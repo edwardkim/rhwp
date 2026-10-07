@@ -118,8 +118,20 @@ cone 이 자동으로 포함한다.
 ```text
 src
 crates
+vendor
 tests
 samples
+saved/blank2010.hwp
+mydocs/manual/agent_knowledge_map.md
+mydocs/manual/agent_troubleshooting_guide.md
+mydocs/manual/recipes/01_fill_form_and_submit.md
+mydocs/manual/recipes/02_table_csv_roundtrip.md
+mydocs/manual/recipes/03_redact_before_sharing.md
+mydocs/manual/recipes/04_safety_check_untrusted_doc.md
+mydocs/manual/recipes/05_mail_merge_batch_fill.md
+mydocs/manual/recipes/06_visual_regression_before_after.md
+mydocs/tech/agent_roadmap/atlas_r1_r200.md
+mydocs/manual/gym_optional_tool.md
 pdf
 tools
 bindings
@@ -131,15 +143,24 @@ scripts
 - `pdf/` 가 공개 오라클이다. `samples/` 가 짝 문서다.
 - workspace members (`crates/*`, `tools/rhwp-subsecond`, `tools/batch-convert`,
   `bindings/Native`) 가 빠지면 `cargo build --bin rhwp` 가 매니페스트에서 실패한다.
+- `Cargo.toml`의 로컬 `[patch.crates-io]`가 사용하는 `vendor/svg2pdf`도 빌드 입력이다.
+  이 트리가 없으면 Cargo가 비교 실행 전에 exit 101로 종료한다.
+- `saved/blank2010.hwp`와 위 `mydocs/` 파일은 제품 코드의 `include_bytes!`·
+  `include_str!` 입력이다. 루트 `llms.txt`는 cone-mode가 자동으로 포함한다.
 - `tools/oracle_public/` 는 비교 러너·리포트 변환기다.
 - 오라클은 `pdf/` 하나만 sparse checkout 하며 LFS 포인터를 허용하지 않는다.
 
-로컬 재현은 `tools/sparse_clone_hint.py` 의 `visual-regression` 프리셋과 같다.
+로컬 재현은 독립 checkout에서 위 목록을 그대로 적용한다. 공용 worktree의 sparse 설정을
+바꾸지 않는다. 파일 경로를 포함한 cone 목록이므로 `--skip-checks`를 사용한다.
 
 ```text
-git sparse-checkout add pdf
-python tools/sparse_clone_hint.py --task visual-regression --apply
+git sparse-checkout set --cone --skip-checks --stdin < oracle-sparse-paths.txt
+cargo build --locked --release --bin rhwp
 ```
+
+`oracle-sparse-paths.txt`는 위 목록을 한 줄에 한 경로씩 담은 로컬 파일이다. Actions의
+`continue-on-error`는 advisory 성격을 유지하지만, 릴리스 promotion은 artifact의 실제
+verdict를 확인한다. Actions run이 성공이어도 `build-failed`는 통과 증거가 아니다.
 
 ## 6. 비교 명령
 

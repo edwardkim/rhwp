@@ -15,6 +15,10 @@ use super::*;
 /// 마커가 사라져 native HWPX로 취급된다.
 pub const HWP5_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp5-origin";
 
+/// 제어 슬롯을 포함하는 문단 UTF-16 축으로 LineSeg를 저장하는 생산자 계약.
+/// 이전 `1` 산출물의 축 해석은 읽기 호환 경로에서 유지한다.
+pub const HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS: &[u8] = b"2:paragraph-utf16";
+
 /// HWP3 원본에서 HWPX 로 export 한 산출물 마커 — 재열람 시 hwp3_lineage 를
 /// 복원해 직파싱 HWP3 와 같은 레이아웃 계약(저장-스텝 등)을 밟게 한다.
 /// 없으면 render-diff 왕복이 프로파일 차이만큼 갈라진다(hwp3-sample p7 14.9px).
@@ -699,7 +703,41 @@ impl Document {
 
         for (id, (basename, ext)) in to_load {
             let full_path = base_dir.join(&basename);
-            if let Ok(data) = std::fs::read(&full_path) {
+            let data = (|| {
+                use std::io::Read;
+                let limit = super::bin_data::MAX_BIN_DATA_BYTES;
+                // Reject an existing FIFO/device before opening it; validate the
+                // opened descriptor as well before the bounded read.
+                let metadata = std::fs::metadata(&full_path).ok()?;
+                if !metadata.is_file() || metadata.len() > limit as u64 {
+                    return None;
+                }
+                let file = std::fs::File::open(&full_path).ok()?;
+                let metadata = file.metadata().ok()?;
+                if !metadata.is_file() || metadata.len() > limit as u64 {
+                    return None;
+                }
+                let mut data = Vec::new();
+                file.take(limit as u64 + 1).read_to_end(&mut data).ok()?;
+                if data.len() > limit {
+                    return None;
+                }
+                let mime = crate::renderer::image_resolver::detect_image_mime_type(&data);
+                if mime == "application/octet-stream" {
+                    return None;
+                }
+                // Prefix detection is sufficient for paint routing, but a local
+                // sidecar must actually be an SVG document, not arbitrary XML.
+                if mime == "image/svg+xml" {
+                    let xml = std::str::from_utf8(&data).ok()?;
+                    let svg = roxmltree::Document::parse(xml).ok()?;
+                    if !svg.root_element().has_tag_name("svg") {
+                        return None;
+                    }
+                }
+                Some(data)
+            })();
+            if let Some(data) = data {
                 if !self.inject_external_image_data(id, data, ext) {
                     continue;
                 }

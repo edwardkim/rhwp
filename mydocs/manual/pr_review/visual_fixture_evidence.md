@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-01
+last_verified: 2026-10-05
 ---
 
 # 시각·fixture 증적
@@ -12,25 +12,29 @@ renderer, layout, typeset, paint, WASM 출력, HWP/HWPX/PDF fixture, 페이지 �
 
 ## 3.5 시각 검증 원칙
 
-최종 판단은 PR이 약속한 사용자-visible 변경 범위다. renderer/layout/paint 개선은 기준 PDF와의 시각 차이가
-blocker가 될 수 있지만, parser·serializer 구조 보존 PR은 visual 차이를 참고 자료로 기록하고 그 차이만으로
-merge를 보류하지 않는다.
+최종 판단은 실제 조판·렌더링 소비 경로다. parser·model·serializer·편집 command 변경도 줄·높이·정렬·개체
+배치·쪽 분할·인쇄 모양에 영향을 주면 Native/fresh WASM Visual Sweep·TSV가 필수이며 시각 미달은 blocker다.
+구조 보존만 변경하고 실제 조판 영향이 없다는 근거가 있는 경우에만 비해당으로 기록한다.
 
-renderer/layout/typeset/paint 등 사용자-visible 렌더링 경로가 바뀌고 HWP/HWPX/PDF fixture가 함께 있으면,
+조판·렌더링 경로가 바뀌면 fixture 첨부 여부와 관계없이 검증해야 한다. 기준 PDF 부족은 미검증이다.
 reviewer는 source PR이 첨부한 before/after나 수치만으로 "시각 검증 완료"라고 쓰지 않는다. 통합 head에서
-직접 만든 기준 PDF·visual sweep 또는 reviewer가 직접 연 기준 PDF/PNG 판정이 있어야 수용 근거가 된다.
+해당 버전 한컴의 [Print PDF](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)와 통합 head의
+Native/fresh WASM Sweep·검증 범위 TSV 및 대표 PNG 직접 판독이 있어야 수용 근거가 된다.
 
-`scripts/visual_sweep.py`의 review PNG를 수용 근거로 사용하면, 각 비교 쪽의
+조판 영향 변경의 검증 범위 전체 TSV와 대표 review PNG에서 각 비교 쪽의
 `tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)는 **90% 이상**이어야 한다. 90% 미만 또는
 지표를 낼 수 없는 쪽이 있으면 스크립트는 review·overlay 산출물과 `pr_review_gate` 기록을 남긴 뒤 실패하며,
 review 문서는 `머지 보류 — 기여자 재검토 필요`로 판정한다. 새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다.
 한컴 PDF 대조는 [Native/fresh WASM 인쇄 프로필](../verification/visual_sweep_guide.md#pdf와-같은-인쇄-프로필)로 수행한다.
 빈 누름틀 안내문만 출력 단계에서 빠지는지 확인하고 실제 입력된 본문과 쪽 구성은 계속 판정한다.
 기여자는 자기 branch에서 원인과 증적을 보완해 새 head로 재실행하고 gate를 통과할 때만 PR을 생성·갱신하며,
-reviewer는 메인터너 보정으로 대신하지 않는다. 한컴 PDF와 rhwp의 실제 글꼴이 완전히 다른
-경우만, 양쪽 글꼴 정보·확인 방법·영향 쪽을 기록한 UTF-8 증거 파일을
-`--font-mismatch-evidence`로 지정해 예외로 남길 수 있다. 그 예외는 이미지 직접 판독을 생략하는 근거가 아니다.
-예외를 지정하기 전에 표 괘선, 문단 시작점, 그림 경계를 PDF·rhwp의 같은 좌표에서 대조한다.
+reviewer는 일반 제출자의 검증을 자동으로 대신하지 않는다. 사용자가 승인한 메인터너 보정도 같은 gate를 따른다.
+**정확히 90%는 통과**한다. 실제 글꼴 차이의 정보·확인 방법·영향 쪽은 UTF-8 증거를
+`--font-mismatch-evidence`로 기록할 수 있다. 올바른 공급으로 해결 불가능한 경우
+[PR 제출 예외 계약](../verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의 JSON 증거를 갖춰
+`font_mismatch_exception`이면 90% 미만이어도 제출할 수 있다. reviewer가 예외 근거를 직접 확인한다.
+측정 불가·쪽수 불일치·배치 차이는 면제하지 않는다.
+표 괘선, 문단 시작점, 그림 경계를 PDF·rhwp의 같은 좌표에서 대조한다.
 위치가 어긋나면 글꼴 차이가 공존해도 배치 결함을 먼저 수정한다(#7359 p14).
 
 직접 visual sweep 또는 동등한 판정을 수행하지 못한 경우 review 문서의 최종 판정은 다음처럼 제한한다.
@@ -44,7 +48,7 @@ reviewer는 메인터너 보정으로 대신하지 않는다. 한컴 PDF와 rhwp
 이 상태에서는 "원 PR 증적 확인", "numeric/contract test 통과", "IR sweep baseline 통과" 같은 표현을
 "visual sweep 통과"와 섞지 않는다.
 
-페이지별 점수 수집은 [TSV 전용 절차](../verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)를 우선 사용한다.
+**페이지별 TSV 명령·저장 위치:** [「실루엣 보조값만 빠르게 TSV 산출」](../verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)의 Native/fresh WASM 예제를 각각 실행한다.
 검증 대상 전체 페이지를 Native/fresh WASM으로 산출해 최저값·90% 미만·누락 쪽을 기록한다.
 기존 PNG 재사용이면 원 실행의 source/build/font provenance를 연결하고 최종 head 재출력으로
 기록하지 않는다. TSV가 모두 90% 이상이면 `not_evaluated`, 미달이면 `re_review_required`이며
@@ -135,6 +139,8 @@ MCP 산출본과 직접 출력본 모두 PDF 1.4 등 여러 형식 버전일 수
 **역할 경계:** 이 절의 MCP 산출은 접근 권한이 있는 메인터너/reviewer의 보완 검증 절차다.
 일반 기여자에게 MCP 접근 또는 호출을 요구하지 않는다. 기여자는 기준 PDF가 필요한 변경에서
 검증 대상 한컴 버전으로 직접 출력한 PDF를 원본 HWP/HWPX와 함께 PR 또는 관련 issue에 첨부한다.
+수동·MCP 모두 **Print 인쇄 경로**를 사용하고 PDF 저장/내보내기로 대신하지 않는다.
+출력 계약·engine 2020/2024 선택은 [MCP 사용법](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
 여러 버전을 비교하거나 지원 근거로 주장하면 각 대상 버전별 PDF와 실제 제품 버전/빌드, OS,
 폰트, 출력 방법을 구분해 제출한다. 기존의 유효한 버전별 첨부본은 재사용한다.
 직접 출력본의 `-2022.pdf` 등을 아래 MCP engine bucket 때문에 `-2020.pdf`로 바꾸지 않는다.
@@ -360,4 +366,5 @@ PR 검증 과정에서 생성됐다는 이유만으로 output 디렉터리 전�
    archive review·asset·오늘할일과 신규 기준 자료만 포함한 후속 PR로 반영한다.
 
 option 2에서도 asset이 devel에 존재하기 전에는 issue/PR comment를 게시하지 않는다. 후속 PR의
-branch, worktree, review 전용 target은 merge 뒤 [merge 후속 처리](post_merge.md)에서 정리한다.
+branch, worktree, review 소유 임시 산출물은 merge 뒤 [merge 후속 처리](post_merge.md)에서 정리한다.
+모든 OS에서 기본 작업공간의 공유 `target/pr-review`는 다음 review의 cache로 보존한다.

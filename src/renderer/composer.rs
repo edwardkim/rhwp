@@ -758,6 +758,24 @@ pub(crate) fn stored_first_tac_line(para: &Paragraph) -> Option<&LineSeg> {
         .then_some(first)
 }
 
+/// Ordinary whitespace rows before an object in the same stored fragment.
+/// A vpos reset has a different continuation owner; its prefix cannot be
+/// emitted again beside the object after that owner advances the page.
+pub(crate) fn ordinary_tac_prefix_rows(para: &Paragraph, owner: usize) -> bool {
+    !para.text.is_empty()
+        && para.text.chars().all(char::is_whitespace)
+        && owner > 0
+        && para.line_segs.get(owner).is_some_and(|row| {
+            row.vertical_pos >= para.line_segs[0].vertical_pos
+                && para.line_segs[..=owner]
+                    .windows(2)
+                    .all(|pair| pair[1].vertical_pos >= pair[0].vertical_pos)
+                && para.line_segs[..owner]
+                    .iter()
+                    .all(|prefix| prefix.line_height == prefix.text_height)
+        })
+}
+
 pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
     // 공백도 자기 저장 줄을 가질 수 있다. 표 앞 공백 줄의 line_height에는
     // 문단의 최대 개체 높이가 반복 저장되므로 text_height와 다음 원점을 확인한다.
@@ -799,6 +817,14 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
             || i64::from(seg.line_height) != outer_height
             || seg.vertical_pos < origin
         {
+            return None;
+        }
+        // Ordinary prefix rows own their text/empty-line boxes and indentation.
+        // A table-only placement cannot replace those rows with an anonymous
+        // offset. Let the common composed paragraph route emit and measure them.
+        // Carriers whose lh repeats the object maximum still need this band's
+        // th-based physical-space contract.
+        if ordinary_tac_prefix_rows(para, owner) {
             return None;
         }
         // 빈 컨트롤 캐리어도 표 앞에 짧은 저장 줄을 가질 수 있다.
@@ -1333,8 +1359,10 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                 );
                 prev.runs.append(&mut extra_runs);
                 prev.has_line_break = true;
-            } else if !pre_text.is_empty() {
-                // 이전 줄이 없거나 [#6300] 저장 줄 경계를 유지할 때 새 ComposedLine
+            } else if !pre_text.is_empty() || keep_stored_boundary {
+                // A terminating break owns its stored line box even with no
+                // visible glyphs. Measurement and placement consume this same
+                // row before the following inline object.
                 let pre_runs = split_row_runs(
                     &pre_text,
                     text_start,
@@ -4538,7 +4566,8 @@ pub(crate) use line_breaking::{
     is_line_end_forbidden, is_line_start_forbidden, layout_paragraph_in_frame, layout_picture_band,
     paragraph_flow_end, recalculate_section_vpos, reflow_line_segs,
     reflow_line_segs_after_cell_split, reflow_line_segs_after_cell_text_edit,
-    reflow_line_segs_in_stored_section, tokenize_paragraph, BreakToken, StoredRowMissPolicy,
+    reflow_line_segs_in_stored_section, restamp_indentation, tokenize_paragraph, BreakToken,
+    StoredRowMissPolicy,
 };
 
 #[cfg(test)]

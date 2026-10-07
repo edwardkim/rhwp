@@ -134,7 +134,8 @@ current head: <작성 시점 참고 SHA 또는 재확인 필요>
 
 ## 3. 병렬 실행과 순차 게이트
 
-같은 checkout의 Cargo 검토 명령은 `target/pr-review`를 공유해 **순차 실행**한다. 긴 baseline은 별도
+모든 OS에서 Cargo 검토 명령은 기본 rhwp 작업공간의 `target/pr-review` 한 곳을 공유해 **순차 실행**한다.
+서로 다른 review worktree에서도 같은 절대 target 경로를 전달하며 PR·이슈별 target은 만들지 않는다. 긴 baseline은 별도
 Cargo 명령을 동시에 띄우지 말고 `.config/nextest.toml`의 nextest priority로 같은 run 안에서 먼저
 스케줄한다. 이는 고정 target cache의 재사용과 실행 중 산출물의 무결성을 함께 보장한다.
 
@@ -284,7 +285,7 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
 
 공유 상태를 바꾸거나 선행 결과가 필요한 작업은 아래 순서를 지킨다.
 
-- 하나의 checkout, `target/pr-review`, Cargo cache를 공유하는 cargo test, cargo clippy, cargo build,
+- checkout·worktree가 달라도 같은 기본 작업공간의 `target/pr-review`를 공유하는 cargo test, cargo clippy, cargo build,
   wasm-pack은 순차 실행한다. 로컬 검증을 CI처럼 여러 Cargo 실행으로 병렬화하지 않는다. 장시간 테스트는
   `.config/nextest.toml`의 우선순위로 같은 nextest 실행 안에서 먼저 시작한다.
 - 전체 integration 회귀를 `cargo test --profile release-test --tests`로 대체하지 않는다. 이 명령은
@@ -295,7 +296,7 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
   merge와 stale run force-cancel은 대상 SHA를 확인한 뒤 순차로 실행한다.
 - 실제 GitHub review/comment, issue close, PR close는 승인과 선행 조건이 갖춰진 뒤에만 게시한다.
 - merge 후에는 merge SHA 확인 → 문서·asset의 devel 반영 → 최종 devel sync → issue 상태 확인 및
-  comment → branch/worktree/검토 전용 target 정리 순서를 지킨다. 이때 worktree 정리에는 commit을
+  comment → branch/worktree/임시 산출물 정리 순서를 지킨다. 공유 `target/pr-review`는 보존한다. 이때 worktree 정리에는 commit을
   만들지 않았더라도 이번 PR의 diff·CI·재현·검증만을 위해 만든 local 검토 worktree를 포함한다. raw image
   URL을 쓰는 comment는 asset이 devel에 존재한 뒤에만 게시한다.
 

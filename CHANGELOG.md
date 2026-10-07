@@ -4,17 +4,93 @@
 
 ## [Unreleased]
 
-### 조판·렌더링
+## [0.8.7] — 2026-10-06
 
-- 표 칸 안 한 문단이 인라인(글자처럼) 중첩 표를 둘 이상 품으면 둘째 표가 칸 너비를 넘어
-  본문 밖으로 나가 사라지던 결함을 고쳤다. 측정과 같은 저장 줄 소속으로 줄별 폭을
-  정렬하고, 각 표의 저장 세로 위치와 바깥 위 여백을 함께 적용한다 (#7337).
-- 쪽 조각이 rowspan 블록 **안쪽**에서 끝나면 걸침 셀이 컷으로 소비한 중첩 표가 조각 상자
-  밖에 놓여 통째로 clip 되던 결함을 고쳤다. 블록-합 보정의 차액을 이 조각이 실제로 그리는
-  마지막 행에 싣는다 (#7336).
-- 저장 RowBreak object frame 이 선언 높이로 "이 쪽을 소유한다"고 말해도, 실측 표가 본문 한
-  쪽에 들어가지 않으면 종전대로 행 컷 스캐너로 분할한다. 쪽보다 큰 표를 통째로 얹어 본문
-  아래로 넘긴 내용이 사라지던 결함을 고쳤다 (#7336).
+> v0.8.6 이후 기능 기준선 `17a69fa4e`까지 2,395커밋과 230개 PR provenance를 확인한 누적 PATCH
+> 릴리스입니다. 이후 main 이력 동기화·버전·배포 검증 commit은 이 계측 범위와 구분합니다.
+
+### 조판·렌더링·폰트
+
+- 문단 안 연속 TAC 표의 저장 줄 소속과 가용 폭, 표 바깥여백을 함께 반영합니다. 저장 LineSeg가 없는
+  문서의 줄 구성도 보정해 같은 줄의 표와 너비 부족에 따른 줄바꿈을 구분합니다 (#7482, #7585).
+- rowspan·중첩 표의 페이지 분할에서 빈 물리 밴드, 셀 패딩과 이어받은 내용의 소유권을 보존합니다.
+  앞 조각의 외곽선과 다음 쪽 그림·뒤 문단이 함께 이어지도록 보정했습니다 (#7368, #7567, #7570).
+- 편집 문단의 들여쓰기와 TAC 표 앞줄 배치를 보정했습니다 (#7599).
+- 호스트 글꼴 공급자와 명시적 폰트 환경을 측정·CanvasKit·Canvas2D 출력에 연결하고,
+  native exact glyph replay의 원자적 fallback을 보강했습니다 (#6881, #7179, #7405).
+
+### 열기·저장·편집
+
+- 빈 머리말·꼬리말이 있는 HWP5 저장본의 한컴 열기 실패와 표 제목 줄 반복·쪽 경계 설정 저장을
+  보정하고, HWPX layoutCompatibility fallback을 정상 생성 형태로 정리했습니다 (#7338, #7460, #7478).
+- Studio 영어 UI, 웹 하이퍼링크 편집과 HWP/HWPX·PDF 링크 보존, 수정 모드 덮어쓰기 및 찾기 결과
+  개수 표시를 추가했습니다 (#6984, #7318, #7485, #7493).
+- 표 뒤 Enter의 새 쪽·빈 문단·캐럿·스크롤 처리와 중첩 표 칸 선택·삭제·붙여넣기 경계를 보정했습니다
+  (#7487, #7539, #7601).
+- CLI 표 생성에 열 너비·정렬·필드 위치 옵션을 추가하고, 안전한 블록 복사·채우기·문서 간 가져오기와
+  캡션·머리말·꼬리말 주소 메타데이터를 보강했습니다 (#7038, #7068, #7101).
+
+### 입력 안전성·브라우저 확장
+
+- SVG 글꼴 정보의 CSS/XML 직렬화 경계, IPv4-mapped IPv6 주소 판정, HWP3 문단 깊이,
+  연결 그림의 파일 형식과 XML 누적 읽기 예산을 보강했습니다. 정상 썸네일의 raw DEFLATE 처리를
+  브라우저 표준 형식에 맞게 복구했습니다 (#7602).
+- WMF 정수 끝값의 산술·비트맵 경계를 보강했습니다. 기존 main 정기 fuzz가 찾은 텍스트 간격
+  뺄셈 패닉의 방어도 이번 배포 코드에 포함됩니다 (#7263).
+- Chrome 다운로드의 최초 상태 저장 중 완료 이벤트, Firefox 중복 탭·저장본 재열기와 자동 열기
+  문서의 파일명 경로 노출을 보정했습니다 (#6965, #6966, #7279).
+
+### macOS·패키지·배포
+
+- macOS CLI runner를 `macos-15`로 전환했습니다. Apple Silicon에서 ARM64를 native 빌드하고
+  Intel target을 교차 빌드하며, target·runner가 포함된 cache key로 이전 SDK 산출물 재사용을 막습니다 (#7556).
+- stable 태그의 Release Binary가 같은 커밋에서 npm·VS Code Marketplace·Open VSX 배포를 직접
+  호출합니다. 채널별 exact version 조회와 aggregate evidence로 배포 결과를 확인합니다 (#6799).
+- Rust, npm core/editor, Studio, VS Code 및 Chrome/Edge/Firefox/Safari 버전을 0.8.7로 통일합니다.
+  Chrome·Edge·Firefox는 별도 스토어 제출 대상입니다.
+
+### 호환성과 남은 범위
+
+- 기존 JSON 봉투 major와 명시적 글꼴/호환성 opt-in을 유지합니다.
+- 문서 입력 경계의 방어를 보강하며 HWP/HWPX 형식 자체의 모든 취약점을 해결했다고 주장하지 않습니다.
+  별도 조사 중인 범위와 비공개 advisory/CVE 절차는 해당 트랙에서 계속 처리합니다.
+- Safari 버전은 맞추지만 이번 브라우저 스토어 배포 대상은 Chrome·Edge·Firefox입니다.
+
+### 기여자
+
+이번 기능 기준선의 사람 기여자 29명(대소문자 보존·알파벳순)입니다. bot과 AI co-author는 별도 집계합니다.
+
+<!-- release-contributors:0.8.7:start -->
+- @aodtjddms
+- @baba9811
+- @davindev
+- @edwardkim
+- @emptinessform
+- @humdrum00001010
+- @jangster77
+- @jeong-sik
+- @kyunghwan-AITeam
+- @lidge-jun
+- @LJYeon12
+- @lpaiu-cs
+- @moongioh
+- @nishantpurohit04
+- @planet6897
+- @postmelee
+- @rubidus-api
+- @salgum1114
+- @semanticist21
+- @semo-git
+- @seo-rii
+- @seongeun82
+- @spamcam1207-stack
+- @winchoose
+- @yoonkhsc
+- @z0rimo
+- @zer0bi9
+- @zlzlzlmo
+- @zunstudio
+<!-- release-contributors:0.8.7:end -->
 
 ## [0.8.6] — 2026-09-02
 

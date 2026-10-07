@@ -292,7 +292,8 @@ contributor fork의 head는 위 `upstream` 조회 대상이 아니다. PR metada
 
 ### 7.7.1 검토 전용 target
 
-PR review Cargo 검증의 고정 경로 `target/pr-review`는 branch·worktree 정리 뒤에도 보존한다. 이 경로는
+PR review Cargo 검증은 macOS·Linux·Windows 모두 각 host의 기본 rhwp 작업공간 아래 `target/pr-review`
+한 곳을 절대 경로로 공유한다. 이 고정 경로는 branch·worktree 정리 뒤에도 보존한다. 이 경로는
 다음 review의 일반 컴파일 산출물을 재사용하는 shared review cache이며, 빌드 뒤 이동하면 통합 테스트에
 박힌 절대 실행 경로가 깨질 수 있다. shared target/debug, target/release, target/release-test,
 target/wasm32-unknown-unknown와 사용자·다른 도구 산출물도 삭제 대상으로 가정하지 않는다.
@@ -306,3 +307,6 @@ pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 `target/review-*`처럼 고정 cache와 구별되는 exact legacy review directory만 소유·미사용을 확인한 뒤
 제거하거나 복구 가능한 환경에서는 휴지통으로 이동한다. 이후 남은 target 하위 경로와 보존한
 `target/pr-review`를 최종 상태에 기록한다.
+
+이 legacy 정리는 새 PR별 target을 만들라는 지시가 아니다. `target/<issue>`, `target/pr-<번호>`,
+`target/pr-review/<issue>`나 worktree별 target을 새로 만들고 merge 뒤 지우는 방식은 사용하지 않는다.

@@ -52,6 +52,7 @@ pub struct Paragraph {
     /// `hp:secPr`(구역 머리 run 소속)이 자리를 차지하지 않는 더 짧은 축이다. 반면 같은
     /// 문단의 `char_count`·`char_offsets`·`char_shapes` 는 **출처와 무관하게 언제나
     /// HWP5 축**이다. 그래서 HWPX 출처의 구역 첫 문단은 IR 안에서 두 축이 섞인다.
+    /// rhwp 원본 마커가 있는 HWPX 는 머리 run 의 `hp:colPr` 도 자리를 차지하지 않는다(#7526).
     ///
     /// 그 상태로 `text_start` 를 `char_offsets` 에 투영하면 줄이 보정폭만큼 **일찍**
     /// 끊긴다. 한글 2024 에 직접 물어 확인한 실측(코퍼스 36497307 문단 0): 한글은 둘째
@@ -892,7 +893,7 @@ impl Paragraph {
     ///
     /// 탭은 Rust 문자열에서는 한 문자지만 HWP5에서는 7개 확장 데이터 unit이 뒤따르는
     /// 8-unit 확장 문자다. 문단 좌표와 `char_count`는 이 스트림 폭을 사용해야 한다.
-    fn char_stream_len(c: char) -> u32 {
+    pub(crate) fn char_stream_len(c: char) -> u32 {
         if c == '\t' {
             CTRL_CHAR_CODE_UNITS
         } else {
@@ -913,7 +914,25 @@ impl Paragraph {
     /// **이 문단의 UTF-16 좌표를 들고 있는 것은 전부 여기서 함께 민다.** 하나라도 빠지면
     /// 그것만 8 만큼 어긋난 채 남아, 다음에 그 문단을 다시 조판할 때 값이 튀어 원인이
     /// 삽입이 아닌 곳에서 찾아진다(#4347 에서 line_segs 가 그랬다).
-    pub(crate) fn shift_for_inline_control_insert(&mut self, char_offset: usize) {
+    ///
+    /// 컨트롤 번호도 같은 이유로 민다. 새 컨트롤이 `controls[control_idx]` 에 들어가면 그
+    /// 자리부터 뒤 컨트롤의 번호가 1씩 커진다. 누름틀 범위가 옛 번호에 남으면 앞에 넣은
+    /// 개체를 가리켜, 누름틀이 조회와 저장에서 사라진다.
+    pub(crate) fn shift_for_inline_control_insert(
+        &mut self,
+        control_idx: usize,
+        char_offset: usize,
+    ) {
+        for range in &mut self.field_ranges {
+            if range.control_idx >= control_idx {
+                range.control_idx += 1;
+            }
+        }
+        self.shift_for_control_slot_insert(char_offset);
+    }
+
+    /// BEGIN/END 슬롯처럼 컨트롤 번호가 늘지 않는 8유닛 삽입에도 사용한다.
+    pub(crate) fn shift_for_control_slot_insert(&mut self, char_offset: usize) {
         if self.char_offsets.is_empty() {
             return;
         }
@@ -1012,7 +1031,11 @@ impl Paragraph {
     }
 
     /// 스트림 삽입으로 이동한 텍스트 좌표와 같은 기준을 쓰는 문단 메타데이터를 갱신한다.
-    fn shift_position_metadata_for_stream_insertion(&mut self, insert_pos: u32, shift: u32) {
+    pub(crate) fn shift_position_metadata_for_stream_insertion(
+        &mut self,
+        insert_pos: u32,
+        shift: u32,
+    ) {
         if shift == 0 {
             return;
         }
@@ -2035,10 +2058,29 @@ impl Paragraph {
 
         let chars: Vec<char> = self.text.chars().collect();
         let mut positions = Vec::with_capacity(total_controls);
+        // 누름틀 끝·다단락 누름틀 끝·제목 차례 표시는 컨트롤 없이 8유닛 슬롯을 차지하고,
+        // 모두 자기 글자 바로 앞 갭에 있다. 그 갭에서 이 수만큼은 컨트롤에 나눠 주지 않는다.
+        // 나눠 주면 뒤 컨트롤이 한 갭씩 앞 글자로 당겨진다.
+        let hidden_slots_before = |char_idx: usize| {
+            self.field_ranges
+                .iter()
+                .filter(|r| r.end_char_idx == char_idx)
+                .count()
+                + self
+                    .orphan_field_ends
+                    .iter()
+                    .filter(|o| o.char_idx == char_idx)
+                    .count()
+                + self
+                    .title_marks
+                    .iter()
+                    .filter(|m| m.char_idx == char_idx)
+                    .count()
+        };
 
         // 첫 문자 이전의 갭: 확장 컨트롤이 텍스트 시작 전에 있는 경우
         let gap_before = offsets[0] as usize;
-        let n_ctrls_before = gap_before / 8;
+        let n_ctrls_before = (gap_before / 8).saturating_sub(hidden_slots_before(0));
         for _ in 0..n_ctrls_before {
             if positions.len() >= total_controls {
                 break;
@@ -2085,7 +2127,7 @@ impl Paragraph {
             }
             if next_off > current_off + char_width {
                 let gap = next_off - current_off - char_width;
-                let n_ctrls = gap / 8;
+                let n_ctrls = (gap / 8).saturating_sub(hidden_slots_before(i + 1));
                 for _ in 0..n_ctrls {
                     if positions.len() >= total_controls {
                         break;
@@ -2382,7 +2424,11 @@ impl Paragraph {
 
     /// 범위 적용과 원본 ID 수집이 같은 UTF-16 경계를 사용한다.
     /// 마지막 텍스트 뒤의 문단 끝 모양은 적용 범위에 포함하지 않는다.
+    /// 글자가 없는 문단은 문단 끝 모양이 곧 이어 입력할 글자의 모양이므로 문단 전체가 범위다.
     fn char_shape_range_bounds(&self, start: usize, end: usize) -> Option<(u32, u32, u32)> {
+        if self.text.is_empty() {
+            return (start == 0).then_some((0, u32::MAX, 0));
+        }
         if start >= end {
             return None;
         }

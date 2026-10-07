@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-10-02
+last_verified: 2026-10-05
 ---
 
 # HWP 2024 변환 MCP client 사용법
@@ -24,6 +24,33 @@ PDF 산출에서는 저장 제품을 세분화해 `-2018.pdf`, `-2022.pdf`처럼
 
 PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 항상 `--engine`과
 `--output-filename`을 명시한다.
+
+## 기준 PDF 인쇄 계약
+
+조판·렌더링 검증의 기준 PDF는 **원본 저장 버전에 맞는 한컴의 Print 인쇄 경로**로 출력한다.
+MCP는 아래 표의 `2020`/`2024` engine을 명시하고 `start → status → download`로 산출한다.
+`--target pdf`는 결과 형식 지정이므로 이것만으로 Print 실행을 입증하지는 않는다.
+서비스 실행 증거에서 실제 한컴 제품/빌드와 Print 경로를 확인해 기록한다. 확인할 수 없으면
+출력 방법은 미검증이며, 성공 job·PDF Creator·파일명만으로 Print 출력으로 간주하지 않는다.
+현재 MCP의 `status.result`에 있는 `engine`, `hancom_version`, `pdf_print_method`,
+`pdf_output_mode`를 확인한다. 예를 들어 2020 출력의 `pdf_print_method: 0`과
+`pdf_output_mode: hancom2020_pdf_driver_one_up`은 한 쪽씩 PDF 인쇄 경로의 실행 증거다.
+결과 필드가 누락되거나 다른 모드이면 해당 engine의 실제 인쇄 경로를 별도로 확인한다.
+
+- 수동 출력도 해당 한컴에서 **파일 → 인쇄(Print) → PDF 출력**을 사용한다.
+  PDF로 저장/내보내기(Save As PDF), 다른 오피스의 변환 결과를 기준으로 대신하지 않는다.
+- 기본은 원본 용지·방향을 유지한 전체 문서, 100% 배율·한 쪽씩(1-up) 인쇄다.
+  모아 찍기·맞춰 찍기·용지 재지정이 검증 대상이면 설정과 비교 범위를 별도로 기록한다.
+- 입력 SHA-256·저장 제품 판정, 실제 한컴 제품/빌드·OS·글꼴, Print 출력 방법과 인쇄 설정,
+  PDF SHA-256·전체 쪽수, MCP engine·job 식별자를 증적에 연결한다. 인증 정보는 기록하지 않는다.
+- 기존 PDF도 같은 원본·버전·Print 출력 출처를 확인한 경우 재사용한다.
+  PDF 형식 버전이나 Creator 표기의 연도만으로 승인하거나 폐기하지 않는다.
+- 일반 기여자는 MCP 권한 없이 본인의 해당 버전 한컴에서 직접 Print 출력해 제출할 수 있다.
+  여러 제품 버전을 비교하면 각 버전의 Print PDF를 구분한다. 직접 출력본은 실제 제품 버전으로
+  이름 붙이고, 아래 MCP의 `2020`/`2024` bucket 명칭으로 바꾸지 않는다.
+
+편집 동작을 검증할 때도 동일하게 편집한 저장본을 해당 한컴에서 열어 Print PDF를 만든다.
+기준 PDF가 없다는 이유로 조판 변경의 Visual Sweep을 비해당으로 처리하지 않는다.
 
 | `rhwp info --json`의 `lastSavedWith.product` | 요청 engine | 기준 PDF 파일명 |
 | --- | --- | --- |
@@ -64,7 +91,8 @@ resource blob의 byte 수와 SHA-256을 검증한 뒤 local output directory에 
 
 server URL/IP, bearer token과 `.env.local` 내용은 Git, issue, PR, 공개 문서와 로그에 기록하지 않는다.
 이 서비스는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용할 수 있다.
-접근 정보는 MCP 관리자에게 비공개 경로로 전달받는다.
+[Discussion #858의 Slack 가입 안내](https://github.com/edwardkim/rhwp/discussions/858)를 참고해
+Slack에 가입한 뒤 메인터너 또는 collaborator에게 접근 정보를 비공개로 요청한다.
 
 ## 최신 client artifact
 
@@ -256,7 +284,8 @@ status의 terminal 상태는 `succeeded`, `failed`, `expired`다. `succeeded`일
 1. 원본의 출처와 저장 제품을 확인하고 적합한 한컴 버전에서 직접 연다. 접근 권한 요청은 사용자가
    파일과 작업을 검토한 뒤 판단한다. 손상·변조 경고 때문에 안전하게 열 수 없다면 보안 설정을
    낮추지 말고 원본 제공자에게 정상 사본을 요청한다.
-2. 정상적으로 열린 문서의 내용·쪽수·조판을 확인한 뒤 한컴의 PDF 저장 기능으로 생성한다.
+2. 정상적으로 열린 문서의 내용·쪽수·조판을 확인한 뒤 **인쇄(Print)의 PDF 출력**으로 생성한다.
+   PDF 저장/내보내기로 대신하지 않고, 위 기준 PDF 인쇄 계약의 배율·용지·전체 쪽수도 확인한다.
    기준 PDF 이름은 위의 저장 제품별 `-2020.pdf` / `-2024.pdf` 규칙을 따른다.
 3. 생성된 PDF를 직접 열어 누락·빈 페이지·출력 손상을 확인한다. 원본과 생성 PDF를 함께 보존하고,
    검증 기록에는 MCP 실패 코드, 수동 생성 사실과 실제 사용한 한컴 버전을 남긴다.

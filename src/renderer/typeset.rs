@@ -4390,8 +4390,13 @@ impl TypesetEngine {
         let clearance = side_wrap_placement.map_or(0.0, |p| p.clearance);
         // 그림 회피로 확정한 물리 줄은 저장 host 줄높이가 작아도 축소되지 않는다.
         // 렌더만 아래로 옮기고 fit에는 짧은 host 높이를 쓰면 쪽 하단을 넘는다.
-        let table_height = if side_wrap_placement.is_some() {
-            table_height.max(band_height)
+        let table_outgrew_saved_row = st.profile.session_edited()
+            && ft.effective_height > hwpunit_to_px(table.common.height as i32, self.dpi) + 0.5;
+        let mut table_height = if side_wrap_placement.is_some() || table_outgrew_saved_row {
+            // Edited cell content can outgrow its saved object row even when
+            // the table is too wide for an inline side-wrap placement. Fit the
+            // same prefix and measured band that paint will actually consume.
+            table_height.max(before_text + band_height)
         } else {
             table_height
         };
@@ -4437,6 +4442,7 @@ impl TypesetEngine {
             stored_tac_table_frame_height(table, self.dpi, table_height);
         let current_page_vpos_base = st.vpos_page_base.unwrap_or(0);
         let saved_tac_table_bottom_fits = !hwpx_rowbreak_tac_missing_owned_line
+            && !table_outgrew_saved_row
             && Some(current_page_vpos_base)
                 .and_then(|base| {
                     para.line_segs
@@ -4472,23 +4478,70 @@ impl TypesetEngine {
             && !st.current_items.is_empty())
             || stored_vpos_rewind_break
         {
+            let mut prefix_carried_separately = false;
+            if tac_table_line_idx.is_some_and(|owner| {
+                crate::renderer::composer::ordinary_tac_prefix_rows(para, owner)
+            }) && before_text > 0.0
+                && st.current_height + before_text <= available
+                && !st.pre_emitted_host_paras.contains(&para_idx)
+            {
+                // Consume the real prefix on this page before carrying only
+                // the object row. Its height is no longer in the next fragment.
+                st.append_item(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: 0,
+                    end_line: tac_table_line_idx.unwrap(),
+                });
+                st.advance_flow_by(before_text);
+                st.mark_pre_emitted_host(para_idx);
+                table_height -= before_text;
+                prefix_carried_separately = true;
+            }
             st.advance_column_or_new_page();
             // 이전 단의 그림은 새 단을 점유하지 않는다. 이미 확정한 다른 표의 metadata는
             // flush가 전 단에 보존하고 이 표는 새 단의 기존 배치 정책으로 시작한다.
             side_wrap_placement = None;
+            if prefix_carried_separately {
+                // Publish the next column's object-row origin to paint too.
+                // A whole TAC wider than the column still owns that row; it
+                // must not recover the preceding page's stored host origin.
+                let next_column = st.inline_flow_column();
+                side_wrap_placement = super::float_placement::place_inline_box(
+                    (next_column.x + left)..(next_column.x + next_column.width - right),
+                    next_column.y + st.current_height,
+                    advance,
+                    band_height,
+                    style.map_or(crate::model::style::Alignment::Left, |s| s.alignment),
+                    &[],
+                    self.dpi,
+                )
+                .or(Some(super::float_placement::InlineBoxPlacement {
+                    x: next_column.x + left,
+                    y: next_column.y + st.current_height,
+                    clearance: 0.0,
+                    advance_end: None,
+                }));
+            }
         }
 
         if let Some(mut placement) = side_wrap_placement {
             st.advance_flow_by(placement.clearance);
-            placement.x -= column.x;
-            placement.y -= column.y;
+            let placement_column = st.inline_flow_column();
+            placement.x -= placement_column.x;
+            placement.y -= placement_column.y;
             st.record_inline_placement((para_idx, ctrl_idx), placement);
             st.invalidate_vpos_after_clearance(placement.clearance);
         }
         // place_table_with_text의 후속 텍스트가 새 단으로 넘어가면 flush가 폐기한다.
         // 호출 뒤 갱신하면 이전 단의 표 하단을 새 단에 유출할 수 있다.
         st.record_inline_flow_bottom(
-            st.current_height.max(st.inline_box_flow_bottom) + before_text + band_height,
+            st.current_height.max(st.inline_box_flow_bottom)
+                + if st.pre_emitted_host_paras.contains(&para_idx) {
+                    0.0
+                } else {
+                    before_text
+                }
+                + band_height,
         );
         self.place_table_with_text(
             st,
@@ -4634,6 +4687,17 @@ impl TypesetEngine {
         let no_lineseg_host_flows_below = no_lineseg_square_host
             && no_lineseg_square_band.is_none()
             && fmt.square_host_plan.is_none();
+        // Corroborate the existing table-height row with the control's stored
+        // stream position. Whitespace-only hosts can own real prefix rows;
+        // PUA carriers retain their specialized filler placement owner.
+        let tac_table_line_idx = self.tac_table_line_index(para, table, fmt);
+        let has_owned_tac_prefix = !para.text.is_empty()
+            && para.text.chars().all(char::is_whitespace)
+            && para.char_offsets.len() == para.text.chars().count()
+            && tac_table_line_idx.is_some_and(|line| {
+                crate::renderer::composer::ordinary_tac_prefix_rows(para, line)
+                    && crate::renderer::layout::control_line_seg_index(para, ctrl_idx) == Some(line)
+            });
         let pre_table_end_line = if !is_visible_para_float
             && signed_vertical_offset > 0
             && !para.text.is_empty()
@@ -4652,16 +4716,18 @@ impl TypesetEngine {
             total_lines
         } else if table.common.treat_as_char
             && total_lines > 1
-            && para.text.chars().any(|c| c.is_alphanumeric())
+            && (has_owned_tac_prefix
+                || para.text.chars().any(|ch| {
+                    !ch.is_whitespace()
+                        && ch > '\u{001F}'
+                        && ch != '\u{FFFC}'
+                        && !('\u{E000}'..='\u{F8FF}').contains(&ch)
+                        && (ch as u32) < 0xF0000
+                }))
         {
-            // 전폭 TAC 표가 자동 줄바꿈으로 자기 줄(line index N)에 놓인 경우(\n 없음):
-            // 한컴은 LINE_SEG 순서대로 line0=텍스트 → lineN=표 로 렌더한다.
-            // control_text_positions() 는 char_offsets 가 비면 무용하므로, 표 줄의 높이
-            // (표 본체 + outer margin top/bottom)와 일치하는 LINE_SEG 인덱스로 판정한다.
-            // PUA 필러/공백만 있는 문단(예: 복학원서.hwp pi=16 — 한컴이 표 폭만큼 필러로
-            // 줄바꿈시킨 케이스)은 is_alphanumeric() 가 false 라 제외 → compute_tac_leading
-            // 경로 유지. (Task #853, Task #842 결함 #2 의 PUA 필러 판정과 정합)
-            self.tac_table_line_index(para, table, fmt).unwrap_or(0)
+            // Keep the legacy text-host route when source positions are absent;
+            // mapped hosts use row ownership rather than glyph visibility.
+            tac_table_line_idx.unwrap_or(0)
         } else {
             0
         };
@@ -4680,7 +4746,10 @@ impl TypesetEngine {
         // [참고2 fix] 배열순서가 아닌 배치순서 기준 (typeset_table_paragraph 산출).
         let is_first_table = is_first_placed;
         let defer_host_line = st.defer_host_line_item_para == Some(para_idx);
-        let pre_height: f64 = if pre_table_end_line > 0 && is_first_table {
+        let pre_height: f64 = if pre_table_end_line > 0
+            && is_first_table
+            && !st.pre_emitted_host_paras.contains(&para_idx)
+        {
             let h = fmt.line_advances_sum(0..pre_table_end_line);
             if !defer_host_line {
                 st.append_item(PageItem::PartialParagraph {

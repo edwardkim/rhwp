@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-01
+last_verified: 2026-10-07
 ---
 
 # 로컬 사전 검증
@@ -16,9 +16,11 @@ PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유
 실행 head·명령·결과와 필요한 증적의 위치를 요약한다. merge 뒤 해당 review의 `output` 정리는
 [merge 후속 처리](post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
 
-모든 PR review Cargo 실행은 기본 증분 빌드를 사용한다. 전체 회귀는 host마다 고정한
-`target/pr-review`를 재사용해 이전 review의 debug/release 산출물과 분리한다. Cargo가 소스·feature·compiler
-변경을 판별해 필요한 unit만 다시 빌드한다.
+모든 PR review Cargo 실행은 기본 증분 빌드를 사용한다. macOS·Linux·Windows 모두 각 host의 **기본 rhwp
+작업공간 아래 `target/pr-review` 한 곳**을 Native·WASM·lint·회귀에 재사용한다. review worktree가 바뀌어도
+동일한 물리 경로를 절대 경로로 전달한다. `target/<issue>`, `target/pr-<번호>`, `target/pr-review/<issue>`나
+worktree 안의 별도 `target/pr-review`를 새로 만들지 않는다. Cargo가 소스 경로·feature·compiler 변경을 판별해
+필요한 unit만 다시 빌드하며, 캐시 재사용이 최종 head 검증을 생략하는 근거는 아니다.
 
 `target/pr-review`는 **이동하거나 이름을 바꾸지 않는다**. 일부 통합 테스트의 `CARGO_BIN_EXE_*` fallback은
 컴파일 당시 절대 target 경로를 가질 수 있어, 빌드 뒤 directory를 옮기면 실행 파일을 찾지 못한다. 최초
@@ -29,11 +31,46 @@ Cargo 검증을 시작하기 전에는 target 하위 directory와 실행 중인 
 target/wasm32-unknown-unknown, 다른 작업의 산출물은 삭제 대상으로 가정하지 않는다.
 
 ~~~bash
-find target -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
+find "${rhwp_review_source_dir:?기본 작업공간 경로를 먼저 고정하세요}/target" -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
 pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 ~~~
 
 ### 고정 review target과 실행 환경
+
+먼저 **기본 작업공간의 저장소 루트에서**, review worktree로 이동하기 전에 절대 경로를 고정한다.
+이 변수는 같은 셸에서 이후 검증 전체에 유지한다. 이미 review worktree에 있다면 기본 작업공간으로 돌아가
+준비하며, 그 worktree의 `git rev-parse --show-toplevel`을 공용 cache의 기준으로 사용하지 않는다.
+
+macOS·Linux 및 POSIX 셸:
+
+```bash
+rhwp_review_source_dir="$(git rev-parse --show-toplevel)"
+rhwp_review_target_dir="${rhwp_review_source_dir}/target/pr-review"
+export CARGO_TARGET_DIR="$rhwp_review_target_dir"
+```
+
+PowerShell(운영체제와 무관하게 동일):
+
+```powershell
+$rhwpReviewSourceDir = (Get-Item -LiteralPath (git rev-parse --show-toplevel)).FullName
+$rhwpReviewTargetDir = Join-Path $rhwpReviewSourceDir 'target/pr-review'
+$env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
+```
+
+Windows cmd에서는 기본 작업공간에서 `RHWP_SOURCE_DIR`를 절대 경로로 고정하고
+`RHWP_REVIEW_TARGET_DIR=%RHWP_SOURCE_DIR%\target\pr-review`를 유지한다. 대화형 cmd의 준비 예시는 다음과
+같으며 `.cmd` 파일에서는 `%R` 대신 `%%R`을 사용한다.
+
+```bat
+for /f "delims=" %R in ('git rev-parse --show-toplevel') do set "RHWP_SOURCE_DIR=%R"
+set "RHWP_REVIEW_TARGET_DIR=%RHWP_SOURCE_DIR%\target\pr-review"
+set "CARGO_TARGET_DIR=%RHWP_REVIEW_TARGET_DIR%"
+```
+
+모든 Cargo `--target-dir`와
+WASM의 `CARGO_TARGET_DIR`는 위에서 고정한 같은 경로를 사용한다. 명시한 `--target-dir`는 환경변수보다
+우선하므로 환경변수만 설정한 뒤 상대 target 옵션을 그대로 쓰지 않는다. 공유 cache를 쓰는 다른 Cargo
+작업이 있으면 종료·소유를 먼저 확인하고 순차로 실행한다. 별도 경로는 사용자 명시 지시가 있을 때만 쓴다.
 
 전체 Rust 회귀의 기본 명령은 다음과 같다. 같은 `target/pr-review`를 사용하는 Cargo 계열 명령은 반드시
 앞 명령의 종료를 확인한 뒤 실행한다.
@@ -46,20 +83,21 @@ pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 아래 wrapper를 사용한다. wrapper는 두 Cargo 호출 모두에 `--locked`를 적용한다.
 
 ```bash
-CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
+CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg
 ```
 
 반복 검증에는 macOS/Linux 셸에서 다음 alias를 사용할 수 있습니다.
 
 ```bash
-alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+alias rhwp-wasm-build='CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg'
 rhwp-wasm-build
 ```
 
 Windows PowerShell에서는 native wrapper를 사용합니다.
 
 ```powershell
-$env:CARGO_TARGET_DIR = 'target\pr-review'
+if (-not $rhwpReviewTargetDir) { throw '기본 작업공간에서 공용 target 경로를 먼저 고정하세요' }
+$env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
 .\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg
 Remove-Item Env:CARGO_TARGET_DIR
 ```
@@ -69,7 +107,8 @@ Remove-Item Env:CARGO_TARGET_DIR
 
 ```bat
 doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
-set "CARGO_TARGET_DIR=target\pr-review"
+if not defined RHWP_REVIEW_TARGET_DIR exit /b 1
+set "CARGO_TARGET_DIR=%RHWP_REVIEW_TARGET_DIR%"
 rhwp-wasm-build
 set "CARGO_TARGET_DIR="
 ```
@@ -83,7 +122,7 @@ host의 논리 CPU·메모리·동시 작업을 확인한 뒤에만 `--test-thre
 ~~~bash
 cargo nextest run --locked \
   --cargo-profile release-test \
-  --target-dir target/pr-review \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
 
@@ -127,7 +166,7 @@ manifest `--check`는 아래처럼 파생 상태를 준비한 review worktree에
 node scripts/rust-test-suite-manifest.mjs --prepare
 node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 node scripts/run-rust-test.mjs issue_1234_short_description \
-  -- --cargo-profile release-test --target-dir target/pr-review
+  -- --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
 ~~~
 
 `tests/generated/*.rs`, unit-tier inventory, manifest는 직접 편집하거나 PR에 stage하지 않는다. Cargo generated
@@ -184,8 +223,8 @@ renderer/layout 변경을 한컴 기준 PDF와 비교할 때는 비교 하네스
 명령을 먼저 쓸 수 있다.
 
 ~~~bash
-cargo build --profile release-test --target-dir target/pr-review
-RHWP_BIN=target/pr-review/release-test/rhwp \
+cargo build --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+RHWP_BIN="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}/release-test/rhwp" \
   venv/bin/python tools/fidelity_compare/fidelity_compare.py <키> <시작쪽> <끝쪽> \
   --out-dir output/pr-review/<review-id>/fidelity-<키>
 ~~~
@@ -214,10 +253,12 @@ target을 재사용한 warm 실행은 6분 11초(build 2.74초, test 359.563초)
 이 host의 4 thread 측정값은 역사적 증적이며, 다른 Windows host의 기본값이나 상한이 아니다.
 
 ~~~powershell
-Set-Location 'C:\\Users\\admin\\Desktop\\rhwp\\rhwp'
+# 준비한 같은 셸에서 review worktree의 루트로 이동한 뒤 실행한다.
+if (-not $rhwpReviewTargetDir) { throw '공용 target 준비가 필요합니다' }
 cargo nextest run `
+  --locked `
   --cargo-profile release-test `
-  --target-dir target/pr-review `
+  --target-dir $rhwpReviewTargetDir `
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
 
@@ -291,11 +332,11 @@ devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. conflict
 node scripts/rust-test-suite-manifest.mjs --prepare
 cargo fmt --all
 cargo fmt --all -- --check
-cargo clippy --locked --target-dir target/pr-review -- -D warnings
+cargo clippy --locked --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
 cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
-  --target-dir target/pr-review -- -D warnings
-cargo build --locked --workspace --target-dir target/pr-review
-cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
+cargo build --locked --workspace --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+cargo clippy --locked --workspace --all-targets --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
 node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 ```
 
@@ -426,7 +467,7 @@ merge 판단에서는 다음 경계를 적용한다.
 ~~~bash
 cargo nextest run --locked \
   --cargo-profile release-test \
-  --target-dir target/pr-review \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 cargo fmt --all -- --check
 cargo clippy --locked --all-targets -- -D warnings
@@ -435,11 +476,11 @@ cargo clippy --locked --all-targets -- -D warnings
 renderer 영향 PR의 Native Skia 공식 회귀 범위는 다음 3종이다.
 
 ~~~bash
-cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
+cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia --lib
 node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \\
-  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
 node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \\
-  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
 # 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
 docker compose --env-file .env.docker run --rm wasm
 ~~~
@@ -473,7 +514,7 @@ draft 해제 전에 코퍼스 래칫을 확인한다. 래칫은 일곱이고, �
 다섯을 한 번에 돌리는 필터다. `oracle_page_count` 도 함께 걸어 두면 쪽수 회귀를 같이 본다.
 
 ~~~bash
-cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast -E \
+cargo nextest run --locked --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --tests --no-fail-fast -E \
  'test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|body_overflow_does_not_grow|oracle_page_count/)'
 ~~~
 
@@ -485,7 +526,7 @@ cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-r
 >
 > ~~~bash
 > python tools/clipping_gate.py --check tests/fixtures/clipping_baseline.tsv \
->   --exe target/release/rhwp
+>   --exe "${rhwp_review_target_dir:?공용 target 준비가 필요합니다}/release/rhwp"
 > # 출력 마지막 줄의 `ERR/누락` 과 `baseline없음` 을 반드시 읽는다.
 > ~~~
 
@@ -529,7 +570,7 @@ cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-r
 정답지를 추가했으면 픽스처를 재생성해 그 문서를 원장에 넣는다.
 
 ~~~bash
-python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe
+python tools/oracle_page_count/regenerate.py --rhwp "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}/release-test/rhwp.exe"
 ~~~
 
 모아 찍기(`printMethod` 4·5) 문서는 한/글이 한 장에 여러 쪽을 실으므로 이 축의 대상이
@@ -553,7 +594,7 @@ python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe
 ~~~bash
 RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx"]' \
   cargo nextest run --locked --cargo-profile release-test \
-  --target-dir target/pr-review --tests --no-fail-fast \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --tests --no-fail-fast \
   -E 'test(/security_corpus_regression/)'
 ~~~
 
@@ -570,7 +611,7 @@ RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/issue6697/80550-agricultural-machine
 ~~~bash
 RHWP_IR_SWEEP_DUMP=/tmp/ir_field_sweep_current.tsv \
   node scripts/run-rust-test.mjs ir_field_sweep_baseline -- \
-  --cargo-profile release-test --target-dir target/pr-review
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
 diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.tsv
 ~~~
 
@@ -594,7 +635,7 @@ review 산출물이므로 수정하거나 stage하지 않는다.
 
 ~~~bash
 RHWP_OVERFLOW_CELL_DUMP=/tmp/overflow_cell_current.tsv \
-  cargo test --locked --profile release-test --target-dir target/pr-review \
+  cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --test overflow_cell_baseline -- --nocapture
 LC_ALL=C cat /tmp/overflow_cell_current.tsv.part??-of16 | \
   LC_ALL=C sort > /tmp/overflow_cell_current.tsv
@@ -636,21 +677,21 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 diff check, clippy, doc test, TypeScript, npm test, 표준 Docker WASM build를 이 순서로 실행한다.
 
 ~~~bash
-cargo build --locked --release --target-dir target/pr-review
-cargo test --locked --release --target-dir target/pr-review --lib
+cargo build --locked --release --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+cargo test --locked --release --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --lib
 cargo nextest run --locked \
   --cargo-profile release-test \
-  --target-dir target/pr-review \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
-cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
+cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia --lib
 node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
-  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
 node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
-  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
 cargo fmt --all -- --check
 git diff --check
-cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings
-cargo test --locked --doc --target-dir target/pr-review
+cargo clippy --locked --all-targets --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
+cargo test --locked --doc --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
 (cd rhwp-studio && npx tsc --noEmit)
 npm --prefix rhwp-studio test
 docker compose --env-file .env.docker run --rm wasm
@@ -685,7 +726,7 @@ git branch -D prN-merge-test
 ~~~
 
 merge가 시작되지 않았거나 Already up to date면 abort는 생략한다. 이 절은 simulation branch만 정리한다.
-fetch branch, review branch, docs-only branch, worktree, 검토 전용 target은 review 종료 뒤
+fetch branch, review branch, docs-only branch, worktree, 검토 소유 임시 산출물은 review 종료 뒤
 [merge 후속 처리](post_merge.md)의 최종 종료 게이트에서 정리한다.
 
 ## 4.5 전체 Rust 회귀 sharding 실측
