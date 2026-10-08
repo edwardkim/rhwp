@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const POLICY_VERSION = '6';
+const POLICY_VERSION = '7';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -14,7 +14,7 @@ const WRITER_PERMISSIONS = new Set(['admin', 'maintain', 'write']);
 const FRONTEND_MODES = new Set(['none', 'unit', 'package']);
 const BOOLEAN_VALUES = new Set(['true', 'false']);
 const CLASSIFICATION_STATUSES = new Set(['classified', 'full']);
-const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
+const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust', 'actions'];
 
 const CI_PUSH_PATHS_IGNORE = []; // CI push is release-tag-only; no branch push checks.
 
@@ -173,6 +173,7 @@ const CODEQL_JOBS = {
   'javascript-typescript': 'Analyze (javascript-typescript)',
   python: 'Analyze (python)',
   rust: 'Analyze (rust)',
+  actions: 'Analyze (actions)',
 };
 
 function fullClassification(reason) {
@@ -473,6 +474,7 @@ function encodeCodeqlLanguages(value) {
     'javascript-typescript': 'js',
     python: 'py',
     rust: 'rs',
+    actions: 'ac',
   })[language] || 'all').join(',');
 }
 
@@ -527,7 +529,7 @@ function parseStatusDescription(description) {
   if (!FRONTEND_MODES.has(fields.get('fe'))) throw new Error('invalid frontend axis');
   if (!new Set(['0', '1']).has(fields.get('render'))) throw new Error('invalid render axis');
   if (!new Set(['0', '1']).has(fields.get('skia'))) throw new Error('invalid skia axis');
-  if (!/^(none|all|(?:js|py|rs)(?:,(?:js|py|rs))*)$/.test(fields.get('ql'))) {
+  if (!/^(none|all|(?:js|py|rs|ac)(?:,(?:js|py|rs|ac))*)$/.test(fields.get('ql'))) {
     throw new Error('invalid CodeQL axis');
   }
   const languages = fields.get('ql').split(',');

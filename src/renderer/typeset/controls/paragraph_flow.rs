@@ -19,6 +19,60 @@ pub(in crate::renderer::typeset) struct TableParagraphInput<'a> {
     pub composed_all: &'a [ComposedParagraph],
 }
 
+fn try_place_reflowed_table_rows(
+    engine: &TypesetEngine,
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    measured_tables: &[MeasuredTable],
+) -> bool {
+    if !crate::renderer::inline_flow::supports_table_text_rows(para) {
+        return false;
+    }
+    let build = |st: &TypesetState, start: f64, preceding: bool| {
+        crate::renderer::typeset::inline_flow::plan::build_plan(
+            st.inline_flow_input(start, preceding),
+            para,
+            para_idx,
+            styles,
+            measured_tables,
+            engine.dpi,
+        )
+    };
+    let Some(mut plan) = build(st, st.current_height, true) else {
+        return false;
+    };
+    // Fragmented tables and footnote reservation retain their existing owner.
+    // A fitting prefix must stay in this column, even if later rows need a cut.
+    if plan.end > st.available_height() {
+        if st.current_items.is_empty()
+            || plan
+                .rows
+                .first()
+                .is_none_or(|row| row.y + row.height <= st.available_height())
+        {
+            return false;
+        }
+        let Some(candidate) = build(st, 0.0, false) else {
+            return false;
+        };
+        if candidate.end > st.base_available_height() {
+            return false;
+        }
+        st.advance_column_or_new_page();
+        let Some(candidate) = build(st, st.current_height, true) else {
+            return false;
+        };
+        if candidate.end > st.available_height() {
+            return false;
+        }
+        plan = candidate;
+    }
+    st.commit_inline_flow(para_idx, plan);
+    true
+}
+
 pub(in crate::renderer::typeset) fn place(
     engine: &TypesetEngine,
     st: &mut TypesetState,
@@ -40,22 +94,8 @@ pub(in crate::renderer::typeset) fn place(
     // 문단의 블록 표 fit 이 존 위에 겹쳐 배치됐다 (19439117: 870px 서식 표
     // 존 [31..902] 위에 866px 표가 y≈36 에 통배치 → 1쪽, 한글 2쪽).
     let host_col_w = st.prepare_table_paragraph_column();
-    if crate::renderer::inline_flow::supports_table_text_rows(para) {
-        if let Some(plan) = crate::renderer::typeset::inline_flow::plan::build_plan(
-            st.inline_flow_input(st.current_height, true),
-            para,
-            para_idx,
-            styles,
-            measured_tables,
-            engine.dpi,
-        ) {
-            // Fragmented tables and footnote reservation retain their existing owner.
-            // Only publish a whole-row plan that fits the current page budget.
-            if plan.end <= st.available_height() {
-                st.commit_inline_flow(para_idx, plan);
-                return;
-            }
-        }
+    if try_place_reflowed_table_rows(engine, st, para_idx, para, styles, measured_tables) {
+        return;
     }
     let mut fmt = engine.format_paragraph(para, composed, styles, Some(host_col_w));
     if let Some(plan) = crate::renderer::inline_flow::plan_square_table_host(
@@ -95,6 +135,12 @@ pub(in crate::renderer::typeset) fn place(
     );
 
     st.ensure_page();
+
+    // A candidate rejected in the previous column does not describe the new
+    // column. Recompose at its origin so fit and paint still consume one plan.
+    if try_place_reflowed_table_rows(engine, st, para_idx, para, styles, measured_tables) {
+        return;
+    }
 
     // pre-fit가 단을 넘겼으면 그 단의 원점·예산으로 확정 줄 배치를 다시 계산한다.
     // 앞 단에서 거절된 후보를 이유로 새 단에서도 legacy 높이 상한을 쓰지 않는다.
