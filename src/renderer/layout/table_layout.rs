@@ -7701,7 +7701,10 @@ impl LayoutEngine {
                 .iter()
                 .any(|c| matches!(c, Control::Table(_)));
             if let Some(frame) = &reflow_picture_frame {
-                for &(ctrl_idx, rect) in &frame.pictures {
+                for &(para_idx, ctrl_idx, rect) in &frame.pictures {
+                    if para_idx != cp_idx {
+                        continue;
+                    }
                     let Control::Picture(pic) = &para.controls[ctrl_idx] else {
                         unreachable!()
                     };
