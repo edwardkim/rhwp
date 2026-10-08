@@ -156,7 +156,15 @@ pub(crate) fn plan(
 ) -> Option<InlineFlowPlan> {
     let style = styles.para_styles.get(para.para_shape_id as usize)?;
     let top = frame.paragraph_y + style.spacing_before;
-    let positions = para.control_text_positions();
+    // A control-only carrier has no glyph offsets. Its logical object cursor
+    // still advances (0, 1, ...), but those slots are not positions in `text`.
+    // Keep control order in the atom stream; the shared row composer decides
+    // whether their boxes fit together or advance to the next physical row.
+    let positions = if para.text.is_empty() {
+        vec![0; para.controls.len()]
+    } else {
+        para.control_text_positions()
+    };
     let chars: Vec<_> = para.text.chars().collect();
     let mut controls: Vec<_> = positions.into_iter().enumerate().collect();
     controls.sort_by_key(|&(ci, position)| (position, ci));
@@ -622,8 +630,14 @@ fn row_geometry(
 }
 
 /// 저장 행과 자체 inline 소유자가 없는 본문만 현재 물리 frame에서 재조판한다.
+///
+/// [#7548] 저장 LineSeg 가 없는 HWPX 문단은 로드 시 합성 줄(구현 태그)을 받는다.
+/// 합성 줄은 앞 개체의 배제 영역을 모르는 전폭 재조판 결과라 저장 증거가 아니다 —
+/// 저장 줄이 하나도 없으면 빈 줄 목록과 같이 이 frame 에서 다시 조판한다.
 pub(crate) fn supports_plain_text(para: &Paragraph) -> bool {
-    para.line_segs.is_empty() && !para.text.trim().is_empty() && para.controls.is_empty()
+    super::para_has_no_stored_line_segs(para)
+        && !para.text.trim().is_empty()
+        && para.controls.is_empty()
 }
 
 pub(crate) fn plan_plain_text(
