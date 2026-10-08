@@ -158,3 +158,42 @@ docker compose -p rhwp --env-file .env.docker run --rm --no-deps wasm
 | 실행 증적 | `studio-docker-wasm-build.log`, `prepare-studio.cjs`, `studio-browser.log`, `studio-session.json`, `studio-vite.log` |
 
 두 검증 탭을 Chrome에 남겨 메인터너가 직접 판정하도록 했다. screenshot도 열어 문서·대상 쪽의 표시를 확인했다. 이 준비는 fresh WASM Studio의 실제 로딩 확인이며 independent PDF와의 fresh WASM Visual Sweep 전체 게이트를 수행한 것은 아니다. 기존 넘침·Native 20쪽 게이트 미달과 보류 판정은 별도 승인·보완 전까지 유지한다. 초기 response-body 수집 도구 오류는 `studio-browser-attempt1.log`에 보존했고, 재시도에서 실제 인스턴스 입력 해시와 network response를 모두 확인했다.
+
+## 후속 — 56345 20쪽 마지막 빈 문단의 점유 누락 진단
+
+2026-10-08 작업지시자가 중첩 1×1 표 뒤의 빈 엔터가 셀 분할에 반영되지 않는 원인 조사를 요청했다. **빈 문단은 파싱·IR·출력 노드에 보존되지만, 셀 높이 측정이 그 문단의 추가 점유를 예약하지 않는다. 실제 배치는 표 뒤로 빈 줄을 전진시키므로 측정·배치가 불일치한다.** 이번 작업은 진단이며 production source·test·baseline은 변경하지 않았다.
+
+입력은 기존 `samples/issue6111/56345_regulatory_impact_analysis.hwp`와 독립 `pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf`다. source head는 앞서 고정한 `5cd52f83aaed82bbaad1d4331587002831c27392`, 대조 source는 `f0e7228f6dd2ea1437724e53ad640c40c56d204b`다. 입력 SHA-256은 `58013017c3a3dc7e2d278b99c5b4fa1c61de0aa861f913a2c41a49145baadafc`, PDF는 `c66ea20c3b8d6b31af73752e170372bc7af839c38812991125bdde4dfba35abb`다. 기존 immutable `rhwp-before`/`rhwp-after`와 Docker WASM을 재사용했으며 다시 빌드하지 않았다.
+
+### 입력과 독립 기준
+
+- 대상은 section 0 / body paragraph 359 / control 0의 6×2 표, 마지막 `cell[11]`(6행 2열, 근거설명)이다. 셀 문단 p[0]은 `ClickHere 설명`과 1×1 중첩 표(control 1)를 가진다. p[1]은 텍스트·control이 없는 실제 빈 문단이며 저장 LineSeg가 `vpos=1582HU, lh=1300HU, ls=260HU`로 남아 있다. 96dpi에서 빈 줄 자체 높이는 17.33px이다. `Space(0)`나 파서가 만든 가상 문단이 아니다.
+- 중첩 표의 본문은 4줄이며 저장 vpos가 `0 → 1952 → 3904 → 0HU`로 재시작한다. PDF 20쪽에는 앞의 3줄, 21쪽에는 표 외곽과 마지막 `수는 없음` 줄이 있다. `review/review_020.png`와 별도 `regulatory-reference-page21.png`를 직접 확인했다. 따라서 21쪽의 이어받기를 지운 채 전체 쪽수만 21로 유지하는 것은 기준과 같은 배치가 아니다.
+- 원본 `fields --json`은 ClickHere 누름틀 324개를 반환한다. 대상의 외부 `설명`과 내부 `근거설명` 누름틀도 확인했다. 누름틀 서식임은 확인되지만 외부 프로그램의 자동 생성·조합 여부는 파일만으로 확정하지 않는다. 누름틀 존재 자체가 빈 문단 제거의 원인은 아니다.
+
+### 생산 결과 → 측정 → 예산 → 실제 배치
+
+| 단계 | 코드와 실행 관측 |
+| --- | --- |
+| 저장 흐름 수용 | `src/renderer/mod.rs:1782`의 `cell_vpos_ladder_is_intact`는 부모 문단의 0 / 양수 1582 앵커를 수용한다. 자식 표의 페이지별 좌표 재시작과 뒤 문단이 실제 자식 표 하단 이후에 있는지는 이 판정이 확인하지 않는다. `height_measurer.rs:3253`의 압축 사다리 보정은 native HWP5에 적용되지 않는다. |
+| 셀 요구 높이 | `height_measurer.rs:3279–3308`은 이 입력에서 `max(저장 줄 끝, text_height, nested_bottom, wrap_bottom)`을 쓴다. 뒤 빈 줄의 저장 끝 `(1582+1300)/75=38.43px`보다 중첩 표 95.41px가 크므로 추가 빈 줄 점유가 결과에 남지 않는다. `cell_nested_controls_bottom:2594`도 중첩 개체의 하단을 구하며 그 뒤 빈 문단을 순차로 예약하지 않는다. 진단은 마지막 행의 `content=95.4, pad=5.9, req=101.4`를 반환했다. |
+| 통째 수용·컷 | `typeset/table/block/entry.rs:1760–1827`의 whole-fit 경로에서 `cur_h=645.6 + total=323.6 <= avail=971.3`, `plain=true`다. 표 전체가 20쪽에 수용되어 이 표의 행/내용 분할 컷이 만들어지지 않는다. 21쪽 pagination에는 paragraph 360–369만 있고 paragraph 359의 이어받기는 없다. |
+| 배치용 높이 | `layout/table_layout.rs:8696–8801`도 composed/stored/nested 끝점의 max를 사용한다. `sequential_nested_cell_layout:9365`는 부모 사다리가 intact이면 적용되지 않는다. 중첩 표보다 작은 저장 extent는 `stored_flow_shape_is_trusted:9007` 조건에 맞지 않아 실제 원점은 순차 흐름을 사용한다(`6050` 저장 원점 선택 조건). |
+| 최종 원점·경계 | `nested_table_flow_advance:9338`와 `para_y` 갱신(`8152`)은 흐름형 중첩 표의 실제 높이만큼 커서를 전진시킨다. 이후 p[1] 빈 줄은 표 뒤에 배치되지만 셀 높이는 위의 101.4px 그대로다. Native와 현재 Studio WASM render tree 모두 아래와 같은 경계를 반환한다. |
+
+| 대상 | 셀 아래 경계 | 중첩 표 아래 경계 | 뒤 빈 줄 y / 높이 / 아래 경계 |
+| --- | ---: | ---: | ---: |
+| 결함: paragraph 359, 마지막 셀 | 1044.9px | 1041.9px | 1041.9 / 17.3 / 1059.2px |
+| 정상 대조: 같은 쪽 paragraph 347, 마지막 셀 | 642.5px | 622.1px(반올림) | 622.2 / 17.3 / 639.5px |
+
+결함 셀의 빈 줄은 셀 하단보다 약 14.3px, 본문 하단 1046.91px보다 약 12.3px 아래까지 놓인다. 정상 대조군은 뒤 빈 문단의 저장 `vpos=11042HU`가 중첩 표 공간을 포함한다. 저장 끝 `(11042+1300)/75=164.56px`와 padding이 요구 높이 170.5px에 반영되어 빈 줄이 셀 안에 들어간다. 따라서 모든 중첩 표 뒤에 높이를 무조건 합산하는 수정도 정상 저장 흐름을 이중 계상할 수 있다.
+
+PR 변경 전·후의 `DIAG_ROWH`와 `DIAG_FIT`은 대상 셀의 과소 측정·whole-fit 판정이 동일했다. 이번 PR이 새로 빈 엔터를 제거한 것은 아니다. 기존 측정·배치 불일치에 바깥 여백 복원으로 표 원점이 약 1.88px 내려가는 차이가 추가된다.
+
+### 실행 증거와 수정 방향의 한계
+
+Native에는 `dump --section 0 --para 359`, 정상 대조 `--para 347`, `fields --json`, `RHWP_DIAG_ROWH=1 RHWP_DIAG_SPLITSCAN=1 dump-pages -p 19 --json`, 21쪽 `dump-pages -p 20 --json` / `export-render-tree -p 20`을 실행했다. 기준은 `pdftotext -f 20 -l 21 -layout`과 `pdftoppm -f 21 -l 21 -r 96 -singlefile -png`로 확인했다. 증거는 `regulatory-para{347,359}-dump.txt`, `regulatory-fields.json`, `regulatory-{before-,}page20-diag.{json,log}`, `regulatory-page21-pagination.json`, `regulatory-page21-tree/`, `regulatory-pdf-pages20-21.txt`, `regulatory-reference-page21.png`에 보존했다.
+
+기존 Studio CDP target `646530F3F106206E8EE236FA6FAA0E11`에서 문서·표시 쪽을 바꾸지 않고 loaded WASM document의 `getPageRenderTree(19/20)`을 호출했다. 실제 instantiate 입력 SHA는 Docker 산출물 `e357f3a63c83fff7f4e3f172ae9a4f7f0248567d42fa3ddf0d07cfa14fd410c3`와 일치한다. `studio-wasm-page{20,21}-render-tree.json`, `studio-wasm-empty-cell-session.json`, 수집 스크립트 `inspect-empty-cell.cjs`와 요약 `regulatory-empty-cell-diagnosis.json`에 보존했다. Native와 WASM 모두 21쪽 Table 노드는 0개다. 이는 해당 엔진 출력의 구조 검증이며 전체 fresh WASM Visual Sweep을 새로 실행한 결과는 아니다.
+
+수정할 계약은 **중첩 표와 그 뒤 실제 빈 줄의 소유·원점·점유 끝점을 같은 줄 구성 결과로 계산하고, 셀 요구 높이·분할 예약·최종 배치가 이를 함께 소비하는 것**이다. 페이지별 저장 vpos를 전체 셀의 절대 끝으로 취급하는 가정을 제거해야 한다. 빈 문단 삭제·clip·clamp나 특정 문서/누름틀 예외는 해결책이 아니다. 통상 본문 예산의 남은 약 2px에 비해 누락된 빈 줄 17.33px는 크지만 `entry.rs:1782`의 아래 여백 허용 예산과 자식 표 컷도 함께 검증해야 한다. 높이만 더하면 PDF와 같은 컷이 자동으로 생긴다고 판정하지 않는다. 이번에는 수정 후 분할·패딩·뒤 빈 문단 소유의 검증은 미실행이며 진단으로만 기록한다.
