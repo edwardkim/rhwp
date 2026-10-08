@@ -107,6 +107,26 @@ merge 후 comment는 한국어 존댓말의 `--body-file`로 원 기여, 보정 
 
 검증 중 devel은 `74f9b71b15a2db18b17c37ceab6cf2b3c20c03c3`으로 전진했습니다. 새 upstream 표 조판 변경과 이번 생산 변경 파일은 겹치지 않고 코드 merge-tree는 clean입니다. 이번 branch의 code를 억지 merge/rebase하지 않고 최신 base와 최종 문서 head의 merge simulation 및 GitHub current-base merge CI를 독립적으로 확인합니다. 새 upstream 변경을 이번 PR 기능 diff로 집계하지 않습니다.
 
-자체 작성 통합 PR의 author self-review입니다. 원 번호의 archive 네 개를 같은 PR에 보존하며 별도 integration 번호 archive나 기록 PR을 만들지 않습니다. GitHub CI 및 실제 merge는 아직 완료값으로 기록하지 않습니다.
+자체 작성 통합 PR의 author self-review입니다. 원 번호의 archive 네 개를 같은 PR에 보존하며 별도 integration 번호 archive나 기록 PR을 만들지 않습니다. 이 절은 로컬 검사 완료 시점의 기록입니다. 이후 완료한 GitHub CI는 다음 절에 기록하며 실제 merge는 반영 확인 뒤 후속 comment에서 확정합니다.
 
 전체 nextest 안의 svg_snapshot 기준 출력 6개와 프로세스 내 결정성 검사 1개가 모두 PASS했습니다. golden 실패 또는 변경이 없으므로 별도 재생성은 수행하지 않았습니다. Native Skia lib의 workspace 합계는 4,109 PASS / 0 FAIL / 기존 13 ignored입니다.
+
+## 통합 PR 및 GitHub Full CI
+
+[통합 PR #7686](https://github.com/edwardkim/rhwp/pull/7686)은 원 번호별 검토 archive·오늘할일·시각 asset을 같은 branch에 포함합니다.
+
+Full CI candidate `cdaa64680f6faa189aa08d9222216ae9a734d9d9`, 실행 base `74f9b71b15a2db18b17c37ceab6cf2b3c20c03c3`, GitHub 자동 merge ref `8047e559b540d50a863a470d324edac4c7fd7170`, tree `a23a61b252876f056fe31d5a26c9b83a607ae636`입니다. PR event의 실제 base/head와 GitHub merge ref의 부모/tree를 API·Git으로 확인했고 로컬 merge simulation의 tree와 같았습니다. 네 builder/worker의 기본 PR merge checkout 정의 및 성공 step도 확인했습니다.
+
+| 검증 | 실제 run | 결과 |
+| --- | --- | --- |
+| CI | [37803919567](https://github.com/edwardkim/rhwp/actions/runs/37803919567) / attempt 1 | SUCCESS |
+| CodeQL | [37803919737](https://github.com/edwardkim/rhwp/actions/runs/37803919737) / attempt 1 | SUCCESS |
+| Render Diff | [37803918893](https://github.com/edwardkim/rhwp/actions/runs/37803918893) / attempt 1 | SUCCESS |
+| Adapter inter-diff | [37803919449](https://github.com/edwardkim/rhwp/actions/runs/37803919449) / attempt 1 | SUCCESS |
+| Proptest roundtrip | [37803919540](https://github.com/edwardkim/rhwp/actions/runs/37803919540) / attempt 1 | SUCCESS |
+
+CI의 네 default-feature archive builder와 네 Run Archive A/B/C/D step이 실제 실행되어 모두 SUCCESS였습니다. 필수 `Build & Test`의 `Verify archive shard totals`와 worker 결과 집계도 SUCCESS입니다. lint·Native Skia 실제 test step·Frontend package gates를 확인했습니다. CodeQL JavaScript/TypeScript·Python·Rust·Actions의 Perform CodeQL Analysis step 네 개가 모두 SUCCESS이고, 별도 GitHub 보안 집계도 SUCCESS(변경 코드에서 새 경고 없음)였습니다.
+
+WASM Build, release operations, Workflow promotion 및 Frontend unit gate는 정책상 SKIPPED입니다. 이를 새 실행으로 세지 않았습니다. fresh WASM 및 Studio 전체 unit은 위 로컬 실측 결과를 사용합니다. GitHub raw 로그 다운로드는 실행 환경의 log backend 접근에서 HTTP 403이 발생했습니다. 따라서 CI의 개별 테스트 숫자나 raw checkout log 줄을 읽었다고 주장하지 않습니다. 완료 Run/Job/Step API와 count 검증 step의 성공, 실제 source/base 및 merge-ref tree로 근거를 보존합니다. 로컬 10,538 PASS는 실제 읽은 nextest Summary입니다.
+
+이 결과 뒤에는 원 번호의 검토 기록·오늘할일만 single-parent trailing commit으로 추가합니다. source/test/fixture/PNG는 변경하지 않습니다. 최종 trailing head의 preflight·required aggregate와 최신 devel의 clean merge-tree를 다시 확인한 뒤 사용자 요청 범위의 일반 merge를 진행합니다. 실제 merge SHA·issue/original PR 종료는 반영 확인 뒤 후속 comment에서 확정합니다. author self-review 예외를 적용하며 별도 integration 번호 archive나 기록 PR은 만들지 않습니다.
