@@ -4,9 +4,10 @@ use crate::renderer::typeset::notes::endnotes::profile::{
     en_ssot_debug, en_ssot_level, EnSsotLevel,
 };
 use crate::renderer::typeset::{
-    compose_paragraph, first_text_line, hwpunit_to_px, page_item_para_index,
-    para_has_treat_as_char_picture_or_shape, paragraph_by_global_index, ComposedParagraph,
-    HeightCursor, PageItem, Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
+    compose_paragraph, endnote_first_local_paras, first_text_line, hwpunit_to_px,
+    page_item_para_index, para_has_treat_as_char_picture_or_shape, paragraph_by_global_index,
+    ComposedParagraph, HeightCursor, PageItem, Paragraph, ResolvedStyleSet, TypesetEngine,
+    TypesetState,
 };
 
 /// [#6574] 렌더 줄 하단이 단 하단을 넘어도 같은 단으로 보는 허용치(px). 좌표 반올림만 흡수한다.
@@ -519,6 +520,8 @@ impl TypesetEngine {
             st.current_endnote_flow,
         );
         hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
+        hc.endnote_note_first_paras =
+            endnote_first_local_paras(paragraphs.len(), &st.endnote_para_sources, &local_indices);
         let mut y = st.current_start_height;
         let extra_item = extra_para_full.map(|pi| PageItem::FullParagraph { para_index: pi });
         // [#5886] 한 번 compact 되감김이 나오면 렌더처럼 나머지도 순차 적층한다.
@@ -741,6 +744,11 @@ impl TypesetEngine {
                 st.current_endnote_flow,
             );
             hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
+            hc.endnote_note_first_paras = endnote_first_local_paras(
+                paragraphs.len(),
+                &st.endnote_para_sources,
+                &local_indices,
+            );
             let mut y = st.current_start_height;
             for item in &st.current_items {
                 let Some(pi) = page_item_para_index(item) else {

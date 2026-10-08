@@ -2352,12 +2352,6 @@ fn para_large_tac_picture_or_shape_height_px(para: &Paragraph, dpi: f64) -> Opti
         .reduce(f64::max)
 }
 
-fn endnote_question_number(para: &Paragraph) -> Option<u16> {
-    let text = para.text.trim_start().strip_prefix('문')?;
-    let digits: String = text.chars().take_while(|ch| ch.is_ascii_digit()).collect();
-    (!digits.is_empty()).then(|| digits.parse().ok()).flatten()
-}
-
 fn textless_non_tac_topbottom_object_tail_advance_px(
     para: &Paragraph,
     control_index: usize,
@@ -2396,10 +2390,9 @@ fn compact_endnote_title_gap_after_single_equation_tail(
     item_ordinal: usize,
     dpi: f64,
 ) -> Option<f64> {
-    let current_is_endnote_question_title = endnote_question_number(current_para).is_some();
+    // 호출자가 새 문항 제목(미주 첫 문단, 소유 경계)일 때만 부른다.
     if item_ordinal > 13
         || prev_endnote_title_gap_px < 50.0
-        || !current_is_endnote_question_title
         || inline_equation_count(prev_para) != 1
     {
         return None;
@@ -3564,6 +3557,9 @@ pub struct LayoutEngine {
     endnote_para_base: std::cell::Cell<usize>,
     /// 가상 미주 문단별 원본 위치
     endnote_para_sources: std::cell::RefCell<Vec<EndnoteParaSource>>,
+    /// [#7665] 미주의 첫 문단(번호 장식을 받는 문단, 조판 `ep_idx == 0`)인 렌더 문단 번호.
+    /// 새 문항 제목 판정의 소유 경계 — `set_endnote_para_sources` 에서 한 번 만든다.
+    endnote_note_first_paras: std::cell::RefCell<std::sync::Arc<std::collections::HashSet<usize>>>,
     /// [Task #1246] 현재 섹션 미주의 between-notes 마진(HWPUNIT, 0=미적용). HeightCursor 가 미주
     /// 사이 min-gap 보정(gap 부족 시 끌어올림)에 사용한다. 섹션 렌더 셋업마다 갱신.
     endnote_between_notes_hu: std::cell::Cell<i32>,
@@ -3755,6 +3751,7 @@ impl LayoutEngine {
             uniform_filler_ladder: std::cell::Cell::new(false),
             endnote_para_base: std::cell::Cell::new(usize::MAX),
             endnote_para_sources: std::cell::RefCell::new(Vec::new()),
+            endnote_note_first_paras: Default::default(),
             endnote_between_notes_hu: std::cell::Cell::new(0),
             column_is_endnote_flow: std::cell::Cell::new(false),
             endnote_separator_above_hu: std::cell::Cell::new(0),
@@ -4232,6 +4229,14 @@ impl LayoutEngine {
     pub fn set_endnote_para_sources(&self, base: usize, sources: &[EndnoteParaSource]) {
         self.endnote_para_base.set(base);
         *self.endnote_para_sources.borrow_mut() = sources.to_vec();
+        *self.endnote_note_first_paras.borrow_mut() = std::sync::Arc::new(
+            sources
+                .iter()
+                .enumerate()
+                .filter(|(_, src)| src.note_para_index == 0)
+                .map(|(local_idx, _)| base + local_idx)
+                .collect(),
+        );
     }
 
     /// [Task #1236] 이 미주 문단의 다음 렌더 문단이 **같은 미주(문제)** 내 연속 문단인지.
@@ -4286,6 +4291,12 @@ impl LayoutEngine {
         self.endnote_between_notes_hu.get() == 0
             && self.endnote_separator_above_hu.get() > ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
             && self.endnote_separator_below_hu.get() > ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+    }
+
+    /// [#7665] 렌더 문단이 미주의 첫 문단(새 문항 제목)인가 — 미주 소유 경계.
+    /// 렌더는 이 문단 앞에 번호 장식(`문1)` 등)을 붙이므로 글자 접두사로 읽지 않는다.
+    fn endnote_para_starts_note(&self, para_index: usize) -> bool {
+        self.endnote_note_first_paras.borrow().contains(&para_index)
     }
 
     fn endnote_para_source_for(&self, para_index: usize) -> Option<EndnoteParaSource> {
@@ -7848,6 +7859,7 @@ impl LayoutEngine {
         // 제목 forward 흐름의 min-gap 보정에 사용. 본문 컬럼은 0 (무영향).
         if col_content.endnote_flow {
             hcursor.endnote_between_notes_hu = self.endnote_between_notes_hu.get();
+            hcursor.endnote_note_first_paras = self.endnote_note_first_paras.borrow().clone();
         }
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
@@ -8168,11 +8180,8 @@ impl LayoutEngine {
                 }
             }
 
-            let current_is_endnote_question_title = col_content.endnote_flow
-                && paragraphs
-                    .get(item_para)
-                    .map(|p| p.text.trim_start().starts_with('문'))
-                    .unwrap_or(false);
+            let current_is_endnote_question_title =
+                col_content.endnote_flow && self.endnote_para_starts_note(item_para);
             let current_endnote_source = if col_content.endnote_flow {
                 self.endnote_para_source_for(item_para)
             } else {
@@ -8780,9 +8789,7 @@ impl LayoutEngine {
                         | PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                         _ => None,
                     })
-                    .and_then(|pi| paragraphs.get(pi))
-                    .map(|p| p.text.trim_start().starts_with('문'))
-                    .unwrap_or(false);
+                    .is_some_and(|pi| self.endnote_para_starts_note(pi));
             if (matches!(
                 item,
                 PageItem::PartialParagraph { start_line, .. } if *start_line > 0
@@ -9279,15 +9286,13 @@ impl LayoutEngine {
                             });
                     let next_is_new_question = next_para_index
                         .and_then(|next_pi| {
-                            let next_para = paragraphs.get(next_pi)?;
                             let next_source = self.endnote_para_source_for(next_pi)?;
                             let current_source = current_source.as_ref()?;
                             let same_note = current_source.section_index
                                 == next_source.section_index
                                 && current_source.para_index == next_source.para_index
                                 && current_source.control_index == next_source.control_index;
-                            (endnote_question_number(next_para).is_some() && !same_note)
-                                .then_some(())
+                            (next_source.note_para_index == 0 && !same_note).then_some(())
                         })
                         .is_some();
                     if next_is_new_question {
