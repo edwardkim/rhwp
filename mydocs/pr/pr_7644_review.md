@@ -136,3 +136,25 @@ PR 본문은 아직 `777756277…`를 대상 head로 적고 PNG raw URL도 그 S
 기여자에게 권고할 순서는 (1) footer 표 높이·점유 경계 해결과 임의 baseline 추가 철회, (2) 56345 20쪽 구조 차이 처리, (3) budget 실패 경계·CellBreak 주장 범위의 독립 근거와 실행 증거 보완, (4) 새 head의 Native/fresh WASM 영향 페이지 및 전체 필요한 범위 게이트 통과, (5) 정확한 head로 본문 PNG·CI 상태 갱신이다. 전체 검증은 작은 경계와 직접 이미지 확인 뒤 수행한다.
 
 보완 의견 초안은 ignored `review-comment-ko.md`에 준비했다. 게시·approve·push·close·merge는 하지 않았다. 원본 증적과 review worktree를 보존한 채 작업지시자의 다음 지시를 기다린다.
+
+## 후속 — Docker WASM과 Studio 확인 준비
+
+2026-10-08 작업지시자가 Studio 확인 준비와 Docker 빌드 지침 준수를 요청했다. 처음 선택한 native `--no-opt` 진단 경로는 이 작업의 표준 경로와 맞지 않아 최종 확인에 사용하지 않았다. 아래 Docker 서비스로 최적화까지 다시 빌드했고 exit 0 / 7m35s 완료를 확인했다. 초기 검토의 fresh WASM 미실행 기록과 이 후속 준비를 구분한다.
+
+```bash
+docker compose -p rhwp --env-file .env.docker run --rm --no-deps wasm
+```
+
+기본 `rhwp` 프로젝트의 `rhwp_wasm-target`, cargo/cache volume을 재사용했다. `/app`은 이 review worktree다. 이미지 `rhwp-wasm:latest`의 ID는 `4824b312625eba7b8146aa1c7eaca95710618beb75c4cec15470cdb76bc2d99b`, wasm-pack 0.15.0 / Rust 1.93.1이다. Docker 서비스가 저장소 루트의 locked wrapper를 실행하고 `pkg/`와 Studio `public/`을 동기화했다. production source는 검토 head `5cd52f83aaed82bbaad1d4331587002831c27392`와 동일하고 추가 변경은 로컬 review 문서뿐이다.
+
+| 준비·실행 | 확인 결과 |
+| --- | --- |
+| JS SHA-256 | pkg / public 모두 `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e` |
+| WASM SHA-256 | pkg / public / 두 Chrome 탭의 실제 instantiateStreaming 입력·network response 모두 `e357f3a63c83fff7f4e3f172ae9a4f7f0248567d42fa3ddf0d07cfa14fd410c3` |
+| 전용 서버 | `http://localhost:7799/`, 이 worktree의 Vite `--host 0.0.0.0 --port 7799 --strictPort`; 기존 7700 / 7798 서버 유지 |
+| footer | 실제 파일 입력으로 로드, 13쪽, `11 / 13 쪽`으로 이동; `studio-footer-page11.png` |
+| 56345 | 실제 파일 입력으로 로드, 21쪽, `20 / 21 쪽`으로 이동; `studio-regulatory-page20.png` |
+| 브라우저 | CDP 19222, print profile, Local Font Access 518 faces / 함초롬바탕 확인, font status loaded, 두 탭 pageerror 0 |
+| 실행 증적 | `studio-docker-wasm-build.log`, `prepare-studio.cjs`, `studio-browser.log`, `studio-session.json`, `studio-vite.log` |
+
+두 검증 탭을 Chrome에 남겨 메인터너가 직접 판정하도록 했다. screenshot도 열어 문서·대상 쪽의 표시를 확인했다. 이 준비는 fresh WASM Studio의 실제 로딩 확인이며 independent PDF와의 fresh WASM Visual Sweep 전체 게이트를 수행한 것은 아니다. 기존 넘침·Native 20쪽 게이트 미달과 보류 판정은 별도 승인·보완 전까지 유지한다. 초기 response-body 수집 도구 오류는 `studio-browser-attempt1.log`에 보존했고, 재시도에서 실제 인스턴스 입력 해시와 network response를 모두 확인했다.
