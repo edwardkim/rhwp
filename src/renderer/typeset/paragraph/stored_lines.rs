@@ -8,6 +8,24 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
+/// 저장 쪽 경계는 그 쪽을 구성한 저장 줄이 유지될 때만 권위가 있다.
+/// 앞의 재조판 문단 뒤에 저장 빈 문단이 이어져도 옛 자동 경계는 복구되지 않는다.
+/// 명시적 쪽/단 나누기는 이 검사 이전의 entry 경로에서 처리한다.
+pub(in crate::renderer::typeset) fn stored_page_boundary_invalidated_by_reflow(
+    profile: crate::model::provenance::LayoutCompatibilityProfile,
+    col_count: u16,
+    current_items: &[crate::renderer::pagination::PageItem],
+    paragraphs: &[Paragraph],
+) -> bool {
+    col_count == 1
+        && (profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
+        && current_items.iter().any(|item| {
+            super::super::page_item_para_index(item)
+                .and_then(|idx| paragraphs.get(idx))
+                .is_some_and(crate::renderer::para_has_no_stored_line_segs)
+        })
+}
+
 /// [#5801] 저장 사다리가 이 문단의 **문단 위 간격을 실제로 담고 있는가**.
 ///
 /// `#2279 ①` 의 spacing 트림은 "저장 ladder 가 spacing 을 이미 반영한다"는 전제 위에 선다.

@@ -135,6 +135,27 @@ pub(crate) fn topbottom_flow_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
     signed_hwpunit(common.vertical_offset).max(0)
 }
 
+/// 셀의 문단 기준 어울림 개체가 만드는 흐름 프레임의 앞 공간.
+/// 흐름과 함께 이동하는 그림의 음수 오프셋은 앞 공간을 만들지 않는다.
+/// 측정에서 양수 부분만 예약한 뒤 출력에서 음수 변위를 다시 적용하면
+/// 세로 정렬한 프레임과 그림 원점이 갈라진다. 배경·절대배치 개체의
+/// 의도된 음수 변위는 그대로 보존한다.
+pub(crate) fn cell_wrap_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
+    let offset = signed_hwpunit(common.vertical_offset);
+    if !common.treat_as_char
+        && common.flow_with_text
+        && matches!(common.vert_rel_to, VertRelTo::Para)
+        && matches!(
+            common.text_wrap,
+            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+        )
+    {
+        offset.max(0)
+    } else {
+        offset
+    }
+}
+
 /// 원본 HWPX noAdjust 셀의 완전한 저장 줄 프레임이 점유하는 끝점.
 /// 여백을 이미 계상하는 중첩/TAC의 relaxed-pad 경로에서 줄 사이 저장 공간을
 /// 재사용한다. noAdjust 자체는 본문 표의 안 여백을 지울 근거가 아니다.
