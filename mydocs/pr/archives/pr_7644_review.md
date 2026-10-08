@@ -8,11 +8,11 @@ last_verified: 2026-10-08
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능.** 사용자께서 2026-10-08 최종 Studio 시각 판정 통과와 PR 머지를 명시적으로 승인했다. 원 contributor PR을 보정 없이 merge하지 않고, 원 기여와 보정을 포함한 별도 메인터너 통합 PR의 최신 CI가 성공하면 병합·원 PR 종료를 진행한다.
+**메인터너 보정 후 통합 완료.** 사용자 2026-10-08 최종 Studio 시각 통과·머지 승인에 따라 원 기여와 보정을 [통합 PR #7681](https://github.com/edwardkim/rhwp/pull/7681)로 devel에 병합했다. 최종 head `c92d3f7cdad1ed932644abb1f2a53be8d3c5814e`, merge SHA `4c7092397e6fb6d1d16e5521bb9049ef25814d5a`. 원 #7644는 head가 통합 history에 포함되어 GitHub가 간접 merge로 자동 `MERGED` 종료했다. 원 PR을 보정 없이 직접 merge한 것은 아니다.
 
 진단에 근거한 메인터너 보정 source는 `37caee9df5f9b208794ea333134084362a370226`이다. 56345 문서의 20·21쪽에서 중첩 표 뒤 실제 빈 문단의 점유·셀 분할·이어받기 패딩을 복구했다. Native/fresh Docker WASM의 해당 쪽 비교는 각각 92.69159% / 99.85289%이며, 기존 집중 회귀 33개와 필수 Rust lint 묶음이 통과했다. 검증용 Studio에서 두 쪽에 대한 메인터너 시각 판정 통과를 받았다.
 
-전체 21쪽 sweep의 7·8·9·17·18쪽 미달과 기존 꼬리말 본문 넘침·contributor baseline 예외는 남아 있다. 직전 보고에서 이 잔여 범위를 공개한 뒤 사용자가 시각 판정 통과·머지를 승인했으므로, 이번 통합은 해당 승인에 따른 제한된 수용이다. 자동 수치 gate를 PASS로 바꾸거나 잔여 문제를 해결했다고 표시하지 않는다. #7620은 부분 해결의 Refs로 유지한다. 새 test 포함 Full nextest 10538 PASS / 0 FAIL / 50 SKIP, Native Skia 3종(라이브러리 4109 + placeholder 2 + direct PDF 4)도 모두 통과했다. 이제 별도 통합 PR의 최신 원격 CI를 확인한 뒤 merge한다.
+전체 21쪽 sweep의 7·8·9·17·18쪽 미달과 기존 꼬리말 본문 넘침·contributor baseline 예외는 남아 있다. 직전 보고에서 이 잔여 범위를 공개한 뒤 사용자가 시각 판정 통과·머지를 승인했으므로, 이번 통합은 해당 승인에 따른 제한된 수용이다. 자동 수치 gate를 PASS로 바꾸거나 잔여 문제를 해결했다고 표시하지 않는다. #7620은 부분 해결의 Refs로 유지한다. 새 test 포함 Full nextest 10538 PASS / 0 FAIL / 50 SKIP, Native Skia 3종(라이브러리 4109 + placeholder 2 + direct PDF 4)도 모두 통과했다. 최신 원격 CI·CodeQL·Render Diff·Adapter·Proptest도 모두 성공했고 current-base 충돌 없음 확인 뒤 merge했다.
 
 ## 최초 검토 판정
 
@@ -260,3 +260,12 @@ base route: maintainer_general.md. modifiers: intake_and_review.md, local_valida
 source/test head `61a8d3ff1…`에서 source 포맷을 확정한 뒤 `--prepare`를 다시 실행했다. 파생 suite drift는 최종 source를 반영한 재생성으로 해소했으며 generator·정책·baseline은 바꾸지 않았다. manifest `--check --base-ref f0e7228f6…` PASS: 1492 sources, 6410 static test attributes, 28 suites + 20 exceptions = 48 targets. 재생성 뒤 `cargo fmt --all -- --check`와 all-target Clippy도 PASS(`integration-manifest-check.log`, `integration-fmt-after-prepare.log`, `integration-clippy-all.log`). 최종 새 회귀 배정은 `regression_suite_025`다.
 
 `cargo nextest run --locked --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --tests --test-threads 8 --no-fail-fast`: **10538 PASS / 0 FAIL / 50 SKIP**, 실행 472.189초(별도 빌드 3분55초). 16 CPU·31GiB host와 다른 Studio 작업을 고려해 8 concurrent tests를 사용했다. 새 빈 문단 회귀도 전체 실행에서 PASS이며 실물 셀 넘침·라운드트립·본문 넘침·겹침 래칫을 포함한다(`integration-full-nextest.log`). 이후 변경은 기록뿐이며 production과 test를 다시 바꾸지 않았다. Native Skia 3종도 모두 통과했다. `cargo test --locked --profile release-test --target-dir <공유 target> --features native-skia --lib`: root 3927 + contracts 15 + OOXML 165 + password 2 = 4109 PASS / 0 FAIL / 13 ignored. `node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --target-dir <공유 target> --features native-skia`: 2 PASS. 같은 옵션의 `render_p37_direct_pdf_export`: 4 PASS. 로그는 `integration-skia-{lib,placeholder,pdf}.log`다.
+
+## #7681 통합 및 종료 확인
+
+- 최종 head `c92d3f7cdad1ed932644abb1f2a53be8d3c5814e`, base `f0e7228f6dd2ea1437724e53ad640c40c56d204b`, merge-tree exit 0 / tree `e92f17ac123e6fdb43f3f7ab0a71f96664d1046e`. 최신 원격 required `Build & Test` 포함 31 success / 4 policy skips, 실패·진행 중 없음. `integration-checks-final.json` 및 [CI run 37770703491](https://github.com/edwardkim/rhwp/actions/runs/37770703491).
+- CI 전체 archive A 4064 + B 1831 + C 2445 + D 2198 = 10538 PASS. 새 회귀도 Archive B의 `regression_suite_017::issue_7644_stored_block_empty_paragraph`에서 PASS(`integration-ci-archive-b.log`). local prepared suite 번호 025와 CI의 파생 배정 번호는 구분하고 source/test 이름과 정확한 head로 실행을 확인했다.
+- Native Skia·fmt/3종 Clippy·Frontend·CodeQL 4언어·Render Diff·Adapter·Proptest success. [메인터너 self-review](https://github.com/edwardkim/rhwp/pull/7681#pullrequestreview-5455912569)는 같은 head의 COMMENT review이며 타인 approval로 표시하지 않았다.
+- #7681 merge SHA `4c7092397e6fb6d1d16e5521bb9049ef25814d5a`, GitHub #7644 state closed / merged=true 확인. 원 source head `5cd52f83…`의 ancestry 때문에 자동 종료됐으므로 별도 close PATCH를 반복하지 않는다.
+- 후속 문서 처리: **maintainer 직접 반영**, archive·실행계획·오늘할일 운영 기록만 반영한다. source/test/workflow/baseline/sample 수정 없음. 기본 작업공간 devel fast-forward 완료. #7620 부분 해결 유지와 merge SHA 고정 이미지의 contributor 안내·임시 remote head 정리는 후속 진행한다.
+- 검증 Studio `http://localhost:7799/`가 현재 review worktree의 pkg/public을 사용하므로 worktree/local branch는 유지한다. 공용 `target/pr-review`, 기존 서버와 타 작업 증적은 삭제하지 않는다. 병합 후 검증 CI는 재실행하지 않고 duration metadata job만 확인한다.
