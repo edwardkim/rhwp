@@ -34,7 +34,7 @@ test('section-settings-dialog.ts onConfirm()은 defaultTabSpacing을 0 이상으
   const body = readOnConfirmBody();
   assert.match(
     body,
-    /defaultTabSpacing:\s*Math\.max\(0,\s*ptToHwpunit\(parseFloat\(this\.defaultTabSpacingInput\.value\)\s*\|\|\s*0\)\)/,
+    /defaultTabSpacing:\s*Math\.max\(0,\s*ptToTabUnits\(parseFloat\(this\.defaultTabSpacingInput\.value\)\s*\|\|\s*0\)\)/,
     'defaultTabSpacing 계산이 Math.max(0, ...)로 하한 clamp되어야 함',
   );
 });
