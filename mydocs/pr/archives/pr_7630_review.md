@@ -142,3 +142,23 @@ WASM SHA-256: `da267652e968e1f2192b7452ad06fed07f6d1fba3708c80e942ae7d3121316ae`
 - 이번 review 전용 clean worktree `/tmp/rhwp-pr7630-review-20261008`와 local branch `review/pr7630-20261008`는 운영 기록·기여자 안내를 완료한 뒤 제거한다. 이 PR만의 ignored 로그·중간 산출물은 영구 요약과 위 PNG 보존 후 정리한다. 기본 작업공간·공유 target·다른 검토·실행 중인 Studio와 contributor fork branch는 보존한다.
 - [duration run 37741100603](https://github.com/edwardkim/rhwp/actions/runs/37741100603)은 성공했다. 수집 결과 `ready:false`, `reason:no-verified-pr-duration-measurements`로 데이터 갱신은 보류됐다. 로그는 최신 CI candidate `37637680059`의 worker b 실측을 수용하지 못했다고 기록했다. trusted 재사용으로 heavy worker가 skipped된 CI 성공과 실제 실행 시간의 가용성을 구분하며, 이 사유로 CI를 재실행하지 않았다.
 - [#7621](https://github.com/edwardkim/rhwp/issues/7621)은 2026-10-08 07:03:30 UTC에 자동 종료됐다. 종료 workflow도 성공했다. 운영 기록 반영 후 동일 merge·증적의 기존 코멘트가 없음을 확인하고 issue/PR에 한국어 안내를 게시한다.
+
+### 추가 focused 검사 재현 명령
+
+공유 target을 사용했으며 새 입력 2개를 보안 검사에 명시 전달했다.
+
+```bash
+CARGO_TARGET_DIR=/home/edward/mygithub/rhwp/target/pr-review \
+RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/issue7621/b-text-after-float.hwp","samples/issue7621/control-float.hwp"]' \
+cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review \
+  --test regression_suite_011 --test regression_suite_012 \
+  --test regression_suite_014 --test regression_suite_025 --no-fail-fast \
+  -E 'test(/issue_6147_empty_anchor_band_host_line|issue_7470_empty_host_picture_band|issue_6888_displaced_float_flow_charge|issue_6950_paragraph_end_topbottom_anchor|issue_6312_float_anchor_line_uses_source_vpos|new_sample_documents_are_clean_across_all_three_detectors/)'
+```
+
+### 후속 완료
+
+- [이슈 안내](https://github.com/edwardkim/rhwp/issues/7621#issuecomment-6054535455)와 [기여자 PR 안내](https://github.com/edwardkim/rhwp/pull/7630#issuecomment-6054535886)를 게시하고 API 본문 일치·UTF-8/BOM·merge SHA 및 이미지 응답을 확인했다. 안내는 기존 asset을 코드 merge SHA, 최신 재출력을 운영 기록 asset SHA `534a97a05baca93b1f85e604b8fe47dc4b1f9154`로 구분해 표시한다.
+- `/tmp/rhwp-pr7630-review-20261008` worktree와 `review/pr7630-20261008` local branch는 clean 상태 및 기록 보존을 확인한 뒤 제거 완료했다. 이 PR의 임시 로그·중간 출력은 이 영구 요약·PNG와 게시 결과 확인 후 정리한다.
+- contributor fork `sacru2red/rhwp`의 `fix/issue-7621-float-only-host-text` branch는 삭제하지 않았다. 공유 `/home/edward/mygithub/rhwp/target/pr-review`, 기존 Studio와 다른 검토 worktree를 보존했다. 원 code merge의 duration 보류 이외에 이 이슈의 남은 처리 작업은 없다.
