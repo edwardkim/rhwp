@@ -6297,7 +6297,16 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 }),
         )?;
         if inline_sizes.iter().any(|(_, occupied)| occupied.is_some()) {
-            let max_line_width = seg_width_hwp.max(1);
+            // 개체만 있는 줄도 본문과 같은 들여쓰기/내어쓰기 폭을 소비한다.
+            // 게시 segment_width는 유지하고 줄 나눔의 가용 폭에서만 뺀다.
+            let max_line_width = |line_index: usize| {
+                let indent = if line_index == 0 {
+                    indent_px.max(0.0)
+                } else {
+                    (-indent_px).max(0.0)
+                };
+                px_to_hwpunit((available_width_px - indent).max(1.0), dpi)
+            };
             let mut line_specs: Vec<(u32, i32, i32)> = Vec::new();
             let mut line_start = 0u32;
             let mut line_width = 0i32;
@@ -6312,7 +6321,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 // 폭 없는 앵커도 이미 넘친 개체 뒤에는 새 줄에 속한다.
                 // 앞 앵커만 남기고 뒤 앵커를 건너뛰면 말미의 정상 글자 줄을 잃는다.
                 let (ctrl_width, ctrl_height) = occupied.unwrap_or((0, 0));
-                if (line_width > 0 || line_has_anchor) && line_width + ctrl_width > max_line_width {
+                if (line_width > 0 || line_has_anchor) && line_width + ctrl_width > max_line_width(line_specs.len()) {
                     storage.push(&mut line_specs, (line_start, line_width, line_height))?;
                     line_start = utf16_start;
                     line_width = 0;
@@ -6381,6 +6390,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 seg.vertical_pos = vpos;
                 vpos += seg.line_height.saturating_add(seg.line_spacing);
             }
+            mark_indented_lines(&mut new_line_segs, 0, para_style, &orig_line_segs);
             para.replace_line_segs(new_line_segs);
         } else {
             // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 앞 문단 LINE_SEG의

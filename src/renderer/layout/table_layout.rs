@@ -5852,15 +5852,14 @@ impl LayoutEngine {
                         inner_width,
                         cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                     );
-                    let line_based =
-                        crate::renderer::float_placement::reflow_mixed_picture_cell_frame(
-                            cell,
-                            inner_width,
-                            styles,
-                            self.dpi,
-                        )
-                        .map(|frame| frame.content_height)
-                        .unwrap_or(line_based);
+                    let line_based = crate::renderer::float_placement::reflow_picture_cell_frame(
+                        cell,
+                        inner_width,
+                        styles,
+                        self.dpi,
+                    )
+                    .map(|frame| frame.content_height)
+                    .unwrap_or(line_based);
                     // [#3386] 저장 cellSz 가 저장 줄 흐름보다 작은 모순 셀은 한글이
                     // 줄 흐름 + 상하 여백으로 재성장한다 (156678235 p5 내부 표 r0:
                     // cellSz 3.8px·lineseg 14.7px → 한글 PDF 실측 18.4px = 14.7+1.9×2).
@@ -7513,7 +7512,7 @@ impl LayoutEngine {
         let single_column_flow = self.stored_single_column_cell_flow(&cell.paragraphs);
         let reflow_picture_frame = (row_filter.is_none() && !single_row_fragment)
             .then(|| {
-                crate::renderer::float_placement::reflow_mixed_picture_cell_frame(
+                crate::renderer::float_placement::reflow_picture_cell_frame(
                     cell,
                     inner_width,
                     styles,
@@ -11590,7 +11589,7 @@ impl LayoutEngine {
                 });
             let reflow_picture_frame = (row_filter.is_none() && !single_row_fragment)
                 .then(|| {
-                    crate::renderer::float_placement::reflow_mixed_picture_cell_frame(
+                    crate::renderer::float_placement::reflow_picture_cell_frame(
                         cell,
                         inner_width,
                         styles,
