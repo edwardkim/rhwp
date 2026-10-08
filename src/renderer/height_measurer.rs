@@ -3593,13 +3593,12 @@ impl HeightMeasurer {
                     text_height
                 };
 
-                let picture_frame =
-                    crate::renderer::float_placement::reflow_mixed_picture_cell_frame(
-                        cell,
-                        cell_inner_width,
-                        styles,
-                        self.dpi,
-                    );
+                let picture_frame = crate::renderer::float_placement::reflow_picture_cell_frame(
+                    cell,
+                    cell_inner_width,
+                    styles,
+                    self.dpi,
+                );
                 let content_height = picture_frame
                     .as_ref()
                     .map(|frame| frame.content_height)
@@ -3838,7 +3837,10 @@ impl HeightMeasurer {
                     content_row_floor[r] = required_height;
                 }
                 if picture_frame.is_some() {
-                    reflow_picture_row_floor[r] = reflow_picture_row_floor[r].max(required_height);
+                    // 재조판한 내용이 작아도 셀 자체의 최소 높이는 남는다.
+                    // 표의 낡은 common.height로 이를 줄이면 아래/가운데 정렬도 이동한다.
+                    reflow_picture_row_floor[r] =
+                        reflow_picture_row_floor[r].max(required_height.max(cell_h_px));
                 }
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;

@@ -24,7 +24,7 @@ pub(crate) struct ReflowPictureCellFrame {
     pub content_height: f64,
 }
 
-pub(crate) fn reflow_mixed_picture_cell_frame(
+pub(crate) fn reflow_picture_cell_frame(
     cell: &crate::model::table::Cell,
     inner_width: f64,
     styles: &super::style_resolver::ResolvedStyleSet,
@@ -114,7 +114,9 @@ pub(crate) fn reflow_mixed_picture_cell_frame(
         band_end = band_end.max(y + height + px(i32::from(c.margin.bottom)));
         pictures.push((index, rect));
     }
-    if inline_count == 0 || pictures.is_empty() {
+    // 인라인 그림만 있는 셀도 같은 줄 나눔과 점유 높이를 사용한다.
+    // 부동 그림이 없으면 앞에서 예약할 띠의 높이는 0이다.
+    if inline_count == 0 {
         return None;
     }
 
