@@ -2,12 +2,14 @@
 
 ## 최종 판정
 
-[대체 PR #7667](https://github.com/edwardkim/rhwp/pull/7667) 등록 완료.
-GitHub CI 및 후속 병합은 최신 head에서 별도로 확인한다.
+[대체 PR #7667](https://github.com/edwardkim/rhwp/pull/7667) **devel 병합 완료**.
+최종 head `49e1cff2c21f132d262d1a8cdd8b9ecbe77de579`의 CI·CodeQL·Render Diff·
+Adapter inter-diff·Proptest 성공, 최신 base 충돌 simulation 통과 및 작업지시자 병합 승인을 확인했다.
+Merge SHA: `281f1fdc6986f66b75ce18c3bbfd6084b81b2173` (2026-10-08).
 원 PR을 직접 병합하지 않고 기여자의 구현을 보존한
 별도 PR로 처리하라는 2026-10-08 작업지시를 따른다. 메인테이너가 Studio에서 확인한
 두 실물 문서는 시각 판정 통과다. 자동 비교의 미달과 남은 줄 이월은 그대로 공개하며,
-최신 제출 head의 GitHub CI는 로컬 검증과 별도로 확인한다.
+자동 gate를 일괄 통과로 바꾸지 않고 사용자가 수용한 부분 개선 범위로 병합했다.
 
 원 PR은 #7618, 관련 이슈는 #7330이다. 이슈 전체 해결을 주장하거나 닫지 않는다.
 원 PR의 최종 head는 `3febe51043d7e96af520b9acb99793c6e97bb394`이다.
@@ -164,6 +166,30 @@ python scripts/visual_sweep.py --silhouette-only \
 2026-10-08 원 PR #7618에 대체 관계·기여자 credit·보정 범위·남은 차이를
 [한국어 comment](https://github.com/edwardkim/rhwp/pull/7618#issuecomment-6052798296)로 남기고
 close했다(`merged=false`). 대체 PR은 #7667, base는 devel이다. 기여자 fork/branch는 삭제하지 않는다.
-새 PR의 최신 CI를 확인하고 병합 승인 범위에 맞춰 진행한다. #7330은 Refs로 유지한다.
-병합 후 contributor comment에는 실제 merge SHA 고정 공개 대표 이미지 및
-시각 검증 정본 링크를 사용한다. 비공개 실물 증거와 자동 점수를 추정해 추가하지 않는다.
+#7667의 최신 head CI 성공과 사용자 병합 승인 뒤 devel에 merge했다. #7330은 Refs로 유지한다.
+후속 기록은 메인테이너 운영 문서만 직접 반영하며, source/test/workflow/baseline은 변경하지 않는다.
+최신 devel 동기화 뒤 issue·원 PR에 병합/검증/남은 범위를 안내한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 원 [#7618](https://github.com/edwardkim/rhwp/pull/7618)에 기여자 코드/저자 보존과 대체
+  [#7667](https://github.com/edwardkim/rhwp/pull/7667)의 merge SHA `281f1fdc6986f66b75ce18c3bbfd6084b81b2173`를 감사 인사와 함께 안내한다.
+- 원 기여의 저장 vpos 개선을 먼저 인정하고, 셀 프레임/자동 경계/TAC 줄 plan의 보정이
+  독립 Print 비교와 수정 전 4 FAIL / 정상 대조 2 PASS 검사를 통해 필요했음을 설명한다.
+- 최신 head CI 성공, 로컬 10,533 PASS / 0 FAIL / 50 SKIP, Native Skia/fresh WASM 결과와
+  공개 9입력·11쪽 최저 92.59797%, 대표 cell-fragments p1=100.00000%와
+  body-single-symbol p1=93.31372%를 각 Native/fresh WASM에 동일하게 기록한다.
+- 공개 대표 review/overlay 8개만 `mydocs/pr/assets/issue_7330_maintainer_20261008/`에서 사용한다.
+  raw URL은 `https://raw.githubusercontent.com/edwardkim/rhwp/281f1fdc6986f66b75ce18c3bbfd6084b81b2173/mydocs/pr/assets/issue_7330_maintainer_20261008/<입력>-p001-<native|wasm>-<review|overlay>.png`로 고정한다.
+  devel에 실제 존재함을 확인한 뒤 게시한다.
+- [Visual Sweep merge comment 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment),
+  본 archive review 및 Native TSV 첨부 링크를 연결한다. 실물 A/B 사용자 시각 통과와 B p7 자동
+  74.24296%를 구분하고 기존 64쪽 대조의 미달/미검증 범위도 해소된 것으로 보고하지 않는다.
+- #7330은 전체 해결 근거가 없어 OPEN 유지한다. 같은 범위의 issue 안내와 대체 PR 병합 안내를 남긴다.
+- 검증용 Studio `http://localhost:7798/`가 실제 실행 중인 `/tmp/rhwp-pr7618-visual-20261008`와
+  공유 `target/pr-review`, 혼합 batch의 비공개 비교 증적은 유지한다. 제출 전용 clean worktree
+  `/tmp/rhwp-pr7618-submit-20261008` 및 그 local/임시 upstream head branch는 정리한다.
+- duration 메타데이터 [run 37733576737](https://github.com/edwardkim/rhwp/actions/runs/37733576737) 성공.
+  `ready:true/successful-pr-worker-measurements`, PR CI `37731302823`의 B/C/D attempt 1을 확인했다.
+  `ci-metrics/nextest-target-durations`에 `04007c89d73418bec8ecb503d23103720bc8e7e1`로 실측을 갱신했다.
+  병합 후 검증 CI는 실행하지 않았다.
