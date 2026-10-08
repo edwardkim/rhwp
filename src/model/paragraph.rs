@@ -1072,36 +1072,6 @@ impl Paragraph {
         self.char_count = self.char_count.saturating_sub(released);
     }
 
-    /// 문단을 나눠 만든 새 문단(`self`)의 첫 글자 앞에 나눈 자리 갭에서 넘어온 자리를 비운다.
-    ///
-    /// 나눈 자리 갭은 원래 문단에서 나눈 글자 바로 앞의 제어문자 자리다. 새 문단으로 넘어오는
-    /// 것은 각각 8유닛인 셋이다.
-    /// - 컨트롤: 개체·각주·누름틀 시작 따위. 원래 글자 위치가 나눈 자리인 컨트롤 수를
-    ///   `moved_controls` 로 받는다.
-    /// - 빈 누름틀의 끝 표지: 이 문단 맨 앞에서 시작하고 끝나는 필드 범위마다 하나.
-    /// - 제목 차례 표시: 이 문단 맨 앞의 표지.
-    ///
-    /// 비우지 않으면 넘어온 컨트롤이 문단 끝으로 밀리고, 저장한 글자 위치가 실제 스트림과
-    /// 어긋난다. 글이 없는 문단은 모든 컨트롤을 글 뒤에 쓰므로 비우지 않는다.
-    pub(crate) fn reserve_split_gap_slots(&mut self, moved_controls: usize) {
-        if self.char_offsets.is_empty() {
-            return;
-        }
-        let empty_field_ends = self
-            .field_ranges
-            .iter()
-            .filter(|range| range.start_char_idx == 0 && range.end_char_idx == 0)
-            .count();
-        let title_marks = self
-            .title_marks
-            .iter()
-            .filter(|mark| mark.char_idx == 0)
-            .count();
-        self.reserve_leading_extended_control_slots(
-            moved_controls + empty_field_ends + title_marks,
-        );
-    }
-
     /// `char_idx` 글자 앞 갭의 첫 슬롯(8유닛)을 걷어낸다.
     ///
     /// 나누기로 잘린 누름틀의 끝 표지처럼 다른 문단으로 간 슬롯 자리에 쓴다. 남겨 두면 그
@@ -1657,18 +1627,18 @@ impl Paragraph {
         // 분할 지점의 UTF-16 위치
         let utf16_split: u32 = if split_pos < self.char_offsets.len() {
             // 나누는 글자 바로 앞 갭에서 새 문단으로 가는 슬롯(옮기는 컨트롤, 그 글자의 제목
-            // 차례 표시)은 새 문단 첫 글자 앞에 남긴다. 남기지 않으면 `앞[각주]뒤` 를 각주
-            // 앞에서 나눈 새 문단이 `뒤[각주]` 가 된다. 그 글자 위치로 보고되는 컨트롤 가운데
-            // 갭에 있는 것은 앞쪽뿐이다 — 자동 번호는 갭이 아니라 자리표 글자에 있다.
+            // 차례 표시, 거기서 시작하고 끝나는 빈 누름틀의 끝 표지)은 새 문단 첫 글자 앞에
+            // 남긴다. 남기지 않으면 `앞[각주]뒤` 를 각주 앞에서 나눈 새 문단이 `뒤[각주]` 가
+            // 된다. 그 글자 위치로 보고되는 컨트롤 가운데 갭에 있는 것은 앞쪽뿐이다 — 자동
+            // 번호는 갭이 아니라 자리표 글자에 있다.
             let gap_start = split_pos.checked_sub(1).map_or(0, |prev| {
                 self.char_offsets[prev] + Self::char_stream_len(text_chars[prev])
             });
             let gap_slots = (self.char_offsets[split_pos].saturating_sub(gap_start) / 8) as usize;
-            let moved_controls = self
-                .control_text_positions()
-                .into_iter()
+            let moved_controls = text_positions
+                .iter()
                 .enumerate()
-                .filter(|&(_, at)| at == split_pos)
+                .filter(|&(_, &at)| at == split_pos)
                 .take(gap_slots.saturating_sub(self.hidden_slots_before(split_pos)))
                 .filter(|&(ci, _)| moves[ci])
                 .count();
@@ -1676,7 +1646,12 @@ impl Paragraph {
                 .title_marks
                 .iter()
                 .filter(|m| m.char_idx == split_pos)
-                .count();
+                .count()
+                + self
+                    .field_ranges
+                    .iter()
+                    .filter(|r| r.start_char_idx == split_pos && r.end_char_idx == split_pos)
+                    .count();
             self.char_offsets[split_pos] - 8 * (moved_controls + moved_marks).min(gap_slots) as u32
         } else if !self.char_offsets.is_empty() {
             self.char_stream_end(&text_chars, self.char_offsets.len() - 1, kept_number)
@@ -1912,11 +1887,6 @@ impl Paragraph {
         }
         self.controls = kept_controls;
         self.ctrl_data_records = kept_ctrl_data;
-        // 나눈 자리 갭(글자 `split_pos` 바로 앞)에 있다가 새 문단으로 가는 컨트롤 수.
-        let moved_gap_controls = moved_control_idx_map
-            .keys()
-            .filter(|&&ci| text_positions.get(ci) == Some(&split_pos))
-            .count();
 
         // 6. char_count 갱신
         //    양쪽 문단에 남은 controls와 누름틀 끝 표지는 각각 8 code unit을 차지하므로 반영 필요
@@ -1986,7 +1956,6 @@ impl Paragraph {
         for &char_idx in cut_field_ends.iter().rev() {
             new_para.remove_gap_slot(char_idx);
         }
-        new_para.reserve_split_gap_slots(moved_gap_controls);
         new_para
     }
 
