@@ -8,8 +8,9 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
-/// 저장 쪽 경계는 그 쪽을 구성한 저장 줄이 유지될 때만 권위가 있다.
-/// 앞의 재조판 문단 뒤에 저장 빈 문단이 이어져도 옛 자동 경계는 복구되지 않는다.
+/// 재조판 뒤 저장 빈 줄만 이어지면 옛 자동 쪽 경계를 복원하지 않는다.
+/// 저장 본문/개체를 다시 소비한 경계는 그 저장 흐름의 소유다. 따라서 쪽에
+/// 재조판 항목이 한 번 있었다는 사실을 쪽 전체의 무효 상태로 사용하지 않는다.
 /// 명시적 쪽/단 나누기는 이 검사 이전의 entry 경로에서 처리한다.
 pub(in crate::renderer::typeset) fn stored_page_boundary_invalidated_by_reflow(
     profile: crate::model::provenance::LayoutCompatibilityProfile,
@@ -17,13 +18,22 @@ pub(in crate::renderer::typeset) fn stored_page_boundary_invalidated_by_reflow(
     current_items: &[crate::renderer::pagination::PageItem],
     paragraphs: &[Paragraph],
 ) -> bool {
-    col_count == 1
-        && (profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
-        && current_items.iter().any(|item| {
-            super::super::page_item_para_index(item)
-                .and_then(|idx| paragraphs.get(idx))
-                .is_some_and(crate::renderer::para_has_no_stored_line_segs)
-        })
+    if col_count != 1 || !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
+    {
+        return false;
+    }
+    for para in current_items.iter().rev().filter_map(|item| {
+        super::super::page_item_para_index(item).and_then(|idx| paragraphs.get(idx))
+    }) {
+        if crate::renderer::para_has_no_stored_line_segs(para) {
+            // 빈 개체 host의 합성 줄은 본문 재조판을 뜻하지 않는다.
+            return para.controls.is_empty();
+        }
+        if !para.controls.is_empty() || !para.text.trim().is_empty() {
+            return false;
+        }
+    }
+    false
 }
 
 /// [#5801] 저장 사다리가 이 문단의 **문단 위 간격을 실제로 담고 있는가**.
