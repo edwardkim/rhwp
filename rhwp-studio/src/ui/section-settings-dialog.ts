@@ -5,6 +5,7 @@ import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
 import { applyCommandThroughRouter } from './dialog-apply';
 import { SetSectionPropsAllCommand, SetSectionPropsCommand } from '@/engine/command';
+import { ptToTabUnits, tabUnitsToPt } from '@/core/tab-units';
 
 import { t as i18nText } from '../i18n/index.ts';
 const HWPUNIT_PER_PT = 100; // 1pt = 100 HWPUNIT (HWP 내부 단위)
@@ -149,7 +150,7 @@ export class SectionSettingsDialog extends ModalDialog {
       // #2938: HTML min='0'은 .value를 자동 clamp하지 않으므로(#2845/#2847과 동일 패턴)
       // 직접 타이핑한 음수가 그대로 WASM으로 넘어가지 않도록 여기서 하한을 강제한다.
       columnSpacing: Math.max(0, ptToHwpunit(parseFloat(this.columnSpacingInput.value) || 0)),
-      defaultTabSpacing: Math.max(0, ptToHwpunit(parseFloat(this.defaultTabSpacingInput.value) || 0)),
+      defaultTabSpacing: Math.max(0, ptToTabUnits(parseFloat(this.defaultTabSpacingInput.value) || 0)),
       hideHeader: this.hideHeaderCheck.checked,
       hideFooter: this.hideHeaderCheck.checked,
       hideMasterPage: this.hideMasterPageCheck.checked,
@@ -220,7 +221,7 @@ export class SectionSettingsDialog extends ModalDialog {
     this.hideBorderCheck.checked = sd.hideBorder || sd.hideFill;
     this.hideEmptyLineCheck.checked = sd.hideEmptyLine;
     this.columnSpacingInput.value = hwpunitToPt(sd.columnSpacing).toFixed(1);
-    this.defaultTabSpacingInput.value = hwpunitToPt(sd.defaultTabSpacing).toFixed(1);
+    this.defaultTabSpacingInput.value = tabUnitsToPt(sd.defaultTabSpacing).toFixed(1);
   }
 
   /** NumCombo에서 값 읽기: 이어서→0, 사용자→입력값 */
