@@ -6,7 +6,13 @@ last_verified: 2026-10-08
 
 # PR #7644 검토 — 통째로 들어가는 RowBreak 빈 앵커 표의 바깥 여백
 
-## 최종 판정
+## 현재 상태
+
+진단에 근거한 메인터너 보정 source는 `37caee9df5f9b208794ea333134084362a370226`이다. 56345 문서의 20·21쪽에서 중첩 표 뒤 실제 빈 문단의 점유·셀 분할·이어받기 패딩을 복구했다. Native/fresh Docker WASM의 해당 쪽 비교는 각각 92.69159% / 99.85289%이며, 기존 집중 회귀 33개와 필수 Rust lint 묶음이 통과했다. 검증용 Studio에 두 쪽을 열어 메인터너의 시각 판정을 준비했다.
+
+PR 전체는 아직 승인 가능한 상태가 아니다. 전체 21쪽 sweep에서 7·8·9·17·18쪽이 미달하며, 기존 꼬리말 본문 넘침과 baseline 예외도 남아 있다. 아래 최초 판정과 진단은 당시 head의 기록이며, 이번 로컬 보정 결과는 마지막 절에 구분했다.
+
+## 최초 검토 판정
 
 **머지 보류.** 쪽 경계 나눔을 허용한 표도 실제로 분할되지 않으면 바깥 여백을 포함한 상자를 점유한다는 수정 근거는 확인했다. 생성 재현의 Native 출력은 개선됐다. 그러나 기존 실물 문서의 본문 넘침이 0→1건으로 증가했고, 이를 baseline에 추가했다. 다른 실물 문서 20쪽은 90% 시각 게이트 미달을 재현했다. 구현의 일반적인 규칙 개선과 이 두 미충족을 구분한다.
 
@@ -205,3 +211,32 @@ Native에는 `dump --section 0 --para 359`, 정상 대조 `--para 347`, `fields 
 구현 계약은 저장 위치가 블록 표의 물리 높이를 흡수하지 못하는 셀에서, 저장 줄 메트릭과 중첩 표의 실제 높이로 문단·개체의 순차 원점과 최종 점유 하단을 함께 생산하는 것이다. `stored_block_cell_flow`를 셀 요구 높이·MeasuredCell의 하단과 배치 원점·정렬 높이가 소비한다. 정상 저장 사다리가 표 공간을 포함하는 경우는 기존 저장 경로를 유지하며 무조건 합산하지 않는다. 대상 host를 IR로 다시 확인하니 실제 control은 단일 단 `ColumnDef`와 Table이며 `설명`은 셀의 누름틀 정보다. 단일 단 정의는 별도 줄/개체 상자를 점유하지 않는 구조 정보로 취급한다(`inspect-inner.rs` / `.log`).
 
 혼합 TAC·어울림·절대배치·배경 개체, NO_LS·붕괴 사다리는 각 기존 구성 계약을 유지한다. 해당 경로를 이번 블록 표의 순차 합으로 바꾸지 않는다. 첫 경계 검증은 20쪽 마지막 셀의 실제 빈 줄 포함·21쪽의 마지막 본문 줄/셀 이어받기, 같은 쪽 paragraph 347의 정상 저장 대조, 기존 저장 중첩 흐름·7518 분할 검사를 대상으로 한다. 새 회귀는 해당 Native/fresh WASM 시각 증거가 선행 기준을 충족한 뒤에만 추가하며, source 수정 뒤 기존 WASM 캡처를 재사용하지 않는다. 완료와 시각 게이트 통과는 실행 뒤 별도로 기록한다.
+
+### 구현 결과 — 20·21쪽의 빈 문단과 실제 조각 높이
+
+최종 production source는 `37caee9df5f9b208794ea333134084362a370226`이다. Native CLI는 `cargo build --locked --profile release-test --bin rhwp --target-dir /home/edward/mygithub/rhwp/target/pr-review`로 빌드해 `rhwp-maintainer-37ca`로 고정했다. 입력·독립 PDF 해시는 앞 절과 동일하다. 모든 아래 실행 자료는 ignored `/home/edward/mygithub/rhwp/output/pr-review/pr7644-20261008/`에 있다.
+
+실제 소비 경로는 `float_placement.rs::stored_block_cell_flow`의 문단/표 원점·점유 하단 → `height_measurer.rs::cell_nested_controls_bottom`과 일반 행·병합 셀·MeasuredCell 요구 높이 → `table_layout.rs::advance_row_cut` / `typeset/table/continuation/fragment/scan.rs`의 예약과 컷 → `layout_horizontal_cell_paragraphs`의 실제 배치다. 완전한 셀은 공통 문단 원점을 쓰며, 컷 조각은 이미 소비한 내용을 다시 더하지 않고 fragment-local cursor를 쓴다. `mixed_nested_split_from_cut`은 이 저장 블록 흐름의 재귀 컷에 `nested_cut_physical_height` / `row_cut_content_height`의 패딩 포함 물리 프레임을 visible/flow 양쪽에 전달한다. 같은 물리 프레임 helper를 기존 재조판 예약도 소비한다. 단순 반환 높이만 바꾼 중간 head `dd1a2051e…`에서는 뒤 빈 줄이 자식 프레임보다 먼저 시작해 실패했으므로, 최종 보정은 컷 생산 지점에 적용했다.
+
+| 경계와 소유 | 측정·예약 / 실제 결과 | 실행 근거 |
+| --- | --- | --- |
+| 전체 셀 | 마지막 행 요구 높이 101.4→118.7px; 내용 112.7px + 부모 padding 5.9px. 정상 p347 마지막 셀 170.5px는 그대로 | `maintainer-37ca-page20.{json,log}`, `structural-after.log` |
+| 20쪽의 시작·끝 컷 | row 0→6, start `[]`, end `[1,3]`; 가용 319.8px에 예약 304.4px. 마지막 셀은 자식의 첫 3줄을 소유하며 뒤 빈 문단을 중복 배치하지 않음 | `maintainer-37ca-page20.json`, `structural-after.log` |
+| 21쪽 이어받기·종료 | row 5→6, start `[1,3]`, end `[]`; 예약 44.4px. 자식 마지막 줄 `수는 없음`과 실제 빈 문단만 남고, 뒤 본문 p360 이후를 보존 | `maintainer-37ca-page21.json`, 실제 RenderTree |
+| 자식 표→빈 문단 | 자식 y=80.5/h=21.1px; 빈 줄 y=101.5/h=17.3px, 끝 118.8px ≤ 부모 끝 121.9px. 마지막 본문 줄은 21쪽에 정확히 한 번 존재 | `structural-after.log`, `structural-studio-wasm.log` |
+| 정상 대조와 영향 범위 | 56345의 p1–19는 기존 통합 base와 RenderTree 동일. footer 13쪽/API 105쪽/RowBreak 생성본 1쪽도 전쪽 동일 | `maintainer-37ca-changed-pages.json`, `maintainer-control-comparison.json` |
+
+진단 스크립트 `check-empty-cell.py`를 같은 기대 관계로 실행했다. `daa73a43…`는 마지막 본문 줄이 20쪽에 있어 FAIL, `dd1a2051e…`는 빈 줄이 자식 테두리 하단보다 먼저 시작해 FAIL, 최종 Native와 실제 Studio WASM은 PASS다. JSON의 반올림 차이만 0.2px로 허용하며 절대 픽셀 배치를 golden으로 고정하지 않는다. 이 스크립트는 ignored 진단 증거다. 전체 시각 게이트가 미달하므로 이번에는 `tests/cases/`에 새 렌더링 회귀를 추가하지 않았다. 진단 통과를 정식 회귀 추가 완료로 보고하지 않는다.
+
+### 최종 검증과 Studio
+
+- `cargo fmt --all -- --check`, Native Clippy, WASM lib Clippy, workspace build, workspace/all-targets Clippy를 순차로 PASS. `maintainer-{fmt,clippy-native,clippy-wasm,workspace-build,clippy-all}.log`.
+- manifest는 `node scripts/rust-test-suite-manifest.mjs --prepare` 뒤 base `f0e7228f…` 고정 `--check` PASS. 파생 suite는 PR source로 stage하지 않았다. source-side test는 변경하지 않았다.
+- `cargo nextest run --locked --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --test regression_suite_020 --test regression_suite_019 --test regression_suite_013 --test regression_suite_017 -E 'test(/(^|::)(stored_nested_content_flow|issue_7518_reflow_row_physical_frame|issue_7620_rowbreak_float_table_outer_margins|issue_6111_empty_field_guide_placement)::/)' --test-threads 4 --no-fail-fast`: **33 PASS**, 891 skipped (`maintainer-37ca-focused.log`). Full nextest·Skia 전체는 이번 보정에서 실행하지 않았다.
+- root에서 `docker compose -p rhwp --env-file .env.docker run --rm --no-deps wasm` PASS, locked wrapper·wasm-opt 완료, pkg/public 동기화 (`maintainer-physical-docker-build.log`). WASM SHA-256 `6675faa946fc54083e6fcfbfe0ac1028f995905458167b4101470fed40b7e826`; JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`.
+
+Native/fresh WASM 모두 같은 원문·PDF·96dpi·print profile로 `scripts/visual_sweep.py --silhouette-only`의 전쪽 TSV를 수집하고, 일반 모드 `--pages 20,21`의 review/compare/standalone overlay를 산출했다. 실행 환경은 `VISUAL_SWEEP_CHROME=/home/edward/.cache/puppeteer/chrome/linux-154.0.8037.57/chrome-linux64/chrome`, Python은 기본 작업공간 `venv/bin/python`이며, 각각 `--rhwp-bin <위 고정 CLI>`와 WASM의 `--wasm-pkg pkg`를 명시했다. 전체 TSV는 `maintainer-37ca-{native,wasm}-scores/regulatory/silhouette.tsv`; 해당 쪽 PNG는 `maintainer-37ca-{native,wasm}/regulatory/{review,compare,overlay}/`다. Native/fresh WASM의 20쪽은 **92.69159%**, 21쪽은 **99.85289%**이며 PNG를 직접 판독해 줄 소유·표 외곽·이어받기를 확인했다.
+
+PDF/Native/WASM 전체 쪽수는 각각 21이다. 전체 최저는 양쪽 **14.34841% (18쪽)**, 미달은 **7:40.32233%, 8:34.14484%, 9:21.67792%, 17:37.46703%, 18:14.34841%**, 누락 쪽은 없다. 전체 `pr_review_gate=re_review_required`를 해당 두 쪽의 개선으로 면제하지 않는다. 전체 새 회귀 추가·PR 승인/생성 조건은 미충족이다. 기존 footer 넘침과 contributor baseline 증가도 그대로 남아 있어 이번 수정으로 전체 이슈 해결을 선언하지 않는다.
+
+Studio는 기존 검증 서버 `http://localhost:7799/`를 사용한다. `prepare-maintainer-studio.cjs`로 새 Chrome 탭 두 개에 실제 파일을 로드했다. local-font access 518faces, print profile, 20/21 및 21/21 표시, 페이지 오류 0을 확인했다. runtime instantiate 입력·network response·pkg/public SHA가 위 Docker 산출물과 일치한다. 기존 검증 탭과 다른 서버는 보존했다. `maintainer-studio/studio-session.json`, `studio-regulatory-page{20,21}.png`, `render_tree/`와 `maintainer-studio-browser.log`에 기록했다. 메인터너 최종 시각 판정은 아직 받지 않았다. 이번 작업은 로컬 branch의 코드·증거 준비이며 원격 push/comment/PR/merge는 수행하지 않았다.
