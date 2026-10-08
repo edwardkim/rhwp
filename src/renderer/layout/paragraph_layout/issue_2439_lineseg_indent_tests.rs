@@ -129,6 +129,7 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         }],
         active_header: None,
         active_footer: None,

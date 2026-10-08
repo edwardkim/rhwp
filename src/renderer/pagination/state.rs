@@ -103,6 +103,7 @@ impl PaginationState {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -130,6 +131,7 @@ impl PaginationState {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
