@@ -2346,11 +2346,63 @@ impl ParagraphFloatPlacement {
         // 동일 단의 실제 원점0·연속 저장 사다리를 확인한 경우만 저장 원점을 쓴다.
         // 폭0 자체는 현재 흐름과 저장/paint 원점이 같다는 증거가 아니다.
         let stored_origin = stored_origin.filter(|_| saved_whole_empty_table_anchor(para, table));
-        let origin = stored_origin.unwrap_or(origin);
-        if !(empty_table_host_uses_formatted_box(para, table) || stored_origin.is_some())
-            || ![origin, table_height, before, after]
-                .iter()
-                .all(|value| value.is_finite())
+        if !(empty_table_host_uses_formatted_box(para, table) || stored_origin.is_some()) {
+            return None;
+        }
+        Self::empty_host_box(
+            table,
+            stored_origin.unwrap_or(origin),
+            stored_origin,
+            table_height,
+            before,
+            after,
+            dpi,
+        )
+    }
+
+    /// [#7620] 쪽 경계 나눔이 켜졌지만 통째로 들어가는 빈 개체 앵커 표의 배치.
+    ///
+    /// 저장 첫 줄 원점은 문단 위 간격이 적용된 뒤의 좌표다(앞 줄 끝 + 앞 문단 아래 간격 +
+    /// 이 문단 위 간격). 한글은 문단 기준 표를 그보다 위인 문단 윗변에 두고, 다음 줄은
+    /// `문단 윗변 + 바깥 여백 위 + 표 높이 + 바깥 여백 아래`에서 시작한다. 그래서 상자는
+    /// 문단 윗변에서 세우고 `tail` 에는 문단 아래 간격을 넣지 않는다. 분할 조각의
+    /// 컷·높이는 소유하지 않으므로 호출자는 whole-fit 이 확정된 경우에만 이 배치를 기록한다.
+    pub(crate) fn from_saved_whole_empty_host(
+        para: &Paragraph,
+        table: &Table,
+        stored_origin: Option<f64>,
+        applied_spacing_before: f64,
+        table_height: f64,
+        tail: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        let origin = stored_origin.filter(|_| saved_empty_table_anchor_props(para, table))?;
+        let mut placement = Self::empty_host_box(
+            table,
+            origin - applied_spacing_before,
+            Some(origin),
+            table_height,
+            hwpunit_to_px(i32::from(table.outer_margin_top), dpi),
+            tail,
+            dpi,
+        )?;
+        // 앵커는 저장 줄 원점이다(`for_first_fragment` 가 여기서 위 간격을 뺀다).
+        placement.anchor_y = origin;
+        Some(placement)
+    }
+
+    fn empty_host_box(
+        table: &Table,
+        origin: f64,
+        stored_origin: Option<f64>,
+        table_height: f64,
+        before: f64,
+        after: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        if ![origin, table_height, before, after]
+            .iter()
+            .all(|value| value.is_finite())
             || table_height < 0.0
         {
             return None;
@@ -2905,6 +2957,148 @@ pub(crate) struct NestedTableGroup {
     pub(crate) side_by_side: bool,
 }
 
+/// A saved parent ladder can describe an anchor line without including its
+/// block table's physical height. In that case subsequent paragraphs belong
+/// after the block, including paragraphs with no visible text. Keep that flow
+/// composition separate from page-local saved coordinates.
+pub(crate) struct StoredBlockCellFlow {
+    pub(crate) paragraph_origins: Vec<f64>,
+    pub(crate) origins: Vec<Vec<Option<f64>>>,
+    pub(crate) bottom: f64,
+}
+
+pub(crate) fn stored_block_cell_flow(
+    paragraphs: &[Paragraph],
+    styles: &super::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+    mut table_height: impl FnMut(&Table) -> f64,
+) -> Option<StoredBlockCellFlow> {
+    // Mixed inline/wrapping/absolute objects have their own line composition.
+    // This plan covers saved text lines and empty hosts of paragraph-relative
+    // block tables. NO_LS and collapsed ladders retain their existing paths.
+    if !super::cell_vpos_ladder_is_intact(paragraphs)
+        || paragraphs.iter().any(|p| {
+            p.stored_text_partition_is_dirty()
+                || p.cell_format_vpos_dirty
+                || p.line_segs.is_empty()
+                || p.line_segs.iter().any(|s| {
+                    s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                })
+                || p.controls.iter().any(|c| match c {
+                    Control::Table(t) => {
+                        !p.text.trim().is_empty()
+                            // Only a single object anchor line is replaced by
+                            // this block. Other host lines need line-level
+                            // text/object composition, not paragraph omission.
+                            || p.line_segs.len() != 1
+                            || t.common.treat_as_char
+                            || t.common.text_wrap != TextWrap::TopAndBottom
+                            || t.common.vert_rel_to != VertRelTo::Para
+                            || t.caption.is_some()
+                    }
+                    Control::Field(_) => false,
+                    // A single-column definition sets the host context and
+                    // owns no additional line or object box.
+                    Control::ColumnDef(columns) => columns.column_count > 1,
+                    _ => true,
+                })
+        })
+    {
+        return None;
+    }
+    let mut heights: Vec<Vec<f64>> = Vec::with_capacity(paragraphs.len());
+    let mut unabsorbed_block = false;
+    for (pi, para) in paragraphs.iter().enumerate() {
+        let h: Vec<f64> = para
+            .controls
+            .iter()
+            .map(|c| match c {
+                Control::Table(t) => table_height(t),
+                _ => 0.0,
+            })
+            .collect();
+        let block_height: f64 = nested_table_groups(para, false)
+            .iter()
+            .map(|group| nested_group_occupied_height(para, group, &h, false))
+            .sum();
+        if block_height > 0.0 {
+            if let Some(next) = paragraphs.get(pi + 1) {
+                let saved_gap = hwpunit_to_px(
+                    next.line_segs[0]
+                        .vertical_pos
+                        .saturating_sub(para.line_segs[0].vertical_pos),
+                    dpi,
+                );
+                // The successor is not positioned after the physical block.
+                // Its stored coordinate cannot be the complete parent extent.
+                unabsorbed_block |= saved_gap < block_height;
+            }
+        }
+        heights.push(h);
+    }
+    if !unabsorbed_block {
+        return None;
+    }
+    let mut result = StoredBlockCellFlow {
+        paragraph_origins: Vec::with_capacity(paragraphs.len()),
+        origins: paragraphs
+            .iter()
+            .map(|p| vec![None; p.controls.len()])
+            .collect(),
+        bottom: 0.0,
+    };
+    let mut cursor = hwpunit_to_px(paragraphs[0].line_segs[0].vertical_pos, dpi);
+    for (pi, para) in paragraphs.iter().enumerate() {
+        let style = styles.para_styles.get(para.para_shape_id as usize);
+        let has_block = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
+        let before = if has_block {
+            0.0
+        } else {
+            super::cell_paragraph_spacing_before(para, pi, style.map_or(0.0, |s| s.spacing_before))
+        };
+        cursor += before;
+        result.paragraph_origins.push(cursor);
+        if has_block {
+            for group in nested_table_groups(para, false) {
+                let group_top = cursor;
+                let mut advance = 0.0_f64;
+                for ci in group.controls {
+                    let Control::Table(table) = &para.controls[ci] else {
+                        continue;
+                    };
+                    // Table origins exclude its top margin; the occupied span
+                    // includes both outer margins and the explicit lead.
+                    let lead =
+                        super::layout::table_layout::para_relative_float_table_lead(table, dpi);
+                    result.origins[pi][ci] =
+                        Some(group_top + if group.side_by_side { 0.0 } else { advance });
+                    advance = if group.side_by_side {
+                        advance.max(lead + heights[pi][ci])
+                    } else {
+                        advance + lead + heights[pi][ci]
+                    };
+                }
+                cursor += advance;
+            }
+        } else {
+            for (li, seg) in para.line_segs.iter().enumerate() {
+                if super::height_measurer::stored_seg_is_row_fragment(para, li) {
+                    continue;
+                }
+                cursor += hwpunit_to_px(seg.line_height, dpi);
+                if pi + 1 != paragraphs.len() || li + 1 != para.line_segs.len() {
+                    cursor += hwpunit_to_px(seg.line_spacing, dpi);
+                }
+            }
+        }
+        if pi + 1 < paragraphs.len() {
+            cursor += style.map_or(0.0, |s| s.spacing_after);
+        }
+        result.bottom = cursor;
+    }
+    Some(result)
+}
+
 /// 저장 HWPX의 글 뒤로 표는 문단 앵커를 공유하는 배경이며 흐름을 전진하지 않는다.
 /// 가로 기준이 단/문단인 경우 모두 같은 역할이다. TAC와 HWP5 기존 경로는 보존한다.
 pub(crate) fn nested_table_is_hwpx_overlay(table: &Table, hwpx_stored: bool) -> bool {
@@ -3269,8 +3463,13 @@ pub(crate) fn empty_table_host_uses_formatted_box(para: &Paragraph, table: &Tabl
 
 /// 저장 원점이 별도로 입증되어야 하는 통째 빈 개체 앵커의 속성 계약.
 fn saved_whole_empty_table_anchor(para: &Paragraph, table: &Table) -> bool {
-    table.page_break == TablePageBreak::None
-        && object_only_saved_table_anchor(para, table)
+    table.page_break == TablePageBreak::None && saved_empty_table_anchor_props(para, table)
+}
+
+/// [#7620] 쪽 나눔 속성을 뺀 빈 개체 앵커의 저장 계약. 쪽 경계 나눔은 분할을 허용할 뿐
+/// 그 표가 실제로 나뉜다는 뜻이 아니다 — 통째 수용 여부는 호출자의 whole-fit 판정이 정한다.
+fn saved_empty_table_anchor_props(para: &Paragraph, table: &Table) -> bool {
+    object_only_saved_table_anchor(para, table)
         && !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
         && para.line_segs.iter().all(|line| {

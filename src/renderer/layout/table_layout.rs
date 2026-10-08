@@ -2132,6 +2132,7 @@ pub(crate) fn calc_nested_split_rows(
 struct SequentialNestedCellLayout {
     origins: Vec<Vec<Option<f64>>>,
     bottom: f64,
+    paragraph_origins: Option<Vec<f64>>,
 }
 
 /// [#2089] 가로쓰기 셀 본문 배치의 셀-스코프 스칼라 묶음.
@@ -5926,11 +5927,22 @@ impl LayoutEngine {
         let mut has_preceding_text = false;
         let sequential_nested_layout =
             self.sequential_nested_cell_layout(composed_paras, &cell.paragraphs, styles);
+        let stored_block_flow = sequential_nested_layout
+            .as_ref()
+            .is_some_and(|layout| layout.paragraph_origins.is_some());
         for (cp_idx, (composed, para)) in composed_paras
             .iter()
             .zip(cell.paragraphs.iter())
             .enumerate()
         {
+            if fragment_cut_units.is_none() {
+                if let Some(origins) = sequential_nested_layout
+                    .as_ref()
+                    .and_then(|layout| layout.paragraph_origins.as_ref())
+                {
+                    para_y = text_y_start + origins[cp_idx];
+                }
+            }
             // Keep rendering and fragment-unit accounting on the same cursor:
             // these empty wrap lines already belong to the preceding nested table.
             if collapse_stored_wrap_spacers && stored_nested_table_empty_wrap_spacer(cell, cp_idx) {
@@ -7615,11 +7627,21 @@ impl LayoutEngine {
                             para_y_before_compose + hwpunit_to_px(offset, self.dpi)
                         } else if let Some(origin) = sequential_nested_layout
                             .as_ref()
+                            // A cut fragment owns a local child cursor. Full-cell
+                            // origins must not reinsert already consumed content.
+                            .filter(|_| !stored_block_flow || fragment_cut_units.is_none())
                             .and_then(|layout| layout.origins[cp_idx][ctrl_idx])
                         {
                             // 빈 줄에도 점유 높이가 있다. 가시 글자 유무로 원점을 다시
                             // 선택하지 않고 정렬용 높이와 같은 계획의 원점을 사용한다.
-                            inner_area.y + origin
+                            if sequential_nested_layout
+                                .as_ref()
+                                .is_some_and(|layout| layout.paragraph_origins.is_some())
+                            {
+                                text_y_start + origin
+                            } else {
+                                inner_area.y + origin
+                            }
                         } else if has_preceding_text {
                             para_y
                         } else {
@@ -8146,9 +8168,17 @@ impl LayoutEngine {
                             if let Some(advance) = self.nested_table_flow_advance(
                                 nested_table,
                                 para,
-                                nested_split
-                                    .map(|split| split.flow_height)
-                                    .unwrap_or(table_h),
+                                if stored_block_flow {
+                                    // This resolved child fragment includes its
+                                    // physical padding, just as row reservation
+                                    // does. Content-only source cuts are not the
+                                    // following paragraph's physical origin.
+                                    table_h
+                                } else {
+                                    nested_split
+                                        .map(|split| split.flow_height)
+                                        .unwrap_or(table_h)
+                                },
                             ) {
                                 if let Some(x) = float_x {
                                     // [#6787] 나란히 무리는 **가장 높은 표** 만큼만 흐름을
@@ -9408,6 +9438,18 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> Option<SequentialNestedCellLayout> {
+        if let Some(flow) = crate::renderer::float_placement::stored_block_cell_flow(
+            paragraphs,
+            styles,
+            self.dpi,
+            |table| self.calc_nested_table_height(table, styles),
+        ) {
+            return Some(SequentialNestedCellLayout {
+                origins: flow.origins,
+                bottom: flow.bottom,
+                paragraph_origins: Some(flow.paragraph_origins),
+            });
+        }
         if composed_paras.len() != paragraphs.len()
             || crate::renderer::cell_vpos_ladder_is_intact(paragraphs)
             || paragraphs
@@ -9425,6 +9467,7 @@ impl LayoutEngine {
                 .map(|p| vec![None; p.controls.len()])
                 .collect(),
             bottom: 0.0,
+            paragraph_origins: None,
         };
         let mut flow_y = 0.0;
         for (pidx, (para, composed)) in paragraphs.iter().zip(composed_paras).enumerate() {
@@ -19245,7 +19288,18 @@ impl LayoutEngine {
             && is_offset_continuation
             && single_cell_nested_continuation
             && !has_later_host_source_owner;
-        let visible_height = if terminal_table_before_host_successor {
+        let stored_block_frame = recursive_cut.as_ref().and_then(|cut| {
+            crate::renderer::float_placement::stored_block_cell_flow(
+                &cell.paragraphs,
+                styles,
+                self.dpi,
+                |child| self.calc_nested_table_height(child, styles),
+            )?;
+            nested.map(|child| self.nested_cut_physical_height(child, cut, styles))
+        });
+        let visible_height = if let Some(physical) = stored_block_frame {
+            physical
+        } else if terminal_table_before_host_successor {
             // 이 mixed stream은 끝났지만 같은 host cell에는 다음 source 문단이 있다.
             // 자식 표의 실제 마지막 unit까지만 frame을 닫고, host 문단의 후행
             // line-spacing은 아래 flow에만 더한다. terminal tail 보정까지 frame에
@@ -19330,7 +19384,9 @@ impl LayoutEngine {
             return None;
         }
         let remaining = (total - offset).max(0.0);
-        let flow_height = if terminal_table_before_host_successor {
+        let flow_height = if let Some(physical) = stored_block_frame {
+            physical
+        } else if terminal_table_before_host_successor {
             flow_visible + terminal_host_line_spacing
         } else if recursive_cut.is_some() {
             flow_visible
@@ -19685,6 +19741,52 @@ impl LayoutEngine {
             .unwrap_or(0.0)
     }
 
+    /// Physical child frame for an authoritative source cut, shared by the
+    /// parent's reservation and the child's viewport/flow advance.
+    fn nested_cut_physical_height(
+        &self,
+        child: &crate::model::table::Table,
+        cut: &NestedTableCut,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let mut physical = 0.0;
+        for row in cut.start_row..cut.end_row {
+            let start_cut = if row == cut.start_row {
+                cut.start_cut.as_slice()
+            } else {
+                &[]
+            };
+            let end_cut = if row + 1 == cut.end_row {
+                cut.end_cut.as_slice()
+            } else {
+                &[]
+            };
+            let content = self.row_cut_content_height(child, row, start_cut, end_cut, styles);
+            physical += if start_cut.is_empty()
+                && end_cut.is_empty()
+                && self.reflowed_fragment_row_uses_measured_height(child, row)
+            {
+                // A complete child row paints the same resolved frame as an
+                // ordinary table. Its source units alone omit physical space.
+                let rows = self.resolve_row_heights(
+                    child,
+                    usize::from(child.col_count),
+                    usize::from(child.row_count),
+                    None,
+                    styles,
+                    true,
+                );
+                content.max(rows[row])
+            } else {
+                content
+            };
+            if row + 1 < cut.end_row {
+                physical += hwpunit_to_px(child.cell_spacing as i32, self.dpi);
+            }
+        }
+        physical
+    }
+
     /// Reflow's projected units own source content and the first/last host margins.
     /// Every actual child RowCut also owns its cell padding. Reserve that physical
     /// box before accepting the parent cut; paint consumes the same child cursor.
@@ -19776,41 +19878,7 @@ impl LayoutEngine {
         } else {
             return None;
         };
-        let mut physical = 0.0;
-        for row in cut.start_row..cut.end_row {
-            let start_cut = if row == cut.start_row {
-                cut.start_cut.as_slice()
-            } else {
-                &[]
-            };
-            let end_cut = if row + 1 == cut.end_row {
-                cut.end_cut.as_slice()
-            } else {
-                &[]
-            };
-            let content = self.row_cut_content_height(child, row, start_cut, end_cut, styles);
-            physical += if start_cut.is_empty()
-                && end_cut.is_empty()
-                && self.reflowed_fragment_row_uses_measured_height(child, row)
-            {
-                // A complete child row paints the same resolved frame as an
-                // ordinary table. Its source units alone omit physical space.
-                let rows = self.resolve_row_heights(
-                    child,
-                    usize::from(child.col_count),
-                    usize::from(child.row_count),
-                    None,
-                    styles,
-                    true,
-                );
-                content.max(rows[row])
-            } else {
-                content
-            };
-            if row + 1 < cut.end_row {
-                physical += hwpunit_to_px(child.cell_spacing as i32, self.dpi);
-            }
-        }
+        let mut physical = self.nested_cut_physical_height(child, &cut, styles);
         let style = styles.para_styles.get(para.para_shape_id as usize);
         let reopens_outer_frame = reflow_nested_table_has_outer_frame(para, child);
         if start == run_start || reopens_outer_frame {
