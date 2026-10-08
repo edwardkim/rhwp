@@ -2596,7 +2596,7 @@ impl HeightMeasurer {
 
     fn cell_nested_controls_bottom(
         &self,
-        paragraphs: &[Paragraph],
+        cell: &crate::model::table::Cell,
         styles: &ResolvedStyleSet,
         depth: usize,
         // [#2195] 부모 셀 전폭(px, 스트레치 기준). 0.0 = 미적용.
@@ -2604,6 +2604,35 @@ impl HeightMeasurer {
     ) -> f64 {
         if depth >= Self::MAX_NESTED_DEPTH {
             return 0.0;
+        }
+        let paragraphs = &cell.paragraphs;
+        // A normal stored ladder may reject the sequential plan after looking
+        // at a child. Reuse that recursive measurement in the stored fallback.
+        let mut nested_body_heights = std::collections::HashMap::new();
+        if let Some(flow) = (cell.text_direction == 0)
+            .then(|| {
+                crate::renderer::float_placement::stored_block_cell_flow(
+                    paragraphs,
+                    styles,
+                    self.dpi,
+                    |nested| {
+                        let stretch = self.render_normalization.nested_table_width_scale(nested);
+                        let height = self
+                            .measure_table_impl(nested, 0, 0, styles, depth + 1, stretch)
+                            .total_height;
+                        nested_body_heights.insert(nested as *const Table as usize, height);
+                        height
+                            + hwpunit_to_px(
+                                i32::from(nested.outer_margin_top)
+                                    + i32::from(nested.outer_margin_bottom),
+                                self.dpi,
+                            )
+                    },
+                )
+            })
+            .flatten()
+        {
+            return flow.bottom;
         }
         // [#4533] `para_top + nested_h` 는 "중첩 표가 앵커 문단 아래로 흐른다"는
         // 가정이다. 앵커 줄이 셀 하단에 있고 표가 셀 상단에 절대배치되는 서식
@@ -2643,8 +2672,10 @@ impl HeightMeasurer {
                         if let Control::Table(nested) = ctrl {
                             let stretch =
                                 self.render_normalization.nested_table_width_scale(nested);
-                            let mt =
-                                self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
+                            let body_height = nested_body_heights
+                                .get(&(nested.as_ref() as *const Table as usize))
+                                .copied()
+                                .unwrap_or_else(|| self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch).total_height);
                             let outer_margin = hwpunit_to_px(
                                 i32::from(nested.outer_margin_top)
                                     + i32::from(nested.outer_margin_bottom),
@@ -2660,7 +2691,7 @@ impl HeightMeasurer {
                             };
                             // 셀 배치의 calc_nested_controls_bottom_height와 같은
                             // 개체 바깥 상자와 마지막 문단 앵커 오프셋을 소비한다.
-                            mt.total_height
+                            body_height
                                 .max(hwpunit_to_px(nested.common.height as i32, self.dpi))
                                 + outer_margin
                                 + lead
@@ -3298,12 +3329,8 @@ impl HeightMeasurer {
                         .map(|s| s.vertical_pos.saturating_add(s.line_height))
                         .max()
                         .unwrap_or(0);
-                    let nested_bottom = self.cell_nested_controls_bottom(
-                        &cell.paragraphs,
-                        styles,
-                        depth,
-                        cell_w_px,
-                    );
+                    let nested_bottom =
+                        self.cell_nested_controls_bottom(cell, styles, depth, cell_w_px);
                     hwpunit_to_px(last_seg_end, self.dpi)
                         .max(text_height)
                         .max(nested_bottom)
@@ -4207,7 +4234,7 @@ impl HeightMeasurer {
                 // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                 let non_inline_h = self.measure_non_inline_controls_height(cell, &table.padding);
                 let nested_bottom =
-                    self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth, cell_w_px);
+                    self.cell_nested_controls_bottom(cell, styles, depth, cell_w_px);
                 let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs);
                 // [Task #2221] 단일행과 동일 — 중첩/TAC 표의 저장 LINE_SEG 텍스트
                 // 셀은 pad 미가산 (layout 2-b relaxed_pad 미러).
@@ -4809,12 +4836,8 @@ impl HeightMeasurer {
                     mc.total_content_height
                         + self.unabsorbed_nested_tables_height(&cell.paragraphs, styles, depth)
                 } else {
-                    let nested_bottom = self.cell_nested_controls_bottom(
-                        &cell.paragraphs,
-                        styles,
-                        depth,
-                        mc_cell_w,
-                    );
+                    let nested_bottom =
+                        self.cell_nested_controls_bottom(cell, styles, depth, mc_cell_w);
                     nested_bottom.max(mc.total_content_height)
                 };
             }

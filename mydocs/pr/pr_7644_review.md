@@ -197,3 +197,11 @@ Native에는 `dump --section 0 --para 359`, 정상 대조 `--para 347`, `fields 
 기존 Studio CDP target `646530F3F106206E8EE236FA6FAA0E11`에서 문서·표시 쪽을 바꾸지 않고 loaded WASM document의 `getPageRenderTree(19/20)`을 호출했다. 실제 instantiate 입력 SHA는 Docker 산출물 `e357f3a63c83fff7f4e3f172ae9a4f7f0248567d42fa3ddf0d07cfa14fd410c3`와 일치한다. `studio-wasm-page{20,21}-render-tree.json`, `studio-wasm-empty-cell-session.json`, 수집 스크립트 `inspect-empty-cell.cjs`와 요약 `regulatory-empty-cell-diagnosis.json`에 보존했다. Native와 WASM 모두 21쪽 Table 노드는 0개다. 이는 해당 엔진 출력의 구조 검증이며 전체 fresh WASM Visual Sweep을 새로 실행한 결과는 아니다.
 
 수정할 계약은 **중첩 표와 그 뒤 실제 빈 줄의 소유·원점·점유 끝점을 같은 줄 구성 결과로 계산하고, 셀 요구 높이·분할 예약·최종 배치가 이를 함께 소비하는 것**이다. 페이지별 저장 vpos를 전체 셀의 절대 끝으로 취급하는 가정을 제거해야 한다. 빈 문단 삭제·clip·clamp나 특정 문서/누름틀 예외는 해결책이 아니다. 통상 본문 예산의 남은 약 2px에 비해 누락된 빈 줄 17.33px는 크지만 `entry.rs:1782`의 아래 여백 허용 예산과 자식 표 컷도 함께 검증해야 한다. 높이만 더하면 PDF와 같은 컷이 자동으로 생긴다고 판정하지 않는다. 이번에는 수정 후 분할·패딩·뒤 빈 문단 소유의 검증은 미실행이며 진단으로만 기록한다.
+
+## 메인터너 보정 — 구현과 경계 검증 진행
+
+작업지시자가 위 진단에 근거한 구현을 명시적으로 승인했다. 같은 `review/pr7644-20261008`에서 최신 devel `f0e7228f6dd2ea1437724e53ad640c40c56d204b`를 충돌 없이 통합했다. 보정 전 통합 source는 `daa73a43d3ca831267932d644b66f9e470381a77`이며 `rhwp-maintainer-base`와 `maintainer-base-{build,page20}.log`로 고정했다. 통합 뒤에도 대상 행의 과소 측정은 재현된다. 기본 작업공간의 devel·다른 Studio 서버는 변경하지 않는다.
+
+구현 계약은 저장 위치가 블록 표의 물리 높이를 흡수하지 못하는 셀에서, 저장 줄 메트릭과 중첩 표의 실제 높이로 문단·개체의 순차 원점과 최종 점유 하단을 함께 생산하는 것이다. `stored_block_cell_flow`를 셀 요구 높이·MeasuredCell의 하단과 배치 원점·정렬 높이가 소비한다. 정상 저장 사다리가 표 공간을 포함하는 경우는 기존 저장 경로를 유지하며 무조건 합산하지 않는다. 대상 host를 IR로 다시 확인하니 실제 control은 단일 단 `ColumnDef`와 Table이며 `설명`은 셀의 누름틀 정보다. 단일 단 정의는 별도 줄/개체 상자를 점유하지 않는 구조 정보로 취급한다(`inspect-inner.rs` / `.log`).
+
+혼합 TAC·어울림·절대배치·배경 개체, NO_LS·붕괴 사다리는 각 기존 구성 계약을 유지한다. 해당 경로를 이번 블록 표의 순차 합으로 바꾸지 않는다. 첫 경계 검증은 20쪽 마지막 셀의 실제 빈 줄 포함·21쪽의 마지막 본문 줄/셀 이어받기, 같은 쪽 paragraph 347의 정상 저장 대조, 기존 저장 중첩 흐름·7518 분할 검사를 대상으로 한다. 새 회귀는 해당 Native/fresh WASM 시각 증거가 선행 기준을 충족한 뒤에만 추가하며, source 수정 뒤 기존 WASM 캡처를 재사용하지 않는다. 완료와 시각 게이트 통과는 실행 뒤 별도로 기록한다.

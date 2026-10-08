@@ -2132,6 +2132,7 @@ pub(crate) fn calc_nested_split_rows(
 struct SequentialNestedCellLayout {
     origins: Vec<Vec<Option<f64>>>,
     bottom: f64,
+    paragraph_origins: Option<Vec<f64>>,
 }
 
 /// [#2089] 가로쓰기 셀 본문 배치의 셀-스코프 스칼라 묶음.
@@ -5926,11 +5927,22 @@ impl LayoutEngine {
         let mut has_preceding_text = false;
         let sequential_nested_layout =
             self.sequential_nested_cell_layout(composed_paras, &cell.paragraphs, styles);
+        let stored_block_flow = sequential_nested_layout
+            .as_ref()
+            .is_some_and(|layout| layout.paragraph_origins.is_some());
         for (cp_idx, (composed, para)) in composed_paras
             .iter()
             .zip(cell.paragraphs.iter())
             .enumerate()
         {
+            if fragment_cut_units.is_none() {
+                if let Some(origins) = sequential_nested_layout
+                    .as_ref()
+                    .and_then(|layout| layout.paragraph_origins.as_ref())
+                {
+                    para_y = text_y_start + origins[cp_idx];
+                }
+            }
             // Keep rendering and fragment-unit accounting on the same cursor:
             // these empty wrap lines already belong to the preceding nested table.
             if collapse_stored_wrap_spacers && stored_nested_table_empty_wrap_spacer(cell, cp_idx) {
@@ -7615,11 +7627,21 @@ impl LayoutEngine {
                             para_y_before_compose + hwpunit_to_px(offset, self.dpi)
                         } else if let Some(origin) = sequential_nested_layout
                             .as_ref()
+                            // A cut fragment owns a local child cursor. Full-cell
+                            // origins must not reinsert already consumed content.
+                            .filter(|_| !stored_block_flow || fragment_cut_units.is_none())
                             .and_then(|layout| layout.origins[cp_idx][ctrl_idx])
                         {
                             // 빈 줄에도 점유 높이가 있다. 가시 글자 유무로 원점을 다시
                             // 선택하지 않고 정렬용 높이와 같은 계획의 원점을 사용한다.
-                            inner_area.y + origin
+                            if sequential_nested_layout
+                                .as_ref()
+                                .is_some_and(|layout| layout.paragraph_origins.is_some())
+                            {
+                                text_y_start + origin
+                            } else {
+                                inner_area.y + origin
+                            }
                         } else if has_preceding_text {
                             para_y
                         } else {
@@ -8146,9 +8168,17 @@ impl LayoutEngine {
                             if let Some(advance) = self.nested_table_flow_advance(
                                 nested_table,
                                 para,
-                                nested_split
-                                    .map(|split| split.flow_height)
-                                    .unwrap_or(table_h),
+                                if stored_block_flow {
+                                    // This resolved child fragment includes its
+                                    // physical padding, just as row reservation
+                                    // does. Content-only source cuts are not the
+                                    // following paragraph's physical origin.
+                                    table_h
+                                } else {
+                                    nested_split
+                                        .map(|split| split.flow_height)
+                                        .unwrap_or(table_h)
+                                },
                             ) {
                                 if let Some(x) = float_x {
                                     // [#6787] 나란히 무리는 **가장 높은 표** 만큼만 흐름을
@@ -9408,6 +9438,18 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> Option<SequentialNestedCellLayout> {
+        if let Some(flow) = crate::renderer::float_placement::stored_block_cell_flow(
+            paragraphs,
+            styles,
+            self.dpi,
+            |table| self.calc_nested_table_height(table, styles),
+        ) {
+            return Some(SequentialNestedCellLayout {
+                origins: flow.origins,
+                bottom: flow.bottom,
+                paragraph_origins: Some(flow.paragraph_origins),
+            });
+        }
         if composed_paras.len() != paragraphs.len()
             || crate::renderer::cell_vpos_ladder_is_intact(paragraphs)
             || paragraphs
@@ -9425,6 +9467,7 @@ impl LayoutEngine {
                 .map(|p| vec![None; p.controls.len()])
                 .collect(),
             bottom: 0.0,
+            paragraph_origins: None,
         };
         let mut flow_y = 0.0;
         for (pidx, (para, composed)) in paragraphs.iter().zip(composed_paras).enumerate() {
