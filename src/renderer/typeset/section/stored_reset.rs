@@ -48,6 +48,14 @@ impl TypesetEngine {
                 .filter(|s| !is_synthetic_line_seg(s))
                 .map(|s| s.vertical_pos);
             if let (Some(cv), Some(pv)) = (curr_first_vpos, prev_last_vpos) {
+                // 저장 쪽 경계는 그 쪽의 줄 구성에 의존한다. 현재 쪽에서
+                // 재조판 줄을 소비했다면 뒤의 저장 빈 문단 두 개가 서로 연속해도
+                // 그 이전 줄 구성의 쪽 경계를 복구할 수 없다. 명시적 쪽/단 나눔은
+                // entry 단계에서 처리하며 여기서는 남은 공간으로 실제 fit한다.
+                let stored_boundary_invalidated_by_reflow =
+                    crate::renderer::typeset::paragraph::stored_lines::stored_page_boundary_invalidated_by_reflow(
+                        profile, st.col_count, &st.current_items, paragraphs,
+                    );
                 // 현재 문단의 vpos가 직전 문단의 마지막 vpos보다 작은 경우 — 컬럼/페이지 reset 시그널.
                 // - 단일 단: cv == 0 만 인정 (Task #321 보수적 기준 유지).
                 //   단일 단에서 cv != 0 의 cv < pv 는 partial-table split 의 LAYOUT 잔재로
@@ -319,6 +327,7 @@ impl TypesetEngine {
                         }
                     };
                 let trigger = trigger
+                    && !stored_boundary_invalidated_by_reflow
                     && !omit_pushed_empty_page
                     && !hangul2024_refit
                     && !overlay_columndef_separator_break

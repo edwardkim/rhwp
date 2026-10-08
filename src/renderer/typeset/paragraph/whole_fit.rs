@@ -167,6 +167,9 @@ pub(super) fn inspect(
         .fold(page.current_height, f64::max);
     // [#3837] 저장 vpos 가 되돌아가면 한글은 거기서 쪽을 끊었다.
     let stored_vpos_rewind_base = page.col_count == 1
+        && !super::stored_lines::stored_page_boundary_invalidated_by_reflow(
+            page.profile, page.col_count, page.current_items, paragraphs,
+        )
         && !page.current_items.is_empty()
         // 같은 문단이 이미 이 쪽에 놓였으면 걸지 않는다 — 되돌아감은 문단 시작 신호라
         // 이미 시작한 뒤 걸면 문단을 쪼갠다.

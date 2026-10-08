@@ -101,6 +101,9 @@ pub(in crate::renderer::typeset) fn inspect_entry(
         // 앞 문단의 손상 HWPX 줄을 순차 조판으로 접은 경우, 그 뒤 문단의
         // 작은 vpos는 새 쪽이 아니라 같은 손상 좌표계의 잔여값이다.
         && !current_page_has_stale_hwpx_line_metrics
+        && !super::stored_lines::stored_page_boundary_invalidated_by_reflow(
+            page.profile, page.col_count, page.current_items, paragraphs,
+        )
         && para
             .line_segs
             .first()
