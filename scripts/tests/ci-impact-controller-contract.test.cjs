@@ -119,7 +119,7 @@ for (const name of ['ci.yml', 'codeql.yml', 'render-diff.yml']) {
     assert.equal((await consume({ run: { status: 'in_progress', conclusion: null } })).accepted, true);
   });
   test(name + ': rejects malformed, stale and untrusted reuse evidence', async () => {
-    for (const bad of [description().replace(/^v=\d+;/, 'v=5;'), description().replace(/^v=\d+;/, 'v=999;'),
+    for (const bad of [description().replace(/^v=\d+;/, 'v=5;'), description().replace(/^v=\d+;/, 'v=6;'), description().replace(/^v=\d+;/, 'v=999;'),
       description() + ';rfp=1', description().replace(';rfp=1', ''), description() + ';',
       description().replace('rfp=1', 'rfp=0'), description().replace(BASE, 'c'.repeat(40))]) {
       assert.equal((await consume({ status: { description: bad } })).accepted, false, bad);

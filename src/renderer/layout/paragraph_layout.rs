@@ -2255,6 +2255,17 @@ fn compute_line_extra_spacing(
             .count()
             .min(trailing_space_limit);
         let visible_count = all_chars.len() - trailing_spaces;
+        // 한 글자만 보이는 줄의 선두 공백은 문단 들여쓰기이지 낱말 사이
+        // 배분 지점이 아니다. 양쪽 정렬로 그 공백을 늘리면 단독 항목 기호가
+        // 오른쪽 끝으로 이동한다. 자연 폭과 저자의 공백을 보존한다.
+        if all_chars[..visible_count]
+            .iter()
+            .filter(|ch| !ch.is_whitespace())
+            .count()
+            <= 1
+        {
+            return (0.0, 0.0, 0.0);
+        }
         let interior_spaces = all_chars[..visible_count]
             .iter()
             .filter(|c| **c == ' ')

@@ -541,7 +541,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "frontend_mode": "'package'",
             "render_required": "'true'",
             "native_skia_required": "'true'",
-            "codeql_languages": "'javascript-typescript,python,rust'",
+            "codeql_languages": "'javascript-typescript,python,rust,actions'",
             "classification_status": "'full'",
             "classifier_version": "'unavailable'",
             "impact_reason": "'fail-closed:impact-unavailable'",

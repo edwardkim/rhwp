@@ -79,7 +79,7 @@ jobs:
       frontend_mode: ${{ steps.impact.outputs.frontend_mode || 'package' }}
       render_required: ${{ steps.impact.outputs.render_required || 'true' }}
       native_skia_required: ${{ steps.impact.outputs.native_skia_required || 'true' }}
-      codeql_languages: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
+      codeql_languages: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
       classification_status: ${{ steps.impact.outputs.classification_status || 'full' }}
       classifier_version: ${{ steps.impact.outputs.classifier_version || 'unavailable' }}
       impact_reason: ${{ steps.impact.outputs.reason || 'fail-closed:impact-unavailable' }}
@@ -288,7 +288,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '6'
+                    && fields.get('v') === '7'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -786,7 +786,7 @@ jobs:
           FRONTEND_MODE: ${{ steps.impact.outputs.frontend_mode || 'package' }}
           RENDER_REQUIRED: ${{ steps.impact.outputs.render_required || 'true' }}
           NATIVE_SKIA_REQUIRED: ${{ steps.impact.outputs.native_skia_required || 'true' }}
-          CODEQL_LANGUAGES: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
+          CODEQL_LANGUAGES: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
           CLASSIFICATION_STATUS: ${{ steps.impact.outputs.classification_status || 'full' }}
           CLASSIFIER_VERSION: ${{ steps.impact.outputs.classifier_version || 'unavailable' }}
           IMPACT_REASON: ${{ steps.impact.outputs.reason || 'fail-closed:impact-unavailable' }}

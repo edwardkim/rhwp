@@ -322,6 +322,43 @@ impl TypesetState {
         }
     }
 
+    /// [#7548] 저장 줄이 없는 host 의 쪽·종이 기준 어울림 표를 뒤 재조판 문단의 배제
+    /// 영역으로 등록한다. 뒤 문단의 측정(`typeset_inline_flow`)과 배치(layout 의
+    /// `inline_flow_plans` 소비)가 이 한 상자로 만든 같은 줄 구성을 쓴다. 저장 host 의
+    /// 뒤 문단 위치는 저장 vpos 가 증언하므로 등록하지 않는다(저장 경로 무변화).
+    pub(in crate::renderer::typeset) fn register_page_anchored_square_table(
+        &mut self,
+        para_index: usize,
+        control_index: usize,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+    ) {
+        if !crate::renderer::para_has_no_stored_line_segs(para) {
+            return;
+        }
+        let column = self.inline_flow_column();
+        let paper = crate::renderer::page_layout::LayoutRect {
+            x: 0.0,
+            y: 0.0,
+            width: self.data.layout.page_width,
+            height: self.data.layout.page_height,
+        };
+        let frame = crate::renderer::float_placement::ObjectPlacementFrame {
+            container: &column,
+            column: &column,
+            body: &self.data.layout.body_area,
+            paper: &paper,
+            paragraph_y: column.y,
+            alignment: crate::model::style::Alignment::Left,
+            dpi: self.data.layout.dpi,
+        };
+        if let Some(exclusion) = frame.page_anchored_square_table_exclusion(table) {
+            self.data
+                .side_wrap_exclusions
+                .insert((para_index, control_index), exclusion);
+        }
+    }
+
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
     pub(in crate::renderer::typeset) fn flush_column(&mut self) {
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.

@@ -135,39 +135,25 @@ pub(crate) fn topbottom_flow_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
     signed_hwpunit(common.vertical_offset).max(0)
 }
 
-/// 글자 없는 칸 문단을 기준으로 흐름을 미는 Square·Tight·Through 개체의 배치용 속성.
-///
-/// 그런 문단은 개체 하나가 내용의 전부라, 칸 측정(`cell_non_inline_control_flow_height`)은
-/// 개체가 **문단 위에서 시작해 개체 높이만큼** 점유한다고 계상하고 칸 `valign` 도 그
-/// 프레임으로 문단 위를 정한다. 음수 저장 오프셋은 그 프레임 위에 공간을 만들지 않으므로
-/// 배치에서도 개체를 문단 위보다 끌어올리지 않는다 — `topbottom_flow_vertical_offset_hu`
-/// 와 같은 계약이다. 한/글 PDF 근거:
-/// - 2024, 36308670 2쪽: 가운데 정렬 칸 Square 그림 다섯(오프셋 −71·−663·0·0·−561HU)이
-///   모두 칸 가운데에 0.2px 안에서 놓인다.
-/// - 2020, pr7518 nested-split 3쪽: 공백 문단의 그림 셋(−992·−1078·0HU)이 같은 y.
-/// - 2024, 36296324 2쪽 중첩 표: 같은 행의 −455HU 그림과 0HU 그림 위 차가 0.5px.
-///
-/// 글자가 있는 문단은 개체가 글줄을 밀어 낸 저장 흐름 안에서 오프셋을 쓴다(보도자료
-/// 머리 표 로고 −80HU: 한/글 PDF 와 0.13px) — 그대로 둔다. 양수 오프셋·문단 기준이
-/// 아닌 개체도 그대로다.
-pub(crate) fn cell_square_flow_placement_common(
-    para: &Paragraph,
-    common: &CommonObjAttr,
-) -> Option<CommonObjAttr> {
-    (para.text.trim().is_empty()
-        && !common.treat_as_char
+/// 셀의 문단 기준 어울림 개체가 만드는 흐름 프레임의 앞 공간.
+/// 흐름과 함께 이동하는 그림의 음수 오프셋은 앞 공간을 만들지 않는다.
+/// 측정에서 양수 부분만 예약한 뒤 출력에서 음수 변위를 다시 적용하면
+/// 세로 정렬한 프레임과 그림 원점이 갈라진다. 배경·절대배치 개체의
+/// 의도된 음수 변위는 그대로 보존한다.
+pub(crate) fn cell_wrap_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
+    let offset = signed_hwpunit(common.vertical_offset);
+    if !common.treat_as_char
         && common.flow_with_text
         && matches!(common.vert_rel_to, VertRelTo::Para)
         && matches!(
             common.text_wrap,
             TextWrap::Square | TextWrap::Tight | TextWrap::Through
         )
-        && signed_hwpunit(common.vertical_offset) < 0)
-        .then(|| {
-            let mut placed = common.clone();
-            placed.vertical_offset = 0;
-            placed
-        })
+    {
+        offset.max(0)
+    } else {
+        offset
+    }
 }
 
 /// 원본 HWPX noAdjust 셀의 완전한 저장 줄 프레임이 점유하는 끝점.
@@ -2710,13 +2696,57 @@ impl ObjectPlacementFrame<'_> {
         Some(FrameExclusion {
             horizontal: hu(x)..hu(x + width),
             vertical: hu(y)..hu(y + height),
-            policy: match common.text_flow {
-                TextFlow::BothSides => FrameExclusionPolicy::BothSides,
-                TextFlow::LargestOnly => FrameExclusionPolicy::LargestSide,
-                TextFlow::LeftOnly => FrameExclusionPolicy::LeftSide,
-                TextFlow::RightOnly => FrameExclusionPolicy::RightSide,
-            },
+            policy: frame_exclusion_policy(common.text_flow),
         })
+    }
+
+    /// [#7548] 쪽·종이 기준 어울림(Square) 표의 바깥 여백 포함 상자.
+    ///
+    /// 문단 기준 표는 host 문단 frame(`plan_square_table_host`)이 같은 상자를 만든다.
+    /// 쪽·종이 기준 표는 host 흐름 밖의 절대 위치라 host 와 무관하게 뒤 재조판 문단이
+    /// 이 상자를 피한다 — 옆 공간이 있으면 그 줄만 좁히고, 쓸 수 있는 폭이 없으면
+    /// `LayoutFrame` 이 상자 바닥으로 줄을 넘긴다. `allow_overlap` 은 개체끼리의 겹침
+    /// 허용이라 글 배제를 취소하지 않는다(그림과 같은 계약). 옆 캡션은 둘째 가로 상자를
+    /// 가지므로 기존 경로에 남긴다.
+    pub(crate) fn page_anchored_square_table_exclusion(
+        &self,
+        table: &Table,
+    ) -> Option<FrameExclusion> {
+        let common = &table.common;
+        if common.treat_as_char
+            || common.text_wrap != TextWrap::Square
+            || !matches!(common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper)
+            || table.caption.is_some()
+        {
+            return None;
+        }
+        let margin = |a: i16, b: i16| hwpunit_to_px(i32::from(a) + i32::from(b), self.dpi);
+        let width = hwpunit_to_px(common.width as i32, self.dpi)
+            + margin(table.outer_margin_left, table.outer_margin_right);
+        let height = hwpunit_to_px(common.height as i32, self.dpi)
+            + margin(table.outer_margin_top, table.outer_margin_bottom);
+        if width <= 0.0 || height <= 0.0 {
+            return None;
+        }
+        let (x, y) = self.position(common, width, height);
+        if ![x, y].iter().all(|value| value.is_finite()) {
+            return None;
+        }
+        let hu = |px| super::px_to_hwpunit(px, self.dpi);
+        Some(FrameExclusion {
+            horizontal: hu(x)..hu(x + width),
+            vertical: hu(y)..hu(y + height),
+            policy: frame_exclusion_policy(common.text_flow),
+        })
+    }
+}
+
+fn frame_exclusion_policy(flow: TextFlow) -> FrameExclusionPolicy {
+    match flow {
+        TextFlow::BothSides => FrameExclusionPolicy::BothSides,
+        TextFlow::LargestOnly => FrameExclusionPolicy::LargestSide,
+        TextFlow::LeftOnly => FrameExclusionPolicy::LeftSide,
+        TextFlow::RightOnly => FrameExclusionPolicy::RightSide,
     }
 }
 
