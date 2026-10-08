@@ -1,8 +1,9 @@
-# PR #7618 대체 메인테이너 조판 보정
+# PR #7667 — #7618 대체 메인테이너 조판 보정
 
 ## 최종 판정
 
-메인테이너 보정 별도 PR 제출. GitHub CI 및 후속 병합은 최신 head에서 별도로 확인한다.
+[대체 PR #7667](https://github.com/edwardkim/rhwp/pull/7667) 등록 완료.
+GitHub CI 및 후속 병합은 최신 head에서 별도로 확인한다.
 원 PR을 직접 병합하지 않고 기여자의 구현을 보존한
 별도 PR로 처리하라는 2026-10-08 작업지시를 따른다. 메인테이너가 Studio에서 확인한
 두 실물 문서는 시각 판정 통과다. 자동 비교의 미달과 남은 줄 이월은 그대로 공개하며,
@@ -85,7 +86,8 @@ raster/review/overlay가 바이트 단위로 동일하다. 따라서 기존 시�
 글꼴 예외로 분류하지 않았다. 이번 별도 PR 제출은 메인테이너의 직접 판정 및 처리 지시에 따른다.
 
 전체 Native 15입력·30개 비교 페이지 TSV 다운로드: [비식별 원본 TSV ZIP](https://github.com/user-attachments/files/33187513/pr7618-maintainer-native-tsv-final.zip).
-본문 게시 후 다운로드 동일성을 확인한다. 공개 대조 9입력 외 원 PR의 공개 가림/정상 저장본
+본문 게시 뒤 익명 다운로드와 ZIP SHA-256 일치를 확인했다
+(`3ee48a1ede951f5813608057a2526810fbcf74610e612fb5d9853c2c52956469`). 공개 대조 9입력 외 원 PR의 공개 가림/정상 저장본
 2입력도 최신 fresh WASM으로 재출력해 gate를 확인했다.
 
 대표 이미지 안정 경로는 `mydocs/pr/assets/issue_7330_maintainer_20261008/`이다.
@@ -159,8 +161,9 @@ python scripts/visual_sweep.py --silhouette-only \
 
 ## 원 PR 종료와 후속 처리
 
-새 PR 번호를 받은 뒤 #7618에 대체 관계·기여자 credit·보정 범위·남은 차이를
-한국어 comment로 남기고 close한다. 기여자 fork/branch는 삭제하지 않는다.
+2026-10-08 원 PR #7618에 대체 관계·기여자 credit·보정 범위·남은 차이를
+[한국어 comment](https://github.com/edwardkim/rhwp/pull/7618#issuecomment-6052798296)로 남기고
+close했다(`merged=false`). 대체 PR은 #7667, base는 devel이다. 기여자 fork/branch는 삭제하지 않는다.
 새 PR의 최신 CI를 확인하고 병합 승인 범위에 맞춰 진행한다. #7330은 Refs로 유지한다.
 병합 후 contributor comment에는 실제 merge SHA 고정 공개 대표 이미지 및
 시각 검증 정본 링크를 사용한다. 비공개 실물 증거와 자동 점수를 추정해 추가하지 않는다.
