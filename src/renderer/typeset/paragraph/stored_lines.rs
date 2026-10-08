@@ -8,6 +8,42 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
+/// 재조판 뒤 저장 빈 줄만 이어지면 옛 자동 쪽 경계를 복원하지 않는다.
+/// 저장 본문/개체를 다시 소비한 경계는 그 저장 흐름의 소유다. 따라서 쪽에
+/// 재조판 항목이 한 번 있었다는 사실을 쪽 전체의 무효 상태로 사용하지 않는다.
+/// 명시적 쪽/단 나누기는 이 검사 이전의 entry 경로에서 처리한다.
+pub(in crate::renderer::typeset) fn stored_page_boundary_invalidated_by_reflow(
+    profile: crate::model::provenance::LayoutCompatibilityProfile,
+    col_count: u16,
+    current_items: &[crate::renderer::pagination::PageItem],
+    paragraphs: &[Paragraph],
+) -> bool {
+    if col_count != 1 || !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
+    {
+        return false;
+    }
+    for item in current_items.iter().rev() {
+        use crate::renderer::pagination::PageItem;
+        let para_index = match item {
+            PageItem::FullParagraph { para_index }
+            | PageItem::PartialParagraph { para_index, .. } => *para_index,
+            // 개체 항목은 독립 배치 owner다. host의 합성 줄을 본문 재조판으로
+            // 오인하지 않고, 이 owner 뒤의 저장 경계는 기존 개체 경로가 맡는다.
+            _ => return false,
+        };
+        let Some(para) = paragraphs.get(para_index) else {
+            return false;
+        };
+        if crate::renderer::para_has_no_stored_line_segs(para) {
+            return true;
+        }
+        if !para.text.trim().is_empty() {
+            return false;
+        }
+    }
+    false
+}
+
 /// [#5801] 저장 사다리가 이 문단의 **문단 위 간격을 실제로 담고 있는가**.
 ///
 /// `#2279 ①` 의 spacing 트림은 "저장 ladder 가 spacing 을 이미 반영한다"는 전제 위에 선다.

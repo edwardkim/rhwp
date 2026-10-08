@@ -4612,21 +4612,20 @@ impl TypesetEngine {
                 crate::model::shape::TextWrap::Square
             )
             && crate::renderer::is_no_lineseg_visible_text_host(para);
+        let col_w_hu = crate::renderer::px_to_hwpunit(
+            st.layout
+                .column_areas
+                .get(st.current_column as usize)
+                .map_or(st.layout.body_area.width, |area| area.width),
+            self.dpi,
+        );
         let no_lineseg_square_band = no_lineseg_square_host
-            .then(|| {
-                let col_w_px = st
-                    .layout
-                    .column_areas
-                    .get(st.current_column as usize)
-                    .map_or(st.layout.body_area.width, |area| area.width);
-                crate::renderer::no_lineseg_square_table_host_band(
-                    para,
-                    crate::renderer::px_to_hwpunit(col_w_px, self.dpi),
-                )
-            })
+            .then(|| crate::renderer::no_lineseg_square_table_host_band(para, col_w_hu))
             .flatten();
+        // 쪽·종이 기준 표는 host 흐름 밖이라 host 글자를 표 아래로 보내지 않는다(#7548,
+        // layout 의 host 줄 페인트 소유자와 같은 판정).
         let no_lineseg_host_flows_below = no_lineseg_square_host
-            && no_lineseg_square_band.is_none()
+            && crate::renderer::no_lineseg_host_text_flows_below_square_table(para, col_w_hu)
             && fmt.square_host_plan.is_none();
         // Corroborate the existing table-height row with the control's stored
         // stream position. Whitespace-only hosts can own real prefix rows;
@@ -4841,6 +4840,8 @@ impl TypesetEngine {
             // host 본문만 전진하고 표 높이를 예약하지 않는다(layout 의 절대 배치와 짝).
             // 뒤 문단이 표 띠를 피하는 것은 저장 vpos 가 증언한다(36295751 pi=9).
             st.advance_flow_by(pre_height);
+            // 저장 줄이 없는 host 면 뒤 재조판 문단이 표 상자를 직접 피한다.
+            st.register_page_anchored_square_table(para_idx, ctrl_idx, para, table);
         } else if is_wrap_around_table
             && pre_height > 0.0
             && crate::renderer::float_placement::square_successor_starts_beside_table(
