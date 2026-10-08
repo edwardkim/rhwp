@@ -41,31 +41,59 @@ fn max_para_text_line_bottom(node: &RenderNode, para_index: usize) -> Option<f64
 }
 
 #[test]
-fn issue_1375_sep2020_page17_rewind_paragraph_advances_whole_to_right_column() {
+fn issue_1375_sep2020_page17_rewind_paragraph_splits_at_stored_rewind() {
+    // [#6574] 기준 PDF(`pdf/3-09월_교육_통합_2024-구분선아래20구분선위20.pdf` Hwp 2024
+    // 13.0.0.3622 · `-hwpx-2024.pdf`)는 pi=894 의 앞 두 줄('(ⅰ) …가 포함되는 경우' 1050.8px,
+    // '두 집합 …에서 한 원소씩을 택' 1068.7px)을 17쪽 왼쪽 단 하단에 두고 셋째 줄부터 오른쪽
+    // 단 맨 위에서 잇는다. 저장 사다리도 셋째 줄에서 되감긴다(789203 → 770559). 종전 기대
+    // (문단 통째로 오른쪽 단)는 이 PDF 와 다르다.
     let doc = load_doc();
     let page17 = doc.dump_page_items(Some(16));
 
-    assert!(
-        !page17.contains("PartialParagraph[미주]  pi=894"),
-        "pi=894 rewind paragraph must not be split into the nearly-full left column\n{page17}"
-    );
-
     let right_col = page17.find("  단 1").expect("page 17 right column dump");
-    let para894 = page17
-        .find("FullParagraph[미주]  pi=894")
-        .expect("pi=894 whole paragraph on page 17");
+    let head = page17
+        .find("PartialParagraph[미주]  pi=894  lines=0..2")
+        .expect("pi=894 head on page 17 left column");
+    let tail = page17
+        .find("PartialParagraph[미주]  pi=894  lines=2..5")
+        .expect("pi=894 tail on page 17 right column");
     assert!(
-        para894 > right_col,
-        "pi=894 should start as a whole paragraph in the right column\n{page17}"
+        head < right_col && right_col < tail,
+        "pi=894 should keep its first two lines in the left column and continue in the right column\n{page17}"
     );
 
+    // 문단이 두 단에 걸치면 쪽에서 가장 위 줄은 오른쪽 단 맨 위 줄이다. 왼쪽 단의 첫 줄을 따로 잰다.
     let tree = doc.build_page_render_tree(16).expect("page 17 render tree");
-    let first_line = min_para_text_line_bbox(&tree.root, 894).expect("pi=894 first text line");
+    let first_line = min_para_text_line_bbox_in_x_range(&tree.root, 894, 0.0, 395.0)
+        .expect("pi=894 first text line in the left column");
     assert!(
-        first_line.x > 390.0 && (84.0..=110.0).contains(&first_line.y),
-        "pi=894 should render at the right-column top band, got {:?}",
+        (1043.0..=1059.0).contains(&first_line.y),
+        "pi=894 first line should sit at the left-column bottom like the PDF (1050.8px), got {:?}",
         first_line
     );
+}
+
+fn min_para_text_line_bbox_in_x_range(
+    node: &RenderNode,
+    para_index: usize,
+    x_min: f64,
+    x_max: f64,
+) -> Option<BoundingBox> {
+    let own = match &node.node_type {
+        RenderNodeType::TextLine(line)
+            if line.para_index == Some(para_index)
+                && node.bbox.x >= x_min
+                && node.bbox.x < x_max =>
+        {
+            Some(node.bbox.clone())
+        }
+        _ => None,
+    };
+    own.into_iter()
+        .chain(node.children.iter().filter_map(|child| {
+            min_para_text_line_bbox_in_x_range(child, para_index, x_min, x_max)
+        }))
+        .min_by(|a, b| a.y.partial_cmp(&b.y).unwrap())
 }
 
 #[test]

@@ -2,6 +2,9 @@
 
 use crate::renderer::typeset::notes::endnotes::content::prepend_endnote_marker_text;
 use crate::renderer::typeset::notes::endnotes::debug::debug_print_endnote_line_segments;
+use crate::renderer::typeset::notes::endnotes::measure::{
+    endnote_column_starts_at_stored_break, EndnoteRenderInkFit,
+};
 use crate::renderer::typeset::notes::endnotes::profile::{
     en_ssot_debug, en_ssot_level, endnote_between_notes_margin,
     endnote_has_absorbed_between_notes_gap, endnote_has_visible_separator,
@@ -112,10 +115,11 @@ impl TypesetEngine {
                 prepend_endnote_marker_text(&mut en_para_copy, en_ctrl);
             }
             let prev_render_endnote_para_local_idx = last_render_endnote_para_local_idx;
+            // [#7665] 직전 렌더 미주 문단이 미주의 첫 문단(번호 장식을 받은 새 문항 제목)인가 —
+            // 「문」 접두사가 아니라 소유 경계(`ep_idx == 0`)로 읽는다.
             let prev_rendered_endnote_is_title = prev_render_endnote_para_local_idx
-                .and_then(|idx| st.endnote_paragraphs.get(idx))
-                .map(|p| p.text.trim_start().starts_with('문'))
-                .unwrap_or(false);
+                .and_then(|idx| st.endnote_para_sources.get(idx))
+                .is_some_and(|src| src.note_para_index == 0);
             let en_para_local_idx = st.endnote_paragraphs.len();
             st.append_endnote_paragraph(en_para_copy);
             st.append_endnote_source(EndnoteParaSource {
@@ -424,6 +428,25 @@ impl TypesetEngine {
                     (prev_en_bottom_vpos, this_first_offset),
                     (Some(prev), Some(first)) if first < prev
                 )
+                // [#6574] 저장 되감김은 저장 당시 배치의 단 경계다. 현재 단이 그 배치의 단
+                // 경계에서 시작하지 않았으면(앞에서 이미 배치가 갈렸으면) 되감김은 낡은 신호라,
+                // 문단이 렌더로 현재 단에 통째로 들어가면 넘기지 않는다 — 한/글 2024 도 같은
+                // 단에 둔다(3-09월_교육_통합_2024-미주사이20 20쪽 pi=1022). 배치가 맞는 단의
+                // 되감김은 그대로 따른다(3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20
+                // 18쪽 pi=821).
+                && (endnote_column_starts_at_stored_break(st, paragraphs)
+                    || !matches!(
+                        self.judge_endnote_render_ink_fit(
+                            st,
+                            paragraphs,
+                            styles,
+                            available,
+                            en_col_w,
+                            en_para_idx,
+                            fmt.line_heights.len(),
+                        ),
+                        EndnoteRenderInkFit::Fits
+                    ))
             {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
@@ -1074,17 +1097,39 @@ impl TypesetEngine {
                 visible_large_between_notes_gap,
                 visible_compact_sequential_tail_fits_current_column,
             });
+            // [#6574] 아래 꼬리 넘김 판정들은 렌더 넘침을 누계·저장 사다리로 예측한 대리값이다.
+            // 렌더가 문단이 현재 단에 통째로 들어간다고 재면 그 예측으로 단을 넘기지 않는다
+            // (3-09월_교육_통합_2024-미주사이20 23쪽 pi=1158, 3-11월_실전_통합_2024-구분선위0
+            // 미주사이20구분선아래2 14쪽 pi=628 — 한/글은 둘 다 왼쪽 단 하단에 둔다).
+            // 표만 든 문단의 판정은 그대로 둔다 — scratch 렌더는 그 문단을 문단 항목으로만 그려
+            // 표 높이를 재지 못한다(구분선없음… 13쪽 문19 도표).
+            let render_whole_fits = |st: &TypesetState| {
+                matches!(
+                    self.judge_endnote_render_ink_fit(
+                        st,
+                        paragraphs,
+                        styles,
+                        available,
+                        en_col_w,
+                        en_para_idx,
+                        fmt.line_heights.len(),
+                    ),
+                    EndnoteRenderInkFit::Fits
+                )
+            };
             if large_between_title_tail_render_overflows
                 && !no_separator_last_column_new_note_head_without_gap_fits
+                && !render_whole_fits(st)
             {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
             }
-            if large_between_tail_render_overflows
+            if ((large_between_tail_render_overflows
                 || large_between_tail_before_rewind_picture
                 || large_between_equation_tail_starts_next_column
+                || no_separator_last_column_tail_before_rewind_starts_next_page)
+                && !render_whole_fits(st))
                 || no_separator_tail_table_starts_next_column
-                || no_separator_last_column_tail_before_rewind_starts_next_page
             {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
@@ -1309,7 +1354,27 @@ impl TypesetEngine {
                 }
             }
             if advance_for_fit {
-                st.advance_column_or_new_page();
+                // [#6574] 렌더 경로로 그려 이 문단이 현재 단에 통째로 들어가면 누계 기반 일반
+                // fit 판정으로 단을 넘기지 않는다. 누계는 렌더와 다른 항(제목의 저장 사다리
+                // 점프)을 실어 들어가는 문단을 넘긴다. 저장 사다리 되감김 등 다른 단 넘김
+                // 신호는 그대로 둔다. 앞 몇 줄만 들어가면(`SplitAt`) 여기서 통째로 넘기지 않고
+                // 아래 렌더 판정의 분할에 맡긴다 — 한/글은 들어가는 줄을 현재 단 하단에 남긴다
+                // (3-09월_교육_통합_2024-구분선아래20구분선위20 17쪽 pi=894 앞 두 줄).
+                let render_fits_current_column = matches!(
+                    self.judge_endnote_render_ink_fit(
+                        st,
+                        paragraphs,
+                        styles,
+                        available,
+                        en_col_w,
+                        en_para_idx,
+                        fmt.line_heights.len(),
+                    ),
+                    EndnoteRenderInkFit::Fits | EndnoteRenderInkFit::SplitAt(_)
+                );
+                if !render_fits_current_column {
+                    st.advance_column_or_new_page();
+                }
                 prev_en_bottom_vpos = None;
                 prev_en_content_bottom_vpos = None;
                 if internal_rewind_split == Some(1) {
@@ -1336,6 +1401,23 @@ impl TypesetEngine {
                     internal_rewind_split = None;
                 }
             }
+            // [#6574] 새 미주 첫 문단의 앞 줄이 렌더로 현재 단에 들어가는지. 누계 임계·저장
+            // 사다리 예측 대신 이 판정으로 "단이 찼다"를 정한다. 앞 몇 줄만 들어가면
+            // (`SplitAt`) 여기서 통째로 넘기지 않고 아래 렌더 분할에 맡긴다 — 한/글은 새 미주
+            // 첫 문단도 들어가는 줄을 현재 단 하단에 남긴다(SO-SUEOP 45쪽 161번 미주 첫 줄).
+            let render_head_fits = ep_idx == 0
+                && matches!(
+                    self.judge_endnote_render_ink_fit(
+                        st,
+                        paragraphs,
+                        styles,
+                        available,
+                        en_col_w,
+                        en_para_idx,
+                        fmt.line_heights.len(),
+                    ),
+                    EndnoteRenderInkFit::Fits | EndnoteRenderInkFit::SplitAt(_)
+                );
             let new_note_fit::NewNoteFitResult {
                 advance_for_new_endnote,
                 advance_for_internal_rewind,
@@ -1361,6 +1443,7 @@ impl TypesetEngine {
                 total_advance_fit,
                 en_fit,
                 new_endnote_advance_threshold,
+                render_head_fits,
                 endnote_has_vpos_rewind,
                 compact_endnote_separator_profile,
                 prev_endnote_had_inline_object_vpos_overestimate,
@@ -1510,6 +1593,34 @@ impl TypesetEngine {
                     })
             } else {
                 None
+            };
+            // [#6574] 렌더 경로로 그린 글줄이 단 하단을 넘으면 그 문단은 현재 단에
+            // 들어가지 않는다. 위 판정들은 누계(`current_height`)로 정하는데, 누계는 미주
+            // 사이 간격 등을 렌더와 다르게 실어 글줄을 단 아래로 흘린다. 같은 단 항목을
+            // scratch 렌더로 다시 그려 잉크 하단을 확인하고, 앞 줄만 들어가면 거기서 나누고
+            // 한 줄도 안 들어가면 다음 단에서 시작한다.
+            let mut render_fits_whole = false;
+            let render_fit_split = match self.judge_endnote_render_ink_fit(
+                st,
+                paragraphs,
+                styles,
+                available,
+                en_col_w,
+                en_para_idx,
+                fmt.line_heights.len(),
+            ) {
+                EndnoteRenderInkFit::Unjudged => None,
+                EndnoteRenderInkFit::Fits => {
+                    render_fits_whole = true;
+                    None
+                }
+                EndnoteRenderInkFit::SplitAt(split) => Some(split),
+                EndnoteRenderInkFit::NextColumn => {
+                    st.advance_column_or_new_page();
+                    prev_en_bottom_vpos = None;
+                    prev_en_content_bottom_vpos = None;
+                    None
+                }
             };
             maybe_register_square_picture_wrap_anchor(
                 &mut *st,
@@ -1704,6 +1815,14 @@ impl TypesetEngine {
             } else {
                 split_candidate
             };
+            // 렌더로 잰 분할 줄 수가 있으면 그 값을 쓴다 — 단 하단까지 실제로 들어가는 줄 수다.
+            // 렌더가 통째로 들어간다고 판정하면 누계 기반 분할 후보를 버린다. 저장 사다리
+            // 되감김 등 다른 분할 후보는 렌더 판정이 없을 때만 쓴다.
+            let split_candidate = if render_fits_whole {
+                None
+            } else {
+                render_fit_split.or(split_candidate)
+            };
             if self.emit_endnote_split(
                 st,
                 &fmt,
@@ -1736,7 +1855,17 @@ impl TypesetEngine {
                 prev_en_bottom_vpos = None;
                 prev_en_content_bottom_vpos = None;
             } else if let Some(tb) = this_bottom_offset {
-                prev_en_bottom_vpos = Some(tb);
+                // 다음 문단의 되감김 판정 기준은 이 문단 흐름이 끝난 사다리 위치 — 마지막 줄의
+                // 끝이다. 내부 되감김이 있는 문단을 통째로 이 단에 둔 경우 최댓값(되감김 앞 줄)을
+                // 쓰면, 되감김 뒤 사다리를 그대로 잇는 다음 문단까지 되감김으로 오인해 단을
+                // 넘긴다(3-09월_교육_통합_2024-미주사이20 20쪽 pi=992→993, 한/글 2024 는 같은 단).
+                let last_line_bottom = en_para.line_segs.last().map(|s| {
+                    s.vertical_pos
+                        .saturating_add(s.line_height)
+                        .saturating_add(s.line_spacing)
+                        + endnote_start
+                });
+                prev_en_bottom_vpos = Some(last_line_bottom.unwrap_or(tb));
                 prev_en_content_bottom_vpos = this_content_bottom_offset.or(this_bottom_offset);
             }
             if local_vpos_rewind {

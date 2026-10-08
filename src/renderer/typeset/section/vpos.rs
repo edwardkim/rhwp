@@ -85,6 +85,8 @@ impl TypesetEngine {
             min_flow_floor: f64::MIN,
             session_edited: self.profile.get().session_edited(),
             curr_item_is_table_fragment: false,
+            // 본문 조판: 미주 제목 갈래는 `suppress_large_forward_jump` 아래에서만 발화한다.
+            endnote_note_first_paras: Default::default(),
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는

@@ -1147,6 +1147,28 @@ fn synth_square_wrap_rects(
         .collect()
 }
 
+/// [#7665] 로컬로 다시 색인한 미주 측정 문단 중 **미주의 첫 문단**(번호 장식을 받는 새 문항
+/// 제목)인 로컬 번호. 렌더 `LayoutEngine::endnote_note_first_paras` 와 같은 소유 경계
+/// (`note_para_index == 0`)를 `HeightCursor` 측정 시뮬에도 싣는다.
+fn endnote_first_local_paras(
+    body_len: usize,
+    endnote_sources: &[EndnoteParaSource],
+    local_indices: &[(usize, usize)],
+) -> std::sync::Arc<std::collections::HashSet<usize>> {
+    std::sync::Arc::new(
+        local_indices
+            .iter()
+            .filter(|(global, _)| {
+                global
+                    .checked_sub(body_len)
+                    .and_then(|local| endnote_sources.get(local))
+                    .is_some_and(|src| src.note_para_index == 0)
+            })
+            .map(|(_, local)| *local)
+            .collect(),
+    )
+}
+
 fn paragraph_by_global_index<'a>(
     body_paragraphs: &'a [Paragraph],
     endnote_paragraphs: &'a [Paragraph],
@@ -3577,6 +3599,8 @@ impl TypesetEngine {
             st.current_endnote_flow,
         );
         hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
+        hc.endnote_note_first_paras =
+            endnote_first_local_paras(paragraphs.len(), &st.endnote_para_sources, &local_indices);
         let mut y = st.current_start_height;
         for item in &st.current_items {
             let Some(pi) = page_item_para_index(item) else {
