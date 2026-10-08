@@ -2288,6 +2288,27 @@ pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Pa
             .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
 }
 
+/// 저장 LINE_SEG 가 없는 host 의 글자가 Square 표 **아래**로 흐르는지.
+///
+/// 문단·단 기준 표가 단 폭을 채워 옆 띠가 없으면 host 글자는 표 아래로 간다. 쪽·종이
+/// 기준 표는 host 흐름 밖의 절대 위치라(#7548) host 글자는 제자리에 남고, 표 상자와
+/// 겹치는 뒤 줄만 배제 영역으로 피한다 — 저장 host 와 같은 순서(글자 → 표)를 쓴다.
+/// typeset(표 앞/뒤 글자 분류)과 layout(host 줄 페인트 소유자)이 같은 판정을 쓴다.
+pub(crate) fn no_lineseg_host_text_flows_below_square_table(
+    para: &crate::model::paragraph::Paragraph,
+    column_width_hu: i32,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+    is_no_lineseg_visible_text_host(para)
+        && !para.controls.iter().any(|control| {
+            matches!(control, crate::model::control::Control::Table(t)
+                if !t.common.treat_as_char
+                    && matches!(t.common.text_wrap, TextWrap::Square)
+                    && matches!(t.common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper))
+        })
+        && no_lineseg_square_table_host_band(para, column_width_hu).is_none()
+}
+
 /// 저장 LINE_SEG 가 없는 host 문단의 Square 표 옆 글자 띠 (cs, sw) HU 도출.
 ///
 /// 저장 줄이 있으면 첫 줄의 `column_start`/`segment_width` 가 한글이 흘린 띠를 그대로

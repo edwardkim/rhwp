@@ -11149,12 +11149,10 @@ impl LayoutEngine {
                     // 글자가 표 아래로 흐른다 — typeset 이 post-text 로 소유시킨 이 줄을
                     // 일반 경로로 그린다. 띠가 있으면 표 경로가 띠에 그린다.
                     let host_text_follows_table = is_wrap_host
-                        && crate::renderer::is_no_lineseg_visible_text_host(para)
-                        && crate::renderer::no_lineseg_square_table_host_band(
+                        && crate::renderer::no_lineseg_host_text_flows_below_square_table(
                             para,
                             px_to_hwpunit(col_area.width, self.dpi),
-                        )
-                        .is_none();
+                        );
                     if is_wrap_host && !explicit_stored_fragment && !host_text_follows_table {
                         return (y_offset, false);
                     }
@@ -13175,10 +13173,17 @@ impl LayoutEngine {
                         .map_or((0, 0), |s| (s.column_start, s.segment_width))
                 });
                 // 저장 줄도 띠도 없으면 host 글자는 표 아래 post-text 로 그린다(위 PartialParagraph).
+                // 쪽·종이 기준 표의 host 글자는 표 아래로 가지 않으므로(#7548) 저장 host 와
+                // 같이 여기서 그린다 — typeset 의 표 앞 글자 분류와 같은 판정.
                 let paint_host_text_in_band = no_lineseg_band.is_some()
                     || para.line_segs.iter().any(|seg| {
                         seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                    });
+                    })
+                    || (crate::renderer::is_no_lineseg_visible_text_host(para)
+                        && !crate::renderer::no_lineseg_host_text_flows_below_square_table(
+                            para,
+                            px_to_hwpunit(col_area.width, self.dpi),
+                        ));
                 let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
                 let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
                 // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로.

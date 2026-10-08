@@ -464,8 +464,8 @@ test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
-    v: '6',
-    cv: '7',
+    v: '7',
+    cv: '8',
     mode: 'selective',
     rfp: '0',
     wf: '111',
@@ -1104,7 +1104,7 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.equal(result.audit.conclusion, 'success');
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
-  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '6');
+  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '7');
 });
 
 test('#7069 completed workflow with nonterminal lint is pending until evidence converges', () => {
@@ -1150,3 +1150,38 @@ test('#7069 collection identity failures and exhausted snapshots cannot pass', (
     assert.equal(auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows }).conclusion, expected);
   }
 });
+
+
+test('full CodeQL coverage includes Actions in the compact policy contract', () => {
+  const input = policyInput({ files: [{ filename: '.github/workflows/codeql.yml', status: 'modified' }] });
+  const policy = determinePolicy(input);
+  assert.equal(policy.classification.codeql_languages, 'javascript-typescript,python,rust,actions');
+  assert.equal(parseStatusDescription(policy.status_description).ql, 'js,py,rs,ac');
+  assert.ok(policy.status_description.length <= 140);
+});
+
+test('CodeQL audit rejects a legacy three-language matrix without Actions', () => {
+  const input = policyInput({ files: [{ filename: '.github/workflows/codeql.yml', status: 'modified' }] });
+  const policy = determinePolicy(input);
+  const workflows = workflowEvidence(policy);
+  workflows.CodeQL.jobs = workflows.CodeQL.jobs.filter((entry) => entry.name !== 'Analyze (actions)');
+  const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+  assert.equal(audit.conclusion, 'failure');
+  assert.match(audit.reason, /missing-job:Analyze \(actions\)/);
+});
+
+for (const conclusion of ['failure', 'skipped']) {
+  test(`CodeQL audit rejects ${conclusion} of selected Actions analysis`, () => {
+    const input = policyInput({ files: [{ filename: '.github/workflows/codeql.yml', status: 'modified' }] });
+    const policy = determinePolicy(input);
+    const workflows = workflowEvidence(policy);
+    workflows.CodeQL.jobs = workflows.CodeQL.jobs.filter((entry) => entry.name !== 'Analyze (actions)');
+    workflows.CodeQL.jobs.push(job('Analyze (actions)', 'success', [
+      step('Skip unselected language', 'skipped'),
+      step('Perform CodeQL Analysis', conclusion),
+    ]));
+    const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+    assert.equal(audit.conclusion, 'failure');
+    assert.match(audit.reason, /Analyze \(actions\).*step-not-success:Perform CodeQL Analysis/);
+  });
+}

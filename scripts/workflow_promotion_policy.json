@@ -27,7 +27,8 @@
         "CodeQL preflight",
         "Analyze (javascript-typescript)",
         "Analyze (python)",
-        "Analyze (rust)"
+        "Analyze (rust)",
+        "Analyze (actions)"
       ],
       "requiredSkippedJobs": [],
       "requiredArtifacts": [],
