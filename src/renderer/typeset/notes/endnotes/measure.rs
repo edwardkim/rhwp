@@ -12,42 +12,6 @@ use crate::renderer::typeset::{
 /// [#6574] 렌더 줄 하단이 단 하단을 넘어도 같은 단으로 보는 허용치(px). 좌표 반올림만 흡수한다.
 const ENDNOTE_RENDER_INK_FIT_TOLERANCE_PX: f64 = 0.25;
 
-/// [#6574] 렌더 판정 생략용 여유(px). 단 커서 상한 + 문단 높이 + 미주 사이 간격에 이만큼을
-/// 더해도 단 안이면 scratch 렌더 없이 들어간다고 본다(저장 사다리 전진 점프 몫).
-const ENDNOTE_RENDER_FIT_SKIP_MARGIN_PX: f64 = 120.0;
-
-/// [#6574] 렌더로 재지 않고 누계 높이로 이어 붙인 거리에 비례해 판정 생략 여유를 늘리는
-/// 비율. 누계 문단 높이는 렌더 전진보다 작을 수 있어(음수 줄간격·문단 아래 간격 등 문단당
-/// 1~2px) 생략이 길게 이어지면 오차가 고정 여유를 넘는다(SO-SUEOP.hwpx 43쪽 +7.8px).
-const ENDNOTE_RENDER_FIT_SKIP_DRIFT_RATIO: f64 = 0.25;
-
-/// 단 상태 키: (구역, 쪽 수, 단 번호, 단 항목 수).
-type EndnoteColumnKey = (usize, usize, u16, usize);
-
-/// [#6574] 미주 단 렌더 판정 캐시. 단 커서의 상한을 이어 가며 단 하단에서 먼 문단은
-/// scratch 렌더를 건너뛴다. 상한은 렌더로 잰 커서에 이후 문단 높이·미주 사이 간격을
-/// 더해 가며, 저장 사다리의 전진 점프는 판정 생략 여유가 흡수한다.
-#[derive(Default)]
-pub(in crate::renderer::typeset) struct EndnoteRenderFitCache {
-    /// 단 상태 → (렌더 커서 하단의 상한(px), 마지막 렌더 측정 뒤 누계로 이어 붙인 거리(px)).
-    /// 같은 단의 상태만 남긴다.
-    cursor_bounds: Vec<(EndnoteColumnKey, f64, f64)>,
-}
-
-impl EndnoteRenderFitCache {
-    fn bound(&self, key: EndnoteColumnKey) -> Option<(f64, f64)> {
-        self.cursor_bounds
-            .iter()
-            .find_map(|(k, cursor, estimated)| (*k == key).then_some((*cursor, *estimated)))
-    }
-
-    fn record(&mut self, key: EndnoteColumnKey, cursor: f64, estimated: f64) {
-        self.cursor_bounds
-            .retain(|(k, _, _)| (k.0, k.1, k.2) == (key.0, key.1, key.2) && k.3 != key.3);
-        self.cursor_bounds.push((key, cursor, estimated));
-    }
-}
-
 /// [#6574] 렌더 경로 잉크 하단으로 본 문단의 현재 단 수용 여부.
 pub(in crate::renderer::typeset) enum EndnoteRenderInkFit {
     /// 판정하지 않았다(빈 단·본문이 섞인 단).
@@ -128,8 +92,6 @@ impl TypesetEngine {
         en_col_w: f64,
         en_para_idx: usize,
         line_count: usize,
-        para_height: f64,
-        starts_new_note: bool,
     ) -> EndnoteRenderInkFit {
         if st.current_items.is_empty() {
             return EndnoteRenderInkFit::Unjudged;
@@ -137,41 +99,6 @@ impl TypesetEngine {
         // 렌더는 단을 물리 본문 하단에서 끝낸다. 누계 판정용 쪽 나눔 허용치는
         // 잉크 판정에 싣지 않는다(표 판정과 같은 물리 경계).
         let available = (available - st.layout.pagination_tolerance_px).max(0.0);
-        let column_key: EndnoteColumnKey = (
-            st.section_index,
-            st.pages.len(),
-            st.current_column,
-            st.current_items.len(),
-        );
-        let next_column_key: EndnoteColumnKey =
-            (column_key.0, column_key.1, column_key.2, column_key.3 + 1);
-        let gap = if starts_new_note {
-            hwpunit_to_px(st.endnote_between_notes_hu.max(0), self.dpi)
-        } else {
-            0.0
-        };
-        let bounded_cursor = self
-            .endnote_render_fit_cache
-            .borrow()
-            .bound(column_key)
-            .map(|(cursor, estimated)| {
-                let step = para_height + gap;
-                (cursor + step, estimated + step)
-            });
-        if let Some((bound, estimated)) = bounded_cursor {
-            if bound
-                + ENDNOTE_RENDER_FIT_SKIP_MARGIN_PX
-                + estimated * ENDNOTE_RENDER_FIT_SKIP_DRIFT_RATIO
-                <= available
-            {
-                self.endnote_render_fit_cache.borrow_mut().record(
-                    next_column_key,
-                    bound,
-                    estimated,
-                );
-                return EndnoteRenderInkFit::Fits;
-            }
-        }
         self.measure_endnote_render_ink_fit(
             st,
             paragraphs,
@@ -180,7 +107,6 @@ impl TypesetEngine {
             en_col_w,
             en_para_idx,
             line_count,
-            next_column_key,
         )
     }
 
@@ -194,7 +120,6 @@ impl TypesetEngine {
         en_col_w: f64,
         en_para_idx: usize,
         line_count: usize,
-        next_column_key: EndnoteColumnKey,
     ) -> EndnoteRenderInkFit {
         let limit = available + ENDNOTE_RENDER_INK_FIT_TOLERANCE_PX;
         let ink_bottom = |item: PageItem| {
@@ -230,11 +155,6 @@ impl TypesetEngine {
             return EndnoteRenderInkFit::Unjudged;
         }
         if fits(full) {
-            if let Some((cursor, _)) = full_extent {
-                self.endnote_render_fit_cache
-                    .borrow_mut()
-                    .record(next_column_key, cursor, 0.0);
-            }
             return EndnoteRenderInkFit::Fits;
         }
         for split in (1..line_count).rev() {

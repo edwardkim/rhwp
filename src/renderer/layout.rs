@@ -8717,23 +8717,34 @@ impl LayoutEngine {
                     hcursor.shift_vpos_base_for_rendered_delta(delta);
                 }
             }
-            // [#6574] 새 문항 제목은 직전 미주의 마지막 글줄 잉크 하단 + 미주 사이 간격에
-            // 놓인다(한컴 정본: 그림·수식 꼬리 뒤에서도 같은 값). 저장 사다리의 전방 점프는
-            // 이 값보다 클 수 있어 제목이 내려가고 단 하단을 넘긴다.
-            if current_is_endnote_question_title && col_content.endnote_flow && item_ordinal > 0 {
-                let prev_is_endnote_para = col_content
-                    .items
-                    .get(item_ordinal - 1)
-                    .and_then(|prev_item| match prev_item {
-                        PageItem::FullParagraph { para_index }
-                        | PageItem::PartialParagraph { para_index, .. }
-                        | PageItem::Shape { para_index, .. } => Some(*para_index),
-                        _ => None,
-                    })
-                    .is_some_and(|pi| pi >= self.endnote_para_base.get());
-                if let Some(prev_bottom) =
-                    last_endnote_content_bottom_y.filter(|_| prev_is_endnote_para)
-                {
+            // [#6574] 새 미주의 첫 문단은 직전 미주의 마지막 글줄 줄 상자 하단 + 미주 사이
+            // 간격에 놓인다(한컴 정본: 그림·수식 꼬리 뒤에서도 같은 값). 저장 사다리의 전방
+            // 점프는 이 값보다 클 수 있어 첫 문단이 내려가고 단 하단을 넘긴다.
+            // 새 미주인지는 글자 모양이 아니라 소유 경계로 정한다 — 이 문단이 미주의 첫
+            // 문단이고 직전 항목이 다른 미주 컨트롤의 문단일 때만이다(조판의 단 수용 판정
+            // `ep_idx == 0` 과 같은 기준). 같은 미주 안에서 「문」으로 시작하는 본문은 대상이
+            // 아니다.
+            let starts_new_endnote = col_content.endnote_flow
+                && item_ordinal > 0
+                && !matches!(item, PageItem::PartialParagraph { start_line, .. } if *start_line > 0)
+                && current_endnote_source
+                    .as_ref()
+                    .filter(|cur| cur.note_para_index == 0)
+                    .zip(
+                        col_content
+                            .items
+                            .get(item_ordinal - 1)
+                            .and_then(|prev_item| match prev_item {
+                                PageItem::FullParagraph { para_index }
+                                | PageItem::PartialParagraph { para_index, .. }
+                                | PageItem::Shape { para_index, .. } => Some(*para_index),
+                                _ => None,
+                            })
+                            .and_then(|pi| self.endnote_para_source_for(pi)),
+                    )
+                    .is_some_and(|(cur, prev)| !same_endnote_control(&prev, cur));
+            if starts_new_endnote {
+                if let Some(prev_bottom) = last_endnote_content_bottom_y {
                     let gap = hwpunit_to_px(self.endnote_between_notes_hu.get(), self.dpi);
                     let target_y = prev_bottom + gap;
                     let delta = target_y - y_offset;
@@ -17070,35 +17081,47 @@ pub(crate) struct EndnoteColumnPlacements {
     >,
 }
 
-/// [#6574] 단 하단 수용 판정용 글줄 하단의 최댓값. 줄 상자(줄 위 + 줄 높이)를 쓰되, 저장
-/// 줄의 글자 높이(`text_height`)가 줄 높이보다 작으면 글자 높이로 잰다 — 한/글은 그 줄의
-/// 글자가 단 안이면 같은 단에 둔다. 같은 문단 뒤 줄의 큰 수식 높이가 앞 줄 줄 높이에 실려
-/// 저장된 경우가 있다(3-09월_교육_통합_2023 16쪽 pi=845 첫 줄: 줄 높이 2696, 글자 높이 900,
-/// 한/글은 글자 하단 1084.6px 로 단 하단에 둔다). 표 칸 안 글줄은 칸 문단 번호를 써 이 목록과
-/// 맞지 않으므로 줄 상자로 잰다.
+/// [#6574] 한/글 글자 상자에서 기준선 위가 차지하는 비율. 글자 상자는 기준선 위 85% ·
+/// 아래 15% 로 나뉜다(저장 줄 기준선 = 0.85 × 줄 높이, 글자처럼 취급 개체의
+/// `TAC_OBJECT_ASCENT_RATIO` 와 같은 규약).
+const HWP_CHAR_BOX_ASCENT_RATIO: f64 = 0.85;
+
+/// [#6574] 단 하단 수용 판정용 글줄 점유 하단의 최댓값. 글줄의 점유는 저장 줄의 글자
+/// 상자다 — 줄 위 + 기준선 + 글자 높이의 15%(글자 상자는 기준선 위 85% · 아래 15%). 저장
+/// 글자 높이는 그 줄에 놓인 가장 큰 요소의 높이라 글자처럼 취급하는 수식·그림도 이 안에
+/// 든다(미주 표본 HWP 18문서 전수: 인라인 개체 상자 높이가 저장 글자 높이를 넘는 줄 0). 개체를
+/// 그린 상자는 기준선 정렬로 글자 상자와 1px 안팎 어긋나므로 따로 재지 않는다 — 한/글은
+/// 수식 잉크가 단 하단을 0.4px 넘는 줄도 같은 단에 둔다(3-11월_실전_통합_2024-구분선위9
+/// 미주사이8구분선아래7 17쪽 왼쪽 단 끝 줄: 글자 상자 하단 1092.0 · 수식 하단 1092.7 · 단 하단
+/// 1092.3, 정본도 같은 단).
+/// 줄 상자(줄 위 + 줄 높이)보다 아래로는 재지 않는다. 보통 줄은 글자 상자가 줄 상자와 같다.
+/// 저장 줄 높이는 같은 문단 뒤 줄의 큰 수식 높이를 앞 줄에 싣기도 해 줄 상자가 실제 점유보다
+/// 클 수 있다(3-09월_교육_통합_2023 16쪽 pi=845 첫 줄: 줄 높이 2696, 글자 높이 900 — 한/글은
+/// 글자 하단 1084.6px 로 단 하단에 둔다). 글자 상자는 줄 위보다 올라가지 않으므로 저장
+/// 기준선이 글자 높이의 85% 보다 작으면(0 으로 저장된 줄이 있다) 85% 로 읽는다. 저장 줄 정보가
+/// 없거나 표 칸 안 글줄(칸 문단 번호를 써 이 목록과 맞지 않는다)은 줄 상자로 잰다.
 fn max_text_line_fit_bottom(node: &RenderNode, paragraphs: &[Paragraph], dpi: f64) -> Option<f64> {
     fn walk(node: &RenderNode, paragraphs: &[Paragraph], dpi: f64, in_table: bool) -> Option<f64> {
         let in_table = in_table || matches!(node.node_type, RenderNodeType::Table(_));
         let own = match &node.node_type {
             RenderNodeType::TextLine(line) => {
-                let box_height = line.line_height.min(node.bbox.height);
-                let text_height = (!in_table)
+                let box_bottom = node.bbox.y + line.line_height.min(node.bbox.height);
+                let stored_text_bottom = (!in_table)
                     .then(|| {
                         let seg = paragraphs
                             .get(line.para_index?)?
                             .line_segs
                             .get(line.line_index? as usize)?;
-                        // 글자가 줄 아래쪽에 놓인 줄도 있으므로 기준선 + 내림(글자 높이의 1/4)
-                        // 과 글자 높이 중 큰 값을 쓴다.
-                        (seg.text_height > 0 && seg.text_height < seg.line_height).then(|| {
-                            let text_bottom = (seg.baseline_distance as f64
-                                + seg.text_height as f64 / 4.0)
-                                .max(seg.text_height as f64);
-                            hwpunit_to_px(text_bottom.round() as i32, dpi)
+                        (seg.text_height > 0).then(|| {
+                            let text_height = seg.text_height as f64;
+                            let baseline = (seg.baseline_distance as f64)
+                                .max(text_height * HWP_CHAR_BOX_ASCENT_RATIO);
+                            let descent = text_height * (1.0 - HWP_CHAR_BOX_ASCENT_RATIO);
+                            node.bbox.y + hwpunit_to_px((baseline + descent).round() as i32, dpi)
                         })
                     })
                     .flatten();
-                Some(node.bbox.y + text_height.map_or(box_height, |th| th.min(box_height)))
+                Some(stored_text_bottom.map_or(box_bottom, |bottom| bottom.min(box_bottom)))
             }
             _ => None,
         };

@@ -443,8 +443,6 @@ impl TypesetEngine {
                             en_col_w,
                             en_para_idx,
                             fmt.line_heights.len(),
-                            fmt.total_height,
-                            ep_idx == 0,
                         ),
                         EndnoteRenderInkFit::Fits
                     ))
@@ -1114,8 +1112,6 @@ impl TypesetEngine {
                         en_col_w,
                         en_para_idx,
                         fmt.line_heights.len(),
-                        fmt.total_height,
-                        ep_idx == 0,
                     ),
                     EndnoteRenderInkFit::Fits
                 )
@@ -1372,8 +1368,6 @@ impl TypesetEngine {
                         en_col_w,
                         en_para_idx,
                         fmt.line_heights.len(),
-                        fmt.total_height,
-                        ep_idx == 0,
                     ),
                     EndnoteRenderInkFit::Fits | EndnoteRenderInkFit::SplitAt(_)
                 );
@@ -1406,8 +1400,10 @@ impl TypesetEngine {
                     internal_rewind_split = None;
                 }
             }
-            // [#6574] 새 미주 첫 문단이 렌더로 현재 단에 통째로 들어가는지. 누계 임계·저장
-            // 사다리 예측 대신 이 판정으로 "단이 찼다"를 정한다.
+            // [#6574] 새 미주 첫 문단의 앞 줄이 렌더로 현재 단에 들어가는지. 누계 임계·저장
+            // 사다리 예측 대신 이 판정으로 "단이 찼다"를 정한다. 앞 몇 줄만 들어가면
+            // (`SplitAt`) 여기서 통째로 넘기지 않고 아래 렌더 분할에 맡긴다 — 한/글은 새 미주
+            // 첫 문단도 들어가는 줄을 현재 단 하단에 남긴다(SO-SUEOP 45쪽 161번 미주 첫 줄).
             let render_head_fits = ep_idx == 0
                 && matches!(
                     self.judge_endnote_render_ink_fit(
@@ -1418,10 +1414,8 @@ impl TypesetEngine {
                         en_col_w,
                         en_para_idx,
                         fmt.line_heights.len(),
-                        fmt.total_height,
-                        true,
                     ),
-                    EndnoteRenderInkFit::Fits
+                    EndnoteRenderInkFit::Fits | EndnoteRenderInkFit::SplitAt(_)
                 );
             let new_note_fit::NewNoteFitResult {
                 advance_for_new_endnote,
@@ -1613,8 +1607,6 @@ impl TypesetEngine {
                 en_col_w,
                 en_para_idx,
                 fmt.line_heights.len(),
-                fmt.total_height,
-                ep_idx == 0,
             ) {
                 EndnoteRenderInkFit::Unjudged => None,
                 EndnoteRenderInkFit::Fits => {
