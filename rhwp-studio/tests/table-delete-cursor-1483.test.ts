@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { clampedCellAfterDelete } from '../src/engine/table-cell-clamp.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -19,13 +20,12 @@ function deleteRowColumnBlock(): string {
   return tableCmd.slice(start, end);
 }
 
+// 보정 헬퍼는 표 명령과 셀 블록 지우기(input-handler)가 같이 쓰도록 engine/table-cell-clamp.ts에 둔다.
 function clampHelperBlock(): string {
-  const tableCmd = source('src/command/commands/table.ts');
-  const start = tableCmd.indexOf('function clampedCellAfterDelete(');
+  const helper = source('src/engine/table-cell-clamp.ts');
+  const start = helper.indexOf('function clampedCellAfterDelete(');
   assert.notEqual(start, -1, 'clampedCellAfterDelete not found');
-  const end = tableCmd.indexOf('function applyTableDeleteRowColumn(', start);
-  assert.notEqual(end, -1, 'applyTableDeleteRowColumn after helper not found');
-  return tableCmd.slice(start, end);
+  return helper.slice(start);
 }
 
 // #1483: 표 줄/칸 지우기 후 커서 cellIndex 보정 — 삭제로 줄어든 셀 범위 초과 방지.
@@ -56,4 +56,18 @@ test('clampedCellAfterDelete는 범위 clamp + bbox 역조회 + 소멸 가드를
   // 병합 셀 매칭 (rowSpan/colSpan 범위 포함).
   assert.match(helper, /b\.rowSpan/, '병합 셀 rowSpan 매칭 필요');
   assert.match(helper, /b\.colSpan/, '병합 셀 colSpan 매칭 필요');
+});
+
+test('삭제 뒤 flat 셀·문단과 경로를 함께 보정하고 history 경로는 보존한다', () => {
+  const oldPath = [{ controlIndex: 2, cellIndex: 8, cellParaIndex: 1 }];
+  const wasm = {
+    getTableCellBboxes: () => [{ row: 1, col: 1, rowSpan: 1, colSpan: 2, cellIdx: 3 }],
+  } as Parameters<typeof clampedCellAfterDelete>[0];
+  const corrected = clampedCellAfterDelete(wasm, 0, 4, 2, 2, 2, 2, 3, oldPath);
+  assert.deepEqual(corrected, {
+    cellIndex: 3, cellParaIndex: 0, paragraphIndex: 0,
+    cellPath: [{ controlIndex: 2, cellIndex: 3, cellParaIndex: 0 }],
+  });
+  assert.deepEqual(oldPath, [{ controlIndex: 2, cellIndex: 8, cellParaIndex: 1 }]);
+  assert.equal(clampedCellAfterDelete(wasm, 0, 4, 2, 2, 2, 0, 3, oldPath), null);
 });
