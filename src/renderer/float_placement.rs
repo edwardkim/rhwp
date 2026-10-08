@@ -20,8 +20,14 @@ use super::page_layout::LayoutRect;
 /// 저장 줄이 없는 그림 전용 셀의 자리차지 띠와 인라인 줄을 함께 배치한다.
 /// 측정과 paint 모두 이 상대 좌표와 점유 높이를 소비한다.
 pub(crate) struct ReflowPictureCellFrame {
-    pub pictures: Vec<(usize, LayoutRect)>,
+    pub pictures: Vec<(usize, usize, LayoutRect)>,
     pub content_height: f64,
+}
+
+struct ReflowPictureParagraphFrame {
+    pictures: Vec<(usize, LayoutRect)>,
+    content_height: f64,
+    advance: f64,
 }
 
 pub(crate) fn reflow_picture_cell_frame(
@@ -30,16 +36,44 @@ pub(crate) fn reflow_picture_cell_frame(
     styles: &super::style_resolver::ResolvedStyleSet,
     dpi: f64,
 ) -> Option<ReflowPictureCellFrame> {
-    use super::layout_frame::ParagraphBox;
-    let [para] = cell.paragraphs.as_slice() else {
-        return None;
-    };
     // 병합 셀은 여러 행에 점유 높이를 나누는 별도 계약을 사용한다.
-    if cell.row_span != 1
-        || cell.text_direction != 0
-        || !para.text.is_empty()
-        || !crate::renderer::para_has_no_stored_line_segs(para)
-    {
+    if cell.row_span != 1 || cell.text_direction != 0 || cell.paragraphs.is_empty() {
+        return None;
+    }
+    let mut pictures = Vec::new();
+    let mut y = 0.0;
+    let mut content_height: f64 = 0.0;
+    for (para_index, para) in cell.paragraphs.iter().enumerate() {
+        let frame = reflow_picture_paragraph_frame(para, inner_width, styles, dpi)?;
+        let style = styles.para_styles.get(para.para_shape_id as usize);
+        y += super::cell_paragraph_spacing_before(
+            para,
+            para_index,
+            style.map_or(0.0, |s| s.spacing_before),
+        );
+        content_height = content_height.max(y + frame.content_height);
+        pictures.extend(frame.pictures.into_iter().map(|(control_index, mut rect)| {
+            rect.y += y;
+            (para_index, control_index, rect)
+        }));
+        // 다음 문단은 마지막 줄의 줄간격과 문단 뒤 간격까지 소비한다.
+        // 셀 끝에는 뒤따를 줄이 없으므로 정렬 높이에 꼬리 간격을 넣지 않는다.
+        y += frame.advance + style.map_or(0.0, |s| s.spacing_after);
+    }
+    Some(ReflowPictureCellFrame {
+        pictures,
+        content_height,
+    })
+}
+
+fn reflow_picture_paragraph_frame(
+    para: &Paragraph,
+    inner_width: f64,
+    styles: &super::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> Option<ReflowPictureParagraphFrame> {
+    use super::layout_frame::ParagraphBox;
+    if !para.text.is_empty() || !crate::renderer::para_has_no_stored_line_segs(para) {
         return None;
     }
     let style = styles.para_styles.get(para.para_shape_id as usize);
@@ -192,9 +226,13 @@ pub(crate) fn reflow_picture_cell_frame(
         .map(|(_, r)| r.y + r.height)
         .fold(0.0, f64::max);
     pictures.sort_by_key(|(index, _)| *index);
-    Some(ReflowPictureCellFrame {
+    let advance = reflowed.line_segs.last().map_or(content_height, |line| {
+        band_end + px(line.vertical_pos) + px(line.line_height) + px(line.line_spacing)
+    });
+    Some(ReflowPictureParagraphFrame {
         pictures,
         content_height,
+        advance,
     })
 }
 
