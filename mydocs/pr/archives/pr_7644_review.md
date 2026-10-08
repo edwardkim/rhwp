@@ -269,3 +269,10 @@ source/test head `61a8d3ff1…`에서 source 포맷을 확정한 뒤 `--prepare`
 - #7681 merge SHA `4c7092397e6fb6d1d16e5521bb9049ef25814d5a`, GitHub #7644 state closed / merged=true 확인. 원 source head `5cd52f83…`의 ancestry 때문에 자동 종료됐으므로 별도 close PATCH를 반복하지 않는다.
 - 후속 문서 처리: **maintainer 직접 반영**, archive·실행계획·오늘할일 운영 기록만 반영한다. source/test/workflow/baseline/sample 수정 없음. 기본 작업공간 devel fast-forward 완료. #7620 부분 해결 유지와 merge SHA 고정 이미지의 contributor 안내·임시 remote head 정리는 후속 진행한다.
 - 검증 Studio `http://localhost:7799/`가 현재 review worktree의 pkg/public을 사용하므로 worktree/local branch는 유지한다. 공용 `target/pr-review`, 기존 서버와 타 작업 증적은 삭제하지 않는다. 병합 후 검증 CI는 재실행하지 않고 duration metadata job만 확인한다.
+
+### 후속 완료
+
+- [#7620 안내](https://github.com/edwardkim/rhwp/issues/7620#issuecomment-6059366404), [원 #7644 안내](https://github.com/edwardkim/rhwp/pull/7644#issuecomment-6059366750) 게시 완료. API로 UTF-8·실제 줄바꿈·정확한 본문을 확인했고, 원 PR 안내의 merge SHA 고정 review/overlay PNG 8개는 HTTP 200 및 기존 asset 해시 일치를 확인했다. #7620 OPEN 유지, #7644/#7681은 MERGED다.
+- [duration run 37773315065](https://github.com/edwardkim/rhwp/actions/runs/37773315065) success, `ready:true / successful-pr-worker-measurements`. PR #7681의 B/C/D attempt 1 실측으로 `ci-metrics/nextest-target-durations`를 `fde05f00…`로 갱신했다. 자동 검증 CI 재실행 없음. 이후 운영 기록 push의 duration 판정은 별개로 확인하며 이 실측 성공을 대체하지 않는다.
+- 원본 저장소에 만든 임시 remote head `maintainer/pr7644-rowbreak-empty-cell-20261008`는 SHA `c92d3f7cd…`의 devel 포함·merge 완료 확인 뒤 삭제했고 remote ref 부재를 확인했다. contributor fork branch는 보존했다.
+- 기본 devel을 upstream/devel과 동기화했다. Studio 7799가 실제 사용하는 `/tmp/rhwp-pr7644-review-20261008`와 `review/pr7644-20261008`은 유지하며 HTTP 200을 확인했다. 공용 target·Docker cache·다른 작업 및 혼합 검토 증적은 보존한다. 후속 변경은 운영 기록뿐이므로 동일 WASM 재빌드와 제품 검증 반복은 하지 않았다.

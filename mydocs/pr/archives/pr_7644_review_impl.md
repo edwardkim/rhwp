@@ -10,7 +10,7 @@
 2. 새 test 포함 Rust lint·manifest와 release-test 전체 10538 PASS — 완료. Native Skia 3종 4109 + 2 + 4 PASS — 완료.
 3. current-base 충돌·문서 링크·fixture commit 확인 후 원본 저장소의 임시 head로 push, 한국어 Open 통합 PR 생성 — 완료.
 4. #7681 head `c92d3f7cd…`의 required check·CI 성공과 최신 base simulation 확인 후 merge — 완료. merge `4c7092397…`.
-5. 원 #7644 자동 MERGED 확인 — 완료. #7620 부분 해결 유지 및 merge SHA 이미지 안내 — 진행.
-6. review·오늘할일의 확정값 반영, 기본 devel fast-forward, 작업 전용 branch 정리. 실행 중 검증 Studio worktree·공유 target은 사용자 확인을 위해 유지 사유를 기록 — 대기.
+5. 원 #7644 자동 MERGED 확인 — 완료. #7620 OPEN 유지·안내 및 원 PR의 merge SHA 이미지 8개 게시/API 검증 — 완료.
+6. review·오늘할일 확정값 반영, 기본 devel fast-forward, 임시 remote head 삭제 — 완료. 실제 Studio가 사용하는 review worktree/local branch와 공유 target은 기록한 사유로 유지한다. duration 실측 갱신 success를 확인했다.
 
 원 PR을 먼저 merge하거나 CI를 이전 contributor head로 대체하지 않는다. 실패한 테스트를 baseline 완화로 숨기지 않고 실제 실패의 원인과 독립 출력부터 확인한다.
