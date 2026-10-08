@@ -19288,7 +19288,18 @@ impl LayoutEngine {
             && is_offset_continuation
             && single_cell_nested_continuation
             && !has_later_host_source_owner;
-        let visible_height = if terminal_table_before_host_successor {
+        let stored_block_frame = recursive_cut.as_ref().and_then(|cut| {
+            crate::renderer::float_placement::stored_block_cell_flow(
+                &cell.paragraphs,
+                styles,
+                self.dpi,
+                |child| self.calc_nested_table_height(child, styles),
+            )?;
+            nested.map(|child| self.nested_cut_physical_height(child, cut, styles))
+        });
+        let visible_height = if let Some(physical) = stored_block_frame {
+            physical
+        } else if terminal_table_before_host_successor {
             // 이 mixed stream은 끝났지만 같은 host cell에는 다음 source 문단이 있다.
             // 자식 표의 실제 마지막 unit까지만 frame을 닫고, host 문단의 후행
             // line-spacing은 아래 flow에만 더한다. terminal tail 보정까지 frame에
@@ -19373,7 +19384,9 @@ impl LayoutEngine {
             return None;
         }
         let remaining = (total - offset).max(0.0);
-        let flow_height = if terminal_table_before_host_successor {
+        let flow_height = if let Some(physical) = stored_block_frame {
+            physical
+        } else if terminal_table_before_host_successor {
             flow_visible + terminal_host_line_spacing
         } else if recursive_cut.is_some() {
             flow_visible
@@ -19728,6 +19741,52 @@ impl LayoutEngine {
             .unwrap_or(0.0)
     }
 
+    /// Physical child frame for an authoritative source cut, shared by the
+    /// parent's reservation and the child's viewport/flow advance.
+    fn nested_cut_physical_height(
+        &self,
+        child: &crate::model::table::Table,
+        cut: &NestedTableCut,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let mut physical = 0.0;
+        for row in cut.start_row..cut.end_row {
+            let start_cut = if row == cut.start_row {
+                cut.start_cut.as_slice()
+            } else {
+                &[]
+            };
+            let end_cut = if row + 1 == cut.end_row {
+                cut.end_cut.as_slice()
+            } else {
+                &[]
+            };
+            let content = self.row_cut_content_height(child, row, start_cut, end_cut, styles);
+            physical += if start_cut.is_empty()
+                && end_cut.is_empty()
+                && self.reflowed_fragment_row_uses_measured_height(child, row)
+            {
+                // A complete child row paints the same resolved frame as an
+                // ordinary table. Its source units alone omit physical space.
+                let rows = self.resolve_row_heights(
+                    child,
+                    usize::from(child.col_count),
+                    usize::from(child.row_count),
+                    None,
+                    styles,
+                    true,
+                );
+                content.max(rows[row])
+            } else {
+                content
+            };
+            if row + 1 < cut.end_row {
+                physical += hwpunit_to_px(child.cell_spacing as i32, self.dpi);
+            }
+        }
+        physical
+    }
+
     /// Reflow's projected units own source content and the first/last host margins.
     /// Every actual child RowCut also owns its cell padding. Reserve that physical
     /// box before accepting the parent cut; paint consumes the same child cursor.
@@ -19819,41 +19878,7 @@ impl LayoutEngine {
         } else {
             return None;
         };
-        let mut physical = 0.0;
-        for row in cut.start_row..cut.end_row {
-            let start_cut = if row == cut.start_row {
-                cut.start_cut.as_slice()
-            } else {
-                &[]
-            };
-            let end_cut = if row + 1 == cut.end_row {
-                cut.end_cut.as_slice()
-            } else {
-                &[]
-            };
-            let content = self.row_cut_content_height(child, row, start_cut, end_cut, styles);
-            physical += if start_cut.is_empty()
-                && end_cut.is_empty()
-                && self.reflowed_fragment_row_uses_measured_height(child, row)
-            {
-                // A complete child row paints the same resolved frame as an
-                // ordinary table. Its source units alone omit physical space.
-                let rows = self.resolve_row_heights(
-                    child,
-                    usize::from(child.col_count),
-                    usize::from(child.row_count),
-                    None,
-                    styles,
-                    true,
-                );
-                content.max(rows[row])
-            } else {
-                content
-            };
-            if row + 1 < cut.end_row {
-                physical += hwpunit_to_px(child.cell_spacing as i32, self.dpi);
-            }
-        }
+        let mut physical = self.nested_cut_physical_height(child, &cut, styles);
         let style = styles.para_styles.get(para.para_shape_id as usize);
         let reopens_outer_frame = reflow_nested_table_has_outer_frame(para, child);
         if start == run_start || reopens_outer_frame {
