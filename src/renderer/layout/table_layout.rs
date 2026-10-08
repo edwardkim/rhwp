@@ -2381,7 +2381,10 @@ impl LayoutEngine {
 
         let object_height = hwpunit_to_px(common.height as i32, self.dpi);
         let top_offset = if matches!(common.vert_rel_to, VertRelTo::Para) {
-            hwpunit_to_px((common.vertical_offset as i32).max(0), self.dpi)
+            hwpunit_to_px(
+                crate::renderer::float_placement::cell_wrap_vertical_offset_hu(common).max(0),
+                self.dpi,
+            )
         } else {
             0.0
         };
@@ -6017,7 +6020,11 @@ impl LayoutEngine {
                 .enumerate()
                 .any(|(prior_para_idx, prior)| {
                     prior.line_segs.iter().enumerate().any(|(line_idx, seg)| {
-                        seg.vertical_pos == 0 && (prior_para_idx > 0 || line_idx > 0)
+                        seg.vertical_pos == 0
+                            && (prior_para_idx > 0 || line_idx > 0)
+                            && !crate::renderer::height_measurer::stored_seg_is_row_fragment(
+                                prior, line_idx,
+                            )
                     })
                 });
             // [#7416] 앞 문단의 저장 줄 사다리를 버리고 다시 조판해 **줄 수가 달라졌으면**,
@@ -6842,15 +6849,25 @@ impl LayoutEngine {
                                 ..inner_area
                             };
                             // [#6494] 나란히 무리에서는 음수 세로 오프셋을 버린다 — 위 주석 참조.
-                            let grouped_common = (side_by_side_float_group
-                                && signed_hwpunit(pic.common.vertical_offset) < 0)
+                            let flow_offset =
+                                crate::renderer::float_placement::cell_wrap_vertical_offset_hu(
+                                    &pic.common,
+                                );
+                            let positioned_common = (flow_offset
+                                != signed_hwpunit(pic.common.vertical_offset)
+                                || (side_by_side_float_group
+                                    && signed_hwpunit(pic.common.vertical_offset) < 0))
                                 .then(|| {
                                     let mut c = pic.common.clone();
-                                    c.vertical_offset = 0;
+                                    c.vertical_offset = if side_by_side_float_group {
+                                        0
+                                    } else {
+                                        flow_offset as u32
+                                    };
                                     c
                                 });
                             let (pic_x, pic_y) = self.compute_object_position(
-                                grouped_common.as_ref().unwrap_or(&pic.common),
+                                positioned_common.as_ref().unwrap_or(&pic.common),
                                 pic_w,
                                 pic_h,
                                 &cell_area,
@@ -8934,12 +8951,22 @@ impl LayoutEngine {
             let (raw_stored_flow_extent, raw_stored_flow_line_sum) = if all_paras_have_segs {
                 cell.paragraphs
                     .iter()
-                    .flat_map(|p| p.line_segs.iter())
-                    .filter(|s| s.vertical_pos >= 0 && s.line_height > 0)
-                    .map(|s| {
+                    .flat_map(|p| {
+                        p.line_segs
+                            .iter()
+                            .enumerate()
+                            .map(move |(idx, s)| (p, idx, s))
+                    })
+                    .filter(|(_, _, s)| s.vertical_pos >= 0 && s.line_height > 0)
+                    .map(|(p, idx, s)| {
                         (
                             hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), self.dpi),
-                            hwpunit_to_px(s.line_height, self.dpi),
+                            if crate::renderer::height_measurer::stored_seg_is_row_fragment(p, idx)
+                            {
+                                0.0
+                            } else {
+                                hwpunit_to_px(s.line_height, self.dpi)
+                            },
                         )
                     })
                     .fold((0.0f64, 0.0f64), |(ext, sum), (e, h)| (ext.max(e), sum + h))
@@ -8953,9 +8980,22 @@ impl LayoutEngine {
             // — 한글 2024 PDF·저장 사다리 실측은 그 줄을 셀 안(825.3)에 담는다.
             // Task #362 의 반증(kps-ai p56: vpos 를 쓰면 +19.5px 클립)은 잘림
             // 방향이 반대(재조판은 담기고 vpos 가 넘침)라 이 판별자에 안 걸린다.
+            let nested_stored_profile = self.profile.get().hwp5_stored_pagination_layout()
+                || (self.profile.get().hwpx_stored_layout()
+                    && !self.profile.get().session_edited()
+                    && cell.paragraphs.iter().all(|para| {
+                        !para.stored_text_partition_is_dirty()
+                            && !para.cell_format_vpos_dirty
+                            && !para.line_segs.is_empty()
+                            && para.line_segs.iter().all(|seg| {
+                                seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                    }));
             let nested_stored_overflow_rescue = has_nested_table
                 && table.common.treat_as_char
-                && self.profile.get().hwp5_stored_pagination_layout()
+                && nested_stored_profile
                 && raw_stored_flow_extent > 0.0
                 && raw_stored_flow_extent <= inner_height + 0.5;
             let (stored_flow_extent, stored_flow_line_sum) = if !has_nested_table
@@ -9019,23 +9059,23 @@ impl LayoutEngine {
             // extent와 자체 측정값이 같아도 문단별 vpos가 하위 표의 실제 위치를
             // 담고 있다. 이 경우에는 total height는 변하지 않지만 순차 배치만
             // 저장 anchor로 복원해야 한다 (#3820 p144).
-            // [#5601] native HWP5 tac 표의 중첩-표 셀에서, 저장 앵커 흐름이 셀
+            // [#5601] HWP/HWPX TAC 표의 중첩-표 셀에서, 저장 앵커 흐름이 셀
             // 안높이에 담기고 비-flow 개체도 그 안이면(모든 문단 앵커 유효),
             // extent==total 이어도 저장 앵커 배치를 신뢰한다 — 재조판 배치는
             // 줄간격을 부풀려(00451: +23px) 마지막 줄이 셀 clip 밖으로 나가는데
             // 측정 total 은 정합(753.7)이라 압축 조건으로는 못 잡는다. Task #362
             // 의 반증(kps-ai p56: 누적 vpos 가 셀을 넘쳐 클립)은 extent 가
             // inner 를 넘어 이 판별자(ext ≤ inner)에 안 걸린다.
-            let native_tac_nested_stored_anchor_fits = has_nested_table
+            let tac_nested_stored_anchor_fits = has_nested_table
                 && table.common.treat_as_char
-                && self.profile.get().hwp5_stored_pagination_layout()
+                && nested_stored_profile
                 && stored_flow_extent > 0.0
                 && stored_flow_extent <= inner_height + 0.5;
             let trust_stored_cell_flow = stored_flow_shape_is_trusted
                 && (stored_flow_extent + 0.5 < total_content_height
                     || (hwpx_noninline_tac_nested_stored_flow
                         && (stored_flow_extent - total_content_height).abs() <= 0.5)
-                    || native_tac_nested_stored_anchor_fits);
+                    || tac_nested_stored_anchor_fits);
             let total_content_height = if trust_stored_cell_flow {
                 stored_flow_extent
             } else {

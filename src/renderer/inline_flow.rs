@@ -156,7 +156,15 @@ pub(crate) fn plan(
 ) -> Option<InlineFlowPlan> {
     let style = styles.para_styles.get(para.para_shape_id as usize)?;
     let top = frame.paragraph_y + style.spacing_before;
-    let positions = para.control_text_positions();
+    // A control-only carrier has no glyph offsets. Its logical object cursor
+    // still advances (0, 1, ...), but those slots are not positions in `text`.
+    // Keep control order in the atom stream; the shared row composer decides
+    // whether their boxes fit together or advance to the next physical row.
+    let positions = if para.text.is_empty() {
+        vec![0; para.controls.len()]
+    } else {
+        para.control_text_positions()
+    };
     let chars: Vec<_> = para.text.chars().collect();
     let mut controls: Vec<_> = positions.into_iter().enumerate().collect();
     controls.sort_by_key(|&(ci, position)| (position, ci));
