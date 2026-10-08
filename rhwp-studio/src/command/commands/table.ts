@@ -280,6 +280,7 @@ function applyTableDeleteRowColumn(
       const corrected = clampedCellAfterDelete(
         wasm, pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!,
         cellInfo.row, cellInfo.col, res.rowCount, res.colCount,
+        pos.cellPath,
       );
       if (!corrected) {
         // 표 소멸 → 표 밖 본문 위치로 폴백.

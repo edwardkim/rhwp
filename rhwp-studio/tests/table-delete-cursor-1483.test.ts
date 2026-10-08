@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { clampedCellAfterDelete } from '../src/engine/table-cell-clamp.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -55,4 +56,18 @@ test('clampedCellAfterDelete는 범위 clamp + bbox 역조회 + 소멸 가드를
   // 병합 셀 매칭 (rowSpan/colSpan 범위 포함).
   assert.match(helper, /b\.rowSpan/, '병합 셀 rowSpan 매칭 필요');
   assert.match(helper, /b\.colSpan/, '병합 셀 colSpan 매칭 필요');
+});
+
+test('삭제 뒤 flat 셀·문단과 경로를 함께 보정하고 history 경로는 보존한다', () => {
+  const oldPath = [{ controlIndex: 2, cellIndex: 8, cellParaIndex: 1 }];
+  const wasm = {
+    getTableCellBboxes: () => [{ row: 1, col: 1, rowSpan: 1, colSpan: 2, cellIdx: 3 }],
+  } as Parameters<typeof clampedCellAfterDelete>[0];
+  const corrected = clampedCellAfterDelete(wasm, 0, 4, 2, 2, 2, 2, 3, oldPath);
+  assert.deepEqual(corrected, {
+    cellIndex: 3, cellParaIndex: 0, paragraphIndex: 0,
+    cellPath: [{ controlIndex: 2, cellIndex: 3, cellParaIndex: 0 }],
+  });
+  assert.deepEqual(oldPath, [{ controlIndex: 2, cellIndex: 8, cellParaIndex: 1 }]);
+  assert.equal(clampedCellAfterDelete(wasm, 0, 4, 2, 2, 2, 0, 3, oldPath), null);
 });

@@ -103,6 +103,13 @@ export abstract class ModalDialog {
         this.hide();
         return;
       }
+      // 버튼의 Enter/Space는 브라우저의 기본 활성화를 허용한다.
+      // 확인 버튼으로 덮어쓰면 남김·취소·닫기도 파괴적 확인이 된다.
+      if (target instanceof HTMLButtonElement && this.dialog.contains(target)
+        && (e.key === 'Enter' || e.key === ' ')) {
+        e.stopPropagation();
+        return;
+      }
       if (e.key === 'Enter' && !isEditable) {
         e.stopPropagation();
         e.preventDefault();

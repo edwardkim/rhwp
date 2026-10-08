@@ -68,7 +68,8 @@ const caretInCell = (page, doc, row, col) => page.evaluate(({ paraIdx, controlId
   const ih = window.__inputHandler;
   const b = (w.getTableCellBboxes(0, paraIdx, controlIdx, 0) || []).find(x => x.row === row && x.col === col);
   if (!b) throw new Error(`cell (${row},${col}) 없음`);
-  ih.cursor.moveToCellByIndex(0, paraIdx, controlIdx, undefined, b.cellIdx, 'end');
+  ih.cursor.moveToCellByIndex(0, paraIdx, controlIdx,
+    [{ controlIndex: controlIdx, cellIndex: b.cellIdx, cellParaIndex: 0 }], b.cellIdx, 'end');
   ih.updateCaret(); ih.focus();
 }, { ...doc, row, col });
 
@@ -129,6 +130,7 @@ const FULL = { A1: 'A1', B1: 'B1', C1: 'C1', A2: 'A2', B2: 'B2', C2: 'C2', A3: '
 
 await runTest('셀 블록 지우기 키 — Backspace/Delete/⌘⌫/⌘E/⌘Delete', async ({ page }) => {
   page.on('pageerror', (err) => pageErrors.push(String(err)));
+  await createNewDocument(page);
   await clickEditArea(page);
   await page.evaluate(() => {
     const btn = [...document.querySelectorAll('button')].find(b => b.textContent?.includes('시작하기'));
@@ -250,6 +252,77 @@ await runTest('셀 블록 지우기 키 — Backspace/Delete/⌘⌫/⌘E/⌘Dele
     const s = await snapshot(page, doc);
     assert(JSON.stringify(s.cells) === JSON.stringify(FULL) && s.dims?.rows === 3,
       'i: Escape=취소, 내용과 행 수 유지');
+  }
+
+  // 실제 키 입력으로 포커스된 버튼의 Enter/Space 활성화를 확인한다.
+  for (const activation of ['Enter', 'Space']) {
+    for (const [label, tabs] of [['지우기', 0], ['남김', 1], ['취소', 2], ['×', 3]]) {
+      const doc = await buildDoc(page);
+      await selectRow1(page, doc);
+      await key(page, { key: 'e', code: 'KeyE', meta: true });
+      for (let i = 0; i < tabs; i++) await page.keyboard.press('Tab');
+      assert(await page.evaluate(() => document.activeElement?.textContent?.trim()) === label,
+        `${activation}: ${label} 포커스`);
+      await page.keyboard.press(activation);
+      await page.waitForFunction(() => !document.querySelector('.modal-overlay'));
+      const s = await snapshot(page, doc);
+      assert(s.dims?.rows === (label === '지우기' ? 2 : 3), `${activation}: ${label} 행 수`);
+      if (label === '남김') {
+        assert(s.cells.A2 === '' && s.cells.C2 === '' && s.cells.A3 === 'A3',
+          `${activation}: 남김은 선택 내용만 지움`);
+      } else if (label === '취소' || label === '×') {
+        assert(JSON.stringify(s.cells) === JSON.stringify(FULL), `${activation}: ${label} 내용 보존`);
+      }
+    }
+  }
+
+  // 마지막 행/열 삭제 뒤 경로 기반 커서, 이동·입력, Undo/Redo를 검사한다.
+  for (const axis of ['row', 'column']) {
+    const doc = await buildDoc(page);
+    await page.evaluate(({ paraIdx, controlIdx }) => {
+      const w = window.__wasm;
+      const b = w.getTableCellBboxes(0, paraIdx, controlIdx, 0).find(x => x.row === 2 && x.col === 2);
+      w.doc.splitParagraphInCell(0, paraIdx, controlIdx, b.cellIdx, 0, 2);
+      w.doc.insertTextInCell(0, paraIdx, controlIdx, b.cellIdx, 1, 0, 'TAIL');
+      window.__canvasView.loadDocument();
+    }, doc);
+    await caretInCell(page, doc, 2, 2);
+    await key(page, { key: 'F5', code: 'F5' });
+    await key(page, { key: 'F5', code: 'F5' });
+    for (let i = 0; i < 2; i++) await key(page, {
+      key: axis === 'row' ? 'ArrowLeft' : 'ArrowUp',
+    });
+    await key(page, { key: 'e', code: 'KeyE', meta: true });
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => !document.querySelector('.modal-overlay'));
+    const cursorState = () => page.evaluate(() => {
+      const cursor = window.__inputHandler.cursor;
+      return { pos: cursor.getPosition(), rect: cursor.getRect() };
+    });
+    const checkCursor = async (stage) => {
+      const { pos, rect } = await cursorState();
+      assert(pos.cellPath?.length === 1 && pos.cellPath[0].cellIndex === pos.cellIndex,
+        `${axis}/${stage}: flat 셀과 경로 일치`);
+      assert(pos.paragraphIndex === pos.cellParaIndex && pos.cellParaIndex === pos.cellPath[0].cellParaIndex,
+        `${axis}/${stage}: 문단 좌표 일치`);
+      assert(rect !== null, `${axis}/${stage}: 커서 rect 존재`);
+    };
+    const deleted = await snapshot(page, doc);
+    assert(deleted.dims?.[axis === 'row' ? 'rows' : 'cols'] === 2, `${axis}: 마지막 구조 삭제`);
+    await checkCursor('delete');
+    await key(page, { key: 'z', code: 'KeyZ', meta: true });
+    const restored = await snapshot(page, doc);
+    assert(restored.dims?.rows === 3 && restored.dims?.cols === 3 && restored.cells.C3 === 'C3¶TAIL',
+      `${axis}: Undo 내용과 구조 복원`);
+    assert(restored.cellSel, `${axis}: Undo 블록 복원`);
+    await key(page, { key: 'z', code: 'KeyZ', meta: true, shift: true });
+    assert((await snapshot(page, doc)).dims?.[axis === 'row' ? 'rows' : 'cols'] === 2, `${axis}: Redo 구조 삭제`);
+    await checkCursor('redo');
+    await key(page, { key: 'ArrowRight', code: 'ArrowRight' });
+    await page.keyboard.type('X');
+    await checkCursor('input');
+    assert(Object.values((await snapshot(page, doc)).cells).some(text => text.includes('X')),
+      `${axis}: 커서 이동 뒤 입력이 남은 셀에 반영`);
   }
 
   await screenshot(page, 'cell-block-delete-keys');

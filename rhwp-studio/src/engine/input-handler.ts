@@ -5704,9 +5704,10 @@ export class InputHandler {
         const corrected = result && clampedCellAfterDelete(
           wasm, ctx.sec, ctx.ppi, ctx.ci,
           range.startRow, range.startCol, result.rowCount, result.colCount,
+          pos.cellPath,
         );
         if (!corrected) return bodyPos;
-        return { ...pos, charOffset: 0, cellIndex: corrected.cellIndex, cellParaIndex: corrected.cellParaIndex };
+        return { ...pos, charOffset: 0, ...corrected };
       },
       selectionBefore: selection ? { mode: 'cellBlock', state: selection } : null,
     });

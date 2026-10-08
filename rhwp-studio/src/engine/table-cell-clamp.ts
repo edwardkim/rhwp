@@ -1,4 +1,5 @@
 import type { CommandServices } from '@/command/types';
+import type { CellPathEntry } from '@/core/types';
 
 /**
  * 줄/칸 지우기 후 커서 셀 보정 (#1483).
@@ -17,7 +18,8 @@ export function clampedCellAfterDelete(
   origCol: number,
   rowCount: number,
   colCount: number,
-): { cellIndex: number; cellParaIndex: number } | null {
+  cellPath?: CellPathEntry[],
+): { cellIndex: number; cellParaIndex: number; paragraphIndex: number; cellPath?: CellPathEntry[] } | null {
   if (rowCount <= 0 || colCount <= 0) return null;
   const row = Math.min(origRow, rowCount - 1);
   const col = Math.min(origCol, colCount - 1);
@@ -27,5 +29,13 @@ export function clampedCellAfterDelete(
       row >= b.row && row < b.row + b.rowSpan &&
       col >= b.col && col < b.col + b.colSpan,
   );
-  return { cellIndex: hit ? hit.cellIdx : 0, cellParaIndex: 0 };
+  const cellIndex = hit ? hit.cellIdx : 0;
+  return {
+    cellIndex,
+    cellParaIndex: 0,
+    paragraphIndex: 0,
+    cellPath: cellPath?.map((entry, index) => index === cellPath.length - 1
+      ? { ...entry, cellIndex, cellParaIndex: 0 }
+      : { ...entry }),
+  };
 }
