@@ -92,6 +92,28 @@ class CodeQLWorkflowTests(unittest.TestCase):
             "security-check-not-green:CodeQL:failure",
         )
 
+    def test_legacy_three_language_candidate_is_not_reused(self) -> None:
+        outputs = self._run_preflight("success", include_actions=False)
+        self.assertEqual(outputs["fast_pass"], "false")
+        self.assertEqual(outputs["reason"], "no-green-codeql-candidate")
+
+    def test_full_selection_covers_actions_on_old_trusted_base(self) -> None:
+        outputs = self._run_language_finalizer(
+            outcome="success",
+            languages="javascript-typescript,python,rust",
+            status="full",
+            reason="fail-closed:workflow-contract",
+        )
+        self.assertEqual(outputs["codeql_languages"], "javascript-typescript,python,rust,actions")
+        self.assertEqual(outputs["classification_status"], "full")
+
+    def test_actions_language_selection_remains_selective(self) -> None:
+        outputs = self._run_language_finalizer(
+            outcome="success", languages="actions", status="classified", reason="classified:actions",
+        )
+        self.assertEqual(outputs["codeql_languages"], "actions")
+        self.assertEqual(outputs["classification_status"], "classified")
+
     def test_green_analyze_jobs_and_early_security_check_remain_reusable(self) -> None:
         outputs = self._run_preflight("success")
         self.assertEqual(outputs["fast_pass"], "true")
@@ -136,7 +158,7 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertIn("permissions:\n      actions: read", preflight)
         self.assertIn(
             "codeql_languages: ${{ steps.languages.outputs.codeql_languages "
-            "|| 'javascript-typescript,python,rust' }}",
+            "|| 'javascript-typescript,python,rust,actions' }}",
             workflow,
         )
         self.assertIn(
@@ -161,6 +183,14 @@ class CodeQLWorkflowTests(unittest.TestCase):
             "javascript-typescript,rust",
             "python,rust",
             "javascript-typescript,python,rust",
+            "actions",
+            "javascript-typescript,actions",
+            "python,actions",
+            "rust,actions",
+            "javascript-typescript,python,actions",
+            "javascript-typescript,rust,actions",
+            "python,rust,actions",
+            "javascript-typescript,python,rust,actions",
         ):
             self.assertIn(f"'{selection}')", workflow)
 
@@ -172,10 +202,10 @@ class CodeQLWorkflowTests(unittest.TestCase):
         )
         self.assertIn(
             "SELECTED_LANGUAGES: ${{ needs.preflight.outputs.codeql_languages "
-            "|| 'javascript-typescript,python,rust' }}",
+            "|| 'javascript-typescript,python,rust,actions' }}",
             analyze,
         )
-        self.assertIn("language: [javascript-typescript, python, rust]", analyze)
+        self.assertIn("language: [javascript-typescript, python, rust, actions]", analyze)
         self.assertIn("name: Analyze (${{ matrix.language }})", analyze)
         self.assertIn("name: Skip unselected language", analyze)
         self.assertIn(f"if: ${{{{ !{selected} }}}}", analyze)
@@ -250,14 +280,34 @@ class CodeQLWorkflowTests(unittest.TestCase):
         ):
             self.assertEqual(
                 outputs["codeql_languages"],
-                "javascript-typescript,python,rust",
+                "javascript-typescript,python,rust,actions",
             )
             self.assertEqual(outputs["classification_status"], "full")
             self.assertEqual(outputs["reason"], reason)
 
+    def test_all_canonical_selections_and_invalid_axes(self) -> None:
+        from itertools import combinations
+        languages = ("javascript-typescript", "python", "rust", "actions")
+        for count in range(5):
+            for subset in combinations(languages, count):
+                selection = ",".join(subset) or "none"
+                with self.subTest(selection=selection):
+                    outputs = self._run_language_finalizer(
+                        outcome="success", languages=selection, status="classified", reason="classified:test",
+                    )
+                    self.assertEqual(outputs["codeql_languages"], selection)
+                    self.assertEqual(outputs["classification_status"], "classified")
+        for invalid in ("actions,rust", "actions,actions", "actions,ruby", "", "javascript-typescript,actions,rust"):
+            with self.subTest(invalid=invalid):
+                outputs = self._run_language_finalizer(
+                    outcome="success", languages=invalid, status="classified", reason="classified:test",
+                )
+                self.assertEqual(outputs["codeql_languages"], ",".join(languages))
+                self.assertEqual(outputs["classification_status"], "full")
+
     def test_rust_lane_uses_explicit_none_build_mode_without_manual_prebuild(self) -> None:
         analyze = job_body(self.workflow, "analyze")
-        self.assertIn("language: [javascript-typescript, python, rust]", analyze)
+        self.assertIn("language: [javascript-typescript, python, rust, actions]", analyze)
         self.assertIn("languages: ${{ matrix.language }}", analyze)
         self.assertIn("security-events: write", analyze)
         self.assertIn("contents: read", analyze)
@@ -335,6 +385,7 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self,
         security_conclusion: str,
         *,
+        include_actions: bool = True,
         run_started_at: str = "2026-08-09T00:10:00Z",
         security_started_at: str | None = "2026-08-09T00:11:00Z",
         security_completed_at: str = "2026-08-09T00:11:02Z",
@@ -406,6 +457,7 @@ const github = {
           completed_at: '2026-08-09T00:14:00Z',
         },
         { name: 'Analyze (rust)', completed_at: '2026-08-09T00:19:00Z' },
+        ...(INCLUDE_ACTIONS ? [{ name: 'Analyze (actions)', completed_at: '2026-08-09T00:19:00Z' }] : []),
       ].map((job) => ({
         ...job,
         status: 'completed',
@@ -451,7 +503,7 @@ PREFLIGHT_SCRIPT
   process.stderr.write(String(error.stack || error));
   process.exitCode = 1;
 });
-""".replace("SECURITY_CONCLUSION", json.dumps(security_conclusion)).replace(
+""".replace("INCLUDE_ACTIONS", json.dumps(include_actions)).replace("SECURITY_CONCLUSION", json.dumps(security_conclusion)).replace(
             "RUN_STARTED_AT", json.dumps(run_started_at)
         ).replace("SECURITY_STARTED_AT", json.dumps(security_started_at)).replace(
             "SECURITY_COMPLETED_AT", json.dumps(security_completed_at)

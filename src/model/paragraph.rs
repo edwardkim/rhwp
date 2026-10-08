@@ -1629,9 +1629,55 @@ impl Paragraph {
             .then(|| self.trailing_auto_number(&text_positions))
             .flatten();
 
+        // 새 문단으로 옮길 컨트롤.
+        //
+        // TAC 그림/표/수식 등은 본문에서 한 글자처럼 취급되므로 문단 분할 시
+        // logical offset 기준으로 앞뒤 문단에 나뉘어야 한다. SectionDef/ColumnDef 같은
+        // 구조 control은 문단 시작에 붙은 문서 구조 정보라 원래 문단에 둔다.
+        //
+        // Field는 보이는 문자 오프셋에서 한 글자를 차지하지 않는다. 다만 새 문단으로
+        // 이관되는 FieldRange가 참조하는 Field control은 범위와 함께 이동해야 한다.
+        // 일반 이동형 컨트롤로 분류하면 split의 논리 offset 계산에 Field가 더해져
+        // ClickHere 복사/붙여넣기 경계가 한 글자씩 어긋난다.
+        let moves: Vec<bool> = self
+            .controls
+            .iter()
+            .enumerate()
+            .map(|(ci, ctrl)| {
+                ((Self::is_split_movable_control(ctrl)
+                    && control_positions.get(ci).copied().unwrap_or(usize::MAX) >= char_offset)
+                    || self
+                        .field_ranges
+                        .iter()
+                        .any(|fr| fr.control_idx == ci && fr.start_char_idx >= split_pos))
+                    && Some(ci) != kept_number
+            })
+            .collect();
+
         // 분할 지점의 UTF-16 위치
         let utf16_split: u32 = if split_pos < self.char_offsets.len() {
-            self.char_offsets[split_pos]
+            // 나누는 글자 바로 앞 갭에서 새 문단으로 가는 슬롯(옮기는 컨트롤, 그 글자의 제목
+            // 차례 표시)은 새 문단 첫 글자 앞에 남긴다. 남기지 않으면 `앞[각주]뒤` 를 각주
+            // 앞에서 나눈 새 문단이 `뒤[각주]` 가 된다. 그 글자 위치로 보고되는 컨트롤 가운데
+            // 갭에 있는 것은 앞쪽뿐이다 — 자동 번호는 갭이 아니라 자리표 글자에 있다.
+            let gap_start = split_pos.checked_sub(1).map_or(0, |prev| {
+                self.char_offsets[prev] + Self::char_stream_len(text_chars[prev])
+            });
+            let gap_slots = (self.char_offsets[split_pos].saturating_sub(gap_start) / 8) as usize;
+            let moved_controls = self
+                .control_text_positions()
+                .into_iter()
+                .enumerate()
+                .filter(|&(_, at)| at == split_pos)
+                .take(gap_slots.saturating_sub(self.hidden_slots_before(split_pos)))
+                .filter(|&(ci, _)| moves[ci])
+                .count();
+            let moved_marks = self
+                .title_marks
+                .iter()
+                .filter(|m| m.char_idx == split_pos)
+                .count();
+            self.char_offsets[split_pos] - 8 * (moved_controls + moved_marks).min(gap_slots) as u32
         } else if !self.char_offsets.is_empty() {
             self.char_stream_end(&text_chars, self.char_offsets.len() - 1, kept_number)
         } else {
@@ -1839,20 +1885,7 @@ impl Paragraph {
         }
         self.field_ranges = kept_field_ranges;
 
-        // Field는 보이는 문자 오프셋에서 한 글자를 차지하지 않는다. 다만 새 문단으로
-        // 이관되는 FieldRange가 참조하는 Field control은 범위와 함께 이동해야 한다.
-        // 일반 이동형 컨트롤로 분류하면 split의 논리 offset 계산에 Field가 더해져
-        // ClickHere 복사/붙여넣기 경계가 한 글자씩 어긋난다.
-        let moved_field_control_indices: std::collections::HashSet<usize> = new_field_ranges
-            .iter()
-            .map(|field_range| field_range.control_idx)
-            .collect();
-
-        // 5-2. controls 분할
-        //
-        // TAC 그림/표/수식 등은 본문에서 한 글자처럼 취급되므로 문단 분할 시
-        // logical offset 기준으로 앞뒤 문단에 나뉘어야 한다. SectionDef/ColumnDef 같은
-        // 구조 control은 문단 시작에 붙은 문서 구조 정보라 원래 문단에 둔다.
+        // 5-2. controls 분할 (`moves`)
         let old_controls = std::mem::take(&mut self.controls);
         let old_ctrl_data = std::mem::take(&mut self.ctrl_data_records);
         let mut kept_controls = Vec::with_capacity(old_controls.len());
@@ -1862,12 +1895,7 @@ impl Paragraph {
 
         for (ci, ctrl) in old_controls.into_iter().enumerate() {
             let data = old_ctrl_data.get(ci).cloned().flatten();
-            let move_to_new = ((Self::is_split_movable_control(&ctrl)
-                && control_positions.get(ci).copied().unwrap_or(usize::MAX) >= char_offset)
-                || moved_field_control_indices.contains(&ci))
-                && Some(ci) != kept_number;
-
-            if move_to_new {
+            if moves[ci] {
                 moved_control_idx_map.insert(ci, new_controls.len());
                 new_controls.push(ctrl);
                 new_ctrl_data_records.push(data);
@@ -2514,6 +2542,26 @@ impl Paragraph {
         u32::try_from(control_index).ok()?.checked_mul(8)
     }
 
+    /// `char_idx` 번째 글자 바로 앞 갭에서 컨트롤 없이 8유닛 슬롯을 차지하는 수.
+    ///
+    /// 누름틀 끝·다단락 누름틀 끝·제목 차례 표시가 그렇고, 모두 자기 글자 바로 앞 갭에 있다.
+    fn hidden_slots_before(&self, char_idx: usize) -> usize {
+        self.field_ranges
+            .iter()
+            .filter(|r| r.end_char_idx == char_idx)
+            .count()
+            + self
+                .orphan_field_ends
+                .iter()
+                .filter(|o| o.char_idx == char_idx)
+                .count()
+            + self
+                .title_marks
+                .iter()
+                .filter(|m| m.char_idx == char_idx)
+                .count()
+    }
+
     /// 인라인 컨트롤이 텍스트의 어느 character 인덱스에 위치하는지 반환한다.
     ///
     /// 일반 경로에서는 `char_offsets` 갭 (인라인 컨트롤당 8 UTF-16 코드 유닛) 의 길이만으로
@@ -2561,29 +2609,12 @@ impl Paragraph {
 
         let chars: Vec<char> = self.text.chars().collect();
         let mut positions = Vec::with_capacity(total_controls);
-        // 누름틀 끝·다단락 누름틀 끝·제목 차례 표시는 컨트롤 없이 8유닛 슬롯을 차지하고,
-        // 모두 자기 글자 바로 앞 갭에 있다. 그 갭에서 이 수만큼은 컨트롤에 나눠 주지 않는다.
+        // 갭에서 `hidden_slots_before` 만큼은 컨트롤에 나눠 주지 않는다.
         // 나눠 주면 뒤 컨트롤이 한 갭씩 앞 글자로 당겨진다.
-        let hidden_slots_before = |char_idx: usize| {
-            self.field_ranges
-                .iter()
-                .filter(|r| r.end_char_idx == char_idx)
-                .count()
-                + self
-                    .orphan_field_ends
-                    .iter()
-                    .filter(|o| o.char_idx == char_idx)
-                    .count()
-                + self
-                    .title_marks
-                    .iter()
-                    .filter(|m| m.char_idx == char_idx)
-                    .count()
-        };
 
         // 첫 문자 이전의 갭: 확장 컨트롤이 텍스트 시작 전에 있는 경우
         let gap_before = offsets[0] as usize;
-        let n_ctrls_before = (gap_before / 8).saturating_sub(hidden_slots_before(0));
+        let n_ctrls_before = (gap_before / 8).saturating_sub(self.hidden_slots_before(0));
         for _ in 0..n_ctrls_before {
             if positions.len() >= total_controls {
                 break;
@@ -2630,7 +2661,7 @@ impl Paragraph {
             }
             if next_off > current_off + char_width {
                 let gap = next_off - current_off - char_width;
-                let n_ctrls = (gap / 8).saturating_sub(hidden_slots_before(i + 1));
+                let n_ctrls = (gap / 8).saturating_sub(self.hidden_slots_before(i + 1));
                 for _ in 0..n_ctrls {
                     if positions.len() >= total_controls {
                         break;
