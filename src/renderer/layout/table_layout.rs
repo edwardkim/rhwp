@@ -14106,6 +14106,71 @@ impl LayoutEngine {
             })
     }
 
+    /// 이어받는 조각 첫머리에서 컷 선택기가 높이 없이 소비하는 빈 spacer 인가.
+    /// `advance_row_cut_inner`·`advance_row_block_cut` 과
+    /// [`Self::skip_leading_free_spacers_in_row_cut`] 가 같은 술어를 쓴다.
+    fn is_free_leading_spacer(
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        unit: &CellUnit,
+    ) -> bool {
+        unit.empty_spacer
+            && !unit.hard_break_before
+            && !Self::empty_unit_owns_flow_line_box(cell, table, unit)
+    }
+
+    /// 다음 조각에 넘길 행 컷에서, 칸마다 **앞 쪽 프레임의 꼬리**인 빈 spacer 를 건너뛴 컷.
+    ///
+    /// 컷 선택기는 이어받는 조각이 무높이 spacer 로 시작하면 높이 없이 소비한다. 그런데 조각
+    /// 상자를 재는 `row_cut_content_height` 와 그리기는 시작 컷부터 유닛 높이를 싣는다.
+    /// 두 쪽이 다른 높이를 쓰면 컷은 예산 안인데 조각은 본문을 넘는다
+    /// (1382000_domestic_violence_survey.hwp 24쪽: 빈 문단 p77 29.3px — 컷 885.3 /
+    /// 상자 918.4 / 본문 890.7).
+    ///
+    /// 건너뛰는 것은 그 spacer 들 **바로 뒤에 저장 프레임 재시작**이 오는 경우뿐이다. 저장
+    /// 사다리에서 그 빈 줄은 앞 쪽 프레임에 있고(p77 vpos 64462), 다음 쪽은 재시작 줄에서
+    /// 시작한다(p78 vpos 0). 빈 줄 자체가 새 프레임의 첫 줄이면(같은 표 p30 vpos 0 → p31
+    /// 1980) 한/글은 그 빈 줄을 쪽 위에 두므로 건너뛰지 않는다. 컷 위치는 바뀌지 않고,
+    /// 다음 조각의 선택·예약·그리기가 같은 유닛에서 시작한다.
+    pub(crate) fn skip_leading_free_spacers_in_row_cut(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Vec<usize> {
+        let order = Self::row_cut_cell_order(table, row);
+        cut.iter()
+            .enumerate()
+            .map(|(index, &start)| {
+                let Some(cell) = order.get(index).and_then(|&ci| table.cells.get(ci)) else {
+                    return start;
+                };
+                if start == 0 {
+                    return start;
+                }
+                let units = self.cell_units(cell, table, styles);
+                let mut next = start.min(units.len());
+                while units
+                    .get(next)
+                    .is_some_and(|unit| Self::is_free_leading_spacer(cell, table, unit))
+                {
+                    next += 1;
+                }
+                let restarts_after = units.get(next).is_some_and(|unit| {
+                    unit.hard_break_before
+                        || unit.stored_frame_break_before
+                        || unit.page_frame_reset_before
+                });
+                if next > start && restarts_after {
+                    next
+                } else {
+                    start
+                }
+            })
+            .collect()
+    }
+
     /// `RowCut`(`start_cut`/`end_cut`) 의 슬롯 순서 — `row` 의 `row_span == 1` 칸을 col
     /// 오름차순으로 센 셀 인덱스다.
     ///
@@ -17201,12 +17266,9 @@ impl LayoutEngine {
                 let u = &units[j];
                 // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
                 if start > 0
-                    && u.empty_spacer
-                    && !u.hard_break_before
-                    && !Self::empty_unit_owns_flow_line_box(cell, table, u)
-                    && units[start..=j].iter().all(|unit| {
-                        unit.empty_spacer && !Self::empty_unit_owns_flow_line_box(cell, table, unit)
-                    })
+                    && units[start..=j]
+                        .iter()
+                        .all(|unit| Self::is_free_leading_spacer(cell, table, unit))
                 {
                     j += 1;
                     continue;
@@ -17646,12 +17708,9 @@ impl LayoutEngine {
                 let u = &units[j];
                 // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
                 if start > 0
-                    && u.empty_spacer
-                    && !u.hard_break_before
-                    && !Self::empty_unit_owns_flow_line_box(cell, table, u)
-                    && units[start..=j].iter().all(|unit| {
-                        unit.empty_spacer && !Self::empty_unit_owns_flow_line_box(cell, table, unit)
-                    })
+                    && units[start..=j]
+                        .iter()
+                        .all(|unit| Self::is_free_leading_spacer(cell, table, unit))
                 {
                     j += 1;
                     continue;

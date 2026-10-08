@@ -1082,7 +1082,17 @@ impl TypesetEngine {
             .filter(|_| !is_continuation && cursor_row == 0 && split_end_cut == [0])
             .map(|frame| frame.continuation_height);
         let next_cut = if split_end_limit > 0.0 {
-            split_end_cut
+            // 다음 조각의 컷 선택이 높이 없이 넘길 첫머리 빈 spacer 를 시작 컷에서 미리
+            // 건너뛴다 — 그 조각의 예약·그리기도 같은 유닛에서 시작한다.
+            match (split_block_start, end_row.checked_sub(1)) {
+                (None, Some(row)) => layout_engine.skip_leading_free_spacers_in_row_cut(
+                    table,
+                    row,
+                    &split_end_cut,
+                    styles,
+                ),
+                _ => split_end_cut,
+            }
         } else {
             Vec::new()
         };
