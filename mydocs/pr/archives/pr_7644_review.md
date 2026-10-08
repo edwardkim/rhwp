@@ -4,13 +4,15 @@ status: active
 last_verified: 2026-10-08
 ---
 
-# PR #7644 검토 — 통째로 들어가는 RowBreak 빈 앵커 표의 바깥 여백
+# PR #7644 검토 — RowBreak 바깥 여백과 중첩 표 뒤 빈 문단 분할
 
-## 현재 상태
+## 최종 판정
 
-진단에 근거한 메인터너 보정 source는 `37caee9df5f9b208794ea333134084362a370226`이다. 56345 문서의 20·21쪽에서 중첩 표 뒤 실제 빈 문단의 점유·셀 분할·이어받기 패딩을 복구했다. Native/fresh Docker WASM의 해당 쪽 비교는 각각 92.69159% / 99.85289%이며, 기존 집중 회귀 33개와 필수 Rust lint 묶음이 통과했다. 검증용 Studio에 두 쪽을 열어 메인터너의 시각 판정을 준비했다.
+**메인터너 보정 후 수용 가능.** 사용자께서 2026-10-08 최종 Studio 시각 판정 통과와 PR 머지를 명시적으로 승인했다. 원 contributor PR을 보정 없이 merge하지 않고, 원 기여와 보정을 포함한 별도 메인터너 통합 PR의 최신 CI가 성공하면 병합·원 PR 종료를 진행한다.
 
-PR 전체는 아직 승인 가능한 상태가 아니다. 전체 21쪽 sweep에서 7·8·9·17·18쪽이 미달하며, 기존 꼬리말 본문 넘침과 baseline 예외도 남아 있다. 아래 최초 판정과 진단은 당시 head의 기록이며, 이번 로컬 보정 결과는 마지막 절에 구분했다.
+진단에 근거한 메인터너 보정 source는 `37caee9df5f9b208794ea333134084362a370226`이다. 56345 문서의 20·21쪽에서 중첩 표 뒤 실제 빈 문단의 점유·셀 분할·이어받기 패딩을 복구했다. Native/fresh Docker WASM의 해당 쪽 비교는 각각 92.69159% / 99.85289%이며, 기존 집중 회귀 33개와 필수 Rust lint 묶음이 통과했다. 검증용 Studio에서 두 쪽에 대한 메인터너 시각 판정 통과를 받았다.
+
+전체 21쪽 sweep의 7·8·9·17·18쪽 미달과 기존 꼬리말 본문 넘침·contributor baseline 예외는 남아 있다. 직전 보고에서 이 잔여 범위를 공개한 뒤 사용자가 시각 판정 통과·머지를 승인했으므로, 이번 통합은 해당 승인에 따른 제한된 수용이다. 자동 수치 gate를 PASS로 바꾸거나 잔여 문제를 해결했다고 표시하지 않는다. #7620은 부분 해결의 Refs로 유지한다. 새 test 포함 Full nextest 10538 PASS / 0 FAIL / 50 SKIP, Native Skia 3종(라이브러리 4109 + placeholder 2 + direct PDF 4)도 모두 통과했다. 이제 별도 통합 PR의 최신 원격 CI를 확인한 뒤 merge한다.
 
 ## 최초 검토 판정
 
@@ -26,7 +28,7 @@ PR 전체는 아직 승인 가능한 상태가 아니다. 전체 21쪽 sweep에�
 | head | `5cd52f83aaed82bbaad1d4331587002831c27392`, `sacru2red/rhwp:fix/issue-7620-rowbreak-float-margins` |
 | API base / 최신 로컬 base | devel `b3c3047db575d146dff9d39098e6de98c4630b3e` / `f0e7228f6dd2ea1437724e53ad640c40c56d204b` |
 | 규모 | PR 고유 5 commits, 21 files; production 2 files, 회귀 1 source·2 tests, 기존 baseline 1 row, 입력·PDF·PNG·생성 절차 |
-| reviewer / 경로 | edwardkim 지정 확인; [maintainer_general](../manual/pr_review/maintainer_general.md), [intake_and_review](../manual/pr_review/intake_and_review.md), [local_validation](../manual/pr_review/local_validation.md), [visual_fixture_evidence](../manual/pr_review/visual_fixture_evidence.md) |
+| reviewer / 경로 | edwardkim 지정 확인; [maintainer_general](../../manual/pr_review/maintainer_general.md), [intake_and_review](../../manual/pr_review/intake_and_review.md), [local_validation](../../manual/pr_review/local_validation.md), [visual_fixture_evidence](../../manual/pr_review/visual_fixture_evidence.md) |
 | merge 상태 | open / non-draft / mergeable=true / unstable; CI Impact Policy pending |
 | 최신 base 충돌 simulation | `git merge-tree --write-tree f0e7228f6dd2ea1437724e53ad640c40c56d204b 5cd52f83aaed82bbaad1d4331587002831c27392` exit 0, tree `91af755e67005c8fece9750e7b473ec5dbfd9feb` |
 | worktree | `/tmp/rhwp-pr7644-review-20261008`, `review/pr7644-20261008` |
@@ -60,9 +62,9 @@ PR 전체는 아직 승인 가능한 상태가 아니다. 전체 21쪽 sweep에�
 | `samples/issue6111/56345_regulatory_impact_analysis.hwp` / `pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf` | 입력 `58013017c3a3dc7e2d278b99c5b4fa1c61de0aa861f913a2c41a49145baadafc`, PDF `c66ea20c3b8d6b31af73752e170372bc7af839c38812991125bdde4dfba35abb` |
 | `samples/hwpctl_API_v2.4.hwp` / `pdf/hwpctl_API_v2.4-hwp-2020.pdf` | 입력 `d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603`, PDF `1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74` |
 
-신규 RowBreak 파일은 `d9749c5a15b95206455953494f6fc871c115cef1`의 rhwp API 생성본이다. 한컴 저장본으로 승격하지 않는다. [입력 설명](../../samples/issue7620/README.md)과 [manifest](../../samples/issue7620/MANIFEST.json)는 생성 절차와 한컴독스 웹서비스 6.3.6 / Web v2 빌드 `20260812021742`의 서버 Print PDF를 구분한다. LineSeg를 수동 수정한 입력이 아니며, 데스크톱 Print 출력과 CellBreak의 독립 PDF는 미검증이다.
+신규 RowBreak 파일은 `d9749c5a15b95206455953494f6fc871c115cef1`의 rhwp API 생성본이다. 한컴 저장본으로 승격하지 않는다. [입력 설명](../../../samples/issue7620/README.md)과 [manifest](../../../samples/issue7620/MANIFEST.json)는 생성 절차와 한컴독스 웹서비스 6.3.6 / Web v2 빌드 `20260812021742`의 서버 Print PDF를 구분한다. LineSeg를 수동 수정한 입력이 아니며, 데스크톱 Print 출력과 CellBreak의 독립 PDF는 미검증이다.
 
-footer 문서는 PR 본문이 기준 PDF 부재로 분류했지만 저장소에 동일 입력에 대한 독립 PDF가 있다. [#6481 기록](archives/pr_6481_planet6897_visual_sweep.md)의 MCP job `1bbb1b6c-04ea-4922-9a5c-a1b6e7da891f`와 [#6485 기록](archives/pr_6485_planet6897_visual_sweep.md)이 위 두 해시를 고정한다. 기존 PDF를 그대로 재사용했으며 새 출력으로 가장하지 않는다. PDF의 Creator 연도만으로 대응이 확인된 기준을 배제하지 않았다.
+footer 문서는 PR 본문이 기준 PDF 부재로 분류했지만 저장소에 동일 입력에 대한 독립 PDF가 있다. [#6481 기록](pr_6481_planet6897_visual_sweep.md)의 MCP job `1bbb1b6c-04ea-4922-9a5c-a1b6e7da891f`와 [#6485 기록](pr_6485_planet6897_visual_sweep.md)이 위 두 해시를 고정한다. 기존 PDF를 그대로 재사용했으며 새 출력으로 가장하지 않는다. PDF의 Creator 연도만으로 대응이 확인된 기준을 배제하지 않았다.
 
 ## 실행으로 확인한 결과
 
@@ -240,3 +242,21 @@ Native/fresh WASM 모두 같은 원문·PDF·96dpi·print profile로 `scripts/vi
 PDF/Native/WASM 전체 쪽수는 각각 21이다. 전체 최저는 양쪽 **14.34841% (18쪽)**, 미달은 **7:40.32233%, 8:34.14484%, 9:21.67792%, 17:37.46703%, 18:14.34841%**, 누락 쪽은 없다. 전체 `pr_review_gate=re_review_required`를 해당 두 쪽의 개선으로 면제하지 않는다. 전체 새 회귀 추가·PR 승인/생성 조건은 미충족이다. 기존 footer 넘침과 contributor baseline 증가도 그대로 남아 있어 이번 수정으로 전체 이슈 해결을 선언하지 않는다.
 
 Studio는 기존 검증 서버 `http://localhost:7799/`를 사용한다. `prepare-maintainer-studio.cjs`로 새 Chrome 탭 두 개에 실제 파일을 로드했다. local-font access 518faces, print profile, 20/21 및 21/21 표시, 페이지 오류 0을 확인했다. runtime instantiate 입력·network response·pkg/public SHA가 위 Docker 산출물과 일치한다. 기존 검증 탭과 다른 서버는 보존했다. `maintainer-studio/studio-session.json`, `studio-regulatory-page{20,21}.png`, `render_tree/`와 `maintainer-studio-browser.log`에 기록했다. 메인터너 최종 시각 판정은 아직 받지 않았다. 이번 작업은 로컬 branch의 코드·증거 준비이며 원격 push/comment/PR/merge는 수행하지 않았다.
+
+## 승인 후 메인터너 통합 준비
+
+base route: maintainer_general.md. modifiers: intake_and_review.md, local_validation.md, visual_fixture_evidence.md, rework_and_exceptions.md, post_merge.md. 별도 통합 PR의 기록 위치와 원 PR 종료는 collaborator_external_pr.md 9.1.1의 기존 통합 관례를 참고했다. contributor history·fork branch는 rewrite하지 않는다. 2026-10-08 재조회한 원 PR head는 `5cd52f83…`, 현재 원 PR CI aggregate success, 원격 devel `f0e7228f…` 유지, 보정 branch의 current-base merge simulation exit 0이다. 권한은 edwardkim/rhwp admin·push를 확인했다.
+
+신규 정식 회귀 `tests/cases/issue_7644_stored_block_empty_paragraph.rs`는 독립 PDF에서 검증한 20·21쪽만을 검사한다. 전체 쪽수 golden·새 문서 전용 baseline을 추가하지 않는다. 빈 줄의 저장 line_height, 자식/부모 포함 관계, 뒤 문단, source 텍스트의 완전한 순서와 마지막 줄/빈 문단 소유를 확인한다. 해당 두 쪽의 Native/fresh WASM은 모두 90% 이상이며 사용자 시각 판정도 통과했다. 같은 컴파일된 정식 회귀를 보정 전 Native에서 실행하면 자식 continuation 누락으로 FAIL, 중간 보정 `dd1a2051e…`는 padding frame 앞 빈 줄로 FAIL, 최종 source에서는 PASS다(`integration-negative-{base,frame}.log`, `integration-new-regression.log`). 이전 절의 “정식 회귀를 추가하지 않았다”는 승인 전 상태이며 현재는 이 제한된 검사를 추가했다. 영향 없는 낮은 점수 쪽까지 새 테스트가 검증했다고 표시하지 않는다.
+
+시각 PNG 8개와 입력/PDF/source/WASM 해시·수치·판정은 `mydocs/pr/assets/issue_7644_stored_block_empty_paragraph/`에 보존했다. production은 여전히 `37caee9df…`와 동일하고 이후 변경은 test·시각 asset·review 기록뿐이다. 기존 Docker 산출물을 재사용하며 같은 WASM을 다시 빌드하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+원 contributor의 RowBreak 바깥 여백 규칙 개선을 명시하고, 추가 보정은 저장 앵커가 중첩 표와 빈 줄의 공간을 충분히 포함하지 못해 필요했다고 설명한다. 사용자 시각 통과와 해당 두 쪽의 Native/fresh WASM 수치 92.69159%/99.85289%, 실제 실행한 정식 회귀·Full/Skia 및 새 head CI 결과만 게시한다. 전체 미달 5쪽과 꼬리말·baseline의 잔여 범위, #7620을 닫지 않는 부분 수용을 명시한다. 통합 PR merge SHA가 확정된 뒤 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)과 위 안정 경로 PNG를 merge SHA 고정 raw URL의 Markdown 이미지로 게시한다. `--body-file` 후 API로 본문·한글·SHA·실제 이미지 응답을 확인한다. 같은 통합 사실의 comment가 있으면 중복 게시하지 않는다.
+
+### 새 회귀 포함 최종 로컬 검증
+
+source/test head `61a8d3ff1…`에서 source 포맷을 확정한 뒤 `--prepare`를 다시 실행했다. 파생 suite drift는 최종 source를 반영한 재생성으로 해소했으며 generator·정책·baseline은 바꾸지 않았다. manifest `--check --base-ref f0e7228f6…` PASS: 1492 sources, 6410 static test attributes, 28 suites + 20 exceptions = 48 targets. 재생성 뒤 `cargo fmt --all -- --check`와 all-target Clippy도 PASS(`integration-manifest-check.log`, `integration-fmt-after-prepare.log`, `integration-clippy-all.log`). 최종 새 회귀 배정은 `regression_suite_025`다.
+
+`cargo nextest run --locked --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --tests --test-threads 8 --no-fail-fast`: **10538 PASS / 0 FAIL / 50 SKIP**, 실행 472.189초(별도 빌드 3분55초). 16 CPU·31GiB host와 다른 Studio 작업을 고려해 8 concurrent tests를 사용했다. 새 빈 문단 회귀도 전체 실행에서 PASS이며 실물 셀 넘침·라운드트립·본문 넘침·겹침 래칫을 포함한다(`integration-full-nextest.log`). 이후 변경은 기록뿐이며 production과 test를 다시 바꾸지 않았다. Native Skia 3종도 모두 통과했다. `cargo test --locked --profile release-test --target-dir <공유 target> --features native-skia --lib`: root 3927 + contracts 15 + OOXML 165 + password 2 = 4109 PASS / 0 FAIL / 13 ignored. `node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --target-dir <공유 target> --features native-skia`: 2 PASS. 같은 옵션의 `render_p37_direct_pdf_export`: 4 PASS. 로그는 `integration-skia-{lib,placeholder,pdf}.log`다.
