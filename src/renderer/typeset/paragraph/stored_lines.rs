@@ -22,14 +22,22 @@ pub(in crate::renderer::typeset) fn stored_page_boundary_invalidated_by_reflow(
     {
         return false;
     }
-    for para in current_items.iter().rev().filter_map(|item| {
-        super::super::page_item_para_index(item).and_then(|idx| paragraphs.get(idx))
-    }) {
+    for item in current_items.iter().rev() {
+        use crate::renderer::pagination::PageItem;
+        let para_index = match item {
+            PageItem::FullParagraph { para_index }
+            | PageItem::PartialParagraph { para_index, .. } => *para_index,
+            // 개체 항목은 독립 배치 owner다. host의 합성 줄을 본문 재조판으로
+            // 오인하지 않고, 이 owner 뒤의 저장 경계는 기존 개체 경로가 맡는다.
+            _ => return false,
+        };
+        let Some(para) = paragraphs.get(para_index) else {
+            return false;
+        };
         if crate::renderer::para_has_no_stored_line_segs(para) {
-            // 빈 개체 host의 합성 줄은 본문 재조판을 뜻하지 않는다.
-            return para.controls.is_empty();
+            return true;
         }
-        if !para.controls.is_empty() || !para.text.trim().is_empty() {
+        if !para.text.trim().is_empty() {
             return false;
         }
     }
