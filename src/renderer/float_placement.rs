@@ -316,6 +316,27 @@ pub(crate) fn topbottom_flow_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
     signed_hwpunit(common.vertical_offset).max(0)
 }
 
+/// 셀의 문단 기준 어울림 개체가 만드는 흐름 프레임의 앞 공간.
+/// 흐름과 함께 이동하는 그림의 음수 오프셋은 앞 공간을 만들지 않는다.
+/// 측정에서 양수 부분만 예약한 뒤 출력에서 음수 변위를 다시 적용하면
+/// 세로 정렬한 프레임과 그림 원점이 갈라진다. 배경·절대배치 개체의
+/// 의도된 음수 변위는 그대로 보존한다.
+pub(crate) fn cell_wrap_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
+    let offset = signed_hwpunit(common.vertical_offset);
+    if !common.treat_as_char
+        && common.flow_with_text
+        && matches!(common.vert_rel_to, VertRelTo::Para)
+        && matches!(
+            common.text_wrap,
+            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+        )
+    {
+        offset.max(0)
+    } else {
+        offset
+    }
+}
+
 /// 원본 HWPX noAdjust 셀의 완전한 저장 줄 프레임이 점유하는 끝점.
 /// 여백을 이미 계상하는 중첩/TAC의 relaxed-pad 경로에서 줄 사이 저장 공간을
 /// 재사용한다. noAdjust 자체는 본문 표의 안 여백을 지울 근거가 아니다.
@@ -3652,6 +3673,23 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
     if para.stored_text_partition_is_dirty()
         || next_para.is_some_and(Paragraph::stored_text_partition_is_dirty)
     {
+        return None;
+    }
+    // [#7621] 폭 0 host 줄이 오프셋 0 띠의 시작에 있으면 그 줄은 띠에 흡수된다(#7470).
+    // 한글은 그런 줄을 띠와 별도로 전진하지 않으므로(다음 vpos − 현 vpos = 개체 높이),
+    // 사다리 `lh + ls` 는 띠 아래 host 줄의 증거가 될 수 없다.
+    if para.controls.iter().any(|control| match control {
+        Control::Table(table) => {
+            crate::renderer::empty_host_line_absorbed_by_topbottom_float(para, &table.common)
+        }
+        Control::Picture(picture) => {
+            crate::renderer::empty_host_line_absorbed_by_topbottom_float(para, &picture.common)
+        }
+        Control::Shape(shape) => {
+            crate::renderer::empty_host_line_absorbed_by_topbottom_float(para, shape.common())
+        }
+        _ => false,
+    }) {
         return None;
     }
     // #6950: 문단 종료는 현재 문단의 마지막 개체에서 한 번 소비한다.
