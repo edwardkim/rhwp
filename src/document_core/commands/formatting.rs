@@ -9,7 +9,8 @@ use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::event::DocumentEvent;
 use crate::renderer::composer::{
-    paragraph_flow_end, recalculate_section_vpos, reflow_line_segs, restamp_indentation, ParagraphBox,
+    paragraph_flow_end, recalculate_section_vpos, reflow_line_segs, restamp_indentation,
+    ParagraphBox,
 };
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
