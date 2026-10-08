@@ -799,15 +799,33 @@ fn decode_rendered_viewtext(
     output_limit: usize,
 ) -> Option<Vec<u8>> {
     let decoded = cfb_reader::decode_stream_limited(raw, compressed, output_limit).ok()?;
-    if decoded.len() < 4 {
-        return None;
-    }
-    let header = u32::from_le_bytes([decoded[0], decoded[1], decoded[2], decoded[3]]);
-    let tag = (header & 0x3ff) as u16;
-    if tag == tags::HWPTAG_PARA_HEADER {
-        Some(decoded)
-    } else {
-        None
+    starts_with_paragraph_header(&decoded).then_some(decoded)
+}
+
+fn starts_with_paragraph_header(data: &[u8]) -> bool {
+    data.get(..4).is_some_and(|bytes| {
+        let header = u32::from_le_bytes(bytes.try_into().unwrap());
+        (header & 0x3ff) as u16 == tags::HWPTAG_PARA_HEADER
+    })
+}
+
+/// 암호 문서도 #5169의 ViewText 우선 정책을 따른다. 스텁은 BodyText로 내려가되,
+/// 읽기 오류와 자원 제한 초과는 숨기지 않는다. DocInfo에서 비밀번호는 이미 검증됐다.
+fn decode_password_rendered_viewtext(
+    raw: Result<Vec<u8>, cfb_reader::CfbError>,
+    password: &[u8],
+    compressed: bool,
+    output_limit: usize,
+) -> Result<Option<Vec<u8>>, ParseError> {
+    let raw = match raw {
+        Ok(raw) => raw,
+        Err(cfb_reader::CfbError::StreamNotFound(_)) => return Ok(None),
+        Err(error) => return Err(ParseError::CfbError(error)),
+    };
+    match crypto::decrypt_password_protected_limited(&raw, password, compressed, output_limit) {
+        Ok(decoded) => Ok(starts_with_paragraph_header(&decoded).then_some(decoded)),
+        Err(crypto::CryptoError::WrongPassword) => Ok(None),
+        Err(error) => Err(ParseError::CryptoError(error)),
     }
 }
 
@@ -835,20 +853,27 @@ fn parse_sections_strict(
             crypto::decrypt_viewtext_section_limited(&raw, compressed, section_output_limit)
                 .map_err(ParseError::CryptoError)?
         } else if encrypted {
-            // 비밀번호 암호 문서: BodyText raw → 비밀번호 복호화.
-            // read_body_text_section_raw() 가 스트림 경로 탐색
-            // (BodyText/Section{i} → /Section{i}) 을 담당하므로 raw 만 얻어
-            // 복호화+압축해제는 crypto 로 위임한다.
-            let raw = cfb
-                .read_body_text_section_raw_limited(i, section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            crypto::decrypt_password_protected_limited(
-                &raw,
+            let rendered = decode_password_rendered_viewtext(
+                cfb.read_viewtext_section_raw_limited(i, section_raw_limit),
                 password.unwrap(),
                 compressed,
                 section_output_limit,
-            )
-            .map_err(ParseError::CryptoError)?
+            )?;
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = cfb
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    crypto::decrypt_password_protected_limited(
+                        &raw,
+                        password.unwrap(),
+                        compressed,
+                        section_output_limit,
+                    )
+                    .map_err(ParseError::CryptoError)?
+                }
+            }
         } else {
             // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 한글이 렌더하는
             // 본문이므로 우선한다. 복호 실패·스텁이면 BodyText 로 폴백한다.
@@ -957,17 +982,27 @@ fn parse_hwp_with_lenient(
             crypto::decrypt_viewtext_section_limited(&raw, compressed, section_output_limit)
                 .map_err(ParseError::CryptoError)?
         } else if encrypted {
-            // 비밀번호 암호 문서: lenient reader 로 raw 섹션 바이트를 얻어 복호화.
-            let raw = lenient
-                .read_body_text_section_raw_limited(i, section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            crypto::decrypt_password_protected_limited(
-                &raw,
+            let rendered = decode_password_rendered_viewtext(
+                lenient.read_viewtext_section_raw_limited(i, section_raw_limit),
                 password.unwrap(),
                 compressed,
                 section_output_limit,
-            )
-            .map_err(ParseError::CryptoError)?
+            )?;
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = lenient
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    crypto::decrypt_password_protected_limited(
+                        &raw,
+                        password.unwrap(),
+                        compressed,
+                        section_output_limit,
+                    )
+                    .map_err(ParseError::CryptoError)?
+                }
+            }
         } else {
             // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 우선한다(위 strict
             // 경로와 동일 규칙). 복호 실패·스텁이면 BodyText 로 폴백.
