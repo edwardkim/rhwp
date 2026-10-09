@@ -1141,3 +1141,48 @@ SVG **119쪽 모두 byte-identical**입니다. Native·fresh WASM·fmt는 exit0�
 원래67개 중 해결 확인25개/잔여42개이며 최신 전체 nextest 통과가 아닙니다.
 [개별 결과·정확한 head·실행 로그 해시](../pr/assets/issue7445/completed-20261009/remaining-after-cell-cache-validation.json)를
 커밋합니다. 이 재검증에서 생산 코드·기대값·fixture·baseline은 추가 수정하지 않았습니다.
+
+
+## 보정 353 사전 분석: Square OLE 옆 빈 줄의 진행량 소비
+
+#2069의 HWP/HWPX Enter 및 재Enter 4개 실패는 저장 줄 pitch에 비해
+후속 문단 끝 표식의 y 간격이 두 배입니다(관측42.67px/원본 pitch21.33px).
+원본은 한셀 OLE 옆의 빈 한 줄이며 그림의 흐름 점유와 빈 줄 상자의 진행을
+구분해야 합니다. 현재 문단 분리 → 재계산된 vpos → block 측정 → layout의
+표식/커서 좌표 소비를 확인합니다. 화면 좌표를 강제로 맞추거나 관계 기대값을
+두 배로 바꾸지 않습니다. 원본 두 형식의 전체1쪽을 독립 버전별 PDF와
+Native/fresh TSV로 먼저 확인하며, 편집 출력의 독립 기준 없이는 수용하지 않습니다.
+
+
+### 보정 353 원인과 검증 결과
+
+현재 편집본의 두 문단 저장 vpos는0/1600HU로 정상입니다.
+`typeset/section/flow.rs`의 확정 빈 줄 예약과 `layout.rs`의 FullParagraph가
+호스트 pitch를 이미 소비했는데, 뒤 OLE Shape가 현재 커서에 같은 pitch를
+다시 더했습니다. 후속 vpos 스냅은 그 차이를 되돌리지 못해 캐럿이42.67px
+뒤에 놓였습니다. Shape도 기록된 `para_start_y`의 줄 끝을 사용하도록 고쳐
+같은 시작점/점유 끝을 공유합니다. 빈 줄 생략 경로에서는 한 번의 진행을 유지합니다.
+
+기존 실패4개는 같은 기대값에서 PASS하며 OLE/Square 대조 포함 기존 함수
+**11 PASS / 0 FAIL / 434 skipped**, 0.080초·threads8·exit0입니다. 후속
+표식은 원본 lh1000+ls600의21.33px 진행을 따릅니다. 테스트·baseline·원본은
+변경하지 않았고 새 테스트 함수나 활성 fixture를 추가하지 않았습니다.
+
+원본 HWP/HWPX 각1쪽과 한 번 Enter 저장본 각1쪽 모두 Native/Mac no-opt
+fresh WASM **100%**, 쪽수 일치·미달/누락0입니다. 편집본 기준은 실제
+한컴 Print engine2020/2024의 succeeded job과 버전·one-up 출력 모드를
+확인한 새 PDF이며 아래 정본으로 보존합니다. Backend PNG/TSV도
+byte-identical이고 정상 대조119쪽 SVG는 이전 후보와 모두 동일합니다.
+직접 PNG에서 노란 OLE의 위치·크기·세 줄과 각 줄1~5 내용을 확인했습니다.
+커서/문단 끝 표식은 Print에 보이지 않으므로 점수로 간격을 입증하지 않으며
+저장 pitch·공개 API 회귀·RenderTree 관계를 별도로 확인했습니다. 숫자의
+래스터 차이는 남고100% 픽셀 동일 주장은 아닙니다.
+
+[소스/빌드·입력·Print job·TSV·회귀 근거](../pr/assets/issue7445/completed-20261009/ole-empty-host-line-validation.json),
+[HWP 편집본 review](../pr/assets/issue7445/completed-20261009/ole-enter-hwp-p001-review.png),
+[HWPX 편집본 review](../pr/assets/issue7445/completed-20261009/ole-enter-hwpx-p001-review.png),
+[HWP 편집본 Print](../../pdf/issue2069/ole-enter-hwp-2020.pdf),
+[HWPX 편집본 Print](../../pdf/issue2069/ole-enter-hwpx-2024.pdf)를 저장본·각 overlay와
+함께 커밋합니다. 원시 로그/TSV와 진단 probe는 ignored output에 보존합니다.
+원래 실패 해결 확인 **29건**, 잔여 **38건**이며 최신 전체 nextest와
+최종 게이트·PR은 남아 있습니다. 원격 devel도 frozen base21ed64071과 같습니다.

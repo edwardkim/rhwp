@@ -1,0 +1,379 @@
+{
+  "stage": 353,
+  "candidateParent": "5aec9d4571175906f8b1dfc41f8280e56a03714c",
+  "build": {
+    "candidateParent": "5aec9d4571175906f8b1dfc41f8280e56a03714c",
+    "sourceSha256": "ebf0c5f374c2908fcf6ae6a9dafe38bcc99d3993008e9f8376c4dc6dff3a0854",
+    "productionDiffSha256": "1c86e184ae7d0546db265d2f197422892c618f82763a647a0d916a75a6c2e0bf",
+    "native": "bdde2585e0e67221f86b45e7a0c8ed78109f72f266619dc4864ee35cd452c0ca",
+    "wasm": "270639055fce14b71765822b33570162c8ee4689d8f6cc23fe6877b594e4c8cf",
+    "js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+    "mode": "Mac no-opt fresh, Docker optimization not executed"
+  },
+  "unchangedTestSha256": "4345c7e7c70bd3cb58cae610168ccf7c8145725c40be37a7384f723f72119f29",
+  "scope": "빈 OLE 호스트 줄의 시작점과 실제 진행 끝을 한 번 소비",
+  "inputs": [
+    {
+      "path": "samples/한셀OLE.hwp",
+      "sha256": "fdc595a2f5f99f97653b91e57b4c74090391495ce5f84ef2e60308ea4b8e9da3"
+    },
+    {
+      "path": "samples/한셀OLE.hwpx",
+      "sha256": "e9d1b0b79021f47743f56e1e162c0226fbc4e83865d4443cb9e0ce8af3e4cc8a"
+    }
+  ],
+  "before": {
+    "failedTests": "Stage352의 #2069 Enter/재Enter HWP/HWPX 기존 함수4개 FAIL; 기대값 동일",
+    "observedPitchPx": 42.66666666666669,
+    "sourcePitchHu": 1600
+  },
+  "after": {
+    "focusedSummary": "Summary [   0.080s] 11 tests run: 11 passed, 434 skipped",
+    "run": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 434,
+    "exitCode": 0,
+    "observedPitchPx": 21.333333333333314,
+    "logPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage353-ole-empty-line-diagnostic/focused.log",
+    "logSha256": "6f9cdaf75b7e4a6372280766b886042c951b452e308b1ff49d6c5d98ca701567"
+  },
+  "sourceContract": "원본 저장 lh1000+ls600=1600HU; 편집 후속 vpos도1600HU이며 변경하지 않음",
+  "consumptionPath": [
+    "typeset/section/flow.rs: stored_textless_square_host_line의 높이와 간격 예약",
+    "layout.rs: FullParagraph의 확인된 줄 진행과 para_start_y 기록",
+    "layout.rs: OLE Shape는 현재 커서에 pitch를 더하지 않고 기록된 호스트 원점의 줄 끝을 소비"
+  ],
+  "markerRenderTrees": {
+    "before": [
+      {
+        "paragraphIndex": 0,
+        "bbox": {
+          "x": 513.4,
+          "y": 132.3,
+          "w": 0.0,
+          "h": 13.3
+        }
+      },
+      {
+        "paragraphIndex": 1,
+        "bbox": {
+          "x": 513.4,
+          "y": 174.9,
+          "w": 166.9,
+          "h": 13.3
+        }
+      }
+    ],
+    "after": [
+      {
+        "paragraphIndex": 0,
+        "bbox": {
+          "x": 513.4,
+          "y": 132.3,
+          "w": 0.0,
+          "h": 13.3
+        }
+      },
+      {
+        "paragraphIndex": 1,
+        "bbox": {
+          "x": 513.4,
+          "y": 153.6,
+          "w": 166.9,
+          "h": 13.3
+        }
+      }
+    ]
+  },
+  "visual": [
+    {
+      "key": "ole-hwp",
+      "backends": {
+        "native": {
+          "metrics": [
+            {
+              "page": 1,
+              "silhouette_method": "threshold_boundary_color_support_v1",
+              "silhouette_raw_match_percent": 100.0,
+              "silhouette_boundary_reconciled_pixels": 0,
+              "silhouette_color_tolerance": 32,
+              "silhouette_content_union_pixels": 22054,
+              "tolerant_content_match_percent": 100.0
+            }
+          ],
+          "pageCounts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage353-ole-empty-line-diagnostic/after-hwp-native/ole-hwp/silhouette.tsv",
+          "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "pngSha256": "42eac521f46105a785699b2b21310035352776ac720ece912ca92779344a8844"
+        },
+        "fresh": {
+          "metrics": [
+            {
+              "page": 1,
+              "silhouette_method": "threshold_boundary_color_support_v1",
+              "silhouette_raw_match_percent": 100.0,
+              "silhouette_boundary_reconciled_pixels": 0,
+              "silhouette_color_tolerance": 32,
+              "silhouette_content_union_pixels": 22054,
+              "tolerant_content_match_percent": 100.0
+            }
+          ],
+          "pageCounts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage353-ole-empty-line-diagnostic/after-hwp-fresh/ole-hwp/silhouette.tsv",
+          "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "pngSha256": "42eac521f46105a785699b2b21310035352776ac720ece912ca92779344a8844"
+        }
+      }
+    },
+    {
+      "key": "ole-enter-hwp",
+      "backends": {
+        "native": {
+          "metrics": [
+            {
+              "page": 1,
+              "silhouette_method": "threshold_boundary_color_support_v1",
+              "silhouette_raw_match_percent": 100.0,
+              "silhouette_boundary_reconciled_pixels": 0,
+              "silhouette_color_tolerance": 32,
+              "silhouette_content_union_pixels": 22054,
+              "tolerant_content_match_percent": 100.0
+            }
+          ],
+          "pageCounts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage353-ole-empty-line-diagnostic/edited-hwp-native/ole-enter-hwp/silhouette.tsv",
+          "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "pngSha256": "42eac521f46105a785699b2b21310035352776ac720ece912ca92779344a8844"
+        },
+        "fresh": {
+          "metrics": [
+            {
+              "page": 1,
+              "silhouette_method": "threshold_boundary_color_support_v1",
+              "silhouette_raw_match_percent": 100.0,
+              "silhouette_boundary_reconciled_pixels": 0,
+              "silhouette_color_tolerance": 32,
+              "silhouette_content_union_pixels": 22054,
+              "tolerant_content_match_percent": 100.0
+            }
+          ],
+          "pageCounts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage353-ole-empty-line-diagnostic/edited-hwp-fresh/ole-enter-hwp/silhouette.tsv",
+          "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "pngSha256": "42eac521f46105a785699b2b21310035352776ac720ece912ca92779344a8844"
+        }
+      }
+    },
+    {
+      "key": "ole-hwpx",
+      "backends": {
+        "native": {
+          "metrics": [
+            {
+              "page": 1,
+              "silhouette_method": "threshold_boundary_color_support_v1",
+              "silhouette_raw_match_percent": 100.0,
+              "silhouette_boundary_reconciled_pixels": 0,
+              "silhouette_color_tolerance": 32,
+              "silhouette_content_union_pixels": 22054,
+              "tolerant_content_match_percent": 100.0
+            }
+          ],
+          "pageCounts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage353-ole-empty-line-diagnostic/after-hwpx-native/ole-hwpx/silhouette.tsv",
+          "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "pngSha256": "42eac521f46105a785699b2b21310035352776ac720ece912ca92779344a8844"
+        },
+        "fresh": {
+          "metrics": [
+            {
+              "page": 1,
+              "silhouette_method": "threshold_boundary_color_support_v1",
+              "silhouette_raw_match_percent": 100.0,
+              "silhouette_boundary_reconciled_pixels": 0,
+              "silhouette_color_tolerance": 32,
+              "silhouette_content_union_pixels": 22054,
+              "tolerant_content_match_percent": 100.0
+            }
+          ],
+          "pageCounts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage353-ole-empty-line-diagnostic/after-hwpx-fresh/ole-hwpx/silhouette.tsv",
+          "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "pngSha256": "42eac521f46105a785699b2b21310035352776ac720ece912ca92779344a8844"
+        }
+      }
+    },
+    {
+      "key": "ole-enter-hwpx",
+      "backends": {
+        "native": {
+          "metrics": [
+            {
+              "page": 1,
+              "silhouette_method": "threshold_boundary_color_support_v1",
+              "silhouette_raw_match_percent": 100.0,
+              "silhouette_boundary_reconciled_pixels": 0,
+              "silhouette_color_tolerance": 32,
+              "silhouette_content_union_pixels": 22054,
+              "tolerant_content_match_percent": 100.0
+            }
+          ],
+          "pageCounts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage353-ole-empty-line-diagnostic/edited-hwpx-native/ole-enter-hwpx/silhouette.tsv",
+          "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "pngSha256": "42eac521f46105a785699b2b21310035352776ac720ece912ca92779344a8844"
+        },
+        "fresh": {
+          "metrics": [
+            {
+              "page": 1,
+              "silhouette_method": "threshold_boundary_color_support_v1",
+              "silhouette_raw_match_percent": 100.0,
+              "silhouette_boundary_reconciled_pixels": 0,
+              "silhouette_color_tolerance": 32,
+              "silhouette_content_union_pixels": 22054,
+              "tolerant_content_match_percent": 100.0
+            }
+          ],
+          "pageCounts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage353-ole-empty-line-diagnostic/edited-hwpx-fresh/ole-enter-hwpx/silhouette.tsv",
+          "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "pngSha256": "42eac521f46105a785699b2b21310035352776ac720ece912ca92779344a8844"
+        }
+      }
+    }
+  ],
+  "directReview": {
+    "pages": "원본 두 형식 각1쪽 및 한 번 Enter 저장본 두 형식 각1쪽",
+    "status": "직접 판독 완료",
+    "observations": [
+      "노란 배경 OLE 미리보기의 위치·전체 폭/높이·세 줄과 각 줄1~5 내용을 유지",
+      "원본과 편집본 전체 쪽수는 각각1쪽, Native/fresh PNG·TSV byte-identical",
+      "문단 끝 표식·커서는 Print에 나타나지 않아 시각 점수로 간격을 입증하지 않음; 원본 저장 pitch와 기존 공개 API 회귀/RenderTree 관계로 별도 확인",
+      "100% 실루엣 보조값은 픽셀 동일 주장이 아님; 미리보기 숫자의 래스터 차이는 남음"
+    ]
+  },
+  "printProvenance": {
+    "hwp": {
+      "job_id": "90391230-5db4-45be-84f5-dd97b158d482",
+      "status": "succeeded",
+      "phase": "completed",
+      "target": "pdf",
+      "engine": "2020",
+      "completed_at": "2026-10-09T19:21:18.738Z",
+      "elapsed_seconds": 13,
+      "output_bytes": 6865,
+      "errorPresent": false,
+      "result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    "hwpx": {
+      "job_id": "f1c5c280-8140-46cc-aa5e-45ae50e199ad",
+      "status": "succeeded",
+      "phase": "completed",
+      "target": "pdf",
+      "engine": "2024",
+      "elapsed_seconds": 11,
+      "completed_at": "2026-10-09T19:21:56.599Z",
+      "output_bytes": 6172,
+      "errorPresent": false,
+      "result": {
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+      }
+    }
+  },
+  "editedArtifacts": [
+    {
+      "path": "mydocs/pr/assets/issue7445/completed-20261009/ole-enter-hwp.hwp",
+      "sha256": "75f3dd5c4ef95e5d29c2ec254e1deba2a0b1279ecbf3e87c86a2968fc9daeff2"
+    },
+    {
+      "path": "pdf/issue2069/ole-enter-hwp-2020.pdf",
+      "sha256": "f08d96aaafcb1c5213394063f8ca238123100812284d2dc6379429d3c2fc1009"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/completed-20261009/ole-enter-hwpx.hwpx",
+      "sha256": "00234f9ecf0dace140026f7afbbd94ede0cd0ceba4526c7df1acd677e5bce54e"
+    },
+    {
+      "path": "pdf/issue2069/ole-enter-hwpx-2024.pdf",
+      "sha256": "b2622289b71002056a41f87be8bc341ee33725f7458d1b9529fafb3c28944d5c"
+    }
+  ],
+  "editedOperation": "각 원본에 split_paragraph_native(0,0,0,None) 한 번 후 해당 형식으로 저장; 진단 probe 사용, 활성 fixture/test 추가 아님",
+  "controls": [
+    {
+      "key": "issue265",
+      "pagesBefore": 16,
+      "pagesAfter": 16,
+      "changedPages": []
+    },
+    {
+      "key": "caption6078",
+      "pagesBefore": 1,
+      "pagesAfter": 1,
+      "changedPages": []
+    },
+    {
+      "key": "regulatory17",
+      "pagesBefore": 17,
+      "pagesAfter": 17,
+      "changedPages": []
+    },
+    {
+      "key": "pii66",
+      "pagesBefore": 66,
+      "pagesAfter": 66,
+      "changedPages": []
+    },
+    {
+      "key": "converted16",
+      "pagesBefore": 16,
+      "pagesAfter": 16,
+      "changedPages": []
+    },
+    {
+      "key": "object-only6950",
+      "pagesBefore": 3,
+      "pagesAfter": 3,
+      "changedPages": []
+    }
+  ],
+  "testOrBaselineChanges": false,
+  "newTestFunctions": 0,
+  "resolvedOriginalFailures": 29,
+  "remainingOriginalFailures": 38,
+  "latestFullNextest": "아직 재실행 전; PR 준비 미완료"
+}
