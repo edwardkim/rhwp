@@ -304,7 +304,7 @@ impl LayoutEngine {
                                     .max(0.0),
                                 height: col_area.height - (pic_y - col_area.y),
                             };
-                            result_y = self.layout_body_picture(
+                            let picture_placement = self.layout_body_picture(
                                 tree,
                                 col_node,
                                 pic,
@@ -326,6 +326,17 @@ impl LayoutEngine {
                                 control_index,
                                 vpos_accounts_for_height,
                             );
+                            result_y = picture_placement.flow_end;
+                            if matches!(pic.common.vert_rel_to, VertRelTo::Para)
+                                && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
+                            {
+                                let previous = self.last_item_content_bottom.get();
+                                self.last_item_content_bottom.set(if previous.is_finite() {
+                                    previous.max(picture_placement.content_bottom)
+                                } else {
+                                    picture_placement.content_bottom
+                                });
+                            }
                             if let Some(placement) = stored_picture {
                                 result_y = col_area.y
                                     + placement.paragraph_end(saved_y_offset - col_area.y, 0.0);

@@ -1,0 +1,138 @@
+{
+  "validationParentHead": "e51d3a3a30d492d69e6e4204b5b1e0a6d49e2ac1",
+  "sourceFiles": {
+    "src/renderer/layout.rs": "b3265356126b74fdea3a69b337d9f876a7fecec57c49b3577ae1081dedcb8e2f",
+    "src/renderer/layout/picture_footnote.rs": "18de598d4fa100750e2e17e24ebc58e41ee333fccc0c5d42ad08fa982941538c"
+  },
+  "source": "samples/issue_265.hwp",
+  "alias": "samples/hwp3-sample.hwp",
+  "sourceSha256": "645525c8cd5ec11b1742ba7cfc759f68622861916233b5e982385cdb12f0ced2",
+  "referencePdf": "pdf/issue_265-hwp-2020.pdf",
+  "referencePdfSha256": "c8e4218c7b80f1fb4f7877f5613eb6fd82fa1ca2b1ca3cde6266b81586357302",
+  "compat": "2022",
+  "dpi": 96,
+  "profile": "print",
+  "fontPath": "/Users/tsjang/Library/Fonts",
+  "testsChanged": false,
+  "newTests": 0,
+  "baselineChanged": false,
+  "nextest": {
+    "run": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 626,
+    "seconds": 4.288,
+    "exitCode": 0,
+    "logSha256": "fe9f4ae9ea328172166784bfac59fccbedf51675898ca1340cd6b085ec0a3191"
+  },
+  "visual": [
+    {
+      "key": "issue265",
+      "backend": "native",
+      "pages": 16,
+      "minimum": 91.17993,
+      "below90": [],
+      "sameAsQualifiedPriorPages": 16,
+      "tsvSha256": "fb6c1e3d65e29d371ead1f04bc08f7de8e185b400d89ea9110eecb2bdf7cce81"
+    },
+    {
+      "key": "issue265",
+      "backend": "fresh",
+      "pages": 16,
+      "minimum": 91.17993,
+      "below90": [],
+      "sameAsQualifiedPriorPages": 16,
+      "tsvSha256": "fb6c1e3d65e29d371ead1f04bc08f7de8e185b400d89ea9110eecb2bdf7cce81"
+    },
+    {
+      "key": "caption6078",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 92.40511,
+      "below90": [],
+      "sameAsQualifiedPriorPages": 1,
+      "tsvSha256": "0667ca44771753d6d92b5d6a169e0bdfba8d3b86c5d72f9f111e0ecea71bc984"
+    },
+    {
+      "key": "caption6078",
+      "backend": "fresh",
+      "pages": 1,
+      "minimum": 92.40511,
+      "below90": [],
+      "sameAsQualifiedPriorPages": 1,
+      "tsvSha256": "0667ca44771753d6d92b5d6a169e0bdfba8d3b86c5d72f9f111e0ecea71bc984"
+    }
+  ],
+  "sourceControls": [
+    {
+      "key": "issue265",
+      "source": "samples/issue_265.hwp",
+      "pagesBefore": 16,
+      "pagesAfter": 16,
+      "changedPages": [],
+      "byteIdentical": true
+    },
+    {
+      "key": "caption6078",
+      "source": "samples/hwp3-table-caption.hwp",
+      "pagesBefore": 1,
+      "pagesAfter": 1,
+      "changedPages": [],
+      "byteIdentical": true
+    },
+    {
+      "key": "regulatory17",
+      "source": "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue7445/80250_regulatory_analysis.hwp",
+      "pagesBefore": 17,
+      "pagesAfter": 17,
+      "changedPages": [],
+      "byteIdentical": true
+    },
+    {
+      "key": "pii66",
+      "source": "/Users/tsjang/rhwp-7445-completed-20261009/samples/task2097/75544_pii_bunseok.hwpx",
+      "pagesBefore": 66,
+      "pagesAfter": 66,
+      "changedPages": [],
+      "byteIdentical": true
+    }
+  ],
+  "actualOverflowCounterexample": [
+    {
+      "mode": "normal",
+      "exitCode": 0,
+      "warning": false,
+      "rows": [
+        {
+          "forced": false,
+          "page": 9,
+          "paragraph": 97,
+          "paintedBottom": 973.0666666666667,
+          "bodyBottom": 1009.12,
+          "outside": false
+        }
+      ]
+    },
+    {
+      "mode": "forced",
+      "exitCode": 0,
+      "warning": true,
+      "rows": [
+        {
+          "forced": true,
+          "page": 9,
+          "paragraph": 97,
+          "paintedBottom": 2095.5733333333333,
+          "bodyBottom": 1009.12,
+          "outside": true
+        }
+      ]
+    }
+  ],
+  "macFreshBuild": "Mac no-opt wasm-pack, 3m00; Docker 최적화 빌드 아님",
+  "binarySha256": "9e47022ba3e0f459c09c7cd1844b79d49d66eb520a41186d311369825f6a42df",
+  "freshWasmSha256": "24f42bbfd2bbf9915ab37cf35414b893af16cee11265dd7d2534297cd52a4302",
+  "remainingFailures": 56,
+  "wholeRegressionReexecuted": false,
+  "directReading": "9쪽의 그림과 캡션은 본문 안에 있으며 소속·중복·뒤 여백을 확인. 기존 수용 출력과 Native/fresh 17쪽 PNG 동일. 로고 테두리 등 작은 기준 출력 차이는 남아 있으며 픽셀 동일을 주장하지 않음."
+}

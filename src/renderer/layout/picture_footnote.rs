@@ -22,6 +22,13 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, TextWrap, VertAlign, VertRelTo,
 };
+
+/// 본문 그림의 표시 끝과 후속 흐름 원점은 서로 다른 소유를 가진다.
+pub(crate) struct BodyPicturePlacement {
+    pub flow_end: f64,
+    pub content_bottom: f64,
+}
+
 use crate::model::style::{Alignment, LineSpacingType};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -739,7 +746,7 @@ impl LayoutEngine {
         .position(common, obj_width, obj_height)
     }
 
-    /// 본문 그림(Picture) 개체를 레이아웃하고 업데이트된 y_offset을 반환한다.
+    /// 본문 그림을 배치하고, 같은 확정 원점에서 표시 하단과 흐름 끝을 반환한다.
     pub(crate) fn layout_body_picture(
         &self,
         tree: &mut PageLayoutContext,
@@ -760,7 +767,7 @@ impl LayoutEngine {
         // 그림을 그 gap 안(바닥이 그림 para 줄에 정렬)에 그리고 flow 를 그림 높이만큼 추가
         // 진행하지 않는다. 이중 계상(gap + draw-advance) 방지.
         vpos_accounts_for_height: bool,
-    ) -> f64 {
+    ) -> BodyPicturePlacement {
         // 그림 크기 (HWPUNIT → 픽셀)
         // [Issue #1230] 측면흐름 wrap 은 common(개체 틀) 프레임으로 그린다.
         let (pic_width_hu, pic_height_hu) = super::utils::picture_flow_frame_size_hu(picture);
@@ -930,6 +937,7 @@ impl LayoutEngine {
         );
 
         parent_node.children.push(img_node);
+        let mut content_bottom = pic_y + pic_height;
 
         // 그림 테두리(선) 렌더링
         self.render_picture_border(
@@ -970,6 +978,7 @@ impl LayoutEngine {
                 }
             };
 
+            content_bottom = content_bottom.max(cap_y + caption_height);
             let cell_ctx = super::CellContext {
                 in_textbox: false,
                 parent_para_index: para_index,
@@ -1008,13 +1017,17 @@ impl LayoutEngine {
         // 상자 하단(잉크 + 위·아래 여백) y가 된다. y_offset(앵커 단락 y) 대신 base_y를
         // 기준으로 반환해야 vert_offset이 있는 혼합 단락(텍스트+그림)에서 후속 단락이
         // 그림 위로 겹치지 않는다.
-        match (picture.common.vert_rel_to, picture.common.text_wrap) {
+        let flow_end = match (picture.common.vert_rel_to, picture.common.text_wrap) {
             (VertRelTo::Para, TextWrap::BehindText | TextWrap::InFrontOfText) => y_offset,
             // [Task #1079] 파일 vpos 가 그림 공간을 이미 반영하면 그림은 gap 안에 그려졌고
             // 후속 문단은 파일 vpos(그림 para 줄)로 흐르므로 추가 진행 없이 base_y 반환.
             (VertRelTo::Para, _) if vpos_accounts_for_height => base_y,
             (VertRelTo::Para, _) => base_y + box_height,
             (VertRelTo::Page | VertRelTo::Paper, _) => y_offset,
+        };
+        BodyPicturePlacement {
+            flow_end,
+            content_bottom,
         }
     }
 

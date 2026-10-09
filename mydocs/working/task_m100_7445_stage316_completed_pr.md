@@ -535,3 +535,45 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
 - [관계 검사·실제 RED/최종 PASS 요약](../pr/assets/issue7445/completed-20261009/issue265-existing-relations-validation.json),
   [다중 줄 캡션 표 review](../pr/assets/issue7445/completed-20261009/caption6078-p001-owned-line-review.png)를 포함합니다.
   전체 실패 이름·명령·로그는 ignored `stage334-issue265-relations/`에 유지합니다.
+
+
+## 보정 335 분석: 본문 그림의 표시 하단과 후행 흐름을 구분
+
+- 남은 `injection_inspection_contract` 두 함수는 같은 `hwp3-sample.hwp` 원본을 읽습니다.
+  원본 SHA는 전쪽 Native/fresh 수용한 issue_265와 같으며, 기존 검사 실패는 JSON/exit가 아니라
+  `export-text --json`의 stderr에 나온 `LAYOUT_OVERFLOW`입니다. 검사 계약은 변경하지 않습니다.
+- 9쪽 마지막 그림 pi97은 실제 Render Tree의 표시가 본문 안에 있지만, 본문 그림 경로가
+  `last_item_content_bottom`을 기록하지 않아 넘침 진단이 호스트 줄까지 진행한 `y_offset`으로 폴백합니다.
+  그림/캡션 표시 하단과 그림 뒤 빈 호스트 줄의 진행은 별도 값입니다. 페이지네이션 허용치를
+  본문 영역에 더하거나 경고 출력을 숨기는 처리는 하지 않습니다.
+- `layout_body_picture`의 확정된 그림·캡션 원점/높이로 표시 하단과 흐름 끝을 함께 반환합니다.
+  일반 본문의 Para/TopAndBottom 그림은 표시 하단을 기존 콘텐츠 하단 기록에 공급하고,
+  호스트 줄·저장 후속 원점 등 이후 흐름 분기는 기존 흐름 끝을 계속 소비합니다.
+  Paper/Page 배경 경로는 표시를 하되 본문 흐름을 점유하지 않으므로 그 하단을 본문 진단에 넣지 않습니다.
+- `last_item_content_bottom`은 넘침뿐 아니라 다음 항목 HeightCursor의 앞 콘텐츠 하단에도 연결됩니다.
+  의도만으로 좌표 불변을 주장하지 않고 원본 16쪽·캡션 대조군 및 완료 대조군 83쪽의 실제 산출을 대조합니다.
+  실제 그림이 본문 밖에 놓인 IR 음성 대조에서는 넘침 경고를 계속 검출하는지도 확인합니다.
+
+
+## 보정 335 결과: 잘못된 그림 넘침 진단 해결
+
+- 기존 집중 nextest는 **7 PASS / 0 FAIL / 626 skipped**, 4.288초, exit 0입니다.
+  기존 `injection_inspection_contract` 실패 두 함수가 모두 통과했습니다. assertion·baseline을
+  바꾸지 않았으며 이전 67개 중 확인된 해결은 11개, 재검증된 잔여는 56개입니다.
+  전체 회귀를 다시 실행한 결과가 아니므로 PR 준비 완료로 표시하지 않습니다.
+- 같은 원본 16쪽 Native/fresh는 **최저 91.17993%·미달 0**, 캡션 표 1쪽은
+  **92.40511%·미달 0**입니다. 17쪽 PNG는 기존 수용 출력과 바이트가 같습니다.
+  실제 Chrome과 이번 source의 Mac no-opt WASM(3분)으로 재출력했고, 생성 public JS는
+  이 작업의 빌드 차이만 확인해 HEAD로 복원했습니다. ignored pkg는 검증한 fresh입니다.
+- 같은 비임베딩 SVG·선언 글꼴 환경·인쇄 프로필로 4종·100쪽을 다시 산출해
+  수정 전후 바이트 동일을 확인했습니다. 이 대조 범위를 넘어 전체 코퍼스 무회귀를 주장하지 않습니다.
+- 원본 9쪽 그림의 실제 하단은 본문 안이며 넘침 경고가 없습니다. 같은 IR 그림을 용지 높이만큼
+  이동한 음성 대조에서는 실제 표시 하단이 본문 밖이고 `LAYOUT_OVERFLOW`가 계속 나옵니다.
+  진단 경고를 숨기거나 페이지 허용치를 진단 기준에 더하지 않았습니다. 이 변이 입력은
+  진단 전용이며 새 fixture·회귀로 등록하거나 정상 시각 수용 자료로 간주하지 않습니다.
+- 9쪽 review를 직접 열어 그림·캡션 소속, 중복 없음, 뒤 여백을 확인했습니다. 기준 PDF의
+  로고 테두리 등 작은 차이는 남아 있으며 픽셀 동일을 주장하지 않습니다.
+- [보정·시각·회귀·음성 대조 요약](../pr/assets/issue7445/completed-20261009/issue265-picture-content-bottom-validation.json),
+  [9쪽 review](../pr/assets/issue7445/completed-20261009/issue265-p009-content-bottom-review.png),
+  [9쪽 overlay](../pr/assets/issue7445/completed-20261009/issue265-p009-content-bottom-overlay.png)를 보존합니다.
+  전체 TSV·명령·로그·진단 스크립트는 ignored `stage335-failure-source-review/`에 있습니다.
