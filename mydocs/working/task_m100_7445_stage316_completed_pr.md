@@ -1403,3 +1403,37 @@ Visual Sweep은 이 범위에 비해당이며 실제 문서 수용으로 보고�
 37개 중 WMF 한 함수의 통과를 추가 확인했으며 최신 전체·잔여 목록 실행은
 아직 하지 않았습니다. PR 준비 완료가 아닙니다.
 [합성 입력 범위·RED/GREEN·로그 해시·검사 계약](../pr/assets/issue7445/completed-20261009/wmf-container-contract-validation.json).
+
+
+## 보정 361 사전 분석: KTX 목차의 SVG 고정 검사
+
+#267 검사는 `samples/KTX.hwp`의 목차 한 쪽을 전체 SVG 문자열로 고정합니다.
+현재 원본은 Native 27쪽·한컴 2018 저장본으로 engine=2020 대상입니다.
+원본의 저장 인쇄 방법은 4(모아 찍기)이므로 새 독립 Print에서 method=0과
+한 쪽씩 출력 모드를 실제 job 결과로 확인합니다. 기존 PDF의 파일명만으로
+Print 정본을 확정하지 않습니다. 같은 원본 전체 Native/fresh base/head TSV와
+직접 review를 먼저 확보해 기존 검사 적합성과 현재 회귀를 분리합니다.
+90% 미만·쪽수 차이·측정 불가이면 기대값을 바꾸지 않습니다. 현재 검사·
+fixture·골든·생산 코드는 그대로입니다.
+
+
+### 보정 361 정본 PDF 결과 — 27쪽 한 쪽씩 Print 확인
+
+engine=2020 job은 성공했고 실제 한컴 11.0.0.9136 / Print method=0 /
+`hancom2020_pdf_driver_one_up`을 확인했습니다. 새 PDF는 27쪽·718,310 bytes이며
+`pdf/basic/KTX-hwp-2020.pdf`의 기존 PDF를 대체합니다. 원본 입력은 변경하지
+않았고 이전 PDF는 ignored output에 비교용으로 보존했습니다. PDF 생성 계약을
+확인한 이 결과부터 별도 커밋합니다.
+
+고정 devel Native의 전체 27쪽 TSV는 누락·쪽수 차이 없이 완료됐으나
+**2쪽 50.35805%, 26쪽 71.16440%**로 시각 gate가 실패(exit 1)했습니다.
+이는 정상적인 측정 완료 뒤 미달 판정이며 실패를 성공으로 바꾸지 않습니다.
+현재 Native/fresh와 base fresh의 전체 비교는 이어서 진행 중입니다. 첫 실행
+드라이버가 base의 gate 실패에서 종료되어, 이미 완료된 base를 다시 돌리지
+않고 나머지 세 비교를 계속하도록 수정했습니다. 완료 TSV가 있는 명시적
+`re_review_required`만 보류 결과로 기록해 계속하며 다른 오류는 중단합니다.
+기대값·골든·검사는 아직 변경하지 않았고 PR 준비 완료가 아닙니다.
+
+[원본·실제 Print·PDF 해시·base 미달 근거](../pr/assets/issue7445/completed-20261009/ktx-reference-print-validation.json),
+[devel 2쪽 review](../pr/assets/issue7445/completed-20261009/ktx-base-p002-review.png),
+[devel 26쪽 review](../pr/assets/issue7445/completed-20261009/ktx-base-p026-review.png).
