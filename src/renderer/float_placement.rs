@@ -3241,8 +3241,7 @@ pub(crate) fn stored_picture_before_host_placement(
     let prev = previous.line_segs.last()?;
     let next = successor.line_segs.first()?;
     let common = &picture.common;
-    if !para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
-        || para.column_type != crate::model::paragraph::ColumnBreakType::None
+    if para.column_type != crate::model::paragraph::ColumnBreakType::None
         || successor.column_type != crate::model::paragraph::ColumnBreakType::None
         || [prev, host, next]
             .iter()
@@ -3251,7 +3250,6 @@ pub(crate) fn stored_picture_before_host_placement(
         || common.text_wrap != TextWrap::TopAndBottom
         || common.vert_rel_to != VertRelTo::Para
         || common.vert_align != VertAlign::Top
-        || picture.caption.is_some()
         || !dpi.is_finite()
         || dpi <= 0.0
         || !actual_host_flow_y.is_finite()
@@ -3268,8 +3266,9 @@ pub(crate) fn stored_picture_before_host_placement(
     let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
     let top = anchor_y + hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
     let (_, height) = picture_flow_frame_size_hu(picture);
+    // 글자 표시 여부와 별개로 저장 호스트 줄은 그림·캡션 뒤의 공간을 소유한다.
     let bottom = top
-        + hwpunit_to_px(height, dpi)
+        + super::composer::captioned_picture_height_px(picture, dpi)
         + hwpunit_to_px(
             i32::from(common.margin.top) + i32::from(common.margin.bottom),
             dpi,

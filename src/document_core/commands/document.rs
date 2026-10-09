@@ -325,17 +325,15 @@ impl DocumentCore {
             include_empty,
             include_cell_empty,
         );
-        // 빈 캡션도 원본 글자모양의 줄 상자를 소유한다. 측정과 배치가 같은
-        // 구성 결과를 사용하도록 누락 줄만 로드 시점에 보완한다.
-        if include_cell_empty {
-            for section in &mut document.sections {
-                Self::reflow_empty_caption_paragraphs(
-                    &mut section.paragraphs,
-                    &styles,
-                    DEFAULT_DPI,
-                    0,
-                );
-            }
+        // 캡션의 표시 여부·문서 계보와 별개로 글자모양은 실제 줄 상자를 정의한다.
+        // 예약과 배치가 같은 구성 결과를 쓰도록 없는 캡션 줄만 보완한다.
+        for section in &mut document.sections {
+            Self::reflow_unstored_caption_paragraphs(
+                &mut section.paragraphs,
+                &styles,
+                DEFAULT_DPI,
+                0,
+            );
         }
         Self::clear_missing_lineseg_placeholders(&mut document);
 
@@ -561,9 +559,9 @@ impl DocumentCore {
         }
     }
 
-    /// 저장 줄이 없는 빈 캡션의 높이를 원본 글자모양으로 구성한다.
+    /// 저장 줄이 없는 캡션을 실제 프레임 너비와 원본 글자모양으로 구성한다.
     /// 기존 저장 줄과 컨트롤 호스트는 별도 계약이므로 재조판하지 않는다.
-    fn reflow_empty_caption_paragraphs(
+    fn reflow_unstored_caption_paragraphs(
         paragraphs: &mut [crate::model::paragraph::Paragraph],
         styles: &ResolvedStyleSet,
         dpi: f64,
@@ -575,17 +573,33 @@ impl DocumentCore {
         }
         for para in paragraphs {
             for control in &mut para.controls {
-                let caption = match control {
-                    Control::Table(table) => &mut table.caption,
-                    Control::Picture(picture) => &mut picture.caption,
+                let (caption, frame_width_hu) = match control {
+                    Control::Table(table) => (
+                        &mut table.caption,
+                        crate::renderer::float_placement::signed_hwpunit(table.common.width),
+                    ),
+                    Control::Picture(picture) => {
+                        let (width, _) =
+                            crate::renderer::layout::picture_flow_frame_size_hu(picture);
+                        (&mut picture.caption, width)
+                    }
                     _ => continue,
                 };
                 if let Some(caption) = caption {
-                    let width = crate::renderer::hwpunit_to_px(caption.width as i32, dpi);
+                    let width_hu = match caption.direction {
+                        crate::model::shape::CaptionDirection::Top
+                        | crate::model::shape::CaptionDirection::Bottom => frame_width_hu,
+                        crate::model::shape::CaptionDirection::Left
+                        | crate::model::shape::CaptionDirection::Right => caption.width as i32,
+                    };
+                    let width = crate::renderer::hwpunit_to_px(width_hu, dpi);
                     for caption_para in &mut caption.paragraphs {
                         if caption_para.line_segs.is_empty()
-                            && caption_para.text.is_empty()
-                            && caption_para.controls.is_empty()
+                            && width > 0.0
+                            && caption_para
+                                .controls
+                                .iter()
+                                .all(|c| matches!(c, Control::AutoNumber(_)))
                             && caption_para.char_count > 0
                             && caption_para.char_shapes.iter().any(|shape| {
                                 styles
@@ -606,7 +620,7 @@ impl DocumentCore {
                             );
                         }
                     }
-                    Self::reflow_empty_caption_paragraphs(
+                    Self::reflow_unstored_caption_paragraphs(
                         &mut caption.paragraphs,
                         styles,
                         dpi,
@@ -615,7 +629,7 @@ impl DocumentCore {
                 }
                 if let Control::Table(table) = control {
                     for cell in &mut table.cells {
-                        Self::reflow_empty_caption_paragraphs(
+                        Self::reflow_unstored_caption_paragraphs(
                             &mut cell.paragraphs,
                             styles,
                             dpi,

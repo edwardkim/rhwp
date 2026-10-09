@@ -278,9 +278,11 @@ impl TypesetEngine {
                             }
                         }
                         // 저장된 그림 앞 공간과 뒤 호스트 줄을 하나의 프레임으로 예약한다.
-                        // 저장 줄이 있는 원본의 현재 단에서만 확정하고 편집 흐름에는 적용하지 않는다.
+                        // HWP3 변환본도 원본 줄의 앞·개체·뒤 경계가 모두 닫히면 같은 프레임이다.
+                        // 현재 단에서만 확정하고 편집 흐름에는 적용하지 않는다.
                         if (self.profile.get().hwp5_stored_pagination_layout()
-                            || self.profile.get().hwpx_stored_layout())
+                            || self.profile.get().hwpx_stored_layout()
+                            || self.profile.get().hwp3_layout())
                             && !self.profile.get().session_edited()
                             && (st.pages.len(), st.current_column)
                                 == (picture_host_origin.0, picture_host_origin.1)

@@ -55,8 +55,184 @@ fn hwp3_sample5_hwpx_64p() {
 
 #[test]
 fn hwp3_sample_hwp5_16p() {
-    // HWP3 변환본: 한컴 정답 16p
-    assert_eq!(page_count("samples/hwp3-sample-hwp5.hwp"), 16);
+    use rhwp::{document_core::DocumentCore, model::control::Control};
+    use serde_json::Value;
+    use std::process::Command;
+
+    fn nodes<'a>(node: &'a Value, result: &mut Vec<&'a Value>) {
+        result.push(node);
+        for child in node["children"].as_array().into_iter().flatten() {
+            nodes(child, result);
+        }
+    }
+    fn top(node: &Value) -> f64 {
+        node["bbox"]["y"].as_f64().expect("노드 상단")
+    }
+    fn bottom(node: &Value) -> f64 {
+        top(node) + node["bbox"]["h"].as_f64().expect("노드 높이")
+    }
+    struct OwnedOutput(std::path::PathBuf);
+    impl Drop for OwnedOutput {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let source = root.join("samples/hwp3-sample-hwp5.hwp");
+    let bytes = fs::read(&source).expect("원본 HWP3 변환 문서");
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 열기");
+    assert_eq!(core.page_count(), 16, "독립 한컴 Print와 같은 전체 쪽 소속");
+    let paragraphs = &core.document().sections[0].paragraphs;
+    let host = paragraphs
+        .iter()
+        .position(|para| {
+            para.controls.iter().any(|control| {
+                let Control::Picture(picture) = control else {
+                    return false;
+                };
+                picture.caption.as_ref().is_some_and(|caption| {
+                    caption
+                        .paragraphs
+                        .iter()
+                        .any(|p| p.text.contains("NAT에 의한 가상 서버의 예"))
+                })
+            })
+        })
+        .expect("원본 캡션이 가리키는 그림 호스트");
+    let [Control::Picture(picture)] = paragraphs[host].controls.as_slice() else {
+        panic!("원본 호스트 그림 한 개")
+    };
+    assert!(
+        paragraphs[host].text.trim().is_empty(),
+        "빈 호스트도 저장 줄 공간을 소유"
+    );
+    let previous = &paragraphs[host - 1];
+    let last = previous.line_segs.last().expect("그림 앞 저장 줄");
+    let offset = i64::from(picture.common.vertical_offset as i32)
+        + i64::from(picture.common.margin.top)
+        + i64::from(last.line_spacing);
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let out = OwnedOutput(
+        root.join("output/regression")
+            .join(format!("converted16-{}-{stamp}", std::process::id())),
+    );
+    fs::create_dir_all(&out.0).expect("검사 소유 output 디렉터리");
+    let bin = std::env::var("CARGO_BIN_EXE_rhwp")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_owned());
+    let result = Command::new(bin)
+        .arg("export-render-tree")
+        .arg(&source)
+        .args(["--compat", "2022"])
+        .arg("-o")
+        .arg(&out.0)
+        .output()
+        .expect("실제 CLI 배치");
+    assert!(
+        result.status.success(),
+        "배치 실패: {}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    let mut files: Vec<_> = fs::read_dir(&out.0)
+        .unwrap()
+        .map(|p| p.unwrap().path())
+        .filter(|p| p.extension().is_some_and(|s| s == "json"))
+        .collect();
+    files.sort();
+    assert_eq!(files.len(), 16, "CLI 전체 쪽과 누락 없음");
+    let trees: Vec<Value> = files
+        .iter()
+        .map(|p| serde_json::from_slice(&fs::read(p).unwrap()).unwrap())
+        .collect();
+    let mut flattened = Vec::new();
+    nodes(&trees[7], &mut flattened);
+    let images: Vec<_> = flattened
+        .iter()
+        .copied()
+        .filter(|n| n["type"] == "Image" && n["pi"].as_u64() == Some(host as u64))
+        .collect();
+    assert_eq!(images.len(), 1, "독립 Print 8쪽의 그림 소유와 중복 없음");
+    let captions: Vec<_> = flattened
+        .iter()
+        .copied()
+        .filter(|n| {
+            n["type"] == "TextLine" && n["captionOwner"]["paraIdx"].as_u64() == Some(host as u64)
+        })
+        .collect();
+    assert_eq!(captions.len(), 1, "같은 그림의 한 줄 캡션");
+    let lines = |pi: usize| {
+        flattened
+            .iter()
+            .copied()
+            .filter(|n| {
+                n["type"] == "TextLine"
+                    && n["pi"].as_u64() == Some(pi as u64)
+                    && n["captionOwner"].is_null()
+            })
+            .collect::<Vec<_>>()
+    };
+    let previous_lines = lines(host - 1);
+    assert_eq!(
+        previous_lines.len(),
+        previous.line_segs.len(),
+        "선행 원본 줄 보존"
+    );
+    // RenderTree JSON의 0.1px 직렬화 반올림 두 번만 허용한다. 문서 절대 좌표 핀이 아니다.
+    let serialization_error = 2.0 * 0.1;
+    let expected_gap = rhwp::renderer::hwpunit_to_px(offset as i32, 96.0);
+    assert!(
+        (top(images[0]) - bottom(previous_lines.last().unwrap()) - expected_gap).abs()
+            <= serialization_error,
+        "그림 앞 저장 줄 진행·개체 offset·여백을 한 번 소비"
+    );
+    assert!(top(captions[0]) >= bottom(images[0]), "캡션은 그림 아래");
+    let next = lines(host + 1);
+    assert_eq!(next.len(), 1, "그림 뒤 본문은 같은 쪽에 한 번");
+    assert!(top(next[0]) >= bottom(captions[0]), "본문은 캡션 아래");
+    let tables: Vec<_> = flattened
+        .iter()
+        .copied()
+        .filter(|n| n["type"] == "Table")
+        .collect();
+    assert_eq!(tables.len(), 5, "독립 Print의 규칙 표와 네 패킷 표");
+    let source_owners: Vec<_> = paragraphs
+        .iter()
+        .enumerate()
+        .skip(host + 1)
+        .take_while(|(_, p)| {
+            p.line_segs
+                .first()
+                .is_some_and(|line| line.vertical_pos > 0)
+        })
+        .filter(|(_, p)| p.controls.iter().any(|c| matches!(c, Control::Table(_))))
+        .map(|(pi, _)| pi)
+        .collect();
+    let rendered_owners: Vec<_> = tables
+        .iter()
+        .map(|n| n["pi"].as_u64().expect("표 문단 소유") as usize)
+        .collect();
+    assert_eq!(
+        rendered_owners, source_owners,
+        "쪽 안의 원본 표 순서와 누락/중복 없음"
+    );
+    for table in tables {
+        let pi = table["pi"].as_u64().unwrap() as usize;
+        let before = lines(pi - 1);
+        assert!(
+            !before.is_empty() && top(table) >= bottom(before.last().unwrap()),
+            "표가 앞 본문 위로 되감기지 않음: pi={pi}"
+        );
+        let after = lines(pi + 1);
+        if pi != *source_owners.last().unwrap() {
+            assert!(
+                !after.is_empty() && top(after[0]) >= bottom(table),
+                "표 뒤 본문이 같은 쪽에 있고 표를 침범하지 않음: pi={pi}"
+            );
+        }
+    }
 }
 
 #[test]
