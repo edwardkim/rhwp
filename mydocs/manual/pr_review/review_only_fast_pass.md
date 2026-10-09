@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-14
+last_verified: 2026-10-09
 ---
 
 # Review-only fast-pass
@@ -33,6 +33,11 @@ repository id와 PR 생성 이후 실행 여부를 함께 확인한다. 따라�
 `pull_requests` 배열이 비어 있어도, 다른 PR·다른 fork·PR 생성 전 실행 결과는 재사용하지 않는다.
 
 ## A. code PR 뒤의 trailing review-only commit
+
+collaborator self PR은 [역할별 기록 순서](collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)에
+따라 **현재 code head의 GitHub Actions CI 성공을 먼저 확인한 뒤** review·오늘할일 trailing
+commit을 만든다. PR 번호 확보나 로컬 검증 완료만으로 기록을 먼저 push하지 않는다.
+이후 새 trailing head의 required check를 별도로 확인한다.
 
 contributor code PR의 뒤에 review 문서·오늘할일·허용된 신규 기준 자료를 추가하면 workflow는 현재 head에서
 거꾸로 확인해, **같은 PR source branch에서 실행된 녹색 code candidate SHA와 이후 변경이 모두 review-only인

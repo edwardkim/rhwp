@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-09-04
+last_verified: 2026-10-09
 ---
 
 # Documentation And Git Workflow
@@ -287,9 +287,12 @@ PR 댓글 톤은 과장하지 않는다. "정말 감사합니다", "정성스러
 - 구현과 로컬 검증이 끝난 merge 후보는 별도의 Draft 지시가 없으면 Open PR로 생성한다.
   Draft는 완료되지 않은 WIP를 공유하거나 조기 검토를 받는 목적을 작업지시자가 명시적으로 승인한
   경우에만 쓴다. 번호 확보 자체는 Draft 생성 근거가 아니다.
-- PR 생성으로 번호 `N`을 받으면 역할별 review 절차에 따라 `pr_N_review.md`와 필요한
-  오늘할일을 작성해 같은 PR branch의 후속 commit으로 push한다. 이 기록 commit을 포함한
-  최신 PR head가 CI와 최종 merge 판단의 기준이다.
+- collaborator self PR은 PR 생성으로 번호 `N`을 받은 뒤 **정확한 code head의 GitHub Actions CI
+  성공을 먼저 확인**한다. 그 뒤 `pr_N_review.md`와 필요한 review_impl·오늘할일에 code SHA,
+  CI run URL과 실제 결과를 기록하고 같은 PR branch의 문서-only trailing commit으로 push한다.
+  push 전 병합·링크 검증과 새 trailing head의 required check도 확인한다. 진행 중·실패·취소·미실행
+  CI를 완료로 기록하거나 로컬 검증으로 대체하지 않는다. 상세 순서는
+  [collaborator self PR](../pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)을 따른다.
 - 실수로 승인 없이 PR을 열었으면 작업지시자 지시에 따라 즉시 close하고, 후속 진행은 승인 대기 상태로 되돌린다.
 - PR 직전 전체 CI 성격의 긴 검증(`cargo test --verbose`, `cargo clippy -- -D warnings` 등)은
   focused test와 visual sweep 결과를 공유한 뒤 작업지시자 승인을 받은 경우에만 실행한다.
@@ -298,7 +301,8 @@ PR 댓글 톤은 과장하지 않는다. "정말 감사합니다", "정성스러
 
 ## Commit Rules
 
-- 보고서와 오늘할일 갱신은 task 브랜치에서 소스 변경과 함께 커밋한다.
+- 구현 보고서는 task 브랜치에서 해당 단계의 소스 변경과 함께 커밋한다. collaborator self PR의
+  PR review·오늘할일은 code head CI 성공 뒤 별도의 문서-only trailing commit으로 기록한다.
 - merge 전에는 `git status`를 확인한다.
 - 이슈 close 전에는 정정 commit이 `devel` 또는 대상 브랜치에 실제 포함되어 있는지 확인한다.
 - 사용자가 만들었을 수 있는 변경은 임의로 되돌리지 않는다.
