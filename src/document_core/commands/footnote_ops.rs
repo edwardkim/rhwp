@@ -13,18 +13,22 @@ use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::renderer::composer::{reflow_line_segs, restamp_indentation, ParagraphBox};
 
 impl DocumentCore {
+    /// 구역의 각주와 미주 번호를 문서 순서대로 다시 매긴다. 한컴처럼 두 종류는 번호를 따로
+    /// 매기고, 미주는 미주 넣기·미주 모양 적용과 같이 구역의 미주 시작 번호에서 시작한다.
     fn renumber_footnotes_in_section(&mut self, section_idx: usize) {
-        let mut number = 1u16;
-        for para in &mut self.document.sections[section_idx].paragraphs {
+        let section = &mut self.document.sections[section_idx];
+        let mut footnote_number = 1u16;
+        let mut endnote_number = section.section_def.endnote_shape.start_number.max(1);
+        for para in &mut section.paragraphs {
             for ctrl in &mut para.controls {
                 match ctrl {
                     Control::Footnote(footnote) => {
-                        footnote.number = number;
-                        number += 1;
+                        footnote.number = footnote_number;
+                        footnote_number = footnote_number.saturating_add(1);
                     }
                     Control::Endnote(endnote) => {
-                        endnote.number = number;
-                        number += 1;
+                        endnote.number = endnote_number;
+                        endnote_number = endnote_number.saturating_add(1);
                     }
                     Control::Table(table) => {
                         for cell in &mut table.cells {
@@ -32,12 +36,12 @@ impl DocumentCore {
                                 for cell_ctrl in &mut cell_para.controls {
                                     match cell_ctrl {
                                         Control::Footnote(footnote) => {
-                                            footnote.number = number;
-                                            number += 1;
+                                            footnote.number = footnote_number;
+                                            footnote_number = footnote_number.saturating_add(1);
                                         }
                                         Control::Endnote(endnote) => {
-                                            endnote.number = number;
-                                            number += 1;
+                                            endnote.number = endnote_number;
+                                            endnote_number = endnote_number.saturating_add(1);
                                         }
                                         _ => {}
                                     }
@@ -53,12 +57,12 @@ impl DocumentCore {
                                 for text_ctrl in &mut text_para.controls {
                                     match text_ctrl {
                                         Control::Footnote(footnote) => {
-                                            footnote.number = number;
-                                            number += 1;
+                                            footnote.number = footnote_number;
+                                            footnote_number = footnote_number.saturating_add(1);
                                         }
                                         Control::Endnote(endnote) => {
-                                            endnote.number = number;
-                                            number += 1;
+                                            endnote.number = endnote_number;
+                                            endnote_number = endnote_number.saturating_add(1);
                                         }
                                         _ => {}
                                     }
