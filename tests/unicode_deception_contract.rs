@@ -535,6 +535,10 @@ const CLEAN_CORPUS: &[&str] = &[
 
 #[test]
 fn ordinary_korean_documents_are_clean() {
+    assert!(
+        !CLEAN_CORPUS.is_empty(),
+        "정상 문서 표본을 비워서는 안 된다"
+    );
     let mut checked = 0usize;
     let mut noisy: Vec<String> = Vec::new();
     for rel in CLEAN_CORPUS {
@@ -559,9 +563,10 @@ fn ordinary_korean_documents_are_clean() {
             ));
         }
     }
-    assert!(
-        checked >= 8,
-        "표본을 거의 못 읽었습니다 — 이 가드가 공허하게 통과합니다 ({checked}건)"
+    assert_eq!(
+        checked,
+        CLEAN_CORPUS.len(),
+        "유지한 정상 문서를 모두 검사해야 한다 — 누락·파싱 실패를 오탐 없음으로 대신하지 않는다"
     );
     assert!(
         noisy.is_empty(),
