@@ -1,0 +1,55 @@
+{
+  "candidateParent": "bb47263edcfa89916808e09fd433206b55516bff",
+  "testSource": "tests/cases/issue_7084_supplemental_metrics.rs",
+  "testSourceSha256": "416a4c37b099478e1beb2f449fd52e9bce9ec34e6616b57a01f00d38c1c9a09b",
+  "changedExistingFunctions": [
+    "canvas_font_setup_preserves_positioned_painter_contract",
+    "measured_canvas_advance_matches_paint_after_ratio_exactly_once",
+    "canvas_css_rounding_is_not_undone_by_advance_conversion"
+  ],
+  "newTestFunctions": 0,
+  "productionChanged": false,
+  "fixtureChanged": false,
+  "baselineChanged": false,
+  "classification": "외부 측정 공급자의 CSS 크기·장평·전진 폭 합성 계약",
+  "originalDocumentVisualGate": "비해당: 세 함수는 원본 HWP/PDF를 입력으로 쓰지 않으며 한컴 시각 수용을 주장하지 않는다.",
+  "independentBasis": {
+    "spec": "mydocs/tech/한글문서파일형식_5.0_revision1.3.md 표 33: 장평·상대 크기·기준 크기 분리",
+    "contract": "가로 장평은 세로 선언/첨자 크기를 변경하지 않는다. 지정 CSS 크기의 측정 폭에 장평을 한 번 적용하며 CSS 반올림을 원래 크기로 역보정하지 않는다.",
+    "providerInputs": [
+      27.531,
+      16.731
+    ],
+    "providerInputMeaning": "통제한 외부 입력값이며 특정 이모지의 보편적인 폭 또는 실제 한컴 관측값을 의미하지 않는다."
+  },
+  "consumerPaths": [
+    "src/renderer/canvas_text_font.rs: descriptor/draw_size/horizontal_scale/natural_advance",
+    "src/renderer/web_canvas.rs: for_positioned_text → set_font → 실제 가로 그리기",
+    "src/renderer/supplemental_metrics.rs: from_canvas_measurement → natural_advance → 조판 advance"
+  ],
+  "oldAssertions": {
+    "ratio081Superscript": "12.600px와 sqrt(0.81)=0.9를 요구해 세로 크기까지 축소",
+    "ratio064": "가로 sqrt(0.64)=0.8을 요구해 단일 장평 계약과 불일치",
+    "cssRounding": "13.333333 선언 크기에 장평을 먼저 섞은 11.926px와 sqrt(0.8) 폭을 요구"
+  },
+  "before": {
+    "failedExistingFunctions": 3,
+    "evidence": "stage334-issue265-relations/prior-failures-and-relations-nextest.log",
+    "logSha256": "070f67cb974f48feb2110a35321653f5a464b74deea5f79112e687ee0c210b31"
+  },
+  "after": {
+    "tests": 21,
+    "passed": 21,
+    "failed": 0,
+    "skipped": 183,
+    "seconds": 0.041,
+    "threads": 8,
+    "exitCode": 0,
+    "logSha256": "cff4eba29512d955bf187ee453233df185b3d4de4a17e0f4d82e71c44f793648"
+  },
+  "retainedControls": "오래된 한글 descriptor, 첨자 크기, 잘못된 descriptor/입력 단위/advance 거부, 문서·폰트·backend 세대 무효화, 기존 hmtx 측정, 제공자 폭·간격 한 번 소비 등 같은 파일의 21개 기존 함수 유지",
+  "remainingOriginalFailures": 53,
+  "confirmedRecoveredOriginalFailures": 14,
+  "readyForPR": false,
+  "ignoredArtifacts": "output/pr-review/7445-completed-20261009/stage341-canvas-provider-contract"
+}

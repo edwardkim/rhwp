@@ -1,5 +1,5 @@
-//! #7084 A: controlled provider contracts, not a Hancom visual oracle.
-//! Advances below are independent provider inputs; no universal emoji width.
+//! #7084 A: 측정 공급자의 합성 계약 검사다. 실물 한컴 출력 수용을 주장하지 않는다.
+//! 전진 폭은 독립 공급자 입력값이며 이모지의 보편적인 폭을 가정하지 않는다.
 use std::sync::Arc;
 
 use rhwp::renderer::canvas_text_font::CanvasTextFont;
@@ -93,6 +93,10 @@ fn canvas_measured_advance_receives_declared_horizontal_ratio_once() {
                 ..style()
             };
             let font = CanvasTextFont::for_positioned_text(&s, 0.0);
+            near(
+                font.draw_size(),
+                s.font_size * if script { 0.7 } else { 1.0 },
+            );
             let entry = SupplementalMetric::from_canvas_measurement(
                 &s,
                 "😀",
