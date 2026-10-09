@@ -174,7 +174,7 @@ pub(super) fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph)
 }
 
 /// `after_control` 이면 `text_offset` 자리에 놓인 개체 뒤를 가리킨다.
-fn text_to_split_logical_offset(
+pub(super) fn text_to_split_logical_offset(
     para: &Paragraph,
     text_offset: usize,
     after_control: bool,

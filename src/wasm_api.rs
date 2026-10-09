@@ -8754,6 +8754,8 @@ impl HwpDocument {
     }
 
     /// HTML 문자열을 파싱하여 캐럿 위치에 삽입한다 (본문).
+    ///
+    /// `char_offset` 과 반환 `charOffset` 은 논리 위치(`insertTextLogical` 과 같은 축)다.
     #[wasm_bindgen(js_name = pasteHtml)]
     pub fn paste_html(
         &mut self,
