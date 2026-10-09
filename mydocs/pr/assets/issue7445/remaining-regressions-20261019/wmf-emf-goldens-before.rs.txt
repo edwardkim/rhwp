@@ -301,7 +301,6 @@ fn emf_record_kind(record: &Record) -> String {
         Record::SetViewportExtEx(_) => "SetViewportExtEx".to_string(),
         Record::SetViewportOrgEx(_) => "SetViewportOrgEx".to_string(),
         Record::SetBkMode(_) => "SetBkMode".to_string(),
-        Record::SetPolyFillMode(_) => "SetPolyFillMode".to_string(),
         Record::SetTextAlign(_) => "SetTextAlign".to_string(),
         Record::SetTextColor(_) => "SetTextColor".to_string(),
         Record::SetBkColor(_) => "SetBkColor".to_string(),
@@ -315,7 +314,6 @@ fn emf_record_kind(record: &Record) -> String {
         Record::Pie { .. } => "Pie".to_string(),
         Record::Polyline16 { .. } => "Polyline16".to_string(),
         Record::Polygon16 { .. } => "Polygon16".to_string(),
-        Record::PolyPolygon16 { .. } => "PolyPolygon16".to_string(),
         Record::PolyBezier16 { .. } => "PolyBezier16".to_string(),
         // [#6577] 패스 기반 EMF 의 주 구성 레코드.
         Record::PolylineTo16 { .. } => "PolylineTo16".to_string(),

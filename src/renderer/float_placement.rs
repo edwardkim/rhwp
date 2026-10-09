@@ -2923,8 +2923,8 @@ pub(crate) fn stored_paragraph_successor_flow(
     })
 }
 
-/// A two-frame cell's declared total and the successor line independently
-/// close its opening box. Multi-page cell ladders are not this contract.
+/// 두 프레임 셀의 선언 총높이와 후속 글줄이 독립적으로 첫 상자의 끝을 정한다.
+/// 여러 쪽에 걸친 셀의 저장 사다리는 이 계약에 해당하지 않는다.
 pub(crate) fn stored_two_frame_successor_origin_hu(
     table: &Table,
     successor: &Paragraph,

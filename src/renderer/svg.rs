@@ -5160,8 +5160,8 @@ pub fn generate_font_style(
                                         .collect::<Vec<_>>()
                                 })
                                 .unwrap_or_default();
-                            // HashSet character order is intentionally irrelevant: stable glyph IDs
-                            // make subset bytes and the embedded base64 deterministic.
+                            // HashSet의 문자 순서와 무관하게 안정적인 글리프 ID를 사용해
+                            // 부분 글꼴 바이트와 삽입하는 base64 결과를 일정하게 만든다.
                             let remapper =
                                 subsetter::GlyphRemapper::new_from_glyphs_sorted(&glyphs);
                             // 서브셋 추출
