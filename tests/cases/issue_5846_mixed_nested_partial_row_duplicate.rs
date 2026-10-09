@@ -56,8 +56,16 @@ fn table_with<'a>(cell: &'a RenderNode, marker: &str) -> &'a RenderNode {
 #[test]
 fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let doc = HwpDocument::from_bytes(&std::fs::read(&path).expect("개인정보 원본 읽기"))
+    let mut doc = HwpDocument::from_bytes(&std::fs::read(&path).expect("개인정보 원본 읽기"))
         .expect("개인정보 원본 파싱");
+    // 전쪽 시각 수용과 같은 선언 글꼴 환경에서 관계를 검사한다.
+    // 미달이 남은 기본 환경의 corpus 수용을 대신하지 않는다.
+    let environment = rhwp::renderer::font_environment::FontEnvironment::from_json(include_str!(
+        "../../mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json"
+    ))
+    .expect("독립 Print와 대조한 선언 글꼴 환경");
+    doc.set_font_environment(Some(environment))
+        .expect("측정과 paint에 같은 선언 환경 적용");
     assert_eq!(doc.page_count(), 66, "독립 Print PDF와 전체 쪽수");
     let before = doc.build_page_render_tree(58).expect("59쪽 렌더");
     let after = doc.build_page_render_tree(59).expect("60쪽 렌더");

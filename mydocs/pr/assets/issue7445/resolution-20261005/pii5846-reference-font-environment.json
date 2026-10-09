@@ -1,0 +1,13 @@
+{
+  "id": "declared-program-933c220fc7e66a28c126599817be0eff5cfa30f8583f51ebab7f9af94479b103",
+  "substitutions": {
+    "명조": "HYmjrE",
+    "한양신명조": "HYSinMyeongJo-Medium",
+    "한양중고딕": "HYGothic-Medium"
+  },
+  "trueTypeFaces": [
+    "HYGothic-Medium",
+    "HYSinMyeongJo-Medium",
+    "HYmjrE"
+  ]
+}
