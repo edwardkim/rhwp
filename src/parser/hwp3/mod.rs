@@ -3682,11 +3682,28 @@ fn parse_paragraph_list_inner(
         // TAC 표의 줄 높이는 표 자체 높이지만 뒤 간격은 원래 글자 줄의
         // 간격이다. 표 높이에 배율을 곱하거나 일반 HWP3의 간격을 0으로
         // 지우지 않는다. 독립 정상 저장·Print의 host 뒤 띠와 대응한다.
+        // TAC 표의 높이는 저장 상자 그대로 두고, 표 소유 줄의 백분율 후행 간격만
+        // 대표 글꼴로 계산한다. 앞 빈 줄·텍스트 줄까지 표 간격을 부여하지 않도록
+        // 측정·배치가 쓰는 컨트롤 소속 조회를 공유한다.
+        // 암호 문서의 인쇄 계약과 고정 줄간격은 기존 값으로 보존한다.
         if hwp3_paragraph_has_treat_as_char_table(&para) {
-            for seg in para.line_segs.iter_mut() {
+            let table_lines: Vec<usize> = para
+                .controls
+                .iter()
+                .enumerate()
+                .filter_map(|(index, control)| match control {
+                    crate::model::control::Control::Table(table) if table.common.treat_as_char => {
+                        crate::renderer::layout::control_line_seg_index(&para, index)
+                    }
+                    _ => None,
+                })
+                .collect();
+            for (index, seg) in para.line_segs.iter_mut().enumerate() {
                 seg.line_height = seg.text_height;
                 seg.line_spacing = if use_password_layout_contract {
                     HWP3_TAC_OBJECT_LINE_SPACING_HU
+                } else if fixed_line_spacing.is_none() && table_lines.contains(&index) {
+                    fallback_line_spacing
                 } else {
                     fallback_line_spacing
                 };
