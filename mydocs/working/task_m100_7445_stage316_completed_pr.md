@@ -577,3 +577,32 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
   [9쪽 review](../pr/assets/issue7445/completed-20261009/issue265-p009-content-bottom-review.png),
   [9쪽 overlay](../pr/assets/issue7445/completed-20261009/issue265-p009-content-bottom-overlay.png)를 보존합니다.
   전체 TSV·명령·로그·진단 스크립트는 ignored `stage335-failure-source-review/`에 있습니다.
+
+
+## 보정 336 분석: 기존 코멘트 5869840624의 RowBreak HWP 전쪽 재확인
+
+- 현재 `fbfb99f9d`의 원본과 보존 사본 SHA는 같고, 독립 PDF 18쪽과 현재 18쪽입니다.
+  Native 인쇄 프로필·96 DPI·full 글꼴 임베딩·compat 2024로 전쪽 TSV를 산출했습니다.
+  **17쪽은 90% 이상, 13쪽만 77.49332%**입니다. Native 미달로 자동 실행이 종료돼
+  이번 원본의 최신 fresh 전쪽 비교는 아직 실행하지 않았습니다.
+- 기존 관계형 회귀 6개는 **6 PASS / 0 FAIL / 205 skipped**, 1.374초입니다.
+  이 검사는 13쪽의 현재 시작 위치 차이를 판별하지 못하므로 시각 완료 근거로 대신하지 않습니다.
+  검사·공차·baseline·생산 코드는 바꾸지 않았습니다.
+- 13쪽 review를 열어 점선 상자 안의 첫 제목·본문·중첩 상자·마지막 본문이 PDF보다
+  위로 이동한 것을 확인했습니다. compat 2022/2024의 같은 쪽 Render Tree는 바이트가 같습니다.
+  저장 제품 이름만으로 비교 모드를 바꾸어 통과시키지 않습니다.
+- 이전 수용 source `3e4e09de2`의 같은 원본 Render Tree와 비교하면 표·셀 외곽은 같고
+  내부의 모든 줄이 현재 1000HU(13.333px) 위로 이동했습니다. 원본 셀은 Center 정렬이며
+  첫 줄 vpos=1000HU, 원시 앞 간격=2000입니다. 같은 셀에 뒤 중첩 표가 있습니다.
+  `stored_block_cell_flow`의 첫 원점·점유 높이, 세로 정렬 높이와 최종 배치 시작점을
+  이어서 확인해야 합니다. 고정 좌표나 단순 패딩 추가로 맞추지 않습니다.
+- [현재 source 전쪽 검토 요약](../pr/assets/issue7445/completed-20261009/rowbreak18-current-source-review.json),
+  [13쪽 review](../pr/assets/issue7445/completed-20261009/rowbreak18-p013-current-review.png),
+  [13쪽 overlay](../pr/assets/issue7445/completed-20261009/rowbreak18-p013-current-overlay.png)를 보존합니다.
+  코멘트의 기존 본문은 변경하지 않았고 완료 꼬리를 추가하지 않았습니다. 미달 원본을 새 회귀로
+  등록하거나 기대값을 바꾸지 않으며 실제 출력을 개선한 뒤 전쪽 Native/fresh를 다시 확인합니다.
+- 보정 335의 그림 콘텐츠 하단 소비에 관련된 나머지 body 검사 5·11·15 분할도 재검증했습니다.
+  **3 FAIL / 0 PASS / 189 skipped**, 3.490초입니다. 실패 원본은 HWP3→HWP5 16·36쪽
+  변환본과 암호 없는 HWP5 24쪽이며, 실제 TextLine 본문 넘침이 남습니다.
+  검사 결과와 입력별 info/layout-anomaly는 ignored `stage337-picture-overflow-consumers/`에
+  보존했습니다. 잔여 56건은 유지하며 이 확인을 새 실패나 해결로 중복 계산하지 않습니다.

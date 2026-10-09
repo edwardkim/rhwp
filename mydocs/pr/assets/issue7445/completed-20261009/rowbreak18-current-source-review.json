@@ -1,0 +1,44 @@
+{
+  "sourceHead": "fbfb99f9d",
+  "source": "samples/rowbreak-problem-pages.hwp",
+  "referencePdf": "pdf/rowbreak-problem-pages-hwp-2024.pdf",
+  "commentId": 5869840624,
+  "inputProvenance": {
+    "head": "fbfb99f9dc85ced1e609c4a17fdbf67ab739bb7a",
+    "commentId": 5869840624,
+    "inputs": {
+      "samples/rowbreak-problem-pages.hwp": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+      "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+      "pdf/rowbreak-problem-pages-hwp-2024.pdf": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c"
+    },
+    "productionChanged": false
+  },
+  "native": {
+    "compat": "2024",
+    "dpi": 96,
+    "pages": 18,
+    "referencePages": 18,
+    "minimum": 77.49332,
+    "below90": [
+      13
+    ],
+    "tsvSha256": "2b627033202c174ff03f362a1403d8b28d37788518194a80c6b3daae9764b268"
+  },
+  "fresh": "Native 미달을 확인해 자동 실행 중단. 이번 원본의 최신 fresh 전쪽 비교 미실행. 이전 완료 소스의 수용 결과로 대체하지 않음.",
+  "existingRelations": {
+    "run": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 205,
+    "seconds": 1.374
+  },
+  "testsChanged": false,
+  "regressionAdded": false,
+  "productionChanged": false,
+  "commentUpdated": false,
+  "wholeDocumentAccepted": false,
+  "samePage13BetweenCompat2022And2024": true,
+  "independentObservedDifference": "표·셀 외곽은 이전 수용 출력과 같지만 점선 상자 첫 제목부터 마지막 본문까지 현재 1000HU만큼 위로 이동. 원본 첫 저장 줄 vpos=1000HU, 앞 간격 raw=2000, Center 셀과 중첩 표를 확인. 현재 공통 stored_block_cell_flow와 정렬 높이·최종 시작 원점 소비 연결의 재검토가 필요. 단순 여백 누락으로 확정하지 않음.",
+  "previousAcceptedProducer": "3e4e09de28493351414d77bafaf97acfbad5ca4a; 별도 보존 브랜치 결과이며 현재 제출 후보의 수용 근거로 쓰지 않음.",
+  "remainingFailures": 56
+}
