@@ -366,3 +366,20 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
   25쪽 97.78985%의 복원과 전체 수용을 구분합니다. 쪽수 gate exit 1은 정상적인 보류이며
   API 실행 실패로 처리하지 않습니다. 이전 전체 67개 실패 중 다른 검사는 아직 재검증 전입니다.
   overflow partition 8도 1 FAIL이므로 PR 생성 조건은 아직 충족하지 않았습니다.
+
+
+## 보정 330: PR #7697 형식과 제출 템플릿 대조
+
+- GitHub의 실제 #7697 본문과 `.github/pull_request_template.md`를 대조했습니다.
+  전체 Native/fresh TSV·대표 review/overlay·검증 SHA·확대 판독 항목은 이미 있었으며,
+  수정 전 템플릿은 고정 upstream/devel과 동일합니다.
+- 빠진 실제 Native Skia PNG·Studio Canvas2D·CanvasKit 캡처 표와 실행 환경,
+  code head CI와 문서-only trailing head CI의 별도 기록 표를 보완했습니다.
+  백엔드 범위는 실제 소비 경로로 정하며 미검증/비해당을 구분합니다.
+  #7697의 Docker 빌드·CI 결과를 자신의 실행 결과로 복사하지 않도록 명시했습니다.
+- 기존 samples/pdf는 SHA 고정 raw/download 링크로 연결하며 비공개 원본을 공개하지 않습니다.
+  부분 개선은 Refs, 전체 해결은 Closes로 구분합니다. 예시 링크를 #7697로 갱신했습니다.
+  일반 기여자에게 메인터너 review·오늘할일을 제출 조건으로 요구하지 않습니다.
+- Markdown 주석 균형·필수 항목·저장소 문서 링크·diff 공백 검사를 통과했습니다.
+  템플릿과 작업 기록만 변경했으며 생산 소스·회귀·workflow를 이 문서 커밋에 포함하지 않습니다.
+  기존 검증 결과와 PR 생성 보류 판정은 그대로 유지합니다.
