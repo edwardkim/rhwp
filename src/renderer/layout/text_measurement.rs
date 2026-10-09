@@ -507,8 +507,14 @@ impl EmbeddedTextMeasurer {
                 // (= 우측 끝 - 한컴_seg_w) 로 저장되어 있어 LEFT fallback 이 인코딩 의도와
                 // 정합. RIGHT 정확 매치 시 seg_w 이중 차감 → ≈seg_w (≈112px) 좌측 이탈
                 // (aift p4 1-1 등 23/24 라인 모두 영향). 본 LEFT fallback 동작 유지.
-                if tab_char_idx < style.inline_tabs.len() {
-                    let ext = &style.inline_tabs[tab_char_idx];
+                // [#7170] 자리표는 `compute_char_positions_walk` 와 같이 순번만 소비하고
+                // `TabDef` 기준 재계산으로 내려간다. 폭 0 탭으로 읽으면 run 폭에서 탭
+                // 전진이 빠져 다음 run 이 탭 뒤 글자 위에 겹친다.
+                let stored_ext = style
+                    .inline_tabs
+                    .get(tab_char_idx)
+                    .filter(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext));
+                if let Some(ext) = stored_ext {
                     let tab_width_px = ext[0] as f64 * 96.0 / 7200.0;
                     let tab_type = ext[2];
                     let tab_target = total + tab_width_px;
