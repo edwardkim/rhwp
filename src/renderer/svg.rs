@@ -4438,6 +4438,9 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         "휴먼명조" | "HumanMyeongJo" => {
             vec!["HMKMM.TTF", "HANBatang.ttf", "HBATANG.TTF", "hamchob-r.ttf"]
         }
+        // 휴먼고딕도 원본 윤곽선을 공급한다. EBDT 혼합 파일은 공통 임베드
+        // 정규화가 비트맵 strike만 제외하므로 local 대체 글꼴로 바꿀 필요가 없다.
+        "휴먼고딕" | "HumanGothic" => vec!["HMKMG.TTF"],
         "새바탕" | "새돋움" | "새굴림" | "새궁서" => {
             vec!["hamchob-r.ttf", "hamchod-r.ttf"]
         }
