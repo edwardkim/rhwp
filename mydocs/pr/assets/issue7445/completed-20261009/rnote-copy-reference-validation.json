@@ -1,0 +1,40 @@
+{
+  "sourceHead": "54c65061b9977ba2b4f35661627606b234e95ebe",
+  "documents": [
+    {
+      "name": "labnote-001-cp-01",
+      "input": "samples/rnote/labnote-001-cp-01.hwp",
+      "inputSha256": "83f3f604192cca91bf15475f0e1de98219b6e65edd3229260fb8e83ebb0bbe79",
+      "reference": "pdf/rnote/labnote-001-cp-01-hwp-2020.pdf",
+      "print": {
+        "job_id": "2e82abe9-2a5e-4908-aefb-f1e61a3ba4e5",
+        "downloadExitCode": 0,
+        "bytes": 20077,
+        "pages": 3,
+        "sha256": "d8a975d2d71c6345574391d54d2ed16590d6ba2480ae4f0be5e510c60d93bc2f",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "name": "labnote-001-cp-02",
+      "input": "samples/rnote/labnote-001-cp-02.hwp",
+      "inputSha256": "e2f939584a357f1776fa57a1bc16e696094b236154a419ac687fee70655c8e2d",
+      "reference": "pdf/rnote/labnote-001-cp-02-hwp-2020.pdf",
+      "print": {
+        "job_id": "2939893f-13dd-4002-a3d3-79f24f239278",
+        "downloadExitCode": 0,
+        "bytes": 21993,
+        "pages": 4,
+        "sha256": "e837e7098edc55d2e482b61696a1fddc58f45ad89d68976ac2366ab57bd3b09f",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    }
+  ],
+  "scope": "원본 한컴 복사본의 Print. Enter 편집본의 독립 출력으로 대신하지 않음."
+}

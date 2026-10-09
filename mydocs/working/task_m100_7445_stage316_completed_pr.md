@@ -1627,3 +1627,20 @@ Gym 결과로 제품·한컴 피델리티를 판정하지 않습니다.
 제거한 회귀는 전체 SVG 고정 한 함수뿐이며 원문·새/이전 PDF·골든·기존
 IR 두 행과 공유 계약을 보존했습니다. 직전 잔여 실패 33건 중 이 함수를
 이관했고 나머지 32건의 현재 head 재검증과 최종 전체 검증은 아직 완료 전입니다.
+
+
+## 보정 367 사전 분석: 한컴 복사본의 Enter 후 형제 표 겹침
+
+`issue_3587_repeated_table_flow::hancom_copies_keep_owner_order_after_enter`는
+한컴 복사본 cp-01(3쪽)·cp-02(4쪽)을 열어 본문 표의 지정 셀에서 Enter를
+15회 적용합니다. cp-01의 문단 12 편집 후 4쪽의 원형 후행 표와 다음
+복제 문단 표가 1.5px 겹친다는 assertion으로 실패합니다. 원본의 비교만으로
+이 편집 계약을 수정하지 않습니다. 먼저 원본 전쪽 Native/fresh와 고정
+devel을 확인한 뒤 같은 편집 상태의 출력과 독립 Print를 대조합니다.
+검사의 임계값만 늘리거나 넓은 절대 좌표 영역으로 다시 고정하지 않습니다.
+
+engine=2020으로 원본의 한 쪽씩 Print PDF를 각각 확보했습니다. cp-01은
+3쪽·20,077 bytes, cp-02는 4쪽·21,993 bytes이며 actual Hancom
+11.0.0.9136·Print method=0을 확인했습니다. 검증 정본은 `pdf/rnote/`에
+바이트 그대로 보존합니다.
+[원본·Print 출처](../pr/assets/issue7445/completed-20261009/rnote-copy-reference-validation.json).
