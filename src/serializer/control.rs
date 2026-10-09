@@ -1299,24 +1299,35 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
 fn picture_raw_extra_with_transparency(pic: &Picture) -> Vec<u8> {
     let transparency = pic.image_attr.transparency_alpha_byte();
     let mut extra = pic.raw_picture_extra.clone();
-    if extra.len() >= 18 {
-        if let Some(last) = extra.last_mut() {
-            *last = transparency;
-        }
+    let Some(offset) = crate::parser::picture_extra::picture_dimensions_offset(&extra) else {
+        return extra;
+    };
+    if let Some(alpha) = extra.get_mut(offset + 8) {
+        *alpha = transparency;
     } else if transparency > 0 {
-        let original_width = if pic.shape_attr.original_width > 0 {
-            pic.shape_attr.original_width
-        } else {
-            pic.crop.right.max(0) as u32
-        };
-        let original_height = if pic.shape_attr.original_height > 0 {
-            pic.shape_attr.original_height
-        } else {
-            pic.crop.bottom.max(0) as u32
-        };
-        extra.extend_from_slice(&original_width.to_le_bytes());
-        extra.extend_from_slice(&original_height.to_le_bytes());
-        extra.push(transparency);
+        if extra.len() == offset {
+            let (width, height) = if pic.img_dim != (0, 0) {
+                pic.img_dim
+            } else {
+                (
+                    if pic.shape_attr.original_width > 0 {
+                        pic.shape_attr.original_width
+                    } else {
+                        pic.crop.right.max(0) as u32
+                    },
+                    if pic.shape_attr.original_height > 0 {
+                        pic.shape_attr.original_height
+                    } else {
+                        pic.crop.bottom.max(0) as u32
+                    },
+                )
+            };
+            extra.extend_from_slice(&width.to_le_bytes());
+            extra.extend_from_slice(&height.to_le_bytes());
+        }
+        if extra.len() == offset + 8 {
+            extra.push(transparency);
+        }
     }
     extra
 }

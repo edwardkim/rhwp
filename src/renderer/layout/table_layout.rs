@@ -82,7 +82,7 @@ pub(crate) fn issue2424_profile_enabled() -> bool {
 /// - positive indent: line 0 에만 +indent 적용 (첫줄 들여쓰기)
 /// - negative indent (hanging): line N≥1 에 +|indent| 적용
 /// - indent=0: 모든 line 에 margin_left 만 적용
-pub(super) fn effective_margin_left_line(margin_left: f64, indent: f64, line_n: usize) -> f64 {
+pub(crate) fn effective_margin_left_line(margin_left: f64, indent: f64, line_n: usize) -> f64 {
     let line_indent = if indent > 0.0 {
         if line_n == 0 {
             indent
@@ -4341,6 +4341,14 @@ impl LayoutEngine {
                         styles,
                         inner_width,
                     );
+                    let line_based = crate::renderer::float_placement::reflow_picture_cell_frame(
+                        cell,
+                        inner_width,
+                        styles,
+                        self.dpi,
+                    )
+                    .map(|frame| frame.content_height)
+                    .unwrap_or(line_based);
                     // [#3386] 저장 cellSz 가 저장 줄 흐름보다 작은 모순 셀은 한글이
                     // 줄 흐름 + 상하 여백으로 재성장한다 (156678235 p5 내부 표 r0:
                     // cellSz 3.8px·lineseg 14.7px → 한글 PDF 실측 18.4px = 14.7+1.9×2).
@@ -5828,6 +5836,16 @@ impl LayoutEngine {
             .then(|| self.stored_empty_picture_cell_frame(cell, table))
             .flatten()
             .filter(|frame| hwpunit_to_px(frame.content_height_hu, self.dpi) <= inner_height + 0.5);
+        let reflow_picture_frame = (row_filter.is_none() && !single_row_fragment)
+            .then(|| {
+                crate::renderer::float_placement::reflow_picture_cell_frame(
+                    cell,
+                    inner_width,
+                    styles,
+                    self.dpi,
+                )
+            })
+            .flatten();
         let inner_area = LayoutRect {
             x: inner_x,
             y: text_y_start,
@@ -5994,6 +6012,47 @@ impl LayoutEngine {
                 })
             };
 
+            if let Some(frame) = &reflow_picture_frame {
+                for &(para_idx, ctrl_idx, rect) in &frame.pictures {
+                    if para_idx != cp_idx {
+                        continue;
+                    }
+                    let Control::Picture(pic) = &para.controls[ctrl_idx] else {
+                        unreachable!()
+                    };
+                    let mut placed = pic.clone();
+                    placed.common.horizontal_offset = 0;
+                    placed.common.vertical_offset = 0;
+                    placed.common.horz_align = HorzAlign::Left;
+                    placed.common.vert_align = VertAlign::Top;
+                    // 이 재조판 프레임은 한컴의 common 크기로 측정했다. 아래 paint가
+                    // 낡은 current 크기의 축별 max로 다시 키우지 않도록 같은 틀을 준다.
+                    if placed.shape_attr.rotation_angle.rem_euclid(360) == 0 {
+                        placed.shape_attr.current_width = placed.common.width;
+                        placed.shape_attr.current_height = placed.common.height;
+                    }
+                    let area = LayoutRect {
+                        x: inner_x + rect.x,
+                        y: text_y_start + rect.y,
+                        ..rect
+                    };
+                    self.layout_picture(
+                        tree,
+                        cell_node,
+                        &placed,
+                        &area,
+                        bin_data_content,
+                        Alignment::Left,
+                        Some(section_index),
+                        cell_context.as_ref().map(|c| c.parent_para_index),
+                        Some(ctrl_idx),
+                        cell_context.as_ref(),
+                        styles,
+                    );
+                }
+                para_y = text_y_start + frame.content_height;
+                continue;
+            }
             let has_table_ctrl = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
             // [Task #573] inline TAC 표(treat_as_char=true) 와 block 표(treat_as_char=false)
             // 를 분리. 인라인 TAC 표가 있는 셀 paragraph 의 surrounding text (예: "ㄷ. ",
@@ -9117,6 +9176,20 @@ impl LayoutEngine {
                 .filter(|frame| {
                     hwpunit_to_px(frame.content_height_hu, self.dpi) <= inner_height + 0.5
                 });
+            let reflow_picture_frame = (row_filter.is_none() && !single_row_fragment)
+                .then(|| {
+                    crate::renderer::float_placement::reflow_picture_cell_frame(
+                        cell,
+                        inner_width,
+                        styles,
+                        self.dpi,
+                    )
+                })
+                .flatten();
+            let total_content_height = reflow_picture_frame
+                .as_ref()
+                .map(|frame| frame.content_height)
+                .unwrap_or(total_content_height);
             let total_content_height = stored_empty_picture_frame
                 .map(|frame| hwpunit_to_px(frame.content_height_hu, self.dpi))
                 .unwrap_or(total_content_height);

@@ -17,6 +17,225 @@ use super::layout::picture_flow_frame_size_hu;
 use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
 
+/// 저장 줄이 없는 그림 전용 셀의 자리차지 띠와 인라인 줄을 함께 배치한다.
+/// 측정과 paint 모두 이 상대 좌표와 점유 높이를 소비한다.
+pub(crate) struct ReflowPictureCellFrame {
+    pub pictures: Vec<(usize, usize, LayoutRect)>,
+    pub content_height: f64,
+}
+
+struct ReflowPictureParagraphFrame {
+    pictures: Vec<(usize, LayoutRect)>,
+    content_height: f64,
+    advance: f64,
+}
+
+pub(crate) fn reflow_picture_cell_frame(
+    cell: &crate::model::table::Cell,
+    inner_width: f64,
+    styles: &super::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> Option<ReflowPictureCellFrame> {
+    // 병합 셀은 여러 행에 점유 높이를 나누는 별도 계약을 사용한다.
+    if cell.row_span != 1 || cell.text_direction != 0 || cell.paragraphs.is_empty() {
+        return None;
+    }
+    let mut pictures = Vec::new();
+    let mut y = 0.0;
+    let mut content_height: f64 = 0.0;
+    for (para_index, para) in cell.paragraphs.iter().enumerate() {
+        let frame = reflow_picture_paragraph_frame(para, inner_width, styles, dpi)?;
+        let style = styles.para_styles.get(para.para_shape_id as usize);
+        y += super::cell_paragraph_spacing_before(
+            para,
+            para_index,
+            style.map_or(0.0, |s| s.spacing_before),
+        );
+        content_height = content_height.max(y + frame.content_height);
+        pictures.extend(frame.pictures.into_iter().map(|(control_index, mut rect)| {
+            rect.y += y;
+            (para_index, control_index, rect)
+        }));
+        // 다음 문단은 마지막 줄의 줄간격과 문단 뒤 간격까지 소비한다.
+        // 셀 끝에는 뒤따를 줄이 없으므로 정렬 높이에 꼬리 간격을 넣지 않는다.
+        y += frame.advance + style.map_or(0.0, |s| s.spacing_after);
+    }
+    Some(ReflowPictureCellFrame {
+        pictures,
+        content_height,
+    })
+}
+
+fn reflow_picture_paragraph_frame(
+    para: &Paragraph,
+    inner_width: f64,
+    styles: &super::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> Option<ReflowPictureParagraphFrame> {
+    use super::layout_frame::ParagraphBox;
+    if !para.text.is_empty() || !crate::renderer::para_has_no_stored_line_segs(para) {
+        return None;
+    }
+    let style = styles.para_styles.get(para.para_shape_id as usize);
+    let paragraph_box = ParagraphBox::content_for_style(inner_width, style, dpi);
+    if !paragraph_box.is_usable() {
+        return None;
+    }
+    let mut pictures: Vec<(usize, LayoutRect)> = Vec::new();
+    let mut inline_count = 0;
+    let mut band_end = 0.0f64;
+    let px = |hu| hwpunit_to_px(hu, dpi);
+    for (index, control) in para.controls.iter().enumerate() {
+        let Control::Picture(picture) = control else {
+            return None;
+        };
+        let c = &picture.common;
+        if picture.caption.is_some()
+            || signed_hwpunit(c.width) <= 0
+            || signed_hwpunit(c.height) <= 0
+        {
+            return None;
+        }
+        if c.treat_as_char {
+            inline_count += 1;
+            continue;
+        }
+        // 자리차지와 겹침 허용 개체는 다른 흐름이다. 용지/쪽 기준 앵커도
+        // 셀 안의 문단 원점으로 옮기지 않는다.
+        if !c.flow_with_text
+            || c.allow_overlap
+            || c.text_wrap != TextWrap::TopAndBottom
+            || c.vert_rel_to != VertRelTo::Para
+            || c.vert_align != VertAlign::Top
+            || !matches!(c.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        {
+            return None;
+        }
+        let width = px(signed_hwpunit(c.width));
+        let height = px(signed_hwpunit(c.height));
+        let reference_left = if c.horz_rel_to == HorzRelTo::Para {
+            style.map_or(0.0, |s| s.margin_left)
+        } else {
+            0.0
+        };
+        let reference_width = inner_width - reference_left;
+        let offset = px(signed_hwpunit(c.horizontal_offset));
+        let x = reference_left
+            + match c.horz_align {
+                HorzAlign::Left | HorzAlign::Inside => offset,
+                HorzAlign::Center => (reference_width - width).max(0.0) / 2.0 + offset,
+                HorzAlign::Right | HorzAlign::Outside => {
+                    (reference_width - width).max(0.0) - offset
+                }
+            };
+        let y = px(topbottom_flow_vertical_offset_hu(c)) + px(i32::from(c.margin.top));
+        let rect = LayoutRect {
+            x,
+            y,
+            width,
+            height,
+        };
+        // 서로 겹치는 float의 충돌 해결은 별도 소유자다. 이 프레임은
+        // 이미 분리된 자리차지 개체들이 만드는 배제 영역을 다룬다.
+        if pictures.iter().any(|(_, other)| {
+            rect.x < other.x + other.width
+                && other.x < rect.x + rect.width
+                && rect.y < other.y + other.height
+                && other.y < rect.y + rect.height
+        }) {
+            return None;
+        }
+        band_end = band_end.max(y + height + px(i32::from(c.margin.bottom)));
+        pictures.push((index, rect));
+    }
+    // 인라인 그림만 있는 셀도 같은 줄 나눔과 점유 높이를 사용한다.
+    // 부동 그림이 없으면 앞에서 예약할 띠의 높이는 0이다.
+    if inline_count == 0 {
+        return None;
+    }
+
+    // 기존 줄 나눔으로 개체 폭·UTF-16 슬롯·줄 높이·줄간격을 확정한다.
+    // 원본에 저장 줄을 만들어 넣거나 개체 순서를 바꾸지 않는다.
+    let mut reflowed = para.clone();
+    reflowed.line_segs.clear();
+    super::composer::reflow_line_segs(&mut reflowed, paragraph_box, styles, dpi);
+    let positions = para.control_utf16_positions();
+    for (line_index, line) in reflowed.line_segs.iter().enumerate() {
+        let end = reflowed.line_segs.get(line_index + 1).map(|l| l.text_start);
+        let members: Vec<_> = para
+            .controls
+            .iter()
+            .enumerate()
+            .filter_map(|(index, control)| {
+                let Control::Picture(p) = control else {
+                    return None;
+                };
+                (p.common.treat_as_char
+                    && positions[index] >= line.text_start
+                    && end.is_none_or(|end| positions[index] < end))
+                .then_some((index, p))
+            })
+            .collect();
+        let row_width: f64 = members
+            .iter()
+            .map(|(_, p)| {
+                px(signed_hwpunit(p.common.width)
+                    + i32::from(p.common.margin.left)
+                    + i32::from(p.common.margin.right))
+            })
+            .sum();
+        let indent = super::layout::table_layout::effective_margin_left_line(
+            0.0,
+            style.map_or(0.0, |s| s.indent),
+            line_index,
+        );
+        let mut x = px(line.column_start) + indent;
+        let free = (px(line.segment_width) - indent - row_width).max(0.0);
+        match style.map(|s| s.alignment) {
+            Some(Alignment::Center | Alignment::Distribute) => x += free / 2.0,
+            Some(Alignment::Right) => x += free,
+            _ => {}
+        }
+        for (index, picture) in members {
+            let c = &picture.common;
+            let width = px(signed_hwpunit(c.width));
+            let height = px(signed_hwpunit(c.height));
+            let left = px(i32::from(c.margin.left));
+            let baseline_offset = if line.text_height > 0 {
+                px(line.baseline_distance) * (1.0 - height / px(line.text_height)).max(0.0)
+            } else {
+                0.0
+            };
+            pictures.push((
+                index,
+                LayoutRect {
+                    x: x + left,
+                    y: band_end + px(line.vertical_pos) + baseline_offset,
+                    width,
+                    height,
+                },
+            ));
+            x += left + width + px(i32::from(c.margin.right));
+        }
+    }
+    if pictures.len() != para.controls.len() {
+        return None;
+    }
+    let content_height = pictures
+        .iter()
+        .map(|(_, r)| r.y + r.height)
+        .fold(0.0, f64::max);
+    pictures.sort_by_key(|(index, _)| *index);
+    let advance = reflowed.line_segs.last().map_or(content_height, |line| {
+        band_end + px(line.vertical_pos) + px(line.line_height) + px(line.line_spacing)
+    });
+    Some(ReflowPictureParagraphFrame {
+        pictures,
+        content_height,
+        advance,
+    })
+}
+
 /// Paragraph-relative floats whose signed vertical intervals overlap occupy
 /// one band. Negative offsets do not remove the object's flow height: when
 /// its owner moves to another fragment the paragraph origin moves with it.
