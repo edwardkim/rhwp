@@ -151,3 +151,7 @@ ignored `final/review-portable.zip`을 별도 임시 폴더에 압축 해제하�
 
 이번 결과는 순차 로컬 구현·검증과 사용자 시각 판정의 완료다.
 #7688 전체 종료·원격 push·PR 생성·merge는 수행하지 않았다.
+
+후속 PR 준비에서 Print PDF·대조군의 커밋 보존과 정식 E2E의 MANIFEST/npm 등록을 보완했다.
+제품 코드와 검사 본문 bytes는 유지했다. 추가 대조군의 최종 출력·64쪽 TSV 및 제출 상태는
+[최종 보고서](../report/task_m100_7688_report.md)에 연결한다.

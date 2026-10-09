@@ -97,3 +97,12 @@ zoom/DPR/resize 15조건의 트리 유지와 3개 원래 조건 복원 PNG 일�
 여러 face의 style 선택, 실제 font 실패의 Canvas2D fallback과 consumer 회귀를 연결한다.
 승인된 세 구현 단계의 로컬 보정은 완료했으며 필수 전체 Rust 검증은 최종 기록에 잇는다.
 이 결과는 #7688 전체의 미검증 backend/변형 완료나 원격 게시·통합 승인을 의미하지 않는다.
+
+## 최종 검증과 제출 준비
+
+[7단계](../working/task_m100_7688_stage7.md)의 전체 필수 회귀와 최종 비교를 완료하고,
+메인테이너가 최종 비교 자료의 시각 판정을 통과로 확정했다.
+[최종 보고서](../report/task_m100_7688_report.md)에 해결 계약·검증 source·잔여 범위를 연결했다.
+PR 준비에서 실제 사용한 Print PDF와 대조 HWPX를 byte 동일하게 보존하고,
+Native/fresh WASM 13개 문서 전체 64쪽의 90% 기준과 누락 없음을 확인했다.
+E2E MANIFEST/npm 배선과 Studio build도 확인했다. 원격 push·PR·통합은 별도 절차다.

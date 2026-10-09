@@ -80,14 +80,14 @@ Canvas2D 실제 화면은 `CanvasView → PageRenderer → WebCanvasRenderer`와
 
 산출물 기본 경로: `/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/`.
 
-- [전체 비교 뷰어](/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/comparison.html)
-- [수식 확대 비교](/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/equation-inline-detail-panel.png)
-- [crop 확대 비교](/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/image-crop-detail-panel.png)
-- [그룹 도형 확대 비교](/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/shape-group-detail-panel.png)
-- [Native crop review](/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/pdf-native-review/image-crop/review/review_001.png)
-- [fresh 트리 차이·복원](/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/canvas-portable-fresh-structure-results.json)
-- [Studio zoom/DPR/resize 결과](/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/studio-page-boundary-results.json)
-- [원래 표시 조건으로 복원한 PNG 결과](/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/studio-page-restoration-pixel-results.json)
+- 전체 비교 뷰어: `/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/comparison.html`
+- 수식 확대 비교: `/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/equation-inline-detail-panel.png`
+- crop 확대 비교: `/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/image-crop-detail-panel.png`
+- 그룹 도형 확대 비교: `/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/shape-group-detail-panel.png`
+- Native crop review: `/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/pdf-native-review/image-crop/review/review_001.png`
+- fresh 트리 차이·복원: `/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/canvas-portable-fresh-structure-results.json`
+- Studio zoom/DPR/resize 결과: `/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/studio-page-boundary-results.json`
+- 원래 표시 조건으로 복원한 PNG 결과: `/home/edward/mygithub/rhwp/output/pr-review/renderer-backend-audit-20261009/studio-page-restoration-pixel-results.json`
 
 Docker wrapper는 worktree **루트**에서 실행했다:
 

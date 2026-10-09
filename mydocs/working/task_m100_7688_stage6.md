@@ -43,7 +43,7 @@ italic face가 없는 대조군에서는 기존 합성 italic을 보존한다. g
 [Skia binding 원문](https://skia.googlesource.com/skia/+/refs/heads/main/modules/canvaskit/canvaskit_bindings.cpp)과
 설치된 CanvasKit API를 대조했다. 다른 layer의 paragraph/shaping 선택을 이 비교로 대체하지 않는다.
 
-정식 `e2e/issue-7688-canvaskit-font-preparation.test.mjs`는 원문의 실제 explicit CanvasKit
+정식 `e2e/canvaskit-font-preparation-issue7688.test.mjs`는 원문의 실제 explicit CanvasKit
 준비·대체 진단과 실제 renderPage를 검사한다. 원문 paint tree의 text face/style만 지정한
 자원 소비 대조군을 screen/print에서 실행한다. 실제 Regular/Bold 단독 공급의 서로 다른
 출력이 독립 기대값이며 두 공급 순서의 family 선택 출력이 각각 그 대조군과 일치한다.
