@@ -137,6 +137,29 @@ impl TypesetEngine {
                 end_row = r;
                 return false;
             }
+            // 문자 유닛 하나는 분할 불가여도 그 뒤의 빈 물리 셀 밴드는
+            // 저장 첫 프레임/다음 쪽 줄이 함께 소유한다. 일반 내용 분할
+            // 가능 여부보다 먼저, 그 소유가 입증된 밴드만 나눈다.
+            if table.row_count == 1 && !is_continuation && r == 0 && start_cut.is_empty() {
+                if let Some(frame) = source_first_fragment_height {
+                    let rest = frame.min((avail_for_rows - consumed - cs_before).max(0.0));
+                    let height = row_query.whole_row_height(&[], whole_row_fit_h);
+                    let probe = row_query.probe_band(&[], rest).probe;
+                    if rest > 0.0
+                        && height > rest + 0.5
+                        && probe.fully_consumed
+                        && row_query.completed_frame_band_fits(rest)
+                    {
+                        consumed += cs_before + rest;
+                        r += 1;
+                        end_row = r;
+                        end_row_height_override = Some(rest);
+                        split_end_cut = probe.end_cut;
+                        split_end_limit = rest;
+                        return false;
+                    }
+                }
+            }
             let rowbreak_rowspan_row_splittable =
                 mt.allows_row_break_split() && can_intra_split && row_units_splittable;
             if rowspan_touched[r] && !rowbreak_rowspan_row_splittable {

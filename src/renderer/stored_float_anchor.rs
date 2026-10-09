@@ -228,3 +228,76 @@ pub(crate) fn stored_single_topbottom_top_px(
     // 본문 안에 온전히 드는 앵커만 물리 좌표로 읽는다.
     (top >= -0.5 && bottom <= available_px + 0.5).then_some(top)
 }
+
+/// 단일 셀의 저장 높이는 내용 뒤의 빈 밴드까지 소유할 수 있다.
+/// 첫 개체 높이 뒤의 잔여 셀 높이와 양끝 바깥 여백이 다음 쪽 첫 줄 위치와
+/// 같으면, 작은 개체 높이는 전체 표가 아니라 첫 조각의 높이다.
+/// 저장 문자 줄이 첫 조각에 모두 들어가는 경우만 빈 꼬리 밴드를 이어받는다.
+pub(crate) fn stored_single_cell_first_frame_height_hu(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    table: &Table,
+) -> Option<i32> {
+    use crate::model::paragraph::LineSeg;
+    use crate::model::table::TablePageBreak;
+    if para.stored_text_partition_is_dirty()
+        || !para.text.trim().is_empty()
+        || para.controls.len() != 1
+        || para.line_segs.len() != 1
+        || para.line_segs[0].segment_width != 0
+        || table.common.treat_as_char
+        || !crate::renderer::float_placement::is_para_topbottom_float(&table.common)
+        || table.common.vertical_offset != 0
+        || table.caption.is_some()
+        || table.row_count != 1
+        || table.col_count != 1
+        || table.cells.len() != 1
+        || table.page_break != TablePageBreak::RowBreak
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+    {
+        return None;
+    }
+    let cell = &table.cells[0];
+    let next = next_para?;
+    let host_y = stored_vpos(para)?;
+    let next_y = stored_vpos(next)?;
+    if next.stored_text_partition_is_dirty()
+        || cell.row != 0
+        || cell.col != 0
+        || cell.row_span != 1
+        || cell.col_span != 1
+        || cell.height <= table.common.height
+        || host_y <= 0
+        || next_y <= 0
+        || next_y >= host_y
+        || cell.paragraphs.is_empty()
+    {
+        return None;
+    }
+    let tail = i64::from(cell.height) - i64::from(table.common.height);
+    let continuation_end =
+        tail + i64::from(table.outer_margin_top) + i64::from(table.outer_margin_bottom);
+    if continuation_end != next_y {
+        return None;
+    }
+    let padding = cell.effective_padding(&table.padding);
+    for paragraph in &cell.paragraphs {
+        if paragraph.stored_text_partition_is_dirty()
+            || !paragraph.controls.is_empty()
+            || paragraph.line_segs.is_empty()
+            || paragraph.line_segs.iter().any(|line| {
+                line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || line.vertical_pos < 0
+                    || i64::from(line.vertical_pos)
+                        + i64::from(line.line_height)
+                        + i64::from(padding.top)
+                        + i64::from(padding.bottom)
+                        > i64::from(table.common.height)
+            })
+        {
+            return None;
+        }
+    }
+    Some(table.common.height as i32)
+}

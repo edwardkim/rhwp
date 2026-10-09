@@ -979,7 +979,19 @@ impl TypesetEngine {
             placement_para_start_height = st.current_height;
         }
 
-        let single_row_object_declared_fits_current = !table.common.treat_as_char
+        let stored_first_frame = (st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && !self.render_normalization.table_text_reflowed(table))
+        .then(|| {
+            crate::renderer::stored_float_anchor::stored_single_cell_first_frame_height_hu(
+                para,
+                paragraphs_all.get(para_idx + 1),
+                table,
+            )
+        })
+        .flatten();
+        let single_row_object_declared_fits_current = stored_first_frame.is_none()
+            && !table.common.treat_as_char
             && table.row_count == 1
             && table.col_count == 1
             && table.cells.len() == 1

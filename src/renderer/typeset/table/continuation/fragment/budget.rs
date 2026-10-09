@@ -1159,6 +1159,26 @@ impl TypesetEngine {
         } else {
             None
         };
+        let saved_first_fragment_source_frame = saved_first_fragment_source_frame.or_else(|| {
+            if is_continuation
+                || cursor_row != 0
+                || !start_cut.is_empty()
+                || !st.profile.hwp5_stored_pagination_layout()
+                || st.profile.session_edited()
+                || self.render_normalization.table_text_reflowed(table)
+            {
+                return None;
+            }
+            crate::renderer::stored_float_anchor::stored_single_cell_first_frame_height_hu(
+                para,
+                input.source.paragraphs_all.get(para_idx + 1),
+                table,
+            )
+            .map(|height| {
+                let height = hwpunit_to_px(height, self.dpi);
+                (height, st.current_height + height)
+            })
+        });
         // 뒤 호스트의 되감김 또는 원본 셀의 내부 쪽 경계와 선언 높이가
         // 같은 온전한 행 끝을 가리키면,
         // 첫 조각은 그 행까지만 소유한다. 일반 최근접 스냅이나 꼬리말 여유로
