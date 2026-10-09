@@ -74,7 +74,7 @@ TS noEmit 및 Studio 전체 1825 PASS / 0 FAIL / 2 skipped를 확인했다.
 실제 Regular outline 불일치로 FAIL / 수정 후 PASS다. 실제 Italic face 대신 합성 italic을
 쓰는 경계도 두 공급 순서의 screen/print에서 단독 face 대조군과 일치했다.
 최종 재캡처는 main/renderer/style module 응답의 source map hash까지 실제 source와 대조한다.
-Rust 필수 전체 검증은 진행 중이다. ignored `canvaskit-font-fix/`의 e2e-before/after/final 로그와
+Rust 필수 전체 검증 결과는 [7단계 기록](task_m100_7688_stage7.md)에서 이어 확인한다. ignored `canvaskit-font-fix/`의 e2e-before/after/final 로그와
 `final/`의 Native/fresh WASM TSV·실제 PNG·Studio provenance/score를 연결한다.
 
 실제 GPU/Windows/macOS, 모든 italic 원 face, 단일 bold-only payload의 합성 정책,

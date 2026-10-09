@@ -117,6 +117,23 @@ Studio를 별도 포트에 실행해 browser capture에 연결한다. 이 명령
 회귀는 수정 전 의도한 원인으로 FAIL, 수정 후 PASS와 정상 대조군을 확인한다.
 새 렌더링 회귀/fixture/golden의 추가 전 시각 조건은 거버넌스를 따르며 현재 실패를 기준값에 고정하지 않는다.
 
+### 구현된 소비 경계 회귀
+
+아래 검사는 #7688에서 독립 Print와 수정 전 FAIL / 수정 후 PASS를 확인한 경계다.
+변경한 소비 경로에 해당하는 검사를 실행하며, 새 문서·다른 형상·모든 OS의 시각 일치를 대신하지 않는다.
+
+| 계약 | 정식 검사 | 직접 확인하는 것 |
+| --- | --- | --- |
+| 그림 crop | [`issue_7688_picture_crop`](../../../tests/cases/issue_7688_picture_crop.rs) | 공개 CLI SVG의 두 그림 source 선택과 내용 순서, screen/print |
+| 화살촉 | [`issue_7688_arrow_heads`](../../../tests/cases/issue_7688_arrow_heads.rs) | 공개 SVG의 intrinsic 크기·끝점 소유와 실제 Native PNG의 shaft 밖 화살촉, screen/print |
+| CanvasKit font 준비·style | [`issue-7688-canvaskit-font-preparation`](../../../rhwp-studio/e2e/issue-7688-canvaskit-font-preparation.test.mjs) | 실제 Studio 준비·자원 실패 fallback, 두 face의 공급 순서와 실제 regular/bold outline 소비 |
+
+Rust 두 검사는 `node scripts/run-rust-test.mjs <case> -- --cargo-profile release-test
+--target-dir <공용 target>`로 실행한다. 실제 PNG 검사는 `--features native-skia`를 추가해야 한다.
+Studio 검사는 Docker WASM을 반영한 서버의 `VITE_URL`과 확인한 `CHROME_PATH`를 지정하고
+저장소 루트에서 `node rhwp-studio/e2e/issue-7688-canvaskit-font-preparation.test.mjs --mode=headless`로
+실행한다. 회귀가 성공해도 영향 입력의 Visual Sweep과 실제 화면 확인을 생략하지 않는다.
+
 ## 6. 제출·review·후속 처리
 
 기존 PR의 구현 주장별로 `소비 경로 → 독립 기대값 → 검사 항목 → 수정 전후 결과 → 대표 이미지`를

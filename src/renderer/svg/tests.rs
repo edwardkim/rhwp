@@ -1243,8 +1243,7 @@ fn test_compute_image_crop_src_no_crop_full_image() {
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
     // 174000 / 75 = 2320 (= image width)
-    assert!(sw > 0.0 && sw < 2320.0);
-    assert!((sw / sh - 102366.0 / 26580.0).abs() < 1e-9);
+    assert!((sw - 2320.0).abs() < 0.01);
     assert!((sh - 354.0).abs() < 0.01);
 }
 
@@ -1308,7 +1307,8 @@ fn test_compute_image_crop_src_fallback_when_original_size_missing() {
     let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 102366, 26580), None, 2320.0, 354.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
-    assert!((sw - 2320.0).abs() < 0.01);
+    assert!(sw > 0.0 && sw < 2320.0);
+    assert!((sw / sh - 102366.0 / 26580.0).abs() < 1e-9);
     assert!((sh - 354.0).abs() < 0.01);
 }
 
