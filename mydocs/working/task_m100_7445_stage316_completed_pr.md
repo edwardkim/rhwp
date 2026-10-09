@@ -271,3 +271,18 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
   fresh WASM 전쪽 검증이 남아 이 시점에는 새 렌더 회귀를 추가하지 않습니다.
   직접 review는 ignored `stage326-review/review/review_002.png`와 `review_010.png`,
   전쪽 TSV·로그·빌드/provenance는 `output/issue7445/20261005/stage326-*`에 보존합니다.
+
+
+### 보정 326 최종 Native/fresh 증적
+
+- `22eab74f3`의 Mac no-opt fresh 빌드 성공(2분 46초) 후 실제 Chrome에서
+  17쪽을 다시 내보냈습니다. Native/fresh 쪽수 17/17, 최저 95.29505%,
+  미달 0이며 raw SVG·최종 PNG 17개가 각각 모두 동일합니다.
+- 2쪽 95.60601%, 10쪽 95.29505%를 직접 review로 확인했습니다.
+  [최종 요약 증적](../pr/assets/issue7445/completed-20261009/regulatory17-shared-outer-frame-native-fresh-validation.json),
+  [2쪽 review](../pr/assets/issue7445/completed-20261009/regulatory17-p002-shared-outer-frame-review.png),
+  [10쪽 review](../pr/assets/issue7445/completed-20261009/regulatory17-p010-shared-outer-frame-review.png)를 포함합니다.
+  글꼴 바이너리·raw TSV·로그·가설 진단 이미지는 커밋하지 않습니다.
+- 이 문서는 전쪽 수용했지만 다른 문서와 전체 회귀 검증이 남았습니다.
+  기존 검사 기대값을 완화하지 않았고, 새 회귀는 독립 계약과 수정 전후 검출 확인을 마친 뒤
+  준비합니다. PR 준비만 하라는 현재 승인 경계를 지키며 원격 코멘트·push는 하지 않습니다.

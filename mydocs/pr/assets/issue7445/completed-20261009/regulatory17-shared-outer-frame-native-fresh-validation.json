@@ -1,0 +1,81 @@
+{
+  "status": "이 문서의 전쪽 Native/fresh 수용; 전체 PR 미완료",
+  "validatedCodeHead": "22eab74f3f3b62aa49448ef30a4581d99f6073a1",
+  "source": {
+    "path": "samples/issue7445/80250_regulatory_analysis.hwp",
+    "sha256": "e68d903c20e89ed1325b3a5633c3c0606d21b042345b76a1785cad1e1eca8589"
+  },
+  "reference": {
+    "path": "pdf/80250_regulatory_analysis-hwp-2024.pdf",
+    "sha256": "65bbfb5a1ae7c4a71774cda4c91156990edd8a41177b6509109ee08ec286f286",
+    "pages": 17
+  },
+  "dpi": 192,
+  "minimumRequiredPercent": 90,
+  "fontEnvironment": {
+    "id": "declared-program-3c8dfaa70e30649d7a6a47ac3edadf58ba3d5898a50fbf0b2592f3175578d9cf",
+    "substitutions": {
+      "나눔바른고딕": "HCR Batang"
+    },
+    "trueTypeFaces": [
+      "HCR Batang"
+    ]
+  },
+  "native": {
+    "pages": 17,
+    "binarySha256": "30257228cdf07b24030badf53bc4468442396652b274975d5b49d85e841fec94",
+    "minimumPercent": 95.29505,
+    "below90": 0,
+    "tsvSha256": "bd2d85d512f1d309041cbe1196f140ce9fb3648216265d888df954fb37ac2f84"
+  },
+  "freshWasm": {
+    "pages": 17,
+    "bundleSha256": {
+      "rhwp.js": "587aed2aaccaf00913e97111b0e0a3b481982ba40cbf140318fbc85e18719c59",
+      "rhwp_bg.wasm": "56b184b4851a7f3cb76ddd2b711ba865239974793e1f56a313374cf5d16b3b90"
+    },
+    "browser": "Chrome/154.0.8037.99",
+    "minimumPercent": 95.29505,
+    "below90": 0,
+    "tsvSha256": "bd2d85d512f1d309041cbe1196f140ce9fb3648216265d888df954fb37ac2f84"
+  },
+  "identicalNativeFreshPngPages": 17,
+  "affectedPages": [
+    {
+      "page": 2,
+      "before": 80.06599,
+      "after": 95.60601,
+      "cause": "저장 첫 조각의 오프셋0 바깥여백 누락"
+    },
+    {
+      "page": 10,
+      "before": 73.53683,
+      "after": 95.29505,
+      "cause": "원본 글꼴 공급 누락과 공백 계산 호스트의 바깥여백 누락"
+    }
+  ],
+  "focusedNextest": {
+    "passed": 33,
+    "failed": 0,
+    "seconds": 0.492
+  },
+  "reviews": [
+    {
+      "page": 2,
+      "file": "regulatory17-p002-shared-outer-frame-review.png",
+      "sha256": "eddb66fba002dfcfff3a1cf6b7bc4d6fd58c3a445f71e783d5f70dcd7f3432ac"
+    },
+    {
+      "page": 10,
+      "file": "regulatory17-p010-shared-outer-frame-review.png",
+      "sha256": "2c53d8771cc9d44035cea5a66110804ce10543b6a6e4326ceb9c86b85d3de78d"
+    }
+  ],
+  "localEvidenceRoot": "/Users/tsjang/rhwp/output/issue7445/20261005",
+  "pending": [
+    "다른 문서의 최신 head 전쪽 비교",
+    "최종 전체 nextest·Skia·lint 검증",
+    "새 회귀의 독립 계약과 수정 전후 검출 확인",
+    "사용자 승인 전 원격 변경 보류"
+  ]
+}
