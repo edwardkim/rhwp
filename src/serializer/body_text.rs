@@ -873,12 +873,13 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         // 아직 0 이라 판정이 실패한다 — 그 자리를 채운 뒤 다시 물어야 자리표시자를 알아본다
         // (#4957: `secd`·`cold` 를 앞세운 HWP3 첫 문단).
         //
-        // 두 번째 물음은 `object_only` 로 **U+FFFC 만** 받는다. 공백 자리표시자는 판별자가
-        // 글자가 아니라 `controls[ctrl_idx]` 의 코드(0x0012)뿐인데, 갭을 채우고 나면
-        // `ctrl_idx` 가 다른 컨트롤을 가리킨다 — 그때 다시 물으면 미주 앞의 **진짜 공백**이
-        // 자동번호로 오인돼 먹힌다(#3495 SO-SUEOP 문단 238). `U+FFFC` 는 글자 자체가
-        // 판별자라 이 위험이 없다.
-        let is_placeholder = |prev_end: u32, ctrl_idx: usize, object_only: bool| -> bool {
+        // 두 번째 물음(`after_gap`)도 공백 자리표시자를 받아야 각주·개체 바로 뒤나 구역·단
+        // 정의 뒤의 자동번호가 자기 자리에 써진다. 다만 이때는 자리 폭으로도 가린다. 공백
+        // 자리표시자는 판별자가 글자가 아니라 `controls[ctrl_idx]` 의 코드(0x0012)뿐인데, 갭을
+        // 채우고 나면 `ctrl_idx` 가 다른 컨트롤을 가리켜 미주 앞의 **진짜 공백**이 자동번호로
+        // 오인될 수 있다(#3495 SO-SUEOP 문단 238). 자리표시자는 8유닛이라 다음 글자가 8의
+        // 배수만큼 뒤에 오고, 1유닛인 진짜 공백은 뒤에 슬롯이 붙어도 그렇지 않다.
+        let is_placeholder = |prev_end: u32, ctrl_idx: usize, after_gap: bool| -> bool {
             if offset != prev_end
                 || ctrl_idx >= para.controls.len()
                 || !next_offset.map_or(is_last_text_char, |n| n >= offset + 8)
@@ -900,8 +901,10 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 // placeholder 를 만들지 않으므로, 여기 포함하면 미주 앞의 진짜 공백을
                 // placeholder 로 오인해 컨트롤로 덮어쓴다 (SO-SUEOP.hwp 문단 238:
                 // 공백 12개 -> 11개, 뒤 텍스트가 한 칸 당겨짐).
-                ' ' if !object_only => {
+                ' ' => {
                     matches!(control_char_code_and_id(&para.controls[ctrl_idx]).0, 0x0012)
+                        && (!after_gap
+                            || next_offset.is_none_or(|n| (n - offset).is_multiple_of(8)))
                 }
                 _ => false,
             }
