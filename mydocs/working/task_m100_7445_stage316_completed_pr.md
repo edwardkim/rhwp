@@ -1506,3 +1506,15 @@ Print method=0, 한 쪽씩 출력과 74쪽·2,311,161 bytes를 확인했습니�
 실패한 raw SVG를 분석한 결과 624개 글자의 fallback font-family만
 다르고 문자·기하 속성은 같았습니다. 이는 전체 문서 시각 수용의
 근거를 대신하지 않으므로 전쪽 Native/fresh 측정 후 판정합니다.
+
+
+## 보정 363 잔여 실패 재실행 결과
+
+최신 canonical harness로 잔여 35건 모두 실행했습니다. 목표 중
+**2 PASS / 33 FAIL**이며, substring 필터에 함께 선택된 정상 partition
+5건을 포함한 실제 summary는 **40 run / 7 PASS / 33 FAIL /
+3,430 skipped**, 57.120초, exit 100입니다. 추가 검사와 목표 결과를
+분리해 기록했습니다. 다음 명령은 전체 함수명 exact filter를 사용합니다.
+두 PASS는 body/text aggregate partition이므로 corpus 이관 뒤 소속
+변경을 고려해 문서 출력 보정 완료 수로 더하지 않습니다. 최초 전체
+검증은 아직 재실행 전이며 전체 통과 또는 PR 준비 완료가 아닙니다.

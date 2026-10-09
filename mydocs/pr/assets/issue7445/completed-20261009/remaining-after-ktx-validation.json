@@ -1,0 +1,220 @@
+{
+  "headAtStart": "8c08463e2493237d754193adcdaabf5acb8a6898",
+  "summary": "Summary [  57.120s] 40 tests run: 7 passed, 33 failed, 3430 skipped",
+  "selectedCount": 35,
+  "selectedPassed": 2,
+  "selectedFailed": 33,
+  "items": [
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_001",
+      "test": "issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_1"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_13"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_003",
+      "test": "issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_004",
+      "test": "issue_6034_footnote_area_reflow_width::issue_6034_footnote_area_starts_below_body_text"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_008",
+      "test": "issue_3587_repeated_table_flow::hancom_copies_keep_owner_order_after_enter"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_006",
+      "test": "issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_006",
+      "test": "issue_7203_float_table_stored_anchor_top::downstream_table_split_and_body_follow_the_oracle_pages"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_009",
+      "test": "issue_7469_footnote_number_paragraph_indent::numbered_footnote_paragraph_continuation_uses_hanging_indent"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_009",
+      "test": "issue_7469_footnote_number_paragraph_indent::footnote_number_replaces_the_autonum_placeholder"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_016",
+      "test": "issue_4961_font_decision_trace::stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_016",
+      "test": "svg_snapshot::issue_147_aift_page3"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_009",
+      "test": "issue_7469_footnote_number_paragraph_indent::unnumbered_footnote_paragraph_keeps_hanging_indent"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_020",
+      "test": "issue_7203_float_table_top_uses_stored_anchor::saved_outer_box_anchor_keeps_following_tables_inside_the_body"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_017",
+      "test": "issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_9"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_2"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_020",
+      "test": "issue_7379_rowbreak_table_footnote_reservation::terminal_caption_withholds_the_last_rowspan_unit_together"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_022",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_11"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_023",
+      "test": "issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_025",
+      "test": "issue_4962_font_metric_coverage::public_hwp_hwpx_classification_golden_is_deterministic_and_format_portable"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_022",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_15"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_025",
+      "test": "issue_6035_cell_split_empty_band::issue_6035_does_not_emit_header_only_ghost_page"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_025",
+      "test": "issue_6035_cell_split_empty_band::issue_6035_water_supply_subitems_stay_with_heading"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_026",
+      "test": "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_011",
+      "test": "issue_6981_split_straddle_row_height::completed_terminal_cut_does_not_allocate_an_empty_page"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_027",
+      "test": "issue_1156_rowbreak_fragment_fit::kps_ai_page37_defers_overflowing_split_row_slice"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_028",
+      "test": "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_028",
+      "test": "issue_7203_split_float_anchors_to_paragraph_top::split_fragment_without_a_gap_is_unchanged"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_022",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_2"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_026",
+      "test": "issue_6761_stored_vpos_rewind_page_break::partial_retreat_inside_a_page_does_not_break"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_026",
+      "test": "issue_7226_rowspan_only_row_cut::the_fix_does_not_add_a_page"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_011",
+      "test": "issue_6981_split_straddle_row_height::continuation_height_respects_varying_page_budgets"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_4"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_022",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_3"
+    }
+  ],
+  "extraTests": [
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_12"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_10"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_15"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_14"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_001",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_11"
+    }
+  ],
+  "exit": {
+    "exitCode": 100,
+    "seconds": 116.80125637492165
+  },
+  "logSha256": "dfe6ac35ff5dbe0dfe4c19d834e9c9ae8158d3b3c8906ee0e1168d4de0a0661e",
+  "filterNote": "substring filter로 partition 1과 일치한 추가 5건도 실행됨. 목표 35건은 모두 포함, 추가 5건 모두 PASS. 다음 명령은 test(=전체이름)으로 지정",
+  "stage": 363,
+  "latestFullNextest": "전체 재실행 전, 최초 전체 67 FAIL 결과는 갱신하지 않음",
+  "passInterpretation": "두 aggregate partition은 corpus 이관으로 소속이 바뀔 수 있어 문서 출력 보정 완료 수로 합산하지 않음"
+}
