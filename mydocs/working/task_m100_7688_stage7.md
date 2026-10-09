@@ -138,6 +138,16 @@ Studio의 기존 단위 검사와 최종 E2E는 6단계 source hash에 대응하
 
 검증용 Studio는 `http://localhost:7788/`이다. ignored `final/review.html`은 crop·화살촉·
 수식과 #7333 영향쪽의 Print/실제 Native PNG/Studio Canvas2D/CanvasKit을 나란히 보여 준다.
-메인테이너의 기존 시각 통과는 3단계 Native 수식에 적용하며 이번 추가 수정의 사용자 판정으로
-확대하지 않는다. 이번 결과는 승인된 순차 로컬 구현·검증의 완료다. 후속 시각 판정과 제출은
-최신 비교 자료에서 이어 진행하며, #7688 전체 종료·원격 push·PR 생성·merge는 수행하지 않았다.
+2026-10-09 메인테이너가 최종 비교 자료에 **시각 검증 통과**를 판정했다.
+검토 source head는 `33991c311a81aef43392f9f9940f5ab805972d8d`이며, 이번 판정은
+위 비교 HTML의 crop·화살촉·수식 및 #7333 영향 19·31·41·43쪽에 연결한다.
+위에 명시한 미실행 범위와 엄격 backend parity의 잔여 차이는 그대로 구별한다.
+
+#7333 이미지의 상위 폴더 참조를 제거하고 HTML 옆 `review-assets/`에 모든 PNG를 모았다.
+ignored `final/review-portable.zip`을 별도 임시 폴더에 압축 해제하여 브라우저에서 28개 이미지의
+정상 표시와 클릭 링크를 확인했다. 원본 이미지의 SHA-256은 모두 동일하며,
+`final/review-portability-check.json`에 복사 검증을 보존한다. 판정 자료 ZIP의 SHA-256은
+`dae8c0f88167dfc0df473b0a0abfa64e14eebd5956449b55b62b72326af3f6c4`다.
+
+이번 결과는 순차 로컬 구현·검증과 사용자 시각 판정의 완료다.
+#7688 전체 종료·원격 push·PR 생성·merge는 수행하지 않았다.
