@@ -12,8 +12,6 @@
     "sourceNupFlag": true,
     "base": "21ed64071f81f35f37618717693bd30f727392c9",
     "candidate": "9bf29e177fe45880a7795cfc75920f4dfead50d0",
-    "oldReference": "pdf/basic/KTX-hwp-2020.pdf",
-    "oldReferenceSha256": "4a08e5abb714d9b99f918b47ba5e81dca0351f759a2faa90bbc0c394c70cda4b",
     "test": "svg_snapshot::issue_267_ktx_toc_page",
     "intent": "새 Print의 한 쪽씩 인쇄 계약을 실제 job 결과로 확인한 뒤 같은 원본의 전체 Native/fresh base/head를 비교. 전체 SVG hash 기대값은 시각 선행 조건 확인 후 관계 검사로 전환"
   },
@@ -34,11 +32,10 @@
     }
   },
   "reference": {
-    "path": "pdf/basic/KTX-hwp-2020.pdf",
+    "path": "mydocs/pr/assets/issue7445/ktx-toc27/KTX-hwp-2020.pdf",
     "sha256": "2b1c78d2a0b7c86b9c7071a491c7c70c3bb435bfef24441b2d929f1c7796f86a",
     "pages": 27,
-    "bytes": 718310,
-    "replacesOldSha256": "4a08e5abb714d9b99f918b47ba5e81dca0351f759a2faa90bbc0c394c70cda4b"
+    "bytes": 718310
   },
   "baseNative": {
     "base": "21ed64071f81f35f37618717693bd30f727392c9",
@@ -72,8 +69,20 @@
     "tsvSha256": "d8a1db30efd89382af38ec28adb821cb910da3d637710406462751984a71569c",
     "exitCode": 1
   },
-  "comparisonStatus": "현재 Native/fresh와 base fresh 전체 비교 진행 중",
+  "comparisonStatus": "네 backend 전체 비교 완료, 2/26쪽 기존 미달. 상세 이관 증거는 ktX transfer 기록 참고",
   "testFixtureGoldenChanges": false,
   "productionChangesSinceVerified357": false,
-  "prReady": false
+  "prReady": false,
+  "referencePathCorrection": {
+    "restoredUnrelatedPdf": "pdf/basic/KTX-hwp-2020.pdf",
+    "restoredSha256": "4a08e5abb714d9b99f918b47ba5e81dca0351f759a2faa90bbc0c394c70cda4b",
+    "restoredPages": 1,
+    "newRootPdf": "pdf/KTX-hwp-2020.pdf",
+    "newSha256": "2b1c78d2a0b7c86b9c7071a491c7c70c3bb435bfef24441b2d929f1c7796f86a",
+    "newPages": 27,
+    "runPathThen": "pdf/basic/KTX-hwp-2020.pdf",
+    "runReferenceSha256": "2b1c78d2a0b7c86b9c7071a491c7c70c3bb435bfef24441b2d929f1c7796f86a",
+    "reason": "동명 samples/basic/KTX.hwp와 samples/KTX.hwp의 정본 경로를 혼동해 저장한 오류 정정. 실행 당시 비교 PDF는 27쪽 새 Print였다",
+    "finalCanonicalPath": "mydocs/pr/assets/issue7445/ktx-toc27/KTX-hwp-2020.pdf"
+  }
 }

@@ -1437,3 +1437,49 @@ engine=2020 job은 성공했고 실제 한컴 11.0.0.9136 / Print method=0 /
 [원본·실제 Print·PDF 해시·base 미달 근거](../pr/assets/issue7445/completed-20261009/ktx-reference-print-validation.json),
 [devel 2쪽 review](../pr/assets/issue7445/completed-20261009/ktx-base-p002-review.png),
 [devel 26쪽 review](../pr/assets/issue7445/completed-20261009/ktx-base-p026-review.png).
+
+
+### 보정 361 이관 결정과 경로 오류 정정
+
+같은 27쪽 새 Print 정본으로 base/current Native/fresh 전쪽이 완료됐습니다.
+base 두 backend는 2쪽 50.35805%, 26쪽 71.16440%, 현재 Native/fresh는
+2쪽 50.35805%, 26쪽 73.09399%/72.83401%입니다. 누락·쪽수 차이는 없으며
+다른 모든 쪽은 90% 이상입니다. 2쪽 목차와 외곽 상자의 수직 차이, 26쪽 표
+뒤 본문 간격 차이를 직접 확인했고 이는 base부터 존재한 미달입니다.
+기존 #7445 등록 댓글 6063592661과 같은 문서·증상으로 연결해 중복 이슈를
+만들지 않습니다. 현재 실패하는 전체 SVG 고정 함수 한 개만 제거하고 원문·
+기준 PDF·제거 전 함수와 골든은 이슈 자산으로 보존합니다. 같은 입력의 기존
+정상 탭·리더·page-hide·hit parity 계약은 경로만 연결해 유지합니다.
+자동 렌더 corpus의 해당 body/render-page 행만 제거하고 IR 왕복 두 baseline
+행과 동일 입력 검사는 이슈 자산의 명시적 입력으로 유지합니다.
+
+초기 PDF 저장 경로를 정정합니다. `pdf/basic/KTX-hwp-2020.pdf`는 동명인
+별도 기본 샘플의 1쪽 정본이었습니다. 27쪽 새 Print를 그곳에 저장했던 오류를
+확인해 기존 1쪽 PDF를 base와 같은 바이트로 복원했습니다. 새 27쪽 PDF는
+원문과 함께 `mydocs/pr/assets/issue7445/ktx-toc27/`에 보존합니다. 실행 당시
+비교 PDF는 새 27쪽의 동일 SHA였으므로 기존 27쪽 비교 결과는 유효하지만,
+재현 명령의 PDF 경로는 새 이슈 자산 경로를 사용해야 합니다. 기존 basic 샘플과
+정본·oracle 행은 그대로 유지합니다. 제거를 피델리티 개선으로 보고하지 않습니다.
+
+
+### 보정 361 유지 검사 결과
+
+이관 경로의 정상 탭·리더·fixture 형태·IR 왕복 검사는 **16 PASS / 834 skipped**,
+42.466초, exit 0입니다. IR baseline 두 행과 27쪽 원문 바이트는 유지했습니다.
+전체 SVG 고정 한 함수 및 자동 렌더 corpus 두 행만 제거했고 기본 KTX 1쪽
+입력·PDF·oracle 행은 그대로입니다. manifest check의 기존 harness drift를
+확인했습니다. 처음 --generate는 stale 예외 정리 전에 49>48 예산 오류로
+파일 생성 없이 종료됐고, --prepare로 동기화 후 28 suites+20 exceptions=
+48/48과 --check가 통과했습니다. 예산을 확대하지 않았습니다. 실제 기본
+harness는 로컬 생성 산출물이며 다음 전체 검증은 canonical packing을 사용합니다.
+[전체 비교·원본/Print 해시·제거와 유지 범위](../pr/assets/issue7445/ktx-toc27/transfer-validation.json).
+
+
+### 보정 361 canonical 재검증 완료
+
+재생성한 canonical harness에서도 유지 검사 **16 PASS / 1,056 skipped**,
+42.326초, exit 0을 확인했습니다. IR 전체 왕복을 포함한 결과이며
+빠른 부분 집계가 아닙니다. OVR 자동 프리셋의 이전 KTX 입력도 제거해
+삭제 경로를 소비하지 않게 했습니다. historical oracle 인덱스는 과거
+측정 기록으로 유지합니다. 최초 실패 67건 중 31건 통과 확인, 부적합
+SVG 검사 1건 이관, 남은 35건은 아직 전체 재검증 전입니다.

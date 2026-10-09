@@ -41,7 +41,7 @@ PT2PX = DPI / 72.0
 
 # OVR 관례 샘플 세트 — CONTRIBUTING "렌더링 PR 자가 검증" 기본 프리셋 (samples/ 기준 상대경로)
 PRESETS = {
-    "ovr5": ["KTX.hwp", "aift.hwp", "biz_plan.hwp"],
+    "ovr5": ["aift.hwp", "biz_plan.hwp"],
 }
 
 

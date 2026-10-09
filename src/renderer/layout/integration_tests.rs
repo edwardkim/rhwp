@@ -862,7 +862,7 @@ mod tests {
     #[test]
     fn test_705_ktx_cell_pagehide_collected() {
         // Stage 0 측정: 본문 PageHide 1건 + 셀 안 PageHide 1건 (셀[10]/p[0] -----P "Ⅰ. 사업 개요")
-        let Some(core) = load_document("samples/KTX.hwp") else {
+        let Some(core) = load_document("mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp") else {
             return;
         };
         let count = core

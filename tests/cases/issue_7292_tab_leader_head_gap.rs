@@ -11,7 +11,7 @@
 //!
 //! ```text
 //!   문서                               앞 여백     px(96dpi)
-//!   pdf/KTX-2022.pdf 2쪽 (목차)        3.70pt      4.93
+//!   mydocs/pr/assets/issue7445/ktx-toc27/KTX-2022.pdf 2쪽 (목차)        3.70pt      4.93
 //!   pdf/aift-2022.pdf 4쪽 (목차)       3.24pt      4.32
 //!   1170000-200500003 … (한/글 2020)   2.88pt      3.84
 //! ```
@@ -20,8 +20,8 @@
 //!
 //! # 이 검사
 //!
-//! `samples/KTX.hwp` 목차 쪽의 **첫 점끌기 시작 x** 를 정본 좌표로 잠근다.
-//! 정본 `pdf/KTX-2022.pdf` 2쪽에서 `사업 개요` 의 advance 끝이 160.6pt, 첫 점이
+//! `mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp` 목차 쪽의 **첫 점끌기 시작 x** 를 정본 좌표로 잠근다.
+//! 정본 `mydocs/pr/assets/issue7445/ktx-toc27/KTX-2022.pdf` 2쪽에서 `사업 개요` 의 advance 끝이 160.6pt, 첫 점이
 //! 164.3pt = **219.07px** 다. 수정 전에는 214.17px(−4.9px)였다.
 //!
 //! 뒤 여백은 잠그지 않는다 — 점은 탭 정지점에서 끝나고 쪽번호가 오른쪽 정렬되므로
@@ -29,7 +29,7 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
-/// 정본 `pdf/KTX-2022.pdf` 2쪽의 첫 점끌기 시작 x (96dpi px).
+/// 정본 `mydocs/pr/assets/issue7445/ktx-toc27/KTX-2022.pdf` 2쪽의 첫 점끌기 시작 x (96dpi px).
 const ORACLE_FIRST_LEADER_X_PX: f64 = 219.07;
 
 /// 수정 전 값 — 이 검사가 무엇을 막는지 남긴다.
@@ -55,7 +55,8 @@ fn first_leader_start_x(svg: &str) -> f64 {
 
 #[test]
 fn toc_leader_starts_one_quarter_em_after_the_text() {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/KTX.hwp");
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp");
     let bytes = std::fs::read(&path).expect("KTX.hwp");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("문서 로드");
     let svg = doc.render_page_svg_native(1).expect("목차 쪽 SVG");
@@ -63,7 +64,7 @@ fn toc_leader_starts_one_quarter_em_after_the_text() {
     let x = first_leader_start_x(&svg);
     assert!(
         (x - ORACLE_FIRST_LEADER_X_PX).abs() <= 0.6,
-        "첫 점끌기 시작 {x:.2}px — 정본(pdf/KTX-2022.pdf 2쪽) {ORACLE_FIRST_LEADER_X_PX:.2}px \
+        "첫 점끌기 시작 {x:.2}px — 정본(mydocs/pr/assets/issue7445/ktx-toc27/KTX-2022.pdf 2쪽) {ORACLE_FIRST_LEADER_X_PX:.2}px \
          (수정 전 {BEFORE_FIX_X_PX:.2}px = 앞 글자에 바로 붙음)"
     );
 }

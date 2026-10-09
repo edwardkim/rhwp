@@ -7075,7 +7075,7 @@ mod tests {
     /// [#4149] KTX.hwp — 일반 표 문서. 패리티만 요구 (적중률은 보고).
     #[test]
     fn issue4149_fast_path_parity_ktx() {
-        issue4149_assert_fast_parity("samples/KTX.hwp", 400);
+        issue4149_assert_fast_parity("mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp", 400);
     }
 
     /// [#4149] hwp_table_test_saved.hwp — 저장 왕복 표 문서. 패리티만 요구.

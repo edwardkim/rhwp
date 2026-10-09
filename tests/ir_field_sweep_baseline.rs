@@ -82,6 +82,19 @@ const BASELINE_SCHEMA: &str = "# rhwp-ir-field-sweep-baseline-v2 complete-normal
 const BASELINE_HEADER: &str = "lane\tsample\tpath\tcount";
 const HWP5_ROOT: &str = "samples";
 const HWPX_ROOT: &str = "samples/hwpx";
+// 이관 문서의 기존 비렌더링 왕복 계약은 논리 샘플명과 입력 바이트를 유지한다.
+const SHARED_HWP5_INPUTS: &[(&str, &str)] =
+    &[("KTX.hwp", "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp")];
+
+fn hwp5_sample_path(sample: &str) -> PathBuf {
+    SHARED_HWP5_INPUTS
+        .iter()
+        .find(|(name, _)| *name == sample)
+        .map_or_else(
+            || Path::new(HWP5_ROOT).join(sample),
+            |(_, path)| PathBuf::from(path),
+        )
+}
 
 /// `RHWP_IR_SWEEP_FAST=1` 일 때만 쓰는 샘플 크기 상한(바이트) — 로컬 반복 확인용.
 /// 기본(CI 포함)은 전체 코퍼스다.
@@ -210,7 +223,13 @@ fn sweep_corpus(size_filter: &dyn Fn(u64) -> bool) -> (Baseline, usize, usize) {
         }
     };
 
-    for (path, rel) in collect(Path::new(HWP5_ROOT), "hwp", &[]) {
+    let mut hwp5_inputs = collect(Path::new(HWP5_ROOT), "hwp", &[]);
+    for (name, path) in SHARED_HWP5_INPUTS {
+        let path = PathBuf::from(path);
+        assert!(path.is_file(), "공유 왕복 입력이 없음: {}", path.display());
+        hwp5_inputs.push((path, (*name).to_owned()));
+    }
+    for (path, rel) in hwp5_inputs {
         let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
         if !size_filter(size) {
             continue;

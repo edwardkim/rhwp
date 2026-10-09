@@ -266,7 +266,7 @@ pub fn extract_tab_leaders(text: &str, positions: &[f64], style: &TextStyle) -> 
 /// ```text
 ///   문서                              앞 여백    그 줄 em    비율
 ///   1170000-200500003 (한/글 2020)   2.8~2.9pt  11.5~12.5pt  0.23~0.24 em
-///   samples/KTX.hwp   (한/글 2022)   3.7pt      15.0pt       0.247 em
+///   mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp   (한/글 2022)   3.7pt      15.0pt       0.247 em
 /// ```
 ///
 /// 종전에는 이 여백이 **0**(탭 시작에 바로 붙임)이라 같은 줄에 점이 3~4개 더 들어가고
