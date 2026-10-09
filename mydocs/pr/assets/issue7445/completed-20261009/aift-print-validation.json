@@ -1,0 +1,33 @@
+{
+  "stage": 362,
+  "input": {
+    "input": "samples/aift.hwp",
+    "sha256": "a3e94e613a7d3dad0ee11e2df8f9572a5b7c2d704602960c2075b5fd22df995c",
+    "pageCount": 74,
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2022",
+      "version": "12.0.0.4426"
+    },
+    "sizeBytes": 5724672,
+    "printMethod": 4,
+    "printMethodImpliesNup": true,
+    "base": "21ed64071f81f35f37618717693bd30f727392c9",
+    "head": "8c08463e2493237d754193adcdaabf5acb8a6898"
+  },
+  "print": {
+    "job_id": "68a3a7bb-60d5-4a8a-a9b6-587709cd2048",
+    "downloadExitCode": 0,
+    "canonicalPath": "pdf/aift-hwp-2020.pdf",
+    "bytes": 2311161,
+    "sha256": "481b46b3b0aa9c87ca3b0af979aba1e6b366efe2592268e1978370d6968f33e9",
+    "pages": 74,
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "state": "전쪽 비교 진행 중, 기대값·골든 변경 없음",
+  "snapshotChangeSummary": "624 text elements differ only in font-family fallback; no text/geometry differences in raw failed snapshot",
+  "prReady": false
+}
