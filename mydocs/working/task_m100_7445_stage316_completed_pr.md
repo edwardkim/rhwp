@@ -1123,3 +1123,21 @@ SVG **119쪽 모두 byte-identical**입니다. Native·fresh WASM·fmt는 exit0�
 [표 전체 2쪽 review](../pr/assets/issue7445/completed-20261009/tac3-cell-cache-p002-review.png),
 [뒤 본문 3쪽 review](../pr/assets/issue7445/completed-20261009/tac3-cell-cache-p003-review.png)를
 1쪽 및 각 overlay와 함께 보존합니다. 원시 TSV·로그·진단 사본은 ignored output에 남깁니다.
+
+
+## 보정 352 사전 분석: 셀 캐시 수정 후 잔여 재검증
+
+보정351의 원본3쪽 수용과 관련39개 통과를 커밋한 코드 후보에서, 보정350의
+실패43개를 같은 함수명으로 다시 선택합니다. #6448 한 함수의 정식 재통과와
+다른 XML 입력의 공통 캐시 판정 영향을 구분하고 실제 실패를 다음 분석 대상으로
+유지합니다. 생산 코드·fixture·기대값·baseline 추가 변경 없이 실행합니다.
+
+
+### 보정 352 잔여 재검증 결과
+
+코드 후보 `1dcf40b417e55c35d36136dbacd1390f2fadcedd`에서 선택43개를 실제 실행해
+**1 PASS / 42 FAIL**, 47.945s·threads8·exit100을
+확인했습니다. #6448은 동일 함수에서 재통과했고 다른42개 실패는 계속 분석합니다.
+원래67개 중 해결 확인25개/잔여42개이며 최신 전체 nextest 통과가 아닙니다.
+[개별 결과·정확한 head·실행 로그 해시](../pr/assets/issue7445/completed-20261009/remaining-after-cell-cache-validation.json)를
+커밋합니다. 이 재검증에서 생산 코드·기대값·fixture·baseline은 추가 수정하지 않았습니다.
