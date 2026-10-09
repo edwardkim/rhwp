@@ -1230,3 +1230,41 @@ nextest나 PR 준비 완료가 아닙니다. 추가 생산 코드·기대값·ba
 [진단·쪽별 수치·입력 해시](../pr/assets/issue7445/completed-20261009/civil-margin-contract-diagnostic.json),
 [원본2쪽 review](../pr/assets/issue7445/completed-20261009/civil-margin-before-p002-review.png)를
 overlay와 함께 보존합니다. 현재 원본의 시각 수용이나 검사 수정 완료가 아닙니다.
+
+
+## 보정 356 사전 분석: 현재 정확한 devel의 독립 출력 확보
+
+clean baseline worktree의 HEAD21ed64071f81f35f37618717693bd30f727392c9가
+현재 upstream/devel과 같습니다. 과거 다른SHA의 낮은 점수를 이 base의
+결과로 대신하지 않고 Native CLI와 Mac no-opt WASM을 새로 빌드합니다.
+현재 후보의 CLI353·pkg·진단 probe는 별도로 보존되어 덮어쓰지 않습니다.
+같은 original/PDF/Fonts/2022 profile와 현재 Visual Sweep script로
+서식2쪽을 base Native/fresh 비교하고 같은 표의 원점·행 높이·후속 흐름을
+대조합니다. 진단 전용 base 빌드이며 현재 후보의 최종 빌드 통과가 아닙니다.
+
+
+### 보정 356 검증 결과 — 현재 보정의 회귀 확정
+
+정확한 base21ed64071의 Native·Mac no-opt fresh WASM은 전체2쪽에서
+**98.62248% / 99.91757%**, 미달·누락·쪽수 차이0건이며 PNG/TSV도
+byte-identical입니다. 2쪽을 직접 판독해 둘째 표와 하단 안내문이 독립
+PDF와 같은 위치임을 확인했습니다. 현재 후보80.40770%는 원래 devel의
+미달 문서가 아니라 현재 보정에서 발생한 회귀입니다. 원본/회귀를 이관하거나
+기대값을 갱신하지 않고 현재 배치 원점 소비를 고칩니다.
+
+base에는 새 `setHangul2024Compat` WASM API가 없어 표준 exporter가
+중단됐습니다. Rust 생성자/profile의 기본false(2022)를 확인하고 ignored
+output의 전용 exporter로 실제 Chrome에서 그대로인 base WASM을 로드했습니다.
+기본2022만 허용하며2024는 거부합니다. 비교 계산과 임계값은 현재 Sweep
+그대로이고 exporter SHA/실행 경로를 별도로 기록했습니다. base 생산 코드나
+현재 정식 도구는 수정하지 않았고 base worktree는 빌드 후에도 clean입니다.
+
+현재 paint가 source rewind 앵커를 구한 뒤 확정 placement의 앵커로
+다시 덮어쓰는 소비 경로가 있습니다. 다음 단계에서는 생산 placement의
+원점·위 간격·본체·아래 간격을 확인해 측정과 paint가 같은 저장 프레임을
+사용하도록 수정합니다. 기존 함수의 기대값은 유지합니다. 내부 Table 여백만
+바꾼 진단 사본은 저장/재열기에서 원래 여백이 남았으므로, 해당 성공 Print를
+여백0 반례의 독립 기준으로 사용하지 않고 진단 output에만 보존했습니다.
+[정확한 base·빌드/입력 해시·전체 시각 증거](../pr/assets/issue7445/completed-20261009/exact-devel-civil-regression-proof.json),
+[devel2쪽 review](../pr/assets/issue7445/completed-20261009/civil-develop-p002-review.png)를
+overlay와 함께 커밋합니다. 현재 후보의 회귀 해결이나 최종 검증 통과는 아닙니다.

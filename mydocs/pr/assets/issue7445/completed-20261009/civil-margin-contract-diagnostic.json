@@ -1,6 +1,6 @@
 {
   "stage": 355,
-  "candidate": "ed46311af",
+  "candidate": "ed46311af32db523bdaf8e2d955ac60d74b782db",
   "productionCandidate": "16149f0fc1db6a19be3dff5878b4728a8aa4b728",
   "input": {
     "path": "samples/issue6032/2912695_civil_petition_form.hwp",
