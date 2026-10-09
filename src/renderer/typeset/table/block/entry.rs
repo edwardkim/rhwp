@@ -2145,6 +2145,46 @@ impl TypesetEngine {
                 self.dpi,
             )
         });
+        let empty_sibling_placement = (|| {
+            // 뒤 호스트 줄이 저장 스택 전체의 현재 프레임을 증명하면 그 계약을
+            // 보존한다. 그 외의 빈 형제 호스트는 가상의 글줄 원점보다 개체 상자가 우선한다.
+            if saved_host_line_after_stack_fits
+                || para_has_visible_text(para)
+                || !is_para_topbottom_float(&table.common)
+                || !(has_preceding_coanchored_float || has_following_coanchored_float)
+            {
+                return None;
+            }
+            // 현재 쪽의 앞 형제 원점을 소비한다. 이어받기 쪽에는 앞 쪽의
+            // 호스트 거리가 없으며, 이 쪽에서 시작한 호스트는 현재 흐름이 원점이다.
+            let host_origin = if st.current_items.iter().any(|item| {
+                matches!(item, PageItem::PartialTable { para_index, is_continuation: true, .. }
+                    if *para_index == para_idx)
+            }) {
+                0.0
+            } else {
+                st.paragraph_float_placements
+                    .iter()
+                    .filter(|((owner, control), _)| *owner == para_idx && *control < ctrl_idx)
+                    .min_by_key(|((_, control), _)| *control)
+                    .map_or(st.current_height, |(_, placement)| placement.anchor_y)
+            };
+            let natural_top = host_origin
+                + hwpunit_to_px(
+                    signed_hwpunit(table.common.vertical_offset).max(0),
+                    self.dpi,
+                );
+            crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_sibling_box(
+                para,
+                table,
+                st.current_height.max(natural_top),
+                host_origin,
+                ft.effective_height,
+                ft.host_spacing.before,
+                ft.host_spacing.after,
+            )
+        })();
+        let unconstrained_host_placement = empty_sibling_placement.or(unconstrained_host_placement);
         let constrain_host_placement = HostPlacementConstraint {
             table,
             has_preceding_coanchored_float,

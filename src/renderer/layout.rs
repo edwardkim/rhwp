@@ -13313,7 +13313,9 @@ impl LayoutEngine {
                         t,
                         ctx.paragraph_float_placements
                             .get(&(para_index, control_index)),
-                    )
+                    ) || (is_current_empty_para_float && is_para_topbottom_float(&t.common)
+                        && ctx.paragraph_float_placements.get(&(para_index, control_index))
+                            .is_some_and(|placement| placement.flow == super::float_placement::ParagraphFloatFlow::NextLine))
                     .then(|| {
                         ctx.paragraph_float_placements
                             .get(&(para_index, control_index))

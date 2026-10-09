@@ -313,6 +313,14 @@ impl TypesetEngine {
             // 위·아래 캡션 개체를 끝내면 캡션 방향과 무관하게
             // 다음 문단 전에 개체의 바깥 상자를 닫는다.
             caption_outer_bottom
+        } else if crate::renderer::float_placement::empty_topbottom_sibling_host(para, table)
+            && prepared.host_placement.is_some_and(|placement| {
+                placement.flow == crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+            })
+        {
+            // fit에서 면제한 아래 여백도 형제의 종료 상자에서는 실제 흐름을 소비한다.
+            // 중간 조각에는 반복하지 않고 마지막 유닛의 예약과 paint에 함께 전달한다.
+            hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi)
         } else {
             fragment_outer_bottom_overhead
         };
