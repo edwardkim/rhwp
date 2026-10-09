@@ -955,3 +955,22 @@ affine를 검사합니다. fallback TextRun 보존, common 대안 한 개, 같�
 잔여 **50건**이며 전체 재검증·최종 게이트·PR 준비는 남습니다.
 [독립 단위 근거·검사·실제 소비·로그 해시](../pr/assets/issue7445/completed-20261009/common-glyph-ratio-contract-validation.json)를
 커밋하고 원시 로그는 ignored output에 보존합니다.
+
+
+## 보정 347 분석: 위첨자 3쪽 원본의 독립 Print 미확보
+
+`issue_5756_superscript_line_stays_inside_cell`은 세로 크기에도 장평 제곱근을
+적용한 옛 기대값에서 실패했습니다. 원본은 `samples/issue5756/156732409_superscript_advance.hwp`,
+140,288byte·현재 3쪽·한컴 2022 저장 12.0.0.3650입니다. Mac Downloads의
+156732409 원본과 SHA `f354fdc246a0b334c34af1bd1916185a23eb7cc729c74e57407a7ea35f65b422`가
+같습니다. 과거 PR #5772도 한컴 출력이 호환성 경고 1쪽이라 정본을 채택하지 않았습니다.
+
+승인된 비공개 MCP 설정으로 현재 2020 engine의 비동기 Print 변환을 요청했습니다.
+최초 `bf921332-ee38-4542-a4dd-afb2d2ce6106`과 원본 이름을 사용한 재시도
+`3dc8f30c-82c3-4197-9441-db8ae135c21d`는 모두 명시적 terminal failed이며
+`HwpEditorFrame.SaveAsDocument returned false for HWP`입니다. 성공 PDF는 없습니다.
+반복 타임아웃으로 종료를 추정하거나 2024/재직렬화 입력을 같은 정본으로 대신하지 않았습니다.
+원본·검사·기대값을 유지합니다. 이 문서는 독립 Print 확보·전3쪽 Native/fresh·확대 판독
+전까지 좁게 보류하며, 다른 잔여 실패 분석은 계속 진행합니다.
+[입력 동일성·두 terminal job·보류 근거](../pr/assets/issue7445/completed-20261009/superscript3-reference-conversion-hold.json)를
+포함하며 endpoint·token·환경 파일 내용은 출력하거나 커밋하지 않았습니다.

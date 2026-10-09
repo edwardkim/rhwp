@@ -1,0 +1,54 @@
+{
+  "candidate": "ed618e83d63526f8d009f9dfeb1f2ce469526165",
+  "test": "issue_5756_superscript_line_stays_inside_cell",
+  "source": "samples/issue5756/156732409_superscript_advance.hwp",
+  "sourceSha256": "f354fdc246a0b334c34af1bd1916185a23eb7cc729c74e57407a7ea35f65b422",
+  "sourceBytes": 140288,
+  "sourceMatchesMacDownloadedOriginal": true,
+  "savedProduct": "hancom-office-2022",
+  "savedVersion": "12.0.0.3650",
+  "currentPages": 3,
+  "requiredEngine": "2020",
+  "attempts": [
+    {
+      "job_id": "bf921332-ee38-4542-a4dd-afb2d2ce6106",
+      "status": "failed",
+      "phase": "failed",
+      "target": "pdf",
+      "engine": "2020",
+      "created_at": "2026-10-09T17:57:30.823Z",
+      "started_at": "2026-10-09T17:58:25.776Z",
+      "completed_at": "2026-10-09T17:58:29.665Z",
+      "expired_at": null,
+      "elapsed_seconds": 3,
+      "queue_position": null,
+      "output_bytes": 0,
+      "delivery": {
+        "status": "not_requested",
+        "attempts": 0,
+        "output_path": null,
+        "saved_at": null,
+        "error": null
+      },
+      "result": null,
+      "error": "HwpEditorFrame.SaveAsDocument returned false for HWP",
+      "terminal": true
+    },
+    {
+      "job_id": "3dc8f30c-82c3-4197-9441-db8ae135c21d",
+      "status": "failed",
+      "phase": "failed",
+      "engine": "2020",
+      "terminal": true,
+      "elapsed_seconds": 3,
+      "error": "HwpEditorFrame.SaveAsDocument returned false for HWP"
+    }
+  ],
+  "independentPrintPDF": null,
+  "referenceStatus": "미확보: 같은 원본의 서로 다른 job 두 번이 HWP SaveAsDocument 단계에서 실패",
+  "testChanged": false,
+  "sourceChanged": false,
+  "expectationChanged": false,
+  "nextAction": "MCP 원본 열기/인쇄 문제를 해결해 독립 Print 전체 3쪽을 확보한 뒤 Native/fresh 90%와 직접 판독 후 기존 검사 교정",
+  "ignoredArtifacts": "output/pr-review/7445-completed-20261009/stage347-superscript3"
+}
