@@ -3479,6 +3479,47 @@ fn saved_empty_table_anchor_props(para: &Paragraph, table: &Table) -> bool {
         && signed_hwpunit(table.common.vertical_offset) >= 0
 }
 
+/// 빈 개체 앵커 문단의 저장 사다리가 표 바깥 여백 상자를 담지 않는다.
+///
+/// 한컴 저장본은 다음 문단을 바깥 여백 상자(위 여백 + 표 + 아래 여백) 아래에 두거나 새 쪽
+/// 원점으로 되감는다. 편집 vpos 재계산(`recalculate_section_vpos`)은 이 앵커를 한 줄
+/// (`lh + ls`)로만 잇는다. 단 맨 위 폴백은 사다리가 상자를 담는다고 보고 위 여백을 그림
+/// 위치에만 더하므로(#4068), 이 사다리에서는 다음 문단이 표 아랫부분과 겹친다.
+pub(crate) fn empty_table_anchor_ladder_lacks_outer_box(
+    para: &Paragraph,
+    table: &Table,
+    next: Option<&Paragraph>,
+) -> bool {
+    let stored_vpos = |para: &Paragraph| {
+        para.line_segs
+            .first()
+            .filter(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            .map(|line| line.vertical_pos)
+    };
+    let (Some(host), Some(next)) = (stored_vpos(para), next.and_then(stored_vpos)) else {
+        return false;
+    };
+    // 구역·단 설정은 앵커 줄에 내용을 더하지 않는다.
+    let mut objects = para
+        .controls
+        .iter()
+        .filter(|control| !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)));
+    let only_table = matches!(objects.next(), Some(Control::Table(_))) && objects.next().is_none();
+    let outer_box = i32::from(table.outer_margin_top)
+        .saturating_add(signed_hwpunit(table.common.height))
+        .saturating_add(i32::from(table.outer_margin_bottom));
+    only_table
+        && para.text.is_empty()
+        && para.line_segs.len() == 1
+        && table.page_break == TablePageBreak::None
+        && is_para_topbottom_float(&table.common)
+        && table.common.vert_align == VertAlign::Top
+        && signed_hwpunit(table.common.vertical_offset) >= 0
+        && (host..host.saturating_add(outer_box)).contains(&next)
+}
+
 /// 실제 예약에서 선택한 저장 원점 증거를 첫 조각도 그대로 소비한다.
 pub(crate) fn empty_table_host_uses_shared_formatted_box(
     para: &Paragraph,

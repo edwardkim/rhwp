@@ -1739,6 +1739,32 @@ impl TypesetEngine {
                         occupied_bottom: st.current_height + whole_fit_table_total,
                     },
                 )
+            })
+            .or_else(|| {
+                // 단 맨 위 빈 앵커의 저장 사다리가 표 바깥 여백 상자를 담지 않으면, 쪽 나누기로
+                // 연 빈 앵커처럼 위 여백·표·아래 여백을 차례로 차지한다. 통째로 들어갈 때만
+                // 쓰고, 상자를 담은 저장본은 종전 저장 흐름을 따른다.
+                (st.flow_table_column_top()
+                    && crate::renderer::float_placement::empty_table_anchor_ladder_lacks_outer_box(
+                        para,
+                        table,
+                        paragraphs_all.get(para_idx + 1),
+                    ))
+                .then(|| {
+                    let table_top = st.current_height
+                        + ft.host_spacing.before
+                        + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), self.dpi);
+                    crate::renderer::float_placement::ParagraphFloatPlacement {
+                        flow: crate::renderer::float_placement::ParagraphFloatFlow::Exclusion,
+                        anchor_y: st.current_height,
+                        stored_host_origin: None,
+                        stored_successor_line_origin: None,
+                        table_left: None,
+                        table_top,
+                        occupied_bottom: table_top + ft.effective_height + ft.host_spacing.after,
+                    }
+                })
+                .filter(|placement| placement.occupied_bottom <= available)
             });
         // [#7390] 저장 RowBreak 개체의 선언 높이는 첫 물리 조각만 나타낼 수 있다.
         // 현재 흐름 위치에서 측정 행을 그렸을 때 종이 경계를 넘는다면
