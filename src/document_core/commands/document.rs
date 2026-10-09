@@ -665,6 +665,8 @@ impl DocumentCore {
         let source_table_frames = !profile.session_edited()
             && (profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout());
         let is_hwp3_variant = document.is_hwp3_variant;
+        let check_cell_text_height = include_empty && document.layout_profile().hwpx_container();
+        let source_doc_info = &document.doc_info;
         for section in &mut document.sections {
             // [#4898] 이 구역의 저장 lineseg 가 배치 권위를 갖는지 먼저 판정한다 —
             // 권위가 있으면 0높이 lineseg(한컴이 접어 둔 숨은 블록)를 재조판하지 않는다.
@@ -861,6 +863,16 @@ impl DocumentCore {
                                 // 좌표계를 공유한다. 셀만 구역 권위를 무시하면 한컴이
                                 // 0 높이로 접어 둔 셀 내부 블록을 다시 조판해 표 높이와
                                 // 뒤쪽 페이지가 변한다.
+                                // 일반 글자 크기를 초과하는 옛 글자 높이는 현재 캐시가 아니다.
+                                // 같은 내용 상자에서 한 번 재구성해 측정과 paint에 공유한다.
+                                if check_cell_text_height
+                                    && Self::stored_plain_cell_line_has_stale_text_height(
+                                        cell_para,
+                                        source_doc_info,
+                                    )
+                                {
+                                    cell_para.replace_line_segs(Vec::new());
+                                }
                                 if Self::needs_line_seg_reflow_in_scope(
                                     cell_para,
                                     inc,
@@ -1480,6 +1492,49 @@ impl DocumentCore {
         include_empty: bool,
     ) -> bool {
         Self::needs_line_seg_reflow_in_scope(para, include_empty, false)
+    }
+
+    /// 단일 일반 글자모양의 현재 높이보다 큰 저장 글자 높이는 재구성 대상이다.
+    /// 줄 높이 자체는 줄간격/행높이 모드로 커질 수 있으므로 비교하지 않는다.
+    fn stored_plain_cell_line_has_stale_text_height(
+        para: &Paragraph,
+        doc_info: &crate::model::document::DocInfo,
+    ) -> bool {
+        let ([line], [run]) = (para.line_segs.as_slice(), para.char_shapes.as_slice()) else {
+            return false;
+        };
+        if line.text_start != 0
+            || run.start_pos != 0
+            || line.line_height <= 0
+            || line.text_height <= 0
+            || line.tag & (LineSeg::TAG_IMPLEMENTATION_PROPERTY | LineSeg::TAG_EMPTY_SEGMENT) != 0
+            || para.text.is_empty()
+            || para.text.chars().any(char::is_control)
+            || !para.controls.is_empty()
+            || para.stored_text_partition_is_dirty()
+        {
+            return false;
+        }
+        let Some(shape) = doc_info.char_shapes.get(run.char_shape_id as usize) else {
+            return false;
+        };
+        let Some(paragraph_shape) = doc_info.para_shapes.get(para.para_shape_id as usize) else {
+            return false;
+        };
+        let relative = shape.relative_sizes[0];
+        if paragraph_shape.attr1 & (1 << 22) != 0
+            || shape.base_size <= 0
+            || relative == 0
+            || shape.relative_sizes.iter().any(|size| *size != relative)
+            || shape.char_offsets.iter().any(|offset| *offset != 0)
+            || shape.superscript
+            || shape.subscript
+        {
+            return false;
+        }
+        let height = i64::from(shape.base_size) * i64::from(relative) / 100;
+        // 정수 HWPUNIT 변환의 반올림 한 단위만 허용한다.
+        i64::from(line.text_height) > height + 1
     }
 
     /// [#4898] `section_has_sized_lineseg` 는 **이 구역의 lineseg 가 배치 권위를 갖는가**다.

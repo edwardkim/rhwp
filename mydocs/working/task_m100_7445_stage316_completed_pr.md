@@ -1072,3 +1072,54 @@ fixture·baseline·생산 코드는 추가로 변경하지 않았습니다.
 확인된 원래 실패 해결은 **24건**, 잔여는 **43건**입니다.
 [정확한 head·45개 개별 결과·원시 로그 해시](../pr/assets/issue7445/completed-20261009/remaining-after-host-fix-validation.json)를
 포함하며 최신 전체 nextest·필수 최종 게이트·PR 생성은 아직 남습니다.
+
+
+## 보정 351 사전 분석: 현재 글자모양과 모순되는 셀 저장 글자 높이
+
+#6448의 3쪽 원본은 현재2쪽이며 2쪽 시각 비교64.77909%입니다. 기존3쪽 기대값을
+바꾸지 않습니다. `MID ROW`·`TAIL ROW EXPANDING`의 현재 CharShape는1000HU인데
+저장 text_height는1200HU·baseline1020HU입니다. 단일 글자모양·일반 상대 크기·
+위치 이동/첨자/컨트롤 없음·fontLineHeight off로 글꼴 행높이 모드도 아닙니다.
+두 과대 캐시 때문에 작은 행이21.6px로 커지고 TAC 선언높이 회수에서 첫66300HU
+행이863.4px로 축소됩니다. 독립 Print는 큰 행을 보존하고 현재 글자모양으로
+작은 행을 확장하며 뒤 본문을3쪽에 둡니다.
+
+원본을 보존한 진단 사본에서 이 두 캐시만 제거해 기존 재구성 경로를 사용하면
+3쪽·전쪽 최저92.54967%(2쪽98.71982%)입니다. 이 사본은 원본 수용이나 정식
+fixture가 아니며 Git에 추가하지 않습니다. 원본의 일반 셀 줄 캐시가 현재
+기준/상대 글자 크기를 초과하고 그 텍스트 크기가 명확할 때만 기존 reflow로
+보냅니다. 글꼴 행높이·첨자/글자 위치 이동·혼합 크기·컨트롤·합성/숨김 줄은
+같은 크기 증거가 없어 대상이 아닙니다. 기존 include_empty·HWPX container
+재구성 경로에서만 캐시를 판정하며 native HWP와 저장 레이아웃 권위 경로는 유지합니다.
+HWP3 변환 대조본의 실제 무변경 여부는 아래 16쪽 대조 결과로 확인합니다.
+
+현재 CharShape/ParaShape → 캐시 유효성 → 기존 ParagraphBox/reflow_line_segs →
+측정의 셀 내용/행 높이 → pagination 예산/실제 table_layout의 동일 측정 결과로
+연결합니다. 표 선언높이·앞 행의 숫자·페이지를 강제로 변경하지 않습니다.
+원본 전체3쪽 Native/fresh90%·확대 판독 후 기존 관계 회귀를 유지/보강하고
+정상 대조군을 확인합니다. 새 테스트 함수·fixture·baseline을 만들지 않습니다.
+
+
+### 보정 351 검증 결과
+
+원본 HWPX와 기존 독립 PDF를 바꾸지 않은 최종 Native·Mac no-opt fresh WASM은
+모두 **3쪽**, 전쪽 일치율 **92.54967% / 98.71982% / 94.26752%**, 미달·누락·
+쪽수 차이 0건입니다. backend PNG와 TSV도 byte-identical입니다. 1~3쪽 review를
+직접 열어 첫 본문/표 전체/뒤 본문의 소속, 큰 행 공간, 두 작은 행과 표 외곽을
+확인했습니다. Haansoft Batang/HCRBatang의 글리프와 기존 괘선 농도 차이는
+남으며 100% 픽셀 동일 주장이나 글꼴 예외로 수용하지 않습니다.
+
+기존 #6448 함수에 정상 캐시 보존·모순 캐시 재구성·원본 첫 행 공간의 관계를
+보강했습니다. 관련 기존 함수 **39 PASS / 0 FAIL / 1255 skipped**, 0.384초·
+threads8·exit0입니다. 기존 3쪽 기대값은 그대로이며 Stage350에서 같은 기존
+기대값의 FAIL을 확인했습니다. 새 세부 assertion의 수정 전 동일 바이너리 실행과
+구분합니다. 새 함수·fixture·baseline·입력/기준 PDF 변경은 없습니다.
+
+정상 대조100쪽, 수용된 converted16 및 #6950 원본3쪽은 이전 후보 대비
+SVG **119쪽 모두 byte-identical**입니다. Native·fresh WASM·fmt는 exit0이고
+생성 public glue는 기존 tracked 파일로 복원했습니다. 확인된 원래 실패 해결은
+**25건**, 잔여는 **42건**이며 최신 전체 nextest·최종 필수 게이트·PR은 남습니다.
+[입력/소스/빌드 해시·전쪽 결과·검증 근거](../pr/assets/issue7445/completed-20261009/tac3-stale-cell-cache-validation.json),
+[표 전체 2쪽 review](../pr/assets/issue7445/completed-20261009/tac3-cell-cache-p002-review.png),
+[뒤 본문 3쪽 review](../pr/assets/issue7445/completed-20261009/tac3-cell-cache-p003-review.png)를
+1쪽 및 각 overlay와 함께 보존합니다. 원시 TSV·로그·진단 사본은 ignored output에 남깁니다.
