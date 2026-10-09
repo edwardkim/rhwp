@@ -6113,6 +6113,23 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 인라인 개체를 논리적 캐럿 위치로 원자적으로 옮긴다.
+    #[wasm_bindgen(js_name = moveInlineControl)]
+    pub fn move_inline_control_api(
+        &mut self,
+        source_json: &str,
+        destination_json: &str,
+    ) -> Result<String, JsValue> {
+        let source =
+            serde_json::from_str(source_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let destination = serde_json::from_str(destination_json)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let result = self
+            .move_inline_control_native(&source, &destination)
+            .map_err(JsValue::from)?;
+        serde_json::to_string(&result).map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
     /// 개체를 한 걸음 옮긴다 — 웹한글컨트롤 `ShapeObjMove*`(걸음 56 HWPUNIT).
     #[wasm_bindgen(js_name = moveControlAt)]
     pub fn move_control_at_api(

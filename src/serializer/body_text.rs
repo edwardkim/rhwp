@@ -708,7 +708,29 @@ fn push_guide_residue(
     });
 }
 
+/// 저장기와 같은 순서로 각 컨트롤의 원본 슬롯 위치를 구한다.
+pub(crate) fn control_stream_slots(para: &Paragraph) -> Vec<Option<(u32, usize)>> {
+    let mut slots = vec![None; para.controls.len()];
+    serialize_para_text_with_slots(para, Some(&mut slots), None);
+    slots
+}
+
+/// 저장기가 실제로 닫는 각 필드의 스트림 경계다.
+pub(crate) fn field_stream_ends(para: &Paragraph) -> Vec<Option<u32>> {
+    let mut ends = vec![None; para.field_ranges.len()];
+    serialize_para_text_with_slots(para, None, Some(&mut ends));
+    ends
+}
+
 fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
+    serialize_para_text_with_slots(para, None, None)
+}
+
+fn serialize_para_text_with_slots(
+    para: &Paragraph,
+    mut slots: Option<&mut [Option<(u32, usize)>]>,
+    mut ends: Option<&mut [Option<u32>]>,
+) -> ParaTextResult {
     let mut code_units: Vec<u16> = Vec::new();
     let text_chars: Vec<char> = para.text.chars().collect();
     let mut ctrl_idx = 0;
@@ -757,12 +779,13 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             .or_insert(fr.start_char_idx);
     }
 
-    for fr in &para.field_ranges {
-        let marker = if let Some(control) = para.controls.get(fr.control_idx) {
+    for (index, fr) in para.field_ranges.iter().enumerate() {
+        let mut marker = if let Some(control) = para.controls.get(fr.control_idx) {
             field_end_marker(control)
         } else {
             FieldEndMarker::default()
         };
+        marker.trace_index = Some(index);
         let residue = guide_residue_for(para, fr);
         if fr.end_char_idx < text_len && fr.start_char_idx == fr.end_char_idx {
             empty_fields.entry(fr.end_char_idx).or_default().push((
@@ -842,6 +865,7 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         //    자동번호를 문단 끝에 덧붙여 다시 열 때 공백이 하나 남는다(#7528).
         if let Some(markers) = field_ends.get(&i) {
             for &marker in markers {
+                trace_field_end(marker, prev_end, &mut ends);
                 push_field_end_ctrl(&mut code_units, marker);
                 prev_end += 8;
             }
@@ -907,6 +931,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             }
         };
         if is_placeholder(prev_end, ctrl_idx, false) {
+            if let Some(slots) = slots.as_deref_mut() {
+                slots[ctrl_idx] = Some((prev_end, i));
+            }
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
@@ -931,6 +958,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 .is_none_or(|&start| start <= i)
         {
             if emits_ctrl_header(&para.controls[ctrl_idx]) {
+                if let Some(slots) = slots.as_deref_mut() {
+                    slots[ctrl_idx] = Some((prev_end, i));
+                }
                 let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
                 push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
                 prev_end += 8;
@@ -941,6 +971,7 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 &mut code_units,
                 &mut residue_shifts,
                 &mut prev_end,
+                &mut ends,
             );
             ctrl_idx += 1;
         }
@@ -954,6 +985,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 .is_some_and(|&start| start == i)
         {
             if emits_ctrl_header(&para.controls[ctrl_idx]) {
+                if let Some(slots) = slots.as_deref_mut() {
+                    slots[ctrl_idx] = Some((prev_end, i));
+                }
                 let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
                 push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
                 prev_end += 8;
@@ -964,6 +998,7 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 &mut code_units,
                 &mut residue_shifts,
                 &mut prev_end,
+                &mut ends,
             );
             ctrl_idx += 1;
         }
@@ -972,6 +1007,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         //     때문에 실패했을 수 있다. 여기서 걸리면 `ctrl_idx` 가 갭을 채운 만큼 앞으로
         //     가 있어, 자리표시자가 **자기 컨트롤**과 짝지어진다(#4957).
         if is_placeholder(prev_end, ctrl_idx, true) {
+            if let Some(slots) = slots.as_deref_mut() {
+                slots[ctrl_idx] = Some((prev_end, i));
+            }
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
@@ -986,6 +1024,7 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             &mut code_units,
             &mut residue_shifts,
             &mut prev_end,
+            &mut ends,
         );
 
         // 텍스트 문자 쓰기
@@ -1092,6 +1131,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
 
     while ctrl_idx < para.controls.len() {
         if emits_ctrl_header(&para.controls[ctrl_idx]) {
+            if let Some(slots) = slots.as_deref_mut() {
+                slots[ctrl_idx] = Some((prev_end, text_chars.len()));
+            }
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             prev_end += 8;
@@ -1107,6 +1149,7 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         // 이 컨트롤(FIELD_BEGIN)에 대응하는 trailing FIELD_END 삽입
         if let Some(end_markers) = trailing_end_after_ctrl.remove(&ctrl_idx) {
             for marker in end_markers {
+                trace_field_end(marker, prev_end, &mut ends);
                 push_field_end_ctrl(&mut code_units, marker);
                 prev_end += 8;
             }
@@ -1123,7 +1166,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     // HWPX 축 판단(`emit_guide_residue` 는 이 경로를 다루지 않는다)을 그대로 따른다.
     for end_markers in trailing_end_after_ctrl.values() {
         for &marker in end_markers {
+            trace_field_end(marker, prev_end, &mut ends);
             push_field_end_ctrl(&mut code_units, marker);
+            prev_end += 8;
         }
     }
 
@@ -1232,6 +1277,7 @@ fn close_empty_fields(
     code_units: &mut Vec<u16>,
     residue_shifts: &mut Vec<GuideResidueShift>,
     prev_end: &mut u32,
+    ends: &mut Option<&mut [Option<u32>]>,
 ) {
     pending.retain(|&(close_after, marker, residue)| {
         if closed != usize::MAX && close_after != closed {
@@ -1240,6 +1286,7 @@ fn close_empty_fields(
         if let Some(residue) = residue {
             push_guide_residue(code_units, residue_shifts, residue, *prev_end);
         }
+        trace_field_end(marker, *prev_end, ends);
         push_field_end_ctrl(code_units, marker);
         *prev_end += 8;
         false
@@ -1250,6 +1297,13 @@ fn close_empty_fields(
 struct FieldEndMarker {
     ctrl_id: u32,
     memo_index: u32,
+    trace_index: Option<usize>,
+}
+
+fn trace_field_end(marker: FieldEndMarker, pos: u32, ends: &mut Option<&mut [Option<u32>]>) {
+    if let Some((ends, index)) = ends.as_deref_mut().zip(marker.trace_index) {
+        ends[index] = Some(pos);
+    }
 }
 
 fn field_end_marker(ctrl: &Control) -> FieldEndMarker {
@@ -1261,11 +1315,13 @@ fn field_end_marker(ctrl: &Control) -> FieldEndMarker {
             FieldEndMarker {
                 ctrl_id: tags::FIELD_MEMO,
                 memo_index: memo_field_index(field),
+                trace_index: None,
             }
         }
         Control::Field(field) => FieldEndMarker {
             ctrl_id: field.ctrl_id,
             memo_index: 0,
+            trace_index: None,
         },
         _ => FieldEndMarker::default(),
     }

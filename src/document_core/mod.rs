@@ -28,6 +28,7 @@ pub(crate) mod html_table_import;
 /// 한글 클립보드 문서모델(hwpjson) → HWPX 변환
 pub mod hwpjson;
 pub mod hyperlink;
+pub mod inline_control;
 pub mod queries;
 pub mod table_calc;
 pub mod text_security;

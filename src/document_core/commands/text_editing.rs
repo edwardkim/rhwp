@@ -3130,7 +3130,10 @@ impl DocumentCore {
             .collect()
     }
 
-    fn cell_metrics_for_control(control: &Control, cell_idx: usize) -> Option<CellReflowMetrics> {
+    pub(crate) fn cell_metrics_for_control(
+        control: &Control,
+        cell_idx: usize,
+    ) -> Option<CellReflowMetrics> {
         match control {
             Control::Table(table) => {
                 if cell_idx == 65534 {
