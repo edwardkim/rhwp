@@ -876,6 +876,13 @@ impl PaintOp {
                 write_line_style(buf, &line.style);
                 buf.push_str(",\"transform\":");
                 write_transform(buf, line.transform);
+                write_arrow_heads(
+                    buf,
+                    &crate::renderer::arrow::line_heads(
+                        (line.x1, line.y1, line.x2, line.y2),
+                        &line.style,
+                    ),
+                );
                 buf.push('}');
             }
             PaintOp::Rectangle { bbox, rect } => {
@@ -935,6 +942,7 @@ impl PaintOp {
                 }
                 buf.push_str(",\"transform\":");
                 write_transform(buf, path.transform);
+                write_arrow_heads(buf, &crate::renderer::arrow::connector_heads(path));
                 buf.push('}');
             }
             PaintOp::Image {
@@ -4829,4 +4837,20 @@ mod image_bytes_mode_tests {
             assert!(op.get("base64").is_some());
         }
     }
+}
+
+fn write_arrow_heads(buf: &mut String, heads: &[crate::renderer::arrow::ArrowHead]) {
+    if heads.is_empty() {
+        return;
+    }
+    buf.push_str(",\"arrowHeads\":[");
+    for (index, head) in heads.iter().enumerate() {
+        if index > 0 {
+            buf.push(',');
+        }
+        let _ = write!(buf, "{{\"filled\":{},\"commands\":", head.filled);
+        write_path_commands(buf, &head.commands);
+        buf.push('}');
+    }
+    buf.push(']');
 }

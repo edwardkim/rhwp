@@ -1468,7 +1468,8 @@ export class CanvasKitLayerRenderer {
       }
     }
     this.drawCompoundLine(canvas, x1, y1, x2, y2, style, 1);
-    this.drawLineArrows(canvas, x1, y1, x2, y2, style, color, width);
+    // A zero-length straight line has no endpoint direction, matching the producer.
+    if (x1 !== x2 || y1 !== y2) this.drawLineArrows(canvas, op.arrowHeads, style, color, width);
   }
 
   private renderPath(canvas: SkCanvas, op: LayerPathOp): void {
@@ -1509,31 +1510,10 @@ export class CanvasKitLayerRenderer {
       }
     }
     this.drawStyledPath(canvas, path, replayStyle, op.bbox, op.gradient);
-    if (op.lineStyle && (op.lineStyle.startArrow || op.lineStyle.endArrow)) {
-      const points: Array<[number, number]> = [];
-      for (const command of op.commands ?? []) {
-        if (command.type === 'moveTo' || command.type === 'lineTo') {
-          points.push([command.x, command.y]);
-        } else if (command.type === 'curveTo') {
-          points.push([command.x3, command.y3]);
-        } else if (command.type === 'arcTo') {
-          points.push([command.x, command.y]);
-        }
-      }
-      if (points.length >= 2) {
-        const [sx, sy] = points[0];
-        const [ex, ey] = points[points.length - 1];
-        this.drawLineArrows(
-          canvas,
-          sx,
-          sy,
-          ex,
-          ey,
-          op.lineStyle,
-          op.lineStyle.color ?? replayStyle.strokeColor ?? '#000000',
-          op.lineStyle.width ?? replayStyle.strokeWidth ?? 1,
-        );
-      }
+    if (op.lineStyle) {
+      this.drawLineArrows(canvas, op.arrowHeads, op.lineStyle,
+        op.lineStyle.color ?? replayStyle.strokeColor ?? '#000000',
+        op.lineStyle.width ?? replayStyle.strokeWidth ?? 1);
     }
     if (needsTransform) {
       canvas.restore();
@@ -4027,127 +4007,30 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private calcArrowDims(strokeWidth: number, lineLen: number, arrowSize: number): [number, number] {
-    const size = Number.isFinite(arrowSize) ? Math.max(0, Math.min(8, Math.trunc(arrowSize))) : 4;
-    const widthLevel = Math.floor(size / 3);
-    const lengthLevel = size % 3;
-    const widthMult = widthLevel === 0 ? 1.5 : widthLevel === 1 ? 2.5 : 3.5;
-    const lengthMult = lengthLevel === 0 ? 1.0 : lengthLevel === 1 ? 1.5 : 2.0;
-    const arrowH = Math.max(3, strokeWidth * widthMult);
-    const arrowW = Math.min(arrowH * lengthMult, Math.max(lineLen * 0.3, 1));
-    return [arrowW, arrowH];
-  }
-
   private drawLineArrows(
     canvas: SkCanvas,
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
+    heads: LayerLineOp['arrowHeads'],
     style: LayerLineStyle,
     color: string,
     width: number,
   ): void {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const lineLen = Math.hypot(dx, dy);
-    if (lineLen < 0.001) return;
-    if (style.startArrow && style.startArrow !== 'none') {
-      const [aw, ah] = this.calcArrowDims(width, lineLen, style.startArrowSize ?? 4);
-      this.drawArrowHead(canvas, x1, y1, -dx / lineLen, -dy / lineLen, aw, ah, style.startArrow, color, width);
+    if (!heads && ((style.startArrow && style.startArrow !== 'none')
+      || (style.endArrow && style.endArrow !== 'none'))) {
+      this.unsupportedOps.add('arrow:geometryMissing');
+      return;
     }
-    if (style.endArrow && style.endArrow !== 'none') {
-      const [aw, ah] = this.calcArrowDims(width, lineLen, style.endArrowSize ?? 4);
-      this.drawArrowHead(canvas, x2, y2, dx / lineLen, dy / lineLen, aw, ah, style.endArrow, color, width);
-    }
-  }
-
-  private drawArrowHead(
-    canvas: SkCanvas,
-    tipX: number,
-    tipY: number,
-    dirX: number,
-    dirY: number,
-    arrowW: number,
-    arrowH: number,
-    arrowStyle: string,
-    color: string,
-    strokeWidth: number,
-  ): void {
-    const alongX = -dirX;
-    const alongY = -dirY;
-    const perpX = dirY;
-    const perpY = -dirX;
-    const halfH = arrowH / 2;
-    const toWorld = (along: number, perp: number): [number, number] => [
-      tipX + along * alongX + perp * perpX,
-      tipY + along * alongY + perp * perpY,
-    ];
-    const builder = new this.canvasKit.PathBuilder();
-    const fill = this.makeFillPaint(color);
-    const stroke = this.makeStrokePaint(color, Math.max(0.5, strokeWidth * 0.3));
-    const openFill = this.makeFillPaint('#ffffff');
-    const drawPath = (paint: SkPaint, outline?: SkPaint): void => {
-      const path = builder.detach();
+    for (const head of heads ?? []) {
+      const path = this.createCommandPath(head.commands, 0, 0);
+      const fill = this.makeFillPaint(head.filled ? color : '#ffffff');
+      const outline = head.filled ? null : this.makeStrokePaint(color, Math.max(0.5, width * 0.3), 1);
       try {
-        canvas.drawPath(path, paint);
+        canvas.drawPath(path, fill);
         if (outline) canvas.drawPath(path, outline);
       } finally {
-        path.delete();
+        outline?.delete?.();
+        fill.delete?.();
+        path.delete?.();
       }
-    };
-    try {
-      if (arrowStyle === 'arrow') {
-        const [bx1, by1] = toWorld(arrowW, -halfH);
-        const [bx2, by2] = toWorld(arrowW, halfH);
-        builder.moveTo(tipX, tipY);
-        builder.lineTo(bx1, by1);
-        builder.lineTo(bx2, by2);
-        builder.close();
-        drawPath(fill);
-      } else if (arrowStyle === 'concaveArrow') {
-        const [bx1, by1] = toWorld(arrowW, -halfH);
-        const [bx2, by2] = toWorld(arrowW, halfH);
-        const [cx, cy] = toWorld(arrowW - arrowW * 0.3, 0);
-        builder.moveTo(tipX, tipY);
-        builder.lineTo(bx1, by1);
-        builder.lineTo(cx, cy);
-        builder.lineTo(bx2, by2);
-        builder.close();
-        drawPath(fill);
-      } else if (arrowStyle === 'diamond' || arrowStyle === 'openDiamond') {
-        const [px1, py1] = toWorld(0, 0);
-        const [px2, py2] = toWorld(arrowW / 2, -halfH);
-        const [px3, py3] = toWorld(arrowW, 0);
-        const [px4, py4] = toWorld(arrowW / 2, halfH);
-        builder.moveTo(px1, py1);
-        builder.lineTo(px2, py2);
-        builder.lineTo(px3, py3);
-        builder.lineTo(px4, py4);
-        builder.close();
-        drawPath(arrowStyle === 'diamond' ? fill : openFill, arrowStyle === 'openDiamond' ? stroke : undefined);
-      } else if (arrowStyle === 'circle' || arrowStyle === 'openCircle') {
-        const [cx, cy] = toWorld(arrowW / 2, 0);
-        const oval = this.canvasKit.XYWHRect(cx - arrowW * 0.4, cy - halfH * 0.8, arrowW * 0.8, arrowH * 0.8);
-        canvas.drawOval(oval, arrowStyle === 'circle' ? fill : openFill);
-        if (arrowStyle === 'openCircle') canvas.drawOval(oval, stroke);
-      } else if (arrowStyle === 'square' || arrowStyle === 'openSquare') {
-        const [px1, py1] = toWorld(0, -halfH);
-        const [px2, py2] = toWorld(arrowW, -halfH);
-        const [px3, py3] = toWorld(arrowW, halfH);
-        const [px4, py4] = toWorld(0, halfH);
-        builder.moveTo(px1, py1);
-        builder.lineTo(px2, py2);
-        builder.lineTo(px3, py3);
-        builder.lineTo(px4, py4);
-        builder.close();
-        drawPath(arrowStyle === 'square' ? fill : openFill, arrowStyle === 'openSquare' ? stroke : undefined);
-      }
-    } finally {
-      openFill.delete?.();
-      stroke.delete?.();
-      fill.delete?.();
-      builder.delete();
     }
   }
 

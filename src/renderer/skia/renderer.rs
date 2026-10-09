@@ -1217,6 +1217,14 @@ impl SkiaLayerRenderer {
                                 (line.x2 as f32, line.y2 as f32),
                                 &make_line_paint(&line.style),
                             );
+                            draw_arrow_heads(
+                                canvas,
+                                &crate::renderer::arrow::line_heads(
+                                    (line.x1, line.y1, line.x2, line.y2),
+                                    &line.style,
+                                ),
+                                &line.style,
+                            );
                             if line.transform.has_transform() {
                                 canvas.restore();
                             }
@@ -1384,6 +1392,13 @@ impl SkiaLayerRenderer {
                             }
                             if let Some(stroke) = make_stroke_paint(&path.style) {
                                 canvas.draw_path(&sk_path, &stroke);
+                            }
+                            if let Some(style) = &path.line_style {
+                                draw_arrow_heads(
+                                    canvas,
+                                    &crate::renderer::arrow::connector_heads(path),
+                                    style,
+                                );
                             }
                             if path.transform.has_transform() {
                                 canvas.restore();
@@ -3566,5 +3581,53 @@ mod tests {
         assert_channel(center, 1, 0, 64);
         assert_channel(center, 2, 180, 255);
         assert_eq!(center[3], 255);
+    }
+}
+
+fn draw_arrow_heads(
+    canvas: &Canvas,
+    heads: &[crate::renderer::arrow::ArrowHead],
+    style: &LineStyle,
+) {
+    for head in heads {
+        let mut builder = PathBuilder::new();
+        for command in &head.commands {
+            match *command {
+                PathCommand::MoveTo(x, y) => {
+                    builder.move_to((x as f32, y as f32));
+                }
+                PathCommand::LineTo(x, y) => {
+                    builder.line_to((x as f32, y as f32));
+                }
+                PathCommand::CurveTo(a, b, c, d, e, f) => {
+                    builder.cubic_to(
+                        (a as f32, b as f32),
+                        (c as f32, d as f32),
+                        (e as f32, f as f32),
+                    );
+                }
+                PathCommand::ClosePath => {
+                    builder.close();
+                }
+                PathCommand::ArcTo(..) => unreachable!("arrow outlines use cubic ellipses"),
+            }
+        }
+        let path = builder.detach();
+        let mut fill = Paint::default();
+        fill.set_anti_alias(true);
+        fill.set_color(if head.filled {
+            colorref_to_skia(style.color, 1.0)
+        } else {
+            Color::WHITE
+        });
+        canvas.draw_path(&path, &fill);
+        if !head.filled {
+            let mut outline = Paint::default();
+            outline.set_anti_alias(true);
+            outline.set_style(paint::Style::Stroke);
+            outline.set_color(colorref_to_skia(style.color, 1.0));
+            outline.set_stroke_width((style.width * 0.3).max(0.5) as f32);
+            canvas.draw_path(&path, &outline);
+        }
     }
 }

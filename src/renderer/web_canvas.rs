@@ -1148,87 +1148,13 @@ impl WebCanvasRenderer {
     fn render_path(&mut self, bbox: &BoundingBox, path: &PathNode, restore_transform: bool) {
         self.open_shape_transform(&path.transform, bbox);
         self.draw_path_with_gradient(&path.commands, &path.style, path.gradient.as_deref());
-        if let (Some(ref ls), Some((x1, y1, x2, y2))) = (&path.line_style, path.connector_endpoints)
-        {
-            let color = color_to_css(ls.color);
-            let width = ls.width;
-            let cmds = &path.commands;
-            let len = ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
-                .sqrt()
-                .max(1.0);
-            if ls.start_arrow != super::ArrowStyle::None {
-                let (dx, dy) = {
-                    let mut found = (x1 - x2, y1 - y2);
-                    for cmd in cmds.iter().skip(1) {
-                        let (px, py) = match cmd {
-                            super::PathCommand::LineTo(px, py) => (*px, *py),
-                            super::PathCommand::CurveTo(cx, cy, _, _, _, _) => (*cx, *cy),
-                            _ => continue,
-                        };
-                        if (x1 - px).abs() > 0.5 || (y1 - py).abs() > 0.5 {
-                            found = (x1 - px, y1 - py);
-                            break;
-                        }
-                    }
-                    found
-                };
-                let d = (dx * dx + dy * dy).sqrt().max(0.001);
-                let (aw, ah) = calc_arrow_dims(width, len, ls.start_arrow_size);
-                draw_arrow_head(
-                    &self.ctx,
-                    x1,
-                    y1,
-                    dx / d,
-                    dy / d,
-                    aw,
-                    ah,
-                    &ls.start_arrow,
-                    &color,
-                    width,
-                );
-            }
-            if ls.end_arrow != super::ArrowStyle::None {
-                let (dx, dy) = {
-                    let mut pts: Vec<(f64, f64)> = Vec::new();
-                    for cmd in cmds.iter() {
-                        match cmd {
-                            super::PathCommand::MoveTo(px, py)
-                            | super::PathCommand::LineTo(px, py) => {
-                                pts.push((*px, *py));
-                            }
-                            super::PathCommand::CurveTo(_, _, cx, cy, ex, ey) => {
-                                pts.push((*cx, *cy));
-                                pts.push((*ex, *ey));
-                            }
-                            _ => {}
-                        }
-                    }
-                    let mut found = (x2 - x1, y2 - y1);
-                    for i in (0..pts.len()).rev() {
-                        let ddx = x2 - pts[i].0;
-                        let ddy = y2 - pts[i].1;
-                        if ddx.abs() > 0.5 || ddy.abs() > 0.5 {
-                            found = (x2 - pts[i].0, y2 - pts[i].1);
-                            break;
-                        }
-                    }
-                    found
-                };
-                let d = (dx * dx + dy * dy).sqrt().max(0.001);
-                let (aw, ah) = calc_arrow_dims(width, len, ls.end_arrow_size);
-                draw_arrow_head(
-                    &self.ctx,
-                    x2,
-                    y2,
-                    dx / d,
-                    dy / d,
-                    aw,
-                    ah,
-                    &ls.end_arrow,
-                    &color,
-                    width,
-                );
-            }
+        if let Some(style) = &path.line_style {
+            draw_arrow_heads(
+                &self.ctx,
+                &super::arrow::connector_heads(path),
+                &color_to_css(style.color),
+                style.width,
+            );
         }
         if restore_transform {
             self.close_shape_transform_if_needed(&path.transform);
@@ -2569,54 +2495,10 @@ impl Renderer for WebCanvasRenderer {
     fn draw_line(&mut self, x1: f64, y1: f64, x2: f64, y2: f64, style: &LineStyle) {
         let color = color_to_css(style.color);
         let width = style.width.max(0.5);
+        let (lx1, ly1, lx2, ly2) = (x1, y1, x2, y2);
         let dx = x2 - x1;
         let dy = y2 - y1;
-        let line_len = (dx * dx + dy * dy).sqrt();
-
-        let mut lx1 = x1;
-        let mut ly1 = y1;
-        let mut lx2 = x2;
-        let mut ly2 = y2;
-
-        if line_len > 0.0 {
-            let ux = dx / line_len;
-            let uy = dy / line_len;
-
-            if style.start_arrow != super::ArrowStyle::None {
-                let (arrow_w, arrow_h) = calc_arrow_dims(width, line_len, style.start_arrow_size);
-                draw_arrow_head(
-                    &self.ctx,
-                    x1,
-                    y1,
-                    -ux,
-                    -uy,
-                    arrow_w,
-                    arrow_h,
-                    &style.start_arrow,
-                    &color,
-                    width,
-                );
-                lx1 += ux * arrow_w;
-                ly1 += uy * arrow_w;
-            }
-            if style.end_arrow != super::ArrowStyle::None {
-                let (arrow_w, arrow_h) = calc_arrow_dims(width, line_len, style.end_arrow_size);
-                draw_arrow_head(
-                    &self.ctx,
-                    x2,
-                    y2,
-                    ux,
-                    uy,
-                    arrow_w,
-                    arrow_h,
-                    &style.end_arrow,
-                    &color,
-                    width,
-                );
-                lx2 -= ux * arrow_w;
-                ly2 -= uy * arrow_w;
-            }
-        }
+        let line_len = dx.hypot(dy);
 
         // 그림자
         if let Some(ref shadow) = style.shadow {
@@ -2700,6 +2582,12 @@ impl Renderer for WebCanvasRenderer {
             self.ctx.set_shadow_offset_y(0.0);
             self.ctx.set_shadow_blur(0.0);
         }
+        draw_arrow_heads(
+            &self.ctx,
+            &super::arrow::line_heads((x1, y1, x2, y2), style),
+            &color,
+            width,
+        );
     }
 
     fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, style: &ShapeStyle) {
@@ -3597,155 +3485,36 @@ impl WebCanvasRenderer {
     }
 }
 
-/// 화살표 크기 계산 (SVG 렌더러와 동일 로직)
+/// Replay the shared outline; no backend-local size or vertex reconstruction.
 #[cfg(target_arch = "wasm32")]
-fn calc_arrow_dims(stroke_width: f64, line_len: f64, arrow_size: u8) -> (f64, f64) {
-    let width_level = arrow_size / 3;
-    let length_level = arrow_size % 3;
-    let width_mult = match width_level {
-        0 => 1.5,
-        1 => 2.5,
-        _ => 3.5,
-    };
-    let length_mult = match length_level {
-        0 => 1.0,
-        1 => 1.5,
-        _ => 2.0,
-    };
-    let arrow_h = (stroke_width * width_mult).max(3.0);
-    let arrow_w = (arrow_h * length_mult).min(line_len * 0.3);
-    (arrow_w, arrow_h)
-}
-
-/// Canvas 2D에 화살표 머리 그리기
-///
-/// (tip_x, tip_y): 화살표 끝점 (선의 시작/끝 좌표)
-/// (dir_x, dir_y): 선이 향하는 방향의 단위벡터 (tip에서 선 바깥쪽을 향함)
-/// arrow_w: 화살표 길이, arrow_h: 화살표 높이(폭)
-#[cfg(target_arch = "wasm32")]
-fn draw_arrow_head(
+fn draw_arrow_heads(
     ctx: &web_sys::CanvasRenderingContext2d,
-    tip_x: f64,
-    tip_y: f64,
-    dir_x: f64,
-    dir_y: f64,
-    arrow_w: f64,
-    arrow_h: f64,
-    arrow_style: &super::ArrowStyle,
+    heads: &[super::arrow::ArrowHead],
     color: &str,
     stroke_width: f64,
 ) {
-    use super::ArrowStyle;
-
-    // 화살표 로컬 좌표 → 월드 좌표 변환
-    // along: 선 방향 (tip → base), perp: 수직 방향
-    let along_x = -dir_x; // tip에서 base 방향
-    let along_y = -dir_y;
-    let perp_x = dir_y; // 90도 회전 (오른쪽)
-    let perp_y = -dir_x;
-
-    let half_h = arrow_h / 2.0;
-
-    // 로컬(along, perp) → 월드(x, y) 변환
-    let to_world = |along: f64, perp: f64| -> (f64, f64) {
-        (
-            tip_x + along * along_x + perp * perp_x,
-            tip_y + along * along_y + perp * perp_y,
-        )
-    };
-
-    match arrow_style {
-        ArrowStyle::Arrow => {
-            // 삼각형: tip → 좌하 → 우하
-            let (bx1, by1) = to_world(arrow_w, -half_h);
-            let (bx2, by2) = to_world(arrow_w, half_h);
-            ctx.begin_path();
-            ctx.move_to(tip_x, tip_y);
-            ctx.line_to(bx1, by1);
-            ctx.line_to(bx2, by2);
-            ctx.close_path();
-            ctx.set_fill_style_str(color);
-            ctx.fill();
-        }
-        ArrowStyle::ConcaveArrow => {
-            let concave = arrow_w * 0.3;
-            let (bx1, by1) = to_world(arrow_w, -half_h);
-            let (bx2, by2) = to_world(arrow_w, half_h);
-            let (cx, cy) = to_world(arrow_w - concave, 0.0);
-            ctx.begin_path();
-            ctx.move_to(tip_x, tip_y);
-            ctx.line_to(bx1, by1);
-            ctx.line_to(cx, cy);
-            ctx.line_to(bx2, by2);
-            ctx.close_path();
-            ctx.set_fill_style_str(color);
-            ctx.fill();
-        }
-        ArrowStyle::Diamond | ArrowStyle::OpenDiamond => {
-            let half_w = arrow_w / 2.0;
-            let (px1, py1) = to_world(0.0, 0.0); // 앞 꼭짓점 (tip 쪽)
-            let (px2, py2) = to_world(half_w, -half_h); // 좌
-            let (px3, py3) = to_world(arrow_w, 0.0); // 뒤 꼭짓점
-            let (px4, py4) = to_world(half_w, half_h); // 우
-            ctx.begin_path();
-            ctx.move_to(px1, py1);
-            ctx.line_to(px2, py2);
-            ctx.line_to(px3, py3);
-            ctx.line_to(px4, py4);
-            ctx.close_path();
-            if *arrow_style == ArrowStyle::Diamond {
-                ctx.set_fill_style_str(color);
-                ctx.fill();
-            } else {
-                ctx.set_fill_style_str("white");
-                ctx.fill();
-                ctx.set_stroke_style_str(color);
-                ctx.set_line_width((stroke_width * 0.3).max(0.5));
-                ctx.stroke();
+    ctx.save();
+    let _ = ctx.set_line_dash(&js_sys::Array::new());
+    for head in heads {
+        ctx.begin_path();
+        for command in &head.commands {
+            match *command {
+                PathCommand::MoveTo(x, y) => ctx.move_to(x, y),
+                PathCommand::LineTo(x, y) => ctx.line_to(x, y),
+                PathCommand::CurveTo(a, b, c, d, e, f) => ctx.bezier_curve_to(a, b, c, d, e, f),
+                PathCommand::ClosePath => ctx.close_path(),
+                PathCommand::ArcTo(..) => unreachable!("arrow outlines use cubic ellipses"),
             }
         }
-        ArrowStyle::Circle | ArrowStyle::OpenCircle => {
-            let half_w = arrow_w / 2.0;
-            let (cx, cy) = to_world(half_w, 0.0);
-            let rx = half_w * 0.8;
-            let ry = half_h * 0.8;
-            ctx.begin_path();
-            let _ = ctx.ellipse(cx, cy, rx, ry, 0.0, 0.0, std::f64::consts::TAU);
-            if *arrow_style == ArrowStyle::Circle {
-                ctx.set_fill_style_str(color);
-                ctx.fill();
-            } else {
-                ctx.set_fill_style_str("white");
-                ctx.fill();
-                ctx.set_stroke_style_str(color);
-                ctx.set_line_width((stroke_width * 0.3).max(0.5));
-                ctx.stroke();
-            }
+        ctx.set_fill_style_str(if head.filled { color } else { "white" });
+        ctx.fill();
+        if !head.filled {
+            ctx.set_stroke_style_str(color);
+            ctx.set_line_width((stroke_width * 0.3).max(0.5));
+            ctx.stroke();
         }
-        ArrowStyle::Square | ArrowStyle::OpenSquare => {
-            let (px1, py1) = to_world(0.0, -half_h);
-            let (px2, py2) = to_world(arrow_w, -half_h);
-            let (px3, py3) = to_world(arrow_w, half_h);
-            let (px4, py4) = to_world(0.0, half_h);
-            ctx.begin_path();
-            ctx.move_to(px1, py1);
-            ctx.line_to(px2, py2);
-            ctx.line_to(px3, py3);
-            ctx.line_to(px4, py4);
-            ctx.close_path();
-            if *arrow_style == ArrowStyle::Square {
-                ctx.set_fill_style_str(color);
-                ctx.fill();
-            } else {
-                ctx.set_fill_style_str("white");
-                ctx.fill();
-                ctx.set_stroke_style_str(color);
-                ctx.set_line_width((stroke_width * 0.3).max(0.5));
-                ctx.stroke();
-            }
-        }
-        ArrowStyle::None => {}
     }
+    ctx.restore();
 }
 
 /// COLORREF (BGR) → CSS 색상 문자열 변환
