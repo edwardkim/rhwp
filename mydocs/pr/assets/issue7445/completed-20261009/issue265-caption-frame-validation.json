@@ -1,0 +1,151 @@
+{
+  "validationParentHead": "d30db2ed38b3780309463c5f95f0280c304fd726",
+  "baseHead": "21ed64071f81f35f37618717693bd30f727392c9",
+  "source": "samples/issue_265.hwp",
+  "sourceSha256": "645525c8cd5ec11b1742ba7cfc759f68622861916233b5e982385cdb12f0ced2",
+  "referencePdf": "pdf/issue_265-hwp-2020.pdf",
+  "referencePdfSha256": "c8e4218c7b80f1fb4f7877f5613eb6fd82fa1ca2b1ca3cde6266b81586357302",
+  "referencePages": 16,
+  "compat": "2022",
+  "dpi": 96,
+  "fontPath": "/Users/tsjang/Library/Fonts",
+  "sourceFiles": {
+    "src/parser/hwp3/mod.rs": "add44bcbf2c47905268870b1a38b2c5f84fbc1f1e58fd169b61997d6ecad3f3a",
+    "src/renderer/composer.rs": "36cabd96d19267ab74e7cd11c1927ab4f5a8349bdafafada276587f3271b7b2b",
+    "src/renderer/layout.rs": "b871b17c0fd27fb0751a6bdf5e0f8d1fa6bd3b2c9d621a1c27cd2fd7adb7179d",
+    "src/renderer/layout/picture_footnote.rs": "610c1f525b12bc75f24016bb27f59325c842cd233fc572d05d147ca39b8f04a4",
+    "src/renderer/typeset/controls/shape_flow.rs": "d062f8d36dc490c688b8238592e5d95ca5b081e4c20484305cddf568d8fc6545",
+    "src/renderer/typeset/section/controls.rs": "4b7f5cee9fb6ca3f7bd41b2feb0608eb34ef33e253aeb077f06473960157cce0"
+  },
+  "native": {
+    "pages": 16,
+    "scores": [
+      {
+        "page": 1,
+        "percent": 92.2928
+      },
+      {
+        "page": 2,
+        "percent": 95.85409
+      },
+      {
+        "page": 3,
+        "percent": 97.20231
+      },
+      {
+        "page": 4,
+        "percent": 93.27786
+      },
+      {
+        "page": 5,
+        "percent": 91.17993
+      },
+      {
+        "page": 6,
+        "percent": 94.45587
+      },
+      {
+        "page": 7,
+        "percent": 97.89958
+      },
+      {
+        "page": 8,
+        "percent": 58.88059
+      },
+      {
+        "page": 9,
+        "percent": 95.89484
+      },
+      {
+        "page": 10,
+        "percent": 92.04601
+      },
+      {
+        "page": 11,
+        "percent": 94.4207
+      },
+      {
+        "page": 12,
+        "percent": 92.28518
+      },
+      {
+        "page": 13,
+        "percent": 92.24951
+      },
+      {
+        "page": 14,
+        "percent": 94.22023
+      },
+      {
+        "page": 15,
+        "percent": 92.68191
+      },
+      {
+        "page": 16,
+        "percent": 92.53628
+      }
+    ],
+    "below90": [
+      8
+    ],
+    "minimum": 58.88059,
+    "binarySha256": "5934bf4c6f4ff197822d4a69e212951a1c33bf9f7932b1e140f859c09aa8fb1d",
+    "gate": "re_review_required",
+    "layoutAnomaly": {
+      "emptyPageCount": 0,
+      "hasSignal": false,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 0,
+      "overflowTolerancePx": 1.0,
+      "overlapCount": 0,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 16,
+      "pageFilter": null,
+      "pages": [],
+      "schemaVersion": "1.0",
+      "source": "samples/issue_265.hwp",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 0,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": []
+    }
+  },
+  "freshWasm": {
+    "status": "미실행: 이 중간 단계는 Native 진단이며, 다음 표 후행 간격 보정까지 원본 전체 수용을 보류한다."
+  },
+  "testsChanged": false,
+  "newTests": 0,
+  "wholeDocumentAccepted": false,
+  "independentContract": "HWP3 사양 10.7의 저장 그림 세로 띠에서 캡션 텍스트 높이를 제외한 간격을 보존한다. 그림 예약과 배치는 같은 표시 프레임·캡션 높이·바깥여백을 소비하고 빈 호스트 줄은 캡션과 별도로 진행한다.",
+  "directReview": "3쪽 그림·캡션·뒤 두 본문 문단 소속과 간격을 Native review에서 직접 확인했다. 8쪽 그림·캡션·첫 본문과 표 외곽은 복원됐으나 표 뒤 본문 줄간격 누락이 반복돼 남은 내용을 위로 당긴다.",
+  "remaining": "8쪽 미달로 원본 전체 수용과 새 회귀 변경을 보류한다. 표 높이에 줄간격 배율을 곱하지 않는 것과 호스트 글꼴의 후행 간격까지 0으로 없애는 것은 별개이며 다음 단계에서 독립 PDF와 검증한다.",
+  "focusedNextest": {
+    "run": 19,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 1281,
+    "durationSeconds": 3.899,
+    "threads": 8,
+    "logSha256": "753b2e8f7ea68d0da23c0824ad5ef108758e5432fe337a6f5ef77c468d20397b"
+  },
+  "controls": {
+    "regulatory17": {
+      "before": 17,
+      "after": 17,
+      "byteIdentical": true,
+      "changedPages": [],
+      "comparison": "같은 비임베딩 SVG·선언 글꼴 환경·인쇄 프로필로 재출력한 직접 바이트 비교. full 임베딩 중간 진단은 비교 환경이 달라 최종 근거에서 제외함."
+    },
+    "pii66": {
+      "before": 66,
+      "after": 66,
+      "byteIdentical": true,
+      "changedPages": [],
+      "comparison": "같은 비임베딩 SVG·선언 글꼴 환경·인쇄 프로필로 재출력한 직접 바이트 비교. full 임베딩 중간 진단은 비교 환경이 달라 최종 근거에서 제외함."
+    }
+  }
+}

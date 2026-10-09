@@ -778,12 +778,16 @@ impl LayoutEngine {
         // 캡션을 포함한 전체 크기 계산 (위치 결정에 사용)
         let (total_width, total_height) = if let Some(ref caption) = picture.caption {
             match caption.direction {
-                CaptionDirection::Top | CaptionDirection::Bottom => {
-                    (pic_width, pic_height + caption_height + caption_spacing)
-                }
+                CaptionDirection::Top | CaptionDirection::Bottom => (
+                    pic_width,
+                    super::super::composer::captioned_picture_height_px(picture, self.dpi),
+                ),
                 CaptionDirection::Left | CaptionDirection::Right => {
                     let cw = hwpunit_to_px(caption.width as i32, self.dpi);
-                    (pic_width + cw + caption_spacing, pic_height)
+                    (
+                        pic_width + cw + caption_spacing,
+                        super::super::composer::captioned_picture_height_px(picture, self.dpi),
+                    )
                 }
             }
         } else {

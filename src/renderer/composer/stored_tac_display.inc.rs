@@ -574,3 +574,9 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
 fn stored_line_box_height(seg: &LineSeg) -> i32 {
     seg.line_height.max(seg.text_height)
 }
+
+/// 표시 프레임과 캡션의 점유는 측정·paint가 같은 결과를 쓴다.
+pub(crate) fn captioned_picture_height_px(picture: &crate::model::image::Picture, dpi: f64) -> f64 {
+    let (_, height) = super::layout::picture_flow_frame_size_hu(picture);
+    captioned_shape_height_px(hwpunit_to_px(height, dpi), &picture.caption, dpi)
+}

@@ -67,7 +67,10 @@ pub(super) fn prepare(
                     && matches!(p.common.text_wrap, TextWrap::TopAndBottom)
                     && matches!(p.common.vert_rel_to, VertRelTo::Para) =>
             {
-                topbottom_pushdown_height(&p.common, dpi)
+                topbottom_pushdown_height(&p.common, dpi).map(|height| {
+                    height - hwpunit_to_px(p.common.height as i32, dpi)
+                        + crate::renderer::composer::captioned_picture_height_px(p, dpi)
+                })
             }
             Control::Shape(s)
                 if !s.common().treat_as_char

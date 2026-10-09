@@ -483,7 +483,9 @@ impl TypesetEngine {
                                     && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
                                     && matches!(pic.common.vert_rel_to, VertRelTo::Para) =>
                             {
-                                let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                let h = crate::renderer::composer::captioned_picture_height_px(
+                                    pic, self.dpi,
+                                );
                                 let mb = hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi);
                                 let hl =
                                     hwpunit_to_px(pic.common.horizontal_offset as i32, self.dpi);
