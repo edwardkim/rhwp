@@ -1,10 +1,12 @@
-//! Original RowBreak source-frame ownership, independently checked against
-//! pdf/rowbreak-problem-pages-hwp-2024.pdf (18 pages, Native/fresh WASM).
-//! Assertions preserve content owners and source padding/line geometry rather
-//! than pinning the provisional SVG or absolute document pixel positions.
+//! 원본 RowBreak의 물리 조각 소유를 독립 한컴 PDF 18쪽과 대조한다.
+//! 정본은 pdf/rowbreak-problem-pages-hwp-2024.pdf이며 Native/fresh WASM을 검증한다.
+//! 내용 소유와 원본 패딩·줄 간격의 관계를 검사하며 절대 문서 좌표를 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
-use rhwp::{document_core::DocumentCore, model::control::Control};
+use rhwp::{
+    document_core::DocumentCore,
+    model::{control::Control, table::VerticalAlign},
+};
 use serde_json::Value;
 use std::{path::Path, process::Command, sync::OnceLock};
 
@@ -118,6 +120,55 @@ fn original_page_count_and_cut_labels_keep_their_owners() {
         );
         assert_eq!(found[0].0, owner, "{label} must keep its PDF page owner");
     }
+
+    let title = "<공공데이터제공·관리실무매뉴얼,3.공공데이터구축단계품질관리(P.58~60)발췌>";
+    let found = occurrences(title);
+    assert_eq!(found.len(), 1, "첫 제목은 누락·재생 없이 한 번 표시한다");
+    let (page, line, owner) = found[0];
+    assert_eq!(page, 12, "독립 PDF에서 첫 제목은 13쪽 조각이 소유한다");
+    let owner = owner.expect("첫 제목에는 물리 셀 소유자가 있다");
+
+    let source = DocumentCore::from_bytes(
+        &std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap(),
+    )
+    .unwrap();
+    let document = source.document();
+    let mut sources = Vec::new();
+    for section in &document.sections {
+        for paragraph in &section.paragraphs {
+            for control in &paragraph.controls {
+                let Control::Table(table) = control else {
+                    continue;
+                };
+                for cell in &table.cells {
+                    if cell
+                        .paragraphs
+                        .first()
+                        .is_some_and(|p| compact(&p.text).contains(title))
+                    {
+                        sources.push((table, cell));
+                    }
+                }
+            }
+        }
+    }
+    assert_eq!(sources.len(), 1, "원본 첫 제목의 셀 소유를 식별한다");
+    let (table, cell) = sources[0];
+    assert_eq!(cell.vertical_align, VerticalAlign::Center);
+    let first = &cell.paragraphs[0];
+    let stored_band_hu = f64::from(first.line_segs[0].vertical_pos);
+    let before_hu =
+        f64::from(document.doc_info.para_shapes[first.para_shape_id as usize].spacing_before) / 2.0;
+    assert!(stored_band_hu > 0.0 && before_hu > 0.0);
+    let padding = cell.effective_padding(&table.padding);
+    let actual_band_hu = (top(line) - top(owner)) * 75.0 - f64::from(padding.top);
+    // 원본 첫 저장 띠와 문단 앞 간격은 서로 다른 공간이다. 독립 PDF의 첫 제목과
+    // 셀 테두리도 이 관계를 보인다. Render Tree의 소수 한 자리 직렬화 오차만 허용한다.
+    let serialization_quantum_hu = 75.0 / 10.0;
+    assert!(
+        (actual_band_hu - (stored_band_hu + before_hu)).abs() <= serialization_quantum_hu,
+        "첫 조각이 원본 앞 띠 또는 문단 간격을 잃거나 두 번 소비했다: 실제 {actual_band_hu}HU, 저장 띠 {stored_band_hu}HU, 앞 간격 {before_hu}HU"
+    );
 }
 
 #[test]
@@ -181,8 +232,8 @@ fn first_fragment_keeps_its_blank_band_below_the_last_owned_line() {
         .find(|(n, _)| n["type"] == "Table" && n["pi"] == 5 && n["ci"] == 0)
         .expect("original first physical table frame")
         .0;
-    // The original object declares its first physical frame, independently
-    // corroborated by the PDF border. Content cuts must not erase its blank band.
+    // 원본이 선언한 첫 물리 조각은 독립 PDF의 테두리와 대응한다.
+    // 내용 컷으로 그 조각의 빈 띠를 지우면 안 된다.
     assert!(
         bottom(frame) - top(frame) + 0.1 >= f64::from(table.common.height) / 75.0,
         "first frame lost source-owned physical space: {:?}",
@@ -217,7 +268,7 @@ fn visible_successor_uses_the_original_line_origin_without_readding_lead() {
         .unwrap()
         .0;
     let expected = f64::from(original.line_segs[0].vertical_pos) / 75.0;
-    // Stored line origin and normalized PDF baseline agree; no glyph-ink bounds are compared.
+    // 저장 줄 원점과 정규화한 PDF 기준선이 대응한다. 글리프 잉크 외곽은 비교하지 않는다.
     assert!((top(line) - top(body) - expected).abs() <= 0.1,
         "visible successor shares the stored table-end boundary; line {:?}, body {:?}, saved={expected}", line["bbox"], body["bbox"]);
 }
