@@ -1310,3 +1310,22 @@ SVG는 이전 검증 후보와 모두 byte-identical이고 fmt도 통과했습�
 [원본·빌드·RED/GREEN·전체 시각 증거](../pr/assets/issue7445/completed-20261009/civil-rewind-frame-validation.json),
 [1쪽 review](../pr/assets/issue7445/completed-20261009/civil-rewind-after-p001-review.png),
 [2쪽 review](../pr/assets/issue7445/completed-20261009/civil-rewind-after-p002-review.png).
+
+
+## 보정 358 사전 분석: 같은 잔여 목록 재검증
+
+보정 357의 생산 head에서 직전과 같은 42개 함수를 threads=8로 실행합니다.
+기존 잔여 38개와 OLE 보정 통과 4개가 대상이며 새 테스트를 추가하거나
+기대값·baseline을 갱신하지 않습니다. #4068 통과 유지와 공유 원점 변경의
+추가 영향 여부를 실제 결과로 판정한 뒤 다음 실패를 개별 분석합니다.
+
+
+### 보정 358 검증 결과 — 잔여 37개
+
+생산 head `0eb51916837e2ee00c48981518476cfc0d813505`의 같은 42개 함수는
+**5 PASS / 37 FAIL / 4043 skipped**, 47.689초, exit 100입니다.
+#4068이 통과로 바뀌었고 직전 OLE 4개도 유지되며 선택 목록에서 새 실패는
+없습니다. 최초 전체 실패 67개 중 통과 확인은 **30개**, 잔여는 **37개**입니다.
+최신 전체 nextest·필수 최종 검증·PR 준비 완료가 아니므로 실패를 숨기거나
+이 실행을 전체 통과로 기록하지 않습니다.
+[정확한 head·개별 결과·로그 해시](../pr/assets/issue7445/completed-20261009/remaining-after-rewind-frame-validation.json).
