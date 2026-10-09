@@ -238,3 +238,15 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
 - 실제 Native review는 `output/issue7445/20261005/stage325-review/review/review_010.png`,
   전쪽 TSV와 기존 33개 검사 로그는 `stage325-full-native-scores/silhouette.tsv`와
   `stage325-focused-nextest.log`입니다. fresh WASM 재빌드·전쪽 비교는 아직 남아 있습니다.
+
+
+### 보정 325 fresh WASM 확인
+
+- `927125d6e`에서 Mac no-opt wrapper 빌드가 성공했습니다(2분 47초).
+  실제 Chrome fresh WASM의 17쪽 SVG 및 공급한 Full 글꼴 프로그램을 확인했고,
+  Native/fresh PNG 17개가 모두 바이트 동일합니다. 10쪽 95.29505%,
+  2쪽 80.06599% 미달을 양쪽에서 재확인했습니다.
+- 이 결과는 10쪽 배치 보정의 Native/WASM 일관성을 입증합니다.
+  2쪽과 다른 문서, 전체 회귀 실패가 남아 있어 PR 준비 완료나 이슈 완료는 아닙니다.
+  전쪽 결과·bundle SHA·검사 결과는 ignored `stage325-validation.json`에 보존합니다.
+  생성된 Studio wrapper 사본만 복원하고 실제 검증 bundle은 pkg에 유지했습니다.
