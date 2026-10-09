@@ -4,7 +4,13 @@ use super::*;
 
 impl DocumentCore {
     /// <p> 태그 내부의 인라인 콘텐츠를 파싱하여 Paragraph에 채운다.
-    pub(crate) fn parse_inline_content(&mut self, para: &mut Paragraph, html: &str) {
+    /// `block_style` 은 감싼 블록(`<p>`·`<li>`)의 style 이다. 그 글자 속성도 안쪽 글에 이어진다.
+    pub(crate) fn parse_inline_content(
+        &mut self,
+        para: &mut Paragraph,
+        html: &str,
+        block_style: &str,
+    ) {
         let mut full_text = String::new();
         // (char_start, char_end, char_shape_id) 형태의 스타일 범위
         let mut style_runs: Vec<(usize, usize, u32)> = Vec::new();
@@ -16,7 +22,11 @@ impl DocumentCore {
         let mut pos = 0;
 
         // 열린 서식 요소(span·b·i·u 등)의 이름과 style. 서식은 닫힐 때까지 안쪽 글에 이어진다.
+        // 블록 style 은 맨 바깥에 둔다. 이름이 비어 있어 어느 닫는 태그와도 짝지어지지 않는다.
         let mut open_styles: Vec<(String, String)> = Vec::new();
+        if !block_style.is_empty() {
+            open_styles.push((String::new(), block_style.to_string()));
+        }
 
         while pos < len {
             if chars[pos] == '<' {
@@ -254,10 +264,10 @@ impl DocumentCore {
         cs.bold = parse_css_value(&css_lower, "font-weight")
             .is_some_and(|w| w.starts_with("bold") || w.parse::<u16>().is_ok_and(|n| n >= 600));
 
-        // font-style
-        let is_italic =
-            css_lower.contains("font-style:italic") || css_lower.contains("font-style: italic");
-        cs.italic = is_italic;
+        // font-style — 굵기처럼 처음 찾은 값을 따른다. 그래야 기울인 블록 안
+        // `<span style="font-style:normal">` 이 기울지 않는다.
+        cs.italic =
+            parse_css_value(&css_lower, "font-style").is_some_and(|s| s.starts_with("italic"));
 
         // color
         if let Some(color_str) = parse_css_value(&css_lower, "color") {

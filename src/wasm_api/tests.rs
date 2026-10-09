@@ -5365,7 +5365,7 @@ fn test_diff1_empty_cell_nbsp() {
     // &nbsp; 만 포함된 셀이 있는 2×2 표 (셀2, 셀4는 빈 셀)
     let html = r#"<table><tr><td>내용1</td><td>&nbsp;</td></tr><tr><td>내용2</td><td>&nbsp;&nbsp;&nbsp;</td></tr></table>"#;
     let mut paragraphs = Vec::new();
-    doc.parse_table_html(&mut paragraphs, html);
+    doc.parse_table_html(&mut paragraphs, html, 42520);
 
     assert_eq!(paragraphs.len(), 1, "표 문단 1개");
     if let crate::model::control::Control::Table(ref tbl) = paragraphs[0].controls[0] {
@@ -17958,7 +17958,7 @@ fn test_diag_clone_vs_parsed_table() {
     let mut doc_b = HwpDocument::from_bytes(&orig_data).unwrap();
     let table_html = r#"<table><tr><td style="border:1px solid black;">테스트A</td><td style="border:1px solid black;">&nbsp;</td></tr><tr><td style="border:1px solid black;">&nbsp;</td><td style="border:1px solid black;">테스트D</td></tr></table>"#;
     let mut parsed_paras = Vec::new();
-    doc_b.parse_table_html(&mut parsed_paras, table_html);
+    doc_b.parse_table_html(&mut parsed_paras, table_html, 42520);
     let parsed_para = &parsed_paras[0];
 
     // 문단 헤더 비교
@@ -18241,7 +18241,7 @@ fn test_parse_table_html_save() {
 
     // parse_table_html으로 표 문단 생성
     let mut table_paragraphs = Vec::new();
-    doc.parse_table_html(&mut table_paragraphs, table_html);
+    doc.parse_table_html(&mut table_paragraphs, table_html, 42520);
     assert_eq!(table_paragraphs.len(), 1, "표 문단 1개 생성");
 
     let table_para = &table_paragraphs[0];

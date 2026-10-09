@@ -7,7 +7,13 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::common_obj_offsets;
 
 impl DocumentCore {
-    pub(crate) fn parse_table_html(&mut self, paragraphs: &mut Vec<Paragraph>, table_html: &str) {
+    /// `container_width` 는 표가 놓일 폭(HWPUNIT)이다. 폭을 적지 않은 열은 이 폭을 나눠 갖는다.
+    pub(crate) fn parse_table_html(
+        &mut self,
+        paragraphs: &mut Vec<Paragraph>,
+        table_html: &str,
+        container_width: u32,
+    ) {
         use crate::model::control::Control;
         use crate::model::table::{Cell, Table, TablePageBreak};
 
@@ -236,8 +242,13 @@ impl DocumentCore {
         let col_count = actual_col_count.max(1);
 
         // --- 3. 셀 크기 계산 ---
-        let default_page_width: u32 = 42520; // A4 좌우 여백 제외
-        let default_col_width = default_page_width / col_count as u32;
+        // 폭을 적지 않은 열은 놓일 폭에서 표 바깥 좌우 여백을 뺀 폭을 고루 나눈다.
+        // 표 만들기(create_table)·쪽 폭에 맞추기(fit_table_to_page_native)와 같은 기준이다.
+        let outer_margin: i16 = 283; // 바깥 여백 ~1mm
+        let table_width = container_width
+            .saturating_sub(2 * outer_margin as u32)
+            .max(7200);
+        let default_col_width = table_width / col_count as u32;
         let default_row_height: u32 = 1000;
 
         // 열별 폭 (CSS 지정 우선, 없으면 균등 분할)
@@ -347,7 +358,10 @@ impl DocumentCore {
             {
                 vec![Paragraph::new_empty()]
             } else {
-                let parsed = self.parse_html_to_paragraphs(&pc.content_html);
+                // 셀 안 표는 이 셀 안쪽 폭에 맞춘다.
+                let inner_width = cell_width
+                    .saturating_sub(padding.left.max(0) as u32 + padding.right.max(0) as u32);
+                let parsed = self.parse_html_to_paragraphs(&pc.content_html, inner_width);
                 if parsed.is_empty()
                     || parsed
                         .iter()
@@ -512,7 +526,6 @@ impl DocumentCore {
         // [24..26] margin.left, [26..28] margin.right,
         // [28..30] margin.top, [30..32] margin.bottom,
         // [32..36] instance_id, [36..38] desc_len(=0)
-        let outer_margin: i16 = 283; // 바깥 여백 ~1mm
         let mut raw_ctrl_data = vec![0u8; 38]; // 32(base) + 2(desc_len) + 4(extra)
         raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&table_attr.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::WIDTH].copy_from_slice(&total_width.to_le_bytes());
@@ -594,7 +607,6 @@ impl DocumentCore {
         // 정상 HWP 파일에서 모든 표는 bit 1 (셀 분리 금지) 이 항상 설정됨
         let tbl_rec_attr: u32 = 0x04000006; // bit 1(셀분리금지) + bit 2 + bit 26
 
-        let outer_margin: i16 = 283; // 바깥 여백 기본값 ~1mm
         let mut table = Table {
             attr: table_attr,
             row_count,
@@ -649,27 +661,6 @@ impl DocumentCore {
             0
         };
 
-        // 표 문단의 para_shape_id: 기존 문서의 표 문단에서 사용하는 값 탐색
-        // 정상 파일에서 표 문단은 ps_id=1 사용 (기본 "본문" 스타일)
-        let table_para_shape_id = {
-            let mut found_ps = 0u16;
-            'outer: for section in &self.document.sections {
-                for para in &section.paragraphs {
-                    for ctrl in &para.controls {
-                        if let Control::Table(_) = ctrl {
-                            found_ps = para.para_shape_id;
-                            break 'outer;
-                        }
-                    }
-                }
-            }
-            if found_ps == 0 && self.document.doc_info.para_shapes.len() > 1 {
-                1u16 // 기본 "본문" ParaShape
-            } else {
-                found_ps
-            }
-        };
-
         // raw_header_extra: [0..2] n_char_shapes, [2..4] n_range_tags, [4..6] n_line_segs, [6..10] instance_id
         // 정상 파일에서 표 문단의 instance_id = 0x80000000
         let mut table_raw_header_extra = vec![0u8; 10];
@@ -698,7 +689,10 @@ impl DocumentCore {
                 tag: crate::model::paragraph::LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
             }],
-            para_shape_id: table_para_shape_id,
+            // 표 문단은 style 없는 붙인 문단처럼 기본 문단 모양(0)을 쓴다. 다른 문단의 모양을
+            // 빌리면(빈 문서의 1번은 왼쪽 여백 15pt 인 "본문") HTML 에 없는 여백만큼 표가 밀려
+            // 본문 오른쪽 끝을 넘는다.
+            para_shape_id: 0,
             style_id: 0,
             controls: vec![Control::Table(Box::new(table))],
             ctrl_data_records: vec![None],
@@ -1183,7 +1177,7 @@ mod nested_table_cell_boundary_tests {
         let html =
             r#"<table><tr><td>OUTER<table><tr><td>INNER</td></tr></table></td></tr></table>"#;
         let mut paragraphs: Vec<Paragraph> = Vec::new();
-        core.parse_table_html(&mut paragraphs, html);
+        core.parse_table_html(&mut paragraphs, html, 42520);
 
         assert_eq!(paragraphs.len(), 1, "표 문단 1개가 나와야 함");
         let outer_table = match &paragraphs[0].controls.first() {
