@@ -81,3 +81,10 @@ zoom/DPR/resize 15조건의 트리 유지와 3개 원래 조건 복원 PNG 일�
 3단계 보정과 검증을 완료했다. [실행 결과](../working/task_m100_7688_stage3.md)에 수정 전 FAIL/
 수정 후 PASS, 전체 회귀, Native Skia 3종, 동일 한컴 PDF의 Native/fresh WASM 및 실제 PNG를
 연결했다. #7688 전체는 공통 crop·화살촉·CanvasKit 글꼴 등 후속 범위가 남아 active다.
+
+## 4–6단계 — 순차 구현
+
+사용자가 crop → 화살촉 → CanvasKit 글꼴 공급·style 선택의 순차 구현을 승인했다.
+각 단계는 독립 출력의 적용 규칙·반례를 확인하고 실제 Native/Studio 출력 및 Docker fresh WASM을
+검증한 뒤 커밋한다. crop의 기존 ‘시작점 0이면 끝점은 원본 전체’ 기대값을 독립 PDF로 재검토한다.
+4단계의 원본 기록·좌표 단위·실제 소비는 [crop 보정 기록](../working/task_m100_7688_stage4.md)에 잇는다.
