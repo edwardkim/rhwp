@@ -172,6 +172,16 @@ impl InlineControlOwner {
     }
 }
 
+fn locked(control: &Control) -> bool {
+    match control {
+        Control::Table(table) => table.common.locked,
+        Control::Shape(shape) => shape.common().locked,
+        Control::Picture(picture) => picture.lock || picture.common.locked,
+        Control::Equation(equation) => equation.common.locked,
+        _ => false,
+    }
+}
+
 fn paragraph_mut<'a>(
     section: &'a mut Section,
     address: &Address,
@@ -182,11 +192,14 @@ fn paragraph_mut<'a>(
         .get_mut(address.root)
         .ok_or_else(|| invalid("문단 주소가 잘못되었습니다"))?;
     for &(ctrl, cell, child) in &address.path {
-        para = match para
+        let control = para
             .controls
             .get_mut(ctrl)
-            .ok_or_else(|| invalid("상위 개체 주소가 잘못되었습니다"))?
-        {
+            .ok_or_else(|| invalid("상위 개체 주소가 잘못되었습니다"))?;
+        if protect && locked(control) {
+            return Err(invalid("잠긴 개체 내부의 개체를 옮길 수 없습니다"));
+        }
+        para = match control {
             Control::Table(t) => {
                 let cell = t
                     .cells
@@ -607,6 +620,9 @@ impl DocumentCore {
             .controls
             .get(source.control_index)
             .ok_or_else(|| invalid("개체 주소가 잘못되었습니다"))?;
+        if locked(control) {
+            return Err(invalid("잠긴 개체를 옮길 수 없습니다"));
+        }
         if !control.is_treat_as_char_object() {
             return Err(invalid(
                 "글자처럼 취급하는 표·그림·도형·수식만 옮길 수 있습니다",

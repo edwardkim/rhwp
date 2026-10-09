@@ -242,6 +242,8 @@ fn zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive
         field_type: FieldType::ClickHere,
         field_id: 71,
         ctrl_id: rhwp::parser::tags::FIELD_CLICKHERE,
+        command: Field::build_clickhere_command("안내", ""),
+        properties: 1 << 15,
         ..Default::default()
     });
     let mut p = paragraph(
@@ -287,7 +289,7 @@ fn zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive
         let reopened = DocumentCore::from_bytes(&bytes).unwrap();
         let p = &reopened.document().sections[0].paragraphs[0];
         assert_eq!(p.text, "ABC");
-        assert_eq!(p.field_ranges.len(), 1);
+        assert_eq!(p.field_ranges.len(), 1, "저장된 컨트롤: {:?}", p.controls);
         assert_eq!(p.field_ranges[0].inner_slot_count, 0);
         assert_eq!(
             object_ids(&reopened.document().sections[0].paragraphs[1]),
@@ -426,4 +428,122 @@ fn header_and_note_destinations_return_existing_owner_forms() {
     assert_eq!(note_control_index, ci - usize::from(ei < ci));
     core.move_inline_control_native(&moved.address, &caret(body(0), 0))
         .unwrap();
+}
+
+#[test]
+fn picture_binary_identity_and_control_metadata_survive_cross_owner_move() {
+    let bytes = include_bytes!("../../assets/logo/logo-16.png");
+    let mut core = core(vec![paragraph("앞뒤", vec![]), paragraph("ABC", vec![])]);
+    core.insert_picture_native(
+        0,
+        0,
+        1,
+        &[],
+        bytes,
+        1500,
+        1500,
+        16,
+        16,
+        "png",
+        "그림",
+        None,
+        None,
+    )
+    .unwrap();
+    let ci = core.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .position(|c| matches!(c, Control::Picture(_)))
+        .unwrap();
+    let Control::Picture(picture) = &mut core.document_mut().sections[0].paragraphs[0].controls[ci]
+    else {
+        panic!()
+    };
+    picture.common.treat_as_char = true;
+    picture.common.instance_id = 771;
+    picture.href = Some("https://example.org/그림".into());
+    let original =
+        serde_json::to_value(&core.document().sections[0].paragraphs[0].controls[ci]).unwrap();
+    let id = core.document().bin_data_content[0].id;
+    let moved = core
+        .move_inline_control_native(&source(body(0), ci), &caret(body(1), 1))
+        .unwrap();
+    assert_eq!(
+        serde_json::to_value(
+            &core.document().sections[0].paragraphs[1].controls[moved.address.control_index]
+        )
+        .unwrap(),
+        original
+    );
+    assert_eq!(core.document().bin_data_content[0].id, id);
+    assert_eq!(core.document().bin_data_content[0].data.load(), bytes);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        assert_eq!(
+            reopened.document().bin_data_content[0].data.load(),
+            include_bytes!("../../assets/logo/logo-16.png")
+        );
+        let Control::Picture(picture) = &reopened.document().sections[0].paragraphs[1].controls[0]
+        else {
+            panic!()
+        };
+        assert_eq!(picture.image_attr.bin_data_id, id);
+        assert_eq!(picture.common.instance_id, 771);
+        assert_eq!(picture.href.as_deref(), Some("https://example.org/그림"));
+    }
+}
+
+#[test]
+fn moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent() {
+    let mut core = core(vec![paragraph(
+        "",
+        vec![(0, table(paragraph("셀", vec![(1, equation(41))])))],
+    )]);
+    let owner = InlineControlOwner::Body {
+        section_index: 0,
+        paragraph_index: 0,
+        cell_path: vec![(0, 0, 0)],
+    };
+    let moved = core
+        .move_inline_control_native(&source(owner, 0), &caret(body(0), 0))
+        .unwrap();
+    assert_eq!(moved.address, source(body(0), 0));
+    let Control::Table(table) = &core.document().sections[0].paragraphs[0].controls[1] else {
+        panic!()
+    };
+    assert_eq!(table.cells[0].paragraphs[0].text, "셀");
+    assert!(table.cells[0].paragraphs[0].controls.is_empty());
+}
+
+#[test]
+fn locked_object_and_locked_parent_reject_without_mutation() {
+    let mut core = core(vec![
+        paragraph("앞뒤", vec![(1, equation(41))]),
+        paragraph("", vec![(0, table(paragraph("셀", vec![])))]),
+    ]);
+    let Control::Equation(eq) = &mut core.document_mut().sections[0].paragraphs[0].controls[0]
+    else {
+        panic!()
+    };
+    eq.common.locked = true;
+    unchanged(&mut core, &source(body(0), 0), &caret(body(1), 0));
+    let Control::Equation(eq) = &mut core.document_mut().sections[0].paragraphs[0].controls[0]
+    else {
+        panic!()
+    };
+    eq.common.locked = false;
+    let Control::Table(table) = &mut core.document_mut().sections[0].paragraphs[1].controls[0]
+    else {
+        panic!()
+    };
+    table.common.locked = true;
+    let owner = InlineControlOwner::Body {
+        section_index: 0,
+        paragraph_index: 1,
+        cell_path: vec![(0, 0, 0)],
+    };
+    unchanged(&mut core, &source(body(0), 0), &caret(owner, 0));
 }
