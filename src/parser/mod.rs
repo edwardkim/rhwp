@@ -29,6 +29,7 @@ pub mod hwp_summary;
 pub mod hwpx;
 pub mod ingest;
 pub mod ole_container;
+pub(crate) mod picture_extra;
 pub mod record;
 pub mod tags;
 
