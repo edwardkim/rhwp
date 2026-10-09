@@ -1,0 +1,106 @@
+{
+  "candidateParent": "8832d940824be91ced1623d381b4dd0ed64f9000",
+  "source": "samples/hwp3-sample-hwp5.hwp",
+  "sourceSha256": "dc2edf4737c110ab16a6c6543bceed9f5648d634a40e180ce3fc2725ec0f21d8",
+  "reference": "pdf/hwp3-sample-hwp5-hwp-2020.pdf",
+  "referenceSha256": "fec78b1b1e8491b735247ff33ad38d3db69ff4cf1f55a6e22d4e81a289597f0b",
+  "referencePages": 16,
+  "screeningNative": [
+    {
+      "key": "base",
+      "referencePages": 16,
+      "pages": 16,
+      "minimum": 62.9768,
+      "below90": [
+        3,
+        8
+      ],
+      "page8": {
+        "page": "8",
+        "tolerant_content_match_percent": "62.97680",
+        "below_90": "1",
+        "silhouette_raw_match_percent": "62.97680",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      "tsvSha256": "87a4f70d07cd4df1a13ade6575873b378cb7853bca0a7ada379afded4a7323ba"
+    },
+    {
+      "key": "head",
+      "referencePages": 16,
+      "pages": 16,
+      "minimum": 42.07406,
+      "below90": [
+        8
+      ],
+      "page8": {
+        "page": "8",
+        "tolerant_content_match_percent": "42.07406",
+        "below_90": "1",
+        "silhouette_raw_match_percent": "42.07406",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      "tsvSha256": "d1406f2732b4a5f8a57018af5df9ddc16806769a315030ca0f041ce7de991516"
+    }
+  ],
+  "screeningBaseProvenance": "기존 동결 devel CLI로 선별했다. 이관/검사 변경 전 정확한 base 빌드 출처와 fresh 검증도 확인해야 한다.",
+  "actualConsumer": "typeset accepted_single_row_origin이 source vpos 50196HU와 lazy base 23116HU로 361.0667px를 수용하고, layout_table_item이 단 상대 절대 top으로 소비해 앞 본문 위 495.2px로 표를 되감았다.",
+  "rejectedChange": "원점 게시 두 분기의 lazy base 허용을 제거하고 page base만 사용",
+  "rejectedSourceSha256": "863e286baf9a3aa0d195e36fe988d5cf88587ddc932729573e4ac53f35c74ad8",
+  "rejectedBinarySha256": "484ad028b8f0053faec4fa4694da6a8537df53826fd4c5d0b7809876a06281b1",
+  "convertedPage8Before": 42.07406,
+  "convertedPage8RejectedAfter": 42.3444,
+  "convertedPage8Read": "문단 85/87/89/91 표의 앞 본문 위 되감김은 사라졌으나 첫 그림과 본문 간격 차이가 남아 90% 미달",
+  "controls": [
+    {
+      "key": "issue265",
+      "pagesBefore": 16,
+      "pagesAfter": 16,
+      "changedPages": [],
+      "byteIdentical": true
+    },
+    {
+      "key": "caption6078",
+      "pagesBefore": 1,
+      "pagesAfter": 1,
+      "changedPages": [],
+      "byteIdentical": true
+    },
+    {
+      "key": "regulatory17",
+      "pagesBefore": 17,
+      "pagesAfter": 17,
+      "changedPages": [
+        1
+      ],
+      "byteIdentical": false
+    },
+    {
+      "key": "pii66",
+      "pagesBefore": 66,
+      "pagesAfter": 66,
+      "changedPages": [],
+      "byteIdentical": true
+    }
+  ],
+  "regulatory17Page1": {
+    "before": 95.72265,
+    "rejectedAfter": 68.84976,
+    "fontCSSIdentical": true,
+    "fontBinarySetsIdentical": true,
+    "changedGeometry": "본문 표와 뒤 내용이 약 4.12px 위로 이동",
+    "directReview": "표지 제목 아래 목차·본문 표·날짜/서명과 PDF의 상대 배치를 직접 확인해 회귀로 판정"
+  },
+  "result": "REJECTED",
+  "productionRestored": true,
+  "restoredTypesetSha256": "18e5488bc23540c3615c1f314a95371a00a881a6770f282f2edf791d77c0b41d",
+  "fixturesChanged": false,
+  "testsChanged": false,
+  "baselineChanged": false,
+  "issueCommentUpdated": false,
+  "freshBuiltForRejectedCandidate": false,
+  "preparationErrors": "오래된 font exporter는 본문 동일 assertion으로 새 배치를 거부했다. root librhwp.rlib 재사용은 의존성 불일치로 컴파일 실패했다. 현재 release/deps/librhwp.rlib로 동일 helper를 재컴파일해 assertion을 유지한 채 비교했다. 준비 오류를 정상 검증이나 통과로 계산하지 않는다.",
+  "nextAction": "원래 확인된 실제 그림/문단 프레임에서 파생한 기준과 누적 소비를 paint의 기존 물리 프레임에 연결하지 못한 기준을 구분한다. 정상 지연 기준을 일괄 제거하지 않고 그 값을 생산한 경계를 고친다.",
+  "readyForPR": false,
+  "remainingOriginalFailures": 53,
+  "ignoredArtifacts": "output/pr-review/7445-completed-20261009/stage342-converted16-overlap"
+}
