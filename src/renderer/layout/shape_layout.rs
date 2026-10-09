@@ -2491,12 +2491,11 @@ impl LayoutEngine {
                                     match crate::ole_chart::parse_ole_chart_contents(raw_contents) {
                                         Ok(ole_chart) => {
                                             let svg_fragment =
-                                                crate::ole_chart::render_ole_chart_svg_fragment_with_contents_at_dpi(
+                                                crate::ole_chart::render_ole_chart_svg_fragment_with_contents(
                                                     &ole_chart,
                                                     raw_contents,
                                                     [render_x, render_y, render_w, render_h],
                                                     ole.bin_data_id,
-                                                    self.dpi,
                                                 );
                                             push_ole_raw_svg_render_node(
                                                 tree,
