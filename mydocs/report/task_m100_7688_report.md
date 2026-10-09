@@ -96,5 +96,7 @@ curve/arc·원본 크기가 완전히 불명인 모든 crop은 미검증이다. 
 
 PR 본문 초안·원격 명령과 전체 Native TSV ZIP은 ignored `final/`에 준비한다.
 TSV·실행 로그·중간 JSON은 Git에 커밋하지 않는다. ZIP은 PR 게시 때 첨부할 자료다.
-원격 push·PR 생성 후에는 채번된 archive review를 추가하고 최신 head CI와 raw 이미지의
-실제 표시를 다시 확인한다. 원격 게시·merge·이슈 종료는 아직 수행하지 않았다.
+이후 [PR #7697](https://github.com/edwardkim/rhwp/pull/7697)을 게시하고 raw 이미지 28개와
+Native TSV 첨부의 실제 표시·다운로드를 확인했다. 최초 CI에서 확인한 검사 계약/신규 sample 등록
+보완은 [8단계](../working/task_m100_7688_stage8.md)에 기록했다. 새 code head CI 성공 후
+archive self-review·오늘할일 기록을 추가하며 merge와 이슈 종료는 남은 별도 절차다.

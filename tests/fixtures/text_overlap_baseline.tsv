@@ -117,6 +117,15 @@ issue6879/156767332-broadcast-revenue-attachment.hwp	1
 #   그린다. 영역 0 인 B12~B14 는 한/글처럼 마커를 그리지 않아 세지 않는다.
 issue7418/list_marker_head_synthetic-hancom-2024.hwpx	3
 issue7418/list_marker_head_synthetic.hwpx	3
+# #7688 / PR #7697: group-drawing-02.hwp의 화살촉 대조군 5개를 신규 등록한다.
+# 수정 전 devel 6f66932a와 현재 head 모두 각 5건이며 소유 path·bbox·교차량도 동일하다.
+# Native/fresh WASM 독립 Print 전쪽 최저 99.84531%; 기존 글상자 줄바꿈 차이는 남는다.
+# 근거와 입력/PDF 해시: mydocs/working/task_m100_7688_stage8.md, samples/issue7688/README.md.
+issue7688/arrow-controls/control-1.hwpx	5
+issue7688/arrow-controls/control-2.hwpx	5
+issue7688/arrow-controls/control-3.hwpx	5
+issue7688/arrow-controls/control-compound.hwpx	5
+issue7688/arrow-controls/control-short.hwpx	5
 kps-ai.hwp	2
 mel-001.hwp	1
 multi-table-001.hwp	1
