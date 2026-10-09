@@ -1427,189 +1427,42 @@ impl SvgRenderer {
 
     /// 화살표 마커 SVG 정의 생성 (중복 시 기존 ID 반환)
     ///
-    /// HWP 화살표 크기(0-8): {작은,중간,큰} × {작은,중간,큰} (너비 × 길이)
-    /// 선 두께와 길이를 고려하여 마커 크기 결정
+    /// A marker replays the common arrow outline at the original endpoint.
     fn ensure_arrow_marker(
         &mut self,
         color: &str,
         stroke_width: f64,
-        line_len: f64,
+        _line_len: f64,
         arrow: &super::ArrowStyle,
         arrow_size: u8,
         is_start: bool,
     ) -> String {
-        let type_name = match arrow {
-            super::ArrowStyle::Arrow => "arrow",
-            super::ArrowStyle::ConcaveArrow => "concave",
-            super::ArrowStyle::OpenDiamond => "odiamond",
-            super::ArrowStyle::OpenCircle => "ocircle",
-            super::ArrowStyle::OpenSquare => "osquare",
-            super::ArrowStyle::Diamond => "diamond",
-            super::ArrowStyle::Circle => "circle",
-            super::ArrowStyle::Square => "square",
-            super::ArrowStyle::None => "none",
-        };
         let dir = if is_start { "s" } else { "e" };
-        let color_id = color.replace('#', "");
-        let id = format!("mk-{}-{}-{}-{}", type_name, dir, color_id, arrow_size);
-
+        let id = format!(
+            "mk-{:?}-{}-{}-{}-{:x}",
+            arrow,
+            dir,
+            color.replace('#', ""),
+            arrow_size,
+            stroke_width.to_bits()
+        );
         if !self.defs_ids.insert(id.clone()) {
             return id;
         }
-
-        // HWP 화살표 크기 → 너비/길이 배율
-        // arrow_size: 0=작은-작은, 1=작은-중간, 2=작은-큰,
-        //             3=중간-작은, 4=중간-중간, 5=중간-큰,
-        //             6=큰-작은, 7=큰-중간, 8=큰-큰
-        let width_level = arrow_size / 3; // 0=작은, 1=중간, 2=큰
-        let length_level = arrow_size % 3; // 0=작은, 1=중간, 2=큰
-
-        // 너비 배율 (선 두께 대비 화살표 높이)
-        let width_mult = match width_level {
-            0 => 1.5, // 작은: 선 두께의 1.5배
-            1 => 2.5, // 중간: 선 두께의 2.5배
-            _ => 3.5, // 큰: 선 두께의 3.5배
-        };
-        // 길이 배율 (화살표 높이 대비 길이)
-        let length_mult = match length_level {
-            0 => 1.0, // 작은
-            1 => 1.5, // 중간
-            _ => 2.0, // 큰
-        };
-
-        let arrow_h = (stroke_width * width_mult).max(3.0);
-        let arrow_w = (arrow_h * length_mult).min(line_len * 0.3); // 선 길이의 30% 이하
-        let half_h = arrow_h / 2.0;
-
-        let def = match arrow {
-            super::ArrowStyle::Arrow => {
-                // 선이 화살표 길이만큼 줄어드므로 refX는 화살표 밑변(base) 위치
-                // start: refX=arrow_w (밑변이 줄어든 시작점에 정렬, 팁은 원래 시작점 방향)
-                // end:   refX=0 (밑변이 줄어든 끝점에 정렬, 팁은 원래 끝점 방향)
-                if is_start {
-                    format!(
-                        "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                        <path d=\"M {} 0 L 0 {} L {} {}\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                        id, arrow_w, arrow_h, arrow_w, half_h, arrow_w, arrow_h,
-                        arrow_w, half_h, arrow_w, arrow_h, color,
-                    )
-                } else {
-                    format!(
-                        "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"0\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                        <path d=\"M 0 0 L {} {} L 0 {}\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                        id, arrow_w, arrow_h, half_h, arrow_w, arrow_h,
-                        arrow_w, half_h, arrow_h, color,
-                    )
-                }
-            }
-            super::ArrowStyle::ConcaveArrow => {
-                let concave = arrow_w * 0.3;
-                if is_start {
-                    format!(
-                        "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                        <path d=\"M {} 0 L 0 {} L {} {} L {} {} Z\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                        id, arrow_w, arrow_h, arrow_w, half_h, arrow_w, arrow_h,
-                        arrow_w, half_h, arrow_w, arrow_h, concave, half_h, color,
-                    )
-                } else {
-                    format!(
-                        "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"0\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                        <path d=\"M 0 0 L {} {} L 0 {} L {} {} Z\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                        id, arrow_w, arrow_h, half_h, arrow_w, arrow_h,
-                        arrow_w, half_h, arrow_h, arrow_w - concave, half_h, color,
-                    )
-                }
-            }
-            super::ArrowStyle::OpenDiamond => {
-                let half_w = arrow_w / 2.0;
-                let sw = (stroke_width * 0.3).max(0.5);
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <path d=\"M {} 0 L {} {} L {} {} L 0 {} Z\" fill=\"white\" stroke=\"{}\" stroke-width=\"{}\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    half_w, arrow_w, half_h, half_w, arrow_h, half_h, color, sw,
-                )
-            }
-            super::ArrowStyle::OpenCircle => {
-                let half_w = arrow_w / 2.0;
-                let rx = half_w * 0.8;
-                let ry = half_h * 0.8;
-                let sw = (stroke_width * 0.3).max(0.5);
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <ellipse cx=\"{}\" cy=\"{}\" rx=\"{}\" ry=\"{}\" fill=\"white\" stroke=\"{}\" stroke-width=\"{}\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    half_w, half_h, rx, ry, color, sw,
-                )
-            }
-            super::ArrowStyle::OpenSquare => {
-                let sw = (stroke_width * 0.3).max(0.5);
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <rect x=\"0\" y=\"0\" width=\"{}\" height=\"{}\" fill=\"white\" stroke=\"{}\" stroke-width=\"{}\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    arrow_w, arrow_h, color, sw,
-                )
-            }
-            super::ArrowStyle::Diamond => {
-                let half_w = arrow_w / 2.0;
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <path d=\"M {} 0 L {} {} L {} {} L 0 {} Z\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    half_w, arrow_w, half_h, half_w, arrow_h, half_h, color,
-                )
-            }
-            super::ArrowStyle::Circle => {
-                let half_w = arrow_w / 2.0;
-                let rx = half_w * 0.8;
-                let ry = half_h * 0.8;
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <ellipse cx=\"{}\" cy=\"{}\" rx=\"{}\" ry=\"{}\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    half_w, half_h, rx, ry, color,
-                )
-            }
-            super::ArrowStyle::Square => {
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <rect x=\"0\" y=\"0\" width=\"{}\" height=\"{}\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    arrow_w, arrow_h, color,
-                )
-            }
-            super::ArrowStyle::None => return id,
-        };
-
-        self.defs.push(def);
+        if let Some(head) = super::arrow::head(*arrow, stroke_width, arrow_size) {
+            let (length, height) = super::arrow::dimensions(stroke_width, arrow_size);
+            let direction = if is_start { -1.0 } else { 1.0 };
+            let commands = head.at(0.0, 0.0, direction, 0.0);
+            let d = svg_path_data(&commands);
+            let left = if is_start { 0.0 } else { -length };
+            let fill = if head.filled { color } else { "white" };
+            let outline = if head.filled { "none" } else { color };
+            let outline_width = (stroke_width * 0.3).max(0.5);
+            self.defs.push(format!(
+                "<marker id=\"{id}\" viewBox=\"{left} {} {length} {height}\" refX=\"0\" refY=\"0\" markerWidth=\"{length}\" markerHeight=\"{height}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\" overflow=\"visible\"><path d=\"{}\" fill=\"{fill}\" stroke=\"{outline}\" stroke-width=\"{outline_width}\"/></marker>\n",
+                -height / 2.0, d.trim()));
+        }
         id
-    }
-
-    /// 화살표 크기(arrow_w, arrow_h) 계산
-    /// ensure_arrow_marker와 동일한 로직으로 화살표 길이를 반환
-    fn calc_arrow_dims(stroke_width: f64, line_len: f64, arrow_size: u8) -> (f64, f64) {
-        let width_level = arrow_size / 3;
-        let length_level = arrow_size % 3;
-        let width_mult = match width_level {
-            0 => 1.5,
-            1 => 2.5,
-            _ => 3.5,
-        };
-        let length_mult = match length_level {
-            0 => 1.0,
-            1 => 1.5,
-            _ => 2.0,
-        };
-        let arrow_h = (stroke_width * width_mult).max(3.0);
-        let arrow_w = (arrow_h * length_mult).min(line_len * 0.3);
-        (arrow_w, arrow_h)
     }
 
     /// 그라데이션 색상 stop 목록 생성
@@ -1719,29 +1572,7 @@ impl SvgRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
-        let mut d = String::new();
-        for cmd in commands {
-            match cmd {
-                PathCommand::MoveTo(x, y) => d.push_str(&format!("M{} {} ", x, y)),
-                PathCommand::LineTo(x, y) => d.push_str(&format!("L{} {} ", x, y)),
-                PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
-                    d.push_str(&format!("C{} {} {} {} {} {} ", x1, y1, x2, y2, x, y))
-                }
-                PathCommand::ArcTo(rx, ry, x_rot, large_arc, sweep, x, y) => {
-                    d.push_str(&format!(
-                        "A{} {} {} {} {} {} {} ",
-                        rx,
-                        ry,
-                        x_rot,
-                        if *large_arc { 1 } else { 0 },
-                        if *sweep { 1 } else { 0 },
-                        x,
-                        y
-                    ));
-                }
-                PathCommand::ClosePath => d.push_str("Z "),
-            }
-        }
+        let d = svg_path_data(commands);
 
         let mut attrs = format!("d=\"{}\"", d.trim());
 
@@ -3155,50 +2986,26 @@ impl SvgRenderer {
         ));
     }
 
-    /// 연결선은 `PathNode`로 보존되므로, 일반 `LineNode`와 같은 marker를 별도
-    /// 투명 기준선에 붙인다. SVG marker는 기준선 stroke와 독립적으로 정의된 색을
-    /// 사용한다. 따라서 경로 본문을 두 번 칠하지 않고도 시작/끝 모양을 유지한다.
+    /// Connectors replay the shared endpoint-tangent outlines over their shaft.
     fn draw_path_arrow_markers(&mut self, path: &PathNode) {
-        let (Some(style), Some((x1, y1, x2, y2))) = (&path.line_style, path.connector_endpoints)
-        else {
+        let Some(style) = &path.line_style else {
             return;
         };
-        if style.start_arrow == super::ArrowStyle::None
-            && style.end_arrow == super::ArrowStyle::None
-        {
-            return;
-        }
-        let color = color_to_svg(style.color);
-        let line_len = ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
-        if line_len <= f64::EPSILON {
-            return;
-        }
-        let mut markers = String::new();
-        if style.start_arrow != super::ArrowStyle::None {
-            let marker_id = self.ensure_arrow_marker(
-                &color,
-                style.width.max(0.5),
-                line_len,
-                &style.start_arrow,
-                style.start_arrow_size,
-                true,
+        self.draw_arrow_heads(&super::arrow::connector_heads(path), style);
+    }
+
+    fn draw_arrow_heads(&mut self, heads: &[super::arrow::ArrowHead], style: &LineStyle) {
+        for head in heads {
+            self.draw_path(
+                &head.commands,
+                &ShapeStyle {
+                    fill_color: Some(if head.filled { style.color } else { 0xFFFFFF }),
+                    stroke_color: if head.filled { None } else { Some(style.color) },
+                    stroke_width: (style.width * 0.3).max(0.5),
+                    ..Default::default()
+                },
             );
-            markers.push_str(&format!(" marker-start=\"url(#{marker_id})\""));
         }
-        if style.end_arrow != super::ArrowStyle::None {
-            let marker_id = self.ensure_arrow_marker(
-                &color,
-                style.width.max(0.5),
-                line_len,
-                &style.end_arrow,
-                style.end_arrow_size,
-                false,
-            );
-            markers.push_str(&format!(" marker-end=\"url(#{marker_id})\""));
-        }
-        self.output.push_str(&format!(
-            "<line x1=\"{x1}\" y1=\"{y1}\" x2=\"{x2}\" y2=\"{y2}\" stroke=\"none\" fill=\"none\"{markers}/>\n"
-        ));
     }
 }
 
@@ -3837,6 +3644,7 @@ impl Renderer for SvgRenderer {
             | super::LineRenderType::ThickThinDouble
             | super::LineRenderType::ThinThickThinTriple => {
                 self.draw_multi_line(x1, y1, x2, y2, width, &color, &style.line_type);
+                self.draw_arrow_heads(&super::arrow::line_heads((x1, y1, x2, y2), style), style);
                 return;
             }
             _ => {}
@@ -3846,21 +3654,16 @@ impl Renderer for SvgRenderer {
         let dy = y2 - y1;
         let line_len = (dx * dx + dy * dy).sqrt();
 
-        // 화살표 머리 크기만큼 선 끝점 조정
-        // 선이 화살표 머리 안으로 침범하지 않도록 줄임
-        let mut lx1 = x1;
-        let mut ly1 = y1;
-        let mut lx2 = x2;
-        let mut ly2 = y2;
+        // Keep original endpoints, including when the head is longer than the shaft.
+        let lx1 = x1;
+        let ly1 = y1;
+        let lx2 = x2;
+        let ly2 = y2;
         let mut marker_start_attr = String::new();
         let mut marker_end_attr = String::new();
 
         if line_len > 0.0 {
-            let ux = dx / line_len; // 단위 벡터
-            let uy = dy / line_len;
-
             if style.start_arrow != super::ArrowStyle::None {
-                let (arrow_w, _) = Self::calc_arrow_dims(width, line_len, style.start_arrow_size);
                 let marker_id = self.ensure_arrow_marker(
                     &color,
                     width,
@@ -3870,12 +3673,8 @@ impl Renderer for SvgRenderer {
                     true,
                 );
                 marker_start_attr = format!(" marker-start=\"url(#{})\"", marker_id);
-                // 시작점을 화살표 길이만큼 전진
-                lx1 += ux * arrow_w;
-                ly1 += uy * arrow_w;
             }
             if style.end_arrow != super::ArrowStyle::None {
-                let (arrow_w, _) = Self::calc_arrow_dims(width, line_len, style.end_arrow_size);
                 let marker_id = self.ensure_arrow_marker(
                     &color,
                     width,
@@ -3885,9 +3684,6 @@ impl Renderer for SvgRenderer {
                     false,
                 );
                 marker_end_attr = format!(" marker-end=\"url(#{})\"", marker_id);
-                // 끝점을 화살표 길이만큼 후퇴
-                lx2 -= ux * arrow_w;
-                ly2 -= uy * arrow_w;
             }
         }
 
@@ -4144,8 +3940,8 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
 /// source rect (x, y, w, h) 를 계산한다.
 ///
 /// `crop_reference_size`(`imgDim`)가 있으면 문서가 보존한 전체 좌표 범위를
-/// 디코딩 이미지 크기에 대응시킨다. 없으면 crop `right`/`bottom` 이 전체 좌표
-/// 범위를 가리킨다고 보고 디코딩 크기에 대응시킨다(적응 폴백) — imgDim 을
+/// 디코딩 이미지 크기에 대응시킨다. 없으면 zero-origin 끝점의 후보를
+/// 같은 등방 단위로 환산한다(적응 폴백) — imgDim 을
 /// 보존하지 않는 구형 HWP5 의 비-96dpi 스캔 그림은 crop 단위가 75 HU/px 가
 /// 아니어서, 고정 75 룰은 src 를 과소 계산해 그림을 확대·절단한다(#3239).
 /// 둘 다 쓸 수 없을 때만 [Task #477] 표준 75 HU/px 를 쓴다.
@@ -4163,29 +3959,24 @@ pub(crate) fn compute_image_crop_src(
         .map(|(w, h)| (w as f64 / img_w_px, h as f64 / img_h_px))
         .filter(|(sx, sy)| sx.is_finite() && sy.is_finite() && *sx > 0.0 && *sy > 0.0)
         .or_else(|| {
-            // [#7015] 적응 폴백은 `right`/`bottom` 이 **전체 좌표 범위**라는 가정 위에
-            // 선다. 그 가정은 그 축을 자르지 않았을 때만 성립하므로, 축마다 따로 본다 —
-            // `left > 0` 이면 x 축, `top > 0` 이면 y 축의 `right`/`bottom` 은 자르기
-            // 경계이지 전체 범위가 아니다.
-            //
-            // 30442 권익위 권고문 3쪽 실측: crop `(0, 20745, 88560, 45453)`, 디코딩
-            // 1181×945. x 축은 `88560 / 1181 = 75.0` 으로 표준과 정확히 일치하는데
-            // (= 전체 범위), y 축을 같은 식으로 보면 `45453 / 945 = 48.1` 이라 배율이
-            // 36% 작아진다. 그 결과 자르기 창이 `y 431.3..945.0` 으로 아래로 밀려
-            // 로고(잉크 `y 324..562`)의 위쪽 107행이 잘리고 아래 383행은 흰 여백만
-            // 들어왔다 — "로고가 절반만 보인다".
-            //
-            // 한 축만 전체 범위가 확인되면 그 배율을 두 축에 쓴다(HWP5 crop 좌표는
-            // 등방이다). 둘 다 확인되지 않으면 아래 표준 75 HU/px 로 떨어진다.
-            // `#3239` 의 200dpi 스캔 픽스처는 `left = top = 0` 이라 종전과 같이
-            // 두 축 모두 적응 배율을 쓴다.
+            // A zero start does not establish that the opposite edge is the full
+            // image extent: right/bottom-only cropping also starts at zero.
+            // Without an explicit reference, HWPUNIT coordinates must retain one
+            // isotropic scale. Use the smallest common scale which fits the
+            // available zero-origin extents in the decoded image. Independent
+            // axis scales would expand a shortened edge back to the full image.
+            // Nonzero starts do not provide a full-extent candidate (#7015).
+            // If neither axis provides one, retain the standard 75 HU/px fallback.
             let axis_scale = |crop_start: i32, crop_end: i32, img_px: f64| {
                 (crop_start == 0 && crop_end > 0 && img_px > 0.0)
                     .then(|| crop_end as f64 / img_px)
                     .filter(|scale| scale.is_finite() && *scale > 0.0)
             };
             match (axis_scale(cl, cr, img_w_px), axis_scale(ct, cb, img_h_px)) {
-                (Some(sx), Some(sy)) => Some((sx, sy)),
+                (Some(sx), Some(sy)) => {
+                    let scale = sx.max(sy);
+                    Some((scale, scale))
+                }
                 (Some(scale), None) | (None, Some(scale)) => Some((scale, scale)),
                 (None, None) => None,
             }
@@ -5131,3 +4922,30 @@ pub fn generate_font_style(
 
 #[cfg(test)]
 mod tests;
+
+fn svg_path_data(commands: &[PathCommand]) -> String {
+    let mut d = String::new();
+    for cmd in commands {
+        match cmd {
+            PathCommand::MoveTo(x, y) => d.push_str(&format!("M{} {} ", x, y)),
+            PathCommand::LineTo(x, y) => d.push_str(&format!("L{} {} ", x, y)),
+            PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
+                d.push_str(&format!("C{} {} {} {} {} {} ", x1, y1, x2, y2, x, y))
+            }
+            PathCommand::ArcTo(rx, ry, x_rot, large_arc, sweep, x, y) => {
+                d.push_str(&format!(
+                    "A{} {} {} {} {} {} {} ",
+                    rx,
+                    ry,
+                    x_rot,
+                    if *large_arc { 1 } else { 0 },
+                    if *sweep { 1 } else { 0 },
+                    x,
+                    y
+                ));
+            }
+            PathCommand::ClosePath => d.push_str("Z "),
+        }
+    }
+    d
+}

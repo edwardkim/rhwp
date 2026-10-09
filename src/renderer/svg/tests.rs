@@ -1301,14 +1301,14 @@ fn test_compute_image_crop_src_issue2817_img_dim_scale() {
 
 #[test]
 fn test_compute_image_crop_src_fallback_when_original_size_missing() {
-    // original_size_hu(imgDim) 부재 시 적응 폴백(#3239): crop right/bottom
-    // (102366, 26580)이 전체 좌표 범위 = 디코딩 2320×354px 에 대응한다고 본다.
-    // pre-#2990 skia 경로(image_conv.rs)와 동일한 해석 — crop 이 전체 범위를
-    // 가리키는 그림(대부분의 무-crop 저장)은 단위와 무관하게 정확하다.
+    // 전체 기준 크기가 없는 crop 끝점은 원본 전체라는 증거가 아니다.
+    // HWPUNIT의 x/y 길이 단위는 동일하므로 source 창의 종횡비를 보존한다.
+    // 두 축에 서로 다른 배율을 적용해 잘린 영역을 전체로 늘리지 않는다.
     let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 102366, 26580), None, 2320.0, 354.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
-    assert!((sw - 2320.0).abs() < 0.01);
+    assert!(sw > 0.0 && sw < 2320.0);
+    assert!((sw / sh - 102366.0 / 26580.0).abs() < 1e-9);
     assert!((sh - 354.0).abs() < 0.01);
 }
 
@@ -1318,11 +1318,11 @@ fn test_compute_image_crop_src_issue3239_non_96dpi_scan_fallback() {
     // 200dpi 스캔(36 HU/px), 디코딩 1654×2340px, crop=(0,0,59520,84240),
     // raw_picture_extra 9바이트로 imgDim 부재.
     // 고정 75 룰이면 src=793.6×1123.2 로 과소 계산되어 좌상단만 2.08배
-    // 확대·절단 렌더된다. 적응 폴백은 전체 이미지를 그대로 돌려준다.
+    // 확대·절단 렌더된다. 독립 200dpi 원본의 단위는 두 축 모두 36 HU/px다.
     let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 59520, 84240), None, 1654.0, 2340.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
-    assert!((sw - 1654.0).abs() < 0.01);
+    assert!((sw - 59520.0 / 36.0).abs() < 0.01);
     assert!((sh - 2340.0).abs() < 0.01);
 }
 

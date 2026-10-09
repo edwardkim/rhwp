@@ -907,8 +907,13 @@ Print 출력해 비교하며, 기준 PDF 부족을 Visual Sweep 비해당 사유
    - 유효한 기존 PDF를 재사용하고, 내용으로 대응시킨 변경 전후 페이지·영역을 직접 확인
    - 자동 검사 통과는 직접 비교를 대체하지 않으며, 메인터너 재검증 예정이라는 이유로 작성자 검증을 생략하지 않음
 
-3. **다른 렌더링 결과** (참고):
-   - HTML / Canvas / VS Code 확장 등 다른 출력 경로와의 일관성
+3. **변경 결과를 소비하는 출력 경로 검증** (해당 경로 필수):
+   - [출력 백엔드 소비 경로 검증](mydocs/manual/verification/renderer_backend_verification.md)에 따라
+     공통 조판/paint 결과와 실제 Canvas·SVG·Native PNG 등의 소비 경로를 연결합니다.
+   - 같은 tree 생성 함수를 호출해도 metric context·font resource·glyph fallback·DOM 합성이
+     다르면 최종 출력이 달라질 수 있습니다. 영향받는 경로의 실제 화면/파일과 정상 대조군을 확인하세요.
+   - backend 자기 비교는 한컴 PDF Sweep을 대체하지 않습니다. 미실행 경로는 미검증이며,
+     해당되지 않는 경로는 호출 경로의 근거를 적습니다. 모든 backend를 매번 전수 실행하는 조건은 아닙니다.
 
 ### 페이지 분할 / 페이지네이션 영향 PR 의 경우
 
