@@ -21,6 +21,11 @@ fn issue_6078_caption_table_and_paper_spec_keep_reading_order() {
     else {
         panic!("HWP3 원본의 캡션 표");
     };
+    let source_para = &core.document().sections[0].paragraphs[0];
+    assert_eq!(
+        source_para.line_segs[0].line_spacing, 0,
+        "표 앞 빈 저장 줄은 TAC 표의 후행 띠를 소유하지 않음"
+    );
     let caption = source_table.caption.as_ref().expect("표 위 캡션");
     assert!(caption.spacing > 0, "원본 캡션의 물리 점유가 보존돼야 함");
     let recommendation_checks: usize = source_table
