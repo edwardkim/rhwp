@@ -172,7 +172,22 @@ impl TypesetEngine {
             + if is_continuation
                 && (fragment_opens_outer_top
                     || terminal_fragment_opens_outer_top
-                    || source_cut_opens_outer_top)
+                    || source_cut_opens_outer_top
+                    // [#7685] 이어지는 RowBreak 조각은 쪽 위에서 표의 바깥 위 여백을 다시
+                    // 연다 — 위 세 형상은 그 일반 규칙의 부분집합이다. 한/글 정본 조각 상자
+                    // 208건 중 180건이 「본문 위 + 선언 outMargin.top」 에 정확히 놓인다
+                    // (#6976 원장). 행 경계에서 시작하는 조각만 — 칸 중간에서 이어지는
+                    // 조각은 칸 조각 계약(#7095 등)이 소유하고, issue1949 55쪽처럼 한/글
+                    // 내용이 그 여백 없이 놓이는 사례가 있다. 앞에서 이미 연 경우
+                    // (`repeats_outer_margin`)는 다시 더하지 않는다. 그리는 쪽
+                    // (`table_partial`)도 같은 조각에서 연다.
+                    || (!table.common.treat_as_char
+                        && matches!(
+                            table.page_break,
+                            crate::model::table::TablePageBreak::RowBreak
+                        )
+                        && start_cut.iter().all(|&unit| unit == 0)
+                        && host_before_overhead < 0.5))
                 && !strict_following_plain_text_fit
                 && !single_cell_page_fragment
                 && !recursive_overlay_frame
