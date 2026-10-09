@@ -853,8 +853,10 @@ impl DocumentCore {
             }
         }
 
-        // 채우기 파싱
-        if let Some(fill_type_str) = json_str(json, "fillType") {
+        // 채우기 파싱 — 그러데이션·그림은 조회가 종류만 알려 주므로 기준 정의의 채우기를 둔다.
+        if let Some(fill_type_str) = json_str(json, "fillType")
+            .filter(|fill_type| !matches!(fill_type.as_str(), "gradient" | "image"))
+        {
             bf.fill = if fill_type_str == "solid" {
                 let bg = json_color(json, "fillColor").unwrap_or(0xFFFFFF);
                 let pat_c = json_color(json, "patternColor").unwrap_or(0);
