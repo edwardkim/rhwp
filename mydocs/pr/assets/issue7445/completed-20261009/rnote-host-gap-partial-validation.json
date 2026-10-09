@@ -1,0 +1,377 @@
+{
+  "stage": 368,
+  "headAtStart": "679af8e10f80b5e45e49108f2dcf6e70578012f8",
+  "base": "21ed64071f81f35f37618717693bd30f727392c9",
+  "candidateScope": "같은 빈 호스트 형제 표의 줄간격을 마지막 흐름 표 뒤에서 한 번 소비",
+  "focused": {
+    "summary": "13 tests run: 12 passed, 1 failed, 10317 skipped",
+    "exitCode": 100,
+    "logSha256": "e41c2971f8cee127d1c059126dc6a8117708cd7de451e5fd8450ee478753331d",
+    "residual": "hancom_copies_keep_owner_order_after_enter: 서명/다음 제목 표의 1.5px 겹침 유지. 공차와 테스트 변경 없음."
+  },
+  "experimentalBuild": {
+    "headAtBuild": "679af8e10f80b5e45e49108f2dcf6e70578012f8",
+    "sourceFiles": {
+      "src/renderer/typeset/table/block/prepare.rs": "0eaa6f0ca704ee1fa5c8bd051081d6e8a58532d88b3fa6f8711db44444cff43b",
+      "src/renderer/typeset/table/host_spacing.rs": "2a2eef1e4a7c6064541a621eae24d100f53563cd1e75230ee1489282321a9bf2"
+    },
+    "artifactFiles": {
+      "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage368-rnote-flow-consumption/rhwp-after": "fd9dba8d82dfab66f7bf267c2cf5dbea238fe9d8b28c59b19d405aaadfabd5cd",
+      "/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm": "388ee79d9dd75ea1aca4e38daceb1eb599f4d2d6f84522e11799caa9d02a9c9b",
+      "/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd"
+    },
+    "note": "형제 호스트 줄간격 보정과 통째 이월 guard 실험을 함께 빌드. guard 실험은 독립 PDF 전체 판독 후 철회. 이 빌드를 철회 후 최종 head 증거로 재사용하지 않음."
+  },
+  "outputs": [
+    {
+      "key": "cp01",
+      "backend": "native-experimental",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 33.03085,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 190643,
+          "tolerant_content_match_percent": 33.03085
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 61015,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 15.98453,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 84050,
+          "tolerant_content_match_percent": 15.98453
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 33.03085
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 15.98453
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 3,
+          "pdf": 3
+        },
+        "page_count_mismatch": false
+      },
+      "tsvSha256": "10b5ae68716374c1cbe179a276ca10a714a09d3b8067c4e125a6d83081337daa",
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage368-rnote-flow-consumption/native/cp01/silhouette.tsv"
+    },
+    {
+      "key": "cp02",
+      "backend": "native-experimental",
+      "counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 33.03085,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 190643,
+          "tolerant_content_match_percent": 33.03085
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 61015,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.86543,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 74639,
+          "tolerant_content_match_percent": 95.86543
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 4.20358,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 43344,
+          "tolerant_content_match_percent": 4.20358
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 33.03085
+          },
+          {
+            "page": 4,
+            "tolerant_content_match_percent": 4.20358
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 4,
+          "pdf": 4
+        },
+        "page_count_mismatch": false
+      },
+      "tsvSha256": "13caf6500da03f1a5bac428980fcd80c88425826d149de08c468fd361e32e751",
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage368-rnote-flow-consumption/native/cp02/silhouette.tsv"
+    },
+    {
+      "key": "enter",
+      "backend": "native-experimental",
+      "counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 33.03085,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 190643,
+          "tolerant_content_match_percent": 33.03085
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 20.44067,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 51285,
+          "tolerant_content_match_percent": 20.44067
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 4.09121,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 45390,
+          "tolerant_content_match_percent": 4.09121
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 17.37905,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 77697,
+          "tolerant_content_match_percent": 17.37905
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 33.03085
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 20.44067
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 4.09121
+          },
+          {
+            "page": 4,
+            "tolerant_content_match_percent": 17.37905
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 4,
+          "pdf": 4
+        },
+        "page_count_mismatch": false
+      },
+      "tsvSha256": "97de1e3bc3ff84959d93f0fb8054252fcd881a08a3409e97895300e7ef23e365",
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage368-rnote-flow-consumption/native/enter/silhouette.tsv"
+    },
+    {
+      "key": "cp01",
+      "backend": "fresh-experimental",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 33.03085,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 190643,
+          "tolerant_content_match_percent": 33.03085
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 61015,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 15.98453,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 84050,
+          "tolerant_content_match_percent": 15.98453
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 33.03085
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 15.98453
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 3,
+          "pdf": 3
+        },
+        "page_count_mismatch": false
+      },
+      "tsvSha256": "10b5ae68716374c1cbe179a276ca10a714a09d3b8067c4e125a6d83081337daa",
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage368-rnote-flow-consumption/experimental-fresh/cp01/silhouette.tsv",
+      "note": "컴파일에는 이후 철회한 이월 guard가 포함되어 있음. 해당 원본들의 2쪽은 통째 수용 경로라 이 guard가 결과를 바꾸지 않음. 최종 head의 fresh 검증은 별도 실행해야 함."
+    },
+    {
+      "key": "cp02",
+      "backend": "fresh-experimental",
+      "counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 33.03085,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 190643,
+          "tolerant_content_match_percent": 33.03085
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 61015,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.86543,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 74639,
+          "tolerant_content_match_percent": 95.86543
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 4.20358,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 43344,
+          "tolerant_content_match_percent": 4.20358
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 33.03085
+          },
+          {
+            "page": 4,
+            "tolerant_content_match_percent": 4.20358
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 4,
+          "pdf": 4
+        },
+        "page_count_mismatch": false
+      },
+      "tsvSha256": "13caf6500da03f1a5bac428980fcd80c88425826d149de08c468fd361e32e751",
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage368-rnote-flow-consumption/experimental-fresh/cp02/silhouette.tsv",
+      "note": "컴파일에는 이후 철회한 이월 guard가 포함되어 있음. 해당 원본들의 2쪽은 통째 수용 경로라 이 guard가 결과를 바꾸지 않음. 최종 head의 fresh 검증은 별도 실행해야 함."
+    }
+  ],
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/completed-20261009/rnote-host-gap-p002-review.png",
+      "sha256": "ad4432c282e0eebba3407bceee79bba7a33c0b4eb35c96d5bdd4e22e6bfa2860"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/completed-20261009/rnote-rejected-defer-p003-review.png",
+      "sha256": "ec629940f512c54480fab385f7d079f5306ece2af93e06034f497b374d219267"
+    }
+  ],
+  "rejectedChange": "같은 호스트의 과대 표를 현재 쪽부터 분할하도록 바꾼 prepare guard는 철회. 5→4쪽만 같고 독립 Print의 실제 본문 조각 소속과 다름. PDF의 서명·후행 제목도 출력되지 않아 쪽수만 정답으로 사용하지 않음. 실험 빌드는 철회 후 최종 head 검증으로 재사용하지 않음.",
+  "acceptedEvidence": "원본 두 입력의 2쪽은 Native에서 18.40317→100%. 같은 호스트 줄간격 중복 수정은 유지. 원본/편집 전체의 잔여 미달은 해결 완료로 표시하지 않음.",
+  "decision": "PR 보류. 실제 형제 표 예약·배치 공통 원점과 기존 실패 검사를 계속 보정. 최종 fresh/전체 검증 필요."
+}

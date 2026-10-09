@@ -220,12 +220,22 @@ pub(super) fn resolve(
         .unwrap_or(false);
     let suppress_empty_anchor_spacing = is_topbottom_empty_anchor && !next_is_empty_table_anchor;
 
+    // 같은 빈 호스트의 흐름 표는 각 개체의 바깥 여백을 소유하지만,
+    // 호스트 줄간격은 마지막 흐름 표 뒤에서 한 번만 소비한다.
+    let has_following_host_float = is_empty_host_float
+        && para.controls.iter().skip(ctrl_idx + 1).any(|control| {
+            matches!(control, crate::model::control::Control::Table(following)
+                if is_para_topbottom_float(&following.common))
+        });
     let reflow_host_tail = crate::renderer::reflow_float_host_line::trailing_advance(
         para, table, composed, styles, dpi,
     );
     let host_line_spacing = if let Some(advance) = reflow_host_tail {
         advance
-    } else if suppress_empty_anchor_spacing || absolute_table_with_post_text {
+    } else if suppress_empty_anchor_spacing
+        || absolute_table_with_post_text
+        || has_following_host_float
+    {
         0.0
     } else if !is_tac && !is_single_cell_placeholder {
         para.line_segs
