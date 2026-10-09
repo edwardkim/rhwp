@@ -263,11 +263,20 @@ fn caret_slot(para: &Paragraph, logical: usize) -> Result<(u32, usize), HwpError
         return Err(invalid("필드 범위가 문단과 일치하지 않습니다"));
     }
 
-    let slots = control_stream_slots(para);
     let text_len = para.text.chars().count();
     if para.char_offsets.len() != text_len {
         return Err(invalid("문단의 문자 좌표가 잘못되었습니다"));
     }
+    let mut previous_end = 0;
+    for (offset, ch) in para.char_offsets.iter().zip(para.text.chars()) {
+        if *offset < previous_end {
+            return Err(invalid("문단의 문자 좌표 순서가 잘못되었습니다"));
+        }
+        previous_end = offset
+            .checked_add(Paragraph::char_stream_len(ch))
+            .ok_or_else(|| invalid("문단의 문자 좌표가 너무 큽니다"))?;
+    }
+    let slots = control_stream_slots(para);
     let mut inline = 0;
     for (ci, control) in para.controls.iter().enumerate() {
         if !control.is_logical_inline() {
@@ -373,11 +382,10 @@ fn prepare_markpen_ranges(para: &mut Paragraph) -> Vec<MarkpenMark> {
         .markpen_marks
         .iter()
         .enumerate()
-        .filter_map(|(index, mark)| {
-            (!paired[index]).then(|| MarkpenMark {
-                utf16_pos: Some(mark.stream_position(para)),
-                ..mark.clone()
-            })
+        .filter(|(index, _)| !paired[*index])
+        .map(|(_, mark)| MarkpenMark {
+            utf16_pos: Some(mark.stream_position(para)),
+            ..mark.clone()
         })
         .collect();
     para.range_tags = para.effective_markpen_range_tags();
@@ -690,6 +698,7 @@ impl DocumentCore {
                 "글자처럼 취급하는 표·그림·도형·수식만 옮길 수 있습니다",
             ));
         }
+        caret_slot(source_para, 0)?;
         let source_text = control_stream_slots(source_para)[source.control_index]
             .ok_or_else(|| invalid("원본 개체 슬롯을 찾을 수 없습니다"))?
             .1;

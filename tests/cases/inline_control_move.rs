@@ -803,3 +803,84 @@ fn table_shape_textbox_and_chart_payloads_are_moved_without_recreation() {
         );
     }
 }
+
+#[test]
+fn actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save() {
+    let bytes = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/samples/chart/세로막대형/묶은세로막대형.hwpx"
+    ))
+    .unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+    let (pi, ci) = core.document().sections[0].paragraphs.iter().enumerate().find_map(|(pi, p)| {
+        p.controls.iter().position(|control| matches!(control, Control::Shape(shape) if matches!(shape.as_ref(), ShapeObject::Chart(_) | ShapeObject::Ole(_)))).map(|ci| (pi, ci))
+    }).unwrap();
+    let Control::Shape(shape) = &mut core.document_mut().sections[0].paragraphs[pi].controls[ci]
+    else {
+        panic!()
+    };
+    shape.common_mut().treat_as_char = true;
+    shape.common_mut().attr |= 1;
+    let original =
+        serde_json::to_value(&core.document().sections[0].paragraphs[pi].controls[ci]).unwrap();
+    let data: Vec<_> = core
+        .document()
+        .bin_data_content
+        .iter()
+        .map(|bin| (bin.id, bin.extension.clone(), bin.data.load()))
+        .collect();
+    let target = core.document().sections[0].paragraphs.len();
+    core.document_mut().sections[0]
+        .paragraphs
+        .push(paragraph("앞뒤", vec![]));
+    let moved = core
+        .move_inline_control_native(&source(body(pi), ci), &caret(body(target), 1))
+        .unwrap();
+    assert_eq!(
+        serde_json::to_value(
+            &core.document().sections[0].paragraphs[target].controls[moved.address.control_index]
+        )
+        .unwrap(),
+        original
+    );
+    assert_eq!(
+        core.document()
+            .bin_data_content
+            .iter()
+            .map(|bin| (bin.id, bin.extension.clone(), bin.data.load()))
+            .collect::<Vec<_>>(),
+        data
+    );
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        assert!(reopened.document().sections[0].paragraphs[target].controls.iter().any(|control| matches!(control, Control::Shape(shape) if matches!(shape.as_ref(), ShapeObject::Chart(_) | ShapeObject::Ole(_)))));
+        for (id, extension, expected) in &data {
+            if extension == "ooxml_chart" {
+                continue;
+            }
+            let bin = reopened
+                .document()
+                .bin_data_content
+                .iter()
+                .find(|bin| bin.id == *id)
+                .unwrap();
+            assert_eq!(bin.data.load(), *expected);
+        }
+    }
+}
+
+#[test]
+fn malformed_source_or_destination_coordinates_reject_without_changes() {
+    for source_invalid in [true, false] {
+        let mut core = core(vec![
+            paragraph("AB", vec![(1, equation(41))]),
+            paragraph("XY", vec![]),
+        ]);
+        let index = usize::from(!source_invalid);
+        core.document_mut().sections[0].paragraphs[index].char_offsets = vec![u32::MAX, 0];
+        unchanged(&mut core, &source(body(0), 0), &caret(body(1), 1));
+    }
+}
