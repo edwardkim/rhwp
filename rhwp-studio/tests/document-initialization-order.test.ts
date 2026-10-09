@@ -70,7 +70,7 @@ test('CanvasKit 첫 replay는 저장된 local face를 bundled fallback보다 먼
 
   const storedIndex = prepareDocument.indexOf('await loadStoredLocalFonts();');
   const localIndex = prepareDocument.indexOf(
-    'await renderer.prepareLocalFonts(report.requiredFontFamilies);',
+    'await renderer.prepareLocalFonts(fontRequirements.requiredFontFamilies);',
   );
   const catchIndex = prepareDocument.indexOf('} catch (error) {');
   const bundledIndex = prepareDocument.indexOf('await renderer.prepareBundledFonts(plan.sources);');

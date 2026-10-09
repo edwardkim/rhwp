@@ -1,3 +1,4 @@
+import { CanvasKitBundledFontFamily } from './canvaskit/font-style-selection.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import type {
   Canvas,
@@ -154,6 +155,8 @@ interface CanvasKitSurfaceTarget {
 }
 
 interface CanvasKitLocalTypeface {
+  bytes?: ArrayBuffer;
+  syntheticStyle?: { bold: boolean; italic: boolean };
   hostFace?: { weight?: number; slant?: string };
   typeface: Typeface | null;
   fontManager: FontMgr | null;
@@ -335,7 +338,8 @@ export class CanvasKitLayerRenderer {
   private readonly localTypefaceLoadFailures = new Set<string>();
   private readonly localTypefacePending = new Map<string, number>();
   private readonly bundledTypefaces = new Map<string, CanvasKitLocalTypeface>();
-  private readonly bundledTypefaceAliases = new Map<string, CanvasKitLocalTypeface>();
+  private readonly bundledTypefaceAliases = new Map<string, CanvasKitLocalTypeface[]>();
+  private readonly bundledFontFamilies = new Map<string, CanvasKitBundledFontFamily>();
   private readonly bundledTypefaceLoadFailures = new Set<string>();
   private readonly currentFontSubstitutions = new Map<string, CanvasKitFontSubstitutionDiagnostic>();
   private readonly bundledFontRequests = new Set<AbortController>();
@@ -379,6 +383,7 @@ export class CanvasKitLayerRenderer {
     private readonly requirePreparedFontFamilies: boolean = false,
     private readonly oldHangulTypeface: CanvasKitLocalTypeface | null = null,
     private readonly oldHangulFontUrl: string = 'fonts/SourceHanSerifK-OldHangul-subset.woff2',
+    private readonly defaultFontBytes?: ArrayBuffer,
   ) {
     this.glyphRunFonts = new CanvasKitGlyphRunFontCache(canvasKit);
   }
@@ -396,6 +401,7 @@ export class CanvasKitLayerRenderer {
       : surfaceRequest;
     // 기본 Noto는 local face가 없거나 등록에 실패한 text run의 안정적인 CJK fallback이다.
     let defaultTypeface: Typeface | null = null;
+    let defaultFontBytes: ArrayBuffer | undefined;
     let defaultFontManager: FontMgr | null = null;
     let defaultFontFamily: string | null = null;
     const defaultFontUrl = options.defaultFontUrl ?? 'fonts/NotoSansKR-Regular.woff2';
@@ -405,6 +411,7 @@ export class CanvasKitLayerRenderer {
         const bytes = await readBoundedResponseArrayBuffer(response, {
           maxBytes: CanvasKitLayerRenderer.MAX_BUNDLED_FONT_BYTES,
         });
+        defaultFontBytes = bytes;
         defaultTypeface = canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
           ?? canvasKit.Typeface.MakeTypefaceFromData(bytes);
         defaultFontManager = canvasKit.FontMgr.FromData(bytes);
@@ -449,6 +456,7 @@ export class CanvasKitLayerRenderer {
           : OLD_HANGUL_FONT_FAMILY;
         if (oldHangulNativeTypeface || oldHangulFontManager) {
           oldHangulTypeface = {
+            bytes,
             typeface: oldHangulNativeTypeface,
             fontManager: oldHangulFontManager,
             fontFamily,
@@ -474,10 +482,11 @@ export class CanvasKitLayerRenderer {
       options.requirePreparedFontFamilies ?? false,
       oldHangulTypeface,
       oldHangulFontUrl,
+      defaultFontBytes,
     );
   }
 
-  /** Auto selection에서 승인된 문서 폰트를 첫 replay 전에 native Typeface로 등록한다. */
+  /** 선택된 문서 폰트를 첫 replay 전에 native Typeface로 등록한다. */
   async prepareBundledFonts(sources: readonly CanvasKitBundledFontSource[]): Promise<number> {
     if (this.disposed || sources.length === 0) return 0;
     const generation = this.documentGeneration;
@@ -491,6 +500,7 @@ export class CanvasKitLayerRenderer {
         ? this.oldHangulTypeface
         : source.url === this.defaultFontUrl && (this.defaultTypeface || this.defaultFontManager)
           ? {
+            bytes: this.defaultFontBytes,
             typeface: this.defaultTypeface,
             fontManager: this.defaultFontManager,
             fontFamily: this.defaultFontFamily,
@@ -533,7 +543,7 @@ export class CanvasKitLayerRenderer {
           const fontFamily = fontManager && fontManager.countFamilies() > 0
             ? fontManager.getFamilyName(0)
             : source.aliases[0];
-          prepared = { typeface, fontManager, fontFamily };
+          prepared = { bytes, typeface, fontManager, fontFamily };
           this.bundledTypefaces.set(source.url, prepared);
           registered += 1;
           typeface = null;
@@ -552,7 +562,15 @@ export class CanvasKitLayerRenderer {
       }
       for (const alias of source.aliases) {
         const key = normalizedFontFamily(alias);
-        if (key) this.bundledTypefaceAliases.set(key, prepared);
+        if (key) {
+          const faces = this.bundledTypefaceAliases.get(key) ?? [];
+          if (!faces.some(face => face.typeface === prepared.typeface)) {
+            faces.push(prepared);
+            this.bundledTypefaceAliases.set(key, faces);
+            this.bundledFontFamilies.get(key)?.dispose();
+            this.bundledFontFamilies.delete(key);
+          }
+        }
       }
       await Promise.resolve();
     }
@@ -791,6 +809,8 @@ export class CanvasKitLayerRenderer {
     }
     this.bundledTypefaces.clear();
     this.bundledTypefaceAliases.clear();
+    for (const family of this.bundledFontFamilies.values()) family.dispose();
+    this.bundledFontFamilies.clear();
     this.bundledTypefaceLoadFailures.clear();
     this.imageCacheHits = 0;
     this.imageCacheMisses = 0;
@@ -883,7 +903,7 @@ export class CanvasKitLayerRenderer {
     const localRecord = resolveRendererLocalFont(requestedFamily);
     const localKey = localRecord ? localFontFaceKey(localRecord) : '';
     const local = localKey ? this.localTypefaces.get(localKey) ?? null : null;
-    const bundled = this.bundledTypefaceAliases.get(normalized) ?? null;
+    const bundled = this.findBundledTypeface(normalized);
     const primary = local ?? bundled ?? (
       normalized === normalizedFontFamily(this.defaultFontFamily) || normalized === 'noto sans kr'
         ? (this.defaultTypeface || this.defaultFontManager ? {
@@ -2236,14 +2256,14 @@ export class CanvasKitLayerRenderer {
       }
 
       {
-        const adjustFont = (target: Font) => {
+        const adjustFont = (target: Font, selected: CanvasKitLocalTypeface | null = preparedTypeface) => {
           const adjustable = target as Font & {
             setEmbolden?: (enabled: boolean) => void;
             setSkewX?: (skew: number) => void;
             setScaleX?: (scale: number) => void;
           };
-          adjustable.setEmbolden?.(style.bold === true && (preparedTypeface?.hostFace?.weight ?? 0) < 600);
-          adjustable.setSkewX?.(style.italic === true && !['italic', 'oblique'].includes(preparedTypeface?.hostFace?.slant ?? '') ? -0.2 : 0);
+          adjustable.setEmbolden?.(selected?.syntheticStyle?.bold ?? (style.bold === true && (selected?.hostFace?.weight ?? 0) < 600));
+          adjustable.setSkewX?.((selected?.syntheticStyle?.italic ?? (style.italic === true && !['italic', 'oblique'].includes(selected?.hostFace?.slant ?? ''))) ? -0.2 : 0);
           adjustable.setScaleX?.(ratio);
         };
         font = new this.canvasKit.Font(typeface, fontSize);
@@ -2268,7 +2288,7 @@ export class CanvasKitLayerRenderer {
             && this.defaultTypeface !== null
             && typeface !== this.defaultTypeface) {
             const defaultFont = new this.canvasKit.Font(this.defaultTypeface, fontSize);
-            adjustFont(defaultFont);
+            adjustFont(defaultFont, null);
             fallbackFonts.push(defaultFont);
             candidateFonts.push(defaultFont);
             candidateFontSources.push('missingGlyphDefault');
@@ -2280,7 +2300,7 @@ export class CanvasKitLayerRenderer {
             && typeface !== this.symbolFallbackTypeface
             && this.defaultTypeface !== this.symbolFallbackTypeface) {
             const symbolFont = new this.canvasKit.Font(this.symbolFallbackTypeface, fontSize);
-            adjustFont(symbolFont);
+            adjustFont(symbolFont, null);
             fallbackFonts.push(symbolFont);
             candidateFonts.push(symbolFont);
             candidateFontSources.push('missingGlyphSymbol');
@@ -2428,7 +2448,7 @@ export class CanvasKitLayerRenderer {
                 this.symbolFallbackTypeface ?? this.defaultTypeface ?? typeface,
                 Math.max(1, fontSize * 0.5),
               );
-              adjustFont(boxedPuaFont);
+              adjustFont(boxedPuaFont, null);
               const numberGlyphIds = boxedPuaFont.getGlyphIDs(
                 displayNumber,
                 displayNumber.length,
@@ -2691,13 +2711,13 @@ export class CanvasKitLayerRenderer {
         let textFont = new this.canvasKit.Font(primaryTypeface, innerFontSize);
         let fallbackCandidate: Font | null = null;
         let paint: SkPaint | null = null;
-        const adjustFont = (target: Font) => {
+        const adjustFont = (target: Font, selected: CanvasKitLocalTypeface | null = preparedTypeface) => {
           const adjustable = target as Font & {
             setEmbolden?: (enabled: boolean) => void;
             setSkewX?: (skew: number) => void;
           };
-          adjustable.setEmbolden?.(style.bold === true && (preparedTypeface?.hostFace?.weight ?? 0) < 600);
-          adjustable.setSkewX?.(style.italic === true && !['italic', 'oblique'].includes(preparedTypeface?.hostFace?.slant ?? '') ? -0.2 : 0);
+          adjustable.setEmbolden?.(selected?.syntheticStyle?.bold ?? (style.bold === true && (selected?.hostFace?.weight ?? 0) < 600));
+          adjustable.setSkewX?.((selected?.syntheticStyle?.italic ?? (style.italic === true && !['italic', 'oblique'].includes(selected?.hostFace?.slant ?? ''))) ? -0.2 : 0);
         };
         try {
           adjustFont(textFont);
@@ -2706,7 +2726,7 @@ export class CanvasKitLayerRenderer {
             for (const fallbackTypeface of [this.defaultTypeface, this.symbolFallbackTypeface]) {
               if (!fallbackTypeface || fallbackTypeface === primaryTypeface) continue;
               fallbackCandidate = new this.canvasKit.Font(fallbackTypeface, innerFontSize);
-              adjustFont(fallbackCandidate);
+              adjustFont(fallbackCandidate, null);
               const fallbackGlyphIds = fallbackCandidate.getGlyphIDs(
                 displayText,
                 Array.from(displayText).length,
@@ -3180,12 +3200,34 @@ export class CanvasKitLayerRenderer {
     }
   }
 
+  /** Availability reads the same prepared candidates as actual text replay.
+   * Installed/host faces need not occur in the portable bundled catalog. */
+  hasPreparedFontFamily(family: string): boolean {
+    return [false, true].some(bold => [false, true].some(italic => (
+      this.findPreparedTypeface(family, { bold, italic }) !== null
+    )));
+  }
+
+  private findBundledTypeface(key: string, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
+    const faces = this.bundledTypefaceAliases.get(key);
+    if (!faces?.length) return null;
+    if (faces.length === 1) return faces[0];
+    let family = this.bundledFontFamilies.get(key);
+    if (!family) {
+      const bytes = faces.map(face => face.bytes).filter((data): data is ArrayBuffer => data !== undefined);
+      if (bytes.length !== faces.length) throw new Error(`CanvasKit family bytes가 준비되지 않았습니다: ${key}`);
+      family = new CanvasKitBundledFontFamily(this.canvasKit, key, bytes);
+      this.bundledFontFamilies.set(key, family);
+    }
+    return family.select(style?.bold === true, style?.italic === true);
+  }
+
   private findPreparedTypeface(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
     const key = normalizedFontFamily(fontFamily);
     if (!key) return null;
     const record = resolveRendererLocalFont(primaryFontFamily(fontFamily), hostFontStyle(style));
     const local = record ? this.localTypefaces.get(localFontFaceKey(record)) ?? null : null;
-    const bundled = this.bundledTypefaceAliases.get(key);
+    const bundled = this.findBundledTypeface(key, style);
     if (key === normalizedFontFamily(OLD_HANGUL_FONT_FAMILY)) {
       return [this.oldHangulTypeface, local, bundled]
         .find(candidate => candidate?.fontManager) ?? null;

@@ -1,6 +1,6 @@
 ---
 kind: working
-status: active
+status: completed
 last_verified: 2026-10-09
 ---
 
@@ -64,8 +64,9 @@ JS 70cde06a… / WASM cc5e9c9d…는 pkg와 public에서 일치하며 실제 초
 90% 선행 조건 뒤 `tests/cases/issue_7688_arrow_heads.rs`를 추가했다. 공개 SVG의
 intrinsic head 크기/끝점 소유와 실제 Native PNG의 shaft 밖 화살촉 영역을 screen/print
 양쪽에서 검사한다. 기준값은 독립 Print의 ~15.35px head이며 절대 화면 좌표나 hash가 아니다.
-검사 컴파일 및 같은 검사 바이너리의 수정 전 FAIL/후 PASS는 현재 실행 중이며 다음 기록에
-연결한다. 처음 잘못 지정한 suite 이름은 검사 준비 오류로 결함 증거에서 제외한다.
+같은 검사 바이너리로 수정 전/후 CLI를 각각 실행해 두 검사 모두 수정 전 FAIL/후 PASS를
+확인했다. SVG는 `medium head 4.5x3`, Native PNG는 head-band ink 0으로 실패했고,
+수정 후 screen/print 모두 통과했다. `arrow-test-results.json`과 대응 로그를 연결한다. 처음 잘못 지정한 suite 이름은 검사 준비 오류로 결함 증거에서 제외한다.
 필수 전체 Rust 묶음은 승인된 후속 단계의 최종 head에서 실행한다.
 
 증적: ignored `output/pr-review/renderer-backend-audit-20261009/arrow-fix/`의

@@ -88,3 +88,12 @@ zoom/DPR/resize 15조건의 트리 유지와 3개 원래 조건 복원 PNG 일�
 각 단계는 독립 출력의 적용 규칙·반례를 확인하고 실제 Native/Studio 출력 및 Docker fresh WASM을
 검증한 뒤 커밋한다. crop의 기존 ‘시작점 0이면 끝점은 원본 전체’ 기대값을 독립 PDF로 재검토한다.
 4단계의 원본 기록·좌표 단위·실제 소비는 [crop 보정 기록](../working/task_m100_7688_stage4.md)에 잇는다.
+
+
+4단계 crop `dfeee5b26` 및 5단계 화살촉 `0ec7eace9`를 커밋했다.
+[화살촉 실행 결과](../working/task_m100_7688_stage5.md)에 일반/복합선 실제 소비,
+독립 크기 대조군, Native/fresh WASM gate와 수정 전 FAIL/후 PASS를 연결했다.
+[6단계 결과](../working/task_m100_7688_stage6.md)는 explicit CanvasKit의 문서 글꼴 준비,
+여러 face의 style 선택, 실제 font 실패의 Canvas2D fallback과 consumer 회귀를 연결한다.
+승인된 세 구현 단계의 로컬 보정은 완료했으며 필수 전체 Rust 검증은 최종 기록에 잇는다.
+이 결과는 #7688 전체의 미검증 backend/변형 완료나 원격 게시·통합 승인을 의미하지 않는다.
