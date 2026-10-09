@@ -161,6 +161,15 @@ const OS_FONT_CANDIDATES = [
 const detectedOSFonts = new Set<string>();
 const detectedOSFontFamilies = new Set<string>();
 
+/** 실제 local() 프로그램 로드가 끝난 face만 공급하고 CDN 덮어쓰기를 막는다. */
+export function registerLoadedLocalFontFace(face: FontFace): void {
+  if (face.status !== 'loaded') throw new Error('로컬 글꼴 프로그램이 로드되지 않았습니다');
+  document.fonts.add(face);
+  const name = face.family.replace(/^['"]|['"]$/g, '');
+  detectedOSFonts.add(name);
+  detectedOSFontFamilies.add(normalizeFontFamily(name));
+}
+
 /**
  * 등록 전 시스템 글꼴을 generic fallback과의 폭 비교로 감지한다.
  * `document.fonts.check()`만 사용하면 일치하는 @font-face가 없을 때도

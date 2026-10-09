@@ -113,6 +113,7 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     "hwp3-sample16-hwp5-2022.hwp",
     "issue3637/press_release_split_cell_nested_table.hwpx",
     "issue6031/3249937_asset_management_rules.hwpx",
+    "hwpctl_API_v2.4.hwp",
     "task2097/75544_pii_bunseok.hwpx",
     "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
     "issue6023/30269_reform_recommendation.hwp",

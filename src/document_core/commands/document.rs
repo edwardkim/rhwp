@@ -212,6 +212,23 @@ impl DocumentCore {
         // line_seg 를 소비하기 전에 물리적으로 불가능한 과다 line_seg 배열을 제거한다.
         Self::drop_corrupt_oversized_linesegs(&mut document);
 
+        // 저장 줄을 재조판하기 전에 물리 셀 프레임을 공통 모델에 복구한다.
+        // 이미 닫힌 표와 입증되지 않은 후보는 원본 폭을 유지한다.
+        let rounding_hu = px_to_hwpunit(0.5, DEFAULT_DPI) as u32;
+        let para_shapes = &document.doc_info.para_shapes;
+        for section in &mut document.sections {
+            let restore = |node: &mut crate::model::identity::walk::Node<'_>| {
+                if let crate::model::identity::walk::Node::Control(Control::Table(table)) = node {
+                    table.restore_stored_cell_frame_widths(rounding_hu, para_shapes);
+                }
+                Ok(())
+            };
+            crate::model::identity::walk::walk(&mut section.paragraphs, restore)?;
+            for master in &mut section.section_def.master_pages {
+                crate::model::identity::walk::walk(&mut master.paragraphs, restore)?;
+            }
+        }
+
         // [#2279 실험 전용] 본문 저장 lineseg 전면 무시 → fresh 재계산.
         // 기계생성 결재문서의 부분-사다리 불신 실험 계측용 (기본 no-op).
         // 주의: 92셋 전수 실측(2026-07-18)에서 전면 fresh 는 88→76 광역 회귀 —
@@ -308,6 +325,18 @@ impl DocumentCore {
             include_empty,
             include_cell_empty,
         );
+        // 빈 캡션도 원본 글자모양의 줄 상자를 소유한다. 측정과 배치가 같은
+        // 구성 결과를 사용하도록 누락 줄만 로드 시점에 보완한다.
+        if include_cell_empty {
+            for section in &mut document.sections {
+                Self::reflow_empty_caption_paragraphs(
+                    &mut section.paragraphs,
+                    &styles,
+                    DEFAULT_DPI,
+                    0,
+                );
+            }
+        }
         Self::clear_missing_lineseg_placeholders(&mut document);
 
         // XML import → HWP 라운드트립 일관성 normalize (#314):
@@ -527,6 +556,72 @@ impl DocumentCore {
                 let seg_count = para.line_segs.len();
                 if seg_count > 64 && seg_count > para.text.chars().count() + 64 {
                     para.line_segs.clear();
+                }
+            }
+        }
+    }
+
+    /// 저장 줄이 없는 빈 캡션의 높이를 원본 글자모양으로 구성한다.
+    /// 기존 저장 줄과 컨트롤 호스트는 별도 계약이므로 재조판하지 않는다.
+    fn reflow_empty_caption_paragraphs(
+        paragraphs: &mut [crate::model::paragraph::Paragraph],
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+        depth: usize,
+    ) {
+        use crate::model::control::Control;
+        if depth >= 32 {
+            return;
+        }
+        for para in paragraphs {
+            for control in &mut para.controls {
+                let caption = match control {
+                    Control::Table(table) => &mut table.caption,
+                    Control::Picture(picture) => &mut picture.caption,
+                    _ => continue,
+                };
+                if let Some(caption) = caption {
+                    let width = crate::renderer::hwpunit_to_px(caption.width as i32, dpi);
+                    for caption_para in &mut caption.paragraphs {
+                        if caption_para.line_segs.is_empty()
+                            && caption_para.text.is_empty()
+                            && caption_para.controls.is_empty()
+                            && caption_para.char_count > 0
+                            && caption_para.char_shapes.iter().any(|shape| {
+                                styles
+                                    .char_styles
+                                    .get(shape.char_shape_id as usize)
+                                    .is_some()
+                            })
+                        {
+                            reflow_line_segs(
+                                caption_para,
+                                ParagraphBox::content_for_style(
+                                    width,
+                                    styles.para_styles.get(caption_para.para_shape_id as usize),
+                                    dpi,
+                                ),
+                                styles,
+                                dpi,
+                            );
+                        }
+                    }
+                    Self::reflow_empty_caption_paragraphs(
+                        &mut caption.paragraphs,
+                        styles,
+                        dpi,
+                        depth + 1,
+                    );
+                }
+                if let Control::Table(table) = control {
+                    for cell in &mut table.cells {
+                        Self::reflow_empty_caption_paragraphs(
+                            &mut cell.paragraphs,
+                            styles,
+                            dpi,
+                            depth + 1,
+                        );
+                    }
                 }
             }
         }
@@ -910,6 +1005,19 @@ impl DocumentCore {
                 // (`recalculate_section_vpos`)와 같은 문단 간격 `앞 아래 + 뒤 위` 를 더한다.
                 let mut previous_spacing_after_hu: Option<(i32, bool)> = None;
 
+                // 앞 문단의 뒤 여백도 다음 개체의 저장 경계를 소유할 수 있다.
+                let orig_spacing_after_hu: Vec<i32> = section
+                    .paragraphs
+                    .iter()
+                    .map(|para| {
+                        styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map(|ps| (ps.spacing_after * 7200.0 / dpi).round() as i32)
+                            .unwrap_or(0)
+                    })
+                    .collect();
+                let body_height_hu = (layout.body_area.height * 7200.0 / dpi).round() as i32;
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
                     let text_only_controls = has_only_text_controls(para)
@@ -945,18 +1053,21 @@ impl DocumentCore {
                         })
                         && pi
                             .checked_sub(1)
-                            .and_then(|prev| orig_span[prev])
+                            .and_then(|prev| {
+                                orig_span[prev].map(|span| (span, orig_spacing_after_hu[prev]))
+                            })
                             .zip(orig_span[pi])
-                            .is_some_and(|((_, prev_end), (first, _))| {
+                            .is_some_and(|(((_, prev_end), after), (first, _))| {
                                 let before = styles
                                     .para_styles
                                     .get(para.para_shape_id as usize)
                                     .map(|ps| (ps.spacing_before * 7200.0 / dpi).round() as i32)
                                     .unwrap_or(0);
-                                before > 0
+                                let boundary_spacing = after.saturating_add(before);
+                                boundary_spacing > 0
                                     && prev_end > 0
                                     && first <= body_height_hu
-                                    && first == prev_end.saturating_add(before)
+                                    && first == prev_end.saturating_add(boundary_spacing)
                             });
                     if !text_only_controls
                         && !saved_object_line
@@ -1062,24 +1173,12 @@ impl DocumentCore {
                     } else if let (false, Some(first)) =
                         (was_reflowed, para.line_segs.first().map(|s| s.vertical_pos))
                     {
-                        // [#2158] #1920 예외의 일반화: 원본(비합성) lineseg 문단의 저장
-                        // first vpos 가 직전 저장 vpos(한 쪽 분량 초과, #1921 near-top
-                        // 임계 60000HU 동일) 대비 쪽 상단 좌표(<5000HU)로 급감하면
-                        // 쪽-상대 리셋(쪽나눔 인코딩)으로 보고 재계산 좌표계에 보존한다.
-                        // 미보존 시 typeset 의 vpos-reset 쪽나눔(#321/#1921)이 무력화되어
-                        // HWPX 로딩만 쪽이 당겨진다 (hwp3-sample16-hwpx pi88: 저장 568이
-                        // 208008 로 변조 → 3쪽부터 전면 당김, 63쪽 vs 한글 64쪽).
-                        // first==0 은 이 규칙에서 제외 — mid-doc vpos=0 은 생성기
-                        // 노이즈일 수 있어(task1749 pi2/27/47 실측, 흔들면 HWP 참조
-                        // 컷 회귀) 아래 #6342 의 좁은 조건에서만 본다. 정당한 텍스트
-                        // 쪽나눔 리셋은 sb 를 반영한 양수 쪽 상단 좌표(sample16
-                        // pi88=568)로 저장된다. 소폭 감소·중간 좌표 리셋도 보존하지
-                        // 않는다.
-                        if prev_stored_last_vpos > 60000
-                            && first > 0
-                            && first < 5000
-                            && first < prev_stored_last_vpos
-                        {
+                        // 유효한 원본 줄의 양수 감소는 저장 프레임의 경계다.
+                        // 직전 저장 줄 뒤에 누락 본문이 있으면60000HU 임계는 그
+                        // 내용의 점유를 보지 못하므로 실제 쪽·단 리셋까지 덮는다.
+                        // 원본 축을 보존하고 실제 쪽·단 수용은 typeset에 맡긴다.
+                        // 합성 줄과 생성기 노이즈일 수 있는0원점은 이 갈래에 넣지 않는다.
+                        if first > 0 && first < prev_stored_last_vpos {
                             running_vpos = first;
                         } else if first == 0
                             && running_vpos > 60000

@@ -910,6 +910,7 @@ pub(crate) fn resolved_to_text_style(
             tab_leaders: Vec::new(),
             inline_tabs: Vec::new(),
             extra_word_spacing: 0.0,
+            unjustified_leading_spaces: 0,
             extra_char_spacing: 0.0,
             extra_dash_advance: 0.0,
             outline_type: cs.outline_type,
@@ -1313,6 +1314,8 @@ pub(crate) struct CharWidthDecision<'a> {
     pub(crate) width_source: &'static str,
     pub(crate) base_width_px: f64,
     pub(crate) final_width_px: f64,
+    /// 자연 글리프 폭에 실제 적용한 자간. 줄 끝 fit도 이 기여를 소비한다.
+    pub(crate) applied_letter_spacing_px: f64,
     pub(crate) metric: Option<font_metrics_data::MetricLookupDecision<'a>>,
     pub(crate) character_match: &'static str,
     pub(crate) dash_leader: bool,
@@ -1371,6 +1374,14 @@ fn measure_char_width_embedded_decision_for_font<'a>(
         .trim()
         .trim_matches('\'')
         .trim_matches('"');
+    if let Some(em) = font_metrics_data::original_glyph_advance_em(primary_name, bold, italic, c) {
+        return EmbeddedWidthDecision {
+            width_px: Some(quantize_hwp_px(font_size * em)),
+            width_source: "measuredOriginalGlyph",
+            metric: None,
+            character_match: "hit",
+        };
+    }
     if let Some(em) = kopub_char_advance_em(primary_name, bold, c) {
         // 장평·자간을 적용할 장치 격자까지 원본 em 비율을 보존한다.
         // 먼저 HU로 자르면 11pt·장평98% 등에서 한 격자를 더 잃는다.
@@ -1552,7 +1563,9 @@ fn char_width_decision_with_hft_tracking<'a>(
     include_hft_bold_tracking: bool,
 ) -> CharWidthDecision<'a> {
     let (font_size, ratio, _) = style_params(style);
-    let c = chars[i];
+    // 줄 채움의 원문 스칼라와 paint의 확정 표시 기호는 같은 advance를 쓴다.
+    // 원문 오프셋과 클러스터 소속은 그대로 유지한다.
+    let c = super::super::composer::single_scalar_display_char(chars[i]);
     // [#7418] 영문 슬롯으로 재는 구두점 — 글꼴·폭 표·자간·장평만 영문 슬롯 값이고, 배치가
     // 얹는 여분(양쪽 정렬 등)은 run 의 값 그대로다. 비ASCII 구두점은 재조판
     // composer가 결정한 run 슬롯을 따른다. 저장 run의 표시 글꼴과 다른 폭을 덮어쓰지 않는다.
@@ -1567,6 +1580,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             width_source: "clusterContinuation",
             base_width_px: 0.0,
             final_width_px: 0.0,
+            applied_letter_spacing_px: 0.0,
             metric: None,
             character_match: "notApplicable",
             dash_leader: false,
@@ -1578,6 +1592,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             width_source: "inlineObjectPlaceholder",
             base_width_px: 0.0,
             final_width_px: 0.0,
+            applied_letter_spacing_px: 0.0,
             metric: None,
             character_match: "notApplicable",
             dash_leader: false,
@@ -1599,13 +1614,15 @@ fn char_width_decision_with_hft_tracking<'a>(
         // 3.718 / 14.992 = 0.248em. 종전 `0.5` 는 정확히 두 배라, 이 문서의 글머리
         // ` ○<FW><FW>` 줄이 전부 10px 오른쪽으로 밀렸다(컨트롤 31 이 35회).
         let base_width_px = font_size * 0.25;
-        let final_width_px = base_width_px * ratio
-            + glyph_letter_spacing(style.letter_spacing, base_width_px * ratio, font_size)
-            + style.extra_char_spacing;
+        let applied_letter_spacing_px =
+            glyph_letter_spacing(style.letter_spacing, base_width_px * ratio, font_size);
+        let final_width_px =
+            base_width_px * ratio + applied_letter_spacing_px + style.extra_char_spacing;
         return CharWidthDecision {
             width_source: "figureSpace",
             base_width_px,
             final_width_px,
+            applied_letter_spacing_px,
             metric: None,
             character_match: "notApplicable",
             dash_leader: false,
@@ -1692,6 +1709,23 @@ fn char_width_decision_with_hft_tracking<'a>(
             if display_metric.width_px.is_some() {
                 embedded = display_metric;
                 embedded.width_source = "unmeasuredSourceDisplayMetric";
+            }
+        }
+        // 원본의 부분 메트릭이 없는 글리프는 검증된 표시 폴백의 폭을 유지한다.
+        // 원본 표의 결측을 반각 휴리스틱으로 바꾸거나 다른 글리프 폭으로 채우지 않는다.
+        let display_family = latin.map_or(&style.font_family, |l| &l.font_family);
+        if embedded.width_px.is_none() && metric_family != display_family {
+            let fallback = measure_char_width_embedded_decision_for_font(
+                display_family,
+                style.bold,
+                style.italic,
+                c,
+                font_size,
+                latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
+                latin.is_none() && style.hft_hangul_face,
+            );
+            if fallback.width_px.is_some() {
+                embedded = fallback;
             }
         }
         // Paint에 전달한 선언 체인에서만 결측 글리프를 찾는다. 일반 OS 폴백이나
@@ -1802,8 +1836,10 @@ fn char_width_decision_with_hft_tracking<'a>(
                 embedded.metric,
                 embedded.character_match,
             )
-        // 원본 HFT 한점 리더의 전진은 전각이다. 폭 표에서 그 글자만 빠졌을 때
-        // 일반 반각 폴백으로 좁히면 뒤 글자가 앞당겨진다. 기존 메트릭 hit는 보존한다.
+        // 한글 슬롯의 결측 한점 리더는 전각 대체 기호로 전진한다. 휴먼명조
+        // TrueType에도 U+2024가 없으며 한컴 Print는 별도 Type3 전각 기호를 쓴다.
+        // HFT 여부로 제한하면 같은 결측을 반각으로 좁힌다. 위의 실제 폭 hit와
+        // 영문 슬롯은 보존하며, 폭 표가 없는 미확인 글꼴까지 일반화하지 않는다.
         } else if cluster_len[i] > 1
             // U+3000 is an ideographic (fullwidth) space. A missing glyph
             // metric must not turn it into an ASCII half-space: PDF lowering
@@ -1814,10 +1850,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             || c == '\u{3000}'
             || is_cjk_char(c)
             || is_fullwidth_symbol(c)
-            || (latin.is_none()
-                && style.hft_fullwidth_dot
-                && embedded.metric.is_some()
-                && c == '\u{2024}')
+            || (latin.is_none() && embedded.metric.is_some() && c == '\u{2024}')
         {
             (
                 font_size,
@@ -1879,6 +1912,11 @@ fn char_width_decision_with_hft_tracking<'a>(
     } else {
         0.0
     };
+    let extra_char_spacing = if i < style.unjustified_leading_spaces {
+        0.0
+    } else {
+        style.extra_char_spacing
+    };
     // 보충 메트릭은 백엔드가 실제로 그리는 전진폭이라 그 값을 그대로 쓴다(#7084).
     let glyph_advance_px = if supplemented {
         let advanced = (base_width_px + font_tracking) * ratio;
@@ -1909,23 +1947,27 @@ fn char_width_decision_with_hft_tracking<'a>(
             matches!(c, ' ' | '\u{00A0}'),
         )
     };
-    let mut final_width_px = glyph_advance_px + style.extra_char_spacing;
-    final_width_px += crate::renderer::legacy_font_advances::bold_advance(
-        style,
-        c,
-        base_width_px * ratio
-            + glyph_letter_spacing(letter_spacing, base_width_px * ratio, font_size),
-    );
-    if c == ' ' {
+    let mut final_width_px = glyph_advance_px + extra_char_spacing;
+    let mut applied_letter_spacing_px = glyph_advance_px - base_width_px * ratio;
+    // 정식 원본 HFT tracking을 이미 소비한 경우 부분 표의 보정을 중복하지 않는다.
+    if include_hft_bold_tracking && !source_hft_metric {
+        final_width_px += crate::renderer::legacy_font_advances::bold_advance(
+            style,
+            c,
+            base_width_px * ratio + applied_letter_spacing_px,
+        );
+    }
+    if c == ' ' && i >= style.unjustified_leading_spaces {
         final_width_px += style.extra_word_spacing;
     }
     if dash_leader {
         final_width_px += style.extra_dash_advance;
     }
     let mut negative_spacing_clamped = false;
-    if letter_spacing + style.extra_char_spacing < 0.0 {
+    if letter_spacing + extra_char_spacing < 0.0 {
         let min_width = base_width_px * ratio * 0.5;
         if final_width_px < min_width {
+            applied_letter_spacing_px += min_width - final_width_px;
             final_width_px = min_width;
             negative_spacing_clamped = true;
         }
@@ -1934,6 +1976,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         width_source,
         base_width_px,
         final_width_px,
+        applied_letter_spacing_px,
         metric,
         character_match,
         dash_leader,
@@ -2125,6 +2168,7 @@ pub(crate) fn trace_char_width_decisions<'a>(
                 decision.width_source = "tabAdvance";
                 decision.base_width_px = advance;
                 decision.final_width_px = advance;
+                decision.applied_letter_spacing_px = 0.0;
                 decision.metric = None;
                 decision.character_match = "notApplicable";
                 decision.dash_leader = false;
@@ -2551,8 +2595,11 @@ mod tests {
                     total = ((total / tab_w).floor() + 1.0) * tab_w;
                     continue;
                 }
-                total += self.char_width * ratio + style.letter_spacing + style.extra_char_spacing;
-                if chars[i] == ' ' {
+                total += self.char_width * ratio + style.letter_spacing;
+                if i >= style.unjustified_leading_spaces {
+                    total += style.extra_char_spacing;
+                }
+                if chars[i] == ' ' && i >= style.unjustified_leading_spaces {
                     total += style.extra_word_spacing;
                 }
             }
@@ -2576,8 +2623,11 @@ mod tests {
                     positions.push(x);
                     continue;
                 }
-                x += self.char_width * ratio + style.letter_spacing + style.extra_char_spacing;
-                if chars[i] == ' ' {
+                x += self.char_width * ratio + style.letter_spacing;
+                if i >= style.unjustified_leading_spaces {
+                    x += style.extra_char_spacing;
+                }
+                if chars[i] == ' ' && i >= style.unjustified_leading_spaces {
                     x += style.extra_word_spacing;
                 }
                 positions.push(x);

@@ -115,6 +115,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
 
         let mut document = Node::new("svg")
             .set("xmlns", "http://www.w3.org/2000/svg")
+            // 논리 크기를 내재 크기로 보존하여 브라우저의 300×150 기본값을 피한다.
             .set("width", vb_w_i32)
             .set("height", vb_h_i32)
             .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));

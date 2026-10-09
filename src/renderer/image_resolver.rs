@@ -22,6 +22,63 @@ use crate::renderer::render_tree::{
 mod picture_adjustments;
 pub(crate) use picture_adjustments::{adjusted_picture_bytes, picture_tone_parameters};
 mod wmf_picture;
+/// 명시된 crop 좌표 범위는 보존한다. 원본 WMF의 범위가 없으면 한컴의
+/// 메타파일 자르기 좌표계(축마다 15000)를 사용한다. SVG/PNG 변환 뒤의 픽셀
+/// 크기는 이 범위의 단위가 아니므로 원본 데이터에서 한 번 판정한다.
+pub(crate) fn resolved_image_crop_reference_size(image: &ImageNode) -> Option<(u32, u32)> {
+    image.original_size_hu.or_else(|| {
+        let data = image.data.as_deref()?;
+        (image.crop.is_some()
+            && crate::renderer::svg::detect_image_mime_type(data) == "image/x-wmf")
+            .then_some((15_000, 15_000))
+    })
+}
+
+/// 그림 source rect의 내재 크기. 비트맵 헤더와 변환 SVG의 논리 크기를 구분한다.
+/// SVG는 첫 요소의 숫자 치수 또는 viewBox만 읽고 본문의 path를 다시 파싱하지 않는다.
+pub(crate) fn render_image_dimensions(data: &[u8]) -> Option<(f64, f64)> {
+    if let Some((width, height)) = crate::renderer::svg::parse_image_dimensions(data) {
+        return Some((f64::from(width), f64::from(height)));
+    }
+    if !data.starts_with(b"<svg") {
+        return None;
+    }
+    let end = data.iter().position(|b| *b == b'>')?;
+    let header = std::str::from_utf8(&data[..=end]).ok()?;
+    let mut reader = quick_xml::Reader::from_str(header);
+    let element = match reader.read_event().ok()? {
+        quick_xml::events::Event::Start(element) | quick_xml::events::Event::Empty(element) => {
+            element
+        }
+        _ => return None,
+    };
+    let mut width = None;
+    let mut height = None;
+    let mut view_box = None;
+    for attr in element.attributes().flatten() {
+        let value = attr.value.as_ref();
+        match attr.key.as_ref() {
+            "width" => width = value.parse::<f64>().ok(),
+            "height" => height = value.parse::<f64>().ok(),
+            "viewBox" => {
+                let values = value
+                    .split(|c: char| c.is_ascii_whitespace() || c == ',')
+                    .filter(|v| !v.is_empty())
+                    .map(str::parse::<f64>)
+                    .collect::<Result<Vec<_>, _>>()
+                    .ok()?;
+                if values.len() == 4 && values.iter().all(|v| v.is_finite()) {
+                    view_box = Some((values[2], values[3]));
+                }
+            }
+            _ => {}
+        }
+    }
+    width
+        .zip(height)
+        .or(view_box)
+        .filter(|(w, h)| w.is_finite() && h.is_finite() && *w > 0.0 && *h > 0.0)
+}
 
 // ── 변환 결과 메모 ──
 //

@@ -73,6 +73,9 @@ use super::{
 
 impl EqLayout {
     pub(super) fn layout_fraction(&self, numer: &EqNode, denom: &EqNode, fs: f64) -> LayoutBox {
+        if self.legacy_hft_metrics {
+            return self.layout_legacy_fraction(numer, denom, fs);
+        }
         let n = self.layout_node(numer, fs);
         let d = self.layout_node(denom, fs);
 
@@ -274,4 +277,56 @@ fn ends_round_delimiter(value: &LayoutBox) -> bool {
         LayoutKind::Row(items) => items.last().is_some_and(ends_round_delimiter),
         _ => false,
     }
+}
+
+impl EqLayout {
+    fn layout_legacy_fraction(&self, numer: &EqNode, denom: &EqNode, fs: f64) -> LayoutBox {
+        let n = self.layout_fraction_operand(numer, fs);
+        let d = self.layout_fraction_operand(denom, fs);
+
+        let pad = fs * FRAC_LINE_PAD;
+        let side_pad = if self.legacy_hft_metrics {
+            fs * 0.24
+        } else {
+            pad
+        };
+        let line_thick = fs * FRAC_LINE_THICK;
+        let axis = fs * AXIS_HEIGHT;
+        let w = n.width.max(d.width) + side_pad * 2.0;
+
+        let numer_h = n.height + pad;
+        let denom_h = d.height + pad;
+
+        // TeX 방식: 분수선은 baseline에서 axis_height 위에 배치
+        // baseline(상단에서) = 분자높이 + 분수선두께/2 + axis_height
+        // 즉, 분수선 y = baseline - axis_height (상단 기준)
+        let frac_line_from_top = numer_h + line_thick / 2.0;
+        let baseline = frac_line_from_top + axis;
+        let total_h = numer_h + line_thick + denom_h;
+
+        let mut n_box = n;
+        n_box.x = (w - n_box.width) / 2.0;
+        n_box.y = pad;
+
+        let mut d_box = d;
+        d_box.x = (w - d_box.width) / 2.0;
+        d_box.y = numer_h + line_thick;
+
+        LayoutBox {
+
+            font_size: fs,
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: total_h,
+            baseline,
+            kind: LayoutKind::Fraction {
+                axis_height: axis,
+                rule_thickness: line_thick,
+                numer: Box::new(n_box),
+                denom: Box::new(d_box),
+            },
+        }
+    }
+
 }

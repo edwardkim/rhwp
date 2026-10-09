@@ -304,7 +304,8 @@ pub(crate) fn build_row_col_x(
 /// [Issue #5590] 한 행이 자기 열 구획을 스스로 완결했는지 보고, 그렇다면 그 행의 x 경계를 만든다.
 ///
 /// 조건 셋을 모두 만족해야 한다.
-/// 1. 그 행을 덮는 셀들이 0열부터 빈틈없이 이어진다. 세로 병합도 가로 폭을 소유한다.
+/// 1. 그 행을 덮는 셀로 0열부터 빈틈없이 이어진다. 앞 행에서 시작한 세로 병합
+///    셀도 현재 행의 너비 소유자이므로 포함한다.
 /// 2. 마지막 열까지 덮는다.
 /// 3. 선언 폭 합이 표 폭(`target_total`)과 일치한다.
 ///
@@ -325,8 +326,10 @@ fn declared_row_col_x(
         .cells
         .iter()
         .filter(|cell| {
-            let start = usize::from(cell.row);
-            start <= row && row < start + usize::from(cell.row_span.max(1)) && cell.width > 0
+            let start_row = usize::from(cell.row);
+            start_row <= row
+                && row < start_row.saturating_add(usize::from(cell.row_span.max(1)))
+                && cell.width > 0
         })
         .collect();
     if row_cells.is_empty() {

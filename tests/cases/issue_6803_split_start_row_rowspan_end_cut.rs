@@ -187,11 +187,14 @@ fn no_text_line_falls_off_the_paper() {
 
     let mut worst = 0.0f64;
     let mut worst_page = 0u32;
+    let mut coordinate_scale = 1.0f64;
     for page in 0..core.page_count() {
         let tree = core
             .build_page_render_tree(page as u32)
             .expect("render tree");
-        let overhang = worst_text_line_overhang(&tree.root, paper_bottom(&tree.root));
+        let bottom = paper_bottom(&tree.root);
+        coordinate_scale = coordinate_scale.max(bottom.abs());
+        let overhang = worst_text_line_overhang(&tree.root, bottom);
         if overhang > worst {
             worst = overhang;
             worst_page = page as u32 + 1;
@@ -199,7 +202,7 @@ fn no_text_line_falls_off_the_paper() {
     }
 
     assert!(
-        worst <= 0.5,
+        worst <= f64::EPSILON * 64.0 * coordinate_scale,
         "글줄이 용지 밖으로 나갔다 — #6803 회귀          (최대 초과 {worst:.1}px @ {worst_page}쪽; 수정 전 +1,015.1px @ 3쪽)"
     );
 }

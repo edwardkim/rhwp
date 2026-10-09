@@ -14,6 +14,9 @@ pub(in crate::renderer::typeset) struct FormattedParagraph {
     pub(in crate::renderer::typeset) stored_ladder_is_filler: bool,
     /// 물리 개체 없는 재조판 줄의 높이·간격을 배치와 동일하게 수용한 결과다.
     pub(in crate::renderer::typeset) exact_reflow_text_box: bool,
+    /// 같은 폭에서 재구성하고 줄 메트릭까지 확인한 일반 본문 결과.
+    pub(in crate::renderer::typeset) computed_paragraph:
+        Option<crate::renderer::composer::ComposedParagraph>,
     /// Measured remaining inline space on the composed tail line. None means
     /// that this path has no reliable width result (not an implicit overflow).
     pub(in crate::renderer::typeset) tail_line_remaining_width: Option<f64>,

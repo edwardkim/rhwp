@@ -252,6 +252,59 @@ pub(in crate::renderer::typeset) fn stored_tail_end_and_advance_hu(
     Some((source_vpos.saturating_add(advance), advance))
 }
 
+/// 현재 단에서 실제 소비한 재구성 본문 앞의 원본 프레임을 찾는다.
+/// 합성 줄의 누적 vpos는 원본 쪽 좌표의 근거가 아니다. 개체나 이어받기
+/// 조각을 건너뛰지 않고, 연속 본문만 같은 저장 프레임에 연결한다.
+pub(in crate::renderer::typeset) fn stored_vpos_before_reconstructed_text(
+    current_items: &[crate::renderer::pagination::PageItem],
+    paragraphs: &[Paragraph],
+    next_para_index: usize,
+) -> Option<i32> {
+    let mut expected = next_para_index.checked_sub(1)?;
+    let mut reconstructed = false;
+    for item in current_items.iter().rev() {
+        let crate::renderer::pagination::PageItem::FullParagraph { para_index } = item else {
+            return None;
+        };
+        if *para_index != expected {
+            return None;
+        }
+        let para = paragraphs.get(*para_index)?;
+        if !para.controls.is_empty()
+            || para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || para.column_type != crate::model::paragraph::ColumnBreakType::None
+        {
+            return None;
+        }
+        if para.source_line_seg_vertical_pos.is_none()
+            && (para.line_segs.is_empty()
+                || para
+                    .line_segs
+                    .iter()
+                    .all(crate::renderer::typeset::is_synthetic_line_seg))
+        {
+            reconstructed = true;
+            expected = expected.checked_sub(1)?;
+            continue;
+        }
+        if !reconstructed
+            || para.line_segs.iter().any(|line| {
+                crate::renderer::typeset::is_synthetic_line_seg(line) || line.line_height <= 0
+            })
+        {
+            return None;
+        }
+        let last = para.line_segs.last()?;
+        return match &para.source_line_seg_vertical_pos {
+            Some(source) if source.len() == para.line_segs.len() => source.last().copied(),
+            Some(_) => None,
+            None => Some(last.vertical_pos),
+        };
+    }
+    None
+}
+
 /// 재조판 뒤 저장 빈 줄만 이어지면 옛 자동 쪽 경계를 복원하지 않는다.
 /// 다만 실제 소비한 흐름 끝이 저장 경계와 일치하면 재조판 이력만으로
 /// 그 경계를 버리지 않는다. 같은 쪽 소유는 기존 저장 끝/실제 흐름 대조로 확인한다.
@@ -268,6 +321,35 @@ pub(in crate::renderer::typeset) fn stored_page_boundary_invalidated_by_reflow(
     dpi: f64,
 ) -> bool {
     if col_count != 1 || !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
+    {
+        return false;
+    }
+    // 빈 저장 줄도 실제 점유를 소유한다. 그 줄을 전량 소비한 끝이 저장
+    // 흐름과 맞으면, 앞 재조판의 존재만으로 뒤 쪽 경계를 무효화하지 않는다.
+    // 미편집 전체 문단만 확인하며 합성 줄이나 개체/이어받기를 기준으로 삼지 않는다.
+    if !profile.session_edited()
+        && current_items.last().is_some_and(|item| {
+            let crate::renderer::pagination::PageItem::FullParagraph { para_index } = item else {
+                return false;
+            };
+            paragraphs.get(*para_index).is_some_and(|para| {
+                para.text.trim().is_empty()
+                    && para.controls.is_empty()
+                    && !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty
+                    && !para.line_segs.is_empty()
+                    && para.line_segs.iter().all(|line| {
+                        !crate::renderer::typeset::is_synthetic_line_seg(line)
+                            && line.line_height > 0
+                    })
+                    && crate::renderer::typeset::stored_rewind_boundary_matches_current_flow(
+                        paragraphs,
+                        para_index + 1,
+                        current_height_px,
+                        dpi,
+                    )
+            })
+        })
     {
         return false;
     }
@@ -412,7 +494,20 @@ pub(in crate::renderer::typeset) fn spacing_trim_restorable(
     use crate::model::paragraph::LineSeg;
     for para in paragraphs.iter().skip(para_idx + 1).take(32) {
         if !para.controls.is_empty() {
-            return true; // 표/개체 재앵커 지점
+            // 빈 호스트의 형제 자리차지 표는 현재 흐름에서 lane을 예약한다.
+            // 저장 vpos를 복원하지 않으므로 앞 문단의 줄간격을 제외하면 소실된다.
+            let flow_lane_tables = para.text.is_empty()
+                && para
+                    .controls
+                    .iter()
+                    .filter(|control| {
+                        matches!(control, crate::model::control::Control::Table(table)
+                        if crate::renderer::float_placement::is_para_topbottom_float(&table.common))
+                    })
+                    .take(2)
+                    .count()
+                    >= 2;
+            return !flow_lane_tables;
         }
         match para.line_segs.first() {
             Some(seg) if seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 => {

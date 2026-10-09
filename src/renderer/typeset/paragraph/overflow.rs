@@ -1,13 +1,13 @@
 //! 일반 fit 실패 뒤의 기존 넘침 허용 판정. 상태 변경과 높이 반영은 하지 않는다.
 
 use super::super::{
-    paragraph_forces_page_boundary_after, stored_vpos_overflow_defers_paragraph,
-    stored_zero_vpos_after_near_full_line,
+    line_seg_visible_bounds_px, paragraph_forces_page_boundary_after,
+    stored_vpos_overflow_defers_paragraph, stored_zero_vpos_after_near_full_line,
 };
 use super::metrics::FormattedParagraph;
 use crate::model::{
     control::Control,
-    paragraph::{ColumnBreakType, Paragraph},
+    paragraph::{ColumnBreakType, LineSeg, Paragraph},
 };
 use crate::renderer::hwpunit_to_px;
 
@@ -19,6 +19,8 @@ pub(in crate::renderer::typeset) struct OverflowPage {
     pub body_height: f64,
     pub body_area_height: f64,
     pub hwp3_layout: bool,
+    pub stored_layout_valid: bool,
+    pub current_page_vpos_base: Option<i32>,
 }
 
 pub(in crate::renderer::typeset) fn atomic_overflow_fits(
@@ -197,7 +199,33 @@ pub(in crate::renderer::typeset) fn tail_overflow_candidate(
         .all(|c| matches!(c, Control::Footnote(_) | Control::Endnote(_)));
     // [Task #1537] 원래 대상 — 폰트 치환 drift 로 꼬리 한 줄이 흘러넘치는 **글자 있는**
     // 여러 줄 문단.
-    let font_drift_tail = !para.text.trim().is_empty() && fmt.line_heights.len() >= 2;
+    // 저장 상자 자체가 본문을 넘으면 대체 글꼴 때문에 커진 꼬리가 아니다.
+    // 통째 수용으로 원래 다음 쪽에 속한 줄을 여백에 남기지 않고 줄 분할로 넘긴다.
+    // 편집 후 캐시와 합성 줄은 독립적인 저장 소속 근거로 사용하지 않는다.
+    let stored_tail_outside_body = page.stored_layout_valid
+        && !para.stored_text_partition_dirty
+        && !para.cell_format_vpos_dirty
+        && para
+            .line_segs
+            .iter()
+            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        && page.current_page_vpos_base.is_some_and(|base| {
+            para.line_segs
+                .last()
+                .and_then(|line| line_seg_visible_bounds_px(line, base, dpi))
+                .is_some_and(|(_, bottom)| bottom > page.body_height)
+        });
+    let font_drift_tail =
+        !para.text.trim().is_empty() && fmt.line_heights.len() >= 2 && !stored_tail_outside_body;
+    if std::env::var("RHWP_DIAG_6031").is_ok() {
+        eprintln!(
+            "DIAG_TAIL pi={para_idx} stored_valid={} base={:?} text_dirty={} cell_dirty={} stored_outside={stored_tail_outside_body} font_drift={font_drift_tail}",
+            page.stored_layout_valid,
+            page.current_page_vpos_base,
+            para.stored_text_partition_dirty,
+            para.cell_format_vpos_dirty,
+        );
+    }
     // [#6854] 같은 고아 쪽이 **잉크 없는 빈 문단**으로도 생긴다. 78494 `pi=86` 은
     // 글자가 없는 한 줄짜리 문단인데 8쪽을 **2.3px** 넘겨(953.6+20.0 vs 971.3) 혼자
     // 9쪽을 열고, 바로 다음 `pi=87` 이 명시적 쪽나누기라 그 쪽에 더는 아무것도

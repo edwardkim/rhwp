@@ -221,9 +221,34 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
                         && line_spacings[index] == hwpunit_to_px(line.line_spacing, ctx.dpi())
                 })
         });
+    // 원본 줄/개체의 별도 점유가 없는 재조판 본문은 실제 줄 결과를 전달한다.
+    // 측정 메트릭과 다른 구성에는 추정 여백을 제거할 근거가 없다.
+    let computed_paragraph = recomposed
+        .as_ref()
+        .filter(|comp| {
+            crate::renderer::para_has_no_stored_line_segs(para)
+                && para.controls.is_empty()
+                && !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
+                && !comp.lines.is_empty()
+                && comp.lines.len() == line_heights.len()
+                && comp.lines.len() == line_spacings.len()
+                && comp
+                    .lines
+                    .iter()
+                    .zip(line_heights.iter().zip(&line_spacings))
+                    .all(|(line, (&height, &spacing))| {
+                        (hwpunit_to_px(line.line_height, ctx.dpi()) - height).abs()
+                            <= ctx.dpi() / 7200.0
+                            && (hwpunit_to_px(line.line_spacing, ctx.dpi()) - spacing).abs()
+                                <= ctx.dpi() / 7200.0
+                    })
+        })
+        .cloned();
     FormattedParagraph {
         stored_ladder_is_filler: ctx.uniform_filler_ladder(),
         exact_reflow_text_box,
+        computed_paragraph,
         tail_line_remaining_width,
         computed_host_lines,
         square_host_plan: None,

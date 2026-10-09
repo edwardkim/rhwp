@@ -182,7 +182,7 @@ pub(super) fn text_typeface_candidates(
     (families, chain)
 }
 
-/// Resolve an ordered family list through the same sources used by body text.
+/// 본문과 수식이 같은 글꼴 계열 순서와 공급 경로로 후보를 조회한다.
 pub(super) fn typeface_candidates_for_families(
     font_mgr: &FontMgr,
     system_families: &SystemFontFamilies,

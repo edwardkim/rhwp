@@ -590,7 +590,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                 }
             }
             // 자동번호(0x12) / 새번호(0x12): 텍스트에 공백 placeholder 추가
-            // → apply_auto_numbers_to_composed에서 "  " (연속 2공백)으로 번호 삽입
+            // → 원본 컨트롤 위치의 이 한 자리를 display_text로 번호 표시
             if ch == 0x0012 {
                 char_offsets.push(code_unit_pos);
                 text.push(' ');

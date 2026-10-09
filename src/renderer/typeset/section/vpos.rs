@@ -128,13 +128,32 @@ impl TypesetEngine {
             owned_origin: None,
             last_compacted_endnote_title_gap: false,
             min_flow_floor: f64::MIN,
+            stored_boundary_spacing_before: 0.0,
             session_edited: self.profile.get().session_edited(),
             curr_item_is_table_fragment: false,
             // 본문 조판: 미주 제목 갈래는 `suppress_large_forward_jump` 아래에서만 발화한다.
             endnote_note_first_paras: Default::default(),
             seed_lazy_base_from_next_stored: false,
         };
-        let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
+        let bound_successor = hc.bind_stored_frame_successor(
+            st.current_height,
+            para_idx,
+            paragraphs,
+            &st.paragraph_float_placements,
+        ) || hc.bind_computed_paragraph_successor(
+            st.current_height,
+            para_idx,
+            paragraphs,
+            styles,
+            &st.paragraph_origins,
+        );
+        let mut y = if bound_successor {
+            st.record_vpos_column_anchor(0.0);
+            st.record_vpos_origin_provenance(true);
+            st.current_height
+        } else {
+            hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles)
+        };
         // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는
         // 옛 행 수를 담고 있다. 동일 쪽에서 회수한 높이를 뺀 뒤 흐름 뒤로만 스냅한다.
         if st.profile.hwpx_stored_layout()
@@ -145,8 +164,10 @@ impl TypesetEngine {
         }
         // [#5699 H1] 저장 사다리가 자리차지 표 밴드를 계상하지 않은 문서: 흐름이
         // 계상 교정으로 확보한 표 밴드 위로 저장 vpos 스냅으로 되감기지 못한다.
-        if y < st.ladder_band_floor {
-            y = st.ladder_band_floor;
+        // 저장 경계가 위 간격을 이미 소유하면 실제 글줄은 그 간격 뒤에 있다.
+        // 논리 문단 상단을 표 밴드 안쪽 잉크로 오인해 같은 간격을 다시 더하지 않는다.
+        if y + hc.stored_boundary_spacing_before < st.ladder_band_floor {
+            y = st.ladder_band_floor - hc.stored_boundary_spacing_before;
         }
         // 렌더의 min_flow_floor는 floor뿐 아니라 직전 순차 cursor도 보호한다.
         // 회피한 표 이후 분할기만 저장 vpos로 되감으면 쪽 fit와 출력이 갈라진다.
@@ -161,7 +182,7 @@ impl TypesetEngine {
                             == crate::renderer::float_placement::ParagraphFloatFlow::NextLine
                 })
         {
-            y = y.max(st.current_height);
+            y = y.max(st.current_height - hc.stored_boundary_spacing_before);
         }
         // [#2243] dirty 저장-앵커 사다리의 역스냅 금지 — 저장 lineseg 누락 문단의
         // fresh 재계산 성장분을 낡은 기계 v0 가 되돌리지 못하게 한다(전방만 허용).
@@ -314,6 +335,7 @@ impl TypesetEngine {
         st.record_vpos_page_origin(hc.vpos_page_base);
         st.record_vpos_lazy_origin(hc.vpos_lazy_base);
         st.record_stored_column_origin(hc.stored_column_origin);
+        st.record_vpos_column_anchor(hc.col_anchor_y);
         st.align_flow_to(y);
         st.record_vpos_snapped_flow_start(para_idx, y);
     }

@@ -522,6 +522,55 @@ fn scanning_does_not_touch_the_document() {
 
 // ── 오탐 0 ─────────────────────────────────────────────────────────────────
 
+/// 시험지 입력은 별도 작업에서 재추가하며 공문서·서식의 오탐 검사는 유지한다.
+const CLEAN_CORPUS: &[&str] = &[
+    "samples/2026_oss_rst.hwp",
+    "samples/hwp3-sample.hwp",
+    "samples/2022년 국립국어원 업무계획.hwp",
+    "samples/2025 행정업무운영 편람(최종).hwp",
+    "samples/2025 행정업무운영 편람(최종).hwpx",
+    "samples/21868765_별표2_보건소_분장사무.hwp",
+    "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+];
+
+#[test]
+fn ordinary_korean_documents_are_clean() {
+    let mut checked = 0usize;
+    let mut noisy: Vec<String> = Vec::new();
+    for rel in CLEAN_CORPUS {
+        let p = manifest(rel);
+        if !p.exists() {
+            continue;
+        }
+        let path = p.to_str().expect("경로");
+        let args = ["inspect", "unicode", path, "--json"];
+        let output = run(&args);
+        if output.status.code() != Some(0) {
+            // 파싱 자체가 안 되는 파일은 이 테스트의 대상이 아니다(다른 축의 문제).
+            continue;
+        }
+        let v = parse_stdout_json(&args, &output);
+        checked += 1;
+        if v["clean"] != true {
+            noisy.push(format!(
+                "  - {rel}: {}건 {:?}",
+                v["findingCount"],
+                kinds_of(&v)
+            ));
+        }
+    }
+    assert!(
+        checked >= 8,
+        "표본을 거의 못 읽었습니다 — 이 가드가 공허하게 통과합니다 ({checked}건)"
+    );
+    assert!(
+        noisy.is_empty(),
+        "정상 한국어 문서에서 오탐 {}건:\n{}\n\
+         정상 문서가 걸리면 규칙을 좁히세요 — 경보는 오탐 한 건이면 통째로 무시됩니다.",
+        noisy.len(),
+        noisy.join("\n"),
+    );
+}
 #[test]
 fn scan_cost_is_linear_in_document_size() {
     // 문서 전체를 훑는 명령이 2차식이면 대형 문서에서 조용히 못 쓰게 된다.

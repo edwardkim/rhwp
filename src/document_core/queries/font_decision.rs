@@ -835,11 +835,20 @@ impl DocumentCore {
                     .metric
                     .map(|metric| metric.requested_name.to_string())
                     .or_else(|| {
-                        run.style
-                            .font_family
-                            .split(',')
-                            .next()
-                            .map(|face| face.trim().to_string())
+                        // 원본 부분 메트릭을 소비한 글리프는 표시 폴백으로 기록하지 않는다.
+                        let family = if width.width_source == "measuredOriginalGlyph" {
+                            let latin = ch
+                                .is_ascii_punctuation()
+                                .then_some(run.style.ascii_punct_latin.as_deref())
+                                .flatten();
+                            latin
+                                .and_then(|slot| slot.metric_font_family.as_deref())
+                                .or(run.style.metric_font_family.as_deref())
+                                .unwrap_or(&run.style.font_family)
+                        } else {
+                            &run.style.font_family
+                        };
+                        family.split(',').next().map(|face| face.trim().to_string())
                     });
                 let layout_metric = LayoutMetricDecision {
                     requested_face: requested_face.clone(),

@@ -113,6 +113,8 @@ mod tests {
             section_index: 0,
             layout,
             column_contents: vec![ColumnContent {
+                paragraph_origins: Default::default(),
+                computed_paragraphs: Default::default(),
                 column_index: 0,
                 start_height: 0.0,
                 endnote_flow: false,

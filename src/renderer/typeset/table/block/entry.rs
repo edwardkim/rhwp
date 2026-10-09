@@ -373,8 +373,14 @@ impl TypesetEngine {
                 && st.current_height >= st.base_available_height() * 0.5
                 && table.cells.iter().all(|cell| cell.row_span == 1)
                 && next_rewinds_after_table;
+        // 기존 각주 영역에는 분리선·각주 간격·내용이 이미 예약돼 있다.
+        // 표가 새 각주를 추가하지 않으면 같은 물리 경계를 통째 fit과 행 스캔이
+        // 소비한다. 고정 안전 여유를 다시 빼서 마지막 행을 이월하지 않는다.
+        let uses_reserved_footnote_boundary =
+            ft.table_footnote_count == 0 && st.current_footnote_height > 0.0;
         let mut fn_margin = if total_footnote > 0.0 {
-            if next_starts_new_page
+            if uses_reserved_footnote_boundary
+                || next_starts_new_page
                 || internal_reset_tail_uses_actual_footnote_boundary
                 || native_single_rowbreak_full_table_fits_actual_footnote_boundary
             {
@@ -623,8 +629,30 @@ impl TypesetEngine {
                 } else {
                     anchor_vpos
                 };
-                let target_y = crate::renderer::hwpunit_to_px(flow_end_vpos, self.dpi)
-                    - st.bottom_fixed_consumed_flow;
+                // 복원한 본문 끝은 원시 구역 좌표가 아니라 현재 단의 좌표다.
+                // 활성 기준에는 앞 표의 소비분도 반영되므로 다시 차감하지 않는다.
+                // 양수 쪽 앵커는 본문 흐름 좌표가 아니므로 기존 절대 판정을 유지한다.
+                let target_y = if anchor_vpos <= 0 {
+                    if let Some(base) = st.vpos_page_base.or(st.vpos_lazy_base) {
+                        let anchor = if st.vpos_page_base.is_some() {
+                            st.vpos_col_anchor
+                        } else {
+                            0.0
+                        };
+                        anchor
+                            + crate::renderer::hwpunit_to_px(
+                                flow_end_vpos.saturating_sub(base),
+                                self.dpi,
+                            )
+                            - st.vpos_compacted_stored_delta
+                    } else {
+                        crate::renderer::hwpunit_to_px(flow_end_vpos, self.dpi)
+                            - st.bottom_fixed_consumed_flow
+                    }
+                } else {
+                    crate::renderer::hwpunit_to_px(flow_end_vpos, self.dpi)
+                        - st.bottom_fixed_consumed_flow
+                };
                 // [Task #1624] footer stored vpos 가 흐름 cur_h 보다 footer 한 개 높이 이상 위에
                 // 있으면(본문이 짧은데 vpos 가 page-bottom 앵커/누적 노이즈), vpos 동기화는
                 // 본문 직후에 들어갈 footer 를 spurious 하게 다음 쪽으로 민다(+1쪽 over-push).
@@ -727,7 +755,7 @@ impl TypesetEngine {
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                     eprintln!(
                         "DIAG_SCAN FOOTER pi={} anchor_vpos={} cur_h={:.2} target_y={:.2} sync_h={:.2} \
-                         block_h={:.2} v_off={:.2} avail={:.2} avail_after={:.2} slack_code={:.2} margin={:.1} underrun={:.2}",
+                         block_h={:.2} v_off={:.2} avail={:.2} avail_after={:.2} slack_code={:.2} margin={:.1} underrun={:.2} base={:?} lazy={:?} compacted={:.2}",
                         para_idx,
                         anchor_vpos,
                         st.current_height,
@@ -740,6 +768,9 @@ impl TypesetEngine {
                         avail_after - sync_h,
                         uncertain_anchor_margin,
                         st.flow_underrun,
+                        st.vpos_page_base,
+                        st.vpos_lazy_base,
+                        st.vpos_compacted_stored_delta,
                     );
                 }
                 if sync_h + uncertain_anchor_margin <= avail_after {
@@ -1551,7 +1582,17 @@ impl TypesetEngine {
                             })
                 })
         });
-        if precedes_reserved_table_flow {
+        // 전체 실측 상자가 저장 후속 줄을 새 쪽 원점에서 정확히 닫으면,
+        // 앞 내용이 표인지 일반 본문인지와 관계없이 같은 쪽 전이를 적용한다.
+        // 단순 되감김이나 첫 조각 선언은 이 공통 조회 결과를 만들지 못한다.
+        let complete_source_frame_restarts_page = next_rewinds_after_table
+            && st.current_height > 0.5
+            && !st.current_items.is_empty()
+            && original_control_frame.is_some_and(|placement| {
+                placement.anchor_y == 0.0
+                    && placement.stored_successor_line_origin == Some(placement.occupied_bottom)
+            });
+        if complete_source_frame_restarts_page || precedes_reserved_table_flow {
             st.advance_column_or_new_page();
             original_control_frame = self.query_original_control_table_frame(
                 st,
@@ -1898,6 +1939,34 @@ impl TypesetEngine {
                     ),
                     _ => placement,
                 }
+            })
+            .or_else(|| {
+                if !st.profile.hwp5_stored_pagination_layout()
+                    || st.profile.session_edited()
+                    || st.col_count != 1
+                    || st.vpos_ladder_dirty
+                    || !st.vpos_page_base_stored
+                    || self.render_normalization.table_text_reflowed(table)
+                {
+                    return None;
+                }
+                let previous_index = para_idx.checked_sub(1)?;
+                if !matches!(st.current_items.last(), Some(PageItem::FullParagraph { para_index })
+                    if *para_index == previous_index)
+                {
+                    return None;
+                }
+                crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_empty_host_after_line(
+                    paragraphs_all.get(previous_index)?,
+                    para,
+                    table,
+                    styles,
+                    st.vpos_page_base?,
+                    st.vpos_col_anchor,
+                    st.current_height,
+                    ft.effective_height,
+                    self.dpi,
+                )
             });
         let unconstrained_host_placement = unconstrained_host_placement
             .or_else(|| {
@@ -1989,45 +2058,63 @@ impl TypesetEngine {
                 })
                 .flatten()
             });
-        let unconstrained_host_placement = unconstrained_host_placement.or_else(|| {
-            // 저장 사다리가 표 공간을 담지 않는 빈 앵커는 옛 안내 줄의 꼬리 간격을
-            // 포함한 saved-host 포맷보다 현재 개체 상자가 우선한다. 다음 문단의
-            // 빈 줄·텍스트는 이 상자 뒤에서 자기 줄 상자를 소비한다.
-            crate::renderer::float_placement::empty_table_anchor_ladder_lacks_outer_box(
-                para,
-                table,
-                paragraphs_all.get(para_idx + 1),
-            )
-            .then(|| {
-                let table_top = st.current_height
-                    + ft.host_spacing.before
-                    + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), self.dpi);
-                crate::renderer::float_placement::ParagraphFloatPlacement {
-                    flow: crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost,
-                    anchor_y: st.current_height,
-                    stored_host_origin: None,
-                    stored_successor_line_origin: None,
-                    table_left: None,
-                    table_top,
-                    occupied_bottom: table_top
-                        + ft.effective_height
-                        + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
-                        + fmt.spacing_after,
-                }
+        let unconstrained_host_placement = unconstrained_host_placement
+            .or_else(|| {
+                // 저장 사다리가 표 공간을 담지 않는 빈 앵커는 옛 안내 줄의 꼬리 간격을
+                // 포함한 saved-host 포맷보다 현재 개체 상자가 우선한다. 다음 문단의
+                // 빈 줄·텍스트는 이 상자 뒤에서 자기 줄 상자를 소비한다.
+                crate::renderer::float_placement::empty_table_anchor_ladder_lacks_outer_box(
+                    para,
+                    table,
+                    paragraphs_all.get(para_idx + 1),
+                )
+                .then(|| {
+                    let table_top = st.current_height
+                        + ft.host_spacing.before
+                        + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), self.dpi);
+                    crate::renderer::float_placement::ParagraphFloatPlacement {
+                        flow: crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost,
+                        anchor_y: st.current_height,
+                        stored_host_origin: None,
+                        stored_successor_line_origin: None,
+                        table_left: None,
+                        table_top,
+                        occupied_bottom: table_top
+                            + ft.effective_height
+                            + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                            + fmt.spacing_after,
+                    }
+                })
             })
-        });
-        let unconstrained_host_placement = unconstrained_host_placement.or_else(|| {
-            crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_reflow_host(
-                para,
-                table,
-                st.current_height,
-                source_host_origin,
-                ft.effective_height,
-                ft.host_spacing.before,
-                ft.host_spacing.after,
-                self.dpi,
-            )
-        });
+            .or_else(|| {
+                (st.profile.hwp5_stored_pagination_layout()
+                && !st.profile.session_edited()
+                && !self.render_normalization.table_text_reflowed(table))
+            .then(|| {
+                crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_inline_host(
+                    para,
+                    table,
+                    source_host_origin,
+                    ft.effective_height,
+                    ft.host_spacing.before,
+                    ft.host_spacing.after,
+                    self.dpi,
+                )
+            })
+            .flatten()
+            })
+            .or_else(|| {
+                crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_reflow_host(
+                    para,
+                    table,
+                    st.current_height,
+                    source_host_origin,
+                    ft.effective_height,
+                    ft.host_spacing.before,
+                    ft.host_spacing.after,
+                    self.dpi,
+                )
+            });
         let constrain_host_placement = HostPlacementConstraint {
             table,
             has_preceding_coanchored_float,

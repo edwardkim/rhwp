@@ -1164,8 +1164,8 @@ fn line_is_leading_empty_equation_tac_guide(
 struct EmptyRunsLineVars {
     alignment: crate::model::style::Alignment,
     available_width: f64,
-    effective_col_x: f64,
-    effective_margin_left: f64,
+    /// 정렬 전 본문 시작점. 목록 마커와 줄 앞 접두 영역을 개체도 공유한다.
+    content_start_x: f64,
     x_start: f64,
     /// 이 줄 끝의 문서 char 좌표 (원본: char_offset)
     line_char_end: usize,
@@ -2021,7 +2021,7 @@ fn right_tab_block_width_with_tac(
         return None;
     }
     let tail: String = run_chars[tab_rel + 1..].iter().collect();
-    let mut ts = style.clone();
+    let mut ts = style.for_text_fragment(tab_rel + 1);
     ts.right_tab_block_width_override = None;
     Some(estimate_text_width(&tail, &ts) + tac_w)
 }
@@ -2171,8 +2171,26 @@ fn converge_cell_overflow_char_spacing(
     extra.min(0.0)
 }
 
+/// 스타일 런이 나뉘어도 줄 시작의 같은 들여쓰기 공백 구간을 보존한다.
+/// 인라인 개체가 먼저 오면 그 뒤 공백은 내부 공백이다.
+fn unjustified_leading_spaces_by_run(line: &ComposedLine, limit: usize) -> Vec<usize> {
+    let mut budget = limit;
+    line.runs
+        .iter()
+        .map(|run| {
+            let text = effective_text_for_metrics(run);
+            let count = text.chars().take_while(|ch| *ch == ' ').count().min(budget);
+            budget -= count;
+            if count < text.chars().count() {
+                budget = 0;
+            }
+            count
+        })
+        .collect()
+}
+
 /// [Task #2067] 명시적 정렬 분배와 실제 오버플로우에 따른 여분 간격 계산.
-/// 반환 = (extra_word_sp, extra_char_sp, extra_dash_sp). Task #352 dash leader 분배 포함.
+/// 반환 = (extra_word_sp, extra_char_sp, extra_dash_sp).
 #[allow(clippy::too_many_arguments)]
 fn compute_line_extra_spacing(
     comp_line: &ComposedLine,
@@ -2189,6 +2207,7 @@ fn compute_line_extra_spacing(
     justify_spaces_only: bool,
     needs_distribute: bool,
     has_tabs: bool,
+    renders_synthetic_wrap_trailing_space: bool,
     suppress_cell_overflow_spacing: bool,
     converge_auto_shrink_cell: bool,
     total_char_count: usize,
@@ -2493,7 +2512,7 @@ fn compute_line_extra_spacing(
                         styles,
                         None,
                         tab_width,
-                        total_char_count,
+                        distributed_char_count,
                         total_text_width,
                         available_width,
                     ),
@@ -2860,6 +2879,7 @@ impl LayoutEngine {
                 Some(bin_data_content),
                 None,
                 true,
+                false,
                 plan.text_spacing_before
                     .map(|before| ParagraphVerticalSpacing {
                         before,
@@ -3620,7 +3640,7 @@ impl LayoutEngine {
                     let lang = super::super::style_resolver::detect_lang_category(ch);
                     let ts =
                         with_stored_tabs(metric_scope.style(styles, cs_id, lang, ch_idx), ch_idx);
-                    total += estimate_text_width(&ch.to_string(), &ts);
+                    total += estimate_text_width_exact(&ch.to_string(), &ts);
                 }
                 total
             })
@@ -4003,7 +4023,7 @@ impl LayoutEngine {
                             metric_scope.style(styles, cs_id, lang, ch_idx),
                             ch_idx,
                         );
-                        let ch_w = estimate_text_width(&ch.to_string(), &ts);
+                        let ch_w = estimate_text_width_exact(&ch.to_string(), &ts);
 
                         // 글자모양·언어 슬롯의 실제 메트릭 변경 또는 줄바꿈 시 run을 출력
                         // [Task #518] LINE_SEG 기반 줄 나눔: ls[1..] 의 text_start 위치 모두 사용.
@@ -4478,7 +4498,41 @@ impl LayoutEngine {
         bin_data_content: Option<&[BinDataContent]>,
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
-        let end_line = composed
+        self.layout_paragraph_with_composition(
+            tree,
+            col_node,
+            para,
+            composed,
+            styles,
+            col_area,
+            y_start,
+            section_index,
+            para_index,
+            multi_col_width_hu,
+            bin_data_content,
+            wrap_anchor,
+            None,
+        )
+    }
+
+    pub(crate) fn layout_paragraph_with_composition(
+        &self,
+        tree: &mut PageLayoutContext,
+        col_node: &mut RenderNode,
+        para: &Paragraph,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        col_area: &LayoutRect,
+        y_start: f64,
+        section_index: usize,
+        para_index: usize,
+        multi_col_width_hu: Option<i32>,
+        bin_data_content: Option<&[BinDataContent]>,
+        wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
+        measured: Option<&ComposedParagraph>,
+    ) -> f64 {
+        let end_line = measured
+            .or(composed)
             .map(|c| c.lines.len())
             .unwrap_or(para.line_segs.len());
         self.layout_partial_paragraph(
@@ -4497,6 +4551,7 @@ impl LayoutEngine {
             multi_col_width_hu,
             bin_data_content,
             wrap_anchor,
+            measured,
         )
     }
 
@@ -4582,6 +4637,7 @@ impl LayoutEngine {
         multi_col_width_hu: Option<i32>,
         bin_data_content: Option<&[BinDataContent]>,
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
+        measured: Option<&ComposedParagraph>,
     ) -> f64 {
         self.layout_partial_paragraph_with_spacing_before(
             tree,
@@ -4600,6 +4656,7 @@ impl LayoutEngine {
             bin_data_content,
             wrap_anchor,
             None,
+            measured,
         )
     }
 
@@ -4625,13 +4682,19 @@ impl LayoutEngine {
         bin_data_content: Option<&[BinDataContent]>,
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
         confirmed_spacing_before: Option<f64>,
+        measured: Option<&ComposedParagraph>,
     ) -> f64 {
         if let Some(comp) = composed {
             // [Task #1042 Stage 6b] 본문 paragraph 의 line_segs.empty case 의 wrap 정합 —
             // compose_lines fallback (CHARS_PER_LINE=45 heuristic) 결과를 column inner width
             // 기반으로 re-split. cell paragraph (Stage 6a 의 height_measurer 호출) 와 동일
             // recompose path 사용.
-            let recomposed: Option<ComposedParagraph> = {
+            let recomposed: Option<ComposedParagraph> = if let Some(measured) = measured {
+                // 줄 구성/메트릭은 fit 결과를 그대로 소비하고 번호 머리만 유지한다.
+                let mut shared = measured.clone();
+                shared.numbering_text = comp.numbering_text.clone();
+                Some(shared)
+            } else {
                 let para_style = styles.para_styles.get(comp.para_style_id as usize);
                 let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                 let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
@@ -4679,30 +4742,25 @@ impl LayoutEngine {
                 }
             };
             let comp_ref = recomposed.as_ref().unwrap_or(comp);
-            // A stored HWP5 page-top line whose vpos exactly equals its own
-            // paragraph spacing still carries that spacing after a width-only
-            // frame recomposition. Suppressing the fallback solely because the
-            // frame returned `Some` moves the complete page-top run upward.
+            // 원본 사다리가 확정한 첫 앞 간격은 폭 재조판 뒤에도 보존한다.
+            // 이월 첫 줄은 다음 저장 축의 완전한 간격 등식으로 같은 계약을 확인한다.
             let preserve_saved_page_top_spacing = recomposed.is_some()
-                && self.profile.get().hwp5_stored_pagination_layout()
-                && self.page_top_float_caption_spacing_para.get() == Some(para_index)
+                && self
+                    .confirmed_paragraph_spacing
+                    .get()
+                    .is_some_and(|(owner, _)| owner == para_index)
                 && start_line == 0
                 && (y_start - col_area.y).abs() < 0.5
                 && para.controls.is_empty()
-                && para.line_segs.len() == 1
-                && para.line_segs[0].tag
-                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                    == 0
+                && (crate::renderer::para_has_no_stored_line_segs(para)
+                    || (para.line_segs.len() == 1
+                        && para.line_segs[0].tag
+                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0))
                 && styles
                     .para_styles
                     .get(comp.para_style_id as usize)
-                    .is_some_and(|style| {
-                        style.spacing_before > 0.5
-                            && (hwpunit_to_px(para.line_segs[0].vertical_pos, self.dpi)
-                                - style.spacing_before)
-                                .abs()
-                                < 0.5
-                    });
+                    .is_some_and(|style| style.spacing_before > 0.0);
             // [#2279] 전체-문단 요청(start=0, end=원본 줄수 이상)은 재래핑 후 줄수로
             // 확장한다. 종전에는 재래핑이 줄수를 늘린 문단(45자 폴백 3줄 → 실폭 4줄,
             // 86712 pi=22)에서 원본 줄수로 클램프되어 마지막 줄이 렌더에서 소실됐다
@@ -4762,6 +4820,8 @@ impl LayoutEngine {
                 bin_data_content,
                 wrap_anchor,
                 false,
+                // 현재 프레임이 발행한 재구성 줄의 말미 공백을 다시 배분하지 않는다.
+                recomposed.is_some() && crate::renderer::para_has_no_stored_line_segs(para),
                 vertical_spacing.or(flow_spacing),
                 None,
             );
@@ -4811,6 +4871,42 @@ impl LayoutEngine {
         };
 
         self.resolve_object_size(&picture.common, col_area, &body_area, &paper_area)
+    }
+
+    /// 같은 줄의 그림들이 공유하는 기준선에서 개별 상자의 위끝을 구한다.
+    /// 정규 줄 소속만 소비하여 뒤 줄의 그림을 최고 상자로 계상하지 않는다.
+    /// 텍스트 런·런 중간·미대응 offset의 실제 그림 발행에 같은 결과를 쓴다.
+    fn inline_picture_box_top_y(
+        &self,
+        para: &Paragraph,
+        line_tac_offsets: &[(usize, f64, usize)],
+        col_area: &LayoutRect,
+        y: f64,
+        baseline: f64,
+        box_h: f64,
+    ) -> f64 {
+        let tallest_box_h = line_tac_offsets
+            .iter()
+            .filter_map(|&(_, _, ci)| match para.controls.get(ci) {
+                Some(Control::Picture(other)) => {
+                    let (_, other_h) = self.resolve_inline_picture_size(other, col_area);
+                    let (_, _, other_top, other_bottom) =
+                        tac_picture_outer_margins_px(other, self.dpi);
+                    Some(
+                        tac_object_box_height_px(other_h, &other.caption, self.dpi)
+                            + other_top
+                            + other_bottom,
+                    )
+                }
+                _ => None,
+            })
+            .fold(box_h, f64::max);
+        if tallest_box_h > box_h + 0.5 {
+            (y + baseline - tallest_box_h).max(y)
+                + (tallest_box_h - box_h) * TAC_OBJECT_ASCENT_RATIO
+        } else {
+            (y + baseline - box_h).max(y)
+        }
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -5295,6 +5391,7 @@ impl LayoutEngine {
             bin_data_content,
             wrap_anchor,
             false,
+            false,
             None,
             None,
         )
@@ -5321,6 +5418,7 @@ impl LayoutEngine {
         bin_data_content: Option<&[BinDataContent]>,
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
         physical_frame_rows: bool,
+        computed_body_rows: bool,
         vertical_spacing: Option<ParagraphVerticalSpacing>,
         stored_cell_content_origin: Option<f64>,
     ) -> f64 {
@@ -5349,6 +5447,11 @@ impl LayoutEngine {
             para_style.map(|s| s.spacing_before).unwrap_or(0.0),
             self.use_hwp3_origin_flow_spacing_before.get(),
         );
+        let spacing_before = self
+            .confirmed_paragraph_spacing
+            .get()
+            .filter(|(owner, _)| *owner == para_index)
+            .map_or(spacing_before, |(_, before)| before);
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
         // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
         // typeset.rs::format_paragraph 측 동일 제거 — solo_zone_pad (zone 전환 패딩) 만 유지.
@@ -5475,7 +5578,14 @@ impl LayoutEngine {
             // 같은 선택 문단에서 확정한 앞 간격을 한 번만 소비한다.
             y += spacing.before;
         } else if start_line == 0 && spacing_before > 0.0 {
-            if !is_column_top || keep_continuation_spacing_before || reapply_snap_spacing_before {
+            if !is_column_top
+                || keep_continuation_spacing_before
+                || reapply_snap_spacing_before
+                || self
+                    .confirmed_paragraph_spacing
+                    .get()
+                    .is_some_and(|(owner, _)| owner == para_index)
+            {
                 y += spacing_before;
             } else if para_index == 0 && !suppress_column_top_vpos_fallback {
                 let vpos0_px = para
@@ -6864,6 +6974,18 @@ impl LayoutEngine {
             let needs_distribute = alignment == Alignment::Distribute;
 
             let has_tabs = comp_line.runs.iter().any(|r| r.text.contains('\t'));
+            let renders_synthetic_wrap_trailing_space = !physical_frame_rows
+                && !computed_body_rows
+                && !is_last_line_of_para
+                && para
+                    .and_then(|p| p.line_segs.get(line_idx))
+                    .is_some_and(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+                && comp_line
+                    .runs
+                    .iter()
+                    .rev()
+                    .find_map(|run| run.text.chars().next_back())
+                    == Some(' ');
             // 자간은 **그려지는 글자**에 나눠 붙으므로 폭(`total_text_width`)과 같은
             // 텍스트로 센다. 머리말 필드처럼 모델 1자가 표시 N자면 모델로 세었을 때
             // 글자당 몫이 N배로 부풀어 글자가 흩어진다 (Task #3216).
@@ -6933,6 +7055,16 @@ impl LayoutEngine {
                 CenteredTextLineMeasure::new(comp_line, styles)
             } else {
                 None
+            };
+            let first_inline_offset = line_tac_offsets_for_width
+                .iter()
+                .map(|(position, _, _)| position.saturating_sub(comp_line.char_start))
+                .min()
+                .unwrap_or(usize::MAX);
+            let unjustified_leading_spaces = if needs_justify && !is_hancom_company_pua_logo_line {
+                unjustified_leading_spaces_by_run(comp_line, first_inline_offset)
+            } else {
+                vec![0; comp_line.runs.len()]
             };
 
             // 글줄 소유 개체/각주는 가시 문자열 바깥에도 있으므로 선행 공백의 끝을 제한한다.
@@ -7008,6 +7140,7 @@ impl LayoutEngine {
                     false,
                     needs_distribute,
                     has_tabs,
+                    renders_synthetic_wrap_trailing_space,
                     suppress_cell_overflow_spacing,
                     converge_auto_shrink_cell,
                     total_char_count,
@@ -7354,6 +7487,7 @@ impl LayoutEngine {
                 para,
                 bin_data_content,
                 styles,
+                &unjustified_leading_spaces,
                 &cell_ctx,
                 &tab_stops,
                 tac_offsets_px,
@@ -7526,8 +7660,7 @@ impl LayoutEngine {
                     EmptyRunsLineVars {
                         alignment,
                         available_width,
-                        effective_col_x,
-                        effective_margin_left,
+                        content_start_x: x_base + inline_offset + num_x_offset,
                         x_start,
                         line_char_end: char_offset,
                         y,
@@ -8086,6 +8219,7 @@ impl LayoutEngine {
         para: Option<&Paragraph>,
         bin_data_content: Option<&[BinDataContent]>,
         styles: &ResolvedStyleSet,
+        unjustified_leading_spaces: &[usize],
         cell_ctx: &Option<CellContext>,
         tab_stops: &[TabStop],
         tac_offsets_px: &[(usize, f64, usize)],
@@ -8411,6 +8545,7 @@ impl LayoutEngine {
             text_style.extra_word_spacing = if fixed_spacing { 0.0 } else { extra_word_sp };
             text_style.extra_char_spacing = if fixed_spacing { 0.0 } else { extra_char_sp };
             text_style.extra_dash_advance = if body_field { 0.0 } else { extra_dash_sp };
+            text_style.unjustified_leading_spaces = unjustified_leading_spaces[run_idx];
             // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
             // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
             // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
@@ -8425,7 +8560,8 @@ impl LayoutEngine {
                     .skip(run_idx + 1)
                     .all(|r| !r.text.contains('\t'));
                 if no_more_tabs_after_in_run && no_tabs_in_subsequent {
-                    let mut ts_measure = text_style.clone();
+                    let mut ts_measure =
+                        text_style.for_text_fragment(run.text[..tab_byte].chars().count() + 1);
                     ts_measure.right_tab_block_width_override = None;
                     let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
                     let subsequent_w = right_tab_block_width(
@@ -8852,16 +8988,17 @@ impl LayoutEngine {
                                 let seg_text: String =
                                     run_chars[seg_start..rel_pos].iter().collect();
                                 // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
+                                let seg_style = text_style.for_text_fragment(seg_start);
                                 let seg_display = run.display_for_model_range(seg_start, rel_pos);
                                 let seg_w = estimate_text_width_exact(
                                     seg_display.as_deref().unwrap_or(&seg_text),
-                                    &text_style,
+                                    &seg_style,
                                 );
                                 let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
                                     kerning_layout_session,
                                     ExactFontSlot::new(run.char_style_id, run.lang_index),
                                     seg_display.as_deref().unwrap_or(&seg_text),
-                                    &text_style,
+                                    &seg_style,
                                     seg_w,
                                     0,
                                     leading_space_ownership
@@ -8877,7 +9014,7 @@ impl LayoutEngine {
                                     seg_id,
                                     RenderNodeType::TextRun(TextRunNode {
                                         text: seg_text,
-                                        style: text_style.clone(),
+                                        style: seg_style,
                                         char_shape_id: Some(run.char_style_id),
                                         para_shape_id: Some(composed.para_style_id),
                                         section_index: Some(section_index),
@@ -8944,11 +9081,12 @@ impl LayoutEngine {
                         if seg_start < run_chars.len() {
                             let seg_text: String = run_chars[seg_start..].iter().collect();
                             // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
+                            let seg_style = text_style.for_text_fragment(seg_start);
                             let seg_display =
                                 run.display_for_model_range(seg_start, run_chars.len());
                             let seg_w = estimate_text_width_exact(
                                 seg_display.as_deref().unwrap_or(&seg_text),
-                                &text_style,
+                                &seg_style,
                             );
                             let trailing_space_count = line_trailing_space_by_run[run_idx]
                                 .min(run_chars.len().saturating_sub(seg_start));
@@ -8956,7 +9094,7 @@ impl LayoutEngine {
                                 kerning_layout_session,
                                 ExactFontSlot::new(run.char_style_id, run.lang_index),
                                 seg_display.as_deref().unwrap_or(&seg_text),
-                                &text_style,
+                                &seg_style,
                                 seg_w - extra_word_sp * trailing_space_count as f64,
                                 trailing_space_count,
                                 leading_space_ownership.in_fragment(
@@ -8975,7 +9113,7 @@ impl LayoutEngine {
                                 seg_id,
                                 RenderNodeType::TextRun(TextRunNode {
                                     text: seg_text,
-                                    style: text_style,
+                                    style: seg_style,
                                     char_shape_id: Some(run.char_style_id),
                                     para_shape_id: Some(composed.para_style_id),
                                     section_index: Some(section_index),
@@ -9048,7 +9186,7 @@ impl LayoutEngine {
                     // tac 앞 텍스트 세그먼트 렌더링
                     if seg_start < tac_rel {
                         let seg_text: String = run_chars[seg_start..tac_rel].iter().collect();
-                        let mut seg_style = text_style.clone();
+                        let mut seg_style = text_style.for_text_fragment(seg_start);
                         seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
                         // [Issue #6179] 이 조각의 마지막 탭 뒤에 TAC 개체가 오면,
                         // 되밀기 폭에 그 개체 폭을 포함시킨다 (조각 경계로 잘려
@@ -9583,7 +9721,7 @@ impl LayoutEngine {
                 // 마지막 tac 이후 텍스트 세그먼트 렌더링
                 let remaining: String = run_chars[seg_start..].iter().collect();
                 if !remaining.is_empty() {
-                    let mut seg_style = text_style.clone();
+                    let mut seg_style = text_style.for_text_fragment(seg_start);
                     seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
                     if has_tabs && remaining.contains('\t') {
                         let positions = compute_char_positions(&remaining, &seg_style);
@@ -9647,7 +9785,7 @@ impl LayoutEngine {
                     x += seg_w;
                 } else if is_last_run {
                     // 마지막 run이 tac로 끝나는 경우: 빈 TextRun으로 is_para_end 표시
-                    let mut seg_style = text_style.clone();
+                    let mut seg_style = text_style.for_text_fragment(seg_start);
                     seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
                     let sub_run_id = tree.next_id();
                     let sub_run_node = RenderNode::new(
@@ -10537,7 +10675,7 @@ impl LayoutEngine {
                     Alignment::Right => (vars.available_width - total_tac_width).max(0.0),
                     _ => 0.0, // Left, Justify
                 };
-                let mut img_x = vars.effective_col_x + vars.effective_margin_left + align_offset;
+                let mut img_x = vars.content_start_x + align_offset;
                 for &(_, tac_w, tac_ci) in line_tac_offsets {
                     if let Some(ctrl) = p.controls.get(tac_ci) {
                         // [Issue #476] 빈 문단 + 인라인 Shape: inline_pos 등록 후 shape_layout 이 그리도록 위임.
@@ -10972,8 +11110,8 @@ impl LayoutEngine {
         para: &Paragraph,
         _counter: &mut super::AutoNumberCounter, // 더 이상 사용하지 않음 (파싱 시 할당됨)
     ) {
-        // AutoNumber 컨트롤이 있는지 확인
-        for ctrl in &para.controls {
+        let positions = para.control_text_positions();
+        for (control_index, ctrl) in para.controls.iter().enumerate() {
             if let Control::AutoNumber(an) = ctrl {
                 // 파싱 시점에 할당된 번호를 번호 형식에 맞게 변환 + 장식 문자 적용
                 let num_fmt = NumFmt::from_hwp_format(an.format);
@@ -10997,19 +11135,49 @@ impl LayoutEngine {
                     num_str
                 };
 
-                // 각 줄의 텍스트에서 AutoNumber 위치를 찾아 번호로 대체
-                // HWP5/HWPX/HWP3 공통: 공백 두 개("  ") 패턴 탐색
-                for line in &mut composed.lines {
-                    for run in &mut line.runs {
-                        if let Some(pos) = run.text.find("  ") {
-                            run.text = format!(
-                                "{}{}{}",
-                                &run.text[..pos + 1],
-                                num_str,
-                                &run.text[pos + 1..]
-                            );
-                            return;
+                // 파서가 보존한 번호 슬롯만 표시한다. 모델 문자 한 자리를 유지해
+                // 뒤 컨트롤의 소속과 저장 줄의 시작 인덱스를 바꾸지 않는다.
+                let Some(&position) = positions.get(control_index) else {
+                    continue;
+                };
+                if para.text.chars().nth(position) != Some(' ') {
+                    continue;
+                }
+                'lines: for line in &mut composed.lines {
+                    let mut run_start = line.char_start;
+                    for run_index in 0..line.runs.len() {
+                        let run = &line.runs[run_index];
+                        // 겹침 글자 등 제어 payload에서 삽입된 런은 원문 글자가 아니다.
+                        if run.inserted_control_text {
+                            continue;
                         }
+                        let len = run.text.chars().count();
+                        if (run_start..run_start + len).contains(&position) {
+                            let local = position - run_start;
+                            let chars: Vec<char> = run.text.chars().collect();
+                            if chars[local] != ' ' || run.display_text.is_some() {
+                                break 'lines;
+                            }
+                            let run = line.runs.remove(run_index);
+                            let mut pieces = Vec::with_capacity(3);
+                            if local > 0 {
+                                let mut before = run.clone();
+                                before.text = chars[..local].iter().collect();
+                                pieces.push(before);
+                            }
+                            let mut number = run.clone();
+                            number.text = " ".to_string();
+                            number.display_text = Some(num_str.clone());
+                            pieces.push(number);
+                            if local + 1 < chars.len() {
+                                let mut after = run;
+                                after.text = chars[local + 1..].iter().collect();
+                                pieces.push(after);
+                            }
+                            line.runs.splice(run_index..run_index, pieces);
+                            break 'lines;
+                        }
+                        run_start += len;
                     }
                 }
             }
@@ -11251,6 +11419,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             5,
             30.0,
             90.0,
@@ -11287,6 +11456,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             false,
             false,
             false,
@@ -11333,6 +11503,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Split,
             true,
             true,
+            false,
             false,
             false,
             false,
@@ -11392,6 +11563,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             12,
             62.5,
             481.8,
@@ -11414,6 +11586,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             false,
             false,
             false,
@@ -11467,6 +11640,7 @@ mod issue_4657_distribute_alignment_tests {
             false,
             false,
             true,
+            false,
             false,
             false,
             false,

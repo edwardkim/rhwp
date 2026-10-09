@@ -274,11 +274,14 @@ pub(super) fn resolve(
         .map(|line_advance| hwpunit_to_px(line_advance, dpi))
         .unwrap_or(0.0)
     };
-    let after = sa
-        + outer_bottom
-        + host_line_spacing
-        + positive_empty_host_rowbreak_tail
-        + stored_empty_anchor_host_line_tail;
+    // 저장 사다리가 전체 호스트 줄 진행을 증명하면 표 스택의 기존 줄간격을
+    // 그 진행량으로 대체한다. 줄간격은 LH+LS 안에 이미 포함되어 있다.
+    let host_line_tail = if stored_empty_anchor_host_line_tail > 0.0 {
+        stored_empty_anchor_host_line_tail
+    } else {
+        host_line_spacing
+    };
+    let after = sa + outer_bottom + host_line_tail + positive_empty_host_rowbreak_tail;
     let host_spacing = HostSpacing {
         before,
         after,

@@ -1229,7 +1229,7 @@ impl WebCanvasRenderer {
                 img.fill_mode,
                 img.original_size,
                 img.crop,
-                img.original_size_hu,
+                crate::renderer::image_resolver::resolved_image_crop_reference_size(img),
             );
             if combined_opacity < 1.0 {
                 self.ctx.set_global_alpha(1.0);
@@ -1611,17 +1611,6 @@ impl WebCanvasRenderer {
         let _ = self.ctx.set_line_dash(&pattern);
     }
 
-    /// HWP 각도(도) → Canvas linearGradient 좌표 변환
-    /// 사각형 (x, y, w, h) 기준으로 (x0, y0, x1, y1) 반환
-    /// [#6845] 그러데이션 축은 SVG 와 **같은 계산**을 쓴다.
-    ///
-    /// 종전에는 방향을 `(sin·w/2, cos·h/2)` 로 축별 배율해 가로세로비만큼 각도가 눕고
-    /// (SVG 의 `objectBoundingBox` 와 같은 왜곡), `cos` 부호가 뒤집혀 `angle=0` 의
-    /// 위아래가 반대였다. 두 렌더러가 규칙을 두 벌로 갖고 있던 것도 함께 없앤다.
-    fn angle_to_canvas_coords(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64, f64, f64, f64) {
-        crate::renderer::linear_gradient_axis(angle, x, y, w, h)
-    }
-
     /// PatternFillInfo → Canvas createPattern으로 패턴 채우기 적용
     /// 오프스크린 캔버스에 6×6 타일 생성 후 반복 패턴으로 설정
     /// 반환값: true이면 패턴이 적용됨
@@ -1796,7 +1785,8 @@ impl WebCanvasRenderer {
             }
             _ => {
                 // Linear (1 또는 기본값)
-                let (x0, y0, x1, y1) = Self::angle_to_canvas_coords(grad.angle, x, y, w, h);
+                let (x0, y0, x1, y1) =
+                    crate::renderer::linear_gradient_axis_for_fill(grad, x, y, w, h);
                 self.ctx.create_linear_gradient(x0, y0, x1, y1)
             }
         };

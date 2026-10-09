@@ -251,8 +251,6 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     // 실패한 목차2쪽은98.09696%; 사용자 지정 문서 최저값 기준으로 이관.
     "pic-in-head-01.hwp",
     "pic-in-table-01.hwp",
-    // #7445: 이 통합 브랜치의 신규 겹침2건과 Native 전1쪽78.18921%를 이관한다.
-    "basic/KTX-003.hwp",
     // #7445: 신규 겹침1건, Native 전10쪽 중8쪽 미달·최저0%; 다른 검사는 유지한다.
     "issue2439/issue2439_repeat_table_overlap.hwp",
     // #7445: 정확한 한컴2020 정본 전82쪽 중43쪽 미달, 최저14.15%; 6쪽 쪽번호 겹침.
@@ -282,10 +280,6 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     "issue6776/78494-virtual-convergence-industry-decree.hwpx",
     "한글문서파일형식_5.0_revision1.3.hwp",
     "rowbreak-problem-pages.hwpx",
-    "hwp3-sample16-hwp5-2022.hwp",
-    "hwp3-sample16-hwp5.hwp",
-    "hwp3-sample16-hwp5-2010.hwp",
-    "issue5941/1480000-201900698-native-neartop-reset.hwp",
     "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
     "issue6795/1341000-201100013-cyber-university-application.hwp",
     "task2319/20544835_jinan_apt_form.hwp",

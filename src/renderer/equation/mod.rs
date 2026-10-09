@@ -122,10 +122,11 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
     }
     if !equation.common.size_protect
         && equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
-        && equation
-            .script
-            .chars()
-            .any(|ch| matches!(ch, '\u{AC00}'..='\u{D7A3}'))
+        && (uses_legacy_hft_metrics(equation)
+            || equation
+                .script
+                .chars()
+                .any(|ch| matches!(ch, '\u{AC00}'..='\u{D7A3}')))
     {
         let ast =
             parser::EqParser::for_document(document_script::tokenize(&equation.script)).parse();
@@ -281,6 +282,12 @@ fn is_simple_box_expression(value: &layout::LayoutBox) -> bool {
         | layout::LayoutKind::Empty => true,
         _ => false,
     }
+}
+
+/// 버전이 없는 기존 수식은 한컴에서 HFT 메트릭으로 출력된다.
+/// 명시적인 현대 버전과 다른 글꼴은 기존 경로를 유지한다.
+pub(crate) fn uses_legacy_hft_metrics(equation: &crate::model::control::Equation) -> bool {
+    equation.version_info.trim().is_empty() && equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
 }
 
 pub(crate) fn flow_width_hwp(equation: &crate::model::control::Equation) -> u32 {

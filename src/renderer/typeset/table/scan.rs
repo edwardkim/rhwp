@@ -81,8 +81,14 @@ impl RowBlockQuery<'_> {
                 None
             };
         let rowbreak_has_internal_hard_break = rowbreak_hard_break_row.is_some();
+        // 분할 허용 값 2는 병합 셀의 묶음 크기와 관계없이 행/내용 컷을 선택한다.
+        // 측정의 snap_to_block_boundary와 같은 정책을 소비하며, 저장 쪽 경계나
+        // 행 합을 넘는 내용은 아래의 전용 블록 컷 경로에서 계속 처리한다.
         let protected = block_has_protectable_rowspan
-            && (!mt.allows_row_break_split() || !rowbreak_has_internal_hard_break);
+            && !mt.allows_row_break_split()
+            && !layout_engine
+                .stored_rowbreak_whole_row_prefix_end(table, &mt.row_heights)
+                .is_some_and(|end| b_start < end && end < b_end);
         // [Task #1086] RowBreak 표는 행 경계 분할 정책이라 보호 블록
         // snap 은 피하지만, rowspan label 이 걸친 블록 안의 큰 row_span==1
         // 셀은 셀 내부 hard-break(vpos reset) 기준으로 쪼갤 수 있어야 한다.

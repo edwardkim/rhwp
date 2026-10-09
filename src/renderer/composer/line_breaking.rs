@@ -1526,9 +1526,12 @@ fn resolved_letter_spacing_px(
     char_offsets: &[u32],
     char_shapes: &[CharShapeRef],
     styles: &ResolvedStyleSet,
+    space_metric: SpaceMetric,
 ) -> Vec<f64> {
     let mut lang = 0usize;
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles);
+    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
+        .with_reflow_slots(text_chars)
+        .with_space_metric(space_metric);
     text_chars
         .iter()
         .enumerate()
@@ -1553,9 +1556,10 @@ fn resolved_paragraph_letter_spacing(
     para: &Paragraph,
     text_chars: &[char],
     styles: &ResolvedStyleSet,
+    space_metric: SpaceMetric,
 ) -> Vec<f64> {
     let mut values =
-        resolved_letter_spacing_px(text_chars, &para.char_offsets, &para.char_shapes, styles);
+        resolved_letter_spacing_px(text_chars, &para.char_offsets, &para.char_shapes, styles, space_metric);
     for (position, value) in &para.layout_field_values {
         if let Some(spacing) = values.get_mut(*position) {
             let shape = para.char_shape_id_at(*position).unwrap_or(0);
@@ -2850,6 +2854,20 @@ fn paragraph_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option
         })
 }
 
+/// 표시되지 않는 문단 끝 문자도 마지막 줄의 글자모양 높이를 소유한다.
+/// 문자 수는 확장 제어를 포함한 원본 UTF-16 축이므로 표시 문자열 길이로 대신하지 않는다.
+fn paragraph_end_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> f64 {
+    let Some(end_pos) = para.char_count.checked_sub(1) else {
+        return 0.0;
+    };
+    let id = find_active_char_shape(&para.char_shapes, end_pos);
+    styles
+        .char_styles
+        .get(id as usize)
+        .map(|style| style.font_size)
+        .unwrap_or(0.0)
+}
+
 /// 비-글자취급 개체(표·그림·도형)의 기준 문자 위치(텍스트 문자 인덱스)와 그 문자의 글꼴 크기(px).
 ///
 /// 개체가 글자처럼 흐르지 않아도 기준 문자는 문단 텍스트의 한 글자이고, 한컴은 그 글자의
@@ -3753,7 +3771,7 @@ fn layout_paragraph_in_frame_impl(
         apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
         tokens
     });
-    let mut letter_spacing_px = resolved_paragraph_letter_spacing(para, &text_chars, styles);
+    let mut letter_spacing_px = resolved_paragraph_letter_spacing(para, &text_chars, styles, space_metric);
     if projected.is_some() {
         for control in &inline_controls {
             letter_spacing_px[control.char_position] = 0.0;
@@ -4010,6 +4028,12 @@ fn layout_paragraph_in_frame_impl(
                     }
                 }
 
+                // 문단 끝까지 채운 물리 줄에서만 종료 문자의 높이를 반영한다.
+                // 같은 값으로 carve를 다시 수행해 측정과 실제 배치의 행 높이를 일치시킨다.
+                if cursor.finished {
+                    maximum_font_size =
+                        maximum_font_size.max(paragraph_end_font_size_px(para, styles));
+                }
                 let mut metrics = frame_metrics_for_line(
                     maximum_font_size,
                     fallback_font_size,
@@ -5045,7 +5069,7 @@ fn reflow_line_segs_impl(
         TabFill::for_paragraph(para_style, indent_px, available_width_px),
         korean_break_unit,
         condense_min_space,
-        &resolved_paragraph_letter_spacing(para, &text_chars, styles),
+        &resolved_paragraph_letter_spacing(para, &text_chars, styles, reflow_space_metric),
         reflow_start_idx,
         reflow_is_first_line,
         kerning_break_session.as_mut(),
@@ -5065,7 +5089,7 @@ fn reflow_line_segs_impl(
             TabFill::for_paragraph(para_style, indent_px, available_width_px),
             korean_break_unit,
             condense_min_space,
-            &resolved_paragraph_letter_spacing(para, &text_chars, styles),
+            &resolved_paragraph_letter_spacing(para, &text_chars, styles, reflow_space_metric),
             reflow_start_idx,
             reflow_is_first_line,
             None,
@@ -5141,6 +5165,11 @@ fn reflow_line_segs_impl(
             lb.end_idx == text_len,
             text_len,
         ));
+        let fs = if line_idx + 1 == line_breaks.len() {
+            fs.max(paragraph_end_font_size_px(para, styles))
+        } else {
+            fs
+        };
         let mut text_seg = make_line_seg(utf16_start, fs);
         if forced_inline_line.is_some_and(|(position, ..)| position == lb.start_idx) {
             let (_, _, height_hwp, _) = forced_inline_line.expect("checked inline control");

@@ -251,6 +251,7 @@ impl LayoutEngine {
                     None,
                     Some(bin_data_content),
                     None, // 표 호스트 어울림 문단 — 별도 wrap_anchor 메커니즘
+                    None,
                 );
                 // 어울림 문단은 항상 ↵ 표시 필요
                 force_para_end_on_last_run(col_node);

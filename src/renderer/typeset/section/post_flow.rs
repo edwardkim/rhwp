@@ -103,7 +103,9 @@ impl TypesetEngine {
                 // v0 로의 **역스냅**은 성장분을 뭉갠다 (36398599: p33~36 누락 구간
                 // fresh +4320HU → 한글 4쪽 vs 역스냅 3쪽). dirty 이후 스냅은 전방만
                 // 허용한다. 합성-앵커(전면 NO_LS 문서)는 자기정합이므로 무관.
+                // 다음 원본 줄로 실제 소비를 확인한 경계는 줄 부재만으로 무효화하지 않는다.
                 if st.vpos_page_base_stored
+                    && !st.paragraph_origins.contains_key(&para_idx)
                     && paragraphs.get(para_idx).is_some_and(|p| {
                         p.line_segs.first().map_or(true, |s| {
                             s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY

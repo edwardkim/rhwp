@@ -25,6 +25,7 @@
 # 값으로 올려 적는다.
 #
 # 0 행은 그대로 둔다 — 값 0 과 행 삭제는 이 게이트에서 같은 판정(증가 / 신규 발생)이다.
+issue3637/press_release_split_cell_nested_table.hwpx	0
 issue6782/1480000-201900042-chemical-product-labeling-study.hwp	6
 issue6921/148733091-briefing-stenographic-record.hwp	0
 156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	1
@@ -205,3 +206,5 @@ issue6465/press_release_footer_logos.hwpx	1
 # 마지막 문단(위 간격 133.3px)을 1쪽에 둔다(한/글 정본은 2쪽). 수정 전 devel 에서도 같은 문서를 짝수
 # 저장값(20000 = 133.3px)으로 만들면 똑같이 37.8px 넘친다 — 홀수 값이 이제 실제 간격으로 읽혀 드러났을 뿐이다. 별도 이슈 #7824.
 issue7816/odd_spacing_prev.hwpx	2
+issue6031/3249937_asset_management_rules.hwpx	0
+hwp3-sample16-hwp5-2022.hwp	0

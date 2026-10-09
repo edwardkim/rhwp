@@ -771,6 +771,7 @@ impl TypesetEngine {
             None, // multi_col_width_hu: 렌더 미주 body-flow 경로와 동일(None)
             None, // bin_data_content: Stage 1 POC — None
             None, // wrap_anchor: 미주 단 내부 wrap-around 없음
+            None,
         );
         (y_after - y_start).max(0.0)
     }

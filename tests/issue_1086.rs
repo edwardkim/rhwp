@@ -20,6 +20,12 @@ fn task1086_k_water_rfp_page_count_matches_hancom_pdf() {
     assert_eq!(page_count("samples/k-water-rfp.hwp"), 27);
 }
 
+/// 독립 한컴 PDF와 전64쪽 Native/fresh 시각 검증의 같은 원본이다.
+#[test]
+fn task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office() {
+    assert_eq!(page_count("samples/hwp3-sample16-hwp5.hwp"), 64);
+}
+
 // hwpspec의 실패한 쪽수·쪽 소속 검사는 #7445로 이관했다.
 // upstream/devel 74f9b71b1의 실제 출력도 6개 확인 쪽 모두 90% 미만이다.
 // 원문/PDF와 정상 검사 보존 및 복원 조건: mydocs/pr/assets/issue7445/README.md.

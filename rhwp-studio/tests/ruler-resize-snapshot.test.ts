@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { PNG } from 'pngjs';
-import { inspectRulerScreenshot, runResizeSnapshots } from '../e2e/ruler-resize.test.mjs';
+import { inspectRulerScreenshot, runResizeSnapshots } from '../e2e/ruler-resize-support.mjs';
 
 const state = {
   width: 100, height: 100, grid: true, visible: true, noOuterOverflow: true,

@@ -44,7 +44,8 @@ impl TypesetEngine {
         table: &crate::model::table::Table,
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> bool {
-        if !self.profile.get().hwp5_stored_pagination_layout()
+        if !(self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().hwpx_stored_layout())
             || self.profile.get().session_edited()
             || table.common.treat_as_char
             || table.page_break != crate::model::table::TablePageBreak::RowBreak
@@ -55,8 +56,10 @@ impl TypesetEngine {
         self.prime_section_cell_context(&engine);
         engine.set_layout_profile(self.profile.get());
         engine.set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
-        (0..usize::from(table.row_count))
-            .any(|row| engine.native_saved_two_line_row_frame(table, row, styles))
+        engine.stored_nested_rows_require_split(table, styles)
+            || (self.profile.get().hwp5_stored_pagination_layout()
+                && (0..usize::from(table.row_count))
+                    .any(|row| engine.native_saved_two_line_row_frame(table, row, styles)))
     }
 
     /// 원본 공동 앵커의 첫 수용 원점과 이월 후 소비된 오프셋을 함께 조회한다.

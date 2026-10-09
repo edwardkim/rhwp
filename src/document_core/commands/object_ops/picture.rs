@@ -621,17 +621,9 @@ impl DocumentCore {
                 doc_hwp3_layout,
             );
         }
-        // 캡션 생성/삭제 시 AutoNumber 재할당. 생성 path 는 문단 placeholder 도 보강한다.
+        // 캡션 생성/삭제 시 자동번호를 재할당한다.
         if caption_created || caption_removed {
             crate::parser::assign_auto_numbers(&mut self.document);
-        }
-        if caption_created {
-            let pic_mut =
-                self.resolve_picture_control_mut(section_idx, parent_para_idx, control_idx)?;
-            let para = &mut pic_mut.caption.as_mut().unwrap().paragraphs[0];
-            para.text = "그림  ".to_string();
-            para.char_offsets = vec![0, 1, 2, 11];
-            para.char_count = 13;
         }
         // [Issue #6204] 배제 밴드 기하가 바뀌었으면 그 밴드에 되감긴 문단들의 저장
         // `LINE_SEG` 를 새 위치 기준으로 다시 새긴다.
@@ -1240,16 +1232,13 @@ impl DocumentCore {
                         number_type: crate::model::control::AutoNumberType::Picture,
                         ..Default::default()
                     };
-                    cap.paragraphs
-                        .push(crate::model::paragraph::Paragraph::default());
+                    cap.paragraphs.push(
+                        crate::model::paragraph::Paragraph::new_auto_number_caption("그림 ", an),
+                    );
                     // 캡션 텍스트 최대 폭 = 개체 폭
                     cap.max_width = pic.common.width;
                     pic.caption = Some(cap);
                     caption_created = true;
-                    // 번호 할당을 위해 컨트롤을 임시로 캡션에 추가
-                    pic.caption.as_mut().unwrap().paragraphs[0]
-                        .controls
-                        .push(crate::model::control::Control::AutoNumber(an));
                     // attr bit 29: 캡션 존재 플래그 (한컴 호환성)
                     pic.common.attr |= 1 << 29;
                 }

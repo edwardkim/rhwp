@@ -369,7 +369,9 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             Ok(d) => d,
             Err(e) => return e.report(),
         };
-        if let Err(e) = doc.set_font_environment(font_environment) {
+        if let Err(e) =
+            super::apply_font_environment(&mut doc, font_environment, &pdf_options.font_paths)
+        {
             eprintln!("오류: 폰트 환경 적용 실패: {e}");
             return EXIT_RUNTIME;
         }

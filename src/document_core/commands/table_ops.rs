@@ -3242,23 +3242,15 @@ impl DocumentCore {
                     number_type: crate::model::control::AutoNumberType::Table,
                     ..Default::default()
                 };
-                let mut cap_para = crate::model::paragraph::Paragraph::new_empty();
                 // 한컴 표 캡션은 AutoNumber 앞에 "표" 접두어를 함께 표시한다.
-                cap_para.text = "표  ".to_string();
-                cap_para.char_count = 13;
-                cap_para.char_count_msb = true;
-                cap_para.control_mask = 1u32 << 0x12;
-                cap_para.char_offsets = vec![0, 1, 2, 11];
+                let mut cap_para =
+                    crate::model::paragraph::Paragraph::new_auto_number_caption("표 ", an);
                 cap_para.style_id = caption_style_id;
                 cap_para.para_shape_id = caption_para_shape_id;
                 cap_para.char_shapes = vec![crate::model::paragraph::CharShapeRef {
                     start_pos: 0,
                     char_shape_id: caption_char_shape_id,
                 }];
-                cap_para
-                    .controls
-                    .push(crate::model::control::Control::AutoNumber(an));
-                cap_para.ctrl_data_records.push(None);
                 // max_width = 표 전체 폭 (열 폭 합산)
                 let total_width: u32 = table
                     .cells

@@ -69,7 +69,6 @@ const BLACK_SHADE: u32 = 0x0000_0000;
 const SAMPLES_ROOT: &str = "samples";
 
 const HWP3_SAMPLE: &str = "samples/hwp3-sample.hwp";
-
 /// 스윕이 조용히 비면 회귀를 놓치므로 하한을 둔다 ([#4141] 과 같은 가드).
 const MIN_SWEPT_SAMPLES: usize = 10;
 

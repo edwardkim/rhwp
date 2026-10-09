@@ -3,7 +3,7 @@
 //!
 //! `press_release_split_cell_nested_table` 은 본문 전체가 3행 1열 `RowBreak` 표의
 //! 한 셀 안에 들어 있고, 8쪽의 두 상자는 그 셀 안의 중첩 표(문단당 1개 atom)다.
-//! 한글 2020 정본(`pdf/issue3637/press_release_split_cell_nested_table-2020.pdf`)
+//! 한글 2020 정본(`pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf`)
 //! 8쪽은 `< 은행의 위탁보증 포트폴리오 구성(가상사례) >` 상자와 그 아래
 //! `☞ 그동안 지속적인 노력에도 …` 결론 상자를 **함께** 담는다
 //! (결론 상자 테두리 512.0~778.0pt, 본문 하단 785.2pt — 7.2pt 여유).
@@ -12,7 +12,7 @@
 //! 예산에 넣어 `avail 997.827px` 를 **0.467px** 넘겼고, 상자를 9쪽으로 밀어
 //! 8쪽 아래 절반이 통째로 비었다.
 //!
-//! 이 문서의 총 쪽수(13)는 9쪽의 별개 결함(본문이 정본보다 세 줄 높게 쌓인다)
+//! 이 문서의 과거 총 쪽수(13)는 9쪽의 별개 결함(본문이 정본보다 세 줄 높게 쌓인다)
 //! 때문에 그대로다 — 총 쪽수는 `tests/fixtures/render_page_samples.tsv` 가 고정한다.
 //! 여기서는 8쪽 정합만 고정한다.
 
@@ -125,7 +125,7 @@ fn issue_7206_page4_fragment_does_not_exceed_the_body() {
     );
     let over = table_bottom - bottom;
     assert!(
-        over <= 0.5,
+        table_bottom <= bottom,
         "#7206: 이어받은 조각 상자가 본문을 넘었다 — 물리 {}쪽 표 하단 {table_bottom:.2}px, \
          본문 하단 {bottom:.2}px, 초과 {over:.2}px. 조각은 본문보다 클 수 없다 \
          (수정 전 1053.90 vs 1046.90 = +7.00, 수정 후 1039.00).",

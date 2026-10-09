@@ -2001,7 +2001,7 @@ impl SkiaLayerRenderer {
                                     image.fill_mode,
                                     image.original_size,
                                     image.crop,
-                                    image.original_size_hu,
+                                    crate::renderer::image_resolver::resolved_image_crop_reference_size(image),
                                     effect,
                                     if suppress_effects {
                                         0

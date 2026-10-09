@@ -147,6 +147,19 @@ impl TypesetEngine {
                             && (st.pages.len(), st.current_column)
                                 == (picture_host_origin.0, picture_host_origin.1)
                         {
+                            if let Some(placements) = crate::renderer::float_placement::stored_picture_group_next_page_placements(
+                                para, &paragraphs[para_idx + 1..], st.vpos_page_base.unwrap_or(0),
+                                picture_host_origin.2, st.available_height(), self.dpi,
+                            ) {
+                                let placement = placements[ctrl_idx];
+                                st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
+                                    kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
+                                    para_index: para_idx,
+                                    control_index: ctrl_idx,
+                                    placement,
+                                });
+                                continue;
+                            }
                             if let Some(placement) =
                                 crate::renderer::float_placement::stored_picture_next_page_placement(
                                     para,
@@ -275,6 +288,35 @@ impl TypesetEngine {
                                 matches!(item, PageItem::FullParagraph { para_index } if *para_index == para_idx)
                             })
                         {
+                            if st.paragraph_float_placements.get(&(para_idx, ctrl_idx))
+                                .is_some_and(|placement| matches!(placement.flow,
+                                    crate::renderer::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }))
+                            {
+                                continue;
+                            }
+                            let grouped = para_idx.checked_sub(1).and_then(|previous| {
+                                let previous = paragraphs.get(previous)?;
+                                let next = paragraphs.get(para_idx + 1)?;
+                                let host_style = styles.para_styles.get(para.para_shape_id as usize)?;
+                                let next_style = styles.para_styles.get(next.para_shape_id as usize)?;
+                                crate::renderer::float_placement::stored_picture_group_before_host_placement(
+                                    previous, para, next, host_style.spacing_after,
+                                    next_style.spacing_before, st.vpos_page_base.unwrap_or(0),
+                                    picture_host_origin.2, self.dpi,
+                                )
+                            });
+                            if let Some(placements) = grouped {
+                                if let Some(selected) = placements.get(ctrl_idx).copied().filter(|p| {
+                                    p.paragraph_end(st.current_height, 0.0) <= st.available_height()
+                                        && p.paragraph_end(st.current_height, 0.0) >= st.current_height
+                                }) {
+                                    for (index, placement) in placements.into_iter().enumerate() {
+                                        st.record_paragraph_float_placement((para_idx, index), placement);
+                                    }
+                                    st.align_flow_to(selected.paragraph_end(st.current_height, 0.0));
+                                    continue;
+                                }
+                            }
                             let saved = para_idx.checked_sub(1).and_then(|previous| {
                                 let previous = paragraphs.get(previous)?;
                                 let next = paragraphs.get(para_idx + 1)?;
@@ -307,6 +349,14 @@ impl TypesetEngine {
                                     matches!(item, PageItem::FullParagraph { para_index } if *para_index == para_idx)
                                 })
                             {
+                                // 같은 호스트의 계획 묶음은 한 번에 발행했다. 형제 그림이
+                                // 이미 전환한 흐름 원점을 이전 page 원점으로 다시 바꾸지 않는다.
+                                if st.paragraph_float_placements.get(&(para_idx, ctrl_idx))
+                                    .is_some_and(|placement| matches!(placement.flow,
+                                        crate::renderer::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }))
+                                {
+                                    continue;
+                                }
                                 let saved = paragraphs.get(para_idx + 1).and_then(|next| {
                                     // 앞 그림의 측정 흐름이 저장 원점과 다르면 중간부터
                                     // 절대 저장 좌표를 재개해 선행 본문을 덮지 않는다.
@@ -316,7 +366,7 @@ impl TypesetEngine {
                                         let Some(Control::Picture(picture)) = paragraphs.get(*owner).and_then(|p| p.controls.get(*control_index)) else { return false; };
                                         !picture.common.treat_as_char
                                             && picture.common.text_wrap == crate::model::shape::TextWrap::TopAndBottom
-                                            && !st.paragraph_float_placements.get(&(*owner, *control_index)).is_some_and(|placement| matches!(placement.flow, crate::renderer::float_placement::ParagraphFloatFlow::StoredPicture { .. }))
+                                            && !st.paragraph_float_placements.get(&(*owner, *control_index)).is_some_and(|placement| matches!(placement.flow, crate::renderer::float_placement::ParagraphFloatFlow::StoredPicture { .. } | crate::renderer::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }))
                                     });
                                     if unresolved_picture_flow { return None; }
                                     let host_style = styles.para_styles.get(para.para_shape_id as usize)?;
@@ -346,6 +396,24 @@ impl TypesetEngine {
                                         let sb = styles.para_styles.get(f.para_shape_id as usize)?.spacing_before;
                                         Some((f, sb))
                                     });
+                                    if let Some(placements) = crate::renderer::float_placement::stored_picture_group_frame_placement(
+                                        para, next, host_style.spacing_before,
+                                        next_style.spacing_before, frame_vpos, actual_host_flow_y, self.dpi,
+                                    ) {
+                                        let selected = *placements.get(ctrl_idx)?;
+                                        if selected.occupied_bottom <= st.available_height()
+                                            && selected.anchor_y <= st.current_height
+                                        {
+                                            for (index, placement) in placements.into_iter().enumerate() {
+                                                st.record_paragraph_float_placement((para_idx, index), placement);
+                                            }
+                                            // 계획의 본문 좌표와 다음 실제 커서가 같은 축을 쓴다.
+                                            st.record_vpos_page_origin(Some(frame_vpos));
+                                            st.record_vpos_lazy_origin(None);
+                                            st.record_vpos_snapped_flow_start(para_idx, selected.anchor_y);
+                                            return Some(selected);
+                                        }
+                                    }
                                     crate::renderer::float_placement::stored_picture_successor_with_following_placement(
                                         para, next, following, host_style.spacing_before,
                                         host_style.spacing_after, next_style.spacing_before,

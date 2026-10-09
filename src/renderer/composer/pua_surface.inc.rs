@@ -222,6 +222,22 @@ pub(crate) fn hancom_symbol_display_key(ch: char) -> char {
     }
 }
 
+/// 이미 확정한 단일 표시 기호를 원문 폭 측정에도 전달한다.
+/// 다문자 확장과 글자겹침 숫자는 각 구성 owner의 계약을 유지한다.
+pub(crate) fn single_scalar_display_char(ch: char) -> char {
+    let key = hancom_symbol_display_key(ch);
+    if let Some(display) = pua_plain_text_display(key) {
+        let mut chars = display.chars();
+        if let Some(first) = chars.next() {
+            if chars.next().is_none() {
+                return first;
+            }
+        }
+        return ch;
+    }
+    super::layout::map_pua_bullet_char(key)
+}
+
 /// 한글 방점(U+302E/U+302F)을 렌더용 spacing 가운데 점 글리프로 치환한다. (Task #1735)
 ///
 /// U+302E/U+302F 는 유니코드 결합문자(combining mark)라, 유효한 base 없이

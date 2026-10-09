@@ -203,6 +203,134 @@ fn ole_chart_contents_renders_standalone_rust_svg() {
     assert!(!svg.contains("charming SSR unavailable"));
 }
 
+// 격자는 축 기준선과 같은 양 끝점을 잇는 내부 수평선이다. 절대 좌표를 기대하지 않는다.
+fn chart_major_grid_count(svg: &str) -> usize {
+    let xml = roxmltree::Document::parse(svg).expect("차트 SVG 파싱");
+    let chart = xml
+        .descendants()
+        .find(|node| {
+            node.attribute("class")
+                .is_some_and(|class| class.split_whitespace().any(|name| name == "hwp-ole-chart"))
+        })
+        .expect("차트 소속");
+    let horizontal: Vec<_> = chart
+        .descendants()
+        .filter(|node| node.has_tag_name("line"))
+        .filter_map(|node| {
+            let coordinate = |name| node.attribute(name)?.parse::<f64>().ok();
+            let (x1, x2, y1, y2) = (
+                coordinate("x1")?,
+                coordinate("x2")?,
+                coordinate("y1")?,
+                coordinate("y2")?,
+            );
+            (y1 == y2 && x2 > x1).then_some((x1, x2, y1))
+        })
+        .collect();
+    let baseline = horizontal
+        .iter()
+        .max_by(|a, b| a.2.total_cmp(&b.2))
+        .expect("차트 가로축 기준선");
+    horizontal
+        .iter()
+        .filter(|line| line.0 == baseline.0 && line.1 == baseline.1 && line.2 < baseline.2)
+        .count()
+}
+
+// 차트 소속 세로선을 판별한다. 축 표시 계약에 절대 픽셀 위치를 사용하지 않는다.
+fn chart_vertical_axis_count(svg: &str) -> usize {
+    let xml = roxmltree::Document::parse(svg).expect("차트 SVG 파싱");
+    let chart = xml
+        .descendants()
+        .find(|node| {
+            node.attribute("class")
+                .is_some_and(|class| class.split_whitespace().any(|name| name == "hwp-ole-chart"))
+        })
+        .expect("차트 소속");
+    chart
+        .descendants()
+        .filter(|node| node.has_tag_name("line"))
+        .filter(|node| {
+            let coordinate = |name| {
+                node.attribute(name)
+                    .and_then(|value| value.parse::<f64>().ok())
+            };
+            matches!((coordinate("x1"), coordinate("x2"), coordinate("y1"), coordinate("y2")),
+                (Some(x1), Some(x2), Some(y1), Some(y2)) if x1 == x2 && y1 != y2)
+        })
+        .count()
+}
+
+// 원본 VtString은 전각 공백을 저장한다. 데이터 IR의 정규화 문자열과 실제 제목을 구분한다.
+fn assert_original_chart_title(svg: &str) {
+    let xml = roxmltree::Document::parse(svg).expect("실제 문서 SVG 파싱");
+    let chart = xml
+        .descendants()
+        .find(|node| {
+            node.attribute("class")
+                .is_some_and(|class| class.split_whitespace().any(|name| name == "hwp-ole-chart"))
+        })
+        .expect("OLE 차트 소속");
+    let titles: Vec<_> = chart
+        .descendants()
+        .filter(|node| node.has_tag_name("text"))
+        .filter_map(|node| node.text())
+        .filter(|text| text.split_whitespace().eq(["연금", "재정", "전망"]))
+        .collect();
+    assert_eq!(
+        titles,
+        ["연금\u{3000}재정\u{3000}전망"],
+        "원본 제목은 차트 안에 한 번 표시하며 전각 공백을 보존해야 한다"
+    );
+    let title = chart
+        .descendants()
+        .find(|node| {
+            node.has_tag_name("text") && node.text() == Some("연금\u{3000}재정\u{3000}전망")
+        })
+        .expect("원본 제목 글자");
+    // 원본은 제목·축·범례에 모두 같은 굴림체10pt를 소유한다. 절대px 대신 그 관계를 검사한다.
+    for label in [
+        "0",
+        "500",
+        "1000",
+        "1500",
+        "2000",
+        "2010년",
+        "2020년",
+        "2030년",
+        "2040년",
+        "적립금",
+        "수입",
+        "지출",
+    ] {
+        let nodes: Vec<_> = chart
+            .descendants()
+            .filter(|node| node.has_tag_name("text") && node.text() == Some(label))
+            .collect();
+        assert_eq!(nodes.len(), 1, "차트 레이블 {label}의 소속·중복");
+        assert_eq!(
+            nodes[0].attribute("font-family"),
+            title.attribute("font-family"),
+            "{label}은 원본과 같은 글꼴을 소유해야 한다"
+        );
+        assert_eq!(
+            nodes[0].attribute("font-size"),
+            title.attribute("font-size"),
+            "{label}은 원본 제목과 같은 글자 크기를 소유해야 한다"
+        );
+    }
+    // 독립 한컴 변종에서 원본 효과 0은 워터마크를 비추는 투명 배경이다.
+    assert!(
+        !chart.children().any(|node| {
+            node.has_tag_name("rect")
+                && node.attribute("fill").is_some_and(|fill| {
+                    fill.eq_ignore_ascii_case("#ffffff") || fill.eq_ignore_ascii_case("white")
+                })
+        }),
+        "원본 차트는 흰 배경으로 뒤의 워터마크를 가리면 안 된다"
+    );
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn issue_1251_svg_uses_legacy_ole_chart_renderer() {
@@ -214,6 +342,135 @@ fn issue_1251_svg_uses_legacy_ole_chart_renderer() {
     // 전체 문서 painter는 저장 TextBlock의 전각 공백을 보존한다.
     // 데이터 IR의 정규화된 제목은 위 parser/standalone 검사에서 따로 확인한다.
     assert!(svg.contains("연금\u{3000}재정\u{3000}전망"));
+    assert_original_chart_title(&svg);
+    // 사용자 제공 2022 PDF는 세 범례를 한 행에 계열 순서대로 표시한다.
+    // 위치의 절대값 대신 같은 행과 왼쪽부터의 순서만 검사한다.
+    let xml = roxmltree::Document::parse(&svg).expect("원본 차트 SVG 파싱");
+    let chart = xml
+        .descendants()
+        .find(|node| {
+            node.attribute("class")
+                .is_some_and(|class| class.split_whitespace().any(|name| name == "hwp-ole-chart"))
+        })
+        .expect("원본 OLE 차트 소속");
+    let label_anchor = |label| {
+        let node = chart
+            .descendants()
+            .find(|node| node.has_tag_name("text") && node.text() == Some(label))
+            .expect("원본 차트 레이블");
+        (
+            node.attribute("x").unwrap().parse::<f64>().unwrap(),
+            node.attribute("y").unwrap().parse::<f64>().unwrap(),
+        )
+    };
+    let legend_anchors = ["적립금", "수입", "지출"].map(label_anchor);
+    assert!(
+        legend_anchors
+            .windows(2)
+            .all(|pair| pair[0].1 == pair[1].1 && pair[0].0 < pair[1].0),
+        "범례는 같은 행에서 적립금·수입·지출 순서여야 한다: {legend_anchors:?}"
+    );
+    assert!(
+        label_anchor("연금\u{3000}재정\u{3000}전망").1 < label_anchor("2000").1,
+        "자동 배치 제목은 최고 값 눈금 위에 있어야 한다"
+    );
+    assert_eq!(
+        chart_major_grid_count(&svg),
+        0,
+        "원본에서 숨긴 주격자를 표시하면 안 된다"
+    );
+    // 독립 한컴 변종은 같은 원본의 범례 Section 표시 값만 0으로 바꿨다.
+    // 입력 필드 오프셋은 고정하지만 출력 좌표·픽셀은 검사하지 않는다.
+    let mut contents = bin_data_2_raw_contents();
+    assert_eq!(&contents[1486..1488], &1u16.to_le_bytes());
+    contents[1486..1488].copy_from_slice(&0u16.to_le_bytes());
+    let chart = parse_ole_chart_contents(&contents).expect("숨긴 범례의 원본 데이터");
+    let hidden_svg = rhwp::ole_chart::render_ole_chart_svg_fragment_with_contents(
+        &chart,
+        &contents,
+        [0.0, 0.0, 300.0, 300.0],
+        2,
+    );
+    let hidden_xml = roxmltree::Document::parse(&hidden_svg).expect("숨긴 범례 SVG");
+    for name in ["적립금", "수입", "지출"] {
+        assert!(
+            !hidden_xml
+                .descendants()
+                .any(|node| node.has_tag_name("text") && node.text() == Some(name)),
+            "숨긴 범례 {name}을 기본 글꼴로 다시 표시하면 안 된다"
+        );
+    }
+    assert!(
+        hidden_svg.contains("2010년"),
+        "범례를 숨겨도 카테고리 축은 남아야 한다"
+    );
+    assert!(
+        hidden_svg.contains("연금"),
+        "범례를 숨겨도 원본 제목은 남아야 한다"
+    );
+    // 미확정 표시 값은 명시적인 숨김 0과 구분하여 기존 표시 폴백을 보존한다.
+    contents[1486..1488].copy_from_slice(&2u16.to_le_bytes());
+    let unknown_svg = rhwp::ole_chart::render_ole_chart_svg_fragment_with_contents(
+        &chart,
+        &contents,
+        [0.0, 0.0, 300.0, 300.0],
+        2,
+    );
+    let unknown_xml = roxmltree::Document::parse(&unknown_svg).expect("미확정 범례 SVG");
+    for name in ["적립금", "수입", "지출"] {
+        assert_eq!(
+            unknown_xml
+                .descendants()
+                .filter(|node| node.has_tag_name("text") && node.text() == Some(name))
+                .count(),
+            1,
+            "미확정 표시 값의 범례 {name}은 기존 폴백을 보존해야 한다"
+        );
+    }
+    // 독립 한컴 PDF에서 주격자 style 0→1만으로 격자가 나타나는 동일 입력을 검사한다.
+    let mut grid_contents = bin_data_2_raw_contents();
+    assert_eq!(&grid_contents[2863..2865], &0u16.to_le_bytes());
+    for style in [1u16, 2u16] {
+        grid_contents[2863..2865].copy_from_slice(&style.to_le_bytes());
+        let grid_svg = rhwp::ole_chart::render_ole_chart_svg_fragment_with_contents(
+            &chart,
+            &grid_contents,
+            [0.0, 0.0, 300.0, 300.0],
+            2,
+        );
+        assert!(
+            chart_major_grid_count(&format!("<svg>{grid_svg}</svg>")) > 0,
+            "주격자 표시 또는 미확정 스타일의 기존 폴백을 보존해야 한다"
+        );
+    }
+    // 독립 한컴 PDF에서 축선 Pen0은 세로축만 숨기고 값 레이블을 보존한다.
+    let mut axis_contents = bin_data_2_raw_contents();
+    assert_eq!(&axis_contents[2841..2843], &1u16.to_le_bytes());
+    for (style, expected_axes) in [(0u16, 0usize), (1, 1), (2, 1)] {
+        axis_contents[2841..2843].copy_from_slice(&style.to_le_bytes());
+        let axis_svg = rhwp::ole_chart::render_ole_chart_svg_fragment_with_contents(
+            &chart,
+            &axis_contents,
+            [0.0, 0.0, 300.0, 300.0],
+            2,
+        );
+        assert_eq!(
+            chart_vertical_axis_count(&format!("<svg>{axis_svg}</svg>")),
+            expected_axes,
+            "주축 표시 상태/미확정 폴백을 보존해야 한다"
+        );
+        let axis_xml = roxmltree::Document::parse(&axis_svg).expect("축선 SVG 파싱");
+        for value in ["0", "500", "1000", "1500", "2000"] {
+            assert_eq!(
+                axis_xml
+                    .descendants()
+                    .filter(|node| node.has_tag_name("text") && node.text() == Some(value))
+                    .count(),
+                1,
+                "축선을 숨겨도 값 레이블 {value}를 보존해야 한다"
+            );
+        }
+    }
     assert!(svg.contains("적립금"));
     assert!(!svg.contains("OLE 개체 (BinData #2)"));
     assert!(!svg.contains("OLE 차트 미지원"));
@@ -241,6 +498,12 @@ fn issue_1283_hwpx_svg_uses_legacy_ole_chart_renderer() {
     assert!(svg.contains("hwp-ole-chart-rust-svg"));
     // 같은 원본의 HWPX도 저장 TextBlock의 전각 공백을 보존한다.
     assert!(svg.contains("연금\u{3000}재정\u{3000}전망"));
+    assert_original_chart_title(&svg);
+    assert_eq!(
+        chart_major_grid_count(&svg),
+        0,
+        "원본에서 숨긴 주격자를 표시하면 안 된다"
+    );
     assert!(svg.contains("적립금"));
     assert!(!svg.contains("OLE 개체 (BinData #3)"));
     assert!(!svg.contains("OLE 차트 미지원"));

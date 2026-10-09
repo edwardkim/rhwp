@@ -5,7 +5,8 @@ mod compound_rectangle;
 mod source_line_frame;
 
 use super::super::composer::{
-    compose_paragraph, reflow_line_segs, ComposedParagraph, ParagraphBox,
+    captioned_shape_height_px, compose_paragraph, reflow_line_segs, shape_caption_for_layout,
+    ComposedParagraph, ParagraphBox,
 };
 use super::super::page_layout::LayoutRect;
 use super::super::pagination::PageItem;
@@ -64,21 +65,6 @@ fn textbox_contains_non_tac_picture(text_box: &TextBox) -> bool {
             .iter()
             .any(|control| matches!(control, Control::Picture(pic) if !pic.common.treat_as_char))
     })
-}
-
-pub(super) fn shape_caption_for_layout(shape: &ShapeObject) -> Option<Caption> {
-    match shape {
-        ShapeObject::Line(s) => s.drawing.caption.clone(),
-        ShapeObject::Rectangle(s) => s.drawing.caption.clone(),
-        ShapeObject::Ellipse(s) => s.drawing.caption.clone(),
-        ShapeObject::Arc(s) => s.drawing.caption.clone(),
-        ShapeObject::Polygon(s) => s.drawing.caption.clone(),
-        ShapeObject::Curve(s) => s.drawing.caption.clone(),
-        ShapeObject::Group(s) => s.caption.clone(),
-        ShapeObject::Picture(s) => s.caption.clone(),
-        ShapeObject::Chart(s) => s.caption.clone().or_else(|| s.drawing.caption.clone()),
-        ShapeObject::Ole(s) => s.caption.clone().or_else(|| s.drawing.caption.clone()),
-    }
 }
 
 fn textbox_vpos_origin_hu(common: &CommonObjAttr, matrix_positioned: bool) -> Option<i32> {
@@ -804,6 +790,7 @@ impl LayoutEngine {
         bin_data_content: &[BinDataContent],
         overflow_map: &std::collections::HashMap<(usize, usize), Vec<Paragraph>>,
         clamp_negative_para_offset: bool,
+        stored_frame_origin: Option<(f64, f64)>,
     ) {
         let para = match paragraphs.get(para_index) {
             Some(p) => p,
@@ -995,10 +982,13 @@ impl LayoutEngine {
             width: col_area.width - para_margin_left - para_margin_right,
             height: col_area.height - (para_y - col_area.y).max(0.0),
         };
-        let (shape_x, shape_y) = if let Some((ix, iy)) = inline_pos {
+        // 조판이 원본 프레임으로 확정한 잉크 원점은 paint에서 다시 추정하지 않는다.
+        let (shape_x, shape_y) = if let Some(origin) = stored_frame_origin {
+            origin
+        } else if let Some((ix, iy)) = inline_pos {
             (ix, iy)
         } else {
-            let (mut x, y) = self.compute_object_position(
+            let (mut x, mut y) = self.compute_object_position(
                 common_for_position,
                 shape_w,
                 shape_h,
@@ -1008,6 +998,10 @@ impl LayoutEngine {
                 paper_area,
                 para_y,
                 alignment,
+            );
+            y += hwpunit_to_px(
+                crate::renderer::float_placement::topbottom_shape_top_margin_hu(common),
+                self.dpi,
             );
             // [#5808] 어울림(Square) **도형**의 왼쪽 바깥여백은 한글이 가로 위치에
             // 가산한다 (156518601 1쪽 묶음: 오프셋 29138+여백 566 HU = 471.6px,
@@ -1071,13 +1065,7 @@ impl LayoutEngine {
                 parent.node_type,
                 RenderNodeType::Header | RenderNodeType::Footer
             ) {
-            let total_h = shape_h
-                + caption_height
-                + if caption_height > 0.0 {
-                    caption_spacing
-                } else {
-                    0.0
-                };
+            let total_h = captioned_shape_height_px(shape_h, &caption_opt, self.dpi);
             let body_bottom = col_area.y + col_area.height - total_h;
             shape_y.min(body_bottom.max(col_area.y))
         } else {
@@ -2069,6 +2057,10 @@ impl LayoutEngine {
                 let (style, gradient) = drawing_to_shape_style(&poly.drawing, self.dpi);
                 // 꼭짓점 좌표를 PathCommand로 변환 (원본→렌더 스케일링 적용)
                 let sa = &poly.drawing.shape_attr;
+                // 저장 행렬은 원본 꼭짓점의 최종 변환이다. 독립 도형도 묶음
+                // 자식과 같이 한 번만 적용하며 current 크기·회전을 다시 합치지 않는다.
+                let source_affine = !matrix_positioned
+                    && (sa.has_saved_affine_geometry() || poly.affine_edit_reference.is_some());
                 let sx = if sa.original_width > 0 {
                     render_w / hwpunit_to_px(sa.original_width as i32, self.dpi)
                 } else {
@@ -2087,9 +2079,31 @@ impl LayoutEngine {
                     (sx, sy),
                 );
                 let mut commands = Vec::new();
+                let mut path_bounds = (
+                    f64::INFINITY,
+                    f64::INFINITY,
+                    f64::NEG_INFINITY,
+                    f64::NEG_INFINITY,
+                );
                 for (i, pt) in poly.points.iter().enumerate() {
-                    let px = point_x + hwpunit_to_px(pt.x, self.dpi) * sx;
-                    let py = point_y + hwpunit_to_px(pt.y, self.dpi) * sy;
+                    let (px, py) = if source_affine {
+                        let x = f64::from(pt.x);
+                        let y = f64::from(pt.y);
+                        let unit = self.dpi / crate::renderer::HWPUNIT_PER_INCH;
+                        (
+                            base_x + (sa.render_sx * x + sa.render_b * y + sa.render_tx) * unit,
+                            base_y + (sa.render_c * x + sa.render_sy * y + sa.render_ty) * unit,
+                        )
+                    } else {
+                        (
+                            point_x + hwpunit_to_px(pt.x, self.dpi) * sx,
+                            point_y + hwpunit_to_px(pt.y, self.dpi) * sy,
+                        )
+                    };
+                    path_bounds.0 = path_bounds.0.min(px);
+                    path_bounds.1 = path_bounds.1.min(py);
+                    path_bounds.2 = path_bounds.2.max(px);
+                    path_bounds.3 = path_bounds.3.max(py);
                     if i == 0 {
                         commands.push(PathCommand::MoveTo(px, py));
                     } else {
@@ -2104,28 +2118,43 @@ impl LayoutEngine {
                         commands.push(PathCommand::ClosePath);
                     }
                 }
+                let (paint_x, paint_y, paint_w, paint_h) =
+                    if source_affine && !poly.points.is_empty() {
+                        (
+                            path_bounds.0,
+                            path_bounds.1,
+                            path_bounds.2 - path_bounds.0,
+                            path_bounds.3 - path_bounds.1,
+                        )
+                    } else {
+                        (render_x, render_y, render_w, render_h)
+                    };
                 let node_id = tree.next_id();
                 let mut path_node = PathNode::new(commands, style, gradient);
                 path_node.section_index = Some(section_index);
                 path_node.para_index = Some(para_index);
                 path_node.control_index = Some(control_index);
-                path_node.transform = transform;
+                path_node.transform = if source_affine {
+                    ShapeTransform::default()
+                } else {
+                    transform
+                };
                 path_node.cell_index = cell_index;
                 path_node.cell_para_index = cell_para_index;
                 path_node.outer_table_control_index = outer_table_control_index;
                 let mut node = RenderNode::new(
                     node_id,
                     RenderNodeType::Path(path_node),
-                    BoundingBox::new(render_x, render_y, render_w, render_h),
+                    BoundingBox::new(paint_x, paint_y, paint_w, paint_h),
                 );
                 self.add_image_fill_node(
                     tree,
                     &mut node,
                     &poly.drawing,
-                    render_x,
-                    render_y,
-                    render_w,
-                    render_h,
+                    paint_x,
+                    paint_y,
+                    paint_w,
+                    paint_h,
                     bin_data_content,
                 );
                 let empty_map = std::collections::HashMap::new();
@@ -2456,7 +2485,7 @@ impl LayoutEngine {
                                 }
                             }
 
-                            // Issue #1251: legacy HWP chart `Contents` stream.
+                            // #1251: 레거시 HWP 차트의 Contents 스트림을 읽는다.
                             if !rendered {
                                 if let Some(raw_contents) = container.raw_contents.as_ref() {
                                     match crate::ole_chart::parse_ole_chart_contents(raw_contents) {
@@ -2943,20 +2972,31 @@ impl LayoutEngine {
     ///
     /// 한글은 이 글상자에서 세로로 자르지 않는다 — 잉크가 상자 하단(132.28)보다
     /// 아래인 132.81 까지 그려진다. 그래서 clip 을 상자 크기로 넓히는 것만으로는
-    /// 부족하고, 세로 clip 을 **내용까지** 놓아 주어야 오라클과 맞는다.
+    /// 부족하고, 표시 영역에 놓인 글줄의 잉크까지 세로 clip을 넓혀야 한다.
+    /// 영역 밖에서 시작하는 후속 줄은 넘친 내용이며, 그 줄까지 넓히면
+    /// 선언된 글상자가 숨기는 뒤 문단과 출처까지 잘못 표시한다.
     ///
     /// 가로 clip 은 그대로 둔다 — 줄바꿈 폭 경계라 의미가 있다. 그리는 상자
     /// (`shape_node`)도 건드리지 않는다 — 한글도 상자는 그대로 두고 잉크만 넘긴다.
     /// 이 점이 `expand_inline_textbox_to_content`(상자까지 키운다)와 다르다.
     fn relax_textbox_clip_to_content(textbox_node: &mut RenderNode) {
-        let (Some(content_top), Some(content_bottom)) = (
-            Self::min_descendant_top(textbox_node),
-            Self::max_descendant_bottom(textbox_node),
-        ) else {
-            return;
-        };
-        let new_top = textbox_node.bbox.y.min(content_top);
-        let new_bottom = (textbox_node.bbox.y + textbox_node.bbox.height).max(content_bottom);
+        let clip_top = textbox_node.bbox.y;
+        let clip_bottom = clip_top + textbox_node.bbox.height;
+        let mut new_top = clip_top;
+        let mut new_bottom = clip_bottom;
+        for child in &textbox_node.children {
+            // 원래 표시 영역과 겹치는 줄의 잉크만 확장에 참여한다.
+            // 확장된 아래끝으로 다음 줄을 연쇄 수용하지 않는다.
+            if matches!(child.node_type, RenderNodeType::TextLine(_))
+                && (child.bbox.y >= clip_bottom || child.bbox.y + child.bbox.height <= clip_top)
+            {
+                continue;
+            }
+            new_top = new_top.min(Self::min_descendant_top(child).unwrap_or(child.bbox.y));
+            new_bottom = new_bottom.max(
+                Self::max_descendant_bottom(child).unwrap_or(child.bbox.y + child.bbox.height),
+            );
+        }
         textbox_node.bbox.y = new_top;
         textbox_node.bbox.height = new_bottom - new_top;
     }
@@ -4607,7 +4647,7 @@ impl LayoutEngine {
                         );
                     (bottom, top)
                 } else {
-                    self.calc_shape_bottom_y(effective_ref, col_area, body_area)
+                    self.calc_shape_bottom_y(ctrl, effective_ref, col_area, body_area)
                 };
 
                 // 본문 시작 근처만 고려 (페이지 하단 개체는 제외)
@@ -4679,6 +4719,7 @@ impl LayoutEngine {
     /// TopAndBottom 개체의 하단 y 좌표와 상단 y 좌표를 계산 (pub(crate) — Task #901 Stage 8 flow-around)
     pub(crate) fn calc_shape_bottom_y(
         &self,
+        control: &Control,
         common: &CommonObjAttr,
         col_area: &LayoutRect,
         body_area: &LayoutRect,
@@ -4691,14 +4732,28 @@ impl LayoutEngine {
             VertRelTo::Page => (body_area.y, body_area.height),
             VertRelTo::Para => (col_area.y, col_area.height),
         };
-        let shape_y = match common.vert_align {
-            VertAlign::Top | VertAlign::Inside => ref_y + v_offset,
-            VertAlign::Center => ref_y + (ref_h - shape_h) / 2.0 + v_offset,
-            VertAlign::Bottom | VertAlign::Outside => ref_y + ref_h - shape_h - v_offset,
+        let margin_top = if matches!(control, Control::Shape(_)) {
+            hwpunit_to_px(
+                crate::renderer::float_placement::topbottom_shape_top_margin_hu(common),
+                self.dpi,
+            )
+        } else {
+            0.0
         };
-        // 바깥 여백(margin.bottom) 포함 — 본문이 여백 이후부터 시작
+        let shape_y = margin_top
+            + match common.vert_align {
+                VertAlign::Top | VertAlign::Inside => ref_y + v_offset,
+                VertAlign::Center => ref_y + (ref_h - shape_h) / 2.0 + v_offset,
+                VertAlign::Bottom | VertAlign::Outside => ref_y + ref_h - shape_h - v_offset,
+            };
+        // 캡션의 간격과 실제 글줄 상자를 포함한 프레임 뒤에 본문 여백을 둔다.
+        let frame_h = if let Control::Shape(shape) = control {
+            captioned_shape_height_px(shape_h, &shape_caption_for_layout(shape), self.dpi)
+        } else {
+            shape_h
+        };
         let margin_bottom = hwpunit_to_px(common.margin.bottom as i32, self.dpi);
-        (shape_y + shape_h + margin_bottom, shape_y)
+        (shape_y + frame_h + margin_bottom, shape_y)
     }
 
     /// 다단 레이아웃에서 body_area 전체에 걸치는 TopAndBottom 개체의 예약 높이 계산
@@ -4749,16 +4804,6 @@ impl LayoutEngine {
                 if !matches!(common.text_wrap, TextWrap::TopAndBottom) || common.treat_as_char {
                     continue;
                 }
-                // Task #321 v3 정밀화 (#326): Paper(용지) 기준 도형 중 본문과 겹치지 않는
-                // (= 머리말 영역에만 위치하는) 도형만 col 1+ reserve 에서 제외.
-                // 본문과 겹치는 Paper 도형은 col 1 시작에 영향 → 제외 안 함.
-                if matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Paper) {
-                    let shape_top = hwpunit_to_px(common.vertical_offset as i32, self.dpi);
-                    let shape_bottom = shape_top + hwpunit_to_px(common.height as i32, self.dpi);
-                    if shape_bottom <= body_area.y {
-                        continue;
-                    }
-                }
                 // body_area 너비의 80% 이상 차지하는 개체만 (2단에 걸치는 개체)
                 let shape_w = hwpunit_to_px(common.width as i32, self.dpi);
                 if shape_w < body_area.width * 0.8 {
@@ -4781,11 +4826,16 @@ impl LayoutEngine {
                             );
                         (bottom, top)
                     } else {
-                        self.calc_shape_bottom_y(common, body_area, body_area)
+                        self.calc_shape_bottom_y(ctrl, common, body_area, body_area)
                     }
                 } else {
-                    self.calc_shape_bottom_y(common, body_area, body_area)
+                    self.calc_shape_bottom_y(ctrl, common, body_area, body_area)
                 };
+                // 머리말에만 있는 용지 기준 개체는 모든 단의 본문을 밀지 않는다.
+                // 위 여백·캡션을 반영한 최종 프레임 끝으로 판정한다.
+                if common.vert_rel_to == VertRelTo::Paper && bottom_y <= body_area.y {
+                    continue;
+                }
                 let threshold_y = body_area.y + body_area.height / 3.0;
                 if shape_y > threshold_y {
                     continue;

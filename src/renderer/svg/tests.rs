@@ -55,17 +55,16 @@ fn test_svg_draw_text_medium_weight() {
 
 #[test]
 fn legacy_hanyang_faces_have_portable_local_aliases() {
-    // HWPX가 저장한 legacy face와 한컴 2020 PDF가 실제로 대체해 출력한 family가
-    // 다르다. `--font-style` SVG가 이 순서를 잃으면 검증 host에서 무관한 폴백 또는
-    // 두부(□)로 rasterize되어 PDF 대조 증적이 무효해진다.
+    // 원본 outline을 먼저 찾고 실제로 없는 경우에만 대체한다.
+    // 한컴 버전만으로 원본 프로그램을 HCR로 덮어쓰지 않는다.
     assert_eq!(
         font_local_aliases("한양중고딕"),
         vec![
-            "HCR Dotum",
-            "함초롬돋움",
             "한양중고딕",
             "HY중고딕",
             "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
         ]
     );
     assert_eq!(
@@ -102,8 +101,8 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
     );
     assert_eq!(
         known_font_filenames("한양중고딕").first(),
-        Some(&"HANDotum.ttf"),
-        "한컴 2020 PDF와 같은 HCR Dotum을 full embed에서 먼저 찾아야 함"
+        Some(&"H2GTRM.TTF"),
+        "Full embed도 같은 원본 outline 프로그램을 먼저 찾아야 함"
     );
     assert_eq!(
         known_font_filenames("휴먼명조").first(),
@@ -272,8 +271,13 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
         .find(|line| line.contains("font-family: \"한양중고딕\""))
         .expect("한양중고딕 style rule");
     assert!(
-        hanyang_jung.contains("local(\"HCR Dotum\"), local(\"함초롬돋움\"), local(\"한양중고딕\")"),
-        "한컴 PDF 대체 고딕이 legacy local face보다 앞서야 함"
+        hanyang_jung
+            .find("local(\"HY중고딕\")")
+            .expect("원본 outline 별칭")
+            < hanyang_jung
+                .find("local(\"HCR Dotum\")")
+                .expect("대체 outline 폴백"),
+        "실제 CSS에서도 정상 원본 outline이 대체 고딕보다 앞서야 함"
     );
     let human_gothic = css
         .lines()

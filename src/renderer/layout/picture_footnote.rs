@@ -1892,6 +1892,7 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         None, // 각주 컨텍스트 — wrap zone 무관
                         false,
+                        false,
                         Some(placement.spacing),
                         None,
                     );

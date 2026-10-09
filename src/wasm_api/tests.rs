@@ -1409,8 +1409,10 @@ fn issue_1470_table_caption_keeps_autonumber_and_can_be_removed() {
     let caption = table.caption.as_ref().expect("캡션 존재");
     let cap_para = caption.paragraphs.first().expect("캡션 문단");
     assert_eq!(cap_para.text, "표  ");
-    assert_eq!(cap_para.char_count, 13);
-    assert_eq!(cap_para.char_offsets, vec![0, 1, 2, 11]);
+    // 접두어 2유닛 + 자동번호 8유닛 + 문단 끝 1유닛이다.
+    assert_eq!(cap_para.char_count, 11);
+    assert_eq!(cap_para.char_offsets, vec![0, 1, 2]);
+    assert_eq!(cap_para.control_text_positions(), vec![2]);
     assert!(
         cap_para
             .controls
@@ -1512,7 +1514,8 @@ fn issue_1470_table_caption_edit_keeps_autonumber() {
 
     let cap_para = caption.paragraphs.first().expect("캡션 문단");
     assert_eq!(cap_para.text, "표  ");
-    assert_eq!(cap_para.char_offsets, vec![0, 1, 2, 11]);
+    assert_eq!(cap_para.char_offsets, vec![0, 1, 2]);
+    assert_eq!(cap_para.control_text_positions(), vec![2]);
     assert!(
         cap_para.controls.iter().any(
             |c| matches!(c, Control::AutoNumber(an) if an.assigned_number == 1 && an.number == 1)

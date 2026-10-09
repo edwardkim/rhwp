@@ -1,6 +1,6 @@
 //! 줄 분할 진입 전 첫 줄/저장 경계 판정. 쪽 전환과 호환성 상태 기록은 호출자가 맡는다.
 use super::super::{
-    is_synthetic_line_seg, page_item_para_index, para_has_visible_text,
+    is_synthetic_line_seg, line_seg_visible_bounds_px, page_item_para_index, para_has_visible_text,
     stored_vpos_restarts_near_body_top,
 };
 use super::metrics::FormattedParagraph;
@@ -23,6 +23,24 @@ pub(in crate::renderer::typeset) struct SplitEntryFit {
     pub hwp_first_line_before_reset_fits: bool,
     pub stored_whole_para_reset: bool,
     pub hangul2024_split_refit: bool,
+}
+
+/// 저장 첫 줄이 현재 흐름의 같은 쪽에서 본문 하단을 넘는지 조회한다.
+/// 통째 수용과 분할 진입이 같은 저장 줄 끝을 소비한다.
+pub(super) fn stored_first_line_bottom_outside_body(
+    para: &Paragraph,
+    page_vpos_base: i32,
+    current_height: f64,
+    body_height: f64,
+    dpi: f64,
+) -> bool {
+    para.line_segs
+        .first()
+        .filter(|line| !is_synthetic_line_seg(line))
+        .and_then(|line| line_seg_visible_bounds_px(line, page_vpos_base, dpi))
+        .is_some_and(|(top, bottom)| {
+            top + 0.5 >= current_height && top <= body_height && bottom > body_height
+        })
 }
 
 /// 구성된 줄이 있을 때만 호출한다. 플래그 기록 전에 관측한 fit 근거를 반환한다.
@@ -179,19 +197,8 @@ pub(in crate::renderer::typeset) fn should_advance(
     // 그 줄을 이 쪽에 두지 않은 것이다. 이미 있는
     // `hwp_first_line_before_reset_fits`(바닥이 안에 들면 남긴다)의 정확한 거울이며,
     // 추정이 아니라 파일이 적어 놓은 값이다.
-    let stored_first_line_bottom_outside_body = para
-        .line_segs
-        .first()
-        .filter(|ls| !is_synthetic_line_seg(ls))
-        .map(|ls| {
-            let top_px = crate::renderer::hwpunit_to_px(ls.vertical_pos, dpi);
-            let bottom_px =
-                crate::renderer::hwpunit_to_px(ls.vertical_pos.saturating_add(ls.line_height), dpi);
-            let body_bottom = page.body_height;
-            // 저장 좌표가 **지금 조판 위치와 같은 쪽**을 가리킬 때만 증거로 쓴다.
-            top_px + 0.5 >= page.current_height && top_px <= body_bottom && bottom_px > body_bottom
-        })
-        .unwrap_or(false);
+    let stored_first_line_bottom_outside_body =
+        stored_first_line_bottom_outside_body(para, 0, page.current_height, page.body_height, dpi);
     (page.current_height >= available
         || remaining < first_line_h
         || stored_first_line_bottom_outside_body

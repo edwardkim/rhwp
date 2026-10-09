@@ -297,6 +297,10 @@ pub(crate) fn glyph_fit_positions<'a>(
     }
 }
 
+fn has_no_unjustified_leading_spaces(count: &usize) -> bool {
+    *count == 0
+}
+
 /// 텍스트 렌더링 스타일
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextStyle {
@@ -375,6 +379,9 @@ pub struct TextStyle {
     pub inline_tabs: Vec<[u16; 7]>,
     /// 양쪽 정렬용: 공백 문자당 추가 간격 (px)
     pub extra_word_spacing: f64,
+    /// 이 런 시작의 들여쓰기 공백 수. 해당 구간은 양쪽 정렬 여분을 받지 않는다.
+    #[serde(skip_serializing_if = "has_no_unjustified_leading_spaces")]
+    pub unjustified_leading_spaces: usize,
     /// 배분/나눔 정렬용: 글자당 추가 간격 (px)
     pub extra_char_spacing: f64,
     /// Task #352: dash leader (3+ 연속 '-') 시퀀스의 글자당 추가 간격 (px).
@@ -514,6 +521,14 @@ impl TextStyle {
         } else {
             12.0
         }
+    }
+
+    /// 런을 각주·인라인 개체 경계에서 나눠도 같은 공백 구간을 이어받는다.
+    pub(crate) fn for_text_fragment(&self, scalar_start: usize) -> Self {
+        let mut style = self.clone();
+        style.unjustified_leading_spaces =
+            self.unjustified_leading_spaces.saturating_sub(scalar_start);
+        style
     }
 
     /// 위첨자/아래첨자 run 의 **그리기** 글꼴 크기와 baseline 을 계산한다.
@@ -666,6 +681,7 @@ impl Default for TextStyle {
             tab_leaders: Vec::new(),
             inline_tabs: Vec::new(),
             extra_word_spacing: 0.0,
+            unjustified_leading_spaces: 0,
             extra_char_spacing: 0.0,
             extra_dash_advance: 0.0,
             outline_type: 0,
@@ -964,6 +980,44 @@ pub(crate) fn linear_gradient_color_stops(
         }
     }
     (colors, stops)
+}
+
+/// 원본 중심에 가까운 축 끝에서 첫 색을 시작한다.
+/// 같은 각도라도 중심이 반대쪽이면 색의 진행 방향은 반대다.
+/// 중심이 축 가운데인 경우에는 기존 각도 방향을 유지한다.
+pub fn linear_gradient_axis_for_fill(
+    grad: &GradientFillInfo,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+) -> (f64, f64, f64, f64) {
+    let (x0, y0, x1, y1) = linear_gradient_axis(grad.angle, x, y, w, h);
+    let cx = x + w * f64::from(grad.center_x) / 100.0;
+    let cy = y + h * f64::from(grad.center_y) / 100.0;
+    let projection = (cx - (x0 + x1) / 2.0) * (x1 - x0) + (cy - (y0 + y1) / 2.0) * (y1 - y0);
+    let midpoint_roundoff = f64::EPSILON * 16.0 * (w.abs() + h.abs()).powi(2);
+    if projection > midpoint_roundoff {
+        (x1, y1, x0, y0)
+    } else {
+        (x0, y0, x1, y1)
+    }
+}
+
+/// 원형 채우기를 상자의 가장 먼 모서리까지 펼친다.
+/// 상자 정규화 좌표로 원을 만들면 비정사각형 도형에서 타원으로 왜곡된다.
+pub fn radial_gradient_geometry(
+    grad: &GradientFillInfo,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+) -> (f64, f64, f64) {
+    let cx = x + w * f64::from(grad.center_x) / 100.0;
+    let cy = y + h * f64::from(grad.center_y) / 100.0;
+    let dx = (cx - x).abs().max((x + w - cx).abs());
+    let dy = (cy - y).abs().max((y + h - cy).abs());
+    (cx, cy, dx.hypot(dy))
 }
 
 /// 선 렌더링 스타일
@@ -1671,18 +1725,14 @@ pub fn corrected_line_height_for_variant_synthetic(
     }
 }
 
-/// [Task #1116] HWP3-origin HWP5 변환본의 문단 앞 간격 보정.
+/// 해소된 문단 앞 간격을 측정·배치·편집 호출에 그대로 전달한다.
 ///
-/// 기존 style resolver는 변환본의 ParaShape spacing 계열을 절반으로 줄인다.
-/// 이는 페이지 수 회귀를 막기 위해 유지하되, 본문 흐름에서 다음 문단을
-/// 배치할 때 쓰는 `spacing_before`는 한컴 PDF의 3mm 격자와 같이 원래 값을 쓴다.
+/// HWP5 원시 간격을 parser에서 반감한 뒤 배치만 다시 두 배로 늘리던
+/// 보정은 제거했다. 계보와 관계없이 공통 style resolver의 물리 값을 한 번 소비한다.
+/// 기존 내부 호출의 인자 형태는 유지하지만 추가 스케일은 적용하지 않는다.
 #[inline]
-pub(crate) fn hwp3_variant_flow_spacing_before(base: f64, is_hwp3_variant: bool) -> f64 {
-    if is_hwp3_variant {
-        base * 2.0
-    } else {
-        base
-    }
+pub(crate) fn hwp3_variant_flow_spacing_before(base: f64, _is_hwp3_variant: bool) -> f64 {
+    base
 }
 
 /// [#6630] 셀 첫 문단의 위 여백(px) — 저장 첫 줄 `LINE_SEG.vertical_pos` 를 상한으로 둔 값.
@@ -2309,6 +2359,51 @@ pub(crate) fn solo_title_exit_pad_px(
     )
 }
 
+/// 단일 단 구간의 확정 텍스트 끝에서 다음 구간 간격과 중복되는 후행 줄간격.
+/// 구조 제어만 가진 빈 줄도 줄 상자는 보존하며, 개체·부분 문단·재조판 줄은 제외한다.
+pub(crate) fn solo_zone_trailing_spacing_px(
+    items: &[pagination::PageItem],
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    column_count: usize,
+    dpi: f64,
+) -> f64 {
+    use crate::model::control::Control;
+    if column_count != 1 {
+        return 0.0;
+    }
+    let Some(pagination::PageItem::FullParagraph { para_index }) = items.last() else {
+        return 0.0;
+    };
+    let Some(para) = paragraphs.get(*para_index) else {
+        return 0.0;
+    };
+    if para.stored_text_partition_is_dirty()
+        || para.layout_only_fill_lines > 0
+        || para.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::Table(_)
+                    | Control::Shape(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Form(_)
+                    | Control::Unknown(_)
+            )
+        })
+        || (para.text.trim_start().starts_with('<')
+            && para.controls.iter().any(|control| {
+                matches!(control, Control::ColumnDef(cd)
+                    if cd.column_count.max(1) <= 1 && cd.spacing <= 283)
+            }))
+    {
+        return 0.0;
+    }
+    para.line_segs
+        .last()
+        .filter(|line| line.line_height > 0 && line.line_spacing > 0)
+        .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, dpi))
+}
+
 /// 같은 저장 줄을 끝으로 갖는 다단에서 빈 마지막 문단의 추가 줄간격.
 /// 글자가 있는 다른 단의 줄 상자는 유지하고, 빈 단의 뒤쪽 여백만 다음 구역에서 제외한다.
 pub(crate) fn parallel_blank_tail_spacing_excess_px(
@@ -2727,8 +2822,41 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
 ///
 /// 다만 이름을 그대로 넣는 것만으로는 Windows(DirectWrite/Chrome)에서 안 잡히는
 /// face 가 있다. 아래 중고딕 arm 의 주석을 볼 것.
+/// 같은 설치 프로그램의 이름만 제공한다. HFT→TTF 호환 대체·generic·successor는 제외한다.
+fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
+    match name {
+        "나눔고딕" => &["NanumGothic"],
+        "NanumGothic" => &["나눔고딕"],
+        "한컴바탕" => &["Haansoft Batang"],
+        "함초롬바탕" => &["HCR Batang"],
+        "함초롬돋움" => &["HCR Dotum"],
+        "맑은 고딕" => &["Malgun Gothic"],
+        "바탕" => &["Batang"],
+        "바탕체" => &["BatangChe"],
+        "돋움" => &["Dotum"],
+        "돋움체" => &["DotumChe"],
+        "굴림" => &["Gulim"],
+        "굴림체" => &["GulimChe"],
+        "궁서" => &["Gungsuh"],
+        "궁서체" => &["GungsuhChe"],
+        "HY신명조" => &["HYSinMyeongJo", "HYSinMyeongJo-Medium"],
+        "HY중고딕" => &["HYGothic", "HYGothic-Medium"],
+        "HY견고딕" => &["HYGothic-Extra"],
+        "HY견명조" => &["HYMyeongJo-Extra"],
+        "HY헤드라인M" => &["HYHeadLine", "HYHeadLine-Medium"],
+        "HY그래픽M" => &["HYGraphic", "HYGraphic-Medium"],
+        "휴먼명조" => &["HumanMyeongJo"],
+        "한컴 고딕" => &["Hancom Gothic", "Hancom Gothic Regular"],
+        "한컴 윤고딕 240" => &["Haan YGodic 240"],
+        _ => &[],
+    }
+}
+
 pub(crate) fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     match font_family {
+        "나눔고딕" => &["NanumGothic"],
+        "NanumGothic" => &["나눔고딕"],
+        "한컴바탕" => &["Haansoft Batang"],
         // 같은 SFNT의 PostScript 이름(name 6)과 실제 family 이름(name 1)이다.
         "HCRBatang" => &["HCR Batang"],
         "HCRDotum" => &["HCR Dotum"],

@@ -157,6 +157,7 @@ fn first_text_with(start_cut_is_block: bool) -> Option<String> {
         row_cursor_is_nested: false,
         end_row_height_override: None,
         start_row_height_override: None,
+        row_height_overrides: Vec::new(),
         straddle_row_relief: Vec::new(),
         straddle_page_bands: Vec::new(),
         fragment_row_heights: None,

@@ -1400,13 +1400,19 @@ async function initializeDocument(
 ): Promise<void> {
   const msg = sbMessage();
   try {
+    // 실제 프로그램을 먼저 확정한 뒤 같은 문서 정보로 공급과 view를 준비한다.
+    await wasm.prepareDeclaredFontEnvironment(canvasView?.getRenderBackend());
+    docInfo = wasm.getDocumentInfo();
     setDocumentFontSubstitutions(docInfo.fontSubstitutions);
-    currentDocumentFonts = [...(docInfo.fontsUsed ?? [])];
+    currentDocumentFonts = [...new Set([
+      ...(docInfo.fontsUsed ?? []),
+      ...(docInfo.fontSubstitutions ?? []).map(([, target]) => target),
+    ])];
     lastAppliedLocalFontGeneration = null;
     console.log('[initDoc] 1. 폰트 로딩 시작');
     await updateLoadProgress(55, '폰트 준비 중...');
-    if (docInfo.fontsUsed?.length) {
-      await loadWebFonts(docInfo.fontsUsed, (loaded, total) => {
+    if (currentDocumentFonts.length) {
+      await loadWebFonts(currentDocumentFonts, (loaded, total) => {
         const fontPercent = total > 0 ? 55 + Math.round((loaded / total) * 20) : 65;
         msg.textContent = `파일 로딩 ${fontPercent}% - 폰트 로딩 중... (${loaded}/${total})`;
       }, extensionViewerSettings);

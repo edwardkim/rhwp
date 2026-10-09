@@ -588,6 +588,9 @@ fn parse_hwp_with_cfb(
     // dir 영역 basename 매칭 영역 image 영역 자동 load.
     populate_link_image_paths(&mut doc);
 
+    // 저장 LineSeg의 원점은 문단 간격을 포함한 실제 저장 결과다.
+    // 계보에 맞춰 좌표를 다시 쓰지 않고 소비 단계에서 같은 저장 프레임을 사용한다.
+
     if let Some(idx) = doc
         .extra_streams
         .iter()
@@ -1081,6 +1084,9 @@ fn parse_hwp_with_lenient(
     // 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
     // dir 영역 basename 매칭 영역 image 영역 자동 load.
     populate_link_image_paths(&mut doc);
+
+    // 저장 LineSeg의 원점은 문단 간격을 포함한 실제 저장 결과다.
+    // 계보에 맞춰 좌표를 다시 쓰지 않고 소비 단계에서 같은 저장 프레임을 사용한다.
 
     Ok(doc)
 }
@@ -2107,10 +2113,9 @@ fn load_bin_data_content(
 mod tests {
     use super::*;
 
-    /// [robustness] 초인적 퍼징(7479 손상)이 잡은 `normalize_variant_paragraph_vpos`
-    /// 의 i32 덧셈 오버플로 패닉 회귀(mod.rs:628). 손상 입력의 거대 vpos/height 로
-    /// `vertical_pos + line_height + line_spacing` 이 오버플로해 패닉하던 것을
-    /// saturating 으로 막았다 — 이제 파싱이 패닉 없이 Ok/Err 로 끝난다.
+    /// 손상된 변환 HWP5의 실제 파싱이 패닉 없이 Ok/Err로 끝나야 한다.
+    /// 과거 누적 vpos 정규화의 오버플로 재현 바이트를 그대로 보존한다.
+    /// 저장 원점 보존 이후에도 원본 파서 진입점으로 같은 손상을 검사한다.
     #[test]
     fn corrupt_variant_vpos_does_not_overflow_panic() {
         let path = concat!(

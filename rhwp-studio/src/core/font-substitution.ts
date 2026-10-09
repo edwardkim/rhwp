@@ -99,6 +99,11 @@ export function setDocumentFontSubstitutions(
   documentFontSubstitutions = next;
 }
 
+/** 엔진이 준 언어별 체인과 대조할 선언 대체 후보를 반환한다. */
+export function documentSubstituteFamilies(fontName: string): readonly string[] {
+  return documentFontSubstitutions.get(normalizedFamilyKey(fontName)) ?? [];
+}
+
 function confirmedFontName(
   candidates: readonly string[],
   confirmedLocalFonts: readonly string[],

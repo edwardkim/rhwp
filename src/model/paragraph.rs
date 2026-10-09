@@ -530,6 +530,32 @@ pub fn tab_ext_is_placeholder(ext: &[u16; 7]) -> bool {
 pub const TAB_EXT_PLACEHOLDER: [u16; 7] = [0, 0, 0, 0, 0, 0, 0x0009];
 
 impl Paragraph {
+    /// 새 캡션의 접두어 뒤에 원시 8유닛 자동번호 자리와 문단 끝을 만든다.
+    pub(crate) fn new_auto_number_caption(
+        prefix: &str,
+        auto_number: super::control::AutoNumber,
+    ) -> Self {
+        let mut paragraph = Self::new_empty();
+        let mut raw_offset = 0u32;
+        paragraph.char_offsets = prefix
+            .chars()
+            .map(|ch| {
+                let offset = raw_offset;
+                raw_offset += ch.len_utf16() as u32;
+                offset
+            })
+            .collect();
+        // 번호는 모델 공백 한 글자로 남지만 HWP 문자 축에서는 8유닛을 점유한다.
+        paragraph.char_offsets.push(raw_offset);
+        paragraph.text = format!("{prefix} ");
+        paragraph.char_count = raw_offset + CTRL_CHAR_CODE_UNITS + 1;
+        paragraph.char_count_msb = true;
+        paragraph.control_mask = 1u32 << 0x12;
+        paragraph.controls.push(Control::AutoNumber(auto_number));
+        paragraph.ctrl_data_records.push(None);
+        paragraph
+    }
+
     /// 한컴 2022 실측: 종류 2, 하위 24비트는 COLORREF(BGR), 끝 위치는 exclusive.
     pub(crate) fn import_markpen_range_tags(&mut self) {
         self.markpen_marks = self
@@ -2601,9 +2627,9 @@ impl Paragraph {
 
     /// 인라인 컨트롤이 텍스트의 어느 character 인덱스에 위치하는지 반환한다.
     ///
-    /// 일반 경로에서는 `char_offsets` 갭 (인라인 컨트롤당 8 UTF-16 코드 유닛) 의 길이만으로
-    /// position 을 분배한다 — 컨트롤 variant 를 보지 않으므로 각주·미주, 그림, 표, 수식,
-    /// 자동번호 등 모든 inline 컨트롤이 동일하게 character offset 을 부여받는다.
+    /// 일반 경로에서는 `char_offsets` 갭에서 부수 마커를 제외한 8 UTF-16 유닛 슬롯을
+    /// 분배한다. FIELD_END·제목 차례 표시는 원시 슬롯을 차지하지만 `controls[]`의
+    /// 개체가 아니므로 뒤 개체의 위치를 가져가면 안 된다.
     ///
     /// `char_offsets` 가 비어있는 폴백 경로에서는 본문 흐름에서 1칸을 차지하는
     /// Shape/Table/Picture/Equation/Footnote/Endnote 만 폭 1을 가산하고,
@@ -2646,29 +2672,23 @@ impl Paragraph {
 
         let chars: Vec<char> = self.text.chars().collect();
         let mut positions = Vec::with_capacity(total_controls);
-        // 누름틀 끝·다단락 누름틀 끝·제목 차례 표시는 컨트롤 없이 8유닛 슬롯을 차지하고,
-        // 모두 자기 글자 바로 앞 갭에 있다. 그 갭에서 이 수만큼은 컨트롤에 나눠 주지 않는다.
-        // 나눠 주면 뒤 컨트롤이 한 갭씩 앞 글자로 당겨진다.
-        let hidden_slots_before = |char_idx: usize| {
-            self.field_ranges
-                .iter()
-                .filter(|r| r.end_char_idx == char_idx)
-                .count()
-                + self
-                    .orphan_field_ends
-                    .iter()
-                    .filter(|o| o.char_idx == char_idx)
-                    .count()
-                + self
-                    .title_marks
-                    .iter()
-                    .filter(|m| m.char_idx == char_idx)
-                    .count()
-        };
+        // 파서가 보존한 본문 문자 축으로 갭의 부수 슬롯을 구분한다.
+        // 같은 위치에 여러 필드 종료가 있어도 각각 원시 8유닛을 소비한다.
+        let mut auxiliary_slots = std::collections::HashMap::<usize, usize>::new();
+        for position in self
+            .field_ranges
+            .iter()
+            .map(|range| range.end_char_idx)
+            .chain(self.orphan_field_ends.iter().map(|end| end.char_idx))
+            .chain(self.title_marks.iter().map(|mark| mark.char_idx))
+        {
+            *auxiliary_slots.entry(position).or_default() += 1;
+        }
 
         // 첫 문자 이전의 갭: 확장 컨트롤이 텍스트 시작 전에 있는 경우
         let gap_before = offsets[0] as usize;
-        let n_ctrls_before = (gap_before / 8).saturating_sub(hidden_slots_before(0));
+        let n_ctrls_before =
+            (gap_before / 8).saturating_sub(auxiliary_slots.get(&0).copied().unwrap_or(0));
         for _ in 0..n_ctrls_before {
             if positions.len() >= total_controls {
                 break;
@@ -2715,7 +2735,8 @@ impl Paragraph {
             }
             if next_off > current_off + char_width {
                 let gap = next_off - current_off - char_width;
-                let n_ctrls = (gap / 8).saturating_sub(hidden_slots_before(i + 1));
+                let n_ctrls =
+                    (gap / 8).saturating_sub(auxiliary_slots.get(&(i + 1)).copied().unwrap_or(0));
                 for _ in 0..n_ctrls {
                     if positions.len() >= total_controls {
                         break;
@@ -2723,6 +2744,28 @@ impl Paragraph {
                     positions.push(i + 1); // 현재 문자 다음에 삽입
                 }
             }
+        }
+
+        // 마지막 자동 번호 자리에는 다음 문자가 없어 stride를 읽을 수 없다.
+        // 문단 끝 마커 전의 원시 8유닛이 확인되면 마지막 공백 자체가 번호 슬롯이다.
+        // 새 번호의 순수 갭이나 일반 말미 공백은 번호 자리로 소비하지 않는다.
+        if positions.len() < total_controls
+            && offsets.len() == chars.len()
+            && matches!(
+                self.controls.get(positions.len()),
+                Some(Control::AutoNumber(_))
+            )
+            && offsets
+                .last()
+                .zip(chars.last())
+                .is_some_and(|(offset, ch)| {
+                    *ch == ' '
+                        && offset
+                            .checked_add(CTRL_CHAR_CODE_UNITS)
+                            .is_some_and(|end| end <= self.char_count.saturating_sub(1))
+                })
+        {
+            positions.push(chars.len() - 1);
         }
 
         // 갭 분석으로 발견되지 않은 컨트롤의 위치를 텍스트의 `\u{FFFC}` marker

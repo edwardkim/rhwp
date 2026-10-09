@@ -279,6 +279,41 @@ pub(crate) fn caption_height_px_in_context(
     line_seg_height.max(composed_height)
 }
 
+/// 도형 캡션 선택은 실제 배치와 흐름 측정이 같은 속성을 소비한다.
+pub(crate) fn shape_caption_for_layout(shape: &ShapeObject) -> Option<Caption> {
+    match shape {
+        ShapeObject::Line(s) => s.drawing.caption.clone(),
+        ShapeObject::Rectangle(s) => s.drawing.caption.clone(),
+        ShapeObject::Ellipse(s) => s.drawing.caption.clone(),
+        ShapeObject::Arc(s) => s.drawing.caption.clone(),
+        ShapeObject::Polygon(s) => s.drawing.caption.clone(),
+        ShapeObject::Curve(s) => s.drawing.caption.clone(),
+        ShapeObject::Group(s) => s.caption.clone(),
+        ShapeObject::Picture(s) => s.caption.clone(),
+        ShapeObject::Chart(s) => s.caption.clone().or_else(|| s.drawing.caption.clone()),
+        ShapeObject::Ole(s) => s.caption.clone().or_else(|| s.drawing.caption.clone()),
+    }
+}
+
+/// 캡션 마지막 줄의 후행 간격을 제외한 도형·캡션의 세로 점유 상자.
+/// 위·아래 캡션은 틀과의 간격을 포함하고 옆 캡션은 같은 세로 띠를 공유한다.
+pub(crate) fn captioned_shape_height_px(
+    shape_height: f64,
+    caption: &Option<Caption>,
+    dpi: f64,
+) -> f64 {
+    let Some(cap) = caption.as_ref().filter(|cap| !cap.paragraphs.is_empty()) else {
+        return shape_height;
+    };
+    let caption_height = caption_height_px(caption, dpi);
+    match cap.direction {
+        CaptionDirection::Top | CaptionDirection::Bottom => {
+            shape_height + hwpunit_to_px(cap.spacing as i32, dpi) + caption_height
+        }
+        CaptionDirection::Left | CaptionDirection::Right => shape_height.max(caption_height),
+    }
+}
+
 /// Hanyang-PUA 옛한글 코드포인트·한컴 PUA와 legacy 제품명을 렌더링용 텍스트로 변환한다.
 ///
 /// 한컴 자체 폰트 (함초롬바탕 LVT 등) 는 PUA 영역에 옛한글 글리프를 직접

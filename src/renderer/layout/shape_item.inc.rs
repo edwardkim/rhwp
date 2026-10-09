@@ -284,7 +284,8 @@ impl LayoutEngine {
                             let stored_picture = ctx.paragraph_float_placements
                                 .get(&(para_index, control_index))
                                 .filter(|placement| matches!(placement.flow,
-                                    super::float_placement::ParagraphFloatFlow::StoredPicture { .. })
+                                    super::float_placement::ParagraphFloatFlow::StoredPicture { .. }
+                                        | super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. })
                                     || (placement.flow == super::float_placement::ParagraphFloatFlow::Exclusion
                                         && placement.stored_host_origin.is_some()));
                             let (vpos_accounts_for_height, pic_y) = stored_picture
@@ -433,6 +434,9 @@ impl LayoutEngine {
                                 && stored_picture
                                     .and_then(|placement| placement.stored_successor_line_origin)
                                     .is_none()
+                                // 복수 그림의 합집합 계획은 빈 호스트 줄도 이미 소유한다.
+                                && !stored_picture.is_some_and(|placement| matches!(placement.flow,
+                                    super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }))
                             {
                                 let has_visible_text =
                                     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
@@ -667,10 +671,18 @@ impl LayoutEngine {
                     {
                         // [Issue #1156] 비-TAC 자리차지(TopAndBottom) 객체(차트 OLE 등):
                         // 자리차지 객체는 본문 텍스트를 위/아래로 밀어내므로, 후속 콘텐츠
-                        // 시작 y(result_y)를 객체 높이 + 아래 여백만큼 진행시켜 텍스트가
+                        // 시작 y(result_y)를 객체 높이 + 위·아래 여백만큼 진행시켜 텍스트가
                         // 객체 영역과 겹치지 않게 한다. (typeset.rs Stage 2 의 current_height
                         // 가산과 layout 정합 — 단 이동 후 단 시작 y_offset 기준.)
-                        let shape_h = hwpunit_to_px(common.height as i32, self.dpi);
+                        let shape_h = super::composer::captioned_shape_height_px(
+                            hwpunit_to_px(common.height as i32, self.dpi),
+                            &super::composer::shape_caption_for_layout(shape),
+                            self.dpi,
+                        );
+                        let margin_top = hwpunit_to_px(
+                            super::float_placement::topbottom_shape_top_margin_hu(common),
+                            self.dpi,
+                        );
                         let margin_bottom = hwpunit_to_px(common.margin.bottom as i32, self.dpi);
                         let occupied_bottom =
                             crate::renderer::float_placement::column_ole_placement(

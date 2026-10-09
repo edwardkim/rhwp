@@ -71,12 +71,13 @@ pub struct Font {
     pub type_info: Option<[u8; 10]>,
     /// 기본 글꼴 이름
     pub default_name: Option<String>,
-    /// 대체 글꼴 (HWPX `<hh:substFont>`) — 원본 글꼴 부재 시 대체될 글꼴 정보.
-    /// HWP5 의 `alt_name`/`alt_type` 과 달리 type·임베드 정보를 독립적으로 보존한다.
+    /// 문서의 명시 대체 글꼴 — 원본 글꼴 부재 시 대체될 글꼴 정보.
+    /// HWP5 FACE_NAME의 대체 이름/별도 유형과 HWPX `<hh:substFont>`를
+    /// 같은 계약으로 전달한다. HWP3 alt_name의 원 이름 추적과는 구분한다.
     pub subst_font: Option<SubstFont>,
 }
 
-/// 대체 글꼴 (HWPX `<hh:substFont>`)
+/// 문서의 명시 대체 글꼴 (HWP5 FACE_NAME / HWPX `<hh:substFont>`)
 ///
 /// 4개 속성을 모두 보존해 라운드트립 무손실을 보장한다. `font_type`/`is_embedded`/
 /// `bin_item_id_ref` 는 부모 `<hh:font>` 의 같은 이름 속성과 독립적이다

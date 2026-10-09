@@ -876,7 +876,12 @@ fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
 }
 
 pub(crate) fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
-    document.layout_profile().hwp3_origin_flow_spacing_before()
+    // HWP5 parser는 저장 간격과 vpos를 그대로 보존한다. 저장 vpos에 담긴
+    // 앞 간격은 HeightCursor가 사전 차감하고 실제 문단 배치가 한 번 더한다.
+    // 역사적 계보 때문에 그 차감을 생략하면 저장 간격을 다시 소비한다.
+    // 기존 HWP5-origin HWPX의 좌표 계약은 별도로 유지한다.
+    let profile = document.layout_profile();
+    profile.hwp3_origin_flow_spacing_before() && profile.hwpx_container()
 }
 
 fn should_insert_hwp3_title_filler_page(
@@ -9318,6 +9323,8 @@ mod tests {
 
         // "page 2" 단: para 1 만 포함.
         let cc = ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,

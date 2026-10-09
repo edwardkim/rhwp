@@ -545,6 +545,150 @@ impl Cell {
 }
 
 impl Table {
+    /// 저장 글줄과 표 전체의 완결한 구획이 입증하는 물리 셀 폭을 복구한다.
+    /// 재조판 전에 한 번 적용해 측정·편집·배치가 같은 폭을 사용한다.
+    /// 원본 폭이 이미 닫히거나 후보가 전체 행을 닫지 못하면 변경하지 않는다.
+    pub(crate) fn restore_stored_cell_frame_widths(
+        &mut self,
+        rounding_hu: u32,
+        para_shapes: &[super::style::ParaShape],
+    ) {
+        let rows = usize::from(self.row_count);
+        let cols = usize::from(self.col_count);
+        let slots = rows.saturating_mul(cols);
+        let Ok(spacing) = u64::try_from(self.cell_spacing) else {
+            return;
+        };
+        if rows == 0
+            || cols == 0
+            || slots > MAX_TABLE_GRID_CELLS
+            || self.cell_grid.len() != slots
+            || self.common.width == 0
+            || self.cell_grid.iter().any(Option::is_none)
+        {
+            return;
+        }
+
+        // 파서의 grid가 덮어쓴 중복 셀도 근거로 수용하지 않는다.
+        // 정상 표의 전체 span 순회는 이미 할당한 grid 칸 수에 비례한다.
+        for (index, cell) in self.cells.iter().enumerate() {
+            let row = usize::from(cell.row);
+            let col = usize::from(cell.col);
+            let end_row = row + usize::from(cell.row_span);
+            let end_col = col + usize::from(cell.col_span);
+            if cell.row_span == 0
+                || cell.col_span == 0
+                || end_row > rows
+                || end_col > cols
+                || cell.width == 0
+            {
+                return;
+            }
+            for r in row..end_row {
+                for c in col..end_col {
+                    if self.cell_grid[r * cols + c] != Some(index) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        let target = u64::from(self.common.width) + spacing * cols.saturating_sub(1) as u64;
+        let tolerance = u64::from(rounding_hu);
+        let row_total = |row: usize, widths: &[u32]| {
+            let mut col = 0;
+            let mut total = 0u64;
+            while col < cols {
+                let index = self.cell_grid[row * cols + col]?;
+                let cell = self.cells.get(index)?;
+                if usize::from(cell.col) != col {
+                    return None;
+                }
+                total += u64::from(*widths.get(index)?);
+                col += usize::from(cell.col_span);
+                if col < cols {
+                    total += spacing;
+                }
+            }
+            Some(total)
+        };
+        let raw = self.cells.iter().map(|cell| cell.width).collect::<Vec<_>>();
+        if (0..rows).all(|row| {
+            row_total(row, &raw).is_some_and(|total| total.abs_diff(target) <= tolerance)
+        }) {
+            return;
+        }
+
+        let widths = self
+            .cells
+            .iter()
+            .map(|cell| {
+                if cell.dirty_flag || cell.text_direction != 0 {
+                    return cell.width;
+                }
+                let padding = cell.paragraph_frame_padding(&self.padding);
+                let horizontal_padding = i64::from(padding.left) + i64::from(padding.right);
+                let frame = cell.paragraphs.iter().filter_map(|para| {
+                    let segs = para.serializable_line_segs();
+                    // 1단 정의는 가시 개체나 추가 줄 공간을 소유하지 않는다.
+                    // 다단 및 실제 개체는 저장 줄만으로 셀 프레임을 복구하지 않는다.
+                    let has_object = para.controls.iter().any(|control| {
+                        !matches!(control, super::control::Control::ColumnDef(columns)
+                                if columns.column_count == 1)
+                    });
+                    if para.stored_text_partition_is_dirty()
+                        || para.cell_format_vpos_dirty
+                        || has_object
+                        || segs.is_empty()
+                        || segs.iter().any(|seg| {
+                            seg.tag & super::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                                || seg.column_start < 0
+                                || seg.segment_width <= 0
+                                || seg.line_height <= 0
+                        })
+                    {
+                        return None;
+                    }
+                    let shape = para_shapes.get(usize::from(para.para_shape_id))?;
+                    if shape.margin_left < 0 || shape.margin_right < 0 {
+                        return None;
+                    }
+                    // 저장 column_start는 문단 왼쪽 여백을 이미 포함한다.
+                    // 공통 ParaShape의 정규화된 2배 단위에서 오른쪽 여백만
+                    // 추가해 같은 물리 셀 프레임을 복구한다. 들여쓰기와
+                    // 글리프 전진폭은 프레임 폭의 근거가 아니다.
+                    let paragraph_margin = i64::from(shape.margin_right) / 2;
+                    segs.iter()
+                        .map(|seg| {
+                            i64::from(seg.column_start)
+                                + i64::from(seg.segment_width)
+                                + horizontal_padding
+                                + paragraph_margin
+                        })
+                        .max()
+                });
+                frame
+                    .filter_map(|width| u32::try_from(width).ok())
+                    .fold(cell.width, u32::max)
+            })
+            .collect::<Vec<_>>();
+        if !(0..rows).all(|row| {
+            row_total(row, &widths).is_some_and(|total| total.abs_diff(target) <= tolerance)
+        }) {
+            return;
+        }
+
+        // 실제 모델을 복구하므로 글줄 재조판 뒤에도 폭이 되돌아가지 않는다.
+        // 내보내기도 같은 물리 폭과 기존 텍스트 영역 폭의 상대 차이를 보존한다.
+        for (cell, width) in self.cells.iter_mut().zip(widths) {
+            let delta = i64::from(width) - i64::from(cell.width);
+            if delta > 0 {
+                cell.shift_text_area_width(delta);
+                cell.width = width;
+            }
+        }
+    }
+
     /// The empty bands before the first and after the last cell are part of
     /// a separated table's physical box, in addition to its internal gaps.
     pub(crate) fn outer_cell_spacing_hu(&self) -> i32 {

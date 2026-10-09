@@ -2717,6 +2717,13 @@ fn write_generated_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAtt
     }
 }
 
+/// 편집으로 합성한 행렬을 HWP 저장 rendering 블록으로 만든다.
+pub(crate) fn serialize_affine_rendering(attr: &ShapeComponentAttr) -> Vec<u8> {
+    let mut writer = ByteWriter::new();
+    write_parsed_rendering_matrix(&mut writer, attr);
+    writer.into_bytes()
+}
+
 fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
     // HWP parser composes rendering info as:
     // result = translation x rotation x scale

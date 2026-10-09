@@ -1160,7 +1160,9 @@ impl PaintOp {
                         left, top, right, bottom
                     );
                 }
-                if let Some((width, height)) = image.original_size_hu {
+                if let Some((width, height)) =
+                    crate::renderer::image_resolver::resolved_image_crop_reference_size(image)
+                {
                     let _ = write!(buf, ",\"originalSizeHu\":[{},{}]", width, height);
                 }
                 let (effect, brightness, contrast) =

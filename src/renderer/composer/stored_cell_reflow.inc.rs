@@ -27,6 +27,17 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     measured_inline_table_heights: &[(usize, u32)],
 ) -> Option<ComposedParagraph> {
     let stored_geometry_policy = stored_geometry_policy.into();
+    // loader가 만든 합성 줄은 원본 저장 캐시가 아니다. 독립 개체가 없는
+    // 본문은 현재 프레임에서 다시 구성하며 원본 IR은 보존한다.
+    let fresh_body = (!para.line_segs.is_empty()
+        && para.controls.is_empty()
+        && crate::renderer::para_has_no_stored_line_segs(para))
+    .then(|| {
+        let mut body = para.clone();
+        body.replace_line_segs(Vec::new());
+        body
+    });
+    let para = fresh_body.as_ref().unwrap_or(para);
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
     // owner to hand it to.

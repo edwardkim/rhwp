@@ -320,6 +320,25 @@ impl Default for ShapeComponentAttr {
     }
 }
 
+impl ShapeComponentAttr {
+    /// 명시적으로 저장된 유효한 변환인지 확인한다.
+    /// 기본 identity 블록은 current/original 크기의 저장 경로이므로 별도 기하가 아니다.
+    pub(crate) fn has_saved_affine_geometry(&self) -> bool {
+        let matrix = [
+            self.render_sx,
+            self.render_b,
+            self.render_tx,
+            self.render_c,
+            self.render_sy,
+            self.render_ty,
+        ];
+        !self.raw_rendering.is_empty()
+            && matrix.iter().all(|v| v.is_finite())
+            && self.render_sx * self.render_sy - self.render_b * self.render_c != 0.0
+            && matrix != [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+    }
+}
+
 /// 그리기 개체 공통 속성
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct DrawingObjAttr {
@@ -700,6 +719,17 @@ pub struct ArcShape {
     pub axis2: Point,
 }
 
+/// 다각형 편집의 기준 기하. 파일에는 현재 합성 행렬만 저장한다.
+#[derive(Debug, Clone)]
+pub struct PolygonAffineEditReference {
+    pub width: u32,
+    pub height: u32,
+    pub rotation: i16,
+    pub horz_flip: bool,
+    pub vert_flip: bool,
+    pub matrix: [f64; 6],
+}
+
 /// 다각형 개체 (HWPTAG_SHAPE_COMPONENT_POLYGON)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct PolygonShape {
@@ -709,6 +739,9 @@ pub struct PolygonShape {
     pub drawing: DrawingObjAttr,
     /// 꼭짓점 좌표 목록
     pub points: Vec<Point>,
+    /// 복수 속성 변경과 되돌리기를 같은 기준 행렬에서 계산한다.
+    #[serde(skip)]
+    pub affine_edit_reference: Option<PolygonAffineEditReference>,
     /// SHAPE_POLYGON 끝 패딩/추가 바이트 (라운드트립 보존)
     pub raw_trailing: Vec<u8>,
 }

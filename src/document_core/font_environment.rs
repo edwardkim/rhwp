@@ -2,6 +2,27 @@ use super::DocumentCore;
 use crate::{error::HwpError, renderer::font_environment::FontEnvironment};
 
 impl DocumentCore {
+    /// 호스트가 실제 프로그램을 준비할 문서 후보와 현재 명시 환경을 반환한다.
+    pub fn get_document_font_selection_plan(&self) -> String {
+        serde_json::json!({
+            "requests": FontEnvironment::document_requests(&self.document.doc_info),
+            "environmentId": self.font_environment.as_ref().map(FontEnvironment::id),
+            "embeddedFamilies": self.document.doc_info.font_faces.iter().flatten()
+                .filter(|font| font.is_embedded).map(|font| &font.name)
+                .collect::<std::collections::BTreeSet<_>>(),
+        })
+        .to_string()
+    }
+
+    /// 설치 조회 정책을 복제하지 않고 실제 공급 snapshot으로 공통 환경을 계산한다.
+    pub fn build_font_environment_from_available_programs(
+        &self,
+        json: &str,
+    ) -> Result<String, HwpError> {
+        let environment = FontEnvironment::from_available_programs(&self.document.doc_info, json)?;
+        serde_json::to_string(&environment).map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
     /// Change the rendering environment without modifying document fonts or saved lines.
     /// None restores the portable default. Repeating an environment is a no-op.
     pub fn set_font_environment(

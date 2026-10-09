@@ -14,7 +14,7 @@ use crate::model::control::Control;
 use crate::model::document::Section;
 pub use crate::model::paragraph::SpaceMetric;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
-use crate::model::shape::Caption;
+use crate::model::shape::{Caption, CaptionDirection, ShapeObject};
 use crate::renderer::layout_frame::LayoutFrame;
 pub use crate::renderer::layout_frame::ParagraphBox;
 
