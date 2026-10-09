@@ -58,6 +58,26 @@ pub(super) fn text_typeface_candidates(
     style: FontStyle,
 ) -> (Vec<String>, Vec<TypefaceCandidate>) {
     let families = text_family_candidates(requested);
+    let chain = typeface_candidates_for_families(
+        font_mgr,
+        system_families,
+        custom_typefaces,
+        bundled_typefaces,
+        &families,
+        style,
+    );
+    (families, chain)
+}
+
+/// Resolve an ordered family list through the same sources used by body text.
+pub(super) fn typeface_candidates_for_families(
+    font_mgr: &FontMgr,
+    system_families: &SystemFontFamilies,
+    custom_typefaces: &HashMap<String, Typeface>,
+    bundled_typefaces: &HashMap<String, Typeface>,
+    families: &[String],
+    style: FontStyle,
+) -> Vec<TypefaceCandidate> {
     let mut chain = Vec::new();
     let mut seen = HashSet::new();
     let mut push = |typeface: Typeface, source: &'static str| {
@@ -66,18 +86,18 @@ pub(super) fn text_typeface_candidates(
             chain.push(TypefaceCandidate { typeface, source });
         }
     };
-    for family in &families {
+    for family in families {
         if let Some(typeface) = custom_typefaces.get(family).cloned() {
             push(typeface, "custom");
         }
     }
-    for family in &families {
+    for family in families {
         if let Some(typeface) = match_system_family_style(font_mgr, system_families, family, style)
         {
             push(typeface, "system");
         }
     }
-    for family in &families {
+    for family in families {
         if let Some(typeface) = bundled_typefaces.get(family).cloned() {
             push(typeface, "bundled");
         }
@@ -85,7 +105,7 @@ pub(super) fn text_typeface_candidates(
     if let Some(typeface) = legacy_typeface_for_style(font_mgr, style) {
         push(typeface, "legacy");
     }
-    (families, chain)
+    chain
 }
 
 pub(super) fn select_typeface_for_character<'a>(

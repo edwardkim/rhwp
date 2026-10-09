@@ -22,7 +22,7 @@ use crate::renderer::layer_renderer::{
 use crate::renderer::render_tree::RenderLayerInfo;
 use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
 
-use super::equation_conv::render_equation;
+use super::equation_conv::{render_equation, EquationFonts};
 use super::font_lookup::{
     collect_system_families, legacy_typeface_for_style, match_system_family_style,
     SystemFontFamilies,
@@ -802,6 +802,12 @@ impl SkiaLayerRenderer {
                 ImageSampling::linear(),
             )
         };
+        let equation_fonts = EquationFonts {
+            font_mgr: &self.font_mgr,
+            system_families: &self.system_families,
+            custom_typefaces: &self.custom_typefaces,
+            bundled_typefaces: &self.bundled_typefaces,
+        };
         let text_replay = SkiaTextReplay {
             canvas,
             font_mgr: &self.font_mgr,
@@ -1474,8 +1480,7 @@ impl SkiaLayerRenderer {
                                 canvas.scale((scale_x as f32, scale_y as f32));
                                 render_equation(
                                     canvas,
-                                    &self.font_mgr,
-                                    &self.system_families,
+                                    &equation_fonts,
                                     &equation.layout_box,
                                     0.0,
                                     0.0,
@@ -1485,8 +1490,7 @@ impl SkiaLayerRenderer {
                             } else {
                                 render_equation(
                                     canvas,
-                                    &self.font_mgr,
-                                    &self.system_families,
+                                    &equation_fonts,
                                     &equation.layout_box,
                                     bbox.x,
                                     bbox.y,

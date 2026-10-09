@@ -60,3 +60,20 @@ zoom/DPR/resize 15조건의 트리 유지와 3개 원래 조건 복원 PNG 일�
 
 절차 반영과 제품 구현의 완료는 구분한다. 2단계 문서 변경과 검증은
 [절차 반영 기록](../working/task_m100_7688_stage2.md)에 남긴다.
+
+## 3단계 — Native PNG 수식 글꼴 소비 보정
+
+사용자가 구현 진행을 승인했다. 독립 기준은 같은 `samples/eq-01.hwp`의 정상 한컴 Print PDF다.
+본문 한글과 Canvas/SVG 수식 한글은 표시되지만 Native PNG 수식에는 네모 glyph가 나온다.
+유효한 Batang custom 경로를 공급해도 기존 수식 경로는 그 자원을 받지 않아 문제가 유지된다.
+
+`PaintOp::Equation` → `render_equation` → 재귀 `render_box` → `draw_text`에서
+본문의 custom/system/bundled 후보와 glyph coverage 선택을 재사용한다. 수식의 family 순서와
+정체/기울임 규칙은 유지한다. 선택된 face별 연속 run의 측정 폭을 실제 paint와 가운데 정렬이
+함께 소비하게 하며, LayoutBox의 줄 소속·원점·저장 scale은 바꾸지 않는다.
+기존 본문 helper는 같은 후보 수집 본체를 호출하고 기존 우선순위를 유지한다.
+
+반례는 custom Batang 공급, 시스템 CJK fallback, 첫 후보에 한글 glyph가 없는 경우,
+한글/수학 기호 혼재와 일반 Latin 수식이다. screen/print와 scale 유무의 실제 호출을 확인한다.
+먼저 실제 PNG와 독립 PDF를 비교하고, 시각 선행 조건 충족 후 정식 회귀를 추가한다.
+공통 crop·화살촉과 다른 backend의 별도 글꼴 등록은 이 보정의 해결 범위가 아니다.
