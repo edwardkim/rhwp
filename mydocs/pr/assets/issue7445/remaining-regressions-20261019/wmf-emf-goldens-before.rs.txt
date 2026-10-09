@@ -1,7 +1,9 @@
-//! M09x: 현행 WMF/EMF 변환을 골든으로 잠근다.
+//! M09x: 합성 WMF/EMF의 파싱·도형·컨테이너 계약을 기존 골든과 비교한다.
 //!
 //! 엔진을 고치거나 새 파서를 만들지 않는다. 한컴 정답 오라클이 아니라
-//! `WMFConverter`/`parse_emf`/`convert_to_svg` 의 현재 출력을 고정한다.
+//! `WMFConverter`/`parse_emf`/`convert_to_svg`의 합성 입력을 검사한다.
+//! WMF의 명시적 크기는 독립 골든의 viewBox와 같은 프레임을 가져야 하며,
+//! XML 속성 순서나 같은 크기의 컨테이너 속성 추가는 도형 변경이 아니다.
 //!
 //! 골든 갱신: `UPDATE_WMF_EMF_GOLDENS=1 cargo test --test <suite> wmf_emf_goldens`
 
@@ -439,6 +441,76 @@ fn snapshot_of(case: &GoldenCase) -> String {
     }
 }
 
+/// WMF 골든의 헤더와 SVG 구조를 보존하면서 명시적 컨테이너 크기를 검사한다.
+/// 합성 입력의 기존 viewBox도 비교 결과에 남기므로 프레임 변경을 숨기지 않는다.
+fn wmf_snapshot_contract(
+    snapshot: &str,
+    require_dimensions: bool,
+) -> Result<(String, String), String> {
+    let (metadata, xml) = snapshot
+        .split_once("=== svg ===\n")
+        .ok_or_else(|| "WMF 골든의 SVG 구역이 없음".to_owned())?;
+    let document = roxmltree::Document::parse(xml.trim())
+        .map_err(|error| format!("WMF SVG 구문 오류: {error}"))?;
+    let root = document.root_element();
+    if root.tag_name().name() != "svg"
+        || root.tag_name().namespace() != Some("http://www.w3.org/2000/svg")
+    {
+        return Err("WMF SVG 루트 또는 namespace가 다름".to_owned());
+    }
+    let view_box: Vec<f64> = root
+        .attribute("viewBox")
+        .ok_or_else(|| "WMF SVG에 viewBox가 없음".to_owned())?
+        .split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()
+        .map_err(|_| "WMF viewBox가 숫자가 아님".to_owned())?;
+    if view_box.len() != 4
+        || view_box.iter().any(|value| !value.is_finite())
+        || view_box[2] <= 0.0
+        || view_box[3] <= 0.0
+    {
+        return Err("WMF viewBox가 유효한 프레임이 아님".to_owned());
+    }
+    for (name, span) in [("width", view_box[2]), ("height", view_box[3])] {
+        if let Some(size) = root.attribute(name) {
+            let size: f64 = size
+                .parse()
+                .map_err(|_| format!("WMF {name}이 숫자가 아님"))?;
+            if size != span {
+                return Err(format!("WMF {name}이 viewBox 프레임과 다름"));
+            }
+        } else if require_dimensions {
+            return Err(format!("WMF의 명시적 {name}이 없음"));
+        }
+    }
+    fn structure(node: roxmltree::Node<'_, '_>, root: bool) -> String {
+        let attributes: std::collections::BTreeMap<_, _> = node
+            .attributes()
+            .filter(|attribute| {
+                !(root
+                    && attribute.namespace().is_none()
+                    && matches!(attribute.name(), "width" | "height"))
+            })
+            .map(|attribute| ((attribute.namespace(), attribute.name()), attribute.value()))
+            .collect();
+        let children: Vec<_> = node
+            .children()
+            .filter_map(|child| {
+                if child.is_element() {
+                    Some(structure(child, false))
+                } else if child.is_text() && !child.text().unwrap_or_default().trim().is_empty() {
+                    Some(format!("텍스트 {:?}", child.text()))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        format!("{:?} {attributes:?} {children:?}", node.tag_name())
+    }
+    Ok((metadata.to_owned(), structure(root, true)))
+}
+
 #[test]
 fn wmf_emf_goldens_lock_current_engine() {
     assert_eq!(CASES.len(), 9, "M09x 골든 개수가 카탈로그와 어긋난다");
@@ -499,7 +571,24 @@ fn wmf_emf_goldens_lock_current_engine() {
         }
         let expected = std::fs::read_to_string(&path)
             .unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
-        if expected != actual {
+        let same_contract = if case.kind == "wmf" {
+            match (
+                wmf_snapshot_contract(&expected, false),
+                wmf_snapshot_contract(&actual, true),
+            ) {
+                (Ok(expected), Ok(actual)) => expected == actual,
+                (expected, actual) => {
+                    mismatches.push(format!(
+                        "{}: WMF 계약 구문/프레임 오류: {expected:?} / {actual:?}",
+                        case.id
+                    ));
+                    false
+                }
+            }
+        } else {
+            expected == actual
+        };
+        if !same_contract {
             mismatches.push(format!(
                 "{} ({})\n--- expected ---\n{expected}\n--- actual ---\n{actual}",
                 case.id,

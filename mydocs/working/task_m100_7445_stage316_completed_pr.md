@@ -1372,3 +1372,34 @@ Native PDF를 정본으로 대신하지 않습니다. 기준 미확보 상태에
 현재 후보의 별도 Native CLI·fresh pkg는 진단 전 생산 출력 그대로입니다.
 
 [원본·정확한 base/후보·원인 분리·소스 복원·변환 job 증거](../pr/assets/issue7445/completed-20261009/court-reference-width-diagnostic.json).
+
+
+## 보정 360 사전 분석: 합성 WMF 컨테이너 계약
+
+잔여 WMF 골든 실패 5건은 실제 도형·헤더가 아니라 루트 SVG에 추가된
+명시적 width/height 때문입니다. 기존 9종은 테스트 안에서 제작한 이진
+헤더·도형 연산자 입력이며 실물 HWP의 조판·쪽·위치 검사가 아닙니다.
+이 범위는 원본 문서/Print Visual Sweep을 비해당으로 기록하며 실물 문서의
+렌더 수용을 주장하지 않습니다. WMF는 기존 헤더·viewBox·도형의 XML 구조와
+속성을 보존해 비교하고 명시적 크기가 viewBox 프레임과 같은지 별도로 검사합니다.
+속성 순서나 동일 프레임의 width/height 추가만 기존 골든과 동등하게 처리합니다.
+EMF 문자열 계약과 골든·시드·생산 코드는 유지하고 기존 한 테스트 함수의
+9종을 실행합니다. 새 회귀 함수나 fixture를 추가하지 않습니다.
+
+
+### 보정 360 결과 — 합성 WMF 계약 9종 통과
+
+기존 한 함수의 같은 9종 합성 입력은 수정 전 WMF 골든 5건 불일치로
+FAIL, 수정 후 **1 PASS / 240 skipped**, exit 0입니다. XML 구조 비교는
+헤더 metadata·기존 viewBox·자식 도형과 모든 paint 속성을 유지하며 실제
+WMF root의 명시적 width/height가 viewBox의 프레임 폭·높이와 같은지
+검사합니다. 서로 다른 크기·다른 viewBox·다른 도형은 동등 처리하지 않습니다.
+EMF의 종전 문자열 계약과 9종 골든·시드·생산 소스는 그대로입니다.
+XML 속성 순서와 동일 프레임의 명시적 크기 추가만 허용했습니다.
+
+실물 HWP/HWPX의 위치·페이지 회귀가 아닌 합성 연산자 단위 계약이므로
+Visual Sweep은 이 범위에 비해당이며 실제 문서 수용으로 보고하지 않습니다.
+새 테스트 함수·fixture를 추가하지 않았고 fmt도 통과했습니다. 직전 잔여
+37개 중 WMF 한 함수의 통과를 추가 확인했으며 최신 전체·잔여 목록 실행은
+아직 하지 않았습니다. PR 준비 완료가 아닙니다.
+[합성 입력 범위·RED/GREEN·로그 해시·검사 계약](../pr/assets/issue7445/completed-20261009/wmf-container-contract-validation.json).

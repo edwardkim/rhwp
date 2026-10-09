@@ -1,0 +1,44 @@
+{
+  "stage": 360,
+  "candidateParent": "9ba222c2e50179d567a8087db6040d0f03285c29",
+  "test": "wmf_emf_goldens::wmf_emf_goldens_lock_current_engine",
+  "testSourceSha256": "2b8cb16c8f28507ada3722136f668957cb3dd710cb068edb14b13b259f982f46",
+  "scope": "동일 합성 WMF/EMF 이진 연산자 9종의 파싱·도형·컨테이너 단위 계약",
+  "visualSweep": {
+    "applicability": "비해당",
+    "reason": "실물 HWP/HWPX·페이지 배치·서체 렌더 검사가 아님. 생산 파서/변환/paint 수정이나 실제 문서 수용 주장 없음"
+  },
+  "red": {
+    "candidate": "0eb51916837e2ee00c48981518476cfc0d813505",
+    "source": "remaining-after-rewind-frame-validation.json",
+    "mismatches": 5,
+    "reason": "WMF root에 동일 viewBox 프레임의 width/height 추가",
+    "logPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage358-remaining-after-rewind-frame/nextest.log",
+    "logSha256": "7f3a9d30c5f33c8bd8f6427ad6884dd113e32cce9fa2d20cb11bc6993c886d7b"
+  },
+  "green": {
+    "summary": "Summary [   0.020s] 1 test run: 1 passed, 240 skipped",
+    "exit": {
+      "exitCode": 0,
+      "seconds": 100.28796979179606
+    },
+    "logPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage360-wmf-container-contract/focused.log",
+    "logSha256": "fdfa404ab627ac3233d32395dcd79fe46a55535f54611004fec626c1659c22ff",
+    "commandSha256": "c2a11ddf0147b0ce054a29dc301ecc2ed22d41e4c43ce7379f6d42c5d8d15a6c",
+    "cases": 9
+  },
+  "contracts": [
+    "합성 입력·시드 바이트와 헤더 metadata 일치 유지",
+    "기존 골든의 viewBox·도형·paint·자식 속성·내용 구조 일치",
+    "실제 WMF root는 명시적 width/height 필수, viewBox 폭·높이와 일치",
+    "루트의 동일 크기와 XML 속성 순서 차이만 동등 처리",
+    "EMF의 기존 문자열 계약 유지"
+  ],
+  "newTestFunctions": 0,
+  "newFixtures": 0,
+  "productionChanges": false,
+  "fixtureOrCorpusChanges": false,
+  "fmtExitCode": 0,
+  "remainingOriginalFailures": "직전37개 중 WMF 한 함수 통과 확인. 전체/잔여 목록 재실행 전이며 다른 실패의 통과를 추정하지 않음",
+  "prReady": false
+}
