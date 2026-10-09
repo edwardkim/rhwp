@@ -1,0 +1,366 @@
+{
+  "validationParentHead": "d5a43fdea2b6057e46c3eb735bdf0b3a01622c46",
+  "baseHead": "21ed64071f81f35f37618717693bd30f727392c9",
+  "source": "samples/issue_265.hwp",
+  "sourceSha256": "645525c8cd5ec11b1742ba7cfc759f68622861916233b5e982385cdb12f0ced2",
+  "referencePdf": "pdf/issue_265-hwp-2020.pdf",
+  "referencePdfSha256": "c8e4218c7b80f1fb4f7877f5613eb6fd82fa1ca2b1ca3cde6266b81586357302",
+  "referencePages": 16,
+  "compat": "2022",
+  "dpi": 96,
+  "fontPath": "/Users/tsjang/Library/Fonts",
+  "sourceFiles": {
+    "src/renderer/typeset/paragraph.rs": "97e67f11edab2252ea3cdf302603656febf28d2666bfe3c3fb3f73ffbb154aa3",
+    "src/renderer/typeset/paragraph/boundary.rs": "57ee945d02130245e4aee6175a56571ad85083606cfce130c647b5175d86b189"
+  },
+  "testsChanged": false,
+  "baselineChanged": false,
+  "newTests": 0,
+  "wholeDocumentAccepted": false,
+  "focusedNextest": {
+    "run": 19,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 1281,
+    "durationSeconds": 2.915,
+    "threads": 8,
+    "logSha256": "3a2aef22c3f3914d948566f0ccf044a61ec0a39f9f6c4eec42af6148d1e9e946"
+  },
+  "results": {
+    "devel": {
+      "pages": 16,
+      "overflowCount": 0,
+      "minimum": 56.68924,
+      "below90": [
+        {
+          "page": 3,
+          "percent": 58.75945
+        },
+        {
+          "page": 8,
+          "percent": 56.68924
+        }
+      ],
+      "scores": [
+        {
+          "page": 1,
+          "percent": 92.15186
+        },
+        {
+          "page": 2,
+          "percent": 95.85409
+        },
+        {
+          "page": 3,
+          "percent": 58.75945
+        },
+        {
+          "page": 4,
+          "percent": 93.27786
+        },
+        {
+          "page": 5,
+          "percent": 91.17993
+        },
+        {
+          "page": 6,
+          "percent": 94.45587
+        },
+        {
+          "page": 7,
+          "percent": 94.29601
+        },
+        {
+          "page": 8,
+          "percent": 56.68924
+        },
+        {
+          "page": 9,
+          "percent": 93.4005
+        },
+        {
+          "page": 10,
+          "percent": 92.04601
+        },
+        {
+          "page": 11,
+          "percent": 94.4207
+        },
+        {
+          "page": 12,
+          "percent": 92.28518
+        },
+        {
+          "page": 13,
+          "percent": 92.24951
+        },
+        {
+          "page": 14,
+          "percent": 94.22023
+        },
+        {
+          "page": 15,
+          "percent": 92.68191
+        },
+        {
+          "page": 16,
+          "percent": 92.53628
+        }
+      ]
+    },
+    "candidate": {
+      "pages": 16,
+      "overflowCount": 1,
+      "minimum": 54.75895,
+      "below90": [
+        {
+          "page": 3,
+          "percent": 58.82809
+        },
+        {
+          "page": 7,
+          "percent": 89.89899
+        },
+        {
+          "page": 8,
+          "percent": 54.75895
+        }
+      ],
+      "scores": [
+        {
+          "page": 1,
+          "percent": 92.2928
+        },
+        {
+          "page": 2,
+          "percent": 95.85409
+        },
+        {
+          "page": 3,
+          "percent": 58.82809
+        },
+        {
+          "page": 4,
+          "percent": 93.27786
+        },
+        {
+          "page": 5,
+          "percent": 91.17993
+        },
+        {
+          "page": 6,
+          "percent": 92.74427
+        },
+        {
+          "page": 7,
+          "percent": 89.89899
+        },
+        {
+          "page": 8,
+          "percent": 54.75895
+        },
+        {
+          "page": 9,
+          "percent": 93.49297
+        },
+        {
+          "page": 10,
+          "percent": 92.04601
+        },
+        {
+          "page": 11,
+          "percent": 94.4207
+        },
+        {
+          "page": 12,
+          "percent": 92.28518
+        },
+        {
+          "page": 13,
+          "percent": 92.24951
+        },
+        {
+          "page": 14,
+          "percent": 94.22023
+        },
+        {
+          "page": 15,
+          "percent": 92.68191
+        },
+        {
+          "page": 16,
+          "percent": 92.53628
+        }
+      ]
+    },
+    "corrected": {
+      "pages": 16,
+      "overflowCount": 0,
+      "minimum": 54.75895,
+      "below90": [
+        {
+          "page": 3,
+          "percent": 58.82809
+        },
+        {
+          "page": 8,
+          "percent": 54.75895
+        }
+      ],
+      "scores": [
+        {
+          "page": 1,
+          "percent": 92.2928
+        },
+        {
+          "page": 2,
+          "percent": 95.85409
+        },
+        {
+          "page": 3,
+          "percent": 58.82809
+        },
+        {
+          "page": 4,
+          "percent": 93.27786
+        },
+        {
+          "page": 5,
+          "percent": 91.17993
+        },
+        {
+          "page": 6,
+          "percent": 94.45587
+        },
+        {
+          "page": 7,
+          "percent": 94.481
+        },
+        {
+          "page": 8,
+          "percent": 54.75895
+        },
+        {
+          "page": 9,
+          "percent": 93.49297
+        },
+        {
+          "page": 10,
+          "percent": 92.04601
+        },
+        {
+          "page": 11,
+          "percent": 94.4207
+        },
+        {
+          "page": 12,
+          "percent": 92.28518
+        },
+        {
+          "page": 13,
+          "percent": 92.24951
+        },
+        {
+          "page": 14,
+          "percent": 94.22023
+        },
+        {
+          "page": 15,
+          "percent": 92.68191
+        },
+        {
+          "page": 16,
+          "percent": 92.53628
+        }
+      ]
+    }
+  },
+  "binarySha256": "7589d57286047f8a98b7e40efa81c18b56078a45354aa67775ed2abd46e93fe5",
+  "productionRule": "원본 HWP3의 유효한 줄 정보에서 문단 내부 쪽 되감김을 같은 forced cut으로 조회하고 줄 스캔·조각·배치가 공유한다. 편집·합성·줄 수가 달라진 재구성은 제외한다.",
+  "freshWasm": {
+    "build": "Mac no-opt locked wrapper 성공; Docker 최적화 검증이 아님",
+    "bundle": {
+      "rhwp.js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+      "rhwp_bg.wasm": "c1457cc91f9c7ffc136595952af34dd647d41a7caf1ec8ca5cf16b5ded9cca6a"
+    },
+    "browser": "Chrome/154.0.8037.99",
+    "pages": 16,
+    "referencePages": 16,
+    "scores": [
+      {
+        "page": 1,
+        "percent": 92.2928
+      },
+      {
+        "page": 2,
+        "percent": 95.85409
+      },
+      {
+        "page": 3,
+        "percent": 58.82809
+      },
+      {
+        "page": 4,
+        "percent": 93.27786
+      },
+      {
+        "page": 5,
+        "percent": 91.17993
+      },
+      {
+        "page": 6,
+        "percent": 94.45587
+      },
+      {
+        "page": 7,
+        "percent": 94.481
+      },
+      {
+        "page": 8,
+        "percent": 54.75895
+      },
+      {
+        "page": 9,
+        "percent": 93.49297
+      },
+      {
+        "page": 10,
+        "percent": 92.04601
+      },
+      {
+        "page": 11,
+        "percent": 94.4207
+      },
+      {
+        "page": 12,
+        "percent": 92.28518
+      },
+      {
+        "page": 13,
+        "percent": 92.24951
+      },
+      {
+        "page": 14,
+        "percent": 94.22023
+      },
+      {
+        "page": 15,
+        "percent": 92.68191
+      },
+      {
+        "page": 16,
+        "percent": 92.53628
+      }
+    ],
+    "minimum": 54.75895,
+    "below90": [
+      3,
+      8
+    ],
+    "identicalNativeFreshPngPages": 16,
+    "gate": "re_review_required",
+    "sweepExitCode": 1
+  },
+  "directReview": "6쪽 마지막 줄이 7쪽 첫 줄로 복원되며 같은 문단의 나머지 줄·그림·캡션은 보존됨. 7쪽 실제 review에서 확인. 캡션 아래 간격·글꼴 잉크 차이는 남음.",
+  "remaining": "3·8쪽 전체 미달은 유지. 원본 그림의 저장 캡션 높이 1852HU와 전체 프레임에 비해 caption spacing이 0이며, Picture 흐름 예약의 캡션 점유 누락을 다음 단계에서 확인한다. 회귀·baseline·공차·원본·기준 PDF는 변경하지 않음."
+}

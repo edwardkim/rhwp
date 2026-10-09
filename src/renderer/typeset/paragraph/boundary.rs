@@ -69,6 +69,27 @@ pub(super) fn stored_page_start_line(
         })
 }
 
+/// 원본 HWP3의 줄 정보 pgy 되감김으로 생산된 문단 내부 쪽 경계다.
+/// 변환본의 로컬 원점과 달리 문단 시작 높이나 개체 유무로 소속을 추정하지 않는다.
+/// 실제 줄 구성이 달라졌거나 편집한 문단에는 저장 경계를 재사용하지 않는다.
+pub(super) fn native_hwp3_stored_page_break_line(
+    para: &Paragraph,
+    line_count: usize,
+) -> Option<usize> {
+    if line_count < 2
+        || line_count != para.line_segs.len()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || para.line_segs.iter().any(is_synthetic_line_seg)
+    {
+        return None;
+    }
+    para.line_segs
+        .windows(2)
+        .position(|pair| pair[0].vertical_pos > 0 && pair[1].vertical_pos == 0)
+        .map(|index| index + 1)
+}
+
 pub(super) fn internal_vpos_page_break_line(
     para: &Paragraph,
     line_count: usize,

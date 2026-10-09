@@ -89,7 +89,12 @@ pub(in crate::renderer::typeset) fn prepare_forced_page_boundary(
     let stored_page_start_line = (!st.profile.session_edited())
         .then(|| boundary::stored_page_start_line(para, fmt.line_count(), 0))
         .flatten();
+    let native_hwp3_stored_break_line = (st.profile.hwp3_native_layout()
+        && !st.profile.session_edited())
+    .then(|| boundary::native_hwp3_stored_page_break_line(para, fmt.line_heights.len()))
+    .flatten();
     let forced_page_break_line = stored_page_start_line
+        .or(native_hwp3_stored_break_line)
         .or(anchored_stored_body_reset_line)
         .or(internal_forced_page_break_line)
         .or_else(|| {
