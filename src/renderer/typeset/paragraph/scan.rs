@@ -430,6 +430,57 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
                         | crate::model::shape::TextWrap::BehindText
                         | crate::model::shape::TextWrap::InFrontOfText))
         });
+    // 뒤 조각 텍스트 아래에서 그 쪽 안에 닫히는 그림은 앞 조각의 줄 소유를 바꾸지 않는다.
+    // 실제 컨트롤 배치는 마지막 문단 조각에 그림을 등록하므로 같은 저장 경계를 공유한다.
+    let continuation_pictures = para.line_segs.get(break_line).is_some_and(|first| {
+        if first.vertical_pos != 0 {
+            return false;
+        }
+        let mut previous_bottom = 0;
+        for line in &para.line_segs[break_line..] {
+            if is_synthetic_line_seg(line)
+                || line.line_height <= 0
+                || line.vertical_pos < previous_bottom
+            {
+                return false;
+            }
+            previous_bottom = line.vertical_pos.saturating_add(line.line_height);
+        }
+        para.controls
+            .iter()
+            .any(|control| matches!(control, crate::model::control::Control::Picture(_)))
+            && para.controls.iter().all(|control| {
+                use crate::model::{
+                    control::Control,
+                    shape::{TextWrap, VertAlign, VertRelTo},
+                };
+                match control {
+                    Control::Field(_) | Control::Hyperlink(_) => true,
+                    Control::Picture(picture) => {
+                        let common = &picture.common;
+                        let top = super::super::super::float_placement::signed_hwpunit(
+                            common.vertical_offset,
+                        );
+                        let end = crate::renderer::hwpunit_to_px(
+                            top.saturating_add(
+                                i32::from(common.margin.top) + i32::from(common.margin.bottom),
+                            ),
+                            dpi,
+                        ) + crate::renderer::composer::captioned_picture_height_px(
+                            picture, dpi,
+                        );
+                        !common.treat_as_char
+                            && common.flow_with_text
+                            && common.vert_rel_to == VertRelTo::Para
+                            && common.vert_align == VertAlign::Top
+                            && common.text_wrap == TextWrap::TopAndBottom
+                            && top >= previous_bottom
+                            && end <= page.body_height
+                    }
+                    _ => false,
+                }
+            })
+    });
     if page.profile.session_edited()
         // 앞선 재조판 이력만으로 현재 저장 조각의 소유를 버리지 않는다.
         // 아래에서 현재 실제 원점과 저장 첫 줄의 일치, 편집되지 않은
@@ -445,7 +496,8 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
             && !only_bodyless_controls
             && !only_suffix_controls
             && !notes_owned_by_following_frame
-            && !stored_frame_reset)
+            && !stored_frame_reset
+            && !continuation_pictures)
         || start_line >= break_line
         || break_line >= para.line_segs.len()
     {

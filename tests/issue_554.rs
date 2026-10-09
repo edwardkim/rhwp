@@ -233,6 +233,78 @@ fn hwp3_sample_hwp5_16p() {
             );
         }
     }
+    let split_owner = paragraphs
+        .iter()
+        .position(|p| p.text.starts_with("NAT에 의한 가상 서버의 작업 흐름"))
+        .expect("독립 Print 6~7쪽을 잇는 원본 문단");
+    let source_lines = &paragraphs[split_owner].line_segs;
+    let cut = source_lines
+        .windows(2)
+        .position(|pair| pair[0].vertical_pos > 0 && pair[1].vertical_pos == 0)
+        .expect("원본의 물리 쪽 경계")
+        + 1;
+    let mut rendered_text = String::new();
+    for (page_index, range) in [(5, 0..cut), (6, cut..source_lines.len())] {
+        let mut page_nodes = Vec::new();
+        nodes(&trees[page_index], &mut page_nodes);
+        let owned: Vec<_> = page_nodes
+            .iter()
+            .copied()
+            .filter(|n| {
+                n["type"] == "TextLine"
+                    && n["pi"].as_u64() == Some(split_owner as u64)
+                    && n["captionOwner"].is_null()
+            })
+            .collect();
+        assert_eq!(
+            owned.len(),
+            range.len(),
+            "원본 저장 경계에 따른 줄의 쪽 소유: {}쪽",
+            page_index + 1
+        );
+        let body = page_nodes
+            .iter()
+            .copied()
+            .find(|n| n["type"] == "Body")
+            .expect("본문 상자");
+        assert!(
+            owned
+                .iter()
+                .all(|n| top(n) >= top(body) && bottom(n) <= bottom(body)),
+            "분할 본문은 쪽 본문 안에 포함"
+        );
+        let images: Vec<_> = page_nodes
+            .iter()
+            .copied()
+            .filter(|n| n["type"] == "Image" && n["pi"].as_u64() == Some(split_owner as u64))
+            .collect();
+        assert_eq!(
+            images.len(),
+            usize::from(page_index == 6),
+            "문단 그림은 뒤 조각에 한 번"
+        );
+        if let Some(image) = images.first() {
+            assert!(
+                top(image) >= bottom(owned.last().unwrap()) && bottom(image) <= bottom(body),
+                "뒤 그림은 이어받은 본문 아래에서 쪽 안에 포함"
+            );
+        }
+        for line in owned {
+            for run in line["children"].as_array().expect("줄의 원본 내용") {
+                rendered_text.push_str(run["text"].as_str().expect("본문 글자"));
+            }
+        }
+    }
+    let compact = |text: &str| {
+        text.chars()
+            .filter(|c| !c.is_whitespace() && *c > '\u{001f}' && *c != '\u{fffc}')
+            .collect::<String>()
+    };
+    assert_eq!(
+        compact(&rendered_text),
+        compact(&paragraphs[split_owner].text),
+        "양쪽 조각의 원문을 누락·중복 없이 한 번 표시"
+    );
 }
 
 #[test]
