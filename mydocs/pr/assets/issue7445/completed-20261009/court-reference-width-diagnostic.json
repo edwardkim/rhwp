@@ -1,0 +1,59 @@
+{
+  "stage": 359,
+  "candidate": "0a559beec13731ad1643e99a92ca86a4d6efaeb4",
+  "base": "21ed64071f81f35f37618717693bd30f727392c9",
+  "input": {
+    "path": "samples/issue6034/2912735_court_report_form.hwp",
+    "sha256": "9e68695b504656383f7686b75b3e92d28056201ad967570c28144e4bfce880ac",
+    "pages": 1,
+    "savedVersion": "6.7.5.954",
+    "product": null,
+    "requiredEngine": "2020",
+    "failure": "기존 본문 하단 절대 px 범위 770..790, 현재810.0",
+    "independentPrint": "미확보, 기준 출력 먼저 생성"
+  },
+  "nativeBuilds": {
+    "base": "78a3a5dc04eb54e203971ca2481279370f75d84700020ee0a8c5fbb70f2482d6",
+    "current": "a0356c7ecb730135ae1dc07cb04ac8bd6ad2e78d1276a1626370417e96402b5c"
+  },
+  "geometry": {
+    "baseBodyBottom": 780.7,
+    "currentBodyBottom": 810.0,
+    "footnoteAreaTopBoth": 804.6,
+    "actualSeparatorTopBoth": 811.9,
+    "interpretation": "영역 bbox 상단만으로 실제 구분선 관통을 판정할 수 없음. 현재 본문 마지막 줄은 실제 구분선 앞에 있음. 줄바꿈 차이의 올바른 출력은 독립 Print 미확보로 미검증"
+  },
+  "causeIsolation": {
+    "change": "결측 U+2024 전각 폴백에 종전 HFT 조건만 임시 복원",
+    "existingTest": "issue_6034_footnote_area_reflow_width::issue_6034_footnote_area_starts_below_body_text",
+    "result": {
+      "exitCode": 0,
+      "seconds": 100.98051583301276
+    },
+    "summary": "1 test run: 1 passed, 225 skipped",
+    "logSha256": "141dd2279c3887d3912d2cca9f420855efb5bcfed9ead1eb113f15eb00622970",
+    "commandSha256": "1da9fbf3bccbc05a3b80330d7a2d27ad71adc35946e3cccbd6c2b4fe09b74e1b",
+    "restored": {
+      "restored": true,
+      "sourceSha256": "7b33076463400fcb806a376817a23566ec701941d70198c95db48d81c3b32f89"
+    },
+    "interpretation": "폭 폴백 분기가 줄바꿈과 기존 좌표 기대값 실패의 원인인 것은 확인. 이전 폭이 올바른 출력임을 입증하지 않음"
+  },
+  "print": {
+    "job_id": "ff44b0ab-309c-45fb-ba25-968702bd538d",
+    "status": "failed",
+    "phase": "failed",
+    "target": "pdf",
+    "engine": "2020",
+    "elapsed_seconds": 900,
+    "output_bytes": 0,
+    "terminal": true,
+    "result": {},
+    "errorCategory": "변환 실패, 원문은 비공개"
+  },
+  "independentPrintAvailable": false,
+  "nativeFreshVisualGate": "미검증; 수용·기대값 변경·검사 삭제 보류",
+  "productionTestFixtureBaselineChanges": false,
+  "activeRegressionRetained": true,
+  "remainingOriginalFailures": 37
+}
