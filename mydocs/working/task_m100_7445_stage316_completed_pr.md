@@ -908,3 +908,16 @@ HWP3 변환본도 원본 줄의 앞 끝·그림/여백/캡션·호스트 줄·�
   [6쪽 review](../pr/assets/issue7445/completed-20261009/converted16-p006-stored-cut-review.png),
   [7쪽 review](../pr/assets/issue7445/completed-20261009/converted16-p007-stored-cut-review.png)를
   최종 overlay와 같이 커밋하고, raw TSV·로그·빌드는 ignored output에 보존합니다.
+
+
+## 보정 345 잔여 실패 재실행 결과
+
+수용 커밋 `1b625b3d0683a707fadd1bebb4e466760048b60e`에서 남은 52개 함수를
+20개 suite의 정확한 함수 선택으로 모두 실행했습니다. **52 실행 / 1 PASS / 51 FAIL /
+4,247 skipped**, 51.533초·threads 8·exit 100입니다. 전체 nextest 통과가 아닙니다.
+`text_overlaps_do_not_grow_partition_11`이 추가로 PASS했고 검사·baseline 변경은 없습니다.
+기존 실패 67건 중 확인된 해결은 **16건**, 잔여는 **51건**입니다. 실패가 남은 원본의
+시각·저장 소유를 먼저 판정하고 정상 검사에는 생산 보정, 틀린 검사에는 독립 근거에
+따른 의미 교정을 적용합니다. 실패 목록을 숨기거나 일괄 제거하지 않습니다.
+[정확한 head·개별 결과·로그 해시](../pr/assets/issue7445/completed-20261009/remaining-blockers-revalidation.json)를
+포함하며 원시 로그는 ignored output의 `stage345-remaining-blockers/remaining-nextest.log`입니다.
