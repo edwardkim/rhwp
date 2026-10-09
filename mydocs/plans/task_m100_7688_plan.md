@@ -44,3 +44,19 @@ CanvasKit은 기존 baseline의 대조군으로 유지한다. #536의 미병합 
 Native 수식의 한글 네모가 우선 수정 대상이며 공통 crop·화살촉 차이와 구분한다.
 zoom/DPR/resize 15조건의 트리 유지와 3개 원래 조건 복원 PNG 일치를 확인했다.
 제품 변경·새 baseline·원격 push는 없으며, 이슈는 후속 구현·검증이 남아 active다.
+
+## 2단계 — 원인 수정과 재발 방지 절차
+
+사용자는 잘못된 동작을 고치는 범위에서 같은 문제가 다시 생기지 않는 절차·방법을 마련하도록
+범위를 확정했다. 별도 전면 재작성이나 모든 PR의 모든 backend 전수 검증은 요구하지 않는다.
+
+1. 공통 조판/paint 결과와 실제 backend 소비자를 연결하고, font/resource·metric context·합성의
+   별도 경로를 확인하는 [출력 백엔드 소비 경로 검증](../manual/verification/renderer_backend_verification.md)을 마련한다.
+2. CONTRIBUTING의 참고 항목을 해당 소비 경로의 필수 확인으로 바꾸고 거버넌스·로컬 검증·review에 연결한다.
+3. 기존 하네스가 검출하는 것과 수식 glyph/crop/실제 합성 화면에서 남는 검증 공백을 명시한다.
+   아직 구현하지 않은 자동 검사를 CI gate로 보고하지 않는다.
+4. Native 수식부터 공통 font 소비 계약으로 보정하고, 독립 시각 근거와 수정 전 FAIL/후 PASS를
+   확인한 경계부터 정식 회귀로 고정한다. 공통 crop은 입력 좌표 기준을 확정한 후 처리한다.
+
+절차 반영과 제품 구현의 완료는 구분한다. 2단계 문서 변경과 검증은
+[절차 반영 기록](../working/task_m100_7688_stage2.md)에 남긴다.

@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-05
+last_verified: 2026-10-09
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
@@ -56,6 +56,15 @@ TSV 성공 또는 `not_evaluated`는 측정 완료만 뜻한다. 평균·90% 이
 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않는다.
 PR 본문에는 명령·source/build SHA·입력/PDF 해시·페이지 범위·최저값·미달/누락 쪽과 증적 출처를 기록한다.
 OVR·Skia·SVG 자기 비교·구조 회귀만으로 한컴 PDF Visual Sweep을 대신하지 않는다.
+
+## 변경 결과를 소비하는 출력 경로
+
+조판·paint·글꼴·그림의 공통 결과 또는 실제 backend 소비 경로가 바뀌면
+[출력 백엔드 소비 경로 검증](renderer_backend_verification.md)을 추가로 적용한다.
+한컴 비교와 backend 상호 비교를 구분하며, 영향받는 Canvas·SVG·Native PNG 등의 실제 산출물과
+정상 대조군을 확인한다. 같은 producer·높은 점수·readiness만으로 최종 glyph·crop·합성 화면의
+내용 보존을 확정하지 않는다. 모든 backend 전수 검증 대신 실제 변경의 소비 경로로 범위를 정하고,
+알려진 내용 손실과 필수 근거 미검증은 다른 출력 경로의 성공으로 상쇄하지 않는다.
 
 ## bug-hunter와 visual sweep 라우팅
 
