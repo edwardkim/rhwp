@@ -1,0 +1,99 @@
+{
+  "stage": 319,
+  "baseHead": "6f66932a73ee6fd05a74a83bdc438c9499a89a12",
+  "productionBuildHead": "c18d5404c97d21175f21227b9b652a0875c1f936",
+  "testParentHead": "32a3f587a",
+  "productionChanged": false,
+  "newTestFunctions": 0,
+  "removedTestFunctions": 0,
+  "testFile": "tests/issue_1116.rs",
+  "testSourceBeforeSha256": "7770a3602187b6ad3e56c8a66d9cd1b153853530d2e74e4d01835682b4e32cbc",
+  "testSourceAfterSha256": "b1094d1217064fafd814b2357730920ac098d491af476c2d3674f7728937c8a3",
+  "existingFailedFunctions": [
+    "regression_suite_007 issue_1116::sample16_hwp5_page3_bcp_tail_paragraph_stays_single_visual_line_for_pdf_oracle",
+    "regression_suite_007 issue_1116::sample16_hwp5_page3_dump_pages_summary_uses_lineseg_spacing",
+    "regression_suite_007 issue_1116::sample16_hwp5_page3_heading_positions_follow_lineseg_vpos"
+  ],
+  "source": "samples/hwp3-sample16-hwp5.hwp",
+  "sourceSha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+  "independentPdf": "pdf/hwp3-sample16-hwp5-hwp-2024.pdf",
+  "independentPdfSha256": "ba4b10dee6e35e9c5ee71dd8c8004528ad3dd72b47ef5dd0cd859e0431aae381",
+  "pdfPages": 64,
+  "develBaseline": {
+    "nativePages": 65,
+    "freshPages": 65,
+    "minimum": {
+      "page": "23",
+      "tolerant_content_match_percent": "3.13476",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "3.13476",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    "below90": 64,
+    "missingReferencePages": 0,
+    "extraRenderedPages": 1,
+    "valid90Evidence": false
+  },
+  "candidateVisual": {
+    "nativePages": 64,
+    "freshPages": 64,
+    "minimumNative": {
+      "page": "22",
+      "tolerant_content_match_percent": "91.28891",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "91.28891",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    "minimumFresh": {
+      "page": "22",
+      "tolerant_content_match_percent": "91.28891",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "91.28891",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    "below90Native": 0,
+    "below90Fresh": 0,
+    "nativeFreshIdenticalPages": 64,
+    "p3Native": {
+      "page": "3",
+      "tolerant_content_match_percent": "98.27428",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.25752",
+      "silhouette_boundary_reconciled_pixels": "73"
+    },
+    "p3Fresh": {
+      "page": "3",
+      "tolerant_content_match_percent": "98.27428",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.25752",
+      "silhouette_boundary_reconciled_pixels": "73"
+    },
+    "nativeTsvSha256": "dad5c101b0e3bc939dd6144ba7c0a6536724382b35d6ea611a1c9bc5f56a2f3d",
+    "freshTsvSha256": "dad5c101b0e3bc939dd6144ba7c0a6536724382b35d6ea611a1c9bc5f56a2f3d",
+    "wholeResults": "output/issue7445/20261005/completed-final-visual/results.json",
+    "reviewPng": "sample16-p003-existing-relations-review.png",
+    "reviewPngSha256": "ab899d937ddb1dc36d86a059680a9676771fe5f0bb911502cfffcf437bbabd72",
+    "reuseReason": "64쪽 Native/fresh PNG가 각각 바이트 동일하며 테스트만 변경하여 생산 코드는 같은 빌드다."
+  },
+  "independentObservation": {
+    "pdfP3Heading2BaselinePt": 269.2799987792969,
+    "pdfP3Heading3BaselinePt": 578.3999633789062,
+    "oldPixelPinsWereGlyphInkTopInsteadOfSvgBaseline": true,
+    "relationships": [
+      "제목 1·2·3은 본문 첫 장의 같은 3쪽에서 순서대로 한 번 표시",
+      "마지막 빈 문단은 앞 가시 문단 뒤에 속하며 저장 줄 간격을 보존",
+      "BCP 문단은 같은 3쪽 한 줄에서 원본 꼬리까지 내용 보존"
+    ]
+  },
+  "before": {
+    "log": "output/issue7445/20261005/stage316-full-nextest-validated-scope.log",
+    "result": "동일 생산 코드에서 기존 절대 좌표·높이 핀 3건 FAIL"
+  },
+  "after": {
+    "log": "output/issue7445/20261005/stage319-sample16-relations-final.log",
+    "result": "3 run / 3 PASS / 241 filtered / 0.110s",
+    "exitCode": 0
+  },
+  "ownPreparationErrors": "목차·후속 장의 반복 문구를 유일한 본문 문단으로 가정한 선택 helper를 원본 첫 장·첫 등장 소유로 교정했다. 중간 helper 실패를 생산 회귀/유효한 RED로 사용하지 않는다.",
+  "prReady": false
+}
