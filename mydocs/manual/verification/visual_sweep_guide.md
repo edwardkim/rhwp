@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-06
+last_verified: 2026-10-09
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -59,6 +59,39 @@ PNG는 인쇄 프로필 실행의 점수·증적과 섞지 않고 새 출력에�
 같은 원문을 지정한 한컴 엔진으로 다시 PDF 출력해 용지 크기·글자 크기·대표 PNG를
 대조하고, 여전히 다른 쪽은 시각 보류와 출력 구현 범위로 기록한다(#6778).
 
+### 기준 Print와 같은 조판 세대
+
+`--compat 2022|2024`로 실제 기준 PDF를 출력한 한컴의 조판 세대를 명시한다.
+2020/2022 Print는 `--compat 2022`, 2024 Print는 `--compat 2024`다.
+기본값은 2022이며 원문의 확장자·파일명·저장 연도로 자동 선택하지 않는다.
+PDF 출력 이력의 engine·실제 제품을 먼저 확인한다. 세대가 다른 기존 점수를
+현재 대상의 검증으로 사용하지 않고 같은 세대에서 다시 출력한다.
+
+Native SVG와 render tree, fresh WASM과 Native font policy에 같은 값을 전달한다.
+WASM은 `setHangul2024Compat`를 페이지 수 조회 전에 적용하므로 현재 소스로
+web package를 빌드해야 한다. API가 없는 과거 bundle은 검증을 중단한다.
+`run_manifest.json`의 `provenance.layout_generation`과 WASM
+`wasm/manifest.json`의 `layoutGeneration`을 확인한다. 다른 세대의 산출물은
+`--resume`으로 섞을 수 없다. 자세한 세대 근거는
+[CLI 조판 세대](../cli_commands.md#조판-세대---compat)를 따른다.
+
+## 페이지별 TSV와 PR 재검토 필수 조건
+
+조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
+`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)를 페이지별로 확인하며,
+**한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
+미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
+
+`re_review_required` 상태에서는 새 PR 생성과 열린 PR의 승인·통합을 보류한다.
+작성자는 원본·독립 한컴 Print PDF·overlay를 대조해 원인을 수정하고 새 head에서 다시 산출한다.
+누락·측정 불가·전체 쪽수 불일치도 보류 조건이다. 모든 페이지가 90% 이상이어도
+변경 영역의 수식·미세 간격을 확대 판독한 뒤 완료 여부를 판단한다.
+
+아래 [TSV 산출 명령](#실루엣-보조값만-빠르게-tsv-산출)을 먼저 실행한다. 전체 페이지 TSV에는
+`--page`·`--pages`를 지정하지 않는다. 대표 PNG 생성에만 페이지 선택을 사용한다.
+기여자는 전체 Native TSV·fresh WASM TSV 원본을 모두 산출·첨부하고 대표 PNG를 함께 제출한다.
+해결 불가능한 실제 글꼴 차이는 [정식 예외 계약](#해결-불가능한-글꼴의-pr-제출-예외)으로만 처리한다.
+
 ## 실루엣 보조값만 빠르게 TSV 산출
 
 `--silhouette-only`는 기존과 같은 2px 관용 실루엣 계산식으로 `silhouette.tsv`를
@@ -75,7 +108,7 @@ python3 scripts/visual_sweep.py --silhouette-only \
 ```bash
 python3 scripts/visual_sweep.py --silhouette-only \
   --hwp "samples/<원문>.hwp" --pdf "pdf/<기준>.pdf" --key "<key>" \
-  --rhwp-bin target/pr-review/release-test/rhwp --dpi 96 \
+  --rhwp-bin target/pr-review/release-test/rhwp --compat 2022 --dpi 96 \
   --out "output/<실행>-native-scores"
 ```
 
@@ -85,7 +118,7 @@ fresh WASM도 같은 입력·기준 PDF·DPI·글꼴 환경으로 실행한다.
 ```bash
 python3 scripts/visual_sweep.py --silhouette-only \
   --hwp "samples/<원문>.hwp" --pdf "pdf/<기준>.pdf" --key "<key>" \
-  --rhwp-bin target/pr-review/release-test/rhwp --wasm-pkg pkg --dpi 96 \
+  --rhwp-bin target/pr-review/release-test/rhwp --wasm-pkg pkg --compat 2022 --dpi 96 \
   --out "output/<실행>-wasm-scores"
 ```
 
@@ -99,6 +132,9 @@ python3 scripts/visual_sweep.py --silhouette-only \
 WASM은 같은 원문·PDF에 `--wasm-pkg pkg`와 검증한 `--rhwp-bin`을 명시한다.
 원문 전체 쪽수는 Native `native-export.json`의 `pageCount`, WASM `wasm/manifest.json`의
 `pageCount`와 독립 PDF 메타데이터를 별도로 대조한다. 선택 raster 개수를 전체 쪽수로 쓰지 않는다.
+일반 실행과 `--silhouette-only`는 Native/WASM export 메타데이터와 `pdfinfo`의 전체 쪽수를
+`pr_review_gate.document_page_counts`에 기록한다. 선택 쪽의 점수가 모두 90% 이상이어도
+전체 쪽수가 다르면 `page_count_mismatch=true`, `re_review_required`로 판정한다.
 기존 `--png-pair`는 양쪽 번호 누락을 거부하지만 원문에 몇 쪽이 있어야 하는지는 입증하지 않는다.
 
 미달/구조 차이 쪽과 대표 변경 경계의 PNG만 일반 모드 `--pages`로 추가 생성한다.
@@ -122,8 +158,9 @@ TSV의 첫 세 열은 `page`, `tolerant_content_match_percent`, `below_90`이며
 현재 코드로 출력했다는 증명이 아니므로 원래 실행의 source/build provenance를 함께 확인한다.
 일반 PNG checkpoint를 사용하는 `--resume`과는 함께 실행하지 않는다.
 
-90% 미만이면 TSV를 남기고 exit 1로 끝난다. 모두 90% 이상이어도 이 모드의
-PR 판정은 `not_evaluated`다. 전체 쪽수, 각주·문단 소속, 누락·중복은 별도로 확인하고,
+90% 미만이거나 전체 쪽수가 다르면 TSV를 남기고 exit 1로 끝난다.
+모두 90% 이상이고 확인한 전체 쪽수도 같아도 이 모드의 PR 판정은 `not_evaluated`다.
+각주·문단 소속, 누락·중복은 별도로 확인하고,
 문제가 있는 쪽은 일반 실행으로 review PNG를 생성해 직접 검토한다.
 실루엣 보조값만으로 PR 승인이나 회귀 fixture 적합성을 판정하지 않는다.
 
@@ -132,6 +169,19 @@ PR 판정은 `not_evaluated`다. 전체 쪽수, 각주·문단 소속, 누락·�
 렌더링 변경의 새 회귀 테스트 추가에도 [회귀 추가 선행 조건](../pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)을 적용한다. 관련 모든 페이지·fixture의
 Native/fresh WASM 최저 일치율이 90% 미만이거나 측정 불가이면 회귀를 추가하지 않고 출력을 먼저
 개선한다. 쪽수 검사는 전체 페이지를 비교하며 평균값·글꼴 예외로 이 조건을 면제하지 않는다.
+
+실패한 기존 회귀도 **원본 입력 출력 보정 → 관련 모든 페이지의 Native/fresh WASM 일치율 90% 이상
+확인 → 필요한 검사 변경** 순서를 따른다. 절대 px 좌표·고정 px 영역 대신 문단·줄·개체의 소유·순서·
+보존·포함·겹침 관계로 검사한다. 상세 절차는
+[기존 기대값 재검토](../pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
+
+**SHA를 고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 회귀 검사**가
+부적합한 경우에만
+[별도 이슈 이관](../pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)에 따라 새로운 이슈로 등록한다.
+해당 회귀 검사와 HWP/HWPX/PDF를 활성 검증 경로에서 제거·이관하고 별도 이슈에서 출력 보정을
+진행한다. 같은 원본의 90% 이상 및 확대 판독 확인 뒤 관계형 회귀를 복원하며, 이관 자체를
+현재 PR의 시각 통과나 결함 해결로 보고하지 않는다. 같은 입력의 base/head 비교로 기존 미달을
+입증하며 현재 수정으로 생긴 회귀는 구현을 고친다. base 미검증은 이관 근거가 아니다.
 
 조판·렌더링 영향 변경은 Visual Sweep을 반드시 사용하고 검증 범위 전체 TSV와 각 대표 review PNG의
 `tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율 보조값)는 **90% 이상**이어야 한다.
@@ -604,8 +654,8 @@ renderer, layout, paint처럼 문서 비교 결과를 reviewer의 판단 근거�
 PNG를 PR 본문에서 바로 볼 수 있게 한다. review 문서·임시 output 경로·asset 파일명만 적어 두고
 reviewer가 저장소를 찾아 열게 하지 않는다.
 
-**제출물은 대표 페이지의 review/standalone overlay PNG와 검증 대상 전체 페이지의 Native TSV 원본이다.**
-제출용 TSV는 Native만 필수이며 WASM TSV 첨부는 요구하지 않는다.
+**제출물은 대표 페이지의 review/standalone overlay PNG와 검증 대상 전체 페이지의 Native TSV·fresh WASM TSV 원본 모두다.**
+두 출력 경로의 TSV를 각각 산출하고 모두 첨부한다.
 전체 페이지의 PNG 생성·커밋·본문 첨부는 요구하지 않는다. 변경 효과·주요 경계를 보여주는 대표 페이지만
 이미지로 첨부하고, 전체 범위의 결과는 TSV 원본과 요약으로 제공한다.
 
@@ -640,8 +690,8 @@ reviewer가 저장소를 찾아 열게 하지 않는다.
    실제 빌드 명령·옵션·인쇄 프로필·글꼴 공급을 적는다. 입력/기준 Print PDF의 경로·해시·제품/빌드·출처도 연결한다.
 2. 전체 결과: 입력마다 Native/fresh WASM 두 행을 만들어 실제 검증 페이지 범위·전체 쪽수·최저값과 그 쪽,
    90% 미만/누락/측정 불가 쪽·gate를 적는다. 여러 문서의 최저값을 하나로 합쳐 개별 실패를 가리지 않는다.
-   검증 대상 전체 페이지의 **Native TSV 원본만** ZIP으로 묶어 PR 본문에 업로드하거나
-   검토자가 내려받을 수 있는 동일 파일의 링크를 첨부한다. WASM TSV는 첨부할 필요가 없다.
+   검증 대상 전체 페이지의 **Native TSV와 fresh WASM TSV 원본 모두** ZIP으로 묶어 PR 본문에 업로드하거나
+   검토자가 내려받을 수 있는 동일 파일의 링크를 첨부한다. ZIP 안에서 Native/fresh WASM을 구분한다.
    첨부 파일의 입력·출력 경로·검증 head를 명시한다.
    요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않는다. TSV는 ignored output에
    보존하고 Git에 커밋하지 않는다. 수정 전 비교를 실행했다면 source SHA와 같은 입력·페이지의 전후 값도 연결한다.
@@ -669,7 +719,7 @@ reviewer가 저장소를 찾아 열게 하지 않는다.
 - PR head repository/SHA: `<head-owner>/<head-repo>` / `<head-sha>`
 - 검증 source·빌드/글꼴 환경·입력/Print PDF 해시: <실제 실행 기록>
 - Native/fresh WASM TSV 명령과 ignored output 경로: <실제 실행 기록>
-- 전체 검증 범위 TSV 원본: [Native TSV ZIP](TSV_ATTACHMENT_URL) — <입력·출력 경로·검증 head>
+- 전체 검증 범위 TSV 원본: [Native·fresh WASM TSV ZIP](TSV_ATTACHMENT_URL) — <입력·출력 경로·검증 head>
 - 아래 이미지는 대표 페이지에만 첨부한다. 전체 페이지 이미지는 필요하지 않다.
 
 | 입력·기준 Print PDF | 경로 | 검증 범위/전체 쪽수 | 최저 일치율·쪽 | 90% 미만/누락/측정 불가 쪽 | 판정 |
@@ -742,10 +792,15 @@ overlay 색상 의미:
 | 색상 | 의미 |
 |---|---|
 | 회색 | 임계값 이하로 거의 같은 픽셀 |
-| 빨강 | rhwp 쪽에만 잉크가 있거나 rhwp가 더 많이 그린 후보 |
-| 파랑 | PDF 쪽에만 잉크가 있거나 PDF 기준에만 보이는 후보 |
+| 파랑 | rhwp 쪽에만 잉크가 있거나 rhwp가 더 많이 그린 후보 |
+| 빨강 | PDF 쪽에만 잉크가 있거나 PDF 기준에만 보이는 후보 |
 | 주황 | 양쪽 모두 잉크가 있지만 위치/색상 차이가 큰 후보 |
 | 연분홍 | 배경/anti-aliasing 계열 차이 후보 |
+
+standalone overlay와 review PNG에 이 범례를 함께 표시한다. 이는 원문 글자색이 아닌
+차이의 소속을 나타낸다. 예를 들어 PDF에 없는 RHWP 그래프는 파랑으로 표시한다.
+범례가 없는 과거 캡처는 색상 규약이 반대였으므로 최신 코드로 다시 생성하고,
+`overlay_metrics.json`의 `overlay_color_legend`와 생성 source를 확인한다.
 
 `overlay/overlay_metrics.json`에는 다음 보조 지표가 기록된다.
 
@@ -776,9 +831,17 @@ PDF raster와 rhwp raster가 얼마나 비슷한지를 보여주는 자동 보�
   `ink_match_percent`나 `visual_accuracy_proxy_percent`를 대체하지 않는다. 다만 PR review에서는 위
   `PR review 실루엣 gate`에 따라 90% 미만을 재검토 신호이자 보류 조건으로 사용한다.
 
-따라서 이 값은 "자동 시각 판정 정확도"가 아니라 "내용 픽셀 중심 raster 일치율"에 가깝다. 폰트,
-anti-aliasing, PDF rasterizer, 전체 위치 이동의 영향을 크게 받으므로, 낮은 값은 우선 검토 신호이지
-그 자체로 불합격 판정은 아니다.
+**90% 이상이어도 수식 모양·장평·미세 간격이 정확하다는 뜻은 아니다.** 변경 영역·알려진 차이·
+사용자 지적 영역을 독립 Print PDF와 변경 전·후 Native/fresh WASM의 같은 내용·배율로 확대한다.
+전체 페이지에서 원점·앞뒤 내용의 배치를 확인하고, 확대 compare/overlay에서는 기호·정체/이탤릭·
+기준선·첨자·화살표·장식과 관계 기호 양쪽·본문·보기 번호·탭·줄 사이 간격을 직접 확인한다.
+점수 통과와 직접 판독 결과를 구분하며, 결함이 보이면 출력을 먼저 보정하고 다시 검증한다.
+확대는 진단용으로 사용하며 전체 TSV의 DPI·관용 거리·범위를 바꾸지 않는다. 상세 절차는
+[90% 통과 후 확대 판독](../pr_review/visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을 따른다.
+
+이 값은 내용 실루엣의 자동 보조 지표이며 글꼴·anti-aliasing·PDF rasterizer·전체 위치 이동의
+영향을 받는다. **PR 제출·검토에서는 한 페이지라도 90% 미만이면 재검토와 보류가 필수**다.
+점수와 확대 판독 결과를 함께 기록하고 출력 보정 후 같은 조건으로 다시 검증한다.
 
 ### glyph·PUA·제품명 표시 차이도 잡는 방법
 

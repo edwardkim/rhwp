@@ -615,7 +615,7 @@ class WasmSweepTests(unittest.TestCase):
                     for page in (1, 2):
                         (output / f'raw_svg/wasm_{page:03}.svg').write_text('<svg><text x="4">WASM</text></svg>')
                         (output / f'render_tree/render_tree_{page:03}.json').write_text('{"type":"Page","bbox":{"x":4}}')
-                    (output / 'manifest.json').write_text('{"pageCount":2}')
+                    (output / 'manifest.json').write_text('{"pageCount":2,"layoutGeneration":"2022"}')
                 else:
                     # Native pagination is deliberately different: only its font CSS is used.
                     (Path(command[command.index('-o') + 1]) / 'native.svg').write_text('<svg><style>@font-face {font-family: "A";src:local("A")}</style><text x="99">Native</text></svg>')
@@ -637,7 +637,7 @@ class WasmSweepTests(unittest.TestCase):
             def incomplete_run(command, **kwargs):
                 result = fake_run(command, **kwargs)
                 if command[0] == 'node':
-                    (Path(command[-1]) / 'render_tree/render_tree_002.json').unlink()
+                    (Path(command[command.index('--out') + 1]) / 'render_tree/render_tree_002.json').unlink()
                 return result
 
             with patch.object(SWEEP, 'run', side_effect=incomplete_run):

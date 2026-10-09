@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-07
+last_verified: 2026-10-09
 ---
 
 # Collaborator self-merge 후보
@@ -17,6 +17,28 @@ last_verified: 2026-08-07
 - merge 뒤 별도 문서 commit을 만들지 않기 위해 review 문서를 현재 PR diff에 포함한다.
 - ready 전환, self-review 기록 확정, merge 판단은 작업지시자 승인 뒤에만 한다.
 
+### 8.1.1 렌더링 회귀의 추가·변경
+
+신규 회귀의 추가와 실패한 기존 회귀의 변경 모두 관련 모든 페이지의 Native/fresh WASM 일치율
+90% 이상을 먼저 확인한다. 실패한 기존 회귀는 **원본 입력 출력 보정 → 버전에 맞는 독립 한컴
+Print PDF로 90% 이상 확인 → 필요한 검사 변경** 순서로 처리한다. 실물 배치를 절대 px 좌표·고정
+px 영역으로 선택하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침 관계로 검사한다.
+미달·측정 불가이면 기대값·baseline 갱신과 준비 완료 판정을 보류한다. 상세 절차는
+[시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+[기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
+
+**SHA를 고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 회귀 검사**가
+부적합한 경우에만
+[별도 이슈 이관](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)에 따라 새 이슈를 등록하고
+해당 회귀 검사와 HWP/HWPX/PDF를 활성 검증 경로에서 제거·이관한다. 별도 이슈에서
+보정·90% 이상·확대 판독 후 관계형 회귀를 복원한다.
+같은 원본·독립 Print PDF의 base/head 비교로 기존 미달을 입증한다. 현재 수정으로 생긴 회귀는
+구현을 고치며, base가 미검증이면 이관 판정을 보류한다. 이관 범위와 현재 PR의 완료 범위를 구분한다.
+
+90% 이상이어도 [수식·간격 확대 판독](visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을
+수행한다. 변경 영역·알려진 차이·사용자 지적 영역의 실제 모양·장평·미세 간격과 앞뒤 내용까지
+대조한 결과를 self-review에 기록하며, 점수만으로 준비 완료를 판정하지 않는다.
+
 ## 8.2 문서와 오늘할일
 
 review 문서는 처음부터 archive 경로에 둔다.
@@ -30,20 +52,31 @@ mydocs/orders/YYYYMMDD.md                  # 갱신이 필요한 경우
 
 ### 8.2.1 PR 채번과 오늘할일 생성·갱신 시점
 
-오늘할일은 이슈 등록·branch 생성·조사·계획·구현 중간에는 만들거나 갱신하지 않는다. 구현과 로컬
-검증이 끝나고 작업지시자가 remote push와 PR 생성을 승인한 최종 준비 시점에 다음 순서로
-작성한다.
+오늘할일은 이슈 등록·branch 생성·조사·계획·구현 중간에는 만들거나 갱신하지 않는다.
+구현과 로컬 검증이 끝나고 작업지시자가 remote push와 PR 생성을 승인하면 먼저 코드 후보로
+PR을 만든다. **같은 PR의 정확한 code head에 대한 GitHub Actions CI가 성공한 뒤에만**
+PR review와 오늘할일을 작성·갱신하고 문서-only trailing commit으로 반영한다.
 
 1. 검증을 마친 후보 commit을 원격 작업 branch에 push한다.
 2. Draft 지시가 없으면 Open PR을 생성해 번호 `N`을 받는다.
-3. reviewer를 지정하지 않고 self-review를 `mydocs/pr/archives/pr_N_review.md`와 필요한 오늘할일에 기록한다.
-4. review 문서와 오늘할일을 같은 source branch의 후속 commit으로 push해 PR diff에 포함한다.
+3. 번호 `N`의 code head SHA를 고정하고 해당 SHA의 required check와 변경 범위상 필요한
+   GitHub Actions가 모두 완료되어 성공했는지 확인한다. 진행 중·실패·취소·미실행 상태에서는
+   review·오늘할일 trailing commit을 만들거나 push하지 않는다. 로컬 검증 성공으로 이 CI를
+   대체하지 않는다. source·test가 바뀌면 새 code head의 CI를 다시 기다린다.
+4. reviewer를 지정하지 않고 self-review를 `mydocs/pr/archives/pr_N_review.md`와 필요한
+   `pr_N_review_impl.md`에 기록한다. 오늘할일에는 PR 번호, 검증한 code SHA, CI run URL과
+   실제 결과, 남은 merge 조건을 함께 적는다.
+5. review 문서와 오늘할일을 같은 source branch의 문서-only trailing commit으로 만든다.
+   [push 전 병합·링크 검증](../pr_review_workflow.md#321-최신-devel-오늘할일을-보존하는-trailing-기록)을
+   통과한 뒤 push해 PR diff에 포함한다. source·test 보정을 이 기록 commit에 섞지 않는다.
+6. trailing head의 required check와 실제 fast-pass 판정을 다시 확인한 뒤 merge한다.
+   code candidate의 CI 성공만으로 trailing head의 CI 성공을 가정하지 않는다.
 
 PR 생성 전에 번호를 예측해 review 파일명을 만들지 않는다. 이미 active 경로에 만든 review 문서는
 다음 PR에 임시로 동반하지 말고, 해당 PR 번호가 확정된 뒤 archive 경로와 파일명을 확정한다.
 
-이 시점에 local CI 검증이 완료됐다면 review 문서와 오늘할일에는 결과를 과거형으로 적는다. 검증을
-다시 실행할 계획처럼 쓰지 말고, 남은 GitHub Actions·작업지시자 승인·merge만 미래 조건으로 분리한다.
+review 문서와 오늘할일에는 완료된 로컬 검증과 code head CI 결과를 과거형으로 적는다.
+아직 실행 전인 trailing head의 GitHub Actions·작업지시자 승인·merge는 남은 조건으로 분리한다.
 
 오늘할일 갱신이나 다른 PR의 `devel` 병합만을 이유로 검토 branch를 반복 merge/rebase하지
 않는다. 최신 `upstream/devel`의 해당 오늘할일만 읽어 양쪽 기록을 보존하고, 검증된 code head

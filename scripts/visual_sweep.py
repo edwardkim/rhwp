@@ -10,6 +10,7 @@ import html as html_lib
 import importlib.util
 import io
 import json
+import math
 import os
 import platform
 import re
@@ -392,7 +393,7 @@ def page_num(path: Path) -> int:
 
 
 def ensure_tools(svg_rasterizer: str = "webfont") -> None:
-    required = ["pdftoppm", "pdftotext"]
+    required = ["pdftoppm", "pdftotext", "pdfinfo"]
     if svg_rasterizer == "rsvg":
         required.append("rsvg-convert")
     else:
@@ -783,8 +784,10 @@ def check_sweep_embedded_fonts(svg_paths: list[Path], report_path: Path) -> None
         raise SystemExit("임베딩 글꼴 검사 실패 — 캡처/시각 통과 판정을 중단합니다.\n" + "\n".join(failures))
 
 
-def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path, font_environment: Path | None = None, font_args: list[str] | None = None) -> None:
-    environment_args = ["--font-environment", str(font_environment)] if font_environment else []
+def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path, font_environment: Path | None = None, font_args: list[str] | None = None, compat: str = "2022") -> None:
+    environment_args = ["--compat", compat]
+    if font_environment:
+        environment_args.extend(["--font-environment", str(font_environment)])
     wasm_dir = base / "wasm"
     policy_dir = base / "font_policy"
     # 이전 실행이 중간에 끝났으면 부분 SVG/JSON을 내보내기 성공 결과로 사용하지 않는다.
@@ -803,6 +806,8 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
     )
     policies = {page_num(path): path for path in policy_dir.glob("*.svg")}
     manifest = load_json_object(wasm_dir / "manifest.json", "WASM export")
+    if manifest.get("layoutGeneration") != compat:
+        raise SystemExit("WASM 산출물의 조판 세대가 요청한 기준 출력과 다릅니다.")
     count = manifest.get("pageCount")
     raw = {page_num(path): path for path in (wasm_dir / "raw_svg").glob("*.svg")}
     trees = {page_num(path): path for path in (wasm_dir / "render_tree").glob("*.json")}
@@ -1100,6 +1105,7 @@ def pr_review_gate(
     *,
     expected_pages: list[int] | None = None,
     font_mismatch_evidence: dict[str, object] | None = None,
+    document_page_counts: dict[str, int] | None = None,
 ) -> dict[str, object]:
     """생성한 검토 PNG의 PR 검토 판정을 반환한다.
 
@@ -1115,7 +1121,7 @@ def pr_review_gate(
         if isinstance(page, int):
             measured_pages.add(page)
         value = item.get("tolerant_content_match_percent")
-        if not isinstance(value, (int, float)):
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 <= value <= 100:
             unavailable.append(page)
         elif value < PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT:
             below_threshold.append(
@@ -1139,7 +1145,10 @@ def pr_review_gate(
         and isinstance(reviewed_pages, list)
         and all(item["page"] in reviewed_pages for item in below_threshold)
     )
-    if unavailable:
+    page_count_mismatch = bool(document_page_counts) and (
+        document_page_counts.get("rhwp") != document_page_counts.get("pdf")
+    )
+    if unavailable or page_count_mismatch:
         status = "re_review_required"
     elif below_threshold:
         status = "font_mismatch_exception" if font_exception else "re_review_required"
@@ -1151,7 +1160,25 @@ def pr_review_gate(
         "below_threshold_pages": below_threshold,
         "unavailable_metric_pages": unavailable,
         "font_mismatch_evidence": font_mismatch_evidence,
+        "document_page_counts": document_page_counts,
+        "page_count_mismatch": page_count_mismatch,
     }
+
+
+def review_gate_reason(gate: dict[str, object]) -> str:
+    """검출된 점수·지표·쪽수 결함을 실제 사유로 표시한다."""
+    reasons = [
+        f"p{item.get('page')}={item.get('tolerant_content_match_percent')}%"
+        for item in gate.get("below_threshold_pages", [])
+        if isinstance(item, dict)
+    ]
+    unavailable = gate.get("unavailable_metric_pages", [])
+    if unavailable:
+        reasons.append(f"측정 불가 쪽: {unavailable}")
+    counts = gate.get("document_page_counts")
+    if gate.get("page_count_mismatch") and isinstance(counts, dict):
+        reasons.append(f"전체 쪽수 불일치: RHWP {counts.get('rhwp')}쪽 / PDF {counts.get('pdf')}쪽")
+    return ", ".join(reasons) or "검증 지표 부족"
 
 
 def font_mismatch_evidence_record(
@@ -1400,6 +1427,7 @@ def write_target_status(
         overlay_metrics,
         expected_pages=requested_pages or completed_pages,
         font_mismatch_evidence=font_mismatch_evidence,
+        document_page_counts=run_manifest.get("document_page_counts"),
     )
     overlay_metrics_path = base / "overlay" / "overlay_metrics.json"
     write_json_atomic(
@@ -1505,6 +1533,7 @@ def render_target(
     font_paths: list[Path] | None = None,
     font_mismatch_evidence: Path | None = None,
     silhouette_only: bool = False,
+    compat: str = "2022",
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1539,11 +1568,12 @@ def render_target(
     for directory in directories:
         directory.mkdir(parents=True, exist_ok=True)
 
-    environment_args = []
+    environment_args = ["--compat", compat]
     if font_environment is not None:
         font_environment = resolve_input_path(root, font_environment)
-        environment_args = ["--font-environment", str(font_environment)]
+        environment_args.extend(["--font-environment", str(font_environment)])
     provenance = sweep_provenance(root, hwp, pdf, rhwp_bin, svg_rasterizer)
+    provenance["layout_generation"] = compat
     if font_environment is not None:
         provenance["font_environment"] = {
             "path": str(font_environment),
@@ -1573,7 +1603,7 @@ def render_target(
     compact_shapes = compact_note_shape(note_shape)
     if wasm_pkg is not None:
         if not (base / "wasm-export-complete.json").is_file():
-            export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base, font_environment, font_args)
+            export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base, font_environment, font_args, compat)
     else:
         export_native_target(root, hwp, rhwp_bin, base, selected_pages, font_args, environment_args)
 
@@ -1586,24 +1616,32 @@ def render_target(
     # 네이티브·WASM과 새 실행·이어받기 모두 래스터·체크포인트 재사용 전에 검사한다.
     # 글꼴 불일치 예외도 손상된 글꼴 데이터의 검사를 우회하지 못한다.
     font_check_path = analysis_dir / "embedded_font_check.json"
+    failure_reason = "invalid_embedded_font"
     try:
         check_sweep_embedded_fonts(
             raster_paths_for_selected_pages(all_svg_paths, selected_pages),
             font_check_path,
         )
-    except SystemExit:
-        # 이어받기 중 손상된 SVG를 발견했을 때도 과거 passed 판정의 요약을 남기지 않는다.
+        # 일부 쪽만 캡처해도 문서 전체 쪽수의 차이는 숨기지 않는다.
+        failure_reason = "unavailable_document_page_counts"
+        metadata_path = base / ("wasm-export-complete.json" if wasm_pkg is not None else "native-export.json")
+        document_counts = document_page_counts(root, pdf, metadata_path)
+    except (SystemExit, subprocess.CalledProcessError):
+        # 필수 증거를 확인하지 못하면 과거 passed 판정의 요약을 남기지 않는다.
         run_manifest["run_state"] = "failed"
         write_json_atomic(run_manifest_path(base), run_manifest)
         failure = {
             "key": target.key,
             "run_state": "failed",
             "embedded_font_check": str(font_check_path),
-            "pr_review_gate": {"status": "re_review_required", "reason": "invalid_embedded_font"},
+            "pr_review_gate": {"status": "re_review_required", "reason": failure_reason},
         }
         write_json_atomic(base / "manifest.json", failure)
         update_root_summary(out_root, failure)
         raise
+
+    run_manifest["document_page_counts"] = document_counts
+    write_json_atomic(run_manifest_path(base), run_manifest)
 
     pdf_prefix = pdf_png_dir / "pdf"
     if not resume and selected_pages is None:
@@ -1627,7 +1665,7 @@ def render_target(
                 cwd=root, verbose=False,
             )
             pairs.append((page, png, pdf_path))
-        manifest = write_silhouette_tsv(pairs, base, target.key)
+        manifest = write_silhouette_tsv(pairs, base, target.key, document_counts=document_counts)
         manifest["provenance"] = provenance
         manifest["exported_svg_pages"] = len(all_svg_paths)
         manifest["exported_render_tree_pages"] = len(all_tree_paths)
@@ -5058,9 +5096,9 @@ def overlay_color(
         gray = int(avg[0] * 0.299 + avg[1] * 0.587 + avg[2] * 0.114)
         return (gray, gray, gray), False, union_ink, False
     if rhwp_ink and not pdf_ink:
-        return (255, 40, 40), True, union_ink, True
-    if pdf_ink and not rhwp_ink:
         return (40, 100, 255), True, union_ink, True
+    if pdf_ink and not rhwp_ink:
+        return (255, 40, 40), True, union_ink, True
     if rhwp_ink and pdf_ink:
         return (255, 150, 0), True, union_ink, True
     return (255, 190, 220), True, union_ink, False
@@ -5136,7 +5174,10 @@ def make_overlay_page(
 
     font = label_font()
     title_lines = wrap_label_lines(f"{key} p{page_index + 1:03d}", font, width - 16)
-    comment_lines = wrap_label_lines(
+    # 범례를 이미지에 포함해 원본의 글자색과 차이 표시색을 구별한다.
+    legend = "색상: 파랑=RHWP만 · 빨강=PDF만 · 주황=양쪽 차이 · 회색=일치"
+    legend_lines = wrap_label_lines(legend, font, width - 16)
+    comment_lines = legend_lines + wrap_label_lines(
         review_comment_line(
             {
                 "visual_accuracy_proxy_percent": visual_accuracy_proxy_percent,
@@ -5168,6 +5209,12 @@ def make_overlay_page(
         "width": width,
         "height": height,
         "pixel_diff_threshold": pixel_diff_threshold,
+        "overlay_color_legend": {
+            "rhwp_only": "blue",
+            "pdf_only": "red",
+            "both_different": "orange",
+            "matching": "gray",
+        },
         "total_pixels": total_pixels,
         "diff_pixels": diff_pixels,
         "diff_ratio": round(diff_ratio, 8),
@@ -5326,8 +5373,22 @@ def make_contact_sheet(compare_pages: list[Path], out_path: Path) -> Path:
     return out_path
 
 
+def document_page_counts(root: Path, pdf: Path, export_metadata: Path) -> dict[str, int]:
+    """선택한 래스터 개수와 구별한 원본 두 문서의 전체 쪽수를 읽는다."""
+    rhwp_count = load_json_object(export_metadata, "전체 쪽수").get("pageCount")
+    info = run(["pdfinfo", str(pdf)], cwd=root, verbose=False)
+    match = re.search(r"^Pages:\s+(\d+)\s*$", info.stdout, re.MULTILINE)
+    if isinstance(rhwp_count, bool) or not isinstance(rhwp_count, int) or rhwp_count < 1 or match is None:
+        raise SystemExit("RHWP 또는 기준 PDF의 전체 쪽수를 확인할 수 없습니다.")
+    pdf_count = int(match.group(1))
+    if pdf_count < 1:
+        raise SystemExit("기준 PDF의 전체 쪽수가 올바르지 않습니다.")
+    return {"rhwp": rhwp_count, "pdf": pdf_count}
+
+
 def write_silhouette_tsv(
-    pairs: list[tuple[int, Path, Path]], out_dir: Path, key: str
+    pairs: list[tuple[int, Path, Path]], out_dir: Path, key: str,
+    *, document_counts: dict[str, int] | None = None,
 ) -> dict[str, object]:
     """이미지 증적을 새로 만들지 않고 같은 2px 보조 지표와 입력 해시만 저장한다."""
     if not pairs:
@@ -5353,9 +5414,9 @@ def write_silhouette_tsv(
                 "pdf_png": str(pdf_path),
                 "pdf_sha256": hashlib.sha256(pdf_path.read_bytes()).hexdigest(),
             })
-    gate = pr_review_gate(metrics, font_mismatch_evidence=None)
+    gate = pr_review_gate(metrics, font_mismatch_evidence=None, document_page_counts=document_counts)
     if gate["status"] == "passed":
-        gate = {"status": "not_evaluated", "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"}
+        gate = {**gate, "status": "not_evaluated", "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"}
     manifest = {
         "key": key, "mode": "silhouette_only", "run_state": "complete",
         "requested_pages": [page for page, _, _ in pairs],
@@ -5446,6 +5507,10 @@ def main() -> None:
         ),
     )
     parser.add_argument("--dpi", type=int, default=96)
+    parser.add_argument(
+        "--compat", choices=("2022", "2024"), default="2022",
+        help="기준 PDF의 실제 한컴 조판 세대. 2020 Print는 2022, 2024 Print는 2024로 명시하며 원문에서 자동 추정하지 않습니다.",
+    )
     parser.add_argument("--embed-fonts", nargs="?", const="full", choices=("full",), help="진단 SVG에 원본 폰트를 전체 임베딩합니다. Unicode cmap 검사 후 캡처하며 공개 증적은 PNG로 보존합니다.")
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
@@ -5565,21 +5630,16 @@ def main() -> None:
             font_paths=args.font_path,
             font_mismatch_evidence=args.font_mismatch_evidence,
             silhouette_only=args.silhouette_only,
+            compat=args.compat,
         )
         gate = manifest.get("pr_review_gate")
         if isinstance(gate, dict) and gate.get("status") == "re_review_required":
-            pages = gate.get("below_threshold_pages")
-            page_text = ", ".join(
-                f"p{item.get('page')}={item.get('tolerant_content_match_percent')}%"
-                for item in pages
-                if isinstance(item, dict)
-            )
-            re_review_targets.append(f"{target.key} ({page_text or '실루엣 지표 없음'})")
+            re_review_targets.append(f"{target.key} ({review_gate_reason(gate)})")
     summary_path = out_root / "summary.json"
     print(f"summary: {summary_path}")
     if re_review_targets:
         raise SystemExit(
-            "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. "
+            "PR 검토 보류. "
             "작성자 branch에서 PDF/overlay 원인을 수정하고 Native/fresh WASM TSV·review PNG를 재산출하세요: " + "; ".join(re_review_targets)
         )
 
