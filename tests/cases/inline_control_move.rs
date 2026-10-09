@@ -9,7 +9,10 @@ use rhwp::{
     model::{
         control::{Control, Equation, Field, FieldType},
         paragraph::{CharShapeRef, FieldRange, MarkpenMark, Paragraph, RangeTag, TitleMark},
-        shape::CommonObjAttr,
+        shape::{
+            ChartShape, ChartType, CommonObjAttr, DataSeries, DrawingObjAttr, RectangleShape,
+            ShapeObject, TextBox,
+        },
         table::{Cell, Table},
     },
 };
@@ -686,5 +689,117 @@ fn nonempty_field_insertion_keeps_object_inside_after_text_is_deleted() {
         assert_eq!(p.field_ranges.len(), 1);
         assert_eq!(p.field_ranges[0].inner_slot_count, 1);
         assert_eq!(object_ids(p), vec![41]);
+    }
+}
+
+#[test]
+fn nested_markpen_colors_keep_outer_inner_order_when_moved() {
+    let mut p = paragraph("AB", vec![(1, equation(41))]);
+    p.markpen_marks = vec![
+        MarkpenMark {
+            char_idx: 1,
+            color: Some("#FF0000".into()),
+            utf16_pos: Some(1),
+        },
+        MarkpenMark {
+            char_idx: 1,
+            color: Some("#0000FF".into()),
+            utf16_pos: Some(2),
+        },
+        MarkpenMark {
+            char_idx: 1,
+            color: None,
+            utf16_pos: Some(8),
+        },
+        MarkpenMark {
+            char_idx: 1,
+            color: None,
+            utf16_pos: Some(9),
+        },
+    ];
+    let mut core = core(vec![p, paragraph("XY", vec![])]);
+    core.move_inline_control_native(&source(body(0), 0), &caret(body(1), 1))
+        .unwrap();
+    let p = &core.document().sections[0].paragraphs[1];
+    assert_eq!(
+        p.markpen_marks
+            .iter()
+            .map(|mark| mark.color.as_deref())
+            .collect::<Vec<_>>(),
+        vec![Some("#FF0000"), Some("#0000FF"), None, None]
+    );
+    assert_eq!(
+        p.markpen_marks
+            .iter()
+            .map(|mark| mark.utf16_pos)
+            .collect::<Vec<_>>(),
+        vec![Some(1), Some(2), Some(8), Some(9)]
+    );
+}
+
+#[test]
+fn table_shape_textbox_and_chart_payloads_are_moved_without_recreation() {
+    let common = |id| CommonObjAttr {
+        treat_as_char: true,
+        width: 3000,
+        height: 2000,
+        instance_id: id,
+        ..Default::default()
+    };
+    let rect = Control::Shape(Box::new(ShapeObject::Rectangle(RectangleShape {
+        common: common(101),
+        x_coords: [0, 3000, 3000, 0],
+        y_coords: [0, 0, 2000, 2000],
+        ..Default::default()
+    })));
+    let textbox = Control::Shape(Box::new(ShapeObject::Rectangle(RectangleShape {
+        common: common(102),
+        drawing: DrawingObjAttr {
+            text_box: Some(TextBox {
+                paragraphs: vec![paragraph("글상자 내용", vec![])],
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+        x_coords: [0, 3000, 3000, 0],
+        y_coords: [0, 0, 2000, 2000],
+        ..Default::default()
+    })));
+    let chart = Control::Shape(Box::new(ShapeObject::Chart(Box::new(ChartShape {
+        common: common(103),
+        chart_type: ChartType::Column,
+        title: Some("차트 내용".into()),
+        series: vec![DataSeries {
+            name: "값".into(),
+            values: vec![2., 3.],
+            categories: vec!["A".into(), "B".into()],
+            color: Some(0xff0000),
+        }],
+        raw_chart_data: vec![1, 2, 3, 4, 5],
+        ..Default::default()
+    }))));
+    let objects = vec![table(paragraph("표 내용", vec![])), rect, textbox, chart];
+    for control in objects {
+        let original = serde_json::to_value(&control).unwrap();
+        let mut core = core(vec![
+            paragraph("AB", vec![(1, control)]),
+            paragraph("XY", vec![]),
+        ]);
+        let result = core
+            .move_inline_control_native(&source(body(0), 0), &caret(body(1), 1))
+            .unwrap();
+        assert_eq!(result.address, source(body(1), 0));
+        assert_eq!(
+            serde_json::to_value(&core.document().sections[0].paragraphs[1].controls[0]).unwrap(),
+            original
+        );
+        assert_eq!(core.document().sections[0].paragraphs[0].text, "AB");
+        assert_eq!(core.document().sections[0].paragraphs[1].text, "XY");
+        core.move_inline_control_native(&result.address, &caret(body(0), 1))
+            .unwrap();
+        assert_eq!(
+            serde_json::to_value(&core.document().sections[0].paragraphs[0].controls[0]).unwrap(),
+            original
+        );
     }
 }

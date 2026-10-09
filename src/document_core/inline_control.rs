@@ -385,7 +385,18 @@ fn prepare_markpen_ranges(para: &mut Paragraph) -> Vec<MarkpenMark> {
 }
 
 fn sync_markpen_marks(para: &mut Paragraph, extras: Vec<MarkpenMark>) {
+    // 같은 시작점의 중첩 표지는 바깥 색부터 연다. 닫힌 순서로 수집한 범위를
+    // 그대로 import하면 같은 슬롯을 덮은 두 색의 순서가 뒤집힌다.
+    let ranges = std::mem::take(&mut para.range_tags);
+    para.range_tags = ranges
+        .iter()
+        .filter(|tag| tag.tag >> 24 == 2)
+        .cloned()
+        .collect();
+    para.range_tags
+        .sort_by_key(|tag| (tag.start, std::cmp::Reverse(tag.end)));
     para.import_markpen_range_tags();
+    para.range_tags = ranges;
     para.markpen_marks.extend(extras);
     for mark in &mut para.markpen_marks {
         if let Some(pos) = mark.utf16_pos {
