@@ -162,7 +162,7 @@ pub fn serialize_control(
             // 오는데, 종전에는 ClickHere 만 CTRL_DATA 를 냈으므로 **책갈피 이름이 저장에서
             // 통째로 사라졌다**(이름 없는 책갈피는 상호참조·하이퍼링크의 대상이 못 된다).
             //
-            // 정답지 `samples/aift.hwp`(한컴 저작)는 같은 문서의 `%bmk` 컨트롤 아래에
+            // 정답지 `mydocs/pr/assets/issue7445/aift74/aift.hwp`(한컴 저작)는 같은 문서의 `%bmk` 컨트롤 아래에
             // `ParameterSet ps_id=0x021b · item id=0x4000(String) = "_top"` 을 싣는다 —
             // 위 ClickHere 구조와 **같은 바이트 모양**이다. 스펙(§4.2.10.11)도 책갈피는
             // "책갈피 이름 밖에 없다"고 못박으므로 item ID 를 새로 발명할 필요가 없다

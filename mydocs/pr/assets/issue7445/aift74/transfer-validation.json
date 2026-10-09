@@ -1,0 +1,236 @@
+{
+  "stage": 366,
+  "issue": 7445,
+  "comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-6090366139",
+  "base": "21ed64071f81f35f37618717693bd30f727392c9",
+  "sourceCorrection": "d4ab924e8061d51da857a0934be01f301925b3a6",
+  "removedFunction": "svg_snapshot::issue_147_aift_page3",
+  "removedFunctionSource": "issue_147_removed.rs.txt",
+  "moved": [
+    {
+      "before": "samples/aift.hwp",
+      "after": "mydocs/pr/assets/issue7445/aift74/aift.hwp",
+      "sha256": "a3e94e613a7d3dad0ee11e2df8f9572a5b7c2d704602960c2075b5fd22df995c",
+      "bytes": 5724672
+    },
+    {
+      "before": "pdf/aift-hwp-2020.pdf",
+      "after": "mydocs/pr/assets/issue7445/aift74/aift-hwp-2020.pdf",
+      "sha256": "481b46b3b0aa9c87ca3b0af979aba1e6b366efe2592268e1978370d6968f33e9",
+      "bytes": 2311161
+    },
+    {
+      "before": "pdf/aift-2022.pdf",
+      "after": "mydocs/pr/assets/issue7445/aift74/aift-2022.pdf",
+      "sha256": "9ece17addbb2ac73aa0b98798fd6d92c30ed8dd535b6dd70196e83f3c1109453",
+      "bytes": 2566690
+    },
+    {
+      "before": "tests/golden_svg/issue-147/aift-page3.svg",
+      "after": "mydocs/pr/assets/issue7445/aift74/aift-page3-before.svg",
+      "sha256": "c633d0f68e8bf0945f86ccbca0dd6567559c97cfac71aa2273808aecf1de7705",
+      "bytes": 343520
+    }
+  ],
+  "removedAutomaticRenderEntries": [
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "row": "aift.hwp\t3"
+    },
+    {
+      "file": "tests/fixtures/render_page_samples.tsv",
+      "row": "samples/aift.hwp\t74\t74\t0"
+    },
+    {
+      "file": "scripts/renderer_baseline_manifest.json",
+      "sample": {
+        "id": "aift-doc",
+        "file": "aift.hwp",
+        "category": "mixed-document",
+        "page": 0,
+        "notes": "AIFT sample for mixed document CanvasKit parity coverage.",
+        "browserParityThresholds": {
+          "maxDiffRatio": null,
+          "inkMaskNeighborhoodRadius": 3,
+          "inkMaskMaxDiffRatio": 0.002,
+          "nonInkMaxDiffPixels": 0,
+          "solidInkMaxDiffRatio": 0.045
+        },
+        "diagnosticAxes": [
+          "mixed-document"
+        ],
+        "baselineTier": "extended"
+      }
+    }
+  ],
+  "retargetedConsumers": [
+    "tests/issue_630.rs",
+    "tests/issue_554.rs",
+    "tests/ir_diff_summary_mode.rs",
+    "tests/ir_diff_json_contract.rs",
+    "tests/cases/issue_5838_bookmark_ctrl_data.rs",
+    "src/renderer/layout/integration_tests.rs",
+    "src/serializer/control.rs",
+    "scripts/font_rule_ledger.mjs",
+    "mydocs/tech/investigations/issue-4939/font_rule_baseline.json",
+    "gym/packs/text-editing/tasks/TE33.json",
+    "gym/packs/render-tree/tasks/RT14.json",
+    "gym/packs/corpus-diagnostics/tasks/CD42.json",
+    "gym/packs/security/tasks/SE79.json",
+    "gym/packs/security/tasks/SE80.json",
+    "gym/packs/casual-rides/tasks/CR30.json",
+    "tests/ir_field_sweep_baseline.rs"
+  ],
+  "preservedIrBaselineRows": [
+    "hwp5rb/aift.hwp/list_header_width_ref=2299",
+    "hwp5rb/aift.hwp/nested/list_header_width_ref=164"
+  ],
+  "validation": "../completed-20261009/aift-first-frame-validation.json",
+  "baseBelow90": [
+    20,
+    21,
+    22,
+    24,
+    25,
+    26,
+    44,
+    45,
+    72
+  ],
+  "currentBelow90": [
+    21,
+    22,
+    24,
+    25,
+    26,
+    44,
+    45,
+    72
+  ],
+  "newBelow90": [],
+  "hwpxCounterpart": "samples/hwpx/aift.hwpx는 변경하지 않았으며 이번 HWP 이관의 측정 대상으로 포함하지 않음",
+  "pending": "최종 전체 nextest·필수 게이트·PR/CI/병합은 아직 완료 전",
+  "sharedConsumerCorrection": {
+    "previousKtxMissingReference": "gym/packs/casual-rides/tasks/CR29.json",
+    "securityContract": "scripts/tests/test_gym_security_pack.py",
+    "authority": "gym/packs/security/README.md",
+    "reason": "공유 입력의 이관 경로 지원과 실제 파일·저장소 내부 경계 검증 유지. task/check/allowExits/정답 값은 변경하지 않음"
+  },
+  "retainedIntegration": {
+    "summary": "18 PASS / 0 FAIL / 1236 skipped / 43.420s",
+    "exit": {
+      "exitCode": 0,
+      "seconds": 165.80423224996775
+    }
+  },
+  "retainedUnit": {
+    "summary": "10 PASS / 0 FAIL / 3999 skipped / 1.113s",
+    "exit": {
+      "exitCode": 0,
+      "seconds": 105.49823958333582
+    }
+  },
+  "fontLedgerContracts": {
+    "summary": "10 PASS / 0 FAIL",
+    "exit": {
+      "exitCode": 0,
+      "seconds": 0.606792917009443
+    }
+  },
+  "policyResults": [
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exitCode": 0,
+      "seconds": 0.6919581247493625
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "21ed64071f81f35f37618717693bd30f727392c9"
+      ],
+      "exitCode": 0,
+      "seconds": 0.4418833749368787
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "21ed64071f81f35f37618717693bd30f727392c9"
+      ],
+      "exitCode": 0,
+      "seconds": 6.597825374919921
+    }
+  ],
+  "gymStructural": [
+    {
+      "key": "gym-contract-final",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-p",
+        "test_gym_*.py"
+      ],
+      "exitCode": 0,
+      "seconds": 5.04920395789668
+    },
+    {
+      "key": "gym-audit-final",
+      "command": [
+        "python3",
+        "gym/tools/audit.py",
+        "--json"
+      ],
+      "exitCode": 0,
+      "seconds": 0.09707279223948717,
+      "summary": {
+        "ok": true,
+        "issueCount": 0,
+        "toolFailed": false
+      }
+    },
+    {
+      "key": "gym-oracle",
+      "command": [
+        "python3",
+        "gym/tools/oracle_probe.py",
+        "--json"
+      ],
+      "exitCode": 0,
+      "seconds": 0.03679395793005824,
+      "summary": {
+        "ok": true,
+        "issueCount": 0
+      }
+    },
+    {
+      "key": "gym-oracle-selftest",
+      "command": [
+        "python3",
+        "gym/tools/oracle_probe.py",
+        "--selftest",
+        "--json"
+      ],
+      "exitCode": 0,
+      "seconds": 0.03648666711524129,
+      "summary": {
+        "ok": true,
+        "issueCount": 0
+      }
+    }
+  ],
+  "gymContractSummary": "3171 run / 0 FAIL / 1 skipped / 4.917s",
+  "formatterNote": "fmt 후 source 길이 변경으로 harness weight drift 발생. --prepare로 현재 source에 재동기화했고 manifest/unit-tier policy 모두 통과. 예산을 확대하지 않았고 generated source는 커밋하지 않음."
+}

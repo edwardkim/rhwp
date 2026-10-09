@@ -80,7 +80,7 @@ fn extract_page_marker_paren_x_positions(svg: &str) -> Vec<f64> {
 #[test]
 fn test_630_aift_p4_toc_paren_alignment() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
-    let hwp_path = Path::new(repo_root).join("samples/aift.hwp");
+    let hwp_path = Path::new(repo_root).join("mydocs/pr/assets/issue7445/aift74/aift.hwp");
     let bytes =
         fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
 

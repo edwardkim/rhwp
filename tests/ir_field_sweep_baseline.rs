@@ -83,8 +83,10 @@ const BASELINE_HEADER: &str = "lane\tsample\tpath\tcount";
 const HWP5_ROOT: &str = "samples";
 const HWPX_ROOT: &str = "samples/hwpx";
 // 이관 문서의 기존 비렌더링 왕복 계약은 논리 샘플명과 입력 바이트를 유지한다.
-const SHARED_HWP5_INPUTS: &[(&str, &str)] =
-    &[("KTX.hwp", "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp")];
+const SHARED_HWP5_INPUTS: &[(&str, &str)] = &[
+    ("KTX.hwp", "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp"),
+    ("aift.hwp", "mydocs/pr/assets/issue7445/aift74/aift.hwp"),
+];
 
 fn hwp5_sample_path(sample: &str) -> PathBuf {
     SHARED_HWP5_INPUTS

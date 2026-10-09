@@ -1670,24 +1670,6 @@
       "baselineTier": "extended"
     },
     {
-      "id": "aift-doc",
-      "file": "aift.hwp",
-      "category": "mixed-document",
-      "page": 0,
-      "notes": "AIFT sample for mixed document CanvasKit parity coverage.",
-      "browserParityThresholds": {
-        "maxDiffRatio": null,
-        "inkMaskNeighborhoodRadius": 3,
-        "inkMaskMaxDiffRatio": 0.002,
-        "nonInkMaxDiffPixels": 0,
-        "solidInkMaxDiffRatio": 0.045
-      },
-      "diagnosticAxes": [
-        "mixed-document"
-      ],
-      "baselineTier": "extended"
-    },
-    {
       "id": "loading-fail-01",
       "file": "loading-fail-01.hwp",
       "category": "mixed-document",

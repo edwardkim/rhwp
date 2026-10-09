@@ -11,7 +11,7 @@ use std::process::{Command, Output};
 const SAMPLE_A: &str = "samples/hwp3-sample.hwp";
 
 /// 구역 수 차이 경로용: SAMPLE_A(1구역) 과 구역 수가 다른 다구역 문서.
-const SAMPLE_MULTI: &str = "samples/aift.hwp";
+const SAMPLE_MULTI: &str = "mydocs/pr/assets/issue7445/aift74/aift.hwp";
 
 /// [#3274] 봉투 계약 불변식 — 이 세 관계가 늘 성립해야 한다.
 /// `identical` ⇔ `diffCount == 0` ⇔ `categories` 가 비어 있음.

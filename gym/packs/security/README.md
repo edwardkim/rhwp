@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/packs/security/README.md
-last_verified: 2026-08-18
+last_verified: 2026-10-10
 ---
 
 # security — 배포 전·수신 후 보안 스윕
@@ -14,7 +14,7 @@ last_verified: 2026-08-18
 PII·메타데이터는 서로 다른 축이다. 한 축이 clean 이어도 다른 축은 더럽다.
 
 이 pack 은 그 축들을 **기존 CLI 표면**(`inspect` · `edit redact` · `edit sanitize`
-· `scan`)과 **저장소에 이미 있는 samples/** 만으로 과제화한다. 새 pack 도, 새
+· `scan`)과 **저장소에 이미 있는 공개 문서**만으로 과제화한다. 새 pack 도, 새
 명령도, 새 연산자도, 새 픽스처도 없다.
 
 권위 출처: `mydocs/manual/cli_commands.md` §inspect · §edit redact · §edit sanitize,
@@ -26,9 +26,10 @@ PII·메타데이터는 서로 다른 축이다. 한 축이 clean 이어도 다�
    `answer_eq` · `len_answer_eq` · `value_eq` · `file_exists` ·
    `differs_from_input` 가 전부다. 전역 훑기(`deep_contains`)는 보안 축에서
    `allowGlobalScan` 없이 쓰지 않는다.
-2. **기존 표본만.** `samples/` 밖 파일을 만들지 않는다. 유니코드 전용 표본,
-   PII 원장, 행정 편람, 누름틀 서식, 시험지, 업무계획, 규제영향분석 — 이미
-   있는 실문서를 축만 바꿔 다시 스윕한다.
+2. **기존 표본만.** `samples/`의 공개 문서 또는 피델리티 이관으로 같은 바이트를
+   보존한 `mydocs/pr/assets/issue7445/`의 문서를 사용한다. 새 입력을 만들거나
+   사설·저장소 밖 경로를 읽지 않는다. 유니코드 전용 표본, PII 원장, 행정 편람,
+   누름틀 서식, 시험지, 업무계획, 규제영향분석 등 기존 실문서를 축만 바꿔 다시 스윕한다.
 3. **라이브 오라클.** 정답 숫자를 과제에 박제하지 않는다. 채점기가 같은
    명령을 다시 돌려 봉투 필드를 읽는다. 표본이 늘거나 탐지 규칙이 보수적으로
    바뀌면 정답이 따라간다.

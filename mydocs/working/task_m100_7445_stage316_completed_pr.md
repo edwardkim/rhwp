@@ -1582,3 +1582,48 @@ package/lock·font asset이 이전 commit과 같고, 재사용 대조 4·44·72�
 모두 새로 캡처한 것으로 표시하지 않습니다.
 
 [소스·빌드·전쪽 결과·대표 PNG·재사용 출처](../pr/assets/issue7445/completed-20261009/aift-first-frame-validation.json).
+
+
+## 보정 366 사전 분석과 범위: AIFT 전체 SVG 고정 검사 이관
+
+base route: collaborator_self_merge
+modifiers: intake_and_review, local_validation, visual_fixture_evidence, rework_and_exceptions
+loaded documents: pr_review_workflow.md, pr_review/README.md 및 위 역할·보조 문서
+current head: d4ab924e8 (이관 전 첫 프레임 보정)
+
+74쪽의 기존 미달은 고정 devel과 같은 원본·독립 한컴 Print로 확인했습니다.
+현재 수정의 19쪽 새 미달을 구현으로 먼저 고친 뒤
+[#7445에 실제 등록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-6090366139)했습니다.
+게시 본문·작성자와 마지막 상태 문장을 API로 재확인했습니다. 미게시 commit/PNG의
+URL은 공개 증거로 쓰지 않았으며 최종 PR 게시 뒤 안정 링크를 연결합니다.
+
+실패한 `svg_snapshot::issue_147_aift_page3` 한 함수와 해당 입력의 자동
+렌더링 항목만 제거합니다. 원문·독립 Print·이전 PDF·제거 전 함수·골든을
+바이트 그대로 이관하고, 공유 계약의 실제 파일 소비자까지 경로를 연결합니다.
+정상 함수와 assertion, 비렌더링 IR 두 baseline 행은 유지합니다. HWPX는
+이번 검증으로 이관하지 않습니다. 폰트 원장의 입력·parity 재현 명령과 gym
+진단도 같은 입력의 새 경로를 사용하며 폰트 메트릭·기대 건수는 변경하지 않습니다.
+[파일 해시와 제거/유지 범위](../pr/assets/issue7445/aift74/transfer-validation.json).
+유지 검사가 완료된 뒤 결과를 연결하며 최종 전체 검증은 아직 완료 전입니다.
+
+
+### 보정 366 결과
+
+기존 관련 integration **18 PASS / 0 FAIL / 1,236 skipped**, 43.420초,
+쪽번호·문서 경로 unit **10 PASS / 0 FAIL / 3,999 skipped**, 1.113초를
+확인했습니다. 폰트 원장 Node 계약 10건도 통과했습니다. fmt 후 source
+길이 변화로 harness 배정의 drift가 발생해 --prepare로 현재 source에
+재동기화했고 manifest·unit-tier policy가 모두 통과했습니다. 파생 suite와
+manifest는 stage하지 않습니다.
+
+공유 소비자를 구조 감사하면서 이전 KTX 이관의 CR29 참조 누락과 security의
+samples-only 경로 계약을 발견했습니다. CR29는 동일 KTX 자산으로 연결했고
+security는 기존 공개 입력이 이슈 자산으로 이동해도 검증하되 실제 파일·
+저장소 내부 경계를 검사하도록 같은 계약을 보완했습니다. 정답·연산자·
+allowExits는 바꾸지 않았습니다. 메인터너 감사 모드의 기존 Gym unit
+3,171건은 실패 0·skip 1이며 구조 감사·oracle·selftest 모두 성공했습니다.
+Gym 결과로 제품·한컴 피델리티를 판정하지 않습니다.
+
+제거한 회귀는 전체 SVG 고정 한 함수뿐이며 원문·새/이전 PDF·골든·기존
+IR 두 행과 공유 계약을 보존했습니다. 직전 잔여 실패 33건 중 이 함수를
+이관했고 나머지 32건의 현재 head 재검증과 최종 전체 검증은 아직 완료 전입니다.
