@@ -77,3 +77,7 @@ zoom/DPR/resize 15조건의 트리 유지와 3개 원래 조건 복원 PNG 일�
 한글/수학 기호 혼재와 일반 Latin 수식이다. screen/print와 scale 유무의 실제 호출을 확인한다.
 먼저 실제 PNG와 독립 PDF를 비교하고, 시각 선행 조건 충족 후 정식 회귀를 추가한다.
 공통 crop·화살촉과 다른 backend의 별도 글꼴 등록은 이 보정의 해결 범위가 아니다.
+
+3단계 보정과 검증을 완료했다. [실행 결과](../working/task_m100_7688_stage3.md)에 수정 전 FAIL/
+수정 후 PASS, 전체 회귀, Native Skia 3종, 동일 한컴 PDF의 Native/fresh WASM 및 실제 PNG를
+연결했다. #7688 전체는 공통 crop·화살촉·CanvasKit 글꼴 등 후속 범위가 남아 active다.
