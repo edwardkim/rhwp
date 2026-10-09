@@ -1,0 +1,225 @@
+{
+  "candidate": "16149f0fc1db6a19be3dff5878b4728a8aa4b728",
+  "run": 42,
+  "passed": 4,
+  "failed": 38,
+  "summary": "Summary [  52.023s] 42 tests run: 4 passed, 38 failed, 4043 skipped",
+  "threads": 8,
+  "exitCode": 100,
+  "items": [
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_003",
+      "test": "wmf_emf_goldens::wmf_emf_goldens_lock_current_engine"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_008",
+      "test": "issue_3587_repeated_table_flow::hancom_copies_keep_owner_order_after_enter"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_008",
+      "test": "issue_6034_footnote_area_reflow_width::issue_6034_footnote_area_starts_below_body_text"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_010",
+      "test": "svg_snapshot::issue_147_aift_page3"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_010",
+      "test": "svg_snapshot::issue_267_ktx_toc_page"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_011",
+      "test": "issue_6035_cell_split_empty_band::issue_6035_does_not_emit_header_only_ghost_page"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_011",
+      "test": "issue_6035_cell_split_empty_band::issue_6035_water_supply_subitems_stay_with_heading"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_012",
+      "test": "issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_012",
+      "test": "issue_7203_float_table_stored_anchor_top::downstream_table_split_and_body_follow_the_oracle_pages"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_012",
+      "test": "issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_001",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_11"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_001",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_15"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_013",
+      "test": "issue_7469_footnote_number_paragraph_indent::footnote_number_replaces_the_autonum_placeholder"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_015",
+      "test": "issue_4068_column_top_table_outer_margin::issue_4068_only_the_column_top_table_receives_outer_margin"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_017",
+      "test": "issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_013",
+      "test": "issue_7469_footnote_number_paragraph_indent::numbered_footnote_paragraph_continuation_uses_hanging_indent"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_018",
+      "test": "issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_006",
+      "test": "issue_6761_stored_vpos_rewind_page_break::partial_retreat_inside_a_page_does_not_break"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_013",
+      "test": "issue_7469_footnote_number_paragraph_indent::unnumbered_footnote_paragraph_keeps_hanging_indent"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_018",
+      "test": "issue_4961_font_decision_trace::stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_023",
+      "test": "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_023",
+      "test": "issue_4962_font_metric_coverage::public_hwp_hwpx_classification_golden_is_deterministic_and_format_portable"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_007",
+      "test": "issue_6981_split_straddle_row_height::completed_terminal_cut_does_not_allocate_an_empty_page"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_022",
+      "test": "issue_1156_rowbreak_fragment_fit::kps_ai_page37_defers_overflowing_split_row_slice"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_026",
+      "test": "issue_2069_ole_object_selection::hwp_enter_after_square_ole_respects_height_boundary"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_026",
+      "test": "issue_2069_ole_object_selection::hwp_enter_backspace_reenter_keeps_ole_anchor_flow"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_026",
+      "test": "issue_2069_ole_object_selection::hwpx_enter_after_square_ole_respects_height_boundary"
+    },
+    {
+      "status": "PASS",
+      "binary": "rhwp::regression_suite_026",
+      "test": "issue_2069_ole_object_selection::hwpx_enter_backspace_reenter_keeps_ole_anchor_flow"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_026",
+      "test": "issue_7203_float_table_top_uses_stored_anchor::saved_outer_box_anchor_keeps_following_tables_inside_the_body"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_023",
+      "test": "issue_7203_split_float_anchors_to_paragraph_top::split_fragment_without_a_gap_is_unchanged"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_025",
+      "test": "issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_001",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_2"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_020",
+      "test": "issue_7379_rowbreak_table_footnote_reservation::terminal_caption_withholds_the_last_rowspan_unit_together"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_026",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_1"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_026",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_13"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_028",
+      "test": "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_026",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_9"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_007",
+      "test": "issue_6981_split_straddle_row_height::continuation_height_respects_varying_page_budgets"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_024",
+      "test": "issue_7226_rowspan_only_row_cut::the_fix_does_not_add_a_page"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_026",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_2"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_026",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_4"
+    },
+    {
+      "status": "FAIL",
+      "binary": "rhwp::regression_suite_001",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_3"
+    }
+  ],
+  "logPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage354-remaining-after-ole-host/nextest.log",
+  "logSha256": "617cb965c860f358201b9f23eb8f324a5152a70d11bcddc3bcf96398c24350c3",
+  "commandSha256": "09f026ce07adc1082f8f5902ed54432c63b9f2ab00749f28c3e305b954549e9c",
+  "latestFullNextest": "최신 보정 후 전체 재실행 전"
+}
