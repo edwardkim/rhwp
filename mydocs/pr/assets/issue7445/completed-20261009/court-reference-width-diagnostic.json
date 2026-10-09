@@ -55,5 +55,15 @@
   "nativeFreshVisualGate": "미검증; 수용·기대값 변경·검사 삭제 보류",
   "productionTestFixtureBaselineChanges": false,
   "activeRegressionRetained": true,
-  "remainingOriginalFailures": 37
+  "remainingOriginalFailures": 37,
+  "printRetry": {
+    "job_id": "b5812072-d8b2-4efd-8d95-87d468c319d9",
+    "status": "failed",
+    "phase": "failed",
+    "engine": "2020",
+    "elapsed_seconds": 900,
+    "output_bytes": 0,
+    "terminal": true,
+    "interpretation": "같은 원본·engine의 재확인도 terminal 실패. 기준 출력 미확보이며 기대값·검사·생산 코드 변경 보류"
+  }
 }
