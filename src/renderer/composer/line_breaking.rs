@@ -3500,6 +3500,18 @@ fn layout_paragraph_in_frame_impl(
                     if filled.termination == FillTermination::ParagraphEnd {
                         maximum_font_size = maximum_font_size.max(paragraph_end_font_size);
                     }
+                    // 강제 줄 나눔 글자도 문단 끝 표지처럼 제 줄의 글자 상자를 갖는다(#7685).
+                    // 나눔만 남은 줄이 12px 기본값으로 접히면 한/글 정본보다 줄마다
+                    // 4.8px 짧다(80168 표 칸 `⏎②…` 첫 줄: 한/글 19.2px 간격).
+                    if filled.termination == FillTermination::ForcedBreak {
+                        let break_font_size = line
+                            .end_idx
+                            .checked_sub(1)
+                            .and_then(|idx| para.char_shape_id_at(idx))
+                            .and_then(|id| styles.char_styles.get(id as usize))
+                            .map_or(0.0, |style| style.font_size);
+                        maximum_font_size = maximum_font_size.max(break_font_size);
+                    }
                     for control in inline_controls.iter().filter(|control| {
                         (line.start_idx..line.end_idx).contains(&control.char_position)
                             || (line.end_idx == text_chars.len()

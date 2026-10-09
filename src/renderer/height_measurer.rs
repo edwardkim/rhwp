@@ -3445,6 +3445,12 @@ impl HeightMeasurer {
                             })
                         })
                         .map(|pp| {
+                            // 저장 줄이 없는 문단은 위 `text_height` 가 400HU 자리 줄을
+                            // 실었다. 같은 줄이므로 같은 값을 뺀다(#7685) — 저장 줄만 빼면
+                            // 자리 줄이 개체 아래에 남는다(issue7182 그림 칸 +5.3px).
+                            if crate::renderer::para_has_no_stored_line_segs(pp) {
+                                return hwpunit_to_px(400, self.dpi);
+                            }
                             pp.line_segs
                                 .iter()
                                 .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
