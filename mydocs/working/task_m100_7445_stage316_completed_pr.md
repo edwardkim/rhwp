@@ -1052,3 +1052,23 @@ Native 괘선이 PDF보다 옅은 기존 차이를 유지하며 100% 픽셀 동�
 [30행 표 review](../pr/assets/issue7445/completed-20261009/table-enter-table30-p001-review.png),
 [33회 입력의 빈2쪽 review](../pr/assets/issue7445/completed-20261009/table-enter-table33-p002-review.png)를
 각 overlay와 함께 커밋하고 전체 TSV·원시 로그·빌드는 ignored output에 보존합니다.
+
+
+## 보정 350 사전 분석: 호스트 판정 수정 후 잔여 45개 재검증
+
+보정 349의 코드·7쪽 시각 수용 결과를 커밋한 같은 head에서, 원래 실패 중
+아직 해결 확인이 없는 45개 함수를 정확히 선택해 실행합니다. 공통 저장 호스트
+판정의 영향으로 결과가 바뀌었는지 먼저 확인하며 새 실패/증거 부족을 숨기지 않습니다.
+생산 코드·기대값·fixture·baseline을 추가 수정하지 않는 잔여 재검증입니다.
+
+
+### 보정 350 잔여 재검증 결과
+
+코드 후보 `f635b19a76901c24b5c165e3c82222988cc674cc`의 잔여45개 실제 실행은 **2 PASS / 43 FAIL**,
+48.670초·threads8·exit100입니다. 같은 호스트 증거 복원으로
+#7288의 표 뒤 본문 줄과 본문 바닥 포함 기존 검사 두 개가 추가 PASS했습니다.
+그 문서 전체의 새로운 시각 승인이나 좌표 기대 변경은 아닙니다. 기존 검사·
+fixture·baseline·생산 코드는 추가로 변경하지 않았습니다.
+확인된 원래 실패 해결은 **24건**, 잔여는 **43건**입니다.
+[정확한 head·45개 개별 결과·원시 로그 해시](../pr/assets/issue7445/completed-20261009/remaining-after-host-fix-validation.json)를
+포함하며 최신 전체 nextest·필수 최종 게이트·PR 생성은 아직 남습니다.
