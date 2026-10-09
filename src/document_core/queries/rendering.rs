@@ -9951,6 +9951,53 @@ mod tests {
             page_hwp_top > paper_hwp_top,
             "쪽 기준 border top should be inside paper 기준: paper={paper_hwp_top}, page={page_hwp_top}"
         );
+        // 전쪽 Print 비교를 마친 원본의 UI 기준선은 실제 이중 테두리 선 묶음 안에 있다.
+        // 특정 픽셀 좌표나 구현의 간격 계산식을 기대값으로 다시 사용하지 않는다.
+        let sample = DocumentCore::from_bytes(
+            &std::fs::read("samples/hwp3-sample16-hwp5.hwp").expect("검증한 원본"),
+        )
+        .expect("원본 로드");
+        let sample16_top = json_number(
+            &sample.get_page_info_native(0).expect("원본 UI 쪽 정보"),
+            "pageBorderTop",
+        );
+        let page = sample.build_page_render_tree(0).expect("첫 쪽 렌더 트리");
+        let body = page
+            .root
+            .children
+            .iter()
+            .find(|node| {
+                matches!(
+                    node.node_type,
+                    crate::renderer::render_tree::RenderNodeType::Body { .. }
+                )
+            })
+            .expect("본문 영역");
+        let top_strokes: Vec<f64> = page
+            .root
+            .children
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                crate::renderer::render_tree::RenderNodeType::Line(line)
+                    if line.y1 == line.y2
+                        && line.y1 < body.bbox.y
+                        && node.bbox.width >= body.bbox.width =>
+                {
+                    Some(line.y1)
+                }
+                _ => None,
+            })
+            .collect();
+        assert!(
+            top_strokes.len() >= 2,
+            "원본 이중 테두리의 실제 상단 선 묶음"
+        );
+        let outer = top_strokes.iter().copied().reduce(f64::min).unwrap();
+        let inner = top_strokes.iter().copied().reduce(f64::max).unwrap();
+        assert!(
+            outer <= sample16_top && sample16_top <= inner,
+            "UI 기준선은 실제 테두리 선 사이에 있어야 한다: {outer}..{inner}, UI={sample16_top}"
+        );
     }
 
     #[cfg(not(target_arch = "wasm32"))]

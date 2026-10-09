@@ -143,3 +143,38 @@ Studio 빌드는 아직 fresh WASM의 타입 파일이 없어 실패했으므로
 - [전쪽·devel·기존 검사 전후 증적](../pr/assets/issue7445/completed-20261009/sample16-existing-relations-validation.json),
   [3쪽 review](../pr/assets/issue7445/completed-20261009/sample16-p003-existing-relations-review.png)를 포함합니다.
   전쪽 TSV·실행 로그는 ignored output에만 보존합니다. 다른 실패와 전체 검증이 남아 PR 준비 완료는 아닙니다.
+
+
+### devel 전쪽 비교 결과
+
+| 원본 | 기준 PDF | devel Native/fresh 쪽수 | 최저 일치율 | 미달/측정 쪽 |
+| --- | ---: | ---: | ---: | ---: |
+| TAC 셀 표 #6448 | 3 | 3 | 53.26199% | 3/3 |
+| sample16 HWP5 원본 | 64 | 65 | 3.13476% | 64/64, 추가 출력 1쪽 |
+| 교육과정 #7226·#6761 | 415 | 413 | 0.43615% | 392/413, 누락 2쪽 |
+
+Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴 공급은
+`output/issue7445/20261005/stage318-devel-visual/`에 기록했습니다.
+쪽수나 기존 검사 통과만으로 피델리티를 수용하지 않습니다. 교육과정의 413쪽 핀은
+아직 수정하지 않았고, 같은 문서의 정상 관계 검사도 제거하지 않았습니다.
+전체 원문을 개선·검증하지 않은 상태에서 415라는 숫자로 치환하지 않습니다.
+자동 생성한 TSV·중간 JSON·미완료 증적은 ignored output으로 옮겨 보존했고,
+이번 커밋에는 시각 선행 검증을 마친 sample16의 직접 PNG와 요약 증적만 포함했습니다.
+
+
+## 보정 320·321: 실행 산출물 확인과 쪽 테두리 관계 검사
+
+- 시각 비교와 기본 환경을 직접 대조했습니다. sample16 원본과 2022 원본 모두
+  Native 기본 환경의 전쪽 64개 raw SVG·Full CSS·실제 글꼴 프로그램이 기존 수용 캡처와 같았습니다.
+  실제 Chrome fresh WASM도 환경 인자 없이 다시 내보낸 각 64개 SVG가 수용 캡처와 바이트 동일합니다.
+- devel 검증 후 공용 target에서 모듈을 재실행했을 때만 2022 두 함수가 65쪽으로 실패했습니다.
+  원본과 생산 코드·글꼴 환경을 바꾸지 않고 라이브러리 입력 timestamp를 갱신해 재빌드하자
+  sample16 모듈 13개가 모두 통과했습니다(0.308초). 두 함수의 기대값·환경·내용 관계는 유지합니다.
+  작업장 전환 후 캐시 산출물 재사용에 의한 실패를 유효한 생산 회귀로 사용하지 않습니다.
+- 독립 Print 첫 쪽의 실제 이중 테두리 선은 41.954pt와 43.033pt입니다. 기존 UI 검사에서
+  고정한 49.2px를 없애고 UI 기준선이 실제 이중 선 사이에 속하는지 검사합니다.
+  본문과 종이 기준 선택 검사는 유지했고 생산 구현 변경이나 신규 테스트 함수 추가는 없습니다.
+- 수정한 기존 테두리 검사 1 PASS / 0 FAIL / 4008 skipped, 0.209초입니다.
+  [전쪽·기본 환경·빌드 산출물 증적](../pr/assets/issue7445/completed-20261009/sample16-page-border-relation-validation.json)과
+  [첫 쪽 review](../pr/assets/issue7445/completed-20261009/sample16-p001-page-border-relation-review.png)를 포함합니다.
+  최종 전체 검증과 다른 실제 실패 판정은 남아 있습니다.
