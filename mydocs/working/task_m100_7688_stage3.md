@@ -73,6 +73,10 @@ screen/print 정상 대조군 10개도 수정 전후 byte 동일하다.
 전체 출력·페이지 TSV·font 입력 hash·binary hash는 같은 ignored 증적 디렉터리에 보존했다.
 최저 점수만으로 glyph 보존을 대신하지 않고 위 실제 이미지와 font 소비 회귀를 함께 확인했다.
 
+2026-10-09 메인터너가 `native-before-after-review.png`를 직접 확인하고
+**“비교 이미지 판정: 통과”**로 판정했다. 이 판정은 `eq-01.hwp`의 Native 수식 보정에
+적용하며, 아래 남은 #7688 범위의 시각 통과로 확대하지 않는다.
+
 ## 최종 검증
 
 검증 head는 `ca7f777695b75f7a77a157eb25f77f6ea48c9b95`, 정책 base는
