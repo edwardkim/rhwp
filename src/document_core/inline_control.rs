@@ -6,9 +6,9 @@ use crate::{
     model::{
         control::Control,
         document::Section,
-        paragraph::{CharShapeRef, Paragraph, RangeTag},
+        paragraph::{CharShapeRef, MarkpenMark, Paragraph, RangeTag},
     },
-    serializer::body_text::control_stream_slots,
+    serializer::body_text::{control_stream_slots, field_stream_ends},
 };
 use serde::{Deserialize, Serialize};
 
@@ -349,6 +349,52 @@ fn normalize_shapes(para: &mut Paragraph) {
     para.char_shapes = runs;
 }
 
+// HWPX 표지와 HWP 범위를 하나의 축으로 편집한다. 짝 없는/알 수 없는 표지는
+// 범위로 변환하지 않고 그대로 남겨 기존 부가 정보를 버리지 않는다.
+fn prepare_markpen_ranges(para: &mut Paragraph) -> Vec<MarkpenMark> {
+    let mut paired = vec![false; para.markpen_marks.len()];
+    let mut open = Vec::new();
+    for (index, mark) in para.markpen_marks.iter().enumerate() {
+        if let Some(color) = &mark.color {
+            let valid = color
+                .strip_prefix('#')
+                .is_some_and(|value| value.len() == 6 && u32::from_str_radix(value, 16).is_ok());
+            open.push((index, valid));
+        } else if let Some((begin, valid)) = open.pop() {
+            if valid
+                && mark.stream_position(para) >= para.markpen_marks[begin].stream_position(para)
+            {
+                paired[begin] = true;
+                paired[index] = true;
+            }
+        }
+    }
+    let extras = para
+        .markpen_marks
+        .iter()
+        .enumerate()
+        .filter_map(|(index, mark)| {
+            (!paired[index]).then(|| MarkpenMark {
+                utf16_pos: Some(mark.stream_position(para)),
+                ..mark.clone()
+            })
+        })
+        .collect();
+    para.range_tags = para.effective_markpen_range_tags();
+    extras
+}
+
+fn sync_markpen_marks(para: &mut Paragraph, extras: Vec<MarkpenMark>) {
+    para.import_markpen_range_tags();
+    para.markpen_marks.extend(extras);
+    for mark in &mut para.markpen_marks {
+        if let Some(pos) = mark.utf16_pos {
+            mark.char_idx = para.char_offsets.partition_point(|&offset| offset < pos);
+        }
+    }
+    para.markpen_marks.sort_by_key(|mark| mark.utf16_pos);
+}
+
 struct Slot {
     control: Control,
     data: Option<Vec<u8>>,
@@ -407,27 +453,36 @@ fn remove_slot(para: &mut Paragraph, ci: usize) -> Result<(Slot, u32), HwpError>
             pos.saturating_sub(8).max(raw)
         }
     };
+    let mut extras = prepare_markpen_ranges(para);
     let mut tags = vec![];
-    for tag in &mut para.range_tags {
-        if tag.start < end && tag.end > raw {
+    let mut survivors = vec![];
+    for mut tag in para.range_tags.drain(..) {
+        let overlap = tag.start < end && tag.end > raw;
+        let point = tag.start == tag.end && raw <= tag.start && tag.start < end;
+        if overlap || point {
             tags.push(RangeTag {
                 start: tag.start.max(raw) - raw,
                 end: tag.end.min(end) - raw,
                 tag: tag.tag,
             });
         }
+        let nonempty = tag.start < tag.end;
         tag.start = collapse(tag.start);
         tag.end = collapse(tag.end);
+        if !point && !(overlap && nonempty && tag.start == tag.end) {
+            survivors.push(tag);
+        }
     }
-    para.range_tags.retain(|tag| tag.start < tag.end);
+    para.range_tags = survivors;
     for offset in &mut para.char_offsets {
         *offset = collapse(*offset);
     }
-    for mark in &mut para.markpen_marks {
+    for mark in &mut extras {
         if let Some(pos) = &mut mark.utf16_pos {
             *pos = collapse(*pos);
         }
     }
+    sync_markpen_marks(para, extras);
     for range in &mut para.field_ranges {
         if range.control_idx < ci && ci <= range.control_idx.saturating_add(range.inner_slot_count)
         {
@@ -464,6 +519,8 @@ fn insert_slot(para: &mut Paragraph, raw: u32, ci: usize, slot: Slot) -> Result<
     {
         return Err(invalid("문자 좌표가 너무 큽니다"));
     }
+    let field_ends = field_stream_ends(para);
+    let mut extras = prepare_markpen_ranges(para);
     let restore = active_shape(para, raw);
     for run in &mut para.char_shapes {
         if run.start_pos >= raw {
@@ -508,7 +565,7 @@ fn insert_slot(para: &mut Paragraph, raw: u32, ci: usize, slot: Slot) -> Result<
             end: raw + tag.end,
             tag: tag.tag,
         }));
-    for mark in &mut para.markpen_marks {
+    for mark in &mut extras {
         if let Some(pos) = &mut mark.utf16_pos {
             if *pos >= raw {
                 *pos = pos
@@ -517,15 +574,9 @@ fn insert_slot(para: &mut Paragraph, raw: u32, ci: usize, slot: Slot) -> Result<
             }
         }
     }
-    let slots = control_stream_slots(para);
-    for range in &mut para.field_ranges {
-        let last = range.control_idx.saturating_add(range.inner_slot_count);
-        let before_end = slots
-            .get(last)
-            .copied()
-            .flatten()
-            .is_some_and(|(pos, _)| raw <= pos.saturating_add(8));
-        if range.control_idx < ci && (ci <= last || (ci == last.saturating_add(1) && before_end)) {
+    sync_markpen_marks(para, extras);
+    for (index, range) in para.field_ranges.iter_mut().enumerate() {
+        if range.control_idx < ci && field_ends[index].is_some_and(|end| raw <= end) {
             range.inner_slot_count += 1;
         }
         if range.control_idx >= ci {

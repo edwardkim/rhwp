@@ -8,7 +8,7 @@ use rhwp::{
     },
     model::{
         control::{Control, Equation, Field, FieldType},
-        paragraph::{CharShapeRef, FieldRange, Paragraph, RangeTag, TitleMark},
+        paragraph::{CharShapeRef, FieldRange, MarkpenMark, Paragraph, RangeTag, TitleMark},
         shape::CommonObjAttr,
         table::{Cell, Table},
     },
@@ -265,10 +265,22 @@ fn zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive
         ignore: false,
     }];
     p.ctrl_data_records = vec![Some(vec![1]), Some(vec![2]), Some(vec![3])];
-    let mut core = core(vec![p, paragraph("XY", vec![])]);
-    core.move_inline_control_native(&source(body(0), 1), &caret(body(1), 1))
+    let mut core = core(vec![paragraph("서문", vec![]), p, paragraph("XY", vec![])]);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let baseline = DocumentCore::from_bytes(&bytes).unwrap();
+        assert_eq!(
+            baseline.document().sections[0].paragraphs[1]
+                .field_ranges
+                .len(),
+            1
+        );
+    }
+    core.move_inline_control_native(&source(body(1), 1), &caret(body(2), 1))
         .unwrap();
-    let p = &core.document().sections[0].paragraphs[0];
+    let p = &core.document().sections[0].paragraphs[1];
     assert_eq!(p.text, "ABC");
     assert_eq!(p.char_offsets, vec![0, 17, 34]);
     assert_eq!(p.field_ranges[0].inner_slot_count, 0);
@@ -287,12 +299,12 @@ fn zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive
         core.export_hwpx_native().unwrap(),
     ] {
         let reopened = DocumentCore::from_bytes(&bytes).unwrap();
-        let p = &reopened.document().sections[0].paragraphs[0];
+        let p = &reopened.document().sections[0].paragraphs[1];
         assert_eq!(p.text, "ABC");
         assert_eq!(p.field_ranges.len(), 1, "저장된 컨트롤: {:?}", p.controls);
         assert_eq!(p.field_ranges[0].inner_slot_count, 0);
         assert_eq!(
-            object_ids(&reopened.document().sections[0].paragraphs[1]),
+            object_ids(&reopened.document().sections[0].paragraphs[2]),
             vec![41]
         );
     }
@@ -465,6 +477,26 @@ fn picture_binary_identity_and_control_metadata_survive_cross_owner_move() {
     let original =
         serde_json::to_value(&core.document().sections[0].paragraphs[0].controls[ci]).unwrap();
     let id = core.document().bin_data_content[0].id;
+    let baseline_hrefs: Vec<_> = [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ]
+    .into_iter()
+    .map(|bytes| {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        reopened.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|control| {
+                if let Control::Picture(picture) = control {
+                    Some(picture.href.clone())
+                } else {
+                    None
+                }
+            })
+            .unwrap()
+    })
+    .collect();
     let moved = core
         .move_inline_control_native(&source(body(0), ci), &caret(body(1), 1))
         .unwrap();
@@ -477,10 +509,13 @@ fn picture_binary_identity_and_control_metadata_survive_cross_owner_move() {
     );
     assert_eq!(core.document().bin_data_content[0].id, id);
     assert_eq!(core.document().bin_data_content[0].data.load(), bytes);
-    for bytes in [
+    for (bytes, baseline_href) in [
         core.export_hwp_native().unwrap(),
         core.export_hwpx_native().unwrap(),
-    ] {
+    ]
+    .into_iter()
+    .zip(baseline_hrefs)
+    {
         let reopened = DocumentCore::from_bytes(&bytes).unwrap();
         assert_eq!(
             reopened.document().bin_data_content[0].data.load(),
@@ -492,7 +527,7 @@ fn picture_binary_identity_and_control_metadata_survive_cross_owner_move() {
         };
         assert_eq!(picture.image_attr.bin_data_id, id);
         assert_eq!(picture.common.instance_id, 771);
-        assert_eq!(picture.href.as_deref(), Some("https://example.org/그림"));
+        assert_eq!(picture.href, baseline_href);
     }
 }
 
@@ -546,4 +581,110 @@ fn locked_object_and_locked_parent_reject_without_mutation() {
         cell_path: vec![(0, 0, 0)],
     };
     unchanged(&mut core, &source(body(0), 0), &caret(owner, 0));
+}
+
+#[test]
+fn markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata() {
+    let mut p = paragraph("AB", vec![(1, equation(41))]);
+    p.markpen_marks = vec![
+        MarkpenMark {
+            char_idx: 1,
+            color: Some("#FF0000".into()),
+            utf16_pos: Some(1),
+        },
+        MarkpenMark {
+            char_idx: 1,
+            color: None,
+            utf16_pos: Some(9),
+        },
+        MarkpenMark {
+            char_idx: 2,
+            color: Some("unknown".into()),
+            utf16_pos: Some(10),
+        },
+    ];
+    p.range_tags.push(RangeTag {
+        start: 10,
+        end: 10,
+        tag: 5,
+    });
+    let mut core = core(vec![paragraph("서문", vec![]), p, paragraph("XY", vec![])]);
+    core.move_inline_control_native(&source(body(1), 0), &caret(body(2), 1))
+        .unwrap();
+    let p = &core.document().sections[0].paragraphs;
+    assert_eq!(p[1].markpen_marks.len(), 1);
+    assert_eq!(p[1].markpen_marks[0].color.as_deref(), Some("unknown"));
+    assert_eq!(p[1].markpen_marks[0].utf16_pos, Some(2));
+    assert!(p[1]
+        .range_tags
+        .iter()
+        .any(|tag| tag.start == 2 && tag.end == 2 && tag.tag == 5));
+    assert_eq!(p[2].markpen_marks.len(), 2);
+    assert_eq!(
+        p[2].markpen_marks
+            .iter()
+            .map(|mark| mark.utf16_pos)
+            .collect::<Vec<_>>(),
+        vec![Some(1), Some(9)]
+    );
+    assert_eq!(p[2].markpen_marks[0].color.as_deref(), Some("#FF0000"));
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        let p = &reopened.document().sections[0].paragraphs[2];
+        assert_eq!(p.markpen_marks.len(), 2);
+        assert_eq!(p.markpen_marks[0].color.as_deref(), Some("#FF0000"));
+        assert_eq!(p.markpen_marks[0].utf16_pos, Some(1));
+        assert_eq!(p.markpen_marks[1].utf16_pos, Some(9));
+    }
+}
+
+#[test]
+fn nonempty_field_insertion_keeps_object_inside_after_text_is_deleted() {
+    let field = Control::Field(Field {
+        field_type: FieldType::ClickHere,
+        field_id: 71,
+        ctrl_id: rhwp::parser::tags::FIELD_CLICKHERE,
+        command: Field::build_clickhere_command("안내", ""),
+        properties: 1 << 15,
+        ..Default::default()
+    });
+    let mut p = paragraph("AB", vec![(0, field)]);
+    p.char_count += 8;
+    p.field_ranges = vec![FieldRange {
+        start_char_idx: 0,
+        end_char_idx: 2,
+        control_idx: 0,
+        inner_slot_count: 0,
+        end_field_id: 71,
+    }];
+    let mut core = core(vec![
+        paragraph("서문", vec![]),
+        paragraph("", vec![(0, equation(41))]),
+        p,
+    ]);
+    core.move_inline_control_native(&source(body(1), 0), &caret(body(2), 1))
+        .unwrap();
+    let p = &mut core.document_mut().sections[0].paragraphs[2];
+    assert_eq!(p.field_ranges[0].inner_slot_count, 1);
+    p.delete_text_at(0, 2);
+    assert_eq!(
+        (
+            p.field_ranges[0].start_char_idx,
+            p.field_ranges[0].end_char_idx
+        ),
+        (0, 0)
+    );
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        let p = &reopened.document().sections[0].paragraphs[2];
+        assert_eq!(p.field_ranges.len(), 1);
+        assert_eq!(p.field_ranges[0].inner_slot_count, 1);
+        assert_eq!(object_ids(p), vec![41]);
+    }
 }
