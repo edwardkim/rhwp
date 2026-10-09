@@ -206,48 +206,6 @@ fn format_cursor_rect_json(
     }
 }
 
-fn note_number_format_from_hwp_code(code: u8) -> crate::renderer::NumberFormat {
-    match code {
-        0 => crate::renderer::NumberFormat::Digit,
-        1 => crate::renderer::NumberFormat::CircledDigit,
-        2 => crate::renderer::NumberFormat::RomanUpper,
-        3 => crate::renderer::NumberFormat::RomanLower,
-        4 => crate::renderer::NumberFormat::LatinUpper,
-        5 => crate::renderer::NumberFormat::LatinLower,
-        8 => crate::renderer::NumberFormat::HangulGaNaDa,
-        12 => crate::renderer::NumberFormat::HangulNumber,
-        13 => crate::renderer::NumberFormat::HanjaNumber,
-        _ => crate::renderer::NumberFormat::Digit,
-    }
-}
-
-fn note_decoration_char(value: u16) -> Option<char> {
-    if value == 0 {
-        None
-    } else {
-        char::from_u32(value as u32).filter(|ch| *ch != '\0')
-    }
-}
-
-fn note_marker_text(
-    number: u16,
-    number_shape: u32,
-    before_decoration_letter: u16,
-    after_decoration_letter: u16,
-) -> String {
-    let number = crate::renderer::format_number(
-        number,
-        note_number_format_from_hwp_code(number_shape as u8),
-    );
-    let prefix = note_decoration_char(before_decoration_letter)
-        .map(|ch| ch.to_string())
-        .unwrap_or_default();
-    let suffix = note_decoration_char(after_decoration_letter)
-        .unwrap_or(')')
-        .to_string();
-    format!("{}{}{}", prefix, number, suffix)
-}
-
 /// 한 시각 줄(line)을 구성하는 한 run 의, 클릭 x → 문자 위치 해석에 필요한 최소 정보.
 ///
 /// `hit_test_native` 내부의 `RunInfo` 에서 줄별로 추려 만든 가벼운 view.
@@ -5863,16 +5821,7 @@ impl DocumentCore {
                         HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
                     })?;
                 let render_char_offset = if note_para_idx == 0 {
-                    char_offset
-                        + note_marker_text(
-                            endnote.number,
-                            endnote.number_shape,
-                            endnote.before_decoration_letter,
-                            endnote.after_decoration_letter,
-                        )
-                        .chars()
-                        .count()
-                        + 1
+                    crate::renderer::typeset::endnote_first_para_render_offset(endnote, char_offset)
                 } else {
                     char_offset
                 };
