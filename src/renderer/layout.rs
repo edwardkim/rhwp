@@ -5423,7 +5423,20 @@ impl LayoutEngine {
             };
             let wanted = an.number_type == an_type;
 
-            let direct_pos = ctrl_positions.get(ctrl_idx).copied().filter(|&pos| {
+            // 문단 끝 자동 번호는 자리표 뒤, 곧 글자 수 자리에 놓인다. `control_text_positions`
+            // 는 뒤 글자가 있어야 자리표를 알아보기 때문이다. 마지막 글자가 번호 몫 8유닛을
+            // 차지하면 그 글자가 자리표다. 놓치면 아래 폴백이 앞의 탭(역시 8유닛)을 집는다.
+            let ctrl_pos = ctrl_positions.get(ctrl_idx).map(|&pos| {
+                let last = pos.saturating_sub(1);
+                if pos == text_chars.len()
+                    && Self::is_auto_number_placeholder_at(para, &text_chars, last)
+                {
+                    last
+                } else {
+                    pos
+                }
+            });
+            let direct_pos = ctrl_pos.filter(|&pos| {
                 Self::is_auto_number_placeholder_at(para, &text_chars, pos)
                     || text_chars
                         .get(pos)
