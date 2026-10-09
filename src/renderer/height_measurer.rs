@@ -3879,47 +3879,7 @@ impl HeightMeasurer {
                 }
             }
             constraints.sort_by_key(|&(_, span, _)| span);
-            let max_iter = row_count + constraints.len();
-            for _ in 0..max_iter {
-                let mut progress = false;
-                for &(r, span, total_h) in &constraints {
-                    let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
-                    let unknown_rows: Vec<usize> =
-                        (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
-                    if unknown_rows.len() == 1 {
-                        let remaining = (total_h - known_sum).max(0.0);
-                        row_heights[unknown_rows[0]] = remaining;
-                        progress = true;
-                    }
-                }
-                if !progress {
-                    break;
-                }
-            }
-            for &(r, span, total_h) in &constraints {
-                let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
-                let unknown_rows: Vec<usize> =
-                    (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
-                if !unknown_rows.is_empty() {
-                    let remaining = (total_h - known_sum).max(0.0);
-                    let per_row = remaining / unknown_rows.len() as f64;
-                    for i in unknown_rows {
-                        row_heights[i] = per_row;
-                    }
-                }
-            }
-            // [#2291/#2237] 병합 셀 **선언** 높이가 걸친 행합을 초과하면 잔여를
-            // 마지막 걸침 행에 가산 — 한글 관례 실측(연결맵 r183: c3 rs=4 선언
-            // 217.8 vs 행합 201.3, 한글 행 괘선 = 39.8+16.5=56.3 정확 일치).
-            // resolve_row_heights(table_layout)와 동일 규칙 — 분할 표의 컷
-            // 회계(mt.row_heights)에도 반영되어야 rowspan 중첩 문서의 쪽당
-            // +15% 조밀(연결맵 −35쪽 지배 성분)이 정합한다.
-            for &(r, span, total_h) in &constraints {
-                let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
-                if total_h > known_sum + 0.5 {
-                    row_heights[r + span - 1] += total_h - known_sum;
-                }
-            }
+            solve_rowspan_row_heights(&constraints, &mut row_heights);
             // [#5910] 반대 방향 모순 — 병합 셀 선언이 걸친 행들의 단일행 선언 합보다
             // **작다**. 한글은 이때도 병합 선언을 권위로 삼아 마지막 걸침 행을 줄인다
             // (규칙과 실측 근거는 `Table::rowspan_declared_overflow_shrink`). 종전에는
@@ -5316,6 +5276,70 @@ impl MeasuredTable {
 /// 블록 단위 보호 분할의 최대 rowspan. 이 값을 초과하는 큰 rowspan 묶음은
 /// 행 단위 분할을 허용하여 페이지 잔여 공간을 활용한다 (Task #398 v2, HanCom-compat).
 pub const BLOCK_UNIT_MAX_ROWS: usize = 3;
+
+/// 병합 칸 선언 높이로 행 높이를 푼다 — 측정기(`HeightMeasurer`)와 조판(`resolve_row_heights`)의
+/// 단일 출처.
+///
+/// `constraints` 는 `(시작 행, 걸침 수, 선언 높이 px)` 이고 걸침 수 오름차순이다. `row_heights` 의
+/// 0.0 은 rs=1 칸이 없어 아직 모르는 행이다.
+///
+/// 회차마다 먼저 **걸친 행이 모두 정해진** 제약의 선언 초과분을 마지막 걸침 행에 더하고(#2291),
+/// 그 높이로 미지 행이 하나인 제약을 푼다. 순서를 거꾸로 하면 같은 부족분이 두 번 들어간다 —
+/// `1342000_edu_curriculum_map.hwp` 구역 10 표: 「초 3~4」(행 182~191, 347.51px)로 미지 행 191 을
+/// 12.07px 로 푼 뒤, 「미술」(행 184~187, 151.36px > 행 합 139.30px)의 부족분 12.06px 가 행 187 에
+/// 다시 더해졌다. 행 191~192 칸(37.09px)의 제약이 49.15px 로 깨졌고, 한/글 정본은 행 191+192 를
+/// 37.1px 로 그린다(글줄 위치 실측, #7685).
+pub(crate) fn solve_rowspan_row_heights(
+    constraints: &[(usize, usize, f64)],
+    row_heights: &mut [f64],
+) {
+    let add_declared_overflow = |row_heights: &mut [f64], only_known: bool| -> bool {
+        let mut changed = false;
+        for &(r, span, total_h) in constraints {
+            if only_known && (r..r + span).any(|i| row_heights[i] == 0.0) {
+                continue;
+            }
+            let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
+            if total_h > known_sum + 0.5 {
+                row_heights[r + span - 1] += total_h - known_sum;
+                changed = true;
+            }
+        }
+        changed
+    };
+    let max_iter = row_heights.len() + constraints.len();
+    for _ in 0..max_iter {
+        let mut progress = add_declared_overflow(row_heights, true);
+        for &(r, span, total_h) in constraints {
+            let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
+            let unknown_rows: Vec<usize> =
+                (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
+            if unknown_rows.len() == 1 {
+                let remaining = (total_h - known_sum).max(0.0);
+                row_heights[unknown_rows[0]] = remaining;
+                progress = true;
+            }
+        }
+        if !progress {
+            break;
+        }
+    }
+    for &(r, span, total_h) in constraints {
+        let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
+        let unknown_rows: Vec<usize> = (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
+        if !unknown_rows.is_empty() {
+            let remaining = (total_h - known_sum).max(0.0);
+            let per_row = remaining / unknown_rows.len() as f64;
+            for i in unknown_rows {
+                row_heights[i] = per_row;
+            }
+        }
+    }
+    // [#2291/#2237] 병합 셀 **선언** 높이가 걸친 행합을 초과하면 잔여를 마지막 걸침 행에
+    // 가산한다 — 한글 관례 실측(연결맵 244×10 r183: c3 rs=4 선언 217.8px vs 행합 201.3px, 한글 행
+    // 괘선 실측 r183 = 39.8+16.5 = 56.3px 정확 일치). 콘텐츠 기반 확장과 별개의 선언 기반 규칙이다.
+    add_declared_overflow(row_heights, false);
+}
 
 /// 표의 모든 셀을 검사하여 rowspan 묶음 블록 경계를 산출한다 (Task #398).
 /// row_block_start[r] = r 행을 포함하는 셀들의 최소 시작 행
