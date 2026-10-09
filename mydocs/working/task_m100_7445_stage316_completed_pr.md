@@ -921,3 +921,37 @@ HWP3 변환본도 원본 줄의 앞 끝·그림/여백/캡션·호스트 줄·�
 따른 의미 교정을 적용합니다. 실패 목록을 숨기거나 일괄 제거하지 않습니다.
 [정확한 head·개별 결과·로그 해시](../pr/assets/issue7445/completed-20261009/remaining-blockers-revalidation.json)를
 포함하며 원시 로그는 ignored output의 `stage345-remaining-blockers/remaining-nextest.log`입니다.
+
+
+## 보정 346 사전 분석: 합성 common GlyphRun의 장평 계약
+
+잔여 `issue_4969_q2_d4_b_one_line_run_publishes_one_common_alternative`는
+실물 HWP/PDF가 아니라 공개 blank model·원본 장평 80%·등록한 SourceHan 프로그램과
+합성 옛한글 문자열의 공통 GlyphRun 발행 계약입니다. 실패는 GlyphRun 세로 글자 크기가
+TextRun보다 작아야 한다는 assertion 한 곳입니다. 형식 사양 표 33은 장평과 상대/기준
+글자 크기를 분리합니다. source 1000HU는 그대로 글자 크기를 소유하고 장평은 가로축에
+한 번 적용해야 합니다. 이전 Canvas 공급자 계약 교정과 같은 원인이며, 회귀가 세로
+축소를 요구한 것입니다. `project_replay_geometry`가 공유 draw 크기/가로 scale을
+GlyphRun의 font size·placement로 게시하고 paint가 그 결과를 소비합니다.
+
+기존 함수를 유지하면서 원본 글자모양의 기준 크기·장평으로 font size 및 가로/세로
+affine를 검사합니다. fallback TextRun 보존, common 대안 한 개, 같은 상자/전진 폭,
+폰트 자원 한 개와 JSON 한 번 발행 검사는 유지합니다. 실물 문서의 절대 위치를
+검사하는 변경이나 한컴 피델리티 수용은 아니며 원본 HWP/PDF 시각 게이트는 비해당입니다.
+생산 코드·fixture·baseline·새 함수는 바꾸지 않고 같은 파일의 기존 함수들을 다시 실행합니다.
+
+
+### 보정 346 검증 결과
+
+원본 CharShape의 기준 크기와 80% 장평을 독립 기대값으로 사용해 세로 크기 보존,
+가로 affine 한 번, 세로 affine 1을 검사합니다. 기존 공통 GlyphRun 한 개·fallback
+보존·폰트 자원/JSON의 중복 없음 검사는 유지했습니다. 같은 파일의 기존 함수
+**11 PASS / 0 FAIL / 193 skipped**, 0.063초·threads 8·exit 0입니다. 보정 345의
+정식 실행에서 같은 함수가 이전 세로 축소 assertion으로 FAIL했던 증거를 연결합니다.
+공개 blank 합성 입력의 단위/발행 계약이며 특정 실제 한컴 문서의 피델리티를
+검증했다고 주장하지 않습니다. 생산 코드·새 함수·fixture·baseline 변경은 없습니다.
+현재 생산 코드와 16쪽 Native/fresh pkg는 직전 수용 후보와 같으므로 시각 sweep을
+문서 기록만을 위해 반복하지 않았습니다. 확인된 원래 실패 해결 **17건**,
+잔여 **50건**이며 전체 재검증·최종 게이트·PR 준비는 남습니다.
+[독립 단위 근거·검사·실제 소비·로그 해시](../pr/assets/issue7445/completed-20261009/common-glyph-ratio-contract-validation.json)를
+커밋하고 원시 로그는 ignored output에 보존합니다.

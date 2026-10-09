@@ -967,10 +967,16 @@ fn issue_4969_common_alternative_preserves_declared_size_and_shared_page_geometr
     assert_eq!(text_bbox.width, glyph_bbox.width);
     assert_eq!(text_bbox.height, glyph_bbox.height);
     assert!((text_bbox.width - page_advance).abs() <= 1.0e-9);
-    // The common replay preserves the declared vertical em; condensation is
-    // carried once by the horizontal transform (independent Print: stage 910).
-    assert_eq!(glyph_run.paint_style.font_size, text_run.style.font_size);
-    assert_eq!(glyph_run.placement.run_to_page.a, text_run.style.ratio);
+    // 장평은 가로축만 소유한다. 실제 원본 글자모양의 기준 크기는 세로로 보존한다.
+    let source_para = &core.document().sections[0].paragraphs[0];
+    let source_shape =
+        &core.document().doc_info.char_shapes[source_para.char_shapes[0].char_shape_id as usize];
+    let source_font_size = rhwp::renderer::hwpunit_to_px(source_shape.base_size as i32, 96.0);
+    let source_ratio = f64::from(source_shape.ratios[0]) / 100.0;
+    assert_eq!(glyph_run.paint_style.font_size, source_font_size);
+    assert_eq!(text_run.style.font_size, source_font_size);
+    assert_eq!(glyph_run.placement.run_to_page.a, source_ratio);
+    assert_eq!(glyph_run.placement.run_to_page.d, 1.0);
     assert_eq!(glyph_run.paint_style.ratio, 1.0);
     assert!(glyph_run.diagnostics.strict_visual_eligible);
     assert_eq!(layer_tree.text_sources.entries.len(), 1);
