@@ -748,6 +748,9 @@ fn footnote_format_command_places_first_and_following_lines() {
         .expect("footnote control");
     doc.insert_text_in_footnote_native(0, 0, control, 0, 2, TEXT)
         .expect("footnote text");
+    // 새 각주는 '각주' 스타일의 문단 모양(내어쓰기)을 받는다. 기준 줄은 들여쓰기 0에서 잰다.
+    doc.apply_para_format_in_footnote_native(0, 0, control, 0, r#"{"indent":0}"#)
+        .expect("flat footnote");
     let flat = starts_in_area(&doc, "footnote");
     for indent in [3000, -3000] {
         doc.apply_para_format_in_footnote_native(
