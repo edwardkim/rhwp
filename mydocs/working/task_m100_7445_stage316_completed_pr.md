@@ -974,3 +974,37 @@ affine를 검사합니다. fallback TextRun 보존, common 대안 한 개, 같�
 전까지 좁게 보류하며, 다른 잔여 실패 분석은 계속 진행합니다.
 [입력 동일성·두 terminal job·보류 근거](../pr/assets/issue7445/completed-20261009/superscript3-reference-conversion-hold.json)를
 포함하며 endpoint·token·환경 파일 내용은 출력하거나 커밋하지 않았습니다.
+
+
+## 보정 348 사전 분석: WMF 패턴 정의와 보이는 paint의 역할
+
+기존 WMF 세 함수의 실패는 합성 `PATINVERT → DPa → PATINVERT` 변환 SVG에
+`rop_pat` 문자열이 있다는 assertion입니다. 실제 출력은 그 패턴을 `<defs>` 안의
+휘도 mask로 사용하고, 보이는 원래 브러시색 도형이 그 mask를 참조합니다.
+패턴 정의의 존재는 흑백 패턴이 직접 칠됐다는 뜻이 아닙니다. 현재 실패는
+SVG 리소스 역할을 문자열 부재로 대신한 검사 가정입니다.
+
+독립 근거는 [Microsoft MS-WMF TernaryRasterOperation](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wmf/1605dd68-a635-4639-ab81-99ff3e3fc5a3)의
+PATINVERT(XOR)와 DPa(AND)입니다. `(D XOR G) AND M XOR G`는 검정 mask에서 G,
+흰 mask에서 D를 보존합니다. SVG에서는 흑백 패턴을 RGB 반전한 휘도 mask로
+브러시색 paint를 선택하며, 패턴이 독립 paint로 나오면 잘못입니다.
+
+이 변경은 해당 합성 레코드의 SVG XML 자원/연산 계약을 교정합니다. 생산 WMF
+변환·그림 픽셀·HWP 입력·문서 위치·기존 실제 curve fixture 검사는 그대로이며,
+월간 수출입 문서 전체의 피델리티가 승인됐다고 주장하지 않습니다. 실물 문서
+위치 핀을 바꾸는 것이 아니라 패턴이 mask에만 속하고 실제 paint가 그 mask를
+한 번 참조하는 관계를 검사합니다. 전체 HWP의 시각 수용은 별도 기존 보류와
+구분하며, 이 합성 XML 계약은 HWP/PDF 배치 게이트 비해당입니다.
+
+
+### 보정 348 검증 결과
+
+세 기존 함수의 잘못된 문자열 부재 검사를 자원 소유·참조 관계로 교정했습니다.
+원본 브러시 paint 한 개, 같은 SVG 휘도 mask, 그 mask 안에서만 소비되는 흑백 패턴,
+RGB 반전 필터를 확인합니다. 실제 curve fixture와 나머지 음성 대조는 유지합니다.
+현재 최종 파일의 기존 함수 **15 PASS / 0 FAIL / 199 skipped**, 0.024초·threads 8·
+exit 0입니다. 생산 코드·fixture·baseline·새 테스트 함수 변경은 없습니다.
+전체 원래 실패 67건 중 확인된 해결은 **20건**, 잔여는 **47건**입니다. 이는 개별
+재검증 집계이며 최신 전체 nextest 통과나 PR 준비 완료를 뜻하지 않습니다.
+[독립 연산 근거·변경 범위·실행 로그 해시](../pr/assets/issue7445/completed-20261009/wmf-mask-resource-contract-validation.json)를
+커밋하며 원시 로그는 ignored output에 보존합니다.
