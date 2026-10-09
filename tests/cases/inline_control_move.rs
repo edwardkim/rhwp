@@ -898,6 +898,16 @@ fn malformed_source_or_destination_coordinates_reject_without_changes() {
         core.document_mut().sections[0].paragraphs[index].char_offsets = vec![u32::MAX, 0];
         unchanged(&mut core, &source(body(0), 0), &caret(body(1), 1));
     }
+    for source_invalid in [true, false] {
+        let mut core = core(vec![
+            paragraph("AB", vec![(1, equation(41))]),
+            paragraph("XY", vec![]),
+        ]);
+        let index = usize::from(!source_invalid);
+        core.document_mut().sections[0].paragraphs[index].ctrl_data_records =
+            vec![Some(vec![3, 7]), Some(vec![9, 2])];
+        unchanged(&mut core, &source(body(0), 0), &caret(body(1), 1));
+    }
 }
 
 #[test]

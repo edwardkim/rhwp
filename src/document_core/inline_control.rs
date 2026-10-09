@@ -251,6 +251,9 @@ fn adjust_path_after_remove(
 /// 캐럿의 정확한 스트림 경계와 컨트롤 삽입 순서를 함께 구한다.
 fn caret_slot(para: &Paragraph, logical: usize) -> Result<(u32, usize), HwpError> {
     let len = para.text.chars().count();
+    if para.ctrl_data_records.len() > para.controls.len() {
+        return Err(invalid("문단의 부가 데이터가 컨트롤과 일치하지 않습니다"));
+    }
     if para.field_ranges.iter().any(|range| {
         range.start_char_idx > range.end_char_idx
             || range.end_char_idx > len
