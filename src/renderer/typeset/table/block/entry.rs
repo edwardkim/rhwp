@@ -1574,6 +1574,26 @@ impl TypesetEngine {
                     previous = Some((line.vertical_pos, line.column_start, host_index));
                 }
             }
+            // 흐름을 차지하는 표 본체는 호스트 문단 상단(앞 문단의 저장 흐름 끝)과 다음 문단
+            // 첫 줄 사이에 놓인다. 한컴 저장본은 앵커 줄을 표 위에 두든 아래에 두든 이 사이를
+            // 표 높이 이상 띄운다. 편집 재계산(`recalculate_section_vpos`)은 표 호스트를 한 줄
+            // 높이로만 이으므로, 그보다 좁은 사다리는 저장 프레임이 아니다.
+            let mut host_top = 0;
+            for pair in chain.windows(2) {
+                let (host, next) = (&pair[0], &pair[1]);
+                let room = i64::from(next.line_segs.first()?.vertical_pos)
+                    - i64::from(host_top.min(host.line_segs.first()?.vertical_pos));
+                if host.controls.iter().any(|control| {
+                    matches!(control, Control::Table(table)
+                        if is_para_topbottom_float(&table.common)
+                            && table.common.vert_align == crate::model::shape::VertAlign::Top
+                            && signed_hwpunit(table.common.vertical_offset) >= 0
+                            && room < i64::from(table.common.height))
+                }) {
+                    return None;
+                }
+                host_top = crate::renderer::composer::paragraph_flow_end(host)?;
+            }
             Some(st.vpos_col_anchor + hwpunit_to_px(para.line_segs.first()?.vertical_pos, self.dpi))
         })
         .flatten();
