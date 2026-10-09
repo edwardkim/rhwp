@@ -1008,3 +1008,47 @@ exit 0입니다. 생산 코드·fixture·baseline·새 테스트 함수 변경�
 재검증 집계이며 최신 전체 nextest 통과나 PR 준비 완료를 뜻하지 않습니다.
 [독립 연산 근거·변경 범위·실행 로그 해시](../pr/assets/issue7445/completed-20261009/wmf-mask-resource-contract-validation.json)를
 커밋하며 원시 로그는 ignored output에 보존합니다.
+
+
+## 보정 349 사전 분석: 표 뒤 반복 Enter의 호스트 줄 중복 예약
+
+기존 #7486 두 함수는 현재 rows10/160% Enter32와 rows30/300% Enter8에서
+예상보다 한 번 일찍 2쪽을 엽니다. 같은 원본의 독립 한컴 2020 Print는
+`table_enter_32.hwpx`를 1쪽, Enter33/40 및 table30 Enter9를 각각 2쪽으로
+출력했고 기존 제출 전 Native/fresh 전7쪽은 100%였습니다. 현재 같은 32회 원문을
+읽으면 Native/fresh 모두 2쪽/기준1쪽으로 실제 미충족입니다. 회귀 기대를 바꾸지 않습니다.
+
+현재 브랜치에서 `stored_empty_anchor_band_host_line_advance_hu`의 후속 증거를
+가시 본문 줄에서 임의의 저장 줄로 넓혔습니다. 반복 Enter의 빈 후속 줄 사다리
+`next.vpos - host.vpos = lh + ls`까지 표 아래 별도 호스트 줄 진행량으로
+오인하여 160%는 1600HU, 300%는 3000HU를 추가 예약했습니다. 빈 문단 자체의
+줄 상자 소유와, 그 저장값이 앞 표 밴드의 별도 호스트 꼬리를 입증하는지는 다릅니다.
+기존 후속 본문 줄의 증거 계약을 복원하며 빈 문단의 항목·전진·캐럿은 그대로 보존합니다.
+
+생산 helper의 반환 진행량 → table host_spacing.after → block의 흐름 끝과
+layout의 `stored_empty_anchor_band_host_line_advance_hu` 소비를 같은 판정으로
+고칩니다. 같은 fixture 전체4종/7쪽의 Native/fresh TSV·쪽수·표 외곽을 확인하고,
+기존 #7486 전체 함수와 #6950의 실제 호스트/꼬리 대조를 실행합니다. 절대 위치
+핀·새 함수·baseline 추가 없이 기존 검사가 같은 결함으로 RED 후 GREEN인지 확인합니다.
+
+
+### 보정 349 검증 결과
+
+기존 #7486 **6 PASS / 0 FAIL**(0.205초), #6950 대조 **28 PASS / 0 FAIL**
+(0.236초)입니다. 이전 두 실패는 같은 기존 기대값에서 GREEN이며 검사·fixture·
+baseline을 바꾸지 않았습니다. 32회 입력은 1쪽, 33/40회와 30행/300%/9회
+입력은 각각 2쪽으로 독립 Print와 일치합니다. 네 원본의 전7쪽 Native/fresh
+최저 **100%**, 미달·누락·쪽수 불일치 0건이며 양 backend PNG/TSV도 byte-identical입니다.
+대표 표 외곽·행/열 경계·전체 높이 및 빈 2쪽을 review PNG로 직접 확인했습니다.
+Native 괘선이 PDF보다 옅은 기존 차이를 유지하며 100% 픽셀 동일 주장이 아닙니다.
+
+정상 대조군100쪽, 수용된 converted16 및 #6950 원본3쪽은 이전 후보 대비 SVG가
+모두 byte-identical입니다. Native 빌드·Mac no-opt fresh WASM·fmt도 exit 0이며
+생성 public glue는 pkg 동일성을 확인한 뒤 기존 tracked 파일로 복원했습니다.
+확인된 원래 실패 해결 **22건**, 잔여 **45건**이고 최신 전체 nextest와 최종
+게이트·PR 생성은 남아 있습니다.
+[소스·입력/기준 해시·전체 쪽별 결과·로그/빌드 근거](../pr/assets/issue7445/completed-20261009/table-enter-host-line-validation.json),
+[32회 입력 review](../pr/assets/issue7445/completed-20261009/table-enter-table32-p001-review.png),
+[30행 표 review](../pr/assets/issue7445/completed-20261009/table-enter-table30-p001-review.png),
+[33회 입력의 빈2쪽 review](../pr/assets/issue7445/completed-20261009/table-enter-table33-p002-review.png)를
+각 overlay와 함께 커밋하고 전체 TSV·원시 로그·빌드는 ignored output에 보존합니다.

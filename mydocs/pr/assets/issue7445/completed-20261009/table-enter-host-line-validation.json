@@ -1,0 +1,309 @@
+{
+  "candidateParent": "eb4127a11ff8058d8621eec42f659efe360eb94a",
+  "source": "src/renderer/float_placement.rs",
+  "sourceSha256": "a01aab22673acb1b0091ef03fc3c74d0eb47c7c661266e6918fd75864aea9f4a",
+  "priorFailure": {
+    "run": "stage345-remaining-blockers",
+    "table10Spacing160Enter": 32,
+    "table30Spacing300Enter": 8,
+    "pagesActual": 2,
+    "pagesExpected": 1
+  },
+  "correctedRule": "후속 실제 본문 줄의 저장 위치가 표 밴드 뒤 호스트 진행량을 입증한다. 빈 문단 자체의 줄/캐럿 소유를 유지하고 종료/편집용 저장 사다리만으로 앞 표 아래 호스트 줄을 추가 예약하지 않는다.",
+  "consumer": "공통 helper → table host_spacing.after → block 흐름 끝, layout의 같은 helper → 실제 뒤 문단 배치",
+  "independentEvidence": "기존 #7486의 동일 API 생성 입력 4종과 독립 한컴 2020 Print PDF. 제출 전 원본/기준 해시 및 전체7쪽 증적은 mydocs/working/assets/issue7486-table-enter/validation.json. 현재 같은 원본으로 Native/실제 Chrome fresh WASM 전쪽 재실행.",
+  "build": {
+    "candidateParent": "eb4127a11ff8058d8621eec42f659efe360eb94a",
+    "productionDiffSha256": "c7989ceb3cc11c0abd6efce1aecffe04f751b4604a2f930c1c44686706fb238d",
+    "sourceSha256": "a01aab22673acb1b0091ef03fc3c74d0eb47c7c661266e6918fd75864aea9f4a",
+    "native": "e6901de1f96d3a63aa8bddf404b974534381c83dfffebb72bcd20a568b949386",
+    "wasm": "33fb85e723d010a19ab4d2f0952ec68c215995ff0e1dddac4d98adf24c24cc6e",
+    "js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+    "mode": "Mac no-opt fresh build; not Docker optimization"
+  },
+  "visual": {
+    "checks": [
+      {
+        "backend": "native",
+        "key": "table32",
+        "pages": [
+          1
+        ],
+        "pageCounts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "minimumTolerantContentMatchPercent": 100.0,
+        "input": {
+          "path": "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx",
+          "sha256": "79d6412a6744ec332978f77d3c09fd3859075dabde7c3613ea04a435beeec517"
+        },
+        "pdf": {
+          "path": "pdf/issue7486_table_enter_32-2020.pdf",
+          "sha256": "3b08c1988ef0ef0ad9485181171ddbacb335dc08e23eb33828012400142e26d8"
+        },
+        "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "automatedGateStatus": "not_evaluated"
+      },
+      {
+        "backend": "native",
+        "key": "table33",
+        "pages": [
+          1,
+          2
+        ],
+        "pageCounts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "minimumTolerantContentMatchPercent": 100.0,
+        "input": {
+          "path": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+          "sha256": "d49761580c9acce5338d17277395791ae63ce8a8d5546ff1a4efe3a77dceba45"
+        },
+        "pdf": {
+          "path": "pdf/issue7486_table_enter_33-2020.pdf",
+          "sha256": "909928debd7823ebd7713db0a96b59ba8559326b83d7844af6b77f754c50fff3"
+        },
+        "tsvSha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "automatedGateStatus": "not_evaluated"
+      },
+      {
+        "backend": "native",
+        "key": "table40",
+        "pages": [
+          1,
+          2
+        ],
+        "pageCounts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "minimumTolerantContentMatchPercent": 100.0,
+        "input": {
+          "path": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx",
+          "sha256": "9d60a17e20ba6f8cbc28508fde139454fca8cff9856a3fc6d1d4eef9acb9609a"
+        },
+        "pdf": {
+          "path": "pdf/issue7486_table_enter_40-2020.pdf",
+          "sha256": "562bd355ac70352dddbb889550d2960b03bbf052302dca0e3529d718e7a95a71"
+        },
+        "tsvSha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "automatedGateStatus": "not_evaluated"
+      },
+      {
+        "backend": "native",
+        "key": "table30",
+        "pages": [
+          1,
+          2
+        ],
+        "pageCounts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "minimumTolerantContentMatchPercent": 100.0,
+        "input": {
+          "path": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+          "sha256": "79c350473cd54de687d66b0e53357b57b889f0ed368d57a49ceafad18e848c4c"
+        },
+        "pdf": {
+          "path": "pdf/issue7486_table30_spacing300_enter9-2020.pdf",
+          "sha256": "fe360e6095b4ccd7a1f0b98ba4af22583b7d4f0c2cf63eb995d841fe6a7e665d"
+        },
+        "tsvSha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "automatedGateStatus": "not_evaluated"
+      },
+      {
+        "backend": "fresh",
+        "key": "table32",
+        "pages": [
+          1
+        ],
+        "pageCounts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "minimumTolerantContentMatchPercent": 100.0,
+        "input": {
+          "path": "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx",
+          "sha256": "79d6412a6744ec332978f77d3c09fd3859075dabde7c3613ea04a435beeec517"
+        },
+        "pdf": {
+          "path": "pdf/issue7486_table_enter_32-2020.pdf",
+          "sha256": "3b08c1988ef0ef0ad9485181171ddbacb335dc08e23eb33828012400142e26d8"
+        },
+        "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "automatedGateStatus": "not_evaluated"
+      },
+      {
+        "backend": "fresh",
+        "key": "table33",
+        "pages": [
+          1,
+          2
+        ],
+        "pageCounts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "minimumTolerantContentMatchPercent": 100.0,
+        "input": {
+          "path": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+          "sha256": "d49761580c9acce5338d17277395791ae63ce8a8d5546ff1a4efe3a77dceba45"
+        },
+        "pdf": {
+          "path": "pdf/issue7486_table_enter_33-2020.pdf",
+          "sha256": "909928debd7823ebd7713db0a96b59ba8559326b83d7844af6b77f754c50fff3"
+        },
+        "tsvSha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "automatedGateStatus": "not_evaluated"
+      },
+      {
+        "backend": "fresh",
+        "key": "table40",
+        "pages": [
+          1,
+          2
+        ],
+        "pageCounts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "minimumTolerantContentMatchPercent": 100.0,
+        "input": {
+          "path": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx",
+          "sha256": "9d60a17e20ba6f8cbc28508fde139454fca8cff9856a3fc6d1d4eef9acb9609a"
+        },
+        "pdf": {
+          "path": "pdf/issue7486_table_enter_40-2020.pdf",
+          "sha256": "562bd355ac70352dddbb889550d2960b03bbf052302dca0e3529d718e7a95a71"
+        },
+        "tsvSha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "automatedGateStatus": "not_evaluated"
+      },
+      {
+        "backend": "fresh",
+        "key": "table30",
+        "pages": [
+          1,
+          2
+        ],
+        "pageCounts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "minimumTolerantContentMatchPercent": 100.0,
+        "input": {
+          "path": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+          "sha256": "79c350473cd54de687d66b0e53357b57b889f0ed368d57a49ceafad18e848c4c"
+        },
+        "pdf": {
+          "path": "pdf/issue7486_table30_spacing300_enter9-2020.pdf",
+          "sha256": "fe360e6095b4ccd7a1f0b98ba4af22583b7d4f0c2cf63eb995d841fe6a7e665d"
+        },
+        "tsvSha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "automatedGateStatus": "not_evaluated"
+      }
+    ],
+    "nativeFreshIdentity": [
+      {
+        "key": "table32",
+        "pngsByteIdentical": true,
+        "tsvByteIdentical": true
+      },
+      {
+        "key": "table33",
+        "pngsByteIdentical": true,
+        "tsvByteIdentical": true
+      },
+      {
+        "key": "table40",
+        "pngsByteIdentical": true,
+        "tsvByteIdentical": true
+      },
+      {
+        "key": "table30",
+        "pngsByteIdentical": true,
+        "tsvByteIdentical": true
+      }
+    ],
+    "directReview": "table32/table30 외곽·행/열 경계·전체 높이 대조 및 table33 빈 2쪽 직접 판독. Native 괘선은 PDF보다 옅은 기존 차이가 남으며 100% 픽셀 동일 주장이 아님. 6 기존 회귀의 저장/재열기·빈 문단 순서·캐럿 소속·표 한 번 표시와 함께 판정."
+  },
+  "unchangedSvgControls": [
+    {
+      "key": "issue265",
+      "pagesBefore": 16,
+      "pagesAfter": 16,
+      "changedPages": []
+    },
+    {
+      "key": "caption6078",
+      "pagesBefore": 1,
+      "pagesAfter": 1,
+      "changedPages": []
+    },
+    {
+      "key": "regulatory17",
+      "pagesBefore": 17,
+      "pagesAfter": 17,
+      "changedPages": []
+    },
+    {
+      "key": "pii66",
+      "pagesBefore": 66,
+      "pagesAfter": 66,
+      "changedPages": []
+    },
+    {
+      "key": "converted16",
+      "pagesBefore": 16,
+      "pagesAfter": 16,
+      "changedPages": []
+    },
+    {
+      "key": "object-only6950",
+      "pagesBefore": 3,
+      "pagesAfter": 3,
+      "changedPages": []
+    }
+  ],
+  "validation": {
+    "enterExistingFunctions": {
+      "run": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 425,
+      "seconds": 0.205,
+      "exitCode": 0,
+      "logSha256": "b29a01bc405492e8aad879e6ed43ee2e02a0e3ee8d429cfceb81d2243a263635"
+    },
+    "paragraphEndExistingFunctions": {
+      "run": 28,
+      "passed": 28,
+      "failed": 0,
+      "skipped": 184,
+      "seconds": 0.236,
+      "exitCode": 0,
+      "logSha256": "6b5486eea93a1214000b566f1efd20066950f4989937a767da1b35da3e85a442"
+    },
+    "fmt": {
+      "exitCode": 0,
+      "seconds": 10.071840124670416
+    }
+  },
+  "testExpectationsChanged": false,
+  "testFunctionsAdded": 0,
+  "fixtureChanged": false,
+  "baselineChanged": false,
+  "confirmedRecoveredOriginalFailures": 22,
+  "remainingOriginalFailures": 45,
+  "fullNextestRerun": false,
+  "readyForPR": false,
+  "ignoredArtifacts": "output/pr-review/7445-completed-20261009/stage349-table-enter-diagnostic",
+  "reviewAssets": [
+    "table-enter-table32-p001-review.png",
+    "table-enter-table30-p001-review.png",
+    "table-enter-table33-p002-review.png"
+  ]
+}
