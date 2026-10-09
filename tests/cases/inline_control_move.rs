@@ -833,6 +833,21 @@ fn actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save() {
     core.document_mut().sections[0]
         .paragraphs
         .push(paragraph("앞뒤", vec![]));
+    let saved_data: Vec<_> = [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ]
+    .into_iter()
+    .map(|bytes| {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        reopened
+            .document()
+            .bin_data_content
+            .iter()
+            .map(|bin| (bin.id, bin.extension.clone(), bin.data.load()))
+            .collect::<Vec<_>>()
+    })
+    .collect();
     let moved = core
         .move_inline_control_native(&source(body(pi), ci), &caret(body(target), 1))
         .unwrap();
@@ -851,24 +866,24 @@ fn actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save() {
             .collect::<Vec<_>>(),
         data
     );
-    for bytes in [
+    for (bytes, baseline_data) in [
         core.export_hwp_native().unwrap(),
         core.export_hwpx_native().unwrap(),
-    ] {
+    ]
+    .into_iter()
+    .zip(saved_data)
+    {
         let reopened = DocumentCore::from_bytes(&bytes).unwrap();
         assert!(reopened.document().sections[0].paragraphs[target].controls.iter().any(|control| matches!(control, Control::Shape(shape) if matches!(shape.as_ref(), ShapeObject::Chart(_) | ShapeObject::Ole(_)))));
-        for (id, extension, expected) in &data {
-            if extension == "ooxml_chart" {
-                continue;
-            }
-            let bin = reopened
+        assert_eq!(
+            reopened
                 .document()
                 .bin_data_content
                 .iter()
-                .find(|bin| bin.id == *id)
-                .unwrap();
-            assert_eq!(bin.data.load(), *expected);
-        }
+                .map(|bin| (bin.id, bin.extension.clone(), bin.data.load()))
+                .collect::<Vec<_>>(),
+            baseline_data
+        );
     }
 }
 
