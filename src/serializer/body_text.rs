@@ -708,7 +708,21 @@ fn push_guide_residue(
     });
 }
 
+/// 저장기와 같은 순서로 각 컨트롤의 원본 슬롯 위치를 구한다.
+pub(crate) fn control_stream_slots(para: &Paragraph) -> Vec<Option<(u32, usize)>> {
+    let mut slots = vec![None; para.controls.len()];
+    serialize_para_text_with_slots(para, Some(&mut slots));
+    slots
+}
+
 fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
+    serialize_para_text_with_slots(para, None)
+}
+
+fn serialize_para_text_with_slots(
+    para: &Paragraph,
+    mut slots: Option<&mut [Option<(u32, usize)>]>,
+) -> ParaTextResult {
     let mut code_units: Vec<u16> = Vec::new();
     let text_chars: Vec<char> = para.text.chars().collect();
     let mut ctrl_idx = 0;
@@ -907,6 +921,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             }
         };
         if is_placeholder(prev_end, ctrl_idx, false) {
+            if let Some(slots) = slots.as_deref_mut() {
+                slots[ctrl_idx] = Some((prev_end, i));
+            }
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
@@ -931,6 +948,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 .is_none_or(|&start| start <= i)
         {
             if emits_ctrl_header(&para.controls[ctrl_idx]) {
+                if let Some(slots) = slots.as_deref_mut() {
+                    slots[ctrl_idx] = Some((prev_end, i));
+                }
                 let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
                 push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
                 prev_end += 8;
@@ -954,6 +974,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 .is_some_and(|&start| start == i)
         {
             if emits_ctrl_header(&para.controls[ctrl_idx]) {
+                if let Some(slots) = slots.as_deref_mut() {
+                    slots[ctrl_idx] = Some((prev_end, i));
+                }
                 let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
                 push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
                 prev_end += 8;
@@ -972,6 +995,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         //     때문에 실패했을 수 있다. 여기서 걸리면 `ctrl_idx` 가 갭을 채운 만큼 앞으로
         //     가 있어, 자리표시자가 **자기 컨트롤**과 짝지어진다(#4957).
         if is_placeholder(prev_end, ctrl_idx, true) {
+            if let Some(slots) = slots.as_deref_mut() {
+                slots[ctrl_idx] = Some((prev_end, i));
+            }
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
@@ -1092,6 +1118,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
 
     while ctrl_idx < para.controls.len() {
         if emits_ctrl_header(&para.controls[ctrl_idx]) {
+            if let Some(slots) = slots.as_deref_mut() {
+                slots[ctrl_idx] = Some((prev_end, text_chars.len()));
+            }
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             prev_end += 8;
