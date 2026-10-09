@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+import importlib.util
 from pathlib import Path
 
 
@@ -90,6 +91,59 @@ class RenderDiffTriggerPolicyTests(unittest.TestCase):
             "steps.pdf-raster-runtime.outputs.available == 'true'",
             canvas_job,
         )
+
+
+class WasmBuildMeasurementTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        spec = importlib.util.spec_from_file_location(
+            "measurement", WORKFLOW_PATH.parents[2] / "scripts/measure_render_diff_wasm.py"
+        )
+        cls.measurement = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.measurement)
+
+    def test_release_rejects_missing_optimization_and_failed_build(self):
+        with self.assertRaisesRegex(RuntimeError, "wasm-opt"):
+            self.measurement.validate("release", 0, {})
+        with self.assertRaisesRegex(RuntimeError, "exit code 3"):
+            self.measurement.validate("release", 3, {"wasm-opt": ["/bin/wasm-opt"]})
+        self.measurement.validate("dev", 0, {})
+        self.measurement.validate("release", 0, {"wasm-opt": ["/bin/wasm-opt"]})
+
+    def test_log_boundaries_and_actual_command(self):
+        events, commands = {}, {}
+        for elapsed, line in [
+            (1, "[INFO]: Compiling to Wasm..."),
+            (11, "[INFO]: Installing wasm-bindgen..."),
+            (14, "[INFO]: Optimizing wasm binaries with `wasm-opt`..."),
+            (14.1, '[INFO wasm_pack::child] Running "/cache/wasm-opt" "pkg/rhwp_bg.wasm" "-o" "pkg/tmp.wasm" "-O"'),
+            (34, "[INFO]: Done in 34s"),
+        ]:
+            self.measurement.observe(line, elapsed, events, commands)
+        self.measurement.observe('[INFO wasm_pack::child] Running "/cache/wasm-opt" "--version"',
+                                 35, events, commands)
+        self.assertEqual(commands["wasm-opt"][-1], "-O")
+        self.assertEqual(self.measurement.intervals(events, 35), {
+            "preparation": 1, "cargo": 10, "bindgen_setup_and_run": 3,
+            "wasm_opt_and_finalize": 20, "after_package": 1,
+        })
+        self.assertTrue(all(value is None for name, value in
+                            self.measurement.intervals({}, 1).items()))
+
+    def test_release_workflow_preserves_development_and_deployment_routes(self):
+        workflow = WORKFLOW_PATH.read_text()
+        self.assertIn('python3 scripts/measure_render_diff_wasm.py --profile "$RHWP_WASM_PROFILE"', workflow)
+        self.assertIn("github.event_name == 'workflow_dispatch' && inputs['wasm-profile'] || 'release'", workflow)
+        self.assertIn("default: 'release'\n        type: choice", workflow)
+        self.assertIn("RHWP_WASM_BUILD_MANIFEST:", workflow)
+        self.assertIn("output/render-diff-build/", workflow)
+        self.assertIn("'scripts/measure_render_diff_wasm.py'", workflow)
+        repo = WORKFLOW_PATH.parents[2]
+        ci = (repo / ".github/workflows/ci.yml").read_text()
+        self.assertIn("wasm-pack build --target web --dev", ci)
+        for name in ("deploy-pages", "npm-publish", "full-renderer-sweep"):
+            self.assertIn("wasm-pack build --target web --release",
+                          (repo / f".github/workflows/{name}.yml").read_text())
 
 
 if __name__ == "__main__":

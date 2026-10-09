@@ -216,6 +216,32 @@ set "CARGO_TARGET_DIR="
 
 TypeScript와 CSS는 Vite가 다시 읽지만 Rust 변경은 위 빌드가 끝나야 브라우저에 반영된다.
 
+### 개발·시각 CI·배포의 빌드 경로 (#7473)
+
+| 목적 | WASM 경로 | 책임 |
+| --- | --- | --- |
+| 로컬 반복 확인 | 기존 locked wrapper의 `--no-opt` 또는 `--dev` | 빠른 진단. 배포 최적화 검증과 구분 |
+| Frontend package gate | `wasm-pack build --target web --dev` | 타입·unit·package 계약 |
+| PR Render Diff | `python3 scripts/measure_render_diff_wasm.py --profile release` | locked wrapper의 release + wasm-opt 산출물로 Canvas/PDF 및 readiness 검사 |
+| Full Renderer Sweep / npm / Pages | 기존 `wasm-pack build --target web --release` | 전체 sweep / 배포 |
+
+Render Diff는 `output/render-diff-build/build.json`에 source SHA·프로필·도구 명령/버전/해시·
+산출물 해시·Cargo cache 정보를 저장한다. `build.log`와 `summary.md`의 구간 시간은 로그 수신
+경계의 wall 근사이며 다운로드·설치·마무리 비용을 포함한다. 프로세스 자체 시간과 혼동하지 않는다.
+최적화 실행이 관측되지 않은 release 빌드와 실패한 빌드는 성공 manifest로 인정하지 않는다.
+
+`RHWP_WASM_BUILD_MANIFEST`가 설정된 E2E는 앱 초기화 중 Chrome이 실제 받은
+`rhwp_bg.wasm` 응답의 SHA-256을 대조하고 `consumption/`에 증거를 남긴다.
+manifest가 없는 일반 로컬 E2E는 기존 동작을 유지한다. 단순히 같은 URL을 다시 fetch한 결과를
+사용하지 않는다. 큰 dev WASM을 관측할 수 있도록 CDP 응답 버퍼를 산출물 크기에 맞춘다.
+
+비용 비교는 수동 Render Diff의 `wasm-profile=dev|release`로 **동일 ref SHA**에서 실행한다.
+기본값과 PR 실행은 항상 release이며 dev 선택은 수동 비교에만 적용된다. 같은 runner 이미지·
+Rust/도구·Chromium·fixture·폰트·캐시 상태를 확인하고 각 조건의 반복 수와 범위를 공개한다.
+cache-hit=false는 부분 복원일 수도 있으므로 matched key/restore 로그를 함께 읽는다.
+전체 job과 시각 검사 시간은 Actions attempt별 jobs API에서 얻고, 기존 다른 소스의 실행이나
+로컬 시간으로 release 전환의 CI 증가분을 대신하지 않는다. 실행은 원격 CI 승인 후 진행한다.
+
 ## 웹한글컨트롤 호환 층
 
 `@rhwp/hwpctrl` 개발은 일반 WASM 빌드 외에 패키지 공개 경로 검사와 OS별 시나리오 gate를 쓴다.

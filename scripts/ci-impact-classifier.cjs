@@ -64,6 +64,8 @@ const RUST_TEST_FONT_EXTENSIONS = [
 
 const RENDER_TOOL_PATHS = new Set([
   'scripts/renderer_baseline.py',
+  'scripts/measure_render_diff_wasm.py',
+  'scripts/wasm-pack-locked.sh',
   'scripts/renderer_baseline_manifest.json',
   'scripts/generate_font_glyph_payload_fixture.py',
   'scripts/generate_exact_face_collection_fixture.py',
