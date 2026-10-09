@@ -33,6 +33,7 @@ import {
   type TabState, type TabSettingsResult, type BorderTabResult,
 } from './para-shape-tab-builders';
 import { enableDialogDrag } from './dialog-drag';
+import { tabUnitsToPt } from '@/core/tab-units';
 
 import { t as i18nText } from '../i18n/index.ts';
 /** 정렬 아이콘 (SVG 아이콘 — 서식바와 동일) */
@@ -687,7 +688,7 @@ export class ParaShapeDialog {
     this.tabResult.tabAutoLeftCb.checked = p.tabAutoLeft ?? false;
     this.tabResult.tabAutoRightCb.checked = p.tabAutoRight ?? false;
     const defSpacing = p.defaultTabSpacing ?? 8000;
-    this.tabResult.defaultTabLabel.textContent = `${(defSpacing / 200).toFixed(1)} pt`;
+    this.tabResult.defaultTabLabel.textContent = `${tabUnitsToPt(defSpacing).toFixed(1)} pt`;
     this.tabResult.renderTabList();
     this.tabResult.renderDeletedTabList();
 
