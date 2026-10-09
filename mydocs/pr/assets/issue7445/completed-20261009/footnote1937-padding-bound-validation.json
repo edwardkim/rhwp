@@ -24,7 +24,69 @@
   "dpi": 96,
   "compat": "2022",
   "referencePages": 50,
-  "freshWasm": "미실행",
+  "freshWasm": {
+    "validationParentHead": "721258b639257933ec3e832c0da281b21b7b8367",
+    "workingSourceFile": "src/wasm_api.rs",
+    "workingSourceFileSha256": "407b9568aa3bf09d1816d83e0c6753682bb4824f6a1dcf9e8113a62f25897132",
+    "workingDiffSha256": "a34720738c832f4dbeb5ba6b0e841a2628a0bcdebb163b9b52a4b6c88e300405",
+    "build": "Mac no-opt locked WASM wrapper・공유 target/pr-review. Docker 최적화 빌드 검증이 아닙니다.",
+    "browser": "Chrome/154.0.8037.99",
+    "bundle": {
+      "rhwp.js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+      "rhwp_bg.wasm": "85cabbd9ddd6403323ede41f18f378fe2d6e46b2ca76afd97dd07bf38461a363"
+    },
+    "focusedNextest": {
+      "tests": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 437,
+      "durationSeconds": 0.184,
+      "suites": [
+        "issue_1133_page_number_bottom_margin",
+        "issue_2724_passthrough_invalidation_guard"
+      ],
+      "testsChanged": false
+    },
+    "controls": [
+      {
+        "key": "regulatory17",
+        "source": "samples/issue7445/80250_regulatory_analysis.hwp",
+        "sourceSha256": "e68d903c20e89ed1325b3a5633c3c0606d21b042345b76a1785cad1e1eca8589",
+        "pdf": "pdf/80250_regulatory_analysis-hwp-2024.pdf",
+        "pdfSha256": "65bbfb5a1ae7c4a71774cda4c91156990edd8a41177b6509109ee08ec286f286",
+        "compat": "2024",
+        "pages": 17,
+        "minimum": 95.29505,
+        "below90": [],
+        "identicalNativeFreshPngPages": 17
+      },
+      {
+        "key": "pii66-declared",
+        "source": "samples/task2097/75544_pii_bunseok.hwpx",
+        "sourceSha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+        "pdf": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+        "pdfSha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+        "compat": "2022",
+        "pages": 66,
+        "minimum": 90.30272,
+        "below90": [],
+        "identicalNativeFreshPngPages": 66
+      }
+    ],
+    "footnoteSource": {
+      "pages": 51,
+      "referencePages": 50,
+      "comparedPages": 50,
+      "page25": 97.78985,
+      "minimum": 7.71613,
+      "below90Count": 30,
+      "gate": "re_review_required",
+      "documentAccepted": false
+    },
+    "manifestPolicy": "PASS",
+    "unitTierPolicy": "PASS",
+    "scope": "기존 DocumentCore의 조판 세대 setter를 WASM에 공개했습니다. 새 계산 규칙·테스트는 추가하지 않았습니다."
+  },
   "testsChanged": false,
   "removedTests": 0,
   "decision": "기존 25쪽 각주 대조군은 base에서 각주 존재와97.8% 일치. 후보의 추가 이월은 구현 회귀이므로 검사/공차 변경 보류.",
@@ -106,7 +168,7 @@
     "newTests": 0,
     "thresholdChanged": false,
     "documentAccepted": false,
-    "freshWasm": "미실행"
+    "freshWasm": "현재 보정과 WASM API 공개를 포함해 실제 Chrome에서 재검증. 25쪽 97.78985%, 전체 51/50쪽·30쪽 미달은 유지."
   },
   "nativeControls": [
     {
@@ -741,5 +803,5 @@
       "identicalToPreviousNativePngPages": 63
     }
   ],
-  "limitations": "기존 문서 전체 미달·51/50쪽 불일치는 미해결. 이번 추가 이월 복원과 25쪽 각주 검출만 확인. 전체 fresh/Skia/lint/회귀 및 나머지 기존 실패는 남음."
+  "limitations": "현재 Native/fresh 원본의 전체 미달·51/50쪽 불일치는 미해결. 추가 이월 복원과 25쪽 각주 검출 및 완료 대조군 83쪽만 확인. 최종 전체 Skia/lint/회귀와 다른 기존 실패 분석은 남음."
 }

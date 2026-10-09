@@ -1216,7 +1216,14 @@ impl HwpDocument {
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
-    /// Set an explicit layout/paint font environment. None restores the default.
+    /// Native와 같은 조판 세대를 선택하고 파생 페이지 상태를 다시 계산한다.
+    /// 문서 내용이나 저장 조판 정보를 편집하지 않는다.
+    #[wasm_bindgen(js_name = setHangul2024Compat)]
+    pub fn set_hangul2024_compat(&mut self, enabled: bool) {
+        self.core.set_hangul2024_compat(enabled);
+    }
+
+    /// 명시적인 조판·표시 글꼴 환경을 설정한다. None이면 기본 환경으로 돌아간다.
     #[wasm_bindgen(js_name = setFontEnvironment)]
     pub fn set_font_environment_json(&mut self, json: Option<String>) -> Result<bool, JsValue> {
         let environment = json
