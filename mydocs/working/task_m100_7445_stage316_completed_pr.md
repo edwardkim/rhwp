@@ -1268,3 +1268,45 @@ output의 전용 exporter로 실제 Chrome에서 그대로인 base WASM을 로�
 [정확한 base·빌드/입력 해시·전체 시각 증거](../pr/assets/issue7445/completed-20261009/exact-devel-civil-regression-proof.json),
 [devel2쪽 review](../pr/assets/issue7445/completed-20261009/civil-develop-p002-review.png)를
 overlay와 함께 커밋합니다. 현재 후보의 회귀 해결이나 최종 검증 통과는 아닙니다.
+
+
+## 보정 357 사전 분석: 저장 앵커 복원과 확정 placement의 덮어쓰기
+
+정확한 devel의 원본 전체2쪽이90% 이상이고 현재 후보2쪽은80.41%입니다.
+기존 #4068 검사는 삭제하거나 기대값을 바꾸지 않습니다. 현재의 측정 생산값
+`closed/unconstrained/resolved placement`와 `before/body/after/source origin`을
+기존 진단 환경으로 관측해, paint가 복원한 앵커를 다른 좌표로 덮는 원인을
+확정합니다. 진단 출력은 임시 삽입 후 제거하며 정식 생산 경로는 같은 확정
+상자를 측정·예약·배치에 공유하도록 수정합니다. 원본/PDF/테스트는 유지합니다.
+
+
+### 보정 357 결과 — 닫힌 저장 프레임의 되감김 원점 복원
+
+실제 `flow_table → try_typeset_empty_para_float_table → empty_float::prepare`
+호출에 앞 문단을 전달했습니다. 기존 layout의 되감김 조회는 공통
+`float_placement`로 이동해 판정과 기존 적용 한도를 그대로 공유합니다.
+현재 커서로 옮기던 닫힌 저장 상자는 되감김이 증명되면 같은 저장 원점에서
+lane 수용·예약 끝·확정 배치를 정하며, 이후 `anchor_y`를 현재 커서로 덮지
+않습니다. 기존 frame 예산 거절과 block 경로, 편집·재조판·dirty·합성 줄·
+다중 단의 저장 프레임 수용 제한은 유지합니다. 새 문서 ID나 위치 공차를
+추가하지 않았습니다. 이 수정은 분할 컷이나 rowspan 계산을 변경하지 않습니다.
+
+원본 후속 줄은 `57794 + 595 + 141 + 5882 + 141 = 64553`으로 전체
+상자를 닫습니다. 기존 테스트는 수정 전 **FAIL**, 수정 후 **#4068 세 함수
+3 PASS**입니다. 원본 작성요령 표의 저장 원점과 앞 표 여백 변경에 대한
+불변 관계를 그대로 검사합니다. 관련 #6032·#6950·#6448은 **30 PASS**,
+모든 실행은 threads=8이고 테스트·fixture·baseline을 변경하지 않았습니다.
+
+같은 원본·독립 PDF의 전체 두 쪽은 Native 및 Mac no-opt fresh WASM에서
+**98.64096% / 99.91212%**, 90% 미달·누락·쪽수 차이 0건입니다.
+두 backend의 PNG/TSV는 byte-identical입니다. 두 쪽 review를 직접 판독해
+큰 표·작성요령 표·뒤 용지규격 문장의 순서와 위치를 확인했습니다. 이전의
+약 11px 하방 밀림은 해소됐습니다. 기존 글리프·괘선 농도와 미세 가장자리
+차이는 남으며 픽셀 동일이라고 주장하지 않습니다. 정상 대조군 119쪽의
+SVG는 이전 검증 후보와 모두 byte-identical이고 fmt도 통과했습니다.
+임시 진단 출력은 소스에서 제거했습니다. 최신 전체 nextest 및 PR 준비는
+아직 완료되지 않았으며 기존 실패 목록을 다음 단계에서 재실행합니다.
+
+[원본·빌드·RED/GREEN·전체 시각 증거](../pr/assets/issue7445/completed-20261009/civil-rewind-frame-validation.json),
+[1쪽 review](../pr/assets/issue7445/completed-20261009/civil-rewind-after-p001-review.png),
+[2쪽 review](../pr/assets/issue7445/completed-20261009/civil-rewind-after-p002-review.png).

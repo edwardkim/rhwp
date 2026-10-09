@@ -1,0 +1,223 @@
+{
+  "stage": 357,
+  "candidateParent": "fc23664c2cdf8f4cfdc95713b7d5313d89d03cb5",
+  "base": "21ed64071f81f35f37618717693bd30f727392c9",
+  "baseProof": "exact-devel-civil-regression-proof.json",
+  "input": {
+    "path": "samples/issue6032/2912695_civil_petition_form.hwp",
+    "sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04"
+  },
+  "reference": {
+    "path": "pdf/2912695_civil_petition_form-2020.pdf",
+    "sha256": "2e85455f13d0e911b495a7a152f1c799ffb2fc37dd2051312cafa4359c810f89"
+  },
+  "build": {
+    "candidateParent": "fc23664c2cdf8f4cfdc95713b7d5313d89d03cb5",
+    "sourceSha256": {
+      "src/renderer/layout.rs": "d0ad4c07b9f332886e0fbf3825762c88b85f283ed41827a48b921ff1f139bafd",
+      "src/renderer/float_placement.rs": "0d95b944725f9d2169c22737d48fc881c7d0d1755bdfd4e66ca11f6df5839653",
+      "src/renderer/typeset/controls/empty_float.rs": "5c5d52f8c4da9ad094a47f4571b962a66585cb3594aa5cbda6ec16813b6e6d3b"
+    },
+    "productionDiffSha256": "8992922c2cba8dbd9d03c119f65adfd11d41b2dfda84dcccf4a48b99777a335d",
+    "native": "a0356c7ecb730135ae1dc07cb04ac8bd6ad2e78d1276a1626370417e96402b5c",
+    "wasm": "8b1f095b49d9b889dc729c5425469ee6555ed1b5a58fc47777ff484e305bcdc3",
+    "js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+    "mode": "Mac no-opt fresh, Docker optimization not executed"
+  },
+  "sourceSha256": {
+    "src/renderer/float_placement.rs": "0d95b944725f9d2169c22737d48fc881c7d0d1755bdfd4e66ca11f6df5839653",
+    "src/renderer/layout.rs": "d0ad4c07b9f332886e0fbf3825762c88b85f283ed41827a48b921ff1f139bafd",
+    "src/renderer/typeset.rs": "a91ad7dbd78de88b486e2627592e5dbda6bc1034d57011898b731ab76c9498cd",
+    "src/renderer/typeset/controls.rs": "a271ed204bef4d7a6dcddcda1db72f2132923ad81f3c106b567decffe28ff168",
+    "src/renderer/typeset/controls/flow_table.rs": "84272a22689d9fcbf16e7b80e7b02dac5c38b449269596299b6915c1e7d2922a",
+    "src/renderer/typeset/controls/empty_float.rs": "5c5d52f8c4da9ad094a47f4571b962a66585cb3594aa5cbda6ec16813b6e6d3b"
+  },
+  "red": {
+    "summary": "1 test run: 0 passed, 1 failed, 215 skipped",
+    "exitCode": 100,
+    "logPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/diagnostic.log",
+    "logSha256": "23a2d9336010487323950ad90908c6fac70d95eb6d3c74224b3067777efa6441"
+  },
+  "green": [
+    {
+      "key": "focused",
+      "summary": "Summary [   0.265s] 3 tests run: 3 passed, 213 skipped",
+      "exitCode": 0,
+      "logPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/focused.log",
+      "logSha256": "af2edd2ec53edc3481bab83940d8edece23926989586103d05bcf4635db0aec2",
+      "commandSha256": "c73c20a7b0e919d35f6869627d3e5f241ada1bd9b380c0a6775c55f7a545c0d0"
+    },
+    {
+      "key": "related",
+      "summary": "Summary [   0.185s] 30 tests run: 30 passed, 633 skipped",
+      "exitCode": 0,
+      "logPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/related.log",
+      "logSha256": "158d3674574657f92688b95c0de2458fee550863210c4c1c9ae4af5ba91837c6",
+      "commandSha256": "7d4c56f977412dec1975e0f7f4231983791136d452bf2855360513e93c8f28c0"
+    }
+  ],
+  "wholeVisual": [
+    {
+      "backend": "native",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.64096,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 27078,
+          "tolerant_content_match_percent": 98.64096
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91212,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 35276,
+          "tolerant_content_match_percent": 99.91212
+        }
+      ],
+      "pageCounts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-native/civil/silhouette.tsv",
+      "tsvSha256": "1af7c1e6daae1b23107fcad0de60596efdc86ebcd65331eba7c8f4a7202e0314",
+      "inputs": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-native/civil/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "40064534ce8a3937a0d82b085d25a56cce34f167d655c66ff13adc960e839ee3",
+          "pdf_png": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-native/civil/pdf_png/pdf-1.png",
+          "pdf_sha256": "02c36afb090b1d207c580dc5f17814eb2ba22f4c233782edeb92e7778128759b"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-native/civil/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "0a8e9db4b4afec13381a6ee619235d2895c9821b1e959be67d06b088aee44b61",
+          "pdf_png": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-native/civil/pdf_png/pdf-2.png",
+          "pdf_sha256": "2d2abbcbbe46d24a962aa5291d18f32e252976051fc681788643ceb8c6406d3e"
+        }
+      ],
+      "directReview": "전체 두 쪽 review PNG 직접 판독 완료"
+    },
+    {
+      "backend": "fresh",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.64096,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 27078,
+          "tolerant_content_match_percent": 98.64096
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91212,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 35276,
+          "tolerant_content_match_percent": 99.91212
+        }
+      ],
+      "pageCounts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-fresh/civil/silhouette.tsv",
+      "tsvSha256": "1af7c1e6daae1b23107fcad0de60596efdc86ebcd65331eba7c8f4a7202e0314",
+      "inputs": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-fresh/civil/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "40064534ce8a3937a0d82b085d25a56cce34f167d655c66ff13adc960e839ee3",
+          "pdf_png": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-fresh/civil/pdf_png/pdf-1.png",
+          "pdf_sha256": "02c36afb090b1d207c580dc5f17814eb2ba22f4c233782edeb92e7778128759b"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-fresh/civil/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "0a8e9db4b4afec13381a6ee619235d2895c9821b1e959be67d06b088aee44b61",
+          "pdf_png": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage357-civil-anchor-consumption/after-fresh/civil/pdf_png/pdf-2.png",
+          "pdf_sha256": "2d2abbcbbe46d24a962aa5291d18f32e252976051fc681788643ceb8c6406d3e"
+        }
+      ],
+      "directReview": "전체 두 쪽 review PNG 직접 판독 완료"
+    }
+  ],
+  "sameNativeFreshTsvAndPng": true,
+  "controls": [
+    {
+      "key": "issue265",
+      "pagesBefore": 16,
+      "pagesAfter": 16,
+      "changedPages": []
+    },
+    {
+      "key": "caption6078",
+      "pagesBefore": 1,
+      "pagesAfter": 1,
+      "changedPages": []
+    },
+    {
+      "key": "regulatory17",
+      "pagesBefore": 17,
+      "pagesAfter": 17,
+      "changedPages": []
+    },
+    {
+      "key": "pii66",
+      "pagesBefore": 66,
+      "pagesAfter": 66,
+      "changedPages": []
+    },
+    {
+      "key": "converted16",
+      "pagesBefore": 16,
+      "pagesAfter": 16,
+      "changedPages": []
+    },
+    {
+      "key": "object-only6950",
+      "pagesBefore": 3,
+      "pagesAfter": 3,
+      "changedPages": []
+    }
+  ],
+  "sourceContract": {
+    "hostVpos": 57794,
+    "previousHostVpos": 65212,
+    "offset": 595,
+    "outerTop": 141,
+    "height": 5882,
+    "outerBottom": 141,
+    "successorVpos": 64553,
+    "closingEquation": "57794 + 595 + 141 + 5882 + 141 = 64553",
+    "legacyRewindQuery": "기존 layout의 되감김 조회와 적용 한도를 그대로 공통 float_placement로 이동",
+    "production": "실제 flow_table 호출에서 앞 문단을 전달하고, 닫힌 원본 상자가 증명된 경우 복원 원점을 frame/lane fit/예약/확정 배치에 소비한다. 원점 복원 후 anchor_y를 현재 흐름으로 덮지 않는다. 기존 수용 거절 시 block 프레임 경로는 유지",
+    "boundaries": "편집/재조판/다중 단/dirty·synthetic·미닫힌 후속 줄은 기존 저장 프레임 gate 유지; 새로운 문서 ID·위치 공차를 추가하지 않음"
+  },
+  "directReview": {
+    "pages": [
+      1,
+      2
+    ],
+    "observations": [
+      "2쪽 큰 표·작성요령 표·용지규격 문장의 순서와 간격 유지",
+      "2쪽 작성요령 표와 뒤 문장의 약 11px 하방 밀림 해소",
+      "1쪽 셀 내용과 구조 보존"
+    ],
+    "residuals": [
+      "기존 텍스트 글리프와 괘선의 농도·미세 가장자리 차이는 남으며 픽셀 동일이라고 주장하지 않음"
+    ]
+  },
+  "testFixtureOrBaselineChanges": false,
+  "newTestFunctions": 0,
+  "fullNextest": "최신 생산 보정 후 전체 재실행 전",
+  "prReady": false
+}
