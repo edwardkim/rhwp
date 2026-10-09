@@ -2102,19 +2102,37 @@ impl TypesetEngine {
                 )
             })
             .flatten()
-            })
-            .or_else(|| {
-                crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_reflow_host(
-                    para,
-                    table,
-                    st.current_height,
-                    source_host_origin,
-                    ft.effective_height,
-                    ft.host_spacing.before,
-                    ft.host_spacing.after,
-                    self.dpi,
-                )
-            });
+        });
+        let unconstrained_host_placement = unconstrained_host_placement.or_else(|| {
+            let lines = fmt.computed_host_lines.as_ref()?;
+            let text_origin = placement_para_start_height
+                + if placement_para_start_height > 0.0 {
+                    fmt.spacing_before
+                } else {
+                    0.0
+                };
+            crate::renderer::float_placement::ParagraphFloatPlacement::from_computed_whitespace_host(
+                para,
+                table,
+                ctrl_idx,
+                text_origin,
+                lines,
+                ft.effective_height,
+                self.dpi,
+            )
+        });
+        let unconstrained_host_placement = unconstrained_host_placement.or_else(|| {
+            crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_reflow_host(
+                para,
+                table,
+                st.current_height,
+                source_host_origin,
+                ft.effective_height,
+                ft.host_spacing.before,
+                ft.host_spacing.after,
+                self.dpi,
+            )
+        });
         let constrain_host_placement = HostPlacementConstraint {
             table,
             has_preceding_coanchored_float,

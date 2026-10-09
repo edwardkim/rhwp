@@ -4125,6 +4125,31 @@ impl ParagraphFloatPlacement {
         Self::from_computed_host_at(char_pos, para, table, text_origin, lines, table_height, dpi)
     }
 
+    /// 공백 호스트도 실제 재조판 줄을 점유한다. 줄이 양수 표 오프셋 안에
+    /// 들어가면 그 줄 원점과 바깥여백을 같은 예약/배치 프레임으로 보존한다.
+    /// 개행·저장 줄·다른 개체가 있으면 별도 소유 계약을 유지한다.
+    pub(crate) fn from_computed_whitespace_host(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        text_origin: f64,
+        lines: &[ParagraphHostLine],
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        let text_len = para.text.chars().count();
+        if text_len == 0
+            || !para.text.chars().all(|ch| matches!(ch, ' ' | '\t'))
+            || !para.line_segs.is_empty()
+            || para.char_offsets.len() != text_len
+            || !matches!(para.controls.as_slice(), [Control::Table(_)])
+        {
+            return None;
+        }
+        let char_pos = *para.control_text_positions().get(control_index)?;
+        Self::from_computed_host_at(char_pos, para, table, text_origin, lines, table_height, dpi)
+    }
+
     fn from_computed_host_at(
         char_pos: usize,
         para: &Paragraph,
