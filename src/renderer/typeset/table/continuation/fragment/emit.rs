@@ -857,8 +857,44 @@ impl TypesetEngine {
                     });
             }
         }
-        // 종료 프레임의 원본 정보를 조회하면서 스캔 이후 여백이 예약됐을 수 있다.
-        // 최종 수용한 예약량을 기준으로 아직 소유되지 않은 흐름 잔여를 구한다.
+        // 새 쪽에 통째로 이월한 그림 표는 셀의 저장 프레임과 후속 줄의
+        // 흐름 원점이 다르다. paint가 쓰던 저장 후속 원점을 예약에도 전달한다.
+        // 분할 컷·편집·재조판 경로는 원본 후속 원점을 재사용하지 않는다.
+        let relocated_successor_origin = (st.current_height == 0.0
+            && !is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty()
+            && end_row == row_count
+            && split_end_cut.is_empty()
+            && split_end_limit == 0.0
+            && !st.profile.session_edited()
+            && !self.render_normalization.table_text_reflowed(table))
+        .then(|| {
+            crate::renderer::float_placement::stored_relocated_picture_successor_origin(
+                st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout(),
+                input.source.paragraph,
+                table,
+                input.source.paragraphs_all.get(para_idx + 1),
+                self.dpi,
+            )
+        })
+        .flatten()
+        .filter(|origin| *origin <= st.base_available_height());
+        if let Some(origin) = relocated_successor_origin {
+            fragment_placement = Some(crate::renderer::float_placement::ParagraphFloatPlacement {
+                flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                anchor_y: st.current_height,
+                stored_host_origin: None,
+                stored_successor_line_origin: Some(origin),
+                table_left: None,
+                // 이월된 빈 호스트의 오프셋은 그림 내부 저장 위치에 속한다.
+                // 표 프레임은 새 본문 원점의 바깥 위 여백에서 시작한다.
+                table_top: st.current_height + host_before_overhead,
+                occupied_bottom: origin,
+            });
+        }
+        // 끝 조각의 원본 조회는 스캔 이후 여백을 예약할 수 있다. 최종 수용한
+        // 예약에서 아직 소유되지 않은 흐름의 남은 몫을 계산한다.
         // 끝 조각의 물리 상자와 아래 바깥여백은 같은 영역을 소유한다.
         // 엄격 예산·캡션 등이 이미 예약한 몫을 다시 더하지 않는다.
         let terminal_flow_outer_bottom =
@@ -903,15 +939,18 @@ impl TypesetEngine {
                 if !terminal {
                     placement.stored_successor_line_origin = None;
                 }
-                placement.occupied_bottom = placement.table_top
-                    + owner_height
-                    + if terminal {
-                        terminal_outer_bottom_overhead + terminal_flow_outer_bottom
-                    } else {
-                        // 실제로 예약한 조각 뒤 여백만 후속 흐름에 전달한다.
-                        // 바깥 위 여백의 재개가 아래 여백 재개까지 뜻하지는 않는다.
-                        fragment_outer_bottom_overhead
-                    };
+                placement.occupied_bottom =
+                    relocated_successor_origin.filter(|_| terminal).unwrap_or(
+                        placement.table_top
+                            + owner_height
+                            + if terminal {
+                                terminal_outer_bottom_overhead + terminal_flow_outer_bottom
+                            } else {
+                                // 실제로 예약한 조각 뒤 여백만 후속 흐름에 전달한다.
+                                // 바깥 위 여백의 재개가 아래 여백 재개까지 뜻하지는 않는다.
+                                fragment_outer_bottom_overhead
+                            },
+                    );
                 if terminal
                     && terminal_outer_bottom_overhead > 0.0
                     && st.prefilled_line_prefixes.contains_key(&(para_idx + 1))
@@ -952,9 +991,10 @@ impl TypesetEngine {
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 st.align_flow_to(successor_flow_end.unwrap_or(
                     placement.occupied_bottom
-                        + if terminal {
+                        + if terminal && relocated_successor_origin.is_none() {
                             input.prepared.host_spacing_after_only
                         } else {
+                            // 후속 저장 글줄의 원점은 호스트 뒤 간격도 포함한다.
                             0.0
                         },
                 ));
