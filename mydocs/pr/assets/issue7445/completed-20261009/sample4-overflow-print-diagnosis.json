@@ -1,0 +1,125 @@
+{
+  "status": "diagnosed_not_fixed_pr_held",
+  "base": "21ed64071f81f35f37618717693bd30f727392c9",
+  "codeHead": "072cb1e437677662e5be854bbd6a70be46bf86d4",
+  "source": {
+    "path": "samples/hwp3-sample4-hwp5.hwp",
+    "sha256": "aa174a18f595cd5f4a4fcb7733d209d6c4af9d35d4c933e63f29aa7f64effda4",
+    "lastSavedWith": "hancom-office-2018",
+    "pages": 36
+  },
+  "reference": {
+    "path": "pdf/hwp3-sample4-hwp5-hwp-2020.pdf",
+    "sha256": "3be0bbbe782f2cb3caa45a2ecec98e419103f6f04416050c3ba1f79a25ccc34d",
+    "previousSha256": "051a632a7f2ad85a1d3269c6909a32a463db037a5bb29550531b62766cafbf72",
+    "pages": 36,
+    "bytes": 1029723,
+    "mcp": {
+      "job_id": "0e37f630-7383-4cb7-85e3-f6d3ab5e1514",
+      "status": "success",
+      "target": "pdf",
+      "size": 1029723,
+      "sha256": "3be0bbbe782f2cb3caa45a2ecec98e419103f6f04416050c3ba1f79a25ccc34d",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_page_count": 36,
+      "logical_page_count": null,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "worker_bits": 32
+    }
+  },
+  "native": {
+    "base": {
+      "pages": 36,
+      "minimum": 46.74204,
+      "below90": [
+        1,
+        2,
+        5,
+        6,
+        8,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "page35": 83.00905,
+      "page36": 49.80808,
+      "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage391-sample4-overflow/base-native/sample4/silhouette.tsv",
+      "tsvSha256": "b65736e3a404f6e2127828ac7cc09664eddf44be2892a726786c414cbbffb605"
+    },
+    "head": {
+      "pages": 36,
+      "minimum": 46.77389,
+      "below90": [
+        1,
+        5,
+        6,
+        8,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        20,
+        21,
+        22,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "page35": 88.04609,
+      "page36": 49.74763,
+      "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage391-sample4-overflow/head-native/sample4/silhouette.tsv",
+      "tsvSha256": "f12c4595211d90f61b804f8866d6a654f95ae5ed3ddc0e262230046d0bbccb32"
+    }
+  },
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/completed-20261009/sample4-p035-before-review.png",
+      "sha256": "b9ddb9cf9307bfc38fb11b0cee857fc27a44d86cb34018b58c52efc602b8879d",
+      "page": 35
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/completed-20261009/sample4-p036-before-review.png",
+      "sha256": "2a92a7d12bc7518c6526786136b8f040351138f003ffd97807553c5dd66eea66",
+      "page": 36
+    }
+  ],
+  "finding": "원본 문단 1242의 저장 줄 5에서 vpos 63900 → 0 경계가 있다. Print PDF는 마지막 두 줄을 36쪽에 둔다. 현재는 이 두 줄이 35쪽에 남고 36쪽 참고문헌이 조기 시작한다. 35쪽 코드 블록의 줄 사이 회색 배경과 그림 캡션 위치도 다르다.",
+  "pending": "생산 경계 해석·배경·캡션 수정, fresh WASM 검증, 독립 기준으로 기존 검사 적절성 판정. baseline/기대값/회귀 삭제는 아직 수행하지 않음."
+}
