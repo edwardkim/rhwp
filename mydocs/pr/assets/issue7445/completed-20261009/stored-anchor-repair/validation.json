@@ -657,5 +657,69 @@
     },
     "fullNextestReexecuted": false,
     "prReady": false
+  },
+  "prepRelationTests": {
+    "codeHead": "d55d91e62",
+    "originalInput": "samples/issue2006/1790387_prep_final_report.hwpx",
+    "referencePdf": "pdf/issue2006/1790387_prep_final_report-2024.pdf",
+    "sourceSha256": "c68baed24096386f9041930d24d39409b61ac99463bf04dfd242440dfdeb739f",
+    "pdfSha256": "04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8",
+    "dpi": 96,
+    "nativePages": 140,
+    "freshPages": 140,
+    "nativeMinimumPercent": 91.93033,
+    "freshMinimumPercent": 91.93033,
+    "below90": [],
+    "visualEvidenceReuse": "V10 Native and actual Chrome fresh WASM are byte-identical to complete V9 nominal96 outputs, unchanged source/PDF/font conditions",
+    "runId": "230bd595-59bc-4868-876f-5f2347fe1ca3",
+    "passed": 20,
+    "failed": 0,
+    "skipped": 634,
+    "seconds": 6.569,
+    "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/prep-relations-nextest.log",
+    "addedTestFunctions": 0,
+    "files": [
+      {
+        "path": "tests/cases/issue_7390_kopub_latin_metrics.rs",
+        "sha256": "fe9bfc3148c96ab65c8f379e6ecb592483a9f2a750d1ad3bbfd7c49d173ce828",
+        "functions": 2
+      },
+      {
+        "path": "tests/cases/issue_7390_prep_table_rowbreak.rs",
+        "sha256": "a241f3e39a8de5d976c90d8d2a70d3a00be471d522cb2f4e2c596d28b6041579",
+        "functions": 17
+      },
+      {
+        "path": "tests/suites/issue_regression_pilot/issue_2006_1790387_prep_pagination_pin.rs",
+        "sha256": "a03241f4cac6b7c1b551da13d4a59bd679e94788a573411047d7350d868d1b06",
+        "functions": 1
+      }
+    ],
+    "directlyInspectedPages": [
+      1,
+      33,
+      34,
+      35,
+      39,
+      40,
+      57,
+      61,
+      67,
+      68,
+      69,
+      70,
+      76,
+      90,
+      92,
+      93,
+      94,
+      105,
+      108,
+      140
+    ],
+    "alreadyRelational": "issue_7362_float_table_does_not_cover_preceding_text.rs, both tests kept",
+    "otherReferences": "parser, provenance, chart CSV/data edit contracts kept",
+    "normalCaseTestsRemoved": false,
+    "fullNextestReexecuted": false
   }
 }
