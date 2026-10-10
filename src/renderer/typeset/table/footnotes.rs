@@ -15,6 +15,8 @@ impl TypesetEngine {
         st: &mut TypesetState,
         footnote: &Footnote,
         source: FootnoteSource,
+        paragraphs: &[crate::model::paragraph::Paragraph],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) {
         self.register_unqueued_table_footnote_with_content_height(
             st,
@@ -22,6 +24,32 @@ impl TypesetEngine {
             source,
             estimate_footnote_note_height(footnote, self.dpi),
         );
+        // 원본 HWP5의 줄 정보 없는 각주는 400HU 추정 대신 실제 각주 조판의
+        // 폭·줄 높이·빈 문단·구분선 간격을 예약한다. 뒤 본문과 마지막 빈 줄이
+        // paint 영역을 다시 사용할 수 없도록 같은 결과를 페이지 예산에 싣는다.
+        if st.col_count == 1
+            && st.profile.hwp5_stored_pagination_layout()
+            && footnote
+                .paragraphs
+                .iter()
+                .any(|para| para.line_segs.is_empty())
+        {
+            let refs = st
+                .pages
+                .last()
+                .map(|page| page.footnotes.as_slice())
+                .unwrap_or_default();
+            let height = crate::renderer::layout::LayoutEngine::new(self.dpi)
+                .estimate_footnote_area_height_with_metrics(
+                    refs,
+                    paragraphs,
+                    styles,
+                    st.layout.body_area.width,
+                    st.footnote_separator_overhead,
+                    st.footnote_between_notes_margin,
+                );
+            st.reserve_painted_footnote_area(height);
+        }
     }
 
     /// `register_unqueued_table_footnote`와 같은 owner/fragment 계약을 사용하되,

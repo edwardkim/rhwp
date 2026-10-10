@@ -91,7 +91,12 @@ fn compose_footnote_paragraph(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> crate::renderer::composer::ComposedParagraph {
-    if para.line_segs.is_empty() && !para.text.is_empty() && content_width_px > 0.0 {
+    // 저장 줄이 없는 실제 빈 각주 문단도 원본 글자모양의 줄 상자를 소유한다.
+    // 본문은 같은 재조판 경로를 쓰는데, 각주만 400HU로 줄이면 앞 각주의
+    // 예약 높이와 구분선 원점까지 작아진다. 문단 자체가 없는 입력은 제외한다.
+    let has_paragraph_line =
+        !para.text.is_empty() || (para.char_count > 0 && para.controls.is_empty());
+    if para.line_segs.is_empty() && has_paragraph_line && content_width_px > 0.0 {
         let para_style = styles.para_styles.get(para.para_shape_id as usize);
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);

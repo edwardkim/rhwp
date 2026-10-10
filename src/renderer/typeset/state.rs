@@ -646,6 +646,7 @@ impl TypesetState {
             body_height: self.base_available_height(),
             current_zone_y_offset: self.data.current_zone_y_offset,
             current_footnote_height: self.data.current_footnote_height,
+            painted_footnote_area_reserved: self.data.current_footnote_body_bottom_reserved,
         }
     }
 
@@ -1043,7 +1044,9 @@ impl TypesetState {
             0.0
         } else if self.data.skip_footnote_margin_once {
             self.data.skip_footnote_margin_once = false;
-            if self.data.current_footnote_height > 0.0 {
+            if self.data.current_footnote_height > 0.0
+                && !self.data.current_footnote_body_bottom_reserved
+            {
                 self.data.footnote_safety_margin
             } else {
                 0.0

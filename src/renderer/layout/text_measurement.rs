@@ -1796,6 +1796,34 @@ fn char_width_decision_with_hft_tracking<'a>(
                 }
             }
         }
+        // 굴림에 없는 한점 리더는 한컴돋움의 기호로 출력된다. 독립 법원 서식
+        // Print PDF의 Haansoft Dotum CID 3과 원본 HDOTUM hmtx가 같은 폭을 준다.
+        // 실제 굴림 글리프 hit와 HFT 치환은 보존하고, 확인된 결측만 대체한다.
+        if embedded.width_px.is_none()
+            && c == '\u{2024}'
+            && latin.is_none()
+            && !style.hft_hangul_face
+            && !style.hft_fullwidth_dot
+            && metric_family == display_family
+            && embedded
+                .metric
+                .is_some_and(|metric| metric.metric.name == "Gulim")
+        {
+            if let Some(metric) =
+                font_metrics_data::find_metric_decision("Haansoft Dotum", false, false)
+            {
+                if let Some(width) = metric.metric.get_width(c) {
+                    embedded = EmbeddedWidthDecision {
+                        width_px: Some(quantize_hwp_px(
+                            font_size * f64::from(width) / f64::from(metric.metric.em_size),
+                        )),
+                        width_source: "metricGlyphFallback",
+                        metric: Some(metric),
+                        character_match: "hit",
+                    };
+                }
+            }
+        }
         // 행의 공통 측정 규칙으로 폭을 고르며 원문의 useFontSpace 속성을 바꾸지 않는다.
         // 일반 공백과 NBSP는 메트릭 조회 출처를 보존하고 명시한 글꼴 공백이 우선한다.
         if style.layout_half_space

@@ -12,6 +12,7 @@ pub(in crate::renderer::typeset) struct EmptyTailPage<'a> {
     pub body_height: f64,
     pub current_zone_y_offset: f64,
     pub current_footnote_height: f64,
+    pub painted_footnote_area_reserved: bool,
 }
 
 pub(super) enum TailDisposition {
@@ -117,6 +118,9 @@ pub(super) fn trailing_disposition(
                 total_h > available && total_h <= available + layout_drift_safety_px;
             let base_available = page.body_height - page.current_zone_y_offset;
             let fit_fail_only_after_footnote_reserve = page.current_footnote_height > 0.0
+                // 실제 paint 높이를 예약했으면 빈 문단도 남은 본문에 들어가야 한다.
+                // 추정 각주 예산의 과다 예약을 완화하던 경로로 소유를 지우지 않는다.
+                && !page.painted_footnote_area_reserved
                 && total_h > available
                 && total_h <= base_available;
             // 앞 줄의 누적 간격이 조금 넘쳤어도 다음 줄 상자의 점유는 별개다.

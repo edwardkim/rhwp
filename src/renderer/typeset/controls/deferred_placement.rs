@@ -79,7 +79,7 @@ pub(in crate::renderer::typeset) fn place(
         deferred.para_index,
         deferred.control_index,
         |st, footnote, source| {
-            engine.register_unqueued_table_footnote(st, footnote, source);
+            engine.register_unqueued_table_footnote(st, footnote, source, paragraphs, styles);
         },
     );
 

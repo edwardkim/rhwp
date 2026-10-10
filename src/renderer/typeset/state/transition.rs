@@ -178,6 +178,8 @@ impl TypesetState {
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
     pub(in crate::renderer::typeset) fn available_height(&self) -> f64 {
         let base = self.base_available_height();
+        // 실제 각주 조판 높이를 예약한 경우에는 추정 오차용 버퍼를 또 빼지 않는다.
+        // 같은 물리 높이가 본문과 paint의 경계이며 꼬리말 회수도 이미 금지돼 있다.
         let fn_margin = if self.data.current_footnote_height > 0.0
             && !self.data.current_footnote_body_bottom_reserved
         {

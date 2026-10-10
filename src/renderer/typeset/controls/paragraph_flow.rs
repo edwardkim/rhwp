@@ -312,7 +312,13 @@ pub(in crate::renderer::typeset) fn place(
                     para_idx,
                     ctrl_idx,
                     |st, footnote, source| {
-                        engine.register_unqueued_table_footnote(st, footnote, source);
+                        engine.register_unqueued_table_footnote(
+                            st,
+                            footnote,
+                            source,
+                            paragraphs_all,
+                            styles,
+                        );
                     },
                 );
                 if break_after_current_table {
