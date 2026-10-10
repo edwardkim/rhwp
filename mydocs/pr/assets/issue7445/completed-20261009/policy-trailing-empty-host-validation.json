@@ -1,0 +1,413 @@
+{
+  "stage": 381,
+  "status": "partial_verified_pr_held",
+  "parentHead": "1b4c22ec37b5d672af9bec0584e672a40fb4df88",
+  "scope": "앞 줄 끝과 전체 표 바깥 상자 끝에 저장된 빈 호스트의 원점 공유; 공백 호스트 줄 상자 보존",
+  "sources": {
+    "src/renderer/float_placement.rs": "b360bea89b539686b863cadf4e8c4bd66669b14acb97b65b12566bd861cfeea8",
+    "src/renderer/layout.rs": "11e2d3753f87eff9fab59cb5c79c890db511bb9d11debce0b438cde20a9b3526"
+  },
+  "input": {
+    "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+    "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113"
+  },
+  "pdf": {
+    "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+    "sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+    "pages": 215
+  },
+  "canonicalCompatibility": "2024",
+  "comparisonProfile": "print",
+  "dpi": 96,
+  "nativeBinarySha256": "25d706d2beab0a6d01a7cd45f60bb71ea264dbcef7b99d3e21ce58c08f7618a3",
+  "pkgHashes": {
+    "rhwp.js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+    "rhwp_bg.wasm": "f3412409715554c72184a460a5f6990aac7c5d1dd072e0a74645ab40ba4306ff",
+    "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390"
+  },
+  "pageCount": {
+    "native": 215,
+    "freshWasm": 215,
+    "pdf": 215
+  },
+  "consumerPath": "stored_adjacent_line_table_frame → query_original_control_table_frame → 통째 fit/NextLine 점유하단 → place_table_with_text → layout_table_control의 같은 table_top/occupied_bottom",
+  "sourceRelationshipHu": {
+    "previousLineVpos": 28000,
+    "previousLineHeight": 1000,
+    "previousLineSpacing": 1000,
+    "frameStart": 30000,
+    "tableHeight": 31282,
+    "outerTop": 283,
+    "outerBottom": 283,
+    "hostVpos": 61848,
+    "successorVpos": 0
+  },
+  "counterexamples": "뒤 경계의 새 판별은 빈 문자열만 수용; 기존 앞 경계의 공백 호스트 계약 유지. 편집·부분 높이·실제 글자·다중 개체·후속 쪽 재시작 없음은 원래 경로. 기존 관계 검사22건 추가 실행, 새 함수/fixture/기대값 변경 없음",
+  "fullOutputIdentity": [
+    {
+      "format": "native-svg",
+      "pages": 215,
+      "changedPages": [
+        176
+      ]
+    },
+    {
+      "format": "native-tree",
+      "pages": 215,
+      "changedPages": [
+        176
+      ]
+    },
+    {
+      "format": "wasm-svg",
+      "pages": 215,
+      "changedPages": [
+        176
+      ]
+    },
+    {
+      "format": "wasm-tree",
+      "pages": 215,
+      "changedPages": [
+        176
+      ]
+    }
+  ],
+  "captureReuse": "Native/fresh 각각 전215쪽 출력 및214쪽 바이트 동일성·같은 입력/PDF/글꼴 공급 확인 후 PNG 재사용, 변경176쪽만 신규 캡처",
+  "visual": {
+    "native": {
+      "command": [
+        "python3",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/native-reconciled-raster",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage375-policy-page-origin/native-v1-full/policy/pdf_png",
+        "--key",
+        "policy",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/native-final-tsv"
+      ],
+      "exitCode": 1,
+      "pages": 215,
+      "below90": [
+        {
+          "page": "184",
+          "tolerant_content_match_percent": "71.39979",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "71.39979",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "208",
+          "tolerant_content_match_percent": "85.37844",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "85.37844",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "minimum": 71.39979,
+      "changedPageScores": [
+        {
+          "page": "176",
+          "tolerant_content_match_percent": "99.74143",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.74143",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "captureReuse": "214 byte-identical SVG pages; changed 1 page recaptured"
+    },
+    "freshWasm": {
+      "command": [
+        "python3",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/fresh-reconciled-raster",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage375-policy-page-origin/fresh-final-full/policy/pdf_png",
+        "--key",
+        "policy",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/fresh-final-tsv"
+      ],
+      "exitCode": 1,
+      "pages": 215,
+      "below90": [
+        {
+          "page": "184",
+          "tolerant_content_match_percent": "71.39979",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "71.39979",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "208",
+          "tolerant_content_match_percent": "85.37844",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "85.37844",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "minimum": 71.39979,
+      "changedPageScores": [
+        {
+          "page": "176",
+          "tolerant_content_match_percent": "99.74143",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.74143",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "captureReuse": "214 byte-identical actual Chrome raw SVG pages; changed 1 page recaptured"
+    },
+    "p176BeforePercent": 88.12309,
+    "p176AfterPercent": 99.74143,
+    "strictInkMatchPercent": 31.5723,
+    "nativeFreshPngIdentical": true
+  },
+  "payloadChecks": {
+    "allPagesExportedTextRunPayloadUnchanged": true,
+    "allPagesFootnoteAreaJsonUnchanged": true,
+    "changedNativeSvgTextStyleUnchanged": {
+      "page": 176,
+      "textElements": 1442,
+      "sameTextAndStyleAttributes": true,
+      "excludedGeometryFields": [
+        "x",
+        "y"
+      ]
+    },
+    "scopeNote": "compact render tree가 내보내지 않는 글꼴 필드는 그 JSON 비교의 대상이 아님; 변경176쪽 SVG 실제 텍스트/서식 속성과 입력 글꼴 공급을 별도로 대조"
+  },
+  "focusedRegression": {
+    "parentHead": "1b4c22ec37b5d672af9bec0584e672a40fb4df88",
+    "sourceSha256": {
+      "src/renderer/float_placement.rs": "b360bea89b539686b863cadf4e8c4bd66669b14acb97b65b12566bd861cfeea8",
+      "src/renderer/layout.rs": "11e2d3753f87eff9fab59cb5c79c890db511bb9d11debce0b438cde20a9b3526"
+    },
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_001",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_004",
+      "--test",
+      "regression_suite_005",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_007",
+      "--test",
+      "regression_suite_010",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_013",
+      "--test",
+      "regression_suite_016",
+      "--test",
+      "regression_suite_017",
+      "--test",
+      "regression_suite_020",
+      "--test",
+      "regression_suite_021",
+      "--test",
+      "regression_suite_023",
+      "--test",
+      "regression_suite_028",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(issue_7048_stored_picture_successor::) | test(issue_6524_float_host_split_lineseg_advance::) | test(issue_6299_same_vpos_seg_is_one_row::) | test(issue_6299_same_vertpos_one_line::) | test(issue_7469_footnote_number_paragraph_indent::) | test(issue_7379_rowbreak_table_footnote_reservation::) | test(issue_3587_repeated_table_flow::) | test(issue_7203_float_table_stored_anchor_top::) | test(issue_7196_page_top_spacing_trim_restore::) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before::) | test(issue_5801_stored_ladder_spacing_before::) | test(issue_6970_multicolumn_synth_ladder_fill::) | test(issue_7359_page_top_table_spacing::) | test(issue_5871_ws_host_float_double_charge::) | test(issue_7063_empty_float_host_snap_intrudes_prev_line::) | test(issue_7063_float_outer_margin_box::) | test(issue_7621_text_after_float_only_host::) | test(issue_7288_stale_frame_empty_paragraph::) | test(issue_6923_wrapper_table_stored_page_frame::)"
+    ],
+    "exitCode": 100,
+    "seconds": 223.232,
+    "summary": "Summary [   6.203s] 67 tests run: 64 passed, 3 failed, 3170 skipped"
+  },
+  "failures": {
+    "failuresUnchanged": true,
+    "before": [
+      "issue_7203_float_table_stored_anchor_top::downstream_table_split_and_body_follow_the_oracle_pages",
+      "issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once",
+      "issue_7379_rowbreak_table_footnote_reservation::terminal_caption_withholds_the_last_rowspan_unit_together"
+    ],
+    "after": [
+      "issue_7203_float_table_stored_anchor_top::downstream_table_split_and_body_follow_the_oracle_pages",
+      "issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once",
+      "issue_7379_rowbreak_table_footnote_reservation::terminal_caption_withholds_the_last_rowspan_unit_together"
+    ],
+    "note": "앞 후보45건과 현재67건에서 같은3건 실패; 추가22건 통과. 전체 최종 검증의 통과로 대신하지 않음"
+  },
+  "validationCommands": [
+    {
+      "name": "native-final-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--bin",
+        "rhwp"
+      ],
+      "exitCode": 0,
+      "seconds": 141.55
+    },
+    {
+      "name": "native-final-svg",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/rhwp-after-final",
+        "export-svg",
+        "/Users/tsjang/rhwp-7445-completed-20261009/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/native-final-export/svg",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--profile",
+        "print",
+        "--compat",
+        "2024"
+      ],
+      "exitCode": 0,
+      "seconds": 25.769
+    },
+    {
+      "name": "native-final-tree",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/rhwp-after-final",
+        "export-render-tree",
+        "/Users/tsjang/rhwp-7445-completed-20261009/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/native-final-export/render_tree",
+        "--compat",
+        "2024"
+      ],
+      "exitCode": 0,
+      "seconds": 1.08
+    },
+    {
+      "name": "fresh-wasm-build",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exitCode": 0,
+      "seconds": 185.775
+    },
+    {
+      "name": "fresh-all-export",
+      "command": [
+        "node",
+        "scripts/export-wasm-for-sweep.mjs",
+        "--pkg",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/pkg",
+        "--input",
+        "/Users/tsjang/rhwp-7445-completed-20261009/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/fresh-final-export",
+        "--compat",
+        "2024"
+      ],
+      "exitCode": 0,
+      "seconds": 9.816
+    },
+    {
+      "name": "native-final-review",
+      "command": [
+        "python3",
+        "scripts/visual_sweep.py",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/rhwp-after-final",
+        "--compat",
+        "2024",
+        "--dpi",
+        "96",
+        "--embed-fonts",
+        "full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--hwp",
+        "/Users/tsjang/rhwp-7445-completed-20261009/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp-7445-completed-20261009/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+        "--pages",
+        "176",
+        "--key",
+        "policy",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/native-final-review"
+      ],
+      "exitCode": 0,
+      "seconds": 13.87
+    },
+    {
+      "name": "fresh-affected-review",
+      "command": [
+        "python3",
+        "scripts/visual_sweep.py",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/rhwp-after-final",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/pkg",
+        "--compat",
+        "2024",
+        "--dpi",
+        "96",
+        "--embed-fonts",
+        "full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--hwp",
+        "/Users/tsjang/rhwp-7445-completed-20261009/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp-7445-completed-20261009/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+        "--pages",
+        "176",
+        "--key",
+        "policy",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin/fresh-final-review"
+      ],
+      "exitCode": 0,
+      "seconds": 166.575
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 34.852
+    }
+  ],
+  "assets": {
+    "policy-trailing-empty-host-p176-native-before-review.png": "a37f39829a72d189ee097a96e66ae78752c73c35797010adc3e94c23f51559cc",
+    "policy-trailing-empty-host-p176-native-review.png": "ffc2f9037b17f0a4f274f8f2384bd250b9d8b9b7bc63137ef815287f0ed3cef8",
+    "policy-trailing-empty-host-p176-native-overlay.png": "65be69e06276ec5aa134f66fc1f2aff8e0972da257f2d68e728269b603bc4d84",
+    "policy-trailing-empty-host-p176-fresh-review.png": "d57b68a66d760c77aa488f750d507f4704be70ce5ede3eb71ee4863f3289890b",
+    "policy-trailing-empty-host-p176-fresh-overlay.png": "fbe00ccef196fe4a73645a278c3e08454cbed7e4410a94ebd36499291da9413d"
+  },
+  "ignoredEvidence": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage381-policy-residual-origin",
+  "pending": "184/208쪽 시각 미달, 잔여 개별 회귀, 최신 후보 전체 회귀·필수 lint/Skia/affected visual·PR/CI/merge/후속 처리 미완료. #7445 전체나 다른 브랜치 미완료 OLE를 완료로 처리하지 않음"
+}

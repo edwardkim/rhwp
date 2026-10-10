@@ -2277,3 +2277,66 @@ fresh WASM raw SVG·렌더 트리는 각각 전215쪽에서 28쪽만 바뀌었�
 [Native overlay](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-native-overlay.png),
 [fresh WASM review](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-fresh-review.png),
 [fresh WASM overlay](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-fresh-overlay.png).
+
+
+## 보정 381 사전 분석: 표 뒤 저장 빈 줄과 바깥 상자의 시작
+
+정책연구 원본 176쪽에서 앞 문단 1831의 마지막 저장 줄은
+28,000+1,000+1,000=30,000HU에서 끝납니다. 표 1832의 측정 본체는
+선언 높이 31,282HU와 같고, 위·아래 바깥 여백은 각각 283HU입니다.
+빈 호스트의 저장 위치 61,848HU는 30,000+283+31,282+283으로
+전체 바깥 상자의 끝을 정확히 닫습니다. 후속 빈 줄은 다음 쪽의 0HU로
+재시작합니다. 이전 후보는 예약에 위 여백을 넣지만 실제 테두리는
+바깥 상자 시작에 그렸고, 그 위 여백을 뒤 흐름에 넣었습니다.
+
+기존 `stored_adjacent_line_table_frame`은 호스트 저장 위치가 앞 줄 끝인
+경우만 인정했습니다. 같은 전체 상자의 끝에 저장된 빈 호스트도 판별하고,
+표 원점은 앞 줄 끝과 위 여백으로 계산합니다. `query_original_control_table_frame`의
+통째 수용·실제 진행 및 paint가 기존 NextLine 계획의 상단·점유 하단을
+함께 소비합니다. 컷을 가진 부분 표·측정/선언 높이 불일치·편집·다중 개체·
+실제 호스트 글자·후속 쪽 재시작 없는 입력은 기존 경로를 유지합니다.
+문서 이름이나 픽셀 공차로 대상이나 기대값을 고정하지 않습니다.
+
+첫 Native 후보는 215쪽을 유지하고 176쪽 렌더 트리만 바뀌었습니다.
+독립 한컴 Print 비교는 88.12309→99.74143%이며, 직접 review에서
+표 테두리·본문과 각주 232~234를 확인했습니다. 이 수치는 Native 선행
+확인이며 fresh WASM·전쪽 동일성·관련 회귀 검증이 끝나기 전에는
+최종 수용이나 PR 준비 완료로 판정하지 않습니다. 새 회귀 함수는 추가하지 않습니다.
+
+
+### 보정 381 결과: 176쪽 복원, 전쪽 미달 3→2쪽
+
+표 앞·뒤 두 저장 경계가 닫는 같은 바깥 상자를 통째 수용과 실제 배치에
+공유했습니다. 뒤 경계에 저장된 새 판별은 실제 빈 문자열에만 적용하고,
+공백 호스트의 자체 줄 상자 및 기존 앞 경계 계약은 유지했습니다.
+표 컷·실측 높이·셀 내용과 각주 예약을 바꾸거나 픽셀 기대값을 완화하지 않았습니다.
+
+최종 소스로 Native와 Mac no-opt fresh WASM을 빌드하고 pkg/public 일치를
+확인했습니다. 한컴 2024 조판 세대의 Native SVG·렌더 트리와 실제 Chrome
+fresh raw SVG·렌더 트리는 각각 215쪽이며 네 형식 모두 176쪽만
+바뀌었습니다. 다른 214쪽은 이전 후보와 바이트 동일함을 확인한 뒤, 같은
+원본·독립 Print PDF·글꼴 공급에서 만든 PNG를 재사용해 전쪽 TSV를 산출했습니다.
+
+176쪽 Native/fresh 일치율은 **88.12309→99.74143%**, 두 backend의
+해당 PNG는 동일합니다. 실제 SVG의 텍스트 내용·서식 속성은 x/y 이동
+외에 동일하며, 전체 215쪽 compact 렌더 트리의 텍스트 비좌표 필드와 각주
+영역 전체 JSON도 동일합니다. compact JSON이 내보내지 않는 글꼴 필드를
+그 비교로 검증했다고 주장하지 않으며, 변경 SVG와 실제 글꼴 공급을 별도로
+확인했습니다. 직접 review에서 테두리·본문과 각주 232~234를 판독했습니다.
+
+관련 기존 nextest는 **67 실행 / 64 PASS / 3 FAIL**, threads 8입니다.
+추가로 실행한 기존 대조군 22건은 모두 통과하고 앞 후보의 실패 3건은
+동일합니다. 새 회귀 함수·fixture를 추가하거나 기대값을 변경하지 않았습니다.
+fmt·Native Clippy·문서 링크는 확인했으며, 최종 전체 lint/회귀를 대신하지 않습니다.
+
+전쪽 TSV는 Native/fresh 모두 미달 **184쪽 71.39979%, 208쪽 85.37844%**로
+exit 1의 재검토 보류 상태입니다. 잔여 개별 검사와 최종 전체 검증도 남아
+있으므로 PR을 아직 생성하지 않습니다.
+
+- [검증 요약](../pr/assets/issue7445/completed-20261009/policy-trailing-empty-host-validation.json)
+- [176쪽 Native 비교](../pr/assets/issue7445/completed-20261009/policy-trailing-empty-host-p176-native-review.png)
+- [176쪽 실제 Chrome fresh 비교](../pr/assets/issue7445/completed-20261009/policy-trailing-empty-host-p176-fresh-review.png)
+
+이전 보정 377~379의 캡처 완료 중간 SVG 1,290개 약95.41 GiB를 ignored
+output에서 정리했습니다. PNG·TSV·렌더 트리·pkg와 최신 정본 380은
+보존하고 열린 파일 독자가 없는 작업 소유 경로만 삭제했습니다.
