@@ -2147,3 +2147,65 @@ raw SVG·렌더 트리를 전215쪽 내보내 대조했습니다. 변경은
 [157쪽 fresh review](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-fresh-review.png),
 [157쪽 fresh overlay](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-fresh-overlay.png),
 [168쪽 fresh review](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p168-fresh-review.png).
+
+## 보정 379 사전 분석: 통째로 이월한 측정 표 뒤 저장 줄 연결
+
+11쪽 문단 237의 2×2 표는 앞 쪽에 첫 행이 들어가지 않아 새 쪽으로 전량
+이월됩니다. 전량 측정 높이 14699HU와 바깥 위·아래 여백 566HU의 합은
+다음 문단 238의 원본 줄 원점 15265HU와 일치합니다. 호스트 줄 61764HU는
+이전 쪽 좌표입니다. 문단 스타일 37의 앞·뒤 간격은 모두 0입니다.
+
+기존 경로는 표를 수용한 뒤에도 이전 호스트 줄을 사용해 lazy base를 만들고
+문단 238의 예약 원점을 한 줄 높이 1000HU만큼 전진시킵니다. 문단 240의
+뒤 그림 표는 이 잘못된 예약을 소비해 기준 PDF보다 아래로 내려갑니다.
+전량 수용한 표 측정 결과 → 저장 후속 원점의 닫힘 확인 → 확정 NextLine
+계획 → `bind_stored_frame_successor` → 후속 예약/paint 순서로 같은 원점을
+전달합니다. 실제 표 높이·셀 내용 컷·기존 그림 표의 별도 저장 프레임 계약은
+유지합니다. 부분 컷·편집·재조판·명시적 단 나눔에는 이 저장 관계를 적용하지
+않습니다. 문서 이름이나 임의 위치 공차로 대상을 선택하지 않습니다.
+
+첫 Native 후보는 전215쪽 중 11쪽만 바뀌고 215쪽을 유지했습니다.
+11쪽의 독립 한컴 Print 비교는 66.64192→99.96122%입니다. 직접 review를
+열어 앞 그림·캡션, 두 본문 줄, 뒤 그림·캡션과 각주를 대조했습니다. 본문
+줄이 기존 후보보다 약 3.77px 내려왔지만 PDF 원본 줄과 더 가깝습니다.
+고정 devel의 좌표 자체를 정답으로 삼지 않습니다. 이 후보의 fresh WASM,
+전쪽 TSV와 기존 관련 회귀 검증은 아직 진행 전이며 완료 판정하지 않습니다.
+
+### 보정 379 결과: 11쪽 복원, 전쪽 미달 5→4쪽
+
+새 쪽에 전량 수용한 표의 측정 높이·양쪽 바깥여백 합과 다음 원본 저장 줄의
+닫힘을 확인해, 같은 후속 원점을 예약과 실제 배치에 전달했습니다. 이전 쪽
+호스트 줄 높이로 후속 예약을 다시 전진하지 않습니다. 표 높이와 내용 컷,
+기존 그림 표의 별도 프레임 판정은 유지했습니다.
+
+Native와 Mac no-opt fresh WASM을 최종 소스로 빌드하고 pkg/public 동일성을
+확인했습니다. 한컴 2024 조판 세대의 Native SVG·렌더 트리와 실제 Chrome
+fresh WASM raw SVG·렌더 트리를 각각 전215쪽 내보냈습니다. 네 형식 모두
+11쪽만 변경됐고 다른 214쪽은 이전 후보와 동일합니다. 전215쪽의 텍스트·
+글꼴·스타일 payload와 각주 영역 JSON도 동일합니다.
+
+변경 11쪽은 Native/fresh로 새로 캡처했고 두 PNG는 동일합니다. 그림 5·6과
+캡션, 중간 본문 두 줄, 뒤 장기매매 본문과 각주를 독립 PDF와 직접 대조했습니다.
+고정 devel과의 좌표 차이만으로 판정하지 않았으며, 앞 본문의 이동도 PDF
+줄 위치와 더 가깝습니다. 2px 관용 실루엣은 **66.64192→99.96122%**이고
+엄격 잉크 일치율은 53.89199%입니다. 글자 굵기·미세 잉크 차이는 남아 있습니다.
+
+입력·PDF·인쇄 프로필·조판 세대·실제 글꼴 공급 동일성과 전쪽 출력 동일성을
+확인한 214쪽 캡처를 재사용해 전215쪽 TSV를 다시 산출했습니다. 두 경로 모두
+**미달 4쪽, 최저 71.39979%**입니다. 잔여는 28(86.84969%)·176(88.12309%)·
+184(71.39979%)·208(85.37844%)쪽이며 새 미달은 없습니다.
+
+기존 관련 회귀 34건은 **31 PASS / 3 FAIL**입니다. 이전과 같은 #7203 두 검사와
+#7379 마지막 rowspan 캡션 검사가 남았습니다. 검사 기대값·함수 수는 바꾸지
+않았습니다. Native Clippy·format·문서 링크를 확인해 보정을 커밋합니다.
+이전 잔여 20개 및 최종 전체 nextest·Skia·나머지 제출 게이트는 아직 미완료이며
+PR 생성·승인·통합은 보류합니다. 다음 미달 28쪽의 그림 호스트 저장 줄은
+좌우 두 조각으로 나뉘어 있고, 캡션 종료 뒤에 호스트 한 줄이 재가산되는
+소비 경로를 별도로 분석했습니다. 이 단계에는 28쪽 구현을 섞지 않습니다.
+
+[입력·빌드·전쪽 검증 요약](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-validation.json),
+[11쪽 보정 전](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-native-before-review.png),
+[Native review](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-native-review.png),
+[Native overlay](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-native-overlay.png),
+[fresh WASM review](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-fresh-review.png),
+[fresh WASM overlay](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-fresh-overlay.png).

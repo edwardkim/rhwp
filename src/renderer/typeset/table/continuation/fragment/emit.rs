@@ -857,8 +857,8 @@ impl TypesetEngine {
                     });
             }
         }
-        // 새 쪽에 통째로 이월한 그림 표는 셀의 저장 프레임과 후속 줄의
-        // 흐름 원점이 다르다. paint가 쓰던 저장 후속 원점을 예약에도 전달한다.
+        // 새 쪽에 통째로 이월한 표는 전량 측정 상자 또는 그림의 저장 프레임이
+        // 후속 저장 줄을 확정한다. 이 원점을 예약과 실제 배치에 함께 전달한다.
         // 분할 컷·편집·재조판 경로는 원본 후속 원점을 재사용하지 않는다.
         let relocated_successor_origin = (st.current_height == 0.0
             && !is_continuation
@@ -870,13 +870,23 @@ impl TypesetEngine {
             && !st.profile.session_edited()
             && !self.render_normalization.table_text_reflowed(table))
         .then(|| {
-            crate::renderer::float_placement::stored_relocated_picture_successor_origin(
+            crate::renderer::float_placement::stored_relocated_measured_table_successor_origin(
                 st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout(),
                 input.source.paragraph,
                 table,
                 input.source.paragraphs_all.get(para_idx + 1),
+                partial_height,
                 self.dpi,
             )
+            .or_else(|| {
+                crate::renderer::float_placement::stored_relocated_picture_successor_origin(
+                    st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout(),
+                    input.source.paragraph,
+                    table,
+                    input.source.paragraphs_all.get(para_idx + 1),
+                    self.dpi,
+                )
+            })
         })
         .flatten()
         .filter(|origin| *origin <= st.base_available_height());
@@ -887,7 +897,7 @@ impl TypesetEngine {
                 stored_host_origin: None,
                 stored_successor_line_origin: Some(origin),
                 table_left: None,
-                // 이월된 빈 호스트의 오프셋은 그림 내부 저장 위치에 속한다.
+                // 이월된 빈 호스트의 이전 쪽 오프셋을 새 표 원점에 재적용하지 않는다.
                 // 표 프레임은 새 본문 원점의 바깥 위 여백에서 시작한다.
                 table_top: st.current_height + host_before_overhead,
                 occupied_bottom: origin,
