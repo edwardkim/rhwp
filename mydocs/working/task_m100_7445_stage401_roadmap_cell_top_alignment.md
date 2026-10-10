@@ -40,3 +40,8 @@
 - 수정 전후 렌더 트리의 TextRun 텍스트와 문단 인덱스 순서가 모두 동일함을 확인했다. 실제 PNG와 확대 판독용 crop을 `roadmap-cell-top-p044-native-review.png`와 `roadmap-cell-top-p044-native-detail.png`로 보존했다.
 - 해당 쪽의 2px 보조 일치율은 99.99955%, 엄격 내용 픽셀 일치율은 84.01278% → 86.82509%다. 확대 판독에서 큰 셀의 상단 간격이 맞아졌으며, 잔존 글자 모양·누적 간격과 전체 Native Skia/fresh WASM 검증은 별도 확인한다.
 - 기존 focused nextest는 실행 중이다. 완료되지 않은 검사와 단일 쪽 보조값으로 PR 준비 완료를 주장하지 않는다.
+
+## 기존 focused 회귀
+
+- 새 소스의 기존 focused nextest는 7 PASS / 0 FAIL / 828 skip, 실행 1.374초, exit 0으로 완료됐다. 문단 쪽 소속·중첩 셀 가운데 정렬·실제 page clip·본문 넘침 partition 4를 포함한다. 새 테스트나 허용치 변경은 없다.
+- Native/WASM32 Clippy → Native Skia 빌드 → Mac no-opt fresh WASM 빌드 순서로 공용 target의 후속 검증을 진행한다. 최종 전체 회귀와 모든 문서의 전체 페이지 시각 검증은 남아 있다.

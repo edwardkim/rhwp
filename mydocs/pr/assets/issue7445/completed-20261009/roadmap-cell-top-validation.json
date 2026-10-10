@@ -1,5 +1,5 @@
 {
-  "codeCommit": "641602768",
+  "codeCommit": "64160276897a926ea5698b67e5fdb3c9af261414",
   "scope": "default Native의 실제 44쪽. 최종 Native Skia/fresh WASM/전체 302쪽 검증 대체 아님.",
   "beforeBaselinePx": 187.24,
   "afterBaselinePx": 196.78666666666666,
@@ -42,5 +42,13 @@
       44
     ]
   },
-  "pending": "기존 focused nextest 실행 중. Native Skia와 fresh WASM 전체 302쪽 TSV 및 완료 scope 전체 검증 미완료."
+  "pending": "Native Skia 빌드와 fresh WASM 빌드·전체 302쪽/완료 scope 전체 시각 검증·최종 전체 nextest 미완료.",
+  "focusedNextest": {
+    "passed": 7,
+    "failed": 0,
+    "skipped": 828,
+    "seconds": 1.374,
+    "exitCode": 0,
+    "scope": "기존 문단 소속·중첩 셀 가운데 정렬·실제 page clip·본문 넘침 partition4. 시험지 입력은 기존 제외 상태를 유지한다."
+  }
 }
