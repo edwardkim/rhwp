@@ -251,6 +251,8 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     // 실패한 목차2쪽은98.09696%; 사용자 지정 문서 최저값 기준으로 이관.
     "pic-in-head-01.hwp",
     "pic-in-table-01.hwp",
+    // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
+    "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: 신규 겹침1건, Native 전10쪽 중8쪽 미달·최저0%; 다른 검사는 유지한다.
     "issue2439/issue2439_repeat_table_overlap.hwp",
     // #7445: 정확한 한컴2020 정본 전82쪽 중43쪽 미달, 최저14.15%; 6쪽 쪽번호 겹침.
