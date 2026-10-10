@@ -144,6 +144,7 @@ pub(in crate::renderer::typeset) fn place(
         styles,
         para_start_height,
         para_float_lanes,
+        paragraphs_all,
     ) {
         // Empty host para-float table placed by horizontal lane reservation.
     } else {

@@ -321,5 +321,83 @@
     "testsRemoved": false,
     "currentNewPaginationRegressionRetained": true
   },
-  "latestStatus": "V5 implementation build in progress; no full validation or PR approval claimed"
+  "latestStatus": "V5 implementation build in progress; no full validation or PR approval claimed",
+  "v8Followup": {
+    "base": "f59ac14370bc7d92384292fde37e33be59b87bd7",
+    "workingTreeProductionDiffSha256": "4131f1142c557ba1f8e4509a2cc8ededc9cba15a69ead93c8017eec33e19490c",
+    "nativeBinarySha256": "7f8c9914b28450ca2e79926d32ce78db7caed74e68e651f0ce6fcfa2a53e6f8c",
+    "focused": {
+      "run": 59,
+      "passed": 55,
+      "failed": 4,
+      "exit": 100,
+      "wholeRegression": false,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage431-anchor-v8-validation/focused-nextest.log"
+    },
+    "microbeNative": {
+      "pages": 5,
+      "minimumPercent": 93.89126,
+      "below90": 0,
+      "textOverlapCount": 0,
+      "directReviewedPage": 3,
+      "freshWasm": "pending"
+    },
+    "counterSummary": [
+      {
+        "pageCount": 5,
+        "textOverlapCount": 0,
+        "overlapCount": 0,
+        "overflowCount": 5,
+        "source": "samples/issue6313/microbe_bank_cell_picture.hwpx"
+      },
+      {
+        "pageCount": 2,
+        "textOverlapCount": 0,
+        "overlapCount": 0,
+        "overflowCount": 0,
+        "source": "samples/hwpx/hancom-hwp/issue_157.hwp"
+      },
+      {
+        "pageCount": 4,
+        "textOverlapCount": 4,
+        "overlapCount": 0,
+        "overflowCount": 0,
+        "source": "samples/issue3837/stored_vpos_rewind_form.hwp"
+      },
+      {
+        "pageCount": 14,
+        "textOverlapCount": 0,
+        "overlapCount": 0,
+        "overflowCount": 0,
+        "source": "samples/issue6123/3112461_railway_emc_criteria.hwpx"
+      },
+      {
+        "pageCount": 140,
+        "textOverlapCount": 0,
+        "overlapCount": 0,
+        "overflowCount": 8,
+        "source": "samples/issue2006/1790387_prep_final_report.hwpx"
+      }
+    ],
+    "prepNative": {
+      "pages": 140,
+      "minimumPercent": 88.20384,
+      "below90": [
+        19,
+        26,
+        27,
+        31,
+        66,
+        84
+      ],
+      "followupIssue": 7804,
+      "newPageCountRegression": "fixed",
+      "freshWasm": "pending"
+    },
+    "remaining": {
+      "originalFourTextBaselineFailures": true,
+      "regimpactAsymmetricMarginRegression": "next production correction",
+      "allBranchVisualAndWholeNextest": "pending"
+    }
+  }
 }

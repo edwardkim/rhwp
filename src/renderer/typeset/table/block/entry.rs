@@ -2190,9 +2190,33 @@ impl TypesetEngine {
             has_preceding_coanchored_float,
             dpi: self.dpi,
         };
+        // 후속 쪽과 원본 개체가 소유한 완전한 저장 프레임이 실측 본체를
+        // 정확히 닫으면, 호스트 글줄의 뒤 간격을 다시 예약하지 않는다.
+        // source frame은 위의 whole 수용 높이뿐 아니라 실제 배치도 소유한다.
+        // 첫 조각만 선언한 다쪽 표는 실측 본체와 닫힘이 다르므로 비대상이다.
+        let saved_whole_body_placement = saved_table_source_frame.and_then(|(top, bottom)| {
+            if self.render_normalization.table_text_reflowed(table) {
+                return None;
+            }
+            let placement = crate::renderer::float_placement::ParagraphFloatPlacement::from_saved_whole_empty_host(
+                para,
+                table,
+                Some(top),
+                0.0,
+                ft.effective_height,
+                0.0,
+                self.dpi,
+            )?;
+            ((placement.occupied_bottom - bottom).abs() <= bottom.abs().max(1.0) * 1e-9)
+                .then_some(placement)
+        });
+        if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+            eprintln!("TABLE_SAVED_WHOLE_FRAME pi={para_idx} source={saved_table_source_frame:?} placement={saved_whole_body_placement:?}");
+        }
         let resolved_host_placement = closed_source_frame_placement
             .or(captioned_column_placement)
             .or(consumed_whole_anchor)
+            .or(saved_whole_body_placement)
             .or_else(|| {
                 unconstrained_host_placement.map(|p| constrain_host_placement.constrain(p, st))
             })

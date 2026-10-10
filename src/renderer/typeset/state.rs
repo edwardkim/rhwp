@@ -494,7 +494,10 @@ impl TypesetState {
     }
 
     /// Lane 조회용 페이지 관측값. 예산은 별도 지연 조회로 제공한다.
-    pub(super) fn empty_float_page(&self) -> EmptyFloatPage<'_> {
+    pub(super) fn empty_float_page(
+        &self,
+        paragraphs: &[crate::model::paragraph::Paragraph],
+    ) -> EmptyFloatPage<'_> {
         EmptyFloatPage {
             layout: &self.data.layout,
             current_column: self.data.current_column,
@@ -502,6 +505,22 @@ impl TypesetState {
             current_height: self.data.current_height,
             current_items: &self.data.current_items,
             visible_float_exclusions: &self.data.visible_float_exclusions,
+            // 원본 0 줄이 실제 첫 완전한 본문 항목으로 수용된 단만 원점을
+            // 증명한다. 이어받기 조각·첫 표·추가 zone의 raw vpos는 다른 축이다.
+            original_column_origin: self.data.current_zone_y_offset == 0.0
+                && self.data.vpos_col_anchor == 0.0
+                && self.data.current_items.first().is_some_and(|item| {
+                    let PageItem::FullParagraph { para_index } = item else { return false; };
+                    paragraphs.get(*para_index).is_some_and(|first| {
+                        first.controls.is_empty()
+                            && !first.stored_text_partition_is_dirty()
+                            && first.source_line_seg_vertical_pos.is_none()
+                            && first.line_segs.first().is_some_and(|line| {
+                                line.vertical_pos == 0
+                                    && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            })
+                    })
+                }),
         }
     }
 

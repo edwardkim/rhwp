@@ -3892,6 +3892,7 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         para_start_height: f64,
         lanes: &mut FloatLaneSet,
+        paragraphs: &[Paragraph],
     ) -> bool {
         if self.stored_two_line_row_frames_require_split(table, styles) {
             return false;
@@ -3909,6 +3910,7 @@ impl TypesetEngine {
             styles,
             para_start_height,
             lanes,
+            paragraphs,
             self.render_normalization.table_text_reflowed(table),
             self.dpi,
         )

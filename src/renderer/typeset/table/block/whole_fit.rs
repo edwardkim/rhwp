@@ -820,7 +820,8 @@ impl TypesetEngine {
                 // the measured cursor has passed; trailing host spacing must
                 // not split its last row. The frame/one-page/reset guards above
                 // still exclude a first-fragment height of a multi-page table.
-                source_top <= st.current_height && source_bottom <= available
+                source_top <= st.current_height + source_top.abs().max(1.0) * 1e-9
+                    && source_bottom <= available
             } else {
                 native_hwp5_saved_rowbreak_tail_frame_matches(
                     source_top,
