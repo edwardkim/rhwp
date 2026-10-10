@@ -953,9 +953,88 @@
         "dpi": 96
       }
     ],
-    "freshWasm": "pending",
+    "freshWasm": {
+      "pages": 9,
+      "minimumPercent": 95.98104,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/multi96-fresh-v10/multi9/silhouette.tsv",
+      "sha256": "246b5094a28eda3e321ae1e00cfa6917b7902d1ed5fbb2a794335d64caf73d25"
+    },
     "directReviewPage": 6,
     "regressionFailure": "em-band boxes intersect; final glyph review has no visible collision",
     "testOrBaselineChange": false
+  },
+  "v11cFirstFragmentMarginRepair": {
+    "candidate": "V11c",
+    "headBeforeSourceCommit": "204e08a44be7e86f17b393f682c20b60b12700b7",
+    "sourceDiffSha256": "eecb1ec80bebb98af03157d5831bab26877892eb2100d7e1e91ca31b07909581",
+    "productionFiles": [
+      "src/renderer/typeset/table/block/prepare.rs"
+    ],
+    "reason": "first-fragment admission reserved whole-object bottom margin while common fragment scan reserved the partial-fragment bottom margin",
+    "pageCount": 105,
+    "nativeChangedPages": [
+      35,
+      36
+    ],
+    "native": {
+      "pages": 105,
+      "minimumPercent": 46.1992,
+      "below90": [
+        12,
+        16,
+        18,
+        27,
+        28,
+        34,
+        41,
+        44,
+        61,
+        63,
+        65,
+        69,
+        73,
+        74,
+        93,
+        94
+      ],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/api96-v11c-complete/comparison/silhouette.tsv",
+      "sha256": "6037b31d5ffb5e5f2a004a068d90060f904dc63db6ad7ac95461e9f95cdb39c4"
+    },
+    "affectedNative": {
+      "pages": 2,
+      "minimumPercent": 99.21991,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/api96-v11c-affected/api105/silhouette.tsv",
+      "sha256": "7cdca9460d11c85545347afce1f453920a0fc325cf05739895523d47a5e13915"
+    },
+    "freshWasmApi105": "running; not yet raster-verified",
+    "nativeCounterDocuments": 12,
+    "nativeCounterPages": 251,
+    "nativeCounterAllSvgIdentical": true,
+    "freshCounterDocuments": 12,
+    "freshCounterPages": 251,
+    "freshCounterAllRawSvgIdentical": true,
+    "freshBuild": {
+      "exitCode": 0,
+      "mode": "Mac locked --no-opt local substitute",
+      "wasmSha256": "0a7128624727a6aa4637d6c4fa0e19b0cb549564b037d3342d863c5cb3855c4d"
+    },
+    "regression": {
+      "runId": "6187b598-c671-4ee2-99cf-9b0fe5da761a",
+      "passed": 36,
+      "failed": 0,
+      "skipped": 572,
+      "seconds": 1.252,
+      "exitCode": 0,
+      "wholeSuite": false,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/v11c-focused-nextest.log"
+    },
+    "existingIssue": 7731,
+    "existingLowPagesKeptSeparate": true,
+    "baselineUpdated": false,
+    "testRemoved": false,
+    "newTestFunctions": 0,
+    "fullNextestRerun": "not yet run"
   }
 }
