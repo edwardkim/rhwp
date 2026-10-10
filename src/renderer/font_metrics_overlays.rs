@@ -72,8 +72,16 @@ static HANYANGSINMYEONGJO_LATIN_0: [u16; 95] = [518,333,401,465,614,939,833,241,
 /// 한양중고딕이 390 인 것과 값이 다르다 — 서로 다른 글꼴이니 각자 실측을 쓴다.
 static HANYANGSINMYEONGJO_B7: [u16; 1] = [393];
 // 한컴 HFT U+2219 불릿의 전진폭은 1em이다. 독립 PDF Type3 /HFT8의 /W=1000.
+// U+2218도 같은 전각이다. 로드맵 독립 Print PDF 44쪽의 /T8은
+// ToUnicode <08> <2218>, 같은 코드의 /Widths 1000, FontMatrix 0.001을 명시한다.
+// 둘을 같은 문자로 바꾸지 않고 각 코드의 자연 전진폭만 보존한다.
 static HANYANGSINMYEONGJO_BULLET: [u16; 1] = [1024];
-static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 9] = [
+static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 10] = [
+    LatinRange {
+        start: 0x2218,
+        end: 0x2218,
+        widths: &HANYANGSINMYEONGJO_BULLET,
+    },
     LatinRange {
         start: 0x2219,
         end: 0x2219,
