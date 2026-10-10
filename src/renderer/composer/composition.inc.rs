@@ -546,9 +546,9 @@ pub(crate) fn tac_successor_uses_reflow_spacing(
         })
 }
 
-/// 실제 표 소유 줄의 저장 끝에 앞 문단 뒤 간격과 다음 문단 앞 간격을 더한 값이
-/// 다음 저장 줄의 시작과 맞닿으면
-/// 배치 원점에는 후행 간격 전량을 적용한다. 분할 예산의 표 점유는 별도로 센다.
+/// 실제 표 소유 줄의 끝과 다음 저장 줄이 닫히면 후행 간격 전량을 적용한다.
+/// 같은 문단의 내부 줄에는 문단 앞/뒤 간격을 넣지 않고, 마지막 줄은 다음 문단의
+/// 스타일 간격까지 대조한다. 분할 예산의 표 점유는 별도로 센다.
 pub(crate) fn tac_next_line_full_spacing(
     para: &Paragraph,
     next_para: Option<&Paragraph>,
@@ -580,6 +580,26 @@ pub(crate) fn tac_next_line_full_spacing(
         && !profile.session_edited()
         && !para.stored_text_partition_is_dirty()
         && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
+    // 다음 흐름 개체가 도형이어도 같은 문단의 저장 줄 간격을 소유한다.
+    // 표 개수만 세어 마지막 표로 판단하면 두 줄 사이의 거리를 절반으로 줄인다.
+    // 같은 vpos의 수평 조각과 편집/합성 사다리는 이 닫힘의 근거가 아니다.
+    if stored_host
+        && !para.cell_format_vpos_dirty
+        && seg.vertical_pos >= 0
+        && seg.line_height > 0
+        && seg.line_spacing > 0
+        && para.line_segs.windows(2).any(|pair| {
+            std::ptr::eq(&pair[0], seg)
+                && pair[1].tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && pair[1].line_height > 0
+                && i64::from(seg.vertical_pos)
+                    + i64::from(seg.line_height)
+                    + i64::from(seg.line_spacing)
+                    == i64::from(pair[1].vertical_pos)
+        })
+    {
+        return true;
+    }
     (stored_host || current_owned_row)
         && para
             .line_segs
