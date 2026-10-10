@@ -10584,9 +10584,37 @@ impl LayoutEngine {
             // 같은 규약을 측정에도 적용한다.
             let stored_flow_has_para_anchors = single_column_flow.is_some()
                 || crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs);
-            // 재정렬 요청의 저장 줄은 재구성한 셀 높이를 다시 축소할 근거가 아니다.
+            // 원본 본문 표의 유효한 줄 사다리는 셀 정렬의 내용 범위도 소유한다.
+            // 줄 합산과 저장 문단 원점이 다르면 Center/Bottom의 여유 공간이 사라진다.
+            // 편집·재조판·줄 수 변경 또는 합성 줄은 저장 범위를 사용하지 않는다.
+            let stored_body_cell_flow = depth == 0
+                && !header_or_master_cell
+                && !table.common.treat_as_char
+                && !has_nested_table
+                && nested_stored_profile
+                && !self.profile.get().session_edited()
+                && !self
+                    .render_normalization
+                    .borrow()
+                    .table_text_reflowed(table)
+                && !cell.dirty_flag
+                && stored_flow_extent <= inner_height + 0.5
+                && composed_paras
+                    .iter()
+                    .zip(&cell.paragraphs)
+                    .all(|(composed, para)| {
+                        !para.stored_text_partition_is_dirty()
+                            && !para.cell_format_vpos_dirty
+                            && !para.line_segs.is_empty()
+                            && composed.lines.len() == para.line_segs.len()
+                            && para.line_segs.iter().all(|seg| {
+                                seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                    });
             let stored_flow_shape_is_trusted = !self.profile.get().hwp3_external_realign()
-                && (depth > 0 || table.common.treat_as_char)
+                && (depth > 0 || table.common.treat_as_char || stored_body_cell_flow)
                 && stored_flow_extent > 0.0
                 && non_flow_object_extent <= stored_flow_extent + 0.5
                 // [#6896] TopAndBottom도 빈 anchor 한 줄만 저장된 경우에는
