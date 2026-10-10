@@ -7862,9 +7862,20 @@ impl LayoutEngine {
                                 // 빈 TAC 호스트도 실제 줄 상자를 갖는다. 문단 위 간격을
                                 // 적용하기 전 커서로 표 원점을 다시 추측하지 않고,
                                 // 같은 저장 줄의 실제 배치 결과를 소비한다.
+                                // [#7344] 저장 줄이 없는 칸 첫 문단도 같다 — 그 문단의 위
+                                // 간격은 측정(`cell_paragraph_spacing_before`)과
+                                // `layout_composed_paragraph`(`keep_continuation_column_top_
+                                // spacing_before`)가 이미 소비했으므로 문단 시작 커서가 아니라
+                                // 배치된 첫 줄을 원점으로 쓴다(36455985 `내용` 칸: 중첩 표만 든
+                                // 문단 `prev=1200`, 한/글 2024 PDF 에서 칸 상단 + 안 여백 + 16px).
+                                let reflowed_first_unit = cp_idx == 0
+                                    && start_line == 0
+                                    && own_line.is_none()
+                                    && crate::renderer::para_has_no_stored_line_segs(para);
                                 let table_anchor_y =
                                     if crate::renderer::composer::stored_first_tac_line(para)
                                         .is_some()
+                                        || reflowed_first_unit
                                     {
                                         cell_node.children[paragraph_children_start..]
                                             .iter()
@@ -8796,7 +8807,14 @@ impl LayoutEngine {
 
                 // (B) vpos 기반: 마지막 문단의 vpos_end + 중첩 표 보정
                 // LINE_SEG lh에 중첩 표 높이가 미반영된 경우를 보정
-                let vpos_height = if cell.paragraphs.len() > 1 {
+                // [#7344] 문단 앵커가 끊긴 사다리(둘째 이후 문단의 첫 줄 vpos=0 등)는 배치가
+                // 순차 적층으로 그린다(`cell_vpos_ladder_is_intact`, 아래 저장 흐름 신뢰와 같은
+                // 규약). 그런 사다리의 마지막 vpos 로 정렬 높이를 잡으면 그려지지 않는 줄
+                // 높이만큼 가운데 정렬이 위로 쏠린다(36312980 `내용` 칸: p1·p2 vpos=0,
+                // p3 vpos=7040 → 정렬 높이 108.5px, 실제 적층 85.1px).
+                let vpos_height = if cell.paragraphs.len() > 1
+                    && crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
+                {
                     let last_para = cell.paragraphs.last().unwrap();
                     if let Some(seg) = last_para.line_segs.last() {
                         let mut last_end = seg.vertical_pos.saturating_add(seg.line_height);
@@ -18021,6 +18039,25 @@ impl LayoutEngine {
                     && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             })
             && self.row_cut_starts_intra_paragraph_stored_frame(table, row, cut, styles)
+    }
+
+    /// 저장 조판 원본에서 이어받는 조각의 시작 행 상자(`start_row_height_override`)는
+    /// 앞 조각이 쓰고 남은 **저장 행 높이**다. 그 상자가 칸의 남은 내용을 모두 담으면
+    /// 그 조각이 칸의 마지막 조각이므로, 한/글은 남는 여유를 칸 `valign` 으로 나눈다
+    /// (36308670 2쪽: 행 선언 35618HU = 앞 조각 394.6 + 끝 조각 80.3px, 끝 조각의 세 줄이
+    /// 상자 위에서 7.5px 아래 = (80.3 − 65.3)/2). 편집·재조판한 표는 저장 높이가 내용과
+    /// 무관해질 수 있어 제외한다.
+    pub(super) fn stored_row_frame_owns_complete_tail(
+        &self,
+        table: &crate::model::table::Table,
+    ) -> bool {
+        (self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().hwpx_stored_layout())
+            && !self.profile.get().session_edited()
+            && !self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
     }
 
     /// 고아 줄 방지가 꺼진 원본 문단의 새 프레임 첫 슬롯에서 쪽 경계를 유지한다.

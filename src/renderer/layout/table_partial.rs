@@ -1356,7 +1356,7 @@ impl LayoutEngine {
                     || (!start_cut_is_block
                         && start_cut
                             .get(single_row_cut_index(table, cell))
-                            .is_some_and(|&start| {
+                            .is_some_and(|_| {
                                 let units = self.cell_units(cell, table, styles);
                                 let (_, end) = cell_cut_window(
                                     table,
@@ -1375,13 +1375,13 @@ impl LayoutEngine {
                                 );
                                 // A nonempty end ledger may already own every content unit
                                 // while the declared physical row still continues. Align the
-                                // complete remaining content in this frame; an actual content
-                                // cut must keep its top origin.
+                                // complete remaining content in this frame; a fragment that
+                                // still cuts this cell's content keeps its top origin.
+                                // The carried frame is the stored/declared row remainder,
+                                // so stored layouts own it like reflowed rows do.
                                 end >= units.len()
-                                    && (self.row_uses_reflow_physical_frame(table, cell_row)
-                                        || self.stored_paragraph_allows_orphan_split(
-                                            table, cell, &units, start, styles,
-                                        ))
+                                    && (self.stored_row_frame_owns_complete_tail(table)
+                                        || self.row_uses_reflow_physical_frame(table, cell_row))
                             })));
             // 유효한 저장 앞 프레임과 이어받기 프레임은 원본 정렬을 소유한다.
             // 줄 구성 창과 최종 배치 원점에서 같은 소유 결과를 사용한다.
@@ -1857,10 +1857,10 @@ impl LayoutEngine {
                 // Capacity accounting owns that advance as physical space;
                 // it is not ink at the bottom of this fragment.
                 total_content_height
-            } else if center_saved_spanning_cell == Some(cell_idx)
-                || (cut_frame_owns_alignment
-                    && self.row_uses_reflow_physical_frame(table, cell_row))
-            {
+            } else if center_saved_spanning_cell == Some(cell_idx) || cut_frame_owns_alignment {
+                // 이어받은 행 상자는 예약과 같은 컷 유닛으로 정렬한다. 문단 줄 범위는
+                // 이 조각이 소유한 그림 띠를 담지 못한다 — 그 값으로 가운데를 잡으면
+                // pr7518 nested-split 3쪽 그림이 한/글 PDF 60.32px 대신 182.1px 로 내려간다.
                 let units = self.cell_units(cell, table, styles);
                 cut_units
                     .map(|(start, end)| {
@@ -2447,6 +2447,10 @@ impl LayoutEngine {
 
                 // 인라인 이미지가 있는 문단: compose 전 위치를 저장
                 let para_y_before_compose = para_y;
+                // 이 조각에서 문단이 시작하면 그 첫 줄 상단이 문단 기준 개체의 원점이다.
+                // 저장 줄 사다리·문단 앞 간격으로 생긴 틈은 compose 안에서 더해지므로
+                // compose 전 커서(`para_y_before_compose`)와 다를 수 있다.
+                let mut para_first_line_top: Option<f64> = None;
 
                 // 인라인(treat_as_char) 컨트롤의 총 폭을 미리 계산
                 let total_inline_width: f64 = para
@@ -2571,6 +2575,7 @@ impl LayoutEngine {
                     self.keep_continuation_column_top_spacing_before
                         .set(keep_spacing);
                     let wrap_anchor = stored_square_picture_wrap_anchor_for_para(cell, cp_idx);
+                    let lines_before = cell_node.children.len();
                     para_y = self.layout_composed_paragraph(
                         tree,
                         &mut cell_node,
@@ -2591,6 +2596,17 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         wrap_anchor.as_ref(),
                     );
+                    if start_line == 0 && end_line > start_line {
+                        para_first_line_top = cell_node.children[lines_before..]
+                            .iter()
+                            .find(|node| {
+                                matches!(
+                                    node.node_type,
+                                    crate::renderer::render_tree::RenderNodeType::TextLine(_)
+                                )
+                            })
+                            .map(|node| node.bbox.y);
+                    }
                     if collapse_stored_wrap_spacers && start_line == 0 && end_line > start_line {
                         if let Some(step) = stored_square_picture_empty_anchor_advance(
                             cell, cp_idx, styles, self.dpi,
@@ -3012,9 +3028,39 @@ impl LayoutEngine {
                                                 })
                                                 .unwrap_or(para_y_before_compose)
                                         }
+                                    } else if let Some(top) = para_first_line_top.filter(|_| {
+                                        // 원본 HWP5 조각 소유 Square 흐름은 아래에서 오프셋 없이
+                                        // 흐름 커서를 쓰는 별도 계약이라 그대로 둔다.
+                                        !fragment_owned_square_flow
+                                            && matches!(
+                                                pic.common.vert_rel_to,
+                                                crate::model::shape::VertRelTo::Para
+                                            )
+                                    }) {
+                                        // 문단 기준 개체의 원점은 그 문단의 위(첫 줄 상단)다.
+                                        // 문단 줄을 모두 구성한 뒤의 `para_y` 는 문단 끝이라
+                                        // 그림을 줄 높이만큼 끌어내렸다 — 한/글 2024 PDF
+                                        // 36308670 2쪽 빈 문단 1100HU=14.67px.
+                                        top
                                     } else {
                                         para_y
                                     };
+                                    // 칸 문단 기준 어울림 개체의 음수 오프셋은 측정 프레임 위
+                                    // 공간을 만들지 않는다 — 일반 표 경로와 같은 계약
+                                    // (`cell_wrap_vertical_offset_hu`).
+                                    let flow_offset =
+                                        crate::renderer::float_placement::cell_wrap_vertical_offset_hu(
+                                            &pic.common,
+                                        );
+                                    let square_flow_common = (flow_offset
+                                        != crate::renderer::float_placement::signed_hwpunit(
+                                            pic.common.vertical_offset,
+                                        ))
+                                    .then(|| {
+                                        let mut c = pic.common.clone();
+                                        c.vertical_offset = flow_offset as u32;
+                                        c
+                                    });
                                     let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
                                     let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                                     let unrestricted_take_place_cell_float =
@@ -3045,7 +3091,7 @@ impl LayoutEngine {
                                         ..inner_area
                                     };
                                     let (pic_x, pic_y) = self.compute_object_position(
-                                        &pic.common,
+                                        square_flow_common.as_ref().unwrap_or(&pic.common),
                                         pic_w,
                                         pic_h,
                                         &cell_area,

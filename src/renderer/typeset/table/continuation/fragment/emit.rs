@@ -1064,7 +1064,13 @@ impl TypesetEngine {
                 // A stored opening frame owns blank space without consuming
                 // the next frame's units. Its source row minimum is shared
                 // with scan and paint through the continuation cursor.
-                if !first_fragment_blank_band || !st.profile.hwp5_stored_pagination_layout() {
+                // Original HWPX stores the same row minimum: Hancom writes the
+                // split cell height as the sum of its fragment boxes
+                // (36308670 p1/p2: 35618HU = 394.6 + 80.3px in the 2024 PDF).
+                if !first_fragment_blank_band
+                    || !(st.profile.hwp5_stored_pagination_layout()
+                        || st.profile.hwpx_stored_layout())
+                {
                     return None;
                 }
                 let row = end_row.checked_sub(1)?;
@@ -1092,7 +1098,24 @@ impl TypesetEngine {
                 let remaining = minimum - end_row_height_override?;
                 let content =
                     layout_engine.row_cut_content_height(table, row, &next_cut, &[], styles);
-                (remaining > content + 0.5).then_some(remaining)
+                // The carried remainder is consumed as one start-row frame on the
+                // next column (scan does not cut a stored carried band again). A
+                // remainder taller than that column is not a single frame: the
+                // content cut keeps owning the continuation (113424 p3: declared
+                // remainder 1271.7px > body 956.2px, Hancom 2024 PDF continues
+                // the row by content over p3/p4).
+                let repeated_header: f64 = if table.repeat_header {
+                    table
+                        .leading_header_rows()
+                        .iter()
+                        .map(|&r| mt.row_heights.get(r).copied().unwrap_or(0.0) + mt.cell_spacing)
+                        .sum()
+                } else {
+                    0.0
+                };
+                (remaining > content + 0.5
+                    && remaining + repeated_header <= st.available_height() + 0.5)
+                    .then_some(remaining)
                 })
             })
             .or_else(|| end_row_height_override
