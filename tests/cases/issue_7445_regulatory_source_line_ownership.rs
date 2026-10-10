@@ -84,7 +84,8 @@ fn paragraph_end_font_is_owned_only_by_the_final_line() {
         .find(|shape| shape.start_pos <= end_pos)
         .expect("종료 문자 글자모양");
     let font_hu = source.doc_info.char_shapes[shape.char_shape_id as usize].base_size;
-    let font_box_px = rhwp::renderer::hwpunit_to_px(font_hu, rhwp::renderer::DEFAULT_DPI);
+    // 좌표 실측값을 고정하지 않고 원본 글자모양과 실제 줄 상자의 포함 관계를 대조한다.
+    let source_font_box = rhwp::renderer::hwpunit_to_px(font_hu, rhwp::renderer::DEFAULT_DPI);
     let core = DocumentCore::from_bytes(&input).expect("문서 로드");
     let tree = core.build_page_render_tree(14).expect("독립 PDF 15쪽");
     let mut lines = Vec::new();
@@ -92,7 +93,7 @@ fn paragraph_end_font_is_owned_only_by_the_final_line() {
     assert_eq!(lines.len(), 2, "문단118의 두 글줄 소속 유지");
     let last = lines.last().expect("마지막 줄");
     assert!(
-        last.bbox.height >= font_box_px,
+        last.bbox.height >= source_font_box,
         "비표시 종료 문자의 원본 글자모양도 마지막 줄 높이에 포함한다"
     );
     assert!(
