@@ -16,6 +16,7 @@ import {
   validateBodyParagraphTarget,
   validateDocumentState,
   validateDocumentChangedEvent,
+  validateFieldChangedEvent,
   validateFocusTargetResult,
   validateRevertTextCommand,
   validateSelectionContext,
@@ -100,6 +101,8 @@ export class RhwpEditor {
     this._transport = transport;
     this._documentChangedListeners = new Set();
     this._offDocumentChanged = null;
+    this._fieldChangedListeners = new Set();
+    this._offFieldChanged = null;
     this._lastDocumentEpoch = null;
     this._lastDocumentChangeSeq = null;
   }
@@ -353,6 +356,36 @@ export class RhwpEditor {
     };
   }
 
+  /**
+   * 캐럿이 누름틀에 들어가거나 다른 누름틀로 옮기거나 나올 때 이벤트를 받습니다.
+   * 같은 누름틀 안에서 움직이는 동안은 다시 오지 않습니다.
+   */
+  onFieldChanged(listener) {
+    assertCapability(this._transport, 'field-focus-events-v1');
+    if (typeof listener !== 'function') throw new TypeError('listener must be a function');
+    this._fieldChangedListeners.add(listener);
+    if (!this._offFieldChanged) {
+      this._offFieldChanged = this._transport.on('fieldChanged', (payload) => {
+        let event;
+        try {
+          event = validateFieldChangedEvent(payload);
+        } catch {
+          return;
+        }
+        for (const subscriber of this._fieldChangedListeners) {
+          try { subscriber(event); } catch { /* 한 listener가 다른 listener를 막지 않는다. */ }
+        }
+      });
+    }
+    return () => {
+      this._fieldChangedListeners.delete(listener);
+      if (this._fieldChangedListeners.size === 0) {
+        this._offFieldChanged?.();
+        this._offFieldChanged = null;
+      }
+    };
+  }
+
   _isFreshDocumentEvent(epoch, changeSeq) {
     if (this._lastDocumentEpoch === null) return true;
     if (epoch !== this._lastDocumentEpoch) return epoch > this._lastDocumentEpoch;
@@ -463,6 +496,9 @@ export class RhwpEditor {
     this._offDocumentChanged?.();
     this._offDocumentChanged = null;
     this._documentChangedListeners.clear();
+    this._offFieldChanged?.();
+    this._offFieldChanged = null;
+    this._fieldChangedListeners.clear();
     this._transport.destroy();
     this._iframe.remove();
   }
