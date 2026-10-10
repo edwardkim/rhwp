@@ -1,0 +1,37 @@
+{
+  "candidate": "c33f1dd25800fd07b36a1c322fbfb2052bb6a265",
+  "base": "21ed64071f81f35f37618717693bd30f727392c9",
+  "input": {
+    "path": "samples/issue6034/2912735_court_report_form.hwp",
+    "sha256": "9e68695b504656383f7686b75b3e92d28056201ad967570c28144e4bfce880ac"
+  },
+  "reference": {
+    "path": "pdf/2912735_court_report_form-2020.pdf",
+    "sha256": "039f83dda89a7ac1fe3a162b39fdee0afbc43f4cc98af0c48a1223eed38d27a8",
+    "provenance": "사용자가 한컴에서 수동 출력. 원본도 마지막 빈 쪽 포함 2쪽이라고 확인",
+    "pdfinfo": "Author:          admin\nCreator:         Hwp 2022 12.0.0.4605\nProducer:        Hancom PDF 1.3.0.550\nCreationDate:    Sat Oct 10 23:05:44 2026 KST\nModDate:         Sat Oct 10 23:05:44 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           2\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       38167 bytes\nOptimized:       no\nPDF version:     1.4\n"
+  },
+  "comparison": {
+    "nativePages": 1,
+    "freshWasmPages": 1,
+    "pdfPages": 2,
+    "nativeP1Percent": 56.61208,
+    "freshP1Percent": 56.61208,
+    "baseP1Percent": 62.4337,
+    "fullDocumentGate": "re_review_required",
+    "missingPage": 2,
+    "selectedPageComparisonOnly": true
+  },
+  "independentGlyphEvidence": {
+    "declaredFont": "굴림",
+    "missingCharacter": "U+2024",
+    "pdfFallback": "Haansoft Dotum",
+    "pdfFontResource": "/F4",
+    "cid": 3,
+    "advanceUnits": 173,
+    "unitsPerEm": 1000,
+    "currentAdvanceEm": 1,
+    "baseAdvanceEm": 0.5
+  },
+  "interpretation": "한컴의 결측 기호 대체 폭과 후보의 전각 추정이 다름. 회귀의 절대 본문 y 핀과 9줄 단정은 아직 갱신하지 않음. 빈 꼬리쪽 누락은 원 이슈에도 알려진 잔여."
+}
