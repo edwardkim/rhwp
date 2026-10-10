@@ -1,74 +1,174 @@
-//! [Issue #5699 H1] 저장 사다리가 자리차지 표 밴드를 계상하지 않아 본문이 표를
-//! 관통해 그려지던 결함(코호트 77문서 중 지배 가족 40문서)의 회귀 가드.
+//! [#5699] 자리차지 표와 뒤 본문의 소속·순서 보존.
 //!
-//! 근인: 기계생성(자치법규 등) 사다리는 자리차지 표의 매핑 줄 th 를 한 줄
-//! 높이(예: 1000HU=13px)로 기록해, 397px 표가 흐름에 13px 만 계상됐다. 후속
-//! 문단들이 표 페인트 대역 안에 배치·페인트되어 서식이 읽을 수 없게 된다.
-//!
-//! 수정: 저장 th 기반 계상이 **선언 표높이와 실측 둘 다**의 1/4 미만이고 선언·실측이
-//! 정합(2배 이내)이면 사다리 자기모순으로 보고 실측 높이로 교정 + 후속 저장 vpos
-//! 후방 스냅 금지(`ladder_band_floor`/`min_flow_floor`). 한글 2022 오라클 실측
-//! (영월군 20099369): 한글은 이 문서를 재조판해 **4쪽**, 표 아래 깨끗한 배치.
-//!
-//! 게이트 계약: HWPX 컨테이너 제외(36397752 하자검사조서 — 한글 1쪽 유지 실측,
-//! 발동 시 +1 회귀), 직파싱 HWP3 는 tac=true 모순 조합만(tac=false TopAndBottom 은
-//! 겹침이 한글 정본인 #4533 하동군 계열).
+//! 영월 원본 HWP3에는 글자 높이만 남은 줄 레코드가 있다. 줄 구성·좌표가
+//! 없는 레코드를 저장 사다리로 수용하면 줄바꿈과 표 밴드의 점유가 다르게 계산된다.
+//! 독립 한컴 2020 Print 전4쪽과 Native/fresh WASM 최저 99.53097%를 대조했다.
+//! 과거 SVG 글자 y>570 검사는 표/문단 소유와 앞뒤 포함 관계로 교체했다.
+//! 쪽수와 각 서식의 내용 소속을 함께 검사한다. 원본과 PDF는 보존한다.
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::fs;
-use std::path::Path;
+use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue5699/20099369_yeongwol_forms.hwp";
 
-fn load() -> rhwp::wasm_api::HwpDocument {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {SAMPLE}: {e}"));
-    rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .unwrap_or_else(|e| panic!("parse {SAMPLE}: {e}"))
+fn load() -> DocumentCore {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    DocumentCore::from_bytes(&std::fs::read(path).expect("영월 원본 읽기")).expect("영월 원본 파싱")
 }
 
-/// 한글 2022 오라클 쪽수(4쪽) 정합 — 종전에는 사다리 추종으로 2쪽에 전부 압착.
-#[test]
-fn issue_5699_yeongwol_page_count_matches_hangul_oracle() {
-    let doc = load();
-    assert_eq!(
-        doc.page_count(),
-        4,
-        "영월군 별지 서식은 한글 2022 재조판 기준 4쪽이어야 한다 (#5699 H1 회귀)"
-    );
+fn compact(text: &str) -> String {
+    text.chars()
+        .filter(|c| !c.is_whitespace() && !c.is_control() && *c != '\u{fffc}')
+        .collect()
 }
 
-/// p1 에서 계약조건 본문(문단 pi=4..)이 표 페인트 대역 아래에서 시작해야 한다.
-/// 종전에는 표(약 y183..580) 안 y213 부터 겹쳐 그려졌다.
-#[test]
-fn issue_5699_yeongwol_body_starts_below_table_band() {
-    let doc = load();
-    let svg = doc
-        .render_page_svg_native(0)
-        .unwrap_or_else(|e| panic!("render p1: {e}"));
-    // SVG 는 글자 단위 `<text transform="translate(x,y) ...">글자</text>` 방출이다.
-    // '건' 은 p1 에서 "임대차계약조건" 제목에만 나오는 글자 — 그 y 로 위치를 판정한다.
-    let mut ys = Vec::new();
-    let mut rest = svg.as_str();
-    while let Some(i) = rest.find(">건<") {
-        let head = &rest[..i];
-        if let Some(t) = head.rfind("translate(") {
-            let coords = &head[t + "translate(".len()..];
-            if let Some(y) = coords
-                .split(')')
-                .next()
-                .and_then(|xy| xy.split(',').nth(1))
-                .and_then(|v| v.trim().parse::<f64>().ok())
-            {
-                ys.push(y);
+fn text(node: &RenderNode) -> String {
+    if !node.visible || node.editor_only {
+        return String::new();
+    }
+    let mut result = match &node.node_type {
+        RenderNodeType::TextRun(run) => run.display_or_text().to_owned(),
+        _ => String::new(),
+    };
+    for child in &node.children {
+        result.push_str(&text(child));
+    }
+    result
+}
+
+fn body_lines<'a>(
+    node: &'a RenderNode,
+    owner: (usize, usize),
+    in_cell: bool,
+    found: &mut Vec<&'a RenderNode>,
+) {
+    if !node.visible || node.editor_only {
+        return;
+    }
+    let in_cell = in_cell || matches!(node.node_type, RenderNodeType::TableCell(_));
+    if !in_cell {
+        if let RenderNodeType::TextLine(line) = &node.node_type {
+            if (line.section_index, line.para_index) == (Some(owner.0), Some(owner.1)) {
+                found.push(node);
             }
         }
-        rest = &rest[i + ">건<".len()..];
     }
-    assert!(!ys.is_empty(), "p1 에 계약조건 제목('건')이 없다");
-    let min_y = ys.iter().cloned().fold(f64::INFINITY, f64::min);
-    assert!(
-        min_y > 570.0,
-        "계약조건 제목이 표 대역(y~183..580) 아래(>570)에 있어야 한다 — 실측 y={min_y:.1} (#5699 H1 회귀)"
-    );
+    for child in &node.children {
+        body_lines(child, owner, in_cell, found);
+    }
+}
+
+/// 독립 Print의 쪽수와 함께 각 별지 제목의 대응·누락·중복을 보호한다.
+#[test]
+fn issue_5699_yeongwol_page_count_matches_hangul_oracle() {
+    let core = load();
+    let titles: Vec<_> = core
+        .document()
+        .sections
+        .iter()
+        .enumerate()
+        .flat_map(|(si, sec)| {
+            sec.paragraphs
+                .iter()
+                .enumerate()
+                .filter(|(_, p)| p.text.contains("별지 제"))
+                .map(move |(pi, p)| ((si, pi), compact(&p.text)))
+        })
+        .collect();
+    assert_eq!(titles.len(), 4, "원본 별지 4개");
+    assert_eq!(core.page_count(), 4, "독립 한컴 Print 전4쪽");
+    let trees: Vec<_> = (0..core.page_count())
+        .map(|p| core.build_page_render_tree(p).unwrap())
+        .collect();
+    for (expected_page, (owner, source)) in titles.iter().enumerate() {
+        let mut occurrences = Vec::new();
+        for (page, tree) in trees.iter().enumerate() {
+            let mut lines = Vec::new();
+            body_lines(&tree.root, *owner, false, &mut lines);
+            let painted = compact(&lines.iter().map(|line| text(line)).collect::<String>());
+            if !painted.is_empty() {
+                occurrences.push((page, painted));
+            }
+        }
+        assert_eq!(
+            occurrences,
+            vec![(expected_page, source.clone())],
+            "각 별지 제목은 대응 Print 쪽에서 원본 내용을 한 번 소유한다"
+        );
+    }
+}
+
+/// 계약조건 제목은 같은 원본의 선행 표 아래에 있어야 한다.
+#[test]
+fn issue_5699_yeongwol_body_starts_below_table_band() {
+    fn tables<'a>(
+        node: &'a RenderNode,
+        owner: (usize, usize, usize),
+        found: &mut Vec<&'a RenderNode>,
+    ) {
+        if !node.visible || node.editor_only {
+            return;
+        }
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if (table.section_index, table.para_index, table.control_index)
+                == (Some(owner.0), Some(owner.1), Some(owner.2))
+                && table.cell_context.is_none()
+            {
+                found.push(node);
+            }
+        }
+        for child in &node.children {
+            tables(child, owner, found);
+        }
+    }
+    let core = load();
+    let mut owners = Vec::new();
+    for (si, section) in core.document().sections.iter().enumerate() {
+        for (pi, paragraph) in section.paragraphs.iter().enumerate() {
+            if compact(&paragraph.text) != "임대차계약조건" {
+                continue;
+            }
+            let preceding = section.paragraphs[..pi]
+                .iter()
+                .enumerate()
+                .rev()
+                .find_map(|(table_pi, host)| {
+                    host.controls
+                        .iter()
+                        .enumerate()
+                        .find(|(_, c)| matches!(c, Control::Table(_)))
+                        .map(|(ci, _)| (si, table_pi, ci))
+                })
+                .expect("계약조건 앞 원본 표");
+            owners.push(((si, pi), preceding));
+        }
+    }
+    assert_eq!(owners.len(), 1, "원본 계약조건 제목과 선행 표를 식별한다");
+    let (paragraph, table) = owners[0];
+    let mut matches = Vec::new();
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let mut lines = Vec::new();
+        body_lines(&tree.root, paragraph, false, &mut lines);
+        if lines.is_empty() {
+            continue;
+        }
+        let mut frames = Vec::new();
+        tables(&tree.root, table, &mut frames);
+        assert_eq!(frames.len(), 1, "제목과 선행 표는 같은 쪽을 소유한다");
+        assert_eq!(
+            compact(&lines.iter().map(|line| text(line)).collect::<String>()),
+            "임대차계약조건"
+        );
+        for line in &lines {
+            assert!(
+                line.bbox.y >= frames[0].bbox.y + frames[0].bbox.height - 0.5,
+                "계약조건 본문이 선행 표를 관통하면 안 된다"
+            );
+        }
+        matches.push(page);
+    }
+    assert_eq!(matches.len(), 1, "원본 계약조건 제목의 누락·중복 방지");
 }

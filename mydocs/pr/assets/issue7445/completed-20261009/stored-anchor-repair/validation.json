@@ -322,11 +322,23 @@
     "currentNewPaginationRegressionRetained": true
   },
   "latestStatus": {
-    "candidate": "KPS boundary ownership expectations corrected after V13b source repair",
+    "candidate": "V14 Yeongwol original HWP3 reflow and source-relative existing regressions",
     "originalFailures": 27,
-    "originalPassed": 15,
+    "originalPassed": 16,
     "originalRemovedUnsuitable": 1,
-    "originalFailed": 11,
+    "originalFailed": 10,
+    "remainingTests": [
+      "issue_5877_fragment_ghost_vrules::issue_5877_gas_rowspan_keeps_label_owner_and_next_row_minimum",
+      "issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line",
+      "issue_7445_biotoxin_source_ownership::cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages",
+      "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band",
+      "issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow",
+      "issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell",
+      "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_5"
+    ],
     "fullNextestAfterRepairs": "not yet run",
     "prReady": false,
     "approvalRequiredBeforePr": true
@@ -1598,5 +1610,291 @@
     },
     "rawOutput": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage434-next-failure-classification",
     "representative": "kps-boundary-review_038.png"
+  },
+  "v14YeongwolUncomputedLineRepair": {
+    "baseSha": "21ed64071f81f35f37618717693bd30f727392c9",
+    "buildParent": "d13dfa27ea6b51f41a1a7d028a072b6ca1c0d70c",
+    "source": {
+      "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "format": "Hwp3",
+      "lastSavedWith": null
+    },
+    "printPdf": {
+      "path": "pdf/20099369_yeongwol_forms-2020.pdf",
+      "sha256": "01682a87a130c0f1d713afa74c4c54b74ef2c0200395b5184d4c31a9f635335b",
+      "pages": 4,
+      "creator": "Hwp 2020 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550"
+    },
+    "normalizationReference": {
+      "path": "mydocs/pr/assets/issue7445/completed-20261009/stored-anchor-repair/yeongwol-hancom-2020.hwpx",
+      "sha256": "18e83983bd0ff3f40e389c961979937a90a230a26d6416cad29230d069b08d20",
+      "role": "independent Hancom normalization diagnostic; not replacement for original HWP or Print PDF",
+      "jobId": "2ad1bdde-09bb-4aa6-ae09-9ed7816fb0cb",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "status": "success",
+      "serverClientSize": 61823,
+      "serverClientHashMatch": true,
+      "native4MinPercent": 99.54887
+    },
+    "authority": "mydocs/tech/한글문서파일구조3.0.md table12: bit15 validates page/column break information, not every legacy layout field",
+    "productionRule": "Records with only line height and zeroed start, space correction, pgy, sx, psx and break information do not certify cached text partitioning. Clear their synthetic ladder and use the shared composer. When no body stored ladders survive, do not extend body budget using Hancom97 last-line tolerance. Preserve source page margins and objects.",
+    "productionFiles": [
+      "src/parser/hwp3/mod.rs"
+    ],
+    "productionSourceSha256": "926bbe73d9d78d09952a591e5c2957a245dd037c82f60e72bb58624795ed52ed",
+    "nativeBinarySha256": "22b13de62b9b51d8ca0369fb35afa9254325c47fac9993121f98934624030e3a",
+    "wasmSha256": "b2bbc827194e5f10d2090434c61df91e65e33ad028dbf8eebe48f2ba54bbe3f5",
+    "beforeFixedBaseNative": [
+      {
+        "page": 1,
+        "matchPercent": 71.48889
+      },
+      {
+        "page": 2,
+        "matchPercent": 30.7489
+      },
+      {
+        "page": 3,
+        "matchPercent": 31.00723
+      },
+      {
+        "page": 4,
+        "matchPercent": 74.47377
+      }
+    ],
+    "beforeCurrentNative": [
+      {
+        "page": 1,
+        "matchPercent": 71.37232
+      },
+      {
+        "page": 2,
+        "matchPercent": 31.50317
+      },
+      {
+        "page": 3,
+        "matchPercent": 31.61505
+      },
+      {
+        "page": 4,
+        "matchPercent": 36.36886
+      }
+    ],
+    "currentNative": [
+      {
+        "page": 1,
+        "matchPercent": 99.53097
+      },
+      {
+        "page": 2,
+        "matchPercent": 100.0
+      },
+      {
+        "page": 3,
+        "matchPercent": 99.94533
+      },
+      {
+        "page": 4,
+        "matchPercent": 100.0
+      }
+    ],
+    "currentFreshWasm": [
+      {
+        "page": 1,
+        "matchPercent": 99.53097
+      },
+      {
+        "page": 2,
+        "matchPercent": 100.0
+      },
+      {
+        "page": 3,
+        "matchPercent": 99.94533
+      },
+      {
+        "page": 4,
+        "matchPercent": 100.0
+      }
+    ],
+    "freshBrowser": "Chrome/154.0.8037.99",
+    "freshPngsIdenticalToNative": true,
+    "dpi": 96,
+    "fontPath": "/Users/tsjang/Library/Fonts",
+    "captureConcurrencyLimit": 8,
+    "comparisonAlgorithmChanged": false,
+    "localWasmBuild": "Mac locked --no-opt, not Docker optimized build",
+    "parserNextest": {
+      "runCount": 50,
+      "passed": 50,
+      "failed": 0,
+      "seconds": 0.128,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin/parser-nextest.log"
+    },
+    "relationshipTests": {
+      "sourceFiles": [
+        "tests/cases/issue_5699_ladder_band_tripwire.rs",
+        "tests/cases/issue_7413_cell_padding_shrinks_only_when_wrapping_overflows.rs"
+      ],
+      "originalName": "issue_7413_cell_padding_shrinks_only_when_wrapping_overflows::b_cell_that_cannot_wrap_within_its_height_still_shrinks",
+      "newName": "issue_7413_cell_padding_shrinks_only_when_wrapping_overflows::b_uncomputed_hwp3_cell_preserves_the_oracle_wrapped_content",
+      "changes": [
+        "retain independent 4-page count with original form title ownership, correspondence and no duplication",
+        "replace SVG y>570 with original preceding table and following paragraph ownership/order",
+        "replace fixed cell y/width selection and incorrect one-line oracle with source cell ownership, two Print lines and frame containment"
+      ],
+      "otherInputPaddingTest": "unchanged",
+      "standalonePassed": 4,
+      "standaloneFailed": 0,
+      "newTestFunctions": 0,
+      "originalCasesStatus": "formal harness completed: all four relevant existing cases PASS",
+      "redGreenObservation": {
+        "before": {
+          "matchingCells": [
+            {
+              "row": 34,
+              "col": 0,
+              "bbox": {
+                "x": 77.4,
+                "y": 893.1,
+                "w": 41.9,
+                "h": 43.6
+              },
+              "lines": [
+                "월별누계"
+              ]
+            }
+          ],
+          "oracleContentRelationPass": false
+        },
+        "after": {
+          "matchingCells": [
+            {
+              "row": 34,
+              "col": 0,
+              "bbox": {
+                "x": 77.4,
+                "y": 924.4,
+                "w": 41.9,
+                "h": 43.6
+              },
+              "lines": [
+                "월별",
+                "누계"
+              ]
+            }
+          ],
+          "oracleContentRelationPass": true
+        }
+      }
+    },
+    "hwp3ControlSvgIdentity": [
+      {
+        "key": "issue265",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin/rhwp-v14",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue_265.hwp",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin/counter-after/issue265",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 16,
+        "afterPages": 16,
+        "identical": true,
+        "changed": []
+      },
+      {
+        "key": "hwp3-alias",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin/rhwp-v14",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/hwp3-sample.hwp",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin/counter-after/hwp3-alias",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 16,
+        "afterPages": 16,
+        "identical": true,
+        "changed": []
+      },
+      {
+        "key": "so-sueop",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin/rhwp-v14",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/SO-SUEOP.hwp",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin/counter-after/so-sueop",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 46,
+        "afterPages": 46,
+        "identical": true,
+        "changed": []
+      }
+    ],
+    "hwp3ControlPages": 78,
+    "directReadPages": [
+      1,
+      3,
+      4
+    ],
+    "residual": "Two-pixel silhouette scores are auxiliary values; stroke darkness and raster edges still differ from Print. Not strict pixel identity.",
+    "rawEvidenceRoot": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin",
+    "fullNextestAfterRepairs": "not yet run",
+    "prReady": false,
+    "originalAndControlsNextest": {
+      "runId": "4c996fc0-0b6c-482c-ad01-a237e587bc0f",
+      "run": 41,
+      "passed": 31,
+      "failed": 10,
+      "skipped": 3254,
+      "seconds": 53.395,
+      "exitCode": 100,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin/original-controls-nextest.log",
+      "commandRecord": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage435-yeongwol-margin/original-controls-command.json",
+      "remainingOriginalTests": [
+        "issue_5877_fragment_ghost_vrules::issue_5877_gas_rowspan_keeps_label_owner_and_next_row_minimum",
+        "issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap",
+        "text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+        "issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line",
+        "issue_7445_biotoxin_source_ownership::cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages",
+        "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band",
+        "issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow",
+        "issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell",
+        "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
+        "body_overflow_baseline::body_overflow_does_not_grow_partition_5"
+      ],
+      "originalFailureTotal": 27,
+      "originalResolved": 16,
+      "originalRemovedUnsuitable": 1,
+      "originalRemaining": 10,
+      "fullRun": false
+    }
   }
 }
