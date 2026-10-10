@@ -1800,3 +1800,34 @@ unit tier 검사, Mac no-opt fresh WASM 대체 빌드를 완료했습니다.
 최종 전체 회귀와 Skia 게이트는 아직 완료되지 않았습니다.
 
 [전쪽 값·빌드 출처·대표 PNG·잔여 범위](../pr/assets/issue7445/completed-20261009/rnote-shared-frame-native-fresh-validation.json).
+
+
+## 보정 370: 남은 31개 정확 이름 개별 재검증
+
+보정 369 커밋 `2fe74c9cec57b423ed94505557400b1ec6ddfdaf`에서 현재 실행
+목록의 바이너리를 다시 조회하고, `test(=전체이름)`으로 **31개를 각각 1건씩**
+실행했습니다. 각 실행의 명시적 summary와 exit code를 기록했으며 최종
+결과는 **6 PASS / 25 FAIL**입니다. 다른 partition이 부분 일치로 섞이지
+않습니다. 통과한 6개는 현재 차단 목록에서 제외하되 원본 검사를 유지합니다.
+
+실패 25개에는 원본·독립 Print의 추가 검증이 필요한 것, 절대 위치/해시
+기대값 재검토가 필요한 것, 실제 순서·분할 문제가 포함됩니다. 이 결과만으로
+기대값을 갱신하거나 회귀를 제거하지 않습니다. 최신 전체 nextest와 Skia는
+아직 미실행이며 PR 준비 완료로 표시하지 않습니다.
+
+[31개 실행·명령·exit·남은 25개](../pr/assets/issue7445/completed-20261009/remaining-after-rnote-validation.json).
+
+보정 369 요약 증적은 반복된 전체 글꼴 inventory를 개수·정본 배열 해시와
+원본 manifest 해시로 압축했습니다. 원래 상세 inventory는 ignored output에
+보존했고, 원본/기준 PDF/소스/빌드/TSV/PNG 출처와 전쪽 결과는 그대로입니다.
+
+### 보정 371 사전 분석: 같은 Enter 편집본 저장 상자의 유효성
+
+현재 fresh WASM을 실제 Chrome에서 실행해 원본 복사본의 같은 셀에 Enter
+15회를 적용했습니다. 출력은 Native와 같은 17,920 bytes, SHA-256
+`f5b017dff4f7e6801428da55e833e5917ccb4fb22cc657097a593af2ee2bb2ad`이며
+두 live 경로 모두 5쪽입니다. 독립 한컴 Print는 같은 저장 파일을 4쪽으로
+출력하므로 backend 차이가 아닙니다. 저장 본문 표의 선언 높이는 편집 전
+62,832HU를 유지하고 있습니다. 실제 행 높이와 저장 상자/형제 호스트 줄을
+대조하여, 높이 또는 앵커가 한컴의 label 가림을 유발하는지 진단합니다.
+진단용 사본을 새 정답지로 대신하지 않으며 원본과 기존 Print를 보존합니다.
