@@ -321,7 +321,15 @@
     "testsRemoved": false,
     "currentNewPaginationRegressionRetained": true
   },
-  "latestStatus": "V5 implementation build in progress; no full validation or PR approval claimed",
+  "latestStatus": {
+    "candidate": "V12 distributed-ink diagnostic correction after V11c source-fragment repair",
+    "originalFailures": 27,
+    "originalPassed": 13,
+    "originalFailed": 14,
+    "fullNextestAfterRepairs": "not yet run",
+    "prReady": false,
+    "approvalRequiredBeforePr": true
+  },
   "v8Followup": {
     "base": "f59ac14370bc7d92384292fde37e33be59b87bd7",
     "workingTreeProductionDiffSha256": "4131f1142c557ba1f8e4509a2cc8ededc9cba15a69ead93c8017eec33e19490c",
@@ -1069,5 +1077,277 @@
     "testRemoved": false,
     "newTestFunctions": 0,
     "fullNextestRerun": "not yet run"
+  },
+  "v12DistributedInkBoundaryRepair": {
+    "sourceCandidate": "V12",
+    "headBeforeSourceCommit": "59faf2c9d",
+    "scope": "read-only diagnostics; render tree and paint unchanged",
+    "reason": "positive extra_char_spacing moves cluster origins and is excluded by actual glyph_fit_advance; old diagnostic counted the final distribution space as ink",
+    "native9SvgIdentity": {
+      "binary": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/rhwp-v12-nextest-built",
+      "binarySha256": "0f9d555b9554fd853620b88bc4a9b21833c82acaaefce50383dbeac28b295d93",
+      "pages": 9,
+      "all9SvgIdenticalToV10": true,
+      "exportExit": 0,
+      "diagnosticExit": 0,
+      "textOverlapCount": 0,
+      "page6TextOverlapCount": 0
+    },
+    "reusedVisual": {
+      "results": [
+        {
+          "version": "base",
+          "pages": 9,
+          "minimumPercent": 93.57938,
+          "below90": [],
+          "tsvSha256": "9311758e10c29a8fe1a45dba2f01a5f4acb38e3d6ec0ed5a3640f421ff36d19d",
+          "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/multi96-base/multi9/silhouette.tsv",
+          "dpi": 96
+        },
+        {
+          "version": "v10",
+          "pages": 9,
+          "minimumPercent": 95.98104,
+          "below90": [],
+          "tsvSha256": "246b5094a28eda3e321ae1e00cfa6917b7902d1ed5fbb2a794335d64caf73d25",
+          "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/multi96-v10/multi9/silhouette.tsv",
+          "dpi": 96
+        }
+      ],
+      "freshWasm": {
+        "pages": 9,
+        "minimumPercent": 95.98104,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/multi96-fresh-v10/multi9/silhouette.tsv",
+        "sha256": "246b5094a28eda3e321ae1e00cfa6917b7902d1ed5fbb2a794335d64caf73d25"
+      },
+      "directReviewPage": 6,
+      "regressionFailure": "em-band boxes intersect; final glyph review has no visible collision",
+      "testOrBaselineChange": false
+    },
+    "red": {
+      "type": "isolated extended existing test linked to frozen prior diagnostic library",
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/glyph-band-v12-red-probe.log",
+      "exitCode": 101,
+      "expectedOverlap": 0,
+      "actualOverlap": 1
+    },
+    "regression": {
+      "runId": "735564d6-357c-4ba6-a7ef-9c815d82f11d",
+      "passed": 23,
+      "failed": 14,
+      "skipped": 2567,
+      "seconds": 47.44,
+      "exitCode": 100,
+      "wholeSuite": false,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/v12-original-and-glyph-nextest.log",
+      "original27": {
+        "passed": 13,
+        "failed": 14
+      },
+      "glyphBoundary10": {
+        "passed": 10,
+        "failed": 0
+      },
+      "tests": [
+        {
+          "suite": "regression_suite_008",
+          "test": "issue_7413_cell_padding_shrinks_only_when_wrapping_overflows::b_cell_that_cannot_wrap_within_its_height_still_shrinks",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_002",
+          "test": "issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_006",
+          "test": "issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_004",
+          "test": "issue_5877_fragment_ghost_vrules::issue_5877_gas_rowspan_keeps_label_owner_and_next_row_minimum",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_010",
+          "test": "issue_7203_split_float_anchors_to_paragraph_top::split_fragment_without_a_gap_is_unchanged",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::flow_extent_is_the_union_across_runs",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::baseline_bands_detect_three_pairs_hidden_by_centering",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::invalid_positions_and_changed_display_text_use_the_render_fallback",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::leading_strip_changes_the_verdict",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::oversized_font_never_grows_the_box",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::runless_line_is_not_a_candidate",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::space_trimming_uses_visible_glyph_replay_positions",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::table_uses_its_own_bbox",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::trailing_space_does_not_erase_the_last_visible_glyph",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_017",
+          "test": "layout_anomaly_glyph_band::zero_font_size_keeps_the_box",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_019",
+          "test": "issue_7203_float_table_top_uses_stored_anchor::saved_outer_box_anchor_keeps_following_tables_inside_the_body",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_019",
+          "test": "issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_022",
+          "test": "issue_7390_kopub_latin_metrics::kopub_latin_line_preserves_content_and_proportional_advances",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_022",
+          "test": "issue_7390_kopub_latin_metrics::kopub_space_stays_half_width",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_010",
+          "test": "issue_2006_1790387_prep_pagination_pin::prep_1790387_page_count_and_boundary_content",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_026",
+          "test": "issue_1156_rowbreak_fragment_fit::kps_ai_page37_defers_overflowing_split_row_slice",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_024",
+          "test": "issue_7390_prep_table_rowbreak::prep_page_105_merged_budget_table_keeps_saved_row_boundaries",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_026",
+          "test": "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_026",
+          "test": "issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_006",
+          "test": "issue_7203_float_table_stored_anchor_top::downstream_table_split_and_body_follow_the_oracle_pages",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_010",
+          "test": "issue_7445_biotoxin_source_ownership::cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_026",
+          "test": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_14",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_026",
+          "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_028",
+          "test": "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_011",
+          "test": "issue_6981_split_straddle_row_height::completed_terminal_cut_does_not_allocate_an_empty_page",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_026",
+          "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_026",
+          "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_011",
+          "test": "issue_6981_split_straddle_row_height::continuation_height_respects_varying_page_budgets",
+          "status": "FAIL"
+        },
+        {
+          "suite": "regression_suite_026",
+          "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_15",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_026",
+          "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_4",
+          "status": "PASS"
+        },
+        {
+          "suite": "regression_suite_006",
+          "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_5",
+          "status": "FAIL"
+        }
+      ]
+    },
+    "manifest": {
+      "exitCode": 0,
+      "sources": 1451,
+      "staticTestAttrs": 6207,
+      "integrationTargets": 48,
+      "minimumCases": 6559,
+      "base": "21ed64071f81f35f37618717693bd30f727392c9"
+    },
+    "newTestFunctions": 0,
+    "baselineChanged": false,
+    "inputsPreserved": true,
+    "newGuidelineChanges": false
   }
 }

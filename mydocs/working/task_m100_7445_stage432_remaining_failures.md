@@ -107,3 +107,29 @@
 - `00cf12a1f`와 같은 조판 코드의 Mac fresh WASM을 실제 Chrome에서 8개씩 캡처해 전 105쪽 TSV를 산출했다. Native와 전쪽 수치가 동일하다. 35쪽 99.34006%, 36쪽 99.21991%이며 두 fresh review도 직접 판독했다.
 - 전체 최저 46.19920%, 미달은 12·16·18·27·28·34·41·44·61·63·65·69·73·74·93·94쪽이다. sweep 종료 1은 이 기존 미달에 대한 정당한 검토 보류이며 빌드 실패가 아니다. 기존 #7731의 미완료 범위를 보존한다.
 - 진단-only 배분 간격 보정과 보강한 기존 함수는 별도 최신 실행 중이다. 위 결과를 그 실행의 통과나 최종 전체 nextest 통과로 혼동하지 않는다.
+
+## 배분 정렬의 마지막 간격을 잉크로 세는 진단 보정 (V12)
+
+- `hwp-multi-001.hwp`는 기본 96dpi 전 9쪽 Native/fresh WASM 모두 최저 95.98104%, 미달 0이다. base도 최저 93.57938%로 통과한다. 따라서 문서를 미달 이슈로 넘기거나 baseline을 92로 올릴 근거가 없다.
+- `extra_char_spacing`의 양수 값은 글리프를 넓히지 않고 다음 문자 원점을 옮긴다. 실제 SVG/Canvas는 `TextStyle::glyph_fit_advance`에서 이 간격을 빼지만 진단은 마지막 슬롯까지 잉크로 보았다. 같은 fit 계약을 끝 경계에 소비하도록 수정했다. 위치·렌더 트리·paint는 바꾸지 않는다. 커닝·세로·회전·겹침 문자와 손상된 전진폭은 보수적인 기존 상자 경로를 유지한다.
+- 생산값 → `replay_positions_for`의 문자 원점 → SVG/Canvas의 cluster fit → 진단의 마지막 가시 글리프 끝을 연결했다. 실제 앞 글리프와 겹치는 이웃은 계속 검출하고 마지막 배분 간격에만 놓인 이웃은 잉크 충돌로 세지 않는다. 기존 검사 함수에 양쪽 관계를 보강했으며 새 함수는 추가하지 않았다.
+- frozen 이전 진단 라이브러리에서 보강 사례가 1 FAIL(원래 1건/기대 0건)하는 isolated RED를 보존했다. 정식 harness에서 글자 경계 기존 10개는 모두 PASS다. 실제 9쪽 Native SVG도 전쪽 동일하며 진단 text-overlap은 92→0으로 정정됐다. 직접 확인한 6쪽도 0이다.
+- 원래 실패 27개와 글자 경계 10개 재실행: **23 PASS / 14 FAIL / 2567 skip**, 47.440초, 종료 코드 100, run `735564d6-357c-4ba6-a7ef-9c815d82f11d`. 원래 27개만 보면 **13 PASS / 14 FAIL**다. 이는 최종 전체 nextest 통과가 아니다.
+- harness는 1451 sources / 6207 static attrs / 48 targets / 최소 6559 cases로 고정 devel 기준 확인했다. baseline·원본·PDF·지침은 변경하지 않았다.
+
+최신 잔여 14개:
+
+- `issue_7413_cell_padding_shrinks_only_when_wrapping_overflows::b_cell_that_cannot_wrap_within_its_height_still_shrinks`
+- `issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell`
+- `issue_5877_fragment_ghost_vrules::issue_5877_gas_rowspan_keeps_label_owner_and_next_row_minimum`
+- `issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line`
+- `issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap`
+- `issue_1156_rowbreak_fragment_fit::kps_ai_page37_defers_overflowing_split_row_slice`
+- `issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band`
+- `issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow`
+- `issue_7445_biotoxin_source_ownership::cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages`
+- `issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures`
+- `issue_6981_split_straddle_row_height::completed_terminal_cut_does_not_allocate_an_empty_page`
+- `text_overlap_baseline::text_overlaps_do_not_grow_partition_2`
+- `issue_6981_split_straddle_row_height::continuation_height_respects_varying_page_budgets`
+- `body_overflow_baseline::body_overflow_does_not_grow_partition_5`

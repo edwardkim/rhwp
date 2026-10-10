@@ -338,6 +338,26 @@ fn space_trimming_uses_visible_glyph_replay_positions() {
         ),
         0
     );
+    // 원점 간격은 40·30·40이지만 각 가시 글리프의 폭은 20이다.
+    // 배분 간격까지 포함한 끝 경계 120은 이웃 글자를 침범하나,
+    // 실제 마지막 글리프는 80..100에 그려진다.
+    let mut distributed = replay_run("가 나", vec![0.0, 40.0, 70.0, 110.0], 10.0, 100.0);
+    if let RenderNodeType::TextRun(tr) = &mut distributed.node_type {
+        tr.style.extra_char_spacing = 20.0;
+    }
+    assert_eq!(
+        text_pair_count(
+            distributed.clone(),
+            replay_run("다", vec![0.0, 20.0], 105.0, 102.0)
+        ),
+        0,
+        "마지막 배분 간격은 잉크가 아니다"
+    );
+    assert_eq!(
+        text_pair_count(distributed, replay_run("다", vec![0.0, 20.0], 90.0, 102.0)),
+        1,
+        "실제 마지막 글리프와 겹치면 계속 검출한다"
+    );
 }
 
 #[test]
