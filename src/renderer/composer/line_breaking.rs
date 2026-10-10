@@ -1245,9 +1245,17 @@ fn apply_paragraph_kerning_to_tokens(
 
 /// px를 HWPUNIT(i32)로 변환 (내림, DPI=96 기준: px * 75)
 ///
+/// [#7702] 정수 HWPUNIT 인 폭(예: 880 HU = 11.7333…px)이 부동소수 오차로 그 아래에
+/// 놓이면 절삭이 한 단위를 잃는다. 오차 범위 안이면 그 정수로 본다.
 #[inline]
 fn to_hwp(px: f64) -> i32 {
-    (px * 75.0) as i32
+    let scaled = px * 75.0;
+    let nearest = scaled.round();
+    if (scaled - nearest).abs() <= 1e-6 {
+        nearest as i32
+    } else {
+        scaled as i32
+    }
 }
 
 /// [#7418] 이 공백 앞에 같은 줄의 글자가 하나도 없는가 — 줄 맨 앞 공백.

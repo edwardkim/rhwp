@@ -730,13 +730,14 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         } else {
             cs.spacings[lang] as f64
         };
-        letter_spacings.push(font_size * spacing_percent / 100.0);
-
         ratios.push(cs.ratios[lang] as f64 / 100.0);
         // 100%는 저장 줄과 같은 원래 크기를 보존한다. 먼저 곱하고 나누면
         // 반올림 잔차로 글꼴이 저장 줄보다 커져 유효한 0 간격이 재계산된다.
         let relative_size = f64::from(cs.relative_sizes[lang]) / 100.0;
-        font_sizes.push(font_size * relative_size);
+        let lang_font_size = font_size * relative_size;
+        // 자간은 그 언어 슬롯이 실제로 그리는 크기(상대 크기 적용 후)의 백분율이다.
+        letter_spacings.push(lang_font_size * spacing_percent / 100.0);
+        font_sizes.push(lang_font_size);
     }
 
     // [#7387] 공백은 영문 슬롯(1) 글꼴이 정한다. 속성이 꺼졌거나 그 글꼴의 공백폭을
