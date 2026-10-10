@@ -776,6 +776,31 @@ export class HwpDocument {
         }
     }
     /**
+     * 실제 공급된 프로그램으로 측정·표시의 공통 환경을 계산한다.
+     * @param {string} json
+     * @returns {string}
+     */
+    buildFontEnvironmentFromAvailablePrograms(json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_buildFontEnvironmentFromAvailablePrograms(this.__wbg_ptr, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * @returns {boolean}
      */
     cancelDeferredPagination() {
@@ -3915,6 +3940,22 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 문서가 선언한 실제 프로그램 후보와 현재 환경을 호스트에 전달한다.
+     * @returns {string}
+     */
+    getDocumentFontSelectionPlan() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.hwpdocument_getDocumentFontSelectionPlan(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
     }
     /**
@@ -10652,7 +10693,7 @@ export class HwpDocument {
         wasm.hwpdocument_setFileName(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * Set an explicit layout/paint font environment. None restores the default.
+     * 명시적인 조판·표시 글꼴 환경을 설정한다. None이면 기본 환경으로 돌아간다.
      * @param {string | null} [json]
      * @returns {boolean}
      */
