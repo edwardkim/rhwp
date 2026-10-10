@@ -39,4 +39,6 @@ Issue: #7445의 제출 후보 검증 중 발견한 #6034 대조군. 브랜치는
 
 로그는 ignored `output/pr-review/7445-completed-20261009/stage422-court-glyph-fallback/`에 보존하며 커밋하지 않는다. 단계 417의 구 생산 소스 시각 실행은 이 수정 전의 증거로 남긴다. 새 생산 소스의 나머지 대상 전쪽 검증과 전체 회귀·lint·Skia는 남아 있다. 전체 검증 완료 후 사용자 승인 전에는 PR을 생성하지 않는다.
 
+Native `cargo clippy --locked -- -D warnings`도 exit 0으로 통과했다(47.37초). WASM32·all-target Clippy와 최종 전체 검증을 이 결과로 대신하지 않는다.
+
 법원 서식의 시각 보정과 기존 관계형 회귀 수정을 완료했다.

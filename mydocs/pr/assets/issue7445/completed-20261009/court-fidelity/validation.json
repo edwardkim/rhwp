@@ -70,5 +70,12 @@
     ],
     "replacement": "독립 2쪽 계약 + 본문 항목 한 줄 소유·전체 내용 일회 보존 + 원본 각주 4개 소속·순서·비겹침 + 실제 구분선 뒤 각주 + 원본 글자 상자를 수용하는 빈 각주 줄 + 마지막 빈 문단의 둘째 쪽 소유"
   },
-  "remaining": "새 생산 head의 나머지 대상 전쪽 Native/fresh, 영향 대조군, 전체 nextest·lint·Skia 및 최종 승인 게이트는 아직 완료 아님"
+  "remaining": "새 생산 head의 나머지 대상 전쪽 Native/fresh, 영향 대조군, 전체 nextest·lint·Skia 및 최종 승인 게이트는 아직 완료 아님",
+  "nativeClippy": {
+    "command": "cargo clippy --locked --target-dir /Users/tsjang/rhwp/target/pr-review -- -D warnings",
+    "exitCode": 0,
+    "logSha256": "d60c038c6a9e630c15c86c224c89f04272a870f2bdcaf56ab1d8618b0447abb1",
+    "summary": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 47.37s",
+    "wasm32AndAllTargetsPending": true
+  }
 }
