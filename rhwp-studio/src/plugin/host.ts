@@ -21,6 +21,7 @@ import {
   type PluginError,
   type PluginErrorCode,
   type PluginHost,
+  type PluginCaret,
   type PluginLedger,
   type PluginSurface,
   type StudioPlugin,
@@ -148,6 +149,53 @@ class PluginHostFacade implements PluginHost {
    */
   read<T>(fn: (doc: HwpDocument) => T): T {
     return fn(this.requireDocument());
+  }
+
+  getCaret(): PluginCaret | null {
+    const ih = this.deps.getInputHandler();
+    if (!ih || !this.deps.wasm.borrowDocumentHandle() || ih.isInSeparateCaretSpace()) return null;
+    const pos = ih.getCursorPosition();
+    if (pos.isTextBox) return null;
+    let caret: PluginCaret;
+    if (pos.cellPath && pos.cellPath.length > 0) {
+      if (pos.parentParaIndex === undefined) return null;
+      caret = {
+        sectionIndex: pos.sectionIndex,
+        parentParaIndex: pos.parentParaIndex,
+        cellPath: pos.cellPath.map(({ controlIndex, cellIndex, cellParaIndex }) =>
+          ({ controlIndex, cellIndex, cellParaIndex })),
+        charOffset: pos.charOffset,
+      };
+    } else if (pos.parentParaIndex !== undefined && pos.controlIndex !== undefined) {
+      // 레거시 평면 셀 좌표 — 단층 표 칸이다.
+      caret = {
+        sectionIndex: pos.sectionIndex,
+        parentParaIndex: pos.parentParaIndex,
+        cellPath: [{
+          controlIndex: pos.controlIndex,
+          cellIndex: pos.cellIndex ?? 0,
+          cellParaIndex: pos.cellParaIndex ?? 0,
+        }],
+        charOffset: pos.charOffset,
+      };
+    } else {
+      caret = {
+        sectionIndex: pos.sectionIndex,
+        parentParaIndex: pos.paragraphIndex,
+        cellPath: [],
+        charOffset: pos.charOffset,
+      };
+    }
+    // 누름틀 경계의 같은 글자 번호는 안·밖 두 자리다 — 화면 캐럿이 어느 쪽인지 함께 준다.
+    try {
+      const fi = this.deps.wasm.getFieldInfoAt(pos);
+      if (fi.inField && fi.fieldType === 'clickhere' && fi.fieldId !== undefined) {
+        const at = ih.isAtExitedFieldStart(pos, fi) ? 'before'
+          : ih.isAtExitedFieldEnd(pos, fi) ? 'after' : 'inside';
+        caret.field = { id: fi.fieldId, at };
+      }
+    } catch { /* 필드 정보 없이도 좌표는 유효하다 */ }
+    return caret;
   }
 
   async loadDocument(bytes: Uint8Array, fileName?: string): Promise<void> {

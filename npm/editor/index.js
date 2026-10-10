@@ -442,6 +442,12 @@ export class RhwpEditor {
         this._request('plugin.invoke', { id: 'hwpctrl', method: 'exportBytes', args: [format] }),
       undo: () => this._request('plugin.invoke', { id: 'hwpctrl', method: 'undo', args: [] }),
       redo: () => this._request('plugin.invoke', { id: 'hwpctrl', method: 'redo', args: [] }),
+      /**
+       * HwpCtrl 커서를 사용자 캐럿 자리로 옮깁니다. HwpCtrl 은 자체 커서를 가지므로, 사용자가
+       * 화면에서 고른 자리에 `CreateField` 등을 쓰려면 먼저 부릅니다. 옮길 수 없으면 `null`.
+       */
+      syncCursorFromCaret: () =>
+        this._request('plugin.invoke', { id: 'hwpctrl', method: 'syncCursorFromCaret', args: [] }),
     };
   }
 

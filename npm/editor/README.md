@@ -75,6 +75,10 @@ await studio.hwpctrl.batch(h => {
 const bytes = await studio.hwpctrl.exportBytes();
 
 await studio.hwpctrl.undo();       // 위 배치 전체가 undo 1스텝
+
+// 사용자 캐럿 자리에 누름틀 — HwpCtrl 커서는 화면 캐럿을 따라가지 않으므로 먼저 맞춘다
+await studio.hwpctrl.syncCursorFromCaret();   // {list, para, pos} 또는 null
+await studio.hwpctrl.call('CreateField', ['이름', '', '기안자']);
 studio.destroy();
 ```
 

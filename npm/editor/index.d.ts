@@ -359,6 +359,11 @@ export declare class RhwpEditor {
     exportBytes(format?: 'hwp' | 'hwpx' | 'hml'): Promise<Uint8Array>;
     undo(): Promise<CommandResult>;
     redo(): Promise<CommandResult>;
+    /**
+     * HwpCtrl 커서를 사용자 캐럿 자리로 옮기고 새 `GetPos` 값을 준다. 캐럿이 머리말·꼬리말·각주·
+     * 글상자 안이면 커서를 두고 `null`. 문서는 바꾸지 않으며 undo 항목도 만들지 않는다.
+     */
+    syncCursorFromCaret(): Promise<{ list: number; para: number; pos: number } | null>;
   };
 
   /** 메뉴·툴바·상태표시줄 표시. 숨겨도 커맨드는 실행된다 */

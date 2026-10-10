@@ -110,6 +110,12 @@ rhwp-studio 안에서는 **플러그인**으로 얹힌다 — `@rhwp/hwpctrl/stu
 플러그인 모드에서 `Undo`/`Redo` 는 studio 히스토리로 간다 — 사용자가 보는 undo 스택과 두 갈래가
 되면 안 되기 때문이다.
 
+커서는 두 갈래다. 이 층의 커서(`GetPos`)는 studio 의 화면 캐럿을 따라가지 않는다. 사용자가 고른
+자리에 `CreateField`·`GetCurFieldName` 등을 쓰려면 먼저 플러그인 표면의 `syncCursorFromCaret()` 을
+부른다. 캐럿의 구역·표 칸·글자 번호를 `{list, para, pos}` 로 옮기고(누름틀 경계에서는 화면 캐럿이
+누름틀 안인지 밖인지까지 반영) 새 `GetPos` 값을 준다. 커서만 옮기므로 undo 항목을 만들지 않는다.
+캐럿이 머리말·꼬리말·각주·글상자 안이면 커서를 두고 `null` 을 준다.
+
 ## 기존 studio 층과의 관계
 
 `rhwp-studio/src/hwpctl/`은 별개이고 아직 동결 상태다. 이 패키지가 원장 100%에 도달하면
