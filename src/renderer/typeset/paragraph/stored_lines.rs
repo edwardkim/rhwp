@@ -485,8 +485,9 @@ fn stored_intra_line_gap(para: &Paragraph) -> Option<i32> {
 /// 복원한다는 전제다. 현 문단과 다음 anchor 사이에 합성/NO_LS 텍스트 문단이
 /// 끼어 있으면 dirty 규칙(#2243 전방-스냅만)으로 복원이 차단되므로 트림하면
 /// 그 spacing 이 흐름에서 소실된다 (36398700 pi6: 다음 anchor pi10 앞에
-/// 합성 pi7~9 → −35.7px 소실 실측). 표 컨트롤 문단은 재앵커(#2243) 지점이라
-/// 복원 가능으로 본다. 탐색은 32문단 한도(초과 시 보수적으로 복원 불가).
+/// 합성 pi7~9 → −35.7px 소실 실측). 빈 호스트의 자리차지 표는 현재 흐름에서
+/// 점유 상자를 확정하므로 저장 위치 복원을 보장하지 않는다. 다른 컨트롤은
+/// 기존 재앵커 계약을 따른다. 탐색은 32문단 한도(초과 시 보수적으로 복원 불가).
 pub(in crate::renderer::typeset) fn spacing_trim_restorable(
     paragraphs: &[Paragraph],
     para_idx: usize,
@@ -494,19 +495,14 @@ pub(in crate::renderer::typeset) fn spacing_trim_restorable(
     use crate::model::paragraph::LineSeg;
     for para in paragraphs.iter().skip(para_idx + 1).take(32) {
         if !para.controls.is_empty() {
-            // 빈 호스트의 형제 자리차지 표는 현재 흐름에서 lane을 예약한다.
-            // 저장 vpos를 복원하지 않으므로 앞 문단의 줄간격을 제외하면 소실된다.
-            let flow_lane_tables = para.text.is_empty()
-                && para
-                    .controls
-                    .iter()
-                    .filter(|control| {
-                        matches!(control, crate::model::control::Control::Table(table)
+            // 빈 호스트의 자리차지 표는 하나여도 현재 흐름에서 lane을 예약한다.
+            // 저장 vpos의 높이 증거만으로 현재 쪽 원점 복원을 가정하면 안 된다.
+            // 앞 문단의 줄간격을 보존해 예약과 실제 출력에 같은 원점을 전달한다.
+            let flow_lane_tables = !super::super::para_has_visible_text(para)
+                && para.controls.iter().any(|control| {
+                    matches!(control, crate::model::control::Control::Table(table)
                         if crate::renderer::float_placement::is_para_topbottom_float(&table.common))
-                    })
-                    .take(2)
-                    .count()
-                    >= 2;
+                });
             return !flow_lane_tables;
         }
         match para.line_segs.first() {

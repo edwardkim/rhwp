@@ -2026,3 +2026,59 @@ Native 전215쪽 TSV는 완료했지만 **11쪽 미달, 최저 210쪽 29.66633%*
 format 정리의 차이를 증적에 구분했습니다.
 
 [31개 정확 이름 실행과 남은 20개 실패](../pr/assets/issue7445/completed-20261009/remaining-after-policy-page-restoration.json).
+
+## 보정 377 사전 분석: 단일 자리차지 표 앞의 간격 복원 가정
+
+210쪽의 문단 2474는 저장 줄 높이와 문단 간격을 합쳐 34.67px를 점유하지만,
+`spacing_trim_restorable`이 다음 빈 표 호스트를 무조건 재앵커 지점으로
+판정해 13.33px만 전진합니다. 문단 2475의 단일 자리차지 표는 닫힌 저장
+상자의 높이를 확인한 뒤 현재 흐름 원점으로 옮겨 예약·배치하므로 이
+21.33px를 복원하지 않습니다. 표와 뒤 문단이 함께 위로 이동합니다.
+
+소비 경로는 `paragraph/stored_lines.rs`의 복원 가능성 →
+`paragraph/metrics.rs`의 흐름 전진 → `controls/paragraph_flow.rs`의 호스트
+원점 → `controls/empty_float.rs`의 닫힌 상자 이동 → 확정 계획을 소비하는
+paint입니다. 원점 clamp나 원본 쪽수 기대값 변경으로 해결하지 않습니다.
+빈 자리차지 표가 현재 흐름을 소비한다는 계약은 표 개수에 따라 달라지지
+않으므로, 기존 복수 표 조건을 단일 표에도 적용합니다. TAC·다른 기준의
+컨트롤과 가시 본문이 있는 호스트는 기존 재앵커 판정을 유지합니다.
+
+현재 구현 후보를 빌드 중입니다. 한컴 2024 정본과 210쪽을 직접 비교하고,
+전215쪽 구조·기존 관련 회귀를 대조한 뒤 결과를 기록합니다. 이 단계의
+분석이나 구현만으로 시각 완료·PR 준비로 판정하지 않습니다.
+
+### 보정 377 결과: 210쪽 복원, 나머지 214쪽 출력 보존
+
+빈 호스트 판정에는 실제 lane 수용과 같은 가시 본문 판별을 사용했습니다.
+Native 및 Mac no-opt fresh WASM을 최종 소스로 빌드하고 pkg/public의
+동일성을 확인했습니다. 한컴 2024 조판 세대에서 Native SVG·렌더 트리와
+실제 Chrome fresh WASM raw SVG·렌더 트리를 모두 전215쪽 내보냈습니다.
+네 출력 형식 각각 **210쪽만 변경됐으며 다른 214쪽은 이전 후보와 동일**합니다.
+
+210쪽의 표와 뒤 응급도 문단이 누락된 간격을 회복했습니다. 원본 텍스트와
+표 크기·쪽수 215쪽은 보존됐습니다. 독립 PDF를 대조한 Native/fresh review와
+overlay에서 앞 윌슨병 줄, 표 내부 및 뒤 응급도 2~6 문단의 순서·포함을
+직접 확인했습니다. 2px 관용 실루엣 보조값은 **29.66633→100%**이며,
+글자 굵기·미세 잉크 차이는 남아 있습니다.
+
+출력 동일성을 확인한 214쪽은 기존 캡처를 재사용하고, 변경된 210쪽은
+Native와 실제 Chrome fresh WASM으로 재캡처했습니다. PNG 입력 해시를
+남겨 전215쪽 TSV를 각각 다시 계산했습니다. **두 경로 모두 미달 10쪽,
+최저 66.64192%**입니다. 이번 변경에서 남은 미달은 11·28·157·160·167쪽,
+고정 devel에서도 미달인 쪽은 158·168·176·184·208쪽입니다. 고정 devel의
+대조 11쪽도 조판 세대 2024로 다시 내보내 기존 2022 대조와 동일함을
+확인했습니다. 평균이나 210쪽 통과로 나머지 미달을 면제하지 않습니다.
+
+관련 기존 회귀 34건은 **31 PASS / 3 FAIL**입니다. 세 실패는 이전에도
+재현됐던 #7203 두 표 배치 검사와 #7379 마지막 rowspan 캡션 검사입니다.
+저장 문단 간격·다단·lazy 원점·반복 표·그림 표 반례 대조군은 통과했습니다.
+기존 기대값과 함수 수를 바꾸지 않았습니다. Native Clippy·format·문서 링크는
+통과했으며, 최종 전체 nextest 및 제출 범위의 나머지 필수 게이트는 아직
+완료하지 않았습니다. 이전 31개 중 실패 20개 기록을 최신 전체 결과로
+대신하지 않으며 PR 생성·승인·통합은 계속 보류합니다.
+
+[입력·빌드·전쪽 출력/캡처 재사용·회귀 요약](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-validation.json),
+[Native 210쪽 review](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-native-review.png),
+[Native overlay](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-native-overlay.png),
+[fresh WASM 210쪽 review](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-fresh-wasm-review.png),
+[fresh WASM overlay](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-fresh-wasm-overlay.png).
