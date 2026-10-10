@@ -324,12 +324,12 @@
   "latestStatus": {
     "candidate": "SO-SUEOP unsuitable coordinate assertions deferred under sub-issue7807; normal contracts retained",
     "originalFailures": 27,
-    "originalPassed": 17,
+    "originalPassed": 18,
     "originalResolved": 16,
     "originalAssertionPinsDeferred": 1,
     "originalRemovedUnsuitable": 1,
     "originalSeparatedTotal": 2,
-    "originalFailed": 9,
+    "originalFailed": 8,
     "remainingTests": [
       "issue_5877_fragment_ghost_vrules::issue_5877_gas_rowspan_keeps_label_owner_and_next_row_minimum",
       "issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap",
@@ -341,9 +341,13 @@
       "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
       "body_overflow_baseline::body_overflow_does_not_grow_partition_5"
     ],
-    "fullNextestAfterRepairs": "not yet run",
+    "fullNextestAfterRepairs": "not yet",
     "prReady": false,
-    "approvalRequiredBeforePr": true
+    "approvalRequiredBeforePr": true,
+    "originalPartialGeometryPass": 1,
+    "pendingVisualFollowup": [
+      "pigfarm page 7 80.90032%"
+    ]
   },
   "v8Followup": {
     "base": "f59ac14370bc7d92384292fde37e33be59b87bd7",
@@ -2471,5 +2475,135 @@
     "rawEvidenceRoot": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage436-so-sueop-oracle",
     "noWholeFreshAcceptanceClaim": true,
     "recoveryGate": "Both original formats, each all46 pages Native/fresh >=90 and direct reading before renderer regression restoration using content/ownership relationships."
+  },
+  "v16EmptyFloatPrecedingBand": {
+    "productionParent": "9839f231156f45d063e346e7f6ae7e18a0b88962",
+    "productionSource": "src/renderer/typeset/controls/empty_float.rs",
+    "productionSourceSha256": "1f4196b9960ef5df35a118a6b93f4343ab0853cbb6b2bca09e8ddf2820d93584",
+    "sourceChain": {
+      "head": "9839f231156f45d063e346e7f6ae7e18a0b88962",
+      "sourceFile": "src/renderer/typeset/controls/empty_float.rs",
+      "sourceSha256": "1f4196b9960ef5df35a118a6b93f4343ab0853cbb6b2bca09e8ddf2820d93584",
+      "supersededPrototype": "layout host push floor; source reverted after failure persisted; no commit",
+      "failureReproduced": "pigfarm prior test 4 PASS 1 FAIL; exact same 11 page independent PDF, p7 Native34.05714",
+      "sourceChain": "controls::empty_float::prepare resolved -> lane_bottom fit -> state::commit_empty_float_table stored placement and lane reservation -> layout table item reads ctx placement -> layout_table_with_wrapper_margin resolved_table_origin",
+      "sharedConstraint": "ParagraphFloatPlacement::clear_occupied_bands prior owner para only; allow_overlap and Square siblings preserved; moved successor-line spacing evidence cleared",
+      "testFilesUnchanged": true,
+      "newTestFunctions": 0
+    },
+    "newTestFunctions": 0,
+    "testsChanged": false,
+    "guidelinesChanged": false,
+    "wholeFidelityAccepted": false,
+    "nativeBefore": {
+      "pages": 11,
+      "minimumPercent": 34.05714,
+      "below90": [
+        7
+      ]
+    },
+    "nativeAfter": {
+      "pages": 11,
+      "minimumPercent": 80.90032,
+      "below90": [
+        7
+      ]
+    },
+    "p7BeforePercent": 34.05714,
+    "p7AfterPercent": 80.90032,
+    "directReviewPages": [
+      7
+    ],
+    "freshAfterSourceChange": "not yet run; next source-frame follow-up pending",
+    "relationshipTests": {
+      "diagnosticSameExistingFunctions": {
+        "passed": 5,
+        "failed": 0
+      },
+      "formalNextest": {
+        "runId": "ac764d86-110d-4629-894a-1a87b8694f59",
+        "passed": 37,
+        "failed": 1,
+        "skipped": 833,
+        "seconds": 0.974,
+        "exitCode": 100,
+        "remainingFailure": "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
+        "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage437-overlay-flow/v16-nextest.log"
+      }
+    },
+    "counterNative": {
+      "documents": 13,
+      "pages": 356,
+      "allByteIdentical": true,
+      "scope": "unembedded Print SVG production V14 vs V16; same source/profile/fonts, not new PDF acceptance"
+    },
+    "remainingDifference": "graph successor title/body lowered by one paragraph spacing-before band; complete source frame is still selected from host flow instead of source-recovered origin",
+    "existingFidelityIssue": {
+      "number": 7770,
+      "state": "OPEN"
+    },
+    "assets": [
+      "pigfarm-v16-before-native-silhouette.tsv",
+      "pigfarm-v16-native-silhouette.tsv",
+      "pigfarm-v16-review_007.png"
+    ]
+  },
+  "overlay4514IndependentOracle": {
+    "source": "samples/issue4514/sample1-repro.hwp",
+    "referencePdf": "pdf/issue4514/sample1-repro-hwp-2020.pdf",
+    "rejectedAsIndependentReference": "pdf/issue4514/sample1-repro-2020.pdf (Cairo)",
+    "native": {
+      "pages": 46,
+      "minimumPercent": 2.77636,
+      "below90": [
+        10,
+        11,
+        12,
+        14,
+        15,
+        16,
+        19,
+        20,
+        21,
+        23,
+        24,
+        28,
+        29,
+        30,
+        31,
+        34,
+        35,
+        37,
+        38,
+        39,
+        40,
+        41,
+        43
+      ]
+    },
+    "base": "21ed64071f81f35f37618717693bd30f727392c9",
+    "baseScopePages": [
+      10
+    ],
+    "baseP10Percent": 50.4213,
+    "currentP10Percent": 53.82229,
+    "directRead": "ECR-004 prefix repeated on next page and ECR-005 detail row absent; unchanged precise overlap contract retained",
+    "independentPdfAndSourcePreserved": true,
+    "freshWasm": "not yet evaluated",
+    "newIssue": {
+      "number": 7808,
+      "id": 5796126000,
+      "state": "OPEN",
+      "url": "https://github.com/edwardkim/rhwp/issues/7808",
+      "parent": 7445,
+      "bodyApiExact": true,
+      "parentChildrenApiVerified": true
+    },
+    "noTestsRemoved": true,
+    "assets": [
+      "overlay4514-native-silhouette.tsv",
+      "overlay4514-base-p010-silhouette.tsv",
+      "overlay4514-review_010.png"
+    ]
   }
 }

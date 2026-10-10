@@ -429,6 +429,27 @@ pub(super) fn prepare(
                 }
             })
         });
+    // 빈 호스트의 lane은 같은 문단 형제만 포함한다. 다른 문단이 만든
+    // 자리차지 밴드는 별도로 지나야 하며, 확정 상자를 예약과 paint가 함께 쓴다.
+    // 저장 프레임을 선택한 뒤 이 관계를 빠뜨리면 paint의 사다리 회피가
+    // 앞서 확정한 원점에 의해 다시 덮인다. 겹침 허용·어울림 형제는 보존한다.
+    let resolved = resolved.map(|placement| {
+        if !is_topbottom_para_float || table.common.allow_overlap {
+            return placement;
+        }
+        let outer_top = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+        let mut cleared = placement.clear_occupied_bands(
+            page.visible_float_exclusions
+                .iter()
+                .filter(|zone| zone.para_index < para_idx)
+                .map(|zone| zone.top..zone.bottom + outer_top),
+        );
+        if cleared.table_top != placement.table_top {
+            // 이동한 상자는 뒤 저장 줄의 원래 간격을 이미 소비했다는 증거가 아니다.
+            cleared.stored_successor_line_origin = None;
+        }
+        cleared
+    });
     let lane_bottom = resolved.map_or(lane_top + reserved_height, |p| {
         if square_resolved.is_some()
             || closed_source_resolved.is_some()

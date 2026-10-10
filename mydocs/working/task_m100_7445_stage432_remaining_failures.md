@@ -300,3 +300,40 @@ run `014fd5d5-e3eb-4167-b077-d1c18b21fc7c`, 종료0이다. 최초 27개 기준
 각 Native 전쪽 TSV·fresh 22쪽 TSV·devel 선택 TSV를 자산으로 보존한다. 로그와 거대한 임베딩 SVG는
 ignored `stage436-so-sueop-oracle/`에 둔다. #7807에서 두 원본 전쪽 최저 90% 이상과 직접 판독 뒤
 독립 내용·소속 관계로 재구축한다. 현재 전체 검증과 PR 준비는 미완료다.
+
+## 빈 호스트 표의 선행 밴드 회피 (V16, 시각 마무리 진행 중)
+
+양돈 원본 `samples/issue6797/156160455-social-pig-farm-income.hwp`과 기존 독립 한컴 Print PDF
+`pdf/156160455-social-pig-farm-income-2020.pdf`는 전 11쪽이다. 수정 전 7쪽은 34.05714%,
+나머지 10쪽은 모두 98% 이상이었다. 원래 회귀 검사는 앞 표·그래프 소유 표·뒤 제목의 순서와
+두 그림의 셀 내부 포함을 검사하므로 유지했다.
+
+생산 경로는 `empty_float::prepare`의 확정 상자 → `lane_bottom`의 fit →
+`commit_empty_float_table`의 배치 계획/높이 예약 → layout의 계획 조회 →
+`layout_table_with_wrapper_margin`의 확정 원점이다. 같은 문단의 lane은 앞 문단의 자리차지
+밴드를 포함하지 않았다. 기존 공통 `clear_occupied_bands`로 앞 소유자의 밴드를 지난 상자를
+fit·예약·paint에 전달했다. 겹침 허용/어울림 형제는 유지하고 이동한 상자의 후속 줄 간격 증거는
+분리했다. 초기 host push-floor 보정안은 실패가 지속되어 되돌렸고 커밋하지 않았다.
+
+기존 양돈 검사 5개는 5 PASS / 0 FAIL이다. 정식 관련 검사 38개는 37 PASS / 1 FAIL,
+0.974초·종료 100이며, 남은 1개는 기존 다중 그림의 본문 바닥 초과 검사다.
+13개 대조 원본 전 356쪽의 unembedded Print SVG는 생산 V14와 byte-identical이다.
+대조 SVG 동일은 새로운 PDF/fresh WASM 통과를 뜻하지 않는다.
+
+양돈 Native 전 11쪽에서 7쪽은 **80.90032%**로 개선됐고 다른 10쪽은 여전히 98% 이상이다.
+[7쪽 review](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/pigfarm-v16-review_007.png)를
+직접 읽었다. 표 겹침은 없어졌지만 그래프 뒤 제목/본문의 앞 간격이 남아 있다. 이 문서는 기존
+[#7770](https://github.com/edwardkim/rhwp/issues/7770) 범위이며 이 브랜치에서 후속 프레임을 마무리한다.
+전쪽 90%/fresh 완료나 이슈 해결로 보고하지 않는다. 새 회귀 함수/기대값 변경/지침 수정은 없다.
+
+`sample1-repro.hwp`는 독립 한컴 PDF `sample1-repro-hwp-2020.pdf`를 사용했다.
+다른 `sample1-repro-2020.pdf`는 Cairo 출력이어서 독립 기준으로 사용하지 않았다.
+Native 전 46쪽은 최저 2.77636%·미달 23쪽, 현재 10쪽 53.82229%, 고정 devel의 같은 10쪽은
+50.42130%다. [10쪽 review](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/overlay4514-review_010.png)에서
+ECR-004 앞 항목 반복과 ECR-005 상세 행 누락을 확인했다. 기존 열린 이슈/서브 이슈를 확인한 뒤
+[#7808](https://github.com/edwardkim/rhwp/issues/7808)을 등록하고 #7445에 연결했으며 API로 본문·OPEN·
+parent child를 확인했다. 정확한 겹침/이어받기 검사는 유지했다. fresh 전쪽은 미검증이다.
+
+원 실패 기준 18개가 현재 통과 중이나, 1개는 부적합 좌표 분리 후 정상 계약 통과이고 1개는
+양돈 시각 마무리가 남아 있다. **16개 해결 / 부적합 범위 2개 분리 / 실패 8개 + 양돈 시각 잔여**다.
+전체 nextest/최종 대상 문서 검증/PR 준비는 미완료다. 원시 로그는 ignored `stage437-overlay-flow/`다.
