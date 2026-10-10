@@ -4321,7 +4321,12 @@ impl LayoutEngine {
                 };
 
                 // TopAndBottom 모드만 본문 밀어내기 처리
-                if !matches!(common.text_wrap, TextWrap::TopAndBottom) {
+                if !matches!(common.text_wrap, TextWrap::TopAndBottom)
+                    && !(col_area.width < body_area.width
+                        && crate::renderer::float_placement::is_body_wide_square_table(
+                            ctrl, body_area, self.dpi,
+                        ))
+                {
                     continue;
                 }
 
@@ -4507,7 +4512,12 @@ impl LayoutEngine {
                     Control::Picture(p) if !p.common.treat_as_char => &p.common,
                     _ => continue,
                 };
-                if !matches!(common.text_wrap, TextWrap::TopAndBottom) || common.treat_as_char {
+                if (!matches!(common.text_wrap, TextWrap::TopAndBottom)
+                    && !crate::renderer::float_placement::is_body_wide_square_table(
+                        ctrl, body_area, self.dpi,
+                    ))
+                    || common.treat_as_char
+                {
                     continue;
                 }
                 // Task #321 v3 정밀화 (#326): Paper(용지) 기준 도형 중 본문과 겹치지 않는
