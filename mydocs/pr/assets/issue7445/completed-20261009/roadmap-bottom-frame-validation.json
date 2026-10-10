@@ -1,0 +1,68 @@
+{
+  "status": "source-frame-corrected-render-preview-pending",
+  "sourceSnapshot": {
+    "baseHead": "c61b627fdd97b06d9b88554969c9ce45e79e266b",
+    "files": {
+      "src/renderer/layout/table_layout.rs": "46767102f0370e2f3c3295c6f9cb003d455cf3507888e6bf54b4f7df6aff20dc",
+      "src/renderer/typeset/table/continuation/fragment/emit.rs": "6e533bc142630a28d04adf5e2729fbd728b5ea3391142179eb3b259c942818b4"
+    }
+  },
+  "focused": {
+    "name": "focused-nextest",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_001",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_020",
+      "--test",
+      "regression_suite_023",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_4) | test(issue_5941_country_tables_match_the_reference_page_owners) | test(issue_5941_frame_drift_page_top_sentinel) | test(issue_6973_mirrored_stored_rewind) | test(=issue_6923_wrapper_table_stored_page_frame::page_count_matches_the_hancom_oracle) | test(=issue_6923_wrapper_table_stored_page_frame::page4_content_stays_inside_the_body) | test(=issue_6923_wrapper_table_stored_page_frame::page4_has_no_text_overlap)"
+    ],
+    "exitCode": 0,
+    "seconds": 360.667,
+    "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage398-roadmap-bottom-frame/focused-nextest.log",
+    "logSha256": "baf0ccc454f7ee32e68aecda8da236dc711adbc77ec9dc65d7eac251f00fb117"
+  },
+  "pageCount": 302,
+  "page44": {
+    "beforeBox": {
+      "x": 143.8,
+      "y": 136.0,
+      "width": 533.7,
+      "height": 849.6
+    },
+    "afterBox": {
+      "x": 143.8,
+      "y": 136.0,
+      "width": 533.7,
+      "height": 868.7
+    },
+    "startCut": [
+      2,
+      1,
+      7
+    ],
+    "endCut": [
+      2,
+      1,
+      30
+    ],
+    "contentCutChanged": false
+  },
+  "renderTreeSha256": "a7c0924d7db2ff6a5d2f08ff43b94c34f6af2ee19f64e249711c776c659653aa",
+  "validationScope": "default build tree + 8 existing checks; Native Skia/full visual/full nextest pending"
+}
