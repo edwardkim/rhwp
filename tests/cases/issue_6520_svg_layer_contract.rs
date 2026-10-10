@@ -1324,10 +1324,9 @@ fn soft_wrap_decoration_trim_does_not_depend_on_source_node_id() {
             _ => None,
         }
     }
-    assert_eq!(
-        underline_x2(&first),
-        10.0 + decoration_end(&json).expect("serialized decoration endpoint")
-    );
+    // 렌더 트리 JSON 은 끝점을 소수 셋째 자리로 직렬화한다 — SVG 좌표를 그 정밀도에서 비교한다.
+    let endpoint = 10.0 + decoration_end(&json).expect("serialized decoration endpoint");
+    assert_eq!((underline_x2(&first) * 1000.0).round() / 1000.0, endpoint);
 
     #[cfg(feature = "native-skia")]
     {
