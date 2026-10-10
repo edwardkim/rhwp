@@ -1,0 +1,46 @@
+{
+  "codeCommit": "641602768",
+  "scope": "default Native의 실제 44쪽. 최종 Native Skia/fresh WASM/전체 302쪽 검증 대체 아님.",
+  "beforeBaselinePx": 187.24,
+  "afterBaselinePx": 196.78666666666666,
+  "referenceBaselinePx": 196.58516,
+  "beforeDifferencePx": -9.345159999999993,
+  "afterDifferencePx": 0.20150666666665984,
+  "referenceTransform": {
+    "cmYScale": 0.119869,
+    "tmY": 1230,
+    "dpi": 96
+  },
+  "unchangedTextRunCount": 61,
+  "orderedTextAndParagraphIndicesPreserved": true,
+  "images": {
+    "mydocs/pr/assets/issue7445/completed-20261009/roadmap-cell-top-p044-native-review.png": "b21220ed717d09ae6b7bd1a6fab4de2c60d72259e5cebe04953104bc1be913fe",
+    "mydocs/pr/assets/issue7445/completed-20261009/roadmap-cell-top-p044-native-detail.png": "1f5495323f66019e8c425ec136f4be6475a2a986f749a96eb223d8cdc1f87cd4"
+  },
+  "sourceHashes": {
+    "src/renderer/layout/table_partial.rs": "792bddcd65eabbe01151c9a043520b739a2ae4b11c0f054a48e5555c350f1fac",
+    "src/renderer/layout/table_layout.rs": "46767102f0370e2f3c3295c6f9cb003d455cf3507888e6bf54b4f7df6aff20dc",
+    "src/renderer/font_metrics_overlays.rs": "d5c101f024295d8c5519c53c7c731bedead27ef8feb9819151d52d1374dd679a",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "6e533bc142630a28d04adf5e2729fbd728b5ea3391142179eb3b259c942818b4"
+  },
+  "pageCounts": {
+    "rhwp": 302,
+    "pdf": 302
+  },
+  "metrics": {
+    "compared_pages": 1,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 93.42419,
+    "worst_pixel_match_percent": 93.42419,
+    "average_ink_match_percent": 86.82509,
+    "worst_ink_match_percent": 86.82509,
+    "average_visual_accuracy_proxy_percent": 86.82509,
+    "worst_visual_accuracy_proxy_percent": 86.82509,
+    "average_tolerant_content_match_percent": 99.99955,
+    "worst_tolerant_content_match_percent": 99.99955,
+    "worst_pages": [
+      44
+    ]
+  },
+  "pending": "기존 focused nextest 실행 중. Native Skia와 fresh WASM 전체 302쪽 TSV 및 완료 scope 전체 검증 미완료."
+}
