@@ -60,3 +60,31 @@
 - 이는 PrEP 변경 범위의 결과이며 남은 기존 실패 17개와 마지막 전체 nextest를 완료한 결과가 아니다.
 
 ![PrEP 105쪽 연구비 표의 내용·행 소유 검토](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/prep-review_105.png)
+
+## V10 이후 원래 27개 재실행의 최신 확정 결과
+
+- `c831d36de`에서 **11 PASS / 16 FAIL / 2762 skip**, 49.582초, 종료 코드 100이다. run `7b064ae6-ffcc-4dfd-be0e-affb6be28c7a`이며 이 문서 앞의 19개·17개는 이전 실행의 상태다. 전체 회귀 재실행은 아니다.
+- API의 `downstream_table_split_and_body_follow_the_oracle_pages`도 기존 기대값 그대로 통과했다. 새 검사 함수나 baseline 갱신은 없다.
+- API 105쪽의 기본 96dpi 전쪽 대조는 base 최저 46.19920%, V10 최저 25.16184%다. 양쪽 각각 17쪽 미달이지만 V10의 36쪽은 새 회귀다. 기존 #7731이 열린 상태임을 확인했으며 이 새 회귀는 구현에서 복구한다. 기존 미달 문서라는 이유로 정확한 분할 검사를 제거하지 않는다.
+- `hwp-multi-001.hwp` 기본 96dpi 전 9쪽은 base 최저 93.57938%, V10 최저 95.98104%, 미달 0이다. 6쪽 직접 review에서 `구 분`과 분기 글자는 겹치지 않는다. em 상자 진단의 91→92건과 실제 잉크를 구분한다. fresh WASM과 진단 계약 검토 전 baseline은 갱신하지 않는다.
+
+현재 16개 실패 함수:
+
+- `issue_7413_cell_padding_shrinks_only_when_wrapping_overflows::b_cell_that_cannot_wrap_within_its_height_still_shrinks`
+- `issue_5877_fragment_ghost_vrules::issue_5877_gas_rowspan_keeps_label_owner_and_next_row_minimum`
+- `issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap`
+- `issue_7203_split_float_anchors_to_paragraph_top::split_fragment_without_a_gap_is_unchanged`
+- `issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell`
+- `issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line`
+- `text_overlap_baseline::text_overlaps_do_not_grow_partition_10`
+- `issue_7445_biotoxin_source_ownership::cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages`
+- `issue_1156_rowbreak_fragment_fit::kps_ai_page37_defers_overflowing_split_row_slice`
+- `issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow`
+- `issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band`
+- `issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures`
+- `issue_6981_split_straddle_row_height::completed_terminal_cut_does_not_allocate_an_empty_page`
+- `text_overlap_baseline::text_overlaps_do_not_grow_partition_2`
+- `issue_6981_split_straddle_row_height::continuation_height_respects_varying_page_budgets`
+- `body_overflow_baseline::body_overflow_does_not_grow_partition_5`
+
+![hwp-multi-001 6쪽 직접 검토](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/multi-review_006.png)
