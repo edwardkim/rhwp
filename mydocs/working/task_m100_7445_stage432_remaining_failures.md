@@ -101,3 +101,9 @@
 
 ![API 35쪽의 빈 시작 조각](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/api-review_035.png)
 ![API 36쪽의 코드·후속 본문](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/api-review_036.png)
+
+## V11c API fresh 전쪽 실행 완료
+
+- `00cf12a1f`와 같은 조판 코드의 Mac fresh WASM을 실제 Chrome에서 8개씩 캡처해 전 105쪽 TSV를 산출했다. Native와 전쪽 수치가 동일하다. 35쪽 99.34006%, 36쪽 99.21991%이며 두 fresh review도 직접 판독했다.
+- 전체 최저 46.19920%, 미달은 12·16·18·27·28·34·41·44·61·63·65·69·73·74·93·94쪽이다. sweep 종료 1은 이 기존 미달에 대한 정당한 검토 보류이며 빌드 실패가 아니다. 기존 #7731의 미완료 범위를 보존한다.
+- 진단-only 배분 간격 보정과 보강한 기존 함수는 별도 최신 실행 중이다. 위 결과를 그 실행의 통과나 최종 전체 nextest 통과로 혼동하지 않는다.

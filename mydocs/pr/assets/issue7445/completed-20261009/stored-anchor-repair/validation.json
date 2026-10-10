@@ -1008,7 +1008,40 @@
       "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/api96-v11c-affected/api105/silhouette.tsv",
       "sha256": "7cdca9460d11c85545347afce1f453920a0fc325cf05739895523d47a5e13915"
     },
-    "freshWasmApi105": "running; not yet raster-verified",
+    "freshWasmApi105": {
+      "pages": 105,
+      "minimumPercent": 46.1992,
+      "below90": [
+        12,
+        16,
+        18,
+        27,
+        28,
+        34,
+        41,
+        44,
+        61,
+        63,
+        65,
+        69,
+        73,
+        74,
+        93,
+        94
+      ],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/api96-fresh-v11c/api105/silhouette.tsv",
+      "sha256": "6037b31d5ffb5e5f2a004a068d90060f904dc63db6ad7ac95461e9f95cdb39c4",
+      "all105MetricsIdenticalToNative": true,
+      "all105PngHashesIdenticalToNative": true,
+      "sourceEquivalentToCommit": "00cf12a1f2647fab616a0593edc442fa1a34cdff",
+      "captureConcurrency": 8,
+      "exitCode": 1,
+      "reason": "existing 16 low-fidelity pages; newly regressed p36 repaired",
+      "reviewPages": [
+        35,
+        36
+      ]
+    },
     "nativeCounterDocuments": 12,
     "nativeCounterPages": 251,
     "nativeCounterAllSvgIdentical": true,
