@@ -25,3 +25,11 @@ exact devel 및 코드 후보의 Native/fresh WASM 전체 24쪽 TSV를 같은 PD
 - `1737aa751`은 HWP3 계보를 근거로 HWP5 원본 ParaShape 간격을 반감하고 저장 vpos를 차감하던 처리를 제거했다. 이 파일의 p25 이후 저장 원점 차이는 568HU이고, 현재 문단 뒤 간격은 원본 값이다. 원본 IR을 다시 훼손하여 과거 결과를 복원하지 않는다.
 - `uses_hwp3_origin_flow_spacing_before`는 이미 원본 HWP5에서 앞 간격 사전 차감 생략을 사용하지 않는다. `vpos_corrected_end_y`의 오래된 설명만 보고 이 플래그가 켜져 있다고 판단하거나 다시 바꾸지 않는다.
 - 전체 Print 비교가 끝나면 원본 저장 줄의 간격·인라인 도형 및 표 점유·실제 흐름 커서가 같은 물리 공간을 한 번 소비하는지 확인한다. 아직 완료·회귀 제거·PR 준비 완료로 판단할 근거는 없다.
+
+## 전수 비교 결과
+
+- exact devel `21ed64071`의 Native/fresh WASM 전24쪽은 최저 44.28514%, 90% 미만 12쪽이다. Native와 실제 Chrome WASM의 TSV 수치가 일치한다. 독립 기준은 이번에 재산출한 한컴 2024 Print PDF다.
+- 이전 코드 후보 `b60dca726`의 Native/fresh WASM 전24쪽은 최저 51.57501%, 미달 2쪽(2쪽 88.73774%, 3쪽 51.57501%)이다. 새 글리프 폭·수직 정렬 후보의 최종 증거로 대신하지 않는다.
+- baseline WASM에는 조판 세대 setter가 없어 최신 exporter가 거부했다. `21ed64071`의 생성자 기본값 `hangul2024_compat=false`를 소스에서 확인하고 기존 진단 exporter의 2022 전용 경로로 실행했다. setter를 가짜로 주입하거나 조판 세대 2024를 주장하지 않는다. package·비교 알고리즘은 변경하지 않았다.
+- 전수 TSV 4종과 입력·PDF·package·exporter 출처를 `mydocs/pr/assets/issue7445/completed-20261009/nopassword-base-head-visual-validation.json`에 기록했다.
+- base 자체의 시각 미달과 현재 수정이 새로 만든 3쪽 넘침은 구분한다. 기대값 완화나 원문 제외로 새 넘침을 숨기지 않고, p25 표 이후 문단 간격·표 바깥여백의 흐름 중복을 구현에서 해결한다. 완료·회귀 제거·PR 승인 가능한 문서로 판정하지 않았다.
