@@ -25,13 +25,7 @@ import type { TextMutationEffects } from './command';
 import type { DocumentPosition } from '@/core/types';
 import { showConfirm } from '@/ui/confirm-dialog';
 import { tryConfirmDeleteHyperlink } from './input-handler-hyperlink-delete';
-import {
-  detectPlatformKind,
-  getNavigationAction,
-  shouldSuppressUnmappedNavigation,
-  type NavigationAction,
-  type NavigationKeyInput,
-} from './navigation-keymap';
+import type { NavigationKeyInput } from './navigation-keymap';
 
 /**
  * [#2548] WASM 삭제/조회 count 는 Rust `Paragraph::delete_text_at` 의 char(Unicode
@@ -143,101 +137,28 @@ function tryConfirmRemoveClickHereAtBoundary(
   }
 }
 
-/** IME 조합 종료 후 대기 중인 탐색 키를 처리한다 */
-function executeNavigationAction(this: any, action: NavigationAction, shiftKey: boolean): void {
-  if (shiftKey) this.cursor.setAnchor();
-  else this.cursor.clearSelection();
-
-  switch (action) {
-    case 'wordBackward':
-      this.cursor.moveToWordBoundary(-1);
-      break;
-    case 'wordForward':
-      this.cursor.moveToWordBoundary(1);
-      break;
-    case 'lineStart':
-      this.cursor.moveToLineStart();
-      this.markCurrentFieldStartOutside?.();
-      break;
-    case 'lineEnd':
-      this.cursor.moveToLineEnd();
-      this.markCurrentFieldEndOutside?.();
-      break;
-    case 'paragraphBackward':
-      this.cursor.moveToParagraphBoundary(-1);
-      break;
-    case 'paragraphForward':
-      this.cursor.moveToParagraphBoundary(1);
-      break;
+/** IME 조합 종료 후에도 현재 편집 모드의 키보드 처리 경로를 사용한다. */
+function processPendingNav(this: any, nav: NavigationKeyInput): boolean {
+  const key = nav.code || nav.key || '';
+  // 조합 확정 Enter는 줄바꿈을 추가하지 않는다. 일반 keydown을 재생하지 않으므로
+  // 이 경로에서 pagination barrier를 수행한다. 다른 탐색 키의 barrier는 onKeyDown이 맡는다.
+  if (key === 'Enter') {
+    this.flushDeferredPaginationIfNeeded('before-navigation', false);
+    return true;
   }
 
-  this.updateCaret();
-  if (shiftKey) this.updateSelection();
-}
-
-function processPendingNav(this: any, nav: NavigationKeyInput): void {
-  this.flushDeferredPaginationIfNeeded('before-navigation', false);
-  const { code, shiftKey } = nav;
-  const platform = detectPlatformKind();
-  const action = getNavigationAction(nav, platform);
-  if (action) {
-    executeNavigationAction.call(this, action, shiftKey);
-    return;
-  }
-  if (shouldSuppressUnmappedNavigation(nav, platform)) return;
-
-  // 방향키 처리
-  if (code === 'ArrowLeft' || code === 'ArrowRight' ||
-      code === 'ArrowUp' || code === 'ArrowDown') {
-    const vertical = this.cursor.isInVerticalCell?.() ?? false;
-    if (shiftKey) {
-      this.cursor.setAnchor();
-    } else {
-      this.cursor.clearSelection();
-    }
-    let moveH: number | null = null;
-    let moveV: number | null = null;
-    if (code === 'ArrowLeft') {
-      if (vertical) moveV = -1; else moveH = -1;
-    } else if (code === 'ArrowRight') {
-      if (vertical) moveV = 1; else moveH = 1;
-    } else if (code === 'ArrowUp') {
-      if (vertical) moveH = -1; else moveV = -1;
-    } else {
-      if (vertical) moveH = 1; else moveV = 1;
-    }
-    if (!shiftKey && moveH === 1 && this.tryEnterExitedFieldStart?.()) {
-      this.updateCaret();
-      return;
-    }
-    if (!shiftKey && moveH === -1 && this.tryEnterExitedFieldEnd?.()) {
-      this.updateCaret();
-      return;
-    }
-    if (!shiftKey && moveH === -1 && this.tryExitCurrentFieldStart?.()) {
-      this.updateCaret();
-      return;
-    }
-    if (!shiftKey && moveH === 1 && this.tryExitCurrentFieldEnd?.()) {
-      this.updateCaret();
-      return;
-    }
-    if (moveH !== null) this.cursor.moveHorizontal(moveH);
-    if (moveV !== null) this.cursor.moveVertical(moveV);
-    this.updateCaret();
-  } else if (code === 'Home') {
-    if (shiftKey) this.cursor.setAnchor(); else this.cursor.clearSelection();
-    this.cursor.moveToLineStart();
-    this.markCurrentFieldStartOutside?.();
-    this.updateCaret();
-  } else if (code === 'End') {
-    if (shiftKey) this.cursor.setAnchor(); else this.cursor.clearSelection();
-    this.cursor.moveToLineEnd();
-    this.markCurrentFieldEndOutside?.();
-    this.updateCaret();
-  } else if (code === 'Enter') {
-    // Enter는 조합 확정만으로 충분 (줄바꿈은 별도 처리 불필요)
-  }
+  // IME의 key='Process'와 조합 플래그를 넘기면 다시 보류된다. 물리 키와 수정자만
+  // 재생해 머리말/꼬리말·각주·셀의 커서 소유자, 선택과 화면 이동을 일반 입력과 공유한다.
+  let handled = false;
+  this.onKeyDown({
+    ...nav,
+    key,
+    code: key,
+    isComposing: false,
+    keyCode: 0,
+    preventDefault() { handled = true; },
+  } as KeyboardEvent);
+  return handled;
 }
 
 function tryDeleteBodyFootnoteAtCursor(
@@ -599,7 +520,12 @@ export function onCompositionEnd(this: any): void {
   if (this._pendingNavAfterIME) {
     const nav = this._pendingNavAfterIME;
     this._pendingNavAfterIME = null;
-    processPendingNav.call(this, nav);
+    if (processPendingNav.call(this, nav)) {
+      this._imeNavigationGuard?.markReplayed();
+    } else {
+      // 재생이 소비하지 않은 키(HF/FN Tab 등)는 native keydown의 기본 동작을 허용한다.
+      this._imeNavigationGuard?.reset();
+    }
   }
 }
 
