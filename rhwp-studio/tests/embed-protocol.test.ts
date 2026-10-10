@@ -146,6 +146,37 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
   );
 });
 
+test('embed router getPageSvg는 profile 생략 시 종전 호출, 허용값만 전달한다', async () => {
+  const calls: Array<{ page: number; profile?: string }> = [];
+  const handlers = {
+    getPageSvg: async (page: number, profile?: string) => {
+      calls.push({ page, profile });
+      return '<svg/>';
+    },
+  } as unknown as EmbedRpcHandlers;
+
+  assert.equal(await routeEmbedRequest('getPageSvg', { page: 1 }, handlers), '<svg/>');
+  await routeEmbedRequest('getPageSvg', {}, handlers);
+  for (const profile of ['fastPreview', 'screen', 'print', 'highQuality']) {
+    await routeEmbedRequest('getPageSvg', { page: 2, profile }, handlers);
+  }
+  assert.deepEqual(calls, [
+    { page: 1, profile: undefined },
+    { page: 0, profile: undefined },
+    { page: 2, profile: 'fastPreview' },
+    { page: 2, profile: 'screen' },
+    { page: 2, profile: 'print' },
+    { page: 2, profile: 'highQuality' },
+  ]);
+  for (const profile of ['Print', '', null, 1]) {
+    await assert.rejects(
+      () => routeEmbedRequest('getPageSvg', { page: 0, profile }, handlers),
+      /profile must be one of/,
+    );
+  }
+  assert.equal(calls.length, 6);
+});
+
 test('embed router는 document-agent v1 command와 target을 strict DTO로만 전달한다', async () => {
   const calls: Array<{ method: string; value?: unknown }> = [];
   const target = {
