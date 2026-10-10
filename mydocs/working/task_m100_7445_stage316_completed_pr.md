@@ -1831,3 +1831,86 @@ unit tier 검사, Mac no-opt fresh WASM 대체 빌드를 완료했습니다.
 62,832HU를 유지하고 있습니다. 실제 행 높이와 저장 상자/형제 호스트 줄을
 대조하여, 높이 또는 앵커가 한컴의 label 가림을 유발하는지 진단합니다.
 진단용 사본을 새 정답지로 대신하지 않으며 원본과 기존 Print를 보존합니다.
+
+
+## 보정 372 사전 분석: 시험지 진단 fixture 의존 검사 잔존
+
+사용자가 시험지 회귀 전체를 별도 작업으로 제거하도록 지시했지만 #4961·
+#4962 공개 진단 manifest에는 `3-10월_교육_통합_2022.hwp/.hwpx`가 남아
+있습니다. 보정 370에서 두 Rust 검사는 이 시험지의 layout/aggregate 해시
+절대핀에서 실패했습니다. 명시적인 시험지 작업 분리 지시에 따라 해당 두
+manifest 입력과 그 형식 쌍 전용 assertion, 시험지를 읽는 Node 전용 검사를
+제거합니다. 시험지 원본·기준 PDF는 보존하며 새 fixture나 회귀는 추가하지
+않습니다. 비시험지 exact/missing/substFont 및 coverage 조정·개인정보·해시
+계약은 유지합니다. 기존 #7445 renderPinsDeferredToIssue7445 기록은 Rust와
+WASM 검사 소비자가 같은 필드만 이관하도록 맞춥니다. 시각 개선으로 보고하지
+않으며 사용자 지시로 분리한 시험지 검사의 제거로 기록합니다.
+
+
+시험지 의존 제거 후 첫 실행은 #4961 관련 7건 중 6 PASS / 1 FAIL입니다.
+#4962가 파생 suite 002로 이동했으므로 후속 실행에서 현재 배정을 사용합니다.
+남은 #4961 실패는 HWP에는 대체 글꼴이 없다는 전제입니다. 사양 표 20의
+0x80 속성과 원시 FACE_NAME을 엔진 밖에서 해독했고, KoPubWorld돋움체 Light의
+언어 슬롯 0·1은 `한컴바탕`을 선언합니다. HWPX XML의 같은 슬롯은 `HCR Batang`입니다.
+원시 선언을 기대값으로 삼아 진단의 문서 대체 값이 그 선언과 같은지 검사하며,
+새 fixture·픽셀 기대값·회귀를 추가하지 않습니다. 문서 배열에서 exact-face를
+숫자 인덱스로 고르던 상한 검사는 ID로 고쳐 기존 입력을 그대로 사용합니다.
+
+
+### 보정 371 진단 결과: 선언 높이 변경만으로는 독립 출력이 바뀌지 않음
+
+같은 Enter 저장본의 본문 표는 선언 62,832HU 대 실측 86,266HU이며,
+편집 셀은 선언 1,848HU 대 실측 25,282HU입니다. 선언 표 높이만 고친
+사본과 표·셀 높이를 함께 고친 사본을 각각 엔진 2020, Print method 0,
+한 쪽씩 출력했습니다. 수정된 원시 높이를 재파싱으로 확인했지만 두 PDF의
+4쪽 전체 PNG는 기존 같은 Enter Print와 byte-identical입니다. 높이만
+되쓰는 변경을 생산 코드에 추가하지 않습니다. Native/fresh 5쪽 대 Print
+4쪽과 한컴 label 가림은 남아 있으며 다른 저장 원점·개체 의미를 추적합니다.
+진단 사본은 ignored output에 보존하고 기존 정본을 대체하지 않습니다.
+
+[원시 높이·fresh 동일 입력·독립 Print 작업·전쪽 대조](../pr/assets/issue7445/completed-20261009/rnote-export-height-diagnostic.json).
+
+
+#4961의 선언 검사는 통과했지만 기존 #4962 비시험지 검사가
+`unclassified widthSource: measuredOriginalGlyph`로 실패했습니다. 원본 부분
+실측 advance는 `characterMatch=hit`, 전체 `metricEntry=None`이며 기존
+measured-overlay 그룹과 같은 실측 폭 계약입니다. coverage 분류와 공용 JSON
+계약에서 이 출처를 명시적으로 지원하고, 기존 분류 우선순위 검사에서 해당
+출처를 확인합니다. 원본 글꼴 선택·폭·paint는 바꾸지 않으며 알 수 없는 출처와
+모순된 hit 조합은 계속 오류로 처리합니다. 새 검사 함수는 추가하지 않습니다.
+
+
+분류 지원 뒤 원문 문자·문단·source run 분모와 legacy projection 해시는
+변경되지 않았습니다. 원시 DocInfo/PARA_TEXT/PARA_CHAR_SHAPE를 엔진 밖에서
+해독한 결과, 비시험지 입력의 라틴 HCI Poppy·정체 슬래시는 정확히 3개입니다.
+이 3개가 옛 char-miss에서 실측 hit로 분류되는 근거이며, 기존 나머지 분류와
+원문 분모는 유지합니다. 분류 그룹의 행 수와 집계 해시 문자열은 glyph 출처
+변경에 의존하므로 배열 길이 계약과 같은 원문 반복 결과의 결정성으로 바꿉니다.
+독립 원시 글리프 수 3개와 기존 legacy projection 해시는 계속 엄격히 검사합니다.
+변경은 진단 수집·검사에 한정되며 렌더링 좌표·쪽수 기대값을 갱신하는 것이
+아닙니다. 이미 실패하는 원본의 시각 수용이나 90% 통과를 이 변경으로 주장하지
+않습니다. 진단의 비변이·개인정보·분모·자원 제한 검사는 유지합니다.
+
+
+### 보정 372 최종 검증과 범위
+
+현재 파생 suite 배정을 다시 조회한 기존 #4961·#4962 검사 **15 PASS /
+0 FAIL / 424 skipped**, exit 0입니다. 첫 선별 실행 중 suite 재배정으로
+#4961만 실행된 결과는 전체 관련 검사 통과로 사용하지 않았습니다. 최종
+실행은 suite 016·028의 두 모듈 전체를 포함합니다. fresh WASM 공개 E2E는
+**2 PASS / 0 FAIL**, coverage 공용 계약은 **9 PASS / 0 FAIL / 1 skip**입니다.
+skip은 기존 로컬 POC v2 aggregate 미제공 선택 검사이며 새 skip이 아닙니다.
+
+fmt·Native/WASM32/all-target Clippy·workspace build·고정 base manifest·
+unit tier 검사와 Mac no-opt fresh WASM 대체 빌드를 모두 통과했습니다.
+시험지 입력 2종과 PDF는 그대로 보존했습니다. 원문 분모·legacy projection
+해시, 비변이·자원 제한·privacy 검사는 유지하고 새 회귀 함수는 추가하지
+않았습니다. 이번 생산 변경은 읽기 전용 진단 분류 1곳으로 renderer와
+원본 글꼴 폭·paint·serializer는 바꾸지 않습니다.
+
+보정 370의 25개 실패 중 이 두 진단 계열을 처리한 잔여 목록은 **23개**입니다.
+이는 최신 전체 통과 또는 남은 23개 모두의 최종 재실행 완료를 뜻하지
+않습니다. rnote Enter 편집본의 독립 Print 차이, 최종 전체 nextest/Skia와
+PR/CI/merge·후속 처리는 아직 완료되지 않았습니다.
+
+[시험지 보존·원시 선언/글리프 근거·15개 실행·lint/build·잔여 목록](../pr/assets/issue7445/completed-20261009/font-diagnostic-exam-removal-validation.json).

@@ -150,8 +150,17 @@ test('공개 HWP/HWPX fixture의 exact, missing, substFont 계보가 WASM에서 
   assert.ok(withSubstitution.records.some(record => record.document.substFont !== null));
   assert.ok(hwpCounterpart.records.some(record => record.document.substFont === feature.expectedHwpSubstFont));
   assert.notEqual(hwpCounterpart.layoutHash.value, withSubstitution.layoutHash.value);
-});
+  for (const declaration of MANIFEST.comparisons.documentSubstituteDeclarations) {
+    const trace = traces.get(declaration.documentId);
+    const records = trace.records.filter(record => (
+      record.document.face === declaration.face
+      && declaration.languageSlots.includes(record.document.languageSlot)
+    ));
+    assert.ok(records.length > 0, `${declaration.documentId}: 선언 대상 글꼴`);
+    assert.ok(records.every(record => record.document.substFont === declaration.substFont));
+  }
 
+});
 
 test('WASM 상한과 backend 미지원은 silent clamp나 빈 성공 없이 fail-closed한다', () => {
   const document = MANIFEST.documents.find(candidate => candidate.id === 'exact-face');

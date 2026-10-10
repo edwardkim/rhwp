@@ -80,9 +80,14 @@ refactor의 historical digest 차이는 `ledgerSourceDrift`로 노출한다.
 | missing face | `HCI Poppy` → `Palatino Linotype` style substitution → exact metric |
 | document substitute | `KoPubWorld돋움체 Light` + 문서 `HCR Batang` → heuristic advance |
 
-같은 공개 문서의 HWP/HWPX가 동일 객체 상태를 가진 경우에는 record와 `layoutHash`가 같다. 반대로
-`[2027] 온새미로 1 본교재` 쌍처럼 현재 HWPX 객체에만 `substFont`가 존재하면 hash가 다른 것이 정상이다.
-이는 format/version 분기가 아니라 현재 객체의 기능 탐지 결과다.
+동일 객체 상태의 HWP/HWPX는 record와 `layoutHash`가 같다. 현재 공개 E2E에서는 사용자의
+시험지 작업 분리 지시에 따라 `3-10월_교육_통합_2022.hwp/.hwpx` 입력과 해당 형식 쌍의
+해시 검사를 제거했습니다. 원본 문서와 PDF는 보존하며 시험지 렌더링 수용을 주장하지 않습니다.
+
+`[2027] 온새미로 1 본교재` HWP에도 사양 표 20의 `0x80` 대체 선언이 있습니다.
+원시 FACE_NAME의 언어 슬롯 0·1은 `한컴바탕`, HWPX XML은 `HCR Batang`을 선언합니다.
+두 형식 모두 문서가 선언한 값을 보존하는지 검사합니다. HWP라는 이유로 `substFont=null`을
+기대하지 않으며, 이 검사는 글꼴 진단의 선언 보존 계약으로 렌더링 위치·해시 기대값과 구분합니다.
 
 Stage 4에서 header/footer 내부의 `usize::MAX` 상대 layout marker가 native 64-bit와 wasm32에서 서로 다른
 문단 번호로 직렬화되던 문제를 발견했다. 이 marker는 문서 source 좌표가 아니므로 `null`로 정규화하고

@@ -83,7 +83,7 @@ test('W3 contract has seven exclusive categories and disjoint reuse/delta fields
 
 test('classification priority produces every W3 category exactly once', () => {
   const cases = [
-    [decision({ widthSource: 'metricSpaceOverlay' }), 'measured-overlay'],
+    [decision({ widthSource: 'measuredOriginalGlyph', matchKind: 'none', metricEntry: null }), 'measured-overlay'],
     [decision({ provenance: [{
       relationType: 'identity-alias',
       evidenceStatus: 'verified-by-bytes',

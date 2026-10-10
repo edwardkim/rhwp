@@ -1,0 +1,116 @@
+{
+  "stage": 371,
+  "headAtStart": "2fe74c9cec57b423ed94505557400b1ec6ddfdaf",
+  "scope": "Enter 저장본의 stale 선언 높이 인과 진단, 생산 코드 변경 없음",
+  "freshLive": {
+    "pageCount": 5,
+    "version": "0.8.7",
+    "layoutGeneration": "2022",
+    "comparisonProfile": "print",
+    "browser": "Chrome/154.0.8037.99",
+    "pages": [
+      {
+        "page": 1,
+        "svgSha256": "69f773afc808ab3335551533e6ac12b8334d19a84515ffc3976b7a86d964303e"
+      },
+      {
+        "page": 2,
+        "svgSha256": "cc5e0b8d93eeda7e1adb0210c5c3da114eb07cc08671b3b20daaeec96606ab2d"
+      },
+      {
+        "page": 3,
+        "svgSha256": "5e3d607c3ee671e63ac7cd87d218980e3895b17dcaab7c6b89a01512d80468d1"
+      },
+      {
+        "page": 4,
+        "svgSha256": "8c6d2f4dd247d51a13247d3ede80efbcbe017fd51f4a2a570a10984176fb2fd3"
+      },
+      {
+        "page": 5,
+        "svgSha256": "d5dd742891e1272cfc7ae12f08eeb98d8f787a290df02d873210e3e72f0d2931"
+      }
+    ]
+  },
+  "freshNativeEditedBytesIdentical": true,
+  "editedInputSha256": "f5b017dff4f7e6801428da55e833e5917ccb4fb22cc657097a593af2ee2bb2ad",
+  "storedHeightHu": 62832,
+  "measuredHeightHu": 86266,
+  "measuredHeightPx": 1150.2133333333336,
+  "editedCellStoredHeightHu": 1848,
+  "editedCellMeasuredHeightHu": 25282,
+  "experiments": [
+    {
+      "variant": "common-height",
+      "hwpSha256": "dc71a9506bea3fea3d132e9e0ae7d01e4331388aacc6fd2ea461243c57366acf",
+      "pdfSha256": "8e4e40e5252baaa22f7c1786b024b4baf9b6b9330f93f83fe6d52043cd52469e",
+      "status": {
+        "key": "common-height",
+        "inputSha256": "dc71a9506bea3fea3d132e9e0ae7d01e4331388aacc6fd2ea461243c57366acf",
+        "start": {
+          "job_id": "b7d9c41d-0ab7-49ac-b5f1-42918586849d",
+          "status": "queued",
+          "phase": "queued",
+          "engine": "2020"
+        },
+        "latest": {
+          "job_id": "b7d9c41d-0ab7-49ac-b5f1-42918586849d",
+          "status": "succeeded",
+          "phase": "completed",
+          "engine": "2020",
+          "result": {
+            "job_id": "b7d9c41d-0ab7-49ac-b5f1-42918586849d",
+            "status": "success",
+            "engine": "2020",
+            "hancom_version": "11.0.0.9136",
+            "pdf_print_method": 0,
+            "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+          }
+        }
+      },
+      "pngIdenticalToExistingPrintPages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "effect": "원시 선언 수정 확인. 한컴 전쪽 raster는 원래 편집 Print와 byte-identical. 단순 높이 변경은 원인 해결 근거가 아님."
+    },
+    {
+      "variant": "common-cell-height",
+      "hwpSha256": "20de9d24483ff3871cce34f034e1ac1b3bb46646c3f1fec7f72990e6eff99987",
+      "pdfSha256": "798e2ec1e63ef7b05ab56aa5a6244314d6b74f58b1eda66c411efc1e1cd718bd",
+      "status": {
+        "key": "common-cell-height",
+        "inputSha256": "20de9d24483ff3871cce34f034e1ac1b3bb46646c3f1fec7f72990e6eff99987",
+        "start": {
+          "job_id": "4bfa7256-c115-4c0f-8bd5-0306b70bd0b6",
+          "status": "queued",
+          "phase": "queued",
+          "engine": "2020"
+        },
+        "latest": {
+          "job_id": "4bfa7256-c115-4c0f-8bd5-0306b70bd0b6",
+          "status": "succeeded",
+          "phase": "completed",
+          "engine": "2020",
+          "result": {
+            "job_id": "4bfa7256-c115-4c0f-8bd5-0306b70bd0b6",
+            "status": "success",
+            "engine": "2020",
+            "hancom_version": "11.0.0.9136",
+            "pdf_print_method": 0,
+            "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+          }
+        }
+      },
+      "pngIdenticalToExistingPrintPages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "effect": "원시 선언 수정 확인. 한컴 전쪽 raster는 원래 편집 Print와 byte-identical. 단순 높이 변경은 원인 해결 근거가 아님."
+    }
+  ],
+  "decision": "같은 Enter 파일 Native/fresh 5쪽 대 Print 4쪽 유지. 높이만 고쳐서는 한컴의 가림·쪽수가 달라지지 않음. 원점을 비롯한 다른 저장 의미를 추적하며 진단 사본을 기준으로 교체하지 않음."
+}

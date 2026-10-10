@@ -47,6 +47,7 @@
   ],
   "widthSources": {
     "measuredOverlay": [
+      "measuredOriginalGlyph",
       "kopubTable",
       "metricHalfwidthPunctuationOverlay",
       "metricNarrowPunctuationOverlay",

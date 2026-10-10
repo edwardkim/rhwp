@@ -454,7 +454,8 @@ fn classify_decision(
             }
             Ok(CoverageClassification::NotApplicable)
         }
-        "kopubTable"
+        "measuredOriginalGlyph"
+        | "kopubTable"
         | "metricHalfwidthPunctuationOverlay"
         | "metricNarrowPunctuationOverlay"
         | "metricSpaceOverlay" => {
