@@ -459,5 +459,37 @@
   "failureInventoryPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage426-full-nextest/failure-inventory.json",
   "logPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage426-full-nextest/nextest.log",
   "diagnosisStatus": "문서별 시각·독립 기대값 재검토 중",
-  "testExpectationsChanged": false
+  "testExpectationsChanged": false,
+  "originalFailureRerun": {
+    "head": "4ddcaaeb6",
+    "run": 27,
+    "passed": 8,
+    "failed": 19,
+    "skipped": 3003,
+    "seconds": 107.94,
+    "exitCode": 100,
+    "wholeRegression": false,
+    "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/nextest.log",
+    "remainingTests": [
+      "issue_5877_fragment_ghost_vrules::issue_5877_gas_rowspan_keeps_label_owner_and_next_row_minimum",
+      "issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell",
+      "issue_7203_split_float_anchors_to_paragraph_top::split_fragment_without_a_gap_is_unchanged",
+      "issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "issue_7203_float_table_stored_anchor_top::downstream_table_split_and_body_follow_the_oracle_pages",
+      "issue_7445_biotoxin_source_ownership::cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages",
+      "issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line",
+      "issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow",
+      "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band",
+      "issue_7413_cell_padding_shrinks_only_when_wrapping_overflows::b_cell_that_cannot_wrap_within_its_height_still_shrinks",
+      "issue_1156_rowbreak_fragment_fit::kps_ai_page37_defers_overflowing_split_row_slice",
+      "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "issue_6981_split_straddle_row_height::completed_terminal_cut_does_not_allocate_an_empty_page",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_15",
+      "issue_6981_split_straddle_row_height::continuation_height_respects_varying_page_budgets",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_4",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_5"
+    ]
+  }
 }
