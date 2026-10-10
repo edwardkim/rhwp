@@ -4833,7 +4833,10 @@ impl TypesetEngine {
             // Source 좌표와 배치 전의 빈 단 상태를 보존한다.
             Some((
                 line.vertical_pos,
-                st.vpos_page_base.or(st.vpos_lazy_base),
+                // 텍스트 누적 끝에서 역산한 lazy base는 개체 줄의 물리
+                // 쪽 원점을 증명하지 않는다. 그 축에서 현재 커서와 같다는
+                // 이유로 표 paint를 덮어쓰면 앞 저장 본문 위로 되감긴다.
+                st.vpos_page_base,
                 st.col_count == 1
                     && st.current_items.is_empty()
                     && st.current_height.abs() <= hwpunit_to_px(1, self.dpi),

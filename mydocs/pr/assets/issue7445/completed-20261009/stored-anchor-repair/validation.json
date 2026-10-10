@@ -582,5 +582,80 @@
     },
     "prepLegacyClassificationAt96": "pending; 192dpi 결과와 직접 섞지 않음",
     "wholeBranchValidation": "pending"
+  },
+  "v10Followup": {
+    "baseHead": "21ed64071f81f35f37618717693bd30f727392c9",
+    "parentHead": "9f6f2499e",
+    "sourceFileSha256": "14d1100428395bb146578f9c5cd5d04dbee93af1eb1fb696252a86705ccc68a8",
+    "nativeBinarySha256": "1ebab31765d840bf6b4f60b92a050f330709185d7b28f869c622c4e669f9f49d",
+    "freshWasmSha256": "f3b2963902d7ab196847c779ac95aa0b93e9f9f65b33b189589ea937c4a97100",
+    "wasmBuild": "locked Mac --no-opt local substitute, not Docker optimized",
+    "cause": "A text-derived lazy origin cannot authenticate the physical page origin of a stored inline object row.",
+    "reform22": [
+      {
+        "backend": "native-v10",
+        "pages": 22,
+        "dpi": 96,
+        "p15Percent": 98.29344,
+        "minimumPercent": 46.00331,
+        "below90": [
+          6,
+          12
+        ],
+        "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/native-v10/reform22/silhouette.tsv",
+        "tsvSha256": "3bd368ab5703491cb1652796fbd427370f65ead6ddc73633090f459b0df8322b"
+      },
+      {
+        "backend": "fresh-v10",
+        "pages": 22,
+        "dpi": 96,
+        "p15Percent": 98.29344,
+        "minimumPercent": 46.00331,
+        "below90": [
+          6,
+          12
+        ],
+        "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/fresh-v10/reform22/silhouette.tsv",
+        "tsvSha256": "0f52843bdd8e1999f9aaf912cce1eedf89bd21abcff9c2f37374d6173ce046ac"
+      }
+    ],
+    "existingTests": {
+      "runId": "f3aee21d-e177-4d1d-bcfc-89c9e6817dcd",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 186,
+      "seconds": 3.931,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage432-original-failures-rerun/overlap-v10-nextest.log"
+    },
+    "counterDocuments": 12,
+    "counterPages": 251,
+    "counterNativeSvgIdentical": true,
+    "counterFreshChromeSvgIdentical": true,
+    "counterRasterEvidence": "reuse V9 only where source, PDF, font policy, declared DPI and full SVG are unchanged",
+    "prep96": {
+      "baseMinimumPercent": 91.57672,
+      "nativeMinimumPercent": 91.93033,
+      "freshMinimumPercent": 91.93033,
+      "pages": 140,
+      "below90": [],
+      "wrongClassificationIssue": 7804,
+      "issueState": "closed/not_planned",
+      "testRemoval": false
+    },
+    "regimpact96": {
+      "issue": 7806,
+      "baseMinimumPercent": 12.81871,
+      "nativeMinimumPercent": 12.8538,
+      "below90": [
+        7,
+        8,
+        9,
+        17,
+        18
+      ],
+      "existingContractTestsKept": true
+    },
+    "fullNextestReexecuted": false,
+    "prReady": false
   }
 }
