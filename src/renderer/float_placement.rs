@@ -1347,6 +1347,129 @@ fn stored_empty_square_picture_cell_frame(
     })
 }
 
+/// 빈 그림 앵커와 뒤 문단의 저장 위치가 함께 증명하는 셀 내용 끝점.
+/// 다음 문단이 그림 바닥 뒤에서 시작하면 그 전진량에 그림이 이미 포함된다.
+/// 편집·합성 줄·겹침 허용 그림·다른 개체가 있으면 이 원본 흐름을 사용하지 않는다.
+pub(crate) fn stored_picture_cell_content_end_hu(cell: &crate::model::table::Cell) -> Option<i32> {
+    stored_picture_cell_flow(cell).map(|flow| flow.content_end_hu)
+}
+
+pub(crate) struct StoredPictureCellFlow {
+    pub paragraph_origins_hu: Vec<i32>,
+    pub control_offsets_hu: Vec<Vec<i32>>,
+    pub initial_offset_hu: i32,
+    pub content_end_hu: i32,
+}
+
+impl StoredPictureCellFlow {
+    pub fn picture_start_hu(&self, paragraph: usize, control: usize) -> i32 {
+        self.paragraph_origins_hu[paragraph]
+            + if paragraph == 0 {
+                0
+            } else {
+                self.initial_offset_hu
+            }
+            + self.control_offsets_hu[paragraph][control]
+    }
+
+    pub fn line_start_hu(&self, paragraph: usize, stored_position: i32) -> i32 {
+        stored_position
+            + if paragraph == 0 {
+                0
+            } else {
+                self.initial_offset_hu
+            }
+    }
+}
+
+pub(crate) fn stored_picture_cell_flow(
+    cell: &crate::model::table::Cell,
+) -> Option<StoredPictureCellFlow> {
+    use crate::model::paragraph::LineSeg;
+    if cell.text_direction != 0 || cell.dirty_flag || cell.paragraphs.is_empty() {
+        return None;
+    }
+    let mut end = 0;
+    let mut has_picture = false;
+    let mut origins = Vec::new();
+    let mut offsets = Vec::new();
+    let mut initial_offset = 0;
+    for (index, para) in cell.paragraphs.iter().enumerate() {
+        let [line] = para.line_segs.as_slice() else {
+            return None;
+        };
+        if !para.text.trim().is_empty()
+            || para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || para.column_type != crate::model::paragraph::ColumnBreakType::None
+            || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || line.line_height <= 0
+            || line.vertical_pos < end
+            || (index == 0 && line.vertical_pos != 0)
+        {
+            return None;
+        }
+        // 저장 줄이 직전 그림 끝에서 첫 그림의 전체 띠만큼 전진했다면
+        // 그 줄은 첫 그림 뒤의 앵커다. 그림에 그 전진량을 다시 얹지 않는다.
+        let first_band = para.controls.first().and_then(|control| {
+            let Control::Picture(picture) = control else {
+                return None;
+            };
+            signed_hwpunit(picture.common.vertical_offset)
+                .checked_add(signed_hwpunit(picture.common.height))
+        });
+        let origin = if index > 0
+            && first_band
+                .is_some_and(|band| band > 0 && end.checked_add(band) == Some(line.vertical_pos))
+        {
+            end
+        } else {
+            line.vertical_pos
+        };
+        origins.push(origin);
+        end = line.vertical_pos.checked_add(line.line_height)?;
+        let mut control_offsets = Vec::new();
+        let mut picture_end = i32::MIN;
+        for (control_index, control) in para.controls.iter().enumerate() {
+            let Control::Picture(picture) = control else {
+                return None;
+            };
+            let common = &picture.common;
+            if !is_para_topbottom_float(common)
+                || !common.flow_with_text
+                || common.allow_overlap
+                || common.vert_align != VertAlign::Top
+                || picture.caption.is_some()
+                || common.margin.top != 0
+                || common.margin.bottom != 0
+                || signed_hwpunit(common.height) <= 0
+            {
+                return None;
+            }
+            let offset = signed_hwpunit(common.vertical_offset).max(picture_end);
+            if index == 0 && control_index == 0 {
+                initial_offset = offset.min(0);
+            }
+            control_offsets.push(offset);
+            picture_end = offset.checked_add(signed_hwpunit(common.height))?;
+            // 칸 위로 완전히 이탈한 저장 오프셋은 정상 그림 사다리의 근거가 아니다.
+            // 기존 배치의 이탈 오프셋 판정을 그대로 사용한다.
+            if origin.checked_add(picture_end)? <= 0 {
+                return None;
+            }
+            has_picture = true;
+            end = end.max(origin.checked_add(picture_end)?);
+        }
+        offsets.push(control_offsets);
+    }
+    has_picture.then_some(StoredPictureCellFlow {
+        paragraph_origins_hu: origins,
+        control_offsets_hu: offsets,
+        initial_offset_hu: initial_offset,
+        content_end_hu: end,
+    })
+}
+
 pub(crate) fn stored_empty_picture_cell_frame(
     cell: &crate::model::table::Cell,
     table: &Table,

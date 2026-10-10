@@ -4725,6 +4725,7 @@ impl DocumentCore {
             .with_stored_geometry_policy(profile.stored_geometry_policy())
             .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
+            .with_hwp5_origin_hwpx(profile.hwp5_origin_hwpx())
             .with_session_edited(profile.session_edited())
             .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before)
             .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing));
@@ -5088,6 +5089,7 @@ impl DocumentCore {
             .with_stored_geometry_policy(profile.stored_geometry_policy())
             .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
+            .with_hwp5_origin_hwpx(profile.hwp5_origin_hwpx())
             .with_session_edited(profile.session_edited())
             .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before)
             .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
