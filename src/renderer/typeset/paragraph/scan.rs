@@ -481,6 +481,8 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
                 }
             })
     });
+    // 저장 조각과 현재 흐름의 일치가 물리 경계를 입증한다. HWP3 유래라는
+    // 이유로 뒤 조각의 그림까지 요구하면 정상 본문의 쪽 재시작도 놓친다.
     if page.profile.session_edited()
         // 앞선 재조판 이력만으로 현재 저장 조각의 소유를 버리지 않는다.
         // 아래에서 현재 실제 원점과 저장 첫 줄의 일치, 편집되지 않은
