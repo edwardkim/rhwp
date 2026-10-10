@@ -325,7 +325,7 @@
     "candidate": "SO-SUEOP unsuitable coordinate assertions deferred under sub-issue7807; normal contracts retained",
     "originalFailures": 27,
     "originalPassed": 18,
-    "originalResolved": 16,
+    "originalResolved": 17,
     "originalAssertionPinsDeferred": 1,
     "originalRemovedUnsuitable": 1,
     "originalSeparatedTotal": 2,
@@ -344,10 +344,8 @@
     "fullNextestAfterRepairs": "not yet",
     "prReady": false,
     "approvalRequiredBeforePr": true,
-    "originalPartialGeometryPass": 1,
-    "pendingVisualFollowup": [
-      "pigfarm page 7 80.90032%"
-    ]
+    "originalPartialGeometryPass": 0,
+    "pendingVisualFollowup": []
   },
   "v8Followup": {
     "base": "f59ac14370bc7d92384292fde37e33be59b87bd7",
@@ -2605,5 +2603,114 @@
       "overlay4514-base-p010-silhouette.tsv",
       "overlay4514-review_010.png"
     ]
+  },
+  "v17RecoveredClosedFrame": {
+    "productionParent": "e67d1f0487f1f8ddf4afcb200490d731c6197a01",
+    "productionSourceSha256": "a161806de5513ccff6cdea06e6abc9d63c08b9553201b5f9937667580dfe8060",
+    "source": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+    "sourceSha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+    "pdf": "pdf/156160455-social-pig-farm-income-2020.pdf",
+    "pdfSha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+    "dpi": 96,
+    "nativePages": 11,
+    "freshPages": 11,
+    "minimumNativePercent": 98.19793,
+    "minimumFreshPercent": 98.19793,
+    "p7Percent": 98.96856,
+    "below90": [],
+    "nativeFreshExactPngPages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "browser": "Chrome/154.0.8037.99",
+    "captureConcurrency": 8,
+    "nativeExitCode": 0,
+    "freshExportExitCode": 0,
+    "freshCaptureExitCode": 0,
+    "build": {
+      "sourceSha256": "a161806de5513ccff6cdea06e6abc9d63c08b9553201b5f9937667580dfe8060",
+      "nativeSha256": "e399a393469e86e0a98227344a2ef1f779f24216d4314cc8ad36e27379bdebe2",
+      "pkg": {
+        "rhwp.js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+        "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+        "rhwp_bg.wasm.d.ts": "59c386a1d7b801a5a4a7f000555096c894fd54c5ffab7d9ad193788b1c35bda8",
+        "README.md": "47991b99c9d9a09290fe52eb585a6b72afb1cf175c2f9a735756aa9b83bb40a2",
+        "rhwp_bg.wasm": "920c74822b4db0c1f1556e0131cf777fd00806de3834c4563ed264d139898edf",
+        ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+        "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390",
+        "rhwp.d.ts": "a085be85c50358f02ed855fb645439a32fa511ea64479fd05088cc480899b63a"
+      },
+      "build": "Mac locked wasm-pack --no-opt; not Docker optimized",
+      "nativeBuildExitCode": 0,
+      "wasmBuildExitCode": 0
+    },
+    "rootCause": "a recovered original closed frame was translated to stale host flow again, dropping ownership of the successor leading band; use recovered source frame, preserve numerical identical origins",
+    "directReadPages": [
+      7
+    ],
+    "residual": "border darkness and glyph raster edge differences; no strict-pixel-identity claim",
+    "counter": {
+      "documents": 13,
+      "pages": 356,
+      "allByteIdentical": true,
+      "scope": "Native unembedded Print SVG only"
+    },
+    "tests": {
+      "noNewTestFunctions": true,
+      "unchangedOriginalOrderingAndTwoImagesContract": true,
+      "pixelPinsReplaced": [
+        "81.24px future-picture table origin -> same preceding input without future picture",
+        "141HU hardcoded outer top -> source table attribute",
+        "100px new-body bottom -> mutated PageDef body containment"
+      ],
+      "diagnosticOriginal6797": {
+        "passed": 5,
+        "failed": 0,
+        "seconds": 0.11
+      },
+      "diagnosticExisting6812": {
+        "passed": 19,
+        "failed": 1,
+        "seconds": 0.23,
+        "remaining": "following_text_respects_column_bottom_after_multiple_pictures",
+        "overflowPixels": 3.64
+      },
+      "formalNextest": {
+        "runId": "93609cdb-4298-4960-99d6-8e8a186320fe",
+        "passed": 24,
+        "failed": 1,
+        "skipped": 198,
+        "seconds": 0.359,
+        "exitCode": 100,
+        "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage437-overlay-flow/v17-nextest.log",
+        "remainingFailure": "issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
+        "failingAssertionNotChanged": true
+      },
+      "files": {
+        "tests/cases/issue_6797_table_item_clears_float_band.rs": "6e961262afcf06bcac622ec360e79fd166f4d3593a6e0a930d637503e25631ee",
+        "tests/cases/issue_6812_square_picture_tac_table.rs": "954c816f96b9818374023f0e5c5928511435c5d1e40f6e77e43bf0fa5dfaafef"
+      }
+    },
+    "guideFilesChanged": false,
+    "assets": [
+      "pigfarm-v17-native-silhouette.tsv",
+      "pigfarm-v17-fresh-silhouette.tsv",
+      "pigfarm-v17-review_007.png"
+    ],
+    "originalFidelityIssue": {
+      "number": 7770,
+      "state": "OPEN; integration not yet done"
+    },
+    "fullRegressionAfterRepairs": false,
+    "prReady": false
   }
 }

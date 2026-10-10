@@ -429,13 +429,28 @@ fn issue_6812_future_picture_does_not_reposition_an_already_placed_table() {
     let mut doc = core.document().clone();
     doc.sections[0].paragraphs[0].controls.swap(3, 4);
     core.set_document(doc);
-    let tree = core.build_page_render_tree(0).unwrap();
+    let with_future_picture = core.build_page_render_tree(0).unwrap();
     let mut tables = Vec::new();
-    table_box_for_control(&tree.root, 3, &mut tables);
+    table_box_for_control(&with_future_picture.root, 3, &mut tables);
     assert_eq!(tables.len(), 1);
+
+    // 동일한 표 앞 입력을 유지한 채 뒤 그림만 제거한 대조군과 비교한다.
+    // 과거 81.24px 원점은 문서/여백이 바뀌어도 지켜야 할 계약이 아니다.
+    let mut without_future = core.document().clone();
+    assert!(matches!(
+        without_future.sections[0].paragraphs[0].controls.remove(4),
+        Control::Picture(_)
+    ));
+    core.set_document(without_future);
+    let baseline = core.build_page_render_tree(0).unwrap();
+    let mut baseline_tables = Vec::new();
+    table_box_for_control(&baseline.root, 3, &mut baseline_tables);
+    assert_eq!(baseline_tables.len(), 1, "대조군에서도 앞 표를 보존한다");
     assert!(
-        (tables[0].y - 81.24).abs() < 0.5,
-        "뒤에서 등장한 그림을 미리 예약하면 안 된다"
+        (tables[0].y - baseline_tables[0].y).abs() < 0.5,
+        "뒤 그림의 존재가 앞 표의 배치를 바꾸면 안 된다: with={:?}, without={:?}",
+        tables[0],
+        baseline_tables[0]
     );
 }
 
@@ -459,7 +474,14 @@ fn issue_6812_clearance_participates_in_page_fit_and_expires_at_page_boundary() 
     assert!(old.is_empty(), "표가 첫 쪽에 중복/넘침 배치되면 안 된다");
     assert_eq!(moved.len(), 1);
     assert!(
-        (moved[0].y - layout.body_area.y - 141.0 / 75.0).abs() < 0.5,
+        (moved[0].y
+            - layout.body_area.y
+            - match &core.document().sections[0].paragraphs[0].controls[4] {
+                Control::Table(table) => f64::from(table.outer_margin_top) / 75.0,
+                _ => panic!("새 쪽을 소유한 원본 표"),
+            })
+        .abs()
+            < 0.5,
         "앞 쪽의 그림 회피를 새 쪽에 중복 가산하면 안 된다: {:?}",
         moved[0]
     );
@@ -670,8 +692,13 @@ fn issue_6812_inline_flow_page_fit_drops_previous_page_exclusion() {
     assert!(first.is_empty());
     assert_eq!(second.len(), 1);
     let (_, _, table) = second[0];
+    let new_layout = PageLayoutInfo::from_page_def(
+        &core.document().sections[0].section_def.page_def,
+        &Default::default(),
+        96.0,
+    );
     assert!(
-        table.y + table.height <= layout.body_area.y + 100.0 + 0.5,
+        table.y + table.height <= new_layout.body_area.y + new_layout.body_area.height + 0.5,
         "새 쪽의 실제 본문 하단 안에 배치"
     );
     let Control::Picture(picture) = &core.document().sections[0].paragraphs[0].controls[3] else {

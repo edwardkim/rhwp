@@ -216,7 +216,7 @@ fn page_column(core: &DocumentCore, page: u32) -> RenderNode {
 fn table_item_clears_the_previous_float_band() {
     let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    assert_eq!(core.page_count(), 11, "쪽수 핀 — 본 수정은 조판 불변");
+    assert_eq!(core.page_count(), 11, "독립 한컴 Print PDF는 전 11쪽");
 
     let column = page_column(&core, 6);
     let band_owner = top_level_table(&column, 70, 0).expect("7쪽에 pi=70 ci=0 표가 있어야 한다");
