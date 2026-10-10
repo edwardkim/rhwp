@@ -19,3 +19,11 @@
 - `cargo fmt --all -- --check`와 `git diff --check`를 통과했다. 기존 메트릭·문서 소속·본문 넘침 nextest는 새 코드로 컴파일 중이며 완료 결과는 아직 없다.
 - 하단 보정 코드의 추가 기존 검사 12 PASS / 0 FAIL과 Native/WASM32 Clippy PASS는 이전 코드 후보의 결과다. 이번 글리프 폭 변경의 회귀 통과 증거로 대신하지 않는다.
 - 이전 fresh WASM 시각 검증의 실행 중 캡처를 보존한다. 대기 중이던 다음 WASM 빌드만 새 코드 후보 검증으로 대체하고, 실행 중 Cargo를 중단하지 않았다.
+
+## 실제 실행 결과와 재시도
+
+- 기존 메트릭·문서 소속·본문 넘침 nextest는 47 PASS / 0 FAIL / 4362 skip으로 완료됐다. 새 회귀 테스트와 허용치 변경은 없다.
+- Native Skia 빌드는 디스크 공간 부족(ENOSPC)으로 실패했다. 이전 SVG를 정리한 후 동일 소스로 빌드를 재실행 중이다. 최초 실패를 통과로 처리하지 않는다.
+- 일반 review 생성에 TSV 전용 비동기 래퍼를 사용하면 PNG 완료 전에 비교를 시작하는 실행 오류가 있었다. canonical `visual_sweep.py --resume`으로 해당 44쪽만 정상 완료했다. 저장소의 비교 알고리즘은 바꾸지 않았다.
+- 실제 default Native 44쪽 review PNG는 `mydocs/pr/assets/issue7445/completed-20261009/roadmap-top-text-p044-native-review.png`에 보존했다. 쪽수 302/302, 해당 쪽 2px 이웃 실루엣 일치율 99.99955%, 엄격 내용 픽셀 일치율 84.01278%다. 단일 쪽 보조값으로 전체 검증이나 미세 간격 완료를 주장하지 않는다.
+- 굵은 글자의 누적 간격과 fresh WASM 및 Native Skia 전체 302쪽 재검증은 남아 있다.
