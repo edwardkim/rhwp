@@ -85,6 +85,9 @@ studio.destroy();
 - **대화상자를 여는 커맨드는 기본 거절됩니다**(`{ok:false, reason:'needs-dialog'}`). 자동화가 그것을
   열면 사람이 누를 때까지 응답이 멈춥니다. 사용자가 앞에 있는 통합에서는
   `studio.commands.execute(id, params, { allowDialog: true })` 로 풉니다.
+  값을 매개변수로 다 받는 커맨드는 대화상자 없이 실행됩니다. 예를 들어 누름틀은
+  `studio.commands.execute('insert:field', { name: '기안자', guide: '이름', memo: '' })` 로
+  캐럿 위치에 바로 넣습니다(`editable`·`type:'clickhere'` 선택, 잘못된 값은 `reason:'threw'`).
 - **컨테이너 이동은 지원하지 않습니다.** iframe 을 다른 요소로 옮기면 브라우저가 문서를 재로드해
   편집 상태가 사라집니다. 화면상의 이동·숨김은 컨테이너 CSS 로 하고(`display:none` 은 상태를
   보존합니다), 정말 옮겨야 하면 `destroy()` 후 다시 만듭니다.

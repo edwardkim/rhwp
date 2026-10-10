@@ -9,6 +9,13 @@ import { SymbolsDialog } from '@/ui/symbols-dialog';
 import { BookmarkDialog } from '@/ui/bookmark-dialog';
 import { EndnoteShapeDialog } from '@/ui/endnote-shape-dialog';
 import { FieldInsertDialog } from '@/ui/field-insert-dialog';
+import {
+  MAX_FIELD_GUIDE_LEN,
+  MAX_FIELD_MEMO_LEN,
+  MAX_FIELD_NAME_LEN,
+  type ClickHereProps,
+} from '@/ui/field-edit-dialog';
+import { hasFieldInsertParams, parseFieldInsertParams } from '@/command/field-insert-params';
 import { showShapePicker } from '@/ui/shape-picker';
 import { showToast } from '@/ui/toast';
 import type { ShapeType } from '@/ui/shape-picker';
@@ -213,34 +220,49 @@ export const insertCommands: CommandDef[] = [
     label: t('command.insert.field.label'),
     shortcutLabel: 'Ctrl+K+E',
     canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode,
-    execute(services) {
+    // 이름·안내문·메모 등을 매개변수로 받으면 대화상자 없이 캐럿 위치에 바로 넣는다.
+    runsWithoutDialog: (params) => hasFieldInsertParams(params),
+    execute(services, params) {
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getCursorPosition();
+      const insertAtCaret = (props: ClickHereProps): void => {
+        // [Task #2377] 누름틀 삽입은 안내문 텍스트를 문서에 넣는다(문자 수 변경) —
+        // 미기록 시 undo 불가 + 후속 undo 오프셋 오염. snapshot 으로 라우팅한다(이 커맨드는
+        // 일반 모드 전용이라 게이트 드롭 없음). 실패 시 throw 로 엔트리 생성을 막는다.
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'insertField',
+          operation: (wasm) => {
+            const result = wasm.insertClickHereField(pos, props.guide, props.memo, props.name, props.editable);
+            if (!result.ok) throw new Error('insertClickHereField not ok');
+            return { ...pos, charOffset: result.charOffset ?? pos.charOffset };
+          },
+        });
+        // 커서는 라우터가 삽입 위치로 이동시킨다 — 필드 끝 밖 마킹·활성 필드 해제는 기존대로.
+        ih.markCurrentFieldEndOutside();
+        services.wasm.clearActiveField();
+        // [Task #2370] 수동 emit 제거 — 스냅샷 라우팅의 'full' refresh 가 afterEdit() 를
+        // 부르고 거기서 이미 'document-mutated'/'document-changed' 를 emit 한다.
+        // 구독자(markDirty·autosave)는 reason 을 라벨로만 쓰므로 중복 emit 은 순손해다.
+        // 모달 확인 버튼(또는 바깥 호스트)으로 옮겨간 포커스를 편집기로 복원 — 종전엔 moveCursorTo 끝의
+        // focusTextarea 가 담당했으나 라우터 경로엔 없다(field:edit 의 onClose 복원과 동형).
+        ih.focus();
+      };
+
+      // 매개변수 경로: 형식 오류·삽입 실패를 던져 자동화 호출자가 `threw` 사유를 받게 한다.
+      const fromParams = parseFieldInsertParams(params, {
+        name: MAX_FIELD_NAME_LEN, guide: MAX_FIELD_GUIDE_LEN, memo: MAX_FIELD_MEMO_LEN,
+      });
+      if (fromParams) {
+        insertAtCaret(fromParams);
+        return;
+      }
+
       fieldInsertDialog = new FieldInsertDialog();
       fieldInsertDialog.onApply = (props) => {
         try {
-          // [Task #2377] 누름틀 삽입은 안내문 텍스트를 문서에 넣는다(문자 수 변경) —
-          // 미기록 시 undo 불가 + 후속 undo 오프셋 오염. snapshot 으로 라우팅한다(이 커맨드는
-          // 일반 모드 전용이라 게이트 드롭 없음). 실패 시 throw 로 엔트리 생성을 막는다.
-          ih.executeOperation({
-            kind: 'snapshot',
-            operationType: 'insertField',
-            operation: (wasm) => {
-              const result = wasm.insertClickHereField(pos, props.guide, props.memo, props.name, props.editable);
-              if (!result.ok) throw new Error('insertClickHereField not ok');
-              return { ...pos, charOffset: result.charOffset ?? pos.charOffset };
-            },
-          });
-          // 커서는 라우터가 삽입 위치로 이동시킨다 — 필드 끝 밖 마킹·활성 필드 해제는 기존대로.
-          ih.markCurrentFieldEndOutside();
-          services.wasm.clearActiveField();
-          // [Task #2370] 수동 emit 제거 — 스냅샷 라우팅의 'full' refresh 가 afterEdit() 를
-          // 부르고 거기서 이미 'document-mutated'/'document-changed' 를 emit 한다.
-          // 구독자(markDirty·autosave)는 reason 을 라벨로만 쓰므로 중복 emit 은 순손해다.
-          // 모달 확인 버튼으로 옮겨간 포커스를 편집기로 복원 — 종전엔 moveCursorTo 끝의
-          // focusTextarea 가 담당했으나 라우터 경로엔 없다(field:edit 의 onClose 복원과 동형).
-          ih.focus();
+          insertAtCaret(props);
         } catch (err) {
           console.warn('[insert:field] 누름틀 삽입 실패:', err);
         }

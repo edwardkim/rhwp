@@ -78,6 +78,7 @@ export interface StudioAutomation {
    *
    * 단 하나 더 걸린다 — `opensDialog` 커맨드는 기본 거절(`needs-dialog`)이다. 자동화가 대화상자를
    * 열면 사람이 누를 때까지 응답이 멈추기 때문이다. `{ allowDialog: true }` 로 풀 수 있다.
+   * 커맨드가 `runsWithoutDialog(params)` 로 대화상자 없는 실행을 밝히면 거절하지 않는다.
    */
   execute(
     id: string,
