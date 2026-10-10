@@ -19,7 +19,7 @@
 직접 HWPX의 writer-local reset 판정, 편집/재조판 입력, 일반 단조로운 행은 그대로 둡니다.
 좌표 공차 확대나 측정 행 높이 절삭으로 넘침을 숨기지 않습니다.
 
-`CellUnit.stored_frame_break_before → 첫 source frame과 같은 행의 CellUnit hard-break → whole_row_fits의 판정 →
+`CellUnit.hard_break_before → row_block_has_internal_hard_break와 첫 source frame의 행 끝 → whole_row_fits의 판정 →
 advance_row_cut / split_end_cut → emit_table_fragment → layout_partial_table`를 확인합니다.
 본문 문단과 국가 표의 소속을 검사하는 기존 로드맵 회귀 두 개는 수정 전 통과했습니다.
 새 회귀를 추가하거나 baseline을 바꾸지 않습니다.
