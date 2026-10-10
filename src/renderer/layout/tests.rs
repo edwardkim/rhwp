@@ -465,29 +465,18 @@ fn stored_layout_relocated_picture_caption_uses_next_saved_flow_anchor() {
         height: 900.0,
     };
 
-    let flow_top = stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
-        true,
-        &host,
-        &table,
-        Some(&next),
-        &col,
-        96.0,
-    )
-    .expect("이월 그림의 다음 저장 anchor");
+    let flow_top =
+        stored_relocated_picture_successor_origin(true, &host, &table, Some(&next), 96.0)
+            .filter(|origin| *origin <= col.height)
+            .map(|origin| col.y + origin)
+            .expect("이월 그림의 다음 저장 원점");
     assert!(
         (flow_top - 488.386_666_7).abs() < 0.001,
         "flow_top={flow_top}"
     );
     assert!(
-        stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
-            false,
-            &host,
-            &table,
-            Some(&next),
-            &col,
-            96.0,
-        )
-        .is_none()
+        stored_relocated_picture_successor_origin(false, &host, &table, Some(&next), 96.0)
+            .is_none()
     );
 }
 
