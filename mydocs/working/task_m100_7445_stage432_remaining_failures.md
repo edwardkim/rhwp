@@ -264,3 +264,39 @@ SVG `y>570`은 원본 선행 표와 계약조건 본문의 소유·순서 관계
 엄격 픽셀 동일로 보고하지 않는다. 원시 증적은 ignored output의
 `stage435-yeongwol-margin/`에 보존한다. 지침 수정·원본 삭제·외부 이슈 게시를 하지 않았다.
 이번4쪽 원본은 현재 브랜치에서 보정했으며 별도 이관이 필요하지 않았다.
+
+## SO-SUEOP의 기존 좌표 요구 분리 (V15)
+
+두 원본과 독립 한컴 PDF는 모두 46쪽이다. HWP3 기준은 기존
+`pdf/SO-SUEOP-hwp-2020.pdf`(Creator Hwp 2022), HWPX 기준은
+`pdf/SO-SUEOP-hwpx-2024.pdf`(Creator Hwp 2024)를 그대로 썼다. 유효한 독립 PDF의
+버전 표기 때문에 재산출하거나 원본을 바꾸지 않았다.
+
+현재 Native 전 46쪽 TSV는 HWP3 최저 36.34276%·미달 39쪽, HWPX 최저 43.01145%·미달 9쪽이다.
+검사 대상 22쪽은 고정 devel HWP3 81.85474%, 현재 HWP3 81.67681%, 현재 HWPX 96.87848%다.
+devel의 1쪽은 35.80495%이며 devel 비교 범위는 1·22쪽이다. 전 46쪽 base 통과로 쓰지 않는다.
+실제 Chrome fresh WASM은 두 원본 각각 46쪽 SVG를 생성했으며, 관련 22쪽 PNG는 각각 현재
+Native PNG와 같고 점수도 같다. 전쪽 fresh 검증 완료나 전체 피델리티 수용을 주장하지 않는다.
+
+두 22쪽을 직접 읽었다. HWP3의 파란 글자 요청은 `필기`인데 Mac Fontconfig의 정확한 family를
+찾지 못했으며 PDF와 글자 모양이 다르다. 유사 필기체로 임의 치환하지 않았고 모든 미달을
+글꼴 하나로 단정하지 않았다. 원본 전쪽 미달은 새 [#7807](https://github.com/edwardkim/rhwp/issues/7807)에
+등록한 뒤 #7445의 서브 이슈로 연결했다. API로 본문 일치·OPEN·parent의 child 7807을 재확인했다.
+기존 child 80개와 열린 이슈의 같은 원본 body/comment를 확인했으며 #7203의 표 여백 계약과
+#4680의 왕복 저장 범위는 이 전쪽 시각 미달과 구분했다.
+
+변경은 기존 실패 함수 안의 **두 좌표 assertion 분리**다. 다른 rhwp 형식의 y를 1px 이내로
+같게 만드는 비교와 후속 질문의 절대 PDF y 상수를 제거했다. 원본 각주 컨트롤 위치·관계도 문자/
+연결선 복원·표의 기존 바깥여백 흐름 계약·본문 내용과 후속 질문 존재/쪽 소속은 보존했다.
+전체 함수를 삭제하지 않았다. 생산 렌더러·입력·PDF·지침을 변경하지 않았고 새 테스트 함수는 없다.
+
+정식 모듈 검사 **11 PASS / 0 FAIL / 207 skip**, 0.153초,
+run `014fd5d5-e3eb-4167-b077-d1c18b21fc7c`, 종료0이다. 최초 27개 기준
+**16개 해결 / 부적합 검사 범위 2개 분리(함수 1·assertion 범위 1) / 9개 잔존**이다.
+현재 통과 17개 중 1개는 부적합 좌표를 분리한 정상 계약의 통과이며 문서 피델리티 해결로 세지 않는다.
+
+대표 [HWP3 22쪽 review](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/so-sueop-hwp3-review_022.png)와
+[HWPX 22쪽 review](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/so-sueop-hwpx-review_022.png),
+각 Native 전쪽 TSV·fresh 22쪽 TSV·devel 선택 TSV를 자산으로 보존한다. 로그와 거대한 임베딩 SVG는
+ignored `stage436-so-sueop-oracle/`에 둔다. #7807에서 두 원본 전쪽 최저 90% 이상과 직접 판독 뒤
+독립 내용·소속 관계로 재구축한다. 현재 전체 검증과 PR 준비는 미완료다.
