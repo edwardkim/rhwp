@@ -133,3 +133,59 @@
 - `text_overlap_baseline::text_overlaps_do_not_grow_partition_2`
 - `issue_6981_split_straddle_row_height::continuation_height_respects_varying_page_budgets`
 - `body_overflow_baseline::body_overflow_does_not_grow_partition_5`
+
+
+## 이어받은 물리 행의 예약 검사와 교육과정 쪽 번호 핀 분리
+
+생산 보정 `cb7116471`은 이전 조각에서 넘겨받은 물리 잔여 높이를 바로 수용하던 경로도
+기존 병합 셀 내용 높이 검사에 통과시킨다. 물리 최소는 보존하며, 새 쪽 예산을 넘으면
+내용 분할·이월 경로에서 판정한다. 높이 허용치를 늘리거나 최종 bbox를 제한하지 않았다.
+
+- 수정 전 여백 변형 41개 중 3개에서 본문 경계 초과가 재현됐다. 최초 초과는 0.77333px이다.
+  행 높이 배열 차이라는 가설은 진단에서 배제했다. 시작 행의 잔여 높이를 수용하는 조기 경로가
+  병합 내용 요구 검사를 건너뛴 것이 원인이었다.
+- 유지한 교육과정 관계 검사 7개는 모두 통과했다. 글줄과 셀의 포함, 내용의 소속·중복 방지,
+  가변 여백·쪽수, 다시 잘리는 병합 셀과 거대 병합 셀의 비적용 대조를 그대로 검사한다.
+- 기존 실패 목록 및 대조 재실행은 **32개 중 20 PASS / 12 FAIL / 2580 skip, 49.817초**다.
+  run `02d5579e-534b-4145-adf3-db37bdc4e500`이며 전체 회귀 완료로 보고하지 않는다.
+  최초 27개 기준으로 **14개 해결 / 부적합 검사 1개 분리 / 12개 잔존**이다.
+
+분리 함수는 `issue_6981_split_straddle_row_height::completed_terminal_cut_does_not_allocate_an_empty_page`
+한 개다. 고정 base `21ed64071f81f35f37618717693bd30f727392c9`에 이미 등록되어 있던 검사이며,
+378쪽에 다음 구역 `노동인권`을 요구했다. 독립 한컴 2022 Print PDF에서 378쪽은 이전 표의
+`선언문 작성` 행을 소유하고 `노동인권` 구역은 380쪽부터 나온다. 숫자만 옮겨 검사하지 않았다.
+
+같은 원본의 전쪽 피델리티와 쪽 소속은 열린 [#7743](https://github.com/edwardkim/rhwp/issues/7743)에
+이미 등록돼 있다. 원본 SHA-256은 `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e`,
+이번 대조 PDF SHA-256은 `6d1119be4b5043f75ba057ed9aeb06753a03eef4b82f78014bfcd02729cf05f2`다.
+base는 413쪽, 현재는 416쪽, PDF는 415쪽이다. Native 96 DPI의 377~380쪽은 base에서
+69.71230 / 24.13970 / 32.10921 / 29.21402%, 보정 직전에는
+49.31812 / 70.48507 / 69.25696 / 22.65933%였다. Native 부정 증거이며 전쪽·fresh WASM
+90% 통과를 뜻하지 않는다. 대표 [378쪽 review](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/curriculum-old-pin-review_378.png)를 직접 확인해
+쪽 소속과 행 내용 차이를 판독했다. 입력과 PDF는 다른 정상 계약 검사와 공유하므로 원래 경로에 보존한다.
+이 함수만 제거했으며 나머지 7개 관계 검사와 자동 corpus의 다른 정상 범위는 유지한다.
+
+Native와 실제 Chrome fresh WASM의 기존 대조 13문서·356쪽 SVG는 각각 직전 증거와 모두 동일하다.
+교육과정 전체 Native SVG는 416쪽 중 4쪽(311·331·380·397)에서 변경됐으나, 해당 4쪽의
+96 DPI PNG는 수정 전후 바이트가 동일하고 TSV도 동일하다. 현재 fresh WASM 416쪽 SVG는
+현재 Native의 비임베딩 SVG와 모두 바이트가 동일하다. 이 동일성은 변화 범위 증거이며,
+교육과정 전쪽 피델리티 수용이나 기존 시각 결함 해결을 뜻하지 않는다. 해당 문서는 #7743에서
+독립 PDF의 전쪽 소속·내용과 최저 90% 이상을 확인한 뒤 관계 검사로 복원해야 한다.
+
+원시 증거는 Mac 공용 ignored `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage433-remaining-relations/`의
+`v13b-original-controls-nextest.log`, `v13b-provenance.json`, `v13b-remaining.json`,
+`curriculum-pin-classification.json`, `native-v13b-identity.json`, `fresh-v13b-identity.json`,
+`curriculum-v13b-identity.json`, `curriculum-affected-raster-identity.json`,
+`curriculum-native-fresh-raw-identity.json`에 둔다. 새 회귀 함수·fixture와 지침 변경은 없다.
+Mac locked `--no-opt` fresh WASM은 로컬 대체 빌드이며 Docker 최적화 빌드 통과가 아니다.
+
+
+4쪽의 fresh PNG도 현재 Native와 바이트가 동일했다. 최저값은 22.65933%로 기존 미달이며,
+Native/fresh TSV는 311쪽 67.60855%, 331쪽 64.74204%, 380쪽 22.65933%, 397쪽 48.23959%로
+일치했다. 원본에서 생성한 해당 4쪽의 전체 글꼴 선언을 정본 `svg_font_face_rules` /
+`apply_svg_font_policy`로 공급하고, `check_sweep_embedded_fonts`의 Unicode cmap 검사,
+정본 Chrome rasterizer, `write_silhouette_tsv`를 그대로 사용했다. 알고리즘과 2px 관용 거리는
+변경하지 않았으며 캡처 동시 실행 상한은 8개다. 증거는 `curriculum-fresh-selected96/provenance.json`,
+`embedded_fonts.json`, `silhouette.tsv`다. 별도로 시작한 416쪽 전체의 중복 글꼴 정책 처리
+(38.62GiB)은 이 검증 완료 후 종료했으며 exit143을 통과로 세지 않는다. 실제 fresh 416쪽의
+raw SVG와 관련 4쪽의 검증 결과는 보존한다.

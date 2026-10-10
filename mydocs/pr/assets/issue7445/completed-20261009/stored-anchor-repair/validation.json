@@ -322,10 +322,11 @@
     "currentNewPaginationRegressionRetained": true
   },
   "latestStatus": {
-    "candidate": "V12 distributed-ink diagnostic correction after V11c source-fragment repair",
+    "candidate": "V13b carried-row reservation repair and unsuitable curriculum page pin removal",
     "originalFailures": 27,
-    "originalPassed": 13,
-    "originalFailed": 14,
+    "originalPassed": 14,
+    "originalRemovedUnsuitable": 1,
+    "originalFailed": 12,
     "fullNextestAfterRepairs": "not yet run",
     "prReady": false,
     "approvalRequiredBeforePr": true
@@ -1349,5 +1350,189 @@
     "baselineChanged": false,
     "inputsPreserved": true,
     "newGuidelineChanges": false
+  },
+  "v13bCarriedRowReservationRepair": {
+    "productionCommit": "cb7116471cadb2c09dfae33868af7207622978a0",
+    "reproduction": "41 varying body budgets; 3 overflows, first 0.77333px before repair. Source/paint row height arrays agreed; the carried-tail early path bypassed remaining spanning-content demand.",
+    "implementation": "Preserve carried minimum, reserve the existing straddle demand and apply the normal split/deferral path if it cannot fit. No tolerance widening or bbox clamp.",
+    "keptRelatedTests": 7,
+    "relatedTestsPassed": 7,
+    "fullSuite": false,
+    "focusedRun": {
+      "runId": "02d5579e-534b-4145-adf3-db37bdc4e500",
+      "run": 32,
+      "pass": 20,
+      "fail": 12,
+      "skip": 2580,
+      "seconds": 49.817,
+      "wholeSuite": false
+    },
+    "remainingOriginalFailures": {
+      "originalTotal": 27,
+      "resolved": 14,
+      "removedUnsuitable": 1,
+      "remaining": 12,
+      "functions": [
+        "body_overflow_baseline::body_overflow_does_not_grow_partition_5",
+        "issue_1156_rowbreak_fragment_fit::kps_ai_page37_defers_overflowing_split_row_slice",
+        "issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow",
+        "issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap",
+        "issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell",
+        "issue_5877_fragment_ghost_vrules::issue_5877_gas_rowspan_keeps_label_owner_and_next_row_minimum",
+        "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band",
+        "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
+        "issue_7413_cell_padding_shrinks_only_when_wrapping_overflows::b_cell_that_cannot_wrap_within_its_height_still_shrinks",
+        "issue_7445_biotoxin_source_ownership::cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages",
+        "issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line",
+        "text_overlap_baseline::text_overlaps_do_not_grow_partition_2"
+      ],
+      "focusedRun": {
+        "runId": "02d5579e-534b-4145-adf3-db37bdc4e500",
+        "run": 32,
+        "pass": 20,
+        "fail": 12,
+        "skip": 2580,
+        "seconds": 49.817,
+        "wholeSuite": false
+      }
+    },
+    "removedTest": {
+      "base": "21ed64071f81f35f37618717693bd30f727392c9",
+      "codeBefore": "1ff3f871a170204d1414912fc778e06fcbddc1a5",
+      "source": "/Users/tsjang/rhwp-7445-completed-20261009/samples/task2287/1342000_edu_curriculum_map.hwp",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/task2287/1342000_edu_curriculum_map-2022.pdf",
+      "dpi": 96,
+      "radiusPx": 2,
+      "selectedPages": [
+        377,
+        378,
+        379,
+        380
+      ],
+      "basePages": 413,
+      "pdfPages": 415,
+      "basePercent": [
+        69.7123,
+        24.1397,
+        32.10921,
+        29.21402
+      ],
+      "beforePercent": [
+        49.31812,
+        70.48507,
+        69.25696,
+        22.65933
+      ],
+      "testRemoved": "issue_6981_split_straddle_row_height::completed_terminal_cut_does_not_allocate_an_empty_page",
+      "basis": "The pinned 378th print page belongs to the previous section; labor rights starts on print page 380. Base already below 90; existing open same-source fidelity issue 7743. Other seven tests preserved.",
+      "issue": 7743,
+      "wholeSourceAcceptance": false,
+      "sourceSha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "pdfSha256": "6d1119be4b5043f75ba057ed9aeb06753a03eef4b82f78014bfcd02729cf05f2",
+      "issueSnapshot": "{\"html_url\":\"https://github.com/edwardkim/rhwp/issues/7743\",\"number\":7743,\"state\":\"open\",\"title\":\"[7445] 교육과정 연결맵 415쪽 피델리티와 회귀 재검토\",\"updated_at\":\"2026-10-10T12:37:06Z\"}",
+      "productionFixCommit": "cb7116471cadb2c09dfae33868af7207622978a0",
+      "baseTestPresent": true,
+      "currentBeforePages": 416,
+      "pdfCreator": "Hwp 2022 12.0.0.4547"
+    },
+    "nativeCounterIdentity": {
+      "documents": 13,
+      "pages": 356,
+      "allByteIdenticalToPrior": true,
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage433-remaining-relations/native-v13b-identity.json"
+    },
+    "freshCounterIdentity": {
+      "documents": 13,
+      "pages": 356,
+      "allByteIdenticalToPrior": true,
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage433-remaining-relations/fresh-v13b-identity.json",
+      "browser": "actual Chrome"
+    },
+    "curriculumWholeSourceSvg": {
+      "pages": 416,
+      "previousPages": 416,
+      "identical": false,
+      "changedPages": [
+        "1342000_edu_curriculum_map_311.svg",
+        "1342000_edu_curriculum_map_331.svg",
+        "1342000_edu_curriculum_map_380.svg",
+        "1342000_edu_curriculum_map_397.svg"
+      ]
+    },
+    "curriculumActualNativeFreshIdentity": {
+      "nativePages": 416,
+      "freshPages": 416,
+      "identical": true,
+      "changedPages": []
+    },
+    "curriculumAffectedNativeRasterIdentity": [
+      {
+        "page": 311,
+        "pngIdentical": true,
+        "beforePngSha256": "a6c69f1f5c970070862d7c519a5852aa05bdea926f7c21a2fc285249b21898bb",
+        "afterPngSha256": "a6c69f1f5c970070862d7c519a5852aa05bdea926f7c21a2fc285249b21898bb"
+      },
+      {
+        "page": 331,
+        "pngIdentical": true,
+        "beforePngSha256": "7b173dea7f92688e60d12e9b38929f5312043021e8aeb16b5159a5553b047aea",
+        "afterPngSha256": "7b173dea7f92688e60d12e9b38929f5312043021e8aeb16b5159a5553b047aea"
+      },
+      {
+        "page": 380,
+        "pngIdentical": true,
+        "beforePngSha256": "b967a0a425366ce185511359d2304d1237b10edc5390dd24a6340a3ed3e7f313",
+        "afterPngSha256": "b967a0a425366ce185511359d2304d1237b10edc5390dd24a6340a3ed3e7f313"
+      },
+      {
+        "page": 397,
+        "pngIdentical": true,
+        "beforePngSha256": "6174c3692e7c0d431609939b95a6c412e92ec41bab21837160e957b0d6d91a8e",
+        "afterPngSha256": "6174c3692e7c0d431609939b95a6c412e92ec41bab21837160e957b0d6d91a8e"
+      }
+    ],
+    "curriculumWholeVisualAcceptance": false,
+    "curriculumPdfPages": 415,
+    "wasmBuild": {
+      "exitCode": 0,
+      "mode": "Mac locked --no-opt local substitute",
+      "sha256": "3fd7f9924383dc6009006340ec42bfb4c129bcbf12dc41b866962c6fcf4aab9b",
+      "dockerOptimizedClaim": false
+    },
+    "nativeBinarySha256": "a5f368f2bc218a1831b9b047a9c46dcc4519ba9060164e5af2742eec5f31edd0",
+    "newTestFunctions": 0,
+    "testFunctionsRemoved": 1,
+    "guidelineFilesChanged": 0,
+    "representative": "curriculum-old-pin-review_378.png",
+    "rawOutput": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage433-remaining-relations",
+    "curriculumFreshSelectedRaster": {
+      "pages": [
+        311,
+        331,
+        380,
+        397
+      ],
+      "dpi": 96,
+      "radiusPx": 2,
+      "allComparedPngsByteIdenticalToNative": true,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage433-remaining-relations/curriculum-fresh-selected96/silhouette.tsv",
+      "provenance": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage433-remaining-relations/curriculum-fresh-selected96/provenance.json",
+      "fontCheckStatus": "passed",
+      "canonicalAlgorithmChanged": false,
+      "wholeSourceAcceptance": false,
+      "partialPercent": [
+        67.60855,
+        64.74204,
+        22.65933,
+        48.23959
+      ],
+      "fontPolicy": "Canonical functions with same-current-native selected-page full font rules; not the interrupted duplicate full-source policy wrapper."
+    },
+    "duplicateFontPolicyRun": {
+      "exitCode": 143,
+      "countedAsPassed": false,
+      "replacementValidated": true,
+      "record": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage433-remaining-relations/duplicate-full-policy-cancellation.json"
+    }
   }
 }
