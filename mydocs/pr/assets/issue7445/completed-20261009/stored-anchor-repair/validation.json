@@ -153,8 +153,123 @@
       "overlapCount": 0,
       "overflowCount": 0
     },
-    "v4FocusedNextest": "pending",
-    "v4FreshWasm": "pending at record creation",
+    "v4FocusedNextest": {
+      "passed": 34,
+      "failed": 5,
+      "selected": 39,
+      "skipped": 2338,
+      "seconds": 58.33,
+      "newRegressionInputs": [
+        "samples/issue1891_external_bindata_link.hwpx",
+        "samples/issue6313/microbe_bank_cell_picture.hwpx",
+        "samples/2025 행정업무운영 편람(최종).hwp"
+      ],
+      "note": "partition7 and original23focused passed; full text-overlap corpus revealed three additional inputs. V5 correction pending."
+    },
+    "v4FreshWasm": {
+      "buildExit": 0,
+      "buildSeconds": 577,
+      "nativeSvgIdentity": [
+        {
+          "key": "issue157",
+          "exit": 0,
+          "pages": 2,
+          "svgByteIdenticalToV3": true
+        },
+        {
+          "key": "rewind3837",
+          "exit": 0,
+          "pages": 4,
+          "svgByteIdenticalToV3": true
+        },
+        {
+          "key": "regulatory17",
+          "exit": 0,
+          "pages": 17,
+          "svgByteIdenticalToV3": true
+        },
+        {
+          "key": "ktx003",
+          "exit": 0,
+          "pages": 1,
+          "svgByteIdenticalToV3": true
+        },
+        {
+          "key": "low-slack6535",
+          "exit": 0,
+          "pages": 1,
+          "svgByteIdenticalToV3": true
+        },
+        {
+          "key": "tac3",
+          "exit": 0,
+          "pages": 3,
+          "svgByteIdenticalToV3": true
+        },
+        {
+          "key": "civil2",
+          "exit": 0,
+          "pages": 2,
+          "svgByteIdenticalToV3": true
+        }
+      ],
+      "freshRawSvgIdentity": [
+        {
+          "key": "issue157",
+          "exit": 0,
+          "pages": 2,
+          "rawSvgByteIdenticalToFreshV3": true
+        },
+        {
+          "key": "rewind3837",
+          "exit": 0,
+          "pages": 4,
+          "rawSvgByteIdenticalToFreshV3": true
+        },
+        {
+          "key": "regulatory17",
+          "exit": 0,
+          "pages": 17,
+          "rawSvgByteIdenticalToFreshV3": false
+        },
+        {
+          "key": "ktx003",
+          "exit": 0,
+          "pages": 1,
+          "rawSvgByteIdenticalToFreshV3": true
+        },
+        {
+          "key": "low-slack6535",
+          "exit": 0,
+          "pages": 1,
+          "rawSvgByteIdenticalToFreshV3": true
+        },
+        {
+          "key": "tac3",
+          "exit": 0,
+          "pages": 3,
+          "rawSvgByteIdenticalToFreshV3": true
+        },
+        {
+          "key": "civil2",
+          "exit": 0,
+          "pages": 2,
+          "rawSvgByteIdenticalToFreshV3": true
+        }
+      ],
+      "regulatoryRecapture": {
+        "pages": 17,
+        "minimumPercent": 94.3112,
+        "below90": 0
+      },
+      "railwayRecapture": {
+        "pages": 14,
+        "nativeMinimumPercent": 91.06446,
+        "freshMinimumPercent": 91.06446,
+        "below90": 0
+      },
+      "sourceVersion": "V4; V5 source is not covered"
+    },
     "wholeNextest": "pending after remaining failure repairs"
   },
   "baselineChange": {
@@ -195,5 +310,16 @@
     "parent": 7445,
     "testsRetained": true,
     "status": "unresolved32SVGpages/31Printpages; not a visual pass"
-  }
+  },
+  "prepFollowup": {
+    "issue": 7804,
+    "url": "https://github.com/edwardkim/rhwp/issues/7804",
+    "state": "open",
+    "exactBody": true,
+    "parent": 7445,
+    "linked": true,
+    "testsRemoved": false,
+    "currentNewPaginationRegressionRetained": true
+  },
+  "latestStatus": "V5 implementation build in progress; no full validation or PR approval claimed"
 }
