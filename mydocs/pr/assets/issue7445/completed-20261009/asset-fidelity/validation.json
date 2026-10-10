@@ -1,0 +1,97 @@
+{
+  "candidateBase": "41562a7032c091d4710fe35ac51c86d75a888017",
+  "status": "시각 및 개별 회귀 통과; 전체 PR 검증 미완료",
+  "input": "samples/issue6031/3249937_asset_management_rules.hwpx",
+  "reference": "pdf/3249937_asset_management_rules-2020.pdf",
+  "sourceFiles": {
+    "src/document_core/commands/document.rs": "adae09273b1587b2413d1e1d7baba839ffaa7ad05196a7a7a07b5b709a8cfbc7",
+    "src/renderer/layout/text_measurement.rs": "6a57677caef91492b3fc4d5f0324996c6b517e771c4291465701506fc02f3d42",
+    "src/document_core/queries/font_decision.rs": "62dfbcaa4d242d6c8fd01427abbbe52780c5e2e99b749b8a6efb7e4d2972f75f"
+  },
+  "build": {
+    "nativeSha256": "69216af9096ec9cb70cc4406e5665d6806b3527d49b8957166b6f0ff6367db6f",
+    "wasmSha256": "240f0406990794cec7dca1eec8c4a81a230da4c94ab3aba66d2379e5828d1b5c",
+    "macLockedNoOpt": true,
+    "dockerOptimized": false
+  },
+  "wholeVisual": {
+    "native": {
+      "pages": 60,
+      "minimumPercent": 91.83989,
+      "below90": 0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage424-asset-signature-spacing/native/asset60/silhouette.tsv",
+      "tsvSha256": "ec7d681cd0392655263bfc46cc1434892db0186d79e91422beda0599c5aa8d2f",
+      "exitCode": 0
+    },
+    "fresh": {
+      "pages": 60,
+      "minimumPercent": 91.83989,
+      "below90": 0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage424-asset-signature-spacing/fresh/asset60/silhouette.tsv",
+      "tsvSha256": "ec7d681cd0392655263bfc46cc1434892db0186d79e91422beda0599c5aa8d2f",
+      "exitCode": 0
+    },
+    "tac-native": {
+      "pages": 3,
+      "minimumPercent": 92.54967,
+      "below90": 0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage424-asset-signature-spacing/tac-native/tac3/silhouette.tsv",
+      "tsvSha256": "3ca2bbae3ad3e90a3719888852ea724d2cbca2655eefec577b2d00cebd79076a",
+      "exitCode": 0
+    },
+    "tac-fresh": {
+      "pages": 3,
+      "minimumPercent": 92.54967,
+      "below90": 0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage424-asset-signature-spacing/tac-fresh/tac3/silhouette.tsv",
+      "tsvSha256": "3ca2bbae3ad3e90a3719888852ea724d2cbca2655eefec577b2d00cebd79076a",
+      "exitCode": 0
+    }
+  },
+  "focus": {
+    "runId": "6e8f4131-1035-42e3-b160-c3efaab68ca3",
+    "passed": 3,
+    "failed": 0,
+    "filtered": 643,
+    "seconds": 0.088,
+    "threads": 8,
+    "logSha256": "98c09119534f6d1b445a940302d39310bea5504e03c10a32f2d953d0cdab2182"
+  },
+  "nativeClippy": {
+    "exitCode": 0,
+    "seconds": 37.69,
+    "logSha256": "dc33185ee51a22b7c0d7b50a655eebac6cfd5a71ec96fda535b6e3b0d7082a37"
+  },
+  "pixelIdentityAgainstPdf": false,
+  "comparisonAlgorithmChanged": false,
+  "newTestFunctionCount": 0,
+  "selectedAssetPages": {
+    "native": {
+      "50": 96.79432,
+      "53": 97.95201,
+      "54": 97.0691
+    },
+    "fresh": {
+      "50": 96.79432,
+      "53": 97.95201,
+      "54": 97.0691
+    }
+  },
+  "nativeFreshPngByteIdentical": true,
+  "courtCounter": {
+    "pages": [
+      {
+        "page": 1,
+        "sha256": "98b2230e867750a5eaaa78113b541657947c7b133015e3f753d8658f9ec3ec1b",
+        "matchesValidatedCourtStage422": true
+      },
+      {
+        "page": 2,
+        "sha256": "a7911f5b20c6cb924ec6a68513eef5a78f7d63e7e4fbf72f1a0613439ac3f824",
+        "matchesValidatedCourtStage422": true
+      }
+    ],
+    "beforeWholeNativeAndFreshMinimum": 91.16037,
+    "freshCurrentCourtNotRecaptured": true
+  }
+}

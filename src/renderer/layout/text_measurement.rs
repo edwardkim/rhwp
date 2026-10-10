@@ -1843,6 +1843,23 @@ fn char_width_decision_with_hft_tracking<'a>(
                 "notApplicable"
             };
         }
+        // 한양신명조 HFT 굵은 한글은 일반체 전각 폭에 5%를 더해 전진한다.
+        // 자산관리규정 Print의 Type3 글리프는 1000폭에 TJ -52.6을 쓰며,
+        // 출력 글꼴 크기 반올림을 포함하면 원본 em의 1.05배다. 공백·기호와
+        // 실제 TrueType 선택, 별도 Bold 메트릭이 있는 글꼴에는 적용하지 않는다.
+        if style.hft_fullwidth_dot
+            && style.bold
+            && latin.is_none()
+            && ('\u{AC00}'..='\u{D7A3}').contains(&c)
+            && embedded.metric.is_some_and(|metric| {
+                metric.bold_fallback && metric.metric.name == "HanyangSinMyeongJo"
+            })
+        {
+            if let Some(width) = embedded.width_px {
+                embedded.width_px = Some(quantize_hwp_px(width * 1.05));
+                embedded.width_source = "metricHftBoldAdvance";
+            }
+        }
         if let Some(w) = embedded.width_px {
             em_exact = embedded.em_fraction;
             (
@@ -2383,6 +2400,7 @@ fn is_fullwidth_symbol(c: char) -> bool {
         '\u{20AC}' |                   // € EURO SIGN
         '\u{00A3}' |                   // £ POUND SIGN
         '\u{00A5}'                     // ¥ YEN SIGN
+        | '\u{F00E1}'                 // 한컴 사각 인(印): Print CID 전진폭 1000
     )
     || ('\u{2190}'..='\u{21FF}').contains(&c) // Arrows (→, ⇨, ⇒ 등)
     || ('\u{2460}'..='\u{24FF}').contains(&c) // Enclosed Alphanumerics (①②③ 등)

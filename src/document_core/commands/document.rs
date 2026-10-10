@@ -1494,8 +1494,9 @@ impl DocumentCore {
         Self::needs_line_seg_reflow_in_scope(para, include_empty, false)
     }
 
-    /// 단일 일반 글자모양의 현재 높이보다 큰 저장 글자 높이는 재구성 대상이다.
-    /// 줄 높이 자체는 줄간격/행높이 모드로 커질 수 있으므로 비교하지 않는다.
+    /// 단일 일반 글자모양보다 큰 옛 글자 상자가 줄·텍스트 높이에 함께 남은 경우만 재구성한다.
+    /// 텍스트 부분 높이는 실제 글꼴 테두리를 포함해 em보다 클 수 있으므로,
+    /// 그 값만으로 정상 저장 줄을 무효화하지 않는다.
     fn stored_plain_cell_line_has_stale_text_height(
         para: &Paragraph,
         doc_info: &crate::model::document::DocInfo,
@@ -1534,7 +1535,7 @@ impl DocumentCore {
         }
         let height = i64::from(shape.base_size) * i64::from(relative) / 100;
         // 정수 HWPUNIT 변환의 반올림 한 단위만 허용한다.
-        i64::from(line.text_height) > height + 1
+        line.text_height == line.line_height && i64::from(line.line_height) > height + 1
     }
 
     /// [#4898] `section_has_sized_lineseg` 는 **이 구역의 lineseg 가 배치 권위를 갖는가**다.

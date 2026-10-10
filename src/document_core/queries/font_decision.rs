@@ -387,11 +387,26 @@ fn transform_steps(
     }
     let mut steps = Vec::new();
     if decision.metric.is_some_and(|metric| metric.bold_fallback) {
+        let hft_bold = decision.width_source == "metricHftBoldAdvance";
         steps.push(DecisionStep {
             kind: "boldFallback".into(),
             input: Some("bold".into()),
-            output: Some("regularMetricAdvance".into()),
-            reason: Some("fauxBoldDoesNotChangeLayoutAdvance".into()),
+            output: Some(
+                if hft_bold {
+                    "hftBoldAdvance"
+                } else {
+                    "regularMetricAdvance"
+                }
+                .into(),
+            ),
+            reason: Some(
+                if hft_bold {
+                    "hftBoldAddsRelativeAdvance"
+                } else {
+                    "fauxBoldDoesNotChangeLayoutAdvance"
+                }
+                .into(),
+            ),
         });
     }
     if (run.style.ratio - 1.0).abs() > f64::EPSILON {
