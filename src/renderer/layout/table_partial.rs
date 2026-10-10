@@ -6546,21 +6546,23 @@ impl LayoutEngine {
             table_x
         };
 
-        // 바깥 여백은 조각의 논리 예약량에 이미 포함되어 있다.
-        // 첫 조각과 뒤 조각 모두 표·셀·프레임의 그리기 하위 트리에서만 이 여백을 복원한다.
+        // 바깥 여백은 조각의 예약에 포함된다. 확정 표 상단을 전달받지 않은
+        // 저장 기하에서만 표·셀·테두리 출력의 원점에 여백을 복원한다.
         //
         // [#7063] 가로는 여기서 복원하지 않는다 — 위 `compute_table_x_position` 이
         // `topbottom_float_outer_margin_left_hu` 로 이미 싣는다. `#3820 Stage 120` 의 술어
         // (자리차지 T&B · `HorzRelTo::Column` · `HorzAlign::Left` · 오프셋 0 ·
         // `outer_margin_left > 0`)는 그 일반 규칙의 **부분집합**이라 둘 다 실으면 두 번 든다
         // (p167 pi=1775 좌단이 본문 94.49 에서 98.27 이 아니라 102.04 로 갔다).
-        // 세로는 저장 사다리가 세로 outer box 만 증명하므로 그대로 복원한다.
+        // 확정 상단은 이미 위 바깥여백을 포함한다. 저장 기하를 함께 재사용해도
+        // 같은 여백을 다시 더하지 않고, 행 프레임 높이와 내용 컷은 보존한다.
 
         let table_y = if render_top_caption {
             y_start + caption_height + caption_spacing
         } else {
             y_start
         } + stored_reset_paint_geometry
+            .filter(|_| resolved_table_top.is_none())
             .map(|geometry| hwpunit_to_px(geometry.outer_top_hu, self.dpi))
             .unwrap_or(0.0);
 

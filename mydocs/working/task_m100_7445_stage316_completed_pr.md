@@ -2082,3 +2082,68 @@ Native와 실제 Chrome fresh WASM으로 재캡처했습니다. PNG 입력 해�
 [Native overlay](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-native-overlay.png),
 [fresh WASM 210쪽 review](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-fresh-wasm-review.png),
 [fresh WASM overlay](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-fresh-wasm-overlay.png).
+
+## 보정 378 사전 분석: 확정 분할표 상단에 저장 위여백 재가산
+
+157·160·167쪽에서 현재 표 상단은 고정 devel보다 각각 약 3.77px 아래입니다.
+본문/단 영역은 같습니다. 157쪽의 실제 paint 진단을 실행하면 분할표 입력
+`y_start`는 646.9px로 이미 올바르지만, 표 노드는 650.7px에서 생성됩니다.
+차이는 원본 위여백 283HU와 대응합니다.
+
+예약한 배치의 `table_top` → `layout_partial_table_item`의 확정 상단 전달 →
+`table_partial`의 `resolved_table_top` 선택까지 같은 원점을 소비합니다.
+그 뒤 저장 되감김 paint 기하가 위여백을 다시 더하는 지점에서 원점이
+갈립니다. 확정 표 상단은 이미 바깥 위여백을 포함하므로 추가 inset을
+적용하지 않아야 합니다. 확정 배치가 없는 저장 기하의 기존 원점 복원은
+유지합니다. 행 높이·내용 컷·예약 예산과 쪽수 기대값은 바꾸지 않습니다.
+
+이 소비 지점을 보정하고 먼저 전쪽 구조 차이와 해당 쪽의 독립 PDF 비교를
+확인합니다. 다른 조각의 출력이나 새로 생기는 미달을 제외하지 않습니다.
+
+### 보정 378 결과: 8쪽 개선, 전쪽 미달 10→5쪽
+
+확정 `resolved_table_top`을 받은 표는 저장 되감김 기하의 위여백을 다시
+더하지 않습니다. 확정 상단이 없는 기존 저장 기하의 여백 복원, 행 프레임
+높이·컷·예약 예산은 유지했습니다. Native 및 Mac no-opt fresh WASM을
+최종 소스로 빌드했고 pkg/public 동일성도 확인했습니다.
+
+한컴 2024 조판 세대의 Native SVG·렌더 트리 및 실제 Chrome fresh WASM
+raw SVG·렌더 트리를 전215쪽 내보내 대조했습니다. 변경은
+157·158·160·167·168·173·213·214쪽이며, 다른 207쪽은 이전 후보와 동일합니다.
+변경 8쪽은 두 경로로 재캡처하고, 동일한 207쪽 캡처는 입력 해시·전쪽 출력
+동일성 근거로 재사용해 Native/fresh 전215쪽 TSV를 다시 계산했습니다.
+
+| 쪽 | 보정 전 | 보정 후 Native/fresh WASM |
+| --- | ---: | ---: |
+| 157 | 84.45646% | 100% |
+| 158 | 73.57651% | 100% |
+| 160 | 71.74749% | 100% |
+| 167 | 85.21340% | 100% |
+| 168 | 82.82906% | 100% |
+| 173 | 90.01344% | 99.68068% |
+| 213 | 92.98258% | 99.64401% |
+| 214 | 91.88352% | 100% |
+
+변경 8쪽의 Native와 fresh WASM PNG는 각각 동일합니다. 여덟 review를 모두
+직접 열어 표의 첫/이어받기 상단, 셀의 마지막 줄, 뒤 본문과 173쪽 각주
+222를 PDF와 대조했습니다. 전215쪽의 텍스트·글꼴·스타일 payload와
+각주 영역 JSON도 이전 후보와 동일합니다. 위 수치는 2px 관용 실루엣
+보조값이며 글자 굵기·미세 잉크 차이는 남아 있습니다.
+
+**미달은 Native/fresh 모두 5쪽**으로 줄었습니다. 잔여는
+11(66.64192%)·28(86.84969%)·176(88.12309%)·184(71.39979%)·208(85.37844%)쪽입니다.
+전체 쪽수는 215쪽입니다. 이번 변경으로 새 미달은 생기지 않았습니다.
+
+관련 회귀 34건은 **31 PASS / 3 FAIL**이며 실패 세 건은 앞 보정에서도
+재현된 #7203 두 표 배치 검사와 #7379 마지막 rowspan 캡션 검사입니다.
+기존 검사와 기대값을 수정하지 않았습니다. Native Clippy·format·문서 링크
+검사를 확인해 이 보정을 커밋합니다. 최종 전체 nextest 및 나머지 제출
+게이트는 아직 미완료이므로 PR 생성·승인·통합은 계속 보류합니다.
+
+[입력·빌드·전쪽 검증·8쪽 증적 목록](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-validation.json),
+[157쪽 보정 전](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-native-before-review.png),
+[157쪽 Native review](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-native-review.png),
+[157쪽 Native overlay](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-native-overlay.png),
+[157쪽 fresh review](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-fresh-review.png),
+[157쪽 fresh overlay](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-fresh-overlay.png),
+[168쪽 fresh review](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p168-fresh-review.png).

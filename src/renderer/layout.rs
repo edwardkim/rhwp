@@ -13226,14 +13226,14 @@ impl LayoutEngine {
                 // empty floats: Square sibling lanes and stored HWPX layout
                 // have separate coordinate contracts.
                 let empty_reflow_flow_end =
-                    crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
+                    (crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
                         para,
                         t,
                         ctx.paragraph_float_placements
                             .get(&(para_index, control_index)),
                     ) || (is_current_empty_para_float && is_para_topbottom_float(&t.common)
                         && ctx.paragraph_float_placements.get(&(para_index, control_index))
-                            .is_some_and(|placement| placement.flow == super::float_placement::ParagraphFloatFlow::NextLine))
+                            .is_some_and(|placement| placement.flow == super::float_placement::ParagraphFloatFlow::NextLine)))
                     .then(|| {
                         ctx.paragraph_float_placements
                             .get(&(para_index, control_index))

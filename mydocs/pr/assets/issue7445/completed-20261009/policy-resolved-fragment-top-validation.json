@@ -1,0 +1,673 @@
+{
+  "stage": 378,
+  "status": "partial_verified_pr_held",
+  "scope": "확정 원점에 이미 포함된 저장 되감김 표의 위 바깥여백을 paint에서 재가산하지 않음; 행 높이·컷·예산·기존 회귀 기대값 보존",
+  "parentHead": "f10ef127170c93018393da6ffebcbaf6a629b516",
+  "source": {
+    "path": "src/renderer/layout/table_partial.rs",
+    "sha256": "2c81d27ecc73bebc138f81dd75c01fd91b121fbe19119ca01eeec3d6641c038b"
+  },
+  "input": {
+    "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+    "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+    "savedProduct": "hancom-office-2024"
+  },
+  "pdf": {
+    "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+    "sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+    "pages": 215
+  },
+  "canonicalCompatibility": "2024",
+  "nativeBinarySha256": "05a1ecaee3602c10cd46392b74b1fab46867bf1de17f4d269f56f935e1840b78",
+  "pkgHashes": {
+    "rhwp.js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+    "rhwp_bg.wasm": "ca0ae457a0eda64d5c48e91134880b991b973d36b58a37d147b0d9860c6b31f2",
+    "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390"
+  },
+  "pageCount": {
+    "native": 215,
+    "freshWasm": 215,
+    "pdf": 215
+  },
+  "consumerPath": "fragment placement.table_top → layout_partial_table_item resolved_table_top → table_partial y_start → 표/셀/테두리 table_y; 마지막 stored_reset_paint_geometry.outer_top 재가산을 제거",
+  "fullOutputIdentity": [
+    {
+      "format": "native-svg",
+      "pages": 215,
+      "changedPages": [
+        157,
+        158,
+        160,
+        167,
+        168,
+        173,
+        213,
+        214
+      ],
+      "fullProofIgnoredOutput": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/final-output-identity.json"
+    },
+    {
+      "format": "native-tree",
+      "pages": 215,
+      "changedPages": [
+        157,
+        158,
+        160,
+        167,
+        168,
+        173,
+        213,
+        214
+      ],
+      "fullProofIgnoredOutput": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/final-output-identity.json"
+    },
+    {
+      "format": "wasm-svg",
+      "pages": 215,
+      "changedPages": [
+        157,
+        158,
+        160,
+        167,
+        168,
+        173,
+        213,
+        214
+      ],
+      "fullProofIgnoredOutput": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/final-output-identity.json"
+    },
+    {
+      "format": "wasm-tree",
+      "pages": 215,
+      "changedPages": [
+        157,
+        158,
+        160,
+        167,
+        168,
+        173,
+        213,
+        214
+      ],
+      "fullProofIgnoredOutput": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/final-output-identity.json"
+    }
+  ],
+  "visual": {
+    "native": {
+      "command": [
+        "python3",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/native-reconciled-raster",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage375-policy-page-origin/native-v1-full/policy/pdf_png",
+        "--key",
+        "policy",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/native-final-tsv"
+      ],
+      "exitCode": 1,
+      "pages": 215,
+      "below90": [
+        {
+          "page": "11",
+          "tolerant_content_match_percent": "66.64192",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "66.63801",
+          "silhouette_boundary_reconciled_pixels": "5"
+        },
+        {
+          "page": "28",
+          "tolerant_content_match_percent": "86.84969",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "86.84969",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "176",
+          "tolerant_content_match_percent": "88.12309",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "88.12309",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "184",
+          "tolerant_content_match_percent": "71.39979",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "71.39979",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "208",
+          "tolerant_content_match_percent": "85.37844",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "85.37844",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "minimum": 66.64192,
+      "changedPageScores": [
+        {
+          "page": "157",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "158",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "160",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "167",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "168",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "173",
+          "tolerant_content_match_percent": "99.68068",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.68068",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "213",
+          "tolerant_content_match_percent": "99.64401",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.64401",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "214",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "captureReuse": "207 byte-identical SVG pages; changed 8 pages recaptured"
+    },
+    "freshWasm": {
+      "command": [
+        "python3",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/fresh-reconciled-raster",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage375-policy-page-origin/fresh-final-full/policy/pdf_png",
+        "--key",
+        "policy",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/fresh-final-tsv"
+      ],
+      "exitCode": 1,
+      "pages": 215,
+      "below90": [
+        {
+          "page": "11",
+          "tolerant_content_match_percent": "66.64192",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "66.63801",
+          "silhouette_boundary_reconciled_pixels": "5"
+        },
+        {
+          "page": "28",
+          "tolerant_content_match_percent": "86.84969",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "86.84969",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "176",
+          "tolerant_content_match_percent": "88.12309",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "88.12309",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "184",
+          "tolerant_content_match_percent": "71.39979",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "71.39979",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "208",
+          "tolerant_content_match_percent": "85.37844",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "85.37844",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "minimum": 66.64192,
+      "changedPageScores": [
+        {
+          "page": "157",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "158",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "160",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "167",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "168",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "173",
+          "tolerant_content_match_percent": "99.68068",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.68068",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "213",
+          "tolerant_content_match_percent": "99.64401",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.64401",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "214",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "captureReuse": "207 byte-identical actual Chrome raw SVG pages; changed 8 pages recaptured"
+    },
+    "affectedPageBeforeAfter": [
+      {
+        "page": 157,
+        "beforePercent": 84.45646,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 44210,
+        "tolerant_content_match_percent": 100.0
+      },
+      {
+        "page": 158,
+        "beforePercent": 73.57651,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 33029,
+        "tolerant_content_match_percent": 100.0
+      },
+      {
+        "page": 160,
+        "beforePercent": 71.74749,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 31739,
+        "tolerant_content_match_percent": 100.0
+      },
+      {
+        "page": 167,
+        "beforePercent": 85.2134,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 60754,
+        "tolerant_content_match_percent": 100.0
+      },
+      {
+        "page": 168,
+        "beforePercent": 82.82906,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 88564,
+        "tolerant_content_match_percent": 100.0
+      },
+      {
+        "page": 173,
+        "beforePercent": 90.01344,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.68068,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 58249,
+        "tolerant_content_match_percent": 99.68068
+      },
+      {
+        "page": 213,
+        "beforePercent": 92.98258,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.64401,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 69383,
+        "tolerant_content_match_percent": 99.64401
+      },
+      {
+        "page": 214,
+        "beforePercent": 91.88352,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 60797,
+        "tolerant_content_match_percent": 100.0
+      }
+    ],
+    "payloadAndBackendRasterIdentity": {
+      "pages": 215,
+      "changedTextAndStylePayloadPages": [],
+      "changedFootnoteAreaPages": [],
+      "comparison": "TextRun의 순서·텍스트·글꼴·스타일은 bbox/id를 제외해 비교; FootnoteArea는 전체 JSON 비교",
+      "rawPngNativeFreshIdentity": [
+        {
+          "page": 157,
+          "nativeSha256": "a8ce81a3e8ba57ba26540de09511e29590522b117cfa22fd8cfe39e5ebf51917",
+          "freshSha256": "a8ce81a3e8ba57ba26540de09511e29590522b117cfa22fd8cfe39e5ebf51917",
+          "byteIdentical": true
+        },
+        {
+          "page": 158,
+          "nativeSha256": "47ee3fac305432d10113296008fda013fb4604f697c27702f70e528a232099ff",
+          "freshSha256": "47ee3fac305432d10113296008fda013fb4604f697c27702f70e528a232099ff",
+          "byteIdentical": true
+        },
+        {
+          "page": 160,
+          "nativeSha256": "c8486a607d8699ce5993ee7882239bd510ce601ca422874707521a16fb4be05e",
+          "freshSha256": "c8486a607d8699ce5993ee7882239bd510ce601ca422874707521a16fb4be05e",
+          "byteIdentical": true
+        },
+        {
+          "page": 167,
+          "nativeSha256": "2264f30e2627bc2b519cac13d2aa6437e3515ad77926f1240a984c3f5f885d4f",
+          "freshSha256": "2264f30e2627bc2b519cac13d2aa6437e3515ad77926f1240a984c3f5f885d4f",
+          "byteIdentical": true
+        },
+        {
+          "page": 168,
+          "nativeSha256": "1708be20591f4d28f68b0424a27ef7c0c9c8bc8c2f9ba0868ac35c312820917a",
+          "freshSha256": "1708be20591f4d28f68b0424a27ef7c0c9c8bc8c2f9ba0868ac35c312820917a",
+          "byteIdentical": true
+        },
+        {
+          "page": 173,
+          "nativeSha256": "d2a46fb3ead2830b66d772ab0c9b6f318af19ff193d582c5dceac54c10129db7",
+          "freshSha256": "d2a46fb3ead2830b66d772ab0c9b6f318af19ff193d582c5dceac54c10129db7",
+          "byteIdentical": true
+        },
+        {
+          "page": 213,
+          "nativeSha256": "7856b20b34177caef4b3cda0c79e3f43137a8e1f1ea52318cb2b2f641065b64a",
+          "freshSha256": "7856b20b34177caef4b3cda0c79e3f43137a8e1f1ea52318cb2b2f641065b64a",
+          "byteIdentical": true
+        },
+        {
+          "page": 214,
+          "nativeSha256": "ab11d1a594fa06d32c6ec24358fe58cb20077a97532fdc49f650b20d7940b2b6",
+          "freshSha256": "ab11d1a594fa06d32c6ec24358fe58cb20077a97532fdc49f650b20d7940b2b6",
+          "byteIdentical": true
+        }
+      ]
+    },
+    "directReading": "8쪽 fresh review를 모두 직접 열어 첫/이어받기 표 상단, 표 내부·뒤 본문·마지막 줄 및 173쪽 각주222를 독립 PDF와 대조; 같은 8쪽 Native PNG는 fresh와 byte-identical",
+    "representativeReview": [
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-fresh-review.png",
+        "sha256": "875f96ee02d7f61e9be5863b29c2c52984b58b679388805af401600f2ba95a63"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p158-fresh-review.png",
+        "sha256": "848d8153ccdb6446b38337cc3a2c9616f55b17cf53d2f178e43a584c452b2d8b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p160-fresh-review.png",
+        "sha256": "e479bfc77f26a0eee9490cb8ef4b0acd00df87ac453c5039fb83518f5fbaf815"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p167-fresh-review.png",
+        "sha256": "e74278382e657d741c6eb4fda639cbcb13e1d90ea7973a495aea89391be582d4"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p168-fresh-review.png",
+        "sha256": "4d5116eefa1d417a1c7676f2db0f7156cc16db248fd7949b1c0c1cdf33d926df"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p173-fresh-review.png",
+        "sha256": "1cdb67993f0cb10567b778f48cce0f34254e4370f158d9bb7315a9628fe09164"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p213-fresh-review.png",
+        "sha256": "0481a5796f97340af56830542042220c610fcf86e88c6b19d2194ba7b78a9586"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p214-fresh-review.png",
+        "sha256": "7b5922bc722cfe548644fd89bdfc320475198cb4b6355f36d9d6aab1751c632e"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-native-review.png",
+        "sha256": "475e2bf07faf8b287299eeacae2e976cfdfe7bc1f55b019b6aa2c8b6eacd5c85"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-native-overlay.png",
+        "sha256": "68e9cdd4d501f27e463c5e324d8e8830c59e1ad5f862407f695aa3be85f5444f"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-fresh-overlay.png",
+        "sha256": "2ca6a1a671dcba9870a199303c5db7b9b836e847b6ecf183c3357c1b03af55ce"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-native-before-review.png",
+        "sha256": "a49bfef0940a9b63278db9a299bfedc984d71c15cfa395f6c488db322a6b674b"
+      }
+    ]
+  },
+  "gates": {
+    "nativeBuildExitCode": 0,
+    "fmtExitCode": 0,
+    "commands": [
+      {
+        "name": "native-final-svg",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/rhwp-after-final",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/native-final-export/svg",
+          "--embed-fonts=full",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2024"
+        ],
+        "exitCode": 0,
+        "seconds": 20.258
+      },
+      {
+        "name": "native-final-tree",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/rhwp-after-final",
+          "export-render-tree",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/native-final-export/render_tree",
+          "--compat",
+          "2024"
+        ],
+        "exitCode": 0,
+        "seconds": 1.078
+      },
+      {
+        "name": "fresh-wasm-build",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exitCode": 0,
+        "seconds": 223.077
+      },
+      {
+        "name": "fresh-all-export",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/pkg",
+          "--input",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/fresh-final-export",
+          "--compat",
+          "2024"
+        ],
+        "exitCode": 0,
+        "seconds": 8.848
+      },
+      {
+        "name": "fresh-affected-review",
+        "command": [
+          "python3",
+          "scripts/visual_sweep.py",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/rhwp-after-final",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/pkg",
+          "--compat",
+          "2024",
+          "--dpi",
+          "96",
+          "--embed-fonts",
+          "full",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--hwp",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+          "--pdf",
+          "/Users/tsjang/rhwp-7445-completed-20261009/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+          "--pages",
+          "157,158,160,167,168,173,213,214",
+          "--key",
+          "policy",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage378-policy-fragment-top/fresh-final-review"
+        ],
+        "exitCode": 0,
+        "seconds": 333.675
+      },
+      {
+        "name": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exitCode": 0,
+        "seconds": 42.031
+      }
+    ]
+  },
+  "regression": {
+    "parentHead": "f10ef127170c93018393da6ffebcbaf6a629b516",
+    "sourceSha256": "2c81d27ecc73bebc138f81dd75c01fd91b121fbe19119ca01eeec3d6641c038b",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_004",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_007",
+      "--test",
+      "regression_suite_010",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_017",
+      "--test",
+      "regression_suite_020",
+      "--test",
+      "regression_suite_021",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(issue_7469_footnote_number_paragraph_indent::) | test(issue_7379_rowbreak_table_footnote_reservation::) | test(issue_3587_repeated_table_flow::) | test(issue_7203_float_table_stored_anchor_top::) | test(issue_7196_page_top_spacing_trim_restore::) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before::) | test(issue_5801_stored_ladder_spacing_before::) | test(issue_6970_multicolumn_synth_ladder_fill::) | test(issue_7359_page_top_table_spacing::)"
+    ],
+    "exitCode": 100,
+    "seconds": 232.976,
+    "summary": "Summary [   4.923s] 34 tests run: 31 passed, 3 failed, 1914 skipped",
+    "run": 34,
+    "passed": 31,
+    "failed": 3,
+    "previouslyReproducedFailures": "#7203 stored_anchor_after_a_taller_float_consumes_its_span_once / downstream_table_split_and_body_follow_the_oracle_pages; #7379 terminal_caption_withholds_the_last_rowspan_unit_together",
+    "expectationsChanged": false,
+    "newRegressionFunctions": 0,
+    "wholeSuite": "최종 전체 nextest 미실행; 이전 31개 선별의20개 실패 기록은 별도 보류"
+  },
+  "remaining": "11·28·176·184·208쪽 미달과 기존 차단 회귀를 해결한 뒤 최종 전체 게이트·PR/CI 검증 필요; PR 생성/승인/통합 보류"
+}
