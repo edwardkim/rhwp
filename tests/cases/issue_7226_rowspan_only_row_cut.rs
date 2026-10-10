@@ -157,8 +157,8 @@ fn the_continuation_page_has_no_text_overlap() {
 fn the_fix_does_not_add_a_page() {
     assert_eq!(
         core().page_count(),
-        413,
-        "쪽수가 변했습니다 — 이 문서의 1..144쪽은 정본(415쪽)과 오프셋 0 으로 정렬한다"
+        415,
+        "쪽수가 변했습니다 — 정본은 415쪽이고 이 문서의 1..144쪽은 오프셋 0 으로 정렬한다 (#7685 이후 정본과 같은 쪽수)"
     );
 }
 

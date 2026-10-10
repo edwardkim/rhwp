@@ -4721,7 +4721,21 @@ impl LayoutEngine {
                     || (is_continuation
                         && col_node.children.is_empty()
                         && (y_start - col_area.y).abs() <= 0.5));
+        // [#7685] 이어지는 RowBreak 조각은 단 위에서 바깥 위 여백을 다시 연다(조판 예산과
+        // 같은 규칙 — `fragment/budget.rs`). 1342000 124쪽 정본 77.44 = 본문 위 75.6 +
+        // 141HU, 종전 rhwp 75.6. 아래의 좁은 형상들은 이 규칙의 부분집합이다.
+        let generic_continuation_outer_top = is_continuation
+            && start_cut.iter().all(|&unit| unit == 0)
+            && !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && enclosing_cell_ctx.is_none()
+            && col_node.children.is_empty()
+            && (y_start - col_area.y).abs() <= 0.5;
         let y_start = if (single_cell_page_fragment
+            || generic_continuation_outer_top
             || terminal_multirow_reopens_outer_top
             || rowbreak_reopens_outer_top
             || stored_body_frame_opens_outer_top

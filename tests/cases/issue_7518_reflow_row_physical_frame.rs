@@ -120,8 +120,11 @@ fn original_no_ls_rows_fit_the_body_and_preserve_the_following_blank_line() {
                 .iter()
                 .find(|n| n["type"] == "TextLine" && n["pi"] == 1233)
             {
+                // render tree JSON 좌표는 0.1px 로 반올림된다. 표와 뒤 줄이 같은 양만큼
+                // 함께 움직여도(#7685: 이어지는 조각 바깥 위 여백 141HU) 두 반올림의 차가
+                // 0.1px 바뀔 수 있으므로 기존 0.2px 허용치에 그 해상도를 더한다.
                 assert!(
-                    coord(line, "y") >= bottom(owner) - 0.2,
+                    coord(line, "y") >= bottom(owner) - 0.3,
                     "following intentional blank line must remain after the final table"
                 );
                 saw_following_line = true;

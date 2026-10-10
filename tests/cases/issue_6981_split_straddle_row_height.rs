@@ -299,14 +299,16 @@ fn physical_blank_band_is_not_reserved_again_on_continuation() {
     assert_tables_inside_body(&tree.root, None);
 }
 
-/// 최종 컷 뒤에 내용 없는 페이지를 할당하면 378쪽에는 쪽 번호만 남는다.
+/// 최종 컷 뒤에 내용 없는 페이지를 할당하면 다음 구역 첫 쪽에는 쪽 번호만 남는다.
 /// 마지막 표의 글자는 앞 쪽에 남고, 다음 구역 본문은 빈 쪽 없이 이어져야 한다.
+/// 다음 구역(`13 노동인권 교육`)은 한/글 정본(`pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf`)
+/// 380쪽에서 시작한다. 종전 378쪽 고정은 rhwp 가 정본보다 두 쪽 적던 때의 위치다(#7685).
 #[test]
 fn completed_terminal_cut_does_not_allocate_an_empty_page() {
     let bytes = std::fs::read(TARGET).expect("committed curriculum fixture");
     let core = DocumentCore::from_bytes(&bytes).expect("parse curriculum fixture");
     let tree = core
-        .build_page_render_tree(377)
+        .build_page_render_tree(379)
         .expect("render successor page");
     fn body_has_text(node: &RenderNode) -> bool {
         if matches!(node.node_type, RenderNodeType::Body { .. }) {
