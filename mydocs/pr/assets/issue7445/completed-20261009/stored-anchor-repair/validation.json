@@ -399,5 +399,188 @@
       "regimpactAsymmetricMarginRegression": "next production correction",
       "allBranchVisualAndWholeNextest": "pending"
     }
+  },
+  "v9Followup": {
+    "sourceParent": "1c12b2c91428daacd88d7ad24e1c00ed66730bba",
+    "sourceAndTestDiffSha256": "6d26d60ff459225508980d0d302fd80f47a3466c18b18dfa90a5ffbaf0f1b647",
+    "nativeBinarySha256": "a3d956b752e99cb2020ebdf6cec5bf38ea6676f009afdf18f4c286ea3e8dd1dc",
+    "wasmSha256": "10a6469eae6435a59aae32f322c1c2e237343494afcbaa774e6ad193a389b3a5",
+    "wasmBuild": {
+      "exitCode": 0,
+      "mode": "Mac locked --no-opt; Docker 최적화 검증 아님"
+    },
+    "freshCounters": [
+      {
+        "key": "microbe5",
+        "pages": 5,
+        "minimumPercent": 93.89126,
+        "below90": [],
+        "tsvSha256": "a2d9e030a5f5f6572aa6d6071a29949d7cec34e77beb3780c0c1b04e002ae7b5",
+        "dpi": 192
+      },
+      {
+        "key": "issue157",
+        "pages": 2,
+        "minimumPercent": 99.02249,
+        "below90": [],
+        "tsvSha256": "539a442226f6ab90f172588daff6698ac9deba8b89c1a75290cf2c7e7d82cab4",
+        "dpi": 192
+      },
+      {
+        "key": "rewind3837",
+        "pages": 4,
+        "minimumPercent": 94.11853,
+        "below90": [],
+        "tsvSha256": "ed997fa6b8db511ec05974f20a02e37986d05a2bde81e725765f6dd6ebe5297f",
+        "dpi": 192
+      },
+      {
+        "key": "regulatory17",
+        "pages": 17,
+        "minimumPercent": 95.29505,
+        "below90": [],
+        "tsvSha256": "bd2d85d512f1d309041cbe1196f140ce9fb3648216265d888df954fb37ac2f84",
+        "dpi": 192
+      },
+      {
+        "key": "ktx003",
+        "pages": 1,
+        "minimumPercent": 95.86468,
+        "below90": [],
+        "tsvSha256": "8f7ccea8f7735c5a89e7546d4c7a512a52a429ba11d79bc4fc2c5f1ae1db1810",
+        "dpi": 192
+      },
+      {
+        "key": "low-slack6535",
+        "pages": 1,
+        "minimumPercent": 95.86412,
+        "below90": [],
+        "tsvSha256": "2b42395e141107244eed25e156c314b364580a5e5fbdf9ab649efae071236116",
+        "dpi": 192
+      },
+      {
+        "key": "tac3",
+        "pages": 3,
+        "minimumPercent": 92.54967,
+        "below90": [],
+        "tsvSha256": "02998c0cf61591c6017cd741e46c1c18b57523b5550d33806b308e7b310caf6a",
+        "dpi": 96,
+        "note": "기존 선언 DPI의 Native/fresh 3쪽 재실행; 192dpi 확대 검사는 별도로 보존"
+      },
+      {
+        "key": "civil2",
+        "pages": 2,
+        "minimumPercent": 96.81947,
+        "below90": [],
+        "tsvSha256": "25049bee868f1cd1ca8caeeac3122fcbcdc05ade413055e18f043d8234e515b0",
+        "dpi": 192
+      },
+      {
+        "key": "emc14",
+        "pages": 14,
+        "minimumPercent": 91.06446,
+        "below90": [],
+        "tsvSha256": "25c84bf7a9aed94277cd381da0575f2306a2ac978d3448dd76db080857c2aec8",
+        "dpi": 192
+      },
+      {
+        "key": "asset60",
+        "pages": 60,
+        "minimumPercent": 91.83989,
+        "below90": [],
+        "tsvSha256": "ec7d681cd0392655263bfc46cc1434892db0186d79e91422beda0599c5aa8d2f",
+        "dpi": 192
+      },
+      {
+        "key": "court2",
+        "pages": 2,
+        "minimumPercent": 91.16037,
+        "below90": [],
+        "tsvSha256": "d09f2bfbf2c3121767e7bbd65d0023f45ebe7e97e153b5448e7228566483e4c4",
+        "dpi": 192
+      }
+    ],
+    "pages": 111,
+    "gateBelow90": 0,
+    "additional192DpiTAC": {
+      "minimumPercent": 76.31579,
+      "below90": [
+        1,
+        2,
+        3
+      ],
+      "sameSvgBytesAsPreviousFresh": true,
+      "previousDeclaredDpi": 96,
+      "gateResultAt96": [
+        {
+          "version": "native",
+          "exitCode": 0,
+          "dpi": 96,
+          "pages": 3,
+          "minimumPercent": 92.54967,
+          "below90": []
+        },
+        {
+          "version": "fresh",
+          "exitCode": 0,
+          "dpi": 96,
+          "pages": 3,
+          "minimumPercent": 92.54967,
+          "below90": []
+        }
+      ],
+      "notClaimedAs192Pass": true
+    },
+    "nativeIdentityProof": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage431-anchor-v8-validation/native-v9-identity.json",
+    "nativeChangedCounters": [
+      {
+        "key": "regulatory17",
+        "dpi": 192,
+        "pages": 17,
+        "minimumPercent": 95.29505,
+        "below90": 0
+      },
+      {
+        "key": "civil2",
+        "dpi": 192,
+        "pages": 2,
+        "minimumPercent": 96.81947,
+        "below90": 0
+      },
+      {
+        "key": "tac3",
+        "dpi": 96,
+        "pages": 3,
+        "minimumPercent": 92.54967,
+        "below90": 0
+      }
+    ],
+    "focusedPrepared": {
+      "run": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 632,
+      "seconds": 0.054,
+      "exitCode": 0,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage431-anchor-v8-validation/relations-v9-prepared-nextest.log"
+    },
+    "manifest": {
+      "initialCheck": 1,
+      "reason": "기존 회귀 source 크기 변경에 따른 파생 harness drift",
+      "prepareExit": 0,
+      "repairedCheckExit": 0,
+      "base": "21ed64071f81f35f37618717693bd30f727392c9",
+      "generatedFilesNotCommitted": true
+    },
+    "newTestFunctions": 0,
+    "regimpactExistingFidelity": {
+      "issue": 7806,
+      "parent": 7445,
+      "bodyVerified": true,
+      "sourceAndTestsPreserved": true,
+      "canonical96Classification": "pending"
+    },
+    "prepLegacyClassificationAt96": "pending; 192dpi 결과와 직접 섞지 않음",
+    "wholeBranchValidation": "pending"
   }
 }
