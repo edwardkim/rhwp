@@ -1821,25 +1821,28 @@ fn rowbreak_row_has_internal_saved_vpos_reset(
         .cells
         .iter()
         .filter(|cell| cell.row as usize == row)
-        .any(|cell| {
-            // 저장된 물리 page reset은 cell paragraph 경계에서 시작할 수도 있다. 각
-            // paragraph 안의 `windows(2)`만 보면 `<OPTN>` 다음 `간 특수 검사`처럼
-            // p[n]의 마지막 LINE_SEG → p[n+1]의 첫 LINE_SEG reset을 놓친다.
-            let mut previous_vpos = None;
-            for para in &cell.paragraphs {
-                for seg in para
-                    .line_segs
-                    .iter()
-                    .filter(|seg| !is_synthetic_line_seg(seg))
-                {
-                    if previous_vpos.is_some_and(|previous| previous > 0 && seg.vertical_pos <= 0) {
-                        return true;
-                    }
-                    previous_vpos = Some(seg.vertical_pos);
-                }
+        .any(cell_has_internal_saved_vpos_reset)
+}
+
+/// 셀 안의 저장 줄 사이에서 `양수 vpos → 0 이하` 되감김이 있는지 판별한다.
+fn cell_has_internal_saved_vpos_reset(cell: &crate::model::table::Cell) -> bool {
+    // 저장된 물리 page reset은 cell paragraph 경계에서 시작할 수도 있다. 각
+    // paragraph 안의 `windows(2)`만 보면 `<OPTN>` 다음 `간 특수 검사`처럼
+    // p[n]의 마지막 LINE_SEG → p[n+1]의 첫 LINE_SEG reset을 놓친다.
+    let mut previous_vpos = None;
+    for para in &cell.paragraphs {
+        for seg in para
+            .line_segs
+            .iter()
+            .filter(|seg| !is_synthetic_line_seg(seg))
+        {
+            if previous_vpos.is_some_and(|previous| previous > 0 && seg.vertical_pos <= 0) {
+                return true;
             }
-            false
-        })
+            previous_vpos = Some(seg.vertical_pos);
+        }
+    }
+    false
 }
 
 /// [#7288] «쪽 경계에서» 값 0 «나누지 않음» 의 **원자 규칙**을 이 표에 걸 수 있는가.
@@ -1894,7 +1897,12 @@ pub(in crate::renderer) fn cell_unit_row_is_atomic_here(
 
 /// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
 fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
-    (0..table.row_count as usize).any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))
+    // [#7639] 행마다 전체 셀을 다시 거르지 않고 셀을 한 번만 훑는다(행×셀 → 셀).
+    let row_count = table.row_count as usize;
+    table
+        .cells
+        .iter()
+        .any(|cell| (cell.row as usize) < row_count && cell_has_internal_saved_vpos_reset(cell))
 }
 
 /// Whether every text-bearing cell proves, through its stored line segments,

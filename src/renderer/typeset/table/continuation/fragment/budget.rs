@@ -924,18 +924,15 @@ impl TypesetEngine {
             exact_source_row_end.map_or(scan_row_count, |end| scan_row_count.min(end));
         // [#6123] 저장 행 높이(행 안 row_span==1 셀의 최대 저장 높이). 프레임
         // 바닥이 진짜 행 경계인지 저장 좌표계에서 검산하는 데 쓴다.
-        let stored_row_heights: Vec<f64> = (0..row_count)
-            .map(|row| {
-                table
-                    .cells
-                    .iter()
-                    .filter(|cell| {
-                        cell.row as usize == row && cell.row_span == 1 && cell.height < 0x8000_0000
-                    })
-                    .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
-                    .fold(0.0f64, f64::max)
-            })
-            .collect();
+        // [#7639] 셀을 한 번만 훑는다. 행마다 전체 셀을 거르면 조각마다 행×셀이 된다.
+        let mut stored_row_heights = vec![0.0f64; row_count];
+        for cell in &table.cells {
+            let row = cell.row as usize;
+            if row < row_count && cell.row_span == 1 && cell.height < 0x8000_0000 {
+                let height = hwpunit_to_px(cell.height as i32, self.dpi);
+                stored_row_heights[row] = stored_row_heights[row].max(height);
+            }
+        }
         let source_first_fragment_row_end =
             saved_first_fragment_source_frame.and_then(|(frame_height, _)| {
                 nearest_saved_rowbreak_frame_row_end(
