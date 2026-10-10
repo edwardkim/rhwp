@@ -1,0 +1,138 @@
+{
+  "status": "source_boundary_fixed_full_visual_pending",
+  "parentHead": "af7fb419211dae0cb741581f6de7544b9d6f48ff",
+  "source": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+  "sourceSha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9",
+  "reference": "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+  "referenceSha256": "133f79cad7b756ebef777d253befb14f9407faaf7fe04eeea66036f3e049bbe7",
+  "sourceCode": "src/renderer/typeset/table/scan/source_frame.rs",
+  "sourceCodeSha256": "91f8523dbc93ba4d04f0b0bf61a8c07d2e2d5e8226cb30fd8afc67d0dfe28075",
+  "beforeOwnership": [
+    {
+      "page": 43,
+      "path": [
+        "Page",
+        "Body",
+        "Column",
+        "Table",
+        "Cell",
+        "TextLine",
+        "TextRun"
+      ],
+      "node": {
+        "type": "TextRun",
+        "bbox": {
+          "x": 233.1,
+          "y": 996.1,
+          "w": 152.2,
+          "h": 14.7
+        },
+        "text": "양질의 시간제 비중 증가",
+        "pi": 7
+      }
+    }
+  ],
+  "beforeAnomaly": {
+    "basePages": 299,
+    "headPages": 302,
+    "baseBottomOverflow": [
+      {
+        "page": 146,
+        "node": "TextLine",
+        "bottom": 12.3599999999999
+      },
+      {
+        "page": 146,
+        "node": "TextLine",
+        "bottom": 38.75999999999988
+      },
+      {
+        "page": 146,
+        "node": "TextLine",
+        "bottom": 65.15999999999997
+      },
+      {
+        "page": 155,
+        "node": "TextLine",
+        "bottom": 10.346666666666579
+      },
+      {
+        "page": 261,
+        "node": "TextLine",
+        "bottom": 9.319999999999709
+      },
+      {
+        "page": 297,
+        "node": "Table",
+        "bottom": 14.280000000000314
+      }
+    ],
+    "headBottomOverflow": [
+      {
+        "page": 43,
+        "node": "Table",
+        "bottom": 5.093333333333362
+      }
+    ]
+  },
+  "focusedBefore": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_001",
+      "--test",
+      "regression_suite_018",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_4) | test(issue_7445_roadmap_source_fragment_ownership)"
+    ],
+    "exitCode": 100,
+    "seconds": 23.913100500125438
+  },
+  "focusedAfter": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_001",
+      "--test",
+      "regression_suite_018",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_4) | test(issue_7445_roadmap_source_fragment_ownership)"
+    ],
+    "exitCode": 0,
+    "seconds": 202.20081354072317
+  },
+  "focusedAfterSummary": "3 tests run: 3 passed, 394 skipped",
+  "focusedAfterLog": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage394-roadmap-overflow/attempt2-focused-nextest.log",
+  "focusedAfterLogSha256": "c387e1f0c19fb322d381db9c557b922bb7c7a3618a5b0e9baf5938368ddb53e2",
+  "baseFullVisual": {
+    "baseHead": "21ed64071f81f35f37618717693bd30f727392c9",
+    "status": "held_page_count_mismatch_tsv_not_produced",
+    "nativePages": 299,
+    "pdfPages": 302,
+    "page43Percent": 67.93691
+  },
+  "changedTestExpectations": false,
+  "newRegressionTests": 0,
+  "fullVisualAfter": "pending",
+  "prReady": false
+}
