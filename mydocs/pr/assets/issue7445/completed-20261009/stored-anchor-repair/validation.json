@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "base": "21ed64071f81f35f37618717693bd30f727392c9",
+  "sourceCandidate": {
+    "head": "49f3777c0871a9390536f2747965d4df2eca6b2f",
+    "sourceHashes": {
+      "src/renderer/typeset/controls/empty_float.rs": "d8149cf285af489ad74bf9e71ab14447f8a0e5857f3b033ce40b4f3462ae94cc",
+      "src/renderer/typeset/controls/stored_tac.rs": "a75120225edbc69bbe4c853adf545d67a9a9fead38fc258ea11ac99b79f514f2",
+      "src/renderer/typeset/state.rs": "38f5d5002bc449738f711ed8587806e9c19fdd5fe2ae3b3be17d3c451299671e",
+      "src/renderer/float_placement.rs": "695afffadf8291bbba13594e398a2196531bbde77c42abbac31cca83bb3b88b1",
+      "src/renderer/typeset/table/block/whole_fit.rs": "472b88ef761b24112a3b149b76afea6ab9f7206779173dc00f0c64da2eefba32"
+    },
+    "nativeSha256": "2e7a5197194f79f76ba31aca20b108f9f76d1accc27c9d94c59c393244f31af7"
+  },
+  "visualCandidateV3": {
+    "head": "49f3777c0871a9390536f2747965d4df2eca6b2f",
+    "uncommittedSourceHashes": {
+      "src/renderer/typeset/controls/empty_float.rs": "557e20af38d64a422ad7729e9f9a5422e1cec2fce0d02695e12ce29e2aef0ee3",
+      "src/renderer/typeset/controls/stored_tac.rs": "a75120225edbc69bbe4c853adf545d67a9a9fead38fc258ea11ac99b79f514f2",
+      "src/renderer/typeset/state.rs": "38f5d5002bc449738f711ed8587806e9c19fdd5fe2ae3b3be17d3c451299671e",
+      "src/renderer/float_placement.rs": "695afffadf8291bbba13594e398a2196531bbde77c42abbac31cca83bb3b88b1",
+      "src/renderer/typeset/table/block/whole_fit.rs": "472b88ef761b24112a3b149b76afea6ab9f7206779173dc00f0c64da2eefba32"
+    },
+    "testChanged": false,
+    "comparisonAlgorithmChanged": false
+  },
+  "visual": [
+    {
+      "key": "issue157",
+      "pages": 2,
+      "nativeMinimumPercent": 99.02249,
+      "freshWasmMinimumPercent": 99.02249,
+      "below90Count": 0,
+      "freshTsvSha256": "539a442226f6ab90f172588daff6698ac9deba8b89c1a75290cf2c7e7d82cab4",
+      "nativeFreshPngByteIdentical": true
+    },
+    {
+      "key": "rewind3837",
+      "pages": 4,
+      "nativeMinimumPercent": 94.11853,
+      "freshWasmMinimumPercent": 94.11853,
+      "below90Count": 0,
+      "freshTsvSha256": "ed997fa6b8db511ec05974f20a02e37986d05a2bde81e725765f6dd6ebe5297f",
+      "nativeFreshPngByteIdentical": true
+    },
+    {
+      "key": "regulatory17",
+      "pages": 17,
+      "nativeMinimumPercent": 94.3112,
+      "freshWasmMinimumPercent": 94.3112,
+      "below90Count": 0,
+      "freshTsvSha256": "71a5ae1347b02ed7c1c01e818809db5bea9eb01203d2b28071f9c854b3f6b23f",
+      "nativeFreshPngByteIdentical": true
+    },
+    {
+      "key": "ktx003",
+      "pages": 1,
+      "nativeMinimumPercent": 95.86468,
+      "freshWasmMinimumPercent": 95.86468,
+      "below90Count": 0,
+      "freshTsvSha256": "8f7ccea8f7735c5a89e7546d4c7a512a52a429ba11d79bc4fc2c5f1ae1db1810",
+      "nativeFreshPngByteIdentical": true
+    },
+    {
+      "key": "low-slack6535",
+      "pages": 1,
+      "nativeMinimumPercent": 95.86412,
+      "freshWasmMinimumPercent": 95.86412,
+      "below90Count": 0,
+      "freshTsvSha256": "2b42395e141107244eed25e156c314b364580a5e5fbdf9ab649efae071236116",
+      "nativeFreshPngByteIdentical": true
+    },
+    {
+      "key": "tac3",
+      "pages": 3,
+      "nativeMinimumPercent": 92.54967,
+      "freshWasmMinimumPercent": 92.54967,
+      "below90Count": 0,
+      "freshTsvSha256": "3ca2bbae3ad3e90a3719888852ea724d2cbca2655eefec577b2d00cebd79076a",
+      "nativeFreshPngByteIdentical": true
+    },
+    {
+      "key": "civil2",
+      "pages": 2,
+      "nativeMinimumPercent": 98.64096,
+      "freshWasmMinimumPercent": 98.64096,
+      "below90Count": 0,
+      "freshTsvSha256": "1af7c1e6daae1b23107fcad0de60596efdc86ebcd65331eba7c8f4a7202e0314",
+      "nativeFreshPngByteIdentical": true
+    }
+  ],
+  "v4NativeSvgIdentity": [
+    {
+      "key": "issue157",
+      "exit": 0,
+      "pages": 2,
+      "svgByteIdenticalToV3": true
+    },
+    {
+      "key": "rewind3837",
+      "exit": 0,
+      "pages": 4,
+      "svgByteIdenticalToV3": true
+    },
+    {
+      "key": "regulatory17",
+      "exit": 0,
+      "pages": 17,
+      "svgByteIdenticalToV3": true
+    },
+    {
+      "key": "ktx003",
+      "exit": 0,
+      "pages": 1,
+      "svgByteIdenticalToV3": true
+    },
+    {
+      "key": "low-slack6535",
+      "exit": 0,
+      "pages": 1,
+      "svgByteIdenticalToV3": true
+    },
+    {
+      "key": "tac3",
+      "exit": 0,
+      "pages": 3,
+      "svgByteIdenticalToV3": true
+    },
+    {
+      "key": "civil2",
+      "exit": 0,
+      "pages": 2,
+      "svgByteIdenticalToV3": true
+    }
+  ],
+  "regression": {
+    "v3OriginalFocused": {
+      "passed": 23,
+      "failed": 0
+    },
+    "v3RelationalFocused": {
+      "passed": 3,
+      "failed": 0
+    },
+    "v3OverlapPartition7": {
+      "passed": 0,
+      "failed": 1,
+      "newRegression": "railway EMC document,91text overlap events"
+    },
+    "v4RailwayAnomaly": {
+      "pages": 14,
+      "textOverlapCount": 0,
+      "overlapCount": 0,
+      "overflowCount": 0
+    },
+    "v4FocusedNextest": "pending",
+    "v4FreshWasm": "pending at record creation",
+    "wholeNextest": "pending after remaining failure repairs"
+  },
+  "baselineChange": {
+    "document": "samples/issue3837/stored_vpos_rewind_form.hwp",
+    "before": 3,
+    "after": 4,
+    "reason": "Independent Print intentionally overlays the stamp on the 2매 photo instruction in both copies; preserve two photo cells and one stamp contained in each."
+  },
+  "redGreen": {
+    "shareholderPageCount": {
+      "before": 3,
+      "after": 2,
+      "oracle": 2
+    },
+    "applicationSourceLineGap": {
+      "before": "fails original preceding line box+spacing+table margin relationship",
+      "after": "passes same relationship; no absolute px coordinate pin"
+    }
+  },
+  "sourceAndPdfPreserved": true,
+  "newTestFunctions": 0,
+  "comparisonAlgorithmChanged": false,
+  "approvalRequiredBeforePr": true,
+  "railwayPrintReference": {
+    "exitCode": 0,
+    "jobId": "dc5d7dda-4e0d-45d7-8b48-e74243add9bc",
+    "exists": true,
+    "size": 794408,
+    "sha256": "26d609eed6fdf96757e11bae65fabed2cd11e24af12ea39c11c7b9d6cfe503eb",
+    "engine": "2020",
+    "hancomVersion": "11.0.0.9136",
+    "printMethod": 0,
+    "outputMode": "hancom2020_pdf_driver_one_up",
+    "pages": 14
+  },
+  "gasFollowup": {
+    "issue": 7803,
+    "parent": 7445,
+    "testsRetained": true,
+    "status": "unresolved32SVGpages/31Printpages; not a visual pass"
+  }
+}

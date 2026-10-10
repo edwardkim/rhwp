@@ -112,6 +112,29 @@ impl TypesetState {
         paragraphs: &[crate::model::paragraph::Paragraph],
     ) -> StoredTacPage {
         StoredTacPage {
+            original_object_column_origin: self.data.current_items.first().is_some_and(|item| {
+                let PageItem::Table {
+                    para_index,
+                    control_index,
+                } = item
+                else {
+                    return false;
+                };
+                paragraphs.get(*para_index).is_some_and(|first| {
+                    first.source_line_seg_vertical_pos.is_none()
+                        && first.line_segs.first().is_some_and(|line| {
+                            line.vertical_pos == 0
+                                && line.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                        })
+                        && self
+                            .data
+                            .inline_placements
+                            .get(&(*para_index, *control_index))
+                            .is_some_and(|placed| placed.y == 0.0 && placed.advance_end.is_some())
+                })
+            }),
             profile: self.data.profile,
             current_height: self.data.current_height,
             empty_column: self.data.current_items.is_empty(),

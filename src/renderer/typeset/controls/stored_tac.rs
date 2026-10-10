@@ -48,6 +48,8 @@ pub(in crate::renderer::typeset) struct StoredTacPage {
     pub stored_table_column_base: Option<i32>,
     /// 원본 단 첫 글줄과 물리 앵커가 함께 인증한 영점 축.
     pub stored_zero_column_origin: bool,
+    /// 첫 원본 TAC의 확정 배치와 저장 줄이 현재 단 원점에서 일치하는가.
+    pub original_object_column_origin: bool,
 }
 
 pub(super) struct StoredTacPlan {
@@ -675,7 +677,9 @@ pub(super) fn prepare(
                 let unreserved_origin =
                     page.current_height + fmt.spacing_before - shared_spacing_before;
                 let same_frame = (saved_origin - page.current_height).abs() <= dpi / 7200.0
-                    || (saved_origin - unreserved_origin).abs() <= dpi / 7200.0;
+                    || (saved_origin - unreserved_origin).abs() <= dpi / 7200.0
+                    || (page.original_object_column_origin
+                        && para.source_line_seg_vertical_pos.is_none());
                 // 앞 저장 글줄의 후행 간격은 표의 진입 밴드다. 수용 커서가
                 // 그 글줄의 내용 끝에 있으면 같은 좌표축에서 표 원점까지 연결한다.
                 let inherited_origin = previous_para.and_then(|previous| {

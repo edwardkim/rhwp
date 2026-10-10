@@ -121,7 +121,51 @@ fn measure(path: &Path) -> Option<(u32, bool)> {
     if path.ends_with("samples/basic/KTX-003.hwp") {
         verify_ktx_single_page_content(&doc);
     }
+    if path.ends_with("samples/hwpx/hancom-hwp/issue_157.hwp") {
+        verify_shareholder_forms_content(&doc);
+    }
     Some((doc.page_count(), nup))
+}
+
+/// 독립 Print의 소집공고·참석장과 마지막 날짜·주의 문구가 실제 두 쪽에
+/// 각각 한 번 남아 있어야 한다. 내용 손실로 쪽수만 맞추는 통과를 막는다.
+fn verify_shareholder_forms_content(doc: &DocumentCore) {
+    assert_eq!(doc.page_count(), 2, "독립 Print의 두 주주총회 서식");
+    let mut owners = BTreeMap::<String, Vec<u32>>::new();
+    fn collect(node: &RenderNode, page: u32, owners: &mut BTreeMap<String, Vec<u32>>) {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            let text = node
+                .children
+                .iter()
+                .filter_map(|child| match &child.node_type {
+                    RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+                    _ => None,
+                })
+                .collect::<String>();
+            owners.entry(text).or_default().push(page);
+        }
+        for child in &node.children {
+            collect(child, page, owners);
+        }
+    }
+    for page in 0..doc.page_count() {
+        let tree = doc
+            .build_page_render_tree(page)
+            .expect("주주총회 서식 실제 쪽");
+        collect(&tree.root, page, &mut owners);
+    }
+    for (text, page) in [
+        ("주주총회 소집공고", 0),
+        ("주주총회 참석장", 1),
+        ("2026년       월       일", 1),
+        ("※ 주주총회 참석자는 신분증을 필히 지참하시기 바랍니다.", 1),
+    ] {
+        assert_eq!(
+            owners.get(text).map(Vec::as_slice),
+            Some([page].as_slice()),
+            "서식 내용의 쪽 소속·누락·중복: {text}"
+        );
+    }
 }
 
 /// 독립 PDF의 지도·시간표·운임표·주의 문구 관계를 기존 동일 원본 검사에서 보호한다.

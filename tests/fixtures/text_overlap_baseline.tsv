@@ -72,6 +72,9 @@ issue1949_giant_cell_nested_tables_perf.hwpx	8
 issue2006/1790387_prep_final_report.hwpx	1
 issue2470/36341511_masked.hwpx	4
 issue2559/1341000_research_report_footnotes.hwp	16
+# 독립 Print에서도 두 사진 칸의 2매와 ㊞ 도장이 겹친다. 전4쪽 Native/fresh WASM
+# 검증 및 tests/issue_3837_stored_vpos_rewind_page_break.rs의 원본 칸·도장 소속 검사 참조.
+issue3837/stored_vpos_rewind_form.hwp	4
 issue4599/36374873_night_guard_log.hwpx	10
 issue5169_viewtext_changetracking.hwp	17
 issue5714/1490000-200800034_vietnam_labor_report.hwp	3
