@@ -189,3 +189,34 @@ Native/fresh TSV는 311쪽 67.60855%, 331쪽 64.74204%, 380쪽 22.65933%, 397쪽
 `embedded_fonts.json`, `silhouette.tsv`다. 별도로 시작한 416쪽 전체의 중복 글꼴 정책 처리
 (38.62GiB)은 이 검증 완료 후 종료했으며 exit143을 통과로 세지 않는다. 실제 fresh 416쪽의
 raw SVG와 관련 4쪽의 검증 결과는 보존한다.
+
+
+## KPS 제안서 지침 표의 잘못된 행 컷 핀 교정
+
+`tests/issue_1156_rowbreak_fragment_fit.rs`의 기존 KPS 함수 한 개를 수정했다. 독립
+`pdf/kps-ai-2022.pdf`의 37쪽은 성능 요구사항까지, 38쪽은 데이터 요구사항부터 소유한다.
+기존 `rows=0..16` / `rows=16..32` 고정 문자열은 데이터 항목을 앞 조각에 요구했다.
+고정 base Native는 37쪽 96.63984%, 38쪽 50.03174%였으며 실제 base render tree는 데이터를
+앞 조각에 두고 이어받은 조각에서는 누락했다. 현재 Native와 실제 Chrome fresh WASM은 각각
+37쪽 **99.75093%**, 38쪽 **98.65303%**이고 PNG도 서로 바이트가 동일하다.
+두 쪽의 review를 직접 판독해 항목·작성방법·표 경계와 내용을 대조했다.
+
+새 검사는 제목으로 원본 표의 소속을 찾고, 두 연속 조각에서 성능/데이터 항목의 순서와
+소속·중복 방지를 확인한다. 모든 원본 셀의 내용과 정확한 복사 수를 보존하며 원본의 반복
+제목행만 예외로 둔다. 본문 안의 표와 셀 안의 글줄을 상대 포함 관계로 검사한다.
+절대 쪽 인덱스·행 컷 숫자·dump 문자열 형식에 묶지 않는다. 원본·PDF와 함수 이름은
+유지했고 새 테스트 함수, 픽스처, 픽셀 핀은 추가하지 않았다. 같은 파일의 Synam 검사는 바꾸지 않았다.
+
+정식 nextest는 **2 PASS / 0 FAIL / 217 skip, 0.214초**로 두 기존 함수를 모두 통과했다.
+원본 27개 실패의 누적 상태는 **15개 해결 / 부적합 1개 분리 / 11개 잔존**이다.
+전쪽 77쪽의 시각 수용이나 전체 회귀 완료를 주장하지 않는다. 관측 쪽수는 Native/fresh/PDF
+77쪽으로 같으며 이 테스트에 전체 쪽수 핀을 추가하지 않았다. 변경한 경계의 전체 범위는 위 두 쪽이다.
+
+원시 증거는 `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage434-next-failure-classification/`의
+`kps-nextest.log`, `kps-nextest-command.json`, `kps-base96/kps77/silhouette.tsv`,
+`kps-current96/kps77/silhouette.tsv`, `kps-fresh-selected96/silhouette.tsv`,
+`kps-fresh-selected96/provenance.json`, `embedded_fonts.json`이다. 대표
+[38쪽 review](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/kps-boundary-review_038.png)를 보존했다.
+base의 새 Rust 함수 RED 실행은 하지 않았으며, 실제 base CLI의 내용 소속 관측을 그 실행으로
+바꾸어 보고하지 않는다. 처음 잘못 지정한 standalone 필터의 0-test 결과도 통과 수로 세지 않고,
+정확한 함수 필터의 1 PASS와 정식 nextest 2 PASS만 기록한다.

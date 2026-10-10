@@ -322,11 +322,11 @@
     "currentNewPaginationRegressionRetained": true
   },
   "latestStatus": {
-    "candidate": "V13b carried-row reservation repair and unsuitable curriculum page pin removal",
+    "candidate": "KPS boundary ownership expectations corrected after V13b source repair",
     "originalFailures": 27,
-    "originalPassed": 14,
+    "originalPassed": 15,
     "originalRemovedUnsuitable": 1,
-    "originalFailed": 12,
+    "originalFailed": 11,
     "fullNextestAfterRepairs": "not yet run",
     "prReady": false,
     "approvalRequiredBeforePr": true
@@ -1534,5 +1534,69 @@
       "replacementValidated": true,
       "record": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage433-remaining-relations/duplicate-full-policy-cancellation.json"
     }
+  },
+  "kpsBoundaryRelationshipRepair": {
+    "productionCommit": "cb7116471cadb2c09dfae33868af7207622978a0",
+    "testSource": "tests/issue_1156_rowbreak_fragment_fit.rs",
+    "testFunction": "kps_ai_page37_defers_overflowing_split_row_slice",
+    "sourceSha256": "9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9",
+    "pdf": "pdf/kps-ai-2022.pdf",
+    "pdfSha256": "7c064fd290368369a3c8eaa7d7b03668c46fb4dfe0fc18ba52d00456ffe01d28",
+    "pdfCreator": "Hwp 2022 12.0.0.4426",
+    "base": "21ed64071f81f35f37618717693bd30f727392c9",
+    "baseNativePercent": [
+      96.63984,
+      50.03174
+    ],
+    "currentNativePercent": [
+      99.75093,
+      98.65303
+    ],
+    "currentFreshPercent": [
+      99.75093,
+      98.65303
+    ],
+    "scope": [
+      37,
+      38
+    ],
+    "wholeDocumentVisualAcceptance": false,
+    "pageCountObservation": {
+      "source": 77,
+      "pdf": 77,
+      "exactTotalPagePinAdded": false
+    },
+    "independentExpectation": "Print page 37 ends with performance requirements; data requirements start on page 38. The previous 0..16 row cut pin put the data cell in the wrong fragment.",
+    "changedAssertions": [
+      "source-owned table discovery without absolute page index",
+      "two consecutive source-owned fragments",
+      "performance before data, no cross-fragment duplicate",
+      "table inside body and text lines inside cell",
+      "all original cell contents preserved; only source-declared leading header cells repeat"
+    ],
+    "newTestFunctions": 0,
+    "removedTestFunctions": 0,
+    "pixelPositionPinsAdded": 0,
+    "otherSynamTestChanged": false,
+    "focusedRun": {
+      "id": "241661a4-01c1-44a7-8d12-62573a71abf2",
+      "run": 2,
+      "pass": 2,
+      "fail": 0,
+      "skip": 217,
+      "seconds": 0.214,
+      "wholeSuite": false
+    },
+    "nativeFreshPngIdentical": true,
+    "freshProvenance": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage434-next-failure-classification/kps-fresh-selected96/provenance.json",
+    "fontCheck": "passed",
+    "baseSemanticObservation": {
+      "frontContainsPerformance": true,
+      "frontContainsData": true,
+      "nextContainsData": false,
+      "basis": "actual fixed-base CLI render-tree JSON; not claimed as execution of the rewritten Rust test on a frozen base library"
+    },
+    "rawOutput": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage434-next-failure-classification",
+    "representative": "kps-boundary-review_038.png"
   }
 }
