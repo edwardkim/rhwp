@@ -1,0 +1,176 @@
+{
+  "stage": 375,
+  "head": "d660765a4bea63856d97e61b1f3962b548104cc2",
+  "sourceSha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+  "pdfSha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+  "snapshots": [
+    {
+      "binary": "stage356-exact-devel-proof/rhwp-devel-21ed",
+      "sha256": "78a3a5dc04eb54e203971ca2481279370f75d84700020ee0a8c5fbb70f2482d6",
+      "exit": 0,
+      "pages": 215
+    },
+    {
+      "binary": "stage331-issue265/rhwp-corrected",
+      "sha256": "7589d57286047f8a98b7e40efa81c18b56078a45354aa67775ed2abd46e93fe5",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage335-failure-source-review/rhwp-corrected",
+      "sha256": "9e47022ba3e0f459c09c7cd1844b79d49d66eb520a41186d311369825f6a42df",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage339-rowbreak-cut-band/rhwp-corrected",
+      "sha256": "074dae9f2704f52b840e5e806fe2879b22067e00224d50be8fff56a701736227",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage344-converted-reset/rhwp-frame-certified-cut",
+      "sha256": "5507b67a2ce6c33574b8c637106a3004d5e322d29edd8118175d4c8b9360f793",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage349-table-enter-diagnostic/rhwp-table-enter",
+      "sha256": "e6901de1f96d3a63aa8bddf404b974534381c83dfffebb72bcd20a568b949386",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage351-tac3-reference-diagnostic/rhwp-stale-cell-height",
+      "sha256": "37ee54efe5e9ad5c6438c4b8633d1238daa78a39bce291259cf217d146ec8582",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage353-ole-empty-line-diagnostic/rhwp-ole-host-origin",
+      "sha256": "bdde2585e0e67221f86b45e7a0c8ed78109f72f266619dc4864ee35cd452c0ca",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage357-civil-anchor-consumption/rhwp-rewind-frame",
+      "sha256": "a0356c7ecb730135ae1dc07cb04ac8bd6ad2e78d1276a1626370417e96402b5c",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage365-aift-first-frame/rhwp-source-frame3",
+      "sha256": "4fd9b48da4032f82915064a24aafb252827204883b549a61bf9dc8259ee0e0d4",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage368-rnote-flow-consumption/rhwp-after",
+      "sha256": "fd9dba8d82dfab66f7bf267c2cf5dbea238fe9d8b28c59b19d405aaadfabd5cd",
+      "exit": 0,
+      "pages": 216
+    },
+    {
+      "binary": "stage369-rnote-shared-frame/rhwp-after-v3",
+      "sha256": "e54208f24ffce8e30789facfde7de8611b63330c1662911d5d82e3705c402488",
+      "exit": 0,
+      "pages": 216
+    }
+  ],
+  "firstPageContentDivergence": 24,
+  "firstShiftedTable": {
+    "para": 348,
+    "control": 0,
+    "develTopPx": 602.8,
+    "candidateTopPx": 701.1,
+    "deltaPx": 98.3
+  },
+  "successorParagraph": {
+    "para": 351,
+    "develPage": 24,
+    "candidatePage": 25
+  },
+  "independentPdfPage24": {
+    "pdfPages": 215,
+    "lines": [
+      {
+        "text": "그림 23. EU 회원국 및 기타 국가에서 2015년 이식 센터 당 장기 이식 건수(출",
+        "topPx": 430.65920000000006
+      },
+      {
+        "text": "처: Study on the uptake and impact of the EU Action Plan on Organ",
+        "topPx": 451.93919999999997
+      },
+      {
+        "text": "Donation and Transplantation (2009-2015) in the EU Member States)",
+        "topPx": 473.39248
+      },
+      {
+        "text": "○ EU에서 생존 장기기증이 상승하고 있으나, 글로벌 지수에 비해서는 아직까지 EU 국가에서의",
+        "topPx": 545.6991999999999
+      },
+      {
+        "text": "생존 장기기증을 통한 이식 비율은 낮음.",
+        "topPx": 572.2592
+      },
+      {
+        "text": "그림 24. 2013-2014 기증 및 이식 관련 글로벌 및 EU 수치(출처: European Commission",
+        "topPx": 798.9791999999999
+      },
+      {
+        "text": "Journalist Workshop on Organ donation and transplantation, Recent Facts &",
+        "topPx": 820.4324799999999
+      },
+      {
+        "text": "Figures(2014))",
+        "topPx": 841.71248
+      },
+      {
+        "text": "2012년 기준, 세계적으로 수행된 이식 수의 25% 이상이 유럽연합에서 발생하였으며, 전 세계 신장",
+        "topPx": 887.2991999999999
+      },
+      {
+        "text": "이식의 24.5%가, 심장이식의 34%, 폐 이식의 40%가, 전 세계 이식의 1/3가 EU 국가에서 발생함.",
+        "topPx": 914.0191999999998
+      },
+      {
+        "text": "단, 세계적으로 생존 신장 이식 비율(42%)은 유럽연합 비율(21%)의 2배이며, 간 이식은 전 세계 비",
+        "topPx": 940.7392
+      },
+      {
+        "text": "율(18.2%)은 유럽연합의 비율(3.7%)과 비교하여 약 9배 정도 차이가 나 증가 추세에도 불구하고,",
+        "topPx": 967.2991999999999
+      },
+      {
+        "text": "EU 국가에서의 생존 장기기증을 통한 이식 비율은 낮음<그림 24>.",
+        "topPx": 994.0191999999998
+      },
+      {
+        "text": "- 24 -",
+        "topPx": 1071.47248
+      }
+    ],
+    "images": [
+      {
+        "xPx": 105.06400000000001,
+        "topPx": 603.9786666666668,
+        "widthPx": 545.4666666666667,
+        "heightPx": 182.83999999999995
+      },
+      {
+        "xPx": 124.73333333333333,
+        "topPx": 88.70266666666673,
+        "widthPx": 495.25333333333333,
+        "heightPx": 330.19866666666667
+      }
+    ]
+  },
+  "treeHashes": {
+    "devel/p024/render_tree_024.json": "6a7eee3af55c83483df09e677da3b6cf14bfe576949193e71567d517509fee14",
+    "devel/p025/render_tree_025.json": "d8e7e3cf85a10f20478786310829ae9c622f638864edde4874dcc99d6ef1df6c",
+    "candidate/p024/render_tree_024.json": "cd5da8cc0bb0cadf09138d3f82342364d2efc9e80b2274d202f4a1d53b3cf232",
+    "candidate/p025/render_tree_025.json": "916f288af394a2ee18abda904fe5846957d03d0f75dc1efbc758457350c5e5dd"
+  },
+  "sourceMetadataSha256": "c41114121fb3eaa4f100ae5d220f078d7d1f90d31381b40f65394e8b59f69dd1",
+  "decision": "devel 215쪽 대 현재 216쪽의 신규 회귀. 첫 차이는 24쪽 후행 표부터이며 독립 PDF의 그림과 뒤 문단 위치는 devel에 대응. 아직 수정 전; 이관이나 기대값 교정으로 숨기지 않고 실제 소비 경로를 보정."
+}
