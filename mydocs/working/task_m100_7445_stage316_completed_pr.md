@@ -2209,3 +2209,71 @@ PR 생성·승인·통합은 보류합니다. 다음 미달 28쪽의 그림 호�
 [Native overlay](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-native-overlay.png),
 [fresh WASM review](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-fresh-review.png),
 [fresh WASM overlay](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-fresh-overlay.png).
+
+## 보정 380 사전 분석: 한 시각 줄의 좌우 조각과 그림 캡션 종료
+
+28쪽 문단 385의 원본 저장 줄은 vpos 12000HU를 공유하는 좌우 두 조각이며,
+가로 시작점은 0/42702HU입니다. 그림의 문단 오프셋 1147HU, 높이 14068HU,
+아래 캡션 간격 850HU와 캡션의 마지막 줄 끝 6660HU를 더하면 다음 빈 문단
+386의 저장 시작점 34725HU가 정확히 닫힙니다. 두 캡션 문단의 저장 줄은
+수정되지 않았고 별도 컨트롤은 없습니다. 독립 PDF는 그림과 캡션 끝 바로
+뒤에서 후속 문단을 진행하며 기존 후보의 추가 호스트 한 줄을 표시하지 않습니다.
+
+`stored_captioned_picture_successor_placement`가 저장 LineSeg 개수 1만
+허용해 이 관계를 거부합니다. 계획 없이 내려간 `layout_shape_item`은
+캡션 끝에 빈 호스트 줄 높이·간격 2000HU를 더하고, 뒤 본문을 26.67px
+내립니다. 저장 줄을 시각 줄로 판별하는 기존 `stored_single_visual_line`은
+같은 세로 원점과 서로 다른 가로 시작점을 공유하는 조각을 한 줄로 판단합니다.
+이 판별을 캡션 프레임 수용에도 공유하고, 모든 원본 조각의 유효한 줄 높이와
+합성 태그 부재를 확인합니다. 실제 여러 줄·동일 가로 시작점의 중복·편집/무효
+저장 줄은 수용하지 않습니다. 캡션 끝·후속 줄의 닫힘과 실제 호스트 원점 검사는
+유지하며 픽셀 임계값이나 문서별 좌표를 맞추지 않습니다.
+
+이 단계는 위 계약의 Native 직접 비교와 전쪽 변화 범위를 먼저 확인합니다.
+기존 검사 기대값은 바꾸지 않으며, fresh WASM·전체 TSV·관련 회귀 검증이
+완료될 때까지 보정 완료로 판단하지 않습니다.
+
+### 보정 380 결과: 28쪽 복원, 전쪽 미달 4→3쪽
+
+기존 한 시각 줄 판별을 저장 그림 캡션 프레임에도 공유했습니다. 저장 줄의
+좌우 조각 개수를 실제 줄 수로 잘못 판단하지 않으며, 모든 조각의 원본 태그와
+양의 줄 높이를 확인합니다. 그림·캡션 끝과 다음 저장 원점의 닫힘, 실제 호스트
+원점, 편집/무효 줄 배제 계약은 유지했습니다. 표·그림 크기와 내용은 바꾸지
+않았고 후속 문단에 이미 포함된 호스트 한 줄을 다시 더하지 않습니다.
+
+최종 소스의 Native와 Mac no-opt fresh WASM을 빌드하고 pkg/public 동일성을
+확인했습니다. 한컴 2024 조판 세대의 Native SVG·렌더 트리와 실제 Chrome
+fresh WASM raw SVG·렌더 트리는 각각 전215쪽에서 28쪽만 바뀌었습니다.
+다른 214쪽 출력과 전215쪽 텍스트·글꼴·스타일 payload 및 각주 영역은
+이전 후보와 동일합니다. 바뀐 28쪽을 Native/fresh로 재캡처했고 PNG도 동일합니다.
+
+두 그림·그림 31/32의 캡션·URL, 뒤 데이터 분석 문단, 영국 제목과 생존 간
+이식 본문 및 각주 27을 독립 PDF와 직접 대조했습니다. 호스트의 불필요한
+한 줄 전진이 사라졌고 내용의 누락·중복은 없습니다. 2px 관용 실루엣은
+**86.84969→98.56585%**, 엄격 잉크 일치율은 64.25973%입니다. 글자 굵기·
+미세 잉크 차이는 남아 있으며 이 수치를 픽셀 완전 일치로 보고하지 않습니다.
+
+전쪽 출력·입력·PDF·조판 세대·인쇄 프로필·글꼴 공급의 동일성을 확인한
+214쪽 캡처를 재사용하고 전215쪽 TSV를 재산출했습니다. Native/fresh 모두
+**미달 3쪽, 최저 71.39979%**이며 잔여는 176(88.12309%)·184(71.39979%)·
+208(85.37844%)쪽입니다. 새 미달은 없습니다.
+
+기존 관련 회귀는 **45건 중 42 PASS / 3 FAIL**입니다. 기존 그림 후속 프레임,
+좌우 줄 조각/한 시각 줄 검사 11건도 함께 실행해 모두 통과했습니다. 새 함수형
+검사를 추가하거나 기대값을 바꾸지 않았습니다. 실패는 이전과 같은 #7203 두
+검사와 #7379 마지막 rowspan 캡션 검사입니다. Native Clippy·format·문서 링크를
+확인해 보정을 커밋하며 최종 전체 nextest·Skia·나머지 제출 게이트는 미완료입니다.
+
+잔여 3쪽은 읽기 전용으로 먼저 대조했습니다. 176쪽 표의 외곽과 184쪽 TAC
+글상자의 외곽은 독립 PDF보다 위에 있고, 기존 휴먼명조 TrueType 환경을 명시해도
+두 쪽의 점수가 그대로입니다. 반면 208쪽은 같은 글꼴 공급 대조 진단에서
+97.19109%로 개선됐습니다. 이 진단은 아직 전쪽 Native/fresh 수용 증거가
+아니므로 정본 환경의 완료를 대신하지 않습니다. 위치 차이와 실제 글꼴 공급을
+분리해 확인하고, 전체 검증·PR/CI·머지·후속 처리 완료까지 목표를 유지합니다.
+
+[입력·빌드·전쪽 검증 요약](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-validation.json),
+[28쪽 보정 전](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-native-before-review.png),
+[Native review](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-native-review.png),
+[Native overlay](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-native-overlay.png),
+[fresh WASM review](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-fresh-review.png),
+[fresh WASM overlay](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-fresh-overlay.png).

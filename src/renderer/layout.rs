@@ -2316,7 +2316,9 @@ fn compact_endnote_title_gap_after_single_equation_tail(
 ///
 /// `cs` 까지 같은 쌍은 쪽 리셋·중복이라 뜻이 갈리고, 진짜 여러 줄은 stale 사다리일 수
 /// 있으므로 둘 다 `None` 으로 물러난다.
-fn stored_single_visual_line(para: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
+pub(crate) fn stored_single_visual_line(
+    para: &Paragraph,
+) -> Option<&crate::model::paragraph::LineSeg> {
     let segs = para.line_segs.as_slice();
     let first = segs.first()?;
     segs[1..]
