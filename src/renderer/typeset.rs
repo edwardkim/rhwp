@@ -3935,6 +3935,7 @@ impl TypesetEngine {
         next_para: Option<&Paragraph>,
         // [#3837] 값이 있는 가장 가까운 앞 문단의 마지막 저장 vpos.
         prev_stored_vpos: Option<i32>,
+        next_para: Option<&Paragraph>,
     ) {
         // [Task #1152] 호스트 문단의 intra-paragraph vpos-reset 가드.
         // empty-text host paragraph 가 N controls + N line_segs 1:1 매핑이고,
@@ -4285,6 +4286,50 @@ impl TypesetEngine {
             placement
         });
         let clearance = side_wrap_placement.map_or(0.0, |p| p.clearance);
+        // 회피 프레임에서 수용한 원본 개체 줄은 본체·바깥여백·뒤 간격을
+        // 하나의 끝점으로 발행한다. 저장 줄 상한이 이 공간을 회수하거나
+        // paint가 같은 간격을 다시 추측하지 않게 한다.
+        let stored_wrap_row = controls::stored_tac::side_wrap_row(
+            para,
+            ctrl_idx,
+            table,
+            ft.effective_height,
+            fmt,
+            next_para,
+            next_para
+                .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+                .map_or(0.0, |style| style.spacing_before),
+            st.profile,
+            !exclusions.is_empty(),
+            self.render_normalization.table_text_reflowed(table),
+            self.dpi,
+        );
+        let resolve_wrap_row = |placement: Option<super::float_placement::InlineBoxPlacement>,
+                                column: crate::renderer::page_layout::LayoutRect,
+                                origin: f64| {
+            stored_wrap_row.map(|(occupied, trailing)| {
+                let mut placement =
+                    placement.unwrap_or(super::float_placement::InlineBoxPlacement {
+                        x: column.x + left,
+                        y: column.y + origin,
+                        clearance: 0.0,
+                        resolved_x: false,
+                        advance_end: None,
+                    });
+                let leading = if origin < 1.0 {
+                    0.0
+                } else {
+                    fmt.spacing_before
+                };
+                placement.y = placement.y.max(column.y + origin + leading);
+                placement.clearance = placement.y - column.y - origin;
+                placement.advance_end = Some(placement.y - column.y + occupied + trailing);
+                placement
+            })
+        };
+        side_wrap_placement =
+            resolve_wrap_row(side_wrap_placement, column, natural_top).or(side_wrap_placement);
+        let clearance = side_wrap_placement.map_or(clearance, |placement| placement.clearance);
         // 그림 회피로 확정한 물리 줄은 저장 host 줄높이가 작아도 축소되지 않는다.
         // 렌더만 아래로 옮기고 fit에는 짧은 host 높이를 쓰면 쪽 하단을 넘는다.
         let table_outgrew_saved_row = st.profile.session_edited()
@@ -4301,7 +4346,9 @@ impl TypesetEngine {
         // trailing gap which advances the following line. The gap may end
         // past the body bottom when the following owner starts a new page;
         // fit the closed object box, and still consume the unchanged end.
-        let occupied_height_for_fit = if tac_count > 1
+        let occupied_height_for_fit = if let Some((occupied, _)) = stored_wrap_row {
+            occupied
+        } else if tac_count > 1
             && st.profile.hwp5_stored_pagination_layout()
             && !st.profile.session_edited()
             && !para.stored_text_partition_is_dirty()
@@ -4407,6 +4454,11 @@ impl TypesetEngine {
             // 이전 단의 그림은 새 단을 점유하지 않는다. 이미 확정한 다른 표의 metadata는
             // flush가 전 단에 보존하고 이 표는 새 단의 기존 배치 정책으로 시작한다.
             side_wrap_placement = None;
+            side_wrap_placement = resolve_wrap_row(
+                side_wrap_placement,
+                st.inline_flow_column(),
+                st.current_height,
+            );
             if prefix_carried_separately {
                 // Publish the next column's object-row origin to paint too.
                 // A whole TAC wider than the column still owns that row; it
@@ -4425,6 +4477,7 @@ impl TypesetEngine {
                     x: next_column.x + left,
                     y: next_column.y + st.current_height,
                     clearance: 0.0,
+                    resolved_x: true,
                     advance_end: None,
                     stored_horizontal_pen: None,
                     stored_column_frame: None,
@@ -4515,6 +4568,12 @@ impl TypesetEngine {
                 || unstored_cell_band,
             styles,
         );
+        if let Some(end) = side_wrap_placement.and_then(|placement| placement.advance_end) {
+            // 같은 줄은 텍스트 꼬리나 각주를 소유하지 않으므로 별도 이월이 없다.
+            // 원본 줄의 수용 끝을 예약·paint·다음 내용의 시작에 공통 적용한다.
+            st.align_flow_to(end);
+            st.record_inline_flow_bottom(end);
+        }
         // [#5699 H1] 교정 계상으로 확보한 표 밴드 하단을 흐름 바닥으로 고정 —
         // 후속 문단의 저장 vpos 스냅이 밴드 위로 되감지 못한다(쪽/단 단위 리셋).
         if owns_tac_band || side_wrap_placement.is_some() {
@@ -4789,6 +4848,7 @@ impl TypesetEngine {
                     x: 0.0,
                     y: origin,
                     clearance: 0.0,
+                    resolved_x: false,
                     advance_end: Some(end),
                     stored_horizontal_pen: None,
                     stored_column_frame: None,
@@ -5645,6 +5705,7 @@ impl TypesetEngine {
                     x: 0.0,
                     y: origin,
                     clearance: 0.0,
+                    resolved_x: false,
                     advance_end: Some(st.current_height),
                 },
             );

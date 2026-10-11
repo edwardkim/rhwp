@@ -65,6 +65,86 @@ pub(in crate::renderer::typeset) struct StoredTacControlPlacement {
     pub rebase_line_origin: bool,
 }
 
+/// 어울림 회피 프레임에서 온전히 소유한 단일 원본 표 줄의 점유와 전진량.
+/// 원본 줄 높이가 실제 외곽 상자를 닫는 경우만 수용한다. 앞뒤 글줄,
+/// 캡션·각주 또는 다른 흐름 개체는 각자의 일반 분할 경로를 유지한다.
+#[allow(clippy::too_many_arguments)]
+pub(in crate::renderer::typeset) fn side_wrap_row(
+    para: &Paragraph,
+    control_index: usize,
+    table: &crate::model::table::Table,
+    measured_body_height: f64,
+    fmt: &FormattedParagraph,
+    next_para: Option<&Paragraph>,
+    next_spacing_before: f64,
+    profile: LayoutCompatibilityProfile,
+    has_exclusions: bool,
+    reflowed: bool,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    if !has_exclusions
+        || !profile.hwp5_stored_pagination_layout()
+        || profile.session_edited()
+        || reflowed
+        || para.cell_format_vpos_dirty
+        || para.line_segs.len() != 1
+        || fmt.line_count() != 1
+        || table_has_notes(table)
+        || para.controls.iter().enumerate().any(|(index, control)| {
+            if index == control_index {
+                return false;
+            }
+            match control {
+                Control::Picture(picture) => {
+                    picture.common.treat_as_char
+                        || picture.common.vert_rel_to != crate::model::shape::VertRelTo::Paper
+                }
+                Control::SectionDef(_)
+                | Control::ColumnDef(_)
+                | Control::Header(_)
+                | Control::Footer(_)
+                | Control::PageNumberPos(_)
+                | Control::PageHide(_) => false,
+                _ => true,
+            }
+        })
+    {
+        return None;
+    }
+    let line = crate::renderer::composer::stored_first_tac_line(para)?;
+    if crate::renderer::layout::control_line_seg_index(para, control_index) != Some(0)
+        || line.line_spacing < 0
+        || (measured_body_height - hwpunit_to_px(table.common.height as i32, dpi)).abs()
+            > dpi / 7200.0
+    {
+        return None;
+    }
+    let trailing = if crate::renderer::composer::tac_next_line_full_spacing(
+        para,
+        next_para,
+        fmt.spacing_after,
+        next_spacing_before,
+        line,
+        profile,
+        dpi,
+    ) {
+        hwpunit_to_px(line.line_spacing, dpi)
+    } else {
+        crate::renderer::composer::tac_host_trailing_spacing(
+            para,
+            control_index,
+            line,
+            false,
+            true,
+            dpi,
+        )
+    };
+    Some((
+        hwpunit_to_px(line.line_height, dpi),
+        trailing + fmt.spacing_after,
+    ))
+}
+
 /// 같은 문단의 float가 저장 밴드 밖에서 시작해도 TAC 줄은 독립된 흐름을 소유한다.
 /// 이 개체만 확정하여 float의 일반 분할 경로를 보존하고 fit과 paint는 같은 원점·끝을 쓴다.
 pub(super) fn prepare_coanchored_first_line(
@@ -215,6 +295,7 @@ pub(super) fn prepare_coanchored_first_line(
             x: 0.0,
             y: origin + hwpunit_to_px(i32::from(table.outer_margin_top), dpi),
             clearance: 0.0,
+            resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
             stored_column_frame: None,
@@ -428,6 +509,7 @@ pub(super) fn prepare_computed(
             x: 0.0,
             y: origin,
             clearance: 0.0,
+            resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
             stored_column_frame: None,
@@ -844,6 +926,7 @@ impl StoredTacPlan {
                 x: 0.0,
                 y: self.origin + hwpunit_to_px(line.top, dpi),
                 clearance: 0.0,
+                resolved_x: false,
                 advance_end: Some(end),
                 stored_horizontal_pen: None,
                 stored_column_frame: self.source_frame,

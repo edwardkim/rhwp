@@ -2712,5 +2712,107 @@
     },
     "fullRegressionAfterRepairs": false,
     "prReady": false
+  },
+  "v18": {
+    "sourceRoot": "/Users/tsjang/rhwp-7445-completed-20261009",
+    "headBeforeCommit": "49f7667f8",
+    "repair": "Closed stored TAC row accepted in a side-wrap frame publishes occupied body and trailing end to fit, reservation and paint. Horizontal ownership is independent. No pixel gate changes.",
+    "originalFailureAssertionPreserved": true,
+    "originalSourceNativeFreshWholePages": 11,
+    "nativeMinimumPercent": 98.19793,
+    "freshMinimumPercent": 98.19793,
+    "below90": 0,
+    "missing": 0,
+    "nativeFreshByteIdenticalPages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "freshActualBrowser": "Chrome/154.0.8037.99",
+    "freshBuild": "Mac locked wasm-pack --no-opt; not Docker optimized",
+    "captureConcurrency": 8,
+    "captureRetries": 0,
+    "directReviews": [
+      "/Users/tsjang/rhwp-7445-completed-20261009/mydocs/pr/assets/issue7445/completed-20261009/stored-anchor-repair/pigfarm-v18-review_001.png",
+      "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage437-overlay-flow/pigfarm-v18-review/review_007.png"
+    ],
+    "directReading": "Source table, picture, body owner/order and successor spacing preserved. Remaining stroke/raster edge differences; no strict pixel identity claim.",
+    "counterOriginalDocuments": 13,
+    "counterOriginalPages": 356,
+    "counterUnembeddedPrintSvgIdentical": true,
+    "counterMeaning": "impact boundary only; not a new whole PDF/fresh acceptance of 356 pages",
+    "testChanges": "existing function strengthened with original line ownership/order and complete text; 141HU replaced by source table outer top margin; no new test functions",
+    "beforeDiagnostic": {
+      "pass": 19,
+      "fail": 1
+    },
+    "afterDiagnostic": {
+      "pass": 20,
+      "fail": 0
+    },
+    "formalOriginalFunctions": {
+      "pass": 25,
+      "fail": 0,
+      "skip": 198,
+      "seconds": 0.463,
+      "runId": "2f4a8614-1fe2-4daf-ba25-5ad4788a07d9",
+      "exitCode": 0
+    },
+    "formalStrengthenedFunctions": {
+      "pass": 25,
+      "fail": 0,
+      "skip": 198,
+      "seconds": 0.361,
+      "runId": "15033650-56fc-453a-b703-1bebdd781dc4",
+      "exitCode": 0,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage437-overlay-flow/v18-content-nextest.log"
+    },
+    "buildIdentity": {
+      "headBeforeCommit": "49f7667f8c3848bd8f52e16112e7a98303b4b477",
+      "sourceSha256": "53b9f25142d2b15f7e786f9c5d577516726dfa84891584377b282c32a080c10b",
+      "sourceFiles": {
+        "src/renderer/float_placement.rs": "d04058b25de5fd4077c0312d395565a9d89a9c5a085fbcc770f699033e7a4db9",
+        "src/renderer/layout.rs": "40eedc67826b03b1cb50a8d71868578deaa2b1cb086d19ae51b303a49f8b21cf",
+        "src/renderer/typeset.rs": "bfc54e4b2f19317ad06dc5ba186d9d86923ce4b516c0d5343c4d878dc5d20b04",
+        "src/renderer/typeset/controls/flow_table.rs": "62924509efce3c7d395762b8f5e1d614640f15f1c0cc66d2462a8dcd43f13c6a",
+        "src/renderer/typeset/controls/stored_tac.rs": "6d2280a2d08fa079c1f9989a4a5a7ec78b335bb55f269b8a06a293329cceacf1"
+      },
+      "nativeSha256": "346dd8b00c5aa34c001bb0ddc206cbb77298d071ce3524709a791ab9e5dddd49",
+      "nativeWholePages": 11,
+      "nativeWholeMinimum": 98.19793,
+      "nativeWholeBelow90": 0,
+      "counterDocuments": 13,
+      "counterPages": 356,
+      "counterSvgIdentical": true,
+      "originalNextestPass": 25,
+      "originalNextestFail": 0,
+      "contentRelationDiagnosticPass": 20,
+      "contentRelationDiagnosticFail": 0,
+      "freshWasm": "actual Chrome/154.0.8037.99; Mac locked no-opt; all11 captured and Native-identical",
+      "pkg": {
+        "rhwp.js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+        "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+        "rhwp_bg.wasm.d.ts": "59c386a1d7b801a5a4a7f000555096c894fd54c5ffab7d9ad193788b1c35bda8",
+        "README.md": "47991b99c9d9a09290fe52eb585a6b72afb1cf175c2f9a735756aa9b83bb40a2",
+        "rhwp_bg.wasm": "8792cab4e57727a3db0d51d91fe2a934b0240e772f7e5b77c2fc3df64b83783a",
+        ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+        "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390",
+        "rhwp.d.ts": "a085be85c50358f02ed855fb645439a32fa511ea64479fd05088cc480899b63a"
+      },
+      "freshMinimumPercent": 98.19793,
+      "freshBelow90": 0,
+      "freshCaptureRetries": 0
+    },
+    "rawLogsIgnored": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage437-overlay-flow",
+    "wholeNextest": "not rerun after repairs; seven original failures still under investigation",
+    "prReady": false
   }
 }

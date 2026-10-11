@@ -366,3 +366,41 @@ run `93609cdb-4298-4960-99d6-8e8a186320fe`이다. 실패한 본문 포함 assert
 
 최초 27개 기준 **17개 해결 / 부적합 범위 2개 분리 / 실패 8개 잔존**이다.
 전체 nextest와 최종 대상 전체 검증은 아직 미완료다. #7770은 통합 전이므로 OPEN을 유지한다.
+
+
+## 그림 회피 줄의 물리 끝점 공유 (V18)
+
+`issue_6812_following_text_respects_column_bottom_after_multiple_pictures`는 독립 쪽 안의 본문
+포함을 검사하는 정확한 관계 검사다. 3.64px 초과 assertion은 유지하고 구현을 보정했다.
+원본 저장 줄은 실제 표 본체와 상하 바깥여백을 온전히 소유하며, 다음 원점은 뒤 간격 전량을
+증명한다. 기존 분할 후 상한은 이 공간 일부를 회수했지만 paint는 전량 소비해 줄 수용과
+출력의 끝점이 갈라졌다.
+
+생산 경로는 `stored_tac::side_wrap_row`의 원본 소유 줄·점유/뒤 간격 → `typeset_tac_table`의
+그림 회피 프레임/occupied fit → 동일 `InlineBoxPlacement.advance_end`의 예약 →
+`tac_reconcile::capped_bottom`과 `layout_table_control_block`의 같은 끝점 소비다.
+가로 위치의 소유는 `resolved_x`로 분리하여, 세로 끝점 유무가 그림 옆 구간의 x를 지우지 않게 했다.
+완전한 단일 원본 줄에만 적용하고 앞뒤 본문·캡션·각주·편집/재구성 줄은 기존 경로를 유지한다.
+문서 ID·좌표 상수·출력 clamp·픽셀 관용 변경은 없다.
+
+원래 기존 함수 20개는 수정 전 19 PASS / 1 FAIL → 수정 후 20 PASS / 0 FAIL이다.
+양돈 원본 검사를 포함한 정식 nextest는 **25 PASS / 0 FAIL / 198 skip**, 0.463초·종료 0,
+run `2f4a8614-1fe2-4daf-ba25-5ad4788a07d9`이다. 이후 같은 함수에서 원본 줄 순서·단일 소유와
+전체 텍스트 보존을 보완한 진단 20개도 통과했다. 원본 141HU 위치 몫은 표의 실제 위여백 속성으로
+바꿨고 새 회귀 함수를 추가하지 않았다. 보완 후 정식 재실행도 **25 PASS / 0 FAIL / 198 skip**,
+0.361초·종료 0, run `15033650-56fc-453a-b703-1bebdd781dc4`로 통과했다.
+
+같은 원본·독립 한컴 PDF의 **Native·실제 Chrome fresh WASM 전 11쪽 최저 98.19793%,
+미달/누락/쪽수 차이 0**이다. 최대 8개 병렬 캡처, 재시도 0이며 모든 fresh PNG가 Native와 같다.
+현재 Native PNG 전 11쪽도 V17과 같고, 13개 정상 대조 원본 356쪽 Print SVG도 V14와 같다.
+대조 SVG 동일은 356쪽의 새로운 PDF/fresh 수용을 뜻하지 않는다. Mac locked no-opt WASM을
+새로 빌드했으며 Docker 최적화 빌드로 보고하지 않는다.
+
+[최신 1쪽 review](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/pigfarm-v18-review_001.png)와
+ignored `stage437-overlay-flow/pigfarm-v18-review/review_007.png`를 직접 확인했다.
+표·그림·제목·뒤 본문의 소속과 간격을 보존한다. 괘선 농도·글자 래스터 가장자리 차이는 남아
+엄격 픽셀 동일로 보고하지 않는다. 전쪽 Native/fresh TSV와 대표 1쪽 PNG를 보존한다.
+
+최초 27개 기준 **18개 해결 / 부적합 범위 2개 분리 / 실패 7개 잔존**이다.
+현재 브랜치에서 새로 생긴 본문/텍스트 초과는 기존 미달이나 이슈 등록으로 제거하지 않고
+계속 구현을 확인한다. 전체 nextest·최종 대상 전쪽 검증·PR 준비는 미완료다.

@@ -325,8 +325,12 @@ fn issue_6812_multiple_picture_boundaries_are_consumed_before_placing_table() {
     let Control::Picture(second) = &core.document().sections[0].paragraphs[0].controls[4] else {
         panic!("두 번째 그림");
     };
-    let required_top =
-        (f64::from(second.common.vertical_offset + second.common.height) + 141.0) / 75.0;
+    let Control::Table(source) = &core.document().sections[0].paragraphs[0].controls[5] else {
+        panic!("두 그림 뒤 원본 표");
+    };
+    let required_top = (f64::from(second.common.vertical_offset + second.common.height)
+        + f64::from(source.outer_margin_top))
+        / 75.0;
     let tree = core.build_page_render_tree(0).unwrap();
     let mut tables = Vec::new();
     table_box_for_control(&tree.root, 5, &mut tables);
@@ -382,15 +386,51 @@ fn issue_6812_following_table_preserves_the_preceding_table_flow_bottom() {
 fn issue_6812_following_text_respects_column_bottom_after_multiple_pictures() {
     let core = multiple_pictures();
     let mut lines = Vec::new();
+    fn collect_owned_content(node: &RenderNode, owners: &mut Vec<u32>, text: &mut String) {
+        if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            return;
+        }
+        match &node.node_type {
+            RenderNodeType::TextLine(line) if line.para_index == Some(8) => {
+                owners.push(line.line_index.expect("원본 문단 줄 소유"));
+            }
+            RenderNodeType::TextRun(run) if run.para_index == Some(8) => {
+                text.push_str(&run.text);
+            }
+            _ => {}
+        }
+        for child in &node.children {
+            collect_owned_content(child, owners, text);
+        }
+    }
+    let (mut owners, mut content) = (Vec::new(), String::new());
     for page in 0..core.page_count() {
         let tree = core.build_page_render_tree(page).unwrap();
         collect_body_lines(&tree.root, None, &mut lines);
+        collect_owned_content(&tree.root, &mut owners, &mut content);
     }
+    let source = &core.document().sections[0].paragraphs[8];
     let target: Vec<_> = lines.iter().filter(|(pi, _, _)| *pi == 8).collect();
     assert_eq!(
         target.len(),
-        3,
+        source.line_segs.len(),
         "문단의 세 줄을 쪽을 넘어도 누락/중복하지 않는다"
+    );
+    assert_eq!(
+        owners,
+        (0..source.line_segs.len() as u32).collect::<Vec<_>>(),
+        "원본 줄의 순서와 단일 소유를 보존한다"
+    );
+    let compact = |value: &str| {
+        value
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect::<String>()
+    };
+    assert_eq!(
+        compact(&content),
+        compact(&source.text),
+        "뒤 본문 내용 보존"
     );
     for (_, line, bottom) in target {
         assert!(

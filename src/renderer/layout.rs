@@ -12394,9 +12394,7 @@ impl LayoutEngine {
                 None
             };
             let tbl_inline_x = flow_placement
-                .filter(|placement| {
-                    placement.advance_end.is_none() || placement.stored_horizontal_pen.is_some()
-                })
+                .filter(|placement| placement.resolved_x || placement.stored_horizontal_pen.is_some())
                 .map(|placement| {
                     col_area.x
                         + placement.stored_horizontal_pen.unwrap_or(placement.x)
