@@ -489,13 +489,23 @@ downloads.onChanged.addListener(async (delta) => {
 | 2 | 확정 `.hwp/.hwpx/.hml` 파일명 | `intercept` |
 | 3 | 확정 Office/PDF/ZIP/ODF 등 비-HWP 파일명 | `ignore` |
 | 4 | 구체적인 비-HWP MIME | `ignore` |
-| 5 | URL/finalUrl/HWP MIME만 일치하고 metadata 미확정 | `defer` |
-| 6 | 같은 HWP 보조 근거가 filename 확정 또는 terminal까지 유지 | `intercept` |
+| 5 | 로컬 `file://` URL 경로가 `.hwp/.hwpx/.hml` (#7664) | `intercept` |
+| 6 | URL/finalUrl/HWP MIME만 일치하고 metadata 미확정 | `defer` |
+| 7 | 같은 HWP 보조 근거가 filename 확정 또는 terminal까지 유지 | `intercept` |
 
 확정 HWP 파일명은 공공기관이 보내는 generic·부정확 MIME보다 우선한다. 반대로 확정 `.xlsx` 파일명은
 URL이나 MIME에 남은 HWP 힌트보다 우선한다. `onCreated`에서 URL/MIME만 일치한 후보는 상태만 추적하고,
 `onChanged` 재조회에서 `delta.filename.current` 또는 terminal state를 확인한 뒤
 `metadataFinalized: true`로 다시 분류한다. `finalUrl`만 먼저 바뀐 경우에는 계속 보류한다.
+
+로컬 `file://` URL은 디스크의 실제 파일이라 redirect나 첨부 파일명으로 바뀌지 않으므로, 경로(pathname)의
+확장자를 확정 근거로 본다(#7664). Chrome의 "다운로드 전에 각 파일의 저장 위치 확인"이 켜져 있으면
+대화상자가 떠 있는 동안 `filename`이 비고 MIME이 `application/octet-stream`이며, 대화상자를 취소하면
+`interrupted`만 와서 재조회 대상이 되지 않는다. 그래서 이 근거는 `onCreated`에서 바로 `intercept`한다.
+쿼리·fragment의 `.hwp`는 경로가 아니므로 이 규칙에 쓰지 않는다. 이 시점에는 `filename`이 비어 있으므로
+뷰어 표시·저장 이름은 `localHwpFileUrlFilename()`이 URL 경로 끝을 퍼센트 디코딩해 만든다.
+로컬 HWP는 이미 디스크에 있으므로 기존 #1131 규칙대로 다운로드는 취소·정리하며, file:// HWP 링크의
+"다른 이름으로 링크 저장"도 같은 경로로 뷰어가 열린다(관찰자는 두 경우를 구분할 수 없다).
 
 `ignore`는 브라우저의 정상 다운로드를 취소하거나 파일명을 바꾸는 동작이 아니다. rhwp 뷰어 탭을
 자동 생성하지 않는다는 뜻이다. 기존 boolean `shouldInterceptDownload()`은 최종 metadata를 받는

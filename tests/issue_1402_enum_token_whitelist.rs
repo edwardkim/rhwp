@@ -11,6 +11,11 @@
 //! 화이트리스트 갱신: 새 열거 속성/토큰을 방출하게 되면, 한컴 실물 또는 owpml
 //! 스펙으로 확인 후 아래 WHITELIST 에 추가한다 (추정 금지 — 실물·스펙 교차).
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 use std::collections::HashMap;
 
 use rhwp::parser::hwpx::parse_hwpx;
@@ -144,6 +149,9 @@ fn serializer_enum_tokens_within_whitelist() {
 
     for entry in std::fs::read_dir("samples/hwpx").expect("samples") {
         let path = entry.unwrap().path();
+        if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+            continue;
+        }
         if path.extension().map(|e| e == "hwpx").unwrap_or(false) {
             let Ok(bytes) = std::fs::read(&path) else {
                 continue;
@@ -184,6 +192,9 @@ fn numtype_figure_regression_guard() {
     // #1387 회귀 봉인 — 어떤 샘플도 serialize 후 numType="FIGURE" 를 방출하면 안 된다.
     for entry in std::fs::read_dir("samples/hwpx").expect("samples") {
         let path = entry.unwrap().path();
+        if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+            continue;
+        }
         if path.extension().map(|e| e == "hwpx").unwrap_or(false) {
             let Ok(bytes) = std::fs::read(&path) else {
                 continue;

@@ -1973,6 +1973,21 @@ impl DocumentCore {
         SkiaLayerRenderer::new().render_png(&layer_tree)
     }
 
+    /// PNG와 같은 조판·replay를 요청 픽셀 너비로 래스터화한다 (쪽 번호는 0부터).
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_pixels_native_at_width(
+        &self,
+        page_num: u32,
+        width: u32,
+        profile: RenderProfile,
+        font_paths: &[std::path::PathBuf],
+    ) -> Result<crate::renderer::raster_pixels::RasterPixels, HwpError> {
+        let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
+        crate::renderer::skia::SkiaLayerRenderer::new()
+            .with_font_paths(font_paths)
+            .render_pixels_at_width(&tree, width, Default::default())
+    }
+
     /// 사용자 지정 폰트 경로를 포함한 PNG 렌더링. SVG 의 `--font-path` 와 동일 패턴.
     /// ttfs 디렉토리의 한컴 전용 폰트 (HY견명조 등) 가 시스템 fontconfig 에 없을 때 사용.
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -4684,7 +4699,8 @@ impl DocumentCore {
             .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
             .with_session_edited(profile.session_edited())
-            .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before);
+            .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before)
+            .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing));
         let column_def = Self::find_initial_column_def(paragraphs);
         let layout =
             PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, self.dpi);
@@ -4712,6 +4728,7 @@ impl DocumentCore {
             measurer.measure_section(paragraphs, composed, &self.styles, Some(column_width))
         };
         let typesetter = TypesetEngine::new(self.dpi)
+            .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing))
             .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
         let Some(renderer_job) = typesetter.begin_resumable_table_pagination(
             paragraphs,
@@ -4813,6 +4830,7 @@ impl DocumentCore {
                 };
             };
             TypesetEngine::new(self.dpi)
+                .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing))
                 .with_render_normalization(std::sync::Arc::clone(
                     &self.render_normalization.overlay,
                 ))
@@ -4840,6 +4858,7 @@ impl DocumentCore {
         let result = {
             let section = &self.document.sections[section_index];
             let Some(mut result) = TypesetEngine::new(self.dpi)
+                .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing))
                 .with_render_normalization(std::sync::Arc::clone(
                     &self.render_normalization.overlay,
                 ))
@@ -5184,6 +5203,7 @@ impl DocumentCore {
                 }
             };
 
+            measurer.set_section_column_spacing_hu(i32::from(section.section_def.column_spacing));
             // 증분 측정: 이전 측정 데이터가 있으면 문단/표 수준 선택적 캐싱
             let issue2424_measure_started = issue2424_profile_enabled.then(std::time::Instant::now);
             let measured = if !self.measured_sections[idx].fallback_paragraphs.is_empty() {
@@ -5315,9 +5335,11 @@ impl DocumentCore {
                 } else {
                     EndnoteDeferral::None
                 };
-                let typesetter = TypesetEngine::new(self.dpi).with_render_normalization(
-                    std::sync::Arc::clone(&self.render_normalization.overlay),
-                );
+                let typesetter = TypesetEngine::new(self.dpi)
+                    .with_render_normalization(std::sync::Arc::clone(
+                        &self.render_normalization.overlay,
+                    ))
+                    .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing));
                 typesetter.typeset_section_with_variant(
                     para_src,
                     composed,
@@ -5542,31 +5564,23 @@ impl DocumentCore {
             if idx > 0 {
                 let section_has_header = result.pages.iter().any(|p| p.active_header.is_some());
                 if !section_has_header {
-                    for (pi, page) in result.pages.iter_mut().enumerate() {
+                    for page in &mut result.pages {
                         let is_odd = page.page_number % 2 == 1;
                         page.active_header = if is_odd {
-                            carry_header_odd
-                                .clone()
-                                .or_else(|| carry_header_even.clone())
+                            carry_header_odd.clone()
                         } else {
-                            carry_header_even
-                                .clone()
-                                .or_else(|| carry_header_odd.clone())
+                            carry_header_even.clone()
                         };
                     }
                 }
                 let section_has_footer = result.pages.iter().any(|p| p.active_footer.is_some());
                 if !section_has_footer {
-                    for (pi, page) in result.pages.iter_mut().enumerate() {
+                    for page in &mut result.pages {
                         let is_odd = page.page_number % 2 == 1;
                         page.active_footer = if is_odd {
-                            carry_footer_odd
-                                .clone()
-                                .or_else(|| carry_footer_even.clone())
+                            carry_footer_odd.clone()
                         } else {
-                            carry_footer_even
-                                .clone()
-                                .or_else(|| carry_footer_odd.clone())
+                            carry_footer_even.clone()
                         };
                     }
                 }
@@ -5895,11 +5909,86 @@ impl DocumentCore {
                 .filter(|(_, para)| unplaced_rows && has_widthless_stored_rows(para))
                 .map(|(index, _)| index)
                 .collect();
-            if matches.is_empty() && !has_cell_stack && widthless.is_empty() {
+            let inline_frames: Vec<(usize, Paragraph)> =
+                if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                    && !profile.session_edited()
+                {
+                    section
+                        .paragraphs
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(index, paragraph)| {
+                            crate::renderer::layout::normalized_single_line_inline_textbox_host(
+                                paragraph,
+                                &self.styles,
+                                self.dpi,
+                            )
+                            .map(|projected| (index, projected))
+                        })
+                        .collect()
+                } else {
+                    Vec::new()
+                };
+            if matches.is_empty()
+                && !has_cell_stack
+                && widthless.is_empty()
+                && inline_frames.is_empty()
+            {
                 out.push(None);
                 continue;
             }
             let mut np = section.paragraphs.clone();
+            let mut frame_changes = Vec::new();
+            if !inline_frames.is_empty() {
+                let mut frames = inline_frames.into_iter().peekable();
+                let mut shift_hu = 0i32;
+                let mut previous_source_end = None;
+                for (index, paragraph) in np.iter_mut().enumerate() {
+                    let source = &section.paragraphs[index];
+                    let first = source.line_segs.first();
+                    if !matches!(source.column_type, ColumnBreakType::None)
+                        || first.is_some_and(|line| {
+                            previous_source_end.is_some_and(|end| line.vertical_pos < end)
+                        })
+                    {
+                        shift_hu = 0;
+                    }
+                    previous_source_end = source.line_segs.last().map(|line| line.vertical_pos);
+                    let projected = frames
+                        .peek()
+                        .is_some_and(|(i, _)| *i == index)
+                        .then(|| frames.next().unwrap().1);
+                    if let Some(projected) = projected {
+                        let old_height =
+                            source.line_segs.first().map_or(0, |line| line.line_height);
+                        let new_height = projected
+                            .line_segs
+                            .first()
+                            .map_or(old_height, |line| line.line_height);
+                        *paragraph = projected;
+                        if shift_hu != 0 {
+                            for line in &mut paragraph.line_segs {
+                                line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
+                                line.tag |=
+                                    crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+                            }
+                        }
+                        frame_changes.push(index);
+                        shift_hu = shift_hu.saturating_add(old_height - new_height);
+                    } else if shift_hu != 0 && !paragraph.line_segs.is_empty() {
+                        // Derived page-frame coordinates stay with the projected
+                        // geometry. Original document/save caches are untouched.
+                        let mut lines = paragraph.line_segs.clone();
+                        for line in &mut lines {
+                            line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
+                            line.tag |=
+                                crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+                        }
+                        paragraph.replace_line_segs(lines);
+                        frame_changes.push(index);
+                    }
+                }
+            }
             for &index in &widthless {
                 discard_widthless_rows_for_render(&mut np[index]);
             }
@@ -5916,7 +6005,10 @@ impl DocumentCore {
                 .iter()
                 .enumerate()
                 .map(|(i, p)| {
-                    if matches.binary_search(&i).is_ok() || widthless.binary_search(&i).is_ok() {
+                    if matches.binary_search(&i).is_ok()
+                        || widthless.binary_search(&i).is_ok()
+                        || frame_changes.binary_search(&i).is_ok()
+                    {
                         let mut c = crate::renderer::composer::compose_paragraph_in_context(
                             p,
                             &self.styles,
@@ -6364,6 +6456,12 @@ impl DocumentCore {
 
     fn dump_section_typesetter(&self, sec_idx: usize) -> TypesetEngine {
         let typesetter = TypesetEngine::new(self.dpi)
+            .with_section_column_spacing_hu(
+                self.document
+                    .sections
+                    .get(sec_idx)
+                    .map_or(0, |section| i32::from(section.section_def.column_spacing)),
+            )
             .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
         typesetter.apply_section_format_context(
             self.section_render_paragraphs(sec_idx),
@@ -7654,6 +7752,12 @@ impl DocumentCore {
         // (이전 구역 + 현재 구역의 이전 페이지 모두 포함하여 구역 간 번호 연속 지원)
         self.layout_engine.reset_numbering_state();
         let sec_idx = page_content.section_index;
+        self.layout_engine.set_section_column_spacing_hu(
+            self.document
+                .sections
+                .get(sec_idx)
+                .map_or(0, |section| i32::from(section.section_def.column_spacing)),
+        );
         let sec_page_offset: usize = self
             .pagination
             .iter()
@@ -9143,7 +9247,9 @@ mod tests {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         };
 
         let h = compute_hwp_used_height(&cc, &paragraphs, 96.0).expect("값이 있어야 함");

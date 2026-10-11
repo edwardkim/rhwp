@@ -319,6 +319,11 @@ impl DocumentCore {
             hwpunit_to_px(text_width, self.dpi)
         };
 
+        // 문단 모양 변경 직후에는 새 id가 이전 rebuild의 styles에 없을 수 있다.
+        // 머리말/꼬리말과 셀의 재조판처럼 현재 doc_info에서 해석한 같은 스타일로
+        // 줄 폭과 들여쓰기 플래그를 만든다.
+        let styles = self.resolve_render_styles();
+
         // 문단 여백 적용
         let para_shape_id = match self.get_footnote_paragraph_ref(
             section_idx,
@@ -329,7 +334,7 @@ impl DocumentCore {
             Some(p) => p.para_shape_id,
             None => return,
         };
-        let para_style = self.styles.para_styles.get(para_shape_id as usize);
+        let para_style = styles.para_styles.get(para_shape_id as usize);
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let final_width = (available_width - margin_left - margin_right).max(0.0);
@@ -344,7 +349,7 @@ impl DocumentCore {
                     reflow_line_segs(
                         para,
                         ParagraphBox::content_width_px(final_width, self.dpi),
-                        &self.styles,
+                        &styles,
                         self.dpi,
                     );
                 }
@@ -355,7 +360,7 @@ impl DocumentCore {
                     reflow_line_segs(
                         para,
                         ParagraphBox::content_width_px(final_width, self.dpi),
-                        &self.styles,
+                        &styles,
                         self.dpi,
                     );
                 }

@@ -18,49 +18,18 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 import coverage_report as cov  # noqa: E402
+from mini_repo_fixture import write_mini_tree  # noqa: E402
 
-MINI_REPO = HERE / "fixtures" / "mini_repo"
+CHECKED_IN_REPO = HERE / "fixtures" / "mini_repo"
+_MINI_SANDBOX = tempfile.TemporaryDirectory(prefix="rhwp-coverage-contract-")
+MINI_REPO = Path(_MINI_SANDBOX.name)
+write_mini_tree(MINI_REPO)
 SCRIPT = HERE / "coverage_report.py"
-
-
-def _touch(path: Path, body: str = "placeholder\n") -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(body, encoding="utf-8", newline="\n")
-
-
-def write_mini_tree(root: Path) -> None:
-    """테스트용 최소 트리. 실 코퍼스와 같은 이름 규칙을 쓴다."""
-    files = [
-        "samples/exam_kor.hwp",
-        "samples/exam_kor.hwpx",
-        "samples/lonely.hwp",
-        "samples/편람.hwp",
-        "samples/편람.hwpx",
-        "samples/hwp3-sample.hwp",
-        "samples/hwp3-sample-hwpx.hwpx",
-        "samples/3-09월_교육_통합_2022.hwp",
-        "samples/basic/calendar_year.hwp",
-        "samples/multi.hwp",
-        "samples/readme.txt",
-        "pdf/exam_kor-2022.pdf",
-        "pdf/exam_kor-2020.pdf",
-        "pdf/편람-hwp-2020.pdf",
-        "pdf/편람-hwpx-2020.pdf",
-        "pdf/hwp3-sample-hwpx-2022.pdf",
-        "pdf/3-09월_교육_통합_2022.pdf",
-        "pdf/basic/calendar_year-2022.pdf",
-        "pdf/multi-2018.pdf",
-        "pdf/multi-2024.pdf",
-        "pdf/unused-2022.pdf",
-        "pdf/hwpx/lonely.pdf",
-    ]
-    for rel in files:
-        _touch(root / rel)
 
 
 class ParseSuffixTests(unittest.TestCase):
     def test_plain_year(self) -> None:
-        info = cov.parse_oracle_suffix("exam_kor", "exam_kor-2022.pdf")
+        info = cov.parse_oracle_suffix("document_kor", "document_kor-2022.pdf")
         self.assertEqual(info, {"year": "2022", "variant": "2022", "fmt": None})
 
     def test_hwp_variant_does_not_steal_hwpx_stem(self) -> None:
@@ -79,7 +48,7 @@ class ParseSuffixTests(unittest.TestCase):
 
     def test_exact_stem_with_year(self) -> None:
         info = cov.parse_oracle_suffix(
-            "3-09월_교육_통합_2022", "3-09월_교육_통합_2022.pdf"
+            "3-09월_회의_자료_2022", "3-09월_회의_자료_2022.pdf"
         )
         self.assertEqual(info, {"year": "2022", "variant": "exact", "fmt": None})
 
@@ -87,7 +56,7 @@ class ParseSuffixTests(unittest.TestCase):
         self.assertIsNone(cov.parse_oracle_suffix("lonely", "lonely.pdf"))
 
     def test_unrelated_name_rejected(self) -> None:
-        self.assertIsNone(cov.parse_oracle_suffix("exam_kor", "other-2022.pdf"))
+        self.assertIsNone(cov.parse_oracle_suffix("document_kor", "other-2022.pdf"))
 
     def test_year_2010_is_out_of_scope(self) -> None:
         self.assertIsNone(cov.parse_oracle_suffix("doc", "doc-2010.pdf"))
@@ -102,26 +71,26 @@ class ParseSuffixTests(unittest.TestCase):
 
 class MiniRepoTests(unittest.TestCase):
     def test_checked_in_fixture_tree_exists(self) -> None:
-        self.assertTrue((MINI_REPO / "samples" / "exam_kor.hwp").is_file())
-        self.assertTrue((MINI_REPO / "pdf" / "exam_kor-2022.pdf").is_file())
-        self.assertTrue((MINI_REPO / "samples" / "lonely.hwp").is_file())
+        self.assertTrue((CHECKED_IN_REPO / "samples" / "편람.hwp").is_file())
+        self.assertTrue((CHECKED_IN_REPO / "pdf" / "편람-hwp-2020.pdf").is_file())
+        self.assertTrue((CHECKED_IN_REPO / "samples" / "lonely.hwp").is_file())
 
     def test_walk_ignores_non_hwp(self) -> None:
         docs = cov.walk_samples(MINI_REPO / "samples", MINI_REPO)
         names = [doc.sample for doc in docs]
         self.assertNotIn("samples/readme.txt", names)
-        self.assertIn("samples/exam_kor.hwp", names)
-        self.assertIn("samples/exam_kor.hwpx", names)
+        self.assertIn("samples/document_kor.hwp", names)
+        self.assertIn("samples/document_kor.hwpx", names)
 
     def test_mini_unmatched_and_pairs(self) -> None:
         report = cov.build_report(MINI_REPO)
         errors = cov.validate_report(report)
         self.assertEqual(errors, [])
         samples = {item["sample"] for item in report["pairs"]}
-        self.assertIn("samples/exam_kor.hwp", samples)
+        self.assertIn("samples/document_kor.hwp", samples)
         self.assertIn("samples/편람.hwp", samples)
         self.assertIn("samples/hwp3-sample-hwpx.hwpx", samples)
-        self.assertIn("samples/3-09월_교육_통합_2022.hwp", samples)
+        self.assertIn("samples/3-09월_회의_자료_2022.hwp", samples)
         unmatched = {item["sample"] for item in report["unmatched"]}
         self.assertIn("samples/lonely.hwp", unmatched)
         self.assertIn("samples/hwp3-sample.hwp", unmatched)
@@ -163,10 +132,10 @@ class MiniRepoTests(unittest.TestCase):
         hits = [
             item
             for item in report["pairs"]
-            if item["sample"] == "samples/3-09월_교육_통합_2022.hwp"
+            if item["sample"] == "samples/3-09월_회의_자료_2022.hwp"
         ]
         self.assertEqual(len(hits), 1)
-        self.assertEqual(hits[0]["pdf"], "pdf/3-09월_교육_통합_2022.pdf")
+        self.assertEqual(hits[0]["pdf"], "pdf/3-09월_회의_자료_2022.pdf")
         self.assertEqual(hits[0]["variant"], "exact")
         self.assertEqual(hits[0]["hancomVersion"], "2022")
 
@@ -181,7 +150,7 @@ class MiniRepoTests(unittest.TestCase):
         exam_roots = {
             item["oracleRoot"]
             for item in report["pairs"]
-            if item["sample"] == "samples/exam_kor.hwp"
+            if item["sample"] == "samples/document_kor.hwp"
         }
         self.assertEqual(exam_roots, {"pdf"})
 

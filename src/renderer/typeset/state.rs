@@ -33,6 +33,26 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(in crate::renderer::typeset) fn table_flow_successor<'a>(
+        &self,
+        host_index: usize,
+        paragraphs: &'a [crate::model::paragraph::Paragraph],
+    ) -> Option<(usize, &'a crate::model::paragraph::Paragraph)> {
+        paragraphs
+            .iter()
+            .enumerate()
+            .skip(
+                self.data
+                    .deferred_table_successor_start
+                    .unwrap_or(host_index + 1)
+                    .max(host_index + 1),
+            )
+            .find(|(index, _)| {
+                !self.data.prefilled_paras.contains(index)
+                    && !self.data.pre_emitted_host_paras.contains(index)
+            })
+    }
+
     /// 빈 단은 배경 개체가 있는 단이 아니다. 통째 표의 별도 여유 경로는
     /// 실제 Shape가 있고 흐름을 점유한 다른 항목이 없을 때만 사용한다.
     pub(super) fn current_column_has_only_overlay_shapes(&self) -> bool {

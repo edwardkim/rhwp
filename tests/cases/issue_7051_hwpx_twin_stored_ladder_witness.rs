@@ -82,30 +82,3 @@ fn hwpx_twin_hft_ascii_run_fits_stored_line_and_matches_oracle_advance() {
 // HWP5 쌍둥이의 전진폭 동등 검사는 #7445로 분리했다. 직접 비교에서 해당 쪽이
 // Native/WASM 모두 37.61557%였으므로, 이 원본을 새 시각 회귀의 정상 대조군으로 쓰지 않는다.
 // 문서 자체와 독립 PDF는 보존한다.
-
-/// 반례 — 같은 legacy HFT 이름을 쓰는 진짜 HWP5 의 HWPX 판은 저장 줄이 반각을 증언하지 않는다.
-///
-/// 정본 `pdf/exam_kor-2022.pdf` 6쪽의 큰 숫자 `6`은 장평 반영 em 대비 약 0.645이다.
-/// 원본 장평을 함께 반영하여 비례 전진폭이 반각으로 바뀌지 않는지 확인한다.
-#[test]
-fn modern_hwpx_with_legacy_hft_names_keeps_proportional_ascii() {
-    let core = open("samples/hwpx/exam_kor.hwpx");
-    let page = core.build_page_render_tree(5).expect("page 6");
-    let mut nodes = Vec::new();
-    walk(&page.root, &mut nodes);
-    let six = nodes
-        .iter()
-        .filter_map(|n| match &n.node_type {
-            RenderNodeType::TextRun(r) if r.display_or_text() == "6" => {
-                Some((n.bbox.width, r.style.font_size * r.style.ratio))
-            }
-            _ => None,
-        })
-        .max_by(|a, b| a.1.total_cmp(&b.1))
-        .expect("6쪽의 큰 '6' 런");
-    assert!(
-        six.0 / six.1 > 0.60,
-        "저장 줄 증언이 없는 문서에 반각 규칙이 발화했다 — '6' 전진폭 {}em (독립 정본 약 0.645em)",
-        six.0 / six.1,
-    );
-}

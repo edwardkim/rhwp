@@ -1,7 +1,7 @@
 //! 표 테두리 수집/렌더링 + 문단 테두리 라인 생성
 
 use super::super::render_tree::*;
-use super::super::style_resolver::ResolvedBorderStyle;
+use super::super::style_resolver::{ResolvedBorderStyle, ResolvedStyleSet};
 use super::super::{LineStyle, StrokeDash};
 use crate::model::style::{BorderLine, BorderLineType, CenterLine};
 use crate::model::table::{Cell, Table, TableZone, MAX_TABLE_GRID_CELLS};
@@ -150,15 +150,13 @@ pub(crate) fn build_row_col_x(
             }
         }
     }
-    let mut base_rx = vec![0.0f64; col_count + 1];
+    let mut base_rx = vec![cell_spacing; col_count + 1];
     for c in 0..col_count {
-        base_rx[c + 1] =
-            base_rx[c] + col_widths[c] + if c + 1 < col_count { cell_spacing } else { 0.0 };
+        base_rx[c + 1] = base_rx[c] + col_widths[c] + cell_spacing;
     }
 
     let target_total = if table.common.width > 0 {
         hwpunit_to_px(table.common.width as i32, dpi) * width_scale
-            + cell_spacing * col_count.saturating_sub(1) as f64
     } else {
         base_rx.last().copied().unwrap_or(0.0)
     };
@@ -251,14 +249,13 @@ pub(crate) fn build_row_col_x(
     }
 
     let fallback_w = hwpunit_to_px(1800, dpi);
-    let mut row_col_x = vec![vec![0.0f64; col_count + 1]; row_count];
+    let mut row_col_x = vec![vec![cell_spacing; col_count + 1]; row_count];
     for r in 0..row_count {
         for c in 0..col_count {
             let w = cell_width_grid[r][c]
                 .or_else(|| col_widths.get(c).copied())
                 .unwrap_or(fallback_w);
-            row_col_x[r][c + 1] =
-                row_col_x[r][c] + w + if c + 1 < col_count { cell_spacing } else { 0.0 };
+            row_col_x[r][c + 1] = row_col_x[r][c] + w + cell_spacing;
         }
         // 저장 파일의 cell.width는 병합 제약을 풀기 전 보조값일 수 있다.
         // 행별 누적 폭이 표 외곽 폭과 맞지 않으면 독립 segment가 아니라 전역 grid를 따른다.
@@ -300,8 +297,8 @@ fn declared_row_col_x(
     }
     row_cells.sort_by_key(|cell| cell.col);
 
-    let mut candidate = vec![0.0f64; col_count + 1];
-    let mut cursor = 0.0f64;
+    let mut candidate = vec![cell_spacing; col_count + 1];
+    let mut cursor = cell_spacing;
     let mut next_col = 0usize;
     for cell in row_cells {
         let c = cell.col as usize;
@@ -314,13 +311,10 @@ fn declared_row_col_x(
         let cell_w = hwpunit_to_px(cell.width as i32, dpi) * width_scale;
         for inner_col in c + 1..end {
             let ratio = (inner_col - c) as f64 / span as f64;
-            candidate[inner_col] = cursor + cell_w * ratio;
+            candidate[inner_col] = cursor + (cell_w + cell_spacing) * ratio;
         }
-        cursor += cell_w;
+        cursor += cell_w + cell_spacing;
         candidate[end] = cursor;
-        if end < col_count {
-            cursor += cell_spacing;
-        }
         next_col = end;
     }
     if next_col != col_count {
@@ -343,6 +337,111 @@ fn declared_row_col_x(
     }
     Some(candidate)
 }
+
+/// Separate cells keep their own edges; neighboring sides are not the same line.
+/// Consume the final cell boxes, including fragment folding, instead of rebuilding
+/// their positions from a collapsed edge grid.
+pub(crate) fn render_spaced_cell_borders(
+    tree: &mut PageLayoutContext,
+    table: &Table,
+    styles: &ResolvedStyleSet,
+    children: &[RenderNode],
+    open_top_row: Option<u16>,
+    show_transparent: bool,
+) -> Vec<RenderNode> {
+    let mut nodes = Vec::new();
+    for node in children {
+        let RenderNodeType::TableCell(meta) = &node.node_type else {
+            continue;
+        };
+        let Some(cell) = meta
+            .model_cell_index
+            .and_then(|index| table.cells.get(index as usize))
+        else {
+            continue;
+        };
+        let mut borders = meta
+            .border_fill_id
+            .checked_sub(1)
+            .and_then(|index| styles.border_styles.get(usize::from(index)))
+            .map_or([BorderLine::default(); 4], |style| style.borders);
+        for zone in &table.zones {
+            let Some(style) = zone
+                .border_fill_id
+                .checked_sub(1)
+                .and_then(|index| styles.border_styles.get(usize::from(index)))
+            else {
+                continue;
+            };
+            let end_cell = table
+                .cells
+                .iter()
+                .find(|candidate| candidate.row == zone.end_row && candidate.col == zone.end_col);
+            let end_row = end_cell.map_or(usize::from(zone.end_row) + 1, |last| {
+                usize::from(last.row) + usize::from(last.row_span)
+            });
+            let end_col = end_cell.map_or(usize::from(zone.end_col) + 1, |last| {
+                usize::from(last.col) + usize::from(last.col_span)
+            });
+            let row = usize::from(cell.row);
+            let col = usize::from(cell.col);
+            let cell_end_row = row + usize::from(cell.row_span);
+            let cell_end_col = col + usize::from(cell.col_span);
+            if row < usize::from(zone.start_row)
+                || col < usize::from(zone.start_col)
+                || cell_end_row > end_row
+                || cell_end_col > end_col
+            {
+                continue;
+            }
+            for (side, on_boundary) in [
+                col == usize::from(zone.start_col),
+                cell_end_col == end_col,
+                row == usize::from(zone.start_row),
+                cell_end_row == end_row,
+            ]
+            .into_iter()
+            .enumerate()
+            {
+                if on_boundary && style.borders[side].line_type != BorderLineType::None {
+                    borders[side] = style.borders[side];
+                }
+            }
+        }
+        if open_top_row.is_some_and(|row| {
+            usize::from(cell.row) <= usize::from(row)
+                && usize::from(row) < usize::from(cell.row) + usize::from(cell.row_span)
+        }) {
+            borders[2].line_type = BorderLineType::None;
+        }
+        let box_ = node.bbox;
+        let (left, top, right, bottom) =
+            (box_.x, box_.y, box_.x + box_.width, box_.y + box_.height);
+        for (border, (x1, y1, x2, y2)) in borders.iter().zip([
+            (left, top, left, bottom),
+            (right, top, right, bottom),
+            (left, top, right, top),
+            (left, bottom, right, bottom),
+        ]) {
+            if border.line_type == BorderLineType::None && show_transparent {
+                nodes.extend(create_editor_only_line(
+                    tree,
+                    0x0000FF,
+                    0.4,
+                    StrokeDash::Dot,
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                ));
+            } else {
+                nodes.extend(create_border_line_nodes(tree, border, x1, y1, x2, y2));
+            }
+        }
+    }
+    nodes
+}
+
 /// 셀 테두리를 엣지 그리드에 수집
 /// h_edges[row_boundary][col]: 수평 엣지 (row_boundary 0..=row_count, col 0..col_count)
 /// v_edges[col_boundary][row]: 수직 엣지 (col_boundary 0..=col_count, row 0..row_count)

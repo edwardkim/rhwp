@@ -536,14 +536,32 @@ impl HeightCursor {
                 && !self.session_edited
                 && !synthetic_prev_seg
                 && !prev_has_text
+                && !prev_para.stored_text_partition_is_dirty()
+                && !prev_para.cell_format_vpos_dirty
                 && vpos_continuous)
                 .then(|| {
-                    let prev_source = *prev_para.source_line_seg_vertical_pos.as_ref()?.last()?;
                     let curr_para = paragraphs.get(item_para)?;
-                    let curr_source = *curr_para.source_line_seg_vertical_pos.as_ref()?.first()?;
+                    if curr_para.stored_text_partition_is_dirty() || curr_para.cell_format_vpos_dirty {
+                        return None;
+                    }
                     let curr_model = curr_para.line_segs.first()?;
+                    // 스냅샷은 구역의 vpos를 재계산할 때만 생긴다. 재계산하지
+                    // 않은 정상 저장 줄은 현재 좌표가 원본 좌표다. 합성 줄은
+                    // 위/아래 tag 검사로, 편집 좌표는 dirty 검사로 제외한다.
+                    // 비어 있는 스냅샷을 정상 원본으로 대체하지 않는다.
+                    let prev_source = match &prev_para.source_line_seg_vertical_pos {
+                        Some(source) => *source.last()?,
+                        None => seg.vertical_pos,
+                    };
+                    let curr_source = match &curr_para.source_line_seg_vertical_pos {
+                        Some(source) => *source.first()?,
+                        None => curr_model.vertical_pos,
+                    };
                     let base = curr_model.vertical_pos.checked_sub(curr_source)?;
-                    let source_is_continuous = base > 0
+                    // Zero is a valid unchanged source coordinate transform,
+                    // including the plain line after a continued table. Its
+                    // already consumed spacing does not need a second bridge.
+                    let source_is_continuous = base >= 0
                         && prev_source
                             .saturating_add(seg.line_height)
                             .saturating_add(seg.line_spacing)
@@ -558,10 +576,24 @@ impl HeightCursor {
                     // 개체 없는 유효한 빈 글줄은 높이와 후행 간격을 이미 소비했다.
                     // 분할 표 뒤의 상대 원점도 실제 수용한 끝에 연결하며, 원본의
                     // 절대 쪽 위치로 강제 이동하거나 간격을 다시 더하지 않는다.
+                    // Ownership of this plain line's advance is independent
+                    // of whether the successor anchors an object.
                     let plain_line_consumed = prev_para.controls.is_empty()
                         && prev_para.line_segs.len() == 1
                         && seg.line_height > 0
-                        && paragraphs.get(item_para)?.controls.is_empty();
+                        // 저장 좌표의 연속성은 실제 간격 소비의 증거가 아니다.
+                        // 측정/배치가 수용한 줄 상자 끝과 확정 원점이 모두 같은
+                        // 간격을 증언할 때만 후행 bridge를 제거한다.
+                        && rendered_spent_trailing;
+                    if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
+                        eprintln!(
+                            "VPOS_SOURCE_CONTINUOUS: pi={} prev_pi={} prev_snapshot={} curr_snapshot={} source_base={} plain_line_consumed={}",
+                            item_para, prev_pi,
+                            prev_para.source_line_seg_vertical_pos.is_some(),
+                            curr_para.source_line_seg_vertical_pos.is_some(),
+                            base, plain_line_consumed,
+                        );
+                    }
                     if plain_line_consumed {
                         Some(prev_vpos_end - y_delta_hu)
                     } else {
@@ -639,6 +671,14 @@ impl HeightCursor {
                 })
             })
             .unwrap_or(false);
+        // 표 host spacing과 본문 글줄의 앞 간격은 같은 소비가 아니다.
+        // TAC 표 host도 본문 앞 간격이 재적용된다는 증거로 쓰지 않는다.
+        let spacing_before_is_line_flow = paragraphs.get(item_para).is_some_and(|para| {
+            !para
+                .controls
+                .iter()
+                .any(|control| matches!(control, Control::Table(_)))
+        });
         // [#7351] 표 조각은 host 문단의 앞 간격을 그리지 않는다 — 사전 차감하면 조각이 그 앞
         // 간격만큼 위로 붙는다(issue2004_cell_image_stack 4쪽: 정본 표 위 괘선 127.84,
         // 쪽 저장 기준점(#7345)을 고친 뒤 차감 스냅이 수용되면 121.1).
@@ -728,6 +768,57 @@ impl HeightCursor {
                             )
                         })
                 });
+        // [#7552] 앞 문단도 빈 자리차지 표 host 면 그 host 줄 끝은 앞 표의 내용 끝이 아니다.
+        // 이때 저장 사다리는 현재 host 줄을 **문단 상단**에 두고 표 바깥 상자를 그 뒤에
+        // 예약한다(다음 문단 vpos − 현재 vpos ≥ 바깥 상자). 앞 간격은 앞 표의 아래 여백·캡션
+        // 띠에 흡수되어 사다리에 들어 있지 않다 — 정본 괘선 = 줄 vpos + 바깥 위 여백
+        // (hwpspec 28쪽 pi=168 447.4, 50쪽 pi=328 858.2). 줄이 표 아래에 저장된 host
+        // (PR #1088 hwp-multi-001)는 다음 문단까지 상자가 들어가지 않아 여기 오지 않는다.
+        let empty_topbottom_host = |para: &crate::model::paragraph::Paragraph| -> Option<i64> {
+            if para_has_visible_text(para) || para.controls.len() != 1 {
+                return None;
+            }
+            match &para.controls[0] {
+                Control::Table(table)
+                    if !table.common.treat_as_char
+                        && table.common.vertical_offset == 0
+                        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+                        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+                        && table.common.height <= i32::MAX as u32 =>
+                {
+                    Some(
+                        i64::from(table.common.height)
+                            + i64::from(table.outer_margin_top)
+                            + i64::from(table.outer_margin_bottom),
+                    )
+                }
+                _ => None,
+            }
+        };
+        let table_host_line_is_top_after_table_host = !self.session_edited
+            && !synthetic_prev_seg
+            && empty_topbottom_host(prev_para).is_some()
+            && paragraphs.get(item_para).is_some_and(|para| {
+                let Some(outer_box) = empty_topbottom_host(para) else {
+                    return false;
+                };
+                let (Some(line), Some(next)) = (
+                    para.line_segs.first(),
+                    paragraphs
+                        .get(item_para + 1)
+                        .and_then(|next| next.line_segs.first()),
+                ) else {
+                    return false;
+                };
+                let stored = |seg: &crate::model::paragraph::LineSeg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                };
+                stored(line)
+                    && stored(next)
+                    && para.line_segs.len() == 1
+                    && line.vertical_pos > seg.vertical_pos
+                    && i64::from(next.vertical_pos) - i64::from(line.vertical_pos) >= outer_box
+            });
         // [Task #412] 현재 paragraph first vpos 우선(spacing_after 인코딩), reset 시 fallback.
         //
         // 단, 현재 문단이 para-relative TopAndBottom 표의 host 이면 first_vpos 가 표
@@ -764,7 +855,8 @@ impl HeightCursor {
                 if v > seg.vertical_pos
                     && (!curr_has_topbottom_para_table
                         || table_host_only_before_gap
-                        || table_host_only_paragraph_gap) =>
+                        || table_host_only_paragraph_gap
+                        || table_host_line_is_top_after_table_host) =>
             {
                 v
             }
@@ -807,6 +899,7 @@ impl HeightCursor {
         // 앞 줄의 실제 끝에서 현재 문단을 시작하고, 앞 간격은 배치가 한 번 더한다.
         let skip_prededuct = self.skip_spacing_before_prededuct
             || inline_host_without_stored_anchor
+            || table_host_line_is_top_after_table_host
             || (synthetic_prev_seg
                 && paragraphs
                     .get(item_para)
@@ -821,6 +914,7 @@ impl HeightCursor {
             curr_sb,
             y_offset,
             curr_has_topbottom_para_table,
+            spacing_before_is_line_flow,
             skip_prededuct,
             allow_large_backward,
             self.dpi,
@@ -838,6 +932,7 @@ impl HeightCursor {
                 curr_sb,
                 y_offset,
                 curr_has_topbottom_para_table,
+                spacing_before_is_line_flow,
                 true,
                 allow_large_backward,
                 self.dpi,

@@ -44,10 +44,6 @@ use rhwp::wasm_api::HwpDocument;
 const SAMPLE: &str = "samples/issue5966/1130000-202100008_franchise_review_report.hwp";
 /// 0-based — 되감김 문단이 놓이는 물리 60쪽.
 const PAGE_INDEX: u32 = 59;
-/// `body_area y=132.3 + h=876.9`.
-const BODY_BOTTOM_PX: f64 = 1009.2;
-/// 용지 높이 — 회귀하면 글자가 이 밖으로 나가 인쇄에서 사라진다.
-const PAGE_HEIGHT_PX: f64 = 1122.5;
 const TOLERANCE_PX: f64 = 8.0;
 
 /// 꼬리말(쪽번호)은 본문 하한 아래에 있는 것이 정상이다 — `Body` 아래만 모은다.
@@ -72,13 +68,24 @@ fn split_paragraph_follows_the_stored_rewind_even_with_budget_left() {
     let document = HwpDocument::from_bytes(&bytes).expect("parse issue5966 sample");
     assert_eq!(
         document.page_count(),
-        143,
-        "쪽수는 143쪽이어야 한다 — 되감김 승격이 쪽을 새로 만들면 안 된다"
+        // 과거 rhwp 실측 143쪽 대신 동일 원본의 독립 한컴 2020 Print PDF를 따른다.
+        // 전 142쪽 Native/fresh WASM 최저 92.20721%와 60쪽 본문/셀 소속을 확인했다.
+        // 증거: mydocs/pr/archives/pr_7617_review.md.
+        142,
+        "독립 Print PDF의 142쪽이어야 한다 — 되감김 승격이 쪽을 새로 만들면 안 된다"
     );
 
     let tree = document
         .build_page_render_tree(PAGE_INDEX)
         .expect("render p60");
+    let page_bottom = tree.root.bbox.y + tree.root.bbox.height;
+    let body = tree
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+        .expect("60쪽 본문 영역");
+    let body_bottom = body.bbox.y + body.bbox.height;
     let mut nodes = Vec::new();
     collect_body_runs(&tree.root, false, &mut nodes);
 
@@ -92,12 +99,12 @@ fn split_paragraph_follows_the_stored_rewind_even_with_budget_left() {
         "60쪽에 글자가 있어야 한다 — 표본이나 쪽 인덱스가 어긋났다"
     );
     assert!(
-        worst <= PAGE_HEIGHT_PX,
-        "60쪽 글자가 **용지 밖**으로 나갔다 — 최하단 {worst:.1}px, 용지 {PAGE_HEIGHT_PX:.1}px \
+        worst <= page_bottom,
+        "60쪽 글자가 **용지 밖**으로 나갔다 — 최하단 {worst:.1}px, 용지 {page_bottom:.1}px \
          (회귀 시 1216.8px = +94.3px, 인쇄에서 소실된다)"
     );
     assert!(
-        worst <= BODY_BOTTOM_PX + TOLERANCE_PX,
-        "60쪽 글자가 본문 하한을 넘었다 — 최하단 {worst:.1}px, 하한 {BODY_BOTTOM_PX:.1}px"
+        worst <= body_bottom + TOLERANCE_PX,
+        "60쪽 글자가 본문 하한을 넘었다 — 최하단 {worst:.1}px, 하한 {body_bottom:.1}px"
     );
 }

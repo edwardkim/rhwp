@@ -122,28 +122,36 @@ fn maintainer_hit_test_uses_the_resolved_trailing_tab_positions() {
     let height = run["h"].as_f64().expect("런 높이");
     let visible_end = run["charX"][3].as_f64().expect("하이픈 끝");
     assert!(width > visible_end, "탭 앞 공백의 클릭 구간이 필요하다");
-    let click_x = x + (visible_end + width) * 0.5 + 0.1;
-    let hit: serde_json::Value = serde_json::from_str(
-        &core
-            .hit_test_native(0, click_x, y + height * 0.5)
-            .expect("공개 hit-test"),
-    )
-    .expect("hit-test JSON");
-    // native API는 hit 여부 bool이 아니라 논리 주소와 cursorRect를 직접 반환한다.
-    // 다른 문단이나 탭 앞 하이픈으로 잘못 붙은 hit를 성공으로 처리하지 않는다.
-    assert_eq!(hit["sectionIndex"].as_u64(), Some(section_index as u64));
-    assert_eq!(hit["paragraphIndex"].as_u64(), Some(paragraph_index as u64));
-    assert_eq!(
-        hit["charOffset"].as_u64(),
-        Some((char_start + 4) as u64),
-        "클릭은 끝 공백 뒤, 폭이 확정된 탭 시작 경계에 붙어야 한다: {hit}"
-    );
-    assert_eq!(hit["cursorRect"]["pageIndex"], 0);
-    let caret_x = hit["cursorRect"]["x"].as_f64().expect("캐럿 x");
-    assert!(
-        (caret_x - (x + width)).abs() <= 0.5,
-        "끝 공백/탭의 캐럿은 확정 끝 경계를 사용해야 한다: caret={caret_x}"
-    );
+    // 탭 앞 공백의 끝(문자4)과 탭 끝(문자5)은 서로 다른 논리 경계다.
+    // 하이픈 끝을 클릭 구간의 시작으로 쓰면 공백 폭이 달라질 때 탭 앞에
+    // 클릭하고도 탭 끝 좌표를 요구하게 된다. 공개 문자 경계의 중점 양쪽을
+    // 클릭해 각각의 논리 주소와 캐럿 위치를 함께 검사한다.
+    let tab_start = run["charX"][4].as_f64().expect("탭 시작 경계");
+    assert!(tab_start >= visible_end && width >= tab_start);
+    let midpoint = (tab_start + width) * 0.5;
+    for (local_x, offset, expected_x) in
+        [(midpoint - 0.1, 4, tab_start), (midpoint + 0.1, 5, width)]
+    {
+        let hit: serde_json::Value = serde_json::from_str(
+            &core
+                .hit_test_native(0, x + local_x, y + height * 0.5)
+                .expect("공개 hit-test"),
+        )
+        .expect("hit-test JSON");
+        assert_eq!(hit["sectionIndex"].as_u64(), Some(section_index as u64));
+        assert_eq!(hit["paragraphIndex"].as_u64(), Some(paragraph_index as u64));
+        assert_eq!(
+            hit["charOffset"].as_u64(),
+            Some((char_start + offset) as u64),
+            "탭 양쪽 경계의 논리 주소를 보존해야 한다: {hit}"
+        );
+        assert_eq!(hit["cursorRect"]["pageIndex"], 0);
+        let caret_x = hit["cursorRect"]["x"].as_f64().expect("캐럿 x");
+        assert!(
+            (caret_x - (x + expected_x)).abs() <= 0.5,
+            "캐럿은 선택한 공개 문자 경계를 소비해야 한다: {hit}"
+        );
+    }
 }
 
 /// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의

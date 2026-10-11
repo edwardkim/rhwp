@@ -17,13 +17,6 @@
 2025 행정업무운영 편람(최종).hwpx	21
 80168_regulatory_analysis.hwp	2
 HWP5-nopassword-123456.hwpx	6
-SO-SUEOP.hwp	33
-SO-SUEOP.hwpx	34
-exam-kor-2p.hwp	1
-exam-kor-3p.hwp	23
-exam-kor-4p.hwp	14
-exam_science.hwp	1
-exam_social.hwp	4
 group-drawing-02.hwp	5
 hwp-multi-001.hwp	91
 # [#7254] 배치·정렬 run 폭의 정수 반올림을 걷어낸 천장 조정 — 2행.
@@ -50,10 +43,6 @@ hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	84
 hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	76
 hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	75
 hwpx/2025년 2분기 해외직접투자 (최종).hwpx	92
-hwpx/exam-kor-2p.hwpx	1
-hwpx/exam-kor-3p.hwpx	23
-hwpx/exam-kor-4p.hwpx	14
-hwpx/exam_social.hwpx	4
 hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	76
 hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	84
 hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	76
@@ -79,7 +68,10 @@ issue1549_multipositive_float_tables.hwpx	6
 issue1858_paper_anchor_float_stack.hwpx	6
 issue1891/80168_regulatory_analysis.hwpx	2
 issue1891_external_bindata_link.hwpx	3
-issue1921/59043_regulatory_analysis.hwp	2
+# [#7092] 굽은 따옴표(‘ ’ “ ”)를 영문 슬롯으로 분류해 그 경계에서 TextRun 이 나뉜다.
+#   layout-anomaly 로 수정 전후를 재면 겹침 교차 사각형은 모두 수정 전 교차 영역 안에 있고
+#   (6쪽 y≈383), 교차 합집합 면적은 544.6 = 544.6px²다. run 쌍의 수만 늘었다(새 겹침 0).
+issue1921/59043_regulatory_analysis.hwp	4
 issue1949_giant_cell_nested_tables_perf.hwp	8
 issue1949_giant_cell_nested_tables_perf.hwpx	8
 issue2006/1790387_prep_final_report.hwpx	1
@@ -108,7 +100,10 @@ issue6284/child_policy_top_caption_charts.hwpx	26
 issue6310/press_release_cell_logo.hwpx	4
 issue6551/113424_evaluation_guideline.hwpx	3
 issue6601/36331407_side_by_side_tac_tables.hwpx	11
-issue6697/80550-agricultural-machinery-act-amendment.hwpx	14
+# [#7092] 굽은 따옴표 영문 슬롯 분류로 TextRun 이 나뉜다. 수정 전후 교차 사각형은 모두
+#   수정 전 교차 영역 안(13·14·26·29쪽, 같은 y)이고 합집합 면적은 13·14·29쪽 같음,
+#   26쪽 1159.5 -> 1133.4px² 로 줄었다. run 쌍의 수만 늘었다(새 겹침 0).
+issue6697/80550-agricultural-machinery-act-amendment.hwpx	18
 issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	5
 issue6879/156767332-broadcast-revenue-attachment.hwp	1
 # #7418: 글머리표 머리 모양 합성 문서의 **의도된** 마커 겹침. 너비 보정 −1000·본문과의 거리 50%
@@ -117,6 +112,15 @@ issue6879/156767332-broadcast-revenue-attachment.hwp	1
 #   그린다. 영역 0 인 B12~B14 는 한/글처럼 마커를 그리지 않아 세지 않는다.
 issue7418/list_marker_head_synthetic-hancom-2024.hwpx	3
 issue7418/list_marker_head_synthetic.hwpx	3
+# #7688 / PR #7697: group-drawing-02.hwp의 화살촉 대조군 5개를 신규 등록한다.
+# 수정 전 devel 6f66932a와 현재 head 모두 각 5건이며 소유 path·bbox·교차량도 동일하다.
+# Native/fresh WASM 독립 Print 전쪽 최저 99.84531%; 기존 글상자 줄바꿈 차이는 남는다.
+# 근거와 입력/PDF 해시: mydocs/working/task_m100_7688_stage8.md, samples/issue7688/README.md.
+issue7688/arrow-controls/control-1.hwpx	5
+issue7688/arrow-controls/control-2.hwpx	5
+issue7688/arrow-controls/control-3.hwpx	5
+issue7688/arrow-controls/control-compound.hwpx	5
+issue7688/arrow-controls/control-short.hwpx	5
 kps-ai.hwp	2
 mel-001.hwp	1
 multi-table-001.hwp	1
@@ -132,6 +136,15 @@ task2093/1192000_hydrogen_policy_research.hwp	1
 task2097/21217935_simsa_jipyo.hwp	48
 task2097/75544_pii_bunseok.hwpx	2
 task2279/36404953_gyeoljae.hwpx	1
+# 편람 쪽수 정렬 묶음(경계 4 저장 되감김 줄간격 트림): 24쪽(0-based 23) 1×1 표 조각 끝 글줄
+#   「3. 가정폭력 피해자 지원서비스를…」(Table0/Cell0/TextLine30, y 1017.1~1031.8)이 본문 바닥
+#   1009.2 를 넘어 꼬리말 쪽번호 「- 22 -」(Footer3/TextLine0, y 1029.1)와 2.7px 겹친다.
+#   컷은 저장 되감김 앞 줄간격을 뺀 885.3 으로 예산 886.9 에 들어가지만, 조각에 따로 얹히는
+#   33.1px 가 예산에 들어 있지 않아 조각이 918.4 로 본문을 넘는다(종전에는 줄간격을 뺀 컷이
+#   예산을 넘어 재시도 834.7 로 줄었다). 정본 한/글 2020(`pdf/issue2430/…-2020.pdf`) 24쪽은
+#   rhwp 와 이미 약 30px 어긋난 쪽 구성이라(마지막 글줄 「5) 피해자 보호시설 퇴소…」) 같은
+#   줄 비교가 성립하지 않는다. 원인 정정은 후속 과제로 남기고 1건을 싣는다.
+task2430/1382000_domestic_violence_survey.hwp	1
 # #7226: 걸침 전용 행의 이중 소유를 없애 이 문서의 겹침이 68 → 39 로 줄었고(devel 236a601da),
 # 이후 표 조판 묶음으로 37 까지 내려갔다. 33쪽 겹침은 0 이다. 여유 없이 실측으로 조인다.
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	53

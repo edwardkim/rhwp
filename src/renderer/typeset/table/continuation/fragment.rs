@@ -25,7 +25,11 @@ struct FragmentStart {
     start_cut_is_block: bool,
     start_row_height_override: Option<f64>,
     start_cut: Vec<usize>,
-    fragment_starts_intra_row: bool,
+    /// [#7531] 이 조각에서 쪽을 넘어온 걸침 칸의 끝 행 높이에서 덜 양 `(행, px)`.
+    straddle_row_relief: Vec<(usize, f64)>,
+    /// 덜기를 적용한 scan 용 행 높이. 덜기가 없으면 준비 상태의 값을 그대로 쓴다.
+    relieved_cut_row_heights: Option<Vec<f64>>,
+    relieved_whole_row_fit_heights: Option<Vec<f64>>,
 }
 
 #[derive(Clone, Copy)]
@@ -72,13 +76,59 @@ impl TypesetEngine {
         profile: &mut FragmentProfile,
     ) -> TableContinuationIteration {
         profile.iterations += 1;
-        let start_cut = continuation.start_cut.clone();
+        // 소스 컷은 앞 조각의 끝과 연속이어야 한다. 저장 프레임의 꼬리 spacer는
+        // 그 연속 범위 안에서 소비하되, 다음 물리 프레임의 높이/원점에는 싣지 않는다.
+        // 예약·선택은 paint와 같은 helper로 구한 물리 시작점을 소비한다.
+        let start_cut = if continuation.start_cut_is_block {
+            continuation.start_cut.clone()
+        } else {
+            prepared.layout_engine.skip_leading_free_spacers_in_row_cut(
+                source.row_geometry_table,
+                continuation.row,
+                &continuation.start_cut,
+                source.styles,
+            )
+        };
+        let straddle_row_relief = if continuation.start_cut_is_block
+            || !continuation.start_cut.is_empty()
+            || continuation.start_row_height_override.is_some()
+        {
+            Vec::new()
+        } else {
+            prepared.layout_engine.straddle_page_band_relief(
+                source.row_geometry_table,
+                &source.measured_table.row_heights,
+                continuation.row,
+                &continuation.straddle_page_bands,
+                source.styles,
+            )
+        };
+        let relieve = |heights: &Vec<f64>| {
+            let mut heights = heights.clone();
+            for &(row, amount) in &straddle_row_relief {
+                if let Some(height) = heights.get_mut(row) {
+                    *height = (*height - amount).max(0.0);
+                }
+            }
+            heights
+        };
+        let (relieved_cut_row_heights, relieved_whole_row_fit_heights) =
+            if straddle_row_relief.is_empty() {
+                (None, None)
+            } else {
+                (
+                    Some(relieve(&prepared.cut_row_heights)),
+                    Some(relieve(&prepared.whole_row_fit_heights)),
+                )
+            };
         let start = FragmentStart {
+            straddle_row_relief,
+            relieved_cut_row_heights,
+            relieved_whole_row_fit_heights,
             cursor_row: continuation.row,
             is_continuation: continuation.is_continuation,
             start_cut_is_block: continuation.start_cut_is_block,
             start_row_height_override: continuation.start_row_height_override,
-            fragment_starts_intra_row: continuation.start_cut_is_block || !start_cut.is_empty(),
             start_cut,
         };
         let input = FragmentInput {
