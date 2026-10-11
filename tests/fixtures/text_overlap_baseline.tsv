@@ -23,7 +23,7 @@ exam-kor-2p.hwp	1
 exam-kor-3p.hwp	23
 exam-kor-4p.hwp	14
 exam_science.hwp	1
-exam_social.hwp	4
+exam_social.hwp	10
 group-drawing-02.hwp	5
 hwp-multi-001.hwp	91
 # [#7254] 배치·정렬 run 폭의 정수 반올림을 걷어낸 천장 조정 — 2행.
@@ -53,7 +53,7 @@ hwpx/2025년 2분기 해외직접투자 (최종).hwpx	92
 hwpx/exam-kor-2p.hwpx	1
 hwpx/exam-kor-3p.hwpx	23
 hwpx/exam-kor-4p.hwpx	14
-hwpx/exam_social.hwpx	4
+hwpx/exam_social.hwpx	10
 hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	76
 hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	84
 hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	76
@@ -79,7 +79,7 @@ issue1549_multipositive_float_tables.hwpx	6
 issue1858_paper_anchor_float_stack.hwpx	6
 issue1891/80168_regulatory_analysis.hwpx	2
 issue1891_external_bindata_link.hwpx	3
-issue1921/59043_regulatory_analysis.hwp	2
+issue1921/59043_regulatory_analysis.hwp	4
 issue1949_giant_cell_nested_tables_perf.hwp	8
 issue1949_giant_cell_nested_tables_perf.hwpx	8
 issue2006/1790387_prep_final_report.hwpx	1
@@ -94,21 +94,18 @@ issue5788/tac_table_missing_anchor_line_spacing.hwp	5
 issue5793/pua_f0827_double_rule.hwp	1
 issue5870/empty_host_float_flow_advance.hwp	2
 issue5877/fragment_ghost_vrules.hwp	6
-issue5966/1130000-202100008_franchise_review_report.hwp	26
+issue5966/1130000-202100008_franchise_review_report.hwp	33
 issue6030/2386771_agritech_review_form.hwp	2
 issue6031/3249937_asset_management_rules.hwpx	1
 issue6035/cgmp_evaluation_table.hwpx	1
 issue6036/156509073_police_press_release.hwpx	1
 issue6060/30307_local_service_reform.hwp	2
 issue6121/156531618_police_press_header.hwpx	1
-issue6180/156745974_tac_object_line_spacing.hwpx	1
-issue6181/156562368_inline_tac_table_line_advance.hwpx	3
 issue6264/1977964_env_satellite_report_form.hwp	2
-issue6284/child_policy_top_caption_charts.hwpx	26
 issue6310/press_release_cell_logo.hwpx	4
 issue6551/113424_evaluation_guideline.hwpx	3
 issue6601/36331407_side_by_side_tac_tables.hwpx	11
-issue6697/80550-agricultural-machinery-act-amendment.hwpx	14
+issue6697/80550-agricultural-machinery-act-amendment.hwpx	18
 issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	5
 issue6879/156767332-broadcast-revenue-attachment.hwp	1
 # #7418: 글머리표 머리 모양 합성 문서의 **의도된** 마커 겹침. 너비 보정 −1000·본문과의 거리 50%

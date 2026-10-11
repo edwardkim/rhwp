@@ -1373,8 +1373,16 @@ fn measure_char_width_embedded_decision_for_font<'a>(
         //
         // 비고정폭 face 는 이 변경의 범위 밖이다 — 같은 이름이 TrueType/HFT 두 realization 으로
         // 갈리고(휴먼명조 `‘` 1.010 ↔ 0.24), 기호 슬롯 선택 축이 따로 있다(#7092 잔여).
-        let quote_width_is_authentic =
-            matches!(c, '\u{2018}' | '\u{2019}') && is_monospace_metric(mm.metric);
+        //
+        // [#7702] 글꼴 파일로 폭이 확인된 TTF face(`font_metric_trusted`)의 곡선 따옴표도
+        // 진짜 값이다. 좁힘의 근거였던 `2022년 국립국어원 업무계획` 3쪽의 좁은 `‘` 는 전부
+        // HFT `한양중고딕`(정본 Type3) 이었고, 같은 문서의 TTF 휴먼명조 `’` 는 1.0em 이다.
+        // 한/글은 HFT 를 제 글리프로 그리므로 그 face 를 빌린 TTF 표(HY중고딕)의 전각이
+        // 틀린 것이지 TTF 글리프가 틀린 것이 아니다.
+        let quote_width_is_authentic = (matches!(c, '\u{2018}' | '\u{2019}')
+            && is_monospace_metric(mm.metric))
+            || (matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
+                && font_metric_trusted);
         let is_narrow_unicode_punct =
             matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}') && !quote_width_is_authentic;
         // [#7092] 전각으로 **적힌** 가운뎃점은 대개 글꼴이 지닌 진짜 값이다 — 결측 글리프는
@@ -1953,6 +1961,33 @@ pub fn forces_halfwidth_cjk_quote(
     }
     measure_char_width_embedded_decision(font_family, bold, italic, c, font_size).width_source
         == HALFWIDTH_PUNCTUATION_WIDTH_SOURCE
+}
+
+/// 페인트가 `U+2018..=U+2027` 구두점을 반각 공간에 눌러 그려야 하는지.
+///
+/// [#7702] 측정이 곡선 따옴표의 글리프 폭을 진짜 값으로 받아들였으면(`quote_width_is_authentic`)
+/// 전진폭이 이미 글리프 폭이므로 누르면 안 된다. 나머지는 종전대로 누른다.
+pub fn forces_halfwidth_punct_paint(style: &TextStyle, c: char) -> bool {
+    if !matches!(c, '\u{2018}'..='\u{2027}') {
+        return false;
+    }
+    let metric_family = style
+        .metric_font_family
+        .as_deref()
+        .unwrap_or(&style.font_family);
+    let decision = measure_char_width_embedded_decision_for_font(
+        metric_family,
+        style.bold,
+        style.italic,
+        c,
+        style.font_size,
+        style.font_metric_trusted,
+        style.hft_hangul_face,
+    );
+    let authentic_fullwidth_quote = matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
+        && decision.width_source == "embeddedMetric"
+        && decision.em_fraction.is_some_and(|em| em >= 1.0);
+    !authentic_fullwidth_quote
 }
 
 /// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).

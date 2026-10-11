@@ -3694,6 +3694,7 @@ pub(crate) use text_measurement::{
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
 // 직접 검증한다 — pub 노출.
 pub use text_measurement::forces_halfwidth_cjk_quote;
+pub(crate) use text_measurement::forces_halfwidth_punct_paint;
 pub use text_measurement::{EmbeddedTextMeasurer, TextMeasurer};
 // [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
 // (PUA substitution 매핑 정합) — pub 노출.

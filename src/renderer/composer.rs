@@ -377,52 +377,6 @@ fn compose_paragraph_scoped(
     let para = synth_para.as_ref().unwrap_or(para);
 
     let mut lines = compose_lines(para);
-    if crate::renderer::para_has_no_stored_line_segs(para) {
-        if let Some(styles) = metric_styles {
-            for line in &mut lines {
-                let mut runs = Vec::new();
-                for run in std::mem::take(&mut line.runs) {
-                    let punct_latin = styles
-                        .char_styles
-                        .get(run.char_style_id as usize)
-                        .is_some_and(|style| style.ascii_punct_latin_slot);
-                    if !punct_latin
-                        || !run
-                            .text
-                            .chars()
-                            .any(|ch| !ch.is_ascii() && is_latin_slot_punct(ch))
-                    {
-                        runs.push(run);
-                        continue;
-                    }
-                    let mut start = 0;
-                    let mut lang = run.lang_index;
-                    for (byte, ch) in run.text.char_indices() {
-                        let next = reflow_punctuation_slot(ch, run.lang_index, punct_latin);
-                        if next != lang {
-                            if byte > start {
-                                runs.push(ComposedTextRun {
-                                    text: run.text[start..byte].to_string(),
-                                    lang_index: lang,
-                                    ..run.clone()
-                                });
-                            }
-                            start = byte;
-                            lang = next;
-                        }
-                    }
-                    if start < run.text.len() {
-                        runs.push(ComposedTextRun {
-                            text: run.text[start..].to_string(),
-                            lang_index: lang,
-                            ..run
-                        });
-                    }
-                }
-                line.runs = runs;
-            }
-        }
-    }
     let inline_controls = identify_inline_controls(para);
 
     // treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 수집
@@ -1817,21 +1771,11 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
 }
 
 /// Legacy Latin 구두점인가 — [`crate::renderer::TextStyle::ascii_punct_latin`] 가
-/// 있는 run 에서 한/글은 이 글자를 영문 슬롯 글꼴로 잰다.
-/// `76076` 한컴 2024 PDF의 가운뎃점·작은따옴표도 Palatino Linotype 슬롯이다.
-/// 한글 face 자체의 가운뎃점 폭과 HFT 한점 리더는 이 슬롯 조건 밖이다.
+/// 있는 run 에서 한/글은 이 ASCII 구두점을 영문 슬롯 글꼴로 잰다.
+/// 가운뎃점·곡선 따옴표는 이 조건과 무관하게 언제나 영문 슬롯이다
+/// ([`detect_lang_category`], #7702).
 pub(crate) fn is_latin_slot_punct(ch: char) -> bool {
-    ch.is_ascii_punctuation() || matches!(ch, '\u{00B7}' | '\u{2018}' | '\u{2019}')
-}
-
-/// Newly composed neutral punctuation shares one explicit slot between width and paint.
-/// Stored runs retain their own inherited face; ASCII keeps its existing metric rule.
-pub(crate) fn reflow_punctuation_slot(ch: char, inherited: usize, punct_latin: bool) -> usize {
-    if punct_latin && !ch.is_ascii() && is_latin_slot_punct(ch) {
-        1
-    } else {
-        inherited
-    }
+    ch.is_ascii_punctuation()
 }
 
 /// 글자의 언어 슬롯. 중립 문자는 앞 글자 언어(`carry`)를 따른다. `punct_latin` 인 글자
@@ -1857,8 +1801,9 @@ pub(crate) fn is_lang_neutral(ch: char) -> bool {
         0x0000..=0x0020 |
         // ASCII 구두점/기호 (영문자/숫자 제외)
         0x0021..=0x002F | 0x003A..=0x0040 | 0x005B..=0x0060 | 0x007B..=0x007F |
-        // Latin-1 Supplement 구두점 (문자 제외)
-        0x00A0..=0x00BF
+        // Latin-1 Supplement 구두점 (문자 제외). `°`·`·` 는 영문 슬롯 글자라 중립이 아니다
+        // ([`detect_lang_category`], #7702).
+        0x00A0..=0x00AF | 0x00B1..=0x00B6 | 0x00B8..=0x00BF
     )
 }
 

@@ -567,9 +567,8 @@ pub(crate) fn resolve_styles_with_environment(
                     let target = primary_font_name(&style.font_families[lang]);
                     let explicit_true_type =
                         environment.is_some_and(|env| env.selects_true_type(target));
-                    style.font_families_metric_trusted[lang] = explicit_true_type
-                        && (metric_widths_verified_face(target)
-                            || matches!(target, "휴먼명조" | "HumanMyeongJo"));
+                    style.font_families_metric_trusted[lang] =
+                        explicit_true_type && metric_widths_verified_face(target);
                     if explicit_true_type {
                         style.font_families_hft_hangul[lang] = false;
                         style.font_families_hft_fullwidth_dot[lang] = false;
@@ -623,6 +622,19 @@ pub fn resolve_styles_with_variant(
 ///
 /// 별칭(`layout-metric` 평면)을 타고 남의 표를 빌려 오는 경우는 거짓이다 — 그건
 /// 치환 대상의 표와 다를 바 없어서 되돌릴 근거가 못 된다.
+/// [#7702] rhwp 의 폭 표가 한/글 **HFT 글리프**를 잰 값인 face.
+///
+/// 한/글은 이 face 를 HFT 로 선언한 문서(`alt_type == 2`)에서만 자기 HFT 글리프로 그린다.
+/// TTF 로 선언하면(`alt_type == 1`) 그런 TrueType 글꼴이 없어 문서가 적은 대체 글꼴로 그린다.
+///
+/// ```text
+///   HCI Poppy  alt_type=2  k-water-rfp 등 50여 문서   정본 `·` = Type3 0.38 em
+///              alt_type=1  76076·80168 (대체 Palatino Linotype)   정본 `·` = Palatino 0.25 em
+/// ```
+fn hft_program_metric_face(face: &&str) -> bool {
+    *face == "HCI Poppy"
+}
+
 fn has_own_metric_table(face: &&str) -> bool {
     crate::renderer::font_metrics_data::find_metric_decision(face, false, false)
         .is_some_and(|decision| decision.alias_rule_id.is_none())
@@ -716,6 +728,9 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                         .requested_face
                         .as_deref()
                         .filter(has_own_metric_table)
+                        .filter(|face| {
+                            decision.alt_type == Some(2) || !hft_program_metric_face(face)
+                        })
                 })
                 .flatten()
                 .map(str::to_string)
@@ -812,6 +827,17 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     }
 }
 
+/// [#7702] 한/글이 앞 글자 언어와 무관하게 **영문 슬롯** 글꼴로 재고 그리는 기호.
+///
+/// 글꼴 슬롯만 영문일 뿐 영문 낱말을 이루는 글자는 아니다 — 줄 나눔은 이 글자를
+/// 종전처럼 구두점으로 다룬다(`composer::line_breaking`).
+pub(crate) fn is_latin_slot_symbol(ch: char) -> bool {
+    matches!(
+        ch,
+        '\u{00B0}' | '\u{00B7}' | '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}'
+    )
+}
+
 /// Unicode 코드포인트로 HWP 언어 카테고리를 판별한다.
 ///
 /// 반환값: 0=한국어, 1=영어(라틴), 2=한자, 3=일본어, 4=기타, 5=기호, 6=사용자
@@ -837,6 +863,14 @@ pub fn detect_lang_category(ch: char) -> usize {
         0x00C0..=0x024F |
         // Latin Extended Additional, Extended-B (subset)
         0x1E00..=0x1EFF => 1,
+
+        // [#7702] 가운뎃점 `·` 과 곡선 따옴표 ‘’“” 는 앞 글자가 한글이어도 한/글이 **영문
+        // 슬롯** 글꼴로 재고 그린다. 한글 휴먼명조 + 영문 Times New Roman 합성 문단(한/글
+        // 2020)에서 `“`·`”` 는 0.444em, `‘`·`’`·`·` 는 0.336em 이고 PDF 글꼴도 Times 다. 영문
+        // 슬롯을 휴먼명조로 바꾸면 따옴표가 1.0em 이 된다. 같은 문단의 `…`·`※`·`「` 등은
+        // 휴먼명조로 남는다. 도 기호 `°` 도 Times 로 그려진다. 뒤따르는 공백도 Times 로
+        // 그려진다(폭은 어느 쪽이든 0.5em).
+        _ if is_latin_slot_symbol(ch) => 1,
 
         // 한자: CJK Unified Ideographs, Extension A
         0x4E00..=0x9FFF | 0x3400..=0x4DBF |
@@ -941,12 +975,14 @@ pub(crate) struct FontNameDecision {
 ///
 /// 새 face 를 넣으려면 그 글꼴 파일의 글리프와 한/글 출력 실측을 함께 남긴다.
 ///
+/// - `휴먼명조` — `HMKMM.TTF` 가 `‘’“”` 를 모두 512/512 로 갖는다. 저장소 한컴 정본
+///   23문서에서 이 face 의 `‘`·`’` 전진폭 중앙값이 0.988em 이고(n=2,042), 한/글 2020
+///   합성 문단(영문 슬롯 휴먼명조 TTF)도 `‘’“”` 를 1.0em 으로 놓는다(#7702). HFT 로
+///   선언된 휴먼명조는 `alt_type == 1` 을 만족하지 않으므로 여기서 걸러진다.
+///
 /// 아직 넣지 않은 것 — `HY중고딕`(정본 5문서 n=41 이 전각이지만 저장소에 글꼴 파일이
 /// 없다) · `HY견고딕`·`HY그래픽`(글꼴 파일은 있으나 정본이 사실상 한 문서뿐) ·
-/// `휴먼명조`·`휴먼고딕`(정본 22문서가 전각이고 `HMKMM.TTF` 도 512/512 지만, 저장소
-/// 표본에서는 이 face 가 `alt_type == 1 && !substituted` 를 만족하지 않아 목록에 넣어도
-/// 값이 움직이지 않는다 — 실측으로 확인했다. HFT/TrueType 두 realization 을 가르는 다른
-/// 갈래다).
+/// `휴먼고딕`(정본 표본이 부족하다).
 fn metric_widths_verified_face(face: &str) -> bool {
     matches!(
         face.trim(),
@@ -956,6 +992,8 @@ fn metric_widths_verified_face(face: &str) -> bool {
             | "HYHeadLine-Medium"
             | "HY울릉도M"
             | "HYwulM"
+            | "휴먼명조"
+            | "HumanMyeongJo"
     )
 }
 

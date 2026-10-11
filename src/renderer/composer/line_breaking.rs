@@ -13,7 +13,9 @@ use crate::renderer::layout::{
     is_cjk_char, kopub_space_advance_em, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
-use crate::renderer::style_resolver::{detect_lang_category, ResolvedParaStyle, ResolvedStyleSet};
+use crate::renderer::style_resolver::{
+    detect_lang_category, is_latin_slot_symbol, ResolvedParaStyle, ResolvedStyleSet,
+};
 use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 use std::ops::Range;
 
@@ -279,9 +281,16 @@ fn is_hangul(ch: char) -> bool {
 }
 
 /// 라틴 문자 여부 (영문+숫자)
+/// 영문 낱말을 이루는 글자. 영문 슬롯 기호(`·`·`°`·곡선 따옴표)는 글꼴만 영문
+/// 슬롯이고 낱말 글자가 아니다(#7702).
 fn is_latin(ch: char) -> bool {
-    let lang = detect_lang_category(ch);
-    lang == 1 // English/Latin
+    detect_lang_category(ch) == 1 && !is_latin_slot_symbol(ch)
+}
+
+/// 영문 낱말 안에 머무는 글자 — 언어 중립 문자와, 중립 문자이던 Latin-1 기호 `·`·`°`.
+/// 곡선 따옴표는 종전처럼 낱말을 끊는다.
+fn stays_in_latin_word(ch: char) -> bool {
+    is_lang_neutral(ch) || matches!(ch, '\u{00B0}' | '\u{00B7}')
 }
 
 /// CJK 문자 여부 (한자/일본어 — 개별 분할 대상)
@@ -395,9 +404,8 @@ fn tokenize_paragraph_with_regenerated_space_metric(
 
     let mut tokens = Vec::new();
     let mut i = 0;
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
-        .with_reflow_slots(text_chars)
-        .with_space_metric(space_metric);
+    let metric_scope =
+        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
     let mut current_lang: usize = 0;
 
     while i < text_len {
@@ -606,7 +614,14 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         i as u32
                     };
                     let follow_style = find_active_char_shape(char_shapes, follow_pos);
-                    let follow_ts = metric_scope.style(styles, follow_style, current_lang, i);
+                    // [#7702] 흡수한 글자도 제 슬롯으로 잰다 — `·` 는 앞 글자가 한글이어도
+                    // 영문 슬롯이다(어절 모드 갈래와 같은 규칙).
+                    let follow_lang = if is_lang_neutral(text_chars[i]) {
+                        current_lang
+                    } else {
+                        detect_lang_category(text_chars[i])
+                    };
+                    let follow_ts = metric_scope.style(styles, follow_style, follow_lang, i);
                     w += estimate_text_width_unrounded(&text_chars[i].to_string(), &follow_ts)
                         + inline_width_px_at(inline_controls, i);
                     i += 1;
@@ -637,7 +652,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                     if c == ' ' || c == '\n' || c == '\t' {
                         break;
                     }
-                    if !is_latin(c) && !is_lang_neutral(c) {
+                    if !is_latin(c) && !stays_in_latin_word(c) {
                         break;
                     }
                     // 하이픈 모드: 하이픈에서 분할 (하이픈 포함 후 분리)
@@ -888,23 +903,14 @@ fn prepare_paragraph_projection(
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
     inline_controls: &[FlowInlineControl],
-    composed: Option<&ComposedParagraph>,
 ) -> Option<PreparedParagraphProjection> {
     if text_chars.is_empty() {
         return None;
     }
     let mut current_lang = 0usize;
     let mut base_positions = Vec::with_capacity(text_chars.len().saturating_add(1));
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
-        .with_reflow_slots(text_chars)
-        .with_space_metric(space_metric);
-    let metric_scope = if let Some(composed) = composed {
-        ParagraphMetricScope::new(text_chars, styles)
-            .with_composed_slots(text_chars, composed)
-            .with_space_metric(space_metric)
-    } else {
-        metric_scope
-    };
+    let metric_scope =
+        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
     let mut kerning_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut shaping_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut hard_boundaries = vec![false; text_chars.len().saturating_add(1)];
@@ -941,7 +947,6 @@ fn prepare_paragraph_projection(
         } else {
             1.0
         };
-        let language_index = metric_scope.scalar_slot(styles, char_shape_id, language_index, index);
         let slot = crate::renderer::kerning::ExactFontSlot::new(char_shape_id, language_index);
         kerning_scalar_styles.push(crate::renderer::kerning::KerningParagraphScalarStyle {
             slot,
@@ -1011,14 +1016,8 @@ fn prepare_paragraph_kerning(
         return None;
     }
     let context = styles.kerning_measurement_context.as_ref()?.clone();
-    let projection = prepare_paragraph_projection(
-        para,
-        text_chars,
-        styles,
-        space_metric,
-        inline_controls,
-        None,
-    )?;
+    let projection =
+        prepare_paragraph_projection(para, text_chars, styles, space_metric, inline_controls)?;
     if !projection
         .kerning_scalar_styles
         .iter()
@@ -1091,7 +1090,6 @@ pub(super) fn compose_horizontal_shaping_handoff(
         styles,
         SpaceMetric::Stored,
         &inline_controls,
-        Some(composed),
     )?;
     let kerning_measurement = kerning_context.paragraph_measurement(
         &para.text,
@@ -3000,9 +2998,7 @@ fn inline_control_requires_own_line(
     };
     let prefix: String = text_chars[line.start_idx..position].iter().collect();
     let prefix_width = to_hwp(measure_token_width(
-        &ParagraphMetricScope::new(text_chars, styles)
-            .with_reflow_slots(text_chars)
-            .with_space_metric(space_metric),
+        &ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric),
         &prefix,
         line.start_idx,
         &para.char_offsets,

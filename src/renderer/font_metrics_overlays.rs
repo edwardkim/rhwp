@@ -476,7 +476,52 @@ static HANYGODIC240_RANGES: [LatinRange; 7] = [LatinRange { start: 32, end: 126,
 static HANYGODIC240_WIDTHS: [u16; 1] = [900];
 static HANYGODIC240_HANGUL: HangulMetric = HangulMetric { cho_groups: 1, jung_groups: 1, jong_groups: 1, cho_map: &FONT_0_HANGUL_CHO, jung_map: &FONT_0_HANGUL_JUNG, jong_map: &FONT_0_HANGUL_JONG, widths: &HANYGODIC240_WIDTHS };
 
-static MEASURED_FONT_METRIC_OVERLAYS: [FontMetric; 13] = [
+/// [#7702] `HCI Poppy` 의 `·`(U+00B7) — 한컴 정본 실측 786/2048 = 0.384 em.
+///
+/// `HCI Poppy` 는 한/글이 자기 HFT 글리프로 그리는 영문 글꼴이고, rhwp 에서는 표시와 폭
+/// 모두 `Palatino Linotype` 으로 대신한다. ASCII 는 그 표가 이미 맞지만(정본 24,662자, 중앙
+/// 오차 0.004 em — #7391) 가운뎃점만 다르다. `Palatino Linotype` 의 `periodcentered` 는
+/// 512/2048 = 0.25 em 인데, 한컴 PDF 의 HFT Type3 영문 글꼴(같은 글꼴이 ASCII·`“”`·`·` 를
+/// 함께 그린다)은 `·` 를 0.38 em 으로 전진시킨다.
+///
+/// ```text
+///   pdf/**  한글 휴먼명조 뒤 Type3 영문 글꼴의 `·`   60문서 n=381   전진 중앙 0.381 em
+///           같은 Type3 의 `/W` 비 `·`/`0` = 3.200/4.1667 = 0.768 → 0.384 em (`0` = 0.5 em)
+///           같은 글꼴의 `“` 0.49 · `‘` 0.27 em        ← Palatino 1024·569/2048 과 일치
+/// ```
+///
+/// 한양신명조의 `·`(393/1024)와 같은 값이다. 굵은·기울인 변형은 실측이 없어 Palatino 표를
+/// 그대로 쓴다.
+static HCI_POPPY_B7: [u16; 1] = [786];
+static HCI_POPPY_LATIN_RANGES: [LatinRange; 5] = [
+    LatinRange {
+        start: 0x00B7,
+        end: 0x00B7,
+        widths: &HCI_POPPY_B7,
+    },
+    LatinRange {
+        start: 0x0020,
+        end: 0x007E,
+        widths: &FONT_455_LATIN_0,
+    },
+    LatinRange {
+        start: 0x00A0,
+        end: 0x00FF,
+        widths: &FONT_455_LATIN_1,
+    },
+    LatinRange {
+        start: 0x2000,
+        end: 0x206F,
+        widths: &FONT_455_LATIN_2,
+    },
+    LatinRange {
+        start: 0x2200,
+        end: 0x22FF,
+        widths: &FONT_455_LATIN_3,
+    },
+];
+
+static MEASURED_FONT_METRIC_OVERLAYS: [FontMetric; 17] = [
     FontMetric {
         name: "HanyangSinMyeongJo",
         bold: false,
@@ -556,4 +601,37 @@ FontMetric { name: "한컴 고딕", bold: true, italic: false, em_size: 1000, la
 
 FontMetric { name: "한컴 윤고딕 240", bold: false, italic: false, em_size: 1000, latin_ranges: &HANYGODIC240_RANGES, hangul: Some(&HANYGODIC240_HANGUL) },
 FontMetric { name: "Haan YGodic 240", bold: false, italic: false, em_size: 1000, latin_ranges: &HANYGODIC240_RANGES, hangul: Some(&HANYGODIC240_HANGUL) },
+    // [#7702] HCI Poppy — Palatino Linotype 표에 실측 `·` 만 얹는다(위 `HCI_POPPY_B7`).
+    FontMetric {
+        name: "HCI Poppy",
+        bold: false,
+        italic: false,
+        em_size: 2048,
+        latin_ranges: &HCI_POPPY_LATIN_RANGES,
+        hangul: None,
+    },
+    FontMetric {
+        name: "HCI Poppy",
+        bold: false,
+        italic: true,
+        em_size: 2048,
+        latin_ranges: &FONT_456_LATIN_RANGES,
+        hangul: None,
+    },
+    FontMetric {
+        name: "HCI Poppy",
+        bold: true,
+        italic: false,
+        em_size: 2048,
+        latin_ranges: &FONT_457_LATIN_RANGES,
+        hangul: None,
+    },
+    FontMetric {
+        name: "HCI Poppy",
+        bold: true,
+        italic: true,
+        em_size: 2048,
+        latin_ranges: &FONT_458_LATIN_RANGES,
+        hangul: None,
+    },
 ];

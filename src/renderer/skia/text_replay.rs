@@ -10,7 +10,9 @@ use crate::renderer::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
     expand_pua_render_text, CharOverlapInfo,
 };
-use crate::renderer::layout::{forces_halfwidth_cjk_quote, split_into_clusters};
+use crate::renderer::layout::{
+    forces_halfwidth_cjk_quote, forces_halfwidth_punct_paint, split_into_clusters,
+};
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, TextStyle};
 
@@ -539,7 +541,7 @@ impl SkiaTextReplay<'_> {
                             // 0.5× 수평 축소로 반각 공간에 배치 (한글은 자체
                             // 내장 협폭 글리프로 렌더 — 오라클 PDF Type3 실측).
                             let needs_halfwidth_scale = cluster.chars().next().is_some_and(|ch| {
-                                matches!(ch, '\u{2018}'..='\u{2027}')
+                                forces_halfwidth_punct_paint(style, ch)
                                     || forces_halfwidth_cjk_quote(
                                         &style.font_family,
                                         style.bold,

@@ -79,7 +79,9 @@ use super::composer::{
     expand_pua_render_text, CharOverlapInfo,
 };
 #[cfg(target_arch = "wasm32")]
-use super::layout::{forces_halfwidth_cjk_quote, split_into_clusters};
+use super::layout::{
+    forces_halfwidth_cjk_quote, forces_halfwidth_punct_paint, split_into_clusters,
+};
 
 // 이미지 캐시: data 해시 → HtmlImageElement
 // WASM 단일 스레드이므로 thread_local 안전
@@ -2262,16 +2264,16 @@ impl Renderer for WebCanvasRenderer {
                     }
 
                     // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
-                    let needs_halfwidth_scale =
-                        (matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}')
-                            || forces_halfwidth_cjk_quote(
-                                &style.font_family,
-                                style.bold,
-                                style.italic,
-                                ch,
-                                style.font_size,
-                            ))
-                            && !has_ratio;
+                    let needs_halfwidth_scale = (ch == '\u{00B7}'
+                        || forces_halfwidth_punct_paint(style, ch)
+                        || forces_halfwidth_cjk_quote(
+                            &style.font_family,
+                            style.bold,
+                            style.italic,
+                            ch,
+                            style.font_size,
+                        ))
+                        && !has_ratio;
 
                     if needs_halfwidth_scale {
                         self.ctx.save();

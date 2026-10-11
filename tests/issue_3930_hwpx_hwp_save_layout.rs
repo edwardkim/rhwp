@@ -42,6 +42,32 @@ fn page_tree(document: &HwpDocument, page: u32) -> String {
         .unwrap_or_else(|error| panic!("p{} render tree: {error:?}", page + 1))
 }
 
+/// render tree JSON 의 `TextLine` 마다 자식 run 의 글을 이어 붙인다. 한 줄은 언어 슬롯마다
+/// run 이 갈린다 — `연·월·일` 의 `·` 는 영문 슬롯이다(#7702).
+fn has_line_text(tree: &str, needle: &str) -> bool {
+    fn walk(node: &serde_json::Value, needle: &str) -> bool {
+        let children = node["children"].as_array();
+        if node["type"] == "TextLine" {
+            let text: String = children
+                .into_iter()
+                .flatten()
+                .filter_map(|child| child["text"].as_str())
+                .collect();
+            if text.contains(needle) {
+                return true;
+            }
+        }
+        children
+            .into_iter()
+            .flatten()
+            .any(|child| walk(child, needle))
+    }
+    walk(
+        &serde_json::from_str(tree).expect("render tree JSON"),
+        needle,
+    )
+}
+
 /// PDF p144 안에서 끝나는 붙임 표가 `page tree`에만 남고 물리적으로 쪽 밖으로
 /// 잘리는 퇴행을 막는다. 새 DocumentCore로 독립 렌더해 앞선 tree 조회의 카운터를
 /// 섞지 않는다 (#3820 Stage 65).
@@ -149,7 +175,7 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         "HWPX Q9 표제는 PDF/native HWP와 같이 p286에서 시작해야 한다"
     );
     assert!(
-        source_p287_tree.contains(Q10_TITLE),
+        has_line_text(&source_p287_tree, Q10_TITLE),
         "HWPX Q10 표제는 PDF/native HWP와 같이 p287에서 시작해야 한다"
     );
     assert!(
