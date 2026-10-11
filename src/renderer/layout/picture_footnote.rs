@@ -1584,6 +1584,8 @@ impl LayoutEngine {
                 Some(paragraph),
                 composed.lines.len(),
                 true,
+                area.width - margin_left - margin_right,
+                self.dpi,
             );
             let line_x = area.x + margin_left + line_indent;
             let line_width = (area.width - margin_left - margin_right - line_indent).max(0.0);

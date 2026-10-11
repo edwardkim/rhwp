@@ -238,3 +238,8 @@ issue7336/stored_frame_page_larger_rowbreak.hwpx	1
 # 남는 초과 4.5px 은 rhwp 가 이 표를 선언 높이 916.5px(68736HU)보다 8.3px 큰 924.8px 로
 # 그리는 기존 결손이다. 수정 전에는 초과가 0.8px 이라 공차 2.0px 아래에 숨어 있었다.
 issue6465/press_release_footer_logos.hwpx	1
+# #7816 새 시험 고정본 1행 — 이 PR 의 변경과 무관한 기존 결손이 드러났다. 저장 줄 없는 HWPX 에서
+# rhwp 가 load 시 합성한 줄 사다리(vpos)는 문단 위 간격을 빼고 쌓이며, 쪽 나눔이 그 사다리를 믿어
+# 마지막 문단(위 간격 133.3px)을 1쪽에 둔다(한/글 정본은 2쪽). 수정 전 devel 에서도 같은 문서를 짝수
+# 저장값(20000 = 133.3px)으로 만들면 똑같이 37.8px 넘친다 — 홀수 값이 이제 실제 간격으로 읽혀 드러났을 뿐이다.
+issue7816/odd_spacing_prev.hwpx	2

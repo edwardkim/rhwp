@@ -1203,11 +1203,46 @@ fn resolve_para_styles_with_variant(
     dpi: f64,
     is_hwp3_variant: bool,
 ) -> Vec<ResolvedParaStyle> {
+    let char_unit_hu = para_margin_char_unit_hu(doc_info);
     doc_info
         .para_shapes
         .iter()
-        .map(|ps| resolve_single_para_style(ps, &doc_info.tab_defs, dpi, is_hwp3_variant))
+        .map(|ps| {
+            resolve_single_para_style(ps, &doc_info.tab_defs, dpi, is_hwp3_variant, char_unit_hu)
+        })
         .collect()
+}
+
+/// [#7816] 문단 여백의 «글자» 단위 하나가 몇 HWPUNIT 인가 — 바탕글 스타일 글자 크기의 1/200.
+///
+/// 한/글 2020 통제 실험(저장 줄 없는 합성 HWPX·그 HWP 저장본)에서 홀수 저장값 `s` 의 양은
+/// `(s − 1) / 2` 단위였고, 단위 하나는 바탕글 10pt 에서 5 HU · 20pt 에서 10 HU 였다.
+/// 바탕글이 가리키는 글자 모양만 바꾸면 따라 바뀌고, 글자 모양 0 이나 문단 자신의 글자
+/// 크기를 바꾸면 그대로였다. 바탕글을 찾지 못하면 10pt(1000) 로 둔다.
+fn para_margin_char_unit_hu(doc_info: &DocInfo) -> f64 {
+    let base_size = doc_info
+        .styles
+        .first()
+        .and_then(|style| doc_info.char_shapes.get(style.char_shape_id as usize))
+        .map(|shape| shape.base_size)
+        .filter(|&size| size > 0)
+        .unwrap_or(1000);
+    base_size as f64 / 200.0
+}
+
+/// [#7816] ParaShape 여백·문단 간격 저장값 → HWPUNIT.
+///
+/// 저장값은 HWPUNIT 의 2배다. 최하위 비트는 단위 표지라, **홀수면 «글자» 단위**다 —
+/// 한/글 HWPX 는 그 자리를 HwpUnitChar `case` 에 `unit="CHAR"` · 값 `(s − 1) / 2` 로 적는다
+/// (`serializer/hwpx/header.rs` `write_margin_child`, #6875). 한/글은 이 값을 단위 수로 읽어
+/// 단위 하나에 [`para_margin_char_unit_hu`] HU 를 준다. 들여쓰기·왼쪽·오른쪽·문단 위·아래
+/// 다섯 항목 모두 같다(저장값 1001·2001·4001 → 33.3·66.7·133.3px, 바탕글 10pt).
+fn para_margin_hwpunit(stored: i32, char_unit_hu: f64) -> f64 {
+    if stored % 2 != 0 {
+        ((stored - 1) / 2) as f64 * char_unit_hu
+    } else {
+        (stored / 2) as f64
+    }
 }
 
 /// 개별 ParaShape 해소
@@ -1216,6 +1251,7 @@ fn resolve_single_para_style(
     tab_defs: &[TabDef],
     dpi: f64,
     is_hwp3_variant: bool,
+    char_unit_hu: f64,
 ) -> ResolvedParaStyle {
     // [#2070] 비-Percent 줄간격(Fixed/SpaceOnly/Minimum)도 여백·문단간격·탭과
     // 동일하게 저장값이 유효 HWPUNIT 의 2배다 — 통제 사다리(#2197)로 확정한
@@ -1257,17 +1293,21 @@ fn resolve_single_para_style(
     // [Task #1037] HWP5 변환본 의 추가 2배 스케일 (총 4배) 은 parser 단계 (parser/mod.rs)
     // 에서 normalize (halve) 되어 본 단계에서는 normal HWP5 동등 (2배 스케일) — uniform
     // variant_div=2 적용. 종전 variant_div=4 는 raw 값 normalize 전 보정 패턴이었음.
+    //
+    // [#7816] 홀수 저장값은 «글자» 단위다 — [`para_margin_hwpunit`].
     let _ = is_hwp3_variant;
-    let variant_div = 2.0;
+    let margin_px = |stored: i32| {
+        para_margin_hwpunit(stored, char_unit_hu) * dpi / crate::renderer::HWPUNIT_PER_INCH
+    };
     ResolvedParaStyle {
         alignment: ps.alignment,
         line_spacing,
         line_spacing_type: ps.line_spacing_type,
-        margin_left: hwpunit_to_px(ps.margin_left, dpi) / variant_div,
-        margin_right: hwpunit_to_px(ps.margin_right, dpi) / variant_div,
-        indent: hwpunit_to_px(ps.indent, dpi) / variant_div,
-        spacing_before: hwpunit_to_px(ps.spacing_before, dpi) / variant_div,
-        spacing_after: hwpunit_to_px(ps.spacing_after, dpi) / variant_div,
+        margin_left: margin_px(ps.margin_left),
+        margin_right: margin_px(ps.margin_right),
+        indent: margin_px(ps.indent),
+        spacing_before: margin_px(ps.spacing_before),
+        spacing_after: margin_px(ps.spacing_after),
         head_type: ps.head_type,
         para_level: ps.para_level,
         numbering_id: ps.numbering_id,

@@ -8,6 +8,7 @@ use super::{char_lang_slot, find_active_char_shape, is_lang_neutral, ComposedPar
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph, SpaceMetric};
 use crate::model::style::{Alignment, HeadType, LineSpacingType};
+use crate::renderer::equation_tac_flow::indent_leaves_line_room_hwp;
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
     is_cjk_char, kopub_space_advance_em, resolved_letter_spacing,
@@ -3108,18 +3109,24 @@ fn mark_indented_lines(
     first_line_index: usize,
     para_style: Option<&ResolvedParaStyle>,
     stored: &[LineSeg],
+    line_width_hwp: i32,
 ) {
     stamp_indentation(
         lines,
         first_line_index,
-        reflow_indentation_pattern(para_style, stored),
+        reflow_indentation_pattern(para_style, stored, line_width_hwp),
     );
 }
 
 /// 재조판이 발행할 줄별 들여쓰기 기록. 개체의 줄 폭 판정도 같은 기록을 소비한다.
+///
+/// [#7816] 줄 폭(`line_width_hwp`, 문단 여백을 뺀 상자)에서 들여쓰기를 빼고 남는 폭이
+/// 모자라면([`indent_leaves_line_room_hwp`]) 들여쓰기를 버린다. 한/글 저장 줄의 기록이
+/// 있으면 그 기록이 같은 판정의 결과이므로 먼저 따른다.
 fn reflow_indentation_pattern(
     para_style: Option<&ResolvedParaStyle>,
     stored: &[LineSeg],
+    line_width_hwp: i32,
 ) -> (bool, bool) {
     let indent = para_style.map_or(0.0, |style| style.indent);
     let indented = |line: &LineSeg| line.tag & LineSeg::TAG_INDENTATION != 0;
@@ -3134,6 +3141,8 @@ fn reflow_indentation_pattern(
         (false, false)
     } else if indent == 0.0 && para_style.is_some_and(|style| style.head_type != HeadType::None) {
         (false, hancom_record && stored.iter().skip(1).any(indented))
+    } else if !indent_leaves_line_room_hwp(to_hwp(indent), line_width_hwp) {
+        (false, false)
     } else {
         (indent > 0.0, indent < 0.0)
     }
@@ -3209,7 +3218,10 @@ fn layout_paragraph_in_frame_impl(
     // 줄 시작을 옮기고 가용폭을 줄이므로 채움도 각 행의 첫 구간에서 같은 상자로 줄을 나눈다
     // (`ListMarkerGeometry::breaker_box`). 게시하는 행 기하(구간)는 마커를 포함한 그대로다 —
     // 한/글 저장 행도 마커 자리부터 시작한다.
-    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs) == (false, false) {
+    let frame_width_hwp = frame.horizontal.end.saturating_sub(frame.horizontal.start);
+    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs, frame_width_hwp)
+        == (false, false)
+    {
         0.0
     } else {
         para_style.map_or(0.0, |style| style.indent)
@@ -3585,7 +3597,7 @@ fn layout_paragraph_in_frame_impl(
             frame.absorb_whitespace_only_rows(&para.text, first_row);
         }
         let mut lines = frame.project_line_segs_since(first_row);
-        mark_indented_lines(&mut lines, 0, para_style, &para.line_segs);
+        mark_indented_lines(&mut lines, 0, para_style, &para.line_segs, frame_width_hwp);
         Some(lines)
     })();
 
@@ -4287,7 +4299,9 @@ fn reflow_line_segs_impl(
     // [#7418·#7436] 판정 폭에서만 목록 마커 폭을 뺀다 — 프레임 채움
     // (`layout_paragraph_in_frame`)과 같은 계약이다. 게시 폭(`seg_width_hwp`)은 마커 자리를 포함한다.
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
-    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs) == (false, false) {
+    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs, seg_width_hwp)
+        == (false, false)
+    {
         0.0
     } else {
         para_style.map_or(0.0, |style| style.indent)
@@ -4457,6 +4471,7 @@ fn reflow_line_segs_impl(
                 0,
                 para_style,
                 &para.line_segs,
+                seg_width_hwp,
             );
             para.replace_line_segs(vec![seg]);
         }
@@ -4649,7 +4664,8 @@ fn reflow_line_segs_impl(
     // 발행할 bit20 기록과 같은 폭을 사용한다 (#6190 편집 후 한컴 PDF).
     let edited_tac_table = supports_tac_table_band_frame_controls(para);
     let table_indent_px = if edited_tac_table
-        && reflow_indentation_pattern(para_style, &original_line_segs) == (false, false)
+        && reflow_indentation_pattern(para_style, &original_line_segs, seg_width_hwp)
+            == (false, false)
     {
         0.0
     } else {
@@ -4780,6 +4796,7 @@ fn reflow_line_segs_impl(
         preserved_prefix_len,
         para_style,
         &original_line_segs,
+        seg_width_hwp,
     );
 
     let space_metrics = new_line_segs

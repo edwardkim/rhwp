@@ -151,7 +151,9 @@ fn applying_indent_to_hancom_paragraph_draws_it() {
     let mut doc = open("samples/issue6190/center_align_first_line_indent.hwp");
     let before = line_starts(&doc, HEADING);
 
-    doc.apply_para_format_native(0, HEADING, r#"{"indent":20445}"#)
+    // [#7816] 저장값이 홀수면 «글자» 단위다 — 20445 는 바탕글 10pt 에서 681.5px 로 줄 상자를
+    // 넘어 한/글도 버린다. 이 시험이 뜻한 136.3px 는 짝수 20444 다.
+    doc.apply_para_format_native(0, HEADING, r#"{"indent":20444}"#)
         .expect("apply indent");
     let after = line_starts(&doc, HEADING);
     assert!(
