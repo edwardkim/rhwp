@@ -994,8 +994,9 @@ fn quantize_hwp_px(px: f64) -> f64 {
 /// [#7390] `KoPubDotum` 기본 라틴 문자(U+0020~U+007E) 전진폭, 1000em 기준.
 ///
 /// KOPUS 배포본 `ttfs/kopub/KoPubDotum-{Light,Medium,Bold}.ttf` 의 `cmap`+`hmtx` 직독.
-/// 굵기 3종이 완전히 같아 한 벌만 둔다. 공백(첫 항목 290)은 **쓰지 않는다** —
-/// 위 `kopub_char_width` 의 반각 갈래가 먼저 반환한다.
+/// 굵기 3종이 완전히 같아 한 벌만 둔다. 공백(첫 항목 290)은 일반 측정에서 **쓰지 않는다** —
+/// 아래 `kopub_char_width` 의 반각 갈래가 먼저 반환한다. `use_font_space` 가 켜진 run 만
+/// [`kopub_declared_space_em`] 으로 이 값을 읽는다(#7387).
 static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
     290, 300, 320, 590, 590, 874, 706, 180, 310, 310, 446, 590, 300, 570, 300, 446, 563, 563, 563,
     563, 563, 563, 563, 563, 563, 563, 316, 316, 425, 590, 425, 486, 882, 662, 664, 664, 713, 609,
@@ -1013,13 +1014,52 @@ static KOPUB_BATANG_LATIN_0: [u16; 95] = [
     288, 900, 612, 612, 632, 596, 416, 432, 350, 604, 506, 772, 588, 516, 476, 312, 468, 312, 648,
 ];
 
-fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
-    let lower = primary_name.to_lowercase();
-    let is_dotum = primary_name.contains("KoPub돋움체") || lower.contains("kopub dotum");
-    let is_batang = primary_name.contains("KoPub바탕체") || lower.contains("kopub batang");
-    if !is_dotum && !is_batang {
-        return None;
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum KoPubFamily {
+    Dotum,
+    Batang,
+}
+
+impl KoPubFamily {
+    fn from_primary(primary_name: &str) -> Option<Self> {
+        let lower = primary_name.to_lowercase();
+        if primary_name.contains("KoPub돋움체") || lower.contains("kopub dotum") {
+            Some(Self::Dotum)
+        } else if primary_name.contains("KoPub바탕체") || lower.contains("kopub batang") {
+            Some(Self::Batang)
+        } else {
+            None
+        }
     }
+
+    /// 기본 라틴 문자(U+0020~U+007E) 전진폭 표, 1000em 기준.
+    fn latin_table(self) -> &'static [u16; 95] {
+        match self {
+            Self::Dotum => &KOPUB_DOTUM_LATIN_0,
+            Self::Batang => &KOPUB_BATANG_LATIN_0,
+        }
+    }
+}
+
+/// [#7387] KoPub 계열 face 가 **선언한** 공백 글리프 전진폭(em).
+///
+/// `use_font_space` 가 켜진 run 의 영문 슬롯이 KoPub 일 때만 쓴다. 메트릭 DB 에는
+/// KoPub 이 없어(전용 표가 따로 있다) DB 만 보던 공백폭 해석이 `None` 을 내고 반각으로
+/// 남았다. 정본 `pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf`(KoPub 서브셋 내장)의
+/// `useFontSpace=1` run 이 이 값을 말한다 — 연속 공백 덩어리만 잰 값:
+///
+/// ```text
+///   charPr 894  영문 KoPub바탕체 Light 8pt   378쪽  n=23 덩어리  0.306 em  (/Widths 312)
+///   charPr 874  영문 KoPub돋움체 Light 10pt  377쪽  n=9  덩어리  0.289 em  (/Widths 290)
+///   같은 쪽 useFontSpace=0 KoPub run                      0.49~0.50 em (반각)
+/// ```
+pub(crate) fn kopub_declared_space_em(primary_name: &str) -> Option<f64> {
+    KoPubFamily::from_primary(primary_name)
+        .map(|family| f64::from(family.latin_table()[0]) / 1000.0)
+}
+
+fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
+    let family = KoPubFamily::from_primary(primary_name)?;
 
     // [#7390] 공백은 표가 아니라 **반각**이다. 글꼴의 `hmtx`/`/Widths` 는 KoPubDotum
     // 290 · KoPubBatang 312 이지만 한/글은 그 값으로 전진시키지 않는다. 정본
@@ -1034,6 +1074,8 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
     // ```
     //
     // 글꼴 값 0.290 은 잔차가 2.7배로 가장 나쁘다. 반각 0.5 를 유지한다.
+    // 그 문서의 charPr 은 전부 `useFontSpace=0` 이다. 켜진 run 은 이 함수에 오기 전에
+    // 글꼴 공백폭(`kopub_declared_space_em`, #7387)으로 갈린다.
     if c == ' ' {
         return Some(quantize_hwp_px(font_size * 0.5));
     }
@@ -1046,12 +1088,7 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         .checked_sub(0x20)
         .filter(|_| ('\u{20}'..='\u{7E}').contains(&c))
     {
-        let table = if is_dotum {
-            &KOPUB_DOTUM_LATIN_0
-        } else {
-            &KOPUB_BATANG_LATIN_0
-        };
-        let units = table[index as usize];
+        let units = family.latin_table()[index as usize];
         if units > 0 {
             return Some(quantize_hwp_px(font_size * f64::from(units) / 1000.0));
         }
@@ -1070,7 +1107,11 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         // 소유해야 한다. 그보다 전의 0.84 도 실물(0.872)과 미세하게 어긋나
         // r27 을 -11줄 과소시켰다. 바탕체 0.94 는 같은 방법 실측 936/1000 과
         // 사실상 일치해 유지한다.
-        let factor = if is_dotum { 0.872 } else { 0.94 };
+        let factor = if family == KoPubFamily::Dotum {
+            0.872
+        } else {
+            0.94
+        };
         return Some(quantize_hwp_px(font_size * factor));
     }
 
@@ -1080,16 +1121,7 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
 /// KoPub 양쪽 정렬의 새 줄 경계를 판단할 때 쓰는 실제 글꼴 공백폭.
 /// 저장 줄의 반각 전진폭은 유지하고, 재조판에서 압축 가능한 공백만 hmtx로 잰다.
 pub(crate) fn kopub_space_advance_em(style: &TextStyle) -> Option<f64> {
-    let primary = style.font_family.split(',').next()?.trim();
-    let lower = primary.to_lowercase();
-    let units = if primary.contains("KoPub돋움체") || lower.contains("kopub dotum") {
-        290.0
-    } else if primary.contains("KoPub바탕체") || lower.contains("kopub batang") {
-        312.0
-    } else {
-        return None;
-    };
-    Some(units / 1000.0)
+    kopub_declared_space_em(style.font_family.split(',').next()?.trim())
 }
 
 /// 한양중고딕의 자연 공백은 반각이다.

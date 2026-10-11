@@ -148,3 +148,67 @@ fn latin_slot_with_half_em_space_keeps_half_width() {
          영문 슬롯이 0.5 em 공백을 선언한 run 까지 좁히면 안 된다.",
     );
 }
+
+/// 폭 표가 **메트릭 DB 밖**에 있는 영문 슬롯 — KoPub.
+///
+/// KoPub 은 메트릭 DB 가 아니라 전용 표(`ttfs/kopub` 의 `hmtx` 직독)가 폭을 소유한다.
+/// 공백폭 해석이 DB 만 보던 동안 `useFontSpace` 가 켜진 KoPub run 은 반각으로 남았다.
+///
+/// 정본 `pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf`(Hwp 2020 11.0.0.9136 ·
+/// Hancom PDF 1.3.0.550, KoPub 서브셋 내장)의 377쪽 「문서관리카드」 상자다. 같은 폴더의
+/// `-hwp-kopub-2020.pdf` 는 cairo 산출이라 가로 폭 기준으로 쓰지 않는다. 두 줄의 공백은 charPr 874
+/// (`useFontSpace=1`, 영문 슬롯 `KoPub돋움체 Light` 10pt — 글꼴 공백 290/1000)이다.
+/// 기대값은 그 줄 첫 공백의 원점부터 마지막 `]` 의 오른쪽 끝까지를 96dpi px 로 잰 값이다.
+///
+/// ```text
+///   줄                         공백  정본 폭   수정 전          수정 후
+///   "  [과제카드명]"              2    69.40    73.6 (+4.2)     68.3 (-1.1)
+///   " [열람범위]  …  [열람제한]"  19   175.80   217.6 (+41.8)   168.6 (-7.2)
+/// ```
+///
+/// 정본의 연속 공백 덩어리는 `13 / 18` 칸 모두 공백당 3.89~3.90px(= 0.29 em)이다.
+/// 수정 후에도 공백당 약 0.35px 이 모자란다 — 이 charPr 은 한글 슬롯만 장평 98%·
+/// 자간 -6% 이고 영문 슬롯은 100%·0 인데, rhwp 는 공백에 run(한글 슬롯)의 장평·자간을
+/// 적용한다. 그 축은 이 검사의 범위 밖이라 허용폭으로 둔다(공백당 0.5px).
+#[test]
+fn use_font_space_kopub_latin_slot_uses_kopub_space_glyph() {
+    const ORACLE_PAGE_PT: f64 = 754.0;
+    const CARD_LINES: [&str; 2] = ["  [과제카드명]", " [열람범위]                  [열람제한]"];
+    let doc = open("2025 행정업무운영 편람(최종).hwp");
+    // 정본은 이 상자를 377쪽에 둔다. rhwp 의 이 문서 전체 쪽수는 정본(383)과 달라
+    // (앞쪽 표 분할 축, 이 검사의 범위 밖) 같은 상자가 몇 쪽 앞에 놓인다. 폭은 쪽 번호와
+    // 무관하므로 쪽 번호로 고정하지 않고 두 줄을 함께 품은 쪽을 내용으로 찾는다.
+    let (tree, runs) = (0..doc.page_count())
+        .rev()
+        .find_map(|page| {
+            let tree = doc.build_page_render_tree(page).ok()?;
+            let mut runs = Vec::new();
+            collect(&tree.root, &mut runs);
+            CARD_LINES
+                .iter()
+                .all(|text| runs.iter().any(|r| r.text == *text))
+                .then_some((tree, runs))
+        })
+        .expect("「문서관리카드」 두 줄을 함께 품은 쪽");
+    let page_px = tree.root.bbox.width;
+    for (text, spaces, oracle_px) in [
+        (CARD_LINES[0], 2.0_f64, 69.40_f64),
+        (CARD_LINES[1], 19.0, 175.80),
+    ] {
+        let run = runs
+            .iter()
+            .find(|r| r.text == text)
+            .unwrap_or_else(|| panic!("「문서관리카드」의 `{text}` run"));
+        let expected = oracle_px * page_px / (ORACLE_PAGE_PT * 96.0 / 72.0);
+        let tolerance = 1.5 + 0.5 * spaces;
+        assert!(
+            (run.width - expected).abs() <= tolerance,
+            "「문서관리카드」 `{text}` 점유폭 {:.2}px 이 정본 {expected:.2}px 에서 {:.2}px 벗어났다\
+             (허용 {tolerance:.1}px, 글꼴 {:.2}px). useFontSpace 영문 슬롯이 KoPub 이면 \
+             공백은 반각이 아니라 KoPub 공백 글리프(290/1000 em)다.",
+            run.width,
+            run.width - expected,
+            run.font_size,
+        );
+    }
+}
