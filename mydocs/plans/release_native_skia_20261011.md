@@ -51,6 +51,19 @@ archive·binary·PNG SHA-256은 `native-smoke-final.json`에 보존했다.
 이번 빌드 계약 보정을 새 조판 개선·Native/fresh WASM 시각 일치 주장으로 확대하지 않는다.
 
 미검증: Linux ARM, macOS ARM/Intel, Windows의 실제 빌드/실행 및 원격 exact-head CI.
-원격 push·PR 생성·workflow dispatch·게시 Release asset 교체·tag 변경은 수행하지 않았다.
+최초 로컬 검증 종료 당시 원격 push·PR 생성·workflow dispatch·게시 Release asset 교체·tag 변경은 수행하지 않았다.
 한국어 PR 초안 `output/pr-review/release-native-skia-20261011/pr-body-ko.md`은 ignored 로컬
 증적에 준비했다. 문서의 외부 링크 대신 실제 GitHub 게시 승인 후 본문을 전송한다.
+
+
+## 이슈 등록과 PR 생성 승인
+
+메인터너가 이슈 등록 후 PR까지 진행하도록 승인했다. 중복 열린 이슈를 증상 문자열로
+검색한 뒤 [#7817](https://github.com/edwardkim/rhwp/issues/7817)을 등록했다. assignee=edwardkim,
+milestone=v1.0.0, labels=bug/cli/ci다. 한국어 본문을 API 응답과 byte-equivalent하게 대조했다.
+최신 devel은 여전히 `8761ac90270a5dddfa0860e3de700ee83d2bf7c8`이며 source 보정은 없다.
+
+기본 경로는 collaborator_self_merge, 보조는 intake_and_review/local_validation이다.
+운영 O3 검증은 github_operations.md에 따른다. PR 번호 기반 review/오늘할일은 정확한
+code head CI 성공 후 작성한다. 이번 승인 범위는 이슈 등록·작업 branch push·devel PR 생성이며
+merge와 기존 Release asset 교체는 포함하지 않는다.
