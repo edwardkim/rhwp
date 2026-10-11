@@ -56,6 +56,11 @@ fn cell_boundary_has_objects(
     if !has_objects {
         return Ok(false);
     }
+    if !paragraph.range_tags.is_empty() || !paragraph.markpen_marks.is_empty() {
+        return Err(HwpError::RenderError(
+            "범위 태그나 형광펜이 있는 문단의 경계 개체 삭제는 아직 지원하지 않습니다".into(),
+        ));
+    }
     if !paragraph.field_ranges.is_empty()
         || !paragraph.orphan_field_ends.is_empty()
         || paragraph

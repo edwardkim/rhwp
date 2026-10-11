@@ -3,7 +3,7 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::{Control, Field};
 use rhwp::model::document::Document;
-use rhwp::model::paragraph::Paragraph;
+use rhwp::model::paragraph::{MarkpenMark, Paragraph, RangeTag};
 use rhwp::model::shape::Caption;
 use rhwp::wasm_api::HwpDocument;
 
@@ -455,6 +455,130 @@ fn empty_cell_ranges_keep_tail_objects_raw_stream_and_events() {
                 assert_eq!(core.get_clipboard_text_native(), clipboard);
             }
         }
+    }
+}
+
+fn reject_boundary_metadata(
+    flat: bool,
+    tables: bool,
+    end_para: usize,
+    tagged: usize,
+    tag: Option<u32>,
+) {
+    let (mut core, path) = fixture(if flat { 1 } else { 3 }, tables);
+    let mut document = core.document().clone();
+    let paragraph = &mut cell_mut(&mut document, &path)[tagged];
+    let end = paragraph.char_offsets[3];
+    if let Some(tag) = tag {
+        paragraph.range_tags.push(RangeTag { start: 0, end, tag });
+    } else {
+        paragraph.markpen_marks = vec![
+            MarkpenMark {
+                char_idx: 0,
+                color: Some("#00ff00".into()),
+                utf16_pos: Some(0),
+            },
+            MarkpenMark {
+                char_idx: 3,
+                color: None,
+                utf16_pos: Some(end),
+            },
+        ];
+    }
+    core.set_document(document);
+    // HWPX는 범위 태그 없이 형광펜 표지만 읽으므로 두 보호 조건을 독립 검증한다.
+    let bytes = if tag.is_some() {
+        core.export_hwp_native().unwrap()
+    } else {
+        core.export_hwpx_native().unwrap()
+    };
+    core.set_document(HwpDocument::from_bytes(&bytes).unwrap().document().clone());
+    let paragraph = &cell(core.document(), &path)[tagged];
+    if tag.is_some() {
+        assert_eq!(paragraph.range_tags.len(), 1);
+        assert!(core.document().sections[0].raw_stream.is_some());
+    } else {
+        assert!(paragraph.range_tags.is_empty());
+        assert_eq!(paragraph.markpen_marks.len(), 2);
+    }
+    core.copy_selection_native(0, 0, 0, 0, 1).unwrap();
+    let before = format!("{:?}", core.document());
+    let stored = core.export_hwp_native().unwrap();
+    let events = core.serialize_event_log();
+    let clipboard = core.get_clipboard_text_native();
+    let end_offset = if end_para == 0 { 4 } else { 2 };
+    assert!(
+        delete(&mut core, &path, flat, (0, 2), (end_para, end_offset)).is_err(),
+        "flat={flat}, tables={tables}, end={end_para}, tagged={tagged}, tag={tag:?}"
+    );
+    assert_eq!(format!("{:?}", core.document()), before);
+    assert_eq!(core.export_hwp_native().unwrap(), stored);
+    assert_eq!(core.serialize_event_log(), events);
+    assert_eq!(core.get_clipboard_text_native(), clipboard);
+}
+
+#[test]
+fn cell_boundary_range_tags_are_rejected_before_mutation() {
+    for flat in [true, false] {
+        for tables in [false, true] {
+            for (end_para, tagged) in [(0, 0), (2, 0), (2, 2)] {
+                for tag in [0x0100_0003, 0x0300_0003, 0x0200_ff00] {
+                    reject_boundary_metadata(flat, tables, end_para, tagged, Some(tag));
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn cell_boundary_markpen_marks_are_rejected_before_mutation() {
+    for flat in [true, false] {
+        for tables in [false, true] {
+            for (end_para, tagged) in [(0, 0), (2, 0), (2, 2)] {
+                reject_boundary_metadata(flat, tables, end_para, tagged, None);
+            }
+        }
+    }
+}
+
+#[test]
+fn metadata_without_boundary_objects_keeps_existing_deletion_paths() {
+    for flat in [true, false] {
+        let (mut core, path) = fixture(1, false);
+        let mut document = core.document().clone();
+        let paragraph = &mut cell_mut(&mut document, &path)[0];
+        let end = paragraph.char_offsets[3];
+        paragraph.range_tags = vec![RangeTag {
+            start: 0,
+            end,
+            tag: 0x0300_0003,
+        }];
+        core.set_document(document);
+        // 첫 그림 앞의 순수 글자 삭제는 기존 태그 축소 경로를 유지한다.
+        delete(&mut core, &path, flat, (0, 0), (0, 1)).unwrap();
+        let paragraph = &cell(core.document(), &path)[0];
+        assert_eq!(paragraph.text, "🦦나다라");
+        assert_eq!(
+            names(&cell(core.document(), &path)[..1]),
+            ["첫 문단 밖", "첫 문단 안"]
+        );
+        assert_eq!(
+            serde_json::to_value(&paragraph.range_tags).unwrap(),
+            serde_json::json!([{ "start": 0, "end": end - 1, "tag": 0x0300_0003u32 }])
+        );
+
+        let (mut core, path) = fixture(1, false);
+        let mut document = core.document().clone();
+        cell_mut(&mut document, &path)[1].range_tags = vec![RangeTag {
+            start: 0,
+            end: 2,
+            tag: 0x0300_0003,
+        }];
+        core.set_document(document);
+        // 통째로 선택한 사이 문단의 태그는 첫·끝 경계 보호와 구별한다.
+        delete(&mut core, &path, flat, (0, 2), (2, 2)).unwrap();
+        assert_eq!(cell(core.document(), &path)[0].text, "가🦦끝말");
+        assert!(cell(core.document(), &path)[0].range_tags.is_empty());
     }
 }
 
