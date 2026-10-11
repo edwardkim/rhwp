@@ -256,12 +256,14 @@ fn break_before_hangul_char(
 }
 
 pub(crate) fn is_line_end_forbidden(ch: char) -> bool {
+    // ASCII 큰따옴표는 여는/닫는 모양이 같아 문자값만으로 줄끝 금칙으로
+    // 분류할 수 없다. 독립 Print에서도 큰따옴표 뒤 한글 경계가 줄끝이 된다.
+    // 방향이 명시된 여는 따옴표·괄호와 기존 줄머리 금칙은 별도로 유지한다.
     matches!(
         ch,
         '(' | '['
             | '{'
             | '\''
-            | '"'
             | '\u{300A}'
             | '\u{300C}'
             | '\u{300E}'

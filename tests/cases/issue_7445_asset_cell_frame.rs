@@ -190,6 +190,46 @@ fn saved_auction_frame_is_owned_by_both_measurement_and_painted_cell() {
             <= footer_run.style.font_size * 1e-9,
         "공백에 굵은 한글의 추가 간격을 전파하지 않는다"
     );
+
+    // 전 60쪽 Native/fresh 수용 후 독립 Print 20쪽의 같은 원문 경계를 보완한다.
+    // 큰따옴표는 앞줄 끝에 속하고 위원회 이름은 다음 줄을 시작한다.
+    // 고정 x/y나 줄 너비 대신 원문 소유·내용 보존·앞뒤 관계를 검사한다.
+    let (quote_para_index, source_quote) = source.sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, para)| compact(&para.text).starts_with("나.매립지등관리자는부실채권에대한정리"))
+        .expect("원본의 부실채권정리심의위원회 문단");
+    let quote_page = core.build_page_render_tree(19).expect("독립 Print 20쪽");
+    let first = find_node(&quote_page.root, &|node| {
+        matches!(&node.node_type, RenderNodeType::TextLine(line)
+            if line.para_index == Some(quote_para_index))
+            && compact(&node_text(node)).starts_with("나.매립지등관리자는부실채권")
+    })
+    .expect("원본 문단의 첫 실제 글줄");
+    let next = find_node(&quote_page.root, &|node| {
+        matches!(&node.node_type, RenderNodeType::TextLine(line)
+            if line.para_index == Some(quote_para_index))
+            && compact(&node_text(node)).contains("부실채권정리심의위원회")
+    })
+    .expect("원본 문단의 이어받은 글줄");
+    assert!(
+        compact(&node_text(first)).ends_with('"'),
+        "ASCII 큰따옴표를 다음 줄로 밀어 공백 정렬을 바꾸지 않는다"
+    );
+    assert!(
+        compact(&node_text(next)).starts_with("부실채권정리심의위원회"),
+        "위원회 이름이 이어받은 줄의 첫 내용이다"
+    );
+    assert_eq!(
+        compact(&format!("{}{}", node_text(first), node_text(next))),
+        compact(&source_quote.text),
+        "두 실제 글줄이 같은 원본 문단을 누락·중복 없이 분할한다"
+    );
+    assert!(
+        first.bbox.y + first.bbox.height <= next.bbox.y,
+        "이어받은 내용은 앞줄 뒤에 배치한다"
+    );
 }
 
 fn compact(text: &str) -> String {

@@ -1762,6 +1762,12 @@ fn test_geumchik_functions() {
     assert!(is_line_end_forbidden('\u{20A9}')); // ₩
     assert!(!is_line_end_forbidden('가'));
     assert!(!is_line_end_forbidden('A'));
+    // 같은 원본의 독립 Print는 ASCII 큰따옴표 뒤 한글 경계를 허용한다.
+    // 방향이 있는 여는 따옴표와 줄머리 금칙은 별도로 유지한다.
+    assert!(!is_line_end_forbidden('"'));
+    assert!(is_line_start_forbidden('"'));
+    assert!(is_line_end_forbidden('\u{201C}'));
+    assert!(is_line_end_forbidden('\u{300C}'));
 }
 
 /// 토크나이저: 한국어 어절 토큰화
