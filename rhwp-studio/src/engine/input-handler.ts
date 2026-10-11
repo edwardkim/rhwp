@@ -38,6 +38,8 @@ import type { TableObjectRenderer } from './table-object-renderer';
 import type { TableResizeRenderer, BorderEdge } from './table-resize-renderer';
 import type { CellBbox, CellPathLike } from '@/core/types';
 import { showConfirm } from '@/ui/confirm-dialog';
+import { askCellBlockDelete } from '@/ui/cell-block-delete-dialog';
+import { clampedCellAfterDelete } from '@/engine/table-cell-clamp';
 import * as _mouse from './input-handler-mouse';
 import * as _table from './input-handler-table';
 import * as _keyboard from './input-handler-keyboard';
@@ -55,6 +57,7 @@ import { showInitialCaretAndPublishFocus } from './initial-caret-focus';
 import { CaretLayoutReveal } from './caret-layout-reveal';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
 import { CellBlockLetterImeGuard } from '@/command/contextual-shortcut';
+import { ImeNavigationGuard } from './ime-navigation-guard';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -538,6 +541,7 @@ export class InputHandler {
   /** HF 선택 위 IME는 선택 삭제와 최종 조합 문자열을 하나의 snapshot으로 기록한다. */
   private headerFooterSelectionComposition = false;
   private _pendingNavAfterIME: NavigationKeyInput | null = null;
+  private _imeNavigationGuard = new ImeNavigationGuard();
   private _cellBlockLetterImeGuard = new CellBlockLetterImeGuard();
   // iOS 폴백: composition 이벤트 없이 input만으로 한글 조합 처리
   private _iosComposing = false;
@@ -553,6 +557,8 @@ export class InputHandler {
   private onClickBound: (e: MouseEvent) => void;
   private onDblClickBound: (e: MouseEvent) => void;
   private onKeyDownBound: (e: KeyboardEvent) => void;
+  private onKeyUpBound: (e: KeyboardEvent) => void;
+  private onIMEWindowBlurBound: () => void;
   private onInputBound: (e?: Event) => void;
   private onCompositionStartBound: () => void;
   private onCompositionEndBound: () => void;
@@ -626,10 +632,13 @@ export class InputHandler {
     this.onClickBound = this.onClick.bind(this);
     this.onDblClickBound = this.onDblClick.bind(this);
     this.onKeyDownBound = this.onKeyDown.bind(this);
+    this.onKeyUpBound = e => this._imeNavigationGuard.release(e);
+    this.onIMEWindowBlurBound = () => this._imeNavigationGuard.reset();
     this.onInputBound = this.onInput.bind(this);
     this.onCompositionStartBound = this.onCompositionStart.bind(this);
     this.onCompositionEndBound = this.onCompositionEnd.bind(this);
     this.onInputBlurBound = () => {
+      this._imeNavigationGuard.reset();
       this.flushDeferredPaginationIfNeeded('input-blur', false);
     };
     this.onCopyBound = this.onCopy.bind(this);
@@ -658,6 +667,9 @@ export class InputHandler {
     container.addEventListener('contextmenu', this.onContextMenuBound);
     container.addEventListener('mousemove', this.onMouseMoveBound);
     this.textarea.addEventListener('keydown', this.onKeyDownBound);
+    // Capture keyup even when a replayed Tab/Escape moves focus away from the textarea.
+    document.addEventListener('keyup', this.onKeyUpBound, true);
+    window.addEventListener('blur', this.onIMEWindowBlurBound);
     this.textarea.addEventListener('input', this.onInputBound);
     this.textarea.addEventListener('compositionstart', this.onCompositionStartBound);
     this.textarea.addEventListener('compositionend', this.onCompositionEndBound);
@@ -4445,6 +4457,7 @@ export class InputHandler {
     this._lastCompositionText = '';
     this._lastComposedText = '';
     this._pendingNavAfterIME = null;
+    this._imeNavigationGuard.reset();
     this._cellBlockLetterImeGuard.reset();
     if (this._iosInputTimer) {
       clearTimeout(this._iosInputTimer);
@@ -4499,6 +4512,7 @@ export class InputHandler {
     this._lastCompositionText = '';
     this._lastComposedText = '';
     this._pendingNavAfterIME = null;
+    this._imeNavigationGuard.reset();
     this._cellBlockLetterImeGuard.reset();
     if (this._iosInputTimer) {
       clearTimeout(this._iosInputTimer);
@@ -4518,6 +4532,8 @@ export class InputHandler {
     document.removeEventListener('mousemove', this.onMouseMoveBound);
     document.removeEventListener('mouseup', this.onMouseUpBound);
     this.textarea.removeEventListener('keydown', this.onKeyDownBound);
+    document.removeEventListener('keyup', this.onKeyUpBound, true);
+    window.removeEventListener('blur', this.onIMEWindowBlurBound);
     this.textarea.removeEventListener('input', this.onInputBound);
     this.textarea.removeEventListener('compositionstart', this.onCompositionStartBound);
     this.textarea.removeEventListener('compositionend', this.onCompositionEndBound);
@@ -5618,9 +5634,100 @@ export class InputHandler {
       }});
       return;
     }
+    if (this.cursor.isInCellSelectionMode()) {
+      void this.deleteSelectedCellBlock().catch((err) => {
+        console.warn('[InputHandler] 셀 블록 지우기 실패:', err);
+      });
+      return;
+    }
     if (this.cursor.hasSelection()) {
       this.deleteSelection();
     }
+  }
+
+  /** Delete selected cells, asking before structurally removing complete rows or columns. */
+  private async deleteSelectedCellBlock(): Promise<void> {
+    if (this.cursor.isProtectedCellSelectionMode()) return;
+    const ctx = this.cursor.getCellTableContext();
+    const range = this.cursor.getSelectedCellRange();
+    if (!ctx || !range) return;
+
+    const clearContents = () => {
+      this.clearSelectedCellBlock();
+      this.updateCellSelection();
+    };
+
+    const nested = (ctx.cellPath?.length ?? 0) > 1;
+    let structural: 'table' | 'rows' | 'cols' | null = null;
+    if (!nested && this.cursor.getExcludedCells().size === 0) {
+      const dims = this.wasm.getTableDimensions(ctx.sec, ctx.ppi, ctx.ci);
+      const fullRows = range.startCol === 0 && range.endCol === dims.colCount - 1;
+      const fullCols = range.startRow === 0 && range.endRow === dims.rowCount - 1;
+      if (fullRows || fullCols) {
+        const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
+        const straddles = bboxes.some((b) => {
+          if (fullRows) {
+            const inside = b.row >= range.startRow && b.row + b.rowSpan - 1 <= range.endRow;
+            const touches = b.row <= range.endRow && b.row + b.rowSpan - 1 >= range.startRow;
+            return touches && !inside;
+          }
+          const inside = b.col >= range.startCol && b.col + b.colSpan - 1 <= range.endCol;
+          const touches = b.col <= range.endCol && b.col + b.colSpan - 1 >= range.startCol;
+          return touches && !inside;
+        });
+        if (!straddles) structural = fullRows && fullCols ? 'table' : fullRows ? 'rows' : 'cols';
+      }
+    }
+
+    if (!structural) {
+      clearContents();
+      return;
+    }
+
+    const answer = await askCellBlockDelete();
+    this.focusTextarea();
+    if (answer === 'cancel') return;
+    if (answer === 'keep') {
+      clearContents();
+      return;
+    }
+
+    const selection = this.cursor.captureCellSelection();
+    const pos = this.cursor.getPosition();
+    const bodyPos: DocumentPosition = { sectionIndex: ctx.sec, paragraphIndex: ctx.ppi, charOffset: 0 };
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'deleteCellBlock',
+      operation: (wasm: WasmBridge) => {
+        if (structural === 'table') {
+          wasm.deleteTableControl(ctx.sec, ctx.ppi, ctx.ci);
+          return bodyPos;
+        }
+        let result: { ok: boolean; rowCount: number; colCount: number } | null = null;
+        if (structural === 'rows') {
+          for (let r = range.endRow; r >= range.startRow; r -= 1) {
+            result = wasm.deleteTableRow(ctx.sec, ctx.ppi, ctx.ci, r);
+            if (!result?.ok) throw new Error('셀 블록 행 삭제 실패');
+          }
+        } else {
+          for (let c = range.endCol; c >= range.startCol; c -= 1) {
+            result = wasm.deleteTableColumn(ctx.sec, ctx.ppi, ctx.ci, c);
+            if (!result?.ok) throw new Error('셀 블록 열 삭제 실패');
+          }
+        }
+        const corrected = result && clampedCellAfterDelete(
+          wasm, ctx.sec, ctx.ppi, ctx.ci,
+          range.startRow, range.startCol, result.rowCount, result.colCount,
+          pos.cellPath,
+        );
+        if (!corrected) return bodyPos;
+        return { ...pos, charOffset: 0, ...corrected };
+      },
+      selectionBefore: selection ? { mode: 'cellBlock', state: selection } : null,
+    });
+    this.cursor.exitCellSelectionMode();
+    this.cellSelectionRenderer?.clear();
+    this.updateCaret();
   }
 
   /** 전체 선택 (커맨드 시스템용) */

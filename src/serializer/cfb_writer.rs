@@ -123,6 +123,7 @@ fn serialize_hwp_inner(
     // IR 형상(구역 수)이 바뀐다. 거부는 순수 HWPX 출처(x2h)에서만 관측됐다.
     let split_multi_sec_pr = doc.layout_profile().hwpx_stored_layout();
     let mut section_bytes_list = Vec::new();
+    let mut viewtext_history = Vec::new();
     let mut form_id_allocator = None;
     for section in &doc.sections {
         let split_starts: Vec<usize> =
@@ -145,7 +146,21 @@ fn serialize_hwp_inner(
         if split_starts.is_empty() {
             let prepared =
                 super::form_identity::prepare_section(section, doc, &mut form_id_allocator)?;
-            section_bytes_list.push(serialize_section_for_version(&prepared, output_version));
+            let bytes = serialize_section_for_version(&prepared, output_version);
+            if prepared.raw_provenance_permits_reuse() {
+                if let Some(visible) =
+                    crate::parser::tracked_viewtext::project(&bytes, &doc.doc_info)
+                        .map_err(|error| SerializeError::UnsupportedInput(error.to_string()))?
+                {
+                    // An unedited review stream belongs in ViewText. Reusing it
+                    // as BodyText alone loses the distinction between current
+                    // content and review history in a Hancom round trip.
+                    viewtext_history.push((section_bytes_list.len(), bytes));
+                    section_bytes_list.push(visible);
+                    continue;
+                }
+            }
+            section_bytes_list.push(bytes);
             continue;
         }
         let mut starts = Vec::with_capacity(split_starts.len() + 1);
@@ -226,6 +241,7 @@ fn serialize_hwp_inner(
         &header_bytes,
         &doc_info_bytes,
         &section_bytes_list,
+        &viewtext_history,
         &doc.doc_info.bin_data_list,
         &doc.bin_data_content,
         &preview,
@@ -309,6 +325,7 @@ fn write_hwp_cfb(
     header_bytes: &[u8],
     doc_info_bytes: &[u8],
     section_bytes_list: &[Vec<u8>],
+    viewtext_history: &[(usize, Vec<u8>)],
     bin_data_list: &[BinData],
     bin_data_content: &[BinDataContent],
     preview: &Option<Preview>,
@@ -343,6 +360,17 @@ fn write_hwp_cfb(
             section_bytes.clone()
         };
         streams.push((path, encrypt_if_password(data, password)));
+    }
+    for (index, bytes) in viewtext_history {
+        let data = if compressed {
+            compress_stream(bytes)?
+        } else {
+            bytes.clone()
+        };
+        streams.push((
+            format!("/ViewText/Section{index}"),
+            encrypt_if_password(data, password),
+        ));
     }
 
     // 4. /BinData/BIN{XXXX}.{ext}

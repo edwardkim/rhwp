@@ -1255,6 +1255,11 @@ export interface LayerGradientFill {
 }
 
 
+export interface LayerArrowHead {
+  filled: boolean;
+  commands: LayerPathCommand[];
+}
+
 export interface LayerLineOp {
   type: 'line';
   bbox: LayerBounds;
@@ -1263,6 +1268,7 @@ export interface LayerLineOp {
   x2: number;
   y2: number;
   style?: LayerLineStyle;
+  arrowHeads?: LayerArrowHead[];
 }
 
 export interface LayerRectangleOp {
@@ -1310,6 +1316,7 @@ export interface LayerPathOp {
   lineStyle?: LayerLineStyle;
   transform?: LayerPathTransform;
   gradient?: LayerGradientFill;
+  arrowHeads?: LayerArrowHead[];
 }
 
 export interface LayerImageOp {

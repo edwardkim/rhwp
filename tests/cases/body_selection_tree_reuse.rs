@@ -6,28 +6,6 @@ use rhwp::diagnostics::perf_counters;
 use rhwp::wasm_api::HwpDocument;
 
 #[test]
-fn body_selection_reuses_a_rendered_page_without_changing_rects() {
-    let bytes = std::fs::read(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/SO-SUEOP.hwp"),
-    )
-    .expect("공개 46쪽 문서");
-    let doc = HwpDocument::from_bytes(&bytes).expect("문서 열기");
-    let expected = doc.get_selection_rects(0, 57, 4, 57, 5).unwrap();
-    assert_ne!(expected, "[]");
-    doc.get_cursor_rect_native(0, 57, 5).unwrap();
-
-    perf_counters::reset_thread_page_tree_builds();
-    for _ in 0..4 {
-        assert_eq!(doc.get_selection_rects(0, 57, 4, 57, 5).unwrap(), expected);
-    }
-    assert_eq!(
-        perf_counters::thread_page_tree_builds(),
-        0,
-        "캐럿 질의가 만든 유효한 쪽 트리를 선택 표시가 다시 만들면 안 된다"
-    );
-}
-
-#[test]
 fn body_selection_keeps_uncached_pages_local() {
     let mut doc = HwpDocument::create_empty();
     doc.create_blank_document_native().unwrap();

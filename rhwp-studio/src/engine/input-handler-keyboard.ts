@@ -58,6 +58,7 @@ const PAGINATION_BOUNDARY_KEYS = new Set([
 const CELL_BLOCK_GLOBAL_COMMANDS = new Set([
   'edit:undo',
   'edit:redo',
+  'edit:delete',
 ]);
 
 function dispatchCellBlockGlobalShortcut(this: any, e: KeyboardEvent): boolean {
@@ -65,6 +66,13 @@ function dispatchCellBlockGlobalShortcut(this: any, e: KeyboardEvent): boolean {
   const commandId = matchShortcut(e, defaultShortcuts);
   if (!commandId || !CELL_BLOCK_GLOBAL_COMMANDS.has(commandId)) return false;
   e.preventDefault();
+  if (commandId === 'edit:delete' && e.ctrlKey && !e.metaKey) {
+    if (!this.cursor.isProtectedCellSelectionMode()) {
+      this.clearSelectedCellBlock();
+      this.updateCellSelection();
+    }
+    return true;
+  }
   this.dispatcher.dispatch(commandId);
   return true;
 }
@@ -697,6 +705,12 @@ function hitTestAfterPageScroll(
 export function onKeyDown(this: any, e: KeyboardEvent): void {
   if (!this.active) return;
 
+  // fcitx forwards the same physical key after its Process/compositionend sequence.
+  if (this._imeNavigationGuard?.consume(e)) {
+    e.preventDefault();
+    return;
+  }
+
   // 이전 셀 문자 단축키의 compositionend가 브라우저 focus 이동으로 누락됐더라도 다음
   // 물리 입력까지 억제 상태가 새지 않게 한다. 현재 S/M이면 아래 resolver가 다시 arm한다.
   this._cellBlockLetterImeGuard?.reset();
@@ -831,6 +845,13 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       const cmdId = matchShortcut(e, defaultShortcuts);
       if (cmdId) {
         e.preventDefault();
+        if (cmdId === 'edit:delete' && this.cursor.isInCellSelectionMode() && e.ctrlKey && !e.metaKey) {
+          if (!this.cursor.isProtectedCellSelectionMode()) {
+            this.clearSelectedCellBlock();
+            this.updateCellSelection();
+          }
+          return;
+        }
         this.dispatcher.dispatch(cmdId);
         return;
       }
@@ -845,6 +866,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         key: e.key, code: e.code, shiftKey: e.shiftKey,
         ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey,
       };
+      this._imeNavigationGuard?.queue(this._pendingNavAfterIME);
     }
     return;
   }
@@ -1269,12 +1291,17 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
 
     // [Task #6741] 선택한 칸들의 내용을 한 번에 지우고 블록을 유지한다 — 한컴과 같다.
     // 종전에는 아래 "그 외 키"로 떨어져 블록이 풀리고 캐럿에서 한 글자만 지워졌다.
-    if (e.key === 'Delete' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
       if (!this.cursor.isProtectedCellSelectionMode()) {
         this.clearSelectedCellBlock();
         this.updateCellSelection();
       }
+      return;
+    }
+    if ((e.key === 'Backspace' || e.key === 'Delete') && e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      this.dispatcher?.dispatch('edit:delete');
       return;
     }
     const cellArrowAction = getCellSelectionArrowAction(e);

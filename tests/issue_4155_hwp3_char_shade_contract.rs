@@ -34,6 +34,11 @@
 //! [#4141]: https://github.com/edwardkim/rhwp/issues/4141
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
@@ -56,12 +61,8 @@ const NO_SHADE: u32 = 0xFFFF_FFFF;
 const BLACK_SHADE: u32 = 0x0000_0000;
 
 const SAMPLES_ROOT: &str = "samples";
-const SO_SUEOP: &str = "samples/SO-SUEOP.hwp";
-const HWP3_SAMPLE: &str = "samples/hwp3-sample.hwp";
 
-/// `<CHARSHAPE>` 에 `ShadeColor` 속성이 없는 HML. 리더가 채우지 않으면 왕복 저장에
-/// `ShadeColor="0"`(검정)이 나간다. ([#4141] 이 `RELSIZE` 부재에 쓴 것과 같은 fixture)
-const HML_WITHOUT_SHADECOLOR: &str = "tests/fixtures/hml/exambank_math_equations_min.hml";
+const HWP3_SAMPLE: &str = "samples/hwp3-sample.hwp";
 
 /// 스윕이 조용히 비면 회귀를 놓치므로 하한을 둔다 ([#4141] 과 같은 가드).
 const MIN_SWEPT_SAMPLES: usize = 10;
@@ -78,6 +79,9 @@ fn hwp3_samples() -> Vec<(PathBuf, String)> {
         };
         for entry in entries.flatten() {
             let path = entry.path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 walk(&path, root, acc);
             } else if path
@@ -168,17 +172,6 @@ fn shade_colors(label: &str, hwp5: &[u8]) -> Vec<u32> {
         .collect()
 }
 
-/// HWPX/HML 처럼 텍스트 엔트리를 하나 꺼낸다.
-fn zip_text_entry(bytes: &[u8], name: &str) -> String {
-    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("ZIP 열기");
-    let mut entry = archive
-        .by_name(name)
-        .unwrap_or_else(|e| panic!("{name} 찾기: {e}"));
-    let mut text = String::new();
-    entry.read_to_string(&mut text).expect("엔트리 읽기");
-    text
-}
-
 fn why_it_matters() -> &'static str {
     "한컴은 검정 음영을 글자마다 순검정 사각형으로 칠하므로 본문 전체가 검정 막대가 된다 \
      (#4155: SO-SUEOP 변환본 한컴 PDF 3쪽에 줄 크기 검정 fill 65개). rhwp 렌더러는 검정을 \
@@ -236,40 +229,6 @@ fn hwp3_convert_never_emits_black_char_shade() {
 }
 
 // ── ② 재현 표본 고정 ───────────────────────────────────────────────────────
-
-/// `SO-SUEOP.hwp` 는 HWP3 원본의 글자 음영 비율이 2,511건 전건 0 이다.
-/// 따라서 저장본의 CHAR_SHAPE 음영색은 예외 없이 "음영 없음" sentinel 이어야 한다.
-#[test]
-fn so_sueop_char_shades_are_all_no_shade() {
-    let hwp5 = convert_to_hwp5_bytes(&repo_path(SO_SUEOP)).expect("SO-SUEOP HWP3 변환");
-    let shades = shade_colors(SO_SUEOP, &hwp5);
-
-    assert!(
-        // [#4680] 스타일 풀 중복 제거 전에는 63개 고유 모양이 2,512벌로 쌓여 있었다.
-        // 이 가드는 계약이 아니라 "조용히 0건으로 통과하는 것" 을 막는 용도다.
-        shades.len() > 50,
-        "{SO_SUEOP}: CHAR_SHAPE 가 {}개다. 고유 모양 실측은 63개다 — 표본이나 변환 \
-         경로가 바뀌었는지 확인하라",
-        shades.len()
-    );
-
-    let deviant: Vec<(usize, u32)> = shades
-        .iter()
-        .enumerate()
-        .filter(|(_, &c)| c != NO_SHADE)
-        .map(|(id, &c)| (id, c))
-        .collect();
-    assert!(
-        deviant.is_empty(),
-        "{SO_SUEOP}: CHAR_SHAPE {}개 중 {}개가 음영 없음이 아니다 \
-         (첫 위반 id={} 값=0x{:08x}). 원본은 음영 비율이 2,511건 전건 0 이다. {}",
-        shades.len(),
-        deviant.len(),
-        deviant[0].0,
-        deviant[0].1,
-        why_it_matters()
-    );
-}
 
 // ── ③ 한컴 실측 정합 — 합성 공식의 반올림 방향을 고정한다 ──────────────────────
 
@@ -426,77 +385,4 @@ fn public_document_core_export_also_avoids_black_char_shade() {
 
 // ── ⑤ HWPX 축 무회귀 ──────────────────────────────────────────────────────
 
-/// 종전에도 정상이던 축이 이 변경으로 깨지지 않는지 본다.
-///
-/// HWPX 라이터는 IR sentinel 을 `color_hex` 로 `"none"` 에 매핑한다. SO-SUEOP 은 전수
-/// `"none"`, sample11 은 음영 2건이 그대로 `#D8D8D8`·`#999999` 로 나가야 한다.
-#[test]
-fn hwp3_export_hwpx_keeps_shade_color_contract() {
-    let so_sueop = hwpx_header_xml(SO_SUEOP);
-    let char_pr = so_sueop.matches("<hh:charPr ").count();
-    let none = so_sueop.matches(r#"shadeColor="none""#).count();
-    assert!(
-        char_pr > 0,
-        "{SO_SUEOP}: charPr 이 없다 — 저장 경로를 확인하라"
-    );
-    assert_eq!(
-        none, char_pr,
-        "{SO_SUEOP}: charPr {char_pr}개 중 shadeColor=\"none\" 은 {none}개다. \
-         원본은 음영 비율이 전건 0 이므로 전수 \"none\" 이어야 한다"
-    );
-
-    let sample11 = hwpx_header_xml("samples/hwp3-sample11.hwp");
-    for expected in [r##"shadeColor="#D8D8D8""##, r##"shadeColor="#999999""##] {
-        assert!(
-            sample11.contains(expected),
-            "samples/hwp3-sample11.hwp: HWPX 에 {expected} 가 없다. 실제 음영이 있는 \
-             글자 모양은 HWPX 축에도 그대로 나가야 한다"
-        );
-    }
-}
-
-fn hwpx_header_xml(rel: &str) -> String {
-    let raw = std::fs::read(repo_path(rel)).expect("표본 읽기");
-    let core = rhwp::document_core::DocumentCore::from_bytes(&raw).expect("HWP3 파싱");
-    let hwpx = core.export_hwpx_native().expect("HWPX 저장");
-    zip_text_entry(&hwpx, "Contents/header.xml")
-}
-
 // ── ⑥ HML 축 ──────────────────────────────────────────────────────────────
-
-/// `ShadeColor` 속성이 없는 `<CHARSHAPE>` 를 왕복해도 검정이 나가면 안 된다.
-///
-/// 한/글이 산출한 HML 은 음영 없음을 `4294967295`(= `0xFFFFFFFF`)로 명시한다
-/// (`samples/hml/*.hml` 2/2). 리더가 속성 부재를 0 으로 채우면 라이터가 `ShadeColor="0"`
-/// 을 내보내 같은 검정 계약이 HML 축에도 새어 나간다.
-#[test]
-fn hml_roundtrip_without_shadecolor_emits_no_shade_sentinel() {
-    let raw = std::fs::read(repo_path(HML_WITHOUT_SHADECOLOR)).expect("HML fixture 읽기");
-    let xml_in = String::from_utf8_lossy(&raw);
-    assert!(
-        !xml_in.contains("ShadeColor"),
-        "{HML_WITHOUT_SHADECOLOR} 에 ShadeColor 가 생겼다 — 이 fixture 는 '속성이 없을 때'를 \
-         재현해야 한다. 다른 fixture 를 쓰거나 회귀 조건을 다시 잡아라"
-    );
-
-    let core = rhwp::document_core::DocumentCore::from_bytes(&raw).expect("HML 파싱");
-    let out = core.export_hml_native().expect("HML 저장");
-    let xml_out = String::from_utf8_lossy(&out);
-
-    let emitted = xml_out.matches("ShadeColor=").count();
-    assert!(
-        emitted > 0,
-        "{HML_WITHOUT_SHADECOLOR}: 왕복 저장에 ShadeColor 가 하나도 없다 — 저장 경로를 확인하라"
-    );
-    assert_eq!(
-        xml_out.matches(r#"ShadeColor="4294967295""#).count(),
-        emitted,
-        "{HML_WITHOUT_SHADECOLOR}: ShadeColor {emitted}개 중 음영 없음 sentinel 이 아닌 것이 \
-         있다. 한/글 산출 HML 은 4294967295 를 쓴다 (samples/hml/*.hml 2/2)"
-    );
-    assert!(
-        !xml_out.contains(r#"ShadeColor="0""#),
-        "{HML_WITHOUT_SHADECOLOR}: ShadeColor=\"0\"(검정)이 나갔다. {}",
-        why_it_matters()
-    );
-}

@@ -193,3 +193,11 @@ close했다(`merged=false`). 대체 PR은 #7667, base는 devel이다. 기여자 
   `ready:true/successful-pr-worker-measurements`, PR CI `37731302823`의 B/C/D attempt 1을 확인했다.
   `ci-metrics/nextest-target-durations`에 `04007c89d73418bec8ecb503d23103720bc8e7e1`로 실측을 갱신했다.
   병합 후 검증 CI는 실행하지 않았다.
+
+## 후속 처리 실행 결과
+
+- 운영 기록은 `64168907c937c646f6a9b698cda969d503ee2763`으로 devel에 직접 반영했다. 파일 범위는 archive review/오늘할일뿐이며 Markdown 상대 링크와 diff 검사를 통과했다.
+- [#7330 안내](https://github.com/edwardkim/rhwp/issues/7330#issuecomment-6053257997), [원 #7618 안내](https://github.com/edwardkim/rhwp/pull/7618#issuecomment-6053258188), [#7667 병합 안내](https://github.com/edwardkim/rhwp/pull/7667#issuecomment-6053269808)를 게시했다. 한국어 본문 round-trip 및 merge SHA 고정 대표 이미지 8개의 공개 응답 바이트 일치를 확인했다.
+- 제출 전용 `/tmp/rhwp-pr7618-submit-20261008` worktree와 local `fix/pr7618-maintainer-layout-20261008` branch를 제거했다. 다른 OPEN PR 사용 없음/remote SHA 일치/merge의 devel 포함/clean 확인 뒤 동일 임시 upstream ref를 예상 head SHA lease로 삭제했고 부재를 확인했다.
+- `/tmp/rhwp-pr7618-visual-20261008`는 검증용 Studio(7798)가 실제 실행 중이므로 유지했다. 다른 검토 worktree, contributor fork, 공유 `target/pr-review`는 보존했다. 현재 열려 있는 batch/#7330의 독립 비교 증적과 IDE 진단 문서도 보존했다.
+- 최초 코드 merge의 duration 실측 갱신은 위 기록대로 성공했다. 운영 문서 commit의 [후속 metadata run 37733935581](https://github.com/edwardkim/rhwp/actions/runs/37733935581)은 success / `ready:false/not-one-merged-devel-pr`로 데이터 갱신을 건너뛰었다. 검증 CI fallback/재실행은 없었다.

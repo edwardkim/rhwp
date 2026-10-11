@@ -149,15 +149,15 @@ impl RowBlockQuery<'_> {
         let mut total = 0.0;
         let mut has_row = false;
         for br in b_start..row_end {
-            let row_h = if layout_engine.row_block_cut_uses_measured_height(
+            let row_h = if let Some(height) = layout_engine.row_block_cut_physical_height(
                 table,
                 (b_start, b_end),
-                br,
+                (br, self.mt.row_heights[br]),
                 block_start_cut,
                 block_end_cut,
                 styles,
             ) {
-                self.mt.row_heights[br]
+                height
             } else {
                 layout_engine.row_block_cut_row_content_height(
                     table,

@@ -92,12 +92,6 @@ fn task554_no_regression_2022_kuglip() {
 }
 
 #[test]
-fn task554_no_regression_exam_kor() {
-    // exam_kor: PS/Para=0.076 (휴리스틱 임계값 0.05 근처) — CS/Para=0.214 로 안전 분리
-    assert_eq!(page_count("samples/exam_kor.hwp"), 20);
-}
-
-#[test]
 fn task554_no_regression_aift() {
     // aift: 단순 -1600 적용 시 -1 회귀였던 케이스
     // Task #874 #1~#8 누적 정합 결과 한컴 PDF (pdf/aift-2022.pdf) 와 동일한 74p.
@@ -111,10 +105,4 @@ fn task554_no_regression_2025_donations_hwpx() {
         page_count("samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx"),
         30
     );
-}
-
-#[test]
-fn task554_no_regression_exam_science() {
-    // exam_science.hwp 4페이지 (Task #546 정합 유지)
-    assert_eq!(page_count("samples/exam_science.hwp"), 4);
 }

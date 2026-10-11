@@ -537,7 +537,7 @@ assert.doesNotMatch(
 );
 requireSnippet(
   mainSource,
-  /new RendererSession\([\s\S]*?async \(mode, surface\) => \{[\s\S]*?import\('\@\/view\/canvaskit-renderer'\)[\s\S]*?CanvasKitLayerRenderer\.create\(mode, surface,[\s\S]*?requirePreparedFontFamilies:[\s\S]*?transformCanvasKitPreflight[\s\S]*?prepareCanvasKitDocument[\s\S]*?loadStoredLocalFonts\(\)[\s\S]*?prepareLocalFonts\(report\.requiredFontFamilies\)[\s\S]*?prepareBundledFonts/,
+  /new RendererSession\([\s\S]*?async \(mode, surface\) => \{[\s\S]*?import\('\@\/view\/canvaskit-renderer'\)[\s\S]*?CanvasKitLayerRenderer\.create\(mode, surface,[\s\S]*?requirePreparedFontFamilies:[\s\S]*?transformCanvasKitPreflight[\s\S]*?prepareCanvasKitDocument[\s\S]*?loadStoredLocalFonts\(\)[\s\S]*?prepareLocalFonts\(fontRequirements\.requiredFontFamilies\)[\s\S]*?prepareBundledFonts/,
   'Studio should prepare stored local faces and bundled fallback before first CanvasKit replay',
 );
 requireSnippet(
@@ -1111,7 +1111,7 @@ function runExecutableGradientFillReplay() {
   return { events, renderer };
 }
 
-function runExecutableM07PackReplay() {
+function runExecutableM07PackReplay({ withArrowGeometry = true } = {}) {
   const events = [];
   class FakePaint {
     setAntiAlias() {}
@@ -1164,6 +1164,16 @@ function runExecutableM07PackReplay() {
     y1: 0,
     x2: 40,
     y2: 0,
+    // The producer owns geometry; replay must consume these commands verbatim.
+    arrowHeads: withArrowGeometry ? [{
+      filled: true,
+      commands: [
+        { type: 'moveTo', x: 40, y: 0 },
+        { type: 'lineTo', x: 24, y: -8 },
+        { type: 'lineTo', x: 24, y: 8 },
+        { type: 'closePath' },
+      ],
+    }] : undefined,
     style: {
       color: '#123456',
       width: 4,
@@ -1250,13 +1260,13 @@ function runExecutableTextSpecialReplay() {
   renderer.currentShowParagraphMarks = true;
   renderer.currentShowControlCodes = true;
   const incompleteOldHangulAlias = { typeface: { face: 'old-hangul-incomplete' }, fontManager: null };
-  renderer.bundledTypefaceAliases.set('source han serif k old hangul', incompleteOldHangulAlias);
+  renderer.bundledTypefaceAliases.set('source han serif k old hangul', [incompleteOldHangulAlias]);
   const rejectedOldHangulAlias = renderer.findPreparedTypeface('Source Han Serif K Old Hangul');
   const oldHangulAlias = {
     typeface: { face: 'old-hangul-alias' },
     fontManager: { family: 'old-hangul-manager' },
   };
-  renderer.bundledTypefaceAliases.set('source han serif k old hangul', oldHangulAlias);
+  renderer.bundledTypefaceAliases.set('source han serif k old hangul', [oldHangulAlias]);
   const resolvedOldHangulAlias = renderer.findPreparedTypeface('Source Han Serif K Old Hangul');
 
   renderer.renderOp(canvas, {
@@ -2021,10 +2031,23 @@ assert.equal(
   true,
   'double compoundLine should emit two 0.30-width-ratio strokes',
 );
+assert.deepEqual(
+  m07PackReplay.events.filter((event) => ['path.moveTo', 'path.lineTo', 'path.close'].includes(event.type)),
+  [
+    { type: 'path.moveTo', x: 40, y: 0 },
+    { type: 'path.lineTo', x: 24, y: -8 },
+    { type: 'path.lineTo', x: 24, y: 8 },
+    { type: 'path.close' },
+  ],
+  'lineArrow should preserve the serialized arrow head tip and every path command',
+);
+assert.equal(m07PackReplay.renderer.unsupportedOps.has('arrow:geometryMissing'), false);
+const missingArrowGeometryReplay = runExecutableM07PackReplay({ withArrowGeometry: false });
+assert.ok(missingArrowGeometryReplay.renderer.unsupportedOps.has('arrow:geometryMissing'));
 assert.equal(
-  m07PackReplay.events.some((event) => event.type === 'path.moveTo'),
-  true,
-  'lineArrow should build a CanvasKit path for the serialized arrow head',
+  missingArrowGeometryReplay.events.some((event) => event.type === 'canvas.drawPath'),
+  false,
+  'missing arrow geometry must be reported without guessing a replacement head',
 );
 assert.equal(
   m07PackReplay.events.some((event) => event.type === 'canvas.drawRect' && event.color?.[0] === 255),
@@ -2086,8 +2109,8 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /drawArrowHead\([\s\S]*?concaveArrow[\s\S]*?openDiamond[\s\S]*?openCircle[\s\S]*?openSquare/,
-  'arrow replay should cover every serialized ArrowStyle except none',
+  /private drawLineArrows\([\s\S]*?arrow:geometryMissing[\s\S]*?this\.createCommandPath\(head\.commands, 0, 0\)[\s\S]*?head\.filled[\s\S]*?canvas\.drawPath\(path, fill\)/,
+  'arrow replay should consume producer geometry and fill rather than reinterpret ArrowStyle',
 );
 requireSnippet(
   canvaskitSource,

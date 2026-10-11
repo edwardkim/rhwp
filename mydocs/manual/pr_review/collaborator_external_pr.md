@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-14
+last_verified: 2026-10-09
 ---
 
 # Collaborator 매개 외부 PR 처리
@@ -60,6 +60,29 @@ git diff --check upstream/devel...HEAD
 경우는 아래 9.3.1의 예외 경로다. 이 경우에도 사용자 가시성이 필요하면 별도 worktree 대신 같은 주
 작업공간에서 source head를 checkout한 `review/<contributor>-<yyyymmdd>` branch를 사용한다. direct source
 경로와 위 체리픽 통합 경로를 한 PR에 섞거나, contributor history를 rebase·amend·force-push하지 않는다.
+
+### 9.1.2 렌더링 회귀 보정의 선행 조건
+
+체리픽 통합과 원 contributor head 직접 보정 모두 **실패한 원 회귀의 원본 입력 출력 보정 →
+버전에 맞는 독립 한컴 Print PDF와 Native/fresh WASM의 관련 모든 페이지에서 90% 이상 확인 →
+독립 기대값에 따라 필요한 검사 변경** 순서를 따른다. 새 렌더링 회귀도 같은 90% 선행 조건을 적용한다.
+실물 배치를 절대 px 좌표·고정 px 영역으로 선택하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침
+관계로 검사한다. 미달·측정 불가이면 기대값·baseline 갱신을 보류하고 원본과 실패 증거를 보존한다.
+사용자가 승인한 보정도 이 조건을 면제하지 않는다. 상세 절차는
+[시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+[기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
+
+**SHA를 고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 회귀 검사**가
+부적합한 경우에만
+[별도 이슈 이관](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)에 따라 새 이슈를 등록하고
+해당 회귀 검사와 HWP/HWPX/PDF를 활성 검증 경로에서 제거·이관한다. 별도 이슈에서
+보정·90% 이상·확대 판독 후 관계형 회귀를 복원한다.
+같은 원본·독립 Print PDF의 base/head 비교로 기존 미달을 입증한다. 현재 수정으로 생긴 회귀는
+구현을 고치며, base가 미검증이면 이관 판정을 보류한다. 이관 범위와 현재 PR의 완료 범위를 구분한다.
+
+90% 이상이어도 [수식·간격 확대 판독](visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을
+수행한다. 통합 head와 직접 보정 head 모두 변경 영역·알려진 차이·사용자 지적 영역의 실제 모양·
+장평·미세 간격을 대조하며, 점수만으로 완료·승인하지 않는다.
 
 ## 9.2 문서 경로
 

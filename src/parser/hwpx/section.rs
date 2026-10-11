@@ -2988,6 +2988,7 @@ fn parse_picture(
     let mut padding = crate::model::Padding::default();
     let mut border_x = [0i32; 4];
     let mut border_y = [0i32; 4];
+    let mut border_line: Option<ShapeBorderLine> = None;
     let mut img_dim: (u32, u32) = (0, 0); // [#1389] hp:imgDim 원본 이미지 픽셀 크기
     let mut href: Option<String> = None;
     let mut picture_instance_id = 0;
@@ -3086,6 +3087,12 @@ fn parse_picture(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
+                    b"lineShape" => {
+                        // A picture outline shares the drawing line contract.
+                        // A zero width still has a style; absence and NONE do
+                        // not acquire a default outline.
+                        border_line = Some(parse_line_shape_attr(ce));
+                    }
                     b"sz" => {
                         // 최종 표시 크기 (최우선)
                         for attr in ce.attributes().flatten() {
@@ -3374,6 +3381,11 @@ fn parse_picture(
     pic.padding = padding;
     pic.border_x = border_x;
     pic.border_y = border_y;
+    if let Some(border) = border_line {
+        pic.border_color = border.color;
+        pic.border_width = border.width;
+        pic.border_attr = border;
+    }
     pic.instance_id = picture_instance_id;
     pic.effects = effects;
     pic.caption = caption;

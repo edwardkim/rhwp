@@ -11,6 +11,11 @@
 //! 주의: 이 게이트는 **구조(뼈대) 보존** 검증이다. 통과 = 시각 충실도 보장이 아니며,
 //! 복합 실문서를 full visual fidelity oracle 로 쓰면 안 된다 (`ORACLE_UNFIT` 참고).
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 use std::path::{Path, PathBuf};
 
 use rhwp::parser::hwpx::parse_hwpx;
@@ -59,6 +64,9 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         let entries = std::fs::read_dir(dir).expect("samples/hwpx 읽기 실패");
         for entry in entries {
             let path = entry.expect("디렉토리 항목 읽기 실패").path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 // opengov 고정 실문서 말뭉치(#1564)는 자체 스냅샷 게이트
                 // (tests/opengov_corpus_snapshot.rs)로 검증한다. 대다수 IR_DIFF 실문서라

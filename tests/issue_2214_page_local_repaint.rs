@@ -1,6 +1,6 @@
 //! Issue #2214 Stage 3 contracts.
 //!
-//! scoped layout-cache coherence와 cell-flow mutation result를 고정한다.
+//! cell-flow mutation result를 고정한다. 고정 px 배치 검사는 #7813에 이관했다.
 
 use std::fs;
 use std::path::Path;
@@ -8,7 +8,6 @@ use std::path::Path;
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::paragraph::Paragraph;
-use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 use serde::Deserialize;
 
@@ -21,23 +20,6 @@ const TABLE_CONTROL: usize = 2;
 const CELL: usize = 2;
 const TARGET_PARAGRAPH: usize = 5;
 const INSERT_OFFSET: usize = 130;
-const CELL_PATH: &str = r#"[{"controlIndex":2,"cellIndex":2,"cellParaIndex":5}]"#;
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct CursorRect {
-    page_index: u32,
-    x: f64,
-    y: f64,
-    height: f64,
-    cell_bounds: Bounds,
-    cell_overflowed: bool,
-}
-
-#[derive(Debug, Deserialize)]
-struct Bounds {
-    h: f64,
-}
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -106,109 +88,6 @@ fn insert_batch(doc: &mut HwpDocument, count: usize) -> CellEditResult {
     parse_cell_edit_result(raw)
 }
 
-fn insert_sequential(doc: &mut HwpDocument, count: usize) {
-    for inserted in 0..count {
-        doc.insert_text_in_cell_native_deferred_pagination(
-            SECTION,
-            PARENT_PARAGRAPH,
-            TABLE_CONTROL,
-            CELL,
-            TARGET_PARAGRAPH,
-            INSERT_OFFSET + inserted,
-            "1",
-        )
-        .expect("sequential deferred insert");
-    }
-}
-
-fn warm_target_layout(doc: &HwpDocument) {
-    doc.build_page_render_tree(0)
-        .expect("warm target page tree");
-    doc.get_cursor_rect_in_cell_native(
-        SECTION,
-        PARENT_PARAGRAPH,
-        TABLE_CONTROL,
-        CELL,
-        TARGET_PARAGRAPH,
-        INSERT_OFFSET,
-    )
-    .expect("warm target cursor");
-}
-
-fn target_tree_end(doc: &HwpDocument) -> usize {
-    fn visit(node: &RenderNode, ranges: &mut Vec<(usize, usize)>) {
-        if let RenderNodeType::TextRun(run) = &node.node_type {
-            if let (Some(start), Some(ctx)) = (run.char_start, run.cell_context.as_ref()) {
-                let exact_path = ctx.parent_para_index == PARENT_PARAGRAPH
-                    && ctx.path.len() == 1
-                    && ctx.path.first().is_some_and(|entry| {
-                        entry.control_index == TABLE_CONTROL
-                            && entry.cell_index == CELL
-                            && entry.cell_para_index == TARGET_PARAGRAPH
-                    });
-                if exact_path {
-                    assert!(run.char_overlap.is_none(), "target run must not overlap");
-                    assert_eq!(
-                        run.text.chars().count(),
-                        run.text.encode_utf16().count(),
-                        "fixture target run must be BMP"
-                    );
-                    ranges.push((start, start + run.text.encode_utf16().count()));
-                }
-            }
-        }
-        for child in &node.children {
-            visit(child, ranges);
-        }
-    }
-
-    let tree = doc
-        .build_page_render_tree(0)
-        .expect("build target page tree");
-    let mut ranges = Vec::new();
-    visit(&tree.root, &mut ranges);
-    ranges.sort_unstable();
-    assert!(!ranges.is_empty(), "target page must have text runs");
-    let mut end = 0;
-    for (start, next_end) in ranges {
-        assert_eq!(start, end, "target ranges must have no gap or overlap");
-        assert!(next_end > start, "target run must advance");
-        end = next_end;
-    }
-    end
-}
-
-fn path_rect(doc: &HwpDocument, offset: usize) -> CursorRect {
-    let raw = doc
-        .get_cursor_rect_by_path_near(
-            SECTION as u32,
-            PARENT_PARAGRAPH as u32,
-            CELL_PATH,
-            offset as u32,
-            0,
-        )
-        .expect("path-near cursor rect");
-    serde_json::from_str(&raw).expect("cursor rect json")
-}
-
-fn direct_rect(doc: &HwpDocument, offset: usize) -> CursorRect {
-    let raw = doc
-        .get_cursor_rect_in_cell_native(
-            SECTION,
-            PARENT_PARAGRAPH,
-            TABLE_CONTROL,
-            CELL,
-            TARGET_PARAGRAPH,
-            offset,
-        )
-        .expect("direct cursor rect");
-    serde_json::from_str(&raw).expect("cursor rect json")
-}
-
-fn approx_eq(actual: f64, expected: f64) -> bool {
-    (actual - expected).abs() <= 0.2
-}
-
 /// fifth line 이 생기는 입력 수 — HWP·HWPX 모두 56 이다.
 ///
 /// [#7418] 종전 HWPX 61 은 한/글 2020 이 한양신명조를 함초롬바탕으로 대체한 환경의 출력에서
@@ -232,159 +111,6 @@ fn expected_line_starts(label: &str, inserted: usize) -> &'static [usize] {
         }
     } else {
         &[0, 44, 84, 122]
-    }
-}
-
-/// [#7063] 두 변형 모두 x 가 +3.77px(283HU) 이동했다. caret 이 아니라 caret 이 속한
-/// 자리차지 표가 옮겨진 것이다 — 이 문서 정본(`pdf/issue1949_giant_cell_nested_tables_
-/// perf-hwp-2024.pdf`) 1쪽의 `1.1.1` 은 x=87.79 인데 수정 전 rhwp 는 84.1 이었다.
-/// 표가 자기 `outMargin.left` 만큼 안으로 들어가면서 안의 글자·caret 이 같이 따라간다.
-fn expected_56_path_caret(label: &str) -> (f64, f64) {
-    match label {
-        "hwp" => (577.6, 344.8),
-        // [#7418] hwpx 도 56 번째에 fifth line 이 생겨(`flow_boundary_insert_count`) caret 이
-        // hwp 와 같은 줄·자리에 선다. 종전 값은 넷째 줄 끝이었다.
-        "hwpx" => (577.6, 344.8),
-        other => panic!("unknown #2214 fixture label: {other}"),
-    }
-}
-
-fn expected_56_direct_caret(label: &str) -> (f64, f64) {
-    match label {
-        "hwp" => (577.6, 345.6),
-        // [#7418] 위 path caret 과 같은 까닭으로 hwp 와 같다.
-        "hwpx" => (577.6, 345.6),
-        other => panic!("unknown #2214 fixture label: {other}"),
-    }
-}
-
-/// Warm cache에서도 deferred edit 직후 최신 tree와 exact cursor를 반환해야 한다.
-#[test]
-fn issue_2214_warm_deferred_tree_and_cursor_are_exact() {
-    let mut failures = Vec::new();
-    for (label, sample) in [("hwp", HWP_SAMPLE), ("hwpx", HWPX_SAMPLE)] {
-        let mut doc = load_sample(sample);
-        assert_eq!(doc.page_count(), 115, "{label}: initial page count");
-        assert_eq!(
-            target_paragraph(&doc).text.encode_utf16().count(),
-            INSERT_OFFSET
-        );
-        let original_text = target_paragraph(&doc).text.clone();
-        warm_target_layout(&doc);
-        insert_sequential(&mut doc, 56);
-
-        let expected_end = INSERT_OFFSET + 56;
-        assert_eq!(
-            target_paragraph(&doc).text.encode_utf16().count(),
-            expected_end
-        );
-        assert_eq!(
-            target_paragraph(&doc).text,
-            format!("{original_text}{}", "1".repeat(56)),
-            "{label}: deferred edit must append exactly 56 characters"
-        );
-        let starts_after_56 = line_starts(&doc);
-        let rect = path_rect(&doc, expected_end);
-        assert_eq!(starts_after_56, expected_line_starts(label, 56));
-        assert_eq!(
-            doc.page_count(),
-            115,
-            "{label}: deferred edit must not paginate"
-        );
-
-        // 실제 Studio 순서처럼 path-near를 첫 observer로 둔다.
-        assert!(
-            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
-            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
-            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
-            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
-            approx_eq(rect.cell_bounds.h, 936.3),
-            "{label}: deferred edit must retain pre-flush cell bounds: {rect:?}"
-        );
-        let tree_end = target_tree_end(&doc);
-        let (expected_x, expected_y) = expected_56_path_caret(label);
-        let exact = tree_end == expected_end
-            && rect.page_index == 0
-            && approx_eq(rect.x, expected_x)
-            // 최신 devel의 table text baseline 보정 뒤 path-near는 direct보다
-            // 0.8px 위의 caret geometry를 반환한다. 원본 형식별 기준선이
-            // flush 전후에도 유지되는지를 고정한다.
-            && approx_eq(rect.y, expected_y)
-            && approx_eq(rect.height, 16.0)
-            && !rect.cell_overflowed;
-        if !exact {
-            failures.push(format!(
-                "{label}: model={expected_end} tree={tree_end} page={} x={:.1} y={:.1} bounds_h={:.1}",
-                rect.page_index, rect.x, rect.y, rect.cell_bounds.h
-            ));
-        }
-    }
-
-    assert!(
-        failures.is_empty(),
-        "warm deferred tree/cursor must be exact:\n{}",
-        failures.join("\n")
-    );
-}
-
-/// Ignored matrix의 cold/direct/path 및 56/62자 대표 계약을 빠른 GREEN으로 고정한다.
-/// [#2430] HY/한양 ASCII 실측 교정으로 줄 채움 임계 44→56 이동 — 대표점 56/62 이관.
-#[test]
-fn issue_2214_cold_representative_queries_are_exact() {
-    for (label, sample) in [("hwp", HWP_SAMPLE), ("hwpx", HWPX_SAMPLE)] {
-        let mut direct44 = load_sample(sample);
-        insert_sequential(&mut direct44, 56);
-        let direct = direct_rect(&direct44, INSERT_OFFSET + 56);
-        assert_eq!(target_tree_end(&direct44), INSERT_OFFSET + 56);
-        assert_eq!(direct.page_index, 0, "{label}: cold 56 direct page");
-        let (expected_x, expected_y) = expected_56_direct_caret(label);
-        assert!(
-            approx_eq(direct.x, expected_x),
-            "{label}: cold 56 direct x = {:.1} (기대 {expected_x:.1})",
-            direct.x
-        );
-        assert!(
-            approx_eq(direct.y, expected_y),
-            "{label}: cold 56 direct y = {:.1} (기대 {expected_y:.1})",
-            direct.y
-        );
-        assert!(
-            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
-            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
-            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
-            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
-            approx_eq(direct.cell_bounds.h, 936.3),
-            "{label}: cold 56 direct pre-flush bounds"
-        );
-        assert!(!direct.cell_overflowed, "{label}: cold 56 direct overflow");
-        assert_eq!(direct44.page_count(), 115, "{label}: cold 56 pages");
-
-        let mut path50 = load_sample(sample);
-        insert_sequential(&mut path50, 62);
-        let path = path_rect(&path50, INSERT_OFFSET + 62);
-        assert_eq!(target_tree_end(&path50), INSERT_OFFSET + 62);
-        assert_eq!(path.page_index, 0, "{label}: cold 62 path page");
-        assert!(
-            // [#7063] 621.5 → 625.3. 위 56자 caret 과 같은 +3.77px(283HU) 이동이다.
-            approx_eq(path.x, 625.3),
-            "{label}: cold 62 path x = {:.1} (기대 625.3)",
-            path.x
-        );
-        assert!(
-            approx_eq(path.y, 344.8),
-            "{label}: cold 62 path y = {:.1} (기대 344.8)",
-            path.y
-        );
-        assert!(
-            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
-            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
-            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
-            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
-            approx_eq(path.cell_bounds.h, 936.3),
-            "{label}: cold 62 path pre-flush bounds"
-        );
-        assert!(!path.cell_overflowed, "{label}: cold 62 path overflow");
-        assert_eq!(path50.page_count(), 115, "{label}: cold 62 pages");
     }
 }
 

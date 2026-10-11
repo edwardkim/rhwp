@@ -1,0 +1,34 @@
+{
+  "issue": 7621,
+  "generator": {
+    "path": "samples/issue7621/generate.mjs",
+    "sha256": "7f3f6134867aca40f91b6e08e6c098f9b624cc87249a51ed063238afd908f2a2",
+    "rhwp_source": "d9749c5a15b95206455953494f6fc871c115cef1",
+    "package": "scripts/wasm-pack-locked.sh --target web"
+  },
+  "reference": {
+    "product": "한컴독스 웹서비스 6.3.6 (2026-09-17), 한컴오피스 Web v2 한글 20260812021742",
+    "method": "파일 → 인쇄 시 서버가 생성한 인쇄용 PDF (webhwp/handler/download/...?fileExt=pdf&preview=true)",
+    "pdf_producer": "cairo 1.15.12"
+  },
+  "files": [
+    {
+      "path": "b-text-after-float.hwp",
+      "sha256": "8af2ecfe54878968ffb78634a4075dfed6ce733d10e16322c7123d28a0e7cafa",
+      "bytes": 13312,
+      "source": "generate.mjs 생성 대조군 — 표 문단 다음 문단에 글자",
+      "reference_pdf": "pdf/issue7621/b-text-after-float-hancomdocs.pdf",
+      "reference_pdf_sha256": "1b4a56da1cfe1fc38cf7337f159713217f1f87473a1d70068b927ec3a1ebf35d",
+      "purpose": "폭 0 앵커 줄 문단 바로 뒤 글자 문단이 표 아랫변 + 바깥 여백 아래에서 시작하는지 검사"
+    },
+    {
+      "path": "control-float.hwp",
+      "sha256": "81d61a11efd5070e64767b8cd32491ba8af93ec212351607694e10aece0a9480",
+      "bytes": 13312,
+      "source": "generate.mjs 생성 대조군 — 표 문단 다음 문단이 빈 문단",
+      "reference_pdf": "pdf/issue7621/control-float-hancomdocs.pdf",
+      "reference_pdf_sha256": "83da2a4b27b50aad35ac4a502e9acb521e1f222ece95bfa15485568bde52f9f1",
+      "purpose": "정상 대조군 — 종전과 같은 배치"
+    }
+  ]
+}

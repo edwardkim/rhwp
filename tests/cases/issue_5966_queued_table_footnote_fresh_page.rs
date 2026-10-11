@@ -12,8 +12,11 @@
 //! 일반 fit(원자 배치) 경로로 보낸다. debug 불변식은 진짜 병리의 tripwire 로
 //! 유지한다.
 //!
-//! 이 테스트는 debug 프로파일에서 조판이 패닉 없이 완주하고 총 143쪽(release
-//! 실측과 동일)임을 고정한다. 결함 상태에서는 debug 에서 패닉으로 실패한다.
+//! 이 테스트는 debug 프로파일에서 조판이 패닉 없이 완주하고 독립 한컴 2020
+//! Print PDF의 142쪽을 보존하는지 검사한다. 이전 143쪽은 당시 rhwp 실측값이었다.
+//! 동일 원본의 전 142쪽 Native/fresh WASM 최저 92.20721%를 확인한 뒤 기대값을
+//! 교정했다. 증거는 `mydocs/pr/archives/pr_7617_review.md`에 연결한다.
+//! 결함 상태에서는 debug 에서 패닉으로 실패한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -28,7 +31,7 @@ fn issue_5966_queued_table_footnote_completes_on_forced_fresh_page() {
     let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
     assert_eq!(
         core.page_count(),
-        143,
-        "release/debug 동일하게 143쪽이어야 한다"
+        142,
+        "독립 한컴 2020 Print PDF와 동일하게 142쪽이어야 한다"
     );
 }

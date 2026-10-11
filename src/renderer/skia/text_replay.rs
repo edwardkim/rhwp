@@ -729,7 +729,19 @@ impl SkiaTextReplay<'_> {
                             false,
                         ),
                         6 => draw_styled_line(x1, line_y, x2, color, 0.5, &[8.0, 4.0], false),
-                        7 => draw_styled_line(x1, line_y, x2, color, 0.7, &[0.1, 2.5], true),
+                        7 => {
+                            let (w, dash, gap) =
+                                crate::renderer::render_tree::tab_circle_leader_stroke();
+                            draw_styled_line(
+                                x1,
+                                line_y,
+                                x2,
+                                color,
+                                w as f32,
+                                &[dash as f32, gap as f32],
+                                true,
+                            )
+                        }
                         8 => {
                             draw_styled_line(x1, line_y - 1.0, x2, color, 0.3, &[], false);
                             draw_styled_line(x1, line_y + 1.0, x2, color, 0.3, &[], false);
