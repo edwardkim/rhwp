@@ -652,11 +652,14 @@ function endSession(h, method) {
     isResizeDragging: false, dragRafId: 0, resizeHoverRafId: 0,
   });
   const hadDocument = 'document' in globalThis;
+  const hadWindow = 'window' in globalThis;
   if (!hadDocument) globalThis.document = inert; // dispose 가 문서 전역 리스너를 뗀다
+  if (!hadWindow) globalThis.window = inert; // 창 focus 이탈 리스너도 같은 DOM 수명에 속한다
   try {
     InputHandler.prototype[method].call(orInert(h));
   } finally {
     if (!hadDocument) delete globalThis.document;
+    if (!hadWindow) delete globalThis.window;
   }
 }
 

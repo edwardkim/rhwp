@@ -62,6 +62,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `grid-mode-click-coord.test.mjs` | 진단 | hold | 보류 ① 그리드 좌표 결함 — 정량 e2e 측정 | exam_kor.hwp | 수동 | legacy-name · 보류① 이슈 종속 |
 | `header-footer-selection-issue4121.test.mjs` | 상시 | active | #4121 HF 선택 생성·반복 페이지 투영과 delete/type/paste/copy/cut/format history | biz_plan.hwp | npm e2e:issue-4121 | Stage 2~3 선택 생성·소비 계약 |
 | `home-end-key.test.mjs` | 상시 | active | Home/End 줄 처음·끝, Ctrl+Home/End 문서 처음·끝 — 포커스 밖·머리말·각주 모드 포함 | biz_plan.hwp, footnote-01.hwp | npm e2e:home-end-key |  |
+| `ime-navigation.test.mjs` | 상시 | active | Linux/fcitx 조합 확정 뒤 전달되는 탐색 키 1회 처리·Shift 선택·keyup·Enter·Undo | 합성 새 문서 ABCDEF한글 | npm e2e:ime-navigation | 실제 OS 이벤트 기록을 DOM으로 재생; native 확인과 구분 |
 | `helpers.mjs` | 유틸 | active | E2E 테스트 헬퍼 — Puppeteer + Chrome CDP | — | 수동 |  |
 | `hml-equation-embed.test.mjs` | 상시 | active | PR #2219 HML equation canvas edit/undo/export/reload | — | 수동 |  |
 | `hml-open.check.mjs` | 상시 | active | Standalone HML browser regression. | — | 수동 | legacy-name |
