@@ -7061,14 +7061,36 @@ impl LayoutEngine {
                 .map(|(position, _, _)| position.saturating_sub(comp_line.char_start))
                 .min()
                 .unwrap_or(usize::MAX);
-            let unjustified_leading_spaces = if needs_justify && !is_hancom_company_pua_logo_line {
-                unjustified_leading_spaces_by_run(comp_line, first_inline_offset)
+            let trailing_space_limit = trailing_space_limit_after_last_inline_object(
+                comp_line,
+                line_tac_offsets_for_width
+                    .iter()
+                    .map(|(pos, _, _)| *pos)
+                    .max(),
+            );
+            // 들여쓰기 공백은 양수 여분 폭의 배분 대상이 아니다. 저장 줄의
+            // 자연 폭 자체가 상자를 넘으면 압축은 선두 공백의 전진에도 적용한다.
+            // 압축 계산과 실제 text run이 같은 대상 배열을 소비해야 한다.
+            let trailing_width = if renders_synthetic_wrap_trailing_space {
+                0.0
             } else {
-                vec![0; comp_line.runs.len()]
+                comp_line.runs.last().map_or(0.0, |run| {
+                    let count = effective_text_for_metrics(run)
+                        .chars()
+                        .rev()
+                        .take_while(|ch| *ch == ' ')
+                        .count()
+                        .min(trailing_space_limit);
+                    let mut style = run.text_style(styles);
+                    style.default_tab_width = tab_width;
+                    estimate_text_width(&" ".repeat(count), &style)
+                })
             };
-
             // 글줄 소유 개체/각주는 가시 문자열 바깥에도 있으므로 선행 공백의 끝을 제한한다.
-            let first_inline_pos = if needs_justify {
+            let first_inline_pos = if needs_justify
+                && !is_hancom_company_pua_logo_line
+                && total_text_width - trailing_width <= available_width
+            {
                 line_tac_offsets_for_width
                     .iter()
                     .map(|(pos, _, _)| *pos)
@@ -7101,6 +7123,14 @@ impl LayoutEngine {
             } else {
                 // 문단 끝·명시 개행의 작성 공백과 밑줄 친 공백은 유지한다.
                 0.0
+            };
+            let unjustified_leading_spaces = if needs_justify
+                && !is_hancom_company_pua_logo_line
+                && total_text_width - trailing_width <= available_width
+            {
+                unjustified_leading_spaces_by_run(&leading_space_plan.line, first_inline_offset)
+            } else {
+                vec![0; leading_space_plan.line.runs.len()]
             };
             let (extra_word_sp, extra_char_sp, extra_dash_sp) = if is_hancom_company_pua_logo_line {
                 // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.

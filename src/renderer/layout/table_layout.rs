@@ -21804,6 +21804,90 @@ impl LayoutEngine {
             })
     }
 
+    /// 저장된 셀 상자와 선택한 줄의 출처가 물리 쪽 프레임을 소유하는지 조회한다.
+    /// 흐름을 전진하지 않는 빈 유닛도 이 상자 안의 정렬 공간일 수 있다.
+    /// 예산의 재컷과 partial paint는 같은 출처/선언 범위 판정을 소비한다.
+    pub(crate) fn cell_cut_owns_page_box(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+        page_box_height: f64,
+    ) -> bool {
+        let stored_cell_spans_page_box =
+            (matches!(cell.vertical_align, crate::model::table::VerticalAlign::Top)
+                && !self.cell_uses_plain_reflow_units(cell, table))
+                || hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) + 0.5
+                    >= page_box_height;
+        if !stored_cell_spans_page_box
+            || self.cell_cut_has_projected_lines(cell, table, styles, start_unit, end_unit)
+        {
+            return false;
+        }
+        // 쪽 상자의 정렬 공간은 가시 끝이 실제로 그 상자에 들어갈 때만
+        // 소유한다. 마지막 줄 뒤의 비가시 간격은 같은 CellUnit 원장에서
+        // 제외하며, 저장 reset trim과 같은 공간을 두 번 빼지 않는다.
+        let units = self.cell_units(cell, table, styles);
+        let start = start_unit.min(units.len());
+        let end = end_unit.clamp(start, units.len());
+        // 원래 첫 조각의 빈 밴드와 이미 소비한 컷의 prefix는 다르다.
+        // 원장이 높이 합에서 제외한 이어받기 prefix가 있을 때만 가시 끝으로
+        // 소유를 재검토한다. 다른 저장 프레임의 빈 공간은 선언 소유를 유지한다.
+        let excluded_prefix = start > 0
+            && units.get(start).is_some_and(|unit| {
+                unit.empty_spacer
+                    && !unit.hard_break_before
+                    && !Self::empty_unit_owns_flow_line_box(cell, table, unit)
+            });
+        if !excluded_prefix {
+            return true;
+        }
+        let reset_trim =
+            self.native_saved_reset_cut_trailing_trim(table, cell, &units, start, end, styles);
+        let trailing = units[start..end]
+            .last()
+            .map_or(0.0, |unit| unit.trailing_blank_height);
+        let remaining_trailing = (trailing - reset_trim).max(0.0);
+        let painted_height = (self.cell_cut_visible_height(cell, table, styles, start, end)
+            - remaining_trailing)
+            .max(0.0);
+        painted_height <= page_box_height + 0.5
+    }
+
+    /// 이어받기 시작의 흐름 비소유 빈 prefix를 원본 유닛 커서에서 소비한다.
+    /// advance_row_cut이 같은 소유 검사로 높이 합에서 제외하는 유닛이다.
+    /// 호출자는 정렬 공간을 보존하며, 예산에서 제외한 prefix만 시작 컷에 반영한다.
+    /// 저장/재조판 줄 상자와 hard break가 소유하는 공간은 그대로 보존한다.
+    pub(crate) fn consume_row_continuation_spacers(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &mut [usize],
+        styles: &ResolvedStyleSet,
+    ) {
+        for (slot, index) in Self::row_cut_cell_order(table, row).into_iter().enumerate() {
+            let (Some(cell), Some(start)) = (table.cells.get(index), start_cut.get_mut(slot))
+            else {
+                continue;
+            };
+            if *start == 0 {
+                continue;
+            }
+            let units = self.cell_units(cell, table, styles);
+            while let Some(unit) = units.get(*start) {
+                if !unit.empty_spacer
+                    || unit.hard_break_before
+                    || Self::empty_unit_owns_flow_line_box(cell, table, unit)
+                {
+                    break;
+                }
+                *start += 1;
+            }
+        }
+    }
+
     fn advance_row_cut_inner(
         &self,
         table: &crate::model::table::Table,

@@ -6349,42 +6349,24 @@ impl LayoutEngine {
                 self.dpi,
             );
             let pinned_height = (box_bottom - y_start).max(0.0);
-            // 호환성 투영은 떠 있는 그림의 세로 묶음을 독립적인 인라인 개체로 바꿀 수 있다.
-            // 그 합성 줄 지오메트리는 저장된 전쪽 프레임이 아니다(issue2004 5쪽: PDF 끝은 1023px이 아닌 약 931px).
-            // 1×1 표 모양만으로 프레임 소유를 추정하지 않고 같은 컷의 줄 출처를 소비한다.
-            let projected_content = table.cells.first().is_some_and(|cell| {
-                self.cell_cut_has_projected_lines(
+            // A compatibility projection can turn a floating picture stack into
+            // independent inline atoms. Its synthetic line geometry is not a
+            // stored full-page frame (issue2004 p5: PDF ends near 931px, not 1023).
+            // Consume the same cut's line provenance instead of inferring frame
+            // ownership from the 1x1 table shape alone.
+            // 선택한 원본/파생 줄과 선언 상자가 이 물리 프레임을 소유하는지는
+            // 예산 재컷과 같은 Query로 판정한다. 작은 stale 선언 또는 projected
+            // 줄은 프레임에 고정하지 않고 실제 내용 높이를 보존한다.
+            if table.cells.first().is_some_and(|cell| {
+                self.cell_cut_owns_page_box(
                     cell,
                     table,
                     styles,
                     start_cut.first().copied().unwrap_or(0),
                     end_cut.first().copied().unwrap_or(0),
+                    pinned_height,
                 )
-            });
-            // [#6923] 쪽 **중간**에서 시작하는 비끝 조각도, 칸 내용이 상자 상단에 붙는
-            // (`valign=Top`) 형상이면 상자를 쪽이 정한다 — 늘려도 내용이 움직이지 않는다.
-            // 148738070 1쪽(감싼 1×1 표, 표 상단 338.4)은 정본 상자 하단이 1021.9 인데
-            // rhwp 는 내용 끝(1003.5)에서 끊어 18.4px 짧았다. 위 156645214 반례는
-            // `Center` 칸이라 늘리면 내용이 8px 내려가므로 그 갈래는 종전대로 둔다.
-            let content_is_top_anchored = table.cells.first().is_some_and(|cell| {
-                matches!(cell.vertical_align, crate::model::table::VerticalAlign::Top)
-            });
-            // [#7095] 한/글은 분할된 칸의 저장 높이를 **조각 상자 높이의 합**으로 적는다
-            // (1382000 `pi=95`: 칸 h 325144HU = 4335px ↔ 정본 상자 855+891×3+810 = 4338px,
-            // 7062: 700976HU = 9346px ↔ 정본 합 9337px, 차는 PDF 쪽 척도). 저장 높이가 쪽 상자
-            // 하나보다도 작은 칸(1382000 `pi=90`: h 282HU)은 상자를 쪽에 고정할 수 없고, 정본도
-            // 네 조각 모두 내용에 맞춘다(16~19쪽 상자 아래 977·980·970·897). 그런 칸은 쪽 상자로
-            // 늘리지 않는다 — 늘린 상자 안에서 칸 `valign` 을 적용하면 내용이 14~18px 내려간다.
-            // `valign=Top` 칸은 저장 높이가 작아도 정본이 상자를 쪽에 둔다(synam-001 `pi=163`
-            // h 282HU: 20쪽 내용 끝 1032 ↔ 상자 1054) — 위 #6923 갈래는 그대로 둔다.
-            let stored_cell_spans_page_box = table.cells.first().is_some_and(|cell| {
-                // 일반 재조판 줄에는 저장된 전쪽 상자가 없다. 위 정렬만으로
-                // 스캔의 내용 컷을 쪽 하단까지 다시 늘리지 않는다.
-                (content_is_top_anchored && !self.cell_uses_plain_reflow_units(cell, table))
-                    || hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) + 0.5
-                        >= pinned_height
-            });
-            if stored_cell_spans_page_box && !projected_content {
+            }) {
                 // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
                 // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
                 // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로

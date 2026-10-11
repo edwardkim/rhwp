@@ -2984,5 +2984,308 @@
     "sourceAndExistingPdfPreserved": true,
     "approvalRequiredBeforePr": true,
     "status": "New bottom overflow repaired with accurate existing tests retained. Six original failures and final whole validation remain. No whole legacy-document acceptance."
+  },
+  "v20": {
+    "sourceBaseHead": "a0c65af5a",
+    "sourceSnapshot": {
+      "sourceBaseHead": "a0c65af5a",
+      "productionFiles": [
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "sha256": "fc34d05f191452039430d89d8fa11781a1c02dd15a269163ff89982961254a9d"
+        },
+        {
+          "path": "src/renderer/layout/table_partial.rs",
+          "sha256": "cd42558eb52809f930397afae70834578af495ead56a0bcc09714855bc772ab6"
+        },
+        {
+          "path": "src/renderer/layout/paragraph_layout.rs",
+          "sha256": "2241de88c52017e99ed02b78192ae8a5746b8219f033eb093d3290b16ab261bb"
+        },
+        {
+          "path": "src/renderer/typeset/table/continuation/fragment.rs",
+          "sha256": "fdc0ba395d894d2e7bf672b129ab5859e2ee779da6fda268932fc9b341bb0c7c"
+        }
+      ],
+      "nativeBinarySha256": "684436393b09447326f7ba54138eb89e62a8fd8e76bb137e9bd420f3f806a31b",
+      "wasmFiles": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/frozen-pkg-v20e/rhwp.js",
+          "sha256": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/frozen-pkg-v20e/rhwp_bg.wasm",
+          "sha256": "ef4aaf90312d5cf58adaf495d1b191d323fd93ed6478d7c0831d038e24563532"
+        }
+      ]
+    },
+    "scope": "continuation flow-unowned prefix and compression distribution; whole PR remains incomplete",
+    "testFilesChanged": false,
+    "newTestFunctions": 0,
+    "baselineOrToleranceChanged": false,
+    "comparisonAlgorithmChanged": false,
+    "newGuidelineFilesChanged": false,
+    "regression": {
+      "runId": "7cd63220-ba78-4ca8-a4fc-5f307cf6a52d",
+      "run": 29,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 5047,
+      "seconds": 50.057,
+      "threads": 8,
+      "exitCode": 0,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/nextest-v20e.log",
+      "wholeNextest": false
+    },
+    "printReference": {
+      "source": "samples/task2430/1382000_domestic_violence_survey.hwp",
+      "sourceSha256": "a3c6a227d26c41c7de9aa258f470001a629da90fa606cdddcbd385add43b7381",
+      "path": "pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf",
+      "sha256": "c238bcb0e7ca7ee65c967cc178664cdd174116be2a282f8277a766a721611ff8",
+      "bytes": 461873,
+      "pages": 39,
+      "engine": "2020",
+      "creator": "Hwp 2020 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550",
+      "jobId": "a3ef2118-897a-4427-ac15-375c0a5806f8",
+      "runtimeVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up",
+      "replacedInvalidCairoSha256": "5f92d3282c0772cd8fbe72e0fadfa49e2cde8ee7d788b6fbafe51bbd4e59e024",
+      "olderGenuine40PageReferencePreserved": true
+    },
+    "survey": {
+      "base": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/base-full/survey39/silhouette.tsv",
+        "sha256": "3148826b55b1ec7b94a8bd4290b140b59f292d50dad17c1e7b005b18c425d2ff",
+        "pages": 39,
+        "minimum": 11.72916,
+        "below90": [
+          20,
+          22,
+          23,
+          24,
+          25,
+          26,
+          28,
+          29,
+          30,
+          31,
+          32,
+          35
+        ]
+      },
+      "native": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/native-v20e/survey39/silhouette.tsv",
+        "sha256": "347120df6e5b34c74c0bf3f5fc772ffd2aac90899580175fa3ab139a5eecb482",
+        "pages": 39,
+        "minimum": 11.46418,
+        "below90": [
+          20,
+          22,
+          23,
+          25,
+          26,
+          28,
+          29,
+          30,
+          31,
+          32,
+          35
+        ]
+      },
+      "fresh": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/fresh-v20e/survey39/silhouette.tsv",
+        "sha256": "514edf4ae12e7a5667c66aa43db7f4324c54e7caa3b154b3d878d55fbc3b03d5",
+        "pages": 39,
+        "minimum": 11.46418,
+        "below90": [
+          20,
+          22,
+          23,
+          25,
+          26,
+          28,
+          29,
+          30,
+          31,
+          32,
+          35
+        ]
+      },
+      "wholeFidelityAccepted": false,
+      "anomaly": {
+        "pages": 39,
+        "overflow": 0,
+        "textOverlap": 0,
+        "overlap": 0
+      },
+      "inspectedPages": [
+        24,
+        27,
+        34
+      ],
+      "selected": [
+        {
+          "page": 24,
+          "beforeV19": 40.62366,
+          "after": 92.21086
+        },
+        {
+          "page": 27,
+          "beforeBase": 91.78356,
+          "beforeV20d": 86.33744,
+          "after": 91.78356
+        },
+        {
+          "page": 34,
+          "beforeBase": 90.81951,
+          "beforeV20d": 89.95164,
+          "after": 90.81951
+        }
+      ],
+      "nativeFreshDifferentPngPages": [
+        1
+      ],
+      "selectedNativeFreshPngIdentical": true,
+      "legacyScopeIssues": [
+        7095,
+        7387,
+        7391
+      ],
+      "invalidReferenceIssue": 7352
+    },
+    "counterNativeSvg": {
+      "documents": 13,
+      "pages": 356,
+      "changedPages": 59,
+      "changedDocuments": 4,
+      "unchangedPages": 297,
+      "records": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/counter-v20e-identity.json"
+    },
+    "affectedCounterVisual": [
+      {
+        "key": "regulatory17",
+        "native": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/counter-native-v20e/regulatory17/silhouette.tsv",
+          "sha256": "0c7c1ebfef6ea56f290f84d7e0ad58c1abc5d489c1d29e65a7f26fc989c45fac",
+          "pages": 17,
+          "minimum": 97.71204,
+          "below90": []
+        },
+        "fresh": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/fresh-v20e/regulatory17/silhouette.tsv",
+          "sha256": "0c7c1ebfef6ea56f290f84d7e0ad58c1abc5d489c1d29e65a7f26fc989c45fac",
+          "pages": 17,
+          "minimum": 97.71204,
+          "below90": []
+        },
+        "sameAllNativeFreshPng": true
+      },
+      {
+        "key": "emc14",
+        "native": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/counter-native-v20e/emc14/silhouette.tsv",
+          "sha256": "0615fe2d50616bdf5c6b99afa004bdcf07505075cc3fc0c78d4508b63c13a26a",
+          "pages": 14,
+          "minimum": 98.00998,
+          "below90": []
+        },
+        "fresh": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/fresh-v20e/emc14/silhouette.tsv",
+          "sha256": "0615fe2d50616bdf5c6b99afa004bdcf07505075cc3fc0c78d4508b63c13a26a",
+          "pages": 14,
+          "minimum": 98.00998,
+          "below90": []
+        },
+        "sameAllNativeFreshPng": true
+      },
+      {
+        "key": "asset60",
+        "native": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/counter-native-v20e/asset60/silhouette.tsv",
+          "sha256": "07386d5c48165d82ac4989724f4a3c925eb50c4fe8745cab454c89ae588b2789",
+          "pages": 60,
+          "minimum": 93.48019,
+          "below90": []
+        },
+        "fresh": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/fresh-v20e/asset60/silhouette.tsv",
+          "sha256": "07386d5c48165d82ac4989724f4a3c925eb50c4fe8745cab454c89ae588b2789",
+          "pages": 60,
+          "minimum": 93.48019,
+          "below90": []
+        },
+        "sameAllNativeFreshPng": true
+      },
+      {
+        "key": "prep140",
+        "native": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/counter-native-v20e/prep140/silhouette.tsv",
+          "sha256": "a4accd944511178d5e6e361b9912c1d2297b029999823442dac4325fdd1d6cb3",
+          "pages": 140,
+          "minimum": 91.93033,
+          "below90": []
+        },
+        "fresh": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/fresh-v20e/prep140/silhouette.tsv",
+          "sha256": "a4accd944511178d5e6e361b9912c1d2297b029999823442dac4325fdd1d6cb3",
+          "pages": 140,
+          "minimum": 91.93033,
+          "below90": []
+        },
+        "sameAllNativeFreshPng": true
+      }
+    ],
+    "captureConcurrency": 8,
+    "rasterDpi": 96,
+    "nativeCapturedPages": 270,
+    "freshCapturedPages": 270,
+    "rasterRetryCount": 0,
+    "setupFailure": "initial PrEP PDF path was wrong before any PrEP capture; corrected from verified original manifest; initial failed log preserved",
+    "fontInputEvidence": [
+      {
+        "key": "regulatory17",
+        "originalInputUnchanged": true,
+        "referencePdfUnchanged": true,
+        "previousFontFiles": 706,
+        "changedFonts": []
+      },
+      {
+        "key": "emc14",
+        "originalInputUnchanged": true,
+        "referencePdfUnchanged": true,
+        "previousFontFiles": 706,
+        "changedFonts": []
+      },
+      {
+        "key": "asset60",
+        "originalInputUnchanged": true,
+        "referencePdfUnchanged": true,
+        "previousFontFiles": 706,
+        "changedFonts": []
+      },
+      {
+        "key": "prep140",
+        "originalInputUnchanged": true,
+        "referencePdfUnchanged": true,
+        "previousFontFiles": 706,
+        "changedFonts": []
+      }
+    ],
+    "wasmBuild": {
+      "exitCode": 0,
+      "environment": "macOS locked --no-opt local substitute",
+      "dockerOptimized": false,
+      "actualBrowser": "Chrome/154.0.8037.99"
+    },
+    "remainingOriginalFailures": 5,
+    "original27": {
+      "resolved": 20,
+      "unsuitableScopesSeparated": 2,
+      "remainingFailures": 5
+    },
+    "superscriptPrintBlockedIssue": 7809,
+    "prApprovalRequired": true
   }
 }
