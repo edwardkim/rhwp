@@ -2885,6 +2885,7 @@ impl HeightMeasurer {
         // 행별 **컨텐츠** 하한 — 2단계에서만 채워지며, 병합 선언이 행합보다 작을 때
         // (2-b 축소 규칙) 글자가 잘리지 않도록 축소 바닥으로 쓴다.
         let mut content_row_floor = vec![0.0f64; row_count];
+        let mut reflow_picture_row_floor = vec![0.0f64; row_count];
 
         // 1단계: row_span==1인 셀에서 행별 최대 높이 추출
         // cell.height는 HWP가 저장한 셀 높이 (pad + content, trailing ls 미포함)
@@ -3622,6 +3623,17 @@ impl HeightMeasurer {
                     text_height
                 };
 
+                let picture_frame = crate::renderer::float_placement::reflow_picture_cell_frame(
+                    cell,
+                    cell_inner_width,
+                    styles,
+                    self.dpi,
+                );
+                let content_height = picture_frame
+                    .as_ref()
+                    .map(|frame| frame.content_height)
+                    .unwrap_or(content_height);
+
                 // 패딩 포함 총 필요 높이
                 // [Task #501] cell.padding 이 IR cell.height 자체를 넘는 비정상 케이스
                 // (mel-001 p2 셀[21]: cell.h=1280 HU, pad.top+bottom=3400 HU) 가드:
@@ -3853,6 +3865,12 @@ impl HeightMeasurer {
                 }
                 if required_height > content_row_floor[r] {
                     content_row_floor[r] = required_height;
+                }
+                if picture_frame.is_some() {
+                    // 재조판한 내용이 작아도 셀 자체의 최소 높이는 남는다.
+                    // 표의 낡은 common.height로 이를 줄이면 아래/가운데 정렬도 이동한다.
+                    reflow_picture_row_floor[r] =
+                        reflow_picture_row_floor[r].max(required_height.max(cell_h_px));
                 }
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
@@ -4558,6 +4576,22 @@ impl HeightMeasurer {
             common_h
         } else {
             raw_table_height
+        };
+
+        // 저장 줄 없는 그림 셀은 위에서 확정한 줄 구성으로 실제 그림을 그린다.
+        // 낡은 common.height로 다시 줄이면 마지막 그림이 셀 clip에 잘리고,
+        // 뒤 내용의 예약 높이도 부족해진다. 같은 점유 높이를 최종 행에도 보존한다.
+        let mut restored_picture_row = false;
+        for (height, floor) in row_heights.iter_mut().zip(reflow_picture_row_floor) {
+            if *height < floor {
+                *height = floor;
+                restored_picture_row = true;
+            }
+        }
+        let table_height = if restored_picture_row {
+            row_heights.iter().sum::<f64>() + cell_spacing * row_count.saturating_sub(1) as f64
+        } else {
+            table_height
         };
 
         // 누적 행 높이 계산 (이진 탐색용)
