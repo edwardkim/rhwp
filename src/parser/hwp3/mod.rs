@@ -4153,13 +4153,8 @@ fn parse_hwp3_inner(
             let font_name = crate::parser::hwp3::encoding::decode_hwp3_string(&font_name_buf);
             use crate::model::style::Font;
             let mut font = Font::default();
-            // [Task #1008 격차 D] HWP3 legacy 폰트명 → 한컴 변환기 정합 명칭 매핑.
-            // HWP3 → HWP5 변환기는 "신명조"/"고딕"/"중고딕"/"견고딕"/"그래픽" 등 legacy
-            // 명칭을 "HY신명조"/"한양*" 으로 변환하여 저장. rhwp SVG 출력의 font-family
-            // 첫 폰트가 다르면 시스템 fallback 미스 + 폰트 metric 측정 차이로 char-by-char
-            // advance drift 발생 (HWP3 vs HWP5 변환본 3-7px 누적). 한컴 변환기 동작
-            // mimic 으로 HWP3 측 폰트명을 HWP5 정합 명칭으로 매핑하여 동일 SVG 출력 +
-            // 폰트 metric 정합. alt_name 에 원본 보존 (트레이싱용).
+            // HWP3 legacy 글꼴 이름을 한/글 변환기가 쓰는 이름으로 옮긴다
+            // (`hwp3_font_name_to_hwp5`). alt_name 에 원본을 보존한다.
             let mapped_name = hwp3_font_name_to_hwp5(&font_name);
             if mapped_name != font_name {
                 font.alt_name = Some(font_name.clone());
@@ -5191,17 +5186,20 @@ fn hwp3_outline_command_level(command: &str) -> Option<u8> {
 ///
 /// 회귀 risk: 의도된 `═` 사용 사례. 단언: 다른 HWP3 sample sweep 시 회귀 0.
 //
-// [Task #1008 격차 D] HWP3 legacy 폰트명 → 한컴 변환기 정합 명칭 매핑.
-// HWP3 → HWP5 변환기는 "신명조" 등 legacy 명칭을 "HY신명조" 등 표준 명칭으로
-// 변환하여 저장. rhwp 도 동일 mapping 적용으로 HWP3 ↔ HWP5 변환본 SVG 정합.
+// HWP3 legacy 글꼴 이름 → 한/글 변환기(HWP3 → HWP5/HWPX)가 쓰는 이름.
+//
+// 한/글은 HWP3 의 한양 글꼴을 `한양*` HFT 로 옮긴다. `HY*` 는 이름이 비슷한 별개의
+// TrueType 글꼴이라(예: `HY신명조` 의 둥근 따옴표는 1.0em, `한양신명조` 는 0.446em)
+// 그 이름을 쓰면 한/글도 다른 글꼴로 그린다(#7810). 표는 저장소의 한/글 변환본
+// (`samples/hwp3-sample*-hwp5*`, `*-hwpx.hwpx`) 대비 실측이며, 증거가 없는 이름은
+// 그대로 둔다. `고딕` 은 한/글도 `고딕` 으로 둔다.
 fn hwp3_font_name_to_hwp5(name: &str) -> String {
     match name.trim() {
-        "신명조" => "HY신명조".to_string(),
-        "신명" => "HY신명조".to_string(),
-        "고딕" => "HY고딕".to_string(),
-        "중고딕" => "HY중고딕".to_string(),
-        "견고딕" => "HY견고딕".to_string(),
-        "그래픽" => "HY그래픽".to_string(),
+        "신명조" => "한양신명조".to_string(),
+        "중고딕" => "한양중고딕".to_string(),
+        "견고딕" => "한양견고딕".to_string(),
+        "그래픽" => "한양그래픽".to_string(),
+        "궁서" => "한양궁서".to_string(),
         _ => name.to_string(),
     }
 }
