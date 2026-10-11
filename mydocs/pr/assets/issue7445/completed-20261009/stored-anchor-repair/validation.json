@@ -3287,5 +3287,440 @@
     },
     "superscriptPrintBlockedIssue": 7809,
     "prApprovalRequired": true
+  },
+  "v21": {
+    "sourceHead": "a0815ccee6b266d1d055f32ca20be9dce641d9a8",
+    "modifiedFile": "src/renderer/layout/table_partial.rs",
+    "modifiedFileSha256": "152653584bab5875c7b43e64488c67d025432bbeb743f9ddb4472f67087be7cd",
+    "nativeBinarySha256": "de5b2f3cb60829dee70aae10ed7b7721b3520ae536249f9aa8b2d054c0454833",
+    "physicalRowReservationAndCellHeightsUnchanged": true,
+    "textLinesAndCaretPositionsUnchanged": true,
+    "rootCause": "paint growth included structural TextLine and empty TextRun bounds; physical row flow was already owned by cell box",
+    "originalFailureBefore": "issue_4514_overlay_tables_do_not_overlap: table parent overlap 4.4267 px",
+    "originalTestChanged": false,
+    "sourcePdfChanged": false,
+    "nativeGuardDiagnosticPassed": 1,
+    "formalNextest": {
+      "runId": "b9457e70-8862-439e-bdc0-b39d2a45f822",
+      "run": 24,
+      "passed": 24,
+      "failed": 0,
+      "skipped": 594,
+      "seconds": 7.964,
+      "exitCode": 0,
+      "threads": 8
+    },
+    "originalOverlayNativeSvg": {
+      "beforePages": 46,
+      "afterPages": 46,
+      "identical": true,
+      "changedPages": [],
+      "records": [
+        {
+          "version": "before",
+          "command": [
+            "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage440-continuation-prefix/rhwp-v20e",
+            "export-svg",
+            "samples/issue4514/sample1-repro.hwp",
+            "--compat",
+            "2022",
+            "--profile",
+            "print",
+            "-o",
+            "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/svg/before",
+            "--json"
+          ],
+          "exitCode": 0
+        },
+        {
+          "version": "after",
+          "command": [
+            "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+            "export-svg",
+            "samples/issue4514/sample1-repro.hwp",
+            "--compat",
+            "2022",
+            "--profile",
+            "print",
+            "-o",
+            "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/svg/after",
+            "--json"
+          ],
+          "exitCode": 0
+        }
+      ]
+    },
+    "normalNativeSvgIdentity": [
+      {
+        "key": "issue157",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/hwpx/hancom-hwp/issue_157.hwp",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/issue157",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 2,
+        "afterPages": 2,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "rewind3837",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue3837/stored_vpos_rewind_form.hwp",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/rewind3837",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 4,
+        "afterPages": 4,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "regulatory17",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue7445/80250_regulatory_analysis.hwp",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/regulatory17",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 17,
+        "afterPages": 17,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "ktx003",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/basic/KTX-003.hwp",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/ktx003",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 1,
+        "afterPages": 1,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "low-slack6535",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue6535/36339092_low_slack_absorb_block.hwpx",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/low-slack6535",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 1,
+        "afterPages": 1,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "tac3",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue6448/tac_cell_leftover_fits.hwpx",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/tac3",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 3,
+        "afterPages": 3,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "civil2",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue6032/2912695_civil_petition_form.hwp",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/civil2",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 2,
+        "afterPages": 2,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "microbe5",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue6313/microbe_bank_cell_picture.hwpx",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/microbe5",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 5,
+        "afterPages": 5,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "emc14",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue6123/3112461_railway_emc_criteria.hwpx",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/emc14",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 14,
+        "afterPages": 14,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "asset60",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue6031/3249937_asset_management_rules.hwpx",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/asset60",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 60,
+        "afterPages": 60,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "court2",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue6034/2912735_court_report_form.hwp",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/court2",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 2,
+        "afterPages": 2,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "prep140",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue2006/1790387_prep_final_report.hwpx",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2024",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/prep140",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 140,
+        "afterPages": 140,
+        "identical": true,
+        "changedPages": []
+      },
+      {
+        "key": "api105",
+        "command": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/rhwp-v21",
+          "export-svg",
+          "/Users/tsjang/rhwp-7445-completed-20261009/samples/hwpctl_API_v2.4.hwp",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--profile",
+          "print",
+          "--compat",
+          "2022",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/counter-v21/api105",
+          "--json"
+        ],
+        "exitCode": 0,
+        "beforePages": 105,
+        "afterPages": 105,
+        "identical": true,
+        "changedPages": []
+      }
+    ],
+    "wasmValidation": "completed",
+    "superscriptHeaderDiagnostic": {
+      "flags": "0x5",
+      "compressed": true,
+      "encrypted": false,
+      "distribution": true,
+      "lastSavedProduct": "hancom-office-2022",
+      "lastSavedVersion": "12.0.0.3650",
+      "printFailureCauseNotConfirmed": true,
+      "existingFollowup": 7809
+    },
+    "fresh": {
+      "actualChrome": "Chrome/154.0.8037.99",
+      "pages": 46,
+      "allRawSvgByteIdenticalToNative": true,
+      "page10Boxes": [
+        {
+          "pi": 139,
+          "bbox": {
+            "x": 75.6,
+            "y": 75.6,
+            "w": 642.5,
+            "h": 464.7
+          }
+        },
+        {
+          "pi": 158,
+          "bbox": {
+            "x": 75.6,
+            "y": 539.7,
+            "w": 642.5,
+            "h": 93.4
+          }
+        }
+      ],
+      "page10NativeFreshPngIdentical": true,
+      "captureCommand": [
+        "node",
+        "/Users/tsjang/rhwp-7445-completed-20261009/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/fresh-p10/svg/wasm_010.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage441-overlay-paint-bounds/fresh-p10/rhwp_png/rhwp_010.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "captureExit": 0,
+      "wholeFidelityAccepted": false
+    },
+    "wasmBuild": {
+      "exitCode": 0,
+      "environment": "Mac locked --no-opt local substitute",
+      "dockerOptimized": false,
+      "files": [
+        {
+          "name": "rhwp.js",
+          "sha256": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd"
+        },
+        {
+          "name": "rhwp_bg.wasm",
+          "sha256": "a956ed6dd5531ffb71955ef2bd8dd676cdfbddab383f13e1fe83108651785c66"
+        }
+      ]
+    },
+    "exactPage10TreeDiff": [
+      [
+        "/children/2/children/0/children/30/bbox/h",
+        468.5,
+        464.7
+      ]
+    ],
+    "selectedNativeFreshPercent": 53.82229,
+    "wholeFidelityAccepted": false,
+    "legacyFidelityIssue": 7808,
+    "original27": {
+      "resolved": 21,
+      "unsuitableScopesSeparated": 2,
+      "remainingFailures": 4
+    },
+    "newTestFunctions": 0,
+    "baselineOrToleranceChanged": false,
+    "comparisonAlgorithmChanged": false,
+    "latestWholeNextest": "not yet run after repairs",
+    "prApprovalRequired": true
   }
 }

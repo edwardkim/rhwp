@@ -7209,6 +7209,9 @@ impl LayoutEngine {
                 terminal_long_child_clip_only: bool,
                 owned_line_flow_bottoms: &FragmentCellFlowBottoms,
             ) -> f64 {
+                if !node.visible {
+                    return f64::NEG_INFINITY;
+                }
                 let clipped_cell = matches!(
                     node.node_type,
                     RenderNodeType::TableCell(TableCellNode { clip: true, .. })
@@ -7220,7 +7223,16 @@ impl LayoutEngine {
                     .get(&node.id)
                     .copied()
                     .unwrap_or(node.bbox.y + node.bbox.height);
-                let mut b = if clipped_cell && terminal_long_child_clip_only {
+                // 행의 흐름은 이미 물리 셀 상자에 예약돼 있다. 여기서는 실제
+                // 표시물의 넘침만 부모 표에 전파한다. TextLine은 줄 구성 상자이고,
+                // 빈 TextRun은 caret용 위치이므로 그 자체가 새 paint 끝점은 아니다.
+                // 자식 글자·개체는 계속 검사하며 빈 줄의 원래 위치/높이도 보존한다.
+                let structural_text = matches!(node.node_type, RenderNodeType::TextLine(_))
+                    || matches!(&node.node_type, RenderNodeType::TextRun(run)
+                        if run.display_or_text().is_empty());
+                let mut b = if structural_text {
+                    f64::NEG_INFINITY
+                } else if clipped_cell && terminal_long_child_clip_only {
                     flow_bottom.min(logical_table_bottom)
                 } else {
                     flow_bottom
