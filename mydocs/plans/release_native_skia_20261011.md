@@ -91,3 +91,18 @@ workflow 계약에 한정하므로 Rust 재빌드·새 WASM/시각 출력은 반
 `workflow-contracts-ci-step-after.log`, `lint-later-contracts-after.log`에 보존한다.
 새 head를 push한 뒤 CI/CodeQL을 다시 확인해야 하며, 이전 head의 성공을 새 head의 CI 성공으로
 대체하지 않는다. 다섯 플랫폼 Release Binary 검증과 merge는 아직 수행하지 않았다.
+
+## Self-review 검증
+
+메인터너가 CI 완료 뒤 self-review 진행을 지시했다. code SHA
+`95ca4097e486892499f0d9a281f5aa2a1c4c2ea8`의 CI 38122117591, CodeQL 38122117572,
+Adapter 38122117587, Proptest 38122117564를 API로 재조회했으며 모두 success다.
+CI Lint·Native Skia·Frontend package·네 archive build/worker와 GHAS CodeQL check도 success다.
+정확한 code head가 녹색이 된 뒤 `mydocs/pr/archives/pr_7818_review.md`와 오늘할일 기록을 준비했다.
+
+Release Binary는 일반 PR CI에서 실행되지 않으므로 동일한 branch/head에서 `tag=test` 모드로
+[38123523720](https://github.com/edwardkim/rhwp/actions/runs/38123523720)을 dispatch했다.
+다섯 플랫폼 모두 build·실제 archive PNG gate·artifact 업로드 success를 API와 로그로 확인했다.
+공식 CLI 검증 범위의 다섯 플랫폼 결과가 충족됐으므로 문서-only trailing commit을 반영한다.
+기존 reusable 후속 package verify(WASM/VSIX)는 별도로 진행 중이며 전체 run success로 보고하지 않는다.
+이 테스트 모드에서는 Release attach와 외부 package publish가 skip되며 실제 배포는 하지 않는다.
