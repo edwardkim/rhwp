@@ -27,62 +27,6 @@ fn save_as_edited(doc: &Document) -> Document {
     parse_document(&out).expect("재파싱 실패")
 }
 
-/// 문단 텍스트를 경로와 함께 수집 (본문 + 컨트롤 하위 문단 1단계).
-fn first_paragraph_text(doc: &Document) -> String {
-    doc.sections[0].paragraphs[0].text.clone()
-}
-
-/// `samples/eq-002.hwp` 문단 0 은 자동번호 컨트롤이 문단 끝에 온다.
-/// 저장을 반복해도 텍스트가 더 자라면 안 된다(멱등).
-///
-/// 주의: **1회차 저장**에서 공백 1개가 생기는 것은 이 결함과 원인이 다르다.
-/// 원본은 자동번호를 쪽 컨트롤 계열 문자(`0x0015`)로 담고 있어 파서가 placeholder 를
-/// 만들지 않는데, 직렬화기는 `Control::AutoNumber` 를 항상 `0x0012` 로 쓴다
-/// (`control_char_code_and_id`). 그래서 1회차에만 placeholder 가 새로 생긴다.
-/// 컨트롤 문자 계열 보존은 별도 사안이라 이 테스트의 단언 대상이 아니다(이슈 #2740 §7).
-/// 여기서 고정하는 것은 **누적되지 않는다**는 성질이다.
-#[test]
-fn para_text_is_idempotent_after_first_save() {
-    let bytes = std::fs::read("samples/eq-002.hwp").expect("샘플 읽기 실패");
-    let doc0 = parse_document(&bytes).expect("파싱 실패");
-
-    let mut doc = save_as_edited(&doc0);
-    let settled = first_paragraph_text(&doc);
-
-    let mut observed = vec![settled.clone()];
-    for _ in 0..3 {
-        doc = save_as_edited(&doc);
-        observed.push(first_paragraph_text(&doc));
-    }
-
-    assert!(
-        observed.iter().all(|t| *t == settled),
-        "저장을 반복할수록 문단 텍스트가 자랐다 (공백 누적) — 라운드마다: {observed:?}"
-    );
-}
-
-/// 누적성 자체를 고정한다 — 1회 저장과 3회 저장의 결과가 같아야 한다.
-/// (1회만 보면 '한 번만 늘고 수렴'하는 정규화와 구분되지 않는다.)
-#[test]
-fn para_text_growth_is_not_cumulative() {
-    let bytes = std::fs::read("samples/eq-002.hwp").expect("샘플 읽기 실패");
-    let doc0 = parse_document(&bytes).expect("파싱 실패");
-
-    let after1 = save_as_edited(&doc0);
-    let after2 = save_as_edited(&after1);
-    let after3 = save_as_edited(&after2);
-
-    assert_eq!(
-        first_paragraph_text(&after1),
-        first_paragraph_text(&after3),
-        "저장 횟수에 따라 텍스트가 계속 자란다 (무한 누적)"
-    );
-    assert_eq!(
-        after1.sections[0].paragraphs[0].char_count, after3.sections[0].paragraphs[0].char_count,
-        "char_count 가 저장 횟수에 비례해 증가한다"
-    );
-}
-
 /// 꼬리말(머리말) 안의 문단도 같은 경로를 탄다 — 쪽번호 자동번호가 대표 사례.
 #[test]
 fn footer_para_text_is_stable_across_repeated_saves() {

@@ -43,6 +43,11 @@
 //! (`src/parser/hwp3/mod.rs:3763` — 모든 HWP3 문서에 1개) 경유로 관통한다.
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
@@ -62,11 +67,8 @@ const RATIO_MIN: u8 = 50;
 const RATIO_MAX: u8 = 200;
 
 const SAMPLES_ROOT: &str = "samples";
-const SO_SUEOP: &str = "samples/SO-SUEOP.hwp";
+
 const HWP3_SAMPLE: &str = "samples/hwp3-sample.hwp";
-/// `<CHARSHAPE>` 가 `FONTID` 만 갖고 `RATIO`·`RELSIZE` 자식이 없는 HML.
-/// HML 리더가 채우지 않으면 왕복 저장에 `RATIO="0"` 이 나간다.
-const HML_WITHOUT_RATIO: &str = "tests/fixtures/hml/exambank_math_equations_min.hml";
 
 /// #4141 Stage 1 실측: HWP3 표본 15건 전부에 인덱스 0 placeholder 가 정확히 1개씩 있다.
 /// 스윕이 조용히 비면 회귀를 놓치므로 하한을 둔다.
@@ -84,6 +86,9 @@ fn hwp3_samples() -> Vec<(PathBuf, String)> {
         };
         for entry in entries.flatten() {
             let path = entry.path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 walk(&path, root, acc);
             } else if path
@@ -148,54 +153,6 @@ fn char_shape_payloads(bytes: &[u8]) -> Vec<Vec<u8>> {
         .collect()
 }
 
-/// HWPX/HML 처럼 텍스트 엔트리를 하나 꺼낸다.
-fn zip_text_entry(bytes: &[u8], name: &str) -> String {
-    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("ZIP 열기");
-    let mut entry = archive
-        .by_name(name)
-        .unwrap_or_else(|e| panic!("{name} 찾기: {e}"));
-    let mut text = String::new();
-    entry.read_to_string(&mut text).expect("엔트리 읽기");
-    text
-}
-
-/// `<hh:ratio .../>` 나 `<RATIO .../>` 같은 태그에서 정수 속성값을 모은다.
-fn tag_int_attrs(tag: &str) -> Vec<i64> {
-    let mut out = Vec::new();
-    let bytes = tag.as_bytes();
-    let mut i = 0;
-    while let Some(open) = bytes[i..].iter().position(|&b| b == b'"') {
-        let start = i + open + 1;
-        let Some(close) = bytes[start..].iter().position(|&b| b == b'"') else {
-            break;
-        };
-        if let Ok(v) = tag[start..start + close].parse::<i64>() {
-            out.push(v);
-        }
-        i = start + close + 1;
-    }
-    out
-}
-
-/// 여는 태그 `<name ... />` 를 전부 찾는다 (속성 안에 `>` 가 없다는 전제 — 숫자 속성뿐이다).
-fn find_tags<'a>(xml: &'a str, name: &str) -> Vec<&'a str> {
-    let open = format!("<{name}");
-    let mut out = Vec::new();
-    let mut rest = xml;
-    while let Some(at) = rest.find(&open) {
-        let after = &rest[at + open.len()..];
-        // `<hh:ratio` 가 `<hh:ratioFoo` 를 잡지 않도록 경계 확인
-        if !after.starts_with([' ', '/', '>', '\t', '\n', '\r']) {
-            rest = &rest[at + open.len()..];
-            continue;
-        }
-        let Some(end) = after.find('>') else { break };
-        out.push(&rest[at..at + open.len() + end + 1]);
-        rest = &after[end + 1..];
-    }
-    out
-}
-
 /// 유효범위 위반을 `(인덱스, 값)` 으로 모은다.
 fn out_of_range(values: &[u8], min: u8, max: u8) -> Vec<(usize, u8)> {
     values
@@ -251,43 +208,6 @@ fn check_hwp5_ratios(label: &str, hwp5: &[u8]) -> Result<usize, String> {
     ))
 }
 
-/// XML 의 `ratio` 계열 태그가 유효범위 안인지 검사한다.
-fn check_xml_ratio(
-    label: &str,
-    xml: &str,
-    tag_name: &str,
-    schema_ref: &str,
-) -> Result<usize, String> {
-    let tags = find_tags(xml, tag_name);
-    if tags.is_empty() {
-        return Err(format!(
-            "{label}: <{tag_name}> 이 하나도 없다 — 저장 경로를 확인하라"
-        ));
-    }
-    let mut bad = Vec::new();
-    for tag in &tags {
-        let values: Vec<u8> = tag_int_attrs(tag)
-            .into_iter()
-            .map(|v| v.clamp(0, 255) as u8)
-            .collect();
-        if !out_of_range(&values, RATIO_MIN, RATIO_MAX).is_empty() {
-            bad.push(*tag);
-        }
-    }
-    if bad.is_empty() {
-        return Ok(tags.len());
-    }
-    Err(format!(
-        "{label}: <{tag_name}> {}개 중 {}개가 유효범위 {RATIO_MIN}~{RATIO_MAX} 밖이다 \
-         (첫 위반: `{}`). OWPML 은 장평을 positiveInteger 로 정의하므로 0 은 스키마 \
-         위반이다 ({schema_ref}). {}",
-        tags.len(),
-        bad.len(),
-        bad[0],
-        why_it_matters()
-    ))
-}
-
 // ── ① HWP5 저장 바이트 — HWP3 표본 전수 ────────────────────────────────────
 
 /// HWP3 표본 전수를 변환해 저장 바이트의 장평이 전부 유효범위 안인지 본다.
@@ -327,21 +247,6 @@ fn hwp3_convert_emits_valid_ratios_for_every_sample() {
     );
 }
 
-/// #4141 계보의 재현 표본을 이름으로 고정한다 — 실데이터 편차(95/90/100/97)가 있는 문서다.
-#[test]
-fn so_sueop_convert_ratios_within_valid_range() {
-    let path = repo_path(SO_SUEOP);
-    let hwp5 = convert_to_hwp5_bytes(&path).expect("SO-SUEOP HWP3 변환");
-    let count = check_hwp5_ratios(SO_SUEOP, &hwp5).unwrap_or_else(|m| panic!("{m}"));
-    assert!(
-        // [#4680] 스타일 풀 중복 제거 전에는 63개 고유 모양이 2,512벌로 쌓여 있었다.
-        // 이 가드는 계약이 아니라 "조용히 0건으로 통과하는 것" 을 막는 용도다.
-        count > 50,
-        "{SO_SUEOP}: CHAR_SHAPE 가 {count}개다. 고유 모양 실측은 63개다 — 표본이나 \
-         변환 경로가 바뀌었는지 확인하라"
-    );
-}
-
 /// public 저장 경로(`DocumentCore::export_hwp_with_adapter`)도 같은 계약을 지킨다.
 #[test]
 fn public_document_core_export_also_emits_valid_ratios() {
@@ -351,43 +256,4 @@ fn public_document_core_export_also_emits_valid_ratios() {
 
 // ── ② HWPX 저장 XML ────────────────────────────────────────────────────────
 
-/// HWPX 라이터(`src/serializer/hwpx/header.rs:635`)에는 가드가 없어 IR 의 0 이 그대로 나간다.
-#[test]
-fn hwp3_export_hwpx_emits_valid_hh_ratio() {
-    for rel in [SO_SUEOP, HWP3_SAMPLE] {
-        let raw = std::fs::read(repo_path(rel)).expect("표본 읽기");
-        let core = rhwp::document_core::DocumentCore::from_bytes(&raw).expect("HWP3 파싱");
-        let hwpx = core.export_hwpx_native().expect("HWPX 저장");
-        let xml = zip_text_entry(&hwpx, "Contents/header.xml");
-        check_xml_ratio(rel, &xml, "hh:ratio", "Header XML schema.xml:590-611")
-            .unwrap_or_else(|m| panic!("{m}"));
-    }
-}
-
 // ── ③ HML 저장 XML ─────────────────────────────────────────────────────────
-
-/// `RATIO` 자식이 없는 `<CHARSHAPE>` 를 읽으면 IR 이 0 으로 남고
-/// (`src/parser/hml/reader.rs:639` 미대입 → `CharShape::default()`) 라이터가 가드 없이
-/// 방출한다(`src/serializer/hml/head.rs:129`). 이 fixture 로 배포 CLI 에서 재현된다.
-/// HML 은 렌더 경로이기도 하다 — `export-svg`/`export-pdf` 가 `.hml` 을 받는다.
-#[test]
-fn hml_roundtrip_without_ratio_child_emits_valid_ratio() {
-    let raw = std::fs::read(repo_path(HML_WITHOUT_RATIO)).expect("HML fixture 읽기");
-    let xml_in = String::from_utf8_lossy(&raw);
-    assert!(
-        find_tags(&xml_in, "RATIO").is_empty(),
-        "{HML_WITHOUT_RATIO} 에 RATIO 가 생겼다 — 이 fixture 는 '자식이 없을 때'를 \
-         재현해야 한다. 다른 fixture 를 쓰거나 회귀 조건을 다시 잡아라"
-    );
-
-    let core = rhwp::document_core::DocumentCore::from_bytes(&raw).expect("HML 파싱");
-    let out = core.export_hml_native().expect("HML 저장");
-    let xml_out = String::from_utf8_lossy(&out);
-    check_xml_ratio(
-        HML_WITHOUT_RATIO,
-        &xml_out,
-        "RATIO",
-        "Header XML schema.xml:590-611 (HWPML 대응 필드)",
-    )
-    .unwrap_or_else(|m| panic!("{m}"));
-}

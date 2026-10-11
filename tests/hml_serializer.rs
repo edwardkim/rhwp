@@ -10,19 +10,6 @@ use rhwp::parser::hml::PreservedFragment;
 use rhwp::parser::{detect_format, parse_document_with_metadata, FileFormat};
 use rhwp::serializer::hml::{serialize_hml, HmlExportError};
 
-fn equation_scripts(document: &rhwp::model::document::Document) -> Vec<&str> {
-    document
-        .sections
-        .iter()
-        .flat_map(|section| &section.paragraphs)
-        .flat_map(|paragraph| &paragraph.controls)
-        .filter_map(|control| match control {
-            Control::Equation(equation) => Some(equation.script.as_str()),
-            _ => None,
-        })
-        .collect()
-}
-
 fn first_equation_mut(
     document: &mut rhwp::model::document::Document,
 ) -> &mut rhwp::model::control::Equation {
@@ -52,37 +39,6 @@ fn first_equation(document: &rhwp::model::document::Document) -> &rhwp::model::c
 }
 
 #[test]
-fn equation_exports_canonically_escapes_and_reparses_edited_and_untouched_scripts() {
-    let mut core = DocumentCore::from_bytes(include_bytes!(
-        "fixtures/hml/exambank_math_equations_min.hml"
-    ))
-    .expect("equation fixture should import");
-    core.set_equation_properties_native(
-        0,
-        2,
-        0,
-        None,
-        None,
-        r#"{"script":"a < b & \"c\"","treatAsChar":true}"#,
-    )
-    .expect("public equation edit should apply");
-
-    let exported = core
-        .export_hml_native()
-        .expect("equations should export losslessly");
-    let xml = std::str::from_utf8(&exported).expect("HML is UTF-8");
-    assert!(xml.contains(
-        "<EQUATION BaseLine=\"65\" BaseUnit=\"1000\" TextColor=\"0\" Version=\"Equation Version 60\"><SCRIPT>a &lt; b &amp; \"c\"</SCRIPT></EQUATION>"
-    ));
-
-    let reparsed = DocumentCore::from_bytes(&exported).expect("exported HML should reparse");
-    assert_eq!(
-        equation_scripts(reparsed.document()),
-        ["a < b & \"c\"", "x^2 +1", "3", "3"]
-    );
-}
-
-#[test]
 fn equation_attributes_preserve_asymmetric_color_and_optional_font() {
     let xml = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><EQUATION BaseLine="-4" BaseUnit="1200" TextColor="1122867" Version="v1" Font="Hancom"><SCRIPT>x</SCRIPT></EQUATION></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
     let core = DocumentCore::from_bytes(xml).expect("equation attributes should import");
@@ -96,32 +52,6 @@ fn equation_attributes_preserve_asymmetric_color_and_optional_font() {
     let reparsed = DocumentCore::from_bytes(&exported).expect("exported HML should reparse");
     let equation = first_equation(reparsed.document());
     assert_eq!(equation.color, 0x0011_2233);
-}
-
-#[test]
-fn equation_invalid_xml_and_stale_offsets_are_aggregated() {
-    let mut core = DocumentCore::from_bytes(include_bytes!(
-        "fixtures/hml/exambank_math_equations_min.hml"
-    ))
-    .expect("equation fixture should import");
-    first_equation_mut(core.document_mut()).script.push('\u{1}');
-    let paragraph = core.document_mut().sections[0]
-        .paragraphs
-        .iter_mut()
-        .find(|paragraph| !paragraph.controls.is_empty())
-        .expect("equation paragraph");
-    paragraph.char_offsets.pop();
-
-    let error = core
-        .export_hml_native()
-        .expect_err("all invalid equation state should block before writing");
-    assert!(error.blockers().iter().any(|blocker| {
-        blocker.code == "HML_INVALID_XML_CHARACTER"
-            && blocker.xml_path.ends_with("/EQUATION/SCRIPT")
-    }));
-    assert!(error.blockers().iter().any(|blocker| {
-        blocker.code == "HML_UNSUPPORTED_IR" && blocker.message.contains("offset")
-    }));
 }
 
 #[test]

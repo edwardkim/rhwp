@@ -1,7 +1,12 @@
-use skia_safe::{font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder};
+use std::collections::HashMap;
+
+use skia_safe::{
+    font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder, Typeface,
+};
 
 use super::font_lookup::{
-    legacy_typeface_for_style, match_system_family_style, SystemFontFamilies,
+    select_typeface_for_character, text_family_candidates, typeface_candidates_for_families,
+    SystemFontFamilies,
 };
 
 use crate::renderer::equation::ast::MatrixStyle;
@@ -14,10 +19,17 @@ use crate::renderer::equation::symbols::{DecoKind, FontStyleKind};
 const EQ_FONT_FAMILY: &str =
     "Latin Modern Math, STIX Two Math, Cambria Math, DejaVu Sans, Times New Roman, serif";
 
-pub fn render_equation(
+/// Font resources supplied to body text and every recursive equation branch.
+pub(super) struct EquationFonts<'a> {
+    pub(super) font_mgr: &'a FontMgr,
+    pub(super) system_families: &'a SystemFontFamilies,
+    pub(super) custom_typefaces: &'a HashMap<String, Typeface>,
+    pub(super) bundled_typefaces: &'a HashMap<String, Typeface>,
+}
+
+pub(super) fn render_equation(
     canvas: &Canvas,
-    font_mgr: &FontMgr,
-    system_families: &SystemFontFamilies,
+    fonts: &EquationFonts<'_>,
     layout: &LayoutBox,
     origin_x: f64,
     origin_y: f64,
@@ -26,8 +38,7 @@ pub fn render_equation(
 ) {
     render_box(
         canvas,
-        font_mgr,
-        system_families,
+        fonts,
         layout,
         origin_x,
         origin_y,
@@ -40,8 +51,7 @@ pub fn render_equation(
 
 fn render_box(
     canvas: &Canvas,
-    font_mgr: &FontMgr,
-    system_families: &SystemFontFamilies,
+    fonts: &EquationFonts<'_>,
     lb: &LayoutBox,
     parent_x: f64,
     parent_y: f64,
@@ -56,18 +66,7 @@ fn render_box(
     match &lb.kind {
         LayoutKind::Row(children) => {
             for child in children {
-                render_box(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    child,
-                    x,
-                    y,
-                    color,
-                    fs,
-                    italic,
-                    bold,
-                );
+                render_box(canvas, fonts, child, x, y, color, fs, italic, bold);
             }
         }
         LayoutKind::Text(text) => {
@@ -87,8 +86,7 @@ fn render_box(
                 {
                     draw_text(
                         canvas,
-                        font_mgr,
-                        system_families,
+                        fonts,
                         &ch.to_string(),
                         x + offset,
                         y + lb.baseline,
@@ -103,8 +101,7 @@ fn render_box(
             }
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 text,
                 x,
                 y + lb.baseline,
@@ -118,8 +115,7 @@ fn render_box(
         LayoutKind::Number(text) => {
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 text,
                 x,
                 y + lb.baseline,
@@ -133,8 +129,7 @@ fn render_box(
         LayoutKind::Symbol(text) => {
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 text,
                 x + lb.width / 2.0,
                 y + lb.baseline,
@@ -153,8 +148,7 @@ fn render_box(
             } else {
                 draw_text(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     text,
                     x,
                     y + lb.baseline,
@@ -169,8 +163,7 @@ fn render_box(
         LayoutKind::Function(name) => {
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 name,
                 x,
                 y + lb.baseline,
@@ -182,62 +175,18 @@ fn render_box(
             );
         }
         LayoutKind::Fraction { numer, denom } => {
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                numer,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, numer, x, y, color, fs, italic, bold);
             let line_y = y + lb.baseline - fs * AXIS_HEIGHT;
             canvas.draw_line(
                 ((x + fs * 0.05) as f32, line_y as f32),
                 ((x + lb.width - fs * 0.05) as f32, line_y as f32),
                 &stroke_paint(color, fs * 0.04),
             );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                denom,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, denom, x, y, color, fs, italic, bold);
         }
         LayoutKind::Atop { top, bottom } => {
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                top,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                bottom,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, top, x, y, color, fs, italic, bold);
+            render_box(canvas, fonts, bottom, x, y, color, fs, italic, bold);
         }
         LayoutKind::Sqrt { index, body } => {
             let sign_h = lb.height;
@@ -262,8 +211,7 @@ fn render_box(
             if let Some(index) = index {
                 render_box(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     index,
                     sign_x,
                     y,
@@ -273,36 +221,13 @@ fn render_box(
                     false,
                 );
             }
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                body,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, body, x, y, color, fs, italic, bold);
         }
         LayoutKind::Superscript { base, sup } => {
+            render_box(canvas, fonts, base, x, y, color, fs, italic, bold);
             render_box(
                 canvas,
-                font_mgr,
-                system_families,
-                base,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 sup,
                 x,
                 y,
@@ -313,22 +238,10 @@ fn render_box(
             );
         }
         LayoutKind::Subscript { base, sub } => {
+            render_box(canvas, fonts, base, x, y, color, fs, italic, bold);
             render_box(
                 canvas,
-                font_mgr,
-                system_families,
-                base,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 sub,
                 x,
                 y,
@@ -339,22 +252,10 @@ fn render_box(
             );
         }
         LayoutKind::SubSup { base, sub, sup } => {
+            render_box(canvas, fonts, base, x, y, color, fs, italic, bold);
             render_box(
                 canvas,
-                font_mgr,
-                system_families,
-                base,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 sub,
                 x,
                 y,
@@ -365,8 +266,7 @@ fn render_box(
             );
             render_box(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 sup,
                 x,
                 y,
@@ -393,24 +293,13 @@ fn render_box(
                 let op_x = x + (lb.width - estimate_op_width(symbol, op_fs)) / 2.0;
                 let op_y = y + sup_h + op_fs * 0.8;
                 draw_text(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    symbol,
-                    op_x,
-                    op_y,
-                    op_fs,
-                    false,
-                    false,
-                    color,
-                    false,
+                    canvas, fonts, symbol, op_x, op_y, op_fs, false, false, color, false,
                 );
             }
             if let Some(sup) = sup {
                 render_box(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     sup,
                     x,
                     y,
@@ -423,8 +312,7 @@ fn render_box(
             if let Some(sub) = sub {
                 render_box(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     sub,
                     x,
                     y,
@@ -439,8 +327,7 @@ fn render_box(
             let name = if *is_upper { "Lim" } else { "lim" };
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 name,
                 x,
                 y + fs * 0.8,
@@ -453,8 +340,7 @@ fn render_box(
             if let Some(sub) = sub {
                 render_box(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     sub,
                     x,
                     y,
@@ -475,8 +361,7 @@ fn render_box(
             if !bracket_chars.0.is_empty() {
                 draw_stretch_bracket(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     bracket_chars.0,
                     x,
                     y,
@@ -487,8 +372,7 @@ fn render_box(
                 );
                 draw_stretch_bracket(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     bracket_chars.1,
                     x + lb.width - fs * 0.3,
                     y,
@@ -500,87 +384,21 @@ fn render_box(
             }
             for row in cells {
                 for cell in row {
-                    render_box(
-                        canvas,
-                        font_mgr,
-                        system_families,
-                        cell,
-                        x,
-                        y,
-                        color,
-                        fs,
-                        italic,
-                        bold,
-                    );
+                    render_box(canvas, fonts, cell, x, y, color, fs, italic, bold);
                 }
             }
         }
         LayoutKind::Rel { arrow, over, under } => {
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                over,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                arrow,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, over, x, y, color, fs, italic, bold);
+            render_box(canvas, fonts, arrow, x, y, color, fs, italic, bold);
             if let Some(under) = under {
-                render_box(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    under,
-                    x,
-                    y,
-                    color,
-                    fs,
-                    italic,
-                    bold,
-                );
+                render_box(canvas, fonts, under, x, y, color, fs, italic, bold);
             }
         }
         LayoutKind::EqAlign { rows } => {
             for (left, right) in rows {
-                render_box(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    left,
-                    x,
-                    y,
-                    color,
-                    fs,
-                    italic,
-                    bold,
-                );
-                render_box(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    right,
-                    x,
-                    y,
-                    color,
-                    fs,
-                    italic,
-                    bold,
-                );
+                render_box(canvas, fonts, left, x, y, color, fs, italic, bold);
+                render_box(canvas, fonts, right, x, y, color, fs, italic, bold);
             }
         }
         LayoutKind::Paren { left, right, body } => {
@@ -590,8 +408,7 @@ fn render_box(
                 if use_glyph && (left == "(" || left == ")") {
                     draw_text(
                         canvas,
-                        font_mgr,
-                        system_families,
+                        fonts,
                         left,
                         x,
                         y + lb.baseline,
@@ -602,39 +419,16 @@ fn render_box(
                         false,
                     );
                 } else {
-                    draw_stretch_bracket(
-                        canvas,
-                        font_mgr,
-                        system_families,
-                        left,
-                        x,
-                        y,
-                        paren_w,
-                        lb.height,
-                        color,
-                        fs,
-                    );
+                    draw_stretch_bracket(canvas, fonts, left, x, y, paren_w, lb.height, color, fs);
                 }
             }
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                body,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, body, x, y, color, fs, italic, bold);
             if !right.is_empty() {
                 let right_x = x + lb.width - paren_w;
                 if use_glyph && (right == "(" || right == ")") {
                     draw_text(
                         canvas,
-                        font_mgr,
-                        system_families,
+                        fonts,
                         right,
                         right_x,
                         y + lb.baseline,
@@ -646,33 +440,13 @@ fn render_box(
                     );
                 } else {
                     draw_stretch_bracket(
-                        canvas,
-                        font_mgr,
-                        system_families,
-                        right,
-                        right_x,
-                        y,
-                        paren_w,
-                        lb.height,
-                        color,
-                        fs,
+                        canvas, fonts, right, right_x, y, paren_w, lb.height, color, fs,
                     );
                 }
             }
         }
         LayoutKind::Decoration { kind, body } => {
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                body,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, body, x, y, color, fs, italic, bold);
             let deco_y = y + fs * 0.05;
             let mid_x = x + body.x + body.width / 2.0;
             draw_decoration(canvas, *kind, mid_x, deco_y, body.width, color, fs);
@@ -687,18 +461,7 @@ fn render_box(
                 FontStyleKind::Blackboard => (false, true),
                 FontStyleKind::Calligraphy | FontStyleKind::Fraktur => (false, false),
             };
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                body,
-                x,
-                y,
-                color,
-                fs,
-                new_italic,
-                new_bold,
-            );
+            render_box(canvas, fonts, body, x, y, color, fs, new_italic, new_bold);
         }
         LayoutKind::Space(_) | LayoutKind::Newline | LayoutKind::Empty => {}
     }
@@ -706,8 +469,7 @@ fn render_box(
 
 fn draw_text(
     canvas: &Canvas,
-    font_mgr: &FontMgr,
-    system_families: &SystemFontFamilies,
+    fonts: &EquationFonts<'_>,
     text: &str,
     x: f64,
     baseline_y: f64,
@@ -733,39 +495,82 @@ fn draw_text(
         (false, true) => FontStyle::italic(),
         (false, false) => FontStyle::normal(),
     };
-    let typeface = family
+    let mut families: Vec<String> = family
         .split(',')
         .map(str::trim)
-        .filter(|family| !family.is_empty())
-        .find_map(|family| match_system_family_style(font_mgr, system_families, family, font_style))
-        .or_else(|| legacy_typeface_for_style(font_mgr, font_style));
-    let mut font = if let Some(typeface) = typeface {
-        Font::new(typeface, font_size as f32)
-    } else {
-        let mut font = Font::default();
-        font.set_size(font_size as f32);
-        font
-    };
-    font.set_edging(font::Edging::AntiAlias);
-
+        .map(str::to_owned)
+        .collect();
+    // Match the web equation's serif CJK fallback before general body fallbacks.
+    if has_cjk {
+        families.extend(
+            [
+                "AppleMyungjo",
+                "Noto Serif KR",
+                "Noto Serif CJK KR",
+                "Nanum Myeongjo",
+            ]
+            .map(str::to_owned),
+        );
+    }
+    for fallback in text_family_candidates("") {
+        if !families.contains(&fallback) {
+            families.push(fallback);
+        }
+    }
+    let chain = typeface_candidates_for_families(
+        fonts.font_mgr,
+        fonts.system_families,
+        fonts.custom_typefaces,
+        fonts.bundled_typefaces,
+        &families,
+        font_style,
+    );
+    // Preserve shaping within consecutive characters using the same face. Use
+    // these exact runs for measurement and paint, including centered symbols.
+    let mut runs: Vec<(Option<usize>, String)> = Vec::new();
+    for ch in text.chars() {
+        let selected = select_typeface_for_character(&chain, ch).or_else(|| chain.first());
+        let index = selected.and_then(|candidate| {
+            chain
+                .iter()
+                .position(|entry| std::ptr::eq(entry, candidate))
+        });
+        if let Some((_, run)) = runs.last_mut().filter(|(previous, _)| *previous == index) {
+            run.push(ch);
+        } else {
+            runs.push((index, ch.to_string()));
+        }
+    }
     let mut paint = Paint::default();
     paint.set_anti_alias(true);
     paint.set_style(paint::Style::Fill);
     paint.set_color(color);
-
-    let draw_x = if centered {
-        let (width, _) = font.measure_str(text, Some(&paint));
-        x - f64::from(width) / 2.0
+    let runs: Vec<_> = runs
+        .into_iter()
+        .map(|(index, text)| {
+            let mut face = index
+                .map(|index| Font::new(chain[index].typeface.clone(), font_size as f32))
+                .unwrap_or_default();
+            face.set_size(font_size as f32);
+            face.set_edging(font::Edging::AntiAlias);
+            let (width, _) = face.measure_str(&text, Some(&paint));
+            (face, text, f64::from(width))
+        })
+        .collect();
+    let mut draw_x = if centered {
+        x - runs.iter().map(|(_, _, width)| width).sum::<f64>() / 2.0
     } else {
         x
     };
-    canvas.draw_str(text, (draw_x as f32, baseline_y as f32), &font, &paint);
+    for (face, text, width) in runs {
+        canvas.draw_str(&text, (draw_x as f32, baseline_y as f32), &face, &paint);
+        draw_x += width;
+    }
 }
 
 fn draw_stretch_bracket(
     canvas: &Canvas,
-    font_mgr: &FontMgr,
-    system_families: &SystemFontFamilies,
+    fonts: &EquationFonts<'_>,
     bracket: &str,
     x: f64,
     y: f64,
@@ -866,8 +671,7 @@ fn draw_stretch_bracket(
         _ => {
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 bracket,
                 mid_x,
                 y + h * 0.7,

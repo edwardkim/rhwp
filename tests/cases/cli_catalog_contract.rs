@@ -107,7 +107,8 @@ fn catalog_is_unique_and_matches_all_top_level_dispatch_arms() {
     let dispatch = dispatch_names();
     let dispatch_set: BTreeSet<&str> = dispatch.iter().copied().collect();
 
-    assert_eq!(commands().len(), 102, "characterization 기준선");
+    // 기존 102개에 #7820 export-sixel 한 개를 추가한다.
+    assert_eq!(commands().len(), 103, "characterization 기준선");
     assert_eq!(catalog_names.len(), commands().len(), "catalog 이름 중복");
     assert_eq!(dispatch.len(), dispatch_set.len(), "dispatch arm 이름 중복");
     assert_eq!(dispatch_set, catalog_names, "dispatch↔catalog drift");

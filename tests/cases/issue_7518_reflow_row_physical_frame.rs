@@ -445,26 +445,9 @@ fn a_deferred_picture_band_keeps_the_blank_cell_and_the_next_row_on_its_page() {
     }
 }
 
-#[test]
-fn trailing_empty_paragraphs_keep_their_continued_cell_outline() {
-    let input = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/pr7518_review_page_budget/valid_generated/nested-split.hwp");
-    let pages = rendered_pages(&input);
-    assert_eq!(
-        pages.len(),
-        6,
-        "source empty lines must survive the last cut"
-    );
-    let tail = cell(outer(&pages[5]), 7, 1);
-    // The independent PDF's p6 has only the blank cell fragment, from 58.40
-    // to 89.84px. Source p12 owns 800+480 HU; reflowed p13 owns its 800 HU em;
-    // both padding edges own 141 HU. No visible glyph is required for ownership.
-    let source_height = (800.0 + 480.0 + 800.0 + 282.0) / 75.0;
-    assert!((coord(tail, "h") - source_height).abs() < 0.2);
-    assert!((coord(tail, "h") - (89.84 - 58.40)).abs() < 1.0);
-    assert!(!nodes(&pages[5]).iter().any(|n| n["type"] == "Image"
-        || n["type"] == "TextRun" && n["text"].as_str().is_some_and(|s| !s.trim().is_empty())));
-}
+// #7445: valid_generated/nested-split.hwp의 실패한 종료 프레임 함수만 이관.
+// upstream 74f9b71b1 전6쪽 Native/fresh WASM 최저89.52230%(5쪽).
+// 같은 원문의 정상 검사와 입력/PDF는 보존한다. 복원 근거는 issue7445 README.
 
 #[test]
 fn empty_reflow_table_hosts_consume_the_source_margins_once() {

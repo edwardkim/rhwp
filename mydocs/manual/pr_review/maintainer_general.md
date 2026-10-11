@@ -2,13 +2,28 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-10-06
 ---
 
 # Maintainer 일반 PR 처리
 
 이 경로는 admin 또는 branch-protection bypass 권한을 가진 maintainer가 외부 contributor PR을 일반 방식으로
 검토·merge하는 기본 경로다. collaborator 경로는 이 문서를 대체하지 않는다.
+
+## 렌더링 회귀의 추가·변경과 메인터너 보정
+
+새 회귀의 추가와 실패한 기존 회귀의 변경은 관련 모든 페이지의 Native/fresh WASM 일치율이
+90% 이상일 때만 진행한다. 기존 회귀가 실패하면 **원본 입력 출력 보정 → 버전에 맞는 독립 한컴
+Print PDF로 90% 이상 확인 → 독립 기대값에 따라 필요한 검사 변경** 순서를 따른다.
+실물 배치는 절대 px 좌표·고정 px 영역으로 선택하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침
+관계로 검사한다. 미달·측정 불가는 보류하고 원본과 실패 증거를 보존한다. 메인터너 보정 승인도
+이 선행 조건을 면제하지 않는다. 상세 절차는
+[시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+[기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
+
+90% 이상이어도 [수식·간격 확대 판독](visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을
+수행한다. 변경 영역·알려진 차이·사용자 지적 영역의 모양·장평·미세 간격을 직접 대조하고,
+확인된 결함이나 미검증은 점수 통과로 면제하지 않는다.
 
 ## review 문서 위치
 

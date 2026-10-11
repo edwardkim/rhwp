@@ -830,7 +830,12 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertTrue(targets)
         for target in targets:
             with self.subTest(target=target):
-                self.assertIn(f"'tests/{target}.rs'", classifier)
+                source = TESTS_DIR / "cases" / f"{target}.rs"
+                if not source.is_file():
+                    source = TESTS_DIR / f"{target}.rs"
+                self.assertTrue(source.is_file(), f"missing Native Skia target source: {target}")
+                source_path = source.relative_to(TESTS_DIR.parent).as_posix()
+                self.assertIn(f"'{source_path}'", classifier)
 
     def test_discovery_finds_the_known_file_gated_native_skia_tests(self) -> None:
         """발견 패턴이 망가지면 아래 테스트가 조용히 무의미해진다.

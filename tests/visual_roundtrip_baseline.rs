@@ -17,6 +17,11 @@
 //! 임계값 근거: 2026-06-24 전수 측정 결과 PASS 샘플의 매칭 노드 변위는 **정확히 0.0px**
 //! (잡음 바닥 0). 0.5px 는 향후 서브픽셀 반올림 여유분이며, 실제 드리프트(≥6.8px)와 충분히 분리.
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 use std::path::{Path, PathBuf};
 
 use rhwp::diagnostics::render_geom_diff::{roundtrip_geom, Via};
@@ -49,6 +54,9 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         let entries = std::fs::read_dir(dir).expect("samples/hwpx 읽기 실패");
         for entry in entries {
             let path = entry.expect("디렉토리 항목 읽기 실패").path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 walk(&path, root, acc);
             } else if path

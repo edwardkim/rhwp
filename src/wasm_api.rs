@@ -738,6 +738,12 @@ impl HwpDocument {
         self.debug_overlay = enabled;
     }
 
+    /// Native와 같은 조판 세대를 선택하고 공통 core에서 재페이지네이션한다.
+    #[wasm_bindgen(js_name = setHangul2024Compat)]
+    pub fn set_hangul2024_compat(&mut self, enabled: bool) {
+        self.core.set_hangul2024_compat(enabled);
+    }
+
     /// LINE_SEG vpos-reset 강제 분리 적용 여부를 설정한다.
     /// 변경 시 페이지네이션 결과가 달라지므로 모든 섹션을 재페이지네이션한다.
     pub fn set_respect_vpos_reset(&mut self, enabled: bool) {

@@ -19,10 +19,11 @@ use crate::renderer::layer_renderer::{
     LayerRasterRenderer, LayerRenderResult, RasterOutputFormat, RasterRenderOptions,
     RasterRenderOutput,
 };
+use crate::renderer::raster_pixels::{RasterPixelFormat, RasterPixels};
 use crate::renderer::render_tree::RenderLayerInfo;
 use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
 
-use super::equation_conv::render_equation;
+use super::equation_conv::{render_equation, EquationFonts};
 use super::font_lookup::{
     collect_system_families, legacy_typeface_for_style, match_system_family_style,
     SystemFontFamilies,
@@ -531,6 +532,42 @@ impl SkiaLayerRenderer {
         tree: &PageLayerTree,
         options: RasterRenderOptions,
     ) -> LayerRenderResult<RasterRenderOutput> {
+        Self::encode_pixels_png(&self.render_pixels_with_options(tree, options)?)
+    }
+
+    /// PNG/Sixel가 공유하는 명시적 RGBA8888 premultiplied CPU 결과.
+    pub fn render_pixels_with_options(
+        &self,
+        tree: &PageLayerTree,
+        options: RasterRenderOptions,
+    ) -> LayerRenderResult<RasterPixels> {
+        self.render_pixels_with_target_width(tree, options, None)
+    }
+
+    /// 요청 너비는 정확한 정수 픽셀이고 높이는 같은 배율을 적용한 올림값이다.
+    pub fn render_pixels_at_width(
+        &self,
+        tree: &PageLayerTree,
+        width: u32,
+        mut options: RasterRenderOptions,
+    ) -> LayerRenderResult<RasterPixels> {
+        if width == 0
+            || width as u64 > options.max_dimension.max(0) as u64
+            || !tree.page_width.is_finite()
+            || tree.page_width <= 0.0
+        {
+            return Err(HwpError::RenderError("invalid raster target width".into()));
+        }
+        options.scale = width as f64 / tree.page_width;
+        self.render_pixels_with_target_width(tree, options, Some(width as i32))
+    }
+
+    fn render_pixels_with_target_width(
+        &self,
+        tree: &PageLayerTree,
+        options: RasterRenderOptions,
+        target_width: Option<i32>,
+    ) -> LayerRenderResult<RasterPixels> {
         if let Some(dpi) = options.dpi {
             if !dpi.is_finite() || dpi <= 0.0 {
                 return Err(HwpError::RenderError(format!("invalid raster dpi: {dpi}")));
@@ -560,7 +597,10 @@ impl SkiaLayerRenderer {
                     options.max_dimension
                 )));
             }
-            let scaled = (value * options.scale).ceil();
+            let scaled = match (label, target_width) {
+                ("width", Some(width)) => f64::from(width),
+                _ => (value * options.scale).ceil(),
+            };
             if !scaled.is_finite() || scaled <= 0.0 || scaled > options.max_dimension as f64 {
                 return Err(HwpError::RenderError(format!(
                     "raster {label} out of range: {scaled}"
@@ -602,6 +642,53 @@ impl SkiaLayerRenderer {
         self.render_page_to_canvas_with_options(canvas, tree, options.scale as f32, false)?;
 
         let image = surface.image_snapshot();
+        // N32는 host에 따라 BGRA다. Skia에 RGBA를 명시해서 읽는다.
+        let info = skia_safe::ImageInfo::new(
+            (width, height),
+            skia_safe::ColorType::RGBA8888,
+            skia_safe::AlphaType::Premul,
+            None,
+        );
+        let stride = info.min_row_bytes();
+        let byte_count = stride
+            .checked_mul(height as usize)
+            .ok_or_else(|| HwpError::RenderError("raster byte count overflow".into()))?;
+        let mut bytes = vec![0u8; byte_count];
+        if !image.read_pixels(
+            &info,
+            &mut bytes,
+            stride,
+            (0, 0),
+            skia_safe::image::CachingHint::Disallow,
+        ) {
+            return Err(HwpError::RenderError("Skia RGBA pixel read failed".into()));
+        }
+        Ok(RasterPixels {
+            bytes,
+            width,
+            height,
+            stride,
+            format: RasterPixelFormat::Rgba8Premultiplied,
+            color_space: options.color_space,
+            dpi: options.dpi,
+        })
+    }
+
+    /// 공통 픽셀 결과에서 PNG를 인코딩한다. 기존 alpha·배경·압축 정책을 유지한다.
+    pub fn encode_pixels_png(pixels: &RasterPixels) -> LayerRenderResult<RasterRenderOutput> {
+        pixels.validate()?;
+        let info = skia_safe::ImageInfo::new(
+            (pixels.width, pixels.height),
+            skia_safe::ColorType::RGBA8888,
+            skia_safe::AlphaType::Premul,
+            None,
+        );
+        let image = skia_safe::images::raster_from_data(
+            &info,
+            skia_safe::Data::new_copy(&pixels.bytes),
+            pixels.stride,
+        )
+        .ok_or_else(|| HwpError::RenderError("Skia RGBA image creation failed".into()))?;
         let mut png_options = png_encoder::Options::default();
         // PNG is lossless at every zlib level. Level 1 avoids spending most of
         // native export time on compression while preserving decoded pixels.
@@ -615,10 +702,10 @@ impl SkiaLayerRenderer {
         Ok(RasterRenderOutput {
             bytes: data.as_bytes().to_vec(),
             format: RasterOutputFormat::Png,
-            width,
-            height,
-            dpi: options.dpi,
-            color_space: options.color_space,
+            width: pixels.width,
+            height: pixels.height,
+            dpi: pixels.dpi,
+            color_space: pixels.color_space,
         })
     }
 
@@ -801,6 +888,12 @@ impl SkiaLayerRenderer {
                 contrast,
                 ImageSampling::linear(),
             )
+        };
+        let equation_fonts = EquationFonts {
+            font_mgr: &self.font_mgr,
+            system_families: &self.system_families,
+            custom_typefaces: &self.custom_typefaces,
+            bundled_typefaces: &self.bundled_typefaces,
         };
         let text_replay = SkiaTextReplay {
             canvas,
@@ -1211,6 +1304,14 @@ impl SkiaLayerRenderer {
                                 (line.x2 as f32, line.y2 as f32),
                                 &make_line_paint(&line.style),
                             );
+                            draw_arrow_heads(
+                                canvas,
+                                &crate::renderer::arrow::line_heads(
+                                    (line.x1, line.y1, line.x2, line.y2),
+                                    &line.style,
+                                ),
+                                &line.style,
+                            );
                             if line.transform.has_transform() {
                                 canvas.restore();
                             }
@@ -1379,6 +1480,13 @@ impl SkiaLayerRenderer {
                             if let Some(stroke) = make_stroke_paint(&path.style) {
                                 canvas.draw_path(&sk_path, &stroke);
                             }
+                            if let Some(style) = &path.line_style {
+                                draw_arrow_heads(
+                                    canvas,
+                                    &crate::renderer::arrow::connector_heads(path),
+                                    style,
+                                );
+                            }
                             if path.transform.has_transform() {
                                 canvas.restore();
                             }
@@ -1474,8 +1582,7 @@ impl SkiaLayerRenderer {
                                 canvas.scale((scale_x as f32, scale_y as f32));
                                 render_equation(
                                     canvas,
-                                    &self.font_mgr,
-                                    &self.system_families,
+                                    &equation_fonts,
                                     &equation.layout_box,
                                     0.0,
                                     0.0,
@@ -1485,8 +1592,7 @@ impl SkiaLayerRenderer {
                             } else {
                                 render_equation(
                                     canvas,
-                                    &self.font_mgr,
-                                    &self.system_families,
+                                    &equation_fonts,
                                     &equation.layout_box,
                                     bbox.x,
                                     bbox.y,
@@ -1679,6 +1785,54 @@ pub(super) fn colorref_to_skia(color: ColorRef, alpha_scale: f32) -> Color {
     let r = (color & 0xFF) as u8;
     let a = (255.0 * alpha_scale.clamp(0.0, 1.0)).round() as u8;
     Color::from_argb(a, r, g, b)
+}
+
+fn draw_arrow_heads(
+    canvas: &Canvas,
+    heads: &[crate::renderer::arrow::ArrowHead],
+    style: &LineStyle,
+) {
+    for head in heads {
+        let mut builder = PathBuilder::new();
+        for command in &head.commands {
+            match *command {
+                PathCommand::MoveTo(x, y) => {
+                    builder.move_to((x as f32, y as f32));
+                }
+                PathCommand::LineTo(x, y) => {
+                    builder.line_to((x as f32, y as f32));
+                }
+                PathCommand::CurveTo(a, b, c, d, e, f) => {
+                    builder.cubic_to(
+                        (a as f32, b as f32),
+                        (c as f32, d as f32),
+                        (e as f32, f as f32),
+                    );
+                }
+                PathCommand::ClosePath => {
+                    builder.close();
+                }
+                PathCommand::ArcTo(..) => unreachable!("arrow outlines use cubic ellipses"),
+            }
+        }
+        let path = builder.detach();
+        let mut fill = Paint::default();
+        fill.set_anti_alias(true);
+        fill.set_color(if head.filled {
+            colorref_to_skia(style.color, 1.0)
+        } else {
+            Color::WHITE
+        });
+        canvas.draw_path(&path, &fill);
+        if !head.filled {
+            let mut outline = Paint::default();
+            outline.set_anti_alias(true);
+            outline.set_style(paint::Style::Stroke);
+            outline.set_color(colorref_to_skia(style.color, 1.0));
+            outline.set_stroke_width((style.width * 0.3).max(0.5) as f32);
+            canvas.draw_path(&path, &outline);
+        }
+    }
 }
 
 #[cfg(test)]

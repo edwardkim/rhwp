@@ -42,6 +42,8 @@ pub const HWPTAG_COMPATIBLE_DOCUMENT: u16 = HWPTAG_BEGIN + 14;
 pub const HWPTAG_LAYOUT_COMPATIBILITY: u16 = HWPTAG_BEGIN + 15;
 /// 변경 추적
 pub const HWPTAG_TRACKCHANGE: u16 = HWPTAG_BEGIN + 16;
+/// 변경 추적 내용 및 모양 (DocInfo의 순번이 RangeTag의 1-based ID)
+pub const HWPTAG_TRACK_CHANGE: u16 = HWPTAG_BEGIN + 80;
 
 // ============================================================
 // BodyText 태그 (HWPTAG_BEGIN + 50 ~)

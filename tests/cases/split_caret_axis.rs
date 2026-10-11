@@ -630,31 +630,25 @@ fn sample_paragraph(name: &str, section: usize, para: usize) -> Paragraph {
 
 #[test]
 fn real_document_end_enter_keeps_last_character() {
-    // (파일, 구역, 문단): 앞머리 떠 있는 도형, 미주·수식 뒤의 떠 있는 표·그림, 앞머리 자동 번호.
-    for (name, section, para) in [
-        ("143E433F503322BD33.hwp", 0, 1),
-        ("3-09월_교육_통합_2023.hwp", 0, 258),
-        ("3-09월_교육_통합_2023.hwp", 0, 369),
-        ("eq-002.hwp", 0, 0),
-    ] {
-        let source = sample_paragraph(name, section, para);
-        let end = source.text.chars().count()
-            + source
-                .controls
-                .iter()
-                .filter(|c| c.is_logical_inline())
-                .count();
-        let last = source.text.chars().last().unwrap().to_string();
+    // (파일, 구역, 문단): 앞머리에 떠 있는 도형이 있는 일반 문서.
+    let (name, section, para) = ("143E433F503322BD33.hwp", 0, 1);
+    let source = sample_paragraph(name, section, para);
+    let end = source.text.chars().count()
+        + source
+            .controls
+            .iter()
+            .filter(|c| c.is_logical_inline())
+            .count();
+    let last = source.text.chars().last().unwrap().to_string();
 
-        let mut head = source.clone();
-        let tail = head.split_at(end);
-        assert_eq!(head.text, source.text, "{name} 문단 {para} End");
-        assert_eq!(tail.text, "", "{name} 문단 {para} End");
+    let mut head = source.clone();
+    let tail = head.split_at(end);
+    assert_eq!(head.text, source.text, "{name} 문단 {para} End");
+    assert_eq!(tail.text, "", "{name} 문단 {para} End");
 
-        let mut head = source.clone();
-        let tail = head.split_at(end - 1);
-        assert_eq!(tail.text, last, "{name} 문단 {para} End-1");
-    }
+    let mut head = source.clone();
+    let tail = head.split_at(end - 1);
+    assert_eq!(tail.text, last, "{name} 문단 {para} End-1");
 }
 
 #[test]

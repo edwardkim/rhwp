@@ -4,6 +4,7 @@ use crate::renderer::typeset::{
     controls, hwpunit_to_px, is_synthetic_line_seg, nearest_saved_rowbreak_frame_row_end,
     para_has_non_whitespace_text, para_has_visible_text, paragraph,
     partial_rowbreak_fragment_spacing_px, row_geometry_table,
+    rowbreak_row_has_internal_saved_vpos_reset,
     saved_rowbreak_first_fragment_flow_overflow_allowance, table,
     table_declared_object_covers_cell_row_frames, Control, TypesetEngine, TypesetState,
     SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
@@ -74,10 +75,12 @@ impl TypesetEngine {
         // 저장된 첫 조각의 원점은 paint와 같은 값으로 예약한다.
         // trailing trim으로 얻은 컷만 공유하고 이전 flow 원점을 유지하면
         // 실제 표 상자와 페이지 예산이 서로 다른 높이를 소비한다.
-        if !is_continuation && cursor_row == 0 && start_cut.is_empty() {
-            if let Some(offset) = prepared.first_fragment_saved_offset {
-                st.align_flow_to(offset);
-            }
+        let accepted_first_fragment_origin =
+            (!is_continuation && cursor_row == 0 && start_cut.is_empty())
+                .then_some(prepared.first_fragment_saved_offset)
+                .flatten();
+        if let Some(offset) = accepted_first_fragment_origin {
+            st.align_flow_to(offset);
         }
         // 닫힌 원본 프레임은 안내 줄까지 이미 소유한 전체 물리 상자다.
         // 같은 조회 결과의 원점과 아래 여백을 예산·확정 배치에 함께 전달한다.
@@ -397,6 +400,14 @@ impl TypesetEngine {
             && !table.common.treat_as_char
             && vert_offset_overhead > 0.0
             && !para_has_non_whitespace_text(para);
+        // A preceding inline control advances flow but does not change the
+        // paragraph-relative float anchor. Both capacity boundaries below must
+        // consume this same origin, as partial paint's paragraph anchor does.
+        let fragment_flow_origin = if is_empty_host_column_float {
+            budget_para_start_height.min(st.current_height)
+        } else {
+            st.current_height
+        };
         let page_avail = if is_continuation {
             // [Task #1937] 연속 페이지는 신선 full-page 를 기준으로 한다(레퍼런스
             // Paginator engine.rs:2502-2503 과 정합). table_available 은 표 *시작*
@@ -437,7 +448,7 @@ impl TypesetEngine {
             // para_start 583.8 차감 → 예산 −584px → 조기 분할 +1쪽). 참 para_start 는
             // 현재 흐름 높이를 초과할 수 없으므로 current_height 로 상한한다.
             (table_available
-                - budget_para_start_height.min(st.current_height)
+                - fragment_flow_origin
                 - caption_extra
                 - host_before_overhead
                 - vert_offset_overhead
@@ -454,6 +465,57 @@ impl TypesetEngine {
         };
         let page_avail = if !is_continuation && start_cut.is_empty() {
             (page_avail - first_fragment_painted_row_footer_guard).max(0.0)
+        } else {
+            page_avail
+        };
+        // Original text-frame rows own blank space as well as units. Reserve
+        // the same physical column bottom used by partial paint before choosing
+        // their row boxes, so paint need not discard a source-owned tail later.
+        let page_avail = if prepared
+            .layout_engine
+            .stored_table_has_physical_text_frames(table, input.source.styles)
+        {
+            let body_filling_source_frame =
+                crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
+                    para,
+                    table,
+                    st.layout.body_area.height,
+                    self.dpi,
+                    st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout(),
+                    st.profile.session_edited(),
+                );
+            // 쪽 중간 첫 조각의 advance와 HWPX에 Native 아래 inset을
+            // 추가하지 않는다. 쪽을 닫는 선언 상자는 자기 바깥 여백을,
+            // 이어받는 Native 원본의 물리 상자는 paint의 공통 하단을 쓴다.
+            // A continued native source row can reserve a blank physical band.
+            // Its accepted box must end at the same fragment bottom as paint,
+            // including when several rows share that page. Otherwise emit
+            // records a larger box and wrongly subtracts it from the terminal
+            // row's independently declared remaining height.
+            let native_continuation_source_frame = is_continuation
+                && st.profile.hwp5_stored_pagination_layout()
+                && table.row_count > 1;
+            let bottom = if body_filling_source_frame
+                || single_cell_page_fragment
+                || native_continuation_source_frame
+            {
+                crate::renderer::float_placement::rowbreak_fragment_frame_bottom(
+                    table,
+                    st.inline_flow_column().height,
+                    self.dpi,
+                    body_filling_source_frame,
+                )
+            } else {
+                st.inline_flow_column().height
+            };
+            page_avail.min(
+                (bottom
+                    - fragment_flow_origin
+                    - caption_extra
+                    - host_before_overhead
+                    - vert_offset_overhead)
+                    .max(0.0),
+            )
         } else {
             page_avail
         };
@@ -689,14 +751,28 @@ impl TypesetEngine {
                     }
                 })
         });
+        // The saved origin has already been accepted in this physical frame.
+        // Carry that result to paint rather than querying it again against a
+        // potentially different column after the row cut has been reserved.
+        fragment_placement = fragment_placement.or_else(|| {
+            accepted_first_fragment_origin.map(|origin| {
+                let top = origin + host_before_overhead + vert_offset_overhead;
+                crate::renderer::float_placement::ParagraphFloatPlacement {
+                    flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                    anchor_y: origin,
+                    stored_host_origin: None,
+                    stored_successor_line_origin: None,
+                    table_left: None,
+                    table_top: top,
+                    occupied_bottom: top,
+                }
+            })
+        });
         // 저장 줄 없는 표 전용 호스트는 계산 흐름 원점을 소유한다.
-        // 첫 조각 예산이 예약한 앞 여백과 오프셋을 paint에도 같은 원점으로 전달한다.
+        // 각 조각 예산이 예약한 앞 여백과 오프셋을 paint에도 같은 원점으로 전달한다.
         // 그렇지 않으면 컷은 여백을 빼고 정해지지만 괘선은 여백만큼 위에 그려진다.
         fragment_placement = fragment_placement.or_else(|| {
-            (!is_continuation
-                && cursor_row == 0
-                && start_cut.is_empty()
-                && para.line_segs.is_empty()
+            (crate::renderer::para_has_no_stored_line_segs(para)
                 && !para_has_non_whitespace_text(para)
                 && para.controls.len() == 1
                 && !table.common.treat_as_char
@@ -773,6 +849,23 @@ impl TypesetEngine {
             }
         }
 
+        // 앞 형제 표에서 이미 소비한 문단 오프셋은 새 쪽의 첫 조각에 다시
+        // 붙이지 않는다. 위 예산만 0으로 처리하고 원점을 전달하지 않으면
+        // paint가 문단 오프셋을 다시 적용해 같은 조각이 예약 영역 밖에 놓인다.
+        // 유효한 저장/캡션 원점은 그대로 우선하며, 없는 경우에만 예산이 쓰는
+        // 현재 프레임의 원점을 확정 배치와 공유한다.
+        if fragment_placement.is_none() && anchor_offset_already_spent {
+            let top = st.current_height + host_before_overhead;
+            fragment_placement = Some(crate::renderer::float_placement::ParagraphFloatPlacement {
+                flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                anchor_y: st.current_height,
+                stored_host_origin: None,
+                stored_successor_line_origin: None,
+                table_left: None,
+                table_top: top,
+                occupied_bottom: top,
+            });
+        }
         let page_avail = fragment_placement.map_or(page_avail, |p| {
             let boundary = if is_continuation
                 || prepared.host_frame
@@ -888,13 +981,30 @@ impl TypesetEngine {
         } else {
             None
         };
-        // 뒤 호스트의 양수 되감김과 선언 높이가 같은 온전한 행 끝을 가리키면,
+        // 뒤 호스트의 되감김 또는 원본 셀의 내부 쪽 경계와 선언 높이가
+        // 같은 온전한 행 끝을 가리키면,
         // 첫 조각은 그 행까지만 소유한다. 일반 최근접 스냅이나 꼬리말 여유로
         // 다음 행을 앞당겨 수용하지 않는다. 실제 출력의 온전한 행 높이를 쓴다.
         let exact_source_row_end = (!is_continuation
             && cursor_row == 0
             && start_cut.is_empty()
-            && source_next_positive_rewind
+            && (source_next_positive_rewind
+                || (prepared
+                    .layout_engine
+                    .native_stored_table_has_fragment_frames(table)
+                    && table.cells.iter().all(|cell| {
+                        !cell.dirty_flag
+                            && cell.paragraphs.iter().all(|p| {
+                                !p.stored_text_partition_is_dirty()
+                                    && !p.cell_format_vpos_dirty
+                                    && !p.line_segs.is_empty()
+                                    && p.line_segs.iter().all(|line| {
+                                        line.line_height > 0 && !is_synthetic_line_seg(line)
+                                    })
+                            })
+                    })
+                    && (0..row_count)
+                        .any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))))
             && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
             && !st.profile.session_edited()
             && !para.stored_text_partition_is_dirty()
@@ -1050,7 +1160,89 @@ impl TypesetEngine {
             // 인데 한글은 한 쪽(p2)에 통째 배치. 전체가 들어갈 때만 적용하므로
             // 분할 경계 산정에는 영향 없음.
             const WHOLE_TABLE_FIT_TOLERANCE_PX: f64 = 2.0;
-            let base = (page_avail - header_overhead).max(0.0);
+            let base = (page_avail
+                - header_overhead
+                - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi))
+            .max(0.0);
+            let base = if !is_continuation && cursor_row == 0 && start_cut.is_empty() {
+                prepared
+                    .source_text_first_frame_height
+                    .or(prepared
+                        .source_single_cell_row_frames
+                        .map(|frame| frame.opening_height))
+                    .map_or(base, |height| {
+                        base.min(
+                            (height
+                                - header_overhead
+                                - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi))
+                            .max(0.0),
+                        )
+                    })
+            } else {
+                base
+            };
+            // An authenticated HWPX source row owns a minimum across fragments,
+            // while the saved first object frame owns this page's physical box.
+            // Reserve that same box before selecting units; spare page capacity
+            // must not enlarge the first box and reduce the carried remainder.
+            let base = if !is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+                && row_count == 1
+                && prepared
+                    .layout_engine
+                    .stored_full_width_row_declared_height(
+                        table,
+                        0,
+                        input.source.styles,
+                        st.layout.body_area.height,
+                    )
+                    .is_some()
+            {
+                prepared
+                    .layout_engine
+                    .saved_single_cell_opening_frame_cut(table, input.source.styles)
+                    .map_or(base, |(_, height)| {
+                        base.min(
+                            (height
+                                - header_overhead
+                                - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi))
+                            .max(0.0),
+                        )
+                    })
+            } else {
+                base
+            };
+            let base = if st.profile.hwpx_stored_layout()
+                && !is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+            {
+                saved_first_fragment_source_frame
+                    .filter(|_| {
+                        (0..row_count).any(|row| {
+                            prepared
+                                .layout_engine
+                                .stored_full_width_row_declared_height(
+                                    table,
+                                    row,
+                                    input.source.styles,
+                                    st.layout.body_area.height,
+                                )
+                                .is_some()
+                        })
+                    })
+                    .map_or(base, |(height, _)| {
+                        base.min(
+                            (height
+                                - header_overhead
+                                - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi))
+                            .max(0.0),
+                        )
+                    })
+            } else {
+                base
+            };
             if !is_continuation
                 && cursor_row == 0
                 && start_cut.is_empty()

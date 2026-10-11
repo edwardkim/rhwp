@@ -34,6 +34,9 @@ const NATIVE_SKIA_RUST_FILES = new Set([
   // [#5776] Native Skia job의 cli_exit_codes_native가 export-png를 직접 실행한다.
   // Render Diff는 현재 raster adapter를 소비하지 않으므로 Canvas 축은 켜지 않는다.
   'src/cli/outputs/raster.rs',
+  // Sixel consumes the same Native Skia pixels; Canvas does not consume this adapter.
+  'src/cli/outputs/sixel.rs',
+  'tests/cases/issue_7820_sixel_contract.rs',
   'tests/cli_exit_codes_native.rs',
   'tests/issue_1144_native.rs',
   'tests/issue_2083_hide_fill_page_background.rs',

@@ -75,6 +75,7 @@ impl TypesetEngine {
         // Prime it before filling CellUnit caches, as actual paint does, so a
         // small page cannot cache the 900px fallback's different child ledger.
         let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        self.prime_section_cell_context(&layout_engine);
         layout_engine.set_layout_profile(st.profile);
         layout_engine.prime_column_layout_env(&st.layout);
         // 행 컷 측정도 같은 렌더링의 일부이므로 조판기와 동일한 표 출처를 사용한다.
@@ -253,6 +254,24 @@ impl TypesetEngine {
             - st.current_footnote_height
             - st.current_zone_y_offset
             - st.current_bottom_fixed_exclusion;
+        let source_single_cell_row_frames = paragraphs_all.get(para_idx + 1).and_then(|next| {
+            layout_engine.native_single_cell_source_row_frames(para, next, table, styles)
+        });
+        let source_single_cell_first_frame_fits = st.col_count == 1
+            && std::ptr::eq(table, row_geometry_table)
+            && ft.table_footnotes.is_empty()
+            && source_single_cell_row_frames.is_some_and(|frame| {
+                let base = st.vpos_page_base.unwrap_or(0);
+                frame.opening_anchor_hu >= base
+                    && frame.opening_table_top_hu >= frame.opening_anchor_hu
+                    && frame
+                        .opening_table_top_hu
+                        .checked_sub(base)
+                        .is_some_and(|top| {
+                            hwpunit_to_px(top, self.dpi) + frame.opening_height
+                                <= actual_first_boundary
+                        })
+            });
         let empty_opening_row_frame = (st.col_count == 1
             && std::ptr::eq(table, row_geometry_table))
         .then(|| paragraphs_all.get(para_idx + 1))
@@ -679,6 +698,10 @@ impl TypesetEngine {
                 self.dpi,
             );
         if empty_opening_row_frame.is_none()
+            // The same authenticated opening box that scan/paint consume fits
+            // the real note boundary. An earlier safety-band probe must not
+            // discard its page owner before that shared plan is consulted.
+            && !source_single_cell_first_frame_fits
             && (stored_page_top_tac_table
                 || (remaining_on_page < split_unit_h && !st.current_items.is_empty()))
         {
@@ -1080,9 +1103,63 @@ impl TypesetEngine {
                 }
             }
         }
+        let legacy_source_top =
+            crate::renderer::layout::native_hwp5_internal_reset_rowbreak_first_fragment_saved_top(
+                self.profile.get().hwp5_stored_pagination_layout(),
+                para,
+                para_idx.checked_sub(1).and_then(|i| paragraphs_all.get(i)),
+                paragraphs_all.get(para_idx + 1),
+                table,
+                &st.inline_flow_column(),
+                self.dpi,
+            );
+        // 원본 text-frame 계약은 원점뿐 아니라 선언 상한과 기존 각주의 물리
+        // 경계도 소유한다. legacy 원점이 있다고 이 조회를 생략하면 후속 컷은
+        // safety band에서 먼저 잘려 원본 frame 중간에 여분 쪽을 만든다.
+        // 인증한 text frame을 우선하고 같은 원점을 fit과 paint에 전달한다.
+        let source_text_frame_top = layout_engine.native_text_frame_first_fragment_saved_top(
+            para,
+            para_idx.checked_sub(1).and_then(|i| paragraphs_all.get(i)),
+            table,
+            &st.inline_flow_column(),
+            styles,
+        );
+        // The authenticated cut and both boxes also own their original first
+        // anchor. Reusing only the cut while keeping a drifted sequential
+        // cursor places a correct fragment in the wrong part of the page.
+        let source_single_cell_first_placement = source_single_cell_row_frames.and_then(|frame| {
+            if st.col_count != 1
+                || !std::ptr::eq(table, row_geometry_table)
+                || host_frame
+                    != (
+                        st.pages.len(),
+                        st.current_column,
+                        st.current_zone_y_offset.to_bits(),
+                    )
+            {
+                return None;
+            }
+            let base = st.vpos_page_base.unwrap_or(0);
+            let anchor = hwpunit_to_px(frame.opening_anchor_hu.checked_sub(base)?, self.dpi);
+            let top = hwpunit_to_px(frame.opening_table_top_hu.checked_sub(base)?, self.dpi);
+            if anchor < 0.0 || top < anchor || top + frame.opening_height > actual_first_boundary {
+                return None;
+            }
+            // The shared first-fragment conversion opens outer_top once.
+            let pre_margin_top = top - hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+            Some(crate::renderer::float_placement::ParagraphFloatPlacement {
+                flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                anchor_y: anchor,
+                stored_host_origin: Some(anchor),
+                stored_successor_line_origin: None,
+                table_left: None,
+                table_top: pre_margin_top,
+                occupied_bottom: top + frame.opening_height,
+            })
+        });
         let prepared = BlockTableContinuationPreparedState {
             first_anchor_offset_consumed,
-            host_placement: fragment_host_placement,
+            host_placement: source_single_cell_first_placement.or(fragment_host_placement),
             host_frame,
             empty_opening_row_frame,
             row_count,
@@ -1091,6 +1168,15 @@ impl TypesetEngine {
             base_available,
             table_available,
             layout_engine,
+            // Native 개체의 선언 높이를 첫 텍스트 프레임 예산으로 쓰는 계약이다.
+            // HWPX에서는 저장 원점이 유효해도 inline 개체 줄의 마지막 간격이
+            // cut 전진 높이에 포함되므로 같은 선언 높이가 cut의 상한은 아니다.
+            // 그 포맷의 첫 물리 상자는 saved_single_cell_opening_frame_cut이
+            // 종료 줄·패딩과 선언 상자를 독립적으로 인증한 경로에서 예약한다.
+            source_text_first_frame_height: source_text_frame_top
+                .filter(|_| st.profile.hwp5_stored_pagination_layout())
+                .map(|_| hwpunit_to_px(table.common.height as i32, self.dpi)),
+            source_single_cell_row_frames,
             rowspan_touched,
             cut_row_heights: cut_row_h,
             whole_row_fit_heights: whole_row_fit_h,
@@ -1106,6 +1192,7 @@ impl TypesetEngine {
             host_spacing_total,
             host_spacing_before: ft.host_spacing.before,
             host_spacing_after_only: ft.host_spacing.spacing_after_only,
+            terminal_outer_bottom_flow: ft.host_spacing.terminal_outer_bottom_flow,
             terminal_host_spacing,
             strict_following_plain_text_fit: ft.strict_following_plain_text_fit,
             budget_para_start_height,
@@ -1113,7 +1200,15 @@ impl TypesetEngine {
                 (native_picture_caption_fits_actual_footnote_boundary
                     || stored_ordinary_rowbreak_rewind_uses_actual_footnote_boundary
                     || native_hwp5_internal_reset_rewind_needs_anchor_resync
-                    || empty_opening_row_frame.is_some())
+                    // An authenticated first text frame is capped by its source
+                    // object box. Reserve actual existing notes, rather than
+                    // shortening that box again by a heuristic safety band.
+                    // The cut and paint consume the same saved origin and cap;
+                    // queued new notes still require their own physical fit.
+                    || (st.profile.hwp5_stored_pagination_layout()
+                        && source_text_frame_top.is_some())
+                    || empty_opening_row_frame.is_some()
+                    || source_single_cell_first_placement.is_some())
                 .then(|| {
                     st.base_available_height()
                         - st.current_footnote_height
@@ -1123,76 +1218,75 @@ impl TypesetEngine {
             source_next_positive_rewind: next_rewinds_after_table && !next_starts_new_page,
             first_fragment_saved_offset: {
                 let column = st.inline_flow_column();
-                crate::renderer::layout::native_hwp5_internal_reset_rowbreak_first_fragment_saved_top(
-                    self.profile.get().hwp5_stored_pagination_layout(),
-                    para,
-                    para_idx.checked_sub(1).and_then(|i| paragraphs_all.get(i)),
-                    paragraphs_all.get(para_idx + 1),
-                    table,
-                    &column,
-                    self.dpi,
-                )
-                .map(|top| top - column.y)
-                .or_else(|| {
-                    // HWPX의 한 줄 캡션 다음에 오는 빈 호스트의 Square RowBreak 표는
-                    // 저장 LineSeg 사다리에서 표의 첫 원점이 확정된다. 앞 문단을
-                    // 재측정한 흐름이 한 줄 이상 길어져도 분할 스캐너는 paint와
-                    // 같은 저장 원점에서 남은 쪽 높이를 계산해야 한다.
-                    let prev = para_idx.checked_sub(1).and_then(|i| paragraphs_all.get(i))?;
-                    if !st.profile.hwpx_stored_layout()
-                        || st.profile.session_edited()
-                        || !prev.controls.is_empty()
-                        || !para_has_visible_text(prev)
-                        || para_has_visible_text(para)
-                        || para.controls.len() != 1
-                        || table.common.treat_as_char
-                        || !matches!(
-                            table.common.text_wrap,
-                            crate::model::shape::TextWrap::Square
-                        )
-                        || !matches!(
-                            table.common.vert_rel_to,
-                            crate::model::shape::VertRelTo::Para
-                        )
-                        || table.common.vertical_offset != 0
-                        || !matches!(
-                            table.page_break,
-                            crate::model::table::TablePageBreak::RowBreak
-                        )
-                        || table.row_count <= 1
-                    {
-                        return None;
-                    }
-                    let mut previous_lines = prev
-                        .line_segs
-                        .iter()
-                        .filter(|seg| !is_synthetic_line_seg(seg));
-                    let previous = previous_lines.next()?;
-                    if previous_lines.next().is_some() {
-                        return None;
-                    }
-                    let mut host_lines = para
-                        .line_segs
-                        .iter()
-                        .filter(|seg| !is_synthetic_line_seg(seg));
-                    let host = host_lines.next()?;
-                    if host_lines.next().is_some()
-                        || previous
-                            .vertical_pos
-                            .saturating_add(previous.line_height)
-                            .saturating_add(previous.line_spacing)
-                            != host.vertical_pos
-                    {
-                        return None;
-                    }
-                    let (saved_top, _) = line_seg_visible_bounds_px(
-                        host,
-                        st.vpos_page_base.unwrap_or(0),
-                        self.dpi,
-                    )?;
-                    (saved_top <= st.current_height && saved_top < table_available)
-                        .then_some(saved_top)
-                })
+                source_single_cell_first_placement
+                    .map(|placement| placement.anchor_y)
+                    .or_else(|| {
+                        source_text_frame_top
+                            .or(legacy_source_top)
+                            .map(|top| top - column.y)
+                    })
+                    .or_else(|| {
+                        // HWPX의 한 줄 캡션 다음에 오는 빈 호스트의 Square RowBreak 표는
+                        // 저장 LineSeg 사다리에서 표의 첫 원점이 확정된다. 앞 문단을
+                        // 재측정한 흐름이 한 줄 이상 길어져도 분할 스캐너는 paint와
+                        // 같은 저장 원점에서 남은 쪽 높이를 계산해야 한다.
+                        let prev = para_idx
+                            .checked_sub(1)
+                            .and_then(|i| paragraphs_all.get(i))?;
+                        if !st.profile.hwpx_stored_layout()
+                            || st.profile.session_edited()
+                            || !prev.controls.is_empty()
+                            || !para_has_visible_text(prev)
+                            || para_has_visible_text(para)
+                            || para.controls.len() != 1
+                            || table.common.treat_as_char
+                            || !matches!(
+                                table.common.text_wrap,
+                                crate::model::shape::TextWrap::Square
+                            )
+                            || !matches!(
+                                table.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            )
+                            || table.common.vertical_offset != 0
+                            || !matches!(
+                                table.page_break,
+                                crate::model::table::TablePageBreak::RowBreak
+                            )
+                            || table.row_count <= 1
+                        {
+                            return None;
+                        }
+                        let mut previous_lines = prev
+                            .line_segs
+                            .iter()
+                            .filter(|seg| !is_synthetic_line_seg(seg));
+                        let previous = previous_lines.next()?;
+                        if previous_lines.next().is_some() {
+                            return None;
+                        }
+                        let mut host_lines = para
+                            .line_segs
+                            .iter()
+                            .filter(|seg| !is_synthetic_line_seg(seg));
+                        let host = host_lines.next()?;
+                        if host_lines.next().is_some()
+                            || previous
+                                .vertical_pos
+                                .saturating_add(previous.line_height)
+                                .saturating_add(previous.line_spacing)
+                                != host.vertical_pos
+                        {
+                            return None;
+                        }
+                        let (saved_top, _) = line_seg_visible_bounds_px(
+                            host,
+                            st.vpos_page_base.unwrap_or(0),
+                            self.dpi,
+                        )?;
+                        (saved_top <= st.current_height && saved_top < table_available)
+                            .then_some(saved_top)
+                    })
             },
             next_para_stored_top: paragraphs_all.get(para_idx + 1).and_then(|next| {
                 let seg = next

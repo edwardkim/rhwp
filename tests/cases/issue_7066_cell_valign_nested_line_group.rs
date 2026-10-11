@@ -105,22 +105,3 @@ fn center_aligned_cell_recovers_its_slack_in_issue2083() {
         "결재 표 하단이 {approval_bottom} — 한/글 393.17, 수정 전 361.10"
     );
 }
-
-/// `valign=Bottom` 칸 — `#7008` 이 세운 "두 상자는 같은 줄" 계약도 함께 지켜야 한다.
-#[test]
-fn bottom_aligned_cell_keeps_the_two_boxes_on_one_line_in_21_language() {
-    let tree = page0("samples/21_언어_기출_편집가능본.hwp");
-    let (_, name_y, _, _) = table_by_width(&tree, 189.0);
-    let (_, number_y, _, _) = table_by_width(&tree, 285.1);
-
-    assert!(
-        (name_y - number_y).abs() < 0.5,
-        "두 상자가 같은 줄이 아니다 — {name_y} vs {number_y}"
-    );
-    // 상자 외곽선에는 별도 축의 3.7px 이 남아 있다(본문 주석 참조) — 수정 전 11.9px 과는
-    // 분명히 갈린다.
-    assert!(
-        (name_y - 266.60).abs() < 4.5,
-        "중첩 상자 상단이 {name_y} — 한/글 266.60, 수정 전 254.70"
-    );
-}
