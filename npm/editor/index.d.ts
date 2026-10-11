@@ -290,8 +290,8 @@ export declare class RhwpEditor {
   loadFile(data: ArrayBuffer | Uint8Array, fileName?: string, options?: LoadFileOptions): Promise<LoadResult>;
   /** 현재 문서의 페이지 수를 반환합니다 */
   pageCount(): Promise<number>;
-  /** 특정 페이지를 SVG 문자열로 렌더링합니다 */
-  getPageSvg(page?: number): Promise<string>;
+  /** 특정 페이지를 SVG 문자열로 렌더링합니다. `profile: 'print'` 는 편집 화면 전용 요소를 뺀 인쇄용 SVG 입니다 */
+  getPageSvg(page?: number, options?: { profile?: 'fastPreview' | 'screen' | 'print' | 'highQuality' }): Promise<string>;
   /** 선택된 renderer와 페이지별 readiness 진단을 반환합니다 */
   getRendererDiagnostics(page?: number): Promise<RendererDiagnosticsV1>;
   /** 현재 snapshot만 읽는 bounded font 결정 계보를 반환합니다 */
