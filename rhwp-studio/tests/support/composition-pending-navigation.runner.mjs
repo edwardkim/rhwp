@@ -3,6 +3,9 @@ import { registerHooks } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+// Ctrl+방향키를 검증하는 Windows/Linux 시나리오를 Node 호스트 플랫폼과 분리한다.
+globalThis.__rhwpTestPlatformKind = 'other';
+
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'src');
 registerHooks({
   resolve(specifier, context, nextResolve) {
