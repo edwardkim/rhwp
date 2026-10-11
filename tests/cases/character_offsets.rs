@@ -64,6 +64,13 @@ fn language_offsets_move_only_their_runs_without_changing_advance_or_line_spacin
         );
         near(new.3, old.3);
     }
+    let selection = value(&doc.get_selection_rects(0, 0, 0, 0, 6).unwrap());
+    let rects = selection.as_array().unwrap();
+    assert_eq!(rects.len(), after.len());
+    for (rect, run) in rects.iter().zip(&after) {
+        assert!((rect["y"].as_f64().unwrap() - run.2).abs() < 0.1);
+        assert!(rect["width"].as_f64().unwrap() >= run.3 - 0.1);
+    }
 }
 
 #[test]

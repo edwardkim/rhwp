@@ -2131,6 +2131,63 @@ impl DocumentCore {
             self.build_page_tree(pn)
         };
 
+        fn collect_run_rects(
+            node: &RenderNode,
+            section: usize,
+            paragraph: usize,
+            target: Option<SelectionCellTarget<'_>>,
+            range: (usize, usize),
+            rects: &mut Vec<(usize, crate::renderer::render_tree::BoundingBox)>,
+        ) {
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                let matches = match target {
+                    None => {
+                        run.section_index == Some(section)
+                            && run.para_index == Some(paragraph)
+                            && run.cell_context.is_none()
+                    }
+                    Some(SelectionCellTarget::Flat {
+                        parent_para_idx,
+                        control_idx,
+                        cell_idx,
+                    }) => run.cell_context.as_ref().is_some_and(|ctx| {
+                        flat_cell_ctx_matches(
+                            ctx,
+                            parent_para_idx,
+                            control_idx,
+                            cell_idx,
+                            paragraph,
+                        )
+                    }),
+                    Some(SelectionCellTarget::Path {
+                        parent_para_idx,
+                        path,
+                    }) => run.cell_context.as_ref().is_some_and(|ctx| {
+                        path_cell_ctx_matches(ctx, parent_para_idx, path, paragraph)
+                    }),
+                };
+                if let (true, Some(start)) = (matches, run.char_start) {
+                    let positions = cursor_positions_for_render_run(run, node.bbox.width);
+                    let left = range.0.max(start);
+                    let right = range.1.min(start + positions.len().saturating_sub(1));
+                    if left < right {
+                        rects.push((
+                            left,
+                            crate::renderer::render_tree::BoundingBox::new(
+                                node.bbox.x + positions[left - start],
+                                node.bbox.y,
+                                positions[right - start] - positions[left - start],
+                                node.bbox.height,
+                            ),
+                        ));
+                    }
+                }
+            }
+            for child in &node.children {
+                collect_run_rects(child, section, paragraph, target, range, rects);
+            }
+        }
+
         // 주요 페이지 트리 미리 빌드
         for &pn in &page_nums {
             tree_cache.push((pn, selection_tree(pn)?));
@@ -2250,6 +2307,19 @@ impl DocumentCore {
                 }
             }
 
+            let has_character_offsets = para
+                .char_shapes
+                .iter()
+                .map(|run| run.char_shape_id)
+                .chain(std::iter::once(0))
+                .any(|id| {
+                    self.document
+                        .doc_info
+                        .char_shapes
+                        .get(id as usize)
+                        .is_some_and(|shape| shape.char_offsets.iter().any(|offset| *offset != 0))
+                });
+
             for line_idx in 0..line_count {
                 let (line_char_start, line_char_end) = Self::get_line_char_range(para, line_idx);
                 let range_start = sel_start.max(line_char_start);
@@ -2314,6 +2384,47 @@ impl DocumentCore {
                     } else {
                         (0.0, 0.0)
                     };
+
+                    // 언어별 위치가 다른 줄은 각 run의 실제 선택 상자를 쓴다.
+                    let mut run_rects = Vec::new();
+                    if let Some((_, tree)) = tree_cache
+                        .iter()
+                        .find(|(page, _)| *page == lh.page)
+                        .filter(|_| has_character_offsets)
+                    {
+                        collect_run_rects(
+                            &tree.root,
+                            section_idx,
+                            para_idx,
+                            cell_target,
+                            (range_start, range_end),
+                            &mut run_rects,
+                        );
+                    }
+                    if run_rects
+                        .iter()
+                        .any(|(_, rect)| (rect.y - lh.y).abs() > 0.01)
+                    {
+                        run_rects.sort_by_key(|(start, _)| *start);
+                        let count = run_rects.len();
+                        for (index, (_, mut rect)) in run_rects.into_iter().enumerate() {
+                            if index == 0 && !partial_start && cell_target.is_none() {
+                                rect.width += rect.x - area_left;
+                                rect.x = area_left;
+                            }
+                            if index + 1 == count && selection_continues {
+                                rect.width = (area_right - rect.x).max(0.0);
+                            }
+                            if rect.width > 0.01 {
+                                rects.push(format!(
+                                    "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}}",
+                                    lh.page, rect.x, rect.y, rect.width, rect.height
+                                ));
+                            }
+                        }
+                        rendered_segments += 1;
+                        continue;
+                    }
 
                     // y/h는 항상 left_hit 기준 (right_hit가 다음 줄에 있을 수 있음)
                     let (page_idx, rect_x, rect_y, rect_h) =
