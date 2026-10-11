@@ -33,6 +33,8 @@ pub(super) struct NewNoteFitInput<'a> {
     pub(super) total_advance_fit: f64,
     pub(super) en_fit: f64,
     pub(super) new_endnote_advance_threshold: f64,
+    /// [#6574] 새 미주 첫 문단이 렌더로 현재 단에 통째로 들어간다.
+    pub(super) render_head_fits: bool,
     pub(super) endnote_has_vpos_rewind: bool,
     pub(super) compact_endnote_separator_profile: bool,
     pub(super) prev_endnote_had_inline_object_vpos_overestimate: bool,
@@ -98,6 +100,7 @@ impl TypesetEngine {
             total_advance_fit,
             en_fit,
             new_endnote_advance_threshold,
+            render_head_fits,
             endnote_has_vpos_rewind,
             compact_endnote_separator_profile,
             prev_endnote_had_inline_object_vpos_overestimate,
@@ -521,8 +524,11 @@ impl TypesetEngine {
                 || rewind_endnote_head_would_split
                 || large_between_notes_vpos_head_outside)
             && (!new_endnote_stale_forward_vpos || large_between_notes_vpos_head_outside)
-            && (st.current_height > available * new_endnote_advance_threshold
-                || large_between_notes_vpos_head_outside
+            // 누계 임계와 저장 사다리 예측은 "단이 찼다"의 대리값이다. 렌더가 첫 문단이
+            // 통째로 들어간다고 재면 그 대리값으로 단을 넘기지 않는다.
+            && (((st.current_height > available * new_endnote_advance_threshold
+                || large_between_notes_vpos_head_outside)
+                && !render_head_fits)
                 || no_separator_compact_new_note_overflows_current_column
                 || no_separator_compact_last_column_single_line_tail_too_low
                 || no_separator_compact_last_column_title_before_tall_next
