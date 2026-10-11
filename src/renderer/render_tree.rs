@@ -176,7 +176,11 @@ pub enum ControlCode {
 }
 
 impl RenderNode {
-    pub fn new(id: NodeId, node_type: RenderNodeType, bbox: BoundingBox) -> Self {
+    pub fn new(id: NodeId, mut node_type: RenderNodeType, mut bbox: BoundingBox) -> Self {
+        if let RenderNodeType::TextRun(run) = &mut node_type {
+            // 줄 진행은 유지하고 출력·캐럿·선택이 공유하는 run 상자만 옮긴다.
+            bbox.y += std::mem::take(&mut run.style.char_offset);
+        }
         Self {
             id,
             node_type,

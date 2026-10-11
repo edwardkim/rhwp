@@ -836,6 +836,9 @@ pub(crate) fn resolved_to_text_style(
             hft_hangul_face: styles.hft_ascii_halfwidth && cs.hft_hangul_face_for_lang(lang_index),
             hft_fullwidth_dot: cs.hft_fullwidth_dot_for_lang(lang_index),
             font_size: cs.font_size_for_lang(lang_index),
+            char_offset: cs.font_size
+                * f64::from(cs.char_offsets.get(lang_index).copied().unwrap_or(0))
+                / 100.0,
             color: cs.text_color,
             bold: cs.bold,
             italic: cs.italic,

@@ -275,6 +275,9 @@ pub struct TextStyle {
     pub font_family: String,
     /// 글꼴 크기 (px)
     pub font_size: f64,
+    /// run 상자를 만들 때 한 번 소비하는 기준 크기 기준 세로 이동량(px).
+    #[serde(skip)]
+    pub char_offset: f64,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -576,6 +579,7 @@ impl Default for TextStyle {
             supplemental_metrics: None,
             font_family: String::new(),
             font_size: 0.0,
+            char_offset: 0.0,
             color: 0,
             bold: false,
             italic: false,
