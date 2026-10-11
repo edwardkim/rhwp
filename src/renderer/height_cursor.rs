@@ -723,6 +723,57 @@ impl HeightCursor {
                             )
                         })
                 });
+        // [#7552] 앞 문단도 빈 자리차지 표 host 면 그 host 줄 끝은 앞 표의 내용 끝이 아니다.
+        // 이때 저장 사다리는 현재 host 줄을 **문단 상단**에 두고 표 바깥 상자를 그 뒤에
+        // 예약한다(다음 문단 vpos − 현재 vpos ≥ 바깥 상자). 앞 간격은 앞 표의 아래 여백·캡션
+        // 띠에 흡수되어 사다리에 들어 있지 않다 — 정본 괘선 = 줄 vpos + 바깥 위 여백
+        // (hwpspec 28쪽 pi=168 447.4, 50쪽 pi=328 858.2). 줄이 표 아래에 저장된 host
+        // (PR #1088 hwp-multi-001)는 다음 문단까지 상자가 들어가지 않아 여기 오지 않는다.
+        let empty_topbottom_host = |para: &crate::model::paragraph::Paragraph| -> Option<i64> {
+            if para_has_visible_text(para) || para.controls.len() != 1 {
+                return None;
+            }
+            match &para.controls[0] {
+                Control::Table(table)
+                    if !table.common.treat_as_char
+                        && table.common.vertical_offset == 0
+                        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+                        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+                        && table.common.height <= i32::MAX as u32 =>
+                {
+                    Some(
+                        i64::from(table.common.height)
+                            + i64::from(table.outer_margin_top)
+                            + i64::from(table.outer_margin_bottom),
+                    )
+                }
+                _ => None,
+            }
+        };
+        let table_host_line_is_top_after_table_host = !self.session_edited
+            && !synthetic_prev_seg
+            && empty_topbottom_host(prev_para).is_some()
+            && paragraphs.get(item_para).is_some_and(|para| {
+                let Some(outer_box) = empty_topbottom_host(para) else {
+                    return false;
+                };
+                let (Some(line), Some(next)) = (
+                    para.line_segs.first(),
+                    paragraphs
+                        .get(item_para + 1)
+                        .and_then(|next| next.line_segs.first()),
+                ) else {
+                    return false;
+                };
+                let stored = |seg: &crate::model::paragraph::LineSeg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                };
+                stored(line)
+                    && stored(next)
+                    && para.line_segs.len() == 1
+                    && line.vertical_pos > seg.vertical_pos
+                    && i64::from(next.vertical_pos) - i64::from(line.vertical_pos) >= outer_box
+            });
         // [Task #412] 현재 paragraph first vpos 우선(spacing_after 인코딩), reset 시 fallback.
         //
         // 단, 현재 문단이 para-relative TopAndBottom 표의 host 이면 first_vpos 가 표
@@ -759,7 +810,8 @@ impl HeightCursor {
                 if v > seg.vertical_pos
                     && (!curr_has_topbottom_para_table
                         || table_host_only_before_gap
-                        || table_host_only_paragraph_gap) =>
+                        || table_host_only_paragraph_gap
+                        || table_host_line_is_top_after_table_host) =>
             {
                 v
             }
@@ -802,6 +854,7 @@ impl HeightCursor {
         // 앞 줄의 실제 끝에서 현재 문단을 시작하고, 앞 간격은 배치가 한 번 더한다.
         let skip_prededuct = self.skip_spacing_before_prededuct
             || inline_host_without_stored_anchor
+            || table_host_line_is_top_after_table_host
             || (synthetic_prev_seg
                 && paragraphs
                     .get(item_para)

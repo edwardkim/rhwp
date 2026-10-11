@@ -188,6 +188,25 @@ impl TypesetEngine {
                 y = st.current_height;
             }
         }
+        // [#7552] 글자 없는 자리차지 표 host(세로 오프셋 0)는 스냅이 미리 뺀 앞 간격을 다시
+        // 더하는 글줄이 없다. 후방 이동이 정확히 그 앞 간격뿐이면 흐름 커서를 유지한다 —
+        // 렌더의 `empty_float_vpos_snap_flow_top` 과 같은 판정이고, 조판은 표 위 바깥 여백을
+        // 이미 예약하므로 두 경로 모두 표 윗변이 흐름 + 바깥 위 여백이 된다(hwpspec 50쪽
+        // pi=327 정본 713.8, 그 뒤 pi=328 이 같은 흐름에서 이어진다).
+        if spacing_before_px > 0.5
+            && y < st.current_height
+            && (st.current_height - y - spacing_before_px).abs() <= 0.5
+            && paragraphs.get(para_idx).is_some_and(|para| {
+                !crate::renderer::typeset::para_has_visible_text(para)
+                    && para.controls.len() == 1
+                    && matches!(&para.controls[0], crate::model::control::Control::Table(table)
+                        if !table.common.treat_as_char
+                            && table.common.vertical_offset == 0
+                            && crate::renderer::float_placement::is_para_topbottom_float(&table.common))
+            })
+        {
+            y = st.current_height;
+        }
         // [#2243 진단] snap 입출력 — 동작 불변.
         if std::env::var("RHWP_DIAG_SNAPALL").is_ok() {
             eprintln!(
