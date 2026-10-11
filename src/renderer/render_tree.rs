@@ -149,6 +149,9 @@ pub struct RenderNode {
     pub node_type: RenderNodeType,
     /// 박스 모델 (위치, 크기, 여백)
     pub bbox: BoundingBox,
+    /// 셀 경계 제한과 구분할 의도된 글자 위치 이동량(px).
+    #[serde(skip)]
+    pub char_offset_y: f64,
     /// 원본 객체 레이어 정보 (paper/page anchored Picture/Table/Shape용)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub layer: Option<RenderLayerInfo>,
@@ -177,14 +180,18 @@ pub enum ControlCode {
 
 impl RenderNode {
     pub fn new(id: NodeId, mut node_type: RenderNodeType, mut bbox: BoundingBox) -> Self {
-        if let RenderNodeType::TextRun(run) = &mut node_type {
+        let char_offset_y = if let RenderNodeType::TextRun(run) = &mut node_type {
             // 줄 진행은 유지하고 출력·캐럿·선택이 공유하는 run 상자만 옮긴다.
-            bbox.y += std::mem::take(&mut run.style.char_offset);
-        }
+            std::mem::take(&mut run.style.char_offset)
+        } else {
+            0.0
+        };
+        bbox.y += char_offset_y;
         Self {
             id,
             node_type,
             bbox,
+            char_offset_y,
             layer: None,
             children: Vec::new(),
             visible: true,

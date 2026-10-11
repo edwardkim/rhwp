@@ -162,6 +162,11 @@ fn cell_offset_moves_its_caret_and_selection_without_touching_the_neighbor() {
         &doc.get_cursor_rect_in_cell_native(0, parent, control, 0, 0, 1)
             .unwrap(),
     );
+    let path = json!([{"controlIndex":control,"cellIndex":0,"cellParaIndex":0}]).to_string();
+    let path_caret = value(
+        &doc.get_cursor_rect_by_path(0, parent as u32, &path, 1)
+            .unwrap(),
+    );
     let selection = value(
         &doc.get_selection_rects_in_cell(0, parent as u32, control as u32, 0, 0, 0, 0, 2)
             .unwrap(),
@@ -192,6 +197,16 @@ fn cell_offset_moves_its_caret_and_selection_without_touching_the_neighbor() {
         moved["y"].as_f64().unwrap() - caret["y"].as_f64().unwrap(),
         -6.0,
     );
+    assert_eq!(moved["cellOverflowed"], caret["cellOverflowed"]);
+    let moved_path = value(
+        &doc.get_cursor_rect_by_path(0, parent as u32, &path, 1)
+            .unwrap(),
+    );
+    near(
+        moved_path["y"].as_f64().unwrap() - path_caret["y"].as_f64().unwrap(),
+        -6.0,
+    );
+    assert_eq!(moved_path["cellOverflowed"], path_caret["cellOverflowed"]);
     let selected = value(
         &doc.get_selection_rects_in_cell(0, parent as u32, control as u32, 0, 0, 0, 0, 2)
             .unwrap(),

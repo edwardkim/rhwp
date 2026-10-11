@@ -79,6 +79,7 @@ struct CellCursorHit {
     x: f64,
     y: f64,
     height: f64,
+    char_offset_y: f64,
 }
 
 /// 렌더 노드 트리에서 대상 셀의 bbox 를 찾는다 (legacy/fast 공유).
@@ -165,6 +166,7 @@ fn find_cursor_in_cell_node(
                     x: node.bbox.x + x_in_run,
                     y: caret_y,
                     height: font_size,
+                    char_offset_y: node.char_offset_y,
                 });
             }
         }
@@ -190,10 +192,14 @@ fn format_cursor_rect_json(
     x: f64,
     y: f64,
     height: f64,
+    char_offset_y: f64,
     cell_bounds: Option<CellCursorBounds>,
 ) -> String {
     if let Some(bounds) = cell_bounds {
-        let (x, y, height, overflowed) = clamp_cursor_to_cell_bounds(x, y, height, bounds);
+        // 실제 셀 넘침을 제한한 뒤 의도한 글자 위치 이동을 되돌린다.
+        let (x, y, height, overflowed) =
+            clamp_cursor_to_cell_bounds(x, y - char_offset_y, height, bounds);
+        let y = y + char_offset_y;
         format!(
             "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1},\"cellBounds\":{{\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}},\"cellOverflowed\":{}}}",
             page_index, x, y, height, bounds.x, bounds.y, bounds.w, bounds.h, overflowed
@@ -2878,6 +2884,7 @@ impl DocumentCore {
                     hit.x,
                     hit.y,
                     hit.height,
+                    hit.char_offset_y,
                     cell_bounds,
                 ));
             }
@@ -2903,7 +2910,7 @@ impl DocumentCore {
             ctrl_idx: usize,
             c_idx: usize,
             cp_idx: usize,
-        ) -> Option<(f64, f64, f64)> {
+        ) -> Option<(f64, f64, f64, f64)> {
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 let matches_cell = text_run.cell_context.as_ref().map_or(false, |ctx| {
                     // path.len()==1 가드가 없으면 중첩 표 *내부* 셀의 run 도
@@ -2917,7 +2924,12 @@ impl DocumentCore {
                         && ctx.path[0].cell_para_index == cp_idx
                 });
                 if matches_cell {
-                    return Some((node.bbox.x, node.bbox.y, node.bbox.height));
+                    return Some((
+                        node.bbox.x,
+                        node.bbox.y,
+                        node.bbox.height,
+                        node.char_offset_y,
+                    ));
                 }
             }
             for child in &node.children {
@@ -2928,7 +2940,7 @@ impl DocumentCore {
             None
         }
 
-        if let Some((x, y, h)) = find_cell_run(
+        if let Some((x, y, h, char_offset_y)) = find_cell_run(
             &tree.root,
             parent_para_idx,
             control_idx,
@@ -2940,6 +2952,7 @@ impl DocumentCore {
                 x,
                 y,
                 h,
+                char_offset_y,
                 first_page_cell_bounds,
             ));
         }
@@ -3000,6 +3013,7 @@ impl DocumentCore {
                 cx + pad_left,
                 cy + pad_top,
                 caret_h,
+                0.0,
                 Some(CellCursorBounds {
                     x: cx,
                     y: cy,
@@ -3439,6 +3453,7 @@ impl DocumentCore {
                 hit.x,
                 hit.y,
                 hit.height,
+                hit.char_offset_y,
                 cell_bounds,
             )));
         }
@@ -3699,7 +3714,7 @@ impl DocumentCore {
             current_table_ctx: Option<CellContext>,
             current_cell_ctx: Option<CellContext>,
             current_cell_bounds: Option<CellCursorBounds>,
-        ) -> Option<(u32, f64, f64, f64, Option<CellCursorBounds>)> {
+        ) -> Option<(u32, f64, f64, f64, f64, Option<CellCursorBounds>)> {
             let table_ctx =
                 table_ctx_from_node(node, current_table_ctx.as_ref(), current_cell_ctx.as_ref());
             let mut child_cell_ctx = current_cell_ctx.clone();
@@ -3750,6 +3765,7 @@ impl DocumentCore {
                             node.bbox.x + xr,
                             node.bbox.y,
                             node.bbox.height,
+                            node.char_offset_y,
                             child_cell_bounds,
                         ));
                     }
@@ -3776,7 +3792,7 @@ impl DocumentCore {
 
         for &page_num in &pages {
             let tree = self.build_page_tree_cached(page_num)?;
-            if let Some((pi, x, y, h, cell_bounds)) = find_cursor_by_path(
+            if let Some((pi, x, y, h, char_offset_y, cell_bounds)) = find_cursor_by_path(
                 self,
                 &tree.root,
                 section_idx,
@@ -3788,7 +3804,14 @@ impl DocumentCore {
                 None,
                 None,
             ) {
-                return Ok(format_cursor_rect_json(pi, x, y, h, cell_bounds));
+                return Ok(format_cursor_rect_json(
+                    pi,
+                    x,
+                    y,
+                    h,
+                    char_offset_y,
+                    cell_bounds,
+                ));
             }
         }
 
@@ -3805,7 +3828,7 @@ impl DocumentCore {
                 current_table_ctx: Option<CellContext>,
                 current_cell_ctx: Option<CellContext>,
                 current_cell_bounds: Option<CellCursorBounds>,
-            ) -> Option<(u32, f64, f64, f64, Option<CellCursorBounds>)> {
+            ) -> Option<(u32, f64, f64, f64, f64, Option<CellCursorBounds>)> {
                 // TextRun이 하나도 없는 table-only 셀 문단은 Esc로 중첩 표 선택을
                 // 해제한 뒤에도 유효한 caret anchor가 필요하다. 현재 Table이 놓인
                 // 부모 셀 문단 context가 요청 경로와 같으면 표 좌상단을 반환한다.
@@ -3819,7 +3842,14 @@ impl DocumentCore {
                         }
                     }
                     if cell_context_matches(&Some(parent_ctx), parent_para, path) {
-                        return Some((page, node.bbox.x, node.bbox.y, 12.0, current_cell_bounds));
+                        return Some((
+                            page,
+                            node.bbox.x,
+                            node.bbox.y,
+                            12.0,
+                            0.0,
+                            current_cell_bounds,
+                        ));
                     }
                 }
                 let table_ctx = table_ctx_from_node(
@@ -3857,6 +3887,7 @@ impl DocumentCore {
                             node.bbox.x,
                             node.bbox.y,
                             node.bbox.height,
+                            node.char_offset_y,
                             child_cell_bounds,
                         ));
                     }
@@ -3866,6 +3897,7 @@ impl DocumentCore {
                             node.bbox.x,
                             node.bbox.y,
                             node.bbox.height.max(1.0),
+                            node.char_offset_y,
                             child_cell_bounds,
                         ));
                     }
@@ -3887,7 +3919,7 @@ impl DocumentCore {
                 }
                 None
             }
-            if let Some((pi, x, y, h, cell_bounds)) = find_any_run(
+            if let Some((pi, x, y, h, char_offset_y, cell_bounds)) = find_any_run(
                 self,
                 &tree.root,
                 section_idx,
@@ -3898,7 +3930,14 @@ impl DocumentCore {
                 None,
                 None,
             ) {
-                return Ok(format_cursor_rect_json(pi, x, y, h, cell_bounds));
+                return Ok(format_cursor_rect_json(
+                    pi,
+                    x,
+                    y,
+                    h,
+                    char_offset_y,
+                    cell_bounds,
+                ));
             }
         }
 
