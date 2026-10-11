@@ -703,3 +703,74 @@ SVG 동일성, fresh manifest·선택 TSV·로그는 ignored `stage441-overlay-p
   이 집중 실행은 API 4검사 이관 전의 빌드에서 시작한 것이며 최종 전체 회귀와 필수 lint를 대신하지 않는다.
   로컬 정본: `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage452-other-branch-regressions/`.
 - 새 PR/push/merge는 전체 검증 후 사용자 승인 단계로 유지한다.
+
+
+## 2026-10-11 고정 devel 재검증과 최근접 행 끝의 의미 교정 (진행 중)
+
+`upstream/devel`을 `8761ac90270a5dddfa0860e3de700ee83d2bf7c8`로 고정하고,
+132개 고유 커밋을 rebase했다. 백업 브랜치는
+`backup/7445-completed-before-8761-20261011`이다. 새 upstream의 중앙 정렬 재조판 계약과
+공개 조판 세대 API를 보존했으며, 로드맵 제목의 반례·최종 전쪽 재검증은 아직 필요하다.
+
+같은 원본·Print PDF·현재 Visual Sweep·generation 2022·실제 Library/Fonts로
+실패에 연결된 9문서를 다시 비교했다. base Native에서 도로조명 2쪽은 최저
+94.82081%였지만 이전 후보의 2쪽은 58.45975%였다. 재난 2→3쪽,
+synam 35→36쪽, 토지표 5→6쪽도 현재 후보에서 추가된 차이였다. 이를 기존 미달
+이슈에 연결했다는 이유로 해결·이관 완료로 처리하지 않는다. 나머지 base 수치와
+쪽수 불일치는 ignored `stage453-current-devel-qualification/base-head-classification.json`에
+구분해 기록했다. 해당 파일의 before 결과는 다음 경계 교정 전 결과다.
+
+원인은 `saved_first_fragment_source_frame → nearest_saved_rowbreak_frame_row_end →
+row_step의 완료 조각 조기 종료 → fragment/emit의 끝행/다음 커서` 경로였다.
+최근접 행 끝은 허용량 조회 기준이며 실제 소유 종료를 증명하지 않는다. 재난은
+저장 프레임이 해당 측정 행 끝보다 약 22.6px 길고, 도로조명도 다음 행 첫 유닛을
+수용할 여지가 있다. 완료 분기가 남은 공간을 현재 행의 빈 물리 밴드로 소비하고
+스캔을 끝내면서 다음 행 첫 줄을 넘겼다.
+
+`row_step.rs`의 완료 분기는 프레임이 누적 측정 행 끝을 지나지 않을 때에만
+실행하도록 교정했다. 지나면 기존 다음 행의 내용 컷·실제 예산 검사를 계속한다.
+문서 ID 조건·새 픽셀 공차·출력 clamp는 없다. 위임전결의 프레임 안에서 닫히는
+기존 빈 밴드 보정은 유지한다. 새 Native에서 재난 2쪽·synam 35쪽·토지표 5쪽을
+확인했고, 도로조명 첫 줄도 SVG 1쪽에 있다. 이는 쪽수/소유 진단이며 전쪽 시각
+수용으로 보고하지 않는다. 위임전결 전쪽 진단의 사건 수는 같고 하단 넘침 증가가
+없지만, 55·63·81쪽의 표 높이가 달라 직접 PDF 대조가 남아 있다.
+
+기장군 `20117321_gijang_handover_bond_ledger_form.hwp`는 경계 교정 전 후보의
+Native/실제 Chrome fresh WASM 모두 98.94647%, 원본·독립 PDF·HWPX 왕복은 1쪽이다.
+`export-hwpx --verify --verify-pages`도 IR diff 0건으로 통과했다. 제목·표 머리글·하단
+확인/서명 내용의 review를 직접 확인했다. 기존 두 검사에서 XML lineseg 존재를
+가정한 지표를 원본 글자모양의 em 크기·실제 run의 글줄 소유/포함으로 바꿨다.
+빈 지표 집합도 두 검사 모두 실패시킨다. 선행 시각 증적은
+`../pr/assets/issue7445/completed-20261009/current-base-qualification/ledger-qualification.json`과
+같은 디렉터리의 `ledger-p001-review.png`다. 새 경계 교정 이후 최종 재검증과
+수정한 정식 검사 결과는 완료를 확인한 뒤 기록한다.
+
+새 한컴 Print 정본 `pdf/hwp3-empty-cell-2020.pdf`와
+`pdf/issue7235/156086935_none_image_fill-2020.pdf` 및 job·원본/PDF 해시·PrintMethod0
+출처는 `100f605f9875ca8388c873d491c2e4a9fdc44f33`으로 보존했다. 원본·다른 작업의
+합성 PDF를 대체하지 않았다. 독립 정본 확보를 시각 통과로 판정하지 않는다.
+
+경계 교정 전 fresh WASM 화학제품 103쪽 캡처 중 81쪽에서 브라우저 load 30초
+시간 초과가 발생했다. 102쪽 PNG는 있으나 해당 실행의 전쪽 TSV/수용은 미완료다.
+진행 중인 나머지 캡처를 보존하고, 완료 후 누락 81쪽만 공식 rasterizer로 재실행한다.
+Mac locked no-opt package이며 Docker 최적화 빌드 통과로 보고하지 않는다.
+
+현재 네 integration suite의 집중 nextest는 실행 중이다. manifest(1446 sources,
+6198 static test attrs)와 source unit tier(4113 tests/297 modules)는 고정 base 대비
+통과했다. 전체 회귀·필수 lint·새 code head의 Native/fresh 시각 검증은 미완료다.
+**2026-10-11 사용자 재확인: 결과 보고와 승인 전 PR 생성·push·CI 모니터링·머지·후속
+처리를 진행하지 않는다.** 로컬 보정·검증·보존은 계속한다.
+
+
+집중 검사 기록 정정: 최초 run `58bb89a0-ed35-406c-9e7d-08b29340de49`는
+manifest 준비 전의 suite 번호를 사용해 **0 tests / exit 4**로 끝났다.
+검증 통과로 계산하지 않는다. `--prepare` 후 실제 검사 위치
+`regression_suite_016/017/020`을 다시 조회해 같은 명시적 함수 필터로 재실행 중이다.
+
+
+정정 후 정식 집중 run `17521d1d-bd99-41b1-8a9d-2a32238c0a31`은
+**9 run / 9 PASS / 0 FAIL / 629 filtered skip**, 1.402초·exit 0이다.
+기장군 관계형 2검사, 도로조명 원본/0-reset 제거 대조군 2검사, 재난·정상 신청서
+쪽수 1검사, 생물독소 원본 내용 소유 4검사를 실제 실행했다. 생물독소 대조군은
+이 작은 경계 교정으로 기존 내용 소유 계약이 깨지지 않음을 확인하며, 205쪽의
+새 Native/fresh 시각 수용을 대신하지 않는다. 테스트 함수는 새로 추가하지 않았다.

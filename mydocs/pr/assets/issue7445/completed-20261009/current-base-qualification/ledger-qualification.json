@@ -1,0 +1,60 @@
+{
+  "qualificationCodeHead": "8f6ca10fe7549b45a8d9b795d9f4f0a57c00f389",
+  "base": "8761ac90270a5dddfa0860e3de700ee83d2bf7c8",
+  "fixture": {
+    "key": "ledger",
+    "source": "samples/issue4680/20117321_gijang_handover_bond_ledger_form.hwp",
+    "sourceSha256": "20698f60a2beca4bcf0d3abe275c090ff46392f916747ed262b5e76f6a5fe2f1",
+    "pdf": "pdf/issue4680/20117321_gijang_handover_bond_ledger_form-2020.pdf",
+    "sourceInfo": {
+      "format": "hwp3",
+      "version": "3.0.0.0",
+      "lastSavedWith": null,
+      "pageCount": 1
+    },
+    "pdfSha256": "2d7698cfbdea7770b3ffe1e9fdd2d1488f6943453582da2f96125d600acfd63d",
+    "pdfInfo": "Author:          SYSTEM\nCreator:         Hwp 2020 0.0.0.0\nProducer:        Hancom PDF 1.3.0.550\nCreationDate:    Tue Sep 22 11:23:15 2026 KST\nModDate:         Tue Sep 22 11:23:15 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           1\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       50572 bytes\nOptimized:       no\nPDF version:     1.4\n",
+    "sourceInfoRawPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/qualification-inputs.json"
+  },
+  "driver": "scripts/visual_sweep.py",
+  "driverSha256": "e450117151a58f9bdf0f666af90d77c3494c12292cf7aa8025d72227b09845df",
+  "backends": {
+    "head-native": {
+      "pages": [
+        1
+      ],
+      "missingPages": [],
+      "minimum": 98.94647,
+      "pageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pngSha256": "8e64b3c5fef8c80dbda3f6c1ed6cff3d3c88d8ee9f6cb215ee6157ac5cf65700",
+      "manifestPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/head-native/ledger/silhouette_manifest.json",
+      "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/head-native/ledger/silhouette.tsv"
+    },
+    "head-wasm": {
+      "pages": [
+        1
+      ],
+      "missingPages": [],
+      "minimum": 98.94647,
+      "pageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pngSha256": "8e64b3c5fef8c80dbda3f6c1ed6cff3d3c88d8ee9f6cb215ee6157ac5cf65700",
+      "manifestPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/head-wasm/ledger/silhouette_manifest.json",
+      "tsvPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/head-wasm/ledger/silhouette.tsv"
+    }
+  },
+  "directReview": "제목·표 괘선·표 머리글·하단 확인 및 서명 내용과 소속을 확인. 글자 가장자리와 괘선 농도 차이는 남음.",
+  "roundtrip": {
+    "command": "rhwp export-hwpx --verify --verify-pages",
+    "exitCode": 0,
+    "diffCount": 0,
+    "pagesBefore": 1,
+    "pagesAfter": 1
+  },
+  "scope": "회귀 기대값 재검토의 선행 증거. 이후 프레임 경계 생산 보정 뒤의 최종 검증은 별도로 필요함."
+}
