@@ -101,6 +101,8 @@ const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
     "hwpx/156160455-social-pig-farm-income.hwpx",
     // #7445: 전31쪽 최저16.17%, 15쪽 본문 누락을 확인한 규제영향분석서.
     "issue3637/regulatory_impact_nested_table_escape.hwpx",
+    // #7749: 위 원본과 SHA-256이 같은 80550 경로. 사용자 요청으로 렌더링 회귀를 이관한다.
+    "issue6697/80550-agricultural-machinery-act-amendment.hwpx",
     // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
     "86712_regulatory_analysis.hwp",
     "issue1891/86712_regulatory_analysis.hwpx",

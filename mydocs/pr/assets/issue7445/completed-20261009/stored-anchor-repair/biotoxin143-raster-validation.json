@@ -1,0 +1,111 @@
+{
+  "candidateHead": "144ea85f0f97da1083899d4364fed5c5fdd367ad",
+  "sourceSha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a",
+  "pdfSha256": "fe01f1ddffc3153d015adab93178f0fa8a5e9624763ff529362d4410d50955dc",
+  "sweepSha256": "e450117151a58f9bdf0f666af90d77c3494c12292cf7aa8025d72227b09845df",
+  "command": [
+    "pdftoppm",
+    "-r",
+    "96",
+    "-thinlinemode",
+    "shape",
+    "-png",
+    "/Users/tsjang/rhwp-7445-completed-20261009/pdf/issue5941-1480000-201900698-2020.pdf",
+    "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage450-biotoxin143-raster/pdf_png/pdf"
+  ],
+  "exitCode": 0,
+  "comparisonSeconds": 4.976,
+  "pdfRasterExecution": "completed once in preceding session80138; finish mode only rereads205 PNGs",
+  "dpi": 96,
+  "nativeFreshReusedCapture": "V26 actual native and fresh Chrome captures; unchanged renderer source and output SHA",
+  "rasterPolicyChanged": true,
+  "comparisonMetricOrThresholdChanged": false,
+  "nativeFreshPngIdentical": true,
+  "summaries": {
+    "native": {
+      "pages": 205,
+      "minimum": 92.75882,
+      "below90": [],
+      "p143": {
+        "page": "143",
+        "tolerant_content_match_percent": "98.25150",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "86.98876",
+        "silhouette_boundary_reconciled_pixels": "11150"
+      },
+      "tsvSha256": "2c0fb356d5e9a8c545bb096e39a1aa617bfc3da02faedf071c0764c72860642e"
+    },
+    "fresh": {
+      "pages": 205,
+      "minimum": 92.75882,
+      "below90": [],
+      "p143": {
+        "page": "143",
+        "tolerant_content_match_percent": "98.25150",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "86.98876",
+        "silhouette_boundary_reconciled_pixels": "11150"
+      },
+      "tsvSha256": "2c0fb356d5e9a8c545bb096e39a1aa617bfc3da02faedf071c0764c72860642e"
+    }
+  },
+  "negativeControls": {
+    "table_removed": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 22.87671,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 81489,
+      "tolerant_content_match_percent": 22.87671
+    },
+    "table_shifted_16px": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 69.14155,
+      "silhouette_boundary_reconciled_pixels": 9753,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 112692,
+      "tolerant_content_match_percent": 77.79612
+    }
+  },
+  "inputLedger": {
+    "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage450-biotoxin143-raster/proof.json",
+    "sha256": "1118e66b4c2a079953b925d6e9e47db47140b080822fc08bcac4264ac49b639c"
+  },
+  "pdfVectorEvidence": {
+    "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage445-biotoxin-boundary/pdf143-vector-strokes.json",
+    "widthPt": 0.36,
+    "svgWidthPx": 0.48,
+    "dpi": 96,
+    "svgColor": "#bfbfbf",
+    "pdfGray": 0.749
+  },
+  "scriptUnitTests": {
+    "tests": 83,
+    "passed": 83,
+    "exitCode": 0,
+    "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage450-biotoxin143-raster/unit.log"
+  },
+  "biotoxinRegression": {
+    "runId": "bda74b86-e0f2-4675-ad97-e589635efa63",
+    "tests": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 230,
+    "seconds": 1.293,
+    "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage450-biotoxin143-raster/biotoxin-nextest.log",
+    "expectationsChanged": false,
+    "decision": "기존 관계형 검사 4개 유지; 새 시각 출처만 교정"
+  },
+  "wholeNextest": {
+    "runId": "6237ac66-a3a8-4fc7-8d3d-01836962d8b9",
+    "tests": 10280,
+    "passed": 10253,
+    "failed": 27,
+    "skipped": 45,
+    "seconds": 620.183,
+    "exitCode": 100,
+    "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage448-biotoxin-final-regression/full.log",
+    "status": "미완료; 143쪽 시각 수용과 별도"
+  },
+  "prApprovalRequired": true
+}

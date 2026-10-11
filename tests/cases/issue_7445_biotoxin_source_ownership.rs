@@ -1,5 +1,6 @@
 //! #7445 지정 댓글의 생물독 원본: 독립 PDF 205쪽 전수 시각 수용 후 복구한 회귀.
-//! Native/실제 fresh WASM 최저 91.78644% 증거는 resolution-20261005에 있다.
+//! 현재 Native/실제 fresh WASM 205쪽 최저 92.75882%, 143쪽 98.25150%의
+//! 독립 Print·TSV·래스터 출처는 completed-20261009/stored-anchor-repair/validation.json에 있다.
 //! 절대 픽셀 위치 대신 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사한다.
 #![cfg(not(target_arch = "wasm32"))]
 

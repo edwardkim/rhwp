@@ -322,13 +322,21 @@
     "currentNewPaginationRegressionRetained": true
   },
   "latestStatus": {
-    "originalFailuresResolved": 19,
-    "unsuitableScopesSeparated": 2,
-    "remainingOriginalFailures": 6,
-    "wholeNextestAfterRepairs": "not_run",
-    "prPrepared": false,
-    "approvalRequiredBeforePr": true,
-    "latestRepair": "v19 source frame before logical row dispatch"
+    "biotoxinVisual": "Native/fresh205쪽 최저92.75882%; 143쪽98.25150%; 미달0",
+    "biotoxinRegression": "4PASS; 관계형 기존 기대값 유지",
+    "wholeNextest": {
+      "runId": "6237ac66-a3a8-4fc7-8d3d-01836962d8b9",
+      "tests": 10280,
+      "passed": 10253,
+      "failed": 27,
+      "skipped": 45,
+      "seconds": 620.183,
+      "exitCode": 100,
+      "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage448-biotoxin-final-regression/full.log",
+      "status": "미완료; 143쪽 시각 수용과 별도"
+    },
+    "prReady": false,
+    "approvalRequired": true
   },
   "v8Followup": {
     "base": "f59ac14370bc7d92384292fde37e33be59b87bd7",
@@ -4445,5 +4453,39 @@
       "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage446-superscript-manual-print/nextest.log",
       "sha256": "f5b8f2a4a10f01e16ab514ce32a385fcc82ff584c5af0cd5de1c706abdaf5d7d"
     }
+  },
+  "v26BiotoxinClosedPrefix": {
+    "parentHead": "144ea85f0f97da1083899d4364fed5c5fdd367ad",
+    "source": "src/renderer/typeset/table/block/prepare.rs",
+    "sourceSha256": "555ffd396a0bffc01b845f6c180aa4ff40dedd7ad46538ed90ac398180fad8db",
+    "producer": "prepare.rs: declared_cellbreak_prefix_end / source_cellbreak_row_end",
+    "consumers": [
+      "continuation/fragment/budget.rs: first fragment scan row count",
+      "continuation/fragment/budget.rs: repeated header whole-row heights"
+    ],
+    "correction": "원본 완전 행 경계는 소속을 정한다. 저장 글줄 원점과 논리 흐름 끝의 불필요한 동일성 비교를 제거하고 실제 배치 상자의 본문 예산 인증은 유지한다.",
+    "visualSummary": "biotoxin143-raster-validation.json",
+    "regressionDecision": "4개 관계형 검사 유지; 기대값 변경 없음"
+  },
+  "v26Issue7749NarrowRemoval": {
+    "issue": "https://github.com/edwardkim/rhwp/issues/7749",
+    "stateAtInspection": "OPEN",
+    "source": "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+    "alias": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+    "sourceSha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+    "userAuthorized": true,
+    "removedScopes": [
+      "text_overlap_baseline corpus reference and baseline row14",
+      "off_canvas_baseline corpus reference and baseline row7"
+    ],
+    "preserved": [
+      "원본 두 경로",
+      "독립 PDF",
+      "일반 합성 중첩 표 오프셋 계약 3개"
+    ],
+    "beforeBioV25Overlap": 17,
+    "afterBioV26Overlap": 17,
+    "fixedBaseOverlap": 14,
+    "doesNotClaimNoEarlierBranchRegression": true
   }
 }

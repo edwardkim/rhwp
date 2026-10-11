@@ -623,3 +623,52 @@ SVG 동일성, fresh manifest·선택 TSV·로그는 ignored `stage441-overlay-p
 ![위첨자 보도자료 3쪽 독립 Print 비교](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/superscript5756-p003-manual-print-review.png)
 
 - 정식 focused nextest 완료: run `03220500-1b7d-47ab-9222-efd9711486ab`, 위첨자 기존 검사 1개와 장평 대조군 2개 **3 PASS / 0 FAIL / 397 skip**, 0.120초, exit 0. 현재 원 실패 27건은 수정 검사 통과 24건·부적합 범위 2개 분리·생물독소 경계 행 1건 잔존이다. 이는 마지막 전체 nextest 결과가 아니다.
+
+
+## 생물독소 경계 행과 143쪽의 PDF 래스터 보정 (V26)
+
+- 원본은 `samples/issue5941/1480000-201900698-native-neartop-reset.hwp`, 독립 Print는
+  `pdf/issue5941-1480000-201900698-2020.pdf`다. 원본·PDF 바이트를 유지했고 205쪽이다.
+  선언 높이로 닫힌 완전 행 경계는 내용 소속을 정하지만 저장 글줄 원점을 가져오지는 않는다.
+  `block/prepare.rs`의 `declared_cellbreak_prefix_end → source_cellbreak_row_end`를
+  `continuation/fragment/budget.rs`의 첫 조각 행 예산과 반복 머리행 높이가 소비한다.
+  저장 글줄 원점과 논리 흐름 끝이 같아야 한다는 잘못된 조건을 제거했다. 실제 호스트·캡션·
+  바깥 상자가 현재 본문 예산 안에 있는지 검사하는 기존 조건은 유지한다.
+- 수정한 경계는 표43 첫 조각 0..5, 표44 첫 조각 0..8이다. 독립 PDF처럼 147쪽 첫 행은
+  `Hyaluronidase`, 148쪽 첫 행은 `Venom prothrombin activator`다. 내용·셀 소유 관계를
+  검사하는 기존 4개는 기대값을 바꾸지 않았다. 이전에 새 검사로 늘리거나 제거하지 않았다.
+- 기존 PDF 래스터화로는 Native/fresh 모두 143쪽 86.98876%가 남았다. 원본 SVG의 회색 선은
+  0.48px/#bfbfbf, 독립 PDF의 선은 0.36pt/gray0.749로 96dpi에서 두께·색상이 같다.
+  PDF를 PNG로 만들 때 1px 미만 선의 농도가 달라지는 것을 확인했다. `visual_sweep.py`에서
+  Poppler `-thinlinemode shape`를 사용해 원래 두께에 비례하는 coverage로 비교한다.
+  PDF/SVG의 물리 두께·색상, 내용 판정 임계값, 2px 공차, 90% gate는 유지했다.
+- 같은 V26 Native PNG와 실제 Chrome fresh WASM PNG 205개를 해시로 고정했다. 같은 PDF 전체를
+  새 모드로 래스터화하고 양쪽 전쪽 TSV를 각각 다시 산출했다. 두 경로 모두 **최저 92.75882%,
+  미달 0쪽, 누락 0쪽, 205/205쪽**, 143쪽 **98.25150%**다. 양쪽 PNG와 TSV가 모두 같다.
+  과거 모드의 PNG·86.98876% TSV는 그대로 보존한다. 값의 상승은 실제 내용 재배치가 아니라
+  비교 래스터화 정정이며, 이진화 원값 86.98876%와 경계 농도 지원 픽셀 11150도 함께 기록한다.
+- 새 143·147·148쪽 review PNG를 생성하고 143쪽을 직접 판독했다. 얇은 표 선을 유지하며
+  캡션·학명·아래 표의 내용과 경계 행 소속을 보존한다. 엄격 픽셀 동일성을 주장하지 않는다.
+  표를 지운 대조군은 22.87671%, 표를 오른쪽으로 16px 옮긴 대조군은 77.79612%로 미달을
+  검출한다. 이것은 실제 출력의 일반 회귀 기대값에 px 상수를 추가하는 검사가 아니라
+  비교 경로가 큰 누락·이동을 숨기지 않는지 확인하는 진단이다.
+- Visual Sweep 기존 단위 검사 **83 PASS**, 생물독소 기존 정식 관계 검사 **4 PASS / 0 FAIL /
+  230 skip**, 1.293초, run `bda74b86-e0f2-4675-ad97-e589635efa63`, exit 0이다.
+  회귀 처리 결정은 **4개 유지**다. 쪽수 205와 해당 셀의 쪽 소속, 그림 기준선·캡션·뒤 본문 보존은
+  독립 기대값과 일치한다. 테스트에는 최신 시각 출처 설명만 교정했다.
+- 사용자가 등록된 #7749의 회귀 참조 제거를 명시 승인했다. SHA가 같은 80550/3637 두 원본과
+  독립 PDF, 합성 중첩 표 오프셋 계약 3개를 보존하고 80550 경로의 text-overlap/off-canvas corpus
+  참조와 해당 baseline 두 행만 제거했다. 같은 표의 body corpus는 이미 제외되어 있었다.
+  정확한 고정 devel의 overlap14와 V25/V26의17을 구분한다. 생물독소 보정 전후 값이 같다는
+  사실만으로 이전 브랜치의 회귀가 없었다고 주장하지 않는다.
+- 원래 실패 27건의 재검사는 25 PASS·80550 overlap 실패 1건·기존 승인으로 제거된 범위 1건이었다.
+  앞 단계의 “24건 해결” 추정 대신 실제 개별 실행 증거로 정정한다. 80550 참조 제거 후 전체
+  nextest run `6237ac66-a3a8-4fc7-8d3d-01836962d8b9`는 **10280 run / 10253 PASS /
+  27 FAIL / 45 skip**, 620.183초, exit 100이다. 새 실패 27건은 별도 목록이며 생물독소 4개는
+  통과했다. API 이어받기 컷·다른 원본의 분할/쪽수 실패가 남아 전체 검증·PR 준비는 미완료다.
+- 전체 TSV·원시 SVG·PNG·로그·쪽별 해시 원장은 ignored
+  `output/pr-review/7445-completed-20261009/stage450-biotoxin143-raster/`에 둔다.
+  요약 JSON·대표 PNG만 커밋한다. 비교 가이드에 래스터 모드·출처·과거 증거 보존을 반영했다.
+  PR 생성·push·merge는 전체 검증 후 사용자 승인 조건을 유지한다.
+
+![생물독소 143쪽 얇은 선 래스터 보정](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/biotoxin-p143-shape-review.png)
