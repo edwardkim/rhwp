@@ -888,3 +888,46 @@ compact 증적과 Native/fresh PNG는
 연결했다. 전체 회귀·완료 대상 전쪽 재검증은 아직 남아 있다. 최신 사용자
 지시에 따라 PR 초안과 검증 결과를 준비한 뒤 승인을 받으며, 승인 전 원격
 push·PR 생성·merge는 진행하지 않는다.
+
+
+## 2026-10-11: 최신 devel 전체 회귀의 두 실제 소속 결함 보정
+
+- 기준은 `790a6f8f388445e7bff2bcb165aa7b384f9ece80`이며 137개 커밋의 rebase에 충돌이 없었습니다.
+  직전 후보 `cccfe283a1c23ebd6c81fd0050d7f3eaca7f2c65`의 전체 nextest는
+  **10266 PASS / 2 FAIL / 45 SKIP, 501.906초**입니다. 두 정확한 관계 검사는 유지했습니다.
+- 보도자료는 유닛 174(빈 문단 135)의 양수 높이를 이미 측정했지만 이어받기에서 후속 객체를
+  이유로 버려, 앞 조각의 끝 컷 174와 다음 조각의 시작 컷 175 사이에서 점유가 사라졌습니다.
+  원본 빈 줄의 슬롯이 후속 저장 원점을 닫는 공통 판정을 유닛 보존·일반/블록 컷의 예약·
+  이어받기 prefix 소비·블록 잔여 높이에 공유했습니다. 이제 두 컷은 모두 174입니다.
+  `cell_line_ranges_from_cut`과 실제 partial paint가 이 소유 유닛을 소비합니다.
+  적용되지 않는 합성 원점·되감김·닫히지 않는 원점·0높이 반례를 기존 단위 함수에 보완했습니다.
+- 영월은 객체-only HWP3 호스트의 LineInfo 하나를 본문 저장 조판의 증거로 사용해,
+  재조판 본문에도 한글97 바닥 관용을 주었습니다. 다음 별지 제목이 앞 쪽 여백에 수용됐습니다.
+  원본 본문 텍스트의 저장 줄이 있는 경우에만 기존 관용을 유지합니다. 독립 Print의
+  별지 1~4 제목은 각각 대응 쪽에 한 번 보존됩니다. 원본과 독립 PDF는 변경하지 않았습니다.
+
+| 전쪽 검증 대상 | Native 최저 | fresh WASM 최저 | 쪽수/미달 |
+| --- | ---: | ---: | --- |
+| 보도자료 | 97.28456% | 97.28456% | 12/12, 0 |
+| 영월 서식 | 99.54887% | 99.54887% | 4/4, 0 |
+| 정상 대조군 6종 포함 | 94.56250% | 94.56250% | 8문서·41쪽씩, 0 |
+
+보도자료 3·8·11쪽은 각각 99.53044%·98.59646%·99.90622%이며 표 시작, 내부 글줄,
+그림, 뒤 내용과 쪽 번호를 직접 확인했습니다. 3·8쪽과 영월 2·4쪽의 Native/fresh 실제 PNG는
+byte-identical입니다. 11쪽은 `新` 글리프 영역 288픽셀의 래스터 차이가 있어 양쪽 review를
+따로 확인했고, 두 일치율은 모두 99.90622%입니다. 픽셀 동일성으로 완료를 주장하지 않습니다.
+기존 검사 함수에 셀 소유·빈 줄 1회 점유·후속 표 1회 소유·원본 간격 뒤 순서를 보완했습니다.
+고정 px 영역은 사용하지 않았습니다. 강화한 기존 실물 검사는 같은 frozen library로
+수정 전 FAIL / 수정 후 PASS를 확인했고, 영월 기존 2개 검사도 PASS입니다.
+이는 개별 `rustc --test` 실행이며 최신 전체 Cargo nextest를 대신하지 않습니다.
+새 테스트 함수는 추가하지 않았습니다. manifest와 unit-tier 정책도 통과했습니다.
+
+증적: [현재 기준 요약](../pr/assets/issue7445/completed-20261009/current-base-qualification/empty-slot-and-hwp3-title-current-base.json),
+[보도자료 8쪽 Native review](../pr/assets/issue7445/completed-20261009/current-base-qualification/press-empty-slot-p008-native-review.png),
+[fresh WASM review](../pr/assets/issue7445/completed-20261009/current-base-qualification/press-empty-slot-p008-wasm-review.png).
+TSV·실행 로그는 ignored `output/pr-review/7445-completed-20261009/stage458-empty-line-cut-ownership/`에 보존했습니다.
+두 정상 대조군의 Chrome 30초 navigation timeout은 지원 환경 변수로 90초를 지정해 같은
+원본·동일 DPI·동일 비교 알고리즘·8개 캡처로 재실행했으며 최초 실패 로그도 유지했습니다.
+
+최신 전체 nextest·필수 lint/build/Skia·완료 corpus 전체 검증은 아직 남았습니다.
+**로컬 보정과 검증을 마친 후 PR 제출안을 보여드리고 승인받습니다. 원격 push·PR 생성·merge는 진행하지 않았습니다.**

@@ -340,6 +340,29 @@ pub(crate) fn stored_square_picture_empty_anchor_advance(
         .then_some(step)
 }
 
+/// 원본 빈 줄의 높이·뒤 간격이 다음 저장 줄의 원점을 닫을 때의 전진량.
+/// 뒤 줄이 객체 호스트여도 이 정확한 연결은 빈 줄 자체의 흐름 소유를 증명한다.
+/// 객체의 로컬 좌표나 합성 줄만으로 빈 문단을 흐름 줄로 승격하지 않는다.
+pub(crate) fn stored_empty_line_successor_advance_hu(
+    cell: &crate::model::table::Cell,
+    para_idx: usize,
+) -> Option<i32> {
+    let para = cell.paragraphs.get(para_idx)?;
+    if !para.text.trim().is_empty() || !para.controls.is_empty() {
+        return None;
+    }
+    let [line] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let next = cell.paragraphs.get(para_idx + 1)?.line_segs.first()?;
+    if (line.tag | next.tag) & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || line.line_height <= 0 {
+        return None;
+    }
+    let slot = line.line_height.checked_add(line.line_spacing.max(0))?;
+    let advance = i64::from(next.vertical_pos) - i64::from(line.vertical_pos);
+    ((advance - i64::from(slot)).abs() <= 2).then_some(slot)
+}
+
 /// Empty stored wrap lines beside a nested table consume its already-owned height.
 /// Callers restrict this to native RowBreak cells with verified Square picture flow.
 pub(crate) fn stored_nested_table_empty_wrap_spacer(

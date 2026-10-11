@@ -4497,7 +4497,12 @@ fn parse_hwp3_inner(
         // pagination_bottom_tolerance 로 paginator 에게만 추가 공간을 허용한다.
         // min(1600, margin_bottom) 으로 clamp: 기존 saturating_sub 동작과 동일한 상한 유지.
         pagination_bottom_tolerance: if doc_info.reserved1 & 1 != 0
-            || !paragraphs.iter().any(|para| !para.line_segs.is_empty())
+            || !paragraphs.iter().any(|para| {
+                !para.line_segs.is_empty()
+                    && para.text.chars().any(|ch| {
+                        !ch.is_whitespace() && !ch.is_control() && ch != '\u{fffc}'
+                    })
+            })
         {
             // 외부 생성 문서는 한글97의 마지막 줄 배치를 증언하지 않는다.
             0
