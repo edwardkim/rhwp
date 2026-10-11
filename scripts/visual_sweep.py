@@ -232,10 +232,13 @@ def run(
     log_path: Path | None = None,
     verbose: bool = True,
     allow_failure: bool = False,
+    encoding_errors: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     if verbose:
         print("+ " + " ".join(cmd), flush=True)
-    proc = subprocess.run(cmd, cwd=cwd, text=True, capture_output=True, check=False)
+    proc = subprocess.run(
+        cmd, cwd=cwd, text=True, capture_output=True, check=False, errors=encoding_errors,
+    )
     if log_path is not None:
         log_path.parent.mkdir(parents=True, exist_ok=True)
         log_path.write_text(proc.stdout + proc.stderr, encoding="utf-8")
@@ -5376,7 +5379,10 @@ def make_contact_sheet(compare_pages: list[Path], out_path: Path) -> Path:
 def document_page_counts(root: Path, pdf: Path, export_metadata: Path) -> dict[str, int]:
     """선택한 래스터 개수와 구별한 원본 두 문서의 전체 쪽수를 읽는다."""
     rhwp_count = load_json_object(export_metadata, "전체 쪽수").get("pageCount")
-    info = run(["pdfinfo", str(pdf)], cwd=root, verbose=False)
+    # Some Windows Poppler builds emit legacy PDF metadata bytes even with
+    # UTF-8 requested. Only the ASCII Pages field is authoritative here;
+    # unrelated title/creator bytes must not break the reader thread.
+    info = run(["pdfinfo", str(pdf)], cwd=root, verbose=False, encoding_errors="replace")
     match = re.search(r"^Pages:\s+(\d+)\s*$", info.stdout, re.MULTILINE)
     if isinstance(rhwp_count, bool) or not isinstance(rhwp_count, int) or rhwp_count < 1 or match is None:
         raise SystemExit("RHWP 또는 기준 PDF의 전체 쪽수를 확인할 수 없습니다.")

@@ -2451,8 +2451,9 @@ impl Renderer for WebCanvasRenderer {
                 6 => draw_line(&self.ctx, ly, 0.5, &[8.0, 4.0]),           // 긴파선
                 7 => {
                     // 원형점선 ●●●
+                    let (w, dash, gap) = crate::renderer::render_tree::tab_circle_leader_stroke();
                     self.ctx.set_line_cap("round");
-                    draw_line(&self.ctx, ly, 0.7, &[0.1, 2.5]);
+                    draw_line(&self.ctx, ly, w, &[dash, gap]);
                     self.ctx.set_line_cap("butt");
                 }
                 8 => {

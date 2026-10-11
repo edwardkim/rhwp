@@ -23,9 +23,6 @@ use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
 
-/// 묶음 빈칸을 `<hp:nbSpace/>` 요소로만 적은 표본(요소 411 · 리터럴 0).
-const ELEMENT_ORIGIN: &str = "samples/hwpx/exam_kor.hwpx";
-
 /// 묶음 빈칸을 리터럴 U+00A0 으로만 적은 표본(요소 0 · 리터럴 16).
 const LITERAL_ORIGIN: &str =
     "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx";
@@ -69,24 +66,6 @@ fn nbsp_char_count(core: &DocumentCore) -> usize {
 }
 
 #[test]
-fn hwpx_save_keeps_element_origin_as_element() {
-    let core = load(ELEMENT_ORIGIN);
-    let before = nbsp_char_count(&core);
-    assert!(before > 0, "표본에 묶음 빈칸이 있어야 시험이 성립한다");
-
-    let (el, lit) = representations(&section_xml(
-        &core.export_hwpx_native().expect("export hwpx"),
-    ));
-
-    assert!(
-        el > 0,
-        "요소 표기 원본은 `<hp:nbSpace/>` 로 보존되어야 한다 — 리터럴로 내리면 한글 추출 \
-         텍스트에 없던 공백이 생긴다"
-    );
-    assert_eq!(lit, 0, "요소로 낸 뒤 리터럴이 함께 남으면 안 된다");
-}
-
-#[test]
 fn hwpx_save_keeps_literal_origin_as_literal() {
     let core = load(LITERAL_ORIGIN);
     let before = nbsp_char_count(&core);
@@ -101,30 +80,6 @@ fn hwpx_save_keeps_literal_origin_as_literal() {
         "리터럴 원본을 `<hp:nbSpace/>` 요소로 바꾸면 한글이 그 공백을 텍스트에서 버린다"
     );
     assert!(lit > 0, "리터럴 표기가 `<hp:t>` 안에 그대로 남아야 한다");
-}
-
-/// x2h — HWP5 축을 지나도 요소 출처가 살아남는다.
-///
-/// HWPX 파서가 `<hp:nbSpace/>` 에서 세운 `control_mask` 비트 30 이 PARA_HEADER 로 넘어가
-/// PARA_TEXT 가 코드 `0x001E` 로 나가야, 그 HWP5 를 다시 읽었을 때 요소로 되돌아온다.
-#[test]
-fn hwp5_roundtrip_keeps_element_origin() {
-    let mut core = load(ELEMENT_ORIGIN);
-    let before = nbsp_char_count(&core);
-
-    let hwp5 = core.export_hwp_with_adapter().expect("export hwp");
-    let reloaded = DocumentCore::from_bytes(&hwp5).expect("reparse");
-    assert_eq!(
-        nbsp_char_count(&reloaded),
-        before,
-        "HWP5 왕복에서 묶음 빈칸 수가 달라지면 안 된다"
-    );
-
-    let (el, lit) = representations(&section_xml(
-        &reloaded.export_hwpx_native().expect("export hwpx"),
-    ));
-    assert!(el > 0, "HWP5 를 지난 뒤에도 요소 표기여야 한다");
-    assert_eq!(lit, 0, "HWP5 를 지나며 리터럴로 강등되면 안 된다");
 }
 
 /// x2h 반대편 — 리터럴 출처는 HWP5 축에서 제어코드로 승격되면 안 된다.

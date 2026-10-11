@@ -10240,6 +10240,13 @@ export class HwpDocument {
         }
     }
     /**
+     * Native와 같은 조판 세대를 선택하고 공통 core에서 재페이지네이션한다.
+     * @param {boolean} enabled
+     */
+    setHangul2024Compat(enabled) {
+        wasm.hwpdocument_setHangul2024Compat(this.__wbg_ptr, enabled);
+    }
+    /**
      * [Task #825] 머리말/꼬리말 안 그림 속성 변경.
      * @param {number} section_idx
      * @param {number} outer_para_idx

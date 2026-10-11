@@ -194,7 +194,6 @@ pub(super) fn prepare(
             .flatten();
     // 다음 저장 위치와의 차이는 높이 증거이며 절대 쪽 원점의 증거가 아니다.
     // 새로 수용하는 바깥 상자는 현재 문단의 흐름 원점에서 배치한다.
-    let mut restored_stored_outer_box = false;
     let outer_box_flow_top = stored_outer_box.then(|| {
         let (top_offset, _) = crate::renderer::stored_float_anchor::stored_topbottom_object_span(
             para, next_para, table,
@@ -215,9 +214,6 @@ pub(super) fn prepare(
                         && flow_top + ft.effective_height > zone.top
                         && host + 0.5 >= zone.bottom
                 })
-            })
-            .inspect(|_| {
-                restored_stored_outer_box = true;
             })
             .unwrap_or(flow_top)
     });
@@ -356,10 +352,13 @@ pub(super) fn prepare(
                 flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
                 anchor_y,
                 stored_host_origin: None,
-                // 후속 줄의 앞 간격은 원본의 전체 상자 끝에 이미 포함된다.
-                // 복구한 저장 상자에서는 측정·출력이 이 원점을 함께 소비한다.
-                stored_successor_line_origin: restored_stored_outer_box
-                    .then(|| anchor_y + hwpunit_to_px(occupied_height as i32, dpi)),
+                // The source ladder certifies the complete outer-box height
+                // regardless of whether its absolute anchor needed recovery.
+                // Project the successor from the accepted anchor; both flow
+                // finalization and paint consume this same closed frame.
+                stored_successor_line_origin: Some(
+                    anchor_y + hwpunit_to_px(occupied_height as i32, dpi),
+                ),
                 table_left: None,
                 table_top: lane_top,
                 occupied_bottom: anchor_y + hwpunit_to_px(occupied_height as i32, dpi),

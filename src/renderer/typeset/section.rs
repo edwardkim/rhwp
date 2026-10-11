@@ -164,6 +164,7 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            st.consume_pending_table_terminal_gap(para_idx, paragraphs, styles, self.dpi);
             // 후속 본문이 사이에 없는 새 표 문단은 이전 묶음의 일부가 아니다.
             // 이전 문단의 후행 표를 먼저 완료한다. 새 문단의 명시적 쪽/단 나눔과
             // 저장 vpos를 적용하기 전이어야 이전 표가 새 문단 뒤로 밀리지 않는다.
@@ -435,6 +436,11 @@ impl TypesetEngine {
         );
         if !st.current_items.is_empty() {
             st.flush_column_always();
+        }
+        // 마지막 본문 뒤의 저장 각주 suffix도 버리지 않는다. 실제 다음 쪽을
+        // 열면 전환 command가 큐를 인출하고 기존 각주 lane에 높이를 예약한다.
+        if st.has_deferred_body_footnotes() {
+            st.push_new_page();
         }
         st.ensure_page();
 

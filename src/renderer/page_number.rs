@@ -308,7 +308,9 @@ mod tests {
                 overlay_cuts: Vec::new(),
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
+                stored_paragraph_flow_ends: Default::default(),
                 paragraph_float_placements: Default::default(),
+                float_pushed_line_spacings: Default::default(),
             }],
             active_header: None,
             active_footer: None,
@@ -419,6 +421,7 @@ mod tests {
             row_cursor_is_nested: false,
             end_row_height_override: None,
             start_row_height_override: None,
+            straddle_row_relief: Vec::new(),
         }]);
         assert_eq!(a.assign(&p1), 1);
 
@@ -436,6 +439,7 @@ mod tests {
             row_cursor_is_nested: false,
             end_row_height_override: None,
             start_row_height_override: None,
+            straddle_row_relief: Vec::new(),
         }]);
         assert_eq!(a.assign(&p2), 2);
     }

@@ -20,13 +20,34 @@ fn core() -> DocumentCore {
     DocumentCore::from_bytes(&bytes).expect("parse 76076 authority fixture")
 }
 
+fn line_text(node: &RenderNode, out: &mut String) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        out.push_str(&run.text);
+    }
+    for child in &node.children {
+        line_text(child, out);
+    }
+}
+
+/// 글줄 하나의 문구는 언어 슬롯 경계에서 여러 TextRun 으로 나뉠 수 있다
+/// (#7092: 굽은 따옴표는 영문 슬롯 run). 줄바꿈 계약은 run 이 아니라 글줄 단위로 본다.
 fn text_y(node: &RenderNode, needle: &str) -> Option<f64> {
     if let RenderNodeType::TextRun(run) = &node.node_type {
         if run.text.contains(needle) {
             return Some(node.bbox.y);
         }
     }
-    node.children.iter().find_map(|child| text_y(child, needle))
+    if let Some(y) = node.children.iter().find_map(|child| text_y(child, needle)) {
+        return Some(y);
+    }
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        let mut text = String::new();
+        line_text(node, &mut text);
+        if text.contains(needle) {
+            return Some(node.bbox.y);
+        }
+    }
+    None
 }
 
 fn contains_text(node: &RenderNode, needle: &str) -> bool {

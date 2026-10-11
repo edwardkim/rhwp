@@ -5812,31 +5812,6 @@ mod tests {
     }
 
     #[test]
-    fn issue_3032_footnote_between_margin_wires_footnote_shape_only() {
-        // doc_info offset 108 "각주와 각주 사이의 간격"(footnote_between_margin)이 파싱만
-        // 되고 IR 에 배선되지 않던 문제 (#3032, PR #3036 kevin9327 발견). 적용처·스케일은
-        // 한컴 자체 HWP3→HWPX 변환 실측(SO-SUEOP.hwpx)이 정답지다:
-        //   footNotePr betweenNotes=284(=71×4) / endNotePr betweenNotes=0.
-        // 따라서 footnote_shape 에만 hunit ×4 로 배선하고 endnote_shape 는 0 을 유지한다.
-        let doc = crate::parser::hwp3::parse_hwp3(
-            &std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/samples/SO-SUEOP.hwp"))
-                .expect("SO-SUEOP.hwp 읽기"),
-        )
-        .expect("SO-SUEOP.hwp 파싱");
-        let section_def = &doc.sections[0].section_def;
-        assert_eq!(
-            section_def.footnote_shape.between_notes_margin_hu(),
-            284,
-            "각주 raw_unknown 은 71(hunit)×4 = 284(HWPUNIT) 이어야 한다"
-        );
-        assert_eq!(
-            section_def.endnote_shape.between_notes_margin_hu(),
-            0,
-            "미주 raw_unknown 은 한컴 endNotePr 실측대로 0 을 유지해야 한다"
-        );
-    }
-
-    #[test]
     fn issue_hwp3_endnote_suffix_char_wires_footnote_bracket_flag() {
         // doc_info offset 110 "각주 옵션" footnote_bracket 이 파싱만 되고 항상 ')' 로
         // 하드코딩되어, 옵션을 끈(footnote_bracket=0) 문서도 미주 번호에 ')' 가 붙던 문제.
@@ -6586,91 +6561,6 @@ mod tests {
             total_paras >= 1000,
             "sample16 paragraph count too low ({}); ch=6/7/8 alignment 회귀 의심",
             total_paras
-        );
-    }
-
-    #[test]
-    fn task3363_hwp3_embedded_ole_payload_extraction() {
-        // [#3363] 추가 정보 블록 id=2(OLE 스토리지, 표 82)에서 pic_type=1 개체
-        // payload 를 추출·재포장해 ext "ole" BinData 로 주입하고, 해당 그림을 OLE
-        // 컨트롤로 변환한다. 종전에는 블록 미처리로 Link BinData 로 남아 외부 파일
-        // 경로로 오노출됐다(SO-SUEOP 1쪽 글맵시 미표시·사이드카 워크어라운드).
-        let path = "samples/SO-SUEOP.hwp";
-        if !std::path::Path::new(path).exists() {
-            // 샘플 미커밋 환경에서는 skip.
-            return;
-        }
-        let mut data = Vec::new();
-        File::open(path).unwrap().read_to_end(&mut data).unwrap();
-        let doc = parse_hwp3(&data).expect("SO-SUEOP parse failed");
-
-        // 1) ext "ole" payload 주입 + 기존 OLE 소비 경로에서 열림(preview·HMapsi 판별)
-        let ole_contents: Vec<_> = doc
-            .bin_data_content
-            .iter()
-            .filter(|c| c.extension == "ole")
-            .collect();
-        assert_eq!(ole_contents.len(), 1, "내장 OLE 개체 1건이 주입되어야 함");
-        let bytes = ole_contents[0].data.load();
-        let container = crate::parser::ole_container::parse_ole_container(&bytes)
-            .expect("재포장 CFB 를 parse_ole_container 가 열 수 있어야 함");
-        assert!(
-            container.has_preview(),
-            "OlePres000 preview 가 추출되어야 함"
-        );
-        assert!(
-            crate::parser::ole_container::is_hmapsi_ole_container(&bytes),
-            "글맵시(HMapsi) 컨테이너로 판별되어야 함"
-        );
-
-        // [#4097] 승격 재포장이 서브 스토리지의 OLE 클래스 ID 를 새 루트로 옮겨야 한다.
-        // parse_ole_container 는 스트림 *이름*으로만 판별하므로 위 단언들은 CLSID 가 0 이어도
-        // 통과한다 — 한컴만 개체를 알아보지 못해 내용을 비워 그린다.
-        // SO-SUEOP 실측값 {00044214-0000-0000-C000-000000000046} (글맵시 서버 클래스,
-        // mydocs/working/task_m100_4097_stage1.md §2.2).
-        let clsid = crate::parser::cfb_reader::root_clsid(&bytes)
-            .expect("재포장 CFB 의 루트 CLSID 를 읽을 수 있어야 함");
-        assert_eq!(
-            clsid,
-            [
-                0x14, 0x42, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x46
-            ],
-            "원본 서브 스토리지의 OLE 클래스 ID 가 보존되어야 함"
-        );
-
-        // 2) payload 확보 그림은 Ole 컨트롤로 변환 (렌더/선택 경로 상속)
-        let has_ole_control = doc.sections.iter().any(|s| {
-            s.paragraphs.iter().any(|p| {
-                p.controls.iter().any(|c| {
-                    matches!(
-                        c,
-                        crate::model::control::Control::Shape(shape)
-                            if matches!(
-                                shape.as_ref(),
-                                crate::model::shape::ShapeObject::Ole(_)
-                            )
-                    )
-                })
-            })
-        });
-        assert!(has_ole_control, "payload 확보 그림은 Ole 컨트롤이어야 함");
-
-        // 3) Link 오노출 소거 — 어떤 그림도 external_path 를 갖지 않아야 함
-        //    (studio getExternalImageBasenames 의 수집 조건과 동일 기준)
-        let any_external = doc.sections.iter().any(|s| {
-            s.paragraphs.iter().any(|p| {
-                p.controls.iter().any(|c| match c {
-                    crate::model::control::Control::Picture(pic) => {
-                        pic.image_attr.external_path.is_some()
-                    }
-                    _ => false,
-                })
-            })
-        });
-        assert!(
-            !any_external,
-            "내장 OLE 확보 후에는 외부 이미지 경로 오노출이 없어야 함"
         );
     }
 

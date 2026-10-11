@@ -2,6 +2,7 @@
 
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +14,27 @@ from scripts.tests.test_visual_sweep import SWEEP
 
 
 class DocumentPageCountTests(unittest.TestCase):
+    def test_pdf_count_survives_non_utf8_metadata_from_pdfinfo(self):
+        with tempfile.TemporaryDirectory() as folder:
+            base = Path(folder)
+            metadata = base / "native-export.json"
+            metadata.write_text(json.dumps({"pageCount": 2}), encoding="utf-8")
+            real_run = subprocess.run
+
+            def pdfinfo_with_legacy_metadata(command, **kwargs):
+                self.assertEqual(command, ["pdfinfo", str(base / "oracle.pdf")])
+                return real_run(
+                    [sys.executable, "-c",
+                     "import sys; sys.stdout.buffer.write(b'Title: \\xff\\nPages: 2\\n')"],
+                    **kwargs,
+                )
+
+            with patch.object(SWEEP.subprocess, "run", side_effect=pdfinfo_with_legacy_metadata):
+                self.assertEqual(
+                    SWEEP.document_page_counts(base, base / "oracle.pdf", metadata),
+                    {"rhwp": 2, "pdf": 2},
+                )
+
     def test_missing_count_invalidates_a_previous_pass_before_rasterization(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

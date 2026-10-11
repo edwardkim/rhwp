@@ -322,29 +322,59 @@ fn full_band_empty_tac_tables_use_their_saved_line_top() {
 fn fixed_line_spacing_after_in_front_decoration_table_is_not_reserved_twice() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
-    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+    let document = rhwp::document_core::DocumentCore::from_bytes(&bytes)
         .unwrap_or_else(|error| panic!("parse {SAMPLE}: {error}"));
 
-    // 한컴 2020 PDF에서 측정한 표 뒤 첫 본문 줄: p13, p16~21.
-    for (page_index, para_index, expected_y) in [
-        (12, 209, 853.5),
-        (15, 253, 835.4),
-        (16, 265, 814.5),
-        (17, 277, 816.8),
-        (18, 288, 662.5),
-        (19, 301, 685.2),
-        (20, 315, 729.0),
+    // 독립 Print의 측정값은 모두 본문 단 원점 + 원본 저장 줄 vpos에 일치한다.
+    // 고정 px 대신 같은 일곱 후속 본문의 소유자와 저장 위치를 검사한다.
+    use rhwp::renderer::render_tree::RenderNodeType;
+    for (page_index, para_index) in [
+        (12, 209),
+        (15, 253),
+        (16, 265),
+        (17, 277),
+        (18, 288),
+        (19, 301),
+        (20, 315),
     ] {
-        let json = document
-            .get_page_render_tree(page_index)
+        let tree = document
+            .build_page_render_tree(page_index)
             .unwrap_or_else(|error| panic!("{}쪽 render tree: {error:?}", page_index + 1));
-        let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
-        let y = find_text_line_y(&tree, para_index)
+        let body = tree
+            .root
+            .children
+            .iter()
+            .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+            .expect("본문 영역");
+        let column = body
+            .children
+            .iter()
+            .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+            .expect("본문 단");
+        let line = column
+            .children
+            .iter()
+            .filter(|node| matches!(&node.node_type, RenderNodeType::TextLine(owner) if owner.para_index == Some(para_index)))
+            .min_by(|a, b| a.bbox.y.total_cmp(&b.bbox.y))
             .unwrap_or_else(|| panic!("{}쪽 pi={para_index} 표 뒤 첫 본문 줄", page_index + 1));
+        let RenderNodeType::TextLine(owner) = &line.node_type else {
+            unreachable!();
+        };
+        let source = &document.document().sections[owner.section_index.expect("본문 구역")]
+            .paragraphs[para_index];
+        let saved = source.line_segs.first().expect("원본 저장 첫 줄");
+        assert_eq!(
+            saved.tag & rhwp::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY,
+            0,
+            "합성 줄로 원본 위치를 대신하지 않는다"
+        );
+        let saved_offset = f64::from(saved.vertical_pos) * 96.0 / 7200.0;
         assert!(
-            (y - expected_y).abs() < 1.0,
-            "{}쪽 pi={para_index} 본문 y={y:.1}px — 음수 저장 줄간격을 표 예약에 중복 계상하면 안 된다",
-            page_index + 1
+            (line.bbox.y - column.bbox.y - saved_offset).abs() < 1.0,
+            "{}쪽 pi={para_index} 본문은 소유 단의 원점에서 원본 저장 위치에 있어야 한다 — 줄 {}, 단 {}, 원본 거리 {saved_offset}",
+            page_index + 1,
+            line.bbox.y,
+            column.bbox.y,
         );
     }
 }

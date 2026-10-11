@@ -321,7 +321,8 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
     def test_required_check_and_release_artifact_contracts_stay_stable(self) -> None:
         self.assertIn("name: Build & Test", self.ci)
         self.assertIn(
-            "cargo build --release --bin rhwp --target ${{ matrix.target }}",
+            "cargo build --locked --release --bin rhwp --features native-skia "
+            "--target ${{ matrix.target }}",
             self.release_binary,
         )
         self.assertIn("wasm-pack build --target web --release", self.ci)

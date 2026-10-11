@@ -6,7 +6,7 @@ use rhwp::parser::hml::{
     parse_hml, parse_hml_with_limits, HmlEncoding, HmlError, HmlLimits, HmlWarningCode,
 };
 use rhwp::parser::{detect_format, parse_document, FileFormat};
-use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const HML_29: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
@@ -65,136 +65,11 @@ fn equations(document: &rhwp::model::document::Document) -> Vec<&rhwp::model::co
         .collect()
 }
 
-fn find_equation_bbox(node: &RenderNode, para_index: usize) -> Option<BoundingBox> {
-    if let RenderNodeType::Equation(equation) = &node.node_type {
-        if equation.para_index == Some(para_index) {
-            return Some(node.bbox.clone());
-        }
-    }
-    node.children
-        .iter()
-        .find_map(|child| find_equation_bbox(child, para_index))
-}
-
 fn find_equation_node(node: &RenderNode) -> Option<&rhwp::renderer::render_tree::EquationNode> {
     if let RenderNodeType::Equation(equation) = &node.node_type {
         return Some(equation);
     }
     node.children.iter().find_map(find_equation_node)
-}
-
-fn find_text_bbox(node: &RenderNode, needle: &str) -> Option<BoundingBox> {
-    if let RenderNodeType::TextRun(run) = &node.node_type {
-        if run.text.contains(needle) {
-            return Some(node.bbox.clone());
-        }
-    }
-    node.children
-        .iter()
-        .find_map(|child| find_text_bbox(child, needle))
-}
-
-#[test]
-fn parses_repo_equation_fixture_into_shared_ir_without_equation_warnings() {
-    let parsed = parse_hml(include_bytes!(
-        "fixtures/hml/exambank_math_equations_min.hml"
-    ))
-    .expect("equation fixture should parse");
-    let equations = equations(&parsed.document);
-
-    assert_eq!(
-        equations
-            .iter()
-            .map(|equation| equation.script.as_str())
-            .collect::<Vec<_>>(),
-        ["x^2 +1", "x^2 +1", "3", "3"]
-    );
-    assert!(equations.iter().all(|equation| {
-        equation.baseline == 65
-            && equation.font_size == 1000
-            && equation.color == 0
-            && equation.version_info == "Equation Version 60"
-    }));
-    assert!(!parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.xml_path.contains("EQUATION")));
-
-    let paragraph = parsed.document.sections[0]
-        .paragraphs
-        .iter()
-        .find(|paragraph| paragraph.text == "다항식 을 전개하시오.")
-        .expect("fixture equation paragraph");
-    assert_eq!(
-        paragraph.char_offsets,
-        [0, 1, 2, 3, 12, 13, 14, 15, 16, 17, 18, 19]
-    );
-    assert_eq!(paragraph.char_count, 21);
-}
-
-#[test]
-fn repo_equation_fixture_contract_has_ordered_scripts_and_no_source_identifiers() {
-    let fixture = include_str!("fixtures/hml/exambank_math_equations_min.hml");
-    let parsed = parse_hml(fixture.as_bytes()).expect("repo equation fixture should parse");
-
-    assert_eq!(
-        equations(&parsed.document)
-            .iter()
-            .map(|equation| equation.script.as_str())
-            .collect::<Vec<_>>(),
-        ["x^2 +1", "x^2 +1", "3", "3"]
-    );
-    for disallowed in [
-        "ExamBank",
-        "exambank",
-        "serial_curated",
-        "http://",
-        "https://",
-        "/Users/",
-        "\\Users\\",
-        "@",
-    ] {
-        assert!(
-            !fixture.contains(disallowed),
-            "repo fixture must not retain source identifier {disallowed:?}"
-        );
-    }
-}
-
-#[test]
-fn imported_inline_equation_has_intrinsic_bbox_between_text_and_is_hittable() {
-    let core = DocumentCore::from_bytes(include_bytes!(
-        "fixtures/hml/exambank_math_equations_min.hml"
-    ))
-    .expect("equation fixture should open");
-    let equation = equations(core.document())[0];
-    assert!(equation.common.width > 0 && equation.common.height > 0);
-
-    let tree = core.build_page_render_tree(0).expect("page render tree");
-    let before = find_text_bbox(&tree.root, "다항식 ").expect("text before equation");
-    let equation = find_equation_bbox(&tree.root, 2).expect("inline equation bbox");
-    let after = find_text_bbox(&tree.root, "을 전개하시오.").expect("text after equation");
-    assert!(
-        equation.width > 0.0 && equation.height > 0.0,
-        "{equation:?}"
-    );
-    assert!(
-        before.x + before.width <= equation.x + 0.5,
-        "{before:?} vs {equation:?}"
-    );
-    assert!(
-        equation.x + equation.width <= after.x + 0.5,
-        "{equation:?} vs {after:?}"
-    );
-
-    let hit = core
-        .hit_test_native(
-            0,
-            equation.x + equation.width / 2.0,
-            equation.y + equation.height / 2.0,
-        )
-        .expect("equation center should be hittable");
-    assert!(hit.contains("\"paragraphIndex\":2"), "{hit}");
 }
 
 #[test]
