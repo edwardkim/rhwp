@@ -95,7 +95,14 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     let trailing_ls = line_spacings.last().copied().unwrap_or(0.0);
     let height_for_fit = {
         let metric = (total_height - trailing_ls).max(0.0);
-        let vpos_metric = if para.controls.is_empty() {
+        // [#7824] 저장 사다리의 줄 범위(span)는 한/글이 계산한 증언일 때만 상한이 된다.
+        // rhwp 가 로드 때 합성한 줄(`TAG_IMPLEMENTATION_PROPERTY`)의 사다리는 줄 전진만 쌓아
+        // 문단 위 간격이 없다 — 그것을 상한으로 쓰면 위 간격이 큰 문단을 넣을 수 있다고
+        // 잘못 판정해 본문 아래로 넘친다(한/글은 다음 쪽으로 넘긴다).
+        let authored_line_segs = para.line_segs.iter().all(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        });
+        let vpos_metric = if para.controls.is_empty() && authored_line_segs {
             para.line_segs
                 .first()
                 .zip(para.line_segs.last())
