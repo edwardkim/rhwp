@@ -582,6 +582,257 @@ fn metadata_without_boundary_objects_keeps_existing_deletion_paths() {
     }
 }
 
+fn paste_cell(core: &mut DocumentCore, path: &Path, flat: bool, offset: usize) {
+    let result = if flat {
+        core.paste_internal_in_cell_native(0, 1, 0, 0, 0, offset)
+    } else {
+        core.paste_internal_in_cell_by_path_native(0, 1, path, offset)
+    }
+    .unwrap();
+    let result: serde_json::Value = serde_json::from_str(&result).unwrap();
+    assert_eq!(result["ok"], true);
+}
+
+fn paste_fixture(flat: bool, tables: bool, inline: bool, format: usize) -> (DocumentCore, Path) {
+    let (mut core, path) = fixture(if flat { 1 } else { 3 }, tables);
+    if !inline {
+        let mut document = core.document().clone();
+        for paragraph in cell_mut(&mut document, &path) {
+            for control in &mut paragraph.controls {
+                match control {
+                    Control::Picture(picture) => picture.common.treat_as_char = false,
+                    Control::Table(table) => table.common.treat_as_char = false,
+                    _ => {}
+                }
+            }
+        }
+        core.set_document(document);
+    }
+    if format != 0 {
+        let bytes = if format == 1 {
+            core.export_hwp_native().unwrap()
+        } else {
+            core.export_hwpx_native().unwrap()
+        };
+        core.set_document(HwpDocument::from_bytes(&bytes).unwrap().document().clone());
+    }
+    (core, path)
+}
+
+fn assert_cell_text_and_style(actual: &[Paragraph], expected: &[Paragraph]) {
+    assert_eq!(actual.len(), expected.len());
+    for (actual, expected) in actual.iter().zip(expected) {
+        assert_eq!(actual.text, expected.text);
+        assert_eq!(actual.char_offsets, expected.char_offsets);
+        assert_eq!(
+            actual.control_text_positions(),
+            expected.control_text_positions()
+        );
+        for at in 0..expected.text.chars().count() {
+            assert_eq!(style_at(actual, at), style_at(expected, at));
+        }
+        assert_eq!(
+            serde_json::to_value(&actual.controls).unwrap(),
+            serde_json::to_value(&expected.controls).unwrap()
+        );
+    }
+}
+
+#[test]
+fn cell_cut_paste_restores_text_offsets_after_inline_and_floating_objects() {
+    for flat in [true, false] {
+        for tables in [false, true] {
+            for inline in [true, false] {
+                for format in 0..3 {
+                    let (mut core, path) = paste_fixture(flat, tables, inline, format);
+                    let before_document = core.document().clone();
+                    let before = cell(core.document(), &path).to_vec();
+                    let sibling = siblings(core.document(), &path);
+                    let image_bytes = images(core.document());
+                    copy(&mut core, &path, flat);
+                    let mut oracle = DocumentCore::new_empty();
+                    oracle.set_document(before_document.clone());
+                    copy(&mut oracle, &path, flat);
+                    delete(&mut core, &path, flat, (0, 2), (2, 2)).unwrap();
+                    assert_eq!(cell(core.document(), &path)[0].text, "가🦦끝말");
+                    // 같은 ID 집합의 빈 본문에 복사만 붙여 새 ID와 전체 개체 원문을 독립 대조한다.
+                    oracle.set_document(core.document().clone());
+                    oracle.paste_internal_native(0, 2, 0).unwrap();
+                    let inside: Vec<_> = oracle.document().sections[0].paragraphs[2..]
+                        .iter()
+                        .flat_map(|p| &p.controls)
+                        .cloned()
+                        .collect();
+                    assert_eq!(inside.len(), 2);
+                    let mut expected_document = before_document;
+                    let expected = cell_mut(&mut expected_document, &path);
+                    expected[0].controls[1] = inside[0].clone();
+                    expected[2].controls[0] = inside[1].clone();
+                    expected_document.sections[0].raw_stream = None;
+                    let mut baseline = DocumentCore::new_empty();
+                    baseline.set_document(expected_document);
+                    paste_cell(&mut core, &path, flat, 2);
+                    assert_cell_text_and_style(
+                        cell(core.document(), &path),
+                        cell(baseline.document(), &path),
+                    );
+                    assert_eq!(
+                        serde_json::to_value(siblings(core.document(), &path)).unwrap(),
+                        serde_json::to_value(&sibling).unwrap()
+                    );
+                    assert_eq!(images(core.document()), image_bytes);
+                    for (actual, expected) in [
+                        (
+                            core.export_hwp_native().unwrap(),
+                            baseline.export_hwp_native().unwrap(),
+                        ),
+                        (
+                            core.export_hwpx_native().unwrap(),
+                            baseline.export_hwpx_native().unwrap(),
+                        ),
+                    ] {
+                        let actual = HwpDocument::from_bytes(&actual).unwrap();
+                        let expected = HwpDocument::from_bytes(&expected).unwrap();
+                        assert_cell_text_and_style(
+                            cell(actual.document(), &path),
+                            cell(expected.document(), &path),
+                        );
+                        assert_eq!(images(actual.document()), images(expected.document()));
+                        assert_eq!(
+                            serde_json::to_value(siblings(actual.document(), &path)).unwrap(),
+                            serde_json::to_value(siblings(expected.document(), &path)).unwrap()
+                        );
+                    }
+                    assert_eq!(
+                        before.iter().map(|p| &p.text).collect::<Vec<_>>(),
+                        cell(core.document(), &path)
+                            .iter()
+                            .map(|p| &p.text)
+                            .collect::<Vec<_>>()
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn cell_single_control_paste_keeps_same_anchor_objects_before_the_scalar_offset() {
+    for flat in [true, false] {
+        for format in 0..3 {
+            let (mut core, path) = paste_fixture(flat, false, true, 0);
+            let mut document = core.document().clone();
+            cell_mut(&mut document, &path)[0].char_offsets = vec![0, 17, 19, 20, 21];
+            core.set_document(document);
+            if format != 0 {
+                let bytes = if format == 1 {
+                    core.export_hwp_native().unwrap()
+                } else {
+                    core.export_hwpx_native().unwrap()
+                };
+                core.set_document(HwpDocument::from_bytes(&bytes).unwrap().document().clone());
+            }
+            let before = cell(core.document(), &path).to_vec();
+            assert_eq!(before[0].control_text_positions(), [1, 1]);
+            if flat {
+                core.copy_selection_in_cell_native(0, 1, 0, 0, 2, 0, 2, 2)
+                    .unwrap();
+            } else {
+                core.copy_selection_in_cell_by_path_native(0, 1, &path, 2, 0, 2, 2)
+                    .unwrap();
+            }
+            paste_cell(&mut core, &path, flat, 2);
+            let after = cell(core.document(), &path);
+            assert_eq!(after[0].text, "가🦦앞뒤나다라");
+            assert_eq!(after[0].control_text_positions(), [1, 1, 3]);
+            assert_eq!(
+                serde_json::to_value(&after[0].controls[..2]).unwrap(),
+                serde_json::to_value(&before[0].controls).unwrap()
+            );
+            for at in 0..before[0].text.chars().count() {
+                assert_eq!(
+                    style_at(&after[0], if at < 2 { at } else { at + 2 }),
+                    style_at(&before[0], at)
+                );
+            }
+            assert_eq!(
+                serde_json::to_value(&after[1..]).unwrap(),
+                serde_json::to_value(&before[1..]).unwrap()
+            );
+            for bytes in [
+                core.export_hwp_native().unwrap(),
+                core.export_hwpx_native().unwrap(),
+            ] {
+                let reopened = HwpDocument::from_bytes(&bytes).unwrap();
+                assert_eq!(cell(reopened.document(), &path)[0].text, "가🦦앞뒤나다라");
+                assert_eq!(
+                    cell(reopened.document(), &path)[0].control_text_positions(),
+                    [1, 1, 3]
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn cell_text_paste_keeps_scalar_fast_path_and_multiline_split_after_inline_objects() {
+    for flat in [true, false] {
+        for format in 0..3 {
+            for multiline in [false, true] {
+                let (mut core, path) = paste_fixture(flat, false, true, format);
+                let before = cell(core.document(), &path).to_vec();
+                if multiline {
+                    core.insert_text_native(0, 2, 0, "새").unwrap();
+                    core.split_paragraph_native(0, 2, 1, None).unwrap();
+                    core.insert_text_native(0, 3, 0, "둘").unwrap();
+                    core.copy_selection_native(0, 2, 0, 3, 1).unwrap();
+                } else {
+                    core.copy_selection_native(0, 0, 0, 0, 2).unwrap();
+                }
+                paste_cell(&mut core, &path, flat, 2);
+                let after = cell(core.document(), &path);
+                let expected = if multiline {
+                    vec!["가🦦새", "둘나다라", "중간", "앞뒤끝말"]
+                } else {
+                    vec!["가🦦머리나다라", "중간", "앞뒤끝말"]
+                };
+                assert_eq!(
+                    after.iter().map(|p| p.text.as_str()).collect::<Vec<_>>(),
+                    expected
+                );
+                for at in 0..2 {
+                    assert_eq!(style_at(&after[0], at), style_at(&before[0], at));
+                }
+                let (suffix, base) = if multiline {
+                    (&after[1], 1)
+                } else {
+                    (&after[0], 4)
+                };
+                for at in 2..before[0].text.chars().count() {
+                    assert_eq!(style_at(suffix, base + at - 2), style_at(&before[0], at));
+                }
+                assert_eq!(
+                    serde_json::to_value(&after[after.len() - 2..]).unwrap(),
+                    serde_json::to_value(&before[1..]).unwrap()
+                );
+                for bytes in [
+                    core.export_hwp_native().unwrap(),
+                    core.export_hwpx_native().unwrap(),
+                ] {
+                    let reopened = HwpDocument::from_bytes(&bytes).unwrap();
+                    assert_eq!(
+                        cell(reopened.document(), &path)
+                            .iter()
+                            .map(|p| p.text.as_str())
+                            .collect::<Vec<_>>(),
+                        expected
+                    );
+                }
+            }
+        }
+    }
+}
+
 #[test]
 fn flat_table_caption_text_delete_keeps_legacy_address() {
     let (mut core, path) = fixture(1, false);

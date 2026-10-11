@@ -905,7 +905,9 @@ impl DocumentCore {
             return Ok((cell_para_idx, char_offset + new_chars));
         }
 
-        let right_half = cell_paras[cell_para_idx].split_at(char_offset);
+        let split_offset =
+            text_to_split_logical_offset(&cell_paras[cell_para_idx], char_offset, false);
+        let right_half = cell_paras[cell_para_idx].split_at(split_offset);
         cell_paras[cell_para_idx].merge_from(&clip_paras[0]);
 
         let mut insert_idx = cell_para_idx + 1;
