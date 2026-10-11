@@ -524,6 +524,43 @@ test('local file HWP is opened and suppressed best-effort', async () => {
   });
 });
 
+// #7664: "다운로드 전 저장 위치 확인" 대화상자가 떠 있으면 filename이 비고 MIME이 generic이다.
+// 대화상자를 취소하면 interrupted만 오므로 onCreated에서 열어야 한다.
+test('local file HWP opens from onCreated while the save-as prompt hides the filename (#7664)', async () => {
+  const env = createChromeMock();
+
+  await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+    listeners.onCreated[0]({
+      id: 7664,
+      url: 'file:///C:/Users/user/Documents/%ED%95%9C%EA%B8%80.hwp',
+      filename: '',
+      mime: 'application/octet-stream',
+      startTime: new Date().toISOString(),
+    });
+    await flushAsyncWork();
+    await flushAsyncWork();
+
+    assert.equal(calls.tabsCreate.length, 1);
+    assert.equal(new URL(calls.tabsCreate[0].url).searchParams.get('filename'), '한글.hwp');
+    assert.deepEqual(calls.cancel, [7664]);
+    assert.deepEqual(calls.erase, [{ id: 7664 }]);
+
+    // 대화상자에서 저장을 고르면 filename 확정 delta가 와도 다시 열지 않는다.
+    searchItems.set(7664, {
+      id: 7664,
+      url: 'file:///C:/Users/user/Documents/%ED%95%9C%EA%B8%80.hwp',
+      filename: 'C:\\Users\\user\\Downloads\\한글.hwp',
+      mime: 'application/octet-stream',
+      startTime: new Date().toISOString(),
+    });
+    await listeners.onChanged[0]({ id: 7664, filename: { current: 'C:\\Users\\user\\Downloads\\한글.hwp' } });
+    await listeners.onChanged[0]({ id: 7664, state: { current: 'interrupted' }, error: { current: 'USER_CANCELED' } });
+    await flushAsyncWork();
+
+    assert.equal(calls.tabsCreate.length, 1, 'filename 확정·interrupted 뒤에도 한 번만 열어야 함');
+  });
+});
+
 // #1498: onChanged 단독(= onCreated 미관측, 과거 다운로드 기록)으로는 뷰어를 열지 않는다.
 test('past download (onChanged only, no onCreated) does not open the viewer', async () => {
   const env = createChromeMock();

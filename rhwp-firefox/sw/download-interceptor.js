@@ -7,7 +7,11 @@
 // #1516: 공통 다운로드 관찰자 상태 머신으로 과거 항목/중복 이벤트를 판정한다.
 
 import { openViewer } from './viewer-launcher.js';
-import { classifyDownload, isOwnExtensionBlobDownload } from './download-interceptor-common.js';
+import {
+  classifyDownload,
+  isOwnExtensionBlobDownload,
+  localHwpFileUrlFilename,
+} from './download-interceptor-common.js';
 import {
   DEFAULT_STATE_TTL_MS,
   evaluateDownloadChanged,
@@ -115,7 +119,8 @@ function handleHwpDownload(item) {
 
   openViewer({
     url: item.url,
-    filename: item.filename,
+    // #7664: 저장 위치 확인 대화상자 중에는 filename이 비어 있다.
+    filename: item.filename || localHwpFileUrlFilename(item.url),
   });
 }
 

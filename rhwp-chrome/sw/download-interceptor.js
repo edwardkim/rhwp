@@ -11,7 +11,11 @@
 //        경로 결정을 무효화하므로 filename 결정 단계에서 완전히 빠진다.
 
 import { openViewer } from './viewer-launcher.js';
-import { classifyDownload, isOwnExtensionBlobDownload } from './download-interceptor-common.js';
+import {
+  classifyDownload,
+  isOwnExtensionBlobDownload,
+  localHwpFileUrlFilename,
+} from './download-interceptor-common.js';
 import { loadSettingsForAutomaticActions } from './settings-store.js';
 import {
   DEFAULT_STATE_TTL_MS,
@@ -163,7 +167,8 @@ function handleHwpDownload(item) {
 
   openViewer({
     url: item.url,
-    filename: item.filename,
+    // #7664: 저장 위치 확인 대화상자 중에는 filename이 비어 있다.
+    filename: item.filename || localHwpFileUrlFilename(item.url),
   });
 }
 

@@ -222,6 +222,31 @@ test('filename finalized in onChanged is rechecked with downloads.search', async
   });
 });
 
+test('Firefox opens local file HWP with an empty filename once (#7664)', async () => {
+  const env = createBrowserMock();
+
+  await withBrowserMock(env, async ({ listeners, calls, searchItems }) => {
+    const item = {
+      id: 7664,
+      url: 'file:///Users/user/Documents/%ED%95%9C%EA%B8%80.hwpx',
+      filename: '',
+      mime: 'application/octet-stream',
+      startTime: new Date().toISOString(),
+    };
+    listeners.onCreated[0](item);
+    await flushAsyncWork();
+
+    assert.equal(calls.tabsCreate.length, 1);
+    assert.equal(new URL(calls.tabsCreate[0].url).searchParams.get('filename'), '한글.hwpx');
+
+    searchItems.set(7664, { ...item, filename: '/Users/user/Downloads/한글.hwpx' });
+    listeners.onChanged[0]({ id: 7664, filename: { current: '/Users/user/Downloads/한글.hwpx' } });
+    await flushAsyncWork();
+
+    assert.equal(calls.tabsCreate.length, 1, 'filename 확정 뒤에도 한 번만 열어야 함');
+  });
+});
+
 test('Firefox ignores XLSX filename even when source URL ends with hwp (#6534)', async () => {
   const env = createBrowserMock();
 
