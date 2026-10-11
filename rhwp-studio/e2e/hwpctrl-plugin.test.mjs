@@ -6,6 +6,7 @@
  * 2. 읽기 API 가 studio 문서를 본다 (문서 한 벌)
  * 3. 배치 편집 → 화면 반영 → undo 1회로 전체 복원
  * 4. 좌표 변환기가 브라우저에서도 같은 답을 준다
+ * 4b. syncCursorFromCaret — 사용자 캐럿 자리로 커서를 옮겨 CreateField·undo 1스텝
  * 5. exportBytes 왕복
  * 6. unload 후 studio 생존
  *
@@ -84,6 +85,37 @@ runTest('hwpctrl 플러그인', async ({ page }) => {
   assert(coords.roundTrip === 0, 'TC4: 역방향 왕복');
   assert(coords.mutatingGetPos === false && coords.mutatingUnknown === true,
     'TC4: 분류 기본값은 "바꾼다"');
+
+  // ── TC4b: 사용자 캐럿 동기화 — 화면에서 고른 자리에 CreateField ──────
+  await clickEditArea(page);
+  await page.keyboard.press('Home');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await page.evaluate(() => new Promise(r => setTimeout(r, 200)));
+  const synced = await page.evaluate(() => {
+    const p = window.rhwpStudio.plugins;
+    const wasm = window.__wasm;
+    p.invoke('hwpctrl', 'invoke', ['SetPos', [0, 0, 0]]);
+    const beforeSync = p.invoke('hwpctrl', 'invoke', ['GetPos', []]);
+    const at = p.invoke('hwpctrl', 'syncCursorFromCaret', []);
+    const created = p.invoke('hwpctrl', 'invoke', ['CreateField', ['안내', '', '동기화필드']]);
+    const field = wasm.getFieldList().find(f => f.name === '동기화필드');
+    const nameAtCaret = p.invoke('hwpctrl', 'invoke', ['GetCurFieldName', [0]]);
+    return { beforeSync, at, created, field, nameAtCaret };
+  });
+  // SetPos(0,0,0) 은 문단 앞머리 컨트롤 뒤 첫 자리로 밀린다 — 캐럿은 거기서 두 글자 뒤다.
+  assert(synced.at && synced.at.list === 0 && synced.at.para === 0
+      && synced.at.pos - synced.beforeSync.pos === 2,
+    `TC4b: 캐럿(글자 2)으로 커서 이동 (${JSON.stringify(synced.beforeSync)} → ${JSON.stringify(synced.at)})`);
+  assert(synced.created === true, 'TC4b: CreateField 성공');
+  assert(synced.field?.startCharIdx === 2 && synced.field?.location.paraIndex === 0,
+    `TC4b: 누름틀이 사용자 캐럿 자리에 들어감 (${JSON.stringify(synced.field?.location)} @${synced.field?.startCharIdx})`);
+  assert(synced.nameAtCaret === '동기화필드', `TC4b: 커서가 새 누름틀 안 (${synced.nameAtCaret})`);
+  await page.evaluate(() => window.rhwpStudio.plugins.invoke('hwpctrl', 'undo', []));
+  await page.evaluate(() => new Promise(r => setTimeout(r, 300)));
+  const afterFieldUndo = await page.evaluate(() =>
+    window.__wasm.getFieldList().some(f => f.name === '동기화필드'));
+  assert(!afterFieldUndo, 'TC4b: undo 1회로 누름틀 제거');
 
   // ── TC5: exportBytes ──────────────────────────────────
   const exported = await page.evaluate(() => {
