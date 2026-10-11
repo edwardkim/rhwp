@@ -1433,21 +1433,12 @@ fn measure_char_width_embedded_decision_for_font<'a>(
                 character_match: "miss",
             };
         };
-        // 검증된 TrueType의 가운뎃점·따옴표는 원 프로그램의 전진폭을 쓴다.
-        // 독립 Print의 같은 glyph outline과 이웃 글자 원점도 전각 전진을 입증한다.
-        // 같은 이름의 HFT 출력은 좁은 호환 폭을 쓰므로 확인된 프로그램 선택에서만
-        // raw hmtx 값을 소비한다. 다른 face의 기존 계약은 유지한다.
-        let verified_true_type_width = (font_metric_trusted
-            && matches!(
-                primary_name,
-                "휴먼명조" | "HumanMyeongJo" | "HY중고딕" | "HYGothic-Medium"
-            )
-            && matches!(
-                c,
-                '\u{00B7}' | '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}'
-            ))
-        .then(|| font_metrics_data::verified_program_punctuation_width(mm.metric, c))
-        .flatten();
+        // 확인된 TrueType 프로그램의 cmap/hmtx는 표 모양으로 추측한 결측보다 우선한다.
+        // 실제 글리프가 1em이어도 Latin-1 표가 0/1em으로만 구성될 수 있다.
+        // 검증된 face·문자만 lookup에 있으며 HFT·치환·불명 face의 호환 폭은 유지한다.
+        let verified_true_type_width = font_metric_trusted
+            .then(|| font_metrics_data::verified_program_punctuation_width(mm.metric, c))
+            .flatten();
         // [#7051] HWP3 변환본의 HFT 한글 전용 face 는 ASCII 를 반각(`em/2`)으로 전진시킨다.
         //
         // HWP3 시절 HFT 글꼴(`명조`·`신명 세명조`·`한양신명조` 등)은 한글 전용이고 ASCII
@@ -3522,6 +3513,9 @@ mod tests {
     ///   TrueType 가운뎃점이512/512 전각임을 확인한다. 명시적 TrueType 선택이
     ///   확인된 신뢰 경로는1.0em, 비신뢰 HFT 호환 경로는 종전0.3em을 유지한다.
     ///   작은따옴표의 별도 조판 규칙은 변경하지 않는다.
+    /// - **휴먼고딕(TTF · 대체 없음)** — HMKMG의 실제 cmap/hmtx는 가운뎃점을
+    ///   512/512로 갖는다. 규제분석의 독립 Print 10쪽도 1em이다.
+    ///   검증된 프로그램 선택에서만 이 폭을 사용하며 비신뢰 경로는 유지한다.
     ///
     /// 대체 안 된 HFT 가 전각이라는 정본은 아직 없어 그 경우는 종전대로 좁힌다.
     #[test]
@@ -3544,6 +3538,8 @@ mod tests {
             ("HY신명조", false, 0.3),
             ("휴먼명조", true, 1.0),
             ("휴먼명조", false, 0.3),
+            ("휴먼고딕", true, 1.0),
+            ("휴먼고딕", false, 0.3),
             ("한양신명조", true, 0.384),
         ] {
             let em = advance(family, trusted);

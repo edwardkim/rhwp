@@ -2415,3 +2415,37 @@ output에서 정리했습니다. 원본 전체 SVG·렌더 트리·PNG·TSV·pkg
 - 정본: [검증 요약](../pr/assets/issue7445/completed-20261009/rebased-pii-20261012/validation.json), 같은 폴더의57·58·59·66쪽 대표 PNG. 로그·전쪽 TSV·실행 상태는 ignored `output/pr-review/7445-completed-20261009/stage520`~`stage525`에 보존합니다.
 - 실행 wrapper의 두 경로/선택 오류는 출력 결함과 구분해 기록했습니다. fresh TSV 뒤 잘못된 review 경로는 기존 PNG에서 패널만 생성하여 복구했고 재캡처하지 않았습니다. 기존18개 선택에 없던 suite024의5846은 올바른 suite에서 별도로 실행했습니다.
 - 최종41문서/1048쪽씩 검증, 실제 Skia/Studio 출력, 전체 회귀·lint는 새 커밋에서 계속합니다. #7720의 Closes는 최종 통합 검증 뒤 확정하고, #7445와 미완료 #7834는 Refs로 유지합니다. PR 게시 승인은 아직 받지 않았습니다.
+
+
+## 2026-10-12 규제분석 가운데점 전진폭과 기존 관계 검사
+
+독립 Print 10쪽과 같은 휴먼고딕 TrueType 원본을 대조했습니다. HMKMG의 실제
+cmap `periodcentered`와 hmtx 512/512는 전각을 입증하지만, 기존 경로는 Latin-1
+표 모양을 결측으로 추정해 0.3em으로 좁혔습니다. 확인된 TrueType 프로그램의
+폭을 이 추정보다 먼저 소비하도록 고쳤습니다. HFT·치환·불명 face의 기존
+호환 경로는 유지하며 문서 ID·페이지 좌표로 분기하지 않습니다.
+
+같은 원본의 전 17쪽을 Native와 Mac locked no-opt fresh WASM으로 다시
+산출했습니다. 양쪽 최저 **95.45455%, 미달 0쪽**, 원시 PNG와 TSV도 모두
+바이트 동일합니다. 6·8·10·11·15·17쪽을 직접 판독했습니다. 10쪽 가운데점
+뒤 네 줄의 최대 원점 차이는 44.86667px에서 0.09333px로 줄었으며 이는
+진단 수치입니다. 작은 글꼴 획과 가는 괘선 차이는 남아 픽셀 동일성을
+주장하지 않습니다.
+
+새 테스트 함수 없이 기존 가운데점 신뢰/비신뢰 matrix와 규제분석 소유
+검사를 보완했습니다. 절대 x/y 대신 글자 크기 대비 전각 전진을 검사하며,
+동일한 두 검사에서 보정 전 **2 FAIL/exit 100**, 보정 후 **2 PASS/exit 0**를
+확인했습니다. RED 뒤 실행 wrapper가 예상한 진단 문자열과 실제 public
+text-layout 비율의 차이로 중단한 기록은 보존했고, 생산 소스 복원 후
+GREEN만 별도로 실행했습니다. 컴파일 오류를 RED로 세거나 실패를 숨기지
+않았습니다.
+
+- [요약 증적](../pr/assets/issue7445/completed-20261009/verified-human-gothic-20261012/validation.json)
+- [10쪽 Native review](../pr/assets/issue7445/completed-20261009/verified-human-gothic-20261012/regulatory-p010-native-review.png)
+- [10쪽 fresh WASM review](../pr/assets/issue7445/completed-20261009/verified-human-gothic-20261012/regulatory-p010-wasm-review.png)
+
+현재 전쪽 선행 수용과 해당 기존 검사는 완료됐으며, 최종 41문서/1048쪽씩과
+실제 출력 25개 및 전체 회귀·lint는 아직 새 통합 head에서 완료하지 않았습니다.
+자산관리 규칙 20쪽의 ASCII 따옴표 줄끝 차이는 별도 보정 단계로 계속합니다.
+#7716의 Closes는 전체 완료 범위와 최종 게이트를 확인한 후 확정하고, 상위
+#7445는 Refs로 유지합니다. 원격 push와 PR 게시 승인은 아직 받지 않았습니다.

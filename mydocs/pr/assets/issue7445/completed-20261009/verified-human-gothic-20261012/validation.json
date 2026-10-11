@@ -1,0 +1,170 @@
+{
+  "baseHead": "c4a5054332ee241eb5f09f517a5f02317a9638a9",
+  "implementation": "Trusted TrueType cmap/hmtx width precedes inferred missing-glyph punctuation narrowing; untrusted HFT/substituted paths unchanged",
+  "input": "samples/issue7445/80250_regulatory_analysis.hwp",
+  "independentPdf": "pdf/80250_regulatory_analysis-hwp-2024.pdf",
+  "independentFontProgramProof": {
+    "program": "/Users/tsjang/Library/Fonts/HMKMG.TTF",
+    "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+    "unitsPerEm": 512,
+    "familyNames": [
+      "휴먼고딕"
+    ],
+    "glyphs": {
+      "0xb7": {
+        "name": "periodcentered",
+        "id": 12190,
+        "advance": 512
+      },
+      "0x2018": {
+        "name": "quoteleft",
+        "id": 12349,
+        "advance": 512
+      },
+      "0x2019": {
+        "name": "quoteright",
+        "id": 12350,
+        "advance": 512
+      },
+      "0x201c": {
+        "name": "quotedblleft",
+        "id": 12351,
+        "advance": 512
+      },
+      "0x201d": {
+        "name": "quotedblright",
+        "id": 12352,
+        "advance": 512
+      },
+      "0x318d": {
+        "name": "uni318D",
+        "id": 12925,
+        "advance": 512
+      }
+    }
+  },
+  "wholeVisual": [
+    {
+      "backend": "native",
+      "pages": 17,
+      "minimum": 95.45455,
+      "below90": 0,
+      "exitCode": 0
+    },
+    {
+      "backend": "wasm",
+      "pages": 17,
+      "minimum": 95.45455,
+      "below90": 0,
+      "exitCode": 0
+    }
+  ],
+  "nativeFreshRawByteAudit": {
+    "rawPng": [
+      {
+        "folder": "rhwp_png",
+        "pages": 17,
+        "byteIdentical": true
+      },
+      {
+        "folder": "pdf_png",
+        "pages": 17,
+        "byteIdentical": true
+      }
+    ],
+    "tsvByteIdentical": true,
+    "independentPdfUnchanged": true
+  },
+  "directInspection": {
+    "pages": [
+      6,
+      8,
+      10,
+      11,
+      15,
+      17
+    ],
+    "middleDotNeighborOriginDelta": [
+      {
+        "text": "(예:과도한자본금·설비·자격요건·제품검사·인증등)",
+        "nonSpaceCharacters": 27,
+        "beforeMaxAbsOriginDelta": 44.86667,
+        "afterMaxAbsOriginDelta": 0.08
+      },
+      {
+        "text": "(예:가격상·하한설정,요금인가,외부기관의개입등)",
+        "nonSpaceCharacters": 26,
+        "beforeMaxAbsOriginDelta": 11.24,
+        "afterMaxAbsOriginDelta": 0.08
+      },
+      {
+        "text": "(예:과도하게긴계약조건,계좌해지·통신사이동시수수료부과등)",
+        "nonSpaceCharacters": 31,
+        "beforeMaxAbsOriginDelta": 11.16,
+        "afterMaxAbsOriginDelta": 0.09333
+      },
+      {
+        "text": "③소비자가상품구매시활용하는정보의내용·제공방식을제한하거나",
+        "nonSpaceCharacters": 30,
+        "beforeMaxAbsOriginDelta": 11.24,
+        "afterMaxAbsOriginDelta": 0.01333
+      }
+    ],
+    "residual": "Small glyph ink and thin-rule differences remain; no pixel identity claimed"
+  },
+  "existingRegression": {
+    "state": "same_test_red_green_passed",
+    "newTestFunctions": 0,
+    "red": {
+      "passed": 0,
+      "failed": 2,
+      "exitCode": 100
+    },
+    "green": {
+      "passed": 2,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "initialRedWrapperError": "Diagnostic-substring guard failed after actual 2 FAIL; source was restored; actual RED evidence kept and GREEN run separately",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--lib",
+      "--test",
+      "regression_suite_018",
+      "-E",
+      "test(test_b7_advance_follows_the_font_table_only_when_trusted) | test(empty_caption_keeps_its_source_font_box_and_table_page_owner)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ]
+  },
+  "builtNativeSha256": "da58a28b7bb8eaa9a433591e8fb7dd5228dbaa9aea1f622d28aab52605bfa04c",
+  "builtWasmHashes": {
+    "rhwp.js": "f366c9d17e4eb925f6ba325a5236659a09af36656eff934284a5d4ba03212213",
+    "rhwp_bg.wasm": "8e36978fe9e76f2a8786e2c043071a670a2af7f45173f76cdfdb36144bd2aec8"
+  },
+  "nextGateScope": {
+    "documents": 41,
+    "referencePagesPerBackend": 1048,
+    "actualOutputSamples": 25
+  },
+  "fullCandidateValidationComplete": false,
+  "prPublicationApproved": false,
+  "representativePngSha256": {
+    "regulatory-p010-native-overlay.png": "d43332faaffb24a2a954ba8a465b3fc83c48c67049d81e16617c474d27ea47fc",
+    "regulatory-p010-native-review.png": "e1e589d97ef50a25f77ca39db6996e76596eb2a7134c145572acf37b919456eb",
+    "regulatory-p010-wasm-overlay.png": "d43332faaffb24a2a954ba8a465b3fc83c48c67049d81e16617c474d27ea47fc",
+    "regulatory-p010-wasm-review.png": "e1e589d97ef50a25f77ca39db6996e76596eb2a7134c145572acf37b919456eb"
+  },
+  "scopeQualification": "Same original whole17 prior to existing test amendment; original final41/1048-per-backend and actual25 backend samples still required",
+  "localLogDirectory": "output/pr-review/7445-completed-20261009/stage535-human-gothic-relational-red-green",
+  "qualifiedSourceParent": "c4a5054332ee241eb5f09f517a5f02317a9638a9",
+  "buildAfterRasterDelta": "Only existing test matrix/comment and integration assertions changed after the frozen Native/fresh builds; final production correction is unchanged"
+}

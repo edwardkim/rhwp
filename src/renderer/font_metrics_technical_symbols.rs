@@ -115,6 +115,10 @@ pub(crate) fn verified_program_punctuation_width(metric: &FontMetric, ch: char) 
         metric.italic,
         ch as u32,
     ) {
+        // HMKMG.TTF SHA-256 9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280.
+        // cmap의 periodcentered gid12190과 hmtx512/unitsPerEm512를 직접 확인했다.
+        // 80250 독립 Print p10의 같은 face·이웃 원점도 전각을 입증한다.
+        ("휴먼고딕", 512, false, false, 183) => Some(512),
         ("Haansoft Batang", 1024, false, false, 183) => Some(341),
         ("Haansoft Batang", 1024, false, false, 8216) => Some(276),
         ("Haansoft Batang", 1024, false, false, 8217) => Some(276),

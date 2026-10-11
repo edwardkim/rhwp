@@ -69,6 +69,50 @@ fn empty_caption_keeps_its_source_font_box_and_table_page_owner() {
         title.bbox.y + title.bbox.height <= rendered_table.bbox.y,
         "표는 제목 뒤에 배치한다"
     );
+
+    // 같은 원본 전 17쪽의 Native/fresh WASM 수용 후 보완한다.
+    // HMKMG의 실제 periodcentered hmtx(512/512)와 독립 Print 10쪽은
+    // 글자 크기 대비 전각 전진을 입증한다. 절대 x 좌표를 고정하지 않는다.
+    let layout: serde_json::Value = serde_json::from_str(
+        &core
+            .get_page_text_layout_native(9)
+            .expect("점검항목 본문 10쪽의 실제 글자 원점"),
+    )
+    .expect("text-layout JSON");
+    let mut verified_dots = 0;
+    for run in layout["runs"].as_array().expect("실제 글줄") {
+        let family = run["fontFamily"].as_str().unwrap_or_default();
+        if family
+            .split(',')
+            .next()
+            .unwrap_or(family)
+            .trim_matches('\'')
+            != "휴먼고딕"
+        {
+            continue;
+        }
+        let text: Vec<char> = run["text"].as_str().expect("글줄 내용").chars().collect();
+        let font_size = run["fontSize"].as_f64().expect("원본 글자 크기");
+        let origins = run["charX"].as_array().expect("글자별 원점");
+        assert!(font_size > 0.0 && origins.len() > text.len());
+        for (i, ch) in text.iter().enumerate() {
+            if *ch != '\u{00B7}' {
+                continue;
+            }
+            let advance = origins[i + 1].as_f64().expect("다음 글자 원점")
+                - origins[i].as_f64().expect("가운데점 원점");
+            assert!(
+                (advance / font_size - 1.0).abs() < 0.05,
+                "휴먼고딕 가운데점은 원본 프로그램의 전각을 소비한다: {}em",
+                advance / font_size
+            );
+            verified_dots += 1;
+        }
+    }
+    assert!(
+        verified_dots > 0,
+        "점검항목의 실제 가운데점 경로를 실행한다"
+    );
 }
 
 #[test]

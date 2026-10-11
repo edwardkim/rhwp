@@ -640,6 +640,9 @@ pub(crate) struct FontNameDecision {
 /// - `HY울릉도M` — `ttfs/hwp/HYWULM.TTF` 가 같은 글리프를 1024/1024 로 갖고, 정본
 ///   `press_release_split_cell_nested_table-hwpx-2020`(n=8, 0.944~1.000) 과
 ///   `pr_6528_issue6181_p5_2020`(n=1, 1.000) 이 전각을 말한다.
+/// - `휴먼고딕` — `HMKMG.TTF`의 실제 `periodcentered`(gid12190)는 512/512이다.
+///   독립 `80250` Print p10의 같은 face도 이웃 원점 사이에 1em을 소비한다.
+///   이 목록은 기존 TTF 선언·비치환 조건과 함께 쓰므로 HFT·불명 face는 유지한다.
 ///
 /// 새 face 를 넣으려면 그 글꼴 파일의 글리프와 한/글 출력 실측을 함께 남긴다.
 ///
@@ -686,6 +689,7 @@ fn metric_widths_verified_face(face: &str) -> bool {
             | "휴먼명조"
             | "HumanMyeongJo"
             | "Times New Roman"
+            | "휴먼고딕"
     )
 }
 
