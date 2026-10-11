@@ -404,3 +404,63 @@ ignored `stage437-overlay-flow/pigfarm-v18-review/review_007.png`를 직접 확�
 최초 27개 기준 **18개 해결 / 부적합 범위 2개 분리 / 실패 7개 잔존**이다.
 현재 브랜치에서 새로 생긴 본문/텍스트 초과는 기존 미달이나 이슈 등록으로 제거하지 않고
 계속 구현을 확인한다. 전체 nextest·최종 대상 전쪽 검증·PR 준비는 미완료다.
+
+## 저장 프레임 완료 소유를 일반 행 수용보다 먼저 적용 (V19)
+
+원본 `samples/issue5679/10857_delegation_rules.hwp`의 62쪽 표는 현재 변경으로 추가된
+본문 아래 넘침 1건이었다. 저장된 첫 조각 높이는 66633HU인데, 큰 병합 블록 안의
+마지막 일반 행이 기존 완료 프레임 검사를 건너뛰고 통째 수용 허용량을 먼저 사용했다.
+표의 올바른 위여백140HU를 없애거나 baseline을 늘리지 않고 기존 검사의 실행 순서를 고쳤다.
+
+`row_step.rs`는 첫 source frame 끝과 앞 병합 소유가 일치할 때 같은 `RowScanQuery`로
+수용 원장·실제 여백·내용 완전 소비를 확인한다. 성공한 경우 source 잔여 높이와 컷·끝행
+override를 함께 반환한다. `fragment/emit.rs`의 기존 완료 표식/이어받기 경로가 이를 소비하며,
+다음 조각은 남은 빈 물리 밴드와 다음 실제 행을 보존한다. 편집·재조판·중첩/개체가 있는
+셀에는 기존 제외 조건을 유지한다. source 파일명 분기·paint clamp·공차 변경은 없다.
+
+실제 표 높이는894.28→888.44px로 원본66633HU와 일치하고, 본문 아래 사건은3→2건으로
+기존 baseline 수준에 복구됐다. 마지막 `신변보호조치 해제 및 신고자 통지`의 가시 소유는
+62쪽에 한 번이며, 63쪽의 이어받은 빈 밴드는 글자를 재소비하지 않는다. 그 다음 실제 행
+`책임감면 / 징계의 감경․면제 요구`를 보존하고, 앞 rowspan의 양쪽 물리 높이 합은 원본
+34139HU와 직렬화 오차 범위에서 같다.
+
+- 기존 본문 넘침 검사 및 #6790/#5057/#3820/#6981/#7470/#7288/#7095 대조군:
+  run `5ba5ec58-b536-4cc0-84fa-07c759f4f11b`,36 PASS/0 FAIL/1418 skip,47.769초,threads8,exit0.
+- 남은6개 원 실패 재실행: run `3796b42d-e2cb-4512-921a-adad7caf8503`,0 PASS/6 FAIL/1081 skip,
+  1.367초,exit100. source 파일·검사 기대값은 바꾸지 않았다.
+- 앞서 검증한13개 문서356쪽의 Native SVG는 V18과 모두 바이트 동일하다. 이것을
+  356쪽의 새 PDF 비교나 fresh 전쪽 수용으로 대신하지 않는다.
+- #3820의 원본82쪽은2쪽만 SVG가 바뀌었다. 실제 저장 제품2024에 맞는 독립 Print
+  `pdf/issue1891/76076-original-hwp-exact-2024-20261005.pdf`와 generation2024로 확인한
+  2쪽은97.34589→97.67017%이며 Native/fresh PNG가 같다. 이전 다른 HWPX용2020 PDF와
+  Cairo 산출물은 판정에 사용하지 않았다. 전82쪽 피델리티 수용을 주장하지 않는다.
+
+위임전결 원본은 engine2020의 실제 Hancom PrintMethod0/one-up으로 다시 PDF를 생성했다.
+job `9a5db5bb-3d42-4fb5-9bbd-4b0f286d089e`,success,769432byte/103쪽이며 최종 정본을
+`pdf/10857_delegation_rules-2020.pdf`에 함께 보존한다. 원본·기존 정본을 삭제하지 않았다.
+기존 #5679에도 한컴103쪽이 기록되어 있고 전체 피델리티 잔여는 OPEN #7700에 등록되어
+있으므로 중복 이슈를 만들지 않았다.
+
+| 진단용 의미 소속 대조 | V18 Native | V19 Native/fresh | 판정 |
+| --- | ---: | ---: | --- |
+| Native62쪽 / Print61쪽 |98.67835%|98.08764%|현재 source frame과 본문 포함 확인|
+| Native63쪽 / Print62쪽 |60.52857%|84.18323%|개선됐지만 잔여 미달, #7700 유지|
+
+현재 Native/fresh는105쪽,Print는103쪽이다. 위 표는 의미가 같은 표 조각을 대응시킨
+**진단 값**이며 같은 쪽 번호의 canonical 전쪽 TSV나 전체 문서 수용이 아니다. 자동 쪽 매핑으로
+쪽수 차이를 숨기지 않았다. 실제 Chrome154.0.8037.99에서 fresh187쪽(105+82쪽)을 생성했고,
+영향3쪽만 capture8로 래스터 비교했다. 선택3쪽의 Native/fresh PNG는 모두 동일하다.
+Mac locked `--no-opt` WASM build exit0이며 Docker 최적화 결과로 표시하지 않는다.
+
+#5756 원본 보도자료는 고정 base·다운로드 원본과 동일한140288byte/SHA-256 입력이다.
+자동 Print 재시도 `69f08d05-3061-431f-893c-a00e9a5b6b87`도 output0/failed였다.
+기존 문자열 크기 검사10.0/14.2가 현재10.2666/14.6666과 달라 실패하지만, 독립 PDF가 없어
+90% 판정 또는 기대값 변경 근거로 사용하지 않았다. 이 기준 확보·재검토를 #7809로 등록하고
+#7445의 서브 이슈로 연결했으며 본문·부모 연결을 API로 재확인했다. 검사는 유지한다.
+
+정본은 기존 `stored-anchor-repair/validation.json`의 `v19`,선택 Native/fresh TSV,
+`delegation-native062-print061-v19-review.png`, `delegation-native063-print062-v19-review.png`,
+`regulatory82-p002-v19-review.png`다. 원시 로그·source/binary hash·진단은 ignored
+`stage438-delegation-budget/` 및 `stage439-superscript-print/`에 둔다.
+기존27건은19건 해결·2개 부적합 scope 분리·6개 실패 잔여다. 전체 nextest·최종 대상 전쪽
+검증·PR 준비는 미완료이며 PR 게시·병합은 전체 검증 후 사용자 승인 전까지 수행하지 않는다.

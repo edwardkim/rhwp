@@ -322,30 +322,13 @@
     "currentNewPaginationRegressionRetained": true
   },
   "latestStatus": {
-    "candidate": "SO-SUEOP unsuitable coordinate assertions deferred under sub-issue7807; normal contracts retained",
-    "originalFailures": 27,
-    "originalPassed": 18,
-    "originalResolved": 17,
-    "originalAssertionPinsDeferred": 1,
-    "originalRemovedUnsuitable": 1,
-    "originalSeparatedTotal": 2,
-    "originalFailed": 8,
-    "remainingTests": [
-      "issue_5877_fragment_ghost_vrules::issue_5877_gas_rowspan_keeps_label_owner_and_next_row_minimum",
-      "issue_4514_overlay_table_flow::issue_4514_overlay_tables_do_not_overlap",
-      "text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
-      "issue_rowbreak_chart_overlap::rowbreak_hwpx_page8_keeps_continued_nested_reference_line",
-      "issue_7445_biotoxin_source_ownership::cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages",
-      "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band",
-      "issue_5756_superscript_advance_scale::issue_5756_superscript_line_stays_inside_cell",
-      "issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
-      "body_overflow_baseline::body_overflow_does_not_grow_partition_5"
-    ],
-    "fullNextestAfterRepairs": "not yet",
-    "prReady": false,
+    "originalFailuresResolved": 19,
+    "unsuitableScopesSeparated": 2,
+    "remainingOriginalFailures": 6,
+    "wholeNextestAfterRepairs": "not_run",
+    "prPrepared": false,
     "approvalRequiredBeforePr": true,
-    "originalPartialGeometryPass": 0,
-    "pendingVisualFollowup": []
+    "latestRepair": "v19 source frame before logical row dispatch"
   },
   "v8Followup": {
     "base": "f59ac14370bc7d92384292fde37e33be59b87bd7",
@@ -2814,5 +2797,192 @@
     "rawLogsIgnored": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage437-overlay-flow",
     "wholeNextest": "not rerun after repairs; seven original failures still under investigation",
     "prReady": false
+  },
+  "v19": {
+    "sourceIdentity": {
+      "headBeforeCommit": "a706b7b867631e08c6dc83a2a7d98e40396074bc",
+      "changedProductionFiles": {
+        "src/renderer/typeset/table/scan/runner/row_step.rs": "46029316a1523b45414fce17ccbc2544606ee1485eab3f1b6e8bfcd262bebf52"
+      },
+      "nativeBinarySha256": "e098f621fc48c9bafb3ab470e828aa0b6c4b24081112eda2163f9b25abc0ce1e",
+      "wasmPackage": {
+        "rhwp.js": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+        "rhwp_bg.wasm": "449aca39fd5ddadb95ce4fa94b5cc168f198b5654764ca38968141b62fa76575"
+      }
+    },
+    "repair": "Existing completed source-frame proof runs before logical rowspan row classification and whole-row overflow allowance. Accepted physical rows, source padding, complete contents and remaining source frame determine the cut and height; emit receives the same override/cut/ledger. No clamp or tolerance changes.",
+    "independentPrint": {
+      "source": "samples/issue5679/10857_delegation_rules.hwp",
+      "sourceSha256": "de43607f05072840097b19a294b4455905210402cc42823545125e03567df881",
+      "sourceBytes": 303104,
+      "sameFixedBaseBlob": true,
+      "base": "21ed64071f81f35f37618717693bd30f727392c9",
+      "lastSavedProduct": "hancom-office-2010",
+      "engine": "2020",
+      "job": "9a5db5bb-3d42-4fb5-9bbd-4b0f286d089e",
+      "runtime": "11.0.0.9136",
+      "pdfPrintMethod": 0,
+      "pdfOutputMode": "hancom2020_pdf_driver_one_up",
+      "pdf": "pdf/10857_delegation_rules-2020.pdf",
+      "pdfSha256": "1572eb86f2ba23a1395bd1ce210c1d3737e0464331df594e9d30360a5f49ba60",
+      "pdfBytes": 769432,
+      "pdfPages": 103
+    },
+    "newOverflowRepair": {
+      "nativePages": 105,
+      "beforePage62Top": 136.36,
+      "beforePage62Height": 894.28,
+      "afterPage62Height": 888.44,
+      "bodyBottom": 1028.0133333333333,
+      "sourceFrameHeightHu": 66633,
+      "baselineBottomOverflowCount": 2,
+      "beforeBottomOverflowCount": 3,
+      "afterBottomOverflowCount": 2,
+      "testUnchanged": "body_overflow_baseline::body_overflow_does_not_grow_partition_5"
+    },
+    "ownerProof": {
+      "sourceLastRowNonemptyOwnerOnce": true,
+      "successorContentsPreserved": true,
+      "rowspanSourcePhysicalHeightHu": 34139,
+      "rowspanPhysicalSumPx": 455.2,
+      "serializationQuantumPx": 0.1,
+      "blankContinuedBandContainsNoRepeatedText": true,
+      "status": "diagnostic ownership proof; no new test fixture or whole-fidelity claim"
+    },
+    "focusedNextest": {
+      "run": "5ba5ec58-b536-4cc0-84fa-07c759f4f11b",
+      "tests": 36,
+      "passed": 36,
+      "failed": 0,
+      "skipped": 1418,
+      "durationSeconds": 47.769,
+      "threads": 8,
+      "exitCode": 0,
+      "wholeRegression": false
+    },
+    "remainingRerun": {
+      "run": "3796b42d-e2cb-4512-921a-adad7caf8503",
+      "tests": 6,
+      "passed": 0,
+      "failed": 6,
+      "skipped": 1081,
+      "durationSeconds": 1.367,
+      "threads": 8,
+      "exitCode": 100,
+      "wholeRegression": false
+    },
+    "unchangedImpactControls": {
+      "documents": 13,
+      "pages": 356,
+      "allNativeUnembeddedSvgByteIdentical": true,
+      "notWholeVisualAcceptance": true
+    },
+    "boundarySvgChange": [
+      {
+        "key": "regulatory82",
+        "source": "samples/76076_regulatory_analysis.hwp",
+        "beforePages": 82,
+        "afterPages": 82,
+        "changedPages": [
+          "76076_regulatory_analysis_002.svg"
+        ]
+      },
+      {
+        "key": "delegation105",
+        "source": "samples/issue5679/10857_delegation_rules.hwp",
+        "beforePages": 105,
+        "afterPages": 105,
+        "changedPages": [
+          "10857_delegation_rules_015.svg",
+          "10857_delegation_rules_018.svg",
+          "10857_delegation_rules_036.svg",
+          "10857_delegation_rules_043.svg",
+          "10857_delegation_rules_046.svg",
+          "10857_delegation_rules_047.svg",
+          "10857_delegation_rules_051.svg",
+          "10857_delegation_rules_052.svg",
+          "10857_delegation_rules_053.svg",
+          "10857_delegation_rules_054.svg",
+          "10857_delegation_rules_056.svg",
+          "10857_delegation_rules_062.svg",
+          "10857_delegation_rules_063.svg",
+          "10857_delegation_rules_064.svg",
+          "10857_delegation_rules_070.svg",
+          "10857_delegation_rules_082.svg",
+          "10857_delegation_rules_089.svg",
+          "10857_delegation_rules_095.svg",
+          "10857_delegation_rules_096.svg"
+        ]
+      }
+    ],
+    "selectedVisual": {
+      "regulatory82": {
+        "input": "samples/76076_regulatory_analysis.hwp",
+        "inputSha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+        "pdf": "pdf/issue1891/76076-original-hwp-exact-2024-20261005.pdf",
+        "pdfSha256": "515133a656a78a9e77db3429f324b0a1f84b658b7a07bc846aa360533cf74072",
+        "engine": "2024",
+        "compat": "2024",
+        "nativeAndFreshExportPages": 82,
+        "measuredPages": [
+          2
+        ],
+        "beforePercent": 97.34589,
+        "afterNativeAndFreshPercent": 97.67017,
+        "sameNativeFreshPng": true,
+        "wholeFidelityAcceptance": false
+      },
+      "delegation": {
+        "nativeAndFreshExportPages": 105,
+        "pdfPages": 103,
+        "semanticMappedDiagnosticPairs": [
+          {
+            "nativePage": 62,
+            "pdfPage": 61,
+            "beforePercent": 98.67835,
+            "afterPercent": 98.08764
+          },
+          {
+            "nativePage": 63,
+            "pdfPage": 62,
+            "beforePercent": 60.52857,
+            "afterPercent": 84.18323
+          }
+        ],
+        "sameNativeFreshPng": true,
+        "pageMappingIsNotCanonicalWholeComparison": true,
+        "wholeFidelityAcceptance": false,
+        "holdReasons": [
+          "105 Native/fresh vs 103 Print",
+          "Native63 vs Print62 still84.18323 percent"
+        ],
+        "existingIssue": 7700
+      },
+      "fresh": {
+        "actualChrome": "154.0.8037.99",
+        "exportPagesTotal": 187,
+        "capturedSelectedPages": 3,
+        "captureConcurrency": 8,
+        "wasmMacLockedNoOptExitCode": 0,
+        "notDockerOptimized": true,
+        "noCaptureRetries": true
+      }
+    },
+    "superscriptPrintFollowup": {
+      "number": 7809,
+      "id": 5796732738,
+      "url": "https://github.com/edwardkim/rhwp/issues/7809",
+      "state": "open",
+      "bodyExactVerified": true,
+      "parent": 7445,
+      "parentAttachmentVerified": true
+    },
+    "guidelineEdits": false,
+    "newTestFunctions": 0,
+    "testExpectationsChanged": false,
+    "comparisonAlgorithmChanged": false,
+    "sourceAndExistingPdfPreserved": true,
+    "approvalRequiredBeforePr": true,
+    "status": "New bottom overflow repaired with accurate existing tests retained. Six original failures and final whole validation remain. No whole legacy-document acceptance."
   }
 }
