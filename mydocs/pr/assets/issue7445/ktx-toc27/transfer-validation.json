@@ -1197,5 +1197,12 @@
   "prReady": false,
   "removedActiveVisualPresetRows": [
     "tools/object_visual_regression.py: ovr5 KTX.hwp"
-  ]
+  ],
+  "removedFunctionSnapshot": {
+    "path": "mydocs/pr/assets/issue7445/ktx-toc27/issue_267_removed.rs.txt",
+    "source": "21ed64071f81f35f37618717693bd30f727392c9:tests/svg_snapshot.rs",
+    "function": "issue_267_ktx_toc_page",
+    "sha256": "5431c04116291612d46159e381787a207efabd8934159eae8aed93be37397a41",
+    "preservation": "원본 주석과 함수의 모든 행을 보존하며 함수 뒤 구분용 빈 줄 한 개만 제외함; 원본 HWP/PDF/골든 바이트는 변경 없음"
+  }
 }

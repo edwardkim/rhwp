@@ -954,3 +954,14 @@ production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수
 - 기존 `__rhwpTestPlatformKind` 계약으로 `other`를 명시했습니다. 실제 Linux Ctrl 탐색 기대값과 본문·머리말/꼬리말·각주의 소유 검사, 중복 키 억제 검사는 유지합니다. 제품 코드·Rust source/test·시각 입력은 변경하지 않았습니다. 새 테스트 함수도 추가하지 않았습니다.
 - 기존 행위 러너 재실행 `COMPOSITION_PENDING_NAVIGATION_OK`, Studio 전체 단위 1834 PASS/0 FAIL/2 SKIP(10641.213ms), exit 0입니다. 첫 실패 로그도 보존합니다.
 - 실패 시점에 fresh WASM와 38개 문서 전쪽 캡처는 아직 시작되지 않았습니다. 수정 커밋 뒤 남은 게이트와 최종 캡처를 재개합니다. 승인 전 원격 push·PR 생성·merge는 하지 않습니다.
+
+
+## 보정 467: Gym 경로 계약과 제출 문서 정합
+
+- `02d8e872c`의 Studio TypeScript·전체 단위 1834 PASS/2 SKIP, Mac locked no-opt fresh WASM 및 Visual Sweep Python 검사는 통과했습니다. fresh는 실제 root `pkg`와 Studio public에 동기화한 빌드입니다. Docker 최적화 빌드로 보고하지 않습니다.
+- Gym 3170건 중 기존 경로 검사가 1건 실패했습니다. Mac의 `TemporaryDirectory`는 `/var` 경로를 주지만 그 안에서 `getcwd()`는 동일 파일의 `/private/var` 경로를 반환합니다. 기존 production runner와 해당 검사 모두 upstream/devel과 같습니다.
+- 상대 바이너리 선택 결과가 절대 경로이며 원래 만든 파일과 `samefile`인지를 기존 함수에서 검사하도록 보정했습니다. 기대한 바이너리, 경로 선택 우선순위, 정상·오류 계약을 유지하고 production은 바꾸지 않았습니다. focused 157건 통과, 전체 Gym 3170건 실행/3169 PASS/1 SKIP(5.418초), exit 0입니다.
+- 글꼴 결정 trace·메트릭·SVG browser raster 계약은 19건 실행/18 PASS/1 SKIP, exit 0입니다.
+- KTX 27쪽에서 이관한 함수 원문 뒤의 구분용 빈 줄 하나만 제외해 `git diff --check`를 통과시켰습니다. 주석과 함수의 모든 행, 원본 HWP/PDF·골든 바이트는 유지하고 원문 출처와 보존 hash를 이관 증적에 기록했습니다.
+- 변경 Markdown 666개 검사에서 시험지 #4318 제거 뒤 남은 내부 링크 1건을 확인했습니다. architecture 표에 사용자 요청으로 활성 회귀에서 제외했음을 명시하고 실제 소비 source를 연결했습니다. source 링크를 테스트 통과 증거로 표기하지 않았습니다.
+- Rust source/test/Cargo·제품 코드와 fresh 입력은 그대로이므로 이전 전체 nextest·lint·Skia·fresh의 정확한 source/build SHA를 보존합니다. 이 보정은 시험 환경·보존 텍스트·문서 정합만 변경하며, 남은 최종 전쪽 시각 비교와 실제 backend 판독은 아직 완료되지 않았습니다.
