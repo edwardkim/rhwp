@@ -965,3 +965,13 @@ production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수
 - KTX 27쪽에서 이관한 함수 원문 뒤의 구분용 빈 줄 하나만 제외해 `git diff --check`를 통과시켰습니다. 주석과 함수의 모든 행, 원본 HWP/PDF·골든 바이트는 유지하고 원문 출처와 보존 hash를 이관 증적에 기록했습니다.
 - 변경 Markdown 666개 검사에서 시험지 #4318 제거 뒤 남은 내부 링크 1건을 확인했습니다. architecture 표에 사용자 요청으로 활성 회귀에서 제외했음을 명시하고 실제 소비 source를 연결했습니다. source 링크를 테스트 통과 증거로 표기하지 않았습니다.
 - Rust source/test/Cargo·제품 코드와 fresh 입력은 그대로이므로 이전 전체 nextest·lint·Skia·fresh의 정확한 source/build SHA를 보존합니다. 이 보정은 시험 환경·보존 텍스트·문서 정합만 변경하며, 남은 최종 전쪽 시각 비교와 실제 backend 판독은 아직 완료되지 않았습니다.
+
+
+## 보정 469: 최신 devel Sixel 변경 동기화
+
+- 원격 `upstream/devel`에 `f79f2e1d6831a2187657b9c60deabc5d7c8b8e0d`가 추가되었습니다. Sixel의 RGBA 픽셀 재사용 때문에 Skia PNG 경로·Cargo 입력도 바뀌므로 이전 전체 검증을 새 통합 head의 완료로 대신하지 않습니다.
+- 기존 후보 `596915dc0`를 `backup/7445-completed-before-f79f-20261011`에 보존하고 141개 커밋을 최신 devel 위로 충돌 없이 리베이스했습니다. 결과 코드 head는 `70a29e33afc4b998a53acf74dcafd5f61d25504b`입니다.
+- 기존 후보와 최신 devel의 `merge-tree --write-tree` 결과 `624a4071d02aa0a1e4cf725c4ee86c72d34afcbb`와 실제 리베이스 tree가 완전히 같습니다. 후보 보정과 upstream 변경이 모두 보존되었습니다.
+- 이전 코드의 전쪽 캡처는 규제분석 17쪽·KTX 1쪽·low-slack 1쪽의 Native/fresh가 모두 통과한 단계까지 증적을 보존합니다. 새 head의 수용 결과로 바꾸지 않으며 head 변경 감지로 다음 대상 시작을 중단합니다.
+- upstream 추가 integration source를 파생 suite에 준비하고 새 통합 head에서 전체 nextest·필수 lint/build/정책·Skia·fresh WASM·전쪽 시각 검증을 다시 진행합니다. 이전 timeout·실패·통과 로그는 보존합니다.
+- PR은 아직 생성하지 않았고 승인 전 원격 push·PR 생성·merge를 하지 않습니다.
