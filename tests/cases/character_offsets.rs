@@ -48,14 +48,16 @@ fn near(actual: f64, expected: f64) {
 fn language_offsets_move_only_their_runs_without_changing_advance_or_line_spacing() {
     // 한글·영문·한자·일어·기호·사용자 슬롯을 기존 언어 분리로 소비한다.
     let mut doc = fixture("가A漢あ★ㆍ", 100);
+    doc.insert_paragraph_native(0, 1).unwrap();
+    doc.insert_text_native(0, 1, 0, "next").unwrap();
     let before = run_boxes(&doc);
-    assert_eq!(before.len(), 6);
+    assert_eq!(before.len(), 7);
     let offsets = [-100, -50, -30, 0, 30, 50, 100];
     doc.apply_char_format_native(0, 0, 0, 6, &json!({"charOffsets":offsets}).to_string())
         .unwrap();
     let after = run_boxes(&doc);
     assert_eq!(after.len(), before.len());
-    for (i, (old, new)) in before.iter().zip(&after).enumerate() {
+    for (i, (old, new)) in before.iter().zip(&after).take(6).enumerate() {
         assert_eq!(old.0, new.0);
         near(new.1, old.1);
         near(
@@ -64,9 +66,10 @@ fn language_offsets_move_only_their_runs_without_changing_advance_or_line_spacin
         );
         near(new.3, old.3);
     }
+    assert_eq!(after[6], before[6]);
     let selection = value(&doc.get_selection_rects(0, 0, 0, 0, 6).unwrap());
     let rects = selection.as_array().unwrap();
-    assert_eq!(rects.len(), after.len());
+    assert_eq!(rects.len(), 6);
     for (rect, run) in rects.iter().zip(&after) {
         assert!((rect["y"].as_f64().unwrap() - run.2).abs() < 0.1);
         assert!(rect["width"].as_f64().unwrap() >= run.3 - 0.1);
