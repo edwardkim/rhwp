@@ -985,3 +985,41 @@ production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수
 - 소비 경로는 `RowBlockQuery::candidate` → 일반 행 스캔의 `completed_source_frame_end`/행 컷 → `emit_table_fragment`의 실제 점유 원장과 continuation 높이 → `table_partial`의 같은 행 상자입니다. 그림·중첩 유닛은 기존 블록 셀 컷과 물리 높이를 유지합니다. 개체 유닛 조회는 작은 RowBreak 보호 후보에만 지연 실행하여 일반 행 전수 스캔의 비용을 늘리지 않습니다.
 - 첫 진단 빌드가 exit 0이고 같은 선언 환경의 전 66쪽 RenderTree에서 3쪽의 원본 9행 잔여와 뒤 10행이 각각 복원됐습니다. 이것은 시각 통과 증거가 아니며 Native/fresh 전쪽 TSV·새 review PNG·그림 대조군·기존 관계 회귀와 최종 전체 게이트를 다시 확인합니다. 검사 기대값과 비교 알고리즘은 변경하지 않았습니다.
 - 보정 전후 진단과 실패 PNG는 ignored output의 `stage477-pii66-continuation-review`, `stage478-rowbreak-cut-owner-repair`에 보존합니다. 승인 전 원격 push·PR 생성·merge는 하지 않습니다.
+
+
+## 보정 485: 개인정보 빈 행 소유의 전쪽 검증과 기존 관계 검사 보강
+
+- 생산 코드 `22d042e2ab137141fa6e3220ede7d87aabceab70`, tested base
+  `f79f2e1d6831a2187657b9c60deabc5d7c8b8e0d`에서 같은 원본·독립 Print·선언 글꼴 환경으로
+  Native와 실제 Chrome fresh WASM을 각각 전 66쪽 캡처했습니다. 두 경로의 최저값은
+  **90.30272%, 미달 0쪽**, 쪽수 66/66/66입니다. 2쪽은 93.53628%, 3쪽은 99.00974%입니다.
+- 2·3·59·60·66쪽의 두 backend review를 직접 열어 앞뒤 내용, 표의 시작·끝, 내부 표와
+  작성 요령·서명의 소유를 대조했습니다. 빈 원본 행의 물리 잔여는 3쪽 상단에 보존되고
+  비용 행은 그 뒤에 시작합니다. 작은 글리프 윤곽·어절 전진·분수 좌표 괘선 차이는 남아 있어
+  픽셀 동일성으로 보고하지 않습니다. 두 backend의 실제 원본 PNG 66개씩은 바이트 동일합니다.
+- 저장 그림·셀 float 정상 대조군은 전 2쪽 Native/fresh 100%입니다. 가스 표는 영향
+  10·11쪽만 각각 99.70859%·99.14248%로 확인했습니다. 이 두 쪽을 가스 전 31쪽의
+  최종 수용 증거로 대신하지 않습니다. Mac locked no-opt fresh는 Docker 최적화 빌드가 아닙니다.
+- 기존 `issue_5846_cut_fragment_defers_partial_nested_tail_row` 함수에 2→3쪽의 원본 9행
+  응답 소유·뒤쪽 중복 없음·양수 빈 공간 보존·다음 비용 행과 인접·본문 안 포함 관계를
+  보완했습니다. 기존 59→60쪽의 내용·표 순서·셀 포함 관계는 유지합니다. 새 테스트 함수나
+  절대 px 좌표/고정 영역/컷 유닛 번호 핀은 추가하지 않았습니다.
+- 강화한 검사 1개는 현재 코드에서 PASS, 보호 블록 분류 한 조건만 이전 식으로 되돌린
+  counterfactual에서 본문 포함 관계 위반으로 1 FAIL(exit 100), 소스 완전 복원 뒤 1 PASS입니다.
+  과거 전체 head를 실행한 결과로 주장하지 않습니다. fmt·고정 base suite 정책은 exit 0이며
+  production 파일은 원래 HEAD 바이트로 복원했습니다. 직전 집중 검증 72 PASS에도 기존 #5846
+  함수가 실제 포함되었음을 로그에서 확인했습니다.
+- 첫 단독 wrapper 실행의 0건 선택은 생성 suite와 현재 자동 배정이 달랐기 때문입니다.
+  `--prepare` 뒤 실제 1건을 실행했고, 0건을 PASS로 기록하지 않았습니다. 임시 counterfactual
+  생성기의 rustfmt 문자열 불일치도 소스를 변경하기 전에 검출해 정정했습니다. 최초 로그를 유지합니다.
+- 정본 요약과 대표 Native/fresh review·overlay는
+  [개인정보 빈 행 보정 요약](../pr/assets/issue7445/completed-20261009/current-base-qualification/pii-empty-row-current-base.json)에
+  연결했습니다. TSV·로그·중간 JSON·실행기는 ignored output의 stage479·stage483·stage484·stage485에
+  보존하며 커밋하지 않습니다.
+- 최신 fetched devel `bfa28a77a2714482f647ee6a7b9aa7f7876d8404`에는 표 분할·글꼴·문서 흐름
+  변경이 있어 리베이스와 새로운 통합 검증이 필요합니다. 이번 개별 검증을 최신 base의
+  전체 회귀나 38문서·1045쪽씩의 최종 완료 증거로 대신하지 않습니다.
+- 사용자 요청에 따라 PR 본문은 실제 완료한 하위 이슈의 전체 조건을 최종 통합 head에서
+  충족하면 각각 `Closes #번호`로 연결합니다. live #7445는 미완료 하위 이슈 89개를 관리하므로
+  대표 이슈 자체에는 현재 `Closes #7445`를 붙이지 않습니다. 이관만 한 항목은 종료하지 않습니다.
+  PR 게시 승인 전 원격 push·PR 생성·CI 실행·merge는 수행하지 않습니다.

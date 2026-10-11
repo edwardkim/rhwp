@@ -53,6 +53,35 @@ fn table_with<'a>(cell: &'a RenderNode, marker: &str) -> &'a RenderNode {
         .unwrap_or_else(|| panic!("{marker} 표가 실제 소유 셀에 없음"))
 }
 
+fn owned_table(node: &RenderNode, para: usize) -> Option<&RenderNode> {
+    if matches!(&node.node_type, RenderNodeType::Table(table)
+        if table.para_index == Some(para) && table.control_index == Some(0))
+    {
+        return Some(node);
+    }
+    node.children
+        .iter()
+        .find_map(|child| owned_table(child, para))
+}
+
+fn source_cell(table: &RenderNode, row: u16, col: u16) -> &RenderNode {
+    table
+        .children
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::TableCell(cell) if cell.row == row && cell.col == col)
+        })
+        .unwrap_or_else(|| panic!("원본 칸 ({row}, {col}) 소실"))
+}
+
+fn body(node: &RenderNode) -> Option<&RenderNode> {
+    if matches!(node.node_type, RenderNodeType::Body { .. }) {
+        return Some(node);
+    }
+    node.children.iter().find_map(body)
+}
+
 #[test]
 fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -67,6 +96,48 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
     doc.set_font_environment(Some(environment))
         .expect("측정과 paint에 같은 선언 환경 적용");
     assert_eq!(doc.page_count(), 66, "독립 Print PDF와 전체 쪽수");
+    // 독립 Print 2→3쪽 경계: 영향평가 내용은 앞쪽에서 끝나지만 같은
+    // 행의 빈 물리 공간은 뒤쪽 상단에 남는다. 비용 행은 그 공간 뒤에서
+    // 시작해야 하며, 내용이 끝났다는 이유로 행 상자를 생략하지 않는다.
+    let opening = doc.build_page_render_tree(1).expect("2쪽 렌더");
+    let closing = doc.build_page_render_tree(2).expect("3쪽 렌더");
+    let first_table = owned_table(&opening.root, 13).expect("앞 규제 표 조각");
+    let next_table = owned_table(&closing.root, 13).expect("뒤 규제 표 조각");
+    for (tree, table) in [(&opening.root, first_table), (&closing.root, next_table)] {
+        let area = body(tree).expect("문서 본문");
+        assert!(
+            table.bbox.y >= area.bbox.y - FLOAT_EPSILON
+                && table.bbox.y + table.bbox.height
+                    <= area.bbox.y + area.bbox.height + FLOAT_EPSILON,
+            "행 조각의 예약과 실제 상자는 본문 세로 영역 안에 있어야 함"
+        );
+    }
+    let cost = source_cell(next_table, 10, 2);
+    for col in [2, 6, 10] {
+        let first = source_cell(first_table, 9, col);
+        let remaining = source_cell(next_table, 9, col);
+        assert_eq!(text(first), "해당없음", "영향평가 응답은 앞쪽 소유");
+        assert!(text(remaining).is_empty(), "응답을 뒤쪽에 중복하지 않음");
+        assert!(
+            remaining.bbox.height > 0.0,
+            "소비한 내용 뒤의 물리 잔여 보존"
+        );
+        assert!(
+            (remaining.bbox.y - next_table.bbox.y).abs() <= FLOAT_EPSILON
+                && (remaining.bbox.y + remaining.bbox.height - cost.bbox.y).abs() <= FLOAT_EPSILON,
+            "같은 빈 행의 잔여가 표 위에서 비용 행까지 이어져야 함"
+        );
+    }
+    let cost_marker = "종전과동일한수준으로서";
+    assert!(
+        !text(first_table).contains(cost_marker),
+        "비용 본문을 앞쪽에 소비하지 않음"
+    );
+    assert_eq!(
+        text(cost).matches(cost_marker).count(),
+        1,
+        "비용 본문은 뒤쪽에 한 번 보존"
+    );
     let before = doc.build_page_render_tree(58).expect("59쪽 렌더");
     let after = doc.build_page_render_tree(59).expect("60쪽 렌더");
     assert!(
