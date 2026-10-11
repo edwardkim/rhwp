@@ -672,3 +672,34 @@ SVG 동일성, fresh manifest·선택 TSV·로그는 ignored `stage441-overlay-p
   PR 생성·push·merge는 전체 검증 후 사용자 승인 조건을 유지한다.
 
 ![생물독소 143쪽 얇은 선 래스터 보정](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/biotoxin-p143-shape-review.png)
+
+
+## 2026-10-11 — 사용자 지정 원본과 기존 시각 미달 회귀의 서브 이슈 이관
+
+- 다른 브랜치에서 보정 중인 `table_giant_cell_overfill.hwpx`는 #7812,
+  `2700727_animal_facility_standards.hwpx`는 #7811,
+  `2025 행정업무운영 편람(최종).hwpx`는 기존 #7752로 연결했다.
+- 앞 세 문서에 의존하는 기존 20검사 함수와 HWPX E2E 입력 하나를 활성 대상에서 분리하고,
+  전용 파일/혼합 파일의 변경 전 원문 12개를 `.rs.txt`로 보존했다.
+  #3930의 혼합 함수에서는 HWPX 렌더링 검사만 이관하고 모델 저장 계약은 유지했다.
+- `issue1949_giant_cell_nested_tables_perf` HWP·HWPX는 #7813으로 이관했다.
+  실패 4함수와 전용 컷/경계 helper 원문을 보존하고 활성 단위 검사에서 분리했다.
+  다른 정상 API/cache/serializer·프로파일링 검사는 유지했다.
+- 합계 24검사 함수 이관이다. 원본·PDF·HWP counterpart는 공유 입력으로 기존 경로와 바이트를 유지한다.
+  자동 렌더링 corpus의 해당 HWPX 참조/원장 행은 명시적으로 분리했다.
+- 고정 renderer base `90fa2f8955c2dd21e9f0ea8fd0c6ee8dc5996a47`, 현재 Visual Sweep
+  `6d55a02401a9be42488fcb7aa7519900aebcecb2`로 giant perf 두 원본의 전 115쪽씩을 비교했다.
+  Native/실제 Chrome fresh WASM 최저는 HWP 23.54542%, HWPX 23.78253%로 각 115쪽 모두 미달이며,
+  각 원본의 Native/fresh TSV가 바이트 동일하다. 96dpi·2px·문턱 32·thinlinemode shape를 유지했다.
+  upstream의 기본 2022 프로필을 쓰는 export adapter 외에는 Rust/WASM·비교 공식을 변경하지 않았다.
+- base의 기존 시각 미달과 현재 브랜치의 새 start/end 컷 간극은 구분해 #7813에 기록했다.
+  이관을 컷 간극 해결이나 전체 검증 통과로 보고하지 않는다.
+- #7445 본문에 하위 이슈 표·본문 끝의 현재 이관 상태를 갱신하고 API로 확인했다.
+  기존 첫 문단과 과거 기록·완료 기준은 보존했다.
+- 정본 이관 자산: `mydocs/pr/assets/issue7445/deferred-regressions-20261011/`.
+  코드·원본·PDF 해시와 검사별 이전/새 경로는 `transfer-inventory.json`,
+  API 4검사는 `issue1949/transfer-plan.json`, 시각 결과는 `issue1949/qualification.json`에 있다.
+- fmt·source unit 정책은 통과했다. 남긴 integration/진단 계약 집중 실행은 64 PASS / 0 FAIL / 필터 skip 10241, 2.162초, exit0이다.
+  이 집중 실행은 API 4검사 이관 전의 빌드에서 시작한 것이며 최종 전체 회귀와 필수 lint를 대신하지 않는다.
+  로컬 정본: `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage452-other-branch-regressions/`.
+- 새 PR/push/merge는 전체 검증 후 사용자 승인 단계로 유지한다.

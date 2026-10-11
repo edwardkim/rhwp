@@ -95,6 +95,10 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     // #7445: upstream/devel 74f9b71b1과 같은 원문의 한컴2024 Print
     // 전2쪽 최저79.32995%; 중국어 원문의 본문 넘침 원장만 이관한다.
     "issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
+    "table_giant_cell_overfill.hwpx",
+    "issue5792/2700727_animal_facility_standards.hwpx",
+    "2025 행정업무운영 편람(최종).hwpx",
     // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
     "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.

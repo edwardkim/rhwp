@@ -286,23 +286,3 @@ fn issue_3931_pi14_declared_overflow_enters_fragment_scan() {
     );
     assert_table_fragment_inside_body(&document, head_page, 14, PI14_HEAD_TEXT);
 }
-
-#[test]
-fn issue_3931_hwpx_keeps_existing_fragment_route() {
-    let path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/2025 행정업무운영 편람(최종).hwpx");
-    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
-    let document = HwpDocument::from_bytes(&bytes).expect("paginate #3931 HWPX fixture");
-    // #7445: HWPX 쪽수의 실제 실패만 보류하고 문답 배치 계약은 유지합니다.
-    let (question_page, answer_page) = paragraph_text_pages(
-        &document,
-        SECTION_INDEX as u32,
-        14,
-        PI14_QUESTION_TEXT,
-        PI14_HEAD_TEXT,
-    );
-    assert_eq!(
-        answer_page, question_page,
-        "#4763 keeps the HWPX question and first answer on the same physical page"
-    );
-}

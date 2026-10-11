@@ -1,0 +1,168 @@
+{
+  "inputs": {
+    "table_giant_cell_overfill.hwpx": "5d7eb4a21e46d9ad01a0f631eea2b1f2ec8a71750b4d448868e944e1b95042f4",
+    "issue5792/2700727_animal_facility_standards.hwpx": "43f4d4a0e6134c787278b139da49ea88e560aee199f2c19f37c787ecb71aeb86",
+    "2025 행정업무운영 편람(최종).hwpx": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+  },
+  "removed_tests": [
+    {
+      "source": "tests/cases/issue_5792_overlay_table_split_overlap.rs",
+      "test": "issue_5792_split_overlay_table_keeps_every_row_and_clears_following_text"
+    },
+    {
+      "source": "tests/cases/issue_6366_infront_flow_paginate.rs",
+      "test": "issue_6366_infront_flow_table_matches_hangul_six_pages"
+    },
+    {
+      "source": "tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs",
+      "test": "issue_5908_giant_cell_last_fragment_keeps_splitting"
+    },
+    {
+      "source": "tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs",
+      "test": "issue_5908_collapsed_page_stays_inside_the_paper"
+    },
+    {
+      "source": "tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs",
+      "test": "issue_5908_annex_two_moves_off_the_collapsed_page"
+    },
+    {
+      "source": "tests/cases/issue_5801_stored_ladder_spacing_before.rs",
+      "test": "issue_5801_typeset_used_height_matches_stored_ladder"
+    },
+    {
+      "source": "tests/cases/issue_5946_pyeollam_p141_pagebreak.rs",
+      "test": "issue_5946_p141_hangmok_is_not_covered_by_form_header"
+    },
+    {
+      "source": "tests/cases/issue_5947_handbook_sidebar_linebreak.rs",
+      "test": "issue_5947_handbook_sidebar_keeps_one_char_stored_lines"
+    },
+    {
+      "source": "tests/issue_3931_declared_rowbreak.rs",
+      "test": "issue_3931_hwpx_keeps_existing_fragment_route"
+    },
+    {
+      "source": "tests/cases/issue_7009_handbook_structure_landmarks.rs",
+      "test": "hwpx_appendix_span_already_matches_the_oracle"
+    },
+    {
+      "source": "tests/cases/issue_6976_page_ending_fragment_row_fold.rs",
+      "test": "the_fold_stops_at_the_slack_the_layout_actually_left"
+    },
+    {
+      "source": "tests/cases/issue_7140_nested_row_unit_paint_height.rs",
+      "test": "hwpx_page_count_matches_the_oracle"
+    },
+    {
+      "source": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_default_exit_zero_even_with_signal"
+    },
+    {
+      "source": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_strict_signal_exits_three"
+    },
+    {
+      "source": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_page_filter_scopes_counts_and_strict_exit"
+    },
+    {
+      "source": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_batch_json_streams_ndjson_and_keeps_failed_loads"
+    },
+    {
+      "source": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_batch_report_is_order_stable_and_recursive"
+    },
+    {
+      "source": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_batch_strict_without_load_fail_exits_three"
+    },
+    {
+      "source": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_types_filter_changes_overflow_set"
+    },
+    {
+      "source": "tests/issue_3930_hwpx_hwp_save_layout.rs",
+      "test": "issue_3820_hwpx_behind_text_stamp_placeholders_keep_common_y_and_offsets"
+    }
+  ],
+  "removed_files": [
+    "tests/cases/issue_5792_overlay_table_split_overlap.rs",
+    "tests/cases/issue_6366_infront_flow_paginate.rs",
+    "tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs",
+    "tests/cases/issue_5801_stored_ladder_spacing_before.rs",
+    "tests/cases/issue_5946_pyeollam_p141_pagebreak.rs",
+    "tests/cases/issue_5947_handbook_sidebar_linebreak.rs"
+  ],
+  "changed_test_contract": {
+    "source": "tests/issue_3930_hwpx_hwp_save_layout.rs",
+    "old": "issue_3930_preserves_page_count_and_inherited_even_master_page",
+    "new": "issue_3930_preserves_serialized_master_page_and_picture_model",
+    "kept": "SectionDef, master-page ownership/flags, BorderFill, Picture model"
+  },
+  "disposition": "transferred, not deleted",
+  "sourceHead": "6d55a02401a9be42488fcb7aa7519900aebcecb2",
+  "archives": [
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/issue_5792_overlay_table_split_overlap.rs.txt",
+      "sha256": "de4e1f6f076f192c002612e6b4c1ad36a543914533fa2d0ba192257f3302b7e7"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/issue_5801_stored_ladder_spacing_before.rs.txt",
+      "sha256": "9efa830d7672d0b99655944d1199d5bc2e5988d09feb1f1a860a7e1513f7dc32"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs.txt",
+      "sha256": "1331143b60d7569aa98f825128e8ebd4e7d72c2a6dabb3b0b1c59659bc3e9730"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/issue_5946_pyeollam_p141_pagebreak.rs.txt",
+      "sha256": "03d31319d06abe58f66949025167eb4bb49552cf8090fbbf3259d7105bd7bbf3"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/issue_5947_handbook_sidebar_linebreak.rs.txt",
+      "sha256": "f42470b65dacf359ef315aeccc89287186d31cc3789c3bad1840864c45a4f9d3"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/issue_6366_infront_flow_paginate.rs.txt",
+      "sha256": "8c504fd0f82007507e63d79280ef91a92cba26d3a172745b37596e859264bfd3"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/issue_6976_page_ending_fragment_row_fold.rs.txt",
+      "sha256": "e3886934df28e5d46c3e39fcba6f4ab639aa0a9ee9324a26ddc48363fab2cc6c"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/issue_7009_handbook_structure_landmarks.rs.txt",
+      "sha256": "43b3c9a2d16f8cd5d45962eccd9c27d9c6cc97af268dc7584e595088707db9a2"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/issue_7140_nested_row_unit_paint_height.rs.txt",
+      "sha256": "b45794c3e52dd6a87d3873d21041c605865cbeada08a0335e464f86cbdc6baac"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/cases/layout_anomaly_contract.rs.txt",
+      "sha256": "83618eede4c4c96affa48715faba58e4a6936ea7bd51ba9fe9d6ac939c3adc62"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/issue_3930_hwpx_hwp_save_layout.rs.txt",
+      "sha256": "e3fb1e95ac0c7e9538384964d8f3243c61df8fd2cc38a1740b64f9b0b2c6dc8e"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/deferred-regressions-20261011/source-before/tests/issue_3931_declared_rowbreak.rs.txt",
+      "sha256": "8fa73b94922ffb87d8c9e955814a39b77d47e6668b0053ce02ea8343ec1633dc"
+    }
+  ],
+  "issues": {
+    "table_giant_cell_overfill.hwpx": 7812,
+    "issue5792/2700727_animal_facility_standards.hwpx": 7811,
+    "2025 행정업무운영 편람(최종).hwpx": 7752
+  },
+  "totalTransferredFunctions": 24,
+  "wasmTransfer": "issue1949/transfer-plan.json",
+  "preservedPdfHashes": {
+    "pdf/table_giant_cell_overfill-hwpx-2024.pdf": "7669a8f468fd47e3180a09b5ea60526785e968fcb9ad5f1039d1f585d55d59be",
+    "pdf/issue5792/2700727_animal_facility_standards-hwpx-2020.pdf": "3bd076dfedc98d52daf416fabf6d6b8e3acfa10473e3edd4a3e26c9b075a4039",
+    "pdf/pr_open_20260821/2700727_animal_facility_standards-2020.pdf": "8d2cf07a6fca9b05ebc32126001ef18614c44af2e8cd49e08d20a1b083a1cb46",
+    "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf": "e77634f4c63c15875797a4d6d354fd90cad27fd65d708cee4cd85b80c4cb1009"
+  }
+}

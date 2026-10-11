@@ -251,6 +251,10 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     // 실패한 목차2쪽은98.09696%; 사용자 지정 문서 최저값 기준으로 이관.
     "pic-in-head-01.hwp",
     "pic-in-table-01.hwp",
+    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
+    "table_giant_cell_overfill.hwpx",
+    "issue5792/2700727_animal_facility_standards.hwpx",
+    "2025 행정업무운영 편람(최종).hwpx",
     // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
     "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: 신규 겹침1건, Native 전10쪽 중8쪽 미달·최저0%; 다른 검사는 유지한다.

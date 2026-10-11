@@ -1,0 +1,9 @@
+{
+  "parentIssue": 7445,
+  "parentBodySha256": "29eaa9506eee0b7be134c990ea8a963e4990e2e796a2dbee5427feb2e2b447f2",
+  "parentUpdatedAt": "2026-10-11T07:03:41Z",
+  "preservedOpening": true,
+  "freshComment": "https://github.com/edwardkim/rhwp/issues/7813#issuecomment-6106494421",
+  "sourceArchives": "transfer-inventory.json",
+  "scopeStatus": "24 functions transferred; original files and PDFs preserved; final overall regression pending"
+}

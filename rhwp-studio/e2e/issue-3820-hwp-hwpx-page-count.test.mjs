@@ -23,12 +23,6 @@ const FIXTURES = Object.freeze([
     ownerPage: 284,
     ownerText: '홈페이지상의 질의에 대하여',
   },
-  {
-    format: 'hwpx',
-    file: path.join(REPO_ROOT, 'samples', '2025 행정업무운영 편람(최종).hwpx'),
-    ownerPage: 143,
-    ownerText: '기안문에 작성한 붙임 문서를 첨부',
-  },
 ]);
 
 async function dismissFontDialog(page) {

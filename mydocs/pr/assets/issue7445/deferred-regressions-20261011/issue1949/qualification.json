@@ -1,0 +1,46 @@
+{
+  "rendererBase": "90fa2f8955c2dd21e9f0ea8fd0c6ee8dc5996a47",
+  "visualSweepDriver": "6d55a02401a9be42488fcb7aa7519900aebcecb2",
+  "dpi": 96,
+  "radius": 2,
+  "thinLineMode": "shape",
+  "exportAdapter": "upstream default 2022; missing setHangul2024Compat call omitted only; Rust/WASM and comparison metric unchanged",
+  "captureConcurrency": 8,
+  "results": [
+    {
+      "backend": "native-hwp-default-2022",
+      "pages": 115,
+      "minMatchPercent": 23.54542,
+      "below90": 115,
+      "tsvSha256": "67b3f84b97ab1809e7f23936a2d5e48ed44857773342f5a9021e0c23d0b52514",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage451-upstream-fixture-qualification/native-default-2022/silhouette.tsv"
+    },
+    {
+      "backend": "native-hwpx-default-2022",
+      "pages": 115,
+      "minMatchPercent": 23.78253,
+      "below90": 115,
+      "tsvSha256": "7ed9399658b03ae60e074d8683edfcb0644c39439946c0cf247b1a07039bf0fe",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage451-upstream-fixture-qualification/native/giant-hwpx/silhouette.tsv"
+    },
+    {
+      "backend": "fresh-hwp-default-2022",
+      "pages": 115,
+      "minMatchPercent": 23.54542,
+      "below90": 115,
+      "tsvSha256": "67b3f84b97ab1809e7f23936a2d5e48ed44857773342f5a9021e0c23d0b52514",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage451-upstream-fixture-qualification/fresh/giant-hwp/silhouette.tsv"
+    },
+    {
+      "backend": "fresh-hwpx-default-2022",
+      "pages": 115,
+      "minMatchPercent": 23.78253,
+      "below90": 115,
+      "tsvSha256": "7ed9399658b03ae60e074d8683edfcb0644c39439946c0cf247b1a07039bf0fe",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage451-upstream-fixture-qualification/fresh/giant-hwpx/silhouette.tsv"
+    }
+  ],
+  "freshHwpx": "complete, visual gate below 90",
+  "newBranchCutGap": "preserved in issue7813; not claimed fixed by transfer",
+  "nativeFreshResult": "all 115 rows equal for both originals"
+}
