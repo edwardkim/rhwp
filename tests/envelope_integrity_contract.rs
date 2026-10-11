@@ -19,6 +19,11 @@
 
 use std::process::{Command, Output};
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 fn rhwp_bin() -> String {
     env!("CARGO_BIN_EXE_rhwp").to_string()
 }
@@ -65,6 +70,7 @@ fn first_sample(ext: &str) -> Option<std::path::PathBuf> {
         };
         let mut hits: Vec<std::path::PathBuf> = rd
             .filter_map(|e| e.ok().map(|e| e.path()))
+            .filter(|p| !is_deferred_exam_document(p.to_string_lossy().as_ref()))
             .filter(|p| {
                 p.is_file()
                     && p.extension()

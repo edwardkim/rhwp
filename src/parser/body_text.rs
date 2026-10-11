@@ -56,6 +56,8 @@ pub enum BodyTextError {
     ParseError(String),
     /// An owned drawing text area is incomplete; never replace its section with an empty one.
     DrawingTextStructure(String),
+    /// A hidden change range cannot be projected without corrupting ownership.
+    ChangeTrackingStructure(String),
 }
 
 impl std::fmt::Display for BodyTextError {
@@ -64,6 +66,9 @@ impl std::fmt::Display for BodyTextError {
             BodyTextError::RecordError(e) => write!(f, "BodyText 레코드 오류: {}", e),
             BodyTextError::DrawingTextStructure(e) => {
                 write!(f, "그리기 내부 영역 구조 오류: {}", e)
+            }
+            BodyTextError::ChangeTrackingStructure(e) => {
+                write!(f, "변경 추적 표시 구조 오류: {}", e)
             }
             BodyTextError::ParseError(e) => write!(f, "BodyText 파싱 오류: {}", e),
         }

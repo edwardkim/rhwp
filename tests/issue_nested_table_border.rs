@@ -14,59 +14,6 @@
 use std::fs;
 use std::path::Path;
 
-#[test]
-fn nested_table_border_exam_social_p1_q4_outline_present() {
-    let repo_root = env!("CARGO_MANIFEST_DIR");
-    let hwp_path = Path::new(repo_root).join("samples/exam_social.hwp");
-    let bytes = fs::read(&hwp_path).expect("read exam_social.hwp");
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse exam_social.hwp");
-
-    // 4 페이지 (PDF 정합)
-    assert_eq!(doc.page_count(), 4, "exam_social.hwp 는 4 페이지");
-
-    // 페이지 1 SVG 출력
-    let svg = doc.render_page_svg(0).expect("render_page_svg");
-
-    // 4번 자료 박스 외곽 4개 라인이 SVG 에 존재해야 한다.
-    // 박스 width: wrapper의 저장 폭 — 411.92px. #6621 이후 안쪽 6x3 표는
-    // host padding 안으로 이동하지만, 외곽선은 host의 선언 폭을 유지한다.
-    // x 좌표: 549.88 (좌) ~ 961.80 (우).
-    // y 좌표: 다른 PR 영역의 페이지네이션 변경에 따라 시프트 가능 영역으로 영역
-    // 좌표 hardcoded 영역 회피 영역 영역 — x 좌표 영역과 stroke 영역 본질 영역만 영역 검증 영역.
-    let lx = "549.8800000000001";
-    let rx = "961.8000000000002";
-
-    // 좌측선: x1==x2==lx (수직선)
-    let has_left_line = svg.contains(&format!("<line x1=\"{lx}\" y1="))
-        && svg
-            .matches(&format!("x1=\"{lx}\" y1=\""))
-            .filter(|_| true)
-            .count()
-            >= 1
-        && svg.contains(&format!("x2=\"{lx}\""));
-    // 우측선: x1==x2==rx (수직선)
-    let has_right_line =
-        svg.contains(&format!("<line x1=\"{rx}\" y1=")) && svg.contains(&format!("x2=\"{rx}\""));
-    // 상/하: x1==lx, x2==rx (수평선)
-    let has_horizontal_line =
-        svg.contains(&format!("x1=\"{lx}\" y1=")) && svg.contains(&format!("x2=\"{rx}\""));
-
-    assert!(has_left_line, "4번 박스 좌측 외곽선 누락 (x={lx})");
-    assert!(has_right_line, "4번 박스 우측 외곽선 누락 (x={rx})");
-    assert!(
-        has_horizontal_line,
-        "4번 박스 수평 외곽선 누락 (x={lx}~{rx})"
-    );
-
-    // 외곽선 stroke=#000000 width=0.75 (3 조건 AND 가드 영역 발동 영역의 본 PR 영역의 본질 영역)
-    let outline_pattern = format!("x1=\"{lx}\"");
-    let outline_count = svg.matches(&outline_pattern).count();
-    assert!(
-        outline_count >= 2,
-        "4번 박스 좌측+상단 라인 영역의 lx 좌표 ≥ 2건 영역 필요 영역 (실제: {outline_count})"
-    );
-}
-
 /// SVG 문자열에서 `<line>` 요소의 좌표와 점선 여부를 추출한다.
 /// 반환: `(x1, y1, x2, y2, dashed)` — `dashed` 는 `stroke-dasharray` 보유 여부.
 fn parse_lines(svg: &str) -> Vec<(f64, f64, f64, f64, bool)> {

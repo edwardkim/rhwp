@@ -419,6 +419,16 @@ tag push 직후 별도의 `gh release create`를 동시에 실행하지 않는�
 모두 통과한 뒤 GitHub Release를 생성·첨부하고, 같은 workflow run에서 `npm-publish.yml`을 직접 호출한다.
 Release job이 성공한 뒤 준비된 release note를 반영한다.
 
+공식 CLI archive는 다섯 target 모두 `--locked --features native-skia`로 빌드한다.
+Linux runner에는 fontconfig·FreeType 개발 패키지를 설치한다. 첨부 전에
+`scripts/verify_release_binary.py`가 실제 archive에서 CLI를 꺼내 버전·`export-png` capability와
+공개 소형 입력의 첫 쪽 PNG 생성을 검사한다. `--version` 성공만으로 PNG 지원을 판정하지 않는다.
+이 검사는 배포 기능의 smoke gate이며 한컴 출력과의 시각 일치를 대신하지 않는다.
+
+v0.8.7의 기존 공식 archive에는 Native Skia가 빠져 있다. 해당 tag의 workflow 재실행만으로는
+빌드 옵션이 바뀌지 않는다. 수정은 devel PR과 정규 devel → main 통합을 거치며, 기존 Release
+asset 교체나 새 tag 배포는 별도 릴리즈 승인 범위에서 수행한다.
+
 ```bash
 gh release edit v0.7.3 \
   --repo edwardkim/rhwp \

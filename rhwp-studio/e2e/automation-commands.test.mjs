@@ -8,6 +8,7 @@
  * 4. 실행(execute) — 판정 반환, 문서에 실제 반영
  * 5. 게이트 동일성 — 미등록·비활성이 사유와 함께 거절
  * 6. ext: 커맨드 등록·메뉴 삽입·회수(disposeOwned)
+ * 7. insert:field 매개변수 — 대화상자 없이 캐럿 위치 삽입·형식 오류 거절·undo 1스텝
  *
  * 계획: mydocs/plans/rhwp_studio_hwpctrl_plugin_impl.md §7(P1)
  */
@@ -111,6 +112,44 @@ runTest('자동화 표면', async ({ page }) => {
   assert(dialogPolicy.allowed.ok === true, `TC5b: allowDialog 로 실행 (${JSON.stringify(dialogPolicy.allowed)})`);
   await page.keyboard.press('Escape');
   await page.evaluate(() => new Promise(r => setTimeout(r, 200)));
+
+  // ── TC5c: insert:field 매개변수 — 대화상자 없이 캐럿 위치에 누름틀 ──
+  // 선택을 풀고 문단 끝에 캐럿을 둔다 — 누름틀은 캐럿 자리에 들어간다.
+  await page.keyboard.press('End');
+  await page.evaluate(() => new Promise(r => setTimeout(r, 200)));
+  const fieldInsert = await page.evaluate(() => {
+    const a = window.rhwpStudio.automation;
+    const wasm = window.__wasm;
+    const before = wasm.getFieldList().length;
+    const noParams = a.execute('insert:field');
+    const inserted = a.execute('insert:field', {
+      name: '현황.매출액', guide: '매출액 합계', memo: 'value:현황.매출액|sum',
+    });
+    const fields = wasm.getFieldList();
+    const field = fields.find(f => f.name === '현황.매출액');
+    const invalid = a.execute('insert:field', { name: 1 });
+    const afterInvalid = wasm.getFieldList().length;
+    const undone = a.execute('edit:undo');
+    return {
+      before, noParams, inserted, count: fields.length, field, invalid, afterInvalid,
+      undone, afterUndo: wasm.getFieldList().length,
+      dialogOpen: !!document.querySelector('.modal-overlay'),
+    };
+  });
+  assert(fieldInsert.noParams.ok === false && fieldInsert.noParams.reason === 'needs-dialog',
+    `TC5c: 매개변수 없으면 기존처럼 needs-dialog (${JSON.stringify(fieldInsert.noParams)})`);
+  assert(fieldInsert.inserted.ok === true, `TC5c: 매개변수로 실행 (${JSON.stringify(fieldInsert.inserted)})`);
+  assert(!fieldInsert.dialogOpen, 'TC5c: 대화상자가 열리지 않음');
+  assert(fieldInsert.count === fieldInsert.before + 1, `TC5c: 누름틀 1개 추가 (${fieldInsert.before}→${fieldInsert.count})`);
+  assert(fieldInsert.field?.guide === '매출액 합계' && fieldInsert.field?.fieldType === 'clickhere',
+    `TC5c: 이름·안내문·종류 반영 (${JSON.stringify(fieldInsert.field)})`);
+  assert(fieldInsert.field?.command.includes('value:현황.매출액|sum'),
+    `TC5c: 메모 반영 (${fieldInsert.field?.command})`);
+  assert(fieldInsert.invalid.ok === false && fieldInsert.invalid.reason === 'threw',
+    `TC5c: 잘못된 매개변수는 threw 로 거절 (${JSON.stringify(fieldInsert.invalid)})`);
+  assert(fieldInsert.afterInvalid === fieldInsert.count, 'TC5c: 거절은 문서를 바꾸지 않음');
+  assert(fieldInsert.undone.ok === true && fieldInsert.afterUndo === fieldInsert.before,
+    `TC5c: undo 1회로 삽입 취소 (${fieldInsert.afterUndo})`);
 
   // ── TC6: ext: 커맨드 등록·메뉴 삽입·회수 ───────────────
   const ext = await page.evaluate(() => {

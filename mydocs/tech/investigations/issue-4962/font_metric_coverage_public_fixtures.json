@@ -82,10 +82,10 @@
         "decisionUsageRows": 823,
         "excludedCharacters": 0,
         "layoutCharacters": 16872,
-        "legacyUsageRows": 476,
+        "legacyUsageRows": 468,
         "notApplicableCharacters": 187,
         "paragraphsSeen": 2565,
-        "sourceRunsSeen": 4663,
+        "sourceRunsSeen": 4573,
         "truncatedCharacters": 0
       },
       "categories": {
@@ -107,8 +107,8 @@
         "metricNarrowPunctuationOverlay": 82,
         "metricSpaceOverlay": 1102
       },
-      "aggregateHash": "efb71617691f41118fad939b4c38afbabf322823d65cb4015bc38add828918a0",
-      "legacyProjectionHash": "dd91cb99ca6a5531428ab12613bcf5a99b6a3df5df90264d2eca16a3ef68d269"
+      "aggregateHash": "079b75d5746d3d7dd537afc0dd197cc6d0adadc9a0dc220045ccbb0a38ace40a",
+      "legacyProjectionHash": "138afb641fa6f406f5eac5106c5d829e0a6b52c6c589eb276988fa5f9ae5d096"
     }
   ],
   "reachableCategories": [

@@ -549,7 +549,7 @@ async function initialize(): Promise<void> {
         msg.textContent = 'CanvasKit 로딩 중...';
         const { CanvasKitLayerRenderer } = await import('@/view/canvaskit-renderer');
         return CanvasKitLayerRenderer.create(mode, surface, {
-          requirePreparedFontFamilies: renderBackendRequest.backend === 'auto',
+          requirePreparedFontFamilies: true,
         });
       },
       {
@@ -578,26 +578,35 @@ async function initialize(): Promise<void> {
             }
             await renderer.prepareHostFonts([...records.values()]);
           }
-          // Explicit CanvasKit has no document-wide auto-selection preflight.
-          if (!report) return;
+          // Explicit selection bypasses auto eligibility, not font preparation.
+          const fontRequirements = report ?? wasm.getCanvasKitDocumentPreflight(
+            canvaskitModeRequest.mode,
+            renderProfile,
+          );
+          if (!fontRequirements.complete) {
+            throw new Error('CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다');
+          }
           const plan = resolveCanvasKitFontPlan(
-            report.requiredFontFamilies,
+            fontRequirements.requiredFontFamilies,
             extensionViewerSettings,
           );
-          if (plan.unavailableFonts.length > 0) {
-            throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${plan.unavailableFonts.join(', ')}`);
-          }
           try {
             // 저장된 Local Font Access 권한이 있으면 첫 replay부터 원 face의 SFNT bytes를
             // CanvasKit에 전달한다. CSS local()에서 EBDT face가 두부로 바뀌는 경로를 타지 않는다.
             await loadStoredLocalFonts();
-            await renderer.prepareLocalFonts(report.requiredFontFamilies);
+            await renderer.prepareLocalFonts(fontRequirements.requiredFontFamilies);
           } catch (error) {
             // 로컬 권한이 만료됐거나 face 읽기에 실패해도 portable bundled face로 계속 연다.
             console.warn(
               '[CanvasKit] 저장된 로컬 Typeface 사전 준비 실패, bundled fallback으로 계속합니다:',
               error,
             );
+          }
+          const unavailableFonts = plan.unavailableFonts.filter(
+            family => !renderer.hasPreparedFontFamily(family),
+          );
+          if (unavailableFonts.length > 0) {
+            throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${unavailableFonts.join(', ')}`);
           }
           await renderer.prepareBundledFonts(plan.sources);
         },

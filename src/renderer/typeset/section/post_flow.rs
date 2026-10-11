@@ -134,12 +134,27 @@ impl TypesetEngine {
                         && matches!(last, Some(PageItem::PartialTable {
                             is_continuation: true, start_cut, ..
                         }) if start_cut.len() == 1 && start_cut[0] > 0);
+                    // [#7552] 문단 기준 자리차지 표(비-TAC) 뒤에는 렌더(`layout.rs`
+                    // `is_para_float_table`)처럼 쪽 저장 기준을 유지한다. 지우면 뒤 문단이 지연
+                    // 경로로 가고, 빈 표 host 뒤 스냅을 막는 #2243 규칙 때문에 순차 흐름 오차가
+                    // 표마다 쌓여 조판과 렌더가 갈린다(hwpspec 50쪽: 표 다섯 개 −57.8px, 렌더는
+                    // 한/글 괘선과 일치).
+                    let para_float_table = matches!(last, Some(PageItem::Table {
+                        para_index,
+                        control_index,
+                    }) if paragraphs
+                        .get(*para_index)
+                        .and_then(|host| host.controls.get(*control_index))
+                        .is_some_and(|control| matches!(control, Control::Table(t)
+                            if !t.common.treat_as_char
+                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                                && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para))));
                     if !host_line_covers_object
                         && !resolved_inline_end
                         && !resolved_stored_wrap_fragment
                         && !resolved_stored_page_frame
+                        && !para_float_table
                     {
-                        // Para-float TopAndBottom 표 예외(렌더러 2513)는 Stage E.
                         st.record_vpos_page_origin(None);
                         st.record_vpos_lazy_origin(None);
                     }
