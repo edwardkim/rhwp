@@ -27,8 +27,37 @@ static ORIGINAL_GLYPH_METRICS: &[OriginalGlyphMetric] = &[OriginalGlyphMetric {
     em_units: 1000,
 }];
 
+// samples/hwp3-empty-cell.hwp의 HCI Tulip regular: 독립 한컴 2020 Print
+// pdf/hwp3-empty-cell-2020.pdf /T1의 ToUnicode와 /Widths, FontMatrix 0.001.
+// 한컴 재저장본의 charPr 12도 '1. ' 등 번호 런의 LATIN face를 HCI Tulip로
+// 보존한다. 표시 폴백 HY견명조의 숫자 폭(약 2/3 em)을 원본 폭으로 쓰면
+// 번호 뒤 한글이 밀린다. 확인한 글리프만 사용하고 미확인 문자/굵기/기울임은
+// 기존 폴백에 맡긴다. 전체 face의 메트릭 표로 확장하거나 추정하지 않는다.
+// useFontSpace=false의 일반 공백은 문서의 반각 공백 계약이 소유한다.
+// /T1의 공백 글리프 폭 250을 그 문서 전진폭으로 덮어쓰지 않는다.
+static HCI_TULIP_REGULAR_ADVANCES: &[(char, u16)] = &[
+    ('(', 332),
+    (')', 332),
+    (',', 248),
+    ('.', 248),
+    ('0', 498),
+    ('1', 498),
+    ('2', 498),
+    ('3', 498),
+    ('4', 498),
+    ('5', 498),
+    ('6', 498),
+    ('7', 498),
+    (':', 277),
+    ('N', 722),
+    ('O', 722),
+    ('[', 332),
+    (']', 332),
+];
+
 pub(crate) fn has_original_glyph_metrics(face: &str) -> bool {
-    ORIGINAL_GLYPH_METRICS
+    face == "HCI Tulip"
+        || ORIGINAL_GLYPH_METRICS
         .iter()
         .any(|metric| metric.face == face)
 }
@@ -39,6 +68,12 @@ pub(crate) fn original_glyph_advance_em(
     italic: bool,
     character: char,
 ) -> Option<f64> {
+    if face == "HCI Tulip" && !bold && !italic {
+        return HCI_TULIP_REGULAR_ADVANCES
+            .iter()
+            .find(|(ch, _)| *ch == character)
+            .map(|(_, advance)| f64::from(*advance) / 1000.0);
+    }
     ORIGINAL_GLYPH_METRICS
         .iter()
         .find(|metric| {

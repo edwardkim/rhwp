@@ -549,8 +549,11 @@ pub fn detect_lang_category(ch: char) -> usize {
         // Katakana Phonetic Extensions
         0x31F0..=0x31FF => 3,
 
+        // ―는 치수 화살표의 가로선에도 쓰는 기호다. HWP3 입장권의
+        // 한컴 Print는 기호 슬롯 바탕(687/1000 em)으로 출력한다.
+        // 한글 슬롯 HFT로 분류하면 1em이 되어 저장 텍스트가 더 길어진다.
         // 기호: 수학 기호, 화살표, 기술 기호, 도형, Dingbats 등
-        0x2190..=0x21FF | 0x2200..=0x22FF | 0x2300..=0x23FF |
+        0x2015 | 0x2190..=0x21FF | 0x2200..=0x22FF | 0x2300..=0x23FF |
         0x2500..=0x257F | 0x2580..=0x259F | 0x25A0..=0x25FF |
         0x2600..=0x26FF | 0x2700..=0x27BF |
         // 원 숫자, 괄호 숫자 등

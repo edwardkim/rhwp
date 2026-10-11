@@ -113,7 +113,9 @@ fn fragment_ranges() -> Vec<Vec<usize>> {
 
     (0..core.page_count())
         .map(|page| {
-            let tree = core.build_page_render_tree(page).expect("render tree");
+            let tree = core
+                .build_page_render_tree(page as u32)
+                .expect("render tree");
             let mut pis = Vec::new();
             tall_cell_para_indices(&tree.root, &mut pis);
             pis
@@ -130,6 +132,22 @@ fn fragment_ranges() -> Vec<Vec<usize>> {
 /// 이 하나로 양쪽이 잠긴다 — 늦게 끊으면 **중복**이, 일찍 끊으면 **구멍**이 생긴다.
 #[test]
 fn the_fragments_partition_the_cell_exactly_once() {
+    let original = rhwp::parse_document(&std::fs::read(document_path()).expect("원본 읽기"))
+        .expect("독립 원본 모델");
+    let rhwp::model::control::Control::Table(source) =
+        &original.sections[0].paragraphs[6].controls[0]
+    else {
+        panic!("분할 표의 원본 소속");
+    };
+    let source_cell = source
+        .cells
+        .iter()
+        .find(|cell| {
+            cell.row == TALL_CELL_ROW
+                && cell.col == TALL_CELL_COL
+                && cell.row_span == TALL_CELL_ROW_SPAN
+        })
+        .expect("병합 셀의 원본 소속");
     let ranges = fragment_ranges();
     let mut seen: Vec<usize> = ranges.iter().flatten().copied().collect();
     let total = seen.len();
@@ -155,7 +173,7 @@ fn the_fragments_partition_the_cell_exactly_once() {
     // 문단들이 누락된 경우와 조각 내부의 역순도 함께 검출한다.
     assert_eq!(
         ranges.iter().flatten().copied().collect::<Vec<_>>(),
-        (0..67).collect::<Vec<_>>(),
+        (0..source_cell.paragraphs.len()).collect::<Vec<_>>(),
         "원본의 모든 문단을 순서대로 한 번씩 보존해야 한다"
     );
 }

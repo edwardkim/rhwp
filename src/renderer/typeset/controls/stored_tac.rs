@@ -78,11 +78,13 @@ pub(in crate::renderer::typeset) fn side_wrap_row(
     next_para: Option<&Paragraph>,
     next_spacing_before: f64,
     profile: LayoutCompatibilityProfile,
-    has_exclusions: bool,
+    owns_exclusion_row: bool,
     reflowed: bool,
     dpi: f64,
 ) -> Option<(f64, f64)> {
-    if !has_exclusions
+    // 다른 세로 밴드의 그림이 단에 남아 있는 것만으로 이 줄의 원점을
+    // 인증할 수 없다. 실제 carve가 같은 줄의 상자를 배치했을 때만 공유한다.
+    if !owns_exclusion_row
         || !profile.hwp5_stored_pagination_layout()
         || profile.session_edited()
         || reflowed

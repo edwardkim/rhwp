@@ -3982,7 +3982,18 @@ fn parse_paragraph_list_inner(
         // 비어 있는 레코드는 저장된 줄 구성을 인증하지 않는다. 이를 저장 줄로
         // 수용하면 실제 너비로 감겨야 하는 본문과 셀을 한 줄로 고정한다.
         // 문단/개체 속성은 보존하고 공통 composer가 줄 구성과 높이를 정한다.
+        // 다만 가시 텍스트 없이 TAC 표 하나만 있는 문단에는 나눌 텍스트가
+        // 없다. 표의 자체 프레임이 그 한 줄을 소유하며, 저장 줄의 간격은
+        // 유효하다. 이를 버리면 새 재조판 경로가 빈 글줄과 간격을 추가해
+        // 같은 표를 다음 쪽으로 넘길 수 있다.
+        let standalone_inline_table = para.controls.len() == 1
+            && hwp3_paragraph_has_treat_as_char_table(&para)
+            && para
+                .text
+                .chars()
+                .all(|ch| ch.is_whitespace() || ch.is_control() || ch == '\u{fffc}');
         if !line_infos.is_empty()
+            && !standalone_inline_table
             && line_infos.iter().all(|line| {
                 line.start_pos == 0
                     && line.space_correction == 0
@@ -4163,6 +4174,13 @@ fn parse_hwp3_inner(
                 font.alt_name = Some(font_name.clone());
             }
             font.name = mapped_name;
+            // '옛한글'은 한컴의 HFT face다. HWP3 이름 목록에는 유형 바이트가
+            // 없지만 한컴 2020 재저장본은 이 face를 type="HFT"로 보존한다.
+            // unknown으로 두면 기존 HFT 치환·폭 규칙을 건너뛰고 고딕으로
+            // 대체되므로 원본 face와 함께 해당 유형을 전달한다.
+            if font.name == "옛한글" {
+                font.alt_type = 2;
+            }
             face_list.push(font);
         }
         font_faces.push(face_list);

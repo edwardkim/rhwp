@@ -4300,7 +4300,7 @@ impl TypesetEngine {
                 .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
                 .map_or(0.0, |style| style.spacing_before),
             st.profile,
-            !exclusions.is_empty(),
+            side_wrap_placement.is_some(),
             self.render_normalization.table_text_reflowed(table),
             self.dpi,
         );
