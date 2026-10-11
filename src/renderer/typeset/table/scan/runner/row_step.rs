@@ -376,6 +376,10 @@ impl TypesetEngine {
                     return true;
                 }
             }
+            let storage_records_page_cuts = table_storage_declares_splits
+                && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                && !st.profile.session_edited()
+                && !self.render_normalization.table_text_reflowed(table);
             let table::scan::row_entry::RowSplitGate {
                 native_short_parent_child_splittable,
                 splittable,
@@ -394,16 +398,6 @@ impl TypesetEngine {
                     || row_needs_whole_band
             });
             if !splittable {
-                // [#2236 진단] 분할 불가 정지 — 동작 불변.
-                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                    eprintln!(
-                        "DIAG_SCAN UNSPLITTABLE r={} consumed={:.1} row_total={:.1} rest={:.1}",
-                        r,
-                        consumed,
-                        row_total,
-                        avail_for_rows - consumed
-                    );
-                }
                 if r == cursor_row {
                     // 페이지 시작 행 — 강제 통째 배치(오버플로 감수).
                     consumed += cs_before + row_total;
@@ -774,6 +768,20 @@ impl TypesetEngine {
                     // 17px, 선언 196.3px). 표를 끝내는 마지막 행이면 이어질 물리 행이 없으므로
                     // 빈 밴드는 쪽 경계에서 끝난다(#5714 와 같은 계약).
                     end_row = r + 1;
+                    // 원본 저장 표의 셀 사다리가 한/글의 쪽 컷을 적어 두었는데 이 행에는 되감김이
+                    // 없으면, 한/글은 이 행을 가르지 않았다 — 내용은 이 쪽에서 끝나고 선언 높이의
+                    // 남은 빈 밴드는 쪽 경계에서 사라진다. 다음 쪽 첫머리로 밴드를 넘기면 그만큼
+                    // 다음 행이 내려가 쪽마다 어긋남이 쌓인다(2025 행정업무운영 편람 부록 103×2
+                    // 행 30: 내용 334.5 · 선언 379.8, 한/글 정본 333쪽은 행 31 이 표 머리 바로
+                    // 아래(괘선 154.9)에서 시작한다).
+                    if storage_records_page_cuts
+                        && !rowbreak_row_has_internal_saved_vpos_reset(table, r)
+                    {
+                        let rest = (avail_for_rows - consumed - cs_before).max(res.consumed_height);
+                        consumed += cs_before + rest;
+                        end_row_height_override = Some(rest);
+                        return false;
+                    }
                     split_end_cut = res.end_cut.clone();
                     split_end_limit = budget.max(res.consumed_height);
                     consumed += cs_before + split_end_limit;
@@ -978,9 +986,20 @@ impl TypesetEngine {
                 && !uses_source_frame_tail
                 && !rowbreak_row_has_internal_saved_vpos_reset(table, r)
                 && !row_has_stored_cross_paragraph_zero_reset(table, r);
+            let stored_page_reset_keep = mt.allows_row_break_split()
+                && !table.common.treat_as_char
+                && res.consumed_height > 0.5
+                && layout_engine.row_cut_ends_at_stored_page_reset(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                );
             if r > cursor_row
                 && (defer_single_unit_row_start
                     || (!cellbreak_complete_unit_keep
+                        && !stored_page_reset_keep
                         && !stored_plain_reset_boundary_keep
                         && !landscape_boundary_band_keep
                         && !stored_zero_origin_rewind_keep

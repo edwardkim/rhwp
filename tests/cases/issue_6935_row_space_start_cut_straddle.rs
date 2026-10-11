@@ -157,6 +157,7 @@ fn first_text_with(start_cut_is_block: bool) -> Option<String> {
         row_cursor_is_nested: false,
         end_row_height_override: None,
         start_row_height_override: None,
+        straddle_row_relief: Vec::new(),
     }];
 
     let tree = LayoutEngine::new(96.0).build_render_tree(

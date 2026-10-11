@@ -1412,6 +1412,26 @@ pub fn fit_measured_table_declared_tail_to_declared_height(
     }
     let last_row = row_count - 1;
 
+    // 셀 저장 줄 사다리가 되감기면(다음 줄 vpos 가 앞 줄보다 작다) 한/글이 그 표를 쪽에서
+    // 갈랐다는 저장 사실이다. 그 표의 선언 높이는 첫 조각 프레임일 뿐 표 전체가 아니고,
+    // 아래 내용 하한도 되감긴 사다리로는 잴 수 없다(pic-in-head-01 pi=65 3×3: 선언 905.8 =
+    // 18쪽 조각, 마지막 행 내용은 19쪽으로 이어진다).
+    let has_stored_page_rewind = table.cells.iter().any(|cell| {
+        let mut previous: Option<i32> = None;
+        cell.paragraphs
+            .iter()
+            .flat_map(|paragraph| paragraph.line_segs.iter())
+            .filter(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+            .any(|seg| {
+                let rewinds = previous.is_some_and(|vpos| seg.vertical_pos < vpos);
+                previous = Some(seg.vertical_pos);
+                rewinds
+            })
+    });
+    if has_stored_page_rewind {
+        return None;
+    }
+
     // 마지막 행이 저장 선언으로만 잡힌 행인지 — 콘텐츠가 밀어 키운 행이면 여유가 없다.
     let declared_tail = table
         .cells
@@ -1468,10 +1488,14 @@ pub fn fit_measured_table_declared_tail_to_declared_height(
     let target_row_sum = (target_body_height - spacing_total).max(0.0);
     let current_row_sum = measured.row_heights.iter().sum::<f64>();
     let reduction = current_row_sum - target_row_sum;
-    // 반올림 급(≤0.5px)은 건드리지 않는다. 선언의 2% 를 넘는 큰 모순은 선언이
-    // stale 한 문서일 수 있으므로 종전대로 콘텐츠 기반 분할에 맡긴다 (#672 의
-    // TAC 임계와 같은 폭).
-    if reduction <= 0.5 || reduction > (target_body_height * 0.02).max(1.0) {
+    // 반올림 급(≤0.5px)은 건드리지 않는다. 회수량의 상한은 비율이 아니라 마지막 행의 저장
+    // 내용 하한(아래 검사)과 되감기 없는 사다리(위 검사)다 — 한/글은 표 선언 높이를 지키며
+    // 앞 행이 커진 만큼을 마지막 행의 빈 공간에서 거둔다. 2025 행정업무운영 편람 구역 10
+    // pi=85(6×5): 정본 괘선 행 12.3/33.3/20.2/13.3/308.1/**9.6** = 396.9 ≒ 선언 397.0,
+    // 마지막 행 선언 21.5 · 내용 하한 8.9(감소 11.8px, 선언의 3%). 하한 아래로는 줄이지 않으므로
+    // 거둘 공간이 모자라면 회수하지 않는다(issue3587 labnote pi=12: 감소 13.7 > 여유 7.5,
+    // 정본도 마지막 행 24.6 그대로 표가 커진다).
+    if reduction <= 0.5 {
         return None;
     }
     let target_tail = measured.row_heights[last_row] - reduction;

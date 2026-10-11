@@ -638,6 +638,9 @@ pub enum PageItem {
         /// 직전 조각에서 내용이 모두 소비된 시작 행의 남은 빈 물리 밴드 높이(px).
         /// `start_cut`은 해당 셀 내용을 숨기고 이 값은 테두리/셀 기하만 보존한다.
         start_row_height_override: Option<f64>,
+        /// [#7531] 쪽을 넘어온 걸침 칸의 끝 행에서 앞 쪽 빈 띠만큼 덜 높이 `(행, px)`.
+        /// 조판 scan 이 같은 값으로 행을 쟀으므로 그리기도 이 값을 그대로 적용한다.
+        straddle_row_relief: Vec<(usize, f64)>,
     },
     /// 그리기 개체
     Shape {
@@ -839,6 +842,7 @@ impl PageItem {
                 row_cursor_is_nested,
                 end_row_height_override,
                 start_row_height_override,
+                straddle_row_relief,
             } => PageItem::PartialTable {
                 para_index: adjust(*para_index),
                 control_index: *control_index,
@@ -852,6 +856,7 @@ impl PageItem {
                 row_cursor_is_nested: *row_cursor_is_nested,
                 end_row_height_override: *end_row_height_override,
                 start_row_height_override: *start_row_height_override,
+                straddle_row_relief: straddle_row_relief.clone(),
             },
             PageItem::Shape {
                 para_index,

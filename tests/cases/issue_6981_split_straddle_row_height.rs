@@ -225,10 +225,25 @@ fn assert_tables_inside_body(node: &RenderNode, body_bottom: Option<f64>) {
     };
     if matches!(node.node_type, RenderNodeType::Table(_)) {
         if let Some(bottom) = body_bottom {
-            assert!(
-                node.bbox.y + node.bbox.height <= bottom + 0.5,
-                "table bottom {} exceeds body bottom {bottom}",
+            // 표 상자(칸 프레임)의 바닥을 본다. 괘선은 프레임 경계 위에 중심을 두고 그려
+            // 굵기의 절반이 경계 밖으로 나간다 — 한/글 정본도 같은 방식이다(1.44px 바닥
+            // 괘선이면 0.72px). 그 절반을 표 넘침으로 세지 않는다.
+            let frame_bottom = node
+                .children
+                .iter()
+                .map(|child| match &child.node_type {
+                    RenderNodeType::Line(line) => line.y1.max(line.y2),
+                    _ => child.bbox.y + child.bbox.height,
+                })
+                .fold(f64::NEG_INFINITY, f64::max);
+            let frame_bottom = if frame_bottom.is_finite() {
+                frame_bottom
+            } else {
                 node.bbox.y + node.bbox.height
+            };
+            assert!(
+                frame_bottom <= bottom + 0.5,
+                "table bottom {frame_bottom} exceeds body bottom {bottom}"
             );
         }
     }
@@ -262,13 +277,17 @@ fn consumed_start_cut_does_not_grow_the_fragment_past_the_body() {
     assert_eq!(assert_continuation_document(isolated_curriculum_table()), 4);
 }
 
-/// 본문 예산을 1px 간격으로 ±20px 바꾼다. 행·글자·rowspan은 그대로 유지하며,
+/// 본문 예산을 1px 간격으로 −20px ~ +28px 바꾼다. 행·글자·rowspan은 그대로 유지하며,
 /// 여러 걸침 셀이 끝나는 조각의 높이 누적과 실제 끝 컷/이월을 함께 검사한다.
+///
+/// 이어받는 조각이 병합 칸 안에서도 바깥 위 여백(141HU)을 열게 되면서(정본 코퍼스의
+/// 그런 조각 29건이 모두 연다) 4→5쪽 전이가 +20.7px(아래 여백 +1550HU) 근처로
+/// 옮겨 갔다. 전이를 계속 지나도록 위쪽 범위를 +28px 까지 넓힌다.
 #[test]
 fn continuation_height_respects_varying_page_budgets() {
     let source = isolated_curriculum_table();
     let mut counts = std::collections::BTreeSet::new();
-    for delta_hu in (-1500i32..=1500).step_by(75) {
+    for delta_hu in (-1500i32..=2100).step_by(75) {
         let mut doc = source.clone();
         let page = &mut doc.sections[0].section_def.page_def;
         page.margin_bottom = (page.margin_bottom as i32 + delta_hu) as u32;
@@ -299,27 +318,43 @@ fn physical_blank_band_is_not_reserved_again_on_continuation() {
     assert_tables_inside_body(&tree.root, None);
 }
 
-/// 최종 컷 뒤에 내용 없는 페이지를 할당하면 378쪽에는 쪽 번호만 남는다.
+/// 최종 컷 뒤에 내용 없는 페이지를 할당하면 그 쪽에는 쪽 번호만 남는다.
 /// 마지막 표의 글자는 앞 쪽에 남고, 다음 구역 본문은 빈 쪽 없이 이어져야 한다.
+///
+/// 쪽 번호가 아니라 **쪽 소속 관계**로 검사한다 — 다음 구역(「노동인권 교육」)이 시작하는
+/// 쪽과 그 바로 앞 쪽(완결된 표 조각)이 모두 본문 글자를 가져야 한다. 정본 한/글 2020
+/// (`pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf`)은 379쪽에서 표를 끝내고
+/// 380쪽에서 「노동인권 교육」을 시작한다. rhwp 는 앞 구간의 편차(154쪽 저장 2줄 / 정본
+/// 1줄 재흐름, 글자 폭 축)만큼 한 쪽 뒤에 있으므로 쪽 번호에 묶지 않는다.
 #[test]
 fn completed_terminal_cut_does_not_allocate_an_empty_page() {
     let bytes = std::fs::read(TARGET).expect("committed curriculum fixture");
     let core = DocumentCore::from_bytes(&bytes).expect("parse curriculum fixture");
-    let tree = core
-        .build_page_render_tree(377)
-        .expect("render successor page");
     fn body_has_text(node: &RenderNode) -> bool {
         if matches!(node.node_type, RenderNodeType::Body { .. }) {
             return !line_text(node).trim().is_empty();
         }
         node.children.iter().any(body_has_text)
     }
+    let pages = core.page_count();
+    let section_start = (300..pages)
+        .find(|&page| {
+            let tree = core.build_page_render_tree(page).expect("render page");
+            line_text(&tree.root).contains("노동인권")
+        })
+        .expect("next section must follow the completed table");
+    let previous = core
+        .build_page_render_tree(section_start - 1)
+        .expect("render completed-table page");
     assert!(
-        body_has_text(&tree.root),
-        "completed row cut left an empty successor page"
+        body_has_text(&previous.root),
+        "completed row cut left an empty page before the next section"
     );
+    let current = core
+        .build_page_render_tree(section_start)
+        .expect("render next-section page");
     assert!(
-        line_text(&tree.root).contains("노동인권"),
-        "next section must follow the completed table"
+        body_has_text(&current.root),
+        "next section page must carry body text"
     );
 }

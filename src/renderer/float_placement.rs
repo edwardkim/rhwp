@@ -507,10 +507,10 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
     // 한글 2020 PDF 는 HWP5 문단 기준 표(148776468 pi=169·pi=121)의 이어받은 조각도 쪽
     // 머리에서 바깥 위 여백(140HU)만큼 내려 그리고, 다음 문단은 저장 vpos 그대로 그 아래에
     // 둔다. HWP5 의 첫 조각은 호스트 간격이 이미 위 여백을 소유하므로 넓히지 않는다
-    // (넓히면 hwpspec 178→180쪽). 위 행에서 내려온 병합 칸 한가운데서 이어지는 조각은
-    // 앞 조각의 칸 상자가 계속되는 것이라 여백을 다시 열지 않는다 — 한글 2020 PDF 는
-    // 1371000-201200057 8·10·14·15쪽(지역 열 병합 칸 안에서 이어짐)의 조각을 본문 위에
-    // 붙여 그린다.
+    // (넓히면 hwpspec 178→180쪽). [#7531] 위 행에서 내려온 병합 칸 한가운데서 이어지는
+    // 조각도 같다 — 정본 코퍼스의 그런 조각 29건이 모두 여백을 열고(80168·86712·aift·
+    // hwpx_sample2·deferred_takeplace 등), 한글 2020 으로 다시 뽑은 1371000-201200057
+    // 정본도 병합 칸 안에서 이어지는 10·14·15쪽과 그렇지 않은 8쪽의 표 윗변이 같은 자리다.
     let para_anchor_below_first_line = native_host.is_some_and(|host| {
         object_only_saved_table_anchor(host, table)
             && host
@@ -518,14 +518,35 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
                 .first()
                 .is_some_and(|line| line.vertical_pos >= line.line_height)
     });
+    // [#7531] 글이 있는 한 줄 호스트에서 표가 그 글줄 아래(세로 오프셋 ≥ 줄 높이)에서
+    // 시작하면 그 글줄은 표 위 여백을 소유하지 않는다 — 독립 밴드 뒤 앵커와 같다.
+    // 한/글 2024 PDF(deferred_takeplace_fill_ahead 4·5쪽, 문단 기준 표)는 첫 조각과
+    // 이어받는 조각 모두 바깥 위 여백 283HU 아래에 괘선을 그린다.
+    // 1×1 RowBreak 쪽 조각은 #7095 의 별도 상자 계약이 여백을 소유하므로 제외한다
+    // (1382000 16쪽 1×1 표: 정본은 여기서 여백을 다시 열지 않는다).
+    let single_cell_frame = table.row_count == 1 && table.col_count == 1;
+    let para_anchor_below_text_line = !single_cell_frame
+        && native_host.is_some_and(|host| {
+            let [line] = host.line_segs.as_slice() else {
+                return false;
+            };
+            para_has_non_whitespace_text(host)
+                && !host.stored_text_partition_is_dirty()
+                && !host.cell_format_vpos_dirty
+                && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && line.vertical_pos >= 0
+                && line.line_height > 0
+                && matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+                && signed_hwpunit(table.common.vertical_offset) >= line.line_height
+        });
     (hwpx_stored || native_object_frame)
         && !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
         && (table.common.horz_rel_to == HorzRelTo::Column
-            || ((hwpx_stored || (is_continuation && !rowspan_straddles_row(table, start_row)))
-                && table.common.horz_rel_to == HorzRelTo::Para
+            || (table.common.horz_rel_to == HorzRelTo::Para
                 && table.common.vert_rel_to == VertRelTo::Para
-                && para_anchor_below_first_line))
+                && (para_anchor_below_text_line
+                    || ((hwpx_stored || is_continuation) && para_anchor_below_first_line))))
         && table.page_break == TablePageBreak::RowBreak
         && table.outer_margin_top > 0
         && ((!is_continuation && start_row == 0 && start_cut.is_empty())
@@ -537,14 +558,6 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
                             && !host.cell_format_vpos_dirty
                             && !host.line_segs.is_empty()
                     })))))
-}
-
-/// 위 행에서 시작한 병합 칸이 `row` 를 걸쳐 내려오는가 (`row` 가 그 칸의 첫 행이 아님).
-fn rowspan_straddles_row(table: &Table, row: usize) -> bool {
-    table.cells.iter().any(|cell| {
-        let top = cell.row as usize;
-        top < row && top + (cell.row_span as usize).max(1) > row
-    })
 }
 
 /// A paragraph-following front overlay still owns a physical RowBreak frame.
@@ -2419,6 +2432,88 @@ impl ParagraphFloatPlacement {
             table_left: None,
             table_top,
             occupied_bottom: table_top + table_height + after,
+        })
+    }
+
+    /// 저장 사다리가 증언하는 빈 host 자리차지 표의 상자.
+    ///
+    /// 글자 없는 host 문단의 문단 기준 자리차지 표는 host 의 문단 앞 간격·줄 상자·
+    /// 문단 뒤 간격을 흐름에 싣지 않는다. 표는 문단 위끝(앞 간격 이전)에서 시작하고,
+    /// 다음 문단은 `표 + 위·아래 바깥여백` 바로 뒤에서 시작한다. 한/글 저장 사다리가
+    /// 이를 그대로 적는다 — `다음.vpos − host.vpos = 세로오프셋 + 위여백 + 선언높이 +
+    /// 아래여백 − 문단 앞 간격`(host vpos 는 앞 간격 뒤의 줄 위치다).
+    /// `2025 행정업무운영 편람(최종).hwp` 구역 10 pi=73(앞 간격 20px): 저장 델타 278.8 =
+    /// 291.3 + 7.5 − 20.0, 한/글 정본 299쪽 표 안 괘선 326.5(rhwp 종전 328.3, 앞 간격만큼
+    /// 아래 앉고 흐름은 앞·뒤 간격과 줄 상자 43.3px 를 더 예약해 다음 표 pi=74 를 다음
+    /// 쪽으로 넘겼다). pi=74(앞 간격 0): 327.3 = 319.8 + 7.5.
+    ///
+    /// 문단 단위 저장 증거로만 발동한다 — 등식이 ±2HU 안에서 맞지 않으면(쪽 경계 되감기,
+    /// 다른 개체·글자가 섞인 host, 합성 줄) `None`. 측정한 표 높이가 선언과 1px 넘게
+    /// 다르면 그 선언 상자가 그려지는 표가 아니므로 역시 `None`.
+    pub(crate) fn from_empty_stored_ladder_host(
+        para: &Paragraph,
+        next: &Paragraph,
+        table: &Table,
+        origin: f64,
+        spacing_before: f64,
+        measured_table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        let stored_line = |paragraph: &Paragraph| {
+            let [line, ..] = paragraph.line_segs.as_slice() else {
+                return None;
+            };
+            (line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && !paragraph.stored_text_partition_is_dirty())
+            .then_some(line.vertical_pos)
+        };
+        if !matches!(para.controls.as_slice(), [Control::Table(_)])
+            || para
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
+            || !is_para_topbottom_float(&table.common)
+            || !matches!(table.common.vert_align, VertAlign::Top)
+            || signed_hwpunit(table.common.vertical_offset) < 0
+            || table.caption.is_some()
+            || !origin.is_finite()
+            || !spacing_before.is_finite()
+            || spacing_before < 0.0
+            || !measured_table_height.is_finite()
+        {
+            return None;
+        }
+        // 사다리는 선언 높이로 적힌다. 행이 선언보다 커진 표(측정이 선언을 넘는 RowBreak
+        // 규정 표 등)는 그 상자가 실제 그려지는 표를 담지 못하므로 이 계약 밖이다.
+        let declared = hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, dpi);
+        if (measured_table_height - declared).abs() > 1.0 {
+            return None;
+        }
+        let host_vpos = stored_line(para)?;
+        let next_vpos = stored_line(next)?;
+        let physical_hu = i64::from(signed_hwpunit(table.common.vertical_offset))
+            + i64::from(table.outer_margin_top)
+            + i64::from(table.common.height.min(i32::MAX as u32))
+            + i64::from(table.outer_margin_bottom);
+        let spacing_before_hu = crate::renderer::px_to_hwpunit(spacing_before, dpi) as i64;
+        let stored_delta = i64::from(next_vpos) - i64::from(host_vpos);
+        if stored_delta <= 0 || (stored_delta - (physical_hu - spacing_before_hu)).abs() > 2 {
+            return None;
+        }
+        let table_top = origin
+            + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+        let occupied_bottom = table_top
+            + hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+        Some(Self {
+            flow: ParagraphFloatFlow::Exclusion,
+            anchor_y: origin,
+            stored_host_origin: None,
+            stored_successor_line_origin: None,
+            table_left: None,
+            table_top,
+            occupied_bottom,
         })
     }
 

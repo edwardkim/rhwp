@@ -26,8 +26,17 @@ impl TypesetEngine {
         let can_intra_split = input.prepared.can_intra_split;
         let layout_engine = &input.prepared.layout_engine;
         let rowspan_touched = &input.prepared.rowspan_touched;
-        let cut_row_h = &input.prepared.cut_row_heights;
-        let whole_row_fit_h = &input.prepared.whole_row_fit_heights;
+        // [#7531] 쪽을 넘어온 걸침 칸의 끝 행은 앞 쪽 빈 띠를 덜어낸 높이로 잰다.
+        let cut_row_h = input
+            .start
+            .relieved_cut_row_heights
+            .as_ref()
+            .unwrap_or(&input.prepared.cut_row_heights);
+        let whole_row_fit_h = input
+            .start
+            .relieved_whole_row_fit_heights
+            .as_ref()
+            .unwrap_or(&input.prepared.whole_row_fit_heights);
         let total_footnote = input.prepared.total_footnote_height;
         let fn_margin = input.prepared.footnote_margin;
         let strict_following_plain_text_fit = input.prepared.strict_following_plain_text_fit;

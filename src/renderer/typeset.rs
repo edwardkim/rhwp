@@ -2790,65 +2790,6 @@ fn native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
         && group_minimum <= st.base_available_height() + 0.5
 }
 
-/// HWP5-origin 문서는 모든 page ornament를 감추는 빈 PageHide marker 뒤에 같은 쪽의
-/// 장식 host를 `Page` break로 한 번 더 기록할 수 있다. 첫 marker가 이미 새 physical
-/// page를 열었으므로 host의 break까지 적용하면 빈 page가 materialize된다.
-fn hwp5_origin_redundant_pagehide_break_marker(
-    para_idx: usize,
-    para: &Paragraph,
-    paragraphs: &[Paragraph],
-    hwpx_stored_layout: bool,
-) -> bool {
-    if para_idx < 2
-        || para.column_type != ColumnBreakType::Page
-        || !para.text.trim().is_empty()
-        || para.controls.len() != 1
-        || !matches!(para.controls.first(), Some(Control::PageHide(_)))
-    {
-        return false;
-    }
-
-    let prior_empty = &paragraphs[para_idx - 1];
-    let section_marker = &paragraphs[para_idx - 2];
-    let Some(next_para) = paragraphs.get(para_idx + 1) else {
-        return false;
-    };
-
-    // Stored-layout HWPX section markers that combine a decorative group and
-    // PageHide own the blank PageHide page immediately before a page-starting
-    // non-inline table. That marker is not the redundant HWP5-origin marker
-    // handled here.
-    let hwpx_pagehide_blank_page_owner = hwpx_stored_layout
-        && section_marker.controls.iter().any(|control| {
-            matches!(
-                control,
-                Control::Shape(shape)
-                    if matches!(
-                        shape.as_ref(),
-                        crate::model::shape::ShapeObject::Group(_)
-                    )
-            )
-        })
-        && next_para
-            .controls
-            .iter()
-            .any(|control| matches!(control, Control::Table(table) if !table.common.treat_as_char));
-
-    prior_empty.text.trim().is_empty()
-        && prior_empty.controls.is_empty()
-        && section_marker.column_type == ColumnBreakType::Section
-        && section_marker
-            .controls
-            .iter()
-            .any(|control| matches!(control, Control::PageHide(_)))
-        && next_para.column_type == ColumnBreakType::Page
-        && next_para
-            .controls
-            .iter()
-            .any(|control| !matches!(control, Control::PageHide(_)))
-        && !hwpx_pagehide_blank_page_owner
-}
-
 /// 빈 ColumnBreak가 두 non-inline 표 사이에 있고 다음 표가 이미 PageBreak를
 /// 소유하면, ColumnBreak는 별도 physical page가 아니라 다음 표의 carrier다.
 /// 표의 shape, 크기, 저장 vpos가 아니라 형제 paragraph의 break 소유권만 쓴다.
@@ -7018,6 +6959,7 @@ mod tests {
                 row_cursor_is_nested: false,
                 end_row_height_override: None,
                 start_row_height_override: None,
+                straddle_row_relief: Vec::new(),
             }]),
             page_with_items(vec![PageItem::PartialTable {
                 para_index: 7,
@@ -7032,6 +6974,7 @@ mod tests {
                 row_cursor_is_nested: false,
                 end_row_height_override: None,
                 start_row_height_override: None,
+                straddle_row_relief: Vec::new(),
             }]),
         ];
 
