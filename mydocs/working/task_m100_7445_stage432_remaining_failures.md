@@ -944,3 +944,13 @@ fmt·Native/WASM32 Clippy·workspace build도 통과했습니다. all-target Cli
 production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수의 재실행과 필수 게이트를 이어갑니다.
 전체 10268 PASS는 위 정확한 head의 결과로 보존하며 다음 head의 전체 실행으로 표시하지 않습니다.
 최종 38문서·1045쪽씩의 대조와 backend 검증, 제출 승인은 아직 남았습니다.
+
+
+## 보정 465: Studio IME 행위 검사의 플랫폼 전제
+
+- 최신 `684baef61`에서 필수 Rust lint·workspace build·manifest/unit 정책·Skia 전체 lib·기존 focused 2+4·CLI build·Rust doc·Studio TypeScript가 통과했습니다.
+- Skia lib는 root 3868 PASS/12 ignored와 workspace lib 15+165+2 PASS입니다. 전체 nextest 10268 PASS는 생산 코드가 같은 `4d13092c` 실행이며 최신 head에서 반복 실행했다고 표기하지 않습니다.
+- Studio 단위는 1833 PASS/1 FAIL/2 SKIP입니다. 실패한 기존 Linux fcitx 예약 탐색 러너는 플랫폼을 지정하지 않았고 Node 24의 `navigator.platform=MacIntel`을 사용했습니다. upstream/devel의 해당 제품 코드와 러너가 같은 바이트임을 확인했습니다.
+- 기존 `__rhwpTestPlatformKind` 계약으로 `other`를 명시했습니다. 실제 Linux Ctrl 탐색 기대값과 본문·머리말/꼬리말·각주의 소유 검사, 중복 키 억제 검사는 유지합니다. 제품 코드·Rust source/test·시각 입력은 변경하지 않았습니다. 새 테스트 함수도 추가하지 않았습니다.
+- 기존 행위 러너 재실행 `COMPOSITION_PENDING_NAVIGATION_OK`, Studio 전체 단위 1834 PASS/0 FAIL/2 SKIP(10641.213ms), exit 0입니다. 첫 실패 로그도 보존합니다.
+- 실패 시점에 fresh WASM와 38개 문서 전쪽 캡처는 아직 시작되지 않았습니다. 수정 커밋 뒤 남은 게이트와 최종 캡처를 재개합니다. 승인 전 원격 push·PR 생성·merge는 하지 않습니다.

@@ -412,12 +412,28 @@
     "fullPrVerificationComplete": false
   },
   "latestPendingChange": {
-    "scope": "cfg(test) constructor syntax only",
-    "old": "Box::new(Table::default())",
-    "new": "Box::default()",
-    "runtimeProductionPrefixUnchanged": true,
-    "reason": "clippy::box_default",
-    "followup": "focused existing unit and required lint/build/Skia/Studio/fresh WASM pending",
-    "whole10268Head": "4d13092c74f480f63b28c84507c3890e7175ce78"
+    "scope": "Studio 기존 Linux fcitx 행위 검사의 실행 플랫폼 전제 명시",
+    "parentHead": "684baef61b3aff993a7662c6120e9b2a3a8454ab",
+    "source": "rhwp-studio/tests/support/composition-pending-navigation.runner.mjs",
+    "runtimeCodeUnchanged": true,
+    "rustSourceAndTestsUnchanged": true,
+    "testExpectationsUnchanged": true,
+    "newTestFunctions": 0,
+    "before": {
+      "studioPass": 1833,
+      "studioFail": 1,
+      "studioSkip": 2,
+      "cause": "Node 24 MacIntel 환경에서 Linux Ctrl 탐색 검사가 Mac 키맵을 사용함"
+    },
+    "after": {
+      "studioPass": 1834,
+      "studioFail": 0,
+      "studioSkip": 2,
+      "durationMs": 10641.213292,
+      "focused": "COMPOSITION_PENDING_NAVIGATION_OK"
+    },
+    "priorRustGatesHead": "684baef61b3aff993a7662c6120e9b2a3a8454ab",
+    "wholeRustNextestHead": "4d13092c74f480f63b28c84507c3890e7175ce78",
+    "remaining": "fresh WASM와 전쪽 Native/fresh 캡처 및 실제 제품 backend 판독"
   }
 }
