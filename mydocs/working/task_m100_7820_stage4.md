@@ -78,3 +78,9 @@ Rust source·Rust test·Cargo와 실제 PNG/WASM/Sixel 출력은 이 보정에�
 
 CI 보정은 새 code candidate로 push하고 새 head CI를 확인한다. 최초 실패 head의 결과로
 self-review 기록이나 병합을 진행하지 않는다.
+
+## Code head CI 성공과 self-review
+
+`83a32353e7b74bbc6d6bb58626dc8e8ad1b8a13a`의 [CI](https://github.com/edwardkim/rhwp/actions/runs/38137467182)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/38137467290)·Render Diff·Adapter·Proptest·CI Impact Policy는 모두 success다. GitHub Native Skia job 로그에서도 Sixel 계약 7 PASS/0 FAIL을 확인했다.
+
+[self-review](../pr/archives/pr_7829_review.md)와 오늘할일을 작성했다. 이 기록은 source/test/workflow/asset을 변경하지 않는 단일 부모 문서 commit이다. push 전 최신 base merge-tree의 공백·실제 링크·오늘할일 기록 보존과 원격 SHA를 확인한다. trailing head CI와 실제 fast-pass를 확인한 뒤 이미 승인된 정상 squash merge를 진행하며, 그 전에는 merge 완료로 보고하지 않는다.
