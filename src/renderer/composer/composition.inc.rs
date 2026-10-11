@@ -609,7 +609,9 @@ pub(crate) fn tac_next_line_full_spacing(
             (current_owned_row || !next.stored_text_partition_is_dirty())
                 && (next.line_segs.is_empty()
                     || next.line_segs.first().is_some_and(|first| {
-                        (current_owned_row || first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                        (current_owned_row
+                            || (first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                && !next.cell_format_vpos_dirty))
                             && (stored_tac_successor_delta_hu(
                                 para,
                                 seg,

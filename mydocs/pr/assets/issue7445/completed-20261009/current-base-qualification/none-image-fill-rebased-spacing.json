@@ -1,0 +1,252 @@
+{
+  "issue": 7445,
+  "status": "local_scope_qualified_full_validation_pending",
+  "parent": "cdd870f2d60caa9edbf0697b15ffeeb6329bbb23",
+  "fixedBase": "8761ac90270a5dddfa0860e3de700ee83d2bf7c8",
+  "original": {
+    "path": "samples/issue7235/156086935_none_image_fill.hwp",
+    "sha256": "b12aa445776bef38a003e8679865a9a0ed2f729ecef18099625c976efe64d6ae"
+  },
+  "independentPdf": {
+    "path": "pdf/issue7235/156086935_none_image_fill-2020.pdf",
+    "sha256": "20f1f898bb5e25b63ea25cb48350964f7ac36a4273d770dd927cc54a54987b9d",
+    "engine": 2020,
+    "method": "Print",
+    "pages": 14
+  },
+  "nativeBuild": {
+    "parent": "cdd870f2d60caa9edbf0697b15ffeeb6329bbb23",
+    "dirtyFiles": [
+      "src/renderer/composer.rs"
+    ],
+    "composerSha256": "e0a1c99249fcbac0c938b5cd5af2b0027a6f1a2ba9fa8cff00b4933ed80c459e",
+    "binary": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/rhwp-rebased-tac-frame",
+    "binarySha256": "dacde9b407ccba08809f7b657e2b8e3d38e4069b85f03e640dd30f236464d641",
+    "buildLog": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/rebased-tac-frame-native-build.log",
+    "exitCode": 0,
+    "fullValidationComplete": false
+  },
+  "freshWasmBuild": {
+    "parent": "cdd870f2d60caa9edbf0697b15ffeeb6329bbb23",
+    "composerSha256": "e0a1c99249fcbac0c938b5cd5af2b0027a6f1a2ba9fa8cff00b4933ed80c459e",
+    "package": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/frozen-rebased-tac-frame-pkg",
+    "jsSha256": "f366c9d17e4eb925f6ba325a5236659a09af36656eff934284a5d4ba03212213",
+    "wasmSha256": "e5c2f54b7b7701c7aeb17c2d13aced43aca355cc5a4a9678d8039b0678b7c668",
+    "studioJsMatches": true,
+    "studioWasmMatches": true,
+    "buildLog": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/rebased-tac-frame-fresh-wasm-build.log",
+    "buildProfile": "Mac locked --no-opt local substitute",
+    "fullValidationComplete": false
+  },
+  "visualPairs": [
+    {
+      "key": "land-table",
+      "mode": "native",
+      "pages": 5,
+      "minimum": 98.68216,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "3b21a9f3ec3a93e2bc6bf7fa02cd01505639af6a04d1dff08032ff21012b3066"
+    },
+    {
+      "key": "none-image-fill",
+      "mode": "native",
+      "pages": 14,
+      "minimum": 97.76365,
+      "below90": [],
+      "p6": {
+        "page": "6",
+        "tolerant_content_match_percent": "98.94678",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.94678",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      "tsvSha256": "6c122eddfeb91e3db7208fceb8da822a33a33174134e7441ae086bbb1648c478"
+    },
+    {
+      "key": "ledger",
+      "mode": "native",
+      "pages": 1,
+      "minimum": 98.97669,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "2c754a318e6afdc2edbe5f2f39937daa0a44e781b55686bbf516db6ceeb9f7a6"
+    },
+    {
+      "key": "empty-cell",
+      "mode": "native",
+      "pages": 1,
+      "minimum": 95.89598,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "2871565f6b50504c819747a05f785380ef24a5abc9f4fd9f254f4911f1303e05"
+    },
+    {
+      "key": "disaster",
+      "mode": "native",
+      "pages": 2,
+      "minimum": 96.21501,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "2474e5bd3d02e51c94206cf7416254aedde6e3d17ec9e422e2d10232d4825364"
+    },
+    {
+      "key": "lighting",
+      "mode": "native",
+      "pages": 2,
+      "minimum": 94.5625,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "c54d4935a65230f20bcffdb21dbda1e67a26ece4b9582546bbc8c74736c3034a"
+    },
+    {
+      "key": "land-table",
+      "mode": "wasm",
+      "pages": 5,
+      "minimum": 96.81887,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "6149be7d8c79ce4ccee7c8c7e810b2f478c198eb7341aae7f8f62423118befb6"
+    },
+    {
+      "key": "none-image-fill",
+      "mode": "wasm",
+      "pages": 14,
+      "minimum": 97.76365,
+      "below90": [],
+      "p6": {
+        "page": "6",
+        "tolerant_content_match_percent": "98.94678",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.94678",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      "tsvSha256": "6c122eddfeb91e3db7208fceb8da822a33a33174134e7441ae086bbb1648c478"
+    },
+    {
+      "key": "ledger",
+      "mode": "wasm",
+      "pages": 1,
+      "minimum": 98.97669,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "2c754a318e6afdc2edbe5f2f39937daa0a44e781b55686bbf516db6ceeb9f7a6"
+    },
+    {
+      "key": "empty-cell",
+      "mode": "wasm",
+      "pages": 1,
+      "minimum": 95.89598,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "2871565f6b50504c819747a05f785380ef24a5abc9f4fd9f254f4911f1303e05"
+    },
+    {
+      "key": "disaster",
+      "mode": "wasm",
+      "pages": 2,
+      "minimum": 96.21501,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "e514bc086be1ed8f814bd9107818fb29cca68f3c5a86c166f9a3e72a2298908a"
+    },
+    {
+      "key": "lighting",
+      "mode": "wasm",
+      "pages": 2,
+      "minimum": 94.5625,
+      "below90": [],
+      "p6": null,
+      "tsvSha256": "c54d4935a65230f20bcffdb21dbda1e67a26ece4b9582546bbc8c74736c3034a"
+    }
+  ],
+  "comparisonPolicy": {
+    "dpi": 96,
+    "binarizationThreshold": 232,
+    "colorThreshold": 32,
+    "toleranceRadius": 2,
+    "gatePercent": 90,
+    "captureWorkers": 8,
+    "algorithmChanged": false
+  },
+  "p6": {
+    "before": 73.86639,
+    "afterNative": 98.94678,
+    "afterFreshWasm": 98.94678,
+    "source": {
+      "hostStoredVpos": 67373,
+      "lineHeightHu": 10377,
+      "lineSpacingHu": 752,
+      "nextVposHu": 11129,
+      "tableHeightHu": 10095,
+      "outerTopHu": 141,
+      "outerBottomHu": 141
+    },
+    "directInspection": "첫 표의 원점은 유지되며 뒤 본문·사례 2·3 표의 공통 시작 위치가 독립 PDF에 맞춰졌다. 글리프 윤곽 차이는 남아 있고 픽셀 동일성이나 사용자 승인을 주장하지 않는다."
+  },
+  "changedExistingTests": [
+    "none_fill_in_table_cell_fits_cell_keeping_aspect",
+    "none_fill_in_shape_fits_shape_keeping_aspect",
+    "owned_rowbreak_tac_height_selects_current_or_multirow_frames"
+  ],
+  "newTestFunctions": 0,
+  "fullValidationComplete": false,
+  "approvalRequiredBeforePushOrPr": true,
+  "focusedNextest": {
+    "runId": "4abf65fe-fb54-4049-9054-750f86fcdded",
+    "run": 27,
+    "passed": 27,
+    "failed": 0,
+    "filteredSkipped": 5746,
+    "seconds": 3.968,
+    "exitCode": 0,
+    "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage453-current-devel-qualification/rebased-tac-frame-focused.log",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--profile",
+      "default",
+      "--cargo-profile",
+      "release-test",
+      "--lib",
+      "--test",
+      "regression_suite_004",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_009",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_015",
+      "--test",
+      "regression_suite_023",
+      "--test",
+      "regression_suite_025",
+      "--test",
+      "regression_suite_027",
+      "-E",
+      "test(issue_6761_zero_origin_rewind_row_split) | test(issue_6860_hancom_resaved_visual) | test(issue_5184_hwp3_empty_cell_vertsize) | test(issue_6803_split_start_row_rowspan_end_cut) | test(issue_2097_squeeze) | test(issue_4962_font_metric_coverage) | test(issue_4966_font_rule_projection) | test(issue_4680_hwp3_line_height_follows_char_size) | test(issue_7235_none_image_fill_fits_area) | test(owned_rowbreak_tac_height_selects_current_or_multirow_frames)",
+      "--test-threads",
+      "8"
+    ]
+  },
+  "currentSourceSha256": {
+    "src/renderer/composer.rs": "f9445afa4eeaef027cfa061a12edeeb3ae4a8a50543ccc71ea5b2ce5f1f63775",
+    "src/renderer/composer/tests.rs": "43aab9d52bd0bb9c199537e0f8985bdee967e0a08344c35bd14c55e6de03e508",
+    "tests/cases/issue_7235_none_image_fill_fits_area.rs": "1346245836718f65b400a2ca44aa2f19be9b0703f4792ab44dd9ca645b5fe8f9"
+  },
+  "captureSourceNote": "Native/fresh 빌드는 cdd870f2d + composer 보정 snapshot이다. 캡처 후 composer.rs에는 rustfmt 줄바꿈만 적용했고 기존 cfg(test) 및 integration 검사만 보완했다. 최신 최종 후보의 전체 검증은 아직 남는다.",
+  "beforeNextestForRewrittenAssertions": "not_run; 변경 전 정식 출력의 6쪽 73.86639%와 다음 줄의 누락된 반간격은 이전 동결 산출물에 보존했다. 새 검사로 변경 전 binary를 실행한 결과로 주장하지 않는다.",
+  "trackedReviewImages": {
+    "native": {
+      "path": "mydocs/pr/assets/issue7445/completed-20261009/current-base-qualification/none-image-fill-rebased-spacing-p006-native-review.png",
+      "sha256": "e5fe74badaa98444a29b81e16c862c3a64b55af7d955f02def5dbc781c753160"
+    },
+    "wasm": {
+      "path": "mydocs/pr/assets/issue7445/completed-20261009/current-base-qualification/none-image-fill-rebased-spacing-p006-wasm-review.png",
+      "sha256": "5e2eb65adcfea1aaf0fa06d5fa3a4877551d7d419e9b381a84cd9ae90abb4350"
+    }
+  }
+}

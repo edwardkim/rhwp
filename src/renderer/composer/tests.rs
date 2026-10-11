@@ -2357,6 +2357,49 @@ fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
         16.0
     );
 
+    // 완전한 원본 개체 줄이 새 프레임의 다음 저장 줄을 닫는 경우와,
+    // 단순 되감김·더티 셀·합성 사다리를 구분한다. px 위치를 핀으로 두지 않는다.
+    let mut moved = single_row.clone();
+    moved.line_segs[0].vertical_pos = moved.line_segs[0].line_height * 2;
+    let mut next = Paragraph {
+        line_segs: vec![LineSeg {
+            vertical_pos: moved.line_segs[0].line_height + moved.line_segs[0].line_spacing,
+            line_height: moved.line_segs[0].line_spacing,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let closes = |host: &Paragraph, following: &Paragraph| {
+        tac_next_line_full_spacing(
+            host,
+            Some(following),
+            0.0,
+            0.0,
+            &host.line_segs[0],
+            crate::model::provenance::LayoutCompatibilityProfile::default(),
+            96.0,
+        )
+    };
+    assert!(closes(&moved, &next));
+    next.line_segs[0].vertical_pos -= moved.line_segs[0].line_spacing;
+    assert!(
+        !closes(&moved, &next),
+        "되감김만으로 전량 간격을 소유하지 않는다"
+    );
+    next.line_segs[0].vertical_pos += moved.line_segs[0].line_spacing;
+    next.cell_format_vpos_dirty = true;
+    assert!(!closes(&moved, &next));
+    next.cell_format_vpos_dirty = false;
+    next.line_segs[0].tag = LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    assert!(!closes(&moved, &next));
+    next.line_segs[0].tag = 0;
+    moved.line_segs[0].line_height -= 1;
+    next.line_segs[0].vertical_pos -= 1;
+    assert!(
+        !closes(&moved, &next),
+        "불완전한 개체 높이의 닫힘을 채택하지 않는다"
+    );
+
     let undersized = para_with_rows(4, 32_338);
     assert_eq!(owned_rowbreak_tac_height(&undersized, 0), None);
     assert!(stored_first_tac_line(&undersized).is_none());
