@@ -51,3 +51,30 @@ WezTerm·Windows Terminal의 SSH 수동 판정은 통과이며 Foot와 정확한
 최종 PR head SHA 고정 raw URL로 이미지를 표시하고 게시 뒤 본문·asset을 API로 재조회한다.
 code head CI 성공 뒤 같은 PR에 self-review 기록을 추가한다. 최신 trailing head의 check와
 mergeability 재확인 전에는 병합하지 않으며 branch protection을 우회하지 않는다.
+
+## PR 생성과 최초 CI 보정
+
+`227438c64731bcca78255c58af73d825445e9247`로 [PR #7829](https://github.com/edwardkim/rhwp/pull/7829)를
+생성했다. 한국어 본문·고정 head의 asset 5개가 로컬 파일과 동일하고,
+실제 CDP Chrome PR 화면에서 모든 이미지가 로드됨을 확인했다.
+
+최초 [CI run](https://github.com/edwardkim/rhwp/actions/runs/38136989011)의 lint job은
+Rust lint 실행 전 `Validate CI impact classifier`에서 실패했다. 새 CLI 출력 어댑터가
+명시적 영향 bucket에 없다는 계약 검사이며 `src/cli/outputs/sixel.rs` 등록 누락이었다.
+출력 어댑터와 `tests/cases/issue_7820_sixel_contract.rs`를 Native Skia 소유 목록에 추가했다.
+Canvas 소비자는 아니므로 이 두 파일만 변경할 때는 Native/Rust 검사만 요구한다.
+이번 PR 전체는 공통 renderer·Cargo 변경을 포함해 Full CI가 필요하다.
+
+동시에 Native Skia job의 release-test·release 두 경로에 Sixel 계약 실행을 추가했다.
+job target의 classifier 소유 검사도 실제 `tests/cases/` 원본을 확인하도록 보완했으며
+기존 root test 경로는 그대로 확인한다. 단순히 파일 목록 assertion만 늘리지 않았다.
+Rust source·Rust test·Cargo와 실제 PNG/WASM/Sixel 출력은 이 보정에서 바꾸지 않았다.
+
+- CI impact·policy·trusted reuse Node 검사: 327건 통과 (`ci-wiring-node.log`).
+- `test_*workflow.py` Python 검사: 186건 통과 (`ci-wiring-python.log`).
+- CI와 같은 `run-rust-test.mjs --cargo-test issue_7820_sixel_contract`의
+  release-test/Native 실행: 7건 통과 (`ci-wiring-sixel-cargo-test.log`).
+- 원 실패 원문: ignored `output/pr-review/issue7820-20261011/github-lint-first.log`.
+
+CI 보정은 새 code candidate로 push하고 새 head CI를 확인한다. 최초 실패 head의 결과로
+self-review 기록이나 병합을 진행하지 않는다.
