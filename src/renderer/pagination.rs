@@ -461,6 +461,10 @@ pub struct ColumnContent {
     /// 문단 텍스트 앞/뒤 관계로 확정한 자리차지 표 배치(단 상대 좌표).
     pub paragraph_float_placements:
         std::collections::HashMap<(usize, usize), super::float_placement::ParagraphFloatPlacement>,
+    /// [#7330] 같은 문단의 자리차지 표가 아래로 민 host 첫 글줄이 표 점유 끝 위에 더
+    /// 소비하는 문단 앞 간격(px, 0 이상). 측정(typeset)이 확정하고 배치(layout)가 같은 값을
+    /// 확정 앞 간격으로 소비한다. 키는 문단 인덱스이며 항목이 없으면 이 계약이 아니다.
+    pub float_pushed_line_spacings: std::collections::HashMap<usize, f64>,
     /// #6812: 텍스트와 TAC 표가 공유하는 확정 줄 결과(단 상대 좌표).
     pub inline_flow_plans: std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     /// #6812: 분할기에서 확정한 단 기준 TAC 배치. 그림 paint 순서와 무관하다.
@@ -1028,6 +1032,13 @@ impl PaginationResult {
                             .iter()
                             .map(|(&(pi, ci), &placement)| {
                                 (((pi as i64 + offset as i64).max(0) as usize, ci), placement)
+                            })
+                            .collect(),
+                        float_pushed_line_spacings: cc
+                            .float_pushed_line_spacings
+                            .iter()
+                            .map(|(&pi, &spacing)| {
+                                ((pi as i64 + offset as i64).max(0) as usize, spacing)
                             })
                             .collect(),
                         zone_layout: cc.zone_layout.clone(),

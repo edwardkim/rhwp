@@ -131,6 +131,9 @@ pub(in crate::renderer::typeset) struct StateView {
         (usize, usize),
         crate::renderer::float_placement::ParagraphFloatPlacement,
     >,
+    /// [#7330] 현재 단에서 확정한 자리차지 표가 민 host 첫 글줄의 남은 앞 간격.
+    pub(in crate::renderer::typeset) float_pushed_line_spacings:
+        std::collections::HashMap<usize, f64>,
     /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
     pub(in crate::renderer::typeset) inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를

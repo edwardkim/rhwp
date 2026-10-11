@@ -127,6 +127,8 @@ struct ColumnItemCtx<'a> {
         (usize, usize),
         super::float_placement::ParagraphFloatPlacement,
     >,
+    /// [#7330] typeset 이 확정한 자리차지 표가 민 host 첫 글줄의 남은 앞 간격.
+    float_pushed_line_spacings: &'a std::collections::HashMap<usize, f64>,
 }
 
 impl ColumnItemCtx<'_> {
@@ -7182,6 +7184,7 @@ impl LayoutEngine {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         };
         let page_content = PageContent {
             page_index: 0,
@@ -7980,6 +7983,7 @@ impl LayoutEngine {
                         &col_content.inline_placements,
                         &col_content.inline_flow_plans,
                         &col_content.paragraph_float_placements,
+                        &col_content.float_pushed_line_spacings,
                     );
                     y_offset = new_y;
                     endnote_sep_body_floor = Some(new_y);
@@ -9385,6 +9389,7 @@ impl LayoutEngine {
                 &col_content.inline_placements,
                 &col_content.inline_flow_plans,
                 &col_content.paragraph_float_placements,
+                &col_content.float_pushed_line_spacings,
             );
             // 명시적 부분 본문이 이미 줄 흐름을 소비한 확정 Exclusion 표는
             // 기하만 출력한다. 표의 시각 하단을 본문 전진으로 다시 더하지 않는다.
@@ -9987,6 +9992,7 @@ impl LayoutEngine {
                 inline_placements: &col_content.inline_placements,
                 inline_flow_plans: &col_content.inline_flow_plans,
                 paragraph_float_placements: &col_content.paragraph_float_placements,
+                float_pushed_line_spacings: &col_content.float_pushed_line_spacings,
             };
             // 이 단에 이미 그려진 표들의 최상단 y — 잔여 행이 그 아래로 내려가면
             // #4514 가 잡은 표 겹침이 재발한다(실측: pi=158 잔여 행 727px ↔ pi=186
@@ -10317,6 +10323,7 @@ impl LayoutEngine {
             (usize, usize),
             super::float_placement::ParagraphFloatPlacement,
         >,
+        float_pushed_line_spacings: &std::collections::HashMap<usize, f64>,
     ) -> (f64, bool) {
         let ctx = ColumnItemCtx {
             page_content,
@@ -10336,6 +10343,7 @@ impl LayoutEngine {
             inline_placements,
             inline_flow_plans,
             paragraph_float_placements,
+            float_pushed_line_spacings,
         };
         let mut applied_tac_segment = false;
         match item {
@@ -11133,7 +11141,12 @@ impl LayoutEngine {
                     if *start_line == 0 {
                         para_start_y.entry(*para_index).or_insert(pp_y_in);
                     }
-                    let pp_y_out = self.layout_partial_paragraph(
+                    // [#7330] 같은 문단의 자리차지 표가 민 첫 글줄은 typeset 이 확정한 남은
+                    // 앞 간격(문단 상단에서 잰 앞 간격 중 표 점유 끝 위에 남는 몫)만 소비한다.
+                    let float_pushed_spacing_before = (*start_line == 0)
+                        .then(|| ctx.float_pushed_line_spacings.get(para_index).copied())
+                        .flatten();
+                    let pp_y_out = self.layout_partial_paragraph_with_spacing_before(
                         tree,
                         col_node,
                         para,
@@ -11149,6 +11162,7 @@ impl LayoutEngine {
                         None,
                         Some(bin_data_content),
                         ctx.wrap_anchors.get(para_index),
+                        float_pushed_spacing_before,
                     );
                     // The last text fragment need not end the paragraph: another
                     // object can follow it, or the table can extend below its text.

@@ -4019,6 +4019,49 @@ impl LayoutEngine {
         bin_data_content: Option<&[BinDataContent]>,
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
+        self.layout_partial_paragraph_with_spacing_before(
+            tree,
+            col_node,
+            para,
+            composed,
+            styles,
+            hwp3_body_reflow,
+            col_area,
+            y_start,
+            start_line,
+            end_line,
+            section_index,
+            para_index,
+            multi_col_width_hu,
+            bin_data_content,
+            wrap_anchor,
+            None,
+        )
+    }
+
+    /// `layout_partial_paragraph` 에 측정이 확정한 첫 줄 앞 간격을 함께 넘긴다.
+    /// `Some` 이면 그 값을 확정 앞 간격으로 한 번 소비하고(단 맨 위 트림·저장 vpos
+    /// 판독으로 다시 정하지 않는다), 문단 뒤 간격은 마지막 줄을 포함할 때만 더한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn layout_partial_paragraph_with_spacing_before(
+        &self,
+        tree: &mut PageLayoutContext,
+        col_node: &mut RenderNode,
+        para: &Paragraph,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        hwp3_body_reflow: bool,
+        col_area: &LayoutRect,
+        y_start: f64,
+        start_line: usize,
+        end_line: usize,
+        section_index: usize,
+        para_index: usize,
+        multi_col_width_hu: Option<i32>,
+        bin_data_content: Option<&[BinDataContent]>,
+        wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
+        confirmed_spacing_before: Option<f64>,
+    ) -> f64 {
         if let Some(comp) = composed {
             // [Task #1042 Stage 6b] 본문 paragraph 의 line_segs.empty case 의 wrap 정합 —
             // compose_lines fallback (CHARS_PER_LINE=45 heuristic) 결과를 column inner width
@@ -4104,7 +4147,22 @@ impl LayoutEngine {
             } else {
                 end_line.min(comp_ref.lines.len()).max(start_line)
             };
-            return self.layout_composed_paragraph(
+            let vertical_spacing =
+                confirmed_spacing_before
+                    .filter(|_| start_line == 0)
+                    .map(|before| ParagraphVerticalSpacing {
+                        before,
+                        after: if end_line_adjusted >= comp_ref.lines.len() {
+                            styles
+                                .para_styles
+                                .get(comp_ref.para_style_id as usize)
+                                .map_or(0.0, |s| s.spacing_after)
+                                .max(0.0)
+                        } else {
+                            0.0
+                        },
+                    });
+            return self.layout_composed_paragraph_in_frame(
                 tree,
                 col_node,
                 comp_ref,
@@ -4124,6 +4182,8 @@ impl LayoutEngine {
                 Some(para),
                 bin_data_content,
                 wrap_anchor,
+                false,
+                vertical_spacing,
             );
         }
 

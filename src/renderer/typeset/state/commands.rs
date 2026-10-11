@@ -244,6 +244,18 @@ impl TypesetState {
     ) {
         self.data.inline_placements.insert(key, placement);
     }
+    /// [#7330] 자리차지 표가 민 host 첫 글줄의 앞 간격을 흐름에 한 번 소비하고 기록한다.
+    /// 배치는 이 기록을 확정 앞 간격으로 받아 같은 값을 소비한다.
+    pub(in crate::renderer::typeset) fn consume_float_pushed_line_spacing(
+        &mut self,
+        para_idx: usize,
+        spacing: f64,
+    ) {
+        self.data.current_height += spacing;
+        self.data
+            .float_pushed_line_spacings
+            .insert(para_idx, spacing);
+    }
     pub(in crate::renderer::typeset) fn record_paragraph_float_placement(
         &mut self,
         key: (usize, usize),

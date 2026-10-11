@@ -5261,11 +5261,11 @@ impl TypesetEngine {
             && !no_lineseg_band_host;
         if should_add_post_text {
             let post_height: f64 = fmt.line_advances_sum(post_table_start..total_lines);
-            if let Some(origin) = st
+            let stored_host_origin = st
                 .paragraph_float_placements
                 .get(&(para_idx, ctrl_idx))
-                .and_then(|placement| placement.stored_host_origin)
-            {
+                .and_then(|placement| placement.stored_host_origin);
+            if let Some(origin) = stored_host_origin {
                 // The host was resolved before fit, even though its text item is
                 // emitted after the floating table. Consume that same origin.
                 st.align_flow_to(origin);
@@ -5303,6 +5303,23 @@ impl TypesetEngine {
                 && !st.current_items.is_empty()
             {
                 st.advance_column_or_new_page();
+            }
+            // [#7330] 같은 문단의 자리차지 표가 첫 글줄을 민 경우 앞 간격은 문단 상단에서
+            // 잰 거리다: 글줄 원점 = max(문단 상단 + 앞 간격, 표 점유 끝). 표 점유 끝 위에
+            // 남는 앞 간격만 흐름에 소비하고 같은 값을 배치에 넘긴다(배치는 이 값을
+            // 확정 앞 간격으로 받아 다시 더하거나 단 맨 위 규칙으로 바꾸지 않는다).
+            // 저장 원점을 소비한 host 는 그 원점이 이미 앞 간격을 포함한다.
+            if post_table_start == 0
+                && is_visible_para_float
+                && stored_host_origin.is_none()
+                && st.current_height > para_start_height + 0.5
+            {
+                let spacing = crate::renderer::float_placement::float_pushed_line_spacing_before(
+                    para_start_height,
+                    fmt.spacing_before,
+                    st.current_height,
+                );
+                st.consume_float_pushed_line_spacing(para_idx, spacing);
             }
             st.append_item(PageItem::PartialParagraph {
                 para_index: para_idx,
@@ -6918,6 +6935,7 @@ mod tests {
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
                 paragraph_float_placements: Default::default(),
+                float_pushed_line_spacings: Default::default(),
             }],
             active_header: None,
             active_footer: None,

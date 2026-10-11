@@ -59,6 +59,7 @@ impl TypesetState {
                 inline_placements: std::collections::HashMap::new(),
                 inline_flow_plans: std::collections::HashMap::new(),
                 paragraph_float_placements: std::collections::HashMap::new(),
+                float_pushed_line_spacings: std::collections::HashMap::new(),
                 inline_box_flow_bottom: 0.0,
                 deferred_table_controls: Vec::new(),
                 deferred_next_page_square_pictures: Vec::new(),
@@ -388,6 +389,7 @@ impl TypesetState {
             inline_placements: std::mem::take(&mut self.data.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.data.inline_flow_plans),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
+            float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
         };
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -463,6 +465,7 @@ impl TypesetState {
             inline_placements: std::mem::take(&mut self.data.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.data.inline_flow_plans),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
+            float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
         };
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);

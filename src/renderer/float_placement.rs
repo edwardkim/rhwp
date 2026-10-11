@@ -3422,6 +3422,25 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
         && matches!(common.vert_rel_to, VertRelTo::Para)
 }
 
+/// [#7330] 같은 문단의 문단 기준 자리차지 개체가 host 첫 글줄을 `pushed_line_top` 까지
+/// 밀었을 때, 그 글줄이 그 위에 더 소비할 문단 앞 간격(0 이상).
+///
+/// 앞 간격은 문단 상단에서 재는 거리라 글줄 원점은 `max(문단 상단 + 앞 간격, 개체 점유 끝)`
+/// 이다 — 두 거리를 더하지 않는다(한/글 저장 vpos: 점유가 앞 간격보다 크면 점유 끝, 작으면
+/// 문단 상단 + 앞 간격). 측정이 이 값을 확정해 단 결과에 남기고 배치가 같은 값을 소비한다.
+pub(crate) fn float_pushed_line_spacing_before(
+    paragraph_top: f64,
+    spacing_before: f64,
+    pushed_line_top: f64,
+) -> f64 {
+    let spacing = (paragraph_top + spacing_before.max(0.0) - pushed_line_top).max(0.0);
+    if spacing.is_finite() {
+        spacing
+    } else {
+        0.0
+    }
+}
+
 /// With no line box, an empty block host places its sole flow table
 /// inside the before/after space already reserved by table formatting. Text and
 /// whitespace hosts retain their own line boxes; negative/absolute positions

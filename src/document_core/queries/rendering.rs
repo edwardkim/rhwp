@@ -9154,6 +9154,7 @@ mod tests {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         };
 
         let h = compute_hwp_used_height(&cc, &paragraphs, 96.0).expect("값이 있어야 함");
