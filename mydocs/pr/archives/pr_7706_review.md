@@ -38,7 +38,7 @@ last_verified: 2026-10-11
 
 ## 실제 검증 결과
 
-실행 대상은 위 로컬 통합 후보다. 원 PR 변경 파일 중 engine 및 새 테스트의 내용은 원 head와 동일함을 `git diff`로 확인했다. 실행 증적은 ignored `output/pr-review/pr7706-20261011/`에 보존했다.
+실행 대상은 위 로컬 통합 후보다. 원 PR 변경 파일 중 engine 및 새 테스트의 내용은 원 head와 동일함을 `git diff`로 확인했다. 실행 당시 원문 로그는 ignored `output/pr-review/pr7706-20261011/`에 보존했다. 아래 결과를 영구 기록하고 댓글 본문을 API 대조한 뒤, 종료 절차에 따라 이 PR 전용 임시 로그를 정리했다. 표의 로그 이름은 당시 실행 자료 식별자다.
 
 | 검증 | 결과와 증적 |
 | --- | --- |
@@ -80,3 +80,11 @@ HWP/HWPX/PDF 검증 입력 커밋 조건은 비해당이다. 이번 직접 재�
 - 원 head의 적용 코드에서 차단 결함은 발견하지 않았다. 위 미검증 환경을 전체 OS 보장으로 확대하지 않는다.
 - 작업지시자의 merge·운영 기록 반영·후속 댓글 승인을 받아 원 head와 필수 CI 및 최신 base를 재확인한 뒤 병합했다. merge parent에 원 기여 SHA가 포함됨을 확인했다. 원 코드 PR의 CI는 병합 전에 끝났으며 병합 후 검증 CI는 시작하거나 재실행하지 않았다. 검토 기록은 maintainer 일반 경로의 운영 기록 직접 반영으로 archive review와 오늘할일만 devel에 보존한다.
 - 기록 반영 뒤 기여자·이슈 댓글에 실제 merge SHA, CI 링크, 검증 요약과 미검증 범위를 남긴다. 본문 파일을 `--body-file`로 전달하고 API로 UTF-8 본문·BOM/치환 문자 여부를 재확인한다. 첫 기여 감사와 원 commit 보존을 명시한다. contributor fork와 공용 target은 보존하고 이 PR의 검토 서버·임시 branch/ref·로그만 종료 절차에 따라 정리한다.
+
+## 후속 처리 완료
+
+- 사용자 승인 후 원 PR merge와 devel 반영을 확인했고, archive review·오늘할일만 운영 기록으로 직접 반영했다. contributor source에 추가 push·rewrite는 하지 않았다.
+- [이슈 검증 요약 댓글](https://github.com/edwardkim/rhwp/issues/7691#issuecomment-6104488961), [첫 기여 감사·병합 댓글](https://github.com/edwardkim/rhwp/pull/7706#issuecomment-6104490984)을 게시했다. 각 본문은 API 응답과 UTF-8 파일이 완전히 같고 BOM·치환 문자·`??`가 없으며 작성자가 edwardkim임을 확인했다.
+- 코드 병합 후 [duration 갱신 run 38104148616](https://github.com/edwardkim/rhwp/actions/runs/38104148616)은 success다. 실제 수집 결과는 `ready:false / no-verified-pr-duration-measurements`로 자료 부족에 따른 갱신 보류이며, 해당 PR의 Rust worker가 skipped인 결과와 일치한다. 필수 검증 CI의 실패로 분류하지 않는다. 병합 후 검증 CI를 재실행하지 않았다.
+- 이 작업이 만든 `review/studyreadbook4ever-20261011` branch와 `upstream/pr7706-head` 임시 fetch ref를 정리했다. 코드 후보와 실제 병합본의 mydocs 밖 diff가 없고 검토 기록이 devel에 존재함을 먼저 확인했다. 별도 worktree는 만들지 않았다. 검토 Vite 7794 서버를 종료했다.
+- 종료 시 이 PR 전용 ignored 로그·스크립트 폴더를 정리했다. 기본 작업공간·기존 다른 검토 worktree·공용 `target/pr-review`와 WASM 산출물은 보존했다. `studyreadbook4ever/rhwp`의 `fix/linux-ime-navigation-devel` fork branch는 삭제하지 않았다. 최종 로컬 branch는 devel이다.
