@@ -356,7 +356,7 @@
     "exitCode": 0,
     "method": "isolated rustc --test exact frozen Native library; does not replace final Cargo nextest"
   },
-  "formalNewUnitCountersRun": false,
+  "formalNewUnitCountersRun": true,
   "fullValidationComplete": false,
   "approvalRequiredBeforePushOrPr": true,
   "executionNote": "Two controls retried with RHWP_VISUAL_RASTER_TIMEOUT_MS=90000 after Chrome 30s navigation timeout; original failure logs retained. Same source, DPI, pixel algorithm and eight workers.",
@@ -389,5 +389,35 @@
       "bothMatchPercent": 99.90622,
       "viewedBoth": true
     }
+  },
+  "formalWholeNextest": {
+    "head": "4d13092c74f480f63b28c84507c3890e7175ce78",
+    "runId": "b0e28439-6639-42ed-bfce-a564f27465d5",
+    "passed": 10268,
+    "failed": 0,
+    "skipped": 45,
+    "runSeconds": 519.72,
+    "selectedCorrectedTests": [
+      "        PASS [   0.015s] ( 2440/10268) rhwp renderer::layout::table_layout::row_cut_tests::test_advance_row_cut_empty_overlay_reset_no_hard_break",
+      "        PASS [   0.354s] ( 6766/10268) rhwp::regression_suite_013 issue_3637_split_cell_nested_table_vpos::nested_table_snap_stays_inside_the_split_cell",
+      "        PASS [   0.051s] ( 9975/10268) rhwp::regression_suite_028 issue_5699_ladder_band_tripwire::issue_5699_yeongwol_body_starts_below_table_band",
+      "        PASS [   0.046s] ( 9977/10268) rhwp::regression_suite_028 issue_5699_ladder_band_tripwire::issue_5699_yeongwol_page_count_matches_hangul_oracle"
+    ],
+    "exit": {
+      "exitCode": 0,
+      "head": "4d13092c74f480f63b28c84507c3890e7175ce78",
+      "elapsedSeconds": 1233.6863607080013
+    },
+    "logSha256": "af449ab4c13f01f82cdc2f49647371bc84c701cb527f519e6e37ec6aac844702",
+    "fullPrVerificationComplete": false
+  },
+  "latestPendingChange": {
+    "scope": "cfg(test) constructor syntax only",
+    "old": "Box::new(Table::default())",
+    "new": "Box::default()",
+    "runtimeProductionPrefixUnchanged": true,
+    "reason": "clippy::box_default",
+    "followup": "focused existing unit and required lint/build/Skia/Studio/fresh WASM pending",
+    "whole10268Head": "4d13092c74f480f63b28c84507c3890e7175ce78"
   }
 }

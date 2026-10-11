@@ -931,3 +931,16 @@ TSV·실행 로그는 ignored `output/pr-review/7445-completed-20261009/stage458
 
 최신 전체 nextest·필수 lint/build/Skia·완료 corpus 전체 검증은 아직 남았습니다.
 **로컬 보정과 검증을 마친 후 PR 제출안을 보여드리고 승인받습니다. 원격 push·PR 생성·merge는 진행하지 않았습니다.**
+
+
+### 같은 후보의 전체 회귀 완료와 lint 문법 수정
+
+`4d13092c74f480f63b28c84507c3890e7175ce78`의 전체 nextest는 run
+`b0e28439-6639-42ed-bfce-a564f27465d5`, **10268 PASS / 0 FAIL / 45 SKIP, 519.720초**, exit 0입니다.
+3·8·11쪽의 관계 검사, 영월 서식의 기존 2검사, 새 빈 줄 소유 반례를 포함한 기존 단위 함수도 통과했습니다.
+fmt·Native/WASM32 Clippy·workspace build도 통과했습니다. all-target Clippy는
+`cfg(test)` 안의 `Box::new(Table::default())`에 `clippy::box_default`를 지적했습니다.
+같은 초기값을 만드는 `Box::default()`와 표준 서식으로 수정했으며 경고를 억제하지 않았습니다.
+production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수의 재실행과 필수 게이트를 이어갑니다.
+전체 10268 PASS는 위 정확한 head의 결과로 보존하며 다음 head의 전체 실행으로 표시하지 않습니다.
+최종 38문서·1045쪽씩의 대조와 backend 검증, 제출 승인은 아직 남았습니다.
