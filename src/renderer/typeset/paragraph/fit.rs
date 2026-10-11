@@ -28,6 +28,29 @@ pub(in crate::renderer::typeset) fn layout_drift_safety_px(paragraphs: &[Paragra
     }
 }
 
+/// [#7824] 이 문단의 fit 에 쓸 drift 안전마진.
+///
+/// 저장 줄 없이 rhwp 가 로드 때 합성한 줄(`TAG_IMPLEMENTATION_PROPERTY`)만 가진 문단은
+/// 마진 없이 진짜 본문 하한으로 잰다. 그런 문단의 쪽 맞춤은 이미 위 간격까지 담은 계산
+/// 높이(`height_for_fit`)로 하므로, 마진은 한/글이 넣는 쪽 마지막 줄만 밀어낸다 —
+/// hwp3-sample16-hwp5 21쪽 끝 한 줄 글머리(바닥 967.8px / 본문 971.3px)와 22쪽 끝
+/// 다섯 줄 문단의 마지막 줄(968.4px)을 한/글은 그 쪽에 두는데 4px 마진 예산
+/// 967.3px 에 걸려 다음 쪽으로 넘어갔다. 한/글 저장 줄이 있는 문단은 종전대로다.
+pub(in crate::renderer::typeset) fn paragraph_layout_drift_safety_px(
+    paragraphs: &[Paragraph],
+    para: &Paragraph,
+) -> f64 {
+    let synthesized_lines_only = !para.line_segs.is_empty()
+        && para.line_segs.iter().all(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        });
+    if synthesized_lines_only {
+        0.0
+    } else {
+        layout_drift_safety_px(paragraphs)
+    }
+}
+
 pub(in crate::renderer::typeset) fn exclusion_probe_height(
     fmt: &FormattedParagraph,
     hwpx_stored_layout: bool,
