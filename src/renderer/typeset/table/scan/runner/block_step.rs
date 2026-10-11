@@ -197,7 +197,7 @@ impl TypesetEngine {
             let mut complete_row_frame = None;
             if cut_query.retries_band(allow_block_split, can_intra_split, block_h, budget) {
                 let offsets = block_query.row_offsets_for_cut(&block, blk_start_cut);
-                let res2 = layout_engine.advance_row_block_cut_with_row_offsets(
+                let mut res2 = layout_engine.advance_row_block_cut_with_row_offsets(
                     table,
                     b_start,
                     b_end,
@@ -206,6 +206,47 @@ impl TypesetEngine {
                     &offsets,
                     styles,
                 );
+                // 내용은 다 들어가도 마지막 독립 행의 물리 최소가 안 들어갈 수 있다.
+                // 그 행의 유닛을 먼저 소비하지 않고 완전 행 경계 후보를 조회한다.
+                // 기존 원본 프레임 Query가 앞 밴드와 뒤 행의 수용을 인증할 때만
+                // 같은 컷을 예약·paint에 전달한다.
+                if res2.fully_consumed {
+                    if let Some(&last_top) = offsets.last() {
+                        let boundary = layout_engine.advance_row_block_cut_with_row_offsets(
+                            table,
+                            b_start,
+                            b_end,
+                            blk_start_cut,
+                            last_top.min(budget),
+                            &offsets,
+                            styles,
+                        );
+                        let candidate = Some((boundary.clone(), offsets.clone()));
+                        let selected = table::scan::block_fragment::SelectedBlockCut::select(
+                            rowbreak_use_row_offsets,
+                            &res,
+                            &block_row_offsets,
+                            &candidate,
+                        );
+                        if selected
+                            .complete_row_boundary_band(
+                                &block_query,
+                                &block,
+                                blk_start_cut,
+                                selected.end_row(&block),
+                                (
+                                    budget,
+                                    st.base_available_height() - header_overhead,
+                                    !is_continuation && cursor_row == 0,
+                                    self.dpi,
+                                ),
+                            )
+                            .is_some()
+                        {
+                            res2 = boundary;
+                        }
+                    }
+                }
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                     eprintln!(
                     "DIAG_SCAN BLOCK_BAND? r={} b={}..{} budget={:.1} cut_h={:.1} fully={} end_cut={:?}",

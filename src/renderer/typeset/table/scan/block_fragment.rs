@@ -181,7 +181,7 @@ impl<'a> SelectedBlockCut<'a> {
             end_row - 1,
             rows.styles,
         );
-        let next_height = source_height - boundary_budget;
+        let next_height = (source_height - boundary_budget).max(rows.mt.row_heights[end_row]);
         let next_visible =
             rows.layout_engine
                 .row_complete_cut_content_height(rows.table, end_row, rows.styles);

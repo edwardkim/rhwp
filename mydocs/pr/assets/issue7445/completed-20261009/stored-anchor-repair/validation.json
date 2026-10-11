@@ -3722,5 +3722,259 @@
     "comparisonAlgorithmChanged": false,
     "latestWholeNextest": "not yet run after repairs",
     "prApprovalRequired": true
+  },
+  "v22": {
+    "sourceCandidate": {
+      "parentHead": "efed4b6b2b4425b1370193ef030dea5bfbb25586",
+      "patchSha256": "b38b61e6afed6bd7d64f299c30c2b19b72e24cac68a6fa8ab6396e22cc6577c9",
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp-7445-completed-20261009/src/renderer/typeset/table/scan/runner/block_step.rs",
+          "sha256": "c4cb56c01215df6899c1f65a43a7765f790614207d6515e92cb539837eac9150"
+        },
+        {
+          "path": "/Users/tsjang/rhwp-7445-completed-20261009/src/renderer/typeset/table/scan/block_fragment.rs",
+          "sha256": "cc75499302f9e52fc36dee93832e6fdc10f13724e663f599f7b9934f4ac967e7"
+        },
+        {
+          "path": "/Users/tsjang/rhwp-7445-completed-20261009/src/renderer/typeset/table/continuation/fragment/emit.rs",
+          "sha256": "77bc63b46751f4cad518a056ea0087679959eb5c561152acdff828c82e4c288a"
+        },
+        {
+          "path": "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue5877/fragment_ghost_vrules.hwp",
+          "sha256": "263a96fa24b4070a4a22cc4a62d878c50b7586d0741e039c58aa18615273d5a3"
+        },
+        {
+          "path": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/fragment_ghost_vrules-2020.pdf",
+          "sha256": "71dd147ab8d9be9f0d79b6e8d42c62d293cbb88e9a7cb645715aa6896343e22f"
+        },
+        {
+          "path": "/Users/tsjang/rhwp-7445-completed-20261009/tests/cases/issue_5877_fragment_ghost_vrules.rs",
+          "sha256": "635b7e9ff4d8c664d50570b9c4cd0f478d632a5daa37039c815cdb1f2187cb87"
+        },
+        {
+          "path": "/Users/tsjang/rhwp-7445-completed-20261009/scripts/visual_sweep.py",
+          "sha256": "d1024c806ba1658e83d0f142780ee3df5867c3e8418ca52d35ac01f6f9489115"
+        }
+      ],
+      "nativeBinary": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/rhwp-v22b",
+        "sha256": "8c41edadc5b9ca7d58a532f71c733eee371c388fb181098e201c51634a862480"
+      },
+      "nativeBuildExitCode": 0,
+      "guardExitCode": 0,
+      "guardTests": 2,
+      "testExpectationChanged": false,
+      "newTestFunctions": 0,
+      "guidelinesChanged": false
+    },
+    "rootCause": "Block offset walk consumed the final independent row content without its physical minimum. Retry a complete source row boundary only when the shared frame query certifies both sides; preserve the independent next-row minimum in fit and emission.",
+    "beforeGuard": {
+      "run": 2,
+      "passed": 1,
+      "failed": 1,
+      "failure": "next independent row minimum was shortened",
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/guard-v22.log"
+    },
+    "afterGuard": {
+      "run": 2,
+      "passed": 2,
+      "failed": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/guard-v22b.log"
+    },
+    "formalNextest": {
+      "runId": "13087007-f35a-4059-95d6-4a2b5ebda25f",
+      "run": 26,
+      "passed": 26,
+      "failed": 0,
+      "skipped": 592,
+      "seconds": 7.923,
+      "threads": 8,
+      "exitCode": 0,
+      "wholeNextest": false,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/nextest-v22b.log"
+    },
+    "newTestFunctions": 0,
+    "testExpectationsChanged": false,
+    "baselineOrToleranceChanged": false,
+    "comparisonAlgorithmChanged": false,
+    "guidelinesChanged": false,
+    "native": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/native-v22/silhouette.tsv",
+      "sha256": "10caa072c273fd13a7191f558426fa42925f43c2170337dfe71c1e3f03c1c949",
+      "pages": 31,
+      "minimum": 42.00626,
+      "below90": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "selected": {
+        "10": 99.65286,
+        "11": 99.14578,
+        "17": 50.6608,
+        "18": 51.9828,
+        "19": 45.4824,
+        "20": 42.00626,
+        "21": 47.21072,
+        "22": 43.52785
+      }
+    },
+    "fresh": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/fresh-v22/silhouette.tsv",
+      "sha256": "10caa072c273fd13a7191f558426fa42925f43c2170337dfe71c1e3f03c1c949",
+      "pages": 31,
+      "minimum": 42.00626,
+      "below90": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "selected": {
+        "10": 99.65286,
+        "11": 99.14578,
+        "17": 50.6608,
+        "18": 51.9828,
+        "19": 45.4824,
+        "20": 42.00626,
+        "21": 47.21072,
+        "22": 43.52785
+      }
+    },
+    "freshProvenance": {
+      "pages": 31,
+      "nativeFreshDifferentPngPages": [],
+      "browser": "Chrome/154.0.8037.99",
+      "wasmBuildExitCode": 0,
+      "wasmSha256": "7392ed6014e873efc9bda09e878a7dc36385dc8057ae9100094b3a9eef25dde5",
+      "javascriptSha256": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+      "captureConcurrency": 8,
+      "retryCount": 0
+    },
+    "nativeBuild": {
+      "exitCode": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/build-v22b.log"
+    },
+    "wasmBuild": {
+      "exitCode": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/wasm-v22b.log",
+      "mode": "macOS locked --no-opt local substitute",
+      "dockerOptimized": false
+    },
+    "pageCount": {
+      "beforeNative": 32,
+      "afterNative": 31,
+      "afterFresh": 31,
+      "independentPrint": 31
+    },
+    "normalNativeControl": {
+      "documents": 13,
+      "pages": 356,
+      "changedPages": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/counter-v22b-identity.json"
+    },
+    "fontSupply": {
+      "referenceManifest": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage417-completed27-final-visual/native/regulatory17/silhouette_manifest.json",
+      "referenceManifestSha256": "9c9037cb08fc719f6db61fafc3879dc8e9a0c8ed7a7546117914636ea2f03dfa",
+      "fontFiles": 706,
+      "changedFiles": []
+    },
+    "beforeV21LowBodiesIdenticalAfterPageMapping": {
+      "comparison": "V21 body to V22b body after preceding one-page repair",
+      "notUpstreamBaseFidelityEvidence": true,
+      "records": [
+        {
+          "beforePage": 18,
+          "afterPage": 17,
+          "bodyIdentical": true,
+          "beforeSha256": "37a3f70148452721a16a79aec78e484cb100f11cd383413111b241c6886b6cc0",
+          "afterSha256": "37a3f70148452721a16a79aec78e484cb100f11cd383413111b241c6886b6cc0"
+        },
+        {
+          "beforePage": 19,
+          "afterPage": 18,
+          "bodyIdentical": true,
+          "beforeSha256": "78b95a7619d1ea6058f65743d27444d2935ad705b70e2a9f41c70605ba0cfb10",
+          "afterSha256": "78b95a7619d1ea6058f65743d27444d2935ad705b70e2a9f41c70605ba0cfb10"
+        },
+        {
+          "beforePage": 20,
+          "afterPage": 19,
+          "bodyIdentical": true,
+          "beforeSha256": "cb7d31a7606e93a4b7fdccabcba47b8cb802fd1b466e0870178def56f7a04ad7",
+          "afterSha256": "cb7d31a7606e93a4b7fdccabcba47b8cb802fd1b466e0870178def56f7a04ad7"
+        },
+        {
+          "beforePage": 21,
+          "afterPage": 20,
+          "bodyIdentical": true,
+          "beforeSha256": "0c8c468af34e9d17cb5d42586afb664d4693281e61335bb0b428b968f23442c4",
+          "afterSha256": "0c8c468af34e9d17cb5d42586afb664d4693281e61335bb0b428b968f23442c4"
+        },
+        {
+          "beforePage": 22,
+          "afterPage": 21,
+          "bodyIdentical": true,
+          "beforeSha256": "93bf9672ffa762e5756328c3fe1e0ff9f0bc7614e9319e3df5b8c8d78e17ff88",
+          "afterSha256": "93bf9672ffa762e5756328c3fe1e0ff9f0bc7614e9319e3df5b8c8d78e17ff88"
+        },
+        {
+          "beforePage": 23,
+          "afterPage": 22,
+          "bodyIdentical": true,
+          "beforeSha256": "0e143c02f726d3e33f614a813ff1c9b94db0ecc0141c60782b5acc806600bf3f",
+          "afterSha256": "0e143c02f726d3e33f614a813ff1c9b94db0ecc0141c60782b5acc806600bf3f"
+        }
+      ]
+    },
+    "exactBaseSelectedSemanticComparison": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage442-gas-page-boundary/base-selected-low/silhouette.tsv",
+      "sha256": "ba6c7d28fff0fc63d24dcf585083a1ec127b459655a1b0935cb2ec99ddb13583",
+      "pages": 6,
+      "minimum": 50.81659,
+      "below90": [
+        17,
+        18
+      ],
+      "selected": {
+        "17": 50.81659,
+        "18": 52.80618,
+        "19": 96.70875,
+        "20": 94.47641,
+        "21": 94.36311,
+        "22": 98.62759
+      }
+    },
+    "baseComparisonScope": "Print p17..22 matched to base Native p18..23; base total32 vs Print31; not whole-base fidelity acceptance",
+    "legacyBelow90Pages": [
+      17,
+      18
+    ],
+    "currentBranchNewBelow90Pages": [
+      19,
+      20,
+      21,
+      22
+    ],
+    "currentBranchNewBelow90MustBeRepaired": true,
+    "wholeFidelityAccepted": false,
+    "trackedWholeDocumentIssue": 7803,
+    "original27": {
+      "resolved": 22,
+      "unsuitableScopesSeparated": 2,
+      "remainingFailures": 3
+    },
+    "additionalVisualWork": "restore branch fire table pages19..22 that were >=90 on exact devel; inspect legacy p17..18 separately",
+    "setupFailuresPreserved": [
+      "bundled-python-fontcheck-failed.log",
+      "nextest-invalid-profile.log"
+    ],
+    "prApprovalRequired": true
   }
 }
