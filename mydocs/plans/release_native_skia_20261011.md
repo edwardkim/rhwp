@@ -67,3 +67,27 @@ milestone=v1.0.0, labels=bug/cli/ci다. 한국어 본문을 API 응답과 byte-e
 운영 O3 검증은 github_operations.md에 따른다. PR 번호 기반 review/오늘할일은 정확한
 code head CI 성공 후 작성한다. 이번 승인 범위는 이슈 등록·작업 branch push·devel PR 생성이며
 merge와 기존 Release asset 교체는 포함하지 않는다.
+
+## CI 오류 보정
+
+메인터너가 CI 종료 뒤 오류 수정을 지시했다. PR #7818의 head
+`efb169e57a9c123bdc23735f16d6c2f2cf4f4bfe`에서
+[CI run 38120641361](https://github.com/edwardkim/rhwp/actions/runs/38120641361)의
+Lint `Validate workflow contracts`가 이전 release 빌드 명령을 요구하는
+`test_nextest_archive_workflow.py`의 검사 1건으로 실패했다. 마지막 Build & Test 실패는
+Lint 실패를 전달한 aggregate이며, 네 archive의 build/worker, Native Skia와 Frontend package는
+성공했다. [CodeQL run 38120641374](https://github.com/edwardkim/rhwp/actions/runs/38120641374)도
+네 언어 분석 모두 성공했다. Clippy/WASM 검사는 선행 실패로 실행되지 않았다.
+
+이 검사를 승인된 locked Native Skia release 계약으로 갱신했다. 기존 빌드/target 요구를
+유지하면서 `--locked --features native-skia`를 함께 요구하며 실패 허용이나 게이트 제거는 없다.
+수정 전 같은 로컬 nextest workflow 검사 15건 중 1건 FAIL, 수정 후 15건 PASS다.
+CI의 `Validate workflow contracts` 명령을 그대로 실행해 Node 335건과 Python 205건 모두
+PASS, 그 뒤의 adoption/planner/org/frame/reality 계약 26건도 PASS다. 테스트 변경은 Python
+workflow 계약에 한정하므로 Rust 재빌드·새 WASM/시각 출력은 반복하지 않는다.
+
+로그는 기존 ignored 증적 경로의 `ci-lint-failed.log`, `ci-aggregate-failed.log`,
+`nextest-contract-before.log`, `nextest-contract-after.log`,
+`workflow-contracts-ci-step-after.log`, `lint-later-contracts-after.log`에 보존한다.
+새 head를 push한 뒤 CI/CodeQL을 다시 확인해야 하며, 이전 head의 성공을 새 head의 CI 성공으로
+대체하지 않는다. 다섯 플랫폼 Release Binary 검증과 merge는 아직 수행하지 않았다.
