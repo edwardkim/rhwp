@@ -55,6 +55,7 @@ pub mod pdf;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf_raster_fidelity;
 pub mod pua_oldhangul;
+pub mod raster_pixels;
 pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
@@ -63,6 +64,8 @@ pub(crate) mod shaping_composition;
 pub(crate) mod shaping_context;
 pub(crate) mod shaping_paragraph;
 pub(crate) mod shaping_publication;
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub mod sixel;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
 #[allow(dead_code)]

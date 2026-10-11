@@ -4,6 +4,8 @@
 - 기준: `upstream/devel` `790a6f8f388445e7bff2bcb165aa7b384f9ece80`.
 - 브랜치: `feat/issue7820-sixel-20261011`. 공용 target은 기본 작업공간의 `target/pr-review`.
 - 범위: 읽기 전용 `export-sixel`, 0부터 시작하는 단일 쪽 선택, 픽셀 너비와 종횡비, stdout 스트림·stderr 오류, 사용·검증 안내.
+- 추가 지시: 2026-10-11 「기존 export-png 처럼 출력 디렉토리와 페이지 지정」.
+  `-o`로 전체 쪽의 개별 파일을 저장하며 `-p`로 한 쪽을 선택한다. stdout 기본은 첫 쪽 한 스트림을 유지한다.
 
 ## 공통 결과와 소비 경로
 

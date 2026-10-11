@@ -301,7 +301,7 @@ subsecond = { version = "=0.7.10", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
-native-skia = ["dep:resvg", "dep:skia-safe"]
+native-skia = ["dep:resvg", "dep:skia-safe", "dep:icy_sixel"]
 subsecond-dev = ["dep:subsecond"]
 # [gym_gpu_raster] GPU 가속 SVG 래스터화 경로 (네이티브 전용). native-skia 와 같은 방식으로
 # 선택 게이팅한다 — CI 는 GPU 없이도 컴파일되고, 실제 GPU 실행은 로컬에서만 일어난다.
@@ -317,6 +317,7 @@ resvg = { version = "0.47", optional = true }
 pdf-writer = "0.12"
 subsetter = "0.2"
 skia-safe = { version = "0.153.2", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
+icy_sixel = { version = "=0.7.0", optional = true }
 
 # [gym_gpu_raster] GPU 래스터화 스택 (feature = "gpu", 네이티브 전용).
 # vello: Linebender 의 GPU 2D 렌더러(컴퓨트 파이프라인). vello_svg: usvg 트리 → vello Scene.

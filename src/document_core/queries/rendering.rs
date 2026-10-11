@@ -1983,6 +1983,21 @@ impl DocumentCore {
         SkiaLayerRenderer::new().render_png(&layer_tree)
     }
 
+    /// PNG와 같은 조판·replay를 요청 픽셀 너비로 래스터화한다 (쪽 번호는 0부터).
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_pixels_native_at_width(
+        &self,
+        page_num: u32,
+        width: u32,
+        profile: RenderProfile,
+        font_paths: &[std::path::PathBuf],
+    ) -> Result<crate::renderer::raster_pixels::RasterPixels, HwpError> {
+        let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
+        crate::renderer::skia::SkiaLayerRenderer::new()
+            .with_font_paths(font_paths)
+            .render_pixels_at_width(&tree, width, Default::default())
+    }
+
     /// 사용자 지정 폰트 경로를 포함한 PNG 렌더링. SVG 의 `--font-path` 와 동일 패턴.
     /// ttfs 디렉토리의 한컴 전용 폰트 (HY견명조 등) 가 시스템 fontconfig 에 없을 때 사용.
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
