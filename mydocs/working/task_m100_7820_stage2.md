@@ -24,7 +24,15 @@ SHA-256은 `9eda469d041e6dc8c6f3ce6cdc9e748aa7ec28f3ba2f7eb046b82f569699efe7`이
 원격에서 version/help 실행, 표 문서 전체 3파일 저장, 파일 모드 stdout 공백,
 두 번째 쪽 stdout과 파일 바이트 일치, 세 번째 쪽 선택 파일과 전체 출력의 해당 파일
 일치를 확인했다. `remote-cli-verification.json`에 환경·명령 결과를 연결한다.
-실시간 CLI의 터미널 화면 판정은 메인테이너가 진행 중이다.
+실시간 CLI의 터미널 화면 판정도 메인테이너가 성공으로 확인했다.
+제공한 화면은 `/home/edward/mydev`에서 `./rhwp export-sixel samples/21a.hwp
+-p 0 --width 320`과 `-p 1 --width 320`을 실행한 첫째·둘째 쪽이다.
+두 페이지의 Sixel 직접 표시와 페이지 선택 동작을 확인한 증적이며,
+해당 문서의 전체 페이지 한컴 일치 판정으로 확대하지 않는다.
+첫 실행에서 보이는 `LAYOUT_OVERFLOW_DRAW`·`LAYOUT_OVERFLOW`(9.1px)는
+조판 진단으로 별도 기록한다. stdout Sixel 스트림의 무결성은 앞의
+바이트 비교·독립 디코더 검사로 검증했다. 이 화면만으로 진단의 원인이
+이번 변경에서 발생했는지 또는 기존 문서 조판 문제인지는 판정하지 않는다.
 이전 저장 스트림의 Windows 11 WezTerm·Windows Terminal SSH 시각 판정은 통과다.
 
 ## fresh Docker WASM
@@ -52,7 +60,14 @@ JS는 `57805b611572e0d2bf9d3a871e801698450d9a8785e7bc524ebc422f7ac924a7`,
 WASM은 `2be5c801685a9af3b3048b103a5f1cbc367723de2df06108284831da9f1be16d`다.
 실루엣 전용 실행의 자동 gate는 `not_evaluated`이므로 TSV 산출을 승인 판정으로
 대신하지 않는다. Native PNG의 수정 전후 전체 픽셀 동일성과 독립 Sixel decode 검증은
-1단계에 연결하며, fresh WASM의 확대 판독과 최종 PR 판정은 별도로 남아 있다.
+1단계에 연결한다. `fresh-wasm-inspection/`의 PDF·Native PNG·fresh WASM 비교 PNG를
+직접 확인하고 표 셀·본문 줄 간격 및 각주 구분선·각주 본문을 확대 판독했다.
+표 괘선과 그림 경계·화살표의 주요 위치 및 내용 순서는 유지된다. 한컴 PDF와의
+글꼴 굵기·정체/글꼴 형태, Native의 회색 괘선·각주선, compound 하단의 `id` 표시 차이는
+남아 있다. Native 전체 11쪽은 고정 base와 decoded RGBA가 동일해 이번 공통 픽셀
+분리로 새로 생긴 Native 출력 차이는 검출되지 않았다. WASM/Native의 글꼴 형태 차이는
+동일 backend의 회귀나 한컴 완전 일치로 해석하지 않는다. 새 레이아웃 golden은 추가하지 않았다.
+Sixel 기능의 메인테이너 터미널 판정과 전체 조판 일치·최종 PR 판정은 구분한다.
 
 전체 release-test·Native Skia 공식 3종·Rust lint는 별도 검증 승인 전까지 미실행이다.
 remote push·PR 생성·merge·이슈 close도 아직 수행하지 않았다.
