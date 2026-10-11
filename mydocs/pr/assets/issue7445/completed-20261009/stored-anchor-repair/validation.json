@@ -4143,5 +4143,225 @@
     },
     "finalWholeRegressionAndLintPending": true,
     "prApprovalRequired": true
+  },
+  "v25": {
+    "sourceCandidate": {
+      "parentHead": "8ea436da91c919a9a8500cd05f7dd020d4d7425d",
+      "patchSha256": "572591215264599846986a9683521863603d9203db04617648fd427a5b6dccf1",
+      "files": [
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "sha256": "e0abd56e8905ee6fb53283ded5c297941a67f84c5f9ecd226888d707e6f4f68a"
+        },
+        {
+          "path": "tests/issue_rowbreak_chart_overlap.rs",
+          "sha256": "39b3262b71bf5a0cd12f42944f7e948566f6895951a30919e14c62d8cacda933"
+        },
+        {
+          "path": "samples/rowbreak-problem-pages.hwpx",
+          "sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0"
+        },
+        {
+          "path": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+          "sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5"
+        },
+        {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "d1024c806ba1658e83d0f142780ee3df5867c3e8418ca52d35ac01f6f9489115"
+        }
+      ],
+      "nativeBinary": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/rhwp-v25",
+        "sha256": "3a65a419a60b89b35537fc1c7347e0876d9800034d1be1bbafdb604bff242695"
+      },
+      "nativeBuildExitCode": 0,
+      "diagnosticTests": 17,
+      "diagnosticFailures": 0,
+      "formalWholeNextestPending": true
+    },
+    "rootCause": "종료 1×1 자식의 새 가시 창을 앞 조각의 첫 줄 소유 증거로 추정해 source cut offset 위에 가시 줄 높이를 추가 소비했다. 원본 컷이 이미 예약한 offset을 유지하고 기존 재귀 커서와 1×1 호스트의 비종료 예약은 보존한다.",
+    "sourceTestCorrect": true,
+    "independentExpectation": "같은 원본의 독립 Print 8쪽 첫 줄은 하여 정보를 제공하거나 정보의 제공을 매개하는 자를 말한다. 기존 포함·후속 문단 순서·중첩 테두리 검사는 이 관계를 보호한다.",
+    "existingTestExpectationsChanged": false,
+    "newTestFunctions": 0,
+    "baselineOrToleranceChanged": false,
+    "comparisonAlgorithmChanged": false,
+    "diagnosticTests": {
+      "harness": "원래 tests/issue_rowbreak_chart_overlap.rs를 같은 Native rlib와 Rust test runner로 직접 실행",
+      "run": 17,
+      "passed": 17,
+      "failed": 0,
+      "threads": 8,
+      "seconds": 0.17,
+      "exitCode": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/guard-v25.log",
+      "formalNextest": false
+    },
+    "base": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/base/rowbreak-hwpx/silhouette.tsv",
+      "sha256": "f4d91d0e2af320c97aa0491475a75a2a94c42f287bccc2538436b1990d695414",
+      "pages": 18,
+      "minimum": 32.30975,
+      "below90": [
+        4,
+        6,
+        7,
+        8,
+        15,
+        16
+      ],
+      "page8": 32.30975
+    },
+    "before": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/current/silhouette.tsv",
+      "sha256": "c17ad2078012151c89189bc995a9c9e33a944a87fb00af0d43306f0b1635a8a0",
+      "pages": 18,
+      "minimum": 36.40792,
+      "below90": [
+        4,
+        6,
+        7,
+        8,
+        15,
+        16
+      ],
+      "page8": 71.1887
+    },
+    "native": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/native-v25/silhouette.tsv",
+      "sha256": "97d08e635640211d2fbdb0eb9225ce4595483144f7b89fee740b981df1a0f932",
+      "pages": 18,
+      "minimum": 36.40792,
+      "below90": [
+        4,
+        6,
+        7,
+        8,
+        15,
+        16
+      ],
+      "page8": 72.73193
+    },
+    "fresh": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/fresh-v25/silhouette.tsv",
+      "sha256": "97d08e635640211d2fbdb0eb9225ce4595483144f7b89fee740b981df1a0f932",
+      "pages": 18,
+      "minimum": 36.40792,
+      "below90": [
+        4,
+        6,
+        7,
+        8,
+        15,
+        16
+      ],
+      "page8": 72.73193
+    },
+    "changedNativeSvgPages": [
+      8
+    ],
+    "wholeDocumentAccepted": false,
+    "retainedSourceAndAccurateTest": true,
+    "existingUnresolvedIssue": {
+      "number": 7741,
+      "state": "open",
+      "sourceAndReferenceHashesMatch": true,
+      "liveRecord": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/issue-7741-live.json",
+      "newDuplicateIssueCreated": false,
+      "publicCompletionNotPosted": true
+    },
+    "counterpartIssue7726Closed": false,
+    "freshProvenance": {
+      "wasmBuildExitCode": 0,
+      "wasmSha256": "efe8ea55eb0a4890802f0c9e5cf2118680fad40bcebbb70ab25c8b798be1ef01",
+      "javascriptSha256": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+      "browser": "Chrome/154.0.8037.99",
+      "mode": "macOS locked --no-opt local substitute",
+      "dockerOptimized": false,
+      "nativeFreshDifferentSvgPages": [],
+      "nativeFreshDifferentPngPages": [],
+      "captureConcurrency": 8,
+      "retryCount": 0
+    },
+    "normalNativeControls": {
+      "documents": 13,
+      "pages": 356,
+      "changedPages": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/counter-v25-identity.json",
+      "additionalControls": [
+        {
+          "key": "gas5877",
+          "beforePages": 31,
+          "afterPages": 31,
+          "identical": true,
+          "changedPages": []
+        },
+        {
+          "key": "rowbreak-hwp18",
+          "beforePages": 18,
+          "afterPages": 18,
+          "identical": true,
+          "changedPages": []
+        }
+      ],
+      "additionalPages": 49
+    },
+    "nativeCaptureReuse": {
+      "changedPages": [
+        8
+      ],
+      "reusedPages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "reuseEvidence": "same raw Native SVG, original input, same independent PDF, verified706 installed fonts, same96dpi",
+      "captures": [
+        {
+          "page": 8,
+          "command": [
+            "node",
+            "/Users/tsjang/rhwp-7445-completed-20261009/scripts/rasterize-svg-webfonts.mjs",
+            "--input",
+            "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/native-v25/svg/rowbreak-problem-pages_008.svg",
+            "--output",
+            "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/native-v25/rhwp_png/rhwp_008.png",
+            "--zoom",
+            "1.00000000"
+          ],
+          "exitCode": 0
+        }
+      ],
+      "captureConcurrency": 8,
+      "rasterRetryCount": 0,
+      "comparisonAlgorithmChanged": false
+    },
+    "fontSupplyUnchangedEvidence": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage444-fire-source-frames/font-supply-unchanged.json",
+    "directReview": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage443-rowbreak-nested-line/review-v25/review_008.png",
+    "original27": {
+      "resolvedByRepairChecks": 23,
+      "unsuitableScopesSeparated": 2,
+      "remainingFailureCandidates": 2,
+      "wholeRerunPending": true
+    },
+    "remaining": [
+      "biotoxin205 boundary row36 PDF owner147 versus current146",
+      "superscript5756 independent Print missing; obsolete size pin disposition held under new guidelines"
+    ],
+    "prApprovalRequired": true
   }
 }

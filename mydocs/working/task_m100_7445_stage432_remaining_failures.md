@@ -595,3 +595,17 @@ SVG 동일성, fresh manifest·선택 TSV·로그는 ignored `stage441-overlay-p
 ![소방 점검표 19쪽](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/gas5877-p019-v24-review.png)
 
 ![소방 점검표 22쪽](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/gas5877-p022-v24-review.png)
+
+
+## HWPX 종료 중첩 줄의 소스 컷 소비 보정 (V25)
+
+- `rowbreak-problem-pages.hwpx` 8쪽 실패는 절대 좌표 핀이 아니라, 남은 참조 줄의 셀 내부 포함과 후속 문단/중첩 테두리 관계 검사다. 같은 원본·독립 Print 8쪽의 첫 줄에 해당 문장이 실제로 보인다. 원래 검사와 기대값을 유지하고 구현을 수정했다.
+- `mixed_nested_split_from_cut`은 HWPX의 종료 1×1 자식이라는 이유로 첫 가시 줄이 앞 조각에서 이미 출력됐다고 추정하고 한 줄 높이를 추가 소비했다. 앞쪽 render tree에는 그 마지막 줄이 실제로 표시되지 않았다. 이미 소비한 원본 컷을 반영한 offset을 유지하도록 이 추정 분기를 제거했다. 재귀 커서와 기존 1×1 호스트 비종료 예약 계약은 그대로다.
+- 8쪽 마지막 참조 줄이 셀/중첩 창 안으로 돌아오고, 뒤 문단과 테두리의 순서는 유지됐다. Native 변경은 8쪽 하나뿐이고 나머지 17쪽 raw SVG는 같다. 8쪽 review에서 복구된 첫 줄을 직접 판독했다.
+- 원 테스트 파일 전체를 같은 Native rlib와 Rust test runner로 직접 실행한 **진단 17 PASS / 0 FAIL**, threads 8, 0.17초, exit 0이다. 정식 nextest 전체 재실행은 아직 하지 않았다. 함수/기대값/공차/baseline을 바꾸지 않았으며 새 검사도 추가하지 않았다.
+- 고정 devel 18쪽 최저 **36.13013%**, 기존 미달 4·6·7·8·15·16쪽이다. 수정 전 현재 18쪽 최저 **36.40792%**, 동일한 여섯 쪽 미달이며 8쪽은 71.18870%다. 수정 후 Native/실제 Chrome fresh WASM 18쪽은 모두 **최저 36.40792%**, 같은 여섯 쪽 미달, 8쪽 **72.73193%**다. 전 18쪽 raw SVG와 PNG가 Native/fresh 사이에서 모두 같다. 줄 잘림의 정확한 검사 통과와 문서 전체 피델리티 수용을 구분한다.
+- 같은 입력/PDF 해시가 열린 **#7741**에 이미 등록되어 있음을 live API로 재확인했다. 새 중복 이슈나 공개 완료 보고를 만들지 않았고 전체 피델리티를 완료로 처리하지 않는다. 정확한 기존 관계 검사를 문서 미달만으로 제거하지 않았으며 원본/PDF도 보존했다. HWP 대응본은 별도 원본과 기준이므로 그 90% 증거로 HWPX를 승인하지 않는다.
+- 정상 대조 13종 356쪽, 별도 HWP 대응본 18쪽과 가스·소방 31쪽의 Native SVG는 V24c와 모두 같다. HWPX Native는 바뀐 8쪽만 새로 캡처하고 같은 SVG/글꼴/PDF/96dpi의 17쪽 raster를 재사용했다. fresh는 18쪽 모두 새 캡처했다. 최대 동시 캡처 8개, 재시도 0, Mac locked `--no-opt` WASM 빌드 exit 0이며 Docker 최적화 빌드가 아니다.
+- 수리 검사의 현재 판정은 **원 실패 27건 중 23건 수정 검사 통과·부적합 범위 2개 분리·잔존 후보 2개**다. 마지막 두 건은 생물독소 205쪽 문서의 경계 행과 #5756의 독립 Print/옛 글자 크기 핀 판정이다. 이는 마지막 전체 nextest 결과가 아니며 전체 검증 및 사용자 승인 전에는 PR 게시·push·merge를 진행하지 않는다.
+
+![HWPX 8쪽 종료 참조 줄 복구](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/rowbreak-hwpx-p008-v25-review.png)
