@@ -4367,14 +4367,23 @@ fn reflow_line_segs_impl(
             })
             .collect::<Vec<_>>();
         if !inline_sizes.is_empty() {
-            let max_line_width = seg_width_hwp.max(1);
+            // 개체만 있는 줄도 본문과 같은 들여쓰기/내어쓰기 폭을 소비한다.
+            // 게시 segment_width는 유지하고 줄 나눔의 가용 폭에서만 뺀다.
+            let max_line_width = |line_index: usize| {
+                let indent = if line_index == 0 {
+                    indent_px.max(0.0)
+                } else {
+                    (-indent_px).max(0.0)
+                };
+                px_to_hwpunit((available_width_px - indent).max(1.0), dpi)
+            };
             let mut line_specs: Vec<(u32, i32, i32)> = Vec::new();
             let mut line_start = 0u32;
             let mut line_width = 0i32;
             let mut line_height = 0i32;
 
             for (utf16_start, (ctrl_width, ctrl_height)) in inline_sizes.iter().copied() {
-                if line_width > 0 && line_width + ctrl_width > max_line_width {
+                if line_width > 0 && line_width + ctrl_width > max_line_width(line_specs.len()) {
                     line_specs.push((line_start, line_width, line_height));
                     line_start = utf16_start;
                     line_width = 0;
@@ -4431,6 +4440,7 @@ fn reflow_line_segs_impl(
                 seg.vertical_pos = vpos;
                 vpos += seg.line_height.saturating_add(seg.line_spacing);
             }
+            mark_indented_lines(&mut new_line_segs, 0, para_style, &orig_line_segs);
             para.replace_line_segs(new_line_segs);
         } else {
             // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 앞 문단 LINE_SEG의
