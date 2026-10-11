@@ -276,6 +276,8 @@ impl TypesetEngine {
             start_row_height_override: continuation.start_row_height_override,
             stored_fragment_outer_frame: continuation.stored_fragment_outer_frame,
             stored_fragment_body_bottom_inset: continuation.stored_fragment_body_bottom_inset,
+            stored_fragment_closes_body: continuation.stored_fragment_closes_body,
+            fragment_starts_intra_row: continuation.start_cut_is_block || !start_cut.is_empty(),
             start_cut,
         };
         let fragment_measurement = physical_rows.as_ref().map(|rows| {

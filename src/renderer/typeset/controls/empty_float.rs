@@ -219,6 +219,7 @@ pub(super) fn prepare(
             .flatten();
     // 다음 저장 위치와의 차이는 높이 증거이며 절대 쪽 원점의 증거가 아니다.
     // 새로 수용하는 바깥 상자는 현재 문단의 흐름 원점에서 배치한다.
+    let mut restored_stored_outer_box = false;
     let outer_box_flow_top = stored_outer_box.then(|| {
         let (top_offset, _) = crate::renderer::stored_float_anchor::stored_topbottom_object_span(
             para, next_para, table,
@@ -240,6 +241,7 @@ pub(super) fn prepare(
                         && host + 0.5 >= zone.bottom
                 })
             })
+            .inspect(|_| restored_stored_outer_box = true)
             .unwrap_or(flow_top)
     });
     let stored_single_topbottom_top = legacy_stored_top.or(outer_box_flow_top);

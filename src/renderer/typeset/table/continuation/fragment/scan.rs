@@ -121,6 +121,8 @@ impl TypesetEngine {
                     split_end_reserved: 0.0,
                     split_block_physical_height: None,
                     end_row_height_override: Some(height),
+                    physical_rows: vec![(0, height)],
+                    completed_source_frame_end: None,
                 };
             }
         }
@@ -175,6 +177,8 @@ impl TypesetEngine {
                         split_end_reserved: 0.0,
                         split_block_physical_height: None,
                         end_row_height_override: Some(opening),
+                        physical_rows: vec![(0, opening)],
+                        completed_source_frame_end: None,
                     };
                 }
                 // No accepted content or physical space on this page. Keep
@@ -198,6 +202,8 @@ impl TypesetEngine {
                         split_end_reserved: 0.0,
                         split_block_physical_height: None,
                         end_row_height_override: None,
+                        physical_rows: Vec::new(),
+                        completed_source_frame_end: None,
                     };
                 }
             }

@@ -1023,3 +1023,14 @@ production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수
   충족하면 각각 `Closes #번호`로 연결합니다. live #7445는 미완료 하위 이슈 89개를 관리하므로
   대표 이슈 자체에는 현재 `Closes #7445`를 붙이지 않습니다. 이관만 한 항목은 종료하지 않습니다.
   PR 게시 승인 전 원격 push·PR 생성·CI 실행·merge는 수행하지 않습니다.
+
+
+## 보정 492: 최신 devel 리베이스와 계약 연결 검증
+
+- `upstream/devel` `bfa28a77a2714482f647ee6a7b9aa7f7876d8404` 위로 기존 144개 커밋을 리베이스했습니다. 변경 전 `0c464dbc947f18bfe5dffc5e16ebb930717eea22`는 `backup/7445-completed-before-bfa-20261012`에 보존했습니다.
+- 통합 후보 `89d88c2851272546c8875be03a9235f56b2e736b`의 첫 Native 빌드에서 API 연결 오류 14개를 확인했습니다. 선언 글꼴 환경, 복구된 저장 상자 원점과 추가된 표 조각 필드·인자를 연결했습니다. 종료 상자 helper의 단 기준 하단 좌표를 같은 축의 배치 상단과 대조하여 높이로 투영합니다.
+- 바로 수용하는 단일 셀 저장 프레임도 실제 수용한 물리 행 높이를 원장에 기록합니다. 내용 컷·물리 공간 원장과 걸친 셀의 쪽 끝 빈 밴드는 각각 유지합니다. 수용하지 못한 경로는 빈 원장을 반환합니다. 전쪽 출력 및 경계 회귀는 아직 검증 중입니다.
+- 기존 BinData 검사 두 함수는 비시험지 `pic-crop-01.hwp`의 parser/export 계약을 유지합니다. 최신 base에서 root 파일이 제거되어 배치 정책상 신규 source로 판정되므로 같은 코드 바이트를 `tests/cases/issue_3893_bindata_sequence_ref.rs`로 옮겼습니다. 새 검사 함수나 배치 좌표 핀은 추가하지 않았습니다.
+- upstream의 기존 #147 관계 검사는 보존된 AIFT 원문 경로를 참조하도록 연결했습니다. 원문 바이트는 base의 `samples/aift.hwp`와 같습니다. 이를 AIFT 전체 시각 통과로 해석하지 않습니다.
+- Native release 빌드는 후보와 생산 코드 diff `4f08e24e9f32acce93487ee360d8fde3d42924d24166c18da3c134910f503a2f`에서 exit 0으로 완료했습니다(997.836초). 해당 생산 코드 바이트를 유지한 채 검사 경로만 연결했습니다. format, integration 배치 정책, 단위 검사 분류 정책도 통과했습니다. Studio TypeScript 및 1,834 PASS / 0 FAIL / 2 SKIP, Visual Sweep 105 PASS, Gym 3,169 PASS / 1 SKIP를 확인했습니다. 로그는 ignored output의 `stage490-rebase-contract-build`, `stage491-rebased-studio-static`, `stage492-rebase-contract-checkpoint`에 보존합니다.
+- 전체 nextest, Native/fresh WASM 전쪽 TSV 및 실제 출력 backend는 새 통합 후보에서 다시 확인해야 합니다. 과거 녹색 결과와 현재 결과를 구분합니다. 완료된 하위 이슈의 전체 조건·통합 검증을 충족한 항목만 PR 본문에 `Closes #번호`로 표시하고, 대표 #7445 및 이관만 한 항목은 종료하지 않습니다. PR 게시·CI·통합은 아직 수행하지 않았습니다.

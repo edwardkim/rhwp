@@ -186,6 +186,7 @@ impl FontEnvironment {
             ),
             substitutions,
             true_type_faces: true_type_faces.into_iter().collect(),
+            glyph_fallbacks: BTreeMap::new(),
         };
         environment.validate()?;
         Ok(Some(environment))
@@ -315,10 +316,12 @@ impl FontEnvironment {
             || self.substitutions.len() > 256
             || self.glyph_fallbacks.len() > 256
             || self.glyph_fallbacks.iter().any(|(from, faces)| {
-                !valid_name(from)
+                !Self::valid_name(from)
                     || faces.is_empty()
                     || faces.len() > 16
-                    || faces.iter().any(|face| !valid_name(face) || face == from)
+                    || faces
+                        .iter()
+                        .any(|face| !Self::valid_name(face) || face == from)
                     || faces
                         .iter()
                         .collect::<std::collections::BTreeSet<_>>()
