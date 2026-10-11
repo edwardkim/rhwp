@@ -150,19 +150,53 @@ fn centered_inline_table_after_tabs_uses_stored_tab_widths() {
         .iter()
         .find(|n| matches!(n.node_type, RenderNodeType::Column(_)))
         .expect("단");
-    let table_x = nodes
+    let table = nodes
         .iter()
         .find_map(|n| match &n.node_type {
             RenderNodeType::Table(tn) if tn.para_index == Some(2) && tn.cell_context.is_none() => {
-                Some(n.bbox.x)
+                Some(*n)
             }
             _ => None,
         })
         .expect("pi=2 표");
-    let expected = col.bbox.x + (col.bbox.width - tab_px - outer).max(0.0) / 2.0 + tab_px + om_left;
+    let tab_runs: Vec<_> = nodes
+        .iter()
+        .filter(|n| {
+            matches!(&n.node_type, RenderNodeType::TextRun(run)
+                if run.para_index == Some(2)
+                    && run.cell_context.is_none()
+                    && !run.text.is_empty()
+                    && run.text.chars().all(|ch| ch == '\t'))
+        })
+        .collect();
+    assert_eq!(
+        tab_runs.len(),
+        1,
+        "선행 탭은 표 앞의 같은 텍스트 줄에 한 번만 남는다"
+    );
+    let tabs_node = tab_runs[0];
+    let RenderNodeType::TextRun(tabs_run) = &tabs_node.node_type else {
+        unreachable!();
+    };
+    assert_eq!(
+        tabs_run.text.chars().count(),
+        tabs,
+        "원본의 선행 탭을 모두 보존한다"
+    );
+    let advanced = table.bbox.x - om_left - tabs_node.bbox.x;
     assert!(
-        (table_x - expected).abs() <= 1.0,
-        "결재란 표 왼쪽 {table_x:.2}px 가 저장 탭 폭·말미 공백 제외 가운데 정렬값 {expected:.2}px 와 다르다"
+        (advanced / tab_px - 1.0).abs() < 1e-6,
+        "탭 뒤 표의 상대 전진은 원본 저장 탭 폭의 합과 같다: {advanced}/{tab_px}"
+    );
+    let left_free = tabs_node.bbox.x - col.bbox.x;
+    let right_free = col.bbox.x + col.bbox.width - (tabs_node.bbox.x + tab_px + outer);
+    assert!(
+        left_free > 0.0 && right_free > 0.0,
+        "가운데 정렬한 탭·표는 단 안에 포함된다"
+    );
+    assert!(
+        (left_free / (left_free + right_free) - 0.5).abs() < 1e-6,
+        "말미 공백을 제외한 탭·표의 왼쪽과 오른쪽 빈 공간은 같은 비율이다: {left_free}/{right_free}"
     );
 }
 

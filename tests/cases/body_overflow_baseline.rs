@@ -92,6 +92,9 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 원문의 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 원문은 samples에 유지하며 다른 래칫·쪽수·렌더러 비교 대상에서는 제외하지 않는다.
 const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
+    // #7834: 고정 devel bfa28a77a 전15쪽 Native/fresh 최저45.18405%.
+    // 본문 넘침 원문과 기존0행을 보존하여 이 입력만 이관한다.
+    "issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
     // #7445: upstream/devel 74f9b71b1과 같은 원문의 한컴2024 Print
     // 전2쪽 최저79.32995%; 중국어 원문의 본문 넘침 원장만 이관한다.
     "issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",

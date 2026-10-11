@@ -3701,7 +3701,11 @@ impl LayoutEngine {
                             .map(|cs| cs.char_shape_id as u32)
                             .unwrap_or(char_style_id);
                         let lang = super::super::style_resolver::detect_lang_category(' ');
-                        estimate_text_width(" ", &metric_scope.style(styles, cs_id, lang, ch_idx))
+                        // 세그먼트에 더한 공백과 정렬에서 제외할 공백을 같은 정밀도로 잰다.
+                        estimate_text_width_exact(
+                            " ",
+                            &metric_scope.style(styles, cs_id, lang, ch_idx),
+                        )
                     })
                     .sum::<f64>()
             })

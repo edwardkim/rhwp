@@ -1,0 +1,164 @@
+{
+  "baseHead": "7f823cab789ec686888bde36588bd4524448ed0c",
+  "productionDiffSha256": "2d489bd4fc41c0feba1bad1260f228c15a56fe8922ea6676ce585e3242315329",
+  "scope": "pre-commit three production-file boundary corrections; not final whole-corpus or full nextest",
+  "comparisonAlgorithmChanged": false,
+  "captureConcurrencyMaximum": 8,
+  "results": [
+    {
+      "case": "land5",
+      "backend": "native",
+      "minimum": 98.68082,
+      "below90": 0,
+      "measuredPages": 5,
+      "referencePages": 5,
+      "pageSetComplete": true
+    },
+    {
+      "case": "land5",
+      "backend": "wasm",
+      "minimum": 96.81731,
+      "below90": 0,
+      "measuredPages": 5,
+      "referencePages": 5,
+      "pageSetComplete": true
+    },
+    {
+      "case": "field-marker1",
+      "backend": "native",
+      "minimum": 99.97837,
+      "below90": 0,
+      "measuredPages": 1,
+      "referencePages": 1,
+      "pageSetComplete": true
+    },
+    {
+      "case": "field-marker1",
+      "backend": "wasm",
+      "minimum": 99.97837,
+      "below90": 0,
+      "measuredPages": 1,
+      "referencePages": 1,
+      "pageSetComplete": true
+    },
+    {
+      "case": "broken-ladder1",
+      "backend": "native",
+      "minimum": 99.52965,
+      "below90": 0,
+      "measuredPages": 1,
+      "referencePages": 1,
+      "pageSetComplete": true
+    },
+    {
+      "case": "broken-ladder1",
+      "backend": "wasm",
+      "minimum": 99.52965,
+      "below90": 0,
+      "measuredPages": 1,
+      "referencePages": 1,
+      "pageSetComplete": true
+    },
+    {
+      "case": "missing-lineseg1",
+      "backend": "native",
+      "minimum": 95.45311,
+      "below90": 0,
+      "measuredPages": 1,
+      "referencePages": 1,
+      "pageSetComplete": true
+    },
+    {
+      "case": "missing-lineseg1",
+      "backend": "wasm",
+      "minimum": 95.45311,
+      "below90": 0,
+      "measuredPages": 1,
+      "referencePages": 1,
+      "pageSetComplete": true
+    }
+  ],
+  "inspected": [
+    {
+      "case": "land5",
+      "pages": [
+        2,
+        3,
+        5
+      ],
+      "observations": "table fragment borders, continuation labels, body bottom and following paragraphs restored; remaining glyph raster deltas not pixel identity"
+    },
+    {
+      "case": "field-marker1",
+      "pages": [
+        1
+      ],
+      "observations": "approval table center uses exact stored tabs and excludes same trailing spaces with same precision; table content, lines and following body preserved"
+    },
+    {
+      "case": "broken-ladder1",
+      "pages": [
+        1
+      ],
+      "observations": "same terminal-space correction moves approval table +1px; stored cell ladder and following table retained"
+    },
+    {
+      "case": "missing-lineseg1",
+      "pages": [
+        1
+      ],
+      "observations": "approval table center moves +1/3px; first cell paragraph spacing and table/body content preserved; remaining headline glyph/advance deltas recorded"
+    }
+  ],
+  "focusedEvidence": {
+    "stage508": {
+      "passed": 13,
+      "failed": 0,
+      "skipped": 608,
+      "scope": "previous two-file table-origin and terminal-rowspan candidate"
+    },
+    "stage510": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 826,
+      "missingModules": [
+        "issue_6803_split_start_row_rowspan_end_cut",
+        "issue_7344_field_marker_stored_tac_lines"
+      ],
+      "primaryRegressionValidated": false
+    },
+    "stage513": {
+      "passed": 18,
+      "failed": 0,
+      "skipped": 1060,
+      "testSeconds": 47.468,
+      "coverageByModule": {
+        "issue_6803_split_start_row_rowspan_end_cut": 3,
+        "issue_6981_split_straddle_row_height": 7,
+        "issue_7379_rowbreak_table_footnote_reservation": 3,
+        "issue_7344_field_marker_stored_tac_lines": 4,
+        "body_overflow_baseline": 1
+      },
+      "primaryTabRegressionExecuted": true,
+      "fmtAndManifestUnitPolicyExitCode": 0
+    }
+  },
+  "finalWholeNextestPending": true,
+  "finalWhole38DocumentsPending": true,
+  "actualOutputBackendsPending": true,
+  "freshToInspectedNativeOutputProof": [
+    {
+      "case": "field-marker1",
+      "pngByteIdentical": true
+    },
+    {
+      "case": "broken-ladder1",
+      "pngByteIdentical": true
+    },
+    {
+      "case": "missing-lineseg1",
+      "pngByteIdentical": true
+    }
+  ],
+  "remainingDeltas": "Native/fresh land formula and text glyph advances differ from PDF at sub-line scale; source content and table/page ownership retained. Primary field marker and control docs retain residual glyph raster and headline advances; no pixel identity or font exception claimed."
+}

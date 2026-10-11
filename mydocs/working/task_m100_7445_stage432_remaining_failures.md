@@ -1034,3 +1034,24 @@ production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수
 - upstream의 기존 #147 관계 검사는 보존된 AIFT 원문 경로를 참조하도록 연결했습니다. 원문 바이트는 base의 `samples/aift.hwp`와 같습니다. 이를 AIFT 전체 시각 통과로 해석하지 않습니다.
 - Native release 빌드는 후보와 생산 코드 diff `4f08e24e9f32acce93487ee360d8fde3d42924d24166c18da3c134910f503a2f`에서 exit 0으로 완료했습니다(997.836초). 해당 생산 코드 바이트를 유지한 채 검사 경로만 연결했습니다. format, integration 배치 정책, 단위 검사 분류 정책도 통과했습니다. Studio TypeScript 및 1,834 PASS / 0 FAIL / 2 SKIP, Visual Sweep 105 PASS, Gym 3,169 PASS / 1 SKIP를 확인했습니다. 로그는 ignored output의 `stage490-rebase-contract-build`, `stage491-rebased-studio-static`, `stage492-rebase-contract-checkpoint`에 보존합니다.
 - 전체 nextest, Native/fresh WASM 전쪽 TSV 및 실제 출력 backend는 새 통합 후보에서 다시 확인해야 합니다. 과거 녹색 결과와 현재 결과를 구분합니다. 완료된 하위 이슈의 전체 조건·통합 검증을 충족한 항목만 PR 본문에 `Closes #번호`로 표시하고, 대표 #7445 및 이관만 한 항목은 종료하지 않습니다. PR 게시·CI·통합은 아직 수행하지 않았습니다.
+
+
+## 보정 508~513: 리베이스 뒤 표 원점·종료 rowspan·탭 정렬 경계
+
+- 깨끗한 `7f823cab789ec686888bde36588bd4524448ed0c`의 전체 nextest는 10,220 PASS / 3 FAIL / 45 SKIP, 431.090초, exit100으로 종료했습니다. 본문 넘침 partition3, 탭 뒤 가운데 정렬 표, 종료 캡션과 마지막 rowspan 블록의 보존이 실패했습니다. 이 결과를 최종 통과로 보고하지 않습니다.
+- 근린생활시설 용지의 선언 표 높이에서 앞 행을 뺀 값과 앞 행을 포함한 실제 물리 상자를 비교하여 앞 행을 두 번 반영했습니다. 선언과 측정 비교를 같은 표 원점 축으로 맞췄습니다. 관련 기존 13개 회귀는 PASS이고, 같은 원문·Print PDF 전5쪽 Native 최저98.68082%, fresh WASM96.81731%로 미달0입니다. 2·3·5쪽 review에서 외곽·분할·이어받기 라벨·후속 내용과 하단을 확인했습니다. 자체 보정 문서의 새 회귀이므로 이관하지 않았습니다.
+- 종료 캡션은 저장 hard break가 없는 재조판 병합 셀도 마지막 rowspan 상자를 함께 소유합니다. 보호 플래그 외에 실제 여러 행을 차지하는 마지막 블록을 확인하여, 새 본문에 들어가는 블록과 캡션을 함께 이월합니다. 기존 실패에서 마지막 조각의 행6이 빠졌고 보정 뒤 기존 종료 캡션 3개와 표 조각 대조군이 PASS입니다. 합성 경계의 통과를 정책연구 원본215쪽 시각 수용으로 해석하지 않습니다.
+- 탭 뒤 표 정렬은 세그먼트의 공백을 반올림 전 값으로 더하고 마지막 공백을 반올림한 값으로 빼서 남은2px를 양쪽에 나눴습니다. 합산·제외가 같은 정확 측정을 소비하도록 수정했습니다. 원본 저장 탭4개의4000HU 전진과 표·바깥여백으로 계산한 가운데 정렬 계약은 유지합니다. 출력은326.56px에서327.56px로 돌아왔습니다. 기존 x좌표±1px 핀은 탭 전진 비율, 단 안의 포함, 양쪽 남는 공간의 같은 비율, 원본 탭 소유·보존 검사로 바꿨습니다. 새 테스트 함수를 추가하지 않았습니다.
+- 해당 원본은 고정 devel의 Native/fresh 전1쪽99.96864%로 선행 수용을 확인했습니다. 보정 후 결재문서 전1쪽 Native/fresh99.97837%, 같은 모듈의 깨진 셀 사다리99.52965%, 저장 줄 없는 첫 셀 문단95.45311%로 모두90% 이상입니다. 두 대조군에도 같은 공백 규칙이 적용되어 결재란이 각각1px·1/3px 이동하므로 바이트 무변경이라고 주장하지 않습니다. 표·내용·후속 문단을 review로 확인했으며 미세 글꼴 획/전진 차이는 픽셀 동일로 보고하지 않습니다.
+- `stage510`의10 PASS는 파생 suite 배정이 오래되어 #6803과 #7344가 필터에서 빠진 실행입니다. 실제 실패 함수의 통과로 기록하지 않았습니다. source 변경 후 `--prepare`로 suite를 다시 만들고 `stage513`에서 필요한 모듈과 함수별 실행 수를 검사합니다. 집중 실행은 **18 PASS / 0 FAIL / 1,060 SKIP**, 47.468초, exit0으로 완료했습니다. #6803 3개·#6981 7개·종료 캡션 3개·#7344 4개·본문 넘침 partition3 1개가 실제 실행되었음을 함수 이름별로 확인했습니다. fmt와 고정 base 대비 manifest/unit 정책도 통과했습니다.
+- 춘천 HWPX는 동일 원문·Print PDF 고정 devel 전15쪽 Native/fresh 최저45.18405%·미달5쪽, 현재 후보45.02910%·미달7쪽입니다. 6쪽의 행 소속 차이를 직접 확인했습니다. #7391과 #7728의 실제 남은 범위를 대조했으며 같은 미완료 결함이 아니어서 [#7834](https://github.com/edwardkim/rhwp/issues/7834)를 등록하고 #7445에 실제 하위 이슈로 연결했습니다. 대표 본문의 표·개수와 후속 상태도 API로 재확인했습니다.
+- 춘천의 본문 넘침 래칫 입력과 기존0행만 원문 보존 후 활성 실행에서 분리했습니다. [보존 inventory](../pr/assets/issue7445/deferred-regressions-20261012/transfer-inventory.json), helper 전체 `.rs.txt`와 원장 행 `.tsv.txt`를 남겼습니다. 원본·PDF 및 범위 밖의 정상 검사는 유지합니다. 미달2쪽 추가와 본문 넘침0→1건은 새 악화로 추적하며, 이관을 출력 보정 완료로 처리하지 않습니다.
+
+- [경계 검증 요약](../pr/assets/issue7445/completed-20261009/rebased-boundaries-20261012/validation.json)
+- [근린생활시설3쪽 Native review](../pr/assets/issue7445/completed-20261009/rebased-boundaries-20261012/land5-native-p003-review.png)
+- [근린생활시설3쪽 fresh review](../pr/assets/issue7445/completed-20261009/rebased-boundaries-20261012/land5-wasm-p003-review.png)
+- [결재문서1쪽 Native review](../pr/assets/issue7445/completed-20261009/rebased-boundaries-20261012/field-marker1-native-p001-review.png)
+- [결재문서1쪽 fresh review](../pr/assets/issue7445/completed-20261009/rebased-boundaries-20261012/field-marker1-wasm-p001-review.png)
+
+최종 전체 nextest·필수 Rust lint/build·전체38문서 및 실제 backend 검증이 남아 있습니다.
+위 자료는 추가 보정의 경계 증거이며, 최종 PR·이슈 종료의 전체 완료 근거가 아닙니다.

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "issue": "https://github.com/edwardkim/rhwp/issues/7834",
+  "parentIssue": 7445,
+  "status": "activated_focused_verification_passed",
+  "source": "samples/issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
+  "sourceSha256": "1d2ae7a559189f73d41f380da59b03aba41102511a69fbf67514141362cb962f",
+  "pdf": "pdf/22037757-chuncheon-personnel-rule-annex13-2020.pdf",
+  "pdfSha256": "2df4d48c365dbae60ab88b32969720e7d83a211084620d97f93f2606dd90498e",
+  "originalCode": {
+    "path": "tests/cases/body_overflow_baseline.rs",
+    "preservedPath": "mydocs/pr/assets/issue7445/deferred-regressions-20261012/body_overflow_baseline-before-chuncheon.rs.txt",
+    "sha256": "f14f8e7a8fdb95e0c8d2beea09143a587cf10f4d3b9290c3898ede27f31c45d5",
+    "function": "body_overflow_does_not_grow_partition_3",
+    "scope": "this input only; common helper and other inputs remain active"
+  },
+  "baselineOriginal": {
+    "path": "tests/fixtures/body_overflow_baseline.tsv",
+    "preservedPath": "mydocs/pr/assets/issue7445/deferred-regressions-20261012/chuncheon-body-baseline.tsv.txt",
+    "sha256": "a93487a8c5cc6c88c38dcc412d7113d82edbd45e7afe720f72231e8de0de87c4"
+  },
+  "fixedUpstreamHead": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+  "frozenUpstreamWholeNativeFresh": {
+    "pagesEach": 15,
+    "minimumEach": 45.18405,
+    "below90Each": 5
+  },
+  "currentWholeNativeFresh": {
+    "pagesEach": 15,
+    "minimumEach": 45.0291,
+    "below90Each": 7
+  },
+  "directReviewedPage": 6,
+  "sourceAndPdfRemainInOriginalPaths": true,
+  "parserSerializerSecurityPageCountContractsPreserved": true,
+  "newOutputRegressionResolved": false,
+  "activationChange": {
+    "deferredInput": "issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
+    "baselineRowRemovedAfterPreservation": true,
+    "otherInputsAndCommonHelpersRemainActive": true
+  },
+  "focusedVerification": {
+    "bodyPartition": 3,
+    "totalPassed": 18,
+    "failed": 0,
+    "skipped": 1060,
+    "seconds": 47.468,
+    "fullNextestPending": true
+  }
+}
