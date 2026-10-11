@@ -4363,5 +4363,87 @@
       "superscript5756 independent Print missing; obsolete size pin disposition held under new guidelines"
     ],
     "prApprovalRequired": true
+  },
+  "superscript_manual_print": {
+    "parentHead": "e4a612118ea59b17638a6f9413fca740ca8db784",
+    "reference": {
+      "path": "pdf/156732409_superscript_advance-2020.pdf",
+      "sha256": "de981116f2f6b526322e239024d4f9fec28cd889f08cffea0c4545effe883b7a",
+      "sha1": "520f35706d734bf2d07bb465d449bbeaaffc5efd",
+      "pages": 3,
+      "creator": "Hwp 2022 12.0.0.4605",
+      "producer": "Hancom PDF 1.3.0.550",
+      "origin": "사용자가 같은 원본을 한컴에서 직접 출력하여 저장했다고 확인한 독립 Print",
+      "generation": "2022"
+    },
+    "source": {
+      "path": "samples/issue5756/156732409_superscript_advance.hwp",
+      "sha256": "f354fdc246a0b334c34af1bd1916185a23eb7cc729c74e57407a7ea35f65b422",
+      "modified": false,
+      "securityFlagsModified": false
+    },
+    "test": {
+      "path": "tests/cases/issue_5756_superscript_advance_scale.rs",
+      "sha256": "5ff562ec4e05e375d28e26b23910c4e9072901278dd155cb387eba1e8702fd13",
+      "oldFailure": "장평으로 세로도 축소된 10.0/14.2px 크기를 리터럴로 고정했다. 기존 장평 보정 이후 원본 선언 크기와 맞지 않는다.",
+      "replacement": "원본 글자모양의 기준 크기와 기존 위첨자 그리기 배율, 원래 문단의 내용·순서·누락·중복, 실제 글줄 전체 전진의 셀 내부 포함 관계를 검증한다. 독립 PDF 전체 쪽수도 유지한다.",
+      "newTestFunctions": 0,
+      "absolutePixelPinsRemoved": true
+    },
+    "productionCodeChanged": false,
+    "comparisonAlgorithmChanged": false,
+    "toleranceChanged": false,
+    "formalWholeNextestPending": true,
+    "prPushMergeApprovalPending": true,
+    "inspection": {
+      "pages": [
+        1,
+        3
+      ],
+      "reviewLabels": "첫 패널 Native, 둘째 패널 독립 PDF. 파랑 RHWP, 빨강 PDF",
+      "residual": "전쪽 관용 실루엣 90% 이상이며 완전 픽셀 동일은 아니다. 1쪽 하단 담당 부서 표와 글꼴 잉크/간격 차이가 남는다.",
+      "glyphSizeExtraction": "독립 PDF의 위첨자 Dotum 크기 7.072271pt, 일반 Dotum 크기 11.027948pt. PDF 크기를 정확히 70%라고 주장하지 않으며 기존 위첨자 70% 그리기 계약만 원본 크기로 유도한다."
+    },
+    "native": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage446-superscript-manual-print/native/superscript-native/silhouette.tsv",
+      "sha256": "3161e592daeae1cc1e822263d3d32e9d43af3a50970cbafbec2031a3eaa7b152",
+      "pages": 3,
+      "minimum": 93.36302,
+      "below90": [],
+      "runManifest": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage446-superscript-manual-print/native/superscript-native/run_manifest.json",
+      "runManifestSha256": "a124a127f7b6fbd2ad70a88d130212e780c7ecef0922575fa9769a587d04178f",
+      "pagePercent": [
+        94.9834,
+        98.5144,
+        93.36302
+      ]
+    },
+    "fresh": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage446-superscript-manual-print/fresh/superscript-fresh/silhouette.tsv",
+      "sha256": "3161e592daeae1cc1e822263d3d32e9d43af3a50970cbafbec2031a3eaa7b152",
+      "pages": 3,
+      "minimum": 93.36302,
+      "below90": [],
+      "runManifest": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage446-superscript-manual-print/fresh/superscript-fresh/run_manifest.json",
+      "runManifestSha256": "17b8cf6be215779caf17a9899d8c82e2257a793e0368ad625bf74df41ff48e86",
+      "pagePercent": [
+        94.9834,
+        98.5144,
+        93.36302
+      ]
+    },
+    "nativeFreshPngIdentical": true,
+    "freshBuildMode": "현재 V25 코드의 locked --no-opt macOS 대체 빌드, 최적화 Docker 검증 아님",
+    "focusedNextest": {
+      "runId": "03220500-1b7d-47ab-9222-efd9711486ab",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 397,
+      "seconds": 0.12,
+      "exitCode": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage446-superscript-manual-print/nextest.log",
+      "sha256": "f5b8f2a4a10f01e16ab514ce32a385fcc82ff584c5af0cd5de1c706abdaf5d7d"
+    }
   }
 }

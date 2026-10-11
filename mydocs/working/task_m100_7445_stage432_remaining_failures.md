@@ -609,3 +609,17 @@ SVG 동일성, fresh manifest·선택 TSV·로그는 ignored `stage441-overlay-p
 - 수리 검사의 현재 판정은 **원 실패 27건 중 23건 수정 검사 통과·부적합 범위 2개 분리·잔존 후보 2개**다. 마지막 두 건은 생물독소 205쪽 문서의 경계 행과 #5756의 독립 Print/옛 글자 크기 핀 판정이다. 이는 마지막 전체 nextest 결과가 아니며 전체 검증 및 사용자 승인 전에는 PR 게시·push·merge를 진행하지 않는다.
 
 ![HWPX 8쪽 종료 참조 줄 복구](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/rowbreak-hwpx-p008-v25-review.png)
+
+## 위첨자 보도자료의 수동 Print 확보와 관계형 검사 교정
+
+- 사용자가 요청 경로에 저장한 `pdf/156732409_superscript_advance-2020.pdf`를 확인했다. Creator는 Hwp 2022 12.0.0.4605, Producer는 Hancom PDF 1.3.0.550이며 3쪽이다. 같은 원본을 한컴에서 직접 출력했다는 사용자 확인에 근거한 독립 기준이다. 배포용 HWP의 보안 플래그나 원본 바이트는 변경하지 않았다.
+- 현재 V25 Native와 실제 Chrome fresh WASM으로 3쪽 전체를 각각 새로 캡처했다. 쪽별 관용 실루엣 일치율은 양쪽 모두 **94.98340% / 98.51440% / 93.36302%**, 최저 93.36302%, 90% 미만 0쪽이다. PDF·Native·WASM 모두 3쪽이며 Native/fresh PNG 3개가 모두 동일하다. 캡처는 최대 8개 병렬, 비교 알고리즘·허용치 변경 없이 수행했다.
+- 1·3쪽 review PNG를 직접 열었다. 3쪽 위첨자 줄은 오른쪽 셀 안에 있으며 원래 내용과 뒤 본문이 보존된다. 완전 픽셀 동일을 주장하지 않는다. 1쪽 하단 담당 부서 표의 가로 위치와 글꼴 잉크·간격 차이가 남아 있으며 전체 비교 수치에 포함되어 있다.
+- 기존 검사는 장평을 세로에도 적용했던 `10.0/14.2px` 크기와 고정 오른쪽 좌표를 유지해 실패했다. 전쪽 선행 조건을 충족한 뒤 **동일한 기존 테스트 함수**를 원본 기준 글자모양과 기존 위첨자 그리기 배율, 셀 내부의 실제 run 전체 전진 범위, 위첨자 포함 문단의 내용·순서·누락·중복 관계로 수정했다. 독립 PDF의 전체 쪽수도 함께 검사한다. 새 테스트 함수·렌더러 소스·지침·baseline·허용치 변경은 없다.
+- 독립 PDF에서 추출한 글리프 크기를 정확한 70%로 주장하지 않는다. 테스트의 70%는 기존 위첨자 그리기 계약을 원본 크기에 적용하는 것이며 PDF 출력과의 시각 수용은 별도의 전쪽 비교로 판단했다.
+- 원 파일을 현재 Native rlib와 직접 연결한 진단 검사 1개는 통과했다. 정식 focused nextest는 실행 중이며 아래 기록을 완료 후 추가한다. 전쪽 TSV·manifest·수동 Print 글꼴 추출 기록과 로그는 ignored `output/pr-review/7445-completed-20261009/stage446-superscript-manual-print/`에 보존했다. 요약 출처·해시와 대표 PNG는 `stored-anchor-repair/validation.json`의 `superscript_manual_print`에 있다. PDF도 커밋 범위에 포함한다.
+- 서비스 반복 저장 실패 후속 #7809에는 독립 Print가 확보되었으나, 공개 완료 보고는 최종 검증·사용자 승인 전에는 하지 않는다. 전체 검증·PR 게시·push·merge는 아직 완료하지 않았다.
+
+![위첨자 보도자료 3쪽 독립 Print 비교](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/superscript5756-p003-manual-print-review.png)
+
+- 정식 focused nextest 완료: run `03220500-1b7d-47ab-9222-efd9711486ab`, 위첨자 기존 검사 1개와 장평 대조군 2개 **3 PASS / 0 FAIL / 397 skip**, 0.120초, exit 0. 현재 원 실패 27건은 수정 검사 통과 24건·부적합 범위 2개 분리·생물독소 경계 행 1건 잔존이다. 이는 마지막 전체 nextest 결과가 아니다.
