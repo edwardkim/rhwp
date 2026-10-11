@@ -81,11 +81,15 @@ impl RowBlockQuery<'_> {
                 None
             };
         let rowbreak_has_internal_hard_break = rowbreak_hard_break_row.is_some();
-        // 첫 블록 진입과 같은 분류를 사용한다. 내부 경계가 없는 작은 병합
-        // 블록은 셀 전체 순서로 컷을 전달해야 앞 행에서 시작한 병합의
-        // 이어받기가 보존된다. 저장 행 경계가 인증된 경우는 행 분할을 유지한다.
+        // 텍스트 병합은 RowBreak의 행/물리 잔여 소유를 취소하지 않는다.
+        // 걸친 개체·중첩 표 유닛은 일반 행의 텍스트 컷에 표현되지 않으므로
+        // 같은 블록 셀 순서의 컷으로 전달한다. 저장 내부 경계는 아래에서
+        // 기존 RowBreak 블록 분할 경로가 소유한다.
         let protected = block_has_protectable_rowspan
-            && (!mt.allows_row_break_split() || !rowbreak_has_internal_hard_break)
+            && (!mt.allows_row_break_split()
+                || (!rowbreak_has_internal_hard_break
+                    && layout_engine
+                        .row_block_has_spanning_object_units(table, b_start, b_end, styles)))
             && !layout_engine
                 .stored_rowbreak_whole_row_prefix_end(table, &mt.row_heights)
                 .is_some_and(|end| b_start < end && end < b_end);

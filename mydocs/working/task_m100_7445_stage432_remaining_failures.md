@@ -975,3 +975,13 @@ production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수
 - 이전 코드의 전쪽 캡처는 규제분석 17쪽·KTX 1쪽·low-slack 1쪽의 Native/fresh가 모두 통과한 단계까지 증적을 보존합니다. 새 head의 수용 결과로 바꾸지 않으며 head 변경 감지로 다음 대상 시작을 중단합니다.
 - upstream 추가 integration source를 파생 suite에 준비하고 새 통합 head에서 전체 nextest·필수 lint/build/정책·Skia·fresh WASM·전쪽 시각 검증을 다시 진행합니다. 이전 timeout·실패·통과 로그는 보존합니다.
 - PR은 아직 생성하지 않았고 승인 전 원격 push·PR 생성·merge를 하지 않습니다.
+
+
+## 보정 478: 개인정보 3쪽의 행 분할 소유 복구
+
+- `090c0ba7bcb0a3a93c5fe3f643249aa92f55ac59`의 전체 nextest는 10273 PASS/0 FAIL/45 SKIP이며 19개 로컬 게이트도 통과했습니다. 그러나 최종 전쪽 비교에서 개인정보 66쪽 중 3쪽이 Native·fresh WASM 모두 35.28043%로 실패했습니다. 이 결과를 완료 또는 PR 준비 통과로 판정하지 않습니다.
+- 같은 원본 `samples/task2097/75544_pii_bunseok.hwpx`와 독립 `pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf`, 선언 글꼴 환경의 최신 review PNG를 직접 판독했습니다. PDF에는 이전 행의 남은 빈 물리 공간이 3쪽 상단에 있지만 기존 후보는 이 공간을 생략하고 비용분석 행부터 시작했습니다. 글꼴 또는 비교 허용치 문제가 아닙니다.
+- 저장 그림 보정에서 작은 텍스트 병합 블록까지 보호 블록으로 분류해 RowBreak의 원본 행 끝과 빈 공간 이어받기를 우회했습니다. 실제 병합 셀의 개체·중첩 유닛이 있을 때만 블록 컷을 유지하고, 텍스트만 있는 병합은 일반 행의 물리 잔여 경로를 사용하도록 보정했습니다. 문서명·쪽 번호·고정 좌표는 조건에 넣지 않았습니다.
+- 소비 경로는 `RowBlockQuery::candidate` → 일반 행 스캔의 `completed_source_frame_end`/행 컷 → `emit_table_fragment`의 실제 점유 원장과 continuation 높이 → `table_partial`의 같은 행 상자입니다. 그림·중첩 유닛은 기존 블록 셀 컷과 물리 높이를 유지합니다. 개체 유닛 조회는 작은 RowBreak 보호 후보에만 지연 실행하여 일반 행 전수 스캔의 비용을 늘리지 않습니다.
+- 첫 진단 빌드가 exit 0이고 같은 선언 환경의 전 66쪽 RenderTree에서 3쪽의 원본 9행 잔여와 뒤 10행이 각각 복원됐습니다. 이것은 시각 통과 증거가 아니며 Native/fresh 전쪽 TSV·새 review PNG·그림 대조군·기존 관계 회귀와 최종 전체 게이트를 다시 확인합니다. 검사 기대값과 비교 알고리즘은 변경하지 않았습니다.
+- 보정 전후 진단과 실패 PNG는 ignored output의 `stage477-pii66-continuation-review`, `stage478-rowbreak-cut-owner-repair`에 보존합니다. 승인 전 원격 push·PR 생성·merge는 하지 않습니다.
