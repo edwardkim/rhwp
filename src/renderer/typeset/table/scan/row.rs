@@ -145,6 +145,10 @@ impl RowScanQuery<'_> {
             styles,
             ..
         } = *rows;
+        // 시작 컷이 있는 행은 이미 소비한 내용을 다시 예약하지 않는다.
+        // 완전 행의 선언 높이는 병합 최소에 분배되어 있으므로 기존처럼
+        // 내용 하한만 사용하고, 병합 원장으로 남은 물리 높이를 정한다.
+        let cut_minimum_height = (r == cursor_row && !start_cut.is_empty()).then_some(height);
         let height = layout_engine
             .rowspan_remaining_physical_row_height(
                 table,
@@ -153,6 +157,7 @@ impl RowScanQuery<'_> {
                 rowspan_physical_space,
                 accepted_rows,
                 styles,
+                cut_minimum_height,
             )
             .unwrap_or(height);
         layout_engine

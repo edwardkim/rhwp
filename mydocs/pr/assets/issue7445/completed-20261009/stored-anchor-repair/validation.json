@@ -3976,5 +3976,172 @@
       "nextest-invalid-profile.log"
     ],
     "prApprovalRequired": true
+  },
+  "v24": {
+    "nativeAndFormalCandidate": {
+      "parentHead": "52ddee09e1b8709beb4eaec818461f2d87da018a",
+      "patchSha256": "767248e764fb29335f6fc67befe4c24b7adcd768dc2d8e7b66564ccbd19332c4",
+      "files": [
+        {
+          "path": "src/renderer/layout/table_layout.rs",
+          "sha256": "c5a89047ba306177a062d831631cb8d3363b7df9cdc32a3339af1e1a3470a636"
+        },
+        {
+          "path": "src/renderer/typeset/table/continuation/fragment/emit.rs",
+          "sha256": "8ad3f79836daa13697ab28f303988cc2f637542657946b84a201f91bcf877093"
+        },
+        {
+          "path": "src/renderer/typeset/table/scan/row.rs",
+          "sha256": "d27a403326580c2b814e8d0ecc07f9a5c40af667c7f972fbd9a34fd3690ea039"
+        }
+      ],
+      "nativeBinary": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage444-fire-source-frames/rhwp-v24c",
+        "sha256": "7c22da12a4ac7de0e0937d6a6f22a4d43571dae1434cb1dfa8be73a12779b522"
+      },
+      "nativeBuildExitCode": 0
+    },
+    "formattedSourceFiles": [
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/stored-anchor-repair/gas5877-p010-v22-review.png",
+        "sha256": "e8f24169a029445630e5a37835b9ff0d26df709f8b554c0d25df93356f0b263e"
+      },
+      {
+        "path": "mydocs/pr/assets/issue7445/completed-20261009/stored-anchor-repair/gas5877-p011-v22-review.png",
+        "sha256": "8cce3addc592e46fb436741486f055dd5eab860f7d96429469b68683c00f30a8"
+      },
+      {
+        "path": "src/renderer/layout/table_layout.rs",
+        "sha256": "e83ab95ed890ff25c2cccfb76548de3206764ed89f93e4c6a48960e1269a11f7"
+      },
+      {
+        "path": "src/renderer/typeset/table/continuation/fragment/emit.rs",
+        "sha256": "8ad3f79836daa13697ab28f303988cc2f637542657946b84a201f91bcf877093"
+      },
+      {
+        "path": "src/renderer/typeset/table/scan/row.rs",
+        "sha256": "d27a403326580c2b814e8d0ecc07f9a5c40af667c7f972fbd9a34fd3690ea039"
+      }
+    ],
+    "formattedPatchSha256": "b8b9a32031ba11603274491d36afbfbe4d38d50f6792aaa44d972a4982a05971",
+    "formattingOnlyAfterFormal": "rustfmt collapsed one unwrap_or_else closure; no expression or behavior changed; whole final validation remains pending",
+    "rootCause": "A split incoming row was measured again as full original content, reserving already consumed units twice. Use the accepted cut/remaining-physical-box lower bound only for a cut incoming row. Keep full-row content demand and source rowspan ledger for unsplit rows.",
+    "rejectedTrials": [
+      "V23 changed repeated body frame and regressed page14",
+      "V23b changed repeated body frame and regressed pages14/15",
+      "V24 passed a full declared row as content lower bound and regressed page15 to84.97219"
+    ],
+    "acceptedNative": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage444-fire-source-frames/native-v24b/silhouette.tsv",
+      "sha256": "2177c81d3cfebd2b66530133ae6689a1bdb8cf39a7d46a4984b38ebaa6e57991",
+      "pages": 31,
+      "minimum": 97.06444,
+      "below90": [],
+      "selected": {
+        "15": 99.51767,
+        "17": 99.33011,
+        "18": 100.0,
+        "19": 97.06444,
+        "20": 100.0,
+        "21": 99.97361,
+        "22": 100.0
+      }
+    },
+    "nativeFinalSourceProof": {
+      "finalBinary": "7c22da12a4ac7de0e0937d6a6f22a4d43571dae1434cb1dfa8be73a12779b522",
+      "diagnosticBinary": "6ce3d90a9290fcde7dce9d846f994c908c5c440a5f3fec199b485f0be5da419b",
+      "pages": 31,
+      "finalRawSvgByteIdentical": true,
+      "rasterAndTsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage444-fire-source-frames/native-v24b",
+      "fontSupply": {
+        "referenceManifest": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage417-completed27-final-visual/native/regulatory17/silhouette_manifest.json",
+        "referenceManifestSha256": "9c9037cb08fc719f6db61fafc3879dc8e9a0c8ed7a7546117914636ea2f03dfa",
+        "fontFiles": 706,
+        "changedFiles": []
+      }
+    },
+    "fresh": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage444-fire-source-frames/fresh-v24c/silhouette.tsv",
+      "sha256": "2177c81d3cfebd2b66530133ae6689a1bdb8cf39a7d46a4984b38ebaa6e57991",
+      "pages": 31,
+      "minimum": 97.06444,
+      "below90": [],
+      "selected": {
+        "15": 99.51767,
+        "17": 99.33011,
+        "18": 100.0,
+        "19": 97.06444,
+        "20": 100.0,
+        "21": 99.97361,
+        "22": 100.0
+      }
+    },
+    "freshProvenance": {
+      "browser": "Chrome/154.0.8037.99",
+      "wasmSha256": "5e9169d1e394792cc5deeac165201b50e69e088faaa2610f212e00e8acac52bf",
+      "javascriptSha256": "5ec009601188bb91e13b104b103ecd8d9f5c496232829a7cd60b8d7d5b8a67dd",
+      "nativeFreshRawSvgDifferentPages": [],
+      "nativeFreshPngDifferentPages": [],
+      "wasmBuildExitCode": 0,
+      "buildMode": "macOS locked --no-opt local substitute",
+      "dockerOptimized": false,
+      "captureConcurrency": 8,
+      "rasterRetryCount": 0
+    },
+    "formalNextest": {
+      "runId": "e4e6f0a3-fadb-47dd-878c-1a32687ec4df",
+      "run": 26,
+      "passed": 26,
+      "failed": 0,
+      "skipped": 592,
+      "seconds": 7.754,
+      "threads": 8,
+      "exitCode": 0,
+      "wholeNextest": false,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage444-fire-source-frames/nextest-v24c.log"
+    },
+    "normalNativeControl": {
+      "documents": 13,
+      "pages": 356,
+      "changedPages": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage444-fire-source-frames/counter-v24c-identity.json"
+    },
+    "fontSupply": {
+      "referenceManifest": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage417-completed27-final-visual/native/regulatory17/silhouette_manifest.json",
+      "referenceManifestSha256": "9c9037cb08fc719f6db61fafc3879dc8e9a0c8ed7a7546117914636ea2f03dfa",
+      "fontFiles": 706,
+      "changedFiles": []
+    },
+    "reviewLabelCorrection": {
+      "rootCause": "Caller passed PDF then Native to helpers requiring Native then PDF",
+      "fixedPanels": [
+        10,
+        11,
+        17,
+        19,
+        22
+      ],
+      "canonicalComparisonAlgorithmChanged": false,
+      "tsvInputOrderWasCorrect": true,
+      "originalRastersChanged": false,
+      "previousPanelsPreserved": true,
+      "rowbreakBeforePanelFixed": 8
+    },
+    "newTestFunctions": 0,
+    "testExpectationsChanged": false,
+    "baselineOrToleranceChanged": false,
+    "comparisonAlgorithmChanged": false,
+    "guidelinesChanged": false,
+    "wholeGasFireDocumentVisualAccepted": true,
+    "pixelIdenticalToPrintClaimed": false,
+    "registeredIssue": 7803,
+    "issuePublicCompletionNotPosted": true,
+    "original27": {
+      "resolved": 22,
+      "unsuitableScopesSeparated": 2,
+      "remainingFailures": 3
+    },
+    "finalWholeRegressionAndLintPending": true,
+    "prApprovalRequired": true
   }
 }
