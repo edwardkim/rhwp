@@ -21,6 +21,7 @@ test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없�
         'document-agent-command-v1',
         'target-navigation-v1',
         'document-change-events-v1',
+        'field-focus-events-v1',
       ]);
       const server = ports[0];
       server.onmessage = ({ data }) => {

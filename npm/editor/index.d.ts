@@ -278,6 +278,21 @@ export interface RhwpDocumentChangedEventV1 {
   commandId: string;
 }
 
+/** 누름틀 진입·이탈 이벤트(`field-focus-events-v1`). 밖으로 나오면 `inField:false` 만 온다 */
+export type RhwpFieldChangedEventV1 =
+  | { schemaVersion: 1; inField: false }
+  | {
+    schemaVersion: 1;
+    inField: true;
+    fieldId: number;
+    /** 예: `clickhere` */
+    fieldType: string;
+    /** 필드 이름(「누름틀 고치기」의 이름). 없으면 빈 문자열 */
+    name: string;
+    /** 안내문 */
+    guide: string;
+  };
+
 export interface RhwpDocumentAgentError extends Error {
   code: string;
   /** TRANSACTION_FAILED/RENDER_FAILED에서 snapshot 복구 성공 여부 */
@@ -325,6 +340,11 @@ export declare class RhwpEditor {
   focusTarget(target: RhwpBodyParagraphTargetV1): Promise<{ focused: boolean; page: number }>;
   /** agent apply/revert가 commit된 뒤 strict v1 변경 이벤트 구독 */
   onDocumentChanged(listener: (event: RhwpDocumentChangedEventV1) => void): () => void;
+  /**
+   * 캐럿이 누름틀에 들어가거나 다른 누름틀로 옮기거나 나올 때 구독. 같은 누름틀 안의 이동은
+   * 다시 알리지 않는다. 스튜디오가 field-focus-events-v1 을 광고하지 않으면 던진다
+   */
+  onFieldChanged(listener: (event: RhwpFieldChangedEventV1) => void): () => void;
   /** iframe 엘리먼트를 반환합니다 */
   readonly element: HTMLIFrameElement;
   // ── 브리지 표면 ────────────────────────────────────────────────
