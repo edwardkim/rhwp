@@ -99,9 +99,19 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         // rhwp 가 로드 때 합성한 줄(`TAG_IMPLEMENTATION_PROPERTY`)의 사다리는 줄 전진만 쌓아
         // 문단 위 간격이 없다 — 그것을 상한으로 쓰면 위 간격이 큰 문단을 넣을 수 있다고
         // 잘못 판정해 본문 아래로 넘친다(한/글은 다음 쪽으로 넘긴다).
+        //
+        // 대신 합성 줄 문단은 «위 간격 + 줄들 − 끝 줄간격» 으로 잰다. 아래 간격은 넣지
+        // 않는다 — 한/글은 쪽 마지막 문단의 아래 간격을 쪽 하단에서 소비하지 않는다(#2093,
+        // HWP5-nopassword 11쪽 끝 pi=167: 바닥 874.2px ≤ 본문 876.9px 라 한/글은 그 쪽에 둔다).
         let authored_line_segs = para.line_segs.iter().all(|seg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         });
+        let metric =
+            if para.controls.is_empty() && !para.line_segs.is_empty() && !authored_line_segs {
+                (metric - spacing_after).max(0.0)
+            } else {
+                metric
+            };
         let vpos_metric = if para.controls.is_empty() && authored_line_segs {
             para.line_segs
                 .first()
