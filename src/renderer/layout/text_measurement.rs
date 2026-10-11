@@ -72,13 +72,17 @@ const HANCOM_DEVICE_UNIT_HU: f64 = 4.0;
 ///
 /// 1. `ppem` = ⌊상대 크기를 적용한 글자 크기(HU) / 4⌋
 /// 2. 전진 단위 = 장평 100% 면 em비 × ppem 을 반올림(공백만 내림),
-///    아니면 ⌊em비 × ppem × 장평⌋
+///    아니면 ⌊em비 × ppem × 장평⌋. 공백은 장평과 무관하게 ⌊em비 × ppem⌋ 을 먼저 내리고
+///    장평을 곱해 반올림한다.
 /// 3. 자간 단위 = 자간 비율 × 전진 단위를 반올림(정확히 ½ 이면 0 에서 먼 쪽)
 /// 4. 전진폭 = (전진 단위 + 자간 단위) × 4 HU
 ///
 /// `em_fraction` 은 글리프 전진폭 / 글자 크기, `spacing_fraction` 은 자간 % / 100 이다.
 /// 2 의 공백 내림은 반각 공백이 정확히 ½ 단위에 걸리는 크기(7·9·11·13·15pt)에서
 /// 굴림체·한양신명조 모두 내림이고, 같은 크기의 반각 숫자는 올림인 데서 나온다.
+/// 장평이 있는 공백은 한양신명조 7·9·10·11·13pt × 장평 75~120% 의 「가 」 간격(한/글 2020)이
+/// ⌊em비 × ppem × 장평⌋ 이 아니라 위 계산을 따른다 — 10pt 장평 98% 에서 반각 125 단위가
+/// 122.5 가 되어 내림이면 122, 한/글은 123 이다.
 fn hancom_device_advance_px(
     em_fraction: f64,
     font_size: f64,
@@ -91,12 +95,15 @@ fn hancom_device_advance_px(
         return 0.0;
     }
     let ppem = (font_size * 75.0 / HANCOM_DEVICE_UNIT_HU + EPS).floor();
-    let advance_units = if (ratio - 1.0).abs() <= EPS {
-        if is_space {
-            (em_fraction * ppem + EPS).floor()
+    let advance_units = if is_space {
+        let base_units = (em_fraction * ppem + EPS).floor();
+        if (ratio - 1.0).abs() <= EPS {
+            base_units
         } else {
-            (em_fraction * ppem + 0.5 + EPS).floor()
+            (base_units * ratio + 0.5 + EPS).floor()
         }
+    } else if (ratio - 1.0).abs() <= EPS {
+        (em_fraction * ppem + 0.5 + EPS).floor()
     } else {
         (em_fraction * ppem * ratio + EPS).floor()
     };
