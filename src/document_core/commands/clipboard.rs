@@ -174,7 +174,7 @@ pub(super) fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph)
 }
 
 /// `after_control` 이면 `text_offset` 자리에 놓인 개체 뒤를 가리킨다.
-fn text_to_split_logical_offset(
+pub(super) fn text_to_split_logical_offset(
     para: &Paragraph,
     text_offset: usize,
     after_control: bool,
@@ -905,7 +905,9 @@ impl DocumentCore {
             return Ok((cell_para_idx, char_offset + new_chars));
         }
 
-        let right_half = cell_paras[cell_para_idx].split_at(char_offset);
+        let split_offset =
+            text_to_split_logical_offset(&cell_paras[cell_para_idx], char_offset, false);
+        let right_half = cell_paras[cell_para_idx].split_at(split_offset);
         cell_paras[cell_para_idx].merge_from(&clip_paras[0]);
 
         let mut insert_idx = cell_para_idx + 1;

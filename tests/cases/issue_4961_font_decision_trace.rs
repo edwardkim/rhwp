@@ -132,6 +132,38 @@ fn stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected() {
     assert_eq!(hwp["layoutHash"], hwpx["layoutHash"]);
     assert_eq!(hwp["records"], hwpx["records"]);
 
+    let original =
+        DocumentCore::from_bytes(include_bytes!("../../samples/3-10월_교육_통합_2022.hwp"))
+            .unwrap();
+    // 해시와 별개로 독립 원문의 모든 글자 주소를 확인한다. 미주 표시는 원문 글자가 아니다.
+    for paragraph in [42, 48, 57, 81] {
+        let expected: Vec<_> = original.document().sections[0].paragraphs[paragraph]
+            .text
+            .chars()
+            .enumerate()
+            .map(|(offset, ch)| (offset as u64, ch.to_string()))
+            .collect();
+        let actual: Vec<_> = hwp["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|r| {
+                r["source"]["sectionIndex"] == 0
+                    && r["source"]["paragraphIndex"] == paragraph
+                    && r["source"]["nestedPath"] == serde_json::json!([])
+                    && r["source"]["charOffset"].is_number()
+            })
+            .map(|r| {
+                assert_eq!(r["source"]["status"], "complete");
+                (
+                    r["source"]["charOffset"].as_u64().unwrap(),
+                    r["source"]["character"].as_str().unwrap().to_string(),
+                )
+            })
+            .collect();
+        assert_eq!(actual, expected, "공개 원문 문단 {paragraph}");
+    }
+
     let feature = &manifest["comparisons"]["substFeatureDetection"];
     let without = traces
         .get(
@@ -436,4 +468,558 @@ fn trace_options_fail_closed() {
     assert!(core
         .get_font_decision_trace_native(core.page_count(), "{}")
         .is_err());
+}
+
+fn readonly_trace(core: &DocumentCore) -> serde_json::Value {
+    let model = format!("{:?}", core.document());
+    let svg = core.render_page_svg_native(0).unwrap();
+    let hwp = core.export_hwp_native().unwrap();
+    let hwpx = core.export_hwpx_native().unwrap();
+    let trace = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":4096}"#)
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(format!("{:?}", core.document()), model);
+    assert_eq!(core.render_page_svg_native(0).unwrap(), svg);
+    assert_eq!(core.export_hwp_native().unwrap(), hwp);
+    assert_eq!(core.export_hwpx_native().unwrap(), hwpx);
+    trace
+}
+
+#[test]
+fn logical_tac_runs_join_exact_scalar_source_in_body_and_nested_cells() {
+    use rhwp::model::control::Control;
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가🦦나나끝").unwrap();
+    core.apply_char_format_native(0, 0, 0, 1, r#"{"bold":true}"#)
+        .unwrap();
+    core.apply_char_format_native(0, 0, 2, 4, r#"{"fontSize":1800}"#)
+        .unwrap();
+    for _ in 0..2 {
+        let image: serde_json::Value = serde_json::from_str(
+            &core
+                .insert_picture_native(
+                    0,
+                    0,
+                    1,
+                    &[],
+                    include_bytes!("../../assets/logo/logo-16.png"),
+                    1200,
+                    400,
+                    16,
+                    16,
+                    "png",
+                    "동일 자리 그림",
+                    None,
+                    None,
+                )
+                .unwrap(),
+        )
+        .unwrap();
+        core.set_picture_properties_native(
+            0,
+            0,
+            image["controlIdx"].as_u64().unwrap() as usize,
+            r#"{"treatAsChar":true}"#,
+        )
+        .unwrap();
+    }
+    let leaf = core.document().sections[0].paragraphs[0].clone();
+    assert_eq!(
+        leaf.control_text_positions()
+            .iter()
+            .copied()
+            .filter(|p| *p == 1)
+            .count(),
+        2
+    );
+    core.split_paragraph_native(0, 0, 7, None).unwrap();
+    core.create_table_native(0, 1, 0, 1, 1).unwrap();
+    let mut document = core.document().clone();
+    let parent = document.sections[0]
+        .paragraphs
+        .iter()
+        .position(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))))
+        .unwrap();
+    let outer_ci = document.sections[0].paragraphs[parent]
+        .controls
+        .iter()
+        .position(|c| matches!(c, Control::Table(_)))
+        .unwrap();
+    let mut host = document.sections[0].paragraphs[parent].clone();
+    let Control::Table(outer) = &mut document.sections[0].paragraphs[parent].controls[outer_ci]
+    else {
+        unreachable!()
+    };
+    let mut inner = outer.clone();
+    inner.cells[0].paragraphs = vec![leaf.clone()];
+    host.controls = vec![Control::Table(inner)];
+    host.text.clear();
+    host.char_offsets.clear();
+    outer.cells[0].paragraphs = vec![
+        rhwp::model::paragraph::Paragraph::new_empty_like(&leaf),
+        host,
+    ];
+    document.sections[0].raw_stream = None;
+    core.set_document(document);
+    // 원문과 그림 두 칸은 다른 축이다. 보조평면 문자도 원문에서 한 scalar다.
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&core.export_hwp_native().unwrap()).unwrap();
+    assert_eq!(doc.logical_to_text_offset(0, 0, 3).unwrap(), 1);
+    assert_eq!(doc.logical_to_text_offset(0, 0, 4).unwrap(), 2);
+    for (format, bytes) in [
+        ("hwp", core.export_hwp_native().unwrap()),
+        ("hwpx", core.export_hwpx_native().unwrap()),
+    ] {
+        let loaded = DocumentCore::from_bytes(&bytes).unwrap();
+
+        let trace = readonly_trace(&loaded);
+        for (para, path) in [(0, vec![]), (parent, vec![outer_ci, 0, 1, 0, 0, 0])] {
+            let records: Vec<_> = trace["records"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|r| {
+                    r["source"]["sectionIndex"] == 0
+                        && r["source"]["paragraphIndex"] == para
+                        && r["source"]["nestedPath"] == serde_json::json!(path)
+                })
+                .collect();
+            let expected: Vec<_> = "가🦦나나끝"
+                .chars()
+                .enumerate()
+                .map(|(offset, ch)| (offset as u64, ch.to_string()))
+                .collect();
+            let actual: Vec<_> = records
+                .iter()
+                .map(|r| {
+                    assert_eq!(r["source"]["status"], "complete", "{format}: {r}");
+                    (
+                        r["source"]["charOffset"].as_u64().unwrap(),
+                        r["source"]["character"].as_str().unwrap().to_string(),
+                    )
+                })
+                .collect();
+            assert_eq!(actual, expected, "{format} source path {path:?}");
+        }
+    }
+}
+
+#[test]
+fn synthetic_overlap_cannot_claim_repeated_source_and_real_pua_keeps_source() {
+    use rhwp::model::control::{CharOverlap, Control};
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가가").unwrap();
+    let mut document = core.document().clone();
+    let para = &mut document.sections[0].paragraphs[0];
+    para.controls = vec![Control::CharOverlap(CharOverlap {
+        chars: vec!['가'],
+        border_type: 1,
+        inner_char_size: 100,
+        expansion: 0,
+        char_shape_ids: vec![0],
+    })];
+    para.char_offsets = vec![0, 9];
+    para.char_count = 11;
+    document.sections[0].raw_stream = None;
+    core.set_document(document);
+    let trace: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":4096}"#)
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(trace["counts"]["charactersSeen"], 3);
+    let records = trace["records"].as_array().unwrap();
+    assert_eq!(records[0]["source"]["status"], "complete");
+    assert_eq!(records[0]["source"]["charOffset"], 0);
+    for record in &records[1..] {
+        assert_eq!(
+            record["source"]["status"], "unavailable",
+            "겹침 원문 소유권을 추정하지 않는다: {record}"
+        );
+        assert!(record["source"]["charOffset"].is_null());
+    }
+    let mut plain = DocumentCore::new_empty();
+    plain.create_blank_document_native().unwrap();
+    plain.insert_text_native(0, 0, 0, "가\u{f02ce}끝").unwrap();
+    let trace: serde_json::Value = serde_json::from_str(
+        &plain
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":4096}"#)
+            .unwrap(),
+    )
+    .unwrap();
+    let records = trace["records"].as_array().unwrap();
+    assert_eq!(records.len(), 3);
+    for (offset, record) in records.iter().enumerate() {
+        assert_eq!(
+            record["source"]["status"], "complete",
+            "PUA는 실제 원문이다: {record}"
+        );
+        assert_eq!(record["source"]["charOffset"], offset);
+    }
+}
+
+#[test]
+fn note_markers_are_transparent_to_body_and_nested_source_glyph_addresses() {
+    use rhwp::model::control::Control;
+    for (footnote, at, has_tac) in [
+        (true, 0, false),
+        (true, 1, false),
+        (false, 0, false),
+        (false, 1, false),
+        (true, 0, true),
+        (true, 1, true),
+        (false, 0, true),
+        (false, 1, true),
+    ] {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "가가🦦나끝").unwrap();
+        if footnote {
+            core.insert_footnote_native(0, 0, at).unwrap();
+        } else {
+            core.insert_endnote_native(0, 0, at).unwrap();
+        }
+        if has_tac {
+            let image: serde_json::Value = serde_json::from_str(
+                &core
+                    .insert_picture_native(
+                        0,
+                        0,
+                        at,
+                        &[],
+                        include_bytes!("../../assets/logo/logo-16.png"),
+                        1200,
+                        400,
+                        16,
+                        16,
+                        "png",
+                        "주석과 같은 자리",
+                        None,
+                        None,
+                    )
+                    .unwrap(),
+            )
+            .unwrap();
+            core.set_picture_properties_native(
+                0,
+                0,
+                image["controlIdx"].as_u64().unwrap() as usize,
+                r#"{"treatAsChar":true}"#,
+            )
+            .unwrap();
+        }
+        core.apply_char_format_native(0, 0, 1, 3, r#"{"bold":true}"#)
+            .unwrap();
+        let leaf = core.document().sections[0].paragraphs[0].clone();
+        core.split_paragraph_native(0, 0, if has_tac { 7 } else { 6 }, None)
+            .unwrap();
+        core.create_table_native(0, 1, 0, 1, 1).unwrap();
+        let mut document = core.document().clone();
+        let mut host = document.sections[0].paragraphs[1].clone();
+        let Control::Table(outer) = &mut document.sections[0].paragraphs[1].controls[0] else {
+            panic!("표")
+        };
+        let mut inner = outer.clone();
+        inner.cells[0].paragraphs = vec![leaf.clone()];
+        host.controls = vec![Control::Table(inner)];
+        outer.cells[0].paragraphs = vec![
+            rhwp::model::paragraph::Paragraph::new_empty_like(&leaf),
+            host,
+        ];
+        document.sections[0].raw_stream = None;
+        core.set_document(document);
+        for (format, bytes) in [
+            ("hwp", core.export_hwp_native().unwrap()),
+            ("hwpx", core.export_hwpx_native().unwrap()),
+        ] {
+            let loaded = DocumentCore::from_bytes(&bytes).unwrap();
+
+            let tree = loaded.build_page_render_tree(0).unwrap();
+            let trace = readonly_trace(&loaded);
+            // 런 순서는 따르되 원문 주소는 독립 원문의 scalar 순서로 정한다.
+            let mut runs = Vec::new();
+            fn collect<'a>(
+                node: &'a rhwp::renderer::render_tree::RenderNode,
+                framed: bool,
+                runs: &mut Vec<(&'a rhwp::renderer::render_tree::TextRunNode, bool)>,
+            ) {
+                use rhwp::renderer::render_tree::RenderNodeType;
+                let framed = framed || matches!(node.node_type, RenderNodeType::TextLine(_));
+                if let RenderNodeType::TextRun(run) = &node.node_type {
+                    runs.push((run, framed));
+                }
+                for child in &node.children {
+                    collect(child, framed, runs);
+                }
+            }
+            collect(&tree.root, false, &mut runs);
+            let records = trace["records"].as_array().unwrap();
+            for (parent, path) in [(0, vec![]), (1, vec![0, 0, 1, 0, 0, 0])] {
+                let expected: Vec<_> = "가가🦦나끝"
+                    .chars()
+                    .enumerate()
+                    .map(|(i, ch)| (i as u64, ch.to_string()))
+                    .collect();
+                let actual: Vec<_> = records
+                    .iter()
+                    .filter(|r| {
+                        let index = r["source"]["runIndex"].as_u64().unwrap() as usize;
+                        let (run, framed) = runs[index];
+                        framed
+                            && run.char_start.is_some()
+                            && r["source"]["sectionIndex"] == 0
+                            && r["source"]["paragraphIndex"] == parent
+                            && r["source"]["nestedPath"] == serde_json::json!(path)
+                    })
+                    .map(|r| {
+                        assert_eq!(
+                            r["source"]["status"], "complete",
+                            "{format} footnote={footnote} at={at}: {r}"
+                        );
+                        (
+                            r["source"]["charOffset"].as_u64().unwrap(),
+                            r["source"]["character"].as_str().unwrap().to_string(),
+                        )
+                    })
+                    .collect();
+                assert_eq!(
+                    actual, expected,
+                    "{format} footnote={footnote} at={at} path={path:?}"
+                );
+            }
+            for record in records {
+                let (run, framed) = runs[record["source"]["runIndex"].as_u64().unwrap() as usize];
+                if !framed
+                    || run.char_start.is_none()
+                    || record["source"]["paragraphIndex"].is_null()
+                {
+                    assert_eq!(record["source"]["status"], "unavailable");
+                    assert!(record["source"]["charOffset"].is_null());
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn coanchored_logical_copy_preserves_endpoint_inclusion_and_source_in_both_formats() {
+    use rhwp::model::control::Control;
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가나").unwrap();
+    for _ in 0..2 {
+        let image: serde_json::Value = serde_json::from_str(
+            &core
+                .insert_picture_native(
+                    0,
+                    0,
+                    1,
+                    &[],
+                    include_bytes!("../../assets/logo/logo-16.png"),
+                    1200,
+                    400,
+                    16,
+                    16,
+                    "png",
+                    "같은 자리",
+                    None,
+                    None,
+                )
+                .unwrap(),
+        )
+        .unwrap();
+        core.set_picture_properties_native(
+            0,
+            0,
+            image["controlIdx"].as_u64().unwrap() as usize,
+            r#"{"treatAsChar":true}"#,
+        )
+        .unwrap();
+    }
+    core.split_paragraph_native(0, 0, 4, None).unwrap();
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        for (start, end, text, controls) in [(1, 3, "", 2), (0, 1, "가", 0), (3, 4, "나", 0)] {
+            let mut loaded = DocumentCore::from_bytes(&bytes).unwrap();
+            let before_model = format!("{:?}", loaded.document());
+            let before_svg = loaded.render_page_svg_native(0).unwrap();
+            let before_hwp = loaded.export_hwp_native().unwrap();
+            let before_hwpx = loaded.export_hwpx_native().unwrap();
+            loaded
+                .copy_selection_logical_native(0, 0, start, 0, end)
+                .unwrap();
+            assert_eq!(loaded.get_clipboard_text_native(), text);
+            assert_eq!(format!("{:?}", loaded.document()), before_model);
+            assert_eq!(loaded.render_page_svg_native(0).unwrap(), before_svg);
+            assert_eq!(loaded.export_hwp_native().unwrap(), before_hwp);
+            assert_eq!(loaded.export_hwpx_native().unwrap(), before_hwpx);
+            let source = format!("{:?}", loaded.document().sections[0].paragraphs[0]);
+            loaded.paste_internal_native(0, 1, 0).unwrap();
+            assert_eq!(
+                format!("{:?}", loaded.document().sections[0].paragraphs[0]),
+                source
+            );
+            let pasted: Vec<_> = loaded.document().sections[0].paragraphs[1..]
+                .iter()
+                .collect();
+            assert_eq!(
+                pasted.iter().map(|p| p.text.as_str()).collect::<String>(),
+                text
+            );
+            assert_eq!(
+                pasted
+                    .iter()
+                    .flat_map(|p| &p.controls)
+                    .filter(|c| matches!(c, Control::Picture(_)))
+                    .count(),
+                controls
+            );
+        }
+    }
+}
+
+#[test]
+fn inline_table_endnote_prefix_cannot_alias_its_body_paragraph() {
+    use rhwp::model::control::Control;
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType, TextRunNode};
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "원문").unwrap();
+    core.insert_endnote_native(0, 0, 0).unwrap();
+    let leaf = core.document().sections[0].paragraphs[0].clone();
+    core.split_paragraph_native(0, 0, 3, None).unwrap();
+    core.create_table_native(0, 1, 0, 1, 1).unwrap();
+    let mut document = core.document().clone();
+    let mut parent = document.sections[0].paragraphs[1].clone();
+    let mut host = parent.clone();
+    let Control::Table(outer) = &mut parent.controls[0] else {
+        panic!("표")
+    };
+    let mut inner = outer.clone();
+    inner.raw_ctrl_data.clear();
+    inner.raw_ctrl_seal = None;
+    inner.common.treat_as_char = true;
+    inner.attr |= 1;
+    inner.common.width = 15000;
+    inner.common.height = 6000;
+    inner.cells[0].width = 15000;
+    inner.cells[0].height = 6000;
+    inner.cells[0].paragraphs = vec![leaf.clone()];
+    host.controls = vec![Control::Table(inner)];
+    host.text = "앞뒤".into();
+    host.char_offsets = vec![0, 9];
+    host.char_count = 11;
+    outer.cells[0].paragraphs = vec![
+        rhwp::model::paragraph::Paragraph::new_empty_like(&leaf),
+        host,
+    ];
+    outer.raw_ctrl_data.clear();
+    outer.raw_ctrl_seal = None;
+    outer.cells[0].height = 18000;
+    outer.common.height = 18000;
+    // 셀의 미주 표시와 본문이 같아도 두 원문의 소유자는 다르다.
+    parent.text = "1) ".into();
+    parent.char_offsets = vec![0, 1, 2];
+    parent.char_count = 12;
+    document.sections[0].paragraphs = vec![parent];
+    document.sections[0].raw_stream = None;
+    core.set_document(document);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let loaded = DocumentCore::from_bytes(&bytes).unwrap();
+
+        let table_ci = loaded.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Table(_)))
+            .unwrap();
+        let Control::Table(table) = &loaded.document().sections[0].paragraphs[0].controls[table_ci]
+        else {
+            unreachable!()
+        };
+        assert!(!table.common.treat_as_char);
+        let Control::Table(inner) = &table.cells[0].paragraphs[1].controls[0] else {
+            panic!("중첩 표")
+        };
+        assert!(inner.common.treat_as_char);
+        let tree = loaded.build_page_render_tree(0).unwrap();
+        let mut runs: Vec<&TextRunNode> = Vec::new();
+        let mut prefixes: Vec<&TextRunNode> = Vec::new();
+        fn collect<'a>(
+            node: &'a RenderNode,
+            runs: &mut Vec<&'a TextRunNode>,
+            prefixes: &mut Vec<&'a TextRunNode>,
+        ) {
+            if let RenderNodeType::TableCell(_) = node.node_type {
+                for child in &node.children {
+                    if let RenderNodeType::TextRun(run) = &child.node_type {
+                        if run.cell_context.is_none() && !run.text.is_empty() {
+                            prefixes.push(run);
+                        }
+                    }
+                }
+            }
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                runs.push(run);
+            }
+            for child in &node.children {
+                collect(child, runs, prefixes);
+            }
+        }
+        collect(&tree.root, &mut runs, &mut prefixes);
+        assert_eq!(prefixes.len(), 1);
+        assert_eq!(prefixes[0].text, "1) ");
+        let prefix_index = runs
+            .iter()
+            .position(|run| std::ptr::eq(*run, prefixes[0]))
+            .unwrap();
+        let trace = readonly_trace(&loaded);
+        let records = trace["records"].as_array().unwrap();
+        let prefix_records: Vec<_> = records
+            .iter()
+            .filter(|r| r["source"]["runIndex"] == prefix_index)
+            .collect();
+        assert_eq!(prefix_records.len(), 3);
+        for record in prefix_records {
+            assert_eq!(
+                record["source"]["status"], "unavailable",
+                "미주 표시의 본문 alias: {record}"
+            );
+            assert!(record["source"]["charOffset"].is_null());
+        }
+        for (path, text) in [
+            (vec![], "1) "),
+            (vec![table_ci, 0, 1], "앞뒤"),
+            (vec![table_ci, 0, 1, 0, 0, 0], "원문"),
+        ] {
+            let actual: Vec<_> = records
+                .iter()
+                .filter(|r| {
+                    r["source"]["status"] == "complete"
+                        && r["source"]["nestedPath"] == serde_json::json!(path)
+                })
+                .map(|r| {
+                    (
+                        r["source"]["charOffset"].as_u64().unwrap(),
+                        r["source"]["character"].as_str().unwrap().to_string(),
+                    )
+                })
+                .collect();
+            let expected: Vec<_> = text
+                .chars()
+                .enumerate()
+                .map(|(i, ch)| (i as u64, ch.to_string()))
+                .collect();
+            assert_eq!(actual, expected, "path={path:?}");
+        }
+    }
 }

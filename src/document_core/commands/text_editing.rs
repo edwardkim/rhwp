@@ -3,6 +3,7 @@
 use super::super::helpers::get_textbox_from_shape;
 use super::super::queries::field_query::rebuild_char_offsets;
 use super::super::queries::rendering::FocusedPageTreePatch;
+use super::clipboard::text_to_split_logical_offset;
 use super::formatting::restore_para_meta;
 use crate::document_core::{
     ActiveFieldInfo, DeferredPaginationDescriptor, DeferredPaginationTargetStatus, DocumentCore,
@@ -23,6 +24,146 @@ use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
+
+/// 복사와 같은 글자 경계에 든 표·그림만 지울 수 있는지 변경 전에 확인한다.
+fn cell_boundary_has_objects(
+    paragraph: &Paragraph,
+    start: usize,
+    end: usize,
+) -> Result<bool, HwpError> {
+    let positions = paragraph.control_text_positions();
+    let end_after = end >= paragraph.text.chars().count();
+    let selected: Vec<usize> = paragraph
+        .controls
+        .iter()
+        .enumerate()
+        .filter_map(|(ci, control)| {
+            let at = positions.get(ci).copied()?;
+            (!matches!(
+                control,
+                Control::SectionDef(_) | Control::ColumnDef(_) | Control::Field(_)
+            ) && at >= start
+                && (at < end || (at == end && end_after)))
+                .then_some(ci)
+        })
+        .collect();
+    let has_objects = selected.iter().any(|&ci| {
+        matches!(
+            paragraph.controls[ci],
+            Control::Table(_) | Control::Picture(_)
+        )
+    });
+    if !has_objects {
+        return Ok(false);
+    }
+    if !paragraph.range_tags.is_empty() || !paragraph.markpen_marks.is_empty() {
+        return Err(HwpError::RenderError(
+            "범위 태그나 형광펜이 있는 문단의 경계 개체 삭제는 아직 지원하지 않습니다".into(),
+        ));
+    }
+    if !paragraph.field_ranges.is_empty()
+        || !paragraph.orphan_field_ends.is_empty()
+        || paragraph
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Field(_)))
+        || selected.iter().any(|&ci| {
+            !matches!(
+                paragraph.controls[ci],
+                Control::Table(_) | Control::Picture(_)
+            ) || paragraph
+                .controls
+                .iter()
+                .enumerate()
+                .any(|(other, control)| {
+                    other != ci
+                        && Paragraph::is_split_movable_control(control)
+                        && positions.get(other) == positions.get(ci)
+                })
+        })
+    {
+        return Err(HwpError::RenderError(
+            "필드나 같은 자리의 여러 개체를 포함한 셀 경계 삭제는 아직 지원하지 않습니다".into(),
+        ));
+    }
+    Ok(true)
+}
+
+fn delete_cell_boundary(paragraph: &mut Paragraph, start: usize, end: usize, has_objects: bool) {
+    if !has_objects {
+        paragraph.delete_text_at(start, end - start);
+        return;
+    }
+    let end_after = end >= paragraph.text.chars().count();
+    let from = text_to_split_logical_offset(paragraph, start, false);
+    let to = text_to_split_logical_offset(paragraph, end, end_after);
+    // 문단 끝의 떠 있는 개체는 캐럿 칸이 없으므로 뒤 조각에 남기지 않는다.
+    let suffix = (!end_after).then(|| paragraph.split_at(to));
+    let _ = paragraph.split_at(from);
+    if let Some(suffix) = suffix {
+        paragraph.merge_from(&suffix);
+    }
+}
+
+/// flat·중첩 경로 모두 같은 문단 범위를 검증한 뒤 적용한다.
+fn delete_cell_range(
+    paragraphs: &mut Vec<Paragraph>,
+    start_para: usize,
+    start_offset: usize,
+    end_para: usize,
+    end_offset: usize,
+) -> Result<bool, HwpError> {
+    if start_para > end_para || (start_para == end_para && start_offset > end_offset) {
+        return Err(HwpError::RenderError(
+            "시작 위치가 끝 위치보다 뒤에 있습니다".into(),
+        ));
+    }
+    let first = paragraphs
+        .get(start_para)
+        .ok_or_else(|| HwpError::RenderError("시작 셀 문단 범위 초과".into()))?;
+    let last = paragraphs
+        .get(end_para)
+        .ok_or_else(|| HwpError::RenderError("끝 셀 문단 범위 초과".into()))?;
+    let first_len = first.text.chars().count();
+    if start_offset > first_len || end_offset > last.text.chars().count() {
+        return Err(HwpError::RenderError("셀 글자 위치 범위 초과".into()));
+    }
+    if start_para == end_para && start_offset == end_offset {
+        return Ok(false);
+    }
+    let first_end = if start_para == end_para {
+        end_offset
+    } else {
+        first_len
+    };
+    let first_objects = cell_boundary_has_objects(first, start_offset, first_end)?;
+    let last_objects = if start_para == end_para {
+        false
+    } else {
+        cell_boundary_has_objects(last, 0, end_offset)?
+    };
+    // 끝 경계까지 검증을 마친 뒤에만 원문을 바꿔 실패 시 부분 삭제를 막는다.
+    if start_para == end_para {
+        delete_cell_boundary(
+            &mut paragraphs[start_para],
+            start_offset,
+            end_offset,
+            first_objects,
+        );
+    } else {
+        delete_cell_boundary(&mut paragraphs[end_para], 0, end_offset, last_objects);
+        paragraphs.drain(start_para + 1..end_para);
+        delete_cell_boundary(
+            &mut paragraphs[start_para],
+            start_offset,
+            first_end,
+            first_objects,
+        );
+        let next = paragraphs.remove(start_para + 1);
+        paragraphs[start_para].merge_from(&next);
+    }
+    Ok(true)
+}
 
 fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
     if let Some(reset) = current.cell_vpos_reset {
@@ -3308,53 +3449,30 @@ impl DocumentCore {
             }
         }
 
-        // Section raw 스트림 무효화 (재직렬화 유도)
-        self.document.sections[section_idx].raw_stream = None;
-        // DocInfo raw_stream은 유지 (전체 재직렬화 시 FIX-4 문제 발생)
-
         if let Some((ppi, ci, cei)) = cell_ctx {
-            // ─── 셀 내 deleteRange ───
-            if start_para == end_para {
-                // 같은 문단 내 삭제
-                let count = end_offset - start_offset;
-                if count > 0 {
-                    let cell_para =
-                        self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
-                    cell_para.delete_text_at(start_offset, count);
-                    self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
+            let changed = if cei == 65534 && start_para == end_para {
+                // 기존 flat API의 표 캡션 문단 주소도 그대로 받는다.
+                let paragraph =
+                    self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
+                let mut paragraphs = vec![paragraph.clone()];
+                let changed = delete_cell_range(&mut paragraphs, 0, start_offset, 0, end_offset)?;
+                if changed {
+                    *paragraph = paragraphs.remove(0);
                 }
+                changed
             } else {
-                // 다중 문단 셀 내 삭제
-                // 1) 마지막 문단 앞부분 삭제
-                if end_offset > 0 {
-                    let cell_para =
-                        self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, end_para)?;
-                    cell_para.delete_text_at(0, end_offset);
-                }
-                // 2) 중간 문단 역순 제거 — 셀 내 문단은 cell.paragraphs에서 직접 제거
-                for mid_para in (start_para + 1..end_para).rev() {
-                    let cell = self.get_cell_mut(section_idx, ppi, ci, cei)?;
-                    if mid_para < cell.paragraphs.len() {
-                        cell.paragraphs.remove(mid_para);
-                    }
-                }
-                // 3) 첫 문단 뒷부분 삭제
-                {
-                    let cell_para =
-                        self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
-                    let para_len = cell_para.text.chars().count();
-                    if start_offset < para_len {
-                        cell_para.delete_text_at(start_offset, para_len - start_offset);
-                    }
-                }
-                // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
-                let cell = self.get_cell_mut(section_idx, ppi, ci, cei)?;
-                if start_para + 1 < cell.paragraphs.len() {
-                    let next_para = cell.paragraphs.remove(start_para + 1);
-                    cell.paragraphs[start_para].merge_from(&next_para);
-                }
-                self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
+                let paragraphs =
+                    self.get_cell_paragraphs_mut_by_path(section_idx, ppi, &[(ci, cei, 0)])?;
+                delete_cell_range(paragraphs, start_para, start_offset, end_para, end_offset)?
+            };
+            if !changed {
+                return Ok(super::super::helpers::json_ok_with(&format!(
+                    "\"paraIdx\":{},\"charOffset\":{}",
+                    start_para, start_offset
+                )));
             }
+            self.document.sections[section_idx].raw_stream = None;
+            self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
 
             // 부모 컨트롤 dirty 마킹 + 재페이지네이션
             self.mark_cell_control_dirty(section_idx, ppi, ci);
@@ -3371,6 +3489,8 @@ impl DocumentCore {
                 start_para, start_offset
             )))
         } else {
+            // 셀 경로 검증 실패는 원시 저장 스트림에도 영향을 주지 않는다.
+            self.document.sections[section_idx].raw_stream = None;
             // ─── 본문 deleteRange ───
             if start_para == end_para {
                 // 같은 문단 내 삭제
@@ -5956,41 +6076,13 @@ impl DocumentCore {
         end_para: usize,
         end_offset: usize,
     ) -> Result<String, HwpError> {
-        {
-            let paras = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
-            if start_para == end_para {
-                let count = end_offset.saturating_sub(start_offset);
-                if count > 0 {
-                    if let Some(p) = paras.get_mut(start_para) {
-                        p.delete_text_at(start_offset, count);
-                    }
-                }
-            } else {
-                // 1) 마지막 문단 앞부분 삭제
-                if end_offset > 0 {
-                    if let Some(p) = paras.get_mut(end_para) {
-                        p.delete_text_at(0, end_offset);
-                    }
-                }
-                // 2) 중간 문단 역순 제거
-                for mid in (start_para + 1..end_para).rev() {
-                    if mid < paras.len() {
-                        paras.remove(mid);
-                    }
-                }
-                // 3) 첫 문단 뒷부분 삭제
-                if let Some(p) = paras.get_mut(start_para) {
-                    let para_len = p.text.chars().count();
-                    if start_offset < para_len {
-                        p.delete_text_at(start_offset, para_len - start_offset);
-                    }
-                }
-                // 4) 첫-마지막 문단 병합 (마지막이 이제 start_para+1)
-                if start_para + 1 < paras.len() {
-                    let next = paras.remove(start_para + 1);
-                    paras[start_para].merge_from(&next);
-                }
-            }
+        let paragraphs =
+            self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+        if !delete_cell_range(paragraphs, start_para, start_offset, end_para, end_offset)? {
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"charOffset\":{}",
+                start_para, start_offset
+            )));
         }
 
         // [#2755] flat `delete_range_native` 셀 분기와 동일하게 병합 생존 문단(start_para)을

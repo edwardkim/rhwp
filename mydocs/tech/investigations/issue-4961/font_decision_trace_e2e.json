@@ -17,7 +17,7 @@
         "recordsEmitted": 440,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "ecc09cc1b2bfc374f5f94871a26a0a6f7e0263fa08eba4f586e4518ad2955251"
+      "expectedLayoutHash": "8078493c0757582f0243a7c48fbc358be8bbc18fb8ad6420d89ccf7913169458"
     },
     {
       "id": "format-parity-hwpx",
@@ -31,7 +31,7 @@
         "recordsEmitted": 440,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "ecc09cc1b2bfc374f5f94871a26a0a6f7e0263fa08eba4f586e4518ad2955251"
+      "expectedLayoutHash": "8078493c0757582f0243a7c48fbc358be8bbc18fb8ad6420d89ccf7913169458"
     },
     {
       "id": "exact-face",
