@@ -1560,6 +1560,10 @@ impl DocumentCore {
             bbox_y: f64,
             bbox_w: f64,
             bbox_h: f64,
+            caret_y: f64,
+            caret_h: f64,
+            has_text: bool,
+            line_id: Option<u32>,
             // 셀/글상자 컨텍스트 (본문 텍스트는 None)
             cell_context: Option<CellContext>,
             is_textbox: bool,
@@ -1695,12 +1699,18 @@ impl DocumentCore {
             cell_bboxes: &mut Vec<CellBboxInfo>,
             textbox_bboxes: &mut Vec<TextBoxBboxInfo>,
             current_column: Option<u16>,
+            current_line_id: Option<u32>,
             current_table_id: Option<u32>,
             // Table 노드에서 전파되는 (section_index, parent_para_index, control_index)
             current_table_meta: Option<(usize, usize, usize)>,
             current_table_ctx: Option<CellContext>,
             current_cell_ctx: Option<CellContext>,
         ) {
+            let line_id = if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+                Some(node.id)
+            } else {
+                current_line_id
+            };
             // Column 노드 진입 시 칼럼 인덱스 전파
             let col = if let RenderNodeType::Column(col_idx) = node.node_type {
                 Some(col_idx)
@@ -1823,6 +1833,15 @@ impl DocumentCore {
                             bbox_y: node.bbox.y,
                             bbox_w: node.bbox.width,
                             bbox_h: node.bbox.height,
+                            caret_y: node.bbox.y + text_run.baseline
+                                - text_run.style.font_size * 0.8,
+                            caret_h: if text_run.text.is_empty() && ecc == 0 {
+                                text_run.style.font_size.max(10.0)
+                            } else {
+                                text_run.style.font_size
+                            },
+                            has_text: !text_run.text.is_empty(),
+                            line_id,
                             cell_context,
                             is_textbox: false,
                             column_index: col,
@@ -1850,6 +1869,7 @@ impl DocumentCore {
                     cell_bboxes,
                     textbox_bboxes,
                     col,
+                    line_id,
                     current_table_id,
                     table_meta,
                     table_ctx.clone(),
@@ -1994,18 +2014,67 @@ impl DocumentCore {
             }
         }
 
-        fn inline_image_caret_metrics(y: f64, h: f64) -> (f64, f64) {
+        fn inline_image_caret_metrics(
+            runs: &[RunInfo],
+            (si, pi, offset, line_id): (usize, usize, usize, Option<u32>),
+            y: f64,
+            h: f64,
+        ) -> ((f64, f64), (f64, f64)) {
             let fallback_h = 12.0;
-            let baseline = h * 0.85;
-            let ascent = fallback_h * 0.8;
-            (y + (baseline - ascent).max(0.0), fallback_h)
+            let fallback = (y + (h * 0.85 - fallback_h * 0.8).max(0.0), fallback_h);
+            // 그림과 같은 TextLine의 글자 모양만 쓴다. 다른 줄의 같은 논리 자리나
+            // 짧은 그림 밖까지 뻗은 큰 글자 캐럿도 줄 소유를 기준으로 구별한다.
+            let same_paragraph = |run: &&RunInfo| {
+                run.section_index == si
+                    && run.paragraph_index == pi
+                    && run.cell_context.is_none()
+                    && !run.is_textbox
+            };
+            let same_line =
+                |run: &&RunInfo| same_paragraph(run) && line_id.is_some() && run.line_id == line_id;
+            let end = offset + 1;
+            // 일반 캐럿처럼 끝 칸 이하의 마지막 글자 자리를 먼저 찾는다.
+            // 그런 자리가 전혀 없을 때만 첫 앵커를 쓰고, 다른 줄이면 폴백한다.
+            let nearby = runs
+                .iter()
+                .filter(same_paragraph)
+                .filter(|run| run.char_start <= end)
+                .min_by_key(|run| std::cmp::Reverse((run.char_start + run.char_count).min(end)))
+                .or_else(|| {
+                    runs.iter()
+                        .filter(same_paragraph)
+                        .min_by_key(|run| run.char_start)
+                })
+                .filter(|run| line_id.is_some() && run.line_id == line_id)
+                .filter(|run| {
+                    let mid = run.caret_y + run.caret_h / 2.0;
+                    mid >= y && mid <= y + h
+                })
+                .map(|run| (run.caret_y, run.caret_h))
+                .unwrap_or(fallback);
+            // 그림 뒤는 실제 텍스트/빈 앵커가 그 논리 칸을 소유하면 그 캐럿을 쓴다.
+            // 그림 앞은 기존 일반 캐럿의 그림 안 기준선·폴백 계약을 유지한다.
+            let after = runs
+                .iter()
+                .filter(same_line)
+                .filter(|run| run.char_start <= end && end <= run.char_start + run.char_count)
+                .min_by_key(|run| usize::from(run.char_start != end))
+                .map(|run| (run.caret_y, run.caret_h))
+                .unwrap_or(nearby);
+            (nearby, after)
         }
 
         fn collect_body_inline_image_hits(
             core: &DocumentCore,
             node: &RenderNode,
-            hits: &mut Vec<(usize, usize, usize, f64, f64, f64, f64)>,
+            line_id: Option<u32>,
+            hits: &mut Vec<(usize, usize, usize, f64, f64, f64, f64, Option<u32>)>,
         ) {
+            let line_id = if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+                Some(node.id)
+            } else {
+                line_id
+            };
             if let RenderNodeType::Image(ref img) = node.node_type {
                 if img.cell_context.is_none() {
                     if let (Some(si), Some(pi), Some(ci)) =
@@ -2038,6 +2107,7 @@ impl DocumentCore {
                                 node.bbox.y,
                                 node.bbox.width,
                                 node.bbox.height,
+                                line_id,
                             ));
                         }
                     }
@@ -2045,7 +2115,7 @@ impl DocumentCore {
             }
 
             for child in &node.children {
-                collect_body_inline_image_hits(core, child, hits);
+                collect_body_inline_image_hits(core, child, line_id, hits);
             }
         }
 
@@ -2074,6 +2144,7 @@ impl DocumentCore {
             &mut guide_runs,
             &mut cell_bboxes,
             &mut textbox_bboxes,
+            None,
             None,
             None,
             None,
@@ -2161,41 +2232,71 @@ impl DocumentCore {
         }
 
         let mut inline_image_hits = Vec::new();
-        collect_body_inline_image_hits(self, &tree.root, &mut inline_image_hits);
-        for (si, pi, char_offset, ix, iy, iw, ih) in inline_image_hits {
-            let (caret_y, caret_h) = inline_image_caret_metrics(iy, ih);
+        collect_body_inline_image_hits(self, &tree.root, None, &mut inline_image_hits);
+        // 이웃 그림의 여백보다 실제 그림 영역을 먼저 판정한다.
+        for &(si, pi, char_offset, ix, iy, iw, ih, line_id) in &inline_image_hits {
             let right = ix + iw;
             if x >= ix && x <= right && y >= iy && y <= iy + ih {
+                let (before, after) =
+                    inline_image_caret_metrics(&runs, (si, pi, char_offset, line_id), iy, ih);
                 let offset = if x > ix + iw / 2.0 {
                     char_offset + 1
                 } else {
                     char_offset
                 };
+                let (caret_y, caret_h) = if offset == char_offset { before } else { after };
                 let caret_x = if offset == char_offset { ix } else { right };
                 return Ok(format_body_inline_image_hit(
                     page_num, si, pi, offset, caret_x, caret_y, caret_h,
                 ));
             }
-            if x >= right && x <= right + caret_h && y >= caret_y && y <= caret_y + caret_h {
+        }
+        for (si, pi, char_offset, ix, iy, iw, ih, line_id) in inline_image_hits {
+            // 큰 글자의 캐럿 높이로 넓어진 여백이 실제 본문 글자·안내문을 덮지 않는다.
+            if guide_runs.iter().any(|guide| {
+                guide.cell_context.is_none()
+                    && x >= guide.bbox_x
+                    && x <= guide.bbox_x + guide.bbox_w
+                    && y >= guide.bbox_y
+                    && y <= guide.bbox_y + guide.bbox_h
+            }) || runs.iter().any(|run| {
+                run.section_index == si
+                    && run.paragraph_index == pi
+                    && run.cell_context.is_none()
+                    && !run.is_textbox
+                    && run.has_text
+                    && line_id.is_some()
+                    && run.line_id == line_id
+                    && x >= run.bbox_x
+                    && x <= run.bbox_x + run.bbox_w
+                    && y >= run.bbox_y
+                    && y <= run.bbox_y + run.bbox_h
+            }) {
+                continue;
+            }
+            let (before, after) =
+                inline_image_caret_metrics(&runs, (si, pi, char_offset, line_id), iy, ih);
+            let right = ix + iw;
+            if x >= right && x <= right + after.1 && y >= after.0 && y <= after.0 + after.1 {
                 return Ok(format_body_inline_image_hit(
                     page_num,
                     si,
                     pi,
                     char_offset + 1,
                     right,
-                    caret_y,
-                    caret_h,
+                    after.0,
+                    after.1,
                 ));
             }
-            if x <= ix && x >= ix - caret_h && y >= caret_y && y <= caret_y + caret_h {
+            if x <= ix && x >= ix - before.1 && y >= before.0 && y <= before.0 + before.1 {
                 return Ok(format_body_inline_image_hit(
                     page_num,
                     si,
                     pi,
                     char_offset,
                     ix,
-                    caret_y,
-                    caret_h,
+                    before.0,
+                    before.1,
                 ));
             }
         }
