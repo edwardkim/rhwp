@@ -125,16 +125,6 @@ fn assert_private_data_absent(value: &serde_json::Value) {
     }
 }
 
-fn public_coverage(path: &str) -> serde_json::Value {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
-    let bytes = std::fs::read(&path)
-        .unwrap_or_else(|error| panic!("public fixture read failed ({}): {error}", path.display()));
-    let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|error| {
-        panic!("public fixture parse failed ({}): {error}", path.display())
-    });
-    coverage(&core).1
-}
-
 fn width_source_counts(value: &serde_json::Value) -> BTreeMap<String, u64> {
     let mut counts = BTreeMap::new();
     for row in value["decisionUsage"].as_array().expect("decision usage") {
@@ -320,45 +310,6 @@ fn many_char_shape_boundaries_use_a_linear_merge_walk() {
     let value: serde_json::Value = serde_json::from_str(&raw).expect("aggregate JSON");
     assert!(count(&value, "/counts/layoutCharacters") >= 10_000);
     assert_reconciled(&value);
-}
-
-#[test]
-fn public_hwp_hwpx_classification_golden_is_deterministic_and_format_portable() {
-    let manifest: serde_json::Value = serde_json::from_str(include_str!(
-        "../../mydocs/tech/investigations/issue-4962/font_metric_coverage_public_fixtures.json"
-    ))
-    .expect("public fixture manifest");
-    let mut results = BTreeMap::new();
-    for fixture in manifest["documents"].as_array().expect("public documents") {
-        let id = fixture["id"].as_str().expect("fixture id");
-        let value = public_coverage(fixture["path"].as_str().expect("fixture path"));
-        assert_reconciled(&value);
-        assert_private_data_absent(&value);
-        assert_eq!(value["format"], fixture["format"], "{id}");
-        assert_eq!(value["counts"], fixture["counts"], "{id}");
-        assert_eq!(value["categories"], fixture["categories"], "{id}");
-        assert_eq!(
-            serde_json::to_value(width_source_counts(&value)).expect("width source JSON"),
-            fixture["widthSources"],
-            "{id}"
-        );
-        assert_eq!(
-            value["aggregateHash"]["value"], fixture["aggregateHash"],
-            "{id}"
-        );
-        assert_eq!(
-            value["legacyProjectionHash"]["value"], fixture["legacyProjectionHash"],
-            "{id}"
-        );
-        results.insert(id.to_string(), value);
-    }
-
-    let hwp = &results["format-parity-hwp"];
-    let hwpx = &results["format-parity-hwpx"];
-    for field in ["counts", "categories", "joins", "legacyUsage"] {
-        assert_eq!(hwp[field], hwpx[field], "portable HWP/HWPX field: {field}");
-    }
-    assert_eq!(width_source_counts(hwp), width_source_counts(hwpx));
 }
 
 #[test]

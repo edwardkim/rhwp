@@ -24,6 +24,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
@@ -188,6 +192,7 @@ fn run_partition(part: usize) {
     // 나머지 하위 디렉터리 68개는 이 이슈가 다루는 축이 아니고, 한꺼번에 넣으면
     // 무관한 신규 실패를 이 PR 에서 등재해야 한다. 필요하면 별도 이슈로 넓힌다.
     collect_recursive(&samples_dir().join("chart"), &mut entries);
+    entries.retain(|path| !is_exam_fixture(path));
     let mut skipped = 0usize;
     let mut oversized = 0usize;
     let entries: Vec<_> = entries

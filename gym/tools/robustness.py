@@ -47,6 +47,7 @@ REPO_ROOT = os.path.dirname(GYM_ROOT)
 sys.path.insert(0, GYM_ROOT)
 
 from core import runner  # noqa: E402
+from core.input_selection import is_excluded_exam_input  # noqa: E402
 
 OLE_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 ZIP_LOCAL = b"PK\x03\x04"
@@ -1062,7 +1063,9 @@ def select_samples(samples_dir: str, limit: int):
         names = os.listdir(samples_dir)
     except OSError:
         return [], 0
-    everything = sorted(f for f in names if f.endswith(".hwp"))
+    everything = sorted(
+        f for f in names if f.endswith(".hwp") and not is_excluded_exam_input(f)
+    )
     if not everything or limit <= 0:
         return everything[: max(0, limit)], len(everything)
     if len(everything) <= limit:

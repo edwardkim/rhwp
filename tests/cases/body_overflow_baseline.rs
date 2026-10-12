@@ -48,6 +48,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -91,7 +95,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     // #7445: 전52쪽 최저39.97%로 캡션·쪽수·본문 넘침 회귀를 함께 보류한다.
     // deferred_caption1853_validation.json의 전체 비교 근거를 따른다.
     "issue1853_caption_precedes_body_split.hwpx",
-    "exam_eng.hwp",
     "hwpctl_API_v2.4.hwp",
     "hwp3-sample16-hwp5.hwp",
     "hwp3-sample16-hwp5-2010.hwp",
@@ -150,6 +153,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str())
             && !DEFERRED_BODY_OVERFLOW_FIXTURES.contains(&rel.as_str())
     });
+    acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");
     acc

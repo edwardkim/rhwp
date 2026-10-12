@@ -93,23 +93,6 @@ pub(super) fn print() {
     println!("      --compat <2022|2024> 기존 한컴 호환 옵션");
     println!("      예: rhwp export-sixel 문서.hwp -o output/sixel --width 720");
     println!();
-    println!("  export-png-gpu <파일.hwp|파일.hwpx> [옵션]   (gpu feature 필요)");
-    println!("      기존 SVG 산출을 GPU(vello/wgpu)로 래스터화해 PNG로 내보내기");
-    println!("      대량 문서 코퍼스를 VLM 입력 이미지로 굽는 파이프라인용. 파싱·레이아웃은");
-    println!("      GPU 대상이 아니다(분기 지배적) — 래스터화 단계만 GPU로 옮긴다.");
-    println!();
-    println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
-    println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
-    println!("      --scale <배율>          렌더링 배율 (기본: 2.0)");
-    println!("      --font-path <경로>      폰트 파일/디렉터리 탐색 경로 (여러 번 지정 가능)");
-    println!(
-        "      --benchmark             같은 벡터를 CPU(resvg)로도 굽고 시간·픽셀차를 정직 보고"
-    );
-    println!("      --repeat <N>            각 페이지 래스터화 반복 후 최솟값 (기본: 1)");
-    println!();
-    println!("  gpu-info                        (gpu feature 필요)");
-    println!("      사용 가능한 GPU 어댑터를 열거 (export-png-gpu 가 쓸 백엔드 확인)");
-    println!();
     println!("  export-text <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 TXT로 내보내기");
     println!();

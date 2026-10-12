@@ -30,12 +30,12 @@ fn synth_exotic_field_hwpx() -> Vec<u8> {
     let mut out = Vec::new();
     {
         let mut zout = zip::ZipWriter::new(std::io::Cursor::new(&mut out));
-        let opts: zip::write::FileOptions<'_, ()> =
+        let opts: zip::write::SimpleFileOptions =
             zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Deflated);
         let mut replaced = false;
         for i in 0..zin.len() {
             let mut f = zin.by_index(i).expect("zip 항목");
-            let name = f.name().to_string();
+            let name = f.name().expect("ZIP 엔트리 이름").to_string();
             let mut data = Vec::new();
             f.read_to_end(&mut data).expect("항목 읽기");
             if !replaced && name.starts_with("Contents/section") && name.ends_with(".xml") {
@@ -64,7 +64,7 @@ fn section_xml(bytes: &[u8]) -> String {
     let mut out = String::new();
     for i in 0..zin.len() {
         let mut f = zin.by_index(i).expect("zip 항목");
-        let name = f.name().to_string();
+        let name = f.name().expect("ZIP 엔트리 이름").to_string();
         if name.starts_with("Contents/section") && name.ends_with(".xml") {
             let mut s = String::new();
             f.read_to_string(&mut s).expect("section xml");

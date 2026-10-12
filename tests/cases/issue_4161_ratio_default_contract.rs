@@ -47,6 +47,12 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
 
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -86,7 +92,9 @@ fn hwp3_samples() -> Vec<(PathBuf, String)> {
         };
         for entry in entries.flatten() {
             let path = entry.path();
-            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+            if is_deferred_exam_document(path.to_string_lossy().as_ref())
+                || exam_fixtures::is_exam_fixture(&path)
+            {
                 continue;
             }
             if path.is_dir() {

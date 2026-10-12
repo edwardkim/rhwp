@@ -15,6 +15,12 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
 
 use std::collections::HashMap;
 
@@ -131,7 +137,7 @@ fn all_section_xml(doc: &rhwp::model::document::Document) -> String {
     let mut xml = String::new();
     for i in 0..zip.len() {
         let mut f = zip.by_index(i).unwrap();
-        let name = f.name().to_string();
+        let name = f.name().expect("ZIP 엔트리 이름").to_string();
         if name.contains("Contents/") && name.ends_with(".xml") {
             use std::io::Read;
             let mut s = String::new();
@@ -149,7 +155,9 @@ fn serializer_enum_tokens_within_whitelist() {
 
     for entry in std::fs::read_dir("samples/hwpx").expect("samples") {
         let path = entry.unwrap().path();
-        if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+        if is_deferred_exam_document(path.to_string_lossy().as_ref())
+            || exam_fixtures::is_exam_fixture(&path)
+        {
             continue;
         }
         if path.extension().map(|e| e == "hwpx").unwrap_or(false) {
@@ -192,7 +200,9 @@ fn numtype_figure_regression_guard() {
     // #1387 회귀 봉인 — 어떤 샘플도 serialize 후 numType="FIGURE" 를 방출하면 안 된다.
     for entry in std::fs::read_dir("samples/hwpx").expect("samples") {
         let path = entry.unwrap().path();
-        if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+        if is_deferred_exam_document(path.to_string_lossy().as_ref())
+            || exam_fixtures::is_exam_fixture(&path)
+        {
             continue;
         }
         if path.extension().map(|e| e == "hwpx").unwrap_or(false) {
@@ -209,7 +219,9 @@ fn numtype_figure_regression_guard() {
             if let Ok(mut zip) = zip::ZipArchive::new(reader) {
                 for i in 0..zip.len() {
                     let mut f = zip.by_index(i).unwrap();
-                    if f.name().contains("Contents/") && f.name().ends_with(".xml") {
+                    if f.name().expect("ZIP 엔트리 이름").contains("Contents/")
+                        && f.name().expect("ZIP 엔트리 이름").ends_with(".xml")
+                    {
                         use std::io::Read;
                         let mut s = String::new();
                         f.read_to_string(&mut s).ok();

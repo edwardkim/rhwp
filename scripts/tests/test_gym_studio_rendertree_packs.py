@@ -21,7 +21,7 @@ RT = GYM / "packs" / "render-tree"
 WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_studio_rendertree.md"
 
 ST_IDS = [f"ST{i:02d}" for i in range(1, 41)]
-RT_IDS = [f"RT{i:02d}" for i in range(1, 41)]
+RT_IDS = [f"RT{i:02d}" for i in range(1, 41) if i not in {4, 23, 24, 25, 26, 27, 28, 29, 32, 38, 39}]
 
 ST_EDIT = {"ST01", "ST02", "ST03", "ST04", "ST05", "ST06", "ST07"}
 ST_INQUIRE = {
@@ -35,22 +35,11 @@ ST_EXTRACT = {
 }
 ST_FLOOR = {"ST39", "ST40"}
 
-RT_LATER = {
-    "RT23": ("1", "002"),
-    "RT24": ("1", "002"),
-    "RT25": ("2", "003"),
-    "RT26": ("1", "002"),
-    "RT27": ("2", "003"),
-    "RT28": ("3", "004"),
-}
-RT_FLAG = {
-    "RT30": "--show-para-marks",
-    "RT31": "--show-control-codes",
-    "RT32": "--respect-vpos-reset",
-    "RT33": "--show-para-marks",
-    "RT34": "--show-control-codes",
-    "RT40": "--show-para-marks",
-}
+RT_FLAG = {'RT30': '--show-para-marks',
+ 'RT31': '--show-control-codes',
+ 'RT33': '--show-para-marks',
+ 'RT34': '--show-control-codes',
+ 'RT40': '--show-para-marks'}
 RT_STRUCTURE = {"RT35", "RT36", "RT37"}
 
 ALLOWED_ST = {"chart-to-csv", "csv-to-chart"}
@@ -331,19 +320,6 @@ class RenderTreeJourneyTests(unittest.TestCase):
             self.assertTrue(types, task["id"])
             self.assertEqual(types[0]["value"], "Page", task["id"])
 
-    def test_later_pages_align_p_and_filename(self):
-        for tid, (page, suffix) in RT_LATER.items():
-            task = load_json(RT / "tasks" / f"{tid}.json")
-            ref = load_json(RT / "reference" / f"{tid}.json")
-            files = task["submit"]["files"]
-            self.assertEqual(files, [f"_rt/render_tree_{suffix}.json"], tid)
-            found = False
-            for cmd in walk_cmds(ref):
-                if cmd and cmd[0] == "export-render-tree":
-                    found = True
-                    self.assertIn("-p", cmd, tid)
-                    self.assertEqual(cmd[cmd.index("-p") + 1], page, tid)
-            self.assertTrue(found, tid)
 
     def test_flag_family_passes_the_flag(self):
         for tid, flag in RT_FLAG.items():

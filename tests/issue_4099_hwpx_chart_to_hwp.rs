@@ -663,7 +663,13 @@ fn issue4099_hwp_save_keeps_live_ir_intact_for_hwpx_reexport() {
 fn zip_entry_names(hwpx: &[u8]) -> Vec<String> {
     let mut z = zip::ZipArchive::new(Cursor::new(hwpx.to_vec())).expect("HWPX zip 열기");
     (0..z.len())
-        .map(|i| z.by_index(i).expect("zip 엔트리").name().to_string())
+        .map(|i| {
+            z.by_index(i)
+                .expect("zip 엔트리")
+                .name()
+                .expect("ZIP 엔트리 이름")
+                .to_string()
+        })
         .collect()
 }
 
