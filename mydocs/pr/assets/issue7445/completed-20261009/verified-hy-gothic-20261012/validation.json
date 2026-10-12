@@ -1,0 +1,197 @@
+{
+  "qualifiedSourceParent": "6b15e0bd1f48732290562c38d9daf1b5be059c68",
+  "source": "samples/task2097/75544_pii_bunseok.hwpx",
+  "sourceSha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+  "independentPrint": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+  "independentPrintSha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+  "sourceAndPrintUnchanged": true,
+  "environment": "mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json",
+  "environmentSha256": "a396b627331aaf9ba2f7e242d255bbddb2946a9835a690dafc6c02117a86d2d0",
+  "fontProgramProof": {
+    "file": "/Users/tsjang/Library/Fonts/H2GTRM.TTF",
+    "localSha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+    "embeddedSvgSha256": "febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+    "unitsPerEm": 1024,
+    "fontBinaryCommitted": false,
+    "glyphs": {
+      "0xb7": {
+        "glyph": "periodcentered",
+        "glyphId": 19305,
+        "hmtx": [
+          1024,
+          466
+        ],
+        "inkBounds": [
+          466,
+          321,
+          558,
+          413
+        ],
+        "localAndActualSvgSameGlyphAdvanceAndOutlineBounds": true
+      },
+      "0x2018": {
+        "glyph": "quoteleft",
+        "glyphId": 19315,
+        "hmtx": [
+          1024,
+          829
+        ],
+        "inkBounds": [
+          829,
+          599,
+          920,
+          832
+        ],
+        "localAndActualSvgSameGlyphAdvanceAndOutlineBounds": true
+      },
+      "0x2019": {
+        "glyph": "quoteright",
+        "glyphId": 19316,
+        "hmtx": [
+          1024,
+          103
+        ],
+        "inkBounds": [
+          103,
+          581,
+          194,
+          815
+        ],
+        "localAndActualSvgSameGlyphAdvanceAndOutlineBounds": true
+      }
+    },
+    "glyfTableIdentical": true,
+    "hmtxTableIdentical": true,
+    "cmapTableIdentical": true
+  },
+  "independentPrintProgramAdvance": {
+    "wholePagesRead": 66,
+    "singleQuotes": 8,
+    "b7": 29,
+    "allAdvanceEm": 1,
+    "doubleQuotesNotIncludedInCorrection": true
+  },
+  "productionRule": "Use independently verified regular HYGothic-Medium program advances for U00B7/U2018/U2019 only under existing TTF/non-substitution or explicitly verified TrueType environment; preserve HFT/unknown programs. PNG adapter applies shared actual Native environment before pagination and paint.",
+  "wholeVisual": [
+    {
+      "backend": "native",
+      "pages": 66,
+      "minimum": 91.09665,
+      "below90": 0,
+      "exitCode": 0
+    },
+    {
+      "backend": "wasm",
+      "pages": 66,
+      "minimum": 91.09665,
+      "below90": 0,
+      "exitCode": 0
+    }
+  ],
+  "page66Before": 90.30272,
+  "page66After": 99.87429,
+  "same66NativeFreshPngAndTsv": true,
+  "directInspection": {
+    "uncommittedCandidate": true,
+    "nativePagesActuallyOpened": [
+      3,
+      7,
+      40,
+      42,
+      47,
+      57,
+      58,
+      59,
+      60,
+      64,
+      65,
+      66
+    ],
+    "freshPagesInspectionReusedAfterBothRawRasterHashesMatched": [
+      3,
+      7,
+      40,
+      42,
+      47,
+      57,
+      58,
+      59,
+      60,
+      64,
+      65,
+      66
+    ],
+    "all66NativeFreshPngsIdentical": true,
+    "all66PdfPngsIdentical": true,
+    "bothWholeTsvIdentical": true,
+    "quoteOpeningVisibleAfterCorrection": true,
+    "p65EsgB7SpacingInspected": true,
+    "unresolvedDefects": [],
+    "residuals": [
+      "Font ink and some heading/paragraph tracking differ; retained in whole-page metric. No pixel identity with independent PDF is claimed."
+    ],
+    "nativeSkiaScreenPrintP66ActuallyOpened": true,
+    "nativeSkiaP66Minimum": 99.84153,
+    "fullFinal41AndActual27StillPending": true
+  },
+  "existingRegressionFunctions": [
+    "test_b7_advance_follows_the_font_table_only_when_trusted",
+    "issue_5846_cut_fragment_defers_partial_nested_tail_row"
+  ],
+  "sameAssertionsRedGreen": [
+    {
+      "key": "same-test-red",
+      "exitCode": 100,
+      "summary": "Summary [   0.251s] 2 tests run: 0 passed, 2 failed, 4199 skipped"
+    },
+    {
+      "key": "same-test-green",
+      "exitCode": 0,
+      "summary": "Summary [   0.252s] 2 tests run: 2 passed, 4199 skipped"
+    }
+  ],
+  "initialTargetSelectionError": "Manifest preparation moved the fixture from suite021 to suite018. Initial 1-test RED and wrapper failure retained; production restored before the correct 2-test RED/GREEN.",
+  "newTestFunctions": 0,
+  "nativeSkiaActualConsumer": {
+    "beforeOpeningQuoteHidden": true,
+    "afterOpeningQuoteVisible": true,
+    "screenAndPrintMatchPercent": 99.84153,
+    "sharedEnvironmentAppliedBeforePageCount": true
+  },
+  "studioDefaultProbe": {
+    "canvas2dQuoteActuallyVisible": true,
+    "canvasKitActualBackend": "canvas2d fallback",
+    "canvasKitDirectReplayPassed": false,
+    "reason": "canvaskitResourcePreparationFailed: bounded document font requirements incomplete",
+    "jsProvenancePending": "Vite transforms the JS module; raw response hash does not equal frozen source hash. WASM response matches frozen package.",
+    "fullActual27StillRequired": true
+  },
+  "whole41Docs1048PagesEachAndFinal16Gates": "pending on next committed head",
+  "prPublicationApproved": false,
+  "closingPolicy": {
+    "parent": "Refs #7445",
+    "resolvedChildren": "Closes only after complete issue scope and final integrated validation",
+    "issue7720PublicationQualified": false
+  },
+  "representativeAssetSha256": {
+    "pii-p066-native-review.png": "ea4a9345d39cd38455b35aa325cd788f40328b3105bbfded94991adcb6da3107",
+    "pii-p066-native-overlay.png": "95141f491fe5880d23e3c9c981a89768200867d62f1616aeeb70bfffb2c7d459",
+    "pii-p065-native-review.png": "f47d3ec0f3e3e423eee19569d803d2d05fe0f2b3b180d008c66ef06431543dfc",
+    "pii-p066-wasm-review.png": "ea4a9345d39cd38455b35aa325cd788f40328b3105bbfded94991adcb6da3107",
+    "pii-p066-wasm-overlay.png": "95141f491fe5880d23e3c9c981a89768200867d62f1616aeeb70bfffb2c7d459",
+    "pii-p065-wasm-review.png": "f47d3ec0f3e3e423eee19569d803d2d05fe0f2b3b180d008c66ef06431543dfc",
+    "pii-p066-native-skia-screen-review.png": "1db62e2422bd6ba2068f0f39e63d92478e727d409f0f9474a2ef5022636a99e2",
+    "pii-p066-native-skia-print-review.png": "299623eea5015493f38a1cd4ded4683ab26ba9ebedeef994186a9485fa148a72",
+    "pii-p066-first-line-review.png": "06fd66ea910ac77ea4a3adc57bff300fb45cabe052e7e0d102d3432774256268"
+  },
+  "tsvSha256": {
+    "native": "070d5c11b1287f04e8d2f8cead9a5a36361a4a313e6ee286a02606cf0bfb1371",
+    "wasm": "070d5c11b1287f04e8d2f8cead9a5a36361a4a313e6ee286a02606cf0bfb1371"
+  },
+  "executionArtifactsIgnoredOutput": [
+    "stage548-pii-quote-program-analysis",
+    "stage549-pii-verified-punctuation-build",
+    "stage550-pii-punctuation-whole-qualification",
+    "stage551-pii-punctuation-relational-red-green"
+  ]
+}

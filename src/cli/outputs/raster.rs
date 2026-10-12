@@ -304,6 +304,14 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         return EXIT_USAGE;
     }
 
+    // 실제 공급 글꼴은 SVG/PDF와 같은 환경에서 측정·쪽수·paint에 사용한다.
+    // Skia에만 font_paths를 넘기면 원본 HFT 호환 폭으로 조판한 뒤 TrueType
+    // 글리프를 그려, 전각 작은따옴표의 잉크가 뒤 글자와 겹칠 수 있다.
+    if let Err(e) = super::apply_font_environment(&mut core, None, &font_paths) {
+        eprintln!("오류: PNG 글꼴 환경을 적용할 수 없습니다: {e}");
+        return EXIT_RUNTIME;
+    }
+
     // [#3302] 외부 연결 그림(HWP3 pic_type=0 등)의 같은 디렉터리 자동 적재 — export-svg
     // 의 #741 규칙과 동일. 누락 시 skia 렌더가 회색 placeholder 를 그린다 (SO-SUEOP 1쪽 실측).
     if allows_implicit_sibling_resources(rhwp::parser::detect_format(&data)) {

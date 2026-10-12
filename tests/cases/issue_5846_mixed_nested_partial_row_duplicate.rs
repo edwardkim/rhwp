@@ -1,7 +1,7 @@
 //! #5846: 혼재 호스트의 내부 행은 쪽별 원본 내용과 표/문단 순서를 보존한다.
 //!
 //! 독립 기준은 `pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf`이다.
-//! 보정235의 Native/fresh 전쪽 66개는 최저 90.30272%, 미달 0이다.
+//! 기호 폭 보정의 Native/fresh 전 66쪽은 최저 91.09665%, 미달 0이다.
 //! 59쪽은 앞 행, 60쪽은 단기연체정보부터 서명까지의 뒤 행을 소유한다.
 //! 절대 좌표·픽셀 공차·유닛 번호 대신 소속, 포함 및 표 뒤 문단의 관계를 검사한다.
 
@@ -319,6 +319,54 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
     let closing = source_cell(owned_table(&page66.root, 619).expect("뒤 설명 표"), 4, 1);
     let first_child = table_with(opening, "인공지능");
     let last_child = table_with(closing, "맞추어");
+    // 독립 H2GTRM hmtx와 Print는 작은따옴표에 1em을 준다. 실제 잉크가
+    // 글리프 오른쪽에 있어 좁힌 전진폭은 뒤 한글과 겹쳐 여는 기호를 숨겼다.
+    // 원본 글자모양의 크기·장평과 이웃 원점 관계를 검사하며 절대 px를 고정하지 않는다.
+    let first_line = line(last_child, "맞추어").expect("66쪽 원본 이어받기 첫 줄");
+    let first_text = text(first_line);
+    assert!(first_text.contains("맞추어‘완전히자동화된시스템’으로개인정보를처리"));
+    assert_eq!(first_text.matches('‘').count(), 1, "여는 기호 한 번 보존");
+    assert_eq!(first_text.matches('’').count(), 1, "닫는 기호 한 번 보존");
+    let runs: Vec<_> = first_line
+        .children
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) if node.visible => Some((node, run)),
+            _ => None,
+        })
+        .collect();
+    for quote in ["‘", "’"] {
+        let index = runs
+            .iter()
+            .position(|(_, run)| run.display_or_text() == quote)
+            .expect("원본 언어 슬롯의 작은따옴표 run");
+        let (painted, run) = runs[index];
+        let original_shape = &source.document().doc_info.char_shapes
+            [run.char_shape_id.expect("원본 글자모양 소유") as usize];
+        // 이 원본의 작은따옴표는 영문 슬롯이며, 독립 Print와 동일하게 자간이 없다.
+        assert_eq!(original_shape.spacings[1], 0);
+        let source_em = hwpunit_to_px(original_shape.base_size, DEFAULT_DPI)
+            * f64::from(original_shape.relative_sizes[1])
+            / 100.0
+            * f64::from(original_shape.ratios[1])
+            / 100.0;
+        assert!(source_em > 0.0);
+        assert!(run.style.font_family.contains("HYGothic-Medium"));
+        assert!(
+            (painted.bbox.width / source_em - 1.0).abs() < 0.01,
+            "검증된 TrueType 작은따옴표는 원본 글자모양의 1em을 점유: {quote}, 비율 {}",
+            painted.bbox.width / source_em
+        );
+        assert!(
+            run.style.font_metric_trusted,
+            "확인된 TrueType 프로그램의 측정 경로"
+        );
+        let next = runs.get(index + 1).expect("기호 뒤 원문 run").0;
+        assert!(
+            painted.bbox.x + source_em <= next.bbox.x + source_em * FLOAT_EPSILON,
+            "작은따옴표의 독립 프로그램 전진폭 안에 다음 원문 원점이 들어오면 안 됨: {quote}"
+        );
+    }
     assert_eq!(
         text(first_child) + &text(last_child),
         expected_text,

@@ -3540,6 +3540,8 @@ mod tests {
             ("휴먼명조", false, 0.3),
             ("휴먼고딕", true, 1.0),
             ("휴먼고딕", false, 0.3),
+            ("HYGothic-Medium", true, 1.0),
+            ("HYGothic-Medium", false, 0.3),
             ("한양신명조", true, 0.384),
         ] {
             let em = advance(family, trusted);
@@ -3547,6 +3549,31 @@ mod tests {
                 (em - expected_em).abs() < 0.05,
                 "{family}(신뢰={trusted}) 가운뎃점 전진폭은 {expected_em}em 이어야 한다 — got {em:.3}em"
             );
+        }
+        // 같은 H2GTRM 프로그램과 독립 Print는 작은따옴표도 1em으로 확인한다.
+        // 프로그램 형식을 확인하지 않은 HFT 호환 경로는 기존 좁은 폭을 유지한다.
+        for (trusted, expected_em) in [(true, 1.0), (false, 0.3)] {
+            let style = TextStyle {
+                font_family: "HYGothic-Medium".into(),
+                font_size: 20.0,
+                ratio: 1.0,
+                font_metric_trusted: trusted,
+                ..Default::default()
+            };
+            for quote in ['‘', '’'] {
+                let text = format!("가{quote}나");
+                let positions = m.compute_char_positions(&text, &style);
+                assert_eq!(
+                    positions.len(),
+                    text.chars().count() + 1,
+                    "원문과 종료 경계 보존"
+                );
+                let em = (positions[2] - positions[1]) / style.font_size;
+                assert!(
+                    (em - expected_em).abs() < 0.05,
+                    "검증된 HYGothic-Medium 작은따옴표 {quote}(신뢰={trusted})는 {expected_em}em — got {em:.3}em"
+                );
+            }
         }
     }
 

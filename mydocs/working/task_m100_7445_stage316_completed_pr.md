@@ -2484,3 +2484,47 @@ Print PDF의 전 60쪽을 새로 산출했습니다. 양쪽 최저 **91.86922%, 
 최종 커밋 head의 fresh WASM 빌드까지 16단계를 계속합니다. #7719의
 Closes는 전체 완료 조건·최종 통합 검증 뒤 확정하고 #7445는 Refs로
 유지합니다. 아직 원격 push·PR 생성 승인은 받지 않았습니다.
+
+
+## 2026-10-12 개인정보 기호 전진폭과 Native PNG 소비 경로
+
+최종 전쪽 비교의 66쪽은 90.30272%였지만, 작은따옴표가 뒤 한글과 겹쳐
+여는 기호가 보이지 않았습니다. H2GTRM과 실제 SVG 프로그램의
+cmap/hmtx/glyf를 대조했고, 독립 Print 전 66쪽의 가운데점 29개·
+작은따옴표 8개가 각각 1em을 사용하는 것을 확인했습니다. 검증한
+TrueType face와 기존 비치환/명시 환경 조건에서만 실제 전진폭을 적용하며,
+HFT·불명 프로그램의 호환 폭과 미검증 큰따옴표 경로는 유지합니다.
+
+Native와 Mac locked no-opt fresh WASM의 같은 원본 전 66쪽은 양쪽
+최저 **91.09665%, 미달 0쪽**, 66쪽은 **99.87429%**입니다. 원시 PNG와
+TSV는 전쪽 바이트 동일합니다. 3·7·40·42·47·57·58·59·60·64·65·66쪽과
+66쪽 첫 줄을 직접 판독했고, 대응 raster 해시가 모두 같은 fresh 패널의
+판독을 명시 재사용했습니다. 글꼴 획과 일부 자간 차이는 점수에 포함하며
+독립 PDF와 완전한 픽셀 동일성을 주장하지 않습니다.
+
+실제 Skia PNG에는 SVG와 다른 글꼴 환경 누락이 남아 있었습니다. 같은
+공통 환경 helper를 DocumentCore에서도 재사용하고, PNG adapter가 실제
+공급 프로그램을 쪽수 계산·측정·paint 전에 적용하도록 보정했습니다.
+실제 66쪽 screen/print는 양쪽 **99.84153%**이며 여는 기호가 보입니다.
+기존 두 함수는 원본 글자 크기 대비 기호 폭·이웃 원점·내용 보존을 검사하며,
+동일 assertion에서 보정 전 **2 FAIL/exit 100**, 보정 후 **2 PASS/exit 0**입니다.
+새 테스트 함수나 절대 px 기대값은 추가하지 않았습니다. 파생 suite 번호를
+준비 전 값으로 선택한 최초 실행 오류는 보존했고 생산 소스를 복원한 뒤
+정확한 suite에서 재검증했습니다.
+
+- [요약 증적](../pr/assets/issue7445/completed-20261009/verified-hy-gothic-20261012/validation.json)
+- [66쪽 첫 줄 review](../pr/assets/issue7445/completed-20261009/verified-hy-gothic-20261012/pii-p066-first-line-review.png)
+- [66쪽 Native review](../pr/assets/issue7445/completed-20261009/verified-hy-gothic-20261012/pii-p066-native-review.png)
+- [66쪽 fresh WASM review](../pr/assets/issue7445/completed-20261009/verified-hy-gothic-20261012/pii-p066-wasm-review.png)
+
+Studio 실제 Canvas2D에서도 여는 기호를 확인했습니다. CanvasKit은 문서
+전쪽 preflight의 작업 예산 안에서 글꼴 요구 목록을 완료하지 못해 Canvas2D로
+fallback했고 해당 직접 replay 계약은 실패했습니다. 이를 CanvasKit 통과로
+세지 않습니다. Vite가 변환한 JS 응답의 해시와 원본 JS 해시를 동일하게 보는
+관측기 가정도 재검토 중입니다. 실제 WASM 응답은 fresh package와 일치합니다.
+
+원래 최종 범위 **41문서/1048쪽씩·실제 출력 27개·16단계**는 모두 유지합니다.
+현재 소스의 최종 전체 검증과 CanvasKit 판정을 마친 뒤, 이번 PR에서 하위
+이슈의 전체 완료 조건을 충족한 항목만 본문에 `Closes #번호`로 표시합니다.
+#7445 전체와 미완료 범위는 `Refs`로 유지하고, 원격 push·PR 게시 전에 사용자
+승인을 받습니다. 현재 #7720의 Closes와 PR 게시 완료를 주장하지 않습니다.

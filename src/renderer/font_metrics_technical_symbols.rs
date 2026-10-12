@@ -119,6 +119,11 @@ pub(crate) fn verified_program_punctuation_width(metric: &FontMetric, ch: char) 
         // cmap의 periodcentered gid12190과 hmtx512/unitsPerEm512를 직접 확인했다.
         // 80250 독립 Print p10의 같은 face·이웃 원점도 전각을 입증한다.
         ("휴먼고딕", 512, false, false, 183) => Some(512),
+        // H2GTRM.TTF SHA-256 0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5.
+        // periodcentered/quoteleft/quoteright의 hmtx는 각각 1024/unitsPerEm1024다.
+        // 실제 SVG 프로그램의 glyf/hmtx/cmap이 원 파일과 같고, 독립 개인정보 Print
+        // 전 66쪽의 가운데점 29개·작은따옴표 8개도 1em이다. HFT 표에는 적용하지 않는다.
+        ("HYGothic-Medium", 1024, false, false, 183 | 8216 | 8217) => Some(1024),
         ("Haansoft Batang", 1024, false, false, 183) => Some(341),
         ("Haansoft Batang", 1024, false, false, 8216) => Some(276),
         ("Haansoft Batang", 1024, false, false, 8217) => Some(276),
