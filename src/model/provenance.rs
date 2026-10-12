@@ -180,6 +180,21 @@ impl LayoutCompatibilityProfile {
         self.hwp5_origin_hwpx
     }
 
+    /// HWP3→HWP5 변환본의 본문 흐름 `spacing_before` 복원(*2) 여부. 렌더 셋업과
+    /// 조판 중 scratch 렌더가 같은 값을 쓰도록 한 곳에서 정한다.
+    ///
+    /// HWP3→HWP5 변환본은 parser 가 ParaShape spacing 을 절반으로 정규화하므로
+    /// 본문 흐름에서만 원래 spacing_before 를 복원한다. 원본 HWP3 는 parser 가 만든
+    /// 값을 그대로 쓰고 재확대하지 않는다. 그 HWPX export 도 IR 이 같은 스케일이다.
+    /// 마커만으로 hwp3_layout 을 켜면 *2 가 한 번 더 들어가 sample16은 64→65,
+    /// sample11은 151→152로 갈라진다(#3518, #3737). HWP5 변환본의 HWPX는 hwp5-origin
+    /// 마커가 있어 절반 정규화가 있었던 경우만 *2를 유지한다.
+    pub fn hwp3_origin_flow_spacing_before(&self) -> bool {
+        self.hwp3_layout
+            && !self.hwp3_native_layout
+            && (!self.hwpx_container || self.hwp5_origin_hwpx)
+    }
+
     /// 변환 계보가 없는 원본 HWP 5.x 바이너리인지 여부. HML 및 HWP3/HWPX
     /// 변환본과 저장 LineSeg 계약을 정확히 분리해야 하는 좁은 호환 분기에 쓴다.
     pub fn native_hwp5_layout(&self) -> bool {

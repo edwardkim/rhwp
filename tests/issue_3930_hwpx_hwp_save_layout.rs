@@ -16,18 +16,20 @@ const HWP_FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
-// [#5923] 비-TAC 다문단 셀 trailing 줄간격 제외로 Q&A 지역(281쪽 이후)이 한 쪽씩
-// 당겨진다 — p30·p144 지역은 불변이고 본문 문자 다중집합은 불변이다.
-const PAGE_283: u32 = 281;
-const PAGE_284: u32 = 282;
-const PAGE_285: u32 = 283;
-const PAGE_286: u32 = 284;
-const PAGE_287: u32 = 285;
-const PAGE_290: u32 = 288;
-const PAGE_291: u32 = 289;
-const PAGE_294: u32 = 292;
-const PAGE_295: u32 = 293;
-const PAGE_296: u32 = 294;
+// 쪽 번호는 독립 정본 `pdf/2025 행정업무운영 편람(최종)-hwp(x)-kopub-2024.pdf`(한컴 2024 +
+// KoPub 내장, 383쪽)의 물리 쪽이고 상수 값은 그 0-기반 색인이다. [#5923] 에서 한 쪽씩 당긴
+// 값(281 …)은 rhwp 가 제5장 간지 뒤 PageHide 빈 쪽(정본 278쪽)을 만들지 않아 생긴 어긋남을
+// 받아 준 것이었다. 그 빈 쪽을 되살린 뒤 Q5·Q8·Q9·Q10·Q16·Q27 은 정본과 같은 물리 쪽에 온다.
+const PAGE_283: u32 = 282;
+const PAGE_284: u32 = 283;
+const PAGE_285: u32 = 284;
+const PAGE_286: u32 = 285;
+const PAGE_287: u32 = 286;
+const PAGE_290: u32 = 289;
+const PAGE_291: u32 = 290;
+const PAGE_294: u32 = 293;
+const PAGE_295: u32 = 294;
+const PAGE_296: u32 = 295;
 const Q5_RESPONSE_FIRST_LINE: &str = "문서는 결재권자의 결재가 완료된 시점에";
 const Q9_TITLE: &str = "보조기관, 보좌기관, 합의제행정기관의 의미";
 const Q10_TITLE: &str = "공문서 작성시 연·월·일의 정확한 표기방법";
@@ -323,7 +325,7 @@ fn issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count() {
     let source = HwpDocument::from_bytes(&bytes).expect("HWP fixture parse");
 
     assert!(
-        page_tree(&source, 283).contains("홈페이지상의 질의에 대하여"),
+        page_tree(&source, PAGE_285).contains("홈페이지상의 질의에 대하여"),
         "Hancom PDF physical p285와 같이 Q8 표제는 Q7 tail 뒤 같은 쪽에서 시작해야 한다"
     );
 }

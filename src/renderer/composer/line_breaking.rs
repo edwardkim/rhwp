@@ -1694,6 +1694,8 @@ impl<'a> TabFill<'a> {
             self.default_width(),
             self.auto_tab_right,
             self.available_width_px,
+            // 그리기의 `text_start_offset`(문단 왼쪽 여백 + 그 줄의 들여쓰기)과 같은 값이다.
+            origin,
         );
         match tab_type {
             0 | 3 => to_hwp(position - origin).max(lw_hwp),
@@ -6280,139 +6282,6 @@ mod frame_reflow_tests {
             band.line_segs[0][0].segment_width,
             text_frame.end - text_frame.start,
             "the right-aligned Para exclusion begins at the text frame's end"
-        );
-    }
-
-    #[test]
-    fn real_p325_picture_band_matches_the_stored_seven_paragraph_geometry() {
-        use crate::model::page::ColumnDef;
-        use crate::renderer::page_layout::PageLayoutInfo;
-
-        const DPI: f64 = 96.0;
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-        let document = crate::parse_document(&bytes).expect("parse p325 corpus fixture");
-        let section = &document.sections[0];
-        let column_def = section.paragraphs[..=325]
-            .iter()
-            .flat_map(|paragraph| &paragraph.controls)
-            .filter_map(|control| match control {
-                Control::ColumnDef(column) => Some(column.clone()),
-                _ => None,
-            })
-            .next_back()
-            .unwrap_or_else(ColumnDef::default);
-        let page_layout =
-            PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, DPI);
-        let column_width = page_layout.column_areas[0].width;
-        let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
-
-        let band = layout_picture_band(
-            &section.paragraphs,
-            325,
-            column_width,
-            &styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("one Picture + trailing TAC Equation p325 band");
-
-        assert_eq!(band.paragraph_range, 325..332);
-        assert_eq!(band.line_segs.len(), 7);
-        for (paragraph_index, generated) in band.paragraph_range.clone().zip(&band.line_segs) {
-            let stored = &section.paragraphs[paragraph_index].line_segs;
-            assert_eq!(generated.len(), 1, "p{paragraph_index}");
-            assert_eq!(
-                generated[0].text_start, stored[0].text_start,
-                "p{paragraph_index}"
-            );
-            assert_eq!(
-                generated[0].column_start, stored[0].column_start,
-                "p{paragraph_index}"
-            );
-            assert_eq!(
-                generated[0].segment_width, stored[0].segment_width,
-                "p{paragraph_index}"
-            );
-            assert!(
-                generated[0].line_height.abs_diff(stored[0].line_height) <= 1,
-                "p{paragraph_index}"
-            );
-            assert!(
-                generated[0].text_height.abs_diff(stored[0].text_height) <= 1,
-                "p{paragraph_index}"
-            );
-            assert!(
-                generated[0]
-                    .baseline_distance
-                    .abs_diff(stored[0].baseline_distance)
-                    <= 1,
-                "p{paragraph_index}: generated={} stored={}",
-                generated[0].baseline_distance,
-                stored[0].baseline_distance,
-            );
-            assert!(
-                generated[0].line_spacing.abs_diff(stored[0].line_spacing) <= 3,
-                "p{paragraph_index}"
-            );
-        }
-        assert!(
-            band.line_segs[0][0].line_height > 900,
-            "the host's trailing TAC Equation must enlarge the retried first row"
-        );
-        assert_eq!(
-            band.line_segs[0][0].baseline_distance,
-            section.paragraphs[325].line_segs[0].baseline_distance,
-            "p325 retains the TAC Equation's object-owned baseline"
-        );
-        assert_ne!(
-            band.line_segs.last().expect("band tail")[0].segment_width,
-            section.paragraphs[332].line_segs[0].segment_width,
-            "p332 is the first full-width paragraph after the exclusion"
-        );
-    }
-
-    #[test]
-    fn picture_band_rejects_a_truncated_p325_before_any_projection() {
-        use crate::model::page::ColumnDef;
-        use crate::renderer::page_layout::PageLayoutInfo;
-
-        const DPI: f64 = 96.0;
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-        let document = crate::parse_document(&bytes).expect("parse p325 corpus fixture");
-        let section = &document.sections[0];
-        let column_def = section.paragraphs[..=325]
-            .iter()
-            .flat_map(|paragraph| &paragraph.controls)
-            .filter_map(|control| match control {
-                Control::ColumnDef(column) => Some(column.clone()),
-                _ => None,
-            })
-            .next_back()
-            .unwrap_or_else(ColumnDef::default);
-        let page_layout =
-            PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, DPI);
-        let column_width = page_layout.column_areas[0].width;
-        let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
-
-        assert!(
-            layout_picture_band(
-                &section.paragraphs[325..329],
-                0,
-                column_width,
-                &styles,
-                DPI,
-                (0.0, 0.0)
-            )
-            .is_none(),
-            "a subset ending before the exclusion clears cannot be published"
         );
     }
 

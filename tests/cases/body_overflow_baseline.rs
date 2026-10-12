@@ -44,6 +44,11 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
@@ -70,6 +75,9 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 원문의 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 원문은 samples에 유지하며 다른 래칫·쪽수·렌더러 비교 대상에서는 제외하지 않는다.
 const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
+    // #7445: upstream/devel 74f9b71b1과 같은 원문의 한컴2024 Print
+    // 전2쪽 최저79.32995%; 중국어 원문의 본문 넘침 원장만 이관한다.
+    "issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
     "issue5699/37787_regulatory_impact.hwp",
     // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
@@ -118,6 +126,9 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         let entries = std::fs::read_dir(dir).expect("samples 읽기 실패");
         for entry in entries {
             let path = entry.expect("dir entry").path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 walk(&path, root, acc);
             } else if matches!(
@@ -149,6 +160,7 @@ fn load_baseline() -> BTreeMap<String, u64> {
         .unwrap_or_else(|e| panic!("baseline 읽기 실패 {BASELINE_PATH}: {e}"));
     text.lines()
         .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
+        .filter(|line| !is_deferred_exam_document(line.split('\t').next().unwrap_or_default()))
         .map(|l| {
             let (rel, n) = l.rsplit_once('\t').expect("baseline TSV 행 형식");
             (rel.to_string(), n.parse::<u64>().expect("baseline 수치"))

@@ -3,7 +3,6 @@ samples/2010-01-06.hwp	6	6	0
 samples/20250130-hongbo.hwp	4	4	0
 samples/80168_regulatory_analysis.hwp	157	157	0
 samples/KTX.hwp	27	27	0
-samples/SO-SUEOP.hwp	46	46	0
 samples/aift.hwp	74	74	0
 samples/atop-equation-01.hwp	1	1	0
 samples/basic/BlogForm_BookReview.hwp	1	1	0
@@ -30,13 +29,6 @@ samples/draw-group.hwp	1	1	0
 samples/endnote-01.hwp	5	5	0
 samples/eq-01.hwp	1	1	0
 samples/equation-lim.hwp	1	1	0
-samples/exam_eng.hwp	8	8	0
-samples/exam_kor.hwp	20	20	0
-samples/exam_math.hwp	20	20	0
-samples/exam_math_8.hwp	1	1	0
-samples/exam_math_no.hwp	20	20	0
-samples/exam_science.hwp	4	4	0
-samples/exam_social.hwp	4	4	0
 samples/field-01-memo.hwp	3	3	0
 samples/field-01.hwp	3	3	0
 samples/float-stack-defer.hwp	2	2	0
@@ -218,7 +210,6 @@ samples/table-ipc.hwp	10	10	0
 samples/table-vpos-01.hwp	5	5	0
 samples/table_giant_cell_overfill.hwpx	48	47	-1
 samples/table_scattered_header_rowbreak.hwp	52	52	0
-samples/table_text_anchor_wrap.hwpx	3	3	0
 samples/tac-case-001.hwp	1	1	0
 samples/tac-case-002.hwp	1	1	0
 samples/tac-case-003.hwp	1	1	0

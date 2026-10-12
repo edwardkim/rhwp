@@ -384,6 +384,18 @@ fn resolve_line_metrics(
         let mut pairs = Vec::with_capacity(comp.lines.len());
         let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
         for (line_idx, line) in comp.lines.iter().enumerate() {
+            if !ctx.profile().session_edited() && !ctx.profile().hwp3_layout() {
+                if let Some(height) = crate::renderer::stored_picture_guide_line_height_px(
+                    para,
+                    comp,
+                    line_idx,
+                    ctx.dpi(),
+                ) {
+                    pairs.push((height, hwpunit_to_px(line.line_spacing, ctx.dpi())));
+                    prev_line_reserved_tac_picture_height = None;
+                    continue;
+                }
+            }
             if let Some(ref hs) = stacked_tac_picture_heights {
                 let ls_px = hwpunit_to_px(line.line_spacing, ctx.dpi());
                 pairs.push((hs[line_idx], ls_px));

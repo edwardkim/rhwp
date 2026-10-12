@@ -195,12 +195,10 @@ struct TableBreakToken {
 ///
 /// `fragment_split`은 native HWP5 cell-footnote의 실제 stored vpos reset을 그대로
 /// 옮긴 경우에만 채운다. 단순 capacity 부족은 일반 각주처럼 원자적으로 유지한다.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 struct TableCellFootnote {
     number: u16,
-    cell_index: usize,
-    cell_para_index: usize,
-    cell_control_index: usize,
+    cell_path: Vec<crate::renderer::pagination::TableFootnotePathEntry>,
     row: usize,
     /// Renderer가 실제 줄바꿈·trailing line-spacing까지 합산한 높이. RowBreak
     /// fragment queue는 이 값을 써야 URL 각주가 본문 위로 침범하지 않는다.
@@ -300,6 +298,8 @@ struct HostSpacing {
     after: f64,
     /// spacing_after만 (마지막 fragment용 — Paginator와 동일)
     spacing_after_only: f64,
+    /// 재조판한 흐름 개체의 마지막 조각 뒤에서 닫을 아래 바깥여백.
+    terminal_outer_bottom_flow: f64,
     /// 페이지 적합 판정용 after — 빈 호스트 자리차지 표의 outer_margin_bottom 은
     /// 흐름 전진에만 계상하고 fit 에서 제외한다 (#2195 stage58: 86712 구분선 간격
     /// 한글 괘선 실측 vs hwpspec 178쪽 핀(#1086) 동시 충족).
@@ -309,6 +309,7 @@ struct HostSpacing {
 /// 단일 패스 조판 엔진
 pub struct TypesetEngine {
     dpi: f64,
+    section_column_spacing_hu: std::cell::Cell<Option<i32>>,
     /// [#2403] 현재 조판 입력의 레이아웃 호환 프로파일 — typeset 진입 시 set.
     /// (HWPX 저장 시멘틱·HWP3 변환본 판단 등 소스분기의 단일 질의 표면.)
     profile: std::cell::Cell<crate::model::provenance::LayoutCompatibilityProfile>,
@@ -2790,65 +2791,6 @@ fn native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
         && group_minimum <= st.base_available_height() + 0.5
 }
 
-/// HWP5-origin 문서는 모든 page ornament를 감추는 빈 PageHide marker 뒤에 같은 쪽의
-/// 장식 host를 `Page` break로 한 번 더 기록할 수 있다. 첫 marker가 이미 새 physical
-/// page를 열었으므로 host의 break까지 적용하면 빈 page가 materialize된다.
-fn hwp5_origin_redundant_pagehide_break_marker(
-    para_idx: usize,
-    para: &Paragraph,
-    paragraphs: &[Paragraph],
-    hwpx_stored_layout: bool,
-) -> bool {
-    if para_idx < 2
-        || para.column_type != ColumnBreakType::Page
-        || !para.text.trim().is_empty()
-        || para.controls.len() != 1
-        || !matches!(para.controls.first(), Some(Control::PageHide(_)))
-    {
-        return false;
-    }
-
-    let prior_empty = &paragraphs[para_idx - 1];
-    let section_marker = &paragraphs[para_idx - 2];
-    let Some(next_para) = paragraphs.get(para_idx + 1) else {
-        return false;
-    };
-
-    // Stored-layout HWPX section markers that combine a decorative group and
-    // PageHide own the blank PageHide page immediately before a page-starting
-    // non-inline table. That marker is not the redundant HWP5-origin marker
-    // handled here.
-    let hwpx_pagehide_blank_page_owner = hwpx_stored_layout
-        && section_marker.controls.iter().any(|control| {
-            matches!(
-                control,
-                Control::Shape(shape)
-                    if matches!(
-                        shape.as_ref(),
-                        crate::model::shape::ShapeObject::Group(_)
-                    )
-            )
-        })
-        && next_para
-            .controls
-            .iter()
-            .any(|control| matches!(control, Control::Table(table) if !table.common.treat_as_char));
-
-    prior_empty.text.trim().is_empty()
-        && prior_empty.controls.is_empty()
-        && section_marker.column_type == ColumnBreakType::Section
-        && section_marker
-            .controls
-            .iter()
-            .any(|control| matches!(control, Control::PageHide(_)))
-        && next_para.column_type == ColumnBreakType::Page
-        && next_para
-            .controls
-            .iter()
-            .any(|control| !matches!(control, Control::PageHide(_)))
-        && !hwpx_pagehide_blank_page_owner
-}
-
 /// 빈 ColumnBreak가 두 non-inline 표 사이에 있고 다음 표가 이미 PageBreak를
 /// 소유하면, ColumnBreak는 별도 physical page가 아니라 다음 표의 carrier다.
 /// 표의 shape, 크기, 저장 vpos가 아니라 형제 paragraph의 break 소유권만 쓴다.
@@ -3463,11 +3405,23 @@ impl TypesetEngine {
         Self {
             dpi,
             profile: std::cell::Cell::new(Default::default()),
+            section_column_spacing_hu: std::cell::Cell::new(None),
             uniform_filler_ladder: std::cell::Cell::new(false),
             float_carve_evidence: std::cell::RefCell::new(Vec::new()),
             render_normalization: std::sync::Arc::new(
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
+        }
+    }
+
+    pub(crate) fn with_section_column_spacing_hu(self, spacing: i32) -> Self {
+        self.section_column_spacing_hu.set(Some(spacing));
+        self
+    }
+
+    fn prime_section_cell_context(&self, engine: &crate::renderer::layout::LayoutEngine) {
+        if let Some(spacing) = self.section_column_spacing_hu.get() {
+            engine.set_section_column_spacing_hu(spacing);
         }
     }
 
@@ -3900,8 +3854,7 @@ impl TypesetEngine {
                 styles,
                 is_last_in_section,
             },
-            self.dpi,
-            || self.profile.get().session_edited(),
+            self,
         );
     }
 
@@ -5261,11 +5214,11 @@ impl TypesetEngine {
             && !no_lineseg_band_host;
         if should_add_post_text {
             let post_height: f64 = fmt.line_advances_sum(post_table_start..total_lines);
-            if let Some(origin) = st
+            let stored_host_origin = st
                 .paragraph_float_placements
                 .get(&(para_idx, ctrl_idx))
-                .and_then(|placement| placement.stored_host_origin)
-            {
+                .and_then(|placement| placement.stored_host_origin);
+            if let Some(origin) = stored_host_origin {
                 // The host was resolved before fit, even though its text item is
                 // emitted after the floating table. Consume that same origin.
                 st.align_flow_to(origin);
@@ -5303,6 +5256,23 @@ impl TypesetEngine {
                 && !st.current_items.is_empty()
             {
                 st.advance_column_or_new_page();
+            }
+            // [#7330] 같은 문단의 자리차지 표가 첫 글줄을 민 경우 앞 간격은 문단 상단에서
+            // 잰 거리다: 글줄 원점 = max(문단 상단 + 앞 간격, 표 점유 끝). 표 점유 끝 위에
+            // 남는 앞 간격만 흐름에 소비하고 같은 값을 배치에 넘긴다(배치는 이 값을
+            // 확정 앞 간격으로 받아 다시 더하거나 단 맨 위 규칙으로 바꾸지 않는다).
+            // 저장 원점을 소비한 host 는 그 원점이 이미 앞 간격을 포함한다.
+            if post_table_start == 0
+                && is_visible_para_float
+                && stored_host_origin.is_none()
+                && st.current_height > para_start_height + 0.5
+            {
+                let spacing = crate::renderer::float_placement::float_pushed_line_spacing_before(
+                    para_start_height,
+                    fmt.spacing_before,
+                    st.current_height,
+                );
+                st.consume_float_pushed_line_spacing(para_idx, spacing);
             }
             st.append_item(PageItem::PartialParagraph {
                 para_index: para_idx,
@@ -6802,6 +6772,8 @@ mod tests {
             first_anchor_offset_consumed: false,
             host_placement: None,
             empty_opening_row_frame: None,
+            source_text_first_frame_height: None,
+            source_single_cell_row_frames: None,
             host_frame: (0, 0, 0.0_f64.to_bits()),
             row_count: 3,
             cell_spacing: 0.0,
@@ -6824,6 +6796,7 @@ mod tests {
             host_spacing_total: 0.0,
             host_spacing_before: 0.0,
             host_spacing_after_only: 0.0,
+            terminal_outer_bottom_flow: 0.0,
             terminal_host_spacing: 0.0,
             strict_following_plain_text_fit: false,
             budget_para_start_height: 0.0,
@@ -6917,7 +6890,9 @@ mod tests {
                 overlay_cuts: Vec::new(),
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
+                stored_paragraph_flow_ends: Default::default(),
                 paragraph_float_placements: Default::default(),
+                float_pushed_line_spacings: Default::default(),
             }],
             active_header: None,
             active_footer: None,
@@ -7018,6 +6993,7 @@ mod tests {
                 row_cursor_is_nested: false,
                 end_row_height_override: None,
                 start_row_height_override: None,
+                straddle_row_relief: Vec::new(),
             }]),
             page_with_items(vec![PageItem::PartialTable {
                 para_index: 7,
@@ -7032,6 +7008,7 @@ mod tests {
                 row_cursor_is_nested: false,
                 end_row_height_override: None,
                 start_row_height_override: None,
+                straddle_row_relief: Vec::new(),
             }]),
         ];
 

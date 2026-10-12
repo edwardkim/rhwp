@@ -15,12 +15,12 @@
     "src/main.rs"
   ],
   "counts": {
-    "cases": 194,
+    "cases": 193,
     "exceptions": 22,
-    "total": 216,
+    "total": 215,
     "hiddenText": 48,
     "injection": 102,
-    "unicode": 44
+    "unicode": 43
   },
   "requiredEnvelopeKeys": {
     "hidden-text": [

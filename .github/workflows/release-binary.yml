@@ -89,8 +89,21 @@ jobs:
           restore-keys: |
             ${{ matrix.target }}-${{ matrix.runner }}-cargo-
 
+      - name: Install native Skia dependencies (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get \
+            -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 update
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get \
+            -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 \
+            install -y --no-install-recommends \
+            fonts-dejavu-core libfontconfig1-dev libfreetype6-dev
+
       - name: Build release binary
-        run: cargo build --release --bin rhwp --target ${{ matrix.target }}
+        run: cargo build --locked --release --bin rhwp --features native-skia --target ${{ matrix.target }}
 
       - name: Verify binary (Linux/macOS)
         if: matrix.archive == 'tar.gz'
@@ -131,6 +144,20 @@ jobs:
           Compress-Archive -Path dist/rhwp -DestinationPath $archiveName -Force
           Get-ChildItem $archiveName
           "ARCHIVE_NAME=$archiveName" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      # Verify the packaged binary on every platform, including the Intel binary
+      # on macOS ARM. --version alone cannot detect a missing optional backend.
+      - name: Install Python for release verification
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Verify packaged PNG export
+        shell: bash
+        run: |
+          python scripts/verify_release_binary.py \
+            --archive "${ARCHIVE_NAME}" \
+            --sample samples/issue2527_empty_linesegs.hwpx
 
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

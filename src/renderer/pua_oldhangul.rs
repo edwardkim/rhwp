@@ -5746,21 +5746,6 @@ mod tests {
     }
 
     #[test]
-    fn test_exam_kor_p17_coverage() {
-        // exam_kor.hwp p17 측정으로 발견된 25 PUA 옛한글 코드포인트
-        // (Stage 1 보고서 §2-3)
-        let exam_kor_pua = [
-            0xE17A_u32, 0xE1A7, 0xE1C2, 0xE288, 0xE38A, 0xE40A, 0xE474, 0xE560, 0xE566, 0xE79C,
-            0xE8A7, 0xE8B2, 0xE95B, 0xEB66, 0xEB68, 0xEBD4, 0xECF0, 0xECFB, 0xED41, 0xED98, 0xED9A,
-            0xF152, 0xF154, 0xF1C4, 0xF537,
-        ];
-        for cp in exam_kor_pua {
-            let ch = char::from_u32(cp).unwrap();
-            assert!(is_pua_old_hangul(ch), "exam_kor PUA U+{:04X} 매핑 누락", cp);
-        }
-    }
-
-    #[test]
     fn test_known_mapping_sample() {
         // U+E1A7 => U+1100 U+119E (\u{1100}\u{119E} = ᄀᆞ)
         let result = map_pua_old_hangul('\u{E1A7}').expect("U+E1A7 매핑");

@@ -83,6 +83,16 @@ pub(super) fn print() {
     println!("                              qwen-vl:    2240 px (Qwen-VL, 별칭: qwen)");
     println!("                              llava:      672 px (LLaVA / OSS CLIP)");
     println!();
+    println!("  export-sixel <파일.hwp|파일.hwpx> [옵션] (native-skia feature 필요)");
+    println!("      Sixel을 stdout에 직접 표시하거나 페이지별 .six 파일로 저장; 오류는 stderr.");
+    println!("      -o, --output <폴더>   출력 폴더 지정 시 전체 쪽 저장, 생략 시 stdout 한 쪽");
+    println!("      -p, --page <번호>     특정 페이지만 (0부터), stdout 기본 첫 쪽");
+    println!("      --width <픽셀>       너비 1..16384 (기본 360), 종횡비 유지");
+    println!("      --font-path <경로>   글꼴 경로, 반복 가능");
+    println!("      --profile <프로필>   screen|print|high-quality|fast-preview");
+    println!("      --compat <2022|2024> 기존 한컴 호환 옵션");
+    println!("      예: rhwp export-sixel 문서.hwp -o output/sixel --width 720");
+    println!();
     println!("  export-png-gpu <파일.hwp|파일.hwpx> [옵션]   (gpu feature 필요)");
     println!("      기존 SVG 산출을 GPU(vello/wgpu)로 래스터화해 PNG로 내보내기");
     println!("      대량 문서 코퍼스를 VLM 입력 이미지로 굽는 파이프라인용. 파싱·레이아웃은");

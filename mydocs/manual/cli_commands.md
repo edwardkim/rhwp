@@ -68,6 +68,15 @@ rhwp inspect hidden-text --help
 > 한컴은 그림 미지정 placeholder 를 편집기에서만 표시하고 인쇄(및 인쇄 등가
 > 출력)에서는 미출력한다 — rhwp 의 인쇄 등가 프로필이 이 계약을 따른다.
 
+## Sixel 출력
+
+Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면
+`rhwp export-sixel 문서.hwp --page 0 --width 360`을 사용한다.
+`rhwp export-sixel 문서.hwp -o output/sixel --width 720`은 전체 쪽을 파일로 저장한다.
+`-p 2`를 함께 지정하면 세 번째 쪽만 저장한다.
+기본 첫 쪽만 stdout에 출력하며 흰 배경·256색으로 변환한다. `native-skia`가 필요하다.
+옵션·종료 코드·terminal/SSH 검증은 [Sixel 출력 가이드](export_sixel_command.md)를 따른다.
+
 ## 비밀번호 보호 HWP
 
 HWP5 FileHeader의 `encrypted` 플래그와 `EncryptVersion=4`가 설정된 문서, 또는
