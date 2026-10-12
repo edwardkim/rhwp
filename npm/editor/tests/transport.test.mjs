@@ -4,8 +4,12 @@ import assert from 'node:assert/strict';
 import { EditorTransport, requestTimeoutFor } from '../transport.js';
 import { createEditor } from '../index.js';
 
-test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없이 전송한다', async () => {
+test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없이 전송한다', { timeout: 10_000 }, async (t) => {
+  // 성공 경로의 MessageChannel 응답을 실행 부하에 따른 100ms 만료와 분리한다.
+  // 실제 port와 전송은 그대로 실행하며 timeout/fallback은 별도 검사에서 확인한다.
+  t.mock.timers.enable({ apis: ['setTimeout'] });
   let received;
+  let server;
   const contentWindow = {
     postMessage(message, targetOrigin, ports) {
       assert.equal(targetOrigin, 'https://studio.example');
@@ -22,7 +26,7 @@ test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없�
         'target-navigation-v1',
         'document-change-events-v1',
       ]);
-      const server = ports[0];
+      server = ports[0];
       server.onmessage = ({ data }) => {
         received = data;
         server.postMessage({
@@ -43,6 +47,10 @@ test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없�
     'https://studio.example/app',
     { window: fakeWindow, requestTimeoutMs: 100, handshakeTimeoutMs: 100 },
   );
+  t.after(() => {
+    transport.destroy();
+    server?.close();
+  });
 
   await transport.connect();
   const callerBytes = new Uint8Array([1, 2, 3]);
@@ -52,7 +60,6 @@ test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없�
   );
   assert.deepEqual([...callerBytes], [1, 2, 3]);
   assert.deepEqual([...received.params.data], [1, 2, 3]);
-  transport.destroy();
 });
 
 test('EditorTransport는 50 MiB v1 loadFile binary를 number array 없이 전송한다', async () => {

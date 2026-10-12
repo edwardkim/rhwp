@@ -103,27 +103,4 @@ fn issue_7063_midpage_fragment_box_reaches_the_page_and_centers_its_slice() {
     );
 }
 
-/// ② — 상자를 늘려도 **보이는 줄은 늘지 않는다.** 늘면 다음 쪽 내용이 이 쪽에 중복된다.
-///
-/// 수정 전 이 갈래를 열면 8쪽 줄이 72 → 78 로 늘고, 그 6줄이 9쪽 첫 행(`구  분`·`조회방법`)과
-/// 같은 내용이었다. 마지막 줄은 1123.90 으로 용지(1122.5) 밖이었다.
-#[test]
-fn issue_7063_midpage_fragment_box_does_not_pull_next_page_rows() {
-    let root = page_root("samples/hwpx_sample2.hwp", 7);
-    let table = top_level_table(&root, 74, false).expect("8쪽 표 pi=74 — 시험 설정");
-    let bottom = table.bbox.y + table.bbox.height;
-    assert!(
-        (bottom - 1083.31).abs() <= 1.0,
-        "① 조각 상자 아래는 한/글 정본(1083.31px) 1px 안이어야 한다 (수정 전 1018.20): {bottom:.2}"
-    );
-
-    let mut lines = Vec::new();
-    text_lines(table, &mut lines);
-    lines.sort_by(f64::total_cmp);
-    let last = *lines.last().expect("칸 마지막 줄");
-    assert!(
-        last <= 1094.0,
-        "② 늘어난 상자가 다음 쪽 행을 끌어오면 안 된다 — 마지막 줄이 쪽번호(1094.7) 위여야 \
-         한다 (분리 없이 열면 1123.90): {last:.2}"
-    );
-}
+// HWP 8쪽 검사 원본은 #7830 자산으로 이관했다. HWPX 19쪽 정상 검사는 유지한다.

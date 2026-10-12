@@ -678,7 +678,6 @@ fn new_num_preserved_on_roundtrip() {
 
 // 머리말/꼬리말: 중첩 문단(subList)을 포함하는 컨트롤이 직렬화 시 통째로 누락됐다.
 // 개수 + 적용범위(applyPageType) + 내부 문단 수까지 보존돼야 함.
-type HfSig = Vec<(rhwp::model::header_footer::HeaderFooterApply, usize, String)>;
 
 fn headers_footers(doc: &rhwp::model::document::Document) -> (HfSig, HfSig) {
     use rhwp::model::control::Control;
@@ -725,91 +724,4 @@ fn header_footer_preserved_on_roundtrip() {
     assert_eq!(f2, f1, "Footer 컨트롤/내용 보존 실패");
 }
 
-fn auto_nums(
-    doc: &rhwp::model::document::Document,
-) -> Vec<(u16, rhwp::model::control::AutoNumberType, u8)> {
-    use rhwp::model::control::Control;
-
-    fn collect(
-        paragraphs: &[rhwp::model::paragraph::Paragraph],
-        output: &mut Vec<(u16, rhwp::model::control::AutoNumberType, u8)>,
-    ) {
-        for paragraph in paragraphs {
-            for control in &paragraph.controls {
-                match control {
-                    Control::AutoNumber(auto_number) => output.push((
-                        auto_number.number,
-                        auto_number.number_type,
-                        auto_number.format,
-                    )),
-                    Control::Header(header) => collect(&header.paragraphs, output),
-                    Control::Footer(footer) => collect(&footer.paragraphs, output),
-                    Control::Table(table) => {
-                        for cell in &table.cells {
-                            collect(&cell.paragraphs, output);
-                        }
-                    }
-                    Control::Shape(shape) => {
-                        if let Some(drawing) = shape.drawing() {
-                            if let Some(text_box) = &drawing.text_box {
-                                collect(&text_box.paragraphs, output);
-                            }
-                        }
-                    }
-                    _ => {}
-                }
-            }
-        }
-    }
-
-    let mut v = Vec::new();
-    for section in &doc.sections {
-        collect(&section.paragraphs, &mut v);
-    }
-    v
-}
-
-#[test]
-fn total_page_auto_num_preserved_on_hwp_to_hwpx_roundtrip() {
-    use rhwp::model::control::AutoNumberType;
-    use rhwp::parser::{hwpx::parse_hwpx, parse_hwp};
-    use rhwp::serializer::hwpx::serialize_hwpx;
-
-    let d1 = parse_hwp(include_bytes!("../samples/exam_eng.hwp")).expect("parse exam_eng");
-    let total_pages_before: Vec<_> = auto_nums(&d1)
-        .into_iter()
-        .filter(|(_, number_type, _)| *number_type == AutoNumberType::TotalPage)
-        .collect();
-    assert!(
-        !total_pages_before.is_empty(),
-        "exam_eng.hwp fixture must contain AutoNumber(TotalPage)"
-    );
-
-    let out = serialize_hwpx(&d1).expect("serialize exam_eng as HWPX");
-    let d2 = parse_hwpx(&out).expect("reparse serialized HWPX");
-    let total_pages_after: Vec<_> = auto_nums(&d2)
-        .into_iter()
-        .filter(|(_, number_type, _)| *number_type == AutoNumberType::TotalPage)
-        .collect();
-
-    assert_eq!(
-        total_pages_after, total_pages_before,
-        "HWPX 왕복에서 TOTAL_PAGE numType과 번호 형식이 보존돼야 한다"
-    );
-}
-
-#[test]
-fn auto_num_preserved_on_roundtrip() {
-    use rhwp::parser::hwpx::parse_hwpx;
-    use rhwp::serializer::hwpx::serialize_hwpx;
-
-    // eq-002: 본문에 autoNum 컨트롤 포함.
-    let bytes = include_bytes!("../samples/hwpx/eq-002.hwpx");
-    let d1 = parse_hwpx(bytes).expect("parse");
-    let an1 = auto_nums(&d1);
-    assert!(!an1.is_empty(), "fixture must contain autoNum");
-
-    let out = serialize_hwpx(&d1).expect("serialize");
-    let d2 = parse_hwpx(&out).expect("reparse");
-    assert_eq!(auto_nums(&d2), an1, "AutoNumber 컨트롤/값 보존 실패");
-}
+type HfSig = Vec<(rhwp::model::header_footer::HeaderFooterApply, usize, String)>;

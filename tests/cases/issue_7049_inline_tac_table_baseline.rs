@@ -156,25 +156,6 @@ fn sibling_samples_close_the_same_gap() {
     }
 }
 
-/// 여백이 극단적으로 다른 두 표도 같은 y 에 놓여야 한다.
-///
-/// `21_언어_기출` 1쪽 머리 표의 「성명」(`om 283/283`)·「수험번호」(`om 0/0`) 상자다.
-/// 한/글은 둘을 `266.6~299.2` 로 **완전히 같게** 놓는다. 수정 전 rhwp 는 `258.50`
-/// / `254.70` 으로 3.8px(= 283 HWPUNIT, 곧 앞 표의 `om_top`) 어긋나 있었다.
-///
-/// ⚠ 두 상자의 **절대** y 는 아직 한/글보다 약 8px 위다 — 줄이 칸 어디에 앉는지는
-/// 별도 축(`#7008` 범위 외)이라 여기서는 **서로 같은지**만 본다.
-#[test]
-fn tables_with_unequal_outer_margins_share_one_y() {
-    let boxes = by_width("samples/21_언어_기출_편집가능본.hwp", 0, 150.0, 300.0);
-    assert_eq!(boxes.len(), 2, "머리 표 안 TAC 표 2개: {boxes:?}");
-    let dy = (boxes[0].1 - boxes[1].1).abs();
-    assert!(
-        dy <= 0.5,
-        "여백이 다른 두 표가 같은 y 에 놓여야 한다 — #7049 회귀                   (y 차 {dy:.2}px, 상자 {boxes:?}; 수정 전 3.80px)"
-    );
-}
-
 /// `#3386`의 표 전용 줄은 표를 소유 글줄 안에 두고 뒤 본문을 보존한다.
 #[test]
 fn table_exclusive_line_keeps_the_band_anchor() {

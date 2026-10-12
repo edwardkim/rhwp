@@ -316,6 +316,28 @@ fn trailing_space_does_not_erase_the_last_visible_glyph() {
 }
 
 #[test]
+fn distributed_terminal_advance_is_not_visible_text() {
+    // 전각 글자 점유는 각각 [0,20], [50,70]이다. 분산 전진의 끝100은 잉크가 아니다.
+    let mut distributed = replay_run("가나", vec![0.0, 50.0, 100.0], 10.0, 100.0);
+    if let RenderNodeType::TextRun(run) = &mut distributed.node_type {
+        run.style.extra_char_spacing = 30.0;
+    }
+    assert_eq!(
+        text_pair_count(
+            distributed.clone(),
+            replay_run("다", vec![0.0, 20.0], 90.0, 102.0)
+        ),
+        0,
+        "말미 분산 간격에만 놓인 글자를 겹침으로 세지 않는다"
+    );
+    assert_eq!(
+        text_pair_count(distributed, replay_run("다", vec![0.0, 20.0], 75.0, 102.0)),
+        1,
+        "말미 글자의 실제 점유와 겹치면 계속 검출한다"
+    );
+}
+
+#[test]
 fn invalid_positions_and_changed_display_text_use_the_render_fallback() {
     let neighbor = replay_run("나", vec![0.0, 10.0], 32.0, 102.0);
     let mut plain = run("  가", 10.0, 100.0, 40.0, 20.0, 20.0);

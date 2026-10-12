@@ -705,6 +705,12 @@ function hitTestAfterPageScroll(
 export function onKeyDown(this: any, e: KeyboardEvent): void {
   if (!this.active) return;
 
+  // fcitx forwards the same physical key after its Process/compositionend sequence.
+  if (this._imeNavigationGuard?.consume(e)) {
+    e.preventDefault();
+    return;
+  }
+
   // 이전 셀 문자 단축키의 compositionend가 브라우저 focus 이동으로 누락됐더라도 다음
   // 물리 입력까지 억제 상태가 새지 않게 한다. 현재 S/M이면 아래 resolver가 다시 arm한다.
   this._cellBlockLetterImeGuard?.reset();
@@ -860,6 +866,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         key: e.key, code: e.code, shiftKey: e.shiftKey,
         ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey,
       };
+      this._imeNavigationGuard?.queue(this._pendingNavAfterIME);
     }
     return;
   }

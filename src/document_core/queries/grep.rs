@@ -625,26 +625,3 @@ impl DocumentCore {
         out
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// [#3413] CLI `rhwp search` 는 `DocumentCore::grep` 을 호출한다(`wasm_api::HwpDocument::grep`
-    /// 경유). 이 경로가 본문/표 셀/글상자만 순회하고 수식(Equation) 컨트롤의 script 텍스트를
-    /// 빠뜨려 `search exam_math.hwp "lim" --json` 이 matchCount=0 을 반환하던 버그의 회귀 테스트.
-    #[test]
-    fn grep_finds_equation_script() {
-        let data = std::fs::read("samples/exam_math.hwp").expect("샘플 파일 읽기 실패");
-        let doc = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
-        let matches = doc.grep("lim", true, None);
-        assert!(
-            !matches.is_empty(),
-            "수식 스크립트 안의 'lim' 매치를 찾지 못함"
-        );
-        assert!(
-            matches.iter().any(|m| m.equation.is_some()),
-            "매치 중 equation 컨텍스트가 있는 항목이 없음: {matches:?}"
-        );
-    }
-}

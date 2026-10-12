@@ -542,8 +542,7 @@ fn issue_7095_terminal_fragment_box_takes_the_stored_cell_height_remainder() {
     // - 7062: 저장 700976HU = 9346.35px ↔ 정본 상자 500.30 + 996.43×8 + 874.04 = 9345.78px.
     //   정본 10쪽 상자 47.20..921.24 (PDF 벡터, 쪽 척도 제거). 수정 전 rhwp 는 내용에 맞춰
     //   901.3 에서 끝났다.
-    // - 1382000 `pi=95`: 저장 4335.25px ↔ 정본 합 4335.38px. 정본 30쪽 상자 아래 923.87,
-    //   수정 전 842.0.
+    // 가정폭력 조사 분기는 #7831로 이관했다. 7062 정상 계약은 유지한다.
     let core = load();
     let (_, top, bottom) = column_children(&core, 9)
         .into_iter()
@@ -552,16 +551,6 @@ fn issue_7095_terminal_fragment_box_takes_the_stored_cell_height_remainder() {
     assert!(
         (top - 47.2).abs() < 0.5 && (bottom - 921.24).abs() < 1.0,
         "#7095: 7062 10쪽 끝 조각 상자는 정본 47.20..921.24 여야 한다: {top:.2}..{bottom:.2}"
-    );
-
-    let survey = load_sample("samples/task2430/1382000_domestic_violence_survey.hwp");
-    let (_, _, bottom) = column_children(&survey, 29)
-        .into_iter()
-        .find(|(is_table, _, _)| *is_table)
-        .expect("1382000 30쪽 끝 조각");
-    assert!(
-        (bottom - 923.87).abs() < 1.0,
-        "#7095: 1382000 30쪽 끝 조각 상자 아래는 정본 923.87 이어야 한다: {bottom:.2}"
     );
 }
 

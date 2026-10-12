@@ -73,6 +73,11 @@ export interface CommandDef {
    * 소스 가드는 다이얼로그 정책을 확정할 때 붙인다.
    */
   readonly opensDialog?: boolean;
+  /**
+   * `opensDialog` 커맨드가 주어진 `params` 로는 대화상자 없이 끝나는가.
+   * 참이면 자동화는 `needs-dialog` 로 거절하지 않는다(예: 값을 다 받은 `insert:field`).
+   */
+  readonly runsWithoutDialog?: (params?: Record<string, unknown>) => boolean;
   /** 커맨드 실행 */
   execute: (services: CommandServices, params?: Record<string, unknown>) => void;
 }

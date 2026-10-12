@@ -7,7 +7,7 @@ use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, ShapeStyle, TextStyle};
 use super::border_rendering::{
     build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_edge_borders,
-    render_transparent_borders,
+    render_spaced_cell_borders, render_transparent_borders,
 };
 use super::text_measurement::{
     is_cjk_char, is_vertical_rotate_char, resolved_to_text_style, vertical_substitute_char,
@@ -847,15 +847,13 @@ impl LayoutEngine {
         let row_heights = self.resolve_row_heights(table, col_count, row_count, None, styles, true);
 
         // 누적 위치 계산
-        let mut col_x = vec![0.0f64; col_count + 1];
+        let mut col_x = vec![cell_spacing; col_count + 1];
         for i in 0..col_count {
-            col_x[i + 1] =
-                col_x[i] + col_widths[i] + if i + 1 < col_count { cell_spacing } else { 0.0 };
+            col_x[i + 1] = col_x[i] + col_widths[i] + cell_spacing;
         }
-        let mut row_y = vec![0.0f64; row_count + 1];
+        let mut row_y = vec![cell_spacing; row_count + 1];
         for i in 0..row_count {
-            row_y[i + 1] =
-                row_y[i] + row_heights[i] + if i + 1 < row_count { cell_spacing } else { 0.0 };
+            row_y[i + 1] = row_y[i] + row_heights[i] + cell_spacing;
         }
 
         // 행별 열 위치 계산 (셀별 독립 너비 지원)
@@ -964,8 +962,8 @@ impl LayoutEngine {
             let cell_y = table_y + row_y[r];
             let end_col = (c + cell.col_span as usize).min(col_count);
             let end_row = (r + cell.row_span as usize).min(row_count);
-            let cell_w = rcx[end_col] - rcx[c];
-            let cell_h = row_y[end_row] - row_y[r];
+            let cell_w = rcx[end_col] - rcx[c] - cell_spacing;
+            let cell_h = row_y[end_row] - row_y[r] - cell_spacing;
 
             let cell_id = tree.next_id();
             let mut cell_node = RenderNode::new(
@@ -1431,21 +1429,33 @@ impl LayoutEngine {
         }
 
         // 엣지 기반 테두리 렌더링
-        table_node.children.extend(render_edge_borders(
-            tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y, None,
-        ));
-        if self.show_transparent_borders.get() {
-            table_node.children.extend(render_transparent_borders(
+        if table.cell_spacing > 0 {
+            let borders = render_spaced_cell_borders(
                 tree,
-                &h_edges,
-                &v_edges,
-                &h_span_covered,
-                &v_span_covered,
-                &row_col_x,
-                &row_y,
-                table_x,
-                table_y,
+                table,
+                styles,
+                &table_node.children,
+                None,
+                self.show_transparent_borders.get(),
+            );
+            table_node.children.extend(borders);
+        } else {
+            table_node.children.extend(render_edge_borders(
+                tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y, None,
             ));
+            if self.show_transparent_borders.get() {
+                table_node.children.extend(render_transparent_borders(
+                    tree,
+                    &h_edges,
+                    &v_edges,
+                    &h_span_covered,
+                    &v_span_covered,
+                    &row_col_x,
+                    &row_y,
+                    table_x,
+                    table_y,
+                ));
+            }
         }
 
         parent.children.push(table_node);

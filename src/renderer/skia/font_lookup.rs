@@ -33,12 +33,18 @@ pub(super) struct TypefaceCandidate {
 
 pub(super) fn text_family_candidates(requested: &str) -> Vec<String> {
     let mut families = Vec::new();
-    if !requested.trim().is_empty() {
-        families.push(requested.to_string());
-    }
-    if let Some(base) = base_family_without_weight_suffix(requested) {
-        if !families.iter().any(|family| family == &base) {
-            families.push(base);
+    for requested in requested
+        .split(',')
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+    {
+        if !families.iter().any(|family| family == requested) {
+            families.push(requested.to_string());
+        }
+        if let Some(base) = base_family_without_weight_suffix(requested) {
+            if !families.iter().any(|family| family == &base) {
+                families.push(base);
+            }
         }
     }
     for family in TEXT_FALLBACK_FAMILIES {
@@ -90,14 +96,12 @@ pub(super) fn typeface_candidates_for_families(
         if let Some(typeface) = custom_typefaces.get(family).cloned() {
             push(typeface, "custom");
         }
-    }
-    for family in families {
+        // 원 face의 system 프로그램보다 뒤 face의 custom 프로그램을 먼저
+        // 고르면 선언 순서를 뒤집는다. 공급 출처는 각 face 내부에서 우선한다.
         if let Some(typeface) = match_system_family_style(font_mgr, system_families, family, style)
         {
             push(typeface, "system");
         }
-    }
-    for family in families {
         if let Some(typeface) = bundled_typefaces.get(family).cloned() {
             push(typeface, "bundled");
         }

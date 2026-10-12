@@ -411,6 +411,15 @@ pub(crate) const COMMANDS: &[CommandSpec] = &[
         false,
     ),
     spec(
+        "export-sixel",
+        Category::Export,
+        Visibility::Public,
+        Some("native-skia"),
+        false,
+        false,
+        false,
+    ),
+    spec(
         "export-png-gpu",
         Category::Export,
         Visibility::Public,
