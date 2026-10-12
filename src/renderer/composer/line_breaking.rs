@@ -1694,6 +1694,8 @@ impl<'a> TabFill<'a> {
             self.default_width(),
             self.auto_tab_right,
             self.available_width_px,
+            // 그리기의 `text_start_offset`(문단 왼쪽 여백 + 그 줄의 들여쓰기)과 같은 값이다.
+            origin,
         );
         match tab_type {
             0 | 3 => to_hwp(position - origin).max(lw_hwp),
