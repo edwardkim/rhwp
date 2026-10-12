@@ -109,6 +109,67 @@ fn cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages() {
             assert_eq!(occurrences, 1, "경계 셀은 인접 쪽 전체에서 한 번만 표시");
         }
     }
+    // Independent Print PDF: table 15 owns rows 0..36, 37..74,
+    // 75..109 and 110..150 on pages 46..49 respectively. The first
+    // control-only host must not consume a caption-sized extra line.
+    let Control::Table(source) = &core.document().sections[4].paragraphs[278].controls[0] else {
+        panic!("PDF 표15의 원본 호스트");
+    };
+    let mut occurrences = vec![0usize; source.cells.len()];
+    for (page, first_row, last_row) in [(46, 0, 36), (47, 37, 74), (48, 75, 109), (49, 110, 150)] {
+        let tree = core
+            .build_page_render_tree(page - 1)
+            .expect("표15의 PDF 대응 쪽");
+        let rendered: Vec<_> = nodes(&tree.root)
+            .into_iter()
+            .filter(|n| {
+                matches!(&n.node_type, RenderNodeType::Table(t)
+                if t.section_index == Some(4) && t.para_index == Some(278)
+                    && t.control_index == Some(0))
+            })
+            .collect();
+        assert_eq!(rendered.len(), 1, "표15는 각 쪽의 한 조각에 소속");
+        let table = rendered[0];
+        let mut rows = std::collections::BTreeSet::new();
+        for cell_node in &table.children {
+            let RenderNodeType::TableCell(cell) = &cell_node.node_type else {
+                continue;
+            };
+            let index = cell.model_cell_index.expect("원본 셀 소속") as usize;
+            let original = &source.cells[index];
+            occurrences[index] += 1;
+            rows.insert(original.row);
+            assert!(
+                (first_row..=last_row).contains(&original.row),
+                "경계 행은 PDF의 같은 쪽에 완전히 소속"
+            );
+            let expected: String = original
+                .paragraphs
+                .iter()
+                .map(|p| p.text.as_str())
+                .collect();
+            assert_eq!(
+                compact(&text(cell_node)),
+                compact(&expected),
+                "셀 내용 누락·중복 금지"
+            );
+            assert!(
+                cell_node.bbox.y >= table.bbox.y
+                    && cell_node.bbox.y + cell_node.bbox.height
+                        <= table.bbox.y + table.bbox.height + f64::EPSILON * 8192.0,
+                "온전한 셀은 수용한 표 조각 안에 포함"
+            );
+        }
+        assert_eq!(
+            rows,
+            (first_row..=last_row).collect(),
+            "수용한 모든 원본 행 보존"
+        );
+    }
+    assert!(
+        occurrences.iter().all(|count| *count == 1),
+        "표15의 모든 원본 셀은 네 쪽 전체에 정확히 한 번 표시"
+    );
 }
 
 #[test]
