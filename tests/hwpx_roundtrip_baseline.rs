@@ -11,6 +11,15 @@
 //! 주의: 이 게이트는 **구조(뼈대) 보존** 검증이다. 통과 = 시각 충실도 보장이 아니며,
 //! 복합 실문서를 full visual fidelity oracle 로 쓰면 안 된다 (`ORACLE_UNFIT` 참고).
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
+
 use std::path::{Path, PathBuf};
 
 use rhwp::parser::hwpx::parse_hwpx;
@@ -45,11 +54,6 @@ const ORACLE_UNFIT: &[&str] = &[
     "2025년 2분기 해외직접투자 (최종).hwpx",
     "[2027] 온새미로 1 본교재.hwpx",
     "aift.hwpx",
-    "exam_kor.hwpx",
-    "exam-kor-1p.hwpx",
-    "exam-kor-2p.hwpx",
-    "exam-kor-3p.hwpx",
-    "exam-kor-4p.hwpx",
     "k-water-rfp.hwpx",
 ];
 
@@ -59,6 +63,9 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         let entries = std::fs::read_dir(dir).expect("samples/hwpx 읽기 실패");
         for entry in entries {
             let path = entry.expect("디렉토리 항목 읽기 실패").path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 // opengov 고정 실문서 말뭉치(#1564)는 자체 스냅샷 게이트
                 // (tests/opengov_corpus_snapshot.rs)로 검증한다. 대다수 IR_DIFF 실문서라
@@ -83,6 +90,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     let root = Path::new(SAMPLES_ROOT);
     let mut acc = Vec::new();
     walk(root, root, &mut acc);
+    acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples/hwpx 에 .hwpx 샘플이 없음");
     acc
@@ -131,7 +139,7 @@ fn baseline_check(path: &Path) -> Result<(), String> {
 }
 
 /// 처리 시간이 긴 대형 샘플 — 별도 테스트로 분리해 하네스 병렬 실행을 활용한다.
-const LARGE: &[&str] = &["exam_kor.hwpx", "aift.hwpx", "k-water-rfp.hwpx"];
+const LARGE: &[&str] = &["aift.hwpx", "k-water-rfp.hwpx"];
 
 /// baseline 대상(XFAIL/EXCLUDED 제외)을 검사하고 실패 목록을 단언한다.
 fn run_baseline(filter: impl Fn(&str) -> bool) {

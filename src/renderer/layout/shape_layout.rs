@@ -405,6 +405,137 @@ fn matrix_textbox_lines_need_reflow(para: &Paragraph) -> bool {
         && para.line_segs.len() > 1
 }
 
+/// A content-grown, unprotected inline textbox may retain a wrapped cache after
+/// its full text fits the unchanged width. Project both its text and host frame
+/// together; a paint-only collapse would leave the old height in pagination.
+pub(crate) fn normalized_single_line_inline_textbox_host(
+    host: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<Paragraph> {
+    let [host_line] = host.line_segs.as_slice() else {
+        return None;
+    };
+    let [Control::Shape(shape)] = host.controls.as_slice() else {
+        return None;
+    };
+    let common = shape.common();
+    let attr = shape.shape_attr();
+    let drawing = shape.drawing()?;
+    let text_box = drawing.text_box.as_ref()?;
+    let [paragraph] = text_box.paragraphs.as_slice() else {
+        return None;
+    };
+    let first = paragraph.line_segs.first()?;
+    let last = paragraph.line_segs.last()?;
+    if !host.text.is_empty()
+        || host.stored_text_partition_is_dirty()
+        || host.cell_format_vpos_dirty
+        || host_line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || !common.treat_as_char
+        || common.size_protect
+        || drawing.caption.is_some()
+        || common.height == 0
+        || common.height > i32::MAX as u32
+        || common.width == 0
+        || common.width > i32::MAX as u32
+        || attr.group_level != 0
+        || attr.rotation_angle != 0
+        || attr.render_b.abs() > 1e-6
+        || attr.render_c.abs() > 1e-6
+        || attr.render_ty.abs() > 1e-6
+        || (attr.render_sx - 1.0).abs() > 1e-6
+        || attr.original_width != common.width
+        || attr.current_width != common.width
+        || attr.original_height != common.height
+        || attr.current_height <= common.height
+        || attr.current_height > i32::MAX as u32
+        || (attr.render_sy - f64::from(attr.current_height) / f64::from(attr.original_height)).abs()
+            > 1e-6
+        || host_line.line_height != shape.flow_height_hu()
+        || host_line.segment_width <= 0
+        || text_box.list_attr & 0x07 != 0
+        || text_box.raw_list_header_extra.iter().any(|&byte| byte != 0)
+        || [
+            text_box.margin_left,
+            text_box.margin_right,
+            text_box.margin_top,
+            text_box.margin_bottom,
+        ]
+        .iter()
+        .any(|&margin| margin < 0)
+        || !matrix_textbox_lines_need_reflow(paragraph)
+        || paragraph.text.contains(['\r', '\t'])
+        || paragraph.stored_text_partition_is_dirty()
+        || first.vertical_pos != 0
+        || first.text_start != 0
+        || paragraph.line_segs.iter().any(|line| {
+            line.line_height <= 0
+                || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        })
+        || paragraph.line_seg_text_start(paragraph.line_segs.len() - 1)
+            >= paragraph.char_offsets.last().copied()?.saturating_add(1)
+    {
+        return None;
+    }
+    let padding = i32::from(text_box.margin_top) + i32::from(text_box.margin_bottom);
+    let cached_height = last
+        .vertical_pos
+        .checked_add(last.line_height)?
+        .checked_add(padding)?;
+    if cached_height != attr.current_height as i32 {
+        return None;
+    }
+    let para_style = styles.para_styles.get(paragraph.para_shape_id as usize)?;
+    let inner_width = hwpunit_to_px(
+        common.width as i32 - i32::from(text_box.margin_left) - i32::from(text_box.margin_right),
+        dpi,
+    ) - para_style.margin_left
+        - para_style.margin_right
+        - para_style.indent.max(0.0);
+    let composed = crate::renderer::composer::compose_paragraph_in_context(paragraph, styles);
+    let width = measure_composed_text_range_width(
+        &composed,
+        styles,
+        0,
+        paragraph.text.chars().count(),
+        None,
+    );
+    let height = first
+        .line_height
+        .checked_add(padding)?
+        .max(common.height as i32);
+    if inner_width <= 0.0
+        || !width.is_finite()
+        || width > inner_width
+        || height >= attr.current_height as i32
+    {
+        return None;
+    }
+    let mut projected = host.clone();
+    let Control::Shape(shape) = &mut projected.controls[0] else {
+        return None;
+    };
+    let mut single_line = first.clone();
+    single_line.segment_width = px_to_hwpunit(inner_width, dpi);
+    single_line.tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    shape.drawing_mut()?.text_box.as_mut()?.paragraphs[0].replace_line_segs(vec![single_line]);
+    let attr = shape.shape_attr_mut();
+    attr.current_height = height as u32;
+    attr.render_sy = f64::from(height) / f64::from(attr.original_height);
+    attr.rotation_center.y = height / 2;
+    reflow_line_segs(
+        &mut projected,
+        ParagraphBox::content_width_px(hwpunit_to_px(host_line.segment_width, dpi), dpi),
+        styles,
+        dpi,
+    );
+    for line in &mut projected.line_segs {
+        line.tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    }
+    Some(projected)
+}
+
 fn matrix_textbox_lines_overflow_height(para: &Paragraph, available_height: f64, dpi: f64) -> bool {
     para.line_segs.last().is_some_and(|seg| {
         hwpunit_to_px(seg.vertical_pos.saturating_add(seg.line_height), dpi)
@@ -1473,7 +1604,9 @@ impl LayoutEngine {
                     style.stroke_width = 0.0;
                 }
                 let round_px = if rect.round_rate > 0 {
-                    (rect.round_rate as f64 / 100.0) * render_w.min(render_h) / 2.0
+                    // 한컴 곡률 50%는 반원이다. 짧은 변의 절반이 반지름이며,
+                    // 백분율을 적용한 뒤 다시 2로 나누면 50%도 둥근 모서리에 그친다.
+                    (rect.round_rate as f64 / 100.0) * render_w.min(render_h)
                 } else {
                     0.0
                 };

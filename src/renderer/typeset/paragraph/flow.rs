@@ -6,7 +6,7 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::typeset::paragraph::{self, metrics::FormattedParagraph};
-use crate::renderer::typeset::TypesetState;
+use crate::renderer::typeset::{TypesetEngine, TypesetState};
 
 pub(in crate::renderer::typeset) struct ParagraphFlowInput<'a> {
     pub para_idx: usize,
@@ -20,9 +20,9 @@ pub(in crate::renderer::typeset) struct ParagraphFlowInput<'a> {
 pub(in crate::renderer::typeset) fn place(
     st: &mut TypesetState,
     input: ParagraphFlowInput<'_>,
-    dpi: f64,
-    session_edited: impl FnOnce() -> bool,
+    engine: &TypesetEngine,
 ) {
+    let dpi = engine.dpi;
     let ParagraphFlowInput {
         para_idx,
         para,
@@ -58,7 +58,15 @@ pub(in crate::renderer::typeset) fn place(
         layout_drift_safety_px,
         prev_is_partial_table,
         available,
-    } = paragraph::prepare_fit_budget(st, para_idx, para, fmt, paragraphs, session_edited(), dpi);
+    } = paragraph::prepare_fit_budget(
+        st,
+        para_idx,
+        para,
+        fmt,
+        paragraphs,
+        engine.profile.get().session_edited(),
+        dpi,
+    );
 
     if paragraph::try_absorb_rowbreak_guide(st, prev_is_partial_table, para, paragraphs, para_idx) {
         return;
@@ -85,7 +93,16 @@ pub(in crate::renderer::typeset) fn place(
         current_page_vpos_base,
         forced_page_break_line,
     } = paragraph::prepare_forced_page_boundary(
-        st, para_idx, para, fmt, paragraphs, available, dpi,
+        st,
+        para_idx,
+        para,
+        fmt,
+        paragraphs,
+        available,
+        &crate::renderer::typeset::notes::footnotes::measure::BodyFootnoteMeasure {
+            engine,
+            styles,
+        },
     );
     if st.prefilled_line_prefixes.contains_key(&para_idx) {
         // 앞 쪽의 선행 조각이 소유한 줄을 whole-fit으로 다시 배치하지 않는다.

@@ -28,16 +28,12 @@ pub(crate) mod font_rule_layout_metric_projection;
 pub(crate) mod font_rule_layout_name_projection;
 pub mod form_appearance;
 pub(crate) mod form_caption;
-pub mod hyperlinks;
-// [gym_gpu_raster] GPU 가속 SVG 래스터화(vello/wgpu). 네이티브 + gpu feature 전용 —
-// native-skia 와 같은 방식으로 선택적 게이팅해 CI는 GPU 없이도 컴파일된다.
-#[cfg(all(not(target_arch = "wasm32"), feature = "gpu"))]
-pub mod gpu;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
 pub(crate) mod hft_ascii_evidence;
 pub mod html;
+pub mod hyperlinks;
 pub(crate) mod image_header;
 pub mod image_resolver;
 pub mod inline_flow;
@@ -55,6 +51,7 @@ pub mod pdf;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf_raster_fidelity;
 pub mod pua_oldhangul;
+pub mod raster_pixels;
 pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
@@ -63,6 +60,8 @@ pub(crate) mod shaping_composition;
 pub(crate) mod shaping_context;
 pub(crate) mod shaping_paragraph;
 pub(crate) mod shaping_publication;
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub mod sixel;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
 #[allow(dead_code)]
@@ -398,6 +397,11 @@ pub struct TextStyle {
     /// 마지막 줄이 상수가 아님을 말한다: 같은 `ufs=1` 이라도 영문 슬롯이 대체 없이
     /// 쓰인 휴먼명조면 그 글꼴의 제 공백 0.5 em 이 나오고, Batang 으로 대체된
     /// 슬롯이면 0.333 em(341/1024)이 나온다.
+    ///
+    /// 영문 슬롯 `KoPub바탕체 Light`(charPr 53·54·59·65 …)는 KoPub 을 **설치한**
+    /// 환경의 같은 문서 정본(`Hwp 2020`, KoPub 서브셋 내장)에서는 연속 공백 덩어리가
+    /// 0.312 em 으로, 그 글꼴의 공백 312/1000 그대로다. 위 0.337 은 KoPub 이 없는
+    /// 환경의 대체 결과로 보이며, rhwp 는 선언 face 의 표를 쓴다(KoPub 전용 표).
     ///
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
@@ -1708,6 +1712,61 @@ fn para_text_is_picture_only_host(para: &crate::model::paragraph::Paragraph) -> 
             || ch <= '\u{001F}'
             || ('\u{E000}'..='\u{F8FF}').contains(&ch)
     })
+}
+
+/// 원본의 다음 줄 원점이 닫는 안내 줄 슬롯. 문단 전체 그림 높이를
+/// 앞 안내 줄의 소유로 취급하지 않는다. 같은 text_start의 그림 줄과
+/// 재조판 줄은 이 계약으로 축소하지 않는다.
+pub(crate) fn stored_picture_guide_line_height_px(
+    para: &crate::model::paragraph::Paragraph,
+    composed: &composer::ComposedParagraph,
+    line_index: usize,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::{control::Control, paragraph::LineSeg};
+
+    if para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || composed.lines.len() != para.line_segs.len()
+    {
+        return None;
+    }
+    let line = para.line_segs.get(line_index)?;
+    let next = para.line_segs.get(line_index + 1)?;
+    if (line.tag | next.tag) & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.vertical_pos < 0
+        || line.text_height <= 0
+        || line.text_height >= line.line_height
+        || line.line_spacing < 0
+        || next.text_start <= line.text_start
+        || line
+            .vertical_pos
+            .checked_add(line.text_height)?
+            .checked_add(line.line_spacing)?
+            != next.vertical_pos
+    {
+        return None;
+    }
+    let mut next_picture_owns_height = false;
+    for (index, control) in para.controls.iter().enumerate() {
+        let owner = layout::control_line_seg_index(para, index);
+        let inline = match control {
+            Control::Picture(picture) => picture.common.treat_as_char,
+            Control::Shape(shape) => shape.common().treat_as_char,
+            Control::Table(table) => table.common.treat_as_char,
+            _ => false,
+        };
+        if inline && owner == Some(line_index) {
+            return None;
+        }
+        if let Control::Picture(picture) = control {
+            next_picture_owns_height |= picture.common.treat_as_char
+                && owner == Some(line_index + 1)
+                && i64::from(picture.common.height) == i64::from(line.line_height)
+                && next.line_height == line.line_height;
+        }
+    }
+    next_picture_owns_height.then(|| hwpunit_to_px(line.text_height, dpi))
 }
 
 /// 쪽 분할 칸의 그림-only 문단에서, 합성 줄이 담은 TAC 그림의 흐름 높이.

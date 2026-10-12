@@ -3148,6 +3148,7 @@ impl DocumentCore {
             row_cursor_is_nested,
             end_row_height_override,
             start_row_height_override,
+            straddle_row_relief,
         }) = col.items.first()
         else {
             return Ok(Unsupported);
@@ -3411,6 +3412,7 @@ impl DocumentCore {
             *row_cursor_is_nested,
             *end_row_height_override,
             *start_row_height_override,
+            straddle_row_relief,
             pt_margin_left,
             pt_margin_right,
             pt_mt,
@@ -3420,6 +3422,12 @@ impl DocumentCore {
             col.paragraph_float_placements
                 .get(&(parent_para_idx, control_idx))
                 .map(|p| col_area.y + p.table_top),
+            crate::renderer::float_placement::preceding_control_flow_bottom_px(
+                &col.paragraph_float_placements,
+                &col.inline_placements,
+                parent_para_idx,
+            )
+            .map(|bottom| col_area.y + bottom),
         );
 
         // legacy 와 동일한 매칭 함수로 캐럿·셀 bbox 탐색
@@ -6186,6 +6194,11 @@ impl DocumentCore {
                 control_index,
             } => (*para_index, *control_index, "body"),
             FootnoteSource::TableCell {
+                para_index,
+                table_control_index,
+                ..
+            }
+            | FootnoteSource::NestedTableCell {
                 para_index,
                 table_control_index,
                 ..

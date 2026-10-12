@@ -114,9 +114,10 @@ pub(in crate::renderer::typeset) fn place(
         para,
         &fmt,
         measured_tables,
-        engine.dpi,
+        engine,
         paragraphs_all,
         styles,
+        composed,
     ) {
         return;
     }
@@ -150,9 +151,10 @@ pub(in crate::renderer::typeset) fn place(
         para,
         &fmt,
         measured_tables,
-        engine.dpi,
+        engine,
         paragraphs_all,
         styles,
+        composed,
     ) {
         return;
     }
@@ -205,6 +207,7 @@ pub(in crate::renderer::typeset) fn place(
                         table,
                         next_para,
                         engine.dpi,
+                        None,
                         |is_column_top| {
                             engine.format_table(
                                 para,

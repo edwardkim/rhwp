@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-09-16
+last_verified: 2026-10-12
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -67,6 +67,15 @@ rhwp inspect hidden-text --help
 
 > 한컴은 그림 미지정 placeholder 를 편집기에서만 표시하고 인쇄(및 인쇄 등가
 > 출력)에서는 미출력한다 — rhwp 의 인쇄 등가 프로필이 이 계약을 따른다.
+
+## Sixel 출력
+
+Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면
+`rhwp export-sixel 문서.hwp --page 0 --width 360`을 사용한다.
+`rhwp export-sixel 문서.hwp -o output/sixel --width 720`은 전체 쪽을 파일로 저장한다.
+`-p 2`를 함께 지정하면 세 번째 쪽만 저장한다.
+기본 첫 쪽만 stdout에 출력하며 흰 배경·256색으로 변환한다. `native-skia`가 필요하다.
+옵션·종료 코드·terminal/SSH 검증은 [Sixel 출력 가이드](export_sixel_command.md)를 따른다.
 
 ## 비밀번호 보호 HWP
 
@@ -186,15 +195,9 @@ HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_pn
   `--profile screen` 을 명시한다 (#2297, #2225 계약).
 - `--compat 2022|2024` — 목표 한글 조판 세대. [조판 세대](#조판-세대-compat)
 
-### `export-png-gpu <파일.hwp|파일.hwpx> [옵션]` / `gpu-info` *(gpu feature 필요)*
-`export-png-gpu`는 기존 SVG 산출을 `vello`/`wgpu`로 래스터화하여 PNG로 내보내는 대량
-VLM 입력용 경로다. 문서 파싱·레이아웃을 GPU로 옮기는 명령은 아니며, 래스터화 단계만 대상이다.
-- `-o, --output <폴더>`(기본 `output/`)·`-p, --page <0-기준 번호>`·`--scale <배율>`(기본 2.0)·
-  `--font-path <경로>`(여러 번 가능)를 받는다.
-- `--benchmark`는 동일 SVG를 CPU `resvg`로도 래스터화하여 시간·픽셀 차이를 함께 보고하며,
-  `--repeat <N>`은 페이지별 반복 중 최솟값을 쓴다.
-- `gpu-info`로 실행 가능한 GPU 어댑터를 먼저 확인한다. `gpu` feature 없이 빌드한 바이너리는
-  두 명령을 사용법 오류(exit 2)로 거부한다.
+> 네이티브 `gpu` 옵션과 `export-png-gpu`·`gpu-info` 명령은 제거되었습니다.
+> PNG 출력에는 `native-skia` 빌드의 `export-png`를 사용합니다.
+> Studio·브라우저 확장의 Canvas2D/CanvasKit 렌더링은 별도 경로입니다.
 
 ### `export-pdf <파일> [옵션]`
 HWP/HWPX → PDF (svg2pdf + pdf-writer).

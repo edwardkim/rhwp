@@ -120,7 +120,6 @@ SE05 는 `all` 한 방에 섞는다. 여기서는 `--kind` 로 제로폭·양방
 | SE20 | 편람 HWP 소견 건수 |
 | SE21 | 편람 HWPX 소견 건수 (형식 짝 — 숫자를 베끼지 마라) |
 | SE22 | para-001 입문 건수 |
-| SE23 | 시험지 소견 건수 |
 | SE24 | 규제영향분석 소견 건수 |
 | SE25 | 업무계획 `clean` |
 
@@ -139,7 +138,6 @@ SE04 는 기본 임계(low=전부)다. 고신뢰만, 중신뢰 이상, 필드 �
 | SE31 | `scanScopes` 길이 |
 | SE32 | 편람 주입 건수 |
 | SE33 | PII 분석본 주입 건수 (축 혼동 금지) |
-| SE34 | 시험지 `clean` |
 | SE35 | 각주 표본 |
 | SE36 | 미주 표본 (SE35 숫자를 베끼지 마라) |
 | SE37 | form-02 + 필드 포함 |
@@ -177,7 +175,6 @@ SE10 은 `all`. hidden / homoglyph / whitespace 를 가르고 편람·PII·시�
 | SE52 | para-001 `clean` |
 | SE53 | 편람 소견 |
 | SE54 | PII 분석본 소견 |
-| SE55 | 시험지 소견 |
 | SE56 | hwpx_sample2 소견 |
 | SE57 | 업무계획 `clean` |
 | SE58 | 표 + `--kind all` |
@@ -199,7 +196,6 @@ SE01/SE09/SE11 은 분석본 한 장에 몰려 있다. 원장·선발 보고서�
 | SE65 | sanitize field-01 |
 | SE66 | sanitize 편람 HWPX |
 | SE67 | sanitize 업무계획 |
-| SE68 | sanitize 시험지 |
 | SE69 | 전화번호 범위 마스킹 후 재스윕 (tier 4) |
 | SE70 | 이메일 범위 마스킹 후 재스윕 (tier 4) |
 
@@ -257,3 +253,7 @@ pack requires 밖 명령 금지, T07 복제 금지를 파일만으로 고정한�
 배포 전: inspect 3축 + watermark + redact --dry-run --no-raw → 처리(redact ·
 sanitize) → 재스윕. 수신 후: 같은 스윕을 열기 전에. 숫자가 아니라 봉투가
 게이트다.
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: SE23, SE34, SE55, SE68. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

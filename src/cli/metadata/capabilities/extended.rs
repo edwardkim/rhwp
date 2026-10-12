@@ -23,16 +23,17 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
             "문서를 페이지별 PNG로 렌더 (native-skia)",
             cfg!(feature = "native-skia"),
         ),
-        cmd_gated(
-            "export-png-gpu",
-            "SVG를 GPU(vello/wgpu)로 래스터화해 페이지별 PNG로 렌더 (--benchmark 로 CPU 대비 실측)",
-            cfg!(feature = "gpu"),
-        ),
-        cmd_gated(
-            "gpu-info",
-            "사용 가능한 GPU 어댑터 열거 (export-png-gpu 가 쓸 백엔드 확인)",
-            cfg!(feature = "gpu"),
-        ),
+        {
+            let mut command = cmd_gated(
+                "export-sixel",
+                "문서를 Sixel stdout 또는 페이지별 파일로 출력 (native-skia)",
+                cfg!(feature = "native-skia"),
+            );
+            command["flags"] = serde_json::json!([
+                "--page", "-p", "--output", "-o", "--width", "--font-path", "--profile", "--compat"
+            ]);
+            command
+        },
         cmd_json(
             "export-pdf",
             "문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)",

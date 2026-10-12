@@ -232,10 +232,13 @@ def run(
     log_path: Path | None = None,
     verbose: bool = True,
     allow_failure: bool = False,
+    encoding_errors: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     if verbose:
         print("+ " + " ".join(cmd), flush=True)
-    proc = subprocess.run(cmd, cwd=cwd, text=True, capture_output=True, check=False)
+    proc = subprocess.run(
+        cmd, cwd=cwd, text=True, capture_output=True, check=False, errors=encoding_errors,
+    )
     if log_path is not None:
         log_path.parent.mkdir(parents=True, exist_ok=True)
         log_path.write_text(proc.stdout + proc.stderr, encoding="utf-8")
@@ -335,9 +338,14 @@ def raster_paths_for_selected_pages(
 def pdf_raster_commands(
     pdf: Path, dpi: int, pdf_prefix: Path, selected_pages: list[int] | None
 ) -> list[list[str]]:
-    """요청한 페이지만 래스터로 변환하도록 pdftoppm 실행 명령을 만든다."""
+    """선 너비에 비례한 coverage를 보존하며 요청한 PDF 쪽을 래스터화한다.
+
+    1px보다 얇은 회색 선을 한 픽셀 전체 농도로 그리면 같은 SVG 선이
+    이진화 경계 반대편에 놓인다. shape는 원래 선 너비에 비례해 그리며
+    비교 임계값이나 원본 PDF/SVG의 두께·색상은 바꾸지 않는다.
+    """
     if not selected_pages:
-        return [["pdftoppm", "-r", str(dpi), "-png", str(pdf), str(pdf_prefix)]]
+        return [["pdftoppm", "-r", str(dpi), "-thinlinemode", "shape", "-png", str(pdf), str(pdf_prefix)]]
     return [
         [
             "pdftoppm",
@@ -347,6 +355,8 @@ def pdf_raster_commands(
             str(page),
             "-r",
             str(dpi),
+            "-thinlinemode",
+            "shape",
             "-png",
             str(pdf),
             str(pdf_prefix),
@@ -621,6 +631,7 @@ def sweep_provenance(
             "sha256": sha256_file(Path(__file__).resolve()),
         },
         "svg_rasterizer": svg_rasterizer,
+        "pdf_rasterizer": {"program": "pdftoppm", "thin_line_mode": "shape"},
         "comparison_profile": "print",
         "rhwp_binary": rhwp_binary_identifier(root, rhwp_bin),
     }
@@ -5376,7 +5387,10 @@ def make_contact_sheet(compare_pages: list[Path], out_path: Path) -> Path:
 def document_page_counts(root: Path, pdf: Path, export_metadata: Path) -> dict[str, int]:
     """선택한 래스터 개수와 구별한 원본 두 문서의 전체 쪽수를 읽는다."""
     rhwp_count = load_json_object(export_metadata, "전체 쪽수").get("pageCount")
-    info = run(["pdfinfo", str(pdf)], cwd=root, verbose=False)
+    # Some Windows Poppler builds emit legacy PDF metadata bytes even with
+    # UTF-8 requested. Only the ASCII Pages field is authoritative here;
+    # unrelated title/creator bytes must not break the reader thread.
+    info = run(["pdfinfo", str(pdf)], cwd=root, verbose=False, encoding_errors="replace")
     match = re.search(r"^Pages:\s+(\d+)\s*$", info.stdout, re.MULTILINE)
     if isinstance(rhwp_count, bool) or not isinstance(rhwp_count, int) or rhwp_count < 1 or match is None:
         raise SystemExit("RHWP 또는 기준 PDF의 전체 쪽수를 확인할 수 없습니다.")

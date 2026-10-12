@@ -10,6 +10,15 @@
 //! 현재값 dump: `RHWP_OVERFLOW_CELL_DUMP=<path>` 로 실행하면 TSV 를 떨어뜨린다.
 //! baseline 은 0 이 아닌 문서만 `상대경로\t줄수` 사전순으로 기록한다.
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
@@ -33,6 +42,9 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 원문과 수집/분할은 유지하여 다른 입력의 소속과 원장 관측값을 바꾸지 않는다.
 const DEFERRED_CELL_OVERFLOW_FIXTURES: &[&str] = &[
     "issue6035/cgmp_evaluation_table.hwpx",
+    // #7445 / #7749: 같은 80550 원본의 두 경로. 원문은 보존하고 실패한 셀 넘침 판정만 이관.
+    "issue3637/regulatory_impact_nested_table_escape.hwpx",
+    "issue6697/80550-agricultural-machinery-act-amendment.hwpx",
     // #7445: 전74쪽 시각 기준 미달 문서는 렌더링 원장에서 제외한다.
     "hwpctl_ParameterSetID_Item_v1.2.hwp",
 ];
@@ -49,6 +61,9 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         let entries = std::fs::read_dir(dir).expect("samples 읽기 실패");
         for entry in entries {
             let path = entry.expect("dir entry").path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 walk(&path, root, acc);
             } else if matches!(
@@ -67,6 +82,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     let mut acc = Vec::new();
     walk(Path::new(SAMPLES_ROOT), Path::new(SAMPLES_ROOT), &mut acc);
     acc.retain(|(_, rel)| !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str()));
+    acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");
     acc
@@ -77,6 +93,7 @@ fn load_baseline() -> BTreeMap<String, u64> {
         .unwrap_or_else(|e| panic!("baseline 읽기 실패 {BASELINE_PATH}: {e}"));
     text.lines()
         .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
+        .filter(|line| !is_deferred_exam_document(line.split('\t').next().unwrap_or_default()))
         .map(|l| {
             let (rel, n) = l.rsplit_once('\t').expect("baseline TSV 행 형식");
             (rel.to_string(), n.parse::<u64>().expect("baseline 수치"))

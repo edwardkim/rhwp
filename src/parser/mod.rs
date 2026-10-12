@@ -31,6 +31,7 @@ pub mod ingest;
 pub mod ole_container;
 pub mod record;
 pub mod tags;
+pub(crate) mod tracked_viewtext;
 
 use crate::model::bin_data::BinDataContent;
 use crate::model::document::{
@@ -465,6 +466,7 @@ fn parse_hwp_with_cfb(
         encrypted,
         password,
         &mut decompression_budget,
+        &doc_info,
     )?;
 
     // 5-7. 미리보기, BinData, 추가 스트림
@@ -780,35 +782,52 @@ fn apply_hwp3_origin_fixup(doc: &mut Document, summary_hwp3_era: bool) {
     }
 }
 
-/// [#5169] 비배포 문서의 `ViewText/Section{N}` 을 렌더 본문으로 채택할지 판정한다.
-///
-/// 배포용(0x04) 문서만 `ViewText` 를 읽던 종전 규칙은, **변경 추적**(0x4000) 등으로
-/// `BodyText` 와 `ViewText` 가 갈라진 일반 문서에서 rhwp 가 한글이 **렌더하지 않는**
-/// `BodyText` 를 읽게 만들었다(예: 연구계획서 — `BodyText` 표 4·3,540자 vs `ViewText`
-/// 표 10·10,210자). 한글은 `ViewText` 가 있으면 그것을 렌더하므로, 정상 복호되는
-/// `ViewText` 를 우선한다.
-///
-/// 단 일부 문서는 압축 비트가 서 있어도 `ViewText` 가 deflate 로 풀리지 않는 스텁이라
-/// (예: `20250130-hongbo.hwp`), 무조건 우선하면 본문을 잃는다. 그래서 **복호에 성공하고
-/// 첫 레코드가 `PARA_HEADER`(구역 시작 문단) 인 경우에만** 채택하고, 아니면 `None` 을
-/// 돌려 호출부가 `BodyText` 로 폴백하게 한다. 배포용 문서는 이 경로로 오지 않는다
-/// (암호화된 `ViewText` 라 별도 복호 경로가 처리한다).
+/// Decode a non-distribution ViewText paragraph stream, falling back on stubs.
+/// Change-tracking streams contain review history, not just visible content;
+/// DocInfo visibility must be applied before this stream becomes layout IR.
 fn decode_rendered_viewtext(
     raw: Vec<u8>,
     compressed: bool,
     output_limit: usize,
 ) -> Option<Vec<u8>> {
     let decoded = cfb_reader::decode_stream_limited(raw, compressed, output_limit).ok()?;
-    if decoded.len() < 4 {
-        return None;
+    starts_with_paragraph_header(&decoded).then_some(decoded)
+}
+
+fn starts_with_paragraph_header(data: &[u8]) -> bool {
+    data.get(..4).is_some_and(|bytes| {
+        let header = u32::from_le_bytes(bytes.try_into().unwrap());
+        (header & 0x3ff) as u16 == tags::HWPTAG_PARA_HEADER
+    })
+}
+
+/// 암호 문서도 #5169의 ViewText 우선 정책을 따른다. 스텁은 BodyText로 내려가되,
+/// 읽기 오류와 자원 제한 초과는 숨기지 않는다. DocInfo에서 비밀번호는 이미 검증됐다.
+/// 반환값은 복호화된 문단 레코드 스트림이며, 비밀번호나 파생 키가 아니다.
+fn decode_viewtext_paragraph_stream(
+    raw: Result<Vec<u8>, cfb_reader::CfbError>,
+    password: &[u8],
+    compressed: bool,
+    output_limit: usize,
+) -> Result<Option<Vec<u8>>, ParseError> {
+    let raw = match raw {
+        Ok(raw) => raw,
+        Err(cfb_reader::CfbError::StreamNotFound(_)) => return Ok(None),
+        Err(error) => return Err(ParseError::CfbError(error)),
+    };
+    match crypto::decrypt_password_protected_limited(&raw, password, compressed, output_limit) {
+        Ok(decoded) => Ok(starts_with_paragraph_header(&decoded).then_some(decoded)),
+        Err(crypto::CryptoError::WrongPassword) => Ok(None),
+        Err(error) => Err(ParseError::CryptoError(error)),
     }
-    let header = u32::from_le_bytes([decoded[0], decoded[1], decoded[2], decoded[3]]);
-    let tag = (header & 0x3ff) as u16;
-    if tag == tags::HWPTAG_PARA_HEADER {
-        Some(decoded)
-    } else {
-        None
-    }
+}
+
+fn parse_visible_section(
+    data: &[u8],
+    doc_info: &crate::model::document::DocInfo,
+) -> Result<crate::model::document::Section, body_text::BodyTextError> {
+    let projected = tracked_viewtext::project(data, doc_info)?;
+    body_text::parse_body_text_section(projected.as_deref().unwrap_or(data))
 }
 
 /// CfbReader로 섹션들 파싱
@@ -821,6 +840,7 @@ fn parse_sections_strict(
     encrypted: bool,
     password: Option<&[u8]>,
     decompression_budget: &mut Hwp5DocumentOpenDecompressionBudget,
+    doc_info: &crate::model::document::DocInfo,
 ) -> Result<Vec<crate::model::document::Section>, ParseError> {
     let mut sections = Vec::new();
 
@@ -835,23 +855,30 @@ fn parse_sections_strict(
             crypto::decrypt_viewtext_section_limited(&raw, compressed, section_output_limit)
                 .map_err(ParseError::CryptoError)?
         } else if encrypted {
-            // 비밀번호 암호 문서: BodyText raw → 비밀번호 복호화.
-            // read_body_text_section_raw() 가 스트림 경로 탐색
-            // (BodyText/Section{i} → /Section{i}) 을 담당하므로 raw 만 얻어
-            // 복호화+압축해제는 crypto 로 위임한다.
-            let raw = cfb
-                .read_body_text_section_raw_limited(i, section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            crypto::decrypt_password_protected_limited(
-                &raw,
+            let rendered = decode_viewtext_paragraph_stream(
+                cfb.read_viewtext_section_raw_limited(i, section_raw_limit),
                 password.unwrap(),
                 compressed,
                 section_output_limit,
-            )
-            .map_err(ParseError::CryptoError)?
+            )?;
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = cfb
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    crypto::decrypt_password_protected_limited(
+                        &raw,
+                        password.unwrap(),
+                        compressed,
+                        section_output_limit,
+                    )
+                    .map_err(ParseError::CryptoError)?
+                }
+            }
         } else {
-            // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 한글이 렌더하는
-            // 본문이므로 우선한다. 복호 실패·스텁이면 BodyText 로 폴백한다.
+            // ViewText may be the only complete section. Apply its visibility
+            // separately after decoding; existence alone does not mean visible.
             let rendered = cfb
                 .read_viewtext_section_raw_limited(i, section_raw_limit)
                 .ok()
@@ -871,13 +898,16 @@ fn parse_sections_strict(
             .consume(section_data.len())
             .map_err(ParseError::CfbError)?;
 
-        match body_text::parse_body_text_section(&section_data) {
+        match parse_visible_section(&section_data, doc_info) {
             Ok(mut section) => {
                 // 원본 BodyText 스트림 보존 (라운드트립용)
                 section.raw_stream = Some(section_data);
                 sections.push(section);
             }
-            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+            Err(
+                e @ (body_text::BodyTextError::DrawingTextStructure(_)
+                | body_text::BodyTextError::ChangeTrackingStructure(_)),
+            ) => {
                 return Err(ParseError::BodyTextError(e));
             }
             Err(e) => {
@@ -957,17 +987,27 @@ fn parse_hwp_with_lenient(
             crypto::decrypt_viewtext_section_limited(&raw, compressed, section_output_limit)
                 .map_err(ParseError::CryptoError)?
         } else if encrypted {
-            // 비밀번호 암호 문서: lenient reader 로 raw 섹션 바이트를 얻어 복호화.
-            let raw = lenient
-                .read_body_text_section_raw_limited(i, section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            crypto::decrypt_password_protected_limited(
-                &raw,
+            let rendered = decode_viewtext_paragraph_stream(
+                lenient.read_viewtext_section_raw_limited(i, section_raw_limit),
                 password.unwrap(),
                 compressed,
                 section_output_limit,
-            )
-            .map_err(ParseError::CryptoError)?
+            )?;
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = lenient
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    crypto::decrypt_password_protected_limited(
+                        &raw,
+                        password.unwrap(),
+                        compressed,
+                        section_output_limit,
+                    )
+                    .map_err(ParseError::CryptoError)?
+                }
+            }
         } else {
             // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 우선한다(위 strict
             // 경로와 동일 규칙). 복호 실패·스텁이면 BodyText 로 폴백.
@@ -990,12 +1030,15 @@ fn parse_hwp_with_lenient(
             .consume(section_data.len())
             .map_err(ParseError::CfbError)?;
 
-        match body_text::parse_body_text_section(&section_data) {
+        match parse_visible_section(&section_data, &doc_info) {
             Ok(mut section) => {
                 section.raw_stream = Some(section_data);
                 sections.push(section);
             }
-            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+            Err(
+                e @ (body_text::BodyTextError::DrawingTextStructure(_)
+                | body_text::BodyTextError::ChangeTrackingStructure(_)),
+            ) => {
                 return Err(ParseError::BodyTextError(e));
             }
             Err(e) => {
@@ -1815,7 +1858,7 @@ fn extract_thumbnail_from_hwpx(data: &[u8], max_bytes: usize) -> Option<Vec<u8>>
     // Preview/PrvImage.png 또는 Preview/PrvImage.* 탐색
     let entry_name = (0..archive.len()).find_map(|i| {
         let file = archive.by_index(i).ok()?;
-        let name = file.name().to_string();
+        let name = file.name().ok()?.into_owned();
         if name.starts_with("Preview/PrvImage") {
             Some(name)
         } else {

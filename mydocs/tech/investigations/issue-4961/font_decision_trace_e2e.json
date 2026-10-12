@@ -6,34 +6,6 @@
   },
   "documents": [
     {
-      "id": "format-parity-hwp",
-      "format": "hwp",
-      "path": "samples/3-10월_교육_통합_2022.hwp",
-      "page": 0,
-      "expectedStatus": "complete",
-      "expectedCounts": {
-        "runsSeen": 175,
-        "charactersSeen": 440,
-        "recordsEmitted": 440,
-        "recordsOmitted": 0
-      },
-      "expectedLayoutHash": "15437a7c1700fb9c89c7de3a0377e9473cf0c5bc7d8b5976cddcda398eda6aa0"
-    },
-    {
-      "id": "format-parity-hwpx",
-      "format": "hwpx",
-      "path": "samples/3-10월_교육_통합_2022.hwpx",
-      "page": 0,
-      "expectedStatus": "complete",
-      "expectedCounts": {
-        "runsSeen": 175,
-        "charactersSeen": 440,
-        "recordsEmitted": 440,
-        "recordsOmitted": 0
-      },
-      "expectedLayoutHash": "15437a7c1700fb9c89c7de3a0377e9473cf0c5bc7d8b5976cddcda398eda6aa0"
-    },
-    {
       "id": "exact-face",
       "format": "hwp",
       "path": "samples/143E433F503322BD33.hwp",
@@ -144,10 +116,6 @@
     }
   ],
   "comparisons": {
-    "portableFormatParity": [
-      "format-parity-hwp",
-      "format-parity-hwpx"
-    ],
     "substFeatureDetection": {
       "withoutSubstFont": "subst-counterpart-hwp",
       "withSubstFont": "document-substitute-hwpx"

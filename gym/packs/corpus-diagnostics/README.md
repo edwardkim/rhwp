@@ -86,11 +86,8 @@ last_verified: 2026-08-18
 |---|---|---|
 | CD03 | 다쪽 실측 | `issue2007_…42065.hwp` |
 | CD16 | 표 문서 | `table-001.hwp` |
-| CD17 | 2쪽 시험지 | `exam-kor-2p.hwp` |
-| CD18 | 3쪽 시험지 | `exam-kor-3p.hwp` |
 | CD19 | 문단 문서 | `para-001.hwp` |
 | CD37 | 가로 문서 | `landscape-001.hwp` |
-| CD44 | 4쪽 시험지 | `exam-kor-4p.hwp` |
 
 **실패 모드**
 
@@ -107,12 +104,9 @@ last_verified: 2026-08-18
 | CD04 | 143E HWP·HWPX | `143E…hwp` + `.hwpx` | `identical` |
 | CD09 | 표 문서 자기대조 | `table-001.hwp` A=A | `identical` |
 | CD20 | 문단 문서 자기대조 | `para-001.hwp` | `identical` |
-| CD21 | 2쪽 시험지 자기대조 | `exam-kor-2p.hwp` | `identical` |
-| CD22 | 2쪽 시험지 쌍 | `.hwp` + `.hwpx` | `identical` |
 | CD23 | OSS 문서 쌍 | `2026_oss_rst` 쌍 | `identical` |
 | CD36 | 가로 문서 자기대조 | `landscape-001.hwp` | `identical` |
 | CD40 | 143E 차이 건수 | 같은 143E 쌍 | `diffCount` |
-| CD45 | 1쪽 시험지 자기대조 | `exam-kor-1p.hwp` | `identical` |
 | CD47 | 표 vs 문단 | `table-001` vs `para-001` | `identical` |
 
 자기대조 과제는 `answer_eq` 와 `value_eq true` 를 같이 둔다. 자기
@@ -133,7 +127,6 @@ last_verified: 2026-08-18
 |---|---|---|---|
 | CD05 | 표 문서 A=A | `table-001.hwp` | `status` + `maxDisp` 0 |
 | CD24 | 문단 문서 A=A | `para-001.hwp` | `status` |
-| CD25 | 1쪽 시험지 A=A | `exam-kor-1p.hwp` | `status` + `maxDisp` 0 |
 
 **실패 모드**
 
@@ -149,13 +142,6 @@ last_verified: 2026-08-18
 |---|---|---|---|
 | CD06 | 다쪽 첫 쪽 | `issue2007_…` | 1–1 |
 | CD10 | 다쪽 둘째 쪽 | `issue2007_…` | 2–2 |
-| CD26 | 2쪽 시험지 첫 쪽 | `exam-kor-2p.hwp` | 1–1 |
-| CD27 | 2쪽 시험지 둘째 쪽 | `exam-kor-2p.hwp` | 2–2 |
-| CD28 | 3쪽 시험지 첫 쪽 | `exam-kor-3p.hwp` | 1–1 |
-| CD29 | 3쪽 시험지 마지막 | `exam-kor-3p.hwp` | 3–3 |
-| CD30 | 4쪽 시험지 첫 쪽 | `exam-kor-4p.hwp` | 1–1 |
-| CD41 | 4쪽 시험지 둘째 쪽 | `exam-kor-4p.hwp` | 2–2 |
-| CD46 | 4쪽 시험지 마지막 | `exam-kor-4p.hwp` | 4–4 |
 
 **실패 모드**
 
@@ -174,7 +160,6 @@ last_verified: 2026-08-18
 | CD07 | 표 문서 | `table-001.hwp` |
 | CD31 | 문단 문서 | `para-001.hwp` |
 | CD32 | 가로 문서 | `landscape-001.hwp` |
-| CD33 | 1쪽 시험지 | `exam-kor-1p.hwp` |
 | CD34 | HWPX 표 | `hwpx/basic-table-01.hwpx` |
 | CD38 | 실문서 | `143E433F503322BD33.hwp` |
 | CD42 | aift | `aift.hwp` |
@@ -222,10 +207,8 @@ last_verified: 2026-08-18
 | `samples/hwpx` | J1, J2 |
 | `samples/basic` · `chart` · `unicode` · `images` · `issues` | J1, J2 |
 | `samples/table-001.hwp` · `para-001.hwp` · `landscape-001.hwp` | J3–J7 |
-| `samples/exam-kor-1p.hwp` … `4p.hwp` | J3, J4, J6, J7 |
 | `samples/basic/issue2007_nested_cell_pagination_42065.hwp` | J3, J6 |
 | `samples/143E433F503322BD33.hwp` + `hwpx/` 짝 | J4, J7 |
-| `samples/exam-kor-2p.hwp` + `hwpx/exam-kor-2p.hwpx` | J4 |
 | `samples/2026_oss_rst.hwp` + `hwpx/` 짝 | J4 |
 | `samples/hwpx/basic-table-01.hwpx` · `samples/aift.hwp` | J7 |
 
@@ -234,3 +217,7 @@ last_verified: 2026-08-18
 - 작업 노트: [mydocs/working/gym_om_lr_cd.md](../../../mydocs/working/archives/gym_om_lr_cd.md)
 - 개체 pack: [../objects-media/README.md](../objects-media/README.md)
 - 조판 pack: [../layout-rendering/README.md](../layout-rendering/README.md)
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: CD17, CD18, CD21, CD22, CD25, CD26, CD27, CD28, CD29, CD30, CD33, CD41, CD44, CD45, CD46. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

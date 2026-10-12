@@ -405,14 +405,16 @@ class SelectedRasterTests(unittest.TestCase):
         self.assertEqual(len(commands), 2)
         self.assertEqual(commands[0][1:5], ["-f", "1", "-l", "1"])
         self.assertEqual(commands[1][1:5], ["-f", "3", "-l", "3"])
-        self.assertEqual(commands[0][-2:], ["reference.pdf", "out/pdf"])
+        self.assertEqual(commands[0][7:9], ["-thinlinemode", "shape"])
+        self.assertEqual(commands[1][7:9], ["-thinlinemode", "shape"])
+        self.assertEqual(commands[0][-2:], ["reference.pdf", str(Path("out") / "pdf")])
 
     def test_pdf_raster_commands_keeps_full_document_default(self) -> None:
         commands = SWEEP.pdf_raster_commands(
             Path("reference.pdf"), 144, Path("out/pdf"), None
         )
 
-        self.assertEqual(commands, [["pdftoppm", "-r", "144", "-png", "reference.pdf", "out/pdf"]])
+        self.assertEqual(commands, [["pdftoppm", "-r", "144", "-thinlinemode", "shape", "-png", "reference.pdf", str(Path("out") / "pdf")]])
 
 
 class EmbeddedFontPreflightTests(unittest.TestCase):

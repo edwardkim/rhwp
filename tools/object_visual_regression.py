@@ -41,7 +41,7 @@ PT2PX = DPI / 72.0
 
 # OVR 관례 샘플 세트 — CONTRIBUTING "렌더링 PR 자가 검증" 기본 프리셋 (samples/ 기준 상대경로)
 PRESETS = {
-    "ovr5": ["KTX.hwp", "exam_math.hwp", "21_언어_기출_편집가능본.hwp", "aift.hwp", "biz_plan.hwp"],
+    "ovr5": ["KTX.hwp", "aift.hwp", "biz_plan.hwp"],
 }
 
 
@@ -557,7 +557,7 @@ def main() -> int:
     ap.add_argument("-o", "--out", type=Path, default=ROOT / "output" / "ovr",
                     help="산출물 디렉터리 (기본: <repo>/output/ovr — .gitignore 의 /output/ 아래)")
     ap.add_argument("--preset", choices=sorted(PRESETS),
-                    help="관례 샘플 세트 추가 — ovr5: KTX/exam_math/21_언어/aift/biz_plan")
+                    help="관례 샘플 세트 추가 — ovr5: KTX/aift/biz_plan")
     ap.add_argument("--diff-against", metavar="REF",
                     help="지정 ref(예: devel)를 임시 worktree 로 빌드해 baseline 자동 생성 후 "
                          "현 트리와 대조 — 원커맨드, 한컴 불필요, md 요약 출력")

@@ -16,6 +16,7 @@ mod crypto;
 pub mod header;
 pub mod reader;
 pub mod section;
+mod tracked_changes;
 pub mod utils;
 
 use std::collections::{HashMap, HashSet};
@@ -456,6 +457,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
 
     // 3. header.xml → DocInfo, DocProperties
     let header_xml = reader.read_file("Contents/header.xml")?;
+    let tracking_visibility = tracked_changes::Visibility::from_header(&header_xml)?;
     // 평문 여백의 단위 전환은 header.xml이 아닌 패키지 xmlVersion에 따른다.
     let physical_plain_margin = hwpx_aux_entries
         .iter()
@@ -531,6 +533,9 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     for (section_idx, section_href) in package_info.section_files.iter().enumerate() {
         let section_xml = reader.read_file(section_href)?;
         let section_xml = canonicalize_bin_item_refs(&section_xml, &package_info.bin_data_items);
+        let section_xml = tracking_visibility
+            .project(&section_xml)?
+            .unwrap_or(section_xml);
         let master_page_refs = match section::collect_hwpx_section_master_page_refs(&section_xml) {
             Ok(refs) => refs,
             Err(e) => {

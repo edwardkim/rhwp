@@ -10,50 +10,8 @@
 //! (vpos 리셋)과 같이 정렬을 끄고 배열(저장) 순서를 보존한다.
 //!
 //! 픽스처는 원본 HWP5 의 구역0 문단 0..4 절단 + BinData 스텁 축소본(9KB).
-#![cfg(not(target_arch = "wasm32"))]
-
-use std::path::Path;
-
-use rhwp::document_core::DocumentCore;
-
-const SAMPLE: &str = "samples/issue5807/coanchored_float_tac_order.hwp";
-
-fn rule_ys(svg: &str) -> Vec<f64> {
-    let mut ys = Vec::new();
-    for cap in svg.split("<line ").skip(1) {
-        let head = &cap[..cap.find('>').unwrap_or(cap.len())];
-        if let Some(v) = head
-            .split_once("y1=\"")
-            .and_then(|(_, rest)| rest.split_once('"'))
-            .and_then(|(v, _)| v.parse::<f64>().ok())
-        {
-            ys.push(v);
-        }
-    }
-    ys
-}
-
-#[test]
-fn issue_5807_float_table_precedes_coanchored_tac_table() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
-    assert_eq!(core.page_count(), 3, "한글과 같은 3쪽이어야 한다");
-
-    // 2쪽: 결함 시 자리차지 표가 y=1439.4 까지 그려져 본문 하단(1084.7)을 354.6px
-    // 넘쳤다. 수정 후 최대 괘선 y 는 본문 안이다.
-    let p2 = core.render_page_svg_native(1).expect("page 2 svg");
-    let p2_max = rule_ys(&p2).into_iter().fold(f64::MIN, f64::max);
-    assert!(
-        p2_max < 1085.0,
-        "2쪽 괘선이 본문 하단 안에 있어야 한다 (결함 시 1439.4): {p2_max:.1}"
-    );
-
-    // 3쪽: 자리차지 표 꼬리(≈332) **아래에** TAC 표(≈375~704)가 놓인다.
-    // 결함 시 TAC 표는 2쪽으로 앞당겨져 3쪽 최대 괘선이 ≈332 에 그친다.
-    let p3 = core.render_page_svg_native(2).expect("page 3 svg");
-    let p3_max = rule_ys(&p3).into_iter().fold(f64::MIN, f64::max);
-    assert!(
-        (690.0..730.0).contains(&p3_max),
-        "3쪽에서 TAC 표가 자리차지 표 꼬리 아래(하단 괘선 ≈704)에 있어야 한다: {p3_max:.1}"
-    );
-}
+//!
+//! 활성 렌더링 검사는 사용자 지시에 따라 #7821 (#7445 서브이슈)로 이관했다.
+//! 샘플·PDF와 이 Rust 파일은 보존한다. 검사 원문은
+//! `mydocs/pr/assets/issue7445/deferred-regressions-20261011/issue7821-issue_5807_coanchored_float_tac_order.rs.txt`에 있다.
+//! 해당 이슈의 전쪽 Native/fresh WASM 검증 뒤 관계형 검사로 복원한다.

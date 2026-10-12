@@ -17,7 +17,19 @@
 //! `node_count` 로 나갔다. 별칭 조회 계층이 없는 정적 매핑 언어(C#·Swift)에서는
 //! 이 필드가 **사라진다** — M20 이 시작되면 바로 부딪힌다.
 
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
+
 use std::process::{Command, Output};
+
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
 
 fn rhwp_bin() -> String {
     env!("CARGO_BIN_EXE_rhwp").to_string()
@@ -65,8 +77,10 @@ fn first_sample(ext: &str) -> Option<std::path::PathBuf> {
         };
         let mut hits: Vec<std::path::PathBuf> = rd
             .filter_map(|e| e.ok().map(|e| e.path()))
+            .filter(|p| !is_deferred_exam_document(p.to_string_lossy().as_ref()))
             .filter(|p| {
-                p.is_file()
+                !exam_fixtures::is_exam_fixture(p)
+                    && p.is_file()
                     && p.extension()
                         .and_then(|e| e.to_str())
                         .is_some_and(|e| e.eq_ignore_ascii_case(ext))

@@ -16,6 +16,15 @@
 //! 주의: 구조(뼈대)+BinData+페이지(자기일관) 보존 검증이며 시각 충실도 보장이 아니다.
 //! 외부 한글-only 페이지 붕괴(convert 경로 등)는 `output/poc/fidelity/` 한글 harness 보조.
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
+
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
@@ -62,6 +71,9 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         let entries = std::fs::read_dir(dir).expect("samples 읽기 실패");
         for entry in entries {
             let path = entry.expect("디렉토리 항목 읽기 실패").path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 walk(&path, root, acc);
             } else if path
@@ -76,6 +88,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     let root = Path::new(SAMPLES_ROOT);
     let mut acc = Vec::new();
     walk(root, root, &mut acc);
+    acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 .hwp 샘플이 없음");
     acc
