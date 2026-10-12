@@ -505,11 +505,11 @@ fn serialize_footnote_shape(fs: &FootnoteShape) -> Vec<u8> {
     w.write_u16(char_to_wchar(fs.prefix_char)).unwrap();
     w.write_u16(char_to_wchar(fs.suffix_char)).unwrap();
     w.write_u16(fs.start_number).unwrap();
-    // HWP5 노트 구분선 길이는 i16 슬롯. 한컴 전폭 sentinel(14692344)은 i16을 넘지만
-    // HWP5 포맷 한계상 하위 16비트로 기록한다(HWPX 경로는 i32 원본을 보존).
-    w.write_i16(fs.separator_length as i16).unwrap();
-    w.write_i16(fs.separator_margin_top).unwrap();
-    w.write_i16(fs.separator_margin_bottom).unwrap();
+    // [#7862] HWP5 노트 구분선 길이는 4바이트다(한컴 전폭 값 14692344 그대로).
+    w.write_i32(fs.separator_length).unwrap();
+    // "구분선 위" 는 다음 i16 이다. HWPX 출처 모양은 `aboveLine` 을
+    // `separator_margin_top` 에 두므로 정규화 접근자로 쓴다(HWP5 출처는 원값 그대로).
+    w.write_i16(fs.separator_above_margin_hu()).unwrap();
     w.write_i16(fs.note_spacing).unwrap();
     // 미문서화 2바이트 (원본 보존)
     w.write_u16(fs.raw_unknown).unwrap();

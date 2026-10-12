@@ -944,16 +944,12 @@ fn hwp3_footnote_separator_length(footnote_line_width: u8, column_width_hu: i32)
 /// OWPML `noteLine length` 의 5cm sentinel.
 const HWP3_SEPARATOR_LENGTH_5CM: i32 = -1;
 
-/// HWP5 `FOOTNOTE_SHAPE` 의 구분선 길이는 **4바이트**다 — 우리 IR 은 그것을
-/// `separator_length`(하위 워드)와 `separator_margin_top`(상위 워드) 두 i16 슬롯으로
-/// 나눠 읽고 그대로 되쓴다(`parse_footnote_shape_record` · `serialize_footnote_shape`).
-/// 그래서 음수 sentinel 은 두 슬롯을 **함께** 채워야 한/글이 `-1` 로 읽는다. 한 쪽만
-/// `-1` 로 두면 바이트가 `FF FF 00 00` = 65535 가 되어 5cm 대신 폭 전체로 잘린다.
-///
-/// 양수 길이는 상위 워드가 0 이므로 종전대로 `separator_length` 만 채운다.
+/// HWP5 `FOOTNOTE_SHAPE` 의 구분선 길이는 **4바이트**다. [#7862] 이후 IR 은 그 값을
+/// `separator_length`(i32) 하나로 읽고 쓰므로 sentinel(`-1` 등)도 그대로 둔다.
+/// `separator_margin_top` 은 HWPX `aboveLine` 전용 슬롯이라 HWP3 변환에서는 비운다.
 fn hwp3_apply_separator_length(shape: &mut crate::model::footnote::FootnoteShape, length: i32) {
     shape.separator_length = length;
-    shape.separator_margin_top = if length < 0 { -1 } else { 0 };
+    shape.separator_margin_top = 0;
 }
 
 fn hwp3_note_column_width_hu(column_width_hu: i32) -> i32 {
