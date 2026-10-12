@@ -1,0 +1,99 @@
+{
+  "baseHead": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+  "parentHead": "3c145ce5f56bbac2c87cbfb47375c89638e61250",
+  "comparisonCandidateDiffSha256": "bc67cd73f09a1d3c9013badcd043352a2881b74ec23a24af514d4b9d409a0387",
+  "comparisonAlgorithmChanged": false,
+  "results": [
+    {
+      "variant": "upstream",
+      "case": "monthly19",
+      "backend": "native",
+      "pages": 19,
+      "minimum": 73.84241,
+      "below90": [
+        3,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "variant": "upstream",
+      "case": "quote1",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 91.20349,
+      "below90": []
+    },
+    {
+      "variant": "candidate",
+      "case": "monthly19",
+      "backend": "native",
+      "pages": 19,
+      "minimum": 74.35374,
+      "below90": [
+        3,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "variant": "candidate",
+      "case": "quote1",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 92.76945,
+      "below90": []
+    },
+    {
+      "variant": "upstream",
+      "case": "quote1",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 91.20349,
+      "below90": []
+    },
+    {
+      "variant": "candidate",
+      "case": "quote1",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 92.76945,
+      "below90": []
+    }
+  ],
+  "reviewInspection": "월간 문서6쪽의 표와 본문 전진폭 차이를 확인했습니다. 보도자료1쪽에서 로고·제목·본문을 확인했고, 따옴표 선택 검사의 문자열 전제를 보정하며 출력 일치 또는 전체 PR 완료로 확대 해석하지 않습니다.",
+  "sharedMonthlySourceRetained": true,
+  "sourceAndPdfHashes": [
+    {
+      "id": "monthly19",
+      "source": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "pdf": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+      "pages": 19,
+      "issue": 4962,
+      "sourceSha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "pdfSha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b"
+    },
+    {
+      "id": "quote1",
+      "source": "samples/issue7235/156467175_press_release_header_logo_p1.hwp",
+      "pdf": "pdf/issue7235/156467175_press_release_header_logo_p1-2020.pdf",
+      "pages": 1,
+      "issue": 7092,
+      "sourceSha256": "559b2760ccb678ae22484bc7de8bc61347fff17d3b980d9bec3f2ecec8e07d57",
+      "pdfSha256": "1e791edc71173ec436fbdca3480705a97beade1f496318212440955077763cc2"
+    }
+  ],
+  "representativeReviewSha256": {
+    "monthly-upstream-p006-review.png": "41e651e1e8d52c54f51c7acfda28fef03608d93c5e4e6ec10532bd83c25900a5",
+    "quote-native-p001-review.png": "208296e48ec098127dc01cedd948acded651f2de238e192ea1df37fbe366e0e3",
+    "quote-wasm-p001-review.png": "208296e48ec098127dc01cedd948acded651f2de238e192ea1df37fbe366e0e3",
+    "monthly-candidate-p006-review.png": "274c2165370df73ca85d37f8ac5e8f51d85a6d391ad30dd01e794340a91a5ba9"
+  },
+  "transferComment": "https://github.com/edwardkim/rhwp/issues/7760#issuecomment-6120959600"
+}

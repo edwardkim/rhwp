@@ -316,6 +316,14 @@ fn many_char_shape_boundaries_use_a_linear_merge_walk() {
 fn public_blank_derived_documents_reach_every_current_positive_category() {
     let cases = [
         ("함초롬바탕", "가", "exact-hit", "embeddedMetric"),
+        // 실제 cmap 결측 뒤 확인된 대체 face에서 측정한 폭도 coverage 집계에 포함한다.
+        // 같은 경로의 U+2024는 개인정보 문서 전 66쪽 Native/fresh WASM에서 검증했다.
+        (
+            "휴먼명조",
+            "\u{2024}",
+            "exact-hit",
+            "declaredGlyphFallbackMetric",
+        ),
         ("KoPub돋움체 Light", "가", "measured-overlay", "kopubTable"),
         ("본한글", "가", "metric-surrogate", "embeddedMetric"),
         ("함초롬바탕", "😀", "char-miss", "heuristicHalfwidth"),

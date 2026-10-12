@@ -1,0 +1,61 @@
+// #7760 / #7445: 자동 실행에서 분리한 검사 원문입니다. 출력 결함 해결이 아닙니다.
+
+fn public_coverage(path: &str) -> serde_json::Value {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
+    let bytes = std::fs::read(&path)
+        .unwrap_or_else(|error| panic!("public fixture read failed ({}): {error}", path.display()));
+    let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|error| {
+        panic!("public fixture parse failed ({}): {error}", path.display())
+    });
+    coverage(&core).1
+}
+
+#[test]
+fn public_non_exam_classification_golden_is_deterministic() {
+    let manifest: serde_json::Value = serde_json::from_str(include_str!(
+        "../../mydocs/tech/investigations/issue-4962/font_metric_coverage_public_fixtures.json"
+    ))
+    .expect("public fixture manifest");
+    for fixture in manifest["documents"].as_array().expect("public documents") {
+        let id = fixture["id"].as_str().expect("fixture id");
+        let value = public_coverage(fixture["path"].as_str().expect("fixture path"));
+        assert_reconciled(&value);
+        assert_private_data_absent(&value);
+        assert_eq!(value["format"], fixture["format"], "{id}");
+        // 원문 문자·문단·source run 분모는 보존한다. 그룹 행 수는 폭 출처 분류에
+        // 따라 달라지므로 decisionUsage 배열과의 계약으로 검사한다.
+        for (name, expected) in fixture["counts"].as_object().expect("원문 분모") {
+            assert_eq!(value["counts"][name], *expected, "{id}: {name}");
+        }
+        assert_eq!(
+            count(&value, "/counts/decisionUsageRows") as usize,
+            value["decisionUsage"]
+                .as_array()
+                .expect("decision usage")
+                .len()
+        );
+        assert_eq!(value["categories"], fixture["categories"], "{id}");
+        assert_eq!(
+            serde_json::to_value(width_source_counts(&value)).expect("width source JSON"),
+            fixture["widthSources"],
+            "{id}"
+        );
+        // 집계 해시의 옛 문자열은 glyph 분류 변경을 회귀로 오인한다.
+        // 같은 원문의 반복 결정성과 원시 글꼴·문자 선언에서 센 실측 대상 수를 확인한다.
+        assert_eq!(
+            value,
+            public_coverage(fixture["path"].as_str().unwrap()),
+            "{id}"
+        );
+        assert_eq!(
+            width_source_counts(&value)["measuredOriginalGlyph"],
+            fixture["independentOriginalGlyphCount"].as_u64().unwrap(),
+            "{id}: 원시 HCI Poppy 슬래시 수"
+        );
+        assert_eq!(
+            value["legacyProjectionHash"]["value"], fixture["legacyProjectionHash"],
+            "{id}"
+        );
+    }
+}
+

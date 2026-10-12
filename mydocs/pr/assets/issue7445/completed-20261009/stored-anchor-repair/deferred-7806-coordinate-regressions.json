@@ -1,0 +1,51 @@
+{
+  "issue": 7806,
+  "issueRemainsOpen": true,
+  "resolved": false,
+  "latestUpstreamBase": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+  "sameSourceAndIndependentPdf": true,
+  "original": "samples/issue6111/56345_regulatory_impact_analysis.hwp",
+  "sourceSha256": "58013017c3a3dc7e2d278b99c5b4fa1c61de0aa861f913a2c41a49145baadafc",
+  "pdf": "pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf",
+  "pdfSha256": "c66ea20c3b8d6b31af73752e170372bc7af839c38812991125bdde4dfba35abb",
+  "baseNativeWholePages": 21,
+  "baseMinimum": 6.39312,
+  "baseBelow90Pages": [
+    2,
+    5,
+    7,
+    8,
+    9,
+    11,
+    12,
+    14,
+    15,
+    17,
+    18,
+    20
+  ],
+  "baselineFrozenBinarySha256": "da10152e88ab7590ddd3494c6f84d12d52e44ba88a0714daa250b47e65bd6592",
+  "comparisonDpi": 192,
+  "toleranceRadiusPx": 2,
+  "reason": "기존 간격 요구는 앞 표의 바깥 위여백을 빼지 않았으며 뒤 검사는 바깥 상자 원점을 가시 테두리로 고정했다. 독립 Print의 소제목 기준선은 위여백을 소비하는 현재 보정과 맞는다. 정상 전쪽 문서로 검증되지 않은 고정 좌표 검사를 기대값 완화로 통과시키지 않고 기존 이슈로 이관한다.",
+  "records": [
+    {
+      "source": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+      "function": "stored_anchor_after_a_taller_float_consumes_its_span_once",
+      "preservedSourceHead": "3c145ce5f56bbac2c87cbfb47375c89638e61250",
+      "codeSha256": "c789eb734e94e6bb23543a4a941cf9d2918afa99806e804a4a5f09fdf8490416",
+      "disposition": "활성 검사에서 분리하여 기존 열린 #7806 범위에 이관. 원본·PDF·검사 원문 보존."
+    },
+    {
+      "source": "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs",
+      "function": "saved_outer_box_anchor_keeps_following_tables_inside_the_body",
+      "preservedSourceHead": "3c145ce5f56bbac2c87cbfb47375c89638e61250",
+      "codeSha256": "b3020e7997499a7e54e6abcaa8e418572db6e407d7016fae7df0b3dac8896e0a",
+      "disposition": "활성 검사에서 분리하여 기존 열린 #7806 범위에 이관. 원본·PDF·검사 원문 보존."
+    }
+  ],
+  "rawTsvAndLogsIgnoredOutputOnly": true,
+  "freshWasmWhole21Accepted": false,
+  "knownHwpctlOtherContractsPreserved": true,
+  "remoteIssueUpdatePendingApprovalOrApprovedPrFollowup": true
+}

@@ -330,6 +330,47 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
                 1,
                 "원본 제목 기호를 한 번 보존"
             );
+            // 독립 Print 40·65쪽의 표 없는 소제목처럼 보이는 줄은 실제로
+            // 빈 host의 1×1 표다. 저장 후속 줄이 높이+상하 바깥여백을
+            // 닫으면 title의 쪽 원점에서 위여백 안쪽에 표를 그려야 한다.
+            // 좌우여백 유무가 세로 inset을 없애지 않으며 절대 px를 고정하지 않는다.
+            let area = body(&page.root).expect("소제목의 본문 원점");
+            for (owner, host) in source_paras.iter().enumerate() {
+                let Some(painted) = owned_table(&page.root, owner) else {
+                    continue;
+                };
+                let Some(Control::Table(original)) = host.controls.first() else {
+                    continue;
+                };
+                if original.outer_margin_top <= 0 || original.cells.len() != 1 {
+                    continue;
+                }
+                let Some(anchor) = host.line_segs.first() else {
+                    continue;
+                };
+                let Some(next) = source_paras
+                    .get(owner + 1)
+                    .and_then(|p| p.line_segs.first())
+                else {
+                    continue;
+                };
+                let reserved = i64::from(original.common.height)
+                    + i64::from(original.outer_margin_top)
+                    + i64::from(original.outer_margin_bottom);
+                if i64::from(next.vertical_pos) - i64::from(anchor.vertical_pos) != reserved {
+                    continue;
+                }
+                let outer_top = area.bbox.y + hwpunit_to_px(anchor.vertical_pos, DEFAULT_DPI);
+                let margin = hwpunit_to_px(i32::from(original.outer_margin_top), DEFAULT_DPI);
+                assert!(((painted.bbox.y - outer_top) / margin - 1.0).abs() < FLOAT_EPSILON,
+                    "저장 바깥 상자의 위여백을 테두리 원점에서 한 번 소비: owner={owner}, inset/margin={}",
+                    (painted.bbox.y - outer_top) / margin);
+                let occupied_bottom = area.bbox.y + hwpunit_to_px(next.vertical_pos, DEFAULT_DPI);
+                assert!(
+                    painted.bbox.y + painted.bbox.height <= occupied_bottom + FLOAT_EPSILON,
+                    "소제목 paint와 다음 host가 같은 예약 상자 안에 있어야 함"
+                );
+            }
             let svg = title_doc
                 .render_page_svg(page_index as u32)
                 .expect("동일 제목의 실제 SVG 출력");

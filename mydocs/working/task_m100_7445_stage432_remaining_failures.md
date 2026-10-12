@@ -1055,3 +1055,53 @@ production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수
 
 최종 전체 nextest·필수 Rust lint/build·전체38문서 및 실제 backend 검증이 남아 있습니다.
 위 자료는 추가 보정의 경계 증거이며, 최종 PR·이슈 종료의 전체 완료 근거가 아닙니다.
+
+## 2026-10-12 개인정보 소제목의 세로 바깥여백 재검토
+
+40·65쪽의 소제목은 빈 호스트 문단에 놓인 1×1 자리차지 표다. 저장 후속 줄의 전진은
+본체 1300HU와 위·아래 바깥여백 566HU씩의 합으로 정확히 닫힌다. 그러나
+`stored_topbottom_object_span`은 네 방향 여백이 모두 같을 때만 위여백을 paint에
+소비했고, 좌우 여백이 0인 제목 표의 inset은 0으로 만들었다. 좌우 여백을 세로
+원점의 증거로 사용한 가정을 제거했다. 측정·조판의 저장 프레임과 layout이
+같은 `ParagraphFloatPlacement.table_top`을 소비하며 예약 끝과 후속 원점은 유지한다.
+
+독립 Print 40쪽의 네 소제목 기준선과 수정 전 SVG의 차이는 7.6133~7.6933px다.
+원본 위여백의 96DPI 환산값 7.5467px를 소비하면 잔차는 0.0667~0.1467px다.
+이 좌표는 진단 증거이며 회귀 검사 상수가 아니다. 기존 개인정보 검사 함수에
+원본 저장 바깥 상자·위여백과 실제 테두리의 포함/비율 관계를 보완했고 수정 전
+1 FAIL, 수정 후 1 PASS를 확인했다. 기존 문단 끝 앵커 대조군 27개도 통과했다.
+Native 실제 PNG·전66쪽 Native/fresh WASM의 수정 후 결과는 별도 실행 중이며
+이 기록만으로 완료를 선언하지 않는다.
+
+대조군의 `56345_regulatory_impact_analysis.hwp` 검사 두 개는 앞 표의 위여백을
+빼지 않은 가시 상자 간격과 바깥 상자 원점을 가시 테두리로 고정했다. 이전 V9
+원점 복구 기록은 이 잘못된 상자 해석에 맞춘 결과이며 실제 소제목 글자 위치의
+정합을 입증하지 않는다. 동일 원본의 독립 Print 11쪽 글자 기준선은 위여백을
+소비하는 보정과 대응한다. 최신 고정 devel `bfa28a77a2714482f647ee6a7b9aa7f7876d8404`의
+전21쪽 Native 비교는 최저 6.39312%, 12쪽 미달이다(192DPI). 기존 열린 #7806에서
+같은 문서 전쪽 미달을 추적하므로 해당 좌표 검사 두 개를 활성 실행에서 분리하고
+원문·source SHA·원본/PDF 해시·최신 base 증거를
+`mydocs/pr/assets/issue7445/completed-20261009/stored-anchor-repair/deferred-7806-coordinate-regressions.json`과
+같은 이름의 `.rs.txt`에 보존했다. 정상 hwpctl 대조군과 원본·PDF는 유지했다.
+#7806의 해결이나 전체 문서 수용으로 표시하지 않으며 원격 이슈 기록 갱신은
+승인된 PR 후속 처리에서 정정 근거와 함께 수행한다. 원시 TSV·실행 로그는 ignored output에만 둔다.
+
+## 2026-10-12 소제목 보정 후 전체 회귀 재검증
+
+- 검증 대상은 `3c145ce5f56bbac2c87cbfb47375c89638e61250` 위 소제목 바깥여백 수정본입니다. 커밋 전 소스 diff SHA-256은 `bc67cd73f09a1d3c9013badcd043352a2881b74ec23a24af514d4b9d409a0387`이며, 실행 중 소스는 변경하지 않았습니다.
+- 선행 개인정보 문서 66쪽 비교: Native와 fresh WASM 각각 66쪽, 최저 92.53112%, 90% 미만 0쪽입니다. 40쪽·65쪽 fresh WASM review PNG의 소제목 간격도 직접 확인했습니다. 작은 글자 폭과 래스터 경계 차이는 남으며 픽셀 동일성은 주장하지 않습니다.
+- 전체 nextest: 10,221개 실행, 10,219개 통과, 2개 실패, 45개 스킵, 테스트 실행 547.421초, 종료 코드 100입니다. 앞선 10,223개보다 2개 적은 것은 #7806 이관 대상 검사 2개를 비실행 증적으로 분리했기 때문입니다.
+- Native Skia 라이브러리: 4,046개 통과, 실패 0개, 12개 제외입니다. 누락 그림 2개·직접 PDF 4개·Sixel 7개, Rust 문서 8개, 글꼴·브라우저 래스터 계약 검사가 모두 통과했습니다.
+- 잔여 실패 1: `issue_4962_font_metric_coverage::public_non_exam_classification_golden_is_deterministic`. 폭 출처 `declaredGlyphFallbackMetric`을 coverage 집계기가 분류하지 못해 RenderError가 발생했습니다. 실행 코드의 분류 누락이며 통과 기대값을 단순 갱신할 사유가 아닙니다.
+- 잔여 실패 2: `issue_7092_monospace_quote_width::proportional_font_quotes_keep_their_previous_width`. 휴먼명조 따옴표를 찾지 못해 폭 assertion 이전에 실패했습니다. 대상 선택 전제와 실제 글꼴 출처를 확인하고, 해당 원본의 최신 upstream 전쪽 시각 증거를 확인한 뒤 교정 여부를 판단해야 합니다.
+- 원본 로그·TSV·명령·소스 증적은 ignored `output/pr-review/7445-completed-20261009/stage606-pii-heading-margin-prepared-whole66` 및 `stage607-after-whole66-full-regression`에 보존했습니다. 소스 테스트와 기대값은 이번 전체 실행 중 변경하지 않았습니다. 최신 전체 회귀는 실패 상태이며 PR 준비 완료로 판정하지 않습니다.
+
+## 2026-10-12 #4962·#7092 최신 upstream 시각 자격 확인과 보정
+
+- 고정 upstream/devel은 `bfa28a77a2714482f647ee6a7b9aa7f7876d8404`입니다. 같은 원본·독립 Print PDF를 현재 Visual Sweep, 192dpi, compat2022, Library/Fonts 조건으로 비교했습니다.
+- #4962의 월간 수출입 원본은 19쪽이며 upstream Native 최저73.84241%, 현재 Native 최저74.35374%입니다. 양쪽 모두 3·6·7·8·9·10쪽이 90% 미달입니다. 해당 원본은 #7445 하위 #7760에 이미 등록돼 있어 분류 golden 한 함수와 전용 manifest를 코드 원문·해시·대표6쪽 PNG와 함께 이관했습니다. 공유 원본/PDF와 정상 WMF 그림·다른 계약 검사는 유지합니다. 이번 월간 문서의 fresh WASM은 재측정하지 않았습니다.
+- #7092의 보도자료 반례는 1쪽이며 upstream Native/fresh WASM91.20349%, 현재 Native/fresh WASM92.76945%입니다. #7092 검사는 현재 브랜치에서 보정합니다. paint의 CSS 목록을 원본 family 이름으로 오인하던 선택 조건만 교정했고, 0건 금지와 기존 전진폭 비율 조건은 유지했습니다. 두 검사가 PASS입니다.
+- #4962에서 드러난 현재 코드의 집계 오류는 이관으로 숨기지 않았습니다. 확인된 대체 face의 metric glyph hit를 기존 embedded metric 분류에 포함합니다. 기존 공통 계약에 실제 cmap 결측·대체 측정 사례를 넣어 수정 전6PASS/1FAIL, 수정 후7PASS를 확인했습니다. 새 test 함수나 px 핀은 추가하지 않았습니다.
+- 이관 코멘트: https://github.com/edwardkim/rhwp/issues/7760#issuecomment-6120959600 . 게시 본문을 API로 재확인했습니다. 로컬 보존 자산은 `mydocs/pr/assets/issue7445/completed-20261009/font-regression-qualification/`입니다.
+- fmt·manifest/unit정책·Native/WASM32/all-target Clippy가 모두 통과했고, 글꼴·래스터 계약18개 PASS/1skip입니다. #7445 본문과 #7760 코멘트의 이관·보정 기록을 갱신하고 API로 재확인했습니다.
+- 이번 변경은 집중9개 PASS를 확인했으며, 앞선 전체10,219PASS/2FAIL 결과를 수정 후 전체 PASS로 바꾸어 보고하지 않습니다. 수정 후 전체 회귀 재실행과 최종 PR 검증은 별도 단계입니다.
