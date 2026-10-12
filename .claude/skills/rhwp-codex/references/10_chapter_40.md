@@ -32,10 +32,8 @@
 | `render-diff` | 계약만 | diagnostic | render-diff <파일> [--via hwpx\|hwp] [-p <페이지>] [--max-disp <px>] [--json] |
 | `build-from-ingest` | 계약만 | export | build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx> |
 | `scaffold` | 계약만 | export | scaffold <spec.json> [--format hwpx] -o <out.hwpx> [--json] |
-| `export-png-gpu` | 계약만 | export | export-png-gpu <파일.hwp\|파일.hwpx> [옵션]   (gpu feature 필요) |
-| `gpu-info` | 계약만 | export | gpu-info                        (gpu feature 필요) |
 
-실측 1 · 계약만 11 · 합 13.
+실측 1 · 계약만 9 · 표지 미확정 1 · 합 11.
 
 ## 하지 말 것
 
