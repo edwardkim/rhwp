@@ -68,10 +68,16 @@ pub(in crate::renderer::typeset) fn inspect_entry(
             .line_segs
             .first()
             .map(|cur| {
-                let bottom_px = crate::renderer::hwpunit_to_px(
-                    cur.vertical_pos.saturating_add(cur.line_height),
-                    dpi,
-                );
+                // [#7702] 쪽 안 위치는 한/글이 저장한 좌표로 잰다. 앞 문단에 저장 줄이 없어
+                // 로드 재구성이 이 문단의 vpos 를 rhwp 누적 좌표로 옮겼으면 원본 값을 쓴다
+                // (HWP5-nopassword pi=228: 원본 64520 → 873.6px ≤ 876.9, 누적 128472).
+                let first_vpos = para
+                    .source_line_seg_vertical_pos
+                    .as_ref()
+                    .and_then(|source| source.first().copied())
+                    .unwrap_or(cur.vertical_pos);
+                let bottom_px =
+                    crate::renderer::hwpunit_to_px(first_vpos.saturating_add(cur.line_height), dpi);
                 bottom_px <= page.body_height + 0.5
             })
             .unwrap_or(false);
