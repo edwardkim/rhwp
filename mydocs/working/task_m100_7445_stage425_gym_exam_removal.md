@@ -1,4 +1,16 @@
+---
+kind: snapshot
+status: historical
+canonical: mydocs/working/task_m100_7445_stage425_gym_exam_removal.md
+last_verified: 2026-10-13
+---
+
 # Gym 시험지 입력 과제·기준풀이·자동 코퍼스 선택 제외
+
+이 문서는 당시 제거 범위를 보존한 기록이다. 해당 변경은
+`review/dependabot-20261012`로 이관했고, 원 브랜치에는 분리 커밋 `28be39176`을 남겼다.
+통합 브랜치의 현재 검증 결과는
+[통합 검증 증적](../pr/assets/dependabot_20261012/final_validation.json)에서 확인한다.
 
 Issue: #7445 완료 후보의 사용자 요청. 제품 코드 head는 `7589a9323`이며, 작업 브랜치는 `fix/7445-completed-20261009`다. 사용자가 지정한 시험지 원본은 보존하고 이를 참조하는 Gym 검사를 제거했다.
 
