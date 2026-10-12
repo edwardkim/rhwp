@@ -557,7 +557,7 @@ def main() -> int:
     ap.add_argument("-o", "--out", type=Path, default=ROOT / "output" / "ovr",
                     help="산출물 디렉터리 (기본: <repo>/output/ovr — .gitignore 의 /output/ 아래)")
     ap.add_argument("--preset", choices=sorted(PRESETS),
-                    help="관례 샘플 세트 추가 — ovr5: biz_plan")
+                    help="관례 샘플 세트 추가 — ovr5: biz_plan (시험지 제외)")
     ap.add_argument("--diff-against", metavar="REF",
                     help="지정 ref(예: devel)를 임시 worktree 로 빌드해 baseline 자동 생성 후 "
                          "현 트리와 대조 — 원커맨드, 한컴 불필요, md 요약 출력")
