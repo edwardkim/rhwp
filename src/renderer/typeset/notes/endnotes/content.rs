@@ -1,7 +1,7 @@
 //! 미주 참조 해석과 번호 문자 준비. 원본 IR은 변경하지 않는다.
 
 use crate::renderer::typeset::{
-    format_number, Control, EndnoteDeferral, EndnoteRef, Paragraph, RenderNumberFormat,
+    format_number, EndnoteDeferral, EndnoteRef, Paragraph, RenderNumberFormat,
 };
 
 /// [미주 배치] `en_ref` 의 미주 본문(en_ctrl)을 해석한다. 현재 구역 미주면 본문
@@ -14,21 +14,11 @@ pub(in crate::renderer::typeset) fn resolve_endnote_content<'a>(
     deferral: &'a EndnoteDeferral<'a>,
 ) -> Option<&'a crate::model::footnote::Endnote> {
     if en_ref.section_index == section_index {
-        match paragraphs
-            .get(en_ref.para_index)
-            .and_then(|p| p.controls.get(en_ref.control_index))
-        {
-            Some(Control::Endnote(en_ctrl)) => Some(en_ctrl.as_ref()),
-            _ => None,
-        }
+        en_ref.resolve(paragraphs)
     } else if let EndnoteDeferral::RenderAll(deferred) = deferral {
         deferred
             .iter()
-            .find(|d| {
-                d.reff.section_index == en_ref.section_index
-                    && d.reff.para_index == en_ref.para_index
-                    && d.reff.control_index == en_ref.control_index
-            })
+            .find(|d| d.reff.same_note(en_ref))
             .map(|d| &d.endnote)
     } else {
         None

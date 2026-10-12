@@ -337,6 +337,7 @@ impl TypesetEngine {
             section_index: usize::MAX,
             para_index: usize::MAX,
             control_index: usize::MAX,
+            cell_path: Vec::new(),
             note_para_index: usize::MAX,
         };
         let successor_source = local_indices

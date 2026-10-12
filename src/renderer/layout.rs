@@ -2342,9 +2342,7 @@ fn inline_equation_count(para: &Paragraph) -> usize {
 }
 
 fn same_endnote_control(a: &EndnoteParaSource, b: &EndnoteParaSource) -> bool {
-    a.section_index == b.section_index
-        && a.para_index == b.para_index
-        && a.control_index == b.control_index
+    a.same_note(b)
 }
 
 fn para_large_tac_picture_or_shape_height_px(para: &Paragraph, dpi: f64) -> Option<f64> {
@@ -4292,11 +4290,7 @@ impl LayoutEngine {
         };
         let sources = self.endnote_para_sources.borrow();
         match (sources.get(local_idx), sources.get(local_idx + 1)) {
-            (Some(cur), Some(next)) => {
-                cur.section_index == next.section_index
-                    && cur.para_index == next.para_index
-                    && cur.control_index == next.control_index
-            }
+            (Some(cur), Some(next)) => cur.same_note(next),
             _ => false,
         }
     }
@@ -4377,6 +4371,11 @@ impl LayoutEngine {
         let base = self.endnote_para_base.get();
         let local_idx = para_index.checked_sub(base)?;
         let src = self.endnote_para_sources.borrow().get(local_idx)?.clone();
+        // [#7860] 편집 주소는 본문 문단의 미주 컨트롤만 표현한다. 표 셀 안 미주에
+        // 표 컨트롤 주소를 내보내면 엉뚱한 개체를 가리키므로 편집 참조를 만들지 않는다.
+        if !src.cell_path.is_empty() {
+            return None;
+        }
         Some(NoteControlRef {
             kind: "endnote".to_string(),
             section_index: src.section_index,
@@ -9371,10 +9370,7 @@ impl LayoutEngine {
                             let next_para = paragraphs.get(next_pi)?;
                             let next_source = self.endnote_para_source_for(next_pi)?;
                             let current_source = current_source.as_ref()?;
-                            let same_note = current_source.section_index
-                                == next_source.section_index
-                                && current_source.para_index == next_source.para_index
-                                && current_source.control_index == next_source.control_index;
+                            let same_note = current_source.same_note(&next_source);
                             (endnote_question_number(next_para).is_some() && !same_note)
                                 .then_some(())
                         })

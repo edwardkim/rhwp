@@ -5274,7 +5274,7 @@ impl DocumentCore {
                     profile,
                 )
             } else {
-                use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral, EndnoteRef};
+                use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral};
                 use crate::renderer::typeset::TypesetEngine;
                 // [미주 배치 — Hancom EndnoteEndOfSection vs EndnoteEndOfDocument]
                 // rhwp 는 지금까지 구역마다 미주를 그 구역 끝에 렌더했으나(END_OF_SECTION),
@@ -5303,18 +5303,14 @@ impl DocumentCore {
                             continue;
                         }
                         for (pi, para) in sec_j.paragraphs.iter().enumerate() {
-                            for (ci, ctrl) in para.controls.iter().enumerate() {
-                                if let crate::model::control::Control::Endnote(en) = ctrl {
-                                    acc.push(DeferredEndnote {
-                                        reff: EndnoteRef {
-                                            number: en.number,
-                                            section_index: sj,
-                                            para_index: pi,
-                                            control_index: ci,
-                                        },
-                                        endnote: (**en).clone(),
-                                    });
-                                }
+                            // [#7860] 표 셀 안 미주도 본문 수집과 같은 경로·순서로 모은다.
+                            for (reff, en) in
+                                crate::renderer::pagination::paragraph_endnote_refs(sj, pi, para)
+                            {
+                                acc.push(DeferredEndnote {
+                                    reff,
+                                    endnote: en.clone(),
+                                });
                             }
                         }
                     }

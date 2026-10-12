@@ -5761,6 +5761,7 @@ impl DocumentCore {
         let pr = self.pagination.get(section_idx)?;
         let local_idx = pr.endnote_para_sources.iter().position(|src| {
             src.section_index == section_idx
+                && src.cell_path.is_empty()
                 && src.para_index == para_idx
                 && src.control_index == control_idx
                 && src.note_para_index == note_para_idx
