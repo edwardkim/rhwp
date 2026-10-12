@@ -11,7 +11,8 @@ use super::float_placement::{
     horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
     native_empty_host_rowbreak_line_advance_hu,
     original_hwpx_column_rowbreak_equal_outer_margin_hu,
-    para_relative_left_aligned_outer_margin_left_hu, signed_hwpunit,
+    para_relative_left_aligned_outer_margin_left_hu,
+    reflowed_empty_anchor_band_host_line_advance_px, signed_hwpunit,
     square_float_outer_margin_top_hu, stored_empty_anchor_band_host_line_advance_hu,
     stored_visible_anchor_band_host_line_advance_hu, FloatLaneSet, FloatPlacementContext,
 };
@@ -13980,8 +13981,13 @@ impl LayoutEngine {
                     .get(para_index + 1)
                     .map(para_is_empty_topbottom_table_anchor)
                     .unwrap_or(false);
-                let suppress_empty_anchor_spacing =
-                    is_current_empty_para_float && !next_is_empty_topbottom_table_anchor;
+                // [#7702] 띠 아래 host 줄(lh+ls)은 lane 꼬리가 계상한다 — 줄간격을 또 두지 않는다.
+                let reflowed_host_line_below_band =
+                    reflowed_empty_anchor_band_host_line_advance_px(para, control_index, styles)
+                        .is_some();
+                let suppress_empty_anchor_spacing = (is_current_empty_para_float
+                    && !next_is_empty_topbottom_table_anchor)
+                    || reflowed_host_line_below_band;
                 if let Some(seg) = para.line_segs.last() {
                     // [#4533 ⑥] 위-예약 Square 판별 재계산(렌더 함수와 동일식) —
                     // 앵커·후속 문단 vpos 동일(붕괴 사다리)이라 후행 간격도 0.
@@ -14129,6 +14135,19 @@ impl LayoutEngine {
                         .map(|line_advance| (table.as_ref(), line_advance)),
                         _ => None,
                     });
+                // [#7702] 저장 줄 없는 빈 앵커의 host 줄이 띠 아래에 놓이는 조판 규칙 —
+                // 조판 `host_spacing` 과 같은 helper 다. 표 꼬리는 바깥 아래 여백을 함께 담는다.
+                let reflowed_empty_anchor_band_host_tail_px = match para.controls.get(control_index)
+                {
+                    Some(Control::Table(table)) => {
+                        reflowed_empty_anchor_band_host_line_advance_px(para, control_index, styles)
+                            .map(|line_advance| {
+                                line_advance
+                                    + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                            })
+                    }
+                    _ => None,
+                };
                 // [#6147] #2439 의 특수형이 아닌 빈 앵커 밴드도 저장 사다리가
                 // host 줄 advance 만 증언하면 그 줄을 흐름에 계상한다.
                 let stored_empty_anchor_band_host_tail_px =
@@ -14156,7 +14175,8 @@ impl LayoutEngine {
                                     + hwpunit_to_px(outer_bottom, self.dpi)
                             })
                         })
-                        .flatten();
+                        .flatten()
+                        .or(reflowed_empty_anchor_band_host_tail_px);
                 let deferred_empty_offset_float_bottom = deferred_empty_float_anchor_y.map(|_| {
                     let outer_bottom = para
                         .controls

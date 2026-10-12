@@ -4689,6 +4689,74 @@ fn stored_anchor_band_host_line_from_ladder(
     ((next_vpos - host_vpos - advance).abs() <= 1).then_some(advance)
 }
 
+/// [#7702] 저장 줄이 없는 빈 앵커의 host 줄이 자리차지 띠 **아래**에 놓이는가 — 조판 규칙.
+///
+/// #6147 은 저장 사다리가 이 사실을 증언할 때만 host 줄을 흐름에 계상한다. 저장 줄이 없는
+/// 문단(재조판)은 증언이 없으니 한/글이 줄을 새로 나누는 규칙으로 정한다. 앵커에서 시작하는
+/// 문단 기준 자리차지 띠는 줄 폭을 전부 막는다. 빈 host 줄이 요구하는 폭은 첫 줄 들여쓰기다:
+///
+/// - 들여쓰기 ≤ 0(0·내어쓰기) — 폭 0 줄이 띠 시작에 흡수된다(저장형 `sw=0`, #7470).
+/// - 들여쓰기 > 0 — 띠에 들어가지 못해 띠 아래에 놓인다(저장형 `sw`=본문 폭, 줄 vpos =
+///   문단 시작 + 개체 점유). 다음 문단은 그 줄의 `lh + ls` 만큼 더 내려간다.
+///
+/// ```text
+///   한/글 2020, 학력 표(3행) host 변형, 표 끝 → 다음 문단 간격
+///   indent 0 · -2000 · -20000 · left 2000/20000 · right 2000     25.9px  (줄 흡수)
+///   indent 2 · 20 · 200 · 1000 · 2000 · 6000 · 20444 · 20445     45.6px  (+ lh+ls 19.7)
+///   정렬(양쪽·가운데·왼쪽)·표 뒤 빈 run·표 폭 60%·가로 기준(단/문단) 무관
+/// ```
+///
+/// 줄 상자는 저장 줄 없는 빈 문단과 같은 생산자([`super::corrected_line_metrics`])로 만든다 —
+/// 문단 첫 글자 모양의 크기와 문단 줄간격.
+pub(crate) fn reflowed_empty_anchor_band_host_line_advance_px(
+    para: &Paragraph,
+    control_index: usize,
+    styles: &super::style_resolver::ResolvedStyleSet,
+) -> Option<f64> {
+    // 판정 축은 #6147 과 같다(`text.is_empty()`). 저장 줄이 있으면 그 사다리가 정본이다.
+    if !para.text.is_empty() || !super::para_has_no_stored_line_segs(para) {
+        return None;
+    }
+    let para_style = styles.para_styles.get(para.para_shape_id as usize)?;
+    if para_style.indent <= 0.0 {
+        return None;
+    }
+    let mut last_float = None;
+    for (index, control) in para.controls.iter().enumerate() {
+        let common = match control {
+            Control::Table(table) => &table.common,
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            _ => continue,
+        };
+        // 띠가 앵커에서 시작해야 host 줄이 띠와 겨룬다. 양수 오프셋이면 host 줄은 개체 위에
+        // 따로 놓인다(#7470 과 같은 전제).
+        if !is_para_topbottom_float(common) || signed_hwpunit(common.vertical_offset) != 0 {
+            return None;
+        }
+        last_float = Some(index);
+    }
+    if last_float != Some(control_index) {
+        return None;
+    }
+    let char_shape_id = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?;
+    let font_size = styles.char_styles.get(char_shape_id as usize)?.font_size;
+    if font_size <= 0.0 {
+        return None;
+    }
+    let (line_height, line_spacing) = super::corrected_line_metrics(
+        0.0,
+        0.0,
+        font_size,
+        para_style.line_spacing_type,
+        para_style.line_spacing,
+    );
+    let advance = line_height + line_spacing;
+    (advance > 0.0).then_some(advance)
+}
+
 /// 문단에 공백·개체 마커가 아닌 실제 글자가 있는가.
 fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
     para.text
