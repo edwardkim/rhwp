@@ -2197,9 +2197,10 @@ struct HorizontalCellVars {
     split_terminal: bool,
 }
 
-/// 칸 첫 줄 뒤의 0→0 되감김(앞 줄도 vpos 0)이 쪽 경계 증거인지. 문단 안에서 다음 줄이
-/// 다시 0 이고, 그 뒤 저장 줄이 되감긴 줄에서 정확히 `줄 높이 + 줄간격` 전진해 새 프레임의
-/// 사다리를 이어 갈 때만 인정한다(#6761: 사다리 전진 확인이 없는 0 은 증거가 아니다).
+/// 칸 첫 줄 뒤의 0→0 되감김(앞 줄도 vpos 0)이 쪽 경계 증거인지. 다음 줄이 다시 0 이고,
+/// 그 뒤 저장 줄이 되감긴 줄에서 정확히 `줄 높이 + 줄간격` 전진해 새 프레임의 사다리를
+/// 이어 갈 때만 인정한다(#6761: 사다리 전진 확인이 없는 0 은 증거가 아니다). 문단을 넘는
+/// 0→0 은 `cross_paragraph_frame`(HWP5 저장 조판)일 때만 같은 확인을 거친다(#7685).
 /// 앞 줄 vpos 가 양수인 일반 되감김은 그대로 증거다.
 fn stored_zero_restart_is_confirmed(
     cell: &crate::model::table::Cell,
@@ -2207,11 +2208,15 @@ fn stored_zero_restart_is_confirmed(
     last: &crate::model::paragraph::LineSeg,
     next_para: usize,
     next_line: usize,
+    cross_paragraph_frame: bool,
 ) -> bool {
     if last.vertical_pos > 0 {
         return true;
     }
-    if closing_para != next_para {
+    // HWP5 저장 조판(#7685)은 칸 첫 문단(vpos 0) 뒤 다음 문단이 다시 0 에서 시작하고 그 뒤
+    // 줄이 정확히 `줄 높이 + 줄간격` 전진하면 문단 지역 원점이 아니라 새 프레임이다.
+    // HWPX 의 문단 지역 0 원점(#6035)은 종전대로 증거로 쓰지 않는다.
+    if closing_para != next_para && !cross_paragraph_frame {
         return false;
     }
     let Some(para) = cell.paragraphs.get(next_para) else {
@@ -15942,6 +15947,7 @@ impl LayoutEngine {
                         && last.line_height > 0
                         && stored_zero_restart_is_confirmed(
                             cell, closing.para_idx, last, next.para_idx, next.vis_start,
+                            self.profile.get().hwp5_stored_pagination_layout(),
                         )
             )
         })
@@ -16167,6 +16173,7 @@ impl LayoutEngine {
                 last,
                 next.para_idx,
                 next.vis_start,
+                self.profile.get().hwp5_stored_pagination_layout(),
             )
         {
             return 0.0;
