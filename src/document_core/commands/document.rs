@@ -497,6 +497,7 @@ impl DocumentCore {
     ) {
         use crate::model::control::Control;
 
+        let is_hwp3_variant = document.is_hwp3_variant;
         for section in &mut document.sections {
             // [#4898] 이 구역의 저장 lineseg 가 배치 권위를 갖는지 먼저 판정한다 —
             // 권위가 있으면 0높이 lineseg(한컴이 접어 둔 숨은 블록)를 재조판하지 않는다.
@@ -774,6 +775,11 @@ impl DocumentCore {
                 // 합성 내용이 자랐으면 이미 소비한 끝점을 유지하여 되감지 않는다.
                 let mut source_anchor_end: Option<(i32, i32)> = None;
                 let body_height_hu = (layout.body_area.height * 7200.0 / dpi).round() as i32;
+                // [#7824] 앞 문단(줄 보유)의 아래 간격(HWPUNIT). 재구성 사다리는 줄 전진만
+                // 쌓으므로, 저장 좌표가 원점을 정하지 않은 문단 경계에서는 편집 경로
+                // (`recalculate_section_vpos`)와 같은 문단 간격 `앞 아래 + 뒤 위` 를 더한다.
+                let mut previous_spacing_after_hu: Option<i32> = None;
+
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
                     // 필드는 저장 글줄 안의 텍스트 범위를 표시할 뿐 별도 높이를
@@ -887,6 +893,7 @@ impl DocumentCore {
                                         first_source.expect("저장 첫 줄").line_height,
                                     ) > body_height_hu
                             });
+                    let accumulated_vpos = running_vpos;
                     if source_page_break || source_tac_reset || source_plain_reset {
                         running_vpos = first_source.expect("저장 프레임 원점").vertical_pos;
                     } else if !was_reflowed
@@ -954,6 +961,26 @@ impl DocumentCore {
                             // 기존 #1920 규칙은 쪽 하단 고정 틀 host 문단만 봐서
                             // 일반 본문 문단인 이 형상을 잡지 못한다.
                             running_vpos = 0;
+                        }
+                    }
+                    // [#7824] 저장 쪽 리셋이 원점을 정하지 않았으면 문단 간격을 더한다.
+                    // 원본 앵커(아래)는 저장 간격을 그대로 옮기므로 큰 쪽을 쓴다.
+                    if running_vpos == accumulated_vpos && !para.line_segs.is_empty() {
+                        if let Some(spacing_after) = previous_spacing_after_hu {
+                            let spacing_before = styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map(|style| {
+                                    crate::renderer::hwp3_variant_flow_spacing_before(
+                                        style.spacing_before,
+                                        is_hwp3_variant,
+                                    )
+                                })
+                                .unwrap_or(0.0);
+                            running_vpos =
+                                running_vpos.saturating_add(spacing_after).saturating_add(
+                                    crate::renderer::px_to_hwpunit(spacing_before, dpi),
+                                );
                         }
                     }
                     if let (Some((original_first, _)), Some((source_end, rebuilt_end))) =
@@ -1121,6 +1148,17 @@ impl DocumentCore {
                     }
                     if let Some(v) = original_last_vpos {
                         prev_stored_last_vpos = v;
+                    }
+                    if !para.line_segs.is_empty() {
+                        previous_spacing_after_hu = Some(
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map(|style| {
+                                    crate::renderer::px_to_hwpunit(style.spacing_after, dpi)
+                                })
+                                .unwrap_or(0),
+                        );
                     }
                 }
             }

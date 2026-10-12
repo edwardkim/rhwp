@@ -5157,6 +5157,16 @@ impl LayoutEngine {
                     .unwrap_or(0.0);
                 if vpos0_px > 0.0 && vpos0_px <= spacing_before + 0.5 {
                     y += vpos0_px;
+                } else if para.is_some_and(|p| {
+                    p.line_segs
+                        .first()
+                        .is_some_and(|ls| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+                }) {
+                    // [#7702] 저장 줄이 없어 rhwp 가 합성한 문단은 트림 여부를 판독할 저장 vpos 가
+                    // 없다. 이런 문단은 한/글이 직접 조판하며, 쪽 맨 위에서도 앞 간격을 둔다
+                    // (HWP5-nopassword 20쪽 제목: 앞 간격 3.8px, 한/글 2024 PDF 기준선 149.8 =
+                    // 본문 위 132.3 + 3.8 + 13.6). 조판의 쪽 맞춤도 이 간격을 문단 높이에 넣는다.
+                    y += spacing_before;
                 }
             }
         }

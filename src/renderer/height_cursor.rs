@@ -620,14 +620,58 @@ impl HeightCursor {
                     }
                 })
                 .flatten();
-            let lazy_base = source_continuous_base.unwrap_or_else(|| {
-                lazy_base_rounding::resolve_lazy_base(
-                    prev_vpos_end,
-                    y_delta_hu,
-                    trailing_ls_hu,
-                    self.trimmed_prev_spacing_before_px,
-                )
-            });
+            // [#7702] 그리기 흐름이 앞 문단 마지막 줄 뒤에서 «끝 줄간격 + 아래 간격» 을 실제로
+            // 소비했으면(흐름 위치 − 줄 바닥이 그 합과 같으면), 그 바닥을 사다리의 같은 자리
+            // (그 줄의 `vpos + 줄 높이`)에 맞대 기준을 세운다. 아래 역산식은 그 간격을 트림한
+            // 조판 흐름을 전제해, 간격이 든 그리기에서는 기준이 낮아져 다음 문단이 내려간다
+            // (HWP5-nopassword 3쪽 표 뒤 빈 문단 → 제목: 1168 HU = 15.6px). 끝 줄간격만 소비한
+            // 경우는 위 `rendered_spent_trailing` 이, 소비 증거가 없으면 종전 식이 맡는다.
+            let prev_spacing_after_px = styles
+                .para_styles
+                .get(prev_para.para_shape_id as usize)
+                .map(|style| style.spacing_after)
+                .unwrap_or(0.0);
+            let flow_bottom_base = self
+                .prev_item_flow_line_bottom_y
+                // 음수 줄간격(줄이 겹치는 문단)은 흐름이 그 간격을 어떻게 소비했는지 이 등식으로
+                // 판독할 수 없다 — 종전 식에 맡긴다(issue7333 aaaaaa 35쪽).
+                .filter(|_| {
+                    // 앞 문단의 사다리가 rhwp 가 다시 세운 좌표일 때만 쓴다(합성 줄이거나, 로드
+                    // 재구성이 원본 vpos 를 옮겨 적은 저장 줄). 한/글 원본 사다리를 그대로 쓰는
+                    // 문단은 옛 줄 나눔을 담을 수 있어 흐름과 맞대지 않는다(1790387 67쪽: 저장
+                    // 5줄, 한/글 출력 4줄 그림 문단 뒤 문단이 26.4px 밀림).
+                    let rebuilt_ladder = synthetic_prev_seg
+                        || prev_para
+                            .source_line_seg_vertical_pos
+                            .as_ref()
+                            .and_then(|source| source.first())
+                            .zip(prev_para.line_segs.first())
+                            .is_some_and(|(source, model)| *source != model.vertical_pos);
+                    rebuilt_ladder
+                        && prev_para.controls.is_empty()
+                        && prev_spacing_after_px > 0.5
+                        && seg.line_spacing >= 0
+                })
+                .filter(|bottom| {
+                    let spent = y_offset - bottom;
+                    let stored =
+                        hwpunit_to_px(seg.line_spacing.max(0), self.dpi) + prev_spacing_after_px;
+                    (spent - stored).abs() < 0.1
+                })
+                .map(|bottom| {
+                    seg.vertical_pos.saturating_add(seg.line_height)
+                        - ((bottom - self.col_area_y) / self.dpi * 7200.0).round() as i32
+                });
+            let lazy_base = source_continuous_base
+                .or(flow_bottom_base)
+                .unwrap_or_else(|| {
+                    lazy_base_rounding::resolve_lazy_base(
+                        prev_vpos_end,
+                        y_delta_hu,
+                        trailing_ls_hu,
+                        self.trimmed_prev_spacing_before_px,
+                    )
+                });
             if lazy_base < 0 {
                 // 역산 무효(자리차지 표 등): 이전 개체 높이가 sequential y 에 이미
                 // 반영된 상태다. 여기서 vpos 보정을 적용하면 단 상단으로 되감겨
@@ -918,15 +962,12 @@ impl HeightCursor {
                 && y_offset > self.col_area_y + self.col_area_height * 0.75)
             || compact_endnote_bottom_rewind
             || compact_endnote_tac_picture_rewind;
-        // 재구성한 두 줄 사이의 vpos는 저장된 문단 앞 간격의 증거가 아니다.
-        // 앞 줄의 실제 끝에서 현재 문단을 시작하고, 앞 간격은 배치가 한 번 더한다.
+        // [#7702] 로드 재구성 사다리도 문단 앞 간격을 담는다(`document.rs` 재구성이 `앞 아래 +
+        // 뒤 위` 를 더한다). 그래서 합성 줄 사이도 저장 줄처럼 앞 간격을 미리 빼고 스냅한다 —
+        // 빼지 않으면 앞 간격이 스냅 목표와 배치에 두 번 들어간다(issue5929 어울림 앵커 문단).
         let skip_prededuct = self.skip_spacing_before_prededuct
             || inline_host_without_stored_anchor
-            || table_host_line_is_top_after_table_host
-            || (synthetic_prev_seg
-                && paragraphs
-                    .get(item_para)
-                    .is_some_and(|para| crate::renderer::para_has_no_stored_line_segs(para)));
+            || table_host_line_is_top_after_table_host;
         let (end_y, applied) = vpos_corrected_end_y(
             is_page_path,
             self.col_anchor_y,

@@ -46,6 +46,11 @@ impl TypesetEngine {
                             0
                         } else {
                             seg.vertical_pos
+                                - paragraphs.get(para_idx).map_or(0, |first| {
+                                    crate::renderer::layout::synthesized_first_margin_hu(
+                                        first, styles, self.dpi,
+                                    )
+                                })
                         }
                     }),
             );
