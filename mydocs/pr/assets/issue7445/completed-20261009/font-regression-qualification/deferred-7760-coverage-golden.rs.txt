@@ -58,4 +58,3 @@ fn public_non_exam_classification_golden_is_deterministic() {
         );
     }
 }
-

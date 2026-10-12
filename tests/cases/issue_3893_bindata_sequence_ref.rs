@@ -71,7 +71,10 @@ fn gapped_storage_ids_resolve_at_export() {
             .read_to_string(&mut hpf)
             .expect("read");
     }
-    let names: Vec<String> = zip.file_names().map(str::to_string).collect();
+    let names: Vec<String> = zip
+        .file_names()
+        .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+        .collect();
     for name in names.iter().filter(|n| n.starts_with("Contents/section")) {
         use std::io::Read;
         let mut xml = String::new();
