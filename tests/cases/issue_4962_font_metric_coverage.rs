@@ -315,7 +315,7 @@ fn many_char_shape_boundaries_use_a_linear_merge_walk() {
 #[test]
 fn public_blank_derived_documents_reach_every_current_positive_category() {
     let cases = [
-        ("함초롬바탕", "가", "exact-hit", "embeddedMetric"),
+        ("함초롬바탕", "가", "exact-hit", "embeddedMetric", false),
         // 실제 cmap 결측 뒤 확인된 대체 face에서 측정한 폭도 coverage 집계에 포함한다.
         // 같은 경로의 U+2024는 개인정보 문서 전 66쪽 Native/fresh WASM에서 검증했다.
         (
@@ -323,15 +323,43 @@ fn public_blank_derived_documents_reach_every_current_positive_category() {
             "\u{2024}",
             "exact-hit",
             "declaredGlyphFallbackMetric",
+            true,
         ),
-        ("KoPub돋움체 Light", "가", "measured-overlay", "kopubTable"),
-        ("본한글", "가", "metric-surrogate", "embeddedMetric"),
-        ("함초롬바탕", "😀", "char-miss", "heuristicHalfwidth"),
-        ("W3 Missing Face", "A", "face-miss", "heuristicHalfwidth"),
-        ("W3 Missing Face", "ㆍ", "heuristic", "areaDotFallback"),
+        (
+            "KoPub돋움체 Light",
+            "가",
+            "measured-overlay",
+            "kopubTable",
+            false,
+        ),
+        ("본한글", "가", "metric-surrogate", "embeddedMetric", false),
+        ("함초롬바탕", "😀", "char-miss", "heuristicHalfwidth", false),
+        (
+            "W3 Missing Face",
+            "A",
+            "face-miss",
+            "heuristicHalfwidth",
+            false,
+        ),
+        (
+            "W3 Missing Face",
+            "ㆍ",
+            "heuristic",
+            "areaDotFallback",
+            false,
+        ),
     ];
-    for (font, text, category, width_source) in cases {
-        let core = public_blank_with_font_text(font, text);
+    for (font, text, category, width_source, explicit_glyph_fallback) in cases {
+        let mut core = public_blank_with_font_text(font, text);
+        if explicit_glyph_fallback {
+            // 양성 집계 입력도 실물 66쪽 수용과 같은 명시 공급 계약을 선언한다.
+            // 기본 paint 공급을 자연 전진 선택으로 오인하지 않는다.
+            core.set_font_environment(Some(
+                rhwp::renderer::font_environment::FontEnvironment::from_json(
+                    r#"{"id":"coverage-declared-glyph-provider","substitutions":{},"glyphFallbacks":{"휴먼명조":["Haansoft Batang"]}}"#,
+                ).unwrap(),
+            )).unwrap();
+        }
         let (_, value) = coverage(&core);
         assert_reconciled(&value);
         assert_private_data_absent(&value);
