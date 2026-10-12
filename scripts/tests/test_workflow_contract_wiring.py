@@ -92,6 +92,11 @@ class WorkflowContractWiringTests(unittest.TestCase):
         )
         self.assertIsNotNone(lint_job, "ci.yml 에 lint job 이 없다")
         body = lint_job.group(0) if lint_job else ""
+        self.assertRegex(
+            body,
+            r"- name: Check GPU feature compatibility\n\s+run: cargo check --locked -p rhwp --all-targets --features gpu\n",
+            "GPU 기능의 컴파일 호환 검사도 Lint job에서 조건 없이 실행해야 한다",
+        )
         for name in [*contract_test_files(), *node_contract_test_files()]:
             self.assertIn(
                 f"scripts/tests/{name}",
