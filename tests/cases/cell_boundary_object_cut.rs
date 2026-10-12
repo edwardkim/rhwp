@@ -5,6 +5,7 @@ use rhwp::model::control::{Control, Field};
 use rhwp::model::document::Document;
 use rhwp::model::paragraph::{MarkpenMark, Paragraph, RangeTag};
 use rhwp::model::shape::Caption;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
 type Path = Vec<(usize, usize, usize)>;
@@ -634,6 +635,317 @@ fn assert_cell_text_and_style(actual: &[Paragraph], expected: &[Paragraph]) {
         assert_eq!(
             serde_json::to_value(&actual.controls).unwrap(),
             serde_json::to_value(&expected.controls).unwrap()
+        );
+    }
+}
+
+fn assert_inline_run_axis(
+    doc: &HwpDocument,
+    paragraph: &Paragraph,
+    path: Option<&Path>,
+    pi: usize,
+) {
+    fn collect<'a>(
+        node: &'a RenderNode,
+        path: Option<&Path>,
+        pi: usize,
+        runs: &mut Vec<&'a RenderNode>,
+    ) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            let area_matches = match (path, &run.cell_context) {
+                (None, None) => run.para_index == Some(pi),
+                (Some(path), Some(context)) => {
+                    context.parent_para_index == 1
+                        && context.path.len() == path.len()
+                        && context.path.iter().zip(path).enumerate().all(
+                            |(i, (actual, expected))| {
+                                actual.control_index == expected.0
+                                    && actual.cell_index == expected.1
+                                    && actual.cell_para_index
+                                        == if i + 1 == path.len() { pi } else { expected.2 }
+                            },
+                        )
+                }
+                _ => false,
+            };
+            if run.section_index == Some(0)
+                && run.char_start.is_some()
+                && area_matches
+                && (!run.text.is_empty() || run.is_para_end)
+            {
+                runs.push(node);
+            }
+        }
+        for child in &node.children {
+            collect(child, path, pi, runs);
+        }
+    }
+    let tree = doc.build_page_render_tree(0).unwrap();
+    let mut runs = Vec::new();
+    collect(&tree.root, path, pi, &mut runs);
+    assert!(!runs.is_empty());
+    let slots = paragraph.control_text_positions();
+    let mut scalar = 0;
+    let mut emitted = String::new();
+    for node in &runs {
+        let RenderNodeType::TextRun(run) = &node.node_type else {
+            unreachable!()
+        };
+        while paragraph.text.chars().nth(scalar) == Some('\n') {
+            emitted.push('\n');
+            scalar += 1;
+        }
+        // 원문 글자 자리와 개체 자리로 기대 논리 좌표를 독립 계산한다.
+        let logical = scalar + slots.iter().filter(|&&at| at <= scalar).count();
+        assert_eq!(
+            run.char_start,
+            Some(logical),
+            "text={:?}, path={path:?}, pi={pi}",
+            run.text
+        );
+        emitted.push_str(&run.text);
+        scalar += run.text.chars().count();
+    }
+    assert_eq!(emitted, paragraph.text);
+    let logical_end = scalar + slots.len();
+    let caret: serde_json::Value = serde_json::from_str(&if let Some(path) = path {
+        let mut entries: Vec<_> = path.iter().map(|&(ci, cell, para)| serde_json::json!({"controlIndex":ci,"cellIndex":cell,"cellParaIndex":para})).collect();
+        entries.last_mut().unwrap()["cellParaIndex"] = pi.into();
+        doc.get_cursor_rect_by_path(0, 1, &serde_json::to_string(&entries).unwrap(), logical_end as u32).unwrap()
+    } else {
+        doc.get_cursor_rect_native(0, pi, logical_end).unwrap()
+    }).unwrap();
+    if path.is_some() {
+        assert_eq!(
+            caret["cellOverflowed"], false,
+            "겹친 칸을 제외한 좌표 fixture: {caret}"
+        );
+    }
+    let last = runs.last().unwrap();
+    let RenderNodeType::TextRun(last_run) = &last.node_type else {
+        unreachable!()
+    };
+    let layout: serde_json::Value =
+        serde_json::from_str(&doc.get_page_text_layout_native(0).unwrap()).unwrap();
+    let last_layout = layout["runs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|run| {
+            run["secIdx"] == 0
+                && run["paraIdx"] == pi
+                && run["charStart"] == last_run.char_start.unwrap()
+                && run["text"] == last_run.text
+                && (run["x"].as_f64().unwrap() - last.bbox.x).abs() < 0.06
+                && (run["y"].as_f64().unwrap() - last.bbox.y).abs() < 0.06
+        })
+        .unwrap();
+    // 반올림된 bbox 폭 대신 캐럿·선택이 공유하는 실제 글자 경계를 대조한다.
+    let right = last_layout["x"].as_f64().unwrap()
+        + last_layout["charX"]
+            .as_array()
+            .unwrap()
+            .last()
+            .unwrap()
+            .as_f64()
+            .unwrap();
+    assert!(
+        (caret["x"].as_f64().unwrap() - right).abs() <= 0.1 + f64::EPSILON * right.abs(),
+        "문단 끝 캐럿 {caret} != 실제 마지막 글 끝 {right}"
+    );
+}
+
+fn inline_axis_fixture(flat: bool, tables: bool) -> (HwpDocument, Path) {
+    let (core, path) = paste_fixture(flat, tables, true, 0);
+    let mut document = core.document().clone();
+    let mut paragraphs = &mut document.sections[0].paragraphs;
+    let mut pi = 1;
+    for &(ci, cell, cell_para) in &path {
+        let Control::Table(table) = &mut paragraphs[pi].controls[ci] else {
+            unreachable!()
+        };
+        // 이 회귀는 overflow clamp를 섞지 않고 중첩 셀의 논리 좌표만 검증한다.
+        let width = table.cells[0].width + table.cells[1].width;
+        table.cells[0].width = width * 9 / 10;
+        table.cells[1].width = width - table.cells[0].width;
+        paragraphs = &mut table.cells[cell].paragraphs;
+        pi = cell_para;
+    }
+    for paragraph in cell_mut(&mut document, &path) {
+        for control in &mut paragraph.controls {
+            if let Control::Table(table) = control {
+                // 합성 표에 대입한 TAC 속성과 옛 template의 raw 헤더를 섞지 않는다.
+                table.raw_ctrl_data.clear();
+                table.raw_ctrl_seal = None;
+                table.common.ctrl_id = rhwp::parser::tags::CTRL_TABLE;
+            }
+        }
+    }
+    let mut doc = HwpDocument::create_empty();
+    doc.set_document(document);
+    (doc, path)
+}
+
+#[test]
+fn styled_inline_objects_keep_first_and_last_cell_paragraph_logical_offsets() {
+    for flat in [true, false] {
+        for tables in [false, true] {
+            for format in 0..3 {
+                let (mut doc, path) = inline_axis_fixture(flat, tables);
+                if format != 0 {
+                    let bytes = if format == 1 {
+                        doc.export_hwp_native().unwrap()
+                    } else {
+                        doc.export_hwpx_native().unwrap()
+                    };
+                    doc = HwpDocument::from_bytes(&bytes).unwrap();
+                }
+                assert!(cell(doc.document(), &path)[0].controls.iter().all(
+                    |control| match control {
+                        Control::Table(table) => table.common.treat_as_char,
+                        Control::Picture(picture) => picture.common.treat_as_char,
+                        _ => false,
+                    }
+                ));
+                let before = serde_json::to_value(&doc.document().sections[0].paragraphs).unwrap();
+                for pi in [0, 2] {
+                    assert_inline_run_axis(&doc, &cell(doc.document(), &path)[pi], Some(&path), pi);
+                }
+                assert_eq!(
+                    serde_json::to_value(&doc.document().sections[0].paragraphs).unwrap(),
+                    before
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn styled_inline_objects_keep_body_run_logical_offsets() {
+    for tables in [false, true] {
+        for format in 0..3 {
+            let (mut doc, path) = inline_axis_fixture(true, tables);
+            let mut document = doc.document().clone();
+            let paragraphs = cell(&document, &path).to_vec();
+            document.sections[0].paragraphs.splice(1..2, paragraphs);
+            doc.set_document(document);
+            if format != 0 {
+                let bytes = if format == 1 {
+                    doc.export_hwp_native().unwrap()
+                } else {
+                    doc.export_hwpx_native().unwrap()
+                };
+                doc = HwpDocument::from_bytes(&bytes).unwrap();
+            }
+            let before = serde_json::to_value(&doc.document().sections[0].paragraphs).unwrap();
+            for pi in [1, 3] {
+                assert_inline_run_axis(&doc, &doc.document().sections[0].paragraphs[pi], None, pi);
+            }
+            assert_eq!(
+                serde_json::to_value(&doc.document().sections[0].paragraphs).unwrap(),
+                before
+            );
+        }
+    }
+}
+
+#[test]
+fn styled_inline_objects_keep_logical_offsets_across_line_breaks() {
+    for flat in [true, false] {
+        for format in 0..3 {
+            let (mut doc, path) = inline_axis_fixture(flat, false);
+            if flat {
+                doc.insert_text_in_cell_native(0, 1, 0, 0, 0, 2, "\n")
+                    .unwrap();
+            } else {
+                doc.insert_text_in_cell_by_path(0, 1, &path, 2, "\n")
+                    .unwrap();
+            }
+            if format != 0 {
+                let bytes = if format == 1 {
+                    doc.export_hwp_native().unwrap()
+                } else {
+                    doc.export_hwpx_native().unwrap()
+                };
+                doc = HwpDocument::from_bytes(&bytes).unwrap();
+            }
+            assert_inline_run_axis(&doc, &cell(doc.document(), &path)[0], Some(&path), 0);
+        }
+    }
+}
+
+#[test]
+fn styled_inline_objects_keep_prior_slots_on_continuation_pages() {
+    let tail = (0..90)
+        .map(|i| format!("{i:03}가나다\n"))
+        .collect::<String>();
+    let text = format!("가🦦나다라\n{tail}");
+    for format in 0..3 {
+        let mut doc = HwpDocument::create_empty();
+        doc.create_blank_document_native().unwrap();
+        doc.insert_text_native(0, 0, 0, "머리").unwrap();
+        doc.split_paragraph_native(0, 0, 2, None).unwrap();
+        doc.insert_text_native(0, 1, 0, &text).unwrap();
+        for at in [1, 3] {
+            let result: serde_json::Value = serde_json::from_str(
+                &doc.insert_picture_native(
+                    0,
+                    1,
+                    at,
+                    &[],
+                    include_bytes!("../../assets/logo/logo-16.png"),
+                    1200,
+                    1400,
+                    16,
+                    16,
+                    "png",
+                    "앞쪽 TAC",
+                    None,
+                    None,
+                )
+                .unwrap(),
+            )
+            .unwrap();
+            doc.set_picture_properties_native(
+                0,
+                1,
+                result["controlIdx"].as_u64().unwrap() as usize,
+                r#"{"treatAsChar":true}"#,
+            )
+            .unwrap();
+        }
+        doc.apply_char_format_native(0, 1, 0, 2, r#"{"bold":true}"#)
+            .unwrap();
+        if format != 0 {
+            let bytes = if format == 1 {
+                doc.export_hwp_native().unwrap()
+            } else {
+                doc.export_hwpx_native().unwrap()
+            };
+            doc = HwpDocument::from_bytes(&bytes).unwrap();
+        }
+        assert!(doc.page_count() > 1);
+        let layout: serde_json::Value =
+            serde_json::from_str(&doc.get_page_text_layout_native(1).unwrap()).unwrap();
+        let run = layout["runs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|run| {
+                run["secIdx"] == 0
+                    && run["paraIdx"] == 1
+                    && !run["text"].as_str().unwrap().is_empty()
+            })
+            .unwrap();
+        let token = run["text"].as_str().unwrap();
+        assert_eq!(token.chars().count(), 3, "고유한 세 자리 줄 번호: {run}");
+        assert!(token.chars().all(|c| c.is_ascii_digit()));
+        // 실제 다음 쪽에 그린 고유한 글을 원문에서 찾아 앞쪽 두 개체 칸만 더한다.
+        let scalar = text[..text.find(token).unwrap()].chars().count();
+        assert_eq!(
+            run["charStart"],
+            scalar + 2,
+            "format={format}, continuation={run}"
         );
     }
 }

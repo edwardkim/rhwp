@@ -1259,6 +1259,7 @@ struct RunEmitState {
     x: f64,
     y: f64,
     char_offset: usize,
+    emitted_tac_slots: usize,
     run_char_pos: usize,
     inline_tab_cursor_render: usize,
     pending_right_tab_render: Option<(f64, u8, u8)>,
@@ -3638,7 +3639,7 @@ impl LayoutEngine {
                                         para_shape_id: Some(para_style_id as u16),
                                         section_index: Some(section_index),
                                         para_index: Some(para_index),
-                                        char_start: Some(line_run_start),
+                                        char_start: Some(line_run_start + table_idx),
                                         cell_context: None,
                                         is_para_end: false,
                                         is_line_break_end: false,
@@ -3805,7 +3806,7 @@ impl LayoutEngine {
                                     para_shape_id: Some(para_style_id as u16),
                                     section_index: Some(section_index),
                                     para_index: Some(para_index),
-                                    char_start: Some(line_run_start),
+                                    char_start: Some(line_run_start + table_idx),
                                     cell_context: None,
                                     is_para_end: false,
                                     is_line_break_end: false,
@@ -3893,7 +3894,7 @@ impl LayoutEngine {
                                 para_shape_id: Some(para_style_id as u16),
                                 section_index: Some(section_index),
                                 para_index: Some(para_index),
-                                char_start: Some(line_run_start),
+                                char_start: Some(line_run_start + table_idx),
                                 cell_context: None,
                                 is_para_end: false,
                                 is_line_break_end: false,
@@ -5248,6 +5249,27 @@ impl LayoutEngine {
 
         // start_line까지의 누적 문자 오프셋 계산 (편집용 문서 좌표)
         let mut char_offset: usize = 0;
+        let mut emitted_tac_slots = 0;
+        let stored_tac_assignment =
+            para.and_then(|p| crate::renderer::composer::stored_tac_line_assignment(p, composed));
+        let tac_slots_for_line = |line_idx| {
+            if let Some(assignment) = stored_tac_assignment.as_ref() {
+                tac_offsets_px
+                    .iter()
+                    .filter(|(_, _, ci)| {
+                        assignment
+                            .iter()
+                            .any(|(control, owner)| control == ci && *owner == line_idx)
+                    })
+                    .count()
+            } else {
+                repeated_empty_tac_line_offset(composed, &tac_offsets_px, line_idx)
+                    .unwrap_or_else(|| {
+                        tac_offsets_for_line_width(composed, &tac_offsets_px, line_idx)
+                    })
+                    .len()
+            }
+        };
         for li in 0..start_line.min(composed.lines.len()) {
             for run in &composed.lines[li].runs {
                 char_offset += run.text.chars().count();
@@ -5256,6 +5278,10 @@ impl LayoutEngine {
             if composed.lines[li].has_line_break {
                 char_offset += 1;
             }
+            // 앞쪽 조각도 실제 줄 소유 TAC의 논리 칸을 같은 기준으로 이어받는다.
+            let slots = tac_slots_for_line(li);
+            char_offset += slots;
+            emitted_tac_slots += slots;
         }
 
         // [Issue #926] Endnote 인라인 마커 — 첫 줄 앞에 일반 텍스트로 emit
@@ -5492,8 +5518,6 @@ impl LayoutEngine {
         // 162.0px, 실제로 그려진 선 159.7/163.7).
         let mut last_line_box_bottom: Option<f64> = None;
         let mut last_line_border_bottom: Option<f64> = None;
-        let stored_tac_assignment =
-            para.and_then(|p| crate::renderer::composer::stored_tac_line_assignment(p, composed));
         for line_idx in start_line..end {
             let source_line_tacs;
             let tac_offsets_px = if let Some(assign) = stored_tac_assignment.as_ref() {
@@ -5564,6 +5588,9 @@ impl LayoutEngine {
                     if comp_line.has_line_break {
                         char_offset += 1;
                     }
+                    let slots = tac_slots_for_line(line_idx);
+                    char_offset += slots;
+                    emitted_tac_slots += slots;
                     continue;
                 }
             }
@@ -6976,6 +7003,7 @@ impl LayoutEngine {
                     x,
                     y,
                     char_offset,
+                    emitted_tac_slots,
                     run_char_pos,
                     inline_tab_cursor_render,
                     pending_right_tab_render,
@@ -6986,6 +7014,7 @@ impl LayoutEngine {
             x = emit_state.x;
             y = emit_state.y;
             char_offset = emit_state.char_offset;
+            emitted_tac_slots = emit_state.emitted_tac_slots;
             run_char_pos = emit_state.run_char_pos;
             inline_tab_cursor_render = emit_state.inline_tab_cursor_render;
             pending_right_tab_render = emit_state.pending_right_tab_render;
@@ -7086,7 +7115,7 @@ impl LayoutEngine {
 
             // runs가 비어있으면 빈 TextRun 생성 (빈 셀 편집용)
             if comp_line.runs.is_empty() {
-                self.layout_empty_runs_line(
+                let empty_line_slots = self.layout_empty_runs_line(
                     tree,
                     &mut line_node,
                     comp_line,
@@ -7120,6 +7149,8 @@ impl LayoutEngine {
                     },
                     &mut current_line_reserved_tac_picture_height,
                 );
+                char_offset += empty_line_slots;
+                emitted_tac_slots += empty_line_slots;
             }
 
             // [Task #287] 빈 runs 줄의 TAC 수식 인라인 처리 — #2067 추출
@@ -7175,11 +7206,11 @@ impl LayoutEngine {
                     section_index,
                     para_index,
                     &cell_ctx,
-                    char_offset,
+                    char_offset - emitted_tac_slots,
                     composed
                         .lines
                         .get(line_idx + 1)
-                        .is_some_and(|next| next.char_start == char_offset),
+                        .is_some_and(|next| next.char_start == char_offset - emitted_tac_slots),
                     x,
                     y,
                     line_height,
@@ -7697,6 +7728,7 @@ impl LayoutEngine {
             mut x,
             y,
             mut char_offset,
+            mut emitted_tac_slots,
             mut run_char_pos,
             mut inline_tab_cursor_render,
             mut pending_right_tab_render,
@@ -9109,6 +9141,9 @@ impl LayoutEngine {
                     // tac 폭만큼 x 전진 (+ TAC 표 outMargin 좌/우 — Issue #3396)
                     x += tac_w + tac_table_om.0 + tac_table_om.1;
                     sub_char_offset += 1;
+                    // 다음 서식 런도 TAC가 차지한 논리 캐럿 한 칸을 이어받는다.
+                    char_offset += 1;
+                    emitted_tac_slots += 1;
                     seg_start = tac_rel;
                 }
 
@@ -9207,12 +9242,14 @@ impl LayoutEngine {
             char_offset += run_char_count;
             run_char_pos = run_char_end;
             inline_tab_cursor_render += run.text.chars().filter(|c| *c == '\t').count();
-            char_x_map.push((char_offset, x));
+            // 마커 배치는 기존 축을 유지하고 새 TAC 논리 슬롯만 제외한다.
+            char_x_map.push((char_offset - emitted_tac_slots, x));
         }
         RunEmitState {
             x,
             y,
             char_offset,
+            emitted_tac_slots,
             run_char_pos,
             inline_tab_cursor_render,
             pending_right_tab_render,
@@ -10015,7 +10052,7 @@ impl LayoutEngine {
         col_area: &LayoutRect,
         vars: EmptyRunsLineVars,
         current_line_reserved_tac_picture_height: &mut Option<f64>,
-    ) {
+    ) -> usize {
         let mut empty_line_mark_x = vars.x_start;
         let mut empty_line_logical_end = vars.line_char_end;
         // runs가 없는 빈 줄에서 treat_as_char 이미지 렌더링
@@ -10323,6 +10360,7 @@ impl LayoutEngine {
             ),
         );
         line_node.children.push(run_node);
+        empty_line_logical_end - vars.line_char_end
     }
 
     /// 원본 문단 데이터로 레이아웃 (ComposedParagraph 없는 경우 fallback)
