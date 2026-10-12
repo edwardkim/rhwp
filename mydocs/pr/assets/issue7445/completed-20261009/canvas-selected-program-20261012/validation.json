@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "parentHead": "6ab623728c24dbb989d5964b3489fec61f5b58cc",
+  "candidateSourceSha256": "2b5b3642c03cdfc80c16b04ed495707072bd555b317eb817a1b15e8d670793ff",
+  "input": {
+    "source": "samples/task2097/75544_pii_bunseok.hwpx",
+    "sourceSha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+    "pdf": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+    "pdfSha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+    "originalUnchanged": true
+  },
+  "rule": "Actual backend measurement replaces unverified narrow-width guesses and paint consumes that same decision; confirmed loaded local originals remain ahead of generic fallback.",
+  "rustExistingRegression": {
+    "redPassed": 0,
+    "redFailed": 2,
+    "greenRelatedPassed": 41,
+    "greenFailed": 0,
+    "newTestFunctions": 0
+  },
+  "studioExistingRegression": {
+    "redPassed": 12,
+    "redFailed": 1,
+    "greenPassed": 13,
+    "greenFailed": 0,
+    "newTestFunctions": 0
+  },
+  "studioWholeTests": {
+    "passed": 1834,
+    "failed": 0,
+    "skipped": 2,
+    "tscExitCode": 0
+  },
+  "build": {
+    "method": "Mac locked no-opt fresh WASM, no Docker optimization",
+    "wasm32ClippyExitCode": 0,
+    "wasmSha256": "ee0339ab5536a09fd1ad2169c4f7b7113a647ebe074a2996e58f1833ec4b57d0",
+    "initialResponseProvenanceVerified": true
+  },
+  "nativeFreshOriginalWholeVisual": [
+    {
+      "backend": "native",
+      "pages": 66,
+      "minimum": 91.09665,
+      "below90": 0,
+      "exitCode": 0
+    },
+    {
+      "backend": "wasm",
+      "pages": 66,
+      "minimum": 91.09665,
+      "below90": 0,
+      "exitCode": 0
+    }
+  ],
+  "actualCanvas": {
+    "page": 66,
+    "profiles": [
+      "screen",
+      "print"
+    ],
+    "beforePercent": 95.21941,
+    "afterPercent": 97.91903,
+    "quoteAdvanceHwpunit": 1299,
+    "sourceShapeHwpunit": 1300,
+    "wholePageCount": 66,
+    "directlyInspected": true,
+    "programFormat": "unknown",
+    "exactLocalProgramByteIdentityClaimed": false,
+    "residual": "Minor font ink/baseline fringe and thin rule gray; no pixel-identity claim"
+  },
+  "canvasKit": {
+    "directReplayAccepted": false,
+    "actualFallback": "canvas2d",
+    "canonicalContractStillReportsMismatch": true,
+    "exactBasePreflightBoundedFallbackProof": "retained locally; not a CanvasKit pass"
+  },
+  "assets": [
+    {
+      "file": "canvas-p066-before-review.png",
+      "sha256": "fe92a4fb2824629f53a2d645ad90a53fd6c765cb919ef02859ca23a61c85f5dc"
+    },
+    {
+      "file": "canvas-p066-before-overlay.png",
+      "sha256": "f7041f8523b737de45676549e4c9a2c8d676ebeec75f55fca1591a1bf4f13d52"
+    },
+    {
+      "file": "canvas-p066-after-review.png",
+      "sha256": "60f9c75e360af1cf9095aa9b8b82f6fb6b42ff903c4f3af836177c422c96b5cb"
+    },
+    {
+      "file": "canvas-p066-after-overlay.png",
+      "sha256": "c903caa697679cbc71ee8322a6cf2758d97f881868a66536591248bad595e8c8"
+    }
+  ],
+  "finalGate": {
+    "requiredDocuments": 41,
+    "referencePagesPerBackend": 1048,
+    "actualOutputSamples": 27,
+    "localGateCommands": 16,
+    "complete": false,
+    "prPublicationApproved": false,
+    "closes7720Finalized": false
+  }
+}

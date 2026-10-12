@@ -6,8 +6,8 @@ use crate::renderer::{
     composer::compose_paragraph_for_metric_requests,
     layout::{resolved_to_text_style, trace_char_width_decisions},
     supplemental_metrics::{
-        MetricContext, MetricError, SupplementalMetric, MAX_SUPPLEMENTAL_ENTRIES,
-        MAX_SUPPLEMENTAL_KEY_BYTES,
+        accepts_prepared_glyph_advance, MetricContext, MetricError, SupplementalMetric,
+        MAX_SUPPLEMENTAL_ENTRIES, MAX_SUPPLEMENTAL_KEY_BYTES,
     },
     TextStyle,
 };
@@ -81,7 +81,7 @@ impl Collector<'_> {
                         index += count;
                         let ch = cluster.chars().next().unwrap();
                         if count != 1
-                            || decision.width_source != "heuristicHalfwidth"
+                            || !accepts_prepared_glyph_advance(decision.width_source)
                             || decision.dash_leader
                             || ch.is_whitespace()
                             || ch.is_control()

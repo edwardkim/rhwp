@@ -107,6 +107,28 @@ fn canvas_measured_advance_receives_declared_horizontal_ratio_once() {
             .unwrap();
             let _store = bound(&mut s, vec![entry]);
             near(positions("😀", &s)[1], 27.531 * paint_scale);
+            // CSS local()의 형식이 미확인이어도 실제 Canvas 공급자가 잰 폭은
+            // 같은 backend에서 소비한다. 가족 이름으로 TrueType을 선언하지 않는다.
+            for punctuation in ["‘", "’", "·"] {
+                let mut local = TextStyle {
+                    font_family: "HYGothic-Medium".into(),
+                    supplemental_metrics: None,
+                    ..s.clone()
+                };
+                assert!(!local.font_metric_trusted);
+                let setup = CanvasTextFont::for_positioned_text(&local, 0.0);
+                let measured = setup.draw_size(); // 독립 공급자 입력: 한글과 같은 1em.
+                let entry = SupplementalMetric::from_canvas_measurement(
+                    &local,
+                    punctuation,
+                    setup.descriptor(),
+                    setup.descriptor().into(),
+                    measured,
+                )
+                .unwrap();
+                let _store = bound(&mut local, vec![entry]);
+                near(positions(punctuation, &local)[1], measured * paint_scale);
+            }
         }
     }
 }
@@ -315,6 +337,29 @@ fn existing_metrics_and_explicit_hwp_rules_are_not_overridden() {
     let _store = bound(&mut prepared, entries);
     assert_eq!(positions(text, &original), positions(text, &prepared));
     assert_eq!(positions("A\t가", &original), positions("A\t가", &prepared));
+    // 확인된 실제 프로그램과 고정폭 원 글리프, 명시적 반각 규칙은
+    // 임의 공급자 폭으로 바꾸지 않는다. 형식 미확인의 좁힘 추정과 구분한다.
+    for (family, trusted, punctuation) in [
+        ("HYGothic-Medium", true, "‘’·"),
+        ("굴림체", false, "‘’"),
+        ("HYGothic-Medium", false, "“”"),
+    ] {
+        let original = TextStyle {
+            font_family: family.into(),
+            font_metric_trusted: trusted,
+            ..style()
+        };
+        let entries = punctuation
+            .chars()
+            .map(|ch| measured(&original, &ch.to_string(), original.font_size * 3.0))
+            .collect();
+        let mut prepared = original.clone();
+        let _store = bound(&mut prepared, entries);
+        assert_eq!(
+            positions(punctuation, &original),
+            positions(punctuation, &prepared)
+        );
+    }
 }
 
 #[test]

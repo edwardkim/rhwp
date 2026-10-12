@@ -1912,11 +1912,12 @@ fn char_width_decision_with_hft_tracking<'a>(
             )
         }
     };
-    // Only replace the generic unknown-width decision, not DB hits or HWP's
-    // explicit width rules. Synthetic PUA boxes are painted as shapes, not glyphs.
+    // Prepared backend evidence replaces only unverified width guesses, never
+    // authentic DB glyph advances or explicit HWP rules. Collection and layout
+    // share this eligibility decision; synthetic PUA boxes remain shapes.
     let dash_leader = is_dash_leader_run(chars, i);
     let supplement = (allow_supplemental
-        && width_source == "heuristicHalfwidth"
+        && super::super::supplemental_metrics::accepts_prepared_glyph_advance(width_source)
         && !dash_leader
         && !c.is_whitespace()
         && !c.is_control()

@@ -95,9 +95,7 @@ use super::composer::{
     expand_pua_render_text_in_style, CharOverlapInfo,
 };
 #[cfg(target_arch = "wasm32")]
-use super::layout::{
-    forces_halfwidth_cjk_quote, forces_halfwidth_punct_paint, split_into_clusters,
-};
+use super::layout::split_into_clusters;
 
 #[cfg(target_arch = "wasm32")]
 mod hft_outline;
@@ -2423,16 +2421,23 @@ impl Renderer for WebCanvasRenderer {
                         continue;
                     }
 
-                    // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
-                    let needs_halfwidth_scale = (forces_halfwidth_punct_paint(style, ch)
-                        || forces_halfwidth_cjk_quote(
-                            &style.font_family,
-                            style.bold,
-                            style.italic,
-                            ch,
-                            style.font_size,
-                        ))
-                        && !has_ratio;
+                    // Same decision as layout: retain the compatibility paint
+                    // scale only while its narrow/halfwidth overlay owns advance.
+                    // Measured or verified natural glyphs must not be shrunk a
+                    // second time merely because they belong to a Unicode range.
+                    let needs_halfwidth_scale = !has_ratio
+                        // Candidate filter only; width ownership decides scaling.
+                        && matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}' | '\u{300C}' | '\u{300D}')
+                        && matches!(
+                            super::layout::char_width_decision(
+                                &[ch],
+                                &[1],
+                                0,
+                                style,
+                                cluster_str.chars().count() == 1,
+                            ).width_source,
+                            "metricNarrowPunctuationOverlay" | "metricHalfwidthPunctuationOverlay"
+                        );
 
                     if needs_halfwidth_scale {
                         self.ctx.save();

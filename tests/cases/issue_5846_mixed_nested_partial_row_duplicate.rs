@@ -367,6 +367,41 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
             "작은따옴표의 독립 프로그램 전진폭 안에 다음 원문 원점이 들어오면 안 됨: {quote}"
         );
     }
+    // Studio의 local() 공급은 형식 미확인을 유지한다. 같은 원본의 비신뢰
+    // 작은따옴표 폭은 Canvas 실제 측정 준비에 포함되어야 한다. 전쪽 수용을
+    // 대신하는 별도 합성 문서를 만들지 않고 원본 요청과 출력 소유를 함께 보호한다.
+    let mut local_environment: serde_json::Value = serde_json::from_str(include_str!(
+        "../../mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json"
+    ))
+    .unwrap();
+    local_environment
+        .as_object_mut()
+        .unwrap()
+        .remove("trueTypeFaces");
+    local_environment["id"] = "canvas-local-format-unknown".into();
+    let mut canvas = DocumentCore::from_bytes(&bytes).unwrap();
+    canvas
+        .set_font_environment(Some(
+            rhwp::renderer::font_environment::FontEnvironment::from_json(
+                &local_environment.to_string(),
+            )
+            .unwrap(),
+        ))
+        .unwrap();
+    let context = rhwp::renderer::supplemental_metrics::MetricContext {
+        document_generation: 1,
+        font_generation: 1,
+        backend: rhwp::renderer::supplemental_metrics::MetricBackend::Canvas2d,
+    };
+    let requests = canvas.collect_canvas_metric_requests(context).unwrap();
+    for quote in ["‘", "’"] {
+        assert!(
+            requests.requests.iter().any(|request| {
+                request.cluster == quote && request.font.contains("HYGothic-Medium")
+            }),
+            "원본 작은따옴표 {quote}의 실제 Canvas 폭을 같은 조판 경로에 공급해야 함"
+        );
+    }
     assert_eq!(
         text(first_child) + &text(last_child),
         expected_text,

@@ -447,11 +447,11 @@ export function fontFamilyCandidatesForDisplayWithRules(
   const originalAllowed =
     options.includeUnconfirmedOriginal === true ||
     REGISTERED_FONTS.has(fontName) ||
-    installedOriginal !== null ||
-    confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US'));
+    confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US')) ||
+    installedOriginal !== null;
 
   if (!localRecord) {
-    const substitute = installedFaceName(fontName, options.confirmedLocalFonts) === null
+    const substitute = installedOriginal === null
       ? installedSubstituteFace(fontName, altType, langId, options.confirmedLocalFonts)
       : null;
     if (substitute) {
@@ -465,6 +465,8 @@ export function fontFamilyCandidatesForDisplayWithRules(
     pushUniqueFontFamily(families, localRecordCssFamily(fontName, localRecord));
     ruleIds.push(FONT_RULE_DISPLAY_CHAIN_POLICY_IDS['style-fallback']);
   } else if (originalAllowed) {
+    // A loaded local program is already the selected face. Do not drop it
+    // merely because it is absent from the bundled web-font catalog.
     pushUniqueFontFamily(families, installedOriginal ?? fontName);
     ruleIds.push(FONT_RULE_DISPLAY_CHAIN_POLICY_IDS['style-fallback']);
   }

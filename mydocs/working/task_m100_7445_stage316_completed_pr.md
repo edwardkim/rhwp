@@ -2528,3 +2528,51 @@ fallback했고 해당 직접 replay 계약은 실패했습니다. 이를 CanvasK
 이슈의 전체 완료 조건을 충족한 항목만 본문에 `Closes #번호`로 표시합니다.
 #7445 전체와 미완료 범위는 `Refs`로 유지하고, 원격 push·PR 게시 전에 사용자
 승인을 받습니다. 현재 #7720의 Closes와 PR 게시 완료를 주장하지 않습니다.
+
+
+## 2026-10-12 실제 Canvas 측정·그리기와 선택 프로그램 일치
+
+이전 후보의 로컬 16단계는 모두 통과했고 전체 nextest는 10,223 PASS/
+0 FAIL/45 skip이었습니다. 그러나 실제 Canvas2D 66쪽의 독립 Print 비교는
+95.21941%였으며, 비검증 0.3em 조판 폭과 문자 범위만으로 적용하는 0.5배
+그리기가 남았습니다. 실제 Chrome의 CSS local() 프로그램에서 작은따옴표는
+한글과 같은 1em입니다. 형식 UNKNOWN이나 정확한 프로그램 바이트 identity를
+가족 이름만으로 TrueType 검증이라고 표시하지 않았습니다.
+
+원본의 측정 요청 누락과 공급자 폭 미소비는 기존 두 검사에서 각각 실패했고,
+보정 후 반각·고정폭·프로그램 신뢰·ratio/script/grapheme·세대와 descriptor
+대조군을 포함한 관련 기존 41건이 통과했습니다. 새 Rust 검사 함수는 없습니다.
+측정 요청과 레이아웃은 공통 조건으로 비검증 좁힘 추정을 실제 backend
+측정으로 대체합니다. Canvas paint도 같은 폭 결정으로 호환 축소 여부를 고르며,
+명시적 반각·portable 호환과 원 글리프 계약은 보존합니다.
+
+첫 Rust 후보의 실제 재캡처는 94.63321%, 기호 폭은 300HU였습니다. 원인은
+로드가 확인된 로컬 프로그램을 설치 판정에서는 읽으면서 표시 체인에는
+포함하지 않아 generic fallback으로 버린 별도 소비 경로였습니다. 특정 가족의
+예외 대신 확인된 실제 original을 체인 앞에 유지했습니다. 기존 Node 검사에서
+12 PASS/1 FAIL → 13 PASS/0 FAIL, Studio 전체 1,834 PASS/0 FAIL/2 skip과
+TSC 및 WASM32 Clippy를 확인했습니다.
+
+같은 원본·독립 Print의 새 Native/fresh WASM 전 66쪽은 양쪽 최저
+91.09665%, 미달 0이며, 66개 원시 PNG가 각각 앞서 수용한 출력과 바이트
+동일합니다. 실제 제품 Canvas2D screen/print는 97.91903%로 개선됐고,
+따옴표의 측정 폭은 원본 1300HU에 대응하는 1299HU입니다. 기호·다음 한글
+원점과 전체 종료를 직접 판독했습니다. 일부 글꼴 잉크·세로 프린지와 얇은
+괘선 농도 차이는 남으며 픽셀 동일성을 주장하지 않습니다. 초기 JS/WASM
+응답과 실제 package 일치는 strict Vite 변환 검증을 거쳤고 resource error는 0입니다.
+CanvasKit의 기존 bounded preflight fallback/직접 replay 계약 실패는 보존하며,
+이를 CanvasKit 성공으로 세지 않습니다.
+
+- [요약 증적](../pr/assets/issue7445/completed-20261009/canvas-selected-program-20261012/validation.json)
+- [66쪽 실제 Canvas 보정 전 review](../pr/assets/issue7445/completed-20261009/canvas-selected-program-20261012/canvas-p066-before-review.png)
+- [66쪽 실제 Canvas 보정 후 review](../pr/assets/issue7445/completed-20261009/canvas-selected-program-20261012/canvas-p066-after-review.png)
+- [66쪽 실제 Canvas 보정 후 overlay](../pr/assets/issue7445/completed-20261009/canvas-selected-program-20261012/canvas-p066-after-overlay.png)
+
+알려진 실제 결함을 고치기 위해 이전 후보의 전쪽 캡처는 54개 비교 완료 뒤
+의도적으로 종료했습니다. 완료된 PNG·TSV·로그·빌드 증거를 보존하고 종료된
+후보의 중간 SVG/font_policy 사본만 정리했습니다(명목 약 118.65GB).
+공용 target 및 실행 중인 새 캡처는 정리하지 않았습니다. 최종 범위는
+41문서/1048쪽씩·실제 출력 27개·로컬 16단계로 유지합니다. 이 보정이 포함된
+최종 head의 검증을 다시 마친 뒤에만 전체 완료 조건을 충족한 하위 이슈에
+`Closes #번호`를 표시합니다. #7445 전체와 미완료 범위는 `Refs`로 유지하며,
+remote push·PR 생성 전에 사용자의 승인을 받습니다.
