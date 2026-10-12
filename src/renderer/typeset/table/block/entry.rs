@@ -2595,6 +2595,7 @@ impl TypesetEngine {
             declared_object_total,
             native_hwp5_internal_reset_rewind_needs_anchor_resync,
             placement_para_start_height,
+            source_host_origin,
             source_anchor_splits_here,
             stored_rewinding_rowbreak_uses_painted_row_footprint,
             closed_source_frame_placement,

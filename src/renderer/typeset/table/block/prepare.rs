@@ -51,6 +51,7 @@ impl TypesetEngine {
             declared_object_total,
             native_hwp5_internal_reset_rewind_needs_anchor_resync,
             placement_para_start_height,
+            source_host_origin,
             source_anchor_splits_here,
             stored_rewinding_rowbreak_uses_painted_row_footprint,
             closed_source_frame_placement,
@@ -432,7 +433,120 @@ impl TypesetEngine {
         // 배제 영역을 만들기 전에 변환해 행 예산과 실제 배치에서 함께 소비한다.
         let source_control_frame =
             closed_source_frame_placement.filter(|_| closed_source_frame_key == host_frame);
-        let fragment_host_placement = source_control_frame.or_else(|| {
+        // A stored RowBreak declaration can close a prefix of complete painted
+        // rows. Reserve and paint that same box at its saved empty-host origin;
+        // consuming the anchor's formatted line first moves one row to the next
+        // page even though the painter still uses the saved origin.
+        let source_prefix_frame = (|| {
+            if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                eprintln!("SOURCE_PREFIX_ANCHOR: sec={} pi={} base={:?} stored={} dirty={} host_visible={} fragments={} current={:.2} declared={} authenticated={:?}",
+                    st.section_index, para_idx, st.vpos_page_base, st.vpos_page_base_stored,
+                    st.vpos_ladder_dirty, para_has_visible_text(para),
+                    layout_engine.native_stored_table_has_fragment_frames(table), st.current_height,
+                    table.common.height, source_host_origin);
+            }
+            if !st.profile.hwp5_stored_pagination_layout()
+                || st.profile.session_edited()
+                || st.col_count != 1
+                || st.vpos_ladder_dirty
+                || para_has_visible_text(para)
+                || para.stored_text_partition_is_dirty()
+                || !std::ptr::eq(row_geometry_table, table)
+                || !layout_engine.native_stored_table_has_fragment_frames(table)
+                || table.common.height == 0
+                || table.common.height > i32::MAX as u32
+                || !is_para_topbottom_float(&table.common)
+                || table.cells.iter().any(|cell| {
+                    cell.dirty_flag
+                        || cell.row_span != 1
+                        || cell.paragraphs.iter().any(|p| {
+                            p.stored_text_partition_is_dirty()
+                                || p.cell_format_vpos_dirty
+                                || p.line_segs.is_empty()
+                                || p.line_segs.iter().any(is_synthetic_line_seg)
+                        })
+                })
+            {
+                return None;
+            }
+            let [line] = para.line_segs.as_slice() else {
+                return None;
+            };
+            if is_synthetic_line_seg(line) || line.segment_width != 0 {
+                return None;
+            }
+            // Reuse the entry phase's authenticated same-column saved ladder;
+            // an absent lazy vpos base is not evidence against that source frame.
+            let origin = source_host_origin.or_else(|| {
+                // A body-top continuation ends the preceding table's saved axis.
+                // Its following full caption and empty anchor close a new local
+                // ladder; the caption's last saved line owns the anchor origin.
+                if st.vpos_page_base.is_none()
+                    && !matches!(
+                        st.current_items.first(),
+                        Some(PageItem::PartialTable {
+                            is_continuation: true,
+                            ..
+                        })
+                    )
+                {
+                    return None;
+                }
+                if st.vpos_page_base.is_some() && !st.vpos_page_base_stored {
+                    return None;
+                }
+                let previous_index = para_idx.checked_sub(1)?;
+                if !matches!(st.current_items.last(),
+                    Some(PageItem::FullParagraph { para_index }) if *para_index == previous_index)
+                {
+                    return None;
+                }
+                let previous = paragraphs_all.get(previous_index)?;
+                if !previous.controls.is_empty()
+                    || !para_has_visible_text(previous)
+                    || previous.stored_text_partition_is_dirty()
+                    || previous.cell_format_vpos_dirty
+                    || previous.line_segs.iter().any(is_synthetic_line_seg)
+                {
+                    return None;
+                }
+                let last = previous.line_segs.last()?;
+                if last
+                    .vertical_pos
+                    .checked_add(last.line_height)?
+                    .checked_add(last.line_spacing)?
+                    != line.vertical_pos
+                {
+                    return None;
+                }
+                Some(
+                    st.vpos_col_anchor
+                        + hwpunit_to_px(
+                            line.vertical_pos
+                                .checked_sub(st.vpos_page_base.unwrap_or(0))?,
+                            self.dpi,
+                        ),
+                )
+            })?;
+            let declared = hwpunit_to_px(table.common.height as i32, self.dpi);
+            let mut prefix = 0.0;
+            let height = whole_row_fit_h
+                .iter()
+                .enumerate()
+                .take(row_count.saturating_sub(1))
+                .find_map(|(row, height)| {
+                    prefix += height + if row > 0 { cs } else { 0.0 };
+                    ((prefix - declared).abs() <= 0.5).then_some(prefix)
+                })?;
+            let placement = crate::renderer::float_placement::ParagraphFloatPlacement::from_saved_prefix_empty_host(
+                para, table, origin, height, self.dpi,
+            )?;
+            (origin >= 0.0
+                && origin <= st.current_height
+                && placement.occupied_bottom <= table_available)
+                .then_some(placement)
+        })();
+        let fragment_host_placement = source_control_frame.or(source_prefix_frame).or_else(|| {
             unconstrained_host_placement
                 .filter(|_| placement_para_start_height + fmt.height_for_fit <= available)
                 .map(|placement| {
@@ -1333,6 +1447,7 @@ impl TypesetEngine {
                 let column = st.inline_flow_column();
                 source_single_cell_first_placement
                     .map(|placement| placement.anchor_y)
+                    .or_else(|| source_prefix_frame.map(|placement| placement.anchor_y))
                     .or_else(|| {
                         source_text_frame_top
                             .or(legacy_source_top)

@@ -4146,6 +4146,29 @@ impl ParagraphFloatPlacement {
         Some(placement)
     }
 
+    /// A validated complete-row prefix owns its first physical fragment box.
+    /// The empty anchor line does not precede this box as an extra text line.
+    pub(crate) fn from_saved_prefix_empty_host(
+        para: &Paragraph,
+        table: &Table,
+        origin: f64,
+        prefix_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        if !saved_empty_table_anchor_props(para, table) {
+            return None;
+        }
+        Self::empty_host_box(
+            table,
+            origin,
+            Some(origin),
+            prefix_height,
+            hwpunit_to_px(i32::from(table.outer_margin_top), dpi),
+            0.0,
+            dpi,
+        )
+    }
+
     fn empty_host_box(
         table: &Table,
         origin: f64,
