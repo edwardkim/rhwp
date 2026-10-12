@@ -89,7 +89,16 @@ impl TypesetEngine {
             if rowspan_touched[r] && !rowbreak_rowspan_row_splittable {
                 // 실제로 수용한 앞 행들의 높이(consumed)를 사용한다. 이전 행의
                 // 증분까지 포함하며, 늘린 높이가 안 맞으면 원래 높이로 되돌리지 않는다.
-                let h = row_query.required_height(cut_row_h[r], consumed, cs_before);
+                // 이어받는 시작 행은 앞 조각이 이미 그린 몫을 뺀 높이다 — 시작 컷 뒤 남은
+                // 내용과 앞 조각이 넘긴 물리 꼬리 중 큰 쪽(`whole_row_height`). 행 전체
+                // 높이로 세면 앞 쪽에서 그린 rowspan 띠가 이 쪽에서 한 번 더 들어간다
+                // (1342000 30쪽: 11행 꼬리 8.5px 대신 60.4px, 정본보다 세 줄 일찍 끊김).
+                let base = if r == cursor_row && !start_cut.is_empty() {
+                    row_query.whole_row_height(start_cut, whole_row_fit_h)
+                } else {
+                    cut_row_h[r]
+                };
+                let h = row_query.required_height(base, consumed, cs_before);
                 if r == cursor_row || consumed + cs_before + h <= avail_for_rows {
                     consumed += cs_before + h;
                     r += 1;

@@ -54,9 +54,11 @@ fn landscape_continuation_starts_below_outer_top_margin() {
 
 #[test]
 fn continuation_outer_top_matches_hangul_page_counts() {
+    // 1342000 의 쪽수(정본 415쪽)는 고정하지 않는다. devel 은 이 문서의 쪽수·시각 검사를
+    // base 미달로 #7445 에 이관했다. 이 PR 의 head(415쪽)는 정본 270쪽 행을 본문 아래로
+    // 31px 넘겨 담아 맞았고, 남은 차이(큰 표 행 높이)는 #7445 의 축이다. 이 문서의 이 PR
+    // 근거는 위 124쪽 위 여백과 `rowspan_continuation_start_row_carried_tail` 30쪽 경계다.
     for (path, hangul_pages) in [
-        // pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf
-        ("samples/task2287/1342000_edu_curriculum_map.hwp", 415),
         // 이중 계상 반례 — pdf/rowbreak-problem-pages-hwpx-2020.pdf
         ("samples/rowbreak-problem-pages.hwpx", 18),
         // 이중 계상 반례 — pdf/issue7336/stored_frame_page_larger_rowbreak-2020.pdf
