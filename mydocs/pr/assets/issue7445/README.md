@@ -628,7 +628,7 @@ venv\Scripts\python.exe scripts\visual_sweep.py --hwp samples/hwpspec.hwp --pdf 
 
 | 입력·독립 PDF | 실제 확인 범위와 최저값(Native/fresh WASM) | 정확한 이관 범위 |
 | --- | --- | --- |
-| [KTX.hwp](../../../../samples/KTX.hwp) / [한컴2022 PDF](../../../../pdf/KTX-2022.pdf) | 실패 대상 목차2쪽 **49.63836 / 49.63836%**, 전27쪽 통과 미주장 | `ktx_toc_page_numbers_aligned_to_cell_right_inner`, `issue_267_ktx_toc_page` 2함수. #874 파일은 이 함수만 포함하며 다른 snapshot/golden은 보존 |
+| [KTX.hwp](ktx-toc27/KTX.hwp) / [한컴2022 PDF](ktx-toc27/KTX-2022.pdf) | 실패 대상 목차2쪽 **49.63836 / 49.63836%**, 전27쪽 통과 미주장 | `ktx_toc_page_numbers_aligned_to_cell_right_inner`, `issue_267_ktx_toc_page` 2함수. #874 파일은 이 함수만 포함하며 다른 snapshot/golden은 보존 |
 | [overlay-top.hwpx](../../../../samples/stored-nested-content-flow/overlay-top.hwpx) / [같은 저장본 PDF](../../../../pdf/pr7200/pr7200-overlay-top-2020.pdf) | 전1쪽 **89.44020 / 89.44020%** | `nested_alignment_uses_rewrapped_text_and_actual_float_flow`의 **overlay-top 세로 advance assertion 하나만**. 가로·포함 관계, Center/Bottom과 square/flow/width 등 정상 검사는 보존 |
 | [정상 생성 nested-split.hwp](../../../../tests/fixtures/pr7518_review_page_budget/valid_generated/nested-split.hwp) / [같은 저장본 PDF](../../../../pdf/pr7518_review/valid_generated/nested-split-2020.pdf) | 전6쪽 최저5쪽 **89.52230 / 89.52230%** | `trailing_empty_paragraphs_keep_their_continued_cell_outline` 1함수. 같은 입력의 다른 정상 함수는 보존 |
 

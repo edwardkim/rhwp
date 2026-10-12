@@ -424,6 +424,9 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub font_metric_trusted: bool,
+    /// 명시된 glyphFallbacks의 자연 전진폭 선택. 기본 paint 공급은 해당하지 않는다.
+    #[serde(skip_serializing)]
+    pub glyph_fallback_advance_explicit: bool,
     /// [#7391] 폭을 잴 때만 `font_family` 대신 쓸 face 이름.
     ///
     /// legacy-latin 폴백은 표시할 글꼴이 없는 환경을 위해 라틴 face 를 한글 face 로
@@ -701,6 +704,7 @@ impl Default for TextStyle {
             shade_color: 0x00FFFFFF,
             font_metric_trusted: false,
             native_pua_metrics: None,
+            glyph_fallback_advance_explicit: false,
             metric_font_family: None,
             font_space_em: None,
             layout_half_space: false,

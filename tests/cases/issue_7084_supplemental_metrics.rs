@@ -322,17 +322,30 @@ fn unknown_non_emoji_glyph_uses_provider_width_not_square_rule() {
     let _store = bound(&mut prepared, vec![entry]);
     near(positions("𝄞", &prepared)[1], 11.25);
     // 같은 검증 regular 프로그램의 faux bold도 cmap 소유가 바뀌지 않는다.
-    // 공급 체인의 결측 기호만 좁히고 원래 한글의 폭은 보존한다.
-    for (bold, font_metric_trusted) in [(false, false), (false, true), (true, false), (true, true)]
-    {
+    // 검증한 TrueType 환경은 결측 기호 공급자의 자연 폭을 소비한다.
+    // 형식 미확인의 한글 슬롯은 독립 sample16 Print의 전각 호환 폭을
+    // 보존한다. 글리프 프로그램이 있다는 사실로 폭 계약을 승격하지 않는다.
+    for (bold, font_metric_trusted, glyph_fallback_advance_explicit) in [
+        (false, false, false),
+        (false, true, false),
+        (true, false, false),
+        (true, true, false),
+        (false, false, true),
+        (true, false, true),
+    ] {
         let declared = TextStyle {
             font_family: "휴먼명조,Haansoft Batang".into(),
             font_metric_trusted,
+            glyph_fallback_advance_explicit,
             bold,
             ..style()
         };
         let p = positions("용․편", &declared);
-        assert!(p[2] - p[1] > 0.0 && p[2] - p[1] < (p[3] - p[2]) / 2.0);
+        if font_metric_trusted || glyph_fallback_advance_explicit {
+            assert!(p[2] - p[1] > 0.0 && p[2] - p[1] < (p[3] - p[2]) / 2.0);
+        } else {
+            near(p[2] - p[1], p[3] - p[2]);
+        }
         for (hft_hangul_face, hft_fullwidth_dot, italic) in [
             (true, false, false),
             (false, true, false),

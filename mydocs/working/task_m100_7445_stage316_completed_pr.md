@@ -2576,3 +2576,56 @@ CanvasKit의 기존 bounded preflight fallback/직접 replay 계약 실패는 �
 최종 head의 검증을 다시 마친 뒤에만 전체 완료 조건을 충족한 하위 이슈에
 `Closes #번호`를 표시합니다. #7445 전체와 미완료 범위는 `Refs`로 유지하며,
 remote push·PR 생성 전에 사용자의 승인을 받습니다.
+
+
+## PR 제출 전 재검증: sample16 2022의 결측 기호 전진 계약 보존
+
+2026-10-13 리베이스 후보 `c13fc1882561cfda704d6f6b6e844ac22bca4ead`의
+전체 nextest는 10,219 PASS / 0 FAIL / 45 skipped였으나, 같은 후보의 전쪽
+시각 비교에서 `hwp3-sample16-hwp5-2022.hwp` 17·23·25·40쪽이 미달했습니다.
+최저 87.06416%를 평균이나 이전 후보의 통과로 상쇄하지 않고 제출을 보류했습니다.
+
+독립 한컴 Print의 해당 네 쪽에서 한점 리더 `․` 20개는 모두 전각 기호
+상자를 사용합니다. 최근 기본 글리프 공급 체인에 추가한 Haansoft Batang의
+자연 폭이 이 호환 전진폭까지 좁혔습니다. 원 글리프의 cmap 결측을 확인한
+사실과 원 문서의 전진폭 계약을 구분하여, 형식 미확인의 한글 슬롯에서는
+전각 호환 폭을 유지하고 명시한 glyphFallbacks·검증 TrueType 환경·영문 슬롯에서는
+선언 공급자의 자연 폭을 소비하도록 수정했습니다. HFT 보호와 실제 glyph hit는 유지합니다.
+
+보정 후 Native/fresh WASM은 각각 전체 64쪽, **최저 91.28697%, 미달 0쪽**입니다.
+실제 Native Skia 40쪽은 91.18761%입니다. 네 쪽의 원문·줄 구성과 기호 뒤
+전진을 review PNG로 확인했으며 잉크·간격 잔차를 픽셀 동일로 주장하지 않습니다.
+기존 세 함수의 합성·실물 계약에 호환 전각/명시된 기호 자연 폭의 관계와 원문
+직렬화 보존을 함께 검사합니다. 새 테스트 함수·고정 px·회귀 baseline 삭제는 없습니다.
+
+- [전후·빌드 입력·전쪽 검증](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-validation.json)
+- [독립 Print 기호 근거](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-independent-evidence.json)
+- [Native TSV](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-native.tsv) / [fresh WASM TSV](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-wasm.tsv)
+- [40쪽 review PNG](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-p040-review.png)
+
+Studio의 원래 29개 실제 캡처는 보존합니다. CanvasKit 요청 일부는 기존 문서
+preflight 제한 또는 준비되지 않은 원 글꼴 때문에 Canvas2D로 전환됐으며
+직접 replay 계약 실패를 CanvasKit 통과로 집계하지 않습니다. 설치 글꼴의 실제
+Local Font Access 감지 및 지원되는 글꼴 준비 E2E를 별도로 확인하여 정상
+CanvasKit 실제 outline 소비와 자원 실패 시 전환을 구분합니다. 새 보정의
+focused 결과와 최종 전체 회귀·전쪽 검증은 후속 결과로 기록하며 현재 PR 완료를
+선언하지 않습니다.
+
+### 명시 기호 환경 대조군 보완
+
+첫 focused는 10건 중 9 PASS / 1 FAIL입니다. 개인정보 검사에서 명시한
+`glyphFallbacks` 환경도 주 face의 전체 메트릭 신뢰도를 승격하지 않으므로,
+TrueType 신뢰도만으로 자연 전진 선택을 가르면 안 됩니다. 명시 기호 폭 선택을
+언어 슬롯의 해소 결과 → 공통 TextStyle → 공통 측정 결정으로 전달하여 기본
+paint 공급과 분리했습니다. 원본·독립 PDF·명시 환경 JSON은 변경하지 않습니다.
+이 정보는 측정 전용으로 직렬화에서 제외하며 주 face의 메트릭 신뢰도도 유지합니다.
+
+보완된 Native의 개인정보 66쪽 렌더 트리는 수용 후보 `c13fc188`의 선언 환경
+출력과 전쪽 동일합니다. 이것만으로 paint·독립 PDF 수용을 대신하지 않으며,
+같은 Native/fresh WASM 전쪽 비교와 focused 재검증을 이어서 수행합니다.
+
+보완한 focused는 **10 run / 10 PASS / 10254 skipped / 0.933초**입니다.
+독립 환경의 개인정보 Native 전66쪽은 최저 92.53112%·미달 0쪽을 유지했습니다.
+이 단계의 생산 보정·관계 검사·전후 증적을 커밋한 뒤 같은 코드의 최종 전체
+회귀와 남은 시각 검증을 진행합니다. PR 원격 생성은 최종 필수 게이트 뒤에
+진행하며 사용자께서 이미 주신 생성 승인을 다시 요청하지 않습니다.

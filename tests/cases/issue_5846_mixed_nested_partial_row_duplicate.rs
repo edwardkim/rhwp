@@ -318,7 +318,7 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
     // 다음 글자도 측정한 같은 전진폭 뒤에서 시작해야 한다.
     // 좌표나 현재 쪽 전체 폭을 고정하지 않는다.
     let mut default_doc = HwpDocument::from_bytes(&bytes).expect("기본 제품 경로의 같은 원본");
-    for title_doc in [&mut doc, &mut default_doc] {
+    for (title_doc, explicit_glyph_advance) in [(&mut doc, true), (&mut default_doc, false)] {
         for page_index in [39, 64] {
             let page = title_doc
                 .build_page_render_tree(page_index)
@@ -394,8 +394,17 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
             };
             let dot_advance = origin(next) - origin(dot);
             let hangul_advance = origin(following) - origin(next);
-            assert!(dot_advance > 0.0 && dot_advance < hangul_advance / 2.0,
-                "결측 기호를 한글 전각으로 계산하지 않음: dot advance={dot_advance}, Hangul advance={hangul_advance}");
+            if explicit_glyph_advance {
+                assert!(
+                    dot_advance > 0.0 && dot_advance < hangul_advance / 2.0,
+                    "명시한 기호 공급자의 자연 전진: dot={dot_advance}, Hangul={hangul_advance}"
+                );
+            } else {
+                assert!(
+                    (dot_advance / hangul_advance - 1.0).abs() < FLOAT_EPSILON,
+                    "기본 glyph 공급으로 원 호환 전진을 승격하지 않음"
+                );
+            }
             assert_eq!(
                 dot.attribute("font-size"),
                 next.attribute("font-size"),

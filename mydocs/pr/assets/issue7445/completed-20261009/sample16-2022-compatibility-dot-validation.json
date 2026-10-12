@@ -1,0 +1,143 @@
+{
+  "parentCodeHead": "c13fc1882561cfda704d6f6b6e844ac22bca4ead",
+  "buildInput": {
+    "parentHead": "c13fc1882561cfda704d6f6b6e844ac22bca4ead",
+    "productionPatchSha256": "700d915024c24e4dc9e18d75875d904ea2a0af96b6682f2a5a9179c1a4f3a441",
+    "textMeasurementSha256": "6dabb395879212e9ba85522a83e23c1874e19acf56df924de4a23d7711c73ebf",
+    "dirtyDiagnosticNotFinalHead": true,
+    "freshMacNoOpt": true,
+    "bundle": [
+      {
+        "file": "rhwp.js",
+        "sha256": "f366c9d17e4eb925f6ba325a5236659a09af36656eff934284a5d4ba03212213"
+      },
+      {
+        "file": "rhwp_bg.wasm",
+        "sha256": "a1c07b5d343e8055c46d9e0a1a8746770a182a2382f4c312b79790a9caecef1c"
+      }
+    ]
+  },
+  "original": "samples/hwp3-sample16-hwp5-2022.hwp",
+  "independentPdf": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+  "productionSourceSha256": {
+    "src/renderer/layout/text_measurement.rs": "241a24f10608f1c9eb95e9f51126e671fbaa1245f1079a83c7b4f0b60f8bf16a",
+    "src/renderer/mod.rs": "d0f4e91a55fbcdd15373e497f5059007d2e3e08ebeebbf38e5b790b1cbd7a3d5",
+    "src/renderer/style_resolver.rs": "23471ff15e5fba147bc7a87e46f55e915bf6b3518845bae15f3feb27c514149f"
+  },
+  "beforeMinimum": 87.06416,
+  "beforeBelow90Pages": [
+    17,
+    23,
+    25,
+    40
+  ],
+  "after": [
+    {
+      "backend": "native",
+      "pages": 64,
+      "minimum": 91.28697,
+      "below90": 0,
+      "tsv": "sample16-2022-compatibility-dot-native.tsv",
+      "tsvSha256": "db2dc5edb19bcb8f73b67a9f15b9b5ec80f237f34a74b208964f88244473d6b5",
+      "pagesPreviouslyBelow90": [
+        {
+          "page": "17",
+          "tolerant_content_match_percent": "97.15445",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "97.15445",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "23",
+          "tolerant_content_match_percent": "92.81918",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "92.81918",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "25",
+          "tolerant_content_match_percent": "93.01888",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "93.01888",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "40",
+          "tolerant_content_match_percent": "91.41748",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "91.41748",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "pages": 64,
+      "minimum": 91.28697,
+      "below90": 0,
+      "tsv": "sample16-2022-compatibility-dot-wasm.tsv",
+      "tsvSha256": "db2dc5edb19bcb8f73b67a9f15b9b5ec80f237f34a74b208964f88244473d6b5",
+      "pagesPreviouslyBelow90": [
+        {
+          "page": "17",
+          "tolerant_content_match_percent": "97.15445",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "97.15445",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "23",
+          "tolerant_content_match_percent": "92.81918",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "92.81918",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "25",
+          "tolerant_content_match_percent": "93.01888",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "93.01888",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "40",
+          "tolerant_content_match_percent": "91.41748",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "91.41748",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ]
+    }
+  ],
+  "nativeSkiaActualPage40": {
+    "tolerantContentMatchPercent": 91.18761,
+    "profile": "print",
+    "compat": "2022",
+    "dpi": 192
+  },
+  "review": "sample16-2022-compatibility-dot-p040-review.png",
+  "directReview": "기호 뒤 원문 전진과 줄 구성 보존 확인. 글리프의 잉크·간격 잔차를 100% 일치로 주장하지 않음.",
+  "rule": "Preserve legacy U+2024 advance when glyph supply was implicit. Explicit glyphFallbacks carry a separate per-language advance contract into TextStyle, without promoting primary metrics or HFT.",
+  "testChanges": "기존 3개 함수에 legacy/explicit glyph fallback/verified TrueType 경계를 검사. 새 함수·고정 px·baseline 제거 없음.",
+  "focusedTests": {
+    "attempt1": "10 run / 9 PASS / 1 FAIL: PII explicitly declared glyph fallback advances must remain narrow; preserve failure and correct producer provenance.",
+    "afterExplicitBoundary": {
+      "result": "10 run / 10 PASS / 10254 skipped / 0.933s",
+      "runId": "872748af-4fcb-4884-b212-530f7f5c1b90",
+      "logSha256": "dd9a065141c8501554e10cbf591c85b7ca9a1cba8358bb01a1804b2b64e05a58"
+    }
+  },
+  "prReady": false,
+  "productionChangePendingRevalidation": "명시된 glyphFallbacks의 전진 선택을 언어 슬롯별 해소 결과에서 공통 TextStyle로 전달. 주 face 전체 메트릭 신뢰도는 승격하지 않음.",
+  "testSourceSha256": {
+    "tests/cases/issue_6389_font_environment.rs": "5a931ffea585055bf0907a98534cfb9987593934e21c3cbaae26ed8e35724d0a",
+    "tests/cases/issue_7084_supplemental_metrics.rs": "796afdbd6be87c4e04011ff508d2553451aeab1a338b7005d1e491c0561476ac",
+    "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs": "ae9da92b0e9f35fcc61b08131989900fe885d3e19d88c7a08ff2c612069b04f2"
+  },
+  "explicitNativePii66": {
+    "pages": 66,
+    "minimum": 92.53112,
+    "below90": 0,
+    "freshWasmRevalidation": "running after Native serial8-capture boundary"
+  }
+}

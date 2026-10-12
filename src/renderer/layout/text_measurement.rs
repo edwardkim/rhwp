@@ -876,6 +876,8 @@ pub(crate) fn resolved_to_text_style(
             font_family: cs.font_family_for_lang(lang_index).to_string(),
             supplemental_metrics: styles.supplemental_metrics.clone(),
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
+            glyph_fallback_advance_explicit: cs
+                .glyph_fallback_advance_explicit_for_lang(lang_index),
             // [#7391] 폭만 선언 face 의 표로 되돌린다. 표시 글꼴(`font_family`)은 그대로다.
             metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
@@ -1752,6 +1754,14 @@ fn char_width_decision_with_hft_tracking<'a>(
             && !c.is_whitespace()
             && !style.hft_hangul_face
             && !style.hft_fullwidth_dot
+            // 결측 글리프의 paint 공급과 한컴 호환 전진폭은 독립 계약이다.
+            // 형식 미확인 한글 슬롯의 한점 리더는 독립 Print의 전각 대체
+            // 기호 폭을 보존한다. 명시 glyphFallbacks·검증 TrueType 환경·영문 슬롯은
+            // 선언 공급자의 자연 폭을 사용하며 HFT 보호는 위에서 유지한다.
+            && (c != '\u{2024}'
+                || style.glyph_fallback_advance_explicit
+                || latin.is_some()
+                || latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted))
         {
             let paint_family = crate::renderer::render_font_family_chain_for_weight(
                 display_family,
