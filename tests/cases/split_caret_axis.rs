@@ -315,12 +315,12 @@ fn rewrite_section(core: &DocumentCore, edit: impl Fn(String) -> String) -> Docu
         let mut entry = input.by_index(i).unwrap();
         let mut data = Vec::new();
         entry.read_to_end(&mut data).unwrap();
-        if entry.name() == "Contents/section0.xml" {
+        if entry.name().expect("ZIP 엔트리 이름") == "Contents/section0.xml" {
             data = edit(String::from_utf8(data).unwrap()).into_bytes();
         }
         output
             .start_file(
-                entry.name(),
+                entry.name().expect("ZIP 엔트리 이름"),
                 zip::write::SimpleFileOptions::default().compression_method(entry.compression()),
             )
             .unwrap();

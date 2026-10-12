@@ -64,7 +64,7 @@ fn direct_hwpx_profile_agrees_with_native_hwp5() {
             .compression_method(zip::CompressionMethod::Deflated);
         for index in 0..zip.len() {
             let mut entry = zip.by_index(index).expect("내보낸 HWPX ZIP 항목 읽기");
-            let name = entry.name().to_string();
+            let name = entry.name().expect("ZIP 엔트리 이름").to_string();
             if name.contains("rhwp-hwp5-origin") {
                 continue;
             }
