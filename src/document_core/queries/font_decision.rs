@@ -3,8 +3,10 @@
 use serde::Deserialize;
 use serde_json::json;
 
+use crate::document_core::helpers::{find_logical_control_positions, logical_to_text_offset};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
+use crate::model::control::Control;
 use crate::renderer::composer::is_lang_neutral;
 use crate::renderer::font_decision::*;
 use crate::renderer::layout::trace_char_width_decisions;
@@ -42,12 +44,36 @@ fn options(options_json: &str) -> Result<TraceLimits, HwpError> {
     Ok(TraceLimits { max_characters })
 }
 
-fn collect_runs<'a>(node: &'a RenderNode, runs: &mut Vec<&'a TextRunNode>) {
+fn collect_runs<'a>(
+    node: &'a RenderNode,
+    runs: &mut Vec<(&'a TextRunNode, bool)>,
+    source_frame: Option<bool>,
+    in_container: bool,
+    in_text_box: bool,
+) {
+    let in_container = in_container
+        || matches!(
+            node.node_type,
+            RenderNodeType::TableCell(_) | RenderNodeType::TextBox
+        );
+    let in_text_box = in_text_box || matches!(node.node_type, RenderNodeType::TextBox);
+    // 조상 줄은 새 컨테이너 문단의 원문 소유자가 아니다.
+    let source_frame = match &node.node_type {
+        RenderNodeType::Header | RenderNodeType::Footer | RenderNodeType::FootnoteArea => None,
+        RenderNodeType::TextLine(line) if line.caption_owner.is_some() => None,
+        RenderNodeType::TextLine(_) => source_frame.map(|_| true),
+        RenderNodeType::TableCell(_) | RenderNodeType::TextBox => source_frame.map(|_| false),
+        _ => source_frame,
+    };
     if let RenderNodeType::TextRun(run) = &node.node_type {
-        runs.push(run);
+        let has_source_path = !in_container
+            || run.cell_context.as_ref().is_some_and(|context| {
+                !context.path.is_empty() && (!in_text_box || context.in_textbox)
+            });
+        runs.push((run, source_frame == Some(true) && has_source_path));
     }
     for child in &node.children {
-        collect_runs(child, runs);
+        collect_runs(child, runs, source_frame, in_container, in_text_box);
     }
 }
 
@@ -171,14 +197,18 @@ fn source_paragraph_index(run: &TextRunNode) -> Option<usize> {
         .filter(|index| *index < usize::MAX.saturating_sub(4096))
 }
 
-fn source_matches(core: &DocumentCore, run: &TextRunNode, offset: usize, ch: char) -> bool {
-    let (Some(section), Some(paragraph), Some(char_start)) = (
-        run.section_index,
-        source_paragraph_index(run),
-        run.char_start,
-    ) else {
-        return false;
-    };
+fn source_character(
+    core: &DocumentCore,
+    run: &TextRunNode,
+    offset: usize,
+    in_text_line: bool,
+) -> Option<(usize, char)> {
+    if !in_text_line {
+        return None;
+    }
+    let section = run.section_index?;
+    let paragraph = source_paragraph_index(run)?;
+    let mut logical_offset = run.char_start?.checked_add(offset)?;
     let path: Vec<(usize, usize, usize)> = run
         .cell_context
         .as_ref()
@@ -190,10 +220,37 @@ fn source_matches(core: &DocumentCore, run: &TextRunNode, offset: usize, ch: cha
                 .collect()
         })
         .unwrap_or_default();
-    core.resolve_control_para(section, paragraph, &path)
-        .ok()
-        .and_then(|para| para.text.chars().nth(char_start + offset))
-        .is_some_and(|source| source == ch)
+    let para = core.resolve_control_para(section, paragraph, &path).ok()?;
+    let control_positions = find_logical_control_positions(para);
+    let mut note_positions: Vec<usize> = para
+        .controls
+        .iter()
+        .zip(&control_positions)
+        .filter_map(|(control, position)| {
+            matches!(control, Control::Footnote(_) | Control::Endnote(_)).then_some(*position)
+        })
+        .collect();
+    note_positions.sort_unstable();
+    // 주석 마커는 런의 글자 주소에 칸을 더하지 않는다. 변환기가 세는 모델 칸을 먼저 복원한다.
+    for note_position in note_positions {
+        if note_position > logical_offset {
+            break;
+        }
+        logical_offset = logical_offset.checked_add(1)?;
+    }
+    for (control, position) in para.controls.iter().zip(control_positions) {
+        // shortcut: 겹침 런의 원문 소유권을 전달할 때까지 첫 겹침부터 뒤 주소는 확정하지 않는다.
+        if (matches!(control, Control::CharOverlap(_)) && position <= logical_offset)
+            || (control.is_logical_inline() && position == logical_offset)
+        {
+            return None;
+        }
+    }
+    let (scalar_offset, _) = logical_to_text_offset(para, logical_offset);
+    para.text
+        .chars()
+        .nth(scalar_offset)
+        .map(|character| (scalar_offset, character))
 }
 
 fn measurement_provenance() -> Result<ProvenanceDecision, HwpError> {
@@ -696,15 +753,15 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let applied_limits = requested_limits;
         let mut runs = Vec::new();
-        collect_runs(&tree.root, &mut runs);
+        collect_runs(&tree.root, &mut runs, Some(false), false, false);
         let characters_seen = runs
             .iter()
-            .map(|run| run.text.chars().count())
+            .map(|(run, _)| run.text.chars().count())
             .sum::<usize>();
         let mut records = Vec::with_capacity(characters_seen.min(applied_limits.max_characters));
         let mut source_mapping_mismatch = false;
         let mut ledger_rule_missing = false;
-        'runs: for (run_index, run) in runs.iter().enumerate() {
+        'runs: for (run_index, (run, in_text_line)) in runs.iter().enumerate() {
             let chars: Vec<char> = run.text.chars().collect();
             let language_slots = run_language_slots(&chars, run_style_language_slot(self, run));
             let width_decisions = trace_char_width_decisions(&run.text, &run.style);
@@ -717,7 +774,8 @@ impl DocumentCore {
                 if records.len() >= applied_limits.max_characters {
                     break 'runs;
                 }
-                let source_complete = source_matches(self, run, run_offset, ch);
+                let source_character = source_character(self, run, run_offset, *in_text_line);
+                let source_complete = source_character.is_some_and(|(_, source)| source == ch);
                 source_mapping_mismatch |= !source_complete;
                 let font_decision = run.char_shape_id.and_then(|char_shape_id| {
                     self.document
@@ -830,7 +888,7 @@ impl DocumentCore {
                     transforms: transform_steps(run, ch, width),
                     final_advance_hwpunit: Some(px_to_hwpunit(width.final_width_px, self.dpi)),
                 };
-                let source_offset = run.char_start.map(|start| start + run_offset);
+                let source_offset = source_character.map(|(offset, _)| offset);
                 let requested_document_face = font_decision
                     .as_ref()
                     .and_then(|font| font.requested_face.clone());

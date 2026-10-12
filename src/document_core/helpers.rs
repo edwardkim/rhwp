@@ -65,6 +65,7 @@ pub(crate) fn logical_to_text_offset(para: &Paragraph, logical_offset: usize) ->
             if logical_idx == logical_offset {
                 return (text_idx, true);
             }
+            continue;
         }
         // 텍스트 문자
         if text_idx < text_len {
