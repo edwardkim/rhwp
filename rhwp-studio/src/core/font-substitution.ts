@@ -11,7 +11,7 @@
  */
 
 import { getDetectedOSFonts, REGISTERED_FONTS } from './font-loader.ts';
-import { resolveLocalFont } from './local-fonts.ts';
+import { getLocalFontState, resolveLocalFont } from './local-fonts.ts';
 
 import {
   FONT_RULE_DISPLAY_CHAIN_POLICY_IDS,
@@ -205,6 +205,10 @@ function installedFaceName(
     // 이전 문서의 전역 감지 결과를 다시 사용하면 설치되지 않은 face가 선택될 수 있다.
     return null;
   }
+  // A width-only presence probe can also see the platform's LastResort font.
+  // With an authorized catalog available, an unmatched name is unverified;
+  // do not promote that probe to the selected original program.
+  if (getLocalFontState().source === 'local-font-access') return null;
   return detectedOSFontIndex().get(normalizedFamilyKey(fontName)) ?? null;
 }
 

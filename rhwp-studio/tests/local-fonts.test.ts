@@ -529,7 +529,9 @@ test('SFNT 지역화 이름을 보존해 HWP 한글 full name을 영문 family�
   g.browser = undefined;
   g.chrome = undefined;
   g.localStorage = storage;
-  g.queryLocalFonts = async () => [{
+  g.queryLocalFonts = async (options?: { postscriptNames?: string[] }) => {
+    if (options?.postscriptNames && !options.postscriptNames.includes('SeoulHangangM')) return [];
+    return [{
     family: '08SeoulHangang',
     fullName: '08SeoulHangang M',
     postscriptName: 'SeoulHangangM',
@@ -539,8 +541,10 @@ test('SFNT 지역화 이름을 보존해 HWP 한글 full name을 영문 family�
       { nameId: 2, value: 'M' },
       { nameId: 4, value: '08서울한강체 M' },
       { nameId: 6, value: 'SeoulHangangM' },
+      { nameId: 6, value: '서울한강체-지역화PS' },
     ])]),
   }];
+  };
 
   try {
     const fonts = await detectLocalFonts({ force: true, includeRegistered: true });
@@ -555,6 +559,8 @@ test('SFNT 지역화 이름을 보존해 HWP 한글 full name을 영문 family�
     assert.equal(englishRecord?.postscriptName, 'SeoulHangangM');
     assert.equal(record?.postscriptName, 'SeoulHangangM');
     assert.ok(record?.aliases.includes('08서울한강체 M'));
+    assert.ok(record?.aliases.includes('서울한강체-지역화PS'));
+    assert.ok(await loadLocalFontBytes('08서울한강체 M'), '표시용 지역화 별칭 대신 API face 식별자로 원 프로그램을 읽는다');
     assert.deepEqual(getLocalFontRecords().map(item => item.displayName), ['08서울한강체 M']);
     assert.deepEqual(report.fonts.map(item => [item.fontName, item.status, item.source]), [
       ['08서울한강체 M', 'available', 'local'],

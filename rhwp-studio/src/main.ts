@@ -1400,6 +1400,8 @@ async function initializeDocument(
 ): Promise<void> {
   const msg = sbMessage();
   try {
+    // 이미 승인된 snapshot을 권한 prompt 없이 준비한 뒤 프로그램을 선택한다.
+    await loadStoredLocalFonts();
     // 실제 프로그램을 먼저 확정한 뒤 같은 문서 정보로 공급과 view를 준비한다.
     await wasm.prepareDeclaredFontEnvironment(canvasView?.getRenderBackend());
     docInfo = wasm.getDocumentInfo();
@@ -1418,9 +1420,6 @@ async function initializeDocument(
       }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
-    // 저장 snapshot은 권한 prompt 없이 읽을 수 있다. Canvas2D 첫 paint의 family 해소가
-    // 이미 승인된 exact local face를 놓치지 않도록 문서 view보다 먼저 준비한다 (#4739).
-    await loadStoredLocalFonts();
     await updateLoadProgress(75, '문서 상태 적용 중...');
     totalSections = docInfo.sectionCount ?? 1;
     sbSection().textContent = t('ui.sbSection.text', { p1: 1, p2: totalSections });

@@ -462,7 +462,9 @@ function makeLocalFontRecord(
   return {
     family,
     fullName: fullNames[0] ?? family,
-    postscriptName: postscriptNames[0] ?? '',
+    // Local Font Access filters by the API identifier. Localized SFNT aliases
+    // remain display/lookup names; their locale sort order is not face identity.
+    postscriptName: normalizeFontNames([fontData.postscriptName])[0] ?? postscriptNames[0] ?? '',
     style: styles[0] ?? '',
     ...(sfntNames.weightClass !== undefined ? { weightClass: sfntNames.weightClass } : {}),
     ...(sfntNames.italic !== undefined ? { italic: sfntNames.italic } : {}),

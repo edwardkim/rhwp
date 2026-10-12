@@ -1,4 +1,5 @@
 import { registerLoadedLocalFontFace } from './font-loader.ts';
+import { loadLocalFontBytes, resolveLocalFont } from './local-fonts.ts';
 
 export interface DocumentFontSelectionPlan {
   environmentId: string | null;
@@ -9,6 +10,7 @@ export interface DocumentFontSelectionPlan {
 interface LoadedProgram {
   query: string;
   family: string;
+  bytes: ArrayBuffer;
   programId: string;
   face: FontFace;
 }
@@ -16,16 +18,25 @@ interface LoadedProgram {
 let programGeneration = 0;
 const loadedPrograms = new Map<string, LoadedProgram>();
 const suppliedAliases = new Map<string, string>();
-const localSource = (name: string) => `local("${name.replace(/(["\\])/g, '\\$1')}")`;
 
 async function loadLocalProgram(query: string): Promise<LoadedProgram | null> {
+  // local() can report loaded while the platform supplies LastResort glyphs.
+  // Only a face from the already authorized catalog may become a declared
+  // local program. An unverified name remains on the ordinary fallback path.
+  const record = resolveLocalFont(query);
+  if (record?.detectionSource !== 'local-font-access') return null;
   const cached = loadedPrograms.get(query);
   if (cached) return cached;
   try {
-    // local() 자체가 성공한 경우만 인정한다. fallback 렌더 가능 여부는 설치 증명이 아니다.
-    const face = new FontFace(query, localSource(query));
+    // 원본 API face의 바이트를 직접 로드한다. 읽기/형식 실패는 공급 완료가 아니다.
+    const bytes = await loadLocalFontBytes(query);
+    // The approved API returns bytes for the matched face. A native local()
+    // cascade can silently replace missing glyphs with LastResort. Let the
+    // browser consume that same program directly, including its cmap.
+    if (!bytes || (bytes.byteLength >= 4 && new DataView(bytes).getUint32(0) === 0x74746366)) return null;
+    const face = new FontFace(query, bytes);
     await face.load();
-    const program = { query, family: query, programId: `browser-local-${++programGeneration}`, face };
+    const program = { query, family: query, bytes, programId: `browser-local-${++programGeneration}`, face };
     loadedPrograms.set(query, program);
     return program;
   } catch {
@@ -56,7 +67,7 @@ export async function prepareDeclaredLocalPrograms(
       if (!selected) continue;
       if (!embedded.has(selected.family)) registerLoadedLocalFontFace(selected.face);
       if (embedded.has(requested) || requested === selected.query || suppliedAliases.get(requested) === selected.programId) continue;
-      const alias = new FontFace(requested, localSource(selected.query));
+      const alias = new FontFace(requested, selected.bytes);
       try {
         await alias.load();
         if (!isCurrent()) return [];
@@ -67,6 +78,6 @@ export async function prepareDeclaredLocalPrograms(
       }
     }
   }
-  // FontFace local()은 sfnt 형식을 공개하지 않으므로 TrueType임을 선언하지 않는다.
+  // 바이트 로드 성공을 문서의 TrueType 메트릭 신뢰 선언으로 승격하지 않는다.
   return [...programs.values()].map(({ query, family, programId }) => ({ query, family, programId }));
 }

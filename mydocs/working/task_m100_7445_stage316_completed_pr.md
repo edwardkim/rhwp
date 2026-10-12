@@ -2635,3 +2635,12 @@ paint 공급과 분리했습니다. 원본·독립 PDF·명시 환경 JSON은 �
 - 코드 후보 `15d28cffb228217fab8ab6f899bc8874c77ad33a` 전체 nextest는 10,218 PASS / 1 FAIL / 45 SKIP(571.920초)였습니다. 실패를 통과로 합산하지 않습니다.
 - #4962 양성 집계의 휴먼명조 U+2024 입력은 `declaredGlyphFallbackMetric`을 기대하면서 실제 `glyphFallbacks`를 선언하지 않았습니다. 개인정보 문서 66쪽과 동일한 명시 공급 환경을 합성 입력에 추가했습니다. 범주·건수 기대값과 검사는 유지하며 생산 코드는 변경하지 않았습니다.
 - suite manifest를 준비한 뒤 #4962 정식 검사 7건이 모두 통과했습니다(3.870초). 준비 이전의 suite 경로가 서로 달랐던 진단 실행은 0건/exit 4로 보존하며 통과 증거로 사용하지 않습니다. 최종 전체 회귀는 이 입력 보정 commit에서 재실행합니다.
+
+### 2026-10-13 최종 전체 회귀와 실제 설치 프로그램 공급 재검토
+
+- `d42be5efcd205ca589e2d67e58eeccde292a585c` 전체 nextest는 10,219 PASS / 0 FAIL / 45 SKIP(425.139초)입니다. all-target Clippy·fmt·Native Skia PNG 2건/PDF 4건도 통과했습니다. 앞선 실패와 0건 suite 선택 진단은 로그에 보존합니다.
+- 실제 Chrome 40쪽에서 `FontFace.load()`는 성공했지만 `휴먼명조`의 실제 플랫폼 선택은 `.LastResort`였습니다. 전체 한글이 물음표 상자로 표시되는 기존 공급 오류를 별도로 발견했습니다. 정상 Native/fresh WASM TSV를 실제 Canvas 성공으로 대체하지 않습니다.
+- 이미 승인된 설치 face snapshot을 선택 전에 읽고, 열거로 확인된 face의 실제 바이트를 공급하도록 보정했습니다. 미확인 이름의 폭 probe를 원 프로그램의 증거로 승격하지 않습니다. 동일 family의 다른 face를 덮어쓰지 않도록 요청한 face 별칭을 유지합니다. TTC의 face index를 추정하여 선택하지 않습니다.
+- SFNT 지역화 이름을 정렬한 첫 항목이 API PostScript 식별자를 덮어쓰는 오류도 보정했습니다. 한컴바탕의 바이트 조회는 이전 미확보에서 정확한 API 식별자로 32,483,900바이트 확보로 바뀌었습니다. 원 font binary는 커밋하지 않습니다.
+- programme 양성·미확인 이름·기존 cache·오래된 문서 공급과 지역화 alias/API identity의 관계를 검사합니다. 관련 선별 16건 및 Studio 1,835 PASS / 0 FAIL / 2 SKIP·build를 확인했습니다. initialize 순서 보정 후 최종 Studio 검증과 실제 소비 검증은 계속합니다.
+- 실제 Canvas 한글 표시를 복구했지만 확대 판독의 한점 리더 한 곳은 추가 확인 중입니다. 현재 최고 보조값만으로 완료·PR 제출을 선언하지 않습니다. 전체 42문서 Native/fresh WASM 재검증은 같은 Rust 생산 코드와 비교기로 계속합니다.
