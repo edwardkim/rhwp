@@ -1,3 +1,10 @@
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
+
 use super::*;
 use crate::model::document::*;
 use crate::model::paragraph::{LineSeg, Paragraph};
@@ -432,7 +439,9 @@ fn test_serialize_real_hwp_files() {
     for entry in std::fs::read_dir(sample_dir).unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
-        if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+        if is_deferred_exam_document(path.to_string_lossy().as_ref())
+            || exam_fixtures::is_exam_fixture(&path)
+        {
             continue;
         }
         if path.extension().and_then(|s| s.to_str()) != Some("hwp") {

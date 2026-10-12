@@ -115,10 +115,6 @@ fn main() {
         }
         Some("export-png") => exit_with(cli::outputs::raster::export_png(&args[2..])),
         Some("export-sixel") => exit_with(cli::outputs::sixel::export_sixel(&args[2..])),
-        // [gym_gpu_raster] GPU 가속 PNG 래스터화 (feature = "gpu"). export-png(native-skia)과
-        // 같은 방식으로 feature 게이팅 — 미빌드 바이너리는 사용법 오류(exit 2)로 안내한다.
-        Some("export-png-gpu") => exit_with(cli::outputs::raster::export_png_gpu(&args[2..])),
-        Some("gpu-info") => exit_with(cli::outputs::raster::gpu_info(&args[2..])),
         Some("export-pdf") => exit_with(cli::outputs::pdf::export_pdf(&args[2..])),
         Some("export-text") => exit_with(cli::outputs::text::export_text(&args[2..])),
         Some("export-markdown") => exit_with(cli::outputs::text::export_markdown(&args[2..])),

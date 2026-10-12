@@ -19,6 +19,11 @@
 //! 만든다** — 저장소에 악성 표본을 두지 않기 위해서다.
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
+
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
@@ -318,9 +323,16 @@ fn security_sweep_documents() -> Vec<PathBuf> {
     let rels: Vec<String> = serde_json::from_str(trimmed).unwrap_or_else(|e| {
         panic!("{SECURITY_SWEEP_SAMPLES_ENV} 는 JSON string array 여야 합니다: {e}")
     });
+    let only_exam_documents = !rels.is_empty()
+        && rels
+            .iter()
+            .all(|rel| is_security_sample_path(rel) && is_exam_fixture(Path::new(rel)));
+    if only_exam_documents {
+        return Vec::new();
+    }
     let docs: Vec<PathBuf> = rels
         .into_iter()
-        .filter(|rel| is_security_sample_path(rel))
+        .filter(|rel| is_security_sample_path(rel) && !is_exam_fixture(Path::new(rel)))
         .map(|rel| repo(&rel))
         .collect();
     assert!(

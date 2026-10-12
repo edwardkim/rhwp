@@ -28,16 +28,12 @@ pub(crate) mod font_rule_layout_metric_projection;
 pub(crate) mod font_rule_layout_name_projection;
 pub mod form_appearance;
 pub(crate) mod form_caption;
-pub mod hyperlinks;
-// [gym_gpu_raster] GPU 가속 SVG 래스터화(vello/wgpu). 네이티브 + gpu feature 전용 —
-// native-skia 와 같은 방식으로 선택적 게이팅해 CI는 GPU 없이도 컴파일된다.
-#[cfg(all(not(target_arch = "wasm32"), feature = "gpu"))]
-pub mod gpu;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
 pub(crate) mod hft_ascii_evidence;
 pub mod html;
+pub mod hyperlinks;
 pub(crate) mod image_header;
 pub mod image_resolver;
 pub mod inline_flow;

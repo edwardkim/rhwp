@@ -338,9 +338,14 @@ def raster_paths_for_selected_pages(
 def pdf_raster_commands(
     pdf: Path, dpi: int, pdf_prefix: Path, selected_pages: list[int] | None
 ) -> list[list[str]]:
-    """요청한 페이지만 래스터로 변환하도록 pdftoppm 실행 명령을 만든다."""
+    """선 너비에 비례한 coverage를 보존하며 요청한 PDF 쪽을 래스터화한다.
+
+    1px보다 얇은 회색 선을 한 픽셀 전체 농도로 그리면 같은 SVG 선이
+    이진화 경계 반대편에 놓인다. shape는 원래 선 너비에 비례해 그리며
+    비교 임계값이나 원본 PDF/SVG의 두께·색상은 바꾸지 않는다.
+    """
     if not selected_pages:
-        return [["pdftoppm", "-r", str(dpi), "-png", str(pdf), str(pdf_prefix)]]
+        return [["pdftoppm", "-r", str(dpi), "-thinlinemode", "shape", "-png", str(pdf), str(pdf_prefix)]]
     return [
         [
             "pdftoppm",
@@ -350,6 +355,8 @@ def pdf_raster_commands(
             str(page),
             "-r",
             str(dpi),
+            "-thinlinemode",
+            "shape",
             "-png",
             str(pdf),
             str(pdf_prefix),
@@ -624,6 +631,7 @@ def sweep_provenance(
             "sha256": sha256_file(Path(__file__).resolve()),
         },
         "svg_rasterizer": svg_rasterizer,
+        "pdf_rasterizer": {"program": "pdftoppm", "thin_line_mode": "shape"},
         "comparison_profile": "print",
         "rhwp_binary": rhwp_binary_identifier(root, rhwp_bin),
     }

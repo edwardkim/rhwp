@@ -80,7 +80,7 @@ fn hwpx_with_field_names(tag: &str, first: &str, second: &str) -> TempFileGuard 
     let mut zout = zip::ZipWriter::new(std::fs::File::create(patched.path()).expect("출력 zip"));
     for i in 0..zin.len() {
         let mut entry = zin.by_index(i).expect("zip 항목");
-        let name = entry.name().to_string();
+        let name = entry.name().expect("ZIP 엔트리 이름").to_string();
         let mut buf = Vec::new();
         std::io::copy(&mut entry, &mut buf).expect("zip 항목 읽기");
         if name == "Contents/section0.xml" {
