@@ -17,8 +17,8 @@
 //! - `d`: 왼쪽 여백 2000·20000 · 오른쪽 여백 2000 · 내어쓰기 -20000(흡수) · 들여쓰기 6000(띠 아래)
 //! - `g`: 빈 host 두 개가 연달아 오는 표 스택(2000+2000 · 0+2000 · 2000+0 · 0+0)
 //!
-//! `a`~`g` 에는 rhwp 내부 표지 `META-INF/rhwp-hwp5-origin` 이 있어(빈 줄 배열 경로), `b_synth` 는
-//! 표지를 지운 같은 문서다(로드 때 합성 줄을 만드는 경로). 한/글 출력은 표지와 무관하다.
+//! 고정본에는 rhwp 내부 표지 `META-INF/rhwp-hwp5-origin` 이 있다(빈 줄 배열 경로). 표지를 지워
+//! 로드 때 줄을 합성하는 경로는 표 바깥 여백 계상이 따로 어긋나(표마다 141HU) 이 시험에 넣지 않는다.
 //!
 //! 기대값은 같은 문서를 한/글 2020(MCP engine 2020)으로 출력한 `pdf/issue7702/empty_host_indent_*-2020.pdf`
 //! 의 글자 기준선(PyMuPDF origin, 96dpi px)에서 얻은 줄 간격이다 — 표 첫 행(`1984.`) → 마지막 행(`1976.`)
@@ -33,8 +33,6 @@ struct Fixture {
     bytes: &'static [u8],
     /// 한/글 2020 기준선 간격(px): `1984.` → `1976.` → (다음 `1984.` | `표지`) …
     gaps: &'static [f64],
-    /// host 줄 간격(`1976.` → `표지`)만 대조한다.
-    host_gaps_only: bool,
 }
 
 const ABSORB: f64 = 25.89;
@@ -47,21 +45,14 @@ const FIXTURES: &[Fixture] = &[
             53.54, ABSORB, 25.41, 53.54, 26.05, 25.42, 53.54, 45.55, 25.57, 53.54, 45.55, 25.41,
             53.55, 26.05, 25.41, 53.54, 25.89,
         ],
-        host_gaps_only: false,
     },
     Fixture {
         name: "b",
         bytes: include_bytes!("../../samples/issue7702/empty_host_indent_b.hwpx"),
-        gaps: B_GAPS,
-        host_gaps_only: false,
-    },
-    // 합성 줄 경로의 `표지 → 다음 표` 간격은 이 수정과 무관하게 한/글보다 1.8px 짧다(표 host 의
-    // 바깥 여백 계상, 수정 전후 같음). 이 문서에서는 host 줄 간격만 대조한다.
-    Fixture {
-        name: "b_synth",
-        bytes: include_bytes!("../../samples/issue7702/empty_host_indent_b_synth.hwpx"),
-        gaps: B_GAPS,
-        host_gaps_only: true,
+        gaps: &[
+            53.54, 45.55, 25.57, 53.54, 45.55, 25.41, 53.55, 45.71, 25.41, 53.54, 45.71, 25.41,
+            53.54, 45.71, 25.42, 53.54, 45.71,
+        ],
     },
     Fixture {
         name: "c",
@@ -70,7 +61,6 @@ const FIXTURES: &[Fixture] = &[
             53.54, 45.55, 25.57, 53.54, 45.55, 25.41, 53.55, 45.71, 25.41, 53.54, 45.71, 25.41,
             53.54, ABSORB,
         ],
-        host_gaps_only: false,
     },
     Fixture {
         name: "d",
@@ -79,7 +69,6 @@ const FIXTURES: &[Fixture] = &[
             53.54, ABSORB, 25.41, 53.54, 26.05, 25.42, 53.54, 25.89, 25.41, 53.54, 45.71, 25.42,
             53.54, 25.89,
         ],
-        host_gaps_only: false,
     },
     Fixture {
         name: "g",
@@ -88,13 +77,7 @@ const FIXTURES: &[Fixture] = &[
             53.54, 49.38, 53.55, 45.71, 25.41, 53.54, 29.73, 53.54, 45.55, 25.41, 53.54, 49.55,
             53.54, 25.89, 25.41, 53.54, 29.73, 53.54, 25.9,
         ],
-        host_gaps_only: false,
     },
-];
-
-const B_GAPS: &[f64] = &[
-    53.54, 45.55, 25.57, 53.54, 45.55, 25.41, 53.55, 45.71, 25.41, 53.54, 45.71, 25.41, 53.54,
-    45.71, 25.42, 53.54, 45.71,
 ];
 
 fn attr<'a>(tag: &'a str, name: &str) -> Option<&'a str> {
@@ -170,11 +153,6 @@ fn issue_7702_empty_host_indent_line_goes_below_topbottom_table() {
             probes.iter().map(|(_, t)| t).collect::<Vec<_>>()
         );
         for (index, (pair, want)) in probes.windows(2).zip(fixture.gaps).enumerate() {
-            if fixture.host_gaps_only
-                && !(pair[0].1.starts_with("1976.") && pair[1].1.starts_with("표지"))
-            {
-                continue;
-            }
             let got = pair[1].0 - pair[0].0;
             if (got - want).abs() > TOLERANCE_PX {
                 failures.push(format!(
