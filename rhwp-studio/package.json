@@ -102,7 +102,7 @@
   "dependencies": {
     "@noble/hashes": "^2.4.0",
     "canvaskit-wasm": "^0.42.0",
-    "pixelmatch": "^7.1.0",
+    "pixelmatch": "^8.0.0",
     "pngjs": "^7.0.0"
   }
 }
