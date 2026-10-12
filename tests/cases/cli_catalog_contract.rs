@@ -110,8 +110,14 @@ fn catalog_is_unique_and_matches_all_top_level_dispatch_arms() {
     // 명령 수는 공개 기능의 추가·폐기로 달라진다. 선언과 실제 dispatch의 대응을 검사한다.
     assert!(!catalog_names.is_empty(), "catalog가 비어서는 안 된다");
     for retired in ["export-png-gpu", "gpu-info"] {
-        assert!(!catalog_names.contains(retired), "폐기 명령이 catalog에 남음: {retired}");
-        assert!(!dispatch_set.contains(retired), "폐기 명령이 dispatch에 남음: {retired}");
+        assert!(
+            !catalog_names.contains(retired),
+            "폐기 명령이 catalog에 남음: {retired}"
+        );
+        assert!(
+            !dispatch_set.contains(retired),
+            "폐기 명령이 dispatch에 남음: {retired}"
+        );
     }
     assert_eq!(catalog_names.len(), commands().len(), "catalog 이름 중복");
     assert_eq!(dispatch.len(), dispatch_set.len(), "dispatch arm 이름 중복");
