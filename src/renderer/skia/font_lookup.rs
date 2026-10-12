@@ -195,6 +195,9 @@ pub(super) fn typeface_candidates_for_families(
     let mut chain = Vec::new();
     let mut seen = HashSet::new();
     let mut push = |typeface: Typeface, source: &'static str| {
+        if is_placeholder_typeface(&typeface) {
+            return;
+        }
         let key = typeface.unique_id();
         if seen.insert(key) {
             chain.push(TypefaceCandidate { typeface, source });
@@ -230,12 +233,93 @@ pub(super) fn select_typeface_for_character<'a>(
     character: char,
 ) -> Option<&'a TypefaceCandidate> {
     if character.is_whitespace() {
-        return chain.first();
+        return chain
+            .iter()
+            .find(|candidate| !is_placeholder_typeface(&candidate.typeface));
     }
     let codepoint = character as i32;
-    chain
-        .iter()
-        .find(|candidate| candidate.typeface.unichar_to_glyph(codepoint) != 0)
+    chain.iter().find(|candidate| {
+        !is_placeholder_typeface(&candidate.typeface)
+            && candidate.typeface.unichar_to_glyph(codepoint) != 0
+    })
+}
+
+/// CoreText는 요청한 family 이름을 유지한 채 LastResort를 반환할 수 있다.
+/// 그 프로그램의 비영 gid는 문자 대신 Unicode 블록 대용 기호이므로,
+/// family_name이나 unichar_to_glyph만으로 실제 문자 공급이라고 판단하지 않는다.
+fn is_placeholder_typeface(typeface: &Typeface) -> bool {
+    let id = typeface.unique_id();
+    PLACEHOLDER_TYPEFACE_CACHE.with(|cache| {
+        if let Some(value) = cache.borrow().get(&id).copied() {
+            return value;
+        }
+        let reserved = |name: &str| matches!(name, ".LastResort" | "LastResort");
+        let placeholder = reserved(&typeface.family_name())
+            || typeface
+                .copy_table_data(u32::from_be_bytes(*b"name"))
+                .is_some_and(|data| {
+                    ttf_parser::name::Table::parse(data.as_bytes()).is_some_and(|table| {
+                        table.names.into_iter().any(|name| {
+                            matches!(name.name_id, 1 | 4 | 6 | 16)
+                                && name.to_string().is_some_and(|value| reserved(&value))
+                        })
+                    })
+                });
+        cache.borrow_mut().insert(id, placeholder);
+        placeholder
+    })
+}
+
+/// OS 조회가 실제 프로그램을 공급하지 못할 때 같은 설치 family를 파일로 찾는다.
+/// 정상 OS 스타일 매칭은 유지하며, family당 regular 한 개로 덮어쓰지 않는다.
+fn recover_installed_system_typeface(
+    font_mgr: &FontMgr,
+    family: &str,
+    style: FontStyle,
+) -> Option<Typeface> {
+    use usvg::fontdb::{Family, Query, Stretch, Style, Weight};
+
+    SYSTEM_PROGRAM_DATABASE.with(|database| {
+        let mut database = database.borrow_mut();
+        let database = database.get_or_insert_with(|| {
+            let mut database = usvg::fontdb::Database::new();
+            for directory in crate::renderer::font_paths::system_font_dirs() {
+                if directory.exists() {
+                    database.load_fonts_dir(directory);
+                }
+            }
+            database
+        });
+        let families = [Family::Name(family)];
+        let stretch = match *style.width() {
+            1 => Stretch::UltraCondensed,
+            2 => Stretch::ExtraCondensed,
+            3 => Stretch::Condensed,
+            4 => Stretch::SemiCondensed,
+            6 => Stretch::SemiExpanded,
+            7 => Stretch::Expanded,
+            8 => Stretch::ExtraExpanded,
+            9 => Stretch::UltraExpanded,
+            _ => Stretch::Normal,
+        };
+        let font_style = match style.slant() {
+            skia_safe::font_style::Slant::Italic => Style::Italic,
+            skia_safe::font_style::Slant::Oblique => Style::Oblique,
+            _ => Style::Normal,
+        };
+        let id = database.query(&Query {
+            families: &families,
+            weight: Weight((*style.weight()).clamp(1, 1000) as u16),
+            stretch,
+            style: font_style,
+        })?;
+        database
+            .with_face_data(id, |bytes, index| {
+                font_mgr.new_from_data(skia_safe::Data::new_copy(bytes), Some(index))
+            })
+            .flatten()
+            .filter(|typeface| !is_placeholder_typeface(typeface))
+    })
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -262,6 +346,10 @@ struct FontLookupKey {
 }
 
 thread_local! {
+    static PLACEHOLDER_TYPEFACE_CACHE: RefCell<HashMap<u32, bool>> =
+        RefCell::new(HashMap::new());
+    static SYSTEM_PROGRAM_DATABASE: RefCell<Option<usvg::fontdb::Database>> =
+        const { RefCell::new(None) };
     static SYSTEM_TYPEFACE_CACHE: RefCell<HashMap<FontLookupKey, Option<Typeface>>> =
         RefCell::new(HashMap::new());
     static LEGACY_TYPEFACE_CACHE: RefCell<HashMap<FontStyleCacheKey, Option<Typeface>>> =
@@ -305,13 +393,19 @@ pub(super) fn match_system_family_style(
             return cached;
         }
 
-        let matched = if has_system_family(system_families, family) {
+        let matched = (if has_system_family(system_families, family) {
             font_mgr.match_family_style(family, style)
         } else {
             // 설치된 style set의 name ID 6만 조회한다. 없는 이름을 OS에
             // 질의하면 headless CoreText의 다운로드 IPC를 유발할 수 있다.
             system_families.postscript_face(font_mgr, family)
-        };
+        })
+        .filter(|typeface| !is_placeholder_typeface(typeface))
+        .or_else(|| {
+            has_system_family(system_families, family)
+                .then(|| recover_installed_system_typeface(font_mgr, family, style))
+                .flatten()
+        });
         cache.borrow_mut().insert(key, matched.clone());
         matched
     })
@@ -365,6 +459,24 @@ mod tests {
         }
         // 사양상 ID 6일 수 없는 요청은 실제 시스템 색인을 시작하지 않는다.
         assert!(system_families.postscript_faces.get().is_none());
+
+        // macOS의 LastResort는 비영(非零) gid를 반환하지만 문자의 실제
+        // 글리프가 아니다. 네이티브 글꼴 공급에서 이를 coverage로 세지 않는다.
+        #[cfg(target_os = "macos")]
+        {
+            let placeholder = font_mgr
+                .match_family_style(".LastResort", FontStyle::normal())
+                .expect("macOS의 내장 LastResort 프로그램");
+            assert_ne!(placeholder.unichar_to_glyph('나' as i32), 0);
+            let chain = [TypefaceCandidate {
+                typeface: placeholder,
+                source: "system",
+            }];
+            assert!(
+                select_typeface_for_character(&chain, '나').is_none(),
+                "블록 대용 글리프를 실제 한글 coverage로 사용하지 않음"
+            );
+        }
     }
 
     #[test]

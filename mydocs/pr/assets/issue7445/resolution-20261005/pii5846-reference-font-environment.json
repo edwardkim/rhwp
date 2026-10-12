@@ -1,5 +1,5 @@
 {
-  "id": "declared-program-933c220fc7e66a28c126599817be0eff5cfa30f8583f51ebab7f9af94479b103",
+  "id": "pii-confirmed-glyph-fallback-3dd7c322eaac2832",
   "substitutions": {
     "명조": "HYmjrE",
     "한양신명조": "HYSinMyeongJo-Medium",
@@ -9,5 +9,10 @@
     "HYGothic-Medium",
     "HYSinMyeongJo-Medium",
     "HYmjrE"
-  ]
+  ],
+  "glyphFallbacks": {
+    "휴먼명조": [
+      "Haansoft Batang"
+    ]
+  }
 }

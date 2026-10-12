@@ -1722,10 +1722,12 @@ fn char_width_decision_with_hft_tracking<'a>(
         // Paint에 전달한 선언 체인에서만 결측 글리프를 찾는다. 일반 OS 폴백이나
         // DB에 존재한다는 사실만으로 설치를 추정하지 않는다. 원 face의 hit와
         // HFT 폭 계약은 유지하고, fallback 자체에는 원 face의 HFT 규칙을 옮기지 않는다.
-        let verified_primary_missing = latin
-            .map_or(style.font_metric_trusted, |l| l.font_metric_trusted)
+        // 호환 전진폭의 신뢰도와 실제 프로그램의 cmap 유무는 다른 정보다.
+        // 폭 계약 전체를 TrueType으로 바꾸지 않고, paint와 같은 primary의
+        // 확인된 결측만 다음 선언 face로 보낸다. HFT 명시 규칙은 아래에서 보호한다.
+        let verified_primary_missing = metric_family == display_family
             && embedded.metric.is_some_and(|found| {
-                found.metric.bold == style.bold
+                (found.metric.bold == style.bold || found.bold_fallback)
                     && found.metric.italic == style.italic
                     && font_metrics_data::verified_metric_has_glyph(found.metric, c) == Some(false)
             });
@@ -1743,10 +1745,13 @@ fn char_width_decision_with_hft_tracking<'a>(
                 ) == Some(false));
         // DB가 수집하지 않은 구간은 glyph 부재의 증거가 아니다. 확인한 프로그램의
         // cmap이 실제 결측을 입증한 경우만 다음 face로 측정한다. 나머지는 기존
-        // backend 보충 측정에 남기며, 다른 weight 프로그램의 부재도 추정하지 않는다.
+        // backend 보충 측정에 남긴다. 선택기가 같은 regular 프로그램으로 faux bold를
+        // 해소한 경우만 그 cmap을 소비하며, 다른 weight/style 프로그램의 부재는 추정하지 않는다.
         if matches!(embedded.width_source, "metricCharacterMiss" | "metricMiss")
             && verified_primary_missing
             && !c.is_whitespace()
+            && !style.hft_hangul_face
+            && !style.hft_fullwidth_dot
         {
             let paint_family = crate::renderer::render_font_family_chain_for_weight(
                 display_family,
@@ -1764,7 +1769,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                 );
                 if fallback.width_px.is_some()
                     && fallback.metric.is_some_and(|found| {
-                        found.metric.bold == style.bold
+                        (found.metric.bold == style.bold || found.bold_fallback)
                             && found.metric.italic == style.italic
                             && font_metrics_data::verified_metric_has_glyph(found.metric, c)
                                 == Some(true)

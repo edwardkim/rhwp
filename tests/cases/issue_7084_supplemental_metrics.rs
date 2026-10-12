@@ -321,6 +321,36 @@ fn unknown_non_emoji_glyph_uses_provider_width_not_square_rule() {
     let entry = measured(&prepared, "𝄞", 11.25);
     let _store = bound(&mut prepared, vec![entry]);
     near(positions("𝄞", &prepared)[1], 11.25);
+    // 같은 검증 regular 프로그램의 faux bold도 cmap 소유가 바뀌지 않는다.
+    // 공급 체인의 결측 기호만 좁히고 원래 한글의 폭은 보존한다.
+    for (bold, font_metric_trusted) in [(false, false), (false, true), (true, false), (true, true)]
+    {
+        let declared = TextStyle {
+            font_family: "휴먼명조,Haansoft Batang".into(),
+            font_metric_trusted,
+            bold,
+            ..style()
+        };
+        let p = positions("용․편", &declared);
+        assert!(p[2] - p[1] > 0.0 && p[2] - p[1] < (p[3] - p[2]) / 2.0);
+        for (hft_hangul_face, hft_fullwidth_dot, italic) in [
+            (true, false, false),
+            (false, true, false),
+            (false, false, true),
+        ] {
+            let protected = TextStyle {
+                hft_hangul_face,
+                hft_fullwidth_dot,
+                italic,
+                ..declared.clone()
+            };
+            let p = positions("용․편", &protected);
+            assert!(
+                p[2] - p[1] >= (p[3] - p[2]) / 2.0,
+                "HFT 또는 확인하지 않은 style 프로그램의 glyph 부재를 추정하지 않음"
+            );
+        }
+    }
 }
 
 #[test]

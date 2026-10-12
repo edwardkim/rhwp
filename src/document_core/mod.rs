@@ -407,6 +407,9 @@ impl DocumentCore {
                     font_idx as u16,
                     self.font_environment.as_ref(),
                 );
+                // 실제 paint가 소비하는 glyph 공급자도 Studio가 준비해야 한다.
+                // primary만 노출하면 측정한 대체 face를 브라우저가 로드하지 못한다.
+                fonts.extend(decision.css_family_chain.iter().cloned());
                 if let Some(resolved) = decision.normalized_face {
                     fonts.insert(resolved.clone());
                     if decision.environment_profile_id.is_none() {

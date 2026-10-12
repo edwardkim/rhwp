@@ -313,6 +313,61 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
         .flat_map(|para| para.text.chars())
         .filter(|ch| !ch.is_whitespace())
         .collect();
+    // 독립 Print의 제목은 원 글리프를 유지하며 결측 한점 리더만
+    // 한컴바탕으로 출력한다. 이 기호는 옆 한글보다 좁아야 하며,
+    // 다음 글자도 측정한 같은 전진폭 뒤에서 시작해야 한다.
+    // 좌표나 현재 쪽 전체 폭을 고정하지 않는다.
+    let mut default_doc = HwpDocument::from_bytes(&bytes).expect("기본 제품 경로의 같은 원본");
+    for title_doc in [&mut doc, &mut default_doc] {
+        for page_index in [39, 64] {
+            let page = title_doc
+                .build_page_render_tree(page_index)
+                .expect("원본 대안 분석 제목 쪽");
+            let title = line(&page.root, "각대안의활동별비용․편익분석결과")
+                .expect("원본 제목 내용과 쪽 소유");
+            assert_eq!(
+                text(title).matches('․').count(),
+                1,
+                "원본 제목 기호를 한 번 보존"
+            );
+            let svg = title_doc
+                .render_page_svg(page_index as u32)
+                .expect("동일 제목의 실제 SVG 출력");
+            let xml = roxmltree::Document::parse(&svg).expect("최종 SVG 파싱");
+            let dot = xml
+                .descendants()
+                .find(|node| {
+                    node.has_tag_name("text")
+                        && node.text() == Some("․")
+                        && node
+                            .attribute("font-family")
+                            .is_some_and(|family| family.contains("휴먼명조"))
+                })
+                .expect("원본 제목 기호의 실제 paint 소유");
+            let next = dot.next_sibling_element().expect("기호 다음 실제 글자");
+            let following = next.next_sibling_element().expect("그 다음 실제 글자");
+            assert_eq!(next.text(), Some("편"));
+            assert_eq!(following.text(), Some("익"));
+            let origin = |node: roxmltree::Node<'_, '_>| {
+                node.attribute("x").unwrap().parse::<f64>().unwrap()
+            };
+            let dot_advance = origin(next) - origin(dot);
+            let hangul_advance = origin(following) - origin(next);
+            assert!(dot_advance > 0.0 && dot_advance < hangul_advance / 2.0,
+                "결측 기호를 한글 전각으로 계산하지 않음: dot advance={dot_advance}, Hangul advance={hangul_advance}");
+            assert_eq!(
+                dot.attribute("font-size"),
+                next.attribute("font-size"),
+                "대체 글리프 공급이 원본 제목의 글자 크기를 바꾸지 않음"
+            );
+            assert!(
+                dot.attribute("font-family")
+                    .unwrap()
+                    .contains("Haansoft Batang"),
+                "실제 paint도 독립 Print에서 확인한 글리프 공급 체인을 소비함"
+            );
+        }
+    }
     let page65 = doc.build_page_render_tree(64).expect("65쪽 내부 표 시작");
     let page66 = doc.build_page_render_tree(65).expect("66쪽 내부 표 종료");
     let opening = source_cell(owned_table(&page65.root, 619).expect("앞 설명 표"), 4, 1);

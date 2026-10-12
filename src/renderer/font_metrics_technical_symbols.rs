@@ -98,6 +98,15 @@ fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(boo
 }
 
 pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
+    // 같은 등록 프로그램의 cmap 결측이다. 폭 표에 없다는 사실만으로
+    // 결측을 추정하지 않으며, 다른 weight/style 프로그램에는 적용하지 않는다.
+    if ch == '\u{2024}' {
+        match (metric.name, metric.em_size, metric.bold, metric.italic) {
+            ("HumanMyeongJo", 1024, false, false) => return Some(false),
+            ("Haansoft Batang", 1024, false, false) => return Some(true),
+            _ => {}
+        }
+    }
     verified_technical_symbol_entry(metric, ch).map(|(present, _)| present)
 }
 
@@ -129,6 +138,7 @@ pub(crate) fn verified_program_punctuation_width(metric: &FontMetric, ch: char) 
         ("Haansoft Batang", 1024, false, false, 8217) => Some(276),
         ("Haansoft Batang", 1024, false, false, 8220) => Some(379),
         ("Haansoft Batang", 1024, false, false, 8221) => Some(379),
+        ("Haansoft Batang", 1024, false, false, 8228) => Some(178),
         ("HumanMyeongJo", 1024, false, false, 183) => Some(1024),
         ("HumanMyeongJo", 1024, false, false, 8216) => Some(1024),
         ("HumanMyeongJo", 1024, false, false, 8217) => Some(1024),

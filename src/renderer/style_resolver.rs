@@ -799,6 +799,19 @@ pub(crate) fn lookup_font_name_in_environment(
                 }
             }
             decision.environment_profile_id = Some(environment.id().to_string());
+        } else if let Some(primary) = decision.normalized_face.as_deref() {
+            // 원본의 substFont와 명시 환경을 먼저 존중한다. 검증된 기본 glyph
+            // 공급자는 OS 체인 앞에 붙이되, TTF/HFT·메트릭 신뢰도는 승격하지 않는다.
+            for face in super::font_metrics_data::verified_program_glyph_fallback_families(primary)
+            {
+                if !decision
+                    .css_family_chain
+                    .iter()
+                    .any(|existing| existing == face)
+                {
+                    decision.css_family_chain.push((*face).to_string());
+                }
+            }
         }
     }
     decision

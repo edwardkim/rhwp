@@ -39,9 +39,10 @@ def extract(path, family, start=0x2300, end=0x23FF):
             "end": end,
             "widths": values,
             "present": present,
+            "oneDotPresent": 0x2024 in cmap and font.getGlyphID(cmap[0x2024]) != 0,
             "punctuationWidths": {
                 str(codepoint): font["hmtx"][cmap[codepoint]][0]
-                for codepoint in (0x00B7, 0x2018, 0x2019, 0x201C, 0x201D)
+                for codepoint in (0x00B7, 0x2018, 0x2019, 0x201C, 0x201D, 0x2024)
                 if codepoint in cmap and font.getGlyphID(cmap[codepoint]) != 0
             },
         }
@@ -107,7 +108,13 @@ def main():
     for index, record in enumerate(records):
         source += f'        ("{record["metricName"]}", {record["metricEm"]}, false, false) => (&VERIFIED_TECHNICAL_{index}_PRESENT, &VERIFIED_TECHNICAL_{index}_WIDTHS),\n'
     source += "        _ => return None,\n    };\n    let index = (ch as u32 - 0x2300) as usize;\n    Some((present[index], widths[index]))\n}\n"
-    source += "\npub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {\n    verified_technical_symbol_entry(metric, ch).map(|(present, _)| present)\n}\n"
+    source += "\npub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {\n"
+    source += "    if ch == '\\u{2024}' {\n        match (metric.name, metric.em_size, metric.bold, metric.italic) {\n"
+    for record in records:
+        present = str(record["oneDotPresent"]).lower()
+        source += f'            ("{record["metricName"]}", {record["metricEm"]}, false, false) => return Some({present}),\n'
+    source += "            _ => {}\n        }\n    }\n"
+    source += "    verified_technical_symbol_entry(metric, ch).map(|(present, _)| present)\n}\n"
     source += "\nfn verified_technical_symbol_width(metric: &FontMetric, ch: char) -> Option<u16> {\n    let (present, width) = verified_technical_symbol_entry(metric, ch)?;\n    (present && width > 0).then_some(width)\n}\n"
     source += "\n// HFT 보정이 섞인 기존 표와 별개인 원 프로그램의 실제 hmtx.\n"
     source += "pub(crate) fn verified_program_punctuation_width(metric: &FontMetric, ch: char) -> Option<u16> {\n"

@@ -130,6 +130,17 @@ pub(crate) fn verified_named_program_has_glyph(
         .or_else(|| cjk_punctuation::primary_has_glyph(family, bold, italic, ch))
 }
 
+/// 확인한 원 프로그램의 결측 글리프 공급 체인. 기본 face의 폭 계약은 바꾸지 않는다.
+pub(crate) fn verified_program_glyph_fallback_families(face: &str) -> &'static [&'static str] {
+    // HMKMM.TTF의 cmap에는 U+2024가 없고 HBATANG.TTF에는 있다.
+    // 독립 개인정보 Print의 같은 제목도 휴먼명조 사이에서 이 기호만
+    // Haansoft Batang으로 출력한다. 이름 별칭은 기존 메트릭 선택기가 해소한다.
+    match find_metric(face, false, false).map(|found| found.metric.name) {
+        Some("HumanMyeongJo") => &["Haansoft Batang"],
+        _ => &[],
+    }
+}
+
 /// find_metric의 반환값: 메트릭 + 폴백 정보
 pub struct MetricMatch {
     pub metric: &'static FontMetric,
