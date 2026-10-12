@@ -1133,11 +1133,6 @@ jobs:
       - name: Clippy (WASM32)
         run: cargo clippy -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings
 
-      # 기본/Skia 검사에서는 gpu cfg를 컴파일하지 않는다. GPU 장치 없이도
-      # vello·vello_svg·wgpu의 API 및 타입 호환을 의존성 업데이트마다 확인한다.
-      - name: Check GPU feature compatibility
-        run: cargo check --locked -p rhwp --all-targets --features gpu
-
       # [#3664] Native FFI 크레이트가 워크스페이스 밖이라 어느 CI job 도 건드리지
       # 않는 사이 코어 API 변경을 못 따라가 이미 컴파일이 깨져 있었다(C#·Swift 래퍼
       # 동반 무력화). 기본 `cargo clippy` 는 루트 크레이트만 보므로 별도 검사가 필요하다.
