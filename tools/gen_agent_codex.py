@@ -143,8 +143,7 @@ FAMILIES = [
     ("30_편집과_계획", "편집·계획 — 원본 무훼손 변경",
      ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit apply-endnote-shape", "edit set-chart-data", "edit insert-number", "edit insert-image", "edit redact", "edit sanitize", "run"]),
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
-     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "export-sixel", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document",
-      "export-png-gpu", "gpu-info"]),
+     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "export-sixel", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document"]),
     ("50_검증_사다리", "검증 사다리 — 판정은 데이터다",
      ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip",
       "layout-anomaly",
@@ -241,8 +240,23 @@ def provenance_map():
 
 
 def help_lines():
-    _, out = run_bin(["--help"])
-    return out.splitlines()
+    # 루트 --help는 이름·요약 index다. 사용법은 명령별 상세 도움말에서 읽는다.
+    commands = {command["name"] for command in capabilities()["commands"]}
+    names = commands | {
+        name for _, _, members in FAMILIES for name in members
+        if name.split()[0] in commands
+    }
+    lines = []
+    for name in sorted(names):
+        code, out = run_bin(name.split() + ["--help"])
+        if code != 0:
+            continue
+        detailed = out.splitlines()
+        lines.extend(detailed)
+        # 보조 설명의 상세 구문을 우선하고, 없으면 정본 rhwp 사용법을 쓴다.
+        lines.extend(line.strip()[5:] for line in detailed
+                     if line.strip().startswith("rhwp " + name + " "))
+    return lines
 
 
 def command_chapter(cmd, prov, help_map):

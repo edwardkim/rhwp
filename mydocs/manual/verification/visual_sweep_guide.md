@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-09
+last_verified: 2026-10-11
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -175,9 +175,30 @@ Native/fresh WASM 최저 일치율이 90% 미만이거나 측정 불가이면 �
 보존·포함·겹침 관계로 검사한다. 상세 절차는
 [기존 기대값 재검토](../pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
 
+현재 브랜치에서 전쪽 Native/fresh WASM 최저 90% 이상·독립 PDF 쪽수 일치·직접 판독을
+확인한 문서는 실패 검사를 먼저 재검토한다. **쪽수 검사도 포함**하며, 잘못된 px·고정 영역·과거
+쪽수 핀은 문단·줄·개체 소속, 내용 순서·보존·포함·겹침 관계로 수정한다. 정확한 독립 기대값은
+유지하고 구현을 고친다. 이미 보정한 문서는 과거 base 미달이나 이슈 등록만으로 제거하지 않는다.
+
+전쪽 Native/fresh WASM 검증과 직접 판독을 마친 **현재 보정 대상 문서**는 기존 회귀가
+통과 중이어도 그 문서를 사용하는 절대 px 좌표·고정 영역 검사를 확인하고 관계 검사로
+바꾼다. 대상 문서의 원본 경로를 따라 검사·공용 corpus 참조를 확인하며 다른 문서로 범위를
+확장하지 않는다. 기존 검사 함수 안에서 쪽 소속·내용 순서·누락·중복·포함·겹침을 보호하고,
+독립 PDF 쪽수 대조에는 대응 내용 보존을 함께 검사한다. 원본 글자모양·셀 속성에서 계산한
+크기와 실제 줄·개체의 포함 또는 비율 관계는 유지할 수 있다. 소스 단위를 px로 환산했다는
+이유만으로 이 원본 계약을 제거하지 않는다. 변경 보고에는 기존에 이미 관계 검사였던 범위,
+실제로 교체한 핀, 새로 보완한 내용 관계와 재사용한 시각 증거를 구분해 기록한다.
+
+미달 문서는 **같은 원본·같은 미해결 범위가 기존 이슈에 등록되어 있는지 먼저 확인**한다.
+등록되어 있으면 해당 회귀 함수·assertion·baseline/manifest 및 자동 수집 참조를 제거한 뒤
+남은 검증을 계속한다. 원본·PDF와 범위 밖의 정상 검사는 보존한다. 관련 이슈가 없을 때만
+별도 이슈를 등록하며, **개인의 작업 이슈를 공통 이관 대상으로 자동 지정하지 않는다.**
+상세 판정·기록은 [기존 기대값 재검토](../pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)와
+[기존 이슈 확인·처리](../pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)를 따른다.
+
 **SHA를 고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 회귀 검사**가
 부적합한 경우에만
-[별도 이슈 이관](../pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)에 따라 새로운 이슈로 등록한다.
+[별도 이슈 이관](../pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)에 따라 기존 이슈 등록 여부를 먼저 확인한다.
 해당 회귀 검사와 HWP/HWPX/PDF를 활성 검증 경로에서 제거·이관하고 별도 이슈에서 출력 보정을
 진행한다. 같은 원본의 90% 이상 및 확대 판독 확인 뒤 관계형 회귀를 복원하며, 이관 자체를
 현재 PR의 시각 통과나 결함 해결로 보고하지 않는다. 같은 입력의 base/head 비교로 기존 미달을
@@ -558,6 +579,16 @@ python3 scripts/visual_sweep.py \
 작은 글자나 셀 clip 경계를 확대 판정할 때는 `--dpi 144`처럼 목표 DPI를 높일 수
 있다. 이 값은 PDF raster와 rhwp SVG raster 양쪽에 같은 배율로 적용된다. 기본값은
 96dpi이며 0 이하 값은 허용하지 않는다.
+
+PDF PNG는 `pdftoppm -thinlinemode shape`로 생성한다. 1px보다 얇은 선을 원래
+너비에 비례한 coverage로 그려 SVG의 안티앨리어싱과 비교한다. 원본 PDF의 선 두께·색상,
+내용 이진화 임계값·2px 공차·90% gate는 바꾸지 않는다. 실행 manifest의
+`provenance.pdf_rasterizer.thin_line_mode`에 이 설정을 기록한다. 과거 기본 모드의 PNG·TSV는
+그 출처를 유지하며 새 결과로 덮어쓰지 않는다. 새 설정으로 다시 비교할 때는 같은 원본·PDF와
+Native/fresh WASM 출력의 해시를 고정하고 전쪽 TSV를 산출한다. 숫자 상승만으로 수용하지 않고
+원본 선과 독립 PDF의 두께·색상, 변경 영역의 review PNG를 함께 확인한다.
+
+옵션의 의미는 [Poppler의 pdftoppm 문서](https://skia.googlesource.com/third_party/poppler/+/master/utils/pdftoppm.1)에 따른다.
 
 일부 공개문서 축약 샘플은 rhwp SVG/PNG 파일명이 문서 내부 원래 페이지 번호나 문서번호를 따라가고,
 기준 PDF는 해당 페이지만 잘라낸 단일 페이지라 `pdf-1.png`로 생성될 수 있다. 예를 들어 rhwp 쪽은

@@ -1,3 +1,10 @@
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
+
 use super::*;
 use crate::model::document::{Document, Section};
 use crate::model::paragraph::{LineSeg, Paragraph};
@@ -26764,6 +26771,7 @@ fn corpus_split_join_sweep_all_samples() {
         .map(|e| e.path())
         .filter(|path| !is_deferred_exam_document(path.to_string_lossy().as_ref()))
         .filter(|p| p.extension().and_then(|s| s.to_str()) == Some("hwp"))
+        .filter(|p| !exam_fixtures::is_exam_fixture(p))
         .collect();
     files.sort();
 

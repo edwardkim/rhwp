@@ -264,7 +264,7 @@ fn check_hwpx_package(path: &str, entry: &str, replacement: &str) {
     let mut changed = false;
     for i in 0..reader.len() {
         let mut file = reader.by_index(i).unwrap();
-        let name = file.name().to_owned();
+        let name = file.name().expect("ZIP 엔트리 이름").into_owned();
         let mut data = Vec::new();
         file.read_to_end(&mut data).unwrap();
         if name == entry {

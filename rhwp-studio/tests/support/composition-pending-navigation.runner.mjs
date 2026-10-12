@@ -22,6 +22,11 @@ const { CursorState } = await import(pathToFileURL(join(srcRoot, 'engine/cursor.
 const { ImeNavigationGuard } = await import(pathToFileURL(join(srcRoot, 'engine/ime-navigation-guard.ts')).href);
 
 const BODY_POSITION = { sectionIndex: 0, paragraphIndex: 7, charOffset: 42 };
+// 호스트의 navigator.platform에 기대지 않고 두 플랫폼의 실제 단축키 계약을 실행한다.
+const platform = process.argv[2] || 'other';
+assert.ok(platform === 'mac' || platform === 'other');
+globalThis.__rhwpTestPlatformKind = platform;
+const wordModifiers = platform === 'mac' ? { altKey: true } : { ctrlKey: true };
 const text = 'alpha beta';
 const bodyText = 'x'.repeat(36) + ' alpha beta' + 'x'.repeat(33);
 const rect = { pageIndex: 0, x: 100, y: 100, height: 12 };
@@ -143,7 +148,7 @@ for (const mode of ['header', 'footer', 'footnote']) {
   }
 }
 
-// 수정자도 보존한다. Shift는 HF anchor를, Ctrl은 HF 단어 경계를 사용해야 한다.
+// 수정자도 보존한다. Shift는 HF anchor를, Ctrl/Option은 HF 단어 경계를 사용한다.
 {
   const state = createHandler('header');
   commitWithKey(state, 'ArrowLeft', { shiftKey: true });
@@ -154,14 +159,14 @@ for (const mode of ['header', 'footer', 'footnote']) {
 }
 {
   const state = createHandler('header');
-  commitWithKey(state, 'ArrowLeft', { ctrlKey: true });
+  commitWithKey(state, 'ArrowLeft', wordModifiers);
   assert.equal(state.cursor.hfCharOffset, 0);
   assert.deepEqual(state.cursor.getPosition(), BODY_POSITION);
 }
 {
   const state = createHandler();
-  commitWithKey(state, 'ArrowLeft', { ctrlKey: true });
-  assert.equal(state.cursor.getPosition().charOffset, 37, 'Ctrl+방향키는 이전 단어 경계로 한 번 이동한다');
+  commitWithKey(state, 'ArrowLeft', wordModifiers);
+  assert.equal(state.cursor.getPosition().charOffset, 37, '플랫폼별 단어 이동은 이전 경계로 한 번 이동한다');
 }
 
 // 본문 Shift+방향키는 선택 렌더링까지 일반 keydown과 같다.

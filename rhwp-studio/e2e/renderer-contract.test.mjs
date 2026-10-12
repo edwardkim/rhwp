@@ -3210,8 +3210,17 @@ assert.deepEqual(
   'the real HWP gate must prove its vertical text, punctuation, and dash features are present',
 );
 assert.equal(rendererBaselineManifest.schemaVersion, 1, 'renderer baseline manifest schema must be explicit');
+// The six exam inputs are intentionally excluded; their files remain in samples/.
+const retiredExamSampleIds = [
+  'exam-kor', 'exam-eng', 'exam-math', 'exam-math-no', 'exam-science', 'exam-social',
+];
+assert.equal(
+  rendererBaselineManifest.samples.some((sample) => retiredExamSampleIds.includes(sample.id)),
+  false,
+  'retired exam inputs must not participate in renderer regression coverage',
+);
 assert.ok(
-  rendererBaselineManifest.samples.length >= 120,
+  rendererBaselineManifest.samples.length >= 120 - retiredExamSampleIds.length,
   'renderer baseline manifest must keep the refreshed cross-backend corpus',
 );
 for (const sample of rendererBaselineManifest.samples) {
@@ -3232,7 +3241,7 @@ for (const sample of rendererBaselineManifest.samples) {
 }
 assert.equal(
   rendererBaselineManifest.samples.filter((sample) => sample.baselineTier === 'representative').length,
-  24,
+  23,
   'the default renderer baseline tier must remain bounded',
 );
 for (const sampleId of [

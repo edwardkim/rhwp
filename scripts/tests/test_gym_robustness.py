@@ -263,6 +263,9 @@ class RobustnessTests(unittest.TestCase):
             for i in range(50):
                 Path(d, f"s{i:03d}.hwp").write_bytes(b"x")
             Path(d, "not-a-sample.txt").write_bytes(b"x")
+            from gym.core.input_selection import EXCLUDED_EXAM_INPUT_NAMES
+            for name in EXCLUDED_EXAM_INPUT_NAMES:
+                Path(d, name).write_bytes(b"x")
             picked1, total = mod.select_samples(d, 10)
             picked2, _ = mod.select_samples(d, 10)
             self.assertEqual(total, 50)  # .txt 제외

@@ -65,10 +65,6 @@ const CONDITION_FIELDS = [
 
 const GENERATOR_VERSION = '2.0.0';
 const PUBLIC_PARITY_FIXTURES = [
-  'samples/exam_kor.hwp',
-  'samples/exam_eng.hwp',
-  'samples/exam_math.hwp',
-  'samples/exam_science.hwp',
   'samples/synam-001.hwp',
   'samples/aift.hwp',
   'samples/2010-01-06.hwp',

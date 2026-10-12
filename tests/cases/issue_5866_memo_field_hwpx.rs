@@ -105,7 +105,13 @@ fn issue_5866_real_hwp5_memo_document_emits_memo_not_crossref() {
     // 메모가 어느 구역에 있든 잡히도록 전 구역을 잇는다.
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(&hwpx[..])).expect("HWPX zip 열기");
     let names: Vec<String> = (0..zip.len())
-        .map(|i| zip.by_index(i).unwrap().name().to_string())
+        .map(|i| {
+            zip.by_index(i)
+                .unwrap()
+                .name()
+                .expect("ZIP 엔트리 이름")
+                .to_string()
+        })
         .filter(|n| n.starts_with("Contents/section") && n.ends_with(".xml"))
         .collect();
     let mut xml = String::new();
