@@ -17,6 +17,7 @@ last_verified: 2026-09-03
 | 주제 | 권위 또는 우선 진입점 | 관련 상세 문서 |
 | --- | --- | --- |
 | HWP 5.0 구현 차이 | [HWP 5.0 스펙 문서 정오표](hwp_spec_errata.md) | [한글 문서 파일 형식 5.0 개정 1.3](한글문서파일형식_5.0_revision1.3.md), [HWP 제어 데이터](hwp_ctrl_data.md) |
+| HWP 차트 파일 구조 | [한글 문서 파일 형식 차트 개정 1.2](한글문서파일형식_차트_revision1.2.md) | 한컴 공식 PDF 전체 변환본: 객체·상수 표와 구조 그림 |
 | HWP↔OWPML(HWPX) 정합 관찰(공개용) | [HWP/OWPML 정합 관찰 노트](owpml_conformance_observations.md) | [HWP 5.0 스펙 문서 정오표](hwp_spec_errata.md), [한컴 공식 OWPML 모델 참조 가이드](hwpx_hancom_reference.md) |
 | 포맷 파서와 공통 IR 책임 경계 | [포맷 파서와 공통 Document IR 경계](parser_architecture.md) | [HWP/HWPX IR 차이](hwp_hwpx_ir_differences.md) |
 | IR 저장·직렬화와 무효화 계약 | [HWP 저장 기술 가이드](hwp_save_guide.md) | [직렬화 passthrough·무효화 계약](serialization_passthrough_contract.md) |
