@@ -2644,3 +2644,11 @@ paint 공급과 분리했습니다. 원본·독립 PDF·명시 환경 JSON은 �
 - SFNT 지역화 이름을 정렬한 첫 항목이 API PostScript 식별자를 덮어쓰는 오류도 보정했습니다. 한컴바탕의 바이트 조회는 이전 미확보에서 정확한 API 식별자로 32,483,900바이트 확보로 바뀌었습니다. 원 font binary는 커밋하지 않습니다.
 - programme 양성·미확인 이름·기존 cache·오래된 문서 공급과 지역화 alias/API identity의 관계를 검사합니다. 관련 선별 16건 및 Studio 1,835 PASS / 0 FAIL / 2 SKIP·build를 확인했습니다. initialize 순서 보정 후 최종 Studio 검증과 실제 소비 검증은 계속합니다.
 - 실제 Canvas 한글 표시를 복구했지만 확대 판독의 한점 리더 한 곳은 추가 확인 중입니다. 현재 최고 보조값만으로 완료·PR 제출을 선언하지 않습니다. 전체 42문서 Native/fresh WASM 재검증은 같은 Rust 생산 코드와 비교기로 계속합니다.
+
+### 2026-10-13 Canvas 옛한글 paint의 공급 자원 준비
+
+직전 확대 판독의 남은 물음표를 한점 리더라고 기록했지만, 실제 fillText 호출과 변환 좌표를 추적한 결과 **옛한글 아래아 U+119E**였습니다. U+2024와 구분하며 위 한점 리더 전진폭 보정은 별도의 유효한 결과로 유지합니다.
+
+Canvas 옛한글 분기는 `Source Han Serif K Old Hangul`을 직접 요청하지만, 문서에 저장된 family 목록만 읽는 초기 로더가 이 자원을 준비하지 않았습니다. 기존 공개 subset·registry 규칙·Unicode 범위는 그대로 두고 필수 공급 대상에 포함했습니다. 외부 폰트 사용을 끈 경로에서도 로컬 자원으로 공급합니다. 기존 로더 검사에서 수정 전 FAIL(exit 1), 수정 후 2 PASS를 확인했습니다. 실제 screen/print 재캡처의 아래아 표시를 확대 판독했고 물음표 상자가 사라졌습니다. 점수와 glyph 존재를 구분하여 기록합니다.
+
+Rust 생산 코드·fresh package·Visual Sweep 비교기는 변경하지 않았습니다. 최종 Studio 단위·build와 전체 42문서 TSV 및 실제 소비 판정은 후속 최종 증적으로 확정합니다.

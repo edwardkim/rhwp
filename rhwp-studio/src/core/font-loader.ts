@@ -61,8 +61,8 @@ const FONT_LIST: readonly FontEntry[] = FONT_RULE_WEBFONT_ENTRIES;
 /** @font-face에 등록된 폰트 이름 Set */
 export const REGISTERED_FONTS = new Set(FONT_LIST.map(f => f.name));
 
-/** 초기 렌더링에 필수인 폰트 (대부분의 HWP 문서 기본 서체) */
-const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움']);
+/** 문서 기본 서체와 Canvas 옛한글 paint가 직접 요청하는 공급 자원. */
+const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움', 'Source Han Serif K Old Hangul']);
 
 /** CSS @font-face에 등록한 글꼴 (문서 요청 단위로 누적) */
 const registeredFontFaces: FontEntry[] = [];
