@@ -7368,10 +7368,13 @@ impl LayoutEngine {
                     } else {
                         last_sig.is_some() && last_sig == cur_sig
                     };
-                    if same_visual
-                        && (last.10 == para_idx || connects(last.10))
-                        && (y_start - last.4) < 30.0
-                    {
+                    // 연결(bit 28)은 보이는 테두리를 한 상자로 잇는다. 테두리 선이 없는 채움만의
+                    // 문단은 연결돼도 사이 틈을 칠하지 않는다(한/글 2020: bit 29 켜진 채움 문단
+                    // 두 개가 연결 1 이어도 줄간격 틈이 남는다). 맞닿은 범위만 하나로 잇는다.
+                    let fill_only = last_sig.is_none() && cur_sig.is_none();
+                    let joined = last.10 == para_idx
+                        || (connects(last.10) && (!fill_only || y_start - last.4 <= 0.5));
+                    if same_visual && joined && (y_start - last.4) < 30.0 {
                         last.4 = y_end;
                         last.6 = bottom_inset;
                         // 그룹의 partial_end 는 마지막 range 의 값으로 갱신.

@@ -5242,8 +5242,15 @@ impl LayoutEngine {
         });
 
         // 배경/테두리 렌더링을 위한 시작 위치 기록
-        // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전)
-        let bg_y_start = if para_border_fill_id > 0 { y_start } else { y };
+        // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전).
+        // `border_ignore_margin`(attr1 bit 29) 문단은 줄 상자만 덮으므로 앞 간격 뒤에서
+        // 시작한다 (한/글 2020: 앞 간격 1000HU 문단의 배경이 첫 줄 위에서 시작).
+        let border_ignore_margin = para_style.is_some_and(|s| s.border_ignore_margin);
+        let bg_y_start = if para_border_fill_id > 0 && !border_ignore_margin {
+            y_start
+        } else {
+            y
+        };
         let bg_insert_idx = col_node.children.len();
 
         // start_line까지의 누적 문자 오프셋 계산 (편집용 문서 좌표)
@@ -7452,26 +7459,34 @@ impl LayoutEngine {
             // [#5711] 줄간격이 음수인 문단은 전진값 `y` 가 마지막 줄 상자 아래보다 위에
             // 있다. 그 값을 테두리 아래 변으로 쓰면 테두리가 글자를 가로지른다. 다음 문단
             // 시작 y 는 종전대로 두어 문단 간 간격 계약은 바꾸지 않는다.
-            // 채움 배경의 마지막 줄간격은 다음 흐름을 위한 공간이므로 칠하지 않는다.
-            // 채움 없는 문단 외곽선은 빈 줄과 뒤 문장의 후행 간격까지 둘러싼다.
+            //
+            // 본문 문단의 아래 변은 `border_ignore_margin`(attr1 bit 29)이 정한다. 채움
+            // 유무와 무관하다(한/글 2020 합성 대조: 채움·테두리·채움+테두리 모두 같은 규칙).
+            // - 꺼짐: 문단 흐름 전체 — 마지막 줄의 줄간격과 문단 뒤 간격까지 덮는다.
+            //   이어진 같은 배경 문단은 틈 없이 한 띠가 된다(hwp3-sample4 코드 블록).
+            // - 켜짐: 마지막 줄 상자 아래까지만 덮는다(#1835 제목 배경).
             // 셀 문단은 기존 점유 계약을 유지하고, 음수 간격도 줄 상자를 감싼다.
-            let outline_includes_line_spacing = styles
-                .border_styles
-                .get((para_border_fill_id as usize).saturating_sub(1))
-                .is_some_and(|style| {
-                    style.fill_color.is_none()
-                        && style.borders.iter().any(|border| {
-                            !matches!(border.line_type, crate::model::style::BorderLineType::None)
-                        })
-                });
+            // 뒤 간격은 아래 흐름 전진과 같은 값을 쓴다.
+            let trailing_after = if let Some(spacing) = &vertical_spacing {
+                spacing.after
+            } else if end == composed.lines.len() {
+                spacing_after
+            } else {
+                0.0
+            };
+            let flow_bottom = if cell_ctx.is_none() {
+                y + trailing_after.max(0.0)
+            } else {
+                y
+            };
             let border_bottom =
                 last_line_border_bottom
                     .or(last_line_box_bottom)
                     .map_or(y, |bottom| {
-                        if cell_ctx.is_none() && !outline_includes_line_spacing {
+                        if cell_ctx.is_none() && border_ignore_margin {
                             bottom
                         } else {
-                            y.max(bottom)
+                            flow_bottom.max(bottom)
                         }
                     });
             let bg_height = border_bottom - bg_y_start;
@@ -7493,8 +7508,21 @@ impl LayoutEngine {
                 // 박스 outline 좌표는 col_area 전체 (PDF 정합). wrap=Square 호스트
                 // (border_box_override) 케이스는 layout_wrap_around_paras 가 설정한
                 // override 좌표 그대로 사용 (margin 미적용).
+                // `border_ignore_margin` 문단은 문단 왼쪽·오른쪽 여백 안쪽을 기준으로, 테두리
+                // 왼쪽·오른쪽 간격만큼 바깥으로 넓힌 범위를 덮는다. 한/글 2020 실측:
+                // - 여백 2000HU·간격 0 문단의 배경이 단 양끝에서 26.7px 안쪽이다.
+                // - exam_math 8쪽(여백 2270/1130HU·간격 1133HU) 상자는 단 왼쪽에서
+                //   1137HU, 오른쪽에서 0 이다.
                 let (box_x, box_w) = if let Some((ox, ow)) = self.border_box_override.get() {
                     (ox, ow)
+                } else if border_ignore_margin && cell_ctx.is_none() {
+                    let style = para_style;
+                    let left =
+                        style.map_or(0.0, |s| (s.margin_left - s.border_spacing[0]).max(0.0));
+                    let right =
+                        style.map_or(0.0, |s| (s.margin_right - s.border_spacing[1]).max(0.0));
+                    let width = (col_area.width - left - right).max(0.0);
+                    (col_area.x + left, width)
                 } else {
                     (col_area.x, col_area.width)
                 };
