@@ -1207,6 +1207,16 @@ fn parse_para_shape_margin_value_child(ce: &quick_xml::events::BytesStart, ps: &
     if !matches!(local, b"intent" | b"left" | b"right" | b"prev" | b"next") {
         return;
     }
+    // 여백 값 요소는 core 네임스페이스(`hc:`)다. 한/글은 다른 접두어로 쓴 요소를 읽지
+    // 않는다 — 옛 rhwp 저장본 `samples/hwpx/hwpx-02.hwpx` 는 `<hh:intent>` 로
+    // 썼고, 한/글 2022 PDF 는 그 내어쓰기(-5184)를 적용하지 않는다(2쪽 `39.2억` 줄 x
+    // 113.44 = 본문 왼쪽). 같은 파일의 접두어만 `hc:` 로 바꾸면 한/글이 148.00 으로
+    // 내어 쓴다(engine 2020 대조 실험). 접두어가 없는 요소는 종전대로 읽는다.
+    if let Some(prefix) = cname.prefix() {
+        if prefix.into_inner() != "hc" {
+            return;
+        }
+    }
 
     // 패키지 xmlVersion 1.4 이상에서만 평문 HWPUNIT은 물리 단위다.
     // 이전 버전은 한컴 HWP 저장본과 같은 IR 값이므로 확대하지 않는다.
