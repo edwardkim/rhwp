@@ -40,7 +40,8 @@ function rustFilesUnder(directory) {
 
 function directPageRendererCallers() {
   return rustFilesUnder(CLI_ROOT).filter((filename) => (
-    /\.render_page_(?:svg|html|canvas|to_canvas)/.test(
+    // Native PNG remains a workflow consumer after the SVG-to-GPU adapter is retired.
+    /\.render_page_(?:svg|html|canvas|to_canvas|png_native)/.test(
       fs.readFileSync(path.join(REPOSITORY_ROOT, filename), 'utf8'),
     )
   ));

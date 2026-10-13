@@ -44,6 +44,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -91,7 +95,7 @@ fn load_baseline() -> BTreeMap<String, Row> {
         }
         let mut parts = line.split('\t');
         let rel = parts.next().expect("기준선 열 1(경로)");
-        if is_deferred_exam_document(rel) {
+        if is_exam_fixture(Path::new(rel)) || is_deferred_exam_document(rel) {
             continue;
         }
         let oracle_raw = parts.next().expect("기준선 열 2(정답지 쪽수)");

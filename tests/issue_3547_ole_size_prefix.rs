@@ -15,7 +15,10 @@ const SAMPLE: &str = "samples/hwpx/143E433F503322BD33.hwpx";
 /// ZIP 바이트에서 확장자가 `.ole`(대소문자 무관)인 엔트리를 (이름, 바이트)로 수집한다.
 fn internal_ole_entries(zip_bytes: &[u8]) -> Vec<(String, Vec<u8>)> {
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(zip_bytes)).expect("ZIP 열기 실패");
-    let names: Vec<String> = zip.file_names().map(str::to_string).collect();
+    let names: Vec<String> = zip
+        .file_names()
+        .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+        .collect();
     let mut entries = Vec::new();
     for name in names {
         if name.to_ascii_lowercase().ends_with(".ole") {

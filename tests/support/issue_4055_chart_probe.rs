@@ -257,7 +257,7 @@ pub(super) fn rewrite_hwpx(original: &[u8], replacements: &[(String, Vec<u8>)]) 
     let mut out = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
     for i in 0..src.len() {
         let entry = src.by_index(i).expect("zip 엔트리");
-        let name = entry.name().to_string();
+        let name = entry.name().expect("ZIP 엔트리 이름").to_string();
         match replacements.iter().find(|(n, _)| *n == name) {
             Some((_, bytes)) => {
                 out.start_file(&name, zip::write::SimpleFileOptions::default())
@@ -282,7 +282,13 @@ pub(super) fn append_hwpx_entries(original: &[u8], additions: &[(String, Vec<u8>
     let mut src =
         zip::ZipArchive::new(std::io::Cursor::new(original.to_vec())).expect("원본 HWPX 열기");
     let existing: Vec<String> = (0..src.len())
-        .map(|i| src.by_index(i).expect("zip 엔트리").name().to_string())
+        .map(|i| {
+            src.by_index(i)
+                .expect("zip 엔트리")
+                .name()
+                .expect("ZIP 엔트리 이름")
+                .to_string()
+        })
         .collect();
     for (name, _) in additions {
         assert!(

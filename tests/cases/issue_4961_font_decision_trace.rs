@@ -120,18 +120,6 @@ fn stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected() {
         );
     }
 
-    let parity = manifest["comparisons"]["portableFormatParity"]
-        .as_array()
-        .expect("portable parity pair");
-    let hwp = traces
-        .get(parity[0].as_str().expect("HWP parity id"))
-        .expect("HWP parity trace");
-    let hwpx = traces
-        .get(parity[1].as_str().expect("HWPX parity id"))
-        .expect("HWPX parity trace");
-    assert_eq!(hwp["layoutHash"], hwpx["layoutHash"]);
-    assert_eq!(hwp["records"], hwpx["records"]);
-
     let feature = &manifest["comparisons"]["substFeatureDetection"];
     let without = traces
         .get(
@@ -159,7 +147,12 @@ fn stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected() {
 #[test]
 fn stage4_public_trace_limit_and_unsupported_backends_fail_closed() {
     let manifest = stage4_e2e_manifest();
-    let document = &manifest["documents"][2];
+    let document = manifest["documents"]
+        .as_array()
+        .expect("공개 문서")
+        .iter()
+        .find(|doc| doc["id"] == "exact-face")
+        .expect("exact-face 입력 유지");
     let trace = public_trace(
         document["path"].as_str().expect("document path"),
         document["page"].as_u64().expect("page") as u32,

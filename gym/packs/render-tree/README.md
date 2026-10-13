@@ -50,7 +50,6 @@ RT01 한 줄만 있으면 에이전트는 "2010-01-06 의 001 만 내면 축 전
 | RT01 | 다쪽 실문서 | `2010-01-06.hwp` |
 | RT02 | 표 | `table-001.hwp` |
 | RT03 | 문단 | `para-001.hwp` |
-| RT04 | 1쪽 시험지 | `exam-kor-1p.hwp` |
 | RT05 | 가로 | `landscape-001.hwp` |
 | RT06 | 영문 | `basic/english.hwp` |
 | RT07 | 서식 | `form-01.hwp` |
@@ -94,15 +93,6 @@ RT01 한 줄만 있으면 에이전트는 "2010-01-06 의 001 만 내면 축 전
 
 | ID | 하는 일 | 표본 | `-p` | 파일 |
 |---|---|---|---|---|
-| RT29 | 2쪽의 첫 쪽 | `exam-kor-2p.hwp` | 0 | 001 |
-| RT23 | 2쪽의 둘째 | 같은 문서 | 1 | 002 |
-| RT38 | 3쪽의 첫 쪽 | `exam-kor-3p.hwp` | 0 | 001 |
-| RT24 | 3쪽의 둘째 | 같은 문서 | 1 | 002 |
-| RT25 | 3쪽의 셋째 | 같은 문서 | 2 | 003 |
-| RT39 | 4쪽의 첫 쪽 | `exam-kor-4p.hwp` | 0 | 001 |
-| RT26 | 4쪽의 둘째 | 같은 문서 | 1 | 002 |
-| RT27 | 4쪽의 셋째 | 같은 문서 | 2 | 003 |
-| RT28 | 4쪽의 넷째 | 같은 문서 | 3 | 004 |
 
 **실패 모드**
 
@@ -119,7 +109,6 @@ RT01 한 줄만 있으면 에이전트는 "2010-01-06 의 001 만 내면 축 전
 |---|---|---|
 | RT30 | `--show-para-marks` | `table-001.hwp` |
 | RT31 | `--show-control-codes` | `para-001.hwp` |
-| RT32 | `--respect-vpos-reset` | `exam-kor-1p.hwp` |
 | RT33 | `--show-para-marks` | `landscape-001.hwp` |
 | RT34 | `--show-control-codes` | `basic/english.hwp` |
 | RT40 | `--show-para-marks` | `2010-01-06.hwp` (RT01 과 같은 문서) |
@@ -171,3 +160,7 @@ python gym/score.py               --agent baseline --pack render-tree --bin targ
 - SVG/PNG 눈 비교는 `export-svg` / `render-diff` — 이 pack 의 명령이 아니다.
 
 관련: 이슈 #5262.
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: RT04, RT23, RT24, RT25, RT26, RT27, RT28, RT29, RT32, RT38, RT39. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.
