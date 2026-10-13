@@ -1,0 +1,262 @@
+{
+  "validatedCandidate": "a7ce883cbbb284b83740e63e2b4f03502996104d",
+  "policyComparisonBase": "552f5228d2dbfd6046c838f14241704f1bcb8a05",
+  "rustFull": {
+    "head": "a7ce883cbbb284b83740e63e2b4f03502996104d",
+    "pass": 10219,
+    "fail": 0,
+    "skip": 45,
+    "testSeconds": 448.66,
+    "threads": 8,
+    "logSha256": "9b08dca7019ec112c1d09ea376263dc017c605dcc1336382bb5ac2d13ab8c2fe"
+  },
+  "studio": {
+    "head": "a7ce883cbbb284b83740e63e2b4f03502996104d",
+    "pass": 1835,
+    "fail": 0,
+    "skip": 2,
+    "logSha256": "983c0a5309d706151456bcb7c633908e24958ae995f520bd14d1477fafdde6e0",
+    "testExitCode": 0,
+    "buildExitCode": 0
+  },
+  "localGates": {
+    "head": "a7ce883cbbb284b83740e63e2b4f03502996104d",
+    "base": "552f5228d2dbfd6046c838f14241704f1bcb8a05",
+    "running": null,
+    "results": [
+      {
+        "name": "biotoxin-focused",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_7445_biotoxin_source_ownership",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review"
+        ],
+        "exitCode": 0,
+        "seconds": 72.169
+      },
+      {
+        "name": "full-nextest",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--tests",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exitCode": 0,
+        "seconds": 649.847
+      },
+      {
+        "name": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exitCode": 0,
+        "seconds": 78.317
+      },
+      {
+        "name": "native-skia-lib",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exitCode": 0,
+        "seconds": 124.067
+      },
+      {
+        "name": "native-skia-png",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_2225_missing_picture_placeholder",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia"
+        ],
+        "exitCode": 0,
+        "seconds": 82.874
+      },
+      {
+        "name": "native-skia-pdf",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "render_p37_direct_pdf_export",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia"
+        ],
+        "exitCode": 0,
+        "seconds": 7.902
+      },
+      {
+        "name": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "552f5228d2dbfd6046c838f14241704f1bcb8a05"
+        ],
+        "exitCode": 0,
+        "seconds": 0.462
+      },
+      {
+        "name": "unit-tiers",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "552f5228d2dbfd6046c838f14241704f1bcb8a05"
+        ],
+        "exitCode": 0,
+        "seconds": 8.574
+      },
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exitCode": 0,
+        "seconds": 8.428
+      }
+    ]
+  },
+  "exactHeadProductionGates": {
+    "head": "a7ce883cbbb284b83740e63e2b4f03502996104d",
+    "running": null,
+    "results": [
+      {
+        "name": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exitCode": 0,
+        "seconds": 0.554
+      },
+      {
+        "name": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exitCode": 0,
+        "seconds": 0.249
+      },
+      {
+        "name": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review"
+        ],
+        "exitCode": 0,
+        "seconds": 0.43
+      }
+    ]
+  },
+  "visual": {
+    "cases": 42,
+    "pagesPerBackend": 1049,
+    "below90": 0,
+    "missing": 0,
+    "pageCountMismatch": 0,
+    "summary": "whole-visual-summary.json"
+  },
+  "producerCandidateReuse": {
+    "producer": "72b86a77c62f5ee6765c453b1b9340db8afa603c",
+    "validatedCandidate": "a7ce883cbbb284b83740e63e2b4f03502996104d",
+    "laterChangedPaths": [
+      "mydocs/working/task_m100_7445_stage316_completed_pr.md",
+      "tests/cases/issue_7445_biotoxin_source_ownership.rs"
+    ],
+    "productionRustAndStudioSourcesUnchanged": true
+  },
+  "wasm": {
+    "head": "72b86a77c62f5ee6765c453b1b9340db8afa603c",
+    "exitCode": 0,
+    "macBuild": "locked --no-opt; not Docker optimized",
+    "sha256": {
+      "rhwp.js": "f366c9d17e4eb925f6ba325a5236659a09af36656eff934284a5d4ba03212213",
+      "rhwp_bg.wasm": "696d7d81f262c64865881eafa4ef767db237a1acc1d34ab3bd311396687fd932"
+    }
+  },
+  "actualConsumers": "actual-consumer-summary.json",
+  "directInspection": "direct-inspection.json",
+  "knownBaseAuditFailure": {
+    "fontLedgerAuditPass": 17,
+    "fontLedgerAuditFail": 1,
+    "reason": "two historic reference document paths already missing at fixed base; audit implementation unchanged"
+  },
+  "wasmBuild": "Mac locked --no-opt local alternative; immutable source72b86a77, later changes are relation tests/docs only, root/pkg and Studio/public and actual responses match",
+  "publicFontProgramsIncluded": false,
+  "gitHubCI": "not_started",
+  "mergeApproved": false
+}

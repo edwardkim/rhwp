@@ -1,0 +1,172 @@
+{
+  "head": "1198642de2073915c27b1ea4555599b3d600c35f",
+  "reviewScope": "six known changed/user-reported regions, separate from whole-page TSV gate",
+  "representatives": [
+    {
+      "case": "asset60",
+      "page": 20,
+      "directlyOpenedCurrentNativeReview": true,
+      "freshWasmPngByteIdenticalToDirectlyOpenedNative": true,
+      "note": "32. 부실채권의 정리 소제목과 앞 문장·나항의 순서·세로 간격 확인. 획·띄어쓰기 폭의 미세 차이 잔존.",
+      "referencePngHashes": [
+        "118a91f5c2dae888534d3125c2565d6b5b9aba6a145b874c8fad62b807890970",
+        "118a91f5c2dae888534d3125c2565d6b5b9aba6a145b874c8fad62b807890970"
+      ]
+    },
+    {
+      "case": "regulatory17",
+      "page": 11,
+      "directlyOpenedCurrentNativeReview": true,
+      "freshWasmPngByteIdenticalToDirectlyOpenedNative": true,
+      "note": "규제 차등화 예비분석 결과표의 상단·판단근거 분할·행 경계·끝 테두리·뒤 페이지번호 소유 확인.",
+      "referencePngHashes": [
+        "d83326324fcbcb8b4d0d9514776ff860a82b1f277ae0b8478a902a3770527e53",
+        "d83326324fcbcb8b4d0d9514776ff860a82b1f277ae0b8478a902a3770527e53"
+      ]
+    },
+    {
+      "case": "ktx003",
+      "page": 1,
+      "directlyOpenedCurrentNativeReview": true,
+      "freshWasmPngByteIdenticalToDirectlyOpenedNative": true,
+      "note": "지도·화살표·운임표 값과 제목의 소속·겹침 해소 확인. 제목 글꼴 획/굵기와 작은 운임 글자의 차이 잔존.",
+      "referencePngHashes": [
+        "563bba742d8d8dc15bfae3bba820487c2883b1c9b9089954f878e6d254e7995e",
+        "563bba742d8d8dc15bfae3bba820487c2883b1c9b9089954f878e6d254e7995e"
+      ]
+    },
+    {
+      "case": "low-slack6535",
+      "page": 1,
+      "directlyOpenedCurrentNativeReview": true,
+      "freshWasmPngByteIdenticalToDirectlyOpenedNative": true,
+      "note": "서명·결재·시행/주소/전화 블록이 같은 한 쪽 안에 보존됨을 확인. 획·가는 선 차이 잔존.",
+      "referencePngHashes": [
+        "dc69bb8f365955c7a3acb412362f463f9252edeb81fd578b10001649a93a1488",
+        "dc69bb8f365955c7a3acb412362f463f9252edeb81fd578b10001649a93a1488"
+      ]
+    },
+    {
+      "case": "pii66-declared",
+      "page": 66,
+      "directlyOpenedCurrentNativeReview": true,
+      "freshWasmPngByteIdenticalToDirectlyOpenedNative": true,
+      "note": "마지막 이어받기 표의 마지막 문장·종료 테두리·페이지번호 소유 확인.",
+      "referencePngHashes": [
+        "15aa68f9ede7895369418bd61af374cac07a520899947c2dd095676e6e8107ae",
+        "15aa68f9ede7895369418bd61af374cac07a520899947c2dd095676e6e8107ae"
+      ]
+    },
+    {
+      "case": "sample16-2022",
+      "page": 40,
+      "directlyOpenedCurrentNativeReview": true,
+      "freshWasmPngByteIdenticalToDirectlyOpenedNative": true,
+      "note": "사업현황의 제목·전체 항목·마지막 줄 보존 확인. (4) 단락 줄끝과 글자폭 차이 잔존; 픽셀 일치를 주장하지 않음.",
+      "referencePngHashes": [
+        "e3cd1d8b850e0188d960d29d99dcde948fc2fd2d1b48fc22691d6c9fa5e0adb3",
+        "e3cd1d8b850e0188d960d29d99dcde948fc2fd2d1b48fc22691d6c9fa5e0adb3"
+      ]
+    }
+  ],
+  "actualCanvas2dContactSheetsOpened": 5,
+  "actualCanvas2dPagesInspected": 29,
+  "nativeSvgRasterNotSkiaAndWasmSvgRasterNotStudioCanvas": true,
+  "validatedCandidate": "a7ce883cbbb284b83740e63e2b4f03502996104d",
+  "currentImageIdentityComparison": [
+    {
+      "case": "asset60",
+      "page": 20,
+      "backend": "native",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "asset60",
+      "page": 20,
+      "backend": "wasm",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "regulatory17",
+      "page": 11,
+      "backend": "native",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "regulatory17",
+      "page": 11,
+      "backend": "wasm",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "ktx003",
+      "page": 1,
+      "backend": "native",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "ktx003",
+      "page": 1,
+      "backend": "wasm",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "low-slack6535",
+      "page": 1,
+      "backend": "native",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "low-slack6535",
+      "page": 1,
+      "backend": "wasm",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "pii66-declared",
+      "page": 66,
+      "backend": "native",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "pii66-declared",
+      "page": 66,
+      "backend": "wasm",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "sample16-2022",
+      "page": 40,
+      "backend": "native",
+      "samePreviouslyInspectedPng": true
+    },
+    {
+      "case": "sample16-2022",
+      "page": 40,
+      "backend": "wasm",
+      "samePreviouslyInspectedPng": true
+    }
+  ],
+  "biotoxin46Through49": {
+    "directlyInspected": true,
+    "sourceProducer": "72b86a77c62f5ee6765c453b1b9340db8afa603c",
+    "note": "Native v4 four panels inspected, new four PNGs share the same immutable native producer; rows36/37/75/110 and following body preserved; independent full205 Native/fresh min92.75882",
+    "nativePngsByteIdenticalToFourInspectedV4Pages": true
+  },
+  "court1": {
+    "directlyInspected": true,
+    "value": 90.06028,
+    "byteIdenticalToFrozen119": true,
+    "note": "표 괘선·칸 높이·내용·첨부 및 각주와 빈 둘째 쪽 보존 확인. 글자 폭·획·줄간격의 작은 차이는 남으며 완전 픽셀 일치를 주장하지 않음."
+  },
+  "actualNativeSkiaSixRepresentativeContact": {
+    "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebased-20261013/final-prefix-anchor/native-skia-direct-contact.png",
+    "directlyViewed": true,
+    "findings": "본문·표·그림·꼬리말 소속과 경계 보존. KTX 제목의 굵기·획 및 sample16 일부 글자폭·줄끝 차이 잔존."
+  },
+  "actualCanvasKitSixRepresentativeContact": {
+    "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebased-20261013/final-prefix-anchor/actual-supported-canvaskit/actual-kit-contact.png",
+    "directlyViewed": true,
+    "findings": "같은 96 DPI 독립 Print와 표 외곽·문단 시작·그림·내용 보존 확인. 작은 글자 획 차이 잔존."
+  }
+}
