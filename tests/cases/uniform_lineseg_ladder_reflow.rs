@@ -8,7 +8,9 @@
 //!
 //! 이 테스트가 잠그는 것은 **두 가지를 함께** 지키는 것이다.
 //!
-//! 1. 빈 쪽이 끼어들지 않는다 (쪽수 6, 어느 쪽도 비어 있지 않다).
+//! 1. 빈 쪽이 끼어들지 않는다 (쪽수 5, 어느 쪽도 비어 있지 않다). 한/글은 header
+//!    `secCnt=1` 만큼의 구역만 읽으므로 spine 의 section1 은 쪽을 만들지 않는다
+//!    (`hwpx_declared_section_count`). 정답지도 5쪽이다.
 //! 2. 문단별 advance 가 한글 모델과 같다 — 쪽수만 맞추고 줄 간격을 틀리게 만드는
 //!    보정(이슈 본문의 "시도했다가 접은 수정")을 되풀이하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -118,7 +120,7 @@ fn advance(tops: &[(u32, usize, f64)], pi: usize) -> Option<f64> {
 fn no_blank_page_is_inserted() {
     assert_eq!(
         page_count(),
-        6,
+        5,
         "합성 사다리를 조판 근거로 쓰면 3쪽 하단이 29px 모자라 빈 4쪽이 끼어든다"
     );
 
@@ -144,7 +146,7 @@ fn no_blank_page_is_inserted() {
     pages.sort();
     let _ = std::fs::remove_dir_all(&dir);
 
-    assert_eq!(pages.len(), 6, "쪽 텍스트 파일 수: {pages:?}");
+    assert_eq!(pages.len(), 5, "쪽 텍스트 파일 수: {pages:?}");
     for (name, chars) in &pages {
         assert!(*chars > 0, "{name} 이 비어 있다 — 빈 쪽이 끼어들었다");
     }
