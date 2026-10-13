@@ -29,9 +29,16 @@ use crate::renderer::hwpunit_to_px;
 /// A lower saved origin starts a different local ladder. Once its owner has
 /// been placed, the preceding ladder cannot anchor the following paragraph.
 pub(crate) fn paragraph_origin_rewinds(previous: &Paragraph, current: &Paragraph) -> bool {
-    previous
+    // 문단이 여러 쪽을 소유하면 첫 줄은 이미 지난 프레임에 속한다.
+    // 실제로 끝낸 마지막 저장 프레임의 원점과 후속 문단을 비교한다.
+    let previous_origin = previous
         .line_segs
-        .first()
+        .windows(2)
+        .rev()
+        .find(|pair| pair[1].vertical_pos < pair[0].vertical_pos)
+        .map(|pair| &pair[1])
+        .or_else(|| previous.line_segs.first());
+    previous_origin
         .zip(current.line_segs.first())
         .is_some_and(|(before, after)| after.vertical_pos < before.vertical_pos)
 }

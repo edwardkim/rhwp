@@ -141,10 +141,19 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         } else {
             None
         };
-        // Stored vpos spans cover line boxes, not the paragraph's outside
-        // spacing. Paint consumes these bands at the accepted flow origin.
+        // 원본 저장 축의 span에는 바깥 앞 간격을 별도로 예약한다.
+        // 정규화 스냅샷이 있는 사다리는 이미 수용한 흐름 원점에서 소비한다.
+        // 이 span에 같은 앞 간격을 다시 더하면 실제로 들어가는 꼬리를 이월한다.
+        // 전체 흐름 전진(total_height)의 앞 간격은 그대로 보존한다.
         vpos_metric
-            .map(|v| metric.min(spacing_before + v))
+            .map(|v| {
+                let outside_before = if para.source_line_seg_vertical_pos.is_some() {
+                    0.0
+                } else {
+                    spacing_before
+                };
+                metric.min(outside_before + v)
+            })
             .unwrap_or(metric)
     };
 
