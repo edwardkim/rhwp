@@ -1305,6 +1305,10 @@ impl LayoutEngine {
                 Some(para),
                 composed.lines.len(),
                 true,
+                area_width
+                    - style.map_or(0.0, |style| style.margin_left)
+                    - style.map_or(0.0, |style| style.margin_right),
+                self.dpi,
             );
             let left = style.map_or(0.0, |style| style.margin_left) + indent;
             let right = style.map_or(0.0, |style| style.margin_right);
