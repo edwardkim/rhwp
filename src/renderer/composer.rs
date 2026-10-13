@@ -903,6 +903,20 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
 /// (`2d973021c`가 `samples/rowbreak-problem-pages.hwpx`에서 고친 오버랩이 이 경우다).
 /// `line_segs`가 비어 있으면(레이아웃 전/미저장 캡션) `compose_paragraph`로만 계산한다.
 pub fn caption_height_px(caption: &Option<Caption>, dpi: f64) -> f64 {
+    caption_height_px_in_context(caption, None, dpi)
+}
+
+/// [`caption_height_px`] 에 글자 모양을 더한 판. 저장 줄이 없는 **빈** 캡션 문단의 줄 높이를
+/// 그 문단 글자 크기로 잡는다 — 캡션을 실제로 그리는 `layout_caption` 이 그 크기의 줄 하나를
+/// 그리므로 측정과 배치가 같은 높이를 쓴다. 글자 모양이 없으면 종전 기본값(400 HU)이다.
+///
+/// 78494 10쪽: 표 위 캡션은 빈 문단 하나(글자 2pt = 200 HU, 저장 줄 없음)다. 기본값 400 HU 로
+/// 재면 표가 2.67px 아래로 밀린다(rhwp 245.93, 한/글 2020 243.09; 200 HU 면 243.27).
+pub(crate) fn caption_height_px_in_context(
+    caption: &Option<Caption>,
+    styles: Option<&ResolvedStyleSet>,
+    dpi: f64,
+) -> f64 {
     let caption = match caption {
         Some(c) => c,
         None => return 0.0,
@@ -926,7 +940,19 @@ pub fn caption_height_px(caption: &Option<Caption>, dpi: f64) -> f64 {
 
         let composed = compose_paragraph(para);
         if composed.lines.is_empty() {
-            composed_height += hwpunit_to_px(DEFAULT_LINE_HEIGHT_HWPUNIT, dpi); // 기본 줄 높이
+            let own_font_size = styles
+                .filter(|_| para.line_segs.is_empty())
+                .and_then(|styles| {
+                    let id = para
+                        .char_shape_id_at(0)
+                        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?;
+                    styles.char_styles.get(id as usize)
+                })
+                .map(|style| style.font_size)
+                .filter(|size| *size > 0.0);
+            composed_height +=
+                own_font_size.unwrap_or_else(|| hwpunit_to_px(DEFAULT_LINE_HEIGHT_HWPUNIT, dpi));
+        // 기본 줄 높이
         } else {
             for (i, line) in composed.lines.iter().enumerate() {
                 let line_h = hwpunit_to_px(line.line_height, dpi);

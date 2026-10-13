@@ -4698,7 +4698,7 @@ impl HeightMeasurer {
         let caption_height = if is_lr_caption {
             0.0
         } else {
-            self.measure_caption(&table.caption)
+            self.measure_caption(&table.caption, styles)
         };
         let caption_spacing = if is_lr_caption {
             0.0
@@ -5209,8 +5209,8 @@ impl HeightMeasurer {
     /// 산식은 `composer::caption_height_px`가 단일 정의다(#4320) — 렌더 쪽
     /// `LayoutEngine::calculate_caption_height`도 같은 함수를 호출해 compose 폴백
     /// 유무로 측정·렌더 결과가 갈라지지 않는다.
-    fn measure_caption(&self, caption: &Option<Caption>) -> f64 {
-        super::composer::caption_height_px(caption, self.dpi)
+    fn measure_caption(&self, caption: &Option<Caption>, styles: &ResolvedStyleSet) -> f64 {
+        super::composer::caption_height_px_in_context(caption, Some(styles), self.dpi)
     }
 }
 

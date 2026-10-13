@@ -999,9 +999,9 @@ impl LayoutEngine {
     pub(crate) fn calculate_caption_height(
         &self,
         caption: &Option<Caption>,
-        _styles: &ResolvedStyleSet,
+        styles: &ResolvedStyleSet,
     ) -> f64 {
-        super::super::composer::caption_height_px(caption, self.dpi)
+        super::super::composer::caption_height_px_in_context(caption, Some(styles), self.dpi)
     }
 
     /// 캡션을 레이아웃한다.
