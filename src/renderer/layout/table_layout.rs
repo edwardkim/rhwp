@@ -21275,13 +21275,17 @@ impl LayoutEngine {
             return false;
         }
         let previous = &para.line_segs[line - 1];
+        // 선언 셀 프레임은 마지막 잉크와 그 줄의 뒤 간격 사이에서도 닫힌다.
+        // 이 빈 밴드를 넘겨 같은 원점으로 재시작한 별도 텍스트 범위를
+        // 현재 행에 통째로 넣으면 다음 조각의 첫 줄 소유를 잃는다.
+        let ink_end = i64::from(previous.vertical_pos)
+            + i64::from(previous.line_height)
+            + i64::from(cell.effective_vertical_padding_hu(&table.padding));
+        let advance_end = ink_end + i64::from(previous.line_spacing.max(0));
+        let declared = i64::from(cell.height);
         (previous.vertical_pos == 0
             && self.stored_row_reset_closes_declared_frame(cell, table, previous))
-            || i64::from(previous.vertical_pos)
-                + i64::from(previous.line_height)
-                + i64::from(previous.line_spacing)
-                + i64::from(cell.effective_vertical_padding_hu(&table.padding))
-                == i64::from(cell.height)
+            || (ink_end <= declared && declared <= advance_end)
     }
 
     pub(crate) fn row_stored_zero_origin_cut(
@@ -21482,6 +21486,12 @@ impl LayoutEngine {
                 // Forcing a physical page needs evidence at this exact cut.
                 // A later confirmed restart cannot authenticate an earlier one.
                 confirmed_source_boundary |= previous.vertical_pos > 0
+                    || self.stored_plain_zero_origin_line_boundary(
+                        cell,
+                        table,
+                        para,
+                        unit.vis_start,
+                    )
                     || next.is_some_and(|next| {
                         i64::from(next.vertical_pos)
                             == i64::from(current.line_height)

@@ -51,3 +51,17 @@
 같은 원본의 미편집 시각 검증은 최신 base Native 전115쪽 최저84.01039%·미달22쪽, 수정 전 head Native 최저83.70496%·미달25쪽입니다. 이 결과는 #7813의 미해결 시각 범위이며 **원본 전쪽 피델리티 완료를 주장하지 않습니다**. 저장·재열기 새 회귀 보정과 기존 시각 미달을 구분합니다. fresh WASM 및 전체 회귀·완료 문서 영향 검증은 계속 진행합니다.
 
 추가 로컬 로그: `giant-base-tests-prepared.log`, `giant-frame-owner-tests.log` 및 `base/giant115/silhouette.tsv`·`head/giant115/silhouette.tsv`. 동일 입력·검사 원문을 대조했으며 원본/PDF와 #7114 활성 검사를 보존합니다.
+
+## 생물독소 44쪽 영향 검증과 보정
+
+43건·backend별1055쪽의 최종 비교를 시작한 뒤 생물독소 Native205쪽 중44쪽이64.28723%로 미달했습니다. 해당 실행은 실패와 PNG·TSV를 보존한 채 보정을 위해 중단했으며 fresh WASM 시각 완료로 보고하지 않습니다. 기존 완료 문서이므로 이관하지 않고 현재 branch에서 보정합니다.
+
+44쪽의 표 첫 줄 `L40-like isoform X1`이43쪽의 같은 셀에 흡수됐습니다. rebase 전에는 43쪽 끝 `endCut=[1,1,1,1,1,1]`, 44쪽 시작 row118의 이어받기였으나, 최신 devel 결합 후에는 row119부터 시작했습니다. 첫 문단의 제목 간격이나 글꼴 크기 변경이 아니라 원본 셀 프레임의 닫힘 판정입니다.
+
+원본 section4/paragraph263/row118/col2는 서로 다른 textStart0·33의 두 글줄이 vpos0에서 각각 시작합니다. 원본 셀 높이1417HU는 첫 잉크·유효 패딩 합1182HU와 그 줄의 뒤 간격까지의 전진1722HU 사이에 있습니다. 프레임이 그 공백 밴드 안에서 닫히는데 기존 판정은 전진 끝과 선언 높이의 정확한 등가만 인정해 유효한 첫 프레임을 기각했습니다.
+
+`stored_plain_zero_origin_line_boundary`가 선언 셀 상자의 닫힘을 마지막 잉크부터 후행 전진까지의 범위로 확인하도록 고쳤습니다. `stored_plain_restart_cut`는 이 정확한 컷에서 입증한 닫힘을 source 경계의 근거로 사용합니다. 같은 원점을 쓰는 다른 텍스트 범위를 실제 원본 줄·가로 구역으로 구분하는 선행 검사, 편집·합성·TAC·개체 경로의 제외는 유지합니다. 느슨한 로컬 restart를 모두 쪽 경계로 승격하거나 source allowance로 다음 조각의 내용을 흡수하지 않습니다. shared cut은 행 스캔과 partial paint가 함께 소비합니다.
+
+Native44쪽 보정 후 **99.99362%**입니다. [수정 후 review PNG](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/biotoxin-p044-native-review.png)에서 이어받기 첫 줄·표 외곽·뒤 본문의 보존을 직접 판독했습니다. 현재 한 쪽 선행 진단이며 전205쪽·fresh WASM 통과를 대신하지 않습니다.
+
+집중 nextest **13 PASS / 0 FAIL**, 5.082초: #7114 저장·재열기5건, #6761 zero-origin4건, 생물독소 기존 내용 소유4건입니다. 기대값·검사 수·허용치를 바꾸지 않았습니다. 로그 정본은 `cell-frame-focused.log`, `cell-frame-diagnostic/biotoxin205/silhouette.tsv`입니다. 수정한 source에서 전체 회귀와43건 Native/fresh WASM을 다시 실행합니다.
