@@ -427,6 +427,7 @@ impl TypesetEngine {
                 continuation.start_cut = effective_cut.clone();
                 start.start_cut = effective_cut;
                 input = FragmentInput {
+                    fragment_row_heights: physical_rows.as_deref(),
                     source,
                     prepared,
                     start: &start,

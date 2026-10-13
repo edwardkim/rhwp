@@ -1990,7 +1990,11 @@ impl TypesetEngine {
                     &[],
                     styles,
                 );
-                Some(span_remaining.max(whole_row).max(*mt.row_heights.get(end_row)?))
+                Some(
+                    span_remaining
+                        .max(whole_row)
+                        .max(*mt.row_heights.get(end_row)?),
+                )
             });
         let source_first_frame_remaining = (!is_continuation
             && cursor_row == 0

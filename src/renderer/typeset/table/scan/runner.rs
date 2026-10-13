@@ -165,6 +165,7 @@ impl TypesetEngine {
                         r,
                         cursor_row: v.cursor_row,
                         start_cut,
+                        start_cut_is_block: v.start_cut_is_block,
                         start_row_height_override: v.start_row_height_override,
                         rowspan_physical_space,
                         accepted_rows: &progress.scan.physical_rows,

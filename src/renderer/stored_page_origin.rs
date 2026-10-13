@@ -78,8 +78,22 @@ pub(crate) fn stored_first_margin_is_page_relative(
         && !first.cell_format_vpos_dirty
         && !next.cell_format_vpos_dirty
         && next.controls.is_empty();
-    // 다음 앞 간격이 0이어도 저장 전진 끝과 정확히 이어지면 같은 쪽 상대 사다리다.
-    // 빈 첫 문단의 유효한 앞 간격도 줄 점유에 포함되며 쪽 원점으로 빼지 않는다.
+    let stored_gap = hwpunit_to_px(
+        next_seg.vertical_pos
+            - last_seg.vertical_pos
+            - last_seg.line_height
+            - last_seg.line_spacing,
+        dpi,
+    );
+    // 명시적 나눔만으로 저장 축을 정하지 않는다. 첫 줄의 앞 간격과
+    // 두 문단 사이의 아래·위 간격이 함께 닫혀야 새 쪽의 절대 원점이다.
+    // 아래 간격이 0이어도 완전한 저장 단계다. 명시적 쪽 나눔의 첫
+    // 앞 간격을 원점으로 빼면 제목만 맞고 이후 본문이 그만큼 위로 당겨진다.
+    // 다음 문단의 앞 간격이 0이어도 같은 저장 경계 등식이 유효하다.
+    // 양수 간격을 필수로 요구하면 제목이 보존한 첫 여백만 뒤 본문에서 빠진다.
+    let complete_margin_step = (stored_gap - first_after - next_before).abs() <= 0.5;
+    let next_margin_step = first.column_type != crate::model::paragraph::ColumnBreakType::Page
+        && (stored_gap - next_before).abs() <= 0.5;
     // 글자처럼 취급되는 도형이 있는 첫 문단은 제목과 개체가 저장 원점을 함께
     // 소유한다. 문단 앞 여백만으로 쪽 원점을 다시 정하면 후속 표가 그 여백만큼
     // 위로 이동한다. 일반 텍스트 문단의 여백 사다리와 구분한다(#6797 7쪽).
@@ -92,22 +106,10 @@ pub(crate) fn stored_first_margin_is_page_relative(
         && first_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && last_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-        && first_before > 0.5
         && next_before >= 0.0
+        && first_before > 0.5
         && (hwpunit_to_px(first_seg.vertical_pos, dpi) - first_before).abs() <= 0.5
-        && {
-            let gap = hwpunit_to_px(
-                next_seg.vertical_pos
-                    - last_seg.vertical_pos
-                    - last_seg.line_height
-                    - last_seg.line_spacing,
-                dpi,
-            );
-            // 기존 0 앞간격 사다리와 뒤간격을 따로 저장한 사다리를 같은 원점에서 판정한다.
-            (gap - next_before).abs() <= 0.5
-                || (gap - first_after - next_before).abs() <= 0.5
-                || (next_before > 0.5 && float_closes_next)
-        }
+        && (float_closes_next || complete_margin_step || next_margin_step)
 }
 
 /// 완전한 인라인 표의 저장 상자 뒤에서 새 본문 사다리가 0으로 재시작하면

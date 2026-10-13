@@ -1155,11 +1155,11 @@ impl TypesetEngine {
                     if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
                         eprintln!(
                             "TABLE_STORED_FIRST_FRAME: pi={} source_anchor={:.8} flow_host={:.8} placement={:?} frame={:.8} fits={}",
-                            para_idx, anchor_px, flow_host_start, fragment_placement,
+                            para_idx, anchor_px, para_start, fragment_placement,
                             frame_height, placed_frame_fits,
                         );
                     }
-                    ((anchor_px - actual_anchor).abs() <= 0.5
+                    ((anchor_px - para_start).abs() <= 0.5
                         && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5
                         && placed_frame_fits)
                         .then_some((frame_height, flow_bottom_px))

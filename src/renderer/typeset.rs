@@ -4314,6 +4314,7 @@ impl TypesetEngine {
                         y: column.y + origin,
                         clearance: 0.0,
                         resolved_x: false,
+                        stored_horizontal_pen: None,
                         advance_end: None,
                     });
                 let leading = if origin < 1.0 {
@@ -4503,6 +4504,7 @@ impl TypesetEngine {
                 (para_idx, ctrl_idx),
                 super::float_placement::InlineBoxPlacement {
                     x: row.horizontal_pen,
+                    resolved_x: false,
                     y: st.current_height,
                     clearance: 0.0,
                     advance_end: Some(st.current_height + table_height),
@@ -5707,6 +5709,7 @@ impl TypesetEngine {
                     clearance: 0.0,
                     resolved_x: false,
                     advance_end: Some(st.current_height),
+                    stored_horizontal_pen: None,
                 },
             );
         }

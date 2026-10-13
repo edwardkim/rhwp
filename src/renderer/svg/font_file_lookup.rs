@@ -68,6 +68,15 @@ pub(super) fn plan_svg_font_file_lookup(
     extra_paths: &[std::path::PathBuf],
     bold: bool,
 ) -> FontFileLookupPlan {
+    plan_svg_font_file_lookup_with_fallback(font_name, extra_paths, bold, true)
+}
+
+pub(super) fn plan_svg_font_file_lookup_with_fallback(
+    font_name: &str,
+    extra_paths: &[std::path::PathBuf],
+    bold: bool,
+    allow_generic_substitute: bool,
+) -> FontFileLookupPlan {
     let original_candidates = original_font_files(font_name, bold);
     let candidates = {
         // 폰트명 → 파일명 후보 생성
@@ -101,7 +110,7 @@ pub(super) fn plan_svg_font_file_lookup(
         // Task #1224: 고딕 계열은 오픈소스 대체(Noto Sans KR ExtraLight)를 최후 후보로 추가.
         // 실제 저작권 폰트가 앞선 탐색 경로에 있으면 그쪽이 우선하므로, 대체는
         // 탐색 경로 말단(ttfs/opensource)에서만 매칭된다.
-        if !bold {
+        if !bold && allow_generic_substitute {
             if let Some(sub) = korean_gothic_substitute(font_name) {
                 files.push(sub.to_string());
             }

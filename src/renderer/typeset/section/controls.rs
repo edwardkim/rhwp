@@ -153,6 +153,7 @@ impl TypesetEngine {
                             ) {
                                 let placement = placements[ctrl_idx];
                                 st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
+                                    following_body_para_index: None,
                                     kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
                                     para_index: para_idx,
                                     control_index: ctrl_idx,
@@ -176,11 +177,11 @@ impl TypesetEngine {
                             {
                                 st.defer_stored_frame(
                                     crate::renderer::typeset::DeferredStoredFrameControl {
+                                        following_body_para_index: None,
                                         kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
                                         para_index: para_idx,
                                         control_index: ctrl_idx,
                                         placement,
-                                        following_body_para_index: None,
                                     },
                                 );
                                 continue;

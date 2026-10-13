@@ -2114,7 +2114,7 @@ impl TypesetEngine {
                 )
             })
             .flatten()
-        });
+            });
         let unconstrained_host_placement = unconstrained_host_placement.or_else(|| {
             let lines = fmt.computed_host_lines.as_ref()?;
             let text_origin = placement_para_start_height

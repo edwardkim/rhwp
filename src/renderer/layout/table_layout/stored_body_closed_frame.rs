@@ -133,6 +133,7 @@ impl LayoutEngine {
                 row_heights,
                 &[],
                 styles,
+                false,
             );
             let units = self.cell_units(cell, table, styles);
             if end == units.len() {

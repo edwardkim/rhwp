@@ -155,3 +155,28 @@ CanvasKit 요청의 개인정보 입력은 문서 preflight의 기존 작업 한
 - [low-slack 실제 CanvasKit 인쇄 review](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/low-slack-p001-canvaskit-print-review.png): **99.89896%**.
 
 GitHub 게시·push·PR 생성·merge는 수행하지 않았습니다. 기존 오늘할일과 닫힌 PR #7871 검토 문서의 미커밋 초안은 그대로 보존합니다. 사용자의 새 승인 후 PR 준비 단계를 진행합니다.
+
+## PR #7882 병합 후 재동기화 — 2026-10-14
+
+PR #7882의 실제 병합 SHA `86a3c88fc89de9a2306a10bdda9a31023f0e24a5`가 `upstream/devel`에 포함됨을 확인했습니다. 기존 head `95ae552f30cc5d97f2217eb01638db6f4c373a4b`의 170개 커밋을 이 base로 모두 리베이스했으며, 리베이스 직후 head는 `9b107d1230b92622ad5194bb72b83c9ea251b0e0`입니다. 이전 절의 통과 결과는 이전 코드의 증거이며 새 head의 통과로 재인용하지 않습니다.
+
+백업 ref `refs/codex-backups/7445-completed-before-7882-rebase-20261014`와 보존 stash `a8288afd56f1bcc5709e5839231b51fe3916993f`를 유지합니다. 오늘할일·PR #7871 검토 초안은 복원 후 SHA-256으로 원래 바이트와 같음을 확인했으며 이번 보정 커밋에서 제외합니다. 원본·PDF·다른 작업트리·공유 target은 보존했습니다.
+
+### 충돌 해소와 API 연결
+
+upstream의 물리 행 높이·이월 원장을 유지하면서 이 브랜치의 저장 프레임 원점·제목 여백·원본 글꼴 경로를 연결했습니다. 중복 원점 판정은 `stored_page_origin`으로, 글꼴 파일 탐색은 typed filename을 사용하는 `svg/font_file_lookup`으로 합쳤습니다. 모든 검색 루트에서 원 face를 먼저 확인하는 upstream 계약과 일반 대체 글꼴을 허용하지 않는 기존 엄격 경로를 함께 보존했습니다.
+
+| 경계 | 연결 및 보존 근거 |
+| --- | --- |
+| 부분 표 | 내용 컷과 물리 예약 높이를 구분합니다. 일반 source 컷의 `physical_height`는 `None`이며 기존 별도 행 높이를 이중 계상하지 않습니다. spacer recut은 수용한 `fragment_row_heights`를 실제 배치에 전달합니다. |
+| 저장 본문 프레임 | 자격 판정 중 재귀 적용을 막는 query는 `false`, 실제 paint query는 입증된 `source_body_frame`을 전달합니다. straddle의 시작·끝 컷 및 block 소속을 새 공통 query에 전달합니다. |
+| 온전한 표 | 전체 행 paint 합과 선언 object 높이가 일치하는 경우에만 전체 표의 물리 높이로 재예약하는 upstream 판정을 복구했습니다. 첫 조각의 선언 높이를 전체 높이로 오인하지 않습니다. |
+| 인라인 원점 | 계산된 x와 저장 horizontal pen의 소속을 구분합니다. 원점 증거가 없는 신규 producer는 임의의 후속 본문 owner를 지정하지 않습니다. |
+| 기존 이관 | 거대 표·2025 편람의 이미 이관된 출력 검사를 재도입하지 않고 원본·증적·범위 밖 IR 검사를 보존했습니다. API v2.4의 upstream #7731 이관과 독립 규제영향분석 대조군 검사를 유지했습니다. |
+| 기존 완료 문서 | KPS의 upstream 행 보존 검사와 이 브랜치 source cell 소유 검사를 함께 유지했습니다. 저장 원점 되감기 서식의 이미 검증한 overlap 기준을 임의 제거하지 않고 새 출력에서 재검증합니다. |
+
+최초 라이브러리 check의 27개 연결 오류와 다음 check의 남은 2개 오류를 수정했습니다. 세 번째 `cargo check --locked --lib`는 exit 0입니다. 테스트 빌드에서는 OLE 차트 보조 함수 호출 6개가 과거 미완성 검사 본문 재도입으로 남은 것을 확인했습니다. `tests/issue_1251_ole_chart_contents.rs`를 최신 upstream의 완전한 검사로 복구했으며, 전각 공백 보존 기대값도 upstream 그대로 유지했습니다. 다음 테스트 전체 컴파일은 2분 5초에 exit 0으로 완료했습니다. 집중 검사는 51 PASS / 0 FAIL, 2.500초로 완료했습니다. 이 결과는 선택 범위의 구조 계약이며, 새 전쪽 시각·전체 회귀 완료로 표시하지 않습니다.
+
+새 전쪽 비교 준비 범위는 기존 43조건 1055쪽에 저장 원점 되감기 서식 4쪽, KPS 77쪽, `56345_regulatory_impact_analysis.hwp` 21쪽을 더한 **46조건 1157쪽**입니다. 현행 Visual Sweep hash `993d97fd6249fa7763d0abd72870dc9f5de86a32480157047417ee90936116ad`, 기존 입력/PDF·DPI·compat·글꼴 조건을 사용하며 2px 관용·90% 기준을 유지합니다. 빌드·테스트·캡처 동시성은 각각 8이며 Cargo는 순차 실행합니다.
+
+새 실행 기록은 `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7882-20261014/`에 보존합니다. 지침·회귀 기대값은 이번 API 연결 단계에서 변경하지 않았습니다. GitHub 게시·push·PR·merge는 새 승인을 받기 전 수행하지 않습니다.

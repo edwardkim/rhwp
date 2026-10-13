@@ -58,7 +58,8 @@ mod system_fonts;
 use font_file_lookup::FontFileName;
 #[cfg(not(target_arch = "wasm32"))]
 use font_file_lookup::{
-    find_font_file, find_font_file_for_chars, plan_svg_font_file_lookup, FontFileLookupPlan,
+    find_font_file, find_font_file_for_chars, plan_svg_font_file_lookup,
+    plan_svg_font_file_lookup_with_fallback, FontFileLookupPlan,
 };
 
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
@@ -4521,131 +4522,6 @@ fn korean_gothic_substitute(font_name: &str) -> Option<&'static str> {
     } else {
         None
     }
-}
-
-/// 파일시스템 탐색에 넘기는 하나의 폰트 파일명.
-///
-/// 문서 메타데이터에서 유래한 후보는 SVG 폰트 해석 단계에서만
-/// 이 형식으로 바뀐다. 파일시스템 루프는 이 타입의 후보만
-/// 설정된 검색 루트에 결합한다.
-#[cfg(not(target_arch = "wasm32"))]
-#[derive(Clone, Debug)]
-struct FontFileName(String);
-
-#[cfg(not(target_arch = "wasm32"))]
-impl FontFileName {
-    fn from_document_candidate(candidate: String) -> Option<Self> {
-        use std::path::Component;
-
-        if candidate.contains(['/', '\\', '\0']) {
-            return None;
-        }
-        let mut components = std::path::Path::new(&candidate).components();
-        (matches!(components.next(), Some(Component::Normal(_))) && components.next().is_none())
-            .then_some(Self(candidate))
-    }
-
-    fn as_path(&self) -> &std::path::Path {
-        std::path::Path::new(&self.0)
-    }
-}
-
-/// SVG 폰트 해석이 선택한 파일명과 탐색 루트.
-#[cfg(not(target_arch = "wasm32"))]
-struct FontFileLookupPlan {
-    candidates: Vec<FontFileName>,
-    search_dirs: Vec<std::path::PathBuf>,
-}
-
-/// 문서 폰트명을 SVG 폰트 해석용 파일 후보로 계획한다.
-///
-/// 별칭·대체 폰트·후보 우선순위는 렌더러 정책이므로 여기서
-/// 선택한다. 이후의 파일시스템 조회는 타입으로 검증된 후보를 읽는 기계적 단계다.
-#[cfg(not(target_arch = "wasm32"))]
-fn plan_svg_font_file_lookup(
-    font_name: &str,
-    extra_paths: &[std::path::PathBuf],
-    bold: bool,
-) -> FontFileLookupPlan {
-    plan_svg_font_file_lookup_with_fallback(font_name, extra_paths, bold, true)
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn plan_svg_font_file_lookup_with_fallback(
-    font_name: &str,
-    extra_paths: &[std::path::PathBuf],
-    bold: bool,
-    allow_generic_substitute: bool,
-) -> FontFileLookupPlan {
-    let candidates = {
-        // 폰트명 → 파일명 후보 생성
-        let known_files = if bold {
-            known_bold_font_filenames(font_name)
-        } else {
-            known_font_filenames(font_name)
-        };
-        let mut files: Vec<String> = known_files.iter().map(|s| s.to_string()).collect();
-        let aliases = if bold {
-            font_local_bold_aliases(font_name)
-        } else {
-            font_local_aliases(font_name)
-        };
-        let mut names = vec![font_name.to_string()];
-        for a in &aliases {
-            names.push(a.to_string());
-        }
-        for name in &names {
-            let clean = name.replace(' ', "");
-            files.push(format!("{}.ttf", name));
-            files.push(format!("{}.otf", name));
-            files.push(format!("{}.ttc", name));
-            files.push(format!("{}.TTF", name));
-            if clean != *name {
-                files.push(format!("{}.ttf", clean));
-                files.push(format!("{}.otf", clean));
-                files.push(format!("{}.ttc", clean));
-            }
-        }
-        // Task #1224: 고딕 계열은 오픈소스 대체(Noto Sans KR ExtraLight)를 최후 후보로 추가.
-        // 실제 저작권 폰트가 앞선 탐색 경로에 있으면 그쪽이 우선하므로, 대체는
-        // 탐색 경로 말단(ttfs/opensource)에서만 매칭된다.
-        if !bold && allow_generic_substitute {
-            if let Some(sub) = korean_gothic_substitute(font_name) {
-                files.push(sub.to_string());
-            }
-        }
-        files
-            .into_iter()
-            .filter_map(FontFileName::from_document_candidate)
-            .collect()
-    };
-
-    // [#2864] 탐색 경로(우선순위 순)는 renderer::font_paths 가 단일 정의한다.
-    // 호출자 지정 → RHWP_FONT_PATH → OS 시스템 경로 → ttfs/opensource(최후 폴백).
-    // 종전의 ttfs/hwp·ttfs/windows(로컬 전용)와 /mnt/c/Windows/Fonts(WSL2 전용)는
-    // 제거했다. Task #1224 의 고딕 대체(Noto Sans KR ExtraLight)는 최후 탐색인
-    // ttfs/opensource 에서 그대로 매칭된다.
-    FontFileLookupPlan {
-        candidates,
-        search_dirs: crate::renderer::font_paths::search_dirs(extra_paths),
-    }
-}
-
-/// 계획된 폰트 파일을 설정된 루트에서 읽는다.
-#[cfg(not(target_arch = "wasm32"))]
-fn find_font_file(plan: &FontFileLookupPlan) -> Option<std::path::PathBuf> {
-    for dir in &plan.search_dirs {
-        if !dir.exists() {
-            continue;
-        }
-        for candidate in &plan.candidates {
-            let path = dir.join(candidate.as_path());
-            if path.exists() {
-                return Some(path);
-            }
-        }
-    }
-    None
 }
 
 /// 형식4 cmap의 마지막 비문자 U+FFFF가 잘못된 글리프 번호를 가리키면
