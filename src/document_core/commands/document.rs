@@ -1860,7 +1860,15 @@ impl DocumentCore {
 
         // 1단계 — 고칠 자리를 live IR 에서 정한다. 유닛 캐시가 live 셀 포인터로 메모이즈
         // 돼 있으므로 스냅숏 포인터를 캐시에 넣지 않는다.
-        let mut plans: Vec<(usize, usize, usize, usize, Vec<(usize, usize)>)> = Vec::new();
+        #[allow(clippy::type_complexity)]
+        let mut plans: Vec<(
+            usize,
+            usize,
+            usize,
+            usize,
+            Vec<(usize, usize)>,
+            BTreeSet<usize>,
+        )> = Vec::new();
         for (section_idx, section) in self.document.sections.iter().enumerate() {
             let Some(pagination) = self.pagination.get(section_idx) else {
                 continue;
@@ -1973,7 +1981,21 @@ impl DocumentCore {
                         if resets.is_empty() {
                             continue;
                         }
-                        plans.push((section_idx, para_idx, control_idx, cell_idx, resets));
+                        // 줄간격을 계상하지 않은 중첩 표 host — 뒤의 되감김을 없앨 때
+                        // 사다리 등식(`lh + ls`)을 새로 만들지 않도록 채울 간격을 줄인다.
+                        let uncharged_hosts = self.layout_engine.cell_uncharged_nested_hosts(
+                            cell,
+                            table,
+                            &self.styles,
+                        );
+                        plans.push((
+                            section_idx,
+                            para_idx,
+                            control_idx,
+                            cell_idx,
+                            resets,
+                            uncharged_hosts,
+                        ));
                     }
                 }
             }
@@ -1985,7 +2007,7 @@ impl DocumentCore {
         // 나르고(조판의 `vpos_gap_before` 등이 읽는다), 촘촘한 사다리로 덮으면 그 신호가
         // 사라져 읽는 쪽이 더 채운다(실측: 문단 2276 편집에서 103쪽이 11낱말 더 먹었다).
         // 그래서 줄 사이 **원래 간격을 그대로 이어 붙이고**, 되감김만 실제 컷 자리로 옮긴다.
-        for (section_idx, para_idx, control_idx, cell_idx, resets) in plans {
+        for (section_idx, para_idx, control_idx, cell_idx, resets, uncharged_hosts) in plans {
             let Some(Control::Table(table)) = snapshot
                 .sections
                 .get_mut(section_idx)
@@ -2002,7 +2024,15 @@ impl DocumentCore {
             for (cell_para_idx, cell_para) in cell.paragraphs.iter_mut().enumerate() {
                 for (line_idx, seg) in cell_para.line_segs.iter_mut().enumerate() {
                     let stored = seg.vertical_pos;
-                    let occupied = seg.line_height.saturating_add(seg.line_spacing);
+                    // 되감김이 사라진 자리를 채울 이 줄의 점유 높이. 중첩 표 host 의 줄간격은
+                    // 조판이 저장 사다리의 `lh + ls` 등식을 증거로만 계상한다(#6126). 편집 직후
+                    // 조판이 계상하지 않은 host 뒤를 `lh + ls` 로 채우면 재열기에서 없던 증거가
+                    // 생겨 그 줄간격이 조각에 더해진다 — 이 경우 줄 높이만 채운다.
+                    let occupied = if uncharged_hosts.contains(&cell_para_idx) {
+                        seg.line_height
+                    } else {
+                        seg.line_height.saturating_add(seg.line_spacing)
+                    };
                     let next = match previous {
                         None => stored,
                         Some((previous_stored, previous_new, previous_occupied)) => {
