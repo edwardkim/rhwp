@@ -102,3 +102,18 @@ sample16의 표 앞 제목 `pi731`은 수정 전 흐름 전진24.9px에서17.3px
 선택 Native42쪽은30.65766%에서 **99.99358%**로 복구됐습니다. 본문 첫 줄은 `동일한 방법 및 절차`, 왼쪽 남은 문단은 `분석`·`(정성분석)`이며, 앞 쪽 소유의 `11.비용편익`·`ㅇ (비용)`을 반복하지 않습니다. review PNG에서 본문·분류명·하단 표를 직접 대조했습니다. 이 선택 쪽 결과는 전66쪽/fresh WASM/최종 전체 회귀 완료를 대신하지 않습니다. 회귀 검사·기대값·baseline을 변경하지 않았습니다.
 
 선행 정본: ignored `pii-cross-paragraph-diagnostic/pii66-declared/silhouette.tsv`, `render_tree/`, `review/review_042.png`. 최종 producer를 새 커밋에서 빌드하고43건 Native/fresh WASM 전쪽과 전체 회귀·필수 게이트를 재실행합니다. PR/merge는 계속 보류합니다.
+
+
+## 35쪽의 인증된 TAC 축과 합성 행 반례
+
+커밋6504bf9ae의 전체 nextest는 **10226 PASS / 1 FAIL / 45 skip**, 실행408.967초, exit100입니다. `issue_6712_cell_visual_row_units::equal_vpos_without_different_columns_is_not_a_wrap_fragment`가 실패했습니다. 최종 통과로 보고하지 않습니다. Native43건·1055쪽은 완료했고, HWP판·2010 alias·2022판의35쪽3건만90% 미만입니다. 개인정보 전66쪽 Native/fresh WASM은 각각 최저92.53112%, 미달0입니다. 이 후보의 이후 WASM 전체·실제 출력 작업은 미달 보정을 위해 중단했습니다.
+
+합성 행의 선언 높이는 전체 줄들을 포함하며, 첫 두 원점0 줄 뒤의 정상 전진만으로 물리 프레임을 인증하면 안 됩니다. 새 전진 인증은 선언 셀이 첫 줄의 advance와 유효 패딩 안에서 끝나는 경우로 제한합니다. 개인정보의 선언450HU와 다음 프레임의 원본 전진은 이 근거를 만족하지만, #6712의 전체 행 선언7200HU는 첫 줄1200HU 안에서 닫히지 않습니다. 기존 반례나 회귀 기대값을 변경하지 않습니다.
+
+HWP35쪽은 초기 리베이스부터 차이가 있었습니다. 직전TAC 표 문단602의 원본 줄8032HU와 수용 pen107.0933px·끝140.8px는 같은 축입니다. 다음 원본 표 문단603의 줄11128HU(148.3733px)에서 그 문단의 앞 간격7.5733px를 빼면 실제 수용 끝140.8px와 일치합니다. 후처리가 모든TAC 뒤의 page base를 지우면서 다음 표의 원본 pen을 전달하지 못했습니다. 정상 producer에서는 이 축으로 전달한 inline placement가225.9px에 표를 두지만, 초기 리베이스부터218.3px에 놓였습니다.
+
+`stored_tac_successor_keeps_axis`는 원본 단일TAC carrier의 선언 외곽과 저장 줄 높이, 비편집·비재구성 원본, host pen과 placement, 다음TAC 줄의 앞 간격 및 실제 수용 끝의 동일성을 함께 인증합니다. 이 경우에만 fit 축을 유지해 다음 표의 확정 inline placement를 paint에 전달합니다. `advance_end`만으로 축을 유지하지 않으며, 일반TAC·부동 개체·재구성·불일치 원본의 축 종료는 유지합니다. 개별 문서 ID나 현재 px 위치를 조건으로 쓰지 않습니다.
+
+보정 후 집중 회귀는 **44 PASS / 0 FAIL**, 6.839초입니다. #6712의 합성 반례와 실제 그림 줄, #6761 원점0 원본/변형, 생물독소 소유, #7114 편집/재열기, 원래 실패 범위와 본문/겹침 partition 대조군을 포함합니다. 선택 Native35쪽은HWP·2010 alias **94.35054%**,2022판 **96.61619%**입니다. 개인정보42쪽 **99.99358%**, HWPX45·46·49쪽99.02821%·99.36060%·98.88525%도 유지했습니다. 선택 결과는 새source의 전쪽/fresh WASM/전체 회귀 완료를 대신하지 않습니다.
+
+정본은 ignored `final-v6-full-nextest.log`, `final-v6-whole/results.json`, `final-v6-stopped-processes.json`, `s16p35-attribution/`, `v7-diagnostic/`, `v7-source-axis-focused.log`입니다. 새 커밋에서 전체 전쪽 및 필수 검증을 다시 실행하며, PR·merge는 보류합니다.
