@@ -4,7 +4,8 @@
 use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile, table::Table};
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::float_placement::{
-    is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu, signed_hwpunit,
+    is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
+    reflowed_empty_anchor_band_host_line_advance_px, signed_hwpunit,
     stored_empty_anchor_band_host_line_advance_hu,
 };
 use crate::renderer::hwpunit_to_px;
@@ -218,7 +219,15 @@ pub(super) fn resolve(
         .unwrap_or(false);
     let suppress_empty_anchor_spacing = is_topbottom_empty_anchor && !next_is_empty_table_anchor;
 
-    let host_line_spacing = if suppress_empty_anchor_spacing || absolute_table_with_post_text {
+    // [#7702] 저장 줄이 없는 빈 앵커의 host 줄이 띠 아래에 놓이면 그 줄 상자(lh+ls)가
+    // host 의 뒤 간격 전부다. layout 의 lane 꼬리와 같은 helper 를 소비한다.
+    let reflowed_empty_anchor_host_line_tail =
+        reflowed_empty_anchor_band_host_line_advance_px(para, ctrl_idx, styles);
+
+    let host_line_spacing = if suppress_empty_anchor_spacing
+        || absolute_table_with_post_text
+        || reflowed_empty_anchor_host_line_tail.is_some()
+    {
         0.0
     } else if !is_tac && !is_single_cell_placeholder {
         para.line_segs
@@ -265,6 +274,7 @@ pub(super) fn resolve(
             next_para,
         )
         .map(|line_advance| hwpunit_to_px(line_advance, dpi))
+        .or(reflowed_empty_anchor_host_line_tail)
         .unwrap_or(0.0)
     };
     let after = sa
