@@ -77,3 +77,15 @@ Native44쪽 보정 후 **99.99362%**입니다. [수정 후 review PNG](../pr/ass
 보정 전 source의 생물독소 전 205쪽 Native/fresh WASM은 각각 최저 **92.75882%**, 미달 0쪽입니다. 규제분석 Native 전 17쪽 최저 **94.34255%**, 미달 0쪽이며 WASM도 완료했습니다. 이 결과를 새 source의 전쪽 증거로 대체하지 않습니다. `final-v3-whole` 실행은 실패와 완료된 PNG·TSV를 보존한 채 sample16 보정을 위해 중단했습니다. 최종 커밋의 fresh WASM·전쪽 비교·전체 회귀·필수 lint/Skia는 다시 실행합니다.
 
 로컬 정본은 `final-v3-full-nextest.log`, `fit-before-band-focused.log`, `fit-spacing-consumer-focused.log`, `fit-rebuilt-ladder-focused.log`, `final-v3-whole/results.json`입니다. 수정 방향이 잘못된 대조 결과도 실패 상태로 남기고, 테스트 통과나 전쪽 완료로 보고하지 않습니다.
+
+## 표 앞 제목의 흐름 간격 복구
+
+`dc0010320a3c2b959a2b91ddf64dbf96e30768aa`의 Native 비교에서 sample16 HWPX 45쪽81.96319%, 46쪽89.76911%, 49쪽86.25559%와 개인정보 42쪽30.65766%가 확인됐습니다. 평균이나 회귀 검사 통과로 이를 수용하지 않았습니다. `final-v4-full-nextest`는 실제 컴파일 중인 작업의 소유 프로세스만 중단했고 exit130을 보존했습니다. 최종 회귀 summary가 없는 실행입니다.
+
+sample16의 표 앞 제목 `pi731`은 수정 전 흐름 전진24.9px에서17.3px로 바뀌었습니다. 앞 간격7.6px를 추가 차감한 영향이 뒤 표 원점에 남았습니다. 해당 문단의 fit은 원본 앞 간격을 예약하며, 이 반환 경로의 전진에도 그 몫이 필요합니다. `metrics.rs`의 추가 앞 간격 차감을 제거해 기존 수용 높이와 뒤 간격의 합을 유지합니다. 앞 간격의 소실을 허용치나 특정 표 좌표로 덮지 않습니다. 사다리 재구성 판정·dirty/합성 가드·원본 프레임 원점 보정은 유지합니다.
+
+보정 후 기존 검사 **19 PASS / 0 FAIL**, 16.760초입니다. 원래 실패8건의 입력·관계와 sample16 내용 소유·겹침, #7114 5개 편집/재열기, #7470 원본 컷과 제목 소유 대조군을 포함합니다. 테스트나 baseline 변경은 없습니다. Native 선택 쪽의 재비교는45쪽**99.02821%**,46쪽**99.36060%**,49쪽**98.88525%**이며, 전64쪽·fresh WASM 완료를 대신하지 않습니다.
+
+개인정보42쪽은 초기 리베이스 head344db09b2와 모든 후속 후보에서 같은 첫 줄 중복이 재현됐습니다. 리베이스 전 완료 producer에서는 이어받기 첫 본문이 `동일한 방법 및 절차`이지만 초기 리베이스부터 이미 앞 쪽의 `ㅇ (비용)` 줄이 다시 표시됩니다. 이 결과를 제목 간격 수정 때문으로 분류하지 않습니다. 페이지41/42의 row/startCut/endCut은 같지만, 새 straddle 셀의 accepted content cursor·paint 소유 창을 추가로 추적하고 있습니다. 기존 완료 문서이므로 이관하거나 수용하지 않습니다.
+
+정본은 `fit-preserved-before-focused.log`, `fit-preserved-before-producer.json`, `preserved-band-diagnostic/sample16-hwpx/silhouette.tsv`, `sample16-{before,current}-adv.log`, `pii42-attribution/`, `final-v4-full-nextest-stopped.json`입니다. 새로운 전체 회귀와43건 Native/fresh WASM, 필수 lint/Skia 게이트는 아직 완료하지 않았습니다.

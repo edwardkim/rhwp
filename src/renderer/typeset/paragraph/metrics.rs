@@ -257,10 +257,7 @@ impl FormattedParagraph {
         {
             // Fit excludes outside after-space; the accepted flow still
             // carries that band to the successor's origin.
-            let trimmed_before = if sb_trim { self.spacing_before } else { 0.0 };
-            return (self.height_for_fit - trimmed_before + self.spacing_after)
-                .max(0.0)
-                .min(self.total_height);
+            return (self.height_for_fit + self.spacing_after).min(self.total_height);
         }
         self.total_height
     }
