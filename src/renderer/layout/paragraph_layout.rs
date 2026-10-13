@@ -2227,7 +2227,6 @@ fn compute_line_extra_spacing(
     justify_spaces_only: bool,
     needs_distribute: bool,
     has_tabs: bool,
-    renders_synthetic_wrap_trailing_space: bool,
     suppress_cell_overflow_spacing: bool,
     converge_auto_shrink_cell: bool,
     total_char_count: usize,
@@ -2412,23 +2411,18 @@ fn compute_line_extra_spacing(
             } else {
                 0.0
             };
-            // A fresh soft-wrap consumes the separator before starting the next
-            // row, but LineSeg can encode only the next row's start. Composition
-            // therefore leaves that separator at the end of this row. The run
-            // painter advances every preserved space, so its distribution must
-            // account for that slot and its natural width; otherwise a corrected
-            // break immediately before a word can push the trailing separator
-            // beyond the line box (#4956).
-            let rendered_space_slots = if renders_synthetic_wrap_trailing_space {
-                interior_spaces + trailing_spaces
-            } else {
-                interior_spaces
-            };
-            let effective_used = if renders_synthetic_wrap_trailing_space {
-                total_text_width + split_ink_overhang
-            } else {
-                total_text_width - trailing_width + split_ink_overhang
-            };
+            // [#7702] 줄 끝에 걸린 공백(저장 줄이든 rhwp 가 새로 나눈 줄이든)은
+            // 배분 자리가 아니다. 줄 나눔(`line_breaking` 의 `overflowing_space_cut`)은
+            // 넘친 공백 하나를 줄 끝에 걸어 두고 그 앞 글자까지로 줄을 채운다. 한/글
+            // 2020 정본도 같다 — 양쪽 정렬 줄의 마지막 가시 글자는 본문 오른쪽 끝에서
+            // 끝나고, 걸린 공백은 그 바깥에 자연 폭으로 찍힌다(issue7816
+            // odd_indent_ladder p1: 공백 14개 줄 마지막 글자 끝 698.82px = 본문 끝).
+            // 종전에는 저장 줄 없는 줄만 이 공백을 분모·사용 폭에 넣어(#4956) 내부
+            // 공백이 1/(n+1) 씩 덜 늘고 마지막 글자가 6~10px 모자랐다. 측정이 건
+            // 공백을 그리기도 같은 규칙으로 건다. 여분은 #5679 회수가 말미 공백에서
+            // 뺀다.
+            let rendered_space_slots = interior_spaces;
+            let effective_used = total_text_width - trailing_width + split_ink_overhang;
             let slack = available_width - effective_used;
             if leader_dashes > 0 && slack > 0.0 {
                 // Task #352: 라인에 dash leader 가 있고 슬랙이 양수면
@@ -6658,7 +6652,6 @@ impl LayoutEngine {
                     false,
                     needs_distribute,
                     has_tabs,
-                    renders_synthetic_wrap_trailing_space,
                     suppress_cell_overflow_spacing,
                     converge_auto_shrink_cell,
                     total_char_count,
@@ -7735,10 +7728,10 @@ impl LayoutEngine {
         // 말미 공백이 여분까지 얹어 그려져 run bbox 와 x 전진이 줄 상자를
         // 여분×말미공백수 만큼 넘는다(10857 p11: '외부 평가전문위원 ' 144.0 vs
         // 줄 122.1 — 가시 글리프는 정확히 줄 끝에서 끝나고 초과 전량이 부풀린
-        // 말미 공백). 분모에 말미 공백을 넣는 synthetic-wrap 모드는 제외.
+        // 말미 공백). 저장 줄 없는 재조판 줄도 같다(#7702).
         let line_trailing_space_by_run: Vec<usize> = {
             let mut counts = vec![0usize; comp_line.runs.len()];
-            if !renders_synthetic_wrap_trailing_space && extra_word_sp != 0.0 {
+            if extra_word_sp != 0.0 {
                 let mut budget = comp_line
                     .runs
                     .iter()
@@ -10765,7 +10758,6 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
-            false,
             5,
             30.0,
             90.0,
@@ -10776,9 +10768,11 @@ mod issue_2809_split_alignment_tests {
         assert_eq!(extra_char, 0.0);
         assert_eq!(extra_dash, 0.0);
 
-        // A synthetic soft-wrap keeps its consumed separator in the projected
-        // run. The renderer advances that final space too, so it participates
-        // in the slot count and the complete run stays inside the line box.
+        // [#7702] A soft-wrap keeps its consumed separator at the end of the
+        // projected run. Like 한/글 2020 (issue7816 odd_indent_ladder p1), the
+        // visible glyphs fill the line box and that hung separator stays outside
+        // the distribution: it neither takes a share of the slack nor counts as
+        // used width.
         let trailing_line = ComposedLine {
             runs: vec![ComposedTextRun {
                 text: "다 같 이 ".to_string(),
@@ -10801,7 +10795,6 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
-            true,
             false,
             false,
             6,
@@ -10809,10 +10802,16 @@ mod issue_2809_split_alignment_tests {
             available_width,
             40.0,
         );
-        let mut distributed_style = text_style;
+        let mut distributed_style = text_style.clone();
         distributed_style.extra_word_spacing = extra_word;
         assert!(
-            (estimate_text_width("다 같 이 ", &distributed_style) - available_width).abs() < 0.001
+            (estimate_text_width("다 같 이", &distributed_style) - available_width).abs() < 0.001,
+            "visible glyphs must end exactly at the line box edge"
+        );
+        let hung = estimate_text_width(" ", &text_style);
+        assert!(
+            (extra_word - (60.0 + hung) / 2.0).abs() < 0.001,
+            "slack goes to the two interior spaces only"
         );
         assert_eq!(extra_char, 0.0);
         assert_eq!(extra_dash, 0.0);
@@ -10839,7 +10838,6 @@ mod issue_2809_split_alignment_tests {
             Alignment::Split,
             true,
             true,
-            false,
             false,
             false,
             false,
@@ -10895,7 +10893,6 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
-            false,
             12,
             62.5,
             481.8,
@@ -10914,7 +10911,6 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
-            false,
             false,
             false,
             false,
@@ -10964,7 +10960,6 @@ mod issue_4657_distribute_alignment_tests {
             false,
             false,
             true,
-            false,
             false,
             false,
             false,
