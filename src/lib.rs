@@ -42,6 +42,7 @@ pub mod service;
 #[doc(hidden)]
 #[cfg(feature = "subsecond-dev")]
 pub mod subsecond_dev;
+#[cfg(feature = "wasm-api")]
 pub mod wasm_api;
 pub mod wmf;
 
@@ -51,14 +52,17 @@ pub use model::event::DocumentEvent;
 pub use parser::{parse_document, parse_document_with_password, DocumentParser};
 pub use serializer::{serialize_document, DocumentSerializer};
 
+// 아래 두 export 는 `wasm-api` 를 켰을 때만 JS 로 나간다. 끄면 start 로 등록하지 않으므로
+// rhwp 를 링크한 앱의 start 를 대신하지 않는다. 두 함수 자체는 Rust API 로 남는다.
+
 /// WASM panic hook 초기화 (한 번만 실행)
-#[wasm_bindgen(start)]
+#[cfg_attr(feature = "wasm-api", wasm_bindgen(start))]
 pub fn init_panic_hook() {
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
 }
 
-#[wasm_bindgen]
+#[cfg_attr(feature = "wasm-api", wasm_bindgen)]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }

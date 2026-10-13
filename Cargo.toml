@@ -23,6 +23,8 @@ crate-type = ["rlib", "cdylib"]
 [[bin]]
 name = "rhwp"
 path = "src/main.rs"
+# CLI 는 `wasm_api::HwpDocument` 를 쓴다 — 아래 `wasm-api` feature 참고.
+required-features = ["wasm-api"]
 
 [[bin]]
 name = "font-metric-gen"
@@ -300,7 +302,12 @@ console_error_panic_hook = { version = "0.1", optional = true }
 subsecond = { version = "=0.7.10", optional = true }
 
 [features]
-default = ["console_error_panic_hook"]
+default = ["console_error_panic_hook", "wasm-api"]
+# 브라우저 JS 바인딩(`wasm_api`)과 `#[wasm_bindgen(start)]`·`version` export.
+# npm 패키지·Studio·CLI 는 기본값 그대로 쓴다. 다른 wasm-bindgen 앱이 rhwp 를
+# 라이브러리로 링크할 때는 `default-features = false` 로 끈다 — rhwp 의 start 가
+# 앱의 start 를 대신하지 않고, 쓰지 않는 export 와 그 뒤의 렌더러가 링크에서 빠진다.
+wasm-api = []
 native-skia = ["dep:resvg", "dep:skia-safe", "dep:icy_sixel"]
 subsecond-dev = ["dep:subsecond"]
 
