@@ -91,14 +91,20 @@ impl SourceFrameQuery<'_> {
             && table.outer_margin_bottom > 0)
             .then(|| layout_engine.row_two_line_source_frame_height(table, r, styles))
             .flatten();
-        // 저장 vpos reset은 같은 문단 안에서 양수 좌표가 0으로 되감긴 경우에만
-        // 물리 조각 경계를 소유한다. 문단 전환의 0은 HWPX writer-local cursor라
-        // 저장 프레임 컷으로 선택하지 않고 일반 행 용량 계산에 맡긴다.
-        let stored_source_frame = (profile.hwpx_stored_layout()
+        // Same-paragraph HWPX resets and original Native plain-text frame
+        // boundaries retain their physical fragment ownership. Native paragraph
+        // resets require a coherent cell coordinate stream and original row
+        // boxes extending beyond the declared object frame; local zeros alone
+        // do not establish a source-owned cut.
+        let native_text_source_frame = layout_engine
+            .native_stored_row_has_text_frame_boundary(table, r, styles)
+            && !rowspan_touched.get(r).copied().unwrap_or(true);
+        let stored_source_frame = ((native_text_source_frame
+            || (profile.hwpx_stored_layout()
+                && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
+                && layout_engine.row_has_single_visible_source_cell(table, r, styles)))
             && !table.common.treat_as_char
             && mt.allows_row_break_split()
-            && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
-            && layout_engine.row_has_single_visible_source_cell(table, r, styles)
             && !rowspan_touched.get(r).copied().unwrap_or(true))
         .then(|| layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles))
         .flatten();
@@ -154,6 +160,17 @@ impl SourceFrameQuery<'_> {
             && !ordinary_declared_band_can_split
             && source_first_fragment_overflow_allowance > 0.0
             && source_first_fragment_row_end == Some(r + 1)
+            // Source object-height slack may absorb an empty physical band,
+            // but it cannot consume visible content that belongs beyond the
+            // actual row budget. The same content/alignment query is used by
+            // ordinary band splitting, independently of the stored border.
+            && layout_engine.row_aligned_content_bottom(
+                table,
+                r,
+                layout_engine.row_complete_cut_content_height(table, r, styles),
+                row_total,
+                styles,
+            ) <= avail_for_rows - consumed - cs_before + 0.5
             && consumed + cs_before + row_total
                 <= avail_for_rows + source_first_fragment_overflow_allowance;
         // A direct HWPX row with one visible owner and a structural empty
@@ -162,10 +179,11 @@ impl SourceFrameQuery<'_> {
         // measured whole-row fast path. The same rule applies to original
         // Native cells whose two local-zero line boxes close the stored row.
         // Spare capacity cannot merge their independently owned source frames.
-        let declared_source_frame = row_start_cut.is_empty()
-            && !table_text_reflowed()
-            && (layout_engine.row_has_declared_stored_frame(table, r)
-                || layout_engine.native_saved_two_line_row_frame(table, r, styles));
+        let declared_source_frame = (native_text_source_frame && stored_source_frame.is_some())
+            || (row_start_cut.is_empty()
+                && !table_text_reflowed()
+                && (layout_engine.row_has_declared_stored_frame(table, r)
+                    || layout_engine.native_saved_two_line_row_frame(table, r, styles)));
         let whole_row_fits = !declared_source_frame
             && ((!single_visible_source_frame
                 && consumed + cs_before + row_total <= avail_for_rows)

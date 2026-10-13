@@ -1865,7 +1865,6 @@ class Builder:
         self._uni_tag()
         self._uni_confusable()
         self._uni_kind_filter()
-        self._uni_hangul_pua()
         self._uni_clean()
         self._uni_rendered_raw()
 
@@ -2360,45 +2359,6 @@ class Builder:
                     human=f"축 {kind['filter']} — 탐지 {len(kept)}건\n",
                 )
             )
-
-    def _uni_hangul_pua(self) -> None:
-        env = {
-            "schemaVersion": SCHEMA,
-            "source": "samples/exam_kor.hwp",
-            "kindFilter": "all",
-            "scannedChars": 1,
-            "findings": [],
-            "findingCount": 0,
-            "clean": True,
-            "severityCounts": {"high": 0, "medium": 0, "low": 0},
-            "kindCounts": {
-                "zero_width": 0,
-                "bidi_override": 0,
-                "tag_char": 0,
-                "confusable": 0,
-            },
-        }
-        self.add(
-            envelope_shell(
-                case_id="uni-zw-hangul-pua-typesetting",
-                axis="unicode",
-                family="zero_width",
-                polarity="negative",
-                source_rule={
-                    "file": UNI_SRC,
-                    "symbol": "zero_width_is_hangul_typesetting",
-                    "note": "PUA 옆 U+200B 는 옛한글 조판 보조. exam_kor.hwp 24건 전부 이 형태.",
-                },
-                argv=["inspect", "unicode", "samples/exam_kor.hwp", "--json"],
-                exit_code=0,
-                envelope=env,
-                consume={"branch": "clean == true", "reason": "hangul-pua"},
-                pair=None,
-                why="한/글 PUA 옛한글 + ZWSP 는 은닉 채널이 아니다.",
-                note="방향 제어·태그 문자에는 이 완화를 적용하지 않는다.",
-                human="유니코드 기만 검사 — 탐지 0건 (옛한글 조판 보조)\n",
-            )
-        )
 
     def _uni_clean(self) -> None:
         for sample in (

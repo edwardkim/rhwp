@@ -38,6 +38,7 @@ impl TypesetState {
                 square_band_bottom: 0.0,
                 square_band_top: None,
                 current_footnote_height: 0.0,
+                deferred_body_footnotes: Vec::new(),
                 current_footnote_body_bottom_reserved: false,
                 deferred_hwpx_note_body: false,
                 current_bottom_fixed_exclusion: 0.0,
@@ -58,9 +59,13 @@ impl TypesetState {
                 side_wrap_exclusions: std::collections::BTreeMap::new(),
                 inline_placements: std::collections::HashMap::new(),
                 inline_flow_plans: std::collections::HashMap::new(),
+                stored_paragraph_flow_ends: std::collections::HashMap::new(),
                 paragraph_float_placements: std::collections::HashMap::new(),
+                float_pushed_line_spacings: std::collections::HashMap::new(),
                 inline_box_flow_bottom: 0.0,
                 deferred_table_controls: Vec::new(),
+                deferred_table_successor_start: None,
+                pending_table_terminal_gap: None,
                 deferred_next_page_square_pictures: Vec::new(),
                 page_start_square_pictures: Vec::new(),
                 deferred_next_page_stored_frames: Vec::new(),
@@ -387,7 +392,9 @@ impl TypesetState {
             overlay_cuts: std::mem::take(&mut self.data.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.data.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.data.inline_flow_plans),
+            stored_paragraph_flow_ends: std::mem::take(&mut self.data.stored_paragraph_flow_ends),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
+            float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
         };
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -462,7 +469,9 @@ impl TypesetState {
             overlay_cuts: std::mem::take(&mut self.data.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.data.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.data.inline_flow_plans),
+            stored_paragraph_flow_ends: std::mem::take(&mut self.data.stored_paragraph_flow_ends),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
+            float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
         };
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -648,6 +657,7 @@ impl TypesetState {
             self.data.current_height = self.data.current_height.max(overlay_top_reserve);
             self.data.current_start_height = self.data.current_height;
         }
+        self.drain_deferred_body_footnotes();
     }
 
     pub(in crate::renderer::typeset) fn reset_for_new_page(&mut self) {

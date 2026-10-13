@@ -527,11 +527,13 @@ fn generate_hancom_judgment_bundle() {
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(hwpx.clone())).expect("zip");
     let chart_part = zip
         .file_names()
+        .map(|name| name.expect("ZIP 엔트리 이름"))
         .find(|n| n.starts_with("Chart/") && n.ends_with(".xml"))
         .expect("Chart 파트")
         .to_string();
     let ole_entry = zip
         .file_names()
+        .map(|name| name.expect("ZIP 엔트리 이름"))
         .find(|n| n.starts_with("BinData/") && n.to_ascii_lowercase().ends_with(".ole"))
         .expect("BinData ole")
         .to_string();

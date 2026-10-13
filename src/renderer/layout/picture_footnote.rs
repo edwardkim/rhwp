@@ -31,9 +31,21 @@ enum FootnoteParagraphRoute {
     StoredEmpty,
 }
 
-struct FootnoteParagraphPlacement {
+struct FootnoteBlockTableFrame<'a> {
+    table: &'a crate::model::table::Table,
+    measured: crate::renderer::height_measurer::MeasuredTable,
+    top_offset: f64,
+    advance: f64,
+    /// A saved TAC line includes the table's outer box and owns its spacing.
+    trailing_line_spacing: f64,
+    /// TAC geometry belongs to the host line, not the object's float offsets.
+    line_left_offset: Option<f64>,
+}
+
+struct FootnoteParagraphPlacement<'a> {
     route: FootnoteParagraphRoute,
     spacing: ParagraphVerticalSpacing,
+    block_table: Option<FootnoteBlockTableFrame<'a>>,
 }
 
 fn fragment_line_bounds(fragment: Option<FootnoteFragment>, total_lines: usize) -> (usize, usize) {
@@ -1200,18 +1212,144 @@ impl LayoutEngine {
         crate::renderer::corrected_line_metrics(raw_lh, raw_ls, max_fs, ls_type, ls_val)
     }
 
-    /// 선택된 각주 문단의 실제 경로와 앞뒤 간격을 함께 확정한다.
-    /// 번호 전용 첫 문단과 저장 빈 줄은 기존 간격 계약을 유지한다.
-    fn footnote_paragraph_placement(
+    fn footnote_block_table<'a>(
+        para: &'a Paragraph,
+        selected: &std::ops::Range<usize>,
+    ) -> Option<&'a crate::model::table::Table> {
+        let [Control::Table(table)] = para.controls.as_slice() else {
+            return None;
+        };
+        if selected.start != 0
+            || selected.end == 0
+            || para
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && ch != '\u{fffc}')
+            || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+            || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+            || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+            || table.caption.is_some()
+            || table.row_count == 0
+            || table.col_count == 0
+        {
+            return None;
+        }
+        if table.common.treat_as_char {
+            let seg_width = para.line_segs.first().map_or(0, |line| line.segment_width);
+            // Ordinary inline TACs are already painted by the paragraph path.
+            // A sole table that owns a saved outer-box line is instead classified
+            // as a block by that path. The note must consume the same owned line
+            // rather than reserving its height while dropping its table.
+            if para.stored_text_partition_is_dirty()
+                || !Self::tac_stored_band_is_outer_box(para, table)
+                || crate::renderer::height_measurer::is_tac_table_inline_in_para(
+                    table, seg_width, para,
+                )
+            {
+                return None;
+            }
+        }
+        Some(table)
+    }
+
+    fn footnote_block_table_frame<'a>(
         &self,
-        para: &Paragraph,
+        para: &'a Paragraph,
+        composed: &ComposedParagraph,
+        styles: &ResolvedStyleSet,
+        selected: &std::ops::Range<usize>,
+        area_width: f64,
+    ) -> Option<FootnoteBlockTableFrame<'a>> {
+        let table = Self::footnote_block_table(para, selected)?;
+        let measurer = crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
+            .with_hwp3_variant(self.profile.get().hwp3_layout())
+            .with_legacy_hwp3_stored_geometry(self.profile.get().legacy_hwp3_stored_geometry())
+            .with_native_hwp5(self.profile.get().hwp5_stored_pagination_layout())
+            .with_hwpx_stored_layout(self.profile.get().hwpx_stored_layout())
+            .with_session_edited(self.profile.get().session_edited())
+            .with_render_normalization(self.render_normalization_overlay());
+        let measured = measurer.measure_table(table, 0, 0, styles);
+        // Whole-table paint consumes this same resolved row geometry. The
+        // empty host is an anchor, not another text row added below the table.
+        let rows = self.resolve_row_heights(
+            table,
+            table.col_count as usize,
+            table.row_count as usize,
+            Some(&measured),
+            styles,
+            table.common.treat_as_char,
+        );
+        let body_height = rows.iter().sum::<f64>()
+            + measured.cell_spacing * (table.row_count as usize + 1) as f64;
+        let top_offset = if table.common.treat_as_char {
+            // Same stored-band producer as the body TAC path. The verified
+            // saved line contains the top/table/bottom outer box.
+            self.tac_table_stored_outer_band_top(para, table, body_height, 0.0)?
+        } else {
+            hwpunit_to_px(table.common.vertical_offset as i32, self.dpi)
+                + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+        };
+        let mut advance =
+            top_offset + body_height + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+        let (trailing_line_spacing, line_left_offset) = if table.common.treat_as_char {
+            let line = composed.lines.first()?;
+            let (line_height, line_spacing) =
+                self.footnote_line_metrics(line, composed.para_style_id, styles);
+            // The line and its table occupy one box. If actual cell demand grows,
+            // reserve that demand rather than clipping it into the saved line.
+            advance = advance.max(line_height);
+            let style = styles.para_styles.get(composed.para_style_id as usize);
+            let indent = crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
+                style.map_or(0.0, |style| style.indent),
+                0,
+                Some(para),
+                composed.lines.len(),
+                true,
+            );
+            let left = style.map_or(0.0, |style| style.margin_left) + indent;
+            let right = style.map_or(0.0, |style| style.margin_right);
+            let outer_left = hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
+            let outer_right = hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
+            let width = self
+                .resolve_column_widths(table, table.col_count as usize)
+                .iter()
+                .sum::<f64>()
+                + measured.cell_spacing * (table.col_count as usize + 1) as f64;
+            let slack = (area_width - left - right - width - outer_left - outer_right).max(0.0);
+            let aligned = match style.map_or(Alignment::Left, |style| style.alignment) {
+                Alignment::Center | Alignment::Distribute => slack / 2.0,
+                Alignment::Right => slack,
+                _ => 0.0,
+            };
+            (line_spacing, Some(left + aligned + outer_left))
+        } else {
+            (0.0, None)
+        };
+        Some(FootnoteBlockTableFrame {
+            table,
+            measured,
+            top_offset,
+            advance,
+            trailing_line_spacing,
+            line_left_offset,
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn footnote_paragraph_placement<'a>(
+        &self,
+        para: &'a Paragraph,
         composed: &ComposedParagraph,
         styles: &ResolvedStyleSet,
         fragment: Option<FootnoteFragment>,
         number_drawn: bool,
         selected: std::ops::Range<usize>,
         relative_y: f64,
-    ) -> FootnoteParagraphPlacement {
+        area_width: f64,
+    ) -> FootnoteParagraphPlacement<'a> {
+        let mut block_table = (composed.lines.len() <= 1)
+            .then(|| self.footnote_block_table_frame(para, composed, styles, &selected, area_width))
+            .flatten();
         let route = if para.text.is_empty()
             && para.controls.is_empty()
             && !fragment_draws_number(fragment)
@@ -1240,7 +1378,23 @@ impl LayoutEngine {
                 spacing.after = style.map_or(0.0, |style| style.spacing_after).max(0.0);
             }
         }
-        FootnoteParagraphPlacement { route, spacing }
+        if route == FootnoteParagraphRoute::Numbered {
+            if let Some(block) = block_table.as_mut() {
+                let number_line_height = composed.lines.first().map_or_else(
+                    || hwpunit_to_px(400, self.dpi),
+                    |line| {
+                        self.footnote_line_metrics(line, composed.para_style_id, styles)
+                            .0
+                    },
+                );
+                block.advance = block.advance.max(number_line_height);
+            }
+        }
+        FootnoteParagraphPlacement {
+            route,
+            spacing,
+            block_table,
+        }
     }
 
     pub(crate) fn estimate_footnote_area_height(
@@ -1291,53 +1445,13 @@ impl LayoutEngine {
         // layout 경로에서도 trailing spacing을 붙이지 않는다.
         for (i, fn_ref) in footnotes.iter().enumerate() {
             let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
-            let (start_line, end_line) = fragment_line_bounds(
+            total += self.footnote_paragraphs_content_height(
+                fn_paras,
+                styles,
+                area_width,
                 fn_ref.fragment,
-                footnote_composed_line_count(fn_paras, area_width, styles, self.dpi),
+                total,
             );
-            let mut flat_line = 0usize;
-            let mut number_drawn = false;
-            for para in fn_paras {
-                let composed = compose_footnote_paragraph(para, area_width, styles, self.dpi);
-                let line_count = composed.lines.len().max(1);
-                let para_start = flat_line;
-                let selected_start = start_line.saturating_sub(para_start).min(line_count);
-                let selected_end = end_line.saturating_sub(para_start).min(line_count);
-                flat_line += line_count;
-                if selected_start >= selected_end {
-                    continue;
-                }
-                let placement = self.footnote_paragraph_placement(
-                    para,
-                    &composed,
-                    styles,
-                    fn_ref.fragment,
-                    number_drawn,
-                    selected_start..selected_end,
-                    total,
-                );
-                total += placement.spacing.before;
-                if placement.route == FootnoteParagraphRoute::StoredEmpty {
-                    // 실제 빈 줄 경로는 저장 높이만 소비하고 후행 줄간격을 붙이지 않는다.
-                    total += hwpunit_to_px(composed.lines[0].line_height, self.dpi);
-                } else if composed.lines.is_empty() {
-                    total += hwpunit_to_px(400, self.dpi);
-                } else {
-                    for (index, line) in composed.lines[selected_start..selected_end]
-                        .iter()
-                        .enumerate()
-                    {
-                        let (line_height, line_spacing_px) =
-                            self.footnote_line_metrics(line, composed.para_style_id, styles);
-                        total += line_height;
-                        if para_start + selected_start + index + 1 < end_line {
-                            total += line_spacing_px;
-                        }
-                    }
-                }
-                total += placement.spacing.after;
-                number_drawn |= placement.route == FootnoteParagraphRoute::Numbered;
-            }
             // 각주 간 간격
             if i + 1 < footnotes.len() {
                 total += between_notes;
@@ -1346,7 +1460,101 @@ impl LayoutEngine {
         total
     }
 
+    /// Paragraph plans are shared by area sizing, body reservation and paint.
+    fn footnote_paragraphs_content_height(
+        &self,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        area_width: f64,
+        fragment: Option<FootnoteFragment>,
+        origin_y: f64,
+    ) -> f64 {
+        let (start_line, end_line) = fragment_line_bounds(
+            fragment,
+            footnote_composed_line_count(paragraphs, area_width, styles, self.dpi),
+        );
+        let mut total = origin_y;
+        let mut flat_line = 0usize;
+        let mut number_drawn = false;
+        for para in paragraphs {
+            let composed = compose_footnote_paragraph(para, area_width, styles, self.dpi);
+            let line_count = composed.lines.len().max(1);
+            let para_start = flat_line;
+            let selected_start = start_line.saturating_sub(para_start).min(line_count);
+            let selected_end = end_line.saturating_sub(para_start).min(line_count);
+            flat_line += line_count;
+            if selected_start >= selected_end {
+                continue;
+            }
+            let placement = self.footnote_paragraph_placement(
+                para,
+                &composed,
+                styles,
+                fragment,
+                number_drawn,
+                selected_start..selected_end,
+                total,
+                area_width,
+            );
+            total += placement.spacing.before;
+            if let Some(block) = placement.block_table {
+                total += block.advance;
+                if para_start + selected_end < end_line {
+                    total += block.trailing_line_spacing;
+                }
+            } else if placement.route == FootnoteParagraphRoute::StoredEmpty {
+                total += hwpunit_to_px(composed.lines[0].line_height, self.dpi);
+            } else if composed.lines.is_empty() {
+                total += hwpunit_to_px(400, self.dpi);
+            } else {
+                for (index, line) in composed.lines[selected_start..selected_end]
+                    .iter()
+                    .enumerate()
+                {
+                    let (height, spacing) =
+                        self.footnote_line_metrics(line, composed.para_style_id, styles);
+                    total += height;
+                    if para_start + selected_start + index + 1 < end_line {
+                        total += spacing;
+                    }
+                }
+            }
+            total += placement.spacing.after;
+            number_drawn |= placement.route == FootnoteParagraphRoute::Numbered;
+        }
+        total - origin_y
+    }
+
+    pub(crate) fn footnote_with_block_table_content_height(
+        &self,
+        footnote: &crate::model::footnote::Footnote,
+        styles: &ResolvedStyleSet,
+        area_width: f64,
+        fragment: Option<FootnoteFragment>,
+    ) -> Option<f64> {
+        footnote
+            .paragraphs
+            .iter()
+            .any(|para| {
+                Self::footnote_block_table(para, &(0..1)).is_some()
+                    && compose_footnote_paragraph(para, area_width, styles, self.dpi)
+                        .lines
+                        .len()
+                        <= 1
+            })
+            .then(|| {
+                self.footnote_paragraphs_content_height(
+                    &footnote.paragraphs,
+                    styles,
+                    area_width,
+                    fragment,
+                    0.0,
+                )
+            })
+    }
+
     /// 각주 영역 레이아웃 (구분선 + 각주 문단들)
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_footnote_area(
         &self,
         tree: &mut PageLayoutContext,
@@ -1356,6 +1564,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         fn_area: &LayoutRect,
         shape: &FootnoteShape,
+        bin_data_content: &[BinDataContent],
     ) {
         let mut y = fn_area.y;
 
@@ -1441,7 +1650,85 @@ impl LayoutEngine {
                     number_drawn,
                     selected_start..selected_end,
                     y - fn_area.y,
+                    fn_area.width,
                 );
+                if let Some(block) = placement.block_table {
+                    y += placement.spacing.before;
+                    let anchor_y = y;
+                    if placement.route == FootnoteParagraphRoute::Numbered {
+                        // 번호와 표는 같은 호스트 줄에 속한다. 번호 줄의 높이를
+                        // 표 아래에 다시 더하지 않고 공통 advance에 포함한다.
+                        let mut number_host = composed.clone();
+                        if number_host.lines.is_empty() {
+                            // 가상 빈 줄도 번호를 실제 출력한다. 측정과 같은
+                            // 기존 400HU fallback 줄이며 표의 내용 줄이 아니다.
+                            number_host.lines.push(ComposedLine {
+                                runs: Vec::new(),
+                                line_height: 400,
+                                baseline_distance: 320,
+                                segment_width: 0,
+                                column_start: 0,
+                                line_spacing: 0,
+                                has_line_break: false,
+                                char_start: 0,
+                            });
+                        }
+                        self.layout_footnote_paragraph_with_number(
+                            tree,
+                            fn_node,
+                            &number_host,
+                            para,
+                            styles,
+                            fn_area,
+                            anchor_y,
+                            &number_text,
+                            fn_ref.number,
+                            marker_section,
+                            marker_para,
+                            base_cs_id,
+                            selected_start,
+                            selected_end,
+                            true,
+                        );
+                        number_drawn = true;
+                    }
+                    let style = styles.para_styles.get(composed.para_style_id as usize);
+                    self.layout_table(
+                        tree,
+                        fn_node,
+                        block.table,
+                        marker_section,
+                        styles,
+                        0,
+                        fn_area,
+                        anchor_y,
+                        bin_data_content,
+                        Some(&block.measured),
+                        0,
+                        Some((marker_para, 0)),
+                        style.map_or(Alignment::Left, |style| style.alignment),
+                        None,
+                        style.map_or(0.0, |style| style.margin_left),
+                        style.map_or(0.0, |style| style.margin_right),
+                        None,
+                        None,
+                        Some(anchor_y),
+                        None,
+                        false,
+                        false,
+                        0.0,
+                        Some((
+                            block.line_left_offset.map(|offset| fn_area.x + offset),
+                            anchor_y + block.top_offset,
+                        )),
+                        Self::standalone_table_char_border_fill(Some(para), block.table, styles),
+                    );
+                    y = anchor_y + block.advance + placement.spacing.after;
+                    if !is_last_selected_line {
+                        y += block.trailing_line_spacing;
+                    }
+                    continue;
+                }
                 if placement.route == FootnoteParagraphRoute::StoredEmpty {
                     y += hwpunit_to_px(composed.lines[0].line_height, self.dpi);
                     continue;
@@ -1492,6 +1779,9 @@ impl LayoutEngine {
                     );
                 } else {
                     let composed = numbered.as_ref().unwrap_or(&composed);
+                    // 각주 줄도 원본 인라인 개체와 문서의 BinData를 소비한다.
+                    // 텍스트 줄만 전달하면 높이는 예약하면서 TAC 표·그림을
+                    // 출력하지 못한다. 이어받기에도 같은 글줄 소유를 사용한다.
                     let returned_y = self.layout_composed_paragraph_in_frame(
                         tree,
                         fn_node,
@@ -1508,11 +1798,12 @@ impl LayoutEngine {
                         false,
                         0.0,
                         None,
-                        None,
-                        None,
+                        Some(para),
+                        Some(bin_data_content),
                         None, // 각주 컨텍스트 — wrap zone 무관
                         false,
                         Some(placement.spacing),
+                        None,
                     );
                     if is_last_selected_line {
                         // fragment의 마지막 줄은 trailing line-spacing을 쓰지 않는다.
@@ -1959,6 +2250,40 @@ fn get_footnote_paragraphs<'a>(
             }
             &[]
         }
+        FootnoteSource::NestedTableCell {
+            para_index,
+            table_control_index,
+            cell_path,
+        } => {
+            let Some(Control::Table(table)) = paragraphs
+                .get(*para_index)
+                .and_then(|para| para.controls.get(*table_control_index))
+            else {
+                return &[];
+            };
+            let mut table = table.as_ref();
+            for (index, entry) in cell_path.iter().enumerate() {
+                let Some(control) = table
+                    .cells
+                    .get(entry.cell_index)
+                    .and_then(|cell| cell.paragraphs.get(entry.cell_para_index))
+                    .and_then(|para| para.controls.get(entry.control_index))
+                else {
+                    return &[];
+                };
+                if index + 1 == cell_path.len() {
+                    return match control {
+                        Control::Footnote(note) => &note.paragraphs,
+                        _ => &[],
+                    };
+                }
+                let Control::Table(child) = control else {
+                    return &[];
+                };
+                table = child;
+            }
+            &[]
+        }
         FootnoteSource::ShapeTextBox {
             para_index,
             shape_control_index,
@@ -2089,10 +2414,39 @@ impl LayoutEngine {
         w: f64,
         h: f64,
     ) {
+        if let Some(border) =
+            self.make_picture_border_node(tree, picture, BoundingBox::new(x, y, w, h))
+        {
+            parent.children.push(border);
+        }
+    }
+
+    /// Inline and floating pictures use the same outer object frame for their
+    /// outline; bitmap crop/inset changes only the image's painted interior.
+    pub(crate) fn append_picture_image_node(
+        &self,
+        tree: &mut PageLayoutContext,
+        parent: &mut RenderNode,
+        picture: &crate::model::image::Picture,
+        image: RenderNode,
+    ) {
+        let bbox = image.bbox;
+        parent.children.push(image);
+        if let Some(border) = self.make_picture_border_node(tree, picture, bbox) {
+            parent.children.push(border);
+        }
+    }
+
+    pub(crate) fn make_picture_border_node(
+        &self,
+        tree: &mut PageLayoutContext,
+        picture: &crate::model::image::Picture,
+        bbox: BoundingBox,
+    ) -> Option<RenderNode> {
         let line_type = picture.border_attr.attr & 0x3F;
         // 선 종류 0 = 없음
         if line_type == 0 {
-            return;
+            return None;
         }
         let border_w = if picture.border_width > 0 {
             hwpunit_to_px(picture.border_width, self.dpi)
@@ -2117,11 +2471,14 @@ impl LayoutEngine {
             shadow: None,
         };
         let border_id = tree.next_id();
-        let border_node = RenderNode::new(
+        let transform = extract_shape_transform(&picture.shape_attr);
+        let bbox = transform.effective_image_bbox(&bbox);
+        let mut rectangle = RectangleNode::new(0.0, style, None);
+        rectangle.transform = transform;
+        Some(RenderNode::new(
             border_id,
-            RenderNodeType::Rectangle(RectangleNode::new(0.0, style, None)),
-            BoundingBox::new(x, y, w, h),
-        );
-        parent.children.push(border_node);
+            RenderNodeType::Rectangle(rectangle),
+            bbox,
+        ))
     }
 }

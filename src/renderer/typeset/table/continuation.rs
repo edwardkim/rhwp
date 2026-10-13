@@ -39,6 +39,9 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     /// Actual physical space accepted for a source-owned full-width row.
     /// Content cuts do not encode the blank band used by vertical alignment.
     pub(in crate::renderer::typeset) stored_row_box_sum: Option<(usize, f64)>,
+    /// [#7531] 행 경계를 넘는 걸침 칸(칸 색인)마다 앞 조각들이 남긴 쪽 끝 빈 띠의 합(px).
+    /// 다음 조각의 scan 과 paint 가 같은 행 높이 덜기(`straddle_page_band_relief`)를 쓴다.
+    pub(in crate::renderer::typeset) straddle_page_bands: Vec<(usize, f64)>,
 }
 
 /// RowBreak 표 셀 각주가 HWP 저장 vpos reset에서 물리 page를 넘을 때의 tail 정보.
@@ -91,6 +94,7 @@ impl TableContinuationCursor {
         self.start_cut.clear();
         self.start_cut_is_block = false;
         self.start_row_height_override = None;
+        self.straddle_page_bands.clear();
         if emitted_fragment {
             self.fragments_emitted = self.fragments_emitted.saturating_add(1);
         }
@@ -134,6 +138,8 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     pub(in crate::renderer::typeset) host_spacing_total: f64,
     pub(in crate::renderer::typeset) host_spacing_before: f64,
     pub(in crate::renderer::typeset) host_spacing_after_only: f64,
+    /// 끝 조각 상자가 이미 예약한 몫을 제외하고 흐름에서 닫는 개체 아래여백.
+    pub(in crate::renderer::typeset) terminal_outer_bottom_flow: f64,
     /// 마지막 RowBreak child 뒤의 저장 empty-host line spacing. 첫 anchor
     /// fragment가 아니라 terminal continuation 뒤에서 한 번만 소비한다.
     pub(in crate::renderer::typeset) terminal_host_spacing: f64,
@@ -148,6 +154,9 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     pub(in crate::renderer::typeset) source_next_positive_rewind: bool,
     /// Paint와 공유하는 저장 첫 조각 원점(단 위쪽 기준).
     pub(in crate::renderer::typeset) first_fragment_saved_offset: Option<f64>,
+    pub(in crate::renderer::typeset) source_text_first_frame_height: Option<f64>,
+    pub(in crate::renderer::typeset) source_single_cell_row_frames:
+        Option<crate::renderer::float_placement::StoredSingleCellRowFrames>,
     /// Both stored fragment heights independently prove this whole-row boundary.
     pub(in crate::renderer::typeset) source_cellbreak_row_end: Option<usize>,
     /// [#7095] 표 host 다음 문단 첫 줄의 저장 vpos(HU)와 그 문단의 문단 위 간격(px).

@@ -105,11 +105,11 @@ class SecurityTaskContractTests(unittest.TestCase):
             self.assertEqual(ref_obj["id"], tid)
         self.assertEqual(missing, [], f"기준풀이 없음: {missing}")
 
-    def test_task_ids_are_contiguous_se_prefix(self):
+    def test_active_task_ids_keep_se_prefix(self):
         nums = sorted(se_num(p) for p in task_paths())
         self.assertEqual(nums[0], 1)
         self.assertGreaterEqual(nums[-1], 80)
-        self.assertEqual(nums, list(range(1, nums[-1] + 1)), "SE 번호에 구멍이 있다")
+        self.assertEqual(nums, [n for n in range(1, nums[-1] + 1) if n not in {23, 34, 55, 68}], "시험지 제외 외의 SE 번호 누락")
 
     def test_operators_are_existing_only(self):
         unknown = []

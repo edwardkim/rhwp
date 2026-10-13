@@ -280,6 +280,31 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
     let only_bodyless_notes = !para.controls.is_empty() && para.controls.iter().all(|control| {
         matches!(control, crate::model::control::Control::Footnote(note) if crate::renderer::stored_footnote_is_bodyless(note))
     });
+    // A note whose marker belongs after the stored page reset cannot change
+    // the ownership of the control-free prefix. Use the same codepoint space
+    // as control_text_positions; LineSeg.text_start is an original UTF-16 slot.
+    let only_suffix_notes = !para.controls.is_empty()
+        && !para.char_offsets.is_empty()
+        && para.line_segs.get(break_line).is_some_and(|line| {
+            let break_char = para.utf16_pos_to_char_idx(line.text_start);
+            let positions = para.control_text_positions();
+            para.controls.iter().enumerate().all(|(index, control)| {
+                matches!(control, crate::model::control::Control::Footnote(_))
+                    && positions
+                        .get(index)
+                        .is_some_and(|&position| position >= break_char)
+            })
+        })
+        && saved_line_range_fits_body_tail(
+            para,
+            start_line,
+            break_line,
+            page.body_height
+                - page.current_footnote_height
+                - page.current_zone_y_offset
+                - page.current_bottom_fixed_exclusion,
+            dpi,
+        );
     // 먼저 검증된 이월 개체 상자의 하단에서 본문이 재개하는 비영 원점이다.
     // 이 경우 흐름을 밀지 않는 떠 있는 표가 있어도 앞 글줄의 소유는 보존한다.
     let stored_frame_reset = (page.profile.hwpx_stored_layout()
@@ -304,7 +329,10 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
         || para.stored_text_partition_is_dirty()
         || para.cell_format_vpos_dirty
         || page.col_count != 1
-        || (!para.controls.is_empty() && !only_bodyless_notes && !stored_frame_reset)
+        || (!para.controls.is_empty()
+            && !only_bodyless_notes
+            && !only_suffix_notes
+            && !stored_frame_reset)
         || start_line >= break_line
         || break_line >= para.line_segs.len()
     {

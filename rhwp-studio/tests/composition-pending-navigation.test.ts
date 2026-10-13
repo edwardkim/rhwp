@@ -9,9 +9,11 @@ test('IME 종료 후 예약 탐색은 본문·머리말/꼬리말·각주의 키
     return;
   }
   const runner = fileURLToPath(new URL('./support/composition-pending-navigation.runner.mjs', import.meta.url));
-  const result = spawnSync(process.execPath, ['--experimental-transform-types', '--no-warnings', runner], {
-    encoding: 'utf8',
-  });
-  assert.equal(result.status, 0, `IME 예약 탐색 행위 검증 실패:\n${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /COMPOSITION_PENDING_NAVIGATION_OK/);
+  for (const platform of ['other', 'mac']) {
+    const result = spawnSync(process.execPath, ['--experimental-transform-types', '--no-warnings', runner, platform], {
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, `${platform}: IME 예약 탐색 행위 검증 실패:\n${result.stdout}\n${result.stderr}`);
+    assert.match(result.stdout, /COMPOSITION_PENDING_NAVIGATION_OK/);
+  }
 });

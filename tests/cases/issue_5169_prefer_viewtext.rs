@@ -162,7 +162,7 @@ fn with_interparagraph_xml_spacing(bytes: &[u8]) -> Vec<u8> {
     let mut output = zip::ZipWriter::new(Cursor::new(Vec::new()));
     for index in 0..source.len() {
         let mut entry = source.by_index(index).expect("ZIP entry");
-        let name = entry.name().to_owned();
+        let name = entry.name().expect("ZIP 엔트리 이름").into_owned();
         let method = entry.compression();
         let mut contents = Vec::new();
         entry.read_to_end(&mut contents).expect("entry bytes");

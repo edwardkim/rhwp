@@ -2903,7 +2903,7 @@ export class CanvasKitLayerRenderer {
             this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.5, [8, 4]);
             break;
           case 7:
-            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.7, [0.1, 2.5], true);
+            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 1.6, [0, 4], true);
             break;
           case 8:
             this.drawTextVisualStroke(canvas, x1, y - 1, x2, y - 1, op.color, 0.3);

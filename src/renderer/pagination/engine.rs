@@ -2019,17 +2019,11 @@ impl Paginator {
 
         // 표 내 각주 높이 사전 계산
         let mut table_footnote_height = 0.0;
-        let mut table_footnote_count = 0usize;
-        for cell in &table.cells {
-            for cp in &cell.paragraphs {
-                for cc in &cp.controls {
-                    if let Control::Footnote(fn_ctrl) = cc {
-                        let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
-                        table_footnote_height += fn_height;
-                        table_footnote_count += 1;
-                    }
-                }
-            }
+        let table_notes = super::table_cell_footnotes(table);
+        let table_footnote_count = table_notes.len();
+        for (_, fn_ctrl) in &table_notes {
+            let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
+            table_footnote_height += fn_height;
         }
 
         // 현재 사용 가능한 높이
@@ -2282,27 +2276,15 @@ impl Paginator {
         }
 
         // 표 셀 내 각주 수집
-        for (cell_idx, cell) in table.cells.iter().enumerate() {
-            for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-                for (cc_idx, cc) in cp.controls.iter().enumerate() {
-                    if let Control::Footnote(fn_ctrl) = cc {
-                        if let Some(page) = st.pages.last_mut() {
-                            page.footnotes.push(FootnoteRef {
-                                number: fn_ctrl.number,
-                                source: FootnoteSource::TableCell {
-                                    para_index: para_idx,
-                                    table_control_index: ctrl_idx,
-                                    cell_index: cell_idx,
-                                    cell_para_index: cp_idx,
-                                    cell_control_index: cc_idx,
-                                },
-                                fragment: None,
-                            });
-                            let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
-                            st.add_footnote_height(fn_height);
-                        }
-                    }
-                }
+        for (cell_path, fn_ctrl) in table_notes {
+            if let Some(page) = st.pages.last_mut() {
+                page.footnotes.push(FootnoteRef {
+                    number: fn_ctrl.number,
+                    source: FootnoteSource::table_cell_path(para_idx, ctrl_idx, &cell_path),
+                    fragment: None,
+                });
+                let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
+                st.add_footnote_height(fn_height);
             }
         }
     }
@@ -2859,6 +2841,7 @@ impl Paginator {
                         row_cursor_is_nested,
                         end_row_height_override: None,
                         start_row_height_override: None,
+                        straddle_row_relief: Vec::new(),
                     });
                     // 마지막 부분 표: spacing_after도 포함 (레이아웃과 일치)
                     let mp = measured.get_measured_paragraph(para_idx);
@@ -2882,6 +2865,7 @@ impl Paginator {
                 row_cursor_is_nested,
                 end_row_height_override: None,
                 start_row_height_override: None,
+                straddle_row_relief: Vec::new(),
             });
             st.advance_column_or_new_page();
 

@@ -29,37 +29,6 @@ samples/2022년 국립국어원 업무계획.hwp	35	35
 samples/2025 행정업무운영 편람(최종).hwpx	384	382
 samples/20250130-hongbo.hwp	4	4
 samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	30	30
-samples/21_언어_기출_편집가능본.hwp	15	15
-samples/3-09월_교육_통합_2022.hwp	23	23
-samples/3-09월_교육_통합_2022.hwpx	23	23
-samples/3-09월_교육_통합_2023.hwp	20	20
-samples/3-09월_교육_통합_2023.hwpx	20	20
-samples/3-09월_교육_통합_2024-구분선아래20.hwp	23	23
-samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp	23	23
-samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx	23	23
-samples/3-09월_교육_통합_2024-미주사이20.hwp	24	24
-samples/3-10월_교육_통합_2022.hwp	18	18
-samples/3-10월_교육_통합_2022.hwpx	18	18
-samples/3-11월_실전_통합_2022.hwp	21	21
-samples/3-11월_실전_통합_2022.hwpx	21	21
-samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp	23	23
-samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwpx	23	23
-samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp	21	21
-samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwpx	21	21
-samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp	22	22
-samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx	22	22
-samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwp	21	21
-samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwpx	21	21
-samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwp	21	21
-samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwpx	21	21
-samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwp	21	21
-samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwpx	21	21
-samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwp	21	21
-samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx	21	21
-samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwp	21	21
-samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx	21	21
-samples/SO-SUEOP.hwp	46	46
-samples/SO-SUEOP.hwpx	46	46
 samples/[2027] 온새미로 1 본교재.hwp	47	47
 samples/[2027] 온새미로 1 본교재.hwpx	47	47
 samples/atop-equation-01.hwp	1	1
@@ -143,13 +112,6 @@ samples/draw-group.hwp	1	1
 samples/endnote-01.hwp	5	5
 samples/eq-01.hwp	1	1
 samples/equation-lim.hwp	1	1
-samples/exam_eng.hwp	8	8
-samples/exam_kor.hwp	20	20
-samples/exam_math.hwp	20	20
-samples/exam_math_8.hwp	1	1
-samples/exam_math_no.hwp	20	20
-samples/exam_science.hwp	4	4
-samples/exam_social.hwp	4	4
 samples/field-01-memo.hwp	3	3
 samples/field-01.hwp	3	3
 samples/float-stack-defer.hwp	2	2
@@ -183,7 +145,6 @@ samples/hwp_table_test-m.hwp	3	3
 samples/hwp_table_test.hwp	3	3
 samples/hwpctl_API_v2.4.hwp	105	105
 samples/hwpctl_Action_Table__v1.1.hwp	16	16
-samples/hwpspec.hwp	178	178
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	9	9
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	9	9
 samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	9	9
@@ -192,8 +153,6 @@ samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	9	9
 samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	9	9
 samples/hwpx/[2027] 온새미로 1 본교재.hwpx	47	46
 samples/hwpx/blank_hwpx.hwpx	1	1
-samples/hwpx/exam_kor.hwpx	20	20
-samples/hwpx/exam_social.hwpx	4	4
 samples/hwpx/footnote-01.hwpx	6	6
 samples/hwpx/form-002.hwpx	10	10
 samples/hwpx/form-01.hwpx	1	1
@@ -354,7 +313,6 @@ samples/issue5787/nested_square_table_horz_offset.hwp	1	1
 samples/issue5788/tac_table_missing_anchor_line_spacing.hwp	8	8
 samples/issue5792/2700727_animal_facility_standards.hwpx	6	6
 samples/issue5798/offcolumn_float_table_no_band.hwp	1	1
-samples/issue5807/coanchored_float_tac_order.hwp	3	3
 samples/issue5809/156518601_p1_square_host.hwpx	1	1
 samples/issue5818/cell_square_logo_text_wrap.hwpx	1	1
 samples/issue5821/condensed_ratio_title_box.hwpx	1	1
@@ -516,7 +474,6 @@ samples/table-vpos-01.hwp	5	5
 samples/table-vpos-01.hwpx	5	5
 samples/table_giant_cell_overfill.hwpx	48	48
 samples/table_scattered_header_rowbreak.hwp	52	52
-samples/table_text_anchor_wrap.hwpx	3	3
 samples/tac-case-001.hwp	1	1
 samples/tac-case-002.hwp	1	1
 samples/tac-case-003.hwp	1	1
@@ -549,7 +506,6 @@ samples/task2243/156631374_taxi_press.hwpx	1	1
 samples/task2243/36382819_gyeoljae_pm_traffic.hwpx	3	3
 samples/task2243/36386907_gyeoljae_sewoon.hwpx	5	5
 samples/task2243/36395325_gyeoljae_consulting.hwpx	5	5
-samples/task2287/1342000_edu_curriculum_map.hwp	415	413
 samples/task3236/issue3236_split_table.hwpx	2	2
 samples/text-align-2.hwp	1	1
 samples/text-align.hwp	1	1
@@ -594,3 +550,5 @@ samples/issue7626/sample-document.hwpx	2	2
 samples/issue7626/hancom-resaved.hwp	2	2
 samples/issue7626/end-run-two-lines.hwpx	2	2
 samples/issue7626/end-run-two-lines.hwp	2	2
+# #7622: 실제 한컴 저장 대조군의 대응 2020 1-up Print 전 1쪽, Native/fresh WASM 99.01152%.
+samples/issue7622/curly_quote_tac_native.hwpx	1	1
