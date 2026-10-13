@@ -34,7 +34,7 @@ fn with_header_sec_cnt(replacement: &str) -> Vec<u8> {
     let mut replaced = false;
     for i in 0..archive.len() {
         let mut entry = archive.by_index(i).expect("entry");
-        let name = entry.name().to_string();
+        let name = entry.name().expect("entry name").to_string();
         let method = entry.compression();
         let mut data = Vec::new();
         entry.read_to_end(&mut data).expect("read entry");
