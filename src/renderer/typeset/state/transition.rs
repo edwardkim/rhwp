@@ -743,7 +743,7 @@ impl TypesetState {
             // 예약한 개체 상자와 항목을 같은 단에서 확정한다. 본문은 그 뒤에 이어진다.
             for (para_idx, ctrl_idx, flow) in std::mem::take(&mut self.data.deferred_column_shapes)
             {
-                self.commit_table_host_shape(para_idx, ctrl_idx, flow);
+                self.commit_table_host_shape(para_idx, ctrl_idx, flow, None);
             }
         } else {
             self.push_new_page();

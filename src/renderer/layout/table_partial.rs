@@ -4529,12 +4529,21 @@ impl LayoutEngine {
                                                 pre_emitted_host_content_height: 0.0,
                                                 host_line_spacing: 0.0,
                                                 predecessor_flow_bottom: None,
-                                                resolved_table_left: stored_inline_left.or_else(
-                                                    || {
+                                                resolved_table_left: stored_inline_left
+                                                    .or_else(|| {
                                                         stored_float_frame
                                                             .and_then(|f| f.table_left)
-                                                    },
-                                                ),
+                                                    })
+                                                    .or_else(|| {
+                                                        self.local_column_table_origin(
+                                                            para,
+                                                            ctrl_idx,
+                                                            nested_table,
+                                                            &inner_area,
+                                                            nested_y,
+                                                        )
+                                                        .and_then(|(x, _)| x)
+                                                    }),
                                                 end_row_owns_stored_frame: false,
                                                 // 같은 원본 프레임의 바깥여백은 부모 흐름에 예약했다.
                                                 // 실제 표 원점에서는 위 여백만 한 번 소비한다.
@@ -4611,6 +4620,7 @@ impl LayoutEngine {
                                                 .or(plain_source_height),
                                             source_frame_height
                                                 .filter(|_| !recursive_cut.start_cut.is_empty()),
+                                            &[],
                                             &[],
                                             &[],
                                             para_margin_left,
@@ -6152,6 +6162,8 @@ impl LayoutEngine {
                     straddle_page_bands,
                     measured_table.is_some(),
                     styles,
+                    source_body_frame,
+                    row_height_overrides,
                 );
             }
         }
