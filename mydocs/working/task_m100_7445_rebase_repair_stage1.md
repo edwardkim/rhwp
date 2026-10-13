@@ -5,7 +5,7 @@
 - upstream/devel 고정 기준: `22317614b03722e95349a1d3d71c86923363c6f5`.
 - 수정 전 candidate: `344db09b2d72f1e1292e0bbd59b08c0ab3387f04`.
 - 수정 전 전체 nextest: 10219 PASS / 8 FAIL / 45 skip, 361.310초, exit 100.
-- 이 단계는 실패 6건의 구현 보정입니다. fresh WASM·최종 전체 회귀 및 기존 완료 문서의 영향 검증은 아직 완료하지 않았습니다. PR 생성·merge를 승인하거나 재개하는 기록이 아닙니다.
+- 최종 검증 코드: `0ecf268fc4df5921f0a5102385c22e3b6afcaf1d`. 전체 nextest 10227 PASS / 0 FAIL / 45 skip, Native·fresh WASM 각각 43건·1055쪽 모두 90% 이상입니다. 실제 출력 검증과 제한은 마지막 절에 기록했습니다. 아래 선행 기록은 후보별 진행 이력이며 최종 결과를 대신하지 않습니다. PR 생성·push·merge는 새 사용자 승인 전까지 보류합니다.
 
 ## 원인과 실제 소비 경로
 
@@ -117,3 +117,41 @@ HWP35쪽은 초기 리베이스부터 차이가 있었습니다. 직전TAC 표 �
 보정 후 집중 회귀는 **44 PASS / 0 FAIL**, 6.839초입니다. #6712의 합성 반례와 실제 그림 줄, #6761 원점0 원본/변형, 생물독소 소유, #7114 편집/재열기, 원래 실패 범위와 본문/겹침 partition 대조군을 포함합니다. 선택 Native35쪽은HWP·2010 alias **94.35054%**,2022판 **96.61619%**입니다. 개인정보42쪽 **99.99358%**, HWPX45·46·49쪽99.02821%·99.36060%·98.88525%도 유지했습니다. 선택 결과는 새source의 전쪽/fresh WASM/전체 회귀 완료를 대신하지 않습니다.
 
 정본은 ignored `final-v6-full-nextest.log`, `final-v6-whole/results.json`, `final-v6-stopped-processes.json`, `s16p35-attribution/`, `v7-diagnostic/`, `v7-source-axis-focused.log`입니다. 새 커밋에서 전체 전쪽 및 필수 검증을 다시 실행하며, PR·merge는 보류합니다.
+
+
+## 최종 전쪽·회귀·실제 출력 검증 완료 — 2026-10-14
+
+검증한 코드 head는 `0ecf268fc4df5921f0a5102385c22e3b6afcaf1d`, 고정 base는 `22317614b03722e95349a1d3d71c86923363c6f5`입니다. 이후 문서·증적 커밋은 생산 소스와 회귀 검사 트리를 변경하지 않습니다. 원래 실패와 중간 후보의 실패·중단 기록을 보존했습니다. 이번 리베이스 보정에서 회귀 함수·assertion·기대값·baseline을 제거하거나 완화하지 않았습니다.
+
+| 최종 검증 | 결과 |
+| --- | --- |
+| 전체 nextest | **10227 PASS / 0 FAIL / 45 skip**, 380.281초, exit 0 |
+| Native 전쪽 Visual Sweep | **43건·1055쪽**, 최저 **90.06028%**, 미달·누락 0쪽 |
+| fresh WASM 전쪽 Visual Sweep | **43건·1055쪽**, 최저 **90.06028%**, 미달·누락 0쪽 |
+| fmt·Native/WASM/all-target Clippy·workspace build·manifest·unit tiers·Skia 빌드 | 필수 게이트 11개 전부 exit 0 |
+| Native Skia lib | rhwp 3864 PASS와 지원 crate 182 PASS, 합계 **4046 PASS / 12 ignored** |
+| Skia 집중 PNG / PDF | **2 PASS / 4 PASS**, 실패 0 |
+| 실제 Skia 화면·인쇄 | 12개, 최저 **98.35333%**, 미달 0 |
+| 실제 Studio Canvas2D 화면·인쇄 | 16개, 최저 **98.01524%**, 미달 0 |
+| 실제 CanvasKit compat / default, software surface | 각 4개, 각각 최저 **99.62391%**, 미달 0 |
+
+빌드 jobs 8, 테스트 threads 8, 전쪽 캡처 동시성 8로 실행했습니다. Cargo 작업은 순차 실행했습니다. WASM은 Mac 로컬 `--no-opt` 대체 빌드이며 Docker 최적화 빌드 통과로 보고하지 않습니다. 루트 pkg·Studio/public의 JS/WASM hash와 실제 Studio 초기화 응답의 hash를 대조했습니다. 비교기 hash `203b68b239bb77fb435de1b3221fc9f021856937108daaf16989679728b8fe74`, 2px 관용·90% 문턱·독립 PDF를 유지했습니다. 완전한 준비 SVG와 글꼴 감사가 같은 경우에만 기존 PNG를 재사용하고 모든 페이지 TSV를 다시 산출했습니다. 재사용 여부와 준비 SVG hash는 각 실행 manifest에 있습니다.
+
+전체 회귀의 최종 로그는 `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-failures-20261013/final-v7-full-nextest.log`입니다. 전쪽 2110행의 통합 TSV는 같은 경로의 `final-v7-all-pages.tsv`, 각 원본 TSV와 실행 신원은 `final-v7-whole/`에 있습니다. 실제 출력 36개의 독립 PDF 비교는 `final-v7-actual/independent-print-summary.json`과 그 아래 review PNG로 보존했습니다. `.log`는 ignored output에만 있습니다.
+
+### 직접 판독과 실제 backend의 제한
+
+실제 화면·인쇄 36개를 모두 열고, 변경한 6개 입력과 CanvasKit 대조군 2개는 독립 Print review 패널도 확대 확인했습니다. 개인정보 42쪽은 첫 본문 `동일한 방법 및 절차`와 남은 분류명 `분석`·`(정성분석)`을 보존하며 앞 쪽의 비용 첫 줄을 반복하지 않습니다. sample16의 제목·표 간격, 생물독소의 `L40-like isoform X1` 이어받기와 뒤 본문, 자산관리 꼬리 본문, rowbreak 제목의 원본 lead, 고용노동부 마지막 표의 행·본문 포함을 확인했습니다. 미세한 글리프 래스터·굵기, 제품 편집 가이드, 일부 그림의 채움 색 차이는 남아 있으며 100% 픽셀 동일성을 주장하지 않습니다.
+
+CanvasKit 요청의 개인정보 입력은 문서 preflight의 기존 작업 한도 50000을 넘었습니다. portable WASM 진단에서 54쪽까지 스캔한 뒤 pageIndex 54에 `workLimitExceeded`, `complete=false`가 확인됐습니다. 고용노동부 입력은 기본 Studio 환경에서 `한양신명조` family가 준비되지 않아 Canvas2D로 대체됐습니다. 두 캡처는 대체 출력의 증거이며 해당 원본의 실제 CanvasKit 통과 증거가 아닙니다. 대체 결과·선택 이유를 보존하고 한도·글꼴 준비 guard를 우회하지 않았습니다. 실제 CanvasKit 검증은 지원되는 low-slack·저장 줄 결측 입력에서 compat/default와 화면/인쇄 모두 수행했습니다.
+
+실제 Skia CLI는 명시적 `--font-environment` 옵션을 지원하지 않으므로 지원되는 Native 글꼴 치환 환경과 기준 compat를 사용했습니다. Studio는 oracle 환경을 주입하지 않은 기본 제품 환경입니다. 전쪽 Visual Sweep의 명시적 기준 환경과 이 실제 출력 환경을 구분해 JSON에 기록했습니다. 최초 하네스의 지원하지 않는 옵션 및 host 브라우저 모드 실패도 output에 보존했고, Mac headless Chrome과 올바른 옵션으로 다시 캡처했습니다. 이 실행 오류를 제품 회귀나 통과로 섞지 않았습니다.
+
+최종 [검증 JSON](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/final_validation.json)에 입력·독립 PDF·코드·비교기·Native/WASM producer hash, 실제 backend/profile, 필수 검증 명령과 결과를 기록했습니다.
+
+- [sample16 HWP 35쪽 Native review](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/sample16-p035-native-review.png): **94.35054%**.
+- [개인정보 42쪽 Native review](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/pii-p042-native-review.png): **99.99358%**.
+- [개인정보 42쪽 실제 Studio 인쇄 review](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/pii-p042-studio-print-review.png): **98.01524%**.
+- [low-slack 실제 CanvasKit 인쇄 review](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/low-slack-p001-canvaskit-print-review.png): **99.89896%**.
+
+GitHub 게시·push·PR 생성·merge는 수행하지 않았습니다. 기존 오늘할일과 닫힌 PR #7871 검토 문서의 미커밋 초안은 그대로 보존합니다. 사용자의 새 승인 후 PR 준비 단계를 진행합니다.
