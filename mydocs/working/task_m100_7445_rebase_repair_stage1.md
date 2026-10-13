@@ -65,3 +65,15 @@
 Native44쪽 보정 후 **99.99362%**입니다. [수정 후 review PNG](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/biotoxin-p044-native-review.png)에서 이어받기 첫 줄·표 외곽·뒤 본문의 보존을 직접 판독했습니다. 현재 한 쪽 선행 진단이며 전205쪽·fresh WASM 통과를 대신하지 않습니다.
 
 집중 nextest **13 PASS / 0 FAIL**, 5.082초: #7114 저장·재열기5건, #6761 zero-origin4건, 생물독소 기존 내용 소유4건입니다. 기대값·검사 수·허용치를 바꾸지 않았습니다. 로그 정본은 `cell-frame-focused.log`, `cell-frame-diagnostic/biotoxin205/silhouette.tsv`입니다. 수정한 source에서 전체 회귀와43건 Native/fresh WASM을 다시 실행합니다.
+
+## 전체 재검증에서 발견한 snapshot / 재구성 구분 보정
+
+`73d19a54d296115f715ced4d8ae5d1a86da9e4c2`의 전체 nextest는 **10225 PASS / 2 FAIL / 45 skip**, 424.725초, exit 100입니다. 선행 실패 8건은 모두 통과했지만 `issue_2158_hwpx_vpos_reset_preserve::hwp3_sample16_hwpx_matches_hwp5_and_hangul`와 `text_overlap_baseline::text_overlaps_do_not_grow_partition_5`가 새로 실패했습니다. 둘 다 sample16 HWPX의 같은 방화벽 문단을 23쪽 대신 22쪽의 본문 바닥 밖에 수용한 결함입니다. 활성 검사·기대값·겹침 baseline은 보존했습니다.
+
+원본 vpos 스냅샷이 존재하는 문단도 현재 줄 위치가 원본과 같을 수 있습니다. `format.rs`가 스냅샷 존재만으로 앞 간격을 제외한 판단을 고쳤습니다. `metrics.rs::flow_advance_height`가 이미 사용하는 **원본 줄 수 / 실제 vpos 변환 비교**와 같은 기준으로, 실제 재구성한 사다리만 수용한 소비 원점에서 fit합니다. 보존된 저장 축에는 문단 앞 간격을 계속 예약합니다. 원본·포맷 이름이나 특정 문서 ID로 분기하지 않습니다.
+
+대조 실험에서 모든 경로에 앞 간격을 예약하면 sample16은 복구되지만 고용노동부 문서가 다시 7쪽으로 밀렸습니다. 포맷 출처의 기존 HWP3 플래그만 사용해도 sample16 HWPX의 문제가 남았습니다. 두 실험은 최종 구현으로 채택하지 않았으며 로그를 보존했습니다. 실제로 재구성된 축을 구분한 보정 후 **6 PASS / 0 FAIL**, 0.967초입니다. sample16 내용 소유·겹침 partition, 고용노동부 안 여백 2건, 자산관리 꼬리 본문과 온새미로 대조군을 함께 확인했습니다.
+
+보정 전 source의 생물독소 전 205쪽 Native/fresh WASM은 각각 최저 **92.75882%**, 미달 0쪽입니다. 규제분석 Native 전 17쪽 최저 **94.34255%**, 미달 0쪽이며 WASM도 완료했습니다. 이 결과를 새 source의 전쪽 증거로 대체하지 않습니다. `final-v3-whole` 실행은 실패와 완료된 PNG·TSV를 보존한 채 sample16 보정을 위해 중단했습니다. 최종 커밋의 fresh WASM·전쪽 비교·전체 회귀·필수 lint/Skia는 다시 실행합니다.
+
+로컬 정본은 `final-v3-full-nextest.log`, `fit-before-band-focused.log`, `fit-spacing-consumer-focused.log`, `fit-rebuilt-ladder-focused.log`, `final-v3-whole/results.json`입니다. 수정 방향이 잘못된 대조 결과도 실패 상태로 남기고, 테스트 통과나 전쪽 완료로 보고하지 않습니다.

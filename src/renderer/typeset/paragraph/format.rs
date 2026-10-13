@@ -141,17 +141,22 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         } else {
             None
         };
-        // 원본 저장 축의 span에는 바깥 앞 간격을 별도로 예약한다.
-        // 정규화 스냅샷이 있는 사다리는 이미 수용한 흐름 원점에서 소비한다.
-        // 이 span에 같은 앞 간격을 다시 더하면 실제로 들어가는 꼬리를 이월한다.
-        // 전체 흐름 전진(total_height)의 앞 간격은 그대로 보존한다.
+        // 원본 스냅샷이 있다는 사실과 사다리가 실제로 재구성됐다는 사실은
+        // 다르다. 저장 축이 그대로면 span 밖의 앞 간격을 fit에도 예약한다.
+        // 실제로 정규화한 소비 축만 수용한 흐름 원점에서 시작한다.
+        let ladder_rebuilt = para
+            .source_line_seg_vertical_pos
+            .as_ref()
+            .is_some_and(|source| {
+                source.len() != para.line_segs.len()
+                    || source
+                        .iter()
+                        .zip(&para.line_segs)
+                        .any(|(vpos, line)| *vpos != line.vertical_pos)
+            });
         vpos_metric
             .map(|v| {
-                let outside_before = if para.source_line_seg_vertical_pos.is_some() {
-                    0.0
-                } else {
-                    spacing_before
-                };
+                let outside_before = if ladder_rebuilt { 0.0 } else { spacing_before };
                 metric.min(outside_before + v)
             })
             .unwrap_or(metric)
