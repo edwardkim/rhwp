@@ -4015,6 +4015,8 @@ impl LayoutEngine {
                             Some(para),
                             para.line_segs.len(),
                             !self.profile.get().legacy_hwp3_stored_geometry(),
+                            available_width,
+                            self.dpi,
                         );
                     let left = line_start_x + line_indent;
                     let width = (available_width - line_indent).max(0.0);
@@ -5866,6 +5868,8 @@ impl LayoutEngine {
                 para,
                 composed.lines.len(),
                 cell_ctx.is_none(),
+                col_area.width - margin_left - margin_right,
+                self.dpi,
             );
             let styled_margin_left = margin_left + line_indent;
 

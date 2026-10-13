@@ -11777,6 +11777,9 @@ impl LayoutEngine {
                     })
                     .map(|index| (index, comp.lines.len()))
             });
+            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+            // [#7816] 줄 상자에 들여쓰기를 얹을 자리가 모자라면 한/글은 들여쓰기를 버린다.
+            let line_box_width = col_area.width - margin_left - margin_right;
             let effective_margin =
                 if let Some((index, count)) = table_owner_line.filter(|_| t.common.treat_as_char) {
                     // 표도 자신이 속한 글줄의 들여쓰기·내어쓰기와 저장 플래그를 소비한다.
@@ -11787,13 +11790,20 @@ impl LayoutEngine {
                             Some(para),
                             count,
                             true,
+                            line_box_width,
+                            self.dpi,
                         )
-                } else if indent > 0.0 && !stored_first_seg_denies_indent {
+                } else if indent > 0.0
+                    && !stored_first_seg_denies_indent
+                    && crate::renderer::equation_tac_flow::indent_leaves_line_room_hwp(
+                        crate::renderer::px_to_hwpunit(indent, self.dpi),
+                        crate::renderer::px_to_hwpunit(line_box_width, self.dpi),
+                    )
+                {
                     margin_left + indent
                 } else {
                     margin_left
                 };
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
             let table_y_before = y_offset;
             let tbl_is_square = matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
             // [#4533 ⑥] '위 예약' Square float — 저장 사다리가 표 공간을
