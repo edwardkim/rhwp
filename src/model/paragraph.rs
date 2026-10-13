@@ -1132,6 +1132,7 @@ impl Paragraph {
                                 | Control::Equation(_)
                                 | Control::Footnote(_)
                                 | Control::Endnote(_)
+                                | Control::CharOverlap(_)
                                 | Control::AutoNumber(_)
                         )
                 });

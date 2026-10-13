@@ -93,10 +93,14 @@ impl Control {
 
     /// 편집/커서 이동에서 논리적으로 한 글자 폭을 차지하는 컨트롤인가.
     ///
-    /// `treat_as_char` 개체에 각주·미주를 더한 것. `SectionDef`/`ColumnDef` 같은
+    /// `treat_as_char` 개체에 각주·미주·글자겹침을 더한 것. `SectionDef`/`ColumnDef` 같은
     /// 구조 컨트롤은 흐름에서 자리를 차지하지 않으므로 제외된다.
     pub fn is_logical_inline(&self) -> bool {
-        self.is_treat_as_char_object() || matches!(self, Control::Footnote(_) | Control::Endnote(_))
+        self.is_treat_as_char_object()
+            || matches!(
+                self,
+                Control::Footnote(_) | Control::Endnote(_) | Control::CharOverlap(_)
+            )
     }
 
     /// HWP5 `PARA_TEXT` 에서 확장 제어문자 자리(`CTRL_CHAR_CODE_UNITS`)를 차지하는가.
