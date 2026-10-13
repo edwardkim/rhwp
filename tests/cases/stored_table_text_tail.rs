@@ -12,7 +12,7 @@ fn fixture_bytes(profile: &str, count: usize, gap: i32, with_shape: bool) -> Vec
     let mut output = zip::ZipWriter::new(Cursor::new(Vec::new()));
     for index in 0..source.len() {
         let mut entry = source.by_index(index).expect("fixture entry");
-        let name = entry.name().to_owned();
+        let name = entry.name().expect("ZIP 엔트리 이름").into_owned();
         // 계보 표식은 파싱에도 영향을 주므로 문서 모델을 만든 뒤 지우지 않는다.
         if profile == "pure" && name == rhwp::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH {
             continue;

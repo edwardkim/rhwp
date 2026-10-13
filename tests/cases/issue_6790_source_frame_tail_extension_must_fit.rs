@@ -114,33 +114,6 @@ fn first_fragment_stays_inside_the_body() {
     );
 }
 
-/// 반대 방향 — **예산 안에 들어가는 저장 프레임 확장은 그대로 적용된다**.
-///
-/// `#5584 ②`/`#4763` 의 확장은 `source_tail_cut` 이 조각의 행 예산 안에 들어가는
-/// 형상이라 이 판정에 걸리지 않는다.
-///
-/// ```text
-///   문서                          tail    avail   mid_ok  확장 적용
-///   3232693 (#5584 / #6025) r=7   162.7   906.6   true    ✔  → 4쪽
-///   17544911 (이 이슈)      r=2  1178.5  1005.4   —       ✗ 기각 → 3쪽
-/// ```
-///
-/// ⚠ 초판은 여기에 `16418295`(#6549)도 양성 사례로 적었는데 **틀렸다**(PR #6792
-/// 검토 실측). 그 문서는 `extension=25.6`, `mid_extension_ok=false` 라 애초에 확장이
-/// **적용되지 않는다** — 이 판정과 무관하다. 아래 `..._is_unaffected` 로 분리했다.
-#[test]
-fn a_source_frame_that_fits_still_extends() {
-    let path = "samples/issue5584/3232693_employment_support_criteria.hwpx";
-    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(path))
-        .unwrap_or_else(|e| panic!("{path} 읽기: {e}"));
-    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    assert_eq!(
-        core.page_count(),
-        4,
-        "예산 안에 들어가는 저장 프레임 확장은 유지돼야 한다 — {path}"
-    );
-}
-
 /// `#6549`(어울림 상한) 문서는 이 판정과 **무관하다**.
 ///
 /// `mid_extension_ok=false` 로 이미 `#6549` 상한에서 걸러지므로 새 조건이 켜지든

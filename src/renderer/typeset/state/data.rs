@@ -1,9 +1,11 @@
 //! 상태의 불변 관측면. 쓰기 권한은 state 소유자에 한정한다.
 use crate::renderer::typeset::{
     ColumnType, DeferredSquarePictureControl, DeferredTableControl, EndnoteParaSource, EndnoteRef,
-    PageContent, PageItem, PageLayoutInfo, Paragraph, VisibleFloatExclusion,
+    FootnoteRef, PageContent, PageItem, PageLayoutInfo, Paragraph, VisibleFloatExclusion,
 };
 pub(in crate::renderer::typeset) struct StateView {
+    pub(in crate::renderer::typeset) deferred_table_successor_start: Option<usize>,
+    pub(super) pending_table_terminal_gap: Option<DeferredTableTerminalGap>,
     /// 완성된 페이지 목록
     pub(in crate::renderer::typeset) pages: Vec<PageContent>,
     /// 현재 단에 쌓이는 항목
@@ -69,6 +71,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 옮겨 밴드 바닥을 확장할 때만 사용한다.
     pub(in crate::renderer::typeset) square_band_top: Option<f64>,
     pub(in crate::renderer::typeset) current_footnote_height: f64,
+    /// 저장 각주 reset 뒤 조각과 그 뒤 번호는 다음 물리 쪽을 소유한다.
+    /// 현재 본문을 먼저 이월하지 않고 실제 쪽 전환 때 같은 순서로 예약한다.
+    pub(in crate::renderer::typeset) deferred_body_footnotes: Vec<(FootnoteRef, f64)>,
     /// 현재 큐 예약은 실제 배치와 같은 본문 하단 앵커를 사용한다.
     pub(in crate::renderer::typeset) current_footnote_body_bottom_reserved: bool,
     /// 현재 쪽은 그림 표시가 있는 앞쪽에서 이월된 HWPX 각주 본문을 소유한다.
@@ -127,10 +132,15 @@ pub(in crate::renderer::typeset) struct StateView {
     >,
     pub(in crate::renderer::typeset) inline_flow_plans:
         std::collections::HashMap<usize, crate::renderer::inline_flow::InlineFlowPlan>,
+    pub(in crate::renderer::typeset) stored_paragraph_flow_ends:
+        std::collections::HashMap<usize, f64>,
     pub(in crate::renderer::typeset) paragraph_float_placements: std::collections::HashMap<
         (usize, usize),
         crate::renderer::float_placement::ParagraphFloatPlacement,
     >,
+    /// [#7330] 현재 단에서 확정한 자리차지 표가 민 host 첫 글줄의 남은 앞 간격.
+    pub(in crate::renderer::typeset) float_pushed_line_spacings:
+        std::collections::HashMap<usize, f64>,
     /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
     pub(in crate::renderer::typeset) inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
@@ -330,4 +340,12 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [#6753] 직전 문단이 `#2279 ①` 트림으로 흐름에서 뺀 `spacing_before`(px).
     /// lazy 기준 역산이 그 트림분을 기준점에 싣지 않도록 `HeightCursor` 로 넘긴다.
     pub(in crate::renderer::typeset) vpos_prev_trimmed_sb_px: f64,
+}
+
+pub(super) struct DeferredTableTerminalGap {
+    pub(super) para_index: usize,
+    pub(super) control_index: usize,
+    pub(super) flow_end: f64,
+    pub(super) page_index: usize,
+    pub(super) column_index: u16,
 }

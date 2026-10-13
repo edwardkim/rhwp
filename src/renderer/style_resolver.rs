@@ -308,6 +308,12 @@ pub struct ResolvedParaStyle {
     pub border_spacing: [f64; 4],
     /// 같은 테두리를 가진 이웃 문단과 연결 (ParaShape attr1 bit 28).
     pub border_connect: bool,
+    /// 문단 테두리/배경의 범위 선택 (ParaShape attr1 bit 29, HWPX `ignoreMargin`).
+    ///
+    /// 한/글 2020 출력 실측: 꺼져 있으면 테두리/배경이 단 너비 전체와 문단 전체 흐름
+    /// (앞 간격·줄간격·뒤 간격 포함)을 덮는다. 켜져 있으면 문단 여백 안쪽과 줄 상자
+    /// (첫 줄 위 ~ 마지막 줄 상자 아래)만 덮는다.
+    pub border_ignore_margin: bool,
     /// 기본 탭 간격 (px)
     pub default_tab_width: f64,
     /// 커스텀 탭 정지 목록 (position 오름차순)
@@ -348,6 +354,7 @@ impl Default for ResolvedParaStyle {
             border_fill_id: 0,
             border_spacing: [0.0; 4],
             border_connect: false,
+            border_ignore_margin: false,
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
             auto_tab_right: false,
@@ -567,9 +574,18 @@ pub(crate) fn resolve_styles_with_environment(
                     let target = primary_font_name(&style.font_families[lang]);
                     let explicit_true_type =
                         environment.is_some_and(|env| env.selects_true_type(target));
-                    style.font_families_metric_trusted[lang] = explicit_true_type
-                        && (metric_widths_verified_face(target)
-                            || matches!(target, "휴먼명조" | "HumanMyeongJo"));
+                    let explicit_replacement = environment.is_some_and(|env| {
+                        decision
+                            .requested_face
+                            .as_deref()
+                            .is_some_and(|face| env.replacement(face).is_some())
+                    });
+                    // 결측 글리프 체인만 추가한 세션은 원 face의 TTF/HFT 신뢰를 바꾸지 않는다.
+                    if explicit_true_type || explicit_replacement {
+                        style.font_families_metric_trusted[lang] = explicit_true_type
+                            && (metric_widths_verified_face(target)
+                                || matches!(target, "휴먼명조" | "HumanMyeongJo"));
+                    }
                     if explicit_true_type {
                         style.font_families_hft_hangul[lang] = false;
                         style.font_families_hft_fullwidth_dot[lang] = false;
@@ -642,6 +658,10 @@ fn declared_space_advance_em(css_family_chain: &str, bold: bool, italic: bool) -
         .trim()
         .trim_matches('\'')
         .trim_matches('"');
+    // KoPub 은 메트릭 DB 가 아니라 전용 표가 폭을 소유한다 — 같은 출처에서 공백을 읽는다.
+    if let Some(em) = crate::renderer::layout::kopub_declared_space_em(primary) {
+        return Some(em);
+    }
     let decision = crate::renderer::font_metrics_data::find_metric_decision(primary, bold, italic)?;
     let em = decision.metric.em_size;
     if em == 0 {
@@ -825,6 +845,15 @@ pub fn detect_lang_category(ch: char) -> usize {
         // 전각 실측)를 동시에 만족하는 유일 분류. 호환 자모 블록이지만
         // 한글(0)이 아니라 사용자(6)로 분류해 user 폰트를 태운다.
         0x318D => 6,
+
+        // [#7092] 굽은 따옴표 ‘ ’ “ ” 는 한컴이 **영문(1) 슬롯** 글꼴로 그린다.
+        // 저장소 `samples/`↔`pdf/` 정본 233문서에서 한글·영문·기호 슬롯 face 가 서로
+        // 다른 출현만 골라 정본 글자의 PDF face 와 대조하면, 영문 슬롯만 일치하는 문서가
+        // ‘ 46 · ’ 39 · “ 29 · ” 27 개이고 한글 슬롯만 일치하는 문서는 0 개다(기호 슬롯만
+        // 일치 1 개). 같은 General Punctuation 블록이라도 `․`(U+2024)는 기호 슬롯 쪽으로
+        // 갈리고 `…`·`–`·`—`·`※`·`•` 는 판별 가능한 표본이 없어, 블록 전체가 아니라
+        // 근거가 있는 네 글자만 옮긴다.
+        0x2018 | 0x2019 | 0x201C | 0x201D => 1,
 
         // 한국어: Hangul Jamo, Compatibility Jamo, Syllables
         0x1100..=0x11FF | 0x3130..=0x318F | 0xAC00..=0xD7AF |
@@ -1041,6 +1070,25 @@ pub(crate) fn lookup_font_name_in_environment(
         })
     {
         decision.environment_profile_id = environment.map(|env| env.id().to_string());
+    }
+    if decision.embedded != Some(true) {
+        if let Some((environment, fallbacks)) = environment.and_then(|env| {
+            decision
+                .normalized_face
+                .as_deref()
+                .and_then(|face| env.glyph_fallbacks(face))
+                .map(|fallbacks| (env, fallbacks))
+        }) {
+            // 호출자가 검증한 체인은 일반 OS 폴백보다 먼저 사용한다.
+            // 기본 face·원본 substFont를 보존하고 중복만 제거한다.
+            let source_fallbacks = decision.css_family_chain.split_off(1);
+            for face in fallbacks.iter().chain(&source_fallbacks) {
+                if !decision.css_family_chain.contains(face) {
+                    decision.css_family_chain.push(face.clone());
+                }
+            }
+            decision.environment_profile_id = Some(environment.id().to_string());
+        }
     }
     decision
 }
@@ -1279,6 +1327,7 @@ fn resolve_single_para_style(
             hwpunit_to_px(ps.border_spacing[3] as i32, dpi),
         ],
         border_connect: ps.attr1 & (1 << 28) != 0,
+        border_ignore_margin: ps.attr1 & (1 << 29) != 0,
         default_tab_width,
         tab_stops,
         auto_tab_right,

@@ -57,12 +57,14 @@ fn nonzero_paragraph_starts_do_not_claim_a_zero_reset_boundary() {
             zip::write::SimpleFileOptions::default().compression_method(entry.compression());
         if entry.is_dir() {
             writer
-                .add_directory(entry.name(), options)
+                .add_directory(entry.name().expect("ZIP 엔트리 이름"), options)
                 .expect("directory");
             continue;
         }
-        writer.start_file(entry.name(), options).expect("entry");
-        if entry.name() == "Contents/section0.xml" {
+        writer
+            .start_file(entry.name().expect("ZIP 엔트리 이름"), options)
+            .expect("entry");
+        if entry.name().expect("ZIP 엔트리 이름") == "Contents/section0.xml" {
             let mut xml = String::new();
             entry.read_to_string(&mut xml).expect("section XML");
             assert!(xml.contains("vertpos=\"0\""));

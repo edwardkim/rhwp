@@ -120,10 +120,8 @@ impl RowScanQuery<'_> {
             styles,
             ..
         } = *rows;
-        let padding =
-            layout_engine.row_remaining_visible_padding_height(table, r, row_start_cut, styles);
-        let content_budget = (rest - padding).max(0.0);
-        let probe = layout_engine.advance_row_cut(table, r, row_start_cut, content_budget, styles);
+        let (probe, _) =
+            layout_engine.advance_row_cut_for_physical_band(table, r, row_start_cut, rest, styles);
         let visible_height =
             layout_engine.row_cut_content_height(table, r, row_start_cut, &probe.end_cut, styles);
 

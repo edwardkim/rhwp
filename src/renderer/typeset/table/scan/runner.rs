@@ -77,10 +77,10 @@ impl TypesetEngine {
             let cs_before = if r > v.cursor_row { v.cs } else { 0.0 };
             // Consume a carried physical tail before scanning the next row.
             if r == v.cursor_row {
-                if let Some(height) = v
-                    .start_row_height_override
-                    .filter(|_| !layout_engine.row_uses_reflow_physical_frame(table, r))
-                {
+                if let Some(height) = v.start_row_height_override.filter(|_| {
+                    !layout_engine.row_uses_reflow_physical_frame(table, r)
+                        && layout_engine.row_cut_units_exhausted(table, r, start_cut, styles)
+                }) {
                     progress.scan.consumed += height;
                     progress.r += 1;
                     progress.scan.end_row = progress.r;

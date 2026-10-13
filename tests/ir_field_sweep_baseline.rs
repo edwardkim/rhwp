@@ -49,6 +49,15 @@
 //! `RHWP_IR_SWEEP_DETAIL="샘플명조각;다른조각"` 을 주면 해당 샘플의 완전한
 //! 경로별 건수와 상한 이내의 경로·값 예시를 출력한다 — 잔여 항목 분류용.
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
+
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -95,6 +104,9 @@ fn collect(root: &Path, ext: &str, skip_dirs: &[&str]) -> Vec<(PathBuf, String)>
         };
         for entry in entries.flatten() {
             let path = entry.path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 let skip = path
                     .file_name()
@@ -117,6 +129,7 @@ fn collect(root: &Path, ext: &str, skip_dirs: &[&str]) -> Vec<(PathBuf, String)>
     }
     let mut acc = Vec::new();
     walk(root, root, ext, skip_dirs, &mut acc);
+    acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     acc
 }

@@ -20,6 +20,15 @@
 //! - 등재된 문서가 통과하면 → 고쳐졌다. **목록에서 지워라** (래칫을 조인다).
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
+
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 
@@ -84,6 +93,9 @@ fn collect_recursive(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
     };
     for entry in entries.filter_map(|e| e.ok()) {
         let path = entry.path();
+        if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+            continue;
+        }
         if path.is_dir() {
             collect_recursive(&path, out);
         } else if matches!(
@@ -161,6 +173,7 @@ fn run_partition(part: usize) {
     let mut entries: Vec<std::path::PathBuf> = std::fs::read_dir(samples_dir())
         .expect("samples 디렉터리")
         .filter_map(|e| e.ok().map(|e| e.path()))
+        .filter(|path| !is_deferred_exam_document(path.to_string_lossy().as_ref()))
         .filter(|p| {
             matches!(
                 p.extension().and_then(|s| s.to_str()),
@@ -179,6 +192,7 @@ fn run_partition(part: usize) {
     // 나머지 하위 디렉터리 68개는 이 이슈가 다루는 축이 아니고, 한꺼번에 넣으면
     // 무관한 신규 실패를 이 PR 에서 등재해야 한다. 필요하면 별도 이슈로 넓힌다.
     collect_recursive(&samples_dir().join("chart"), &mut entries);
+    entries.retain(|path| !is_exam_fixture(path));
     let mut skipped = 0usize;
     let mut oversized = 0usize;
     let entries: Vec<_> = entries

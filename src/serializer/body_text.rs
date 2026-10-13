@@ -317,8 +317,10 @@ fn serialize_paragraph_with_msb(
         || !para.controls.is_empty()
         || !para.title_marks.is_empty()
         || has_emittable_orphan_end;
+    // An explicit empty PARA_TEXT (just its terminator) is different from
+    // an absent record. Preserve that source distinction on rebuild.
     let (text_data, residue_shifts): (Option<Vec<u8>>, Vec<GuideResidueShift>) =
-        if has_content || (para.has_para_text && para.char_count > 1) {
+        if has_content || para.has_para_text {
             let result = serialize_para_text(para);
             (Some(result.bytes), result.residue_shifts)
         } else {

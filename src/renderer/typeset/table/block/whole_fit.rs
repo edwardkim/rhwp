@@ -52,6 +52,7 @@ impl TypesetEngine {
             return false;
         }
         let engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        self.prime_section_cell_context(&engine);
         engine.set_layout_profile(self.profile.get());
         engine.set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
         (0..usize::from(table.row_count))
@@ -483,6 +484,7 @@ impl TypesetEngine {
             && self.render_normalization.table_text_reflowed(table)
         {
             let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+            self.prime_section_cell_context(&layout_engine);
             layout_engine.set_layout_profile(st.profile);
             layout_engine.prime_column_layout_env(&st.layout);
             layout_engine.set_render_normalization_overlay(std::sync::Arc::clone(
@@ -733,8 +735,24 @@ impl TypesetEngine {
         .flatten()
         .and_then(|(source_top, _)| {
             let source_bottom = source_top + declared_object_total - host_spacing_total;
+            // 선언 높이는 첫 조각의 프레임일 수 있다. 표 전체가 빈 쪽에 들어가도
+            // 현재 저장 원점에서 실측 행을 놓으면 용지 밖으로 나갈 수 있으므로,
+            // 같은 원점의 실제 점유 끝도 검사한다. 글앞으로/rowspan 표 역시
+            // 블록 흐름에 들어온 뒤에는 선언 프레임으로 남은 행을 숨길 수 없다.
+            let below_body_slack = (st.layout.page_height
+                - (st.layout.body_area.y + st.layout.body_area.height))
+                .max(0.0);
+            let painted_source_bottom = source_top + (table_total - host_spacing_total).max(0.0);
+            if painted_source_bottom > available + below_body_slack + 0.5 {
+                return None;
+            }
             let source_frame_matches_profile = if st.profile.hwpx_container() {
-                source_top < st.current_height && source_bottom <= available
+                // A preceding paragraph can finish exactly at the stored table
+                // origin. This is the same complete frame as one whose origin
+                // the measured cursor has passed; trailing host spacing must
+                // not split its last row. The frame/one-page/reset guards above
+                // still exclude a first-fragment height of a multi-page table.
+                source_top <= st.current_height && source_bottom <= available
             } else {
                 native_hwp5_saved_rowbreak_tail_frame_matches(
                     source_top,

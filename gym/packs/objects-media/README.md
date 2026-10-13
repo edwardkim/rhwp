@@ -115,9 +115,7 @@ last_verified: 2026-08-18
 | OM20 | 문단 문서 가로 | `para-001.hwp` | `width` |
 | OM21 | 실문서 세로 | `143E433F503322BD33.hwp` | `height` |
 | OM22 | 가로 문서 MIME | `landscape-001.hwp` | `mime` |
-| OM29 | 1쪽 시험지 가로 | `exam-kor-1p.hwp` | `width` |
 | OM36 | HWPX 서식 세로 | `hwpx/form-01.hwpx` | `height` |
-| OM38 | 2쪽 시험지 세로 | `exam-kor-2p.hwp` | `height` |
 | OM42 | 실문서 MIME | `143E433F503322BD33.hwp` | `mime` |
 | OM44 | 요청 문서 가로 | `basic/request.hwp` | `width` |
 
@@ -139,9 +137,7 @@ last_verified: 2026-08-18
 | OM07 | 실문서 이미지 | `143E433F503322BD33.hwp` | `imageCount` |
 | OM23 | 표 문서 이미지 | `table-001.hwp` | `imageCount` |
 | OM24 | 문단 문서 이미지 | `para-001.hwp` | `imageCount` |
-| OM25 | 2쪽 시험지 이미지 | `exam-kor-2p.hwp` | `imageCount` |
 | OM30 | 가로 문서 이미지 | `landscape-001.hwp` | `imageCount` |
-| OM39 | 1쪽 시험지 이미지 | `exam-kor-1p.hwp` | `imageCount` |
 
 **실패 모드**
 
@@ -212,7 +208,6 @@ T07 과 겹치지 않는 것들: 값 `홍길동` 없음, 산출 `filled.hwp` 없
 | `samples/table-001.hwp` | J4, J5 |
 | `samples/para-001.hwp` | J4, J5 |
 | `samples/landscape-001.hwp` | J4, J5 |
-| `samples/exam-kor-1p.hwp` · `exam-kor-2p.hwp` | J4, J5 |
 | `samples/143E433F503322BD33.hwp` | J4, J5 |
 | `samples/basic/issue2007_nested_cell_pagination_42065.hwp` | J4, J5 |
 
@@ -233,3 +228,7 @@ T07 과 겹치지 않는 것들: 값 `홍길동` 없음, 산출 `filled.hwp` 없
 - 작업 노트: [mydocs/working/gym_om_lr_cd.md](../../../mydocs/working/archives/gym_om_lr_cd.md)
 - 조판 pack: [../layout-rendering/README.md](../layout-rendering/README.md)
 - 코퍼스 pack: [../corpus-diagnostics/README.md](../corpus-diagnostics/README.md)
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: OM25, OM29, OM38, OM39. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

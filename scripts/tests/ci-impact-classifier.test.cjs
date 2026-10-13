@@ -40,7 +40,8 @@ function rustFilesUnder(directory) {
 
 function directPageRendererCallers() {
   return rustFilesUnder(CLI_ROOT).filter((filename) => (
-    /\.render_page_(?:svg|html|canvas|to_canvas)/.test(
+    // Native PNG remains a workflow consumer after the SVG-to-GPU adapter is retired.
+    /\.render_page_(?:svg|html|canvas|to_canvas|png_native)/.test(
       fs.readFileSync(path.join(REPOSITORY_ROOT, filename), 'utf8'),
     )
   ));
@@ -130,6 +131,7 @@ test('every CLI output adapter belongs to one explicit impact bucket', () => {
     ],
     nativeOnly: [
       'src/cli/outputs/raster.rs',
+      'src/cli/outputs/sixel.rs',
     ],
     plainRust: [
       'src/cli/outputs/doclang.rs',
@@ -219,6 +221,7 @@ test('every direct CLI page renderer caller has an explicit workflow-consumer de
 
 test('Native Skia integration test and support changes run Rust and Native Skia without Canvas', () => {
   for (const filename of [
+    'tests/cases/issue_7820_sixel_contract.rs',
     'tests/cli_exit_codes_native.rs',
     'tests/issue_1144_native.rs',
     'tests/issue_2083_hide_fill_page_background.rs',

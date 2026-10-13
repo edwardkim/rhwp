@@ -688,18 +688,25 @@ impl SvgRenderer {
                     // SVG 본문에서 `font-weight="bold"`를 내보내는 것과 같은
                     // 조건을 쓴다. CharShape.bold 외에 family 이름에 명시된 Bold
                     // face도 실제 Bold outline을 선택해야 synthetic bold가 되지 않는다.
-                    if run.style.is_visually_bold() {
-                        self.font_bold_families
-                            .insert(run.style.font_family.clone());
-                    }
-                    let codepoints = self
-                        .font_codepoints
-                        .entry(run.style.font_family.clone())
-                        .or_default();
-                    // 그려지는 글자로 모은다 — 필드는 표시값이 나간다 (Task #3216).
-                    for ch in run.display_or_text().chars() {
-                        if !ch.is_control() {
-                            codepoints.insert(ch);
+                    // 체인 전체를 한 face 이름으로 임베딩하면 CSS가 실제 선택하는
+                    // 각 face에는 공급되지 않는다. 측정과 같은 선언 순서의 face를 모은다.
+                    for family in run
+                        .style
+                        .font_family
+                        .split(',')
+                        .map(str::trim)
+                        .filter(|s| !s.is_empty())
+                    {
+                        if run.style.is_visually_bold() {
+                            self.font_bold_families.insert(family.to_string());
+                        }
+                        let codepoints =
+                            self.font_codepoints.entry(family.to_string()).or_default();
+                        // 그려지는 글자로 모은다 — 필드는 표시값이 나간다 (Task #3216).
+                        for ch in run.display_or_text().chars() {
+                            if !ch.is_control() {
+                                codepoints.insert(ch);
+                            }
                         }
                     }
                 }
@@ -3567,9 +3574,10 @@ impl Renderer for SvgRenderer {
                 }
                 7 => {
                     // 원형점선 ●●●
+                    let (w, dash, gap) = super::render_tree::tab_circle_leader_stroke();
                     self.output.push_str(&format!(
-                        "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"0.7\" stroke-dasharray=\"0.1 2.5\" stroke-linecap=\"round\"/>\n",
-                        lx1, ly, lx2, ly, color,
+                        "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{:.3}\" stroke-dasharray=\"{:.3} {:.3}\" stroke-linecap=\"round\"/>\n",
+                        lx1, ly, lx2, ly, color, w, dash, gap,
                     ));
                 }
                 8 => {
@@ -4150,6 +4158,60 @@ fn font_local_bold_aliases(font_family: &str) -> Vec<&'static str> {
 /// 폰트명 → 알려진 파일명 매핑 (HWP/한컴/MS 폰트)
 fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
     match font_name {
+        // 기존 KoPub의 name table에 있는 한글/영문 face와 실제 배포
+        // 파일명을 연결한다. KoPub World는 별도 family이므로 포함하지 않는다.
+        "KoPub돋움체"
+        | "KoPubDotum"
+        | "KoPub Dotum"
+        | "KoPub돋움체 Light"
+        | "KoPubDotum Light"
+        | "KoPub Dotum Light"
+        | "KoPubDotumLight" => vec![
+            "KoPub Dotum Light.ttf",
+            "KoPubDotum-Light.ttf",
+            "KoPubDotumLight.ttf",
+        ],
+        "KoPub돋움체 Medium" | "KoPubDotum Medium" | "KoPub Dotum Medium" | "KoPubDotumMedium" =>
+        {
+            vec![
+                "KoPub Dotum Medium.ttf",
+                "KoPubDotum-Medium.ttf",
+                "KoPubDotumMedium.ttf",
+            ]
+        }
+        "KoPub돋움체 Bold" | "KoPubDotum Bold" | "KoPub Dotum Bold" | "KoPubDotumBold" => {
+            vec![
+                "KoPub Dotum Bold.ttf",
+                "KoPubDotum-Bold.ttf",
+                "KoPubDotumBold.ttf",
+            ]
+        }
+        "KoPub바탕체"
+        | "KoPubBatang"
+        | "KoPub Batang"
+        | "KoPub바탕체 Light"
+        | "KoPubBatang Light"
+        | "KoPub Batang Light"
+        | "KoPubBatangLight" => vec![
+            "KoPub Batang Light.ttf",
+            "KoPubBatang-Light.ttf",
+            "KoPubBatangLight.ttf",
+        ],
+        "KoPub바탕체 Medium"
+        | "KoPubBatang Medium"
+        | "KoPub Batang Medium"
+        | "KoPubBatangMedium" => vec![
+            "KoPub Batang Medium.ttf",
+            "KoPubBatang-Medium.ttf",
+            "KoPubBatangMedium.ttf",
+        ],
+        "KoPub바탕체 Bold" | "KoPubBatang Bold" | "KoPub Batang Bold" | "KoPubBatangBold" => {
+            vec![
+                "KoPub Batang Bold.ttf",
+                "KoPubBatang-Bold.ttf",
+                "KoPubBatangBold.ttf",
+            ]
+        }
         // 실제 설치 face가 있어도 파일명 누락으로 Noto를 원 family에 내장하지 않는다.
         "한컴 고딕" | "Hancom Gothic" => vec!["Hancom Gothic Regular.ttf"],
         // 한컴 PDF의 함초롬바탕은 HCR Batang이다. HBATANG.TTF는 다른
@@ -4222,6 +4284,28 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
 /// 별도 선언해야 글리프 폭과 획 두께가 유지된다.
 fn known_bold_font_filenames(font_name: &str) -> Vec<&'static str> {
     match font_name {
+        "KoPub돋움체"
+        | "KoPubDotum"
+        | "KoPub Dotum"
+        | "KoPub돋움체 Bold"
+        | "KoPubDotum Bold"
+        | "KoPub Dotum Bold"
+        | "KoPubDotumBold" => vec![
+            "KoPub Dotum Bold.ttf",
+            "KoPubDotum-Bold.ttf",
+            "KoPubDotumBold.ttf",
+        ],
+        "KoPub바탕체"
+        | "KoPubBatang"
+        | "KoPub Batang"
+        | "KoPub바탕체 Bold"
+        | "KoPubBatang Bold"
+        | "KoPub Batang Bold"
+        | "KoPubBatangBold" => vec![
+            "KoPub Batang Bold.ttf",
+            "KoPubBatang-Bold.ttf",
+            "KoPubBatangBold.ttf",
+        ],
         "한컴 고딕" | "Hancom Gothic" => vec!["Hancom Gothic Bold.ttf"],
         "함초롬바탕" | "함초롱바탕" | "한컴바탕" | "휴먼명조" => {
             vec!["HANBatangB.ttf", "HBATANGB.TTF"]

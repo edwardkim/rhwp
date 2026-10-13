@@ -1,6 +1,43 @@
 //! 본문 각주 측정과 표 큐 최소 높이의 서로 다른 계약.
 
-use crate::renderer::typeset::{compose_paragraph, hwpunit_to_px, Footnote};
+use crate::renderer::typeset::{
+    compose_paragraph, hwpunit_to_px, Footnote, FootnoteFragment, ResolvedStyleSet, TypesetEngine,
+    TypesetState,
+};
+
+/// 본문 예약과 reset 충돌 조회가 최종 각주 배치와 같은 표 높이를 소비한다.
+pub(in crate::renderer::typeset) struct BodyFootnoteMeasure<'a> {
+    pub engine: &'a TypesetEngine,
+    pub styles: &'a ResolvedStyleSet,
+}
+
+impl BodyFootnoteMeasure<'_> {
+    pub fn block_content_height(
+        &self,
+        st: &TypesetState,
+        footnote: &Footnote,
+        fragment: Option<FootnoteFragment>,
+    ) -> Option<f64> {
+        let layout = crate::renderer::layout::LayoutEngine::new(self.engine.dpi);
+        self.engine.prime_section_cell_context(&layout);
+        layout.set_layout_profile(st.profile);
+        layout.prime_column_layout_env(&st.layout);
+        layout.set_render_normalization_overlay(std::sync::Arc::clone(
+            &self.engine.render_normalization,
+        ));
+        layout.footnote_with_block_table_content_height(
+            footnote,
+            self.styles,
+            st.layout.body_area.width,
+            fragment,
+        )
+    }
+
+    pub fn content_height(&self, st: &TypesetState, footnote: &Footnote) -> f64 {
+        self.block_content_height(st, footnote, None)
+            .unwrap_or_else(|| composed_footnote_content_height(footnote, self.engine.dpi))
+    }
+}
 
 /// 각주의 실제 렌더 높이. 일반 paginator의 빠른 저장 LineSeg 추정과 달리
 /// `layout_footnote_area`와 같은 composed line/line-spacing 규칙을 쓴다. 긴 URL은
