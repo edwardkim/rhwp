@@ -89,3 +89,16 @@ sample16의 표 앞 제목 `pi731`은 수정 전 흐름 전진24.9px에서17.3px
 개인정보42쪽은 초기 리베이스 head344db09b2와 모든 후속 후보에서 같은 첫 줄 중복이 재현됐습니다. 리베이스 전 완료 producer에서는 이어받기 첫 본문이 `동일한 방법 및 절차`이지만 초기 리베이스부터 이미 앞 쪽의 `ㅇ (비용)` 줄이 다시 표시됩니다. 이 결과를 제목 간격 수정 때문으로 분류하지 않습니다. 페이지41/42의 row/startCut/endCut은 같지만, 새 straddle 셀의 accepted content cursor·paint 소유 창을 추가로 추적하고 있습니다. 기존 완료 문서이므로 이관하거나 수용하지 않습니다.
 
 정본은 `fit-preserved-before-focused.log`, `fit-preserved-before-producer.json`, `preserved-band-diagnostic/sample16-hwpx/silhouette.tsv`, `sample16-{before,current}-adv.log`, `pii42-attribution/`, `final-v4-full-nextest-stopped.json`입니다. 새로운 전체 회귀와43건 Native/fresh WASM, 필수 lint/Skia 게이트는 아직 완료하지 않았습니다.
+
+
+## 개인정보 이어받기의 문단 사이 원본 프레임 복구
+
+독립 Print PDF와 리베이스 전 정상 producer를 다시 대조했습니다. 개인정보 41쪽의 실제 종료 컷은 마지막 두 칸이 각각1유닛이며, 초기 리베이스 이후에는0유닛으로 바뀌었습니다. 앞 기록의 “row/startCut/endCut은 같다”는 비교는 초기 리베이스 head와 후속 후보 사이에만 해당합니다. 정상 producer까지 포함한 비교에서는 같지 않습니다.
+
+왼쪽 분류명은 문단0의 `11.비용편익`과 문단1의 `분석`이 각각 원점0이고, 다음 문단 `(정성분석)`이1300+780HU만큼 전진합니다. 오른쪽 본문도 첫 두 원본 줄이원점0이며 다음 줄은1100+660HU만큼 전진합니다. 앞 쪽의 한 줄과 뒤 쪽의 정상 사다리를 인증하는 동일한 근거입니다. 새 셀 유닛 producer는 문단 안 재시작만 프레임으로 인정하여 분류명에 `hard=true/frame=false`를 남겼습니다.
+
+`is_stored_frame_rewind`의 문단 사이 판정에도 같은 원본 전진 인증을 적용합니다. 원본 태그·동일 수평 영역·원점0·뒤 줄 전진·비편집/비재흐름/일반 텍스트·RowBreak 조건을 확인하며, 문서 ID나 현재 px 위치를 조건으로 쓰지 않습니다. 같은 전진 helper를 기존 행 컷 인증과 문단 안 프레임 인증도 사용합니다. 중간 후보의 행 컷 생성기 변경과 임시 진단은 제거했습니다.
+
+선택 Native42쪽은30.65766%에서 **99.99358%**로 복구됐습니다. 본문 첫 줄은 `동일한 방법 및 절차`, 왼쪽 남은 문단은 `분석`·`(정성분석)`이며, 앞 쪽 소유의 `11.비용편익`·`ㅇ (비용)`을 반복하지 않습니다. review PNG에서 본문·분류명·하단 표를 직접 대조했습니다. 이 선택 쪽 결과는 전66쪽/fresh WASM/최종 전체 회귀 완료를 대신하지 않습니다. 회귀 검사·기대값·baseline을 변경하지 않았습니다.
+
+선행 정본: ignored `pii-cross-paragraph-diagnostic/pii66-declared/silhouette.tsv`, `render_tree/`, `review/review_042.png`. 최종 producer를 새 커밋에서 빌드하고43건 Native/fresh WASM 전쪽과 전체 회귀·필수 게이트를 재실행합니다. PR/merge는 계속 보류합니다.
