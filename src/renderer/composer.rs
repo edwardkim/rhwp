@@ -2955,6 +2955,7 @@ pub(crate) fn recompose_stored_lines_in_frame(
         float_carve_evidence,
         false,
         false,
+        false,
     )
 }
 
@@ -2980,6 +2981,11 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
     known_square_band: bool,
     hwpx_stored_layout: bool,
+    // [hwpx-02] 구역의 저장 줄 사다리가 통짜 합성값(`stored_line_ladder_is_uniform_filler`)
+    // 이면 문단마다 한 줄이라는 저장 분할도 조판 결과가 아니다. 한/글 2022 PDF 는 그
+    // 문단들을 다시 나눈다(hwpx-02 2쪽 `…투자대상국에서 제 / 외`). 이때는 저장 행을
+    // 부실로 보고 프레임이 다시 채운다.
+    stored_rows_untrusted: bool,
 ) -> Option<ComposedParagraph> {
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
@@ -3077,6 +3083,7 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
                 .is_some_and(|rows| rows.len() < para.line_segs.len())
         };
     let stale = rejoinable_word_tail
+        || (stored_rows_untrusted && !para.line_segs.is_empty())
         || stored_rows_are_stale(composed, para, inner_width_px, styles)
         || line_breaking::remeasured_equation_start_row(para).is_some();
     match line_breaking::resolve_stored_line_segs_in_frame(

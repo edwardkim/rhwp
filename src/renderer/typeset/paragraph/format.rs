@@ -251,6 +251,7 @@ fn recompose_for_flow(
                     &ctx.float_carve_evidence(),
                     known_square_band,
                     ctx.profile().hwpx_stored_layout(),
+                    ctx.uniform_filler_ladder(),
                 )
             } else {
                 None
