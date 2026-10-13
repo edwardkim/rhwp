@@ -821,6 +821,25 @@ fn hwp3_para_shape_border_fill(
     Some(bf)
 }
 
+/// HWP3 줄에 한/글 변환기와 같은 들여쓰기 적용 기록(`TAG_INDENTATION`, bit 20)을 단다.
+///
+/// HWP3 줄 정보에는 이 기록이 없다. 렌더러는 bit 20 이 꺼진 저장 줄을 "한/글이 들여쓰기를
+/// 적용하지 않은 줄"로 읽으므로(#6190), 비운 채 두면 HWP3 문단의 들여쓰기·내어쓰기가
+/// 모두 사라진다. 한/글의 HWP3 변환본(`samples/SO-SUEOP.hwpx`, `hwp3-sample10-hwpx.hwpx`)은
+/// 들여쓰기 문단의 첫 줄, 내어쓰기 문단의 둘째 줄부터 bit 20 을 켜고, 들여쓰기 0 문단은
+/// 켜지 않는다.
+fn hwp3_stamp_indentation(line_segs: &mut [crate::model::paragraph::LineSeg], indent: i32) {
+    use crate::model::paragraph::LineSeg;
+    for (line_index, seg) in line_segs.iter_mut().enumerate() {
+        let applied = (indent > 0 && line_index == 0) || (indent < 0 && line_index > 0);
+        if applied {
+            seg.tag |= LineSeg::TAG_INDENTATION;
+        } else {
+            seg.tag &= !LineSeg::TAG_INDENTATION;
+        }
+    }
+}
+
 fn hwp3_para_line_box(
     para_shape: Option<&crate::model::style::ParaShape>,
     column_width_hu: i32,
@@ -3804,6 +3823,11 @@ fn parse_paragraph_list_inner(
                 });
             }
         }
+
+        hwp3_stamp_indentation(
+            &mut para.line_segs,
+            para_shape.map_or(0, |shape| shape.indent),
+        );
 
         let last_pgy = line_infos.last().map(|l| l.pgy).unwrap_or(0);
         // pgy=0 줄(그림 호스트 등)은 기준 미갱신이 원칙이나, 이 문단이 새 페이지를
