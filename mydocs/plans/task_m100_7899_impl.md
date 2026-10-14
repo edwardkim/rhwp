@@ -55,6 +55,14 @@ Docker WASM은 worktree 루트에서 canonical locked wrapper를 사용하고 �
 
 ## 제출 전과 완료 조건
 
+### 승인된 추가 범위: 편집 후 수식 줄 소속
+
+2026-10-14 작업지시자는 남은 math_8 조판 차이의 보정을 승인했고, 원본은 정상이며 편집 저장본에서 문제가 발생한다고 확인했다. 기존 base CLI와 보정 CLI가 **같은 편집 저장본**에 같은 출력을 낸다는 관측은 #7899 tail 보정의 새 회귀가 아니라는 근거일 뿐, 원본도 잘못 조판된다는 근거가 아니다.
+
+원본의 큰 글자취급 수식은 PARA_TEXT UTF-16 위치 41에서 시작하고 해당 LineSeg도 41에서 시작한다. A 삽입 뒤 수식 시작은 42이지만 재발행 LineSeg는 수식 뒤 개행인 50을 가리킨다. `char_offsets`는 제어문자 앞이 아닌 뒤 가시 문자를 가리키므로, 편집 재조판의 줄 구성 결과를 저장 UTF-16 범위로 변환할 때 실제 인라인 개체의 소유를 보존해야 한다. 입력은 일반 본문 편집으로 생성된 저장본이며 수동 LineSeg 입력이 아니다.
+
+`reflow_line_segs_impl`/프레임 채움의 줄 경계 생산 → `Paragraph.line_segs` 저장 → composer의 줄 소속 → paragraph layout의 TAC 배치 → 미처리 Shape 배치까지 추적한다. 좌표 clamp나 샘플 전용 조건은 추가하지 않는다. 원본, 같은 A 편집본의 독립 한컴 Print, 보정 전후 Native/fresh Docker WASM을 구분해 확인하고, 시각 게이트 통과 뒤 관계형 회귀를 추가한다. 기존 구역 끝 목록·메모 보존 검사는 유지한다.
+
 - 정책 base SHA를 고정하고 [로컬 검증 4.3](../manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)의 fmt / Native·WASM32·workspace Clippy / workspace build / manifest 검사를 순차 수행한다.
 - 필요한 전체 회귀·Native Skia는 focused·시각 결과 공유 후 승인된 범위에서 실행한다. 새 렌더링 fixture·기대값 변경에는 기존 90%·쪽수 일치 조건을 적용한다.
 - #7867, #7694, #7671, #7668, #7675, #7682와 파일을 공유하므로 push 전에 최신 devel의 실제 충돌·호출 경로를 확인한다. 해당 PR의 병합을 #7899 해결로 간주하지 않는다.
