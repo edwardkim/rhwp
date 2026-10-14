@@ -126,10 +126,20 @@ fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
         };
         serialize_paragraph_with_msb(para_ref, 0, is_last, &mut records);
     }
-    if has_memo_tail {
-        serialize_memo_tail(section, &memo_lists, &mut records);
+    if let Some(tail) = &section.trailing_lists {
+        // 본문 재작성과 별개로 저장 소유를 유지한다. 모델 목록을 중복 생성하지 않는다.
+        records.extend(tail.records.iter().map(|raw| Record {
+            tag_id: raw.tag_id,
+            level: raw.level,
+            size: raw.data.len() as u32,
+            data: raw.data.clone(),
+        }));
+    } else {
+        if has_memo_tail {
+            serialize_memo_tail(section, &memo_lists, &mut records);
+        }
+        serialize_master_page_tail(section, &mut records);
     }
-    serialize_master_page_tail(section, &mut records);
     // 변경추적 병합 문단 여부(UINT16)는 5.0.3.2부터 존재한다. 재귀로 생성한
     // 머리말·꼬리말·셀 문단도 같은 출력 버전을 따른다. 보존된 24바이트 이상의
     // 헤더는 건드리지 않으며, 원본 스트림 재사용은 위에서 이미 반환했다.
@@ -1481,7 +1491,9 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         // 통째로 버린다(0자·1쪽). `CTRL_CHAR_OVERLAP` 상수는 이름과 달리 'tdut'(덧말)이다.
         Control::Ruby(_) => (0x0017, tags::CTRL_CHAR_OVERLAP),
         Control::CharOverlap(_) => (0x0017, tags::CTRL_TCPS),
-        Control::Field(f) => (0x0003, f.ctrl_id),
+        // Native MEMO의 CTRL_HEADER는 %unk여도 본문 FIELD_BEGIN은 %%me다.
+        // 시작·종료 마커가 같은 메모 정체성을 소비해야 목록 번호와 연결된다.
+        Control::Field(_) => (0x0003, field_end_marker(ctrl).ctrl_id),
         Control::Equation(_) => (0x000B, tags::CTRL_EQUATION),
         Control::Form(_) => (0x000B, tags::CTRL_FORM),
         Control::Unknown(u) => (0x000B, u.ctrl_id),
@@ -2631,6 +2643,7 @@ mod tests {
                 ..Default::default()
             },
             paragraphs: vec![para],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         };

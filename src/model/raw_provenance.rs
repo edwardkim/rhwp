@@ -255,6 +255,7 @@ pub fn section_model_digest(section: &crate::model::document::Section) -> [u8; 3
     let crate::model::document::Section {
         section_def,
         paragraphs,
+        trailing_lists,
         raw_stream: _,
         raw_provenance: _,
     } = section;
@@ -263,6 +264,7 @@ pub fn section_model_digest(section: &crate::model::document::Section) -> [u8; 3
     struct Fingerprint<'a> {
         section_def: &'a crate::model::document::SectionDef,
         paragraphs: &'a [crate::model::paragraph::Paragraph],
+        trailing_lists: &'a Option<crate::model::section_tail::SectionTail>,
     }
 
     let mut hasher = blake3::Hasher::new();
@@ -271,6 +273,7 @@ pub fn section_model_digest(section: &crate::model::document::Section) -> [u8; 3
         &Fingerprint {
             section_def,
             paragraphs,
+            trailing_lists,
         },
     )
     .expect("모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)");
@@ -430,6 +433,16 @@ impl crate::model::document::Document {
             seal_raw_bearing_controls(&mut section.paragraphs);
             for master_page in &mut section.section_def.master_pages {
                 seal_raw_bearing_controls(&mut master_page.paragraphs);
+            }
+        }
+        let tail_digest = self
+            .sections
+            .iter()
+            .any(|s| s.trailing_lists.is_some())
+            .then(|| crate::model::section_tail::projection_digest(self));
+        for section in &mut self.sections {
+            if let Some(tail) = &mut section.trailing_lists {
+                tail.projection_seal = tail_digest;
             }
             section.seal_raw_provenance();
         }
