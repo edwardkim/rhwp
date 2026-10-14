@@ -39,6 +39,38 @@ class TerminalCmapTests(unittest.TestCase):
             self.assertIsNone(png.repair_terminal_cmap(self.cmap()[:end], 3))
 
 
+class FontNameCatalogueTests(unittest.TestCase):
+    def test_invalid_legacy_name_preserves_valid_face_and_records_provenance(self):
+        from fontTools.ttLib.tables._n_a_m_e import NameRecord
+        valid = NameRecord()
+        valid.nameID, valid.platformID, valid.platEncID, valid.langID = 1, 3, 1, 0x409
+        valid.string = 'Independent Family'.encode('utf-16-be')
+        invalid = NameRecord()
+        invalid.nameID, invalid.platformID, invalid.platEncID, invalid.langID = 1, 3, 5, 0x412
+        invalid.string = b'\xd3'
+        class Font(dict):
+            def close(self):
+                pass
+        font = Font(name=SimpleNamespace(names=[invalid, valid]),
+                    head=SimpleNamespace(macStyle=0))
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'legacy.ttf').write_bytes(b'font resource identity')
+            vs = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                                 sha256_file=sweep.sha256_file,
+                                 write_json_atomic=sweep.write_json_atomic)
+            with patch('fontTools.ttLib.TTFont', return_value=font):
+                path = png.font_catalog(vs, root, [root], root)
+            face = json.loads(path.read_text())['faces'][0]
+            self.assertEqual(face['families'], ['Independent Family'])
+            self.assertEqual(face['sourceSha256'], sweep.sha256_file(root / 'legacy.ttf'))
+            self.assertEqual(face['nameDecodeWarnings'][0]['platformID'], 3)
+            self.assertEqual(face['nameDecodeWarnings'][0]['platEncID'], 5)
+            font['name'].names = [invalid]
+            with patch('fontTools.ttLib.TTFont', return_value=font), self.assertRaisesRegex(SystemExit, 'family 이름'):
+                png.font_catalog(vs, root, [root], root)
+
+
 class PngExportTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()

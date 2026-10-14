@@ -249,7 +249,15 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
             cached_records = []
             try:
                 for index, font in enumerate(fonts):
-                    names, name_errors = font_family_names(font)
+                    try:
+                        names, name_errors = font_family_names(font)
+                    except ValueError as error:
+                        raise SystemExit(f'공급 글꼴의 유효한 family 이름이 없습니다: {source} face={index}: {error}') from error
+                    name_warnings = [{'nameID': item['nameID'],
+                                      'platformID': item['platformID'],
+                                      'platEncID': item['encodingID'],
+                                      'langID': item['languageID'],
+                                      'error': item['reason']} for item in name_errors]
                     weight = font['OS/2'].usWeightClass if 'OS/2' in font else 400
                     italic = bool(font['head'].macStyle & 2) if 'head' in font else False
                     path = source
@@ -274,6 +282,7 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     face = {'path': str(path.resolve()), 'source': str(source.resolve()),
                                     'sourceSha256': digest, 'sha256': vs.sha256_file(path),
                                     'faceIndex': index, 'families': names, 'weight': weight,
+                                    'nameDecodeWarnings': name_warnings,
                                     'style': 'italic' if italic else 'normal',
                                     'nameRecordErrors': name_errors,
                                     'repairs': repairs}
