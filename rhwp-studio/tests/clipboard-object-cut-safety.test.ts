@@ -20,7 +20,7 @@ function deferred() {
 
 async function settle() { await new Promise<void>(resolve => setImmediate(resolve)); }
 
-function fixture(keyboard: any, picture: any, tableObjectClipboardTarget: any, mode: Mode) {
+function fixture(keyboard: any, picture: any, tableObjectClipboardTarget: any, mode: Mode, text: any) {
   const calls: string[] = [];
   const copyCalls: unknown[][] = [];
   const deleteCalls: Array<{ name: string; args: unknown[] }> = [];
@@ -60,7 +60,9 @@ function fixture(keyboard: any, picture: any, tableObjectClipboardTarget: any, m
   const disposable = { hide: noop, clear: noop, dispose: noop };
   const handler: any = {
     active: true, editMode: 'normal', cancelPendingObjectCut: null,
+    isComposing: false, compositionAnchor: null, compositionLength: 0,
     isFormMode() { return this.editMode === 'form'; },
+    canInsertTextInFormMode: () => true,
     wasm: {
       get documentGeneration() { return state.generation; },
       borrowDocumentHandle: () => state.handle,
@@ -86,6 +88,9 @@ function fixture(keyboard: any, picture: any, tableObjectClipboardTarget: any, m
     cursor: {
       isInPictureObjectSelection: () => state.mode === 'picture',
       isInTableObjectSelection: () => state.mode === 'table',
+      hasSelection: () => false,
+      isInHeaderFooter: () => false,
+      isInFootnote: () => false,
       getSelectedPictureRef: () => state.mode === 'picture' ? state.ref : null,
       getSelectedTableRef: () => state.mode === 'table' ? state.ref : null,
       getPosition: () => position,
@@ -109,7 +114,7 @@ function fixture(keyboard: any, picture: any, tableObjectClipboardTarget: any, m
     flushDeferredPaginationIfNeeded: noop, cancelDeferredPaginationFlush: noop,
     resetRawTextMutationEffects: noop, stopTextSelectionDragAutoScroll: noop,
     deferredPaginationRunner: { cancel: noop }, caretLayoutReveal: { clear: noop },
-    _compositionFragment: null, _imeNavigationGuard: { reset: noop }, _cellBlockLetterImeGuard: { reset: noop },
+    _compositionFragment: null, _imeNavigationGuard: { reset: noop }, _cellBlockLetterImeGuard: { reset: noop, consume: () => false },
     caret: disposable, fieldMarker: disposable, selectionRenderer: disposable,
     container: { removeEventListener: noop },
     textarea: { value: '', remove: noop, removeEventListener: noop },
@@ -127,14 +132,14 @@ function fixture(keyboard: any, picture: any, tableObjectClipboardTarget: any, m
   } } };
   const documentBoundary = { removeEventListener: noop, execCommand: (command: string) => { calls.push(command); return true; } };
   // 공개 명령에서 실제 private helper까지 연결하며, 구버전은 원래 공개 메서드 그대로 실행한다.
-  for (const name of ['performCopy', 'performCut', 'deactivate', 'dispose', 'deleteObjectControl', 'copySelectedObject', 'cutSelectedObject']) {
+  for (const name of ['performCopy', 'performCut', 'deactivate', 'dispose', 'deleteObjectControl', 'copySelectedObject', 'cutSelectedObject', 'onCompositionStart']) {
     if (!source.includes(`${name}(`)) continue;
-    const signature = name === 'deleteObjectControl' ? 'private deleteObjectControl('
+    const signature = name === 'deleteObjectControl' || name === 'onCompositionStart' ? `private ${name}(`
       : name === 'copySelectedObject' || name === 'cutSelectedObject' ? `private async ${name}(` : `${name}(`;
     const method = functionBodyFrom(source, signature).replace('private ', '');
     const code = stripTypeScriptTypes(`const holder = { ${method} };`);
-    handler[name] = new Function('_keyboard', '_picture', 'tableObjectClipboardTarget', 'navigator', 'document', 'window',
-      `${code} return holder.${name};`)(keyboardBoundary, picture, tableObjectClipboardTarget, navigatorBoundary, documentBoundary, { removeEventListener: noop });
+    handler[name] = new Function('_keyboard', '_picture', '_text', 'tableObjectClipboardTarget', 'navigator', 'document', 'window',
+      `${code} return holder.${name};`)(keyboardBoundary, picture, text, tableObjectClipboardTarget, navigatorBoundary, documentBoundary, { removeEventListener: noop });
   }
   return {
     handler, state, calls, copyCalls, deleteCalls, primary, fallback, eventBus,
@@ -155,8 +160,9 @@ test('공개 개체 잘라내기는 클립보드 기록을 기다리고 같은 �
   try {
     const keyboard = await vite.ssrLoadModule('/src/engine/input-handler-keyboard.ts');
     const picture = await vite.ssrLoadModule('/src/engine/input-handler-picture.ts');
+    const text = await vite.ssrLoadModule('/src/engine/input-handler-text.ts');
     const { tableObjectClipboardTarget } = await vite.ssrLoadModule('/src/engine/table-object-clipboard-target.ts');
-    const make = (mode: Mode) => fixture(keyboard, picture, tableObjectClipboardTarget, mode);
+    const make = (mode: Mode) => fixture(keyboard, picture, tableObjectClipboardTarget, mode, text);
     for (const mode of ['picture', 'table'] as const) {
       await t.test(`${mode}: rich 기록 완료 전 삭제하지 않고 완료 후 한 번 지운다`, async () => {
         const f = make(mode);
@@ -227,6 +233,7 @@ test('공개 개체 잘라내기는 클립보드 기록을 기다리고 같은 �
         ['해제된 handle', f => { f.state.handle = null; }],
         ['비활성화', f => { f.handler.active = false; }],
         ['양식 모드', f => { f.handler.editMode = 'form'; }],
+        ['빈 조합 시작', f => f.handler.onCompositionStart()],
         ['undo top', f => { f.state.undoTop = {}; }],
         ['같은 주소의 크기 변경', f => f.eventBus.emit('document-mutated')],
         ['문서 변경 이벤트', f => f.eventBus.emit('document-changed')],
@@ -236,13 +243,51 @@ test('공개 개체 잘라내기는 클립보드 기록을 기다리고 같은 �
           const f = make(mode);
           f.cut();
           assertNoDeletion(f);
+          const ref = f.state.ref;
+          const undoTop = f.state.undoTop;
+          const handle = f.state.handle;
+          const generation = f.state.generation;
           change(f);
+          const anchor = f.handler.compositionAnchor;
+          if (name === '빈 조합 시작') {
+            assert.equal(f.handler.isComposing, true);
+            assert.equal(anchor, f.handler.cursor.getPosition());
+            assert.equal(f.state.ref, ref);
+            assert.equal(f.state.undoTop, undoTop);
+            assert.equal(f.state.handle, handle);
+            assert.equal(f.state.generation, generation);
+          }
           f.primary[0].resolve();
           await settle();
           assertNoDeletion(f);
+          if (name === '빈 조합 시작') {
+            assert.equal(f.handler.isComposing, true);
+            assert.equal(f.handler.compositionAnchor, anchor);
+            assert.equal(f.handler.compositionLength, 0);
+            assert.equal(f.state.mode, mode);
+          }
           assert.equal(f.subscriptions(), 0);
         });
       }
+
+      await t.test(`${mode}: plain fallback을 기다리는 동안 시작한 조합을 보존한다`, async () => {
+        const f = make(mode);
+        f.cut();
+        f.primary[0].reject(new Error('rich 실패'));
+        await settle();
+        assert.equal(f.fallback.length, 1);
+        f.handler.onCompositionStart();
+        const anchor = f.handler.compositionAnchor;
+        assert.equal(f.handler.isComposing, true);
+        f.fallback[0].resolve();
+        await settle();
+        assertNoDeletion(f);
+        assert.equal(f.state.mode, mode);
+        assert.equal(f.handler.isComposing, true);
+        assert.equal(f.handler.compositionAnchor, anchor);
+        assert.equal(f.handler.compositionLength, 0);
+        assert.equal(f.subscriptions(), 0);
+      });
 
       await t.test(`${mode}: 중복 cut을 막고 실패 후 재시도한다`, async caseTest => {
         caseTest.mock.method(console, 'warn', () => {});
@@ -382,12 +427,14 @@ test('공개 개체 잘라내기는 클립보드 기록을 기다리고 같은 �
         assert.equal(f.subscriptions(), 0);
       });
 
-      for (const guard of ['inactive', 'form', 'missing-ref'] as const) {
+      for (const guard of ['inactive', 'form', 'missing-ref', 'composition'] as const) {
         await t.test(`${mode}: 처음부터 ${guard}이면 Cut은 쓰기·삭제하지 않는다`, async () => {
           const f = make(mode);
           if (guard === 'inactive') f.handler.active = false;
           if (guard === 'form') f.handler.editMode = 'form';
           if (guard === 'missing-ref') f.state.ref = null;
+          if (guard === 'composition') f.handler.onCompositionStart();
+          const anchor = f.handler.compositionAnchor;
           f.cut();
           await settle();
           assertNoDeletion(f);
@@ -395,6 +442,11 @@ test('공개 개체 잘라내기는 클립보드 기록을 기다리고 같은 �
           assert.equal(f.primary.length, 0);
           assert.equal(f.fallback.length, 0);
           assert.equal(f.subscriptions(), 0);
+          if (guard === 'composition') {
+            assert.equal(f.handler.isComposing, true);
+            assert.equal(f.handler.compositionAnchor, anchor);
+            assert.equal(f.handler.compositionLength, 0);
+          }
         });
       }
     }

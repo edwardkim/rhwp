@@ -5589,7 +5589,7 @@ export class InputHandler {
   }
 
   private async cutSelectedObject(): Promise<void> {
-    if (!this.active || this.editMode === 'form' || this.cancelPendingObjectCut) return;
+    if (!this.active || this.editMode === 'form' || this.isComposing || this.cancelPendingObjectCut) return;
     const picture = this.cursor.isInPictureObjectSelection() ? this.cursor.getSelectedPictureRef() : null;
     const table = !picture && this.cursor.isInTableObjectSelection() ? this.cursor.getSelectedTableRef() : null;
     const ref = picture ?? table;
@@ -5618,7 +5618,7 @@ export class InputHandler {
     this.cancelPendingObjectCut = cancel;
     const isCurrent = () => {
       if (invalidated || this.cancelPendingObjectCut !== cancel
-        || !this.active || this.isFormMode()
+        || !this.active || this.isFormMode() || this.isComposing
         || this.wasm.documentGeneration !== generation || this.wasm.borrowDocumentHandle() !== handle
         || this.history.peekUndoTop() !== undoTop) return false;
       if (picture
