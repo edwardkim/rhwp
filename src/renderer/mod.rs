@@ -986,26 +986,11 @@ pub(crate) fn linear_gradient_color_stops(
     (colors, stops)
 }
 
-/// 원본 중심에 가까운 축 끝에서 첫 색을 시작한다.
-/// 같은 각도라도 중심이 반대쪽이면 색의 진행 방향은 반대다.
-/// 중심이 축 가운데인 경우에는 기존 각도 방향을 유지한다.
+/// 원본 중심은 공통 색상 스톱에서 반영한다. 축을 다시 뒤집지 않는다.
 pub fn linear_gradient_axis_for_fill(
-    grad: &GradientFillInfo,
-    x: f64,
-    y: f64,
-    w: f64,
-    h: f64,
+    grad: &GradientFillInfo, x: f64, y: f64, w: f64, h: f64,
 ) -> (f64, f64, f64, f64) {
-    let (x0, y0, x1, y1) = linear_gradient_axis(grad.angle, x, y, w, h);
-    let cx = x + w * f64::from(grad.center_x) / 100.0;
-    let cy = y + h * f64::from(grad.center_y) / 100.0;
-    let projection = (cx - (x0 + x1) / 2.0) * (x1 - x0) + (cy - (y0 + y1) / 2.0) * (y1 - y0);
-    let midpoint_roundoff = f64::EPSILON * 16.0 * (w.abs() + h.abs()).powi(2);
-    if projection > midpoint_roundoff {
-        (x1, y1, x0, y0)
-    } else {
-        (x0, y0, x1, y1)
-    }
+    linear_gradient_axis(grad.angle, x, y, w, h)
 }
 
 /// 원형 채우기를 상자의 가장 먼 모서리까지 펼친다.

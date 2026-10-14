@@ -27,7 +27,9 @@ use crate::renderer::raster_pixels::{
     RasterPixelFormat, RasterPixels, RasterRegion, RasterRegionPixels,
 };
 use crate::renderer::render_tree::RenderLayerInfo;
-use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
+use crate::renderer::{
+    svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash,
+};
 
 use super::cache::{
     debug_key, debug_size, inline_resource_estimate, BoundedCache, NativeSkiaCacheStats,
@@ -3224,6 +3226,98 @@ mod tests {
         assert_channel(ellipse_pixel, 0, 180, 255);
         assert_channel(path_pixel, 2, 180, 255);
         assert_channel(line_pixel, 0, 180, 255);
+    }
+
+    #[test]
+    fn renders_gradient_background_hard_stops_opacity_and_radial_shapes() {
+        let linear = GradientFillInfo {
+            gradient_type: 1,
+            angle: 90,
+            center_x: 0,
+            center_y: 50,
+            colors: vec![0x000000ff, 0x00ff0000],
+            positions: vec![0.0, 1.0],
+        };
+        let background = PageBackgroundNode {
+            gradient: Some(Box::new(linear.clone())),
+            background_color: None,
+            border_color: None,
+            border_width: 0.0,
+            image: None,
+        };
+        let hard_stop = GradientFillInfo {
+            colors: vec![0x000000ff, 0x000000ff, 0x00ff0000, 0x00ff0000],
+            positions: vec![0.0, 0.5, 0.5, 1.0],
+            ..linear.clone()
+        };
+        let radial = GradientFillInfo {
+            gradient_type: 2,
+            center_x: 50,
+            ..linear.clone()
+        };
+        let tree = PageLayerTree::new(
+            120.0,
+            120.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 120.0, 120.0),
+                None,
+                vec![
+                    PaintOp::page_background(BoundingBox::new(0.0, 0.0, 120.0, 120.0), background),
+                    PaintOp::rectangle(
+                        BoundingBox::new(10.0, 10.0, 40.0, 20.0),
+                        RectangleNode::new(
+                            0.0,
+                            ShapeStyle {
+                                opacity: 0.5,
+                                ..Default::default()
+                            },
+                            Some(Box::new(hard_stop)),
+                        ),
+                    ),
+                    PaintOp::ellipse(
+                        BoundingBox::new(10.0, 50.0, 40.0, 20.0),
+                        crate::renderer::render_tree::EllipseNode::new(
+                            ShapeStyle::default(),
+                            Some(Box::new(radial)),
+                        ),
+                    ),
+                    PaintOp::path(
+                        BoundingBox::new(60.0, 50.0, 40.0, 20.0),
+                        PathNode::new(
+                            vec![
+                                PathCommand::MoveTo(60.0, 50.0),
+                                PathCommand::LineTo(100.0, 50.0),
+                                PathCommand::LineTo(100.0, 70.0),
+                                PathCommand::LineTo(60.0, 70.0),
+                                PathCommand::ClosePath,
+                            ],
+                            ShapeStyle::default(),
+                            Some(Box::new(linear)),
+                        ),
+                    ),
+                ],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render gradient consumers");
+        let image = decode_rgba(&output.bytes);
+        let left = *image.get_pixel(2, 115);
+        let right = *image.get_pixel(117, 115);
+        assert_channel(left, 0, 240, 255);
+        assert_channel(right, 2, 240, 255);
+        let before_stop = *image.get_pixel(29, 20);
+        let after_stop = *image.get_pixel(30, 20);
+        assert!(
+            before_stop[0] > after_stop[0] + 100,
+            "hard stop must remain abrupt"
+        );
+        assert!(before_stop[2] + 100 < after_stop[2]);
+        assert_channel(after_stop, 0, 85, 105); // 반투명 파랑과 빨강/파랑 배경의 합성
+        assert_channel(*image.get_pixel(30, 60), 0, 240, 255);
+        assert_channel(*image.get_pixel(12, 60), 2, 180, 230);
+        assert_channel(*image.get_pixel(65, 60), 0, 200, 230);
+        assert_channel(*image.get_pixel(95, 60), 2, 210, 240);
     }
 
     #[test]
