@@ -2,6 +2,14 @@
 
 계획: [수행](../plans/task_m100_7899.md), [구현](../plans/task_m100_7899_impl.md). 이전 저장 검증: [단계 2](task_m100_7899_stage2.md). **진행 중이며 시각 gate·PR 준비 완료가 아니다.**
 
+## 메인터너 직접 시각 판정
+
+2026-10-14 작업지시자는 code head `40f0ec7de`의 Docker WASM 편집 저장본에 **“시각 판정 : 통과”**로 응답했다. 판정 대상은 아래 Studio에서 재열기한 `line-ownership-native/studio-saved.hwp`이며 SHA-256은 `bb9d973f0cbaddfc3e510c957d7a85b936fe9efae99b35dab0cd6431c4332c57`이다. 첫 문장과 큰 수식의 겹침 해소·저장 전후 배치에 대한 직접 판정을 충족으로 기록한다. 새 code head의 직접 판정으로 재사용하지 않는다.
+
+Native 비교 입력과 이 Studio 저장본의 BodyText 76개 레코드는 tag/level/payload가 전부 같고, 다른 CFB stream도 DocInfo 외에는 모두 같다. DocInfo의 차이는 DocumentProperties의 캐럿 글자 위치 17→16뿐이며 명세 표14의 해당 필드와 대조했다. 따라서 저장 레코드 차이로 자동 비교 결과를 배제하지 않는다. 직접 판정 통과와 **Native/fresh WASM 77.20043%의 자동 gate 미충족**을 별도로 유지한다. 이번 응답을 90% 수치 조건의 예외 승인이나 원격·전체 CI 승인으로 확대하지 않는다.
+
+남은 수식 내부 칸 맞춤의 규칙 근거를 [한컴 공식 수식 명령어 설명](https://help.hancom.com/hoffice/multi/ko_kr/hwp/insert/equation/equation%28explanation%29.htm)에서 확인했다. `&`는 세로 칸 맞춤 표식인데 `parse_cases`는 고정 Tab 공백으로 발행하고 `layout_cases`는 각 행을 독립적으로 가로 나열한다. 독립 Print의 조건 문구 시작들이 같은 세로 축에 놓이는 관측과 대조해 추가 보정을 진행한다. 이 분석을 구현 완료나 새 시각 통과로 보고하지 않는다.
+
 ## 사용자 판정과 원인 계층 정정
 
 작업지시자는 원본이 한컴·Studio 모두 정상이고 한컴의 편집 저장본도 정상이나, rhwp의 저장 후 출력에서 조판이 틀어진다고 확인했다. 단계 2의 base/current 동일 SVG 관측은 같은 **편집 저장본**의 비교였으므로 tail 보정의 새 회귀가 아니라는 근거일 뿐이다. 원본도 틀렸다는 결론이나 사용자 판정의 대체 근거로 사용하지 않는다.
