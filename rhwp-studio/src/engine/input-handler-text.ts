@@ -367,6 +367,7 @@ function clearCellBlockLetterImeFollowup(this: any): void {
   this.isComposing = false;
   this.compositionAnchor = null;
   this.compositionLength = 0;
+  this.compositionBodyLogical = false;
   this._lastCompositionText = '';
   this._lastComposedText = '';
   this.caret.hideComposition();
@@ -374,6 +375,7 @@ function clearCellBlockLetterImeFollowup(this: any): void {
 }
 
 export function onCompositionStart(this: any): void {
+  this.compositionBodyLogical = false;
   if (this._cellBlockLetterImeGuard?.consume('compositionstart')) {
     clearCellBlockLetterImeFollowup.call(this);
     return;
@@ -416,6 +418,13 @@ export function onCompositionStart(this: any): void {
   }
 
   this.isComposing = true;
+  this.compositionBodyLogical = !this.cursor.isInHeaderFooter()
+    && !this.cursor.isInFootnote()
+    && basePos.parentParaIndex === undefined
+    && !basePos.isTextBox
+    && basePos.charOffset > this.wasm.getParagraphLength(basePos.sectionIndex, basePos.paragraphIndex)
+    && basePos.charOffset >= this.wasm.getLogicalLength(basePos.sectionIndex, basePos.paragraphIndex);
+  if (this.compositionBodyLogical) this._lastCompositionText = '';
   if (this.cursor.isInHeaderFooter()) {
     // 머리말/꼬리말 모드에서는 hfCharOffset을 anchor의 charOffset으로 사용
     this.compositionAnchor = basePos;
@@ -436,6 +445,7 @@ export function onCompositionEnd(this: any): void {
 
   const anchor = this.compositionAnchor;
   const finalLength = this.compositionLength;
+  const bodyLogical = this.compositionBodyLogical;
   const headerFooterSelectionComposition = this.headerFooterSelectionComposition === true;
   const covered: string = this._compositionCovered || '';
   const fragmentId: number | null = this._compositionFragment;
@@ -445,6 +455,7 @@ export function onCompositionEnd(this: any): void {
   this.isComposing = false;
   this.compositionAnchor = null;
   this.compositionLength = 0;
+  this.compositionBodyLogical = false;
   this.textarea.value = '';
   this.caret.hideComposition();
   this.updateCaret();
@@ -452,7 +463,7 @@ export function onCompositionEnd(this: any): void {
 
   // [#7489] 조합이 글자 없이 끝나면(취소) 덮었던 글자를 범위·글자 모양까지 되살린다.
   // 기록할 편집은 없다.
-  if (anchor && finalLength === 0 && covered) {
+  if (anchor && finalLength === 0 && (covered || (bodyLogical && fragmentId !== null))) {
     if (fragmentId !== null) {
       // 되돌리기(handleUndo)와 같은 순서로 지연 조판을 먼저 끝내고 문단을 되돌린다.
       this.flushDeferredPaginationIfNeeded('before-undo', false);
@@ -497,18 +508,26 @@ export function onCompositionEnd(this: any): void {
         this.executeOperation({ kind: 'record', command: new InsertTextInFootnoteCommand(target, this.cursor.fnInnerParaIdx, anchor.charOffset, composed) });
       }
     } else {
-      const insertedText = this.getTextAt(anchor, finalLength);
-      if (insertedText) {
+      const textAnchor = bodyLogical ? {
+        ...anchor,
+        charOffset: this.wasm.logicalToTextOffset(anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset),
+      } : anchor;
+      const insertedText = this.getTextAt(textAnchor, finalLength);
+      const recorded = insertedText && (!bodyLogical
+        || (insertedText === this._lastCompositionText && charCount(insertedText) === finalLength));
+      if (recorded) {
         // execute() 없이 히스토리에만 기록 (텍스트는 이미 문서에 있음). 덮어쓴 글자와 덮기 전
         // 문단 조각도 함께 기록해 한 번의 되돌리기로 되살린다.
         this.executeOperation({
           kind: 'record',
           command: new InsertTextCommand(
-            anchor, insertedText, undefined, undefined, covered, fragmentId === null ? [] : [fragmentId],
+            anchor, insertedText, undefined, bodyLogical ? this.getPendingCharShape?.() : undefined,
+            covered, fragmentId === null ? [] : [fragmentId], bodyLogical,
           ),
         });
-      } else if (fragmentId !== null) {
-        this.wasm.discardDeleteFragment(fragmentId);
+      } else {
+        if (bodyLogical) this._lastComposedText = '';
+        if (fragmentId !== null) this.wasm.discardDeleteFragment(fragmentId);
       }
     }
   }
@@ -588,6 +607,14 @@ export function onInput(this: any, e?: InputEvent): void {
     try {
       this.replaceTextAtRaw(anchor, this.compositionLength, text);
     } catch (err) {
+      if (this.compositionBodyLogical) {
+        // 이 경로는 조각을 복구했으므로 같은 앵커에서 다음 조합 갱신을 받는다.
+        console.warn('[InputHandler] 개체 뒤 조합 갱신 실패 — 이전 입력 유지:', err);
+        this.textarea.value = this._lastCompositionText || '';
+        this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
+        this.afterEdit();
+        return;
+      }
       // wasm 의 deferred replace 범위 가드가 거부하면(외부 변이로 앵커·길이가 낡은
       // 경합) 여기서 던진 채 두면 onInput 전체가 죽어 조합 추적이 낡은 값으로
       // wedge 된다. 조합을 현재 캐럿에 재정박하고 이번 조합 텍스트를 새로 삽입해
@@ -824,9 +851,45 @@ export function replaceTextAtRaw(
   deleteCount: number,
   text: string,
 ): TextMutationEffects {
-  if (!this.canInsertTextInFormMode?.(pos)) return NO_TEXT_MUTATION_EFFECTS;
-  if (deleteCount > 0 && !this.canDeleteTextInFormMode?.(pos, deleteCount)) {
+  if (!this.canInsertTextInFormMode?.(pos)) {
+    if (this.isComposing && this.compositionBodyLogical) throw new Error('이 위치에는 조합을 넣지 못합니다');
     return NO_TEXT_MUTATION_EFFECTS;
+  }
+  if (deleteCount > 0 && !this.canDeleteTextInFormMode?.(pos, deleteCount)) {
+    if (this.isComposing && this.compositionBodyLogical) throw new Error('이 위치의 조합을 바꾸지 못합니다');
+    return NO_TEXT_MUTATION_EFFECTS;
+  }
+  if (this.isComposing && this.compositionBodyLogical) {
+    const scalar = this.wasm.logicalToTextOffset(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
+    const textPos = { ...pos, charOffset: scalar };
+    if (!Number.isInteger(pos.charOffset) || pos.charOffset < 0
+      || pos.charOffset > this.wasm.getLogicalLength(pos.sectionIndex, pos.paragraphIndex)
+      || !Number.isInteger(deleteCount) || deleteCount < 0
+      || scalar + deleteCount > this.wasm.getParagraphLength(pos.sectionIndex, pos.paragraphIndex)) {
+      throw new Error('조합 범위가 바뀌었습니다');
+    }
+    if (deleteCount > 0 && !this.canDeleteTextInFormMode?.(textPos, deleteCount)) {
+      throw new Error('이 위치의 조합을 바꾸지 못합니다');
+    }
+    // 한 오프셋을 받는 local replace는 개체 뒤 삽입과 텍스트 삭제를 함께 표현하지 못한다.
+    const fragment = captureTextFragment(this.wasm, pos);
+    if (fragment === null) throw new Error('이 위치에서는 조합을 바꾸지 못했습니다');
+    try {
+      this.wasm.runInBatch(() => {
+        if (deleteCount > 0) this.wasm.deleteText(pos.sectionIndex, pos.paragraphIndex, scalar, deleteCount);
+        if (text) this.wasm.insertTextLogical(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, text);
+      });
+      // 예약 서식이 빈 run까지 바꾸므로 첫 원문 조각을 Undo·취소에 넘긴다.
+      if (this._compositionFragment === null && this.getPendingCharShape?.()) {
+        this._compositionFragment = fragment;
+      }
+    } catch (error) {
+      this.wasm.restoreDeleteFragment(fragment);
+      throw error;
+    } finally {
+      if (this._compositionFragment !== fragment) this.wasm.discardDeleteFragment(fragment);
+    }
+    return IMMEDIATE_TEXT_MUTATION_EFFECTS;
   }
   if (!this.cursor.isInHeaderFooter() && !this.cursor.isInFootnote()) {
     return replaceTextWithMutationEffects(this.wasm, pos, deleteCount, text);
