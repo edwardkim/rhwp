@@ -61,9 +61,19 @@ export function encodeCanvasOnWhitePaper(canvasId) {
   const source = document.getElementById(canvasId);
   const paper = document.createElement('canvas');
   paper.width = source.width; paper.height = source.height;
-  const ctx = paper.getContext('2d', {alpha: false});
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, paper.width, paper.height);
-  ctx.drawImage(source, 0, 0);
+  const sourceContext = source.getContext('2d');
+  if (sourceContext.isContextLost?.()) throw Error('Canvas context가 유실되어 PNG를 내보낼 수 없습니다.');
+  // 실제 RGBA를 동기 readback한 뒤 흰 종이에 합성한다.
+  const pixels = sourceContext.getImageData(0, 0, source.width, source.height);
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    const alpha = pixels.data[i + 3];
+    if (alpha === 255) continue;
+    for (let channel = 0; channel < 3; channel++) {
+      pixels.data[i + channel] = Math.round((pixels.data[i + channel] * alpha + 255 * (255 - alpha)) / 255);
+    }
+    pixels.data[i + 3] = 255;
+  }
+  paper.getContext('2d', {alpha: false}).putImageData(pixels, 0, 0);
   return paper.toDataURL('image/png').split(',')[1];
 }
 
