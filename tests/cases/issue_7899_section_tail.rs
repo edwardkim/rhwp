@@ -73,6 +73,28 @@ fn edit(bytes: &[u8], section: usize, text: &str) -> Vec<u8> {
 }
 
 #[test]
+fn direct_hwp_parser_preserves_tail_without_core_load_fixups() {
+    for name in ["exam_math_8.hwp", "hwpctl_ParameterSetID_Item_v1.2.hwp"] {
+        let original = sample(name);
+        let mut doc = rhwp::parser::parse_hwp(&original).unwrap();
+        let saved = serialize_hwp(&doc).expect("직접 parse_hwp 반환값도 그대로 저장할 수 있다");
+        for section in 0..doc.sections.len() {
+            assert_eq!(tail(&saved, section), tail(&original, section));
+        }
+        doc.sections[0].paragraphs[0].text.insert_str(0, "A");
+        let edited = serialize_hwp(&doc).expect("본문 변경은 목록의 의미를 바꾸지 않는다");
+        assert_eq!(tail(&edited, 0), tail(&original, 0));
+    }
+    let mut doc = rhwp::parser::parse_hwp(&sample("exam_math_8.hwp")).unwrap();
+    assert!(!doc.sections[0].section_def.master_pages.is_empty());
+    doc.sections[0].section_def.master_pages.clear();
+    assert!(matches!(
+        serialize_hwp(&doc),
+        Err(SerializeError::UnsupportedInput(_))
+    ));
+}
+
+#[test]
 fn extension_master_lists_survive_body_edit_in_source_order() {
     for name in ["exam_math_8.hwp", "exam_science.hwp"] {
         let original = sample(name);

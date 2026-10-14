@@ -435,6 +435,15 @@ impl crate::model::document::Document {
                 seal_raw_bearing_controls(&mut master_page.paragraphs);
             }
         }
+        self.seal_section_tail_provenance();
+        for section in &mut self.sections {
+            section.seal_raw_provenance();
+        }
+    }
+
+    /// Direct HWP parsing also owns a stable section-tail projection before
+    /// returning editable IR. This leaves its existing raw-cache policy intact.
+    pub(crate) fn seal_section_tail_provenance(&mut self) {
         let tail_digest = self
             .sections
             .iter()
@@ -444,7 +453,6 @@ impl crate::model::document::Document {
             if let Some(tail) = &mut section.trailing_lists {
                 tail.projection_seal = tail_digest;
             }
-            section.seal_raw_provenance();
         }
     }
 }

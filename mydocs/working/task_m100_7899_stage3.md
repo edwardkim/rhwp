@@ -2,7 +2,36 @@
 
 계획: [수행](../plans/task_m100_7899.md), [구현](../plans/task_m100_7899_impl.md). 이전 저장 검증: [단계 2](task_m100_7899_stage2.md). **진행 중이며 시각 gate·PR 준비 완료가 아니다.**
 
+## 제출 범위 확정과 첫 전체 검증
+
+첫 전체 nextest는 10,294건 중 10,293건 통과, 1건 실패, 45건 skipped였다. 실패는 `serializer::cfb_writer::tests::test_serialize_real_hwp_files`의 공개 ParameterSet 원본 저장이며, 직접 `parse_hwp` 경로에 tail 투영 seal이 없어서 미편집 원본도 UnsupportedInput으로 거절됐다. `DocumentCore`의 공통 load fixup 이후 봉인 경로만 확인한 기존 집중 검사로 놓친 호출 경계다.
+
+직접 파서의 strict/lenient·password 공통 종료 지점에서 tail 투영을 봉인하게 했고, 기존 전체 body/raw 캐시 봉인과 같은 helper를 사용한다. 직접 파서의 다른 raw 캐시 수용 정책은 바꾸지 않는다. 새 순수 저장 검사에는 직접 파싱·미편집 저장·본문 변경의 tail 보존과 실제 master 모델 변경 거부를 포함한다. 기존 실패 검사의 기대값·원본·baseline은 그대로 유지한다. 수정 전 실패는 첫 전체 실행 로그로 보존하고, 수정 후 해당 검사와 저장 계약 10건의 집중 nextest 11건이 모두 통과했다. 새 코드의 전체 nextest도 10,295건 통과 / 0건 실패 / 45건 skipped, 334.106s로 완료했다. 이 소스 수정 때문에 새 검증이 필요한 범위와 기존 완료 증거를 구분한다.
+
+추가로 원격 `devel`의 문서-only `c0d330737fabae77ca2bf1706cba8514d0e8f1df`를 병합했다. renderer/parser의 upstream 제품 코드는 이전 기준 `116b2b6ae`와 같으며, 병합 자체를 이유로 기존 코드 검사를 반복하지 않는다. 새 시각 거버넌스의 devel 대비 조건은 수치 통과 주장과 구분해 최종 기록에 남긴다.
+
+
+작업지시자는 `{` 기호 크기 차이뿐 아니라 다중 행 수식의 약 2px 세로 위치 차이도 이번 PR의 예외로 수용하고 PR 등록·self-review 진행을 승인했다. 추가 수식 AST 또는 세로 배치 변경 없이 통합 source `97616c522`을 제출한다. 자동 수치 gate 미달과 Canvas2D 글리프 누락은 그대로 공개하고, 예외를 정상 캡처 또는 수치 통과로 바꾸지 않는다.
+
+기존 완료 증거를 재사용한다. 저장 계약 9건, 통합 Native Skia 빌드, Docker WASM 빌드, 실제 저장·재열기, Native/Canvas2D/SVG 비교는 다시 실행하지 않는다. 이전 단계에 미실행으로 기록했던 세 Clippy·workspace build·정책 검사는 이번 PR 준비에서 처음 실행해 모두 통과했다. `release-test` 전체 nextest도 이 후보에서 첫 실행으로 진행 중이다. 완료된 전체 회귀를 반복하는 것이 아니며, 테스트·source 변경 없이 검증 로그만 새로 생성한 것으로 구분한다.
+
+`.env.local`은 작업지시자의 지시로 `.gitignore`에 추가했다. 기본 작업공간에는 임시 local exclude도 적용해 즉시 제외했고 설정 내용은 읽거나 stage하지 않았다. 실행한 편집 저장본과 독립 Print는 `samples/issue7899/`에 원본 해시 그대로 보존했다. 대표 PNG만 `mydocs/pr/assets/issue7899-save-reopen/`에 제출하며 private 글꼴·WASM glue·로그·파생 suite는 제외한다. source/test tree가 검증한 통합 SHA와 같은지 제출 전 다시 확인한다.
+
+## 최신 devel 병합 후 Visual Sweep 준비
+
+작업지시자의 PR 생성 전 devel 병합 지시로 `upstream/devel`을 다시 fetch하고 `116b2b6ae0c1ec655c2db9878b1c8cf1bdd67cc4`를 병합했다. 통합 source head는 `97616c5223cde8985b431f60faba811f6d0c6b47`이며 충돌은 없었다. 기존 local commit 7개와 generated `rhwp-studio/public/rhwp.js` 변경을 보존했다. base는 HEAD의 조상이며 behind는 0이다. 원격 push·PR 생성은 수행하지 않았다.
+
+통합본의 Native Skia 빌드, fmt check, 구역 끝·메모 보존 집중 검사 9건과 고정 base `116b2b6ae` 대비 integration manifest·unit tier 정책 검사는 통과했다. 전체 회귀·세 Clippy 단계의 실행 완료를 뜻하지 않는다. shared `target/pr-review`을 재사용했으며 새 파생 suite는 stage하지 않았다.
+
+devel의 #7903은 Visual Sweep 기본 출력을 Native Skia·WASM Canvas의 직접 PNG로 전환한다. 기존 SVG 결과를 이 방식의 증거로 재사용하지 않는다. 같은 `edited-source-baseline.hwp`와 정확한 독립 한컴 2020 Print로 실행한 새 Native 전쪽 TSV는 1쪽/1쪽, **77.01188% / re_review_required**다. 직접 review에서도 큰 수식의 조건 칸·첨자와 본문 글리프 차이가 남아 있어, 이전 메인터너 직접 판정과 자동 수치 미충족을 구분한다. Docker WASM 빌드는 8m05s에 완료했고 root pkg·Studio public의 WASM SHA-256은 `d158eca06fbe7912c7bb2edf57af0db2dfaa3169c309181affd89d29e1b83597`로 같다. fresh Node 편집→저장→재열기에서 5개 수식의 TextLine 소속·기하가 유지됐고 저장본 hash는 이전 보정본의 `e00edfc63c35d5753e1369bad72de5187a485e9a6d0e9406f5746cb7c7cebf52`와 같다. 직접 Canvas2D 비교의 기록값은 75.78392%이나, HyhwpEQ 공급·FontFace 적재 성공 뒤에도 수식 문자가 네모로 표시돼 정상 판정용 캡처로 인정하지 않는다. 이 실패를 조판 미달의 수치 증거 또는 글꼴 예외로 승격하지 않는다. 같은 fresh bundle의 명시적 SVG 진단은 정상 글자 표시를 확인했고 77.20043%였다. 이것도 미달이며 직접 PNG gate의 대체 증거가 아니다.
+
+증거는 기본 작업공간의 ignored `output/pr-review/issue7899-20261014/devel-merge-116b/`에 보존한다. `merge.json`, `native-build.log`, `storage-tests.log`, `fmt-check.log`, 두 policy 로그와 `native-scores/math-edited/silhouette.tsv`, `native-review/math-edited/review/review_001.png`를 연결한다. source/policy base는 위 SHA에 고정했으며 새 head의 자동 gate 통과나 PR 준비 완료로 보고하지 않는다.
+
+작업지시자의 Visual Sweep 직접 확인 요청에 따라 `visual-review.html`을 준비했다. 독립 PDF·Native Skia·fresh WASM SVG 진단, 확대/전체 쪽 전환과 overlay를 포함하고 Canvas2D 글리프 누락 캡처는 실패 증거로 별도 표시했다. PNG 12개를 HTML 안에 내장했으며 Chrome에서 전부 로딩되고 전환 버튼이 동작함을 확인했다. 사용자 열람본은 `/mnt/e/tmp/issue7899-visual-review-97616c5.html`이며 Windows에서는 `E:\tmp\issue7899-visual-review-97616c5.html`로 연다. Docker·Canvas·SVG 실행 로그, `fresh-save-reopen.json`, `visual-review-manifest.json`, `visual-review-browser-check.json`을 같은 증거 폴더에 보존한다.
+
 ## 메인터너 직접 시각 판정
+
+통합본 Visual Sweep을 확인한 작업지시자는 단일 행 수식은 유사하지만 다중 행 수식은 독립 한컴 PDF보다 약 2px 아래에 조판된다고 관측했다. 사용자 직접 판독이며 자동 좌표 계측값이나 허용치 승인으로 바꾸지 않는다. `layout_cases` 및 `layout_matrix`는 현재 상자 높이의 절반을 내부 baseline으로 발행하지만, `layout_fraction`은 baseline과 수학 축을 구분해 axis 높이를 계상한다. 다중 행 수식의 공통 축 정렬을 원인 후보로 좁혔으며, source 개체 baseline·문단 줄 baseline·내부 AST baseline·최종 scale의 연결을 대조하기 전에는 원인을 확정하거나 일괄 -2px 보정을 추가하지 않는다. 단일 행 대조군의 보존도 함께 확인해야 한다.
 
 2026-10-14 작업지시자는 code head `40f0ec7de`의 Docker WASM 편집 저장본에 **“시각 판정 : 통과”**로 응답했다. 판정 대상은 아래 Studio에서 재열기한 `line-ownership-native/studio-saved.hwp`이며 SHA-256은 `bb9d973f0cbaddfc3e510c957d7a85b936fe9efae99b35dab0cd6431c4332c57`이다. 첫 문장과 큰 수식의 겹침 해소·저장 전후 배치에 대한 직접 판정을 충족으로 기록한다. 새 code head의 직접 판정으로 재사용하지 않는다.
 
