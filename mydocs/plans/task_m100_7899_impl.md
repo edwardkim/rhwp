@@ -63,6 +63,10 @@ Docker WASM은 worktree 루트에서 canonical locked wrapper를 사용하고 �
 
 `reflow_line_segs_impl`/프레임 채움의 줄 경계 생산 → `Paragraph.line_segs` 저장 → composer의 줄 소속 → paragraph layout의 TAC 배치 → 미처리 Shape 배치까지 추적한다. 좌표 clamp나 샘플 전용 조건은 추가하지 않는다. 원본, 같은 A 편집본의 독립 한컴 Print, 보정 전후 Native/fresh Docker WASM을 구분해 확인하고, 시각 게이트 통과 뒤 관계형 회귀를 추가한다. 기존 구역 끝 목록·메모 보존 검사는 유지한다.
 
+작업지시자는 원본이 한컴과 Studio 모두 정상이고, 한컴은 편집 저장본도 정상임을 확인했다. 기존 WASM API에서 같은 A 삽입을 실행한 결과 큰 수식은 원본의 `TextLine` 자식에서 편집 재조판 직후 `Column` 직속으로 바뀌었고, export 및 재열기에서도 유지됐다. 화면에서 저장 뒤에 관측된 증상의 생산 지점은 serializer의 원시 목록 보존이 아니라 편집 재조판의 줄 경계 발행이다. 이 API 관측을 사용자의 화면 관측과 구분한다.
+
+별도로 문단 테두리의 `attr1 bit29`를 parser/model은 보존하지만 resolved style은 누락한다. 공식 [문단 배경 도움말](https://help.hancom.com/hoffice130/ko-KR/Hwp/format/paragraph/paragraph%28background%29.htm)의 문단 여백 무시 설명과 [자동화 ParameterSet의 BorderText](https://raw.githubusercontent.com/hancom-io/devcenter-archive/main/hwp-automation/ParameterSetObject.pdf)(0=단, 1=텍스트)를 근거로, 같은 속성을 스타일→문단 테두리 범위→연속 테두리 병합→각 backend 공통 Rect에 전달한다. 흐름 높이는 바꾸지 않으며 텍스트 기준 테두리와 기본 단 기준 테두리를 구분한다. 실제 한컴 편집본 Print와 대조해 적용 경계를 확인한다.
+
 - 정책 base SHA를 고정하고 [로컬 검증 4.3](../manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)의 fmt / Native·WASM32·workspace Clippy / workspace build / manifest 검사를 순차 수행한다.
 - 필요한 전체 회귀·Native Skia는 focused·시각 결과 공유 후 승인된 범위에서 실행한다. 새 렌더링 fixture·기대값 변경에는 기존 90%·쪽수 일치 조건을 적용한다.
 - #7867, #7694, #7671, #7668, #7675, #7682와 파일을 공유하므로 push 전에 최신 devel의 실제 충돌·호출 경로를 확인한다. 해당 PR의 병합을 #7899 해결로 간주하지 않는다.

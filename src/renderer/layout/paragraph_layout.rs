@@ -5415,7 +5415,12 @@ impl LayoutEngine {
 
         // 배경/테두리 렌더링을 위한 시작 위치 기록
         // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전)
-        let bg_y_start = if para_border_fill_id > 0 { y_start } else { y };
+        let border_uses_text_area = para_style.is_some_and(|style| style.border_ignore_margin);
+        let bg_y_start = if para_border_fill_id > 0 && !border_uses_text_area {
+            y_start
+        } else {
+            y
+        };
         let bg_insert_idx = col_node.children.len();
 
         // start_line까지의 누적 문자 오프셋 계산 (편집용 문서 좌표)
@@ -7595,7 +7600,9 @@ impl LayoutEngine {
                 last_line_border_bottom
                     .or(last_line_box_bottom)
                     .map_or(y, |bottom| {
-                        if cell_ctx.is_none() && !outline_includes_line_spacing {
+                        if cell_ctx.is_none()
+                            && (!outline_includes_line_spacing || border_uses_text_area)
+                        {
                             bottom
                         } else {
                             y.max(bottom)
@@ -7624,6 +7631,11 @@ impl LayoutEngine {
                 // override 좌표 그대로 사용 (margin 미적용).
                 let (box_x, box_w) = if let Some((ox, ow)) = self.border_box_override.get() {
                     (ox, ow)
+                } else if border_uses_text_area {
+                    (
+                        col_area.x + box_margin_left,
+                        col_area.width - box_margin_left - box_margin_right,
+                    )
                 } else {
                     (col_area.x, col_area.width)
                 };
