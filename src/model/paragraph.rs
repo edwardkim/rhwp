@@ -2746,28 +2746,6 @@ impl Paragraph {
             }
         }
 
-        // 마지막 자동 번호 자리에는 다음 문자가 없어 stride를 읽을 수 없다.
-        // 문단 끝 마커 전의 원시 8유닛이 확인되면 마지막 공백 자체가 번호 슬롯이다.
-        // 새 번호의 순수 갭이나 일반 말미 공백은 번호 자리로 소비하지 않는다.
-        if positions.len() < total_controls
-            && offsets.len() == chars.len()
-            && matches!(
-                self.controls.get(positions.len()),
-                Some(Control::AutoNumber(_))
-            )
-            && offsets
-                .last()
-                .zip(chars.last())
-                .is_some_and(|(offset, ch)| {
-                    *ch == ' '
-                        && offset
-                            .checked_add(CTRL_CHAR_CODE_UNITS)
-                            .is_some_and(|end| end <= self.char_count.saturating_sub(1))
-                })
-        {
-            positions.push(chars.len() - 1);
-        }
-
         // 갭 분석으로 발견되지 않은 컨트롤의 위치를 텍스트의 `\u{FFFC}` marker
         // 위치로 매핑한다. HWP3 파서가 char_offsets 에 control gap (8) 을 추가하지
         // 않고 sequential [0,1,2,...] 만 push 하는 경우 갭 분석이 실패하여 control

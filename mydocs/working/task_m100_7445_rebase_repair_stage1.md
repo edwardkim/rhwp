@@ -180,3 +180,39 @@ upstream의 물리 행 높이·이월 원장을 유지하면서 이 브랜치의
 새 전쪽 비교 준비 범위는 기존 43조건 1055쪽에 저장 원점 되감기 서식 4쪽, KPS 77쪽, `56345_regulatory_impact_analysis.hwp` 21쪽을 더한 **46조건 1157쪽**입니다. 현행 Visual Sweep hash `993d97fd6249fa7763d0abd72870dc9f5de86a32480157047417ee90936116ad`, 기존 입력/PDF·DPI·compat·글꼴 조건을 사용하며 2px 관용·90% 기준을 유지합니다. 빌드·테스트·캡처 동시성은 각각 8이며 Cargo는 순차 실행합니다.
 
 새 실행 기록은 `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7882-20261014/`에 보존합니다. 지침·회귀 기대값은 이번 API 연결 단계에서 변경하지 않았습니다. GitHub 게시·push·PR·merge는 새 승인을 받기 전 수행하지 않습니다.
+
+
+## PR #7882 이후 입력 위치·수집 경로 보정 — 2026-10-14
+
+API 연결 head `4fb5584c4179436861c1928c708342f3b0b0cca3`의 전체 nextest는
+**10259 PASS / 33 FAIL / 45 skip**, 363.833초, exit 100입니다. 이전 head의 전체 통과를
+이 head의 결과로 재사용하지 않습니다. Native 전쪽에서는 개인정보 3·31·35·56·57쪽의
+미달을 확인하여 전쪽 실행을 중단하고 산출물을 보존했습니다.
+
+이번 입력/검사 경로 보정은 다음 세 가지입니다.
+
+- 문단 끝 공백을 자동 번호 자리로 옮기는 추가 추정 분기를 제거했습니다. 실제 컨트롤의
+  원시 위치와 upstream의 말미 fallback을 유지합니다. 기존 자동 번호 4건과 Enter undo
+  검사를 기대값 변경 없이 통과했습니다.
+- IR 검사에서 이미 보존한 KTX·aift 공유 입력 경로와 upstream의 보존 입력 경로를 동일한
+  resolver로 찾습니다. 원본 파일이 없는 것으로 잘못 보고하던 `baseline_samples_exist`가 통과했습니다.
+- 본문 넘침 수집기가 이미 제외하던 전용 장시간/기존 이관 입력을 baseline 로더에서도 같은
+  범위로 제외합니다. 기존 제외 목록과 raw TSV의 숫자는 수정하지 않았습니다.
+  본문 넘침 partition **16개 전부 PASS**입니다. 원본·PDF를 삭제하지 않았습니다.
+
+진단 후보 v7의 기존 집중 검사 결과는 **59건 중 55 PASS / 4 FAIL**, 349.656초입니다.
+이 실행은 dev 프로필이며 최종 release-test 전체 검증의 대체 자료가 아닙니다.
+남은 실패는 고용지원 표 하단 여백, 개인정보 소제목 위여백, 각주 HWPX의 추가 쪽과 그
+oracle 쪽수 검사입니다. 가스 라벨 소속·가맹사업 정렬·로드맵 내용 소속은 이후 조판 보정
+후 집중 검사에서 통과했으나, 이 입력/수집 경로 커밋에는 그 조판 소스를 포함하지 않습니다.
+
+로그 정본은 ignored `rebase-7882-20261014/full-nextest-01.log`,
+`v5-focused-dev-02.log`, `v7-focused-dev.log`입니다. v7 Native 캡처에서 개인정보
+31·35·56쪽은 여전히 미달입니다. 새 전쪽 Native/fresh WASM·실제 소비 경로·전체 회귀는
+조판 보정 뒤 재실행해야 합니다. 회귀 assertion·숫자 기대값을 완화하지 않았으며 PR은 보류합니다.
+
+고정 upstream 비교용 코드 archive를 별도로 빌드하는 과정에서 공유 target의 base CLI를
+후보 바이너리로 잘못 복사한 초기 v4 진단을 발견했습니다. 해당 `v4-focused-native/`는
+`INVALID-CANDIDATE.txt`로 무효 표시했습니다. 실제 root CLI 재빌드 후 동결한 바이너리의
+`v4-focused-native-rebuilt/` 및 이후 후보별 새 캡처만 사용합니다. 최종 검증에서는 제출할
+head·생산 소스 hash·바이너리 hash·프로필을 다시 고정합니다.

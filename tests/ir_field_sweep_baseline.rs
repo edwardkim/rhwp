@@ -93,7 +93,7 @@ fn hwp5_sample_path(sample: &str) -> PathBuf {
         .iter()
         .find(|(name, _)| *name == sample)
         .map_or_else(
-            || Path::new(HWP5_ROOT).join(sample),
+            || preserved_format_inputs::hwp5_path(sample),
             |(_, path)| PathBuf::from(path),
         )
 }
@@ -448,7 +448,7 @@ fn baseline_samples_exist() {
         let path = if lane == "hwpx" {
             Path::new(HWPX_ROOT).join(sample)
         } else {
-            preserved_format_inputs::hwp5_path(sample)
+            hwp5_sample_path(sample)
         };
         if !path.exists() {
             missing.push(format!("  [{lane}] {sample}"));

@@ -189,6 +189,11 @@ fn load_baseline() -> BTreeMap<String, u64> {
     text.lines()
         .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
         .filter(|line| !is_deferred_exam_document(line.split('\t').next().unwrap_or_default()))
+        .filter(|line| {
+            let rel = line.split('\t').next().unwrap_or_default();
+            !DEDICATED_SLOW_FIXTURES.contains(&rel)
+                && !DEFERRED_BODY_OVERFLOW_FIXTURES.contains(&rel)
+        })
         .map(|l| {
             let (rel, n) = l.rsplit_once('\t').expect("baseline TSV 행 형식");
             (rel.to_string(), n.parse::<u64>().expect("baseline 수치"))
