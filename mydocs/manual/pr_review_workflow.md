@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-09
+last_verified: 2026-10-14
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -21,6 +21,11 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 실제 diff와 PR 주장을 근거로 적용 여부를 먼저 판단하고, 적용 대상은 `AGENTS.md`의 공통 조판 원칙을
 검토 head의 코드·증거와 대조한다. 비해당도 이유를 적는다. maintainer 일반, collaborator self,
 collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
+
+조판·렌더링 영향 PR은 최신 SHA를 고정한 `upstream/devel`의 전쪽 Native/fresh WASM TSV를
+후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도0.01%p 이상 하락하면90% 이상이어도
+PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과로 상쇄하지 않는다.
+계산·증거·base 갱신은 [devel 대비 실루엣 하락 재검토](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 
 검증에 사용한 HWP/HWPX/PDF는 [검증 입력 커밋 확인](pr_review/intake_and_review.md#28-검증-입력-커밋-확인)을
 모든 정식 PR review의 공통 항목으로 점검한다. 수용 근거로 쓴 파일은 검토 대상 commit에 포함하고,

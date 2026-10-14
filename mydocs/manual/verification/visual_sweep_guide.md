@@ -171,6 +171,17 @@ TSV의 첫 세 열은 `page`, `tolerant_content_match_percent`, `below_90`이며
 문제가 있는 쪽은 일반 실행으로 review PNG를 생성해 직접 검토한다.
 실루엣 보조값만으로 PR 승인이나 회귀 fixture 적합성을 판정하지 않는다.
 
+### upstream devel 기준 TSV와 후보 TSV 비교
+
+위 Native/fresh WASM 명령을 기준 SHA의 producer와 후보 SHA의 producer로 각각 실행한다.
+동일 원본·PDF·글꼴·backend·Print profile·compat·DPI로 문서 전쪽을 비교하며, output은
+`output/pr-review/<id>/base/{native,wasm}`와 `head/{native,wasm}`처럼 분리한다.
+`page`별 `tolerant_content_match_percent`의 **기준−후보가0.01%p 이상이면90% 이상이어도
+PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 혼합은 허용하지 않는다.
+원 소수값·십진수 연산·누락 판정·직접 판독·review 기록은
+[devel 대비 실루엣 하락 재검토](visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
+현재 자동90% gate 또는 `not_evaluated`만으로 이 비교를 완료했다고 쓰지 않는다.
+
 ## PR review 실루엣 gate
 
 렌더링 변경의 새 회귀 테스트 추가에도 [회귀 추가 선행 조건](../pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)을 적용한다. 관련 모든 페이지·fixture의

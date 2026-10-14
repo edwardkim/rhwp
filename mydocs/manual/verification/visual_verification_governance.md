@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-10
+last_verified: 2026-10-14
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
@@ -26,6 +26,57 @@ last_verified: 2026-10-10
 기여자는 전체 페이지 **Native TSV와 fresh WASM TSV 원본 모두 및 대표 PNG**를 제출한다.
 검토자의 Native/fresh WASM 검증은 해당 역할의 절차를 따른다. 해결 불가능한 실제 글꼴 차이는
 [정식 글꼴 예외 계약](visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의 증거와 gate 판정으로만 처리한다.
+
+## upstream devel 대비 페이지별 실루엣 하락 재검토
+
+조판·렌더링 영향 PR은 후보 head의90% 통과만 확인하지 않는다. 검증 기준으로 SHA를
+고정한 `upstream/devel`에서 Visual Sweep 전체 페이지 TSV를 먼저 산출하고, 같은
+원본·독립 한컴 Print PDF에 대한 후보 head TSV와 페이지별로 비교한다. Native와
+fresh WASM을 각각 비교하며 어느 한 문서·페이지·출력 경로라도 기준보다0.01%p 이상
+낮아지면 PR을 재검토한다. 작성자·reviewer·콜라보레이터·메인터너 보정에 동일 적용한다.
+
+### 실행 순서
+
+1. 최신 upstream/devel을 fetch하고 기준 SHA·후보 code SHA를 고정한다. 과거 PR 본문이나
+   이전 검토 브랜치를 기준 출력으로 대신하지 않는다. fetch는 기준 확인이며 source branch를
+   매번 rebase하라는 지시가 아니다.
+2. 입력/PDF SHA-256, 전체 쪽수·쪽 번호, Print profile, compat, DPI, 실제 글꼴 파일·face,
+   backend 및 실루엣 계산 방법·버전을 맞춘다. Native 기준은 Native 후보와, fresh WASM
+   기준은 fresh WASM 후보와 비교한다. backend 전환 PR도 공통으로 지원하는 같은 backend의
+   base/head 비교를 먼저 확보하고 새 backend의 품질은 별도 검증한다.
+3. 두 source SHA에서 Native CLI와 fresh WASM package를 각각 준비한다. 공용 target/pr-review를
+   순차 사용하고, 다음 빌드가 이전 producer를 덮어쓰기 전에 ignored output에 검증용
+   producer를 보존한다. 실제 source/build·파일 SHA를 기록한다. 각 문서의 전쪽 TSV를 산출한다.
+   [전쪽 TSV 명령](visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)을 따른다.
+4. 같은 문서·backend·page의 tolerant_content_match_percent 원래 소수값을 비교한다.
+   하락폭=기준−후보이며 Decimal 같은 십진수 연산으로 하락폭>=0.01을 판정한다.
+   표시용 반올림 또는 이진 부동소수점 오차로 정확히0.01의 하락을 누락하지 않는다.
+5. 쪽 누락·중복·측정 불가·쪽수 차이·비교 조건 불일치·기준 TSV 없음은 미검증/재검토다.
+   다른 페이지의 개선·평균 상승·CI 통과·글꼴 예외·98% 유지로 한 쪽의0.01%p 하락을
+   상쇄하지 않는다. 감소 쪽의 base/head review·overlay를 같은 배율로 독립 PDF와 직접 대조한다.
+6. 원인을 보정한 새 head에서 전쪽 TSV와 비교를 재수행한다. 기준·DPI·글꼴·마스크·허용치를
+   바꿔 하락을 숨기지 않는다. 검토 중 devel head가 바뀌면 새 기준 SHA의 TSV와 비교를 갱신한다.
+
+### 판정
+
+0.01%p는 98.50%→98.49%의 퍼센트포인트 차이다. 기준에0.01%를 곱한 상대 변화율이 아니다.
+
+| 기준 → 후보 | 판정 |
+| --- | --- |
+| 98.50000% → 98.49000% | 90%·98% 이상이어도 재검토 |
+| 99.00000% → 98.98000% | 0.02%p 하락, 재검토 |
+| 95.00000% → 96.00000% | 이 비교의 하락 없음, 다른 시각·구조 gate 유지 |
+| 89.00000% → 89.50000% | 개선됐어도90% 미달 gate로 재검토 |
+| 기준 TSV 없음 또는 쪽 누락 | 미검증, 승인·통합 보류 |
+
+자동 pr_review_gate의90% 판정 또는 not_evaluated는 이 비교를 자동 입증하지 않는다.
+별도 비교 결과 하락이 있으면 `머지 보류 — devel 대비 시각 회귀 재검토`로 기록하고
+새 PR 생성·승인·통합을 보류한다. 원래90% gate, 완료 페이지98% 보호, 전체 쪽수·내용 보존과
+확대 판독은 함께 적용한다.
+
+review와 PR 본문에 base/head·producer SHA, 입력/PDF·글꼴·backend 조건, 기준/후보
+Native·fresh WASM TSV 원본, 비교 명령·전쪽 수·최대 하락폭 및 문서/backend/페이지/
+기준/후보/하락폭 목록을 연결한다. 목록이 비면 실제 비교 범위와0.01%p 이상 하락0쪽을 기록한다.
 
 ## 원칙
 
@@ -59,7 +110,7 @@ Native/fresh WASM 출력의 최저 일치율 90% 이상을 먼저 입증한다. 
 Native/fresh WASM의 관련 모든 페이지에서 90% 이상 확인 → 필요한 검사 변경** 순서로 진행한다.
 실물 배치는 절대 px 좌표·고정 px 영역으로 검사하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침
 관계로 검사한다. 다만 **완료된 페이지**의 Native/fresh WASM 2px 관용 실루엣 일치율이 각각
-100%이고 독립 PDF와 직접 확대 판독을 마쳤으면, 해당 쪽의 독립 기대 좌표는 ±2px 허용 오차로
+98% 이상이고 독립 PDF와 직접 확대 판독을 마쳤으면, 해당 쪽의 독립 기대 좌표는 ±2px 허용 오차로
 고정할 수 있다. 문서 전체 98% 이상은 요구하지 않으며 관계 검사도 유지한다.
 [페이지별 px 회귀 조건](../pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.
 90% 미만·측정 불가이면 기대값 갱신을 보류하고,

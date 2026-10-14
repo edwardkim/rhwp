@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review/intake_and_review.md
-last_verified: 2026-10-09
+last_verified: 2026-10-14
 ---
 
 # PR #N 리뷰 — 변경 요약
@@ -39,6 +39,12 @@ PR 채번과 code head CI 성공 뒤 이 review와 오늘할일을 문서-only t
 핵심 동작, 영향받는 입력·호출 경로, 범위 밖 변경과 의존 PR을 적는다.
 
 ## 검증 입력과 결과
+
+조판·렌더링 영향 PR은 고정한 최신 upstream/devel SHA와 후보 SHA의 전쪽 Native/fresh WASM
+TSV를 같은 조건·페이지로 비교한 증거를 적는다. 원본/PDF·producer·글꼴·backend·쪽수와
+페이지별 기준/후보/하락폭,0.01%p 이상 하락한 쪽 목록을 연결한다. 한 쪽이라도 하락하면
+90% 이상·평균 개선·CI 성공과 관계없이 재검토다. 기준 TSV가 없으면 미검증으로 기록한다.
+[상세 비교 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)을 따른다.
 
 실제 사용한 HWP/HWPX·한컴 기준 PDF의 저장소 경로, 출처·SHA-256·검토 commit 포함
 여부를 적는다. 실행한 명령과 대상 head·통과/실패/미실행 범위를 구분한다. 조판 원칙,
