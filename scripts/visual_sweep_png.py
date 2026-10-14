@@ -157,16 +157,11 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     weight = font['OS/2'].usWeightClass if 'OS/2' in font else 400
                     italic = bool(font['head'].macStyle & 2) if 'head' in font else False
                     path = source
-                    repaired_cmap = repair_terminal_cmap(font.getTableData('cmap'), font['maxp'].numGlyphs) if 'cmap' in font else None
-                    if repaired_cmap is not None:
-                        from fontTools.ttLib.tables.DefaultTable import DefaultTable
-                        table = DefaultTable('cmap')
-                        table.data = repaired_cmap
-                        font['cmap'] = table
+                    repaired_cmap = repair_terminal_cmap(font.reader['cmap'], font['maxp'].numGlyphs) if 'cmap' in font else None
                     if collection or repaired_cmap is not None:
                         resource_dir.mkdir(exist_ok=True)
                         path = resource_dir / f'{digest}-{index}.ttf'
-                        font.save(path)
+                        write_font_face(font, path, repaired_cmap)
                     records.append({'path': str(path.resolve()), 'source': str(source.resolve()),
                                     'sourceSha256': digest, 'sha256': vs.sha256_file(path),
                                     'faceIndex': index, 'families': names, 'weight': weight,
@@ -180,6 +175,19 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
     path = base / 'font-catalog.json'
     vs.write_json_atomic(path, {'faces': records})
     return path
+
+
+def write_font_face(font, path: Path, repaired_cmap: bytes | None) -> None:
+    """원본 SFNT 테이블을 복사한다. 글리프·메트릭·경계·날짜를 재컴파일하지 않는다."""
+    from fontTools.ttLib.sfnt import SFNTWriter
+    # TTFont.save는 읽어 둔 테이블을 재컴파일하고 CFF 전체의 bbox를 계산한다.
+    # face 공급에는 directory/checksum 갱신과 명시한 cmap 종료 항목 수정만 필요하다.
+    tags = sorted(font.reader.keys())
+    with path.open('wb') as output:
+        writer = SFNTWriter(output, len(tags), font.sfntVersion)
+        for tag in tags:
+            writer[tag] = repaired_cmap if tag == 'cmap' and repaired_cmap is not None else font.reader[tag]
+        writer.close()
 
 
 def repair_terminal_cmap(data: bytes, glyph_count: int) -> bytes | None:
