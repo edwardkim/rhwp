@@ -9308,6 +9308,7 @@ mod tests {
                 has_para_text: true,
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });
@@ -9463,6 +9464,7 @@ mod tests {
                 ..Default::default()
             },
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });
@@ -9510,6 +9512,7 @@ mod tests {
             Section {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
+                trailing_lists: None,
                 raw_stream: None,
                 raw_provenance: None,
             }
@@ -9581,6 +9584,7 @@ mod tests {
             Section {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
+                trailing_lists: None,
                 raw_stream: None,
                 raw_provenance: None,
             }
@@ -9645,6 +9649,7 @@ mod tests {
             Section {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
+                trailing_lists: None,
                 raw_stream: None,
                 raw_provenance: None,
             }
@@ -9703,6 +9708,7 @@ mod tests {
         document.sections.push(Section {
             section_def: SectionDef::default(),
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });

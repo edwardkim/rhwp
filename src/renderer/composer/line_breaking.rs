@@ -127,6 +127,7 @@ pub(crate) enum BreakToken {
 #[derive(Debug, Clone, Copy)]
 struct FlowInlineControl {
     char_position: usize,
+    utf16_position: u32,
     width_hwp: i32,
     height_hwp: i32,
     /// Equation supplies an object-owned baseline for the physical row. Other
@@ -2742,7 +2743,12 @@ fn flow_inline_controls_with_tac_tables(
 ) -> Vec<FlowInlineControl> {
     let text_len = para.text.chars().count();
     let mut controls = flow_inline_controls(para);
-    for (control, char_position) in para.controls.iter().zip(para.control_text_positions()) {
+    for ((control, char_position), utf16_position) in para
+        .controls
+        .iter()
+        .zip(para.control_text_positions())
+        .zip(para.control_utf16_positions())
+    {
         let Control::Table(table) = control else {
             continue;
         };
@@ -2755,6 +2761,7 @@ fn flow_inline_controls_with_tac_tables(
         };
         controls.push(FlowInlineControl {
             char_position,
+            utf16_position,
             width_hwp,
             height_hwp,
             baseline_distance_hwp: None,
@@ -2769,7 +2776,8 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
     para.controls
         .iter()
         .zip(para.control_text_positions())
-        .filter_map(|(control, char_position)| {
+        .zip(para.control_utf16_positions())
+        .filter_map(|((control, char_position), utf16_position)| {
             // 글자처럼 취급되는 표는 renderer가 control 위치를 기준으로 별도
             // TextRun/Table 경계를 만든다. 보이지 않는 PARA_TEXT 위치의 다음
             // 글자 폭에 표 전체 폭을 더하면 HML의 `abc + table + efg`처럼
@@ -2779,20 +2787,29 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
                 return None;
             }
             let (width_hwp, height_hwp) = inline_control_size_hwp(control)?;
-            let baseline_distance_hwp = match control {
-                Control::Equation(equation) if equation.baseline > 0 => {
-                    Some(crate::renderer::equation::flow_metrics_hwp(equation).2)
-                }
-                _ => None,
-            };
+            let baseline_distance_hwp = flow_inline_baseline_hwp(control, height_hwp);
             (char_position < text_len).then_some(FlowInlineControl {
                 char_position,
+                utf16_position,
                 width_hwp,
                 height_hwp,
                 baseline_distance_hwp,
             })
         })
         .collect()
+}
+
+fn flow_inline_baseline_hwp(control: &Control, height_hwp: i32) -> Option<i32> {
+    match control {
+        // This percentage is the source object's alignment contract. The AST
+        // baseline describes glyph painting inside its box, a different origin.
+        Control::Equation(equation) if equation.baseline > 0 => Some(
+            height_hwp
+                .saturating_mul(i32::from(equation.baseline))
+                .saturating_div(100),
+        ),
+        _ => None,
+    }
 }
 
 /// Controls that claim no inline advance and own no layout box of their own.
@@ -3086,6 +3103,21 @@ fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
                 .map(|ch| ch.len_utf16() as u32)
                 .sum()
         })
+}
+
+/// A physical line begins before the inline objects owned by its first scalar.
+/// Visible character offsets point after their control gaps; publishing that
+/// offset would leave a leading equation/picture owned by the preceding line.
+fn line_start_utf16_offset(
+    para: &Paragraph,
+    char_index: usize,
+    inline_controls: &[FlowInlineControl],
+) -> u32 {
+    inline_controls
+        .iter()
+        .filter(|control| control.char_position == char_index)
+        .map(|control| control.utf16_position)
+        .fold(char_index_to_utf16_offset(para, char_index), u32::min)
 }
 
 /// `baseline_distance` from a row's height — the one expression, so the frame
@@ -3590,9 +3622,10 @@ fn layout_paragraph_in_frame_impl(
                         {
                             0
                         } else {
-                            char_index_to_utf16_offset(para, line.start_idx)
+                            line_start_utf16_offset(para, line.start_idx, &inline_controls)
                         };
-                    let text_end = char_index_to_utf16_offset(para, line.end_idx).max(text_start);
+                    let text_end = line_start_utf16_offset(para, line.end_idx, &inline_controls)
+                        .max(text_start);
                     let mut segment = RowSegment::new(text_start..text_end, interval, source_tag);
                     segment.space_metric = selected_space_metric;
                     segments.push(segment);
@@ -4745,7 +4778,7 @@ fn reflow_line_segs_impl(
         } else {
             match forced_inline_line {
                 Some((position, control_start, ..)) if position == lb.start_idx => control_start,
-                _ => char_index_to_utf16_offset(para, lb.start_idx),
+                _ => line_start_utf16_offset(para, lb.start_idx, &inline_controls),
             }
         };
         let fs = if lb.max_font_size > 0.0 {
@@ -4765,16 +4798,21 @@ fn reflow_line_segs_impl(
             let (_, _, height_hwp, _) = forced_inline_line.expect("checked inline control");
             apply_inline_control_line_height(&mut text_seg, height_hwp);
         }
-        if let Some(height_hwp) = inline_controls
+        if let Some(control) = inline_controls
             .iter()
             .filter(|control| {
                 (lb.start_idx..lb.end_idx).contains(&control.char_position)
                     || (lb.end_idx == text_len && control.char_position == text_len)
             })
-            .map(|control| control.height_hwp)
-            .max()
+            .max_by_key(|control| (control.height_hwp, control.baseline_distance_hwp))
         {
-            apply_inline_control_line_height(&mut text_seg, height_hwp);
+            let inline_owns_row_height = control.height_hwp > text_seg.line_height;
+            apply_inline_control_line_height(&mut text_seg, control.height_hwp);
+            if inline_owns_row_height {
+                if let Some(baseline) = control.baseline_distance_hwp {
+                    text_seg.baseline_distance = baseline;
+                }
+            }
         }
         new_line_segs.push(text_seg);
 

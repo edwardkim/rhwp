@@ -91,7 +91,7 @@ ignored 실행 기록은 `output/pr-review/planet6897-followup-20261011/`의 `c6
 
 `e99deef760e1e8066b120f76e2150c13339ef713`의 모든 workflow와 check/status를 완료 후 다시 읽어 실패·대기 없이 성공 또는 정책상 skipped임을 확인했다.
 
-- [CI / Build & Test](https://github.com/edwardkim/rhwp/actions/runs/38597293963): fmt·세 Clippy/WASM check, Skia, fresh WASM을 빌드한 Frontend package gates, Rust archive A–D 빌드·회귀 및 집계 성공.
+- [CI / Build & Test](https://github.com/edwardkim/rhwp/actions/runs/38597293963): fmt·세 Clippy/WASM check, Skia, fresh WASM을 빌드한 Frontend package gates, Rust archive A–D 빌드·회귀 **10,101 PASS / 45 skipped / 실패0** 및 집계 성공.
 - [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/38597293770): Python·JavaScript/TypeScript·Actions·Rust 분석 성공.
 - [Adapter](https://github.com/edwardkim/rhwp/actions/runs/38597293628), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/38597293407), [정책 controller](https://github.com/edwardkim/rhwp/actions/runs/38597290758) 성공; CI Impact Policy success.
 - 별도 WASM Build·Frontend unit 등의 정책상 skipped는 로컬 fresh WASM/실제 browser 미실행을 뜻하지 않는다. Python/helper 변경 범위의 로컬141+Node4와 전쪽 실제 출력 검증을 완료했다. Rust source/test를 바꾸지 않아 CI가 성공한 광범위 Rust 전체를 로컬에서 중복 실행하지 않는다.
@@ -101,6 +101,8 @@ ignored 실행 기록은 `output/pr-review/planet6897-followup-20261011/`의 `c6
 [오늘할일](../../orders/20261015.md)과 이 review만 trailing 기록으로 반영한다. 최신 base와 실제 merge tree의 충돌·공백·Markdown 링크·기존 오늘 기록 보존을 확인해 push하고, latest head의 fast-pass/required checks를 다시 확인한다. 사용자에게 merge와 후속 처리까지 승인받았으므로 별도 승인 질문을 반복하지 않는다.
 
 merge 뒤 문서/asset이 devel에 포함됐음을 확인하고 local devel을 fast-forward한다. [post_merge](../../manual/pr_review/post_merge.md)의 순서대로 duration 갱신 성공 또는 증거 부족 보류를 확인한다. 검증 CI를 재실행하지 않는다. 관련 #7902는 계속 OPEN으로 보존하고 도구 개선/남은 원 검증 범위를 comment에 구분한다.
+
+최신 base `957ab0610e24e147433076e013c78f38f04bc789`에는 오늘 날짜 파일이 신규 추가되어 source의 신규 파일과 add/add 충돌이 발생했다. 양쪽 기록을 모두 보존해 `mydocs/orders/20261015.md`만 수동 해소한 current-base bridge를 사용한다. source/test/workflow 충돌은 없으며 검증한 Visual Sweep helper/test 바이트는 그대로다. 실제 merge tree의 공백·링크·기록 보존은 push 전 별도 실행 기록으로 확인한다.
 
 ### Merge 후 contributor PR comment 계획
 
