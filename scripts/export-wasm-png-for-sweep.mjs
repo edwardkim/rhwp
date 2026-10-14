@@ -55,6 +55,18 @@ export function createSweepBrowserProfile(output, index) {
   return mkdtempSync(join(resolve(output), `chrome-worker-${index}-`));
 }
 
+// Print PNG는 투명 Canvas를 종이의 흰 배경에 합성한다.
+// ceil로 늘어난 마지막 픽셀의 투명 RGB를 검정 잉크로 해석하지 않게 한다.
+export function encodeCanvasOnWhitePaper(canvasId) {
+  const source = document.getElementById(canvasId);
+  const paper = document.createElement('canvas');
+  paper.width = source.width; paper.height = source.height;
+  const ctx = paper.getContext('2d', {alpha: false});
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, paper.width, paper.height);
+  ctx.drawImage(source, 0, 0);
+  return paper.toDataURL('image/png').split(',')[1];
+}
+
 async function main() {
   const pkg = option('--pkg'), input = option('--input'), output = option('--out');
   const settings = JSON.parse(readFileSync(option('--options'), 'utf8'));
@@ -231,10 +243,15 @@ async function main() {
             if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
             const bytes = await response.arrayBuffer();
             for (const family of selected) {
-              try { await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc, metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`)); }
+              // 실제 family 등록과 HFT 원본 윤곽 바인딩을 같은 helper가 소유한다.
+              let font;
+              try {
+                font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc, metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`));
+                if (font.family !== family) throw Error(`Canvas 글꼴의 등록 이름이 다릅니다: ${family} → ${font.family}`);
+              }
               catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
               supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}`);
-              loaded.push({family, sourceSha256: record.sourceSha256, sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
+              loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
             }
           }
           await document.fonts.ready;
@@ -254,9 +271,10 @@ async function main() {
               if (attempt === 2) throw Error('Canvas 그림 캐시가 안정되지 않아 PNG 캡처를 중단합니다.');
             }
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-            return {png: canvas.toDataURL('image/png').split(',')[1], width: canvas.width, height: canvas.height,
+            return {width: canvas.width, height: canvas.height,
                     tree: doc.getPageRenderTree(number - 1)};
           }, {number, scale: settings.scale});
+          result.png = await page.evaluate(encodeCanvasOnWhitePaper, 'page');
           const tree = JSON.parse(result.tree);
           if (!tree.type || !tree.bbox || !(result.width > 0 && result.height > 0)) throw Error(`p${number} Canvas 산출물 손상`);
           const bytes = Buffer.from(result.png, 'base64');
@@ -282,6 +300,7 @@ async function main() {
     if (pageRecords.length !== expected.length || new Set(pageRecords.map(p => p.page)).size !== expected.length) throw Error('WASM PNG 쪽 누락·중복');
     writeFileSync(join(output, 'wasm-export-complete.json'), JSON.stringify({
       pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d', protocolTimeoutMs: protocolTimeout,
+      pngBackground: 'opaque-white-print-paper',
       pages: pageRecords.sort((a,b) => a.page-b.page), workers,
     }, null, 2));
   } finally {
