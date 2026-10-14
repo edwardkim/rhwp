@@ -82,6 +82,39 @@ fn hwpx_generated_hft_number_keeps_print_baseline_and_content() {
     hft_number_baseline("tests/fixtures/pr7704_manual_reflow/6761-control.hwpx");
 }
 
+#[cfg(feature = "native-skia")]
+#[test]
+fn native_generated_hft_font_trace_uses_paint_aliases() {
+    use rhwp::{document_core::DocumentCore, renderer::skia::SkiaLayerRenderer};
+
+    for sample in [
+        "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+        "tests/fixtures/pr7704_manual_reflow/6761-control.hwpx",
+    ] {
+        let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample)).unwrap();
+        let core = DocumentCore::from_bytes(&bytes).unwrap();
+        let trace: Value = serde_json::from_str(
+            &SkiaLayerRenderer::new()
+                .get_font_decision_trace(&core, 28, r#"{"maxCharacters":16}"#)
+                .unwrap(),
+        )
+        .unwrap();
+        let records = trace["records"].as_array().unwrap();
+        assert!(!records.is_empty(), "생성 번호도 진단 대상이다");
+        for record in records {
+            let native = &record["paint"]["native"];
+            // 한양중고딕의 설치 TTF 이름은 HY중고딕이다. 실제 paint가
+            // 이 별칭을 찾는데 진단만 generic 후보를 바로 고르면 안 된다.
+            let candidates = native["candidates"].as_array().unwrap();
+            assert_eq!(candidates[0], "한양중고딕", "원 face 우선");
+            assert_eq!(
+                candidates[1], "HY중고딕",
+                "generic보다 원 face의 설치 별칭 우선"
+            );
+        }
+    }
+}
+
 struct Trees(std::path::PathBuf);
 
 impl Drop for Trees {

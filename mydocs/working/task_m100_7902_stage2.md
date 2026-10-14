@@ -3,6 +3,30 @@
 Issue: #7902. 이미 merge된 PR #7877의 원본 19문서·835쪽 범위를 유지한다.
 1단계 도구 PR #7903과 기록 PR #7906은 실제 merge됐으며 이 이슈는 OPEN이다.
 
+## 현재 확인 상태 — 2026-10-15
+
+아래는 이전 진단과 구분한 현재 집계다. **아직 PR 생성·전체 검증 완료가 아니다.**
+아래 전쪽 집계의 실행 소스는`a37caa731`, 기준은`a5e88ad68`다.59a6 체크포인트
+뒤 fetch에서 원격 기준이 동일한 것을 확인했다. PR 직전에는 다시 fetch해 변경된 경우에만 리베이스·재검증한다.
+
+| 항목 | 실제 확인 결과 | 남은 범위 |
+| --- | --- | --- |
+| Native 원본 전쪽 |19문서835쪽,미달/누락0·Print 쪽수 일치,최저91.71770%(scattered37쪽)|최종 제출 head와 증적 연결|
+| Native devel 대조 |비교 가능한18문서787쪽,0.01%p 이상 하락0쪽|overfill base49/Print48로 전쪽 TSV 비교 불가|
+| fresh WASM 전쪽 |19문서835쪽,미달/누락0·Print 쪽수 일치,최저90.09386%(chemical19쪽)|최종 공용 pkg 재생성·연결|
+| WASM devel 대조 |nested HWPX104쪽99.93539→99.87312%,0.06227%p 하락1쪽|재검토 상태 유지,기준·글꼴·마스크를 바꾸지 않음|
+| 새 회귀6개 |실제 이전 CLI의 의도한 실패·수정 후6PASS|진단 일치 보완 뒤 Cargo 정식 전체 nextest 재실행 필요|
+| Rust lint·정책 |일반/WASM/전체 target 및 Native Skia Clippy PASS,manifest/base·unit tier PASS|최종 fmt 확인|
+| 브라우저·CI 계약 |관련 Node6PASS,CI 계약328PASS,Python workflow186PASS,actionlint PASS|없음|
+| Studio |단위1840PASS·2skip|로컬 pkg의 이전 타입 선언으로 tsc 실패;공용 fresh pkg 갱신 후 재실행|
+
+Native의 실제 마지막 전쪽 phase는`candidate-fractional-number-dev`(714.62초),WASM은
+`candidate-generated-number-dev`(963.22초)다. Native chemical4종29쪽은100%이며,
+original/control/shifted100쪽도100%다(later100쪽은 다른 내용의94.79873%).
+TS 오류의`getTableCellBboxesAtPage`는 현재 fresh WASM 선언에 실제 존재한다.
+오래된 root pkg를 근거로 제품 TS 소스를 고치지 않으며,공유 Cargo 작업 종료 후 wrapper로
+공용 pkg를 재생성한다. a37 전체 nextest는 후속 진단 보완 때문에 중단했으며 완료 결과로 사용하지 않는다.
+
 ## 기준과 승인된 진행
 
 - 브랜치: `fix/pr7877-render-regressions-20261014`.
@@ -562,3 +586,37 @@ Roman 번호도 별도 진단했다. Native 기본 `Font`는 subpixel=false,base
 이 합성 교체 이미지는 진단 근거일 뿐 정식 전쪽 측정으로 세지 않는다.
 실제 Native는 생성 HFT 번호에 subpixel=true,baseline_snap=false를 적용해 재빌드했고
 1분42초에 성공했다. 이 producer로 원본19문서 전체와 a5 비교를 다시 실행한다.
+
+
+### 생성 번호의 Native 진단과 paint 경로 일치
+
+코드 대조에서 생성 HFT 번호의 Native paint에만 설치 별칭이 추가되고 진단 observer는
+원래 family만 받은 것을 발견했다. a37의 실제 Native 라이브러리를 분리 보존해 같은
+정식 테스트로 재현했다. 실제 원본29쪽의 후보2번째가`Noto Sans KR`로 나와
+`HY중고딕`을 기대한 검사1개가 의도한 원인으로 FAIL(4.89초)했다.
+
+paint의 기존 문자열 생산식을`native_font_family_for_style`로 옮겨 Native paint와
+읽기 전용 진단이 같은 결과를 사용하게 했다. 일반 본문은 원 family를 그대로 빌린다.
+새 검사는 HWP/HWPX 두 원본의 생성 번호를 실제 Native renderer-bound API로 조회한다.
+새 fixture·사유 불명의 좌표·baseline 완화는 추가하지 않는다. Native CI의 두 profile에
+이 source를 추가했고 classifier의 Native 입력 목록도 맞췄다. 수정 후 workflow186개,
+CI Node328개·actionlint는 통과했다. Native 실제 after 검증은 이어서 수행한다.
+
+직전 전체 nextest는723.57초 후 중단됐다. 마지막 컴파일 관측 뒤 실행 단계가 시작되어
+최종 로그는2425/10301실행·2417PASS·8SIGINT·7876미실행·45skip이었다.8건은
+실제 구현 실패로 분류하지 않는다. 중단 사유와 프로세스 소유 확인은
+`a37-full-build-superseded-for-font-trace.json`에 남겼다. 새 소스의 전체 검증으로 대체한다.
+
+before worktree가 공용 target의 해시 없는`librhwp.rlib`를 덮은 뒤 main에서 Cargo가
+Fresh로 판정한 캐시 불일치도 실제 확인했다. 첫 after 시도는 before와 같은 RLIB 바이트로
+실행되어 완료 증거로 사용하지 않는다. 공유 target을 삭제하지 않고 main의 entrypoint
+mtime만 갱신해 실제 현재 라이브러리를 재빌드하고 해시·실제 API 결과를 확인한다.
+
+
+현재 라이브러리의 SHA가 before와 다름을 확인한 실제 after 실행은 HWP/HWPX 두 입력
+조회 모두 통과했다(정식 새 테스트1PASS,9.46초). 로그는
+`font-trace-after-refreshed-test.log`이며 이전1FAIL은`font-trace-before-test.log`다.
+새 정식 테스트는 Native feature에서 동작하므로 CI의 Native lane에도 명시했다.
+이제7개 검사 중6개는 기본 전체 회귀,새 진단1개는 Native lane에서 보호한다.
+이 source 보완은 실제 paint의 기존 후보 생산식을 공통 helper로 옮긴 것이며
+글리프·좌표·폭을 새로 변경하지 않는다. 새 source에서 필요한 검증을 이어간다.

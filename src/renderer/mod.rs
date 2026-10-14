@@ -2727,6 +2727,25 @@ fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     }
 }
 
+/// Native paint와 진단이 같은 요청 사다리를 사용한다.
+/// 저장 줄이 없는 HFT 번호는 원 face의 설치 별칭을 함께 찾는다.
+pub(crate) fn native_font_family_for_style(style: &TextStyle) -> std::borrow::Cow<'_, str> {
+    if !style.fixed_glyph_advances {
+        return std::borrow::Cow::Borrowed(&style.font_family);
+    }
+    std::borrow::Cow::Owned(
+        style
+            .font_family
+            .split(',')
+            .flat_map(|family| {
+                let family = family.trim();
+                std::iter::once(family).chain(installed_render_font_aliases(family).iter().copied())
+            })
+            .collect::<Vec<_>>()
+            .join(","),
+    )
+}
+
 fn internal_font_family_members(font_family: &str) -> Vec<&str> {
     font_family
         .split(',')

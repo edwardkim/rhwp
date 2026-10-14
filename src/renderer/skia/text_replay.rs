@@ -88,25 +88,7 @@ impl SkiaTextReplay<'_> {
                     self.system_families,
                     self.custom_typefaces,
                     self.bundled_typefaces,
-                    &if style.fixed_glyph_advances {
-                        // 저장 글줄이 없는 HFT 번호도 Canvas와 같은 원 face의
-                        // 설치 별칭을 찾는다. 임의의 Bold 대체 face는 넣지 않는다.
-                        style
-                            .font_family
-                            .split(',')
-                            .flat_map(|family| {
-                                let family = family.trim();
-                                std::iter::once(family).chain(
-                                    crate::renderer::installed_render_font_aliases(family)
-                                        .iter()
-                                        .copied(),
-                                )
-                            })
-                            .collect::<Vec<_>>()
-                            .join(",")
-                    } else {
-                        style.font_family.clone()
-                    },
+                    &crate::renderer::native_font_family_for_style(style),
                     font_style,
                 );
                 let primary_typeface = typeface_chain
