@@ -12573,6 +12573,28 @@ impl LayoutEngine {
                             )
                         })
                         .flatten();
+                    // 완전한 세로 저장 상자가 닫힌 작은 HWPX 표도 같은
+                    // 바깥 위 여백을 그린다. 배치 계획이 없는 whole float는
+                    // native-only 폴백 대신 원본 앞·뒤 줄의 공통 Query를 소비한다.
+                    let stored_top = stored_top.or_else(|| {
+                        if self.profile.get().session_edited()
+                            || !(self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout())
+                            || self.render_normalization.borrow().table_text_reflowed(t)
+                        {
+                            return None;
+                        }
+                        let spacing_before = styles.para_styles
+                            .get(para.para_shape_id as usize)
+                            .map_or(0.0, |style| style.spacing_before);
+                        crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_stored_ladder_host(
+                            para, paragraphs.get(para_index + 1)?, t,
+                            para_y_for_table - col_area.y - spacing_before,
+                            spacing_before,
+                            mt.map_or(declared_height, |measured| measured.total_height),
+                            self.dpi,
+                        ).map(|placement| col_area.y + placement.table_top)
+                    });
                     let stored_flow_advance = stored_top.and_then(|_| {
                         stored_topbottom_flow_advance_hu(para, paragraphs.get(para_index + 1), t)
                             .map(|height| hwpunit_to_px(height as i32, self.dpi))

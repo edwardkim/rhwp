@@ -2069,6 +2069,32 @@ impl TypesetEngine {
                     )
                 })
                 .flatten()
+            })
+            .or_else(|| {
+                // 공백 호스트 줄도 표 뒤에서 자기 줄 상자를 점유할 수 있다.
+                // 앞·현재·뒤 저장 줄이 닫는 같은 프레임을 중첩 셀과 공유한다.
+                let (frame_start, origin) = source_host_frame?;
+                let mut placement =
+                    crate::renderer::float_placement::stored_table_before_host_frame(
+                        paragraphs_all.get(frame_start..)?,
+                        para_idx.checked_sub(frame_start)?,
+                        table,
+                        ctrl_idx,
+                        origin - fmt.spacing_before,
+                        ft.effective_height,
+                        styles,
+                        self.dpi,
+                    )?;
+                // 이 전체 프레임은 뒤 호스트 줄까지 현재 단에 들어갈 때만 쓴다.
+                // 부분 조각의 컷·줄 소유를 전체 선언 상자로 대신하지 않는다.
+                let host_end = placement.occupied_bottom
+                    + fmt.line_advances_sum(0..fmt.line_count())
+                    + fmt.spacing_after;
+                if host_end > available {
+                    return None;
+                }
+                placement.stored_host_origin = Some(placement.occupied_bottom);
+                Some(placement)
             });
         let unconstrained_host_placement = unconstrained_host_placement
             .or_else(|| {

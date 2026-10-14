@@ -97,6 +97,9 @@ pub fn intrinsic_size_hwp(script: &str, font_size: u32) -> (u32, u32) {
 /// 수학 글꼴 HYhwpEQ에는 한글 cmap이 없으므로 한글은 본문 대체 글꼴로 그린다.
 /// 일반 수식의 저장 프레임과 보호된 크기는 유지한다. 독립 한컴 출력에서
 /// 확인한 글자 줄·윗줄·단일 위첨자·BOX의 낡은 캐시만 논리 상자로 재발행한다.
+/// 보호된 크기와 한글 대체가 없는 수식은 저장 상자 계약을 유지한다.
+/// legacy HFT 글리프 메트릭 선택 자체는 이 물리 상자의 재조판 증거가 아니다.
+/// 대체 경로는 폭·높이·기준선을 같은 AST에서 얻어 측정과 paint가 함께 소비한다.
 pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
     if declared_frame::retains_unpositioned_host_frame(equation) {
         return (
@@ -122,11 +125,10 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
     }
     if !equation.common.size_protect
         && equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
-        && (uses_legacy_hft_metrics(equation)
-            || equation
-                .script
-                .chars()
-                .any(|ch| matches!(ch, '\u{AC00}'..='\u{D7A3}')))
+        && equation
+            .script
+            .chars()
+            .any(|ch| matches!(ch, '\u{AC00}'..='\u{D7A3}'))
     {
         let ast =
             parser::EqParser::for_document(document_script::tokenize(&equation.script)).parse();

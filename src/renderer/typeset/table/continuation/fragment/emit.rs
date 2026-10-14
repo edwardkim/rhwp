@@ -2319,7 +2319,13 @@ impl TypesetEngine {
             ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
                 && layout_engine.reflow_row_physical_minimum(table, end_row.saturating_sub(1), mt.row_heights[end_row.saturating_sub(1)], Some(&next_cut), styles).is_none()
                 && (!layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1))
-                    || crossing_span_owns_tail))
+                    || crossing_span_owns_tail)
+                // 원본 순수 글줄의 최소 상자는 위 저장 행 Query가 별도로
+                // 인증한다. 그 경로가 높이를 주지 않으면 전체 측정 전진량을
+                // 물리 최소로 바꿔 다음 쪽에 빈 공간을 이월하지 않는다.
+                && !(!start_cut_is_block && split_block_start.is_none()
+                    && layout_engine.row_has_original_plain_text_owners(
+                        table, end_row.saturating_sub(1), &next_cut)))
             .and_then(|limit| {
             let row = end_row.checked_sub(1)?;
             // 같은 일반 행을 다시 나누는 경우 앞 조각까지 차감한 물리 상자에서

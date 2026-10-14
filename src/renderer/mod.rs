@@ -1765,6 +1765,18 @@ pub(crate) fn cell_first_para_stored_lead(
     spacing_before_px.min(vpos)
 }
 
+/// 셀 안의 단일 단 정의는 글자·개체를 그리거나 세로 흐름을 전진하지 않는다.
+/// 원본 HWP는 텍스트 셀 문단에도 이 메타데이터를 보존할 수 있다.
+/// 여러 단 정의와 실제 개체 컨트롤은 일반 plain 글줄로 재분류하지 않는다.
+pub(crate) fn cell_paragraph_has_only_single_column_metadata(
+    para: &crate::model::paragraph::Paragraph,
+) -> bool {
+    para.controls.iter().all(|control| {
+        matches!(control, crate::model::control::Control::ColumnDef(columns)
+            if columns.column_count == 1)
+    })
+}
+
 /// Stored cell starts already express their lead in the saved frame. Reflow
 /// starts have no such frame and own the paragraph's declared before-space.
 /// Later paragraphs own that space in both paths.

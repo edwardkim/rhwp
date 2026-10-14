@@ -93,7 +93,17 @@ impl LayoutEngine {
                 let physical = row_heights[first..row].iter().sum::<f64>()
                     + spacing * (row - first) as f64
                     + remaining;
+                // 여기서 끝나는 병합 칸에는 뒤 행이 물리 잔여를 받을 수 없다.
+                // 글자가 모두 들어갔어도 저장 최소 상자의 빈 띠가 남았다면
+                // 같은 행의 부분 컷으로 이어받아야 한다. 계속되는 병합 칸은
+                // 이후 종료 행의 원장이 그 최소 높이를 소유한다.
+                let closes_short_physical_frame = cell.row_span > 1
+                    && first + usize::from(cell.row_span) == row + 1
+                    && cell.height <= i32::MAX as u32
+                    && hwpunit_to_px(cell.height as i32, self.dpi)
+                        > physical + ROW_CUT_CAPACITY_FP_EPSILON_PX;
                 !units.is_empty()
+                    && !closes_short_physical_frame
                     && !units
                         .iter()
                         .any(|unit| unit.hard_break_before || unit.page_frame_reset_before)
