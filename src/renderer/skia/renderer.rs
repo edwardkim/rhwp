@@ -3352,6 +3352,140 @@ mod tests {
         assert_eq!(pixel[3], 255);
     }
 
+    // 합성 스타일 fixture: 기존 OFL 글꼴의 윤곽/advance는 그대로 두고
+    // 선언 weight·style만 Bold로 바꾼다. 원하는 style의 프로그램 선택을 검증한다.
+    fn synthetic_bold_font(mut bytes: Vec<u8>) -> Vec<u8> {
+        fn u16_at(b: &[u8], p: usize) -> u16 {
+            u16::from_be_bytes(b[p..p + 2].try_into().unwrap())
+        }
+        fn u32_at(b: &[u8], p: usize) -> u32 {
+            u32::from_be_bytes(b[p..p + 4].try_into().unwrap())
+        }
+        let count = usize::from(u16_at(&bytes, 4));
+        let records: Vec<_> = (0..count)
+            .map(|i| {
+                let r = 12 + i * 16;
+                (
+                    r,
+                    bytes[r..r + 4].to_vec(),
+                    u32_at(&bytes, r + 8) as usize,
+                    u32_at(&bytes, r + 12) as usize,
+                )
+            })
+            .collect();
+        let head = records.iter().find(|r| r.1 == b"head").unwrap().2;
+        let os2 = records.iter().find(|r| r.1 == b"OS/2").unwrap().2;
+        bytes[os2 + 4..os2 + 6].copy_from_slice(&700u16.to_be_bytes());
+        let selection = (u16_at(&bytes, os2 + 62) & !0x40) | 0x20;
+        bytes[os2 + 62..os2 + 64].copy_from_slice(&selection.to_be_bytes());
+        let mac_style = u16_at(&bytes, head + 44) | 1;
+        bytes[head + 44..head + 46].copy_from_slice(&mac_style.to_be_bytes());
+        let name = records.iter().find(|r| r.1 == b"name").unwrap().2;
+        let pool = name + usize::from(u16_at(&bytes, name + 4));
+        let names = usize::from(u16_at(&bytes, name + 2));
+        for i in 0..names {
+            let r = name + 6 + i * 12;
+            if ![2, 4, 6, 17].contains(&u16_at(&bytes, r + 6)) {
+                continue;
+            }
+            let start = pool + usize::from(u16_at(&bytes, r + 10));
+            let len = usize::from(u16_at(&bytes, r + 8));
+            let unicode = [0, 3].contains(&u16_at(&bytes, r));
+            let text = if unicode {
+                String::from_utf16(
+                    &bytes[start..start + len]
+                        .chunks_exact(2)
+                        .map(|x| u16::from_be_bytes([x[0], x[1]]))
+                        .collect::<Vec<_>>(),
+                )
+                .unwrap()
+            } else {
+                String::from_utf8_lossy(&bytes[start..start + len]).into_owned()
+            };
+            if !text.contains("Regular") {
+                continue;
+            }
+            let replacement = text.replace("Regular", "Bold");
+            let replacement: Vec<u8> = if unicode {
+                replacement
+                    .encode_utf16()
+                    .flat_map(u16::to_be_bytes)
+                    .collect()
+            } else {
+                replacement.into_bytes()
+            };
+            assert!(replacement.len() <= len);
+            bytes[start..start + replacement.len()].copy_from_slice(&replacement);
+            bytes[r + 8..r + 10].copy_from_slice(&(replacement.len() as u16).to_be_bytes());
+        }
+        bytes[head + 8..head + 12].fill(0);
+        let checksum = |data: &[u8]| {
+            data.chunks(4).fold(0u32, |sum, c| {
+                let mut word = [0u8; 4];
+                word[..c.len()].copy_from_slice(c);
+                sum.wrapping_add(u32::from_be_bytes(word))
+            })
+        };
+        for (r, _, off, len) in records {
+            let sum = checksum(&bytes[off..off + len]);
+            bytes[r + 4..r + 8].copy_from_slice(&sum.to_be_bytes());
+        }
+        let adjustment = 0xB1B0_AFBAu32.wrapping_sub(checksum(&bytes));
+        bytes[head + 8..head + 12].copy_from_slice(&adjustment.to_be_bytes());
+        bytes
+    }
+
+    #[test]
+    fn custom_font_paths_select_the_requested_style_after_bold_is_loaded_first() {
+        let regular = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("ttfs/opensource/NotoSansKR-Regular.ttf"),
+        )
+        .unwrap();
+        let bold = synthetic_bold_font(regular.clone());
+        let root = std::env::temp_dir().join(format!(
+            "rhwp-native-font-style-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let bold_dir = root.join("bold-first");
+        let regular_dir = root.join("regular-second");
+        std::fs::create_dir_all(&bold_dir).unwrap();
+        std::fs::create_dir_all(&regular_dir).unwrap();
+        std::fs::write(bold_dir.join("bold.ttf"), &bold).unwrap();
+        std::fs::write(regular_dir.join("regular.ttf"), regular).unwrap();
+        let renderer = SkiaLayerRenderer::new().with_font_paths(&[bold_dir, regular_dir]);
+        let declared_bold = renderer
+            .font_mgr
+            .new_from_data(skia_safe::Data::new_copy(&bold), None)
+            .unwrap();
+        assert_eq!(
+            *declared_bold.font_style().weight(),
+            700,
+            "합성 입력은 실제 Bold 선언을 갖는다"
+        );
+        for wanted in [FontStyle::normal(), FontStyle::bold()] {
+            let (_, chain) = crate::renderer::skia::font_lookup::text_typeface_candidates(
+                &renderer.font_mgr,
+                &renderer.system_families,
+                &renderer.custom_typefaces,
+                &renderer.bundled_typefaces,
+                "Noto Sans KR",
+                wanted,
+            );
+            assert_eq!(
+                *chain[0].typeface.font_style().weight(),
+                *wanted.weight(),
+                "파일 순서로 요청 굵기를 바꾸지 않는다"
+            );
+            assert_eq!(chain[0].source, "custom");
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn renders_arc_path_segments_as_ink() {
         let path = PathNode::new(

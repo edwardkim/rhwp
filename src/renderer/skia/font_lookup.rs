@@ -277,8 +277,6 @@ fn recover_installed_system_typeface(
     family: &str,
     style: FontStyle,
 ) -> Option<Typeface> {
-    use usvg::fontdb::{Family, Query, Stretch, Style, Weight};
-
     SYSTEM_PROGRAM_DATABASE.with(|database| {
         let mut database = database.borrow_mut();
         let database = database.get_or_insert_with(|| {
@@ -290,36 +288,47 @@ fn recover_installed_system_typeface(
             }
             database
         });
-        let families = [Family::Name(family)];
-        let stretch = match *style.width() {
-            1 => Stretch::UltraCondensed,
-            2 => Stretch::ExtraCondensed,
-            3 => Stretch::Condensed,
-            4 => Stretch::SemiCondensed,
-            6 => Stretch::SemiExpanded,
-            7 => Stretch::Expanded,
-            8 => Stretch::ExtraExpanded,
-            9 => Stretch::UltraExpanded,
-            _ => Stretch::Normal,
-        };
-        let font_style = match style.slant() {
-            skia_safe::font_style::Slant::Italic => Style::Italic,
-            skia_safe::font_style::Slant::Oblique => Style::Oblique,
-            _ => Style::Normal,
-        };
-        let id = database.query(&Query {
-            families: &families,
-            weight: Weight((*style.weight()).clamp(1, 1000) as u16),
-            stretch,
-            style: font_style,
-        })?;
-        database
-            .with_face_data(id, |bytes, index| {
-                font_mgr.new_from_data(skia_safe::Data::new_copy(bytes), Some(index))
-            })
-            .flatten()
-            .filter(|typeface| !is_placeholder_typeface(typeface))
+        query_database_typeface(database, font_mgr, family, style)
     })
+}
+
+/// custom·bundled·설치 프로그램 복구가 같은 CSS 스타일 선택을 사용한다.
+fn query_database_typeface(
+    database: &usvg::fontdb::Database,
+    font_mgr: &FontMgr,
+    family: &str,
+    style: FontStyle,
+) -> Option<Typeface> {
+    use usvg::fontdb::{Family, Query, Stretch, Style, Weight};
+    let families = [Family::Name(family)];
+    let stretch = match *style.width() {
+        1 => Stretch::UltraCondensed,
+        2 => Stretch::ExtraCondensed,
+        3 => Stretch::Condensed,
+        4 => Stretch::SemiCondensed,
+        6 => Stretch::SemiExpanded,
+        7 => Stretch::Expanded,
+        8 => Stretch::ExtraExpanded,
+        9 => Stretch::UltraExpanded,
+        _ => Stretch::Normal,
+    };
+    let font_style = match style.slant() {
+        skia_safe::font_style::Slant::Italic => Style::Italic,
+        skia_safe::font_style::Slant::Oblique => Style::Oblique,
+        _ => Style::Normal,
+    };
+    let id = database.query(&Query {
+        families: &families,
+        weight: Weight((*style.weight()).clamp(1, 1000) as u16),
+        stretch,
+        style: font_style,
+    })?;
+    database
+        .with_face_data(id, |bytes, index| {
+            font_mgr.new_from_data(skia_safe::Data::new_copy(bytes), Some(index))
+        })
+        .flatten()
+        .filter(|typeface| !is_placeholder_typeface(typeface))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
