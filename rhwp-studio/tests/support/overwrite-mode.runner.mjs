@@ -97,6 +97,7 @@ function makeWasm({ body = '', cell = '', objects = [], ranges = [], cellRanges 
   return {
     doc,
     fragments,
+    getParagraphLength: () => [...doc.body].length,
     getTextRange: (_s, _p, off, n) => [...doc.body].slice(off, off + n).join(''),
     getTextInCell: (_s, _pp, _ci, _cei, _cpi, off, n) => [...doc.cell].slice(off, off + n).join(''),
     insertText: (_s, _p, off, t) => editBody(off, 0, [...t]),

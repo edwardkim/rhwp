@@ -739,7 +739,15 @@ export class InsertTextCommand implements EditCommand {
     }
     // [#2337-review] 삭제 count 는 char(Unicode scalar) 단위다. UTF-16 length 를 넘기면
     // astral 문자에서 실제보다 많이 지워 인접 문자를 잃는다 → HF/FN 과 동일하게 charCount.
-    doDeleteTextImmediate(wasm, this.position, charCount(this.text));
+    // 문단 끝의 개체 뒤 입력은 텍스트 끝에 들어가므로 실제 삽입 시작에서 지운다.
+    const position = isCell(this.position) ? this.position : {
+      ...this.position,
+      charOffset: Math.min(
+        this.position.charOffset,
+        wasm.getParagraphLength(this.position.sectionIndex, this.position.paragraphIndex) - charCount(this.text),
+      ),
+    };
+    doDeleteTextImmediate(wasm, position, charCount(this.text));
     if (this.replacedText) doInsertTextImmediate(wasm, this.position, this.replacedText);
     return { ...this.position };
   }
