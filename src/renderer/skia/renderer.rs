@@ -3321,6 +3321,38 @@ mod tests {
     }
 
     #[test]
+    fn renders_complete_svg_image_larger_than_a_raw_fragment() {
+        // WMF/EPS의 완결 그림은 내장 래스터 때문에 조각보다 크다.
+        // 큰 입력도 실제 그림을 그려야 하며 회색 decode fallback이면 실패한다.
+        let svg = format!(
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\"><!--{}--><rect width=\"8\" height=\"8\" fill=\"#ff0000\"/></svg>",
+            " ".repeat(4 * 1024 * 1024),
+        );
+        let tree = PageLayerTree::new(
+            8.0,
+            8.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                None,
+                vec![PaintOp::image(
+                    BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                    ImageNode::new(1, Some(svg.into_bytes())),
+                    None,
+                )],
+            ),
+        );
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render complete SVG image");
+        let image = decode_rgba(&output.bytes);
+        let pixel = *image.get_pixel(4, 4);
+        assert_channel(pixel, 0, 250, 255);
+        assert_channel(pixel, 1, 0, 5);
+        assert_channel(pixel, 2, 0, 5);
+        assert_eq!(pixel[3], 255);
+    }
+
+    #[test]
     fn renders_arc_path_segments_as_ink() {
         let path = PathNode::new(
             vec![
