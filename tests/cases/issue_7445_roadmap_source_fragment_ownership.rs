@@ -109,3 +109,64 @@ fn agency_table_keeps_germany_on_the_second_fragment_and_preserves_its_source() 
         "표 끝 → 주석 → 출처 순서"
     );
 }
+
+#[test]
+fn closing_note_fragment_preserves_its_stored_frame_and_first_line_origin() {
+    // 독립 Print 295쪽은 같은 문단의 원점0 재시작부터 마지막 출처 줄까지
+    // 한 프레임이다. 작은 cellSz는 최소 안 여백만 소유하며 전체 줄 전진량의
+    // 잔여를 물리 최소로 넘겨 본문을 가운데로 밀어서는 안 된다.
+    let core = core();
+    let Control::Table(source) = &core.document().sections[SECTION].paragraphs[1304].controls[0]
+    else {
+        panic!("독립 PDF의 임시근로 주석 표");
+    };
+    let original = source.cells.iter().find(|cell| cell.row == 33).unwrap();
+    let padding = original.effective_padding(&source.padding);
+    assert!(i64::from(original.height) <= i64::from(padding.top) + i64::from(padding.bottom));
+    let restart = original
+        .paragraphs
+        .iter()
+        .flat_map(|para| para.line_segs.windows(2))
+        .find(|pair| pair[0].vertical_pos > 0 && pair[1].vertical_pos == 0)
+        .map(|pair| &pair[1])
+        .expect("같은 문단에 원본 재시작이 있습니다");
+    let last = original
+        .paragraphs
+        .last()
+        .unwrap()
+        .line_segs
+        .last()
+        .unwrap();
+    let source_extent = f64::from(
+        last.vertical_pos + last.line_height - restart.vertical_pos
+            + i32::from(padding.top)
+            + i32::from(padding.bottom),
+    ) * rhwp::renderer::DEFAULT_DPI
+        / 7200.0;
+    let tree = core.build_page_render_tree(294).expect("독립 PDF 295쪽");
+    let table = table_for_host(&tree.root, 1304).unwrap();
+    let cell = table
+        .children
+        .iter()
+        .find(|node| matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.row == 33))
+        .unwrap();
+    assert!(
+        (cell.bbox.height - source_extent).abs() < 0.2,
+        "마지막 저장 줄·안 여백의 프레임 {source_extent} 대신 {}를 소유했습니다",
+        cell.bbox.height,
+    );
+    fn first_line(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::TextLine(_)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(first_line)
+    }
+    let first = first_line(cell).expect("재시작의 첫 본문 줄");
+    let source_top = cell.bbox.y + f64::from(padding.top) * rhwp::renderer::DEFAULT_DPI / 7200.0;
+    assert!(
+        (first.bbox.y - source_top).abs() < 0.2,
+        "수용된 다음 줄 원점과 첫 글줄이 갈라졌습니다: {} / {source_top}",
+        first.bbox.y,
+    );
+    assert!(text(cell).contains("출처: OECD(2014), Table 4.2"));
+}
