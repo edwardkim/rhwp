@@ -2006,8 +2006,8 @@ export class InputHandler {
   // ─── 클립보드 이벤트 처리 ─────────────────────────────
 
   /** 복사 이벤트 처리 */
-  private onCopy(e: ClipboardEvent): void {
-    _keyboard.onCopy.call(this, e);
+  private onCopy(e: ClipboardEvent): boolean {
+    return _keyboard.onCopy.call(this, e);
   }
 
   /** 잘라내기 이벤트 처리 */

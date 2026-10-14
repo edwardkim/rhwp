@@ -1796,6 +1796,7 @@ function copyHeaderFooterSelection(this: any, e: ClipboardEvent): boolean {
   const selection = this.getNonEmptyHeaderFooterSelection();
   if (!selection) return false;
   e.preventDefault();
+  if (!e.clipboardData) return false;
   try {
     const result = this.wasm.copySelectionInHeaderFooter(
       selection.start.sectionIdx,
@@ -1806,14 +1807,12 @@ function copyHeaderFooterSelection(this: any, e: ClipboardEvent): boolean {
       selection.end.paraIdx,
       selection.end.charOffset,
     );
-    if (!result.ok) return false;
-    if (e.clipboardData) {
-      e.clipboardData.setData('text/plain', result.text);
-      e.clipboardData.setData(
-        'text/html',
-        prepareRhwpInternalClipboardHtml(this, '', result.text),
-      );
-    }
+    if (result.ok !== true) return false;
+    e.clipboardData.setData('text/plain', result.text);
+    e.clipboardData.setData(
+      'text/html',
+      prepareRhwpInternalClipboardHtml(this, '', result.text),
+    );
     return true;
   } catch (err) {
     console.warn('[InputHandler] HF 선택 복사 실패:', err);
@@ -1821,12 +1820,11 @@ function copyHeaderFooterSelection(this: any, e: ClipboardEvent): boolean {
   }
 }
 
-export function onCopy(this: any, e: ClipboardEvent): void {
-  if (!this.active) return;
+export function onCopy(this: any, e: ClipboardEvent): boolean {
+  if (!this.active) return false;
 
   if (this.cursor.isInHeaderFooter() && this.getNonEmptyHeaderFooterSelection()) {
-    copyHeaderFooterSelection.call(this, e);
-    return;
+    return copyHeaderFooterSelection.call(this, e);
   }
 
   // 개체(글상자/그림) 선택 모드 → 개체 복사
@@ -1834,62 +1832,66 @@ export function onCopy(this: any, e: ClipboardEvent): void {
     const ref = this.cursor.getSelectedPictureRef();
     if (ref) {
       e.preventDefault();
+      if (!e.clipboardData) return false;
       try {
         const cellPathJson = pictureCellPathJson(ref);
-        this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
+        const result = this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
+        if (JSON.parse(result).ok !== true) return false;
         const text = this.wasm.getClipboardText() || '[그림]';
         let html = '';
         try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci, cellPathJson) || ''; } catch { /* HTML 내보내기 실패는 fallback */ }
         const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
-        if (e.clipboardData) {
-          if (text) e.clipboardData.setData('text/plain', text);
-          e.clipboardData.setData('text/html', markedHtml);
-        }
+        e.clipboardData.setData('text/plain', text);
+        e.clipboardData.setData('text/html', markedHtml);
         // 이미지 컨트롤이면 image/png Blob 포함 클립보드 기록
         if (ref.type === 'image') {
           writeImageToClipboard(this.wasm, ref.sec, ref.ppi, ref.ci, text, markedHtml, cellPathJson)
             .catch(() => {});
         }
+        return true;
       } catch (err) {
         console.warn('[InputHandler] 개체 복사 실패:', err);
       }
     }
-    return;
+    return false;
   }
 
-  if (!this.cursor.hasSelection()) return;
+  if (!this.cursor.hasSelection()) return false;
   e.preventDefault();
+  if (!e.clipboardData) return false;
 
   const sel = this.cursor.getSelectionOrdered();
-  if (!sel) return;
+  if (!sel) return false;
   const { start, end } = sel;
 
   try {
     // WASM 내부 클립보드에 복사 (서식 보존)
+    let result: string;
     if (isNestedCellPosition(start)) {
-      this.wasm.copySelectionInCellByPath(
+      result = this.wasm.copySelectionInCellByPath(
         start.sectionIndex, start.parentParaIndex!, JSON.stringify(start.cellPath),
         cellParaIndexOf(start), start.charOffset,
         cellParaIndexOf(end), end.charOffset,
       );
     } else if (start.parentParaIndex !== undefined) {
-      this.wasm.copySelectionInCell(
+      result = this.wasm.copySelectionInCell(
         start.sectionIndex, start.parentParaIndex, start.controlIndex!, start.cellIndex!,
         start.cellParaIndex!, start.charOffset,
         end.cellParaIndex!, end.charOffset,
       );
     } else {
-      this.wasm.copySelection(
+      result = this.wasm.copySelection(
         start.sectionIndex,
         start.paragraphIndex, start.charOffset,
         end.paragraphIndex, end.charOffset,
       );
     }
+    if (JSON.parse(result).ok !== true) return false;
 
     // 시스템 클립보드에 플레인 텍스트 + HTML 설정
     const text = this.wasm.getClipboardText();
     if (e.clipboardData) {
-      if (text) e.clipboardData.setData('text/plain', text);
+      e.clipboardData.setData('text/plain', text);
       // HTML 내보내기 (표/서식 보존)
       let html = '';
       try {
@@ -1916,8 +1918,10 @@ export function onCopy(this: any, e: ClipboardEvent): void {
       const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
       e.clipboardData.setData('text/html', markedHtml);
     }
+    return true;
   } catch (err) {
     console.warn('[InputHandler] 복사 실패:', err);
+    return false;
   }
 }
 
@@ -1937,7 +1941,7 @@ export function onCut(this: any, e: ClipboardEvent): void {
   if (this.cursor.isInPictureObjectSelection()) {
     const ref = this.cursor.getSelectedPictureRef();
     if (ref) {
-      this.onCopy(e); // 클립보드에 복사
+      if (!this.onCopy(e)) return;
       this.cursor.moveOutOfSelectedPicture();
       this.pictureObjectRenderer?.clear();
       this.eventBus.emit('picture-object-selection-changed', false);
@@ -1950,10 +1954,8 @@ export function onCut(this: any, e: ClipboardEvent): void {
   }
 
   if (!this.cursor.hasSelection()) return;
-  // 먼저 복사
-  this.onCopy(e);
-  // 선택 영역 삭제
-  this.deleteSelection();
+  // 복사 실패로 원문을 잃지 않도록 이번 클립보드 기록이 끝난 뒤에만 지운다.
+  if (this.onCopy(e)) this.deleteSelection();
 }
 
 
