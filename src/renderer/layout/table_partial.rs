@@ -1404,20 +1404,15 @@ impl LayoutEngine {
                 && self
                     .saved_nested_single_cell_frame_height(table, start_cut, end_cut, styles)
                     .is_some();
-            let plain_cut_frame_owns_alignment = end_row_source_frame_candidate
+            // 재귀 자식의 셀 상자는 명시적 override가 없어도 선택 컷 높이를 쓴다.
+            // 원본 재시작에서 끝난 조각은 그 실제 상자 안에 선택 줄만 정렬한다.
+            let plain_cut_frame_owns_alignment = is_split_end_row
+                && !is_block_split
+                && !start_cut_is_block
+                && (cell_row != start_row || start_cut.iter().all(|cut| *cut == 0))
                 && self
-                    .stored_plain_cut_frame_minimum(
-                        table,
-                        cell_row,
-                        if cell_row == start_row {
-                            start_cut
-                        } else {
-                            &[]
-                        },
-                        end_cut,
-                        styles,
-                    )
-                    .is_some();
+                    .row_plain_restart_capacity_cut(table, cell_row, styles)
+                    .is_some_and(|cut| cut == end_cut);
             let cut_frame_owns_alignment = is_continuation
                 && start_row_height_override.is_some()
                 && cell_row == start_row
@@ -1587,26 +1582,7 @@ impl LayoutEngine {
                         );
                         start > 0 && end >= self.cell_units(cell, table, styles).len()
                     });
-            let original_in_paragraph_flow = is_in_split_row && {
-                let (start, end) = cell_cut_window(
-                    table,
-                    cell,
-                    start_cut_is_block,
-                    is_block_split,
-                    is_split_start_row,
-                    split_start_block,
-                    is_split_end_row,
-                    split_end_block,
-                    start_cut,
-                    end_cut,
-                    None,
-                    start_row,
-                    end_row.saturating_sub(1),
-                );
-                self.original_in_paragraph_cut_owns_flow(table, cell, start, end, styles)
-            };
             let frame_owns_alignment = !descendant_owns_closing_band
-                && !original_in_paragraph_flow
                 && (ordinary_source_frame_owns_alignment
                     || closing_source_frame_owns_alignment
                     || complete_plain_suffix_frame
@@ -2060,7 +2036,7 @@ impl LayoutEngine {
             });
             let cell_content_cut_by_slice = has_multicol_nested
                 && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
-            let effective_align = if descendant_owns_closing_band || original_in_paragraph_flow {
+            let effective_align = if descendant_owns_closing_band {
                 VerticalAlign::Top
             } else if frame_owns_alignment {
                 // 앞 조각의 빈 공간을 보존한 물리 상자는 이 조각 내용으로 정렬한다.

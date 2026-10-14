@@ -6,7 +6,8 @@ Issue: #7902. 이미 merge된 PR #7877의 원본 19문서·835쪽 범위를 유�
 ## 기준과 승인된 진행
 
 - 브랜치: `fix/pr7877-render-regressions-20261014`.
-- 기준 `upstream/devel`: `c0d330737fabae77ca2bf1706cba8514d0e8f1df`.
+- 현재 기준 `upstream/devel`: `a5e88ad682c805e1d845502ddc9521b94ea8eccd`.
+  아래 c0 측정은 리베이스 이전의 고정 기준 기록이다.
 - 공용 Cargo target: `/home/tsjang/rhwp/target/pr-review`, jobs8, Cargo 순차 실행.
 - 사용자 승인 범위: 원본 출력 보정, Native/fresh WASM 전쪽 대조, 회귀 보강 및 필수 검증.
   먼저 영향 경계를 확인하고 최종 소스에서 전체 범위를 검증한다. 기존 값·허용치를 완화하지 않는다.
@@ -226,3 +227,323 @@ producer와 소스 patch/hash는 `source-flow-and-outer-frame-dev-proof.json`, �
 `source-flow-and-outer-frame-dev-native-result.json` 및
 `nested-outer-frame-dev-native-result.json`에 보존했다. 사용자 요청으로 현재 변경을
 중간 커밋한 뒤 upstream 변경 여부를 확인하고 필요한 리베이스 및 보정을 이어간다.
+
+## upstream 동기화와 원본 정렬 계약 재검토
+
+사용자 요청으로 중간 소스·증거를 `b6d6820e5`에 커밋한 뒤 upstream을 fetch했다.
+기준이c0에서 `a5e88ad68`로 변경되어 충돌 없이 리베이스했으며, 후보 커밋은
+`870ca3e29347b053bed25bc27382e1099839ec4d`다. 새 기준에는 #7907 TTC SFNT 보존과
+#7908 줄 구성 변경이 포함된다. 이후 비교는 새 기준의 producer/TSV로 갱신한다.
+진단용 runner도 실행 시 `--base-ref`를 SHA로 고정하게 했고 과거 결과를 덮어쓰지 않는다.
+
+리베이스 후 Native dev 빌드는2분14초에 성공했다. overfill43–46쪽 점수는 위의
+source-flow 후보와 각각 동일했다. 44쪽의 추가 직접 판독에서 글줄 원점과 함께
+하단 외곽도 약10px 늘어난 것을 확인했다. 따라서 원본 CENTER를 TOP으로 대체한
+앞 후보의 가정을 제거하고 예약 높이 생산자를 재검토한다.
+
+원본 row24/col6 마지막 앞쪽 줄은40960HU, 줄높이1000HU, 뒤 간격600HU이며
+셀 상하 여백은566HU다. 합43126HU는 선언 셀높이43992HU와 일치하지 않는다.
+`stored_plain_restart_cut(..., false)`는 이러한 재시작에서 **내용 컷**만 허용한다.
+`stored_plain_cut_frame_minimum`이 그 판정으로 선언 셀의 빈 띠까지 예약한 것이
+상위 `stored_child_cut_frame_extra` → 조각 flow/row override → 실제 셀 높이를 늘렸다.
+
+빈 띠는 기존 원본 상자 닫힘 판정(`source_owned=true`)이 인증한 경우에만 예약하고,
+선택한 실제 셀 상자의 원본 세로 정렬은 내용 컷의 계약으로 유지하도록 분리한다.
+원점 clamp·쪽 번호 분기·허용치 변경을 추가하지 않는다. 이 후속 후보의 결과는
+아직 미검증이며 dev 빌드와 영향 쪽 직접 비교를 먼저 진행한다.
+
+첫 후속 후보 Native에서 row24/col6의 실제 셀 높이는586.5→575.0px로 바뀌었고,
+44쪽 점수는85.14566→87.97724%였다. 나머지 선택43·45·46쪽은 각각 동일했다.
+명시적 `end_row_height_override`가 없는 재귀 자식도 선택 컷 높이로 실제 상자를
+만들지만, 정렬 소유의 조건은 override만 요구해 원본 CENTER를 소비하지 않았다.
+실제 종료 컷에서 원본 재시작과 일치하는지로 판정하도록 연결했다. 뒤 꼬리 내용을
+정렬 높이에 포함하지 않고 선택된 글줄만 소비한다. 이 최종 연결은 검증 대기다.
+
+리베이스 후 도구 계약 검사: Python PNG·workflow24개 PASS, HTTP 공급4개 PASS,
+실제 브라우저 glyph1개 PASS(영문 공백/한글 family 모두). 이는 도구 계약 결과이며
+19문서835쪽 렌더링 완료 증거가 아니다. 새 기준 Native/fresh WASM producer를
+만들기 위한 읽기 전용 detached sparse worktree는 `output/.../base-a5-source`다.
+Cargo 대상은 기존 `/home/tsjang/rhwp/target/pr-review`를 순차 재사용한다.
+
+## 최종 CI와 기록 PR 경로 — 사용자 지정
+
+모든 필수 회귀·lint·Native/fresh WASM 전쪽 검증 및 직접 판독 완료 후, PR 생성 직전에
+upstream/devel을 다시 fetch해 검증 기준 HEAD를 대조한다. 사용자는 HEAD가 변경된
+경우에만 현재 변경을 커밋하고 리베이스한 뒤 새 통합 소스에서 재검증하도록 지정했다.
+그 검증까지 완료한 뒤 코드 PR을 생성하고 실제 code head CI를 모니터링한다.
+사용자는2026-10-15에 PR review·오늘할일을
+옵션2의 **별도 문서 PR**로 처리하도록 지정했다. 코드 PR에 trailing 기록 커밋을
+추가하지 않는다. 코드 PR 통합 후 최신 devel을 기준으로 새 브랜치를 만들어 기록만
+담는 PR을 생성하고 review-only required checks를 실제 확인해 통합·후속 처리한다.
+검증 완료 전 PR 준비 완료·승인·이슈 해결로 보고하지 않는다.
+
+## 48쪽 Native 통과와 마지막 줄간격의 독립 판독
+
+`source-cut-alignment-dev` Native 전쪽은48/Print48쪽, 누락·90% 미달0쪽,
+최저43쪽90.86416%였다.44쪽99.92289%,45쪽99.95610%,46쪽99.97079%다.
+원시 TSV·manifest는 해당 phase에, immutable producer/hash/patch는
+`source-cut-alignment-dev-proof.json`에 있다.43–46쪽 review PNG는 같은 전쪽
+실행의 PNG를 canonical 합성 함수로 재사용해 `source-cut-alignment-reviews-native`에
+만들었다. export를 다시 실행하거나 SVG를 생성하지 않았다.
+
+44쪽 PCB 조건의 시작·줄 간격·중앙 정렬·하단 괘선이 독립 PDF와 대응한다.
+43쪽은 앞 후보93.05352%보다 낮아졌으며 직접 판독에서 끝 행의 비고 셀 글줄이
+4px 내려간 것을 확인했다.90% 통과로 면제하지 않고 후속 원인을 보정한다.
+원본 row21/col8의 앞쪽 마지막 잉크 끝은11200+1000HU, 상하 여백566HU다.
+합12766HU는 선언 셀12476HU보다 크다. 실제 선택 유닛의 잉크 끝도 이 원본과
+일치하지만 예약은 다음 프레임의 전진 간격600HU까지 포함해 셀을178.2px로 늘렸다.
+원본 잉크·여백에 맞게 확장한 상자를 쓰고 종료 줄간격은 제외해야 한다.
+반례인 row24/col6은 같은 잉크·여백 합42526HU가 선언43992HU 안에 있으므로
+이 조건을 적용하지 않는다.44쪽의 이미 확인한 정렬 공간을 없애지 않는다.
+
+이 후속 분기는 원본 재시작·선택 유닛 누적 잉크 일치·선언보다 큰 잉크를 모두 확인해
+마지막 줄간격만 기존 공통 컷 높이 helper에서 제외한다. clamp로 글줄을 옮기거나
+내용을 숨기지 않는다. Native 재빌드·전쪽 확인 및 fresh WASM은 검증 대기다.
+
+공유 target에서 다른 worktree를 빌드한 뒤 main 빌드가0.42초에 완료되면서
+기준과 같은 실행 파일 SHA를 남긴 것도 확인했다. 이 산출물은 후보 증거로 사용하지
+않았다. 소스 내용을 바꾸지 않고 main의 lib/bin 입력 mtime을 갱신해 실제 재컴파일을
+확인했다(3분11초). 기준/후보 producer를 각각 복사하고 파일 SHA가 다른지 확인한
+뒤 위 전쪽 sweep을 실행했다. 공유 target을 삭제·초기화하지 않았다.
+
+마지막 줄간격 보정의 Native 빌드는1분08초에 성공했다. 새 producer
+`source-frame-tail-dev-rhwp`의 overfill 전쪽48/Print48은 미달·누락0쪽이며
+**최저37쪽97.27881%**,43쪽99.00924%,44쪽99.92289%,45쪽99.95610%,
+46쪽99.97079%다. 앞 후보의43쪽 하락을 복구했고44쪽 개선도 유지했다.
+같은 source/patch의19문서 전쪽 Native는 `candidate-a5-frame-tail-dev/native`에서
+계속 진행 중이다. fresh WASM dev 빌드도 실제 재컴파일3분27초에 성공했으며
+같은19문서 전쪽 비교를 시작했다. 완료된 전쪽 결과와 진행 중 범위를 구분한다.
+
+최신a5 기준 Native19문서도 완료됐다.16통과/3미달 또는 쪽수 불일치로,
+rowbreak HWPX15쪽87.45557%, nested HWP104쪽89.87550%, overfill49/Print48이다.
+기준 fresh WASM 전쪽과 후보 양쪽의 완료·비교·직접 판독·관계형 회귀 추가·최종
+Rust 전체 회귀 및 lint는 아직 남아 있다.
+
+후보 Native19문서835쪽도 완료돼 모두90% 이상·쪽수 일치·미달/누락0쪽이다.
+하지만 최신a5와18문서787쪽 Decimal 비교에서는 nested HWPX104쪽이
+99.39010→93.84310%로5.54700%p 하락했다. overfill은 기준49쪽 때문에 비교
+불가로 별도 기록했다.90% 통과만으로 무회귀·PR 준비 완료라고 판정하지 않는다.
+
+추적 결과 이어받기 helper가 위·아래 여백을 모두 더하는 동안, 생산자는 이미
+마지막 유닛의 `terminal_band = om_bot + spacing_after`에 아래 여백을 담고 있었다.
+`nested_table_split_from_cut_units`의 합 → 컷 요구 높이 → `split.flow_height` →
+`para_y`의 소비 경로에서 아래 여백이 중복되어104쪽 후속 그림이512.9→516.7px로
+밀렸다. HWPX의 기존 표 원점83.1px 자체는 바뀌지 않았다. 형식별 예외를 추가하는
+대신 시작 띠에서는 위 여백만 예약하고 종료 띠의 아래 여백 소유는 생산자에 둔다.
+이 후속 수정은 Native/fresh WASM과 같은 기준의 전쪽 비교를 다시 확인한다.
+
+시작 띠의 중복 제거 후 Native104쪽은 HWP/HWPX 모두99.66092%로 올랐다.
+이어 실행한 `candidate-a5-leading-band-dev` Native19문서835쪽도 모두90% 이상·
+쪽수 일치·누락0쪽으로 완료했다. 비교 가능한18문서787쪽의0.01%p 이상 하락은
+0쪽이다. overfill은 여전히 기준 쪽수 불일치로 별도 기록하며 자동 무회귀 통과로
+바꾸지 않는다. 최종 Rust 검증 및 현재 family 후속 후보 검증은 아직 미완료다.
+
+한편 앞 후보 `candidate-a5-frame-tail-dev` fresh WASM19문서835쪽은 모두90% 이상이지만
+기준 대비0.01%p 이상 하락77쪽을 검출했다. 여기에는 위104쪽 여백 결함 외에 본문
+글꼴 변경이 있었다. chemical3쪽의 PDF 본문 face는 휴먼명조이고, base/candidate PNG
+차이는 꼬리말이 아닌 본문 y243..899에 분포했다. 도입한 Bold 별칭 우선 선택이
+실제 설치한 휴먼명조를 HCR Batang으로 교체하고 있었다. SVG의 파일 탐색용 fallback
+후보를 Canvas의 실제 글꼴보다 앞세울 수 있다는 가정을 제거한다.
+
+원래 Canvas family 순서와 동일한 실측/paint 경로로 복원하고 FontFace raw-family
+등록 수정은 유지했다. 불필요해진 Bold 별칭 이동도 되돌렸다. 이 후보의 fresh WASM
+빌드는2분10초 재컴파일로 성공했다. 실제 글꼴 등록을 고치기 전의 관측을 근거로
+본문 family를 교체했던 보정이 필요했는지는 chemical3·29·100쪽에서 먼저 확인한다.
+다른 font 이름 조건을 붙여 대상을 좁히거나 점수 허용치를 완화하지 않는다.
+
+원 family만 사용한 선택 쪽에서는 chemical3쪽98.13497%로 기준을 그대로 재현했지만,
+29쪽85.61151%·100쪽91.02041%여서 전체 해결로 채택하지 않았다. 실제 요청한
+family가 있을 때는 보존하되, 없을 때 실제 Bold 후보를 찾는 fallback은 필요하다.
+별칭을 원 family보다 앞세운 공통 가정을 제거해 **요청 family → Bold 대체 후보 →
+기존 나머지 체인** 순서로 실측·paint를 연결했다. 이름별 예외는 추가하지 않았다.
+
+이 후보의 첫 WASM 빌드는 코드 오류가 아니라 rlib archive의 디스크 부족(error28)으로
+실패했다. 실행 중인 Cargo/Rust와 sweep이 없음을 확인하고 종료된 `font_resources`
+복사본을 SHA-256으로 중복 정리했다. 실제 바이트가 다른1313개 프로그램은
+`normalized-font-programs`에 hardlink로 보존하고,4272개의 임시 경로를 정리해
+할당 공간8.75443GiB를 확보했다. 원본8개 글꼴 경로·TSV·JSON catalog·로그·PNG·
+producer package와 공유 target은 삭제하지 않았다. 이전 catalog의 경로와 보존
+프로그램 SHA/경로 대응은 `deduplicated-font-resources-20261015.jsonl`에 있다.
+공간 확보 후 동일 후보 빌드를 다시 실행하며 이 환경 실패를 회귀 재현으로 세지 않는다.
+
+## 2026-10-15 후속 검증: 글꼴 교체 가정 철회와 정식 회귀 추가
+
+PR 직전에 `upstream/devel` head를 다시 확인한다. 변경됐을 때만 현재 단계를 커밋한 뒤
+rebase하고 새 통합 소스를 재검증한다. 모든 필수 검증이 완료되면 code PR을 생성하고 실제
+CI를 모니터링한다. code PR의 CI 완료·merge 뒤 새 branch에서 **옵션2의 별도 docs-only PR**로
+개별 PR review·오늘할일을 처리하고, 그 PR의 CI·merge·후속 정리까지 진행한다.
+이 단계에는 아직 remote push·PR 생성·승인이 없다.
+
+### 원 face·별칭을 앞서는 Bold 대체는 채택하지 않음
+
+`primary-before-bold-fallback-dev` 선택 쪽은 chemical3쪽98.13485%,29쪽98.05825%,
+100쪽98.00000%였다. 그러나 원 이름 뒤에도 동일 face의 설치 별칭보다 HCR Bold를
+앞세웠으므로 rowbreak HWPX의9개 하락은 그대로였다. 예:2쪽99.71263→99.55553%,
+13쪽94.52919→93.96166%. 단순히 primary 이름 하나만 앞세워도 원 face 보존이 된다는
+가정을 철회했다. `canvas_text_font.rs`, `web_canvas.rs`의 family 체인과 SVG의 별칭
+정의 위치를 a5 기준과 동일하게 복원했고, 잘못 도입한 공통 별칭 모듈을 제거했다.
+FontFace의 실제 family 등록 수정과 real-browser 검사는 유지한다.
+
+원본 두 문서에서 `한양중고딕`은 HFT 선언이었다. 독립 PDF Type3 프로그램의 공통
+Unicode115개 중114개는 실제 CharProc 바이트가 같았다. 글꼴 이름만으로 다른 Bold face를
+선택하는 보정은 이 근거를 대신하지 못한다. 기존 SVG와 같은0.02em 합성 획의 진단용
+브라우저 실험도 수행했다. rowbreak2쪽99.71234%,13쪽94.55224%였지만 chemical29쪽
+80.35714%,100쪽88.78505%여서 채택하지 않았다. 이 실험은 ignored probe에만 있으며
+제품 코드나 최종 시각 통과로 보고하지 않는다.
+
+원 family·별칭 순서를 보존한 현재 소스로 fresh WASM dev/no-opt 빌드를 완료했다
+(실제 컴파일1분19초, wrapper2분15초). producer·source patch·새 검사 SHA는
+`preserved-original-aliases-dev-wasm-proof.json`에 있다. 같은 기준19문서 전쪽 WASM을
+`preserved-original-aliases-dev`로 다시 측정 중이다. 이는 진단 빌드이며 최종 release 검증과
+구분한다. 기존 chemical의 쪽번호 미달 및 nested HWPX104쪽의 기준 대비 미세 하락은
+아직 해결됐다고 판정하지 않는다.
+
+### `tests/cases/issue_7902_original_frame_and_content.rs`
+
+독립 Print와 `candidate-a5-leading-band-dev`의 전쪽 Native/fresh WASM 시각 증거가 있는
+overfill·nested 두 형식에4개 검사를 추가했다. 화면 위치는98% 이상을 확인한43·104쪽에만
+독립 PDF 좌표와±2px를 사용하고, 별도로 원본 내용·소유·순서·포함·가운데 정렬을 검사한다.
+
+| 검사 | 독립 기대값·보호 의미 | 실제 수정 전 | 실제 수정 후 |
+| --- | --- | --- | --- |
+| overfill 내용 컷 | Print48쪽,43→44쪽 `기인/한다.`,44→45쪽 `있/다.`, 두 조각의 합=원본 셀 전체 | 최종 전체 회귀에서 base 대조 추가 예정 | PASS |
+| overfill 닫힌 프레임 | Print43쪽 마지막 괘선1053.886637px±2, 셀21/6·21/8 및 정상 대조24/6의 위/아래 여유 대칭·줄 포함 | `source-cut-alignment-dev-rhwp`: 실제1063.5px로 의도한 assertion FAIL | `continuation-leading-band-dev-rhwp`: PASS |
+| nested HWP104쪽 | Print115쪽,14×2표→그림 순서, 표 위82.949300px·그림 위514.157333px±2 | `source-frame-tail-dev-rhwp`: 그림516.7px로 의도한 assertion FAIL | PASS |
+| nested HWPX104쪽 | 같은 원본 대응과 별도 Print PDF의 동일 배치 계약 | 같은 이전 producer: 그림516.7px로 FAIL | PASS |
+
+같은 정식 Rust 검사 소스를 기존 rlib·serde_json에 연결해 focused test executable로 실행했다.
+수정 후4/4 PASS(116.49초), 수정 전 마지막 줄간격1/1 FAIL(28.31초), 중복 아래 여백2/2
+FAIL(37.64초)이다. source 차이 대신 `CARGO_BIN_EXE_rhwp`로 SHA가 보존된 이전/이후 CLI를
+선택했으며 실패는 빌드·환경 문제가 아닌 위 배치 assertion이다. 이 실행은 Cargo generated
+suite 및 최종 전체 nextest·세 Clippy lane의 완료를 뜻하지 않는다. 로그는 각각
+`frame-content-after.log`, `frame-content-before-trailing-space.log`,
+`frame-content-before-double-bottom.log`다.
+
+104쪽 Native/fresh WASM의 표 끝·후속 문단·그림·그림 뒤 문단을 독립 PDF와 직접 읽었다.
+각 backend에서 HWP/HWPX PNG SHA가 각각 같아 같은 출력임도 확인했다. 현재 review·overlay는
+`nested-current-reviews/{native,wasm}/{hwp,hwpx}/`에 있으며,0기반 overlay API를 잘못 호출해
+처음 패널에105쪽으로 적힌 진단 이미지는104쪽으로 다시 생성했다. 측정·원본 쪽은104쪽이다.
+
+종료된 임시 `font_resources`144개 경로도 같은 SHA의 보존 프로그램으로 중복 정리해
+추가0.42714GiB를 확보했다. 첫 ledger를 덮어쓰지 않았으며 v2 ledger·결과에 분리했다.
+원본 문서/PDF·8개 공급 font 경로·TSV·PNG·producer와 공유 target은 보존했다.
+
+### HFT 자동 번호 기준선과 Native의 공통 글리프 폭 소비
+
+원 face를 바꾸지 않고 chemical29쪽의 자동 번호를 진단했다. 독립 Print의 HFT Type3
+프로그램은 FontBBox `[0 -200 1000 1000]`이며12pt 번호의 실제 원점은
+`(294.359985,797.039978)pt`다.100쪽도 같은 y다. 원본 영문 슬롯은 HFT이고,
+기존 `footer_page_number_y`는 프로그램 종류와 무관하게 크기의1/3을 기준선 여유로 뺐다.
+0.2em 하강 메트릭으로 예상한 기준선은1062.613333px이고 독립 PDF는1062.719971px다.
+TTF 대조군 rowbreak/7336의 HCRDotum 기준선은1061.559896px이며 기존 경로를 유지한다.
+
+원본 정상 저장본의 font type → `ResolvedStyleSet.page_number_font_is_hft` → 자동 번호의
+공통 `footer_page_number_y` → 테두리 유무 분기의 최종 TextRun 기준선으로 연결했다.
+문서 ID·글꼴 이름·쪽 번호로 분기하지 않으며, 대체 family를 원본 HFT 프로그램 종류의
+대용으로 쓰지 않는다. 머리말 번호의 기존 배치와 명시적 저장 LineSeg 경로는 이 변경에
+포함되지 않는다. 일반 꼬리말·테두리 분기는 같은 기준선을 소비한다.
+
+WASM 실측은 chemical3쪽98.13497%로 기준 본문을 유지했고,29·100쪽은 각각100%였다.
+그러나 기준선만 고친 첫 Native는29쪽90.64748%로 낮아졌다. Native가 설치 별칭을
+건너 generic을 선택하고, Canvas의 글리프 폭 맞춤도 소비하지 않는 두 경로를 확인했다.
+Native도 기존 `installed_render_font_aliases`의 원 face 순서로 프로그램을 찾게 했고,
+저장/측정 전진 위치는 유지하면서 `glyph_fit_positions`와 `canvas_cluster_fit_scale`의
+커닝 전 폭 계약을 소비하도록 연결했다. 별칭만 고친 중간 후보는29쪽87.95181%여서
+완료로 채택하지 않았다. 글리프 실측 폭을 바꾸지 않은 채 숫자·구두점을 그대로 그리는
+Native의 가정을 제거한 후 새 Native는3쪽97.72264%,29쪽98.47328%,100쪽99.10314%다.
+전쪽 무회귀를 뜻하지 않으며 새 원본19문서 Native/fresh WASM 측정을 시작했다.
+
+현재 진단 producer는 `source-hft-baseline-aliases-and-fit-dev-rhwp`와
+`source-hft-baseline-dev-wasm`이다. WASM은 HFT 기준선 수정 뒤 실제 재빌드했고 이후
+Skia 전용 변경은 WASM cfg에 들어가지 않는다. 최종 제출용 정확한 code head의 release
+빌드·WASM과 필수 lint/전체 nextest는 별도 완료해야 한다. 현재 전쪽 cohort 이름은
+`candidate-source-hft-and-shared-glyph-dev`다.
+
+원 별칭 복원만 적용한 이전 전쪽 진단은4개 chemical 변형의29쪽85.61151%를 실제 확인한
+뒤 HFT 기준선 수정으로 대체했다. 남은 이전 source의 비교 작업·하위 프로세스만 정확히
+종료했고 결과를 `superseded_by_source_hft_baseline_change`로 보존했다. 전체 완료나
+통과로 바꾸지 않았으며 Cargo·새 source 검증은 종료하지 않았다.
+
+nested HWPX104쪽 WASM은 여전히99.87312%로 기준99.93539%보다0.06227%p 낮다.
+비슷한 점수만으로 해소하지 않는다. 추가 불일치35픽셀 중25픽셀은 y880대의 **그림 뒤
+문단**에 있어 그림 resampling만의 문제로 단정할 수 없다. 진단용 high quality는
+99.87261%, nearest는99.86552%여서 두 후보 모두 제품에 적용하지 않았다. 현재 source의
+표→그림→뒤 문단 흐름과 독립 PDF의 실제 기준선을 더 대조한다.
+
+추가 기존 검사에서도 a5 기준의49쪽/Print48쪽 때문에 원본 내용 컷 검사가 실제 FAIL
+했다(`frame-content-before-original-count.log`,38.05초). 위 표의 수정 전 칸은 이제
+미실행이 아니라 **쪽수 assertion49≠48의 실제 실패**로 보완됐다.
+
+공간 확보도 현재 작업과 분리해 기록했다. 사용 중이 아닌 폐기된 진단 CLI7개만 삭제해
+2.83658GiB를 확보했다. 기준·실제 before/after 회귀용 producer와 모든 proof/TSV/PNG는
+유지했다. 또139개의 완료된 WASM export의 실제 적재 프로그램194개 SHA를 감사해,
+한 번도 적재되지 않은 정규화 중간 프로그램1244개만 제거해3.57598GiB를 확보했다.
+실제로 적재한 프로그램, 원본 공급 글꼴, catalog/ledger·이미지·공유 target은 보존했다.
+기록은 `obsolete-diagnostic-cli-cleanup-20261015.json`,
+`normalized-font-program-use-audit.json`,
+`never-loaded-normalized-font-program-cleanup-20261015.json`에 있다.
+
+
+### 전쪽 대조에서 폐기한 후보와 자동 번호 한정 재검증
+
+`candidate-source-hft-and-shared-glyph-dev`는 두 backend 모두19문서835쪽의90%·쪽수
+조건을 통과했다. 그러나 a5와 비교 가능한18문서787쪽에서 Native191쪽이0.01%p 이상
+하락했다. Native 전체 본문에 설치 별칭과 글리프 폭 맞춤을 적용한 후보는 채택하지 않는다.
+WASM도 nested HWPX104쪽99.93539→99.87312%가 남아 있어 PR 승인 조건을 충족하지 않는다.
+overfill은 base49쪽/Print48쪽이므로 같은 전체 페이지 집합으로 비교 가능하다고 보고하지 않는다.
+
+Native의 본문 face 선택·자연 글리프 폭은 a5 경로로 복원했다. 저장 글줄이 없이 생성되는
+HFT 자동 번호에만 원 face의 설치 별칭과 원본 전진폭을 적용하는 후보를 별도 검증한다.
+첫 제한 후보는 별칭을 누락해 chemical29쪽90.00000%,100쪽93.91304%였다.
+일반 본문까지 다시 바꾸지 않고 생성 번호의 원 face 탐색 누락을 보완한다.
+현재 결과를 최종 제출 head의 전체 검증으로 보고하지 않는다.
+
+### Snap Chromium 프로필 누수 수정·실행 증거
+
+Puppeteer가 host `/tmp`에서 만든 프로필 경로와 Snap Chromium의 private `/tmp`가 달라,
+브라우저가 실제로 쓴 프로필이 종료 뒤 남는 것을 확인했다. 출력 폴더 아래에 실행별 전용
+프로필을 만들고 Chrome 종료 뒤 제거하도록 수정했다. 시작 실패 경로도 실제 exporter CLI에
+존재하지만 Chrome이 아닌 Node 실행 파일을 주입해 검증했다. 원본 문서 파싱은 이 fault
+검사에서 실행하지 않는다. 실제 Canvas 글꼴 검사와 시작 실패 검사2개 PASS(4.744초),
+HTTP 서버 검사4개 PASS(0.637초)다.
+
+동일 입력·WASM·글꼴의 nested HWPX104쪽을 실제 새 프로필 경로로 캡처했다.
+수정 전후 PNG SHA256이 모두
+`5314795c95d164342e706849b8ac9db1b98613272c11347dfb6cb8a1b19676ae`로 같고,
+작업 후 전용 프로필이 남지 않았다. 캡처 방식·픽셀·폰트 선택은 바꾸지 않는다.
+
+Snap private 임시 경로에서 동일 UID·미사용·loopback RHWP 리소스 캐시가 확인된 오래된
+프로필1105개만 감사 후 제거해96,984,805,376바이트(약90.3GiB)를 확보했다.
+사용 중이거나 RHWP 소유 증거가 없는5개 프로필은 보존했다. 원본 HWP/HWPX/PDF·글꼴·
+공용 target은 삭제하지 않았다. 감사·두 단계 정리 JSONL/결과는
+`snap-rhwp-browser-profile-*-20261015*`와 v2 ledger에 남긴다.
+
+
+HFT 쪽번호의 정식 검사2개도 같은 소스로 실행했다. 이전 producer
+`continuation-leading-band-dev-rhwp`는 HWP/HWPX 모두 실제 기준선1060.48px로 FAIL
+(2/2,8.54초), 제한 후보는 기존4개 검사와 합쳐6/6 PASS(67.57초)였다.
+독립 Print29쪽의 실제 번호·원본12pt·진하게 속성과797.039978pt 기준선을 검사한다.
+Native29쪽98.47328%,fresh WASM100%와 대표 review 직접 판독을 선행했다.
+이 focused rustc 실행은 최종 Cargo 전체 suite 완료로 보고하지 않는다.
+
+제한 후보의 전쪽 비교에서도 chemical Native 일부 쪽이0.01%p 이상 낮아졌다.
+원본 H2GTRM 프로그램·같은 glyph 원점·폭의 작은 Skia 진단으로 실제29쪽 PNG를
+바이트 단위로 재현했다. 기본 `Font`의 subpixel=false가 소수 x 원점을 정수로
+반올림하는 것을 확인했다. 이 플래그만 true로 그린 진단은 독립 PDF 대비100%였다.
+실제 소스에서는 원본 폭을 소비하는 생성 HFT 번호에만 소수 원점 보존을 적용한다.
+본문·글꼴 프로그램·비교 기준은 바꾸지 않는다. 증거는 `number-raster-probe-result.json`과
+각 PNG다. 새 Native producer·전쪽 비교로 실제 효과를 다시 검증한다.
+
+
+`candidate-generated-number-dev` 전쪽 진단은 양쪽 모두19문서835쪽, 미달/누락0,
+독립 PDF 쪽수 일치로 끝났다. Native 최저91.71770%(scattered37쪽),664.39초,
+WASM 최저90.09386%(chemical 계열19쪽),963.22초다. 단, 이 Native는 소수 원점 보존
+직전 후보다. 같은 a5 기준18문서787쪽 대조에서 Native chemical4종 각9쪽(총36쪽),
+WASM nested HWPX104쪽1쪽의0.01%p 이상 하락을 실제 검출했다. 앞의90% 통과로
+무회귀를 대신하지 않는다. 해당 비교 JSON·TSV는 모두 보존하며 PR은 생성하지 않았다.
+
+일반 Clippy3분04초, WASM Clippy2분15초, workspace build3분47초가 통과했다.
+전체 target·Native Skia Clippy와 전체 회귀는 아직 완료 전이다. 브라우저·HTTP의
+최종 관련 Node 검사6/6 PASS(5.586초), source unit tier의 고정 base 비교도 PASS다.
+추가한6개 회귀의 Cargo 정식 suite 실행은 남아 있다. 사용자 요청에 따른 커밋·upstream
+확인 후 head가 바뀐 경우에만 리베이스하며, 최종 PR 직전에도 이를 다시 확인한다.

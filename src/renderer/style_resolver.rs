@@ -436,6 +436,9 @@ pub struct ResolvedStyleSet {
     /// 문서의 `쪽 번호` 스타일이 참조하는 글자 모양. 자동 쪽번호는 본문
     /// 기본 글꼴이 아닌 이 스타일로 출력된다.
     pub page_number_char_style_id: Option<usize>,
+    /// 자동 쪽번호 영문 슬롯의 선언 프로그램이 HFT인지 보존한다.
+    /// 표시용 TTF 대체 이름으로 원본 글상자의 기준선 메트릭을 추측하지 않는다.
+    pub page_number_font_is_hft: bool,
     /// Shared session measurements for DB-missing glyphs, not document styles.
     pub supplemental_metrics:
         Option<std::sync::Arc<super::supplemental_metrics::SupplementalMetricSnapshot>>,
@@ -613,16 +616,21 @@ pub fn resolve_styles_with_variant(
     let border_styles = resolve_border_styles(doc_info, dpi);
     let numberings = doc_info.numberings.clone();
     let bullets = doc_info.bullets.clone();
+    let page_number_char_style_id = doc_info
+        .styles
+        .iter()
+        .find(|style| {
+            style.local_name == "쪽 번호" || style.english_name.eq_ignore_ascii_case("Page Number")
+        })
+        .map(|style| style.char_shape_id as usize);
+    let page_number_font_is_hft = page_number_char_style_id
+        .and_then(|id| doc_info.char_shapes.get(id))
+        .and_then(|shape| doc_info.font_faces.get(1)?.get(shape.font_ids[1] as usize))
+        .is_some_and(|face| face.alt_type == 2);
 
     ResolvedStyleSet {
-        page_number_char_style_id: doc_info
-            .styles
-            .iter()
-            .find(|style| {
-                style.local_name == "쪽 번호"
-                    || style.english_name.eq_ignore_ascii_case("Page Number")
-            })
-            .map(|style| style.char_shape_id as usize),
+        page_number_char_style_id,
+        page_number_font_is_hft,
         char_styles,
         para_styles,
         border_styles,

@@ -6,35 +6,6 @@ use crate::renderer::hwpunit_to_px;
 use super::{CellUnit, LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
-    /// 문단 안의 원본 재시작으로 잘린 텍스트는 계속되는 같은 글줄 흐름이다.
-    /// 물리 프레임의 남는 공간을 현재 가시 접두부의 가운데 정렬 띠로 옮기지 않는다.
-    pub(in crate::renderer::layout) fn original_in_paragraph_cut_owns_flow(
-        &self,
-        table: &Table,
-        cell: &Cell,
-        start: usize,
-        end: usize,
-        styles: &ResolvedStyleSet,
-    ) -> bool {
-        let profile = self.profile.get();
-        if cell.row_span != 1
-            || profile.session_edited()
-            || !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
-            || self
-                .render_normalization
-                .borrow()
-                .table_text_reflowed(table)
-        {
-            return false;
-        }
-        let units = self.cell_units(cell, table, styles);
-        [start, end].into_iter().any(|index| {
-            units
-                .get(index)
-                .is_some_and(|unit| Self::stored_in_paragraph_unit_is_original_restart(cell, unit))
-        })
-    }
-
     /// 원본 문단 안의 저장 재시작은 선언 높이가 있는 중첩 행도 분할한다.
     /// 문단마다 시작하는 로컬 좌표와 편집 후 만든 줄 정보는 이 근거가 아니다.
     pub(super) fn stored_nested_row_has_in_paragraph_cut(

@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
+import {execFile} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {readFileSync} from 'node:fs';
+import {existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-import {join, resolve} from 'node:path';
+import {isAbsolute, join, resolve, sep} from 'node:path';
 import test from 'node:test';
 import {fileURLToPath} from 'node:url';
-import {createSweepServer} from '../export-wasm-png-for-sweep.mjs';
+import {promisify} from 'node:util';
+import {createSweepBrowserProfile, createSweepServer} from '../export-wasm-png-for-sweep.mjs';
 import {findChrome} from '../rasterize-svg-webfonts.mjs';
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
@@ -25,10 +27,23 @@ test('공급한 family가 실제 Canvas advance와 글리프를 결정한다', a
     server.closeAllConnections();
     await new Promise(accept => server.close(accept));
   });
-  const browser = await require('puppeteer-core').launch({
-    executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true,
+  const profileRoot = join(root, 'output/pr-review/browser-profile-tests');
+  const userDataDir = createSweepBrowserProfile(profileRoot, 0);
+  assert.ok(isAbsolute(userDataDir));
+  assert.ok(userDataDir.startsWith(resolve(profileRoot) + sep));
+  let browser;
+  t.after(async () => {
+    if (browser) {
+      await browser.close();
+      // 실제 Chrome도 host와 같은 경로를 썼는지 확인한다(Snap /tmp 누수 방지).
+      assert.ok(existsSync(join(userDataDir, 'Default/Preferences')));
+    }
+    rmSync(userDataDir, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+    assert.equal(existsSync(userDataDir), false);
   });
-  t.after(() => browser.close());
+  browser = await require('puppeteer-core').launch({
+    executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true, userDataDir,
+  });
   const page = await browser.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}`);
   const results = await page.evaluate(async () => {
@@ -62,4 +77,26 @@ test('공급한 family가 실제 Canvas advance와 글리프를 결정한다', a
     assert.equal(result.inkWidth, 12, JSON.stringify(result));
     assert.equal(result.inkHeight, 28, JSON.stringify(result));
   }
+});
+
+test('Chrome 시작 실패 후에도 output 전용 프로필을 정리한다', async t => {
+  const work = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'launch-fault');
+  t.after(() => rmSync(work, {recursive: true, force: true, maxRetries: 5, retryDelay: 100}));
+  const pkg = join(work, 'pkg'), output = join(work, 'out');
+  mkdirSync(pkg);
+  // 브라우저 시작 단계의 fault injection이다. 문서 파싱·조판은 실행하지 않는다.
+  writeFileSync(join(pkg, 'rhwp.js'), '');
+  writeFileSync(join(pkg, 'rhwp_bg.wasm'), Buffer.alloc(0));
+  writeFileSync(join(work, 'source'), Buffer.alloc(0));
+  writeFileSync(join(work, 'fonts.json'), JSON.stringify({faces: []}));
+  writeFileSync(join(work, 'options.json'), JSON.stringify({compat: '2022', scale: 1, workers: 1, pages: [1]}));
+  await assert.rejects(promisify(execFile)(process.execPath, [
+    join(root, 'scripts/export-wasm-png-for-sweep.mjs'), '--pkg', pkg,
+    '--input', join(work, 'source'), '--out', output,
+    '--fonts', join(work, 'fonts.json'), '--options', join(work, 'options.json'),
+  ], {
+    // Node는 존재하지만 Chrome 전용 인자를 받지 못하므로 실제 launch가 실패한다.
+    env: {...process.env, VISUAL_SWEEP_CHROME: process.execPath}, timeout: 15_000,
+  }), error => !error.killed && /Failed to launch/.test(error.stderr));
+  assert.deepEqual(readdirSync(output).filter(name => name.startsWith('chrome-worker-')), []);
 });

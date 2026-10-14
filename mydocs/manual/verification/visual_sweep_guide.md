@@ -358,6 +358,12 @@ legacy TTF는 종료 비문자만 `.notdef`로 고친 공급 사본을 사용하
 그려 캡처하고, 준비 실패·쪽 누락·중복이면 중단한다. 내장 글꼴은 WASM의 기존 Canvas API가
 소비한다. private 공급 글꼴과 `font_resources`는 공개 증적이나 Git에 포함하지 않는다.
 
+WASM PNG 작업자는 출력 폴더 아래 `chrome-worker-<번호>-*`에 전용 Chrome 프로필을
+만들고, 브라우저 종료를 확인한 뒤 제거한다. Snap Chromium도 host와 같은 경로를
+사용하도록 `/tmp` 대신 이 경로를 사용한다. 시작 실패 시에도 생성한 프로필을 정리하며,
+브라우저 종료에 실패하면 실행 중인 프로필을 삭제하지 않는다. 수동 정리가 필요하면
+해당 경로를 사용하는 Chrome이 종료됐는지 먼저 확인한다.
+
 `--rasterizer svg` 진단에서 CLI는 같은 원본의 `export-svg --font-style --profile print`가 만든 글꼴 별칭과 note-shape 메타데이터를 제공한다.
 Sweep은 `@font-face`만 WASM SVG에 보충하며 텍스트·좌표·그리기 노드는 수정하지 않는다.
 이후 기존 Chrome webfont rasterizer로 비교·overlay·review PNG를 생성한다. 별도 HTML에

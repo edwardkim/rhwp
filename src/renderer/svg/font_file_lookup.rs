@@ -75,7 +75,7 @@ pub(super) fn plan_svg_font_file_lookup(
         };
         let mut files: Vec<String> = known_files.iter().map(|s| s.to_string()).collect();
         let aliases = if bold {
-            font_local_bold_aliases(font_name).to_vec()
+            font_local_bold_aliases(font_name)
         } else {
             font_local_aliases(font_name)
         };

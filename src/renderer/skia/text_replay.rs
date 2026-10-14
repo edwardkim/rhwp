@@ -88,7 +88,25 @@ impl SkiaTextReplay<'_> {
                     self.system_families,
                     self.custom_typefaces,
                     self.bundled_typefaces,
-                    &style.font_family,
+                    &if style.fixed_glyph_advances {
+                        // 저장 글줄이 없는 HFT 번호도 Canvas와 같은 원 face의
+                        // 설치 별칭을 찾는다. 임의의 Bold 대체 face는 넣지 않는다.
+                        style
+                            .font_family
+                            .split(',')
+                            .flat_map(|family| {
+                                let family = family.trim();
+                                std::iter::once(family).chain(
+                                    crate::renderer::installed_render_font_aliases(family)
+                                        .iter()
+                                        .copied(),
+                                )
+                            })
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    } else {
+                        style.font_family.clone()
+                    },
                     font_style,
                 );
                 let primary_typeface = typeface_chain
@@ -307,6 +325,14 @@ impl SkiaTextReplay<'_> {
                 let text = text.as_str();
                 let char_positions =
                     crate::renderer::replay_positions_or_compute(text, style, layout_positions);
+                let fit_positions = style.fixed_glyph_advances.then(|| {
+                    crate::renderer::glyph_fit_positions(
+                        text,
+                        style,
+                        layout_positions,
+                        &char_positions,
+                    )
+                });
                 let clusters = split_into_clusters(text);
                 let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
                 let trim = trim_trailing_spaces.min(trailing);
@@ -566,10 +592,27 @@ impl SkiaTextReplay<'_> {
                                 canvas.restore();
                                 continue;
                             }
-                            if has_ratio {
+                            // 생성자가 원본 폭을 명시한 텍스트만 같은 커닝 전
+                            // 경계를 소비한다. 본문을 일괄 축소·확대하지 않는다.
+                            let fit_scale = fit_positions
+                                .as_deref()
+                                .and_then(|positions| {
+                                    let end = *char_idx + cluster.chars().count();
+                                    let advance = positions.get(end)? - positions.get(*char_idx)?;
+                                    let natural_width =
+                                        f64::from(font.measure_str(cluster, None).0);
+                                    crate::renderer::canvas_cluster_fit_scale(
+                                        style,
+                                        advance,
+                                        natural_width * f64::from(ratio),
+                                        cluster.chars().any(|ch| ch.is_ascii_graphic()),
+                                    )
+                                })
+                                .unwrap_or(1.0) as f32;
+                            if has_ratio || (fit_scale - 1.0).abs() > f32::EPSILON {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
-                                canvas.scale((ratio, 1.0));
+                                canvas.scale((ratio * fit_scale, 1.0));
                                 canvas.draw_str(cluster, (0.0, 0.0), &font, &text_paint);
                                 canvas.restore();
                             } else {

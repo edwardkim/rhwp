@@ -20,7 +20,6 @@ pub(crate) mod equation_tac_flow;
 pub mod float_placement;
 pub(crate) mod font_decision;
 pub mod font_environment;
-pub(crate) mod font_face_aliases;
 pub mod font_metrics_data;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod font_paths;
@@ -281,6 +280,11 @@ pub struct TextStyle {
     pub font_family: String,
     /// 글꼴 크기 (px)
     pub font_size: f64,
+    /// 저장 글줄 없이 생성한 텍스트의 원본 글자 폭을 paint에도 적용한다.
+    /// HFT 자동 쪽번호는 HFT 메트릭으로 정렬하므로 대체 TTF의 자연 폭을
+    /// 그대로 그리면 숫자·장식의 점유 폭이 달라진다. 본문은 기존 계약을 쓴다.
+    #[serde(skip_serializing)]
+    pub fixed_glyph_advances: bool,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -587,6 +591,7 @@ impl Default for TextStyle {
             supplemental_metrics: None,
             font_family: String::new(),
             font_size: 0.0,
+            fixed_glyph_advances: false,
             color: 0,
             bold: false,
             italic: false,

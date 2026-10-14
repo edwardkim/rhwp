@@ -18369,6 +18369,32 @@ impl LayoutEngine {
             return 0.0;
         }
 
+        // 원본 셀 선언보다 앞 프레임의 잉크·여백이 이미 큰 경우에는 실제
+        // 글줄 상자까지 확장한다. 다음 프레임으로 전진하는 마지막 줄간격까지
+        // 덧붙이면 앞 조각과 그 안의 가운데 정렬을 한 간격씩 늘리게 된다.
+        // 선택 유닛의 누적 끝이 원본 잉크 끝과 일치하는 첫 프레임만 인증한다.
+        if cell.row_span == 1
+            && cell.height > 0
+            && cell.height < 0x8000_0000
+            && Self::stored_in_paragraph_unit_is_original_restart(cell, next_unit)
+        {
+            let (_, _, top, bottom) = self.resolve_stored_nested_cell_padding(cell, table, styles);
+            let padding = top + bottom;
+            let source_ink = hwpunit_to_px(
+                previous_seg
+                    .vertical_pos
+                    .saturating_add(previous_seg.line_height),
+                self.dpi,
+            ) + padding;
+            let selected_ink = consumed_before_px + last_unit_height_px - trim + padding;
+            let epsilon = hwpunit_to_px(2, self.dpi);
+            if source_ink > hwpunit_to_px(cell.height as i32, self.dpi) + epsilon
+                && (selected_ink - source_ink).abs() <= epsilon
+            {
+                return trim;
+            }
+        }
+
         if self.stored_zero_origin_text_frame_break(table, cell, previous_seg, next_seg) {
             return trim;
         }
@@ -20449,12 +20475,14 @@ impl LayoutEngine {
     ) -> Option<f64> {
         if start_cut.iter().any(|cut| *cut > 0)
             || self
-                .stored_plain_restart_cut(table, row, styles, false)?
+                .stored_plain_restart_cut(table, row, styles, true)?
                 .as_slice()
                 != end_cut
         {
             return None;
         }
+        // 재시작은 내용 컷을 허용하지만 선언 셀 높이의 빈 띠를 입증하지 않는다.
+        // 원본 줄 끝·간격·여백이 선언 상자를 닫는 컷에만 그 최소 높이를 예약한다.
         let minimum = table
             .cells
             .iter()
@@ -23824,7 +23852,7 @@ impl LayoutEngine {
         if children.next().is_some() {
             return 0.0;
         }
-        // 바깥여백은 제목행 반복 여부와 별개인 이어받기 상자의 공간이다.
+        // 앞쪽 바깥여백은 제목행 반복 여부와 별개인 이어받기 상자의 공간이다.
         let headers = if child.repeat_header {
             child.leading_header_rows()
         } else {
@@ -23842,8 +23870,9 @@ impl LayoutEngine {
         let outer_margin = if child.common.treat_as_char {
             0.0
         } else {
+            // 마지막 유닛은 생산자의 terminal_band로 아래 여백을 이미 소유한다.
+            // 시작 띠에서 다시 더하면 뒤 문단이 같은 여백만큼 한 번 더 밀린다.
             hwpunit_to_px(child.outer_margin_top as i32, self.dpi)
-                + hwpunit_to_px(child.outer_margin_bottom as i32, self.dpi)
         };
         outer_margin
             + headers

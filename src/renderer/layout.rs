@@ -5821,6 +5821,7 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
         footer_area: &LayoutRect,
         font_size: f64,
+        source_hft: bool,
     ) -> f64 {
         let margin_footer = (layout.page_height - (footer_area.y + footer_area.height)).max(0.0);
         let band_bottom = if margin_footer > 1e-6 {
@@ -5831,7 +5832,15 @@ impl LayoutEngine {
             footer_area.y + footer_area.height / 2.0
         };
         // 글상자 상단과 기준선을 혼용하지 않고 아래끝에서 기준선 여유를 뺀다.
-        band_bottom - font_size / 3.0
+        // 독립 한컴 Print의 HFT Type3 글상자는 em=1000, yMin=-200이다.
+        // TTF의 기존 기준선 여유를 HFT에도 쓰면 자동 번호가 약 0.133em 위에 놓인다.
+        // 글꼴 이름·표시용 대체 face가 아니라 원본 영문 슬롯의 프로그램 종류를 쓴다.
+        let descent = if source_hft {
+            font_size * 0.2
+        } else {
+            font_size / 3.0
+        };
+        band_bottom - descent
     }
 
     fn page_number_baseline_y(
@@ -5839,6 +5848,7 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
         page_border_fill: Option<&PageBorderFill>,
         font_size: f64,
+        source_hft: bool,
     ) -> Option<f64> {
         let pbf = page_border_fill.filter(|p| p.border_fill_id > 0)?;
         let paper_based = matches!(pbf.basis, PageBorderBasis::PaperBased);
@@ -5846,7 +5856,7 @@ impl LayoutEngine {
             return None;
         }
         // 쪽 테두리 경로도 같은 아래쪽 여백 기준선을 소비한다.
-        Some(self.footer_page_number_y(layout, &layout.footer_area, font_size))
+        Some(self.footer_page_number_y(layout, &layout.footer_area, font_size, source_hft))
     }
 
     fn build_page_borders(
@@ -6740,6 +6750,9 @@ impl LayoutEngine {
                 page_num_style.font_size = PAGE_NUMBER_PT * self.dpi / 72.0;
             }
             let font_size = page_num_style.font_size;
+            // 글줄 정보가 없는 HFT 자동 번호의 숫자·장식은 정렬에 쓴 원본
+            // 전진폭으로 그린다. 본문의 저장 줄·기존 글꼴 선택에는 적용하지 않는다.
+            page_num_style.fixed_glyph_advances = styles.page_number_font_is_hft;
 
             // [#3048] 폭은 실제 폰트 메트릭으로 잰다. 종전 `문자수 × 크기 × 0.6` 은
             // 장식 공백이 든 `- 1 -`(5자)을 30pt 로 과대평가해(실측 24.8pt) 가운데·
@@ -6780,16 +6793,26 @@ impl LayoutEngine {
                 .unwrap_or(false);
             let is_footer = !matches!(pnp.position, 1..=3 | 7 | 9);
             let footer_center = if is_footer {
-                self.footer_page_number_y(layout, target_area, font_size)
+                self.footer_page_number_y(
+                    layout,
+                    target_area,
+                    font_size,
+                    styles.page_number_font_is_hft,
+                )
             } else {
                 target_area.y + target_area.height / 2.0 + font_size / 3.0
             };
             // 본문 기준 테두리 경로도 공통 쪽번호 기준선을 사용한다.
             // 종이 기준 테두리·감추기 여부로 별도의 글자 원점을 만들지 않는다.
             let y = if is_footer {
-                self.page_number_baseline_y(layout, page_border_fill, font_size)
-                    .filter(|_| border_drawn)
-                    .unwrap_or(footer_center)
+                self.page_number_baseline_y(
+                    layout,
+                    page_border_fill,
+                    font_size,
+                    styles.page_number_font_is_hft,
+                )
+                .filter(|_| border_drawn)
+                .unwrap_or(footer_center)
             } else {
                 footer_center
             };
