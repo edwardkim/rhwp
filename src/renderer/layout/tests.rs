@@ -751,6 +751,7 @@ fn test_layout_with_composed_styles() {
 
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![
@@ -898,6 +899,7 @@ fn test_layout_multi_run_x_position() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![
@@ -995,6 +997,7 @@ fn test_resolved_to_text_style() {
 
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -1033,6 +1036,7 @@ fn test_resolved_to_text_style_with_ratio() {
 
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {

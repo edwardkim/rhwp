@@ -127,6 +127,11 @@ impl SkiaTextReplay<'_> {
                     font.set_edging(font::Edging::AntiAlias);
                     // 글줄이 정한 소수 원점을 glyph raster에서도 보존한다.
                     font.set_subpixel(true);
+                    // 원본 폭과 기준선으로 배치한 생성 번호의 소수 원점을
+                    // 정수로 반올림하지 않는다. Canvas도 이 원점에서 그린다.
+                    if style.fixed_glyph_advances {
+                        font.set_baseline_snap(false);
+                    }
                     if want_synthetic_bold && !is_bold_face {
                         font.set_embolden(true);
                     }

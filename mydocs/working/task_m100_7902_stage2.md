@@ -547,3 +547,18 @@ WASM nested HWPX104쪽1쪽의0.01%p 이상 하락을 실제 검출했다. 앞의
 최종 관련 Node 검사6/6 PASS(5.586초), source unit tier의 고정 base 비교도 PASS다.
 추가한6개 회귀의 Cargo 정식 suite 실행은 남아 있다. 사용자 요청에 따른 커밋·upstream
 확인 후 head가 바뀐 경우에만 리베이스하며, 최종 PR 직전에도 이를 다시 확인한다.
+
+
+체크포인트`59a6c9d6c` 후 fetch한`upstream/devel`은 a5 그대로여서 리베이스하지 않았다.
+
+최종 all-target Clippy의 lib-test 경로에서 `ResolvedStyleSet`의 완전 초기화6곳에
+새 HFT 메타데이터가 누락된 것을 검출했다. 기존 테스트의 비 HFT 입력에는false를
+명시해 컴파일 계약을 보완했다. source unit tier 및 세 Clippy lane을 새 소스에서
+재확인한다. 이 실패를 런타임 회귀로 분류하거나 통과로 기록하지 않는다.
+
+Roman 번호도 별도 진단했다. Native 기본 `Font`는 subpixel=false,baseline_snap=true였다.
+원본의 소수 원점을 보존하려면 두 축 모두 반올림하지 않아야 한다.5쪽 번호만 바꿔 본
+진단은 x만 보존했을 때99.17727%,기준선도 보존하면99.19634%(a5는99.19277%)였다.
+이 합성 교체 이미지는 진단 근거일 뿐 정식 전쪽 측정으로 세지 않는다.
+실제 Native는 생성 HFT 번호에 subpixel=true,baseline_snap=false를 적용해 재빌드했고
+1분42초에 성공했다. 이 producer로 원본19문서 전체와 a5 비교를 다시 실행한다.
