@@ -13,7 +13,7 @@ last_verified: 2026-10-14
 로컬 검증과 정확한 code head CI가 완료됐고 코드 PR을 squash merge했다.
 #7902의 화학제품 쪽번호·행 나눔 HWPX·giant overfill 및 전체19문서 보정은 후속 범위이며
 해결·종료로 기록하지 않는다. 사용자 선택 옵션2에 따라 이 review와 오늘할일은 merge 후
-별도 문서 PR로 준비하고, 생성·push 전 사용자 승인을 받는다.
+별도 문서 PR로 준비했다. 사용자 지시 “PR 후 merge 후 후속처리”로 원격 제출·병합을 승인받았다.
 
 ## 접수 정보
 
@@ -150,7 +150,8 @@ upstream/devel 대비 무회귀 TSV 비교라고 주장하지 않는다.
 이 비교를 실제 적용하며, 위 동일 source의 backend 성능 관측으로 대체하지 않는다.
 거버넌스에 남아 있던100% 문구도 완료 페이지98% 이상으로 교정한다.
 
-코드 PR merge는 완료됐다. 문서 PR 생성·push는 사용자 승인 대기이며, 승인 뒤 실제
-문서-only fast-pass와 required checks를 확인한다. 운영 기록 반영 후 최종 devel sync,
-merge SHA 이미지의 한국어 comment, duration 갱신 결과 및 소유가 확인된 작업 전용
-branch 정리를 수행한다. #7902는 열린 상태로 유지한다.
+코드 PR merge와 사용자 원격 제출 승인은 완료됐다. 문서 PR의 실제 문서-only fast-pass와
+required checks를 확인한 뒤 merge하고 최종 devel sync·merge SHA 이미지의 한국어 comment·
+소유가 확인된 작업 전용 branch 정리를 수행한다.
+[duration 데이터 갱신](https://github.com/edwardkim/rhwp/actions/runs/38569838497)은 실제 성공했으며
+병합 후 CI·CodeQL·Rust 회귀를 재시작하지 않았다. #7902는 열린 상태로 유지한다.
