@@ -840,6 +840,15 @@ impl TypesetEngine {
                     });
                 }
             }
+            // 글줄을 따로 소유하지 않는 호스트의 마지막 개체가 끝나면,
+            // 수용한 조각·캡션·바깥여백의 최종 흐름 끝도 배치에 전달한다.
+            // paint가 표 상자만으로 다시 계산하면 아래 바깥여백이 빠진다.
+            if terminal
+                && !crate::renderer::typeset::para_has_visible_text(input.source.paragraph)
+                && ctrl_idx + 1 == input.source.paragraph.controls.len()
+            {
+                st.record_stored_paragraph_flow_end(para_idx, st.current_height);
+            }
         };
 
         // [작업 #1046 2단계 진단] 순회 결과 — 조각 경계/소비 높이. 동작 불변.

@@ -7,6 +7,8 @@ use super::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
     expand_pua_render_text, CharOverlapInfo,
 };
+#[cfg(not(target_arch = "wasm32"))]
+use super::font_face_aliases::local_bold_aliases as font_local_bold_aliases;
 pub(crate) use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
     real_picture_watermark_bytes_to_hancom_tone_png_bytes,
@@ -4147,26 +4149,6 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         "HY견고딕" => vec!["HY견고딕", "HYGothic-Extra"],
         "한양견명조" => vec!["한양견명조", "HY견명조", "HYMyeongJo-Extra"],
         "HY견명조" => vec!["HY견명조", "HYMyeongJo-Extra"],
-        _ => vec![],
-    }
-}
-
-/// 폰트명 → 실제 Bold face의 local() 별칭.
-///
-/// `@font-face`를 원 family명으로 다시 선언하는 SVG 경로에서는 CSS의
-/// `font-weight="bold"`만으로 시스템의 sibling bold face를 자동 선택하지 못한다.
-/// 한컴 2020 PDF가 쓴 full name을 명시해 synthetic bold를 피한다.
-fn font_local_bold_aliases(font_family: &str) -> Vec<&'static str> {
-    match font_family {
-        "함초롬바탕" | "함초롱바탕" | "한컴바탕" | "휴먼명조" => {
-            vec!["HCR Batang Bold", "함초롬바탕 Bold"]
-        }
-        "함초롬돋움" | "함초롱돋움" | "한컴돋움" | "한양중고딕" | "HY중고딕" =>
-        {
-            vec!["HCR Dotum Bold", "함초롬돋움 Bold"]
-        }
-        "한컴 고딕" | "Hancom Gothic" => vec!["Hancom Gothic Bold", "한컴 고딕 Bold"],
-        "맑은 고딕" | "Malgun Gothic" => vec!["Malgun Gothic Bold", "맑은 고딕 Bold"],
         _ => vec![],
     }
 }

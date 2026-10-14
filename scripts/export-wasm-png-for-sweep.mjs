@@ -52,6 +52,7 @@ async function main() {
     ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
     ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
     ['/source', ['application/octet-stream', readFileSync(input)]],
+    ['/font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
   ]);
   // 실제 공급 목록만 HTTP로 읽을 수 있다. 요청 URL을 파일시스템 경로로 변환하지 않는다.
   const fonts = catalogue.faces.map((face, index) => ({...face, url: `/font/${index}`}));
@@ -165,6 +166,7 @@ async function main() {
         }
         // 같은 문서의 필요한 face를 한 번만 공급한다. 데이터는 SVG/base64로 복제하지 않는다.
         const fontInfo = await page.evaluate(async ({pages, fonts, scale}) => {
+          const {installCanvasFont} = await import('/font-registration.mjs');
           const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
           const requested = new Set();
@@ -186,10 +188,8 @@ async function main() {
             if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
             const bytes = await response.arrayBuffer();
             for (const family of selected) {
-              const font = new FontFace(family, bytes, {weight: String(record.weight), style: record.style});
-              try { await font.load(); }
+              try { await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}); }
               catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
-              document.fonts.add(font);
               supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}`);
               loaded.push({family, sourceSha256: record.sourceSha256, sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
             }

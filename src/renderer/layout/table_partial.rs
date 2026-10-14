@@ -1587,7 +1587,26 @@ impl LayoutEngine {
                         );
                         start > 0 && end >= self.cell_units(cell, table, styles).len()
                     });
+            let original_in_paragraph_flow = is_in_split_row && {
+                let (start, end) = cell_cut_window(
+                    table,
+                    cell,
+                    start_cut_is_block,
+                    is_block_split,
+                    is_split_start_row,
+                    split_start_block,
+                    is_split_end_row,
+                    split_end_block,
+                    start_cut,
+                    end_cut,
+                    None,
+                    start_row,
+                    end_row.saturating_sub(1),
+                );
+                self.original_in_paragraph_cut_owns_flow(table, cell, start, end, styles)
+            };
             let frame_owns_alignment = !descendant_owns_closing_band
+                && !original_in_paragraph_flow
                 && (ordinary_source_frame_owns_alignment
                     || closing_source_frame_owns_alignment
                     || complete_plain_suffix_frame
@@ -2041,7 +2060,7 @@ impl LayoutEngine {
             });
             let cell_content_cut_by_slice = has_multicol_nested
                 && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
-            let effective_align = if descendant_owns_closing_band {
+            let effective_align = if descendant_owns_closing_band || original_in_paragraph_flow {
                 VerticalAlign::Top
             } else if frame_owns_alignment {
                 // 앞 조각의 빈 공간을 보존한 물리 상자는 이 조각 내용으로 정렬한다.
@@ -2215,6 +2234,27 @@ impl LayoutEngine {
                         + frame.paragraph_origin_offset_px(inner_height, effective_align, self.dpi)
                 })
                 .unwrap_or(text_y_start);
+
+            super::table_layout::unit_diagnostics::trace_alignment(
+                cell,
+                (cell_y, text_y_start),
+                (
+                    cell_h,
+                    pad_top + pad_bottom,
+                    total_content_height,
+                    centered_content_height,
+                ),
+                effective_align,
+                &[
+                    ("frame", frame_owns_alignment),
+                    ("ordinary", ordinary_source_frame_owns_alignment),
+                    ("opening", align_saved_opening_frame),
+                    ("closing", closing_source_frame_owns_alignment),
+                    ("full_width", full_width_row_frame_owns_alignment),
+                    ("restart_span", original_restart_span_owns_alignment),
+                ],
+                cut_units,
+            );
 
             // 세로쓰기 셀: 별도 레이아웃 경로 (가로 레이아웃 루프 대신)
             if cell.text_direction != 0 {
@@ -4554,11 +4594,7 @@ impl LayoutEngine {
                                                                 .iter()
                                                                 .all(|cut| *cut == 0))
                                                             || (!nested_table.common.treat_as_char
-                                                                && recursive_cut.start_row > 0
-                                                                && nested_table.repeat_header
-                                                                && !nested_table
-                                                                    .leading_header_rows()
-                                                                    .is_empty()))
+                                                                && recursive_cut.start_row > 0))
                                                         .then(|| {
                                                             nested_y
                                                                 + hwpunit_to_px(
@@ -4720,7 +4756,10 @@ impl LayoutEngine {
                                     };
                                     let visible_table_h = split_info
                                         .as_ref()
-                                        .filter(|_| mixed_nested_split.is_some())
+                                        .filter(|_| {
+                                            mixed_nested_split.is_some()
+                                                || nested_cursor_split.is_some()
+                                        })
                                         .map(|split| split.flow_height)
                                         .unwrap_or(table_h_rendered);
                                     if std::env::var_os("RHWP_DIAG_SCAN").is_some() {

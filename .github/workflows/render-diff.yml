@@ -799,6 +799,12 @@ jobs:
           browser_path=$(realpath "$browser_path")
           echo "CHROME_PATH=$browser_path" >> "$GITHUB_ENV"
 
+      - name: Validate Visual Sweep Canvas font registration
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
+        env:
+          VISUAL_SWEEP_CHROME: ${{ env.CHROME_PATH }}
+        run: node --test scripts/tests/visual-sweep-font-registration-browser.test.mjs
+
       - name: Check render diff script syntax
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio

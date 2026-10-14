@@ -1,7 +1,27 @@
-//! Shared font setup for horizontal positioned Canvas2D text and its provider.
-//! This does not select an exact fallback face or authorize another backend.
+//! 가로 Canvas2D 텍스트와 실측 provider의 공통 글꼴 설정.
 
 use super::{canvas_font_family_chain, condensed_ratio_draw_params, TextStyle};
+
+pub(super) fn font_family_chain(style: &TextStyle) -> String {
+    let fallback = canvas_font_family_chain(&style.font_family);
+    if !style.bold {
+        return fallback;
+    }
+    let primary = style.font_family.split(',').next().unwrap_or("").trim();
+    let aliases = super::font_face_aliases::local_bold_aliases(primary);
+    if aliases.is_empty() {
+        return fallback;
+    }
+    let actual_bold = aliases
+        .iter()
+        // local()의 full face 이름은 Canvas의 CSS family와 다르다.
+        // 실제 family에서 요청한 bold weight를 선택해야 같은 프로그램을 쓴다.
+        .filter_map(|family| super::base_family_without_weight_suffix(family))
+        .map(|family| format!("\"{}\"", family.replace('"', "\\\"")))
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!("{actual_bold}, {fallback}")
+}
 
 #[derive(Debug, Clone)]
 pub struct CanvasTextFont {
@@ -14,9 +34,8 @@ pub struct CanvasTextFont {
 }
 
 impl CanvasTextFont {
-    /// Preserve the positioned painter's existing defaults, script geometry,
-    /// condensed-ratio rule, family chain and three-decimal CSS size verbatim.
-    /// Registration must reject invalid styles; painting keeps its old fallback.
+    /// 글자 크기·첨자·장평·CSS 소수점 규칙을 실측과 paint에서 공유한다.
+    /// 굵게는 실제 Bold 후보를 먼저 찾고, 없으면 기존 family 체인을 사용한다.
     pub fn for_positioned_text(style: &TextStyle, baseline: f64) -> Self {
         let base_size = if style.font_size > 0.0 {
             style.font_size
@@ -25,7 +44,7 @@ impl CanvasTextFont {
         };
         let (size, baseline) = style.script_draw_metrics(base_size, baseline);
         let (draw_size, horizontal_scale) = condensed_ratio_draw_params(size, style.ratio);
-        let family = canvas_font_family_chain(&style.font_family);
+        let family = font_family_chain(style);
         let prefix = format!(
             "{}{}{:.3}px ",
             if style.italic { "italic " } else { "" },

@@ -24,7 +24,7 @@ mod stored_span_reservation;
 mod stored_span_row_owner;
 mod stored_terminal_row_frame;
 mod stored_zero_origin;
-mod unit_diagnostics;
+pub(super) mod unit_diagnostics;
 mod wrapper_cell_viewport;
 pub(super) use stored_nested_host_flow::StoredNestedHostFlow;
 
@@ -16162,7 +16162,9 @@ impl LayoutEngine {
                     })
                     .sum();
                 let para_h = if let Some(advance) = stored_empty_successor_advance {
-                    spacing_before + advance
+                    // 저장 전진량은 현재 앞 간격까지 포함한다. 온전한 셀과
+                    // 조각 paint도 이 결과를 그대로 소비하므로 다시 더하지 않는다.
+                    advance
                 } else if let Some(advance) = stored_frame_empty_advance {
                     spacing_before + advance + spacing_after
                 } else if let Some(advance) = stored_overlap_spacer_advance_px {
@@ -16345,7 +16347,7 @@ impl LayoutEngine {
                         h
                     };
                     if let Some(advance) = stored_empty_successor_advance {
-                        lh = spacing_before + advance;
+                        lh = advance;
                     } else if let Some(advance) = stored_overlap_spacer_advance_px {
                         // 접기 대신 저장 전진량을 그대로 점유로 쓴다 (위 #6923 주석).
                         lh = advance;
@@ -23819,13 +23821,15 @@ impl LayoutEngine {
         let Some(child) = children.next() else {
             return 0.0;
         };
-        if children.next().is_some() || !child.repeat_header {
+        if children.next().is_some() {
             return 0.0;
         }
-        let headers = child.leading_header_rows();
-        if headers.is_empty() {
-            return 0.0;
-        }
+        // 바깥여백은 제목행 반복 여부와 별개인 이어받기 상자의 공간이다.
+        let headers = if child.repeat_header {
+            child.leading_header_rows()
+        } else {
+            Vec::new()
+        };
         let heights = self.resolve_row_heights(
             child,
             child.col_count as usize,

@@ -6720,30 +6720,31 @@ impl LayoutEngine {
             // #7336 쪽번호는 HCRDotum 인데, 고정 `바탕`은 폭·획·세로 위치를
             // 모두 다르게 그렸다.
             const PAGE_NUMBER_PT: f64 = 10.0;
-            let page_number_char_style = styles
+            let page_number_style_id = styles
                 .page_number_char_style_id
-                .and_then(|id| styles.char_styles.get(id));
-            let font_size = page_number_char_style
-                .map(|style| style.font_size)
-                .filter(|size| *size > 0.0)
-                .unwrap_or(PAGE_NUMBER_PT * self.dpi / 72.0);
+                .filter(|&id| styles.char_styles.get(id).is_some());
+            // 쪽번호도 본문과 같은 글자모양을 소비한다. 굵게·장평·자간과
+            // 선언 글꼴 메트릭을 빼면 폭 측정과 실제 glyph가 원본 계약을 잃는다.
+            // 숫자·장식은 기존과 같이 영문 슬롯(1)의 스타일로 잰 뒤 그대로 칠한다.
+            let mut page_num_style = page_number_style_id
+                .map(|id| resolved_to_text_style(styles, id as u32, 1))
+                .unwrap_or_else(|| TextStyle {
+                    font_family: "바탕".to_string(),
+                    font_size: PAGE_NUMBER_PT * self.dpi / 72.0,
+                    ..Default::default()
+                });
+            if page_num_style.font_family.is_empty() {
+                page_num_style.font_family = "바탕".to_string();
+            }
+            if page_num_style.font_size <= 0.0 {
+                page_num_style.font_size = PAGE_NUMBER_PT * self.dpi / 72.0;
+            }
+            let font_size = page_num_style.font_size;
 
             // [#3048] 폭은 실제 폰트 메트릭으로 잰다. 종전 `문자수 × 크기 × 0.6` 은
             // 장식 공백이 든 `- 1 -`(5자)을 30pt 로 과대평가해(실측 24.8pt) 가운데·
             // 오른쪽 정렬 위치를 약 2pt 왼쪽으로 밀었다. 아래 TextRunNode 가 쓰는
             // 스타일과 **같은 값**으로 재야 측정과 렌더가 어긋나지 않는다.
-            let page_num_style = TextStyle {
-                font_family: page_number_char_style
-                    .and_then(|style| style.font_families.get(1).or(style.font_families.first()))
-                    .filter(|family| !family.is_empty())
-                    .cloned()
-                    .unwrap_or_else(|| "바탕".to_string()),
-                font_size,
-                color: page_number_char_style
-                    .map(|style| style.text_color)
-                    .unwrap_or(0x000000),
-                ..Default::default()
-            };
             let text_width = estimate_text_width(&page_num_text, &page_num_style);
 
             let is_odd_page = page_content.page_number % 2 == 1;
