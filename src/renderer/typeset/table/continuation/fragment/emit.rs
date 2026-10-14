@@ -2256,6 +2256,9 @@ impl TypesetEngine {
                 // 잃는다(편람 부록 103×2 행 5: 선언 1210.5 − 첫 프레임 223.9 = 986.6 을
                 // 한 쪽에 실어 본문을 495px 넘겼다; 저장 되감김은 줄 10·33).
                 if split_block_start.is_none()
+                    && !layout_engine.row_cut_consumes_all_ordinary_units(
+                        table, row, &next_cut, styles,
+                    )
                     && !layout_engine.row_cut_remaining_is_single_stored_frame(
                         table,
                         row,
@@ -2321,11 +2324,15 @@ impl TypesetEngine {
                 && (!layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1))
                     || crossing_span_owns_tail)
                 // 원본 순수 글줄의 최소 상자는 위 저장 행 Query가 별도로
-                // 인증한다. 그 경로가 높이를 주지 않으면 전체 측정 전진량을
-                // 물리 최소로 바꿔 다음 쪽에 빈 공간을 이월하지 않는다.
+                // 인증한다. 한 저장 프레임의 실제 행 높이는 물리 띠를 소유할 수
+                // 있지만 여러 저장 쪽을 합친 측정 전진량은 같은 최소 상자가 아니다.
+                // 전체 행의 원본 프레임을 검증하고 후자의 잘못된 이월만 막는다.
                 && !(!start_cut_is_block && split_block_start.is_none()
                     && layout_engine.row_has_original_plain_text_owners(
-                        table, end_row.saturating_sub(1), &next_cut)))
+                        table, end_row.saturating_sub(1), &next_cut)
+                    && !layout_engine.row_cut_remaining_is_single_stored_frame(
+                        table, end_row.saturating_sub(1), &vec![0; next_cut.len()],
+                        None, styles)))
             .and_then(|limit| {
             let row = end_row.checked_sub(1)?;
             // 같은 일반 행을 다시 나누는 경우 앞 조각까지 차감한 물리 상자에서

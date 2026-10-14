@@ -1878,7 +1878,7 @@ fn native_empty_single_topbottom_table_saved_top(
     // [#7203] 원점·수용 조건은 `stored_float_anchor` 한 곳이 정한다. 종전에는 여기와
     // typeset 이 각자 판정해, 같은 표를 두고 렌더는 저장 앵커를 쓰고 조판은 안 쓰는
     // 구간이 생겼다.
-    stored_single_topbottom_top_px(para, next_para, table, col_area.height, dpi)
+    stored_single_topbottom_top_px(para, next_para, table, col_area.height, dpi, false)
         .map(|top| col_area.y + top)
 }
 
@@ -12593,7 +12593,7 @@ impl LayoutEngine {
                             spacing_before,
                             mt.map_or(declared_height, |measured| measured.total_height),
                             self.dpi,
-                        ).map(|placement| col_area.y + placement.table_top)
+                        self.profile.get().hwpx_stored_layout(),).map(|placement| col_area.y + placement.table_top)
                     });
                     let stored_flow_advance = stored_top.and_then(|_| {
                         stored_topbottom_flow_advance_hu(para, paragraphs.get(para_index + 1), t)

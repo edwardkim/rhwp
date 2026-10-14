@@ -963,20 +963,21 @@ impl Paragraph {
         }
     }
 
-    /// 마지막 글자가 문단 끝 자동 번호의 자리표면 그 번호의 컨트롤 번호를 돌려준다.
-    ///
-    /// 파서는 자동 번호(0x12) 자리에 공백 한 글자를 남기고, 그 글자가 번호의 8유닛을 함께
-    /// 차지한다. 문단 가운데 자리표는 다음 글자가 8 뒤에 있어 [`Self::control_text_positions`]
-    /// 가 번호를 자리표 자리에 두지만, 마지막 글자는 다음 글자가 없어 번호가 문단 끝(글자 수)에
-    /// 놓인다. 직렬화기(#2740)와 같은 규칙으로, 문단 끝에 놓인 첫 컨트롤이 자동 번호이고 마지막
-    /// 글자가 공백이면 그 공백을 자리표로 본다.
+    /// 마지막 공백이 자동 번호의 원시 8유닛을 소유하면 그 컨트롤을 반환한다.
+    /// 저장 파서/새 캡션은 자리표 인덱스를, 구형 편집 모델은 문단 끝을
+    /// 전달할 수 있다. 양쪽 표현 모두 병합·삽입·분할에서 같은 슬롯 끝을 소비한다.
     fn trailing_auto_number(&self, control_positions: &[usize]) -> Option<usize> {
-        if !self.text.ends_with(' ') {
+        let chars: Vec<_> = self.text.chars().collect();
+        if chars.last() != Some(&' ') {
             return None;
         }
-        let text_len = self.text.chars().count();
-        let index = control_positions.iter().position(|&at| at >= text_len)?;
-        matches!(self.controls.get(index), Some(Control::AutoNumber(_))).then_some(index)
+        control_positions.iter().enumerate().find_map(|(ci, &at)| {
+            (matches!(self.controls.get(ci), Some(Control::AutoNumber(_)))
+                && (at >= chars.len()
+                    || (at + 1 == chars.len()
+                        && self.control_owns_char(ci, at, &chars, &self.char_offsets))))
+            .then_some(ci)
+        })
     }
 
     /// `idx` 번째 글자가 끝나는 스트림 위치. 문단 끝 자동 번호의 자리표(마지막 글자)는 번호의
@@ -2744,6 +2745,28 @@ impl Paragraph {
                     positions.push(i + 1); // 현재 문자 다음에 삽입
                 }
             }
+        }
+
+        // 마지막 자동 번호 자리에는 다음 문자가 없어 stride를 읽을 수 없다.
+        // 문단 끝 마커 전의 원시 8유닛이 확인되면 마지막 공백 자체가 번호 슬롯이다.
+        // 새 번호의 순수 갭이나 일반 말미 공백은 번호 자리로 소비하지 않는다.
+        if positions.len() < total_controls
+            && offsets.len() == chars.len()
+            && matches!(
+                self.controls.get(positions.len()),
+                Some(Control::AutoNumber(_))
+            )
+            && offsets
+                .last()
+                .zip(chars.last())
+                .is_some_and(|(offset, ch)| {
+                    *ch == ' '
+                        && offset
+                            .checked_add(CTRL_CHAR_CODE_UNITS)
+                            .is_some_and(|end| end <= self.char_count.saturating_sub(1))
+                })
+        {
+            positions.push(chars.len() - 1);
         }
 
         // 갭 분석으로 발견되지 않은 컨트롤의 위치를 텍스트의 `\u{FFFC}` marker

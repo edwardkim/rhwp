@@ -231,6 +231,7 @@ pub(super) fn from_stored_ladder(
     spacing_before: f64,
     measured_table_height: f64,
     dpi: f64,
+    hwpx_object_frame: bool,
 ) -> Option<ParagraphFloatPlacement> {
     let paragraph_square = !table.common.treat_as_char
         && table.common.text_wrap == TextWrap::Square
@@ -268,12 +269,15 @@ pub(super) fn from_stored_ladder(
         return None;
     }
     // 점유 하단은 그림 원점이 아니라 다음 저장 줄이 닫는 전체 프레임이다.
-    // 닫힌 등식은 세로 바깥 상자를 직접 증명한다. 좌우 여백이 없다는
-    // 사실은 이 세로 위 여백의 소유를 없애지 않는다. 저장 등식이 없는
-    // 기존 앵커는 이 경로에 들어오지 않는다.
+    // 닫힌 등식과 동일한 저장 출처를 사용해 실제 본체 윗변을 정한다.
+    // HWP5 앵커의 원점을 HWPX object frame의 위 여백으로 바꾸지 않는다.
+    // 저장 등식이 없는 기존 앵커는 이 경로에 들어오지 않는다.
     let table_top = origin
         + (i64::from(signed_hwpunit(table.common.vertical_offset))
-            + i64::from(table.outer_margin_top)) as f64
+            + crate::renderer::stored_float_anchor::stored_outer_box_table_top_hu(
+                table,
+                hwpx_object_frame,
+            )) as f64
             * dpi
             / 7200.0;
     let occupied_bottom = origin + physical_hu as f64 * dpi / 7200.0;

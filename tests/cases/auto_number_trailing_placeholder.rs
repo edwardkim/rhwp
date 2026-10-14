@@ -18,7 +18,7 @@ fn number_doc() -> DocumentCore {
         paragraphs(&core),
         [
             ("첫 문단".to_string(), vec![]),
-            ("가나다 ".to_string(), vec![4]),
+            ("가나다 ".to_string(), vec![3]),
             ("끝 문단".to_string(), vec![]),
         ]
     );
@@ -86,7 +86,7 @@ fn enter_after_a_trailing_auto_number_leaves_the_number_in_its_paragraph() {
         &core,
         &[
             ("첫 문단", &[]),
-            ("가나다 ", &[4]),
+            ("가나다 ", &[3]),
             ("", &[]),
             ("끝 문단", &[]),
         ],
@@ -121,7 +121,7 @@ fn field_and_number_doc() -> DocumentCore {
     para.char_count += 8;
     let core = DocumentCore::from_bytes(&core.export_hwpx_native().unwrap()).unwrap();
     assert_eq!(fields(&core), [(1, 1)]);
-    assert_eq!(paragraphs(&core)[1], ("가나다 ".to_string(), vec![4]));
+    assert_eq!(paragraphs(&core)[1], ("가나다 ".to_string(), vec![3]));
     core
 }
 

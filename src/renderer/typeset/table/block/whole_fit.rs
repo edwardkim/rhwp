@@ -322,6 +322,7 @@ impl TypesetEngine {
                     // 글줄 호스트의 상대 원점처럼 page base를 다시 빼지 않는다.
                     0,
                     self.dpi,
+                    st.profile.hwpx_stored_layout(),
                 )
             })
         .or_else(|| {

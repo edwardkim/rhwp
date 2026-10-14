@@ -1183,6 +1183,13 @@ impl TypesetEngine {
                 } else if table_storage_declares_splits
                     && layout_engine.stored_single_line_row_is_fragmentable(table, r, styles)
                     && !rowspan_touched[r]
+                    // 일반 내용 컷도 기존 최소 잔여를 지킨다. 한 줄이라는
+                    // 사실만으로 미인증된 작은 조각에 원본 행을 앞당기지 않는다.
+                    // 원본 첫 프레임의 작은 빈 띠는 앞의 인증 경로가 따로 소유한다.
+                    && avail_for_rows - consumed - cs_before >= MIN_TOP_KEEP_PX
+                    && layout_engine.row_aligned_content_bottom(
+                        table, r, res.consumed_height + padding, row_total, styles,
+                    ) <= avail_for_rows - consumed - cs_before
                     && layout_engine
                         .stored_ordinary_row_cut_height(
                             table,

@@ -2066,7 +2066,7 @@ impl TypesetEngine {
                         fmt.spacing_before,
                         (table_total - host_spacing_total).max(0.0),
                         self.dpi,
-                    )
+                    st.profile.hwpx_stored_layout(),)
                 })
                 .flatten()
             })
