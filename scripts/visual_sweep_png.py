@@ -152,8 +152,7 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
             fonts = collection.fonts if collection else [TTFont(source, lazy=True)]
             try:
                 for index, font in enumerate(fonts):
-                    names = sorted({entry.toUnicode() for entry in font['name'].names
-                                    if entry.nameID in {1, 4, 16} and entry.toUnicode()})
+                    names, name_errors = font_family_names(font)
                     weight = font['OS/2'].usWeightClass if 'OS/2' in font else 400
                     italic = bool(font['head'].macStyle & 2) if 'head' in font else False
                     path = source
@@ -166,6 +165,7 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                                     'sourceSha256': digest, 'sha256': vs.sha256_file(path),
                                     'faceIndex': index, 'families': names, 'weight': weight,
                                     'style': 'italic' if italic else 'normal',
+                                    'nameRecordErrors': name_errors,
                                     'repairs': ['cmap-format4-terminal-notdef'] if repaired_cmap is not None else []})
             finally:
                 if collection:
@@ -175,6 +175,27 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
     path = base / 'font-catalog.json'
     vs.write_json_atomic(path, {'faces': records})
     return path
+
+
+def font_family_names(font) -> tuple[list[str], list[dict]]:
+    """유효한 이름을 사용하고 해독 불가 항목의 원본 식별자를 보존한다."""
+    names, errors = set(), []
+    for entry in font['name'].names:
+        if entry.nameID not in {1, 4, 16}:
+            continue
+        try:
+            value = entry.toUnicode()
+        except (UnicodeError, LookupError) as error:
+            errors.append({'nameID': entry.nameID, 'platformID': entry.platformID,
+                           'encodingID': entry.platEncID, 'languageID': entry.langID,
+                           'rawSha256': hashlib.sha256(entry.string).hexdigest(),
+                           'reason': str(error)})
+        else:
+            if value:
+                names.add(value)
+    if errors and not names:
+        raise ValueError('공급 face의 family 이름을 해독할 수 없습니다: ' + str(errors))
+    return sorted(names), errors
 
 
 def write_font_face(font, path: Path, repaired_cmap: bytes | None) -> None:

@@ -300,3 +300,47 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
                         self.assertEqual(after, before, tag)
                 self.assertEqual(actual.reader['cmap'], png.repair_terminal_cmap(invalid, original['maxp'].numGlyphs))
                 self.assertEqual(actual.getBestCmap(), {65: original.getBestCmap()[65]})
+
+    def test_unreadable_legacy_name_keeps_valid_family_and_raw_name_table(self):
+        from fontTools.ttLib import TTCollection, TTFont
+        from fontTools.ttLib.tables._n_a_m_e import NameRecord
+        import hashlib
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            inputs = root / 'input'
+            inputs.mkdir()
+            fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPExactFaceSmoke.ttc'
+            with TTFont(fixture, fontNumber=0) as font:
+                good = ['RHWP Exact Face Zero', 'RHWP Exact Face Zero Regular']
+                entry = NameRecord()
+                entry.nameID, entry.platformID, entry.platEncID, entry.langID = 1, 3, 5, 1042
+                entry.string = b'\xd3\x9c'
+                font['name'].names.append(entry)
+                collection = TTCollection()
+                collection.fonts = [font]
+                collection.save(inputs / 'legacy.ttc')
+            adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest(),
+                write_json_atomic=lambda p, v: p.write_text(json.dumps(v), encoding='utf-8'))
+            catalogue = json.loads(png.font_catalog(adapter, root, [inputs], root).read_text(encoding='utf-8'))
+            record = catalogue['faces'][0]
+            self.assertEqual(record['families'], good)
+            self.assertEqual(len(record['nameRecordErrors']), 1)
+            error = record['nameRecordErrors'][0]
+            self.assertEqual((error['nameID'], error['platformID'], error['encodingID'], error['languageID']),
+                             (1, 3, 5, 1042))
+            self.assertEqual(error['rawSha256'], hashlib.sha256(entry.string).hexdigest())
+            with TTFont(inputs / 'legacy.ttc', fontNumber=0, lazy=True) as original, TTFont(record['path'], lazy=True) as actual:
+                self.assertEqual(actual.reader['name'], original.reader['name'])
+
+    def test_all_unreadable_family_names_fail_without_inventing_aliases(self):
+        from fontTools.ttLib import TTFont
+        from fontTools.ttLib.tables._n_a_m_e import NameRecord
+        fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPExactFaceSmoke.ttc'
+        with TTFont(fixture, fontNumber=0) as font:
+            entry = NameRecord()
+            entry.nameID, entry.platformID, entry.platEncID, entry.langID = 1, 3, 5, 1042
+            entry.string = b'\xd3\x9c'
+            font['name'].names = [entry]
+            with self.assertRaisesRegex(ValueError, 'family 이름'):
+                png.font_family_names(font)
