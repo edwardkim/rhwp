@@ -5612,6 +5612,29 @@ impl LayoutEngine {
             let current: f64 = row_heights.iter().sum();
             let residual = target_row_sum - current;
             if residual > 0.5 {
+                // [#7418] `HeightMeasurer::measure_table` 과 같은 계약: 칸 선언(cellSz)이
+                // 모든 행을 이미 담고 있으면(내용이 어느 행도 키우지 않았으면) 칸 선언이
+                // 권위다 — 표 선언(`common.height`)은 낡은 값이다.
+                let raw_rows = self.indexed_raw_row_heights(table);
+                let all_rows_declared = raw_rows.len() >= row_heights.len()
+                    && raw_rows
+                        .iter()
+                        .take(row_heights.len())
+                        .all(|&h| h > 0 && h < 0x8000_0000);
+                let declared_row_sum: f64 = raw_rows
+                    .iter()
+                    .take(row_heights.len())
+                    .map(|&h| {
+                        if h < 0x8000_0000 {
+                            hwpunit_to_px(h as i32, self.dpi)
+                        } else {
+                            0.0
+                        }
+                    })
+                    .sum();
+                if all_rows_declared && current <= declared_row_sum + 0.5 {
+                    return;
+                }
                 if let Some(last) = row_heights.last_mut() {
                     *last += residual;
                 }
@@ -28503,6 +28526,61 @@ mod row_cut_tests {
             fp(&base),
             fp(&spacer),
             "공백 스페이서 클래스 전이는 지문이 변해야 한다"
+        );
+    }
+
+    /// [#7418] 칸 선언(`cellSz`)이 모든 행 내용을 이미 담고 있을 때 낡은 표 선언(`common.height`)이
+    /// 페인트·미측정 경로(`fit_row_heights_to_common_height`)에서 마지막 행을 부풀리지 않아야 하며,
+    /// 반대로 칸 선언이 최소값(stale-min)이라 내용으로 행이 자란 표는 표 선언을 따라야 한다.
+    #[test]
+    fn stale_common_height_does_not_inflate_rows_already_contained_by_cell_size() {
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+
+        // 1) 법제처 HWPX 머리글/꼬리글 표 형상: cellSz=1982HU(26.43px) 가 1줄(1200HU=16px) 내용을
+        //    이미 담고 있으나 common.height=56850HU(758.0px) 가 낡은 값으로 남아 있는 경우.
+        let mut cell_contained = cell(0, 0, vec![visible_text_para(1, 0)]);
+        cell_contained.height = 1982;
+        let mut tbl_contained = table(vec![cell_contained]);
+        tbl_contained.common.treat_as_char = true;
+        tbl_contained.common.height = 56850;
+
+        let rows_contained = eng.resolve_row_heights(
+            &tbl_contained,
+            1,
+            1,
+            None,
+            &styles,
+            true,
+        );
+        let expected_cell_px = crate::renderer::hwpunit_to_px(1982, 96.0);
+        assert!(
+            (rows_contained[0] - expected_cell_px).abs() < 0.5,
+            "cellSz 가 내용을 이미 담고 있으면 낡은 common.height(758px)로 부풀지 않아야 함: got {:?}",
+            rows_contained
+        );
+
+        // 2) 반대로 cellSz=284HU(3.79px, stale-min) 보다 내용(3줄=48px)이 커서 행이 성장한
+        //    비-TAC 표는 종전대로 common.height(15000HU=200px) 최소 높이를 유지해야 한다.
+        let mut cell_grew = cell(0, 0, vec![visible_text_para(3, 0)]);
+        cell_grew.height = 284;
+        let mut tbl_grew = table(vec![cell_grew]);
+        tbl_grew.common.treat_as_char = false;
+        tbl_grew.common.height = 15000;
+
+        let rows_grew = eng.resolve_row_heights(
+            &tbl_grew,
+            1,
+            1,
+            None,
+            &styles,
+            false,
+        );
+        let expected_common_px = crate::renderer::hwpunit_to_px(15000, 96.0);
+        assert!(
+            (rows_grew[0] - expected_common_px).abs() < 0.5,
+            "내용이 cellSz(stale-min)를 넘어 자란 표는 common.height 로 맞춰야 함: got {:?}",
+            rows_grew
         );
     }
 }
