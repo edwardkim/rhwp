@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { functionBodyFrom } from './support/source-guard.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const source = (path: string): string => readFileSync(join(rootDir, path), 'utf8');
@@ -47,13 +48,16 @@ test('개체 선택 C/X/Delete는 canonical edit command를 사용하고 native 
 
 test('canonical 표 cut/delete가 keyboard의 중첩 표 안전 계약을 유지한다', () => {
   const inputHandler = source('src/engine/input-handler.ts');
-  const cut = slice(inputHandler, 'performCut(): void {', '\n  /** 선택 영역 삭제');
+  const publicCut = functionBodyFrom(inputHandler, 'performCut(): void');
+  assert.match(publicCut, /this\.cutSelectedObject\(\)/, '공개 잘라내기는 같은 helper로 위임');
+  const cut = functionBodyFrom(inputHandler, 'private async cutSelectedObject(');
   const del = slice(inputHandler, 'performDelete(): void {', '\n  /** 전체 선택');
 
-  const tableCut = slice(cut, "if (this.cursor.isInTableObjectSelection()) {", '\n    // 텍스트 선택');
-  const guard = tableCut.indexOf('if (ref.cellPath && ref.cellPath.length > 1) return;');
-  const copy = tableCut.indexOf('this.performCopy();');
-  assert.ok(guard !== -1 && guard < copy, '중첩 표는 복사·삭제 전에 차단');
+  const guard = cut.indexOf('if (table?.cellPath && table.cellPath.length > 1) return;');
+  const copy = cut.indexOf('await this.copySelectedObject(');
+  const deletion = cut.indexOf('wasm.deleteTableControl(');
+  assert.ok(guard !== -1 && copy !== -1 && deletion !== -1 && guard < copy && guard < deletion,
+    '중첩 표는 복사·삭제 전에 차단');
 
   const nestedDelete = slice(del, 'if (ref.cellPath && ref.cellPath.length > 1) {', '\n      }');
   assert.match(nestedDelete, /this\.updateCaret\(\)/, '중첩 표 delete 뒤 caret를 갱신');

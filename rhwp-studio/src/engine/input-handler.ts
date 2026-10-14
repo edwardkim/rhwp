@@ -324,6 +324,7 @@ export class InputHandler {
   private history: CommandHistory;
   private textarea: HTMLTextAreaElement;
   private active = false;
+  private cancelPendingObjectCut: (() => void) | null = null;
   private insertMode = true;  // true=삽입, false=수정(덮어쓰기)
   private editMode: EditorEditMode = 'normal';
   /** 마지막 셀 키 (눈금자 셀 bbox 중복 조회 방지) */
@@ -4432,6 +4433,8 @@ export class InputHandler {
   }
 
   deactivate(): void {
+    this.cancelPendingObjectCut?.();
+    this.cancelPendingObjectCut = null;
     this.flushDeferredPaginationIfNeeded('before-deactivate', false);
     this.active = false;
     // 문서 교체와 mutation renderer 선택이 경합해 layout 완료 이벤트가 생략돼도
@@ -4478,6 +4481,8 @@ export class InputHandler {
   }
 
   dispose(): void {
+    this.cancelPendingObjectCut?.();
+    this.cancelPendingObjectCut = null;
     this.flushDeferredPaginationIfNeeded('before-dispose', false);
     if (this.isResizeDragging) {
       this.cleanupResizeDrag();
@@ -5493,38 +5498,54 @@ export class InputHandler {
 
   /** 복사 (커맨드 시스템용 — 컨텍스트 메뉴/도구 상자에서 호출) */
   performCopy(): void {
+    if (this.cursor.isInPictureObjectSelection() || this.cursor.isInTableObjectSelection()) {
+      void this.copySelectedObject().catch((err) => {
+        console.warn('[InputHandler] 개체 복사 실패:', err);
+      });
+      return;
+    }
+    // 텍스트 선택 → textarea 포커스 후 execCommand
+    this.focusTextarea();
+    document.execCommand('copy');
+  }
+
+  private async copySelectedObject(isCurrent: () => boolean = () => true): Promise<boolean> {
     // 개체 선택 모드 → 직접 클립보드 기록 (textarea 포커스 불필요)
     if (this.cursor.isInPictureObjectSelection()) {
       const ref = this.cursor.getSelectedPictureRef();
       if (ref) {
         try {
           const cellPathJson = _keyboard.pictureCellPathJson(ref);
-          this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
+          const result = this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
+          if (JSON.parse(result).ok !== true) return false;
           const text = this.wasm.getClipboardText() || '[그림]';
           let html = '';
           try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci, cellPathJson) || ''; } catch { /* 무시 */ }
           const markedHtml = _keyboard.prepareRhwpInternalClipboardHtml(this, html, text);
+          if (!isCurrent()) return false;
           if (ref.type === 'image') {
-            _keyboard.writeImageToClipboard(this.wasm, ref.sec, ref.ppi, ref.ci, text, markedHtml, cellPathJson)
-              .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
+            await _keyboard.writeImageToClipboard(this.wasm, ref.sec, ref.ppi, ref.ci, text, markedHtml, cellPathJson, isCurrent)
+              .catch(() => { if (isCurrent()) return navigator.clipboard.writeText(text); });
           } else {
-            _keyboard.writeTextHtmlToClipboard(text, markedHtml)
-              .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
+            await _keyboard.writeTextHtmlToClipboard(text, markedHtml)
+              .catch(() => { if (isCurrent()) return navigator.clipboard.writeText(text); });
           }
+          return isCurrent();
         } catch (err) {
           console.warn('[InputHandler] 개체 복사 실패:', err);
         }
       }
-      return;
+      return false;
     }
     if (this.cursor.isInTableObjectSelection()) {
       const ref = this.cursor.getSelectedTableRef();
       if (ref) {
         try {
           const target = tableObjectClipboardTarget(ref);
-          this.wasm.copyControl(
+          const result = this.wasm.copyControl(
             ref.sec, ref.ppi, target.controlIndex, target.ownerCellPathJson,
           );
+          if (JSON.parse(result).ok !== true) return false;
           const text = this.wasm.getClipboardText() || '[표]';
           let html = '';
           try {
@@ -5533,17 +5554,17 @@ export class InputHandler {
             ) || '';
           } catch { /* 무시 */ }
           const markedHtml = _keyboard.prepareRhwpInternalClipboardHtml(this, html, text);
-          _keyboard.writeTextHtmlToClipboard(text, markedHtml)
-            .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
+          if (!isCurrent()) return false;
+          await _keyboard.writeTextHtmlToClipboard(text, markedHtml)
+            .catch(() => { if (isCurrent()) return navigator.clipboard.writeText(text); });
+          return isCurrent();
         } catch (err) {
           console.warn('[InputHandler] 표 복사 실패:', err);
         }
       }
-      return;
+      return false;
     }
-    // 텍스트 선택 → textarea 포커스 후 execCommand
-    this.focusTextarea();
-    document.execCommand('copy');
+    return false;
   }
 
   /** 붙이기 (커맨드 시스템용 — 컨텍스트 메뉴/도구 상자에서 호출) */
@@ -5556,49 +5577,82 @@ export class InputHandler {
   /** 잘라내기 (커맨드 시스템용 — 컨텍스트 메뉴/도구 상자에서 호출) */
   performCut(): void {
     if (this.editMode === 'form') return;
-    // 개체 선택 모드 → 복사 + 삭제
-    if (this.cursor.isInPictureObjectSelection()) {
-      const ref = this.cursor.getSelectedPictureRef();
-      if (ref) {
-        // 클립보드에 복사
-        this.performCopy();
-        // 삭제
-        this.cursor.moveOutOfSelectedPicture();
-        this.pictureObjectRenderer?.clear();
-        this.eventBus.emit('picture-object-selection-changed', false);
-        this.executeOperation({ kind: 'snapshot', operationType: 'cutObject', operation: (wasm: WasmBridge) => {
-          if (ref.type === 'image' && ref.cellPath && ref.cellPath.length > 0) {
-            wasm.deleteCellPictureControlByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci);
-          } else if (ref.type === 'image') {
-            wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
-          } else if (ref.type === 'equation') {
-            wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
-          } else {
-            wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
-          }
-          return this.cursor.getPosition();
-        }});
-      }
-      return;
-    }
-    if (this.cursor.isInTableObjectSelection()) {
-      const ref = this.cursor.getSelectedTableRef();
-      if (ref) {
-        // 중첩 표 잘라내기는 지원하지 않는다. keydown 경로도 같은 선택 상태를 유지한다.
-        if (ref.cellPath && ref.cellPath.length > 1) return;
-        this.performCopy();
-        this.cursor.moveOutOfSelectedTable();
-        this.eventBus.emit('table-object-selection-changed', false);
-        this.executeOperation({ kind: 'snapshot', operationType: 'cutTable', operation: (wasm: WasmBridge) => {
-          wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
-          return this.cursor.getPosition();
-        }});
-      }
+    if (this.cursor.isInPictureObjectSelection() || this.cursor.isInTableObjectSelection()) {
+      void this.cutSelectedObject().catch((err) => {
+        console.warn('[InputHandler] 개체 잘라내기 실패:', err);
+      });
       return;
     }
     // 텍스트 선택 → textarea 포커스 후 execCommand
     this.focusTextarea();
     document.execCommand('cut');
+  }
+
+  private async cutSelectedObject(): Promise<void> {
+    if (!this.active || this.editMode === 'form' || this.cancelPendingObjectCut) return;
+    const picture = this.cursor.isInPictureObjectSelection() ? this.cursor.getSelectedPictureRef() : null;
+    const table = !picture && this.cursor.isInTableObjectSelection() ? this.cursor.getSelectedTableRef() : null;
+    const ref = picture ?? table;
+    if (!ref) return;
+    // 중첩 표 잘라내기는 지원하지 않는다. keydown 경로도 같은 선택 상태를 유지한다.
+    if (table?.cellPath && table.cellPath.length > 1) return;
+    const handle = this.wasm.borrowDocumentHandle();
+    if (!handle) return;
+    const generation = this.wasm.documentGeneration;
+    const undoTop = this.history.peekUndoTop();
+    const section = ref.sec;
+    const paragraph = ref.ppi;
+    const type = picture?.type;
+    const target = picture
+      ? { controlIndex: picture.ci, ownerCellPathJson: _keyboard.pictureCellPathJson(picture) }
+      : tableObjectClipboardTarget(table!);
+    // 복사를 기다리는 동안 편집된 개체를 오래된 클립보드로 지우지 않는다.
+    let invalidated = false;
+    const stopMutation = this.eventBus.on('document-mutated', () => { invalidated = true; });
+    const stopChange = this.eventBus.on('document-changed', () => { invalidated = true; });
+    const cancel = () => {
+      invalidated = true;
+      stopMutation();
+      stopChange();
+    };
+    this.cancelPendingObjectCut = cancel;
+    const isCurrent = () => {
+      if (invalidated || this.cancelPendingObjectCut !== cancel
+        || !this.active || this.isFormMode()
+        || this.wasm.documentGeneration !== generation || this.wasm.borrowDocumentHandle() !== handle
+        || this.history.peekUndoTop() !== undoTop) return false;
+      if (picture
+        ? !this.cursor.isInPictureObjectSelection() || this.cursor.getSelectedPictureRef() !== picture
+        : !this.cursor.isInTableObjectSelection() || this.cursor.getSelectedTableRef() !== table) return false;
+      const currentTarget = picture
+        ? { controlIndex: picture.ci, ownerCellPathJson: _keyboard.pictureCellPathJson(picture) }
+        : tableObjectClipboardTarget(table!);
+      return ref.sec === section && ref.ppi === paragraph && picture?.type === type
+        && currentTarget.controlIndex === target.controlIndex
+        && currentTarget.ownerCellPathJson === target.ownerCellPathJson;
+    };
+    try {
+      if (!await this.copySelectedObject(isCurrent) || !isCurrent()) return;
+      if (picture) {
+        this.cursor.moveOutOfSelectedPicture();
+        this.pictureObjectRenderer?.clear();
+        this.executeOperation({ kind: 'snapshot', operationType: 'cutObject', operation: () => {
+          this.deleteObjectControl(picture);
+          return this.cursor.getPosition();
+        }});
+        this.eventBus.emit('picture-object-selection-changed', false);
+      } else {
+        this.cursor.moveOutOfSelectedTable();
+        this.executeOperation({ kind: 'snapshot', operationType: 'cutTable', operation: (wasm: WasmBridge) => {
+          wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
+          return this.cursor.getPosition();
+        }});
+        this.eventBus.emit('table-object-selection-changed', false);
+      }
+    } finally {
+      cancel();
+      if (this.cancelPendingObjectCut === cancel) this.cancelPendingObjectCut = null;
+    }
   }
 
   /** 선택 영역 삭제 (커맨드 시스템용 — 편집 > 지우기) */

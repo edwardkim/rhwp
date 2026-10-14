@@ -496,10 +496,12 @@ export function pictureCellPathJson(
 export async function writeImageToClipboard(
   wasm: WasmBridge, sec: number, ppi: number, ci: number,
   text: string, html: string, cellPathJson = '',
+  isCurrent: () => boolean = () => true,
 ): Promise<void> {
   const imageData = wasm.getControlImageData(sec, ppi, ci, cellPathJson);
   const mime = wasm.getControlImageMime(sec, ppi, ci, cellPathJson);
   const pngBlob = await convertToPngBlob(imageData, mime);
+  if (!isCurrent()) return;
   const item = new ClipboardItem({
     'text/plain': new Blob([text], { type: 'text/plain' }),
     'text/html': new Blob([html], { type: 'text/html' }),
