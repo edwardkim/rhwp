@@ -81,7 +81,7 @@ fn direct_hwp_parser_preserves_tail_without_core_load_fixups() {
         for section in 0..doc.sections.len() {
             assert_eq!(tail(&saved, section), tail(&original, section));
         }
-        doc.sections[0].paragraphs[0].text.insert_str(0, "A");
+        doc.sections[0].paragraphs[0].text.insert(0, 'A');
         let edited = serialize_hwp(&doc).expect("본문 변경은 목록의 의미를 바꾸지 않는다");
         assert_eq!(tail(&edited, 0), tail(&original, 0));
     }
