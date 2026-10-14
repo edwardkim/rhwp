@@ -168,17 +168,17 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
             root = Path(folder)
             sources = root / 'source-fonts'
             sources.mkdir()
-            path = sources / 'embedded.ttc'
+            path = sources / '내장 font face.ttc'
             shutil.copyfile(Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPExactFaceSmoke.ttc', path)
             requests = root / 'requests.json'
             requests.write_text(json.dumps([{'path': str(path), 'faceIndex': 1,
-                                            'families': ['문서 논리 글꼴']}]))
-            catalogue = json.loads(png.embedded_font_catalog(requests, root).read_text())
+                                            'families': ['문서 논리 글꼴 Ω 🚀']}]), encoding='utf-8')
+            catalogue = json.loads(png.embedded_font_catalog(requests, root).read_text(encoding='utf-8'))
             self.assertEqual(len(catalogue['faces']), 1)
             face = catalogue['faces'][0]
             self.assertEqual(face['faceIndex'], 1)
             self.assertEqual(face['sourceKind'], 'document-embedded')
-            self.assertIn('문서 논리 글꼴', face['families'])
+            self.assertIn('문서 논리 글꼴 Ω 🚀', face['families'])
             self.assertIn('RHWP Exact Face One', face['families'])
             from fontTools.ttLib import TTFont
             with TTFont(face['path']) as font:

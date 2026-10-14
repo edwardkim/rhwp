@@ -269,9 +269,9 @@ def embedded_font_catalog(requests: Path, output: Path) -> Path:
     root = requests.parent
     adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
                               sha256_file=lambda path: hashlib.sha256(path.read_bytes()).hexdigest(),
-                              write_json_atomic=lambda path, value: path.write_text(json.dumps(value)))
+                              write_json_atomic=lambda path, value: path.write_text(json.dumps(value), encoding='utf-8'))
     catalogue = font_catalog(adapter, root, [root / 'source-fonts'], output)
-    value = json.loads(catalogue.read_text())
+    value = json.loads(catalogue.read_text(encoding='utf-8'))
     selected = []
     for face in value['faces']:
         matches = [entry for entry in entries if Path(entry['path']).resolve() == Path(face['source'])
@@ -285,7 +285,7 @@ def embedded_font_catalog(requests: Path, output: Path) -> Path:
                    and face['faceIndex'] == entry['faceIndex'] for face in selected) for entry in entries):
         raise SystemExit('문서 내장 글꼴의 선택 face를 공급할 수 없습니다.')
     value['faces'] = selected
-    catalogue.write_text(json.dumps(value, ensure_ascii=False))
+    catalogue.write_text(json.dumps(value, ensure_ascii=False), encoding='utf-8')
     return catalogue
 
 

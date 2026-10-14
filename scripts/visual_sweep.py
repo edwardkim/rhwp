@@ -166,7 +166,8 @@ def run(
     if verbose:
         print("+ " + " ".join(cmd), flush=True)
     proc = subprocess.run(
-        cmd, cwd=cwd, text=True, capture_output=True, check=False, errors=encoding_errors,
+        cmd, cwd=cwd, text=True, capture_output=True, check=False,
+        encoding="utf-8", errors=encoding_errors,
     )
     if log_path is not None:
         log_path.parent.mkdir(parents=True, exist_ok=True)
