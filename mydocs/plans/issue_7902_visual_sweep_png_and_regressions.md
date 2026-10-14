@@ -33,6 +33,12 @@ Issue: #7902. 작업지시: 먼저 SVG 출력을 최소화하는 Visual Sweep을
 
 ## 2단계 — #7902 출력 보정과 재발 방지
 
+2026-10-14 재개 기준: 도구 PR #7903과 검토·지침 PR #7906은 실제 merge됐다.
+2단계 브랜치는 `fix/pr7877-render-regressions-20261014`, 기준 devel SHA는
+`c0d330737fabae77ca2bf1706cba8514d0e8f1df`다. [2단계 기록](../working/task_m100_7902_stage2.md)에
+현재 기준 산출물, 실제 보정·검증과 정리 결과를 이어 기록한다. #7877은 이미 merge된 PR이며
+별도 회귀 이슈 #7902의 원본 검증 범위를 보존한다.
+
 기존 고정 소스의 Native/fresh SVG 비교는 각각 19문서 중 13통과/6미달이었다. 측정 가능한
 18문서는 각 787쪽이며 9쪽이 90% 미만이다. overfill은 49쪽/Print 48쪽으로 측정 불가다.
 
@@ -54,9 +60,11 @@ Issue: #7902. 작업지시: 먼저 SVG 출력을 최소화하는 Visual Sweep을
 
 ## 증거와 디스크
 
-ignored `output/pr-review/pr7877-after-rebase-20261014/`와
-`output/pr-review/visual-sweep-direct-png-20261014/`에 원시 기록을 보존한다.
-완료된 중간 SVG만 정리하며 원본 HWP/HWPX/HML/PDF·PNG·TSV·로그·글꼴·공용 target은 보존한다.
+검증 중인 원시 기록은 ignored `output/pr-review/issue7902-render-repair-20261014/`에 저장한다.
+과거 실행 기록의 원래 경로는 단계별 증거에 남기되, 종료 뒤에는 **`output/pr-review` 전체**를
+점검해 필요 없는 로그·중간 출력·중복 산출물을 정리한다. 필요한 원본·기준 PDF·글꼴·현재 재현 자료와
+공유 캐시는 보존하며, 영구 증적과 실제 사용 여부를 확인한 정확한 경로만 제거한다.
+정본은 [전체 output 정리 지침](../manual/pr_review/post_merge.md#77-branch-worktree-검토-전용-target-정리)이다.
 
 ## 페이지별 좌표 회귀 지침
 
