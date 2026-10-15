@@ -96,13 +96,20 @@ function extractBlockBody(source, signatureIndex, blockName) {
 }
 
 function extractMethodBody(source, methodName) {
-  let signatureIndex = source.indexOf(`private ${methodName}(`);
-  if (signatureIndex === -1) {
-    signatureIndex = source.indexOf(`${methodName}(`);
-  }
-  assert.notEqual(signatureIndex, -1, `missing method ${methodName}`);
+  const signature = source.match(new RegExp(
+    `^\\s*(?:(?:private|public|protected)\\s+)?(?:async\\s+)?${methodName}\\(`, 'm',
+  ));
+  assert.notEqual(signature, null, `missing method ${methodName}`);
 
-  return extractBlockBody(source, signatureIndex, methodName);
+  // Skip the parameter list, including object-valued defaults, before finding
+  // the method body. Declarations are anchored so call sites cannot match.
+  let depth = 1;
+  for (let index = signature.index + signature[0].length; index < source.length; index += 1) {
+    if (source[index] === '(') depth += 1;
+    if (source[index] === ')') depth -= 1;
+    if (depth === 0) return extractBlockBody(source, index + 1, methodName);
+  }
+  throw new Error(`unterminated parameters for ${methodName}`);
 }
 
 function extractSwitchCaseClusterBody(methodBody, caseLabel) {
@@ -3015,7 +3022,7 @@ requireSnippet(
 );
 requireSnippet(
   renderColorPaintGraphNodeBody,
-  /node\.kind === 'transform'[\s\S]*?transformNode\?\.childNodeId[\s\S]*?this\.renderColorPaintGraphNode\(canvas, nodesById, transformNode\.childNodeId, visited\)/,
+  /node\.kind === 'transform'[\s\S]*?transformNode\?\.childNodeId[\s\S]*?this\.renderColorPaintGraphNode\(canvas, nodesById, transformNode\.childNodeId, visited, budget, depth \+ 1\)/,
   'glyphOutline color graph replay should keep transform recursion explicit',
 );
 requireSnippet(
