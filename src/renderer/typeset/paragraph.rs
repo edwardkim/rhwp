@@ -485,10 +485,20 @@ pub(super) fn try_place_overflow_paragraph(
     body_bottom_vpos: Option<i32>,
     available: f64,
     forced_page_break_line: Option<usize>,
+    stored_vpos_rewind_overflow_break: bool,
     dpi: f64,
 ) -> bool {
     let page = st.paragraph_overflow_page();
-    if overflow::atomic_overflow_fits(para, fmt, paragraphs, para_idx, &page, available, dpi) {
+    if overflow::atomic_overflow_fits(
+        para,
+        fmt,
+        paragraphs,
+        para_idx,
+        &page,
+        available,
+        stored_vpos_rewind_overflow_break,
+        dpi,
+    ) {
         st.begin_atomic_overflow_paragraph(para_idx);
         let stored_flow =
             content::stored_successor_flow(st, para, fmt, paragraphs, styles, para_idx, dpi);

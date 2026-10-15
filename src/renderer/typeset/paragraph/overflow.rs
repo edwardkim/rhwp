@@ -28,6 +28,7 @@ pub(in crate::renderer::typeset) fn atomic_overflow_fits(
     para_idx: usize,
     page: &OverflowPage,
     available: f64,
+    stored_vpos_rewind_overflow_break: bool,
     dpi: f64,
 ) -> bool {
     // [Task #409 v3] atomic TAC top-fit:
@@ -58,8 +59,14 @@ pub(in crate::renderer::typeset) fn atomic_overflow_fits(
             para_idx,
             crate::renderer::px_to_hwpunit(page.body_height, dpi),
         );
+    // 저장 vpos 가 이 문단에서 되감기고 통째로는 안 들어가면(#5755) 한글은 이 문단을
+    // 다음 쪽 첫머리에 둔 것이다 — top-fit 스필은 저장 사다리가 쪽을 끊지 않은 자리의
+    // 규칙이다. 1480000-201900698 pi=88(그림 370px, 저장 vpos 44640 → 300): 남은
+    // 334px 에 27px 넘친 채 19쪽에 남아 984.7px 로 본문을 넘쳤고, 한/글 PDF 는 20쪽
+    // 첫머리에 둔다.
     if is_atomic_tac_singleton
         && !stored_next_page_atomic
+        && !stored_vpos_rewind_overflow_break
         && page.current_height < available
         && page.has_items
     {
