@@ -706,18 +706,18 @@ fn bitmap_and_svg_bounds_stay_positive_in_f32_replay_space() {
         svg.intrinsic_size = Some(size);
         assert!(!svg.has_static_sanitized_contract(), "size: {size:?}");
     }
-    // A positive, representable subnormal at the origin still has two edges.
+    // A representable subnormal has native edges, but the decimal wire loses them.
     let minimum = f64::from(f32::from_bits(1));
     let mut bitmap = bitmap();
     bitmap.placement = BoundingBox::new(0.0, 0.0, minimum, minimum);
-    assert!(bitmap.has_strict_visual_contract());
+    assert!(!bitmap.has_strict_visual_contract());
     let mut svg = svg();
     svg.view_box = bitmap.placement;
     svg.intrinsic_size = Some(LayerVector {
         dx: minimum,
         dy: minimum,
     });
-    assert!(svg.has_static_sanitized_contract());
+    assert!(!svg.has_static_sanitized_contract());
 }
 
 #[test]
@@ -782,6 +782,252 @@ fn shared_svg_selector_preserves_the_required_fallback_font_for_invalid_destinat
 }
 
 #[test]
+fn shared_bitmap_and_svg_selector_preserves_fonts_when_decimal_wire_extents_collapse() {
+    for (field, values) in [
+        (
+            "bitmapPlacement",
+            vec![f64::from(f32::from_bits(1)), 0.000_49],
+        ),
+        ("svgViewBox", vec![f64::from(f32::from_bits(1)), 0.000_49]),
+        (
+            "svgDestination",
+            vec![f64::from(f32::from_bits(1)), 0.000_49],
+        ),
+        (
+            "svgIntrinsic",
+            vec![f64::from(f32::from_bits(1)), 0.000_000_49],
+        ),
+    ] {
+        for value in values {
+            let mut tree = monochrome_selector_tree();
+            let svg_ref = tree
+                .resources
+                .intern_svg_fragment("<path d=\"M0 0H10V10Z\"/>");
+            let image_ref = tree
+                .resources
+                .intern_image_bytes(include_bytes!("../../assets/logo/logo-32.png"));
+            let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+                unreachable!()
+            };
+            let PaintOp::GlyphOutline { bbox, outline } = &mut ops[1] else {
+                unreachable!()
+            };
+            outline.paths.clear();
+            if field == "bitmapPlacement" {
+                outline.payload_kind = GlyphOutlinePayloadKind::BitmapGlyph;
+                outline.bitmap_glyph = Some(BitmapGlyphPayload {
+                    image_ref,
+                    placement: BoundingBox::new(0.0, 0.0, value, 8.0),
+                    ..bitmap()
+                });
+            } else {
+                outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+                let mut payload = SvgGlyphPayload { svg_ref, ..svg() };
+                match field {
+                    "svgViewBox" => payload.view_box = BoundingBox::new(0.0, 0.0, value, 8.0),
+                    "svgDestination" => *bbox = BoundingBox::new(0.0, 0.0, value, 8.0),
+                    "svgIntrinsic" => {
+                        payload.intrinsic_size = Some(LayerVector { dx: value, dy: 8.0 })
+                    }
+                    _ => unreachable!(),
+                }
+                outline.svg_glyph = Some(payload);
+            }
+            let options = TextVariantSelectionOptions {
+                allow_bitmap_glyph: true,
+                allow_svg_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            };
+            // Exercise the real serializer rather than a numerical approximation
+            // of its precision: this is the payload CanvasKit actually receives.
+            let wire: serde_json::Value = serde_json::from_str(&tree.to_json()).unwrap();
+            let op = &wire["root"]["ops"][1];
+            let serialized_extent = match field {
+                "bitmapPlacement" => &op["bitmapGlyph"]["placement"]["width"],
+                "svgViewBox" => &op["svgGlyph"]["viewBox"]["width"],
+                "svgDestination" => &op["bbox"]["width"],
+                "svgIntrinsic" => &op["svgGlyph"]["intrinsicSize"]["width"],
+                _ => unreachable!(),
+            };
+            assert_eq!(serialized_extent.as_f64(), Some(0.0), "{field}: {value}");
+            let report = &analyze_text_variant_selection(&tree, options)[0];
+            assert_eq!(
+                report.selected_variant_kind,
+                Some(TextVariantKind::TextRun),
+                "{field}: {value}"
+            );
+            assert!(report.fallback_required);
+            let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+            assert_eq!(plan.required_font_families, ["Test"], "{field}: {value}");
+            assert!(plan.required_font_families_complete);
+            if field != "svgDestination" {
+                assert!(op.get("payloadResourceKey").is_none(), "{field}: {value}");
+            }
+        }
+    }
+}
+
+#[test]
+fn bitmap_and_svg_resource_keys_use_full_fixed_decimals_at_large_f32_values() {
+    for (value, integer) in [
+        (1e21, "1000000000000000000000"),
+        (
+            f64::from(f32::MAX),
+            "340282346638528859811704183484516925440",
+        ),
+    ] {
+        let mut tree = monochrome_selector_tree();
+        let svg_ref = tree
+            .resources
+            .intern_svg_fragment("<path d=\"M0 0H10V10Z\"/>");
+        let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+            unreachable!()
+        };
+        let PaintOp::GlyphOutline { outline, .. } = &mut ops[1] else {
+            unreachable!()
+        };
+        outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+        outline.paths.clear();
+        outline.svg_glyph = Some(SvgGlyphPayload {
+            svg_ref,
+            view_box: BoundingBox::new(0.0, -3.0, value, 8.0),
+            intrinsic_size: Some(LayerVector { dx: value, dy: 8.0 }),
+            transform_to_run: Some(LayerAffineTransform {
+                e: -value,
+                ..affine()
+            }),
+            ..svg()
+        });
+        let key = outline.payload_resource_key().unwrap();
+        assert!(key.contains(&format!("viewBox:0.000,-3.000,{integer}.000,8.000:")));
+        assert!(key.contains(&format!("intrinsicSize:{integer}.000000,8.000000:")));
+        assert!(key.ends_with(&format!(
+            "transform:1.000000,0.000000,0.000000,1.000000,-{integer}.000000,-3.000000"
+        )));
+        let wire: serde_json::Value = serde_json::from_str(&tree.to_json()).unwrap();
+        let op = &wire["root"]["ops"][1];
+        assert!(op["payloadResourceKey"]
+            .as_str()
+            .unwrap()
+            .starts_with(&format!("{key}:resource:")));
+        assert_eq!(
+            op["svgGlyph"]["intrinsicSize"]["width"].as_f64(),
+            Some(value)
+        );
+        assert_eq!(op["svgGlyph"]["transformToRun"]["e"].as_f64(), Some(-value));
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert!(plan.required_font_families.is_empty());
+        assert!(plan.required_font_families_complete);
+    }
+}
+
+#[test]
+fn bitmap_and_svg_resource_keys_preserve_the_fixed_decimal_negative_zero_sign() {
+    let mut tree = monochrome_selector_tree();
+    let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+        unreachable!()
+    };
+    let PaintOp::GlyphOutline { outline, .. } = &mut ops[1] else {
+        unreachable!()
+    };
+    outline.payload_kind = GlyphOutlinePayloadKind::BitmapGlyph;
+    outline.paths.clear();
+    outline.bitmap_glyph = Some(BitmapGlyphPayload {
+        placement: BoundingBox::new(-0.0, -3.0, 8.0, 8.0),
+        transform_to_run: Some(LayerAffineTransform {
+            e: -0.0,
+            ..affine()
+        }),
+        ..bitmap()
+    });
+    let key = outline.payload_resource_key().unwrap();
+    assert!(key.contains("placement:-0.000,-3.000,8.000,8.000:"));
+    assert!(key.ends_with("transform:1.000000,0.000000,0.000000,1.000000,-0.000000,-3.000000"));
+    let wire: serde_json::Value = serde_json::from_str(&tree.to_json()).unwrap();
+    let op = &wire["root"]["ops"][1];
+    assert_eq!(op["payloadResourceKey"], key);
+    assert!(op["bitmapGlyph"]["placement"]["x"]
+        .as_f64()
+        .unwrap()
+        .is_sign_negative());
+    assert!(op["bitmapGlyph"]["transformToRun"]["e"]
+        .as_f64()
+        .unwrap()
+        .is_sign_negative());
+}
+
+#[test]
+fn shared_svg_selector_keeps_fallback_fonts_when_view_box_mapping_overflows() {
+    let max = f64::from(f32::MAX);
+    let normal = SvgGlyphPayload {
+        view_box: BoundingBox::new(0.0, 0.0, 0.001, 1.0),
+        ..svg()
+    };
+    assert!(normal.has_portable_view_box_mapping(BoundingBox::new(0.0, 0.0, 1.0, 1.0)));
+    assert!(svg().has_portable_view_box_mapping(BoundingBox::new(-10.0, -10.0, 20.0, 20.0)));
+    for (view_box, destination) in [
+        (
+            BoundingBox::new(0.0, 0.0, 0.001, 1.0),
+            BoundingBox::new(0.0, 0.0, max, 1.0),
+        ),
+        (
+            BoundingBox::new(0.0, 0.0, 1.0, 0.001),
+            BoundingBox::new(0.0, 0.0, 1.0, max),
+        ),
+        (
+            BoundingBox::new(1e20, 0.0, 1e14, 1.0),
+            BoundingBox::new(0.0, 0.0, 1e36, 1.0),
+        ),
+        (
+            BoundingBox::new(-4.0, 0.0, 1.0, 1.0),
+            BoundingBox::new(max * 0.75, 0.0, max * 0.125, 1.0),
+        ),
+        // The original ratio is finite f32; rounding view width to .001
+        // makes the actual CanvasKit wire ratio exceed f32::MAX.
+        (
+            BoundingBox::new(0.0, 0.0, 0.001_49, 1.0),
+            BoundingBox::new(0.0, 0.0, max * 0.001_25, 1.0),
+        ),
+    ] {
+        let mut tree = monochrome_selector_tree();
+        let svg_ref = tree
+            .resources
+            .intern_svg_fragment("<path d=\"M0 0H10V10Z\"/>");
+        let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+            unreachable!()
+        };
+        let PaintOp::GlyphOutline { bbox, outline } = &mut ops[1] else {
+            unreachable!()
+        };
+        *bbox = destination;
+        outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+        outline.paths.clear();
+        outline.svg_glyph = Some(SvgGlyphPayload {
+            svg_ref,
+            view_box,
+            ..svg()
+        });
+        let options = TextVariantSelectionOptions {
+            allow_svg_glyph: true,
+            ..TextVariantSelectionOptions::canvaskit_strict_outline()
+        };
+        let report = &analyze_text_variant_selection(&tree, options)[0];
+        assert_eq!(
+            report.selected_variant_kind,
+            Some(TextVariantKind::TextRun),
+            "{view_box:?} => {destination:?}"
+        );
+        assert!(report.fallback_required);
+        assert!(report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedSvgGlyph));
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(plan.required_font_families, ["Test"]);
+        assert!(plan.required_font_families_complete);
+    }
+}
+
+#[test]
 fn shared_svg_selector_uses_the_explicit_font_em_destination() {
     let mut tree = monochrome_selector_tree();
     let svg_ref = tree
@@ -834,5 +1080,47 @@ fn shared_svg_selector_uses_the_explicit_font_em_destination() {
                 .required_font_families,
             ["Test"]
         );
+    }
+}
+
+#[test]
+fn shared_svg_mapping_checks_the_explicit_font_em_viewport() {
+    for (compatibility_width, em_width, expected) in [
+        (f64::from(f32::MAX), 1.0, TextVariantKind::GlyphOutline),
+        (1.0, f64::from(f32::MAX), TextVariantKind::TextRun),
+    ] {
+        let mut tree = monochrome_selector_tree();
+        let svg_ref = tree
+            .resources
+            .intern_svg_fragment("<path d=\"M0 0H10V10Z\"/>");
+        let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+            unreachable!()
+        };
+        let PaintOp::GlyphOutline { bbox, outline } = &mut ops[1] else {
+            unreachable!()
+        };
+        *bbox = BoundingBox::new(0.0, 0.0, compatibility_width, 1.0);
+        outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+        outline.paths.clear();
+        outline.svg_glyph = Some(SvgGlyphPayload {
+            svg_ref,
+            view_box: BoundingBox::new(0.0, 0.0, 0.001, 1.0),
+            font_em_box: Some(BoundingBox::new(0.0, 0.0, em_width, 1.0)),
+            ..svg()
+        });
+        let options = TextVariantSelectionOptions {
+            allow_svg_glyph: true,
+            ..TextVariantSelectionOptions::canvaskit_strict_outline()
+        };
+        assert_eq!(
+            analyze_text_variant_selection(&tree, options)[0].selected_variant_kind,
+            Some(expected)
+        );
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(
+            plan.required_font_families.is_empty(),
+            expected == TextVariantKind::GlyphOutline
+        );
+        assert!(plan.required_font_families_complete);
     }
 }

@@ -25,6 +25,7 @@ pub(super) fn project(
     let mut input = source.clone();
     input.text.clear();
     input.char_offsets.clear();
+    input.layout_field_values.clear();
     let mut controls = Vec::with_capacity(slots.len());
     let mut scalar_index = 0;
     for position in 0..=chars.len() {
@@ -47,6 +48,15 @@ pub(super) fn project(
                 && source.char_offsets.get(position) == Some(&raw);
         }
         if let Some(&character) = chars.get(position).filter(|_| !represented) {
+            if let Some((_, value)) = source
+                .layout_field_values
+                .iter()
+                .find(|(at, _)| *at == position)
+            {
+                input
+                    .layout_field_values
+                    .push((scalar_index, value.clone()));
+            }
             input.text.push(character);
             input
                 .char_offsets

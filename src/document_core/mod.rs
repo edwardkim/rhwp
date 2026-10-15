@@ -189,6 +189,8 @@ pub struct DocumentCore {
     pub(crate) font_environment: Option<crate::renderer::font_environment::FontEnvironment>,
     /// 구역별 구성된 문단 목록
     pub(crate) composed: Vec<Vec<ComposedParagraph>>,
+    /// 본문 동적 필드의 쪽 소속/표시값이 수렴하지 않으면 출력을 명시적으로 거부한다.
+    pub(crate) body_page_field_error: Option<String>,
     /// [#2308] source IR로부터 재생성되는 revision 기반 render normalization state.
     /// #2004 immutable compatibility projection과 #2195 sparse width overlay를 소유하며,
     /// **원본 `document`는 무손상**이고 deferred edit은 projection을 직접 mirror하지 않는다.
@@ -527,6 +529,7 @@ impl DocumentCore {
             canvas_metrics: None,
             font_environment: None,
             composed: Vec::new(),
+            body_page_field_error: None,
             render_normalization: RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),

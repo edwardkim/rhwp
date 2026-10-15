@@ -6862,6 +6862,7 @@ impl LayoutEngine {
         // 이 zone emit 경로 하나에서 그린다.
         let mut prev_zone_layout_for_sep: Option<PageLayoutInfo> = None;
         let mut prev_zone_sep_y_start: f64 = 0.0;
+        let mut prev_zone_sep_y_end: f64 = 0.0;
         // [Task #853/#866] 직전 zone 의 "디자인 spacing"(1단 ColumnDef 의 `간격`, 다단은 0).
         // 한컴은 zone 전환 시 (이전 zone 디자인 spacing /2)+(새 zone /2) 만큼 세로 여백을
         // 둔다(shortcut.hwp 1쪽 헤더 띠 ColumnDef 간격=10mm → 제목↔헤더 5mm, 헤더↔본문 5mm).
@@ -6924,7 +6925,7 @@ impl LayoutEngine {
                         body_node,
                         &pz,
                         prev_zone_sep_y_start,
-                        prev_zone_y_end,
+                        prev_zone_sep_y_end,
                     );
                 }
                 // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
@@ -7039,6 +7040,7 @@ impl LayoutEngine {
                             .unwrap_or(false));
                 prev_zone_was_multi = zone_layout.column_areas.len() >= 2;
                 last_zone_y_offset = col_content.zone_y_offset;
+                prev_zone_sep_y_end = 0.0;
                 // 본 zone 이 다단 + 구분선 보유 시 종료 시점에 emit 하기 위해 기록.
                 // [Task #1333] zone emit(emit_zone_column_separators)이 단 구분선의 단일
                 // 경로다. zone_layout=None(초기 단정의·연속 페이지)은 unwrap_or(layout)로
@@ -7205,6 +7207,17 @@ impl LayoutEngine {
                     }
                 }
             }
+            // 다음 흐름의 원점에는 줄 뒤 간격을 포함하지만, 구분선은 수용한
+            // 줄·표·개체의 물리 끝까지만 그린다. 빈 글줄의 상자도 점유로 보존한다.
+            // Column 자체 bbox는 전체 본문 높이이므로 실제 자식의 범위를 소비한다.
+            let content_bottom = col_node
+                .children
+                .iter()
+                .map(render_subtree_bottom)
+                .reduce(f64::max);
+            if let Some(bottom) = content_bottom {
+                prev_zone_sep_y_end = prev_zone_sep_y_end.max(bottom);
+            }
             body_node.children.push(col_node);
         }
 
@@ -7215,7 +7228,7 @@ impl LayoutEngine {
                 body_node,
                 &pz,
                 prev_zone_sep_y_start,
-                prev_zone_y_end,
+                prev_zone_sep_y_end,
             );
         }
     }
