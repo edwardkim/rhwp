@@ -1,0 +1,363 @@
+{
+  "producer": {
+    "head": "0a50892dad1afd5869288a7a0ef749261c219dfc",
+    "base": "463c48cc228170b576c832591b76826116e86a49",
+    "rustProducer": "../stored-justify-tail-final-candidate-v25a/producer.json",
+    "wasmProducer": "../stored-justify-tail-final-candidate-v25a/wasm-producer.json",
+    "baseProducer": "../fixed-base-463c48cc2",
+    "explicitEnvironment": "../land-display-provider-diagnostic-v26/auto-font-environment.json",
+    "scripts": {
+      "scripts/export-wasm-png-for-sweep.mjs": "e6768ed3b4576448076b61703e94f5013a9217a0832a88ae60f271ad760be6fd",
+      "scripts/visual-sweep-font-environment.mjs": "ee457aed51b751a6accbaa4dd785e80393e4b45894ba654e3b51cc7fabb67102"
+    },
+    "scope": "whole5 192DPI compat2022 capture8 sequential; auto vs same explicit real programs; base requires explicit because automatic API absent"
+  },
+  "results": [
+    {
+      "condition": "head-auto-native",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/stored-justify-tail-final-candidate-v25a",
+      "environment": "automatic actual supplied programs",
+      "counts": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "scores": {
+        "1": "98.86167",
+        "2": "97.60018",
+        "3": "97.82109",
+        "4": "97.72887",
+        "5": "99.81436"
+      }
+    },
+    {
+      "condition": "head-auto-wasm",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/stored-justify-tail-final-candidate-v25a",
+      "environment": "automatic actual supplied programs",
+      "counts": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "scores": {
+        "1": "98.87441",
+        "2": "97.55715",
+        "3": "97.31422",
+        "4": "97.77219",
+        "5": "99.78317"
+      }
+    },
+    {
+      "condition": "head-explicit-native",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/stored-justify-tail-final-candidate-v25a",
+      "environment": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/land-display-provider-diagnostic-v26/auto-font-environment.json",
+      "counts": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "scores": {
+        "1": "98.86167",
+        "2": "97.60018",
+        "3": "97.82109",
+        "4": "97.72887",
+        "5": "99.81436"
+      }
+    },
+    {
+      "condition": "head-explicit-wasm",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/stored-justify-tail-final-candidate-v25a",
+      "environment": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/land-display-provider-diagnostic-v26/auto-font-environment.json",
+      "counts": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "scores": {
+        "1": "98.87441",
+        "2": "97.55715",
+        "3": "97.31422",
+        "4": "97.77219",
+        "5": "99.78317"
+      }
+    },
+    {
+      "condition": "base-explicit-native",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/fixed-base-463c48cc2",
+      "environment": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/land-display-provider-diagnostic-v26/auto-font-environment.json",
+      "counts": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "scores": {
+        "1": "97.25210",
+        "2": "96.36598",
+        "3": "94.75972",
+        "4": "95.05374",
+        "5": "94.78225"
+      }
+    },
+    {
+      "condition": "base-explicit-wasm",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/fixed-base-463c48cc2",
+      "environment": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-sync-20261015/land-display-provider-diagnostic-v26/auto-font-environment.json",
+      "counts": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "scores": {
+        "1": "97.51428",
+        "2": "96.57161",
+        "3": "94.56858",
+        "4": "95.36045",
+        "5": "95.06401"
+      }
+    }
+  ],
+  "develDeclinesAtLeast001PercentagePoint": [],
+  "automaticAndExplicitHeadPngHashesEqualAll5Pages": true,
+  "wasmFontEnvironment": {
+    "source": "preparedPrograms",
+    "environment": {
+      "id": "declared-program-eed21ee7da0f189bda0dec7362a4143268ee1f5528ea5b3f94c2a6b25afb3537",
+      "substitutions": {
+        "-윤고딕110": "Haansoft Batang",
+        "-윤고딕120": "Haansoft Batang",
+        "-윤고딕160": "Haansoft Batang",
+        "HY울릉도L": "Haansoft Batang",
+        "견명조": "Haansoft Batang",
+        "휴먼신문고딕": "Haansoft Batang",
+        "휴먼신문명조": "Haansoft Batang"
+      },
+      "trueTypeFaces": [
+        "Haansoft Batang"
+      ]
+    },
+    "programs": [
+      {
+        "query": "굴림",
+        "family": "Gulim",
+        "programId": "sweep-372da65793c4dea2686cc175bc4eb7abd8d2459188b39669226aaf8c0a1d7565",
+        "trueType": true
+      },
+      {
+        "query": "Gulim",
+        "family": "Gulim",
+        "programId": "sweep-372da65793c4dea2686cc175bc4eb7abd8d2459188b39669226aaf8c0a1d7565",
+        "trueType": true
+      },
+      {
+        "query": "돋움체",
+        "family": "DotumChe",
+        "programId": "sweep-3e87913f1b4dbd4e4a6aff34f7cd28b2d60dbf7a7c758539bfea124761021737",
+        "trueType": true
+      },
+      {
+        "query": "DotumChe",
+        "family": "DotumChe",
+        "programId": "sweep-3e87913f1b4dbd4e4a6aff34f7cd28b2d60dbf7a7c758539bfea124761021737",
+        "trueType": true
+      },
+      {
+        "query": "바탕",
+        "family": "Batang",
+        "programId": "sweep-ef2d21038b84a1cf92545bc64c9f18e63403476863d9102a88ee477aac50cad6",
+        "trueType": true
+      },
+      {
+        "query": "Batang",
+        "family": "Batang",
+        "programId": "sweep-ef2d21038b84a1cf92545bc64c9f18e63403476863d9102a88ee477aac50cad6",
+        "trueType": true
+      },
+      {
+        "query": "휴먼명조",
+        "family": "휴먼명조",
+        "programId": "sweep-d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "trueType": true
+      },
+      {
+        "query": "한컴바탕",
+        "family": "Haansoft Batang",
+        "programId": "sweep-09f9eefb95f63ed255eff69b3a781b101bc78ee3887e6a11c56bc793131162bf",
+        "trueType": true
+      },
+      {
+        "query": "Haansoft Batang",
+        "family": "Haansoft Batang",
+        "programId": "sweep-09f9eefb95f63ed255eff69b3a781b101bc78ee3887e6a11c56bc793131162bf",
+        "trueType": true
+      },
+      {
+        "query": "HY견명조",
+        "family": "HYMyeongJo-Extra",
+        "programId": "sweep-acd4b604c9561bd88f9c6d160e640f42bce668abd106a39c2ed74478a15869bd",
+        "trueType": true
+      },
+      {
+        "query": "HYMyeongJo-Extra",
+        "family": "HYMyeongJo-Extra",
+        "programId": "sweep-acd4b604c9561bd88f9c6d160e640f42bce668abd106a39c2ed74478a15869bd",
+        "trueType": true
+      }
+    ],
+    "loaded": [
+      {
+        "family": "굴림",
+        "registeredFamily": "굴림",
+        "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+        "sha256": "372da65793c4dea2686cc175bc4eb7abd8d2459188b39669226aaf8c0a1d7565",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Gulim",
+        "registeredFamily": "Gulim",
+        "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+        "sha256": "372da65793c4dea2686cc175bc4eb7abd8d2459188b39669226aaf8c0a1d7565",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      },
+      {
+        "family": "돋움체",
+        "registeredFamily": "돋움체",
+        "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+        "sha256": "3e87913f1b4dbd4e4a6aff34f7cd28b2d60dbf7a7c758539bfea124761021737",
+        "faceIndex": 3,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      },
+      {
+        "family": "DotumChe",
+        "registeredFamily": "DotumChe",
+        "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+        "sha256": "3e87913f1b4dbd4e4a6aff34f7cd28b2d60dbf7a7c758539bfea124761021737",
+        "faceIndex": 3,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      },
+      {
+        "family": "바탕",
+        "registeredFamily": "바탕",
+        "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "sha256": "ef2d21038b84a1cf92545bc64c9f18e63403476863d9102a88ee477aac50cad6",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Batang",
+        "registeredFamily": "Batang",
+        "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "sha256": "ef2d21038b84a1cf92545bc64c9f18e63403476863d9102a88ee477aac50cad6",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      },
+      {
+        "family": "휴먼명조",
+        "registeredFamily": "휴먼명조",
+        "sourceSha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      },
+      {
+        "family": "한컴바탕",
+        "registeredFamily": "한컴바탕",
+        "sourceSha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "sha256": "09f9eefb95f63ed255eff69b3a781b101bc78ee3887e6a11c56bc793131162bf",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Haansoft Batang",
+        "registeredFamily": "Haansoft Batang",
+        "sourceSha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "sha256": "09f9eefb95f63ed255eff69b3a781b101bc78ee3887e6a11c56bc793131162bf",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      },
+      {
+        "family": "HY견명조",
+        "registeredFamily": "HY견명조",
+        "sourceSha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+        "sha256": "acd4b604c9561bd88f9c6d160e640f42bce668abd106a39c2ed74478a15869bd",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      },
+      {
+        "family": "HYMyeongJo-Extra",
+        "registeredFamily": "HYMyeongJo-Extra",
+        "sourceSha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+        "sha256": "acd4b604c9561bd88f9c6d160e640f42bce668abd106a39c2ed74478a15869bd",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ],
+        "sourceKind": "external"
+      }
+    ]
+  },
+  "tsvSha256": {
+    "head-auto-native.tsv": "40a49e6e5d4560def11f6dcdf1c6eaedadd02d8a4e4fe8a315baf923a241fc8e",
+    "head-explicit-native.tsv": "40a49e6e5d4560def11f6dcdf1c6eaedadd02d8a4e4fe8a315baf923a241fc8e",
+    "base-explicit-native.tsv": "9b463c5e92e7829f6822a146370c8c5480d5f1b43539691a40bac762db80455f",
+    "head-auto-wasm.tsv": "2132e450bacb70103ee3d0efd59d5791caf2589f16e50eeeaada49e623d59265",
+    "head-explicit-wasm.tsv": "2132e450bacb70103ee3d0efd59d5791caf2589f16e50eeeaada49e623d59265",
+    "base-explicit-wasm.tsv": "b985b5a9c26a75629a13c8e528ef8fe7439c4f5788a2baa55c3408f0b2f2d4e9"
+  },
+  "thresholdChanged": false,
+  "captureWorkers": 8,
+  "testEvidence": {
+    "before": "land-shared-program-environment-diagnostic-v26b/initializer-before.log: 3 tests, 2 pass, 1 fail; prelayout environment contract",
+    "after": "12 node tests pass; 142 Python tests pass"
+  },
+  "residuals": [
+    "Native/WASM glyph rasterization differences remain",
+    "This is land-table five-page validation, not primary43 or actual36 completion",
+    "The base automatic selection API is absent; both sides explicit identical environment is the fixed-base comparison condition"
+  ]
+}

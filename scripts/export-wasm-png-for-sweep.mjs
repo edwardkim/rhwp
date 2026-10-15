@@ -99,6 +99,7 @@ async function main() {
     ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
     ['/source', ['application/octet-stream', readFileSync(input)]],
     ['/font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
+    ['/sweep-font-environment.js', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-environment.mjs'))]],
   ]);
   // 실제 공급 목록만 HTTP로 읽을 수 있다. 요청 URL을 파일시스템 경로로 변환하지 않는다.
   const fonts = catalogue.faces.map((face, index) => ({...face, url: `/font/${index}`}));
@@ -109,6 +110,8 @@ async function main() {
   });
   const require = createRequire(join(root, 'rhwp-studio/package.json'));
   let pageCount;
+  let environmentSignature;
+  let fontEnvironment;
   const browsers = new Set();
   const pageRecords = [];
   const workers = [];
@@ -133,7 +136,10 @@ async function main() {
           const doc = new module.HwpDocument(new Uint8Array(await (await fetch('/source')).arrayBuffer()));
           if (typeof doc.renderPageToCanvasFilteredWithProfile !== 'function') throw Error('Print Canvas API가 없는 이전 WASM입니다.');
           doc.setHangul2024Compat(compat === '2024');
-          if (environmentJson !== null) doc.setFontEnvironment(environmentJson);
+          const {applySweepFontEnvironment, loadSweepFontPrograms} = await import('/sweep-font-environment.js');
+          // 실제 프로그램을 준비하고 공통 선택을 적용한 다음에 첫 pageCount를 계산한다.
+          const fontEnvironment = await applySweepFontEnvironment(doc, environmentJson,
+            plan => loadSweepFontPrograms(plan, fonts));
           globalThis.sweepDocument = doc;
           globalThis.sweepRequestedFonts = new Set();
           globalThis.sweepImages = new Set();
@@ -165,8 +171,12 @@ async function main() {
             if (!response.ok) throw Error('PUA 공급 글꼴을 읽을 수 없습니다.');
             return response.arrayBuffer();
           });
-          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts};
+          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, fontEnvironment};
         }, {compat: settings.compat, environmentJson, fonts});
+        const signature = JSON.stringify(info.fontEnvironment);
+        if (environmentSignature !== undefined && environmentSignature !== signature) throw Error('WASM 작업자의 실제 글꼴 환경이 다릅니다.');
+        environmentSignature = signature;
+        fontEnvironment = info.fontEnvironment;
         if (!Number.isInteger(info.pageCount) || info.pageCount < 1) throw Error('WASM 전체 쪽수가 올바르지 않습니다.');
         if (pageCount !== undefined && pageCount !== info.pageCount) throw Error('WASM 작업자 간 전체 쪽수가 다릅니다.');
         pageCount = info.pageCount;
@@ -295,7 +305,7 @@ async function main() {
           pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height});
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
-        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, browser: await browser.version()});
+        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, fontEnvironment: info.fontEnvironment, browser: await browser.version()});
         await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
       } finally {
         if (browser) {
@@ -311,6 +321,7 @@ async function main() {
     writeFileSync(join(output, 'wasm-export-complete.json'), JSON.stringify({
       pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d', protocolTimeoutMs: protocolTimeout,
       pngBackground: 'opaque-white-print-paper',
+      fontEnvironment,
       pages: pageRecords.sort((a,b) => a.page-b.page), workers,
     }, null, 2));
   } finally {
