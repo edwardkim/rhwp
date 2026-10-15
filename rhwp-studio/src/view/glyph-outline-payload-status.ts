@@ -52,7 +52,8 @@ export function glyphOutlinePayloadStatus(
   if ((op.placement?.baselineY !== undefined && !isPortableGlyphScalar(op.placement.baselineY))
     || !isOptionalFiniteAffine(op.placement?.runToPage)
     || ((payloadKind === 'monochromeFill' || payloadKind === 'monochromeFillStroke')
-      && (!Array.isArray(op.paths) || op.paths.length === 0
+      && (!isFiniteAffine(op.placement?.runToPage)
+        || !Array.isArray(op.paths) || op.paths.length === 0
         || !op.paths.every((path) => isValidPathCommands(path?.commands))))) {
     return { payloadKind, supported: false, reason: 'unsupportedOutlinePayload' };
   }

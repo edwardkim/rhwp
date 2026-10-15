@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { LayerGlyphOutlineOp, LayerPathCommand } from '../src/core/types.ts';
+import type { LayerGlyphOutlineOp, LayerPathCommand, LayerTextRunOp } from '../src/core/types.ts';
+import { selectLayerTextVariantsForLeaf } from '../src/view/canvaskit/text-variant-selection.ts';
 import {
   glyphOutlinePayloadResourceKey,
   glyphOutlinePayloadStatus,
@@ -197,6 +198,49 @@ test('run baseline rejects finite f64 overflow and accepts both exact f32 limits
     op.placement.baselineY = value;
     expectAccepted(op);
   }
+});
+
+test('monochrome fill and stroke require a complete run transform before admission', () => {
+  for (const create of [monochrome, stroked]) {
+    expectAccepted(create());
+    for (const placement of [undefined, {}, { baselineY: 0 }, { runToPage: undefined }]) {
+      const op: LayerGlyphOutlineOp = create();
+      op.placement = placement;
+      expectRejected(op);
+    }
+    const incomplete: LayerGlyphOutlineOp = create();
+    incomplete.placement!.runToPage = { a: 1, b: 0, c: 0, d: 1, e: 0 } as ReturnType<typeof affine>;
+    expectRejected(incomplete);
+  }
+});
+
+test('missing monochrome run transforms keep the whole TextRun fallback selected', () => {
+  for (const create of [monochrome, stroked]) {
+    const outline: LayerGlyphOutlineOp = {
+      ...create(),
+      variant: { equivalenceGroup: 'run', variantId: 'outline', variantKind: 'glyphOutline' },
+    };
+    const fallback: LayerTextRunOp = {
+      type: 'textRun', bbox: outline.bbox, text: '가',
+      variant: { equivalenceGroup: 'run', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+    };
+    const select = () => selectLayerTextVariantsForLeaf(
+      [outline, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+    );
+    assert.deepEqual([...select()], [outline]);
+    delete outline.placement!.runToPage;
+    assert.deepEqual([...select()], [fallback]);
+  }
+});
+
+test('payload-local transforms remain optional for color, bitmap and SVG glyphs', () => {
+  const color: LayerGlyphOutlineOp = colrv0();
+  const image: LayerGlyphOutlineOp = bitmap();
+  const vector: LayerGlyphOutlineOp = svg();
+  delete color.colorLayers!.layers![0].transformToRun;
+  delete image.bitmapGlyph!.transformToRun;
+  delete vector.svgGlyph!.transformToRun;
+  for (const op of [color, image, vector]) expectAccepted(op);
 });
 
 const AFFINE_CASES = [
