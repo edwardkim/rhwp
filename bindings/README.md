@@ -253,11 +253,6 @@ P61의 텍스트 편집·clipboard는 전체 대상 문단에 floating object나
 `PublicationError`의 `published=True`와 `path`는 완성된 파일을 게시한 뒤 directory flush/정리/ack 등이 실패했음을 뜻합니다. 게시된 파일을 삭제하거나 저장 성공으로 표시하지 않고 확인해야 합니다. 외부 변경 검사는 다른 프로세스와의 원자적 compare-and-swap이 아니므로 앱 내부 저장을 직렬화해야 하며 Windows directory durability와 네트워크 파일시스템 보장은 별도 검증 대상입니다.
 
 
-### Native Qt 창 예제 (P63)
-
-[Qt 실행 안내](Native/examples/QT_NATIVE_HOST.md)는 선택 설치하는 PySide6 창과 기존 NativeWorker·Skia RGBA 경로를 연결합니다. Linux에서 실제 QWidget offscreen 렌더·한글 QInputMethodEvent·키보드 이동·undo/redo·새 파일 저장/재열기를 확인했습니다. 실제 OS IME 후보창·compositor와 macOS/Windows 실행은 별도 검증 대상입니다.
-
-
 ### Native 접근성 snapshot (P64)
 
 session의 `accessibility` 요청은 `request:{}`를 기본으로 본문·표 셀 문단의 구조 순서 텍스트와 scalar 주소를 반환합니다. `selection`을 명시하면 조회에만 사용하고, 생략/null이면 editor의 현재 선택을 사용합니다. worker는 `accessibility {target,request}`를 받아 현재 선택의 snapshot을 `kind:"accessibility"`로 반환하며 revision을 검사합니다. capability는 `accessibilitySnapshots:true`입니다.
