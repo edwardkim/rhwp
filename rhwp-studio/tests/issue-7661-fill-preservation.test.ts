@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { tabUnitsToPt } from '../src/core/tab-units.ts';
 
 // 제품 대화상자 메서드를 그대로 실행한다. DOM 입력과 부수 미리보기만 대역이다.
 const ui = fileURLToPath(new URL('../src/ui/', import.meta.url));
@@ -24,7 +25,7 @@ class Select {
 const noop=()=>{};
 function control() { return {value:'',checked:false,disabled:false,textContent:'',classList:{contains:()=>false,add:noop,remove:noop,toggle:noop}}; }
 function controls(): any { return new Proxy({}, {get(o: any,k) { return o[k]??=(control()); }}); }
-const context=vm.createContext({i18nText:(s:string)=>s,REGISTERED_FONTS:new Set(),console,document:{createElement:(name:string)=>{assert.equal(name,'option');return new Option();}}});
+const context=vm.createContext({tabUnitsToPt,i18nText:(s:string)=>s,REGISTERED_FONTS:new Set(),console,document:{createElement:(name:string)=>{assert.equal(name,'option');return new Option();}}});
 function loadSource(file: string) {
   const source=readFileSync(ui+file+'.ts','utf8').replace(/^import\s[\s\S]*?\sfrom\s+['"][^'"]+['"];\s*$/gm,'');
   return stripTypeScriptTypes(source,{mode:'transform'}).replace(/\bexport\s+/g,'');
