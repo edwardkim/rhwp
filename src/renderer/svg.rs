@@ -3137,7 +3137,7 @@ impl Renderer for SvgRenderer {
             // [#3772] bold 는 ExtraLight 를 빼서 PDF 굵기를 지킨다.
             super::render_font_family_chain_for_weight(&style.font_family, style.is_visually_bold())
         };
-        let old_hangul_font_family = format!("'Source Han Serif K Old Hangul',{}", font_family);
+        let old_hangul_font_family = format!("'RHWP Old Hangul',{}", font_family);
 
         // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
         let (font_size, ratio) =

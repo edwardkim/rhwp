@@ -35,7 +35,7 @@ use super::equation_conv::{render_equation, EquationFonts};
 use super::fill_shader::shape_fill;
 use super::font_catalog::TypefaceCatalog;
 use super::font_lookup::{
-    collect_system_families, font_style_for_text, legacy_typeface_for_style,
+    collect_system_families, font_style_for_text, legacy_typeface_for_style, match_supplied_family,
     match_system_family_style, SystemFontFamilies,
 };
 use super::glyph_replay::{
@@ -513,6 +513,28 @@ impl SkiaLayerRenderer {
         let bundled_dirs = crate::renderer::font_paths::bundled_font_dirs();
         self.bundled_typefaces = TypefaceCatalog::load(&self.font_mgr, &bundled_dirs);
         self
+    }
+
+    /// 이미 공급한 family를 문서의 요청 이름에 명시적으로 연결한다.
+    /// `with_font_paths` 이후 호출하며 실제 폰트 메타데이터와 기본 폴백은 변경하지 않는다.
+    /// 이 renderer에 적재된 스타일 목록을 공유하고 글자별 coverage 검사는 그대로 적용한다.
+    pub fn with_font_family_alias(
+        mut self,
+        requested: &str,
+        supplied: &str,
+    ) -> LayerRenderResult<Self> {
+        if requested.trim().is_empty() {
+            return Err(HwpError::RenderError(
+                "요청 글꼴 이름이 비어 있습니다".into(),
+            ));
+        }
+        if !self.custom_typefaces.alias_family(requested, supplied) {
+            return Err(HwpError::RenderError(format!(
+                "공급되지 않은 글꼴 family: {supplied}"
+            )));
+        }
+        self.clear_caches();
+        Ok(self)
     }
 
     /// 기본 native Skia paint와 동일한 후보 사다리에서 문자별 typeface 결정을 읽는다.
@@ -1881,12 +1903,7 @@ impl SkiaLayerRenderer {
     fn make_form_font(&self, size: f32) -> Font {
         let style = FontStyle::default();
         for family in FORM_CJK_FAMILIES {
-            if let Some(tf) = self
-                .custom_typefaces
-                .candidates(family, style)
-                .into_iter()
-                .next()
-            {
+            if let Some(tf) = match_supplied_family(&self.custom_typefaces, family, style) {
                 return Font::new(tf, size);
             }
             if let Some(tf) =
@@ -1896,12 +1913,7 @@ impl SkiaLayerRenderer {
             }
             // [#3300] 시스템 폰트가 없는 headless 환경에서는 번들 폰트가
             // custom·system 뒤의 최후 폴백으로 form caption의 한국어를 구제한다.
-            if let Some(tf) = self
-                .bundled_typefaces
-                .candidates(family, style)
-                .into_iter()
-                .next()
-            {
+            if let Some(tf) = match_supplied_family(&self.bundled_typefaces, family, style) {
                 return Font::new(tf, size);
             }
         }
@@ -1981,11 +1993,7 @@ impl SkiaLayerRenderer {
                     skia_safe::font_style::Slant::Upright
                 },
             );
-            let typeface = self
-                .custom_typefaces
-                .candidates(&label.font_family, style)
-                .into_iter()
-                .next()
+            let typeface = match_supplied_family(&self.custom_typefaces, &label.font_family, style)
                 .or_else(|| {
                     match_system_family_style(
                         &self.font_mgr,
@@ -1995,10 +2003,7 @@ impl SkiaLayerRenderer {
                     )
                 })
                 .or_else(|| {
-                    self.bundled_typefaces
-                        .candidates(&label.font_family, style)
-                        .into_iter()
-                        .next()
+                    match_supplied_family(&self.bundled_typefaces, &label.font_family, style)
                 });
             let font = typeface
                 .map(|tf| Font::new(tf, label.font_size as f32))

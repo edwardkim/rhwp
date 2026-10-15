@@ -90,7 +90,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 
 | 입력/기준 경로 | SHA-256 |
 | --- | --- |
-| [pdf/1192000-202100017-policy-research-report-2020.pdf](../../../pdf/1192000-202100017-policy-research-report-2020.pdf) | `34c9173724fa5d2ef5e0b2a796b56c9b564d3f5e0c9224609dffd507921ada48` |
+| [pdf/1192000-202100017-policy-research-report-2020.pdf](../assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report-2020.pdf) | `34c9173724fa5d2ef5e0b2a796b56c9b564d3f5e0c9224609dffd507921ada48` |
 | [pdf/86712_regulatory_analysis-hwp-2024.pdf](../../../pdf/86712_regulatory_analysis-hwp-2024.pdf) | `bc1025b0607bbac01fea960997fa54430fd8dcc2604831b02940e7815cbcf84f` |
 | [pdf/SO-SUEOP-hwp-2020.pdf](../../../pdf/SO-SUEOP-hwp-2020.pdf) | `12f7e011dcf1aaf90484a79c60b7ca853dcea860f135263ac41abf7c9ae613a7` |
 | [pdf/hwpctl_API_v2.4-hwp-2020.pdf](../../../pdf/hwpctl_API_v2.4-hwp-2020.pdf) | `1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74` |
@@ -105,7 +105,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 | [samples/issue1891/86712_regulatory_analysis.hwpx](../../../samples/issue1891/86712_regulatory_analysis.hwpx) | `0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19` |
 | [samples/issue1891_external_bindata_link.hwpx](../../../samples/issue1891_external_bindata_link.hwpx) | `ce9f7275b9c84e4f032c218b9b6f94cf53c24f6e91fba30be7fd55b17acee924` |
 | [samples/issue6202/156483689-turmeric-industry-standardization.hwp](../../../samples/issue6202/156483689-turmeric-industry-standardization.hwp) | `bd24e80fda9e298ffb05dcdb64c22752a4ed78716b358076db26b2e721e41dc4` |
-| [samples/issue6800/1192000-202100017-policy-research-report.hwp](../../../samples/issue6800/1192000-202100017-policy-research-report.hwp) | `fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee` |
+| [samples/issue6800/1192000-202100017-policy-research-report.hwp](../assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report.hwp) | `fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee` |
 | [pdf/148751598-briefing-2020.pdf](../../../pdf/148751598-briefing-2020.pdf) | `98ce52ec0a6ed25ba73070b22c743cb72d129113456ae3019f417d1b53ee9dd3` |
 | [samples/issue6924/148751598-briefing.hwp](../../../samples/issue6924/148751598-briefing.hwp) | `03c93b021e01652b1ca5ba3a4a301decf9da33484af7d088987327efcb59e610` |
 | [samples/issue7062/tac_object_host_line_height.hwp](../../../samples/issue7062/tac_object_host_line_height.hwp) | `2cf764c89943a23eff17fb8ac5ccaa1958711216b15d5eb29a9a469b97d23abb` |

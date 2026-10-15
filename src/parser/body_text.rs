@@ -1191,10 +1191,12 @@ fn parse_footnote_shape_record(data: &[u8]) -> FootnoteShape {
     fs.prefix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
     fs.suffix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
     fs.start_number = r.read_u16().unwrap_or(1);
-    fs.separator_length = r.read_i16().unwrap_or(0) as i32;
-    fs.separator_margin_top = r.read_i16().unwrap_or(0);
-    // HWP5 실파일에서는 이 슬롯이 한컴 UI "구분선 위" 값으로 쓰이는 사례가 있다.
-    // HWPX aboveLine 은 separator_margin_top 에 들어오므로 정규화 접근자에서 합친다.
+    // [#7862] 구분선 길이는 4바이트다. 한/글 기본 미주 모양 `12280 | 224` 는 상위 워드까지
+    // 합친 14692344 이고, 한/글 자신의 HWPX 도 `noteLine length="14692344"` 로 적는다.
+    // 상위 워드를 "구분선 위" 여백으로 읽으면 구분선이 짧아지고 미주가 위로 올라간다.
+    fs.separator_length = r.read_i32().unwrap_or(0);
+    // HWP5 에는 HWPX `aboveLine` 슬롯이 없다. "구분선 위" 는 다음 i16 이다.
+    fs.separator_margin_top = 0;
     fs.separator_margin_bottom = r.read_i16().unwrap_or(0);
     fs.note_spacing = r.read_i16().unwrap_or(0);
 
