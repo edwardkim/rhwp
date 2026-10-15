@@ -1,6 +1,7 @@
 //! Strict glyph geometry must remain finite in the f32 replay coordinate space.
 
 use rhwp::paint::*;
+use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitReplayMode};
 use rhwp::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, VariantRejectReason,
     VariantSelectedReason,
@@ -475,8 +476,7 @@ fn strict_stroke_rejects_finite_values_outside_f32() {
     .is_strict_subset());
 }
 
-#[test]
-fn strict_outline_selector_keeps_text_fallback_when_geometry_exceeds_f32() {
+fn strict_outline_tree() -> PageLayerTree {
     let bounds = BoundingBox::new(0.0, 0.0, 24.0, 24.0);
     let style = TextStyle {
         font_family: "Test".to_string(),
@@ -568,6 +568,12 @@ fn strict_outline_selector_keeps_text_fallback_when_geometry_exceeds_f32() {
         },
     ));
 
+    tree
+}
+
+#[test]
+fn strict_outline_selector_keeps_text_fallback_when_geometry_exceeds_f32() {
+    let tree = strict_outline_tree();
     let options = TextVariantSelectionOptions::canvaskit_strict_outline();
     let reports = analyze_text_variant_selection(&tree, options);
     assert_eq!(reports.len(), 1);
@@ -619,5 +625,119 @@ fn strict_outline_selector_keeps_text_fallback_when_geometry_exceeds_f32() {
                 "only the changed scalar should reject {field}: {value}"
             );
         }
+    }
+}
+
+#[test]
+fn bitmap_and_svg_bounds_stay_positive_in_f32_replay_space() {
+    for bounds in [
+        BoundingBox::new(0.0, 0.0, 1e-100, 8.0),
+        BoundingBox::new(0.0, 0.0, 8.0, 1e-100),
+        BoundingBox::new(1.0, 0.0, 2f64.powi(-25), 8.0),
+        BoundingBox::new(0.0, 1.0, 8.0, 2f64.powi(-25)),
+        // The two consumers narrow in different orders; either can collapse.
+        BoundingBox::new(1.0 + 2f64.powi(-25), 0.0, 3.0 * 2f64.powi(-26), 8.0),
+        BoundingBox::new(1.0 - 2f64.powi(-26), 0.0, 5.0 * 2f64.powi(-26), 8.0),
+        // The f64 edge fits, but the sum of the narrowed components overflows.
+        BoundingBox::new(
+            f64::from(f32::MAX) - 2f64.powi(103) + 2f64.powi(77),
+            0.0,
+            2f64.powi(103) - 2f64.powi(77),
+            8.0,
+        ),
+    ] {
+        let mut bitmap = bitmap();
+        bitmap.placement = bounds;
+        assert!(!bitmap.has_strict_visual_contract(), "bitmap: {bounds:?}");
+        let mut svg = svg();
+        svg.view_box = bounds;
+        assert!(!svg.has_static_sanitized_contract(), "SVG: {bounds:?}");
+    }
+    for size in [
+        LayerVector {
+            dx: 1e-100,
+            dy: 8.0,
+        },
+        LayerVector {
+            dx: 8.0,
+            dy: 1e-100,
+        },
+    ] {
+        let mut svg = svg();
+        svg.intrinsic_size = Some(size);
+        assert!(!svg.has_static_sanitized_contract(), "size: {size:?}");
+    }
+    // A positive, representable subnormal at the origin still has two edges.
+    let minimum = f64::from(f32::from_bits(1));
+    let mut bitmap = bitmap();
+    bitmap.placement = BoundingBox::new(0.0, 0.0, minimum, minimum);
+    assert!(bitmap.has_strict_visual_contract());
+    let mut svg = svg();
+    svg.view_box = bitmap.placement;
+    svg.intrinsic_size = Some(LayerVector {
+        dx: minimum,
+        dy: minimum,
+    });
+    assert!(svg.has_static_sanitized_contract());
+}
+
+#[test]
+fn shared_svg_selector_preserves_the_required_fallback_font_for_invalid_destination() {
+    let mut tree = strict_outline_tree();
+    let svg_ref = tree
+        .resources
+        .intern_svg_fragment("<path d=\"M0 0H10V10Z\"/>");
+    let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+        unreachable!()
+    };
+    let PaintOp::GlyphOutline { outline, .. } = &mut ops[1] else {
+        unreachable!()
+    };
+    outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+    outline.paths.clear();
+    outline.svg_glyph = Some(SvgGlyphPayload { svg_ref, ..svg() });
+    let options = TextVariantSelectionOptions {
+        allow_svg_glyph: true,
+        ..TextVariantSelectionOptions::canvaskit_strict_outline()
+    };
+    assert_eq!(
+        analyze_text_variant_selection(&tree, options)[0].selected_variant_kind,
+        Some(TextVariantKind::GlyphOutline)
+    );
+    assert!(
+        analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default)
+            .required_font_families
+            .is_empty()
+    );
+    let edge = f64::from(f32::MAX) * 0.75;
+    for bounds in [
+        BoundingBox::new(1e100, 0.0, 8.0, 8.0),
+        BoundingBox::new(0.0, -1e100, 8.0, 8.0),
+        BoundingBox::new(edge, 0.0, edge, 8.0),
+        BoundingBox::new(0.0, edge, 8.0, edge),
+        BoundingBox::new(0.0, 0.0, 1e-100, 8.0),
+        BoundingBox::new(1.0, 0.0, 2f64.powi(-25), 8.0),
+    ] {
+        let mut invalid = tree.clone();
+        let LayerNodeKind::Leaf { ops } = &mut invalid.root.kind else {
+            unreachable!()
+        };
+        let PaintOp::GlyphOutline { bbox, .. } = &mut ops[1] else {
+            unreachable!()
+        };
+        *bbox = bounds;
+        let reports = analyze_text_variant_selection(&invalid, options);
+        assert_eq!(
+            reports[0].selected_variant_kind,
+            Some(TextVariantKind::TextRun),
+            "{bounds:?}"
+        );
+        assert!(reports[0].fallback_required);
+        assert!(reports[0].rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedSvgGlyph));
+        let plan = analyze_canvaskit_replay_plan(&invalid, CanvasKitReplayMode::Default);
+        assert_eq!(plan.required_font_families, ["Test"], "{bounds:?}");
+        assert!(plan.required_font_families_complete);
     }
 }

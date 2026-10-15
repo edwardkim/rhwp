@@ -1336,8 +1336,8 @@ impl SvgGlyphPayload {
                 .map(|size| {
                     portable_glyph_scalar(size.dx)
                         && portable_glyph_scalar(size.dy)
-                        && size.dx > 0.0
-                        && size.dy > 0.0
+                        && (size.dx as f32) > 0.0
+                        && (size.dy as f32) > 0.0
                 })
                 .unwrap_or(true)
             && self.static_sanitized
@@ -1365,15 +1365,25 @@ fn layer_affine_is_finite(transform: LayerAffineTransform) -> bool {
         && portable_glyph_scalar(transform.f)
 }
 
-fn bbox_is_finite_positive(bbox: BoundingBox) -> bool {
+pub(crate) fn bbox_is_finite_positive(bbox: BoundingBox) -> bool {
+    let [x, y, width, height] = [bbox.x, bbox.y, bbox.width, bbox.height].map(|v| v as f32);
+    // Native Skia narrows the components before adding; CanvasKit's XYWHRect
+    // adds the f64 components before storing f32 edges. Both must remain
+    // finite and retain a positive span before suppressing the TextRun.
     portable_glyph_scalar(bbox.x)
         && portable_glyph_scalar(bbox.y)
         && portable_glyph_scalar(bbox.width)
         && portable_glyph_scalar(bbox.height)
-        && bbox.width > 0.0
-        && bbox.height > 0.0
         && portable_glyph_scalar(bbox.x + bbox.width)
         && portable_glyph_scalar(bbox.y + bbox.height)
+        && width > 0.0
+        && height > 0.0
+        && [
+            (x + width, y + height),
+            ((bbox.x + bbox.width) as f32, (bbox.y + bbox.height) as f32),
+        ]
+        .into_iter()
+        .all(|(right, bottom)| right.is_finite() && bottom.is_finite() && right > x && bottom > y)
 }
 
 #[derive(Debug, Clone)]

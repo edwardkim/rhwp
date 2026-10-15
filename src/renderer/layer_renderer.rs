@@ -6,6 +6,7 @@ use crate::paint::{
     ResourceArena, TextDirection, TextVariantKind, TextVariantQuality, WritingMode,
     MAX_PORTABLE_FONT_BLOB_BYTES, MAX_PORTABLE_GLYPHS_PER_RUN,
 };
+use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::static_svg::static_svg_fragment_has_path_layer;
 use image::{ImageReader, Limits};
 use std::collections::{BTreeMap, BTreeSet};
@@ -426,7 +427,7 @@ struct TextVariantCandidate {
     present_parts: BTreeSet<u32>,
     duplicate_part: bool,
     glyph_runs: Vec<LayerGlyphRunPaint>,
-    glyph_outlines: Vec<LayerGlyphOutlinePaint>,
+    glyph_outlines: Vec<(BoundingBox, LayerGlyphOutlinePaint)>,
 }
 
 impl TextVariantCandidate {
@@ -449,10 +450,10 @@ impl TextVariantCandidate {
         self.glyph_runs.push(run.clone());
     }
 
-    fn add_glyph_outline(&mut self, outline: &LayerGlyphOutlinePaint) {
+    fn add_glyph_outline(&mut self, bbox: BoundingBox, outline: &LayerGlyphOutlinePaint) {
         self.part_counts.insert(outline.variant.part_count);
         self.duplicate_part |= !self.present_parts.insert(outline.variant.part_index);
-        self.glyph_outlines.push(outline.clone());
+        self.glyph_outlines.push((bbox, outline.clone()));
     }
 
     fn reject_reasons(
@@ -480,7 +481,7 @@ impl TextVariantCandidate {
                 }
             }
             TextVariantKind::GlyphOutline => {
-                let q3_variable_outline = self.glyph_outlines.iter().any(|outline| {
+                let q3_variable_outline = self.glyph_outlines.iter().any(|(_, outline)| {
                     outline.diagnostics.reason.as_deref() == Some("q3VariableOutlineProjectionV1")
                 });
                 if matches!(options.backend, VariantSelectionBackend::Canvas2D)
@@ -494,8 +495,14 @@ impl TextVariantCandidate {
                 {
                     reasons.insert(VariantRejectReason::BackendDoesNotSupportVariant);
                 }
-                for outline in &self.glyph_outlines {
-                    collect_glyph_outline_reject_reasons(outline, options, resources, &mut reasons);
+                for (bbox, outline) in &self.glyph_outlines {
+                    collect_glyph_outline_reject_reasons(
+                        *bbox,
+                        outline,
+                        options,
+                        resources,
+                        &mut reasons,
+                    );
                 }
             }
         }
@@ -559,7 +566,7 @@ fn collect_text_variant_groups(
                             });
                         candidate.add_glyph_run(run);
                     }
-                    PaintOp::GlyphOutline { outline, .. } => {
+                    PaintOp::GlyphOutline { bbox, outline } => {
                         let group = groups
                             .entry(outline.variant.equivalence_group.clone())
                             .or_default();
@@ -576,7 +583,7 @@ fn collect_text_variant_groups(
                                     outline.variant.variant_kind,
                                 )
                             });
-                        candidate.add_glyph_outline(outline);
+                        candidate.add_glyph_outline(*bbox, outline);
                     }
                     _ => {}
                 }
@@ -876,6 +883,7 @@ fn font_digest_matches_resource_digest(digest: &crate::paint::FontDigest, actual
 }
 
 fn collect_glyph_outline_reject_reasons(
+    bbox: BoundingBox,
     outline: &LayerGlyphOutlinePaint,
     options: TextVariantSelectionOptions,
     resources: &ResourceArena,
@@ -896,6 +904,11 @@ fn collect_glyph_outline_reject_reasons(
     }
     if !outline.paint_style.is_fill_only_glyph_replay() {
         reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
+    }
+    if outline.payload_kind == GlyphOutlinePayloadKind::SvgGlyph
+        && !crate::paint::paint_op::bbox_is_finite_positive(bbox)
+    {
+        reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
     }
     match outline.payload_kind {
         GlyphOutlinePayloadKind::MonochromeFill => {
