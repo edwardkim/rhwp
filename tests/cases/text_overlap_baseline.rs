@@ -365,7 +365,11 @@ fn partition_dump_path(path: &str, part: usize) -> String {
 /// 크래시·파싱 회귀는 기존 스위트가 잡는다(overflow_cell_baseline 과 같은 규약).
 fn count_doc(path: &Path) -> Option<u64> {
     let bytes = std::fs::read(path).ok()?;
-    let doc = DocumentCore::from_bytes(&bytes).ok()?;
+    let mut doc = DocumentCore::from_bytes(&bytes).ok()?;
+    // 독립2024 Print와 같은 compat에서 전48쪽 Native/fresh WASM90% 이상을 확인했다.
+    if path.ends_with("samples/table_giant_cell_overfill.hwpx") {
+        doc.set_hangul2024_compat(true);
+    }
     let anomalies = scan_document(&doc, &AnomalyOptions::default()).ok()?;
     // 같은 원문·Print의 Native/fresh WASM 전4쪽 최저98.77240% 및 확대 판독.
     // 사진 칸의 원형 날인과 `2매` 안내는 Print에도 교차한다. 좌표/건수 대신
@@ -475,7 +479,7 @@ fn audited_shortcut_background_number(root: &RenderNode, page: u32) -> BoundingB
 
 fn text_overlaps_do_not_grow_partition(part: usize) {
     let buckets = partition_samples(collect_samples(), PARTITIONS);
-    let mut samples = buckets
+    let samples = buckets
         .into_iter()
         .nth(part)
         .unwrap_or_else(|| panic!("없는 partition: {part}"));
@@ -483,9 +487,6 @@ fn text_overlaps_do_not_grow_partition(part: usize) {
         !samples.is_empty(),
         "text-overlap partition {part} 이 비어 있음"
     );
-    // #7812: 다른 브랜치의 보정 대상은 원본을 보존하고 활성 회귀에서 분리한다.
-    // partition 배정 뒤 제외하므로 다른 문서의 배정은 바뀌지 않는다.
-    samples.retain(|(_, rel)| rel != "table_giant_cell_overfill.hwpx");
     let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
     let baseline = load_baseline();
 

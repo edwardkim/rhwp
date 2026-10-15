@@ -1,8 +1,8 @@
 //! #7902: 원본 표의 분할 내용과 이어받기 뒤 그림을 함께 보호한다.
 //!
 //! 독립 Print PDF와 Native/fresh WASM 전쪽 증거는
-//! mydocs/working/task_m100_7902_stage2.md의 candidate-a5-leading-band-dev에 있다.
-//! overfill 43·44쪽과 nested HWP/HWPX 104쪽은 양쪽 모두 98% 이상이다.
+//! mydocs/working/task_m100_7902_stage3.md의 rebase-7923-opening-frame-full에 있다.
+//! 고정한 쪽은 양쪽 모두 98% 이상이며 독립 Print와 직접 판독했다.
 //! 위치 검사와 별도로 원본 셀의 내용 보존·소유·정렬 관계를 검사한다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -14,7 +14,18 @@ const OVERFILL: &str = "samples/table_giant_cell_overfill.hwpx";
 const NESTED_HWP: &str = "samples/issue1949_giant_cell_nested_tables_perf.hwp";
 const NESTED_HWPX: &str = "samples/issue1949_giant_cell_nested_tables_perf.hwpx";
 
-fn hft_number_baseline(sample: &str) {
+fn hft_number_baseline(sample: &str, page: u32) {
+    // 독립 Print의 rawdict chars[].origin을 72pt→96dpi로 환산했다.
+    // 같은 번호 동작을 검증하는 후보 중 양쪽 실루엣 100%인 쪽을 선정했다.
+    // fresh 증거와 확대 판독: task_m100_7902_stage3.md.
+    let (expected, origins): (&str, &[f64]) = match page {
+        29 => ("-7-", &[375.519_979, 392.479_980, 409.279_989]),
+        100 => (
+            "-78-",
+            &[371.039_998, 388.159_993, 396.960_002, 413.760_010],
+        ),
+        _ => panic!("독립 기대값이 없는 쪽: {page}"),
+    };
     let stamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
@@ -28,10 +39,12 @@ fn hft_number_baseline(sample: &str) {
     let output = Command::new(bin)
         .arg("export-svg")
         .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample))
-        .args(["--compat", "2022", "--profile", "print", "-p", "28", "-o"])
+        .args(["--compat", "2022", "--profile", "print", "-p"])
+        .arg((page - 1).to_string())
+        .arg("-o")
         .arg(&directory.0)
         .output()
-        .expect("29쪽의 최종 글리프 출력");
+        .expect("선택한 쪽의 최종 글리프 출력");
     assert!(
         output.status.success(),
         "{}",
@@ -42,26 +55,32 @@ fn hft_number_baseline(sample: &str) {
         .map(|entry| entry.unwrap().path())
         .filter(|path| path.extension().is_some_and(|ext| ext == "svg"))
         .collect();
-    assert_eq!(files.len(), 1, "29쪽 하나만 내보낸다");
+    assert_eq!(files.len(), 1, "선택한 쪽 하나만 내보낸다");
     let svg = std::fs::read_to_string(&files[0]).unwrap();
     let xml = roxmltree::Document::parse(&svg).unwrap();
     let glyphs: Vec<_> = xml
         .descendants()
         .filter(|node| node.has_tag_name("text"))
         .collect();
-    // 독립 Print의 이 쪽은 본문 없이 '- 7 -'만 있다. 빈 본문 때문에
+    // 독립 Print의 이 쪽은 본문 없이 쪽번호만 있다. 빈 본문 때문에
     // 번호까지 빠지거나 중복되는 것을 위치 검사와 별도로 검출한다.
     assert_eq!(
         glyphs
             .iter()
             .filter_map(|node| node.text())
             .collect::<String>(),
-        "-7-"
+        expected
     );
-    for glyph in glyphs {
+    assert_eq!(glyphs.len(), origins.len(), "번호의 글리프 누락·중복 방지");
+    for (glyph, expected_x) in glyphs.into_iter().zip(origins) {
+        let x: f64 = glyph.attribute("x").unwrap().parse().unwrap();
         let y: f64 = glyph.attribute("y").unwrap().parse().unwrap();
-        // Print PDF의 실제 797.039978pt 원점. Native98.47328%, WASM100%
+        // Print PDF의 실제 797.039978pt 원점. Native100%, WASM100%
         // 페이지에 한해 허용되는 ±2px이며 구현의 descent 값을 재인용하지 않는다.
+        assert!(
+            (x - expected_x).abs() <= 2.0,
+            "{sample} {page}쪽: 글리프 원점 {x}, 독립 PDF {expected_x}"
+        );
         assert!((y - 1062.719971).abs() <= 2.0, "{sample}: 기준선 {y}");
         assert_eq!(glyph.attribute("font-size"), Some("16"), "원본12pt");
         let bold = glyph.attribute("font-weight") == Some("bold")
@@ -74,12 +93,24 @@ fn hft_number_baseline(sample: &str) {
 
 #[test]
 fn hwp_generated_hft_number_keeps_print_baseline_and_content() {
-    hft_number_baseline("samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp");
+    for page in [29, 100] {
+        hft_number_baseline(
+            "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+            page,
+        );
+    }
 }
 
 #[test]
 fn hwpx_generated_hft_number_keeps_print_baseline_and_content() {
-    hft_number_baseline("tests/fixtures/pr7704_manual_reflow/6761-control.hwpx");
+    for variant in ["control", "shifted", "later"] {
+        let sample = format!("tests/fixtures/pr7704_manual_reflow/6761-{variant}.hwpx");
+        hft_number_baseline(&sample, 29);
+        // later의 100쪽은 본문 쪽이다. 같은 쪽 번호로 다른 내용을 고정하지 않는다.
+        if variant != "later" {
+            hft_number_baseline(&sample, 100);
+        }
+    }
 }
 
 #[cfg(feature = "native-skia")]
@@ -146,7 +177,15 @@ fn pages(sample: &str) -> &'static Vec<Value> {
         let output = Command::new(bin)
             .arg("export-render-tree")
             .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample))
-            .args(["--compat", "2022", "-o"])
+            .args([
+                "--compat",
+                if sample == OVERFILL || sample == NESTED_HWP {
+                    "2024"
+                } else {
+                    "2022"
+                },
+                "-o",
+            ])
             .arg(&directory.0)
             .output()
             .expect("원본 최종 렌더 트리");
@@ -241,6 +280,50 @@ fn original_cells_survive_the_print_page_cuts_without_loss_or_duplication() {
         .expect("원본 재시작을 가진 표");
     let actual = pages(OVERFILL);
     assert_eq!(actual.len(), 48, "독립 Print PDF와 전체 쪽수 일치");
+    let opening = document
+        .sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|paragraph| &paragraph.controls)
+        .find_map(|control| match control {
+            Control::Table(table) if table.row_count == 5 && table.col_count == 1 => {
+                table.cell_at(4, 0)
+            }
+            _ => None,
+        })
+        .expect("정의·일반사항을 담은 원본 바깥 셀");
+    let source_text = |range: std::ops::Range<usize>| {
+        compact(
+            &opening.paragraphs[range]
+                .iter()
+                .map(|paragraph| paragraph.text.as_str())
+                .collect::<String>(),
+        )
+    };
+    // 독립 Print: 1쪽은 구동 너트 설명으로 끝나고 2쪽은 3.7로 시작한다.
+    // 양수1500HU 재시작을 잃으면 마지막 문장이 2쪽으로 이동한다.
+    // 앞·뒤 전체 원문과 일치시켜 이월 경계의 유닛 누락·중복도 검출한다.
+    assert_eq!(compact(&text(cell(&actual[0], 4, 0))), source_text(0..22));
+    assert_eq!(compact(&text(cell(&actual[1], 4, 0))), source_text(22..45));
+    // 같은 인증의 후속 경계: Print 4쪽은 내화성 설명, 5쪽은 정격속도다.
+    let fourth = compact(&text(cell(&actual[3], 4, 0)));
+    let fifth = compact(&text(cell(&actual[4], 4, 0)));
+    assert!(
+        fourth.ends_with(&source_text(87..88)),
+        "4쪽 마지막 본문의 소유"
+    );
+    assert!(
+        fifth.starts_with(&source_text(88..90)),
+        "5쪽 제목·후속 본문의 순서"
+    );
+    assert!(
+        !fourth.contains(&source_text(88..89)),
+        "제목의 앞 쪽 중복 방지"
+    );
+    assert!(
+        !fifth.contains(&source_text(87..88)),
+        "앞 본문의 잘못된 이월 방지"
+    );
     for (row, col, first, last, prefix_end, suffix_start) in [
         (21, 8, 43, 44, "비율의변화에기인", "한다."),
         (24, 6, 44, 45, "감소될수있", "다."),

@@ -160,16 +160,8 @@ fn rowbreak_page13_textbox_shapes_cover_their_text() {
 
     let mut rectangles = Vec::new();
     collect_rectangles_with_text(table, &mut rectangles);
-    let wide_text_rectangles: Vec<_> = rectangles
-        .into_iter()
-        .filter(|node| node.bbox.width > 300.0 && node.bbox.height > 20.0)
-        .collect();
-
-    assert!(
-        !wide_text_rectangles.is_empty(),
-        "page 13 should render textbox-backed rectangles inside the excerpt table"
-    );
-    for rect in wide_text_rectangles {
+    assert_eq!(rectangles.len(), 2, "독립 Print 13쪽의 두 본문 글상자");
+    for rect in rectangles {
         let rect_bottom = rect.bbox.y + rect.bbox.height;
         let text_bottom = max_text_line_bottom(rect).expect("rectangle should contain text lines");
         assert!(
@@ -184,6 +176,25 @@ fn rowbreak_page13_textbox_shapes_cover_their_text() {
 #[test]
 fn rowbreak_page13_preserves_linear_empty_spacer_in_excerpt_table() {
     for sample in [SAMPLE, HWP_SAMPLE] {
+        let bytes = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample)).unwrap();
+        let source = rhwp::parser::parse_document(&bytes).expect("원본 저장 글줄");
+        let source_table = source.sections[1].paragraphs[13]
+            .controls
+            .iter()
+            .find_map(|control| match control {
+                rhwp::model::control::Control::Table(table) => Some(table),
+                _ => None,
+            })
+            .expect("원본 발췌 표");
+        let source_cell = source_table.cell_at(0, 0).unwrap();
+        let paragraphs = &source_cell.paragraphs;
+        let spacer = &paragraphs[1];
+        assert!(spacer.text.trim().is_empty() && spacer.controls.is_empty());
+        let spacer_line = &spacer.line_segs[0];
+        assert!(spacer_line.line_height > 0 && spacer_line.line_spacing > 0);
+        let caption_line = &paragraphs[0].line_segs[0];
+        let textbox_line = &paragraphs[4].line_segs[0];
+
         let doc = load_doc(sample);
         let tree = doc
             .build_page_render_tree(12)
@@ -192,24 +203,61 @@ fn rowbreak_page13_preserves_linear_empty_spacer_in_excerpt_table() {
 
         let mut rectangles = Vec::new();
         collect_rectangles_with_text(table, &mut rectangles);
-        let mut wide_text_rectangles: Vec<_> = rectangles
+        let textboxes: Vec<_> = rectangles
             .into_iter()
-            .filter(|node| node.bbox.width > 300.0 && node.bbox.height > 20.0)
+            .filter(|node| {
+                let mut content = String::new();
+                collect_text(node, &mut content);
+                compact(&content).contains("정보시스템의데이터베이스설계시준수사항")
+            })
             .collect();
-        wide_text_rectangles.sort_by(|a, b| a.bbox.y.partial_cmp(&b.bbox.y).unwrap());
-        let first_textbox = wide_text_rectangles
-            .first()
-            .unwrap_or_else(|| panic!("{sample} page 13 should render the first blue textbox"));
-        let table_bottom = table.bbox.y + table.bbox.height;
-
+        assert_eq!(textboxes.len(), 1, "첫 글상자의 내용·단일 소유");
+        let first_textbox = textboxes[0];
+        let cell = table
+            .children
+            .iter()
+            .find(|node| matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.row == 0 && cell.col == 0))
+            .expect("발췌 본문의 물리 셀");
+        let caption = cell
+            .children
+            .iter()
+            .find(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(0)))
+            .expect("같은 셀의 원본 첫 캡션");
+        // 절대 쪽 좌표 대신 원본 캡션→글상자 글줄 원점의 비율을 보호한다.
+        // 중간의 빈 문단도 높이·간격을 소유하므로 보이는 글자만 합산하면 깨진다.
+        let expected_ratio = f64::from(textbox_line.vertical_pos - caption_line.vertical_pos)
+            / f64::from(caption_line.line_height);
+        let RenderNodeType::TextLine(caption_metrics) = &caption.node_type else {
+            unreachable!()
+        };
+        let actual_ratio = (first_textbox.bbox.y - caption.bbox.y) / caption_metrics.line_height;
+        // 두 원본 HWPUNIT 끝점의 양자화만 허용한다. 쪽의 잠정 배치를 고정하지 않는다.
+        let ratio_tolerance = 2.0 / f64::from(caption_line.line_height);
         assert!(
-            first_textbox.bbox.y >= 572.0,
-            "{sample} page 13 collapses the caption spacer before the first textbox: first_textbox_y={:.2}",
-            first_textbox.bbox.y
+            (actual_ratio - expected_ratio).abs() <= ratio_tolerance,
+            "{sample}: 원본 빈 문단을 포함한 캡션→글상자 간격 비율: {actual_ratio}, 원본 {expected_ratio}"
         );
-        assert!(
-            table_bottom >= 995.0,
-            "{sample} page 13 excerpt table is too short after spacer collapse: table_bottom={table_bottom:.2}"
+        assert!(first_textbox.bbox.y > caption.bbox.y + caption.bbox.height);
+
+        let final_lines: Vec<_> = cell
+            .children
+            .iter()
+            .filter(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(8)))
+            .collect();
+        let final_line = final_lines
+            .first()
+            .expect("같은 조각에 남아야 하는 마지막 원본 본문");
+        assert!(final_line.bbox.y > first_textbox.bbox.y + first_textbox.bbox.height);
+        let mut final_text = String::new();
+        for line in final_lines {
+            collect_text(line, &mut final_text);
+            assert!(line.bbox.y >= cell.bbox.y);
+            assert!(line.bbox.y + line.bbox.height <= cell.bbox.y + cell.bbox.height + 0.5);
+        }
+        assert_eq!(
+            compact(&final_text),
+            compact(&paragraphs[8].text),
+            "마지막 본문의 소속·내용 순서·누락·중복"
         );
     }
 }
@@ -228,18 +276,13 @@ fn rowbreak_page17_split_table_covers_visible_textbox_shape() {
 
     let mut rectangles = Vec::new();
     collect_rectangles_with_text(table, &mut rectangles);
-    let wide_text_rectangles: Vec<_> = rectangles
-        .into_iter()
-        .filter(|node| node.bbox.width > 300.0 && node.bbox.height > 100.0)
-        .collect();
-
     assert!(
-        !wide_text_rectangles.is_empty(),
+        !rectangles.is_empty(),
         "page 17 should render the large textbox-backed rectangle in table pi=28 ci=0"
     );
 
     let table_bottom = table.bbox.y + table.bbox.height;
-    for rect in wide_text_rectangles {
+    for rect in rectangles {
         let rect_bottom = rect.bbox.y + rect.bbox.height;
         assert!(
             table_bottom >= rect_bottom - 0.5,
@@ -254,24 +297,20 @@ fn rowbreak_page17_split_table_covers_visible_textbox_shape() {
 
 #[test]
 fn rowbreak_page18_does_not_emit_tiny_empty_table_continuation() {
-    let repo_root = env!("CARGO_MANIFEST_DIR");
-    let sample_path = Path::new(repo_root).join(SAMPLE);
-    let bytes = fs::read(&sample_path).unwrap_or_else(|e| panic!("read {}: {}", SAMPLE, e));
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .unwrap_or_else(|e| panic!("parse {}: {:?}", SAMPLE, e));
-    let tree = doc
-        .build_page_render_tree(17)
-        .unwrap_or_else(|e| panic!("render page 18: {e}"));
-
-    if let Some(table) = find_table_node(&tree.root, 28, 0) {
+    for sample in [SAMPLE, HWP_SAMPLE] {
+        let doc = load_doc(sample);
+        let tree = doc
+            .build_page_render_tree(17)
+            .unwrap_or_else(|e| panic!("render {sample} page 18: {e}"));
+        // Print 17쪽에서 끝난 표다. 100px보다 크면 허용하던 조건은
+        // 크기만 달라진 잘못된 이어받기를 놓치므로 쪽 소유 자체를 검사한다.
         assert!(
-            table.bbox.height > 100.0,
-            "page 18 should not be a tiny empty continuation of table pi=28 ci=0: height={:.2}",
-            table.bbox.height
+            find_table_node(&tree.root, 28, 0).is_none(),
+            "{sample}: 앞 쪽에서 끝난 표를 18쪽에 다시 소유하면 안 된다"
         );
         assert!(
-            max_text_line_bottom(table).is_some(),
-            "page 18 continuation of table pi=28 ci=0 should contain visible content"
+            text_line_exists(&tree.root, "보안 분야"),
+            "18쪽 후속 보안 본문을 보존한다"
         );
     }
 }
@@ -370,6 +409,12 @@ fn collect_text(node: &RenderNode, out: &mut String) {
     for child in &node.children {
         collect_text(child, out);
     }
+}
+
+fn compact(text: &str) -> String {
+    text.chars()
+        .filter(|ch| !ch.is_whitespace() && !ch.is_control() && *ch != '\u{fffc}')
+        .collect()
 }
 
 fn text_line_exists(root: &RenderNode, needle: &str) -> bool {

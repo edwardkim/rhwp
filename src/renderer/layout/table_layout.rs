@@ -23,6 +23,7 @@ mod stored_span_content;
 mod stored_span_reservation;
 mod stored_span_row_owner;
 mod stored_terminal_row_frame;
+mod stored_text_frame_owner;
 mod stored_zero_origin;
 pub(super) mod unit_diagnostics;
 mod wrapper_cell_viewport;
@@ -2715,24 +2716,6 @@ impl LayoutEngine {
         table.common.height > 0
             && height + i64::from(table.cell_spacing) * i64::from(table.row_count.saturating_sub(1))
                 > i64::from(table.common.height)
-    }
-
-    pub(crate) fn native_stored_table_has_fragment_frames(
-        &self,
-        table: &crate::model::table::Table,
-    ) -> bool {
-        self.profile.get().hwp5_stored_pagination_layout()
-            && !self.profile.get().session_edited()
-            && !table.common.treat_as_char
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            )
-            && !self
-                .render_normalization
-                .borrow()
-                .table_text_reflowed(table)
-            && Self::stored_row_boxes_exceed_object_frame(table)
     }
 
     pub(crate) fn native_stored_row_has_text_frame_boundary(
@@ -13908,9 +13891,7 @@ impl LayoutEngine {
         ) && !table.common.treat_as_char;
         let direct_hwpx_stored_frame_cell =
             self.direct_hwpx_cell_has_declared_stored_frame(cell, table);
-        let native_text_frame_cell = cell.row_span == 1
-            && self.native_stored_table_has_fragment_frames(table)
-            && stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi);
+        let original_text_frame_cell = self.original_stored_text_frame_cell(cell, table, styles);
         let before_space_proves_local_origin = is_block_rowbreak_table
             && !self
                 .render_normalization
@@ -14725,7 +14706,7 @@ impl LayoutEngine {
                 && self.stored_two_line_row_cut_frame(table, usize::from(cell.row), styles);
             // 같은 인증을 강제 컷과 저장 프레임 플래그가 소비한다.
             // 양수 문단 앞 간격도 원본 셀의 공유 좌표계가 입증한 재시작을 소유한다.
-            let source_text_frame_reset = native_text_frame_cell
+            let source_text_frame_reset = original_text_frame_cell
                 && pi > 0
                 && cell.paragraphs.get(pi - 1).is_some_and(|previous| {
                     stored_plain_text_paragraph_frame_reset(previous, p, styles, self.dpi)
@@ -20915,7 +20896,6 @@ impl LayoutEngine {
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
         ) && !table.common.treat_as_char;
-        let native_table_fragment_frames = self.native_stored_table_has_fragment_frames(table);
         for (i, cell) in row_cells.iter().enumerate() {
             // Parallel cells own their padding independently. A short sibling
             // with larger padding must not shorten this cell's content band.
@@ -20925,9 +20905,8 @@ impl LayoutEngine {
                     .copied()
                     .unwrap_or(0.0);
             let units = self.cell_units(cell, table, styles);
-            let native_text_frame_cell = native_table_fragment_frames
-                && cell.row_span == 1
-                && stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi);
+            let original_text_frame_cell =
+                self.original_stored_text_frame_cell(cell, table, styles);
             let source_row_height = self.stored_full_width_row_source_height(table, row, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
             let nested_header = self.nested_continuation_header_height(cell, &units, start, styles);
@@ -21058,7 +21037,7 @@ impl LayoutEngine {
                         || self.stored_joint_zero_origin_boundary(cell, table)
                             == Some((u.para_idx, u.vis_start))
                         || self.stored_cut_has_zero_before_origin(cell, table, styles, j)
-                        || (native_text_frame_cell
+                        || (original_text_frame_cell
                             && u.vis_start == 0
                             && u.para_idx.checked_sub(1).is_some_and(|previous_idx| {
                                 stored_plain_text_paragraph_frame_reset(
