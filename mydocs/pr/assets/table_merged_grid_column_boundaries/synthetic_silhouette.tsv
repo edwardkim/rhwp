@@ -1,0 +1,7 @@
+build	backend	page	tolerant_content_match_percent	below_90
+base	png	1	91.90389	0
+base	svg	1	94.48751	0
+base	wasm	1	91.84270	0
+fix	png	1	94.98474	0
+fix	svg	1	98.00253	0
+fix	wasm	1	95.18405	0
