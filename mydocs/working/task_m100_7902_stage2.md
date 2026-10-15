@@ -40,7 +40,16 @@ WASM835쪽은 이전 출력과 바이트 동일하다. 현재 raster에서 revie
 `rebase-463c-candidate-full-{native,wasm}-devel-comparison.json`에 있다.
 
 이전 source02c3의 전체10301PASS를 새 통합 head의 전체 회귀 결과로 재사용하지 않는다.
-현재 head의 전체 Rust 회귀는 미실행이다. 시각 제출 보류가 유지돼 새 PR·push·CI·merge와
+실행 head `eac3e5477`의 전체 Rust 회귀는 **10310/10310 PASS·45 skip·exit 0**으로 끝났다.
+렌더러 소스는 `edb51bd2b`와 동일하며 컴파일 21분 07초, 테스트 실행 1632.459초다.
+기존 실패였던 본문 넘침 partition14도 57.718초에 PASS했다.
+Native Skia 라이브러리는 4041 PASS·0 FAIL·12 ignore·exit 0이다(컴파일 7분 21초, 주 실행 54.59초).
+Native 선택 10종도 35 PASS·0 FAIL(새 검사 7개·기존 글꼴 진단 9개 포함), doctest는 8 PASS·3 ignore다.
+실행 13단계 전부 exit 0이며 종료 후 Cargo/rustc/rustdoc가 없는 것도 확인했다.
+Canvas 글꼴 등록·시작 실패 시 프로필 정리2개는 현재 소스에서PASS했다.
+원시 근거는`final-eac3-execution-result.json`·`final-eac3-full-nextest-proof.json`과
+`final-eac3-font-registration-browser.log`다. 같은 devel `463c48cc2`를 원격 ref로 다시 확인했다.
+시각 제출 보류가 유지돼 새 PR·push·CI·merge와
 옵션2 기록 PR은 실행하지 않았다. #7902는 OPEN이다. 재차 요청한 rebase는 fetch·원격 ref·
 GitHub API 모두463c48cc2로 이미 포함돼 추가 수행하지 않았으며 기존 생성 JS는 보존했다.
 
