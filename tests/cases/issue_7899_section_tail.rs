@@ -7,15 +7,14 @@ use rhwp::model::control::Control;
 use rhwp::parser::cfb_reader::CfbReader;
 use rhwp::serializer::{serialize_hwp, SerializeError};
 
+// 기존 samples/aift.hwp와 SHA-256이 같은 정본 보존 경로다.
+const AIFT: &str = "mydocs/pr/assets/issue7445/aift74/aift.hwp";
+
 type RecordTuple = (u16, u16, Vec<u8>);
 
 fn sample(name: &str) -> Vec<u8> {
-    std::fs::read(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("samples")
-            .join(name),
-    )
-    .expect("공개 한컴 저장 원본")
+    std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(name))
+        .expect("공개 한컴 저장 원본")
 }
 
 // 구현의 tail 모델·경계 helper를 사용하지 않고 파일 레코드 헤더를 직접 해독한다.
@@ -74,7 +73,10 @@ fn edit(bytes: &[u8], section: usize, text: &str) -> Vec<u8> {
 
 #[test]
 fn direct_hwp_parser_preserves_tail_without_core_load_fixups() {
-    for name in ["exam_math_8.hwp", "hwpctl_ParameterSetID_Item_v1.2.hwp"] {
+    for name in [
+        "samples/exam_math_8.hwp",
+        "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+    ] {
         let original = sample(name);
         let mut doc = rhwp::parser::parse_hwp(&original).unwrap();
         let saved = serialize_hwp(&doc).expect("직접 parse_hwp 반환값도 그대로 저장할 수 있다");
@@ -85,7 +87,7 @@ fn direct_hwp_parser_preserves_tail_without_core_load_fixups() {
         let edited = serialize_hwp(&doc).expect("본문 변경은 목록의 의미를 바꾸지 않는다");
         assert_eq!(tail(&edited, 0), tail(&original, 0));
     }
-    let mut doc = rhwp::parser::parse_hwp(&sample("exam_math_8.hwp")).unwrap();
+    let mut doc = rhwp::parser::parse_hwp(&sample("samples/exam_math_8.hwp")).unwrap();
     assert!(!doc.sections[0].section_def.master_pages.is_empty());
     doc.sections[0].section_def.master_pages.clear();
     assert!(matches!(
@@ -96,7 +98,7 @@ fn direct_hwp_parser_preserves_tail_without_core_load_fixups() {
 
 #[test]
 fn extension_master_lists_survive_body_edit_in_source_order() {
-    for name in ["exam_math_8.hwp", "exam_science.hwp"] {
+    for name in ["samples/exam_math_8.hwp", "samples/exam_science.hwp"] {
         let original = sample(name);
         let expected = tail(&original, 0);
         assert!(!expected.is_empty());
@@ -106,7 +108,7 @@ fn extension_master_lists_survive_body_edit_in_source_order() {
             .map(|r| u16::from_le_bytes(r.2[18..20].try_into().unwrap()))
             .collect();
         assert!(kinds.contains(&4), "독립 원본에 유실된 종류 4가 있다");
-        if name == "exam_science.hwp" {
+        if name == "samples/exam_science.hwp" {
             assert!(kinds.contains(&5) && kinds.contains(&6) && kinds.contains(&7));
         }
         assert_eq!(
@@ -119,7 +121,7 @@ fn extension_master_lists_survive_body_edit_in_source_order() {
 
 #[test]
 fn native_memo_numbers_and_contents_survive_body_edit() {
-    for name in ["aift.hwp", "issue5866/memo_field_hwp5.hwp"] {
+    for name in [AIFT, "samples/issue5866/memo_field_hwp5.hwp"] {
         let original = sample(name);
         let core = DocumentCore::from_bytes(&original).unwrap();
         let section = core.document().sections.len() - 1;
@@ -129,14 +131,7 @@ fn native_memo_numbers_and_contents_survive_body_edit() {
             .filter(|r| r.0 == 93)
             .map(|r| u32::from_le_bytes(r.2[..4].try_into().unwrap()))
             .collect();
-        assert_eq!(
-            numbers,
-            if name == "aift.hwp" {
-                vec![1, 2]
-            } else {
-                vec![1]
-            }
-        );
+        assert_eq!(numbers, if name == AIFT { vec![1, 2] } else { vec![1] });
         assert_eq!(
             tail(&edit(&original, section, "A"), section),
             expected,
@@ -161,7 +156,7 @@ fn memo_begin_markers(bytes: &[u8], section: usize) -> Vec<Vec<u8>> {
 
 #[test]
 fn unknown_header_memo_keeps_distinct_begin_slot_identity() {
-    for name in ["aift.hwp", "issue5866/memo_field_hwp5.hwp"] {
+    for name in [AIFT, "samples/issue5866/memo_field_hwp5.hwp"] {
         let original = sample(name);
         let count = DocumentCore::from_bytes(&original)
             .unwrap()
@@ -194,7 +189,7 @@ fn unknown_header_memo_keeps_distinct_begin_slot_identity() {
 
 #[test]
 fn repeated_save_does_not_duplicate_tail_and_preserves_both_edits() {
-    let original = sample("exam_math_8.hwp");
+    let original = sample("samples/exam_math_8.hwp");
     let first = edit(&original, 0, "A");
     let second = edit(&first, 0, "B");
     assert_eq!(tail(&second, 0), tail(&original, 0));
@@ -209,7 +204,7 @@ fn repeated_save_does_not_duplicate_tail_and_preserves_both_edits() {
 
 #[test]
 fn editing_other_section_keeps_memo_owner_and_ordinary_master_controls() {
-    let original = sample("aift.hwp");
+    let original = sample(AIFT);
     let count = DocumentCore::from_bytes(&original)
         .unwrap()
         .document()
@@ -223,7 +218,7 @@ fn editing_other_section_keeps_memo_owner_and_ordinary_master_controls() {
             "다른 구역의 저장 소유를 옮기거나 재작성하면 안 된다"
         );
     }
-    for name in ["exam_kor.hwp", "exam_eng.hwp"] {
+    for name in ["samples/exam_kor.hwp", "samples/exam_eng.hwp"] {
         let original = sample(name);
         let before = DocumentCore::from_bytes(&original).unwrap();
         let saved = edit(&original, 0, "A");
@@ -239,7 +234,7 @@ fn editing_other_section_keeps_memo_owner_and_ordinary_master_controls() {
 
 #[test]
 fn changed_master_model_cannot_replay_stale_tail() {
-    let core = DocumentCore::from_bytes(&sample("exam_math_8.hwp")).unwrap();
+    let core = DocumentCore::from_bytes(&sample("samples/exam_math_8.hwp")).unwrap();
     let mut model = core.document().clone();
     let masters = &mut model.sections[0].section_def.master_pages;
     assert!(!masters.is_empty());
@@ -255,7 +250,7 @@ fn changed_master_model_cannot_replay_stale_tail() {
 
 #[test]
 fn removed_memo_anchor_cannot_replay_orphan_tail() {
-    let core = DocumentCore::from_bytes(&sample("issue5866/memo_field_hwp5.hwp")).unwrap();
+    let core = DocumentCore::from_bytes(&sample("samples/issue5866/memo_field_hwp5.hwp")).unwrap();
     let mut model = core.document().clone();
     let mut removed = false;
     for para in &mut model.sections[0].paragraphs {
@@ -277,7 +272,7 @@ fn removed_memo_anchor_cannot_replay_orphan_tail() {
 
 #[test]
 fn synthesized_section_definition_does_not_take_tail_owned_masters() {
-    let core = DocumentCore::from_bytes(&sample("exam_math_8.hwp")).unwrap();
+    let core = DocumentCore::from_bytes(&sample("samples/exam_math_8.hwp")).unwrap();
     let mut model = core.document().clone();
     let expected = serde_json::to_value(&model.sections[0].section_def.master_pages).unwrap();
     model.sections[0].paragraphs[0]
@@ -294,7 +289,7 @@ fn synthesized_section_definition_does_not_take_tail_owned_masters() {
 
 #[test]
 fn hwpx_without_native_tail_keeps_existing_memo_materialization() {
-    let original = sample("hwpx/aift.hwpx");
+    let original = sample("samples/hwpx/aift.hwpx");
     let core = DocumentCore::from_bytes(&original).unwrap();
     let saved = core
         .export_hwp_with_adapter_snapshot()
