@@ -1,3 +1,5 @@
+import { repairTerminalFontCmap } from './browser-font-cmap.ts';
+
 const TTC_TAG = 0x7474_6366;
 const TTC_VERSION_1 = 0x0001_0000;
 const TTC_VERSION_2 = 0x0002_0000;
@@ -11,9 +13,9 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
   if (!Number.isInteger(faceIndex) || faceIndex < 0 || faceIndex > 0xffff_ffff) return null;
 
   const bytes = new Uint8Array(fontData);
-  if (bytes.byteLength < 4) return faceIndex === 0 ? fontData.slice(0) : null;
+  if (bytes.byteLength < 4) return faceIndex === 0 ? repairTerminalFontCmap(fontData.slice(0)) : null;
   const view = new DataView(fontData);
-  if (view.getUint32(0, false) !== TTC_TAG) return faceIndex === 0 ? fontData.slice(0) : null;
+  if (view.getUint32(0, false) !== TTC_TAG) return faceIndex === 0 ? repairTerminalFontCmap(fontData.slice(0)) : null;
   if (bytes.byteLength < 12) return null;
 
   const version = view.getUint32(4, false);
@@ -92,5 +94,5 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
     }
     selectedView.setUint32(headOffset + 8, (SFNT_CHECKSUM_MAGIC - checksum) >>> 0, false);
   }
-  return selected.buffer;
+  return repairTerminalFontCmap(selected.buffer);
 }

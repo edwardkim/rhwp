@@ -24,8 +24,10 @@ impl TypesetEngine {
             whole_row_fit_h,
             rowspan_touched,
             start_cut,
+            straddle_page_bands,
             v,
             table_storage_declares_splits,
+            ..
         } = input;
         let BlockRowScanVars {
             cursor_row,
@@ -42,7 +44,9 @@ impl TypesetEngine {
             strict_painted_bottom_fit,
             source_first_fragment_overflow_allowance,
             source_first_fragment_row_end,
+            start_cut_is_block: _,
             start_row_height_override,
+            ..
         } = v;
         let ScanProgress {
             mut r,
@@ -50,6 +54,7 @@ impl TypesetEngine {
             mut bleed_absorbed_row_height,
         } = progress;
         let BlockTableRowScan {
+            source_frame_band,
             mut consumed,
             mut end_row,
             mut split_block_start,
@@ -65,6 +70,7 @@ impl TypesetEngine {
             cut_row_h,
             rowspan_touched,
             cs,
+            straddle_page_bands,
         };
         let table::scan::RowBlockCandidate {
             b_start,
@@ -78,9 +84,20 @@ impl TypesetEngine {
         let keep_scanning = (|| {
             // [Task #1025] 연속분 커서가 블록 중간이면 블록 시작 컷을 적용.
             let blk_start_cut: &[usize] = if r == cursor_row { &start_cut } else { &[] };
-            let block_row_offsets = block_query.row_offsets(&block);
+            let block_row_offsets = block_query.row_offsets(&block, blk_start_cut);
             let block_h = block_query.required_height(&block, blk_start_cut);
-            if consumed + cs_before + block_h <= avail_for_rows {
+            let required = consumed + cs_before + block_h;
+            // The source remainder and a mixed row/block walk can sum the
+            // same physical boxes in different orders. Account only for f64
+            // roundoff, as the saved-span reservation does after this walk.
+            let roundoff = f64::EPSILON
+                * (required.abs() + avail_for_rows.abs()).max(1.0)
+                * (r - cursor_row + block_size + 2) as f64;
+            if required <= avail_for_rows
+                || (required.is_finite()
+                    && avail_for_rows.is_finite()
+                    && required - avail_for_rows <= roundoff)
+            {
                 consumed += cs_before + block_h;
                 r = b_end;
                 end_row = r;
@@ -116,7 +133,8 @@ impl TypesetEngine {
             // 페이지 중간에서 분할한다. fresh 페이지엔 들어가면(잔여 공간만
             // 부족) 통째로 다음 페이지로 미뤄 잔여 overflow 를 피한다(기존 동작).
             // 페이지 시작 행(r==cursor_row)은 더 미룰 수 없으므로 무조건 분할.
-            let genuinely_page_larger = block_h > st.base_available_height();
+            let genuinely_page_larger =
+                block_h > (st.base_available_height() - header_overhead).max(0.0);
             // [#2097 진단] 블록 컷/이월 결정 입력 — 동작 불변.
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
@@ -167,13 +185,9 @@ impl TypesetEngine {
             // PDF p2 는 rows 8..9 수용 실측) — fully 오판 여부와 무관하게
             // 기각 경계 전체로 오프셋 재시도를 확장한다.
             let mut band_fill = None;
+            let mut complete_row_frame = None;
             if cut_query.retries_band(allow_block_split, can_intra_split, block_h, budget) {
-                let mut offsets = Vec::with_capacity(block_size);
-                let mut top = 0.0;
-                for br in b_start..b_end {
-                    offsets.push(top);
-                    top += cut_row_h[br] + if br + 1 < b_end { cs } else { 0.0 };
-                }
+                let offsets = block_query.row_offsets_for_cut(&block, blk_start_cut);
                 let res2 = layout_engine.advance_row_block_cut_with_row_offsets(
                     table,
                     b_start,
@@ -195,8 +209,27 @@ impl TypesetEngine {
                     res2.end_cut
                 );
                 }
-                if !res2.fully_consumed && res2.consumed_height >= MIN_TOP_KEEP_PX {
-                    band_fill = Some((res2, offsets));
+                if !res2.fully_consumed {
+                    let candidate = Some((res2, offsets));
+                    let selected = table::scan::block_fragment::SelectedBlockCut::select(
+                        rowbreak_use_row_offsets,
+                        &res,
+                        &block_row_offsets,
+                        &candidate,
+                    );
+                    if selected.cut_res.consumed_height < MIN_TOP_KEEP_PX {
+                        complete_row_frame = selected.complete_row_boundary_frame(
+                            &block_query,
+                            &block,
+                            blk_start_cut,
+                            budget,
+                        );
+                    }
+                    if selected.cut_res.consumed_height >= MIN_TOP_KEEP_PX
+                        || complete_row_frame.is_some()
+                    {
+                        band_fill = candidate;
+                    }
                 }
             }
             if can_intra_split
@@ -209,6 +242,14 @@ impl TypesetEngine {
                     &band_fill,
                 );
                 end_row = selected.end_row(&block);
+                if let Some((height, last)) = complete_row_frame {
+                    split_block_start = Some(b_start);
+                    split_end_cut = selected.cut_res.end_cut.clone();
+                    split_end_limit = selected.cut_res.consumed_height;
+                    end_row_height_override = Some(last);
+                    consumed += cs_before + height;
+                    return false;
+                }
                 if let Some(band) = selected.complete_row_boundary_band(
                     &block_query,
                     &block,
@@ -255,6 +296,7 @@ impl TypesetEngine {
             false
         })();
         let scan = BlockTableRowScan {
+            source_frame_band,
             consumed,
             end_row,
             split_block_start,

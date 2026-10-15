@@ -157,6 +157,9 @@ fn dump_layout(out: &mut String, lb: &LayoutBox, indent: usize) {
         lb.x, lb.y, lb.width, lb.height, lb.baseline
     );
     match &lb.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            let _ = writeln!(out, "{pad}HancomGlyphs({run:?}) {metrics}");
+        }
         LayoutKind::Row(children) => {
             let _ = writeln!(out, "{pad}Row {metrics}");
             for child in children {

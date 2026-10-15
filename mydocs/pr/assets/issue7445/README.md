@@ -325,7 +325,7 @@ venv/bin/python scripts/visual_sweep.py \
 
 ## 추가: 교육과정 원문의 실제 text-overlap 축
 
-[추가등록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5874264216), [기존원문](../../../../samples/task2287/1342000_edu_curriculum_map.hwp), [동일입력 정상한컴PDF415쪽](../../../../pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf), [단독실패·새선택Native·유지검사/전수분할](curriculum2287_text_blocking_scope_validation.json). 실제37→90증가의text입력/37건행만보류하고기존실물/IR 및다른축·원문/PDF 유지. 선택6쪽최저68.47008%,413/415쪽,전수Native/freshWASM미완료입니다. 기존18PASS/시장별도1FAIL 및text15PASS/진안1FAIL,lint/정책7단계exit0. 전체피델리티/전체회귀 완료아닙니다.
+[추가등록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5874264216), [기존원문](education-curriculum-map/1342000_edu_curriculum_map.hwp), [동일입력 정상한컴PDF415쪽](education-curriculum-map/existing-hwp-hancom2020-print.pdf), [단독실패·새선택Native·유지검사/전수분할](curriculum2287_text_blocking_scope_validation.json). 실제37→90증가의text입력/37건행만보류하고기존실물/IR 및다른축·원문/PDF 유지. 선택6쪽최저68.47008%,413/415쪽,전수Native/freshWASM미완료입니다. 기존18PASS/시장별도1FAIL 및text15PASS/진안1FAIL,lint/정책7단계exit0. 전체피델리티/전체회귀 완료아닙니다.
 
 
 ## 진안군 신청서: 실제 차단된 text-overlap 축만 보류

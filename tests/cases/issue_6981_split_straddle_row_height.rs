@@ -7,7 +7,7 @@
 //! `row_span==1` 셀만 보고 정해진다. 어긋난 만큼 clip 이 글자를 지운다 — 렌더 트리에는
 //! 정상 좌표로 있는데 화면에 한 자도 안 나간다.
 //!
-//! `samples/task2287/1342000_edu_curriculum_map.hwp` 377쪽, 셀 `(62,8) row_span=2`:
+//! `mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp` 377쪽, 셀 `(62,8) row_span=2`:
 //!
 //! ```text
 //!   저장: 셀 3882 HU = 51.76px · 여백 141 HU = 1.88px · 문단 3개 vpos 0·1300·2600 HU
@@ -81,14 +81,16 @@ fn escaped_lines_all_pages(path: &str) -> Vec<String> {
     let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("로드 {path}: {e}"));
     let mut out = Vec::new();
     for page in 0..core.page_count() {
-        if let Ok(tree) = core.build_page_render_tree(page) {
-            lines_outside_their_cell(&tree.root, None, &mut out);
-        }
+        let tree = core
+            .build_page_render_tree(page)
+            .expect("모든 쪽 렌더 성공");
+        lines_outside_their_cell(&tree.root, None, &mut out);
     }
     out
 }
 
-const TARGET: &str = "samples/task2287/1342000_edu_curriculum_map.hwp";
+const TARGET: &str =
+    "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp";
 const NEEDLE: &str = "선언문 작성";
 
 /// 이 수정은 쪽수를 바꾼다(413 → 414). 쪽 번호에 묶지 않고 전 쪽을 훑는다.
@@ -100,9 +102,9 @@ fn all_occurrences(path: &str, needle: &str) -> Vec<(u32, f64, f64)> {
     let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("로드 {path}: {e}"));
     let mut out = Vec::new();
     for page in 0..core.page_count() {
-        let Ok(tree) = core.build_page_render_tree(page) else {
-            continue;
-        };
+        let tree = core
+            .build_page_render_tree(page)
+            .expect("모든 출현 쪽 렌더 성공");
         let mut found = Vec::new();
         locate(&tree.root, None, needle, &mut found);
         for (line_bottom, cell_bottom) in found {
@@ -161,14 +163,15 @@ fn the_pages_that_carry_it_have_no_escaped_line() {
     }
 }
 
-/// 반례 ① — 남은 내용이 조각에 다 안 들어가는 거대 걸침 셀은 늘리지 않는다.
+/// 반례 ① — 거대 걸침 셀의 각 조각에서 소유한 글줄이 자기 칸을 벗어나지 않는다.
+/// 행 높이의 증가 자체를 검사한다는 주장과 포함 관계 검사를 혼동하지 않는다.
 #[test]
-fn giant_straddle_cell_that_must_be_cut_is_not_grown() {
+fn giant_straddle_fragment_keeps_owned_lines_inside_cells() {
     let path = "samples/issue6803/1376496-neighborhood-facility-land-table.hwp";
     let escaped = escaped_lines_all_pages(path);
     assert!(
         escaped.is_empty(),
-        "{path} 에 칸 밖 글줄이 생겼습니다(늘리면 안 되는 셀을 늘렸습니다): {escaped:?}"
+        "{path} 에 소유한 칸 밖으로 나간 글줄이 있습니다: {escaped:?}"
     );
 }
 

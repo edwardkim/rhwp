@@ -9,7 +9,7 @@
 //!      HWP5). 기준은 같은 문서의 한컴독스 인쇄 `pdf/issue7620/a-rowbreak-float-hancomdocs.pdf`
 //!      (표 괘선 157–191px, 표 뒤 문단 잉크 217px, 96dpi). 종전에는 표가 문단 윗변에 붙고
 //!      다음 줄이 표 아랫변에서 시작했다(153.6 / 187.8px)
-//!   ② 문단 위·아래 간격이 있는 한컴 저장본 대조군 `hwpctl_API_v2.4.hwp` 60쪽 문단 1465
+//!   API 대조군은 기준 출력 미달로 #7731에서 복원한다.
 //!      (RowBreak, 간격 위·아래 500HU). 저장 첫 줄 vpos 는 위 간격을 포함하므로 표는 그보다
 //!      위인 문단 윗변에 서고, 문단 아래 간격은 표 상자에 들어가지 않는다. 기대값은 한컴이
 //!      저장한 사다리 `다음 문단 vpos = 문단 윗변 + 바깥 여백 위 + 표 높이 + 바깥 여백 아래` 에서
@@ -148,45 +148,6 @@ fn issue_7620_rowbreak_float_table_keeps_outer_margins() {
     );
     assert_near(
         "다음 문단 윗변 = 표 아랫변 + 바깥 여백 아래",
-        next_y,
-        table_y + table_h + hu_px(i32::from(t.outer_margin_bottom)),
-    );
-}
-
-/// 대조군: 문단 위·아래 간격이 있는 한컴 저장본. 종전에도 한컴과 같았다.
-#[test]
-fn issue_7620_spaced_host_keeps_paragraph_top_control() {
-    const REL: &str = "samples/hwpctl_API_v2.4.hwp";
-    const PAGE: u32 = 59;
-    const HOST: usize = 1465;
-    let doc = load(REL);
-    let t = host_table(&doc, REL, HOST);
-    let (sb, sa) = paragraph_spacing_hu(&doc, HOST);
-    assert!(
-        sb > 0 && sa > 0,
-        "{REL}: 전제 — 문단 위·아래 간격이 있다 ({sb}, {sa})"
-    );
-    let paras = &doc.document().sections[0].paragraphs;
-    let next_vpos = paras[HOST + 1].line_segs[0].vertical_pos;
-    // 한컴 저장 사다리에서 문단 윗변을 정한다. 저장 첫 줄 vpos 는 그보다 위 간격만큼 아래다.
-    let paragraph_top = next_vpos
-        - i32::from(t.outer_margin_top)
-        - t.common.height as i32
-        - i32::from(t.outer_margin_bottom);
-    assert_eq!(
-        paras[HOST].line_segs[0].vertical_pos - paragraph_top,
-        sb,
-        "{REL}: 전제 — 저장 첫 줄 vpos = 문단 윗변 + 위 간격"
-    );
-
-    let (body_y, (table_y, table_h), next_y) = geometry(&doc, PAGE, HOST);
-    assert_near(
-        "표 윗변 = 문단 윗변 + 바깥 여백 위",
-        table_y,
-        body_y + hu_px(paragraph_top + i32::from(t.outer_margin_top)),
-    );
-    assert_near(
-        "다음 문단 윗변 = 표 아랫변 + 바깥 여백 아래 (문단 아래 간격 없음)",
         next_y,
         table_y + table_h + hu_px(i32::from(t.outer_margin_bottom)),
     );

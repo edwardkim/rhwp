@@ -8199,6 +8199,8 @@ export class HwpDocument {
     }
     /**
      * HTML 문자열을 파싱하여 캐럿 위치에 삽입한다 (본문).
+     *
+     * `char_offset` 과 반환 `charOffset` 은 논리 위치(`insertTextLogical` 과 같은 축)다.
      * @param {number} section_idx
      * @param {number} para_idx
      * @param {number} char_offset
@@ -11530,6 +11532,10 @@ export function version() {
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
+        __wbg___wbindgen_is_function_5e4570eb24ffa122: function(arg0) {
+            const ret = typeof(arg0) === 'function';
+            return ret;
+        },
         __wbg___wbindgen_is_undefined_6cff064c44e0d823: function(arg0) {
             const ret = arg0 === undefined;
             return ret;
@@ -11552,6 +11558,10 @@ function __wbg_get_imports() {
         __wbg_bezierCurveTo_2ef9bdbf3d7cab27: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
             arg0.bezierCurveTo(arg1, arg2, arg3, arg4, arg5, arg6);
         },
+        __wbg_call_35dba3c747ad7521: function() { return handleError(function (arg0, arg1, arg2) {
+            const ret = arg0.call(arg1, arg2);
+            return ret;
+        }, arguments); },
         __wbg_clearRect_81c3c80fbe793b63: function(arg0, arg1, arg2, arg3, arg4) {
             arg0.clearRect(arg1, arg2, arg3, arg4);
         },
@@ -11634,6 +11644,10 @@ function __wbg_get_imports() {
         __wbg_getRandomValues_436a51d0629d84e1: function() { return handleError(function (arg0, arg1) {
             globalThis.crypto.getRandomValues(getArrayU8FromWasm0(arg0, arg1));
         }, arguments); },
+        __wbg_get_971a0c45d172643f: function() { return handleError(function (arg0, arg1) {
+            const ret = Reflect.get(arg0, arg1);
+            return ret;
+        }, arguments); },
         __wbg_height_e56f6fb197710e09: function(arg0) {
             const ret = arg0.height;
             return ret;
@@ -11694,6 +11708,10 @@ function __wbg_get_imports() {
             const ret = new Image();
             return ret;
         }, arguments); },
+        __wbg_new_ebe3e0f6837f0879: function() {
+            const ret = new Object();
+            return ret;
+        },
         __wbg_new_with_u8_clamped_array_and_sh_d9a3bf9abac17f51: function() { return handleError(function (arg0, arg1, arg2, arg3) {
             const ret = new ImageData(getClampedArrayU8FromWasm0(arg0, arg1), arg2 >>> 0, arg3 >>> 0);
             return ret;
@@ -11732,6 +11750,10 @@ function __wbg_get_imports() {
         }, arguments); },
         __wbg_setTransform_af9c1fdc090e1259: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
             arg0.setTransform(arg1, arg2, arg3, arg4, arg5, arg6);
+        }, arguments); },
+        __wbg_set_8155bb79a948541b: function() { return handleError(function (arg0, arg1, arg2) {
+            const ret = Reflect.set(arg0, arg1, arg2);
+            return ret;
         }, arguments); },
         __wbg_set_fillStyle_392607276a67e12a: function(arg0, arg1) {
             arg0.fillStyle = arg1;
@@ -11819,6 +11841,9 @@ function __wbg_get_imports() {
         __wbg_stroke_5f311844f0db0d9a: function(arg0) {
             arg0.stroke();
         },
+        __wbg_transform_62123174d9cd3977: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
+            arg0.transform(arg1, arg2, arg3, arg4, arg5, arg6);
+        }, arguments); },
         __wbg_translate_b7073fdf68217bcc: function() { return handleError(function (arg0, arg1, arg2) {
             arg0.translate(arg1, arg2);
         }, arguments); },

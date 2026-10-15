@@ -52,6 +52,18 @@ const TALL_CELL_ROW_SPAN: u16 = 6;
 
 /// 그 셀이 이 쪽에 그린 직계 글줄의 문단 인덱스.
 fn tall_cell_para_indices(node: &RenderNode, out: &mut Vec<usize>) {
+    if !node.visible || node.editor_only {
+        return;
+    }
+    if let RenderNodeType::Table(meta) = &node.node_type {
+        if meta.section_index != Some(0)
+            || meta.para_index != Some(6)
+            || meta.control_index != Some(0)
+            || meta.cell_context.is_some()
+        {
+            return;
+        }
+    }
     if let RenderNodeType::TableCell(meta) = &node.node_type {
         if meta.row == TALL_CELL_ROW
             && meta.col == TALL_CELL_COL
@@ -88,7 +100,7 @@ fn worst_text_line_overhang(node: &RenderNode, bottom: f64) -> f64 {
     worst
 }
 
-/// 이 셀이 조각별로 그린 문단 인덱스 — 2·3·4쪽 순서대로.
+/// 원본 표 소속의 이 셀이 전쪽에서 그린 문단 인덱스 — 실제 paint 순서.
 fn fragment_ranges() -> Vec<Vec<usize>> {
     let path = document_path();
     let bytes = std::fs::read(&path).expect("#6803 정식 회귀 sample 읽기");
@@ -99,15 +111,14 @@ fn fragment_ranges() -> Vec<Vec<usize>> {
         "쪽수 형상이 바뀌면 이 시험의 전제가 깨진다"
     );
 
-    (1u32..=3)
+    (0..core.page_count())
         .map(|page| {
             let tree = core.build_page_render_tree(page).expect("render tree");
             let mut pis = Vec::new();
             tall_cell_para_indices(&tree.root, &mut pis);
-            pis.sort_unstable();
-            pis.dedup();
             pis
         })
+        .filter(|pis| !pis.is_empty())
         .collect()
 }
 
@@ -139,6 +150,13 @@ fn the_fragments_partition_the_cell_exactly_once() {
         seen.len(),
         seen.last().copied().expect("마지막") + 1,
         "조각 사이에 구멍이 있다 — #6803 회귀 (조각별 범위 {ranges:?})"
+    );
+    // 원본 셀의 67문단은 각각 저장 줄 하나다. 앞부분만 연속이고 마지막
+    // 문단들이 누락된 경우와 조각 내부의 역순도 함께 검출한다.
+    assert_eq!(
+        ranges.iter().flatten().copied().collect::<Vec<_>>(),
+        (0..67).collect::<Vec<_>>(),
+        "원본의 모든 문단을 순서대로 한 번씩 보존해야 한다"
     );
 }
 
@@ -181,7 +199,7 @@ fn no_text_line_falls_off_the_paper() {
     }
 
     assert!(
-        worst < 40.0,
+        worst <= 0.5,
         "글줄이 용지 밖으로 나갔다 — #6803 회귀          (최대 초과 {worst:.1}px @ {worst_page}쪽; 수정 전 +1,015.1px @ 3쪽)"
     );
 }

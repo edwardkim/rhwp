@@ -3965,6 +3965,10 @@ fn parse_paragraph_list_inner(
                     // 새 페이지 시작 — vpos reset
                     acc_section_vpos = 0;
                     wrap_zone_end_vpos = 0;
+                    // Preserve the stored page owner, not only its coordinate.
+                    // A zero local cursor alone cannot distinguish a page start
+                    // from a wrapped/control-local origin after conversion.
+                    seg.tag |= LineSeg::TAG_FIRST_LINE_OF_PAGE;
                 }
                 seg.vertical_pos = acc_section_vpos;
 
@@ -4599,6 +4603,7 @@ fn parse_hwp3_inner(
         paragraphs,
         raw_provenance: None,
         raw_stream: None,
+        trailing_lists: None,
     };
     doc.sections.push(section);
 

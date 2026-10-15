@@ -1,31 +1,16 @@
 //! 문단 fit 예산에 필요한 읽기 전용 계산. 페이지 상태나 1회성 flag를 소비하지 않는다.
 
 use super::super::{
-    saved_bounds_overlap_current_flow, section_has_zero_high_attr_rowbreak_table,
-    BODY_BOTTOM_SEAT_PX, SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX,
+    saved_bounds_overlap_current_flow, BODY_BOTTOM_SEAT_PX, SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX,
 };
 use super::metrics::FormattedParagraph;
 use crate::model::paragraph::Paragraph;
 
-pub(in crate::renderer::typeset) fn layout_drift_safety_px(paragraphs: &[Paragraph]) -> f64 {
-    // Task #332 Stage 4a: layout drift 안전 마진.
-    // typeset 의 fit 추정과 layout 의 실측 진행은 폰트 메트릭/표 측정 다중성 등으로
-    // 미세하게 어긋날 수 있다 (~수 px). 마진을 빼서 보수적으로 fit 을 판정해
-    // layout 시점의 LAYOUT_OVERFLOW (clamp pile 트리거) 를 사전 차단한다.
-    // [Task #359] 다음 pi 가 vpos-reset 가드 발동 예정 시 안전마진 1회 비활성화
-    // (단독 항목 페이지 차단).
-    // [Task #361] 직전 항목이 PartialTable 인 경우 안전마진 비활성화.
-    // PartialTable 의 cur_h 는 row 단위로 정확히 누적되므로 안전마진이 과함.
-    // (k-water-rfp p15 case: PartialTable 직후 작은 텍스트 (16px) 가 잔여 5.3px 부족으로
-    // fit 실패하여 다음 페이지로 밀리는 회귀.)
-    // [Task #643] VPOS_CORR 백워드 허용 (8px) 으로 layout drift 누적이 해소됨.
-    const DEFAULT_LAYOUT_DRIFT_SAFETY_PX: f64 = 4.0;
-    const ROWBREAK_LAYOUT_DRIFT_SAFETY_PX: f64 = 0.0;
-    if section_has_zero_high_attr_rowbreak_table(paragraphs) {
-        ROWBREAK_LAYOUT_DRIFT_SAFETY_PX
-    } else {
-        DEFAULT_LAYOUT_DRIFT_SAFETY_PX
-    }
+pub(in crate::renderer::typeset) fn layout_drift_safety_px(_paragraphs: &[Paragraph]) -> f64 {
+    // Fit uses the accepted line/object footprint. An unrelated margin cannot
+    // reject content which fits inside the physical column; any discrepancy
+    // with paint must be corrected in the shared footprint or origin instead.
+    0.0
 }
 
 pub(in crate::renderer::typeset) fn exclusion_probe_height(

@@ -46,7 +46,7 @@ fn with_bookmark(core: &DocumentCore) -> DocumentCore {
         let mut entry = input.by_index(i).unwrap();
         let mut bytes = Vec::new();
         entry.read_to_end(&mut bytes).unwrap();
-        if entry.name() == "Contents/section0.xml" {
+        if entry.name().expect("ZIP 엔트리 이름") == "Contents/section0.xml" {
             let xml = String::from_utf8(bytes).unwrap();
             assert_eq!(xml.matches("ANCHOR").count(), 1);
             bytes = xml
@@ -58,7 +58,7 @@ fn with_bookmark(core: &DocumentCore) -> DocumentCore {
         }
         output
             .start_file(
-                entry.name(),
+                entry.name().expect("ZIP 엔트리 이름"),
                 zip::write::SimpleFileOptions::default().compression_method(entry.compression()),
             )
             .unwrap();

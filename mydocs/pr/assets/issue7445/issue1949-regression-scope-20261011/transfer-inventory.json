@@ -1,0 +1,134 @@
+{
+  "head": "ea261eff5f79db43169c5e61a4a28be1c9a82942",
+  "issue": "https://github.com/edwardkim/rhwp/issues/7813",
+  "representative_issue": 7445,
+  "status": "applied_local_not_final_validation_pass",
+  "reason": "이관 원본의 고정 base 전115쪽 Native가 모두90% 미만인 배치 검사. 현재 직접 보정은 KPS와 가맹사업이며 이 원본은 해당하지 않는다.",
+  "source_tests": [
+    "test_get_table_bbox_at_page_for_giant_multi_page_cell",
+    "issue2214_scoped_cache_coherence_preserves_transient_pagination",
+    "issue3137_focused_cell_geometry_matches_exact_rect",
+    "issue2424_resumable_pagination_commits_only_after_final_fragment",
+    "issue2424_resumable_delete_commits_only_after_final_fragment",
+    "issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision"
+  ],
+  "integration_tests": [
+    "issue_2214_warm_deferred_tree_and_cursor_are_exact",
+    "issue_2214_cold_representative_queries_are_exact",
+    "issue_2214_cell_flow_transition_baseline",
+    "issue_2215_hwp_and_hwpx_preserve_normal_selection_oracles",
+    "issue_2215_split_paragraph_same_page_hints_select_the_pointer_fragment",
+    "issue_2215_split_paragraph_cross_page_hints_keep_cursor_pairs_on_each_page"
+  ],
+  "removed_test_count": 12,
+  "preserved_inputs": {
+    "samples/issue1949_giant_cell_nested_tables_perf.hwp": "ef10261cd29325116028e4f4f3e6be1a72c675eb771bddfd8484e7fe5aa94b4e",
+    "samples/issue1949_giant_cell_nested_tables_perf.hwpx": "fc6e5f156de470dfbb14aab392389491720ee7fb1bf6f03fe9a018e93b420c65",
+    "rhwp-studio/public/samples/issue1949_giant_cell_nested_tables_perf.hwp": "ef10261cd29325116028e4f4f3e6be1a72c675eb771bddfd8484e7fe5aa94b4e"
+  },
+  "original_test_sha256": {
+    "src/wasm_api/tests.rs": "46e84d8959fa44e9b94c37d1898059452142ae6fceb4ba025e983e2197043dca"
+  },
+  "preserved": "원본 HWP/HWPX/PDF, 일반 입력의 API/cache/serializer 검사, issue4149 조사와 프로파일링 및 issue4167 모델 지문 계약",
+  "remaining": "이관은 결함 해결이나 테스트 성공이 아니다. 다른 브랜치에서 보정 및 전쪽 Native/fresh90%와 확대 판독 후 관계형 검사를 복원한다.",
+  "base_visual_evidence": {
+    "renderer_base": "90fa2f8955c2dd21e9f0ea8fd0c6ee8dc5996a47",
+    "hwp_pages": 115,
+    "hwp_native_min_percent": 23.54542,
+    "hwpx_pages": 115,
+    "hwpx_native_min_percent": 23.78253,
+    "native_below90_pages_each": 115,
+    "source": "#7813 live issue body; fresh WASM is pending, not counted as PASS"
+  },
+  "whole_baseline_before_removal": {
+    "status": "terminal",
+    "head": "ea261eff5f79db43169c5e61a4a28be1c9a82942",
+    "base": "8761ac90270a5dddfa0860e3de700ee83d2bf7c8",
+    "command": [
+      "env",
+      "CARGO_BUILD_JOBS=2",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ],
+    "scope": "Whole default Rust baseline after transferred regression removal; current known KPS/franchise failures remain. Not a passing candidate or PR qualification.",
+    "exit_code": 100,
+    "seconds": 4072.177,
+    "summary": "     Summary [1741.136s] 10343 tests run: 10334 passed (30 slow), 9 failed, 45 skipped",
+    "source_unchanged": true,
+    "log": "output/pr-review/semanticist21-20261008/logs/whole-rust-transferred-scope-v155-retry1.log"
+  },
+  "static_policy_after_removal": {
+    "status": "terminal",
+    "head": "ea261eff5f79db43169c5e61a4a28be1c9a82942",
+    "precondition": "Generated suites refreshed after source-file removal before fmt; initial fmt failed on stale generated imports and is not counted as PASS",
+    "commands": [
+      {
+        "argv": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 47.192,
+        "log": "output/pr-review/semanticist21-20261008/logs/issue1949-transfer-stage-policy-v156-retry1-0.log"
+      },
+      {
+        "argv": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 3.934,
+        "log": "output/pr-review/semanticist21-20261008/logs/issue1949-transfer-stage-policy-v156-retry1-1.log"
+      },
+      {
+        "argv": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 50.519,
+        "log": "output/pr-review/semanticist21-20261008/logs/issue1949-transfer-stage-policy-v156-retry1-2.log"
+      },
+      {
+        "argv": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "8761ac90270a5dddfa0860e3de700ee83d2bf7c8"
+        ],
+        "exit_code": 0,
+        "seconds": 2.629,
+        "log": "output/pr-review/semanticist21-20261008/logs/issue1949-transfer-stage-policy-v156-retry1-3.log"
+      },
+      {
+        "argv": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "8761ac90270a5dddfa0860e3de700ee83d2bf7c8"
+        ],
+        "exit_code": 0,
+        "seconds": 34.135,
+        "log": "output/pr-review/semanticist21-20261008/logs/issue1949-transfer-stage-policy-v156-retry1-4.log"
+      }
+    ],
+    "all_pass": true
+  }
+}

@@ -41,7 +41,20 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     pub(in crate::renderer::typeset) stored_row_box_sum: Option<(usize, f64)>,
     /// [#7531] 행 경계를 넘는 걸침 칸(칸 색인)마다 앞 조각들이 남긴 쪽 끝 빈 띠의 합(px).
     /// 다음 조각의 scan 과 paint 가 같은 행 높이 덜기(`straddle_page_band_relief`)를 쓴다.
-    pub(in crate::renderer::typeset) straddle_page_bands: Vec<(usize, f64)>,
+    pub(in crate::renderer::typeset) straddle_page_bands:
+        Vec<crate::renderer::pagination::StraddleCellCarry>,
+    /// Complete row boxes actually accepted in preceding stored fragments.
+    /// Repeated headers and content cuts are separate owners.
+    pub(in crate::renderer::typeset) accepted_row_boxes: Vec<Option<f64>>,
+    /// 원본 쪽 재시작 컷이 실제 수용한 미완료 행 상자. 내용 컷과 별도로
+    /// 보존하고 같은 행의 뒤 상자가 수용되면 완료 행 장부에 합산한다.
+    pub(in crate::renderer::typeset) stored_restart_row_box: Option<(usize, f64)>,
+    /// 인증된 첫 물리 조각을 실제 수용한 사실. 뒤 조각의 바깥 프레임을
+    /// 예산과 배치가 같은 원점에서 한 번만 다시 열도록 전달한다.
+    pub(in crate::renderer::typeset) stored_fragment_outer_frame: bool,
+    /// 실제 수용한 원본 첫 상자가 본문 아래를 닫았는지 여부.
+    /// 뒤 조각의 저장 내용 경계를 같은 본문 프레임과 대조한다.
+    pub(in crate::renderer::typeset) stored_fragment_closes_body: bool,
 }
 
 /// RowBreak 표 셀 각주가 HWP 저장 vpos reset에서 물리 page를 넘을 때의 tail 정보.
@@ -152,6 +165,7 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     /// 다음 host의 양수 vpos rewind가 현재 RowBreak 표의 continuation source
     /// page를 가리키는지 여부. page-top reset은 표 종료이므로 포함하지 않는다.
     pub(in crate::renderer::typeset) source_next_positive_rewind: bool,
+    pub(in crate::renderer::typeset) source_terminal_suffix_start: Option<usize>,
     /// Paint와 공유하는 저장 첫 조각 원점(단 위쪽 기준).
     pub(in crate::renderer::typeset) first_fragment_saved_offset: Option<f64>,
     pub(in crate::renderer::typeset) source_text_first_frame_height: Option<f64>,

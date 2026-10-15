@@ -1341,6 +1341,13 @@ impl CanvasKitReplayPlanBuilder {
                 PaintOp::FootnoteMarker { marker, .. } => {
                     self.record_required_font_family(&marker.font_family);
                 }
+                PaintOp::Equation { equation, .. }
+                    if crate::renderer::equation::hancom_glyphs::is_used(&equation.layout_box) =>
+                {
+                    self.record_required_font_family(
+                        crate::renderer::equation::hancom_glyphs::FONT_FAMILY,
+                    );
+                }
                 _ => {}
             }
         }
@@ -1844,6 +1851,12 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
             visit(child, depth + 1, remaining_nodes, max_text_utf16_units)
         };
         match &layout.kind {
+            LayoutKind::HancomGlyphs(run) => {
+                text_supported(&run.glyphs)
+                    && run.baseline_shift.is_finite()
+                    && run.glyphs.chars().count() == run.positions.len()
+                    && run.positions.iter().all(|x| x.is_finite())
+            }
             LayoutKind::Row(children) => children.iter().all(|item| child(item, remaining_nodes)),
             LayoutKind::Text(text)
             | LayoutKind::Number(text)
@@ -2436,6 +2449,7 @@ mod tests {
         let rect_style = ShapeStyle {
             pattern: Some(crate::renderer::PatternFillInfo {
                 pattern_type: 4,
+                tile_size: 7.68,
                 pattern_color: 0x0000_00ff,
                 background_color: 0x00ff_ffff,
             }),
@@ -3268,6 +3282,7 @@ mod tests {
                 number: 1,
                 text: "1)".to_string(),
                 base_font_size: 12.0,
+                baseline: 7.0,
                 font_family: "Test".to_string(),
                 color: 0x0000_0000,
                 section_index: 0,

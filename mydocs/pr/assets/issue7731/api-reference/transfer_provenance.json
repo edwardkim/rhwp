@@ -1,0 +1,192 @@
+{
+  "status": "applied-focused-validation-complete",
+  "issue": 7731,
+  "parent_issue": 7445,
+  "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+  "current_binary_source_record": "remaining-row-frame-native-v249-result.json",
+  "input_sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603",
+  "preserve": [
+    "pure IR issue_3695_structure_auto_policy",
+    "all healthy other document tests and common helpers",
+    "original bytes and needed PDF"
+  ],
+  "base_native_page18": 58.9313,
+  "latest_native_page18": 58.9313,
+  "whole_and_fresh": "not executed on latest source",
+  "same_page18_png": true,
+  "remove_count": 24,
+  "source_before_commit": "03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3",
+  "source_unchanged_production": true,
+  "pdf_moves": [
+    {
+      "from": "pdf/hwpctl_API_v2.4-2020.pdf",
+      "to": "mydocs/pr/assets/issue7731/api-reference/hwpctl_API_v2.4-2020.pdf",
+      "sha256": "8c2922c80a3b49b823e22eb8a4fbb8d95df09b2c370d48f8a6dde234eb7b355a",
+      "bytes": 828100
+    },
+    {
+      "from": "pdf/hwpctl_API_v2.4-2022.pdf",
+      "to": "mydocs/pr/assets/issue7731/api-reference/hwpctl_API_v2.4-2022.pdf",
+      "sha256": "a0141ca188ca638b305d896e21749703a39529f7bd8cf2bc806dea4ff9aaac66",
+      "bytes": 828097
+    },
+    {
+      "from": "pdf/hwpctl_API_v2.4-hwp-2020.pdf",
+      "to": "mydocs/pr/assets/issue7731/api-reference/hwpctl_API_v2.4-hwp-2020.pdf",
+      "sha256": "1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74",
+      "bytes": 828101
+    }
+  ],
+  "original_preserved_at": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+  "rendering_baseline_rows_removed": [
+    {
+      "source": "tests/fixtures/text_overlap_baseline.tsv",
+      "removed": [
+        "hwpctl_API_v2.4.hwp\t5\n"
+      ]
+    },
+    {
+      "source": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "removed": [
+        "samples/hwpctl_API_v2.4.hwp\t105\t105\n"
+      ]
+    }
+  ],
+  "pure_ir_baseline_rows_preserved": true,
+  "validation_state": "fmt, Native/WASM/workspace all-targets Clippy, workspace build, pinned-base manifest/unit policies, retained document/IR 47 tests all passed; final whole/fresh gates pending",
+  "test_source_history": [
+    {
+      "source": "tests/cases/issue_6368_row_cut_fp_epsilon.rs",
+      "before_sha256": "d421eb2793195fff1123cee4e8470719e03d4dc180748c65512b8084544ae188",
+      "removed_tests": [
+        "issue_6368_hwpctl_api_example_last_line_stays_on_page_12"
+      ],
+      "retained_tests": [],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_6368_row_cut_fp_epsilon.rs"
+    },
+    {
+      "source": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+      "before_sha256": "9c410833438f337a42d38c8ad22aa24d6f43f4259ad28b645b892e2f0ddb1eaa",
+      "removed_tests": [
+        "issue_7063_empty_float_host_table_starts_below_previous_line_box",
+        "issue_7063_second_empty_float_host_table_matches_oracle",
+        "issue_7063_stored_ladder_witness_table_is_untouched",
+        "issue_7063_following_flow_and_page_boundary_match_hancom"
+      ],
+      "retained_tests": [],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs"
+    },
+    {
+      "source": "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs",
+      "before_sha256": "1154ae7fa886a0032f4a68eec2767175fa8b7e21e25f8d05b2bfa05595084fb1",
+      "removed_tests": [
+        "split_fragment_ignores_the_anchor_leading_gap",
+        "split_fragment_without_a_gap_is_unchanged",
+        "the_correction_does_not_move_the_page_count"
+      ],
+      "retained_tests": [],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs"
+    },
+    {
+      "source": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+      "before_sha256": "f18aec43a6d8cdbaa7c2066fd5df206e72b07c4912b292b4fba2c29c9a2f225e",
+      "removed_tests": [
+        "stored_rewind_keeps_its_last_line_in_the_fragment",
+        "the_continuation_neither_repeats_nor_drops_the_moved_unit",
+        "neither_the_fragment_nor_the_following_table_overflows_the_body",
+        "an_already_selected_boundary_uses_the_same_trimmed_box",
+        "the_page_count_matches_the_oracle",
+        "reserved_bottom_matches_painted_bottom_and_continuation_cuts"
+      ],
+      "retained_tests": [],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs"
+    },
+    {
+      "source": "tests/cases/issue_7203_tac_column_top_stored_vpos.rs",
+      "before_sha256": "8abde304ec89b5f8786fa4c93408b0f8dd6fa5e0fb262cd1070cc952e6b5c43e",
+      "removed_tests": [
+        "column_top_tac_table_keeps_stored_vertical_pos",
+        "column_top_tac_table_without_stored_vertical_pos_does_not_move"
+      ],
+      "retained_tests": [],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_7203_tac_column_top_stored_vpos.rs"
+    },
+    {
+      "source": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+      "before_sha256": "aab7ae77e9c2f3ddbf6e733825b93c1b39a12e8076df7fc04d8ea4a1024faff1",
+      "removed_tests": [
+        "a_float_table_top_sits_on_its_stored_anchor",
+        "treat_as_char_tables_are_untouched",
+        "downstream_table_split_and_body_follow_the_oracle_pages"
+      ],
+      "retained_tests": [
+        "an_offset_anchored_float_table_keeps_flow_placement",
+        "stored_anchor_after_a_taller_float_consumes_its_span_once"
+      ],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_7203_float_table_stored_anchor_top.rs"
+    },
+    {
+      "source": "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs",
+      "before_sha256": "b2444af5866fb5246c46315856113baec017d8b2f34c222c9be7959bf0e20ec0",
+      "removed_tests": [
+        "para_float_table_top_sits_at_the_stored_anchor_not_a_line_above",
+        "saved_anchor_subtracts_only_top_margin_with_asymmetric_margins"
+      ],
+      "retained_tests": [
+        "saved_outer_box_anchor_keeps_following_tables_inside_the_body"
+      ],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs"
+    },
+    {
+      "source": "tests/cases/issue_7387_use_font_space_latin_slot.rs",
+      "before_sha256": "e09908797b73afebbaf0ddb84d9967598cae1fae5cbccfd7edf94d66bf868a66",
+      "removed_tests": [
+        "use_font_space_line_width_matches_hancom_in_absolute_px"
+      ],
+      "retained_tests": [
+        "latin_slot_with_half_em_space_keeps_half_width",
+        "use_font_space_kopub_latin_slot_uses_kopub_space_glyph"
+      ],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_7387_use_font_space_latin_slot.rs"
+    },
+    {
+      "source": "tests/cases/issue_7552_page_break_first_margin_origin.rs",
+      "before_sha256": "b3d6bbcf0772f08fd46d8de6b1d3169c5b218864925d098cc3abfad1a41f5a94",
+      "removed_tests": [
+        "hwp5_empty_table_host_flow_follows_stored_ladder"
+      ],
+      "retained_tests": [
+        "caption_table_on_page_break_page_starts_below_previous_paragraph",
+        "page_break_first_paragraph_keeps_stored_ladder_distance",
+        "empty_table_host_opens_at_previous_stored_line_end",
+        "stored_cell_reset_line_stays_on_first_fragment_page",
+        "row_sibling_reset_keeps_padless_cell_line_on_first_fragment_page"
+      ],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_7552_page_break_first_margin_origin.rs"
+    },
+    {
+      "source": "tests/cases/issue_7620_rowbreak_float_table_outer_margins.rs",
+      "before_sha256": "a012bddd424cdb51b602b511916be5030c6bbb5566a47084d9508bcebce46d24",
+      "removed_tests": [
+        "issue_7620_spaced_host_keeps_paragraph_top_control"
+      ],
+      "retained_tests": [
+        "issue_7620_rowbreak_float_table_keeps_outer_margins"
+      ],
+      "history_url": "https://github.com/edwardkim/rhwp/blob/03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3/tests/cases/issue_7620_rowbreak_float_table_outer_margins.rs"
+    }
+  ],
+  "review": "mydocs/pr/assets/issue7731/api-reference/review_018.png",
+  "overlay": "mydocs/pr/assets/issue7731/api-reference/overlay_018.png",
+  "whole_fresh_validation": "unexecuted; same-condition Native base/current page18 below90 is transfer evidence",
+  "production_source_commit": "5eda5d45f100f9d0d4635c9e65a09a341145d3b3",
+  "validated_worktree_head": "03c5e62b26ed181e74ebd82ff9895f72dc1e4ce3",
+  "validation": {
+    "record": "output/pr-review/semanticist21-20261008/api-transfer-validation-v267-result.json",
+    "all_steps_exit_zero": true,
+    "focused_tests_run": 47,
+    "focused_tests_passed": 47,
+    "production_hashes_match_commit": "5eda5d45f100f9d0d4635c9e65a09a341145d3b3",
+    "exam_originals_preserved": 59
+  }
+}

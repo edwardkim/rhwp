@@ -822,7 +822,7 @@ impl LayoutEngine {
 
             // 인라인 좌표 없으면 기존 방식 (정렬 기반 단독 배치)
             let eq_w = hwpunit_to_px(
-                crate::renderer::equation::flow_width_hwp(eq) as i32,
+                crate::renderer::equation::inline_advance_width_hwp(eq),
                 self.dpi,
             );
             let eq_h = hwpunit_to_px(
@@ -867,7 +867,11 @@ impl LayoutEngine {
                     cell_para_index: None,
                     note_ref: None,
                 }),
-                BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
+                crate::renderer::equation::inline_content_box(
+                    eq,
+                    BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
+                    self.dpi,
+                ),
             );
             parent.children.push(eq_node);
             return;
@@ -1057,6 +1061,10 @@ impl LayoutEngine {
             {
                 x += hwpunit_to_px(i32::from(common.margin.left), self.dpi);
             }
+            // 자리차지 OLE의 위 여백은 잉크 원점과 본문 예약 높이에 함께 속한다.
+            // 일반 문단도 단 이월과 동일한 확정 프레임을 소비한다.
+            let y = crate::renderer::float_placement::column_ole_placement(shape, para_y, self.dpi)
+                .map_or(y, |placement| placement.table_top);
             (x, y)
         };
 
@@ -1238,7 +1246,7 @@ impl LayoutEngine {
 
         match child {
             ShapeObject::Polygon(poly) => {
-                let (style, gradient) = drawing_to_shape_style(&poly.drawing);
+                let (style, gradient) = drawing_to_shape_style(&poly.drawing, self.dpi);
                 let mut commands = Vec::new();
                 let mut min_x = f64::MAX;
                 let mut min_y = f64::MAX;
@@ -1274,7 +1282,7 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Line(line) => {
-                let (style, gradient) = drawing_to_shape_style(&line.drawing);
+                let (style, gradient) = drawing_to_shape_style(&line.drawing, self.dpi);
                 let (x1, y1) = transform_pt(line.start.x as f64, line.start.y as f64);
                 let (x2, y2) = transform_pt(line.end.x as f64, line.end.y as f64);
                 let min_x = x1.min(x2);
@@ -1289,7 +1297,7 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Curve(curve) => {
-                let (style, gradient) = drawing_to_shape_style(&curve.drawing);
+                let (style, gradient) = drawing_to_shape_style(&curve.drawing, self.dpi);
                 let mut commands = Vec::new();
                 let mut min_x = f64::MAX;
                 let mut min_y = f64::MAX;
@@ -1334,7 +1342,7 @@ impl LayoutEngine {
                 let ow = sa.original_width as f64;
                 let oh = sa.original_height as f64;
                 let corners = [(0.0, 0.0), (ow, 0.0), (ow, oh), (0.0, oh)];
-                let (style, gradient) = drawing_to_shape_style(&rect.drawing);
+                let (style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
                 let mut commands = Vec::new();
                 let mut min_x = f64::MAX;
                 let mut min_y = f64::MAX;
@@ -1597,7 +1605,7 @@ impl LayoutEngine {
 
         match shape {
             ShapeObject::Rectangle(rect) => {
-                let (mut style, gradient) = drawing_to_shape_style(&rect.drawing);
+                let (mut style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
                 // 기존 글상자 보정만 적용한다. 일반 사각형의 선은 원본 스타일을 따른다.
                 if should_suppress_group_textbox_construction_stroke(&rect.drawing) {
                     style.stroke_color = None;
@@ -1931,7 +1939,7 @@ impl LayoutEngine {
                 }
             }
             ShapeObject::Ellipse(ellipse) => {
-                let (style, gradient) = drawing_to_shape_style(&ellipse.drawing);
+                let (style, gradient) = drawing_to_shape_style(&ellipse.drawing, self.dpi);
                 let node_id = tree.next_id();
                 let mut ell_node = EllipseNode::new(style, gradient);
                 ell_node.section_index = Some(section_index);
@@ -1979,7 +1987,7 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Arc(arc) => {
-                let (style, gradient) = drawing_to_shape_style(&arc.drawing);
+                let (style, gradient) = drawing_to_shape_style(&arc.drawing, self.dpi);
                 // 호(Arc) 좌표 계산: center, axis1, axis2를 렌더 좌표로 변환
                 let sa = &arc.drawing.shape_attr;
                 let sx = if sa.original_width > 0 {
@@ -2081,7 +2089,7 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Polygon(poly) => {
-                let (style, gradient) = drawing_to_shape_style(&poly.drawing);
+                let (style, gradient) = drawing_to_shape_style(&poly.drawing, self.dpi);
                 // 꼭짓점 좌표를 PathCommand로 변환 (원본→렌더 스케일링 적용)
                 let sa = &poly.drawing.shape_attr;
                 let sx = if sa.original_width > 0 {
@@ -2166,7 +2174,7 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Curve(curve) => {
-                let (style, gradient) = drawing_to_shape_style(&curve.drawing);
+                let (style, gradient) = drawing_to_shape_style(&curve.drawing, self.dpi);
                 let sa = &curve.drawing.shape_attr;
                 let sx = if sa.original_width > 0 {
                     render_w / hwpunit_to_px(sa.original_width as i32, self.dpi)
@@ -2472,11 +2480,12 @@ impl LayoutEngine {
                                     match crate::ole_chart::parse_ole_chart_contents(raw_contents) {
                                         Ok(ole_chart) => {
                                             let svg_fragment =
-                                                crate::ole_chart::render_ole_chart_svg_fragment_with_contents(
+                                                crate::ole_chart::render_ole_chart_svg_fragment_with_contents_at_dpi(
                                                     &ole_chart,
                                                     raw_contents,
                                                     [render_x, render_y, render_w, render_h],
                                                     ole.bin_data_id,
+                                                    self.dpi,
                                                 );
                                             push_ole_raw_svg_render_node(
                                                 tree,
@@ -2550,7 +2559,7 @@ impl LayoutEngine {
                                             .encode(&svg_bytes);
                                         let href = format!("data:image/svg+xml;base64,{}", b64);
                                         let svg_fragment = format!(
-                                            "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                            "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"none\" xlink:href=\"{}\" href=\"{}\"/>",
                                             render_x, render_y, render_w, render_h, href, href
                                         );
                                         push_ole_raw_svg_render_node(
@@ -2689,7 +2698,7 @@ impl LayoutEngine {
                                                 .encode(&svg_bytes);
                                             let href = format!("data:image/svg+xml;base64,{}", b64);
                                             let svg_fragment = format!(
-                                                "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                                "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"none\" xlink:href=\"{}\" href=\"{}\"/>",
                                                 render_x, render_y, render_w, render_h, href, href
                                             );
                                             push_ole_raw_svg_render_node(
@@ -3627,7 +3636,7 @@ impl LayoutEngine {
                     }
                     Control::Equation(eq) => {
                         total_inline_width += hwpunit_to_px(
-                            crate::renderer::equation::flow_width_hwp(eq) as i32,
+                            crate::renderer::equation::inline_advance_width_hwp(eq),
                             self.dpi,
                         );
                         max_inline_height = max_inline_height.max(hwpunit_to_px(
@@ -3847,14 +3856,39 @@ impl LayoutEngine {
                             } else {
                                 pic_h
                             };
-                            // [#5820 축2] 인라인 형제는 **하단 정렬** — 한글은 같은 줄의
-                            // TAC 그림들을 베이스라인(하단)에 맞춘다(156560092 로고 A/B:
-                            // 한글 A top = B top + 10.4px = 상자-상대 +12.8, rhwp 상단
-                            // 정렬은 두 그림 top 이 같아 A 가 12.1px 낮았다).
+                            // A saved object line owns its baseline, which need
+                            // not be the bottom of the object box. Preserve the
+                            // baseline proportion for each inline picture when
+                            // the complete saved line matches this object row.
+                            // Without an authoritative row, keep the existing
+                            // composed bottom alignment (#5820).
+                            let baseline_fraction = para
+                                .line_segs
+                                .get(inline_line_idx)
+                                .filter(|line| {
+                                    !para.stored_text_partition_is_dirty()
+                                        && !para.cell_format_vpos_dirty
+                                        && line.tag
+                                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                            == 0
+                                        && line.line_height > 0
+                                        && line.baseline_distance >= 0
+                                        && line.baseline_distance <= line.line_height
+                                        && (max_inline_height
+                                            - hwpunit_to_px(line.line_height, self.dpi))
+                                            .abs()
+                                            <= self.dpi / 7200.0
+                                })
+                                .map(|line| {
+                                    f64::from(line.baseline_distance)
+                                        / f64::from(line.line_height)
+                                })
+                                .unwrap_or(1.0);
                             let pic_container = LayoutRect {
                                 x: inline_x,
                                 // [#6465] 개체가 뒤 줄에 배정됐으면 그 줄의 y 를 쓴다.
-                                y: inline_obj_y + (max_inline_height - clamped_h).max(0.0),
+                                y: inline_obj_y
+                                    + (max_inline_height - clamped_h).max(0.0) * baseline_fraction,
                                 width: clamped_w,
                                 height: clamped_h,
                             };
@@ -3903,7 +3937,7 @@ impl LayoutEngine {
                     Control::Equation(eq) => {
                         // 글상자 내 수식: 항상 글자처럼 인라인 배치
                         let eq_w = hwpunit_to_px(
-                            crate::renderer::equation::flow_width_hwp(eq) as i32,
+                            crate::renderer::equation::inline_advance_width_hwp(eq),
                             self.dpi,
                         );
                         let eq_h = hwpunit_to_px(
@@ -3982,7 +4016,11 @@ impl LayoutEngine {
                                     cell_para_index: None,
                                     note_ref: None,
                                 }),
-                                BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
+                                crate::renderer::equation::inline_content_box(
+                                    eq,
+                                    BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
+                                    self.dpi,
+                                ),
                             );
                             textbox_node.children.push(eq_node);
                         }

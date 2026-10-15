@@ -10,6 +10,8 @@ use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile}
 /// 문단 format() 결과: 문단의 실제 렌더링 높이 정보
 #[derive(Debug, Clone)]
 pub(in crate::renderer::typeset) struct FormattedParagraph {
+    /// 구역의 저장 사다리가 무효이면 문단 끝도 저장 좌표로 다시 투영하지 않는다.
+    pub(in crate::renderer::typeset) stored_ladder_is_filler: bool,
     /// Measured remaining inline space on the composed tail line. None means
     /// that this path has no reliable width result (not an implicit overflow).
     pub(in crate::renderer::typeset) tail_line_remaining_width: Option<f64>,
@@ -205,14 +207,30 @@ impl FormattedParagraph {
                 self.spacing_before, self.total_height, self.height_for_fit
             );
         }
+        // Normalization's rebuilt ladder no longer restores the original
+        // outside spacing. Preserve its actual composed advances rather than
+        // trimming against an anchor in a different coordinate frame.
+        let ladder_rebuilt = para
+            .source_line_seg_vertical_pos
+            .as_ref()
+            .is_some_and(|source| {
+                source.len() != para.line_segs.len()
+                    || source
+                        .iter()
+                        .zip(&para.line_segs)
+                        .any(|(vpos, line)| *vpos != line.vertical_pos)
+            });
         if para.controls.is_empty()
             && has_authoritative_seg
             && !ladder_dirty
+            && !ladder_rebuilt
             && (sa_trim || sb_trim)
             && self.height_for_fit > 0.0
             && self.height_for_fit + 0.5 < self.total_height
         {
-            return self.height_for_fit.min(self.total_height);
+            // Fit excludes outside after-space; the accepted flow still
+            // carries that band to the successor's origin.
+            return (self.height_for_fit + self.spacing_after).min(self.total_height);
         }
         self.total_height
     }

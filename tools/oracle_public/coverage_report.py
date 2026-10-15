@@ -97,11 +97,18 @@ def discover_repo_root(start: Path | None = None) -> Path:
 def walk_samples(samples_dir: Path, repo_root: Path) -> list[SampleDoc]:
     if not samples_dir.is_dir():
         raise UsageError(f"samples 디렉터리가 없습니다: {samples_dir}")
+    # 원본은 보존하고 공통 제외 목록만 활성 회귀 수집에 적용한다.
+    policy = repo_root / "tests/fixtures/transferred_exam_regressions.txt"
+    if not policy.is_file():
+        policy = Path(__file__).resolve().parents[2] / "tests/fixtures/transferred_exam_regressions.txt"
+    excluded = set(policy.read_text(encoding="utf-8").splitlines()) if policy.is_file() else set()
     found: list[SampleDoc] = []
     for path in samples_dir.rglob("*"):
         if not path.is_file():
             continue
         if path.suffix.lower() not in SAMPLE_EXTS:
+            continue
+        if path.relative_to(samples_dir).as_posix() in excluded:
             continue
         rel = Path(posix_rel(path, repo_root))
         parent = rel.parent.as_posix()

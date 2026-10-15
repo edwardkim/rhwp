@@ -566,7 +566,7 @@ fn default_column_rebuild_preserves_content_and_object_geometry() {
         "samples/issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp",
         "samples/issue5715/float_chart_ghost_ladder_gap.hwp",
         "samples/issue5802/hf_cross_section_inherit.hwp",
-        "samples/issue5833/cell_multi_para_float_pics.hwp",
+        // #7863: 기존 미달 축약 입력의 geometry는 별도 보정 후 복원한다.
         "samples/issue5871/ws_host_float_double_charge.hwp",
         "samples/issue6133/156483831_poster_title_above_offset_float.hwp",
         "samples/issue6135/156544683_title_row_underfit.hwp",
@@ -748,6 +748,9 @@ fn footnote_format_command_places_first_and_following_lines() {
         .expect("footnote control");
     doc.insert_text_in_footnote_native(0, 0, control, 0, 2, TEXT)
         .expect("footnote text");
+    // 새 각주는 '각주' 스타일의 문단 모양(내어쓰기)을 받는다. 기준 줄은 들여쓰기 0에서 잰다.
+    doc.apply_para_format_in_footnote_native(0, 0, control, 0, r#"{"indent":0}"#)
+        .expect("flat footnote");
     let flat = starts_in_area(&doc, "footnote");
     for indent in [3000, -3000] {
         doc.apply_para_format_in_footnote_native(

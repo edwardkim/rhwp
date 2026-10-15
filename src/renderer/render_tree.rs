@@ -169,6 +169,10 @@ pub struct RenderNode {
     /// 문단 부호·투명 테두리처럼 편집 화면에서만 보여야 하는 보조 표시.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub editor_only: bool,
+    /// 편집 안내문/조판부호의 전진을 적용하기 전 실제 내용 상자.
+    /// 인쇄 레이어는 같은 줄 구성의 이 상자를 소비한다.
+    #[serde(skip)]
+    pub print_bbox: Option<BoundingBox>,
     /// 원본 컨트롤의 식별 결과. 내부 레이아웃 노드 이름과 조판부호를 분리한다.
     #[serde(skip)]
     pub control_code: ControlCode,
@@ -195,6 +199,7 @@ impl RenderNode {
             children: Vec::new(),
             visible: true,
             editor_only: false,
+            print_bbox: None,
             control_code: ControlCode::Automatic,
             header_footer_source: None,
         }
@@ -634,8 +639,10 @@ pub struct FootnoteMarkerNode {
     pub number: u16,
     /// 위첨자 텍스트 ("1)" 등)
     pub text: String,
-    /// 기본 폰트 크기 (본문 크기, 위첨자는 이것의 55%)
+    /// 기본 폰트 크기 (본문 크기)
     pub base_font_size: f64,
+    /// 줄 상자 원점에 대한 참조 번호의 확정 baseline(px).
+    pub baseline: f64,
     /// 폰트 패밀리
     pub font_family: String,
     /// 글자 색
@@ -645,6 +652,16 @@ pub struct FootnoteMarkerNode {
     pub para_index: usize,
     /// 문단 내 컨트롤 인덱스
     pub control_index: usize,
+}
+
+impl FootnoteMarkerNode {
+    /// 독립 한컴 Print에서 8/10/20pt 본문 번호는 본문 크기의 3/4이다.
+    pub fn font_size(base: f64) -> f64 {
+        base * 0.75
+    }
+    pub fn reference_baseline(base: f64, line_baseline: f64) -> f64 {
+        line_baseline - base * 0.21
+    }
 }
 
 /// 양식 개체 렌더 노드

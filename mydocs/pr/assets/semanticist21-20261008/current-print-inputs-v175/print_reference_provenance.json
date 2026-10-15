@@ -1,0 +1,60 @@
+{
+  "purpose": "Preserve independent Print references and exact edited inputs required by current PR preparation",
+  "production_code_commit": "5eda5d45f100f9d0d4635c9e65a09a341145d3b3",
+  "conversion_record": "output/pr-review/semanticist21-20261008/pr-preparation-current-input-print-v175-result.json",
+  "visual_record": "output/pr-review/semanticist21-20261008/pr-preparation-current-print-visual-v176-result.json",
+  "items": [
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261008/current-print-inputs-v175/clickhere-wrapper-current-v175.hwpx",
+      "input_sha256": "17a174162fd3fcd1c51bd04a25a577396c44bd51ad1c8ab001f9184b16dc4de3",
+      "reference_pdf": "pdf/semanticist21-20261008/pr-preparation-current-inputs-v175/clickhere-wrapper-current-v175-17a174162fd3-2020.pdf",
+      "reference_pdf_sha256": "c87e5e65928d4b5dfa1a47c11b06104af0150cfd03ee63082ad13b52a78fa1ba",
+      "pages": 1,
+      "engine": "Hancom Office 2020",
+      "pdf_metadata": {
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      },
+      "validation_state": "visual correction pending; no fixture or golden gate qualification"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261008/current-print-inputs-v175/additional-edited-note-style-hancom-hwp-endnote-v175.hwpx",
+      "input_sha256": "fd079a4fe1a5a9b338f72d58820f8b249dfd679081a657beb09d0afacf436a9e",
+      "reference_pdf": "pdf/semanticist21-20261008/pr-preparation-current-inputs-v175/additional-edited-note-style-hancom-hwp-endnote-v175-fd079a4fe1a5-2020.pdf",
+      "reference_pdf_sha256": "df186aff12e586a72ceb8eb48143d1e0f4320e29314136296c603033cad069a8",
+      "pages": 2,
+      "engine": "Hancom Office 2020",
+      "pdf_metadata": {
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      },
+      "validation_state": "visual correction pending; no fixture or golden gate qualification"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261008/current-print-inputs-v175/additional-edited-note-style-hancom-hwpx-endnote-v175.hwpx",
+      "input_sha256": "ac171fe6f2f9a71daccfc68b1277c1f9f2bfee9d14bcedfbc4e12b09199b826c",
+      "reference_pdf": "pdf/semanticist21-20261008/pr-preparation-current-inputs-v175/additional-edited-note-style-hancom-hwpx-endnote-v175-ac171fe6f2f9-2020.pdf",
+      "reference_pdf_sha256": "9f472a01c8d654c4022f0772a7676ef05f570a40557ea1e750d83db950bbbff2",
+      "pages": 2,
+      "engine": "Hancom Office 2020",
+      "pdf_metadata": {
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      },
+      "validation_state": "visual correction pending; no fixture or golden gate qualification"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261008/current-print-inputs-v175/additional-edited-note-style-hancom-hwpx-footnote-v175.hwpx",
+      "input_sha256": "12fb864391efd32d8e34ff9e8583af0b540c13e6c224a399a0505356b2439810",
+      "reference_pdf": "pdf/semanticist21-20261008/pr-preparation-current-inputs-v175/additional-edited-note-style-hancom-hwpx-footnote-v175-12fb864391ef-2020.pdf",
+      "reference_pdf_sha256": "7f05b25dce68fbd035b8bc3a5b10c8cfe593ee2a1c6464e9c4745aa4379da9d0",
+      "pages": 1,
+      "engine": "Hancom Office 2020",
+      "pdf_metadata": {
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      },
+      "validation_state": "visual correction pending; no fixture or golden gate qualification"
+    }
+  ]
+}

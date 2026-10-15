@@ -260,6 +260,50 @@ fn text_pair_count(first: RenderNode, second: RenderNode) -> usize {
         .len()
 }
 
+#[test]
+fn text_overlap_uses_the_visible_intersection_of_nested_clips() {
+    // 진단 계약의 독립 기하: 두 글자 띠는 y=20..40에서 겹치지만
+    // 명시한 두 clip의 교집합 y=0..18에는 글자가 남지 않는다.
+    let mut clipped = RenderNode::new(
+        200,
+        RenderNodeType::Body {
+            clip_rect: Some(BoundingBox::new(0.0, 0.0, 100.0, 18.0)),
+        },
+        BoundingBox::new(0.0, 0.0, 100.0, 100.0),
+    );
+    clipped.children = vec![run("가", 10.0, 20.0, 20.0, 20.0, 20.0)];
+    let neighbor = run("나", 10.0, 20.0, 20.0, 20.0, 20.0);
+    let scan = |clipped: RenderNode| {
+        scan_page(
+            0,
+            &page_root(vec![clipped, neighbor.clone()]),
+            2,
+            &AnomalyOptions::default(),
+        )
+        .text_overlap
+        .len()
+    };
+    assert_eq!(scan(clipped.clone()), 0, "잘린 글자는 교차 후보가 아니다");
+    // 일부가 보이는 정상 대조군: 10px 교차는 기존 2px 관용보다 크다.
+    clipped.node_type = RenderNodeType::Body {
+        clip_rect: Some(BoundingBox::new(0.0, 0.0, 100.0, 30.0)),
+    };
+    assert_eq!(scan(clipped.clone()), 1, "남아 있는 교차는 계속 검출한다");
+    clipped.node_type = RenderNodeType::TextBox;
+    clipped.bbox.height = 18.0;
+    assert_eq!(scan(clipped.clone()), 0, "글상자 자체도 paint clip이다");
+    clipped.node_type = RenderNodeType::Group(rhwp::renderer::render_tree::GroupNode {
+        section_index: None,
+        para_index: None,
+        control_index: None,
+    });
+    assert_eq!(
+        scan(clipped),
+        1,
+        "일반 그룹 bbox를 clip으로 오인하지 않는다"
+    );
+}
+
 fn replay_run(text: &str, positions: Vec<f64>, x: f64, y: f64) -> RenderNode {
     let width = *positions.last().expect("advance");
     let mut node = run(text, x, y, width, 20.0, 20.0);

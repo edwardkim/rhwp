@@ -388,7 +388,7 @@ fn parse_hwp_inner_with_limits(
     limits: Hwp5DocumentOpenDecompressionLimits,
 ) -> Result<Document, ParseError> {
     // 1. CFB 컨테이너 열기 (strict → lenient 폴백)
-    match cfb_reader::CfbReader::open(data) {
+    let mut document = match cfb_reader::CfbReader::open(data) {
         Ok(cfb) => parse_hwp_with_cfb(cfb, data, password, limits),
         Err(strict_err) => {
             eprintln!(
@@ -399,7 +399,9 @@ fn parse_hwp_inner_with_limits(
                 .map_err(|_| ParseError::CfbError(strict_err))?;
             parse_hwp_with_lenient(lenient, data, password, limits)
         }
-    }
+    }?;
+    document.seal_section_tail_provenance();
+    Ok(document)
 }
 
 /// 표준 CfbReader로 파싱
@@ -1858,7 +1860,7 @@ fn extract_thumbnail_from_hwpx(data: &[u8], max_bytes: usize) -> Option<Vec<u8>>
     // Preview/PrvImage.png 또는 Preview/PrvImage.* 탐색
     let entry_name = (0..archive.len()).find_map(|i| {
         let file = archive.by_index(i).ok()?;
-        let name = file.name().to_string();
+        let name = file.name().ok()?.into_owned();
         if name.starts_with("Preview/PrvImage") {
             Some(name)
         } else {

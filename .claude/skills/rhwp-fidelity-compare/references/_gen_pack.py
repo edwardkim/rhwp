@@ -63,30 +63,6 @@ REG_KEYS = [
         "pages": None,
         "note": "표 중심. 최종 기준 승격 금지",
     },
-    {
-        "key": "korexam",
-        "source": "samples/21_*.hwp",
-        "pdf": "pdf/21_*-2022.pdf",
-        "grade": "한컴 2022 기준 PDF",
-        "pages": 15,
-        "note": "A3 2단 법학적성시험",
-    },
-    {
-        "key": "math",
-        "source": "samples/exam_math.hwp",
-        "pdf": "pdf/exam_math-2022.pdf",
-        "grade": "한컴 2022 기준 PDF",
-        "pages": 20,
-        "note": "수식. 실측 diff 6~11%",
-    },
-    {
-        "key": "eng",
-        "source": "samples/exam_eng.hwp",
-        "pdf": "pdf/exam_eng-2022.pdf",
-        "grade": "한컴 2022 기준 PDF",
-        "pages": 8,
-        "note": "영어 시험지, 라틴 혼합",
-    },
 ]
 
 OUTPUTS = [
@@ -915,8 +891,6 @@ def write_samples() -> None:
             {
                 "optionalLive": [
                     "samples/form-01.hwp",
-                    "samples/exam_math.hwp",
-                    "samples/exam_eng.hwp",
                 ],
                 "liveCompareNotRequiredForContract": True,
                 "reason": "공식 PDF 와 Chrome 은 CI 에 없을 수 있다. 계약은 파일 존재·스키마.",

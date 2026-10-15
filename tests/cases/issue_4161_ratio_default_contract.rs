@@ -5,10 +5,6 @@
 //!
 //! `RATIO` 자식이 없는 HML 을 배포 CLI 로 왕복시키면 장평이 0 으로 나간다:
 //!
-//! ```bash
-//! rhwp export-hml tests/fixtures/hml/exambank_math_equations_min.hml -o /tmp/rt.hml
-//! # → <RATIO Hangul="0" Latin="0" Hanja="0" Japanese="0" Other="0" Symbol="0" User="0"/>
-//! ```
 //!
 //! ## 근인
 //!
@@ -47,6 +43,12 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
 
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -86,7 +88,9 @@ fn hwp3_samples() -> Vec<(PathBuf, String)> {
         };
         for entry in entries.flatten() {
             let path = entry.path();
-            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+            if is_deferred_exam_document(path.to_string_lossy().as_ref())
+                || exam_fixtures::is_exam_fixture(&path)
+            {
                 continue;
             }
             if path.is_dir() {

@@ -185,9 +185,6 @@ pub(in crate::renderer::typeset) fn next_boundary_reverts_spacing_trim(
     para_idx: usize,
     dpi: f64,
 ) -> bool {
-    if !hwpx_stored_non_hwp3 {
-        return false;
-    }
     let next_idx = para_idx + 1;
     let Some(next) = paragraphs.get(next_idx) else {
         return false;
@@ -202,6 +199,20 @@ pub(in crate::renderer::typeset) fn next_boundary_reverts_spacing_trim(
             .map(|style| style.spacing_before)
             .unwrap_or(0.0)
     };
+    if paragraphs.get(para_idx).is_some_and(|previous| {
+        crate::renderer::height_cursor::paragraph_origin_rewinds(previous, next)
+            || crate::renderer::height_cursor::rebuilt_ladder_omits_spacing_before(
+                previous,
+                next,
+                spacing_before_px,
+                dpi,
+            )
+    }) {
+        return true;
+    }
+    if !hwpx_stored_non_hwp3 {
+        return false;
+    }
     spacing_before_px > 5.0
         && !stored_ladder_encodes_spacing_before(paragraphs, next_idx, spacing_before_px, dpi)
 }

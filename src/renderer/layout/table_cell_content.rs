@@ -1035,7 +1035,7 @@ impl LayoutEngine {
 
             // 셀 패딩 (apply_inner_margin 고려)
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
-                self.resolve_cell_padding(cell, table);
+                self.resolve_stored_nested_cell_padding(cell, table, styles);
 
             // 셀 내 문단 레이아웃
             let composed_paras: Vec<_> = cell

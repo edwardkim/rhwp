@@ -1,7 +1,9 @@
 //! HTML 붙여넣기 + HTML 파싱 관련 native 메서드
 
 use super::super::helpers::*;
+use super::clipboard::text_to_split_logical_offset;
 
+mod cell_flow;
 mod inline_content;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
@@ -43,6 +45,10 @@ fn open_format_tags(run: &str) -> String {
 }
 
 impl DocumentCore {
+    /// HTML 을 파싱해 본문 캐럿 자리에 붙인다.
+    ///
+    /// `char_offset` 과 돌려주는 `charOffset` 은 캐럿의 논리 위치다 — 글자와 각주·미주·글자처럼
+    /// 취급한 개체를 한 칸씩 센다(`getLogicalLength`·`navigateNextEditable` 과 같은 축).
     pub fn paste_html_native(
         &mut self,
         section_idx: usize,
@@ -63,8 +69,10 @@ impl DocumentCore {
             )));
         }
 
-        // HTML 파싱 → 문단 목록 생성
-        let parsed_paras = self.parse_html_to_paragraphs(html);
+        // HTML 파싱 → 문단 목록 생성. 폭을 적지 않은 표는 이 구역 본문 글이 접히는 폭에 맞춘다.
+        let body_width =
+            crate::renderer::px_to_hwpunit(self.body_wrap_width(section_idx), self.dpi).max(0);
+        let parsed_paras = self.parse_html_to_paragraphs(html, body_width as u32);
         if parsed_paras.is_empty() {
             return Ok("{\"ok\":false,\"error\":\"empty html\"}".to_string());
         }
@@ -74,19 +82,21 @@ impl DocumentCore {
         let clip_count = parsed_paras.len();
 
         if clip_count == 1 && parsed_paras[0].controls.is_empty() {
-            // 단일 문단 텍스트 삽입
+            // 단일 문단 텍스트 삽입 — 논리 위치를 글자 위치와 그 자리 개체의 앞뒤로 바꿔 넣는다.
+            // 아래 다중 문단 경로의 split_at 도 논리 위치를 받는다.
             let clip_text = parsed_paras[0].text.clone();
             let clip_char_shapes = parsed_paras[0].char_shapes.clone();
             let clip_char_offsets = parsed_paras[0].char_offsets.clone();
             let new_chars = clip_text.chars().count();
 
-            self.document.sections[section_idx].paragraphs[para_idx]
-                .insert_text_at(char_offset, &clip_text);
+            let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            let (text_offset, after_control) = logical_to_text_offset(para, char_offset);
+            let text_offset = para.insert_text_at_caret(text_offset, &clip_text, after_control);
 
             self.apply_clipboard_char_shapes(
                 section_idx,
                 para_idx,
-                char_offset,
+                text_offset,
                 &clip_char_shapes,
                 &clip_char_offsets,
                 new_chars,
@@ -112,7 +122,10 @@ impl DocumentCore {
             self.recompose_paragraph(section_idx, para_idx);
             self.paginate_if_needed();
 
-            let new_offset = char_offset + new_chars;
+            let new_offset = text_to_logical_offset(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+                text_offset + new_chars,
+            );
             self.event_log.push(DocumentEvent::HtmlImported {
                 section: section_idx,
                 para: para_idx,
@@ -334,7 +347,8 @@ impl DocumentCore {
     fn parse_html_to_cell_paragraphs(&mut self, html: &str) -> Vec<Paragraph> {
         let bin_content_len = self.document.bin_data_content.len();
         let bin_list_len = self.document.doc_info.bin_data_list.len();
-        let parsed_paras = self.parse_html_to_paragraphs(html);
+        // 셀에는 표를 글로 펼쳐 넣으므로 표 폭은 쓰이지 않는다.
+        let parsed_paras = self.parse_html_to_paragraphs(html, 0);
         self.document.bin_data_content.truncate(bin_content_len);
         self.document.doc_info.bin_data_list.truncate(bin_list_len);
         Self::normalize_html_paragraphs_for_cell_paste(parsed_paras)
@@ -373,7 +387,10 @@ impl DocumentCore {
             return Ok((cell_para_idx, char_offset + new_chars));
         }
 
-        let right_half = cell_paras[cell_para_idx].split_at(char_offset);
+        // 셀 캐럿은 글자 위치다. split_at 이 한 칸으로 세는 컨트롤과 같은 기준으로 바꿔 넘긴다.
+        let split_offset =
+            text_to_split_logical_offset(&cell_paras[cell_para_idx], char_offset, false);
+        let right_half = cell_paras[cell_para_idx].split_at(split_offset);
         cell_paras[cell_para_idx].merge_from(&parsed_paras[0]);
 
         let mut insert_idx = cell_para_idx + 1;
@@ -387,7 +404,7 @@ impl DocumentCore {
         Ok((last_para_idx, merge_point))
     }
 
-    /// HTML 문자열을 파싱하여 셀 내부 캐럿 위치에 삽입한다.
+    /// HTML 문자열을 파싱하여 셀 내부 캐럿 위치에 삽입한다. 셀 캐럿 `char_offset` 은 글자 위치다.
     pub fn paste_html_in_cell_native(
         &mut self,
         section_idx: usize,
@@ -435,6 +452,15 @@ impl DocumentCore {
         for i in cell_para_idx..=last_para_idx {
             self.reflow_cell_paragraph(section_idx, parent_para_idx, control_idx, cell_idx, i);
         }
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            None,
+        );
+        self.reflow_html_cell_host(section_idx, parent_para_idx, control_idx);
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -480,6 +506,17 @@ impl DocumentCore {
         };
 
         let outer_ctrl = path[0].0;
+        for i in cell_para_idx..=last_para_idx {
+            self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, i);
+        }
+        self.recalculate_cell_paragraph_vpos_by_path(
+            section_idx,
+            parent_para_idx,
+            path,
+            cell_para_idx,
+            None,
+        );
+        self.reflow_html_cell_host(section_idx, parent_para_idx, outer_ctrl);
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
@@ -514,8 +551,14 @@ impl DocumentCore {
     /// 2MB(= 한글 본문 약 70만 자)로 올린다. data: URI 페이로드는 아래에서 따로 제외한다.
     const HTML_PASTE_MAX_BYTES: usize = 2_000_000;
 
-    pub(crate) fn parse_html_to_paragraphs(&mut self, html: &str) -> Vec<Paragraph> {
-        self.parse_html_to_paragraphs_at_depth(html, 0)
+    /// `container_width` 는 글이 놓일 폭(HWPUNIT)이다 — 본문 글이 접히는 폭이나 바깥 셀 안쪽 폭.
+    /// 폭을 적지 않은 표는 이 폭에 맞춘다.
+    pub(crate) fn parse_html_to_paragraphs(
+        &mut self,
+        html: &str,
+        container_width: u32,
+    ) -> Vec<Paragraph> {
+        self.parse_html_to_paragraphs_at_depth(html, 0, container_width)
     }
 
     /// 크기 상한은 **태그 트리 복잡도**를 막으려는 것이므로 `data:` URI 로 실린
@@ -536,7 +579,12 @@ impl DocumentCore {
         html.len().saturating_sub(payload)
     }
 
-    fn parse_html_to_paragraphs_at_depth(&mut self, html: &str, depth: u32) -> Vec<Paragraph> {
+    fn parse_html_to_paragraphs_at_depth(
+        &mut self,
+        html: &str,
+        depth: u32,
+        container_width: u32,
+    ) -> Vec<Paragraph> {
         if depth >= Self::HTML_PASTE_MAX_RECURSION_DEPTH
             || Self::html_markup_len(html) > Self::HTML_PASTE_MAX_BYTES
         {
@@ -599,7 +647,7 @@ impl DocumentCore {
                     // 표 전체 추출
                     let table_end = find_closing_tag_chars(&chars, pos, "table");
                     let table_html: String = chars[tag_start..table_end.min(len)].iter().collect();
-                    self.parse_table_html(&mut paragraphs, &table_html);
+                    self.parse_table_html(&mut paragraphs, &table_html, container_width);
                     pos = table_end;
                     continue;
                 } else if tag_lower.starts_with("<img") {
@@ -624,7 +672,11 @@ impl DocumentCore {
 
                     // <p> 내부에 <table>이 있으면 재귀적으로 처리
                     if p_inner.to_lowercase().contains("<table") {
-                        let sub_paras = self.parse_html_to_paragraphs_at_depth(p_inner, depth + 1);
+                        let sub_paras = self.parse_html_to_paragraphs_at_depth(
+                            p_inner,
+                            depth + 1,
+                            container_width,
+                        );
                         paragraphs.extend(sub_paras);
                         pos = p_end;
                         continue;
@@ -635,7 +687,7 @@ impl DocumentCore {
 
                     let mut para = Paragraph::default();
                     para.para_shape_id = para_shape_id;
-                    self.parse_inline_content(&mut para, p_inner);
+                    self.parse_inline_content(&mut para, p_inner, &para_style);
                     paragraphs.push(para);
 
                     pos = p_end;
@@ -653,7 +705,11 @@ impl DocumentCore {
                         &div_inner
                     };
 
-                    let sub_paras = self.parse_html_to_paragraphs_at_depth(div_inner, depth + 1);
+                    let sub_paras = self.parse_html_to_paragraphs_at_depth(
+                        div_inner,
+                        depth + 1,
+                        container_width,
+                    );
                     paragraphs.extend(sub_paras);
                     pos = div_end;
                     continue;
@@ -678,7 +734,7 @@ impl DocumentCore {
                     } else {
                         &list_inner
                     };
-                    let sub_paras = self.parse_html_to_paragraphs(list_inner);
+                    let sub_paras = self.parse_html_to_paragraphs(list_inner, container_width);
                     paragraphs.extend(sub_paras);
                     pos = list_end;
                     continue;
@@ -697,7 +753,7 @@ impl DocumentCore {
                         &li_inner
                     };
                     let mut para = Paragraph::default();
-                    self.parse_inline_content(&mut para, li_inner);
+                    self.parse_inline_content(&mut para, li_inner, &parse_inline_style(&tag_str));
                     // 그림만 든 항목도 버리지 않는다 — 버리면 등록한 그림 데이터만 문서에 남는다.
                     if !para.text.trim().is_empty() || !para.controls.is_empty() {
                         para.text = format!("• {}", para.text);
@@ -794,7 +850,7 @@ impl DocumentCore {
             return;
         }
         let mut para = Paragraph::default();
-        self.parse_inline_content(&mut para, run.trim());
+        self.parse_inline_content(&mut para, run.trim(), "");
         if !para.text.trim().is_empty() || !para.controls.is_empty() {
             // HTML 태그 분기도 plain paste와 같은 문자 수 제한을 지킨다.
             // 모델 분할은 UTF-16 서식 원점과 그림 소유를 함께 옮긴다.

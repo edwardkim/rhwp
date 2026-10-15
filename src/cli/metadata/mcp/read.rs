@@ -209,6 +209,27 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 "pages",
             ],
         ),
+        {
+            let mut definition = tool(
+                "hwp_export_png",
+                "native-skia 빌드에서 문서를 PNG로 저장하고 전체 쪽수·실제 산출물 JSON을 반환한다.",
+                serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "path": { "type": "string", "description": "원본 문서 경로" },
+                        "output": { "type": "string", "description": "PNG 출력 폴더" }
+                    },
+                    "required": ["path", "output"]
+                }),
+                "export-png",
+                serde_json::json!(["export-png", "{path}", "-o", "{output}", "--json"]),
+                &["schemaVersion", "source", "backend", "comparisonProfile", "layoutGeneration",
+                  "outputDir", "pageCount", "renderedCount", "pages"],
+            );
+            definition["requiresFeature"] = serde_json::json!("native-skia");
+            definition["available"] = serde_json::json!(cfg!(feature = "native-skia"));
+            definition
+        },
         tool(
             "hwp_export_pdf",
             "문서를 PDF 로 렌더해 저장하고 산출물 매니페스트(경로·크기·페이지 수)를 돌려준다. 제출·인쇄용 최종 산출물을 만들 때 쓴다.",

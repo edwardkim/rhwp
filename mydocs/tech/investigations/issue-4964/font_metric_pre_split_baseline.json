@@ -48,7 +48,7 @@
     },
     {
       "path": "mydocs/tech/investigations/issue-4939/font_rule_baseline.json",
-      "sha256": "a0fac05c3138471eb3e7404fc701f0053caa6c01a923afae60fd4da64064b466"
+      "sha256": "3e849b0b7edc3c13f03ef754c116ef94906975f5a2cf240c118e60c431b9553d"
     }
   ],
   "kind": "font-metric-pre-split-baseline",

@@ -35,8 +35,8 @@ pub enum DirectionKind {
 }
 
 /// 계산식 문자열을 토큰 스트림으로 변환한다.
-/// 선행 '=' 또는 '@'는 제거한다.
-pub fn tokenize(input: &str) -> Vec<Token> {
+/// 선행 '=' 또는 '@'는 제거한다. 문법 밖 글자나 읽을 수 없는 숫자가 있으면 `None`이다.
+pub fn tokenize(input: &str) -> Option<Vec<Token>> {
     let s = input.trim();
     let s = if s.starts_with('=') || s.starts_with('@') {
         &s[1..]
@@ -65,9 +65,7 @@ pub fn tokenize(input: &str) -> Vec<Token> {
                 i += 1;
             }
             let num_str: String = chars[start..i].iter().collect();
-            if let Ok(n) = num_str.parse::<f64>() {
-                tokens.push(Token::Number(n));
-            }
+            tokens.push(Token::Number(num_str.parse().ok()?));
             continue;
         }
 
@@ -156,12 +154,13 @@ pub fn tokenize(input: &str) -> Vec<Token> {
             ')' => tokens.push(Token::RParen),
             ',' => tokens.push(Token::Comma),
             ':' => tokens.push(Token::Colon),
-            _ => {} // 알 수 없는 문자 무시
+            // 모르는 글자를 버리면 `=A1*10%`가 A1*10으로 계산된다.
+            _ => return None,
         }
         i += 1;
     }
 
-    tokens
+    Some(tokens)
 }
 
 #[cfg(test)]
@@ -170,13 +169,13 @@ mod tests {
 
     #[test]
     fn test_simple_number() {
-        let tokens = tokenize("=123");
+        let tokens = tokenize("=123").unwrap();
         assert_eq!(tokens, vec![Token::Number(123.0)]);
     }
 
     #[test]
     fn test_cell_ref() {
-        let tokens = tokenize("=A1+B3");
+        let tokens = tokenize("=A1+B3").unwrap();
         assert_eq!(
             tokens,
             vec![
@@ -189,7 +188,7 @@ mod tests {
 
     #[test]
     fn test_function_call() {
-        let tokens = tokenize("=SUM(A1:B5)");
+        let tokens = tokenize("=SUM(A1:B5)").unwrap();
         assert_eq!(
             tokens,
             vec![
@@ -205,7 +204,7 @@ mod tests {
 
     #[test]
     fn test_direction() {
-        let tokens = tokenize("=sum(left)");
+        let tokens = tokenize("=sum(left)").unwrap();
         assert_eq!(
             tokens,
             vec![
@@ -219,7 +218,7 @@ mod tests {
 
     #[test]
     fn test_complex_formula() {
-        let tokens = tokenize("=a1+(b3-3)*2+sum(a1:b5,avg(c3,e5-3))");
+        let tokens = tokenize("=a1+(b3-3)*2+sum(a1:b5,avg(c3,e5-3))").unwrap();
         assert!(tokens.len() > 10);
         assert_eq!(tokens[0], Token::CellRef("A".into(), 1));
         assert_eq!(tokens[1], Token::Plus);
@@ -227,7 +226,7 @@ mod tests {
 
     #[test]
     fn test_wildcard() {
-        let tokens = tokenize("=SUM(?1:?3)");
+        let tokens = tokenize("=SUM(?1:?3)").unwrap();
         assert_eq!(
             tokens,
             vec![
@@ -243,7 +242,7 @@ mod tests {
 
     #[test]
     fn test_at_prefix() {
-        let tokens = tokenize("@SUM(A1:A5)");
+        let tokens = tokenize("@SUM(A1:A5)").unwrap();
         assert_eq!(tokens[0], Token::Function("SUM".into()));
     }
 }

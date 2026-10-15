@@ -47,7 +47,6 @@
 //! - `FontSubstitutionBoundary::LegacyLatin` — **진짜 영문** HFT/legacy face
 //!   (`HCI Poppy`·`Swis721 BT`·`굵은안상수체영문` 등)는 비례 글꼴이라 이 갈래에 안 들어온다.
 //! - `ResolvedStyleSet::hwp3_variant` — **HWP3→HWP5 변환본만**. 이 게이트가 없으면
-//!   `samples/exam_kor.hwp` 가 깨진다(아래 반례). 같은 HFT 이름이라도 HWP3 시대에 조판된
 //!   저장본만 반각이다.
 //!
 //! ## 비범위

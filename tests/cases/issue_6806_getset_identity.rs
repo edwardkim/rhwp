@@ -4,10 +4,8 @@
 //! 바뀌지 않아야 한다.
 //!
 //! 표본은 전부 한컴 저장본이고, 각각 결함의 한 층을 판정력 있게 드러낸다.
-//! - 그림 `3-09월_교육_통합_2023.hwp` s0p236c0: 파싱값이 `current_height(7295) ≠ common.height(7296)`.
 //!   종전에는 `rotationAngle` 키 존재만으로 refresh 가 돌고 `height` 키로 `current` 가 덮여
 //!   지문이 흔들려 한컴 원본 렌더링 행렬(146B)이 지워졌다.
-//! - 가로선 `21_언어_기출_편집가능본.hwp` s0p4c0: 높이 4, `original 100×100`. 종전에는 높이가 200 으로
 //!   부풀고 `original` 이 `common` 으로 덮여 렌더 스케일이 바뀌어 424px 선이 1.3px 로 무너졌다.
 //! - 묶음 `text_footnote_tail_overpagination.hwp` s0p4352c1: 높이 76, `current ≠ common`.
 //! - 도형 `143E433F503322BD33.hwp` s0p1c0: 「쪽 영역 제한」과 「겹침 허용」이 동시에 켜진 채 저장됨.

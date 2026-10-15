@@ -48,6 +48,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -91,8 +95,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     // #7445: 전52쪽 최저39.97%로 캡션·쪽수·본문 넘침 회귀를 함께 보류한다.
     // deferred_caption1853_validation.json의 전체 비교 근거를 따른다.
     "issue1853_caption_precedes_body_split.hwpx",
-    "exam_eng.hwp",
-    "hwpctl_API_v2.4.hwp",
     "hwp3-sample16-hwp5.hwp",
     "hwp3-sample16-hwp5-2010.hwp",
     "hwp3-sample16-hwp5-2022.hwp",
@@ -150,6 +152,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str())
             && !DEFERRED_BODY_OVERFLOW_FIXTURES.contains(&rel.as_str())
     });
+    acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");
     acc
@@ -236,7 +239,7 @@ fn body_overflow_does_not_grow_partition(part: usize) {
         "baseline 샘플이 삭제되거나 누락됨: {absent:?}"
     );
     let buckets = partition_samples(all_samples, PARTITIONS);
-    let samples = buckets
+    let mut samples = buckets
         .into_iter()
         .nth(part)
         .unwrap_or_else(|| panic!("없는 partition: {part}"));
@@ -244,6 +247,16 @@ fn body_overflow_does_not_grow_partition(part: usize) {
         !samples.is_empty(),
         "body-overflow partition {part} 이 비어 있음"
     );
+    // #7812: 다른 브랜치의 보정 대상은 원본을 보존하고 활성 회귀에서 분리한다.
+    // partition 배정 뒤 제외하므로 다른 문서의 배정은 바뀌지 않는다.
+    // #7813: 같은 원본의 기존 전쪽 미달이 이관된 거대 중첩 셀 문서.
+    samples.retain(|(_, rel)| {
+        ![
+            "table_giant_cell_overfill.hwpx",
+            "issue1949_giant_cell_nested_tables_perf.hwpx",
+        ]
+        .contains(&rel.as_str())
+    });
     let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
 
     let workers = std::thread::available_parallelism()

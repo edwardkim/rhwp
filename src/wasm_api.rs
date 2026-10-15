@@ -46,6 +46,7 @@ mod canvas_metrics;
 mod hyperlink;
 /// 어떤 렌더 export가 교체 가능한 경계 뒤에 있는지 선언하는 곳 (#4577, #4642).
 mod render_patch_boundary;
+mod table_cell_bboxes;
 mod template_automation;
 
 impl From<HwpError> for JsValue {
@@ -7369,6 +7370,11 @@ impl HwpDocument {
         char_mods_json: &str,
         para_mods_json: &str,
     ) -> bool {
+        use crate::document_core::helpers::{
+            build_tab_def_from_json, json_has_border_keys, json_has_tab_keys,
+            parse_char_shape_mods, parse_json_i16_array, parse_para_shape_mods,
+        };
+
         let styles = &self.core.document.doc_info.styles;
         let style = match styles.get(style_id as usize) {
             Some(s) => s.clone(),
@@ -7380,7 +7386,12 @@ impl HwpDocument {
 
         // CharShape 수정
         if !char_mods_json.is_empty() && char_mods_json != "{}" {
-            let char_mods = crate::document_core::helpers::parse_char_shape_mods(char_mods_json);
+            let mut char_mods = parse_char_shape_mods(char_mods_json);
+            // 테두리/배경은 글자 모양 적용 경로처럼 BorderFill 을 찾거나 만들어 단다.
+            if json_has_border_keys(char_mods_json) {
+                char_mods.border_fill_id =
+                    Some(self.core.create_border_fill_from_json(char_mods_json));
+            }
             if let Some(cs) = self
                 .core
                 .document
@@ -7398,7 +7409,26 @@ impl HwpDocument {
 
         // ParaShape 수정
         if !para_mods_json.is_empty() && para_mods_json != "{}" {
-            let para_mods = crate::document_core::helpers::parse_para_shape_mods(para_mods_json);
+            let mut para_mods = parse_para_shape_mods(para_mods_json);
+            // 탭 정의와 테두리/배경은 문단 모양 적용 경로처럼 찾거나 만들어 달고, 테두리 간격도
+            // 넣는다. 탭은 스타일의 지금 탭 정의에서 바뀐 항목만 덮어쓴다.
+            if json_has_tab_keys(para_mods_json) {
+                let doc_info = &self.core.document.doc_info;
+                let base_tab_def_id = doc_info
+                    .para_shapes
+                    .get(old_psid as usize)
+                    .map_or(0, |ps| ps.tab_def_id);
+                let tab_def =
+                    build_tab_def_from_json(para_mods_json, base_tab_def_id, &doc_info.tab_defs);
+                para_mods.tab_def_id = Some(self.core.document.find_or_create_tab_def(tab_def));
+            }
+            if json_has_border_keys(para_mods_json) {
+                para_mods.border_fill_id =
+                    Some(self.core.create_border_fill_from_json(para_mods_json));
+            }
+            if let Some(spacing) = parse_json_i16_array(para_mods_json, "borderSpacing", 4) {
+                para_mods.border_spacing = Some([spacing[0], spacing[1], spacing[2], spacing[3]]);
+            }
             if let Some(ps) = self
                 .core
                 .document
@@ -7565,6 +7595,9 @@ impl HwpDocument {
     /// 삭제된 스타일을 사용 중인 문단은 바탕글(ID 0)로 변경된다.
     #[wasm_bindgen(js_name = deleteStyle)]
     pub fn delete_style(&mut self, style_id: u32) -> bool {
+        use crate::model::document::RawRecord;
+        use crate::model::identity::walk::{walk, Node};
+
         if style_id == 0 {
             return false; // 바탕글은 삭제 불가
         }
@@ -7573,31 +7606,51 @@ impl HwpDocument {
             return false;
         }
         let sid = style_id as u8;
-        // 해당 스타일을 사용 중인 문단을 바탕글(0)로 변경
-        for section in &mut self.core.document.sections {
-            for para in &mut section.paragraphs {
-                if para.style_id == sid {
-                    para.style_id = 0;
+        // 스타일 표는 인덱스 기반이다. 지운 스타일을 가리키던 번호는 바탕글(0)로, 그 뒤 번호는
+        // 한 칸씩 당긴다.
+        let remap = |id: u8| match id.cmp(&sid) {
+            std::cmp::Ordering::Less => id,
+            std::cmp::Ordering::Equal => 0,
+            std::cmp::Ordering::Greater => id - 1,
+        };
+        // HWP 원본 바탕쪽은 구역 정의의 원시 레코드로 그대로 저장된다. 그 안 문단 머리의
+        // 스타일 번호(PARA_HEADER 10번째 바이트)도 옮겨야 저장본이 모델과 같다.
+        let remap_raw = |records: &mut [RawRecord]| {
+            for record in records {
+                if record.tag_id == crate::parser::tags::HWPTAG_PARA_HEADER {
+                    if let Some(id) = record.data.get_mut(10) {
+                        *id = remap(*id);
+                    }
                 }
             }
-        }
-        // 스타일 삭제 (인덱스 기반이므로 뒤의 ID가 변경됨에 주의)
+        };
         self.core.document.doc_info.styles.remove(style_id as usize);
-        // 삭제된 ID보다 큰 style_id를 가진 문단들 보정
-        for section in &mut self.core.document.sections {
-            for para in &mut section.paragraphs {
-                if para.style_id > sid {
-                    para.style_id -= 1;
+        // 본문뿐 아니라 표 셀·글상자·머리말/꼬리말·각주/미주·캡션·메모·바탕쪽 문단과 덧말도
+        // 같은 스타일 표를 가리킨다. 하나라도 빠지면 그 문단이 다른 스타일을 가리킨 채 저장된다.
+        let mut visit = |node: &mut Node<'_>| -> Result<(), HwpError> {
+            match node {
+                Node::Paragraph(para) => para.style_id = remap(para.style_id),
+                Node::Control(Control::Ruby(ruby)) => {
+                    if let Ok(id) = u8::try_from(ruby.style_id_ref) {
+                        ruby.style_id_ref = remap(id).into();
+                    }
                 }
+                Node::Control(Control::SectionDef(def)) => remap_raw(&mut def.extra_child_records),
+                _ => {}
             }
+            Ok(())
+        };
+        for section in &mut self.core.document.sections {
+            walk(&mut section.paragraphs, &mut visit).expect("스타일 번호 순회는 실패하지 않는다");
+            // 렌더와 HWPX 저장은 구역의 구역 정의 사본에서 바탕쪽을 읽는다.
+            for master in &mut section.section_def.master_pages {
+                walk(&mut master.paragraphs, &mut visit)
+                    .expect("스타일 번호 순회는 실패하지 않는다");
+            }
+            remap_raw(&mut section.section_def.extra_child_records);
         }
-        // next_style_id 보정
         for s in &mut self.core.document.doc_info.styles {
-            if s.next_style_id == sid {
-                s.next_style_id = 0;
-            } else if s.next_style_id > sid {
-                s.next_style_id -= 1;
-            }
+            s.next_style_id = remap(s.next_style_id);
         }
         // 스타일 캐시 갱신
         self.core.rebuild_resolved_styles();
@@ -8760,6 +8813,8 @@ impl HwpDocument {
     }
 
     /// HTML 문자열을 파싱하여 캐럿 위치에 삽입한다 (본문).
+    ///
+    /// `char_offset` 과 반환 `charOffset` 은 논리 위치(`insertTextLogical` 과 같은 축)다.
     #[wasm_bindgen(js_name = pasteHtml)]
     pub fn paste_html(
         &mut self,

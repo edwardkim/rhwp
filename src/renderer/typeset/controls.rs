@@ -96,16 +96,26 @@ pub(super) fn place_decoration_table(
     dpi: f64,
     anchor_origin: Option<f64>,
     format: impl FnOnce(bool) -> FormattedTable,
+    engine: &super::TypesetEngine,
+    styles: &ResolvedStyleSet,
 ) {
     st.emit_decoration_table(para_idx, ctrl_idx);
     // [#4568] 현재 쪽을 넘는 잔여 행만 다음 쪽 대기열에 남긴다.
     // 포맷은 Shape 발행 뒤, 앵커/가용 영역 조회 전에 수행한다.
     let origin = anchor_origin.unwrap_or_else(|| st.decoration_table_flow_height());
     let ft = format(origin < 1.0);
-    let continuation =
-        decoration_table::continuation(para, table, next_para, &ft, origin, dpi, || {
-            st.base_available_height()
-        });
+    let continuation = decoration_table::continuation(
+        para,
+        table,
+        next_para,
+        &ft,
+        origin,
+        dpi,
+        || st.base_available_height(),
+        |row, available| {
+            decoration_table::partial_row_query(engine, st, table, &ft, styles, row, available)
+        },
+    );
     if let Some(ref continuation) = continuation {
         if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
             eprintln!(
@@ -138,6 +148,28 @@ pub(super) fn prepare_table_control(
     dpi: f64,
     original_hwpx: impl FnOnce() -> bool,
 ) -> bool {
+    let page = st.table_control_page();
+    let follows_tac_frame = !page.profile.session_edited()
+        && (page.profile.hwpx_stored_layout() || page.profile.hwp5_stored_pagination_layout())
+        && crate::renderer::stored_control_frame::following_first_tac_frame(
+            para,
+            (st.base_available_height() * 7200.0 / dpi).round() as i32,
+        )
+        .is_some_and(|frame| {
+            crate::renderer::layout::control_line_seg_index(para, ctrl_idx) == Some(frame.line)
+                && st.coanchored_table_page().1.iter().any(|item| {
+                    use crate::renderer::pagination::PageItem;
+                    matches!(item,
+                        PageItem::Table { para_index, control_index }
+                        | PageItem::PartialTable { para_index, control_index, .. }
+                        | PageItem::Shape { para_index, control_index }
+                        if *para_index == para_idx && *control_index == frame.before_control)
+                })
+        });
+    // 앞 줄 개체가 현재 쪽에 남아 있을 때만 경계를 건넌다. 새 줄 형제는 다시 넘기지 않는다.
+    if follows_tac_frame {
+        st.advance_column_or_new_page();
+    }
     if table_entry::needs_stored_line_advance(
         para,
         table,
@@ -200,6 +232,7 @@ pub(super) fn reconcile_tac_height(
     para: &Paragraph,
     next_para: Option<&Paragraph>,
     fmt: &FormattedParagraph,
+    styles: &ResolvedStyleSet,
     measured_tables: &[MeasuredTable],
     tac_count: usize,
     height_before: f64,
@@ -218,6 +251,7 @@ pub(super) fn reconcile_tac_height(
         para,
         next_para,
         fmt,
+        styles,
         measured_tables,
         tac_count,
         height_before,
@@ -316,10 +350,14 @@ pub(super) fn place_table_host_shape(
         return;
     }
     let flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
+        return;
+    }
     if flow.needs_advance(st.table_host_shape_page(), || st.available_height()) {
         st.advance_column_or_new_page();
     }
-    st.commit_table_host_shape(para_idx, ctrl_idx, flow);
+    let accepted_frame = flow.accepted_shape_frame(ctrl, st.current_height);
+    st.commit_table_host_shape(para_idx, ctrl_idx, flow, accepted_frame);
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
 }
 
@@ -477,6 +515,8 @@ pub(super) fn try_place_stored_tac_paragraph(
                             is_column_top,
                         )
                     },
+                    engine,
+                    styles,
                 );
             } else {
                 place_table_host_shape(
@@ -501,7 +541,7 @@ pub(super) fn try_place_stored_tac_paragraph(
         // 원본 저장 줄의 좌표축은 이미 확립돼 있다. 합성 줄의 확정 끝만
         // lazy 원점으로 역산하며, 실제 저장 표 뒤 사다리는 유지한다.
         if rebase_line_origin {
-            st.commit_deferred_table_anchor(para_idx);
+            st.commit_deferred_table_anchor(para_idx, paragraphs);
             st.record_vpos_lazy_origin(lazy_origin);
             st.mark_vpos_ladder_dirty();
         }
@@ -538,7 +578,7 @@ pub(super) fn try_place_stored_tac_paragraph(
         st.commit_stored_tac_control(para_idx, placement);
     }
     if plan.source_origin.is_some() {
-        st.commit_deferred_table_anchor(para_idx);
+        st.commit_deferred_table_anchor(para_idx, paragraphs);
         st.record_vpos_page_origin(plan.source_origin);
         st.record_vpos_origin_provenance(true);
         st.record_vpos_lazy_origin(None);

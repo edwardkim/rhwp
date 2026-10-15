@@ -120,9 +120,22 @@ impl RowEntryQuery<'_> {
         } = *rows;
         let native_short_parent_child_splittable =
             layout_engine.native_short_parent_child_row_is_fragmentable(table, r, styles);
+        // A saved line can own several distinct floating picture units even
+        // though the text-line inventory has only one line. Use the same
+        // authenticated source plan consumed by measurement and actual paint.
+        let stored_picture_cell_splittable = table.col_count == 1
+            && r + 1 == table.row_count as usize
+            && table.cells.iter().any(|cell| {
+                cell.row as usize == r
+                    && layout_engine
+                        .stored_partitioned_picture_cell_is_fragmentable(cell, table, styles)
+            });
         let splittable = can_intra_split
             && intra_row_cut_here
-            && (mt.is_row_splittable(r) || native_short_parent_child_splittable);
+            && (mt.is_row_splittable(r)
+                || native_short_parent_child_splittable
+                || stored_picture_cell_splittable
+                || layout_engine.stored_single_line_row_is_fragmentable(table, r, styles));
 
         RowSplitGate {
             native_short_parent_child_splittable,

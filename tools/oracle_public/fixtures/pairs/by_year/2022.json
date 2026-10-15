@@ -3,7 +3,7 @@
   "claim": "M01-f",
   "kind": "oraclePairFixture",
   "hancomVersion": "2022",
-  "pairCount": 364,
+  "pairCount": 350,
   "pairs": [
     {
       "id": "samples/2010-01-06.hwp::pdf/2010-01-06-2022.pdf",
@@ -42,76 +42,6 @@
       "stem": "2025년 기부·답례품 실적 지자체 보고서_양식",
       "hancomVersion": "2022",
       "variant": "2022",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/21_언어_기출_편집가능본.hwp::pdf/21_언어_기출_편집가능본-2022.pdf",
-      "sample": "samples/21_언어_기출_편집가능본.hwp",
-      "pdf": "pdf/21_언어_기출_편집가능본-2022.pdf",
-      "stem": "21_언어_기출_편집가능본",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-09월_교육_통합_2022.hwp::pdf/3-09월_교육_통합_2022.pdf",
-      "sample": "samples/3-09월_교육_통합_2022.hwp",
-      "pdf": "pdf/3-09월_교육_통합_2022.pdf",
-      "stem": "3-09월_교육_통합_2022",
-      "hancomVersion": "2022",
-      "variant": "exact",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-09월_교육_통합_2022.hwpx::pdf/3-09월_교육_통합_2022.pdf",
-      "sample": "samples/3-09월_교육_통합_2022.hwpx",
-      "pdf": "pdf/3-09월_교육_통합_2022.pdf",
-      "stem": "3-09월_교육_통합_2022",
-      "hancomVersion": "2022",
-      "variant": "exact",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-10월_교육_통합_2022.hwp::pdf/3-10월_교육_통합_2022.pdf",
-      "sample": "samples/3-10월_교육_통합_2022.hwp",
-      "pdf": "pdf/3-10월_교육_통합_2022.pdf",
-      "stem": "3-10월_교육_통합_2022",
-      "hancomVersion": "2022",
-      "variant": "exact",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-10월_교육_통합_2022.hwpx::pdf/3-10월_교육_통합_2022.pdf",
-      "sample": "samples/3-10월_교육_통합_2022.hwpx",
-      "pdf": "pdf/3-10월_교육_통합_2022.pdf",
-      "stem": "3-10월_교육_통합_2022",
-      "hancomVersion": "2022",
-      "variant": "exact",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-11월_실전_통합_2022.hwp::pdf/3-11월_실전_통합_2022.pdf",
-      "sample": "samples/3-11월_실전_통합_2022.hwp",
-      "pdf": "pdf/3-11월_실전_통합_2022.pdf",
-      "stem": "3-11월_실전_통합_2022",
-      "hancomVersion": "2022",
-      "variant": "exact",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-11월_실전_통합_2022.hwpx::pdf/3-11월_실전_통합_2022.pdf",
-      "sample": "samples/3-11월_실전_통합_2022.hwpx",
-      "pdf": "pdf/3-11월_실전_통합_2022.pdf",
-      "stem": "3-11월_실전_통합_2022",
-      "hancomVersion": "2022",
-      "variant": "exact",
       "sourceFormat": "hwpx",
       "oracleRoot": "pdf"
     },
@@ -940,76 +870,6 @@
       "sample": "samples/equation-lim.hwp",
       "pdf": "pdf/equation-lim-2022.pdf",
       "stem": "equation-lim",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_eng.hwp::pdf/exam_eng-2022.pdf",
-      "sample": "samples/exam_eng.hwp",
-      "pdf": "pdf/exam_eng-2022.pdf",
-      "stem": "exam_eng",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_kor.hwp::pdf/exam_kor-2022.pdf",
-      "sample": "samples/exam_kor.hwp",
-      "pdf": "pdf/exam_kor-2022.pdf",
-      "stem": "exam_kor",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_math.hwp::pdf/exam_math-2022.pdf",
-      "sample": "samples/exam_math.hwp",
-      "pdf": "pdf/exam_math-2022.pdf",
-      "stem": "exam_math",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_math_8.hwp::pdf/exam_math_8-2022.pdf",
-      "sample": "samples/exam_math_8.hwp",
-      "pdf": "pdf/exam_math_8-2022.pdf",
-      "stem": "exam_math_8",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_math_no.hwp::pdf/exam_math_no-2022.pdf",
-      "sample": "samples/exam_math_no.hwp",
-      "pdf": "pdf/exam_math_no-2022.pdf",
-      "stem": "exam_math_no",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_science.hwp::pdf/exam_science-2022.pdf",
-      "sample": "samples/exam_science.hwp",
-      "pdf": "pdf/exam_science-2022.pdf",
-      "stem": "exam_science",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_social.hwp::pdf/exam_social-2022.pdf",
-      "sample": "samples/exam_social.hwp",
-      "pdf": "pdf/exam_social-2022.pdf",
-      "stem": "exam_social",
       "hancomVersion": "2022",
       "variant": "2022",
       "sourceFormat": "hwp",

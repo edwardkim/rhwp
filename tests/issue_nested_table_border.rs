@@ -1,4 +1,3 @@
-//! Nested table 외부 1x1 wrapper 표 외곽 테두리 누락 정정 (exam_social.hwp p1 4번).
 //!
 //! `src/renderer/layout/table_layout.rs::layout_table` 의 1x1 wrapper 분기는
 //! 외부 표를 무시하고 내부 표만 직접 layout 한다. 외부 표가 padding 과
@@ -9,7 +8,6 @@
 //! 라인을 col_node 에 추가한다.
 //!
 //! 권위 자료: pi=15 4번 자료 박스 (외부 1x1 padding=850 + 내부 6x3 대화체).
-//! 한컴2022 PDF (`pdf/exam_social-2022.pdf`) p1 우측 4번 영역 외곽 박스 시각 정합.
 
 use std::fs;
 use std::path::Path;

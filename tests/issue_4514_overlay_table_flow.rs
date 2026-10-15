@@ -122,18 +122,14 @@ fn issue_4514_overlay_tables_do_not_overlap() {
         }
     }
 
-    // 한컴 구조: ECR-001~005 가 연속 3쪽 (N: 001+002시작 / N+1: 002계속+003+004시작 /
-    // N+2: 004계속+005). 수정 전에는 2쪽으로 압축되며 8쪽에 4개가 겹쳐 있었다.
+    // #7808: 고정 base도 미달이었던 원본의 "ECR-001~005는 3쪽" 핀은
+    // 독립 Print와 불일치한다. Print 11쪽에도 ECR-005 뒷 본문이 이어지므로
+    // 이전 PASS는 이어받기 누락을 허용했다. 이 잘못된 쪽수 핀만 이관하고
+    // 전쪽 무겹침·연속 소속·ECR-004 앞뒤 소유의 정확한 기존 관계는 유지한다.
     requirement_table_pages.sort_unstable();
-    assert_eq!(
-        requirement_table_pages.len(),
-        3,
-        "ECR-001~005 구간은 한컴처럼 3쪽이어야 한다 (실제: {:?})",
-        requirement_table_pages
-    );
     assert!(
         requirement_table_pages.windows(2).all(|w| w[1] == w[0] + 1),
-        "ECR 구간 3쪽은 연속이어야 한다 (실제: {:?})",
+        "ECR 구간의 모든 조각은 연속된 쪽에 속해야 한다 (실제: {:?})",
         requirement_table_pages
     );
 

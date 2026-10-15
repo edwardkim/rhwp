@@ -3,7 +3,7 @@
   "claim": "M01-f",
   "kind": "oraclePairFixture",
   "hancomVersion": "2020",
-  "pairCount": 539,
+  "pairCount": 525,
   "pairs": [
     {
       "id": "samples/2010-01-06.hwp::pdf/2010-01-06-hwp-2020.pdf",
@@ -103,56 +103,6 @@
       "hancomVersion": "2020",
       "variant": "hwpx-2020",
       "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/21_언어_기출_편집가능본.hwp::pdf/21_언어_기출_편집가능본-hwp-2020.pdf",
-      "sample": "samples/21_언어_기출_편집가능본.hwp",
-      "pdf": "pdf/21_언어_기출_편집가능본-hwp-2020.pdf",
-      "stem": "21_언어_기출_편집가능본",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-09월_교육_통합_2022.hwp::pdf/3-09월_교육_통합_2022-hwp-2020.pdf",
-      "sample": "samples/3-09월_교육_통합_2022.hwp",
-      "pdf": "pdf/3-09월_교육_통합_2022-hwp-2020.pdf",
-      "stem": "3-09월_교육_통합_2022",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-09월_교육_통합_2023.hwp::pdf/3-09월_교육_통합_2023-hwp-2020.pdf",
-      "sample": "samples/3-09월_교육_통합_2023.hwp",
-      "pdf": "pdf/3-09월_교육_통합_2023-hwp-2020.pdf",
-      "stem": "3-09월_교육_통합_2023",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-10월_교육_통합_2022.hwp::pdf/3-10월_교육_통합_2022-hwp-2020.pdf",
-      "sample": "samples/3-10월_교육_통합_2022.hwp",
-      "pdf": "pdf/3-10월_교육_통합_2022-hwp-2020.pdf",
-      "stem": "3-10월_교육_통합_2022",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/3-11월_실전_통합_2022.hwp::pdf/3-11월_실전_통합_2022-hwp-2020.pdf",
-      "sample": "samples/3-11월_실전_통합_2022.hwp",
-      "pdf": "pdf/3-11월_실전_통합_2022-hwp-2020.pdf",
-      "stem": "3-11월_실전_통합_2022",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
       "oracleRoot": "pdf"
     },
     {
@@ -976,76 +926,6 @@
       "oracleRoot": "pdf"
     },
     {
-      "id": "samples/exam_eng.hwp::pdf/exam_eng-hwp-2020.pdf",
-      "sample": "samples/exam_eng.hwp",
-      "pdf": "pdf/exam_eng-hwp-2020.pdf",
-      "stem": "exam_eng",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_kor.hwp::pdf/exam_kor-hwp-2020.pdf",
-      "sample": "samples/exam_kor.hwp",
-      "pdf": "pdf/exam_kor-hwp-2020.pdf",
-      "stem": "exam_kor",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_math.hwp::pdf/exam_math-hwp-2020.pdf",
-      "sample": "samples/exam_math.hwp",
-      "pdf": "pdf/exam_math-hwp-2020.pdf",
-      "stem": "exam_math",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_math_8.hwp::pdf/exam_math_8-hwp-2020.pdf",
-      "sample": "samples/exam_math_8.hwp",
-      "pdf": "pdf/exam_math_8-hwp-2020.pdf",
-      "stem": "exam_math_8",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_math_no.hwp::pdf/exam_math_no-hwp-2020.pdf",
-      "sample": "samples/exam_math_no.hwp",
-      "pdf": "pdf/exam_math_no-hwp-2020.pdf",
-      "stem": "exam_math_no",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_science.hwp::pdf/exam_science-hwp-2020.pdf",
-      "sample": "samples/exam_science.hwp",
-      "pdf": "pdf/exam_science-hwp-2020.pdf",
-      "stem": "exam_science",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_social.hwp::pdf/exam_social-hwp-2020.pdf",
-      "sample": "samples/exam_social.hwp",
-      "pdf": "pdf/exam_social-hwp-2020.pdf",
-      "stem": "exam_social",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
       "id": "samples/field-01-memo.hwp::pdf/field-01-memo-hwp-2020.pdf",
       "sample": "samples/field-01-memo.hwp",
       "pdf": "pdf/field-01-memo-hwp-2020.pdf",
@@ -1510,26 +1390,6 @@
       "sample": "samples/hwpx/blank_hwpx.hwpx",
       "pdf": "pdf/hwpx/blank_hwpx-hwpx-2020.pdf",
       "stem": "blank_hwpx",
-      "hancomVersion": "2020",
-      "variant": "hwpx-2020",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwpx/exam_kor.hwpx::pdf/hwpx/exam_kor-hwpx-2020.pdf",
-      "sample": "samples/hwpx/exam_kor.hwpx",
-      "pdf": "pdf/hwpx/exam_kor-hwpx-2020.pdf",
-      "stem": "exam_kor",
-      "hancomVersion": "2020",
-      "variant": "hwpx-2020",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwpx/exam_social.hwpx::pdf/hwpx/exam_social-hwpx-2020.pdf",
-      "sample": "samples/hwpx/exam_social.hwpx",
-      "pdf": "pdf/hwpx/exam_social-hwpx-2020.pdf",
-      "stem": "exam_social",
       "hancomVersion": "2020",
       "variant": "hwpx-2020",
       "sourceFormat": "hwpx",

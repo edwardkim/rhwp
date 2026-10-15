@@ -6,6 +6,8 @@
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
+use encoding_rs::EUC_KR;
+
 type Result<T> = std::result::Result<T, ()>;
 
 #[derive(Clone, Copy)]
@@ -23,23 +25,164 @@ pub(super) struct Series {
     pub secondary: bool,
     pub index: usize,
     pub selectors: Vec<i16>,
+    pub legend: Option<Text>,
+}
+
+/// 저장 글꼴 크기는 포인트 단위이며 차트의 캐시 사각형 크기와 구별한다.
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct Font {
+    pub family: String,
+    pub size: f64,
+    pub style: u16,
+    pub effects: u16,
+    pub color: u32,
+}
+
+#[derive(Clone, Debug)]
+pub(super) struct Text {
+    pub value: String,
+    pub font: Font,
+    pub metrics: TextMetrics,
 }
 
 pub(super) struct Presentation {
+    pub chart_type: usize,
     pub axes: [Axis; 2],
     pub series: Vec<Series>,
     pub extent: [f64; 4],
     pub plot: [f64; 4],
+    pub title: Option<Text>,
+    pub legend_font: Option<Font>,
+    pub label_fonts: [Option<Font>; 4],
+    /// 계열 막대 사이와 범주 사이의 간격을 막대 너비에 대한 비율로 저장한다.
+    pub bar_gap: f64,
+    pub x_gap: f64,
+    pub backdrop: Option<Backdrop>,
+    pub title_section: Option<Section>,
+    pub legend_section: Option<Section>,
+    pub plot_section: Section,
+    pub axis_styles: [AxisStyle; 4],
+    pub labels: [Option<Text>; 4],
+}
+
+/// 소유 텍스트의 저장 점유 정보. 글꼴 크기와 같은 값으로 추정하지 않는다.
+#[derive(Clone, Debug)]
+pub(super) struct TextMetrics {
+    pub margin: i32,
+    pub rect: [i32; 4],
+    pub extent: [i32; 2],
+    pub cache_valid: bool,
+    pub horizontal: u16,
+    pub vertical: u16,
+    pub orientation: u16,
+    pub paint_rect: [i32; 4],
+}
+#[derive(Clone, Debug)]
+pub(super) struct Section {
+    pub external: i16,
+    pub internal: i16,
+    pub visible: bool,
+    pub rect: [f64; 4],
+    pub location: u16,
+    pub backdrop: Option<Backdrop>,
+}
+#[derive(Clone, Debug)]
+pub(super) struct Backdrop {
+    pub frame_color: u32,
+    pub frame_width: f64,
+    pub frame_enabled: bool,
+    pub fill_kind: i16,
+    pub fill_color: u32,
+    pub shadow_enabled: bool,
+}
+#[derive(Clone, Copy, Debug, Default)]
+pub(super) struct Pen {
+    pub enabled: bool,
+    pub color: u32,
+    pub width: f64,
+}
+#[derive(Clone, Copy, Debug, Default)]
+pub(super) struct AxisStyle {
+    pub labels_visible: bool,
+    pub pen: Pen,
+    pub major_grid: Pen,
+    pub minor_grid: Pen,
+    pub tick_length: f64,
+    pub tick_style: u16,
+}
+fn pen(bytes: &[u8]) -> Result<Pen> {
+    if bytes.len() != 22 || bytes[..2] != [1, 0] || bytes[8..10] != [1, 0] {
+        return Err(());
+    }
+    let width = f32::from_le_bytes(bytes[14..18].try_into().map_err(|_| ())?) as f64;
+    if !width.is_finite() || width < 0.0 {
+        return Err(());
+    }
+    Ok(Pen {
+        enabled: u16::from_le_bytes(bytes[2..4].try_into().map_err(|_| ())?) != 0,
+        color: u32::from_le_bytes(bytes[10..14].try_into().map_err(|_| ())?),
+        width,
+    })
+}
+fn axis_label(node: &Node) -> Option<Text> {
+    match node {
+        Node::Text(text) => Some(text.clone()),
+        Node::Array(items) => items
+            .iter()
+            .filter_map(|item| axis_label(item))
+            .max_by_key(|text| text.metrics.extent[0]),
+        _ => None,
+    }
 }
 
 enum Node {
     Empty,
     Count(usize),
     Array(Vec<Rc<Node>>),
-    Axis(Option<Axis>),
+    Axis(Option<Axis>, Option<Font>, AxisStyle, Option<Text>),
     Series(Series),
-    Section([f64; 4]),
-    Plot([Option<Axis>; 4], [f64; 4]),
+    Section(Section),
+    Backdrop(Backdrop),
+    Fill(i16, u32),
+    Plot(
+        Box<(
+            [Option<Axis>; 4],
+            [Option<Font>; 4],
+            Section,
+            [f64; 2],
+            [AxisStyle; 4],
+            [Option<Text>; 4],
+        )>,
+    ),
+    String(String),
+    Font(Font),
+    Text(Text),
+    Title(Option<Text>, Section),
+    Legend(Option<Font>, Section),
+}
+
+fn axis_label_font(node: &Node) -> Option<Font> {
+    match node {
+        Node::Text(text) => Some(text.font.clone()),
+        Node::Array(items) => {
+            let mut font = None;
+            for item in items {
+                match item.as_ref() {
+                    Node::Empty => {}
+                    Node::Text(text) => {
+                        if font.as_ref().is_some_and(|font| *font != text.font) {
+                            // 다단 축의 서로 다른 레이블 글꼴을 하나로 덮어쓰지 않는다.
+                            return None;
+                        }
+                        font = Some(text.font.clone());
+                    }
+                    _ => return None,
+                }
+            }
+            font
+        }
+        _ => None,
+    }
 }
 
 struct Reader<'a> {
@@ -203,13 +346,25 @@ impl<'a> Reader<'a> {
             }
             "VtString" => {
                 let len = self.u16()? as usize;
-                if len > 0 {
+                let text = if len > 0 {
                     // Legacy archives reserve one trailing byte, but newer
                     // writers do not always zero it. Keep the length/bounds
                     // check without treating that byte as a NUL contract.
-                    self.skip(len + 1)?;
-                }
+                    let bytes = self.bytes(len + 1)?;
+                    let end = bytes[..len]
+                        .iter()
+                        .position(|byte| *byte == 0)
+                        .unwrap_or(len);
+                    let (text, _, errors) = EUC_KR.decode(&bytes[..end]);
+                    if errors {
+                        return Err(());
+                    }
+                    text.into_owned()
+                } else {
+                    String::new()
+                };
                 self.base("VtValue")?;
+                return Ok(Node::String(text));
             }
             "VtDouble" => {
                 self.skip(10)?;
@@ -219,15 +374,36 @@ impl<'a> Reader<'a> {
                 self.base("VtObject")?;
             }
             "VtBackdrop" => {
-                self.skip(50)?;
-                self.object()?;
+                let bytes = self.bytes(50)?;
+                let frame_width =
+                    f32::from_le_bytes(bytes[44..48].try_into().map_err(|_| ())?) as f64;
+                if !frame_width.is_finite() || frame_width < 0.0 {
+                    return Err(());
+                }
+                let fill = self.object()?;
+                let (fill_kind, fill_color) = match fill.as_ref() {
+                    Node::Fill(kind, color) => (*kind, *color),
+                    Node::Empty => (0, 0),
+                    _ => return Err(()),
+                };
+                let backdrop = Backdrop {
+                    frame_color: u32::from_le_bytes(bytes[34..38].try_into().map_err(|_| ())?),
+                    frame_width,
+                    frame_enabled: bytes[48..50] != [0, 0],
+                    shadow_enabled: bytes[28..30] != [0, 0],
+                    fill_kind,
+                    fill_color,
+                };
                 self.base("VtObject")?;
+                return Ok(Node::Backdrop(backdrop));
             }
             "VtFill" => {
-                self.skip(34)?;
+                let bytes = self.bytes(34)?;
+                let color = u32::from_le_bytes(bytes[6..10].try_into().map_err(|_| ())?);
                 self.object()?;
-                self.skip(2)?;
+                let kind = self.i16()?;
                 self.base("VtObject")?;
+                return Ok(Node::Fill(kind, color));
             }
             "VtPicture" => {
                 self.skip(2)?;
@@ -244,38 +420,121 @@ impl<'a> Reader<'a> {
                 self.base("VtObject")?;
             }
             "VtFont" => {
-                self.object()?;
-                self.skip(14)?;
+                let object = self.object()?;
+                let Node::String(family) = object.as_ref() else {
+                    return Err(());
+                };
+                let bytes = self.bytes(14)?;
+                let size = f32::from_le_bytes(bytes[..4].try_into().map_err(|_| ())?) as f64;
+                if !size.is_finite() || size <= 0.0 || bytes[8..10] != [1, 0] {
+                    return Err(());
+                }
+                let font = Font {
+                    family: family.clone(),
+                    size,
+                    style: u16::from_le_bytes(bytes[4..6].try_into().map_err(|_| ())?),
+                    effects: u16::from_le_bytes(bytes[6..8].try_into().map_err(|_| ())?),
+                    color: u32::from_le_bytes(bytes[10..14].try_into().map_err(|_| ())?),
+                };
                 self.base("VtObject")?;
+                return Ok(Node::Font(font));
             }
             "VtTextBlock" => {
-                self.skip(12)?;
+                let layout = self.bytes(12)?;
+                if layout[..2] != [1, 0] {
+                    return Err(());
+                }
+                let horizontal = u16::from_le_bytes(layout[4..6].try_into().map_err(|_| ())?);
+                let vertical = u16::from_le_bytes(layout[6..8].try_into().map_err(|_| ())?);
+                let orientation = u16::from_le_bytes(layout[8..10].try_into().map_err(|_| ())?);
                 self.object()?;
-                self.object()?;
-                self.skip(24)?;
-                self.object()?;
-                self.skip(26)?;
+                let font = self.object()?;
+                let Node::Font(font) = font.as_ref() else {
+                    return Err(());
+                };
+                self.u16()?;
+                let margin = self.i32()?;
+                let mut rect = [0; 4];
+                for value in &mut rect {
+                    *value = self.i32()?;
+                }
+                let cache_valid = self.u16()? != 0;
+                let text = self.object()?;
+                let value = match text.as_ref() {
+                    Node::String(value) => value.clone(),
+                    Node::Empty => String::new(),
+                    _ => return Err(()),
+                };
+                let extent = [self.i32()?, self.i32()?];
+                let mut paint_rect = [0; 4];
+                for value in &mut paint_rect {
+                    *value = self.i32()?;
+                }
+                self.skip(2)?;
                 self.base("VtObject")?;
+                return Ok(Node::Text(Text {
+                    value,
+                    font: font.clone(),
+                    metrics: TextMetrics {
+                        margin,
+                        rect,
+                        extent,
+                        cache_valid,
+                        horizontal,
+                        vertical,
+                        orientation,
+                        paint_rect,
+                    },
+                }));
             }
             "VtChartText" => {
-                self.object()?;
-                self.base("VtChartSection")?;
+                let text = self.object()?;
+                let Node::Text(text) = text.as_ref() else {
+                    return Err(());
+                };
+                let Node::Section(section) = self.base("VtChartSection")? else {
+                    return Err(());
+                };
+                return Ok(Node::Title(section.visible.then(|| text.clone()), section));
             }
             "VtChartTitle" | "VtChartFootnote" => {
-                self.base("VtChartText")?;
+                return self.base("VtChartText");
             }
             "VtChartSection" => {
-                self.skip(8)?;
+                let external = self.i16()?;
+                let internal = self.i16()?;
+                if self.u16()? != 1 || external < 0 || internal < 0 {
+                    return Err(());
+                }
+                let visible = self.u16()? != 0;
                 let rect = self.rect()?;
-                self.skip(2)?;
-                self.object()?;
+                let location = self.u16()?;
+                let object = self.object()?;
+                let backdrop = match object.as_ref() {
+                    Node::Backdrop(b) => Some(b.clone()),
+                    Node::Empty => None,
+                    _ => return Err(()),
+                };
                 self.base("VtObject")?;
-                return Ok(Node::Section(rect));
+                return Ok(Node::Section(Section {
+                    external,
+                    internal,
+                    visible,
+                    rect,
+                    location,
+                    backdrop,
+                }));
             }
             "VtChartLegend" => {
-                self.object()?;
+                let font = self.object()?;
+                let Node::Font(font) = font.as_ref() else {
+                    return Err(());
+                };
                 self.skip(10)?;
-                self.base("VtChartSection")?;
+                let Node::Section(section) = self.base("VtChartSection")? else {
+                    return Err(());
+                };
+                return Ok(Node::Legend(section.visible.then(|| font.clone()), section));
             }
             "VtLight3" => {
                 self.object()?;
@@ -287,7 +546,7 @@ impl<'a> Reader<'a> {
                 self.base("VtObject")?;
             }
             "VtSeriesLabel" => {
-                self.base("VtTextBlock")?;
+                return self.base("VtTextBlock");
             }
             "VtSeriesPoint" => {
                 self.object()?;
@@ -307,19 +566,36 @@ impl<'a> Reader<'a> {
                 self.skip(2)?;
                 self.object()?;
                 self.skip(3)?;
-                self.base("VtTextBlock")?;
+                return self.base("VtTextBlock");
             }
             "VtAxisScaleBlock" => {
                 self.object()?;
                 self.skip(4)?;
-                self.base("VtValueBlock")?;
+                return self.base("VtValueBlock");
             }
             "VtAxis" => {
-                self.skip(6)?;
+                self.u16()?;
+                let labels_visible = self.u16()? != 0;
+                self.u16()?;
                 let manual = self.i16()? != 0;
-                self.skip(74)?;
+                let props = self.bytes(74)?;
+                let tick_length =
+                    f32::from_le_bytes(props[66..70].try_into().map_err(|_| ())?) as f64;
+                if !tick_length.is_finite() || tick_length < 0.0 {
+                    return Err(());
+                }
+                let mut style = AxisStyle {
+                    labels_visible,
+                    tick_style: 0,
+                    pen: pen(&props[..22])?,
+                    major_grid: pen(&props[22..44])?,
+                    minor_grid: pen(&props[44..66])?,
+                    tick_length,
+                };
+                // 첫 참조는 축 제목, 둘째 참조는 눈금/범주 레이블이다.
                 self.object()?;
-                self.object()?;
+                let label = self.object()?;
+                let label_font = axis_label_font(label.as_ref());
                 self.skip(34)?;
                 let axis = if manual {
                     let min = self.f64()?;
@@ -342,9 +618,16 @@ impl<'a> Reader<'a> {
                 } else {
                     None
                 };
-                self.skip(16)?;
+                let tail = self.bytes(16)?;
+                // WriteOn에서 percent basis/unit 뒤에 저장하는 TickStyle.
+                style.tick_style = u16::from_le_bytes(tail[4..6].try_into().map_err(|_| ())?);
                 self.base("VtObject")?;
-                return Ok(Node::Axis(axis));
+                return Ok(Node::Axis(
+                    axis,
+                    label_font,
+                    style,
+                    axis_label(label.as_ref()),
+                ));
             }
             "VtCLineItem" => {
                 self.skip(48)?;
@@ -363,23 +646,46 @@ impl<'a> Reader<'a> {
             }
             "VtChartPlot" => {
                 self.object()?;
-                self.skip(136)?;
+                // VtChartPlot v4의 고정 prefix: 깊이/너비 비율 뒤의
+                // BarGap·xGap를 읽고, 아직 지원하지 않는 나머지 표현은 건너뛴다.
+                // 공식 Plot 속성과 ReadFrom/SetBarGap/SetXGap의 저장 순서를 대조했다.
+                let prefix = self.bytes(136)?;
+                let gaps = [8, 12].map(|at| {
+                    f32::from_le_bytes(prefix[at..at + 4].try_into().expect("bounded plot prefix"))
+                        as f64
+                });
+                if gaps.iter().any(|gap| !gap.is_finite() || *gap < 0.0) {
+                    return Err(());
+                }
                 self.object()?;
                 let mut axes = [None; 4];
-                for axis in &mut axes {
+                let mut fonts = std::array::from_fn(|_| None);
+                let mut axis_styles = [AxisStyle::default(); 4];
+                let mut labels = std::array::from_fn(|_| None);
+                for (index, (axis, font)) in axes.iter_mut().zip(&mut fonts).enumerate() {
                     let object = self.object()?;
-                    let Node::Axis(value) = object.as_ref() else {
+                    let Node::Axis(value, label_font, style, label) = object.as_ref() else {
                         return Err(());
                     };
                     *axis = *value;
+                    *font = label_font.clone();
+                    axis_styles[index] = *style;
+                    labels[index] = label.clone();
                 }
                 self.skip(30)?;
                 self.object()?;
                 self.skip(16)?;
-                let Node::Section(rect) = self.base("VtChartSection")? else {
+                let Node::Section(section) = self.base("VtChartSection")? else {
                     return Err(());
                 };
-                return Ok(Node::Plot(axes, rect));
+                return Ok(Node::Plot(Box::new((
+                    axes,
+                    fonts,
+                    section,
+                    gaps,
+                    axis_styles,
+                    labels,
+                ))));
             }
             "VtSeries" => return self.series(),
             "VtWindow" => {
@@ -411,7 +717,12 @@ impl<'a> Reader<'a> {
         self.skip(12 + 22 + 16 + 16)?;
         self.object()?;
         self.object()?;
-        self.object()?;
+        let label = self.object()?;
+        let legend = match label.as_ref() {
+            Node::Text(text) => Some(text.clone()),
+            Node::Empty => None,
+            _ => return Err(()),
+        };
         self.skip(2)?;
         self.object()?;
         self.object()?;
@@ -446,6 +757,7 @@ impl<'a> Reader<'a> {
             secondary,
             index,
             selectors,
+            legend,
         }))
     }
 }
@@ -474,12 +786,17 @@ fn parse_inner(data: &[u8]) -> Result<Presentation> {
     reader.object()?;
     reader.skip(2)?;
     let extent = reader.rect()?;
+    let backdrop = reader.object()?;
+    let backdrop = match backdrop.as_ref() {
+        Node::Backdrop(b) => Some(b.clone()),
+        Node::Empty => None,
+        _ => return Err(()),
+    };
     reader.object()?;
-    reader.object()?;
-    reader.object()?;
+    let legend = reader.object()?;
     let plot = reader.object()?;
     let series = reader.object()?;
-    reader.object()?;
+    let title = reader.object()?;
     reader.object()?;
     reader.skip(6)?;
     reader.object()?;
@@ -487,11 +804,22 @@ fn parse_inner(data: &[u8]) -> Result<Presentation> {
     let chart_type = reader.i16()?;
     reader.skip(4)?;
     reader.base("VtWindow")?;
-    if chart_type != 9 || reader.at != data.len() {
+    if !matches!(chart_type, 1 | 9) || reader.at != data.len() {
         return Err(());
     }
-    let Node::Plot(axes, plot) = plot.as_ref() else {
+    let Node::Plot(plot) = plot.as_ref() else {
         return Err(());
+    };
+    let (axes, label_fonts, plot_section, gaps, axis_styles, labels) = plot.as_ref();
+    let (title, title_section) = match title.as_ref() {
+        Node::Title(text, section) => (text.clone(), Some(section.clone())),
+        Node::Empty => (None, None),
+        _ => return Err(()),
+    };
+    let (legend_font, legend_section) = match legend.as_ref() {
+        Node::Legend(font, section) => (font.clone(), Some(section.clone())),
+        Node::Empty => (None, None),
+        _ => return Err(()),
     };
     let Node::Array(items) = series.as_ref() else {
         return Err(());
@@ -504,24 +832,48 @@ fn parse_inner(data: &[u8]) -> Result<Presentation> {
         let Node::Series(style) = item.as_ref() else {
             return Err(());
         };
-        // Painter 1: column; painter 6: line, selected by chart type 9.
-        if style.index != index || !matches!(style.selectors[9], 1 | 6) {
+        // 저장 차트 종류에 대응하는 painter를 사용한다.
+        // 막대형(1)은 column만, 혼합형(9)은 column/line만 지원한다.
+        let painter = style.selectors[chart_type as usize];
+        if style.index != index || !(painter == 1 || chart_type == 9 && painter == 6) {
             return Err(());
         }
         styles.push(style.clone());
     }
-    if !styles.iter().any(|s| s.selectors[9] == 1) || !styles.iter().any(|s| s.selectors[9] == 6) {
+    if chart_type == 9
+        && (!styles.iter().any(|s| s.selectors[9] == 1)
+            || !styles.iter().any(|s| s.selectors[9] == 6))
+    {
         return Err(());
     }
-    for rect in [extent, *plot] {
+    for rect in [extent, plot_section.rect] {
         if rect[2] <= rect[0] || rect[3] <= rect[1] {
             return Err(());
         }
     }
     Ok(Presentation {
-        axes: [axes[1].ok_or(())?, axes[2].ok_or(())?],
+        chart_type: chart_type as usize,
+        axes: [
+            axes[1].ok_or(())?,
+            if styles.iter().any(|series| series.secondary) {
+                axes[2].ok_or(())?
+            } else {
+                axes[1].ok_or(())?
+            },
+        ],
         series: styles,
         extent,
-        plot: *plot,
+        plot: plot_section.rect,
+        title,
+        legend_font,
+        label_fonts: label_fonts.clone(),
+        bar_gap: gaps[0],
+        x_gap: gaps[1],
+        backdrop,
+        title_section,
+        legend_section,
+        plot_section: plot_section.clone(),
+        axis_styles: *axis_styles,
+        labels: labels.clone(),
     })
 }

@@ -21,6 +21,9 @@ use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+mod stored_table_tail;
+mod tac_cache_repair;
+
 /// HWP 내보내기 + 자기 재로드 검증 결과 (#178 Stage 6).
 ///
 /// `serialize_hwp_with_verify` 의 반환값. 호출자가 페이지 회복 여부를 확인하고
@@ -333,6 +336,7 @@ impl DocumentCore {
             validation_report,
         };
 
+        tac_cache_repair::repair(&mut doc.document, &doc.styles, DEFAULT_DPI);
         doc.rebuild_embedded_exact_font_sources();
         doc.recompose_all_with_horizontal_shaping();
         doc.paginate();
@@ -497,6 +501,9 @@ impl DocumentCore {
     ) {
         use crate::model::control::Control;
 
+        let profile = document.layout_profile();
+        let source_table_frames = !profile.session_edited()
+            && (profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout());
         for section in &mut document.sections {
             // [#4898] 이 구역의 저장 lineseg 가 배치 권위를 갖는지 먼저 판정한다 —
             // 권위가 있으면 0높이 lineseg(한컴이 접어 둔 숨은 블록)를 재조판하지 않는다.
@@ -509,6 +516,23 @@ impl DocumentCore {
                 .first()
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
+
+            // 합성/캐시 보정 전에 원본 TAC 상자가 소유한 내부 쪽 경계를 고정한다.
+            let body_height_hu = (layout.body_area.height * 7200.0 / dpi).round() as i32;
+            let source_tac_frames: Vec<_> = section
+                .paragraphs
+                .iter()
+                .map(|para| {
+                    source_table_frames
+                        .then(|| {
+                            crate::renderer::stored_control_frame::following_first_tac_frame(
+                                para,
+                                body_height_hu,
+                            )
+                        })
+                        .flatten()
+                })
+                .collect();
 
             let mut body_line_seg_changed = false;
             // [Issue #1920] vpos 재계산(아래) 시 저장 vpos 의 새 쪽 시작 신호를 보존하기
@@ -752,7 +776,6 @@ impl DocumentCore {
                     .map(|(i, para)| {
                         if reflowed_paras.contains(&i)
                             || para.stored_text_partition_dirty
-                            || !para.controls.is_empty()
                             || para.line_segs.iter().any(|line| {
                                 line.tag
                                     & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
@@ -760,6 +783,11 @@ impl DocumentCore {
                             })
                         {
                             return None;
+                        }
+                        if !para.controls.is_empty() {
+                            return source_table_frames
+                                .then(|| stored_table_tail::source_frame_tail(para))
+                                .flatten();
                         }
                         let last = para.line_segs.last()?;
                         let painted_end = last.vertical_pos.saturating_add(last.line_height);
@@ -773,7 +801,6 @@ impl DocumentCore {
                 // 끼워 넣더라도 뒤의 원본 앵커가 확보한 공간을 삭제하지 않는다.
                 // 합성 내용이 자랐으면 이미 소비한 끝점을 유지하여 되감지 않는다.
                 let mut source_anchor_end: Option<(i32, i32)> = None;
-                let body_height_hu = (layout.body_area.height * 7200.0 / dpi).round() as i32;
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
                     // 필드는 저장 글줄 안의 텍스트 범위를 표시할 뿐 별도 높이를
@@ -994,7 +1021,7 @@ impl DocumentCore {
                         .map(|line| line.vertical_pos)
                         .collect();
                     let preserve_source_frames = !was_reflowed
-                        && para.controls.is_empty()
+                        && (para.controls.is_empty() || source_tac_frames[pi].is_some())
                         && !para.stored_text_partition_dirty
                         && para.line_segs.iter().all(|line| {
                             line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
@@ -1012,6 +1039,9 @@ impl DocumentCore {
                         let source_vpos = source_positions[line_index];
                         if preserve_source_frames
                             && line_index > 0
+                            && (para.controls.is_empty()
+                                || source_tac_frames[pi]
+                                    .is_some_and(|frame| frame.line == line_index))
                             && source_vpos == 0
                             && previous_source_end.is_some_and(|end: i32| {
                                 end > 0 && end.saturating_add(seg.line_height) > body_height_hu
@@ -1860,7 +1890,15 @@ impl DocumentCore {
 
         // 1단계 — 고칠 자리를 live IR 에서 정한다. 유닛 캐시가 live 셀 포인터로 메모이즈
         // 돼 있으므로 스냅숏 포인터를 캐시에 넣지 않는다.
-        let mut plans: Vec<(usize, usize, usize, usize, Vec<(usize, usize)>)> = Vec::new();
+        struct FrameWriteback {
+            section: usize,
+            paragraph: usize,
+            control: usize,
+            cell: usize,
+            resets: Vec<(usize, usize)>,
+            preserved_frames: Vec<((usize, usize), (usize, usize))>,
+        }
+        let mut plans = Vec::new();
         for (section_idx, section) in self.document.sections.iter().enumerate() {
             let Some(pagination) = self.pagination.get(section_idx) else {
                 continue;
@@ -1938,6 +1976,33 @@ impl DocumentCore {
                         let anchors =
                             self.layout_engine
                                 .cell_unit_line_anchors(cell, table, &self.styles);
+                        if std::env::var_os("RHWP_DIAG_WRITEBACK").is_some() {
+                            let normalized_table = self
+                                .section_render_paragraphs(section_idx)
+                                .get(para_idx)
+                                .and_then(|p| p.controls.get(control_idx))
+                                .and_then(|c| {
+                                    if let Control::Table(t) = c {
+                                        Some(t)
+                                    } else {
+                                        None
+                                    }
+                                });
+                            if let Some(t) = normalized_table {
+                                if let Some(normalized_cell) = t.cells.get(cell_idx) {
+                                    let normalized_anchors = self
+                                        .layout_engine
+                                        .cell_unit_line_anchors(normalized_cell, t, &self.styles);
+                                    eprintln!("WRITEBACK_UNITS section={section_idx} para={para_idx} control={control_idx} cell={cell_idx} live_paras={} render_paras={} live_units={} render_units={} anchors_equal={} cuts={units:?}", cell.paragraphs.len(), normalized_cell.paragraphs.len(), anchors.len(), normalized_anchors.len(), anchors == normalized_anchors);
+                                    for &unit in &units {
+                                        let lo = unit.saturating_sub(1);
+                                        let hi = (unit + 2).min(anchors.len());
+                                        eprintln!("WRITEBACK_CUT cell={cell_idx} cut={unit} live={:?} render={:?}", anchors.get(lo..hi), normalized_anchors.get(lo..hi));
+                                    }
+                                }
+                            }
+                        }
+                        let mut preserved_frames = Vec::new();
                         let mut resets: Vec<(usize, usize)> = Vec::with_capacity(units.len());
                         for unit in units.iter() {
                             match anchors.get(*unit) {
@@ -1965,15 +2030,52 @@ impl DocumentCore {
                                 // 뒤 줄을 대신 적으면 그 구조를 통째로 앞 쪽에 넣으라는 거짓이
                                 // 되므로 이 경계는 **쓰지 않는다** — 읽는 쪽이 제 용량 컷을
                                 // 쓰게 두는 것이 편집 직후 배치와 같다.
-                                Some(CellUnitLineAnchor::InsideAnOpenLine) | None => {}
+                                Some(CellUnitLineAnchor::InsideAnOpenLine) => {
+                                    let preceding =
+                                        anchors[..*unit].iter().rev().find_map(|a| match a {
+                                            CellUnitLineAnchor::Opens(p, l) => Some((*p, *l)),
+                                            _ => None,
+                                        });
+                                    let following = anchors[*unit..].iter().find_map(|a| match a {
+                                        CellUnitLineAnchor::Opens(p, l) => Some((*p, *l)),
+                                        _ => None,
+                                    });
+                                    if let (Some(start), Some(end)) = (preceding, following) {
+                                        // A recursive cut has no host line at its physical
+                                        // start. Preserve the successor's source rewind;
+                                        // erasing it also changes the nested frame's extent.
+                                        if start < end {
+                                            preserved_frames.push((start, end));
+                                        }
+                                    }
+                                }
+                                None => {}
                             }
                         }
+                        preserved_frames.extend(
+                            self.layout_engine
+                                .cell_deferred_picture_source_frames(cell, table, &self.styles)
+                                .into_iter()
+                                .map(|(start, end)| ((start, 0), (end, 0))),
+                        );
+                        resets.retain(|line| {
+                            !preserved_frames
+                                .iter()
+                                .any(|(start, end)| start <= line && line <= end)
+                        });
                         resets.sort_unstable();
                         resets.dedup();
                         if resets.is_empty() {
                             continue;
                         }
-                        plans.push((section_idx, para_idx, control_idx, cell_idx, resets));
+                        plans.push(FrameWriteback {
+                            section: section_idx,
+                            paragraph: para_idx,
+                            control: control_idx,
+                            cell: cell_idx,
+                            resets,
+                            preserved_frames,
+                        });
                     }
                 }
             }
@@ -1985,7 +2087,15 @@ impl DocumentCore {
         // 나르고(조판의 `vpos_gap_before` 등이 읽는다), 촘촘한 사다리로 덮으면 그 신호가
         // 사라져 읽는 쪽이 더 채운다(실측: 문단 2276 편집에서 103쪽이 11낱말 더 먹었다).
         // 그래서 줄 사이 **원래 간격을 그대로 이어 붙이고**, 되감김만 실제 컷 자리로 옮긴다.
-        for (section_idx, para_idx, control_idx, cell_idx, resets) in plans {
+        for FrameWriteback {
+            section: section_idx,
+            paragraph: para_idx,
+            control: control_idx,
+            cell: cell_idx,
+            resets,
+            preserved_frames,
+        } in plans
+        {
             let Some(Control::Table(table)) = snapshot
                 .sections
                 .get_mut(section_idx)
@@ -2006,7 +2116,12 @@ impl DocumentCore {
                     let next = match previous {
                         None => stored,
                         Some((previous_stored, previous_new, previous_occupied)) => {
-                            if resets.contains(&(cell_para_idx, line_idx)) {
+                            if resets.contains(&(cell_para_idx, line_idx))
+                                || (preserved_frames
+                                    .iter()
+                                    .any(|(_, end)| *end == (cell_para_idx, line_idx))
+                                    && stored < previous_stored)
+                            {
                                 // 조각 시작 — 원래도 여기서 되감겼으면 그 원점을 그대로 쓰고,
                                 // 아니면 셀-로컬 원점 0 을 쓴다(이 문서의 조각 원점 관행).
                                 if stored < previous_stored {
@@ -3098,8 +3213,7 @@ impl DocumentCore {
                 // 좌표 기준. 역순 처리라 오른쪽 removal 의 시프트가 왼쪽 utf16 좌표에 영향
                 // 없고, 삭제 폭(u_end−u_start)은 원본 스냅샷 불변량이다. 컨트롤/필드 마커의
                 // 8유닛 갭 구조는 기존 오프셋에 이미 올바르게 인코딩되어 있으므로 감산만으로
-                // 보존된다 (rebuild_char_offsets 의 선행-컨트롤 휴리스틱은 문단 서두 0-length
-                // 필드의 end 마커를 컨트롤로 오산해 begin 갭을 유실 — 필드쌍 교차 페어링 유발).
+                // 보존된다.
                 if offsets_valid && start < end && end <= orig_offsets.len() {
                     let u_start = orig_offsets[start];
                     // [#3545] 지워진 본문 run 을 HWPX 저장에서 되살리기 위한 잔재 기록.

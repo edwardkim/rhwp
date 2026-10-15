@@ -149,9 +149,10 @@ impl SourceFrameQuery<'_> {
         // 실제 예산 안에 들어가는 행은 기존대로 수용하고, 초과 수용만 컷에 맡긴다.
         let terminal_zero_origin_cut = (profile.hwpx_stored_layout()
             || profile.hwp5_stored_pagination_layout())
+            && row_start_cut.is_empty()
             && !table_text_reflowed()
             && layout_engine
-                .row_stored_terminal_zero_origin_cut(table, r, styles)
+                .row_stored_zero_origin_cut(table, r, styles)
                 .is_some();
         let source_frame_whole_row_fits = !terminal_zero_origin_cut
             // #5585: 일반 선언 행의 초과 밴드는 다음 쪽에 이어져야 한다.
@@ -183,10 +184,17 @@ impl SourceFrameQuery<'_> {
             || (row_start_cut.is_empty()
                 && !table_text_reflowed()
                 && (layout_engine.row_has_declared_stored_frame(table, r)
-                    || layout_engine.native_saved_two_line_row_frame(table, r, styles)));
+                    || layout_engine.native_saved_two_line_row_frame(table, r, styles)
+                    || layout_engine.row_has_saved_zero_origin_text_frame(table, r)));
+        // HU-derived row sums can exceed the identical source frame by binary
+        // summation error. Bound that error by the number of accumulated rows;
+        // this does not grant any additional physical layout space.
+        let candidate_end = consumed + cs_before + row_total;
+        let sum_roundoff =
+            f64::EPSILON * (r + 3) as f64 * candidate_end.abs().max(avail_for_rows.abs());
         let whole_row_fits = !declared_source_frame
-            && ((!single_visible_source_frame
-                && consumed + cs_before + row_total <= avail_for_rows)
+            && !terminal_zero_origin_cut
+            && ((!single_visible_source_frame && candidate_end <= avail_for_rows + sum_roundoff)
                 || strict_nonterminal_rounding_fit
                 || source_frame_whole_row_fits);
 

@@ -384,6 +384,7 @@ fn compute_char_positions_walk(
                 x = inline_tab_x(i, x, ext, &chars, &cluster_len, &char_width);
                 tab_char_idx += 1;
             } else if has_custom_tabs {
+                let has_more_tabs_after = chars[i + 1..].contains(&'\t');
                 let abs_x = style.line_x_offset + x;
                 let (tab_pos, tab_type, fill_type) = find_next_tab_stop(
                     abs_x,
@@ -406,8 +407,13 @@ fn compute_char_positions_walk(
                             }
                             s
                         };
-                        let seg_w =
-                            measure_segment_from(&chars, &cluster_len, seg_start, &char_width);
+                        let seg_w = if !has_more_tabs_after {
+                            style.right_tab_block_width_override.unwrap_or_else(|| {
+                                measure_segment_from(&chars, &cluster_len, seg_start, &char_width)
+                            })
+                        } else {
+                            measure_segment_from(&chars, &cluster_len, seg_start, &char_width)
+                        };
                         x = (rel_tab - seg_w).max(x);
                     }
                     2 => {
@@ -544,6 +550,7 @@ impl EmbeddedTextMeasurer {
                     }
                     tab_char_idx += 1;
                 } else if has_custom_tabs {
+                    let has_more_tabs_after = chars[i + 1..].contains(&'\t');
                     let abs_x = style.line_x_offset + total;
                     let (tab_pos, tab_type, _) = find_next_tab_stop(
                         abs_x,
@@ -557,8 +564,13 @@ impl EmbeddedTextMeasurer {
                     match tab_type {
                         1 => {
                             // 오른쪽
-                            let seg_w =
-                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                            let seg_w = if !has_more_tabs_after {
+                                style.right_tab_block_width_override.unwrap_or_else(|| {
+                                    measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
+                                })
+                            } else {
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
+                            };
                             total = (rel_tab - seg_w).max(total);
                         }
                         2 => {
@@ -1464,8 +1476,13 @@ pub(crate) fn char_width_decision<'a>(
                 .as_deref()
                 .unwrap_or(&style.font_family),
         };
+        let digit_width =
+            crate::renderer::legacy_font_advances::digit_width(metric_family, c, font_size);
+        let display_family = latin.map_or(&style.font_family, |l| &l.font_family);
+        let measured_family =
+            crate::renderer::legacy_font_advances::measurement_face(metric_family, display_family);
         let mut embedded = measure_char_width_embedded_decision_for_font(
-            metric_family,
+            measured_family,
             style.bold,
             style.italic,
             c,
@@ -1473,6 +1490,11 @@ pub(crate) fn char_width_decision<'a>(
             latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
             latin.is_none() && style.hft_hangul_face,
         );
+        if let Some(width) = digit_width {
+            embedded.width_px = Some(width);
+            embedded.width_source = "verifiedLegacyDigit";
+            embedded.character_match = "hit";
+        }
         // Paint에 전달한 선언 체인에서만 결측 글리프를 찾는다. 일반 OS 폴백이나
         // DB에 존재한다는 사실만으로 설치를 추정하지 않는다. 원 face의 hit와
         // HFT 폭 계약은 유지하고, fallback 자체에는 원 face의 HFT 규칙을 옮기지 않는다.
@@ -1612,6 +1634,12 @@ pub(crate) fn char_width_decision<'a>(
     let mut final_width_px = base_width_px * ratio
         + glyph_letter_spacing(letter_spacing, base_width_px * ratio, font_size)
         + style.extra_char_spacing;
+    final_width_px += crate::renderer::legacy_font_advances::bold_advance(
+        style,
+        c,
+        base_width_px * ratio
+            + glyph_letter_spacing(letter_spacing, base_width_px * ratio, font_size),
+    );
     if c == ' ' {
         final_width_px += style.extra_word_spacing;
     }

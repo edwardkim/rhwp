@@ -17,6 +17,8 @@ use crate::renderer::style_resolver::{detect_lang_category, ResolvedParaStyle, R
 use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 use std::ops::Range;
 
+mod inline_frame_input;
+
 struct PreparedParagraphKerning {
     context: std::sync::Arc<crate::renderer::kerning::KerningMeasurementContext>,
     scalar_styles: Vec<crate::renderer::kerning::KerningParagraphScalarStyle>,
@@ -125,6 +127,7 @@ pub(crate) enum BreakToken {
 #[derive(Debug, Clone, Copy)]
 struct FlowInlineControl {
     char_position: usize,
+    utf16_position: u32,
     width_hwp: i32,
     height_hwp: i32,
     /// Equation supplies an object-owned baseline for the physical row. Other
@@ -429,6 +432,26 @@ fn tokenize_paragraph_with_regenerated_space_metric(
         }
 
         // 공백 (줄 바꿈 지점) — NonBreakingSpace(\u{00A0})는 제외
+        // 개체 슬롯은 뒤 글자와 별개의 분할 불가 토큰이다. 글꼴 글리프의
+        // 폭은 없으며 공통 측정 결과가 제공한 물리 폭만 소비한다.
+        if ch == '\u{FFFC}' && inline_width_px_at(inline_controls, i) > 0.0 {
+            let width = inline_width_px_at(inline_controls, i);
+            let style_id = find_active_char_shape(
+                char_shapes,
+                char_offsets.get(i).copied().unwrap_or(i as u32),
+            );
+            tokens.push(BreakToken::Text {
+                start_idx: i,
+                end_idx: i + 1,
+                base_width: width,
+                width,
+                max_font_size: token_line_font_size(styles, style_id),
+                base_char_widths: vec![width],
+                char_widths: vec![width],
+            });
+            i += 1;
+            continue;
+        }
         if ch == ' ' {
             let utf16_pos = if i < char_offsets.len() {
                 char_offsets[i]
@@ -469,7 +492,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
 
                 while i < text_len {
                     let c = text_chars[i];
-                    if c == ' ' || c == '\n' || c == '\t' {
+                    if c == ' ' || c == '\n' || c == '\t' || c == '\u{FFFC}' {
                         break;
                     }
                     // 한글이 아니고 라틴이면 다른 토큰으로 분리
@@ -964,6 +987,7 @@ fn prepare_paragraph_projection(
         );
 
         let scalar_width = match character {
+            '\u{FFFC}' if inline_width_px_at(inline_controls, index) > 0.0 => 0.0,
             '\t' | '\n' | '\r' => 0.0,
             ' ' => space_metric.space_advance(&text_style),
             _ => estimate_text_width_unrounded(&character.to_string(), &text_style),
@@ -2665,7 +2689,7 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
             (width, table.common.height as i32)
         }
         Control::Equation(eq) if eq.common.treat_as_char => (
-            crate::renderer::equation::flow_width_hwp(eq) as i32,
+            crate::renderer::equation::inline_advance_width_hwp(eq),
             crate::renderer::equation::flow_height_hwp(eq) as i32,
         ),
         Control::Form(form) if form.common.treat_as_char => (form.width as i32, form.height as i32),
@@ -2712,21 +2736,32 @@ fn inline_control_occupied_size_hwp(
 /// 일반 경로는 표를 `control 배치 경로`에 두려고 제외하지만(#3211), 저장 줄이 없는 host 는
 /// 이 채움이 줄 경계의 유일한 소유자다. 표 폭을 안 실으면 줄에 남은 폭보다 넓은 표가
 /// 줄바꿈 없이 앞 글자 뒤에 붙는다(`distribution_doc.hwpx` 3쪽 — 표가 본문 오른쪽 밖으로 나간다).
-fn flow_inline_controls_with_tac_tables(para: &Paragraph) -> Vec<FlowInlineControl> {
+fn flow_inline_controls_with_tac_tables(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Vec<FlowInlineControl> {
     let text_len = para.text.chars().count();
     let mut controls = flow_inline_controls(para);
-    for (control, char_position) in para.controls.iter().zip(para.control_text_positions()) {
+    for ((control, char_position), utf16_position) in para
+        .controls
+        .iter()
+        .zip(para.control_text_positions())
+        .zip(para.control_utf16_positions())
+    {
         let Control::Table(table) = control else {
             continue;
         };
         if !table.common.treat_as_char || char_position >= text_len {
             continue;
         }
-        let Some((width_hwp, height_hwp)) = inline_control_size_hwp(control) else {
+        let Some((width_hwp, height_hwp)) = inline_control_occupied_size_hwp(control, styles, dpi)
+        else {
             continue;
         };
         controls.push(FlowInlineControl {
             char_position,
+            utf16_position,
             width_hwp,
             height_hwp,
             baseline_distance_hwp: None,
@@ -2741,7 +2776,8 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
     para.controls
         .iter()
         .zip(para.control_text_positions())
-        .filter_map(|(control, char_position)| {
+        .zip(para.control_utf16_positions())
+        .filter_map(|((control, char_position), utf16_position)| {
             // 글자처럼 취급되는 표는 renderer가 control 위치를 기준으로 별도
             // TextRun/Table 경계를 만든다. 보이지 않는 PARA_TEXT 위치의 다음
             // 글자 폭에 표 전체 폭을 더하면 HML의 `abc + table + efg`처럼
@@ -2751,20 +2787,29 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
                 return None;
             }
             let (width_hwp, height_hwp) = inline_control_size_hwp(control)?;
-            let baseline_distance_hwp = match control {
-                Control::Equation(equation) if equation.baseline > 0 => {
-                    Some(crate::renderer::equation::flow_metrics_hwp(equation).2)
-                }
-                _ => None,
-            };
+            let baseline_distance_hwp = flow_inline_baseline_hwp(control, height_hwp);
             (char_position < text_len).then_some(FlowInlineControl {
                 char_position,
+                utf16_position,
                 width_hwp,
                 height_hwp,
                 baseline_distance_hwp,
             })
         })
         .collect()
+}
+
+fn flow_inline_baseline_hwp(control: &Control, height_hwp: i32) -> Option<i32> {
+    match control {
+        // This percentage is the source object's alignment contract. The AST
+        // baseline describes glyph painting inside its box, a different origin.
+        Control::Equation(equation) if equation.baseline > 0 => Some(
+            height_hwp
+                .saturating_mul(i32::from(equation.baseline))
+                .saturating_div(100),
+        ),
+        _ => None,
+    }
 }
 
 /// Controls that claim no inline advance and own no layout box of their own.
@@ -2912,6 +2957,9 @@ pub(super) fn supports_tac_table_band_frame_controls(para: &Paragraph) -> bool {
             Control::Table(table) if table.common.treat_as_char => tac_tables += 1,
             Control::Picture(picture) if picture.common.treat_as_char => {}
             Control::Equation(equation) if equation.common.treat_as_char => {}
+            // 머리말/꼬리말은 본문 바깥의 별도 프레임이다. 본문 줄의 너비·높이를
+            // 소비하지 않으므로 NO_LS 인라인 표의 줄 구성에서 사양할 이유가 없다.
+            Control::Header(_) | Control::Footer(_) => {}
             other if control_is_width_neutral_marker(other) => {}
             _ => return false,
         }
@@ -2946,9 +2994,11 @@ pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
 /// (#4138: 1×2 split 뒤 nested table/picture host). control 자체가 셀 폭을 넘거나,
 /// control 앞의 실제 text 폭과 합쳐 현재 줄의 폭을 넘는 경우만 대상으로 한다.
 /// 같은 줄에 들어가는 작은 object와 복수 control 문단의 기존 reflow는 건드리지 않는다.
+///
+/// 돌려주는 값은 (개체 글자 위치, 개체 원시 위치, 개체 줄 높이, 뒤 글자를 다음 줄로 넘기는지)다.
 fn inline_control_requires_own_line(
     para: &Paragraph,
-    occupied_controls: &[(usize, i32, i32)],
+    occupied_controls: &[(usize, u32, i32, i32)],
     text_chars: &[char],
     line_breaks: &[LineBreakResult],
     available_width_px: f64,
@@ -2956,13 +3006,13 @@ fn inline_control_requires_own_line(
     reflow_is_first_line: bool,
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
-) -> Option<(usize, i32)> {
+) -> Option<(usize, u32, i32, bool)> {
     let text_len = para.text.chars().count();
     let mut candidates = occupied_controls
         .iter()
         .copied()
-        .filter(|(position, _, _)| *position > 0 && *position <= text_len);
-    let (position, control_width, height) = candidates.next()?;
+        .filter(|(position, _, _, _)| *position > 0 && *position <= text_len);
+    let (position, utf16_start, control_width, height) = candidates.next()?;
     // 여러 inline control은 일반 placement가 순서를 보존해야 하므로 이 좁은
     // single-control 계약 밖이다.
     if candidates.next().is_some() {
@@ -2990,24 +3040,44 @@ fn inline_control_requires_own_line(
     } else {
         to_hwp(available_width_px)
     };
-    let prefix: String = text_chars[line.start_idx..position].iter().collect();
-    let prefix_width = to_hwp(measure_token_width(
-        &ParagraphMetricScope::new(text_chars, styles)
-            .with_reflow_slots(text_chars)
-            .with_space_metric(space_metric),
-        &prefix,
-        line.start_idx,
-        &para.char_offsets,
-        &para.char_shapes,
-        styles,
-        0,
-        &[],
-    ));
+    let scope = ParagraphMetricScope::new(text_chars, styles)
+        .with_reflow_slots(text_chars)
+        .with_space_metric(space_metric);
+    let width_of = |range: Range<usize>| {
+        let text: String = text_chars[range.clone()].iter().collect();
+        to_hwp(measure_token_width(
+            &scope,
+            &text,
+            range.start,
+            &para.char_offsets,
+            &para.char_shapes,
+            styles,
+            0,
+            &[],
+        ))
+    };
+    let prefix_width = width_of(line.start_idx..position);
 
     let tolerance_hwp = line_break_tolerance_hwp(available_hwp);
-    (control_width > available_hwp + tolerance_hwp
-        || prefix_width + control_width > available_hwp + tolerance_hwp)
-        .then_some((position, height))
+    if control_width <= available_hwp + tolerance_hwp
+        && prefix_width + control_width <= available_hwp + tolerance_hwp
+    {
+        return None;
+    }
+    // 개체 줄은 첫 줄이 아니다. 개체 옆에 들어가지 않는 뒤 글자는 개체 줄 다음 줄에서
+    // 시작한다. 줄 끝 공백은 줄을 넘기지 않는다.
+    let row_hwp = if indent_px < 0.0 {
+        to_hwp((available_width_px + indent_px).max(1.0))
+    } else {
+        to_hwp(available_width_px)
+    };
+    let suffix_end = (position..line.end_idx)
+        .rfind(|&i| !text_chars[i].is_whitespace())
+        .map_or(position, |i| i + 1);
+    let suffix_row = suffix_end > position
+        && control_width + width_of(position..suffix_end)
+            > row_hwp + line_break_tolerance_hwp(row_hwp);
+    Some((position, utf16_start, height, suffix_row))
 }
 
 fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
@@ -3033,6 +3103,21 @@ fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
                 .map(|ch| ch.len_utf16() as u32)
                 .sum()
         })
+}
+
+/// A physical line begins before the inline objects owned by its first scalar.
+/// Visible character offsets point after their control gaps; publishing that
+/// offset would leave a leading equation/picture owned by the preceding line.
+fn line_start_utf16_offset(
+    para: &Paragraph,
+    char_index: usize,
+    inline_controls: &[FlowInlineControl],
+) -> u32 {
+    inline_controls
+        .iter()
+        .filter(|control| control.char_position == char_index)
+        .map(|control| control.utf16_position)
+        .fold(char_index_to_utf16_offset(para, char_index), u32::min)
 }
 
 /// `baseline_distance` from a row's height — the one expression, so the frame
@@ -3194,6 +3279,10 @@ fn layout_paragraph_in_frame_impl(
         return None;
     }
 
+    let projected = (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
+        .then(|| inline_frame_input::project(para, styles, dpi))
+        .flatten();
+    let para = projected.as_ref().map_or(para, |(input, _)| input);
     let text_chars = para.text.chars().collect::<Vec<_>>();
     // 문단 끝의 빈 run도 마지막 물리 줄의 글자 상자를 소유한다. 가시 글자와
     // 별개인 종단 CharShapeRef를 보존해야 줄 높이·간격·베이스라인을 프레임의
@@ -3233,13 +3322,14 @@ fn layout_paragraph_in_frame_impl(
     // Keep Equation width and height ownership with the current scalar
     // `FlowInlineControl` path. A non-TAC Picture deliberately contributes no
     // inline token: it is represented by the caller's exclusion instead.
-    let inline_controls =
-        if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
-            // [#7160] 저장 줄이 없는 TAC 표 host 는 표 폭까지 줄 경계 판정에 넣는다.
-            flow_inline_controls_with_tac_tables(para)
-        } else {
-            flow_inline_controls(para)
-        };
+    let inline_controls = if let Some((_, controls)) = projected.as_ref() {
+        controls.clone()
+    } else if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
+        // [#7160] 저장 줄이 없는 TAC 표 host 는 표 폭까지 줄 경계 판정에 넣는다.
+        flow_inline_controls_with_tac_tables(para, styles, dpi)
+    } else {
+        flow_inline_controls(para)
+    };
     // [#3128] 프레임이 들여쓰기 추적을 잃던 자리. 종전에는 여기서 `false` 를 박아
     // 두어, 저장 `LINE_SEG` 가 없는 들여쓴 셀 문단도 글꼴 고유 공백 폭으로 쟀다.
     // 실측: `76076_regulatory_analysis.hwp` 에서 이 술어를 만족하는 문단이 74 개고,
@@ -3306,8 +3396,13 @@ fn layout_paragraph_in_frame_impl(
             &inline_controls,
         )
     });
-    let letter_spacing_px =
+    let mut letter_spacing_px =
         resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles);
+    if projected.is_some() {
+        for control in &inline_controls {
+            letter_spacing_px[control.char_position] = 0.0;
+        }
+    }
     let fallback_font_size = if para.text.is_empty() {
         para.char_shapes
             .first()
@@ -3527,9 +3622,10 @@ fn layout_paragraph_in_frame_impl(
                         {
                             0
                         } else {
-                            char_index_to_utf16_offset(para, line.start_idx)
+                            line_start_utf16_offset(para, line.start_idx, &inline_controls)
                         };
-                    let text_end = char_index_to_utf16_offset(para, line.end_idx).max(text_start);
+                    let text_end = line_start_utf16_offset(para, line.end_idx, &inline_controls)
+                        .max(text_start);
                     let mut segment = RowSegment::new(text_start..text_end, interval, source_tag);
                     segment.space_metric = selected_space_metric;
                     segments.push(segment);
@@ -3714,21 +3810,7 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     // `para.char_shapes`, which is the char-shape re-splitting #2632 needed —
     // a mixed-char-shape paragraph must measure the way it renders.
     if para.line_segs.is_empty() {
-        let mut fill_input = para.clone();
-        fill_input.line_segs.clear();
-        // [#7160] 문단 **끝**에 앵커된 글자처럼 취급 표는 글자 슬롯이 없어 폭 판정에서
-        // 빠진다. 자리 문자를 하나 붙여 그 표가 줄에 들어가는지 묻게 한다 — 안 들어가면
-        // 채움이 다음 줄로 넘긴다(한/글 정본 `distribution_doc-2024.pdf` 3쪽과 같은 자리).
-        let text_len = fill_input.text.chars().count();
-        if supports_tac_table_band_frame_controls(&fill_input)
-            && fill_input
-                .control_text_positions()
-                .iter()
-                .any(|position| *position >= text_len)
-        {
-            fill_input.text.push('\u{FFFC}');
-        }
-        return layout_paragraph_in_frame(&fill_input, frame, styles, dpi)
+        return layout_paragraph_in_frame(para, frame, styles, dpi)
             .map(|_| StoredRowResolution::Reflowed);
     }
 
@@ -4656,14 +4738,17 @@ fn reflow_line_segs_impl(
         indent_px
     };
     // 실제 측정한 표 본체와 바깥 여백을 줄 폭과 줄 높이에서 함께 사용한다.
+    // 개체 줄은 개체 자신의 원시 위치에서 시작한다. 뒤 글자 위치(`char_offsets`)로
+    // 시작하면 저장 줄 경계가 개체 뒤에 놓여 개체가 앞 줄 끝에 남는다.
     let occupied_controls: Vec<_> =
         if split_stale_cell_reflow || edited_tac_table || inline_controls.is_empty() {
             para.controls
                 .iter()
                 .zip(para.control_text_positions())
-                .filter_map(|(control, position)| {
+                .zip(para.control_utf16_positions())
+                .filter_map(|((control, position), utf16_start)| {
                     let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
-                    Some((position, width, height))
+                    Some((position, utf16_start, width, height))
                 })
                 .collect()
         } else {
@@ -4691,7 +4776,10 @@ fn reflow_line_segs_impl(
         let utf16_start = if new_line_segs.is_empty() {
             0 // 첫 번째 줄의 text_start는 항상 0 (문단 시작)
         } else {
-            char_index_to_utf16_offset(para, lb.start_idx)
+            match forced_inline_line {
+                Some((position, control_start, ..)) if position == lb.start_idx => control_start,
+                _ => line_start_utf16_offset(para, lb.start_idx, &inline_controls),
+            }
         };
         let fs = if lb.max_font_size > 0.0 {
             lb.max_font_size
@@ -4706,36 +4794,50 @@ fn reflow_line_segs_impl(
             text_len,
         ));
         let mut text_seg = make_line_seg(utf16_start, fs);
-        if forced_inline_line.is_some_and(|(position, _)| position == lb.start_idx) {
-            let (_, height_hwp) = forced_inline_line.expect("checked inline control");
+        if forced_inline_line.is_some_and(|(position, ..)| position == lb.start_idx) {
+            let (_, _, height_hwp, _) = forced_inline_line.expect("checked inline control");
             apply_inline_control_line_height(&mut text_seg, height_hwp);
         }
-        if let Some(height_hwp) = inline_controls
+        if let Some(control) = inline_controls
             .iter()
             .filter(|control| {
                 (lb.start_idx..lb.end_idx).contains(&control.char_position)
                     || (lb.end_idx == text_len && control.char_position == text_len)
             })
-            .map(|control| control.height_hwp)
-            .max()
+            .max_by_key(|control| (control.height_hwp, control.baseline_distance_hwp))
         {
-            apply_inline_control_line_height(&mut text_seg, height_hwp);
+            let inline_owns_row_height = control.height_hwp > text_seg.line_height;
+            apply_inline_control_line_height(&mut text_seg, control.height_hwp);
+            if inline_owns_row_height {
+                if let Some(baseline) = control.baseline_distance_hwp {
+                    text_seg.baseline_distance = baseline;
+                }
+            }
         }
         new_line_segs.push(text_seg);
 
         // control이 text line 한가운데/끝에 있으면 먼저 text prefix를 확정하고,
         // control offset에서 다음 LineSeg를 삽입한다. 단순히 vector 끝에 붙이면
         // 중간 nested table 뒤의 text가 control보다 앞에서 그려진다.
-        let control_after_text = forced_inline_line.is_some_and(|(position, _)| {
+        let control_after_text = forced_inline_line.is_some_and(|(position, ..)| {
             position > lb.start_idx
                 && (position < lb.end_idx
                     || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
         });
         if control_after_text {
-            let (position, height_hwp) = forced_inline_line.expect("checked inline control");
-            let mut control_seg = make_line_seg(char_index_to_utf16_offset(para, position), fs);
+            let (_, control_start, height_hwp, _) =
+                forced_inline_line.expect("checked inline control");
+            let mut control_seg = make_line_seg(control_start, fs);
             apply_inline_control_line_height(&mut control_seg, height_hwp);
             new_line_segs.push(control_seg);
+        }
+        if let Some((position, _, _, true)) = forced_inline_line
+            .filter(|(position, ..)| control_after_text || *position == lb.start_idx)
+        {
+            new_line_segs.push(make_line_seg(
+                char_index_to_utf16_offset(para, position),
+                fs,
+            ));
         }
     }
 
@@ -4747,7 +4849,7 @@ fn reflow_line_segs_impl(
     }
 
     if forced_inline_line.is_none() && inline_controls.is_empty() {
-        for &(position, _, height_hwp) in &occupied_controls {
+        for &(position, _, _, height_hwp) in &occupied_controls {
             // 명시적 개행으로 정해진 개체 줄에 높이를 싣는다. 최초 줄에 일괄
             // 적용하면 표 앞 제목이 표 줄로 오인되어 표 뒤로 재배치된다.
             let line_index = line_breaks

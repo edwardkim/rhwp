@@ -115,6 +115,14 @@ impl LayerBuilder {
     }
 
     fn build_node(&mut self, node: &RenderNode) -> Option<LayerNode> {
+        if !self.profile.shows_editor_visuals() {
+            if let Some(bbox) = node.print_bbox {
+                let mut print_node = node.clone();
+                print_node.bbox = bbox;
+                print_node.print_bbox = None;
+                return self.build_node(&print_node);
+            }
+        }
         if !node.visible || (node.editor_only && !self.profile.shows_editor_visuals()) {
             return None;
         }
@@ -773,6 +781,7 @@ mod tests {
                     number: 1,
                     text: "1)".to_string(),
                     base_font_size: 12.0,
+                    baseline: 7.0,
                     font_family: "serif".to_string(),
                     color: 0x00000000,
                     section_index: 0,

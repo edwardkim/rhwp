@@ -334,8 +334,42 @@ impl TypesetEngine {
         host_before: f64,
         table_and_caption_height: f64,
     ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
+        // This plan opens a column from its flow origin. Within a populated
+        // column the saved paragraph anchor owns the table and caption; the
+        // measured cursor alone cannot replace that anchor.
+        if !st.current_items.is_empty() || st.current_height > 0.5 {
+            return None;
+        }
+        self.query_captioned_rowbreak_frame(
+            st,
+            para,
+            table,
+            host_before,
+            table_and_caption_height,
+            None,
+        )
+    }
+
+    /// A caption closes the same object frame as its rows. A declared row
+    /// height cannot substitute for the caption or its closing outer space.
+    /// Preserve an independently resolved origin within a populated column.
+    pub(in crate::renderer::typeset) fn query_captioned_rowbreak_frame(
+        &self,
+        st: &TypesetState,
+        para: &crate::model::paragraph::Paragraph,
+        table: &crate::model::table::Table,
+        host_before: f64,
+        table_and_caption_height: f64,
+        resolved_origin: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
+    ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
         use crate::renderer::float_placement as placement;
-        let opens = placement::column_rowbreak_fragment_opens_outer_top(
+        let opens = placement::stored_hwpx_cut_owns_outer_frame(
+            st.profile.hwpx_stored_layout()
+                && !st.profile.hwp5_origin_hwpx()
+                && !st.profile.session_edited(),
+            para,
+            table,
+        ) || placement::column_rowbreak_fragment_opens_outer_top(
             st.profile.hwpx_stored_layout(),
             (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
                 .then_some(para),
@@ -385,17 +419,19 @@ impl TypesetEngine {
             } else {
                 hwpunit_to_px(signed_offset, self.dpi)
             };
-        Some(placement::ParagraphFloatPlacement {
+        let mut frame = resolved_origin.unwrap_or(placement::ParagraphFloatPlacement {
             flow: placement::ParagraphFloatFlow::NextLine,
             anchor_y: st.current_height,
             stored_host_origin: None,
             stored_successor_line_origin: None,
             table_left: None,
             table_top: top,
-            occupied_bottom: top
-                + table_and_caption_height
-                + placement::column_rowbreak_caption_outer_spacing_px(opens, para, table, self.dpi),
-        })
+            occupied_bottom: top,
+        });
+        frame.occupied_bottom = frame.table_top
+            + table_and_caption_height
+            + placement::column_rowbreak_caption_outer_spacing_px(opens, para, table, self.dpi);
+        Some(frame)
     }
 
     pub(super) fn query_whole_table_fit(
@@ -746,7 +782,9 @@ impl TypesetEngine {
             if painted_source_bottom > available + below_body_slack + 0.5 {
                 return None;
             }
-            let source_frame_matches_profile = if st.profile.hwpx_container() {
+            // A ZIP container does not change the origin of its saved frames.
+            // HWP5-origin HWPX keeps the HWP5 frame-acceptance contract.
+            let source_frame_matches_profile = if st.profile.hwpx_stored_layout() {
                 // A preceding paragraph can finish exactly at the stored table
                 // origin. This is the same complete frame as one whose origin
                 // the measured cursor has passed; trailing host spacing must

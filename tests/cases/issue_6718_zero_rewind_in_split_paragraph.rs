@@ -38,13 +38,13 @@
 use std::fs;
 use std::path::Path;
 
+use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
 const SAMPLE: &str = "samples/issue5966/1130000-202100008_franchise_review_report.hwp";
 /// 0-based — 되감김 문단이 놓이는 물리 60쪽.
 const PAGE_INDEX: u32 = 59;
-const TOLERANCE_PX: f64 = 8.0;
 
 /// 꼬리말(쪽번호)은 본문 하한 아래에 있는 것이 정상이다 — `Body` 아래만 모은다.
 fn collect_body_runs<'a>(node: &'a RenderNode, in_body: bool, out: &mut Vec<&'a RenderNode>) {
@@ -61,6 +61,19 @@ fn collect_body_runs<'a>(node: &'a RenderNode, in_body: bool, out: &mut Vec<&'a 
     }
 }
 
+/// 본문 표의 원본 셀 내용과 실제 셀 소유를 대조해, 빈 출력으로 포함 검사를 통과하지 못하게 한다.
+fn collect_owner_tables<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+    if matches!(&node.node_type, RenderNodeType::Table(table) if table.para_index == Some(569)) {
+        out.push(node);
+    }
+    for child in &node.children {
+        collect_owner_tables(child, out);
+    }
+}
+fn compact(text: &str) -> String {
+    text.chars().filter(|c| !c.is_whitespace()).collect()
+}
+
 #[test]
 fn split_paragraph_follows_the_stored_rewind_even_with_budget_left() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -69,8 +82,8 @@ fn split_paragraph_follows_the_stored_rewind_even_with_budget_left() {
     assert_eq!(
         document.page_count(),
         // 과거 rhwp 실측 143쪽 대신 동일 원본의 독립 한컴 2020 Print PDF를 따른다.
-        // 전 142쪽 Native/fresh WASM 최저 92.20721%와 60쪽 본문/셀 소속을 확인했다.
-        // 증거: mydocs/pr/archives/pr_7617_review.md.
+        // 현재 전142쪽 Native/fresh WASM 최저93.16816%와 60쪽 본문/셀 소속을 확인했다.
+        // 증거: mydocs/pr/assets/semanticist21-20261008/franchise-whole-dual-current-proof-v453/README.md.
         142,
         "독립 Print PDF의 142쪽이어야 한다 — 되감김 승격이 쪽을 새로 만들면 안 된다"
     );
@@ -86,6 +99,61 @@ fn split_paragraph_follows_the_stored_rewind_even_with_budget_left() {
         .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
         .expect("60쪽 본문 영역");
     let body_bottom = body.bbox.y + body.bbox.height;
+    let mut owner_tables = Vec::new();
+    collect_owner_tables(body, &mut owner_tables);
+    assert_eq!(
+        owner_tables.len(),
+        1,
+        "독립 Print 60쪽의 소유 표는 한 번만 나타난다"
+    );
+    let owner = owner_tables[0];
+    let RenderNodeType::Table(meta) = &owner.node_type else {
+        unreachable!()
+    };
+    let source = &document.document().sections[meta.section_index.expect("표의 구역 소유")]
+        .paragraphs[meta.para_index.expect("표의 문단 소유")];
+    let Control::Table(source_table) =
+        &source.controls[meta.control_index.expect("표의 컨트롤 소유")]
+    else {
+        panic!("원본 소유 개체는 표다")
+    };
+    let cells: Vec<_> = owner
+        .children
+        .iter()
+        .filter(|node| matches!(&node.node_type, RenderNodeType::TableCell(_)))
+        .collect();
+    assert_eq!(
+        cells.len(),
+        source_table.cells.len(),
+        "소유 셀 누락이나 중복이 없어야 한다"
+    );
+    for source_cell in &source_table.cells {
+        let selected: Vec<_> = cells.iter().filter(|node| matches!(&node.node_type,
+            RenderNodeType::TableCell(cell) if cell.row == source_cell.row && cell.col == source_cell.col)).collect();
+        assert_eq!(selected.len(), 1, "원본 행·열의 소유 셀은 하나다");
+        let mut runs = Vec::new();
+        collect_body_runs(selected[0], true, &mut runs);
+        let actual: String = runs
+            .iter()
+            .filter_map(|node| {
+                if let RenderNodeType::TextRun(run) = &node.node_type {
+                    Some(run.text.as_str())
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let expected: String = source_cell
+            .paragraphs
+            .iter()
+            .map(|para| para.text.as_str())
+            .collect();
+        assert_eq!(
+            compact(&actual),
+            compact(&expected),
+            "원본 셀의 내용 순서·보존을 확인한다"
+        );
+    }
     let mut nodes = Vec::new();
     collect_body_runs(&tree.root, false, &mut nodes);
 
@@ -104,7 +172,7 @@ fn split_paragraph_follows_the_stored_rewind_even_with_budget_left() {
          (회귀 시 1216.8px = +94.3px, 인쇄에서 소실된다)"
     );
     assert!(
-        worst <= body_bottom + TOLERANCE_PX,
+        worst <= body_bottom,
         "60쪽 글자가 본문 하한을 넘었다 — 최하단 {worst:.1}px, 하한 {body_bottom:.1}px"
     );
 }

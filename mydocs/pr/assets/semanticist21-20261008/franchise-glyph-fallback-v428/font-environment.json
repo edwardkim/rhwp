@@ -1,0 +1,16 @@
+{
+  "id": "confirmed-human-ttf-and-haansoft-glyph-fallback",
+  "substitutions": {},
+  "trueTypeFaces": [
+    "휴먼명조",
+    "HumanMyeongJo"
+  ],
+  "glyphFallbacks": {
+    "휴먼명조": [
+      "Haansoft Batang"
+    ],
+    "HumanMyeongJo": [
+      "Haansoft Batang"
+    ]
+  }
+}

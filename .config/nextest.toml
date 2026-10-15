@@ -13,6 +13,11 @@ priority = 100
 filter = "test(issue_2007_intra_paragraph_saved_frame_break_is_preserved)"
 threads-required = "num-test-threads"
 
+# [#2833] 시간 상한은 유지하고 다른 회귀 검사의 CPU 부하와 분리한다.
+[[profile.default.overrides]]
+filter = "test(inflated_row_count_does_not_slow_down_parsing)"
+threads-required = "num-test-threads"
+
 # B/C/D archive workers use this profile only to emit a compact JUnit report.
 # Successful devel runs retain it for the baseline; same-repository PRs retain a
 # short-lived candidate that a later trusted post-merge verifier may consume.
@@ -25,4 +30,8 @@ report-skipped = "none"
 
 [[profile.ci-duration-observation.overrides]]
 filter = "test(issue_2007_intra_paragraph_saved_frame_break_is_preserved)"
+threads-required = "num-test-threads"
+
+[[profile.ci-duration-observation.overrides]]
+filter = "test(inflated_row_count_does_not_slow_down_parsing)"
 threads-required = "num-test-threads"

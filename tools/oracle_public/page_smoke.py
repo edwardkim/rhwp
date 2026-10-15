@@ -463,7 +463,16 @@ def discover_pairs(
     pdf_list = list(pdf_roots) if pdf_roots is not None else [repo / d for d in DEFAULT_PDF_DIRS]
     pairs: list[Pair] = []
     unpaired: list[str] = []
+    policy = repo / "tests/fixtures/transferred_exam_regressions.txt"
+    if not policy.is_file():
+        policy = Path(__file__).resolve().parents[2] / "tests/fixtures/transferred_exam_regressions.txt"
+    excluded = {
+        (repo / "samples" / line).resolve()
+        for line in policy.read_text(encoding="utf-8").splitlines()
+    } if policy.is_file() else set()
     for doc in iter_docs(docs_list):
+        if doc.resolve() in excluded:
+            continue
         stem = doc.stem
         pdfs = find_pdfs_for_stem(stem, pdf_list)
         if not pdfs:

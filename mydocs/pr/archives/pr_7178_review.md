@@ -161,7 +161,7 @@ lane 표 + block 표 + 뒤 표가 있는 혼재 경계를 실제 제품 경로�
 | [pdf/issue6946/44529-logistics-policy-rule-amendment-hwp-2020.pdf](../../../pdf/issue6946/44529-logistics-policy-rule-amendment-hwp-2020.pdf) | `a1b36d69d544cb68f0d9ba84391fcb366e2dacf8887e62a1eaf71ed3c2719eb1` |
 | [samples/issue6795/1341000-201100013-cyber-university-application.hwp](../../../samples/issue6795/1341000-201100013-cyber-university-application.hwp) | `3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8` |
 | [samples/issue2813/dangjik_dutylog.hwpx](../../../samples/issue2813/dangjik_dutylog.hwpx) | `d785a49b62c43ed5b4602509657a112742d916782828022a355b916bcc19a4c5` |
-| [samples/task2287/1342000_edu_curriculum_map.hwp](../../../samples/task2287/1342000_edu_curriculum_map.hwp) | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
+| [samples/task2287/1342000_edu_curriculum_map.hwp](../assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp) | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
 | [samples/issue6803/1376496-neighborhood-facility-land-table.hwp](../../../samples/issue6803/1376496-neighborhood-facility-land-table.hwp) | `2482b695bc92c0cafe661af63c54acea834b6927bf9c666bdf47299910e3801d` |
 
 ## 직접 Visual Sweep

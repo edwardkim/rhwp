@@ -35,7 +35,7 @@ impl TypesetEngine {
                             || st.profile.hwp5_stored_pagination_layout())
                             && !st.profile.session_edited()
                             && paragraphs.get(para_idx).is_some_and(|first| {
-                                crate::renderer::layout::stored_first_margin_is_page_relative(
+                                crate::renderer::stored_page_origin::stored_first_margin_is_page_relative(
                                     first,
                                     paragraphs.get(para_idx + 1),
                                     styles,
@@ -223,7 +223,9 @@ impl TypesetEngine {
         // [#2243 진단] snap 입출력 — 동작 불변.
         if std::env::var("RHWP_DIAG_SNAPALL").is_ok() {
             eprintln!(
-                "DIAG_SNAPALL pi={} y_in={:.1} y_out={:.1} base={:?} lazy={:?} anchor={:.1} dirty={}",
+                "DIAG_SNAPALL sec={} page={} pi={} y_in={:.1} y_out={:.1} base={:?} lazy={:?} anchor={:.1} dirty={}",
+                st.section_index,
+                st.pages.len(),
                 para_idx,
                 st.current_height,
                 y,

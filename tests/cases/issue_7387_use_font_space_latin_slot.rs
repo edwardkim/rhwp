@@ -1,39 +1,7 @@
-//! #7387: `CharShape.useFontSpace` 가 켜진 run 의 공백은 반각이 아니라
-//! **영문 슬롯 글꼴이 선언한 공백 전진폭**이다.
-//!
-//! 종전에는 `useFontSpace` 를 렌더러가 아예 읽지 않아 공백이 언제나 `em/2` 였다.
-//!
-//! # 왜 절대 좌표로 재는가
-//!
-//! 이 검사는 `em` 으로 정규화하지 않는다. 앞선 PR(#7389)은 `exam_eng` 를 앵커로
-//! 잡고 `폭 / 글꼴크기` 를 정본의 `폭 / 글꼴크기` 와 비교했는데, **그 문서는 정본과
-//! rhwp 의 글꼴 크기가 6.43% 다르다**(#7398). 분모가 서로 달라, 고쳐진 뒤에도 남아 있던
-//! 5.4% 폭 부족이 상쇄되어 "일치"로 보였다. 그래서 그 PR 을 닫았다.
-//!
-//! 여기서는 글꼴 크기 confound 가 없는 문서(`scripts/oracle_comparability.py` 판정
-//! `fontScale` 0.996)를 앵커로 쓰고, **px 절대 폭**을 본다.
-//!
-//! # 기대값
-//!
-//! 한컴 정본 `pdf/hwpctl_API_v2.4-2022.pdf` 를 `mutool draw -F stext` 로 읽어, 같은
-//! 글자열 줄의 첫 글자 `x0` 부터 마지막 글자 `x1` 까지를 96dpi px 로 잰 값이다.
-//!
-//! ```text
-//!   쪽   정본 잉크폭   수정 전 점유폭   수정 후 점유폭
-//!   14      416.66      432.50 (+15.8)   416.60 (-0.1)
-//!   49      430.42      454.20 (+23.8)   432.30 (+1.9)
-//!   88      302.42      322.10 (+19.7)   306.20 (+3.8)
-//! ```
-//!
-//! rhwp 쪽은 run 의 **점유폭**이라 마지막 글자의 전진폭까지 포함한다 — 정본의 잉크폭보다
-//! 한 글자 몫 안쪽에서 조금 크다. 그래서 등식이 아니라 `±8px` 구간으로 판정한다.
-//! 수정 전 값은 전부 그 구간 위에 있다.
+//! #7387: 영문 슬롯의 공백 전진폭을 유지하는 휴먼명조·KoPub 대조군.
+//! API의 절대 폭 검사는 원본의 기준 출력 미달로 #7731에서 복원한다.
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::DocumentCore;
-
-/// 정본 PDF 의 쪽 너비(595.0pt)를 96dpi px 로 환산한 값. 기대값을 rhwp 쪽 상자에 맞춘다.
-const ORACLE_PAGE_PX: f64 = 595.0 * 96.0 / 72.0;
-const TOLERANCE_PX: f64 = 8.0;
 
 struct Run {
     text: String,
@@ -92,37 +60,6 @@ fn line_span(doc: &DocumentCore, page: u32, needle: &str) -> Option<(f64, f64)> 
         }
     }
     None
-}
-
-#[test]
-fn use_font_space_line_width_matches_hancom_in_absolute_px() {
-    let doc = open("hwpctl_API_v2.4.hwp");
-    for (page, needle, oracle_ink_px) in [
-        (
-            14u32,
-            "되고,대화상자가닫힌후에는사용자가지정한값들이담겨돌아온다.",
-            416.66_f64,
-        ),
-        (
-            49,
-            "option:다음과같은옵션을지정할수있다.0을지정하면모두off이다.",
-            430.42,
-        ),
-        (88, "ToolBarID:미리정의된툴바의이름이올수있다.", 302.42),
-    ] {
-        let (span, page_px) =
-            line_span(&doc, page, needle).unwrap_or_else(|| panic!("{page}쪽의 `{needle}` 줄"));
-        // 정본 쪽 상자에 맞춰 환산한다. 두 쪽 너비는 0.05% 안이라 보정은 미미하지만
-        // 기대값이 어느 좌표계의 값인지 남겨 둔다.
-        let expected = oracle_ink_px * page_px / ORACLE_PAGE_PX;
-        assert!(
-            (span - expected).abs() <= TOLERANCE_PX,
-            "{page}쪽 `{needle}` 줄 점유폭 {span:.2}px 이 정본 {expected:.2}px 에서 \
-             {:.2}px 벗어났다(허용 {TOLERANCE_PX}px). useFontSpace 를 무시하고 공백을 \
-             반각으로 전진시키면 공백마다 넓어진다.",
-            span - expected,
-        );
-    }
 }
 
 /// 반례 가드 — 규칙은 상수가 아니라 **영문 슬롯 글꼴의 값**이다.

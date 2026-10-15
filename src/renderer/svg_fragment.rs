@@ -117,6 +117,84 @@ pub(crate) fn decode_base64_data_url(data_url: &str) -> Option<(String, Vec<u8>)
     Some((mime.to_string(), bytes))
 }
 
+pub(crate) struct SvgTextFontUsage {
+    pub family: String,
+    pub text: String,
+    pub bold: bool,
+}
+
+/// 생성 SVG의 명시적 글꼴 속성과 그룹 상속을 따라 실제 text 글자를 수집한다.
+/// CSS 선택자나 외부 스타일시트를 해석하는 함수는 아니다.
+pub(crate) fn svg_text_font_usage(svg: &str) -> Vec<SvgTextFontUsage> {
+    use quick_xml::{events::Event, Reader, XmlVersion};
+
+    let mut reader = Reader::from_str(svg);
+    let mut stack: Vec<(Option<String>, bool, bool)> = Vec::new();
+    let mut usages = Vec::new();
+    loop {
+        let Ok(event) = reader.read_event() else {
+            return Vec::new();
+        };
+        let text = match event {
+            Event::Start(element) => {
+                if stack.len() >= 128 {
+                    return Vec::new();
+                }
+                let mut state = stack.last().cloned().unwrap_or_default();
+                for attribute in element.attributes() {
+                    let Ok(attribute) = attribute else {
+                        return Vec::new();
+                    };
+                    let Ok(value) = attribute.normalized_value(XmlVersion::Implicit1_0) else {
+                        return Vec::new();
+                    };
+                    match attribute.key.as_ref() {
+                        "font-family" if value != "inherit" => state.0 = Some(value.into_owned()),
+                        "font-weight" if value != "inherit" => {
+                            state.1 = value == "bold"
+                                || value.parse::<u16>().is_ok_and(|weight| weight >= 600);
+                        }
+                        _ => {}
+                    }
+                }
+                state.2 |= element.local_name().as_ref() == "text";
+                stack.push(state);
+                continue;
+            }
+            Event::End(_) => {
+                if stack.pop().is_none() {
+                    return Vec::new();
+                }
+                continue;
+            }
+            Event::Text(text) => text.into_inner().into_owned(),
+            Event::CData(text) => text.into_inner().into_owned(),
+            Event::GeneralRef(reference) => {
+                let encoded = format!("&{};", reference.as_ref());
+                let Ok(decoded) = quick_xml::escape::unescape(&encoded) else {
+                    return Vec::new();
+                };
+                decoded.into_owned()
+            }
+            Event::Eof => return if stack.is_empty() { usages } else { Vec::new() },
+            _ => continue,
+        };
+        if let Some((Some(family), bold, true)) = stack.last() {
+            for face in family
+                .split(',')
+                .map(str::trim)
+                .filter(|face| !face.is_empty())
+            {
+                usages.push(SvgTextFontUsage {
+                    family: face.trim_matches(['\'', '"']).to_owned(),
+                    text: text.clone(),
+                    bold: *bold,
+                });
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -237,6 +315,27 @@ mod tests {
         let frag = r#"<text x="5" y="5">가 &amp; 나</text>"#;
         let wrapped = wrap_svg_fragment(frag, 0.0, 0.0, 10.0, 10.0);
         assert!(wrapped.contains(r#"<text x="5" y="5">가 &amp; 나</text>"#));
+
+        // 같은 조각의 원문 보존과 실제 글꼴/글자 공급을 함께 확인한다.
+
+        let svg = r#"<g font-family="'굴림체', sans-serif" font-weight="bold">
+            <text>연금&#x3000;재정<tspan font-family="다른 글꼴" font-weight="normal">&amp;전망</tspan></text>
+            <g font-family="숨긴 글꼴"><title>미표시</title></g>
+            <text>수입</text><rect data-label="지출"/>
+        </g>"#;
+        let usage = svg_text_font_usage(svg);
+        let collect = |face: &str, bold| {
+            usage
+                .iter()
+                .filter(|u| u.family == face && u.bold == bold)
+                .map(|u| u.text.as_str())
+                .collect::<String>()
+        };
+        assert_eq!(collect("굴림체", true), "연금　재정수입");
+        assert_eq!(collect("sans-serif", true), "연금　재정수입");
+        assert_eq!(collect("다른 글꼴", false), "&전망");
+        assert!(!usage.iter().any(|u| u.family == "숨긴 글꼴"));
+        assert!(svg_text_font_usage("<g><text font-family=\"굴림체\">미완료").is_empty());
     }
 
     #[test]

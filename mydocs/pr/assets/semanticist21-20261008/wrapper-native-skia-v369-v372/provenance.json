@@ -1,0 +1,182 @@
+{
+  "binary": "output/pr-review/semanticist21-20261008/binaries/rhwp-wrapper-cell-note-v364-native-skia",
+  "binary_sha256": "9120fe0a56d99b2742c4a229888195ee3c927d7142749c6c2a014d08b1cbf85f",
+  "production_source_head": "940ea1322617ccff5a7b47d6920ae96e94cfffad",
+  "documents": 11,
+  "pages": 14,
+  "minimum": 91.21234,
+  "cases": [
+    {
+      "key": "current-04-6b4f6a375029",
+      "input": "mydocs/pr/assets/semanticist21-20261008/current-print-inputs-v175/additional-edited-note-style-missing-named-style-v175.hwpx",
+      "input_sha256": "6b4f6a375029dcb0c9def5b4443683d1b55cf09acbdb9cb9ab87ac2d94888edb",
+      "pdf": "pdf/semanticist21-20261008/new_note_paragraph_style-0462-6b4f6a375029-2020.pdf",
+      "pdf_sha256": "778594c4e099ec86ddaa825f1dd307c195c4ffe49b842a5082df0c15274d6828",
+      "pages": 2,
+      "minimum": 91.73962
+    },
+    {
+      "key": "current-05-17a174162fd3",
+      "input": "mydocs/pr/assets/semanticist21-20261008/current-print-inputs-v175/clickhere-wrapper-current-v175.hwpx",
+      "input_sha256": "17a174162fd3fcd1c51bd04a25a577396c44bd51ad1c8ab001f9184b16dc4de3",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/pr-preparation-current-inputs-v175/clickhere-wrapper-current-v175-17a174162fd3-2020.pdf",
+      "pdf_sha256": "c87e5e65928d4b5dfa1a47c11b06104af0150cfd03ee63082ad13b52a78fa1ba",
+      "pages": 1,
+      "minimum": 100.0
+    },
+    {
+      "key": "current-06-fd079a4fe1a5",
+      "input": "mydocs/pr/assets/semanticist21-20261008/current-print-inputs-v175/additional-edited-note-style-hancom-hwp-endnote-v175.hwpx",
+      "input_sha256": "fd079a4fe1a5a9b338f72d58820f8b249dfd679081a657beb09d0afacf436a9e",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/pr-preparation-current-inputs-v175/additional-edited-note-style-hancom-hwp-endnote-v175-fd079a4fe1a5-2020.pdf",
+      "pdf_sha256": "df186aff12e586a72ceb8eb48143d1e0f4320e29314136296c603033cad069a8",
+      "pages": 2,
+      "minimum": 91.21234
+    },
+    {
+      "key": "current-07-ac171fe6f2f9",
+      "input": "mydocs/pr/assets/semanticist21-20261008/current-print-inputs-v175/additional-edited-note-style-hancom-hwpx-endnote-v175.hwpx",
+      "input_sha256": "ac171fe6f2f9a71daccfc68b1277c1f9f2bfee9d14bcedfbc4e12b09199b826c",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/pr-preparation-current-inputs-v175/additional-edited-note-style-hancom-hwpx-endnote-v175-ac171fe6f2f9-2020.pdf",
+      "pdf_sha256": "9f472a01c8d654c4022f0772a7676ef05f570a40557ea1e750d83db950bbbff2",
+      "pages": 2,
+      "minimum": 91.60043
+    },
+    {
+      "key": "current-08-12fb864391ef",
+      "input": "mydocs/pr/assets/semanticist21-20261008/current-print-inputs-v175/additional-edited-note-style-hancom-hwpx-footnote-v175.hwpx",
+      "input_sha256": "12fb864391efd32d8e34ff9e8583af0b540c13e6c224a399a0505356b2439810",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/pr-preparation-current-inputs-v175/additional-edited-note-style-hancom-hwpx-footnote-v175-12fb864391ef-2020.pdf",
+      "pdf_sha256": "7f05b25dce68fbd035b8bc3a5b10c8cfe593ee2a1c6464e9c4745aa4379da9d0",
+      "pages": 1,
+      "minimum": 91.60041
+    },
+    {
+      "key": "child-offset",
+      "input": "mydocs/pr/assets/semanticist21-20261008/wrapper-anchor-counters-v289/child-offset-8b1ec78415f1.hwpx",
+      "input_sha256": "8b1ec78415f1b35232de4a6f1d5964bd2b5039d15a2049b855a638160c4abfc5",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/wrapper-anchor-counters-v289/child-offset-2020.pdf",
+      "pdf_sha256": "5b96ff466e5f3f6a3f348448eb4d941bcf6ff56c72264c5505c16c3268519b8c",
+      "pages": 1,
+      "minimum": 100.0
+    },
+    {
+      "key": "parent-padding",
+      "input": "mydocs/pr/assets/semanticist21-20261008/wrapper-anchor-counters-v289/parent-padding-61e9cbd25806.hwpx",
+      "input_sha256": "61e9cbd2580635e282ebc5489988152b458f3eee94f64f8aba749f6d7bc2e6ff",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/wrapper-anchor-counters-v289/parent-padding-2020.pdf",
+      "pdf_sha256": "56d0f3b0773b1aeb243db404eddcac04bd74a2745758272cf93239bc27fe7d8f",
+      "pages": 1,
+      "minimum": 100.0
+    },
+    {
+      "key": "child-flow",
+      "input": "mydocs/pr/assets/semanticist21-20261008/wrapper-anchor-counters-v289/child-flow-faeb7331e8fb.hwpx",
+      "input_sha256": "faeb7331e8fb9ecd81df5dc761847197c1e7c1ff99c8cfcf02e4b58d58bbe576",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/wrapper-anchor-counters-v289/child-flow-2020.pdf",
+      "pdf_sha256": "ae28e12d6665682c8040415f760d35af9f395294c4aac0656408b1d910faf454",
+      "pages": 1,
+      "minimum": 100.0
+    },
+    {
+      "key": "child-inline",
+      "input": "mydocs/pr/assets/semanticist21-20261008/wrapper-anchor-counters-v289/child-inline-fda0d3d71ef2.hwpx",
+      "input_sha256": "fda0d3d71ef2729fee28c0c685fac5bad5c71943f1346676fdfd99df17d1130d",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/wrapper-anchor-counters-v289/child-inline-2020.pdf",
+      "pdf_sha256": "1b82b4e57205af99268c67e77ab46540883955455e1b30d929f50ad252324000",
+      "pages": 1,
+      "minimum": 100.0
+    },
+    {
+      "key": "parent-height",
+      "input": "mydocs/pr/assets/semanticist21-20261008/wrapper-anchor-counters-v289/parent-height-96f2cd69236d.hwpx",
+      "input_sha256": "96f2cd69236d0be49f62d10c86b39cb20b082384b48946be875cf7d6e7cd4a88",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/wrapper-anchor-counters-v289/parent-height-2020.pdf",
+      "pdf_sha256": "860ee5d293ba53b51c82eb280e1d268aca5f2c5e42f2c0f86b7cebb78e515a28",
+      "pages": 1,
+      "minimum": 100.0
+    },
+    {
+      "key": "normal-save-hwp",
+      "input": "mydocs/pr/assets/semanticist21-20261008/wrapper-anchor-counters-v289/normal-save-hwp-bebf8d7399c2.hwp",
+      "input_sha256": "bebf8d7399c24fb70c545be6f65af899637d9496f3241e97fb51735957fb5056",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261008/wrapper-anchor-counters-v289/normal-save-hwp-2020.pdf",
+      "pdf_sha256": "cbc0c0bb52abb8cdb26c4da25279b91ea01434a94c6f1dd86fab050133a8b27a",
+      "pages": 1,
+      "minimum": 100.0
+    }
+  ],
+  "assets": [
+    {
+      "path": "current-04-6b4f6a375029-p002-review.png",
+      "sha256": "77aee0ab22fed0488e6fbf5676ceaf34512d21d3e6db4be6804a945465ac4c56"
+    },
+    {
+      "path": "current-04-6b4f6a375029-p002-overlay.png",
+      "sha256": "a6111d3b682c9683371c20a3e85bada643b1e3797172b1445032c976ffeac1ae"
+    },
+    {
+      "path": "current-05-17a174162fd3-p001-review.png",
+      "sha256": "0d27a8192d6717c61df4ed61a646f8a21cfac7421d8c8f25da2f5dab6e3642f5"
+    },
+    {
+      "path": "current-05-17a174162fd3-p001-overlay.png",
+      "sha256": "c7c9bd34d2a62c8a71ab3e4457715e5ca979bcdb2ec772387dc5f81ba4eabc1e"
+    },
+    {
+      "path": "child-flow-p001-review.png",
+      "sha256": "8f43c1a5744d8172769ee089fd17eb49707685c2d5f176dd7b37fd684a22d85a"
+    },
+    {
+      "path": "child-flow-p001-overlay.png",
+      "sha256": "aaff353802eeb9c7dec09e25cd5c09dd1d216e8589849ab969b4004cd2b9bca9"
+    },
+    {
+      "path": "child-inline-p001-review.png",
+      "sha256": "3a69875a958fdfe525216fa9b727820fa693051bc22e56dc8484921e950fee19"
+    },
+    {
+      "path": "child-inline-p001-overlay.png",
+      "sha256": "a7b66ab6ff0e8cbd82fc414d5fe4fd981d81a512d820b78c536f9107bf17b201"
+    },
+    {
+      "path": "current-05-17a174162fd3-right-parent-child-zoom.png",
+      "sha256": "8c44c9a0aefb2d5d10d4cd1e3ecf7b064f909133163aae6c14893f6852f631bf"
+    },
+    {
+      "path": "child-flow-owned-text-zoom.png",
+      "sha256": "429e0c8085526b9e92581fe7ab37b1dcb24b9c444cf2fa1ec04dec3489b7d80a"
+    },
+    {
+      "path": "child-flow-right-parent-child-zoom.png",
+      "sha256": "6d8cf1e244d1300f8f5d3e2c28c6032a473765cf7406f41835f6d33388613dd4"
+    },
+    {
+      "path": "child-inline-right-parent-child-zoom.png",
+      "sha256": "6d8cf1e244d1300f8f5d3e2c28c6032a473765cf7406f41835f6d33388613dd4"
+    },
+    {
+      "path": "child-inline-owned-text-zoom.png",
+      "sha256": "429e0c8085526b9e92581fe7ab37b1dcb24b9c444cf2fa1ec04dec3489b7d80a"
+    },
+    {
+      "path": "current-05-17a174162fd3-owned-text-zoom.png",
+      "sha256": "2e498bd58a6e88baa383cfa55a25430ea59565e0282b1d1b3396e35c9a730dcb"
+    }
+  ],
+  "direct_zoom": {
+    "scale": 3,
+    "cases": [
+      "child-flow",
+      "child-inline",
+      "current-05-17a174162fd3"
+    ],
+    "regions": [
+      "right-parent-child",
+      "owned-text"
+    ],
+    "observed": "흘림/글자취급의 괘선·글자는 부모 경계에서 끝나고, 원본의 제한 없는 자식은 자기 표시 영역을 유지한다. 앞/뒤 글자·기준선·부모 사이 간격이 대응한다. AA 획농도 차이는 남는다.",
+    "independent_stroke_width_pt": 0.36000001430511475,
+    "source_stroke_width_mm": 0.12
+  }
+}

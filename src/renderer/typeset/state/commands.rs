@@ -135,7 +135,90 @@ impl TypesetState {
         &mut self,
         picture: crate::renderer::typeset::DeferredStoredFrameControl,
     ) {
+        if let Some(index) = picture.following_body_para_index {
+            self.data
+                .deferred_source_frame_body_pages
+                .insert(index, self.data.pages.len() + 2);
+        }
         self.data.deferred_next_page_stored_frames.push(picture);
+    }
+    /// OLE를 넘기더라도 현재 단의 뒤 본문은 남은 예산을 계속 소비한다.
+    pub(in crate::renderer::typeset) fn defer_table_host_ole_to_next_column(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        ctrl: &crate::model::control::Control,
+        dpi: f64,
+    ) -> bool {
+        if self.data.current_column + 1 >= self.data.col_count {
+            return false;
+        }
+        let crate::model::control::Control::Shape(shape) = ctrl else {
+            return false;
+        };
+        let anchor_y = self
+            .data
+            .deferred_next_column_stored_frames
+            .iter()
+            .map(|frame| frame.placement.occupied_bottom)
+            .fold(self.data.pending_body_wide_top_reserve, f64::max);
+        let Some(placement) =
+            crate::renderer::float_placement::column_ole_placement(shape, anchor_y, dpi)
+        else {
+            return false;
+        };
+        let required_height = placement.occupied_bottom - placement.anchor_y;
+        if self.data.current_height < 1.0
+            || self.data.current_height + required_height <= self.available_height() + 0.5
+            || placement.occupied_bottom > self.available_height()
+        {
+            return false;
+        }
+        self.data.deferred_next_column_stored_frames.push(
+            crate::renderer::typeset::DeferredStoredFrameControl {
+                kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
+                para_index: para_idx,
+                control_index: ctrl_idx,
+                placement,
+                following_body_para_index: None,
+            },
+        );
+        true
+    }
+    pub(in crate::renderer::typeset) fn activate_next_column_stored_frames(&mut self) {
+        if self.data.deferred_next_column_stored_frames.is_empty() {
+            return;
+        }
+        for deferred in std::mem::take(&mut self.data.deferred_next_column_stored_frames) {
+            self.data.current_height = self
+                .data
+                .current_height
+                .max(deferred.placement.occupied_bottom);
+            self.data.paragraph_float_placements.insert(
+                (deferred.para_index, deferred.control_index),
+                deferred.placement,
+            );
+            self.data.page_start_stored_frames.push(deferred);
+        }
+        self.data.current_start_height = self.data.current_height;
+    }
+
+    /// 뒤 본문이 없거나 명시적 쪽 나눔이 있어도 이월 개체의 원래 쪽 소유를 닫는다.
+    pub(in crate::renderer::typeset) fn finish_next_column_stored_frames(&mut self) {
+        if !self.data.deferred_next_column_stored_frames.is_empty() {
+            self.advance_column_or_new_page();
+            self.flush_column();
+        }
+    }
+    pub(in crate::renderer::typeset) fn apply_deferred_source_frame_body_page(
+        &mut self,
+        index: usize,
+    ) {
+        if let Some(page) = self.data.deferred_source_frame_body_pages.remove(&index) {
+            while self.data.pages.len() < page {
+                self.advance_column_or_new_page();
+            }
+        }
     }
     pub(in crate::renderer::typeset) fn mark_pre_emitted_host(&mut self, index: usize) {
         self.data.pre_emitted_host_paras.insert(index);
@@ -301,9 +384,16 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn protect_current_ladder_floor(&mut self) {
         self.data.ladder_band_floor = self.data.ladder_band_floor.max(self.data.current_height);
     }
-    pub(in crate::renderer::typeset) fn register_square_band(&mut self, top: f64, bottom: f64) {
+    /// Keep the source host origin separate from the object's physical box.
+    /// Following stored paragraph offsets use this origin; closing flow uses
+    /// the occupied bottom supplied by the accepted object placement.
+    pub(in crate::renderer::typeset) fn register_square_band(
+        &mut self,
+        source_origin: f64,
+        bottom: f64,
+    ) {
         self.data.square_band_bottom = self.data.square_band_bottom.max(bottom);
-        self.data.square_band_top = Some(top);
+        self.data.square_band_top = Some(source_origin);
     }
     pub(in crate::renderer::typeset) fn record_ladder_band_table(&mut self, key: (usize, usize)) {
         self.data.current_ladder_band_tables.push(key);
@@ -341,6 +431,17 @@ impl TypesetState {
         end: f64,
     ) {
         self.data.stored_paragraph_flow_ends.insert(para_idx, end);
+    }
+
+    pub(in crate::renderer::typeset) fn record_stored_column_top_spacing(
+        &mut self,
+        para_idx: usize,
+        frame: crate::renderer::float_placement::StoredColumnTopSpacing,
+    ) {
+        self.data.vpos_page_base = Some(frame.source_origin_hu);
+        self.data.vpos_lazy_base = None;
+        self.data.vpos_col_anchor = self.data.current_height;
+        self.data.stored_column_top_spacings.insert(para_idx, frame);
     }
     /// 뒤 줄간격과 문단 아래 여백을 제외한 확정 본문 하단을 보존한다.
     pub(in crate::renderer::typeset) fn record_paragraph_content_bottom(
@@ -580,7 +681,11 @@ impl TypesetState {
     ) {
         for (&(owner, _), placement) in &self.data.paragraph_float_placements {
             if owner == para_idx
-                && placement.flow == crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                && matches!(
+                    placement.flow,
+                    crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                        | crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost
+                )
             {
                 self.data.current_height =
                     placement.paragraph_end(self.data.current_height, spacing_after);

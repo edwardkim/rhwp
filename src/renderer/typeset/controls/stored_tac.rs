@@ -1,6 +1,8 @@
 //! 저장 줄을 소유한 TAC 표의 수용 판단과 배치 좌표 계산.
 //! composer의 기존 줄 소속·점유 끝점을 재사용하며 새 줄 구성이나 상태 쓰기를 하지 않는다.
 
+pub(in crate::renderer::typeset) mod owned_row;
+
 use super::super::paragraph::metrics::FormattedParagraph;
 use crate::model::{
     control::Control, paragraph::Paragraph, provenance::LayoutCompatibilityProfile,
@@ -115,6 +117,7 @@ pub(super) fn prepare_coanchored_first_line(
             y: origin,
             clearance: 0.0,
             advance_end: Some(end),
+            stored_horizontal_pen: None,
         },
         end,
         rebase_line_origin: false,
@@ -321,6 +324,7 @@ pub(super) fn prepare_computed(
             y: origin,
             clearance: 0.0,
             advance_end: Some(end),
+            stored_horizontal_pen: None,
         },
         end,
         rebase_line_origin: !closed_stored_line,
@@ -412,8 +416,9 @@ pub(super) fn prepare(
             ) {
                 hwpunit_to_px(seg.line_spacing, dpi)
             } else {
-                crate::renderer::composer::tac_host_trailing_spacing(
+                crate::renderer::composer::tac_host_trailing_spacing_at_boundary(
                     para,
+                    next_para,
                     control_index,
                     seg,
                     page.profile.hwpx_stored_layout(),
@@ -567,6 +572,7 @@ impl StoredTacPlan {
                 y: self.origin + hwpunit_to_px(line.top, dpi),
                 clearance: 0.0,
                 advance_end: Some(end),
+                stored_horizontal_pen: None,
             },
             end,
             rebase_line_origin: false,

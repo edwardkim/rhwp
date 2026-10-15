@@ -206,48 +206,6 @@ fn format_cursor_rect_json(
     }
 }
 
-fn note_number_format_from_hwp_code(code: u8) -> crate::renderer::NumberFormat {
-    match code {
-        0 => crate::renderer::NumberFormat::Digit,
-        1 => crate::renderer::NumberFormat::CircledDigit,
-        2 => crate::renderer::NumberFormat::RomanUpper,
-        3 => crate::renderer::NumberFormat::RomanLower,
-        4 => crate::renderer::NumberFormat::LatinUpper,
-        5 => crate::renderer::NumberFormat::LatinLower,
-        8 => crate::renderer::NumberFormat::HangulGaNaDa,
-        12 => crate::renderer::NumberFormat::HangulNumber,
-        13 => crate::renderer::NumberFormat::HanjaNumber,
-        _ => crate::renderer::NumberFormat::Digit,
-    }
-}
-
-fn note_decoration_char(value: u16) -> Option<char> {
-    if value == 0 {
-        None
-    } else {
-        char::from_u32(value as u32).filter(|ch| *ch != '\0')
-    }
-}
-
-fn note_marker_text(
-    number: u16,
-    number_shape: u32,
-    before_decoration_letter: u16,
-    after_decoration_letter: u16,
-) -> String {
-    let number = crate::renderer::format_number(
-        number,
-        note_number_format_from_hwp_code(number_shape as u8),
-    );
-    let prefix = note_decoration_char(before_decoration_letter)
-        .map(|ch| ch.to_string())
-        .unwrap_or_default();
-    let suffix = note_decoration_char(after_decoration_letter)
-        .unwrap_or(')')
-        .to_string();
-    format!("{}{}{}", prefix, number, suffix)
-}
-
 /// 한 시각 줄(line)을 구성하는 한 run 의, 클릭 x → 문자 위치 해석에 필요한 최소 정보.
 ///
 /// `hit_test_native` 내부의 `RunInfo` 에서 줄별로 추려 만든 가벼운 view.
@@ -3149,6 +3107,9 @@ impl DocumentCore {
             end_row_height_override,
             start_row_height_override,
             straddle_row_relief,
+            straddle_page_bands,
+            fragment_row_heights,
+            end_row_owns_stored_frame,
         }) = col.items.first()
         else {
             return Ok(Unsupported);
@@ -3193,15 +3154,16 @@ impl DocumentCore {
         // 모든 셀 렌더 후 수행되는 border clip 확장으로 바깥 셀 bbox를 넓힐 수 있다.
         // `cellBounds`도 공개 JSON 계약이므로, 이 형상에서는 대상 셀만 끝까지
         // 렌더해 같은 후처리를 재현한다. 다른 셀과 페이지 트리는 여전히 생략한다.
-        let needs_full_cell_for_bounds = cell
-            .paragraphs
-            .iter()
-            .skip(cell_para_idx.saturating_add(1))
-            .any(|para| {
-                para.controls
-                    .iter()
-                    .any(|control| matches!(control, Control::Table(_)))
-            });
+        let needs_full_cell_for_bounds = *end_row_owns_stored_frame
+            || cell
+                .paragraphs
+                .iter()
+                .skip(cell_para_idx.saturating_add(1))
+                .any(|para| {
+                    para.controls
+                        .iter()
+                        .any(|control| matches!(control, Control::Table(_)))
+                });
         // 반복 제목행 사본으로 그려질 수 있는 셀은 컷 창 모델 밖
         let cell_row = cell.row as usize;
         let cell_end_row = cell_row + (cell.row_span as usize).max(1);
@@ -3213,7 +3175,7 @@ impl DocumentCore {
         // 대상 셀이 그 행의 유일한 칸일 때만 같은 값을 재현한다 — 그 밖에는 legacy 로
         // 폴백한다. 접는 조각에서는 여분이 실제 배치 커서로 정해지므로 대상 셀을 끝까지
         // 렌더한다(`needs_full_cell_for_bounds` 와 같은 이유·같은 방법).
-        let fragment_may_fold = end_cut.iter().any(|&unit| unit > 0);
+        let fragment_may_fold = !*end_row_owns_stored_frame && end_cut.iter().any(|&unit| unit > 0);
         if fragment_may_fold {
             let Some(fold_row) = (*end_row).min(table.row_count as usize).checked_sub(1) else {
                 return Ok(Unsupported);
@@ -3290,6 +3252,11 @@ impl DocumentCore {
         // 존재 이유(속도)를 지키는 게이트다.
         const FULL_COMPOSE_MAX: usize = 64;
         let n_paras = cell.paragraphs.len();
+        // 저장 정렬은 선택 내용의 높이를 함께 읽는다. 빠른 경로의 기존 전량
+        // 구성 상한을 넘으면 같은 item을 소비하는 정상 전체 배치로 돌아간다.
+        if *end_row_owns_stored_frame && n_paras > FULL_COMPOSE_MAX {
+            return Ok(Unsupported);
+        }
         let (windowed, window_paras) = match plan {
             ProbeCutPlan::Unsupported => return Ok(Unsupported),
             ProbeCutPlan::Uncut => {
@@ -3355,6 +3322,15 @@ impl DocumentCore {
             v.iter()
                 .find(|mt| mt.para_index == parent_para_idx && mt.control_index == control_idx)
         });
+        let fragment_measurement =
+            pt_mt
+                .zip(fragment_row_heights.as_deref())
+                .map(|(measured, rows)| {
+                    let mut measured = measured.clone();
+                    measured.row_heights = rows.to_vec();
+                    measured
+                });
+        let pt_mt = fragment_measurement.as_ref().or(pt_mt);
         let outline_num_id = self
             .document
             .sections
@@ -3410,9 +3386,11 @@ impl DocumentCore {
             *is_block_split,
             *start_cut_is_block,
             *row_cursor_is_nested,
+            *end_row_owns_stored_frame,
             *end_row_height_override,
             *start_row_height_override,
             straddle_row_relief,
+            straddle_page_bands,
             pt_margin_left,
             pt_margin_right,
             pt_mt,
@@ -5871,16 +5849,7 @@ impl DocumentCore {
                         HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
                     })?;
                 let render_char_offset = if note_para_idx == 0 {
-                    char_offset
-                        + note_marker_text(
-                            endnote.number,
-                            endnote.number_shape,
-                            endnote.before_decoration_letter,
-                            endnote.after_decoration_letter,
-                        )
-                        .chars()
-                        .count()
-                        + 1
+                    crate::renderer::typeset::endnote_first_para_render_offset(endnote, char_offset)
                 } else {
                     char_offset
                 };

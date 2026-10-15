@@ -308,6 +308,8 @@ pub struct ResolvedParaStyle {
     pub border_spacing: [f64; 4],
     /// 같은 테두리를 가진 이웃 문단과 연결 (ParaShape attr1 bit 28).
     pub border_connect: bool,
+    /// BorderText: use the paragraph text area rather than the column area.
+    pub border_ignore_margin: bool,
     /// 기본 탭 간격 (px)
     pub default_tab_width: f64,
     /// 커스텀 탭 정지 목록 (position 오름차순)
@@ -348,6 +350,7 @@ impl Default for ResolvedParaStyle {
             border_fill_id: 0,
             border_spacing: [0.0; 4],
             border_connect: false,
+            border_ignore_margin: false,
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
             auto_tab_right: false,
@@ -472,6 +475,7 @@ pub fn resolve_styles(doc_info: &DocInfo, dpi: f64) -> ResolvedStyleSet {
 pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> ResolvedStyleSet {
     let profile = document.layout_profile();
     let mut styles = resolve_styles_with_variant(&document.doc_info, dpi, profile.hwp3_layout());
+    super::legacy_font_advances::select_native_programs(document, &mut styles);
     // [#7051] 계보 신호가 없는 저장본의 HFT ASCII 반각 판정은 로드 시 한 번 내려 출처에 둔다.
     styles.hft_ascii_halfwidth |= document.provenance.hft_ascii_halfwidth_witnessed;
     if profile.hwpx_stored_layout() {
@@ -602,7 +606,7 @@ pub fn resolve_styles_with_variant(
 ) -> ResolvedStyleSet {
     let char_styles = resolve_char_styles(doc_info, dpi);
     let para_styles = resolve_para_styles_with_variant(doc_info, dpi, is_hwp3_variant);
-    let border_styles = resolve_border_styles(doc_info);
+    let border_styles = resolve_border_styles(doc_info, dpi);
     let numberings = doc_info.numberings.clone();
     let bullets = doc_info.bullets.clone();
 
@@ -633,6 +637,9 @@ pub fn resolve_styles_with_variant(
 /// 별칭(`layout-metric` 평면)을 타고 남의 표를 빌려 오는 경우는 거짓이다 — 그건
 /// 치환 대상의 표와 다를 바 없어서 되돌릴 근거가 못 된다.
 fn has_own_metric_table(face: &&str) -> bool {
+    if *face == "HCI Tulip" {
+        return true;
+    }
     crate::renderer::font_metrics_data::find_metric_decision(face, false, false)
         .is_some_and(|decision| decision.alias_rule_id.is_none())
 }
@@ -1320,6 +1327,7 @@ fn resolve_single_para_style(
             hwpunit_to_px(ps.border_spacing[3] as i32, dpi),
         ],
         border_connect: ps.attr1 & (1 << 28) != 0,
+        border_ignore_margin: ps.attr1 & (1 << 29) != 0,
         default_tab_width,
         tab_stops,
         auto_tab_right,
@@ -1334,16 +1342,16 @@ fn resolve_single_para_style(
 }
 
 /// BorderFill → ResolvedBorderStyle 목록
-fn resolve_border_styles(doc_info: &DocInfo) -> Vec<ResolvedBorderStyle> {
+fn resolve_border_styles(doc_info: &DocInfo, dpi: f64) -> Vec<ResolvedBorderStyle> {
     doc_info
         .border_fills
         .iter()
-        .map(resolve_single_border_style)
+        .map(|bf| resolve_single_border_style(bf, dpi))
         .collect()
 }
 
 /// 개별 BorderFill 해소
-fn resolve_single_border_style(bf: &BorderFill) -> ResolvedBorderStyle {
+fn resolve_single_border_style(bf: &BorderFill, dpi: f64) -> ResolvedBorderStyle {
     let fill_color = match bf.fill.fill_type {
         FillType::Solid => bf.fill.solid.as_ref().and_then(|s| {
             // pattern_type > 0: 패턴 채우기 → 단색 fill 아님 (background_color는 패턴 배경)
@@ -1363,6 +1371,7 @@ fn resolve_single_border_style(bf: &BorderFill) -> ResolvedBorderStyle {
             if s.pattern_type > 0 {
                 Some(PatternFillInfo {
                     pattern_type: s.pattern_type,
+                    tile_size: hwpunit_to_px(576, dpi),
                     pattern_color: s.pattern_color,
                     background_color: s.background_color,
                 })

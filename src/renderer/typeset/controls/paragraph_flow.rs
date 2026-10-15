@@ -221,6 +221,8 @@ pub(in crate::renderer::typeset) fn place(
                                 is_column_top,
                             )
                         },
+                        engine,
+                        styles,
                     );
                     // [#703 잔여] host 문단의 가시 텍스트(제목 등)를 흐름 문단으로
                     // 방출한다. 종전에는 표만 방출하고 `continue` 해서 이 텍스트를
@@ -331,6 +333,7 @@ pub(in crate::renderer::typeset) fn place(
             para,
             next_para,
             &fmt,
+            styles,
             measured_tables,
             tac_count,
             height_before,

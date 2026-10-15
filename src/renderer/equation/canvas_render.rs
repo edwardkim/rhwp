@@ -45,6 +45,28 @@ fn render_box(
     let y = parent_y + lb.y;
 
     match &lb.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            ctx.set_font(&format!(
+                "{:.2}px {}",
+                fs,
+                super::hancom_glyphs::FONT_FAMILY
+            ));
+            ctx.set_fill_style_str(color);
+            for ((glyph, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears)
+            {
+                ctx.save();
+                let _ = ctx.transform(
+                    1.0,
+                    0.0,
+                    -shear,
+                    1.0,
+                    x + offset,
+                    y + lb.baseline + run.baseline_shift,
+                );
+                let _ = ctx.fill_text(&glyph.to_string(), 0.0, 0.0);
+                ctx.restore();
+            }
+        }
         LayoutKind::Row(children) => {
             for child in children {
                 render_box(ctx, child, x, y, color, fs, italic, bold);

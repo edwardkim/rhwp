@@ -100,6 +100,24 @@ class MiniRepoTests(unittest.TestCase):
         self.assertIn("samples/hwp3-sample.hwp", unmatched)
         self.assertNotIn("samples/readme.txt", unmatched)
 
+    def test_exclusion_keeps_originals_and_preserves_other_relative_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name in ("excluded.hwp", "keep/excluded.hwp", "ordinary.hwpx"):
+                path = root / "samples" / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"metadata-only test")
+            policy = root / "tests/fixtures/transferred_exam_regressions.txt"
+            policy.parent.mkdir(parents=True)
+            policy.write_text("excluded.hwp\n", encoding="utf-8")
+            rows = oracle_resolver.walk_samples(root / "samples", root)
+            self.assertEqual({row.sample for row in rows}, {
+                "samples/keep/excluded.hwp", "samples/ordinary.hwpx",
+            })
+            self.assertTrue((root / "samples/excluded.hwp").is_file())
+
+
+
     def test_format_tag_does_not_cross_hwp_hwpx(self) -> None:
         manifest = load_mini()
         hwp_pdfs = [

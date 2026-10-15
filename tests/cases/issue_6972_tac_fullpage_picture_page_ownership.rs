@@ -26,9 +26,11 @@
 //!
 //! ## 이 시험이 잠그는 것
 //!
-//! 글자 위치 투영으로 되돌아가면 소유 줄이 `1` 이 되고, 그 줄은 **현재 조각**(`current_items`)
-//! 에 있으므로 `find_inline_control_target_page` 는 `None`(= 현재 쪽에 둔다)을 돌려준다.
-//! 곧 `Some((0, 0))` 이라는 단언 하나가 기하 판정이 살아 있음을 증명한다.
+//! 첫 검사는 그림이 자기 저장 줄을 포함한 이전 쪽으로 라우팅되는지 확인한다.
+//! 둘째 검사는 두 줄 높이가 같아도 원시 제어 슬롯의 소속을 보존하는 합성 계약이다.
+//! 한컴 사양 표 6의 확장 제어는 8유닛을 차지한다. 이 입력의 그림 슬롯은 0부터,
+//! 보이는 글자와 둘째 줄은 8부터 시작하므로 글자의 줄 소속을 그림에 대입하지 않는다.
+//! 실제 원본의 출력 정확성이나 기하 경로만의 결함 검출을 이 순수 계약으로 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;
@@ -109,6 +111,7 @@ fn page_with_paragraph_fragment(start_line: usize, end_line: usize) -> PageConte
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),
         }],
@@ -143,10 +146,11 @@ fn tac_full_page_picture_routes_to_the_page_holding_its_own_stored_line() {
 }
 
 #[test]
-fn ambiguous_same_height_lines_keep_the_character_position_projection() {
-    // 같은 높이의 줄이 둘이면 어느 줄이 개체 줄인지 기하로 가릴 수 없다(#2004 이미지 스택).
-    // 그때는 종전 글자 위치 투영으로 되돌아가야 하고, 그 투영은 둘째 줄을 가리키므로
-    // 현재 조각에 그 줄이 있는 이 배치에서는 `None`(= 현재 쪽 유지)이 나온다.
+fn ambiguous_same_height_lines_keep_raw_control_slot_ownership() {
+    // 같은 높이의 줄이 둘이면 높이로 개체 소유를 결정할 수 없다.
+    // 이 HWP5 합성 계약은 첫 8유닛을 그림 슬롯이, 8부터의 유닛을 보이는 글자가
+    // 소유한다(한컴 사양 표 6/62). 글자의 둘째 줄 소속을 그림 슬롯의 소속으로
+    // 대신하지 않으며, 슬롯이 있는 첫 줄을 소유한 이전 쪽으로 라우팅한다.
     let mut para = cover_picture_paragraph();
     para.line_segs[1].line_height = PICTURE_HU;
     let first_page = page_with_paragraph_fragment(0, 1);
@@ -158,7 +162,7 @@ fn ambiguous_same_height_lines_keep_the_character_position_projection() {
 
     assert_eq!(
         find_inline_control_target_page(&[first_page], &current_items, 0, 0, &para),
-        None,
-        "높이가 같은 줄이 둘이면 기하 판정을 쓰지 않고 종전 경로를 유지해야 한다"
+        Some((0, 0)),
+        "같은 줄 높이로 원시 제어 슬롯의 첫 줄 소유를 바꾸면 안 된다"
     );
 }

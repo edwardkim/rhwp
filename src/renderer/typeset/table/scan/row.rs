@@ -10,6 +10,7 @@ pub(in crate::renderer::typeset) struct RowScanQuery<'a> {
     pub(in crate::renderer::typeset) r: usize,
     pub(in crate::renderer::typeset) cursor_row: usize,
     pub(in crate::renderer::typeset) start_cut: &'a [usize],
+    pub(in crate::renderer::typeset) start_cut_is_block: bool,
     pub(in crate::renderer::typeset) start_row_height_override: Option<f64>,
 }
 
@@ -36,6 +37,7 @@ impl RowScanQuery<'_> {
             r,
             cursor_row,
             start_cut,
+            start_cut_is_block,
             start_row_height_override,
         } = *self;
         let RowBlockQuery {
@@ -51,8 +53,10 @@ impl RowScanQuery<'_> {
                 r,
                 cursor_row,
                 start_cut,
+                start_cut_is_block,
                 start_row_height_override,
                 &mt.row_heights,
+                rows.straddle_page_bands,
                 styles,
                 (r + 1, true),
             )
@@ -139,4 +143,59 @@ pub(in crate::renderer::typeset) fn retains_blank_tail(
 ) -> bool {
     let retained_blank_tail = (rest - visible_height).max(0.0);
     probe.fully_consumed && visible_height <= rest + 0.5 && retained_blank_tail >= MIN_TOP_KEEP_PX
+}
+
+/// [#5585] 일반 행 밴드 컷(내용과 안 여백은 남은 쪽에 다 들어가지만 선언 행 높이가 넘치는
+/// 행을 쪽 경계에서 자름)을 받을 수 있는 행의 형상. rowspan 이 걸친 행은 `#2236` 밴드 컷이
+/// 따로 맡고, 쪽의 첫 행은 이미 강제 배치된다(호출부 조건).
+///
+/// 칸 내용이 글줄 유닛만으로 이뤄진 행만 자른다. 칸 안의 그림·도형·표·수식·각주 등
+/// 개체는 내용 컷(`end_cut`)에 높이가 잡히지 않아, 글줄이 다 들어가도 개체가 선언 높이를
+/// 채우고 있을 수 있다 — 한글도 그런 행은 통째로 넘긴다(1220000-202100003 23쪽 13×7 표
+/// 행 3: 글앞으로 그림 세 장이 선언 247.6px 를 채우고 글줄은 29.3px, 한글 41쪽 유지).
+///
+/// 빈 밴드는 선언 행 높이가 내용보다 클 때만 생긴다 — 측정 행 높이가 칸의 선언 높이를
+/// 넘으면 그 높이는 내용이 만든 것이고 내용 컷이 그 내용을 다 담지 못한 것이므로 기존
+/// 행내 분할 경로에 맡긴다.
+pub(in crate::renderer::typeset) fn ordinary_band_row_shape(
+    table: &crate::model::table::Table,
+    row: usize,
+    row_total: f64,
+    dpi: f64,
+) -> bool {
+    row_content_is_line_units_only(table, row)
+        && row_total <= declared_row_height_px(table, row, dpi) + 0.5
+}
+
+/// 행의 선언 높이 — 이 행에서 시작해 이 행에서 끝나는 칸의 저장 높이 중 최댓값(px).
+fn declared_row_height_px(table: &crate::model::table::Table, row: usize, dpi: f64) -> f64 {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row && cell.row_span <= 1)
+        .map(|cell| crate::renderer::hwpunit_to_px(cell.height as i32, dpi))
+        .fold(0.0f64, f64::max)
+}
+
+/// 행의 칸들이 글줄 유닛 밖의 개체(표·도형·그림·수식·양식·각주/미주)를 품지 않는가.
+fn row_content_is_line_units_only(table: &crate::model::table::Table, row: usize) -> bool {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row)
+        .flat_map(|cell| cell.paragraphs.iter())
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .all(|control| {
+            !matches!(
+                control,
+                Control::Table(_)
+                    | Control::Shape(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Form(_)
+                    | Control::Footnote(_)
+                    | Control::Endnote(_)
+                    | Control::Unknown(_)
+            )
+        })
 }

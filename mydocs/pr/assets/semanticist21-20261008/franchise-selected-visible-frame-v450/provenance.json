@@ -1,0 +1,101 @@
+{
+  "code_sha": "7f04c48cd395086ed59c08565f343d3f9e1b013d",
+  "build_profile": "dev (현재공용target Native, debug정보있음)",
+  "binary_sha256": "2552cecd315dea914451af6c52c77757c9dc6418cf066135bdece4ae08c10e7a",
+  "input": {
+    "samples/issue5966/1130000-202100008_franchise_review_report.hwp": "a1b8299b2554a83873b780474defb02efa949b43c86c63bcc164967f96091e55",
+    "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020.pdf": "4cf22800e29baddb9b84023462c75252efd4efb04d22e9e64a8e3d9313076009"
+  },
+  "result": {
+    "exit": 0,
+    "seconds": 296.619401953998,
+    "head": "7f04c48cd395086ed59c08565f343d3f9e1b013d",
+    "binary_sha256": "2552cecd315dea914451af6c52c77757c9dc6418cf066135bdece4ae08c10e7a",
+    "source_guard_unchanged": true,
+    "scores": [
+      [
+        55,
+        99.99889
+      ],
+      [
+        56,
+        99.99893
+      ],
+      [
+        57,
+        99.99882
+      ],
+      [
+        78,
+        99.99907
+      ],
+      [
+        79,
+        99.99881
+      ],
+      [
+        80,
+        99.99655
+      ]
+    ],
+    "below90": [],
+    "expected_pages": [
+      55,
+      56,
+      57,
+      78,
+      79,
+      80
+    ]
+  },
+  "asset_sha256": {
+    "native-p055-review.png": "4893cff0cde90a9d577f90da3666e7967ff61071b08b38dc524250b82005bcfd",
+    "native-p055-overlay.png": "94e30b5c9afec14edb9b0cc6df37ae2271de9ec8790416d85f4e3cbaf744032f",
+    "native-p057-review.png": "7464f6cc389ef820b553ec7525af0a70fd84a11b891a42fc673886ad71687528",
+    "native-p057-overlay.png": "3862eebb62cefa15a1cd6fedc876d571db7dd216c3e4b3c4a7b40366d896bfa3",
+    "native-p079-review.png": "c0d9de3bf9aa736ba89c34e8509958d1ccd6346b4a2aab7b4f4046a44dd150a2",
+    "native-p079-overlay.png": "67821362af4e097d9012f7426679dd471b451ca59962dacf238367cbe1d02a11",
+    "native-p080-review.png": "3917c06ae9fc14823090afeb3913c361f8b047bda50e51a3a59c0ebe0668b86b",
+    "native-p080-overlay.png": "e8c77dc6ae66f9ba915f1f0df52f31467e6e09f374c7342babba48c2dbd4f338"
+  },
+  "argv": [
+    "venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--rhwp-bin",
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-20261008/franchise-source-frame-batch-v450/selected-visible-rhwp",
+    "--embed-fonts",
+    "full",
+    "--font-path",
+    "output/pr-review/semanticist21-20261008/verified-franchise-original-human-v176",
+    "--font-path",
+    "output/pr-review/semanticist21-20261008/verified-declared-faces-v91",
+    "--font-path",
+    "/usr/local/share/fonts/hancom-office-2020/Hwp",
+    "--font-path",
+    "/usr/local/share/fonts/hancom-office-2020/All",
+    "--font-path",
+    "/usr/local/share/fonts/hancom-office-2020/Install",
+    "--font-path",
+    "output/pr-review/semanticist21-20261008/verified-font-supply",
+    "--font-path",
+    "/usr/local/share/fonts/hwp-convert-mcp-survey",
+    "--font-path",
+    "output/pr-review/semanticist21-20261008/verified-ms-font-supply-v61/faces",
+    "--file-target",
+    "franchise5966",
+    "samples/issue5966/1130000-202100008_franchise_review_report.hwp",
+    "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020.pdf",
+    "--out",
+    "/home/tsjang/rhwp/output/pr-review/semanticist21-20261008/franchise-source-frame-batch-v450/native-selected-visible-boundary",
+    "--compat",
+    "2022",
+    "--silhouette-only",
+    "--font-environment",
+    "output/pr-review/semanticist21-20261008/franchise-glyph-fallback-v428/font-environment.json",
+    "--pages",
+    "55-57,78-80"
+  ],
+  "source_guard_unchanged": true,
+  "direct_read": "새79쪽 PNG 판독; 나머지5쪽의 새 캡처는 직전 판독한 캡처와 RGBA/render tree가 같음",
+  "remaining": "전142쪽 Native/fresh 및 최종 회귀 미완료"
+}

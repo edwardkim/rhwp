@@ -31,7 +31,8 @@ struct Case {
 const LARGER_ANCHOR: &[Case] = &[
     // 자리차지 표, 기준 문자 16pt · 텍스트 12pt
     Case {
-        sample: "samples/task2287/1342000_edu_curriculum_map.hwp",
+        sample:
+            "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
         section: 4,
         para: 12,
         stored_first_line_height: 1600,

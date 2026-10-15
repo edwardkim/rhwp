@@ -26,6 +26,7 @@ impl TypesetEngine {
         endnote_shape: Option<&FootnoteShape>,
         endnote_flow_profile: Option<EndnoteFlowProfile>,
         compact_endnote_separator_profile: bool,
+        separator_origin: Option<f64>,
         emitted_endnote_count: usize,
         last_render_endnote_para_local_idx: Option<usize>,
         cleared_single_line_internal_rewind_split: bool,
@@ -45,8 +46,11 @@ impl TypesetEngine {
         if !emitted_endnote_separator {
             if let (Some(shape), Some(profile)) = (endnote_shape, endnote_flow_profile) {
                 let sep_height = profile.separator_height_px(self.dpi);
-                if sep_height > 0.0 {
+                // 새 쪽 첫 미주는 본문과 나눌 경계가 없다. 같은 쪽 본문 뒤에만
+                // 구분선과 위/아래 여백을 예약한다(혼재 각주·미주 Print 대조).
+                if sep_height > 0.0 && !st.current_items.is_empty() {
                     st.append_item(PageItem::EndnoteSeparator {
+                        flow_origin: separator_origin,
                         separator_length: shape.separator_length,
                         margin_above: shape.separator_above_margin_hu(),
                         margin_below: endnote_separator_below_margin(shape),
@@ -54,13 +58,13 @@ impl TypesetEngine {
                         line_width: shape.separator_line_width,
                         color: shape.separator_color,
                     });
-                    st.mark_endnote_flow();
                     if !profile.compact_separator_below {
                         st.advance_flow_by(sep_height);
                         st.record_column_flow_origin(st.current_height);
                     }
                 }
             }
+            st.mark_endnote_flow();
             emitted_endnote_separator = true;
         }
         let rewind_group_advance_threshold = if st.current_column + 1 < st.col_count {

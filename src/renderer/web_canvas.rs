@@ -1162,11 +1162,7 @@ impl WebCanvasRenderer {
     }
 
     fn render_equation(&mut self, bbox: &BoundingBox, eq: &EquationNode) {
-        let scale_x = if eq.layout_box.width > 0.0 && bbox.width > 0.0 {
-            bbox.width / eq.layout_box.width
-        } else {
-            1.0
-        };
+        let scale_x = super::equation::stored_horizontal_scale(bbox.width, &eq.layout_box);
         let scale_y =
             super::equation::stored_vertical_scale(bbox.height, eq.layout_box.height, eq.font_size);
         self.ctx.save();
@@ -1186,11 +1182,11 @@ impl WebCanvasRenderer {
     }
 
     fn render_footnote_marker(&mut self, bbox: &BoundingBox, marker: &FootnoteMarkerNode) {
-        let sup_size = (marker.base_font_size * 0.55).max(7.0);
+        let sup_size = FootnoteMarkerNode::font_size(marker.base_font_size);
         let font = format!("{:.1}px {}", sup_size, marker.font_family);
         self.ctx.set_font(&font);
         self.ctx.set_fill_style_str(&color_to_css(marker.color));
-        let y = bbox.y + bbox.height * 0.4;
+        let y = bbox.y + marker.baseline;
         let _ = self.ctx.fill_text(&marker.text, bbox.x, y);
     }
 
@@ -1520,7 +1516,7 @@ impl WebCanvasRenderer {
             None => return false,
         };
 
-        // 오프스크린 캔버스 생성 (6×6 타일)
+        // 오프스크린 캔버스 생성 (100dpi의 8×8 타일)
         let tile_canvas = match document.create_element("canvas") {
             Ok(el) => match el.dyn_into::<HtmlCanvasElement>() {
                 Ok(c) => c,
@@ -1528,7 +1524,7 @@ impl WebCanvasRenderer {
             },
             Err(_) => return false,
         };
-        let sz: u32 = 6;
+        let sz: u32 = 8;
         tile_canvas.set_width(sz);
         tile_canvas.set_height(sz);
 
@@ -1553,46 +1549,54 @@ impl WebCanvasRenderer {
         tile_ctx.set_line_width(1.0);
 
         match info.pattern_type {
-            0 => {
+            1 => {
                 // 가로줄 (- - - -)
                 tile_ctx.begin_path();
-                tile_ctx.move_to(0.0, 3.0);
-                tile_ctx.line_to(s, 3.0);
-                tile_ctx.stroke();
-            }
-            1 => {
-                // 세로줄 (|||||)
-                tile_ctx.begin_path();
-                tile_ctx.move_to(3.0, 0.0);
-                tile_ctx.line_to(3.0, s);
+                tile_ctx.move_to(0.0, 0.0);
+                tile_ctx.line_to(s, 0.0);
+                tile_ctx.move_to(0.0, s);
+                tile_ctx.line_to(s, s);
                 tile_ctx.stroke();
             }
             2 => {
+                // 세로줄 (|||||)
+                tile_ctx.begin_path();
+                tile_ctx.move_to(0.0, 0.0);
+                tile_ctx.line_to(0.0, s);
+                tile_ctx.move_to(s, 0.0);
+                tile_ctx.line_to(s, s);
+                tile_ctx.stroke();
+            }
+            3 => {
                 // 대각선 (/////)
                 tile_ctx.begin_path();
                 tile_ctx.move_to(s, 0.0);
                 tile_ctx.line_to(0.0, s);
                 tile_ctx.stroke();
             }
-            3 => {
+            4 => {
                 // 역대각선 (\\\\\)
                 tile_ctx.begin_path();
                 tile_ctx.move_to(0.0, 0.0);
                 tile_ctx.line_to(s, s);
                 tile_ctx.stroke();
             }
-            4 => {
+            5 => {
                 // 십자 (+++++)
                 tile_ctx.begin_path();
-                tile_ctx.move_to(3.0, 0.0);
-                tile_ctx.line_to(3.0, s);
+                tile_ctx.move_to(0.0, 0.0);
+                tile_ctx.line_to(0.0, s);
+                tile_ctx.move_to(s, 0.0);
+                tile_ctx.line_to(s, s);
                 tile_ctx.stroke();
                 tile_ctx.begin_path();
-                tile_ctx.move_to(0.0, 3.0);
-                tile_ctx.line_to(s, 3.0);
+                tile_ctx.move_to(0.0, 0.0);
+                tile_ctx.line_to(s, 0.0);
+                tile_ctx.move_to(0.0, s);
+                tile_ctx.line_to(s, s);
                 tile_ctx.stroke();
             }
-            5 => {
+            6 => {
                 // 격자 (xxxxx)
                 tile_ctx.begin_path();
                 tile_ctx.move_to(0.0, 0.0);
@@ -1614,6 +1618,27 @@ impl WebCanvasRenderer {
             .create_pattern_with_html_canvas_element(&tile_canvas, "repeat")
         {
             Ok(Some(pattern)) => {
+                // 현재 web-sys의 SVGMatrix 시그니처 대신 표준 DOMMatrix2DInit을
+                // 전달해 소수 DPI에서도 물리 반복 주기를 보존한다.
+                let matrix = js_sys::Object::new();
+                let scale = info.tile_size / s;
+                for (key, value) in [("a", scale), ("d", scale)] {
+                    if js_sys::Reflect::set(
+                        &matrix,
+                        &JsValue::from_str(key),
+                        &JsValue::from_f64(value),
+                    )
+                    .is_err()
+                    {
+                        return false;
+                    }
+                }
+                let transform = js_sys::Reflect::get(&pattern, &JsValue::from_str("setTransform"))
+                    .ok()
+                    .and_then(|method| method.dyn_into::<js_sys::Function>().ok());
+                if transform.is_none_or(|method| method.call1(&pattern, &matrix).is_err()) {
+                    return false;
+                }
                 self.ctx.set_fill_style_canvas_pattern(&pattern);
                 true
             }
@@ -1647,13 +1672,9 @@ impl WebCanvasRenderer {
         };
 
         // 색상 스톱 추가 (positions는 이미 0.0~1.0으로 정규화됨)
-        for (i, &color) in grad.colors.iter().enumerate() {
-            let offset = if i < grad.positions.len() {
-                grad.positions[i] as f32
-            } else {
-                i as f32 / (grad.colors.len().max(2) - 1).max(1) as f32
-            };
-            let _ = canvas_grad.add_color_stop(offset, &color_to_css(color));
+        let (colors, positions) = super::linear_gradient_color_stops(grad, x, y, w, h);
+        for (&color, &position) in colors.iter().zip(&positions) {
+            let _ = canvas_grad.add_color_stop(position as f32, &color_to_css(color));
         }
 
         self.ctx.set_fill_style_canvas_gradient(&canvas_grad);

@@ -164,6 +164,7 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            st.apply_deferred_source_frame_body_page(para_idx);
             st.consume_pending_table_terminal_gap(para_idx, paragraphs, styles, self.dpi);
             // 후속 본문이 사이에 없는 새 표 문단은 이전 묶음의 일부가 아니다.
             // 이전 문단의 후행 표를 먼저 완료한다. 새 문단의 명시적 쪽/단 나눔과
@@ -399,7 +400,7 @@ impl TypesetEngine {
         // source tail에 뒤따르는 본문이 없어 자연 page break가 일어나지 않은 경우에도,
         // deferred Square picture는 현재 쪽 FootnoteArea에 겹치지 않고 독립한 다음 physical
         // page를 가져야 한다. 일반 흐름을 되감지 않고 picture PageItem만 drain한다.
-        if !st.deferred_next_page_square_pictures.is_empty() {
+        if !st.deferred_next_page_square_pictures.is_empty() || st.has_deferred_body_footnotes() {
             st.force_new_page();
         }
 
@@ -434,6 +435,7 @@ impl TypesetEngine {
             &mut issue2424_prof.deferred_flush,
             issue2424_final_flush_started,
         );
+        st.finish_next_column_stored_frames();
         if !st.current_items.is_empty() {
             st.flush_column_always();
         }

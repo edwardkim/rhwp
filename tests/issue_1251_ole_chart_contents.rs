@@ -211,7 +211,9 @@ fn issue_1251_svg_uses_legacy_ole_chart_renderer() {
 
     assert!(svg.contains("hwp-ole-chart"));
     assert!(svg.contains("hwp-ole-chart-rust-svg"));
-    assert!(svg.contains("연금 재정 전망"));
+    // 전체 문서 painter는 저장 TextBlock의 전각 공백을 보존한다.
+    // 데이터 IR의 정규화된 제목은 위 parser/standalone 검사에서 따로 확인한다.
+    assert!(svg.contains("연금\u{3000}재정\u{3000}전망"));
     assert!(svg.contains("적립금"));
     assert!(!svg.contains("OLE 개체 (BinData #2)"));
     assert!(!svg.contains("OLE 차트 미지원"));
@@ -237,7 +239,8 @@ fn issue_1283_hwpx_svg_uses_legacy_ole_chart_renderer() {
 
     assert!(svg.contains("hwp-ole-chart"));
     assert!(svg.contains("hwp-ole-chart-rust-svg"));
-    assert!(svg.contains("연금 재정 전망"));
+    // 같은 원본의 HWPX도 저장 TextBlock의 전각 공백을 보존한다.
+    assert!(svg.contains("연금\u{3000}재정\u{3000}전망"));
     assert!(svg.contains("적립금"));
     assert!(!svg.contains("OLE 개체 (BinData #3)"));
     assert!(!svg.contains("OLE 차트 미지원"));

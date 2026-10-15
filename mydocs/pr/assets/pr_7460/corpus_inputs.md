@@ -670,7 +670,7 @@
 | [samples/task2097/3080901_pii_ledger.hwp](../../../../samples/task2097/3080901_pii_ledger.hwp) | `bdd56e677ca852605098587f9546bb59dedb2431fa98cee9ad98187985abf801` |
 | [samples/task2137/156618554_petfood_press.hwp](../../../../samples/task2137/156618554_petfood_press.hwp) | `c9e2b516124634319d3150d79dd6d3596c0fe07a556448aa6c807c0f8c8ba516` |
 | [samples/task2146/21761835_jeonjik_exemption_table.hwp](../../../../samples/task2146/21761835_jeonjik_exemption_table.hwp) | `d8e7e38b206f6e53b7d2d260115396f8a0dd94bd8b712bbc4428dc11bf66e5dc` |
-| [samples/task2287/1342000_edu_curriculum_map.hwp](../../../../samples/task2287/1342000_edu_curriculum_map.hwp) | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
+| [samples/task2287/1342000_edu_curriculum_map.hwp](../issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp) | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
 | [samples/task2319/20544835_jinan_apt_form.hwp](../../../../samples/task2319/20544835_jinan_apt_form.hwp) | `515fb049d24c0f3a26b7a35d7ff99244af3837f32254f30077d9557f8c2d6b25` |
 | [samples/task2322/19439117_gokseong_voucher_form.hwp](../../../../samples/task2322/19439117_gokseong_voucher_form.hwp) | `54eed7e02a4c762349922c17a7812bcf63049c6417201ccc0dc738548e5f43d2` |
 | [samples/task2322/20862337_cheongyang_voucher_form.hwp](../../../../samples/task2322/20862337_cheongyang_voucher_form.hwp) | `362f6c8dd8da21db2a10954cbce5882145212614385d16599c8282c02870ac72` |

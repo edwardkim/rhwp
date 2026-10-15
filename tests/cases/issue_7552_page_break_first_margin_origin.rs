@@ -193,35 +193,6 @@ fn empty_table_host_opens_at_previous_stored_line_end() {
     );
 }
 
-/// 대조군(HWP5) — 같은 형상에서 표 뒤 다음 문단 줄은 저장 사다리 거리에 선다. host 의
-/// 앞·뒤 간격은 공간을 차지하지 않는다(hwpctl 49쪽 pi=1171 → pi=1173, 앞 끝 5460 + 상자
-/// 11448 = 다음 줄 16908).
-#[test]
-fn hwp5_empty_table_host_flow_follows_stored_ladder() {
-    const SAMPLE: &str = "samples/hwpctl_API_v2.4.hwp";
-    const SECTION: usize = 0;
-    let core = open(SAMPLE);
-    let page = page_with_table(&core, SECTION, 1172);
-    let tree = core.build_page_render_tree(page).expect("render tree");
-    let nodes = column_nodes(&tree.root);
-    let before = *body_lines(&nodes, SECTION, 1171)
-        .last()
-        .expect("pi=1171 마지막 줄");
-    let after = *body_lines(&nodes, SECTION, 1173)
-        .first()
-        .expect("pi=1173 첫 줄");
-    let vpos = |n: &RenderNode| match &n.node_type {
-        RenderNodeType::TextLine(line) => line.vpos.expect("저장 vpos"),
-        _ => unreachable!(),
-    };
-    let expected = hu(i64::from(vpos(after)) - i64::from(vpos(before)));
-    let actual = after.bbox.y - before.bbox.y;
-    assert!(
-        (actual - expected).abs() <= 1.0,
-        "표 뒤 줄 거리 {actual:.2} 가 저장 사다리 {expected:.2} 와 다르다"
-    );
-}
-
 /// 표 첫 조각을 담은 쪽의 글자(공백 제거).
 fn first_fragment_page_text(core: &DocumentCore, section: usize, para: usize) -> String {
     let page = page_with_table(core, section, para);

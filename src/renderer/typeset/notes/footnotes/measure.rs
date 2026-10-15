@@ -39,6 +39,49 @@ impl BodyFootnoteMeasure<'_> {
     }
 }
 
+impl crate::renderer::typeset::TypesetEngine {
+    /// 재조판한 단일 단 본문 각주도 실제 FootnoteArea를 예약한다.
+    /// 이미 구분선·여백을 포함한 상자에 추정용 안전 여백을 다시 더하지 않는다.
+    pub(in crate::renderer::typeset) fn reserve_current_body_note_area(
+        &self,
+        st: &mut crate::renderer::typeset::TypesetState,
+        paragraphs: &[crate::model::paragraph::Paragraph],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) {
+        if st.col_count != 1 {
+            return;
+        }
+        let Some(page) = st.pages.last().filter(|page| !page.footnotes.is_empty()) else {
+            return;
+        };
+        let layout = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        // 원 HWP5와 그 저장 줄을 보존한 HWPX는 같은 각주 쪽 분할을 따른다.
+        // 앞 쪽에 참조가 배치된 이어받기 각주도 재조판 예약값으로 소속을 바꾸지 않는다.
+        // 줄 정보가 없거나 합성·편집된 각주는 아래 실제 조판 높이를 예약한다.
+        if st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && layout.footnote_area_has_stored_lines(
+                &page.footnotes,
+                paragraphs,
+                st.layout.body_area.width,
+            )
+        {
+            return;
+        }
+        layout.set_layout_profile(st.profile);
+        layout.set_render_normalization_overlay(self.render_normalization.clone());
+        let height = layout.estimate_footnote_area_height_with_metrics(
+            &page.footnotes,
+            paragraphs,
+            styles,
+            st.layout.body_area.width,
+            st.footnote_separator_overhead,
+            st.footnote_between_notes_margin,
+        );
+        st.reserve_painted_footnote_area(height);
+    }
+}
+
 /// 각주의 실제 렌더 높이. 일반 paginator의 빠른 저장 LineSeg 추정과 달리
 /// `layout_footnote_area`와 같은 composed line/line-spacing 규칙을 쓴다. 긴 URL은
 /// renderer에서 두 줄 이상으로 재래핑되므로, 저장 LineSeg 한 줄만 예약하면 본문과

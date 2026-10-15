@@ -53,6 +53,14 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
+
+mod preserved_format_inputs {
+    include!("common/preserved_format_inputs.rs");
+}
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -125,6 +133,10 @@ fn collect(root: &Path, ext: &str, skip_dirs: &[&str]) -> Vec<(PathBuf, String)>
     }
     let mut acc = Vec::new();
     walk(root, root, ext, skip_dirs, &mut acc);
+    if root == Path::new(HWP5_ROOT) && ext == "hwp" {
+        preserved_format_inputs::append_preserved_hwp5_inputs(&mut acc);
+    }
+    acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     acc
 }
@@ -405,8 +417,11 @@ fn baseline_samples_exist() {
     assert!(!baseline.is_empty(), "baseline 이 비어 있음: {BASELINE}");
     let mut missing = Vec::new();
     for (lane, sample, _) in baseline.keys() {
-        let root = if lane == "hwpx" { HWPX_ROOT } else { HWP5_ROOT };
-        let path = Path::new(root).join(sample);
+        let path = if lane == "hwpx" {
+            Path::new(HWPX_ROOT).join(sample)
+        } else {
+            preserved_format_inputs::hwp5_path(sample)
+        };
         if !path.exists() {
             missing.push(format!("  [{lane}] {sample}"));
         }

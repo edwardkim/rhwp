@@ -19,6 +19,12 @@ impl TypesetEngine {
         para_style_break: bool,
         force_page_break: bool,
     ) -> bool {
+        st.prepare_saved_empty_run(para_idx, paragraphs, self.dpi);
+        if st.saved_empty_run_contains(para_idx) {
+            // 실제 줄 상자를 fit/이월한다. 저장 reset 앞이라는 이유로
+            // 줄의 물리 점유를 감추지 않는다.
+            return false;
+        }
         // [Task #359] 단독 항목 페이지 차단:
         // 다음 pi 가 vpos-reset 가드를 발동할 예정이고 현재 pi 가 잔여 공간 부족으로
         // 새 페이지를 시작하면 단독 항목 페이지가 발생.

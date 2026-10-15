@@ -113,6 +113,7 @@ pub(in crate::renderer::typeset) fn place(
             para,
             fmt,
             paragraphs,
+            styles,
             fmt.line_count(),
             base_available,
             layout_drift_safety_px,
@@ -120,6 +121,7 @@ pub(in crate::renderer::typeset) fn place(
             native_hwp5_existing_footnote_reset_line,
             current_page_vpos_base,
             false,
+            strict_after_empty_host_float,
             dpi,
         );
         return;
@@ -196,6 +198,7 @@ pub(in crate::renderer::typeset) fn place(
         trimmed_sb_gate,
         body_bottom_vpos,
         available,
+        strict_after_empty_host_float,
         layout_drift_safety_px,
         stored_vpos_rewind_break,
         stored_vpos_rewind_overflow_break,

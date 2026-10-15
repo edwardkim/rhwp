@@ -1,16 +1,21 @@
 //! 장식 표의 현재 쪽 컷과 다음 쪽 예약량 조회.
 //! Shape 발행·표 포맷·대기열 반영·host 텍스트 배치는 수행하지 않는다.
+mod row_fragment;
+
 use super::super::FormattedTable;
 use crate::model::{paragraph::Paragraph, table::Table};
 use crate::renderer::hwpunit_to_px;
+use crate::renderer::pagination::OverlayRowFragment;
 
 pub(in crate::renderer::typeset) struct OverlayContinuation {
     pub first_unfit: usize,
     pub remaining_px: f64,
     pub reserve_px: f64,
     pub room: f64,
+    pub row_fragment: Option<OverlayRowFragment>,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn continuation(
     para: &Paragraph,
     table: &Table,
@@ -19,6 +24,7 @@ pub(super) fn continuation(
     current_height: f64,
     dpi: f64,
     base_available_height: impl FnOnce() -> f64,
+    partial_row: impl FnOnce(usize, f64) -> Option<OverlayRowFragment>,
 ) -> Option<OverlayContinuation> {
     // [#7441] 잔여 행 컷은 흐름을 따라 쪽 하단에 닿는 문단 기준 표만 대상이다(#4568 원 범위).
     // 아래 앵커 식(흐름 높이 + 오프셋)도 문단 기준에서만 성립한다. 용지 기준 표는 흐름과
@@ -46,12 +52,20 @@ pub(super) fn continuation(
             .map(|i| i.saturating_sub(1))
             .unwrap_or(ft.row_heights.len());
         if first_unfit > 0 && first_unfit < ft.row_heights.len() {
+            let row_fragment = partial_row(
+                first_unfit,
+                room - ft.cumulative_heights[first_unfit] - ft.cell_spacing,
+            );
             let remaining_px = (ft.effective_height
                 - ft.cumulative_heights
                     .get(first_unfit)
                     .copied()
                     .unwrap_or(0.0))
             .max(0.0);
+            let remaining_px = row_fragment.as_ref().map_or(remaining_px, |fragment| {
+                remaining_px - ft.row_heights[first_unfit] - ft.cell_spacing
+                    + fragment.remaining_height
+            });
             // [#5792] 잔여 행이 놓일 자리를 뒤따르는 흐름이 스스로
             // 만드는가? #4514 형상은 앵커 뒤 빈 필러 문단들이 표
             // 높이만큼 흐름을 만들므로(저장 사다리가 앵커 → 필러로
@@ -77,8 +91,21 @@ pub(super) fn continuation(
                 remaining_px,
                 reserve_px,
                 room,
+                row_fragment,
             });
         }
     }
     None
+}
+
+pub(super) fn partial_row_query(
+    engine: &crate::renderer::typeset::TypesetEngine,
+    state: &crate::renderer::typeset::TypesetState,
+    table: &Table,
+    formatted: &FormattedTable,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    row: usize,
+    available: f64,
+) -> Option<OverlayRowFragment> {
+    row_fragment::query(engine, state, table, formatted, styles, row, available)
 }

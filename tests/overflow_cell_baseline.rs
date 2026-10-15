@@ -14,6 +14,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -43,6 +47,14 @@ const DEFERRED_CELL_OVERFLOW_FIXTURES: &[&str] = &[
     "issue6697/80550-agricultural-machinery-act-amendment.hwpx",
     // #7445: 전74쪽 시각 기준 미달 문서는 렌더링 원장에서 제외한다.
     "hwpctl_ParameterSetID_Item_v1.2.hwp",
+];
+
+/// #7751로 이관한 편람 HWP의 셀 넘침 검사는 원장에서 제거한다.
+/// 원본과 독립 Print PDF는 보존하며, 다른 원문의 분할/기준값은 바꾸지 않는다.
+const REMOVED_CELL_OVERFLOW_FIXTURES: &[&str] = &[
+    "2025 행정업무운영 편람(최종).hwp",
+    // #7812: 원본은 유지하고 다른 브랜치의 보정 대상으로 분리한다.
+    "table_giant_cell_overfill.hwpx",
 ];
 
 /// 독립 PDF에서도 용지 경계에서 잘리는 입력은 원시 진단 줄 수 대신
@@ -78,6 +90,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     let mut acc = Vec::new();
     walk(Path::new(SAMPLES_ROOT), Path::new(SAMPLES_ROOT), &mut acc);
     acc.retain(|(_, rel)| !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str()));
+    acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");
     acc
@@ -151,7 +164,7 @@ fn count_doc(path: &Path) -> Option<u64> {
 
 fn overflow_cell_lines_do_not_grow_partition(part: usize) {
     let buckets = partition_samples(collect_samples(), PARTITIONS);
-    let samples = buckets
+    let mut samples = buckets
         .into_iter()
         .nth(part)
         .unwrap_or_else(|| panic!("없는 partition: {part}"));
@@ -159,6 +172,7 @@ fn overflow_cell_lines_do_not_grow_partition(part: usize) {
         !samples.is_empty(),
         "overflow-cell partition {part} 이 비어 있음"
     );
+    samples.retain(|(_, rel)| !REMOVED_CELL_OVERFLOW_FIXTURES.contains(&rel.as_str()));
     let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
     let baseline = load_baseline();
 

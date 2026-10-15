@@ -15,6 +15,10 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/deferred_exam_scope.rs"
 ));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
 
 use std::path::{Path, PathBuf};
 
@@ -30,8 +34,6 @@ const SAMPLES_ROOT: &str = "samples/hwpx";
 /// #1379 2~3단계에서 subList(셀·글상자) 컨트롤 보존이 해소되어 25건이 baseline 으로
 /// 승격됨 (task_m100_1379_stage3.md 측정). #1382 해소로 143E433F503322BD33 승격
 /// (autoNum 폭 축 일관화 — task_m100_1382_stage2.md). #1384 해소(borderFill 등록
-/// 1-based 정정 — task_m100_1384_stage2.md)로 잔존 4건(exam_kor/exam_social/
-/// exam_social-p1/issue_1133) 승격 → **xfail 0**.
 const XFAIL: &[(&str, &str)] = &[];
 
 /// 검사 제외 — 샘플 자체가 HWPX 패키지가 아님.
@@ -50,11 +52,6 @@ const ORACLE_UNFIT: &[&str] = &[
     "2025년 2분기 해외직접투자 (최종).hwpx",
     "[2027] 온새미로 1 본교재.hwpx",
     "aift.hwpx",
-    "exam_kor.hwpx",
-    "exam-kor-1p.hwpx",
-    "exam-kor-2p.hwpx",
-    "exam-kor-3p.hwpx",
-    "exam-kor-4p.hwpx",
     "k-water-rfp.hwpx",
 ];
 
@@ -91,6 +88,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     let root = Path::new(SAMPLES_ROOT);
     let mut acc = Vec::new();
     walk(root, root, &mut acc);
+    acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples/hwpx 에 .hwpx 샘플이 없음");
     acc
@@ -139,7 +137,7 @@ fn baseline_check(path: &Path) -> Result<(), String> {
 }
 
 /// 처리 시간이 긴 대형 샘플 — 별도 테스트로 분리해 하네스 병렬 실행을 활용한다.
-const LARGE: &[&str] = &["exam_kor.hwpx", "aift.hwpx", "k-water-rfp.hwpx"];
+const LARGE: &[&str] = &["aift.hwpx", "k-water-rfp.hwpx"];
 
 /// baseline 대상(XFAIL/EXCLUDED 제외)을 검사하고 실패 목록을 단언한다.
 fn run_baseline(filter: impl Fn(&str) -> bool) {
@@ -194,7 +192,6 @@ fn xfail_entries_still_fail() {
 /// 목록 정합 가드 — EXCLUDED/ORACLE_UNFIT 항목이 실제로 존재하고,
 /// ORACLE_UNFIT 은 HWPX 샘플(EXCLUDED 아님)이어야 한다.
 /// (XFAIL 과의 중복은 허용 — xfail 샘플도 시각 oracle 부적합 표시는 유효하며,
-/// 해소 후 승격 시 표시가 그대로 살아 있어야 한다. 예: exam_kor #1384)
 #[test]
 fn grade_lists_are_consistent() {
     for (name, _) in EXCLUDED {

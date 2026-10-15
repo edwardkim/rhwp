@@ -2694,10 +2694,12 @@ impl DocumentCore {
         let common = &table.common;
         let table_width = common.width;
         let table_height = common.height;
-        let outer_left = common.margin.left;
-        let outer_right = common.margin.right;
-        let outer_top = common.margin.top;
-        let outer_bottom = common.margin.bottom;
+        // 바깥 여백은 조판과 HWPX 저장이 읽는 표 필드에서 조회한다. 새로 만든 표는
+        // `common.margin` 이 0이라, 그 값을 돌려주면 다시 쓸 때 여백이 사라진다.
+        let outer_left = table.outer_margin_left;
+        let outer_right = table.outer_margin_right;
+        let outer_top = table.outer_margin_top;
+        let outer_bottom = table.outer_margin_bottom;
 
         // 캡션 정보
         let caption_json = if let Some(ref cap) = table.caption {
@@ -3005,28 +3007,43 @@ impl DocumentCore {
             );
         }
 
-        // 바깥 여백 (CommonObjAttr margin ranges, parse_common_obj_attr 정합)
-        if table.raw_ctrl_data.len() >= common_obj_offsets::MARGIN_BOTTOM.end {
-            if let Some(v) = json_i16(json, "outerLeft") {
-                table.raw_ctrl_data[common_obj_offsets::MARGIN_LEFT]
-                    .copy_from_slice(&v.to_le_bytes());
-                table.common.margin.left = v;
-            }
-            if let Some(v) = json_i16(json, "outerRight") {
-                table.raw_ctrl_data[common_obj_offsets::MARGIN_RIGHT]
-                    .copy_from_slice(&v.to_le_bytes());
-                table.common.margin.right = v;
-            }
-            if let Some(v) = json_i16(json, "outerTop") {
-                table.raw_ctrl_data[common_obj_offsets::MARGIN_TOP]
-                    .copy_from_slice(&v.to_le_bytes());
-                table.common.margin.top = v;
-            }
-            if let Some(v) = json_i16(json, "outerBottom") {
-                table.raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
-                    .copy_from_slice(&v.to_le_bytes());
-                table.common.margin.bottom = v;
-            }
+        // 바깥 여백: 조판과 HWPX 저장은 `outer_margin_*`, HWP 저장 합성은 `common.margin` 을
+        // 읽는다. 둘을 함께 바꾸고, raw 는 길이가 허락할 때만 덧쓴다(HWPX 파스본은 비어 있다).
+        if let Some(v) = json_i16(json, "outerLeft") {
+            table.outer_margin_left = v;
+            table.common.margin.left = v;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::MARGIN_LEFT,
+                &v.to_le_bytes(),
+            );
+        }
+        if let Some(v) = json_i16(json, "outerRight") {
+            table.outer_margin_right = v;
+            table.common.margin.right = v;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::MARGIN_RIGHT,
+                &v.to_le_bytes(),
+            );
+        }
+        if let Some(v) = json_i16(json, "outerTop") {
+            table.outer_margin_top = v;
+            table.common.margin.top = v;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::MARGIN_TOP,
+                &v.to_le_bytes(),
+            );
+        }
+        if let Some(v) = json_i16(json, "outerBottom") {
+            table.outer_margin_bottom = v;
+            table.common.margin.bottom = v;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::MARGIN_BOTTOM,
+                &v.to_le_bytes(),
+            );
         }
 
         // 캡션 생성/수정

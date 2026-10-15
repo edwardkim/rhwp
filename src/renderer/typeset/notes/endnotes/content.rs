@@ -76,25 +76,77 @@ pub(in crate::renderer::typeset) fn format_endnote_marker_text(
     format!("{}{}{}", prefix, number, suffix)
 }
 
+/// 미주 첫 문단을 그릴 때 번호 앞에서 지우는 앞 공백 글자 수.
+fn endnote_leading_space_count(para: &Paragraph) -> usize {
+    para.text
+        .chars()
+        .take_while(|ch| matches!(*ch, ' ' | '\u{00A0}' | '\u{2007}'))
+        .count()
+}
+
+/// 미주 첫 문단 앞에 붙여 그리는 번호 글자(`1) `).
+fn endnote_marker_prefix(endnote: &crate::model::footnote::Endnote) -> String {
+    format!("{} ", format_endnote_marker_text(endnote))
+}
+
+/// 미주 첫 문단의 글자 위치를 번호를 붙여 그린 문단의 글자 위치로 바꾼다.
+/// 지운 앞 공백 안의 위치는 번호 바로 뒤로 모은다.
+pub(crate) fn endnote_first_para_render_offset(
+    endnote: &crate::model::footnote::Endnote,
+    char_offset: usize,
+) -> usize {
+    let leading_spaces = endnote
+        .paragraphs
+        .first()
+        .map_or(0, endnote_leading_space_count);
+    char_offset.saturating_sub(leading_spaces) + endnote_marker_prefix(endnote).chars().count()
+}
+
 pub(in crate::renderer::typeset) fn prepend_endnote_marker_text(
     para: &mut Paragraph,
     endnote: &crate::model::footnote::Endnote,
 ) {
     // 미주 번호는 렌더 시점에 가상 텍스트로 붙이므로, line_segs/char_shapes도
     // 같은 UTF-16 stream 기준으로 함께 밀어야 한다.
-    let leading_spaces = para
-        .text
-        .chars()
-        .take_while(|ch| matches!(*ch, ' ' | '\u{00A0}' | '\u{2007}'))
-        .count();
-    let marker_char_shape_id = para.char_shape_id_at(leading_spaces);
+    let leading_spaces = endnote_leading_space_count(para);
+    // 자동번호는 뒤 본문과 다른 글자 모양을 가질 수 있다. 표시 문자의
+    // 위치가 아니라 번호가 소유한 원본 UTF-16 슬롯에서 서식을 읽는다.
+    let marker_char_shape_id = para
+        .controls
+        .iter()
+        .enumerate()
+        .find(|(index, control)| {
+            matches!(control, Control::AutoNumber(number)
+                if number.number_type == crate::model::control::AutoNumberType::Endnote)
+                && para
+                    .control_text_positions()
+                    .get(*index)
+                    .is_some_and(|position| *position <= leading_spaces)
+        })
+        .and_then(|(index, _)| para.control_utf16_positions().get(index).copied())
+        .and_then(|position| {
+            para.char_shapes
+                .iter()
+                .rev()
+                .find(|shape| shape.start_pos <= position)
+                .map(|shape| shape.char_shape_id)
+        })
+        .or_else(|| para.char_shape_id_at(leading_spaces));
+    let separator_char_shape_id = if leading_spaces > 0 {
+        para.char_shape_id_at(0)
+    } else {
+        marker_char_shape_id
+    };
     if leading_spaces > 0 {
         para.delete_text_at(0, leading_spaces);
     }
-    let prefix = format!("{} ", format_endnote_marker_text(endnote));
+    let prefix = endnote_marker_prefix(endnote);
     let prefix_len = prefix.chars().count();
     para.insert_text_at(0, &prefix);
     if let Some(char_shape_id) = marker_char_shape_id {
-        para.apply_char_shape_range(0, prefix_len, char_shape_id);
+        para.apply_char_shape_range(0, prefix_len - 1, char_shape_id);
+    }
+    if let Some(char_shape_id) = separator_char_shape_id {
+        para.apply_char_shape_range(prefix_len - 1, prefix_len, char_shape_id);
     }
 }

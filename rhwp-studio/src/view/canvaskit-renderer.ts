@@ -1353,7 +1353,7 @@ export class CanvasKitLayerRenderer {
           type: 'textRun',
           bbox: op.bbox,
           text: op.text,
-          baseline: op.fontSize ?? 7,
+          baseline: op.baseline ?? op.fontSize ?? 7,
           style: { fontFamily: op.fontFamily, fontSize: op.fontSize, color: op.color },
         });
         return;
@@ -3263,7 +3263,7 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('equation:unsupportedDirectReplay');
       return;
     }
-    const scaleX = op.layoutBox.width > 0 && op.bbox.width > 0
+    const scaleX = op.scaleX !== undefined && Number.isFinite(op.scaleX) ? op.scaleX : op.layoutBox.width > 0 && op.bbox.width > 0
       ? op.bbox.width / op.layoutBox.width
       : 1;
     const budget: EquationRenderBudget = {
@@ -3274,7 +3274,9 @@ export class CanvasKitLayerRenderer {
     let recordingFinished = false;
     let replayed = false;
     try {
-      const recordingCanvas = recorder.beginRecording(this.rect(op.bbox));
+      const recordingCanvas = recorder.beginRecording(this.rect({
+        ...op.bbox, width: Math.max(op.bbox.width, op.layoutBox.width * scaleX),
+      }));
       recordingCanvas.save();
       recordingCanvas.translate(op.bbox.x, op.bbox.y);
       if (Math.abs(scaleX - 1) > 0.01) recordingCanvas.scale(scaleX, 1);
@@ -3342,6 +3344,33 @@ export class CanvasKitLayerRenderer {
     );
 
     switch (layout.kind.type) {
+      case 'hancomGlyphs': {
+        const run = layout.kind;
+        const typeface = this.findPreparedTypeface('HyhwpEQ')?.typeface;
+        const glyphs = Array.from(run.glyphs);
+        const shears = run.shears ?? glyphs.map(() => 0);
+        if (!typeface || glyphs.length !== run.positions.length
+          || glyphs.length !== shears.length || !shears.every(Number.isFinite)
+          || glyphs.length > CanvasKitLayerRenderer.MAX_EQUATION_TEXT_LENGTH
+          || !run.positions.every(Number.isFinite) || !Number.isFinite(run.baselineShift)) return false;
+        const font = new this.canvasKit.Font(typeface, fontSize);
+        font.setHinting(this.canvasKit.FontHinting.None);
+        font.setSubpixel(true);
+        const paint = this.makeFillPaint(color);
+        try {
+          const ids = font.getGlyphIDs(run.glyphs, glyphs.length);
+          if (!ids || ids.some(id => id === 0)) return false;
+          glyphs.forEach((glyph, index) => {
+            canvas.save();
+            try {
+              canvas.translate(x + run.positions[index], y + layout.baseline + run.baselineShift);
+              canvas.concat([1, -shears[index], 0, 0, 1, 0, 0, 0, 1]);
+              canvas.drawText(glyph, 0, 0, paint, font);
+            } finally { canvas.restore(); }
+          });
+          return true;
+        } finally { font.delete(); paint.delete(); }
+      }
       case 'row':
         return layout.kind.children.every((box) => child(box));
       case 'text':
@@ -3958,49 +3987,47 @@ export class CanvasKitLayerRenderer {
   }
 
   private drawPatternFill(
-    canvas: SkCanvas,
-    bounds: LayerBounds,
+    _canvas: SkCanvas,
+    _bounds: LayerBounds,
     pattern: NonNullable<LayerShapeStyle['pattern']>,
     opacity: number,
     draw: (paint: SkPaint) => void,
   ): void {
-    const background = this.makeFillPaint(pattern.backgroundColor ?? '#ffffff', opacity);
-    draw(background);
-    background.delete?.();
-    const patternType = Number.isInteger(pattern.patternType) ? Number(pattern.patternType) : 0;
-    const fg = this.makeStrokePaint(pattern.patternColor ?? '#000000', 1, opacity);
-    const tile = 6;
-    const x0 = bounds.x;
-    const y0 = bounds.y;
-    const x1 = bounds.x + (bounds.width ?? 0);
-    const y1 = bounds.y + (bounds.height ?? 0);
-    const kind = patternType === 0 ? 1 : patternType;
-    try {
-      if (kind === 1 || kind === 5) {
-        for (let y = y0 + tile / 2; y <= y1; y += tile) {
-          canvas.drawLine(x0, y, x1, y, fg);
-        }
+    const kind = pattern.patternType ?? 0;
+    const bg = parseCssColor(pattern.backgroundColor ?? '#ffffff');
+    const fg = parseCssColor(pattern.patternColor ?? '#000000');
+    const bytes = new Uint8Array(8 * 8 * 4);
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const horizontal = y === 0;
+        const vertical = x === 0;
+        const slash = (x + y) % 8 === 0;
+        const backslash = x === y;
+        const ink = kind === 1 ? horizontal : kind === 2 ? vertical
+          : kind === 3 ? slash : kind === 4 ? backslash
+          : kind === 5 ? horizontal || vertical : kind === 6 ? slash || backslash : false;
+        const color = ink ? fg : bg;
+        bytes.set([color.r, color.g, color.b, Math.round(color.a * 255)], (y * 8 + x) * 4);
       }
-      if (kind === 2 || kind === 5) {
-        for (let x = x0 + tile / 2; x <= x1; x += tile) {
-          canvas.drawLine(x, y0, x, y1, fg);
-        }
-      }
-      if (kind === 3 || kind === 6) {
-        for (let offset = - (y1 - y0); offset <= (x1 - x0); offset += tile) {
-          canvas.drawLine(x0 + offset, y0, x0 + offset + (y1 - y0), y1, fg);
-        }
-      }
-      if (kind === 4 || kind === 6) {
-        for (let offset = 0; offset <= (x1 - x0) + (y1 - y0); offset += tile) {
-          canvas.drawLine(x0 + offset, y0, x0 + offset - (y1 - y0), y1, fg);
-        }
-      }
-    } finally {
-      fg.delete?.();
     }
-    if (kind < 1 || kind > 6) {
-      return;
+    const image = this.canvasKit.MakeImage({
+      width: 8, height: 8, colorType: this.canvasKit.ColorType.RGBA_8888,
+      alphaType: this.canvasKit.AlphaType.Unpremul, colorSpace: this.canvasKit.ColorSpace.SRGB,
+    }, bytes, 8 * 4);
+    if (!image) return;
+    const scale = (pattern.tileSize ?? 7.68) / 8;
+    const shader = image.makeShaderOptions(
+      this.canvasKit.TileMode.Repeat, this.canvasKit.TileMode.Repeat,
+      this.canvasKit.FilterMode.Linear, this.canvasKit.MipmapMode.None,
+      [scale, 0, -scale / 2, 0, scale, -scale / 2, 0, 0, 1],
+    );
+    const paint = this.makeFillPaint('#ffffff', opacity);
+    try {
+      paint.setShader(shader);
+      // 무늬도 원래 도형 경로를 채워 괘선·타원·path의 소유 영역을 보존한다.
+      draw(paint);
+    } finally {
+      paint.delete(); shader.delete(); image.delete();
     }
   }
 

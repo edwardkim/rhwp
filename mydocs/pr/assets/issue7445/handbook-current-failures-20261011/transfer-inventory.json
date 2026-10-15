@@ -1,0 +1,76 @@
+{
+  "status": "validated_local_scope",
+  "issue": "https://github.com/edwardkim/rhwp/issues/7751",
+  "parent": "https://github.com/edwardkim/rhwp/issues/7445",
+  "source_before": "cf9541e98e1323dc3cc052141406321e96ac3f2b",
+  "user_instruction": "현재 보정중인 문서가 아니고 #7445에 이관되어 있다면 회귀 테스트 제거 후 진행",
+  "scope": "Current v153 failing union only: Q8 rendering function and handbook HWP cell-overflow corpus gate. Other documents and independent parser/serializer/security contracts retained. This supersedes the historical narrow Q8 preservation decision for this failing function.",
+  "removed_test": "issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count",
+  "removed_corpus_input": "2025 행정업무운영 편람(최종).hwp",
+  "former_baseline": 32,
+  "archive_function": "mydocs/pr/assets/issue7445/handbook-current-failures-20261011/issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count.rs.txt",
+  "archive_baseline": "mydocs/pr/assets/issue7445/handbook-current-failures-20261011/removed-overflow-cell-baseline.tsv.txt",
+  "preserved_inputs_sha256": {
+    "samples/2025 행정업무운영 편람(최종).hwp": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+    "pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf": "34db2aeefa4ae00b38c464571e7e17eef375ffd3ec29eb6d89ddcd67b63bb670"
+  },
+  "other_baseline_rows_unchanged": true,
+  "partition_policy": "Partition on the existing complete sample list, then remove only this transferred row from active workers. All other input partition assignments remain unchanged.",
+  "current_direct_target": "superseded: giant excluded from current scope by #7812 and user correction",
+  "retained_maintainer_target": "samples/issue6035/cgmp_evaluation_table.hwpx",
+  "kps_and_franchise": "No matching #7445 direct subissue found in live 86-child audit; do not remove their three current failing tests.",
+  "live_previous_validation": "IR/overlap worker has already completed compilation; its production/IR/case inputs are unchanged. No overlapping Cargo invocation.",
+  "restore_condition": "같은 원본과 독립 한컴 Print PDF 전쪽 Native/fresh WASM의 최저90% 이상, 쪽수 일치와 직접 review 판독 후 Q8/셀 넘침의 관계형 검사로 복원",
+  "pr_creation": "Explicit user approval required before creating PR; local validation and corrections continue.",
+  "validation": {
+    "manifest_prepare": "1462 sources / 6284 static test attrs / 28 suites + 20 exceptions",
+    "fmt": "cargo fmt --all and cargo fmt --all -- --check exit0",
+    "overflow_partition9": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "dev",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--test",
+        "overflow_cell_baseline",
+        "--test",
+        "regression_suite_013",
+        "--test-threads",
+        "12",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) | test(=overflow_cell_lines_do_not_grow_partition_9)"
+      ],
+      "summary": "     Summary [ 102.921s] 1 test run: 1 passed (1 slow), 233 skipped",
+      "exit_code": 0
+    },
+    "retained_save_tests": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "dev",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "12",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::)"
+      ],
+      "summary": "     Summary [  61.091s] 2 tests run: 2 passed (1 slow), 202 skipped",
+      "exit_code": 0,
+      "seconds": 77.583
+    },
+    "scope_limit": "Three remaining existing tests passed. Removed function/input were not executed or counted as successes. Whole Rust/fresh WASM/visual qualification remain pending."
+  },
+  "scope_correction": "giant-regression-scope-20261011/transfer-inventory.json"
+}

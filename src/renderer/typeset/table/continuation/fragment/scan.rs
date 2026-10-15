@@ -30,12 +30,14 @@ impl TypesetEngine {
         let cut_row_h = input
             .start
             .relieved_cut_row_heights
-            .as_ref()
+            .as_deref()
+            .or(input.fragment_row_heights)
             .unwrap_or(&input.prepared.cut_row_heights);
         let whole_row_fit_h = input
             .start
             .relieved_whole_row_fit_heights
-            .as_ref()
+            .as_deref()
+            .or(input.fragment_row_heights)
             .unwrap_or(&input.prepared.whole_row_fit_heights);
         let total_footnote = input.prepared.total_footnote_height;
         let fn_margin = input.prepared.footnote_margin;
@@ -55,17 +57,17 @@ impl TypesetEngine {
             ..
         } = *budget;
         let source_cut_heights = budget.source_complete_frame_last_row.map(|(row, height)| {
-            let mut heights = cut_row_h.clone();
+            let mut heights = cut_row_h.to_vec();
             heights[row] = height;
             heights
         });
         let source_fit_heights = budget.source_complete_frame_last_row.map(|(row, height)| {
-            let mut heights = whole_row_fit_h.clone();
+            let mut heights = whole_row_fit_h.to_vec();
             heights[row] = height;
             heights
         });
-        let cut_row_h = source_cut_heights.as_ref().unwrap_or(cut_row_h);
-        let whole_row_fit_h = source_fit_heights.as_ref().unwrap_or(whole_row_fit_h);
+        let cut_row_h = source_cut_heights.as_deref().unwrap_or(cut_row_h);
+        let whole_row_fit_h = source_fit_heights.as_deref().unwrap_or(whole_row_fit_h);
         // The original content cut and the two boxes are one accepted result.
         // A blank band is reserved here, before emit and paint, and never
         // consumed as an extra content unit on the following page.
@@ -83,6 +85,7 @@ impl TypesetEngine {
             };
             if (opening || closing) && height <= avail_for_rows {
                 return BlockTableRowScan {
+                    source_frame_band: 0.0,
                     consumed: height,
                     end_row: 1,
                     split_block_start: None,
@@ -103,6 +106,7 @@ impl TypesetEngine {
             if let Some(frame) = input.prepared.empty_opening_row_frame {
                 if frame.opening_height <= avail_for_rows + 0.5 {
                     return BlockTableRowScan {
+                        source_frame_band: 0.0,
                         consumed: frame.opening_height,
                         end_row: 1,
                         split_block_start: None,
@@ -127,6 +131,7 @@ impl TypesetEngine {
                 }
                 if opening <= avail_for_rows + 0.1 {
                     return BlockTableRowScan {
+                        source_frame_band: 0.0,
                         consumed: opening,
                         end_row: 1,
                         split_block_start: None,
@@ -143,6 +148,7 @@ impl TypesetEngine {
                     || st.current_footnote_height > 0.0
                 {
                     return BlockTableRowScan {
+                        source_frame_band: 0.0,
                         consumed: 0.0,
                         end_row: cursor_row,
                         split_block_start: None,
@@ -198,10 +204,12 @@ impl TypesetEngine {
             strict_painted_bottom_fit: strict_following_plain_text_fit,
             source_first_fragment_overflow_allowance,
             source_first_fragment_row_end,
+            start_cut_is_block: input.start.start_cut_is_block,
             start_row_height_override,
+            source_terminal_suffix_start: input.prepared.source_terminal_suffix_start,
         };
-        let run_scan = |vars| {
-            self.scan_block_table_split_rows(
+        let run_scan = |vars: BlockRowScanVars| {
+            let mut scan = self.scan_block_table_split_rows(
                 st,
                 layout_engine,
                 mt,
@@ -209,10 +217,13 @@ impl TypesetEngine {
                 styles,
                 cut_row_h,
                 whole_row_fit_h,
+                input.fragment_row_heights.unwrap_or(&mt.row_heights),
                 rowspan_touched,
                 &start_cut,
+                &input.start.straddle_page_bands,
                 vars,
                 BlockTableRowScan {
+                    source_frame_band: 0.0,
                     consumed: 0.0,
                     end_row: cursor_row,
                     split_block_start: None,
@@ -220,9 +231,76 @@ impl TypesetEngine {
                     split_end_limit: 0.0,
                     end_row_height_override: None,
                 },
-            )
+            );
+            // 원본 첫 상자가 본문 하단을 닫는 경우, 후속 쪽의 공통 저장 컷은
+            // 잉크뿐 아니라 남은 빈 밴드도 소유한다. 각주 재수용도 이 closure를
+            // 다시 호출하므로 현재 실제 예산 안에서만 물리 프레임을 수용한다.
+            if is_continuation
+                && scan.split_block_start.is_none()
+                && scan.split_end_limit > 0.0
+                && st.current_zone_y_offset == 0.0
+                && layout_engine.original_body_closed_table_frame(
+                    input.source.paragraph,
+                    table,
+                    st.layout.body_area.height,
+                )
+                && scan.end_row.checked_sub(1).is_some_and(|row| {
+                    layout_engine.row_cut_closes_shared_original_frame(
+                        table,
+                        row,
+                        &scan.split_end_cut,
+                        styles,
+                    ) || layout_engine.row_cut_closes_original_restart_frame(
+                        table,
+                        row,
+                        &scan.split_end_cut,
+                        input.fragment_row_heights.unwrap_or(&mt.row_heights),
+                        styles,
+                    )
+                })
+            {
+                let top = budget.fragment_placement.map_or(
+                    st.current_height + budget.host_before_overhead + budget.vert_offset_overhead,
+                    |placement| placement.table_top,
+                ) + budget.caption_extra;
+                let frame_height =
+                    crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                        table,
+                        st.layout.body_area.height,
+                        self.dpi,
+                    ) - top
+                        - vars.header_overhead;
+                if frame_height >= scan.consumed && frame_height <= vars.avail_for_rows {
+                    let last_height = scan.end_row_height_override.unwrap_or_else(|| {
+                        let row = scan.end_row - 1;
+                        let row_start = if row == cursor_row {
+                            start_cut.as_slice()
+                        } else {
+                            &[]
+                        };
+                        // split_end_limit은 내용 유닛 전진량이다. 안여백 등을 포함한
+                        // 실제 행 점유를 바탕으로 빈 밴드를 더해야 같은 상자를 예약한다.
+                        layout_engine.row_cut_content_height(
+                            row_geometry_table,
+                            row,
+                            row_start,
+                            &scan.split_end_cut,
+                            styles,
+                        )
+                    });
+                    scan.end_row_height_override = Some(last_height + frame_height - scan.consumed);
+                    scan.consumed = frame_height;
+                    if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                        eprintln!("SOURCE_BODY_FRAME: pi={} end_row={} end_cut={:?} frame_h={:.3} last_h={:.3}",
+                            para_idx, scan.end_row, scan.split_end_cut, scan.consumed,
+                            scan.end_row_height_override.unwrap_or(0.0));
+                    }
+                }
+            }
+            scan
         };
         let BlockTableRowScan {
+            mut source_frame_band,
             mut consumed,
             mut end_row,
             mut split_block_start,
@@ -273,9 +351,51 @@ impl TypesetEngine {
                     .sum::<f64>()
                     + cs * end_row.saturating_sub(2) as f64;
                 end_row_height_override = Some((frame_height - before_last).max(0.0));
+                // The accepted source frame replaces the physical height of
+                // this opening fragment. Its content cut does not change,
+                // but the reservation must include the same blank band that
+                // paint receives through the last-row override. Otherwise
+                // emit reserves that band a second time as unused page space.
+                let source_frame_height = before_last + end_row_height_override.unwrap_or(0.0);
+                source_frame_band = (source_frame_height - consumed).max(0.0);
+                consumed = source_frame_height;
                 // 내용이 끝난 일반 행도 같은 저장 물리 프레임을 사용한다.
                 // 내용 예산으로 빈 밴드를 계산하면 다음 쪽이 그 차이만큼
                 // 밀린다. 그리는 쪽 상한 절삭은 별도이며 선언 공간을 줄이지 않는다.
+            }
+        }
+        // The accepted source frame owns physical space independently of its
+        // complete content cut. A protected next block can stop the row walk
+        // before the nearest source-frame row candidate. Keep that actual cut,
+        // and account for the frame's blank tail in both reservation and paint.
+        if !is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty()
+            && end_row > 0
+            && end_row < row_count
+            && split_block_start.is_none()
+            && split_end_cut.is_empty()
+            && split_end_limit <= 0.0
+            // Minimum growth keeps the complete source row and its saved
+            // blank tail. A compressed row has a different physical cut.
+            && end_row_height_override
+                .is_none_or(|height| height >= whole_row_fit_h[end_row - 1])
+            && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+            && !st.profile.session_edited()
+            && !input.source.paragraph.stored_text_partition_is_dirty()
+            && !self.render_normalization.table_text_reflowed(table)
+        {
+            if let Some((frame, _)) = saved_first_fragment_source_frame {
+                let whole_rows = whole_row_fit_h[..end_row].iter().sum::<f64>()
+                    + cs * end_row.saturating_sub(1) as f64;
+                if frame > consumed
+                    && frame <= avail_for_rows + 0.5
+                    && (whole_rows - consumed).abs() <= 0.5
+                {
+                    let before_last = whole_rows - whole_row_fit_h[end_row - 1];
+                    end_row_height_override = Some(frame - before_last);
+                    consumed = frame;
+                }
             }
         }
         // [#3674 진단] 표 행 분할 스캔 입력/결과 — 동작 불변.
@@ -369,6 +489,7 @@ impl TypesetEngine {
                                 min_anchor
                             );
                         }
+                        source_frame_band = refit.source_frame_band;
                         consumed = refit.consumed;
                         end_row = refit.end_row;
                         split_block_start = refit.split_block_start;
@@ -388,7 +509,14 @@ impl TypesetEngine {
         // 현재 쪽에서 마지막 유닛을 닫을 수 없으면 수용한 앞 조각을 다시 스캔한다.
         // 높이·컷을 확정한 뒤 end_row만 바꾸지 않는다.
         if end_row >= row_count
-            && split_end_limit == 0.0
+            && (split_end_limit == 0.0
+                || input.closes_terminal_content_cut(
+                    end_row,
+                    split_end_limit,
+                    &split_end_cut,
+                    split_block_start,
+                    end_row_height_override,
+                ))
             && (input.prepared.caption_overhead > 0.0
                 || budget.terminal_outer_bottom_overhead > budget.fragment_outer_bottom_overhead)
         {
@@ -410,6 +538,7 @@ impl TypesetEngine {
                     cut_row_h,
                     rowspan_touched,
                     cs,
+                    straddle_page_bands: &input.start.straddle_page_bands,
                 };
                 let last_range = rows.candidate(row_count - 1);
                 let last = rows.candidate(last_range.b_start);
@@ -428,6 +557,7 @@ impl TypesetEngine {
                     // 실제 앞 항목이 점유한 쪽을 비운다. 다른 항목이 없는 프레임의
                     // 양수 저장 앵커 때문에 이월을 무한 반복하지 않아야 한다.
                     return BlockTableRowScan {
+                        source_frame_band: 0.0,
                         consumed: 0.0,
                         end_row: cursor_row,
                         split_block_start: None,
@@ -448,6 +578,7 @@ impl TypesetEngine {
                     }
                 });
                 if refit.end_row > cursor_row && refit.consumed > 0.0 {
+                    source_frame_band = refit.source_frame_band;
                     consumed = refit.consumed;
                     end_row = refit.end_row;
                     split_block_start = refit.split_block_start;
@@ -458,7 +589,192 @@ impl TypesetEngine {
             }
         }
 
+        // Refit has finished: only now can a complete continuation reserve its
+        // remaining physical band without changing content ownership.
+        if is_continuation
+            && start_cut.is_empty()
+            && end_row > cursor_row
+            && end_row < row_count
+            && split_block_start.is_none()
+            && split_end_cut.is_empty()
+            && split_end_limit <= 0.0
+            // A minimum extension still owns the complete row. Only a
+            // compressed band prevents the saved frame from consuming its tail.
+            && end_row_height_override
+                .is_none_or(|height| height >= whole_row_fit_h[end_row - 1])
+            && self.stored_header_physical_rows(st, input.source)
+            && row_geometry_table.cells.iter().any(|cell| {
+                let first = cell.row as usize;
+                first < end_row && first + cell.row_span as usize > end_row
+            })
+        {
+            let whole_rows = whole_row_fit_h[cursor_row..end_row].iter().sum::<f64>()
+                + cs * (end_row - cursor_row).saturating_sub(1) as f64;
+            // Logical line advances selected the content cut above. Only its
+            // unused physical tail uses the same closing boundary as paint;
+            // subtracting that band before scanning would move valid units.
+            let physical_rows_available = self.stored_header_fragment_row_budget(
+                st,
+                input,
+                budget.page_avail,
+                budget.host_before_overhead,
+            ) - header_overhead;
+            if physical_rows_available > consumed && (whole_rows - consumed).abs() <= 0.5 {
+                let before_last = whole_rows - whole_row_fit_h[end_row - 1];
+                end_row_height_override = Some(physical_rows_available - before_last);
+                consumed = physical_rows_available;
+            }
+        }
+
+        if split_block_start.is_none()
+            && !split_end_cut.is_empty()
+            && split_end_limit > 0.0
+            && end_row_height_override.is_none()
+            && end_row > cursor_row
+        {
+            // split_end_limit counts units only. Padding already belongs to the
+            // accepted last-row box and cannot also belong to the prefix.
+            let row = end_row - 1;
+            let row_start = if row == cursor_row {
+                start_cut.as_slice()
+            } else {
+                &[]
+            };
+            let selected = layout_engine.row_cut_content_height(
+                row_geometry_table,
+                row,
+                row_start,
+                &split_end_cut,
+                styles,
+            );
+            let before_last = consumed - selected;
+            let source_frame_available =
+                crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                    table,
+                    st.available_height(),
+                    self.dpi,
+                ) - st.current_height
+                    - budget.host_before_overhead
+                    - budget.vert_offset_overhead
+                    - budget.caption_extra
+                    - header_overhead;
+            if let Some(height) = layout_engine.stored_shared_row_end_frame(
+                row_geometry_table,
+                row,
+                &split_end_cut,
+                avail_for_rows.min(source_frame_available) - before_last,
+                styles,
+            ) {
+                consumed += height - selected;
+                end_row_height_override = Some(height);
+            }
+        }
+
+        // 반복 제목행의 원본 쪽 프레임은 refit이 선택한 내용과 같은 물리 상자를 예약한다.
+        // 내용을 다 소비한 컷에도 마지막 줄 간격만 남은 꼬리를 별도 행으로 세지 않는다.
+        if split_block_start.is_none()
+            && split_end_limit > 0.0
+            && !split_end_cut.is_empty()
+            && end_row > cursor_row
+            && self.stored_header_physical_rows(st, input.source)
+        {
+            let row = end_row - 1;
+            let row_start = if row == cursor_row {
+                start_cut.as_slice()
+            } else {
+                &[]
+            };
+            let selected = end_row_height_override.unwrap_or_else(|| {
+                layout_engine.row_cut_content_height(
+                    row_geometry_table,
+                    row,
+                    row_start,
+                    &split_end_cut,
+                    styles,
+                )
+            });
+            let before_last = consumed - selected;
+            let physical = self.stored_header_fragment_row_budget(
+                st,
+                input,
+                budget.page_avail,
+                budget.host_before_overhead,
+            ) - header_overhead
+                - before_last;
+            if let Some(height) = layout_engine.stored_ordinary_row_end_frame(
+                row_geometry_table,
+                row,
+                row_start,
+                &split_end_cut,
+                physical.min(avail_for_rows - before_last),
+                styles,
+            ) {
+                consumed += height - selected;
+                end_row_height_override = Some(height);
+            }
+        }
+
+        // 온전한 앞 제목만 소유한 원본 조각은 다음 인라인 상자를 가져오지
+        // 않고 현재 셀의 최소 물리 밴드를 끝낸다. 같은 높이를 paint에 전달한다.
+        if split_block_start.is_none()
+            && end_row > cursor_row
+            && layout_engine.stored_heading_before_inline_frame_cut(
+                row_geometry_table,
+                end_row - 1,
+                if end_row - 1 == cursor_row {
+                    start_cut
+                } else {
+                    &[]
+                },
+                &split_end_cut,
+                styles,
+            )
+        {
+            let row = end_row - 1;
+            let selected = end_row_height_override.unwrap_or_else(|| {
+                layout_engine.row_cut_content_height(
+                    row_geometry_table,
+                    row,
+                    &[],
+                    &split_end_cut,
+                    styles,
+                )
+            });
+            let top = budget.fragment_placement.map_or(
+                st.current_height + budget.host_before_overhead + budget.vert_offset_overhead,
+                |placement| placement.table_top,
+            );
+            let physical = st.layout.body_area.height
+                - crate::renderer::typeset::hwpunit_to_px(
+                    i32::from(table.outer_margin_bottom),
+                    self.dpi,
+                )
+                - top
+                - budget.caption_extra
+                - header_overhead
+                - (consumed - selected);
+            let minimum = row_geometry_table
+                .cells
+                .iter()
+                .filter(|cell| usize::from(cell.row) == row)
+                .map(|cell| {
+                    crate::renderer::typeset::hwpunit_to_px(
+                        cell.height.min(i32::MAX as u32) as i32,
+                        self.dpi,
+                    )
+                })
+                .fold(0.0, f64::max);
+            if physical >= selected
+                && physical < minimum
+                && physical <= avail_for_rows - (consumed - selected)
+            {
+                consumed += physical - selected;
+                end_row_height_override = Some(physical);
+            }
+        }
+
         BlockTableRowScan {
+            source_frame_band,
             consumed,
             end_row,
             split_block_start,

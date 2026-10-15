@@ -13,7 +13,10 @@
 
 ## 관련 이슈
 
-closes #
+<!-- 전체 완료한 이슈만 Closes #번호로 연결합니다. 부분 개선·추적 이슈는 Refs #번호로 연결하고,
+해결한 범위와 남은 범위를 적습니다. 외부 기여자에게 메인터너 review·오늘할일 문서를 요구하지 않습니다. -->
+
+Refs #
 
 ## 테스트
 
@@ -79,10 +82,12 @@ head repository를 사용하며 target repository로 바꾸지 않는다. 이후
 - 렌더링 회귀 추가·변경 시: 관련 전체 범위의 Native/fresh WASM 최저 일치율 / 최저 페이지 / manifest: <!-- 최저 90% 미만·측정 불가이면 회귀 추가·변경을 보류합니다. 쪽수 검사는 전체 페이지, 평균값·글꼴 예외로 면제하지 않습니다. -->
 - 기존 회귀가 실패했다면: 원본 입력 / 실패한 검사 / 출력 보정 SHA / 90% 이상 확인 증거 / 검사 변경 이유·실제 관계 assertion: <!-- 원본 출력 보정 → 90% 이상 확인 → 필요한 검사 변경 순서입니다. 절대 px 좌표·고정 px 영역을 바꿔 실패를 없애지 않습니다. 관련이 없으면 이 항목을 제거하세요. -->
 - PR head repository / SHA:
+- 증적 구성 예시: [PR #7697](https://github.com/edwardkim/rhwp/pull/7697) <!-- 실행 환경·결과·이미지는 자신의 검증 자료로 작성합니다. 예시의 Docker 빌드·CI 결과를 복사하지 않습니다. -->
 - 입력·기준 PDF·대응 페이지·영역:
+- 입력·기준 Print PDF 다운로드 링크: <!-- 기존 samples/pdf 파일을 사용할 수 있으면 실제 head repository의 SHA 고정 raw/download 링크를 연결합니다. 동일 자료를 새 asset으로 중복 복사하지 않습니다. 비공개 입력은 공개하지 않고 식별자·해시·접근 제한을 적습니다. -->
 - 한컴 제품/빌드·저장 제품 판정·Print 출력 방법/설정·PDF 출처/해시 (MCP이면 engine·job 식별자):
 - TSV 실행 명령·source/build SHA·로컬 산출 경로: <!-- TSV·실행 로그·중간 JSON은 ignored output에 보존하고 Git에 커밋하지 않습니다. -->
-- **전체 검증 범위의 Native·fresh WASM TSV 원본 첨부 링크:** <!-- Native TSV와 fresh WASM TSV를 모두 산출·제출합니다. 두 출력 경로를 구분해 묶은 ZIP을 PR 본문에 업로드하거나 동일 파일의 다운로드 링크를 넣습니다. 입력·출력 경로·검증 head를 명시하고, 요약 표·최저값·로컬 경로만으로 대신하지 않습니다. -->
+- **전체 검증 범위의 Native·fresh WASM TSV 원본 첨부 링크:** <!-- Native TSV와 fresh WASM TSV를 모두 산출·제출합니다. 두 출력 경로를 구분해 원본 TSV를 PR 본문에 첨부하거나 동일 파일의 다운로드 링크를 넣습니다. 입력·출력 경로·검증 head를 명시하고, 요약 표·최저값·로컬 경로만으로 대신하지 않습니다. -->
 - **대표 페이지 이미지:** <!-- 변경 효과·주요 경계를 보여주는 대표 페이지에만 아래 표를 작성합니다. 전체 페이지의 PNG 생성·커밋·첨부는 필요하지 않습니다. 전체 검증 범위는 위 TSV로 제공합니다. -->
 
 <!-- 입력마다 Native/fresh WASM 두 행을 반복합니다. 대표 이미지의 점수와 검증 범위 전체의 최저값을 구분하세요.
@@ -98,8 +103,8 @@ PR 생성·제출 갱신·검토 요청을 하지 않습니다. 시간 제약·�
 실패/미실행 사유는 제출 전 로컬 작업 기록이며 PR 제출 허가가 아닙니다. 자기 branch에서 수정·재실행해 통과한 뒤 본문을 완성합니다.
 평균값·높은 페이지 선별·단순 글꼴 차이 추정·CI 녹색으로 면제하지 않습니다. 쪽수/분할 변경은 전체 페이지를 비교합니다.
 공급으로 해결 불가능한 실제 글꼴 차이만 위 계약의 예외로 제출하고 근거·미달 쪽·최종 font_mismatch_exception을 명시합니다. -->
-<!-- PR #7551의 Native/fresh WASM 증적 표처럼 대표 입력·페이지마다 아래 소제목/표/판독 묶음을 반복합니다.
-https://github.com/edwardkim/rhwp/pull/7551
+<!-- PR #7697의 증적 구성처럼 대표 입력·페이지마다 아래 소제목/표/판독 묶음을 반복합니다.
+https://github.com/edwardkim/rhwp/pull/7697
 같은 입력·쪽의 Native/fresh WASM review/standalone overlay 네 이미지를 한 표에서 바로 대조하게 합니다.
 대표 이미지 대신 파일 경로만 적거나 서로 다른 쪽을 섞은 표를 쓰지 않습니다. 전체 페이지 이미지 나열·전쪽 overlay 합성은 요구하지 않습니다. -->
 
@@ -115,12 +120,42 @@ https://github.com/edwardkim/rhwp/pull/7551
 - 이 쪽의 실루엣 보조값·gate: Native / fresh WASM <!-- 실행한 값과 판정을 각각 적습니다. 개선을 주장하면 같은 입력·쪽의 수정 전후 값과 source SHA를 연결합니다. -->
 - 사람 판독 및 남은 차이: <!-- 90% 이상이어도 수식 모양·장평·기준선·첨자·장식, 관계 기호 양쪽·본문·보기 번호·탭·줄 사이 간격을 확대 대조하세요. 변경 영역·알려진 차이·사용자 지적 영역의 내용 식별자·같은 배율의 확대 증거·원인·처리 결과를 기존 증적에 연결하세요. 표·그림·줄바꿈·테두리·앞뒤 내용도 확인하고 점수 통과와 판독 결과를 구분합니다. 확인된 결함은 출력 보정·재검증 후 완료 여부를 판정합니다. -->
 
+#### 실제 출력 백엔드 증적 (해당하는 경우)
+
+<!-- [출력 백엔드 소비 경로 검증](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/renderer_backend_verification.md)에 따라
+변경한 값의 실제 소비 경로를 확인합니다. 아래 표는 같은 입력·쪽의 예시입니다. 해당 경로만 작성하고,
+미검증과 비해당의 근거를 구분합니다. Native SVG raster를 실제 Native Skia PNG로,
+fresh WASM SVG raster를 Studio Canvas2D/CanvasKit 화면으로 표시하지 않습니다.
+화면 캡처는 본문·앞뒤 레이어·DOM 그림 등을 포함한 실제 Studio 출력이며 CanvasKit software/GPU를 구분합니다. -->
+
+| 실제 Native Skia PNG (print) | Studio Canvas2D (screen) | Studio CanvasKit software 또는 GPU (screen) |
+| --- | --- | --- |
+| ![입력명 pN Native Skia PNG](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-skia.png) | ![입력명 pN Studio Canvas2D](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-canvas2d.png) | ![입력명 pN Studio CanvasKit](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-canvaskit.png) |
+
+- 실행 신원·환경: <!-- source SHA·Native binary/WASM bundle SHA-256·빌드 옵션·브라우저 버전·print/screen 프로필·DPI/zoom/DPR·조판 세대·실제 글꼴 공급/선택 face를 기존 검증 기록에 연결합니다. 서로 다른 환경의 점수를 동일 조건의 무회귀 증거로 사용하지 않습니다. -->
+- 직접 판독·남은 차이·미검증 경로: <!-- 같은 배율에서 변경 영역을 확인한 결과와 근거를 적습니다. 점수 통과만으로 glyph 모양·crop·화살촉·레이어 보존을 판정하지 않습니다. -->
+
 <!-- 조판 영향 변경에서는 Native/fresh WASM 두 경로를 모두 검증한 뒤 각 경로의 이미지를 넣습니다.
 미실행 경로의 행을 지우거나 사유만 적어 제출하지 않습니다. 실제 asset 존재와 PR 본문 Markdown을
 PR 생성·수정 뒤 다시 확인한다. OWNER/REPOSITORY/HEAD_SHA/ISSUE_OR_TOPIC/INPUT/pNNN을 실제 값으로 치환한다.
 ISSUE_OR_TOPIC에는 이슈 번호·주제 또는 주제 이름을 넣는다 (PR 번호 불필요).
 본문의 네 이미지는 자신의 입력·페이지·출력 경로에 대응하는 제출 head 증적을 사용한다.
 merge 뒤 comment에는 같은 asset의 merge SHA 고정 URL을 별도로 사용한다. -->
+
+## PR 게시 후 CI 기록 (해당하는 경우)
+
+<!-- PR 생성 전에는 이 절을 제거합니다. 게시 후 실제 CI 결과가 확인되면 갱신합니다.
+collaborator self PR의 review·오늘할일 기록은 정확한 code head CI 성공 후 문서-only trailing commit으로 작성합니다.
+일반 기여자에게 해당 메인터너 문서 작성을 요구하지 않습니다. 예시: PR #7697의 CI 성공 후 self-review 기록.
+필수 게이트와 reuse/fast-pass 판정은 현재 PR workflow를 따릅니다. 녹색 job 이름만으로 재사용을 주장하지 않습니다. -->
+
+| 구분 | 정확한 head SHA | CI run 링크·실제 결과 | 검증 출처·재사용 근거 |
+| --- | --- | --- | --- |
+| 제품·회귀 코드 검증 | | | Full 또는 실제 provenance |
+| 문서-only trailing 검증 (해당 시) | | | source/test/fixture/workflow 불변 확인·trusted reuse/fast-pass 또는 Full |
+
+- trailing 변경 범위·최신 base와 merge tree 확인·review/오늘할일 링크 (해당 시):
+- 실패·취소·미실행 및 잔여 사항: <!-- 로컬 검증과 GitHub CI를 구분하고 진행 중인 결과를 성공으로 적지 않습니다. -->
 
 ## 성능 영향 및 측정 결과 (해당하는 경우)
 

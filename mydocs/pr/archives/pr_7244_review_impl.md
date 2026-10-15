@@ -96,7 +96,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 | [pdf/hwpctl_API_v2.4-hwp-2020.pdf](../../../pdf/hwpctl_API_v2.4-hwp-2020.pdf) | `1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74` |
 | [pdf/issue7235/156467175_press_release_header_logo_p1-2020.pdf](../../../pdf/issue7235/156467175_press_release_header_logo_p1-2020.pdf) | `1e791edc71173ec436fbdca3480705a97beade1f496318212440955077763cc2` |
 | [pdf/tac_object_host_line_height-2020.pdf](../../../pdf/tac_object_host_line_height-2020.pdf) | `f90ea6915a842ac2266f4dd737b2829bbb3b72b927b1658577f6ca8c8b9b6051` |
-| [pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf](../../../pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf) | `bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197` |
+| [pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf](../assets/issue7445/education-curriculum-map/existing-hwp-hancom2020-print.pdf) | `bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197` |
 | [samples/86712_regulatory_analysis.hwp](../../../samples/86712_regulatory_analysis.hwp) | `ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88` |
 | [samples/SO-SUEOP.hwp](../../../samples/SO-SUEOP.hwp) | `b5e410d4972b988240eb79f462c75ab3f92ce3415af6ed7f411906cc7498396c` |
 | [samples/basic/request.hwp](../../../samples/basic/request.hwp) | `99e63b90f4aa3197029299ab087bc46225b3c27c0d07d424145b20879b45f12e` |
@@ -118,7 +118,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 | [samples/issue7235/156086935_none_image_fill.hwp](../../../samples/issue7235/156086935_none_image_fill.hwp) | `b12aa445776bef38a003e8679865a9a0ed2f729ecef18099625c976efe64d6ae` |
 | [samples/issue7235/156467175_press_release_header_logo_p1.hwp](../../../samples/issue7235/156467175_press_release_header_logo_p1.hwp) | `559b2760ccb678ae22484bc7de8bc61347fff17d3b980d9bec3f2ecec8e07d57` |
 | [samples/lseg-05-tab.hwp](../../../samples/lseg-05-tab.hwp) | `0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c` |
-| [samples/task2287/1342000_edu_curriculum_map.hwp](../../../samples/task2287/1342000_edu_curriculum_map.hwp) | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
+| [samples/task2287/1342000_edu_curriculum_map.hwp](../assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp) | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
 | [tests/fixtures/issue6802/1400000-200600006_toc_leader_fill-2020.pdf](../../../tests/fixtures/issue6802/1400000-200600006_toc_leader_fill-2020.pdf) | `a55f4f55c89f70273996e30a3fb1885e3b3fcb86f14348824f01f713065ad6a6` |
 | [tests/fixtures/issue6802/1400000-200600006_toc_leader_fill.hwp](../../../tests/fixtures/issue6802/1400000-200600006_toc_leader_fill.hwp) | `e9bc5e78b412876ad3a810d01ba3b5ca5077e921f13cd15dde755c8f537bbeae` |
 | [tests/fixtures/issue6923/148738070_wrapper_table_stored_page_frame-2020.pdf](../../../tests/fixtures/issue6923/148738070_wrapper_table_stored_page_frame-2020.pdf) | `0dde093557a0a11cec2f01af94f3a8dcf5004c30d267f6f5ea3fa5ac65f9b4bf` |

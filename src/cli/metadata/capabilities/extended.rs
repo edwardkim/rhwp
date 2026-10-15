@@ -18,11 +18,24 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "pages",
             ],
         ),
-        cmd_gated(
-            "export-png",
-            "문서를 페이지별 PNG로 렌더 (native-skia)",
-            cfg!(feature = "native-skia"),
-        ),
+        {
+            let mut command = cmd_gated(
+                "export-png",
+                "문서를 페이지별 PNG로 렌더하고 --json 매니페스트 출력 (native-skia)",
+                cfg!(feature = "native-skia"),
+            );
+            command["json"] = serde_json::json!(true);
+            command["flags"] = serde_json::json!([
+                "--page", "-p", "--output", "-o", "--font-path", "--profile", "--compat",
+                "--font-environment", "--dpi", "--scale", "--json", "--metadata-only",
+                "--render-tree-output"
+            ]);
+            command["recordFields"] = serde_json::json!([
+                "schemaVersion", "source", "backend", "comparisonProfile", "layoutGeneration",
+                "outputDir", "pageCount", "renderedCount", "pages"
+            ]);
+            command
+        },
         {
             let mut command = cmd_gated(
                 "export-sixel",
@@ -34,16 +47,6 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
             ]);
             command
         },
-        cmd_gated(
-            "export-png-gpu",
-            "SVG를 GPU(vello/wgpu)로 래스터화해 페이지별 PNG로 렌더 (--benchmark 로 CPU 대비 실측)",
-            cfg!(feature = "gpu"),
-        ),
-        cmd_gated(
-            "gpu-info",
-            "사용 가능한 GPU 어댑터 열거 (export-png-gpu 가 쓸 백엔드 확인)",
-            cfg!(feature = "gpu"),
-        ),
         cmd_json(
             "export-pdf",
             "문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)",

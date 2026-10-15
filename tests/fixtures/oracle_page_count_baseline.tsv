@@ -143,7 +143,6 @@ samples/hwp3-sample5-hwpx.hwpx	64	64
 samples/hwp3-sample5.hwp	64	64
 samples/hwp_table_test-m.hwp	3	3
 samples/hwp_table_test.hwp	3	3
-samples/hwpctl_API_v2.4.hwp	105	105
 samples/hwpctl_Action_Table__v1.1.hwp	16	16
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	9	9
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	9	9
@@ -472,7 +471,6 @@ samples/table-in-tbox.hwp	2	2
 samples/table-ipc.hwp	10	10
 samples/table-vpos-01.hwp	5	5
 samples/table-vpos-01.hwpx	5	5
-samples/table_giant_cell_overfill.hwpx	48	48
 samples/table_scattered_header_rowbreak.hwp	52	52
 samples/tac-case-001.hwp	1	1
 samples/tac-case-002.hwp	1	1

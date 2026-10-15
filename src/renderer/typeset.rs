@@ -287,6 +287,8 @@ struct DeferredStoredFrameControl {
     para_index: usize,
     control_index: usize,
     placement: crate::renderer::float_placement::ParagraphFloatPlacement,
+    /// This original zero-origin body starts after the deferred object's page.
+    following_body_para_index: Option<usize>,
 }
 
 /// 호스트 문단의 spacing (표 전/후)
@@ -1443,7 +1445,7 @@ fn tac_control_indices_for_line(
         return Vec::new();
     }
 
-    if let Some(assign) = crate::renderer::composer::stored_tac_line_assignment(para, comp) {
+    if let Some(assign) = crate::renderer::composer::composed_tac_line_assignment(para, comp) {
         return assign
             .into_iter()
             .filter_map(|(ci, owner)| (owner == line_idx).then_some(ci))
@@ -1844,25 +1846,28 @@ fn rowbreak_row_has_internal_saved_vpos_reset(
         .cells
         .iter()
         .filter(|cell| cell.row as usize == row)
-        .any(|cell| {
-            // 저장된 물리 page reset은 cell paragraph 경계에서 시작할 수도 있다. 각
-            // paragraph 안의 `windows(2)`만 보면 `<OPTN>` 다음 `간 특수 검사`처럼
-            // p[n]의 마지막 LINE_SEG → p[n+1]의 첫 LINE_SEG reset을 놓친다.
-            let mut previous_vpos = None;
-            for para in &cell.paragraphs {
-                for seg in para
-                    .line_segs
-                    .iter()
-                    .filter(|seg| !is_synthetic_line_seg(seg))
-                {
-                    if previous_vpos.is_some_and(|previous| previous > 0 && seg.vertical_pos <= 0) {
-                        return true;
-                    }
-                    previous_vpos = Some(seg.vertical_pos);
-                }
+        .any(cell_has_internal_saved_vpos_reset)
+}
+
+/// 셀 안의 저장 줄 사이에서 `양수 vpos → 0 이하` 되감김이 있는지 판별한다.
+fn cell_has_internal_saved_vpos_reset(cell: &crate::model::table::Cell) -> bool {
+    // 저장된 물리 page reset은 cell paragraph 경계에서 시작할 수도 있다. 각
+    // paragraph 안의 `windows(2)`만 보면 `<OPTN>` 다음 `간 특수 검사`처럼
+    // p[n]의 마지막 LINE_SEG → p[n+1]의 첫 LINE_SEG reset을 놓친다.
+    let mut previous_vpos = None;
+    for para in &cell.paragraphs {
+        for seg in para
+            .line_segs
+            .iter()
+            .filter(|seg| !is_synthetic_line_seg(seg))
+        {
+            if previous_vpos.is_some_and(|previous| previous > 0 && seg.vertical_pos <= 0) {
+                return true;
             }
-            false
-        })
+            previous_vpos = Some(seg.vertical_pos);
+        }
+    }
+    false
 }
 
 /// [#7288] «쪽 경계에서» 값 0 «나누지 않음» 의 **원자 규칙**을 이 표에 걸 수 있는가.
@@ -1917,7 +1922,12 @@ pub(in crate::renderer) fn cell_unit_row_is_atomic_here(
 
 /// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
 fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
-    (0..table.row_count as usize).any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))
+    // [#7639] 행마다 전체 셀을 다시 거르지 않고 셀을 한 번만 훑는다(행×셀 → 셀).
+    let row_count = table.row_count as usize;
+    table
+        .cells
+        .iter()
+        .any(|cell| (cell.row as usize) < row_count && cell_has_internal_saved_vpos_reset(cell))
 }
 
 /// Whether every text-bearing cell proves, through its stored line segments,
@@ -3094,6 +3104,7 @@ fn saved_line_range_fits_body_tail(
     start_line: usize,
     end_line: usize,
     body_height_px: f64,
+    page_vpos_base: i32,
     dpi: f64,
 ) -> bool {
     if start_line >= end_line || end_line > para.line_segs.len() {
@@ -3108,7 +3119,9 @@ fn saved_line_range_fits_body_tail(
         if prev_vpos.is_some_and(|prev| seg.vertical_pos < prev) {
             return false;
         }
-        let bottom_px = hwpunit_to_px(seg.vertical_pos.saturating_add(seg.line_height), dpi);
+        let Some((_, bottom_px)) = line_seg_visible_bounds_px(seg, page_vpos_base, dpi) else {
+            return false;
+        };
         if bottom_px > body_height_px + 0.5 {
             return false;
         }
@@ -3251,6 +3264,7 @@ mod controls;
 #[path = "typeset/inline_flow.rs"]
 mod inline_flow;
 mod notes;
+pub(crate) use notes::endnotes::content::endnote_first_para_render_offset;
 mod paragraph;
 mod section;
 mod state;
@@ -4046,6 +4060,7 @@ impl TypesetEngine {
         is_first_placed: bool,
         is_last_placed: bool,
         styles: &ResolvedStyleSet,
+        composed: Option<&ComposedParagraph>,
         // [#3837] 값이 있는 가장 가까운 앞 문단의 마지막 저장 vpos.
         prev_stored_vpos: Option<i32>,
     ) {
@@ -4333,9 +4348,31 @@ impl TypesetEngine {
         let style = styles.para_styles.get(para.para_shape_id as usize);
         let left = style.map_or(0.0, |s| s.margin_left);
         let right = style.map_or(0.0, |s| s.margin_right);
-        let before_text: f64 = (0..tac_table_line_idx.unwrap_or(0))
-            .map(|line| fmt.line_advance(line))
-            .sum();
+        let owned_row = (tac_count > 1
+            && st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && !self.render_normalization.table_text_reflowed(table)
+            && ft.table_footnotes.is_empty())
+        .then(|| {
+            controls::stored_tac::owned_row::prepare(
+                para,
+                table,
+                ctrl_idx,
+                composed,
+                ft.effective_height,
+                styles,
+                self.dpi,
+            )
+        })
+        .flatten();
+        // 앞선 TAC 소유 줄은 이미 각자의 표 경로에서 소비됐다.
+        let before_text: f64 = if owned_row.is_some() {
+            0.0
+        } else {
+            (0..tac_table_line_idx.unwrap_or(0))
+                .map(|line| fmt.line_advance(line))
+                .sum()
+        };
         let advance = hwpunit_to_px(
             (table.common.width as i32)
                 .saturating_add(i32::from(table.outer_margin_left))
@@ -4475,6 +4512,15 @@ impl TypesetEngine {
                 prefix_carried_separately = true;
             }
             st.advance_column_or_new_page();
+            // A bare object row without saved LineSeg uses the formatted
+            // table band. Its old-column paragraph-before band is not part
+            // of the new column's object box: paint starts this row at the
+            // column top and retains only the table's own outer top margin.
+            // Stored rows and visible text prefixes have their own origins.
+            if para.line_segs.is_empty() && !para_has_non_whitespace_text(para) {
+                let outer_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+                table_height -= ft.host_spacing.before - outer_top;
+            }
             // 이전 단의 그림은 새 단을 점유하지 않는다. 이미 확정한 다른 표의 metadata는
             // flush가 전 단에 보존하고 이 표는 새 단의 기존 배치 정책으로 시작한다.
             side_wrap_placement = None;
@@ -4497,6 +4543,7 @@ impl TypesetEngine {
                     y: next_column.y + st.current_height,
                     clearance: 0.0,
                     advance_end: None,
+                    stored_horizontal_pen: None,
                 }));
             }
         }
@@ -4508,6 +4555,18 @@ impl TypesetEngine {
             placement.y -= placement_column.y;
             st.record_inline_placement((para_idx, ctrl_idx), placement);
             st.invalidate_vpos_after_clearance(placement.clearance);
+        }
+        if let Some(row) = owned_row.filter(|_| side_wrap_placement.is_none()) {
+            st.record_inline_placement(
+                (para_idx, ctrl_idx),
+                super::float_placement::InlineBoxPlacement {
+                    x: row.horizontal_pen,
+                    y: st.current_height,
+                    clearance: 0.0,
+                    advance_end: Some(st.current_height + table_height),
+                    stored_horizontal_pen: Some(row.horizontal_pen),
+                },
+            );
         }
         // place_table_with_text의 후속 텍스트가 새 단으로 넘어가면 flush가 폐기한다.
         // 호출 뒤 갱신하면 이전 단의 표 하단을 새 단에 유출할 수 있다.
@@ -4678,6 +4737,16 @@ impl TypesetEngine {
             && signed_vertical_offset > 0
             && !para.text.is_empty()
             && !whitespace_host_line_covers_table
+            // 앞·뒤 저장 줄로 확정한 표 뒤 호스트는 pre-text가 아니다.
+            // 같은 저장 원점에서 post-text로 한 번만 배치·전진한다.
+            && !st
+                .paragraph_float_placements
+                .get(&(para_idx, ctrl_idx))
+                .is_some_and(|placement| {
+                    placement.stored_host_origin.is_some_and(|origin| {
+                        placement.table_top < origin && placement.occupied_bottom <= origin
+                    })
+                })
             // 확정 프레임이 있고 저장 앵커가 앞쪽에서 소진된 경우에만
             // 그 공백 줄을 이월된 표 앞에 다시 방출하지 않는다.
             // 현재 쪽의 일반 공백 줄은 기존 점유 높이를 유지한다.
@@ -4799,6 +4868,7 @@ impl TypesetEngine {
                     y: origin,
                     clearance: 0.0,
                     advance_end: Some(end),
+                    stored_horizontal_pen: None,
                 },
             );
             Some(end)
@@ -4989,6 +5059,10 @@ impl TypesetEngine {
         } else if let Some(placement) = st
             .paragraph_float_placements
             .get(&(para_idx, ctrl_idx))
+            .filter(|placement| {
+                placement.flow
+                    != crate::renderer::float_placement::ParagraphFloatFlow::StoredSquareWrap
+            })
             .copied()
         {
             // 빈 저장 호스트도 닫힌 원본 프레임을 소유할 수 있다.
@@ -5125,7 +5199,13 @@ impl TypesetEngine {
             } else if hangul_flowed_beside_table {
                 let band_top = st.current_height + pre_height;
                 st.align_flow_to(band_top + stored_host_line_px.unwrap_or(0.0));
-                st.register_square_band(band_top, band_top + table_total_height);
+                let frame = st.paragraph_float_placements.get(&(para_idx, ctrl_idx));
+                st.register_square_band(
+                    // Absorbed source offsets are relative to the host's
+                    // line origin, not the displaced object's physical top.
+                    band_top,
+                    frame.map_or(band_top + table_total_height, |frame| frame.occupied_bottom),
+                );
             } else if let Some(extras_hu) = empty_host_physical_extras_hu {
                 st.advance_flow_by(
                     pre_height + table_total_height + hwpunit_to_px(extras_hu as i32, self.dpi),
@@ -5330,7 +5410,15 @@ impl TypesetEngine {
         // TAC 표: trailing line_spacing 복원 (Paginator place_table_fits:777-783 동일)
         // has_post_text는 tac_table_count와 무관하게 텍스트 줄 존재 여부만 확인
         let is_tac = self.is_effective_tac_table(para, table, fmt);
-        if is_tac && !has_post_text {
+        // Multi-line TAC flow already includes this line's outgoing spacing
+        // in every nonterminal table_height. Restoring the paragraph's tail
+        // after each table reserves the same spacing a second time and shifts
+        // the intervening floating object away from its accepted line frame.
+        let has_following_tac_table = para.controls.iter().skip(ctrl_idx + 1).any(|control| {
+            matches!(control, Control::Table(next) if self.is_effective_tac_table(para, next, fmt))
+        });
+        let restore_terminal_tac_spacing = is_tac && !has_post_text && !has_following_tac_table;
+        if restore_terminal_tac_spacing {
             st.advance_flow_by(fmt.total_height - fmt.height_for_fit);
         }
         // [#2243 진단] 배치 종료 시 누적 — 동작 불변.
@@ -5339,7 +5427,7 @@ impl TypesetEngine {
                 "DIAG_TAC_END pi={} cur_h={:.1} trailing_fired={} has_post_text={} delta={:.1}",
                 para_idx,
                 st.current_height,
-                is_tac && !has_post_text,
+                restore_terminal_tac_spacing,
                 has_post_text,
                 fmt.total_height - fmt.height_for_fit,
             );
@@ -5610,13 +5698,10 @@ impl TypesetEngine {
         })
     }
 
-    /// 표의 세로 오프셋 추출 (Paginator와 동일).
-    ///
-    /// `raw_ctrl_data` 의 첫 4바이트는 `attr` 비트 플래그이고 `vertical_offset` 은
-    /// 다음 4바이트 (`raw_ctrl_data[4..8]`) 이지만, IR 의 `common.vertical_offset` 가
-    /// 파서가 채운 권위 있는 값이므로 이를 직접 사용한다 (#178).
+    /// 표의 흐름 오프셋. 원본 common 값과 캡션을 포함한 점유 상자의 계약을
+    /// paint와 같은 producer로 해석한다. 원본 IR은 변경하지 않는다.
     fn get_table_vertical_offset(table: &crate::model::table::Table) -> u32 {
-        table.common.vertical_offset as u32
+        crate::renderer::float_placement::captioned_table_flow_vertical_offset_hu(table) as u32
     }
 }
 
@@ -5785,6 +5870,7 @@ mod issue_3780_line_advance_oob {
 
     fn fp(lines: usize) -> FormattedParagraph {
         FormattedParagraph {
+            stored_ladder_is_filler: false,
             tail_line_remaining_width: None,
             computed_host_lines: None,
             square_host_plan: None,
@@ -6797,6 +6883,7 @@ mod tests {
             host_placement: None,
             empty_opening_row_frame: None,
             source_text_first_frame_height: None,
+            source_terminal_suffix_start: None,
             source_single_cell_row_frames: None,
             host_frame: (0, 0, 0.0_f64.to_bits()),
             row_count: 3,
@@ -6915,6 +7002,7 @@ mod tests {
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
                 stored_paragraph_flow_ends: Default::default(),
+                stored_column_top_spacings: Default::default(),
                 paragraph_float_placements: Default::default(),
                 float_pushed_line_spacings: Default::default(),
             }],
@@ -7018,6 +7106,9 @@ mod tests {
                 end_row_height_override: None,
                 start_row_height_override: None,
                 straddle_row_relief: Vec::new(),
+                straddle_page_bands: Vec::new(),
+                fragment_row_heights: None,
+                end_row_owns_stored_frame: false,
             }]),
             page_with_items(vec![PageItem::PartialTable {
                 para_index: 7,
@@ -7033,6 +7124,9 @@ mod tests {
                 end_row_height_override: None,
                 start_row_height_override: None,
                 straddle_row_relief: Vec::new(),
+                straddle_page_bands: Vec::new(),
+                fragment_row_heights: None,
+                end_row_owns_stored_frame: false,
             }]),
         ];
 
@@ -7096,31 +7190,49 @@ mod tests {
             .map(crate::renderer::composer::compose_paragraph)
             .collect();
 
-        let result = engine.typeset_section_with_variant(
-            &paras,
-            &composed,
-            &styles,
-            &a4_page_def(),
-            &ColumnDef::default(),
-            0,
-            &[],
-            false,
-            Default::default(),
-            false,
-            false,
-            Some(&shape),
-            None,
-            &std::collections::HashSet::new(),
-            EndnoteDeferral::None,
-        );
+        let run_with_shape = |shape: &FootnoteShape| {
+            engine.typeset_section_with_variant(
+                &paras,
+                &composed,
+                &styles,
+                &a4_page_def(),
+                &ColumnDef::default(),
+                0,
+                &[],
+                false,
+                Default::default(),
+                false,
+                false,
+                Some(shape),
+                None,
+                &std::collections::HashSet::new(),
+                EndnoteDeferral::None,
+            )
+        };
 
-        let expected = footnote_separator_overhead_px(&shape, DEFAULT_DPI)
-            + hwpunit_to_px(400, DEFAULT_DPI)
-            + footnote_between_notes_margin_px(&shape, DEFAULT_DPI)
-            + hwpunit_to_px(600, DEFAULT_DPI);
+        let result = run_with_shape(&shape);
+        let without_margins = run_with_shape(&FootnoteShape {
+            separator_margin_top: 0,
+            note_spacing: 0,
+            raw_unknown: 0,
+            ..shape.clone()
+        });
+        // 폭 0인 합성 줄은 재조판된다. LH 400/600을 실제 텍스트 높이로
+        // 고정하지 않고 같은 두 각주의 예약 높이에서 구역 여백의 몫을 확인한다.
+        // 구분선 위·아래 여백과 각주 사이 여백(두 각주 사이 한 번)만 달라야 한다.
+        let expected_delta = hwpunit_to_px(1000 + 700 + 900, DEFAULT_DPI);
         let page = result.pages.first().expect("page");
+        let control = without_margins.pages.first().expect("대조군 page");
         assert_eq!(page.footnotes.len(), 2);
-        assert!((page.layout.footnote_area.height - expected).abs() < 0.01);
+        assert_eq!(control.footnotes.len(), 2);
+        assert_eq!(result.pages.len(), without_margins.pages.len());
+        assert!(
+            (page.layout.footnote_area.height
+                - control.layout.footnote_area.height
+                - expected_delta)
+                .abs()
+                < 0.01
+        );
     }
 
     #[test]

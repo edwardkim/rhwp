@@ -25,6 +25,7 @@ pub use commands::paragraph_block::{
 pub use commands::{TableColumnWidths, TableCreationOptions};
 pub mod converters;
 pub(crate) mod html_table_import;
+mod html_table_width;
 /// 한글 클립보드 문서모델(hwpjson) → HWPX 변환
 pub mod hwpjson;
 pub mod hyperlink;
@@ -395,6 +396,12 @@ impl DocumentCore {
                         }
                     }
                 }
+            }
+        }
+        for section in &self.document.sections {
+            queries::equation_fonts::collect(&section.paragraphs, &mut fonts);
+            for master in &section.section_def.master_pages {
+                queries::equation_fonts::collect(&master.paragraphs, &mut fonts);
             }
         }
         let fonts_json: Vec<String> = fonts

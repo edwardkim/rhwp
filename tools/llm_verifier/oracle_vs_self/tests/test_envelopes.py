@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from support import PKG
+from oracle_vs_self.contracts import bind_visual_sweep_manifest
 from oracle_vs_self.decide import (
     NO_ORACLE_SELF_CONSISTENT,
     ORACLE_CHEAP_FAIL,
@@ -14,19 +15,41 @@ from oracle_vs_self.envelopes import load_envelope
 
 
 class EnvelopeBindTests(unittest.TestCase):
-    def test_page_smoke_mixed(self) -> None:
-        rows = load_envelope(PKG / "fixtures" / "envelopes" / "page_smoke_mixed.json")
-        classes = [decision.verdict_class for _signals, decision in rows]
-        self.assertEqual(
-            classes,
-            [ORACLE_TRUSTED, ORACLE_PAGECOUNT_MISMATCH, ORACLE_CHEAP_FAIL],
-        )
 
-    def test_resolver_unmatched_is_self_only(self) -> None:
-        rows = load_envelope(PKG / "fixtures" / "envelopes" / "resolver_mini.json")
-        classes = [decision.verdict_class for _signals, decision in rows]
-        self.assertEqual(classes[:2], [ORACLE_TRUSTED, ORACLE_TRUSTED])
-        self.assertEqual(classes[2], NO_ORACLE_SELF_CONSISTENT)
+    def test_visual_sweep_current_and_legacy_complete_manifests(self) -> None:
+        for version in (1, 2):
+            with self.subTest(version=version):
+                signals = bind_visual_sweep_manifest({
+                    "schema_version": version,
+                    "provenance": {"pdf": {"path": "reference.pdf"}},
+                    "run_state": "complete",
+                    "font_mismatch_evidence": None,
+                })
+                self.assertTrue(signals.has_hangul_pdf)
+                self.assertTrue(signals.cheap_ok)
+
+    def test_visual_sweep_noncomplete_or_unsupported_manifest_is_rejected(self) -> None:
+        for version, state in (
+            (1, "incomplete"), (1, "failed"), (1, ""),
+            (2, "incomplete"), (2, "failed"), (2, ""), (3, "complete"),
+        ):
+            with self.subTest(version=version, state=state):
+                signals = bind_visual_sweep_manifest({
+                    "schema_version": version,
+                    "provenance": {"pdf": {"path": "reference.pdf"}},
+                    "run_state": state,
+                })
+                self.assertFalse(signals.cheap_ok)
+
+    def test_visual_sweep_complete_manifest_still_requires_reference_pdf(self) -> None:
+        signals = bind_visual_sweep_manifest({
+            "schema_version": 2,
+            "provenance": {"hwp": {"path": "original.hwpx"}},
+            "run_state": "complete",
+        })
+        self.assertFalse(signals.has_hangul_pdf)
+        self.assertFalse(signals.cheap_ok)
+
 
     def test_multiver_disagree(self) -> None:
         rows = load_envelope(PKG / "fixtures" / "envelopes" / "multiver_disagree.json")
@@ -43,10 +66,6 @@ class EnvelopeBindTests(unittest.TestCase):
         )
         self.assertEqual(mismatch[0][1].verdict_class, ORACLE_PAGECOUNT_MISMATCH)
 
-    def test_visual_sweep_complete_run(self) -> None:
-        rows = load_envelope(PKG / "fixtures" / "envelopes" / "visual_sweep_run.json")
-        self.assertEqual(rows[0][1].verdict_class, ORACLE_TRUSTED)
-        self.assertTrue(rows[0][0].has_hangul_pdf)
 
 
 if __name__ == "__main__":

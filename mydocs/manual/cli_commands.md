@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-09-16
+last_verified: 2026-10-12
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -187,23 +187,21 @@ HWP/HWPX → SVG.
 
 ### `export-png <파일> [옵션]` *(native-skia feature 필요)*
 HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_png_command.md](export_png_command.md)
-- `-o`, `-p`, `--font-path` (공통/폰트)
+- `-o`, `-p`, `--font-path` (공통/폰트). `-p`는 0부터 시작하며 여러 번 지정할 수 있다.
+- `--json` — 전체 쪽수와 실제 PNG 경로·bytes·출력 backend/profile의 JSON manifest만 stdout에 출력.
+- `--metadata-only` — PNG를 만들지 않고 전체 쪽수 JSON만 출력.
+- `--render-tree-output <폴더>` — 같은 문서·글꼴 환경의 선택 쪽 render tree를 함께 저장.
+- `capabilities --mcp`의 `hwp_export_png`는 원본·출력 폴더를 받아 같은 JSON 계약을 사용한다.
+  `requiresFeature: native-skia`와 현재 빌드의 `available`을 함께 확인한다.
 - `--scale <배율>` (기본 1.0), `--dpi <값>`(pHYs 메타 + scale 자동), `--max-dimension <픽셀>`(longest edge)
 - `--vlm-target <프리셋>` — claude / gpt4v-low / gpt4v-high(gpt4v) / gemini / qwen-vl(qwen) / llava
-- `--profile <프로필>` — 출력 프로필. **기본 `high-quality`(인쇄 등가)** —
-  그림 미지정 placeholder 는 억제된다. 편집기식 표시가 필요하면
-  `--profile screen` 을 명시한다 (#2297, #2225 계약).
+- `--profile <프로필>` — **기본 `screen`**. 인쇄 비교에는 `--profile print`를 명시한다.
+  Print에서는 편집 화면 안내문·미지정 그림 placeholder를 제외한다.
 - `--compat 2022|2024` — 목표 한글 조판 세대. [조판 세대](#조판-세대-compat)
 
-### `export-png-gpu <파일.hwp|파일.hwpx> [옵션]` / `gpu-info` *(gpu feature 필요)*
-`export-png-gpu`는 기존 SVG 산출을 `vello`/`wgpu`로 래스터화하여 PNG로 내보내는 대량
-VLM 입력용 경로다. 문서 파싱·레이아웃을 GPU로 옮기는 명령은 아니며, 래스터화 단계만 대상이다.
-- `-o, --output <폴더>`(기본 `output/`)·`-p, --page <0-기준 번호>`·`--scale <배율>`(기본 2.0)·
-  `--font-path <경로>`(여러 번 가능)를 받는다.
-- `--benchmark`는 동일 SVG를 CPU `resvg`로도 래스터화하여 시간·픽셀 차이를 함께 보고하며,
-  `--repeat <N>`은 페이지별 반복 중 최솟값을 쓴다.
-- `gpu-info`로 실행 가능한 GPU 어댑터를 먼저 확인한다. `gpu` feature 없이 빌드한 바이너리는
-  두 명령을 사용법 오류(exit 2)로 거부한다.
+> 네이티브 `gpu` 옵션과 `export-png-gpu`·`gpu-info` 명령은 제거되었습니다.
+> PNG 출력에는 `native-skia` 빌드의 `export-png`를 사용합니다.
+> Studio·브라우저 확장의 Canvas2D/CanvasKit 렌더링은 별도 경로입니다.
 
 ### `export-pdf <파일> [옵션]`
 HWP/HWPX → PDF (svg2pdf + pdf-writer).

@@ -11,7 +11,8 @@
 #     — 이미 존재하는 두 디렉토리만 비교
 #
 # 기본 SAMPLES (지정 안 하면 사용):
-#   exam_kor exam_eng exam_science exam_math synam-001 aift 2010-01-06
+#   synam-001 aift 2010-01-06
+#   시험지 입력은 기본 회귀 비교에서 제외한다. 원본 파일은 보존한다.
 #
 # 출력:
 #   {sample}: total={N} same={M} diff={D}
@@ -19,7 +20,7 @@
 
 set -euo pipefail
 
-DEFAULT_SAMPLES=(exam_kor exam_eng exam_science exam_math synam-001 aift 2010-01-06)
+DEFAULT_SAMPLES=(synam-001 aift 2010-01-06)
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 usage() {

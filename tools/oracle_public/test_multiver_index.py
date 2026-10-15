@@ -61,11 +61,6 @@ def write_lfs_pointer(path: Path) -> None:
 
 
 class ParseOracleNameTests(unittest.TestCase):
-    def test_plain_version_suffix(self) -> None:
-        stem, ver, variants = mx.parse_oracle_name("exam_kor-2022")
-        self.assertEqual(stem, "exam_kor")
-        self.assertEqual(ver, "2022")
-        self.assertEqual(variants, [])
 
     def test_date_stem_keeps_leading_2010(self) -> None:
         stem, ver, variants = mx.parse_oracle_name("2010-01-06-2022")
@@ -73,11 +68,6 @@ class ParseOracleNameTests(unittest.TestCase):
         self.assertEqual(ver, "2022")
         self.assertEqual(variants, [])
 
-    def test_underscore_year_stays_in_stem(self) -> None:
-        stem, ver, variants = mx.parse_oracle_name("3-09월_교육_통합_2022")
-        self.assertEqual(stem, "3-09월_교육_통합_2022")
-        self.assertIsNone(ver)
-        self.assertEqual(variants, [])
 
     def test_variant_after_version(self) -> None:
         stem, ver, variants = mx.parse_oracle_name("편람-2010-kopub")

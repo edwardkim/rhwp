@@ -159,6 +159,8 @@ class MiniRepoTests(unittest.TestCase):
         by_ver = report["byHancomVersion"]
         self.assertEqual(by_ver["2018"]["pairCount"], 1)
         self.assertEqual(by_ver["2018"]["sampleCount"], 1)
+        # 독립 fixture 목록에는 2020 네 쌍과 2022 다섯 쌍의 일반 표본이 있다.
+        # 시험지 원본은 보존하지만 이 메타데이터용 임시 트리에는 넣지 않는다.
         self.assertEqual(by_ver["2020"]["pairCount"], 4)
         self.assertEqual(by_ver["2020"]["sampleCount"], 4)
         self.assertEqual(by_ver["2022"]["pairCount"], 5)

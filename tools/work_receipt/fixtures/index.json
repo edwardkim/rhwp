@@ -4,7 +4,7 @@
   "claim": "M-rcpt",
   "issue": 5478,
   "generator": "tools/work_receipt/fatten_work_receipt.py",
-  "generatedAt": "2026-08-18T11:28:01Z",
+  "generatedAt": "2026-10-10T07:40:03Z",
   "replay": [
     "notice_year",
     "org_rename",
@@ -24,7 +24,6 @@
     "table_label",
     "cell_amount",
     "seal_caption",
-    "hwpx_year",
     "newline_keep",
     "privacy_mask",
     "version_tag",
@@ -45,8 +44,6 @@
     "corp_name",
     "bid_round",
     "bid_price",
-    "exam_year",
-    "exam_subject",
     "minutes_date",
     "minutes_attend",
     "agenda_item",
@@ -173,5 +170,5 @@
     "head-missing",
     "usage"
   ],
-  "fileCount": 342
+  "fileCount": 336
 }

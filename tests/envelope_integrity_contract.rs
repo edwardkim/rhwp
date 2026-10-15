@@ -17,7 +17,21 @@
 //! `node_count` 로 나갔다. 별칭 조회 계층이 없는 정적 매핑 언어(C#·Swift)에서는
 //! 이 필드가 **사라진다** — M20 이 시작되면 바로 부딪힌다.
 
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
+
 use std::process::{Command, Output};
+
+mod corpus_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/common/corpus_scope.rs"
+    ));
+}
 
 include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -72,7 +86,9 @@ fn first_sample(ext: &str) -> Option<std::path::PathBuf> {
             .filter_map(|e| e.ok().map(|e| e.path()))
             .filter(|p| !is_deferred_exam_document(p.to_string_lossy().as_ref()))
             .filter(|p| {
-                p.is_file()
+                !exam_fixtures::is_exam_fixture(p)
+                    && p.is_file()
+                    && corpus_scope::sample_is_in_scope(p)
                     && p.extension()
                         .and_then(|e| e.to_str())
                         .is_some_and(|e| e.eq_ignore_ascii_case(ext))

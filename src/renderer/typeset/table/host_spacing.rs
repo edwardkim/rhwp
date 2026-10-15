@@ -5,7 +5,7 @@ use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile,
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::float_placement::{
     is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu, signed_hwpunit,
-    stored_empty_anchor_band_host_line_advance_hu,
+    square_float_outer_margin_top_hu, stored_empty_anchor_band_host_line_advance_hu,
 };
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -88,11 +88,13 @@ pub(super) fn resolve(
             .filter(|control| matches!(control, crate::model::control::Control::Table(_)))
             .count()
             == 1;
+    let empty_square_outer_top = square_float_outer_margin_top_hu(table)
+        .filter(|_| !crate::renderer::typeset::para_has_visible_text(para));
     let outer_top =
         if is_tac || is_para_topbottom_float(&table.common) || absolute_table_with_post_text {
             hwpunit_to_px(table.outer_margin_top as i32, dpi)
         } else {
-            0.0
+            empty_square_outer_top.map_or(0.0, |margin| hwpunit_to_px(margin, dpi))
         };
     // [Task #1841] visible-host 자리차지(TopAndBottom) 표는 outer_margin_bottom 을
     // 후속 재개 간격에 포함한다 (layout 재개 y 가산과 대칭 — 렌더/pagination 정합).
@@ -279,10 +281,7 @@ pub(super) fn resolve(
         // 전체 표와 같은 바깥여백을 마지막 조각 뒤 흐름에 한 번 전달한다.
         // 호스트 줄간격은 첫 조각의 계약이므로 여기서 반복하지 않는다.
         spacing_after_only: sa,
-        terminal_outer_bottom_flow: if crate::renderer::para_has_no_stored_line_segs(para)
-            && is_para_topbottom_float(&table.common)
-            && !is_tac
-        {
+        terminal_outer_bottom_flow: if is_para_topbottom_float(&table.common) && !is_tac {
             outer_bottom
         } else {
             0.0

@@ -2027,81 +2027,15 @@ impl DocumentCore {
         profile: RenderProfile,
         options: &PngExportOptions,
     ) -> Result<Vec<u8>, HwpError> {
-        use crate::renderer::layer_renderer::{LayerRasterRenderer, RasterRenderOptions};
-        use crate::renderer::skia::SkiaLayerRenderer;
-
-        let layer_tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
-
-        // 페이지 크기에서 effective scale + max_dimension 결정
-        let mut raster_options = RasterRenderOptions::default();
-
-        // VLM 프리셋 적용 (longest edge 한도 + 픽셀 수 한도)
-        let mut effective_max_dim: Option<i32> = options.max_dimension;
-        let mut effective_max_pixels: Option<u64> = None;
-        if let Some(target) = options.vlm_target {
-            let (longest_edge, max_pixels) = target.constraints();
-            // 명시 max_dimension 이 없으면 프리셋 한도 사용
-            effective_max_dim.get_or_insert(longest_edge);
-            effective_max_pixels = Some(max_pixels);
-        }
-
-        // scale 결정 우선순위:
-        // 1. 명시 scale (사용자 직접 지정)
-        // 2. max_dimension / VLM 기반 자동 계산
-        // 3. --dpi 만 지정 시 scale = dpi / 96.0 (#614)
-        // 4. 기본 1.0
-        let scale = if let Some(s) = options.scale {
-            s
-        } else if effective_max_dim.is_some() || effective_max_pixels.is_some() {
-            let mut auto_scale: f64 = 1.0;
-            // longest edge 한도
-            if let Some(max_dim) = effective_max_dim {
-                let longest_page_edge = layer_tree.page_width.max(layer_tree.page_height);
-                if longest_page_edge > 0.0 {
-                    auto_scale = auto_scale.min(max_dim as f64 / longest_page_edge);
-                }
-            }
-            // 픽셀 수 한도 (ceil + 부동소수점 오차 안전 마진 0.5%)
-            if let Some(max_pixels) = effective_max_pixels {
-                let page_pixels = layer_tree.page_width * layer_tree.page_height;
-                if page_pixels > 0.0 {
-                    let pixel_scale = (max_pixels as f64 / page_pixels).sqrt() * 0.995;
-                    auto_scale = auto_scale.min(pixel_scale);
-                }
-            }
-            // 1.0 초과 시는 페이지가 이미 충분히 작은 것이므로 1.0 으로 cap
-            auto_scale.min(1.0).max(0.1)
-        } else if let Some(dpi) = options.dpi {
-            (dpi / 96.0).max(0.1)
-        } else {
-            1.0
-        };
-
-        raster_options.scale = scale;
-        raster_options.dpi = options.dpi;
-        if let Some(max_dim) = effective_max_dim {
-            raster_options.max_dimension = max_dim;
-        }
-        if let Some(max_pixels) = effective_max_pixels {
-            raster_options.max_pixels = max_pixels;
-        }
-
-        let png_bytes = SkiaLayerRenderer::new()
-            .with_font_paths(&options.font_paths)
-            .render_png_with_options(&layer_tree, raster_options)?;
-
-        if let Some(dpi) = options.dpi {
-            Ok(inject_png_phys(png_bytes, dpi))
-        } else {
-            Ok(png_bytes)
-        }
+        super::png_export::NativePngExporter::new(profile, options.clone())
+            .render_page(self, page_num)
     }
 }
 
 /// PNG 바이트에 pHYs chunk 를 삽입한다 (IHDR 직후, 첫 IDAT 직전).
 /// pHYs chunk: 4-byte X ppm + 4-byte Y ppm + 1-byte unit(1=meter).
 #[cfg(not(target_arch = "wasm32"))]
-fn inject_png_phys(png: Vec<u8>, dpi: f64) -> Vec<u8> {
+pub(super) fn inject_png_phys(png: Vec<u8>, dpi: f64) -> Vec<u8> {
     const PNG_SIGNATURE: [u8; 8] = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
     const IHDR_DATA_LEN: usize = 13;
 
@@ -4803,7 +4737,9 @@ impl DocumentCore {
                     page_count: self.page_count(),
                 };
             };
-            let Some(paragraph) = section.paragraphs.get(paragraph_index) else {
+            // Continue in the same normalized IR used by begin/measurement.
+            let paragraphs = self.section_render_paragraphs(pending.descriptor.section_index);
+            let Some(paragraph) = paragraphs.get(paragraph_index) else {
                 return DeferredPaginationStepResult {
                     state: DeferredPaginationJobState::Stale,
                     revision,
@@ -4837,7 +4773,7 @@ impl DocumentCore {
                 .step_resumable_table_pagination(
                     &mut pending.renderer_job,
                     paragraph,
-                    &section.paragraphs,
+                    paragraphs,
                     table,
                     measured_table,
                     &self.styles,
@@ -4864,7 +4800,7 @@ impl DocumentCore {
                 ))
                 .finish_resumable_table_pagination(
                     pending.renderer_job,
-                    &section.paragraphs,
+                    self.section_render_paragraphs(section_index),
                     section_index,
                 )
             else {
@@ -9248,6 +9184,7 @@ mod tests {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),
         };
@@ -9371,6 +9308,7 @@ mod tests {
                 has_para_text: true,
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });
@@ -9526,6 +9464,7 @@ mod tests {
                 ..Default::default()
             },
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });
@@ -9573,6 +9512,7 @@ mod tests {
             Section {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
+                trailing_lists: None,
                 raw_stream: None,
                 raw_provenance: None,
             }
@@ -9644,6 +9584,7 @@ mod tests {
             Section {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
+                trailing_lists: None,
                 raw_stream: None,
                 raw_provenance: None,
             }
@@ -9708,6 +9649,7 @@ mod tests {
             Section {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
+                trailing_lists: None,
                 raw_stream: None,
                 raw_provenance: None,
             }
@@ -9766,6 +9708,7 @@ mod tests {
         document.sections.push(Section {
             section_def: SectionDef::default(),
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });

@@ -66,7 +66,7 @@ interface ProbeView {
 }
 
 const FIXTURES = [
-  ['exam_kor (필수)', 'exam_kor.hwp'], ['hwpspec (100+쪽)', 'hwpspec.hwp'],
+  ['hwpspec (100+쪽)', 'hwpspec.hwp'],
   ['kps-ai', 'kps-ai.hwp'], ['KTX 4-layer', 'basic/KTX.hwp'],
   ['4쪽 실문서', '21868765_별표2_보건소_분장사무.hwp'],
   ['21쪽 다중 레이어', 'issue6280/156742029_prosecutor_transfer_list.hwp'],

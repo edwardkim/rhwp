@@ -20,6 +20,31 @@ fn controls_are_inline_text_metadata(para: &Paragraph) -> bool {
         .all(|control| matches!(control, Control::Field(_) | Control::Hyperlink(_)))
 }
 
+/// An authoritative page-start flag owns the following physical fragment.
+/// Its origin is independent of the paragraph's later floating controls and
+/// of the legacy last-line allowance. Edited/recomposed ladders are not owners.
+pub(super) fn stored_page_start_line(
+    para: &Paragraph,
+    line_count: usize,
+    start_line: usize,
+) -> Option<usize> {
+    if para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || para.line_segs.len() != line_count
+    {
+        return None;
+    }
+    para.line_segs
+        .iter()
+        .enumerate()
+        .skip(start_line.saturating_add(1))
+        .find_map(|(index, line)| {
+            (!is_synthetic_line_seg(line)
+                && line.tag & crate::model::paragraph::LineSeg::TAG_FIRST_LINE_OF_PAGE != 0)
+                .then_some(index)
+        })
+}
+
 pub(super) fn internal_vpos_page_break_line(
     para: &Paragraph,
     line_count: usize,

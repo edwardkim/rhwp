@@ -82,6 +82,8 @@ class PrReviewGateTests(unittest.TestCase):
             check=True,
             text=True,
             capture_output=True,
+            encoding="utf-8",
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"},
         )
         self.assertIn("90% 실루엣 gate", completed.stdout)
 
@@ -405,6 +407,8 @@ class SelectedRasterTests(unittest.TestCase):
         self.assertEqual(len(commands), 2)
         self.assertEqual(commands[0][1:5], ["-f", "1", "-l", "1"])
         self.assertEqual(commands[1][1:5], ["-f", "3", "-l", "3"])
+        self.assertEqual(commands[0][7:9], ["-thinlinemode", "shape"])
+        self.assertEqual(commands[1][7:9], ["-thinlinemode", "shape"])
         self.assertEqual(commands[0][-2:], ["reference.pdf", str(Path("out") / "pdf")])
 
     def test_pdf_raster_commands_keeps_full_document_default(self) -> None:
@@ -412,10 +416,7 @@ class SelectedRasterTests(unittest.TestCase):
             Path("reference.pdf"), 144, Path("out/pdf"), None
         )
 
-        self.assertEqual(
-            commands,
-            [["pdftoppm", "-r", "144", "-png", "reference.pdf", str(Path("out") / "pdf")]],
-        )
+        self.assertEqual(commands, [["pdftoppm", "-r", "144", "-thinlinemode", "shape", "-png", "reference.pdf", str(Path("out") / "pdf")]])
 
 
 class EmbeddedFontPreflightTests(unittest.TestCase):
@@ -450,7 +451,7 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             report = Path(temp) / 'font-check.json'
             with self.assertRaisesRegex(SystemExit, 'Unicode cmap'):
                 SWEEP.check_sweep_embedded_fonts([svg], report)
-            record = json.loads(report.read_text())
+            record = json.loads(report.read_text(encoding="utf-8"))
             self.assertEqual(record['status'], 'failed')
             self.assertEqual(record['pages'][0]['fonts'][0]['family'], 'Fixture')
 

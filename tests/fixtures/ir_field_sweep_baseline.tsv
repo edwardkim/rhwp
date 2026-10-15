@@ -369,6 +369,7 @@ hwp5rb	셀보호2.hwp	sections[].paragraphs[].controls[].cells[].list_header_wid
 hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	217
 hwp5rb	통합재정통계(2010.11월).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	20
 hwp5rb	통합재정통계(2011.10월).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	20
+hwpx	143E433F503322BD33-ole.hwpx	sections[].paragraphs[].raw_header_extra[]	4
 hwpx	143E433F503322BD33.hwpx	doc_info.border_fills[].fill.image.brightness	1
 hwpx	143E433F503322BD33.hwpx	doc_info.border_fills[].fill.image.contrast	1
 hwpx	143E433F503322BD33.hwpx	sections[].paragraphs[].controls[].caption.paragraphs[].raw_header_extra[]	1

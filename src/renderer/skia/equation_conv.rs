@@ -5,8 +5,8 @@ use skia_safe::{
 };
 
 use super::font_lookup::{
-    select_typeface_for_character, text_family_candidates, typeface_candidates_for_families,
-    SystemFontFamilies,
+    match_system_family_style, select_typeface_for_character, text_family_candidates,
+    typeface_candidates_for_families, SystemFontFamilies,
 };
 
 use crate::renderer::equation::ast::MatrixStyle;
@@ -64,6 +64,48 @@ fn render_box(
     let y = parent_y + lb.y;
 
     match &lb.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            let family = crate::renderer::equation::hancom_glyphs::FONT_FAMILY;
+            let typeface = fonts
+                .custom_typefaces
+                .get(family)
+                .or_else(|| fonts.bundled_typefaces.get(family))
+                .cloned()
+                .or_else(|| {
+                    match_system_family_style(
+                        fonts.font_mgr,
+                        fonts.system_families,
+                        family,
+                        FontStyle::normal(),
+                    )
+                });
+            let mut font = if let Some(typeface) = typeface {
+                Font::new(typeface, fs as f32)
+            } else {
+                let mut font = Font::default();
+                font.set_size(fs as f32);
+                font
+            };
+            font.set_edging(font::Edging::AntiAlias);
+            font.set_hinting(skia_safe::FontHinting::None);
+            font.set_subpixel(true);
+            let mut paint = Paint::default();
+            paint.set_anti_alias(true);
+            paint.set_color(color);
+            for ((glyph, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears)
+            {
+                font.set_skew_x(-(*shear as f32));
+                canvas.draw_str(
+                    glyph.to_string(),
+                    (
+                        (x + offset) as f32,
+                        (y + lb.baseline + run.baseline_shift) as f32,
+                    ),
+                    &font,
+                    &paint,
+                );
+            }
+        }
         LayoutKind::Row(children) => {
             for child in children {
                 render_box(canvas, fonts, child, x, y, color, fs, italic, bold);

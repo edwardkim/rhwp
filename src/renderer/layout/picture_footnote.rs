@@ -1397,6 +1397,38 @@ impl LayoutEngine {
         }
     }
 
+    /// The saved-note composer retains these source lines without reflow.
+    /// Source pagination owns their page cuts; an edited or fallback note uses
+    /// the newly composed physical budget instead.
+    pub(crate) fn footnote_area_has_stored_lines(
+        &self,
+        footnotes: &[FootnoteRef],
+        paragraphs: &[Paragraph],
+        area_width: f64,
+    ) -> bool {
+        // 저장 줄이 있어도 현재 각주 영역보다 넓은 캐시는 같은 조판을 증언하지 않는다.
+        // 생성 각주가 제본 여백을 빼기 전 폭을 저장한 경우 실제 영역을 재조판한다.
+        let width_hu = i64::from(crate::renderer::px_to_hwpunit(area_width, self.dpi));
+        !footnotes.is_empty()
+            && footnotes.iter().all(|note| {
+                let paras = get_footnote_paragraphs(note, paragraphs);
+                !paras.is_empty()
+                    && paras.iter().all(|para| {
+                        !para.line_segs.is_empty()
+                            && !para.stored_text_partition_is_dirty()
+                            && para.line_segs.iter().all(|line| {
+                                line.line_height > 0
+                                && line.segment_width > 0
+                                && i64::from(line.column_start) + i64::from(line.segment_width)
+                                    <= width_hu
+                                && line.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                    })
+            })
+    }
+
     pub(crate) fn estimate_footnote_area_height(
         &self,
         footnotes: &[FootnoteRef],
@@ -1759,7 +1791,40 @@ impl LayoutEngine {
                     )
                 })
                 .flatten();
-                if draw_number && numbered.is_none() {
+                if !draw_number
+                    && composed.lines.len() == 1
+                    && selected_start == 0
+                    && selected_end == line_count
+                    && para.controls.iter().any(|control| {
+                        matches!(control, Control::Table(table) if table.common.treat_as_char)
+                    })
+                {
+                    // 선택된 TAC 줄의 표는 원본 줄 상자 안의 실제 내용이다.
+                    // 일반 인라인 표와 같은 원점·여백·자원을 사용해 빈 글줄만
+                    // 남기지 않고 표와 내부 그림까지 해당 각주 조각에 보존한다.
+                    let style = styles.para_styles.get(composed.para_style_id as usize);
+                    let before = crate::renderer::hwp3_variant_flow_spacing_before(
+                        style.map_or(0.0, |style| style.spacing_before),
+                        self.use_hwp3_origin_flow_spacing_before.get(),
+                    );
+                    let after = style.map_or(0.0, |style| style.spacing_after);
+                    y = self.layout_inline_table_paragraph(
+                        tree,
+                        fn_node,
+                        para,
+                        Some(&composed),
+                        styles,
+                        fn_area,
+                        y + placement.spacing.before - before,
+                        marker_section,
+                        marker_para,
+                        bin_data_content,
+                        &[],
+                    ) + placement.spacing.after - after;
+                    if is_last_selected_line {
+                        y -= hwpunit_to_px(composed.lines[0].line_spacing, self.dpi);
+                    }
+                } else if draw_number && numbered.is_none() {
                     y = self.layout_footnote_paragraph_with_number(
                         tree,
                         fn_node,

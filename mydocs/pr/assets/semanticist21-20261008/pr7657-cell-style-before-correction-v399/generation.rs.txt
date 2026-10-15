@@ -1,0 +1,55 @@
+use rhwp::model::control::Control;
+use rhwp::wasm_api::HwpDocument;
+use std::path::Path;
+
+const OUT: &str = "output/pr-review/semanticist21-20261008/original-pr7657-style-delete-v397";
+
+fn write(doc: &HwpDocument, name: &str, hwp: bool, hwpx: bool) {
+    if hwp {
+        std::fs::write(Path::new(OUT).join(format!("{name}.hwp")), doc.export_hwp().unwrap()).unwrap();
+    }
+    if hwpx {
+        std::fs::write(Path::new(OUT).join(format!("{name}.hwpx")), doc.export_hwpx().unwrap()).unwrap();
+    }
+}
+
+fn open(path: &str) -> HwpDocument {
+    HwpDocument::from_bytes(&std::fs::read(path).unwrap()).unwrap()
+}
+
+fn main() {
+    std::fs::create_dir(OUT).unwrap();
+
+    // 정식 첫 검사와 같은 빈 문서·표 셀·스타일 변경 순서를 저장한다.
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document().unwrap();
+    doc.insert_text(0, 0, 0, "머리").unwrap();
+    doc.split_paragraph(0, 0, 2, None).unwrap();
+    doc.create_table(0, 1, 0, 1, 1).unwrap();
+    let toc_title = doc.document().doc_info.styles.iter().position(|s| s.local_name == "차례 제목").unwrap() as u32;
+    doc.apply_cell_style(0, 1, 0, 0, 0, toc_title).unwrap();
+    let body = doc.document().doc_info.styles.iter().position(|s| s.local_name == "본문").unwrap() as u32;
+    assert!(doc.delete_style(body));
+    write(&doc, "original-cell-style-after-delete", true, true);
+
+    // 정식 둘째 검사와 같은 실물 문서의 1번 스타일 삭제와 저장 형식이다.
+    for (input, name, hwp, hwpx) in [
+        ("samples/SO-SUEOP.hwpx", "original-sosueop-after-delete", false, true),
+        ("samples/143E433F503322BD33.hwp", "original-143e-after-delete", true, false),
+    ] {
+        let mut doc = open(input);
+        assert!(doc.delete_style(1));
+        write(&doc, name, hwp, hwpx);
+    }
+
+    // 정식 덧말 검사에 명시된 수동 스타일 참조 설정을 그대로 구분해 보존한다.
+    let mut doc = open("samples/hwpx/opengov/36389301_결재문서본문_직장훈련계획_덧말.hwpx");
+    let last = doc.document().doc_info.styles.len() - 1;
+    for control in doc.document_mut().sections.iter_mut().flat_map(|s| &mut s.paragraphs).flat_map(|p| &mut p.controls) {
+        if let Control::Ruby(ruby) = control {
+            ruby.style_id_ref = last as u16;
+        }
+    }
+    assert!(doc.delete_style(1));
+    write(&doc, "original-ruby-style-after-delete", true, true);
+}

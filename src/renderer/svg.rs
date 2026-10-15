@@ -45,6 +45,13 @@ use super::layout::{is_halfwidth_cjk_quote, split_into_clusters};
 use crate::model::style::{ImageFillMode, UnderlineType};
 use base64::Engine;
 
+#[cfg(not(target_arch = "wasm32"))]
+mod font_file_lookup;
+#[cfg(all(test, not(target_arch = "wasm32")))]
+use font_file_lookup::FontFileName;
+#[cfg(not(target_arch = "wasm32"))]
+use font_file_lookup::{find_font_file, plan_svg_font_file_lookup, FontFileLookupPlan};
+
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
 
 /// Result of translating one canonical paint operation to SVG syntax.
@@ -849,14 +856,15 @@ impl SvgRenderer {
                 }
             }
             RenderNodeType::FootnoteMarker(marker) => {
-                let sup_size = (marker.base_font_size * 0.55).max(7.0);
+                let sup_size =
+                    super::render_tree::FootnoteMarkerNode::font_size(marker.base_font_size);
                 let color = color_to_svg(marker.color);
                 let font_family = if marker.font_family.is_empty() {
                     "sans-serif"
                 } else {
                     &marker.font_family
                 };
-                let y = node.bbox.y + node.bbox.height * 0.4;
+                let y = node.bbox.y + marker.baseline;
                 self.output.push_str(&format!(
                     "<text x=\"{}\" y=\"{}\" font-family=\"{}\" font-size=\"{}\" fill=\"{}\">{}</text>\n",
                     node.bbox.x, y, escape_xml(font_family), sup_size, color, escape_xml(&marker.text),
@@ -910,11 +918,8 @@ impl SvgRenderer {
                 // HWP 저장 영역(bbox)과 레이아웃 산출 크기(layout_box)가 다를 수 있으므로
                 // bbox 너비에 맞춰 스케일링한다. 일반 높이는 줄 여백을 포함하므로
                 // 유지하고, 기본 글자보다 낮은 압축 프레임만 공통 세로 비율을 쓴다.
-                let scale_x = if eq.layout_box.width > 0.0 && node.bbox.width > 0.0 {
-                    node.bbox.width / eq.layout_box.width
-                } else {
-                    1.0
-                };
+                let scale_x =
+                    super::equation::stored_horizontal_scale(node.bbox.width, &eq.layout_box);
                 let scale_y = super::equation::stored_vertical_scale(
                     node.bbox.height,
                     eq.layout_box.height,
@@ -940,7 +945,14 @@ impl SvgRenderer {
                     for segment in eq.svg_content.split("</text>") {
                         if let Some(start) = segment.rfind('>') {
                             let text = &segment[start + 1..];
-                            let family = if super::equation::text_has_cjk(text) {
+                            let header = &segment[..start];
+                            let family = if header
+                                .rsplit("<text ")
+                                .next()
+                                .is_some_and(|attrs| attrs.contains("font-family=\"HyhwpEQ\""))
+                            {
+                                super::equation::hancom_glyphs::FONT_FAMILY
+                            } else if super::equation::text_has_cjk(text) {
                                 "Haansoft Batang"
                             } else {
                                 "Latin Modern Math"
@@ -957,6 +969,17 @@ impl SvgRenderer {
                 self.render_form_object(form, &node.bbox);
             }
             RenderNodeType::RawSvg(r) => {
+                if self.font_embed_mode != FontEmbedMode::None {
+                    for usage in super::svg_fragment::svg_text_font_usage(&r.svg) {
+                        if usage.bold {
+                            self.font_bold_families.insert(usage.family.clone());
+                        }
+                        self.font_codepoints
+                            .entry(usage.family)
+                            .or_default()
+                            .extend(usage.text.chars().filter(|ch| !ch.is_control()));
+                    }
+                }
                 // Task #195 단계 8: OOXML 차트 SVG 조각 그대로 삽입
                 self.output.push_str(&r.svg);
             }
@@ -1329,7 +1352,13 @@ impl SvgRenderer {
         self.gradient_counter += 1;
         let id = format!("grad{}", self.gradient_counter);
 
-        let stops = Self::build_gradient_stops(grad);
+        let (colors, positions) =
+            super::linear_gradient_color_stops(grad, bbox.0, bbox.1, bbox.2, bbox.3);
+        let stops = Self::build_gradient_stops(&GradientFillInfo {
+            colors,
+            positions,
+            ..grad.clone()
+        });
 
         let def = match grad.gradient_type {
             2 => {
@@ -1376,37 +1405,24 @@ impl SvgRenderer {
         let id = format!("pat{}", self.clip_counter);
         let bg = color_to_svg(info.background_color);
         let fg = color_to_svg(info.pattern_color);
-        let sz = 6; // 패턴 타일 크기 (px)
-
-        // HWP 패턴 종류 (0-based, 표 31 참조): 0=가로줄, 1=세로줄, 2=역대각선, 3=대각선, 4=십자, 5=격자
+        let sz = info.tile_size;
+        let stroke = sz / 8.0;
+        // 독립 Print의 1~6 hatch: 쪽 원점에 고정한 8-dot/100dpi 무늬.
+        let horizontal = format!("<path d=\"M0 0H{sz}M0 {sz}H{sz}\"/>");
+        let vertical = format!("<path d=\"M0 0V{sz}M{sz} 0V{sz}\"/>");
+        let slash = format!("<path d=\"M{sz} 0L0 {sz}\"/>");
+        let backslash = format!("<path d=\"M0 0L{sz} {sz}\"/>");
         let lines = match info.pattern_type {
-            0 => // 가로줄 (- - - -)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"0\" y1=\"3\" x2=\"{sz}\" y2=\"3\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            1 => // 세로줄 (|||||)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"3\" y1=\"0\" x2=\"3\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            2 => // 대각선 (/////)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"{sz}\" y1=\"0\" x2=\"0\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            3 => // 역대각선 (\\\\\)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"0\" y1=\"0\" x2=\"{sz}\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            4 => // 십자 (+++++)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"3\" y1=\"0\" x2=\"3\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>\
-                         <line x1=\"0\" y1=\"3\" x2=\"{sz}\" y2=\"3\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            5 => // 격자 (xxxxx)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"0\" y1=\"0\" x2=\"{sz}\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>\
-                         <line x1=\"{sz}\" y1=\"0\" x2=\"0\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            _ => // 알 수 없는 패턴: 단색
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>"),
+            1 => horizontal,
+            2 => vertical,
+            3 => slash,
+            4 => backslash,
+            5 => format!("{horizontal}{vertical}"),
+            6 => format!("{slash}{backslash}"),
+            _ => String::new(),
         };
-
         let def = format!(
-            "<pattern id=\"{}\" patternUnits=\"userSpaceOnUse\" width=\"{}\" height=\"{}\">{}</pattern>\n",
-            id, sz, sz, lines
+            "<pattern id=\"{id}\" patternUnits=\"userSpaceOnUse\" width=\"{sz}\" height=\"{sz}\"><rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/><g fill=\"none\" stroke=\"{fg}\" stroke-width=\"{stroke}\">{lines}</g></pattern>\n"
         );
         self.defs.push(def);
         id
@@ -4253,6 +4269,7 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         "HY신명조" | "한양신명조" => {
             vec!["H2MJSM.TTF", "HYSNMJ.TTF", "hamchob-r.ttf"]
         }
+        "HyhwpEQ" | "HYhwpEQ" => vec!["HYHWPEQ.TTF", "hyhwpeq.ttf"],
         "Latin Modern Math" => vec![
             "latinmodern-math.otf",
             "LatinModernMath-Regular.otf",
@@ -4347,121 +4364,6 @@ fn korean_gothic_substitute(font_name: &str) -> Option<&'static str> {
     } else {
         None
     }
-}
-
-/// 파일시스템 탐색에 넘기는 하나의 폰트 파일명.
-///
-/// 문서 메타데이터에서 유래한 후보는 SVG 폰트 해석 단계에서만
-/// 이 형식으로 바뀐다. 파일시스템 루프는 이 타입의 후보만
-/// 설정된 검색 루트에 결합한다.
-#[cfg(not(target_arch = "wasm32"))]
-#[derive(Clone, Debug)]
-struct FontFileName(String);
-
-#[cfg(not(target_arch = "wasm32"))]
-impl FontFileName {
-    fn from_document_candidate(candidate: String) -> Option<Self> {
-        use std::path::Component;
-
-        if candidate.contains(['/', '\\', '\0']) {
-            return None;
-        }
-        let mut components = std::path::Path::new(&candidate).components();
-        (matches!(components.next(), Some(Component::Normal(_))) && components.next().is_none())
-            .then_some(Self(candidate))
-    }
-
-    fn as_path(&self) -> &std::path::Path {
-        std::path::Path::new(&self.0)
-    }
-}
-
-/// SVG 폰트 해석이 선택한 파일명과 탐색 루트.
-#[cfg(not(target_arch = "wasm32"))]
-struct FontFileLookupPlan {
-    candidates: Vec<FontFileName>,
-    search_dirs: Vec<std::path::PathBuf>,
-}
-
-/// 문서 폰트명을 SVG 폰트 해석용 파일 후보로 계획한다.
-///
-/// 별칭·대체 폰트·후보 우선순위는 렌더러 정책이므로 여기서
-/// 선택한다. 이후의 파일시스템 조회는 타입으로 검증된 후보를 읽는 기계적 단계다.
-#[cfg(not(target_arch = "wasm32"))]
-fn plan_svg_font_file_lookup(
-    font_name: &str,
-    extra_paths: &[std::path::PathBuf],
-    bold: bool,
-) -> FontFileLookupPlan {
-    let candidates = {
-        // 폰트명 → 파일명 후보 생성
-        let known_files = if bold {
-            known_bold_font_filenames(font_name)
-        } else {
-            known_font_filenames(font_name)
-        };
-        let mut files: Vec<String> = known_files.iter().map(|s| s.to_string()).collect();
-        let aliases = if bold {
-            font_local_bold_aliases(font_name)
-        } else {
-            font_local_aliases(font_name)
-        };
-        let mut names = vec![font_name.to_string()];
-        for a in &aliases {
-            names.push(a.to_string());
-        }
-        for name in &names {
-            let clean = name.replace(' ', "");
-            files.push(format!("{}.ttf", name));
-            files.push(format!("{}.otf", name));
-            files.push(format!("{}.ttc", name));
-            files.push(format!("{}.TTF", name));
-            if clean != *name {
-                files.push(format!("{}.ttf", clean));
-                files.push(format!("{}.otf", clean));
-                files.push(format!("{}.ttc", clean));
-            }
-        }
-        // Task #1224: 고딕 계열은 오픈소스 대체(Noto Sans KR ExtraLight)를 최후 후보로 추가.
-        // 실제 저작권 폰트가 앞선 탐색 경로에 있으면 그쪽이 우선하므로, 대체는
-        // 탐색 경로 말단(ttfs/opensource)에서만 매칭된다.
-        if !bold {
-            if let Some(sub) = korean_gothic_substitute(font_name) {
-                files.push(sub.to_string());
-            }
-        }
-        files
-            .into_iter()
-            .filter_map(FontFileName::from_document_candidate)
-            .collect()
-    };
-
-    // [#2864] 탐색 경로(우선순위 순)는 renderer::font_paths 가 단일 정의한다.
-    // 호출자 지정 → RHWP_FONT_PATH → OS 시스템 경로 → ttfs/opensource(최후 폴백).
-    // 종전의 ttfs/hwp·ttfs/windows(로컬 전용)와 /mnt/c/Windows/Fonts(WSL2 전용)는
-    // 제거했다. Task #1224 의 고딕 대체(Noto Sans KR ExtraLight)는 최후 탐색인
-    // ttfs/opensource 에서 그대로 매칭된다.
-    FontFileLookupPlan {
-        candidates,
-        search_dirs: crate::renderer::font_paths::search_dirs(extra_paths),
-    }
-}
-
-/// 계획된 폰트 파일을 설정된 루트에서 읽는다.
-#[cfg(not(target_arch = "wasm32"))]
-fn find_font_file(plan: &FontFileLookupPlan) -> Option<std::path::PathBuf> {
-    for dir in &plan.search_dirs {
-        if !dir.exists() {
-            continue;
-        }
-        for candidate in &plan.candidates {
-            let path = dir.join(candidate.as_path());
-            if path.exists() {
-                return Some(path);
-            }
-        }
-    }
-    None
 }
 
 /// 형식4 cmap의 마지막 비문자 U+FFFF가 잘못된 글리프 번호를 가리키면

@@ -73,8 +73,8 @@ pub(in crate::renderer::typeset) fn place(
                 let wrap_prefix_len = prefix.len;
                 let col_width = st.following_wrap_column_width();
                 let formatted = engine.format_paragraph(para, composed, styles, Some(col_width));
-                if let Some(suffix_height) = prefix.suffix_height(para, &formatted, is_empty_para) {
-                    if suffix_height <= st.available_height() + 0.5 {
+                if let Some(suffix) = prefix.suffix_metrics(para, &formatted, is_empty_para) {
+                    if suffix.content_height <= st.available_height() + 0.5 {
                         let absorption = wrap_absorption::prefix(
                             para,
                             paragraphs,
@@ -85,14 +85,15 @@ pub(in crate::renderer::typeset) fn place(
                         );
                         st.commit_wrap_absorption(absorption);
                         st.end_following_wrap();
-                        if st.wrap_tail_needs_advance(suffix_height) {
+                        if st.wrap_tail_needs_advance(suffix.content_height) {
                             st.advance_column_or_new_page();
                         }
                         st.commit_wrap_tail(
                             para_idx,
                             wrap_prefix_len,
                             formatted.line_count(),
-                            suffix_height,
+                            suffix.advance,
+                            suffix.content_height,
                         );
                         return true;
                     }

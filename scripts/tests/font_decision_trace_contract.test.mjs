@@ -221,6 +221,7 @@ test('W1 source digest drift is detected without exposing an absolute checkout p
     'THIRD_PARTY_LICENSES.md',
     'rhwp-studio/src/core/font-loader.ts',
     'rhwp-studio/src/core/font-substitution.ts',
+    'rhwp-studio/src/core/local-fonts.ts',
     'rhwp-studio/src/core/wasm-bridge.ts',
     'rhwp-studio/tests/font-substitution.test.ts',
     'src/renderer/font_metrics_data.rs',

@@ -1763,6 +1763,17 @@ impl DocumentCore {
                     )
                 });
             let (old_indent, new_indent) = self.para_shape_indents(base_id, new_id);
+            self.restamp_cell_format_origin(
+                (
+                    sec_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                ),
+                base_id,
+                new_id,
+            )?;
 
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -1850,6 +1861,17 @@ impl DocumentCore {
                 )
             });
         let (old_indent, new_indent) = self.para_shape_indents(old_id, para_shape_id);
+        self.restamp_cell_format_origin(
+            (
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ),
+            old_id,
+            para_shape_id,
+        )?;
         {
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -2239,6 +2261,7 @@ impl DocumentCore {
                     cell_para_idx,
                 )?;
                 cell_para.apply_char_shape_to_entire_text(new_char_shape_id);
+                cell_para.cell_format_vpos_dirty = true;
                 cell_para.text.chars().count()
             };
 
@@ -2249,6 +2272,7 @@ impl DocumentCore {
                 cell_idx,
                 cell_para_idx,
             );
+            self.pending_cell_format_vpos = true;
             self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
             self.document.sections[sec_idx].raw_stream = None;
             self.rebuild_section_deferred_in_batch(sec_idx);
@@ -2266,6 +2290,17 @@ impl DocumentCore {
             _ => self.resolve_style_para_shape_id(style_id, current_psid),
         };
         let (old_indent, new_indent) = self.para_shape_indents(current_psid, new_para_shape_id);
+        self.restamp_cell_format_origin(
+            (
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ),
+            current_psid,
+            new_para_shape_id,
+        )?;
 
         {
             let cell_para = self.get_cell_paragraph_mut(
@@ -2277,6 +2312,7 @@ impl DocumentCore {
             )?;
             cell_para.style_id = style_id as u8;
             cell_para.para_shape_id = new_para_shape_id;
+            cell_para.cell_format_vpos_dirty = true;
             restamp_indentation(&mut cell_para.line_segs, old_indent, new_indent);
             if let Some(old) = old_style {
                 cell_para.replace_style_char_shape_preserving_overrides(
@@ -2295,6 +2331,7 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
+        self.pending_cell_format_vpos = true;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section_deferred_in_batch(sec_idx);

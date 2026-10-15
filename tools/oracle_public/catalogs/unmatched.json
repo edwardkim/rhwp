@@ -4,7 +4,7 @@
   "kind": "unmatchedSampleCatalog",
   "generator": "tools/oracle_public/fatten_catalog.py",
   "generatedAt": "2026-09-03T13:33:12Z",
-  "unmatchedCount": 414,
+  "unmatchedCount": 400,
   "samples": [
     {
       "sample": "samples/143E433F503322BD33.hwp",
@@ -115,30 +115,6 @@
       "suggestedPdfs": []
     },
     {
-      "sample": "samples/3-09월_교육_통합_2024-격자기준종이.hwp",
-      "stem": "3-09월_교육_통합_2024-격자기준종이",
-      "sourceFormat": "hwp",
-      "reason": "no_oracle_pdf",
-      "directory": "",
-      "family": "education",
-      "sampleBytes": 5876224,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
-      "sample": "samples/3-09월_교육_통합_2024-격자기준쪽.hwp",
-      "stem": "3-09월_교육_통합_2024-격자기준쪽",
-      "sourceFormat": "hwp",
-      "reason": "no_oracle_pdf",
-      "directory": "",
-      "family": "education",
-      "sampleBytes": 5876224,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
       "sample": "samples/76076_regulatory_analysis.hwp",
       "stem": "76076_regulatory_analysis",
       "sourceFormat": "hwp",
@@ -239,84 +215,6 @@
           "oracleRoot": "pdf"
         }
       ]
-    },
-    {
-      "sample": "samples/eq-002.hwp",
-      "stem": "eq-002",
-      "sourceFormat": "hwp",
-      "reason": "no_oracle_pdf",
-      "directory": "",
-      "family": "equation",
-      "sampleBytes": 18432,
-      "sampleExists": true,
-      "nearMissCount": 1,
-      "suggestedPdfs": [
-        {
-          "pdf": "pdf/hwpx/eq-002.pdf",
-          "why": "suffix_not_oracle",
-          "oracleRoot": "pdf"
-        }
-      ]
-    },
-    {
-      "sample": "samples/exam-kor-1p.hwp",
-      "stem": "exam-kor-1p",
-      "sourceFormat": "hwp",
-      "reason": "no_oracle_pdf",
-      "directory": "",
-      "family": "exam",
-      "sampleBytes": 976384,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
-      "sample": "samples/exam-kor-2p.hwp",
-      "stem": "exam-kor-2p",
-      "sourceFormat": "hwp",
-      "reason": "no_oracle_pdf",
-      "directory": "",
-      "family": "exam",
-      "sampleBytes": 980992,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
-      "sample": "samples/exam-kor-3p.hwp",
-      "stem": "exam-kor-3p",
-      "sourceFormat": "hwp",
-      "reason": "no_oracle_pdf",
-      "directory": "",
-      "family": "exam",
-      "sampleBytes": 985600,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
-      "sample": "samples/exam-kor-4p.hwp",
-      "stem": "exam-kor-4p",
-      "sourceFormat": "hwp",
-      "reason": "no_oracle_pdf",
-      "directory": "",
-      "family": "exam",
-      "sampleBytes": 989696,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
-      "sample": "samples/exam_social-p1.hwp",
-      "stem": "exam_social-p1",
-      "sourceFormat": "hwp",
-      "reason": "no_oracle_pdf",
-      "directory": "",
-      "family": "exam",
-      "sampleBytes": 117248,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
     },
     {
       "sample": "samples/footnote-tbox-01.hwp",
@@ -812,84 +710,6 @@
           "oracleRoot": "pdf"
         }
       ]
-    },
-    {
-      "sample": "samples/hwpx/eq-002.hwpx",
-      "stem": "eq-002",
-      "sourceFormat": "hwpx",
-      "reason": "no_oracle_pdf",
-      "directory": "hwpx",
-      "family": "hwpx_tree",
-      "sampleBytes": 18665,
-      "sampleExists": true,
-      "nearMissCount": 1,
-      "suggestedPdfs": [
-        {
-          "pdf": "pdf/hwpx/eq-002.pdf",
-          "why": "suffix_not_oracle",
-          "oracleRoot": "pdf"
-        }
-      ]
-    },
-    {
-      "sample": "samples/hwpx/exam-kor-1p.hwpx",
-      "stem": "exam-kor-1p",
-      "sourceFormat": "hwpx",
-      "reason": "no_oracle_pdf",
-      "directory": "hwpx",
-      "family": "hwpx_tree",
-      "sampleBytes": 885009,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
-      "sample": "samples/hwpx/exam-kor-2p.hwpx",
-      "stem": "exam-kor-2p",
-      "sourceFormat": "hwpx",
-      "reason": "no_oracle_pdf",
-      "directory": "hwpx",
-      "family": "hwpx_tree",
-      "sampleBytes": 890923,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
-      "sample": "samples/hwpx/exam-kor-3p.hwpx",
-      "stem": "exam-kor-3p",
-      "sourceFormat": "hwpx",
-      "reason": "no_oracle_pdf",
-      "directory": "hwpx",
-      "family": "hwpx_tree",
-      "sampleBytes": 896433,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
-      "sample": "samples/hwpx/exam-kor-4p.hwpx",
-      "stem": "exam-kor-4p",
-      "sourceFormat": "hwpx",
-      "reason": "no_oracle_pdf",
-      "directory": "hwpx",
-      "family": "hwpx_tree",
-      "sampleBytes": 900898,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
-    },
-    {
-      "sample": "samples/hwpx/exam_social-p1.hwpx",
-      "stem": "exam_social-p1",
-      "sourceFormat": "hwpx",
-      "reason": "no_oracle_pdf",
-      "directory": "hwpx",
-      "family": "hwpx_tree",
-      "sampleBytes": 121201,
-      "sampleExists": true,
-      "nearMissCount": 0,
-      "suggestedPdfs": []
     },
     {
       "sample": "samples/hwpx/expense_report.hwpx",

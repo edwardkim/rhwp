@@ -67,6 +67,8 @@ fn serialize_hwp_inner(
     password: Option<&[u8]>,
     warning_mode: ContentLossWarningMode,
 ) -> Result<SerializedDocument, SerializeError> {
+    crate::model::section_tail::validate_preservation(doc)
+        .map_err(SerializeError::UnsupportedInput)?;
     // 1. FileHeader 직렬화
     // [Task #1768] 배포용/암호화 문서 강하: IR 은 이미 복호화된 평문이고 본 직렬화는
     // ViewText/DISTRIBUTE_DOC_DATA 를 생성하지 않으므로, 플래그를 유지하면 산출물
@@ -184,6 +186,11 @@ fn serialize_hwp_inner(
             let sub = crate::model::document::Section {
                 section_def,
                 paragraphs,
+                trailing_lists: if k + 1 == starts.len() {
+                    section.trailing_lists.clone()
+                } else {
+                    None
+                },
                 raw_stream: None,
                 raw_provenance: None,
             };

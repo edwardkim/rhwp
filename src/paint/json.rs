@@ -856,11 +856,12 @@ impl PaintOp {
                 write_bbox(buf, *bbox);
                 let _ = write!(
                     buf,
-                    ",\"text\":{},\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{}",
+                    ",\"text\":{},\"fontFamily\":{},\"fontSize\":{:.3},\"color\":{},\"baseline\":{:.3}",
                     json_escape(&marker.text),
                     json_escape(&marker.font_family),
-                    (marker.base_font_size * 0.55).max(7.0),
+                    crate::renderer::render_tree::FootnoteMarkerNode::font_size(marker.base_font_size),
                     json_escape(&color_ref_to_css(marker.color)),
+                    marker.baseline,
                 );
                 buf.push('}');
             }
@@ -1070,6 +1071,14 @@ impl PaintOp {
                     equation.font_size
                 );
                 write_equation_layout_box(buf, &equation.layout_box);
+                let _ = write!(
+                    buf,
+                    ",\"scaleX\":{}",
+                    crate::renderer::equation::stored_horizontal_scale(
+                        bbox.width,
+                        &equation.layout_box
+                    )
+                );
                 buf.push('}');
             }
             PaintOp::FormObject { bbox, form } => {
@@ -2743,10 +2752,11 @@ fn write_shape_style(buf: &mut String, style: &ShapeStyle) {
 fn write_pattern_fill(buf: &mut String, pattern: &PatternFillInfo) {
     let _ = write!(
         buf,
-        "{{\"patternType\":{},\"patternColor\":{},\"backgroundColor\":{}}}",
+        "{{\"patternType\":{},\"patternColor\":{},\"backgroundColor\":{},\"tileSize\":{:.4}}}",
         pattern.pattern_type,
         json_escape(&color_ref_to_css(pattern.pattern_color)),
         json_escape(&color_ref_to_css(pattern.background_color)),
+        pattern.tile_size,
     );
 }
 
@@ -2859,6 +2869,27 @@ fn write_equation_layout_box(buf: &mut String, layout: &LayoutBox) {
 
 fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
     match kind {
+        LayoutKind::HancomGlyphs(run) => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"hancomGlyphs\",\"glyphs\":{},\"positions\":[",
+                json_escape(&run.glyphs)
+            );
+            for (index, offset) in run.positions.iter().enumerate() {
+                if index > 0 {
+                    buf.push(',');
+                }
+                let _ = write!(buf, "{offset}");
+            }
+            buf.push_str("],\"shears\":[");
+            for (index, shear) in run.shears.iter().enumerate() {
+                if index > 0 {
+                    buf.push(',');
+                }
+                let _ = write!(buf, "{shear}");
+            }
+            let _ = write!(buf, "],\"baselineShift\":{}}}", run.baseline_shift);
+        }
         LayoutKind::Row(children) => {
             buf.push_str("{\"type\":\"row\",\"children\":[");
             for (index, child) in children.iter().enumerate() {

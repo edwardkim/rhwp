@@ -443,7 +443,11 @@ fn compose_paragraph_scoped(
                 }
                 Control::Equation(eq) if eq.common.treat_as_char => {
                     // HWP 저장값을 사용 — 한컴 편집기가 실제 폰트로 계산한 정확한 너비
-                    Some((pos, crate::renderer::equation::flow_width_hwp(eq) as i32, i))
+                    Some((
+                        pos,
+                        crate::renderer::equation::inline_advance_width_hwp(eq),
+                        i,
+                    ))
                 }
                 Control::Form(f) if f.common.treat_as_char => Some((pos, f.width as i32, i)),
                 Control::Table(t)
@@ -654,7 +658,24 @@ pub(crate) fn tac_host_trailing_spacing(
         && para.line_segs.len() == 1
         && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         && owned_rowbreak_tac_height(para, control_index).is_some();
-    if current_owned_row
+    // 같은 문단의 뒤 글줄이 표 줄의 전체 간격 끝에서 시작하면 그 간격을
+    // 줄 흐름과 표 배치에 모두 보존한다. 문단 경계의 별도 계약은 유지한다.
+    let stored_successor_owns_full_gap = native_stored_layout
+        && !para.stored_text_partition_is_dirty()
+        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && para.line_segs.windows(2).any(|pair| {
+            std::ptr::eq(&pair[0], seg)
+                && pair[1].tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && pair[1].text_start > seg.text_start
+                && seg
+                    .vertical_pos
+                    .checked_add(seg.line_height)
+                    .and_then(|end| end.checked_add(seg.line_spacing))
+                    == Some(pair[1].vertical_pos)
+        });
+    if stored_successor_owns_full_gap {
+        spacing
+    } else if current_owned_row
         || (native_stored_layout
             && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             && !para.stored_text_partition_is_dirty())
@@ -662,6 +683,40 @@ pub(crate) fn tac_host_trailing_spacing(
         spacing / 2.0
     } else {
         spacing
+    }
+}
+
+/// 다음 문단을 현재 프레임에서 재조판하면 저장 vpos가 간격의 나머지를
+/// 복원하지 않는다. 마지막 저장 TAC 줄은 후행 간격 전량을 흐름에 남긴다.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn tac_host_trailing_spacing_at_boundary(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    control_index: usize,
+    seg: &LineSeg,
+    hwpx_stored_layout: bool,
+    native_stored_layout: bool,
+    dpi: f64,
+) -> f64 {
+    if native_stored_layout
+        && !para.stored_text_partition_is_dirty()
+        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && para
+            .line_segs
+            .last()
+            .is_some_and(|last| std::ptr::eq(last, seg))
+        && next_para.is_some_and(crate::renderer::para_has_no_stored_line_segs)
+    {
+        crate::renderer::hwpunit_to_px(seg.line_spacing.max(0), dpi)
+    } else {
+        tac_host_trailing_spacing(
+            para,
+            control_index,
+            seg,
+            hwpx_stored_layout,
+            native_stored_layout,
+            dpi,
+        )
     }
 }
 
@@ -701,17 +756,65 @@ pub(crate) fn tac_next_line_full_spacing(
             .is_some_and(|last| std::ptr::eq(last, seg))
         && next_para.is_some_and(|next| {
             (current_owned_row || !next.stored_text_partition_is_dirty())
-                && next.line_segs.first().is_some_and(|first| {
-                    (current_owned_row || first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
-                        && seg
-                            .vertical_pos
-                            .saturating_add(seg.line_height)
-                            .saturating_add(seg.line_spacing)
-                            .saturating_add(current_spacing_after_hu)
-                            .saturating_add(next_spacing_before_hu)
-                            == first.vertical_pos
-                })
+                && (next.line_segs.is_empty()
+                    || next.line_segs.first().is_some_and(|first| {
+                        (current_owned_row || first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                            && stored_tac_successor_delta_hu(
+                                para,
+                                seg,
+                                first,
+                                current_spacing_after_hu.saturating_add(next_spacing_before_hu),
+                            )
+                            .is_some_and(|delta| {
+                                seg.line_height
+                                    .checked_add(seg.line_spacing)
+                                    .and_then(|advance| {
+                                        advance.checked_add(current_spacing_after_hu)
+                                    })
+                                    .and_then(|advance| advance.checked_add(next_spacing_before_hu))
+                                    == Some(delta)
+                            })
+                    }))
         })
+}
+
+/// 다음 저장 원점과 표 소유 줄의 거리. 쪽으로 통째 이월된 단일 TAC 줄은
+/// 호스트에 이전 쪽 vpos가 남아도 후속 문단이 새 쪽의 0 원점에서 상자를 닫는다.
+/// 줄 높이가 바깥여백 포함 개체 상자와 같고 후속 원점이 정확히 닫힐 때만 그
+/// 좌표계 전환을 사용한다. 측정과 실제 배치가 같은 거리 계약을 소비한다.
+pub(crate) fn stored_tac_successor_delta_hu(
+    para: &Paragraph,
+    seg: &LineSeg,
+    successor: &LineSeg,
+    paragraph_spacing_hu: i32,
+) -> Option<i32> {
+    let closing_advance = seg
+        .line_height
+        .checked_add(seg.line_spacing)?
+        .checked_add(paragraph_spacing_hu)?;
+    let reset_closes_owned_line = successor.vertical_pos < seg.vertical_pos
+        && successor.vertical_pos == closing_advance
+        && para.line_segs.len() == 1
+        && !para.cell_format_vpos_dirty
+        && successor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && stored_first_tac_line(para).is_some_and(|first| std::ptr::eq(first, seg))
+        && para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            == 1
+        && !para.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::Picture(_) | Control::Shape(_) | Control::Equation(_)
+            )
+        });
+    if reset_closes_owned_line {
+        Some(successor.vertical_pos)
+    } else {
+        successor.vertical_pos.checked_sub(seg.vertical_pos)
+    }
 }
 
 /// 저장된 서로 다른 물리 줄을 소유한 빈/공백 캐리어 TAC 표의 흐름.
@@ -1868,12 +1971,15 @@ pub(crate) fn is_lang_neutral(ch: char) -> bool {
 
 /// 문단 내 인라인 컨트롤(표/도형)의 위치를 식별한다.
 /// [#6706] 줄 끝 개체와 다음 줄 첫 글자는 같은 가시 위치로 투영될 수 있다.
-/// 원본 줄 구성이 유지되고 그 충돌이 실제 존재할 때 원 기록으로 개체 소유 줄을 복원한다.
-/// 재조판된 줄이나 경계 충돌이 없는 인라인 개체들은 기존 문자 범위 배정을 그대로 쓴다.
-pub(crate) fn stored_tac_line_assignment(
+/// 조합 결과가 현재 문단의 줄 경계·메트릭을 그대로 소비하고 충돌이 존재할 때
+/// UTF-16 제어 슬롯으로 개체 소유 줄을 복원한다. 저장 줄과 편집 재조판 줄은
+/// 각각의 출처 안에서만 적용하며 둘을 섞은 사다리는 수용하지 않는다.
+/// 이 조회는 저장 캐시의 수용 조건을 변경하거나 옛 줄을 재조판에 적용하지 않는다.
+pub(crate) fn composed_tac_line_assignment(
     para: &Paragraph,
     comp: &ComposedParagraph,
 ) -> Option<Vec<(usize, usize)>> {
+    let computed_rows = para.line_segs.first()?.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
     if super::equation_tac_flow::uses_equation_only_flow(para, comp)
         || para.char_offsets.is_empty()
         || comp.lines.len() != para.line_segs.len()
@@ -1884,7 +1990,7 @@ pub(crate) fn stored_tac_line_assignment(
             .zip(&para.line_segs)
             .enumerate()
             .any(|(i, (line, seg))| {
-                seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                (seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0) != computed_rows
                     || line.line_height != stored_line_box_height(seg)
                     || line.segment_width != seg.segment_width
                     || line.char_start
@@ -1895,14 +2001,11 @@ pub(crate) fn stored_tac_line_assignment(
     {
         return None;
     }
-    let raw = para.control_utf16_positions();
     let assignments: Vec<(usize, usize)> = comp
         .tac_controls
         .iter()
         .map(|(_, _, ci)| {
-            let start = *raw.get(*ci)?;
-            let owner =
-                (0..para.line_segs.len()).rfind(|&i| para.line_seg_text_start(i) <= start)?;
+            let owner = control_slot_line_index(para, *ci)?;
             Some((*ci, owner))
         })
         .collect::<Option<_>>()?;
@@ -1916,6 +2019,13 @@ pub(crate) fn stored_tac_line_assignment(
                     .is_some_and(|next| *pos >= next.char_start)
             });
     collapsed_boundary.then_some(assignments)
+}
+
+/// 보이는 다음 글자와 확장 제어 슬롯이 같은 논리 위치여도 원시 줄 소속은 다를 수 있다.
+/// 저장/현재 재조판 사다리의 UTF-16 경계로 조회하며 높이의 우연한 일치는 사용하지 않는다.
+pub(crate) fn control_slot_line_index(para: &Paragraph, control_index: usize) -> Option<usize> {
+    let start = *para.control_utf16_positions().get(control_index)?;
+    (0..para.line_segs.len()).rfind(|&line| para.line_seg_text_start(line) <= start)
 }
 
 fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {

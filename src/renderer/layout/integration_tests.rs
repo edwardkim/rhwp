@@ -124,6 +124,7 @@ mod tests {
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
                 stored_paragraph_flow_ends: Default::default(),
+                stored_column_top_spacings: Default::default(),
                 paragraph_float_placements: Default::default(),
                 float_pushed_line_spacings: Default::default(),
             }],

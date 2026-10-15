@@ -51,15 +51,16 @@
 //! 보이는데, `Body` 안만 보면 그 짝이 애초에 후보가 아니기 때문이다
 //! (편람 69쪽 실측 4건). 자세한 근거는 [`collect_text_outside_body`].
 
+mod glyph_advance;
+mod text_clip;
+
+use glyph_advance::glyph_band_horizontal;
 use serde_json::{json, Value};
 
 use crate::document_core::DocumentCore;
 use crate::model::shape::TextWrap;
 use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use crate::HwpError;
-
-mod text_occupancy;
-use text_occupancy::glyph_band_horizontal;
 
 // ─────────────────────────────────────────────────────────────────────────
 // 판정 옵션 · 데이터 모델
@@ -801,6 +802,7 @@ fn walk(
     off_canvas_suppress: bool,
     boundary: &BoundingBox,
     page: &BoundingBox,
+    inherited_text_clip: BoundingBox,
     opts: &AnomalyOptions,
     overflow_out: &mut Vec<OverflowAnomaly>,
     off_canvas_out: &mut Vec<OffCanvasAnomaly>,
@@ -837,11 +839,13 @@ fn walk(
 
     // 표·글상자 안으로도 내려가 런 bbox 를 모은다. 일반 overlap 의 suppress 와
     // 무관 — 표 안의 글자가 서로 겹치는 것은 표-표 겹침이 아니다.
-    if is_text_overlap_candidate(node) {
+    let current_text_clip = text_clip::for_node(node, inherited_text_clip);
+    let visible_text = text_clip::intersect(glyph_band_bbox(node), current_text_clip);
+    if is_text_overlap_candidate(node) && visible_text.width > 0.0 && visible_text.height > 0.0 {
         text_out.push(FlowCandidate {
             path: path.clone(),
             node_type: "TextRun",
-            bbox: glyph_band_bbox(node),
+            bbox: visible_text,
             column,
         });
     }
@@ -888,6 +892,7 @@ fn walk(
             next_off_canvas_suppress,
             boundary,
             page,
+            current_text_clip,
             opts,
             overflow_out,
             off_canvas_out,
@@ -973,21 +978,29 @@ fn find_overlaps_with(
 ///
 /// 단(column) 은 본문 개념이라 여기서 모은 후보는 모두 `column: None` 이다.
 /// 짝짓기는 [`text_columns_can_overlap`] 이 "단 밖은 어느 단과도 짝이 된다"로 받는다.
-fn collect_text_outside_body(node: &RenderNode, path: String, out: &mut Vec<FlowCandidate>) {
+fn collect_text_outside_body(
+    node: &RenderNode,
+    path: String,
+    inherited_text_clip: BoundingBox,
+    out: &mut Vec<FlowCandidate>,
+) {
     if !node.visible || node.editor_only {
         return;
     }
-    if is_text_overlap_candidate(node) {
+    let current_text_clip = text_clip::for_node(node, inherited_text_clip);
+    // 이 경로의 기존 node bbox 기준은 유지하고 실제 clip만 대조한다.
+    let visible_text = text_clip::intersect(node.bbox, current_text_clip);
+    if is_text_overlap_candidate(node) && visible_text.width > 0.0 && visible_text.height > 0.0 {
         out.push(FlowCandidate {
             path: path.clone(),
             node_type: "TextRun",
-            bbox: node.bbox,
+            bbox: visible_text,
             column: None,
         });
     }
     for (i, child) in node.children.iter().enumerate() {
         let child_path = format!("{path}/{}{i}", node_type_label(&child.node_type));
-        collect_text_outside_body(child, child_path, out);
+        collect_text_outside_body(child, child_path, current_text_clip, out);
     }
 }
 
@@ -1292,6 +1305,7 @@ pub fn scan_page_with_source(
             false,
             &boundary,
             &page_boundary,
+            page_boundary,
             opts,
             &mut overflow,
             &mut off_canvas,
@@ -1306,7 +1320,7 @@ pub fn scan_page_with_source(
     for (i, child) in root.children.iter().enumerate() {
         if is_outside_body_text_area(&child.node_type) {
             let path = format!("Page/{}{i}", node_type_label(&child.node_type));
-            collect_text_outside_body(child, path, &mut text);
+            collect_text_outside_body(child, path, page_boundary, &mut text);
         }
     }
 

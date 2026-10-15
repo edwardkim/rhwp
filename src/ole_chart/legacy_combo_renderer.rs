@@ -32,7 +32,8 @@ pub(super) fn render(
     bounds: [f64; 4],
 ) -> Option<String> {
     let [x, y, width, height] = bounds;
-    if !bounds.iter().all(|v| v.is_finite())
+    if presentation.chart_type != 9
+        || !bounds.iter().all(|v| v.is_finite())
         || width <= 0.0
         || height <= 0.0
         || chart.series.len() != presentation.series.len()

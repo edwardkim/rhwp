@@ -25,6 +25,8 @@ pub struct LayoutBox {
 /// 레이아웃 요소 종류
 #[derive(Debug, Clone, serde::Serialize)]
 pub enum LayoutKind {
+    /// Selected Hancom glyphs and the same advances used by layout.
+    HancomGlyphs(super::hancom_glyphs::GlyphRun),
     /// 수평 나열
     Row(Vec<LayoutBox>),
     /// 일반 텍스트 (이탤릭)
@@ -119,11 +121,14 @@ pub enum LayoutKind {
 }
 
 /// 수식 레이아웃 계산기
+#[derive(Clone, Copy)]
 pub struct EqLayout {
     /// 기본 글꼴 크기 (px)
     pub font_size: f64,
     dpi: f64,
     hancom_cjk_advance: bool,
+    hancom_latin: bool,
+    latin_italic: bool,
 }
 
 /// 비율 상수
@@ -201,6 +206,8 @@ impl EqLayout {
             font_size,
             dpi: super::super::DEFAULT_DPI,
             hancom_cjk_advance: false,
+            hancom_latin: false,
+            latin_italic: true,
         }
     }
 
@@ -211,6 +218,9 @@ impl EqLayout {
             font_size: super::super::hwpunit_to_px(equation.font_size.max(1) as i32, dpi),
             dpi,
             hancom_cjk_advance: equation.font_name.eq_ignore_ascii_case("HYhwpEQ"),
+            hancom_latin: !equation.common.size_protect
+                && equation.font_name.eq_ignore_ascii_case("HYhwpEQ"),
+            latin_italic: true,
         }
     }
 
@@ -279,7 +289,43 @@ impl EqLayout {
 
         let mut boxes: Vec<LayoutBox> = children
             .iter()
-            .map(|c| self.layout_node(c, fs))
+            .enumerate()
+            .map(|(index, c)| {
+                let mut layout = self.layout_node(c, fs);
+                let operator = match c {
+                    EqNode::Symbol(text) | EqNode::MathSymbol(text) => {
+                        super::hancom_glyphs::is_operator(text)
+                    }
+                    _ => false,
+                };
+                if operator {
+                    if let LayoutKind::HancomGlyphs(run) = &mut layout.kind {
+                        let operand = |node: &EqNode| match node {
+                            EqNode::Empty | EqNode::Space(_) => false,
+                            EqNode::Symbol(text) | EqNode::MathSymbol(text) => {
+                                !super::hancom_glyphs::is_operator(text)
+                            }
+                            _ => true,
+                        };
+                        let left = if index > 0 && operand(&children[index - 1]) {
+                            fs * 0.15
+                        } else {
+                            0.0
+                        };
+                        let right = if children.get(index + 1).is_some_and(operand) {
+                            fs * 0.15
+                        } else {
+                            0.0
+                        };
+                        for position in &mut run.positions {
+                            *position += left;
+                        }
+                        run.width += left + right;
+                        layout.width = run.width;
+                    }
+                }
+                layout
+            })
             .filter(|b| b.width > 0.0 || matches!(b.kind, LayoutKind::Newline))
             .collect();
 
@@ -319,7 +365,38 @@ impl EqLayout {
         }
     }
 
+    fn layout_hancom_glyphs(
+        &self,
+        text: &str,
+        role: super::hancom_glyphs::Role,
+        fs: f64,
+        pad: f64,
+    ) -> Option<LayoutBox> {
+        if !self.hancom_latin {
+            return None;
+        }
+        let run = super::hancom_glyphs::measure(text, role, fs, self.dpi, pad)?;
+        Some(LayoutBox {
+            x: 0.0,
+            y: 0.0,
+            width: run.width,
+            height: fs,
+            baseline: fs * TEXT_BASELINE,
+            kind: LayoutKind::HancomGlyphs(run),
+        })
+    }
+
     fn layout_text(&self, text: &str, fs: f64) -> LayoutBox {
+        if let Some(layout) = self.layout_hancom_glyphs(
+            text,
+            super::hancom_glyphs::Role::Variable {
+                italic: self.latin_italic,
+            },
+            fs,
+            0.0,
+        ) {
+            return layout;
+        }
         // CJK/한글 텍스트는 이탤릭이 아니므로 italic 보정 제외
         let has_cjk = text.chars().any(|c| {
             matches!(c,
@@ -351,6 +428,11 @@ impl EqLayout {
     }
 
     fn layout_number(&self, text: &str, fs: f64) -> LayoutBox {
+        if let Some(layout) =
+            self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::Number, fs, 0.0)
+        {
+            return layout;
+        }
         let w = estimate_text_width(text, fs, false);
         LayoutBox {
             x: 0.0,
@@ -363,6 +445,11 @@ impl EqLayout {
     }
 
     fn layout_symbol(&self, text: &str, fs: f64) -> LayoutBox {
+        if let Some(layout) =
+            self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::Operator, fs, 0.0)
+        {
+            return layout;
+        }
         let w = estimate_text_width(text, fs, false);
         // 연산자 좌우 여백
         let pad = if matches!(text, "+" | "-" | "=" | "<" | ">" | "×" | "÷") {
@@ -381,6 +468,11 @@ impl EqLayout {
     }
 
     fn layout_math_symbol(&self, text: &str, fs: f64) -> LayoutBox {
+        if let Some(layout) =
+            self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::Operator, fs, 0.0)
+        {
+            return layout;
+        }
         // 적분 기호: 큰 크기로 렌더링 (INTEGRAL_SCALE 적용 — Task #1313)
         // Task #1317: 글리프를 path 로 그리므로 advance 는 path 폭(geom.width)을 쓴다.
         if is_integral_symbol(text) {
@@ -1207,7 +1299,13 @@ impl EqLayout {
         body: &EqNode,
         fs: f64,
     ) -> LayoutBox {
-        let b = self.layout_node(body, fs);
+        let mut context = *self;
+        match style {
+            super::symbols::FontStyleKind::Roman => context.latin_italic = false,
+            super::symbols::FontStyleKind::Italic => context.latin_italic = true,
+            _ => context.hancom_latin = false,
+        }
+        let b = context.layout_node(body, fs);
         LayoutBox {
             x: 0.0,
             y: 0.0,
