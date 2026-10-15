@@ -35,6 +35,41 @@ test('CanvasKit SFNT normalization keeps standalone fonts on face zero', () => {
   assert.equal(canvasKitFontFaceData(standalone, 1), null);
 });
 
+test('standalone SFNT tables are aligned without changing glyph or metric data', () => {
+  const original = fixtureBuffer('RHWPBitmapSvgGlyphSmoke.ttf');
+  const source = new DataView(original);
+  const count = source.getUint16(4, false);
+  const directoryEnd = 12 + count * 16;
+  // Some installed legacy fonts have valid table payloads at unaligned offsets.
+  // OTS rejects these before FontFace can expose any glyphs.
+  const shifted = new Uint8Array(original.byteLength + 1);
+  shifted.set(new Uint8Array(original, 0, directoryEnd));
+  shifted.set(new Uint8Array(original, directoryEnd), directoryEnd + 1);
+  const input = new DataView(shifted.buffer);
+  for (let i = 0; i < count; i++) {
+    const record = 12 + i * 16;
+    input.setUint32(record + 8, source.getUint32(record + 8, false) + 1, false);
+  }
+  const normalized = canvasKitFontFaceData(shifted.buffer, 0);
+  assert.ok(normalized);
+  const output = new DataView(normalized);
+  for (let i = 0; i < count; i++) {
+    const record = 12 + i * 16;
+    const offset = output.getUint32(record + 8, false);
+    const length = output.getUint32(record + 12, false);
+    const originalOffset = source.getUint32(record + 8, false);
+    assert.equal(offset % 4, 0, 'browser SFNT directory alignment');
+    const before = new Uint8Array(original.slice(originalOffset, originalOffset + length));
+    const after = new Uint8Array(normalized.slice(offset, offset + length));
+    if (source.getUint32(record, false) === 0x68656164) {
+      before.fill(0, 8, 12);
+      after.fill(0, 8, 12);
+    }
+    assert.deepEqual(after, before, 'table payload, apart from head checksumAdjustment');
+  }
+  assert.equal(canvasKitFontFaceData(shifted.buffer, 1), null);
+});
+
 test('CanvasKit SFNT normalization rejects malformed collection directories', () => {
   const collection = fixtureBuffer('RHWPExactFaceSmoke.ttc');
   const malformed = collection.slice(0);

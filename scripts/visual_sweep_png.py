@@ -269,7 +269,11 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     repairs += [f'empty-vtt-source-table:{tag}' for tag in vtt_tables]
                     if dropped:
                         repairs.append('drop-embedded-bitmap-strikes')
-                    if collection or repaired_cmap is not None or excluded_tables:
+                    # Preserve original SFNT payloads while aligning browser tables.
+                    misaligned_sfnt = font.flavor is None and any(
+                        table.offset % 4 for table in font.reader.tables.values())
+                    repairs += ['sfnt-table-alignment'] if misaligned_sfnt else []
+                    if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt:
                         resource_dir.mkdir(parents=True, exist_ok=True)
                         path = resource_dir / f'{digest}-{index}.ttf'
                         temporary = resource_dir / f'.{digest}-{index}-{os.getpid()}-{uuid.uuid4().hex}.ttf'
@@ -287,7 +291,7 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                                     'nameRecordErrors': name_errors,
                                     'repairs': repairs}
                     records.append(face)
-                    cached_records.append({**face, 'cacheKind': 'derived' if collection or repaired_cmap is not None or excluded_tables else 'source'})
+                    cached_records.append({**face, 'cacheKind': 'derived' if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt else 'source'})
                 resource_dir.mkdir(parents=True, exist_ok=True)
                 vs.write_json_atomic(resource_dir / f'{digest}.json',
                                      {'schemaVersion': 1, 'sourceSha256': digest,

@@ -1071,3 +1071,15 @@ Canvas2D는 정규 descriptor와 획, Native는 텍스트 채움과 같은 glyph
 실패는 새 px 검사가 아니라 HFT 굵은 한글의 기존 전진폭 계약이며, 검사 기대값을 바꾸지 않았다.
 새 px 검사들은 통과했다. 이 실패와 전체/고정devel/실제 소비 검증 잔여를 숨기지 않으며
 PR 준비 완료로 보고하지 않는다. 사용자 초안·지침 파일은 변경/커밋에 포함하지 않는다.
+
+
+## C29. 독립 SFNT 공급의 table 정렬 경계
+
+WASM 글꼴 준비에서 TAENMR.TTF가 OTS hhea misaligned table로 거절됐다.
+TTC만 수행하던 테이블 복사·4바이트 정렬·checksum 경로를 standalone SFNT에도 공유했다.
+글리프·hmtx·경계·날짜는 재컴파일하지 않는다. 정상 정렬 standalone과 WOFF 경로는 유지한다.
+Node반례4PASS1FAIL→5PASS, Python catalogue20PASS, 환경 경계9PASS. 실제 Chrome의
+같은 공개 smoke 글꼴에서 misaligned 거절→loaded도 확인했다. TAENMR 테이블 payload는
+head checksum을 제외하고 모두 동일하지만 maxp.maxZones4라는 다른 오류로 계속 거절된다.
+이 글꼴 사용 성공이나 해당 문서 WASM 완료로 주장하지 않고 원시 오류를 보존했다.
+상세 증적은 `regression-policy-20261015/sfnt-alignment/validation.json`.

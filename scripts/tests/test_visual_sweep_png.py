@@ -400,6 +400,44 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
                         before, after = before[:8] + before[12:], after[:8] + after[12:]
                     self.assertEqual(after, before, tag)
 
+    def test_unaligned_standalone_tables_preserve_payloads_and_metrics(self):
+        from fontTools.ttLib import TTFont
+        from fontTools.ttLib.sfnt import calcChecksum
+        import hashlib
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            inputs = root / 'input'
+            inputs.mkdir()
+            fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf'
+            data = fixture.read_bytes()
+            count = struct.unpack_from('>H', data, 4)[0]
+            directory_end = 12 + 16 * count
+            shifted = bytearray(data[:directory_end] + b'\0' + data[directory_end:])
+            for index in range(count):
+                record = 12 + 16 * index
+                offset = struct.unpack_from('>I', data, record + 8)[0]
+                struct.pack_into('>I', shifted, record + 8, offset + 1)
+            source = inputs / 'unaligned.ttf'
+            source.write_bytes(shifted)
+            adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest(),
+                write_json_atomic=lambda p, v: p.write_text(json.dumps(v)))
+            catalogue = json.loads(png.font_catalog(adapter, root, [inputs], root).read_text())
+            record = catalogue['faces'][0]
+            self.assertEqual(record['repairs'], ['sfnt-table-alignment'])
+            self.assertEqual(record['sourceSha256'], hashlib.sha256(shifted).hexdigest())
+            prepared = Path(record['path'])
+            self.assertEqual(calcChecksum(prepared.read_bytes()), 0xB1B0AFBA)
+            with TTFont(source, lazy=True) as before, TTFont(prepared, lazy=True) as after:
+                self.assertEqual(set(before.reader.keys()), set(after.reader.keys()))
+                for tag in before.reader.keys():
+                    self.assertEqual(after.reader.tables[tag].offset % 4, 0, tag)
+                    original, actual = before.reader[tag], after.reader[tag]
+                    if tag == 'head':
+                        original, actual = original[:8] + original[12:], actual[:8] + actual[12:]
+                    self.assertEqual(actual, original, tag)
+
+
     def test_outline_face_drops_embedded_bitmap_strikes_only(self):
         from fontTools.ttLib import TTFont
         from fontTools.ttLib.sfnt import SFNTWriter

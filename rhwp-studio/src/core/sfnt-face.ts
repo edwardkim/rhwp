@@ -15,21 +15,31 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
   const bytes = new Uint8Array(fontData);
   if (bytes.byteLength < 4) return faceIndex === 0 ? repairTerminalFontCmap(fontData.slice(0)) : null;
   const view = new DataView(fontData);
-  if (view.getUint32(0, false) !== TTC_TAG) return faceIndex === 0 ? repairTerminalFontCmap(fontData.slice(0)) : null;
-  if (bytes.byteLength < 12) return null;
-
-  const version = view.getUint32(4, false);
-  const faceCount = view.getUint32(8, false);
-  if (faceCount > MAX_TTC_FACE_COUNT) return null;
-  const collectionHeaderLength = 12 + faceCount * 4 + (version === TTC_VERSION_2 ? 12 : 0);
-  if (
-    (version !== TTC_VERSION_1 && version !== TTC_VERSION_2)
-    || faceCount === 0
-    || faceIndex >= faceCount
-    || collectionHeaderLength > bytes.byteLength
-  ) return null;
-
-  const faceOffset = view.getUint32(12 + faceIndex * 4, false);
+  const collection = view.getUint32(0, false) === TTC_TAG;
+  let faceOffset = 0;
+  let sourceHeaderLength = 0;
+  if (collection) {
+    if (bytes.byteLength < 12) return null;
+    const version = view.getUint32(4, false);
+    const faceCount = view.getUint32(8, false);
+    if (faceCount > MAX_TTC_FACE_COUNT) return null;
+    sourceHeaderLength = 12 + faceCount * 4 + (version === TTC_VERSION_2 ? 12 : 0);
+    if (
+      (version !== TTC_VERSION_1 && version !== TTC_VERSION_2)
+      || faceCount === 0
+      || faceIndex >= faceCount
+      || sourceHeaderLength > bytes.byteLength
+    ) return null;
+    faceOffset = view.getUint32(12 + faceIndex * 4, false);
+  } else {
+    if (faceIndex !== 0) return null;
+    // WOFF/WOFF2 and other browser-supported wrappers are not SFNT directories.
+    const signature = view.getUint32(0, false);
+    if (![0x0001_0000, 0x4f54_544f, 0x7472_7565, 0x7479_7031].includes(signature)) {
+      return repairTerminalFontCmap(fontData.slice(0));
+    }
+    if (bytes.byteLength < 12) return null;
+  }
   if (faceOffset > bytes.byteLength - 12) return null;
   const sfntVersion = view.getUint32(faceOffset, false);
   const tableCount = view.getUint16(faceOffset + 4, false);
@@ -45,6 +55,7 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
     || tableCount > MAX_SFNT_TABLE_COUNT
     || directoryLength > bytes.byteLength - faceOffset
   ) return null;
+  if (!collection) sourceHeaderLength = directoryLength;
 
   const tables: Array<{
     recordOffset: number;
@@ -58,7 +69,7 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
     const tableOffset = view.getUint32(recordOffset + 8, false);
     const tableLength = view.getUint32(recordOffset + 12, false);
     if (
-      (tableLength > 0 && tableOffset < collectionHeaderLength)
+      (tableLength > 0 && tableOffset < sourceHeaderLength)
       || tableOffset > bytes.byteLength
       || tableLength > bytes.byteLength - tableOffset
     ) return null;
@@ -69,6 +80,11 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
     tables.push({ recordOffset, sourceOffset: tableOffset, length: tableLength, outputOffset });
   }
   outputLength = Math.ceil(outputLength / 4) * 4;
+  // Aligned standalone fonts keep their bytes, including the existing cmap repair.
+  if (!collection && tables.every((table) => table.sourceOffset % 4 === 0)) {
+    return repairTerminalFontCmap(fontData.slice(0));
+  }
+  tables.sort((a, b) => view.getUint32(a.recordOffset, false) - view.getUint32(b.recordOffset, false));
 
   const selected = new Uint8Array(outputLength);
   const selectedView = new DataView(selected.buffer);
