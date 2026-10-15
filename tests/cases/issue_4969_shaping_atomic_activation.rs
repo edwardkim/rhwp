@@ -725,6 +725,8 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
     let rejected_json = rejected_layer.to_json();
     let accepted: serde_json::Value =
         serde_json::from_str(&accepted_json).expect("parse accepted layer JSON");
+    let rejected: serde_json::Value =
+        serde_json::from_str(&rejected_json).expect("parse rejected layer JSON");
     assert_eq!(accepted["textSources"].as_array().map(Vec::len), Some(2));
     assert_eq!(
         accepted["fontResources"]["blobs"].as_array().map(Vec::len),
@@ -768,9 +770,51 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
         .map(|(_, bytes)| bytes.len())
         .sum::<usize>();
     assert_eq!(font_payload_bytes, 2_519_996);
-    assert_eq!(accepted_json.len(), 3_375_713);
-    assert_eq!(rejected_json.len(), 9_161);
-    assert_eq!(accepted_json.len() - rejected_json.len(), 3_366_552);
+    // P45 adds these root knownFeatures capabilities to every export, including
+    // rejected publication. They describe writer support, not this fixture's
+    // glyphs or resources. Account for exactly their JSON strings + separators
+    // while retaining the original payload/structure size receipts unchanged.
+    const ADDED_CAPABILITIES: [&str; 3] = [
+        "text.glyphOutline.colorLayers.colrV1.sourceOver",
+        "text.glyphOutline.colorLayers.colrV1.clip",
+        "text.glyphOutline.svgGlyph.fontEmBox",
+    ];
+    let capability_wire_bytes = ADDED_CAPABILITIES
+        .iter()
+        .map(|feature| {
+            serde_json::to_string(feature)
+                .expect("JSON capability string")
+                .len()
+                + 1
+        })
+        .sum::<usize>();
+    let publication_json_bytes = |json: &str, value: &serde_json::Value| {
+        let known = value["knownFeatures"]
+            .as_array()
+            .expect("known capabilities");
+        assert!(known.len() > ADDED_CAPABILITIES.len());
+        for feature in ADDED_CAPABILITIES {
+            assert_eq!(
+                known
+                    .iter()
+                    .filter(|entry| entry.as_str() == Some(feature))
+                    .count(),
+                1,
+                "added capability must occur exactly once: {feature}"
+            );
+        }
+        json.len()
+            .checked_sub(capability_wire_bytes)
+            .expect("capability wire overhead")
+    };
+    let accepted_publication_bytes = publication_json_bytes(&accepted_json, &accepted);
+    let rejected_publication_bytes = publication_json_bytes(&rejected_json, &rejected);
+    assert_eq!(accepted_publication_bytes, 3_375_713);
+    assert_eq!(rejected_publication_bytes, 9_161);
+    assert_eq!(
+        accepted_publication_bytes - rejected_publication_bytes,
+        3_366_552
+    );
     println!(
         "{}",
         serde_json::json!({

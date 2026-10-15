@@ -2569,13 +2569,17 @@ export class CanvasKitLayerRenderer {
       const src = crop
         ? this.canvasKit.XYWHRect(crop.x, crop.y, crop.width, crop.height)
         : this.canvasKit.XYWHRect(0, 0, imageWidth, imageHeight);
-      const effectWasApplied = !!canvasKitImageEffectKey(op);
-      const useMipmaps = bitmapFiltering === undefined && !effectWasApplied
+      // imageForOp rejects failed preprocessing before replay. Only binary
+      // source-pixel effects need nearest to preserve their threshold/dither;
+      // grayscale and tone retain the profile's ordinary sampling policy.
+      const binaryEffectWasApplied = !!canvasKitImageEffectKey(op)
+        && (op.effect === 'blackWhite' || op.effect === 'pattern8x8');
+      const useMipmaps = bitmapFiltering === undefined && !binaryEffectWasApplied
         && this.currentProfile !== 'fastPreview' && this.preferRasterDepth === 0
         && (this.renderMode === 'compat' || this.currentProfile === 'print' || this.currentProfile === 'highQuality')
         && ((crop?.width ?? imageWidth) > dstW * 1.2 || (crop?.height ?? imageHeight) > dstH * 1.2);
       this.drawImageRect(canvas, image, src, this.canvasKit.XYWHRect(dstX, dstY, dstW, dstH), opacity,
-        bitmapFiltering ?? (effectWasApplied ? 'nearest' : 'linear'), useMipmaps);
+        bitmapFiltering ?? (binaryEffectWasApplied ? 'nearest' : 'linear'), useMipmaps);
     };
 
     const fillMode = op.fillMode ?? 'fitToSize';
