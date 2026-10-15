@@ -718,8 +718,8 @@ mod tests {
             "단별 간격이 왕복에서 보존돼야 함(#4387)"
         );
         assert!(
-            !cd2.proportional_widths,
-            "HWPX colSz 는 절대 HWPUNIT — 비례값 플래그가 켜지면 안 됨"
+            cd2.proportional_widths,
+            "한컴 HWPX colSz의 비례 너비 해석이 왕복에서 보존돼야 함"
         );
     }
 
