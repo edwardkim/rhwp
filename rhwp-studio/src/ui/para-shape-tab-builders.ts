@@ -5,6 +5,7 @@
 
 import { createFieldset, row, label, numberInput, unit } from './para-shape-helpers';
 import { updateFillControls } from './fill-selection';
+import { ptToTabUnits, tabUnitsToPt } from '@/core/tab-units';
 
 import { t as i18nText } from '../i18n/index.ts';
 // ════════════════════════════════════════════════════════
@@ -285,7 +286,7 @@ export function buildTabSettingsTab(state: TabState): TabSettingsResult {
   function addTabStop(): void {
     const positionPt = parseFloat(tabPositionInput.value) || 0;
     if (positionPt <= 0) return;
-    const position = Math.round(positionPt * 100);
+    const position = ptToTabUnits(positionPt);
     const tabType = parseInt(tabTypeRadios.find(r => r.checked)?.value ?? '0');
     const fill = parseInt(tabFillSelect.value);
     if (state.currentTabStops.some(t => t.position === position)) return;
@@ -327,7 +328,7 @@ export function buildTabSettingsTab(state: TabState): TabSettingsResult {
     state.currentTabStops.forEach((t, i) => {
       const tr = document.createElement('tr');
       if (i === state.selectedTabIndex) tr.className = 'selected';
-      appendTableCell(tr, `${(t.position / 100).toFixed(1)} pt`);
+      appendTableCell(tr, `${tabUnitsToPt(t.position).toFixed(1)} pt`);
       appendTableCell(tr, TAB_TYPE_NAMES[t.type] ?? '?');
       tr.addEventListener('click', () => {
         state.selectedTabIndex = i;
@@ -341,7 +342,7 @@ export function buildTabSettingsTab(state: TabState): TabSettingsResult {
     deletedTabListBody.replaceChildren();
     state.deletedTabStops.forEach((t, i) => {
       const tr = document.createElement('tr');
-      appendTableCell(tr, `${(t.position / 100).toFixed(1)} pt`);
+      appendTableCell(tr, `${tabUnitsToPt(t.position).toFixed(1)} pt`);
       appendTableCell(tr, TAB_TYPE_NAMES[t.type] ?? '?');
       tr.addEventListener('dblclick', () => restoreTabStop(i));
       tr.title = i18nText('dialog.paraShapeTabBuilders.tr.tooltip');
