@@ -1,10 +1,11 @@
 # 웹 폰트 목록
 
 웹 배포에 사용하는 WOFF2 폰트의 canonical source 목록이다. Git에는 36개 WOFF2,
-총 22,651,296 bytes가 포함된다. Studio와 legacy `/web`은 각각의 `fonts/` runtime URL을 유지하면서
+총 23,137,616 bytes가 포함된다. Studio와 legacy `/web`은 각각의 `fonts/` runtime URL을 유지하면서
 이 디렉토리를 참조하고, extension build는 여기에서 배포 산출물로 복사한다.
 
-저작권 보호가 필요한 폰트는 Git에 포함하지 않으며, 별도로 준비해야 한다.
+재배포 권한이 확인되지 않은 상용 폰트는 Git에 포함하지 않는다. 오픈소스 폰트도 저작권의
+보호를 받으며, [파일별 고지와 라이선스 전문](licenses/README.md)을 제품 패키지에 함께 배포한다.
 
 ## 저작권 폰트 (Git 미포함)
 
@@ -103,14 +104,18 @@ python tools/subset_noto_sans_kr_regular.py \
 
 | 파일명 | 폰트명 | 라이선스 | 출처 |
 |--------|--------|---------|------|
-| Cafe24Ssurround-v2.0.woff2 | 카페24 써라운드 | 무료 배포 | Cafe24 |
-| Cafe24Supermagic-Regular-v1.0.woff2 | 카페24 슈퍼매직 | 무료 배포 | Cafe24 |
-| Happiness-Sans-*.woff2 (3종) | 행복고딕 Regular/Bold/Title | 무료 배포 | 행복나눔 |
-| HappinessSansVF.woff2 | 행복고딕 Variable | 무료 배포 | 행복나눔 |
+| Cafe24Ssurround-v2.0.woff2 | 카페24 써라운드 | SIL OFL 1.1 | Cafe24 |
+| Cafe24Supermagic-Regular-v1.0.woff2 | 카페24 슈퍼매직 | SIL OFL 1.1 | Cafe24 |
+| Happiness-Sans-*.woff2 (3종) | 해피니스 산스 Regular/Bold/Title | SIL OFL 1.1 | [현대백화점](https://thehyundaifont.com/) |
+| HappinessSansVF.woff2 | 해피니스 산스 Variable | SIL OFL 1.1 | [현대백화점](https://thehyundaifont.com/) |
+
+해피니스 산스의 [공식 동봉 라이선스 PDF](../../ttfs/redistributable/happiness-sans/HapinessSans_License.pdf)는
+OFL 1.1 전문과 Reserved Font Name을 명시한다. 이 네 WOFF2는 공식 `HappinessSans-Screen.zip`의
+대응 member와 바이트가 같으며 임의 변환본이 아니다. 재배포 시 권리자 고지와 라이선스를 함께 보존한다.
 
 ### 문자/수식 보조
 
 | 파일명 | 폰트명 | 라이선스 | 출처 | 용도 |
 |--------|--------|---------|------|------|
-| SourceHanSerifK-OldHangul-subset.woff2 | Source Han Serif K Old Hangul subset | SIL OFL 1.1 (`SourceHanSerifK-OFL.txt`) | Adobe / Google | 옛한글 자모·합자 fallback |
+| RHWPOldHangul-Regular.woff2 | RHWP Old Hangul subset | SIL OFL 1.1 (`SourceHanSerifK-OFL.txt`) | Adobe / Google | 옛한글 자모·합자 fallback |
 | LatinModernMath-Regular.woff2 | Latin Modern Math | GUST Font License | GUST / TeX ecosystem | 수식 fallback |

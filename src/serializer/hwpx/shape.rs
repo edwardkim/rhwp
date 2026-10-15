@@ -994,8 +994,11 @@ pub(crate) fn write_fill_brush<W: Write>(
                 ImageFillMode::TileHorzBottom => "TILE_HORZ_BOTTOM",
                 ImageFillMode::TileVertLeft => "TILE_VERT_LEFT",
                 ImageFillMode::TileVertRight => "TILE_VERT_RIGHT",
-                ImageFillMode::FitToSize => "FIT",
-                ImageFillMode::Zoom => "ZOOM",
+                ImageFillMode::FitToSize => "TOTAL",
+                // HWP5 mode 15 is emitted as ZOOM by Hancom when saving HWPX.
+                // It is an aspect-preserving fit, not the wildcard TILE fallback.
+                // This writer is shared by shape fills and header BorderFill.
+                ImageFillMode::Zoom | ImageFillMode::None => "ZOOM",
                 ImageFillMode::Total => "TOTAL",
                 ImageFillMode::Center => "CENTER",
                 ImageFillMode::CenterTop => "CENTER_TOP",

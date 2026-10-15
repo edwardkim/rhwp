@@ -150,7 +150,7 @@
 | [samples/hwp3-pagedef-1915.hwp](../../../../samples/hwp3-pagedef-1915.hwp) | `b272fdd218b4e91355167e63438a1605ef6902d75970c4ff5b8bae67087122d0` |
 | [samples/hwp3-sample-hwp5.hwp](../../../../samples/hwp3-sample-hwp5.hwp) | `dc2edf4737c110ab16a6c6543bceed9f5648d634a40e180ce3fc2725ec0f21d8` |
 | [samples/hwp3-sample.hwp](../../../../samples/hwp3-sample.hwp) | `645525c8cd5ec11b1742ba7cfc759f68622861916233b5e982385cdb12f0ced2` |
-| [samples/hwp3-sample10-hwp5.hwp](../../../../samples/hwp3-sample10-hwp5.hwp) | `a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51` |
+| [samples/hwp3-sample10-hwp5.hwp](../issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp) | `a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51` |
 | [samples/hwp3-sample10.hwp](../../../../samples/hwp3-sample10.hwp) | `d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48` |
 | [samples/hwp3-sample11-hwp5.hwp](../../../../samples/hwp3-sample11-hwp5.hwp) | `412956ee85313584dcb901e162a19f68b70a35d57cbe76c95e5e3a1c6f591b9d` |
 | [samples/hwp3-sample11.hwp](../../../../samples/hwp3-sample11.hwp) | `51b743b2823a2df9b6fac243f56aebecedbbd02e2a8baad58ffc2e5a4e695f20` |
@@ -466,7 +466,7 @@
 | [samples/issue6793/1611000-201000141-small-air-transport-study.hwp](../../../../samples/issue6793/1611000-201000141-small-air-transport-study.hwp) | `25cc60d379f68246875e968978c13f3273fcc3f6b04fc1fe726434e4626e447d` |
 | [samples/issue6795/1341000-201100013-cyber-university-application.hwp](../../../../samples/issue6795/1341000-201100013-cyber-university-application.hwp) | `3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8` |
 | [samples/issue6797/156160455-social-pig-farm-income.hwp](../../../../samples/issue6797/156160455-social-pig-farm-income.hwp) | `1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8` |
-| [samples/issue6800/1192000-202100017-policy-research-report.hwp](../../../../samples/issue6800/1192000-202100017-policy-research-report.hwp) | `fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee` |
+| [samples/issue6800/1192000-202100017-policy-research-report.hwp](../issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report.hwp) | `fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee` |
 | [samples/issue6803/1376496-neighborhood-facility-land-table.hwp](../../../../samples/issue6803/1376496-neighborhood-facility-land-table.hwp) | `2482b695bc92c0cafe661af63c54acea834b6927bf9c666bdf47299910e3801d` |
 | [samples/issue6844/30269-anticorruption-recommendation-toc.hwp](../../../../samples/issue6844/30269-anticorruption-recommendation-toc.hwp) | `9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7` |
 | [samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp](../../../../samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp) | `a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb` |

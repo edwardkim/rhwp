@@ -10,9 +10,13 @@ pub(crate) use stored_cell_flow_picture::{
 mod stored_closed_cell_frame;
 mod stored_empty_host_frame;
 mod stored_nested_before_host;
+mod stored_nested_closing_host;
+mod stored_nested_terminal_line;
 pub(crate) use stored_nested_before_host::{
     stored_nested_before_host_placement, stored_table_before_host_frame,
 };
+pub(crate) use stored_nested_closing_host::stored_nested_host_closes_after_previous_line;
+pub(crate) use stored_nested_terminal_line::stored_nested_terminal_host_line_height_hu;
 mod stored_cut_outer_frame;
 mod stored_header_frame;
 pub(crate) use stored_cut_outer_frame::stored_hwpx_cut_owns_outer_frame;
@@ -725,7 +729,12 @@ pub(crate) fn stored_tac_line_successor_advance(
         .get(next.para_shape_id as usize)?
         .spacing_before;
     let advance = line.line_height.checked_add(line.line_spacing)?;
-    let delta = successor.vertical_pos.checked_sub(line.vertical_pos)?;
+    let delta = crate::renderer::composer::stored_tac_successor_delta_hu(
+        host,
+        line,
+        successor,
+        super::px_to_hwpunit(after + before, dpi),
+    )?;
     (delta == advance.checked_add(super::px_to_hwpunit(after + before, dpi))?)
         .then(|| hwpunit_to_px(advance, dpi) + after)
 }
@@ -1564,7 +1573,7 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
     // 표제의 쪽나눔 유무는 Para 앵커가 소유하는 바깥 여백을 바꾸지 않는다.
     // 표제의 글줄 잉크와 표의 바깥 여백은 별도로 소유하며 캡션 간격도 별도로 계산한다.
     let native_object_frame = native_host.is_some_and(|para| {
-        if object_only_saved_table_anchor(para, table) {
+        if object_only_saved_table_anchor(para, table) || reflow_empty_table_host(para, table) {
             return true;
         }
         // 각주·미주는 호스트 글줄에 속하며 표의 독립 바깥 프레임을 없애지 않는다.
@@ -5446,11 +5455,18 @@ pub(crate) fn float_pushed_line_spacing_before(
 /// whitespace hosts retain their own line boxes; negative/absolute positions
 /// and saved frames have different origins.
 pub(crate) fn reflow_empty_table_host(para: &Paragraph, table: &Table) -> bool {
+    // 구역·단 설정은 표 앵커와 함께 저장되지만 가시 글줄이나 개체가 아니다.
+    // 실제 표 하나만 이 빈 호스트의 포맷 상자를 소유한다.
+    let mut objects = para
+        .controls
+        .iter()
+        .filter(|control| !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)));
+    let only_table = matches!(objects.next(), Some(Control::Table(_))) && objects.next().is_none();
     para.text.is_empty()
         // An implementation-tagged LineSeg still describes a computed line.
         // Lack of a trustworthy saved anchor does not erase that line box.
         && para.line_segs.is_empty()
-        && matches!(para.controls.as_slice(), [Control::Table(_)])
+        && only_table
         && is_para_topbottom_float(&table.common)
         && matches!(table.common.vert_align, VertAlign::Top)
         && signed_hwpunit(table.common.vertical_offset) >= 0
@@ -6017,7 +6033,11 @@ pub(crate) fn rowbreak_fragment_frame_bottom(
     dpi: f64,
     body_filling_source_frame: bool,
 ) -> f64 {
-    if body_filling_source_frame {
+    // 한 행에 속한 셀의 반복 프레임은 기존 본문 끝 inset을 공유한다.
+    // 다행·다열이라는 이유만으로 이 계약을 버리지 않는다. 걸친 셀의
+    // 물리 잔여와 본문 전체를 선언한 개체 상자에는 inset을 중복 계상하지 않는다.
+    let has_spanning_cells = table.cells.iter().any(|cell| cell.row_span > 1);
+    if body_filling_source_frame || has_spanning_cells {
         body_bottom - hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi)
     } else {
         single_cell_page_fragment_bottom(table, body_bottom, dpi)
