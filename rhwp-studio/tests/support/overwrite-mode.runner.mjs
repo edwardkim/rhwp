@@ -54,9 +54,12 @@ function makeWasm({ body = '', cell = '', objects = [], ranges = [], cellRanges 
   const doc = {
     body,
     cell,
+    objects: [...objects],
     ranges: toRanges(ranges),
     cellRanges: toRanges(cellRanges),
     bold: [...body].map((_, i) => i >= bold[0] && i < bold[1]),
+    colors: [...body].map(() => '#000000'),
+    emptyRunStyle: { bold: false, textColor: '#000000' },
   };
   const fragments = new Map();
   let nextFragmentId = 1;
@@ -79,13 +82,21 @@ function makeWasm({ body = '', cell = '', objects = [], ranges = [], cellRanges 
       }
     });
   };
-  const editBody = (off, del, ins) => {
+  const editBody = (off, del, ins, afterControl) => {
     const chars = [...doc.body];
     const added = [...ins];
-    chars.splice(off, del, ...added);
+    const after = afterControl ?? off > chars.length;
+    const at = Math.min(off, chars.length);
+    const removed = Math.min(del, chars.length - at);
+    doc.objects = doc.objects.map((position) => {
+      const before = position >= at + removed ? position - removed : Math.min(position, at);
+      return before > at || (before === at && !after) ? before + added.length : before;
+    });
+    chars.splice(at, removed, ...added);
     doc.body = chars.join('');
-    doc.bold.splice(off, del, ...added.map(() => off > 0 && doc.bold[off - 1]));
-    moveRanges(doc.ranges, false, off, del, added.length);
+    doc.bold.splice(at, removed, ...added.map(() => at > 0 && doc.bold[at - 1]));
+    doc.colors.splice(at, removed, ...added.map(() => at > 0 ? doc.colors[at - 1] : '#000000'));
+    moveRanges(doc.ranges, false, at, removed, added.length);
   };
   const editCell = (off, del, ins) => {
     const chars = [...doc.cell];
@@ -94,9 +105,35 @@ function makeWasm({ body = '', cell = '', objects = [], ranges = [], cellRanges 
     moveRanges(doc.cellRanges, true, off, del, ins.length);
   };
   const cellResult = (off) => ({ ok: true, charOffset: off, paginationDeferred: false, cellFlowChanged: false });
+  const logicalPosition = (target) => {
+    const positions = [...doc.objects].sort((a, b) => a - b);
+    let scalar = 0;
+    let logical = 0;
+    let control = 0;
+    while (logical < target) {
+      if (positions[control] === scalar) {
+        logical++;
+        control++;
+        if (logical === target) return { scalar, afterControl: true };
+      } else if (scalar < [...doc.body].length) {
+        scalar++;
+        logical++;
+      } else break;
+    }
+    return { scalar, afterControl: false };
+  };
   return {
     doc,
     fragments,
+    getParagraphLength: () => [...doc.body].length,
+    getLogicalLength: () => [...doc.body].length + doc.objects.length,
+    logicalToTextOffset: (_s, _p, off) => logicalPosition(off).scalar,
+    insertTextLogical: (_s, _p, off, value) => {
+      const { scalar, afterControl } = logicalPosition(off);
+      editBody(scalar, 0, value, afterControl);
+      return JSON.stringify({ ok: true, logicalOffset: off + [...value].length });
+    },
+    runInBatch: (apply) => apply(),
     getTextRange: (_s, _p, off, n) => [...doc.body].slice(off, off + n).join(''),
     getTextInCell: (_s, _pp, _ci, _cei, _cpi, off, n) => [...doc.cell].slice(off, off + n).join(''),
     insertText: (_s, _p, off, t) => editBody(off, 0, [...t]),
@@ -115,7 +152,15 @@ function makeWasm({ body = '', cell = '', objects = [], ranges = [], cellRanges 
       editCell(off, del, [...t]);
       return cellResult(off + [...t].length);
     },
-    textToLogicalOffset: (_s, _p, off) => off + objects.filter((p) => p < off).length,
+    textToLogicalOffset: (_s, _p, off) => off + doc.objects.filter((p) => p < off).length,
+    applyCharFormat: (_s, _p, from, to, props) => {
+      const { bold, textColor } = JSON.parse(props);
+      if (bold !== undefined) for (let at = from; at < to; at++) doc.bold[at] = bold;
+      if (textColor !== undefined) for (let at = from; at < to; at++) doc.colors[at] = textColor;
+      // 실제 문단은 마지막 글을 지워도 끝의 빈 run은 직전 글자 모양을 참조한다.
+      doc.emptyRunStyle = { ...doc.emptyRunStyle, ...JSON.parse(props) };
+      return '{"ok":true}';
+    },
     getFieldInfoAt: (pos) => {
       const fieldId = fieldIndexAt(pos);
       if (fieldId < 0) return { inField: false };
@@ -187,6 +232,7 @@ function makeHandler(wasm, start, { insertMode = false, editMode = 'normal', exi
     isComposing: false,
     compositionAnchor: null,
     compositionLength: 0,
+    compositionBodyLogical: false,
     _compositionCovered: '',
     _compositionFragment: null,
     _lastCompositionText: '',
@@ -679,6 +725,352 @@ for (const method of ['deactivate', 'dispose']) {
     assert.equal(wasm.doc.body, 'ㅎbcd', `${method}: 조합이 남긴 문서를 다시 건드리면 안 된다`);
   });
 }
+
+// 실제 빈 그림 문단의 본문 anchor는 개체 한 칸을 포함하지만 문자열은 scalar만 센다.
+for (const prefix of ['', '앞🦦']) {
+  for (const updates of [['한'], ['ㅎ', '하', '한'], ['😀', '😀X'], ['한', ''], ['ㅎ', '하', '한', '']]) {
+    scenario(`31. 개체 뒤 ${JSON.stringify(prefix)} ${JSON.stringify(updates)} 조합의 확정·취소·이력`, () => {
+      const length = [...prefix].length;
+      const wasm = makeWasm({ body: prefix, objects: [length] });
+      const h = makeHandler(wasm, bodyPos(length + 1), { insertMode: true });
+      const value = updates.at(-1);
+      h.compose(...updates);
+      assert.equal(wasm.doc.body, prefix + value, '앞 조합 글이 잔상으로 남으면 안 된다');
+      assert.deepEqual(wasm.doc.objects, [length], '개체는 원문 뒤·새 글 앞에 남아야 한다');
+      assert.equal(h.cursor.getPosition().charOffset, length + 1 + [...value].length);
+      assert.equal(h.compositionBodyLogical, false, '확정·취소 뒤 논리 조합 상태가 남으면 안 된다');
+      assert.equal(wasm.fragments.size, 0, '미리보기 복원 조각을 보관하지 않는다');
+      assert.equal(h.history.canUndo(), !!value, '확정한 글만 이력에 남겨야 한다');
+      if (!value) return;
+      for (let cycle = 0; cycle < 2; cycle++) {
+        h.undo();
+        assert.equal(wasm.doc.body, prefix);
+        assert.deepEqual(wasm.doc.objects, [length]);
+        assert.equal(h.history.canUndo(), false);
+        h.redo();
+        assert.equal(wasm.doc.body, prefix + value);
+        assert.deepEqual(wasm.doc.objects, [length]);
+      }
+    });
+  }
+}
+
+scenario('32. 개체 뒤 연속 두 음절은 순서와 하나의 병합 이력을 유지한다', () => {
+  const wasm = makeWasm({ objects: [0] });
+  const h = makeHandler(wasm, bodyPos(1), { insertMode: true });
+  h.compose('ㅎ', '하', '한');
+  h.compose('ㄱ', '그', '글');
+  assert.equal(wasm.doc.body, '한글');
+  assert.deepEqual(wasm.doc.objects, [0]);
+  assert.equal(h.cursor.getPosition().charOffset, 3);
+  h.undo();
+  assert.equal(wasm.doc.body, '');
+  assert.equal(h.history.canUndo(), false);
+  h.redo();
+  assert.equal(wasm.doc.body, '한글');
+  assert.deepEqual(wasm.doc.objects, [0]);
+});
+
+scenario('33. 개체 뒤 수정 모드의 조합도 원문과 개체를 덮어쓰지 않는다', () => {
+  const wasm = makeWasm({ body: '앞🦦', objects: [2] });
+  const h = makeHandler(wasm, bodyPos(3));
+  h.compose('ㅎ', '하', '한');
+  assert.equal(wasm.doc.body, '앞🦦한');
+  h.undo();
+  assert.equal(wasm.doc.body, '앞🦦');
+  assert.deepEqual(wasm.doc.objects, [2]);
+});
+
+scenario('34. 개체 뒤 조합 조각의 첫 준비 실패는 원문 손실이나 조각 누수를 만들지 않는다', () => {
+  const wasm = makeWasm({ body: '앞🦦', objects: [2] });
+  const capture = wasm.captureDeleteRange;
+  let attempted = 0;
+  wasm.captureDeleteRange = (...args) => {
+    if (++attempted === 1) throw new Error('조합 복원 조각 준비 거절');
+    return capture(...args);
+  };
+  const h = makeHandler(wasm, bodyPos(3), { insertMode: true });
+  h.compose('ㅎ', '하', '한');
+  assert.equal(wasm.doc.body, '앞🦦한');
+  assert.ok(attempted > 0, '복원 조각 준비 거절 경로를 실제로 실행해야 한다');
+  assert.equal(wasm.fragments.size, 0);
+  h.undo();
+  assert.equal(wasm.doc.body, '앞🦦');
+  assert.deepEqual(wasm.doc.objects, [2]);
+});
+
+scenario('35. 조합 삭제 뒤 새 글 삽입이 실패하면 미리보기와 개체를 복구하고 다음 갱신을 받는다', () => {
+  const wasm = makeWasm({ body: '앞🦦', objects: [2] });
+  const h = makeHandler(wasm, bodyPos(3), { insertMode: true });
+  text.onCompositionStart.call(h);
+  h.input('ㅎ');
+  assert.equal(wasm.doc.body, '앞🦦ㅎ');
+  const insert = wasm.insertTextLogical;
+  let rejected = false;
+  wasm.insertTextLogical = (...args) => {
+    const result = insert(...args);
+    if (!rejected) { rejected = true; throw new Error('조합 새 글 삽입 뒤 거절'); }
+    return result;
+  };
+  h.input('하');
+  assert.equal(wasm.doc.body, '앞🦦ㅎ', '실패한 갱신은 이전 미리보기를 복구해야 한다');
+  assert.equal(rejected, true, '삽입 후 거절 경로를 실제로 실행해야 한다');
+  assert.equal(h.history.canUndo(), false, '미리보기는 확정 전 이력에 넣지 않는다');
+  assert.equal(wasm.fragments.size, 0);
+  h.input('한');
+  text.onCompositionEnd.call(h);
+  assert.equal(wasm.doc.body, '앞🦦한');
+  h.undo();
+  assert.equal(wasm.doc.body, '앞🦦');
+  assert.deepEqual(wasm.doc.objects, [2]);
+});
+
+scenario('36. 논리 범위를 넘긴 시작 주소는 개체와 원문을 바꾸지 않는다', () => {
+  const wasm = makeWasm({ body: '앞🦦', objects: [2] });
+  const before = structuredClone(wasm.doc);
+  const h = makeHandler(wasm, bodyPos(100), { insertMode: true });
+  try { h.compose('ㅎ', '하', '한'); } catch {}
+  assert.deepEqual(wasm.doc, before);
+  assert.equal(h.history.canUndo(), false);
+  assert.equal(wasm.fragments.size, 0);
+});
+
+scenario('37. 조합 중 범위가 낡아도 scalar 원문을 추측해 지우지 않는다', () => {
+  const wasm = makeWasm({ body: '앞🦦', objects: [2] });
+  const h = makeHandler(wasm, bodyPos(3), { insertMode: true });
+  text.onCompositionStart.call(h);
+  h.compositionLength = 100;
+  h._compositionCovered = '';
+  try { h.input('한'); } catch {}
+  assert.ok(wasm.doc.body.startsWith('앞🦦'), '음수나 낡은 조합 길이로 원문을 지우면 안 된다');
+  assert.equal(h.history.canUndo(), false);
+  assert.deepEqual(wasm.doc.objects, [2]);
+  assert.equal(wasm.fragments.size, 0);
+});
+
+scenario('38. 실제 예약 서식은 개체 뒤 모든 갱신과 다음 음절에 이어진다', () => {
+  const wasm = makeWasm({ objects: [0] });
+  const originalStyle = structuredClone(wasm.doc.emptyRunStyle);
+  const h = makeHandler(wasm, bodyPos(1), { insertMode: true });
+  h.pendingCharShape = { bold: true, textColor: '#1122ff' };
+  h.pendingCharShapeAnchor = bodyPos(1);
+  for (const name of ['getPendingCharShape', 'advancePendingCharShapeAnchor', 'applyPendingCharShapeToRange']) {
+    h[name] = InputHandler.prototype[name];
+  }
+  for (const updates of [['ㅎ', '하', '한'], ['ㄱ', '그', '글']]) {
+    text.onCompositionStart.call(h);
+    for (const value of updates) {
+      h.input(value);
+      assert.ok(wasm.doc.bold.every(Boolean), '실제 scalar 조합 글에 예약 서식을 적용해야 한다');
+      assert.ok(wasm.doc.colors.every(color => color === '#1122ff'));
+      assert.deepEqual(h.pendingCharShapeAnchor, h.cursor.getPosition(), '현재 커서에서 예약을 이어가야 한다');
+    }
+    text.onCompositionEnd.call(h);
+  }
+  assert.equal(wasm.doc.body, '한글');
+  assert.deepEqual(wasm.doc.bold, [true, true]);
+  assert.deepEqual(wasm.doc.colors, ['#1122ff', '#1122ff']);
+  assert.deepEqual(wasm.doc.objects, [0]);
+  for (let cycle = 0; cycle < 2; cycle++) {
+    h.undo();
+    assert.equal(wasm.doc.body, '');
+    assert.deepEqual(wasm.doc.emptyRunStyle, originalStyle, '빈 run의 글자 모양 참조까지 되돌려야 한다');
+    assert.equal(wasm.fragments.size, 0);
+    h.redo();
+    assert.equal(wasm.doc.body, '한글');
+    assert.deepEqual(wasm.doc.bold, [true, true]);
+    assert.deepEqual(wasm.doc.colors, ['#1122ff', '#1122ff']);
+    assert.deepEqual(wasm.doc.objects, [0]);
+    assert.deepEqual(wasm.doc.emptyRunStyle, { bold: true, textColor: '#1122ff' });
+    assert.equal(wasm.fragments.size, 1, '다시 실행도 다음 Undo의 원문 조각을 보유해야 한다');
+  }
+});
+
+scenario('39. 개체 뒤 양식 입력 거절은 조각과 이력을 만들지 않는다', () => {
+  const wasm = makeWasm({ objects: [0] });
+  const before = structuredClone(wasm.doc);
+  const h = makeHandler(wasm, bodyPos(1), { insertMode: true, editMode: 'form' });
+  h.compose('ㅎ', '하', '한');
+  assert.deepEqual(wasm.doc, before);
+  assert.equal(h.history.canUndo(), false);
+  assert.equal(wasm.fragments.size, 0);
+});
+
+scenario('40. 실제 조합 삭제 권한이 사라지면 새 글만 넣지 않고 다음 허용된 갱신을 받는다', () => {
+  const wasm = makeWasm({ body: '앞🦦', objects: [2] });
+  const h = makeHandler(wasm, bodyPos(3), { insertMode: true });
+  text.onCompositionStart.call(h);
+  h.input('ㅎ');
+  const before = structuredClone(wasm.doc);
+  const allowed = h.canDeleteTextInFormMode;
+  h.canDeleteTextInFormMode = () => false;
+  h.input('하나');
+  assert.deepEqual(wasm.doc, before, '삭제 거절 뒤 새 조합만 끼워 넣으면 안 된다');
+  assert.equal(h.compositionLength, 1, '거절된 미리보기 길이를 적용하면 안 된다');
+  assert.equal(h._lastCompositionText, 'ㅎ');
+  assert.equal(h.history.canUndo(), false);
+  assert.equal(wasm.fragments.size, 0);
+  h.canDeleteTextInFormMode = allowed;
+  h.input('한');
+  text.onCompositionEnd.call(h);
+  assert.equal(wasm.doc.body, '앞🦦한');
+  h.undo();
+  assert.equal(wasm.doc.body, '앞🦦');
+});
+
+scenario('41. 실제 조합 readback이 다르면 캐시 문자열만 믿고 이력을 만들지 않는다', () => {
+  const wasm = makeWasm({ objects: [0] });
+  const h = makeHandler(wasm, bodyPos(1), { insertMode: true });
+  text.onCompositionStart.call(h);
+  h.input('한');
+  const read = wasm.getTextRange;
+  wasm.getTextRange = () => '틀';
+  text.onCompositionEnd.call(h);
+  assert.equal(wasm.doc.body, '한');
+  assert.equal(h.history.canUndo(), false, '실제 글과 다른 내용을 기록하면 안 된다');
+  assert.equal(h._lastComposedText, '', '확정 실패를 유령 입력 캐시에 남기면 안 된다');
+  assert.equal(h.compositionBodyLogical, false);
+  assert.equal(wasm.fragments.size, 0);
+  wasm.getTextRange = read;
+});
+
+for (const method of ['deactivate', 'dispose']) {
+  scenario(`42. 개체 뒤 조합 중 ${method}는 논리 조합 상태와 임시 조각을 해제한다`, () => {
+    const wasm = makeWasm({ objects: [0] });
+    const h = makeHandler(wasm, bodyPos(1), { insertMode: true });
+    text.onCompositionStart.call(h);
+    h.input('ㅎ');
+    assert.equal(h.compositionBodyLogical, true, '논리 조합 경로를 실제로 시작해야 한다');
+    endSession(h, method);
+    assert.equal(h.compositionBodyLogical, false);
+    assert.equal(wasm.fragments.size, 0);
+    text.onCompositionEnd.call(h);
+    assert.equal(h.history.canUndo(), false, '끝난 세션의 늦은 확정은 기록하지 않는다');
+    assert.equal(wasm.doc.body, 'ㅎ');
+  });
+}
+
+scenario('43. 다음 음절의 첫 조각 준비 거절은 지난 확정 글을 조합 버퍼에 되살리지 않는다', () => {
+  const wasm = makeWasm({ objects: [0] });
+  const h = makeHandler(wasm, bodyPos(1), { insertMode: true });
+  h.compose('한');
+  const before = structuredClone(wasm.doc);
+  const previous = h.history.peekUndoTop();
+  text.onCompositionStart.call(h);
+  const capture = wasm.captureDeleteRange;
+  let failed = false;
+  wasm.captureDeleteRange = (...args) => {
+    if (!failed) { failed = true; throw new Error('새 음절 첫 조각 준비 거절'); }
+    return capture(...args);
+  };
+  h.input('ㄱ');
+  assert.equal(failed, true);
+  assert.deepEqual(wasm.doc, before);
+  assert.equal(h.textarea.value, '', '빈 새 음절에는 지난 음절을 복원하면 안 된다');
+  assert.equal(h.compositionLength, 0);
+  assert.equal(h.history.peekUndoTop(), previous);
+  assert.equal(wasm.fragments.size, 0);
+  h.input('그');
+  h.input('글');
+  text.onCompositionEnd.call(h);
+  assert.equal(wasm.doc.body, '한글');
+  assert.deepEqual(wasm.doc.objects, [0]);
+});
+
+scenario('44. 본문 중간의 혼합 좌표에는 논리 조합 경로를 일괄 적용하지 않는다', () => {
+  const wasm = makeWasm({ body: '앞뒤', objects: [0, 0] });
+  const h = makeHandler(wasm, bodyPos(3), { insertMode: true });
+  let logicalCalls = 0;
+  const insert = wasm.insertTextLogical;
+  wasm.insertTextLogical = (...args) => { logicalCalls++; return insert(...args); };
+  text.onCompositionStart.call(h);
+  assert.equal(h.compositionBodyLogical, false);
+  h.input('한');
+  assert.equal(logicalCalls, 0);
+  text.onCompositionEnd.call(h);
+});
+
+scenario('45. 논리 본문 조합과 기존 scalar 입력은 서로 다른 이력 주소를 합치지 않는다', () => {
+  const wasm = makeWasm({ objects: [0] });
+  const h = makeHandler(wasm, bodyPos(1), { insertMode: true });
+  h.compose('한');
+  assert.equal(h.history.canUndo(), true);
+  h.input('X');
+  assert.equal(wasm.doc.body, '한X');
+  h.undo();
+  assert.equal(wasm.doc.body, '한');
+  h.undo();
+  assert.equal(wasm.doc.body, '');
+  assert.deepEqual(wasm.doc.objects, [0]);
+});
+
+for (const prefix of ['', '앞🦦']) {
+  scenario(`46. ${JSON.stringify(prefix)} 뒤 예약 서식 조합 취소는 빈 run 참조와 첫 원문 조각을 복원한다`, () => {
+    const length = [...prefix].length;
+    const wasm = makeWasm({ body: prefix, objects: [length] });
+    const before = structuredClone(wasm.doc);
+    const h = makeHandler(wasm, bodyPos(length + 1), { insertMode: true });
+    h.pendingCharShape = { bold: true, textColor: '#1122ff' };
+    h.pendingCharShapeAnchor = bodyPos(length + 1);
+    for (const name of ['getPendingCharShape', 'advancePendingCharShapeAnchor', 'applyPendingCharShapeToRange']) h[name] = InputHandler.prototype[name];
+    text.onCompositionStart.call(h);
+    let firstFragment;
+    for (const value of ['ㅎ', '하', '한']) {
+      h.input(value);
+      firstFragment ??= h._compositionFragment;
+      assert.notEqual(firstFragment, null, '첫 원문 조각을 서식 적용 전에 확보해야 한다');
+      assert.equal(h._compositionFragment, firstFragment, '갱신마다 첫 원문을 교체하면 안 된다');
+      assert.equal(wasm.fragments.size, 1, '중간 미리보기 복원 조각은 해제해야 한다');
+    }
+    h.input('');
+    text.onCompositionEnd.call(h);
+    assert.deepEqual(wasm.doc, before);
+    assert.equal(h._compositionFragment, null);
+    assert.equal(h.history.canUndo(), false);
+    assert.equal(wasm.fragments.size, 0);
+  });
+}
+
+scenario('47. 예약 서식 확정 조각은 이력 초기화 시 해제하고 현재 문서는 유지한다', () => {
+  const wasm = makeWasm({ objects: [0] });
+  const h = makeHandler(wasm, bodyPos(1), { insertMode: true });
+  h.pendingCharShape = { bold: true, textColor: '#1122ff' };
+  h.pendingCharShapeAnchor = bodyPos(1);
+  for (const name of ['getPendingCharShape', 'advancePendingCharShapeAnchor', 'applyPendingCharShapeToRange']) h[name] = InputHandler.prototype[name];
+  h.compose('ㅎ', '하', '한');
+  assert.equal(h._compositionFragment, null, '확정 뒤 조각 소유권은 command로 넘어가야 한다');
+  assert.equal(wasm.fragments.size, 1);
+  const before = structuredClone(wasm.doc);
+  h.history.clear(wasm);
+  assert.deepEqual(wasm.doc, before);
+  assert.equal(wasm.fragments.size, 0);
+  assert.equal(h.history.canUndo(), false);
+});
+
+scenario('48. 예약 서식 Redo가 서식 적용 뒤 실패하면 원문의 빈 run 참조까지 복원한다', () => {
+  const wasm = makeWasm({ body: '앞🦦', objects: [2] });
+  const before = structuredClone(wasm.doc);
+  const h = makeHandler(wasm, bodyPos(3), { insertMode: true });
+  h.pendingCharShape = { bold: true, textColor: '#1122ff' };
+  h.pendingCharShapeAnchor = bodyPos(3);
+  for (const name of ['getPendingCharShape', 'advancePendingCharShapeAnchor', 'applyPendingCharShapeToRange']) h[name] = InputHandler.prototype[name];
+  h.compose('한');
+  h.undo();
+  assert.deepEqual(wasm.doc, before);
+  const apply = wasm.applyCharFormat;
+  let failed = false;
+  wasm.applyCharFormat = (...args) => {
+    const result = apply(...args);
+    failed = true;
+    throw new Error('Redo 서식 적용 뒤 거절');
+  };
+  assert.throws(() => h.history.redo(wasm), /Redo 서식 적용 뒤 거절/);
+  assert.equal(failed, true);
+  assert.deepEqual(wasm.doc, before, '삽입 글과 빈 run의 글자 모양 참조를 함께 복구해야 한다');
+  assert.equal(wasm.fragments.size, 0);
+  assert.equal(h.history.canUndo(), false);
+  assert.equal(h.history.canRedo(), false);
+});
 
 if (failures.length > 0) {
   console.error(failures.join('\n'));

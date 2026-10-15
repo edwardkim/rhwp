@@ -1370,6 +1370,11 @@ export class WasmBridge {
     return this.doc.insertText(sec, para, charOffset, text);
   }
 
+  insertTextLogical(sec: number, para: number, logicalOffset: number, text: string): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.insertTextLogical(sec, para, logicalOffset, text);
+  }
+
   replaceBodyTextLocal(
     sec: number,
     para: number,
@@ -1539,6 +1544,16 @@ export class WasmBridge {
   textToLogicalOffset(sec: number, para: number, textOffset: number): number {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.textToLogicalOffset(sec, para, textOffset);
+  }
+
+  logicalToTextOffset(sec: number, para: number, logicalOffset: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.logicalToTextOffset(sec, para, logicalOffset);
+  }
+
+  getLogicalLength(sec: number, para: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.getLogicalLength(sec, para);
   }
 
   /** 문서 트리 DFS 기반 다음/이전 편집 가능 위치 반환 */

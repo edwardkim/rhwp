@@ -530,6 +530,7 @@ export class InputHandler {
   private isComposing = false;
   private compositionAnchor: DocumentPosition | null = null;
   private compositionLength = 0; // 문서에 삽입된 조합 텍스트 길이
+  private compositionBodyLogical = false;
   /** [#7489] 수정 모드에서 이번 조합이 덮어쓴 글자. null 이면 첫 조합 글자에서 정한다. */
   private _compositionCovered: string | null = '';
   /** [#7489] 이번 조합이 덮기 직전 문단 조각. 조합 취소면 되살리고, 확정이면 기록에 넘긴다. */
@@ -2134,9 +2135,14 @@ export class InputHandler {
   applyPendingCharShapeToRange(anchor: DocumentPosition, count: number): void {
     const props = this.getPendingCharShape();
     if (!props) return;
-    const to = anchor.charOffset + count;
-    applyCharShapeModsToRange(this.wasm, anchor, anchor.charOffset, to, props);
-    this.advancePendingCharShapeAnchor(anchor, { ...anchor, charOffset: to });
+    const textAnchor = this.compositionBodyLogical ? {
+      ...anchor,
+      charOffset: this.wasm.logicalToTextOffset(anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset),
+    } : anchor;
+    // 서식 범위는 텍스트 자리지만 예약은 갱신 전후의 논리 캐럿을 따른다.
+    const previous = this.compositionBodyLogical ? this.cursor.getPosition() : anchor;
+    applyCharShapeModsToRange(this.wasm, textAnchor, textAnchor.charOffset, textAnchor.charOffset + count, props);
+    this.advancePendingCharShapeAnchor(previous, { ...anchor, charOffset: anchor.charOffset + count });
   }
 
   /**
@@ -4444,6 +4450,7 @@ export class InputHandler {
     this.isComposing = false;
     this.compositionAnchor = null;
     this.compositionLength = 0;
+    this.compositionBodyLogical = false;
     this._compositionCovered = '';
     // [#7489] 기록되기 전 덮은 조합의 문단 조각은 해제만 한다. deactivate 는 문서를 바꾼 뒤 불리므로
     // (같은 코어를 다시 쓰는 새 문서 포함) 되살리면 옛 문단이 새 문서에 끼어든다.
@@ -4500,6 +4507,7 @@ export class InputHandler {
     this.isComposing = false;
     this.compositionAnchor = null;
     this.compositionLength = 0;
+    this.compositionBodyLogical = false;
     this._compositionCovered = '';
     // [#7489] 기록되기 전 덮은 조합의 문단 조각을 해제한다(deactivate 와 같다).
     if (this._compositionFragment !== null) this.wasm.discardDeleteFragment(this._compositionFragment);
