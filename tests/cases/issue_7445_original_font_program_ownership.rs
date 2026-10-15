@@ -34,28 +34,44 @@ fn core(face: &str, text: &str, symbol_face: Option<&str>) -> DocumentCore {
 
 fn record(core: &DocumentCore, character: &str) -> Value {
     let value: Value = serde_json::from_str(
-        &core.get_font_decision_trace_native(0, r#"{"maxCharacters":100}"#).unwrap(),
-    ).unwrap();
-    value["records"].as_array().unwrap().iter()
-        .find(|r| r["source"]["character"] == character).expect("원본 글자 기록").clone()
+        &core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":100}"#)
+            .unwrap(),
+    )
+    .unwrap();
+    value["records"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["source"]["character"] == character)
+        .expect("원본 글자 기록")
+        .clone()
 }
 
 fn advance(record: &Value) -> f64 {
-    record["layoutMetric"]["baseAdvanceHwpunit"].as_f64().unwrap()
+    record["layoutMetric"]["baseAdvanceHwpunit"]
+        .as_f64()
+        .unwrap()
 }
 
 #[test]
 fn measured_original_glyph_survives_legacy_type1_display_fallback() {
     let core = core("HCI Poppy", "A/A·", None);
     let slash = record(&core, "/");
-    assert_eq!(slash["layoutMetric"]["widthSource"], "measuredOriginalGlyph");
+    assert_eq!(
+        slash["layoutMetric"]["widthSource"],
+        "measuredOriginalGlyph"
+    );
     // 독립2020/2024 Print의 동일 CharProc SHA와 Widths=605/1000em.
     // 기존4HU 장치 격자의 반 격자만 허용하며 전체 HFT 표를 승격하지 않는다.
     assert!((advance(&slash) - 7500.0 * 0.605).abs() <= 2.0);
     let fallback = core_with_palatino_program();
     for character in ["A", "·"] {
-        assert_eq!(advance(&record(&core,character)), advance(&record(&fallback,character)),
-            "부분 표에 없는 글자는 표시 프로그램의 폭을 유지함:{character}");
+        assert_eq!(
+            advance(&record(&core, character)),
+            advance(&record(&fallback, character)),
+            "부분 표에 없는 글자는 표시 프로그램의 폭을 유지함:{character}"
+        );
     }
 }
 
@@ -70,18 +86,34 @@ fn explicit_true_type_program_keeps_its_own_slash_advance() {
     core.set_font_environment(Some(FontEnvironment::from_json(
         r#"{"id":"verified-palatino-program","substitutions":{"HCI Poppy":"Palatino Linotype"},"trueTypeFaces":["Palatino Linotype"]}"#,
     ).unwrap())).unwrap();
-    let slash = record(&core,"/");
-    assert_eq!(advance(&slash),advance(&record(&core_with_palatino_program(),"/")));
-    assert_ne!(slash["layoutMetric"]["widthSource"],"measuredOriginalGlyph");
-    assert_eq!(core.export_hwp_native().unwrap(),original,"선택 환경은 원본을 수정하지 않음");
+    let slash = record(&core, "/");
+    assert_eq!(
+        advance(&slash),
+        advance(&record(&core_with_palatino_program(), "/"))
+    );
+    assert_ne!(
+        slash["layoutMetric"]["widthSource"],
+        "measuredOriginalGlyph"
+    );
+    assert_eq!(
+        core.export_hwp_native().unwrap(),
+        original,
+        "선택 환경은 원본을 수정하지 않음"
+    );
 }
 
 #[test]
 fn onepoint_uses_its_symbol_program_before_glyph_resolution() {
     let core = core("휴먼명조", "가․나", Some("한양신명조"));
-    let dot = record(&core,"․");
-    assert_eq!(dot["document"]["face"],"한양신명조","독립 Type3의 원본 기호 슬롯");
-    assert!((advance(&dot)-7500.0).abs() <= 2.0,"독립 전각 프로그램 전진");
+    let dot = record(&core, "․");
+    assert_eq!(
+        dot["document"]["face"], "한양신명조",
+        "독립 Type3의 원본 기호 슬롯"
+    );
+    assert!(
+        (advance(&dot) - 7500.0).abs() <= 2.0,
+        "독립 전각 프로그램 전진"
+    );
 }
 
 #[test]
@@ -90,7 +122,10 @@ fn explicit_onepoint_provider_uses_its_own_advance() {
     core.set_font_environment(Some(FontEnvironment::from_json(
         r#"{"id":"selected-provider","substitutions":{},"trueTypeFaces":["휴먼명조"],"glyphFallbacks":{"휴먼명조":["Haansoft Batang"]}}"#,
     ).unwrap())).unwrap();
-    let dot = record(&core,"․");
-    assert!((advance(&dot)-7500.0*178.0/1024.0).abs()<=2.0,"명시 공급자의 자연 전진");
-    assert_ne!(dot["layoutMetric"]["widthSource"],"heuristicFullwidth");
+    let dot = record(&core, "․");
+    assert!(
+        (advance(&dot) - 7500.0 * 178.0 / 1024.0).abs() <= 2.0,
+        "명시 공급자의 자연 전진"
+    );
+    assert_ne!(dot["layoutMetric"]["widthSource"], "heuristicFullwidth");
 }
