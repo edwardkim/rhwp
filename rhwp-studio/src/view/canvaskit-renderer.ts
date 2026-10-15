@@ -2012,7 +2012,7 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderPath(canvas: SkCanvas, op: LayerPathOp): void {
-    const path = this.pathFromCommands(op.commands ?? [], op.bbox.x, op.bbox.y);
+    const path = this.createCommandPath(op.commands ?? [], op.bbox.x, op.bbox.y);
     const style: LayerShapeStyle = op.style ?? (op.lineStyle ? {} : {
       strokeColor: '#000000',
       strokeWidth: 1,
@@ -2060,7 +2060,7 @@ export class CanvasKitLayerRenderer {
     path.delete?.();
   }
 
-  private pathFromCommands(commands: readonly LayerPathCommand[], x = 0, y = 0): Path {
+  private createCommandPath(commands: readonly LayerPathCommand[], x = 0, y = 0): Path {
     const builder = new this.canvasKit.PathBuilder();
     try {
       for (const command of commands) [x, y] = this.applyPathCommand(builder, command, x, y);
@@ -2172,7 +2172,7 @@ export class CanvasKitLayerRenderer {
         const placement = this.affineToCanvasKitMatrix(op.placement?.runToPage);
         if (placement) canvas.concat(placement);
         for (const layer of op.colorLayers.layers ?? []) {
-          const path = this.pathFromCommands(layer.commands ?? []);
+          const path = this.createCommandPath(layer.commands ?? []);
           const paint = new this.canvasKit.Paint();
           canvas.save();
           try {
@@ -2327,7 +2327,7 @@ export class CanvasKitLayerRenderer {
     try {
       (canvas as unknown as { concat: (matrix: number[]) => void }).concat(matrix);
       for (const outline of op.paths) {
-        const path = this.pathFromCommands(outline.commands ?? []);
+        const path = this.createCommandPath(outline.commands ?? []);
         try {
           this.applyGlyphPathFillRule(path, outline.fillRule);
           if (stroke && op.stroke?.paintOrder === 'strokeThenFill') canvas.drawPath(path, stroke);
@@ -2394,7 +2394,7 @@ export class CanvasKitLayerRenderer {
         return;
       }
       if (node.kind === 'clip' && node.clip?.clipCommands && node.clip.childNodeId !== undefined) {
-        const path = this.pathFromCommands(node.clip.clipCommands);
+        const path = this.createCommandPath(node.clip.clipCommands);
         canvas.save();
         try {
           this.applyFillRule(path, node.clip.fillRule);
@@ -2411,7 +2411,7 @@ export class CanvasKitLayerRenderer {
         this.unsupportedOps.add('glyphOutline:replayInvariant');
         return;
       }
-      const path = this.pathFromCommands(pathNode.commands);
+      const path = this.createCommandPath(pathNode.commands);
       this.applyFillRule(path, pathNode.fillRule);
       const paint = new this.canvasKit.Paint();
       let shader: unknown | undefined;
@@ -4687,7 +4687,7 @@ export class CanvasKitLayerRenderer {
         } else if (primitive.kind === 'circle') {
           canvas.drawCircle(primitive.x, primitive.y, primitive.radius, paint);
         } else if (primitive.points.length > 0) {
-          const path = this.pathFromCommands([
+          const path = this.createCommandPath([
             { type: 'moveTo', x: primitive.points[0][0], y: primitive.points[0][1] },
             ...primitive.points.slice(1).map(([x, y]) => ({ type: 'lineTo' as const, x, y })),
             ...(primitive.closed ? [{ type: 'closePath' as const }] : []),
@@ -5019,7 +5019,7 @@ export class CanvasKitLayerRenderer {
       return;
     }
     for (const head of heads ?? []) {
-      const path = this.pathFromCommands(head.commands, 0, 0);
+      const path = this.createCommandPath(head.commands, 0, 0);
       const fill = this.makeFillPaint(head.filled ? color : '#ffffff');
       const outline = head.filled ? null : this.makeStrokePaint(color, Math.max(0.5, width * 0.3), 1);
       try {
