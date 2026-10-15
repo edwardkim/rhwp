@@ -85,3 +85,20 @@ ignored 증적 루트는 `output/pr-review/issue7902-render-repair-20261014/`다
 `rebase-7935-develop-comparison.json`, `rebase-after-pr7936-7937.json`,
 `cff-path-replay-subset-result.json`에 SHA·명령·TSV·입력/PDF 해시·직접 생성한 PNG를 연결했다.
 로그·TSV·중간 JSON·공급 글꼴은 커밋하지 않는다.
+
+## 후속 정리와 실제 PNG 동일성
+
+- 새 candidate의 실제 Native835개·WASM835개 PNG는 이전 `9c1de319b` 출력과 각각 모두
+  SHA-256이 같았다. 새 head에서 재출력한 결과를 비교한 것이며, 이전에 직접 판독한 증거만
+  연결할 수 있다. 미판독 쪽에 새 판독 증거를 만드는 것으로 해석하지 않는다.
+- #7902와 #7936에 정확한 완료 범위·merge SHA 고정 PNG·개별 review를 게시하고 API로
+  원문 일치를 확인했다. #7902는 OPEN이다. 별도 문서 PR의 duration workflow도 성공했다.
+- 도구/문서 전용 local branch2개와 worktree를 제거했고 독립 venv63.8MiB 및 잘못 복제한
+  Native binary419.3MiB를 정리했다. 원격 head2개는 `post_merge.md`7.7의 기본 작업공간
+  clean 조건 때문에 사용자 dirty JS를 보존한 상태에서는 유지한다. 정확한 이름·SHA는
+  `pr7936-7937-closeout.json`에 기록했다.
+- `output/pr-review`의9개 하위 경로 전체를 점검했다. 진행 중인 #7902 원본·기준·실행 증거,
+  실제 사용 중인 글꼴·공유 캐시는 유지했다. 종료된 자체 `font_resources`에서 SHA로 동일한
+  사본12,864개를48개 프로그램과 hardlink로 묶어 **37.967GiB**를 확보했다(522.987초).
+  모든 원래 경로와 파일 바이트는 유지되며 Git worktree·target·원본 글꼴은 대상에서 제외했다.
+  `completed-font-resource-hardlink-audit.json`에 경로별 원래 SHA·대응 inode와 전후 공간을 기록했다.
