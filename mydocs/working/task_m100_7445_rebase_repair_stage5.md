@@ -1404,3 +1404,52 @@ fixed-base-source를 준비했다. 공용 target에서 Cargo를 순차 실행하
 뒤 Native/fresh WASM 전쪽 TSV를 같은 입력/PDF/글꼴/192DPI 조건으로 비교한다.
 전체 새 head 회귀·새 시각 비교·실제 소비 검증은 아직 완료가 아니다. 법원과 이전 분할본
 미달도 남아 있어 PR 완료로 판정하지 않는다. 지침은 수정하지 않았다.
+
+
+## C41. base 전환 뒤 산출물 신원 재검증과 기존 저장 줄 진단
+
+고정 e4e6d0c8의 Native/fresh 생산 뒤 후보를 빌드했을 때 Cargo가 후보 Native를2.05초에
+cache hit로 처리했고, 서로 다른 source인데 기준과 후보 Native SHA가
+`d0ef7b0a37489b7fe49aaacd994f76742f957caf47f6844478e4b94e9ea8173b`로 같았다.
+이 후보의 source hash 기록만으로는 실제 산출물을 입증하지 못한다.
+`candidate-c40-build` 및 그 `candidate-c40-diagnostic` 결과는 INVALID로 명시했다.
+후보 법원 출력이 실제 기준처럼1쪽/PDF2쪽이었던 결과도 수용 증거에서 제외한다.
+
+공유 target을 clean/삭제하지 않고 base 대비 변경 입력153개(및 루트 진입점)의 mtime만
+갱신했다. 내용·Git diff는 불변이다. fingerprint info 로그에서 candidate src 경로의
+StaleItem/ChangedFile을 확인한 뒤 실제 재컴파일했다. 후보 Native는1m52s 빌드 후
+`6bc89d0e6585864fc9e2862b039cb97dbfb961a914eb4062aac6e2ccd471e939`이며
+기준과 다르다. `candidate-c40-rebuilt`만 유효 후보로 사용한다. 새 fresh WASM 역시
+실제 dirty fingerprint/컴파일과 루트/Studio public/동결 패키지 hash를 확인한다.
+공유 cache·다른 작업·원본/PDF는 보존했다.
+
+유효 후보 Native로 법원2/2쪽 최저89.97913%, 이전d9bc 분할197/197쪽 최저25.59019%,
+미달7쪽을 다시 확인했다. 새 e4e6d0c8의 실제 출력은 sample16 65/PDF64쪽 등 기존
+쪽수 불일치가 있어 전쪽 통과로 쓰지 않는다. 기준 수집 driver는 count/export 실패를
+명시적으로 기록하고 다른 조건을 계속 수집한다. 미달·미검증 수치는 비우거나 통과로
+채우지 않는다. 첫 기준 실행의 중첩 font-supply 경로 누락은 내 driver 경로 오류이며
+캡처 전 실패했다. 동일 canonical 공급 폴더로 향하는 소유 symlink를 만들어 재시도했고
+글꼴 바이트·기준·DPI·관용치는 바꾸지 않았다.
+
+기존 분할본의 진단에서는 예전d9bc와 새4a96 입력을 같은 frozen exporter로 HWPX에
+내보냈다. header.xml이 같고, section0.xml에서 LineSeg 배열만 제외한 나머지 바이트도
+동일하다(SHA65677970970a8085f43c32e44173754a36d3e56ccb0f3e0bf69e7c25ef08d406).
+149쪽 화살표 문단의 저장 줄 시작은 예전[0,19,40,56], 새[0,19,41,57]이고
+줄 높이/간격/폭은 같다. 두 입력을 각각 인쇄한 독립 PDF는 전197쪽 중186쪽의
+모든 문자 코드·원점·bbox가 동일하고, 미달7쪽은 전부 그 동일한186쪽에 포함된다.
+이는 글리프 프로그램이나 최종 래스터 동일성의 입증과는 구분한다.
+따라서 예전 저장 줄 경계가 독립 Print와 달라 그대로 재사용되는 경계를 추적해야 한다.
+이것은 진단이며 구현 보정/전쪽 수용이 아니다. 새 입력의 성공을 예전 입력의 개선으로
+대신 쓰거나 원본 파일/쪽수 검사를 제거하지 않는다.
+
+ignored 정본은 `rebase-e4e6d0c8-20261016/`의 candidate-rebuild-input-mtimes.json,
+candidate-c40-rebuilt 생산자/로그, candidate-c40-valid-diagnostic 전쪽 TSV,
+old-giant-stale-partition-cause.json, old-new-non-layout-body-equality.json,
+old-vs-new-independent-pdf-glyphs.json이다. Studio 새 base `npm run build`는 exit0이다.
+전체 새 head 회귀·범위 lint 묶음·남은 전쪽/실제 소비 검증과 미달 보정은 계속 필요하다.
+
+C41 fresh 재빌드 완료: source code head는e9c213df3b이며 locked wrapper web/pkg/no-opt의
+로컬 대체 빌드다(Docker 최적화 비해당). 실제 Rust 컴파일3m59s를 포함해 종료했고
+기준과 다른 WASM SHA, root/pkg/Studio public/동결 패키지 hash 일치를 확인했다.
+WASM SHA는`4e1c2a6ba20647aeca7db3570ba63d3f41fc4cf9a8612512d4be4f9cf930f00a`이다.
+최신 원격 devel은 다시 조회해e4e6d0c8 그대로임을 확인했다.
