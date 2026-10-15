@@ -886,11 +886,13 @@ pub(super) fn prepare_glyph_outline(
         }
         GlyphOutlinePayloadKind::SvgGlyph => {
             let payload = outline.svg_glyph.as_ref()?;
-            if !payload.has_static_sanitized_contract() {
+            let viewport = payload.font_em_box.unwrap_or(bbox);
+            if !payload.has_static_sanitized_contract()
+                || !payload.has_portable_view_box_mapping(viewport)
+            {
                 return None;
             }
             let fragment = resources.svg_fragment(payload.svg_ref)?;
-            let viewport = payload.font_em_box.unwrap_or(bbox);
             let (image, bytes) =
                 svg_glyph_image(fragment, payload.view_box, viewport, raster_scale)?;
             let transforms = optional_matrix(payload.transform_to_run)?;
