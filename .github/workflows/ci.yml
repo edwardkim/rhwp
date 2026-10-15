@@ -1289,6 +1289,7 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_7820_sixel_contract -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_4961_font_decision_trace -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_7902_original_frame_and_content -- --profile release-test --features native-skia --verbose
               ;;
             release)
@@ -1302,6 +1303,7 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_7820_sixel_contract -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_4961_font_decision_trace -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_7902_original_frame_and_content -- --release --features native-skia --verbose
               ;;
             *)

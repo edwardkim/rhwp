@@ -1794,7 +1794,14 @@ impl TypesetEngine {
             let carried = (row == cursor_row && !start_cut_is_block)
                 .then_some(start_row_height_override)
                 .flatten();
-            let full = carried.or_else(|| cut_row_h.get(row).copied())?;
+            // 내용 측정 높이는 앞 프레임의 줄간격도 담을 수 있다. 이미 닫힌
+            // 앞 상자를 그 합에서 빼서 미소비 물리 공간으로 넘기지 않는다.
+            // 수용한 잔여가 없으면 원본 행의 선언 최소 상자만 빈 띠를 소유한다.
+            let full = carried.or_else(|| {
+                let declared = *table.get_raw_row_heights().get(row)?;
+                (declared <= i32::MAX as u32)
+                    .then(|| hwpunit_to_px(declared as i32, self.dpi))
+            })?;
             let tail = (full - limit).max(0.0);
             if complete_physical_end_cut
                 && layout_engine.stored_complete_row_tail_is_line_advance(

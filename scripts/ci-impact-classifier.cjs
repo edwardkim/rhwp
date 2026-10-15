@@ -37,6 +37,7 @@ const NATIVE_SKIA_RUST_FILES = new Set([
   // Sixel consumes the same Native Skia pixels; Canvas does not consume this adapter.
   'src/cli/outputs/sixel.rs',
   'tests/cases/issue_7820_sixel_contract.rs',
+  'tests/cases/issue_4961_font_decision_trace.rs',
   'tests/cases/issue_7902_original_frame_and_content.rs',
   'tests/cli_exit_codes_native.rs',
   'tests/issue_1144_native.rs',

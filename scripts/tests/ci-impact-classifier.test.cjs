@@ -238,6 +238,7 @@ test('every direct CLI page renderer caller has an explicit workflow-consumer de
 test('Native Skia integration test and support changes run Rust and Native Skia without Canvas', () => {
   for (const filename of [
     'tests/cases/issue_7820_sixel_contract.rs',
+    'tests/cases/issue_4961_font_decision_trace.rs',
     'tests/cases/issue_7902_original_frame_and_content.rs',
     'tests/cli_exit_codes_native.rs',
     'tests/issue_1144_native.rs',

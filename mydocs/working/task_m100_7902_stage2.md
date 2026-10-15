@@ -710,3 +710,41 @@ face를 시스템에서 찾지 못해 custom Noto fallback을 쓸 것이라고 �
 이는 채택한 구현이나 제출 head가 아니며 같은 조건의 rowbreak15쪽/nested104쪽/정책연구
 본문 넘침과 비교해 해당 일반화가 필요한지 확인하는 실험이다. 명령·source diff·해시는
 `flow-end-ablation-result.json`,실행 상태는`flow-end-ablation-run.log`에 있다.
+
+### 조각 물리 잔여의 잘못된 생산 근거
+
+9줄 제거 진단은 정책연구의 본문 넘침을 기존1건으로 돌렸지만,rowbreak HWPX15쪽도
+기준의87.45557%로 되돌렸다. nested HWPX104쪽 Native99.66092%는 변하지 않았다.
+그러므로 올바른 종료 흐름 전달을 삭제해 검사를 통과시키는 안은 채택하지 않는다.
+
+정책연구 원본 표 id1937554103은 독립적인 원본 첫 프레임을 갖는다.
+마지막 원본 줄의10000+1000HU와상하padding282HU가표 선언11282HU를 닫는다.
+이어받는6..13유닛은 실제 합15000HU(200px),원본 마지막 줄간격은 유닛에서
+이미 제외되어 있다. 따라서 종료 상자의 내용+padding은15282HU(203.76px)다.
+독립2024 Print214쪽의 첫 표 높이는203.457px(595×841pt PDF)로 대응한다.
+
+그러나 스캐너는213.333px를 수용했다. 종료 조각에 전달된 물리 하한이 내용 요구보다
+9.57333px 컸다. 잔여 생산의 마지막 fallback이`cut_row_h`(측정으로 생긴 전체 내용 높이)
+에서 앞의 독립 프레임 높이를 빼서,첫 프레임의 줄간격을 미소비 물리 공간처럼 넘겼다.
+`cellSz`의 원본 최소 높이3948HU는 앞 프레임보다 작아 그러한 빈 공간을 입증하지 않는다.
+
+수정 경로는`emit_table_fragment`의 잔여 생산→cursor.start_row_height_override→
+`RowScanQuery::whole_row_height`의 내용과 물리 하한 max→scan.consumed→
+`PageItem::PartialTable` 시작 행 override와실제 배치다. 이전에 실제 수용한 물리 잔여와
+걸침 셀·인증된 프레임의 특수 생산은 보존한다. 마지막 일반 fallback은 측정한 내용 합 대신
+원본 행의 선언 최소 높이에서만 빈 공간을 생산하도록 보정한다. 문서ID·쪽·임의 수치로 분기하지 않는다.
+
+물리 잔여 보정 후보의 Native 빌드는2분02초에 성공했다.
+기존 물리 잔여·가운데 정렬·중첩 이어받기22개와 글꼴 진단9개를 같은 정식 nextest
+선택 바이너리로 실행해 **31PASS/0FAIL**했다(실행46.147초,dev).
+Native CI의 두profile에 기존 #4961 진단 source도 명시했고 classifier 입력과 검사를
+맞췄다. 관련Node45PASS,workflow35PASS,actionlint exit0이다.
+
+선택 쪽 Native:rowbreak15쪽92.37322%,overfill43/44/45/46쪽
+99.00924/99.92289/99.95610/99.97079%,nested HWPX104쪽99.66092%로
+직전 보정 수치를 유지했다. 정책연구는215쪽을 보존하며 전체 본문2px 초과 넘침이
+**2→0건**으로 줄었다(기준a5의 기존1건도 함께 해소).
+`physical-tail-minimum-{producer,checks}.json`과`physical-tail-minimum-native-contracts.log`,
+`physical-tail-minimum-liver-anomaly.log`가 근거다. 원본·PDF·baseline 기대값은 바꾸지 않았다.
+새 producer의 정책연구162/214쪽 직접 비교와 현재 최종 head의 전체 Native/fresh WASM
+19문서,전체 Rust 회귀·lint는 계속 확인한다. 현행0.01%p·일대일 전체 비교 gate는 유지한다.
