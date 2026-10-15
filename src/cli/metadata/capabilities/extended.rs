@@ -18,11 +18,24 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "pages",
             ],
         ),
-        cmd_gated(
-            "export-png",
-            "문서를 페이지별 PNG로 렌더 (native-skia)",
-            cfg!(feature = "native-skia"),
-        ),
+        {
+            let mut command = cmd_gated(
+                "export-png",
+                "문서를 페이지별 PNG로 렌더하고 --json 매니페스트 출력 (native-skia)",
+                cfg!(feature = "native-skia"),
+            );
+            command["json"] = serde_json::json!(true);
+            command["flags"] = serde_json::json!([
+                "--page", "-p", "--output", "-o", "--font-path", "--profile", "--compat",
+                "--font-environment", "--dpi", "--scale", "--json", "--metadata-only",
+                "--render-tree-output"
+            ]);
+            command["recordFields"] = serde_json::json!([
+                "schemaVersion", "source", "backend", "comparisonProfile", "layoutGeneration",
+                "outputDir", "pageCount", "renderedCount", "pages"
+            ]);
+            command
+        },
         {
             let mut command = cmd_gated(
                 "export-sixel",

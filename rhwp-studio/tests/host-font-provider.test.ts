@@ -5,7 +5,7 @@ import { setHostFontProvider, prepareHostFontCatalog, resolveRendererLocalFont, 
   loadRendererLocalFont, getLocalFontState } from '../src/core/local-fonts.ts';
 import { fontFamilyChainForDisplay } from '../src/core/font-substitution.ts';
 import { collectHostFontRequests } from '../src/core/host-font-requests.ts';
-import type { PageLayerTree } from '../src/core/types.ts';
+import type { LayerEquationLayoutBox, PageLayerTree } from '../src/core/types.ts';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -136,6 +136,37 @@ test('paint requests preserve weight and only read the selected faces', async ()
     assert.equal(f.reads(), 0);
     await loadRendererLocalFont(records[0]);
     assert.equal(f.reads(), 1);
+  } finally { await setHostFontProvider(null); }
+});
+
+test('Hancom equation glyphs request their actual regular host face without reading bytes', async () => {
+  const f = fixture();
+  const equationFace = { id: 'equation', family: 'HyhwpEQ', fullName: 'HyhwpEQ',
+    postscriptName: 'HyhwpEQ', style: 'Regular', weight: 400, slant: 'normal' as const };
+  f.replace({ ...f.snapshot(), faces: [...f.snapshot().faces, equationFace] });
+  const bounds = { x: 0, y: 0, width: 200, height: 100 };
+  const glyph: LayerEquationLayoutBox = { ...bounds, baseline: 10,
+    kind: { type: 'hancomGlyphs', glyphs: '1', positions: [0], baselineShift: 0 } };
+  const root: LayerEquationLayoutBox = { ...bounds, baseline: 10,
+    kind: { type: 'row', children: [glyph] } };
+  const plain: LayerEquationLayoutBox = { ...bounds, baseline: 10,
+    kind: { type: 'number', text: '1' } };
+  const tree: PageLayerTree = { pageWidth: 200, pageHeight: 100,
+    root: { kind: 'leaf', bounds, ops: [
+      { type: 'equation', bbox: bounds, layoutBox: root },
+      { type: 'equation', bbox: bounds, layoutBox: glyph },
+    ] } };
+  try {
+    await setHostFontProvider(f.provider);
+    const requests = collectHostFontRequests(tree);
+    assert.equal(requests.length, 1, 'the same equation face is prepared once');
+    assert.equal(requests[0].hostReference?.face.id, 'equation');
+    assert.equal(f.reads(), 0, 'request collection is metadata only');
+    tree.root = { kind: 'leaf', bounds, ops: [
+      { type: 'equation', bbox: bounds, layoutBox: plain },
+      { type: 'equation', bbox: bounds, svgContent: '<svg/>' },
+    ] };
+    assert.equal(collectHostFontRequests(tree).length, 0, 'other equation paint paths do not consume HyhwpEQ');
   } finally { await setHostFontProvider(null); }
 });
 

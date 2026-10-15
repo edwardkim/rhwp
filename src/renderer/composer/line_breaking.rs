@@ -8,12 +8,15 @@ use super::{char_lang_slot, find_active_char_shape, is_lang_neutral, ComposedPar
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph, SpaceMetric};
 use crate::model::style::{Alignment, HeadType, LineSpacingType};
+use crate::renderer::equation_tac_flow::indent_leaves_line_room_hwp;
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
     is_cjk_char, kopub_space_advance_em, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
-use crate::renderer::style_resolver::{detect_lang_category, ResolvedParaStyle, ResolvedStyleSet};
+use crate::renderer::style_resolver::{
+    detect_lang_category, is_latin_slot_symbol, ResolvedParaStyle, ResolvedStyleSet,
+};
 use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 use std::ops::Range;
 
@@ -127,6 +130,7 @@ pub(crate) enum BreakToken {
 #[derive(Debug, Clone, Copy)]
 struct FlowInlineControl {
     char_position: usize,
+    utf16_position: u32,
     width_hwp: i32,
     height_hwp: i32,
     /// Equation supplies an object-owned baseline for the physical row. Other
@@ -281,9 +285,16 @@ fn is_hangul(ch: char) -> bool {
 }
 
 /// 라틴 문자 여부 (영문+숫자)
+/// 영문 낱말을 이루는 글자. 영문 슬롯 기호(`·`·`°`·곡선 따옴표)는 글꼴만 영문
+/// 슬롯이고 낱말 글자가 아니다(#7702).
 fn is_latin(ch: char) -> bool {
-    let lang = detect_lang_category(ch);
-    lang == 1 // English/Latin
+    detect_lang_category(ch) == 1 && !is_latin_slot_symbol(ch)
+}
+
+/// 영문 낱말 안에 머무는 글자 — 언어 중립 문자와, 중립 문자이던 Latin-1 기호 `·`·`°`.
+/// 곡선 따옴표는 종전처럼 낱말을 끊는다.
+fn stays_in_latin_word(ch: char) -> bool {
+    is_lang_neutral(ch) || matches!(ch, '\u{00B0}' | '\u{00B7}')
 }
 
 /// CJK 문자 여부 (한자/일본어 — 개별 분할 대상)
@@ -397,9 +408,8 @@ fn tokenize_paragraph_with_regenerated_space_metric(
 
     let mut tokens = Vec::new();
     let mut i = 0;
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
-        .with_reflow_slots(text_chars)
-        .with_space_metric(space_metric);
+    let metric_scope =
+        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
     let mut current_lang: usize = 0;
 
     while i < text_len {
@@ -598,8 +608,15 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 current_lang = detect_lang_category(ch);
                 let ts = metric_scope.style(styles, style_id, current_lang, i);
                 let fs = token_line_font_size(styles, style_id);
-                let mut w = estimate_text_width_unrounded(&ch.to_string(), &ts)
-                    + inline_width_px_at(inline_controls, i);
+                // [#7702] 첫가끝 자모(초성+중성(+종성))는 한 글자다 — 옛한글 `ᄒᆞᆫ` 을 자모마다
+                // 한 글자 폭으로 재면 줄을 두 글자 일찍 끊는다. 그리기(`split_into_clusters`)처럼
+                // 묶어 잰다.
+                let cluster_end = hangul_jamo_cluster_end(text_chars, i);
+                let cluster: String = text_chars[i..cluster_end].iter().collect();
+                let mut w = estimate_text_width_unrounded(&cluster, &ts)
+                    + (i..cluster_end)
+                        .map(|idx| inline_width_px_at(inline_controls, idx))
+                        .sum::<f64>();
                 // 글자 모드에서도 **줄 머리 금칙**을 지킨다.
                 //
                 // 어절 모드(위 분기)만 후행 금칙 문자를 앞 토큰에 흡수하고 있어, 글자 모드
@@ -609,7 +626,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 // 저장된 사다리가 있는 문서는 그 값을 쓰므로 영향이 없고, 편집·붙여넣기처럼
                 // 다시 조판하는 경우에만 달라진다.
                 let start = i;
-                i += 1;
+                i = cluster_end;
                 while i < text_len
                     && is_line_start_forbidden(text_chars[i])
                     && text_chars[i] != '\n'
@@ -628,7 +645,14 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         i as u32
                     };
                     let follow_style = find_active_char_shape(char_shapes, follow_pos);
-                    let follow_ts = metric_scope.style(styles, follow_style, current_lang, i);
+                    // [#7702] 흡수한 글자도 제 슬롯으로 잰다 — `·` 는 앞 글자가 한글이어도
+                    // 영문 슬롯이다(어절 모드 갈래와 같은 규칙).
+                    let follow_lang = if is_lang_neutral(text_chars[i]) {
+                        current_lang
+                    } else {
+                        detect_lang_category(text_chars[i])
+                    };
+                    let follow_ts = metric_scope.style(styles, follow_style, follow_lang, i);
                     w += estimate_text_width_unrounded(&text_chars[i].to_string(), &follow_ts)
                         + inline_width_px_at(inline_controls, i);
                     i += 1;
@@ -659,7 +683,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                     if c == ' ' || c == '\n' || c == '\t' {
                         break;
                     }
-                    if !is_latin(c) && !is_lang_neutral(c) {
+                    if !is_latin(c) && !stays_in_latin_word(c) {
                         break;
                     }
                     // 하이픈 모드: 하이픈에서 분할 (하이픈 포함 후 분리)
@@ -870,8 +894,14 @@ fn measure_token_char_widths(
     let mut total = 0.0;
     let mut char_widths = Vec::with_capacity(text.len());
     let mut current_lang = default_lang;
-    for (offset, ch) in text.chars().enumerate() {
+    let chars: Vec<char> = text.chars().collect();
+    let mut offset = 0;
+    while offset < chars.len() {
+        let ch = chars[offset];
         let idx = start_char_idx + offset;
+        // [#7702] 첫가끝 자모 묶음은 한 글자 폭을 첫 자모에 주고 나머지는 0 으로 둔다
+        // (글자별 폭 배열의 칸 수는 글자 수와 같아야 한다).
+        let cluster_end = hangul_jamo_cluster_end(&chars, offset);
         let utf16_pos = if idx < char_offsets.len() {
             char_offsets[idx]
         } else {
@@ -886,12 +916,42 @@ fn measure_token_char_widths(
             detected
         };
         let ts = metric_scope.style(styles, style_id, lang, idx);
-        let width = estimate_text_width_unrounded(&ch.to_string(), &ts)
-            + inline_width_px_at(inline_controls, idx);
+        let cluster: String = chars[offset..cluster_end].iter().collect();
+        let width =
+            estimate_text_width_unrounded(&cluster, &ts) + inline_width_px_at(inline_controls, idx);
         total += width;
         char_widths.push(width);
+        for tail in offset + 1..cluster_end {
+            let tail_width = inline_width_px_at(inline_controls, start_char_idx + tail);
+            total += tail_width;
+            char_widths.push(tail_width);
+        }
+        offset = cluster_end;
     }
     (total, char_widths)
+}
+
+/// [#7702] `start` 에서 시작하는 첫가끝 자모 묶음(초성 + 중성 (+ 종성))의 끝 (배타).
+/// 초성으로 시작하지 않거나 중성이 따르지 않으면 한 글자다. 그리기의 클러스터
+/// (`split_into_clusters`)와 같은 묶음이다.
+fn hangul_jamo_cluster_end(chars: &[char], start: usize) -> usize {
+    let is_choseong =
+        |c: char| ('\u{1100}'..='\u{115F}').contains(&c) || ('\u{A960}'..='\u{A97F}').contains(&c);
+    let is_jungseong =
+        |c: char| ('\u{1160}'..='\u{11A7}').contains(&c) || ('\u{D7B0}'..='\u{D7C6}').contains(&c);
+    let is_jongseong =
+        |c: char| ('\u{11A8}'..='\u{11FF}').contains(&c) || ('\u{D7CB}'..='\u{D7FB}').contains(&c);
+    if !chars.get(start).is_some_and(|&c| is_choseong(c)) {
+        return start + 1;
+    }
+    let mut end = start + 1;
+    if chars.get(end).is_some_and(|&c| is_jungseong(c)) {
+        end += 1;
+        if chars.get(end).is_some_and(|&c| is_jongseong(c)) {
+            end += 1;
+        }
+    }
+    end
 }
 
 fn inline_width_px_at(inline_controls: &[FlowInlineControl], char_idx: usize) -> f64 {
@@ -910,23 +970,14 @@ fn prepare_paragraph_projection(
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
     inline_controls: &[FlowInlineControl],
-    composed: Option<&ComposedParagraph>,
 ) -> Option<PreparedParagraphProjection> {
     if text_chars.is_empty() {
         return None;
     }
     let mut current_lang = 0usize;
     let mut base_positions = Vec::with_capacity(text_chars.len().saturating_add(1));
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
-        .with_reflow_slots(text_chars)
-        .with_space_metric(space_metric);
-    let metric_scope = if let Some(composed) = composed {
-        ParagraphMetricScope::new(text_chars, styles)
-            .with_composed_slots(text_chars, composed)
-            .with_space_metric(space_metric)
-    } else {
-        metric_scope
-    };
+    let metric_scope =
+        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
     let mut kerning_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut shaping_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut hard_boundaries = vec![false; text_chars.len().saturating_add(1)];
@@ -963,7 +1014,6 @@ fn prepare_paragraph_projection(
         } else {
             1.0
         };
-        let language_index = metric_scope.scalar_slot(styles, char_shape_id, language_index, index);
         let slot = crate::renderer::kerning::ExactFontSlot::new(char_shape_id, language_index);
         kerning_scalar_styles.push(crate::renderer::kerning::KerningParagraphScalarStyle {
             slot,
@@ -1034,14 +1084,8 @@ fn prepare_paragraph_kerning(
         return None;
     }
     let context = styles.kerning_measurement_context.as_ref()?.clone();
-    let projection = prepare_paragraph_projection(
-        para,
-        text_chars,
-        styles,
-        space_metric,
-        inline_controls,
-        None,
-    )?;
+    let projection =
+        prepare_paragraph_projection(para, text_chars, styles, space_metric, inline_controls)?;
     if !projection
         .kerning_scalar_styles
         .iter()
@@ -1114,7 +1158,6 @@ pub(super) fn compose_horizontal_shaping_handoff(
         styles,
         SpaceMetric::Stored,
         &inline_controls,
-        Some(composed),
     )?;
     let kerning_measurement = kerning_context.paragraph_measurement(
         &para.text,
@@ -1268,9 +1311,17 @@ fn apply_paragraph_kerning_to_tokens(
 
 /// px를 HWPUNIT(i32)로 변환 (내림, DPI=96 기준: px * 75)
 ///
+/// [#7702] 정수 HWPUNIT 인 폭(예: 880 HU = 11.7333…px)이 부동소수 오차로 그 아래에
+/// 놓이면 절삭이 한 단위를 잃는다. 오차 범위 안이면 그 정수로 본다.
 #[inline]
 fn to_hwp(px: f64) -> i32 {
-    (px * 75.0) as i32
+    let scaled = px * 75.0;
+    let nearest = scaled.round();
+    if (scaled - nearest).abs() <= 1e-6 {
+        nearest as i32
+    } else {
+        scaled as i32
+    }
 }
 
 /// [#7418] 이 공백 앞에 같은 줄의 글자가 하나도 없는가 — 줄 맨 앞 공백.
@@ -1598,13 +1649,91 @@ impl FillCursor {
     }
 }
 
+/// [#7702] 줄 나눔이 탭을 전진하는 규칙. 그리기(`text_measurement` 의 탭 전진)와 같은 규칙이다 —
+/// 문단 탭 정지는 **단 시작 기준 절대 위치**이고, 정지를 다 지나면 기본 등간격 탭도 단 기준이다.
+///
+/// 종전 줄 나눔은 탭 정지를 무시하고 줄 시작부터 기본 간격으로만 쟀다. 그래서 문단 왼쪽
+/// 여백이나 사용자 탭 정지가 있으면 줄 나눔이 잰 탭 폭과 그려지는 탭 폭이 달랐다
+/// (HWP5-nopassword 14쪽: 여백 12.65px · 탭 정지 3328HU 에서 그리기 31.7px, 줄 나눔 47.9px).
+///
+/// 오른쪽·가운데 탭은 뒤 글의 폭을 알아야 자리가 정해지므로 종전대로 줄 시작 기준 기본
+/// 간격으로 잰다.
+#[derive(Clone, Copy)]
+struct TabFill<'a> {
+    default_width_px: f64,
+    stops: &'a [crate::renderer::TabStop],
+    auto_tab_right: bool,
+    /// 첫 줄·다음 줄의 줄 상자 시작 (단 시작 기준 px) — 문단 왼쪽 여백 + 그 줄의 들여쓰기.
+    line_origin_px: [f64; 2],
+    available_width_px: f64,
+}
+
+impl<'a> TabFill<'a> {
+    fn default_only(default_width_px: f64) -> Self {
+        Self {
+            default_width_px,
+            stops: &[],
+            auto_tab_right: false,
+            line_origin_px: [0.0, 0.0],
+            available_width_px: 0.0,
+        }
+    }
+
+    fn for_paragraph(
+        para_style: Option<&'a ResolvedParaStyle>,
+        indent_px: f64,
+        available_width_px: f64,
+    ) -> Self {
+        let Some(style) = para_style else {
+            return Self::default_only(0.0);
+        };
+        Self {
+            default_width_px: style.default_tab_width,
+            stops: &style.tab_stops,
+            auto_tab_right: style.auto_tab_right,
+            line_origin_px: [
+                style.margin_left + indent_px.max(0.0),
+                style.margin_left + (-indent_px).max(0.0),
+            ],
+            available_width_px,
+        }
+    }
+
+    fn default_width(&self) -> f64 {
+        if self.default_width_px > 0.0 {
+            self.default_width_px
+        } else {
+            48.0
+        }
+    }
+
+    /// 줄 안 위치 `lw_hwp` 의 탭이 끝나는 줄 안 위치(HWPUNIT).
+    fn next_hwp(&self, lw_hwp: i32, first_line: bool) -> i32 {
+        let lw_px = lw_hwp as f64 / 75.0;
+        let origin = self.line_origin_px[usize::from(!first_line)];
+        let (position, tab_type, _) = crate::renderer::layout::find_next_tab_stop(
+            origin + lw_px,
+            self.stops,
+            self.default_width(),
+            self.auto_tab_right,
+            self.available_width_px,
+            // 그리기의 `text_start_offset`(문단 왼쪽 여백 + 그 줄의 들여쓰기)과 같은 값이다.
+            origin,
+        );
+        match tab_type {
+            0 | 3 => to_hwp(position - origin).max(lw_hwp),
+            _ => to_hwp(((lw_px / self.default_width()).floor() + 1.0) * self.default_width()),
+        }
+    }
+}
+
 /// Fill all scalar intervals through the resumable greedy continuation.
 fn fill_lines(
     tokens: &[BreakToken],
     text_chars: &[char],
     available_width_px: f64,
     indent_px: f64,
-    default_tab_width: f64,
+    tabs: TabFill<'_>,
     korean_break_unit: u8,
     condense_min_space: u8,
     letter_spacing_px: &[f64],
@@ -1620,7 +1749,7 @@ fn fill_lines(
         text_chars,
         available_width_px,
         indent_px,
-        default_tab_width,
+        tabs,
         korean_break_unit,
         condense_min_space,
         letter_spacing_px,
@@ -1639,7 +1768,7 @@ fn fill_one_interval(
     text_chars: &[char],
     available_width_px: f64,
     indent_px: f64,
-    default_tab_width: f64,
+    tabs: TabFill<'_>,
     korean_break_unit: u8,
     condense_min_space: u8,
     letter_spacing_px: &[f64],
@@ -1679,11 +1808,6 @@ fn fill_one_interval(
         });
     }
 
-    let tab_w_px = if default_tab_width > 0.0 {
-        default_tab_width
-    } else {
-        48.0
-    };
     let eff_w = |first: bool| -> i32 {
         if indent_px > 0.0 {
             if first {
@@ -1767,10 +1891,7 @@ fn fill_one_interval(
             }
             BreakToken::Tab { idx, max_font_size } => {
                 cursor.word_gap_natural_hwp = None;
-                // 탭 계산은 px로 수행 후 HWPUNIT 변환 (정밀도 유지)
-                let lw_px = cursor.lw as f64 / 75.0;
-                let next_tab_px = ((lw_px / tab_w_px).floor() + 1.0) * tab_w_px;
-                let next_tab_hwp = to_hwp(next_tab_px);
+                let next_tab_hwp = tabs.next_hwp(cursor.lw, cursor.is_first_line);
                 if *max_font_size > cursor.line_max_fs {
                     cursor.line_max_fs = *max_font_size;
                 }
@@ -1802,9 +1923,7 @@ fn fill_one_interval(
                     };
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
-                    let lw_px2 = cursor.lw as f64 / 75.0;
-                    let next_tab2 = ((lw_px2 / tab_w_px).floor() + 1.0) * tab_w_px;
-                    cursor.lw = to_hwp(next_tab2);
+                    cursor.lw = tabs.next_hwp(cursor.lw, cursor.is_first_line);
                     cursor.token_index += 1;
                     cursor.emitted_any = true;
                     return Some(FilledInterval {
@@ -2742,7 +2861,12 @@ fn flow_inline_controls_with_tac_tables(
 ) -> Vec<FlowInlineControl> {
     let text_len = para.text.chars().count();
     let mut controls = flow_inline_controls(para);
-    for (control, char_position) in para.controls.iter().zip(para.control_text_positions()) {
+    for ((control, char_position), utf16_position) in para
+        .controls
+        .iter()
+        .zip(para.control_text_positions())
+        .zip(para.control_utf16_positions())
+    {
         let Control::Table(table) = control else {
             continue;
         };
@@ -2755,6 +2879,7 @@ fn flow_inline_controls_with_tac_tables(
         };
         controls.push(FlowInlineControl {
             char_position,
+            utf16_position,
             width_hwp,
             height_hwp,
             baseline_distance_hwp: None,
@@ -2769,7 +2894,8 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
     para.controls
         .iter()
         .zip(para.control_text_positions())
-        .filter_map(|(control, char_position)| {
+        .zip(para.control_utf16_positions())
+        .filter_map(|((control, char_position), utf16_position)| {
             // 글자처럼 취급되는 표는 renderer가 control 위치를 기준으로 별도
             // TextRun/Table 경계를 만든다. 보이지 않는 PARA_TEXT 위치의 다음
             // 글자 폭에 표 전체 폭을 더하면 HML의 `abc + table + efg`처럼
@@ -2779,20 +2905,29 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
                 return None;
             }
             let (width_hwp, height_hwp) = inline_control_size_hwp(control)?;
-            let baseline_distance_hwp = match control {
-                Control::Equation(equation) if equation.baseline > 0 => {
-                    Some(crate::renderer::equation::flow_metrics_hwp(equation).2)
-                }
-                _ => None,
-            };
+            let baseline_distance_hwp = flow_inline_baseline_hwp(control, height_hwp);
             (char_position < text_len).then_some(FlowInlineControl {
                 char_position,
+                utf16_position,
                 width_hwp,
                 height_hwp,
                 baseline_distance_hwp,
             })
         })
         .collect()
+}
+
+fn flow_inline_baseline_hwp(control: &Control, height_hwp: i32) -> Option<i32> {
+    match control {
+        // This percentage is the source object's alignment contract. The AST
+        // baseline describes glyph painting inside its box, a different origin.
+        Control::Equation(equation) if equation.baseline > 0 => Some(
+            height_hwp
+                .saturating_mul(i32::from(equation.baseline))
+                .saturating_div(100),
+        ),
+        _ => None,
+    }
 }
 
 /// Controls that claim no inline advance and own no layout box of their own.
@@ -3023,9 +3158,7 @@ fn inline_control_requires_own_line(
     } else {
         to_hwp(available_width_px)
     };
-    let scope = ParagraphMetricScope::new(text_chars, styles)
-        .with_reflow_slots(text_chars)
-        .with_space_metric(space_metric);
+    let scope = ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
     let width_of = |range: Range<usize>| {
         let text: String = text_chars[range.clone()].iter().collect();
         to_hwp(measure_token_width(
@@ -3086,6 +3219,21 @@ fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
                 .map(|ch| ch.len_utf16() as u32)
                 .sum()
         })
+}
+
+/// A physical line begins before the inline objects owned by its first scalar.
+/// Visible character offsets point after their control gaps; publishing that
+/// offset would leave a leading equation/picture owned by the preceding line.
+fn line_start_utf16_offset(
+    para: &Paragraph,
+    char_index: usize,
+    inline_controls: &[FlowInlineControl],
+) -> u32 {
+    inline_controls
+        .iter()
+        .filter(|control| control.char_position == char_index)
+        .map(|control| control.utf16_position)
+        .fold(char_index_to_utf16_offset(para, char_index), u32::min)
 }
 
 /// `baseline_distance` from a row's height — the one expression, so the frame
@@ -3161,18 +3309,24 @@ fn mark_indented_lines(
     first_line_index: usize,
     para_style: Option<&ResolvedParaStyle>,
     stored: &[LineSeg],
+    line_width_hwp: i32,
 ) {
     stamp_indentation(
         lines,
         first_line_index,
-        reflow_indentation_pattern(para_style, stored),
+        reflow_indentation_pattern(para_style, stored, line_width_hwp),
     );
 }
 
 /// 재조판이 발행할 줄별 들여쓰기 기록. 개체의 줄 폭 판정도 같은 기록을 소비한다.
+///
+/// [#7816] 줄 폭(`line_width_hwp`, 문단 여백을 뺀 상자)에서 들여쓰기를 빼고 남는 폭이
+/// 모자라면([`indent_leaves_line_room_hwp`]) 들여쓰기를 버린다. 한/글 저장 줄의 기록이
+/// 있으면 그 기록이 같은 판정의 결과이므로 먼저 따른다.
 fn reflow_indentation_pattern(
     para_style: Option<&ResolvedParaStyle>,
     stored: &[LineSeg],
+    line_width_hwp: i32,
 ) -> (bool, bool) {
     let indent = para_style.map_or(0.0, |style| style.indent);
     let indented = |line: &LineSeg| line.tag & LineSeg::TAG_INDENTATION != 0;
@@ -3187,6 +3341,8 @@ fn reflow_indentation_pattern(
         (false, false)
     } else if indent == 0.0 && para_style.is_some_and(|style| style.head_type != HeadType::None) {
         (false, hancom_record && stored.iter().skip(1).any(indented))
+    } else if !indent_leaves_line_room_hwp(to_hwp(indent), line_width_hwp) {
+        (false, false)
     } else {
         (indent > 0.0, indent < 0.0)
     }
@@ -3266,13 +3422,24 @@ fn layout_paragraph_in_frame_impl(
     // 줄 시작을 옮기고 가용폭을 줄이므로 채움도 각 행의 첫 구간에서 같은 상자로 줄을 나눈다
     // (`ListMarkerGeometry::breaker_box`). 게시하는 행 기하(구간)는 마커를 포함한 그대로다 —
     // 한/글 저장 행도 마커 자리부터 시작한다.
-    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs) == (false, false) {
+    let frame_width_hwp = frame.horizontal.end.saturating_sub(frame.horizontal.start);
+    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs, frame_width_hwp)
+        == (false, false)
+    {
         0.0
     } else {
         para_style.map_or(0.0, |style| style.indent)
     };
     // 저장 기록이 끄는 것은 문단 들여쓰기뿐이다. 마커의 첫/후속 줄 차이는 유지한다.
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
+    let tab_fill = TabFill::for_paragraph(
+        para_style,
+        indent_px,
+        crate::renderer::hwpunit_to_px(
+            frame.horizontal.end.saturating_sub(frame.horizontal.start),
+            dpi,
+        ),
+    );
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);
@@ -3280,9 +3447,6 @@ fn layout_paragraph_in_frame_impl(
     let condense_min_space = para_style
         .map(|style| style.condense_min_space)
         .unwrap_or(0);
-    let default_tab_width = para_style
-        .map(|style| style.default_tab_width)
-        .unwrap_or(0.0);
     let line_spacing_type = para_style
         .map(|style| style.line_spacing_type)
         .unwrap_or(LineSpacingType::Percent);
@@ -3526,7 +3690,7 @@ fn layout_paragraph_in_frame_impl(
                             &text_chars,
                             available_width_px,
                             indent_px,
-                            default_tab_width,
+                            tab_fill,
                             korean_break_unit,
                             condense_min_space,
                             &letter_spacing_px,
@@ -3550,7 +3714,7 @@ fn layout_paragraph_in_frame_impl(
                             &text_chars,
                             available_width_px,
                             indent_px,
-                            default_tab_width,
+                            tab_fill,
                             korean_break_unit,
                             condense_min_space,
                             &letter_spacing_px,
@@ -3562,6 +3726,18 @@ fn layout_paragraph_in_frame_impl(
                     maximum_font_size = maximum_font_size.max(line.max_font_size);
                     if filled.termination == FillTermination::ParagraphEnd {
                         maximum_font_size = maximum_font_size.max(paragraph_end_font_size);
+                    }
+                    // 강제 줄 나눔 글자도 문단 끝 표지처럼 제 줄의 글자 상자를 갖는다(#7685).
+                    // 나눔만 남은 줄이 12px 기본값으로 접히면 한/글 정본보다 줄마다
+                    // 4.8px 짧다(80168 표 칸 `⏎②…` 첫 줄: 한/글 19.2px 간격).
+                    if filled.termination == FillTermination::ForcedBreak {
+                        let break_font_size = line
+                            .end_idx
+                            .checked_sub(1)
+                            .and_then(|idx| para.char_shape_id_at(idx))
+                            .and_then(|id| styles.char_styles.get(id as usize))
+                            .map_or(0.0, |style| style.font_size);
+                        maximum_font_size = maximum_font_size.max(break_font_size);
                     }
                     for control in inline_controls.iter().filter(|control| {
                         (line.start_idx..line.end_idx).contains(&control.char_position)
@@ -3590,9 +3766,10 @@ fn layout_paragraph_in_frame_impl(
                         {
                             0
                         } else {
-                            char_index_to_utf16_offset(para, line.start_idx)
+                            line_start_utf16_offset(para, line.start_idx, &inline_controls)
                         };
-                    let text_end = char_index_to_utf16_offset(para, line.end_idx).max(text_start);
+                    let text_end = line_start_utf16_offset(para, line.end_idx, &inline_controls)
+                        .max(text_start);
                     let mut segment = RowSegment::new(text_start..text_end, interval, source_tag);
                     segment.space_metric = selected_space_metric;
                     segments.push(segment);
@@ -3648,7 +3825,7 @@ fn layout_paragraph_in_frame_impl(
             frame.absorb_whitespace_only_rows(&para.text, first_row);
         }
         let mut lines = frame.project_line_segs_since(first_row);
-        mark_indented_lines(&mut lines, 0, para_style, &para.line_segs);
+        mark_indented_lines(&mut lines, 0, para_style, &para.line_segs, frame_width_hwp);
         Some(lines)
     })();
 
@@ -4336,7 +4513,9 @@ fn reflow_line_segs_impl(
     // [#7418·#7436] 판정 폭에서만 목록 마커 폭을 뺀다 — 프레임 채움
     // (`layout_paragraph_in_frame`)과 같은 계약이다. 게시 폭(`seg_width_hwp`)은 마커 자리를 포함한다.
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
-    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs) == (false, false) {
+    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs, seg_width_hwp)
+        == (false, false)
+    {
         0.0
     } else {
         para_style.map_or(0.0, |style| style.indent)
@@ -4506,6 +4685,7 @@ fn reflow_line_segs_impl(
                 0,
                 para_style,
                 &para.line_segs,
+                seg_width_hwp,
             );
             para.replace_line_segs(vec![seg]);
         }
@@ -4521,7 +4701,6 @@ fn reflow_line_segs_impl(
     let english_break_unit = para_style.map(|s| s.english_break_unit).unwrap_or(0);
     let korean_break_unit = para_style.map(|s| s.korean_break_unit).unwrap_or(0);
     let condense_min_space = para_style.map(|s| s.condense_min_space).unwrap_or(0);
-    let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
 
     // 토큰화 → 줄 채움 → LineSeg 생성
     let reflow_space_metric = if split_stale_cell_reflow {
@@ -4662,7 +4841,7 @@ fn reflow_line_segs_impl(
         &text_chars,
         available_width_px,
         indent_px,
-        tab_width,
+        TabFill::for_paragraph(para_style, indent_px, available_width_px),
         korean_break_unit,
         condense_min_space,
         &resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles),
@@ -4682,7 +4861,7 @@ fn reflow_line_segs_impl(
             &text_chars,
             available_width_px,
             indent_px,
-            tab_width,
+            TabFill::for_paragraph(para_style, indent_px, available_width_px),
             korean_break_unit,
             condense_min_space,
             &resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles),
@@ -4698,7 +4877,8 @@ fn reflow_line_segs_impl(
     // 발행할 bit20 기록과 같은 폭을 사용한다 (#6190 편집 후 한컴 PDF).
     let edited_tac_table = supports_tac_table_band_frame_controls(para);
     let table_indent_px = if edited_tac_table
-        && reflow_indentation_pattern(para_style, &original_line_segs) == (false, false)
+        && reflow_indentation_pattern(para_style, &original_line_segs, seg_width_hwp)
+            == (false, false)
     {
         0.0
     } else {
@@ -4745,7 +4925,7 @@ fn reflow_line_segs_impl(
         } else {
             match forced_inline_line {
                 Some((position, control_start, ..)) if position == lb.start_idx => control_start,
-                _ => char_index_to_utf16_offset(para, lb.start_idx),
+                _ => line_start_utf16_offset(para, lb.start_idx, &inline_controls),
             }
         };
         let fs = if lb.max_font_size > 0.0 {
@@ -4765,16 +4945,21 @@ fn reflow_line_segs_impl(
             let (_, _, height_hwp, _) = forced_inline_line.expect("checked inline control");
             apply_inline_control_line_height(&mut text_seg, height_hwp);
         }
-        if let Some(height_hwp) = inline_controls
+        if let Some(control) = inline_controls
             .iter()
             .filter(|control| {
                 (lb.start_idx..lb.end_idx).contains(&control.char_position)
                     || (lb.end_idx == text_len && control.char_position == text_len)
             })
-            .map(|control| control.height_hwp)
-            .max()
+            .max_by_key(|control| (control.height_hwp, control.baseline_distance_hwp))
         {
-            apply_inline_control_line_height(&mut text_seg, height_hwp);
+            let inline_owns_row_height = control.height_hwp > text_seg.line_height;
+            apply_inline_control_line_height(&mut text_seg, control.height_hwp);
+            if inline_owns_row_height {
+                if let Some(baseline) = control.baseline_distance_hwp {
+                    text_seg.baseline_distance = baseline;
+                }
+            }
         }
         new_line_segs.push(text_seg);
 
@@ -4844,6 +5029,7 @@ fn reflow_line_segs_impl(
         preserved_prefix_len,
         para_style,
         &original_line_segs,
+        seg_width_hwp,
     );
 
     let space_metrics = new_line_segs
@@ -5158,7 +5344,7 @@ mod fill_cursor_tests {
             text_chars,
             available_width_px,
             indent_px,
-            default_tab_width,
+            TabFill::default_only(default_tab_width),
             korean_break_unit,
             condense_min_space,
             &[],
@@ -5197,7 +5383,7 @@ mod fill_cursor_tests {
             text_chars,
             available_width_px,
             indent_px,
-            default_tab_width,
+            TabFill::default_only(default_tab_width),
             korean_break_unit,
             condense_min_space,
             &[],

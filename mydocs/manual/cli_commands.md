@@ -187,12 +187,16 @@ HWP/HWPX → SVG.
 
 ### `export-png <파일> [옵션]` *(native-skia feature 필요)*
 HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_png_command.md](export_png_command.md)
-- `-o`, `-p`, `--font-path` (공통/폰트)
+- `-o`, `-p`, `--font-path` (공통/폰트). `-p`는 0부터 시작하며 여러 번 지정할 수 있다.
+- `--json` — 전체 쪽수와 실제 PNG 경로·bytes·출력 backend/profile의 JSON manifest만 stdout에 출력.
+- `--metadata-only` — PNG를 만들지 않고 전체 쪽수 JSON만 출력.
+- `--render-tree-output <폴더>` — 같은 문서·글꼴 환경의 선택 쪽 render tree를 함께 저장.
+- `capabilities --mcp`의 `hwp_export_png`는 원본·출력 폴더를 받아 같은 JSON 계약을 사용한다.
+  `requiresFeature: native-skia`와 현재 빌드의 `available`을 함께 확인한다.
 - `--scale <배율>` (기본 1.0), `--dpi <값>`(pHYs 메타 + scale 자동), `--max-dimension <픽셀>`(longest edge)
 - `--vlm-target <프리셋>` — claude / gpt4v-low / gpt4v-high(gpt4v) / gemini / qwen-vl(qwen) / llava
-- `--profile <프로필>` — 출력 프로필. **기본 `high-quality`(인쇄 등가)** —
-  그림 미지정 placeholder 는 억제된다. 편집기식 표시가 필요하면
-  `--profile screen` 을 명시한다 (#2297, #2225 계약).
+- `--profile <프로필>` — **기본 `screen`**. 인쇄 비교에는 `--profile print`를 명시한다.
+  Print에서는 편집 화면 안내문·미지정 그림 placeholder를 제외한다.
 - `--compat 2022|2024` — 목표 한글 조판 세대. [조판 세대](#조판-세대-compat)
 
 > 네이티브 `gpu` 옵션과 `export-png-gpu`·`gpu-info` 명령은 제거되었습니다.

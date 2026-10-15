@@ -17,6 +17,14 @@ impl TypesetEngine {
         let para_idx = source.para_index;
         let ctrl_idx = source.control_index;
         let row_count = continuation_context.prepared.row_count;
+        let _geometry_rows = continuation_context
+            .prepared
+            .layout_engine
+            .table_rows_scope(source.row_geometry_table);
+        let _host_rows = continuation_context
+            .prepared
+            .layout_engine
+            .table_rows_scope(source.table);
         // [#2424 Stage C] Native caller는 step을 동기 drain한다. 각 step은 budget만큼의
         // fragment만 처리하며 cursor와 shadow page-flow state는 context에 남는다.
         while !continuation_context.is_complete() {
@@ -50,6 +58,14 @@ impl TypesetEngine {
         let row_geometry_table = source.row_geometry_table;
         let mt = source.measured_table;
         let styles = source.styles;
+        let _geometry_rows = continuation_context
+            .prepared
+            .layout_engine
+            .table_rows_scope(row_geometry_table);
+        let _host_rows = continuation_context
+            .prepared
+            .layout_engine
+            .table_rows_scope(table);
         // [Issue #4326] 이 continuation이 방출하는 모든 PartialTable의 start_row/end_row/
         // start_cut/end_cut은 `row_geometry_table` 기준(투명 1×1 래퍼를 벗긴 표일 수
         // 있다)이다. 렌더러가 `end_row <= table.row_count` 로 값을 되추론하던 것을,

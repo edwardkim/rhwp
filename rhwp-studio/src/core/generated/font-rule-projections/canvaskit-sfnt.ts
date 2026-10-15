@@ -25,10 +25,10 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVASKIT_SFNT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "a94b64311540ff736c7eb89a70dc3ce38742fdd671ec3c73a4ee05b1302be034",
+  "inputSha256": "a1232971b1b929cdb6a71348e76c66ca024a727d21b42156515a067b4d1559a4",
   "projectionId": "canvaskit-sfnt",
-  "projectionSha256": "d9019fc756d4fd9334252704309bb2020c251d6a7d04dc0f5a6b2efb0f017668",
-  "ruleCount": 158
+  "projectionSha256": "b118ebc3e757da4ec107fbb80cf8aeee6c64e30601113b86492eda3b888e4e8e",
+  "ruleCount": 159
 });
 
 export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
@@ -6504,12 +6504,12 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     }
   },
   {
-    "ruleId": "rule.studio-supply.0aab2d58429b52047acb.canvaskit",
+    "ruleId": "rule.issue-4969.oldhangul-license-canvaskit",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "Source Han Serif K Old Hangul",
-    "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/SourceHanSerifK-OldHangul-subset.woff2'",
+    "sourceFace": "RHWP Old Hangul",
+    "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/RHWPOldHangul-Regular.woff2'",
     "conditions": {
       "profile": "canvaskit-sfnt"
     },
@@ -6519,15 +6519,15 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     "supply": {
       "capabilityAgreement": false,
       "declaredCapability": "unavailable",
-      "fontFamily": "Source Han Serif K Old Hangul",
+      "fontFamily": "RHWP Old Hangul",
       "kind": "canvaskit-plan",
       "offline": {
         "sources": [
           {
             "aliases": [
-              "Source Han Serif K Old Hangul"
+              "RHWP Old Hangul"
             ],
-            "url": "fonts/SourceHanSerifK-OldHangul-subset.woff2"
+            "url": "fonts/RHWPOldHangul-Regular.woff2"
           }
         ],
         "unavailableFonts": []
@@ -6536,9 +6536,9 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
         "sources": [
           {
             "aliases": [
-              "Source Han Serif K Old Hangul"
+              "RHWP Old Hangul"
             ],
-            "url": "fonts/SourceHanSerifK-OldHangul-subset.woff2"
+            "url": "fonts/RHWPOldHangul-Regular.woff2"
           }
         ],
         "unavailableFonts": []
@@ -6620,5 +6620,48 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     "mode": "direct",
     "metricEntryIds": [],
     "supply": null
+  },
+  {
+    "ruleId": "rule.issue-5884.noto-symbols2.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "Noto Sans Symbols2",
+    "targetFaceOrPolicy": "sfnt: fonts/NotoSansSymbols2-Regular.ttf",
+    "conditions": {
+      "profile": "canvaskit-sfnt"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "capabilityAgreement": true,
+      "declaredCapability": "sfnt-source",
+      "fontFamily": "Noto Sans Symbols2",
+      "kind": "canvaskit-plan",
+      "offline": {
+        "sources": [
+          {
+            "aliases": [
+              "Noto Sans Symbols2"
+            ],
+            "url": "fonts/NotoSansSymbols2-Regular.ttf"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "online": {
+        "sources": [
+          {
+            "aliases": [
+              "Noto Sans Symbols2"
+            ],
+            "url": "fonts/NotoSansSymbols2-Regular.ttf"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "runtimePlanStatus": "planned"
+    }
   }
 ]);

@@ -4,6 +4,7 @@
  */
 
 import { createFieldset, row, label, numberInput, unit } from './para-shape-helpers';
+import { updateFillControls } from './fill-selection';
 
 import { t as i18nText } from '../i18n/index.ts';
 // ════════════════════════════════════════════════════════
@@ -521,7 +522,7 @@ export function buildBorderTab(
   faceRow.appendChild(label(i18nText('dialog.paraShapeTabBuilders.label.label.x18d3e6')));
   const bgFillSelect = document.createElement('select');
   bgFillSelect.className = 'dialog-select';
-  bgFillSelect.style.width = '100px';
+  bgFillSelect.style.width = '180px';
   for (const [val, lbl] of [['none', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x5ab3b7')], ['solid', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x013035')]] as const) {
     const o = document.createElement('option');
     o.value = val; o.textContent = lbl;
@@ -565,6 +566,9 @@ export function buildBorderTab(
   }
   patRow.appendChild(bgPatShapeSelect);
   bgFs.appendChild(patRow);
+  bgFillSelect.addEventListener('change', () => updateFillControls(
+    bgFillSelect, [bgFillPicker, bgPatColorInput, bgPatShapeSelect],
+  ));
   panel.appendChild(bgFs);
 
   // ── 간격 섹션

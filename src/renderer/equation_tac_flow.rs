@@ -155,14 +155,36 @@ fn pack_equation_tac_rows(
     (tac_rows, row + 1)
 }
 
+/// [#7816] 들여쓰기·내어쓰기를 적용한 뒤 남는 줄 폭의 하한(HWPUNIT). 이보다 적게 남으면
+/// 한/글은 그 들여쓰기·내어쓰기를 버린다.
+///
+/// 한/글 2020 통제 실험(저장 줄 없는 합성 HWPX, 본문 폭 45,356 HU): 남는 폭 1,500 HU(20px)
+/// 이상은 적용하고 1,425 HU(19px) 이하는 버렸다. 글자 크기(10·20pt)·바탕글 크기·정렬·
+/// 짝수/홀수(글자 단위) 저장값과 무관한 고정 하한이다. 20pt 글자는 남는 폭 20px 에서도
+/// 들여쓰기를 적용한다 — 글자 폭 기준이 아니다. 한/글이 저장한 줄에서는 이 판정의 결과가
+/// `TAG_INDENTATION`(bit 20)이 꺼진 줄로 남는다.
+pub(crate) const MIN_INDENTED_LINE_WIDTH_HWP: i32 = 1500;
+
+/// [#7816] 줄 상자 폭(문단 여백을 뺀 폭)에서 들여쓰기를 빼도 [`MIN_INDENTED_LINE_WIDTH_HWP`]
+/// 이상 남는가. 조판(줄 나눔)과 배치가 같은 판정을 쓴다.
+pub(crate) fn indent_leaves_line_room_hwp(indent_hwp: i32, line_box_width_hwp: i32) -> bool {
+    line_box_width_hwp.saturating_sub(indent_hwp.saturating_abs()) >= MIN_INDENTED_LINE_WIDTH_HWP
+}
+
 /// 본문과 번호 있는 각주는 같은 원본 줄 번호와 저장 들여쓰기 플래그를 소비한다.
 /// 셀 또는 줄 수가 바뀐 재조판에서는 문단의 줄별 들여쓰기 규칙을 사용한다.
+///
+/// [#7816] 저장 플래그가 증언하지 않는 줄은 줄 상자 폭(`line_box_width_px`, 문단 여백을
+/// 뺀 폭)으로 [`indent_leaves_line_room_hwp`] 를 판정해, 남는 폭이 모자라면 들여쓰기를
+/// 버린다 — 재조판(`reflow_indentation_pattern`)이 줄을 나눌 때와 같은 판정이다.
 pub(crate) fn paragraph_line_indent_for_source(
     indent: f64,
     visual_line_idx: usize,
     paragraph: Option<&Paragraph>,
     composed_line_count: usize,
     respect_stored_ladder: bool,
+    line_box_width_px: f64,
+    dpi: f64,
 ) -> f64 {
     use crate::model::paragraph::LineSeg;
     let stored_seg_denies_indent = respect_stored_ladder
@@ -173,7 +195,10 @@ pub(crate) fn paragraph_line_indent_for_source(
                 seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                     && seg.tag & LineSeg::TAG_INDENTATION == 0
             });
-    if stored_seg_denies_indent {
+    let to_hwp = |px: f64| crate::renderer::px_to_hwpunit(px, dpi);
+    if stored_seg_denies_indent
+        || !indent_leaves_line_room_hwp(to_hwp(indent), to_hwp(line_box_width_px))
+    {
         0.0
     } else {
         paragraph_line_indent(indent, visual_line_idx)

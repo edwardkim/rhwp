@@ -33,6 +33,7 @@ import {
   type TabState, type TabSettingsResult, type BorderTabResult,
 } from './para-shape-tab-builders';
 import { enableDialogDrag } from './dialog-drag';
+import { populateFillSelection, updateFillControls } from './fill-selection';
 
 import { t as i18nText } from '../i18n/index.ts';
 /** 정렬 아이콘 (SVG 아이콘 — 서식바와 동일) */
@@ -701,7 +702,10 @@ export class ParaShapeDialog {
       this.bdSideToggles[side] = val ? val.type !== 0 : false;
     }
     // 배경
-    this.borderResult.bgFillSelect.value = p.fillType === 'solid' ? 'solid' : 'none';
+    populateFillSelection(this.borderResult.bgFillSelect, p.fillType ?? 'none');
+    updateFillControls(this.borderResult.bgFillSelect, [
+      this.borderResult.bgFillPicker, this.borderResult.bgPatColorInput, this.borderResult.bgPatShapeSelect,
+    ]);
     this.borderResult.bgFillPicker.value = p.fillColor || '#ffffff';
     this.borderResult.bgPatColorInput.value = p.patternColor || '#000000';
     this.borderResult.bgPatShapeSelect.value = String(p.patternType ?? 0);
@@ -894,20 +898,20 @@ export class ParaShapeDialog {
 
     // 배경
     const newFillType = this.borderResult.bgFillSelect.value;
-    if (newFillType !== (p.fillType ?? 'none')) mods.fillType = newFillType;
     const newFillColor = this.borderResult.bgFillPicker.value;
-    if (newFillColor !== (p.fillColor ?? '#ffffff')) mods.fillColor = newFillColor;
     const newPatColor = this.borderResult.bgPatColorInput.value;
-    if (newPatColor !== (p.patternColor ?? '#000000')) mods.patternColor = newPatColor;
-    // [Issue #1172] patternType: 무늬 없음 = -1 (IR 정합). select '없음' value=-1.
-    // 종전 `|| 0` 은 -1(truthy)을 보존하나 폴백 기본값을 0 으로 두어, patternType=-1
-    // 문단에서 0!=-1 변경 오인 → fillType=solid 강제 주입(배경 생성) 결함을 냈다.
     const parsedPat = parseInt(this.borderResult.bgPatShapeSelect.value, 10);
     const newPatType = Number.isNaN(parsedPat) ? -1 : parsedPat;
-    if (newPatType !== (p.patternType ?? -1)) mods.patternType = newPatType;
-    // 배경이 변경되었으면 fillType도 함께 전송
-    if (mods.fillColor || mods.patternColor || mods.patternType !== undefined) {
-      if (!mods.fillType) mods.fillType = newFillType;
+    if (newFillType !== (p.fillType ?? 'none') || (newFillType === 'solid'
+      && (newFillColor !== (p.fillColor ?? '#ffffff')
+        || newPatColor !== (p.patternColor ?? '#000000')
+        || newPatType !== (p.patternType ?? -1)))) {
+      mods.fillType = newFillType;
+      if (newFillType === 'solid') {
+        mods.fillColor = newFillColor;
+        mods.patternColor = newPatColor;
+        mods.patternType = newPatType;
+      }
     }
 
     // 간격 (mm → HWPUNIT)
@@ -927,6 +931,11 @@ export class ParaShapeDialog {
     if (borderConnect !== (p.borderConnect ?? false)) mods.borderConnect = borderConnect;
     const borderIgnoreMargin = this.borderResult.bdIgnoreMarginCb.checked;
     if (borderIgnoreMargin !== (p.borderIgnoreMargin ?? false)) mods.borderIgnoreMargin = borderIgnoreMargin;
+
+    if (Object.keys(mods).some(key => key.startsWith('border')
+      || ['fillType', 'fillColor', 'patternColor', 'patternType'].includes(key))) {
+      mods.borderFillId = p.borderFillId;
+    }
 
     return mods;
   }
