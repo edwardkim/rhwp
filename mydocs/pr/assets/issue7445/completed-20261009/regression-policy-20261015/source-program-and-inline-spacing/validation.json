@@ -1237,5 +1237,16 @@
     ],
     "allSelectedNamesAccountedFor": true,
     "coverageAudit": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/symbol-slot-point/focused-coverage-audit.json"
+  },
+  "sourceCaseMigration": {
+    "reason": "source unit count cannot grow above devel baseline4103",
+    "sourceFile": "src/renderer/style_resolver.rs",
+    "productionBytesUnchanged": true,
+    "newPublicApiCase": "tests/cases/issue_7445_original_font_program_ownership.rs",
+    "tests": 4,
+    "nativeFrozenPublicApiPassed": 4,
+    "log": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/symbol-slot-point/public-api-tests.log",
+    "unitTierCheck": "PASS:4103tests/296modules, unchanged baseline",
+    "fullCurrentHeadNextest": "pending"
   }
 }

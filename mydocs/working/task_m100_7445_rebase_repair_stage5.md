@@ -1322,3 +1322,16 @@ Docker 최적화 통과가 아니다. 공통 태은명조 준비·루트/Studio 
 [생산자·원본/PDF·전쪽 수치·독립 기호·중요 쪽 선택·직접 판독 이미지](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/source-program-and-inline-spacing/validation.json).
 최신 전체 회귀, 남은 완료 문서 범위, 최신 devel 대비 비교, 실제 소비 경로와 범위별
 게이트가 끝나기 전 PR 완료로 판정하지 않는다. 사용자 초안·샘플/PDF·공유 target은 보존했다.
+
+
+### C38 후속: source-side 검사 총량 정책 준수
+
+최신 base의 unit-tier gate가 source-side4107>4103 및 style_resolver30>26을 검출했다.
+정책·기준선을 올리지 않고 새4건을 `tests/cases/issue_7445_original_font_program_ownership.rs`로
+옮겼다. 공개 FontDecisionTrace/FontEnvironment API로 같은 원본0.605em, 명시 TrueType
+선택, 기호 슬롯과 실제 공급자178/1024em을 검사한다. private 측정 helper에 의존하지 않는다.
+기존 실제59쪽의 SVG 잉크/원문/px 검사도 유지한다. 변경은 해당 private4검사와 그 입력
+helper 삭제뿐이며 생산 바이트가 동일함을 `git show7fc729cd3c`와 직접 대조했다.
+공개 검사4건은 frozen Native 라이브러리로 실제4PASS(0.01초)이고 unit-tier gate는
+4103 tests/296 modules로PASS다. 정책 기준·지침을 변경하지 않았다. 전체 nextest에는
+현재 manifest로 새 case를 포함해 다시 실행한다.
