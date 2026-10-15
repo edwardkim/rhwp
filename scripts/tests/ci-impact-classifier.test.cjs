@@ -240,6 +240,7 @@ test('Native Skia integration test and support changes run Rust and Native Skia 
     'tests/cases/issue_7820_sixel_contract.rs',
     'tests/cases/issue_4961_font_decision_trace.rs',
     'tests/cases/issue_7902_original_frame_and_content.rs',
+    'tests/cases/native_fractional_glyph_origin.rs',
     'tests/cli_exit_codes_native.rs',
     'tests/issue_1144_native.rs',
     'tests/issue_2083_hide_fill_page_background.rs',

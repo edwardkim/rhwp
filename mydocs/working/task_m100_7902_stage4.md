@@ -106,3 +106,24 @@ WASM 진단은 소유한 export script 복사본에서 Canvas `textRendering=geo
 현재 원본 HFT 조건의 devel Native/fresh WASM은 각각19문서835쪽 완료다.
 소스에서 빌드한104쪽도 Native99.96471%·fresh WASM99.95176%로 진단과 같은 값이다.
 이 선택 쪽 결과로 다른834쪽의 무회귀를 대신하지 않는다.
+
+## 최종 전쪽 검증 중 확인한 추가 하락과 CI 연결
+
+원점 보존 source는 `484c9bfa175c9745a084f7292fa5ae38022cc59a`에 커밋했다.
+사용자의 PR 전 동기화 요청에 따라 다시 fetch한 `upstream/devel`도 `2efefc6a1`로 같았다.
+변경이 없어 추가 리베이스하지 않았으며, 해당 source의 Native/fresh WASM producer를 새로 빌드해
+전체 회귀와19문서 전쪽 비교를 시작했다. `final-484c-source.json`과
+`final-484c-validation-result.json`에 source·명령·실행 상태를 보존한다.
+
+첫 `6761-later`104쪽에서 최저값은 Native91.81884%·WASM91.71317%지만,
+같은 원본 HFT를 공급한 devel 대비0.01%p 이상 하락이 **Native24쪽·WASM6쪽** 검출됐다.
+이 문서의 최대 하락은 각각0.12334%p·0.14757%p다.104쪽 선택 진단의 개선이나
+전쪽90% 통과로 이를 면제하지 않는다. 이는 진행 중인 첫 문서 결과이며 전체19문서 판정은 아니다.
+현재 새 PR 생성은 보류하고, 남은 전쪽 검증과 함께 공통 raster 원점 변경의 영향을 확인한다.
+
+새 `native_fractional_glyph_origin`은 Native feature 전용이므로 기본 전체 회귀만으로 실행되지 않는다.
+CI Native Skia의 release-test/release 두 경로에 정식 case wrapper 호출을 추가하고,
+그 파일만 바뀌어도 Native lane을 켜도록 classifier와 대응 계약에 등록했다.
+classifier 검사, workflow 계약35개, actionlint는 모두 exit0이다.
+`native-case-ci-result.json`과 각 log에 연결한다. 이 CI 연결 변경은 renderer source·테스트 본문·
+입력·producer를 바꾸지 않으며, 진행 중인484c 회귀의 통과나 종료를 미리 주장하지 않는다.
