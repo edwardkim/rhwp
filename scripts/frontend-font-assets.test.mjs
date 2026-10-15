@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, lstatSync, readFileSync, readdirSync, readlinkSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -8,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const CANONICAL_DIR = path.join(ROOT, 'assets/fonts');
 const EXPECTED_FONT_COUNT = 36;
-const EXPECTED_TOTAL_BYTES = 22_651_296;
+const EXPECTED_TOTAL_BYTES = 23_137_616;
 const EXPECTED_NOTO_SANS_KR_SHA256 = 'd1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a';
 const VSCODE_FONT_FILES = [
   'NotoSerifKR-Regular.woff2',
@@ -48,6 +49,29 @@ function assertDirectoryMatchesSource(directory, expectedFiles, label) {
   }
 }
 
+function assertFontNotices(directory, expectedFiles, label) {
+  const sourceDir = path.join(CANONICAL_DIR, 'licenses');
+  const noticeDir = path.join(directory, 'licenses');
+  const registry = JSON.parse(readFileSync(path.join(noticeDir, 'font-notices.json'), 'utf8'));
+  const requiredNotices = new Set(['README.md', 'font-notices.json']);
+  for (const filename of expectedFiles) {
+    const entries = registry.fonts.filter((entry) => entry.file === filename);
+    assert.equal(entries.length, 1, `${label}/${filename} must have exactly one font notice`);
+    const [entry] = entries;
+    assert.equal(entry.sha256, sha256(path.join(directory, filename)));
+    assert.ok(entry.copyrightNotices.length > 0, `${label}/${filename} copyright must be retained`);
+    assert.ok(entry.licenseFiles.length > 0, `${label}/${filename} must include full license text`);
+    for (const name of entry.licenseFiles) requiredNotices.add(name);
+  }
+  for (const name of requiredNotices) {
+    assert.deepEqual(
+      readFileSync(path.join(noticeDir, name)),
+      readFileSync(path.join(sourceDir, name)),
+      `${label} must preserve the complete font notice: ${name}`,
+    );
+  }
+}
+
 test('canonical font inventory and license contract', () => {
   const files = fontFiles(CANONICAL_DIR);
   assert.equal(files.length, EXPECTED_FONT_COUNT);
@@ -58,6 +82,31 @@ test('canonical font inventory and license contract', () => {
   assert.ok(statSync(path.join(CANONICAL_DIR, 'FONTS.md')).size > 0);
   assert.ok(statSync(path.join(CANONICAL_DIR, 'SourceHanSerifK-OFL.txt')).size > 0);
   assert.equal(sha256(path.join(CANONICAL_DIR, 'NotoSansKR-Regular.woff2')), EXPECTED_NOTO_SANS_KR_SHA256);
+});
+
+test('every public repository font has matching bytes and redistribution notices', () => {
+  const registry = JSON.parse(readFileSync(path.join(CANONICAL_DIR, 'licenses/font-notices.json'), 'utf8'));
+  const entries = [
+    ...registry.fonts.map((entry) => ({
+      ...entry,
+      repositoryPath: `assets/fonts/${entry.file}`,
+      licenseFiles: entry.licenseFiles.map((file) => `assets/fonts/licenses/${file}`),
+    })),
+    ...registry.repositoryOnlyFonts,
+  ];
+  const publicFiles = execFileSync('git', [
+    'ls-files', '--cached', '--others', '--exclude-standard', '-z', '--',
+    '*.ttf', '*.otf', '*.ttc', '*.woff', '*.woff2',
+  ], { cwd: ROOT, encoding: 'utf8' }).split('\0').filter((file) => file && existsSync(path.join(ROOT, file)));
+  const declared = entries.map((entry) => entry.repositoryPath);
+  assert.equal(new Set(declared).size, declared.length, 'font notice paths must be unique');
+  assert.deepEqual([...new Set(publicFiles)].sort(), declared.sort(), 'unregistered public fonts must fail the gate');
+  for (const entry of entries) {
+    assert.equal(sha256(path.join(ROOT, entry.repositoryPath)), entry.sha256, entry.repositoryPath);
+    assert.ok(entry.copyrightNotices.length > 0, `${entry.repositoryPath} copyright notice`);
+    assert.ok(entry.licenseFiles.length > 0, `${entry.repositoryPath} full license`);
+    for (const file of entry.licenseFiles) assert.ok(statSync(path.join(ROOT, file)).size > 0, file);
+  }
 });
 
 test('Studio font link targets the canonical directory', () => {
@@ -81,6 +130,15 @@ test('VS Code distribution preserves the approved font subset', () => {
     VSCODE_FONT_FILES,
     'VS Code dist',
   );
+});
+
+test('every shipped font retains its copyright and full redistribution license', () => {
+  for (const host of ['rhwp-studio', 'rhwp-chrome', 'rhwp-firefox', 'rhwp-vscode']) {
+    const directory = path.join(ROOT, host, host === 'rhwp-vscode' ? 'dist/media/fonts' : 'dist/fonts');
+    const shippedFonts = readdirSync(directory).filter((file) => /\.(?:woff2?|ttf|otf|ttc)$/i.test(file));
+    assert.ok(shippedFonts.length > 0, `${host} must ship its required fonts`);
+    assertFontNotices(directory, shippedFonts, host);
+  }
 });
 
 test('VS Code CanvasKit auto font planning is limited to packaged fonts', () => {

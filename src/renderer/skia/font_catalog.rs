@@ -5,6 +5,8 @@ use std::path::PathBuf;
 
 use skia_safe::{Data, FontMgr, FontStyle, Typeface};
 
+use super::font_lookup::supplied_family_names;
+
 const MAX_FONT_FILES: usize = 256;
 const MAX_FONT_FILE_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_FONT_TOTAL_BYTES: u64 = 64 * 1024 * 1024;
@@ -23,6 +25,7 @@ impl TypefaceCatalog {
         let mut loaded_files = 0usize;
         let mut seen = std::collections::HashSet::new();
         for source in sources {
+            let mut source_catalog = Self::default();
             let mut paths = if source.is_file() {
                 vec![source.clone()]
             } else {
@@ -48,7 +51,7 @@ impl TypefaceCatalog {
                     continue;
                 }
                 if loaded_files >= MAX_FONT_FILES {
-                    return catalog;
+                    break;
                 }
                 let Ok(metadata) = path.metadata() else {
                     continue;
@@ -86,16 +89,52 @@ impl TypefaceCatalog {
                         font_mgr.new_from_data(Data::new_copy(&bytes), Some(face_index))
                     {
                         retained_bytes += bytes.len() as u64;
-                        catalog
-                            .families
-                            .entry(face.family_name().trim().to_lowercase())
-                            .or_default()
-                            .push(face);
+                        source_catalog.insert_face(&bytes, face_index, face);
                     }
                 }
             }
+            // The first supplied path owns the family's complete style set.
+            // Within that directory retain all bounded faces for CSS matching
+            // and P47's per-character coverage fallback;
+            // later paths cannot override it with a closer style match.
+            for (family, faces) in source_catalog.families {
+                catalog.families.entry(family).or_insert(faces);
+            }
+            if loaded_files >= MAX_FONT_FILES {
+                break;
+            }
         }
         catalog
+    }
+
+    fn insert_face(&mut self, data: &[u8], face_index: u32, face: Typeface) {
+        for family in supplied_family_names(data, face_index, &face.family_name()) {
+            let family = family.trim().to_lowercase();
+            if family.is_empty() {
+                continue;
+            }
+            let faces = self.families.entry(family).or_default();
+            if !faces
+                .iter()
+                .any(|existing| existing.unique_id() == face.unique_id())
+            {
+                faces.push(face.clone());
+            }
+        }
+    }
+
+    /// Link an explicit document family to the supplied family's existing faces.
+    /// Cloning Typeface handles shares the retained bytes without reloading them.
+    pub fn alias_family(&mut self, requested: &str, supplied: &str) -> bool {
+        let requested = requested.trim().to_lowercase();
+        if requested.is_empty() {
+            return false;
+        }
+        let Some(faces) = self.families.get(&supplied.trim().to_lowercase()).cloned() else {
+            return false;
+        };
+        self.families.insert(requested, faces);
+        true
     }
 
     pub fn candidates(&self, family: &str, style: FontStyle) -> Vec<Typeface> {
@@ -106,17 +145,53 @@ impl TypefaceCatalog {
         {
             if let Some(faces) = self.families.get(&family.to_lowercase()) {
                 let mut faces = faces.clone();
-                faces.sort_by_key(|face| {
-                    let actual = face.font_style();
-                    (
-                        u8::from(actual.slant() != style.slant()),
-                        (*actual.weight() - *style.weight()).abs(),
-                        (*actual.width() - *style.width()).abs(),
-                    )
-                });
+                // Stable sorting keeps the first supplied program on a tie.
+                faces.sort_by_key(|face| supplied_style_rank(style, face.font_style()));
                 result.extend(faces);
             }
         }
         result
     }
+}
+
+/// CSS/Skia matches width, then slant, then weight (including 400..=500).
+/// This is the same ordering as SkFontStyleSet::matchStyleCSS3.
+fn supplied_style_rank(requested: FontStyle, actual: FontStyle) -> ((i32, i32), usize, (i32, i32)) {
+    let rw = *requested.width();
+    let cw = *actual.width();
+    let width = if rw <= 5 {
+        if cw <= rw {
+            (0, rw - cw)
+        } else {
+            (1, cw - rw)
+        }
+    } else if cw >= rw {
+        (0, cw - rw)
+    } else {
+        (1, rw - cw)
+    };
+    let slant_order = [[0, 2, 1], [2, 0, 1], [2, 1, 0]];
+    let slant = slant_order[requested.slant() as usize][actual.slant() as usize];
+    let rw = *requested.weight();
+    let cw = *actual.weight();
+    let weight = if rw < 400 {
+        if cw <= rw {
+            (0, rw - cw)
+        } else {
+            (1, cw - rw)
+        }
+    } else if rw <= 500 {
+        if (rw..=500).contains(&cw) {
+            (0, cw - rw)
+        } else if cw < rw {
+            (1, rw - cw)
+        } else {
+            (2, cw - 500)
+        }
+    } else if cw >= rw {
+        (0, cw - rw)
+    } else {
+        (1, rw - cw)
+    };
+    (width, slant, weight)
 }

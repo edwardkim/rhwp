@@ -435,7 +435,10 @@ fn outline_tree() -> PageLayerTree {
         color_layers: None,
         bitmap_glyph: None,
         svg_glyph: None,
-        paint_style: PaintTextStyle::from(&TextStyle::default()),
+        paint_style: PaintTextStyle::from(&TextStyle {
+            font_size: 32.0,
+            ..Default::default()
+        }),
         placement: TextRunPlacement {
             run_to_page: LayerAffineTransform {
                 a: 1.0,
@@ -497,6 +500,10 @@ fn native_glyph_replay_renders_outline_fill_rule_transform_and_stroke_order() {
 
 #[test]
 fn native_glyph_replay_requires_every_variant_part_and_every_path() {
+    let mut invalid_style = outline_tree();
+    outline_mut(&mut invalid_style).paint_style.font_size = 0.0;
+    assert_same_pixels(render(&invalid_style), render(&fallback_tree()));
+
     let mut tree = outline_tree();
     let outline = outline_mut(&mut tree);
     outline.variant.part_count = 2;

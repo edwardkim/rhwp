@@ -61,6 +61,57 @@ fn glyph_letter_spacing(letter_spacing_px: f64, glyph_base_px: f64, font_size: f
     letter_spacing_px * (glyph_base_px / font_size)
 }
 
+/// 한/글 장치 격자의 한 단위(HWPUNIT). 한/글은 글자 전진폭을 1800dpi 장치 단위
+/// (= 4 HWPUNIT)의 정수로 정한다.
+const HANCOM_DEVICE_UNIT_HU: f64 = 4.0;
+
+/// [#7702] 한/글이 놓는 글자 전진폭(px).
+///
+/// 한/글 2020·2024 Print PDF 의 글자 원점(굴림체·한컴돋움·휴먼명조, 크기 8~20pt ×
+/// 장평 50~150% × 상대 크기 80~125% × 자간 −10~+10%)이 모두 다음 계산과 일치한다.
+///
+/// 1. `ppem` = ⌊상대 크기를 적용한 글자 크기(HU) / 4⌋
+/// 2. 전진 단위 = 장평 100% 면 em비 × ppem 을 반올림(공백만 내림),
+///    아니면 ⌊em비 × ppem × 장평⌋. 공백은 장평과 무관하게 ⌊em비 × ppem⌋ 을 먼저 내리고
+///    장평을 곱해 반올림한다.
+/// 3. 자간 단위 = 자간 비율 × 전진 단위를 반올림(정확히 ½ 이면 0 에서 먼 쪽)
+/// 4. 전진폭 = (전진 단위 + 자간 단위) × 4 HU
+///
+/// `em_fraction` 은 글리프 전진폭 / 글자 크기, `spacing_fraction` 은 자간 % / 100 이다.
+/// 2 의 공백 내림은 반각 공백이 정확히 ½ 단위에 걸리는 크기(7·9·11·13·15pt)에서
+/// 굴림체·한양신명조 모두 내림이고, 같은 크기의 반각 숫자는 올림인 데서 나온다.
+/// 장평이 있는 공백은 한양신명조 7·9·10·11·13pt × 장평 75~120% 의 「가 」 간격(한/글 2020)이
+/// ⌊em비 × ppem × 장평⌋ 이 아니라 위 계산을 따른다 — 10pt 장평 98% 에서 반각 125 단위가
+/// 122.5 가 되어 내림이면 122, 한/글은 123 이다.
+fn hancom_device_advance_px(
+    em_fraction: f64,
+    font_size: f64,
+    ratio: f64,
+    spacing_fraction: f64,
+    is_space: bool,
+) -> f64 {
+    const EPS: f64 = 1e-6;
+    if font_size <= 0.0 || em_fraction <= 0.0 {
+        return 0.0;
+    }
+    let ppem = (font_size * 75.0 / HANCOM_DEVICE_UNIT_HU + EPS).floor();
+    let advance_units = if is_space {
+        let base_units = (em_fraction * ppem + EPS).floor();
+        if (ratio - 1.0).abs() <= EPS {
+            base_units
+        } else {
+            (base_units * ratio + 0.5 + EPS).floor()
+        }
+    } else if (ratio - 1.0).abs() <= EPS {
+        (em_fraction * ppem + 0.5 + EPS).floor()
+    } else {
+        (em_fraction * ppem * ratio + EPS).floor()
+    };
+    let spacing = spacing_fraction * advance_units;
+    let spacing_units = spacing.signum() * (spacing.abs() + 0.5 + EPS).floor();
+    (advance_units + spacing_units) * HANCOM_DEVICE_UNIT_HU / 75.0
+}
+
 /// 스타일에서 공통 파라미터 추출 (font_size, ratio, tab_w)
 fn style_params(style: &TextStyle) -> (f64, f64, f64) {
     let base_font_size = if style.font_size > 0.0 {
@@ -1182,6 +1233,8 @@ const HALFWIDTH_PUNCTUATION_WIDTH_SOURCE: &str = "metricHalfwidthPunctuationOver
 #[derive(Debug, Clone, Copy)]
 struct EmbeddedWidthDecision<'a> {
     width_px: Option<f64>,
+    /// 글리프 전진폭 / 글자 크기 — 격자 계산이 HU 로 내리기 전 값을 쓰도록 둔다.
+    em_fraction: Option<f64>,
     width_source: &'static str,
     metric: Option<font_metrics_data::MetricLookupDecision<'a>>,
     character_match: &'static str,
@@ -1226,6 +1279,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
     if let Some(w) = kopub_char_width(primary_name, c, font_size) {
         return EmbeddedWidthDecision {
             width_px: Some(w),
+            em_fraction: None,
             width_source: "kopubTable",
             metric: None,
             character_match: "hit",
@@ -1234,6 +1288,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
     let Some(mm) = font_metrics_data::find_metric_decision(primary_name, bold, italic) else {
         return EmbeddedWidthDecision {
             width_px: None,
+            em_fraction: None,
             width_source: "metricMiss",
             metric: None,
             character_match: "notApplicable",
@@ -1262,6 +1317,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
         let Some(glyph_w) = mm.metric.get_width(c) else {
             return EmbeddedWidthDecision {
                 width_px: None,
+                em_fraction: None,
                 width_source: "metricCharacterMiss",
                 metric: Some(mm),
                 character_match: "miss",
@@ -1329,8 +1385,16 @@ fn measure_char_width_embedded_decision_for_font<'a>(
         //
         // 비고정폭 face 는 이 변경의 범위 밖이다 — 같은 이름이 TrueType/HFT 두 realization 으로
         // 갈리고(휴먼명조 `‘` 1.010 ↔ 0.24), 기호 슬롯 선택 축이 따로 있다(#7092 잔여).
-        let quote_width_is_authentic =
-            matches!(c, '\u{2018}' | '\u{2019}') && is_monospace_metric(mm.metric);
+        //
+        // [#7702] 글꼴 파일로 폭이 확인된 TTF face(`font_metric_trusted`)의 곡선 따옴표도
+        // 진짜 값이다. 좁힘의 근거였던 `2022년 국립국어원 업무계획` 3쪽의 좁은 `‘` 는 전부
+        // HFT `한양중고딕`(정본 Type3) 이었고, 같은 문서의 TTF 휴먼명조 `’` 는 1.0em 이다.
+        // 한/글은 HFT 를 제 글리프로 그리므로 그 face 를 빌린 TTF 표(HY중고딕)의 전각이
+        // 틀린 것이지 TTF 글리프가 틀린 것이 아니다.
+        let quote_width_is_authentic = (matches!(c, '\u{2018}' | '\u{2019}')
+            && is_monospace_metric(mm.metric))
+            || (matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
+                && font_metric_trusted);
         let is_narrow_unicode_punct =
             matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}') && !quote_width_is_authentic;
         // [#7092] 전각으로 **적힌** 가운뎃점은 대개 글꼴이 지닌 진짜 값이다 — 결측 글리프는
@@ -1360,6 +1424,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
         width_px: Some(quantize_hwp_px(
             w as f64 * font_size / mm.metric.em_size as f64,
         )),
+        em_fraction: Some(w as f64 / mm.metric.em_size as f64),
         width_source,
         metric: Some(mm),
         character_match: "hit",
@@ -1447,6 +1512,8 @@ pub(crate) fn char_width_decision<'a>(
         .then_some(style.font_space_em)
         .flatten()
         .map(|em| quantize_hwp_px(font_size * em));
+    // 글리프 전진폭 / 글자 크기. 메트릭 갈래는 HU 로 내리기 전 값을 쓴다.
+    let mut em_exact: Option<f64> = None;
     let (base_width_raw, width_source, metric, character_match) = if let Some(w) = font_space_width
     {
         (w, "useFontSpace", None, "notApplicable")
@@ -1492,6 +1559,9 @@ pub(crate) fn char_width_decision<'a>(
         );
         if let Some(width) = digit_width {
             embedded.width_px = Some(width);
+            // 검증된 프로그램 폭을 선택했으면 장치 격자의 em 비율도 같은
+            // 프로그램을 소비한다. 표시 대체 글꼴의 비율을 다시 쓰지 않는다.
+            embedded.em_fraction = (font_size > 0.0).then_some(width / font_size);
             embedded.width_source = "verifiedLegacyDigit";
             embedded.character_match = "hit";
         }
@@ -1544,6 +1614,7 @@ pub(crate) fn char_width_decision<'a>(
             && embedded.width_source != "metricHalfSpace"
         {
             embedded.width_px = Some(font_size * 0.5);
+            embedded.em_fraction = Some(0.5);
             embedded.width_source = if embedded.metric.is_some() {
                 "metricHalfSpace"
             } else {
@@ -1556,6 +1627,7 @@ pub(crate) fn char_width_decision<'a>(
             };
         }
         if let Some(w) = embedded.width_px {
+            em_exact = embedded.em_fraction;
             (
                 w,
                 embedded.width_source,
@@ -1623,6 +1695,7 @@ pub(crate) fn char_width_decision<'a>(
         snapshot.lookup(snapshot.context(), style, c)
     })
     .flatten();
+    let supplemented = supplement.is_some();
     let (base_width_raw, width_source) = supplement
         .map(|entry| (entry.natural_advance_px(), entry.width_source()))
         .unwrap_or((base_width_raw, width_source));
@@ -1631,9 +1704,30 @@ pub(crate) fn char_width_decision<'a>(
     } else {
         base_width_raw
     };
-    let mut final_width_px = base_width_px * ratio
-        + glyph_letter_spacing(letter_spacing, base_width_px * ratio, font_size)
-        + style.extra_char_spacing;
+    // 보충 메트릭은 백엔드가 실제로 그리는 전진폭이라 그 값을 그대로 쓴다(#7084).
+    let glyph_advance_px = if supplemented {
+        base_width_px * ratio
+            + glyph_letter_spacing(letter_spacing, base_width_px * ratio, font_size)
+    } else {
+        let em_fraction = match em_exact {
+            Some(em) if !dash_leader => em,
+            _ if font_size > 0.0 => base_width_px / font_size,
+            _ => 0.0,
+        };
+        let spacing_fraction = if font_size > 0.0 {
+            letter_spacing / font_size
+        } else {
+            0.0
+        };
+        hancom_device_advance_px(
+            em_fraction,
+            font_size,
+            ratio,
+            spacing_fraction,
+            matches!(c, ' ' | '\u{00A0}'),
+        )
+    };
+    let mut final_width_px = glyph_advance_px + style.extra_char_spacing;
     final_width_px += crate::renderer::legacy_font_advances::bold_advance(
         style,
         c,
@@ -1942,6 +2036,38 @@ pub fn forces_halfwidth_cjk_quote(
         == HALFWIDTH_PUNCTUATION_WIDTH_SOURCE
 }
 
+/// 페인트가 `U+2018..=U+2027` 구두점을 반각 공간에 눌러 그려야 하는지.
+///
+/// [#7702] 측정이 곡선 따옴표의 글리프 폭을 진짜 값으로 받아들였으면(`quote_width_is_authentic`)
+/// 전진폭이 이미 글리프 폭이므로 누르면 안 된다. 나머지는 종전대로 누른다.
+pub fn forces_halfwidth_punct_paint(style: &TextStyle, c: char) -> bool {
+    if !matches!(c, '\u{2018}'..='\u{2027}') {
+        return false;
+    }
+    let metric_family = style
+        .metric_font_family
+        .as_deref()
+        .unwrap_or(&style.font_family);
+    let decision = measure_char_width_embedded_decision_for_font(
+        metric_family,
+        style.bold,
+        style.italic,
+        c,
+        style.font_size,
+        style.font_metric_trusted,
+        style.hft_hangul_face,
+    );
+    // 그 글리프의 전진폭을 그대로 썼다면 폭이 전각인지와 관계없이 다시 누르지 않는다.
+    // 휴먼명조의 검증된 프로그램 폭과 Times의 좁은 원 글리프도 같은 계약이다.
+    let authentic_quote = matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
+        && matches!(
+            decision.width_source,
+            "embeddedMetric" | "metricTrueTypeGlyph"
+        )
+        && (style.font_metric_trusted || decision.em_fraction.is_some_and(|em| em >= 1.0));
+    !authentic_quote
+}
+
 /// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).
 ///
 /// 한컴 문서의 빈칸/구분선은 ASCII '-' 반복으로 구성되며, PDF 도 좁은
@@ -2122,11 +2248,17 @@ mod tests {
             ..Default::default()
         };
 
-        assert_eq!(estimate_text_width_unrounded("AVATAR", &style), 3633.0);
+        // 폰트 전진(1000em) 608·575·608·599·608·635 를 [#7702] 한/글 장치 격자
+        // (ppem 18750, 단위 반올림)에 올린 단위 × 4/75 px.
+        let mut expected = vec![0.0];
+        for units in [11400.0, 10781.0, 11400.0, 11231.0, 11400.0, 11906.0] {
+            expected.push(expected.last().unwrap() + units * 4.0 / 75.0);
+        }
         assert_eq!(
-            compute_char_positions("AVATAR", &style),
-            vec![0.0, 608.0, 1183.0, 1791.0, 2390.0, 2998.0, 3633.0]
+            estimate_text_width_unrounded("AVATAR", &style),
+            *expected.last().unwrap()
         );
+        assert_eq!(compute_char_positions("AVATAR", &style), expected);
     }
 
     /// [진단] 흔한 폰트의 라틴 metric 커버리지 — 없으면 0.5em 폴백(캐럿·재래핑 부정확).

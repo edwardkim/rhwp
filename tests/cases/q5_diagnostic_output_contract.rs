@@ -65,7 +65,9 @@ fn info_human_stdout_is_byte_stable() {
         &["info", sample.to_str().expect("UTF-8 sample path")],
         // [#4680] HWP3 스타일 풀 중복 제거로 두 줄이 바뀌었다 — 나머지 출력은 동일하다.
         //   ParaShape: 119 → 16 · CharShape: 747 → 23
-        "9ce249e42a04c9d4461833568930ffbbe89f2e8262cb3982e9fa453712b884f4",
+        // [#7810] HWP3 글꼴 이름을 한/글 변환기 이름으로 읽어 폰트 여섯 줄이 바뀌었다
+        //   (HY신명조 → 한양신명조 · HY중고딕 → 한양중고딕 · HY견고딕 → 한양견고딕 · 궁서 → 한양궁서).
+        "b9b3bbaf4930f9e242429e45747c937c62cd2225de8f75ed400eb4b333c01f44",
     );
 }
 

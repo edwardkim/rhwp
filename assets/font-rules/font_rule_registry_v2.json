@@ -14,6 +14,26 @@
       "changeSetId": "issue-7196.ygodic230-metric-name",
       "path": "assets/font-rules/changes/issue-7196-ygodic230-metric-name.json",
       "sha256": "32ba0e30b0bbb23fa29f46d56ac2dc6ffd80bfb16315090be1886df0b74cccf9"
+    },
+    {
+      "changeSetId": "issue-5884.noto-symbols2-webfont",
+      "path": "assets/font-rules/changes/issue-5884-noto-symbols2-webfont.json",
+      "sha256": "269c36ec10b2eae9af54e6630931875a5bfb9627be9881285eeb48d216dd82f4"
+    },
+    {
+      "changeSetId": "issue-5884.noto-symbols2-canvaskit",
+      "path": "assets/font-rules/changes/issue-5884-noto-symbols2-canvaskit.json",
+      "sha256": "0513fa026fc89793049314e945c94aff589961bfc9c6e8b7e996fcc58bda4be9"
+    },
+    {
+      "changeSetId": "issue-4969.oldhangul-license-webfont",
+      "path": "assets/font-rules/changes/issue-4969-oldhangul-license-webfont.json",
+      "sha256": "212b6169582fb2b18fc875b6f9b0094e24b1aa5d68dc57ef256c125110e6a0e2"
+    },
+    {
+      "changeSetId": "issue-4969.oldhangul-license-canvaskit",
+      "path": "assets/font-rules/changes/issue-4969-oldhangul-license-canvaskit.json",
+      "sha256": "2bc3932d2ee31d52f53282972d3a3ad081b215c1c1c9bbfa4d0067cddddb3faf"
     }
   ],
   "evidenceRecords": [
@@ -48,6 +68,22 @@
       "parentEvidenceIds": [],
       "sha256": "5db32d3107d229d471eb43b544e2c87a5fade1d1738b4bdea6338958726cc443",
       "source": "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf"
+    },
+    {
+      "evidenceId": "evidence.issue-5884.noto-symbols2-program",
+      "kind": "public-source",
+      "licenseOrProvenance": "SIL OFL 1.1 원본 Noto Sans Symbols2 Regular. font-program-evidence.json의 cmap/hmtx 직접 추출과 공개 라이선스를 보존한다.",
+      "parentEvidenceIds": [],
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
+      "source": "rhwp-studio/public/fonts/NotoSansSymbols2-Regular.ttf"
+    },
+    {
+      "evidenceId": "evidence.issue-4969.oldhangul-redistribution-name",
+      "kind": "public-source",
+      "licenseOrProvenance": "Adobe Source Han Serif K OFL 1.1 수정본. Reserved Font Name을 수정본 이름으로 사용하지 않도록 RHWP Old Hangul로 재명명. 원본 저작권과 OFL, 2215개 glyph charstring 및 메트릭·cmap·GSUB·GPOS 보존. scripts/rename-old-hangul-font.py로 재생성한다.",
+      "parentEvidenceIds": [],
+      "sha256": "1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab",
+      "source": "assets/fonts/RHWPOldHangul-Regular.woff2"
     }
   ],
   "issue": 5955,
@@ -31895,15 +31931,18 @@
         "w1RuleId": "rule.studio-supply.0aab2d58429b52047acb.canvas2d"
       },
       "evidenceIds": [
-        "evidence.issue-5955.sealed-v1-registry"
+        "evidence.issue-5955.sealed-v1-registry",
+        "evidence.issue-4969.oldhangul-redistribution-name"
       ],
       "lifecycle": {
         "introducedBy": "migration:issue-5955",
         "lastEvidenceChangeBy": null,
         "predecessorRuleIds": [],
-        "retiredBy": null,
-        "retirementReason": null,
-        "successorRuleIds": []
+        "retiredBy": "issue-4969.oldhangul-license-webfont",
+        "retirementReason": "수정본을 RHWP 고유 이름으로 공급하고 원본 Source Reserved Font Name을 primary font name에서 제거한다.",
+        "successorRuleIds": [
+          "rule.issue-4969.oldhangul-license-webfont"
+        ]
       },
       "metricEntryIds": [],
       "order": null,
@@ -31919,7 +31958,7 @@
       "selectionTupleSha256": "aeab4bb705e97d654bee51adc7c84cce6c6d056b145c173061ca113cec5548e2",
       "sourceBoundaryId": "studio-supply.font-list",
       "sourceFace": "Source Han Serif K Old Hangul",
-      "status": "active",
+      "status": "retired",
       "supply": {
         "external": false,
         "fontFamily": "Source Han Serif K Old Hangul",
@@ -42978,15 +43017,18 @@
         "w1RuleId": "rule.studio-supply.0aab2d58429b52047acb.canvaskit"
       },
       "evidenceIds": [
-        "evidence.issue-5955.sealed-v1-registry"
+        "evidence.issue-5955.sealed-v1-registry",
+        "evidence.issue-4969.oldhangul-redistribution-name"
       ],
       "lifecycle": {
         "introducedBy": "migration:issue-5955",
         "lastEvidenceChangeBy": null,
         "predecessorRuleIds": [],
-        "retiredBy": null,
-        "retirementReason": null,
-        "successorRuleIds": []
+        "retiredBy": "issue-4969.oldhangul-license-canvaskit",
+        "retirementReason": "수정본을 RHWP 고유 이름으로 공급하고 원본 Source Reserved Font Name을 primary font name에서 제거한다.",
+        "successorRuleIds": [
+          "rule.issue-4969.oldhangul-license-canvaskit"
+        ]
       },
       "metricEntryIds": [],
       "order": null,
@@ -43002,7 +43044,7 @@
       "selectionTupleSha256": "41d172a0612eb72b5e4c535b18147c4a506856b9bfd76f3022ff886c35e0222e",
       "sourceBoundaryId": "studio-supply.font-list",
       "sourceFace": "Source Han Serif K Old Hangul",
-      "status": "active",
+      "status": "retired",
       "supply": {
         "capabilityAgreement": false,
         "declaredCapability": "unavailable",
@@ -43374,9 +43416,223 @@
       "status": "active",
       "supply": null,
       "targetFaceOrPolicy": "Haan YGodic 230"
+    },
+    {
+      "conditions": {
+        "profile": "canvas2d-css-unknown"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-5884.noto-symbols2-program"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-5884.noto-symbols2-webfont",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 153,
+      "projections": [
+        {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-5884.noto-symbols2.webfont",
+      "selectionTupleSha256": "47801966375da37a6f40dbc5bb83c7e91a8f4d90fb07a89ec249bc773f78de34",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "Noto Sans Symbols2",
+      "status": "active",
+      "supply": {
+        "external": false,
+        "fontFamily": "Noto Sans Symbols2",
+        "format": "truetype",
+        "kind": "canvas2d-webfont",
+        "sourceUrl": "fonts/NotoSansSymbols2-Regular.ttf",
+        "unicodeRange": null
+      },
+      "targetFaceOrPolicy": "'fonts/NotoSansSymbols2-Regular.ttf'"
+    },
+    {
+      "conditions": {
+        "profile": "canvaskit-sfnt"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-5884.noto-symbols2-program"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-5884.noto-symbols2-canvaskit",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 158,
+      "projections": [
+        {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-5884.noto-symbols2.canvaskit",
+      "selectionTupleSha256": "4c35df2cd5de0deef1bbc3201db9fc7e06b5774f19dfe571c66f433275e1147d",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "Noto Sans Symbols2",
+      "status": "active",
+      "supply": {
+        "capabilityAgreement": true,
+        "declaredCapability": "sfnt-source",
+        "fontFamily": "Noto Sans Symbols2",
+        "kind": "canvaskit-plan",
+        "offline": {
+          "sources": [
+            {
+              "aliases": [
+                "Noto Sans Symbols2"
+              ],
+              "url": "fonts/NotoSansSymbols2-Regular.ttf"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "online": {
+          "sources": [
+            {
+              "aliases": [
+                "Noto Sans Symbols2"
+              ],
+              "url": "fonts/NotoSansSymbols2-Regular.ttf"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "runtimePlanStatus": "planned"
+      },
+      "targetFaceOrPolicy": "sfnt: fonts/NotoSansSymbols2-Regular.ttf"
+    },
+    {
+      "conditions": {
+        "profile": "canvas2d-css-unknown"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-4969.oldhangul-redistribution-name"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-4969.oldhangul-license-webfont",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [
+          "rule.studio-supply.0aab2d58429b52047acb.canvas2d"
+        ],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 152,
+      "projections": [
+        {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-4969.oldhangul-license-webfont",
+      "selectionTupleSha256": "42f8570f739f3e6fa6e453f0a5c7aa2115d928ab54ebfa355586f515b0d23b08",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "RHWP Old Hangul",
+      "status": "active",
+      "supply": {
+        "external": false,
+        "fontFamily": "RHWP Old Hangul",
+        "format": "woff2",
+        "kind": "canvas2d-webfont",
+        "sourceUrl": "fonts/RHWPOldHangul-Regular.woff2",
+        "unicodeRange": "U+1100-11FF, U+A960-A97F, U+D7B0-D7FF"
+      },
+      "targetFaceOrPolicy": "'fonts/RHWPOldHangul-Regular.woff2'"
+    },
+    {
+      "conditions": {
+        "profile": "canvaskit-sfnt"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-4969.oldhangul-redistribution-name"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-4969.oldhangul-license-canvaskit",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [
+          "rule.studio-supply.0aab2d58429b52047acb.canvaskit"
+        ],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 152,
+      "projections": [
+        {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-4969.oldhangul-license-canvaskit",
+      "selectionTupleSha256": "48ec1c8fbd5aad92f09fc4c81a8752e69746b2d693e6fdb50f77e6a95dc8a810",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "RHWP Old Hangul",
+      "status": "active",
+      "supply": {
+        "capabilityAgreement": false,
+        "declaredCapability": "unavailable",
+        "fontFamily": "RHWP Old Hangul",
+        "kind": "canvaskit-plan",
+        "offline": {
+          "sources": [
+            {
+              "aliases": [
+                "RHWP Old Hangul"
+              ],
+              "url": "fonts/RHWPOldHangul-Regular.woff2"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "online": {
+          "sources": [
+            {
+              "aliases": [
+                "RHWP Old Hangul"
+              ],
+              "url": "fonts/RHWPOldHangul-Regular.woff2"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "runtimePlanStatus": "planned"
+      },
+      "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/RHWPOldHangul-Regular.woff2'"
     }
   ],
-  "rulesSha256": "837b77ca5f77164eff7913fcab46c8dd4bbe5a78bf7b77a546cbf3c31d1b50c0",
+  "rulesSha256": "a8d727ced359b9148dc6618607c61c6afbd1d4c309afc54d64b9786e20b99b4c",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -43388,15 +43644,15 @@
   },
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 831,
+    "activeRuleCount": 833,
     "countsByProjection": {
       "canvas2d-paint": 281,
-      "canvas2d-webfont": 153,
-      "canvaskit-sfnt": 158,
+      "canvas2d-webfont": 154,
+      "canvaskit-sfnt": 159,
       "rust-layout-metric": 68,
       "rust-layout-name": 171
     },
-    "retiredRuleCount": 2,
-    "ruleCount": 833
+    "retiredRuleCount": 4,
+    "ruleCount": 837
   }
 }

@@ -34,7 +34,7 @@ impl CanvasTextFont {
         );
         Self {
             descriptor: format!("{prefix}{family}"),
-            old_hangul_descriptor: format!("{prefix}'Source Han Serif K Old Hangul', {family}"),
+            old_hangul_descriptor: format!("{prefix}'RHWP Old Hangul', {family}"),
             draw_size,
             baseline,
             horizontal_scale,

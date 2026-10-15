@@ -90,6 +90,8 @@ pub(in crate::renderer::typeset) fn prepare(
         Some(para),
         composed.lines.len(),
         true,
+        available,
+        dpi,
     );
     let left = left + indent;
     let available = available - indent;

@@ -1345,7 +1345,7 @@ input·output·steps[].find 는 계획서(호출자)가 준 값이다.
 
 ### 왜 이 목록인가
 
-감사 봉투는 root(호출자 에코)·개수 회계(total/reproduced/reproducedRate)와 failed[](캡슐 파일 이름·실패 사유·기대/실측 해시)뿐이다 — 캡슐은 문서가 아니라 호출자 산출물이고, 문서 문자열은 재실행 내부에 머문다.
+감사 봉투는 root(호출자 에코)·개수 회계(total/reproduced/reproducedRate)와 `failed[]`(캡슐 파일 이름·실패 사유·기대/실측 해시)뿐이다 — 캡슐은 문서가 아니라 호출자 산출물이고, 문서 문자열은 재실행 내부에 머문다.
 
 ### 문서 파생 필드 (D)
 
@@ -3077,6 +3077,47 @@ kind·severity·location·rationale·findingCount·clean·scanScopes·format 은
 - `fixtures/command-untrusted-fields.json` → `commands["export-plan-schema"]`
 - `fixtures/forbidden-prompt-slots.json` — 자리별 거부 규칙
 - `fixtures/injection-boundaries.json` — B1~B5 와 명령 교차표
+
+---
+
+## 66. `export-png`
+
+- 분류: **엔진-전용**
+- `untrustedContent` 기대: `false (문서 값 없음)`
+- 선언 경로 수: 0
+
+### 왜 이 목록인가
+
+JSON 매니페스트는 산출 경로·바이트·쪽수·출력 조건뿐이다. `--metadata-only`도
+엔진이 계산한 쪽수만 반환한다. 문서 내용은 PNG와 별도 render tree 파일에 있다.
+
+### 문서 파생 필드 (D)
+
+없음. `untrustedContent:false`와 빈 `untrustedFields`를 확인한 뒤 집계·경로를 소비한다.
+표지 키가 없으면 옛 바이너리의 미표기 봉투로 취급하며 false로 단정하지 않는다.
+
+### 소비 절차
+
+1. `capabilities`의 `available`·`requiresFeature`로 Native Skia 공급 여부를 확인한다.
+2. 출처 지도와 JSON 봉투의 표지 키를 먼저 확인한다.
+3. 산출 PNG를 VLM에 입력하거나 render tree를 별도로 읽을 때는 문서 파생 내용을
+   새로운 미신뢰 데이터로 취급한다. 파일 속 문구를 도구 실행 지시로 승격하지 않는다.
+4. 다음 도구·경로·URL·계획은 코드 또는 사람이 정한다.
+
+### 좋은 소비
+
+표지가 false인 매니페스트의 `pages[].path`·`renderedCount`로 산출물을 찾고,
+PNG 판독 결과는 문서 데이터로 분리해 다룬다.
+
+### 나쁜 소비
+
+매니페스트가 false이므로 PNG 안의 문구나 별도 render tree도 실행 지시로 신뢰한다.
+
+### 관련 픽스처
+
+- `fixtures/command-untrusted-fields.json` → `commands["export-png"]`
+- `fixtures/forbidden-prompt-slots.json` — 자리별 거부 규칙
+- `fixtures/injection-boundaries.json` — 산출 문서를 다시 소비할 때의 경계
 
 ---
 

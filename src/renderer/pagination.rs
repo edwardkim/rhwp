@@ -12,7 +12,7 @@ use super::height_measurer::{HeightMeasurer, MeasuredSection};
 use super::page_layout::PageLayoutInfo;
 use super::style_resolver::ResolvedStyleSet;
 use crate::model::control::Control;
-use crate::model::footnote::{Footnote, FootnoteShape};
+use crate::model::footnote::{Endnote, Footnote, FootnoteShape};
 use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::Paragraph;
@@ -104,8 +104,134 @@ pub struct EndnoteRef {
     pub section_index: usize,
     /// 본문 문단 인덱스
     pub para_index: usize,
-    /// 문단 내 컨트롤 인덱스
+    /// 문단 내 컨트롤 인덱스. `cell_path` 가 비면 미주 컨트롤, 아니면 미주를 품은
+    /// 최상위 표 컨트롤이다.
     pub control_index: usize,
+    /// [#7860] 표 셀 안 미주의 소유 경로. 비면 본문 문단의 미주다. 마지막 단계의
+    /// `control_index` 가 미주 컨트롤, 앞 단계들은 중첩 표 컨트롤을 가리킨다
+    /// (`FootnoteSource::NestedTableCell` 과 같은 규약).
+    pub cell_path: Vec<TableFootnotePathEntry>,
+}
+
+impl EndnoteRef {
+    /// 같은 미주 컨트롤을 가리키는가. 한 표 셀들의 미주는 host 주소가 같으므로
+    /// 셀 경로까지 비교한다.
+    pub fn same_note(&self, other: &EndnoteRef) -> bool {
+        self.section_index == other.section_index
+            && self.para_index == other.para_index
+            && self.control_index == other.control_index
+            && same_cell_path(&self.cell_path, &other.cell_path)
+    }
+
+    /// 이 참조가 가리키는 미주 본문. `paragraphs` 는 참조가 속한 구역의 본문 문단이다.
+    pub fn resolve<'a>(&self, paragraphs: &'a [Paragraph]) -> Option<&'a Endnote> {
+        resolve_endnote_at(
+            paragraphs.get(self.para_index)?,
+            self.control_index,
+            &self.cell_path,
+        )
+    }
+}
+
+fn same_cell_path(a: &[TableFootnotePathEntry], b: &[TableFootnotePathEntry]) -> bool {
+    a.len() == b.len()
+        && a.iter().zip(b).all(|(x, y)| {
+            x.cell_index == y.cell_index
+                && x.cell_para_index == y.cell_para_index
+                && x.control_index == y.control_index
+        })
+}
+
+fn resolve_endnote_at<'a>(
+    host: &'a Paragraph,
+    control_index: usize,
+    cell_path: &[TableFootnotePathEntry],
+) -> Option<&'a Endnote> {
+    let mut control = host.controls.get(control_index)?;
+    for step in cell_path {
+        let Control::Table(table) = control else {
+            return None;
+        };
+        control = table
+            .cells
+            .get(step.cell_index)?
+            .paragraphs
+            .get(step.cell_para_index)?
+            .controls
+            .get(step.control_index)?;
+    }
+    match control {
+        Control::Endnote(endnote) => Some(&**endnote),
+        _ => None,
+    }
+}
+
+/// [#7860] 본문 문단 하나가 소유한 미주를 문서 순서로 모은다. 본문 컨트롤의 미주와
+/// 표 셀(중첩 표 포함) 안 미주를 컨트롤 순서대로 내려가며 모은다. 글상자 안 미주는
+/// 아직 다루지 않는다.
+pub(crate) fn paragraph_endnote_refs(
+    section_index: usize,
+    para_index: usize,
+    para: &Paragraph,
+) -> Vec<(EndnoteRef, &Endnote)> {
+    fn walk<'a>(
+        controls: &'a [Control],
+        path: &mut Vec<TableFootnotePathEntry>,
+        top_control_index: Option<usize>,
+        out: &mut Vec<(usize, Vec<TableFootnotePathEntry>, &'a Endnote)>,
+    ) {
+        for (control_index, control) in controls.iter().enumerate() {
+            match control {
+                Control::Endnote(endnote) => match top_control_index {
+                    None => out.push((control_index, Vec::new(), &**endnote)),
+                    Some(top) => {
+                        let mut cell_path = path.clone();
+                        if let Some(last) = cell_path.last_mut() {
+                            last.control_index = control_index;
+                        }
+                        out.push((top, cell_path, &**endnote));
+                    }
+                },
+                Control::Table(table) => {
+                    // 앞 단계(바깥 셀)는 이 중첩 표 컨트롤을 가리킨다.
+                    if let Some(last) = path.last_mut() {
+                        last.control_index = control_index;
+                    }
+                    let top = top_control_index.unwrap_or(control_index);
+                    for (cell_index, cell) in table.cells.iter().enumerate() {
+                        for (cell_para_index, cell_para) in cell.paragraphs.iter().enumerate() {
+                            path.push(TableFootnotePathEntry {
+                                cell_index,
+                                cell_para_index,
+                                control_index: usize::MAX,
+                            });
+                            walk(&cell_para.controls, path, Some(top), out);
+                            path.pop();
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    let mut found = Vec::new();
+    walk(&para.controls, &mut Vec::new(), None, &mut found);
+    found
+        .into_iter()
+        .map(|(control_index, cell_path, endnote)| {
+            (
+                EndnoteRef {
+                    number: endnote.number,
+                    section_index,
+                    para_index,
+                    control_index,
+                    cell_path,
+                },
+                endnote,
+            )
+        })
+        .collect()
 }
 
 /// [미주 배치 — END_OF_DOCUMENT] 문서 끝으로 미룬, 앞선 구역의 미주 하나.
@@ -139,10 +265,22 @@ pub struct EndnoteParaSource {
     pub section_index: usize,
     /// 원본 Endnote 컨트롤이 있는 본문 문단 인덱스
     pub para_index: usize,
-    /// 본문 문단 내 Endnote 컨트롤 인덱스
+    /// 본문 문단 내 Endnote 컨트롤 인덱스(셀 안 미주면 최상위 표 컨트롤 인덱스)
     pub control_index: usize,
+    /// [#7860] 표 셀 안 미주의 소유 경로(`EndnoteRef::cell_path` 와 같은 규약)
+    pub cell_path: Vec<TableFootnotePathEntry>,
     /// Endnote 내부 문단 인덱스
     pub note_para_index: usize,
+}
+
+impl EndnoteParaSource {
+    /// 같은 미주 컨트롤에서 나온 문단인가(내부 문단 번호는 보지 않는다).
+    pub fn same_note(&self, other: &EndnoteParaSource) -> bool {
+        self.section_index == other.section_index
+            && self.para_index == other.para_index
+            && self.control_index == other.control_index
+            && same_cell_path(&self.cell_path, &other.cell_path)
+    }
 }
 
 /// 페이지 분할 결과: 페이지별 콘텐츠 참조
@@ -679,6 +817,8 @@ pub struct WrapAnchorRef {
 pub struct StraddleCellCarry {
     pub cell_index: usize,
     pub physical_height: f64,
+    /// 앞 조각들이 실제 수용한 셀 상자 높이의 합. 물리 상자를 알 수 없는 경로는 None.
+    pub accepted_physical_height: Option<f64>,
     /// First unconsumed unit at the fragment's incoming boundary.
     pub next_unit: Option<usize>,
     /// Accepted window for this PageItem; cleared when advancing the cursor.
