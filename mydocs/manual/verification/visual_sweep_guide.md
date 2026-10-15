@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-14
+last_verified: 2026-10-15
 ---
 
 # PDF/PNG visual sweep 가이드
@@ -18,6 +18,9 @@ last_verified: 2026-10-14
 기준 PDF는 [원본 저장 버전에 맞는 한컴 Print 출력](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
 MCP는 저장 제품에 따라 engine 2020/2024를 명시하고, 수동 출력도 PDF 저장/내보내기 대신 인쇄를 쓴다.
 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않는다.
+**50 MiB(52,428,800바이트) 이상 기준 PDF는 로컬에만 보관하고 PR에 포함하지 않는다.**
+파일의 출처·바이트 수·SHA-256·전체 쪽수·명령과 전쪽 TSV·대표 PNG를 남기며,
+[대용량 PDF 보존 규칙](../pr_review/visual_fixture_evidence.md#원본-fixture와-기준-pdf-보존)을 따른다.
 
 `scripts/visual_sweep.py`는 rhwp가 만든 PNG/render tree와 한컴 기준 PDF를 비교해
 문항 흐름 drift, frame overflow, 줄 순서 겹침 같은 후보를 자동으로 찾는 보조 도구다.

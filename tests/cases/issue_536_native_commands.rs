@@ -532,6 +532,36 @@ fn native_commands_join_checks_previous_paragraph_outside_collapsed_selection() 
 }
 
 #[test]
+fn native_commands_split_at_semantic_paragraph_caret_preserves_redo() {
+    let mut core = core(&["A", "B"]);
+    let mut document = core.document().clone();
+    document.sections[0].paragraphs[1]
+        .controls
+        .push(Control::Bookmark(Default::default()));
+    core.set_document(document);
+    let mut editor =
+        NativeEditor::new(NativeDocumentSession::from_core(core), caret(0, 0)).unwrap();
+    editor.replace_selection(0, "x").unwrap();
+    editor.undo(1).unwrap();
+    let revision = editor.session().revision();
+    let range = caret(1, 1);
+    select(&mut editor, range.clone());
+    let before = format!("{:?}", editor.session().document().document());
+    assert!(matches!(
+        editor.execute_command(revision, Command::SplitParagraph {}),
+        Err(NativeHostError::Unsupported(_))
+    ));
+    assert_eq!(
+        format!("{:?}", editor.session().document().document()),
+        before
+    );
+    assert_eq!(editor.selection(), &range);
+    assert_eq!(editor.session().revision(), revision);
+    assert!(editor.can_redo());
+    assert!(!editor.can_undo());
+}
+
+#[test]
 fn native_commands_semantic_control_paragraph_allows_selection_and_identical_text() {
     let mut core = core(&["A"]);
     let mut document = core.document().clone();

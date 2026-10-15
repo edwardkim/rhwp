@@ -31,6 +31,7 @@ use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, MarkerHead, NumberingMarker, Paragraph};
 
+mod leading_justification;
 mod right_tab_fields;
 use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap,
@@ -38,6 +39,7 @@ use crate::model::shape::{
 };
 use crate::model::style::{Alignment, HeadType, LineSpacingType, Numbering, UnderlineType};
 use crate::model::table::Table;
+use leading_justification::LeadingSpacePlan;
 
 const CAPTION_CELL_SENTINEL: usize = 65534;
 
@@ -597,7 +599,18 @@ fn bullet_marker_text(
     // Bullet: numbering_id(1-based)로 Bullet 참조
     let bullet_id = para_style.numbering_id;
     if bullet_id == 0 {
-        return None;
+        // 0은 명시적 정의가 없는 기본 글머리표다. 리소스 검증도 이 값을
+        // 배열의 첫 항목으로 해석하지 않는다. 기본 ●의 한 글자 영역과
+        // 50% 본문 거리를 줄 나눔과 실제 마커 배치가 함께 소비한다.
+        return Some((
+            "●".to_string(),
+            MarkerHead {
+                attr: 1 << 3,
+                width_adjust: 0,
+                text_distance: 50,
+                char_shape_id: u32::MAX,
+            },
+        ));
     }
     let bullet = styles.bullets.get((bullet_id - 1) as usize)?;
     // U+FFFF는 이미지 글머리표 표시자 — 문자 렌더링 불가, 건너뜀
@@ -891,7 +904,7 @@ fn list_marker_geometry_for(
     }
 }
 
-fn paragraph_active_text_style(
+pub(super) fn paragraph_active_text_style(
     styles: &ResolvedStyleSet,
     para: Option<&Paragraph>,
     char_offset: usize,
@@ -1323,6 +1336,7 @@ struct EquationTacLineVars {
 struct RunEmitVars {
     stored_tac_assignment: bool,
     trailing_space_limit: usize,
+    natural_prefix_runs: usize,
     baseline: f64,
     raw_lh: f64,
     alignment: crate::model::style::Alignment,
@@ -1341,7 +1355,6 @@ struct RunEmitVars {
     line_spacing_px: f64,
     max_fs: f64,
     runs_all_whitespace: bool,
-    renders_synthetic_wrap_trailing_space: bool,
     start_line: usize,
     tab_width: f64,
     section_index: usize,
@@ -2207,7 +2220,7 @@ impl CenteredTextLineMeasure {
 /// 목표보다 1~2% 헐겁다. 가운데 정렬은 줄 끝 측정 결과를 재사용하고,
 /// 나머지 일반 문단·일반 셀의 기존 선형 경로는 그대로 둔다.
 fn converge_cell_overflow_char_spacing(
-    comp_line: &ComposedLine,
+    line_plan: &LeadingSpacePlan<'_>,
     styles: &ResolvedStyleSet,
     centered_measure: Option<&CenteredTextLineMeasure>,
     tab_width: f64,
@@ -2215,19 +2228,24 @@ fn converge_cell_overflow_char_spacing(
     total_text_width: f64,
     available_width: f64,
 ) -> f64 {
-    let avg_char_w = total_text_width / total_char_count as f64;
+    let spacing_count = total_char_count - line_plan.leading_spaces;
+    debug_assert!(spacing_count > 0);
+    let body_width = total_text_width - line_plan.natural_width(styles, tab_width);
+    let avg_char_w = body_width / spacing_count as f64;
     let min_sp = -avg_char_w * 0.5;
-    let mut extra = ((available_width - total_text_width) / total_char_count as f64).max(min_sp);
+    let mut extra = ((available_width - total_text_width) / spacing_count as f64).max(min_sp);
     for _ in 0..4 {
         let measured = centered_measure.map_or_else(
             || {
-                comp_line
+                line_plan
+                    .line
                     .runs
                     .iter()
-                    .map(|run| {
+                    .enumerate()
+                    .map(|(index, run)| {
                         let mut ts = run.text_style(styles);
                         ts.default_tab_width = tab_width;
-                        ts.extra_char_spacing = extra;
+                        ts.extra_char_spacing = line_plan.spacing(index, extra);
                         estimate_text_width(&run.text, &ts)
                     })
                     .sum()
@@ -2238,7 +2256,7 @@ fn converge_cell_overflow_char_spacing(
         if delta >= -0.05 && delta.abs() < 0.25 {
             break;
         }
-        extra = (extra + delta / total_char_count as f64).max(min_sp);
+        extra = (extra + delta / spacing_count as f64).max(min_sp);
     }
     extra.min(0.0)
 }
@@ -2249,6 +2267,7 @@ fn converge_cell_overflow_char_spacing(
 fn compute_line_extra_spacing(
     comp_line: &ComposedLine,
     trailing_space_limit: usize,
+    leading_space_plan: &LeadingSpacePlan<'_>,
     styles: &ResolvedStyleSet,
     centered_measure: Option<&CenteredTextLineMeasure>,
     alignment: Alignment,
@@ -2257,7 +2276,6 @@ fn compute_line_extra_spacing(
     justify_spaces_only: bool,
     needs_distribute: bool,
     has_tabs: bool,
-    renders_synthetic_wrap_trailing_space: bool,
     suppress_cell_overflow_spacing: bool,
     converge_auto_shrink_cell: bool,
     total_char_count: usize,
@@ -2418,47 +2436,38 @@ fn compute_line_extra_spacing(
         {
             return (0.0, 0.0, 0.0);
         }
-        let interior_spaces = all_chars[..visible_count]
+        let interior_spaces = all_chars
+            [leading_space_plan.leading_spaces.min(visible_count)..visible_count]
             .iter()
             .filter(|c| **c == ' ')
             .count();
         let leader_dashes = count_dash_leaders(&all_chars[..visible_count]);
-        if interior_spaces > 0 {
-            // 후행 공백 폭 계산
-            let trailing_width = if trailing_spaces > 0 {
-                if let Some(last_run) = comp_line.runs.last() {
-                    let mut ts = last_run.text_style(styles);
-                    ts.default_tab_width = tab_width;
-                    let trailing_str: String = " ".repeat(trailing_spaces);
-                    estimate_text_width(&trailing_str, &ts)
-                } else {
-                    0.0
-                }
+        // 후행 공백 폭 계산
+        let trailing_width = if trailing_spaces > 0 {
+            if let Some(last_run) = comp_line.runs.last() {
+                let mut ts = last_run.text_style(styles);
+                ts.default_tab_width = tab_width;
+                let trailing_str: String = " ".repeat(trailing_spaces);
+                estimate_text_width(&trailing_str, &ts)
             } else {
                 0.0
-            };
+            }
+        } else {
+            0.0
+        };
+        if interior_spaces > 0 {
+            let spacing_char_count = total_char_count - leading_space_plan.leading_spaces;
             let split_ink_overhang = if alignment == Alignment::Split {
                 trailing_glyph_ink_overhang()
             } else {
                 0.0
             };
-            // A fresh soft-wrap consumes the separator before starting the next
-            // row, but LineSeg can encode only the next row's start. Composition
-            // therefore leaves that separator at the end of this row. The run
-            // painter advances every preserved space, so its distribution must
-            // account for that slot and its natural width; otherwise a corrected
-            // break immediately before a word can push the trailing separator
-            // beyond the line box (#4956).
-            let rendered_space_slots = if renders_synthetic_wrap_trailing_space {
-                interior_spaces + trailing_spaces
-            } else {
-                interior_spaces
-            };
-            let effective_used = if renders_synthetic_wrap_trailing_space {
-                total_text_width + split_ink_overhang
-            } else {
-                total_text_width - trailing_width + split_ink_overhang
-            };
+            // 줄 나눔이 소비한 구분 공백은 다음 줄의 시작 오프셋과 소유를 보존하지만
+            // 가시 내용의 양쪽 정렬 폭에는 포함하지 않는다. 저장 줄과 합성 줄 모두
+            // 같은 내부 공백 수·말미 공백 제외 폭을 사용한다. 별도 합성 분기는
+            // 한컴 Print의 같은 줄을 마지막 공백 한 칸만큼 왼쪽으로 압축했다.
+            let rendered_space_slots = interior_spaces;
+            let effective_used = total_text_width - trailing_width + split_ink_overhang;
             let slack = available_width - effective_used;
             if leader_dashes > 0 && slack > 0.0 {
                 // Task #352: 라인에 dash leader 가 있고 슬랙이 양수면
@@ -2487,20 +2496,22 @@ fn compute_line_extra_spacing(
                 // 테두리에서 클리핑된다. 공백-없는 분기와 동일하게 잔여 음수 슬랙을
                 // 자간으로 흡수한다 (narrow glyph 역진은 #229 per-char 클램프가 방어).
                 let leftover = slack - ews * rendered_space_slots as f64;
-                let ecs = if in_cell && leftover < 0.0 && total_char_count > 1 && !has_tabs {
-                    let avg_char_w = total_text_width / total_char_count as f64;
+                let ecs = if in_cell && leftover < 0.0 && spacing_char_count > 1 && !has_tabs {
+                    let avg_char_w = (total_text_width
+                        - leading_space_plan.natural_width(styles, tab_width))
+                        / spacing_char_count as f64;
                     let min_ecs = -avg_char_w * 0.5;
-                    let mut ecs = (leftover / total_char_count as f64).max(min_ecs);
+                    let mut ecs = (leftover / spacing_char_count as f64).max(min_ecs);
                     // narrow glyph per-char 클램프가 음수 자간 기여 일부를 되돌리므로
                     // 선형 1회 분배로는 부족하다 — underflow 확장과 동일하게 실효 폭
                     // 재측정으로 수렴 반복한다.
                     let measure_with = |ecs: f64| -> f64 {
                         let mut measured = 0.0f64;
-                        for r in &comp_line.runs {
+                        for (run_index, r) in leading_space_plan.line.runs.iter().enumerate() {
                             let mut ts = r.text_style(styles);
                             ts.default_tab_width = tab_width;
-                            ts.extra_word_spacing = ews;
-                            ts.extra_char_spacing = ecs;
+                            ts.extra_word_spacing = leading_space_plan.spacing(run_index, ews);
+                            ts.extra_char_spacing = leading_space_plan.spacing(run_index, ecs);
                             measured += estimate_text_width(&r.text, &ts);
                         }
                         if trailing_spaces > 0 {
@@ -2519,7 +2530,7 @@ fn compute_line_extra_spacing(
                         if delta.abs() < 0.5 {
                             break;
                         }
-                        ecs = (ecs + delta / total_char_count as f64).max(min_ecs);
+                        ecs = (ecs + delta / spacing_char_count as f64).max(min_ecs);
                     }
                     ecs.min(0.0)
                 } else {
@@ -2527,10 +2538,12 @@ fn compute_line_extra_spacing(
                 };
                 (ews, ecs, 0.0)
             }
-        } else if total_char_count > 1 {
-            // 양쪽 정렬이지만 공백 없음 (일본어/숫자 등):
-            let slack = available_width - total_text_width;
-            if justify_spaces_only && slack > 0.0 {
+        } else if visible_count > 1 {
+            // 내부 공백이 없는 줄도 소비한 말미 구분 공백을 가시 폭에서 제외한다.
+            // 공백의 논리 advance는 보존하고 가시 글자 사이만 배분한다.
+            let visible_text_width = total_text_width - trailing_width;
+            let slack = available_width - visible_text_width;
+            if (justify_spaces_only || alignment == Alignment::Split) && slack > 0.0 {
                 // [#4516] 머리말/꼬리말 예외로만 justify 된 마지막 줄은 한컴처럼
                 // **공백만** 벌린다. 공백 없는 줄(영문 문서번호 등)에 양수 slack 을
                 // 자간으로 살포하면 글자가 전체 폭으로 흩어지므로 자연 폭 유지.
@@ -2544,7 +2557,7 @@ fn compute_line_extra_spacing(
                 (
                     0.0,
                     converge_cell_overflow_char_spacing(
-                        comp_line,
+                        leading_space_plan,
                         styles,
                         None,
                         tab_width,
@@ -2555,12 +2568,14 @@ fn compute_line_extra_spacing(
                     0.0,
                 )
             } else {
-                // A projected soft-wrap still carries its consumed separator.
-                // That final space advances too; distribute over all slots in
-                // this case. Other rows distribute between visible glyphs.
-                let slots = total_char_count - usize::from(!renders_synthetic_wrap_trailing_space);
+                // 같은 가시 폭과 글자 수로 저장 줄·합성 줄의 배분을 정한다.
+                let visible_body_count =
+                    visible_count - leading_space_plan.leading_spaces.min(visible_count);
+                let slots = visible_body_count - 1;
                 let raw = slack / slots as f64;
-                let avg_char_w = total_text_width / total_char_count as f64;
+                let avg_char_w = (visible_text_width
+                    - leading_space_plan.natural_width(styles, tab_width))
+                    / visible_body_count as f64;
                 let min_sp = -avg_char_w * 0.5;
                 (0.0, raw.max(min_sp), 0.0)
             }
@@ -2623,7 +2638,7 @@ fn compute_line_extra_spacing(
             (
                 0.0,
                 converge_cell_overflow_char_spacing(
-                    comp_line,
+                    leading_space_plan,
                     styles,
                     centered_measure,
                     tab_width,
@@ -3820,6 +3835,12 @@ impl LayoutEngine {
                             .map(|cs| cs.char_shape_id as u32)
                             .unwrap_or(char_style_id)
                     };
+                    // [#7702] 글자의 언어 슬롯 — composer 의 run 분할과 같은 규칙이다(중립
+                    // 문자는 앞 글자 언어를 잇는다). run 은 슬롯이 바뀌는 자리에서도 끊고 그
+                    // run 의 슬롯으로 잰다. 첫 글자 슬롯으로 run 전체를 재면 `(’24.)` 처럼
+                    // 영문 슬롯 따옴표가 한글 슬롯 글꼴 폭으로 잡혀 다음 run 과 겹친다.
+                    let mut carry_lang = 0usize;
+                    let mut run_lang: Option<usize> = None;
 
                     for ch_idx in *s..*e {
                         // 각주 마커 삽입: 현재 문자 위치에 각주가 있으면 먼저 run flush + FootnoteMarker 노드 삽입
@@ -3832,19 +3853,16 @@ impl LayoutEngine {
                             if ch_idx > line_run_start {
                                 let run_text: String =
                                     text_chars[line_run_start..ch_idx].iter().collect();
-                                let first_lang = super::super::style_resolver::detect_lang_category(
-                                    text_chars[line_run_start],
-                                );
                                 let run_ts = with_stored_tabs(
                                     metric_scope.style(
                                         styles,
                                         current_cs_id,
-                                        first_lang,
+                                        run_lang.unwrap_or(carry_lang),
                                         line_run_start,
                                     ),
                                     line_run_start,
                                 );
-                                let run_width = estimate_text_width(&run_text, &run_ts);
+                                let run_width = inline_x - line_run_x;
                                 let run_bbox_h = stored_line_baseline_at(line_run_start).unwrap_or(
                                     if wrapped_below_table {
                                         text_line_baseline
@@ -3882,9 +3900,9 @@ impl LayoutEngine {
                                     BoundingBox::new(line_run_x, current_y, run_width, run_bbox_h),
                                 );
                                 col_node.children.push(run_node);
-                                inline_x += run_width;
                                 line_run_x = inline_x;
                                 line_run_start = ch_idx;
+                                run_lang = None;
                             }
                             // FootnoteMarker 노드 삽입 (위첨자로 렌더링됨)
                             let fn_text = note_marker_text_from_control(
@@ -3939,7 +3957,12 @@ impl LayoutEngine {
                             .unwrap_or(char_style_id);
 
                         let ch = text_chars[ch_idx];
-                        let lang = super::super::style_resolver::detect_lang_category(ch);
+                        let lang = if crate::renderer::composer::is_lang_neutral(ch) {
+                            carry_lang
+                        } else {
+                            carry_lang = super::super::style_resolver::detect_lang_category(ch);
+                            carry_lang
+                        };
                         let ts = with_stored_tabs(
                             metric_scope.style(styles, cs_id, lang, ch_idx),
                             ch_idx,
@@ -3982,9 +4005,7 @@ impl LayoutEngine {
                         // 폭을 측정한 style과 첫 문자의 paint style이 다른 경우만
                         // 나눈다. 슬롯이 달라도 실제 style이 같으면 기존 run을 유지한다.
                         let slot_metrics_changed = ch_idx > line_run_start && {
-                            let run_lang = super::super::style_resolver::detect_lang_category(
-                                text_chars[line_run_start],
-                            );
+                            let run_lang = run_lang.unwrap_or(lang);
                             let run_style =
                                 metric_scope.style(styles, current_cs_id, run_lang, line_run_start);
                             ts.font_family != run_style.font_family
@@ -3994,7 +4015,8 @@ impl LayoutEngine {
                         };
                         let cs_changed = cs_id != current_cs_id
                             || metric_scope.allows(ch_idx) != metric_scope.allows(line_run_start)
-                            || slot_metrics_changed;
+                            || slot_metrics_changed
+                            || run_lang.is_some_and(|run_lang| run_lang != lang);
 
                         // 줄바꿈된 텍스트의 BoundingBox 높이: 표 줄 vs 텍스트 줄
                         let run_bbox_h = stored_line_baseline_at(line_run_start).unwrap_or(
@@ -4009,19 +4031,18 @@ impl LayoutEngine {
                             // 누적된 run 출력
                             let run_text: String =
                                 text_chars[line_run_start..ch_idx].iter().collect();
-                            let first_lang = super::super::style_resolver::detect_lang_category(
-                                text_chars[line_run_start],
-                            );
                             let run_ts = with_stored_tabs(
                                 metric_scope.style(
                                     styles,
                                     current_cs_id,
-                                    first_lang,
+                                    run_lang.unwrap_or(lang),
                                     line_run_start,
                                 ),
                                 line_run_start,
                             );
-                            let run_width = estimate_text_width(&run_text, &run_ts);
+                            // [#7702] 글자는 `ch_w` 합으로 놓였다 — 상자도 그 전진량이다.
+                            // run 을 다시 재 반올림하면 다음 run 과 몇 px 씩 겹친다.
+                            let run_width = inline_x - line_run_x;
 
                             let run_id = tree.next_id();
                             let run_node = RenderNode::new(
@@ -4055,6 +4076,10 @@ impl LayoutEngine {
                             col_node.children.push(run_node);
                             line_run_start = ch_idx;
                             line_run_x = inline_x;
+                            run_lang = None;
+                        }
+                        if run_lang.is_none() {
+                            run_lang = Some(lang);
                         }
 
                         if need_wrap {
@@ -4102,14 +4127,14 @@ impl LayoutEngine {
                     // 남은 run 출력
                     if line_run_start < *e {
                         let run_text: String = text_chars[line_run_start..*e].iter().collect();
-                        let first_lang = super::super::style_resolver::detect_lang_category(
-                            text_chars[line_run_start],
-                        );
-                        let run_ts = with_stored_tabs(
-                            metric_scope.style(styles, current_cs_id, first_lang, line_run_start),
+                        let run_ts = metric_scope.style(
+                            styles,
+                            current_cs_id,
+                            run_lang.unwrap_or(carry_lang),
                             line_run_start,
                         );
-                        let run_width = estimate_text_width(&run_text, &run_ts);
+                        let run_ts = with_stored_tabs(run_ts, line_run_start);
+                        let run_width = inline_x - line_run_x;
 
                         let run_id = tree.next_id();
                         let run_node = RenderNode::new(
@@ -4226,6 +4251,8 @@ impl LayoutEngine {
                             Some(para),
                             para.line_segs.len(),
                             !self.profile.get().legacy_hwp3_stored_geometry(),
+                            available_width,
+                            self.dpi,
                         );
                     let left = line_start_x + line_indent;
                     let width = (available_width - line_indent).max(0.0);
@@ -4435,6 +4462,7 @@ impl LayoutEngine {
                 &self.body_float_carve_evidence.borrow(),
                 known_square_band,
                 self.profile.get().hwpx_stored_layout(),
+                self.uniform_filler_ladder.get(),
             )?;
         let line = current.lines.get(line_index)?;
         let font_size = crate::renderer::composed_line_max_font_size(line, para, styles);
@@ -4557,6 +4585,7 @@ impl LayoutEngine {
                         &self.body_float_carve_evidence.borrow(),
                         wrap_anchor.is_some(),
                         self.profile.get().hwpx_stored_layout(),
+                        self.uniform_filler_ladder.get(),
                     )
                 } else {
                     None
@@ -5215,6 +5244,8 @@ impl LayoutEngine {
         vertical_spacing: Option<ParagraphVerticalSpacing>,
         stored_cell_content_origin: Option<f64>,
     ) -> f64 {
+        let frame_paragraph = para.map(|source| composed.paragraph_with_frame_geometry(source));
+        let para = frame_paragraph.as_deref();
         let mut y = y_start;
         let end = end_line.min(composed.lines.len());
         // [#4968 R4D-1] 한 문단의 모든 최종 emitted run이 같은 registry
@@ -5394,6 +5425,16 @@ impl LayoutEngine {
                     .unwrap_or(0.0);
                 if vpos0_px > 0.0 && vpos0_px <= spacing_before + 0.5 {
                     y += vpos0_px;
+                } else if para.is_some_and(|p| {
+                    p.line_segs
+                        .first()
+                        .is_some_and(|ls| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+                }) {
+                    // [#7702] 저장 줄이 없어 rhwp 가 합성한 문단은 트림 여부를 판독할 저장 vpos 가
+                    // 없다. 이런 문단은 한/글이 직접 조판하며, 쪽 맨 위에서도 앞 간격을 둔다
+                    // (HWP5-nopassword 20쪽 제목: 앞 간격 3.8px, 한/글 2024 PDF 기준선 149.8 =
+                    // 본문 위 132.3 + 3.8 + 13.6). 조판의 쪽 맞춤도 이 간격을 문단 높이에 넣는다.
+                    y += spacing_before;
                 }
             }
         }
@@ -5479,9 +5520,11 @@ impl LayoutEngine {
         });
 
         // 배경/테두리 렌더링을 위한 시작 위치 기록
-        // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전)
-        let border_uses_text_area = para_style.is_some_and(|style| style.border_ignore_margin);
-        let bg_y_start = if para_border_fill_id > 0 && !border_uses_text_area {
+        // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전).
+        // `border_ignore_margin`(attr1 bit 29) 문단은 줄 상자만 덮으므로 앞 간격 뒤에서
+        // 시작한다 (한/글 2020: 앞 간격 1000HU 문단의 배경이 첫 줄 위에서 시작).
+        let border_ignore_margin = para_style.is_some_and(|s| s.border_ignore_margin);
+        let bg_y_start = if para_border_fill_id > 0 && !border_ignore_margin {
             y_start
         } else {
             y
@@ -6024,6 +6067,8 @@ impl LayoutEngine {
                 para,
                 composed.lines.len(),
                 cell_ctx.is_none(),
+                col_area.width - margin_left - margin_right,
+                self.dpi,
             );
             let styled_margin_left = margin_left + line_indent;
 
@@ -6710,16 +6755,6 @@ impl LayoutEngine {
             let needs_distribute = alignment == Alignment::Distribute;
 
             let has_tabs = comp_line.runs.iter().any(|r| r.text.contains('\t'));
-            let renders_synthetic_wrap_trailing_space = !is_last_line_of_para
-                && para
-                    .and_then(|p| p.line_segs.get(line_idx))
-                    .is_some_and(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
-                && comp_line
-                    .runs
-                    .iter()
-                    .rev()
-                    .find_map(|run| run.text.chars().next_back())
-                    == Some(' ');
             // 자간은 **그려지는 글자**에 나눠 붙으므로 폭(`total_text_width`)과 같은
             // 텍스트로 센다. 머리말 필드처럼 모델 1자가 표시 N자면 모델로 세었을 때
             // 글자당 몫이 N배로 부풀어 글자가 흩어진다 (Task #3216).
@@ -6784,7 +6819,6 @@ impl LayoutEngine {
             // 동일한 점유 폭으로 압축 여부와 실제 시작점을 결정한다.
             let centered_measure = if alignment == Alignment::Center
                 && !has_tabs
-                && !renders_synthetic_wrap_trailing_space
                 && line_tac_offsets_for_width.is_empty()
             {
                 CenteredTextLineMeasure::new(comp_line, styles)
@@ -6792,6 +6826,18 @@ impl LayoutEngine {
                 None
             };
 
+            // 글줄 소유 개체/각주는 가시 문자열 바깥에도 있으므로 선행 공백의 끝을 제한한다.
+            let first_inline_pos = if needs_justify {
+                line_tac_offsets_for_width
+                    .iter()
+                    .map(|(pos, _, _)| *pos)
+                    .chain(composed.footnote_positions.iter().map(|(pos, _, _)| *pos))
+                    .filter(|pos| *pos >= comp_line.char_start)
+                    .min()
+            } else {
+                Some(comp_line.char_start)
+            };
+            let leading_space_plan = LeadingSpacePlan::new(comp_line, first_inline_pos);
             let trailing_space_limit = trailing_space_limit_after_last_inline_object(
                 comp_line,
                 line_tac_offsets_for_width
@@ -6820,6 +6866,7 @@ impl LayoutEngine {
                 compute_line_extra_spacing(
                     comp_line,
                     trailing_space_limit,
+                    &leading_space_plan,
                     styles,
                     centered_measure.as_ref(),
                     alignment,
@@ -6828,7 +6875,6 @@ impl LayoutEngine {
                     false,
                     needs_distribute,
                     has_tabs,
-                    renders_synthetic_wrap_trailing_space,
                     suppress_cell_overflow_spacing,
                     converge_auto_shrink_cell,
                     total_char_count,
@@ -7129,7 +7175,11 @@ impl LayoutEngine {
                 tree,
                 &mut line_node,
                 col_node,
-                comp_line,
+                if extra_word_sp == 0.0 && extra_char_sp == 0.0 {
+                    comp_line
+                } else {
+                    leading_space_plan.line.as_ref()
+                },
                 composed,
                 para,
                 bin_data_content,
@@ -7149,6 +7199,7 @@ impl LayoutEngine {
                 RunEmitVars {
                     stored_tac_assignment: stored_tac_assignment.is_some(),
                     trailing_space_limit,
+                    natural_prefix_runs: leading_space_plan.natural_prefix_runs,
                     baseline,
                     raw_lh,
                     alignment,
@@ -7167,7 +7218,6 @@ impl LayoutEngine {
                     line_spacing_px,
                     max_fs,
                     runs_all_whitespace,
-                    renders_synthetic_wrap_trailing_space,
                     start_line,
                     tab_width,
                     section_index,
@@ -7672,25 +7722,34 @@ impl LayoutEngine {
             // [#5711] 줄간격이 음수인 문단은 전진값 `y` 가 마지막 줄 상자 아래보다 위에
             // 있다. 그 값을 테두리 아래 변으로 쓰면 테두리가 글자를 가로지른다. 다음 문단
             // 시작 y 는 종전대로 두어 문단 간 간격 계약은 바꾸지 않는다.
-            // 문단 외곽선은 빈 줄과 뒤 문장의 후행 간격까지 둘러싼다. 같은 정의의 채움도
-            // 그 외곽선과 같은 상자를 소비해야 한다. 외곽선 없는 채움만 마지막 줄 상자에서
-            // 끝나며, 다음 문단을 위한 후행 간격을 칠하지 않는다.
+            //
+            // 본문 문단의 아래 변은 `border_ignore_margin`(attr1 bit 29)이 정한다. 채움
+            // 유무와 무관하다(한/글 2020 합성 대조: 채움·테두리·채움+테두리 모두 같은 규칙).
+            // - 꺼짐: 문단 흐름 전체 — 마지막 줄의 줄간격과 문단 뒤 간격까지 덮는다.
+            //   이어진 같은 배경 문단은 틈 없이 한 띠가 된다(hwp3-sample4 코드 블록).
+            // - 켜짐: 마지막 줄 상자 아래까지만 덮는다(#1835 제목 배경).
             // 셀 문단은 기존 점유 계약을 유지하고, 음수 간격도 줄 상자를 감싼다.
-            let outline_includes_line_spacing =
-                crate::renderer::paragraph_outline_reserves_line_spacing(
-                    para_border_fill_id,
-                    styles,
-                );
+            // 뒤 간격은 아래 흐름 전진과 같은 값을 쓴다.
+            let trailing_after = if let Some(spacing) = &vertical_spacing {
+                spacing.after
+            } else if end == composed.lines.len() {
+                spacing_after
+            } else {
+                0.0
+            };
+            let flow_bottom = if cell_ctx.is_none() {
+                y + trailing_after.max(0.0)
+            } else {
+                y
+            };
             let border_bottom =
                 last_line_border_bottom
                     .or(last_line_box_bottom)
                     .map_or(y, |bottom| {
-                        if cell_ctx.is_none()
-                            && (!outline_includes_line_spacing || border_uses_text_area)
-                        {
+                        if cell_ctx.is_none() && border_ignore_margin {
                             bottom
                         } else {
-                            y.max(bottom)
+                            flow_bottom.max(bottom)
                         }
                     });
             let bg_height = border_bottom - bg_y_start;
@@ -7714,13 +7773,21 @@ impl LayoutEngine {
                 // 박스 outline 좌표는 col_area 전체 (PDF 정합). wrap=Square 호스트
                 // (border_box_override) 케이스는 layout_wrap_around_paras 가 설정한
                 // override 좌표 그대로 사용 (margin 미적용).
+                // `border_ignore_margin` 문단은 문단 왼쪽·오른쪽 여백 안쪽을 기준으로, 테두리
+                // 왼쪽·오른쪽 간격만큼 바깥으로 넓힌 범위를 덮는다. 한/글 2020 실측:
+                // - 여백 2000HU·간격 0 문단의 배경이 단 양끝에서 26.7px 안쪽이다.
+                // - exam_math 8쪽(여백 2270/1130HU·간격 1133HU) 상자는 단 왼쪽에서
+                //   1137HU, 오른쪽에서 0 이다.
                 let (box_x, box_w) = if let Some((ox, ow)) = self.border_box_override.get() {
                     (ox, ow)
-                } else if border_uses_text_area {
-                    (
-                        col_area.x + box_margin_left,
-                        col_area.width - box_margin_left - box_margin_right,
-                    )
+                } else if border_ignore_margin && cell_ctx.is_none() {
+                    let style = para_style;
+                    let left =
+                        style.map_or(0.0, |s| (s.margin_left - s.border_spacing[0]).max(0.0));
+                    let right =
+                        style.map_or(0.0, |s| (s.margin_right - s.border_spacing[1]).max(0.0));
+                    let width = (col_area.width - left - right).max(0.0);
+                    (col_area.x + left, width)
                 } else {
                     (col_area.x, col_area.width)
                 };
@@ -7896,6 +7963,7 @@ impl LayoutEngine {
         let RunEmitVars {
             stored_tac_assignment,
             trailing_space_limit,
+            natural_prefix_runs,
             baseline,
             raw_lh,
             alignment,
@@ -7914,7 +7982,6 @@ impl LayoutEngine {
             line_spacing_px,
             max_fs,
             runs_all_whitespace,
-            renders_synthetic_wrap_trailing_space,
             start_line,
             tab_width,
             section_index,
@@ -7958,10 +8025,10 @@ impl LayoutEngine {
         // 말미 공백이 여분까지 얹어 그려져 run bbox 와 x 전진이 줄 상자를
         // 여분×말미공백수 만큼 넘는다(10857 p11: '외부 평가전문위원 ' 144.0 vs
         // 줄 122.1 — 가시 글리프는 정확히 줄 끝에서 끝나고 초과 전량이 부풀린
-        // 말미 공백). 분모에 말미 공백을 넣는 synthetic-wrap 모드는 제외.
+        // 말미 공백). 저장 줄과 합성 줄 모두 이 회수 규칙을 사용한다.
         let line_trailing_space_by_run: Vec<usize> = {
             let mut counts = vec![0usize; comp_line.runs.len()];
-            if !renders_synthetic_wrap_trailing_space && extra_word_sp != 0.0 {
+            if extra_word_sp != 0.0 {
                 let mut budget = comp_line
                     .runs
                     .iter()
@@ -8194,8 +8261,17 @@ impl LayoutEngine {
                 } // end else (non-blank run)
             }
             text_style.line_x_offset = x - col_area.x;
-            text_style.extra_word_spacing = extra_word_sp;
-            text_style.extra_char_spacing = extra_char_sp;
+            // 분모·수렴 측정과 같은 계획의 선행 공백 런만 자연 폭으로 방출한다.
+            text_style.extra_word_spacing = if run_idx < natural_prefix_runs {
+                0.0
+            } else {
+                extra_word_sp
+            };
+            text_style.extra_char_spacing = if run_idx < natural_prefix_runs {
+                0.0
+            } else {
+                extra_char_sp
+            };
             text_style.extra_dash_advance = extra_dash_sp;
             // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
             // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
@@ -8302,8 +8378,7 @@ impl LayoutEngine {
                 && run_border_fill_id == 0
                 && extra_word_sp.abs() <= f64::EPSILON
                 && extra_char_sp.abs() <= f64::EPSILON
-                && extra_dash_sp.abs() <= f64::EPSILON
-                && !renders_synthetic_wrap_trailing_space;
+                && extra_dash_sp.abs() <= f64::EPSILON;
             // NodeId를 먼저 고정하되 attach가 실패하면 같은 id로 legacy TextRun을
             // 만든다. 따라서 실패는 id hole이나 K1 suppression을 남기지 않는다.
             let reserved_shaping_run_id = shaping_candidate.then(|| tree.next_id());
@@ -10953,7 +11028,7 @@ mod issue_4370_tac_table_wrap_tests {
 
 #[cfg(test)]
 mod issue_2809_split_alignment_tests {
-    use super::{compute_line_extra_spacing, needs_word_distribution};
+    use super::{compute_line_extra_spacing, needs_word_distribution, LeadingSpacePlan};
     use crate::model::style::Alignment;
     use crate::renderer::composer::{ComposedLine, ComposedTextRun};
     use crate::renderer::layout::text_measurement::{estimate_text_width, resolved_to_text_style};
@@ -10990,12 +11065,12 @@ mod issue_2809_split_alignment_tests {
         let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
             &line,
             usize::MAX,
+            &LeadingSpacePlan::new(&line, None),
             &ResolvedStyleSet::default(),
             None,
             Alignment::Split,
             true,
             true,
-            false,
             false,
             false,
             false,
@@ -11011,9 +11086,9 @@ mod issue_2809_split_alignment_tests {
         assert_eq!(extra_char, 0.0);
         assert_eq!(extra_dash, 0.0);
 
-        // A synthetic soft-wrap keeps its consumed separator in the projected
-        // run. The renderer advances that final space too, so it participates
-        // in the slot count and the complete run stays inside the line box.
+        // 독립 Print와 전쪽 Native/fresh WASM 대조는 마지막 보이는 글자가
+        // 문단 오른쪽 끝에 맞는다는 계약을 증명한다. 말미 구분 공백은 원문에
+        // 남지만 내부 공백의 정렬 배분에 참여하지 않는다.
         let trailing_line = ComposedLine {
             runs: vec![ComposedTextRun {
                 text: "다 같 이 ".to_string(),
@@ -11028,6 +11103,7 @@ mod issue_2809_split_alignment_tests {
         let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
             &trailing_line,
             usize::MAX,
+            &LeadingSpacePlan::new(&trailing_line, None),
             &styles,
             None,
             Alignment::Justify,
@@ -11036,7 +11112,6 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
-            true,
             false,
             false,
             6,
@@ -11046,9 +11121,9 @@ mod issue_2809_split_alignment_tests {
         );
         let mut distributed_style = text_style;
         distributed_style.extra_word_spacing = extra_word;
-        assert!(
-            (estimate_text_width("다 같 이 ", &distributed_style) - available_width).abs() < 0.001
-        );
+        let visible_advance = estimate_text_width("다 같 이", &distributed_style);
+        assert!((visible_advance - available_width).abs() < 0.001);
+        assert_eq!(trailing_line.runs[0].text, "다 같 이 ");
         assert_eq!(extra_char, 0.0);
         assert_eq!(extra_dash, 0.0);
     }
@@ -11069,12 +11144,12 @@ mod issue_2809_split_alignment_tests {
         let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
             &line,
             usize::MAX,
+            &LeadingSpacePlan::new(&line, None),
             &styles,
             None,
             Alignment::Split,
             true,
             true,
-            false,
             false,
             false,
             false,
@@ -11120,13 +11195,13 @@ mod issue_2809_split_alignment_tests {
         let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
             &line,
             usize::MAX,
+            &LeadingSpacePlan::new(&line, None),
             &ResolvedStyleSet::default(),
             None,
             Alignment::Justify,
             false,
             true,
             true,
-            false,
             false,
             false,
             false,
@@ -11144,12 +11219,12 @@ mod issue_2809_split_alignment_tests {
         let (_, extra_char_mid, _) = compute_line_extra_spacing(
             &line,
             usize::MAX,
+            &LeadingSpacePlan::new(&line, None),
             &ResolvedStyleSet::default(),
             None,
             Alignment::Justify,
             false,
             true,
-            false,
             false,
             false,
             false,
@@ -11166,7 +11241,7 @@ mod issue_2809_split_alignment_tests {
 
 #[cfg(test)]
 mod issue_4657_distribute_alignment_tests {
-    use super::compute_line_extra_spacing;
+    use super::{compute_line_extra_spacing, LeadingSpacePlan};
     use crate::model::style::Alignment;
     use crate::renderer::composer::{ComposedLine, ComposedTextRun};
     use crate::renderer::layout::text_measurement::{estimate_text_width, resolved_to_text_style};
@@ -11192,6 +11267,7 @@ mod issue_4657_distribute_alignment_tests {
         let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
             &line(text),
             usize::MAX,
+            &LeadingSpacePlan::new(&line(text), None),
             &ResolvedStyleSet::default(),
             None,
             Alignment::Distribute,
@@ -11199,7 +11275,6 @@ mod issue_4657_distribute_alignment_tests {
             false,
             false,
             true,
-            false,
             false,
             false,
             false,
@@ -11324,6 +11399,7 @@ mod trailing_tac_width_tests {
             footnote_positions: Vec::new(),
             tab_extended: Vec::new(),
             horizontal_shaping: None,
+            frame_geometry: None,
         }
     }
 
@@ -11621,17 +11697,18 @@ pub fn map_pua_bullet_char(ch: char) -> char {
     match w {
         // 도형/기호 (0x6C~0x7E)
         0x6C => '\u{25CF}', // ● Black circle
-        0x6D => '\u{25CF}', // ● (Lower right shadowed white circle → 근사값)
-        0x6E => '\u{25A0}', // ■ Black square
-        0x6F => '\u{25A1}', // □ White square
-        0x70 => '\u{25A1}', // □ (Bold white square → 근사값)
-        0x71 => '\u{25A1}', // □ (Lower right shadowed → 근사값)
-        0x72 => '\u{25A1}', // □ (Upper right shadowed → 근사값)
-        0x73 => '\u{2B27}', // ⬧ Black medium lozenge
-        0x74 => '\u{29EB}', // ⧫ Black lozenge
-        0x75 => '\u{25C6}', // ◆ Black diamond
-        0x76 => '\u{2756}', // ❖ Black diamond minus white X
-        0x77 => '\u{2B25}', // ⬥ Black medium diamond
+        // 원문의 빈 내부와 오른쪽 아래 그림자를 함께 보존한다(독립 한컴 Print 대조).
+        0x6D => '\u{1F53E}', // 오른쪽 아래 그림자가 있는 흰 원
+        0x6E => '\u{25A0}',  // ■ Black square
+        0x6F => '\u{25A1}',  // □ White square
+        0x70 => '\u{25A1}',  // □ (Bold white square → 근사값)
+        0x71 => '\u{25A1}',  // □ (Lower right shadowed → 근사값)
+        0x72 => '\u{25A1}',  // □ (Upper right shadowed → 근사값)
+        0x73 => '\u{2B27}',  // ⬧ Black medium lozenge
+        0x74 => '\u{29EB}',  // ⧫ Black lozenge
+        0x75 => '\u{25C6}',  // ◆ Black diamond
+        0x76 => '\u{2756}',  // ❖ Black diamond minus white X
+        0x77 => '\u{2B25}',  // ⬥ Black medium diamond
         // 체크/별/점 (0x9E~0xAF)
         0x9E => '\u{00B7}', // · Middle dot
         0x9F => '\u{2022}', // • Bullet

@@ -15,6 +15,7 @@ use crate::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, TextVariantSelectionReport,
     VariantSelectionBackend,
 };
+use crate::schema_registry::TEXT_IR_V2_ENVELOPE_SCHEMA_VERSION;
 
 impl PageLayerTree {
     /// One text envelope per anchored paint slot, including its TextRun fallback.
@@ -131,7 +132,7 @@ impl PageLayerTree {
             return Err(issues);
         }
 
-        value["schemaVersion"] = json!(2);
+        value["schemaVersion"] = json!(TEXT_IR_V2_ENVELOPE_SCHEMA_VERSION);
         value["schemaMinorVersion"] = json!(0);
         value["schema"] = json!({ "major": 2, "minor": 0 });
         value["layout"] = json!({ "profile": "hwpCompat", "measurementAuthority": "legacyHwpPositions", "shapedMeasurement": "diagnosticsOnly" });

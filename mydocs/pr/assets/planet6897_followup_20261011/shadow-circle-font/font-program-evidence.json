@@ -1,0 +1,26 @@
+{
+  "font_file": "rhwp-studio/public/fonts/NotoSansSymbols2-Regular.ttf",
+  "font_sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
+  "family": "Noto Sans Symbols2",
+  "em": 1000,
+  "glyphs": [
+    {
+      "codepoint": "0x1f53e",
+      "glyph_name": "u1F53E",
+      "glyph_id": 1084,
+      "advance": 916
+    },
+    {
+      "codepoint": "0x1f53f",
+      "glyph_name": "u1F53F",
+      "glyph_id": 1379,
+      "advance": 916
+    }
+  ],
+  "license": "SIL Open Font License 1.1",
+  "font_name_license": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software.",
+  "method": "fontTools TTFont getBestCmap and hmtx direct extraction; no screen-adjusted widths",
+  "qualification": "Typeface program evidence only; actual renderer and whole Native/fresh WASM/direct acceptance are separate.",
+  "native_bundled_font_file": "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+  "license_file": "rhwp-studio/public/fonts/NotoSansSymbols2-OFL.txt"
+}
