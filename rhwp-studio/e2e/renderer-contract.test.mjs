@@ -2129,11 +2129,11 @@ requireSnippet(
 );
 requireSnippet(
   renderPathBody,
-  /this\.pathFromCommands\(op\.commands \?\? \[\], op\.bbox\.x, op\.bbox\.y\)[\s\S]*?this\.drawStyledPath/,
+  /this\.createCommandPath\(op\.commands \?\? \[\], op\.bbox\.x, op\.bbox\.y\)[\s\S]*?this\.drawStyledPath/,
   'path replay should build command paths before drawing the serialized style',
 );
 requireSnippet(
-  extractMethodBody(canvaskitSource, 'pathFromCommands'),
+  extractMethodBody(canvaskitSource, 'createCommandPath'),
   /new this\.canvasKit\.PathBuilder\(\)[\s\S]*?try\s*\{[\s\S]*?this\.applyPathCommand\(builder,[\s\S]*?return builder\.detach\(\);[\s\S]*?finally\s*\{\s*builder\.delete\(\);/,
   'command paths should use PathBuilder, detach the completed Path, and always release the builder',
 );
@@ -2154,7 +2154,7 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /private drawLineArrows\([\s\S]*?arrow:geometryMissing[\s\S]*?this\.pathFromCommands\(head\.commands, 0, 0\)[\s\S]*?head\.filled[\s\S]*?canvas\.drawPath\(path, fill\)/,
+  /private drawLineArrows\([\s\S]*?arrow:geometryMissing[\s\S]*?this\.createCommandPath\(head\.commands, 0, 0\)[\s\S]*?head\.filled[\s\S]*?canvas\.drawPath\(path, fill\)/,
   'arrow replay should consume producer geometry and fill rather than reinterpret ArrowStyle',
 );
 requireSnippet(
