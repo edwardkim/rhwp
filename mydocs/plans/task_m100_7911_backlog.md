@@ -5,7 +5,7 @@
 - 관리: 메인테이너 작업 브랜치 `task_m100_7911`; 후속 구현은 기여자와 분담
 - 정본 계획: [수행계획](task_m100_7911.md), [구현계획](task_m100_7911_impl.md)
 - 이관 근거: [2단계 기록 3.22](../working/task_m100_7911_stage2.md#322-폰트-전역-캐시-격리와-truetype-cmap-예약-경계-2026-10-16)
-- 현재 위치: **제품 F1–F4 구현 전. 아래 세부 항목은 대기이며 해결·검증 완료가 아니다.**
+- 현재 위치: **최신 devel 병합·F1 공통 Parser/Core 연결 완료. 다음은 F2 CLI이며 세부 보완은 아래에 유지한다.**
 
 ## 1. 진행 규칙
 
@@ -60,7 +60,7 @@
 | B09 · 출력 보완 | 12쪽 PDF의 semantic table 보류 7개 쪽·3쪽 모호한 소유권, 줄 단위 임시 Paragraph·fallback | F4 제품 진단으로 실제 보류 쪽과 원본 대응 확인. 표 확정·fallback의 내용 누락/중복·소유권·배치 결함을 구분해 승인 범위의 결함 보정. Deferred를 임의 Complete로 바꾸지 않으며 완전한 논리 문단 복원으로 범위를 넓히지 않음 | 대기·기존 제한/미검증 |
 | B10 · 시각·편집 호환 | 새 제품 head의 Native/fresh WASM 전쪽 비교·생성 HWPX/HWP 한컴 Print·편집 재열기 미실행 | 원본 PDF와 제품 출력, 저장본의 독립 한컴 Print를 구분해 전체 쪽수·내용·표 소속·전쪽 TSV·직접 확대 판독. 미달 출력 보정 후 관련 회귀를 추가/변경. 기존 POC 점수·byte 동일성을 최종 시각 증거로 재사용하지 않음 | 대기·미검증 |
 | B11 · 최종 회귀 | default/feature-on 전체 lint, workspace/all-targets, 전체 Rust 회귀·Native Skia, 기존 HWP/HWPX/HML | 집중/시각 결과 뒤 정본 절차로 최종 제품 head 검증. baseline 완화 없이 회귀 수정. 긴 PR-CI 성격 검증의 별도 승인 절차 유지 | 대기·미실행 |
-| B12 · 최종 통합 | 최신 devel 차이, 제품 bundle 비용, PR 문서·CI·Ready 판정 | 원격 base 확인·필요한 통합 후 영향 검증. 최종 제품 bundle 크기/시간 측정(크기 축소 목표 없음), 본문·증적·head 정합 확인. 원격 push/Ready/merge/close는 별도 승인 | 대기·미실행 |
+| B12 · 최종 통합 | `f5251e7de` devel 동기화·merge 완료; 제품 bundle 비용, 최종 PR 문서·CI·Ready 판정 남음 | 원격 base 확인·필요한 통합 후 영향 검증. 최종 제품 bundle 크기/시간 측정(크기 축소 목표 없음), 본문·증적·head 정합 확인. 원격 push/Ready/merge/close는 별도 승인 | 진행·최종 통합 미실행 |
 
 B01–B04는 아직 실제 결함을 모두 재현한 목록이 아니라 미검증 경계다. B06은 별도 lint
 실패가 관측된 항목이다. B09는 명시된 지원 제한과 출력 결함 가능성을 구분해 처리한다.
@@ -80,8 +80,8 @@ B01–B04는 아직 실제 결함을 모두 재현한 목록이 아니라 미검
 
 ## 4. 현재 진행 위치
 
-- **다음 실행:** 2단계 checkpoint 정리 후 F1 공통 Parser/Core 연결.
-- **기능 구현 완료:** 미충족. F1–F4를 실제 제품 경로로 실행한 증거가 아직 없다.
+- **현재 실행:** checkpoint `966af9575` 및 devel merge `672acadd7` 후 F1 공통 Parser/Core 연결 완료, 다음 F2 CLI. [3단계 기록](../working/task_m100_7911_stage3.md)에 새 통합본 결과를 기록한다.
+- **기능 구현 완료:** 미충족. F1과 기존 CLI 전체 입력은 실행 확인했고 F2–F4의 선택 CLI·공개 WASM/Worker·현재 범위 최종 검증이 남았다.
 - **백로그 보완 완료:** 미충족. B01–B12는 대기 상태다.
 - **devel 통합 준비:** 미충족. 제품 연결과 현재 통합 범위 검증·기여 인계 자료가 남아 있다.
 - **배포 준비:** 별도 미충족. 기본 비활성·`parser_allocation_bounds_proven=false` 유지.

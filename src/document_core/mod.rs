@@ -310,6 +310,9 @@ pub struct DocumentCore {
     pub(crate) source_format: crate::parser::FileFormat,
     /// HML 입력에서만 유지되는 버전·인코딩·손실 진단.
     pub(crate) hml_metadata: Option<crate::parser::HmlImportMetadata>,
+    /// PDF 가져오기 당시의 원본 쪽 대응·미지원 진단. 편집 후 현재 페이지 번호와 구분한다.
+    #[cfg(feature = "pdf-import")]
+    pub(crate) pdf_metadata: Option<crate::parser::pdf::PdfImportMetadata>,
     /// HWPX 비표준 감지 등 문서 검증 경고.
     /// `from_bytes` 에서 자동 생성되며, 사용자 고지·선택적 reflow 에 사용 (#177).
     pub(crate) validation_report: validation::ValidationReport,
@@ -575,6 +578,8 @@ impl DocumentCore {
             para_offset: Vec::new(),
             source_format: crate::parser::FileFormat::Hwp,
             hml_metadata: None,
+            #[cfg(feature = "pdf-import")]
+            pdf_metadata: None,
             validation_report: validation::ValidationReport::new(),
         }
     }
@@ -582,6 +587,12 @@ impl DocumentCore {
     /// HML 열기 메타데이터. 다른 입력 포맷은 `None`이다.
     pub fn hml_metadata(&self) -> Option<&crate::parser::HmlImportMetadata> {
         self.hml_metadata.as_ref()
+    }
+
+    /// PDF를 가져온 시점의 진단. HWP/HWPX 저장본 재열기에서는 `None`이다.
+    #[cfg(feature = "pdf-import")]
+    pub fn pdf_metadata(&self) -> Option<&crate::parser::pdf::PdfImportMetadata> {
+        self.pdf_metadata.as_ref()
     }
 
     /// 문서 검증 리포트에 대한 참조를 반환한다.

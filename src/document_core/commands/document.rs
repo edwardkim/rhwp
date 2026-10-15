@@ -173,6 +173,17 @@ impl DocumentCore {
         Self::from_bytes_inner(data, Some(password))
     }
 
+    /// PDF의 전체 또는 선택한 원본 쪽을 직접 IR로 가져와 공통 Core를 초기화한다.
+    #[cfg(feature = "pdf-import")]
+    pub fn from_pdf_bytes(
+        data: &[u8],
+        options: &crate::parser::pdf::PdfImportOptions,
+    ) -> Result<DocumentCore, HwpError> {
+        let parsed = crate::parser::parse_pdf_with_metadata(data, options)
+            .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        Self::from_parsed_document(parsed, crate::parser::FileFormat::Pdf)
+    }
+
     fn from_bytes_inner(data: &[u8], password: Option<&[u8]>) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
         let parsed = match password {
@@ -180,8 +191,17 @@ impl DocumentCore {
             None => crate::parser::parse_document_with_metadata(data),
         }
         .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        Self::from_parsed_document(parsed, source_format)
+    }
+
+    fn from_parsed_document(
+        parsed: crate::parser::ParsedDocument,
+        source_format: crate::parser::FileFormat,
+    ) -> Result<DocumentCore, HwpError> {
         let mut document = parsed.document;
         let hml_metadata = parsed.hml_metadata;
+        #[cfg(feature = "pdf-import")]
+        let pdf_metadata = parsed.pdf_metadata;
 
         // [#4813] 손상 입력 DoS 방어 — 파싱 직후, compose/pagination/layout 이 저장
         // line_seg 를 소비하기 전에 물리적으로 불가능한 과다 line_seg 배열을 제거한다.
@@ -336,6 +356,8 @@ impl DocumentCore {
             para_offset: Vec::new(),
             source_format,
             hml_metadata,
+            #[cfg(feature = "pdf-import")]
+            pdf_metadata,
             validation_report,
         };
 
@@ -1880,6 +1902,10 @@ impl DocumentCore {
         self.snapshot_store.clear();
         self.next_snapshot_id = 0;
         self.source_format = crate::parser::FileFormat::Hwp;
+        #[cfg(feature = "pdf-import")]
+        {
+            self.pdf_metadata = None;
+        }
         self.validation_report = ValidationReport::new();
 
         self.convert_to_editable_native()?;

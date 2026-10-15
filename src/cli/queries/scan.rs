@@ -115,6 +115,7 @@ fn scan_format_token(format: rhwp::parser::FileFormat) -> &'static str {
         FileFormat::Hwpx => "hwpx",
         FileFormat::Hwp3 => "hwp3",
         FileFormat::Hml => "hml",
+        FileFormat::Pdf => "pdf",
         FileFormat::DrmProtected => "drm-protected",
         FileFormat::Empty => "empty",
         FileFormat::Unknown => "unknown",

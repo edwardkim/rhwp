@@ -52,6 +52,8 @@ pub enum FileFormat {
     Hwp3,
     /// Standalone HWPML XML
     Hml,
+    /// PDF (실험적 가져오기는 `pdf-import` feature 필요)
+    Pdf,
     /// DRM/보안 컨테이너로 보호된 문서 (미지원 — 감지만, Issue #1982)
     /// Fasoo(`\x9b DRMONE`) / SoftCamp SCDSA(`SCDSA00x`) 등. 복호화는 범위 밖.
     DrmProtected,
@@ -69,6 +71,8 @@ const DRM_PROTECTED_HINT: &str =
     "DRM/보안 컨테이너로 보호된 문서입니다. 한컴오피스 등 DRM 클라이언트에서 보호를 해제한 뒤 저장해 열어주세요.";
 const EMPTY_FILE_CODE: &str = "EMPTY_FILE";
 const EMPTY_FILE_HINT: &str = "빈 파일(0 바이트)입니다.";
+pub(crate) const PDF_IMPORT_DISABLED_HINT: &str =
+    "실험적 PDF 가져오기는 pdf-import feature를 활성화한 빌드에서 사용할 수 있습니다.";
 
 /// HWP5 완전 문서 열기가 선택하는 핵심 스트림 출력 예산.
 ///
@@ -213,6 +217,9 @@ pub fn detect_format(data: &[u8]) -> FileFormat {
     if data.starts_with(FASOO_DRM_SIG) || data.starts_with(SCDSA_SIG) {
         return FileFormat::DrmProtected;
     }
+    if data.starts_with(b"%PDF-") {
+        return FileFormat::Pdf;
+    }
     if data.len() >= 8 {
         // CFB/OLE 시그니처: D0 CF 11 E0 A1 B1 1A E1
         if data[0] == 0xD0 && data[1] == 0xCF && data[2] == 0x11 && data[3] == 0xE0 {
@@ -251,6 +258,8 @@ pub enum ParseError {
     HwpxError(hwpx::HwpxError),
     Hwp3Error(hwp3::Hwp3Error),
     HmlError(hml::HmlError),
+    #[cfg(feature = "pdf-import")]
+    PdfError(pdf::PdfImportError),
     EncryptedDocument,
     /// 감지는 되었으나 지원하지 않는 포맷
     UnsupportedFormat {
@@ -271,6 +280,8 @@ impl std::fmt::Display for ParseError {
             ParseError::HwpxError(e) => write!(f, "HWPX 오류: {}", e),
             ParseError::Hwp3Error(e) => write!(f, "HWP 3.0 오류: {}", e),
             ParseError::HmlError(e) => write!(f, "HML 오류: {}", e),
+            #[cfg(feature = "pdf-import")]
+            ParseError::PdfError(e) => write!(f, "PDF 오류: {}", e),
             ParseError::EncryptedDocument => write!(
                 f,
                 "비밀번호가 필요한 암호 문서입니다 (parse_document_with_password 또는 parse_hwp_with_password 로 비밀번호를 전달하세요)"
@@ -1613,6 +1624,32 @@ pub struct HmlImportMetadata {
 pub struct ParsedDocument {
     pub document: Document,
     pub hml_metadata: Option<HmlImportMetadata>,
+    #[cfg(feature = "pdf-import")]
+    pub pdf_metadata: Option<pdf::PdfImportMetadata>,
+}
+
+/// 선택한 PDF 쪽을 공통 IR과 원본 쪽 대응 메타데이터로 가져온다.
+///
+/// 자동 감지 경로와 같은 provenance 봉인을 사용한다. PDF로 다시 저장하는 API가 아니다.
+#[cfg(feature = "pdf-import")]
+pub fn parse_pdf_with_metadata(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+) -> Result<ParsedDocument, ParseError> {
+    parse_pdf_unsealed(data, options).map(seal_parsed_document)
+}
+
+#[cfg(feature = "pdf-import")]
+fn parse_pdf_unsealed(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+) -> Result<ParsedDocument, ParseError> {
+    let result = pdf::parse_pdf_with_options(data, options).map_err(ParseError::PdfError)?;
+    Ok(ParsedDocument {
+        document: result.document,
+        hml_metadata: None,
+        pdf_metadata: Some(result.metadata),
+    })
 }
 
 /// 포맷 자동 감지 후 공통 IR과 입력 메타데이터를 파싱한다.
@@ -1636,7 +1673,10 @@ fn parse_document_inner(
     data: &[u8],
     password: Option<&[u8]>,
 ) -> Result<ParsedDocument, ParseError> {
-    let mut parsed = parse_document_inner_unsealed(data, password)?;
+    parse_document_inner_unsealed(data, password).map(seal_parsed_document)
+}
+
+fn seal_parsed_document(mut parsed: ParsedDocument) -> ParsedDocument {
     // [#4493] 파싱과 모든 load fixup 이 끝난 마지막 지점에서 DocInfo raw 출처를
     // 봉인한다 — 이보다 앞(포맷별 파서 내부)에서 봉인하면 HWP3-변환본 spacing
     // 반감 같은 로드 보정이 봉인을 깨서, 무변경 문서의 원본 바이트 통과가 죽는다.
@@ -1649,7 +1689,7 @@ fn parse_document_inner(
     // 지점에서 봉인한다. DocumentCore 로 열리는 경로는 from_bytes 의 로드 픽스업
     // (손상 lineseg 제거 등) 뒤에 다시 봉인된다.
     parsed.document.seal_body_raw_provenance();
-    Ok(parsed)
+    parsed
 }
 
 fn parse_document_inner_unsealed(
@@ -1692,8 +1732,18 @@ fn parse_document_inner_unsealed(
                     warnings: result.warnings,
                     preserved_fragments: result.preserved_fragments,
                 }),
+                #[cfg(feature = "pdf-import")]
+                pdf_metadata: None,
             })
         }
+        #[cfg(feature = "pdf-import")]
+        FileFormat::Pdf => parse_pdf_unsealed(data, &pdf::PdfImportOptions::default()),
+        #[cfg(not(feature = "pdf-import"))]
+        FileFormat::Pdf => Err(ParseError::UnsupportedFormat {
+            code: "PDF_IMPORT_DISABLED",
+            format: "PDF",
+            hint: PDF_IMPORT_DISABLED_HINT,
+        }),
         FileFormat::DrmProtected => Err(ParseError::UnsupportedFormat {
             code: DRM_PROTECTED_CODE,
             format: drm_format_name(data),
@@ -1716,6 +1766,8 @@ fn without_hml_metadata(document: Document) -> ParsedDocument {
     ParsedDocument {
         document,
         hml_metadata: None,
+        #[cfg(feature = "pdf-import")]
+        pdf_metadata: None,
     }
 }
 

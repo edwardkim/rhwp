@@ -565,6 +565,7 @@ fn source_format_name(format: crate::parser::FileFormat) -> &'static str {
     match format {
         crate::parser::FileFormat::Hwpx => "hwpx",
         crate::parser::FileFormat::Hml => "hml",
+        crate::parser::FileFormat::Pdf => "pdf",
         _ => "hwp",
     }
 }

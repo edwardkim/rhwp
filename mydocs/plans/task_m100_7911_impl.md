@@ -5,7 +5,8 @@
 - 상태: **2026-10-16 공동 구현 목적 반영 — 제품 연결 기반의 devel 통합과 배포 준비를 분리**.
 - [수행계획](task_m100_7911.md), [1단계 조사 보고](../working/task_m100_7911_stage1.md)
 - 브랜치: `task_m100_7911`; 조사 head `92df2f3cbdc7012f5e91635512ceda68debecfac`
-- 고정 base: `origin/devel` `a5e88ad682c805e1d845502ddc9521b94ea8eccd`
+- 최초 base: `origin/devel` `a5e88ad682c805e1d845502ddc9521b94ea8eccd`
+- 2026-10-16 통합 기준: `upstream/devel` `f5251e7de4e31ee0fb939f352c6ef144bb340bdb`; 로컬 devel 동기화 및 작업 브랜치 merge `672acadd7d2309e5c0294a98c2142e240ed6f1a9` 완료. [3단계 기록](../working/task_m100_7911_stage3.md).
 - POC: `poc/pdf-ir` `6bc3847e0ff3e1302736914859903f3c9c51bb69`
 
 현재 순서·완료 경계는 [6절](#6-구현-순서와-승인), 세부 일감·상태·종료 증거의 정본은
@@ -372,7 +373,7 @@ macOS 작성 당시 경로는 해당 host의 기록이며 현재 worktree별 tar
 | --- | --- | --- |
 | 1 (완료) | 호출 경로 조사, 이 구현계획, stage1 보고·commit | 메인테이너 구현계획 승인 완료 |
 | 2 (checkpoint 정리) | POC·frontend·기존 보안 보정과 집중 증거 보존, 미완료 ID 인계 | stage2 기록·commit 후 3단계; 잔여 보안 항목은 미완료 유지 |
-| 3 (다음 구현) | F1–F4 제품 전체 경로 및 기본 오류 복구 | 실제 CLI·제품 WASM 실행, 렌더·저장·재열기와 정상 대조군 확인, 보고·commit |
+| 3 (진행: F1 완료) | F1–F4 제품 전체 경로 및 기본 오류 복구 | 실제 CLI·제품 WASM 실행, 렌더·저장·재열기와 정상 대조군 확인, 보고·commit |
 | 4 | 현재 범위의 통합 검증·기여 진입점·미완료 인계 | 적용 검증·보고와 원격 통합 승인; 전체 백로그 완료를 전제하지 않음 |
 | 후속 | 기여자·메인테이너의 백로그별 구현·검증, 배포 준비 | 개별 변경의 수용 조건과 배포할 지원 범위의 검증 |
 
@@ -380,8 +381,8 @@ macOS 작성 당시 경로는 해당 host의 기록이며 현재 worktree별 tar
 
 | 순서 | 구현 범위 | 기능 완료에 필요한 관측 |
 | --- | --- | --- |
-| F1 | 포맷 감지·`ParsedDocument`·Core 공통 초기화, 전체/선택 PDF 옵션 | feature-on에서 직접 IR·원본 쪽 대응, feature-off에서 안정적인 거부; 기존 HWP/HWPX 진입점 보존 |
-| F2 | CLI `import-pdf`, 기존 info·렌더·저장 명령, 도움말·JSON | 실제 CLI로 전체/선택 쪽 렌더·저장·재열기, 잘못된 옵션·미지원·예산 오류 및 출력 원자성 |
+| F1 (완료) | 포맷 감지·`ParsedDocument`·Core 공통 초기화, 전체/선택 PDF 옵션 | feature-on에서 직접 IR·원본 쪽 대응, feature-off에서 안정적인 거부; 기존 HWP/HWPX 진입점 보존 |
+| F2 (다음) | CLI `import-pdf`, 기존 info·렌더·저장 명령, 도움말·JSON | 실제 CLI로 전체/선택 쪽 렌더·저장·재열기, 잘못된 옵션·미지원·예산 오류 및 출력 원자성 |
 | F3 | 제품 WASM 생성자·import/diagnostics, Worker deadline·취소·재생성 | 루트 Docker WASM과 실제 JS/Worker에서 열기·렌더·저장; 실패/취소가 현재 세션을 교체하지 않으며 다음 정상 입력 복구 |
 | F4 | 같은 실물 PDF를 CLI와 제품 WASM에서 끝까지 처리 | 전체 12쪽·선택 7/8쪽의 원본 대응·내용·표 소속, 출력 생성과 재열기; 단순 byte 동일성을 시각 일치로 대체하지 않음 |
 

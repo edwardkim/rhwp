@@ -170,3 +170,132 @@ fn blank_pages_are_not_silently_dropped() {
     assert_eq!(texts(&imported.document), ["", "OK"]);
     assert!(imported.metadata.pages[0].source_spans.is_empty());
 }
+
+#[test]
+fn automatic_parser_and_core_share_pdf_origin_and_page_mapping() {
+    use rhwp::{parser, DocumentCore};
+    let source = pdf(&[("FIRST", "Helvetica"), ("SECOND", "Courier")]);
+    let parsed = parser::parse_document_with_metadata(&source).unwrap();
+    assert!(parsed.hml_metadata.is_none());
+    assert_eq!(texts(&parsed.document), ["FIRST", "SECOND"]);
+    assert_eq!(parsed.document.provenance.format, SourceFormat::Pdf);
+    let metadata = parsed.pdf_metadata.unwrap();
+    assert_eq!(metadata.source_page_count, 2);
+    assert_eq!(
+        metadata
+            .pages
+            .iter()
+            .map(|p| (p.source_page, p.output_section))
+            .collect::<Vec<_>>(),
+        [(0, 0), (1, 1)]
+    );
+    assert!(!metadata.parser_allocation_bounds_proven);
+    for core in [
+        DocumentCore::from_bytes(&source).unwrap(),
+        DocumentCore::from_bytes_with_password(&source, b"unused").unwrap(),
+    ] {
+        assert_eq!(texts(core.document()), ["FIRST", "SECOND"]);
+        assert_eq!(core.document().provenance.format, SourceFormat::Pdf);
+        assert!(core.hml_metadata().is_none());
+        assert_eq!(core.pdf_metadata().unwrap().pages.len(), 2);
+        assert_eq!(core.page_count(), 2);
+        for (page, text) in [(0, "FIRST"), (1, "SECOND")] {
+            let svg = core.render_page_svg_native(page).unwrap();
+            // SVG may split one word into per-glyph <text> elements. Check the
+            // visible text sequence, not incidental XML serialization grouping.
+            let xml = roxmltree::Document::parse(&svg).unwrap();
+            let rendered: String = xml
+                .descendants()
+                .filter(|node| {
+                    node.is_text() && node.ancestors().any(|parent| parent.has_tag_name("text"))
+                })
+                .filter_map(|node| node.text())
+                .collect();
+            assert_eq!(rendered, text, "source text order on page {page}");
+        }
+    }
+}
+
+#[test]
+fn selected_core_uses_common_loader_and_saved_documents_keep_selected_content() {
+    use rhwp::{parser, DocumentCore};
+    let source = pdf(&[
+        ("FIRST", "Helvetica"),
+        ("SECOND", "Courier"),
+        ("THIRD", "Helvetica"),
+    ]);
+    let options = PdfImportOptions {
+        source_pages: Some(vec![0, 2]),
+    };
+    let parsed = parser::parse_pdf_with_metadata(&source, &options).unwrap();
+    let mut core = DocumentCore::from_pdf_bytes(&source, &options).unwrap();
+    assert_eq!(texts(&parsed.document), ["FIRST", "THIRD"]);
+    assert_eq!(texts(core.document()), texts(&parsed.document));
+    assert_eq!(core.page_count(), 2);
+    let metadata = core.pdf_metadata().unwrap();
+    assert_eq!(metadata.source_page_count, 3);
+    assert_eq!(
+        metadata
+            .pages
+            .iter()
+            .map(|p| (p.source_page, p.output_section))
+            .collect::<Vec<_>>(),
+        [(0, 0), (2, 1)]
+    );
+    for bytes in [
+        core.export_hwpx_native().unwrap(),
+        core.export_hwp_native().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        assert_eq!(texts(reopened.document()), ["FIRST", "THIRD"]);
+        assert!(reopened.pdf_metadata().is_none());
+        assert_ne!(reopened.document().provenance.format, SourceFormat::Pdf);
+    }
+    core.create_blank_document_native().unwrap();
+    assert!(
+        core.pdf_metadata().is_none(),
+        "new document must not retain PDF diagnostics"
+    );
+}
+
+#[test]
+fn common_loader_errors_keep_pdf_codes_and_do_not_poison_later_imports() {
+    use rhwp::{parser, DocumentCore};
+    let source = pdf(&[("OK", "Helvetica")]);
+    let broken = b"%PDF-1.4\ninvalid";
+    assert!(matches!(
+        parser::parse_document(broken),
+        Err(parser::ParseError::PdfError(_))
+    ));
+    let error = DocumentCore::from_bytes(broken).err().unwrap().to_string();
+    assert!(error.contains("PDF_PARSE_FAILED"), "{error}");
+    for pages in [vec![], vec![1], vec![0, 0]] {
+        let error = DocumentCore::from_pdf_bytes(
+            &source,
+            &PdfImportOptions {
+                source_pages: Some(pages),
+            },
+        )
+        .err()
+        .unwrap()
+        .to_string();
+        assert!(error.contains("PDF_PAGE_SELECTION"), "{error}");
+    }
+    let core = DocumentCore::from_bytes(&source).unwrap();
+    assert_eq!(texts(core.document()), ["OK"]);
+    assert_eq!(core.page_count(), 1);
+}
+
+#[test]
+fn service_exposes_pdf_format_without_a_synthetic_hwp_version() {
+    let source = pdf(&[("PDF CONTENT", "Helvetica")]);
+    let opened = rhwp::service::DocumentService::new()
+        .open_bytes(&source, &rhwp::service::OpenOptions::new())
+        .unwrap();
+    assert_eq!(opened.format(), rhwp::parser::FileFormat::Pdf);
+    let info = opened.info();
+    assert_eq!(info.format, "pdf");
+    assert!(info.version.is_none());
+    assert_eq!(texts(opened.document()), ["PDF CONTENT"]);
+    assert!(opened.into_core().pdf_metadata().is_some());
+}
