@@ -71,3 +71,30 @@ PrintMethod0 PDF를 만들었다. 입력·PDF SHA, 실제 engine/version/job과 
   `raster-normal-control-{after,studio-test,studio-tsc}.log`에 보존한다.
 - 이 변경은 최종 시각 무회귀 완료가 아니다. restored producer의 전체 TSV와 남은104쪽
   원인 보정·판독을 마치기 전에는 이전484c 결과를 새 source의 승인 증거로 사용하지 않는다.
+
+
+## 104쪽 저장 흐름과 최종 출력의 회귀 보강
+
+부모 원본 문단의 다음 빈 줄 vpos는19078HU다. 현재 남은 자식 유닛의 높이를 HU로 읽으면
+2134+3734+3734+3734+5602=18938HU이고 원본 위 여백140HU를 더한19078HU와 같다.
+`nested104-following-source-frame-proof.json`에 연결했다. 유닛 합 자체를 회귀의 정답으로 쓰지 않고,
+원본 저장 LineSeg와 실제 최종 줄의 셀 상대 위치를 대조한다.
+
+- `issue_7902_original_frame_and_content`의 기존 HWP/HWPX104쪽 검사에서 원본의14×2
+  로터리 조종기 표를 찾아 후속 빈 줄·제목의 소유, 원문 보존, 저장 셀 원점을 함께 확인한다.
+  고정 그림 위치±2px와 별도로 원본 좌표 계약을 검사한다. JSON 좌표의0.1px 반올림만 허용한다.
+- 같은 새 assertion에 devel `2efefc6a1`의 고정 CLI를 공급하면 두 형식 모두 원본 후속 줄의
+  잘못된 셀 상대 위치 때문에 **2/2 FAIL**, exit101이다. 빌드 실패·빈 선택이 아니다.
+  HWPX는333.7→335.6px, 뒤 제목은359.3→361.2px이며 현재 쪽이 원본 프레임을 보존한다.
+  `nested104-source-relation-before-result.json`에 CLI/검사 소스/실행 파일 SHA와 불변성을 기록했다.
+- 현재 Native 정식 case는 생성 번호·폰트 진단·overfill의 원문·정렬 대조군까지 **7/7 PASS**, exit0,
+  실행54.45초다. `nested104-source-relation-after.log`와 직접 rustfmt check exit0에 보존한다.
+- 최초 focused 호출은 소스 수정 후 suite 재생성이 늦어0건이었다. 그 로그는
+  `nested104-source-relation-zero-tests.log`에 보존하고 통과 증거에서 제외했다.
+  `--prepare` 뒤 실제7건과 수정 전2건을 다시 실행했으며 파생 파일은 커밋하지 않는다.
+
+복구한9c1de319b의 Native producer와 fresh WASM을 새로 만들었다. `src/`·Studio source는
+전체가 검증한4e2c554b3와 바이트 동일하고 이 뒤 추가한 내용은 회귀 assertion이다.
+`normal-grid-source.json`, `normal-grid-validation-result.json` 및 `normal-grid-full`에
+19문서835쪽씩 전쪽 비교를 새로 보존한다. 비교 도중 일부 완료 문서의 하락0은 전체 완료가 아니다.
+그 뒤 `audit-normal-grid-full-sweep.py`의 Decimal 대조와 직접 판독을 마쳐야 제출할 수 있다.

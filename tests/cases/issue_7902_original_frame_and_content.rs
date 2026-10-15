@@ -6,7 +6,11 @@
 //! 위치 검사와 별도로 원본 셀의 내용 보존·소유·정렬 관계를 검사한다.
 #![cfg(not(target_arch = "wasm32"))]
 
-use rhwp::model::{control::Control, paragraph::Paragraph, table::Table};
+use rhwp::model::{
+    control::Control,
+    paragraph::Paragraph,
+    table::{Cell, Table},
+};
 use serde_json::Value;
 use std::{path::Path, process::Command, sync::OnceLock};
 
@@ -374,10 +378,68 @@ fn closed_source_frames_keep_center_alignment_instead_of_extra_line_spacing() {
     }
 }
 
+fn rotary_control_host(paragraphs: &[Paragraph]) -> Option<(&Table, &Cell, usize)> {
+    for control in paragraphs.iter().flat_map(|paragraph| &paragraph.controls) {
+        let Control::Table(table) = control else {
+            continue;
+        };
+        for cell in &table.cells {
+            for (index, paragraph) in cell.paragraphs.iter().enumerate() {
+                if paragraph.controls.iter().any(|control| {
+                    matches!(control, Control::Table(child)
+                        if child.row_count == 14 && child.col_count == 2
+                            && child.cells.iter().flat_map(|cell| &cell.paragraphs)
+                                .any(|paragraph| paragraph.text.contains("Rotary")))
+                }) {
+                    return Some((table, cell, index));
+                }
+            }
+            if let Some(host) = rotary_control_host(&cell.paragraphs) {
+                return Some(host);
+            }
+        }
+    }
+    None
+}
+
+fn assert_following_source_lines(sample: &str, page: &Value) {
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample)).unwrap();
+    let document = rhwp::parser::parse_document(&bytes).unwrap();
+    let (table, source_cell, host_index) = document
+        .sections
+        .iter()
+        .find_map(|section| rotary_control_host(&section.paragraphs))
+        .expect("로터리 조종기 표를 소유하는 원본 셀");
+    let owner = cell(page, source_cell.row, source_cell.col);
+    let padding = source_cell.effective_padding(&table.padding);
+    let descendants = nodes(owner);
+    for index in [host_index + 1, host_index + 2] {
+        let source = &source_cell.paragraphs[index];
+        let saved = source.line_segs.first().expect("원본 후속 문단의 저장 줄");
+        let lines: Vec<_> = descendants
+            .iter()
+            .copied()
+            .filter(|node| node["type"] == "TextLine" && node["pi"] == index)
+            .collect();
+        assert_eq!(lines.len(), 1, "후속 원본 줄의 누락·중복 방지");
+        assert_eq!(compact(&text(lines[0])), compact(&source.text));
+        // 원본의 빈 줄과 뒤 제목은 같은 셀 좌표계를 쓴다. 저장 vpos를 독립
+        // 기대값으로 삼아 시작 여백의 누락·중복을 검출한다. 출력 JSON의
+        // 0.1px 반올림만 허용하며 그림의 ±2px 위치 검사와 구분한다.
+        let actual = top(lines[0]) - top(owner);
+        let expected = f64::from(saved.vertical_pos + i32::from(padding.top)) * 96.0 / 7200.0;
+        assert!(
+            (actual - expected).abs() <= 0.11,
+            "{sample}: 원본 후속 줄 {index}의 셀 상대 위치 {actual}, 저장 원점 {expected}"
+        );
+    }
+}
+
 fn assert_following_image(sample: &str) {
     let actual = pages(sample);
     assert_eq!(actual.len(), 115, "독립 Print PDF 전체 쪽수");
     let page = &actual[103];
+    assert_following_source_lines(sample, page);
     let all = nodes(page);
     let images: Vec<_> = all
         .iter()
