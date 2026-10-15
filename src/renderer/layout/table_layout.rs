@@ -3,6 +3,7 @@
 mod nested_header_frame;
 mod row_block_cut;
 mod stored_body_closed_frame;
+mod stored_column_boundaries;
 mod stored_complete_block_cut;
 mod stored_deferred_picture_frame;
 mod stored_empty_frame_restart;
@@ -4748,6 +4749,23 @@ impl LayoutEngine {
         for c in 0..col_count {
             if col_widths[c] <= 0.0 {
                 col_widths[c] = hwpunit_to_px(1800, self.dpi);
+            }
+        }
+
+        // 4단계: 위 해석이 저장 칸 폭과 모순되면(병합 제약 균등 분배가 다른 행의 칸이
+        // 정한 경계를 덮어쓴 경우) 행별 칸 폭 누적으로 푼 열 경계로 바꾼다.
+        let constraints = stored_column_boundaries::StoredCellSpans::collect(
+            table,
+            col_count,
+            &invalid_rows,
+            self.dpi,
+            width_scale,
+        );
+        if let Some(constraints) = constraints {
+            if !constraints.satisfied_by(&col_widths) {
+                if let Some(solved) = constraints.solve() {
+                    col_widths = solved;
+                }
             }
         }
         let target_width = if table.common.width > 0 {
