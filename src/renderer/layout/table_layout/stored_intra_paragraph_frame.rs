@@ -371,7 +371,21 @@ impl LayoutEngine {
         if (origin + opening - source_end).abs() > epsilon || (accepted - opening).abs() > epsilon {
             return None;
         }
-        let remaining = measured_rows[row] - opening;
+        // 넘길 물리 잔여는 행 **상자**의 남은 몫이다. 측정 행 높이가 선언 상자보다 크면
+        // 그 초과분은 내용(마지막 줄의 줄간격 포함)이 만든 높이라 빈 물리 띠가 아니다 —
+        // 남은 내용은 다음 조각이 제 높이로 재므로 여기서 다시 넘기지 않는다.
+        // 80168 hwp 5쪽: 선언 869px · 측정 929.6px 행의 이어받기가 33.6px(내용 22.4px)로
+        // 늘어 한/글 2024 PDF(≈21px)보다 상자가 11px 길었다.
+        let declared = table
+            .get_raw_row_heights()
+            .get(row)
+            .copied()
+            .filter(|&height| height > 0 && height <= i32::MAX as u32)
+            .map(|height| hwpunit_to_px(height as i32, self.dpi));
+        let physical = declared.map_or(measured_rows[row], |declared| {
+            declared.min(measured_rows[row])
+        });
+        let remaining = physical - opening;
         let content = self.row_cut_content_height(table, row, cut, &[], styles);
         (remaining > content + epsilon).then_some(remaining)
     }
