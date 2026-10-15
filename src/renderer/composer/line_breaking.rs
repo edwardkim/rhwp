@@ -1580,8 +1580,13 @@ fn resolved_paragraph_letter_spacing(
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
 ) -> Vec<f64> {
-    let mut values =
-        resolved_letter_spacing_px(text_chars, &para.char_offsets, &para.char_shapes, styles, space_metric);
+    let mut values = resolved_letter_spacing_px(
+        text_chars,
+        &para.char_offsets,
+        &para.char_shapes,
+        styles,
+        space_metric,
+    );
     for (position, value) in &para.layout_field_values {
         if let Some(spacing) = values.get_mut(*position) {
             let shape = para.char_shape_id_at(*position).unwrap_or(0);
@@ -3928,7 +3933,8 @@ fn layout_paragraph_in_frame_impl(
         apply_auto_left_tab_targets(&mut tokens, para_style);
         tokens
     });
-    let mut letter_spacing_px = resolved_paragraph_letter_spacing(para, &text_chars, styles, space_metric);
+    let mut letter_spacing_px =
+        resolved_paragraph_letter_spacing(para, &text_chars, styles, space_metric);
     if projected.is_some() {
         for control in &inline_controls {
             letter_spacing_px[control.char_position] = 0.0;

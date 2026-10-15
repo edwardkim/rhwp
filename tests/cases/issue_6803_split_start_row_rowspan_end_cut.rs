@@ -293,36 +293,68 @@ fn title_missing_dot_uses_the_print_supplier_advance() {
             .expect("1쪽 공개 글자 배치"),
     )
     .expect("공개 배치 JSON");
-    let matches: Vec<_> = layout["runs"]
-        .as_array()
-        .expect("runs")
+    let expected = "근린생활시설용지 건축물 용도 ․ 건폐율 ․ 용적률 ․ 높이";
+    let runs = layout["runs"].as_array().expect("runs");
+    let anchors: Vec<_> = runs
         .iter()
         .filter(|run| {
-            run["text"]
-                .as_str()
-                .is_some_and(|text| text == "근린생활시설용지 건축물 용도 ․ 건폐율 ․ 용적률 ․ 높이")
+            run["parentParaIdx"].is_null()
+                && run["text"]
+                    .as_str()
+                    .is_some_and(|text| text.starts_with("근린생활시설용지 건축물 용도 "))
         })
         .collect();
-    assert_eq!(matches.len(), 1, "제목의 누락·중복이 없어야 한다");
-    let title = matches[0];
-    let text = title["text"].as_str().expect("제목");
+    assert_eq!(anchors.len(), 1, "제목 원문의 누락·중복이 없어야 한다");
+    let anchor = anchors[0];
+    let start = anchor["charStart"].as_u64().expect("제목 원문 시작");
+    let end = start + expected.chars().count() as u64;
+    // 기호 슬롯 경계는 별도 run일 수 있다. 원문 소유를 따라 이어 붙이고
+    // 한 run이라는 구현 형태 대신 내용·연속 소속·실제 전진을 검증한다.
+    let title_runs: Vec<_> = runs
+        .iter()
+        .filter(|run| {
+            run["parentParaIdx"].is_null()
+                && run["secIdx"] == anchor["secIdx"]
+                && run["paraIdx"] == anchor["paraIdx"]
+                && run["charStart"]
+                    .as_u64()
+                    .is_some_and(|position| (start..end).contains(&position))
+        })
+        .collect();
+    let mut cursor = start;
+    let mut characters = Vec::new();
+    for run in title_runs {
+        assert_eq!(
+            run["charStart"].as_u64(),
+            Some(cursor),
+            "제목 원문 소속의 틈·중복"
+        );
+        assert_eq!(run["y"], anchor["y"], "제목은 같은 글줄에 있어야 한다");
+        let text = run["text"].as_str().expect("제목 조각");
+        let positions = run["charX"].as_array().expect("source scalar 전진");
+        assert_eq!(positions.len(), text.chars().count() + 1);
+        let origin = run["x"].as_f64().expect("조각 원점");
+        let font_size = run["fontSize"].as_f64().expect("글자 크기");
+        for (index, ch) in text.chars().enumerate() {
+            let x = positions[index].as_f64().unwrap();
+            let advance = positions[index + 1].as_f64().unwrap() - x;
+            characters.push((ch, origin + x, advance, font_size));
+        }
+        cursor += text.chars().count() as u64;
+    }
+    assert_eq!(cursor, end);
     assert_eq!(
-        text,
-        "근린생활시설용지 건축물 용도 ․ 건폐율 ․ 용적률 ․ 높이"
+        characters.iter().map(|item| item.0).collect::<String>(),
+        expected
     );
-    let positions = title["charX"].as_array().expect("source scalar 전진");
-    assert_eq!(positions.len(), text.chars().count() + 1);
-    let font_size = title["fontSize"].as_f64().expect("글자 크기");
-    let origin = title["x"].as_f64().expect("제목 원점");
     let mut dots = 0;
-    for (index, ch) in text.chars().enumerate() {
+    for (index, &(ch, _, advance, font_size)) in characters.iter().enumerate() {
         if ch != '․' {
             continue;
         }
         dots += 1;
-        let advance = positions[index + 1].as_f64().unwrap() - positions[index].as_f64().unwrap();
-        let next_space =
-            positions[index + 2].as_f64().unwrap() - positions[index + 1].as_f64().unwrap();
+        let &(next, _, next_space, _) = characters.get(index + 1).expect("기호 뒤 공백");
+        assert_eq!(next, ' ');
         assert!(advance > 0.0 && advance < next_space && advance < font_size / 4.0,
             "기호를 전각으로 늘리면 안 된다: 기호={advance}, 이웃 공백={next_space}, em={font_size}");
     }
@@ -330,9 +362,9 @@ fn title_missing_dot_uses_the_print_supplier_advance() {
     // Print trace의 원점×(.119935pt/HU)×(96/72). 구현 결과에서 역산하지 않는다.
     for (label, pdf_css_x) in [("건폐율", 357.566), ("용적률", 418.813), ("높이", 479.900)]
     {
-        let byte_index = text.find(label).expect("후속 항목 보존");
-        let index = text[..byte_index].chars().count();
-        let actual = origin + positions[index].as_f64().unwrap();
+        let byte_index = expected.find(label).expect("후속 항목 보존");
+        let index = expected[..byte_index].chars().count();
+        let actual = characters[index].1;
         assert!(
             (actual - pdf_css_x).abs() <= 2.0,
             "독립 Print의 {label} 원점: expected={pdf_css_x}, actual={actual}"

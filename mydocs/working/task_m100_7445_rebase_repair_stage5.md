@@ -1362,3 +1362,45 @@ console error0이다. 기존7729 서버가 종료되어 첫 진단은 import 실
 실행 정본은 ignored `final-current-20261016/`의 full-result.json, studio-unit-after-loader.log,
 studio-build-after-loader.log, font-loader-browser.json과 interrupted-for-rebase.json이다.
 공유 target·원본/PDF·사용자 초안 및 이전 실행 증적을 보존하며 지침은 변경하지 않았다.
+
+
+## C40. e4e6d0c8 리베이스와 두 기대값의 계약 보존
+
+새 base `e4e6d0c8d83f688e376043c639e4fe5842169c2d` 위로205개 커밋을 리베이스했다.
+리베이스 직후 head는439bc3528adf01a94e6a61b896b1e4041e941fd6이다. range-diff에서
+202개 동일·충돌 해결3개·누락/추가0이다. 원래 history의00439736d8/1e3ab75e32/b3ee96869f에서
+본문 쪽번호의 원자 토큰/표시 텍스트/비분배 소유를 유지하면서 기존 공백 metric context·
+자동 왼쪽 탭·조각별 text style을 함께 소비하도록 합쳤다. helper의 SpaceMetric 인자를 전달하고
+포맷을 정리했다. 중간 status 확인이 rebase의 index.lock과 경합해 일시 중단된 것은 내 실행
+오류다. 다른 git 종료와 lock 소멸을 확인해 continue했고, 커밋을 skip하거나 덮어쓰지 않았다.
+
+사용자 orders/PR 초안은 별도 stash56955b1e…를 apply한 뒤 SHA를 대조해 둘 다 불변임을
+확인했다. 기존 stash와 backup refs·원본/PDF·공유 target을 보존했다.
+
+새 base Native Clippy는 TextRun568바이트/Path360바이트 차이로 large_enum_variant를 검출했다.
+경고 억제나 RenderNode 전체 변경 대신 이번에 추가한 원본 글꼴 이름의 저장 공간을
+Option<String>에서 Option<Box<str>>로 줄였다. 이름·소유/선택/측정 규칙과 serde 생략은 같다.
+이후 Native Clippy는38.89초에PASS했다.
+
+#7092는 굽은 따옴표4개와 실제 문서 두 검사는 이미PASS였고 U+2024의 슬롯0 기대만 틀렸다.
+독립 sample16 2022 Print에서 확인한 기호 슬롯5로 정확히 검사한다. 나머지 중립 문자와
+논문 원본의 Times/한컴바탕 선택 검사는 유지했다. #6803은 제목이 올바른 언어 슬롯 경계에서
+여러 run으로 나뉘어 기존 단일 run 선택이0건이 됐다. run을 합치는 구현 변경 대신 같은 원문
+문단·scalar 범위의 run을 실제 순서로 추적하고 연속 소유·제목/기호3개·같은 줄·glyph/공백
+전진을 검사한다. 기존 독립 Print의 건폐율/용적률/높이 x±2CSSpx는 그대로다.
+허용치를 넓히거나 내용 검사를 제거하지 않았다.
+
+현재 manifest를 prepare한 뒤 동적으로 구한15개 case의 집중 nextest는
+88실행/88PASS/0FAIL(3.230초)다. 두 실패 검사뿐 아니라 새 upstream의 탭 저장·자동번호·
+본문 쪽번호·새 쪽 단 정의·독립 Print 위치와 기존 분할/규제분석/생물독소/로드맵/자산/
+low-slack/기호 글꼴 경계를 함께 포함했다. 생성 suite는 커밋하지 않는다. 새 base 정책은
+1503 sources/6394 static attrs, unit-tier4103 tests/296 modules로PASS다.
+Studio는2015실행2013PASS/0FAIL/2skip(10.240초)다.
+
+ignored 정본은 `rebase-e4e6d0c8-20261016/`의 before/after.json, range-diff-audit.json,
+native-clippy-after.log, focused-plan.json/focused-result.json, studio-unit.log, manifest-check.log,
+unit-tier.log다. 최신 devel의 기준 출력 생산을 위해 해당 ignored 경로의 소유한 detached
+fixed-base-source를 준비했다. 공용 target에서 Cargo를 순차 실행하고 기준 producer를 동결한
+뒤 Native/fresh WASM 전쪽 TSV를 같은 입력/PDF/글꼴/192DPI 조건으로 비교한다.
+전체 새 head 회귀·새 시각 비교·실제 소비 검증은 아직 완료가 아니다. 법원과 이전 분할본
+미달도 남아 있어 PR 완료로 판정하지 않는다. 지침은 수정하지 않았다.
