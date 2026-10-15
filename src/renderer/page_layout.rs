@@ -224,7 +224,7 @@ fn calculate_column_areas(
         let mut x = body_area.x;
 
         if column_def.proportional_widths {
-            // HWP 5.0 바이너리: widths/gaps는 비례값 (합계=32768)
+            // 한컴 HWP5·HWPX: widths/gaps는 비례값(합계=32768)
             // body_area.width에 대한 비례로 변환
             let total: f64 = column_def
                 .widths
