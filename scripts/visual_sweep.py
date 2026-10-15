@@ -166,7 +166,8 @@ def run(
     if verbose:
         print("+ " + " ".join(cmd), flush=True)
     proc = subprocess.run(
-        cmd, cwd=cwd, text=True, capture_output=True, check=False, errors=encoding_errors,
+        cmd, cwd=cwd, text=True, capture_output=True, check=False,
+        encoding="utf-8", errors=encoding_errors,
     )
     if log_path is not None:
         log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -335,7 +336,7 @@ def ensure_tools(svg_rasterizer: str = "webfont") -> None:
     required = ["pdftoppm", "pdftotext", "pdfinfo"]
     if svg_rasterizer == "rsvg":
         required.append("rsvg-convert")
-    else:
+    elif svg_rasterizer != "native-skia":
         required.append("node")
     missing = [tool for tool in required if shutil.which(tool) is None]
     if missing:
@@ -373,12 +374,19 @@ def svg_raster_command(
 
 
 def rasterized_sources(root, sources, png_dir, zoom, rasterizer, workers=1):
+    if rasterizer == "png":
+        for page, source, tree, pdf in sources:
+            target = png_dir / f"rhwp_{page:03d}.png"
+            if source.resolve() != target.resolve():
+                shutil.copyfile(source, target)
+            yield page, source, tree, pdf
+        return
     try:
         from scripts.visual_sweep_raster import rasterized_sources as capture
     except ModuleNotFoundError:
         from visual_sweep_raster import rasterized_sources as capture
-    return capture(root, sources, png_dir, zoom, rasterizer, run,
-                   svg_raster_command, write_json_atomic, workers=workers)
+    yield from capture(root, sources, png_dir, zoom, rasterizer, run,
+                       svg_raster_command, write_json_atomic, workers=workers)
 
 
 def load_note_shape(root: Path, hwp: Path, rhwp_bin: str, out_path: Path) -> dict[str, object]:
@@ -575,16 +583,17 @@ def sweep_provenance(
     }
 
 
-def wasm_package_provenance(root: Path, package: Path) -> dict[str, object]:
+def wasm_package_provenance(root: Path, package: Path, rasterizer: str = "svg") -> dict[str, object]:
     files = [package / "rhwp.js", package / "rhwp_bg.wasm"]
     if any(not path.is_file() for path in files):
         raise SystemExit("--wasm-pkg에는 wasm-pack --target web의 rhwp.js와 rhwp_bg.wasm이 필요합니다.")
-    exporter = root / "scripts" / "export-wasm-for-sweep.mjs"
+    exporter = root / "scripts" / ("export-wasm-png-for-sweep.mjs" if rasterizer == "png" else "export-wasm-for-sweep.mjs")
     return {
         "files": [{"path": str(path.resolve()), "sha256": sha256_file(path)} for path in files],
         "exporter_sha256": sha256_file(exporter),
         "comparison_profile": "print",
-        "font_policy": "same-input native export-svg --font-style --profile print; font-face CSS only",
+        "font_policy": ("document embedded glyph resources; requested Canvas families supplied once per worker"
+                        if rasterizer == "png" else "same-input native export-svg --font-style --profile print; font-face CSS only"),
         "render_tree": "WASM getPageRenderTree",
     }
 
@@ -951,7 +960,7 @@ def relative_artifact(base: Path, path: Path) -> str:
 
 
 REQUIRED_PAGE_ARTIFACTS = (
-    "svg",
+    "source",
     "render_tree",
     "rhwp_png",
     "pdf_png",
@@ -977,7 +986,7 @@ def valid_page_manifests(base: Path) -> dict[int, dict[str, object]]:
             continue
         valid = True
         for key in REQUIRED_PAGE_ARTIFACTS:
-            artifact = artifacts.get(key)
+            artifact = artifacts.get(key, artifacts.get("svg") if key == "source" else None)
             if not isinstance(artifact, str):
                 valid = False
                 break
@@ -1450,12 +1459,13 @@ def write_target_status(
         "missing_pages": missing_pages,
         "run_state": run_state,
         "run_manifest": safe_rel_str(root, run_manifest_path(base)),
-        "exported_svg_pages": len(all_svg_paths),
+        "exported_svg_pages": len(all_svg_paths) if run_manifest["provenance"].get("raster_backend", "svg").startswith("svg") else 0,
+        "exported_source_pages": len(all_svg_paths),
         "exported_render_tree_pages": len(all_tree_paths),
         "exported_pdf_pages": len(all_pdf_paths),
-        "rasterized_svg_pages": len(completed_pages),
+        "rasterized_svg_pages": len(completed_pages) if run_manifest["provenance"].get("raster_backend", "svg").startswith("svg") else 0,
         "rasterized_pdf_pages": len(all_pdf_paths),
-        "svg_pages": len(completed_pages),
+        "svg_pages": len(completed_pages) if run_manifest["provenance"].get("raster_backend", "svg").startswith("svg") else 0,
         "render_tree_pages": len(completed_pages),
         "pdf_pages": len(completed_pages),
         "compare_pages": len(compare_pages),
@@ -1505,6 +1515,7 @@ def render_target(
     silhouette_only: bool = False,
     compat: str = "2022",
     page_workers: int = 4,
+    rasterizer: str = "svg",
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1544,6 +1555,17 @@ def render_target(
         font_environment = resolve_input_path(root, font_environment)
         environment_args.extend(["--font-environment", str(font_environment)])
     provenance = sweep_provenance(root, hwp, pdf, rhwp_bin, svg_rasterizer)
+    png_module = None
+    if rasterizer == "png":
+        try:
+            from scripts import visual_sweep_png as png_module
+        except ModuleNotFoundError:
+            import visual_sweep_png as png_module
+        provenance["raster_backend"] = png_module.png_backend(wasm_pkg)
+        provenance["png_exporter_sha256"] = sha256_file(Path(png_module.__file__))
+        provenance["svg_rasterizer"] = None
+    else:
+        provenance["raster_backend"] = "svg-" + svg_rasterizer
     provenance["layout_generation"] = compat
     if font_environment is not None:
         provenance["font_environment"] = {
@@ -1551,10 +1573,16 @@ def render_target(
             "sha256": hashlib.sha256(font_environment.read_bytes()).hexdigest(),
         }
     if wasm_pkg is not None:
-        provenance["wasm"] = wasm_package_provenance(root, wasm_pkg)
-    font_args, font_supply = svg_font_export_options(root, embed_fonts, font_paths or [])
+        provenance["wasm"] = wasm_package_provenance(root, wasm_pkg, rasterizer)
+    if png_module is not None and not font_paths:
+        font_paths = default_sweep_font_paths()
+    font_args, font_supply = svg_font_export_options(
+        root, "full" if png_module and font_paths else embed_fonts, font_paths or []
+    )
+    if png_module is not None:
+        font_supply["mode"] = "direct-font-programs"
     provenance["font_supply"] = font_supply
-    if wasm_pkg is not None:
+    if wasm_pkg is not None and rasterizer == "svg":
         provenance["wasm"]["font_policy"] = "same-input native " + " ".join(font_args) + "; font-face CSS only"
     run_manifest = run_manifest_for_target(
         base,
@@ -1572,28 +1600,48 @@ def render_target(
     else:
         note_shape = load_note_shape(root, hwp, rhwp_bin, note_shape_path)
     compact_shapes = compact_note_shape(note_shape)
-    if wasm_pkg is not None:
+    if png_module is not None:
+        try:
+            if not (resume and png_module.png_export_has_pages(base, wasm_pkg is not None, selected_pages)):
+                if wasm_pkg is not None:
+                    png_module.export_wasm_png(sys.modules[__name__], root, hwp, wasm_pkg, base,
+                                              selected_pages, font_paths or [], font_environment, compat,
+                                              dpi, page_workers)
+                else:
+                    png_module.export_native_png(sys.modules[__name__], root, hwp, rhwp_bin, base,
+                                                selected_pages, font_paths or [], environment_args,
+                                                dpi, page_workers)
+        except (Exception, SystemExit):
+            run_manifest['run_state'] = 'failed'
+            write_json_atomic(run_manifest_path(base), run_manifest)
+            failure = {'key': target.key, 'run_state': 'failed',
+                       'pr_review_gate': {'status': 're_review_required', 'reason': 'raster_export_failed'}}
+            write_json_atomic(base / 'manifest.json', failure)
+            update_root_summary(out_root, failure)
+            raise
+    elif wasm_pkg is not None:
         if not wasm_export_has_pages(base, selected_pages):
             export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base, font_environment, font_args, compat, selected_pages)
     else:
         export_native_target(root, hwp, rhwp_bin, base, selected_pages, font_args, environment_args)
 
-    all_svg_paths = sorted(svg_dir.glob("*.svg"), key=page_num)
+    all_svg_paths = sorted((rhwp_png_dir.glob("*.png") if png_module else svg_dir.glob("*.svg")), key=page_num)
     all_tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
-    print(f"SVG export pages: {len(all_svg_paths)}", flush=True)
+    print(f"{rasterizer.upper()} export pages: {len(all_svg_paths)}", flush=True)
     if not all_svg_paths or not all_tree_paths:
-        raise SystemExit("SVG 또는 render tree export 산출물이 없습니다.")
+        raise SystemExit("렌더 source 또는 render tree export 산출물이 없습니다.")
 
     # 네이티브·WASM과 새 실행·이어받기 모두 래스터·체크포인트 재사용 전에 검사한다.
     # 글꼴 불일치 예외도 손상된 글꼴 데이터의 검사를 우회하지 못한다.
     font_check_path = analysis_dir / "embedded_font_check.json"
     failure_reason = "invalid_embedded_font"
     try:
-        check_sweep_embedded_fonts(
-            raster_paths_for_selected_pages(all_svg_paths, selected_pages),
-            font_check_path,
-            workers=page_workers,
-        )
+        if png_module is None:
+            check_sweep_embedded_fonts(
+                raster_paths_for_selected_pages(all_svg_paths, selected_pages),
+                font_check_path,
+                workers=page_workers,
+            )
         # 일부 쪽만 캡처해도 문서 전체 쪽수의 차이는 숨기지 않는다.
         failure_reason = "unavailable_document_page_counts"
         metadata_path = base / ("wasm-export-complete.json" if wasm_pkg is not None else "native-export.json")
@@ -1631,12 +1679,13 @@ def render_target(
         )
         pairs = []
         for page, _, _, pdf_path in rasterized_sources(
-            root, sources, rhwp_png_dir, dpi / 96.0, svg_rasterizer, workers=page_workers
+            root, sources, rhwp_png_dir, dpi / 96.0, "png" if png_module else svg_rasterizer, workers=page_workers
         ):
             pairs.append((page, rhwp_png_dir / f"rhwp_{page:03d}.png", pdf_path))
         manifest = write_silhouette_tsv(pairs, base, target.key, document_counts=document_counts, workers=page_workers)
         manifest["provenance"] = provenance
-        manifest["exported_svg_pages"] = len(all_svg_paths)
+        manifest["exported_svg_pages"] = len(list(svg_dir.glob("*.svg")))
+        manifest["exported_png_source_pages"] = len(all_svg_paths) if png_module else 0
         manifest["exported_render_tree_pages"] = len(all_tree_paths)
         manifest["exported_pdf_pages"] = len(all_pdf_pngs)
         write_json_atomic(base / "silhouette_manifest.json", manifest)
@@ -1701,7 +1750,7 @@ def render_target(
     pending = [source for source in source_pages if source[0] not in completed]
     # 단위 없는 SVG 크기는 CSS px(96dpi)다. 같은 확대율로 쪽마다 캡처·checkpoint한다.
     for page, svg_path, tree_path, pdf_path in rasterized_sources(
-        root, pending, rhwp_png_dir, svg_zoom, svg_rasterizer, workers=page_workers
+        root, pending, rhwp_png_dir, svg_zoom, "png" if png_module else svg_rasterizer, workers=page_workers
     ):
         png = rhwp_png_dir / f"rhwp_{page:03d}.png"
         capture_label = f"{target.key} (WASM)" if wasm_pkg is not None else target.key
@@ -1732,7 +1781,7 @@ def render_target(
         visual_metrics = analyze_page(
             png,
             pdf_path,
-            svg_path,
+            None if png_module else svg_path,
             tree_path,
             analysis_dir,
             target.key,
@@ -1747,7 +1796,8 @@ def render_target(
             "schema_version": VISUAL_SWEEP_PAGE_SCHEMA_VERSION,
             "page": page,
             "artifacts": {
-                "svg": relative_artifact(base, svg_path),
+                "source": relative_artifact(base, svg_path),
+                "svg": None if png_module else relative_artifact(base, svg_path),
                 "render_tree": relative_artifact(base, tree_path),
                 "rhwp_png": relative_artifact(base, png),
                 "pdf_png": relative_artifact(base, pdf_path),
@@ -4145,7 +4195,7 @@ def suppress_tolerated_frame_tail_candidates(
 def analyze_page(
     rhwp_path: Path,
     pdf_path: Path,
-    svg_path: Path,
+    svg_path: Path | None,
     tree_path: Path,
     analysis_dir: Path,
     key: str,
@@ -4552,7 +4602,7 @@ def analyze_page(
         },
         "endnote_no_separator_content_start": no_separator_content_start,
         "between_notes_marker_gap": between_notes_marker_gap,
-        "svg": str(svg_path),
+        "svg": str(svg_path) if svg_path is not None else None,
         "render_tree_json": str(tree_path),
         "equation_text_overlap_candidates": equation_overlaps,
         "square_wrap_text_overlap_candidates": square_wrap_text_overlaps,
@@ -5472,8 +5522,10 @@ def main() -> None:
         help="--silhouette-only에서 기존 raster 두 디렉터리를 비교합니다. 원문 재출력 없이 입력 해시를 기록합니다.",
     )
     parser.add_argument("--out", default="output/task1274")
+    parser.add_argument("--rasterizer", choices=("png", "svg"), default="png",
+                        help="기본 png는 Native Skia/fresh WASM Canvas에서 직접 출력합니다. svg는 벡터 진단 경로입니다.")
     parser.add_argument("--page-workers", type=int, default=4, metavar="N",
-                        help="내장 글꼴 검사·PNG 캡처·TSV 점수 계산의 쪽 작업자 수. 기본4, 1은 순차 실행. 각 캡처 작업자는 Chrome 하나와 탭 하나를 사용합니다.")
+                        help="PNG 내보내기·SVG 내장 글꼴 검사·TSV 계산의 쪽 작업자 수. 기본4, 1은 순차 실행. WASM/SVG 캡처 작업자는 Chrome 하나와 탭 하나를 재사용합니다.")
     parser.add_argument(
         "--rhwp-bin",
         default=DEFAULT_RHWP_BIN,
@@ -5578,7 +5630,8 @@ def main() -> None:
     if args.wasm_pkg is not None:
         args.wasm_pkg = resolve_input_path(root, args.wasm_pkg)
         wasm_package_provenance(root, args.wasm_pkg)
-    ensure_tools(args.svg_rasterizer)
+    ensure_tools(args.svg_rasterizer if args.rasterizer == "svg" else
+                 ("webfont" if args.wasm_pkg else "native-skia"))
     ensure_default_rhwp_binary_is_current(root, args.rhwp_bin)
     requested_targets = args.target
     if requested_targets and "all" in requested_targets:
@@ -5612,6 +5665,7 @@ def main() -> None:
             silhouette_only=args.silhouette_only,
             compat=args.compat,
             page_workers=args.page_workers,
+            rasterizer=args.rasterizer,
         )
         gate = manifest.get("pr_review_gate")
         if isinstance(gate, dict) and gate.get("status") == "re_review_required":

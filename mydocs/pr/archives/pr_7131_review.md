@@ -98,8 +98,8 @@ Git object 또는 LFS oid와 일치한다. full/OVR 공통 입력은 아래 재�
 
 | 저장소 파일 | 출처·역할 | SHA-256 |
 | --- | --- | --- |
-| [samples/hwp3-sample10-hwp5.hwp](../../../samples/hwp3-sample10-hwp5.hwp) | 전수 layout-anomaly 진단 입력 | `a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51` |
-| [samples/hwp3-sample10-hwpx.hwpx](../../../samples/hwp3-sample10-hwpx.hwpx) | 전수 layout-anomaly 진단 입력 | `3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191` |
+| [samples/hwp3-sample10-hwp5.hwp](../assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp) | 전수 layout-anomaly 진단 입력 | `a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51` |
+| [samples/hwp3-sample10-hwpx.hwpx](../assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx) | 전수 layout-anomaly 진단 입력 | `3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191` |
 | [samples/hwp3-table-cell-overlap.hwp](../../../samples/hwp3-table-cell-overlap.hwp) | 전수 layout-anomaly 진단 입력 | `5eefd79676f22c83192b035a92f13fa4b49a2d523600a90db1deb94f1a5314ed` |
 | [samples/issue2559/1341000_research_report_footnotes.hwp](../../../samples/issue2559/1341000_research_report_footnotes.hwp) | 전수 layout-anomaly 진단 입력 | `e9011fe125a76ed5d56ae06a1702e7f82b4ff5550f2a07ead956ca540f1231c8` |
 | [samples/issue6280/156742029_prosecutor_transfer_list.hwp](../../../samples/issue6280/156742029_prosecutor_transfer_list.hwp) | 전수 layout-anomaly 진단 입력 | `522b4522395bbd25993f52799eb0607e9f81286f875b7ceddad7264edecc6ead` |

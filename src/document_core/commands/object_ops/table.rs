@@ -9,6 +9,45 @@ use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::common_obj_offsets;
 
+use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+// 렌더 트리에서 해당 표 노드를 찾아 셀 bbox를 수집
+fn find_table_cells(
+    node: &RenderNode,
+    sec: usize,
+    ppi: usize,
+    ci: usize,
+    page_idx: usize,
+    result: &mut Vec<String>,
+) -> bool {
+    if let RenderNodeType::Table(ref tn) = node.node_type {
+        if tn.section_index == Some(sec)
+            && tn.para_index == Some(ppi)
+            && tn.control_index == Some(ci)
+        {
+            for child in &node.children {
+                if let RenderNodeType::TableCell(ref cn) = child.node_type {
+                    // cellIdx: 모델의 cells 배열에서 (row, col)로 검색한 인덱스
+                    let model_cell_idx = cn.model_cell_index.unwrap_or(0) as usize;
+                    result.push(format!(
+                        "{{\"cellIdx\":{},\"row\":{},\"col\":{},\"rowSpan\":{},\"colSpan\":{},\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}}",
+                        model_cell_idx, cn.row, cn.col, cn.row_span, cn.col_span,
+                        page_idx,
+                        child.bbox.x, child.bbox.y, child.bbox.width, child.bbox.height
+                    ));
+                }
+            }
+            return true; // 찾음
+        }
+    }
+    for child in &node.children {
+        if find_table_cells(child, sec, ppi, ci, page_idx, result) {
+            return true;
+        }
+    }
+    false
+}
+
 impl DocumentCore {
     /// [Task #1151 v7] cell_path JSON → Vec<(controlIdx, cellIdx, cellParaIdx)>.
     /// 4 개 by_path setter/getter (cell picture/shape × set/get) 의 공통 파싱.
@@ -1203,6 +1242,31 @@ impl DocumentCore {
         }
         (0, 0)
     }
+    /// 지정 페이지에 배치된 표 조각의 셀 bbox만 반환한다.
+    /// hover/리사이즈용이며 다른 페이지의 렌더 트리를 준비하지 않는다.
+    /// 분할 조각의 cellIdx는 원본 모델 인덱스를 그대로 보존한다.
+    pub fn get_table_cell_bboxes_at_page_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        page: u32,
+    ) -> Result<String, HwpError> {
+        let mut cells = Vec::new();
+        self.with_page_tree_cached(page, |tree| {
+            find_table_cells(
+                &tree.root,
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                page as usize,
+                &mut cells,
+            );
+            Ok(())
+        })?;
+        Ok(format!("[{}]", cells.join(",")))
+    }
+
     /// page_hint부터 탐색하여 표의 셀 bbox를 반환한다 (네이티브).
     /// page_hint에서 못 찾으면 앞쪽도 탐색한다 (페이지 분할된 표 대응).
     pub(crate) fn get_table_cell_bboxes_from_page(
@@ -1212,45 +1276,6 @@ impl DocumentCore {
         control_idx: usize,
         page_hint: usize,
     ) -> Result<String, HwpError> {
-        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
-
-        // 렌더 트리에서 해당 표 노드를 찾아 셀 bbox를 수집
-        fn find_table_cells(
-            node: &RenderNode,
-            sec: usize,
-            ppi: usize,
-            ci: usize,
-            page_idx: usize,
-            result: &mut Vec<String>,
-        ) -> bool {
-            if let RenderNodeType::Table(ref tn) = node.node_type {
-                if tn.section_index == Some(sec)
-                    && tn.para_index == Some(ppi)
-                    && tn.control_index == Some(ci)
-                {
-                    for (_child_idx, child) in node.children.iter().enumerate() {
-                        if let RenderNodeType::TableCell(ref cn) = child.node_type {
-                            // cellIdx: 모델의 cells 배열에서 (row, col)로 검색한 인덱스
-                            let model_cell_idx = cn.model_cell_index.unwrap_or(0) as usize;
-                            result.push(format!(
-                                "{{\"cellIdx\":{},\"row\":{},\"col\":{},\"rowSpan\":{},\"colSpan\":{},\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}}",
-                                model_cell_idx, cn.row, cn.col, cn.row_span, cn.col_span,
-                                page_idx,
-                                child.bbox.x, child.bbox.y, child.bbox.width, child.bbox.height
-                            ));
-                        }
-                    }
-                    return true; // 찾음
-                }
-            }
-            for child in &node.children {
-                if find_table_cells(child, sec, ppi, ci, page_idx, result) {
-                    return true;
-                }
-            }
-            false
-        }
-
         let mut cells = Vec::new();
         let total_pages = self.page_count() as usize;
         let start = page_hint.min(total_pages.saturating_sub(1));

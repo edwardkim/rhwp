@@ -37,14 +37,10 @@ pub(super) fn project(
             input.char_offsets.push(raw);
             controls.push(FlowInlineControl {
                 char_position: scalar_index,
+                utf16_position: raw,
                 width_hwp: width,
                 height_hwp: height,
-                baseline_distance_hwp: match control {
-                    Control::Equation(equation) if equation.baseline > 0 => {
-                        Some(crate::renderer::equation::flow_metrics_hwp(equation).2)
-                    }
-                    _ => None,
-                },
+                baseline_distance_hwp: flow_inline_baseline_hwp(control, height),
             });
             scalar_index += 1;
             represented |= chars.get(position) == Some(&'\u{FFFC}')

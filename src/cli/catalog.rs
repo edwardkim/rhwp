@@ -406,9 +406,9 @@ pub(crate) const COMMANDS: &[CommandSpec] = &[
         Category::Export,
         Visibility::Public,
         Some("native-skia"),
+        true,
         false,
-        false,
-        false,
+        true,
     ),
     spec(
         "export-sixel",

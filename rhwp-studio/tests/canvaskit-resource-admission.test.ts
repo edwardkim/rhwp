@@ -31,6 +31,37 @@ test('SVG image admission bounds intrinsic dimensions and rejects active or exte
     { format: 'svg', width: 10, height: 10 });
 });
 
+test('SVG image admission validates comment bodies and retains markup boundaries', () => {
+  const header = (value: string) => replayableEncodedImageHeader(new TextEncoder().encode(value));
+  const dimensions = { format: 'svg', width: 10, height: 10 };
+  assert.deepEqual(header('<!-- before --><svg width="10" height="10"><!----><g/><!-- <path/> -->\n</svg><!-- after -->'),
+    dimensions);
+  assert.deepEqual(header('<?xml version="1.0"?><!-- 설명 😀 --><svg width="10" height="10"/>'),
+    dimensions);
+  assert.deepEqual(header('<svg width="10" height="10"><text>한<!-- note -->글</text></svg>'),
+    dimensions);
+  assert.deepEqual(header('<svg width="10" height="10"><!-- note --><style>path {fill:red}</style></svg>'),
+    dimensions);
+  for (const comment of ['<!-- unfinished', '<!-- alpha--beta -->', '<!-- trailing--->', '<!-- \u0000 -->',
+    '<!-- outer <!-- inner --> -->']) {
+    assert.equal(header(`<svg width="10" height="10">${comment}</svg>`), null, comment);
+  }
+  // XML comments cannot interrupt a tag, attribute name, or attribute value.
+  for (const source of ['<sv<!-- gap -->g width="10" height="10"/>',
+    '<svg wid<!-- gap -->th="10" height="10"/>',
+    '<svg width="1<!-- gap -->0" height="10"/>',
+    '<svg width="10"<!-- gap --> height="10"/>']) {
+    assert.equal(header(source), null, source);
+  }
+  // XML comments disappear from CSS text content. Admission cannot substitute
+  // whitespace there while the browser receives the unmodified input bytes.
+  for (const style of ['<style>path {fi<!-- note -->ll:red}</style>',
+    '<s:style xmlns:s="http://www.w3.org/2000/svg">path {fill:red}<!-- note --></s:style>',
+    '<style><style/><!-- note --></style>']) {
+    assert.equal(header(`<svg width="10" height="10">${style}</svg>`), null, style);
+  }
+});
+
 test('browser image decoder validates dimensions, revokes URLs, and ignores cancellation races', async () => {
   const header = { format: 'svg', width: 2, height: 3 } as const;
   let deleted = 0;

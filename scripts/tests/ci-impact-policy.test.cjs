@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
+require('./ci-impact-policy-pr-association-contract.cjs');
 
 const { classifyChanges } = require('../ci-impact-classifier.cjs');
 const {
