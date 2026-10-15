@@ -36,7 +36,7 @@ Issue: #7902. 이 단계는 비교 도구의 투명도 처리만 수정하며 �
   수정 후에는 alpha 계약11개를 포함한 Visual Sweep Python 검사152개가 모두 통과했다.
 - 독립 venv에 `Pillow==12.3.0`, `fonttools==4.64.0`만 설치한 실행도152개 통과(28.098초).
   CLI2작업자 경로, overlay·compare 및 내용 분석을 포함한다.
-- 실제 보존 PNG3,340쌍(19문서×835쪽×Native/WASM×base/candidate)의 재평가는406.167초에
+- 실제 보존 PNG3,340쌍(19문서 합계835쪽×Native/WASM×base/candidate)의 재평가는406.167초에
   끝났고76개 TSV 모두 기존 바이트와 동일했다. 원래 renderer source는 각각 `2efefc6a1f`와
   `9c1de319b`이며 새 base의 시각 검증으로 승격하지 않는다.
 - [합성 입력의 수정 전후 review](../pr/assets/visual_sweep_alpha_20261016/README.md)를 직접 판독했다.
