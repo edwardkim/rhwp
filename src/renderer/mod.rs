@@ -2855,6 +2855,11 @@ fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
 
 pub(crate) fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     match font_family {
+        // gulim.TTC collection face 3의 name ID 1은 같은 프로그램을
+        // 한국어 '돋움체'와 영문 'DotumChe'로 등록한다. 영문 이름만 노출하는
+        // Native fontdb에서도 원 face를 선언 glyph 대체보다 먼저 공급한다.
+        "돋움체" => &["DotumChe"],
+        "DotumChe" => &["돋움체"],
         "나눔고딕" => &["NanumGothic"],
         "NanumGothic" => &["나눔고딕"],
         "한컴바탕" => &["Haansoft Batang"],

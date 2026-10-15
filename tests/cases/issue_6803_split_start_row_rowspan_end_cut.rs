@@ -279,3 +279,63 @@ fn closing_row_stays_inside_the_original_body_frame() {
         "끝 행 상자가 원본 본문 프레임 밖의 빈 띠를 다시 수용했다: end={ending_bottom:.8}, frame={frame_end:.8} (원본1HU 허용)"
     );
 }
+
+/// 독립 Print 1쪽의 결측 U+2024는 한컴바탕 글리프의 자연 폭을 쓴다.
+/// 이 쪽의 Native/fresh WASM은 192DPI 98% 이상과 확대 판독을 확인했다.
+/// source 기호 소속·전진 관계와 독립 Print의 후속 항목 원점을 함께 보호한다.
+#[test]
+fn title_missing_dot_uses_the_print_supplier_advance() {
+    let core = DocumentCore::from_bytes(&std::fs::read(document_path()).expect("정식 sample"))
+        .expect("문서 로드");
+    let layout: serde_json::Value = serde_json::from_str(
+        &core
+            .get_page_text_layout_native(0)
+            .expect("1쪽 공개 글자 배치"),
+    )
+    .expect("공개 배치 JSON");
+    let matches: Vec<_> = layout["runs"]
+        .as_array()
+        .expect("runs")
+        .iter()
+        .filter(|run| {
+            run["text"]
+                .as_str()
+                .is_some_and(|text| text == "근린생활시설용지 건축물 용도 ․ 건폐율 ․ 용적률 ․ 높이")
+        })
+        .collect();
+    assert_eq!(matches.len(), 1, "제목의 누락·중복이 없어야 한다");
+    let title = matches[0];
+    let text = title["text"].as_str().expect("제목");
+    assert_eq!(
+        text,
+        "근린생활시설용지 건축물 용도 ․ 건폐율 ․ 용적률 ․ 높이"
+    );
+    let positions = title["charX"].as_array().expect("source scalar 전진");
+    assert_eq!(positions.len(), text.chars().count() + 1);
+    let font_size = title["fontSize"].as_f64().expect("글자 크기");
+    let origin = title["x"].as_f64().expect("제목 원점");
+    let mut dots = 0;
+    for (index, ch) in text.chars().enumerate() {
+        if ch != '․' {
+            continue;
+        }
+        dots += 1;
+        let advance = positions[index + 1].as_f64().unwrap() - positions[index].as_f64().unwrap();
+        let next_space =
+            positions[index + 2].as_f64().unwrap() - positions[index + 1].as_f64().unwrap();
+        assert!(advance > 0.0 && advance < next_space && advance < font_size / 4.0,
+            "기호를 전각으로 늘리면 안 된다: 기호={advance}, 이웃 공백={next_space}, em={font_size}");
+    }
+    assert_eq!(dots, 3);
+    // Print trace의 원점×(.119935pt/HU)×(96/72). 구현 결과에서 역산하지 않는다.
+    for (label, pdf_css_x) in [("건폐율", 357.566), ("용적률", 418.813), ("높이", 479.900)]
+    {
+        let byte_index = text.find(label).expect("후속 항목 보존");
+        let index = text[..byte_index].chars().count();
+        let actual = origin + positions[index].as_f64().unwrap();
+        assert!(
+            (actual - pdf_css_x).abs() <= 2.0,
+            "독립 Print의 {label} 원점: expected={pdf_css_x}, actual={actual}"
+        );
+    }
+}

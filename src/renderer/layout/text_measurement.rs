@@ -1802,22 +1802,19 @@ fn char_width_decision_with_hft_tracking<'a>(
                 }
             }
         }
-        // 굴림에 없는 한점 리더는 한컴돋움의 기호로 출력된다. 독립 법원 서식
-        // Print PDF의 Haansoft Dotum CID 3과 원본 HDOTUM hmtx가 같은 폭을 준다.
+        // 원 프로그램에서 결측이며 독립 Print로 확인한 공급 face의 전진을 쓴다.
+        // 돋움체→한컴바탕과 굴림→한컴돋움은 같은 결측 기호라도 공급자가 다르다.
         // 실제 굴림 글리프 hit와 HFT 치환은 보존하고, 확인된 결측만 대체한다.
         if embedded.width_px.is_none()
-            && c == '\u{2024}'
             && latin.is_none()
             && !style.hft_hangul_face
             && !style.hft_fullwidth_dot
             && metric_family == display_family
-            && embedded
-                .metric
-                .is_some_and(|metric| metric.metric.name == "Gulim")
         {
-            if let Some(metric) =
-                font_metrics_data::find_metric_decision("Haansoft Dotum", false, false)
-            {
+            if let Some(metric) = embedded.metric.and_then(|primary| {
+                font_metrics_data::verified_missing_glyph_supplier(primary.metric, c)
+                    .and_then(|face| font_metrics_data::find_metric_decision(face, false, false))
+            }) {
                 if let Some(width) = metric.metric.get_width(c) {
                     embedded = EmbeddedWidthDecision {
                         width_px: Some(quantize_hwp_px(

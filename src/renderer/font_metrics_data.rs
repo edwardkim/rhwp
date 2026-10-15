@@ -136,8 +136,25 @@ pub(crate) fn verified_program_glyph_fallback_families(face: &str) -> &'static [
     // 독립 개인정보 Print의 같은 제목도 휴먼명조 사이에서 이 기호만
     // Haansoft Batang으로 출력한다. 이름 별칭은 기존 메트릭 선택기가 해소한다.
     match find_metric(face, false, false).map(|found| found.metric.name) {
-        Some("HumanMyeongJo") => &["Haansoft Batang"],
+        Some("HumanMyeongJo" | "DotumChe") => &["Haansoft Batang"],
         _ => &[],
+    }
+}
+
+/// 원 프로그램의 결측과 독립 Print의 공급 face를 함께 확인한 기호만 해소한다.
+/// 폭 표의 누락만으로 공급자를 추측하지 않으며, HFT 호환 폭과의 경계는 호출자가 지킨다.
+pub(crate) fn verified_missing_glyph_supplier(
+    metric: &FontMetric,
+    ch: char,
+) -> Option<&'static str> {
+    match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
+        // gulim.TTC의 DotumChe cmap에는 U+2024가 없다(SHA ed750275…776c).
+        // 근린생활시설 표의 독립 Print는 HBATANG의 0.173em 글리프로 출력하며,
+        // HBATANG.TTF의 hmtx 178/1024도 같은 자연 전진을 확인한다.
+        ("DotumChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        // 법원 서식 Print의 Haansoft Dotum CID 3과 HDOTUM hmtx의 대응.
+        ("Gulim", 1024, false, false, '\u{2024}') => Some("Haansoft Dotum"),
+        _ => None,
     }
 }
 
