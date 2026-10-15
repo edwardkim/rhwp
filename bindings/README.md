@@ -64,7 +64,9 @@ revision, `rgba8Premultiplied`/`srgb` 정보를 반환한다. 각 행은 위에�
 문서와 buffer handle은 **생성한 OS 스레드에서만** 사용한다. 다른 스레드·닫힌 handle은 오류다.
 요청은 동기 호출이며 재진입을 지원하지 않는다. thread마다 문서 8개, 보관 buffer 64개/128 MiB,
 요청 JSON 1 MiB로 제한한다. 이 제한은 파서·Skia의 전체 peak RSS 상한을 뜻하지 않는다.
-panic을 포착하면 해당 스레드의 handle을 모두 무효화한다. 잘못된 주소를 C 포인터로 넘기는 것은
+동기 요청의 panic을 포착하면 해당 스레드의 문서·버퍼 handle을 무효화한다.
+worker는 종료를 요청하되 handle을 보존하므로 workerStatus.isFinished 확인 후 workerRelease로
+해제해야 공유 library를 안전하게 unload할 수 있다. 잘못된 주소를 C 포인터로 넘기는 것은
 호출자 계약 위반이다. 입력 메모리는 호출 동안 유효해야 하며 포인터를 보관하지 않는다.
 
 Swift는 `Rhwp.session*`, C#은 `RhwpNative.Session*` 메서드를 제공한다. 외부 실행 예산·파일 I/O·
@@ -79,12 +81,19 @@ python3 bindings/Native/tests/session_contract.py /path/to/librhwp_native_ffi.so
 ## 화면 영역 출력 (P52)
 
 `{"op":"renderRegion","page":0,"x":20.5,"y":40,"width":320,"height":240,"scale":1.5}`는
-해당 영역 크기의 surface에 직접 그린다. `scale`은 host의 zoom × device pixel ratio다.
+전체 페이지와 동일한 원점의 제한된 scratch surface에 그린 뒤 해당 영역을 복사한다.
+`scale`은 host의 zoom × device pixel ratio다. 정수 원점 이동도 Skia의 antialiasing을
+바꿀 수 있으므로, 작은 surface에 평행 이동해 그리던 방식 대신 정확한 full-page crop을 사용한다.
 왼쪽/위는 floor, 오른쪽/아래는 ceil로 전체 페이지 픽셀 격자에 맞추며 `originX/originY`를 반환한다.
 버퍼 픽셀 `(px, py)`의 페이지 좌표는 `((originX+px)/scale, (originY+py)/scale)`다.
 음수/페이지 밖 영역은 허용하고 원본 페이지 픽셀 경계 밖은 배경색으로 채운다.
 좌표는 ±2²⁴픽셀, 출력 크기·픽셀 수는 기존 frame 한도로 제한한다.
-전체 페이지 bitmap을 만든 뒤 잘라내지 않지만, 화면 밖 subtree의 replay 생략이나 GPU 렌더링은 하지 않는다.
+출력 한도와 별개로 scratch는 축당 16,384픽셀·총 16,777,216픽셀 이하이고,
+scratch N32와 출력 RGBA의 합계는 128 MiB 이하다. 초과하면 할당 전에
+`limitExceeded`를 반환한다. 이는 두 bitmap의 상한이며 Skia 중간 surface·캐시·전체 RSS 상한은 아니다.
+따라서 큰 페이지의 작은 영역도 scratch 상한 때문에 거절될 수 있다. 전체 페이지와 겹치지 않는
+요청은 scratch 없이 배경색만 반환하지만, 먼저 geometry·출력 한도를 검증하고 출력 바이트에도
+128 MiB 상한을 적용한다. 화면 밖 subtree의 replay 생략이나 GPU 렌더링은 하지 않는다.
 
 ## 폰트와 frame 유효성 (P53)
 

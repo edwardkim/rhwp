@@ -1,5 +1,7 @@
 //! 문서 생성/로딩/저장/설정 관련 native 메서드
 
+mod reflowed_table_frames;
+
 use crate::document_core::validation::{
     CellPath, ValidationReport, ValidationWarning, WarningKind,
 };
@@ -504,6 +506,7 @@ impl DocumentCore {
         let profile = document.layout_profile();
         let source_table_frames = !profile.session_edited()
             && (profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout());
+        let is_hwp3_variant = document.is_hwp3_variant;
         for section in &mut document.sections {
             // [#4898] 이 구역의 저장 lineseg 가 배치 권위를 갖는지 먼저 판정한다 —
             // 권위가 있으면 0높이 lineseg(한컴이 접어 둔 숨은 블록)를 재조판하지 않는다.
@@ -801,6 +804,11 @@ impl DocumentCore {
                 // 끼워 넣더라도 뒤의 원본 앵커가 확보한 공간을 삭제하지 않는다.
                 // 합성 내용이 자랐으면 이미 소비한 끝점을 유지하여 되감지 않는다.
                 let mut source_anchor_end: Option<(i32, i32)> = None;
+                // [#7824] 앞 문단(줄 보유)의 아래 간격(HWPUNIT). 재구성 사다리는 줄 전진만
+                // 쌓으므로, 저장 좌표가 원점을 정하지 않은 문단 경계에서는 편집 경로
+                // (`recalculate_section_vpos`)와 같은 문단 간격 `앞 아래 + 뒤 위` 를 더한다.
+                let mut previous_spacing_after_hu: Option<(i32, bool)> = None;
+
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
                     // 필드는 저장 글줄 안의 텍스트 범위를 표시할 뿐 별도 높이를
@@ -914,6 +922,7 @@ impl DocumentCore {
                                         first_source.expect("저장 첫 줄").line_height,
                                     ) > body_height_hu
                             });
+                    let accumulated_vpos = running_vpos;
                     if source_page_break || source_tac_reset || source_plain_reset {
                         running_vpos = first_source.expect("저장 프레임 원점").vertical_pos;
                     } else if !was_reflowed
@@ -981,6 +990,33 @@ impl DocumentCore {
                             // 기존 #1920 규칙은 쪽 하단 고정 틀 host 문단만 봐서
                             // 일반 본문 문단인 이 형상을 잡지 못한다.
                             running_vpos = 0;
+                        }
+                    }
+                    // [#7824] 저장 쪽 리셋이 원점을 정하지 않았으면 문단 간격을 더한다.
+                    // 원본 앵커(아래)는 저장 간격을 그대로 옮기므로 큰 쪽을 쓴다.
+                    if running_vpos == accumulated_vpos && !para.line_segs.is_empty() {
+                        if let Some((spacing_after, _)) =
+                            previous_spacing_after_hu.filter(|(_, previous_has_source_span)| {
+                                // 양쪽의 저장 줄이 있으면 그 원점 차이가 문단 간격을 이미
+                                // 소유한다. 스타일 간격은 합성 줄이 경계에 참여할 때만
+                                // 재구성하며 저장 간격에 다시 더하지 않는다.
+                                !*previous_has_source_span || orig_span[pi].is_none()
+                            })
+                        {
+                            let spacing_before = styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map(|style| {
+                                    crate::renderer::hwp3_variant_flow_spacing_before(
+                                        style.spacing_before,
+                                        is_hwp3_variant,
+                                    )
+                                })
+                                .unwrap_or(0.0);
+                            running_vpos =
+                                running_vpos.saturating_add(spacing_after).saturating_add(
+                                    crate::renderer::px_to_hwpunit(spacing_before, dpi),
+                                );
                         }
                     }
                     if let (Some((original_first, _)), Some((source_end, rebuilt_end))) =
@@ -1151,6 +1187,18 @@ impl DocumentCore {
                     }
                     if let Some(v) = original_last_vpos {
                         prev_stored_last_vpos = v;
+                    }
+                    if !para.line_segs.is_empty() {
+                        previous_spacing_after_hu = Some((
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map(|style| {
+                                    crate::renderer::px_to_hwpunit(style.spacing_after, dpi)
+                                })
+                                .unwrap_or(0),
+                            orig_span[pi].is_some(),
+                        ));
                     }
                 }
             }
@@ -1879,6 +1927,9 @@ impl DocumentCore {
     /// 공간이 아닌 조각(rowspan 블록 분할·중첩 행 커서)은 이 매핑으로 줄 자리를 정할 수
     /// 없으므로 그 표의 사다리를 그대로 둔다 — 종전 동작이다.
     fn writeback_reflowed_table_frames(&self, snapshot: &mut Document) {
+        use self::reflowed_table_frames::{
+            generated_block_host_lines, mark_generated_host_lines, CellFrameWriteback,
+        };
         use crate::model::control::Control;
         use crate::renderer::layout::table_layout::CellUnitLineAnchor;
         use crate::renderer::pagination::PageItem;
@@ -1890,15 +1941,7 @@ impl DocumentCore {
 
         // 1단계 — 고칠 자리를 live IR 에서 정한다. 유닛 캐시가 live 셀 포인터로 메모이즈
         // 돼 있으므로 스냅숏 포인터를 캐시에 넣지 않는다.
-        struct FrameWriteback {
-            section: usize,
-            paragraph: usize,
-            control: usize,
-            cell: usize,
-            resets: Vec<(usize, usize)>,
-            preserved_frames: Vec<((usize, usize), (usize, usize))>,
-        }
-        let mut plans = Vec::new();
+        let mut plans: Vec<CellFrameWriteback> = Vec::new();
         for (section_idx, section) in self.document.sections.iter().enumerate() {
             let Some(pagination) = self.pagination.get(section_idx) else {
                 continue;
@@ -2003,6 +2046,7 @@ impl DocumentCore {
                             }
                         }
                         let mut preserved_frames = Vec::new();
+                        let generated_host_lines = generated_block_host_lines(cell, &anchors);
                         let mut resets: Vec<(usize, usize)> = Vec::with_capacity(units.len());
                         for unit in units.iter() {
                             match anchors.get(*unit) {
@@ -2068,12 +2112,21 @@ impl DocumentCore {
                         if resets.is_empty() {
                             continue;
                         }
-                        plans.push(FrameWriteback {
-                            section: section_idx,
-                            paragraph: para_idx,
-                            control: control_idx,
-                            cell: cell_idx,
+                        // 줄간격을 계상하지 않은 중첩 표 host — 뒤의 되감김을 없앨 때
+                        // 사다리 등식(`lh + ls`)을 새로 만들지 않도록 채울 간격을 줄인다.
+                        let uncharged_hosts = self.layout_engine.cell_uncharged_nested_hosts(
+                            cell,
+                            table,
+                            &self.styles,
+                        );
+                        plans.push(CellFrameWriteback {
+                            section_idx,
+                            para_idx,
+                            control_idx,
+                            cell_idx,
                             resets,
+                            uncharged_hosts,
+                            generated_host_lines,
                             preserved_frames,
                         });
                     }
@@ -2087,12 +2140,14 @@ impl DocumentCore {
         // 나르고(조판의 `vpos_gap_before` 등이 읽는다), 촘촘한 사다리로 덮으면 그 신호가
         // 사라져 읽는 쪽이 더 채운다(실측: 문단 2276 편집에서 103쪽이 11낱말 더 먹었다).
         // 그래서 줄 사이 **원래 간격을 그대로 이어 붙이고**, 되감김만 실제 컷 자리로 옮긴다.
-        for FrameWriteback {
-            section: section_idx,
-            paragraph: para_idx,
-            control: control_idx,
-            cell: cell_idx,
+        for CellFrameWriteback {
+            section_idx,
+            para_idx,
+            control_idx,
+            cell_idx,
             resets,
+            uncharged_hosts,
+            generated_host_lines,
             preserved_frames,
         } in plans
         {
@@ -2112,7 +2167,15 @@ impl DocumentCore {
             for (cell_para_idx, cell_para) in cell.paragraphs.iter_mut().enumerate() {
                 for (line_idx, seg) in cell_para.line_segs.iter_mut().enumerate() {
                     let stored = seg.vertical_pos;
-                    let occupied = seg.line_height.saturating_add(seg.line_spacing);
+                    // 되감김이 사라진 자리를 채울 이 줄의 점유 높이. 중첩 표 host 의 줄간격은
+                    // 조판이 저장 사다리의 `lh + ls` 등식을 증거로만 계상한다(#6126). 편집 직후
+                    // 조판이 계상하지 않은 host 뒤를 `lh + ls` 로 채우면 재열기에서 없던 증거가
+                    // 생겨 그 줄간격이 조각에 더해진다 — 이 경우 줄 높이만 채운다.
+                    let occupied = if uncharged_hosts.contains(&cell_para_idx) {
+                        seg.line_height
+                    } else {
+                        seg.line_height.saturating_add(seg.line_spacing)
+                    };
                     let next = match previous {
                         None => stored,
                         Some((previous_stored, previous_new, previous_occupied)) => {
@@ -2147,6 +2210,17 @@ impl DocumentCore {
                     previous = Some((stored, next, occupied));
                 }
             }
+            let Some(Control::Table(original_table)) = self.document.sections[section_idx]
+                .paragraphs[para_idx]
+                .controls
+                .get(control_idx)
+            else {
+                continue;
+            };
+            let Some(original_cell) = original_table.cells.get(cell_idx) else {
+                continue;
+            };
+            mark_generated_host_lines(cell, original_cell, &generated_host_lines);
         }
     }
 

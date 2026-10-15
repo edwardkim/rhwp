@@ -1,4 +1,4 @@
-//! Native gradient and pattern fills shared by all shape replay paths.
+//! Bounded Native fills using the shared upstream gradient geometry.
 
 use super::renderer::colorref_to_skia;
 use crate::renderer::{render_tree::BoundingBox, GradientFillInfo, PatternFillInfo, ShapeStyle};
@@ -10,10 +10,21 @@ pub(super) fn shape_fill(
     gradient: Option<&GradientFillInfo>,
     antialias: bool,
 ) -> Option<Paint> {
-    // Consume the same center/stop expansion and physical axis as upstream
-    // rectangle backgrounds for every shape, including ellipses and paths.
-    if let Some(mut paint) =
-        gradient.and_then(|gradient| super::fill::gradient_paint(gradient, bounds, style.opacity))
+    // Keep P47's admission/stop bound while consuming upstream's center/stop
+    // expansion and physical axis for backgrounds and every shape alike.
+    let raster_bounds = Rect::from_xywh(
+        bounds.x as f32,
+        bounds.y as f32,
+        bounds.width as f32,
+        bounds.height as f32,
+    );
+    if let Some(mut paint) = gradient
+        .filter(|gradient| {
+            (2..=4096).contains(&gradient.colors.len())
+                && raster_bounds.is_finite()
+                && !raster_bounds.is_empty()
+        })
+        .and_then(|gradient| super::fill::gradient_paint(gradient, bounds, style.opacity))
     {
         paint.set_anti_alias(antialias);
         return Some(paint);
