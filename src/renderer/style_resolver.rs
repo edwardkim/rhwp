@@ -328,6 +328,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     let mut font_sizes = Vec::with_capacity(LANG_COUNT);
     let mut latin_slot_legacy = false;
     let mut latin_declared_hft = false;
+    let mut latin_slot_explicit = false;
 
     for lang in 0..LANG_COUNT {
         let font_id = cs.font_ids[lang];
@@ -341,7 +342,9 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         let decision = lookup_font_name_decision(doc_info, lang, font_id);
         if lang == 1 {
             latin_slot_legacy =
-                decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin);
+                original.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin);
+            latin_slot_explicit = decision.environment_profile_id.is_some()
+                && decision.normalized_face != original.normalized_face;
         }
         let substituted = decision.substitution_boundary.is_some()
             && decision.normalized_face != decision.requested_face;
@@ -432,6 +435,14 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         cs.bold,
         cs.italic,
     );
+    let primary = |chain: &String| {
+        chain.split(',').next().unwrap_or("").trim()
+            .trim_matches(|c| c == '\'' || c == '"').to_string()
+    };
+    let explicit_latin_slot = latin_slot_explicit
+        && latin_slot_legacy
+        && primary(&font_families[0]) != primary(&font_families[1]);
+    let ascii_punct_latin_slot = ascii_punct_latin_slot || explicit_latin_slot;
 
     // 한국어(0번) 값을 기본값으로 사용
     let font_family = font_families[0].clone();
@@ -447,6 +458,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families_source_hft,
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
+        explicit_latin_slot,
         font_families_metric_face,
         font_space_em,
         font_size,

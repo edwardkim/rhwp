@@ -113,7 +113,14 @@ static HANYANGSINMYEONGJO_B7: [u16; 1] = [393];
 // ToUnicode <08> <2218>, 같은 코드의 /Widths 1000, FontMatrix 0.001을 명시한다.
 // 둘을 같은 문자로 바꾸지 않고 각 코드의 자연 전진폭만 보존한다.
 static HANYANGSINMYEONGJO_BULLET: [u16; 1] = [1024];
-static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 10] = [
+static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 11] = [
+    // 독립 HWP5 변환본 Print 5쪽의 •도 HFT 전각 글리프다.
+    // 굵은 글줄은 이 기본 폭에 한글과 같은 상대 굵은 전진을 적용한다.
+    LatinRange {
+        start: 0x2022,
+        end: 0x2022,
+        widths: &HANYANGSINMYEONGJO_BULLET,
+    },
     LatinRange {
         start: 0x2218,
         end: 0x2218,

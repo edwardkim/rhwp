@@ -1501,6 +1501,10 @@ fn measure_char_width_embedded_decision_for_font<'a>(
             && is_monospace_metric(mm.metric))
             || (matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
                 && font_metric_trusted);
+        // 이 HFT overlay의 bullet은 독립 Print로 확인한 전각 글리프다.
+        // U+2018..U+2027이라는 범위만으로 실제 폭을 다시 반각으로 줄이지 않는다.
+        let hft_bullet_width_is_authentic =
+            c == '\u{2022}' && mm.metric.name == "HanyangSinMyeongJo";
         let is_narrow_unicode_punct =
             matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}') && !quote_width_is_authentic;
         // [#7092] 전각으로 **적힌** 가운뎃점은 대개 글꼴이 지닌 진짜 값이다 — 결측 글리프는
@@ -1520,7 +1524,11 @@ fn measure_char_width_embedded_decision_for_font<'a>(
                 (mm.metric.em_size as f64 * 0.3) as u16,
                 "metricNarrowPunctuationOverlay",
             )
-        } else if is_halfwidth_punct && !quote_width_is_authentic && glyph_w >= mm.metric.em_size {
+        } else if is_halfwidth_punct
+            && !quote_width_is_authentic
+            && !hft_bullet_width_is_authentic
+            && glyph_w >= mm.metric.em_size
+        {
             (mm.metric.em_size / 2, HALFWIDTH_PUNCTUATION_WIDTH_SOURCE)
         } else {
             (glyph_w, "embeddedMetric")
@@ -1846,14 +1854,14 @@ fn char_width_decision_with_hft_tracking<'a>(
                 "notApplicable"
             };
         }
-        // 한양신명조 HFT 굵은 한글은 일반체 전각 폭에 5%를 더해 전진한다.
+        // 한양신명조 HFT 굵은 한글·전각 bullet은 일반체 폭에 5%를 더해 전진한다.
         // 자산관리규정 Print의 Type3 글리프는 1000폭에 TJ -52.6을 쓰며,
         // 출력 글꼴 크기 반올림을 포함하면 원본 em의 1.05배다. 공백·기호와
         // 실제 TrueType 선택, 별도 Bold 메트릭이 있는 글꼴에는 적용하지 않는다.
         if style.hft_fullwidth_dot
             && style.bold
             && latin.is_none()
-            && ('\u{AC00}'..='\u{D7A3}').contains(&c)
+            && (('\u{AC00}'..='\u{D7A3}').contains(&c) || c == '\u{2022}')
             && embedded.metric.is_some_and(|metric| {
                 metric.bold_fallback && metric.metric.name == "HanyangSinMyeongJo"
             })

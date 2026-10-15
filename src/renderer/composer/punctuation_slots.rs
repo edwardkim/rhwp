@@ -58,7 +58,9 @@ fn slot(ch: char, inherited: usize, regenerated: bool, style: Option<&ResolvedCh
         != style.font_size_for_lang(1)
         || style.letter_spacing_for_lang(inherited) != style.letter_spacing_for_lang(1)
         || style.ratio_for_lang(inherited) != style.ratio_for_lang(1);
-    if explicit_metrics_differ && (matches!(ch, ' ' | '\u{00a0}') || ch.is_ascii_punctuation()) {
+    if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
+        1
+    } else if explicit_metrics_differ && (matches!(ch, ' ' | '\u{00a0}') || ch.is_ascii_punctuation()) {
         1
     } else if !style.ascii_punct_latin_slot {
         inherited

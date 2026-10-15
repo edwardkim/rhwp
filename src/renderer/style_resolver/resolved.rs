@@ -36,6 +36,8 @@ pub struct ResolvedCharStyle {
     /// 한글 글꼴 그대로 둔다(`hwp3-sample16-hwp5` 정본: 한글 뒤 구두점 41건 모두 같은 글꼴).
     /// 한글 슬롯이 바탕·맑은 고딕처럼 ASCII 를 가진 TTF 인 문서도 대부분 한글 글꼴 그대로다.
     pub ascii_punct_latin_slot: bool,
+    /// 명시 환경이 선택한 원본 영문 슬롯의 구두점 소유.
+    pub explicit_latin_slot: bool,
     /// [#7391] 언어 슬롯별로, 폭을 **선언 face 자신의 표**로 재야 하는 경우의 그 이름.
     ///
     /// legacy-latin 치환은 표시할 글꼴이 없는 환경의 폴백이라 라틴 face 를 한글 face 로
@@ -134,6 +136,7 @@ impl Default for ResolvedCharStyle {
             font_families_source_hft: Vec::new(),
             font_families_hft_fullwidth_dot: Vec::new(),
             ascii_punct_latin_slot: false,
+            explicit_latin_slot: false,
             font_families_metric_face: Vec::new(),
             font_space_em: None,
             font_size: 12.0,
