@@ -252,7 +252,7 @@ fn inline_object_affinity_is_explicitly_unsupported() {
 fn vertical_navigation_is_typed_and_preserves_nested_paths() {
     let mut core = blank();
     core.insert_text_native(0, 0, 0, "abc").unwrap();
-    core.split_paragraph_native(0, 0, 3).unwrap();
+    core.split_paragraph_native(0, 0, 3, None).unwrap();
     core.insert_text_native(0, 1, 0, "def").unwrap();
     let down = core
         .native_move_vertical(&body(0, 0), NativeVerticalDirection::Down, None)
