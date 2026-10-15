@@ -8,9 +8,7 @@ use crate::renderer::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
     expand_pua_render_text_in_style, CharOverlapInfo,
 };
-use crate::renderer::layout::{
-    forces_halfwidth_cjk_quote, forces_halfwidth_punct_paint, split_into_clusters,
-};
+use crate::renderer::layout::split_into_clusters;
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, TextStyle};
 
@@ -664,19 +662,25 @@ impl SkiaTextReplay<'_> {
                                 + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
                                 + dx;
                             let char_y = y as f32 + dy;
-                            // 반각 강제 구두점: 측정은 반각(0.3~0.5em)인데 폰트
-                            // 글리프가 전각인 문자(휴먼명조 U+2018 등)를 그대로
-                            // 그리면 다음 글자와 겹친다. web_canvas 와 동일하게
-                            // 0.5× 수평 축소로 반각 공간에 배치 (한글은 자체
-                            // 내장 협폭 글리프로 렌더 — 오라클 PDF Type3 실측).
-                            let needs_halfwidth_scale = cluster.chars().next().is_some_and(|ch| {
-                                forces_halfwidth_punct_paint(style, ch)
-                                    || forces_halfwidth_cjk_quote(
-                                        &style.font_family,
-                                        style.bold,
-                                        style.italic,
+                            // 측정에서 폭을 소유한 경로가 paint의 축소도 결정한다.
+                            // Unicode 범위만으로 이미 좁은 자연 글리프를 다시 줄이지 않는다.
+                            let needs_halfwidth_scale = !has_ratio
+                                && cluster.chars().next().is_some_and(|ch| {
+                                    matches!(
                                         ch,
-                                        style.font_size,
+                                        '\u{2018}'
+                                            ..='\u{2027}' | '\u{00B7}' | '\u{300C}' | '\u{300D}'
+                                    ) && matches!(
+                                        crate::renderer::layout::char_width_decision(
+                                            &[ch],
+                                            &[1],
+                                            0,
+                                            style,
+                                            cluster.chars().count() == 1,
+                                        )
+                                        .width_source,
+                                        "metricNarrowPunctuationOverlay"
+                                            | "metricHalfwidthPunctuationOverlay"
                                     )
                             }) && !has_ratio;
                             if needs_halfwidth_scale {
@@ -739,10 +743,11 @@ impl SkiaTextReplay<'_> {
                                 }
                                 continue;
                             }
+                            let scale = ratio * fit_scale;
                             if has_ratio || (fit_scale - 1.0).abs() > f32::EPSILON {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
-                                canvas.scale((ratio * fit_scale, 1.0));
+                                canvas.scale((scale, 1.0));
                                 if !hft_outline.as_ref().is_some_and(|outline| {
                                     outline.draw(canvas, cluster, &font, (0.0, 0.0), glyph_paint)
                                 }) {

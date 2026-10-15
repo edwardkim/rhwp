@@ -3878,6 +3878,77 @@ mod tests {
     }
 
     #[test]
+    fn text_glyph_fit_uses_layout_advance_without_distribution_spacing() {
+        let render = |advance: f64, distribution: f64, letter_spacing: f64| {
+            let bounds = BoundingBox::new(8.0, 0.0, 56.0, 56.0);
+            let run = TextRunNode {
+                text: "m".into(),
+                style: TextStyle {
+                    font_family: "Noto Sans KR".into(),
+                    font_size: 32.0,
+                    extra_char_spacing: distribution,
+                    letter_spacing,
+                    ..Default::default()
+                },
+                char_shape_id: None,
+                para_shape_id: None,
+                section_index: None,
+                para_index: None,
+                char_start: None,
+                cell_context: None,
+                is_para_end: false,
+                is_line_break_end: false,
+                rotation: 0.0,
+                is_vertical: false,
+                char_overlap: None,
+                border_fill_id: 0,
+                baseline: 40.0,
+                field_marker: Default::default(),
+                layout_positions: Some(vec![0.0, advance]),
+                display_text: None,
+            };
+            let tree = PageLayerTree::new(
+                72.0,
+                56.0,
+                LayerNode::leaf(
+                    BoundingBox::new(0.0, 0.0, 72.0, 56.0),
+                    None,
+                    vec![PaintOp::text_run(bounds, run)],
+                ),
+            );
+            let out = SkiaLayerRenderer::new()
+                .with_font_paths(&[
+                    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource")
+                ])
+                .render_raster_with_options(&tree, RasterRenderOptions::default())
+                .unwrap();
+            decode_rgba(&out.bytes)
+        };
+        let compact = render(8.0, 0.0, 0.0);
+        let distributed = render(20.0, 12.0, 0.0);
+        assert_eq!(
+            compact, distributed,
+            "배분 간격은 다음 글리프 원점을 옮기며 윤곽을 늘리지 않는다"
+        );
+        let ink_width = |image: &image::RgbaImage| {
+            let columns: Vec<_> = (0..image.width())
+                .filter(|x| (0..image.height()).any(|y| image.get_pixel(*x, y)[3] > 32))
+                .collect();
+            columns.last().unwrap() - columns.first().unwrap() + 1
+        };
+        assert!(
+            ink_width(&compact) <= 9,
+            "합의한 8px advance 안의 글리프가 뒤 글자를 침범하지 않는다: {}",
+            ink_width(&compact)
+        );
+        let negative = render(8.0, 0.0, -2.0);
+        assert!(
+            ink_width(&negative) > ink_width(&compact) * 2,
+            "음수 자간은 후속 원점의 겹침을 허용하며 글리프 자체를 압축하지 않는다"
+        );
+    }
+
+    #[test]
     fn renders_char_overlap_text_run_as_ink() {
         let run = TextRunNode {
             text: "①".to_string(),
