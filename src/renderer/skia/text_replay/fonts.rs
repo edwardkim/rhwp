@@ -89,10 +89,10 @@ fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Fon
     if style.is_visually_bold() && !is_bold_face && !owns_heavy {
         font.set_embolden(true);
     }
-    // strict glyph replay와 PDF가 쓰는 같은 합성 기울임이다.
+    // 한컴 Print의 직립 프로그램 합성은 x/y shear 1/3이다.
     // 실제 기울임 face에는 중복 shear를 적용하지 않는다.
     if style.italic && !is_slanted_face {
-        font.set_skew_x(-0.25);
+        font.set_skew_x(-1.0 / 3.0);
     }
     font
 }
