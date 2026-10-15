@@ -64,7 +64,9 @@ revision, `rgba8Premultiplied`/`srgb` 정보를 반환한다. 각 행은 위에�
 문서와 buffer handle은 **생성한 OS 스레드에서만** 사용한다. 다른 스레드·닫힌 handle은 오류다.
 요청은 동기 호출이며 재진입을 지원하지 않는다. thread마다 문서 8개, 보관 buffer 64개/128 MiB,
 요청 JSON 1 MiB로 제한한다. 이 제한은 파서·Skia의 전체 peak RSS 상한을 뜻하지 않는다.
-panic을 포착하면 해당 스레드의 handle을 모두 무효화한다. 잘못된 주소를 C 포인터로 넘기는 것은
+동기 요청의 panic을 포착하면 해당 스레드의 문서·버퍼 handle을 무효화한다.
+worker는 종료를 요청하되 handle을 보존하므로 workerStatus.isFinished 확인 후 workerRelease로
+해제해야 공유 library를 안전하게 unload할 수 있다. 잘못된 주소를 C 포인터로 넘기는 것은
 호출자 계약 위반이다. 입력 메모리는 호출 동안 유효해야 하며 포인터를 보관하지 않는다.
 
 Swift는 `Rhwp.session*`, C#은 `RhwpNative.Session*` 메서드를 제공한다. 외부 실행 예산·파일 I/O·
