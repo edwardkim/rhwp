@@ -1192,3 +1192,28 @@ leading_spaces/natural_prefix_runs→최종 glyph spacing이 같은 경계를 �
 집중 Native Skia22PASS0FAIL(1.609초), Native build/fresh web no-opt 빌드·fmt 완료.
 전체 회귀와 #1105/생물독소 경계 보정 등은 남아 있으며 PR 준비 완료가 아니다.
 [전쪽 수치·출처·대표 확대 이미지](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/field-prefix-consumer-repair/validation.json).
+
+
+## C34. 문단 내부 컷 허용과 고아 줄 예외의 분리
+
+생물독소 표15의75행은 내부 저장 reset이 없고 첫 조각12px만47쪽에 새어나갔다.
+`row_cut_respects_plain_paragraph_keeps`의 일반 컷 허용을 고아 줄 높이 면제로
+사용한 오류였다. 스캔의 이 면제만 완결한 독립 문단 경계 질의로 바꿨다.
+실제 저장 reset·첫 조각 프레임·병합 셀 빈 띠와 emit의 수용된 물리 띠 계약은
+보존한다. 문서 ID나 좌표 조건을 추가하지 않았다. 실제 소스 유닛 컷→고아 줄
+판정→예약 end_row/end_cut→같은 컷의 이어받기·paint가 기존 관계 검사를 충족한다.
+
+기존 생물독소4검사는3PASS1FAIL→4PASS0FAIL(0.62→0.67초)이다. 전체 원문205쪽
+Native/fresh192DPI 비교를 끝냈고 쪽수205/205이다. 같은192DPI의 수정 전후 Native
+48쪽은33.97789→97.85274%,47쪽96.00150→98.08291%,46/49쪽은 동일하다.
+독립 Print/Native/fresh의47쪽74행 끝·48쪽75행 전체 시작을 직접 확대 판독했다.
+
+전쪽 수용은 아직 아니다.168쪽은 Native89.09225/fresh89.05377%이며 설명문의
+줄바꿈 차이가 남는다. 같은192DPI 수정 전 Native도89.09225%로 본 변경과 별도다.
+과거96DPI 결과와 숫자를 혼합하지 않는다. 신규 px 회귀를 보류하고 기존 소유·
+쪽수·누락/중복 검사를 유지했다.
+
+영향 범위 default nextest45건은44PASS1FAIL(2.977초), 남은 실패는#1105의
+2022 저장본 낱말 소속이다. 이는 전체 회귀 결과가 아니다. Native/fresh build·fmt
+완료이며 최신 전체 회귀 및 범위별 필수 게이트는 보정 뒤 다시 실행한다.
+[원인·빌드·전후·전쪽 수치·대표 review](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/biotoxin-row-ownership/validation.json).
