@@ -318,6 +318,43 @@ for (const fixture of BOUNDS_CASES) {
     });
   }
   for (const [origin, extent] of [['x', 'width'], ['y', 'height']] as const) {
+    test(`${fixture.name} rejects ${extent} that narrows to zero`, () => {
+      for (const size of [1e-100, 2 ** -150]) {
+        const op = fixture.create();
+        Object.assign(fixture.bounds(op), { [origin]: 0, [extent]: size });
+        expectRejected(op);
+      }
+    });
+    test(`${fixture.name} rejects ${origin} endpoints that collapse after f32 narrowing`, () => {
+      // The first rect collapses in both backends. The next two distinguish
+      // Native's f32 addition from CanvasKit XYWHRect's f64-then-f32 addition.
+      for (const [position, size] of [
+        [1, 2 ** -25],
+        [1 + 2 ** -25, 3 * 2 ** -26],
+        [1 - 2 ** -26, 5 * 2 ** -26],
+      ]) {
+        const op = fixture.create();
+        Object.assign(fixture.bounds(op), { [origin]: position, [extent]: size });
+        expectRejected(op);
+      }
+    });
+    test(`${fixture.name} rejects ${origin} endpoint overflow from narrowed components`, () => {
+      // The exact f64 endpoint is F32_MAX, but separately rounding both
+      // components makes their f32 sum overflow to infinity.
+      const op = fixture.create();
+      Object.assign(fixture.bounds(op), {
+        [origin]: F32_MAX - 2 ** 103 + 2 ** 77,
+        [extent]: 2 ** 103 - 2 ** 77,
+      });
+      expectRejected(op);
+    });
+    test(`${fixture.name} accepts positive subnormal ${extent} at the origin`, () => {
+      for (const size of [2 ** -149, 3 * 2 ** -151]) {
+        const op = fixture.create();
+        Object.assign(fixture.bounds(op), { [origin]: 0, [extent]: size });
+        expectAccepted(op);
+      }
+    });
     test(`${fixture.name} rejects overflowing ${origin} + ${extent} with finite f32 components`, () => {
       const op = fixture.create();
       Object.assign(fixture.bounds(op), { [origin]: F32_MAX, [extent]: F32_MAX });
@@ -331,6 +368,29 @@ for (const fixture of BOUNDS_CASES) {
       }
     });
   }
+  test(`${fixture.name} narrowing failure keeps the whole two-part TextRun fallback`, () => {
+    const outlines: LayerGlyphOutlineOp[] = [0, 1].map(partIndex => ({
+      ...fixture.create(),
+      variant: { equivalenceGroup: 'run', variantId: 'outline', variantKind: 'glyphOutline', partIndex, partCount: 2 },
+    }));
+    const fallback: LayerTextRunOp = {
+      type: 'textRun', bbox: monochrome().bbox, text: '가나',
+      variant: { equivalenceGroup: 'run', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+    };
+    const select = () => selectLayerTextVariantsForLeaf(
+      [...outlines, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+    );
+    assert.deepEqual([...select()], outlines);
+    for (const bounds of [
+      { x: 0, y: 0, width: 1e-100, height: 1 },
+      { x: 1, y: 0, width: 2 ** -25, height: 1 },
+      { x: 1 + 2 ** -25, y: 0, width: 3 * 2 ** -26, height: 1 },
+      { x: 1 - 2 ** -26, y: 0, width: 5 * 2 ** -26, height: 1 },
+    ]) {
+      Object.assign(fixture.bounds(outlines[1]), bounds);
+      assert.deepEqual([...select()], [fallback]);
+    }
+  });
 }
 
 test('SVG destination bounds must exist and have positive extents', () => {
@@ -390,6 +450,18 @@ test('an invalid SVG fontEmBox does not silently fall back to the logical bbox',
 });
 
 for (const field of ['width', 'height'] as const) {
+  test(`SVG intrinsic ${field} must remain positive after f32 narrowing`, () => {
+    for (const value of [1e-100, 2 ** -150]) {
+      const op = svg();
+      op.svgGlyph.intrinsicSize[field] = value;
+      expectRejected(op);
+    }
+    for (const value of [2 ** -149, 3 * 2 ** -151]) {
+      const op = svg();
+      op.svgGlyph.intrinsicSize[field] = value;
+      expectAccepted(op);
+    }
+  });
   test(`SVG intrinsic ${field} rejects finite f64 overflow and accepts exact f32::MAX`, () => {
     for (const value of OVERFLOW_VALUES) {
       const op = svg();
