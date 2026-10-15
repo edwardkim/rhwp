@@ -1,0 +1,10 @@
+{
+  "path": "/Users/tsjang/Library/Fonts/NanumGothic.ttf",
+  "result": {
+    "status": "error",
+    "error": "SyntaxError: Invalid font data in ArrayBuffer."
+  },
+  "logs": [
+    "OTS parsing error: TSI3: zero-length table"
+  ]
+}

@@ -83,6 +83,44 @@ test('CanvasKit SFNT normalization rejects malformed collection directories', ()
   assert.equal(canvasKitFontFaceData(collection, 1.5), null);
 });
 
+test('empty VTT source tables do not block browser font loading or change runtime tables', () => {
+  const original = fixtureBuffer('RHWPBitmapSvgGlyphSmoke.ttf');
+  const source = new DataView(original);
+  const count = source.getUint16(4, false);
+  const directoryEnd = 12 + count * 16;
+  const input = new Uint8Array(original.byteLength + 16);
+  input.set(new Uint8Array(original, 0, directoryEnd));
+  input.set(new Uint8Array(original, directoryEnd), directoryEnd + 16);
+  const view = new DataView(input.buffer);
+  view.setUint16(4, count + 1, false);
+  for (let i = 0; i < count; i++) {
+    const record = 12 + i * 16;
+    view.setUint32(record + 8, source.getUint32(record + 8, false) + 16, false);
+  }
+  // NanumGothic's empty TSI3 is VTT authoring metadata. OTS rejects its
+  // directory entry before it can use the unchanged cmap/glyf/hmtx program.
+  view.setUint32(directoryEnd, 0x54534933, false);
+  view.setUint32(directoryEnd + 8, input.byteLength, false);
+  const normalized = canvasKitFontFaceData(input.buffer, 0);
+  assert.ok(normalized);
+  const output = new DataView(normalized);
+  assert.equal(output.getUint16(4, false), count, 'omit only the empty source record');
+  for (let i = 0; i < count; i++) {
+    const record = 12 + i * 16;
+    const tag = source.getUint32(record, false);
+    const found = Array.from({length: count}, (_, n) => 12 + n * 16)
+      .find((offset) => output.getUint32(offset, false) === tag);
+    assert.notEqual(found, undefined);
+    const start = source.getUint32(record + 8, false);
+    const length = source.getUint32(record + 12, false);
+    const actual = output.getUint32(found! + 8, false);
+    const before = new Uint8Array(original.slice(start, start + length));
+    const after = new Uint8Array(normalized.slice(actual, actual + length));
+    if (tag === 0x68656164) { before.fill(0, 8, 12); after.fill(0, 8, 12); }
+    assert.deepEqual(after, before, 'runtime tables and nonempty source tables keep their bytes');
+  }
+});
+
 test('CanvasKit SFNT normalization protects TTC v2 DSIG metadata', () => {
   const collection = fixtureBuffer('RHWPExactFaceSmoke.ttc');
   const malformed = collection.slice(0);

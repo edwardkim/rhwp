@@ -1,7 +1,7 @@
 //! #5846: 혼재 호스트의 내부 행은 쪽별 원본 내용과 표/문단 순서를 보존한다.
 //!
 //! 독립 기준은 `pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf`이다.
-//! 기호 폭 보정의 Native/fresh 전 66쪽은 최저 91.09665%, 미달 0이다.
+//! 현재 기본/명시 환경의 Native/fresh 전66쪽은 각각 최저93.72832%, 미달0이다.
 //! 59쪽은 앞 행, 60쪽은 단기연체정보부터 서명까지의 뒤 행을 소유한다.
 //! 절대 좌표·픽셀 공차·유닛 번호 대신 소속, 포함 및 표 뒤 문단의 관계를 검사한다.
 
@@ -319,6 +319,11 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
     // 좌표나 현재 쪽 전체 폭을 고정하지 않는다.
     let mut default_doc = HwpDocument::from_bytes(&bytes).expect("기본 제품 경로의 같은 원본");
     for (title_doc, explicit_glyph_advance) in [(&mut doc, true), (&mut default_doc, false)] {
+        assert_eq!(
+            title_doc.font_environment().is_some(),
+            explicit_glyph_advance,
+            "결측 기호 공급만으로 기본 세션에 글꼴 환경을 승격하지 않음"
+        );
         for page_index in [39, 64] {
             let page = title_doc
                 .build_page_render_tree(page_index)
@@ -394,16 +399,26 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
             };
             let dot_advance = origin(next) - origin(dot);
             let hangul_advance = origin(following) - origin(next);
-            if explicit_glyph_advance {
-                assert!(
-                    dot_advance > 0.0 && dot_advance < hangul_advance / 2.0,
-                    "명시한 기호 공급자의 자연 전진: dot={dot_advance}, Hangul={hangul_advance}"
-                );
-            } else {
-                assert!(
-                    (dot_advance / hangul_advance - 1.0).abs() < FLOAT_EPSILON,
-                    "기본 glyph 공급으로 원 호환 전진을 승격하지 않음"
-                );
+            assert!(
+                dot_advance > 0.0 && dot_advance < hangul_advance / 2.0,
+                "독립 Print의 결측 기호 공급자는 기본/명시 세션 모두 자연 전진을 사용함: \
+                 explicit={explicit_glyph_advance}, dot={dot_advance}, Hangul={hangul_advance}"
+            );
+            if page_index == 64 {
+                // 같은 제목 동작의40쪽은97.84795/97.86223%라 관계만 검사한다.
+                // 전66쪽 양쪽90% 이상,65쪽은98.17737/98.18230%와 확대 판독을
+                // 충족했다. 독립 Print 기호와 뒤 한글의 원점을 ±2 CSSpx로 보호한다.
+                let baseline = dot.attribute("y").unwrap().parse::<f64>().unwrap();
+                for (actual, independent) in [
+                    (origin(dot), 320.8),
+                    (origin(next), 324.32),
+                    (baseline, 92.64),
+                ] {
+                    assert!(
+                        (actual - independent).abs() <= 2.0,
+                        "독립 Print65쪽의 기호/다음 글자 원점: 실제{actual}, 독립{independent}"
+                    );
+                }
             }
             assert_eq!(
                 dot.attribute("font-size"),

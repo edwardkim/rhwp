@@ -298,6 +298,38 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
             second = json.loads(png.font_catalog(adapter, root, [sources], root).read_text())
             self.assertNotEqual(first['faces'][0]['sourceSha256'], second['faces'][0]['sourceSha256'])
             self.assertEqual(second['faces'][0]['weight'], 700)
+    def test_empty_vtt_source_record_is_omitted_without_recompiling_runtime_tables(self):
+        from fontTools.ttLib import TTFont
+        from fontTools.ttLib.sfnt import SFNTWriter, calcChecksum
+        import hashlib
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            inputs = root / 'input'
+            inputs.mkdir()
+            fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf'
+            source = inputs / 'empty-source.ttf'
+            with TTFont(fixture, lazy=True) as font, source.open('wb') as output:
+                writer = SFNTWriter(output, len(font.reader.keys()) + 2, font.sfntVersion)
+                for tag in sorted(font.reader.keys()):
+                    writer[tag] = font.reader[tag]
+                writer['TSI3'] = b''
+                writer['TSI5'] = b'\0\0\0\0'
+                writer.close()
+            adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest(),
+                write_json_atomic=lambda p, v: p.write_text(json.dumps(v)))
+            face = json.loads(png.font_catalog(adapter, root, [inputs], root).read_text())['faces'][0]
+            self.assertEqual(face['repairs'], ['empty-vtt-source-table:TSI3'])
+            prepared = Path(face['path'])
+            self.assertEqual(face['sourceSha256'], hashlib.sha256(source.read_bytes()).hexdigest())
+            self.assertEqual(calcChecksum(prepared.read_bytes()), 0xB1B0AFBA)
+            with TTFont(source, lazy=True) as before, TTFont(prepared, lazy=True) as after:
+                self.assertEqual(set(after.reader.keys()), set(before.reader.keys()) - {'TSI3'})
+                for tag in after.reader.keys():
+                    original, actual = before.reader[tag], after.reader[tag]
+                    if tag == 'head':
+                        original, actual = original[:8] + original[12:], actual[:8] + actual[12:]
+                    self.assertEqual(actual, original, tag)
 
     def test_selected_ttc_face_keeps_document_family_alias(self):
         with tempfile.TemporaryDirectory() as folder:

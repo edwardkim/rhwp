@@ -8,6 +8,9 @@ const MAX_SFNT_TABLE_COUNT = 4096;
 const MAX_NORMALIZED_SFNT_BYTES = 64 * 1024 * 1024;
 const HEAD_TAG = 0x6865_6164;
 const SFNT_CHECKSUM_MAGIC = 0xb1b0_afba;
+// VTT source records are authoring metadata, not executable glyph instructions.
+// Empty records (e.g. NanumGothic TSI3) make OTS reject an otherwise usable font.
+const VTT_SOURCE_TAGS = new Set([0x5453_4930, 0x5453_4931, 0x5453_4932, 0x5453_4933, 0x5453_4935]);
 
 export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number): ArrayBuffer | null {
   if (!Number.isInteger(faceIndex) || faceIndex < 0 || faceIndex > 0xffff_ffff) return null;
@@ -73,22 +76,37 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
       || tableOffset > bytes.byteLength
       || tableLength > bytes.byteLength - tableOffset
     ) return null;
+    if (tableLength === 0 && VTT_SOURCE_TAGS.has(view.getUint32(recordOffset, false))) continue;
     outputLength = Math.ceil(outputLength / 4) * 4;
     const outputOffset = outputLength;
     outputLength += tableLength;
     if (!Number.isSafeInteger(outputLength) || outputLength > MAX_NORMALIZED_SFNT_BYTES) return null;
     tables.push({ recordOffset, sourceOffset: tableOffset, length: tableLength, outputOffset });
   }
+  if (tables.length === 0) return null;
   outputLength = Math.ceil(outputLength / 4) * 4;
   // Aligned standalone fonts keep their bytes, including the existing cmap repair.
-  if (!collection && tables.every((table) => table.sourceOffset % 4 === 0)) {
+  if (!collection && tables.length === tableCount && tables.every((table) => table.sourceOffset % 4 === 0)) {
     return repairTerminalFontCmap(fontData.slice(0));
   }
   tables.sort((a, b) => view.getUint32(a.recordOffset, false) - view.getUint32(b.recordOffset, false));
+  outputLength = 12 + tables.length * 16;
+  for (const table of tables) {
+    outputLength = Math.ceil(outputLength / 4) * 4;
+    table.outputOffset = outputLength;
+    outputLength += table.length;
+  }
+  outputLength = Math.ceil(outputLength / 4) * 4;
 
   const selected = new Uint8Array(outputLength);
   const selectedView = new DataView(selected.buffer);
   selected.set(bytes.subarray(faceOffset, faceOffset + 12), 0);
+  const selector = Math.floor(Math.log2(tables.length));
+  const searchRange = 16 * 2 ** selector;
+  selectedView.setUint16(4, tables.length, false);
+  selectedView.setUint16(6, searchRange, false);
+  selectedView.setUint16(8, selector, false);
+  selectedView.setUint16(10, tables.length * 16 - searchRange, false);
   let headOffset: number | null = null;
   for (let tableIndex = 0; tableIndex < tables.length; tableIndex += 1) {
     const table = tables[tableIndex];

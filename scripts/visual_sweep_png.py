@@ -10,6 +10,8 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+VTT_SOURCE_TABLES = frozenset({'TSI0', 'TSI1', 'TSI2', 'TSI3', 'TSI5'})
+
 
 def png_backend(wasm_package: Path | None) -> str:
     return 'wasm-canvas2d' if wasm_package else 'native-skia'

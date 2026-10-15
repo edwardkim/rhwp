@@ -1,0 +1,34 @@
+{
+  "pdf": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+  "page": 65,
+  "dpi": 192,
+  "coordinateSystem": "CSS96 = independent Print point * 4/3",
+  "unrelatedInvalidTraceBytesReplaced": true,
+  "glyphs": [
+    {
+      "character": "비",
+      "xCss": 280.8,
+      "baselineCss": 92.64
+    },
+    {
+      "character": "용",
+      "xCss": 300.8,
+      "baselineCss": 92.64
+    },
+    {
+      "character": "․",
+      "xCss": 320.8,
+      "baselineCss": 92.64
+    },
+    {
+      "character": "편",
+      "xCss": 324.32,
+      "baselineCss": 92.64
+    },
+    {
+      "character": "익",
+      "xCss": 344.32,
+      "baselineCss": 92.64
+    }
+  ]
+}

@@ -1128,3 +1128,42 @@ root/Studio와 frozen JS/WASM hash 일치를 확인했다. fresh WASM 전쪽 비
 전체 default nextest는 이전 fbb source에서10383건 중10374PASS9FAIL45skip이었으며,
 현재 후보의 전체 통과로 재인용하지 않는다. 로그·전쪽 TSV·대표 PNG는 ignored
 `output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/hft-ascii-followthrough/`에 보존한다.
+
+
+## C32. 실제 생성 저장본의 전쪽 검증과 글꼴 준비·기존 검사 교정
+
+현재 코드의 공개 분할→HWP 저장→재파싱 경로로 만든 입력4a96f1fc…를 독립 한컴2024
+Print(8430f817…, preprocessing 없음)로 확인했다. 기본/2024 모드의 생성 바이트도 동일했다.
+원본115쪽은 Native90.52654/fresh90.43677%, 새 분할197쪽은 양쪽 최저90.24017%,
+쪽수 일치·미달0이다. 이전 d9bc 입력은 다른 저장본이고 양쪽7쪽 미달이 남으므로 보존하며,
+새 입력의 통과를 이전 입력의 개선으로 바꾸어 쓰지 않는다. 130쪽 수식의 현재 생성본은
+기준선·행 간격이 독립 출력과 일치했다. 90쪽140℃ 줄 경계 차이는 직접 확인해 잔여로 남겼다.
+
+마지막 이어받기197쪽은 양쪽99.11469%, 같은 동작을 보호하는 가장 높은 완료 쪽이다.
+독립 Print trace의 첫 글자x/첫·끝 baseline을 ±2 CSSpx로 보호하고,196→197쪽의 원문
+누락·중복·여섯 줄 소속·셀 안 포함·겹침 없음도 함께 검사했다. 새 검사는 이전fbb의196쪽
+FAIL→현재197쪽PASS(실제 rustc --test)이며, 원본115/저장197 검사는 유지했다.
+[입력·전쪽 수치·독립 원점·review](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/validation.json).
+
+#6389의 합성 세션과#5846의 기본 제품 경로가 결측U+2024를 전각으로 기대하던 검사를
+C19의 독립 Print/실제 기호 공급자 계약으로 교정했다. 원 글꼴의 TrueType 선언 승격을
+금지하는 검사와 원본 저장 불변은 유지했다. 개인정보66쪽은 기본/명시 환경 각각
+Native/fresh 최저93.72832%, 미달0이다. #5821 제목은 SVG의 한 자리 x 반올림과
+반올림 전 셀 좌표를 혼합한16.7milli-pixel 오검출이었다. 측정 불확실성0.05px만
+추가로 전파하고 기존1HU의 조판 정밀도·중심 관계는 유지했다. 전1쪽99.98575/99.99665%.
+
+이 검증 중 NanumGothic의 빈TSI3를 Chrome OTS가 거절한 원인을 확인했다. Mac/Linux는
+동일한 원본SHA48a28e97…이고 파일을 교체하지 않았다. Studio와 Sweep 공통 준비에서
+빈VTT 편집 메타데이터만 제외해 실제 Chrome error→loaded를 확인했다. 원본의 나머지
+글리프·폭·힌팅·cmap 등 payload는 head checksum 외에 모두 동일하며, 두 준비 경로의
+결과SHA도badb9944…로 동일하다. Node5PASS1FAIL→6PASS, Python1FAIL→전체21PASS,
+글꼴 환경Node9PASS·Studio tsc PASS다. 글꼴 바이너리는 커밋하지 않았다.
+[준비·fixture 교정 증거](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/font-program-preparation/validation.json).
+
+집중Native Skia13건은13PASS. 기존 공개 paint/재조판 계약의integration 이관 파일도
+기존 원본 계약을 유지한다. default feature의 영향 범위45건은41PASS4FAIL이며,
+#1116 빈 문단 소유/#1105 2022 저장본 낱말/#규제분석 누름틀 공백/생물독소 경계 행이
+남았다. 이 검증은 전체 default nextest가 아니며 네 실패의 보정을 계속한다.
+이는 전체 회귀 통과나 PR 준비 완료가 아니다. 지침·사용자 초안은 변경하지 않았다.
+
+C32 보완: 개인정보의 같은 기호 제목40쪽은97%대로 관계 검사를 유지하고, 양쪽98.17737/98.18230%인65쪽은 독립 Print의 기호/다음 글자x·baseline ±2px를 보호했다. 새 좌표는 이미 정상인 위치의 보호이며, 새 생산 코드 결함의 before/after로 주장하지 않는다. 해당 기존 함수는 default1PASS(0.534초). HFT i의277/1000 자연 폭은 별도의 독립 metric 계약에서도 이전1FAIL→현재1PASS를 확인했다. 사용자 초안 두 파일의 SHA는 계속 동일하다.

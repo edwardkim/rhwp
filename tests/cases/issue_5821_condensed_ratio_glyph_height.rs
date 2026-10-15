@@ -230,9 +230,12 @@ fn issue_5821_first_title_visible_span_is_centered_in_its_cell() {
     let cell = title_cell(&tree.root).expect("제목 셀 소속");
     let span_center = (first.x + visible_end) / 2.0;
     let cell_center = cell.bbox.x + cell.bbox.width / 2.0;
-    // HU 한 단위의 변환 정밀도만 허용한다. 실제 문서의 절대 좌표를 고정하지 않는다.
+    // SVG는 각 glyph x를 소수 한 자리로 직렬화한다. 두 원점의 평균에도
+    // 최대0.05px의 반올림 구간이 남는다. 반올림하지 않은 셀 원점과 비교할 때
+    // 이 측정 구간을 반영하고, 그 밖에는 기존 한 HU의 조판 정밀도를 유지한다.
+    let svg_origin_rounding_bound = 0.1 / 2.0;
     assert!(
-        (span_center - cell_center).abs() <= 96.0 / 7200.0,
+        (span_center - cell_center).abs() <= svg_origin_rounding_bound + 96.0 / 7200.0,
         "첫 제목 가시 폭이 셀 중심에 맞아야 한다: 제목 {span_center}, 셀 {cell_center}"
     );
 }

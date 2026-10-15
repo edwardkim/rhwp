@@ -1,0 +1,77 @@
+{
+  "catalogue": {
+    "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/font-provider-contract-repair/nanum-catalogue/font_resources/48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733-0.ttf",
+    "source": "/Users/tsjang/Library/Fonts/NanumGothic.ttf",
+    "sourceSha256": "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733",
+    "sha256": "badb9944d99fc61dc918977b6bf3f8989904665c1205afc1402ed75126c56d79",
+    "faceIndex": 0,
+    "families": [
+      "NanumGothic",
+      "나눔고딕"
+    ],
+    "weight": 400,
+    "nameDecodeWarnings": [],
+    "style": "normal",
+    "nameRecordErrors": [],
+    "repairs": [
+      "empty-vtt-source-tables:TSI3"
+    ]
+  },
+  "studioPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/font-provider-contract-repair/nanum-studio-normalized.ttf",
+  "payloads": {
+    "studio": {
+      "sha256": "badb9944d99fc61dc918977b6bf3f8989904665c1205afc1402ed75126c56d79",
+      "droppedEmptySourceTables": [
+        "TSI3"
+      ],
+      "unchangedTables": [
+        "OS/2",
+        "TSI0",
+        "TSI1",
+        "TSI2",
+        "TSI5",
+        "cmap",
+        "cvt ",
+        "fpgm",
+        "gasp",
+        "glyf",
+        "head",
+        "hhea",
+        "hmtx",
+        "kern",
+        "loca",
+        "maxp",
+        "name",
+        "post",
+        "prep"
+      ]
+    },
+    "sweep": {
+      "sha256": "badb9944d99fc61dc918977b6bf3f8989904665c1205afc1402ed75126c56d79",
+      "droppedEmptySourceTables": [
+        "TSI3"
+      ],
+      "unchangedTables": [
+        "OS/2",
+        "TSI0",
+        "TSI1",
+        "TSI2",
+        "TSI5",
+        "cmap",
+        "cvt ",
+        "fpgm",
+        "gasp",
+        "glyf",
+        "head",
+        "hhea",
+        "hmtx",
+        "kern",
+        "loca",
+        "maxp",
+        "name",
+        "post",
+        "prep"
+      ]
+    }
+  }
+}
