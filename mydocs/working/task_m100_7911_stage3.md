@@ -62,3 +62,77 @@ SVG 내용 검사는 실제 출력이 글자별 `<text>`를 사용함을 확인�
 - Native lib lint는 `cargo clippy --locked -p rhwp --lib [--features pdf-import] --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings` 두 구성을 순차 실행했다. WASM lint는 `docker compose -p rhwp --env-file .env.docker run --rm --no-deps -e CARGO_BUILD_JOBS=4 wasm` 안에서 같은 두 구성에 `--target wasm32-unknown-unknown`을 적용했다. 실제 제품 WASM 생성·브라우저 실행 검증은 F3의 작업이다.
 - 다음은 F2 `import-pdf` 선택 페이지 CLI·도움말·JSON 진단/종료/원자적 저장 계약이다. 이후 F3 공개 WASM/Worker와 F4 실제 편집·저장 및 제출 범위 검증을 연결한다. B01–B12 전체 소진을 이 순서의 선행 조건으로 삼지 않는다.
 - 이번 완료는 F1이며 3단계 전체 완료·PR Ready·배포 준비 완료 판정이 아니다.
+
+
+## 5. F2 선택 페이지 CLI (2026-10-16)
+
+사용자의 다음 작업 승인으로 F2를 구현했다. `import-pdf <입력.pdf> <출력.hwpx|출력.hwp>`는
+기존 F1 `DocumentCore::from_pdf_bytes`를 소비하며 PDF 추출·인식·lowering·조판 로직을
+변경하지 않는다. frontend 상한 두 개만 공개해 CLI의 입력 읽기·범위 펼치기도 같은 값을 쓴다.
+
+- `--source-pages 0,6-7`: 0-based 원본 쪽의 엄격히 증가하는 목록/포함 범위다. 생략하면 전체.
+  중복·역순·빈 항목·정수/범위 오류는 exit 2이며, 펼치기 전 개수와 overflow를 검사한다.
+  Core의 기존 `InvalidFile` 문자열에 봉인된 `PDF_PAGE_SELECTION` code만 사용법 오류로
+  분류한다. 나머지 처리 실패는 exit 1이다. 기존 exit 3/4는 그대로다.
+- 옵션 오타·중복·암호 옵션은 거부한다. 원본의 같은 경로·symlink·Unix hard link도 거부한다.
+  전체 변환·직렬화 후 기존 `atomic_file`로 임시 파일을 교체한다. 실패 시 stdout과 부분 결과를
+  남기지 않고 기존 출력 파일을 보존한다.
+- JSON은 저장 후 한 번만 내며 원본 쪽/출력 구역 대응, 원본 좌표, 문단 정책·경고,
+  `parserAllocationBoundsProven=false`를 유지한다. 원본 좌표의 provenance도 등록했다.
+  입력 문서 전체는 현재 1~128쪽/16 MiB 한도를 유지한다.
+- root/scoped 도움말·catalog·capabilities와 CLI 매뉴얼을 함께 갱신했다. feature-off에서도
+  명령은 보이고 `available=false`, 실행은 `PDF_IMPORT_DISABLED`로 안내한다. PDF 읽기 형식은
+  feature-on에서만 선언한다.
+- 저장소의 JSON CLI/MCP 대응 규약에 따라 `hwp_import_pdf` 선언을 같은 CLI에 연결했다.
+  선택 문자열 `sourcePages`는 기존 optionalArgs 경로를 사용하며 변환 구현을 복제하지 않는다.
+  후속 F3 WASM의 `sourcePages` 배열 계약과는 다른 CLI 문자열 표면이다.
+
+### 5.1 기능 실행 근거
+
+원시 증적은 `output/pr-review/issue7911/cli-integration-20261016/`에 있다.
+
+- 기존 F1 바이너리에서 새 정식 선택/저장 테스트가 미지원 명령으로 실패했고, F2에서 통과했다
+  (`cli-before-red.log`, `cli-feature-final.log`). 컴파일/환경 실패를 red로 세지 않았다.
+- 새 CLI 계약은 합성 PDF의 선택 내용·순서, HWP/HWPX 재열기·SVG 텍스트, 잘못된 옵션,
+  과대 입력, 기존 출력 보존, rename 실패의 임시 파일 정리, 입력 별칭 보호를 검사한다.
+  시각 배치 golden을 추가하거나 한컴 일치 증거로 해석하지 않는다.
+- 실제 입력 `pdf/issue5875/nested_table_text_caption-2020.pdf`: 전체 12쪽 HWPX,
+  원본 `0,6,7` → 구역 `0,1,2`의 선택 3쪽 HWPX/HWP를 저장·재열기했다. 선택 HWPX는
+  기존 `export-svg`로 렌더했다. 모든 명령 exit 0이며 전체 HWPX가 F1 저장본과 바이트 동일하다.
+  `real-smoke.json`에 입력·실행 바이너리 SHA-256, 명령, 저장본 hash를 기록했다.
+- qpdf로 만든 암호화 PDF와 90도 회전 PDF는 각각 `PDF_ENCRYPTION_UNSUPPORTED`·
+  `PDF_GEOMETRY_UNSUPPORTED`와 exit 1로 거부하며 stdout 비움·기존 출력 보존을 확인했다
+  (`unsupported-inputs.json`). 미지원 내용을 조용히 생략해 성공 처리하지 않는다.
+- 실제 `mcp-serve`에서 `6-7` 선택 가져오기 → `99` 범위 실패 → 선택 생략 전체 가져오기를
+  연속 실행했다. 각각 2쪽 성공·오류(파일 없음)·12쪽 성공이다. `mcp.stdout`/`mcp.stderr`에
+  응답을 보존했다. 이는 CLI subprocess 복구이며 F3의 브라우저 Worker 검증은 아니다.
+- 포맷팅으로 새 테스트 source 크기와 파생 suite 배정이 바뀌어 첫 실행은 0건이었다.
+  해당 실행은 통과에 포함하지 않았다. `--prepare`를 다시 수행해 manifest를 확인한 뒤
+  실제 5건 실행을 확인했다. 이 상태를 `cli-feature-final.log`로 구분한다.
+
+### 5.2 완료 경계
+
+F2의 집중 검증 결과와 로컬 commit은 아래 후속 기록 및 ignored `completion.json`에 고정한다.
+F3 공개 WASM/Worker·F4 실제 편집/저장·전쪽 시각 판정과 최종 제출 검증은 남는다.
+공통 PDF 변환/조판 코드는 바뀌지 않아 이전 WASM을 다시 빌드하지 않았다. F2 결과를
+새 제품 WASM 실행·전체 회귀·전체 parser 할당 감사 통과로 승격하지 않는다.
+
+
+F2 정식 집중 검사는 **82건** 통과했다. CLI는 feature-on 5건/default 4건,
+기존 catalog 20건·scoped help 11건·CLI JSON 31건·provenance 11건이다.
+마지막 네 묶음은 pdf-import 활성 구성에서 새 명령과의 정합을 확인했다.
+명령은 F1과 같은 `node scripts/run-rust-test.mjs --cargo-test <case> -- --locked
+--profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review
+[--features pdf-import]`이며 실제 실행 건수/결과를 각 case 이름의 log에 보존했다.
+
+`cargo fmt --all -- --check`, manifest 및 unit-tier의 base `f5251e7de` 비교도 통과했다.
+Native CLI lint는 `cargo clippy --locked -p rhwp --bin rhwp [--features pdf-import]
+--target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings` 두 구성 모두 통과했다.
+새 source와 검사 hash는 `source-final.json`, 최종 로컬 commit 및 lint 결과는
+`completion.json`에 기록한다. 기존 B11의 전체 workspace/회귀 gate를 이 focused 결과로
+대체하지 않는다. 원격 push·PR 상태 변경은 수행하지 않는다.
+
+확인할 출력은 위 증적 디렉터리의 `all.hwpx`(12쪽), `selected.hwpx`·`selected.hwp`
+(원본 1·7·8쪽), `selected-svg/`다. 실행 바이너리는 같은 디렉터리의 `candidate/rhwp`다.
+기능 경로 진행은 **F1·F2 완료 → F3 공개 WASM/Worker → F4 편집·저장·시각 검증**이다.
+세부 보완 B01–B12의 완료를 이 순서의 선행 조건으로 되돌리지 않는다.

@@ -447,6 +447,15 @@ pub(crate) const COMMANDS: &[CommandSpec] = &[
         true,
     ),
     spec(
+        "import-pdf",
+        Category::Export,
+        Visibility::Public,
+        Some("pdf-import"),
+        true,
+        false,
+        true,
+    ),
+    spec(
         "export-hml",
         Category::Export,
         Visibility::Public,

@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-10-12
+last_verified: 2026-10-16
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -76,6 +76,48 @@ Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면
 `-p 2`를 함께 지정하면 세 번째 쪽만 저장한다.
 기본 첫 쪽만 stdout에 출력하며 흰 배경·256색으로 변환한다. `native-skia`가 필요하다.
 옵션·종료 코드·terminal/SSH 검증은 [Sixel 출력 가이드](export_sixel_command.md)를 따른다.
+
+## PDF 가져오기 (기본 비활성)
+
+`pdf-import` feature를 켠 빌드에서 PDF를 공통 Document IR로 가져와 HWPX 또는 HWP로 저장한다.
+devel에서 함께 구현하는 기능이며, parser 전체 할당 경계는 아직 미입증이다.
+현재 한도는 입력 16 MiB, 원본 문서 전체 1~128쪽이다. 선택 가져오기에서도 이 원본 한도를
+적용하며 암호화 PDF는 지원하지 않는다.
+
+```bash
+cargo build --locked --profile release-test --bin rhwp --features pdf-import \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간의 공용 target/pr-review 절대 경로를 지정하세요}"
+
+# 전체 쪽
+rhwp import-pdf input.pdf output.hwpx --json
+
+# 원본 1·7·8쪽을 순서대로 가져오기: 0-based, 범위 양 끝 포함
+rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
+```
+
+- 입력·출력 위치 인자 두 개가 필수이며 출력 확장자는 `.hwpx` 또는 `.hwp`다.
+  `--source-pages`·`--json`은 위치 인자 앞뒤에 둘 수 있다.
+- 쪽 선택 생략은 전체 쪽이다. 목록은 엄격히 증가해야 하며 중복·역순·빈 항목·범위 초과와
+  미지/중복 옵션은 exit 2다. `--page`는 렌더 출력 옵션이므로 이 명령에서 사용하지 않는다.
+- 읽기·PDF 처리·저장 실패는 exit 1, 성공은 exit 0이다. 실패하면 stdout은 비어 있고
+  stderr에 원인을 출력한다. 기존 검증 명령의 exit 3/4 의미는 바꾸지 않는다.
+- 원본과 같은 파일(심볼릭 링크, Unix hard link 포함)은 거부한다. 모든 선택 쪽을 처리·직렬화한
+  후 같은 폴더의 임시 파일을 원자적으로 교체한다. 처리/교체 실패 시 기존 출력 파일을 보존한다.
+- `--json` 성공 봉투는 `schemaVersion`, `source`, `output`, `format`, `bytes`, `pageCount`,
+  `diagnostics`와 출처 표지를 포함한다. `diagnostics.pages`의 `sourcePage` → `outputSection`은
+  원본 쪽과 가져온 구역의 0-based 대응이며 `pageCount`는 Core가 조판한 쪽수다. 이 둘을 동일한
+  값으로 가정하지 않는다. `paragraphPolicy`, `warnings`, `parserAllocationBoundsProven=false`도
+  진단에 남긴다. 원본 좌표를 담는 `diagnostics.pages`는 비신뢰 문서 파생 필드로 표시한다.
+- 암호 옵션은 이 명령에서 거부한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
+  `export-hwpx`의 암호 옵션을 사용한다.
+- feature-off 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은
+  `PDF_IMPORT_DISABLED`(exit 1)다. `capabilities.formats.read`에는 feature-on일 때만 PDF를 넣는다.
+
+feature-on에서는 기존 `info input.pdf --json`, `export-svg input.pdf`,
+`export-hwpx input.pdf output.hwpx`, `convert input.pdf output.hwp`도 **전체 쪽** 공통 로더를 쓴다.
+선택 쪽은 `import-pdf`로 저장한 뒤 기존 조회·렌더 명령을 사용한다.
+MCP `hwp_import_pdf`도 같은 CLI를 사용한다. 필수 인자는 `path`·`output`이며 선택 문자열
+`sourcePages`의 문법은 `--source-pages`와 같다. 별도 파싱·변환 구현은 두지 않는다.
 
 ## 비밀번호 보호 HWP
 

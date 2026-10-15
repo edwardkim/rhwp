@@ -261,6 +261,16 @@ pub(super) fn print() {
     );
     println!("      --verify-pages        변환 전/후 렌더 페이지 수를 비교 (불일치 시 exit 4)");
     println!();
+    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json]");
+    println!(
+        "      PDF 전체 또는 선택 쪽을 가져오기. cargo build --features pdf-import --bin rhwp 필요"
+    );
+    println!("      --source-pages <목록>  원본 쪽 0-based 증가 목록·포함 범위. 생략하면 전체 쪽");
+    println!("      --json                 stdout에 저장 결과·원본 쪽/구역 대응·진단 JSON 한 개");
+    println!("      중복·역순·잘못된 범위는 exit 2, 읽기·변환·쓰기 실패는 exit 1 (stdout 비움)");
+    println!("      원본 덮어쓰기 금지. 성공한 전체 결과만 원자적으로 저장하며 암호 옵션은 미지원");
+    println!("      기본 feature-off는 PDF_IMPORT_DISABLED. 전체 할당 경계는 아직 미입증");
+    println!();
     println!("  export-hml <입력.hml> -o <출력.hml>");
     println!("      HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장");
     println!("      -o, --output <파일>    출력 HML 파일 (필수, 원본 덮어쓰기 금지)");

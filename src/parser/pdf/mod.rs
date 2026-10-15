@@ -16,8 +16,10 @@ use pdf_oxide::{elements::PathContent, extractors::PdfImage, layout::TextSpan, P
 use serde::Serialize;
 use serde_json::Value;
 
-const MAX_INPUT_BYTES: usize = 16 * 1024 * 1024;
-const MAX_PAGES: usize = 128;
+/// Product adapters may stop reading after this limit plus one byte.
+pub const MAX_INPUT_BYTES: usize = 16 * 1024 * 1024;
+/// Maximum selected pages; adapters must bound range expansion before allocation.
+pub const MAX_PAGES: usize = 128;
 const MAX_POOL_ENTRIES: usize = u16::MAX as usize;
 const MAX_SOURCE_SPANS: usize = 40_000;
 const MAX_TEXT_BYTES: usize = 2 * 1024 * 1024;

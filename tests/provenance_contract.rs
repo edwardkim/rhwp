@@ -1694,6 +1694,23 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        #[cfg(feature = "pdf-import")]
+        Recipe {
+            command: "import-pdf",
+            // PDF 좌표 진단의 표지는 전용 CLI 계약에서도 검사한다.
+            doc: None,
+            args: vec![
+                s("import-pdf"),
+                p(&sample("pdf/issue5875/nested_table_text_caption-2020.pdf")),
+                out("pdf-import.hwpx"),
+                s("--source-pages"),
+                s("0"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         Recipe {
             command: "export-hml",
             doc: Some(hml.clone()),

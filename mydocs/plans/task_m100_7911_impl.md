@@ -114,7 +114,7 @@ PDF 특유의 추론은 frontend 소유이고 renderer에 PDF 전용 좌표 보�
 
 - 기존 `export-hwpx input.pdf output.hwpx`, `convert input.pdf output.hwp`, `info`/렌더 명령은
   공통 document loader를 통해 전체 PDF를 처리한다. feature-off 안내를 함께 갱신한다.
-- 선택 가져오기는 `rhwp import-pdf input.pdf output.hwpx --source-pages 0,6-7 --json`을 제안한다.
+- 선택 가져오기는 `rhwp import-pdf input.pdf output.hwpx --source-pages 0,6-7 --json`을 제공한다.
   기존 CLI의 0-based 페이지 규약을 따른다. 이 옵션은 입력 쪽 선택이며 렌더 `--page`와 다르다.
   미지정은 전체 쪽, 잘못된 문법·중복·내림차순·범위 초과는 exit 2, 처리 실패는 exit 1이다.
   출력·검증의 기존 코드 3/4 의미를 재정의하지 않는다.
@@ -373,7 +373,7 @@ macOS 작성 당시 경로는 해당 host의 기록이며 현재 worktree별 tar
 | --- | --- | --- |
 | 1 (완료) | 호출 경로 조사, 이 구현계획, stage1 보고·commit | 메인테이너 구현계획 승인 완료 |
 | 2 (checkpoint 정리) | POC·frontend·기존 보안 보정과 집중 증거 보존, 미완료 ID 인계 | stage2 기록·commit 후 3단계; 잔여 보안 항목은 미완료 유지 |
-| 3 (진행: F1 완료) | F1–F4 제품 전체 경로 및 기본 오류 복구 | 실제 CLI·제품 WASM 실행, 렌더·저장·재열기와 정상 대조군 확인, 보고·commit |
+| 3 (진행: F1·F2 완료) | F1–F4 제품 전체 경로 및 기본 오류 복구 | 실제 CLI·제품 WASM 실행, 렌더·저장·재열기와 정상 대조군 확인, 보고·commit |
 | 4 | 현재 범위의 통합 검증·기여 진입점·미완료 인계 | 적용 검증·보고와 원격 통합 승인; 전체 백로그 완료를 전제하지 않음 |
 | 후속 | 기여자·메인테이너의 백로그별 구현·검증, 배포 준비 | 개별 변경의 수용 조건과 배포할 지원 범위의 검증 |
 
@@ -382,8 +382,8 @@ macOS 작성 당시 경로는 해당 host의 기록이며 현재 worktree별 tar
 | 순서 | 구현 범위 | 기능 완료에 필요한 관측 |
 | --- | --- | --- |
 | F1 (완료) | 포맷 감지·`ParsedDocument`·Core 공통 초기화, 전체/선택 PDF 옵션 | feature-on에서 직접 IR·원본 쪽 대응, feature-off에서 안정적인 거부; 기존 HWP/HWPX 진입점 보존 |
-| F2 (다음) | CLI `import-pdf`, 기존 info·렌더·저장 명령, 도움말·JSON | 실제 CLI로 전체/선택 쪽 렌더·저장·재열기, 잘못된 옵션·미지원·예산 오류 및 출력 원자성 |
-| F3 | 제품 WASM 생성자·import/diagnostics, Worker deadline·취소·재생성 | 루트 Docker WASM과 실제 JS/Worker에서 열기·렌더·저장; 실패/취소가 현재 세션을 교체하지 않으며 다음 정상 입력 복구 |
+| F2 (완료) | CLI `import-pdf`, 기존 info·렌더·저장 명령, 도움말·JSON | 실제 CLI로 전체/선택 쪽 렌더·저장·재열기, 잘못된 옵션·미지원·예산 오류 및 출력 원자성 |
+| F3 (다음) | 제품 WASM 생성자·import/diagnostics, Worker deadline·취소·재생성 | 루트 Docker WASM과 실제 JS/Worker에서 열기·렌더·저장; 실패/취소가 현재 세션을 교체하지 않으며 다음 정상 입력 복구 |
 | F4 | 같은 실물 PDF를 CLI와 제품 WASM에서 끝까지 처리 | 전체 12쪽·선택 7/8쪽의 원본 대응·내용·표 소속, 출력 생성과 재열기; 단순 byte 동일성을 시각 일치로 대체하지 않음 |
 
 각 경로를 실제 실행하고 기능을 막는 결함은 그 자리에서 해결한다. 기능 경로의 기본 오류

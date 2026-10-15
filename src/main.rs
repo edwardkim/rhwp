@@ -125,6 +125,7 @@ fn main() {
         Some("chart-to-csv") => exit_with(cli::outputs::tabular::chart_to_csv(&args[2..])),
         Some("csv-to-chart") => exit_with(cli::commands::tabular_import::csv_to_chart(&args[2..])),
         Some("export-hwpx") => exit_with(cli::commands::conversion::export_hwpx(&args[2..])),
+        Some("import-pdf") => exit_with(cli::commands::pdf_import::import_pdf(&args[2..])),
         Some("export-hml") => cli::commands::conversion::export_hml(&args[2..]),
         Some("export-doclang") => exit_with(cli::outputs::doclang::export_doclang(&args[2..])),
         Some("export-ir-schema") => exit_with(cmd_export_ir_schema(&args[2..])),

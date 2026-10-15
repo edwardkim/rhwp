@@ -99,6 +99,17 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "verifyPages",
             ],
         ),
+        {
+            let mut command = cmd_json(
+                "import-pdf",
+                "PDF 전체/선택 쪽을 HWPX 또는 HWP로 가져오기 (기본 비활성 pdf-import)",
+                &["--source-pages", "--json"],
+                &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics"],
+            );
+            command["requiresFeature"] = serde_json::json!("pdf-import");
+            command["available"] = serde_json::json!(cfg!(feature = "pdf-import"));
+            command
+        },
         cmd_json(
             "export-hml",
             "HML 원본을 HWPML 2.91 XML로 저장 (--json 봉투)",

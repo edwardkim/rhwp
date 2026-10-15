@@ -611,6 +611,13 @@ pub const MAP: &[CommandProvenance] = &[
         note: "저장 봉투는 경로·바이트·verify 판정값뿐이다.",
     },
     CommandProvenance {
+        command: "import-pdf",
+        untrusted: &[
+            f("diagnostics.pages", "PDF MediaBox와 추출 span의 원본 좌표·쪽 대응"),
+        ],
+        note: "본문은 저장 파일에 있다. 진단의 원본 좌표는 문서 파생 값이며, 경고·문단 정책은 엔진 상수다.",
+    },
+    CommandProvenance {
         command: "export-hml",
         untrusted: NONE,
         note: "저장 봉투는 경로·바이트뿐이다.",

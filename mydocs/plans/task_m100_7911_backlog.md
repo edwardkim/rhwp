@@ -5,7 +5,7 @@
 - 관리: 메인테이너 작업 브랜치 `task_m100_7911`; 후속 구현은 기여자와 분담
 - 정본 계획: [수행계획](task_m100_7911.md), [구현계획](task_m100_7911_impl.md)
 - 이관 근거: [2단계 기록 3.22](../working/task_m100_7911_stage2.md#322-폰트-전역-캐시-격리와-truetype-cmap-예약-경계-2026-10-16)
-- 현재 위치: **최신 devel 병합·F1 공통 Parser/Core 연결 완료. 다음은 F2 CLI이며 세부 보완은 아래에 유지한다.**
+- 현재 위치: **최신 devel 병합·F1 공통 Parser/Core·F2 선택 CLI 완료. 다음은 F3 공개 WASM/Worker이며 세부 보완은 아래에 유지한다.**
 
 ## 1. 진행 규칙
 
@@ -80,8 +80,8 @@ B01–B04는 아직 실제 결함을 모두 재현한 목록이 아니라 미검
 
 ## 4. 현재 진행 위치
 
-- **현재 실행:** checkpoint `966af9575` 및 devel merge `672acadd7` 후 F1 공통 Parser/Core 연결 완료, 다음 F2 CLI. [3단계 기록](../working/task_m100_7911_stage3.md)에 새 통합본 결과를 기록한다.
-- **기능 구현 완료:** 미충족. F1과 기존 CLI 전체 입력은 실행 확인했고 F2–F4의 선택 CLI·공개 WASM/Worker·현재 범위 최종 검증이 남았다.
+- **현재 실행:** checkpoint `966af9575` 및 devel merge `672acadd7` 후 F1 공통 Parser/Core·F2 선택 CLI 연결 완료, 다음 F3 공개 WASM/Worker. [3단계 기록](../working/task_m100_7911_stage3.md)에 새 통합본 결과를 기록한다.
+- **기능 구현 완료:** 미충족. F1·F2의 전체/선택 CLI는 실행 확인했고 F3–F4의 공개 WASM/Worker·현재 범위 최종 검증이 남았다.
 - **백로그 보완 완료:** 미충족. B01–B12는 대기 상태다.
 - **devel 통합 준비:** 미충족. 제품 연결과 현재 통합 범위 검증·기여 인계 자료가 남아 있다.
 - **배포 준비:** 별도 미충족. 기본 비활성·`parser_allocation_bounds_proven=false` 유지.

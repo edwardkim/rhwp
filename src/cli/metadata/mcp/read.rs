@@ -290,6 +290,23 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
             serde_json::json!(["convert", "{path}", "{output}", "--verify", "--json"]),
             &["schemaVersion", "source", "output", "format", "bytes", "wasDistribution", "verify", "verifyPages"],
         ),
+        tool_with_optional_args(
+            "hwp_import_pdf",
+            "PDF 전체 또는 선택 원본 쪽을 HWPX/HWP로 가져온다. 기본 비활성 pdf-import 빌드가 필요하며 전체 parser 할당 경계는 아직 미입증이다. 원본 덮어쓰기는 거부한다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 PDF 경로" },
+                    "output": { "type": "string", "description": "출력 .hwpx 또는 .hwp 경로" },
+                    "sourcePages": { "type": "string", "description": "0-based 증가 목록·포함 범위 (예: 0,6-7). 생략하면 전체 쪽" }
+                },
+                "required": ["path", "output"]
+            }),
+            "import-pdf",
+            serde_json::json!(["import-pdf", "{path}", "{output}", "--json"]),
+            serde_json::json!([{ "when": "sourcePages", "args": ["--source-pages", "{sourcePages}"] }]),
+            &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics"],
+        ),
         tool(
             "hwp_export_hml",
             "HML 원본을 HWPML 2.91 XML 로 재직렬화해 저장하고 봉투를 돌려준다.",
