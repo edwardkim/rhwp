@@ -426,8 +426,8 @@ function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && op.bbox !== undefined
     && isPositiveBounds(op.bbox)
     && (glyph.intrinsicSize === undefined || (glyph.intrinsicSize !== null
-      && isPortableGlyphScalar(glyph.intrinsicSize.width) && glyph.intrinsicSize.width > 0
-      && isPortableGlyphScalar(glyph.intrinsicSize.height) && glyph.intrinsicSize.height > 0
+      && isPortableGlyphScalar(glyph.intrinsicSize.width) && Math.fround(glyph.intrinsicSize.width) > 0
+      && isPortableGlyphScalar(glyph.intrinsicSize.height) && Math.fround(glyph.intrinsicSize.height) > 0
     ))
     && isOptionalFiniteAffine(glyph.transformToRun);
 }

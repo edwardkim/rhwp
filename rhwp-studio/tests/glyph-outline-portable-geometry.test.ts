@@ -418,6 +418,18 @@ test('SVG destination overflow keeps the complete TextRun fallback selected', ()
 });
 
 for (const field of ['width', 'height'] as const) {
+  test(`SVG intrinsic ${field} must remain positive after f32 narrowing`, () => {
+    for (const value of [1e-100, 2 ** -150]) {
+      const op = svg();
+      op.svgGlyph.intrinsicSize[field] = value;
+      expectRejected(op);
+    }
+    for (const value of [2 ** -149, 3 * 2 ** -151]) {
+      const op = svg();
+      op.svgGlyph.intrinsicSize[field] = value;
+      expectAccepted(op);
+    }
+  });
   test(`SVG intrinsic ${field} rejects finite f64 overflow and accepts exact f32::MAX`, () => {
     for (const value of OVERFLOW_VALUES) {
       const op = svg();
