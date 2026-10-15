@@ -1453,3 +1453,49 @@ C41 fresh 재빌드 완료: source code head는e9c213df3b이며 locked wrapper w
 기준과 다른 WASM SHA, root/pkg/Studio public/동결 패키지 hash 일치를 확인했다.
 WASM SHA는`4e1c2a6ba20647aeca7db3570ba63d3f41fc4cf9a8612512d4be4f9cf930f00a`이다.
 최신 원격 devel은 다시 조회해e4e6d0c8 그대로임을 확인했다.
+
+## C42. 최신 devel 재확인·전체 회귀 통과와 저장 캐시 원인 분리
+
+2026-10-16 KST에 `upstream/devel`을 직접 조회한 결과는e4e6d0c8 그대로다.
+현재 HEADf7a6a75c의 조상에 포함되어 추가 리베이스는 필요하지 않았다.
+code heade9c213df3b에서 전체 nextest를 다시 실행해10,436 PASS / 0 FAIL /
+45 skip을 확인했다. 테스트524.396초, 준비·컴파일 포함 nextest 명령913.840초,
+exit0이며 실행 전후 source hash는 같았다. 빌드 jobs8·test threads8이다.
+앞선 Native/WASM/all-target Clippy·workspace build·fmt도 통과했다.
+Studio2013 PASS/2 skip과 build exit0은 C40과 같은 code head의 결과다.
+이 통과는 아래 미완료 시각 보정을 대신하지 않는다.
+
+기준 WASM의45조건 실패는 새 검증 도구의 실제 프로그램 선택 API가e4e6d0c8에
+없어서 발생했다. `substitutions={}`인 명시 환경을 기존 지원 API로 전달하는
+대조군에서는 Native land-table5쪽이 기본 환경 PNG와 byte-identical했고 WASM도
+5쪽을 측정했다(Native 최저95.79803%, WASM95.95956%). 글꼴 치환·TrueType 승격·
+glyph fallback을 추가하지 않았으며 canonical exporter·실루엣 기준은 바꾸지 않았다.
+이 조건의 기준 WASM 수집을 별도로 시작했다. 기존 실패 기록은 보존하며, 쪽수 불일치·
+실제 미달·아직 수집 중인 조건을 통과로 쓰지 않는다. 명시 환경이 있는 두 조건은 유지한다.
+
+기존d9bc 분할 입력을 복제한 진단에서 독립 한컴 재저장의 논리 줄 시작23문단만
+대입하자197쪽을 유지하면서 미달7쪽 중5쪽이96% 이상으로 회복됐다.
+130쪽은25.80635%, 176쪽은83.06032%로 남았다. 같은 source text/control을 가진
+현재 생성본의 LineSeg 전체를 대입한 추가 진단에서는7쪽 모두93.71087% 이상이다.
+이는 외부/현재 생성 캐시를 대입한 **원인 진단**이며 production 구현 보정이나
+원본 전쪽 수용이 아니다. 원본·PDF를 교체하지 않았다. 논리 경계뿐 아니라 수식 줄의
+baseline/spacing/height와 그 뒤 누적 원점도 함께 현재 공통 재조판 결과를 소비해야 한다.
+두 저장본의 비수직 필드 차이는26문단이며 baseline8·spacing4·height1문단이 포함된다.
+재구성은 일반 저장 줄을 전면 폐기하지 않고, 이미 확인한 분할 clone 계보 및 물리 쪽
+reset이 없는 누적 좌표 캐시를 근거로 기존 편집 producer를 공유하는 방향으로 검증한다.
+
+법원 서식의 실제 PDF 부분 글꼴과 현재 공급 프로그램을 glyph 단위로 대조했다.
+Batang15/15·Gulim678/678의 윤곽이 같고, Haansoft Dotum의U2024는 동일 advance178HU에
+윤곽 y차이2/1024em이 있다. 파일명 Batang.ttf는 김포평화바탕이므로 실제Batang은
+batang.TTC face0임을 확인했다. 실제 공급은 기존 catalog의TTC로 정상이다.
+900초 한컴2020 HWPX 재저장은 시간 제한으로 실패했다. 기존 독립 Print PDF는 유지하며
+각주 번호·공백 측정과 paint를 계속 추적한다. 본문용1em 필드 폭 대입은 네 번째 각주를
+잘못 줄바꿈하므로 채택하지 않았다.
+
+정본은 ignored `rebase-e4e6d0c8-20261016/`의 full-current-result.json,
+remaining-lint-state.json, base-portable-control/result.json,
+fixed-base-wasm-portable/, giant-independent-partition-probe/result.json,
+giant-current-generated-cache-probe/result.json,
+giant-old-current-cache-field-differences.json, court-*-outline-comparison.json이다.
+새 캐시 보정 뒤 Native/fresh WASM 전쪽·전체 회귀·범위 gate·실제 소비 검증은 다시 필요하다.
+사용자 orders20261013 및 pr7871 초안·원본·PDF·공유 target은 보존했다.
