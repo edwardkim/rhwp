@@ -292,13 +292,14 @@ impl NativeEditor {
         let mut previous = next.clone();
         previous.paragraph -= 1;
         previous.scalar_offset = scalar_len(self.command_text(&previous))?;
-        Self::validate_selection(
-            self.session().document(),
-            &NativeTextSelection {
-                anchor: previous.clone(),
-                focus: next.clone(),
-            },
-        )?;
+        let span = NativeTextSelection {
+            anchor: previous.clone(),
+            focus: next.clone(),
+        };
+        Self::validate_selection(self.session().document(), &span)?;
+        // The current caret alone does not cover the adjacent paragraph whose
+        // text and controls this join would move.
+        Self::check_body_text_span(self.session().document(), &span)?;
         self.edit_transaction(revision, |core| {
             core.merge_paragraph_native(next.section as usize, paragraph as usize)?;
             Ok(NativeTextSelection {

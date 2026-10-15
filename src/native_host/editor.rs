@@ -277,6 +277,7 @@ impl NativeEditor {
         edit: impl FnOnce(&mut DocumentCore) -> Result<NativeTextSelection, NativeHostError>,
     ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
+        Self::check_body_text_span(&self.session.core, &self.selection)?;
         self.check_mutation_capacity()?;
         self.check_snapshot_slots(2)?;
         let selection_before = self.selection.clone();
