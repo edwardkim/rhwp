@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-09
+last_verified: 2026-10-15
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -22,10 +22,17 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 검토 head의 코드·증거와 대조한다. 비해당도 이유를 적는다. maintainer 일반, collaborator self,
 collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
 
+조판·렌더링 영향 PR은 최신 SHA를 고정한 `upstream/devel`의 전쪽 Native/fresh WASM TSV를
+후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도0.01%p 이상 하락하면90% 이상이어도
+PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과로 상쇄하지 않는다.
+계산·증거·base 갱신은 [devel 대비 실루엣 하락 재검토](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
+
 검증에 사용한 HWP/HWPX/PDF는 [검증 입력 커밋 확인](pr_review/intake_and_review.md#28-검증-입력-커밋-확인)을
 모든 정식 PR review의 공통 항목으로 점검한다. 수용 근거로 쓴 파일은 검토 대상 commit에 포함하고,
-실제로 실행한 파일과 commit의 내용이 같은지 확인한다. `korea_downloads`, 임시 output 또는 외부 첨부에만
-있는 파일로 검증을 완료 처리하지 않는다. 기존에 커밋된 동일 파일은 재사용하며 중복 사본을 추가하지 않는다.
+실제로 실행한 파일과 commit의 내용이 같은지 확인한다. 단, **50 MiB(52,428,800바이트) 이상 PDF는
+로컬에만 보관하고 PR에 포함하지 않으며**, 공통 입력 확인의 로컬 파일·SHA·전쪽 검증 증거로 점검한다.
+그 외 파일은 `korea_downloads`, 임시 output 또는 외부 첨부에만 두고 검증을 완료 처리하지 않는다.
+기존에 커밋된 동일 파일은 재사용하며 중복 사본을 추가하지 않는다.
 
 rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator가 매개하는 외부 PR을
 구분한다. 권한과 변경 위치가 다르므로 한 경로의 예외를 다른 경로에 일반화하지 않는다.
@@ -52,7 +59,10 @@ commit의 lint 생략 규칙이 아니다.
 90% 이상을 먼저 입증한다. 기존 회귀가 실패하면 **원본 출력 보정 → 독립 한컴 Print PDF로
 90% 이상 확인 → 필요한 검사 변경** 순서로 처리하며, 실물 배치는 절대 px 좌표·고정 px 영역 대신
 소유·순서·보존·포함·겹침 관계로 검사한다. 기여자·메인터너·콜라보레이터와 승인된 보정에 모두
-적용한다. 상세 조건은 [시각 선행 조건](pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+적용한다. 다만 **완료된 페이지**의 Native/fresh WASM 2px 관용 실루엣 일치율이 각각98% 이상이고
+독립 PDF와 직접 확대 판독을 마쳤으면 해당 쪽의 독립 기대 좌표를 ±2px 오차로 고정할 수 있다.
+문서 전체98% 이상은 요구하지 않는다. [페이지별 px 회귀 조건](pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.
+상세 조건은 [시각 선행 조건](pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
 [기존 기대값 재검토](pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
 
 고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 부적합한 회귀는

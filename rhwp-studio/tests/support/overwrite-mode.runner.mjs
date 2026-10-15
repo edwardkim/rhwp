@@ -259,11 +259,19 @@ function makeHandler(wasm, start, { insertMode = false, editMode = 'normal', exi
 
 // 시나리오마다 실패를 모아 한꺼번에 알린다 — 앞 시나리오가 깨져도 나머지 결과를 볼 수 있다.
 const failures = [];
+// 연속 입력의 간격은 호스트 부하가 아니라 시나리오가 정한다. 실제 병합의 300ms
+// 경계는 아래에서 별도로 검사하므로, 스케줄링 지연을 사용자 입력 간격으로 보지 않는다.
+const wallClockNow = Date.now;
+let inputClockMs = 1_000_000;
 function scenario(name, fn) {
+  Date.now = () => inputClockMs;
   try {
     fn();
   } catch (err) {
     failures.push(`${name}: ${err.message}`);
+  } finally {
+    Date.now = wallClockNow;
+    inputClockMs += 10_000;
   }
 }
 
@@ -679,6 +687,34 @@ for (const method of ['deactivate', 'dispose']) {
     assert.equal(wasm.doc.body, 'ㅎbcd', `${method}: 조합이 남긴 문서를 다시 건드리면 안 된다`);
   });
 }
+
+scenario('31. 덮어쓰기 입력의 300ms 경계는 되돌리기 묶음을 나눈다', () => {
+  for (const gap of [300, 301]) {
+    const wasm = makeWasm({ body: 'abcd' });
+    const h = makeHandler(wasm, bodyPos(0));
+    h.input('X');
+    inputClockMs += gap;
+    h.input('Y');
+    assert.equal(wasm.doc.body, 'XYcd');
+    h.undo();
+    if (gap === 300) {
+      assert.equal(wasm.doc.body, 'abcd', '300ms까지는 연속 입력을 한 번에 되돌린다');
+    } else {
+      assert.equal(wasm.doc.body, 'Xbcd', '301ms 뒤 입력은 앞 입력과 분리한다');
+      assert.equal(h.history.canUndo(), true);
+      h.undo();
+      assert.equal(wasm.doc.body, 'abcd', '앞 덮어쓰기도 별도로 되돌릴 수 있다');
+    }
+    assert.equal(h.history.canUndo(), false);
+    assert.equal(wasm.fragments.size, 0, '두 경로 모두 문단 조각을 해제한다');
+    h.redo();
+    if (gap === 301) {
+      assert.equal(wasm.doc.body, 'Xbcd');
+      h.redo();
+    }
+    assert.equal(wasm.doc.body, 'XYcd', '다시 실행은 같은 입력 순서를 보존한다');
+  }
+});
 
 if (failures.length > 0) {
   console.error(failures.join('\n'));

@@ -522,15 +522,14 @@ fn border_line_type_to_u8(lt: BorderLineType) -> u8 {
     }
 }
 
-fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
+pub(super) fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
     match mode {
         ImageFillMode::TileAll => 0,
         ImageFillMode::TileHorzTop => 1,
         ImageFillMode::TileHorzBottom => 2,
         ImageFillMode::TileVertLeft => 3,
         ImageFillMode::TileVertRight => 4,
-        ImageFillMode::Total => 0,
-        ImageFillMode::FitToSize | ImageFillMode::Zoom => 5,
+        ImageFillMode::FitToSize | ImageFillMode::Total => 5,
         ImageFillMode::Center => 6,
         ImageFillMode::CenterTop => 7,
         ImageFillMode::CenterBottom => 8,
@@ -540,7 +539,7 @@ fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
         ImageFillMode::RightCenter => 12,
         ImageFillMode::RightTop => 13,
         ImageFillMode::RightBottom => 14,
-        ImageFillMode::None => 15,
+        ImageFillMode::None | ImageFillMode::Zoom => 15,
     }
 }
 

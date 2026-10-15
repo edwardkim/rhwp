@@ -1069,6 +1069,9 @@ jobs:
           cargo test --manifest-path tools/llm_verifier/repeat_eval/Cargo.toml
           cargo test --manifest-path tools/llm_verifier/tool_version_gate/Cargo.toml
 
+      - name: Validate Visual Sweep PNG server
+        run: node --test scripts/tests/visual-sweep-png-server.test.mjs
+
       - name: Validate Render Diff trigger policy
         run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
 
@@ -1421,6 +1424,9 @@ jobs:
           fi
           echo "CHROME_PATH=$chrome_path" >> "$GITHUB_ENV"
           echo "PUPPETEER_EXECUTABLE_PATH=$chrome_path" >> "$GITHUB_ENV"
+
+      - name: Validate Visual Sweep Canvas font binding
+        run: VISUAL_SWEEP_CHROME="$CHROME_PATH" node --test scripts/tests/visual-sweep-canvas-fonts.browser.mjs
 
       # [#5959] 스냅샷 예산 축출 회귀 게이트(#5769) — 실 wasm 과 실 브라우저를
       # 구동해야 하므로 스텁 wasm 을 쓰는 unit 모드가 아닌 package 모드에서만 단다.

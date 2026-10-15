@@ -697,6 +697,13 @@
       "category": "엔진-전용",
       "forbiddenSlots": []
     },
+    "export-png": {
+      "untrusted": [],
+      "origins": {},
+      "note": "매니페스트는 산출 경로·바이트·쪽수·출력 조건뿐이다. 문서 내용은 PNG와 별도 render tree 파일에 있으며 JSON 봉투에는 없다. metadata-only도 엔진이 계산한 쪽수만 반환한다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
     "export-pdf": {
       "untrusted": [],
       "origins": {},
