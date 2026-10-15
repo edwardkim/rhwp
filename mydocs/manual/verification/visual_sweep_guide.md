@@ -25,6 +25,12 @@ TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하
 `scripts/visual_sweep.py`는 rhwp가 만든 PNG/render tree와 한컴 기준 PDF를 비교해
 문항 흐름 drift, frame overflow, 줄 순서 겹침 같은 후보를 자동으로 찾는 보조 도구다.
 
+RGBA·LA·팔레트 PNG의 투명 영역은 **흰 종이 위에 합성한 RGB**로 비교한다.
+실루엣, overlay, compare/review와 내용 분석이 같은 해석을 사용한다. 불투명 RGB 픽셀,
+좌표·DPI·2px 반경·색상 임계값은 유지한다. 실행/실루엣 manifest의 `image_decoding`에는
+흰 배경과 디코더 helper의 SHA-256을 기록한다. 과거 TSV와 비교할 때도 양쪽 PNG를 같은
+디코더 버전으로 다시 측정하며, 보이는 잉크의 차이를 투명도 보정으로 면제하지 않는다.
+
 이 도구는 메인테이너의 최종 시각 판정을 대체하지 않는다. 대신 다음을 빠르게 확인한다.
 
 - SVG/PDF 페이지 수 일치

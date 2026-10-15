@@ -25,8 +25,10 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 try:
     from scripts.visual_sweep_workers import ordered_page_map
+    from scripts.visual_sweep_images import open_page_rgb, page_rgb
 except ModuleNotFoundError:
     from visual_sweep_workers import ordered_page_map
+    from visual_sweep_images import open_page_rgb, page_rgb
 
 
 LABEL_FONT_ENV = "RHWP_VISUAL_SWEEP_LABEL_FONT"
@@ -561,6 +563,11 @@ def ensure_default_rhwp_binary_is_current(root: Path, rhwp_bin: str) -> None:
         )
 
 
+def image_decoding_provenance() -> dict[str, str]:
+    source = Path(__file__).with_name("visual_sweep_images.py")
+    return {"alpha_background": "#ffffff", "script_sha256": sha256_file(source)}
+
+
 def sweep_provenance(
     root: Path,
     hwp: Path,
@@ -576,6 +583,7 @@ def sweep_provenance(
             "path": safe_rel_str(root, Path(__file__).resolve()),
             "sha256": sha256_file(Path(__file__).resolve()),
         },
+        "image_decoding": image_decoding_provenance(),
         "svg_rasterizer": svg_rasterizer,
         "pdf_rasterizer": {"program": "pdftoppm", "thin_line_mode": "shape"},
         "comparison_profile": "print",
@@ -1864,7 +1872,7 @@ def subpixel_tolerant_content_match_details(
     안티앨리어싱·서브픽셀 차이를 구분해 보여 주는 보조 지표다."""
     if radius_px < 0:
         raise ValueError("radius_px must be non-negative")
-    rhwp, pdf = padded_pair(rhwp.convert("RGB"), pdf.convert("RGB"))
+    rhwp, pdf = padded_pair(rhwp, pdf)
     # 8비트 RGB에서 채널차>24이면 최소 채널은230 이하이므로,
     # 기존 is_content_pixel의 내용 픽셀 판정은 최소 채널<232와 정확히 같다.
     # PIL 연산으로 같은 마스크를 만들며 임계값이나 비교 영역은 바꾸지 않는다.
@@ -1962,7 +1970,7 @@ def is_horizontal_rule_pixel(pixel: tuple[int, int, int]) -> bool:
 
 
 def detect_frame(image: Image.Image) -> tuple[int, int, int, int]:
-    rgb = image.convert("RGB")
+    rgb = page_rgb(image)
     w, h = rgb.size
     px = rgb.load()
 
@@ -2037,7 +2045,7 @@ def horizontal_rule_candidates(
     frame: tuple[int, int, int, int],
     expected_length_px: float | None = None,
 ) -> list[dict[str, float]]:
-    rgb = image.convert("RGB")
+    rgb = page_rgb(image)
     px = rgb.load()
     left, top, right, bottom = frame
     frame_w = right - left
@@ -2261,7 +2269,7 @@ def content_bounds(
     y_min: int,
     y_max: int,
 ) -> tuple[int, int, int, int, int] | None:
-    rgb = image.convert("RGB")
+    rgb = page_rgb(image)
     w, h = rgb.size
     px = rgb.load()
     x_min = max(0, x_min)
@@ -2296,7 +2304,7 @@ def row_bands(
     min_pixels_per_row: int,
     gap: int = 2,
 ) -> list[dict[str, float]]:
-    rgb = image.convert("RGB")
+    rgb = page_rgb(image)
     px = rgb.load()
     left, top, right, bottom = frame
     rows: list[tuple[int, int, int, int]] = []
@@ -3746,7 +3754,7 @@ def render_tree_equation_overlap_candidates(
     tree = load_render_tree(tree_path)
     if tree is None:
         return []
-    rhwp_image = Image.open(rhwp_image_path).convert("RGB") if rhwp_image_path else None
+    rhwp_image = open_page_rgb(rhwp_image_path) if rhwp_image_path else None
 
     equations: list[dict[str, object]] = []
     text_runs: list[dict[str, object]] = []
@@ -4046,7 +4054,7 @@ def render_tree_frame_tail_candidates(
     left, top, right, bottom = frame
     mid_x = (left + right) / 2.0
     candidates: list[dict[str, object]] = []
-    raster_pixels = raster_image.convert("RGB").load() if raster_image is not None else None
+    raster_pixels = page_rgb(raster_image).load() if raster_image is not None else None
     for line in collect_render_tree_text_lines(tree):
         tree_box = line["bbox"]
         assert isinstance(tree_box, tuple)
@@ -4204,8 +4212,8 @@ def analyze_page(
     endnote_shape: dict[str, object],
     pixel_diff_threshold: int,
 ) -> dict[str, object]:
-    rhwp = Image.open(rhwp_path).convert("RGB")
-    pdf = Image.open(pdf_path).convert("RGB")
+    rhwp = open_page_rgb(rhwp_path)
+    pdf = open_page_rgb(pdf_path)
     rhwp_frame = detect_frame(rhwp)
     pdf_frame = detect_frame(pdf)
     frame_is_interior_decoration = frames_are_interior_decorations(
@@ -5091,8 +5099,8 @@ def padded_pair(left_image: Image.Image, right_image: Image.Image) -> tuple[Imag
     height = max(left_image.height, right_image.height)
     left = Image.new("RGB", (width, height), "white")
     right = Image.new("RGB", (width, height), "white")
-    left.paste(left_image.convert("RGB"), (0, 0))
-    right.paste(right_image.convert("RGB"), (0, 0))
+    left.paste(page_rgb(left_image), (0, 0))
+    right.paste(page_rgb(right_image), (0, 0))
     return left, right
 
 
@@ -5128,8 +5136,8 @@ def make_overlay_page(
     *,
     pixel_diff_threshold: int,
 ) -> dict[str, object]:
-    rhwp_raw = Image.open(rhwp_path).convert("RGB")
-    pdf_raw = Image.open(pdf_path).convert("RGB")
+    rhwp_raw = open_page_rgb(rhwp_path)
+    pdf_raw = open_page_rgb(pdf_path)
     rhwp, pdf = padded_pair(rhwp_raw, pdf_raw)
     width, height = rhwp.size
     overlay = Image.new("RGB", (width, height), "white")
@@ -5312,8 +5320,8 @@ def make_review_panels(
         overlay_path = overlays_by_page.get(page)
         if overlay_path is None:
             continue
-        compare = Image.open(compare_path).convert("RGB")
-        overlay = Image.open(overlay_path).convert("RGB")
+        compare = open_page_rgb(compare_path)
+        overlay = open_page_rgb(overlay_path)
         width = compare.width + gutter + overlay.width
         # 겹침 이미지 자체가 상단 대상 키와 하단 한국어 지표를 이미 포함한다. 검토 이미지에서 같은
         # 하단 설명을 다시 만들면 지표가 두 번 출력되므로 두 패널의 최대 높이만 사용한다.
@@ -5334,8 +5342,8 @@ def make_compares(rhwp_pngs: list[Path], pdf_pngs: list[Path], out_dir: Path, ke
     font = label_font()
     pages: list[Path] = []
     for index in range(count):
-        rhwp = Image.open(rhwp_pngs[index]).convert("RGB")
-        pdf = Image.open(pdf_pngs[index]).convert("RGB")
+        rhwp = open_page_rgb(rhwp_pngs[index])
+        pdf = open_page_rgb(pdf_pngs[index])
         page_number = page_num(rhwp_pngs[index])
         width = max(rhwp.width, pdf.width)
         height = max(rhwp.height, pdf.height)
@@ -5368,7 +5376,7 @@ def make_contact_sheet(compare_pages: list[Path], out_path: Path) -> Path:
     font = label_font()
     thumbs: list[Image.Image] = []
     for page in compare_pages:
-        image = Image.open(page).convert("RGB")
+        image = open_page_rgb(page)
         ratio = thumb_w / image.width
         thumb = image.resize((thumb_w, max(1, int(image.height * ratio))))
         labeled = Image.new("RGB", (thumb.width, thumb.height + 26), "white")
@@ -5447,6 +5455,7 @@ def write_silhouette_tsv(
         "completed_pages": [page for page, _, _ in pairs],
         "missing_pages": [], "tsv": str(tsv), "radius_px": 2,
         "inputs": inputs, "metrics": metrics, "silhouette_method": SILHOUETTE_METHOD,
+        "image_decoding": image_decoding_provenance(),
         "color_tolerance": DEFAULT_PIXEL_DIFF_THRESHOLD, "pr_review_gate": gate,
     }
     write_json_atomic(out_dir / "silhouette_manifest.json", manifest)

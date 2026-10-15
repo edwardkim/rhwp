@@ -99,6 +99,19 @@ class WorkflowContractWiringTests(unittest.TestCase):
                 f"{name} 이 lint job 밖에서 실행된다 — 조건화로 생략될 수 있다",
             )
 
+    def test_visual_sweep_png_contracts_are_discovered_by_lint(self):
+        lint_job = re.search(
+            r"(?ms)^  lint:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\Z)", self.ci
+        )
+        self.assertIsNotNone(lint_job)
+        body = lint_job.group(0)
+        self.assertIn(
+            "-m unittest discover -s scripts/tests -p 'test_visual_sweep*.py'", body
+        )
+        discovered = {path.name for path in TESTS_DIR.glob("test_visual_sweep*.py")}
+        self.assertIn("test_visual_sweep_alpha.py", discovered)
+        self.assertIn("test_visual_sweep_workers.py", discovered)
+
 
 if __name__ == "__main__":
     unittest.main()
