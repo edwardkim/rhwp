@@ -1335,3 +1335,30 @@ helper 삭제뿐이며 생산 바이트가 동일함을 `git show7fc729cd3c`와 
 공개 검사4건은 frozen Native 라이브러리로 실제4PASS(0.01초)이고 unit-tier gate는
 4103 tests/296 modules로PASS다. 정책 기준·지침을 변경하지 않았다. 전체 nextest에는
 현재 manifest로 새 case를 포함해 다시 실행한다.
+
+
+## C39. 최신 devel 감지와 Studio 필수 옛한글 공급 이름 정합
+
+2026-10-16 PR 준비 전 원격을 확인하니 devel이2efefc6a1f에서
+`e4e6d0c8d83f688e376043c639e4fe5842169c2d`로 전진했다. 탭 저장·본문 쪽번호·단 배치 변경이
+포함되어 새 base로 리베이스하고 조판 소비 경계를 다시 검증한다. 사용자 초안 두 파일과
+이번 source 변경은 ignored `rebase-e4e6d0c8-20261016/before.json` 및 별도 사본으로 보존했다.
+
+이전1e2c58ec74 head의 전체 default nextest는10388실행/10386PASS/2FAIL/45skip,
+411.263초로 종료했다. 두 실패는 #7092의U+2024 슬롯0 기대와 #6803의 제목 기호 폭 검사다.
+이는 새 base의 결과가 아니며 수정·재검증이 필요하다. Native45조건1367쪽을 보존한 뒤
+새 devel 반영을 위해 나머지 캡처를 중단했다. 법원1쪽89.97913% 및 이전 #4138 저장본
+7쪽 미달(23/60/130/149/153/169/176)은 완료로 처리하지 않는다.
+
+Studio 전체 검사는1880실행1877PASS/1FAIL/2skip이었다. 기존 필수 공급 집합이 폐기된
+`Source Han Serif K Old Hangul` 이름을 써서 현재 등록 자원`RHWP Old Hangul`을 초기화에서
+누락했다. 실제 loader와 기존 offline 검사를 현재 자원 이름/URL로 함께 맞췄다. focused2PASS,
+전체1878PASS/0FAIL/2skip(27.853초), `npm run build` exit0을 확인했다. 실제 Chrome155의
+loader import와 `FontFace.load`/FontFaceSet.load를 실행했고 준비된 family가loaded이며 실제
+응답 SHA가 로컬woff2 `1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab`와 같다.
+console error0이다. 기존7729 서버가 종료되어 첫 진단은 import 실패했으며 결과로 쓰지 않았다.
+소유한 별도7736 Vite에서 확인했고, 이는 전체 실제 소비36건 수용을 대체하지 않는다.
+
+실행 정본은 ignored `final-current-20261016/`의 full-result.json, studio-unit-after-loader.log,
+studio-build-after-loader.log, font-loader-browser.json과 interrupted-for-rebase.json이다.
+공유 target·원본/PDF·사용자 초안 및 이전 실행 증적을 보존하며 지침은 변경하지 않았다.
