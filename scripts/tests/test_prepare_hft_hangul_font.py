@@ -66,6 +66,18 @@ class OriginalHftFontTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unsupported glyph operator'):
             self.tool.restore_outline('1000 0 0 -200 1000 1000 d1 2 0 0 2 0 0 cm')
 
+    def test_horizontal_bearing_keeps_original_outline_origin(self):
+        for left, expected in [('10.25', 10), ('-12.75', -13)]:
+            width, charstring = self.tool.restore_outline(
+                f'1000 0 -100 -200 1000 1000 d1 {left} 80 m '
+                '90 80 l 90 90 l h f')
+            charstring.private = PrivateDict()
+            self.assertEqual(self.tool.source_horizontal_metrics(width, charstring),
+                             (1000, expected))
+            pen = RecordingPen()
+            charstring.draw(pen)
+            self.assertEqual(pen.value[0], ('moveTo', ((float(left), 80),)))
+
     def test_paint_without_advance_is_rejected(self):
         with self.assertRaisesRegex(ValueError, 'Invalid move'):
             self.tool.restore_outline('10 80 m 70 90 l h f')

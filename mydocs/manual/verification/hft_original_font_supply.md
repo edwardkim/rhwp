@@ -51,6 +51,12 @@ venv/bin/python scripts/prepare_hft_hangul_font.py restore \
 지원하지 않는 행렬·연산, 충돌하는 중복 glyph program, 누락된 한글은 실패다.
 각 원본 glyph program과 PDF/생성 글꼴 SHA는 출력의 `*.provenance.json`에 보존한다.
 
+CFF의 실제 왼쪽 끝 `xMin`은 `hmtx`의 왼쪽 side bearing에도 반올림해 기록한다.
+모든 bearing을0으로 넣으면 이 테이블을 읽는 소비자와 CFF에서 직접 경계를 읽는 소비자의
+계약이 달라진다. 원본 윤곽은 이동하지 않는다.
+[OpenType hmtx 사양](https://learn.microsoft.com/en-us/typography/opentype/spec/hmtx)의
+CFF 윤곽과 hmtx bearing 일치 조건을 따른다.
+
 범위는 한양신명조 정규체의 현대 한글이다. ASCII·기호·PUA·독립 bold/italic face는 만들지 않으며
 그 글자들은 기존 실제 공급 사다리를 사용한다. 생성 글꼴을 이름만 같은 임의 TTF와 동등하다고
 추정하지 않는다. 준비 뒤 실제 원본 HFT 윤곽과 같은지, 외곽·전진폭·기준선과 대표 PNG를 대조한다.

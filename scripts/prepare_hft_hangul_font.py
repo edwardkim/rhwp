@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 import pymupdf
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.t2CharStringPen import T2CharStringPen
+from fontTools.misc.roundTools import otRound
 
 
 def mapped_characters(document, reference):
@@ -57,6 +58,12 @@ def font_encoding(document, reference):
 
 def font_reference(body, key):
     return int(re.search(r'/' + key + r'\s+(\d+)\s+0\s+R', body)[1])
+
+
+def source_horizontal_metrics(width, charstring):
+    """CFF 윤곽의 xMin을 hmtx에도 기록한다. 글리프 자체는 이동하지 않는다."""
+    bounds = charstring.calcBounds(None)
+    return otRound(width), otRound(bounds[0]) if bounds else 0
 
 
 def restore_outline(stream):
@@ -149,13 +156,18 @@ def restore(specimen_pdf, output_font):
     builder.setupPost()
     builder.setupCFF('HanyangSinMyeongJo-OriginalHFT-Hangul',
                      {'FullName': 'Original HFT Hangul', 'FamilyName': 'Original HFT Hangul', 'Weight': 'Regular'}, strings, {})
+    # CFF 자체에서 bearing을 읽는 rasterizer와 hmtx를 읽는 소비자가 같은
+    # 원점을 사용해야 한다. setupCFF가 연결한 private dict로 원본 경계를 읽는다.
+    builder.setupHorizontalMetrics({name: source_horizontal_metrics(widths[name][0], string)
+                                    for name, string in strings.items()})
     output_font.parent.mkdir(parents=True, exist_ok=True)
     builder.save(output_font)
     record = {'source': str(specimen_pdf), 'sourceSha256': hashlib.sha256(specimen_pdf.read_bytes()).hexdigest(),
               'font': str(output_font), 'fontSha256': hashlib.sha256(output_font.read_bytes()).hexdigest(),
               'scope': 'Complete modern Hangul alphabet only; ASCII intentionally absent and uses the existing supplied chain',
               'glyphs': len(glyphs), 'sourceGlyphSha256': source_hashes, 'fontMatrix': [0.001, 0, 0, 0.001, 0, 0],
-              'glyphTransform': 'identity; no score-dependent shift, scale, hinting or contour changes'}
+              'glyphTransform': 'identity; no score-dependent shift, scale, hinting or contour changes',
+              'horizontalMetrics': 'original advance and rounded CFF xMin; outlines are not translated'}
     output_font.with_suffix('.provenance.json').write_text(json.dumps(record, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({key: value for key, value in record.items() if key != 'sourceGlyphSha256'}, ensure_ascii=True))
 

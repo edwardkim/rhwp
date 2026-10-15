@@ -127,3 +127,25 @@ CI Native Skia의 release-test/release 두 경로에 정식 case wrapper 호출�
 classifier 검사, workflow 계약35개, actionlint는 모두 exit0이다.
 `native-case-ci-result.json`과 각 log에 연결한다. 이 CI 연결 변경은 renderer source·테스트 본문·
 입력·producer를 바꾸지 않으며, 진행 중인484c 회귀의 통과나 종료를 미리 주장하지 않는다.
+
+### CFF 준비 도구의 bearing 계약 보완
+
+공개 준비 도구의 `hmtx` bearing0 고정은 CFF 윤곽의 실제 xMin과 달랐다.
+[OpenType 사양](https://learn.microsoft.com/en-us/typography/opentype/spec/hmtx)은 CFF를 직접 읽는
+rasterizer와 hmtx를 읽는 소비자를 위해 두 값이 일치하도록 요구한다. 원본 윤곽에서 계산한 xMin을
+반올림해 기록하도록 수정했다. 원본 곡선·좌표·전진폭은 바꾸지 않는다.
+
+- 도구 단위 계약10개 PASS. 양수/음수 bearing과 실제 move 원점 보존을 함께 검사했다.
+- 같은 독립11,172자 표본을 실제 도구로 다시 restore해 exit0,206.252초를 확인했다.
+  CFF/cmap/name/OS2 테이블과 모든 전진폭은 이전 파일과 동일하다.
+  11,172개 bearing과 hhea 파생 메트릭만 바뀌었다(head timestamp/checksum 제외).
+- 새 글꼴 SHA-256은 `7257416630313e6989c7690847f2c372a3d5106a2c215a6e16ee03573fe995dd`다.
+  `hft-horizontal-metrics-restore-result.json`에 테이블별 전후 해시와 실행 명령을 연결한다.
+- 현재 전쪽 비교의 고정5476… 글꼴은 보존한다. 새 파일을 실행 중인 경로에 덮어쓰지 않았다.
+  이 수정이 현재 raster 하락을 해결했다고 주장하지 않는다. 샘플 FreeType 출력은 전후 같았다.
+
+원점 하락의 정상 대조군 `6761-later`14쪽에서 원본 fontRef를 직접 추적했다.
+첫 문장은 바탕체 TTF, 표 내용은 HY중고딕 TTF다. 따라서 이 쪽의 하락을 새 원본 HFT 윤곽의
+문제로 돌리지 않는다. 본문 전체에 새 원점 처리를 적용한 가정과 실제 원본 HFT의 출력 계약을
+분리해 검토한다. 별도 Native hinting=None 진단에서도14쪽이 devel98.59383→98.57566%로
+하락해 단순 hinting 변경을 해결책으로 채택하지 않는다.
