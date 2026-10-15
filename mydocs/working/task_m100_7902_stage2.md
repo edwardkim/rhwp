@@ -6,26 +6,26 @@ Issue: #7902. 이미 merge된 PR #7877의 원본 19문서·835쪽 범위를 유�
 ## 현재 확인 상태 — 2026-10-15
 
 아래는 이전 진단과 구분한 현재 집계다. **아직 PR 생성·전체 검증 완료가 아니다.**
-아래 전쪽 집계의 실행 소스는`a37caa731`, 기준은`a5e88ad68`다.59a6 체크포인트
-뒤 fetch에서 원격 기준이 동일한 것을 확인했다. PR 직전에는 다시 fetch해 변경된 경우에만 리베이스·재검증한다.
+아래 전쪽 집계의 실행 소스는`f5284cd0b`, 기준은`a5e88ad68`다.
+PR 직전 다시 fetch하며 기준 SHA가 바뀐 경우에만 커밋·리베이스 후 필요한 검증을 갱신한다.
 
 | 항목 | 실제 확인 결과 | 남은 범위 |
 | --- | --- | --- |
 | Native 원본 전쪽 |19문서835쪽,미달/누락0·Print 쪽수 일치,최저91.71770%(scattered37쪽)|최종 제출 head와 증적 연결|
 | Native devel 대조 |비교 가능한18문서787쪽,0.01%p 이상 하락0쪽|overfill base49/Print48로 전쪽 TSV 비교 불가|
-| fresh WASM 전쪽 |19문서835쪽,미달/누락0·Print 쪽수 일치,최저90.09386%(chemical19쪽)|최종 공용 pkg 재생성·연결|
+| fresh WASM 전쪽 |19문서835쪽,미달/누락0·Print 쪽수 일치,최저90.09386%(chemical19쪽)|nested HWP의 Chrome 시작 timeout은 같은 producer로115쪽 재실행 완료|
 | WASM devel 대조 |nested HWPX104쪽99.93539→99.87312%,0.06227%p 하락1쪽|재검토 상태 유지,기준·글꼴·마스크를 바꾸지 않음|
-| 새 회귀6개 |실제 이전 CLI의 의도한 실패·수정 후6PASS|진단 일치 보완 뒤 Cargo 정식 전체 nextest 재실행 필요|
-| Rust lint·정책 |일반/WASM/전체 target 및 Native Skia Clippy PASS,manifest/base·unit tier PASS|최종 fmt 확인|
+| 새 회귀7개 |정식 Cargo Native selector7PASS;공통6개·Native 진단1개|최종 source의 전체 gate와 연결|
+| Rust 전체 nextest |10301실행,10300PASS·1FAIL·45skip|정책연구 HWPX 본문 넘침1→2건의 원인 보정·재검증|
+| Native Skia lib |全lib PASS(exit0),컴파일·실행428.84초|Native integration·doctest는 순차 실행 중|
+| Rust lint·정책 |fmt,일반/WASM/전체 target 및 Native Skia Clippy PASS,manifest/base·unit tier PASS|후속 검사 변경의 lint/정식 Cargo 검증|
 | 브라우저·CI 계약 |관련 Node6PASS,CI 계약328PASS,Python workflow186PASS,actionlint PASS|없음|
-| Studio |단위1840PASS·2skip|로컬 pkg의 이전 타입 선언으로 tsc 실패;공용 fresh pkg 갱신 후 재실행|
+| Studio |단위1840PASS·2skip,fresh 공용 pkg 갱신 후 tsc PASS|생성 public wrapper는 제품 변경으로 stage하지 않음|
 
-Native의 실제 마지막 전쪽 phase는`candidate-fractional-number-dev`(714.62초),WASM은
-`candidate-generated-number-dev`(963.22초)다. Native chemical4종29쪽은100%이며,
-original/control/shifted100쪽도100%다(later100쪽은 다른 내용의94.79873%).
-TS 오류의`getTableCellBboxesAtPage`는 현재 fresh WASM 선언에 실제 존재한다.
-오래된 root pkg를 근거로 제품 TS 소스를 고치지 않으며,공유 Cargo 작업 종료 후 wrapper로
-공용 pkg를 재생성한다. a37 전체 nextest는 후속 진단 보완 때문에 중단했으며 완료 결과로 사용하지 않는다.
+검증 결과는`final-f528-head-dev-verified-{native,wasm}-result.json`에 있다.
+WASM 원래 실패 로그와 동일 producer의 nested HWP115쪽 retry를 별도로 보존하고
+완료 원장에는 해당 행만 대체했다. Native PNG835장은 직전 a37 producer와 바이트가 같다.
+전체 회귀의 실제1FAIL은 SIGINT나 빌드 오류로 분류하지 않으며 PR 생성·통합을 보류한다.
 
 ## 기준과 승인된 진행
 
@@ -620,3 +620,64 @@ mtime만 갱신해 실제 현재 라이브러리를 재빌드하고 해시·실�
 이제7개 검사 중6개는 기본 전체 회귀,새 진단1개는 Native lane에서 보호한다.
 이 source 보완은 실제 paint의 기존 후보 생산식을 공통 helper로 옮긴 것이며
 글리프·좌표·폭을 새로 변경하지 않는다. 새 source에서 필요한 검증을 이어간다.
+
+
+### f5284cd0b의 실제 공용 패키지와 정식 Cargo 검사
+
+진단 보완·Native CI 배선을`f5284cd0b`에 커밋했다. 저장소 루트 wrapper와 공용
+`target/pr-review`,jobs8로 fresh dev/no-opt WASM을 재생성했다(2분41초).
+`pkg`와`rhwp-studio/public`의 JS/WASM SHA가 같음을 확인했고,오래된 타입 선언 때문에
+실패했던 표준 Studio tsc를 다시 실행해 PASS했다. 생성된 public wrapper는 검증 산출물이며
+이 변경에 임의로 stage하지 않는다. 불변 producer와 source/해시는
+`final-f528-producers-proof.json`에 보존했다.
+
+Native feature의 정식 Cargo source selector로 새 회귀7개가 모두 PASS했다.
+실행95.92초,debug test/CLI 컴파일8분27초이며 Native 글꼴 진단 검사도 포함한다.
+로그는`final-f528-native-formal-seven-dev.log`다. 첫 selector 호출의 harness 인자 배치는
+잘못되어 전체 target 선택으로 해석됐으므로 중단·보존했고,올바른 target selector와
+`RUST_TEST_THREADS=4`로 다시 실행한 위7PASS만 정식 결과로 사용한다.
+현재 f528의 Native/fresh WASM19문서 전쪽 측정과 최종 lint/전체 회귀를 이어간다.
+
+
+### 최종 전체 회귀에서 검출한 실제 실패와 기존 검사 감사
+
+f528 전체 nextest는 컴파일·실행1414.57초, 실제 테스트772.154초에 종료됐다.
+10301개 중10300PASS·1FAIL·45skip이다. 실패는
+`body_overflow_baseline::body_overflow_does_not_grow_partition_14`의
+정책연구 HWPX이며, 본문 바닥2px를 넘는 건수가1→2로 증가했다.
+`final-f528-full-nextest.log`와`final-f528-gates-result.json`을 보존한다.
+종료된 runner 대신 남은 Native feature·doctest만 순차 실행하는 별도 runner를 시작했다.
+Native lib 전체는 exit0이며 나머지는 완료 전이다.
+
+같은 원본의 기준a5와 현재f528을 같은2024 Print·96dpi·글꼴로 직접 비교했다.
+기준162/214쪽은12.29880%/59.36872%,현재30.21663%/34.15727%다.
+기준과 현재 모두215쪽이다. 기존 #7445 하위 #7753에서 같은 원본 전체 피델리티를
+추적 중인 것도 실제 API로 확인했다. 그러나 이번 흐름 끝 전달이 아래 바깥여백283HU
+(3.77333px)를 paint에 반영하면서214쪽 후속 표의 넘침이1.78667→5.56px로
+늘었다. 기존 이슈 등록만으로 새 영향을 숨기거나1→2로 baseline을 완화하지 않는다.
+직접 비교 PNG·render tree·fit/paint trace는`liver-failure-review/` 및
+`liver-{flow,pagination}-audit.log`에 보존하며 구현 원인 검토를 계속한다.
+
+현재 보정 대상의 기존 검사도 경로로 따라 감사했다. 원본HU·셀 padding·글자크기에서
+계산한 상대 계약과 이미 포함/순서 검사였던 항목은 보존했다. 실제 교체·보완은 다음과 같다.
+
+- #7336:97%대인5쪽의 bbox 상단1048..1049.5 핀을 독립 Print에서 같은
+  기준선인2·5쪽 자동 번호의 정렬 관계로 교체했다.95%대인1쪽은 독립 Print의
+  꼬리말 하단 여유/원본 글자 em 비율0.322±0.045로 검사한다(기존 약0.6px 정밀도).
+- chemical16쪽:97%대의974.72/1020.32 절대 baseline을 원본 문단149/150의
+  저장LineSeg 원점·baseline과 실제 본문 원점의 관계로 교체했다. 원본 크기·줄 순서를 보호한다.
+  검토 범위 밖 reduced 입력의 기존 기대값은 유지한다.
+- chemical57쪽:Native99.08734%·WASM99.09650%,표 하단·꼬리말과 원본 내용을
+  직접 확대 대조했다. 기존 독립 Print1006.6±1px 핀을 유지하고 본문 포함·꼬리말 비침범을 보완한다.
+- chemical77쪽:Native99.97569%·WASM99.97568%,같은 영역4배 확대에서 CCC 이미지와
+  셀 경계를 직접 대조했다. 기존 원본 소유·참조 검사를 유지하며 독립 Print235.903px의
+  공차를3→2px로 좁혔다. 미확인 과거2.8px 오차 주석은 제거했다.
+- rowbreak HWPX:첫 본문의 임의90px 영역과10쪽 표의120px 영역을 원본HWP와의
+  본문 상대 원점·제목→표 간격 관계로 교체한다.10쪽 제목 한 줄 높이로 간격을
+  추정한 첫 진단은 실제 빈 줄 점유를 빠뜨려 FAIL했으므로 채택하지 않았다.
+
+같은f528 debug 라이브러리에 현재 테스트 source를 직접 컴파일한 선행 확인은
+#1133 대상1PASS,#7336 대상1PASS,#7048전체6PASS,#6782전체2PASS,
+rowbreak전체16PASS다. 이는 정식 Cargo/lint gate를 대체하지 않는다.
+대표 확대는`ccc-audit/ccc-p77-4x.png`와`chemical-p57-bottom.png`다.
+수용 근거인 전쪽 TSV는 위 f528 최종 원장을 재사용하며 생산 코드는 이 감사로 변경하지 않았다.

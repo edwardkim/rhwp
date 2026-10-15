@@ -465,9 +465,15 @@ fn rowbreak_hwpx_page1_ignores_stale_initial_vpos() {
     let body = find_body_node(&page1.root).expect("HWPX page 1 body should render");
     let definition = text_line_bbox_containing(&page1.root, "(정의)")
         .expect("HWPX page 1 definition paragraph should render");
-
+    let hwp = load_doc(HWP_SAMPLE);
+    let hwp_page = hwp.build_page_render_tree(0).expect("HWP page 1");
+    let hwp_body = find_body_node(&hwp_page.root).expect("HWP page 1 body");
+    let hwp_definition =
+        text_line_bbox_containing(&hwp_page.root, "(정의)").expect("HWP 원본의 같은 첫 본문");
+    // 독립 Print에서 두 형식의 첫 본문은 같은 본문 상대 원점이다.
+    // 임의의 위쪽90px 영역 대신 원본 형식 사이의 원점 관계를 보호한다.
     assert!(
-        definition.y <= body.bbox.y + 90.0,
+        ((definition.y - body.bbox.y) - (hwp_definition.y - hwp_body.bbox.y)).abs() <= 0.5,
         "HWPX page 1 stale vpos pushes the first content down: body_top={:.2}, definition_y={:.2}",
         body.bbox.y,
         definition.y
@@ -511,16 +517,19 @@ fn rowbreak_hwpx_page10_keeps_csap_table_near_title() {
     let page10 = doc
         .build_page_render_tree(9)
         .unwrap_or_else(|e| panic!("render HWPX page 10: {e}"));
-    let body = find_body_node(&page10.root).expect("HWPX page 10 body should render");
     let title = text_line_bbox_containing(&page10.root, "서비스 보안인증제도")
         .expect("HWPX page 10 title should render");
     let table = find_table_bbox(&page10.root, 1, 0).expect("HWPX page 10 CSAP table should render");
-
+    let hwp = load_doc(HWP_SAMPLE);
+    let hwp_page = hwp.build_page_render_tree(9).expect("HWP page 10");
+    let hwp_title = text_line_bbox_containing(&hwp_page.root, "서비스 보안인증제도")
+        .expect("HWP 원본의 같은 제목");
+    let hwp_table = find_table_bbox(&hwp_page.root, 1, 0).expect("HWP 원본의 같은 표");
+    // 같은 Print 내용의 제목→표 간격을 형식 사이에서 비교한다.
     assert!(
-        table.y <= body.bbox.y + 120.0,
-        "HWPX page 10 stale vpos pushes the CSAP table to the page bottom: body_top={:.2}, table_y={:.2}",
-        body.bbox.y,
-        table.y
+        ((table.y - title.y - title.height) - (hwp_table.y - hwp_title.y - hwp_title.height)).abs()
+            <= 0.5,
+        "두 형식의 제목→CSAP 표 간격이 다름"
     );
     assert!(
         table.y >= title.y + title.height - 0.5,
