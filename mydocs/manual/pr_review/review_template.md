@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review/intake_and_review.md
-last_verified: 2026-10-09
+last_verified: 2026-10-14
 ---
 
 # PR #N 리뷰 — 변경 요약
@@ -40,9 +40,17 @@ PR 채번과 code head CI 성공 뒤 이 review와 오늘할일을 문서-only t
 
 ## 검증 입력과 결과
 
+조판·렌더링 영향 PR은 고정한 최신 upstream/devel SHA와 후보 SHA의 전쪽 Native/fresh WASM
+TSV를 같은 조건·페이지로 비교한 증거를 적는다. 원본/PDF·producer·글꼴·backend·쪽수와
+페이지별 기준/후보/하락폭,0.01%p 이상 하락한 쪽 목록을 연결한다. 한 쪽이라도 하락하면
+90% 이상·평균 개선·CI 성공과 관계없이 재검토다. 기준 TSV가 없으면 미검증으로 기록한다.
+[상세 비교 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)을 따른다.
+
 실제 사용한 HWP/HWPX·한컴 기준 PDF의 저장소 경로, 출처·SHA-256·검토 commit 포함
 여부를 적는다. 실행한 명령과 대상 head·통과/실패/미실행 범위를 구분한다. 조판 원칙,
 focused·전체 회귀·lint·Native/WASM·시각 검증 중 적용되는 것을 기록한다.
+50 MiB 이상 PDF는 PR에서 제외하고 로컬 경로·바이트 수·SHA-256·출처·전체 쪽수와
+[대용량 PDF 로컬 보관 확인](intake_and_review.md#28-검증-입력-커밋-확인)을 기록한다.
 
 렌더링 회귀를 추가·변경했다면 관련 모든 페이지의 Native/fresh WASM 최저 일치율 90% 이상을
 먼저 확인한 source SHA·TSV·직접 판독 증거를 연결한다. 실패한 기존 회귀는 원본 출력 보정 후

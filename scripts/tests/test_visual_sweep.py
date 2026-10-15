@@ -82,6 +82,8 @@ class PrReviewGateTests(unittest.TestCase):
             check=True,
             text=True,
             capture_output=True,
+            encoding="utf-8",
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"},
         )
         self.assertIn("90% 실루엣 gate", completed.stdout)
 
@@ -449,7 +451,7 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             report = Path(temp) / 'font-check.json'
             with self.assertRaisesRegex(SystemExit, 'Unicode cmap'):
                 SWEEP.check_sweep_embedded_fonts([svg], report)
-            record = json.loads(report.read_text())
+            record = json.loads(report.read_text(encoding="utf-8"))
             self.assertEqual(record['status'], 'failed')
             self.assertEqual(record['pages'][0]['fonts'][0]['family'], 'Fixture')
 

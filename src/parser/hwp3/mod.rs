@@ -821,6 +821,25 @@ fn hwp3_para_shape_border_fill(
     Some(bf)
 }
 
+/// HWP3 줄에 한/글 변환기와 같은 들여쓰기 적용 기록(`TAG_INDENTATION`, bit 20)을 단다.
+///
+/// HWP3 줄 정보에는 이 기록이 없다. 렌더러는 bit 20 이 꺼진 저장 줄을 "한/글이 들여쓰기를
+/// 적용하지 않은 줄"로 읽으므로(#6190), 비운 채 두면 HWP3 문단의 들여쓰기·내어쓰기가
+/// 모두 사라진다. 한/글의 HWP3 변환본(`samples/SO-SUEOP.hwpx`, `hwp3-sample10-hwpx.hwpx`)은
+/// 들여쓰기 문단의 첫 줄, 내어쓰기 문단의 둘째 줄부터 bit 20 을 켜고, 들여쓰기 0 문단은
+/// 켜지 않는다.
+fn hwp3_stamp_indentation(line_segs: &mut [crate::model::paragraph::LineSeg], indent: i32) {
+    use crate::model::paragraph::LineSeg;
+    for (line_index, seg) in line_segs.iter_mut().enumerate() {
+        let applied = (indent > 0 && line_index == 0) || (indent < 0 && line_index > 0);
+        if applied {
+            seg.tag |= LineSeg::TAG_INDENTATION;
+        } else {
+            seg.tag &= !LineSeg::TAG_INDENTATION;
+        }
+    }
+}
+
 fn hwp3_para_line_box(
     para_shape: Option<&crate::model::style::ParaShape>,
     column_width_hu: i32,
@@ -944,16 +963,12 @@ fn hwp3_footnote_separator_length(footnote_line_width: u8, column_width_hu: i32)
 /// OWPML `noteLine length` 의 5cm sentinel.
 const HWP3_SEPARATOR_LENGTH_5CM: i32 = -1;
 
-/// HWP5 `FOOTNOTE_SHAPE` 의 구분선 길이는 **4바이트**다 — 우리 IR 은 그것을
-/// `separator_length`(하위 워드)와 `separator_margin_top`(상위 워드) 두 i16 슬롯으로
-/// 나눠 읽고 그대로 되쓴다(`parse_footnote_shape_record` · `serialize_footnote_shape`).
-/// 그래서 음수 sentinel 은 두 슬롯을 **함께** 채워야 한/글이 `-1` 로 읽는다. 한 쪽만
-/// `-1` 로 두면 바이트가 `FF FF 00 00` = 65535 가 되어 5cm 대신 폭 전체로 잘린다.
-///
-/// 양수 길이는 상위 워드가 0 이므로 종전대로 `separator_length` 만 채운다.
+/// HWP5 `FOOTNOTE_SHAPE` 의 구분선 길이는 **4바이트**다. [#7862] 이후 IR 은 그 값을
+/// `separator_length`(i32) 하나로 읽고 쓰므로 sentinel(`-1` 등)도 그대로 둔다.
+/// `separator_margin_top` 은 HWPX `aboveLine` 전용 슬롯이라 HWP3 변환에서는 비운다.
 fn hwp3_apply_separator_length(shape: &mut crate::model::footnote::FootnoteShape, length: i32) {
     shape.separator_length = length;
-    shape.separator_margin_top = if length < 0 { -1 } else { 0 };
+    shape.separator_margin_top = 0;
 }
 
 fn hwp3_note_column_width_hu(column_width_hu: i32) -> i32 {
@@ -3805,6 +3820,11 @@ fn parse_paragraph_list_inner(
             }
         }
 
+        hwp3_stamp_indentation(
+            &mut para.line_segs,
+            para_shape.map_or(0, |shape| shape.indent),
+        );
+
         let last_pgy = line_infos.last().map(|l| l.pgy).unwrap_or(0);
         // pgy=0 줄(그림 호스트 등)은 기준 미갱신이 원칙이나, 이 문단이 새 페이지를
         // 시작했다면(is_page_break) 이전 페이지의 pgy 기준을 유지하면 안 된다 —
@@ -4157,13 +4177,8 @@ fn parse_hwp3_inner(
             let font_name = crate::parser::hwp3::encoding::decode_hwp3_string(&font_name_buf);
             use crate::model::style::Font;
             let mut font = Font::default();
-            // [Task #1008 격차 D] HWP3 legacy 폰트명 → 한컴 변환기 정합 명칭 매핑.
-            // HWP3 → HWP5 변환기는 "신명조"/"고딕"/"중고딕"/"견고딕"/"그래픽" 등 legacy
-            // 명칭을 "HY신명조"/"한양*" 으로 변환하여 저장. rhwp SVG 출력의 font-family
-            // 첫 폰트가 다르면 시스템 fallback 미스 + 폰트 metric 측정 차이로 char-by-char
-            // advance drift 발생 (HWP3 vs HWP5 변환본 3-7px 누적). 한컴 변환기 동작
-            // mimic 으로 HWP3 측 폰트명을 HWP5 정합 명칭으로 매핑하여 동일 SVG 출력 +
-            // 폰트 metric 정합. alt_name 에 원본 보존 (트레이싱용).
+            // HWP3 legacy 글꼴 이름을 한/글 변환기가 쓰는 이름으로 옮긴다
+            // (`hwp3_font_name_to_hwp5`). alt_name 에 원본을 보존한다.
             let mapped_name = hwp3_font_name_to_hwp5(&font_name);
             if mapped_name != font_name {
                 font.alt_name = Some(font_name.clone());
@@ -4603,6 +4618,7 @@ fn parse_hwp3_inner(
         paragraphs,
         raw_provenance: None,
         raw_stream: None,
+        trailing_lists: None,
     };
     doc.sections.push(section);
 
@@ -5195,17 +5211,20 @@ fn hwp3_outline_command_level(command: &str) -> Option<u8> {
 ///
 /// 회귀 risk: 의도된 `═` 사용 사례. 단언: 다른 HWP3 sample sweep 시 회귀 0.
 //
-// [Task #1008 격차 D] HWP3 legacy 폰트명 → 한컴 변환기 정합 명칭 매핑.
-// HWP3 → HWP5 변환기는 "신명조" 등 legacy 명칭을 "HY신명조" 등 표준 명칭으로
-// 변환하여 저장. rhwp 도 동일 mapping 적용으로 HWP3 ↔ HWP5 변환본 SVG 정합.
+// HWP3 legacy 글꼴 이름 → 한/글 변환기(HWP3 → HWP5/HWPX)가 쓰는 이름.
+//
+// 한/글은 HWP3 의 한양 글꼴을 `한양*` HFT 로 옮긴다. `HY*` 는 이름이 비슷한 별개의
+// TrueType 글꼴이라(예: `HY신명조` 의 둥근 따옴표는 1.0em, `한양신명조` 는 0.446em)
+// 그 이름을 쓰면 한/글도 다른 글꼴로 그린다(#7810). 표는 저장소의 한/글 변환본
+// (`samples/hwp3-sample*-hwp5*`, `*-hwpx.hwpx`) 대비 실측이며, 증거가 없는 이름은
+// 그대로 둔다. `고딕` 은 한/글도 `고딕` 으로 둔다.
 fn hwp3_font_name_to_hwp5(name: &str) -> String {
     match name.trim() {
-        "신명조" => "HY신명조".to_string(),
-        "신명" => "HY신명조".to_string(),
-        "고딕" => "HY고딕".to_string(),
-        "중고딕" => "HY중고딕".to_string(),
-        "견고딕" => "HY견고딕".to_string(),
-        "그래픽" => "HY그래픽".to_string(),
+        "신명조" => "한양신명조".to_string(),
+        "중고딕" => "한양중고딕".to_string(),
+        "견고딕" => "한양견고딕".to_string(),
+        "그래픽" => "한양그래픽".to_string(),
+        "궁서" => "한양궁서".to_string(),
         _ => name.to_string(),
     }
 }

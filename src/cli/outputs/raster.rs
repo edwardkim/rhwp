@@ -23,7 +23,7 @@ pub(crate) fn export_png(_args: &[String]) -> i32 {
 struct PngExportArgs<'a> {
     file_path: &'a str,
     output_dir: String,
-    target_page: Option<u32>,
+    target_pages: Vec<u32>,
     font_paths: Vec<std::path::PathBuf>,
     scale: Option<f64>,
     max_dimension: Option<i32>,
@@ -31,6 +31,9 @@ struct PngExportArgs<'a> {
     dpi: Option<f64>,
     render_profile: rhwp::paint::RenderProfile,
     hangul2024_compat: bool,
+    json: bool,
+    metadata_only: bool,
+    render_tree_output: Option<String>,
 }
 
 #[cfg(feature = "native-skia")]
@@ -40,7 +43,7 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
     // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
     let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
-    let mut target_page: Option<u32> = None;
+    let mut target_pages: Vec<u32> = Vec::new();
     let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
     let mut scale: Option<f64> = None;
     let mut max_dimension: Option<i32> = None;
@@ -50,10 +53,30 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
     // 고품질 출력은 명시적인 `--profile high-quality`로 선택한다.
     let mut render_profile = rhwp::paint::RenderProfile::Screen;
     let mut hangul2024_compat = false;
+    let mut json = false;
+    let mut metadata_only = false;
+    let mut render_tree_output = None;
 
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
+            "--render-tree-output" => {
+                let Some(directory) = args.get(i + 1) else {
+                    eprintln!("오류: --render-tree-output 뒤에 폴더 경로가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                };
+                render_tree_output = Some(directory.clone());
+                i += 2;
+            }
+            "--metadata-only" => {
+                metadata_only = true;
+                json = true;
+                i += 1;
+            }
+            "--json" => {
+                json = true;
+                i += 1;
+            }
             "--output" | "-o" => {
                 if i + 1 < args.len() {
                     output_dir = args[i + 1].clone();
@@ -83,7 +106,11 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
             "--page" | "-p" => {
                 if i + 1 < args.len() {
                     match args[i + 1].parse::<u32>() {
-                        Ok(n) => target_page = Some(n),
+                        Ok(n) if !target_pages.contains(&n) => target_pages.push(n),
+                        Ok(_) => {
+                            eprintln!("오류: 중복 페이지 번호입니다.");
+                            return Err(EXIT_USAGE);
+                        }
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
                             return Err(EXIT_USAGE);
@@ -207,7 +234,7 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
     Ok(PngExportArgs {
         file_path,
         output_dir,
-        target_page,
+        target_pages,
         font_paths,
         scale,
         max_dimension,
@@ -215,6 +242,9 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
         dpi,
         render_profile,
         hangul2024_compat,
+        json,
+        metadata_only,
+        render_tree_output,
     })
 }
 
@@ -222,10 +252,14 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
 pub(crate) fn export_png(args: &[String]) -> i32 {
     use rhwp::document_core::queries::rendering::PngExportOptions;
 
+    let (filtered_args, font_environment) = match super::font_environment_args(args) {
+        Ok(options) => options,
+        Err(code) => return code,
+    };
     let PngExportArgs {
         file_path,
         output_dir,
-        target_page,
+        target_pages,
         font_paths,
         scale,
         max_dimension,
@@ -233,7 +267,10 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         dpi,
         render_profile,
         hangul2024_compat,
-    } = match parse_export_png_args(args) {
+        json,
+        metadata_only,
+        render_tree_output,
+    } = match parse_export_png_args(&filtered_args) {
         Ok(options) => options,
         Err(code) => return code,
     };
@@ -262,6 +299,10 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
     if hangul2024_compat {
         core.set_hangul2024_compat(true);
     }
+    if let Err(e) = core.set_font_environment(font_environment) {
+        eprintln!("오류: 폰트 환경을 적용할 수 없습니다: {e}");
+        return EXIT_USAGE;
+    }
 
     // [#3302] 외부 연결 그림(HWP3 pic_type=0 등)의 같은 디렉터리 자동 적재 — export-svg
     // 의 #741 규칙과 동일. 누락 시 skia 렌더가 회색 placeholder 를 그린다 (SO-SUEOP 1쪽 실측).
@@ -272,7 +313,9 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
     }
 
     let page_count = core.page_count();
-    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    if !json {
+        println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    }
 
     let output_path = Path::new(&output_dir);
     if !output_path.exists() {
@@ -285,46 +328,66 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         }
     }
 
-    let pages: Vec<u32> = match target_page {
-        Some(p) => {
-            if p >= page_count as u32 {
-                eprintln!(
-                    "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
-                    page_count - 1
-                );
-                return EXIT_USAGE;
-            }
-            vec![p]
-        }
-        None => (0..page_count as u32).collect(),
+    if target_pages.iter().any(|&page| page >= page_count as u32) {
+        eprintln!("오류: 페이지 번호가 범위를 벗어났습니다 (전체 {page_count}쪽).");
+        return EXIT_USAGE;
+    }
+    let pages: Vec<u32> = if target_pages.is_empty() {
+        (0..page_count as u32).collect()
+    } else {
+        target_pages
     };
+    if metadata_only {
+        println!(
+            "{}",
+            rhwp::provenance::marked(
+                serde_json::json!({
+                    "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
+                    "tool": "export-png",
+                    "backend": "native-skia",
+                    "source": file_path,
+                    "pageCount": page_count,
+                    "renderedCount": 0,
+                    "metadataOnly": true,
+                    "pages": [],
+                }),
+                "export-png"
+            )
+        );
+        return EXIT_OK;
+    }
 
     let file_stem = Path::new(file_path)
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("page");
+    if let Some(directory) = &render_tree_output {
+        if let Err(error) = fs::create_dir_all(directory) {
+            eprintln!("오류: render tree 출력 폴더 생성 실패: {error}");
+            return EXIT_RUNTIME;
+        }
+    }
 
     let total_pages = pages.len();
     let mut success = 0;
     let mut total_bytes = 0usize;
+    let mut exported_pages = Vec::new();
+    let has_options = png_options.scale.is_some()
+        || png_options.max_dimension.is_some()
+        || png_options.vlm_target.is_some()
+        || png_options.dpi.is_some()
+        || render_profile != rhwp::paint::RenderProfile::Screen;
+    let exporter = if has_options || !font_paths.is_empty() {
+        rhwp::document_core::queries::png_export::NativePngExporter::new(
+            render_profile,
+            png_options,
+        )
+    } else {
+        rhwp::document_core::queries::png_export::NativePngExporter::system_defaults()
+    };
 
     for page_num in &pages {
-        let has_options = png_options.scale.is_some()
-            || png_options.max_dimension.is_some()
-            || png_options.vlm_target.is_some()
-            || png_options.dpi.is_some()
-            || render_profile != rhwp::paint::RenderProfile::Screen;
-        let result = if has_options {
-            core.render_page_png_native_with_profile_and_export_options(
-                *page_num,
-                render_profile,
-                &png_options,
-            )
-        } else if !font_paths.is_empty() {
-            core.render_page_png_native_with_fonts(*page_num, &font_paths)
-        } else {
-            core.render_page_png_native(*page_num)
-        };
+        let result = exporter.render_page(&core, *page_num);
         match result {
             Ok(png_bytes) => {
                 let png_filename = if total_pages == 1 {
@@ -337,7 +400,34 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
                     eprintln!("오류: 페이지 {} PNG 저장 실패 - {}", page_num + 1, e);
                     continue;
                 }
-                println!("  → {} ({} bytes)", png_path.display(), png_bytes.len());
+                let tree_path = if let Some(directory) = &render_tree_output {
+                    let path =
+                        Path::new(directory).join(format!("render_tree_{:03}.json", page_num + 1));
+                    let result = core
+                        .build_page_render_tree(*page_num)
+                        .map(|tree| tree.root.to_json())
+                        .map_err(|error| error.to_string())
+                        .and_then(|tree| fs::write(&path, tree).map_err(|error| error.to_string()));
+                    if let Err(error) = result {
+                        eprintln!(
+                            "오류: 페이지 {} render tree 저장 실패: {error}",
+                            page_num + 1
+                        );
+                        continue;
+                    }
+                    Some(path)
+                } else {
+                    None
+                };
+                if !json {
+                    println!("  → {} ({} bytes)", png_path.display(), png_bytes.len());
+                }
+                exported_pages.push(serde_json::json!({
+                    "page": page_num,
+                    "path": png_path,
+                    "bytes": png_bytes.len(),
+                    "renderTreePath": tree_path,
+                }));
                 total_bytes += png_bytes.len();
                 success += 1;
             }
@@ -347,12 +437,39 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         }
     }
 
-    println!(
-        "내보내기 완료: {}개 PNG 파일 → {}/ ({:.1} MB)",
-        success,
-        output_dir,
-        total_bytes as f64 / 1024.0 / 1024.0
-    );
+    if json {
+        let profile = match render_profile {
+            rhwp::paint::RenderProfile::Screen => "screen",
+            rhwp::paint::RenderProfile::Print => "print",
+            rhwp::paint::RenderProfile::HighQuality => "high-quality",
+            rhwp::paint::RenderProfile::FastPreview => "fast-preview",
+        };
+        println!(
+            "{}",
+            rhwp::provenance::marked(
+                serde_json::json!({
+                    "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
+                    "tool": "export-png",
+                    "source": file_path,
+                    "backend": "native-skia",
+                    "comparisonProfile": profile,
+                    "layoutGeneration": if hangul2024_compat { "2024" } else { "2022" },
+                    "outputDir": output_dir,
+                    "pageCount": page_count,
+                    "renderedCount": success,
+                    "pages": exported_pages,
+                }),
+                "export-png"
+            )
+        );
+    } else {
+        println!(
+            "내보내기 완료: {}개 PNG 파일 → {}/ ({:.1} MB)",
+            success,
+            output_dir,
+            total_bytes as f64 / 1024.0 / 1024.0
+        );
+    }
 
     // [#2707] 성공 수 집계는 이미 정확했지만 종료 코드가 항상 0이었다.
     if success == total_pages {

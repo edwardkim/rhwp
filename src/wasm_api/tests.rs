@@ -1818,6 +1818,7 @@ fn test_document_with_paragraphs() {
                 ..Default::default()
             },
         ],
+        trailing_lists: None,
         raw_stream: None,
         raw_provenance: None,
     });
@@ -2028,6 +2029,7 @@ fn create_doc_with_table() -> HwpDocument {
             ..Default::default()
         },
         paragraphs: vec![parent_para],
+        trailing_lists: None,
         raw_stream: None,
         raw_provenance: None,
     });
@@ -2115,6 +2117,7 @@ fn create_doc_with_page_count_boundary_table() -> HwpDocument {
             ..Default::default()
         },
         paragraphs: vec![parent_para],
+        trailing_lists: None,
         raw_stream: None,
         raw_provenance: None,
     });
@@ -4479,6 +4482,7 @@ fn create_doc_with_floating_picture(tac: bool, voff: u32, hoff: u32) -> HwpDocum
             ..Default::default()
         },
         paragraphs: vec![pic_para, Paragraph::default()],
+        trailing_lists: None,
         raw_stream: None,
         raw_provenance: None,
     });

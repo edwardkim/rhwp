@@ -26,7 +26,7 @@ use crate::renderer::render_tree::{
     RenderLayerInfo, RenderNodeType, TextRunNode,
 };
 
-const OLD_HANGUL_FONT_FAMILY: &str = "Source Han Serif K Old Hangul";
+const OLD_HANGUL_FONT_FAMILY: &str = "RHWP Old Hangul";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -2071,6 +2071,8 @@ fn text_requires_complex_shaping(text: &str) -> bool {
                 | 0xfe30..=0xfe6f
                 | 0xff00..=0xffef
                 | 0x1d400..=0x1d7ff
+                // 독립 SFNT 글리프로 재생하는 두 그림자 원형 기호. M/Cf는 아래에서 보류한다.
+                | 0x1f53e..=0x1f53f
                 | 0x20000..=0x323af
         );
         let category_requires_shaping = matches!(
@@ -3153,7 +3155,7 @@ mod tests {
 
     #[test]
     fn shaped_script_text_fails_closed_without_positioned_cluster_authority() {
-        for text in ["가", "\u{F012B}"] {
+        for text in ["가", "\u{F012B}", "\u{1f53e}", "\u{1f53f}"] {
             let mut superscript = text_run(text);
             superscript.style.superscript = true;
             let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), superscript)]);
@@ -3180,6 +3182,8 @@ mod tests {
 
         for text in [
             "e\u{0301}",
+            "\u{1f53e}\u{fe0f}",
+            "\u{1f53e}\u{200d}\u{1f53f}",
             "к\u{0483}",
             "漢\u{302a}",
             "か\u{3099}",
