@@ -1905,6 +1905,9 @@ fn char_width_decision_with_hft_tracking<'a>(
         {
             if let Some(width) = embedded.width_px {
                 embedded.width_px = Some(quantize_hwp_px(width * 1.05));
+                // 장치 격자 변환도 같은 HFT 프로그램의 보정된 전진을 쓴다.
+                // px 폭만 바꾸면 원래 em 비율이 아래에서 그 보정을 덮어쓴다.
+                embedded.em_fraction = embedded.em_fraction.map(|em| em * 1.05);
                 embedded.width_source = "metricHftBoldAdvance";
             }
         }

@@ -1083,3 +1083,21 @@ Node반례4PASS1FAIL→5PASS, Python catalogue20PASS, 환경 경계9PASS. 실제
 head checksum을 제외하고 모두 동일하지만 maxp.maxZones4라는 다른 오류로 계속 거절된다.
 이 글꼴 사용 성공이나 해당 문서 WASM 완료로 주장하지 않고 원시 오류를 보존했다.
 상세 증적은 `regression-policy-20261015/sfnt-alignment/validation.json`.
+
+
+## C30. HFT 전진의 em 비율 덮어쓰기 복구·px 페이지 유지
+
+C28의 기존 HFT 검사 실패는 px 폭에 반영한1.05를 기존 em_fraction이 장치 격자
+변환에서 덮어쓰던 오류다. 같은 프로그램의 em 비율도 함께 보정해 기존 기대값을 유지했다.
+독립 Print54쪽의 Type3 그림·태그된 한글 원점은 약140/133em이며 현재 전진을 대조했다.
+집중75건74PASS1FAIL→75PASS0FAIL(5.155초), Native build/fresh web/no-opt WASM 성공.
+Native/fresh 각각8조건79쪽 전쪽90%·독립 쪽수 일치다. 자산관리규정 전60쪽 최저
+91.82160/91.81721%로 개선됐다. 보호한36쪽98.92960/98.88248%, 영월4쪽/표 여백1쪽
+100/100%, 일·생활6쪽99.94512/99.94559% 및 기존 토지 제목98.81416/98.81533% 유지.
+해당 중요 페이지 PNG는 C28에서 직접 판독한 것과 hash도 같으며, 새 후보에서 전쪽 TSV를
+다시 산출했다. #7490 서로 다른 두 편집/원본도 양쪽98% 이상을 유지했다.
+세부 증거는 `regression-policy-20261015/hft-em-followthrough/validation.json`.
+
+전체 default nextest는 별도 실행 중이며 최종 통과로 기록하지 않는다. 기준2ef의 전쪽
+대조와 나머지 문서별 중요 위치 점검도 계속한다. #4138 분할 입력은 아직196/독립197쪽으로
+미해결이며 검사나 기대 쪽수를 제거하지 않았다.

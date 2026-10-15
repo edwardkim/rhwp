@@ -1,0 +1,24 @@
+{
+  "head": "22b41c52934c2a09f9d80c925a6bca30087d2820",
+  "binary": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/hft-em-followthrough/rhwp-native",
+  "binarySha256": "a86eba51b895ab51bb953da416ba8dd386af2d4be75251bfe9f10acb6e6db4f2",
+  "rlibSha256": "5a4da42452946882a0de512fcd8f1fb2d28b0d47ddae67252b9f23ce7b561bca",
+  "buildJobs": 8,
+  "log": "native-build.log",
+  "sourceFilesBase": "../current-native-producer.json",
+  "changedSourceFiles": {
+    "src/renderer/layout/text_measurement.rs": "058717dc47a66e3ebbbb85a54326ddc4c0933b1679c96251a095ddf8f8beaf7d"
+  },
+  "freshWasm": {
+    "head": "9a1054d3a81cbb7eefbcdd065dbbc4fda12bb448",
+    "package": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/hft-em-followthrough/pkg",
+    "hashes": {
+      "rhwp.js": "009b53a277844df11b6d9f00a0cab0b29e449d3e46f00a24dca42a6fed9696ed",
+      "rhwp_bg.wasm": "28977ea5358a22ddf89846e0b77ad5bad3958ec7e4b24dded38bf569da34e0cc",
+      "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390"
+    },
+    "localNoOpt": true,
+    "exitCode": 0,
+    "seconds": 221.23520708299475
+  }
+}
