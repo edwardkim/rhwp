@@ -84,17 +84,31 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
     let records = Record::read_all(data).map_err(|e| BodyTextError::RecordError(e.to_string()))?;
     drawing_text_structure::validate(&records)?;
 
+    // 본문 뒤 level 1 LIST_HEADER/MEMO_LIST는 독립된 저장 범위다.
+    let tail_start = records
+        .iter()
+        .rposition(|r| r.tag_id == tags::HWPTAG_PARA_HEADER && r.level == 0)
+        .and_then(|last| {
+            records[last + 1..]
+                .iter()
+                .position(|r| {
+                    r.level == 1
+                        && matches!(r.tag_id, tags::HWPTAG_LIST_HEADER | tags::HWPTAG_MEMO_LIST)
+                })
+                .map(|offset| last + 1 + offset)
+        });
+    let body_end = tail_start.unwrap_or(records.len());
     let mut section = Section::default();
     let mut idx = 0;
 
-    while idx < records.len() {
+    while idx < body_end {
         if records[idx].tag_id == tags::HWPTAG_PARA_HEADER {
             let base_level = records[idx].level;
             let start = idx;
             idx += 1;
 
             // 자식 레코드 수집 (level > base_level)
-            while idx < records.len() && records[idx].level > base_level {
+            while idx < body_end && records[idx].level > base_level {
                 idx += 1;
             }
 
@@ -116,39 +130,24 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
 
     link_orphan_field_ends(&mut section.paragraphs);
 
-    // 확장 바탕쪽 파싱: 마지막 문단 이후의 LIST_HEADER (level=1)
-    // HWP 바이너리에서 확장 바탕쪽(마지막 쪽, 임의 쪽)은 Section 스트림 끝에 저장되지만,
-    // level=1로 태그되어 마지막 문단의 자식으로 오인됨.
-    // 전체 레코드를 재스캔하여 마지막 PARA_HEADER(level=0) 이후의 LIST_HEADER(level=1)를 추출.
-    {
-        let all_records = Record::read_all(data).unwrap_or_default();
-        let last_para0_idx = all_records
+    if let Some(start) = tail_start {
+        let tail: Vec<RawRecord> = records[start..]
             .iter()
-            .rposition(|r| r.tag_id == tags::HWPTAG_PARA_HEADER && r.level == 0);
-        if let Some(lp) = last_para0_idx {
-            // 마지막 문단의 본래 자식 레코드 범위 결정 (PARA_TEXT, PARA_CHAR_SHAPE 등)
-            // LIST_HEADER(level=1)가 나타나면 그 이후는 확장 바탕쪽
-            let mut scan = lp + 1;
-            while scan < all_records.len() {
-                if all_records[scan].tag_id == tags::HWPTAG_LIST_HEADER
-                    && all_records[scan].level == 1
-                {
-                    // 확장 바탕쪽 발견
-                    let tail: Vec<RawRecord> = all_records[scan..]
-                        .iter()
-                        .map(|r| RawRecord {
-                            tag_id: r.tag_id,
-                            level: r.level,
-                            data: r.data.clone(),
-                        })
-                        .collect();
-                    let ext_mps = parse_master_pages_from_raw(&tail, 0);
-                    section.section_def.master_pages.extend(ext_mps);
-                    break;
-                }
-                scan += 1;
-            }
-        }
+            .map(|r| RawRecord {
+                tag_id: r.tag_id,
+                level: r.level,
+                data: r.data.clone(),
+            })
+            .collect();
+        // 화면의 기존 의미 투영은 유지하고, 저장 소유는 플래그와 독립적으로 보존한다.
+        section
+            .section_def
+            .master_pages
+            .extend(parse_master_pages_from_raw(&tail, 0));
+        section.trailing_lists = Some(crate::model::section_tail::SectionTail {
+            records: tail,
+            projection_seal: None,
+        });
     }
 
     Ok(section)
@@ -1192,10 +1191,12 @@ fn parse_footnote_shape_record(data: &[u8]) -> FootnoteShape {
     fs.prefix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
     fs.suffix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
     fs.start_number = r.read_u16().unwrap_or(1);
-    fs.separator_length = r.read_i16().unwrap_or(0) as i32;
-    fs.separator_margin_top = r.read_i16().unwrap_or(0);
-    // HWP5 실파일에서는 이 슬롯이 한컴 UI "구분선 위" 값으로 쓰이는 사례가 있다.
-    // HWPX aboveLine 은 separator_margin_top 에 들어오므로 정규화 접근자에서 합친다.
+    // [#7862] 구분선 길이는 4바이트다. 한/글 기본 미주 모양 `12280 | 224` 는 상위 워드까지
+    // 합친 14692344 이고, 한/글 자신의 HWPX 도 `noteLine length="14692344"` 로 적는다.
+    // 상위 워드를 "구분선 위" 여백으로 읽으면 구분선이 짧아지고 미주가 위로 올라간다.
+    fs.separator_length = r.read_i32().unwrap_or(0);
+    // HWP5 에는 HWPX `aboveLine` 슬롯이 없다. "구분선 위" 는 다음 i16 이다.
+    fs.separator_margin_top = 0;
     fs.separator_margin_bottom = r.read_i16().unwrap_or(0);
     fs.note_spacing = r.read_i16().unwrap_or(0);
 

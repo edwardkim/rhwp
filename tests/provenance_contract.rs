@@ -1619,6 +1619,23 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        #[cfg(feature = "native-skia")]
+        Recipe {
+            command: "export-png",
+            doc: Some(main.clone()),
+            args: vec![
+                s("export-png"),
+                p(&main),
+                s("-o"),
+                out("png"),
+                s("-p"),
+                s("0"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         Recipe {
             command: "export-pdf",
             doc: Some(main.clone()),
@@ -1955,8 +1972,28 @@ fn every_text_bearing_command_declares_untrusted_fields() {
     // 조용히 빠져나가면 그 다음 검사는 아무 의미가 없다.
     let sweep = sweep();
     let covered: BTreeSet<&str> = sweep.recipes.iter().map(|r| r.command).collect();
+    // 선언의 출처 지도는 위 검사에서 feature 비가용 명령까지 확인한다.
+    // 실제 호출은 이 바이너리가 명시적으로 사용 가능하다고 밝힌 명령만 수행한다.
+    // 비가용 PNG를 문서 입력이 없는 명령으로 면제하지 않으며 Native Skia에서는
+    // 위 PNG 레시피와 cli_exit_codes_native가 실제 산출 봉투를 확인한다.
+    let unavailable: BTreeSet<&str> = cap["commands"]
+        .as_array()
+        .expect("commands")
+        .iter()
+        .filter(|command| command["json"] == true && command["available"] == false)
+        .map(|command| {
+            assert!(
+                command["requiresFeature"]
+                    .as_str()
+                    .is_some_and(|feature| !feature.is_empty()),
+                "비가용 JSON 명령에는 빌드 feature 근거가 있어야 한다: {command}"
+            );
+            command["name"].as_str().expect("command name")
+        })
+        .collect();
     let uncovered: Vec<String> = json_commands(&cap)
         .into_iter()
+        .filter(|name| !unavailable.contains(name.as_str()))
         .filter(|n| !covered.contains(n.as_str()))
         .filter(|n| !SWEEP_EXEMPT.iter().any(|(c, _)| c == n))
         .collect();

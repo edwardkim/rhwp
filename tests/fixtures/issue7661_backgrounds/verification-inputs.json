@@ -1,0 +1,170 @@
+[
+  {
+    "key": "image",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/image.hwpx",
+    "input_sha256": "7bedc6fcb4449e46971014120a309f8175e935206a36d1e55a7291ac7c1fa3bf",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/image-2020.pdf",
+    "pdf_sha256": "402382062826c21c5e186e78599f8b073fc381973527c77feb22aaabe5130936",
+    "kind": "manual-public-derived"
+  },
+  {
+    "key": "image-char-unrelated",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/image-char-unrelated.hwpx",
+    "input_sha256": "0e5a873bedd9c7b6789319b8a9792f4ece940dd1517218b6904aeb21260c78d2",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/image-char-unrelated-2020.pdf",
+    "pdf_sha256": "7dfeddda10d27ed71e8a7897ee31f8eb38c375bfe7b3424f4d948023062e595a",
+    "kind": "browser-api-edited"
+  },
+  {
+    "key": "image-para-unrelated",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/image-para-unrelated.hwpx",
+    "input_sha256": "8937d869dd2b4fff70aa4ca4678b3492e89627d368edf6d0f5ab717c43db55d4",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/image-para-unrelated-2020.pdf",
+    "pdf_sha256": "501cce61ef58430fc4203a43d663b12adfe262c0b04ae58f4f292d583aa15cf3",
+    "kind": "browser-api-edited"
+  },
+  {
+    "key": "gradient",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/gradient.hwpx",
+    "input_sha256": "91957a81ac486829ef424b39e10c989b387626b75615281dfd8531521f596925",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/gradient-2020.pdf",
+    "pdf_sha256": "4beca05aa676c0246d80e5bcc14a71fbb5a62525e0eeb47463a99b7508124320",
+    "kind": "manual-public-derived"
+  },
+  {
+    "key": "gradient-char-unrelated",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/gradient-char-unrelated.hwpx",
+    "input_sha256": "eea6bffc0e5b50a4c74cad87a889223539b8819ac197b68ac7f7412a60ed9db4",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/gradient-char-unrelated-2020.pdf",
+    "pdf_sha256": "89e29814a4248e0e3298528ed124b689bdffe5213ea91bbf7e4defb2d56bc102",
+    "kind": "browser-api-edited"
+  },
+  {
+    "key": "gradient-para-unrelated",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/gradient-para-unrelated.hwpx",
+    "input_sha256": "29f8c14496617eeafe4b7de5ff25960534cd3bd3765330432c1fe556665ad516",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/gradient-para-unrelated-2020.pdf",
+    "pdf_sha256": "3980b453a86994a6ca117f9d4219703451152773e276fb8615d3b196bf58869e",
+    "kind": "browser-api-edited"
+  },
+  {
+    "key": "api-issue7235",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/api-issue7235.hwpx",
+    "input_sha256": "cd8226dcc0706f30b8580928a986e659c4a0e2caf597b725ddcffeb5298a5e5f",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/api-issue7235-2020.pdf",
+    "pdf_sha256": "358562db0088d99dbaa28d2d9448a93891af452540ba690af7f924e61d50d629",
+    "kind": "browser-api-edited"
+  },
+  {
+    "key": "api-mel",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/api-mel.hwpx",
+    "input_sha256": "e0691578f32be19f8b097861537e7d0492b851c334104a149224c63701ef026a",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/api-mel-2020.pdf",
+    "pdf_sha256": "92c36322d162bc05c952c0213b77949a8daa4a4af260de18ff5464577111871a",
+    "kind": "browser-api-edited"
+  },
+  {
+    "key": "api-school",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/api-school.hwpx",
+    "input_sha256": "17b158717f9b9a96053514207428ab184523ee3860285b26feeacd4e53a263d6",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/api-school-2020.pdf",
+    "pdf_sha256": "7937ef8a5c9d121fd92ef23b5a8267cf76da7b9eb835314d3cbceabcb7ffe6f6",
+    "kind": "browser-api-edited"
+  },
+  {
+    "key": "api-newyear",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/api-newyear.hwpx",
+    "input_sha256": "53192ad01902766c1fe0cd2360cb5558f8824c79a00247560095339439bbc53c",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/api-newyear-2020.pdf",
+    "pdf_sha256": "b3bdc439af02e88362aba32668a1871506d5cc6b1cd277952aed3e85eb9d7532",
+    "kind": "browser-api-edited"
+  },
+  {
+    "key": "api-page-image",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/api-page-image.hwpx",
+    "input_sha256": "9d5293c8907d0edc80d97f525a9c84019f82b192f859e6d02ca521c53ace4781",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/api-page-image-2020.pdf",
+    "pdf_sha256": "fb025238855f343f7ae46ffb4efd9d3b4fe52334961252c0a5a8f45b3e197862",
+    "kind": "browser-api-edited"
+  },
+  {
+    "key": "probe-connected-backgrounds",
+    "input": "tests/fixtures/issue7661_backgrounds/connected-backgrounds.hwpx",
+    "input_sha256": "7a370b4dad2d8cd47f02b5fa5e0c09c03f8a55029ac80e057b771780be04c1da",
+    "pdf": "tests/fixtures/issue7661_backgrounds/connected-backgrounds-2020.pdf",
+    "pdf_sha256": "3ba9b1a07c9a2fed6af3f0aae446a061e2c2aef22aaad6997558b05b017d7874",
+    "kind": "probe"
+  },
+  {
+    "key": "probe-connect-01",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/probe-connect-01.hwpx",
+    "input_sha256": "b5af3dc934a6983061dc48a763998039680e7d20f37d706cb9e1449d7aade5d3",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/probe-connect-01-2020.pdf",
+    "pdf_sha256": "2aafcd47b1a1b386da18bac76277e7a56116c51c9f56f33704daa5f7b6b325ec",
+    "kind": "probe"
+  },
+  {
+    "key": "probe-connect-10",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/probe-connect-10.hwpx",
+    "input_sha256": "67b6fb12636fb0400b4709d0fd159792a70fc35ce663e249a4b5a49becbb360f",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/probe-connect-10-2020.pdf",
+    "pdf_sha256": "f81ffe5d676ca7e2de6808691a3993cb29c663f56096c1edec8fc5e6b92d8029",
+    "kind": "probe"
+  },
+  {
+    "key": "probe-cell-background-layers",
+    "input": "tests/fixtures/issue7661_backgrounds/cell-background-layers.hwpx",
+    "input_sha256": "2082c02fddf44002e65ba384a78d7ca765b0457be14f52c35c16658ac88aa09c",
+    "pdf": "tests/fixtures/issue7661_backgrounds/cell-background-layers-2020.pdf",
+    "pdf_sha256": "191d44755a29eaaebb87af26a87c4827789be226858f5fa1450de33d3ffc9ae8",
+    "kind": "probe"
+  },
+  {
+    "key": "probe-continued-paragraph",
+    "input": "tests/fixtures/issue7661_backgrounds/continued-paragraph.hwpx",
+    "input_sha256": "de9dc6a1c7b6f14a6a6e98b017add2b67a4391d00414ac81547499da1c0cc274",
+    "pdf": "tests/fixtures/issue7661_backgrounds/continued-paragraph-2020.pdf",
+    "pdf_sha256": "d64cecfeaad10a76c8d84a76c91760f18de2e67655ebfe936fd17b2d9ad58106",
+    "kind": "probe"
+  },
+  {
+    "key": "probe-gradient-centers",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/probe-gradient-centers.hwpx",
+    "input_sha256": "c6637be6709eb4cce4d2bd4815ec0990f7ae172366b0d7bc30471025c66c045e",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/probe-gradient-centers-2020.pdf",
+    "pdf_sha256": "324618a7f1d4cf65168d60bb4cfdb333f86eb99dabee9a6757e23dd97e38dda4",
+    "kind": "probe"
+  },
+  {
+    "key": "probe-char-only-image",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/probe-char-only-image.hwpx",
+    "input_sha256": "1061986693136eae1d327f76b0ae56c8199b7b17661a0676123a110bbcd57083",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/probe-char-only-image-2020.pdf",
+    "pdf_sha256": "d8787d7de7d3134e636b4c34bfba49ddfa083587cebb7905b7b1e58c33b1ba14",
+    "kind": "probe"
+  },
+  {
+    "key": "probe-char-only-gradient",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/probe-char-only-gradient.hwpx",
+    "input_sha256": "a91820d052501db3b209929e7b5bf0b79fc952b9f38a2f370b7b91e50192f55f",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/probe-char-only-gradient-2020.pdf",
+    "pdf_sha256": "dae5203e19d14212d5da8683bdd681e7eb2d982ae052f91e951550194a0ebb2d",
+    "kind": "probe"
+  },
+  {
+    "key": "probe-flow-band-ownership",
+    "input": "tests/fixtures/issue7661_backgrounds/flow-band-ownership.hwpx",
+    "input_sha256": "4f390d9e24ca9bcd134db6372a998445d1ffe60a714990e6e788e886573ad172",
+    "pdf": "tests/fixtures/issue7661_backgrounds/flow-band-ownership-2020.pdf",
+    "pdf_sha256": "18200d72bf6393d7b2f6a2f47bb027fec6f8f319b45022f1ade454ce41322a50",
+    "kind": "probe"
+  },
+  {
+    "key": "probe-table-only-background",
+    "input": "tests/fixtures/issue7661_backgrounds/verification/probe-table-only-background.hwpx",
+    "input_sha256": "99650a4647bcd30821ec6e32b7fa56850ba392a9ff3f60ee4a0ae95321215f4a",
+    "pdf": "tests/fixtures/issue7661_backgrounds/verification/probe-table-only-background-2020.pdf",
+    "pdf_sha256": "0188af1005e23a3d77323a724da0cbb9e3b7e4a27ecc7ce4c8e95d5e5baae10c",
+    "kind": "probe"
+  }
+]

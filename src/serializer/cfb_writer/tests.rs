@@ -74,6 +74,7 @@ fn test_serialize_hwp_cfb_streams() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],
@@ -222,6 +223,7 @@ fn test_full_roundtrip_uncompressed() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],
@@ -303,6 +305,7 @@ fn test_full_roundtrip_compressed() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],
@@ -1698,6 +1701,7 @@ fn test_ole_storage_size_prefix_restored() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],
@@ -1786,6 +1790,7 @@ fn test_compressed_ole_storage_payload_is_deflated() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],

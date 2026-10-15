@@ -589,6 +589,13 @@ pub const MAP: &[CommandProvenance] = &[
                안에 있고 봉투에는 없다.",
     },
     CommandProvenance {
+        command: "export-png",
+        untrusted: NONE,
+        note: "매니페스트는 산출 경로·바이트·쪽수·출력 조건뿐이다. 문서 내용은 PNG와 \
+               별도 render tree 파일에 있으며 JSON 봉투에는 없다. metadata-only도 \
+               엔진이 계산한 쪽수만 반환한다.",
+    },
+    CommandProvenance {
         command: "export-pdf",
         untrusted: NONE,
         note: "매니페스트는 backend·경로·바이트·쪽수뿐이다.",
