@@ -128,17 +128,15 @@ fn strict_glyph_run_export_uses_only_the_proven_font_variant() {
 
 #[test]
 fn strict_outline_export_preserves_bitmap_resources() {
-    for text in ["\u{E100}"] {
-        let tree = native_tree(text);
-        let old = value(tree.to_json());
-        let new = value(tree.to_json_v2_strict_glyph_outline().unwrap());
-        let slot = &new["root"]["ops"][0];
-        assert_eq!(slot["defaultVariantId"], "glyphOutline");
-        assert_eq!(slot["variants"].as_array().unwrap().len(), 1);
-        let payload = &slot["variants"][0]["parts"][0]["payload"];
-        assert_eq!(payload["type"], "glyphOutline");
-        assert_eq!(new["resources"], old["resources"]);
-    }
+    let tree = native_tree("\u{E100}");
+    let old = value(tree.to_json());
+    let new = value(tree.to_json_v2_strict_glyph_outline().unwrap());
+    let slot = &new["root"]["ops"][0];
+    assert_eq!(slot["defaultVariantId"], "glyphOutline");
+    assert_eq!(slot["variants"].as_array().unwrap().len(), 1);
+    let payload = &slot["variants"][0]["parts"][0]["payload"];
+    assert_eq!(payload["type"], "glyphOutline");
+    assert_eq!(new["resources"], old["resources"]);
 }
 
 #[test]
