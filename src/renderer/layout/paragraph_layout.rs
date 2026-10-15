@@ -7170,6 +7170,7 @@ impl LayoutEngine {
                     .iter()
                     .map(|(pos, _, _)| *pos)
                     .chain(composed.footnote_positions.iter().map(|(pos, _, _)| *pos))
+                    .chain(click_here_positions.iter().copied())
                     .filter(|pos| *pos >= comp_line.char_start)
                     .min()
             } else {

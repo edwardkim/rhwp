@@ -153,3 +153,99 @@ fn paragraph_end_font_is_owned_only_by_the_final_line() {
         "다음 문단은 마지막 줄 뒤에 배치한다"
     );
 }
+
+#[test]
+fn click_here_value_spaces_share_distribution_after_the_authored_prefix() {
+    let input = bytes();
+    let source = rhwp::parse_document(&input).expect("원본 파싱");
+    let (index, paragraph) = source.sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, para)| para.text.contains("해당없음(교통약자 등 국민생명"))
+        .expect("일몰설정 누름틀의 원본 값");
+    let field_index = paragraph
+        .controls
+        .iter()
+        .position(|control| {
+            matches!(control, Control::Field(field)
+                if field.field_type == rhwp::model::control::FieldType::ClickHere)
+        })
+        .expect("누름틀 시작 소유");
+    let field_start = paragraph.control_text_positions()[field_index];
+    assert!(field_start > 0);
+    assert!(paragraph.text.chars().take(field_start).all(|ch| ch == ' '));
+    let core = DocumentCore::from_bytes(&input).expect("문서 로드");
+    assert_eq!(core.page_count(), 17);
+    let layout: serde_json::Value = serde_json::from_str(
+        &core
+            .get_page_text_layout_native(11)
+            .expect("독립 Print 12쪽의 실제 글자 원점"),
+    )
+    .expect("글줄 JSON");
+    let runs: Vec<_> = layout["runs"]
+        .as_array()
+        .expect("실제 글줄")
+        .iter()
+        .filter(|run| run["secIdx"] == 0 && run["paraIdx"] == index)
+        .collect();
+    let prefix = runs
+        .iter()
+        .find(|run| run["charStart"] == 0)
+        .expect("필드 전 원본 들여쓰기 공백");
+    let field_space = runs
+        .iter()
+        .find(|run| run["charStart"] == field_start)
+        .expect("필드 값의 첫 공백");
+    assert_eq!(
+        prefix["text"].as_str().unwrap().chars().count(),
+        field_start
+    );
+    assert_eq!(field_space["text"], " ");
+    assert_eq!(prefix["fontSize"], field_space["fontSize"]);
+    let natural_prefix_space = prefix["w"].as_f64().unwrap() / field_start as f64;
+    assert!(
+        field_space["w"].as_f64().unwrap() > natural_prefix_space + 0.1,
+        "필드 전 접두 공백은 자연 폭, 값 안 공백은 독립 Print와 같은 본문 정렬 배분을 갖는다"
+    );
+
+    // 전17쪽 Native/fresh 수용 뒤12쪽은99.53545/99.53641%이며 확대 판독했다.
+    // 독립 Print 첫 '해'의 trace 원점은722×0.12pt다. 허용된 ±2 CSSpx
+    // 좌표 보호와 별도로 위의 실제 공백 소유 관계가 수정 전 결함을 검출한다.
+    let value_byte_offset = paragraph.text.find("해당없음(교통약자").unwrap();
+    let value_offset = paragraph.text[..value_byte_offset].chars().count();
+    let value = runs
+        .iter()
+        .find(|run| {
+            let start = run["charStart"].as_u64().unwrap() as usize;
+            let count = run["text"].as_str().unwrap().chars().count();
+            start <= value_offset && value_offset < start + count
+        })
+        .expect("값 본문의 실제 글줄");
+    let glyph_offset = value_offset - value["charStart"].as_u64().unwrap() as usize;
+    assert_eq!(
+        value["text"].as_str().unwrap().chars().nth(glyph_offset),
+        Some('해')
+    );
+    let first_glyph_x =
+        value["x"].as_f64().unwrap() + value["charX"][glyph_offset].as_f64().unwrap();
+    let independent_x = 722.0 * 0.12 * rhwp::renderer::DEFAULT_DPI / 72.0;
+    assert!(
+        (first_glyph_x - independent_x).abs() <= 2.0,
+        "누름틀 값 시작: 실제{first_glyph_x}, 독립 Print{independent_x}"
+    );
+    let compact = |text: &str| {
+        text.chars()
+            .filter(|ch| !ch.is_whitespace())
+            .collect::<String>()
+    };
+    let painted = runs
+        .iter()
+        .map(|run| run["text"].as_str().unwrap())
+        .collect::<String>();
+    assert_eq!(
+        compact(&painted),
+        compact(&paragraph.text),
+        "필드 앞뒤 원문은 같은 쪽에 누락·중복 없이 보존된다"
+    );
+}

@@ -1167,3 +1167,28 @@ Native/fresh 최저93.72832%, 미달0이다. #5821 제목은 SVG의 한 자리 x
 이는 전체 회귀 통과나 PR 준비 완료가 아니다. 지침·사용자 초안은 변경하지 않았다.
 
 C32 보완: 개인정보의 같은 기호 제목40쪽은97%대로 관계 검사를 유지하고, 양쪽98.17737/98.18230%인65쪽은 독립 Print의 기호/다음 글자x·baseline ±2px를 보호했다. 새 좌표는 이미 정상인 위치의 보호이며, 새 생산 코드 결함의 before/after로 주장하지 않는다. 해당 기존 함수는 default1PASS(0.534초). HFT i의277/1000 자연 폭은 별도의 독립 metric 계약에서도 이전1FAIL→현재1PASS를 확인했다. 사용자 초안 두 파일의 SHA는 계속 동일하다.
+
+
+## C33. 누름틀 값 공백의 공통 소비 복구와 빈 문단 소유 검사 교정
+
+실제 upstream/devel 원격 HEAD를 fetch·대조했고2efefc6a1f로 동일했다. 리베이스를 반복하지
+않았으며 PR 생성 직전 다시 확인한다. 누름틀 시작 이후 값 공백을 예산 계산은 본문 정렬에
+참여시키지만 LeadingSpacePlan이 다시 자연 접두 공백으로 덮어쓰던 공통 소비 오류를 고쳤다.
+control_text_positions→click_here_positions→첫 inline 경계→LeadingSpacePlan의
+leading_spaces/natural_prefix_runs→최종 glyph spacing이 같은 경계를 쓴다. 특정 문서나
+색상 조건은 없다. 접두 공백/값 공백 관계의 수정 전 FAIL→수정 후 PASS를 확인했다.
+값의 첫 글자는 run 분할 형태 대신 실제 원문 char offset으로 선택한다.
+
+규제분석17쪽은 Native 최저94.12693/fresh94.07490%, sample16 64쪽은
+90.98229/90.99154%, 각각 전쪽 쪽수 일치·미달0이다. 규제분석12쪽은
+99.53545/99.53641%로 독립 첫 글자 x ±2CSSpx를 보호하고 누락·중복·공백
+소유 관계를 함께 검사한다. 값 두 줄의 시작·어간·줄바꿈을 직접 확대 판독했다.
+
+#1116은 인쇄 줄만 고르는 helper에서 editor_only 빈 문단을 찾던 기대 오류였다.
+빈 문단 원본의 양수 lineSpacing은 계속 검사하고, 논리 줄 노드·원문 문단 소속·
+뒤 순서와 실제 편집 API의 빈 caret 한 번 소유를 검증한다. 추가 가시 폭이나
+인쇄 흐름 예약을 요구하지 않는다. 독립 Print/Native/fresh3쪽 하단도 직접 대조했다.
+
+집중 Native Skia22PASS0FAIL(1.609초), Native build/fresh web no-opt 빌드·fmt 완료.
+전체 회귀와 #1105/생물독소 경계 보정 등은 남아 있으며 PR 준비 완료가 아니다.
+[전쪽 수치·출처·대표 확대 이미지](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/field-prefix-consumer-repair/validation.json).
