@@ -23,7 +23,8 @@ export interface SupplementalMetricGeneration {
   fonts: number;
 }
 
-type MeasurementContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>;
+type MeasurementContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>
+  & { textRendering?: string };
 
 export type SupplementalMetricPreparation =
   | { status: 'ready'; generation: SupplementalMetricGeneration;
@@ -135,6 +136,8 @@ export class CanvasSupplementalMetricProvider {
       if (next.size >= MAX_ENTRIES) throw new Error('Supplemental metric cache limit exceeded');
       context ??= createContext();
       if (!context) throw new Error('Canvas2D measurement context unavailable');
+      // 같은 CSS 글꼴을 칠하는 WASM CanvasTextFont의 기하 hint와 일치시킨다.
+      if ('textRendering' in context) context.textRendering = 'geometricPrecision';
       // Canvas ignores invalid font assignments. Two distinct reset values
       // distinguish a valid canonical descriptor from retained previous state.
       context.font = '10px sans-serif';

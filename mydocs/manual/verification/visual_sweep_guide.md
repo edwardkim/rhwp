@@ -399,6 +399,11 @@ venv/bin/python scripts/visual_sweep.py \
 OTS 오류나 LastResort가 있으면 성공 캡처로 세지 않는다. 원 face를 공급한 정합성 검증과
 실제 Studio fallback 환경의 비교는 서로 다른 증거로 구분한다.
 
+원본이 HFT `한양신명조`이고 같은 이름의 TTF 대체 윤곽이 실제 원본과 다르면,
+[독립 전체 한글 표본으로 원본 HFT 글꼴 공급 준비](hft_original_font_supply.md)를 사용할 수 있다.
+대상 정답 PDF를 글꼴 소스로 쓰지 않는다. 기존 대체 공급 결과를 보존하고, 준비한 같은 원본
+글꼴을 공급한 devel/head의 전쪽 Native/fresh WASM을 모두 다시 비교한다.
+
 Sweep은 Native/WASM의 선택 SVG를 캡처하거나 resume checkpoint를 재사용하기 전에
 임베딩 폰트의 Unicode `cmap`을 검사한다. 이를 위해 임베딩 모드는 Python `fonttools`가
 필요하다(`python -m pip install fonttools`). 손상된 폰트·없는/빈 `cmap`·검사 의존성 누락은

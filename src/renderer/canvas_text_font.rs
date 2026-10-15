@@ -46,6 +46,21 @@ impl CanvasTextFont {
         &self.descriptor
     }
 
+    /// 저장/측정 원점에서 그리는 글리프를 화면 픽셀 격자에 다시 맞추지 않는다.
+    /// 같은 CSS 글꼴을 소비하는 Canvas 측정 provider도 이 hint를 사용한다.
+    #[cfg(target_arch = "wasm32")]
+    pub fn apply_to(&self, context: &web_sys::CanvasRenderingContext2d) {
+        context.set_font(&self.descriptor);
+        let property = wasm_bindgen::JsValue::from_str("textRendering");
+        if js_sys::Reflect::has(context.as_ref(), &property).unwrap_or(false) {
+            let _ = js_sys::Reflect::set(
+                context.as_ref(),
+                &property,
+                &wasm_bindgen::JsValue::from_str("geometricPrecision"),
+            );
+        }
+    }
+
     pub fn old_hangul_descriptor(&self) -> &str {
         &self.old_hangul_descriptor
     }
