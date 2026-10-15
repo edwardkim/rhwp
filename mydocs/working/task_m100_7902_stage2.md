@@ -5,27 +5,43 @@ Issue: #7902. 이미 merge된 PR #7877의 원본 19문서·835쪽 범위를 유�
 
 ## 현재 확인 상태 — 2026-10-15
 
-아래는 이전 진단과 구분한 현재 집계다. **아직 PR 생성·전체 검증 완료가 아니다.**
-아래 전쪽 집계의 실행 소스는`f5284cd0b`, 기준은`a5e88ad68`다.
-PR 직전 다시 fetch하며 기준 SHA가 바뀐 경우에만 커밋·리베이스 후 필요한 검증을 갱신한다.
+**로컬 필수 실행 검증은 완료했다. PR 제출 조건은 미충족이다.**
+렌더러 검증 소스 SHA는 `02c3b8074430d5d521280404dc84affeb4ab0e31`,
+고정 기준은 `a5e88ad682c805e1d845502ddc9521b94ea8eccd`다. 사용자 동기화 요청 후
+fetch와 마지막 원격 헤드 조회에서도 devel은 같아 리베이스하지 않았다.
 
-| 항목 | 실제 확인 결과 | 남은 범위 |
+| 항목 | 최종 확인 결과 | 판정 |
 | --- | --- | --- |
-| Native 원본 전쪽 |19문서835쪽,미달/누락0·Print 쪽수 일치,최저91.71770%(scattered37쪽)|최종 제출 head와 증적 연결|
-| Native devel 대조 |비교 가능한18문서787쪽,0.01%p 이상 하락0쪽|overfill base49/Print48로 전쪽 TSV 비교 불가|
-| fresh WASM 전쪽 |19문서835쪽,미달/누락0·Print 쪽수 일치,최저90.09386%(chemical19쪽)|nested HWP의 Chrome 시작 timeout은 같은 producer로115쪽 재실행 완료|
-| WASM devel 대조 |nested HWPX104쪽99.93539→99.87312%,0.06227%p 하락1쪽|재검토 상태 유지,기준·글꼴·마스크를 바꾸지 않음|
-| 새 회귀7개 |정식 Cargo Native selector7PASS;공통6개·Native 진단1개|최종 source의 전체 gate와 연결|
-| Rust 전체 nextest |10301실행,10300PASS·1FAIL·45skip|정책연구 HWPX 본문 넘침1→2건의 원인 보정·재검증|
-| Native Skia lib |全lib PASS(exit0),컴파일·실행428.84초|Native integration·doctest는 순차 실행 중|
-| Rust lint·정책 |fmt,일반/WASM/전체 target 및 Native Skia Clippy PASS,manifest/base·unit tier PASS|후속 검사 변경의 lint/정식 Cargo 검증|
-| 브라우저·CI 계약 |관련 Node6PASS,CI 계약328PASS,Python workflow186PASS,actionlint PASS|없음|
-| Studio |단위1840PASS·2skip,fresh 공용 pkg 갱신 후 tsc PASS|생성 public wrapper는 제품 변경으로 stage하지 않음|
+| Native 원본 전쪽 | 19문서·835쪽, 최저91.71770%(scattered37쪽), 미달/누락0·Print 쪽수 일치 | 90%·쪽수 조건 충족 |
+| fresh WASM 원본 전쪽 | 19문서·835쪽, 최저90.09386%(chemical 계열19쪽), 미달/누락0·Print 쪽수 일치 | 90%·쪽수 조건 충족 |
+| Native devel 대조 | 대응 가능한18문서·787쪽에서0.01%p 이상 하락0쪽 | overfill 비교 불가 별도 보류 |
+| WASM devel 대조 | 같은787쪽에서 nested HWPX104쪽99.93539→99.87312%, **0.06227%p 하락1쪽** | 미충족 |
+| overfill 일대일 대조 | 현재48쪽=독립 Print48쪽, 기준 devel49쪽 | 현행 일대일 조건 미충족 |
+| 원본 출력 보존 | f528→02c3의 Native835개·WASM835개 PNG가 각각 전부 바이트 동일 | 확인 완료 |
+| 추가 HWP2022 전쪽 | 각115쪽, Native 최저96.74524%·WASM96.89031%, 미달/누락0·Print 일치; 각115개 PNG가2024와 동일 | 새 회귀의 실행 프로필 증거 보완 |
+| Rust 전체 회귀 | **10301/10301 PASS**,45skip·39slow; 실행1537.132초, 컴파일24분30초 | 완료 |
+| Native 라이브러리 | **4041 PASS/0FAIL/12ignore** | 완료 |
+| Native 선택 검사 | **35 PASS/0FAIL**, 기존 글꼴 진단9개·새 회귀7개 포함 | 완료 |
+| doctest | **8 PASS/0FAIL/3ignore** | 완료 |
+| Rust lint·정책 | fmt, 일반/WASM/all-target/Native Skia Clippy, workspace build, manifest·unit tier 모두 통과 | 22단계 전체 exit0 |
+| CI 분류·계약 | Node classifier45PASS, workflow35PASS, actionlint PASS | 완료 |
+| 직접 PNG 경로 | 원본 두 backend1670개 PNG 해시 확인, 생성 SVG0개; 추가2022의230쪽도SVG0개 | 확인 완료 |
+| 공개 WASM 계약 | JS는f528과 바이트 동일, TS 선언은 순서만 변경·시그니처 동일 | UI 동작 전체 재검증 주장은 아님 |
 
-검증 결과는`final-f528-head-dev-verified-{native,wasm}-result.json`에 있다.
-WASM 원래 실패 로그와 동일 producer의 nested HWP115쪽 retry를 별도로 보존하고
-완료 원장에는 해당 행만 대체했다. Native PNG835장은 직전 a37 producer와 바이트가 같다.
-전체 회귀의 실제1FAIL은 SIGINT나 빌드 오류로 분류하지 않으며 PR 생성·통합을 보류한다.
+전쪽 producer는 명시한 최종 소스의 **dev Native / fresh dev WASM**이다. Rust 실행 검증은
+별도 release-test 구성과 Native feature 구성이다. 서로 다른 빌드 프로필의 성능이나
+미실행 UI 동작까지 동일하게 검증했다고 확대하지 않는다.
+
+핵심 원시 증거는 ignored `output/pr-review/issue7902-render-repair-20261014/`의
+`final-02c3-gates-result.json`, `final-02c3-head-dev-verified-{native,wasm}-result.json`,
+같은 두 backend의 `-devel-comparison.json`, `final-02c3-visual-provenance-audit.json`,
+`02c3-vs-f528-{native,wasm}-png-equivalence.json`, `nested-hwp-2022-full-audit.json`이다.
+Chrome 시작 실패1건은 동일 producer로 재시도해 통과했으며 원시 실패와 교체 사유를 보존했다.
+
+사용자는 **현행 전체 페이지 일대일 무회귀 기준 유지**를 선택했다. 기준49/Print48을
+예외로 처리하거나0.06227%p 하락을 평균 상승으로 상쇄하지 않는다. 따라서 새 code PR,
+원격 CI·merge, 옵션2의 개별 PR review·오늘할일 문서 PR 및 후속 처리는 미수행이다.
+#7902도 OPEN으로 유지하며 전체 목표 완료로 판정하지 않는다.
 
 ## 기준과 승인된 진행
 
@@ -748,3 +764,159 @@ Native CI의 두profile에 기존 #4961 진단 source도 명시했고 classifier
 `physical-tail-minimum-liver-anomaly.log`가 근거다. 원본·PDF·baseline 기대값은 바꾸지 않았다.
 새 producer의 정책연구162/214쪽 직접 비교와 현재 최종 head의 전체 Native/fresh WASM
 19문서,전체 Rust 회귀·lint는 계속 확인한다. 현행0.01%p·일대일 전체 비교 gate는 유지한다.
+
+
+### 02c3 전쪽 Native 완료 및 기존 출력 보존
+
+새 원본19문서835쪽의 Native 전쪽은 모두90% 이상이며 독립 Print와 쪽수가 같다.
+최저는scattered37쪽91.71770%다. 실제 생성된 각 쪽PNG835개를 f528의 같은 쪽과
+SHA-256으로 대조해 전부 바이트 동일(변경0·누락0)을 확인했다.추측으로 Native
+보존을 주장하거나 Native 결과를 WASM 검증으로 대신하지 않는다.
+
+현재 기준a5와 대응 가능한18문서787쪽의Decimal 대조는0.01%p 이상 하락0쪽이다.
+overfill은기준49/Print48로 기준전쪽TSV가 없어 `re_review_required`를 유지한다.
+현재WASM의7336-stored는Chrome launch가WS endpoint를30초 내 노출하지 못해
+렌더 전에 종료됐다.다른 문서를 중단하지 않고,전체WASM runner 종료와 완전한 원시
+결과를 확인한 뒤 같은불변producer·입력·PDF·글꼴·DPI로 이시작실패만 재실행하는
+supervisor를 준비했다.낮은실루엣점수나실제렌더결함은 이 재시도 대상으로 대체하지 않는다.
+
+
+### 02c3 정책연구 fresh WASM 및 회귀 검증 조건 대조
+
+정책연구의 같은 원본·독립 Print와 최종 02c3 fresh WASM으로 162·214쪽을 재출력했다.
+결과는 각각 **99.99555%, 100.00000%**다. 두 review PNG를 직접 열어 위쪽 이어받기
+표의 끝·뒤 본문 간격·본문 소유·하단 표·쪽번호를 대조했다. 표 괘선과 내용의 순서가
+Print와 대응하며, 이전의 본문 끝 넘침을 기준값 갱신으로 숨기지 않았다. Native는 앞서
+162쪽99.98055%,214쪽99.98992%였고, 전체215쪽 본문 넘침2→0 및 쪽수 보존도 확인했다.
+이 두 쪽의 확인을 문서215쪽 전체 시각 통과나 #7753 전체 해결로 확대하지 않는다.
+
+증거: `liver-failure-review/final-02c3-wasm/liver/overlay/overlay_metrics.json`,
+같은 문서의 `review/review_162.png`·`review_214.png`,
+`final-02c3-wasm-liver-selected.log`(exit0).
+
+원본19문서 WASM의 원시 전체 실행은 완료됐다.18문서는 전쪽90% 이상이며,
+7336-stored 1문서는 렌더 전 Chrome WS 시작 시간 초과다. 해당 실패만 재시도 중이고
+원시 실패를 지우지 않는다. nested HWPX104쪽의 최신 TSV는 기준99.93539% 대비
+99.87312%로 **0.06227%p 하락을 다시 확인**했다. PR 보류 조건은 미해결이다.
+
+신규 nested HWP 회귀 함수의 `compat2022`와 원본 manifest의 `compat2024` 차이를
+발견했다. 원래19문서의 전쪽 조건은 바꾸지 않고, 검사가 실제 소비하는 2022 프로필의
+104쪽 Native/fresh WASM을 추가 확인 중이다. 결과 전에는 해당 프로필의 px 증거까지
+충족했다고 주장하지 않는다. 문서 내부 링크 검사는 현재 작업 문서1개에서 통과했다.
+
+
+### 02c3 전쪽 Native/fresh WASM 증적 감사
+
+Chrome 시작 실패7336-stored는 같은 producer로 재시도해7쪽 전부 통과했다(최저96.62082%).
+원시 전체 결과와 시작 실패 로그를 보존하고, 해당 항목만 대체한 최종 검증 결과에
+원시 결과·재시도 결과의 SHA-256과 교체 사유를 연결했다. 낮은 실루엣 점수나 렌더 결함을
+재시도로 제외한 항목은 없다.
+
+최종 두 backend는 각각19문서835쪽이며 Native 최저91.71770%, WASM 최저90.09386%다.
+전체 페이지 집합·누락0·모든 쪽90% 이상·Print 쪽수 일치를 실제 TSV와 manifest로 확인했다.
+현재 산출된 Native835개와 WASM835개의 PNG 파일 SHA-256도 각 실행의 원시 manifest와
+전부 일치한다. 두 경로의 생성 SVG 파일은0개다. 이 증적 감사는 90%·쪽수 조건의 완료이며,
+아래 별도 PR 무회귀 gate를 면제하지 않는다.
+
+최종 devel Decimal 대조는 Native18문서787쪽에서 하락0쪽, WASM18문서787쪽에서
+nested HWPX104쪽 **0.06227%p 하락1쪽**이다. overfill은두 경로 모두기준49/Print48로
+전체 페이지 일대일 비교 불가다. 사용자 선택에 따라 `re_review_required`를 유지하며
+새 PR 생성·승인·merge는 수행하지 않는다.
+
+증거: `final-02c3-head-dev-verified-{native,wasm}-result.json`,
+`final-02c3-head-dev-verified-{native,wasm}-devel-comparison.json`,
+`final-02c3-visual-provenance-audit.json`, `final-02c3-launch-retry-state.json`.
+
+
+### 02c3 원본 출력 보존과 nested HWP 2022 조건 확인
+
+WASM도 f528의 실제 생성 PNG835개와 현재02c3 PNG835개를 쪽별 SHA-256으로 대조했다.
+변경0·누락0으로 전부 바이트 동일하다. Native835개 동일성과 함께 이번 물리 잔여 생산
+보정이 원래19문서 출력에 영향을 주지 않았음을 확인한다. 직전 head의 직접 판독은 이
+동일성 근거와 현재 head의 재출력을 구분해 재사용할 수 있으며, Native 결과를 WASM의
+증거로 대신하지 않는다. 기록은 `02c3-vs-f528-wasm-png-equivalence.json`이다.
+
+nested HWP 회귀 함수가 쓰는2022 프로필104쪽의 추가 실행도 끝났다.
+Native99.66092%, fresh WASM99.87312%이며 각 실행에서 전체 쪽수는115/Print115다.
+이 쪽은 양쪽 모두2024 프로필의 같은 쪽 PNG와 바이트 동일하다. 새 review PNG를 두
+경로에서 직접 열어 앞 표의 끝·제목/본문·그림·그림 뒤 문단 순서와 간격을 판독했다.
+Native와 Print 사이에 기존 글꼴 획 모양 차이는 남아 있으며, 이를 새 배치 보정으로
+해결했다고 주장하지 않는다. 테스트가 고정한 독립 좌표는 변경하지 않았다.
+2022 전체115쪽의 새 TSV를 산출했다고 확대하지 않으며, 원본19문서의2024 전쪽 증적과
+추가2022 선택 쪽 증적을 구분한다.
+
+증거: `nested-hwp-2022-proof-result.json`, `nested-hwp-2022-profile-comparison.json`,
+`nested-hwp-2022-proof/{native,wasm}/nested-hwp/review/review_104.png`.
+
+
+### 02c3 전체 nextest 실행 중 확인한 실제 결함 회귀 결과
+
+최종 소스의 release-test 전체 빌드는24분30초에 끝났다. 실제 전체 nextest에서 직전
+실패였던 `body_overflow_baseline::body_overflow_does_not_grow_partition_14`가
+**PASS(50.783초)**했다. baseline·허용값·원본·PDF를 바꾸지 않고 물리 잔여 생산을
+보정한 결과이며, Native/fresh WASM 정책연구162·214쪽의 직접 판독과 연결된다.
+
+신규 `issue_7902_original_frame_and_content` 기본6개도 전체 실행에서 모두 PASS했다.
+HWP/HWPX 쪽번호2개, 두 형식의 nested 이어받기2개, overfill 가운데 정렬·선언 프레임1개,
+원본 셀의 쪽별 컷·내용 보존1개다. 이6개 통과를 Native 전용 글꼴 trace1개나 전체
+10301개 완료로 확대하지 않는다. 전체 실행과 Native feature·doctest는 계속 진행 중이다.
+원시 근거는 `final-02c3-full-nextest.log`다.
+
+
+### 02c3 전체 nextest 완료 및 2022 전쪽 증거 보완
+
+최종 nextest summary는 **10301 tests run: 10301 passed (39 slow), 45 skipped**다.
+실행1537.132초, 전체 명령 exit0이며 빌드 포함3012.77초다. 마지막
+`text_overlaps_do_not_grow_partition_15`도361.627초에 통과했다. 전체 코퍼스 검사를
+제거하거나 baseline을 완화하지 않았다. 현재 head의 기본 전체 회귀는 완료됐으며
+Native feature·doctest가 남아 있어 모든 테스트 완료로 보고하지 않는다.
+
+nested HWP의 회귀 함수와 같은2022 프로필 **전쪽115쪽**도 추가로 양쪽에서 완료했다.
+Native 최저96.74524%, fresh WASM 최저96.89031%, 모두90% 이상·누락0·Print115쪽
+일치다. 각 backend의115개 실제 PNG 해시도 기존2024 프로필의 같은 쪽과 전부 동일하다.
+기존104쪽 직접 판독과 전체 쪽수/내용 검사의 프로필 차이에 대한 시각 근거를 보완했다.
+기존 원본19문서835쪽 범위를 줄이거나2024 전체 결과를2022 결과로 바꿔 기록하지 않는다.
+추가230쪽도SVG 생성0개다. 증거는 `nested-hwp-2022-full-{result,audit}.json`과
+`nested-hwp-2022-full/{native,wasm}/nested-hwp/silhouette.tsv`다.
+
+PR 무회귀 gate의 WASM104쪽0.06227%p 하락 및 overfill 기준49/Print48의 비교 불가는
+남아 있다. 전체 nextest 통과로 이 조건을 면제하거나 PR을 생성하지 않는다.
+
+
+### 02c3 Native feature 라이브러리 완료
+
+`cargo test --locked --profile release-test --features native-skia --target-dir
+/home/tsjang/rhwp/target/pr-review --lib -- --test-threads 12`가exit0으로 끝났다.
+테스트 구성별3859+15+165+2=**4041PASS/0FAIL/12ignore**다. Native feature 빌드10분29초,
+전체 명령681.82초이며 주 라이브러리 실행은51.06초였다. 원시 로그는
+`final-02c3-native-skia-lib.log`다. Native CLI/선택 회귀10종과 doctest는 후속 진행 중이며,
+기본 전체10301개·Native 라이브러리4041개 통과만으로 모든 게이트 완료로 기록하지 않는다.
+
+
+### 최종 로컬 게이트와 PR 보류 판정
+
+`final-02c3-gates-result.json`은 source02c3/basea5, jobs8의22단계 모두exit0,
+최종status=`passed`다. Native 선택10종에서35개가 통과했으며 새#7902 검사7개와
+기존#4961 진단9개를 실제로 실행했다. doctest는8PASS/0FAIL/3ignore이며
+명령exit0(276.52초)이다. 검증 종료 후 Cargo/rustc/rustdoc 프로세스가 없는 것도 확인했다.
+기본 전체 회귀를 문서 결과 갱신 때문에 다시 실행하지 않는다.
+
+도구 PR#7903의 merge=`116b2b6ae0c1ec655c2db9878b1c8cf1bdd67cc4`, 기록 PR#7906의
+merge=`c0d330737fabae77ca2bf1706cba8514d0e8f1df`가 현재devel/작업head에 모두 포함됨을
+GitHub의MERGED 상태와Git ancestry로 재확인했다. `foundation-final-merge-audit.json`에 있다.
+
+기준 실행의 manifest `git_head=870ca3e...`는 캡처 도구를 실행한 작업 트리의SHA다.
+실제 불변 Native/WASM producer는 깨끗한a5 소스에서 빌드했고, 현재 보존한 바이너리·WASM·
+JS의해시가기준빌드증명과모두같다. source worktree의HEAD와Rust 소스 무변경도 재확인했다.
+즉 기준 렌더러를870 후보로 잘못 부른 비교가 아니다. 양쪽 기준 overfill의 실제49/Print48은
+`final-02c3-base-producer-link-audit.json`에 명시했다.
+
+현재브랜치의GitHub PR 목록은 빈배열이다. 보류 조건이 남은 상태에서 PR을 만들거나
+승인·merge하지 않았다. 원본·PDF·미해결 재현 자료·현재TSV/PNG·공유target은 보존한다.
+Studio의생성JS/WASM은같은실제빌드쌍으로유지하며,생성JS차이는구현결과문서커밋에포함하지않는다.
+
+
+최종 결과 문서의 내부 링크 검사1개 문서와 `git diff --check`도 통과했다.
+`final-readiness-audit.json`은 로컬22단계 통과, 원본19문서 전쪽 시각 증거,
+추가2022 전쪽 대조, 두 PR 보류 조건과 미실행 원격 후속 절차를 구분한다.
+이번 결과 기록 갱신은 Rust·테스트·도구·workflow 소스를 바꾸지 않는다.
