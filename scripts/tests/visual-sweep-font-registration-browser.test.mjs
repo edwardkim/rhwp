@@ -52,7 +52,14 @@ test('공급한 family가 실제 Canvas advance와 글리프를 결정한다', a
     const ctx = document.getElementById('page').getContext('2d');
     const results = [];
     for (const family of ['RHWP Sweep Absent Alias', 'RHWP 검증 글꼴']) {
-      const font = await installCanvasFont(family, bytes, {weight: '400', style: 'normal'});
+      const registrations = [];
+      const sourceOwner = {registerHftOutlineFont(name, program, faceIndex) {
+        registrations.push({name, faceIndex, sameBytes: program.length === bytes.byteLength
+          && program.every((value, index) => value === new Uint8Array(bytes)[index]),
+          alreadyLoaded: [...document.fonts].some(face => face.family === name && face.status === 'loaded')});
+        return true;
+      }};
+      const font = await installCanvasFont(family, bytes, {weight: '400', style: 'normal'}, sourceOwner);
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.font = `40px ${JSON.stringify(family)}`;
       ctx.fillText('A', 10, 50);
@@ -65,12 +72,14 @@ test('공급한 family가 실제 Canvas advance와 글리프를 결정한다', a
           top = Math.min(top, y); bottom = Math.max(bottom, y);
         }
       }
-      results.push({family, status: font.status, advance: ctx.measureText('A').width,
+      results.push({family, registrations, status: font.status, advance: ctx.measureText('A').width,
                     inkWidth: right - left + 1, inkHeight: bottom - top + 1});
     }
     return results;
   });
   for (const result of results) {
+    assert.deepEqual(result.registrations, [{name: result.family, faceIndex: 0,
+      sameBytes: true, alreadyLoaded: true}], '실제 적재가 끝난 같은 프로그램만 소유자에게 전달한다');
     assert.equal(result.status, 'loaded');
     // 기존 fixture generator: 1000 UPM, 900 advance, 300×700 직사각형.
     assert.ok(Math.abs(result.advance - 36) < 0.01, JSON.stringify(result));

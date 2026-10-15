@@ -15,13 +15,14 @@ use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, TextStyle};
 
 use super::font_lookup::{
-    legacy_typeface_for_style, match_system_family_style, select_typeface_for_character,
-    text_typeface_candidates, SuppliedTypefaces, SystemFontFamilies,
+    legacy_typeface_for_style, match_supplied_family, match_system_family_style,
+    select_typeface_for_character, text_typeface_candidates, SuppliedTypefaces, SystemFontFamilies,
 };
 use super::renderer::colorref_to_skia;
 
 pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
+    pub(super) hft_outline_enabled: bool,
     pub(super) font_mgr: &'a FontMgr,
     pub(super) custom_typefaces: &'a SuppliedTypefaces,
     pub(super) bundled_typefaces: &'a SuppliedTypefaces,
@@ -91,6 +92,25 @@ impl SkiaTextReplay<'_> {
                     &crate::renderer::native_font_family_for_style(style),
                     font_style,
                 );
+                let hft_outline = (self.hft_outline_enabled
+                    && crate::renderer::hft_outline::supports_style(style))
+                .then(|| {
+                    let family = crate::renderer::hft_outline::first_family(&style.font_family);
+                    let face = match_supplied_family(self.custom_typefaces, family, font_style)
+                        .or_else(|| {
+                            match_system_family_style(
+                                self.font_mgr,
+                                self.system_families,
+                                family,
+                                font_style,
+                            )
+                        })
+                        .or_else(|| {
+                            match_supplied_family(self.bundled_typefaces, family, font_style)
+                        })?;
+                    super::hft_outline::HftOutlineReplay::new(&face)
+                })
+                .flatten();
                 let primary_typeface = typeface_chain
                     .first()
                     .map(|candidate| candidate.typeface.clone());
@@ -600,9 +620,15 @@ impl SkiaTextReplay<'_> {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
                                 canvas.scale((ratio * fit_scale, 1.0));
-                                canvas.draw_str(cluster, (0.0, 0.0), &font, &text_paint);
+                                if !hft_outline.as_ref().is_some_and(|outline| {
+                                    outline.draw(canvas, cluster, &font, (0.0, 0.0), &text_paint)
+                                }) {
+                                    canvas.draw_str(cluster, (0.0, 0.0), &font, &text_paint);
+                                }
                                 canvas.restore();
-                            } else {
+                            } else if !hft_outline.as_ref().is_some_and(|outline| {
+                                outline.draw(canvas, cluster, &font, (char_x, char_y), &text_paint)
+                            }) {
                                 canvas.draw_str(cluster, (char_x, char_y), &font, &text_paint);
                             }
                         }

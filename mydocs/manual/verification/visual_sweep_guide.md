@@ -404,6 +404,18 @@ OTS 오류나 LastResort가 있으면 성공 캡처로 세지 않는다. 원 fac
 대상 정답 PDF를 글꼴 소스로 쓰지 않는다. 기존 대체 공급 결과를 보존하고, 준비한 같은 원본
 글꼴을 공급한 devel/head의 전쪽 Native/fresh WASM을 모두 다시 비교한다.
 
+직접 PNG의 Print/HighQuality 경로는 원본 언어 슬롯이 HFT이고 실제 공급 face가 일반 CFF1일 때,
+기존 글자 원점·크기·장평에서 같은 윤곽을 재생한다. Native는 실제 선택 Typeface를 확인한다.
+fresh WASM의 exporter는 `FontFace.load()`·`document.fonts.add()` 뒤 같은 바이트를
+`doc.registerHftOutlineFont(family, bytes, faceIndex)`에 전달한다. 구형 WASM에 이 메서드가
+없으면 기존 FontFace 경로를 사용한다. 글꼴 파일의 이름만 보고 다른 프로그램을 찾지 않는다.
+
+다른 호스트에서 이 선택 경로를 사용할 때도 실제 적재한 바이트를 등록해야 한다.
+등록은 paint 세션만 갱신하며 문서·측정·줄 구성은 변경하지 않는다. 반환 boolean은 바인딩 변경
+여부다. 지원하지 않는 프로그램으로 교체하면 이전 윤곽 바인딩을 해제한다. 일반 TTF,
+화면 프로필, 지원하지 않는 효과·복합 cluster·누락 glyph는 기존 글꼴 painter를 사용한다.
+원본 HFT 윤곽의 공급 정합성은 위 독립 표본 절차와 전쪽 비교로 별도 확인한다.
+
 Sweep은 Native/WASM의 선택 SVG를 캡처하거나 resume checkpoint를 재사용하기 전에
 임베딩 폰트의 Unicode `cmap`을 검사한다. 이를 위해 임베딩 모드는 Python `fonttools`가
 필요하다(`python -m pip install fonttools`). 손상된 폰트·없는/빈 `cmap`·검사 의존성 누락은

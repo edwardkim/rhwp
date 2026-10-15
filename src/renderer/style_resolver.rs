@@ -36,6 +36,8 @@ pub struct ResolvedCharStyle {
     /// [#7051] 언어 슬롯별로 선언 글꼴이 **HFT 한글 전용 face** 여서 치환됐는지.
     /// 그런 글꼴의 ASCII 는 한컴이 반각으로 전진시킨다(측정 전용).
     pub font_families_hft_hangul: Vec<bool>,
+    /// 대체 여부와 무관하게 보존하는 원본 프로그램 종류다.
+    pub font_families_source_hft: Vec<bool>,
     /// 언어 슬롯이 대체되지 않은 원본 HFT 기호 전각 폭을 갖는지.
     pub font_families_hft_fullwidth_dot: Vec<bool>,
     /// [#7418] 한/글이 한글 뒤 ASCII 구두점도 **영문 슬롯** 글꼴로 재고 그리는가.
@@ -140,6 +142,7 @@ impl Default for ResolvedCharStyle {
             font_families: Vec::new(),
             font_families_metric_trusted: Vec::new(),
             font_families_hft_hangul: Vec::new(),
+            font_families_source_hft: Vec::new(),
             font_families_hft_fullwidth_dot: Vec::new(),
             ascii_punct_latin_slot: false,
             font_families_metric_face: Vec::new(),
@@ -216,6 +219,20 @@ impl ResolvedCharStyle {
             0
         };
         self.font_families_hft_hangul
+            .get(slot)
+            .copied()
+            .unwrap_or(false)
+    }
+
+    pub fn source_hft_for_lang(&self, lang_index: usize) -> bool {
+        let slot = if lang_index < self.font_families.len()
+            && !self.font_families[lang_index].is_empty()
+        {
+            lang_index
+        } else {
+            0
+        };
+        self.font_families_source_hft
             .get(slot)
             .copied()
             .unwrap_or(false)
@@ -717,6 +734,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     let mut font_families = Vec::with_capacity(LANG_COUNT);
     let mut font_families_metric_trusted = Vec::with_capacity(LANG_COUNT);
     let mut font_families_hft_hangul = Vec::with_capacity(LANG_COUNT);
+    let mut font_families_source_hft = Vec::with_capacity(LANG_COUNT);
     let mut font_families_hft_fullwidth_dot = Vec::with_capacity(LANG_COUNT);
     let mut font_families_metric_face: Vec<Option<String>> = Vec::with_capacity(LANG_COUNT);
     let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
@@ -726,6 +744,13 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
 
     for lang in 0..LANG_COUNT {
         let font_id = cs.font_ids[lang];
+        font_families_source_hft.push(
+            doc_info
+                .font_faces
+                .get(lang)
+                .and_then(|faces| faces.get(font_id as usize))
+                .is_some_and(|face| face.alt_type == 2),
+        );
         let decision = lookup_font_name_decision(doc_info, lang, font_id);
         if lang == 1 {
             latin_slot_legacy =
@@ -825,6 +850,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families,
         font_families_metric_trusted,
         font_families_hft_hangul,
+        font_families_source_hft,
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
         font_families_metric_face,

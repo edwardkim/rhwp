@@ -33,6 +33,7 @@ pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
 pub(crate) mod hft_ascii_evidence;
+pub(crate) mod hft_outline;
 pub mod html;
 pub mod hyperlinks;
 pub(crate) mod image_header;
@@ -285,6 +286,9 @@ pub struct TextStyle {
     /// 그대로 그리면 숫자·장식의 점유 폭이 달라진다. 본문은 기존 계약을 쓴다.
     #[serde(skip_serializing)]
     pub fixed_glyph_advances: bool,
+    /// 표시용 대체 face와 구분한 원본 언어 슬롯의 HFT 선언이다.
+    #[serde(skip_serializing)]
+    pub source_font_is_hft: bool,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -592,6 +596,7 @@ impl Default for TextStyle {
             font_family: String::new(),
             font_size: 0.0,
             fixed_glyph_advances: false,
+            source_font_is_hft: false,
             color: 0,
             bold: false,
             italic: false,
