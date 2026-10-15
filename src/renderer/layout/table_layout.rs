@@ -29,6 +29,7 @@ mod stored_terminal_row_frame;
 mod stored_text_frame_owner;
 mod stored_zero_origin;
 mod tac_host_end;
+pub(crate) use stored_zero_origin::SavedZeroOriginWitness;
 pub(super) mod unit_diagnostics;
 mod wrapper_cell_viewport;
 pub(super) use stored_nested_host_flow::StoredNestedHostFlow;

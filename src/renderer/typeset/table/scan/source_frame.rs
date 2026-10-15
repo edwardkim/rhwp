@@ -180,18 +180,33 @@ impl SourceFrameQuery<'_> {
         // measured whole-row fast path. The same rule applies to original
         // Native cells whose two local-zero line boxes close the stored row.
         // Spare capacity cannot merge their independently owned source frames.
-        let declared_source_frame = (native_text_source_frame && stored_source_frame.is_some())
-            || (row_start_cut.is_empty()
-                && !table_text_reflowed()
-                && (layout_engine.row_has_declared_stored_frame(table, r)
-                    || layout_engine.native_saved_two_line_row_frame(table, r, styles)
-                    || layout_engine.row_has_saved_zero_origin_text_frame(table, r)));
         // HU-derived row sums can exceed the identical source frame by binary
         // summation error. Bound that error by the number of accumulated rows;
         // this does not grant any additional physical layout space.
         let candidate_end = consumed + cs_before + row_total;
         let sum_roundoff =
             f64::EPSILON * (r + 3) as f64 * candidate_end.abs().max(avail_for_rows.abs());
+        // 원본 원점0 재시작은 둘로 나뉜다. 첫 개체 프레임을 가로지르는 재시작은 선언
+        // 기하가 인증하므로 언제나 물리 경계다. 그 뒤 행의 재시작은 저장 당시 쪽 나눔의
+        // 기록이라, 지금 흐름에서 그 행이 남은 예산에 통째로 들어가면 경계가 아니다 —
+        // 저장 쪽 나눔이 다른 자리로 옮겨 간 것이다(1342000 구역 12 표 행 132: 저장 2줄
+        // `vpos 0/0` 이 쪽 위 120px 지점에서 행을 끊어 한 쪽이 213px 만 쓰고 끝났다.
+        // 한/글 2022 PDF 는 그 행을 끊지 않는다). 쪽 끝에 걸린 행은 종전대로 그 재시작에서
+        // 자른다(table_scattered_header_rowbreak 47→48쪽 row99 「6가 크로 / 뮴)」).
+        let saved_zero_origin_frame = match layout_engine.row_saved_zero_origin_text_frame(table, r)
+        {
+            Some(crate::renderer::layout::SavedZeroOriginWitness::OpeningFrame) => true,
+            Some(crate::renderer::layout::SavedZeroOriginWitness::LaterPage) => {
+                candidate_end > avail_for_rows + sum_roundoff
+            }
+            None => false,
+        };
+        let declared_source_frame = (native_text_source_frame && stored_source_frame.is_some())
+            || (row_start_cut.is_empty()
+                && !table_text_reflowed()
+                && (layout_engine.row_has_declared_stored_frame(table, r)
+                    || layout_engine.native_saved_two_line_row_frame(table, r, styles)
+                    || saved_zero_origin_frame));
         let whole_row_fits = !declared_source_frame
             && !terminal_zero_origin_cut
             && ((!single_visible_source_frame && candidate_end <= avail_for_rows + sum_roundoff)
