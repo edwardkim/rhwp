@@ -557,3 +557,44 @@ test('resource keys preserve negative zero from Rust fixed-decimal geometry', ()
     expectAccepted(op);
   }
 });
+
+
+const SVG_MAPPING_FAILURES = [
+  { name: 'horizontal scale overflow', view: { x: 0, y: 0, width: 0.001, height: 1 }, dest: { x: 0, y: 0, width: F32_MAX, height: 1 } },
+  { name: 'vertical scale overflow', view: { x: 0, y: 0, width: 1, height: 0.001 }, dest: { x: 0, y: 0, width: 1, height: F32_MAX } },
+  { name: 'scaled source origin overflow', view: { x: 1e20, y: 0, width: 1e14, height: 1 }, dest: { x: 0, y: 0, width: 1e36, height: 1 } },
+  { name: 'composed destination translation overflow', view: { x: -4, y: 0, width: 1, height: 1 }, dest: { x: F32_MAX * 0.75, y: 0, width: F32_MAX * 0.125, height: 1 } },
+  { name: 'scale overflow only after decimal wire rounding', view: { x: 0, y: 0, width: 0.00149, height: 1 }, dest: { x: 0, y: 0, width: F32_MAX * 0.00125, height: 1 } },
+];
+
+for (const fixture of SVG_MAPPING_FAILURES) {
+  test(`SVG ${fixture.name} keeps the complete TextRun fallback`, () => {
+    const outline: LayerGlyphOutlineOp = {
+      ...svg(),
+      bbox: fixture.dest,
+      variant: { equivalenceGroup: 'mapped-svg', variantId: 'outline', variantKind: 'glyphOutline' },
+    };
+    outline.svgGlyph!.viewBox = fixture.view;
+    const fallback: LayerTextRunOp = {
+      type: 'textRun', bbox: monochrome().bbox, text: 'A',
+      variant: { equivalenceGroup: 'mapped-svg', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+    };
+    expectRejected(outline);
+    const selected = selectLayerTextVariantsForLeaf(
+      [outline, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+    );
+    assert.deepEqual([...selected], [fallback]);
+  });
+}
+
+test('SVG finite viewBox-to-destination mapping retains outline admission', () => {
+  for (const [view, dest] of [
+    [{ x: 0, y: 0, width: 0.001, height: 1 }, { x: 0, y: 0, width: 1, height: 1 }],
+    [{ x: -4, y: -8, width: 16, height: 24 }, { x: -10, y: -10, width: 20, height: 20 }],
+  ]) {
+    const op = svg();
+    op.svgGlyph.viewBox = view;
+    op.bbox = dest;
+    expectAccepted(op);
+  }
+});

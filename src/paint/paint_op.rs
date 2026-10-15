@@ -1327,6 +1327,19 @@ pub struct SvgGlyphPayload {
 }
 
 impl SvgGlyphPayload {
+    /// CanvasKit composes T(destination) * S(destination / viewBox) * T(-viewBox).
+    /// Both the producer geometry and its fixed-decimal JSON form must fit the
+    /// f32 matrix used by replay before the TextRun fallback can be suppressed.
+    pub fn has_portable_view_box_mapping(&self, destination: BoundingBox) -> bool {
+        bbox_is_finite_positive(self.view_box)
+            && bbox_is_finite_positive(destination)
+            && svg_view_box_mapping_is_portable(self.view_box, destination)
+            && svg_view_box_mapping_is_portable(
+                glyph_geometry_wire_bbox(self.view_box),
+                glyph_geometry_wire_bbox(destination),
+            )
+    }
+
     pub fn has_static_sanitized_contract(&self) -> bool {
         text_source_range_is_non_empty(self.source_range_utf8)
             && self.glyph_range.is_non_empty()
@@ -1372,12 +1385,41 @@ pub(crate) fn bbox_is_finite_positive(bbox: BoundingBox) -> bool {
     // must also survive both replay backends, or preflight would omit a font
     // that the browser's whole-TextRun fallback still requires.
     bbox_is_positive_in_replay_space(bbox)
-        && bbox_is_positive_in_replay_space(BoundingBox::new(
-            glyph_geometry_wire_scalar(bbox.x, 3),
-            glyph_geometry_wire_scalar(bbox.y, 3),
-            glyph_geometry_wire_scalar(bbox.width, 3),
-            glyph_geometry_wire_scalar(bbox.height, 3),
-        ))
+        && bbox_is_positive_in_replay_space(glyph_geometry_wire_bbox(bbox))
+}
+
+fn glyph_geometry_wire_bbox(bbox: BoundingBox) -> BoundingBox {
+    BoundingBox::new(
+        glyph_geometry_wire_scalar(bbox.x, 3),
+        glyph_geometry_wire_scalar(bbox.y, 3),
+        glyph_geometry_wire_scalar(bbox.width, 3),
+        glyph_geometry_wire_scalar(bbox.height, 3),
+    )
+}
+
+fn svg_view_box_mapping_is_portable(view_box: BoundingBox, destination: BoundingBox) -> bool {
+    [
+        (view_box.x, view_box.width, destination.x, destination.width),
+        (
+            view_box.y,
+            view_box.height,
+            destination.y,
+            destination.height,
+        ),
+    ]
+    .into_iter()
+    .all(|(origin, extent, destination_origin, destination_extent)| {
+        let scale = destination_extent / extent;
+        let scaled_origin = origin * scale;
+        let narrowed_scale = scale as f32;
+        let narrowed_origin = (origin as f32) * narrowed_scale;
+        portable_glyph_scalar(scale)
+            && narrowed_scale > 0.0
+            && portable_glyph_scalar(scaled_origin)
+            && portable_glyph_scalar(destination_origin - scaled_origin)
+            && narrowed_origin.is_finite()
+            && ((destination_origin as f32) - narrowed_origin).is_finite()
+    })
 }
 
 fn glyph_geometry_wire_scalar(value: f64, precision: usize) -> f64 {

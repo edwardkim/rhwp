@@ -790,7 +790,9 @@ pub(super) fn prepare_glyph_outline(
         }
         GlyphOutlinePayloadKind::SvgGlyph => {
             let payload = outline.svg_glyph.as_ref()?;
-            if !payload.has_static_sanitized_contract() {
+            if !payload.has_static_sanitized_contract()
+                || !payload.has_portable_view_box_mapping(bbox)
+            {
                 return None;
             }
             let fragment = resources.svg_fragment(payload.svg_ref)?;

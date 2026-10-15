@@ -905,11 +905,6 @@ fn collect_glyph_outline_reject_reasons(
     if !outline.paint_style.is_fill_only_glyph_replay() {
         reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
     }
-    if outline.payload_kind == GlyphOutlinePayloadKind::SvgGlyph
-        && !crate::paint::paint_op::bbox_is_finite_positive(bbox)
-    {
-        reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
-    }
     match outline.payload_kind {
         GlyphOutlinePayloadKind::MonochromeFill => {
             if outline.stroke.is_some() {
@@ -957,7 +952,10 @@ fn collect_glyph_outline_reject_reasons(
             }
         },
         GlyphOutlinePayloadKind::SvgGlyph => match outline.svg_glyph.as_ref() {
-            Some(svg_glyph) if !svg_glyph.has_static_sanitized_contract() => {
+            Some(svg_glyph)
+                if !svg_glyph.has_static_sanitized_contract()
+                    || !svg_glyph.has_portable_view_box_mapping(bbox) =>
+            {
                 reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
             }
             Some(_) if !options.allow_svg_glyph => {

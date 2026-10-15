@@ -916,3 +916,74 @@ fn bitmap_and_svg_resource_keys_preserve_the_fixed_decimal_negative_zero_sign() 
         .unwrap()
         .is_sign_negative());
 }
+
+#[test]
+fn shared_svg_selector_keeps_fallback_fonts_when_view_box_mapping_overflows() {
+    let max = f64::from(f32::MAX);
+    let normal = SvgGlyphPayload {
+        view_box: BoundingBox::new(0.0, 0.0, 0.001, 1.0),
+        ..svg()
+    };
+    assert!(normal.has_portable_view_box_mapping(BoundingBox::new(0.0, 0.0, 1.0, 1.0)));
+    assert!(svg().has_portable_view_box_mapping(BoundingBox::new(-10.0, -10.0, 20.0, 20.0)));
+    for (view_box, destination) in [
+        (
+            BoundingBox::new(0.0, 0.0, 0.001, 1.0),
+            BoundingBox::new(0.0, 0.0, max, 1.0),
+        ),
+        (
+            BoundingBox::new(0.0, 0.0, 1.0, 0.001),
+            BoundingBox::new(0.0, 0.0, 1.0, max),
+        ),
+        (
+            BoundingBox::new(1e20, 0.0, 1e14, 1.0),
+            BoundingBox::new(0.0, 0.0, 1e36, 1.0),
+        ),
+        (
+            BoundingBox::new(-4.0, 0.0, 1.0, 1.0),
+            BoundingBox::new(max * 0.75, 0.0, max * 0.125, 1.0),
+        ),
+        // The original ratio is finite f32; rounding view width to .001
+        // makes the actual CanvasKit wire ratio exceed f32::MAX.
+        (
+            BoundingBox::new(0.0, 0.0, 0.001_49, 1.0),
+            BoundingBox::new(0.0, 0.0, max * 0.001_25, 1.0),
+        ),
+    ] {
+        let mut tree = strict_outline_tree();
+        let svg_ref = tree
+            .resources
+            .intern_svg_fragment("<path d=\"M0 0H10V10Z\"/>");
+        let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+            unreachable!()
+        };
+        let PaintOp::GlyphOutline { bbox, outline } = &mut ops[1] else {
+            unreachable!()
+        };
+        *bbox = destination;
+        outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+        outline.paths.clear();
+        outline.svg_glyph = Some(SvgGlyphPayload {
+            svg_ref,
+            view_box,
+            ..svg()
+        });
+        let options = TextVariantSelectionOptions {
+            allow_svg_glyph: true,
+            ..TextVariantSelectionOptions::canvaskit_strict_outline()
+        };
+        let report = &analyze_text_variant_selection(&tree, options)[0];
+        assert_eq!(
+            report.selected_variant_kind,
+            Some(TextVariantKind::TextRun),
+            "{view_box:?} => {destination:?}"
+        );
+        assert!(report.fallback_required);
+        assert!(report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedSvgGlyph));
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(plan.required_font_families, ["Test"]);
+        assert!(plan.required_font_families_complete);
+    }
+}
