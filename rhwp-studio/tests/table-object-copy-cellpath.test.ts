@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { functionBodyFrom } from './support/source-guard.ts';
 import { tableObjectClipboardTarget } from '../src/engine/table-object-clipboard-target.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -47,15 +48,12 @@ test('#4272 키보드 표 복사는 dispatcher를 거쳐 canonical 주소 변환
   assert.doesNotMatch(ctrlCBlock, /copyControl\(|exportControlHtml\(/,
     '키보드는 주소 변환을 재구현하지 않는다');
 
-  const performCopyStart = handler.indexOf('performCopy(): void');
-  const performCopyEnd = handler.indexOf('\n  /**', performCopyStart + 1);
-  const performCopyBlock = handler.slice(
-    performCopyStart,
-    performCopyEnd === -1 ? undefined : performCopyEnd,
-  );
-  const tableBranchStart = performCopyBlock.indexOf('this.cursor.isInTableObjectSelection()');
-  const tableBranch = performCopyBlock.slice(tableBranchStart);
-  assert.notEqual(tableBranchStart, -1, 'performCopy 표 객체 분기를 찾지 못함');
+  const performCopy = functionBodyFrom(handler, 'performCopy(): void');
+  assert.match(performCopy, /this\.copySelectedObject\(\)/, '공개 복사는 같은 helper로 위임');
+  const copy = functionBodyFrom(handler, 'private async copySelectedObject(');
+  const tableBranchStart = copy.indexOf('this.cursor.isInTableObjectSelection()');
+  const tableBranch = copy.slice(tableBranchStart);
+  assert.notEqual(tableBranchStart, -1, '개체 복사 helper의 표 분기를 찾지 못함');
   assert.match(tableBranch, /const target = tableObjectClipboardTarget\(ref\);/);
   assert.match(
     tableBranch,
