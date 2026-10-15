@@ -150,17 +150,13 @@
     "method": "rustc test harness against exact frozen native producer; scoped regression only, not whole Cargo suite"
   },
   "wholeNextest": {
-    "passed": 10436,
-    "failed": 0,
-    "skipped": 45,
-    "summary": [
-      "     Summary [ 386.307s] 10436 tests run: 10436 passed (5 slow), 45 skipped"
-    ],
+    "head": "b88b666ba4b8739d7b70ffc4a4d631216a5114bb",
+    "codeIdentity": "committed b88b666 including two new formal regression cases; production hashes match frozen C50 producer",
     "steps": [
       {
         "name": "prepare",
         "exitCode": 0,
-        "seconds": 2.497610833030194,
+        "seconds": 1.0804100829991512,
         "command": [
           "node",
           "scripts/rust-test-suite-manifest.mjs",
@@ -170,7 +166,7 @@
       {
         "name": "full-nextest",
         "exitCode": 0,
-        "seconds": 762.3410866659833,
+        "seconds": 495.0990927089588,
         "command": [
           "cargo",
           "nextest",
@@ -187,8 +183,18 @@
         ]
       }
     ],
+    "summary": [
+      "     Summary [ 344.316s] 10438 tests run: 10438 passed (4 slow), 45 skipped"
+    ],
     "sourceUnchanged": true,
-    "scope": "production C50 source; 10436 preexisting tests before the new two-case module; latest full10438 still pending"
+    "passed": 10438,
+    "failed": 0,
+    "skipped": 45,
+    "scope": "committed b88b666, including both newly registered formal cases; no source changed during run",
+    "testExecutionSeconds": 344.316,
+    "buildAndTestSeconds": 495.0990927089588,
+    "buildJobs": 8,
+    "testThreads": 8
   },
   "baselineComparison": {
     "codeEquivalence": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-f5251e7d-20261016/latest-base-equivalence.json",
@@ -898,5 +904,54 @@
       "exitCode": 0,
       "seconds": 18.049201040994376
     }
-  ]
+  ],
+  "previousWholeNextest": {
+    "passed": 10436,
+    "failed": 0,
+    "skipped": 45,
+    "summary": [
+      "     Summary [ 386.307s] 10436 tests run: 10436 passed (5 slow), 45 skipped"
+    ],
+    "steps": [
+      {
+        "name": "prepare",
+        "exitCode": 0,
+        "seconds": 2.497610833030194,
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ]
+      },
+      {
+        "name": "full-nextest",
+        "exitCode": 0,
+        "seconds": 762.3410866659833,
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--tests",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ]
+      }
+    ],
+    "sourceUnchanged": true,
+    "scope": "production C50 source; 10436 preexisting tests before the new two-case module; latest full10438 still pending"
+  },
+  "upstreamRecheck": {
+    "remoteHead": "f5251e7de4e31ee0fb939f352c6ef144bb340bdb",
+    "candidateCodeHead": "b88b666ba4b8739d7b70ffc4a4d631216a5114bb",
+    "fetchExitCode": 0,
+    "behind": 0,
+    "ahead": 209,
+    "action": "unchanged from rebased base, no repeated rebase"
+  }
 }

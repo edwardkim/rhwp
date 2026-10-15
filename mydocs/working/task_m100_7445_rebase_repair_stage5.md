@@ -1584,3 +1584,23 @@ C50의 실제 같은 검사2PASS(0.80초)다. 캐시 키/앵커를 잘못 바꾼
 0.001pt 이내였다. 나머지 각87개는 원점 위상 등을 더 확인해야 하므로 이 진단을
 일반 조판 규칙으로 승격하거나 source에 보정 상수를 넣지 않았다.
 정본은 ignored type3-position-grid-diagnostic.json과 두 exact PDF SHA다.
+
+
+### C44 — 최신 원격 기준 확인과 신규 등록 뒤 전체 회귀
+
+원격 `upstream/devel`을 ls-remote와 fetch로 다시 확인했다. SHA는 기존 기준
+`f5251e7de4e31ee0fb939f352c6ef144bb340bdb` 그대로이며 코드 head `b88b666b`에
+모두 포함되어(behind0/ahead209) 반복 리베이스하지 않았다. 사용자 초안과 원본은 보존했다.
+
+신규 정식 관계 검사2건을 포함한 전체 nextest는 `b88b666b`에서10438PASS/0FAIL/
+45skip이다. 테스트344.316초·빌드 포함495.099초, buildjobs8/testthreads8이며
+실행 전후 production source hash가 같다. 이전10436건 실행과2건 focused 결과를
+합산한 수치가 아니다. 실행 로그/명령 정본은 ignored `rebase-f5251e7d-20261016/`
+`full-b88-result.json` 및 `full-nextest-b88.log`, 공개 요약은 기존 C50 validation.json이다.
+
+법원 서식 각주 원문 공백과 번호 폭의 기여를 분리하는 진단 복사본2개를 만들었다.
+내부3개 이상 연속 공백만1개로 줄인 복사본에서는21개 공백을 제거했으며 원본·기준
+PDF는 변경하지 않았다. 원문 수정본을 정답으로 바꾸지 않는다. 한컴2020 인쇄 대조는
+아직 실행 중이다. 수식130쪽의 실제 literal `△`/`․`는 독립 Type3에서 각각1em 폭이며,
+현재 generic 수식 fallback의 추정 폭과 다른 것을 확인했다. 글리프 윤곽/소비 경로
+진단 단계이고 새 source 보정이나 시각 완료로 판정하지 않았다. 기존 PR 보류는 유지한다.

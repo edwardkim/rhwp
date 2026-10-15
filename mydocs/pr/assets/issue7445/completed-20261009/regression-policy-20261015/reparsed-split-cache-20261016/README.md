@@ -37,10 +37,11 @@ C49 후보는 전쪽 검증에서 실패하여 채택하지 않았다. 원래 �
 
 ## 남은 제출 조건
 
-C50 production source의 전체 nextest10436PASS/0FAIL/45skip, Native/WASM/all-target
-Clippy·workspace build·fmt·Skia lib3859PASS/12ignore+내부182PASS·PNG2PASS·PDF4PASS다.
-신규2검사는 이 전체 실행 뒤 추가하여 별도 실행했다. 신규 등록 뒤 최신 전체10438과
-최종 source의 전체 제출 gate를 완료했다고 주장하지 않는다.
+코드 head `b88b666b`에서 신규2검사를 포함한 전체 nextest10438PASS/0FAIL/45skip이다.
+테스트344.316초, 빌드 포함495.099초이며 실행 중 source 변경은 없었다.
+같은 production source의 Native/WASM/all-target Clippy·workspace build·fmt와
+Skia lib3859PASS/12ignore+내부182PASS·PNG2PASS·PDF4PASS도 확인했다.
+전체 제출 범위의 시각·실제 소비 경로 gate를 완료했다고 주장하지 않는다.
 
 devel 대비 WASM 원본61쪽·과거 저장7쪽의0.01%p 이상 하락, 법원 서식1쪽 미달,
 기호·미세 간격과 실제 소비 경로 검증이 남아 PR은 보류한다.
