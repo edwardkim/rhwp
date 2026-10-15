@@ -1291,6 +1291,10 @@ impl Table {
     pub fn update_ctrl_dimensions(&mut self) {
         let total_width: HwpUnit = self.base_grid_column_widths().iter().sum();
         let total_height: HwpUnit = self.get_row_heights().iter().sum();
+        self.sync_ctrl_dimensions(total_width, total_height);
+    }
+
+    fn sync_ctrl_dimensions(&mut self, total_width: HwpUnit, total_height: HwpUnit) {
         // (1) serialize source — raw_ctrl_data bytes (HWP 직렬화 시 사용).
         // HWPX 파스 문서처럼 raw 가 없으면 건너뛴다 — 그 경우 직렬화기가
         // self.common 에서 합성하므로 (2)만으로 충분하다.
@@ -1412,6 +1416,12 @@ impl Table {
                 self.col_count
             ));
         }
+        // 전체 열이 병합된 표에서는 단일 열 셀로 이 폭을 역산할 수 없다.
+        // 요청한 열 폭을 크기 갱신과 직렬화의 같은 소유 값으로 사용한다.
+        let total_width = widths
+            .iter()
+            .try_fold(0u32, |sum, width| sum.checked_add(*width))
+            .ok_or_else(|| "표 전체 열 폭이 HWPUNIT 범위를 넘습니다".to_string())?;
         for cell in &mut self.cells {
             let c = cell.col as usize;
             if c >= widths.len() {
@@ -1420,7 +1430,8 @@ impl Table {
             let end = (c + cell.col_span as usize).min(widths.len());
             cell.width = widths[c..end].iter().sum();
         }
-        self.update_ctrl_dimensions();
+        let total_height = self.get_row_heights().iter().sum();
+        self.sync_ctrl_dimensions(total_width, total_height);
         self.rebuild_grid();
         Ok(())
     }

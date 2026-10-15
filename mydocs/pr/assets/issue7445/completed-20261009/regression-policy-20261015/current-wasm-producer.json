@@ -1,0 +1,13 @@
+{
+  "head": "b3ee96869fb93f5fe5d8398460e20e78d4630d44",
+  "package": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/issue7490-fit-prefix/corrected/pkg",
+  "hashes": {
+    "rhwp.js": "009b53a277844df11b6d9f00a0cab0b29e449d3e46f00a24dca42a6fed9696ed",
+    "rhwp_bg.wasm": "93b7d1489da1a93decc88eee8a46c26a1550aa93773eeec9c0a4dbbc836d6238",
+    "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390"
+  },
+  "localNoOpt": true,
+  "exitCode": 0,
+  "seconds": 203.21980958303902,
+  "sourceFilesReference": "current-native-producer.json"
+}

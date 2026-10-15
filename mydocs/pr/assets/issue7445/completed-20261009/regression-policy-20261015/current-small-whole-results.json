@@ -1,0 +1,68 @@
+[
+  {
+    "backend": "native",
+    "case": "table-text",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "pages": 1,
+    "minimum": 100.0,
+    "below90": []
+  },
+  {
+    "backend": "native",
+    "case": "yeongwol",
+    "counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "pages": 4,
+    "minimum": 98.05546,
+    "below90": []
+  },
+  {
+    "backend": "native",
+    "case": "land-table",
+    "counts": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "pages": 5,
+    "minimum": 95.08447,
+    "below90": []
+  },
+  {
+    "backend": "wasm",
+    "case": "table-text",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "pages": 1,
+    "minimum": 100.0,
+    "below90": []
+  },
+  {
+    "backend": "wasm",
+    "case": "yeongwol",
+    "counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "pages": 4,
+    "minimum": 97.72386,
+    "below90": []
+  },
+  {
+    "backend": "wasm",
+    "case": "land-table",
+    "counts": {
+      "rhwp": 5,
+      "pdf": 5
+    },
+    "pages": 5,
+    "minimum": 94.7278,
+    "below90": []
+  }
+]

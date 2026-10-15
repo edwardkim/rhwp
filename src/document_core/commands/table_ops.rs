@@ -2627,7 +2627,7 @@ impl DocumentCore {
             .set_column_widths(&widths)
             .map_err(HwpError::RenderError)?;
         let col_count = table.col_count;
-        let total: u32 = table.get_column_widths().iter().sum();
+        let total = table.common.width;
 
         // 폭이 바뀐 셀의 모든 문단을 재배치(line_segs 재계산)한다.
         let reflow: Vec<(usize, usize)> = {
@@ -2711,7 +2711,7 @@ impl DocumentCore {
 
         let new_total: u32 = {
             let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-            table.get_column_widths().iter().sum()
+            table.common.width
         };
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"colCount\":{},\"tableWidth\":{},\"pageContentWidth\":{},\"changed\":true",

@@ -1,6 +1,7 @@
 //! #7445 저장 줄 프레임은 측정과 실제 셀 배치에서 같은 물리 폭을 사용한다.
 //! 원본의 부족한 cellSz를 한컴이 이미 넓은 프레임으로 인쇄한다는 독립 근거와
-//! 전60쪽 Native/fresh WASM 수용 뒤 복구한 관계 검사다. 고정 x/y는 없다.
+//! 전60쪽 Native/fresh WASM 수용 뒤 복구한 관계 검사다. 양쪽98% 이상인
+//! 그림 뒤 제목 쪽만 독립 Print의 ±2 CSSpx 좌표도 함께 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::{control::Control, document::Document, table::Table};
@@ -229,6 +230,81 @@ fn saved_auction_frame_is_owned_by_both_measurement_and_painted_cell() {
     assert!(
         first.bbox.y + first.bbox.height <= next.bbox.y,
         "이어받은 내용은 앞줄 뒤에 배치한다"
+    );
+}
+
+#[test]
+fn picture_successor_keeps_source_gap_and_independent_print_baseline() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue6031/3249937_asset_management_rules.hwpx");
+    let bytes = std::fs::read(path).expect("정식 자산관리규정 원본");
+    let source = rhwp::parser::parse_document(&bytes).expect("원본 저장 간격");
+    let paragraphs = &source.sections[0].paragraphs;
+    let heading_index = paragraphs
+        .iter()
+        .position(|para| compact(&para.text) == "2.전산시스템(DIMS)개관")
+        .expect("그림 뒤의 전산시스템 제목");
+    let picture_index = heading_index - 1;
+    assert!(paragraphs[picture_index].controls.iter().any(|control| {
+        matches!(control, Control::Picture(picture) if picture.common.treat_as_char)
+    }));
+    let picture_source = paragraphs[picture_index]
+        .line_segs
+        .last()
+        .expect("그림을 소유한 저장 글줄");
+    let heading_source = paragraphs[heading_index]
+        .line_segs
+        .first()
+        .expect("뒤 제목의 저장 글줄");
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    let tree = core.build_page_render_tree(35).expect("독립 Print 36쪽");
+    let line_for = |index| {
+        find_node(&tree.root, &|node| {
+            matches!(&node.node_type, RenderNodeType::TextLine(line)
+                if line.para_index == Some(index))
+        })
+        .expect("원래 쪽에 속한 실제 글줄")
+    };
+    let picture_line = line_for(picture_index);
+    let heading_line = line_for(heading_index);
+
+    // 현재 전60쪽 Native/fresh WASM 최저90.54804/90.54058%, 해당36쪽은
+    // 98.92960/98.88248%이며 확대 판독도 완료했다. 독립 한컴 Print의
+    // 제목 baseline은 trace y6151 ×0.119869pt다. 같은 원본의 baseline_distance를
+    // 더한 실제 글줄 원점을 ±2 CSS px로 보호하며 source 간격 관계도 유지한다.
+    // 증적: regression-policy-20261015/asset-picture-successor (C15의 최신 재검증).
+    let independent_baseline = 6151.0 * 0.119869 * DEFAULT_DPI / 72.0;
+    let painted_baseline =
+        heading_line.bbox.y + hwpunit_to_px(heading_source.baseline_distance, DEFAULT_DPI);
+    assert!(
+        (painted_baseline - independent_baseline).abs() <= 2.0,
+        "그림 뒤 제목 baseline: 실제{painted_baseline}, 독립 Print{independent_baseline}"
+    );
+    let heading_run = find_node(heading_line, &|node| {
+        matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text == "전산시스템(")
+    })
+    .expect("같은 제목의 첫 한글 원점");
+    assert!(
+        (heading_run.bbox.x - 617.0 * 0.119935 * DEFAULT_DPI / 72.0).abs() <= 2.0,
+        "독립 Print의 그림 뒤 제목 x 원점"
+    );
+    let source_gap = hwpunit_to_px(
+        heading_source.vertical_pos - picture_source.vertical_pos,
+        DEFAULT_DPI,
+    );
+    let painted_gap = heading_line.bbox.y - picture_line.bbox.y;
+    assert!(
+        (painted_gap - source_gap).abs() <= hwpunit_to_px(1, DEFAULT_DPI),
+        "이미 소비한 그림 글줄 간격을 제목 앞에 다시 더하지 않는다: {painted_gap} != {source_gap}"
+    );
+    assert_eq!(
+        compact(&node_text(heading_line)),
+        compact(&paragraphs[heading_index].text),
+        "제목의 원문 소속·순서를 보존한다"
+    );
+    assert!(
+        picture_line.bbox.y + picture_line.bbox.height <= heading_line.bbox.y,
+        "그림의 점유 영역과 뒤 제목은 겹치지 않는다"
     );
 }
 

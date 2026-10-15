@@ -172,3 +172,141 @@ fn issue_5699_yeongwol_body_starts_below_table_band() {
     }
     assert_eq!(matches.len(), 1, "원본 계약조건 제목의 누락·중복 방지");
 }
+
+/// 전4쪽이 양쪽90% 이상인 문서의 p4는 Native/WASM 모두100%다.
+/// 같은 표 밴드의 시작·종료를 독립 Print 괘선으로 보호한다. p3 월별누계
+/// 영역은 WASM97.72386%이므로 이 검사를 그 영역의 px 증거로 사용하지 않는다.
+#[test]
+fn issue_5699_final_ledger_preserves_its_owned_table_frame() {
+    fn owned_tables<'a>(
+        node: &'a RenderNode,
+        owner: (usize, usize, usize),
+        out: &mut Vec<&'a RenderNode>,
+    ) {
+        if !node.visible || node.editor_only {
+            return;
+        }
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if (table.section_index, table.para_index, table.control_index)
+                == (Some(owner.0), Some(owner.1), Some(owner.2))
+                && table.cell_context.is_none()
+            {
+                out.push(node);
+            }
+        }
+        for child in &node.children {
+            owned_tables(child, owner, out);
+        }
+    }
+    fn cells<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        if !node.visible || node.editor_only {
+            return;
+        }
+        if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            out.push(node);
+        }
+        for child in &node.children {
+            cells(child, out);
+        }
+    }
+    let core = load();
+    let mut sources = Vec::new();
+    for (si, section) in core.document().sections.iter().enumerate() {
+        for (pi, para) in section.paragraphs.iter().enumerate() {
+            if compact(&para.text) != "임대료수납대장" {
+                continue;
+            }
+            let (table_pi, ci, table) = section
+                .paragraphs
+                .iter()
+                .enumerate()
+                .skip(pi + 1)
+                .find_map(|(table_pi, host)| {
+                    host.controls.iter().enumerate().find_map(|(ci, c)| {
+                        if let Control::Table(table) = c {
+                            Some((table_pi, ci, table))
+                        } else {
+                            None
+                        }
+                    })
+                })
+                .expect("수납대장 제목 다음 원본 표");
+            sources.push(((si, pi), (si, table_pi, ci), table));
+        }
+    }
+    assert_eq!(
+        sources.len(),
+        1,
+        "원본 제목으로 수납대장을 유일하게 식별한다"
+    );
+    let (title_owner, table_owner, source) = sources[0];
+    assert_eq!(core.page_count(), 4, "독립 Print 쪽수와 서식 소속");
+    let mut occurrences = 0;
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let mut tables = Vec::new();
+        owned_tables(&tree.root, table_owner, &mut tables);
+        if tables.is_empty() {
+            continue;
+        }
+        occurrences += 1;
+        assert_eq!(page, 3, "수납대장은 Print p4에만 있다");
+        assert_eq!(tables.len(), 1, "표 조각 중복 없음");
+        let table = tables[0];
+        let mut titles = Vec::new();
+        body_lines(&tree.root, title_owner, false, &mut titles);
+        assert_eq!(
+            compact(&titles.iter().map(|n| text(n)).collect::<String>()),
+            "임대료수납대장"
+        );
+        assert!(!titles.is_empty());
+        assert!(
+            titles
+                .iter()
+                .all(|n| n.bbox.y + n.bbox.height <= table.bbox.y),
+            "제목 다음 표의 순서·비겹침"
+        );
+        let mut painted_cells = Vec::new();
+        cells(table, &mut painted_cells);
+        assert_eq!(
+            painted_cells.len(),
+            source.cells.len(),
+            "빈 입력 행도 누락·중복 없이 보존"
+        );
+        for (index, original) in source.cells.iter().enumerate() {
+            let matches: Vec<_> = painted_cells
+                .iter()
+                .filter(|n| {
+                    matches!(&n.node_type,
+                RenderNodeType::TableCell(c) if c.model_cell_index == Some(index as u32))
+                })
+                .collect();
+            assert_eq!(matches.len(), 1, "원본 셀 소유가 유일하다: {index}");
+            assert_eq!(
+                compact(&text(matches[0])),
+                compact(
+                    &original
+                        .paragraphs
+                        .iter()
+                        .map(|p| p.text.as_str())
+                        .collect::<String>()
+                )
+            );
+        }
+        // 독립 Print p4의 외곽 괘선 중심(pt)을 96DPI CSS px로 변환.
+        // PDF: x58.049..530.835, y688.886..183.759, page height841pt.
+        // 전쪽 TSV·확대 판독: regression-policy-20261015/yeongwol-final-ledger.
+        for (actual, expected) in [
+            (table.bbox.x, 58.049 * 4.0 / 3.0),
+            (table.bbox.y, (841.0 - 688.886) * 4.0 / 3.0),
+            (table.bbox.width, (530.835 - 58.049) * 4.0 / 3.0),
+            (table.bbox.height, (688.886 - 183.759) * 4.0 / 3.0),
+        ] {
+            assert!(
+                (actual - expected).abs() <= 2.0,
+                "독립 Print 표 시작·종료 ±2 CSSpx: 실제={actual}, 기준={expected}"
+            );
+        }
+    }
+    assert_eq!(occurrences, 1, "마지막 대장 표의 누락·중복 방지");
+}

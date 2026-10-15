@@ -1,0 +1,45 @@
+{
+  "source": "samples/issue6145/worklife_balance_index_156607916.hwpx",
+  "sourceSha256": "7778e5373baf7371a7c643cf4cca73defb065a92ecc941a3e55fff34fcdd2d17",
+  "pdf": "pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf",
+  "pdfSha256": "0cc7229c1d8da5ef425ef76f3ba143db17171a71449bc4e341579a18a07a47ec",
+  "page": 6,
+  "dpi": 96,
+  "coordinateSystem": "96DPI CSS px",
+  "toleranceCssPx": 2,
+  "directReview": "same scale PDF/Native/WASM last-column row20/21; all five lines and padding visible, original order and no overlap with border",
+  "independentCoordinates": {
+    "extractor": "mutool draw -F trace, cell clip containing original text",
+    "xPt": 438.004,
+    "rightPt": 536.951,
+    "pageHeightPt": 841,
+    "rows": [
+      {
+        "row": 20,
+        "topPt": 244.652,
+        "bottomPt": 197.064
+      },
+      {
+        "row": 21,
+        "topPt": 197.064,
+        "bottomPt": 163.861
+      }
+    ]
+  },
+  "wholeDocuments": {
+    "native": {
+      "pages": 6,
+      "minimum": 99.08366,
+      "importantPageScore": 99.94512,
+      "tsvSha256": "a5de96531af5d9abaec77a1c207decf1ba6bd37f33959336d9030cda9f52a654",
+      "manifestSha256": "0fb920994efb09364c246dfdf3a22a77c16d07056c8e596fa47b7b515d6eaed8"
+    },
+    "wasm": {
+      "pages": 6,
+      "minimum": 99.08514,
+      "importantPageScore": 99.94559,
+      "tsvSha256": "ca907f1d8e543eb1185e421b965a0e3c614d573046ce824dbbd41afbdfbe3bfb",
+      "manifestSha256": "fa3ea3561f4b762ed0498b3fbdce43c7128d1ab96d258da5e5520d58517adc1f"
+    }
+  }
+}
