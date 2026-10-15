@@ -339,11 +339,11 @@ for (const fixture of BOUNDS_CASES) {
       });
       expectRejected(op);
     });
-    test(`${fixture.name} accepts positive subnormal ${extent} at the origin`, () => {
-      for (const size of [2 ** -149, 3 * 2 ** -151]) {
+    test(`${fixture.name} rejects ${extent} that the three-decimal JSON wire rounds to zero`, () => {
+      for (const size of [2 ** -149, 3 * 2 ** -151, 0.00049]) {
         const op = fixture.create();
         Object.assign(fixture.bounds(op), { [origin]: 0, [extent]: size });
-        expectAccepted(op);
+        expectRejected(op);
       }
     });
     test(`${fixture.name} rejects overflowing ${origin} + ${extent} with finite f32 components`, () => {
@@ -424,10 +424,10 @@ for (const field of ['width', 'height'] as const) {
       op.svgGlyph.intrinsicSize[field] = value;
       expectRejected(op);
     }
-    for (const value of [2 ** -149, 3 * 2 ** -151]) {
+    for (const value of [2 ** -149, 3 * 2 ** -151, 0.00000049]) {
       const op = svg();
       op.svgGlyph.intrinsicSize[field] = value;
-      expectAccepted(op);
+      expectRejected(op);
     }
   });
   test(`SVG intrinsic ${field} rejects finite f64 overflow and accepts exact f32::MAX`, () => {
@@ -476,4 +476,36 @@ test('null bitmap placement and SVG viewBox are rejected without throwing', () =
   svgOp.svgGlyph.viewBox = null as unknown as typeof svgOp.svgGlyph.viewBox;
   expectRejected(bitmapOp);
   expectRejected(svgOp);
+});
+
+
+test('decimal wire rejection keeps whole-run fallback selection before and after JSON parsing', () => {
+  for (const fixture of BOUNDS_CASES) {
+    for (const extent of [2 ** -149, 0.00049]) {
+      const outline: LayerGlyphOutlineOp = {
+        ...fixture.create(),
+        variant: { equivalenceGroup: 'wire', variantId: 'outline', variantKind: 'glyphOutline' },
+      };
+      Object.assign(fixture.bounds(outline), { x: 0, width: extent });
+      const fallback: LayerTextRunOp = {
+        type: 'textRun', bbox: monochrome().bbox, text: 'A',
+        variant: { equivalenceGroup: 'wire', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+      };
+      const wire: LayerGlyphOutlineOp = JSON.parse(JSON.stringify(outline));
+      fixture.bounds(wire).width = 0; // Real Rust bbox writer uses exactly three decimals.
+      for (const candidate of [outline, wire]) {
+        const selected = selectLayerTextVariantsForLeaf(
+          [candidate, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+        );
+        assert.deepEqual([...selected], [fallback]);
+        assert.equal(glyphOutlinePayloadResourceKey(candidate), null);
+      }
+    }
+    const representable = fixture.create();
+    Object.assign(fixture.bounds(representable), { x: 0, width: 0.001 });
+    expectAccepted(representable);
+  }
+  const intrinsic = svg();
+  intrinsic.svgGlyph.intrinsicSize.width = 0.000001;
+  expectAccepted(intrinsic);
 });

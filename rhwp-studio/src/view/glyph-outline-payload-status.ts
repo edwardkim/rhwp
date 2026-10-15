@@ -428,6 +428,8 @@ function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && (glyph.intrinsicSize === undefined || (glyph.intrinsicSize !== null
       && isPortableGlyphScalar(glyph.intrinsicSize.width) && Math.fround(glyph.intrinsicSize.width) > 0
       && isPortableGlyphScalar(glyph.intrinsicSize.height) && Math.fround(glyph.intrinsicSize.height) > 0
+      && Number(glyph.intrinsicSize.width.toFixed(6)) > 0
+      && Number(glyph.intrinsicSize.height.toFixed(6)) > 0
     ))
     && isOptionalFiniteAffine(glyph.transformToRun);
 }
@@ -531,6 +533,18 @@ function fixedBounds(value: number | undefined): string {
 }
 
 function isPositiveBounds(bounds: { x?: number; y?: number; width?: number; height?: number }): boolean {
+  if (!isPositiveBoundsInReplaySpace(bounds)) return false;
+  // Match preflight before JSON export as well as already serialized payloads.
+  // The three-decimal wire must not turn an admitted extent into zero.
+  return isPositiveBoundsInReplaySpace({
+    x: Number(bounds.x!.toFixed(3)),
+    y: Number(bounds.y!.toFixed(3)),
+    width: Number(bounds.width!.toFixed(3)),
+    height: Number(bounds.height!.toFixed(3)),
+  });
+}
+
+function isPositiveBoundsInReplaySpace(bounds: { x?: number; y?: number; width?: number; height?: number }): boolean {
   if (bounds === null || !isPortableGlyphScalar(bounds.x)
     || !isPortableGlyphScalar(bounds.y)
     || !isPortableGlyphScalar(bounds.width)

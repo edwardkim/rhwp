@@ -667,18 +667,18 @@ fn bitmap_and_svg_bounds_stay_positive_in_f32_replay_space() {
         svg.intrinsic_size = Some(size);
         assert!(!svg.has_static_sanitized_contract(), "size: {size:?}");
     }
-    // A positive, representable subnormal at the origin still has two edges.
+    // A representable subnormal has native edges, but the decimal wire loses them.
     let minimum = f64::from(f32::from_bits(1));
     let mut bitmap = bitmap();
     bitmap.placement = BoundingBox::new(0.0, 0.0, minimum, minimum);
-    assert!(bitmap.has_strict_visual_contract());
+    assert!(!bitmap.has_strict_visual_contract());
     let mut svg = svg();
     svg.view_box = bitmap.placement;
     svg.intrinsic_size = Some(LayerVector {
         dx: minimum,
         dy: minimum,
     });
-    assert!(svg.has_static_sanitized_contract());
+    assert!(!svg.has_static_sanitized_contract());
 }
 
 #[test]
@@ -739,5 +739,91 @@ fn shared_svg_selector_preserves_the_required_fallback_font_for_invalid_destinat
         let plan = analyze_canvaskit_replay_plan(&invalid, CanvasKitReplayMode::Default);
         assert_eq!(plan.required_font_families, ["Test"], "{bounds:?}");
         assert!(plan.required_font_families_complete);
+    }
+}
+
+#[test]
+fn shared_bitmap_and_svg_selector_preserves_fonts_when_decimal_wire_extents_collapse() {
+    for (field, values) in [
+        (
+            "bitmapPlacement",
+            vec![f64::from(f32::from_bits(1)), 0.000_49],
+        ),
+        ("svgViewBox", vec![f64::from(f32::from_bits(1)), 0.000_49]),
+        (
+            "svgDestination",
+            vec![f64::from(f32::from_bits(1)), 0.000_49],
+        ),
+        (
+            "svgIntrinsic",
+            vec![f64::from(f32::from_bits(1)), 0.000_000_49],
+        ),
+    ] {
+        for value in values {
+            let mut tree = strict_outline_tree();
+            let svg_ref = tree
+                .resources
+                .intern_svg_fragment("<path d=\"M0 0H10V10Z\"/>");
+            let image_ref = tree
+                .resources
+                .intern_image_bytes(include_bytes!("../../assets/logo/logo-32.png"));
+            let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+                unreachable!()
+            };
+            let PaintOp::GlyphOutline { bbox, outline } = &mut ops[1] else {
+                unreachable!()
+            };
+            outline.paths.clear();
+            if field == "bitmapPlacement" {
+                outline.payload_kind = GlyphOutlinePayloadKind::BitmapGlyph;
+                outline.bitmap_glyph = Some(BitmapGlyphPayload {
+                    image_ref,
+                    placement: BoundingBox::new(0.0, 0.0, value, 8.0),
+                    ..bitmap()
+                });
+            } else {
+                outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+                let mut payload = SvgGlyphPayload { svg_ref, ..svg() };
+                match field {
+                    "svgViewBox" => payload.view_box = BoundingBox::new(0.0, 0.0, value, 8.0),
+                    "svgDestination" => *bbox = BoundingBox::new(0.0, 0.0, value, 8.0),
+                    "svgIntrinsic" => {
+                        payload.intrinsic_size = Some(LayerVector { dx: value, dy: 8.0 })
+                    }
+                    _ => unreachable!(),
+                }
+                outline.svg_glyph = Some(payload);
+            }
+            let options = TextVariantSelectionOptions {
+                allow_bitmap_glyph: true,
+                allow_svg_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            };
+            // Exercise the real serializer rather than a numerical approximation
+            // of its precision: this is the payload CanvasKit actually receives.
+            let wire: serde_json::Value = serde_json::from_str(&tree.to_json()).unwrap();
+            let op = &wire["root"]["ops"][1];
+            let serialized_extent = match field {
+                "bitmapPlacement" => &op["bitmapGlyph"]["placement"]["width"],
+                "svgViewBox" => &op["svgGlyph"]["viewBox"]["width"],
+                "svgDestination" => &op["bbox"]["width"],
+                "svgIntrinsic" => &op["svgGlyph"]["intrinsicSize"]["width"],
+                _ => unreachable!(),
+            };
+            assert_eq!(serialized_extent.as_f64(), Some(0.0), "{field}: {value}");
+            let report = &analyze_text_variant_selection(&tree, options)[0];
+            assert_eq!(
+                report.selected_variant_kind,
+                Some(TextVariantKind::TextRun),
+                "{field}: {value}"
+            );
+            assert!(report.fallback_required);
+            let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+            assert_eq!(plan.required_font_families, ["Test"], "{field}: {value}");
+            assert!(plan.required_font_families_complete);
+            if field != "svgDestination" {
+                assert!(op.get("payloadResourceKey").is_none(), "{field}: {value}");
+            }
+        }
     }
 }

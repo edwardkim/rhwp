@@ -1338,6 +1338,8 @@ impl SvgGlyphPayload {
                         && portable_glyph_scalar(size.dy)
                         && (size.dx as f32) > 0.0
                         && (size.dy as f32) > 0.0
+                        && glyph_geometry_wire_scalar(size.dx, 6) > 0.0
+                        && glyph_geometry_wire_scalar(size.dy, 6) > 0.0
                 })
                 .unwrap_or(true)
             && self.static_sanitized
@@ -1366,6 +1368,24 @@ fn layer_affine_is_finite(transform: LayerAffineTransform) -> bool {
 }
 
 pub(crate) fn bbox_is_finite_positive(bbox: BoundingBox) -> bool {
+    // Selection happens before JSON export. The fixed-decimal wire rectangle
+    // must also survive both replay backends, or preflight would omit a font
+    // that the browser's whole-TextRun fallback still requires.
+    bbox_is_positive_in_replay_space(bbox)
+        && bbox_is_positive_in_replay_space(BoundingBox::new(
+            glyph_geometry_wire_scalar(bbox.x, 3),
+            glyph_geometry_wire_scalar(bbox.y, 3),
+            glyph_geometry_wire_scalar(bbox.width, 3),
+            glyph_geometry_wire_scalar(bbox.height, 3),
+        ))
+}
+
+fn glyph_geometry_wire_scalar(value: f64, precision: usize) -> f64 {
+    // Keep this identical to json.rs's bbox (3) and intrinsic-size (6) writers.
+    format!("{value:.precision$}").parse().unwrap_or(f64::NAN)
+}
+
+fn bbox_is_positive_in_replay_space(bbox: BoundingBox) -> bool {
     let [x, y, width, height] = [bbox.x, bbox.y, bbox.width, bbox.height].map(|v| v as f32);
     // Native Skia narrows the components before adding; CanvasKit's XYWHRect
     // adds the f64 components before storing f32 edges. Both must remain
