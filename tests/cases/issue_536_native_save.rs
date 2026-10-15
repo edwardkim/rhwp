@@ -1,6 +1,5 @@
 //! Host persistence checkpoints, byte/report ownership and saved-caret contracts.
 #![cfg(not(target_arch = "wasm32"))]
-#![cfg(not(target_arch = "wasm32"))]
 
 use std::io::{Cursor, Read};
 use std::sync::Arc;
@@ -120,9 +119,15 @@ fn superseded_foreign_and_cancelled_tokens_cannot_consume_the_latest_checkpoint(
 #[test]
 fn failed_preparation_preserves_live_state_and_the_previous_checkpoint() {
     let mut invalid = core("text");
-    // HWPX validates referenced paragraph style IDs; the HWP writer retains
-    // this raw numeric field. No huge resource or test-only failure hook needed.
-    invalid.document_mut().sections[0].paragraphs[0].para_shape_id = u16::MAX;
+    // A missing embedded-font BinData is rejected by the HWPX header writer;
+    // HWP retains this reference field. A dangling paragraph style is repaired
+    // by canonical export, so it is not a serializer failure fixture.
+    invalid.document_mut().doc_info.font_faces[0].push(rhwp::model::style::Font {
+        name: "Missing Embedded Face".into(),
+        is_embedded: true,
+        resolved_bin_data_id: Some(9),
+        ..Default::default()
+    });
     let mut session = NativeDocumentSession::from_core(invalid);
     let before = format!("{:?}", session.document().document());
     let prior = session.prepare_save(NativeSaveFormat::Hwp).unwrap();
