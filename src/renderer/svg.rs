@@ -20,8 +20,9 @@ use super::render_tree::{
     REAL_PICTURE_WATERMARK_FILL_OPACITY, REAL_PICTURE_WATERMARK_PAGE_OPACITY,
 };
 use super::{
-    boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, GradientFillInfo, LineStyle,
-    PathCommand, PatternFillInfo, Renderer, ShapeStyle, TextStyle,
+    boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, faux_bold_stroke_width,
+    GradientFillInfo, LineStyle, PathCommand, PatternFillInfo, Renderer, ShapeStyle, StrokeDash,
+    TextStyle,
 };
 use crate::paint::{PaintOp, TextDecorationKind};
 use std::fmt::Write as _;
@@ -3943,32 +3944,6 @@ fn path_bbox(commands: &[PathCommand]) -> (f64, f64, f64, f64) {
         // 점 하나뿐이거나 한 축이 0 인 패스 — 정규화 공간 폴백으로 넘긴다.
         (0.0, 0.0, 0.0, 0.0)
     }
-}
-
-/// COLORREF (BGR) → SVG 색상 문자열 변환
-/// 합성 볼드 획 굵기(px) — 실제 Bold 메트릭이 없는 face 의 볼드 요청에만.
-///
-/// 한/글 2022 는 Bold face 가 없는 face 의 볼드를 PDF `2 Tr`(fill+stroke)로
-/// 내보내고 선 굵기를 **글꼴·크기 불문 `0.02 em`** 으로 준다. 표본
-/// `pdf/issue2470/36382471_masked-2022.pdf` 1쪽의 `Tr 2` run 은 전부
-/// `w / Tf` 가 0.0200 이다 — 굴림체 `1.66/83`, HY헤드라인M `3.50/175`,
-/// HY견명조 `4.34/217`. `font-weight="bold"` 만 넘기면 굵히는 양이 받는 쪽
-/// 몫이라 Chromium 은 이보다 굵게 만든다(#7151).
-///
-/// 메트릭 DB 에 Bold 항목이 있는 face 는 배치 advance 도 Bold 메트릭으로
-/// 잡았으므로 종전대로 그 face 를 요청한다. DB 에 없는 face 는 어느 쪽인지
-/// 알 근거가 없어 건드리지 않는다.
-fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Option<f64> {
-    /// 한/글 2022 PDF 실측 — `w / Tf`.
-    const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
-
-    if !style.bold {
-        return None;
-    }
-    let primary = super::style_resolver::primary_font_name(&style.font_family);
-    super::font_metrics_data::find_metric(primary, true, style.italic)?
-        .bold_fallback
-        .then_some(font_size * HANCOM_FAUX_BOLD_STROKE_EM)
 }
 
 /// `fill` 과 같은 색으로 합성 볼드 획을 준다 — PDF `2 Tr` 과 같은 채움 후 획.

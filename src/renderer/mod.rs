@@ -356,6 +356,9 @@ pub struct TextStyle {
     pub tab_stops: Vec<TabStop>,
     /// 문단 오른쪽 끝 자동 탭 여부
     pub auto_tab_right: bool,
+    /// 문단 왼쪽 자동 탭의 단 기준 위치. 저장 hint와 줄 채움이 같은 정지를 쓴다.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auto_left_tab_position: Option<f64>,
     /// 사용 가능 너비 (px, auto_tab_right 계산용)
     pub available_width: f64,
     /// 단 시작으로부터 run 시작 위치 (탭 절대좌표 변환용)
@@ -379,7 +382,8 @@ pub struct TextStyle {
     pub inline_tabs: Vec<[u16; 7]>,
     /// 양쪽 정렬용: 공백 문자당 추가 간격 (px)
     pub extra_word_spacing: f64,
-    /// 이 런 시작의 들여쓰기 공백 수. 해당 구간은 양쪽 정렬 여분을 받지 않는다.
+    /// 이 런 앞부분의 분배 제외 문자 수. 선행 공백과 자동 탭 앞 항목 번호는
+    /// 원래 전진 폭을 보존하며 뒤 본문의 양쪽 정렬 여분을 받지 않는다.
     #[serde(skip_serializing_if = "has_no_unjustified_leading_spaces")]
     pub unjustified_leading_spaces: usize,
     /// 배분/나눔 정렬용: 글자당 추가 간격 (px)
@@ -515,6 +519,31 @@ pub const SCRIPT_FONT_SCALE: f64 = 0.7;
 pub const SUPERSCRIPT_RISE_EM: f64 = 0.3;
 /// 아래첨자 baseline 하향 이동량 (본문 글꼴 크기 대비 em).
 pub const SUBSCRIPT_DROP_EM: f64 = 0.15;
+
+/// 합성 볼드 획 굵기(px) — 실제 Bold 메트릭이 없는 face 의 볼드 요청에만.
+///
+/// 한/글 2022 는 Bold face 가 없는 face 의 볼드를 PDF `2 Tr`(fill+stroke)로
+/// 내보내고 선 굵기를 **글꼴·크기 불문 `0.02 em`** 으로 준다. 표본
+/// `pdf/issue2470/36382471_masked-2022.pdf` 1쪽의 `Tr 2` run 은 전부
+/// `w / Tf` 가 0.0200 이다 — 굴림체 `1.66/83`, HY헤드라인M `3.50/175`,
+/// HY견명조 `4.34/217`. `font-weight="bold"` 만 넘기면 굵히는 양이 받는 쪽
+/// 몫이라 Chromium 은 이보다 굵게 만든다(#7151).
+///
+/// 메트릭 DB 에 Bold 항목이 있는 face 는 배치 advance 도 Bold 메트릭으로
+/// 잡았으므로 종전대로 그 face 를 요청한다. DB 에 없는 face 는 어느 쪽인지
+/// 알 근거가 없어 건드리지 않는다.
+pub(crate) fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Option<f64> {
+    /// 한/글 2022 PDF 실측 — `w / Tf`.
+    const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
+
+    if !style.bold {
+        return None;
+    }
+    let primary = style_resolver::primary_font_name(&style.font_family);
+    font_metrics_data::find_metric(primary, true, style.italic)?
+        .bold_fallback
+        .then_some(font_size * HANCOM_FAUX_BOLD_STROKE_EM)
+}
 
 impl TextStyle {
     /// 원본의 0 크기를 보존한다. 해소되지 않은 기본 스타일에만 기존 폴백을 쓴다.
@@ -677,6 +706,7 @@ impl Default for TextStyle {
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
             auto_tab_right: false,
+            auto_left_tab_position: None,
             available_width: 0.0,
             line_x_offset: 0.0,
             text_start_offset: 0.0,
@@ -988,7 +1018,11 @@ pub(crate) fn linear_gradient_color_stops(
 
 /// 원본 중심은 공통 색상 스톱에서 반영한다. 축을 다시 뒤집지 않는다.
 pub fn linear_gradient_axis_for_fill(
-    grad: &GradientFillInfo, x: f64, y: f64, w: f64, h: f64,
+    grad: &GradientFillInfo,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
 ) -> (f64, f64, f64, f64) {
     linear_gradient_axis(grad.angle, x, y, w, h)
 }

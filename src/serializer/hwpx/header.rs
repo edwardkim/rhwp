@@ -1210,8 +1210,10 @@ fn write_para_line_spacing<W: Write>(
 
 /// margin 자식(`<hc:intent value="…" unit="HWPUNIT"/>`). 한컴 원본 속성 순서는
 /// value, unit 이며 네임스페이스는 `hc:` 다.
-/// `<hh:margin>` 자식 하나. `half=true`(HwpUnitChar `case`)에서 저장값이 **홀수**면
-/// 절반이 정수로 안 떨어지므로 한컴은 그 자리를 `unit="CHAR"` 로 표시한다.
+/// `<hh:margin>` 자식 하나. `half=true`(HwpUnitChar `case`)에서 하위 비트가1이면
+/// 기본 스타일 em에 대한 상대 단위 CHAR, 0이면 절대 HWPUNIT으로 쓴다.
+/// 같은 CHAR80도 기본 스타일10pt에서는400HU,20pt에서는800HU다.
+/// 나머지는 단위 비트를 제거한 값이며 0.5HU 반올림 표시가 아니다.
 ///
 /// [#6875] 종전에는 단위를 `HWPUNIT` 으로 고정하고 값만 `x / 2` 로 적었다. 그러면 홀수의
 /// 최하위 비트(= 한컴이 `CHAR` 로 표시하는 그 자리)가 사라지고, 한/글은 `case` 를 우선

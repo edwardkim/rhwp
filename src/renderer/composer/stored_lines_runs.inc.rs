@@ -726,6 +726,22 @@ pub(crate) fn composed_tac_line_assignment(
 /// 보이는 다음 글자와 확장 제어 슬롯이 같은 논리 위치여도 원시 줄 소속은 다를 수 있다.
 /// 저장/현재 재조판 사다리의 UTF-16 경계로 조회하며 높이의 우연한 일치는 사용하지 않는다.
 pub(crate) fn control_slot_line_index(para: &Paragraph, control_index: usize) -> Option<usize> {
+    control_slot_line_index_with_starts(
+        para,
+        control_index,
+        (0..para.line_segs.len()).map(|line| para.line_seg_text_start(line)),
+    )
+}
+
+/// 저장 줄과 새로 발행할 줄은 같은 원시 제어 슬롯 경계로 소유를 판정한다.
+pub(super) fn control_slot_line_index_with_starts(
+    para: &Paragraph,
+    control_index: usize,
+    starts: impl Iterator<Item = u32>,
+) -> Option<usize> {
     let start = *para.control_utf16_positions().get(control_index)?;
-    (0..para.line_segs.len()).rfind(|&line| para.line_seg_text_start(line) <= start)
+    starts
+        .enumerate()
+        .filter_map(|(line, pos)| (pos <= start).then_some(line))
+        .last()
 }

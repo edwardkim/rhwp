@@ -2189,6 +2189,28 @@ fn unjustified_leading_spaces_by_run(line: &ComposedLine, limit: usize) -> Vec<u
         .collect()
 }
 
+/// A left automatic tab fixes the label's end position. Distribution belongs
+/// to text after that anchor, including when character styles split the label.
+fn fixed_auto_tab_prefix_by_run(line: &ComposedLine) -> Vec<usize> {
+    let mut remaining = line
+        .runs
+        .iter()
+        .flat_map(|run| effective_text_for_metrics(run).chars())
+        .position(|c| c == '\t')
+        .map_or(0, |index| index + 1);
+    line.runs
+        .iter()
+        .map(|run| {
+            let count = effective_text_for_metrics(run)
+                .chars()
+                .count()
+                .min(remaining);
+            remaining -= count;
+            count
+        })
+        .collect()
+}
+
 /// [Task #2067] 명시적 정렬 분배와 실제 오버플로우에 따른 여분 간격 계산.
 /// 반환 = (extra_word_sp, extra_char_sp, extra_dash_sp).
 #[allow(clippy::too_many_arguments)]
@@ -2199,6 +2221,7 @@ fn compute_line_extra_spacing(
     leading_space_plan: &LeadingSpacePlan<'_>,
     soft_wrap_separator_width: f64,
     terminal_tracking: f64,
+    unjustified_leading_spaces: &[usize],
     styles: &ResolvedStyleSet,
     centered_measure: Option<&CenteredTextLineMeasure>,
     alignment: Alignment,
@@ -2370,7 +2393,20 @@ fn compute_line_extra_spacing(
         {
             return (0.0, 0.0, 0.0);
         }
-        let interior_spaces = all_chars[leading_space_count.min(visible_count)..visible_count]
+        let leading_spaces = unjustified_leading_spaces
+            .iter()
+            .sum::<usize>()
+            .max(leading_space_count)
+            .min(visible_count);
+        if leading_spaces == visible_count {
+            return (0.0, 0.0, 0.0);
+        }
+        let fixed_visible_chars = all_chars[..leading_spaces]
+            .iter()
+            .filter(|c| **c != '\t')
+            .count();
+        let distributed_char_count = total_char_count.saturating_sub(fixed_visible_chars);
+        let interior_spaces = all_chars[leading_spaces..visible_count]
             .iter()
             .filter(|c| **c == ' ')
             .count();
@@ -3286,6 +3322,7 @@ impl LayoutEngine {
             styles,
             style.alignment == Alignment::Center,
         );
+        // 텍스트와 같은 원본 줄 소속의 들여쓰기·내어쓰기 결과를 소비한다.
         let indent = crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
             style.indent,
             owner,
@@ -5912,6 +5949,26 @@ impl LayoutEngine {
         let mut last_line_consumed = false;
         let stored_tac_assignment =
             para.and_then(|p| crate::renderer::composer::composed_tac_line_assignment(p, composed));
+        let click_here_positions: Vec<_> = para
+            .filter(|paragraph| {
+                paragraph.controls.iter().any(|control| {
+                    matches!(control, Control::Field(field)
+                        if field.field_type == crate::model::control::FieldType::ClickHere)
+                })
+            })
+            .map(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .zip(paragraph.control_text_positions())
+                    .filter_map(|(control, position)| {
+                        matches!(control, Control::Field(field)
+                            if field.field_type == crate::model::control::FieldType::ClickHere)
+                        .then_some(position)
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
         for line_idx in start_line..end {
             let source_line_tacs;
             let tac_offsets_px = if let Some(assign) = stored_tac_assignment.as_ref() {
@@ -6523,17 +6580,21 @@ impl LayoutEngine {
             // (저장 LINE_SEG 두 줄 모두 cs=200 sw=8076).
             //
             // 첫 줄은 내어쓰기의 기준선이므로 건드리지 않고, 이어지는 줄에만 적용한다.
-            let effective_margin_left = if line_indent > 0.0 && !physical_frame_rows {
-                let min_line_w = max_fs.max(1.0);
-                let avail = effective_col_w - effective_margin_left - effective_margin_right;
-                if avail < min_line_w {
-                    margin_left.min(effective_margin_left)
+            // 본문의 명시적 첫 줄 들여쓰기는 용지 밖이어도 지정한 원점을 갖는다.
+            // 셀 내어쓰기의 좁은 후속 줄을 복구하는 계약을 여기에 전파하면,
+            // 재조판은 들여쓴 폭으로 줄을 나누고 paint만 들여쓰기를 취소한다.
+            let effective_margin_left =
+                if cell_ctx.is_some() && indent < 0.0 && line_idx > 0 && line_indent > 0.0 && !physical_frame_rows {
+                    let min_line_w = max_fs.max(1.0);
+                    let avail = effective_col_w - effective_margin_left - effective_margin_right;
+                    if avail < min_line_w {
+                        margin_left.min(effective_margin_left)
+                    } else {
+                        effective_margin_left
+                    }
                 } else {
                     effective_margin_left
-                }
-            } else {
-                effective_margin_left
-            };
+                };
 
             // 인라인 Shape가 있는 줄: 텍스트 y를 Shape 하단 baseline에 맞춤
             let text_y = if has_tac_shape
@@ -7060,11 +7121,21 @@ impl LayoutEngine {
             } else {
                 None
             };
+            // 누름틀 앞의 들여쓰기 공백과 누름틀 값 안의 공백은 소유 범위가 다르다.
+            // 값이 공백으로 시작해도 그 공백까지 문단 접두 영역으로 제외하지 않는다.
+            // 글자취급 개체와 같은 원문 scalar 경계로 배분 제외 구간을 끝낸다.
+            let first_field_offset = click_here_positions
+                .iter()
+                .filter(|&&position| position >= comp_line.char_start)
+                .map(|position| position.saturating_sub(comp_line.char_start))
+                .min()
+                .unwrap_or(usize::MAX);
             let first_inline_offset = line_tac_offsets_for_width
                 .iter()
                 .map(|(position, _, _)| position.saturating_sub(comp_line.char_start))
                 .min()
-                .unwrap_or(usize::MAX);
+                .unwrap_or(usize::MAX)
+                .min(first_field_offset);
             let trailing_space_limit = trailing_space_limit_after_last_inline_object(
                 comp_line,
                 line_tac_offsets_for_width
@@ -7129,6 +7200,14 @@ impl LayoutEngine {
                 0.0
             };
             let unjustified_leading_spaces = if needs_justify
+                && has_tabs
+                && styles
+                    .para_styles
+                    .get(composed.para_style_id as usize)
+                    .is_some_and(|style| style.auto_tab_left && style.indent < 0.0)
+            {
+                fixed_auto_tab_prefix_by_run(&leading_space_plan.line)
+            } else if needs_justify
                 && !is_hancom_company_pua_logo_line
                 && total_text_width - trailing_width <= available_width
             {
@@ -7166,6 +7245,7 @@ impl LayoutEngine {
                         &line_tac_offsets_for_width,
                         true,
                     ),
+                    &unjustified_leading_spaces,
                     styles,
                     centered_measure.as_ref(),
                     alignment,
@@ -8412,6 +8492,11 @@ impl LayoutEngine {
             text_style.default_tab_width = tab_width;
             text_style.tab_stops = tab_stops.to_vec();
             text_style.auto_tab_right = auto_tab_right;
+            text_style.auto_left_tab_position = styles
+                .para_styles
+                .get(composed.para_style_id as usize)
+                .filter(|style| style.auto_tab_left && style.indent < 0.0)
+                .map(|style| style.margin_left - style.indent);
             text_style.available_width = available_width;
             text_style.text_start_offset = effective_margin_left;
             // 저장 탭의 순번은 런과 글자 모양 경계를 넘어 이어진다.
@@ -11448,6 +11533,7 @@ mod issue_2809_split_alignment_tests {
             &LeadingSpacePlan::new(&line, None),
             0.0,
             0.0,
+            &[],
             &ResolvedStyleSet::default(),
             None,
             Alignment::Split,
@@ -11490,6 +11576,7 @@ mod issue_2809_split_alignment_tests {
             &LeadingSpacePlan::new(&trailing_line, None),
             0.0,
             0.0,
+            &[],
             &styles,
             None,
             Alignment::Justify,
@@ -11537,6 +11624,7 @@ mod issue_2809_split_alignment_tests {
             &LeadingSpacePlan::new(&line, None),
             0.0,
             0.0,
+            &[],
             &styles,
             None,
             Alignment::Split,
@@ -11592,6 +11680,7 @@ mod issue_2809_split_alignment_tests {
             &LeadingSpacePlan::new(&line, None),
             0.0,
             0.0,
+            &[],
             &ResolvedStyleSet::default(),
             None,
             Alignment::Justify,
@@ -11620,6 +11709,7 @@ mod issue_2809_split_alignment_tests {
             &LeadingSpacePlan::new(&line, None),
             0.0,
             0.0,
+            &[],
             &ResolvedStyleSet::default(),
             None,
             Alignment::Justify,
@@ -11672,6 +11762,7 @@ mod issue_4657_distribute_alignment_tests {
             &LeadingSpacePlan::new(&line(text), None),
             0.0,
             0.0,
+            &[],
             &ResolvedStyleSet::default(),
             None,
             Alignment::Distribute,

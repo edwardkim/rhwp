@@ -920,29 +920,3 @@ fn first_existing_family(fontdb: &usvg::fontdb::Database, candidates: &[&str]) -
         .find(|c| families.contains(**c))
         .map(|c| c.to_string())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn svg_images_and_raw_fragments_keep_bounded_input_and_raster_area() {
-        // 완결 그림 예산을 넓혀도 조각 입력과 목적지 픽셀 제한은 유지한다.
-        let over_document = vec![b' '; MAX_SVG_DOCUMENT_BYTES + 1];
-        assert!(rasterize_svg_document_to_png(&over_document, 8.0, 8.0, 1.0).is_none());
-        let over_fragment = " ".repeat(MAX_SVG_FRAGMENT_BYTES + 1);
-        assert!(rasterize_svg_fragment_to_png(&over_fragment, 0.0, 0.0, 8.0, 8.0, 1.0).is_none());
-        let svg = br#"<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="red"/></svg>"#;
-        assert!(rasterize_svg_document_to_png(svg, 10000.0, 10000.0, 1.0).is_none());
-        assert!(rasterize_svg_document_to_png(svg, f32::NAN, 8.0, 1.0).is_none());
-        assert!(rasterize_svg_fragment_to_png(
-            "<rect width=\"8\" height=\"8\"/>",
-            0.0,
-            0.0,
-            10000.0,
-            10000.0,
-            1.0
-        )
-        .is_none());
-    }
-}

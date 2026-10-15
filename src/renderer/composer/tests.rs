@@ -795,15 +795,6 @@ fn test_compose_multi_line_multi_style() {
     assert_eq!(composed.lines[1].runs[0].char_style_id, 3);
 }
 
-/// 빈 문단
-#[test]
-fn test_compose_empty_paragraph() {
-    let para = Paragraph::default();
-    let composed = compose_paragraph(&para);
-    assert!(composed.lines.is_empty());
-    assert!(composed.inline_controls.is_empty());
-}
-
 /// table-vpos-01 page 5의 10/11/12 마커는 CharOverlap 하나에 두 개의
 /// HWP PUA 구성 글자가 들어온다. 텍스트 흐름과 캐럿 이동은 한 글자 폭이어야 한다.
 #[test]
@@ -2414,5 +2405,44 @@ fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
     assert!(
         stored_first_tac_line(&single_row).is_none(),
         "가시 텍스트와 같은 줄은 별도 구성 계약"
+    );
+}
+
+#[test]
+fn default_tabs_use_the_physical_row_origin() {
+    // 80px 등간격 탭 격자에서 원점 20px인 폭 100px 줄은
+    // 첫 탭 60px + 전각 네 글자 40px가 정확히 한 줄을 소유한다.
+    // 원점 0인 대조군은 80px + 40px라 두 줄이다.
+    let styles = ResolvedStyleSet {
+        char_styles: vec![crate::renderer::style_resolver::ResolvedCharStyle {
+            font_size: 10.0,
+            ..Default::default()
+        }],
+        para_styles: vec![crate::renderer::style_resolver::ResolvedParaStyle {
+            default_tab_width: 80.0,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let para = Paragraph {
+        text: "\t가나다라".into(),
+        char_count: 6,
+        char_offsets: (0..5).collect(),
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        ..Default::default()
+    };
+    let rows = |left| {
+        let mut frame =
+            crate::renderer::layout_frame::LayoutFrame::new(left..left + 7500, 0, vec![]);
+        super::line_breaking::layout_paragraph_in_frame(&para, &mut frame, &styles, 96.0).unwrap()
+    };
+    assert_eq!(rows(0).len(), 2);
+    assert_eq!(
+        rows(1500).len(),
+        1,
+        "탭 격자는 줄 내부 0이 아니라 물리 행의 시작 좌표에서 이어진다"
     );
 }

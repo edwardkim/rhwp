@@ -435,7 +435,7 @@ fn row_has_stored_cross_paragraph_zero_reset(
 /// 나란히 둔다. `dirty_flag`는 저장 경계를 넘지 못하므로 이 구조만 #4138의
 /// continuation strict-cut 근거로 쓴다. 병합 제목행과 일반 2열 데이터행이 섞인
 /// 흔한 표(#2097)는 현재 행의 두 셀이 모두 본문을 가지므로 제외된다.
-fn is_reparsed_single_column_cell_split_row(
+pub(crate) fn is_reparsed_single_column_cell_split_row(
     table: &crate::model::table::Table,
     row: usize,
 ) -> bool {

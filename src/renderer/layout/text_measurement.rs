@@ -135,6 +135,18 @@ fn style_params(style: &TextStyle) -> (f64, f64, f64) {
     (font_size, ratio, tab_w)
 }
 
+/// 재조판 반각 빈칸은 글리프의 위/아래첨자 축소가 아니라 본문 em 격자를
+/// 소비한다. 독립 한컴 Print의 `0.509cd/m2 이상`은 첨자2 뒤 빈칸도 앞의
+/// 본문 빈칸과 같은 advance/양쪽 정렬 증가분을 가진다. 저장 글꼴 공백은
+/// 기존 경로를 유지하고, 줄 채움과 paint가 같은 layout_half_space를 읽는다.
+fn reflow_space_font_size(style: &TextStyle) -> f64 {
+    if style.font_size > 0.0 {
+        style.font_size
+    } else {
+        12.0
+    }
+}
+
 /// inline_tabs ext[2] 에서 탭 종류를 추출.
 ///
 /// HWP `tab_extended` 포맷 (PR #292 / Task #290 실증):
@@ -422,6 +434,15 @@ fn compute_char_positions_walk(
             continue;
         }
         if c == '\t' {
+            if let Some(position) = style
+                .auto_left_tab_position
+                .filter(|position| *position > style.line_x_offset + x)
+            {
+                x = position - style.line_x_offset;
+                tab_char_idx += 1;
+                positions.push(x);
+                continue;
+            }
             // [#7170] 자리표(저장 폭 없음)는 저장값이 아니다 — 순번만 소비하고 아래
             // `TabDef` 기준 재계산으로 내려간다. 폭 0 을 결과 위치로 읽으면 탭이
             // 무폭이 된다(#1892).
@@ -532,6 +553,14 @@ impl EmbeddedTextMeasurer {
                 continue;
             }
             if c == '\t' {
+                if let Some(position) = style
+                    .auto_left_tab_position
+                    .filter(|position| *position > style.line_x_offset + total)
+                {
+                    total = position - style.line_x_offset;
+                    tab_char_idx += 1;
+                    continue;
+                }
                 // 인라인 탭 (HWP tab_extended / HWPX 인라인 탭)
                 // NOTE: 네이티브 경로는 `tab_type = ext[2]` 전체 u16 해석을 유지.
                 // 기존 golden SVG (issue-147, issue-267) 가 이 "우연한 LEFT 폴백" 동작에
@@ -905,6 +934,7 @@ pub(crate) fn resolved_to_text_style(
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
             auto_tab_right: false,
+            auto_left_tab_position: None,
             available_width: 0.0,
             line_x_offset: 0.0,
             text_start_offset: 0.0,
@@ -1379,6 +1409,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
     if let Some(em) = font_metrics_data::original_glyph_advance_em(primary_name, bold, italic, c) {
         return EmbeddedWidthDecision {
             width_px: Some(quantize_hwp_px(font_size * em)),
+            em_fraction: Some(em),
             width_source: "measuredOriginalGlyph",
             metric: None,
             character_match: "hit",
@@ -1567,6 +1598,11 @@ fn char_width_decision_with_hft_tracking<'a>(
     // 줄 채움의 원문 스칼라와 paint의 확정 표시 기호는 같은 advance를 쓴다.
     // 원문 오프셋과 클러스터 소속은 그대로 유지한다.
     let c = super::super::composer::single_scalar_display_char(chars[i]);
+    let font_size = if style.layout_half_space && matches!(c, ' ' | '\u{00A0}') {
+        reflow_space_font_size(style)
+    } else {
+        font_size
+    };
     // [#7418] 영문 슬롯으로 재는 구두점 — 글꼴·폭 표·자간·장평만 영문 슬롯 값이고, 배치가
     // 얹는 여분(양쪽 정렬 등)은 run 의 값 그대로다. 비ASCII 구두점은 재조판
     // composer가 결정한 run 슬롯을 따른다. 저장 run의 표시 글꼴과 다른 폭을 덮어쓰지 않는다.
@@ -1828,6 +1864,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                         width_px: Some(quantize_hwp_px(
                             font_size * f64::from(width) / f64::from(metric.metric.em_size),
                         )),
+                        em_fraction: Some(f64::from(width) / f64::from(metric.metric.em_size)),
                         width_source: "metricGlyphFallback",
                         metric: Some(metric),
                         character_match: "hit",
@@ -2129,7 +2166,8 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
 /// 저장 metric과 재조판 metric이 같은 style에는 `None`을 반환해 별도 보정이 없도록
 /// 한다. 따라서 글꼴명이나 고정 글자 크기에 의존하지 않는다.
 pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
-    let (font_size, ratio, _) = style_params(style);
+    let (_, ratio, _) = style_params(style);
+    let font_size = reflow_space_font_size(style);
     // [#7387] `use_font_space` run 은 반각이 아니라 영문 슬롯 글꼴의 공백폭이 기준이다.
     // 이 값을 그대로 두면 아래 `stored_width` 비교가 늘 참이 되어, 고친 공백폭을
     // 다시 반각으로 되돌린다.
@@ -2408,6 +2446,8 @@ fn is_dash_leader_run(chars: &[char], i: usize) -> bool {
 /// 한컴이 전각으로 처리하는 기호 (메트릭 폴백 시 font_size 사용)
 fn is_fullwidth_symbol(c: char) -> bool {
     matches!(c,
+        '\u{2103}' |                   // ℃: Hancom Print Type3 full-em advance; a missing metric is not a half-em glyph
+        '\u{2113}' |                   // ℓ: Hancom Print Type3 full-em advance; glyph metric hits retain precedence
         '\u{20A9}' |                   // ₩ WON SIGN
         '\u{20AC}' |                   // € EURO SIGN
         '\u{00A3}' |                   // £ POUND SIGN

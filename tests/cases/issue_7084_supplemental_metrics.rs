@@ -696,3 +696,54 @@ fn verified_source_uses_real_hmtx_and_preserves_source_identity() {
         Err(MetricError::MissingGlyph)
     );
 }
+
+/// 독립 한컴 Print의 DotumChe 합성 굵게는 같은 정규 프로그램의 채움+획이다.
+/// 획은 advance를 바꾸지 않으며, 실제 Bold face의 요청은 별도로 남아야 한다.
+#[test]
+fn faux_bold_uses_the_regular_canvas_measurement_without_changing_metric_ownership() {
+    let regular = TextStyle {
+        font_family: "DotumChe".into(),
+        ..style()
+    };
+    let bold = TextStyle {
+        bold: true,
+        ..regular.clone()
+    };
+    let regular_font = CanvasTextFont::for_positioned_text(&regular, 0.0);
+    let bold_font = CanvasTextFont::for_positioned_text(&bold, 0.0);
+    assert_eq!(
+        regular_font.descriptor(),
+        bold_font.descriptor(),
+        "PDF의 같은 정규 face를 측정하며 굵은 획은 paint가 담당한다"
+    );
+    let entry = SupplementalMetric::from_canvas_measurement(
+        &bold,
+        "😀",
+        regular_font.descriptor(),
+        regular_font.descriptor().into(),
+        27.5,
+    )
+    .expect("실제 그리는 정규 프로그램의 advance 등록");
+    let mut measured_bold = bold.clone();
+    let _store = bound(&mut measured_bold, vec![entry]);
+    near(positions("😀", &measured_bold)[1], 27.5);
+    assert_ne!(
+        positions("😀", &regular)[1],
+        27.5,
+        "동일 face를 사용해도 보충 메트릭의 원본 style 소유는 분리한다"
+    );
+    let real_bold = TextStyle {
+        font_family: "Malgun Gothic".into(),
+        bold: true,
+        ..regular.clone()
+    };
+    let real_regular = TextStyle {
+        bold: false,
+        ..real_bold.clone()
+    };
+    assert_ne!(
+        CanvasTextFont::for_positioned_text(&real_bold, 0.0).descriptor(),
+        CanvasTextFont::for_positioned_text(&real_regular, 0.0).descriptor(),
+        "실제 Bold 메트릭이 있는 face는 bold 요청을 유지한다"
+    );
+}

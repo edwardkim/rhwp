@@ -1031,6 +1031,10 @@ fn para_margin_hwpunit(stored: i32, char_unit_hu: f64) -> f64 {
     }
 }
 
+pub(crate) fn paragraph_margin_hwpunit(raw: i32, doc_info: &DocInfo) -> f64 {
+    para_margin_hwpunit(raw, para_margin_char_unit_hu(doc_info))
+}
+
 /// 개별 ParaShape 해소
 fn resolve_single_para_style(
     ps: &ParaShape,
@@ -1071,10 +1075,10 @@ fn resolve_single_para_style(
         .unwrap_or_default();
     let auto_tab_right = tab_def.map(|td| td.auto_tab_right).unwrap_or(false);
 
-    // ParaShape의 여백 및 문단 간격은 HWPUNIT의 2배 값으로 저장된다.
+    // ParaShape의 여백 및 문단 간격은 값과 단위 비트를 함께 보존한다.
     // margin_left/right/indent: LineSeg.column_start와 비교하면 column_start = margin_left / 2
-    // spacing_before/after: pyhwpx 확인 결과 동일하게 2배 스케일 저장
-    // 실제 렌더링 시 2로 나누어야 올바른 값이 된다.
+    // 하위 비트0은 HWPUNIT(물리 HU), 1은 CHAR(기본 스타일의 반각 em 백분율)다.
+    // HwpUnitChar case의 CHAR80/raw161은400HU이며 raw160은80HU다.
     //
     // [Task #1037] HWP5 변환본 의 추가 2배 스케일 (총 4배) 은 parser 단계 (parser/mod.rs)
     // 에서 normalize (halve) 되어 본 단계에서는 normal HWP5 동등 (2배 스케일) — uniform
@@ -1109,6 +1113,7 @@ fn resolve_single_para_style(
         border_ignore_margin: ps.attr1 & (1 << 29) != 0,
         default_tab_width,
         tab_stops,
+        auto_tab_left: tab_def.is_some_and(|td| td.auto_tab_left),
         auto_tab_right,
         condense_min_space: ((ps.attr1 >> 9) & 0x7f).min(75) as u8,
         english_break_unit: ((ps.attr1 >> 5) & 0x03) as u8,

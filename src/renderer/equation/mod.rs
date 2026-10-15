@@ -153,7 +153,8 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
         (
             equation.common.width,
             equation.common.height,
-            (equation.common.height as i32).saturating_mul(i32::from(equation.baseline)) / 100,
+            (f64::from(equation.common.height) * f64::from(equation.baseline) / 100.0).round()
+                as i32,
         )
     }
 }

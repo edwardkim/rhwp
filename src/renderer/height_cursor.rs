@@ -1025,11 +1025,13 @@ impl HeightCursor {
             // layout/한컴 33.1px — 기전 1). 시그니처를 tac 그림 텍스트 호스트 직후로
             // 한정해 일반 lazy 재역산의 bridge 는 종전 유지 (rowbreak-problem-pages
             // 쪽나눔 무회귀). HWP3-origin 변환본(sb 사전 차감 생략 경로)도 종전 유지.
-            let prev_is_tac_picture_text_host = prev_has_text
-                && prev_para
-                    .controls
-                    .iter()
-                    .any(|c| matches!(c, Control::Picture(p) if p.common.treat_as_char));
+            let prev_has_tac_picture = prev_para
+                .controls
+                .iter()
+                .any(|c| matches!(c, Control::Picture(p) if p.common.treat_as_char));
+            let prev_is_tac_picture_text_host = prev_has_text && prev_has_tac_picture;
+            let prev_is_tac_picture_only =
+                prev_has_tac_picture && para_is_treat_as_char_picture_only(prev_para);
             // 재구성 전의 두 저장 글줄이 같은 본문 프레임 안에 있고 경계
             // 차이가 현재 문단 위 간격과 정확히 같으면, 앞줄 trailing 은 이미
             // 순차 커서에 소비됐다. 재구성한 누적 vpos만으로 판단하지 않는다.
@@ -1072,7 +1074,9 @@ impl HeightCursor {
                             })
                 });
             let curr_sb_hu = if self.skip_spacing_before_prededuct
-                || !(prev_is_tac_picture_text_host || curr_is_plain_stored)
+                || !(prev_is_tac_picture_text_host
+                    || prev_is_tac_picture_only
+                    || curr_is_plain_stored)
             {
                 0
             } else {
@@ -1085,15 +1089,14 @@ impl HeightCursor {
             let vpos_continuous =
                 matches!(curr_first_vpos, Some(v) if v <= prev_vpos_end + curr_sb_hu);
             // 저장 HWPX의 글자취급 그림만 든 문단도 그림 높이와 trailing
-            // 줄간격을 순차 커서가 이미 소비한다. 다음 저장 시작이 정확히
-            // 그 끝이면 빈 텍스트라는 이유로 같은 간격을 lazy 기준에 재가산하지 않는다.
+            // 줄간격을 순차 커서가 이미 소비한다. 다음 저장 시작이 그 끝 또는
+            // 다음 문단 앞 간격까지 이어지면 같은 간격을 lazy 기준에 재가산하지 않는다.
+            // 앞 간격은 아래 저장 원점 조회가 사전 차감하고 실제 문단 배치가 한 번 더한다.
             let picture_spent_trailing = self.suppress_hwpx_stale_forward
                 && !synthetic_prev_seg
-                && para_is_treat_as_char_picture_only(prev_para)
-                && prev_para.controls.iter().any(|control| {
-                    matches!(control, Control::Picture(picture) if picture.common.treat_as_char)
-                })
-                && curr_first_vpos == Some(prev_vpos_end);
+                && prev_is_tac_picture_only
+                && matches!(curr_first_vpos,
+                    Some(v) if v >= prev_vpos_end && v <= prev_vpos_end.saturating_add(curr_sb_hu));
             // 실제 직전 점유 끝과 순차 커서가 저장 줄간격만큼 떨어져 있으면
             // 그 간격은 이미 소비됐다. 빈 글줄도 공간을 소유하므로 텍스트 유무로
             // 이 소비를 부정하지 않는다. 비연속·합성·편집 경로는 기존 bridge를 쓴다.

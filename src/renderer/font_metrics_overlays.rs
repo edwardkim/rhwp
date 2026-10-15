@@ -87,9 +87,17 @@ pub(crate) fn original_glyph_advance_em(
 
 pub // [#2430] 한양신명조 실측 ASCII (한글 COM 무신축 래더 2026-07-20, 93/95 실측·2 보간 med=0.942).
 // 한글은 한양신명조 를 HYSinMyeongJo-Medium 와 다른 실폭으로 렌더한다 — LATIN_0 만 교체, 이외 범위·한글 메트릭은 HYSinMyeongJo-Medium 공유.
-// U+002E: 독립 한컴2024 Print 원본 8/9쪽 88개·분할 148쪽 31개의 Type3
-// 전진폭은 모두 0.244em이다. 250/1024로 양자화하며 대체 TTF hmtx는 사용하지 않는다.
-static HANYANGSINMYEONGJO_LATIN_0: [u16; 95] = [518,333,401,465,614,939,833,241,404,386,535,579,237,588,250,404,509,509,509,509,509,509,509,509,509,509,281,298,746,588,754,526,939,816,719,711,763,693,667,763,798,342,465,807,658,983,798,763,640,772,719,667,790,790,798,1061,772,790,614,368,404,360,439,509,395,518,570,500,553,491,360,605,570,281,325,570,281,877,579,526,544,561,412,500,360,579,596,860,605,588,483,430,290,430,509];
+// U+0022는 독립 한컴2024 Print의 Type3 /Widths 42.3/100 em → 433/1024로 정정한다.
+// 원본115쪽 pdf/issue1949_giant_cell_nested_tables_perf-hwp-2024.pdf 8/9쪽의30개와
+// 분할197쪽 pdf/issue4138-picture-liter-20261014-2024.pdf 13쪽의 실제 줄 소속이 근거다.
+// HFT 한양신명조의 Latin/Symbol 슬롯이며, 대체 Batang의0.416em이나 TTF hmtx를 사용하지 않는다.
+// U+002E는 독립 Print 원본 8/9쪽 88개·분할 148쪽 31개의 Type3 전진폭
+// 0.244em을 250/1024로 양자화한다. 246/1024는 물리 폭 경계에서 문단 끝
+// `다.`를 앞줄에 잘못 수용했다. 표시 대체 글꼴의 hmtx는 근거로 쓰지 않는다.
+// 이후 독립 원본115쪽·분할197쪽 Print에서 모두 같은 자연 폭을 확인한41개 ASCII만
+// 갱신했다. 미확인54개와 별도 HY신명조·휴먼명조 메트릭은 그대로다.
+// glyph별 양쪽 표본 수와 old/new는 stage5의 cross-verified HFT 증거를 따른다.
+static HANYANGSINMYEONGJO_LATIN_0: [u16; 95] = [518, 333, 433, 465, 614, 939, 833, 395, 404, 383, 535, 579, 241, 586, 250, 399, 512, 512, 512, 512, 512, 512, 512, 512, 512, 512, 281, 298, 746, 584, 754, 526, 939, 813, 721, 707, 763, 693, 667, 763, 798, 342, 465, 807, 658, 982, 798, 766, 640, 772, 719, 664, 790, 790, 798, 1061, 772, 790, 614, 368, 404, 360, 439, 509, 395, 521, 569, 497, 556, 494, 360, 605, 570, 281, 325, 570, 281, 879, 578, 528, 547, 561, 415, 498, 359, 575, 596, 860, 605, 588, 485, 430, 290, 430, 509];
 /// [#7092] 한양신명조의 `·`(U+00B7) — 한컴 정본 실측 393/1024 = 0.384 em.
 ///
 /// 한양중고딕(`HANYANGJUNGGOTHIC_B7`)과 같은 갈래다. 아래 `0x00A0-0x00FF` 구간을
@@ -113,13 +121,36 @@ static HANYANGSINMYEONGJO_B7: [u16; 1] = [393];
 // ToUnicode <08> <2218>, 같은 코드의 /Widths 1000, FontMatrix 0.001을 명시한다.
 // 둘을 같은 문자로 바꾸지 않고 각 코드의 자연 전진폭만 보존한다.
 static HANYANGSINMYEONGJO_BULLET: [u16; 1] = [1024];
-static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 11] = [
+// 독립 한컴 Print의 Type3 자연 전진폭: 분할149/153쪽의 “/”는0.441em,
+// 149/187쪽의 ±는0.617em이다. 같은 HFT 소유의 glyph를 TTF 전각 표나
+// 일반 구두점0.5em 휴리스틱으로 재지 않는다. 1024HU표의 최근접 값만 쓴다.
+static HANYANGSINMYEONGJO_DOUBLE_QUOTES: [u16; 2] = [452, 452];
+static HANYANGSINMYEONGJO_PLUS_MINUS: [u16; 1] = [632];
+// 두 독립 Print의 섭씨/화씨 단위는 서로 다른 원문 문자를 보존하며 각각1em이다.
+// U+2109는 기존 범위 누락으로 반각 fallback이었으므로 확인한 이 glyph만 보충한다.
+static HANYANGSINMYEONGJO_FAHRENHEIT: [u16; 1] = [1024];
+static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 14] = [
     // 독립 HWP5 변환본 Print 5쪽의 •도 HFT 전각 글리프다.
     // 굵은 글줄은 이 기본 폭에 한글과 같은 상대 굵은 전진을 적용한다.
     LatinRange {
         start: 0x2022,
         end: 0x2022,
         widths: &HANYANGSINMYEONGJO_BULLET,
+    },
+    LatinRange {
+        start: 0x2109,
+        end: 0x2109,
+        widths: &HANYANGSINMYEONGJO_FAHRENHEIT,
+    },
+    LatinRange {
+        start: 0x201C,
+        end: 0x201D,
+        widths: &HANYANGSINMYEONGJO_DOUBLE_QUOTES,
+    },
+    LatinRange {
+        start: 0x00B1,
+        end: 0x00B1,
+        widths: &HANYANGSINMYEONGJO_PLUS_MINUS,
     },
     LatinRange {
         start: 0x2218,

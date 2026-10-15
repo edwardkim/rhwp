@@ -354,6 +354,7 @@ pub struct ResolvedParaStyle {
     /// 커스텀 탭 정지 목록 (position 오름차순)
     pub tab_stops: Vec<TabStop>,
     /// 문단 오른쪽 끝 자동 탭 여부
+    pub auto_tab_left: bool,
     pub auto_tab_right: bool,
     /// HWPX paraPr condense / HWP ParaShape attr1 bits 9..15.
     /// Spec name: minimum spacing value, 0..75%.
@@ -393,6 +394,7 @@ impl Default for ResolvedParaStyle {
             border_ignore_margin: false,
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
+            auto_tab_left: false,
             auto_tab_right: false,
             condense_min_space: 0,
             english_break_unit: 0,

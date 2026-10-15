@@ -2443,7 +2443,14 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.save();
                         self.ctx.translate(char_x, y).unwrap_or(());
                         self.ctx.scale(0.5, 1.0).unwrap_or(());
-                        let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                        Self::fill_positioned_text(
+                            &self.ctx,
+                            cluster_str,
+                            0.0,
+                            0.0,
+                            style,
+                            font_size,
+                        );
                         self.ctx.restore();
                     } else {
                         let cluster_advance = {
@@ -2485,7 +2492,14 @@ impl Renderer for WebCanvasRenderer {
                             .scale(ratio * fit_scale.unwrap_or(1.0), 1.0)
                             .unwrap_or(());
                         if !self.draw_hft_outline(cluster_str, style, font_size) {
-                            let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                            Self::fill_positioned_text(
+                                &self.ctx,
+                                cluster_str,
+                                0.0,
+                                0.0,
+                                style,
+                                font_size,
+                            );
                         }
                         self.ctx.restore();
                     }
@@ -3000,6 +3014,24 @@ impl WebCanvasRenderer {
         self.draw_image(data, dx, dy, dw, dh);
     }
 
+    fn fill_positioned_text(
+        ctx: &web_sys::CanvasRenderingContext2d,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        font_size: f64,
+    ) {
+        let _ = ctx.fill_text(text, x, y);
+        if let Some(width) = super::faux_bold_stroke_width(style, font_size) {
+            ctx.save();
+            ctx.set_stroke_style_str(&color_to_css(style.color));
+            ctx.set_line_width(width);
+            let _ = ctx.stroke_text(text, x, y);
+            ctx.restore();
+        }
+    }
+
     /// 텍스트 변형 효과 렌더링 (외곽선/그림자/양각/음각)
     fn draw_text_with_effects(
         &self,
@@ -3025,9 +3057,15 @@ impl WebCanvasRenderer {
                            stroke_color: &str,
                            line_width: f64| {
             ctx.set_fill_style_str(fill_color);
-            if stroke {
-                ctx.set_stroke_style_str(stroke_color);
-                ctx.set_line_width(line_width);
+            let faux_width = super::faux_bold_stroke_width(style, font_size);
+            let paint_stroke = stroke || faux_width.is_some();
+            if paint_stroke {
+                ctx.set_stroke_style_str(if stroke { stroke_color } else { fill_color });
+                ctx.set_line_width(if stroke {
+                    line_width
+                } else {
+                    faux_width.unwrap_or(0.0)
+                });
             }
             for (char_idx, cluster_str) in clusters {
                 let cs: &str = cluster_str;
@@ -3077,13 +3115,13 @@ impl WebCanvasRenderer {
                     ctx.translate(char_x, char_y).unwrap_or(());
                     ctx.scale(ratio, 1.0).unwrap_or(());
                     let _ = ctx.fill_text(cs, 0.0, 0.0);
-                    if stroke {
+                    if paint_stroke {
                         let _ = ctx.stroke_text(cs, 0.0, 0.0);
                     }
                     ctx.restore();
                 } else {
                     let _ = ctx.fill_text(cs, char_x, char_y);
-                    if stroke {
+                    if paint_stroke {
                         let _ = ctx.stroke_text(cs, char_x, char_y);
                     }
                 }

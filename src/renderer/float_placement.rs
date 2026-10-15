@@ -618,13 +618,70 @@ pub(crate) fn parallel_cell_float_band_height(controls: &[Control], dpi: f64) ->
     (latest_start + 0.5 < earliest_end).then_some(bottom)
 }
 
+/// Physical TopAndBottom picture band shared by saved-fragment reservation
+/// and a reflowed host's published successor origin. The host-relative offset
+/// is applied by the caller: a deferred band has already consumed that offset.
+fn topbottom_picture_band_height(picture: &Picture, dpi: f64) -> Option<f64> {
+    use crate::model::shape::CaptionDirection;
+    let common = &picture.common;
+    if common.treat_as_char
+        || !common.flow_with_text
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || picture
+            .caption
+            .as_ref()
+            .is_some_and(|caption| caption.direction != CaptionDirection::Bottom)
+    {
+        return None;
+    }
+    let (_, height) = picture_flow_frame_size_hu(picture);
+    if height <= 0 {
+        return None;
+    }
+    let caption = picture.caption.as_ref().map_or(0.0, |caption| {
+        super::composer::caption_height_px(&picture.caption, dpi)
+            + hwpunit_to_px(caption.spacing as i32, dpi)
+    });
+    Some(
+        hwpunit_to_px(height, dpi)
+            + hwpunit_to_px(
+                i32::from(common.margin.top) + i32::from(common.margin.bottom),
+                dpi,
+            )
+            + caption,
+    )
+}
+
+/// An empty reflowed anchor keeps the complete block's physical advance even
+/// though its text line is short. Parallel pictures share a band, not a sum.
+/// Absolute/upward anchors and visible host text retain their separate paths.
+pub(crate) fn reflow_picture_host_advance(para: &Paragraph, dpi: f64) -> Option<f64> {
+    if !para.text.trim().is_empty() || para.line_segs.len() != 1 || para.controls.is_empty() {
+        return None;
+    }
+    let mut advance = 0.0f64;
+    for control in &para.controls {
+        let Control::Picture(picture) = control else {
+            return None;
+        };
+        let offset = signed_hwpunit(picture.common.vertical_offset);
+        if offset < 0 {
+            return None;
+        }
+        advance =
+            advance.max(hwpunit_to_px(offset, dpi) + topbottom_picture_band_height(picture, dpi)?);
+    }
+    Some(advance)
+}
+
 /// A saved empty anchor may remain on the preceding page while its indivisible
 /// picture band moves to the next one. That band opens at the new fragment
 /// origin: the old page's paragraph offset is consumed, but object margins and
 /// captions still belong to its physical reservation.
 pub(crate) fn deferred_picture_band_height(para: &Paragraph, dpi: f64) -> Option<f64> {
     use crate::model::paragraph::LineSeg;
-    use crate::model::shape::CaptionDirection;
     let [line] = para.line_segs.as_slice() else {
         return None;
     };
@@ -643,35 +700,7 @@ pub(crate) fn deferred_picture_band_height(para: &Paragraph, dpi: f64) -> Option
         let Control::Picture(picture) = control else {
             return None;
         };
-        let common = &picture.common;
-        if common.treat_as_char
-            || !common.flow_with_text
-            || common.text_wrap != TextWrap::TopAndBottom
-            || common.vert_rel_to != VertRelTo::Para
-            || common.vert_align != VertAlign::Top
-            || picture
-                .caption
-                .as_ref()
-                .is_some_and(|caption| caption.direction != CaptionDirection::Bottom)
-        {
-            return None;
-        }
-        let (_, height) = picture_flow_frame_size_hu(picture);
-        if height <= 0 {
-            return None;
-        }
-        let caption = picture.caption.as_ref().map_or(0.0, |caption| {
-            super::composer::caption_height_px(&picture.caption, dpi)
-                + hwpunit_to_px(caption.spacing as i32, dpi)
-        });
-        band = band.max(
-            hwpunit_to_px(height, dpi)
-                + hwpunit_to_px(
-                    i32::from(common.margin.top) + i32::from(common.margin.bottom),
-                    dpi,
-                )
-                + caption,
-        );
+        band = band.max(topbottom_picture_band_height(picture, dpi)?);
     }
     Some(band)
 }
@@ -818,6 +847,33 @@ pub(crate) fn reflow_block_table_host_occupied_height(
         }
     }
     has_table.then_some(line_height.max(table_height))
+}
+
+/// Literal whitespace after a paragraph-relative block object still owns a
+/// text line. Its saved line slot follows the object's outer box; a zero-text
+/// anchor owns only the object band. Inline, wrapping and multiple-object hosts
+/// require their own composed text/object ordering.
+pub(crate) fn block_table_trailing_whitespace_line_hu(
+    para: &Paragraph,
+    table: &Table,
+    control_index: usize,
+) -> Option<i32> {
+    if para.text.is_empty()
+        || !para.text.chars().all(char::is_whitespace)
+        || para.controls.len() != 1
+        || !table.common.flow_with_text
+        || !is_para_topbottom_float(&table.common)
+        || table.common.vert_align != VertAlign::Top
+        || signed_hwpunit(table.common.vertical_offset) != 0
+        || para.control_text_positions().get(control_index).copied()? >= para.text.chars().count()
+        || para.line_segs.len() != 1
+    {
+        return None;
+    }
+    let line = &para.line_segs[0];
+    (line.line_height > 0
+        && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .then(|| line.line_height.saturating_add(line.line_spacing.max(0)))
 }
 
 /// The renderer defers visible TopAndBottom host text unless the saved lines
@@ -5154,6 +5210,14 @@ pub(crate) fn stored_block_cell_flow(
                     };
                 }
                 cursor += advance;
+            }
+            for (ci, control) in para.controls.iter().enumerate() {
+                if let Control::Table(table) = control {
+                    if let Some(advance) = block_table_trailing_whitespace_line_hu(para, table, ci)
+                    {
+                        cursor += hwpunit_to_px(advance, dpi);
+                    }
+                }
             }
         } else {
             for (li, seg) in para.line_segs.iter().enumerate() {

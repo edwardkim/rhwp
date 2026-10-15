@@ -1,0 +1,17 @@
+{
+  "source": "land-independent-p1-trace.xml",
+  "font": "DotumChe Regular",
+  "fontProgramComparison": "land-dotumche-outline-comparison.json",
+  "independentPaint": "fill_text then stroke_text, same regular program",
+  "strokeToFontSizeRatio": 0.02,
+  "nativeCause": "CoreText text embolden and text stroke reproduce damaged Hangul components; same glyph outline path stroke does not",
+  "nativeCorrection": "searchable regular text fill once, same face/size/positions path stroke; actual Bold and missing outline keep previous paths",
+  "browserCorrection": "shared regular descriptor plus fillText/strokeText with original explicit positions",
+  "diagnostics": [
+    "dotum-bold.png",
+    "dotum-regular.png",
+    "dotum-stroke.png",
+    "dotum-path.png"
+  ],
+  "currentFullPrValidation": "pending"
+}

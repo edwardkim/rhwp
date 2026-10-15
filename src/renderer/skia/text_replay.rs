@@ -642,22 +642,56 @@ impl SkiaTextReplay<'_> {
                             }
                         }
                         if let Some(mut font) = font_for_text(cluster, font_size) {
-                            // 독립 Print의 regular 프로그램 합성 굵기는 같은 윤곽선의
-                            // fill+stroke(0.02em)다. 실제 bold face와 outline pass는 보존한다.
-                            let regular = (style.bold && stroke_width == 0.0)
-                                .then(|| unemboldened_typeface(self.font_mgr, &font.typeface()))
-                                .flatten();
-                            let synthetic_bold = regular.is_some();
-                            let bold_paint = regular.map(|typeface| {
-                                font.set_typeface(typeface);
-                                font.set_embolden(false);
-                                let mut paint = text_paint.clone();
-                                paint.set_style(paint::Style::StrokeAndFill);
-                                paint.set_stroke_width(font_size * 0.02);
-                                paint.set_stroke_miter(10.0);
-                                paint
-                            });
-                            let glyph_paint = bold_paint.as_ref().unwrap_or(&text_paint);
+                            if style.bold && stroke_width == 0.0 {
+                                if let Some(regular) = unemboldened_typeface(self.font_mgr, &font.typeface()) {
+                                    font.set_typeface(regular);
+                                    font.set_embolden(false);
+                                }
+                            }
+                            // 채움은 검색 가능한 텍스트로 한 번 남긴다. 합성 굵기의
+                            // 획은 같은 face의 glyph path로 그린다. CoreText의 text
+                            // stroke/embolden은 일부 한글 자소를 가늘게 지울 수 있다.
+                            let mut faux_paths = None;
+                            if stroke_width == 0.0 && *font.typeface().font_style().weight() < 600 {
+                                if let Some(width) = crate::renderer::faux_bold_stroke_width(
+                                    style,
+                                    f64::from(font_size),
+                                ) {
+                                    let was_emboldened = font.is_embolden();
+                                    font.set_embolden(false);
+                                    let glyphs = font.str_to_glyphs_vec(cluster);
+                                    let paths: Option<Vec<_>> =
+                                        glyphs.iter().map(|glyph| font.get_path(*glyph)).collect();
+                                    if let Some(paths) = paths {
+                                        let mut origins =
+                                            vec![skia_safe::Point::default(); glyphs.len()];
+                                        font.get_pos(&glyphs, &mut origins, None);
+                                        faux_paths = Some((width, paths, origins));
+                                    } else {
+                                        // 비트맵 전용 glyph의 기존 경로는 유지한다.
+                                        font.set_embolden(was_emboldened);
+                                    }
+                                }
+                            }
+                            let paint_cluster = |x: f32, y: f32| {
+                                if hft_outline.as_ref().is_some_and(|outline| {
+                                    outline.draw(canvas, cluster, &font, (x, y), &text_paint)
+                                }) {
+                                    return;
+                                }
+                                canvas.draw_str(cluster, (x, y), &font, &text_paint);
+                                if let Some((width, paths, origins)) = &faux_paths {
+                                    let mut stroke = text_paint.clone();
+                                    stroke.set_style(paint::Style::Stroke);
+                                    stroke.set_stroke_width(*width as f32);
+                                    for (path, origin) in paths.iter().zip(origins) {
+                                        canvas.draw_path(
+                                            &path.make_offset((x + origin.x, y + origin.y)),
+                                            &stroke,
+                                        );
+                                    }
+                                }
+                            };
                             let char_x = bbox.x as f32
                                 + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
                                 + dx;
@@ -748,16 +782,10 @@ impl SkiaTextReplay<'_> {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
                                 canvas.scale((scale, 1.0));
-                                if !hft_outline.as_ref().is_some_and(|outline| {
-                                    outline.draw(canvas, cluster, &font, (0.0, 0.0), glyph_paint)
-                                }) {
-                                    canvas.draw_str(cluster, (0.0, 0.0), &font, glyph_paint);
-                                }
+                                paint_cluster(0.0, 0.0);
                                 canvas.restore();
-                            } else if !hft_outline.as_ref().is_some_and(|outline| {
-                                outline.draw(canvas, cluster, &font, (char_x, char_y), glyph_paint)
-                            }) {
-                                canvas.draw_str(cluster, (char_x, char_y), &font, glyph_paint);
+                            } else {
+                                paint_cluster(char_x, char_y);
                             }
                         }
                     }

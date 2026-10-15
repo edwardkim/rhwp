@@ -11,6 +11,14 @@ export async function applySweepFontEnvironment(doc, environmentJson, preparePro
   }
   const plan = JSON.parse(doc.getDocumentFontSelectionPlan());
   if (plan.environmentId !== null) throw Error('새 문서에 예상하지 못한 글꼴 환경이 있습니다.');
+  // Native도 명시 대체 후보가 없으면 환경을 만들지 않는다. 문서 사전에만
+  // 남은 미사용 face를 환경 선택을 위해 모두 로드할 이유가 없다.
+  // 실제 paint의 글꼴 공급·로드 검증은 exporter가 요청된 run별로 계속 수행한다.
+  if (plan.requests.every(request => request.substitute.length === 0)) {
+    const environment = JSON.parse(doc.buildFontEnvironmentFromAvailablePrograms('[]'));
+    if (environment !== null) throw Error('대체 후보가 없는 문서에서 예상하지 못한 환경이 생성됐습니다.');
+    return {source: 'noDeclaredSubstitutions', environment: null, programs: [], loaded: []};
+  }
   const prepared = await preparePrograms(plan);
   const environment = JSON.parse(doc.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(prepared.programs)));
   if (environment !== null) doc.setFontEnvironment(JSON.stringify(environment));
@@ -59,7 +67,10 @@ export async function loadSweepFontPrograms(plan, fonts, host = globalThis) {
       const key = `${alias.toLowerCase()}|${record.weight}|${record.style}`;
       if (supplied.has(key)) continue;
       const font = new host.FontFace(alias, resource.bytes, {weight: String(record.weight), style: record.style});
-      await font.load();
+      try { await font.load(); }
+      catch (error) {
+        throw Error(`선택한 글꼴 프로그램 로드 실패: family=${alias}, source=${record.source || record.url}, faceIndex=${record.faceIndex}, sha256=${resource.sha256}: ${error}`);
+      }
       if (font.status !== 'loaded' || font.family !== alias) throw Error('글꼴 프로그램의 실제 준비 상태가 다릅니다.');
       host.document.fonts.add(font); supplied.add(key);
       loaded.push({family: alias, registeredFamily: font.family, sourceSha256: record.sourceSha256,

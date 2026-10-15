@@ -28,6 +28,19 @@ test('준비된 프로그램의 공통 환경을 첫 페이지 수 계산 전에
   assert.equal(doc.source, original, '선택 환경은 source font·본문을 편집하지 않는다');
 });
 
+test('명시 대체가 없으면 Native와 같은 null 환경이며 미사용 사전 face를 선택하지 않는다', async () => {
+  const doc = documentFixture();
+  doc.getDocumentFontSelectionPlan = () => JSON.stringify({environmentId: null,
+    requests: [{primary: ['Unused Legacy Face'], substitute: []}]});
+  const result = await applySweepFontEnvironment(doc, null, async () => {
+    throw Error('조판 선택에 쓰이지 않는 사전 face의 로드를 요구하면 안 된다');
+  });
+  assert.equal(result.source, 'noDeclaredSubstitutions');
+  assert.equal(result.environment, null);
+  assert.equal(doc.pageCount(), 3);
+  assert.deepEqual(result.loaded, []);
+});
+
 test('명시 환경은 자동 선택보다 우선한다', async () => {
   const doc = documentFixture();
   const declared = {id: 'explicit', substitutions: {'Missing Original': 'Requested Program'}};

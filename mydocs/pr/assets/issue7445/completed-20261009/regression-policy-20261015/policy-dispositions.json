@@ -1,0 +1,52 @@
+{
+  "head": "f15f52c7a204f5f8c98a94ba6e7a5ee94f403faf",
+  "scope": "현재 보정 원본과 실제 branch diff를 대조. 파일 내 다른 원본의 무변경 검사를 일괄 확장/변경하지 않는다.",
+  "completeAudit": false,
+  "records": {
+    "tests/cases/issue_7413_cell_padding_shrinks_only_when_wrapping_overflows.rs": {
+      "scope": "두 실물 원본 모두 현재 보정 대상",
+      "action": "절대 selector를 원문·셀 소유로 교체. table-text 1쪽 독립 cell bounds ±2 CSSpx만 유지/추가. 영월3쪽은 WASM98미만이므로 관계 검사",
+      "evidence": "README.md / evidence.json"
+    },
+    "tests/cases/issue_7084_supplemental_metrics.rs": {
+      "scope": "합성 공급자 계약",
+      "action": "같은 정규 프로그램으로 그리는 합성 굵기의 측정 descriptor와 style별 메트릭 소유를 검증. 실제 Bold descriptor 대조 포함",
+      "evidence": "bold-before.log / bold-after.log / bold-unit-before-after.json"
+    },
+    "tests/cases/issue_7080_area_dot_fullwidth.rs": {
+      "scope": "현재 변경은 자산관리60쪽의 원문 전진비율 대조군 추가",
+      "action": "원본 단위/글꼴 em 관계 유지. 기존80168의 x390/y500 검사까지 다른 원본으로 확장하지 않음",
+      "evidence": "git diff upstream/devel"
+    },
+    "tests/cases/issue_5714_completed_row_tail_band.rs": {
+      "scope": "현재 보정은 사업신청서 2쪽의 행 압축/소유",
+      "action": "현재 사업신청서의 기존 높이 핀은 이미 관계로 전환됨. Vietnam124쪽의 h55 조건은 별도 원본으로 현 검토 변경 대상 아님",
+      "evidence": "git diff upstream/devel"
+    },
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": {
+      "scope": "현재 diff는 합성 병합 반례에서 저장 line_seg 무효화 6줄",
+      "action": "정책연구 원본215쪽의 기존 절대 핀은 이번 추가/교정 핀이 아님. 이 파일 전체를 새 완료/98% 적격으로 분류하지 않음",
+      "evidence": "git diff upstream/devel (6 additions)"
+    },
+    "tests/issue_3931_declared_rowbreak.rs": {
+      "scope": "다른 브랜치 작업 문서의 검사 이관에 따른 함수 제거",
+      "action": "수치 후보39.3/392.3/422.5/24.51은 기존 다른 원본의 검사이며 이번 신규/교정 핀이 아님",
+      "evidence": "git diff upstream/devel"
+    },
+    "tests/issue_1116.rs": {
+      "scope": "현재 보정 sample16 판본별 전쪽 완료 검증 필요",
+      "action": "기존 page3 제목 관계 전환은 존재. 아직 남은 x600, y337.2/749.2 선택자는 해당 입력의 최신 전쪽 Native/WASM 확인 뒤 교정",
+      "status": "pending_current_visual_qualification"
+    },
+    "tests/cases/issue_7490_edited_paragraph_indent.rs": {
+      "scope": "현재 편집/새 문서/정상 대조군",
+      "action": "98.3..699.2 고정 본문 선택 범위는 원본 page_def/column 소유 경계로 교정할 후보. 원본·동일 편집 입력의 최신 시각 검증 선행",
+      "status": "pending_current_visual_qualification"
+    },
+    "tests/issue_630.rs": {
+      "scope": "현재 aift74 원본 경로 이관",
+      "action": "기존 x200 선택자는 해당 원본 전쪽 근거와 원문 소속을 확인 후 교정할 후보",
+      "status": "pending_current_visual_qualification"
+    }
+  }
+}

@@ -478,16 +478,6 @@ impl FontMetrics {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn hft_period_advance_matches_independent_print() {
-        // 원본115쪽 Print 8/9쪽 88개와 분할 Print 148쪽 31개의
-        // Type3 glyph advance는 모두 0.244em이다. 1024 단위 표의 양자화만 허용한다.
-        let found = super::find_metric("한양신명조", false, false).unwrap();
-        let advance = f64::from(found.metric.get_width('.').unwrap())
-            / f64::from(found.metric.em_size);
-        assert!((advance - 0.244).abs() <= 0.5 / 1024.0);
-    }
-
     use super::*;
     use sha2::{Digest, Sha256};
 

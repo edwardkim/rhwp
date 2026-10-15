@@ -111,7 +111,13 @@ fn prove(
             .doc_info
             .para_shapes
             .get(usize::from(paragraph.para_shape_id))?;
-        Some((shape.spacing_before / 2, shape.spacing_after / 2))
+        let physical = |raw| {
+            crate::renderer::style_resolver::paragraph_margin_hwpunit(raw, &document.doc_info)
+        };
+        Some((
+            physical(shape.spacing_before).round() as i32,
+            physical(shape.spacing_after).round() as i32,
+        ))
     };
     let lines: Vec<_> = cell
         .paragraphs
