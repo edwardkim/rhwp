@@ -15,9 +15,10 @@ test('Studio runtime은 W7 generated projection의 승인 분모를 전부 소�
   assert.equal(FONT_RULE_SUBSTITUTION_TABLES.length, 7);
   assert.equal(FONT_RULE_SUBSTITUTION_TABLES.flat().length, 265);
   assert.equal(FONT_RULE_GOVERNMENT_SUCCESSORS.length, 10);
-  assert.equal(FONT_RULE_WEBFONT_ENTRIES.length, 153);
+  // 공개 Noto Sans Symbols2의 Canvas2D/SFNT 공급을 각각 한 규칙 추가했다.
+  assert.equal(FONT_RULE_WEBFONT_ENTRIES.length, 154);
   assert.equal(generatedCanvas2dPaintRuleCount(), 281);
-  assert.equal(generatedCanvasKitRuleCount(), 158);
+  assert.equal(generatedCanvasKitRuleCount(), 159);
   assert.equal(
     FONT_RULE_SUBSTITUTION_TABLES.flat().every(entry => /^rule\./.test(entry[4])),
     true,

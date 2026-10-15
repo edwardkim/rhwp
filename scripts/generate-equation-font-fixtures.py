@@ -6,12 +6,30 @@ from fontTools import subset
 from fontTools.ttLib import TTFont
 
 ROOT = Path(__file__).resolve().parents[1]
+FAMILY = "RHWP Equation Contract"
+CJK = "평점입찰가격배한도최저해당추정의상0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz =+-×%()"
 CASES = [
-    ("NotoSansKR-ExtraLight.ttf", "RHWPEquationCJKLight.ttf", "Noto Sans KR",
+    ("NotoSansKR-Regular.ttf", "RHWPEquationCJKRegular.ttf", FAMILY, CJK),
+    ("NotoSansKR-ExtraLight.ttf", "RHWPEquationCJKLight.ttf", FAMILY,
      "평점입찰가격배한도최저해당추정의상0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz =+-×%()"),
-    ("NotoSansKR-Regular.ttf", "RHWPEquationLatinOnly.ttf", "Batang",
+    ("NotoSansKR-Regular.ttf", "RHWPEquationLatinOnly.ttf", FAMILY,
      "".join(chr(c) for c in range(32, 127))),
 ]
+
+
+def name_fixture(font, target, family):
+    """윤곽선 출처의 고지는 보존하고 수정본의 식별 이름만 고유하게 지정한다."""
+    suffix = Path(target).stem.removeprefix("RHWPEquation")
+    names = {
+        1: family, 16: family, 21: family,
+        3: f"RHWP Equation Contract {suffix};1.0",
+        4: f"{family} {suffix}",
+        6: f"RHWPEquationContract-{suffix}",
+        18: f"{family} {suffix}",
+    }
+    for record in font["name"].names:
+        if record.nameID in names:
+            record.string = names[record.nameID].encode(record.getEncoding())
 
 
 def main():
@@ -25,9 +43,7 @@ def main():
         selected = subset.Subsetter(options=options)
         selected.populate(text=characters)
         selected.subset(font)
-        for name in font["name"].names:
-            if name.nameID in (1, 16):
-                name.string = family.encode(name.getEncoding())
+        name_fixture(font, target, family)
         font.save(ROOT / "tests/fixtures/fonts" / target)
 
 

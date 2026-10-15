@@ -891,7 +891,9 @@ generated suite의 `does not exist` 오류는 준비 부족에 의한 검사 실
 일반 기여자는 메인터너 전용 HWP 변환 MCP를 사용할 수 없습니다. MCP 접근이나 호출을
 기여자의 검증 전제로 요구하지 않습니다. 기준 PDF가 필요한 렌더링 변경은 기여자가 직접
 원본 저장 버전에 맞는 검증 대상 한컴 오피스에서 원본 HWP/HWPX를 열어 **Print 인쇄 경로로 PDF를 출력**하고 PR 또는 관련 issue에
-원본과 함께 첨부해주세요. 파서 구조만을 검증하는 변경에 이 요구를 일괄 적용하지는 않습니다.
+원본과 함께 첨부해주세요. **50 MiB(52,428,800바이트) 이상 PDF는 로컬에만 보관하고 PR에 포함하지 않습니다.**
+대용량 PDF는 아래 fixture 정책의 출처·해시·전쪽 검증 기록으로 확인합니다. 파서 구조만을 검증하는 변경에
+PDF 요구를 일괄 적용하지는 않습니다.
 
 [기준 PDF 인쇄 계약](mydocs/manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따릅니다.
 PDF로 저장/내보내기 대신 파일 → 인쇄 → PDF 출력을 사용하고 원본 용지·100%·1-up·전체 문서를
@@ -899,7 +901,8 @@ PDF로 저장/내보내기 대신 파일 → 인쇄 → PDF 출력을 사용하�
 명시합니다. 직접 출력본은 실제 제품 버전으로 이름 붙입니다. 편집 동작도 같은 편집 저장본을
 Print 출력해 비교하며, 기준 PDF 부족을 Visual Sweep 비해당 사유로 쓰지 않습니다.
 
-- 여러 한컴 버전의 동작을 주장하거나 비교한다면 그 대상 버전별 PDF를 각각 첨부합니다.
+- 여러 한컴 버전의 동작을 주장하거나 비교한다면 그 대상 버전별 PDF를 각각 확보합니다.
+  50 MiB 미만 PDF는 첨부하고, 이상인 PDF는 아래 로컬 보관 규칙을 적용합니다.
   예를 들어 2020/2022/2024 비교에는 실제 각 제품에서 출력한 PDF가 필요합니다.
 - 파일명은 `원본stem-2020.pdf`, `원본stem-2022.pdf`, `원본stem-2024.pdf`처럼
   실제 출력 제품 버전으로 구분합니다. 메인터너 MCP의 2020/2024 engine bucket으로 바꾸지 않습니다.
@@ -1011,11 +1014,14 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
   PR 본문 Markdown 이미지로 표시합니다. output 전체·원시 raster·로그·JSON은 포함하지 않습니다.
 - **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명
   (예: `pdf/issue1835_tac_stale_height-2022.pdf`), PR 본문에 생성 환경(한컴 버전)을
-  명시해주세요. 한컴 정본 오라클은 버전·크기와 무관하게 `pdf/**`에 일반 Git blob으로만
-  커밋하며 `pdf-2020/`, `pdf-large/` 같은 최상위 분리 폴더와 Git LFS pointer를 사용하지 않습니다.
-  파일 하나는 50 MiB(52,428,800 bytes) 미만이어야 합니다. 상한을 넘으면 그대로 제출하지 말고
-  축소 fixture·페이지 발췌·외부 증적 방식을 이슈에서 먼저 합의해주세요. 재현 fixture는 가능하면
-  1~2페이지로 축소해 `samples/`에 포함합니다.
+  명시해주세요. 50 MiB 미만 한컴 정본 오라클은 `pdf/**`에 일반 Git blob으로 커밋하며
+  `pdf-2020/`, `pdf-large/` 같은 최상위 분리 폴더와 Git LFS pointer를 사용하지 않습니다.
+  **50 MiB(52,428,800바이트) 이상 PDF는 로컬에만 보관하고 commit·push·PR 첨부에서 제외합니다.**
+  저장소 밖의 안정적인 로컬 경로에 보관하고, 저장소 안에 둘 경우 `.git/info/exclude`에 정확한 경로를
+  등록하세요. 출처·바이트 수·SHA-256·전체 쪽수·Print/검증 명령과 전쪽 Native/fresh WASM TSV·대표 PNG를
+  PR에 기록합니다. 크기 제한을 피하려고 전쪽 PDF를 분할해 올리거나 커밋 예외 승인을 요청하지 않습니다.
+  실제 PDF 검증은 생략하지 않으며, [대용량 PDF 보존](mydocs/manual/pr_review/visual_fixture_evidence.md#원본-fixture와-기준-pdf-보존)을 따릅니다.
+  재현 fixture는 가능하면 1~2페이지로 축소해 `samples/`에 포함합니다.
 
   ```bash
   python3 scripts/check_pdf_repository_policy.py

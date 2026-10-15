@@ -26,6 +26,14 @@ pub(super) fn font_style_for_text(style: &crate::renderer::TextStyle) -> FontSty
     )
 }
 
+pub(super) fn match_supplied_family(
+    families: &TypefaceCatalog,
+    family: &str,
+    requested: FontStyle,
+) -> Option<Typeface> {
+    families.candidates(family, requested).into_iter().next()
+}
+
 const TEXT_FALLBACK_FAMILIES: &[&str] = &[
     "Noto Sans KR",
     "Noto Serif KR",
@@ -48,6 +56,33 @@ const TEXT_FALLBACK_FAMILIES: &[&str] = &[
 pub(super) struct TypefaceCandidate {
     pub(super) typeface: Typeface,
     pub(super) source: &'static str,
+}
+
+/// A supplied face has one Skia primary name, but its SFNT naming table may
+/// declare localized or typographic family names for that same program.
+/// Match family records only: a full face or PostScript name is not a family.
+pub(super) fn supplied_family_names(data: &[u8], face_index: u32, primary: &str) -> Vec<String> {
+    let mut families = vec![primary.to_string()];
+    // Read the same collection face that the bounded catalog constructed.
+    if let Ok(face) = ttf_parser::Face::parse(data, face_index) {
+        for name in face.names() {
+            if !matches!(
+                name.name_id,
+                ttf_parser::name_id::FAMILY
+                    | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
+                    | ttf_parser::name_id::WWS_FAMILY
+            ) {
+                continue;
+            }
+            if let Some(family) = name.to_string() {
+                let family = family.trim();
+                if !family.is_empty() && !families.iter().any(|name| name == family) {
+                    families.push(family.to_string());
+                }
+            }
+        }
+    }
+    families
 }
 
 pub(super) fn text_family_candidates(requested: &str) -> Vec<String> {

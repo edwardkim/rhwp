@@ -25,10 +25,10 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVAS2D_WEBFONT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "6148c568b05fea9ec317759bfc7a19762f93eded557c5b5af01efbb7057ed266",
+  "inputSha256": "362249f4e2a0020b5f190bb89b4a396432f5423a9ff18f5d53dc3abf2ac1b521",
   "projectionId": "canvas2d-webfont",
-  "projectionSha256": "b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245",
-  "ruleCount": 153
+  "projectionSha256": "74158e11fbaeabda7894841a43751aa2724842bd140e2ed48cdc7dd4ce362435",
+  "ruleCount": 154
 });
 
 export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
@@ -3377,12 +3377,12 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     }
   },
   {
-    "ruleId": "rule.studio-supply.0aab2d58429b52047acb.canvas2d",
+    "ruleId": "rule.issue-4969.oldhangul-license-webfont",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "Source Han Serif K Old Hangul",
-    "targetFaceOrPolicy": "'fonts/SourceHanSerifK-OldHangul-subset.woff2'",
+    "sourceFace": "RHWP Old Hangul",
+    "targetFaceOrPolicy": "'fonts/RHWPOldHangul-Regular.woff2'",
     "conditions": {
       "profile": "canvas2d-css-unknown"
     },
@@ -3391,11 +3391,33 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     "metricEntryIds": [],
     "supply": {
       "external": false,
-      "fontFamily": "Source Han Serif K Old Hangul",
+      "fontFamily": "RHWP Old Hangul",
       "format": "woff2",
       "kind": "canvas2d-webfont",
-      "sourceUrl": "fonts/SourceHanSerifK-OldHangul-subset.woff2",
+      "sourceUrl": "fonts/RHWPOldHangul-Regular.woff2",
       "unicodeRange": "U+1100-11FF, U+A960-A97F, U+D7B0-D7FF"
+    }
+  },
+  {
+    "ruleId": "rule.issue-5884.noto-symbols2.webfont",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "Noto Sans Symbols2",
+    "targetFaceOrPolicy": "'fonts/NotoSansSymbols2-Regular.ttf'",
+    "conditions": {
+      "profile": "canvas2d-css-unknown"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": false,
+      "fontFamily": "Noto Sans Symbols2",
+      "format": "truetype",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "fonts/NotoSansSymbols2-Regular.ttf",
+      "unicodeRange": null
     }
   }
 ]);
