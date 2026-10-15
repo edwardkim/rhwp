@@ -182,6 +182,7 @@ pub(in crate::renderer::typeset) fn place(
         body_bottom_vpos,
         available,
         forced_page_break_line,
+        stored_vpos_rewind_overflow_break,
         dpi,
     ) {
         return;
