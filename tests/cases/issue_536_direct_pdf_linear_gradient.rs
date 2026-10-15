@@ -200,9 +200,14 @@ fn direct_pdf_keeps_non_linear_and_pattern_fills_closed() {
 #[test]
 fn native_linear_axis_preserves_direction_and_non_square_isolines() {
     let renderer = SkiaLayerRenderer::new();
+    // The 0/50/100% Hancom Print controls recorded in PR #7661 establish
+    // that the first color is at the source center. An endpoint center
+    // therefore isolates axis direction from the default two-sided ramp.
+    let mut upward = gradient(0);
+    upward.center_y = 100;
     let vertical = renderer
         .render_pixels_with_options(
-            &tree("rectangle", gradient(0), bounds()),
+            &tree("rectangle", upward, bounds()),
             RasterRenderOptions::default(),
         )
         .unwrap();
@@ -216,18 +221,48 @@ fn native_linear_axis_preserves_direction_and_non_square_isolines() {
     assert!(channel(&vertical, 48, 12, 2) > channel(&vertical, 48, 28, 2));
     assert!(channel(&vertical, 48, 12, 0) < channel(&vertical, 48, 28, 0));
 
+    let mut upward_right = gradient(45);
+    upward_right.center_x = 0;
+    upward_right.center_y = 100;
     let diagonal = renderer
         .render_pixels_with_options(
-            &tree("rectangle", gradient(45), bounds()),
+            &tree("rectangle", upward_right, bounds()),
             RasterRenderOptions::default(),
         )
         .unwrap();
     // At 45 degrees the gradient varies with x-y, independently of the box's
     // aspect ratio. Moving (+8,+8) remains on the same color isoline.
+    // Use a one-sided ramp: a centered ramp would also give equal colors
+    // to these reflected points even if the axis were scaled by box size.
     for component in [0, 2] {
         assert!(
             channel(&diagonal, 44, 16, component).abs_diff(channel(&diagonal, 52, 24, component))
                 <= 2
         );
+    }
+}
+
+#[test]
+fn native_centered_linear_gradient_preserves_two_sided_color_ramps() {
+    let pixels = SkiaLayerRenderer::new()
+        .render_pixels_with_options(
+            &tree("rectangle", gradient(0), bounds()),
+            RasterRenderOptions::default(),
+        )
+        .unwrap();
+    let pixel = |y: usize| {
+        let offset = y * pixels.stride + 4 * 48;
+        &pixels.bytes[offset..offset + 4]
+    };
+    // The default 50% center is red, with blue toward both endpoints.
+    // Pixel centers 12.5 and 27.5 are equally far from center y=20.
+    let (above, below, center) = (pixel(12), pixel(27), pixel(19));
+    for channel in 0..4 {
+        assert!(above[channel].abs_diff(below[channel]) <= 2);
+    }
+    for side in [above, below] {
+        assert!(side[2] > side[0], "blue must dominate on both sides");
+        assert!(center[0].saturating_sub(side[0]) > 100);
+        assert!(side[2].saturating_sub(center[2]) > 100);
     }
 }
