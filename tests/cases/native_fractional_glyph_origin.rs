@@ -1,6 +1,6 @@
 #![cfg(feature = "native-skia")]
 
-//! 조판과 무관한 raster 원점 계약: 같은 글리프의 입력 이동량이 잉크에도 보존돼야 한다.
+//! 생성 번호의 소수 원점과 일반 본문의 기존 raster 격자를 함께 보호한다.
 
 use rhwp::paint::{LayerNode, PageLayerTree, PaintOp};
 use rhwp::renderer::layer_renderer::RasterRenderOptions;
@@ -9,13 +9,14 @@ use rhwp::renderer::render_tree::{BoundingBox, TextRunNode};
 use rhwp::renderer::skia::SkiaLayerRenderer;
 use rhwp::renderer::TextStyle;
 
-fn glyph_at(renderer: &SkiaLayerRenderer, y: f64) -> RasterPixels {
+fn glyph_at(renderer: &SkiaLayerRenderer, y: f64, fixed_glyph_advances: bool) -> RasterPixels {
     let run = TextRunNode {
         text: "H".into(),
         style: TextStyle {
             font_family: "Noto Sans KR".into(),
             font_size: 32.0,
             color: 0,
+            fixed_glyph_advances,
             ..Default::default()
         },
         char_shape_id: None,
@@ -66,12 +67,12 @@ fn ink_center(image: &RasterPixels) -> (f64, f64) {
 }
 
 #[test]
-fn positioned_glyph_preserves_quarter_pixel_baseline_translation() {
+fn fixed_advance_glyph_preserves_quarter_pixel_baseline_translation() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let renderer = SkiaLayerRenderer::new().with_font_paths(&[root.join("ttfs/opensource")]);
-    let original = ink_center(&glyph_at(&renderer, 4.1));
-    let quarter = ink_center(&glyph_at(&renderer, 4.35));
-    let whole = ink_center(&glyph_at(&renderer, 5.1));
+    let original = ink_center(&glyph_at(&renderer, 4.1, true));
+    let quarter = ink_center(&glyph_at(&renderer, 4.35, true));
+    let whole = ink_center(&glyph_at(&renderer, 5.1, true));
     // 입력은 정확히1/4px 이동이다. alpha 양자화만 허용하며, 같은 정수 기준선으로
     // 반올림돼 이동이0이 되는 기존 raster 동작을 검출한다.
     let quarter_shift = quarter.1 - original.1;
@@ -79,6 +80,20 @@ fn positioned_glyph_preserves_quarter_pixel_baseline_translation() {
         (quarter_shift - 0.25).abs() <= 0.08,
         "소수 기준선 이동이 잉크에 보존돼야 한다: {quarter_shift}"
     );
+    assert!((whole.1 - original.1 - 1.0).abs() <= 0.02);
+    assert!((quarter.0 - original.0).abs() <= 0.05);
+}
+
+#[test]
+fn ordinary_ttf_keeps_existing_raster_baseline_grid() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let renderer = SkiaLayerRenderer::new().with_font_paths(&[root.join("ttfs/opensource")]);
+    let original = ink_center(&glyph_at(&renderer, 4.1, false));
+    let quarter = ink_center(&glyph_at(&renderer, 4.35, false));
+    let whole = ink_center(&glyph_at(&renderer, 5.1, false));
+    // 일반 TTF는 기존 화면 격자를 쓴다. 생성 번호의 별도 계약을 모든 본문에
+    // 확장해 정상 쪽의 잉크 위치까지 바꾸는 회귀를 검출한다.
+    assert!((quarter.1 - original.1).abs() <= 0.02);
     assert!((whole.1 - original.1 - 1.0).abs() <= 0.02);
     assert!((quarter.0 - original.0).abs() <= 0.05);
 }

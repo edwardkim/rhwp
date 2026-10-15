@@ -58,3 +58,16 @@ PrintMethod0 PDF를 만들었다. 입력·PDF SHA, 실제 engine/version/job과 
 
 현재는 원인 추적과 정상 raster 복구 단계이며, PR 준비 완료나 최종 승인으로 보고하지 않는다.
 사용자가 수정한 `rhwp-studio/public/rhwp.js`는 그대로 보존한다.
+
+
+## 과도한 raster 정책 복구 검증
+
+- Native 일반/폴백 font의 baseline-snap과 Canvas painter/provider 네 파일을
+  `4e2c554b3` 정책으로 복구했다. 생성 번호의 `fixed_glyph_advances` 계약은 유지한다.
+- 정식 `native_fractional_glyph_origin` 통합 검사2개 모두 PASS, exit0이다.
+  실제 Cargo Native 빌드136초·검사0.84초이며 일반 TTF의 기존 격자 대조군도 보호한다.
+  앞의 standalone TTF FAIL은 같은 Noto 입력 이동에 대한 수정 전 검출 증거다.
+- Studio 전체1,875개 중1,873 PASS·2 skipped, TypeScript noEmit exit0이다.
+  `raster-normal-control-{after,studio-test,studio-tsc}.log`에 보존한다.
+- 이 변경은 최종 시각 무회귀 완료가 아니다. restored producer의 전체 TSV와 남은104쪽
+  원인 보정·판독을 마치기 전에는 이전484c 결과를 새 source의 승인 증거로 사용하지 않는다.

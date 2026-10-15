@@ -2132,7 +2132,7 @@ impl Renderer for WebCanvasRenderer {
         let has_ratio = (ratio - 1.0).abs() > 0.01;
         let font = font_setup.descriptor();
         let old_hangul_font = font_setup.old_hangul_descriptor();
-        font_setup.apply_to(&self.ctx);
+        self.ctx.set_font(font);
 
         // 클러스터 분할
         let clusters = split_into_clusters(text);
