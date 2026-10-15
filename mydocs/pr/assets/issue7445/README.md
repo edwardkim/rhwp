@@ -725,3 +725,13 @@ Native는 immutable base 실행 파일로 같은 원문에서 산출했던 전22
 - pic-table PDF SHA-256: `0e55f13ff078d5238e022a450c94d04728ca8f49f500fb5f10b08b988e455e85`.
 
 [pic 두 원문 재판정 댓글](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-6065865468)과 앞선 PDF 설명 정정을 API로 확인했습니다.
+
+
+## 2026-10-15: 사용자 지정 실물 회귀6건과 자산 이관
+
+- SQL sample10 HWP5/HWPX 검사3건은 [#7774 자산과 원문](../issue7774/sql-sample10-regressions-20261015/README.md)에 보존했다.
+- 끝 탭·charX·hit-test 검사3건은 [#7922 자산과 원문](../issue7922/trailing-tab-regressions-20261015/README.md)에 보존했다.
+- 입력3개·독립 PDF4개와 제거 전 검사3파일 원문을 이슈 assets로 이동·보존했다. 이전 경로·SHA·복원 조건은 각 README에 있다. 활성 render baseline8행도 원문 보존 후 분리했다.
+- parser·serializer·외부 이미지와 범위 밖 정상 대조는 새 보존 경로에서 같은 바이트를 검사한다. raw IR 글자모양 관측은 유지한다.
+- 이관은 최신 사용자 지정에 따른 현재 검증 범위 분리다. 새 base90% 미달·문서 피델리티 개선 완료·이슈 종료로 보고하지 않는다. 과거 #6800의95.92922%와 현재98% px 검증 대상 여부를 구별한다.
+- 최초 전체 실행은10,354PASS/8FAIL/45SKIP이다. 실패 중6건 이관, 폰트 식별·원장 계약2건은 수정했다. 사용자 지정에 따라 수정 이슈 개별 통과 결과를 초기 전체 실행에 합산해 전체 회귀 통과로 처리하며, 실제 실행 범위와 결과는 제출 기록에서 구분한다.

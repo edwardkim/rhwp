@@ -15,8 +15,10 @@ export function parseSvgImageHeader(bytes: Uint8Array): EncodedImageHeader | nul
   if (source.charCodeAt(0) === 0xfeff) {
     source = source.slice(1);
   }
-  source = source.replace(/<!--[\s\S]*?-->/g, '');
-  if (source.includes('<!--') || /<\?(?!xml\s)/i.test(source)) return null;
+  const scanSource = svgCommentScanSource(source);
+  if (scanSource === null) return null;
+  source = scanSource;
+  if (/<\?(?!xml\s)/i.test(source)) return null;
   let elements = 0;
   let depth = 0;
   for (const tag of source.matchAll(/<\s*(\/?)\s*[A-Za-z_][^>]*>/g)) {
@@ -44,14 +46,6 @@ export function parseSvgImageHeader(bytes: Uint8Array): EncodedImageHeader | nul
   let cursor = 0;
   while (true) {
     cursor = skipXmlWhitespace(source, cursor);
-    if (source.startsWith('<!--', cursor)) {
-      const end = source.indexOf('-->', cursor + 4);
-      if (end < 0) {
-        return null;
-      }
-      cursor = end + 3;
-      continue;
-    }
     if (source.startsWith('<?', cursor)) {
       const end = source.indexOf('?>', cursor + 2);
       if (end < 0) {
@@ -138,6 +132,59 @@ export function parseSvgImageHeader(bytes: Uint8Array): EncodedImageHeader | nul
   return dimensions === null
     ? null
     : { format: 'svg', width: dimensions[0], height: dimensions[1] };
+}
+
+/** Build admission-only text; the decoder still receives the original bytes.
+ * XML 1.0 §2.5: comments are outside other markup and cannot contain `--`.
+ * Keep a separator for every comment so scanning never joins adjacent tokens.
+ * The caller bounds UTF-8 input to 4 MiB; each markup span is visited once.
+ */
+function svgCommentScanSource(source: string): string | null {
+  const parts: string[] = [];
+  let cursor = 0;
+  let copyFrom = 0;
+  let styleDepth = 0;
+  while (cursor < source.length) {
+    const start = source.indexOf('<', cursor);
+    if (start < 0) break;
+    if (source.startsWith('<!--', start)) {
+      // CSS consumes XML text content with comments omitted. Replacing such a
+      // comment with whitespace would change the tokens checked below, so this
+      // bounded static-image surface rejects comments within style elements.
+      if (styleDepth !== 0) return null;
+      // The first double hyphen must be the terminator. This rejects nested
+      // comments, internal double hyphens and the invalid `--->` ending.
+      const end = source.indexOf('--', start + 4);
+      if (end < 0 || !source.startsWith('-->', end)
+        || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/.test(source.slice(start + 4, end))) {
+        return null;
+      }
+      parts.push(source.slice(copyFrom, start), ' ');
+      cursor = end + 3;
+      copyFrom = cursor;
+    } else if (source.startsWith('<![CDATA[', start)) {
+      // Comment-like text in CDATA or processing instructions is not markup.
+      const end = source.indexOf(']]>', start + 9);
+      if (end < 0) return null;
+      cursor = end + 3;
+    } else if (source.startsWith('<?', start)) {
+      const end = source.indexOf('?>', start + 2);
+      if (end < 0) return null;
+      cursor = end + 2;
+    } else {
+      const end = findXmlStartTagEnd(source, start);
+      if (end < 0 || source.slice(start, end).includes('<!--')) return null;
+      const tag = source.slice(start, end + 1);
+      const style = /^<\s*(\/?)\s*(?:[A-Za-z_][\w.-]*:)?style(?=\s|\/?>)/i.exec(tag);
+      if (style?.[1] === '/') styleDepth -= 1;
+      else if (style && !/\/\s*>$/.test(tag)) styleDepth += 1;
+      if (styleDepth < 0) return null;
+      cursor = end + 1;
+    }
+  }
+  if (parts.length === 0) return source;
+  parts.push(source.slice(copyFrom));
+  return parts.join('');
 }
 
 function skipXmlWhitespace(source: string, offset: number): number {

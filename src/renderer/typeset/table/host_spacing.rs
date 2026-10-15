@@ -220,7 +220,12 @@ pub(super) fn resolve(
         .unwrap_or(false);
     let suppress_empty_anchor_spacing = is_topbottom_empty_anchor && !next_is_empty_table_anchor;
 
-    let host_line_spacing = if suppress_empty_anchor_spacing || absolute_table_with_post_text {
+    let reflow_host_tail = crate::renderer::reflow_float_host_line::trailing_advance(
+        para, table, composed, styles, dpi,
+    );
+    let host_line_spacing = if let Some(advance) = reflow_host_tail {
+        advance
+    } else if suppress_empty_anchor_spacing || absolute_table_with_post_text {
         0.0
     } else if !is_tac && !is_single_cell_placeholder {
         para.line_segs

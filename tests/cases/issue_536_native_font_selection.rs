@@ -1,9 +1,13 @@
-//! Portable Native Skia instance selection; actual Typeface construction is tested
-//! separately by the native renderer. Browser authority must not widen with it.
+//! Portable Native Skia and bounded horizontal browser instance selection.
+//! P46's Text IR v2 export and CanvasKit glyph-run consumer both support synthetic
+//! bold/italic for horizontal LTR, level-zero instances without variations.
+//! Typeface construction and actual effect replay are tested by their consumers;
+//! this contract keeps exact font-resource proof and unsupported subset rejection.
 
 use rhwp::paint::{
-    lower_font_native_glyph_sidecars, EmbeddedFontFace, LayerGlyphRunPaint, LayerNode,
-    LayerNodeKind, PageLayerTree, PaintOp, TextVariantKind, VariationAxisValue,
+    lower_font_native_glyph_sidecars, EmbeddedFontFace, GlyphRunOrientation, LayerGlyphRunPaint,
+    LayerNode, LayerNodeKind, PageLayerTree, PaintOp, TextDirection, TextVariantKind,
+    VariationAxisValue, WritingMode,
 };
 use rhwp::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, TextVariantSelectionReport,
@@ -93,44 +97,130 @@ fn selection(tree: &PageLayerTree, backend: VariantSelectionBackend) -> TextVari
     .expect("one source-bound variant group")
 }
 
-#[test]
-fn native_collection_contract_keeps_the_exact_face_and_rejects_invalid_indexes() {
-    let mut tree = tree(COLLECTION, 1, "\u{e104}");
-    let report = selection(&tree, VariantSelectionBackend::NativeSkia);
+fn assert_glyph_selected(tree: &PageLayerTree, backend: VariantSelectionBackend) {
+    let report = selection(tree, backend);
     assert_eq!(
         report.selected_variant_kind,
-        Some(TextVariantKind::GlyphRun)
+        Some(TextVariantKind::GlyphRun),
+        "{report:?}"
     );
-    assert!(!report.fallback_required);
-    tree.resources.font_resources_mut().faces[0].face_index = 999;
-    let report = selection(&tree, VariantSelectionBackend::NativeSkia);
-    assert!(report.fallback_required);
-    assert!(report.rejected_variants[0]
-        .reasons
-        .contains(&VariantRejectReason::FaceIndexUnsupported));
+    assert!(!report.fallback_required, "{report:?}");
+    assert!(report.rejected_variants.is_empty(), "{report:?}");
+}
+
+fn assert_glyph_rejected(
+    tree: &PageLayerTree,
+    backend: VariantSelectionBackend,
+    reason: VariantRejectReason,
+) {
+    let report = selection(tree, backend);
+    assert!(report.fallback_required, "{report:?}");
+    assert_eq!(
+        report.selected_variant_kind,
+        Some(TextVariantKind::TextRun),
+        "{report:?}"
+    );
+    assert_eq!(report.rejected_variants.len(), 1, "{report:?}");
+    assert_eq!(
+        report.rejected_variants[0].variant_kind,
+        TextVariantKind::GlyphRun,
+        "{report:?}"
+    );
+    assert!(
+        report.rejected_variants[0].reasons.contains(&reason),
+        "{report:?}"
+    );
 }
 
 #[test]
-fn native_synthetic_instances_do_not_grant_browser_authority_or_bypass_digest_proof() {
+fn native_and_browser_collection_contract_keeps_exact_faces_and_rejects_invalid_indexes() {
     let mut tree = tree(COLLECTION, 1, "\u{e104}");
-    glyph(&mut tree).shape_key.font_instance.synthetic_bold = true;
-    glyph(&mut tree).shape_key.font_instance.synthetic_italic = true;
-    assert!(!selection(&tree, VariantSelectionBackend::NativeSkia).fallback_required);
-    let browser = selection(&tree, VariantSelectionBackend::CanvasKitBrowser);
-    assert!(browser.fallback_required);
-    assert!(browser.rejected_variants[0]
-        .reasons
-        .contains(&VariantRejectReason::SyntheticStyleAuthorityPending));
-    tree.resources.font_resources_mut().blobs[0]
-        .digest
-        .as_mut()
-        .unwrap()
-        .value = "not-the-embedded-font".into();
-    let report = selection(&tree, VariantSelectionBackend::NativeSkia);
-    assert!(report.fallback_required);
-    assert!(report.rejected_variants[0]
-        .reasons
-        .contains(&VariantRejectReason::FontBlobDigestMismatch));
+    for backend in [
+        VariantSelectionBackend::NativeSkia,
+        VariantSelectionBackend::CanvasKitBrowser,
+    ] {
+        assert_glyph_selected(&tree, backend);
+    }
+    tree.resources.font_resources_mut().faces[0].face_index = 999;
+    for backend in [
+        VariantSelectionBackend::NativeSkia,
+        VariantSelectionBackend::CanvasKitBrowser,
+    ] {
+        assert_glyph_rejected(&tree, backend, VariantRejectReason::FaceIndexUnsupported);
+    }
+}
+
+#[test]
+fn native_and_browser_support_horizontal_synthetic_instances_with_digest_proof() {
+    for (bold, italic) in [(true, false), (false, true), (true, true)] {
+        let mut tree = tree(COLLECTION, 1, "\u{e104}");
+        glyph(&mut tree).shape_key.font_instance.synthetic_bold = bold;
+        glyph(&mut tree).shape_key.font_instance.synthetic_italic = italic;
+        // P46: text_v2::glyph_run_is_strict permits this subset, and
+        // canvaskit/glyph-run-fonts.ts applies setEmbolden/setSkewX after proof.
+        for backend in [
+            VariantSelectionBackend::NativeSkia,
+            VariantSelectionBackend::CanvasKitBrowser,
+        ] {
+            assert_glyph_selected(&tree, backend);
+        }
+        tree.resources.font_resources_mut().blobs[0]
+            .digest
+            .as_mut()
+            .unwrap()
+            .value = "not-the-embedded-font".into();
+        for backend in [
+            VariantSelectionBackend::NativeSkia,
+            VariantSelectionBackend::CanvasKitBrowser,
+        ] {
+            assert_glyph_rejected(&tree, backend, VariantRejectReason::FontBlobDigestMismatch);
+        }
+    }
+}
+
+#[test]
+fn synthetic_instances_do_not_grant_bidi_or_generic_vertical_authority() {
+    let mut baseline = tree(COLLECTION, 1, "\u{e104}");
+    glyph(&mut baseline).shape_key.font_instance.synthetic_bold = true;
+    glyph(&mut baseline)
+        .shape_key
+        .font_instance
+        .synthetic_italic = true;
+    type Mutation = fn(&mut LayerGlyphRunPaint);
+    let cases: [(Mutation, VariantRejectReason); 4] = [
+        (
+            |run| {
+                run.direction = TextDirection::Rtl;
+                run.shape_key.direction = TextDirection::Rtl;
+            },
+            VariantRejectReason::BidiDirectionAuthorityPending,
+        ),
+        (
+            |run| run.bidi_level = Some(1),
+            VariantRejectReason::BidiLevelAuthorityPending,
+        ),
+        (
+            |run| {
+                run.writing_mode = WritingMode::VerticalRl;
+                run.shape_key.writing_mode = WritingMode::VerticalRl;
+            },
+            VariantRejectReason::WritingModeAuthorityPending,
+        ),
+        (
+            |run| run.orientation = GlyphRunOrientation::VerticalUpright,
+            VariantRejectReason::VerticalGlyphOrientationAuthorityPending,
+        ),
+    ];
+    for (mutate, reason) in cases {
+        let mut invalid = baseline.clone();
+        mutate(glyph(&mut invalid));
+        for backend in [
+            VariantSelectionBackend::NativeSkia,
+            VariantSelectionBackend::CanvasKitBrowser,
+        ] {
+            assert_glyph_rejected(&invalid, backend, reason);
+        }
+    }
 }
 
 #[test]
@@ -140,8 +230,12 @@ fn native_variation_contract_checks_exact_axes_ranges_duplicates_and_budget() {
         tag: "wght".into(),
         value: 900.0,
     }];
-    assert!(!selection(&tree, VariantSelectionBackend::NativeSkia).fallback_required);
-    assert!(selection(&tree, VariantSelectionBackend::CanvasKitBrowser).fallback_required);
+    assert_glyph_selected(&tree, VariantSelectionBackend::NativeSkia);
+    assert_glyph_rejected(
+        &tree,
+        VariantSelectionBackend::CanvasKitBrowser,
+        VariantRejectReason::VariationUnsupported,
+    );
     for axes in [
         vec![VariationAxisValue {
             tag: "nope".into(),
