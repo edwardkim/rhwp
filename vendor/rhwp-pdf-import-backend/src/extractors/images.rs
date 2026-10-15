@@ -10,6 +10,7 @@ use crate::error::{Error, Result};
 use crate::extractors::ccitt_bilevel;
 use crate::geometry::Rect;
 use crate::object::ObjectRef;
+use std::borrow::Cow;
 use std::cmp::min;
 use std::path::Path;
 
@@ -421,13 +422,34 @@ impl PdfImage {
         // near-raw. This is purely a container-size choice - the decoded pixels
         // are byte-identical either way (PNG is lossless) - so it trades a little
         // encode CPU for large size reductions (measured ~40x on flat scans).
-        let encoder =
-            PngEncoder::new_with_quality(buffer, CompressionType::Default, FilterType::Adaptive);
+        let mut write_pixels = |pixels: &[u8], color: image::ExtendedColorType| -> Result<()> {
+            if let Some(budget) = budget {
+                return super::png_limited::encode(
+                    buffer,
+                    pixels,
+                    self.width,
+                    self.height,
+                    color.channel_count() as usize,
+                    budget,
+                );
+            }
+            PngEncoder::new_with_quality(
+                &mut *buffer,
+                CompressionType::Default,
+                FilterType::Adaptive,
+            )
+            .write_image(pixels, self.width, self.height, color)
+            .map_err(|e| Error::Encode(format!("Failed to encode PNG: {}", e)))
+        };
 
         match &self.data {
             ImageData::Raw { pixels, format } => {
-                let expected_gray = (self.width * self.height) as usize;
-                let expected_rgb = expected_gray * 3;
+                let expected_gray = (self.width as usize)
+                    .checked_mul(self.height as usize)
+                    .ok_or_else(|| Error::Image("image geometry overflow".into()))?;
+                let expected_rgb = expected_gray
+                    .checked_mul(3)
+                    .ok_or_else(|| Error::Image("image RGB size overflow".into()))?;
                 let ccitt_budget = budget.filter(|_| {
                     self.bits_per_component == 1
                         && self.color_space == ColorSpace::DeviceGray
@@ -442,23 +464,28 @@ impl PdfImage {
                     // image 0.25 changed `write_image` to take
                     // `ExtendedColorType` — `ColorType::*` now converts
                     // through `Into`. API-only change, same semantics.
-                    encoder
-                        .write_image(pixels, self.width, self.height, image::ColorType::L8.into())
-                        .map_err(|e| Error::Encode(format!("Failed to encode PNG: {}", e)))?;
+                    write_pixels(pixels, image::ColorType::L8.into())?;
                 } else if ccitt_budget.is_none()
                     && *format == PixelFormat::RGB
                     && pixels.len() == expected_rgb
                 {
-                    encoder
-                        .write_image(pixels, self.width, self.height, image::ColorType::Rgb8.into())
-                        .map_err(|e| Error::Encode(format!("Failed to encode PNG: {}", e)))?;
+                    write_pixels(pixels, image::ColorType::Rgb8.into())?;
                 } else {
                     let dynamic_image = if let Some(budget) = ccitt_budget {
                         self.decode_ccitt_with_budget(budget)?
+                    } else if let Some(budget) = budget {
+                        if self.bits_per_component != 8 {
+                            return Err(Error::Unsupported(
+                                "limited import packed colour samples".into(),
+                            ));
+                        }
+                        image::DynamicImage::ImageRgb8(
+                            self.raw_rgb_with_budget(pixels, *format, budget)?,
+                        )
                     } else {
                         self.to_dynamic_image()?
                     };
-                    let rgb = dynamic_image.to_rgb8();
+                    let rgb = Self::into_rgb_with_budget(dynamic_image, budget)?;
                     // `ImageBuffer::from_raw` accepts a buffer at least as long
                     // as the image needs, so a mis-declared depth can leave the
                     // RGB buffer larger than width×height×3. Reject that here
@@ -474,14 +501,7 @@ impl PdfImage {
                             expected_rgb
                         )));
                     }
-                    encoder
-                        .write_image(
-                            rgb.as_raw(),
-                            self.width,
-                            self.height,
-                            image::ColorType::Rgb8.into(),
-                        )
-                        .map_err(|e| Error::Encode(format!("Failed to encode PNG: {}", e)))?;
+                    write_pixels(rgb.as_raw(), image::ColorType::Rgb8.into())?;
                 }
             },
             ImageData::Jpeg(_) => {
@@ -490,19 +510,70 @@ impl PdfImage {
                 } else {
                     self.to_dynamic_image()?
                 };
-                let rgb = dynamic_image.to_rgb8();
-                encoder
-                    .write_image(
-                        rgb.as_raw(),
-                        self.width,
-                        self.height,
-                        image::ColorType::Rgb8.into(),
-                    )
-                    .map_err(|e| Error::Encode(format!("Failed to encode PNG: {}", e)))?;
+                let rgb = Self::into_rgb_with_budget(dynamic_image, budget)?;
+                write_pixels(rgb.as_raw(), image::ColorType::Rgb8.into())?;
             },
         }
 
         Ok(())
+    }
+
+    fn raw_rgb_with_budget(
+        &self,
+        pixels: &[u8],
+        format: PixelFormat,
+        budget: &crate::import_limits::ImportBudget,
+    ) -> Result<image::RgbImage> {
+        let count = (self.width as usize)
+            .checked_mul(self.height as usize)
+            .ok_or_else(|| budget.reject("image RGB size overflow"))?;
+        if count.checked_mul(format.bytes_per_pixel()) != Some(pixels.len()) {
+            return Err(Error::Image("invalid raw colour image length".into()));
+        }
+        let size = count
+            .checked_mul(3)
+            .ok_or_else(|| budget.reject("image RGB size overflow"))?;
+        let mut rgb = sample_buffer(size, Some(budget))?;
+        match format {
+            PixelFormat::RGB => rgb.extend_from_slice(pixels),
+            PixelFormat::Grayscale => {
+                for &gray in pixels {
+                    rgb.extend_from_slice(&[gray; 3]);
+                }
+            },
+            PixelFormat::CMYK => {
+                let transform = self.build_icc_transform();
+                for c in pixels.chunks_exact(4) {
+                    let value = match &transform {
+                        Some(t) => t.convert_cmyk_pixel(c[0], c[1], c[2], c[3]),
+                        None => cmyk_pixel_to_rgb(c[0], c[1], c[2], c[3]),
+                    };
+                    rgb.extend_from_slice(&value);
+                }
+            },
+        }
+        image::RgbImage::from_raw(self.width, self.height, rgb)
+            .ok_or_else(|| Error::Image("invalid RGB image geometry".into()))
+    }
+
+    fn into_rgb_with_budget(
+        image: image::DynamicImage,
+        budget: Option<&crate::import_limits::ImportBudget>,
+    ) -> Result<image::RgbImage> {
+        let Some(budget) = budget else {
+            return Ok(image.to_rgb8());
+        };
+        // Consume an RGB buffer without cloning it. Other formats allocate one
+        // RGB output in into_rgb8; account for that payload before conversion.
+        if !matches!(image, image::DynamicImage::ImageRgb8(_)) {
+            let size = (image.width() as usize)
+                .checked_mul(image.height() as usize)
+                .and_then(|n| n.checked_mul(3))
+                .filter(|&n| n <= budget.limits.stream_bytes)
+                .ok_or_else(|| budget.reject("image RGB size overflow"))?;
+            budget.charge_codec_allocation(size)?;
+        }
+        Ok(image.into_rgb8())
     }
 
     fn decode_ccitt_with_budget(
@@ -555,74 +626,56 @@ impl PdfImage {
             unreachable!()
         };
         if self.color_space.components() != 4 {
-            use image::ImageDecoder;
-            let mut limits = image::Limits::default();
-            limits.max_image_width = Some(self.width);
-            limits.max_image_height = Some(self.height);
-            limits.max_alloc = Some(budget.limits.stream_bytes as u64);
-            let mut reader = image::ImageReader::with_format(
-                std::io::Cursor::new(bytes),
-                image::ImageFormat::Jpeg,
-            );
-            reader.limits(limits);
-            let decoder = reader
-                .into_decoder()
-                .map_err(|_| Error::Image("bounded JPEG header rejected".into()))?;
-            if decoder.dimensions() != (self.width, self.height) {
-                return Err(Error::Image("JPEG dimensions differ from PDF declaration".into()));
-            }
-            return image::DynamicImage::from_decoder(decoder)
-                .map_err(|_| Error::Image("bounded JPEG decode failed".into()));
+            return super::jpeg_limited::decode(bytes, self.width, self.height, budget);
         }
-        let mut decoder = jpeg_decoder::Decoder::new(std::io::Cursor::new(bytes));
+        let request = super::jpeg_cmyk_limited::Request(budget);
+        let decoder = jpeg_decoder_limited::Decoder::new_with_allocation_budget(
+            std::io::Cursor::new(bytes),
+            &request,
+        );
+        budget.check()?;
+        let mut decoder =
+            decoder.map_err(|_| Error::Image("bounded CMYK JPEG constructor failed".into()))?;
         decoder.set_max_decoding_buffer_size(budget.limits.stream_bytes);
-        decoder
-            .read_info()
-            .map_err(|_| Error::Image("invalid JPEG header".into()))?;
+        let header = decoder.read_info();
+        budget.check()?;
+        header.map_err(|_| Error::Image("invalid JPEG header".into()))?;
         let info = decoder
             .info()
             .ok_or_else(|| Error::Image("missing JPEG dimensions".into()))?;
         if u32::from(info.width) != self.width || u32::from(info.height) != self.height {
             return Err(Error::Image("JPEG dimensions differ from PDF declaration".into()));
         }
-        let pixels = decoder
-            .decode()
-            .map_err(|_| Error::Image("bounded JPEG decode failed".into()))?;
+        let _output_bytes = (self.width as usize)
+            .checked_mul(self.height as usize)
+            .and_then(|n| n.checked_mul(info.pixel_format.pixel_bytes()))
+            .filter(|&n| n <= budget.limits.stream_bytes)
+            .ok_or_else(|| budget.reject("JPEG decoded pixel buffer"))?;
+        // The decoder now charges the actual output and intermediate reservations.
+        let pixels = decoder.decode();
+        budget.check()?;
+        let pixels = pixels.map_err(|_| Error::Image("bounded JPEG decode failed".into()))?;
         match info.pixel_format {
-            jpeg_decoder::PixelFormat::L8 => {
+            jpeg_decoder_limited::PixelFormat::L8 => {
                 image::GrayImage::from_raw(self.width, self.height, pixels)
                     .map(image::DynamicImage::ImageLuma8)
             },
-            jpeg_decoder::PixelFormat::RGB24 => {
+            jpeg_decoder_limited::PixelFormat::RGB24 => {
                 image::RgbImage::from_raw(self.width, self.height, pixels)
                     .map(image::DynamicImage::ImageRgb8)
             },
-            jpeg_decoder::PixelFormat::CMYK32 => {
-                let transform = self.build_icc_transform();
+            jpeg_decoder_limited::PixelFormat::CMYK32 => {
                 let mut cmyk = pixels;
                 if cmyk_jpeg_samples_are_inverted(bytes) {
                     for channel in &mut cmyk {
                         *channel = 255 - *channel;
                     }
                 }
-                let rgb = if let Some(transform) = transform {
-                    transform.convert_cmyk_buffer(&cmyk)
-                } else {
-                    let size = (self.width as usize)
-                        .checked_mul(self.height as usize)
-                        .and_then(|n| n.checked_mul(3))
-                        .ok_or_else(|| budget.reject("JPEG RGB size overflow"))?;
-                    let mut rgb = Vec::new();
-                    rgb.try_reserve_exact(size)
-                        .map_err(|_| budget.reject("JPEG RGB allocation"))?;
-                    for c in cmyk.chunks_exact(4) {
-                        let [r, g, b] = cmyk_pixel_to_rgb(c[0], c[1], c[2], c[3]);
-                        rgb.extend_from_slice(&[r, g, b]);
-                    }
-                    rgb
-                };
-                image::RgbImage::from_raw(self.width, self.height, rgb)
-                    .map(image::DynamicImage::ImageRgb8)
+                Some(image::DynamicImage::ImageRgb8(self.raw_rgb_with_budget(
+                    &cmyk,
+                    PixelFormat::CMYK,
+                    budget,
+                )?))
             },
             _ => return Err(Error::Unsupported("limited import JPEG sample depth".into())),
         }
@@ -988,6 +1041,60 @@ fn decode_ranges(decode: Option<&crate::object::Object>, ncomp: usize) -> Option
     Some(out)
 }
 
+/// Reserve owned sample/lookup storage before materializing it. This accounts
+/// requested payload bytes, not allocator overhead or the entire process heap.
+fn sample_buffer<T>(
+    count: usize,
+    budget: Option<&crate::import_limits::ImportBudget>,
+) -> Result<Vec<T>> {
+    if let Some(budget) = budget {
+        let bytes = count
+            .checked_mul(std::mem::size_of::<T>())
+            .filter(|&n| n <= budget.limits.stream_bytes)
+            .ok_or_else(|| budget.reject("image sample buffer"))?;
+        budget.charge_codec_allocation(bytes)?;
+    }
+    let mut output = Vec::new();
+    output.try_reserve_exact(count).map_err(|_| match budget {
+        Some(budget) => budget.reject("image sample allocation failed"),
+        None => Error::Image("image sample allocation failed".into()),
+    })?;
+    Ok(output)
+}
+
+fn limited_decode_ranges(
+    doc: Option<&crate::document::PdfDocument>,
+    decode: Option<&crate::object::Object>,
+    ncomp: usize,
+    budget: &crate::import_limits::ImportBudget,
+) -> Result<Option<Vec<(f32, f32)>>> {
+    let Some(decode) = decode else {
+        return Ok(None);
+    };
+    let decode = resolve_image_object(doc, decode)?;
+    if matches!(*decode, crate::object::Object::Null) {
+        return Ok(None);
+    }
+    let arr = decode
+        .as_array()
+        .filter(|arr| Some(arr.len()) == ncomp.checked_mul(2))
+        .ok_or_else(|| Error::Image("invalid image Decode array".into()))?;
+    let mut ranges = sample_buffer(ncomp, Some(budget))?;
+    for pair in arr.chunks_exact(2) {
+        let number = |value: &crate::object::Object| -> Result<f32> {
+            let value = resolve_image_object(doc, value)?;
+            value
+                .as_integer()
+                .map(|n| n as f32)
+                .or_else(|| value.as_real().map(|n| n as f32))
+                .filter(|n| n.is_finite())
+                .ok_or_else(|| Error::Image("non-finite or nonnumeric image Decode value".into()))
+        };
+        ranges.push((number(&pair[0])?, number(&pair[1])?));
+    }
+    Ok(Some(ranges))
+}
+
 /// Interleaved image samples as one 8-bit byte per component with `/Decode`
 /// applied (ISO 32000-1 §8.9.5.2): each raw sample maps through
 /// `Dmin + raw · (Dmax − Dmin) / (2^bpc − 1)`, then scales to `0..=255`.
@@ -1003,9 +1110,10 @@ fn samples_to_decoded_bytes(
     ncomp: usize,
     bpc: u8,
     ranges: Option<&[(f32, f32)]>,
-) -> Option<Vec<u8>> {
+    budget: Option<&crate::import_limits::ImportBudget>,
+) -> Result<Option<Vec<u8>>> {
     if !matches!(bpc, 1 | 2 | 4 | 8) || ncomp == 0 {
-        return None;
+        return Ok(None);
     }
     let bpc = usize::from(bpc);
     // Sizes come from /Width and /Height, which a hostile file controls, so
@@ -1013,9 +1121,23 @@ fn samples_to_decoded_bytes(
     // with ordinary dimensions) would under-reserve and then grow until the
     // allocator aborts, and an allocation failure aborts the process rather
     // than returning an error.
-    let samples_per_row = (width as usize).checked_mul(ncomp)?;
-    let total = samples_per_row.checked_mul(height as usize)?;
-    let row_bytes = samples_per_row.checked_mul(bpc)?.div_ceil(8);
+    let geometry = (width as usize).checked_mul(ncomp).and_then(|row| {
+        Some((row, row.checked_mul(height as usize)?, row.checked_mul(bpc)?.div_ceil(8)))
+    });
+    let Some((samples_per_row, total, row_bytes)) = geometry else {
+        return match budget {
+            Some(budget) => Err(budget.reject("image sample geometry")),
+            None => Ok(None),
+        };
+    };
+    if let Some(budget) = budget {
+        let required = row_bytes
+            .checked_mul(height as usize)
+            .ok_or_else(|| budget.reject("image sample geometry"))?;
+        if data.len() < required {
+            return Err(Error::Image("truncated image samples".into()));
+        }
+    }
     // A stream shorter than its declared size is padded, matching what the
     // packed path already did. Refusing it instead would drop the image back
     // to its packed bytes with `/Decode` never applied, which renders the
@@ -1029,6 +1151,9 @@ fn samples_to_decoded_bytes(
     /// `/Width` × `/Height` does.
     const MAX_UNPACKED_OUTPUT_BYTES: usize = 256 * 1024 * 1024;
     if total > MAX_UNPACKED_OUTPUT_BYTES {
+        if let Some(budget) = budget {
+            return Err(budget.reject("image sample buffer"));
+        }
         // Refusing here is the same fallback the short-stream case was moved
         // off: the caller keeps the packed bytes and any /Decode goes
         // unapplied, which renders the negative of the picture. Nothing in a
@@ -1039,7 +1164,7 @@ fn samples_to_decoded_bytes(
             "Refusing to unpack a {total}-byte image buffer (cap {MAX_UNPACKED_OUTPUT_BYTES}); \
              samples stay packed and any /Decode is left unapplied"
         );
-        return None;
+        return Ok(None);
     }
 
     // Per-component lookup instead of float arithmetic per sample: `2^bpc`
@@ -1047,28 +1172,36 @@ fn samples_to_decoded_bytes(
     // identity mapping stays exact (bpc 1/2/4/8 -> ×255/×85/×17/×1).
     let levels = 1usize << bpc;
     let max = (levels - 1) as f32;
-    let lut: Vec<[u8; 256]> = (0..ncomp)
-        .map(|comp| {
-            let (lo, hi) = ranges.map_or((0.0, 1.0), |r| r[comp]);
-            let mut table = [0u8; 256];
-            for (raw, slot) in table.iter_mut().enumerate().take(levels) {
-                let v = lo + (raw as f32) * (hi - lo) / max;
-                *slot = (v.clamp(0.0, 1.0) * 255.0).round() as u8;
-            }
-            table
-        })
-        .collect();
+    let mut lut: Vec<[u8; 256]> = sample_buffer(ncomp, budget)?;
+    for comp in 0..ncomp {
+        let (lo, hi) = ranges.map_or((0.0, 1.0), |r| r[comp]);
+        let mut table = [0u8; 256];
+        for (raw, slot) in table.iter_mut().enumerate().take(levels) {
+            let v = lo + (raw as f32) * (hi - lo) / max;
+            *slot = (v.clamp(0.0, 1.0) * 255.0).round() as u8;
+        }
+        lut.push(table);
+    }
 
     if bpc == 8 {
-        return Some(
+        // Only the declared rows are image samples. Keep the legacy extractor's
+        // extra-byte behavior, but do not amplify unrelated stream suffixes in
+        // the limited path or fabricate missing samples.
+        let data = if budget.is_some() {
+            &data[..total]
+        } else {
+            data
+        };
+        let mut output = sample_buffer(data.len(), budget)?;
+        output.extend(
             data.iter()
                 .enumerate()
-                .map(|(i, &b)| lut[i % ncomp][b as usize])
-                .collect(),
+                .map(|(i, &b)| lut[i % ncomp][b as usize]),
         );
+        return Ok(Some(output));
     }
     let mask = (1u32 << bpc) - 1;
-    let mut out = Vec::with_capacity(total);
+    let mut out = sample_buffer(total, budget)?;
     for row in 0..height as usize {
         let row_start = row * row_bytes;
         for s in 0..samples_per_row {
@@ -1083,7 +1216,7 @@ fn samples_to_decoded_bytes(
             out.push(lut[s % ncomp][raw as usize]);
         }
     }
-    Some(out)
+    Ok(Some(out))
 }
 
 /// Extract an image from an XObject stream.
@@ -1186,10 +1319,17 @@ pub fn extract_image_from_xobject_at(
         budget.charge_decoded(worst_buffer)?;
     }
 
-    let bits_per_component = dict
+    let sample_depth = dict
         .get("BitsPerComponent")
-        .and_then(|obj| obj.as_integer())
-        .unwrap_or(8) as u8;
+        .and_then(resolve_int)
+        .unwrap_or(8);
+    let sample_budget = doc
+        .and_then(|doc| doc.import_budget())
+        .map(|budget| &**budget);
+    if sample_budget.is_some() && !matches!(sample_depth, 1 | 2 | 4 | 8 | 16) {
+        return Err(Error::Image("invalid image BitsPerComponent".into()));
+    }
+    let bits_per_component = sample_depth as u8;
 
     // ISO 32000-1:2008 Table 89, /ColorSpace: "Required for images, except
     // those that use the JPXDecode filter … If ColorSpace is absent, the
@@ -1219,23 +1359,22 @@ pub fn extract_image_from_xobject_at(
         None => return Err(Error::Image("Image missing /ColorSpace".to_string())),
     };
 
-    let resolved_color_space = if let Some(d) = doc {
-        let res = if let Some(obj_ref) = color_space_obj.as_reference() {
-            d.load_object(obj_ref)?
-        } else {
-            color_space_obj.clone()
-        };
-        if let Object::Name(ref name) = res {
+    let resolved_color_space = resolve_image_object(doc, color_space_obj)?;
+    let resolved_color_space = if doc.is_some() {
+        if let Object::Name(ref name) = *resolved_color_space {
             if let Some(map) = color_space_map {
-                map.get(name).cloned().unwrap_or(res)
+                match map.get(name) {
+                    Some(object) => resolve_image_object(doc, object)?,
+                    None => resolved_color_space,
+                }
             } else {
-                res
+                resolved_color_space
             }
         } else {
-            res
+            resolved_color_space
         }
     } else {
-        color_space_obj.clone()
+        resolved_color_space
     };
 
     // For array-form color spaces (e.g. [/ICCBased <ref>], [/Indexed <base> <hi> <palette_ref>])
@@ -1245,13 +1384,15 @@ pub fn extract_image_from_xobject_at(
     // `N = 3` and a CMYK (N = 4) image is labelled as RGB. Resolve the stream
     // reference here so the component count reflects the real profile.
     let resolved_color_space =
-        if let (Some(doc_mut), Object::Array(arr)) = (doc, &resolved_color_space) {
-            if arr.len() > 1 {
+        if let (Some(doc_mut), Object::Array(arr)) = (doc, &*resolved_color_space) {
+            // Indexed resolves its base separately; do not clone its lookup
+            // string just to dereference that base a second time here.
+            if arr.len() > 1 && arr[0].as_name() != Some("Indexed") {
                 if let Some(second_ref) = arr[1].as_reference() {
                     if let Ok(resolved_second) = doc_mut.load_object(second_ref) {
                         let mut new_arr = arr.clone();
                         new_arr[1] = resolved_second;
-                        Object::Array(new_arr)
+                        Cow::Owned(Object::Array(new_arr))
                     } else {
                         resolved_color_space
                     }
@@ -1407,30 +1548,78 @@ pub fn extract_image_from_xobject_at(
             xobject.decode_stream_data()?
         };
         if let Some(ir) = indexed_resolution.as_ref() {
+            let budget = doc.and_then(|doc| doc.import_budget()).map(|b| &**b);
+            let decoded_data = if let Some(budget) = budget.filter(|_| is_ccitt) {
+                if bits_per_component != 1 {
+                    return Err(Error::Image("CCITT requires one-bit image samples".into()));
+                }
+                let index = filter_names
+                    .iter()
+                    .position(|name| name.eq_ignore_ascii_case("CCITTFaxDecode"))
+                    .unwrap();
+                let params = limited_ccitt_parameters(
+                    doc.unwrap(),
+                    dict.get("DecodeParms"),
+                    index,
+                    width,
+                    height,
+                )?;
+                let mut packed =
+                    crate::decoders::ccitt::decode_with_budget(&decoded_data, &params, budget)?
+                        .data;
+                // The decoder returns black=1. PDF's default BlackIs1=false
+                // means black=0; /Decode is a separate index mapping below.
+                if !params.black_is_1 {
+                    for byte in &mut packed {
+                        *byte = !*byte;
+                    }
+                }
+                packed
+            } else {
+                decoded_data
+            };
             // Build a Transform if the Indexed base has a profile so
             // palette entries render through the real CMM (when linked).
             let transform = ir
                 .base_profile
                 .clone()
                 .map(|p| crate::color::Transform::new_srgb_target(p, rendering_intent));
-            let expanded = expand_indexed_to_rgb_with_transform(
+            let indexed_decode = if budget.is_some() {
+                limited_indexed_decode(doc, dict.get("Decode"))?
+            } else {
+                None
+            };
+            let expanded = expand_indexed_to_rgb_with_context(
                 &decoded_data,
                 &ir.palette,
                 ir.base_fmt,
                 width,
                 height,
                 bits_per_component,
-                transform.as_ref(),
+                IndexedDecodeContext {
+                    transform: transform.as_ref(),
+                    budget,
+                    decode: indexed_decode,
+                },
             )?;
             // Palette lookup replaces index samples with RGB, so the buffer
             // is no longer in the space the dictionary's entries describe.
             samples_are_raw = false;
+            if budget.is_some() {
+                stored_bpc = 8;
+                // The expander validated bpc before the shift. Consumers must
+                // know that a non-default Decode is already materialized.
+                let default_decode = (0.0, ((1u32 << bits_per_component) - 1) as f64);
+                decode_folded_in = indexed_decode.is_some_and(|range| range != default_decode);
+            }
             ImageData::Raw {
                 pixels: expanded,
                 format: PixelFormat::RGB,
             }
         } else {
             let pixel_format = color_space_to_pixel_format(&color_space);
+            let ncomp = devicen_ink_count(&resolved_color_space)
+                .unwrap_or_else(|| color_space.components());
             // ISO 32000-1 §8.9.5.2: BitsPerComponent 16 stores each colour
             // sample as a big-endian 16-bit value. The rest of the image
             // pipeline (and the render target, an 8-bit tiny_skia pixmap)
@@ -1453,12 +1642,25 @@ pub fn extract_image_from_xobject_at(
                 // declared depth rule for every codec. A colour-key /Mask
                 // states its bounds in the file's 0..65535 space and must not
                 // be range-tested against these bytes.
-                decoded_data
-                    .as_chunks::<2>()
-                    .0
-                    .iter()
-                    .map(|sample| reduce_16_to_8(sample[0], sample[1]))
-                    .collect()
+                let samples = if let Some(budget) = sample_budget {
+                    let required = (width as usize)
+                        .checked_mul(height as usize)
+                        .and_then(|n| n.checked_mul(ncomp))
+                        .and_then(|n| n.checked_mul(2))
+                        .ok_or_else(|| budget.reject("image sample geometry"))?;
+                    decoded_data
+                        .get(..required)
+                        .ok_or_else(|| Error::Image("truncated 16-bit image samples".into()))?
+                } else {
+                    &decoded_data
+                };
+                let mut reduced = sample_buffer(samples.len() / 2, sample_budget)?;
+                reduced.extend(
+                    samples
+                        .chunks_exact(2)
+                        .map(|sample| reduce_16_to_8(sample[0], sample[1])),
+                );
+                reduced
             } else {
                 decoded_data
             };
@@ -1474,8 +1676,6 @@ pub fn extract_image_from_xobject_at(
             // with the wrong value every row starts at the wrong offset, and a
             // stream sized for its true ink count runs out partway down, so
             // the tail of the image is padded with fabricated zeros.
-            let ncomp = devicen_ink_count(&resolved_color_space)
-                .unwrap_or_else(|| color_space.components());
             // The stored buffer is one byte per component at the stride
             // `PixelFormat` declares, and that stride is only ever 1, 3 or 4.
             // A colour space whose component count is anything else — a
@@ -1490,8 +1690,12 @@ pub fn extract_image_from_xobject_at(
             // not confined to [0, 1], so the linear-to-byte mapping does not
             // apply to them.
             let keep_raw = is_ccitt || color_space == ColorSpace::Lab || !representable;
-            let ranges = decode_ranges(dict.get("Decode"), ncomp)
-                .filter(|r| r.iter().any(|&(lo, hi)| (lo, hi) != (0.0, 1.0)));
+            let ranges = if let Some(budget) = sample_budget {
+                limited_decode_ranges(doc, dict.get("Decode"), ncomp, budget)?
+            } else {
+                decode_ranges(dict.get("Decode"), ncomp)
+            }
+            .filter(|r| r.iter().any(|&(lo, hi)| (lo, hi) != (0.0, 1.0)));
 
             // The stored buffer contract is one 8-bit byte per component
             // (`PixelFormat::bytes_per_pixel`), so sub-byte samples are
@@ -1515,7 +1719,8 @@ pub fn extract_image_from_xobject_at(
                     ncomp,
                     bpc_after_reduce,
                     ranges.as_deref(),
-                )
+                    sample_budget,
+                )?
             };
             // A `/BitsPerComponent` the spec does not define leaves the
             // stream untouched, so the existing length checks downstream
@@ -1656,6 +1861,39 @@ pub fn extract_image_from_xobject_at(
     }
 
     Ok(image)
+}
+
+fn resolve_image_object<'a>(
+    doc: Option<&crate::document::PdfDocument>,
+    object: &'a crate::object::Object,
+) -> Result<Cow<'a, crate::object::Object>> {
+    match (doc, object.as_reference()) {
+        (Some(doc), Some(_)) => Ok(Cow::Owned(doc.resolve_object(object)?)),
+        _ => Ok(Cow::Borrowed(object)),
+    }
+}
+
+fn limited_indexed_decode(
+    doc: Option<&crate::document::PdfDocument>,
+    object: Option<&crate::object::Object>,
+) -> Result<Option<(f64, f64)>> {
+    let Some(object) = object else {
+        return Ok(None);
+    };
+    let object = resolve_image_object(doc, object)?;
+    let array = object
+        .as_array()
+        .filter(|array| array.len() == 2)
+        .ok_or_else(|| Error::Image("invalid Indexed Decode array".into()))?;
+    let number = |value: &crate::object::Object| {
+        value
+            .as_integer()
+            .map(|n| n as f64)
+            .or_else(|| value.as_real())
+            .filter(|n| n.is_finite())
+            .ok_or_else(|| Error::Image("invalid Indexed Decode value".into()))
+    };
+    Ok(Some((number(&array[0])?, number(&array[1])?)))
 }
 
 fn limited_ccitt_parameters(
@@ -1804,26 +2042,24 @@ fn resolve_indexed_palette(
     // Resolve the base color-space object. When it's an array like
     // [/ICCBased <stream_ref>], resolve inner references so
     // parse_color_space can read /N from the ICC stream dict.
+    let outer = resolve_image_object(doc, &arr[1])?;
     let base_obj = if let Some(d) = doc {
-        let outer = if let Some(r) = arr[1].as_reference() {
-            d.load_object(r)?
-        } else {
-            arr[1].clone()
-        };
-        if let Object::Array(mut inner) = outer {
+        if let Object::Array(inner) = &*outer {
+            let mut inner = inner.clone();
             for item in inner.iter_mut() {
                 if let Some(r) = item.as_reference() {
-                    if let Ok(resolved) = d.load_object(r) {
-                        *item = resolved;
+                    match d.load_object(r) {
+                        Ok(resolved) => *item = resolved,
+                        Err(_) => d.check_import_budget()?,
                     }
                 }
             }
-            Object::Array(inner)
+            Cow::Owned(Object::Array(inner))
         } else {
             outer
         }
     } else {
-        arr[1].clone()
+        outer
     };
     let base_cs = parse_color_space(&base_obj)?;
     let base_fmt = color_space_to_pixel_format(&base_cs);
@@ -1841,15 +2077,7 @@ fn resolve_indexed_palette(
 
     // hival bounds the valid index range. Resolve via indirect reference if
     // needed; treat invalid / missing values as "unknown" and skip truncation.
-    let hival_obj = if let Some(d) = doc {
-        if let Some(r) = arr[2].as_reference() {
-            d.load_object(r)?
-        } else {
-            arr[2].clone()
-        }
-    } else {
-        arr[2].clone()
-    };
+    let hival_obj = resolve_image_object(doc, &arr[2])?;
     let hival: Option<usize> = hival_obj.as_integer().and_then(|i| {
         if (0..=255).contains(&i) {
             Some(i as usize)
@@ -1858,22 +2086,30 @@ fn resolve_indexed_palette(
         }
     });
 
-    let lookup_obj = if let Some(d) = doc {
-        if let Some(r) = arr[3].as_reference() {
-            d.load_object(r)?
-        } else {
-            arr[3].clone()
-        }
-    } else {
-        arr[3].clone()
-    };
-    let mut palette_bytes = match &lookup_obj {
-        Object::String(s) => s.clone(),
-        Object::Stream { .. } => lookup_obj.decode_stream_data()?,
+    let budget = doc.and_then(|doc| doc.import_budget());
+    if budget.is_some() && hival.is_none() {
+        return Err(Error::Image("invalid Indexed hival".into()));
+    }
+    let expected = hival.map(|h| (h + 1) * n);
+    let lookup_obj = resolve_image_object(doc, &arr[3])?;
+    let mut palette_bytes = match &*lookup_obj {
+        Object::String(s) => match budget {
+            Some(budget) => budget.copy_bytes(&s[..s.len().min(expected.unwrap())])?,
+            None => s.clone(),
+        },
+        Object::Stream { .. } => match (doc, arr[3].as_reference()) {
+            (Some(doc), Some(reference)) => {
+                doc.decode_stream_with_encryption(&lookup_obj, reference)?
+            },
+            _ => lookup_obj.decode_stream_data()?,
+        },
         _ => return Ok(None),
     };
     if palette_bytes.is_empty() {
         return Ok(None);
+    }
+    if budget.is_some() && expected.is_some_and(|expected| palette_bytes.len() < expected) {
+        return Err(Error::Image("truncated Indexed palette".into()));
     }
 
     // Truncate palette to the logical length implied by hival so that indices
@@ -1893,6 +2129,9 @@ fn resolve_indexed_palette(
     // Lab triples are mis-interpreted as raw RGB and render with
     // perceptually wrong colours.
     if matches!(base_cs, ColorSpace::Lab) {
+        if let Some(budget) = budget {
+            budget.charge_codec_allocation(palette_bytes.len())?;
+        }
         let white = extract_lab_whitepoint(&base_obj);
         let rgb_palette = lab_palette_to_rgb(&palette_bytes, white);
         // Lab palettes are now RGB; no base ICC profile to carry through.
@@ -1947,6 +2186,7 @@ fn expand_indexed_to_rgb(
 /// Like [`expand_indexed_to_rgb`] but routes CMYK palette entries
 /// through an ICC transform when one is supplied. Used during image
 /// extraction when the base colour space is `/ICCBased` with N=4.
+#[cfg(any(test, feature = "jpeg2000"))]
 fn expand_indexed_to_rgb_with_transform(
     raw: &[u8],
     palette: &[u8],
@@ -1956,6 +2196,37 @@ fn expand_indexed_to_rgb_with_transform(
     bpc: u8,
     transform: Option<&crate::color::Transform>,
 ) -> Result<Vec<u8>> {
+    expand_indexed_to_rgb_with_context(
+        raw,
+        palette,
+        base_fmt,
+        width,
+        height,
+        bpc,
+        IndexedDecodeContext {
+            transform,
+            budget: None,
+            decode: None,
+        },
+    )
+}
+
+struct IndexedDecodeContext<'a> {
+    transform: Option<&'a crate::color::Transform>,
+    budget: Option<&'a crate::import_limits::ImportBudget>,
+    decode: Option<(f64, f64)>,
+}
+
+fn expand_indexed_to_rgb_with_context(
+    raw: &[u8],
+    palette: &[u8],
+    base_fmt: PixelFormat,
+    width: u32,
+    height: u32,
+    bpc: u8,
+    context: IndexedDecodeContext<'_>,
+) -> Result<Vec<u8>> {
+    let transform = context.transform;
     /// Hard cap on the decoded output buffer size (256 MiB). Legitimate
     /// Indexed images in real PDFs are several orders of magnitude below
     /// this — the cap only fires on pathological / adversarial inputs
@@ -2024,7 +2295,18 @@ fn expand_indexed_to_rgb_with_transform(
         )));
     }
 
-    let mut out = Vec::with_capacity(output_bytes);
+    if let Some(budget) = context.budget {
+        if output_bytes > budget.limits.stream_bytes {
+            return Err(budget.reject("Indexed RGB buffer"));
+        }
+        budget.charge_codec_allocation(output_bytes)?;
+    }
+    let mut out = Vec::new();
+    out.try_reserve_exact(output_bytes)
+        .map_err(|_| match context.budget {
+            Some(budget) => budget.reject("Indexed RGB allocation"),
+            None => Error::Image("Indexed RGB allocation failed".into()),
+        })?;
 
     let read_index = |row: &[u8], x: usize| -> usize {
         match bpc {
@@ -2083,7 +2365,17 @@ fn expand_indexed_to_rgb_with_transform(
             // colour the file never asked for, and it darkens the page: on the
             // file named for this case we rendered a mean tone of 222.34 where
             // four engines agree on 231.72–235.49.
-            let idx = read_index(row, x).min(last_entry);
+            let sample = read_index(row, x);
+            let idx = if let Some((low, high)) = context.decode {
+                let fraction = sample as f64 / ((1u32 << bpc) - 1) as f64;
+                // Weighted endpoints avoid overflowing high-low for finite
+                // opposite endpoints. Indexed values round to nearest integer.
+                ((1.0 - fraction) * low + fraction * high)
+                    .round()
+                    .clamp(0.0, last_entry as f64) as usize
+            } else {
+                sample.min(last_entry)
+            };
             let off = idx * n;
             if off + n > palette.len() {
                 out.extend_from_slice(&[0, 0, 0]);
@@ -3695,6 +3987,28 @@ impl<'doc> PdfImageHandle<'doc> {
             PdfImageSource::Inline { stream_object, .. } => (stream_object, None),
         };
 
+        if self.doc.import_budget().is_some() {
+            // The limited handle path imports the image as an independent IR
+            // picture. Unlike the renderer, it has no mask compositor or
+            // current nonstroking colour. Never return the base pixels while
+            // silently dropping Table 89's transparency/stencil semantics.
+            // The legacy extractor remains available to renderer callers that
+            // apply these masks themselves.
+            let dict = obj
+                .as_dict()
+                .ok_or_else(|| Error::Image("invalid image object".into()))?;
+            for key in ["Mask", "SMask", "ImageMask"] {
+                if let Some(value) = dict.get(key) {
+                    let value = resolve_image_object(Some(self.doc), value)?;
+                    let absent = matches!(*value, crate::object::Object::Null)
+                        || (key == "ImageMask" && value.as_bool() == Some(false));
+                    if !absent {
+                        return Err(Error::Unsupported(format!("limited image import /{key}")));
+                    }
+                }
+            }
+        }
+
         // Pass the active resource ColorSpace map so a resource-name
         // `/ColorSpace` (e.g. `/CS0`) resolves the same way the renderer does.
         // `None` when empty preserves the original decode path for the common
@@ -3858,6 +4172,7 @@ fn resolve_color_space_for_handle(
     doc: Option<&crate::document::PdfDocument>,
 ) -> (ColorSpace, Option<ColorSpace>) {
     use crate::object::Object;
+    use std::borrow::Cow;
 
     // (a) Resource-name → resolved Object (skip standard device names, which
     // always identify their space directly and never refer to resources).
@@ -3865,31 +4180,46 @@ fn resolve_color_space_for_handle(
         Object::Name(name)
             if !matches!(name.as_str(), "DeviceGray" | "DeviceRGB" | "DeviceCMYK" | "Pattern") =>
         {
-            color_space_resources
-                .get(name)
-                .cloned()
-                .unwrap_or_else(|| entry.clone())
+            color_space_resources.get(name).unwrap_or(entry)
         },
-        _ => entry.clone(),
+        _ => entry,
     };
 
     // (b) Resolve one indirect-ref hop.
     let resolved = match (after_name.as_reference(), doc) {
-        (Some(r), Some(d)) => d.load_object(r).unwrap_or(after_name),
-        _ => after_name,
+        (Some(r), Some(d)) => d
+            .load_object(r)
+            .map(Cow::Owned)
+            .unwrap_or(Cow::Borrowed(after_name)),
+        _ => Cow::Borrowed(after_name),
     };
 
     // (c) `[/Indexed base hival lookup]` (§8.6.6.3): report Indexed + base.
-    if let Object::Array(arr) = &resolved {
+    if let Object::Array(arr) = resolved.as_ref() {
         if arr.first().and_then(|o| o.as_name()) == Some("Indexed") && arr.len() >= 2 {
             // Resolve the base object, mirroring resolve_indexed_palette: an
             // indirect base ref, plus inner refs of an array base such as
             // [/ICCBased <stream_ref>] so parse_color_space can read /N.
             let base_obj = if let Some(d) = doc {
                 let outer = if let Some(r) = arr[1].as_reference() {
-                    d.load_object(r).unwrap_or_else(|_| arr[1].clone())
+                    match d.load_object(r) {
+                        Ok(value) => value,
+                        Err(_) => match crate::object_copy::clone_object(
+                            &arr[1],
+                            d.import_budget().map(AsRef::as_ref),
+                        ) {
+                            Ok(value) => value,
+                            Err(_) => return (ColorSpace::Indexed, None),
+                        },
+                    }
                 } else {
-                    arr[1].clone()
+                    match crate::object_copy::clone_object(
+                        &arr[1],
+                        d.import_budget().map(AsRef::as_ref),
+                    ) {
+                        Ok(value) => value,
+                        Err(_) => return (ColorSpace::Indexed, None),
+                    }
                 };
                 if let Object::Array(mut inner) = outer {
                     for item in inner.iter_mut() {
@@ -3989,7 +4319,11 @@ pub(crate) fn image_handle_from_xobject<'doc>(
         ctm,
         doc,
         source: PdfImageSource::XObject(obj_ref),
-        color_space_resources: color_space_resources.clone(),
+        color_space_resources: crate::object_copy::clone_dictionary(
+            color_space_resources,
+            doc.import_budget().map(AsRef::as_ref),
+        )
+        .ok()?,
         indexed_base,
     })
 }
@@ -4006,7 +4340,9 @@ pub(crate) fn image_handle_from_inline<'doc>(
     use crate::object::Object;
 
     // Inline image dicts use abbreviated keys; expand them.
-    let expanded = crate::extractors::expand_inline_image_dict(dict.clone());
+    let expanded = crate::extractors::expand_inline_image_dict(
+        crate::object_copy::clone_dictionary(dict, doc.import_budget().map(AsRef::as_ref)).ok()?,
+    );
 
     let w = expanded
         .get("Width")
@@ -4045,7 +4381,10 @@ pub(crate) fn image_handle_from_inline<'doc>(
     // duplicating potentially large image payloads (e.g. 10 MB JPEG → 20 MB RSS).
     let mut stream_dict = expanded;
     stream_dict.insert("Subtype".to_string(), Object::Name("Image".to_string()));
-    let compressed_bytes = crate::import_limits::StreamData::from(data);
+    // Synthetic inline streams must retain the originating request context,
+    // just like parsed XObject streams. Otherwise decode_stream_data() takes
+    // the legacy unbounded filter path after the content parser returns.
+    let compressed_bytes = crate::import_limits::StreamData::bounded(data, doc.import_budget());
     let stream_object = Object::Stream {
         dict: stream_dict,
         data: compressed_bytes.clone(),
@@ -4068,7 +4407,11 @@ pub(crate) fn image_handle_from_inline<'doc>(
             stream_object,
             compressed_bytes,
         },
-        color_space_resources: color_space_resources.clone(),
+        color_space_resources: crate::object_copy::clone_dictionary(
+            color_space_resources,
+            doc.import_budget().map(AsRef::as_ref),
+        )
+        .ok()?,
         indexed_base,
     })
 }

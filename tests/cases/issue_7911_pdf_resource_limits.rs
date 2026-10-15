@@ -84,7 +84,7 @@ fn individual_output_boundaries_are_exact_for_supported_filters() {
     ];
     for (encoded, filter, expected) in cases {
         for cap in [expected.len() - 1, expected.len(), expected.len() + 1] {
-            let budget = budget(cap, 4096);
+            let budget = budget(cap, 1024 * 1024);
             let result = decode(&encoded, &[filter], &budget);
             if cap < expected.len() {
                 assert!(
@@ -94,7 +94,10 @@ fn individual_output_boundaries_are_exact_for_supported_filters() {
                 assert!(budget.check().is_err());
             } else {
                 assert_eq!(result.unwrap(), expected, "{filter}");
-                assert_eq!(budget.decoded_bytes(), expected.len());
+                assert_eq!(
+                    budget.decoded_bytes(),
+                    budget.codec_allocated_bytes() + expected.len()
+                );
             }
         }
     }
@@ -449,11 +452,18 @@ fn jpeg_header_mismatch_is_rejected_before_png_and_normal_pixels_are_unchanged()
     );
     assert!(wrong.to_png_bytes_with_budget(&budget(4096, 8192)).is_err());
     let normal = PdfImage::new(2, 1, ColorSpace::DeviceRGB, 8, ImageData::Jpeg(jpeg));
+    // Compare decoded pixels, not the compressor's container representation.
     assert_eq!(
-        normal
-            .to_png_bytes_with_budget(&budget(4096, 8192))
-            .unwrap(),
-        normal.to_png_bytes().unwrap()
+        image::load_from_memory(
+            &normal
+                .to_png_bytes_with_budget(&budget(4096, 2 * 1024 * 1024))
+                .unwrap()
+        )
+        .unwrap()
+        .to_rgb8(),
+        image::load_from_memory(&normal.to_png_bytes().unwrap())
+            .unwrap()
+            .to_rgb8()
     );
 }
 
@@ -730,11 +740,20 @@ fn content_array_combination_includes_separator_bytes_in_the_buffer_cap() {
 #[test]
 fn cached_content_copies_consume_budget_and_cannot_revive_failed_imports() {
     let source = object_file(&objects(b"1234", "", ""), "");
+    let probe =
+        PdfDocument::from_bytes_with_limits(source.clone(), PdfImportLimits::default()).unwrap();
+    assert_eq!(probe.get_page_content_data(0).unwrap(), b"1234");
+    let first_read_bytes = probe.import_budget().unwrap().decoded_bytes();
+    // Parsing and metadata copies precede the cache. After warming it, each
+    // returned content buffer must still consume exactly its four payload bytes.
+    let before = probe.import_budget().unwrap().decoded_bytes();
+    assert_eq!(probe.get_page_content_data(0).unwrap(), b"1234");
+    assert_eq!(probe.import_budget().unwrap().decoded_bytes() - before, 4);
     let doc = PdfDocument::from_bytes_with_limits(
         source.clone(),
         PdfImportLimits {
             stream_bytes: 8,
-            decoded_bytes: 16,
+            decoded_bytes: first_read_bytes + 4,
             ..PdfImportLimits::default()
         },
     )
@@ -1194,9 +1213,28 @@ fn image_raw_copy_is_bounded_and_sticky_for_inline_and_xobjects() {
                 .unwrap();
         let handles = doc.page_image_handles(0).unwrap();
         assert_eq!(handles.len(), 1);
+        let metadata_copy = if inline {
+            0
+        } else {
+            let probe = PdfDocument::from_bytes_with_limits(
+                raw_image_file(false),
+                PdfImportLimits::default(),
+            )
+            .unwrap();
+            probe.page_image_handles(0).unwrap();
+            let before = probe.import_budget().unwrap().decoded_bytes();
+            probe
+                .load_object(pdf_oxide::object::ObjectRef::new(6, 0))
+                .unwrap();
+            probe.import_budget().unwrap().decoded_bytes() - before
+        };
+        let copy_bytes = metadata_copy + 6;
         let used = doc.import_budget().unwrap().decoded_bytes();
         assert_eq!(handles[0].raw_compressed_bytes().unwrap(), b"ABCDEF");
-        assert_eq!(doc.import_budget().unwrap().decoded_bytes() - used, 6);
+        assert_eq!(
+            doc.import_budget().unwrap().decoded_bytes() - used,
+            copy_bytes
+        );
         doc.import_budget()
             .unwrap()
             .reject("test raw image failure");
@@ -1208,7 +1246,11 @@ fn image_raw_copy_is_bounded_and_sticky_for_inline_and_xobjects() {
             handles[0].decode(),
             Err(Error::ImportResourceLimit("test raw image failure"))
         ));
-        for cap in [used + 5, used + 6, used + 7] {
+        for cap in [
+            used + copy_bytes - 1,
+            used + copy_bytes,
+            used + copy_bytes + 1,
+        ] {
             let limited = PdfDocument::from_bytes_with_limits(
                 raw_image_file(inline),
                 PdfImportLimits {
@@ -1219,7 +1261,7 @@ fn image_raw_copy_is_bounded_and_sticky_for_inline_and_xobjects() {
             .unwrap();
             let handles = limited.page_image_handles(0).unwrap();
             let result = handles[0].raw_compressed_bytes();
-            if cap < used + 6 {
+            if cap < used + copy_bytes {
                 assert!(matches!(
                     result,
                     Err(Error::ImportResourceLimit("document decoded bytes"))
@@ -1532,7 +1574,7 @@ fn ccitt_private_transition_storage_obeys_the_codec_budget() {
 fn ccitt_compressed_length_cannot_impersonate_uncompressed_gray_pixels() {
     // T.6 vertical(0) against the imaginary white reference produces a white row.
     let png = ccitt_image(1, 1, Some(1), &[0x80])
-        .to_png_bytes_with_budget(&budget(4096, 8192))
+        .to_png_bytes_with_budget(&budget(4096, 2 * 1024 * 1024))
         .unwrap();
     let gray = image::load_from_memory(&png).unwrap().to_luma8();
     assert_eq!(gray.as_raw(), &[255]);
@@ -1615,8 +1657,15 @@ fn ccitt_normal_group3_group4_alignment_and_polarity_preserve_pixels() {
                 assert!(!decoded.recovered_partial);
                 let mut image = ccitt_image(8, 3, Some(3), &data);
                 image.set_ccitt_params(params);
-                let png = image.to_png_bytes_with_budget(&budget(4096, 8192)).unwrap();
-                assert_eq!(png, image.to_png_bytes().unwrap());
+                let png = image
+                    .to_png_bytes_with_budget(&budget(4096, 2 * 1024 * 1024))
+                    .unwrap();
+                assert_eq!(
+                    image::load_from_memory(&png).unwrap().to_luma8(),
+                    image::load_from_memory(&image.to_png_bytes().unwrap())
+                        .unwrap()
+                        .to_luma8()
+                );
                 let actual = image::load_from_memory(&png).unwrap().to_luma8();
                 let expected: Vec<u8> = [255u8, 255, 231]
                     .into_iter()
@@ -1757,7 +1806,7 @@ fn ccitt_unknown_rows_use_image_height_and_wide_columns_do_not_wrap() {
     let data = ccitt_rows(-1, false);
     for rows in [None, Some(0)] {
         let png = ccitt_image(8, 3, rows, &data)
-            .to_png_bytes_with_budget(&budget(4096, 8192))
+            .to_png_bytes_with_budget(&budget(4096, 2 * 1024 * 1024))
             .unwrap();
         let gray = image::load_from_memory(&png).unwrap().to_luma8();
         assert_eq!(
@@ -1861,5 +1910,2069 @@ fn ccitt_filter_parameters_keep_chain_index_and_decode_polarity() {
             direct.document.bin_data_content[0].data.load(),
             chained.document.bin_data_content[0].data.load()
         );
+    }
+}
+
+fn indexed_image_pdf(data: &[u8], entries: &str, extra_object: &[u8]) -> Vec<u8> {
+    let mut parts = objects(b"/Im Do", "", "");
+    parts[2] = b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /XObject << /Im 6 0 R >> >> /Contents 4 0 R >>".to_vec();
+    let mut image = format!(
+        "<< /Subtype /Image {entries} /Length {} >>\nstream\n",
+        data.len()
+    )
+    .into_bytes();
+    image.extend_from_slice(data);
+    image.extend_from_slice(b"\nendstream");
+    parts.push(image);
+    parts.push(extra_object.to_vec());
+    object_file(&parts, "")
+}
+
+#[test]
+fn indexed_ccitt_decodes_before_palette_lookup_and_preserves_polarity() {
+    use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
+    // ISO 32000-1 7.4.6 + 8.6.6.3: fax bits become sample indices first,
+    // then /Decode maps the indices into this explicitly coloured lookup.
+    for k in [-1, 0, 1] {
+        for black_is_one in [false, true] {
+            for invert in [false, true] {
+                let data = ccitt_rows(k, false);
+                let entries = format!("/Width 8 /Height 3 /BitsPerComponent 1 /ColorSpace [/Indexed /DeviceRGB 1 <0A141EC8D2DC>] /Filter /CCITTFaxDecode /DecodeParms 7 0 R {}", if invert { "/Decode [1 0]" } else { "" });
+                let params = format!("<< /K {k} /Columns 8 /Rows 3 /BlackIs1 {black_is_one} >>");
+                let source = indexed_image_pdf(&data, &entries, params.as_bytes());
+                let backend =
+                    PdfDocument::from_bytes_with_limits(source.clone(), Default::default())
+                        .unwrap();
+                let handles = backend.page_image_handles(0).unwrap();
+                let decoded = handles[0].decode().unwrap();
+                assert!(!decoded.samples_are_raw());
+                assert_eq!(decoded.bits_per_component(), 8);
+                assert_eq!(decoded.decode_folded_in(), invert);
+                let imported =
+                    parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+                assert_eq!(imported.document.bin_data_content.len(), 1);
+                let bytes = imported.document.bin_data_content[0].data.load();
+                let rgb = image::load_from_memory(&bytes).unwrap().to_rgb8();
+                assert_eq!(rgb.dimensions(), (8, 3));
+                for (x, y, pixel) in rgb.enumerate_pixels() {
+                    let black = !(y == 2 && (3..5).contains(&x));
+                    let index_one = (black == black_is_one) ^ invert;
+                    assert_eq!(
+                        pixel.0,
+                        if index_one {
+                            [200, 210, 220]
+                        } else {
+                            [10, 20, 30]
+                        },
+                        "K={k}, BlackIs1={black_is_one}, invert={invert}, ({x},{y})"
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn indexed_ccitt_rejects_invalid_geometry_and_truncated_streams() {
+    use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
+    let entries = "/Width 8 /Height 3 /BitsPerComponent 1 /ColorSpace [/Indexed /DeviceRGB 1 <000000FFFFFF>] /Filter /CCITTFaxDecode /DecodeParms 7 0 R";
+    for (data, params) in [
+        (ccitt_rows(-1, false), "<< /K -1 /Columns 8 /Rows 32768 >>"),
+        (
+            ccitt_rows(-1, false),
+            "<< /K -1 /Columns 4294967304 /Rows 3 >>",
+        ),
+        (vec![0, 0, 0], "<< /K -1 /Columns 8 /Rows 3 >>"),
+    ] {
+        assert!(
+            parse_pdf_with_options(
+                &indexed_image_pdf(&data, entries, params.as_bytes()),
+                &PdfImportOptions::default()
+            )
+            .is_err(),
+            "{params}"
+        );
+    }
+    assert!(parse_pdf_with_options(
+        &indexed_image_pdf(
+            &ccitt_rows(-1, false),
+            entries,
+            b"<< /K -1 /Columns 8 /Rows 3 >>"
+        ),
+        &PdfImportOptions::default(),
+    )
+    .is_ok());
+}
+
+#[test]
+fn indexed_rgb_expansion_obeys_allocation_cap_before_reserve() {
+    let source = indexed_image_pdf(
+        &[0, 0, 0],
+        "/Width 8 /Height 3 /BitsPerComponent 1 /ColorSpace [/Indexed /DeviceRGB 1 <0A141EC8D2DC>]",
+        b"null",
+    );
+    // The output is 8 * 3 pixels, each with three independently specified
+    // channels. A decoder cap below 72 must reject that reservation.
+    for cap in [71, 72, 74, 75, 76] {
+        let doc = PdfDocument::from_bytes_with_limits(
+            source.clone(),
+            PdfImportLimits {
+                codec_allocation_bytes: cap,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let handles = doc.page_image_handles(0).unwrap();
+        assert_eq!(handles.len(), 1);
+        let result = handles[0].decode();
+        if cap < 72 {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            assert!(doc.check_import_budget().is_err());
+            assert!(handles[0].decode().is_err());
+        } else {
+            let decoded = result.unwrap();
+            let png = decoded.to_png_bytes_with_budget(doc.import_budget().unwrap());
+            // Decoding fits; the subsequent PNG compressor has a separate,
+            // larger private allocation, which this deliberately tiny cap rejects.
+            assert!(matches!(png, Err(Error::ImportResourceLimit(_))));
+        }
+    }
+}
+
+#[test]
+fn indexed_palette_and_expansion_share_the_document_budget() {
+    let source = indexed_image_pdf(
+        &[0, 0, 0],
+        "/Width 8 /Height 3 /BitsPerComponent 1 /ColorSpace [/Indexed /DeviceRGB 1 <0A141EC8D2DC>]",
+        b"null",
+    );
+    let normal = PdfDocument::from_bytes_with_limits(source.clone(), Default::default()).unwrap();
+    let handles = normal.page_image_handles(0).unwrap();
+    handles[0].decode().unwrap();
+    let consumed = normal.import_budget().unwrap().decoded_bytes();
+    for cap in [consumed - 1, consumed, consumed + 1] {
+        let doc = PdfDocument::from_bytes_with_limits(
+            source.clone(),
+            PdfImportLimits {
+                decoded_bytes: cap,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let handles = doc.page_image_handles(0).unwrap();
+        let result = handles[0].decode();
+        if cap < consumed {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+        } else {
+            assert!(result.is_ok());
+        }
+        // A repeated decode is additional work in the same request.
+        assert!(matches!(
+            handles[0].decode(),
+            Err(Error::ImportResourceLimit(_))
+        ));
+        assert!(doc.check_import_budget().is_err());
+    }
+}
+
+#[test]
+fn indexed_palette_validation_and_decode_mapping_preserve_sample_meaning() {
+    use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
+    for (data, bpc, lookup, hival, decode, expected) in [
+        (
+            vec![0b0001_1000],
+            2,
+            "0A141E28",
+            3,
+            "[3 0]",
+            vec![40, 30, 20],
+        ),
+        (vec![0, 128, 255], 8, "0A141E", 2, "[0 2]", vec![10, 20, 30]),
+        (vec![0x08, 0xF0], 4, "0A141E", 2, "[2 0]", vec![30, 20, 10]),
+    ] {
+        let entries = format!("/Width 3 /Height 1 /BitsPerComponent {bpc} /ColorSpace [/Indexed /DeviceGray {hival} <{lookup}>] /Decode {decode}");
+        let imported = parse_pdf_with_options(
+            &indexed_image_pdf(&data, &entries, b"null"),
+            &PdfImportOptions::default(),
+        )
+        .unwrap();
+        let pixels = image::load_from_memory(&imported.document.bin_data_content[0].data.load())
+            .unwrap()
+            .to_luma8();
+        assert_eq!(pixels.as_raw(), &expected);
+    }
+    for color_space in [
+        "[/Indexed /DeviceRGB 256 <000000FFFFFF>]",
+        "[/Indexed /DeviceRGB -1 <000000FFFFFF>]",
+        "[/Indexed /DeviceRGB 1 <000000FFFF>]",
+    ] {
+        let entries = format!("/Width 1 /Height 1 /BitsPerComponent 1 /ColorSpace {color_space}");
+        assert!(parse_pdf_with_options(
+            &indexed_image_pdf(&[0], &entries, b"null"),
+            &PdfImportOptions::default()
+        )
+        .is_err());
+    }
+}
+
+#[test]
+fn indexed_stream_palette_and_filter_chain_keep_bounds_and_pixels() {
+    use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
+    let data = ccitt_rows(-1, false);
+    let encoded = data.iter().map(|b| format!("{b:02X}")).collect::<String>();
+    let entries = "/Width 8 /Height 3 /BitsPerComponent 1 /ColorSpace [/Indexed /DeviceRGB 1 <0A141EC8D2DC>] /Filter [/ASCIIHexDecode /CCITTFaxDecode] /DecodeParms [null 7 0 R]";
+    let imported = parse_pdf_with_options(
+        &indexed_image_pdf(
+            encoded.as_bytes(),
+            entries,
+            b"<< /K -1 /Columns 8 /Rows 3 >>",
+        ),
+        &PdfImportOptions::default(),
+    )
+    .unwrap();
+    let pixels = image::load_from_memory(&imported.document.bin_data_content[0].data.load())
+        .unwrap()
+        .to_rgb8();
+    assert_eq!(pixels.get_pixel(3, 2).0, [200, 210, 220]);
+    assert_eq!(pixels.get_pixel(0, 0).0, [10, 20, 30]);
+
+    let entries =
+        "/Width 8 /Height 3 /BitsPerComponent 1 /ColorSpace [/Indexed /DeviceRGB 1 7 0 R]";
+    for size in [6, 8192] {
+        let palette = if size == 6 {
+            vec![10, 20, 30, 200, 210, 220]
+        } else {
+            vec![0; size]
+        };
+        let compressed = flate(&palette);
+        let mut stream = format!(
+            "<< /Length {} /Filter /FlateDecode >>\nstream\n",
+            compressed.len()
+        )
+        .into_bytes();
+        stream.extend_from_slice(&compressed);
+        stream.extend_from_slice(b"\nendstream");
+        let doc = PdfDocument::from_bytes_with_limits(
+            indexed_image_pdf(&[0, 0, 0], entries, &stream),
+            PdfImportLimits {
+                stream_bytes: 4096,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let handles = doc.page_image_handles(0).unwrap();
+        let decoded = handles[0].decode();
+        if size == 6 {
+            let png = decoded
+                .unwrap()
+                .to_png_bytes_with_budget(doc.import_budget().unwrap())
+                .unwrap();
+            assert!(image::load_from_memory(&png)
+                .unwrap()
+                .to_rgb8()
+                .pixels()
+                .all(|p| p.0 == [10, 20, 30]));
+        } else {
+            assert!(matches!(decoded, Err(Error::ImportResourceLimit(_))));
+            assert!(handles[0].decode().is_err());
+        }
+    }
+}
+
+#[test]
+fn inline_image_decode_keeps_the_request_stream_budget() {
+    // Inline BI/ID/EI and a referenced Image XObject encode the same samples.
+    // The former must not turn a bounded content stream into unbound image
+    // bytes when it constructs the synthetic XObject used by decode().
+    for inline in [false, true] {
+        for length in [6, 4095, 4096, 4097] {
+            let samples = vec![65; length];
+            let compressed = flate(&samples);
+            let source = if inline {
+                let hex = compressed
+                    .iter()
+                    .map(|b| format!("{b:02X}"))
+                    .collect::<String>();
+                let content = format!("BI /W 2 /H 1 /BPC 8 /CS /RGB /F [/AHx /Fl] ID {hex}> EI");
+                object_file(&objects(content.as_bytes(), "", ""), "")
+            } else {
+                indexed_image_pdf(
+                    &compressed,
+                    "/Width 2 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Filter /FlateDecode",
+                    b"null",
+                )
+            };
+            let doc = PdfDocument::from_bytes_with_limits(
+                source,
+                PdfImportLimits {
+                    stream_bytes: 4096,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            let handles = doc.page_image_handles(0).unwrap();
+            assert_eq!(handles.len(), 1);
+            let result = handles[0].decode();
+            if length > 4096 {
+                assert!(
+                    matches!(result, Err(Error::ImportResourceLimit(_))),
+                    "inline={inline}, decoded length={length}"
+                );
+                assert!(doc.check_import_budget().is_err());
+                assert!(handles[0].decode().is_err());
+            } else {
+                let image = result.unwrap();
+                if length == 6 {
+                    let png = image
+                        .to_png_bytes_with_budget(doc.import_budget().unwrap())
+                        .unwrap();
+                    assert!(image::load_from_memory(&png)
+                        .unwrap()
+                        .to_rgb8()
+                        .pixels()
+                        .all(|p| p.0 == [65, 65, 65]));
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn sample_conversion_reserves_with_the_request_codec_limit() {
+    // ISO 32000-1 Table 89 / 8.9.5.2: each row has 1,025 gray samples.
+    // All three transformations must reserve exactly that output, before
+    // writing it. The LUT (256 bytes) is smaller than each tested limit.
+    for (bpc, data, extra, expected) in [
+        (1, vec![0; 129], "", 0),
+        (8, vec![0; 1025], "/Decode [1 0]", 255),
+        (16, vec![0x80; 2050], "", 128),
+    ] {
+        let entries = format!(
+            "/Width 1025 /Height 1 /BitsPerComponent {bpc} /ColorSpace /DeviceGray {extra}"
+        );
+        for cap in [1024, 1025, 1026] {
+            let doc = PdfDocument::from_bytes_with_limits(
+                indexed_image_pdf(&data, &entries, b"null"),
+                PdfImportLimits {
+                    codec_allocation_bytes: cap,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            let handles = doc.page_image_handles(0).unwrap();
+            let result = handles[0].decode();
+            if cap < 1025 {
+                assert!(
+                    matches!(result, Err(Error::ImportResourceLimit(_))),
+                    "bpc={bpc}, cap={cap}"
+                );
+                assert!(handles[0].decode().is_err());
+            } else {
+                let image = result.unwrap();
+                let pdf_oxide::extractors::images::ImageData::Raw { pixels, .. } = image.data()
+                else {
+                    panic!("raw samples expected")
+                };
+                assert_eq!(pixels, &vec![expected; 1025]);
+                assert_eq!(image.bits_per_component(), 8);
+            }
+        }
+    }
+}
+
+#[test]
+fn sample_lut_and_output_share_cumulative_request_accounting() {
+    let source = indexed_image_pdf(
+        &[0b1010_1000],
+        "/Width 2 /Height 1 /BitsPerComponent 1 /ColorSpace /DeviceRGB",
+        b"null",
+    );
+    for cap in [767, 768, 769] {
+        let doc = PdfDocument::from_bytes_with_limits(
+            source.clone(),
+            PdfImportLimits {
+                codec_allocation_bytes: cap,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let handles = doc.page_image_handles(0).unwrap();
+        let result = handles[0].decode();
+        if cap == 767 {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+        } else {
+            let image = result.unwrap();
+            let pdf_oxide::extractors::images::ImageData::Raw { pixels, .. } = image.data() else {
+                panic!("raw expected")
+            };
+            assert_eq!(pixels, &[255, 0, 255, 0, 255, 0]);
+            // Three 256-entry component tables plus six transformed samples.
+            assert_eq!(
+                doc.import_budget().unwrap().codec_allocated_bytes(),
+                768 + 6
+            );
+        }
+    }
+    let doc =
+        PdfDocument::from_bytes_with_limits(source.clone(), PdfImportLimits::default()).unwrap();
+    doc.page_image_handles(0).unwrap()[0].decode().unwrap();
+    let consumed = doc.import_budget().unwrap().decoded_bytes();
+    for cap in [consumed - 1, consumed, consumed + 1] {
+        let doc = PdfDocument::from_bytes_with_limits(
+            source.clone(),
+            PdfImportLimits {
+                decoded_bytes: cap,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let handles = doc.page_image_handles(0).unwrap();
+        assert_eq!(handles[0].decode().is_ok(), cap >= consumed);
+        assert!(matches!(
+            handles[0].decode(),
+            Err(Error::ImportResourceLimit(_))
+        ));
+    }
+}
+
+#[test]
+fn limited_sample_geometry_and_decode_do_not_silently_fabricate_pixels() {
+    for (data, bpc, extra) in [
+        (vec![], 1, ""),
+        (vec![0], 16, ""),
+        (vec![0], 8, "/Decode [1 0]"),
+        (vec![0], 257, ""),
+        (vec![0], -255, ""),
+        (vec![0], 1, "/Decode [0]"),
+        (vec![0], 1, "/Decode [/bad 1]"),
+    ] {
+        let entries =
+            format!("/Width 2 /Height 1 /BitsPerComponent {bpc} /ColorSpace /DeviceGray {extra}");
+        let doc = PdfDocument::from_bytes_with_limits(
+            indexed_image_pdf(&data, &entries, b"null"),
+            PdfImportLimits::default(),
+        )
+        .unwrap();
+        assert!(
+            doc.page_image_handles(0).unwrap()[0].decode().is_err(),
+            "bpc={bpc}, extra={extra}"
+        );
+    }
+    // Non-byte-aligned rows are individually padded, and indirect Decode is
+    // still the same mapping. Padding bits never become next-row samples.
+    let source = indexed_image_pdf(
+        &[0x18, 0xE4],
+        "/Width 3 /Height 2 /BitsPerComponent 2 /ColorSpace /DeviceGray /Decode 7 0 R",
+        b"[1 0]",
+    );
+    let doc = PdfDocument::from_bytes_with_limits(source, PdfImportLimits::default()).unwrap();
+    let image = doc.page_image_handles(0).unwrap()[0].decode().unwrap();
+    let pdf_oxide::extractors::images::ImageData::Raw { pixels, .. } = image.data() else {
+        panic!("raw expected")
+    };
+    assert_eq!(pixels, &[255, 170, 85, 0, 85, 170]);
+    assert!(image.decode_folded_in());
+
+    let source = indexed_image_pdf(
+        &[0x08, 0xF0, 0xF8, 0x00],
+        "/Width 3 /Height 2 /BitsPerComponent 4 /ColorSpace /DeviceGray",
+        b"null",
+    );
+    for limited in [false, true] {
+        let doc = if limited {
+            PdfDocument::from_bytes_with_limits(source.clone(), PdfImportLimits::default())
+        } else {
+            PdfDocument::from_bytes(source.clone())
+        }
+        .unwrap();
+        let image = doc.page_image_handles(0).unwrap()[0].decode().unwrap();
+        let pdf_oxide::extractors::images::ImageData::Raw { pixels, .. } = image.data() else {
+            panic!("raw expected")
+        };
+        assert_eq!(pixels, &[0, 136, 255, 255, 136, 0]);
+    }
+}
+
+#[test]
+fn limited_import_rejects_unapplied_image_masks_instead_of_dropping_them() {
+    use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
+    for (extra, mask_object) in [
+        ("/Mask [0 0 0 0 0 0]", b"null".to_vec()),
+        ("/Mask 7 0 R", b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ImageMask true /BitsPerComponent 1 /Length 1 >>\nstream\n\x80\nendstream".to_vec()),
+        ("/SMask 7 0 R", b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Length 1 >>\nstream\n\x80\nendstream".to_vec()),
+    ] {
+        let entries = format!("/Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB {extra}");
+        let source = indexed_image_pdf(&[0, 0, 0], &entries, &mask_object);
+        let doc = PdfDocument::from_bytes_with_limits(source.clone(), PdfImportLimits::default()).unwrap();
+        assert!(matches!(doc.page_image_handles(0).unwrap()[0].decode(), Err(Error::Unsupported(_))), "{extra}");
+        let err = parse_pdf_with_options(&source, &PdfImportOptions::default()).err().expect("mask cannot be silently discarded");
+        assert_eq!(err.code, "PDF_IMAGE_UNSUPPORTED");
+        // Legacy image extraction still serves callers that apply masks
+        // themselves; this restriction belongs to bounded handle import.
+        assert!(PdfDocument::from_bytes(source).unwrap().page_image_handles(0).unwrap()[0].decode().is_ok());
+    }
+    for inline in [false, true] {
+        let source = if inline {
+            object_file(
+                &objects(b"BI /W 1 /H 1 /IM true /BPC 1 ID \x80 EI", "", ""),
+                "",
+            )
+        } else {
+            indexed_image_pdf(
+                &[0x80],
+                "/Width 1 /Height 1 /ImageMask true /BitsPerComponent 1",
+                b"null",
+            )
+        };
+        let err = parse_pdf_with_options(&source, &PdfImportOptions::default())
+            .err()
+            .expect("stencil import requires the painting colour");
+        assert_eq!(err.code, "PDF_IMAGE_UNSUPPORTED");
+    }
+    // Null dictionary values are absent, and a false ImageMask is ordinary
+    // colour data (ISO 32000-1 7.3.9 and Table 89).
+    let source = indexed_image_pdf(&[10, 20, 30], "/Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Mask null /SMask 7 0 R /ImageMask false", b"null");
+    let imported = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+    assert_eq!(
+        image::load_from_memory(&imported.document.bin_data_content[0].data.load())
+            .unwrap()
+            .to_rgb8()
+            .get_pixel(0, 0)
+            .0,
+        [10, 20, 30]
+    );
+
+    // A later masked page must fail the whole import, while selecting just the
+    // ordinary first page remains valid. No partially built IR may escape.
+    let mut pages = objects(b"/Im Do", "", "");
+    pages[1] = b"<< /Type /Pages /Count 2 /Kids [3 0 R 7 0 R] >>".to_vec();
+    pages[2] = b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /XObject << /Im 6 0 R >> >> /Contents 4 0 R >>".to_vec();
+    pages.push(b"<< /Subtype /Image /Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Length 3 >>\nstream\nABC\nendstream".to_vec());
+    pages.push(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /XObject << /Im 8 0 R >> >> /Contents 4 0 R >>".to_vec());
+    pages.push(b"<< /Subtype /Image /Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Mask [0 0 0 0 0 0] /Length 3 >>\nstream\nABC\nendstream".to_vec());
+    let source = object_file(&pages, "");
+    for source_pages in [None, Some(vec![1])] {
+        let error = parse_pdf_with_options(&source, &PdfImportOptions { source_pages })
+            .err()
+            .expect("whole selected import must fail");
+        assert_eq!(error.code, "PDF_IMAGE_UNSUPPORTED");
+    }
+    let normal = parse_pdf_with_options(
+        &source,
+        &PdfImportOptions {
+            source_pages: Some(vec![0]),
+        },
+    )
+    .unwrap();
+    assert_eq!(normal.metadata.pages.len(), 1);
+    assert_eq!(normal.metadata.pages[0].source_page, 0);
+}
+
+#[test]
+fn png_color_conversion_obeys_the_same_codec_allocation_limit() {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage, PixelFormat};
+    for (space, format, pixels) in [
+        (
+            ColorSpace::DeviceCMYK,
+            PixelFormat::CMYK,
+            vec![0, 0, 0, 0, 0, 255, 255, 0],
+        ),
+        (
+            ColorSpace::ICCBased(1),
+            PixelFormat::Grayscale,
+            vec![0, 255],
+        ),
+    ] {
+        let image = PdfImage::new(2, 1, space, 8, ImageData::Raw { pixels, format });
+        // Color policy is unchanged in this resource patch. Compare the
+        // unmodified legacy conversion; six bytes are independently required
+        // for two RGB pixels, regardless of that colour policy.
+        let expected = image::load_from_memory(&image.to_png_bytes().unwrap())
+            .unwrap()
+            .to_rgb8();
+        for cap in [5, 6, 7, 8, 1024 * 1024] {
+            let budget = ImportBudget::new(PdfImportLimits {
+                codec_allocation_bytes: cap,
+                ..Default::default()
+            })
+            .unwrap();
+            let result = image.to_png_bytes_with_budget(&budget);
+            if cap < 1024 * 1024 {
+                assert!(
+                    matches!(result, Err(Error::ImportResourceLimit(_))),
+                    "{space:?} cap={cap}"
+                );
+                assert!(budget.check().is_err());
+                // RGB conversion fits at six; the compressor must still be gated.
+                assert_eq!(budget.codec_allocated_bytes(), if cap >= 6 { 6 } else { 0 });
+            } else {
+                assert_eq!(
+                    image::load_from_memory(&result.unwrap()).unwrap().to_rgb8(),
+                    expected
+                );
+                assert!(budget.codec_allocated_bytes() > 6 + 65536);
+            }
+        }
+    }
+}
+
+#[test]
+fn png_encoder_scratch_is_reserved_before_the_output_writer() {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage, PixelFormat};
+    let image = PdfImage::new(
+        2,
+        1,
+        ColorSpace::DeviceRGB,
+        8,
+        ImageData::Raw {
+            pixels: vec![1, 2, 3, 4, 5, 6],
+            format: PixelFormat::RGB,
+        },
+    );
+    let normal = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    image.to_png_bytes_with_budget(&normal).unwrap();
+    let scratch = normal.codec_allocated_bytes();
+    // The audited compressor owns a 32KiB window and a hash table, not merely
+    // the seven-byte scanline. Its actual allocation is charged before init.
+    assert!(scratch >= 65536);
+    for cap in [scratch - 1, scratch, scratch + 1] {
+        let budget = ImportBudget::new(PdfImportLimits {
+            codec_allocation_bytes: cap,
+            ..Default::default()
+        })
+        .unwrap();
+        let result = image.to_png_bytes_with_budget(&budget);
+        if cap < scratch {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            assert_eq!(budget.codec_allocated_bytes(), 0);
+            assert!(image.to_png_bytes_with_budget(&budget).is_err());
+        } else {
+            assert_eq!(
+                image::load_from_memory(&result.unwrap())
+                    .unwrap()
+                    .to_rgb8()
+                    .as_raw(),
+                &[1, 2, 3, 4, 5, 6]
+            );
+            assert_eq!(budget.codec_allocated_bytes(), scratch);
+        }
+    }
+}
+
+#[test]
+fn jpeg_input_copy_is_charged_before_the_image_decoder_is_created() {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage};
+    let mut jpeg = Vec::new();
+    image::codecs::jpeg::JpegEncoder::new(&mut jpeg)
+        .encode(
+            &[12, 34, 56, 78, 90, 123],
+            2,
+            1,
+            image::ExtendedColorType::Rgb8,
+        )
+        .unwrap();
+    let input_bytes = jpeg.len();
+    let image = PdfImage::new(2, 1, ColorSpace::DeviceRGB, 8, ImageData::Jpeg(jpeg));
+    let expected = image::load_from_memory(&image.to_png_bytes().unwrap())
+        .unwrap()
+        .to_rgb8();
+    for cap in [input_bytes - 1, input_bytes, input_bytes + 1, 1024 * 1024] {
+        let budget = ImportBudget::new(PdfImportLimits {
+            codec_allocation_bytes: cap,
+            ..Default::default()
+        })
+        .unwrap();
+        let result = image.to_png_bytes_with_budget(&budget);
+        if cap < input_bytes {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            assert_eq!(budget.codec_allocated_bytes(), 0);
+            assert!(image.to_png_bytes_with_budget(&budget).is_err());
+        } else if cap < 1024 * 1024 {
+            // Input fits; a private JPEG or subsequent PNG reservation must fail.
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            assert!(budget.codec_allocated_bytes() >= input_bytes);
+        } else {
+            assert_eq!(
+                image::load_from_memory(&result.unwrap()).unwrap().to_rgb8(),
+                expected
+            );
+            assert!(budget.codec_allocated_bytes() >= input_bytes + 6);
+        }
+    }
+}
+
+fn png_rgb_pair() -> pdf_oxide::extractors::images::PdfImage {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage, PixelFormat};
+    PdfImage::new(
+        2,
+        1,
+        ColorSpace::DeviceRGB,
+        8,
+        ImageData::Raw {
+            pixels: vec![1, 2, 3, 4, 5, 6],
+            format: PixelFormat::RGB,
+        },
+    )
+}
+
+#[test]
+fn png_output_and_cumulative_limits_include_container_and_repeated_work() {
+    let image = png_rgb_pair();
+    let normal = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    let encoded_bytes = image.to_png_bytes_with_budget(&normal).unwrap().len();
+    let scratch = normal.codec_allocated_bytes();
+    for cap in [encoded_bytes - 1, encoded_bytes, encoded_bytes + 1] {
+        let budget = budget(cap, 2 * 1024 * 1024);
+        let result = image.to_png_bytes_with_budget(&budget);
+        if cap < encoded_bytes {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            assert_eq!(budget.codec_allocated_bytes(), scratch);
+            assert!(budget.check().is_err());
+        } else {
+            let png = result.unwrap();
+            assert_eq!(png.len(), encoded_bytes);
+            assert_eq!(
+                image::load_from_memory(&png).unwrap().to_rgb8().as_raw(),
+                &[1, 2, 3, 4, 5, 6]
+            );
+        }
+    }
+    // Existing conservative image work + actual scratch + encoded output.
+    let one_request = 2 * 4 * 3 + scratch + encoded_bytes;
+    assert_eq!(normal.decoded_bytes(), one_request);
+    for count in [1, 2] {
+        for cap in [
+            count * one_request - 1,
+            count * one_request,
+            count * one_request + 1,
+        ] {
+            let budget = budget(4096, cap);
+            for _ in 1..count {
+                image.to_png_bytes_with_budget(&budget).unwrap();
+            }
+            let result = image.to_png_bytes_with_budget(&budget);
+            if cap < count * one_request {
+                assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+                assert!(image.to_png_bytes_with_budget(&budget).is_err());
+            } else {
+                result.unwrap();
+                assert_eq!(budget.decoded_bytes(), count * one_request);
+            }
+        }
+    }
+}
+
+#[test]
+fn png_scanlines_and_blocks_preserve_every_sample_across_boundaries() {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage, PixelFormat};
+    for (width, height, channels) in [
+        (16383, 1, 1),
+        (16384, 1, 1),
+        (5461, 1, 3),
+        (5462, 1, 3),
+        (7, 800, 3),
+        (20000, 3, 3),
+    ] {
+        let mut seed = 7911u32;
+        let pixels: Vec<u8> = (0..width * height * channels)
+            .map(|i| {
+                seed = seed.wrapping_mul(1664525).wrapping_add(1013904223);
+                if width == 5462 || height > 1 {
+                    (seed >> 24) as u8
+                } else {
+                    ((i * 37 + i / 251) % 256) as u8
+                }
+            })
+            .collect();
+        let image = PdfImage::new(
+            width,
+            height,
+            if channels == 1 {
+                ColorSpace::DeviceGray
+            } else {
+                ColorSpace::DeviceRGB
+            },
+            8,
+            ImageData::Raw {
+                pixels: pixels.clone(),
+                format: if channels == 1 {
+                    PixelFormat::Grayscale
+                } else {
+                    PixelFormat::RGB
+                },
+            },
+        );
+        let budget = ImportBudget::new(PdfImportLimits::default()).unwrap();
+        let actual =
+            image::load_from_memory(&image.to_png_bytes_with_budget(&budget).unwrap()).unwrap();
+        assert_eq!((actual.width(), actual.height()), (width, height));
+        let bytes = if channels == 1 {
+            actual.to_luma8().into_raw()
+        } else {
+            actual.to_rgb8().into_raw()
+        };
+        assert_eq!(bytes, pixels);
+        let tiny = ImportBudget::new(PdfImportLimits::default()).unwrap();
+        png_rgb_pair().to_png_bytes_with_budget(&tiny).unwrap();
+        // Streaming rows/IDAT chunks reuse exactly the same compressor memory.
+        assert_eq!(budget.codec_allocated_bytes(), tiny.codec_allocated_bytes());
+    }
+}
+
+#[test]
+fn png_large_custom_limits_do_not_overflow_geometry_or_accept_short_pixels() {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage, PixelFormat};
+    for (width, height) in [(0, 1), (1, 0), (100_000, 100_000), (u32::MAX, u32::MAX)] {
+        let image = PdfImage::new(
+            width,
+            height,
+            ColorSpace::DeviceRGB,
+            8,
+            ImageData::Raw {
+                pixels: vec![],
+                format: PixelFormat::RGB,
+            },
+        );
+        let limits = ImportBudget::new(PdfImportLimits {
+            stream_bytes: usize::MAX,
+            decoded_bytes: usize::MAX,
+            codec_allocation_bytes: usize::MAX,
+            ..Default::default()
+        })
+        .unwrap();
+        assert!(image.to_png_bytes_with_budget(&limits).is_err());
+        assert_eq!(limits.codec_allocated_bytes(), 0);
+    }
+}
+
+#[test]
+fn bounded_png_compresses_repeated_scanlines_without_changing_pixels() {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage, PixelFormat};
+    let pixels: Vec<u8> = (0..512 * 256 * 3).map(|i| (i % 256) as u8).collect();
+    let image = PdfImage::new(
+        512,
+        256,
+        ColorSpace::DeviceRGB,
+        8,
+        ImageData::Raw {
+            pixels: pixels.clone(),
+            format: PixelFormat::RGB,
+        },
+    );
+    let limits = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    let png = image.to_png_bytes_with_budget(&limits).unwrap();
+    assert_eq!(
+        image::load_from_memory(&png).unwrap().to_rgb8().as_raw(),
+        &pixels
+    );
+    // Identical scanlines are compressible. This detects the previous stored-
+    // block expansion without pinning a compressor's exact byte representation.
+    assert!(
+        png.len() < pixels.len() / 2,
+        "repeated rows expanded to {} bytes",
+        png.len()
+    );
+}
+
+#[test]
+fn flate_private_allocation_is_guarded_even_for_empty_output() {
+    // RFC 1950 empty stream, independently generated with Python zlib.compress(b"").
+    let empty = [0x78, 0x9c, 3, 0, 0, 0, 0, 1];
+    for cap in [1, 32767] {
+        let shared = ImportBudget::new(PdfImportLimits {
+            codec_allocation_bytes: cap,
+            ..PdfImportLimits::default()
+        })
+        .unwrap();
+        assert!(matches!(
+            decode(&empty, &["FlateDecode"], &shared),
+            Err(Error::ImportResourceLimit(_))
+        ));
+        assert_eq!(shared.codec_allocated_bytes(), 0);
+        assert_eq!(shared.decoded_bytes(), 0);
+        assert!(decode(&empty, &["FlateDecode"], &shared).is_err());
+    }
+    assert!(decode(&empty, &["FlateDecode"], &budget(1, 1024 * 1024))
+        .unwrap()
+        .is_empty());
+}
+
+#[test]
+fn flate_requires_complete_stream_and_valid_checksum() {
+    let expected = b"bounded Flate stream";
+    let encoded = flate(expected);
+    // A complete payload without its RFC 1950 checksum is not a complete stream.
+    for missing in [1, 4, 5] {
+        let result = decode(
+            &encoded[..encoded.len() - missing],
+            &["FlateDecode"],
+            &budget(1024, 1024 * 1024),
+        );
+        assert!(
+            result.is_err(),
+            "accepted {missing} missing trailer/payload bytes: {result:?}"
+        );
+    }
+    let mut damaged = encoded;
+    *damaged.last_mut().unwrap() ^= 1;
+    assert!(decode(&damaged, &["FlateDecode"], &budget(1024, 1024 * 1024)).is_err());
+    assert_eq!(
+        decode(
+            &flate(expected),
+            &["FlateDecode"],
+            &budget(1024, 1024 * 1024)
+        )
+        .unwrap(),
+        expected
+    );
+}
+
+#[test]
+fn flate_scratch_and_output_have_independent_exact_limits() {
+    let bytes = flate(b"AB");
+    let normal = budget(2, 1024 * 1024);
+    assert_eq!(decode(&bytes, &["FlateDecode"], &normal).unwrap(), b"AB");
+    let scratch = normal.codec_allocated_bytes();
+    // The pinned decoder requests the 32 KiB Deflate window plus state and
+    // alignment. Exact size is ABI-dependent; do not pin a native struct size.
+    assert!(scratch > 32768);
+    assert_eq!(normal.decoded_bytes(), scratch + 2);
+    for cap in [scratch - 1, scratch, scratch + 1] {
+        let shared = ImportBudget::new(PdfImportLimits {
+            stream_bytes: 2,
+            codec_allocation_bytes: cap,
+            ..PdfImportLimits::default()
+        })
+        .unwrap();
+        let result = decode(&bytes, &["FlateDecode"], &shared);
+        if cap < scratch {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            assert_eq!(shared.codec_allocated_bytes(), 0);
+            assert!(decode(&bytes, &["FlateDecode"], &shared).is_err());
+        } else {
+            assert_eq!(result.unwrap(), b"AB");
+        }
+    }
+    for count in [1, 2, 3] {
+        let required = count * (scratch + 2);
+        for cap in [required - 1, required, required + 1] {
+            let shared = budget(2, cap);
+            for _ in 1..count {
+                assert_eq!(decode(&bytes, &["FlateDecode"], &shared).unwrap(), b"AB");
+            }
+            let result = decode(&bytes, &["FlateDecode"], &shared);
+            if cap < required {
+                assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+                assert!(decode(&bytes, &["FlateDecode"], &shared).is_err());
+            } else {
+                assert_eq!(result.unwrap(), b"AB");
+                assert_eq!(shared.codec_allocated_bytes(), count * scratch);
+                assert_eq!(shared.decoded_bytes(), required);
+            }
+        }
+    }
+}
+
+#[test]
+fn flate_raw_fallback_charges_both_attempts_and_never_retries_resource_failure() {
+    // Independently encoded raw RFC 1951 stored block: BFINAL=1, LEN=2, NLEN.
+    let raw = [1, 2, 0, 253, 255, b'A', b'B'];
+    let normal = budget(2, 1024 * 1024);
+    assert_eq!(
+        decode(&flate(b"AB"), &["FlateDecode"], &normal).unwrap(),
+        b"AB"
+    );
+    let scratch = normal.codec_allocated_bytes();
+    let total = scratch * 2 + 2;
+    for cap in [scratch - 1, scratch, total - 1, total, total + 1] {
+        let shared = budget(2, cap);
+        let result = decode(&raw, &["FlateDecode"], &shared);
+        if cap < total {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            assert!(decode(&raw, &["FlateDecode"], &shared).is_err());
+            if cap < scratch {
+                assert_eq!(shared.codec_allocated_bytes(), 0);
+            }
+            if cap == scratch {
+                assert_eq!(shared.codec_allocated_bytes(), scratch);
+            }
+        } else {
+            assert_eq!(result.unwrap(), b"AB");
+            assert_eq!(shared.codec_allocated_bytes(), scratch * 2);
+            assert_eq!(shared.decoded_bytes(), total);
+        }
+    }
+    assert!(decode(
+        &raw[..raw.len() - 1],
+        &["FlateDecode"],
+        &budget(2, 1024 * 1024)
+    )
+    .is_err());
+    let mut trailing = raw.to_vec();
+    trailing.extend_from_slice(b"\nunused PDF bytes");
+    assert_eq!(
+        decode(&trailing, &["FlateDecode"], &budget(2, 1024 * 1024)).unwrap(),
+        b"AB"
+    );
+}
+
+#[test]
+fn flate_multichunk_and_filter_chain_preserve_bytes_and_account_scratch() {
+    let pixels: Vec<u8> = (0..80000).map(|i| (i * 31 + i / 256) as u8).collect();
+    let encoded = flate(&pixels);
+    for cap in [pixels.len() - 1, pixels.len(), pixels.len() + 1] {
+        let shared = budget(cap, 2 * 1024 * 1024);
+        let result = decode(&encoded, &["FlateDecode"], &shared);
+        if cap < pixels.len() {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            assert!(shared.check().is_err());
+        } else {
+            assert_eq!(result.unwrap(), pixels);
+            assert_eq!(
+                shared.decoded_bytes(),
+                shared.codec_allocated_bytes() + pixels.len()
+            );
+        }
+    }
+    let shared = budget(4, 1024 * 1024);
+    assert_eq!(
+        decode(&flate(b"4142"), &["FlateDecode", "ASCIIHexDecode"], &shared).unwrap(),
+        b"AB"
+    );
+    assert_eq!(
+        shared.decoded_bytes(),
+        shared.codec_allocated_bytes() + 4 + 2
+    );
+}
+
+#[test]
+fn flate_private_limit_reaches_document_content_xref_and_image_consumers() {
+    let limits = PdfImportLimits {
+        // Smaller than the 32 KiB Deflate window plus its state, but larger
+        // than every small content/image/palette buffer in these documents.
+        codec_allocation_bytes: 32768,
+        ..Default::default()
+    };
+    let compressed = flate(b"0 0 m 10 10 l S");
+    let source = object_file(&objects(&compressed, "/Filter /FlateDecode", ""), "");
+    let doc = PdfDocument::from_bytes_with_limits(source.clone(), limits).unwrap();
+    assert!(matches!(
+        doc.extract_paths(0),
+        Err(Error::ImportResourceLimit(_))
+    ));
+    assert!(doc.check_import_budget().is_err());
+    assert!(doc.extract_paths(0).is_err());
+    let normal = PdfDocument::from_bytes_with_limits(source, Default::default()).unwrap();
+    assert!(!normal.extract_paths(0).unwrap().is_empty());
+
+    let xref = flate(&[0; 64]);
+    let mut source = b"%PDF-1.5\n".to_vec();
+    let offset = source.len();
+    write!(source, "1 0 obj\n<< /Type /XRef /Size 1 /W [1 4 2] /Root 2 0 R /Length {} /Filter /FlateDecode >>\nstream\n", xref.len()).unwrap();
+    source.extend(xref);
+    write!(source, "\nendstream\nendobj\nstartxref\n{offset}\n%%EOF\n").unwrap();
+    assert!(matches!(
+        PdfDocument::from_bytes_with_limits(source, limits),
+        Err(Error::ImportResourceLimit(_))
+    ));
+
+    for inline in [false, true] {
+        let compressed = flate(&[10, 20, 30, 40, 50, 60]);
+        let source = if inline {
+            let hex = compressed
+                .iter()
+                .map(|b| format!("{b:02X}"))
+                .collect::<String>();
+            let content = format!("BI /W 2 /H 1 /BPC 8 /CS /RGB /F [/AHx /Fl] ID {hex}> EI");
+            object_file(&objects(content.as_bytes(), "", ""), "")
+        } else {
+            indexed_image_pdf(&compressed, "/Width 2 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Filter /FlateDecode", b"null")
+        };
+        let doc = PdfDocument::from_bytes_with_limits(source.clone(), limits).unwrap();
+        let handles = doc.page_image_handles(0).unwrap();
+        assert_eq!(handles.len(), 1);
+        assert!(matches!(
+            handles[0].decode(),
+            Err(Error::ImportResourceLimit(_))
+        ));
+        assert_eq!(doc.import_budget().unwrap().codec_allocated_bytes(), 0);
+        assert!(handles[0].decode().is_err());
+        let normal = PdfDocument::from_bytes_with_limits(source, Default::default()).unwrap();
+        let image = normal.page_image_handles(0).unwrap()[0].decode().unwrap();
+        let png = image
+            .to_png_bytes_with_budget(normal.import_budget().unwrap())
+            .unwrap();
+        assert_eq!(
+            image::load_from_memory(&png).unwrap().to_rgb8().into_raw(),
+            [10, 20, 30, 40, 50, 60]
+        );
+    }
+}
+
+fn jpeg_allocation_pair() -> (
+    pdf_oxide::extractors::images::PdfImage,
+    pdf_oxide::extractors::images::PdfImage,
+    usize,
+) {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage};
+    let jpeg = include_bytes!("../fixtures/issue7911_jpeg/RGB-0-0.jpg");
+    let payload = [b"Exif\0\0".as_slice(), &vec![0; 32768]].concat();
+    let mut tagged = jpeg[..2].to_vec();
+    for _ in 0..4 {
+        tagged.extend_from_slice(&[0xff, 0xe1]);
+        tagged.extend_from_slice(&((payload.len() + 2) as u16).to_be_bytes());
+        tagged.extend_from_slice(&payload);
+    }
+    tagged.extend_from_slice(&jpeg[2..]);
+    let extra_input = tagged.len() - jpeg.len();
+    (
+        PdfImage::new(
+            19,
+            17,
+            ColorSpace::DeviceRGB,
+            8,
+            ImageData::Jpeg(jpeg.to_vec()),
+        ),
+        PdfImage::new(19, 17, ColorSpace::DeviceRGB, 8, ImageData::Jpeg(tagged)),
+        extra_input,
+    )
+}
+
+#[test]
+fn replaced_jpeg_metadata_reservations_remain_in_the_request_budget() {
+    let (plain, tagged, extra_input) = jpeg_allocation_pair();
+    let a = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    let b = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    let plain_png = plain.to_png_bytes_with_budget(&a).unwrap();
+    let tagged_png = tagged.to_png_bytes_with_budget(&b).unwrap();
+    assert_eq!(plain_png, tagged_png);
+    // Four replaced APP1 EXIF payloads each allocate 32KiB. This lower bound
+    // comes from the encoded marker lengths, independent of decoder internals.
+    assert!(b.codec_allocated_bytes() - a.codec_allocated_bytes() >= extra_input + 4 * 32768);
+}
+
+#[test]
+fn jpeg_metadata_cumulative_failure_is_sticky_and_request_local() {
+    let (plain, tagged, extra_input) = jpeg_allocation_pair();
+    let normal = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    let expected = plain.to_png_bytes_with_budget(&normal).unwrap();
+    let limited = ImportBudget::new(PdfImportLimits {
+        decoded_bytes: normal.decoded_bytes() + extra_input + 4096,
+        ..Default::default()
+    })
+    .unwrap();
+    assert!(matches!(
+        tagged.to_png_bytes_with_budget(&limited),
+        Err(Error::ImportResourceLimit(_))
+    ));
+    assert!(matches!(
+        plain.to_png_bytes_with_budget(&limited),
+        Err(Error::ImportResourceLimit(_))
+    ));
+    let fresh = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    assert_eq!(tagged.to_png_bytes_with_budget(&fresh).unwrap(), expected);
+}
+
+#[test]
+fn bounded_jpeg_baseline_progressive_subsampling_and_cmyk_preserve_pixels() {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage};
+    let cases: &[(&[u8], ColorSpace)] = &[
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/CMYK-0-0.jpg"),
+            ColorSpace::DeviceCMYK,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/CMYK-1-0.jpg"),
+            ColorSpace::DeviceCMYK,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/L-0-0.jpg"),
+            ColorSpace::DeviceGray,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/L-1-0.jpg"),
+            ColorSpace::DeviceGray,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/RGB-0-0.jpg"),
+            ColorSpace::DeviceRGB,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/RGB-0-1.jpg"),
+            ColorSpace::DeviceRGB,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/RGB-0-2.jpg"),
+            ColorSpace::DeviceRGB,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/RGB-1-0.jpg"),
+            ColorSpace::DeviceRGB,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/RGB-1-1.jpg"),
+            ColorSpace::DeviceRGB,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/RGB-1-2.jpg"),
+            ColorSpace::DeviceRGB,
+        ),
+    ];
+    for (bytes, color) in cases {
+        let image = PdfImage::new(19, 17, color.clone(), 8, ImageData::Jpeg(bytes.to_vec()));
+        let expected = image::load_from_memory(&image.to_png_bytes().unwrap())
+            .unwrap()
+            .to_rgb8();
+        let budget = ImportBudget::new(PdfImportLimits::default()).unwrap();
+        let actual = image::load_from_memory(&image.to_png_bytes_with_budget(&budget).unwrap())
+            .unwrap()
+            .to_rgb8();
+        assert_eq!(actual, expected, "{color:?}");
+    }
+}
+
+fn cmyk_allocation_pair() -> (
+    pdf_oxide::extractors::images::PdfImage,
+    pdf_oxide::extractors::images::PdfImage,
+) {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage};
+    let source = include_bytes!("../fixtures/issue7911_jpeg/CMYK-0-0.jpg");
+    let payload = [b"Exif\0\0".as_slice(), &vec![0; 32768]].concat();
+    let mut tagged = source[..2].to_vec();
+    for _ in 0..4 {
+        tagged.extend_from_slice(&[0xff, 0xe1]);
+        tagged.extend_from_slice(&((payload.len() + 2) as u16).to_be_bytes());
+        tagged.extend_from_slice(&payload);
+    }
+    tagged.extend_from_slice(&source[2..]);
+    (
+        PdfImage::new(
+            19,
+            17,
+            ColorSpace::DeviceCMYK,
+            8,
+            ImageData::Jpeg(source.to_vec()),
+        ),
+        PdfImage::new(19, 17, ColorSpace::DeviceCMYK, 8, ImageData::Jpeg(tagged)),
+    )
+}
+
+#[test]
+fn cmyk_jpeg_replaced_metadata_is_charged_before_reservation() {
+    let (plain, tagged) = cmyk_allocation_pair();
+    let a = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    let b = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    assert_eq!(
+        plain.to_png_bytes_with_budget(&a).unwrap(),
+        tagged.to_png_bytes_with_budget(&b).unwrap()
+    );
+    // The encoded four EXIF payloads each contain 32KiB. Replaced/free metadata
+    // remains request work; this lower bound does not pin private struct sizes.
+    assert!(b.codec_allocated_bytes() - a.codec_allocated_bytes() >= 4 * 32768);
+    let limited = ImportBudget::new(PdfImportLimits {
+        codec_allocation_bytes: 32768,
+        ..Default::default()
+    })
+    .unwrap();
+    assert!(matches!(
+        tagged.to_png_bytes_with_budget(&limited),
+        Err(Error::ImportResourceLimit(_))
+    ));
+    assert!(limited.check().is_err());
+}
+
+#[test]
+fn cmyk_jpeg_budget_failure_is_sticky_and_request_local() {
+    let (plain, tagged) = cmyk_allocation_pair();
+    let normal = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    let expected = plain.to_png_bytes_with_budget(&normal).unwrap();
+    let limited = ImportBudget::new(PdfImportLimits {
+        decoded_bytes: normal.decoded_bytes() + 4096,
+        ..Default::default()
+    })
+    .unwrap();
+    assert!(matches!(
+        tagged.to_png_bytes_with_budget(&limited),
+        Err(Error::ImportResourceLimit(_))
+    ));
+    assert!(matches!(
+        plain.to_png_bytes_with_budget(&limited),
+        Err(Error::ImportResourceLimit(_))
+    ));
+    let fresh = ImportBudget::new(PdfImportLimits::default()).unwrap();
+    assert_eq!(tagged.to_png_bytes_with_budget(&fresh).unwrap(), expected);
+}
+
+#[test]
+fn cmyk_pdf_xobject_propagates_private_decoder_limits() {
+    use pdf_oxide::extractors::images::ImageData;
+    let (_, tagged) = cmyk_allocation_pair();
+    let ImageData::Jpeg(bytes) = tagged.data() else {
+        unreachable!()
+    };
+    let source = indexed_image_pdf(
+        bytes,
+        "/Width 19 /Height 17 /BitsPerComponent 8 /ColorSpace /DeviceCMYK /Filter /DCTDecode",
+        b"null",
+    );
+    let doc = PdfDocument::from_bytes_with_limits(
+        source.clone(),
+        PdfImportLimits {
+            codec_allocation_bytes: 32768,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let im = doc.page_image_handles(0).unwrap()[0].decode().unwrap();
+    assert!(matches!(
+        im.to_png_bytes_with_budget(doc.import_budget().unwrap()),
+        Err(Error::ImportResourceLimit(_))
+    ));
+    assert!(doc.check_import_budget().is_err());
+    assert!(doc.page_image_handles(0).is_err());
+    let fresh = PdfDocument::from_bytes_with_limits(source, Default::default()).unwrap();
+    let im = fresh.page_image_handles(0).unwrap()[0].decode().unwrap();
+    assert!(!im
+        .to_png_bytes_with_budget(fresh.import_budget().unwrap())
+        .unwrap()
+        .is_empty());
+}
+
+#[test]
+fn cmyk_large_workers_and_lossless_preserve_legacy_samples() {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage};
+    let cases: &[(&[u8], u32, u32)] = &[
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/YCCK-large.jpg"),
+            257,
+            129,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/CMYK-large-progressive.jpg"),
+            257,
+            129,
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/CMYK-lossless-8.jpg"),
+            19,
+            17,
+        ),
+    ];
+    for &(bytes, width, height) in cases {
+        let im = PdfImage::new(
+            width,
+            height,
+            ColorSpace::DeviceCMYK,
+            8,
+            ImageData::Jpeg(bytes.to_vec()),
+        );
+        let normal = ImportBudget::new(PdfImportLimits::default()).unwrap();
+        let actual = im.to_png_bytes_with_budget(&normal).unwrap();
+        let expected = im.to_png_bytes().unwrap();
+        assert_eq!(
+            image::load_from_memory(&actual).unwrap().to_rgb8(),
+            image::load_from_memory(&expected).unwrap().to_rgb8()
+        );
+        let repeated = ImportBudget::new(PdfImportLimits {
+            decoded_bytes: normal.decoded_bytes(),
+            ..Default::default()
+        })
+        .unwrap();
+        assert_eq!(im.to_png_bytes_with_budget(&repeated).unwrap(), actual);
+        assert!(matches!(
+            im.to_png_bytes_with_budget(&repeated),
+            Err(Error::ImportResourceLimit(_))
+        ));
+    }
+}
+
+fn copied_object_file(stream: bool) -> Vec<u8> {
+    let mut value = format!("<< /Nested [({}) /Name [1 2 3]]", "a".repeat(4096)).into_bytes();
+    if stream {
+        value.extend(b" /Length 16384 >>\nstream\n");
+        value.extend(vec![b'X'; 16384]);
+        value.extend(b"\nendstream");
+    } else {
+        value.extend(b" >>");
+    }
+    object_file(&[b"<< /Type /Catalog >>".to_vec(), value], "")
+}
+
+#[test]
+fn object_cache_owned_payload_is_accounted_on_warm_read() {
+    let doc =
+        PdfDocument::from_bytes_with_limits(copied_object_file(false), PdfImportLimits::default())
+            .unwrap();
+    let reference = pdf_oxide::object::ObjectRef::new(2, 0);
+    let first = doc.load_object(reference).unwrap();
+    let before = doc.import_budget().unwrap().decoded_bytes();
+    let second = doc.load_object(reference).unwrap();
+    assert_eq!(first, second);
+    assert!(
+        doc.import_budget().unwrap().decoded_bytes() - before >= 4096,
+        "the owned 4096-byte string must be counted on every cache read"
+    );
+}
+
+#[test]
+fn object_cache_copy_exhaustion_is_sticky_and_request_local() {
+    let input = copied_object_file(false);
+    let reference = pdf_oxide::object::ObjectRef::new(2, 0);
+    let doc =
+        PdfDocument::from_bytes_with_limits(input.clone(), PdfImportLimits::default()).unwrap();
+    let expected = doc.load_object(reference).unwrap();
+    let before = doc.import_budget().unwrap().decoded_bytes();
+    doc.load_object(reference).unwrap();
+    let after = doc.import_budget().unwrap().decoded_bytes();
+    assert!(after >= before + 4096);
+    for cap in [after - 1, after, after + 1] {
+        let limited = PdfDocument::from_bytes_with_limits(
+            input.clone(),
+            PdfImportLimits {
+                decoded_bytes: cap,
+                ..PdfImportLimits::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(limited.load_object(reference).unwrap(), expected);
+        let result = limited.load_object(reference);
+        if cap < after {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            // Rejection precedes the whole copy, not a partially copied tree.
+            assert_eq!(limited.import_budget().unwrap().decoded_bytes(), before);
+            assert!(limited.load_object(reference).is_err());
+        } else {
+            assert_eq!(result.unwrap(), expected);
+            assert_eq!(limited.import_budget().unwrap().decoded_bytes(), after);
+        }
+    }
+    let fresh = PdfDocument::from_bytes_with_limits(input, PdfImportLimits::default()).unwrap();
+    assert_eq!(fresh.load_object(reference).unwrap(), expected);
+}
+
+#[test]
+fn object_cache_stream_payload_stays_shared_with_originating_budget() {
+    use pdf_oxide::object::{Object, ObjectRef};
+    let doc =
+        PdfDocument::from_bytes_with_limits(copied_object_file(true), PdfImportLimits::default())
+            .unwrap();
+    let first = doc.load_object(ObjectRef::new(2, 0)).unwrap();
+    let before = doc.import_budget().unwrap().decoded_bytes();
+    let second = doc.load_object(ObjectRef::new(2, 0)).unwrap();
+    let charged = doc.import_budget().unwrap().decoded_bytes() - before;
+    assert!((4096..16384).contains(&charged));
+    let (Object::Stream { data: a, .. }, Object::Stream { data: b, .. }) = (first, second) else {
+        panic!("expected streams")
+    };
+    assert_eq!(a.as_ptr(), b.as_ptr());
+    assert!(Arc::ptr_eq(a.budget().unwrap(), b.budget().unwrap()));
+    assert!(Arc::ptr_eq(
+        a.budget().unwrap(),
+        doc.import_budget().unwrap()
+    ));
+}
+
+fn color_resource_copy_file(inline: bool, padding: usize) -> Vec<u8> {
+    let content = if inline {
+        b"BI /W 1 /H 1 /BPC 8 /CS /CS0 ID \0 EI".as_slice()
+    } else {
+        b"/Im Do".as_slice()
+    };
+    let mut stream = format!("<< /Length {} >>\nstream\n", content.len()).into_bytes();
+    stream.extend(content);
+    stream.extend(b"\nendstream");
+    let resources = format!("<< /ColorSpace << /CS0 [/Indexed /DeviceRGB 1 <ff000000ff00>] /Unused ({}) >> /XObject << /Im 5 0 R >> >>", "p".repeat(padding));
+    object_file(&[
+        b"<< /Type /Catalog /Pages 2 0 R >>".to_vec(),
+        b"<< /Type /Pages /Count 1 /Kids [3 0 R] >>".to_vec(),
+        format!("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 10 10] /Resources {resources} /Contents 4 0 R >>").into_bytes(),
+        stream,
+        b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /CS0 /Length 1 >>\nstream\n\0\nendstream".to_vec()
+    ], "")
+}
+
+#[test]
+fn color_resource_owned_payload_is_accounted_for_inline_and_xobject_handles() {
+    for inline in [false, true] {
+        let mut deltas = Vec::new();
+        let mut pixels = Vec::new();
+        for padding in [0, 4096] {
+            let doc = PdfDocument::from_bytes_with_limits(
+                color_resource_copy_file(inline, padding),
+                PdfImportLimits::default(),
+            )
+            .unwrap();
+            assert_eq!(doc.page_image_handles(0).unwrap().len(), 1);
+            let before = doc.import_budget().unwrap().decoded_bytes();
+            let handles = doc.page_image_handles(0).unwrap();
+            deltas.push(doc.import_budget().unwrap().decoded_bytes() - before);
+            let image = handles[0].decode().unwrap();
+            pixels.push(
+                image
+                    .to_png_bytes_with_budget(doc.import_budget().unwrap())
+                    .unwrap(),
+            );
+        }
+        assert!(deltas[1] >= deltas[0] + 4096, "inline={inline}: {deltas:?}");
+        assert_eq!(
+            pixels[0], pixels[1],
+            "unused resources must not change pixels"
+        );
+    }
+}
+
+#[test]
+fn color_resource_limit_cannot_return_partial_handle_success() {
+    for inline in [false, true] {
+        let input = color_resource_copy_file(inline, 4096);
+        let full =
+            PdfDocument::from_bytes_with_limits(input.clone(), PdfImportLimits::default()).unwrap();
+        full.page_image_handles(0).unwrap();
+        let before = full.import_budget().unwrap().decoded_bytes();
+        full.page_image_handles(0).unwrap();
+        let after = full.import_budget().unwrap().decoded_bytes();
+        assert!(after > before);
+        for cap in [after - 1, after, after + 1] {
+            let doc = PdfDocument::from_bytes_with_limits(
+                input.clone(),
+                PdfImportLimits {
+                    decoded_bytes: cap,
+                    ..PdfImportLimits::default()
+                },
+            )
+            .unwrap();
+            assert_eq!(doc.page_image_handles(0).unwrap().len(), 1);
+            let result = doc.page_image_handles(0);
+            if cap < after {
+                assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+                assert!(doc.page_image_handles(0).is_err());
+                assert!(doc.check_import_budget().is_err());
+            } else {
+                assert_eq!(result.unwrap().len(), 1);
+            }
+        }
+    }
+}
+
+#[test]
+fn compressed_object_cache_preserves_values_and_accounts_return_copies() {
+    use pdf_oxide::object::ObjectRef;
+    let mut input = b"%PDF-1.5\n".to_vec();
+    let catalog_offset = input.len();
+    input.extend(b"1 0 obj\n<< /Type /Catalog >>\nendobj\n");
+    let object_stream_offset = input.len();
+    let body = format!("4 0 << /Nested [({}) /Name] >>", "c".repeat(4096));
+    write!(input, "2 0 obj\n<< /Type /ObjStm /N 1 /First 4 /Length {} >>\nstream\n{body}\nendstream\nendobj\n", body.len()).unwrap();
+    let xref_offset = input.len();
+    let mut entries = Vec::new();
+    for (kind, offset, generation) in [
+        (0u8, 0usize, 65535u16),
+        (1, catalog_offset, 0),
+        (1, object_stream_offset, 0),
+        (1, xref_offset, 0),
+        (2, 2, 0),
+    ] {
+        entries.push(kind);
+        entries.extend((offset as u32).to_be_bytes());
+        entries.extend(generation.to_be_bytes());
+    }
+    write!(
+        input,
+        "3 0 obj\n<< /Type /XRef /Size 5 /W [1 4 2] /Root 1 0 R /Length {} >>\nstream\n",
+        entries.len()
+    )
+    .unwrap();
+    input.extend(entries);
+    write!(
+        input,
+        "\nendstream\nendobj\nstartxref\n{xref_offset}\n%%EOF\n"
+    )
+    .unwrap();
+    let doc = PdfDocument::from_bytes_with_limits(input, PdfImportLimits::default()).unwrap();
+    let first = doc.load_object(ObjectRef::new(4, 0)).unwrap();
+    let nested = first.as_dict().unwrap()["Nested"].as_array().unwrap();
+    assert_eq!(nested[0].as_string().unwrap(), vec![b'c'; 4096]);
+    let before = doc.import_budget().unwrap().decoded_bytes();
+    assert_eq!(doc.load_object(ObjectRef::new(4, 0)).unwrap(), first);
+    assert!(doc.import_budget().unwrap().decoded_bytes() - before >= 4096);
+}
+// TrueType bytes below follow OpenType cmap formats 0/4/6/12; these are
+// resource contracts, not rendered font or Hancom layout baselines.
+fn font_cmap_sfnt(subtable: &[u8]) -> Vec<u8> {
+    let mut data = vec![0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0];
+    data.extend(b"cmap");
+    data.extend(0u32.to_be_bytes());
+    data.extend(28u32.to_be_bytes());
+    data.extend(((12 + subtable.len()) as u32).to_be_bytes());
+    data.extend([0, 0, 0, 1, 0, 3, 0, 10]);
+    data.extend(12u32.to_be_bytes());
+    data.extend(subtable);
+    data
+}
+
+fn font_cmap_format12(groups: &[(u32, u32, u32)]) -> Vec<u8> {
+    let mut data = vec![0, 12, 0, 0];
+    data.extend(((16 + groups.len() * 12) as u32).to_be_bytes());
+    data.extend(0u32.to_be_bytes());
+    data.extend((groups.len() as u32).to_be_bytes());
+    for (start, end, gid) in groups {
+        for value in [start, end, gid] {
+            data.extend(value.to_be_bytes());
+        }
+    }
+    font_cmap_sfnt(&data)
+}
+
+fn limited_truetype_font(
+    data: Vec<u8>,
+    limits: PdfImportLimits,
+) -> (PdfDocument, pdf_oxide::fonts::FontInfo) {
+    let doc = PdfDocument::from_bytes_with_limits(object_file(&objects(b"", "", ""), ""), limits)
+        .unwrap();
+    let (_, dict) = pdf_oxide::parser::parse_object(
+        b"<< /Type /Font /Subtype /TrueType /BaseFont /AAAAAA+BudgetProbe >>",
+    )
+    .unwrap();
+    let mut font = pdf_oxide::fonts::FontInfo::from_dict(&dict, &doc).unwrap();
+    font.embedded_font_data = Some(Arc::new(data));
+    font.is_truetype_font = true;
+    (doc, font)
+}
+
+fn metric_cache_file(name: &str) -> Vec<u8> {
+    let mut parts = objects(b"BT /F1 12 Tf 20 100 Td <00010002> Tj ET", "", "");
+    parts[4] = format!("<< /Type /Font /Subtype /Type0 /BaseFont /{name} /Encoding /Identity-H /DescendantFonts [<< /Type /Font /Subtype /CIDFontType2 /BaseFont /{name} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /W [0 2 500] >>] >>").into_bytes();
+    object_file(&parts, "")
+}
+
+fn load_probe_font(doc: &PdfDocument) -> Result<Arc<pdf_oxide::fonts::FontInfo>, Error> {
+    let (_, resources) = pdf_oxide::parser::parse_object(b"<< /Font << /F1 5 0 R >> >>").unwrap();
+    let mut extractor = pdf_oxide::extractors::TextExtractor::new();
+    doc.load_fonts_public(&resources, &mut extractor)?;
+    Ok(extractor
+        .get_font_set()
+        .into_iter()
+        .find(|(name, _)| name == "F1")
+        .unwrap()
+        .1)
+}
+
+#[test]
+fn font_global_cache_cannot_bypass_a_later_requests_metric_limit() {
+    let input = metric_cache_file("BudgetWarmLegacy7911");
+    let legacy = PdfDocument::from_bytes(input.clone()).unwrap();
+    assert_eq!(
+        load_probe_font(&legacy)
+            .unwrap()
+            .cid_widths
+            .as_ref()
+            .unwrap()
+            .len(),
+        3
+    );
+    let limited = PdfDocument::from_bytes_with_limits(
+        input.clone(),
+        PdfImportLimits {
+            font_entries: 2,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let result = load_probe_font(&limited);
+    assert!(matches!(
+        result,
+        Err(Error::ImportResourceLimit("font metric entries"))
+    ));
+    assert!(load_probe_font(&limited).is_err());
+    let fresh = PdfDocument::from_bytes_with_limits(
+        input,
+        PdfImportLimits {
+            font_entries: 3,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert_eq!(
+        load_probe_font(&fresh)
+            .unwrap()
+            .cid_widths
+            .as_ref()
+            .unwrap()
+            .len(),
+        3
+    );
+    fresh.check_import_budget().unwrap();
+}
+
+#[test]
+fn limited_fonts_share_only_within_the_originating_document() {
+    let input = metric_cache_file("BudgetLocalOnly7911");
+    let first = PdfDocument::from_bytes_with_limits(input.clone(), Default::default()).unwrap();
+    let second = PdfDocument::from_bytes_with_limits(input.clone(), Default::default()).unwrap();
+    let a = load_probe_font(&first).unwrap();
+    assert!(Arc::ptr_eq(&a, &load_probe_font(&first).unwrap()));
+    let b = load_probe_font(&second).unwrap();
+    assert!(!Arc::ptr_eq(&a, &b));
+    let legacy = PdfDocument::from_bytes(input.clone()).unwrap();
+    let c = load_probe_font(&legacy).unwrap();
+    assert!(!Arc::ptr_eq(&a, &c));
+    assert!(!Arc::ptr_eq(&b, &c));
+    let legacy2 = PdfDocument::from_bytes(input).unwrap();
+    assert!(Arc::ptr_eq(&c, &load_probe_font(&legacy2).unwrap()));
+    first
+        .import_budget()
+        .unwrap()
+        .reject("font isolation probe");
+    assert!(load_probe_font(&first).is_err());
+    second.check_import_budget().unwrap();
+    assert!(load_probe_font(&second).is_ok());
+}
+
+#[test]
+fn truetype_cmap_expansion_obeys_exact_request_limits() {
+    let data = font_cmap_format12(&[(65, 67, 1)]);
+    for cap in [2, 3, 4] {
+        let (doc, font) = limited_truetype_font(
+            data.clone(),
+            PdfImportLimits {
+                font_entries: cap,
+                ..Default::default()
+            },
+        );
+        let cmap = font.truetype_cmap();
+        if cap == 2 {
+            assert!(cmap.is_none());
+            assert!(doc.check_import_budget().is_err());
+        } else {
+            let cmap = cmap.unwrap();
+            assert_eq!(cmap.len(), 3);
+            for (gid, ch) in [(1, 'A'), (2, 'B'), (3, 'C')] {
+                assert_eq!(cmap.get_unicode(gid), Some(ch));
+            }
+            let before = doc.import_budget().unwrap().decoded_bytes();
+            assert!(font.truetype_cmap().is_some());
+            assert_eq!(doc.import_budget().unwrap().decoded_bytes(), before);
+        }
+    }
+}
+
+#[test]
+fn truetype_cmap_repeated_ranges_charge_work_not_distinct_glyphs() {
+    let data = font_cmap_format12(&[(65, 67, 1), (65, 67, 1)]);
+    let (doc, font) = limited_truetype_font(
+        data.clone(),
+        PdfImportLimits {
+            font_entries: 5,
+            ..Default::default()
+        },
+    );
+    assert!(font.truetype_cmap().is_none());
+    assert!(doc.check_import_budget().is_err());
+    let (doc, font) = limited_truetype_font(
+        data,
+        PdfImportLimits {
+            font_entries: 6,
+            ..Default::default()
+        },
+    );
+    assert_eq!(font.truetype_cmap().unwrap().len(), 3);
+    doc.check_import_budget().unwrap();
+}
+
+#[test]
+fn truetype_lazy_success_cannot_outlive_a_fatal_request() {
+    let (doc, font) = limited_truetype_font(font_cmap_format12(&[(65, 65, 1)]), Default::default());
+    assert_eq!(font.truetype_cmap().unwrap().get_unicode(1), Some('A'));
+    doc.import_budget().unwrap().reject("lazy font probe");
+    assert!(font.truetype_cmap().is_none());
+    assert!(font.clone().truetype_cmap().is_none());
+    let (fresh, font) =
+        limited_truetype_font(font_cmap_format12(&[(65, 65, 1)]), Default::default());
+    assert!(font.truetype_cmap().is_some());
+    fresh.check_import_budget().unwrap();
+}
+
+#[test]
+fn truetype_maps_consume_cumulative_allocation_budget_before_expansion() {
+    let data = font_cmap_format12(&[(65, 67, 1)]);
+    let (doc, font) = limited_truetype_font(data.clone(), Default::default());
+    let before = doc.import_budget().unwrap().decoded_bytes();
+    assert!(font.truetype_cmap().is_some());
+    let after = doc.import_budget().unwrap().decoded_bytes();
+    assert!(after >= before + 3 * std::mem::size_of::<(u16, char)>());
+    for cap in [after - 1, after, after + 1] {
+        let (doc, font) = limited_truetype_font(
+            data.clone(),
+            PdfImportLimits {
+                decoded_bytes: cap,
+                ..Default::default()
+            },
+        );
+        if cap < after {
+            assert!(font.truetype_cmap().is_none());
+            assert!(doc.check_import_budget().is_err());
+        } else {
+            assert_eq!(font.truetype_cmap().unwrap().len(), 3);
+            doc.check_import_budget().unwrap();
+        }
+    }
+}
+
+#[test]
+fn truetype_format12_rejects_glyph_overflow_without_wrapping() {
+    let (_, font) =
+        limited_truetype_font(font_cmap_format12(&[(65, 67, 65535)]), Default::default());
+    assert!(font.truetype_cmap().is_none());
+}
+
+fn embedded_truetype_file(data: &[u8], cid: bool) -> Vec<u8> {
+    let mut parts = objects(b"BT /F1 12 Tf 20 100 Td (ABC) Tj ET", "", "");
+    let descriptor = "/FontDescriptor 7 0 R";
+    parts[4] = if cid {
+        format!("<< /Type /Font /Subtype /Type0 /BaseFont /AAAAAA+ProgramProbe /Encoding /Identity-H /DescendantFonts [<< /Type /Font /Subtype /CIDFontType2 /BaseFont /AAAAAA+ProgramProbe /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> {descriptor} >>] >>").into_bytes()
+    } else {
+        format!("<< /Type /Font /Subtype /TrueType /BaseFont /AAAAAA+ProgramProbe {descriptor} >>")
+            .into_bytes()
+    };
+    let mut stream = format!("<< /Length {} >>\nstream\n", data.len()).into_bytes();
+    stream.extend(data);
+    stream.extend(b"\nendstream");
+    parts.push(stream);
+    parts.push(
+        b"<< /Type /FontDescriptor /FontName /AAAAAA+ProgramProbe /Flags 32 /FontFile2 6 0 R >>"
+            .to_vec(),
+    );
+    object_file(&parts, "")
+}
+
+#[test]
+fn embedded_truetype_limits_propagate_through_simple_and_cid_font_loading() {
+    for cid in [false, true] {
+        let input = embedded_truetype_file(&font_cmap_format12(&[(65, 67, 1)]), cid);
+        for cap in [2, 3, 4] {
+            let doc = PdfDocument::from_bytes_with_limits(
+                input.clone(),
+                PdfImportLimits {
+                    font_entries: cap,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            let result = load_probe_font(&doc);
+            if cap == 2 {
+                assert!(
+                    matches!(
+                        result,
+                        Err(Error::ImportResourceLimit("font metric entries"))
+                    ),
+                    "cid={cid}"
+                );
+                assert!(doc.extract_text(0).is_err());
+            } else {
+                assert_eq!(
+                    result.unwrap().truetype_cmap().unwrap().get_unicode(3),
+                    Some('C')
+                );
+                doc.check_import_budget().unwrap();
+            }
+        }
+    }
+}
+
+fn font_cmap_small_formats() -> Vec<(Vec<u8>, usize)> {
+    let mut zero = vec![0, 0, 1, 6, 0, 0];
+    zero.resize(262, 0);
+    zero[6 + 65] = 1;
+    zero[6 + 66] = 2;
+    zero[6 + 67] = 3;
+    let six: Vec<u8> = [6u16, 16, 0, 65, 3, 1, 2, 3]
+        .iter()
+        .flat_map(|n| n.to_be_bytes())
+        .collect();
+    // Format 4: A..C via delta, then the required 0xffff sentinel segment.
+    let four: Vec<u8> = [
+        4u16, 32, 0, 4, 4, 1, 0, 67, 65535, 0, 65, 65535, 65472, 1, 0, 0,
+    ]
+    .iter()
+    .flat_map(|n| n.to_be_bytes())
+    .collect();
+    vec![
+        (font_cmap_sfnt(&zero), 256),
+        (font_cmap_sfnt(&four), 3),
+        (font_cmap_sfnt(&six), 3),
+    ]
+}
+
+#[test]
+fn truetype_supported_formats_keep_mapping_and_obey_work_limits() {
+    for (data, work) in font_cmap_small_formats() {
+        let legacy = pdf_oxide::fonts::TrueTypeCMap::from_font_data(&data).unwrap();
+        for cap in [work - 1, work, work + 1] {
+            let (doc, font) = limited_truetype_font(
+                data.clone(),
+                PdfImportLimits {
+                    font_entries: cap,
+                    ..Default::default()
+                },
+            );
+            if cap < work {
+                assert!(font.truetype_cmap().is_none());
+                assert!(doc.check_import_budget().is_err());
+            } else {
+                let map = font.truetype_cmap().unwrap();
+                assert_eq!(map.len(), legacy.len());
+                for (gid, ch) in [(1, 'A'), (2, 'B'), (3, 'C')] {
+                    assert_eq!(map.get_unicode(gid), Some(ch));
+                    assert_eq!(map.get_unicode(gid), legacy.get_unicode(gid));
+                }
+                doc.check_import_budget().unwrap();
+            }
+        }
+    }
+}
+
+#[test]
+fn truetype_source_and_scan_caps_precede_mapping_allocation() {
+    let data = font_cmap_format12(&[(65, 67, 1)]);
+    let cmap_bytes = data.len() - 28;
+    for source_limit in [true, false] {
+        for cap in [cmap_bytes - 1, cmap_bytes, cmap_bytes + 1] {
+            let mut limits = PdfImportLimits::default();
+            if source_limit {
+                limits.cmap_bytes = cap;
+            } else {
+                limits.cmap_scan_bytes = cap;
+            }
+            let (doc, font) = limited_truetype_font(data.clone(), limits);
+            if cap < cmap_bytes {
+                assert!(font.truetype_cmap().is_none());
+                assert!(doc.check_import_budget().is_err());
+            } else {
+                assert_eq!(font.truetype_cmap().unwrap().len(), 3);
+                doc.check_import_budget().unwrap();
+            }
+        }
+    }
+}
+
+#[test]
+fn truetype_format4_cannot_read_glyphs_from_the_next_table() {
+    // The first idRangeOffset points to a glyph just AFTER this subtable.
+    let four: Vec<u8> = [4u16, 32, 0, 4, 4, 1, 0, 65, 65535, 0, 65, 65535, 0, 1, 4, 0]
+        .iter()
+        .flat_map(|n| n.to_be_bytes())
+        .collect();
+    let mut data = font_cmap_sfnt(&four);
+    data.extend(7u16.to_be_bytes());
+    let (_, font) = limited_truetype_font(data, Default::default());
+    let map = font.truetype_cmap();
+    assert!(map.is_none_or(|map| map.get_unicode(7).is_none()));
+}
+
+#[test]
+fn truetype_declared_ranges_are_bounded_without_large_materialization() {
+    let (doc, font) = limited_truetype_font(
+        font_cmap_format12(&[(0, 65535, 0)]),
+        PdfImportLimits {
+            font_entries: 16,
+            ..Default::default()
+        },
+    );
+    assert!(font.truetype_cmap().is_none());
+    assert!(doc.check_import_budget().is_err());
+    for data in [
+        font_cmap_format12(&[(0, u32::MAX, 0)]),
+        font_cmap_format12(&[(67, 65, 1)]),
+        font_cmap_format12(&[(65, 67, u32::MAX)]),
+    ] {
+        let (_, font) = limited_truetype_font(data, Default::default());
+        assert!(font.truetype_cmap().is_none());
+    }
+    let mut truncated = font_cmap_format12(&[(65, 67, 1)]);
+    truncated[52..56].copy_from_slice(&u32::MAX.to_be_bytes());
+    let (_, font) = limited_truetype_font(truncated, Default::default());
+    assert!(font.truetype_cmap().is_none());
+}
+
+fn font_cmap_symbol_sfnt() -> Vec<u8> {
+    let four: Vec<u8> = [
+        4u16, 32, 0, 4, 4, 1, 0, 0xf043, 0xffff, 0, 0xf041, 0xffff, 0x0fc0, 1, 0, 0,
+    ]
+    .iter()
+    .flat_map(|n| n.to_be_bytes())
+    .collect();
+    let mut cmap = vec![0, 0, 0, 1, 0, 3, 0, 0];
+    cmap.extend(12u32.to_be_bytes());
+    cmap.extend(four);
+    let mut head = vec![0; 54];
+    head[18..20].copy_from_slice(&2048u16.to_be_bytes());
+    let tables = [
+        (b"cmap", cmap),
+        (b"head", head),
+        (b"hhea", vec![0; 36]),
+        (b"maxp", vec![0, 0, 0x50, 0, 0, 4]),
+    ];
+    let mut data = vec![0, 1, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0];
+    let mut payload = Vec::new();
+    for (tag, table) in tables {
+        data.extend(tag);
+        data.extend(0u32.to_be_bytes());
+        data.extend(((76 + payload.len()) as u32).to_be_bytes());
+        data.extend((table.len() as u32).to_be_bytes());
+        payload.extend(table);
+    }
+    data.extend(payload);
+    data
+}
+
+#[test]
+fn truetype_symbol_mapping_lookup_is_bounded_and_preserves_pua_resolution() {
+    let data = font_cmap_symbol_sfnt();
+    let legacy = pdf_oxide::fonts::TrueTypeCMap::from_font_data(&data).unwrap();
+    assert_eq!(legacy.code_to_gid(65), Some(1));
+    for cap in [258, 259, 260] {
+        let (doc, font) = limited_truetype_font(
+            data.clone(),
+            PdfImportLimits {
+                font_entries: cap,
+                ..Default::default()
+            },
+        );
+        if cap == 258 {
+            assert!(font.truetype_cmap().is_none());
+            assert!(doc.check_import_budget().is_err());
+        } else {
+            let map = font.truetype_cmap().unwrap();
+            assert_eq!(map.code_to_gid(65), Some(1));
+            assert_eq!(map.get_unicode(1), Some('\u{f041}'));
+            doc.check_import_budget().unwrap();
+        }
+    }
+}
+
+#[test]
+fn truetype_format4_scratch_and_maps_obey_cumulative_byte_boundary() {
+    let data = font_cmap_small_formats().remove(1).0;
+    let (doc, font) = limited_truetype_font(data.clone(), Default::default());
+    let before = doc.import_budget().unwrap().decoded_bytes();
+    assert!(font.truetype_cmap().is_some());
+    let after = doc.import_budget().unwrap().decoded_bytes();
+    // Four 2-entry u16/i16 arrays precede the three map-entry reservations.
+    assert!(after >= before + 16 + 3 * std::mem::size_of::<(u16, char)>());
+    for cap in [after - 1, after, after + 1] {
+        let (doc, font) = limited_truetype_font(
+            data.clone(),
+            PdfImportLimits {
+                decoded_bytes: cap,
+                ..Default::default()
+            },
+        );
+        if cap < after {
+            assert!(font.truetype_cmap().is_none());
+            assert!(doc.check_import_budget().is_err());
+        } else {
+            assert!(font.truetype_cmap().is_some());
+            doc.check_import_budget().unwrap();
+        }
     }
 }

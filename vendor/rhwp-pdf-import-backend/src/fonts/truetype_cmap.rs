@@ -1,3 +1,4 @@
+use crate::import_limits::ImportBudget;
 use byteorder::{BigEndian, ReadBytesExt};
 /// TrueType cmap table extraction for font character mapping
 ///
@@ -43,10 +44,10 @@ fn mac_roman_to_unicode(byte: u8) -> char {
 #[derive(Debug, Clone)]
 pub struct TrueTypeCMap {
     /// Mapping from Glyph ID to Unicode character
-    gid_to_unicode: HashMap<u16, char>,
+    gid_to_unicode: std::sync::Arc<HashMap<u16, char>>,
     /// Content-byte → GID, from a `(3,0)`/`(1,0)` subtable. Empty unless the
     /// font is symbolic-style; lets decode do byte→GID before GID→Unicode.
-    symbol_code_to_gid: HashMap<u32, u16>,
+    symbol_code_to_gid: std::sync::Arc<HashMap<u32, u16>>,
 }
 
 impl TrueTypeCMap {
@@ -60,6 +61,16 @@ impl TrueTypeCMap {
     /// 2. Platform 3 (Windows), Encoding 1 (Unicode BMP) - supports basic multilingual plane
     /// 3. Platform 0 (Unicode), Encoding 3 - fallback to old Unicode platform
     pub fn from_font_data(data: &[u8]) -> Result<Self, String> {
+        Self::from_font_data_with_budget(data, None)
+    }
+
+    pub(crate) fn from_font_data_with_budget(
+        data: &[u8],
+        budget: Option<&ImportBudget>,
+    ) -> Result<Self, String> {
+        if let Some(budget) = budget {
+            budget.check().map_err(|e| e.to_string())?;
+        }
         let mut cursor = Cursor::new(data);
 
         // Parse sfnt header to locate table directory
@@ -67,7 +78,7 @@ impl TrueTypeCMap {
             Self::parse_sfnt_header(&mut cursor)?;
 
         // Find cmap table entry in the directory
-        let cmap_offset = Self::find_cmap_table(
+        let (cmap_offset, cmap_length) = Self::find_cmap_table(
             &mut cursor,
             num_tables,
             search_range,
@@ -76,7 +87,20 @@ impl TrueTypeCMap {
         )?;
 
         // Parse cmap table and find the best subtable
-        cursor.set_position(cmap_offset as u64);
+        let start = cmap_offset as usize;
+        let end = start
+            .checked_add(cmap_length as usize)
+            .ok_or("cmap table offset overflow")?;
+        let cmap_data = data.get(start..end).ok_or("cmap table outside font data")?;
+        if let Some(budget) = budget {
+            if cmap_data.len() > budget.limits.cmap_bytes {
+                return Err(budget.reject("TrueType cmap source bytes").to_string());
+            }
+            budget
+                .charge_cmap_scan(cmap_data.len())
+                .map_err(|e| e.to_string())?;
+        }
+        let mut cursor = Cursor::new(cmap_data);
         let cmap_version = cursor
             .read_u16::<BigEndian>()
             .map_err(|e| format!("Failed to read cmap version: {}", e))?;
@@ -128,14 +152,32 @@ impl TrueTypeCMap {
             subtable_offset
         );
 
-        cursor.set_position((cmap_offset + subtable_offset) as u64);
-        let gid_to_unicode = Self::parse_cmap_subtable(&mut cursor)?;
+        // Offsets are relative to the cmap table, lengths to the subtable.
+        // A format-4 glyph array must not consume adjacent font tables.
+        let sub = cmap_data
+            .get(subtable_offset as usize..)
+            .ok_or("cmap subtable outside table")?;
+        let mut header = Cursor::new(sub);
+        let format = header.read_u16::<BigEndian>().map_err(|e| e.to_string())?;
+        if !matches!(format, 0 | 4 | 6 | 12) {
+            return Err(format!("Unsupported cmap format: {}", format));
+        }
+        let length = if format == 12 {
+            header.read_u16::<BigEndian>().map_err(|e| e.to_string())?;
+            header.read_u32::<BigEndian>().map_err(|e| e.to_string())? as usize
+        } else {
+            header.read_u16::<BigEndian>().map_err(|e| e.to_string())? as usize
+        };
+        let sub = sub
+            .get(..length)
+            .ok_or("cmap subtable length outside table")?;
+        let gid_to_unicode = Self::parse_cmap_subtable(&mut Cursor::new(sub), budget)?;
 
         Ok(TrueTypeCMap {
-            gid_to_unicode,
+            gid_to_unicode: std::sync::Arc::new(gid_to_unicode),
             // Symbolic fonts index glyphs by content byte, not GID — build
             // byte→GID from the (3,0)/(1,0) subtable so decode can do that hop.
-            symbol_code_to_gid: Self::build_symbol_code_to_gid(data),
+            symbol_code_to_gid: std::sync::Arc::new(Self::build_symbol_code_to_gid(data, budget)?),
         })
     }
 
@@ -143,14 +185,17 @@ impl TrueTypeCMap {
     /// Macintosh cmap subtable, resolving the `0xF000` symbol-PUA offset at build
     /// time. Reuses `ttf-parser` (already a dependency). Empty when the font has
     /// no such subtable or fails to parse — decode then treats the byte as a GID.
-    fn build_symbol_code_to_gid(data: &[u8]) -> HashMap<u32, u16> {
+    fn build_symbol_code_to_gid(
+        data: &[u8],
+        budget: Option<&ImportBudget>,
+    ) -> Result<HashMap<u32, u16>, String> {
         use ttf_parser::PlatformId;
         let mut map = HashMap::new();
         let Ok(face) = ttf_parser::Face::parse(data, 0) else {
-            return map;
+            return Ok(map);
         };
         let Some(cmap) = face.tables().cmap else {
-            return map;
+            return Ok(map);
         };
         let mut chosen = None;
         let mut best = 0;
@@ -166,6 +211,7 @@ impl TrueTypeCMap {
             }
         }
         if let Some(sub) = chosen {
+            Self::reserve_mappings(&mut map, 256, budget)?;
             for code in 0u32..256 {
                 if let Some(gid) = sub
                     .glyph_index(code)
@@ -175,7 +221,7 @@ impl TrueTypeCMap {
                 }
             }
         }
-        map
+        Ok(map)
     }
 
     /// Content-byte → GID via the font's symbol/Mac cmap. `None` when the font
@@ -202,6 +248,43 @@ impl TrueTypeCMap {
     // ==================================================================================
     // Private Helper Methods
     // ==================================================================================
+
+    // Count expanded work (including overwrites), then reserve requested map
+    // slots. This is cumulative allocation work, not allocator/RSS accounting.
+    fn reserve_mappings<K: std::hash::Hash + Eq, V>(
+        map: &mut HashMap<K, V>,
+        count: usize,
+        budget: Option<&ImportBudget>,
+    ) -> Result<(), String> {
+        if let Some(budget) = budget {
+            budget
+                .charge_font_entries(count)
+                .map_err(|e| e.to_string())?;
+        }
+        map.try_reserve(count).map_err(|_| match budget {
+            Some(budget) => budget.reject("TrueType map allocation").to_string(),
+            None => "TrueType map allocation failed".into(),
+        })
+    }
+
+    fn zeroed_array<T: Default + Clone>(
+        count: usize,
+        budget: Option<&ImportBudget>,
+    ) -> Result<Vec<T>, String> {
+        let bytes = count
+            .checked_mul(std::mem::size_of::<T>())
+            .ok_or("TrueType array size overflow")?;
+        if let Some(budget) = budget {
+            budget.charge_decoded(bytes).map_err(|e| e.to_string())?;
+        }
+        let mut values = Vec::new();
+        values.try_reserve_exact(count).map_err(|_| match budget {
+            Some(budget) => budget.reject("TrueType array allocation").to_string(),
+            None => "TrueType array allocation failed".into(),
+        })?;
+        values.resize(count, T::default());
+        Ok(values)
+    }
 
     fn parse_sfnt_header(cursor: &mut Cursor<&[u8]>) -> Result<(u16, u16, u16, u16), String> {
         // Read sfnt version (4 bytes - can be 0x00010000 for TrueType or "OTTO" for OpenType)
@@ -237,7 +320,7 @@ impl TrueTypeCMap {
         _search_range: u16,
         _entry_selector: u16,
         _range_shift: u16,
-    ) -> Result<u32, String> {
+    ) -> Result<(u32, u32), String> {
         // Linear search through table directory for 'cmap' tag (0x636D6170)
         const CMAP_TAG: u32 = 0x636D6170;
 
@@ -251,28 +334,31 @@ impl TrueTypeCMap {
             let offset = cursor
                 .read_u32::<BigEndian>()
                 .map_err(|e| format!("Failed to read table offset: {}", e))?;
-            let _length = cursor
+            let length = cursor
                 .read_u32::<BigEndian>()
                 .map_err(|e| format!("Failed to read table length: {}", e))?;
 
             if tag == CMAP_TAG {
-                return Ok(offset);
+                return Ok((offset, length));
             }
         }
 
         Err("cmap table not found in font".to_string())
     }
 
-    fn parse_cmap_subtable(cursor: &mut Cursor<&[u8]>) -> Result<HashMap<u16, char>, String> {
+    fn parse_cmap_subtable(
+        cursor: &mut Cursor<&[u8]>,
+        budget: Option<&ImportBudget>,
+    ) -> Result<HashMap<u16, char>, String> {
         let format = cursor
             .read_u16::<BigEndian>()
             .map_err(|e| format!("Failed to read cmap format: {}", e))?;
 
         match format {
-            0 => Self::parse_cmap_format0(cursor),
-            4 => Self::parse_cmap_format4(cursor),
-            6 => Self::parse_cmap_format6(cursor),
-            12 => Self::parse_cmap_format12(cursor),
+            0 => Self::parse_cmap_format0(cursor, budget),
+            4 => Self::parse_cmap_format4(cursor, budget),
+            6 => Self::parse_cmap_format6(cursor, budget),
+            12 => Self::parse_cmap_format12(cursor, budget),
             _ => Err(format!("Unsupported cmap format: {}", format)),
         }
     }
@@ -294,7 +380,10 @@ impl TrueTypeCMap {
     /// Benchmark canary: ~8 MS Office corpus fixtures previously logged
     /// "Unsupported cmap format: 0" warnings and lost font glyph mapping
     /// as a consequence (B9).
-    fn parse_cmap_format0(cursor: &mut Cursor<&[u8]>) -> Result<HashMap<u16, char>, String> {
+    fn parse_cmap_format0(
+        cursor: &mut Cursor<&[u8]>,
+        budget: Option<&ImportBudget>,
+    ) -> Result<HashMap<u16, char>, String> {
         let _length = cursor
             .read_u16::<BigEndian>()
             .map_err(|e| format!("Failed to read format 0 length: {}", e))?;
@@ -307,6 +396,7 @@ impl TrueTypeCMap {
             .map_err(|e| format!("Failed to read format 0 glyphIdArray: {}", e))?;
 
         let mut gid_to_unicode = HashMap::new();
+        Self::reserve_mappings(&mut gid_to_unicode, 256, budget)?;
         for (byte, &gid) in glyph_ids.iter().enumerate() {
             if gid == 0 {
                 continue;
@@ -328,7 +418,10 @@ impl TrueTypeCMap {
     }
 
     /// Parse cmap format 4 (BMP - supports characters U+0000 to U+FFFF)
-    fn parse_cmap_format4(cursor: &mut Cursor<&[u8]>) -> Result<HashMap<u16, char>, String> {
+    fn parse_cmap_format4(
+        cursor: &mut Cursor<&[u8]>,
+        budget: Option<&ImportBudget>,
+    ) -> Result<HashMap<u16, char>, String> {
         let _length = cursor
             .read_u16::<BigEndian>()
             .map_err(|e| format!("Failed to read format 4 length: {}", e))?
@@ -341,6 +434,9 @@ impl TrueTypeCMap {
             .read_u16::<BigEndian>()
             .map_err(|e| format!("Failed to read segCountX2: {}", e))?
             as usize;
+        if !seg_count_x2.is_multiple_of(2) {
+            return Err("odd TrueType segCountX2".into());
+        }
         let seg_count = seg_count_x2 / 2;
 
         // Skip binary search parameters
@@ -354,8 +450,17 @@ impl TrueTypeCMap {
             .read_u16::<BigEndian>()
             .map_err(|e| format!("Failed to read rangeShift: {}", e))?;
 
+        // Validate the complete array payload before reserving any of it.
+        if cursor
+            .get_ref()
+            .len()
+            .saturating_sub(cursor.position() as usize)
+            < seg_count * 8 + 2
+        {
+            return Err("truncated TrueType segment arrays".into());
+        }
         // Read segment arrays
-        let mut end_codes = vec![0u16; seg_count];
+        let mut end_codes = Self::zeroed_array::<u16>(seg_count, budget)?;
         for i in 0..seg_count {
             end_codes[i] = cursor
                 .read_u16::<BigEndian>()
@@ -367,14 +472,14 @@ impl TrueTypeCMap {
             .read_u16::<BigEndian>()
             .map_err(|e| format!("Failed to read reserved pad: {}", e))?;
 
-        let mut start_codes = vec![0u16; seg_count];
+        let mut start_codes = Self::zeroed_array::<u16>(seg_count, budget)?;
         for i in 0..seg_count {
             start_codes[i] = cursor
                 .read_u16::<BigEndian>()
                 .map_err(|e| format!("Failed to read startCode[{}]: {}", i, e))?;
         }
 
-        let mut id_deltas = vec![0i16; seg_count];
+        let mut id_deltas = Self::zeroed_array::<i16>(seg_count, budget)?;
         for i in 0..seg_count {
             id_deltas[i] = cursor
                 .read_i16::<BigEndian>()
@@ -382,7 +487,7 @@ impl TrueTypeCMap {
         }
 
         // id_range_offsets require special parsing - just read as array
-        let mut id_range_offsets = vec![0u16; seg_count];
+        let mut id_range_offsets = Self::zeroed_array::<u16>(seg_count, budget)?;
         for i in 0..seg_count {
             id_range_offsets[i] = cursor
                 .read_u16::<BigEndian>()
@@ -390,9 +495,14 @@ impl TrueTypeCMap {
         }
 
         // Read remaining bytes as glyphIdArray (used when idRangeOffset != 0)
-        let mut glyph_id_array = Vec::new();
-        while let Ok(val) = cursor.read_u16::<BigEndian>() {
-            glyph_id_array.push(val);
+        let glyph_count = cursor
+            .get_ref()
+            .len()
+            .saturating_sub(cursor.position() as usize)
+            / 2;
+        let mut glyph_id_array = Self::zeroed_array::<u16>(glyph_count, budget)?;
+        for value in &mut glyph_id_array {
+            *value = cursor.read_u16::<BigEndian>().map_err(|e| e.to_string())?;
         }
 
         // Build character to GID mappings
@@ -403,6 +513,11 @@ impl TrueTypeCMap {
             let end = end_codes[seg] as u32;
             let id_delta = id_deltas[seg] as i32;
 
+            let count = end
+                .min(0xfffe)
+                .checked_sub(start)
+                .map_or(0, |n| n as usize + 1);
+            Self::reserve_mappings(&mut gid_to_unicode, count, budget)?;
             for char_code in start..=end {
                 if char_code == 0xFFFF {
                     break; // End segment marker
@@ -416,8 +531,10 @@ impl TrueTypeCMap {
                     // offset = idRangeOffset[i]/2 + (charCode - startCode[i]) + i - segCount
                     let offset = (id_range_offsets[seg] as usize) / 2
                         + (char_code as usize - start as usize)
-                        + seg
-                        - seg_count;
+                        + seg;
+                    let offset = offset
+                        .checked_sub(seg_count)
+                        .ok_or("invalid TrueType glyph offset")?;
                     if offset < glyph_id_array.len() {
                         let raw = glyph_id_array[offset];
                         if raw != 0 {
@@ -442,7 +559,10 @@ impl TrueTypeCMap {
     }
 
     /// Parse cmap format 6 (trimmed table)
-    fn parse_cmap_format6(cursor: &mut Cursor<&[u8]>) -> Result<HashMap<u16, char>, String> {
+    fn parse_cmap_format6(
+        cursor: &mut Cursor<&[u8]>,
+        budget: Option<&ImportBudget>,
+    ) -> Result<HashMap<u16, char>, String> {
         let _length = cursor
             .read_u16::<BigEndian>()
             .map_err(|e| format!("Failed to read format 6 length: {}", e))?;
@@ -459,6 +579,15 @@ impl TrueTypeCMap {
 
         let mut gid_to_unicode = HashMap::new();
 
+        if cursor
+            .get_ref()
+            .len()
+            .saturating_sub(cursor.position() as usize)
+            < count * 2
+        {
+            return Err("truncated TrueType glyph array".into());
+        }
+        Self::reserve_mappings(&mut gid_to_unicode, count, budget)?;
         for i in 0..count {
             let gid = cursor
                 .read_u16::<BigEndian>()
@@ -474,7 +603,10 @@ impl TrueTypeCMap {
     }
 
     /// Parse cmap format 12 (segmented coverage - supports full Unicode)
-    fn parse_cmap_format12(cursor: &mut Cursor<&[u8]>) -> Result<HashMap<u16, char>, String> {
+    fn parse_cmap_format12(
+        cursor: &mut Cursor<&[u8]>,
+        budget: Option<&ImportBudget>,
+    ) -> Result<HashMap<u16, char>, String> {
         // Skip reserved bytes
         let _reserved = cursor
             .read_u16::<BigEndian>()
@@ -494,6 +626,17 @@ impl TrueTypeCMap {
 
         let mut gid_to_unicode = HashMap::new();
 
+        let group_bytes = num_groups
+            .checked_mul(12)
+            .ok_or("TrueType group size overflow")?;
+        if cursor
+            .get_ref()
+            .len()
+            .saturating_sub(cursor.position() as usize)
+            < group_bytes
+        {
+            return Err("truncated TrueType groups".into());
+        }
         for _ in 0..num_groups {
             let start_char_code = cursor
                 .read_u32::<BigEndian>()
@@ -505,6 +648,17 @@ impl TrueTypeCMap {
                 .read_u32::<BigEndian>()
                 .map_err(|e| format!("Failed to read startGlyphId: {}", e))?;
 
+            let delta = end_char_code
+                .checked_sub(start_char_code)
+                .ok_or("reversed TrueType group")?;
+            if end_char_code > 0x10ffff
+                || start_gid
+                    .checked_add(delta)
+                    .is_none_or(|gid| gid > u16::MAX as u32)
+            {
+                return Err("TrueType group exceeds Unicode or glyph range".into());
+            }
+            Self::reserve_mappings(&mut gid_to_unicode, delta as usize + 1, budget)?;
             for (offset, char_code) in (start_char_code..=end_char_code).enumerate() {
                 let gid = (start_gid + offset as u32) as u16;
                 if let Some(ch) = char::from_u32(char_code) {
@@ -521,6 +675,13 @@ impl TrueTypeCMap {
 mod tests {
     use super::*;
     use byteorder::{BigEndian, WriteBytesExt};
+
+    // The directory length is a real OpenType boundary, not an unused field.
+    // These synthetic fonts put their only cmap table at offset 28.
+    fn finish_cmap_length(data: &mut [u8]) {
+        let length = (data.len() - 28) as u32;
+        data[24..28].copy_from_slice(&length.to_be_bytes());
+    }
 
     /// Build a minimal TrueType font with a cmap format 4 table.
     fn build_truetype_with_cmap_format4(mappings: &[(u16, u16)]) -> Vec<u8> {
@@ -539,7 +700,7 @@ mod tests {
         data.write_u32::<BigEndian>(0x636D6170).unwrap(); // 'cmap' tag
         data.write_u32::<BigEndian>(0).unwrap(); // checksum (unused)
         data.write_u32::<BigEndian>(cmap_offset).unwrap(); // offset
-        data.write_u32::<BigEndian>(0).unwrap(); // length (unused)
+        data.write_u32::<BigEndian>(0).unwrap(); // length placeholder
 
         // ---- cmap table header ----
         data.write_u16::<BigEndian>(0).unwrap(); // version
@@ -601,6 +762,7 @@ mod tests {
         data[length_pos] = len_bytes[0];
         data[length_pos + 1] = len_bytes[1];
 
+        finish_cmap_length(&mut data);
         data
     }
 
@@ -640,6 +802,7 @@ mod tests {
         data.write_u16::<BigEndian>(0).unwrap(); // language
         data.extend_from_slice(&glyph_ids);
 
+        finish_cmap_length(&mut data);
         data
     }
 
@@ -679,6 +842,7 @@ mod tests {
             data.write_u16::<BigEndian>(gid).unwrap();
         }
 
+        finish_cmap_length(&mut data);
         data
     }
 
@@ -720,6 +884,7 @@ mod tests {
             data.write_u32::<BigEndian>(start_gid).unwrap();
         }
 
+        finish_cmap_length(&mut data);
         data
     }
 
@@ -1068,6 +1233,7 @@ mod tests {
         data.write_u16::<BigEndian>(262).unwrap();
         data.write_u16::<BigEndian>(0).unwrap();
         data.extend_from_slice(&[0u8; 8]);
+        finish_cmap_length(&mut data);
         let result = TrueTypeCMap::from_font_data(&data);
         assert!(result.is_err());
     }
@@ -1096,6 +1262,7 @@ mod tests {
                                                      // format 2 (unsupported)
         data.write_u16::<BigEndian>(2).unwrap();
 
+        finish_cmap_length(&mut data);
         let result = TrueTypeCMap::from_font_data(&data);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("Unsupported cmap format"));
@@ -1119,6 +1286,7 @@ mod tests {
         // cmap header with invalid version
         data.write_u16::<BigEndian>(99).unwrap(); // version != 0
 
+        finish_cmap_length(&mut data);
         let result = TrueTypeCMap::from_font_data(&data);
         assert!(result.is_err());
         assert!(result
@@ -1145,6 +1313,7 @@ mod tests {
         data.write_u16::<BigEndian>(0).unwrap(); // version
         data.write_u16::<BigEndian>(0).unwrap(); // 0 subtables
 
+        finish_cmap_length(&mut data);
         let result = TrueTypeCMap::from_font_data(&data);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("No suitable cmap subtable"));
@@ -1212,6 +1381,7 @@ mod tests {
         data.write_u32::<BigEndian>(65).unwrap();
         data.write_u32::<BigEndian>(1).unwrap();
 
+        finish_cmap_length(&mut data);
         let cmap = TrueTypeCMap::from_font_data(&data).unwrap();
         assert_eq!(cmap.get_unicode(1), Some('A'));
     }

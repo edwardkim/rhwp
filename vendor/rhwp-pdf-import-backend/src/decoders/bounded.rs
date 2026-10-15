@@ -22,16 +22,7 @@ pub(super) fn decode(
     }
     for filter in filters {
         let decoded = match normalize_filter_name(filter)? {
-            "FlateDecode" => match budget.read(flate2::read::ZlibDecoder::new(current.as_ref())) {
-                Ok(bytes) => bytes,
-                Err(error) => {
-                    budget.check()?;
-                    if !matches!(error, Error::Io(_)) {
-                        return Err(error);
-                    }
-                    budget.read(flate2::read::DeflateDecoder::new(current.as_ref()))?
-                },
-            },
+            "FlateDecode" => super::flate_limited::decode(&current, budget)?,
             "BrotliDecode" => decode_brotli(&current, budget)?,
             "LZWDecode" => {
                 let mut output = budget.output();

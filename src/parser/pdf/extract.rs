@@ -110,7 +110,15 @@ pub(super) fn extract(
                 "declared image pixel budget exceeded",
             ));
         }
-        let image = checked(pdf, handle.decode())?;
+        let decoded = handle.decode();
+        pdf.check_import_budget().map_err(PdfImportError::backend)?;
+        let image = decoded.map_err(|error| match error {
+            pdf_oxide::error::Error::Unsupported(_) => PdfImportError::new(
+                "PDF_IMAGE_UNSUPPORTED",
+                "image codec or mask is not supported by the bounded import path",
+            ),
+            other => PdfImportError::backend(other),
+        })?;
         if image.width() != handle.width || image.height() != handle.height {
             return Err(PdfImportError::new(
                 "PDF_IMAGE_UNSUPPORTED",

@@ -2592,6 +2592,14 @@ impl PdfDocument {
         result
     }
 
+    fn cached_object_copy(&self, reference: ObjectRef) -> Result<Option<Object>> {
+        self.object_cache
+            .lock_or_recover()
+            .get(&reference)
+            .map(|value| crate::object_copy::clone_object(value, self.import_budget.as_deref()))
+            .transpose()
+    }
+
     fn load_object_inner(&self, obj_ref: ObjectRef) -> Result<Object> {
         log::debug!("Loading object {} gen {}", obj_ref.id, obj_ref.gen);
 
@@ -2622,7 +2630,7 @@ impl PdfDocument {
         }
 
         // Check cache first (warm path: fully parallel, no serialization).
-        let cached_opt = self.object_cache.lock_or_recover().get(&obj_ref).cloned();
+        let cached_opt = self.cached_object_copy(obj_ref)?;
         if let Some(cached) = cached_opt {
             return Ok(cached);
         }
@@ -2638,7 +2646,7 @@ impl PdfDocument {
             let guard = self.load_lock.lock_or_recover();
             // Double-checked: another thread may have loaded and cached
             // this object while we were blocked on the guard.
-            if let Some(cached) = self.object_cache.lock_or_recover().get(&obj_ref).cloned() {
+            if let Some(cached) = self.cached_object_copy(obj_ref)? {
                 return Ok(cached);
             }
             Some(guard)
@@ -2750,7 +2758,7 @@ impl PdfDocument {
             // mis-flag every compressed object's xref slot as free, so
             // sweep the object streams once and recheck the cache.
             self.recover_from_object_streams();
-            if let Some(obj) = self.object_cache.lock_or_recover().get(&obj_ref).cloned() {
+            if let Some(obj) = self.cached_object_copy(obj_ref)? {
                 if !matches!(obj, Object::Null) {
                     log::debug!("Object {} recovered from object-stream sweep", obj_ref.id);
                     return Ok(obj);
@@ -2925,14 +2933,18 @@ impl PdfDocument {
             }
         }
 
-        // If already in object cache, check directly
-        let cached_opt = self.object_cache.lock_or_recover().get(&obj_ref).cloned();
-        if let Some(cached) = cached_opt {
-            let is_form = cached
-                .as_dict()
-                .and_then(|d| d.get("Subtype"))
-                .and_then(|s| s.as_name())
-                == Some("Form");
+        // Borrow only the subtype; do not clone an entire cached object to peek.
+        let cached_is_form = {
+            let cache = self.object_cache.lock_or_recover();
+            cache.get(&obj_ref).map(|cached| {
+                cached
+                    .as_dict()
+                    .and_then(|d| d.get("Subtype"))
+                    .and_then(|s| s.as_name())
+                    == Some("Form")
+            })
+        };
+        if let Some(is_form) = cached_is_form {
             if !is_form {
                 self.image_xobject_cache.lock_or_recover().insert(obj_ref);
             }
@@ -3804,9 +3816,10 @@ impl PdfDocument {
 
         // Cache the object
         self.check_import_budget()?;
-        self.object_cache
-            .lock_or_recover()
-            .insert(obj_ref, obj.clone());
+        self.object_cache.lock_or_recover().insert(
+            obj_ref,
+            crate::object_copy::clone_object(&obj, self.import_budget.as_deref())?,
+        );
 
         Ok(obj)
     }
@@ -3915,7 +3928,7 @@ impl PdfDocument {
 
         // Extract the requested object
         let obj = match objects_map.get(&obj_ref.id) {
-            Some(o) => o.clone(),
+            Some(o) => crate::object_copy::clone_object(o, self.import_budget.as_deref())?,
             None => {
                 // PDF Spec §7.3.10: treat as null
                 log::warn!(
@@ -21276,13 +21289,25 @@ impl PdfDocument {
         resources: &Object,
         extractor: &mut crate::extractors::TextExtractor<'_>,
     ) -> Result<()> {
+        self.check_import_budget()?;
+        let result = self.load_fonts_impl(resources, extractor);
+        // Font fallbacks and lazy CMap sharing must not hide a fatal limit.
+        self.check_import_budget()?;
+        result
+    }
+
+    fn load_fonts_impl(
+        &self,
+        resources: &Object,
+        extractor: &mut crate::extractors::TextExtractor<'_>,
+    ) -> Result<()> {
         use crate::fonts::FontInfo;
 
         // Resources can be a reference or a dictionary
         let resources_obj = if let Some(res_ref) = resources.as_reference() {
             self.load_object(res_ref)?
         } else {
-            resources.clone()
+            crate::object_copy::clone_object(resources, self.import_budget().map(AsRef::as_ref))?
         };
 
         let resources_dict = match resources_obj.as_dict() {
@@ -21303,7 +21328,7 @@ impl PdfDocument {
             let font_dict_obj = if let Some(font_ref) = font_dict_ref {
                 self.load_object(font_ref)?
             } else {
-                font_obj.clone()
+                crate::object_copy::clone_object(font_obj, self.import_budget().map(AsRef::as_ref))?
             };
 
             // Layer 2: Check font set cache for the /Font dictionary.
@@ -21456,7 +21481,10 @@ impl PdfDocument {
                         // glyph procs / glyph-subset + ToUnicode mappings are
                         // document-specific. The per-document Layer 4/5 caches
                         // below stay safe to use.
-                        let is_document_local = Self::font_is_document_local(&font);
+                        // Request-bound FontInfo/LazyCMap must never enter or consume
+                        // a process cache, including legacy entries without limits.
+                        let is_document_local =
+                            self.import_budget().is_some() || Self::font_is_document_local(&font);
 
                         // Layer 5: Per-font identity cache — skip from_dict when a
                         // structurally identical font was already parsed elsewhere.
@@ -23878,45 +23906,39 @@ impl PdfDocument {
     fn build_color_space_map(
         &self,
         resources: Option<&Object>,
-    ) -> std::collections::HashMap<String, Object> {
-        let mut map = std::collections::HashMap::new();
+    ) -> Result<std::collections::HashMap<String, Object>> {
+        use std::borrow::Cow;
+        self.check_import_budget()?;
         let Some(res) = resources else {
-            return map;
+            return Ok(HashMap::new());
         };
-        let res = if let Some(r) = res.as_reference() {
-            match self.load_object(r) {
-                Ok(o) => o,
-                Err(_) => return map,
+        let resolve = |value: &Object| -> Result<Option<Object>> {
+            match value.as_reference() {
+                Some(reference) => match self.load_object(reference) {
+                    Ok(value) => Ok(Some(value)),
+                    Err(_) => {
+                        self.check_import_budget()?;
+                        Ok(None)
+                    },
+                },
+                None => Ok(None),
             }
-        } else {
-            res.clone()
         };
-        let Some(res_dict) = res.as_dict() else {
-            return map;
+        let res = resolve(res)?.map_or(Cow::Borrowed(res), Cow::Owned);
+        let Some(cs_entry) = res.as_dict().and_then(|dict| dict.get("ColorSpace")) else {
+            return Ok(HashMap::new());
         };
-        let Some(cs_entry) = res_dict.get("ColorSpace") else {
-            return map;
-        };
-        let cs_obj = if let Some(r) = cs_entry.as_reference() {
-            match self.load_object(r) {
-                Ok(o) => o,
-                Err(_) => return map,
-            }
-        } else {
-            cs_entry.clone()
-        };
+        let cs_obj = resolve(cs_entry)?.map_or(Cow::Borrowed(cs_entry), Cow::Owned);
         let Some(cs_dict) = cs_obj.as_dict() else {
-            return map;
+            return Ok(HashMap::new());
         };
-        for (name, value) in cs_dict.iter() {
-            let resolved = if let Some(r) = value.as_reference() {
-                self.load_object(r).unwrap_or_else(|_| value.clone())
-            } else {
-                value.clone()
-            };
-            map.insert(name.clone(), resolved);
+        let mut map = crate::object_copy::clone_dictionary(cs_dict, self.import_budget.as_deref())?;
+        for value in map.values_mut() {
+            if let Some(resolved) = resolve(value)? {
+                *value = resolved;
+            }
         }
-        map
+        Ok(map)
     }
 
     /// Enumerate images on a page without decompressing any stream (Phase 1).
@@ -23973,7 +23995,7 @@ impl PdfDocument {
                 if let Some(ref_obj) = res.as_reference() {
                     Some(self.load_object(ref_obj)?)
                 } else {
-                    Some(res.clone())
+                    Some(crate::object_copy::clone_object(res, self.import_budget.as_deref())?)
                 }
             },
             None => None,
@@ -23989,7 +24011,7 @@ impl PdfDocument {
             };
 
         // Resource-name colour-space map for this page scope (§8.6.6 / §8.9.7).
-        let cs_map = self.build_color_space_map(resources.as_ref());
+        let cs_map = self.build_color_space_map(resources.as_ref())?;
 
         // Pre-resolve the XObject dictionary once
         let xobject_dict = if let Some(ref res) = resources {
@@ -23998,9 +24020,17 @@ impl PdfDocument {
                     let resolved = if let Some(ref_obj) = xobj_entry.as_reference() {
                         self.load_object(ref_obj)?
                     } else {
-                        xobj_entry.clone()
+                        crate::object_copy::clone_object(xobj_entry, self.import_budget.as_deref())?
                     };
-                    resolved.as_dict().cloned()
+                    resolved
+                        .as_dict()
+                        .map(|dict| {
+                            crate::object_copy::clone_dictionary(
+                                dict,
+                                self.import_budget.as_deref(),
+                            )
+                        })
+                        .transpose()?
                 } else {
                     None
                 }
@@ -24101,7 +24131,7 @@ impl PdfDocument {
         let xobject = if let Some(ref_obj) = xobject_ref_opt {
             self.load_object(ref_obj)?
         } else {
-            xobject_ref_obj.clone()
+            crate::object_copy::clone_object(xobject_ref_obj, self.import_budget.as_deref())?
         };
         let xobj_dict = match xobject.as_dict() {
             Some(d) => d,
@@ -24116,7 +24146,7 @@ impl PdfDocument {
         match subtype {
             "Image" => {
                 if let Some(ref_obj) = xobject_ref_opt {
-                    let cs_map = self.build_color_space_map(resources);
+                    let cs_map = self.build_color_space_map(resources)?;
                     if let Some(h) = image_handle_from_xobject(
                         self,
                         ref_obj,
@@ -24201,10 +24231,10 @@ impl PdfDocument {
             if let Some(ref_obj) = form_res.as_reference() {
                 self.load_object(ref_obj)?
             } else {
-                form_res.clone()
+                crate::object_copy::clone_object(form_res, self.import_budget.as_deref())?
             }
         } else {
-            parent_resources.clone()
+            crate::object_copy::clone_object(parent_resources, self.import_budget.as_deref())?
         };
 
         // Pre-resolve the XObject dictionary for *this* Form's Resources.
@@ -24213,9 +24243,14 @@ impl PdfDocument {
                 let resolved = if let Some(ref_obj) = xobj_entry.as_reference() {
                     self.load_object(ref_obj)?
                 } else {
-                    xobj_entry.clone()
+                    crate::object_copy::clone_object(xobj_entry, self.import_budget.as_deref())?
                 };
-                resolved.as_dict().cloned()
+                resolved
+                    .as_dict()
+                    .map(|dict| {
+                        crate::object_copy::clone_dictionary(dict, self.import_budget.as_deref())
+                    })
+                    .transpose()?
             } else {
                 None
             }
@@ -24303,7 +24338,7 @@ impl PdfDocument {
                         .last()
                         .copied()
                         .unwrap_or_else(crate::content::Matrix::identity);
-                    let cs_map = self.build_color_space_map(Some(&form_resources));
+                    let cs_map = self.build_color_space_map(Some(&form_resources))?;
                     if let Some(h) = image_handle_from_inline(
                         self,
                         &dict,

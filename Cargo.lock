@@ -2174,6 +2174,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rhwp-jpeg-decoder"
+version = "0.3.2-rhwp.1"
+dependencies = [
+ "rayon",
+]
+
+[[package]]
 name = "rhwp-native-ffi"
 version = "0.1.0"
 dependencies = [
@@ -2235,6 +2242,8 @@ dependencies = [
  "phf",
  "quick-xml 0.42.0",
  "regex",
+ "rhwp-jpeg-decoder",
+ "rhwp-zune-jpeg",
  "serde",
  "serde_json",
  "sha2",
@@ -2249,6 +2258,8 @@ dependencies = [
  "unicode-normalization",
  "uuid",
  "weezl 0.2.1",
+ "zlib-rs",
+ "zune-core 0.5.3",
 ]
 
 [[package]]
@@ -2256,6 +2267,13 @@ name = "rhwp-subsecond"
 version = "0.0.0"
 dependencies = [
  "rhwp",
+]
+
+[[package]]
+name = "rhwp-zune-jpeg"
+version = "0.5.15-rhwp.1"
+dependencies = [
+ "zune-core 0.5.3",
 ]
 
 [[package]]
@@ -2800,7 +2818,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.4.3",
+ "getrandom 0.3.4",
  "once_cell",
  "rustix",
  "windows-sys",

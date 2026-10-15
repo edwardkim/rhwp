@@ -1,10 +1,14 @@
 # Task #7911 2단계 진행 기록: pdf_oxide 0.3.78 직접 IR 경계
 
 - 일자: 2026-10-15 (Asia/Seoul)
-- 상태: **구현 진행 중**. Native/WASM 컴파일·fresh binding 실행·작은 계약·로컬 패키지 확인; 단계 완료 보고가 아니다.
+- 상태: **2026-10-16 실행 순서 변경 — 2단계 checkpoint 정리, 제품 전체 경로 우선 구현으로 인계**.
+  기존 집중 검증과 미완료를 보존한다. 전체 자원 안전성·제품 통합 완료 보고가 아니다.
 - [수행계획](../plans/task_m100_7911.md), [승인된 구현계획](../plans/task_m100_7911_impl.md)
 - 작업 브랜치 `task_m100_7911`, 고정 devel `a5e88ad682c805e1d845502ddc9521b94ea8eccd`
 - 승인: 구현계획 승인 후 착수. 후속 지시 “0.3.78에 맞추어 코드를 수정해서 컴파일” 반영.
+- 현재 순서: [구현계획 6절](../plans/task_m100_7911_impl.md#6-구현-순서와-승인).
+  세부 미완료의 상태·종료 조건은 [백로그](../plans/task_m100_7911_backlog.md)를 따른다.
+  3.1–3.22의 단계 유지 문구는 당시 기록이며, 후속 결정과 목적 정정은 3.23–3.24에 기록한다.
 
 ## 1. 반영 내용
 
@@ -956,25 +960,759 @@ PR 본문은 현재 65개 집중 계약 및 library lint/fresh WASM probe의 검
 판정하지 않았다. 이 기록은 작업 문서일 뿐 CI 성공 뒤 작성하는 정식 PR review나
 오늘할일 trailing 기록을 대신하지 않는다. 아래 미완료 게이트는 그대로 유지한다.
 
-## 4. 미완료와 다음 게이트
+### 3.14 WSL 재개: Indexed·인라인 이미지 경계 보완 (2026-10-15)
 
-- 기존 format detect/`ParsedDocument`/Core 생성 경로, CLI 명령과 WASM 공개 import API는
-  아직 PDF에 연결하지 않았다. 현재는 optional Rust frontend 경계다.
-- 실제 12쪽/7·8쪽의 Native/fresh WASM 시각·한컴 Print·편집 왕복을 새 head에서 실행하지 않았다.
-  이전 POC 점수로 이를 대신하지 않는다. 본문 positional span과 셀 줄 단위 문단은 임시 정책이다.
-- 입력 16 MiB·128쪽, 추출 객체/문자/경로, 선언 이미지 픽셀, 누적 셀·참조 ID 예산과
-  위 제한된 decode 경로는 구현했으나 모든 codec·font/cache의 선행 할당·CPU 격리는 미입증이다.
-  초기 upstream 공개 API의 한계 때문에 별도 보안 patch를 도입했으며 남은 경로는 3.4에 구분했다.
-  **외부 비신뢰 입력 배포·기본 활성화와 PR 준비 완료 판정은 보류**한다.
-- 최소 보안 patch의 초기 적용과 19개 계약은 위 3.4, 후속 10개 추가 계약·보완은 3.5에 기록했다.
-  추가 도입·후속 진행 승인은 받았으나
-  모든 선행/누적 할당 경로를 입증한 것은 아니며 자원 안전성 게이트는 여전히 열려 있다.
-- 3.7의 디스크 대기는 공간 확보 알림으로 해소했다. 탐색 보완의 계약·lint·Native 실물 결과는
-  3.8을 따른다. 나머지 2단계 자원 게이트와 단계 승인 절차는 유지한다.
-- 후속 캐시·원본 이미지 복사 보완의 기존 결과는 3.9, Brotli 보완의 현재 source 집중 계약은
-  3.11을 따른다. CCITT DeviceGray 제한 경로의 보완은 3.12이며, 다른 이미지 경로와
-  나머지 선행 할당 감사는 계속 미완료다.
-- default/feature-on 전체 Rust lint 묶음, workspace all-targets, nextest 전체 회귀,
-  제품 Studio용 공식 fresh web wrapper/Worker·제품 번들 크기·전쪽 비교는 최종 게이트에서 남아 있다.
-- 현재 기록은 2단계 중간 checkpoint다. 커밋·PR 요청과 미완료 상태의 처리 확인은 3.6에 기록했다.
-  3단계 착수·merge·close 승인은 아니며 private 환경 파일·사용자 output·POC 이력은 보존했다.
+메인테이너의 “순서에 따라 진행을 시작합니다”에 따라 #7913의 2단계 자원 감사를 재개했다.
+작업트리는 `/home/edward/mygithub/rhwp-issue7911`, 시작 head는 `bc5ff5690`이며 이번 변경은
+로컬 WIP다. Native target은 기본 작업공간의 `/home/edward/mygithub/rhwp/target/pr-review`를
+재사용했다. 기본 작업공간의 기존 WIP·Studio·환경 파일은 보존했다.
+
+**적용한 계약과 실제 경로**
+
+- `page_image_handles → PdfImageHandle::decode → extract_image_from_xobject_at →
+  decode_stream_with_encryption → Indexed expansion → to_png_bytes_with_budget`를 추적했다.
+  일반 CCITT filter가 압축 bytes를 그대로 반환하는데 Indexed 분기는 이를 즉시 palette index로
+  해석했다. 제한된 경로는 기존 bounded Group 3/4 decoder를 먼저 호출하고
+  `BlackIs1 → /Decode → palette → RGB` 결과를 소비하도록 보정했다.
+- 직접 palette는 필요한 prefix를 요청 예산으로 복사하고, 참조 stream palette는 같은 문서의
+  decoder를 사용한다. hival·palette 길이를 검사하며 RGB·Lab palette의 예약 전 예산을 적용한다.
+  기대값은 [ISO 32000-1:2008](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf)
+  7.4.6, 8.6.6.3, 8.9.5.2에서 정했다. index 반올림·제한은 색상표 규칙이며 배치 좌표 보정이 아니다.
+- 인라인의 `image_handle_from_inline → StreamData::from(data) → decode_stream_data`는
+  원래 요청 context를 잃었다. `StreamData::bounded(data, doc.import_budget())`로 바꿔
+  합성 XObject도 filter·누적·fatal 예산을 보존한다. 비제한 문서는 기존 None context를 유지한다.
+- Indexed `/Decode` 적용 결과를 `decode_folded_in()`에도 반영했다. 원래 sample 여부·저장 bpc와
+  별도로 검증한다. 기존 분판 renderer는 Indexed를 직접 소비하지 않으므로 이 표시 누락을
+  현재 frontend의 픽셀 오류와 혼동하지 않았다. 확장과 상태 표시가 같은 해석 결과를 사용한다.
+
+**수정 전후 실행 증거** (`output/pr-review/issue7911/` 아래)
+
+| 검증 | 결과 | 증거 |
+| --- | --- | --- |
+| Indexed 수정 전 | 기존 60 PASS, 신규 반례 3 FAIL | `logs/indexed-before-contracts.log` |
+| 인라인 수정 전 | cap 4,096에서 4,097-byte 출력을 허용해 정식 검사 FAIL | `logs/inline-before-contract.log` |
+| Decode 상태 수정 전 | 비기본 Decode 적용 뒤 false/true assertion FAIL | `logs/indexed-metadata-before.log` |
+| 최종 Native 자원 계약 | **67 PASS / 0 FAIL** | `logs/images-final-metadata-contracts.log` |
+| 최종 Native frontend·여백 | **4 + 1 PASS / 0 FAIL** | `logs/images-frontend-margin-final.log` |
+| backend Native/WASM lib Clippy | 둘 다 `-D warnings` PASS | `logs/images-backend-native-clippy-final.log`, `logs/images-docker-wasm-final.log` |
+| 최종 Docker web WASM 진단 | CCITT 조합·상태 24, codec cap 3, 오류 후 정상 2, inline 경계 4 PASS | `logs/images-docker-wasm-smoke-final.log`, `indexed-wasm-probe/results/smoke.json` |
+| 실물 3쪽 이미지 9회 | Native/WASM 모두 Poppler와 RGB 동일; 기존 정상 5 PNG byte 동일 | `indexed-real-control/final-pixel-comparison.json`, WASM smoke JSON |
+| 실물 전체 12쪽·선택 7/8쪽 | Native/WASM HWPX 3건 byte 동일 | `indexed-wasm-probe/results/final-comparison.json` |
+
+실물 이미지 입력은 `pdf/hwpx/[2027] 온새미로 1 본교재.pdf`이며 Poppler 24.02.0의
+`pdfimages -f 3 -l 3 -png`로 독립 기준을 만들었다. 수정 전 CCITT 4회가 실패했고 보정 후
+9회 모두 추출된다. frontend 실물 입력은 `pdf/issue5875/nested_table_text_caption-2020.pdf`다.
+합성 CCITT 24개 및 인라인 정상 입력은 rhwp frontend가 저장한 HWPX의 BinData PNG도
+독립 디코더로 다시 읽어 명시적 기대 픽셀과 비교했다. 이는 codec/IR 계약 검증이며
+전쪽 조판·한컴 Print·Studio 시각 통과 증거로 사용하지 않는다.
+
+Native 실행은 suite prepare 뒤 공용 target의 `--locked --profile release-test --features pdf-import`로
+수행했다. `node scripts/run-rust-test.mjs --cargo-test issue_7911_pdf_resource_limits -- ...`가
+선택한 source를 실행했다. frontend/여백의 최종 suite는 012/008이다. 재분배 전 suite 006의
+0건 실행이나 최초 중복 필터 CLI 오류는 통과·실패 재현 건수에 포함하지 않았다.
+
+Docker는 기존 `rhwp-pr7704-review-20261011-wasm:latest`와 `-p rhwp`의 named volumes를
+재사용했다(Rust 1.93.0, wasm-pack 0.15.0; host Native Rust 1.93.1).
+진단 crate가 현재 root frontend/backend를 path로 소비하고 root의 svg2pdf patch를 명시한다.
+루트에서 `scripts/wasm-pack-locked.sh output/pr-review/issue7911/indexed-wasm-probe --target web
+--out-dir /app/output/pr-review/issue7911/indexed-wasm-probe/pkg`를 실행했다.
+진단 빌드는 wasm-opt를 끄며 제품 root pkg·Studio public을 덮어쓰지 않는다.
+독립 backend Clippy는 standalone lock을, 제품 probe는 제품 그래프를 사용하므로 구분한다.
+root/backend manifest·lock은 이번 재개에서 변경하지 않았다.
+
+최종 source 식별자는 `indexed-wasm-probe/source-final.json`, 실제 JS/WASM hash는
+`indexed-wasm-probe/results/final-comparison.json`에 있다. 변경 이미지 source SHA-256은
+`73c8ebd2336465260c25c52a73b23b55c3a7555be558bc6e9c6513e39e8ac0c5`다.
+`cargo fmt --all -- --check`, `git diff --check`, suite policy의 고정 base
+`463c48cc228170b576c832591b76826116e86a49` 비교도 통과했다.
+
+**남은 범위:** 다른 색 공간의 샘플/LUT 변환·mask 의미·PNG private scratch,
+객체/색 공간 map cache의 소유 복사, embedded font·glyph-name·후처리 cache의 선행 할당과
+CPU 격리는 미완료다. 정적 관측은 `resource-audit/remaining-allocation-paths-ko.md`에 기록했다.
+`parser_allocation_bounds_proven=false`를 유지하며 제품 CLI/WASM API·Worker·독립 package 소비·
+전체 lint/회귀·전쪽 시각 게이트의 완료로 확대하지 않는다. 2단계 중간 보완이며 원격 #7913은
+기존 head의 Draft 상태다. 이번 변경의 commit·push·Ready 전환·merge는 수행하지 않았다.
+
+### 3.15 이미지 샘플·색 변환 예산과 마스크 오류 경계 (2026-10-15)
+
+메인테이너의 “다음 절편 진행을 승인합니다”에 따라 3.14의 로컬 변경을 보존하고
+이미지 변환의 후행 소비 경로를 보완했다. 시작 head `bc5ff5690` 위의 로컬 WIP이며,
+이번 절편의 구현·검증은 원격 push·Ready·merge·외부 package 게시를 포함하지 않는다.
+
+**구현 주장과 적용 경로**
+
+| 경로 | 독립 계약과 보완 | 비적용·남은 범위 |
+| --- | --- | --- |
+| `extract_image_from_xobject_at → samples_to_decoded_bytes → ImageData::Raw` | ISO 32000-1 Table 89, 8.9.5.2의 bit depth·행 단위 byte alignment·Decode를 따른다. LUT·Decode range·8-bit 변환 출력의 예약 전에 `sample_buffer`가 요청 codec/누적 예산을 적용한다. 제한된 변환은 잘린 sample을 0으로 만들지 않고 오류를 반환한다. | legacy 추출의 짧은 stream 복구는 유지한다. Lab 등 기존 keep-raw 색 변환의 완전한 의미는 이번 통과 범위가 아니다. |
+| 16-bit reduction → 후행 Decode → PNG | big-endian sample의 기존 반올림을 유지한다. 검증한 geometry로 읽을 prefix와 변환 크기를 정하고 할당 전에 같은 예산을 소비한다. 잘못된 정수 bit depth가 `as u8`로 유효한 값으로 바뀌지 않게 검사한다. | 별도의 16-bit 고정밀 IR 도입이 아니다. |
+| `PdfImage::encode_png → raw_rgb_with_budget / into_rgb_with_budget` | CMYK/Gray→RGB의 입력 길이를 검사하고 RGB 버퍼를 예약 전에 계상한다. 이미 RGB인 소유 버퍼는 복제하지 않고 소비한다. 기존 색 정책은 보존 대조로 확인한다. | PNG encoder private scratch와 optional CMM 내부 메모리는 미입증이다. |
+| `decode_jpeg_with_budget → RGB 변환 → PNG` | 실제 header geometry 확인 후 JPEG decoder 출력 payload와 후행 RGB payload를 개별·누적 한도로 계상한다. CMYK 반전은 기존 규칙을 유지한다. | JPEG decoder private scratch의 전체 선행 할당 한계를 입증한 것은 아니다. |
+| 제한된 `PdfImageHandle::decode → frontend extract` | Table 89, 8.9.6 및 11.6.5.3의 `/Mask`·`/SMask`·stencil을 소비할 compositor가 없으므로 `PDF_IMAGE_UNSUPPORTED`로 명시적으로 거부한다. 뒤쪽 선택 페이지의 오류도 전체 builder 실패로 전파한다. | mask를 구현해 보존한 결과가 아니다. renderer가 mask를 직접 적용하는 legacy 경로는 유지하며 graphics-state soft mask/alpha/blend는 별도 미검증이다. |
+
+`sample_buffer`는 요청 payload bytes와 누적 작업량을 계상한다. 기존 보수적인 선행
+이미지 작업량 계상도 유지한다. 이 합계를 실제 peak RSS나 전체 allocator overhead로
+표시하지 않는다. 직접·참조 Decode, 2/4-bit의 행 끝 padding, null Mask/SMask와 false
+ImageMask, 마스크 없는 페이지만 선택하는 경우를 반례의 정상 대조군으로 사용한다.
+참조 사양은 3.14의 독립 ISO PDF이며 로컬 사본은 `resource-audit/PDF32000_2008.pdf`다.
+
+**실행 증거** (`output/pr-review/issue7911/` 아래)
+
+- 첫 수정 전 기존 67 PASS·신규 4 FAIL: `logs/samples-masks-before.log`.
+  sample 출력 1,025 bytes 대비 cap 1,024, 3-component LUT 768 bytes 대비 cap 767,
+  잘린 sample의 조용한 0 채움, colour-key mask의 무시를 각각 검출했다.
+- PNG 소비 경계의 추가 반례는 기존 71 PASS·신규 1 FAIL:
+  `logs/color-output-before.log`. 2-pixel RGB에 필요한 6 bytes보다 작은 cap 5에서도
+  CMYK 변환이 성공했던 경로다. 보정 후 **72 PASS / 0 FAIL**:
+  `logs/color-output-after.log`.
+- Native backend/root lib Clippy는 `logs/color-output-clippy.log`,
+  `logs/color-output-root-clippy-final.log`에서 통과했다. Docker backend/root WASM lib
+  Clippy도 `logs/samples-masks-docker-wasm-final.log`에서 통과했다.
+- 최종 Native frontend/여백 **5 PASS**: `logs/samples-masks-focused-final.log`.
+  테스트 추가 뒤 파생 배정이 바뀌어 이전 0건 실행은 제외했다. 최종 prepare 후 두 source가
+  속한 suite 016에서 실제 5건을 실행했다. 자원 72건은 suite 002에서 실행했다.
+- fresh Docker WASM의 이번 경계 검사 **40 PASS**: `samples-masks-probe/results.json`,
+  `logs/samples-masks-wasm-final.log`. 24개 예산 경계, 7개 잘못된 입력, 정상 픽셀 4개,
+  mask/선택 페이지 오류 계약 5개다. 이전 bundle에서는 이 중 19개가 실패했다
+  (`before-results-expanded.json`). CMYK를 단순 RGB로 계산한 초기 진단 기대값은 결함
+  건수로 세지 않고 기존 변환의 픽셀 보존 대조로 정정했다.
+- 기존 Docker WASM CCITT 24조합·codec 경계 3·오류 후 정상 2·inline 4도 통과:
+  `logs/samples-masks-wasm-controls-final.log`,
+  `indexed-wasm-probe/results-samples-masks/smoke.json`.
+- Native CMYK/Gray/RGB JPEG의 실제 handle→PNG 경계 12개 통과. 실물 이미지 9개는
+  Native/WASM 모두 독립 Poppler RGB와 같다. 실물 전체 12쪽·선택 7쪽·선택 8쪽
+  HWPX 3개는 이전 정상 Native 및 새 Native/WASM 사이에서 byte 동일하다:
+  `samples-masks-probe/native-results.json`, `logs/samples-masks-native-controls-final.log`.
+- fmt/check·변경 diff whitespace·고정 base `463c48cc228170b576c832591b76826116e86a49`
+  대비 suite 정책 검사가 통과했다. `logs/samples-masks-fmt-final.log`,
+  `logs/samples-masks-final-suite-policy.log`를 따른다. workspace all-targets를 포함한
+  최종 PR lint 묶음이나 전체 회귀는 이번 결과로 대체하지 않는다.
+
+실행 source/manifest/input/JS/WASM SHA-256은 `samples-masks-probe/source-final.json`에
+고정했다. Native와 이번 Docker는 Rust 1.93.1이며, 기존 이미지에서 저장소 toolchain pin을
+따라 준비했다. 3.14의 Docker Rust 1.93.0 결과와 구분한다. Docker 프로젝트 `rhwp`와
+기존 `/build-target` volume을 재사용했고, 저장소 루트의 locked wrapper로 진단 web
+bundle을 만들었다. 제품 root pkg·Studio public·기본 작업공간의 기존 WIP는 변경하지 않았다.
+
+핵심 코드 위치는 `vendor/rhwp-pdf-import-backend/src/extractors/images.rs`의
+`raw_rgb_with_budget:518`, `into_rgb_with_budget:556`, `sample_buffer:1058`,
+`limited_decode_ranges:1077`, `samples_to_decoded_bytes:1118`, mask 오류 반환 `:4018` 및
+`src/parser/pdf/extract.rs:113`이다. 정상 출력 보존 대조는 codec/IR 계약이며 한컴 Print
+전쪽 Visual Sweep·제품 Studio/Worker의 실행 증거가 아니다.
+
+이번 절편은 `tests/cases/issue_7911_pdf_resource_limits.rs`의 합성 codec/자원/오류
+계약이며, 새 페이지 조판 golden이나 한컴 시각 판정을 추가하지 않았다. 정확한 경계,
+실패 후 같은 요청의 fatal 유지·다음 요청 정상 처리, 정상 픽셀과 all-or-error를 검사한다.
+기존 3.14 WASM bundle은 `samples-masks-probe/pkg-before/`에 보존했다.
+
+**계속 남은 게이트:** PNG/JPEG private scratch, 객체·색 공간 map cache의 소유 복사,
+embedded font/glyph-name/후처리, graphics-state 투명도와 미지원 색 공간의 의미,
+제품 CLI/WASM 공개 API·Worker 종료/취소·패키지 소비·전체 회귀·전쪽 시각 검증이다.
+`parser_allocation_bounds_proven=false`를 유지하며 이번 절편을 2단계 전체 완료나
+외부 비신뢰 입력 배포 준비 완료로 표시하지 않는다.
+
+### 3.16 PNG 제한 출력과 JPEG 입력 복사 선계상 (2026-10-15)
+
+메인테이너의 “다음 절편 진행을 승인합니다”에 따라 기존 WIP 위에서 PNG/JPEG 내부
+할당을 추적했다. 시작 head `bc5ff5690`의 로컬 작업이며 기본 작업공간의 WIP·Studio,
+공용 Native target과 Docker `rhwp`의 기존 `/build-target`을 보존했다.
+
+**실제 경로와 구현 범위**
+
+- `PdfImage::to_png_bytes_with_budget → encode_png → image::PngEncoder →
+  png 0.18.1 write_image_data`는 외부 bounded writer 호출 전에 행 버퍼·압축기 내부
+  공간·압축 결과 전체 Vec을 할당했다. 기존 출력 Vec 제한만으로 이 중간 할당은 막지 못했다.
+- 제한 경로는 `extractors/png_limited.rs::encode`로 연결했다. 8-bit Gray/RGB의 원래
+  샘플에 filter 0을 붙이고 최대 16 KiB의 블록 하나를 재사용한다. 블록을 codec/누적
+  예산으로 선계상한 뒤 `try_reserve_exact`하며, 저장 DEFLATE 블록을 bounded writer에
+  직접 쓴다. PNG 전체 길이의 checked 사전 검사와 누적 출력·fatal 처리는 유지한다.
+  압축 전체 Vec·별도 PNG 압축기 heap은 이 제한 경로에서 생성하지 않는다.
+  비제한 API의 기존 adaptive 압축 경로는 유지했다.
+- 계약 근거는 [PNG §5.5/10/11.2](https://www.w3.org/TR/png-3/) 및
+  [RFC 1951 §3.2.4](https://www.rfc-editor.org/rfc/rfc1951)이다. IDAT 경계가 행과
+  filter byte를 가를 수 있음을 반영하며 CRC/Adler와 종료 블록을 독립 디코더로 검증했다.
+  픽셀 해석과 조판 좌표를 변경한 것이 아니라 무손실 container 표현의 변경이다.
+- `decode_jpeg_with_budget → image 0.25.10 JpegDecoder::new`가 limits 적용 전에
+  전체 input을 복사한다. reader 생성 전에 알려진 input payload를 codec/누적 예산으로
+  계상했다. private Vec capacity/OOM·header metadata·JPEG coefficient/upsample buffer까지
+  입증한 것은 아니다. CMYK의 별도 jpeg-decoder 경로와 함께 후속 감사 대상으로 남긴다.
+- 넓은 사용자 지정 한도에서도 PNG 입력의 `width * height * channels`가 u32로
+  overflow하지 않도록 checked usize 연산을 사용한다. 잘못된 길이를 출력하지 않는다.
+
+**실행 결과와 증거** — 아래 경로는 `output/pr-review/issue7911/` 기준이다.
+
+| 검증 | 결과 | 로그·자료 |
+| --- | --- | --- |
+| 수정 전 Native | 기존 72 PASS, PNG/JPEG 새 반례 **2 FAIL** | `logs/png-codec-before.log` |
+| 수정 전 WASM | 27 경계 중 **8 FAIL**, 한도 미적용 재현 | `png-codec-probe/before-wasm.json` |
+| 최종 Native 자원 계약 | **77 PASS / 0 FAIL** | `logs/png-codec-final-contracts.log` |
+| 기존 Native frontend·여백 | **4 + 1 PASS** | `logs/png-codec-frontend.log`, `logs/png-codec-margin.log` |
+| fresh Docker WASM 추가 경계 | **27 + 14 PASS** | `logs/png-codec-wasm-boundaries.log`, `logs/png-codec-wasm-raw.log` |
+| 기존 WASM 대조군 | samples/masks 40, CCITT 24, 한도 5, 오류 뒤 정상 2, inline 4 PASS | `logs/png-codec-wasm-samples-masks.log`, `logs/png-codec-wasm-existing-controls.log` |
+| 실물 이미지 9회 | Native/WASM 모두 독립 Poppler와 RGB 동일 | `png-codec-probe/native-results.json`, `indexed-wasm-probe/results-png-codec/smoke.json` |
+| 비제한 PNG 대조군 9회 | 기존 압축 PNG와 byte 동일 | `png-codec-probe/legacy-results.json` |
+| 실물 12쪽 전체·선택 7/8쪽 | Native/WASM HWPX byte 동일, 변경 전후 비-PNG entry 동일·PNG 픽셀 동일 | `png-codec-probe/native-results.json` |
+| backend/root lib Clippy | Native와 Docker WASM 모두 `-D warnings` PASS | `logs/png-codec-native-*-clippy.log`, `logs/png-codec-docker-wasm.log` |
+| fmt·suite 정책·diff | PASS, base `463c48cc228170b576c832591b76826116e86a49` | `logs/png-codec-fmt-check.log`, `logs/png-codec-policy-final.log` |
+
+정식 source는 `tests/cases/issue_7911_pdf_resource_limits.rs`이며 5개 계약을 추가했다.
+2개는 수정 전 실패를 확인했고, 나머지는 block/row 분할·개별 출력·누적 반복·정수 경계의
+추가 검사다. geometry 검사를 수정 전 실행한 결함 검출 증거로 세지 않는다.
+기존 검사 4개에서 PNG 압축 byte 비교를 decoded pixel 비교로 바꾸고, 변환 버퍼와
+추가 PNG scratch를 구분했다. Indexed RGB는 72 bytes, PNG는 filter 3 bytes를 포함한
+75 bytes이며 각각의 미만·정확 경계·초과와 fatal 상태를 검사한다. 시각 baseline 완화가 아니다.
+최종 suite는 자원 002, frontend 027, 여백 028이다. prepare 후 실제 77/4/1건 실행을 확인했다.
+
+Native/Docker Rust 1.93.1, 루트 locked WASM wrapper와 기존 진단 crate를 사용했다.
+실행 source·manifest·입력·JS/WASM SHA-256은 `png-codec-probe/source-final.json`에 고정했다.
+PNG source SHA-256은 `66ea4aadc5d3f8a81626cac8f8f70f0d348dea2671d5542be9df3a0dec8a0137`이다.
+새 dependency/lock 변경은 없으며 제품 root pkg·Studio public을 갱신한 결과가 아니다.
+
+**확인된 크기 비용:** 제한 PNG는 압축하지 않는다. 실물 이미지 9회는 각각 기존의
+115.22–766.27배이며 합계 **36,323 → 15,252,683 bytes**다. 동일 encoded-byte 한도에
+더 빨리 도달할 수 있다. 별도 12쪽 대조군의 HWPX는 ZIP 재압축으로
+**1,607,950 → 1,457,545 bytes**였고, 선택 7/8쪽 HWPX는 byte 동일했다. 최종 ZIP 크기가
+줄었다고 내부 PNG 보관 비용을 상쇄한 것으로 판단하지 않는다. 제품 통합 전 제한 가능한
+압축 경로와 이 비용을 함께 검토해야 한다. 과거 PNG/HWPX 해시를 억지로 유지하지 않았다.
+
+**남은 범위:** JPEG metadata·progressive/MCU/upsampling/worker의 private allocation,
+일반 Flate 라이브러리의 내부 scratch, 객체/색 공간 map cache·embedded font/glyph-name,
+graphics-state 투명도 의미, 공개 CLI/WASM API·Worker·패키지 소비와 최종 전체 검증이다.
+상세 위치·dependency hash는 `png-codec-probe/allocation-audit-ko.md`에 있다.
+`parser_allocation_bounds_proven=false`를 유지한다. 이번 결과는 codec/IR 자원 계약이며
+2단계 전체 완료·전쪽 한컴 Visual Sweep·외부 비신뢰 입력 배포 준비 완료가 아니다.
+
+### 3.17 요청별 할당 제한을 유지한 PNG 압축 복구 (2026-10-15)
+
+메인테이너의 다음 절편 승인으로 3.16의 PNG 보관 비용을 보정하고 JPEG 입력 복사의
+실제 예약 지점을 보완했다. 시작 head `bc5ff569022bd296c3bfe2f904118b9e81d488e4`와
+기존 WIP를 유지한 같은 2단계 작업이다. 공유 Native target·Docker volume을 재사용했다.
+
+**구현과 비용**
+
+- `to_png_bytes_with_budget → encode_png → png_limited::encode → deflate::init/feed/end`를
+  연결했다. 기존 전이 의존성 `zlib-rs =0.6.7`의 internal allocator API를 exact pin하여
+  사용한다. state/window/hash/pending/symbols와 alignment 공간을 요청 예산으로 선계상하고
+  `try_reserve_exact`로 예약한다. 원본 행은 빌려 쓰며 16 KiB 고정 stack 출력 버퍼를
+  bounded writer에 직접 전송한다. 전체 filtered/compressed Vec을 만들지 않는다.
+  정상 종료·출력 중 오류에서 RAII로 codec allocation을 해제한다.
+- 이 버전에서 해당 압축 경로는 단일 private allocation이다. Native **380,041 bytes**,
+  wasm32 **379,845 bytes**이며 각각 미만/정확/초과 한도를 실제 실행했다. 크기 차이는
+  내부 layout·pointer 폭의 차이이며 출력 PNG/HWPX byte 일치와 별개다. 다른 codec의
+  private heap·malloc overhead·전체 RSS를 이 값으로 대표하지 않는다.
+- `image 0.25.10 JpegDecoder::new`가 limits 적용 전 `read_to_end`로 input을 소유 복사하는
+  지점에 `jpeg_input::Input`을 연결했다. 이전 외부 payload 선계상을 실제 복사 경계의
+  예산 확인 → fallible exact reservation → 복사 순서로 옮겼다. RGB/Gray 픽셀 정책과
+  CMYK의 별도 decoder 경로는 유지했다. JPEG metadata·계수·upsampling의 제한 완료는 아니다.
+- root/backend lock의 변경은 기존 zlib-rs dependency edge 한 줄씩이다. 새 crate 버전이나
+  C/native zlib를 도입하지 않았다. `std`, `rust-allocator`, `__internal-api`를 확인했다.
+  internal API라 exact version을 갱신할 때 allocation/lifetime 경로를 다시 감사해야 한다.
+
+실물 이미지 9회의 제한 PNG 합계는 **15,252,683 → 35,939 bytes**로 줄었다.
+이전 일반 압축 경로는 36,323 bytes였다. 이미지별 이전 일반 압축 대비 비율은
+0.8023–1.3082이며, 모든 입력의 압축률 개선을 주장하지 않는다. 제한 경로는 filter None,
+비제한 경로는 기존 adaptive filtering이다. 독립 Poppler RGB와 9개 모두 동일했다.
+실물 12쪽 HWPX는 1,457,545 → **1,431,027 bytes**, 선택 7/8쪽은 기존과 byte 동일하다.
+전체 HWPX의 바뀐 PNG entry는 decoded pixels가 같고 다른 ZIP entry는 byte 동일하다.
+
+**최종 실행 결과** — `output/pr-review/issue7911/` 기준.
+
+| 검증 | 결과 | 증거 |
+| --- | --- | --- |
+| 압축 비용 반례, 수정 전 | 기존 77 PASS / 새 반복 scanline 검사 **1 FAIL**, PNG 393,972 bytes | `logs/png-compression-before.log` |
+| 최종 Native 자원 계약 | **78 PASS / 0 FAIL** | `logs/png-compression-jpeg-final-contracts.log` |
+| 기존 Native frontend·명시 여백 | **4 + 1 PASS** | `logs/png-compression-frontend.log`, `logs/png-compression-margin.log` |
+| fresh Docker WASM raw PNG | **24 PASS**: codec/output/누적·반복·geometry·여러 IDAT·픽셀·회복 | `logs/png-compression-wasm-raw-final.log`, `png-compression-probe/raw-results.json` |
+| fresh WASM samples/masks/JPEG | **48 PASS** | `logs/png-compression-wasm-samples-final.log` |
+| 기존 fresh WASM CCITT·inline·오류 | **24 + 6 + 2 + 4 PASS**, 실물 이미지 9회 PASS | `logs/png-compression-wasm-existing-final.log` |
+| Native 추가 작은 한도·정상 복귀 | **36 PASS**, 실물 이미지 9회 Poppler 동일 | `png-compression-probe/native-results.json` |
+| 실물 frontend 전체/선택 | **3건 Native/WASM HWPX byte 동일**, 비-PNG entry 보존·PNG 픽셀 동일 | `png-compression-probe/native-results.json` |
+| 비제한 기존 PNG | **9건 byte 동일** | `png-compression-probe/legacy-results.json` |
+| root/backend lib Clippy | Native/Docker WASM 모두 `-D warnings` PASS | `logs/png-compression-native-*-clippy.log`, `logs/png-compression-jpeg-docker-wasm.log` |
+| fmt·suite policy·diff | PASS, base `463c48cc228170b576c832591b76826116e86a49` | `logs/png-compression-fmt-check.log`, `logs/png-compression-policy.log`, `logs/png-compression-diff-check.log` |
+
+정식 test source는 `tests/cases/issue_7911_pdf_resource_limits.rs`다. 새 반복 행 검사는
+수정 전 실패를 확인했다. 기존 stored-container 99-byte 기대값은 실제 encoded 길이의
+미만/정확/초과 한도와 픽셀 검사로 바꿨다. decoder의 작은 한도 계약은 유지하며,
+정상 PNG 출력 대조군 4개의 누적 8 KiB 예산은 새 private compressor 공간을 수용하도록
+2 MiB로 분리했다. 중간 4건 실패는 이 정상 대조군의 예산 부족이었고 이미지 차이는 아니었다.
+PNG scratch는 별도 정확 경계와 누적 반복 검사로 보호한다. 조판 golden/시각 기준을
+완화한 것이 아니다. 긴 행·압축이 어려운 입력으로 16 KiB 출력 버퍼를 넘는 경우도 실행했다.
+
+Docker Rust 1.93.1과 루트 locked wrapper로 진단 web package를 새로 생성했다.
+WASM은 **21,462,527 bytes**, SHA-256
+`9e92466a9b460449c2f68a1c84610c29483bed552996f3486f90d2d741591fcb`다.
+소스·manifest·입력·JS/WASM 26개 hash는 `png-compression-probe/source-final.json`,
+allocator 실제 호출과 unsafe lifetime·dependency hash는 같은 폴더의
+`allocation-audit-ko.md`, `dependency-source.json`에 있다. 제품 root pkg·Studio의
+사용자 WIP를 갱신하지 않았다. synthetic codec 계약은 전쪽 시각 검증의 대체물이 아니다.
+
+**다음 경계:** JPEG metadata/progressive/MCU/upsampling/worker의 실제 예약 지점에
+요청 context를 전달하는 보안 보완, 일반 Flate 내부 scratch, 객체/색 공간 cache와 font
+할당 감사가 남는다. 공개 API/Worker·패키지 소비·전체 회귀·전쪽 한컴 시각 검증은 이후
+게이트다. `parser_allocation_bounds_proven=false`를 유지하며 이번 절편을 2단계 전체 완료나
+비신뢰 입력 배포 준비 완료로 표시하지 않는다. remote push·PR 상태 변경은 하지 않았다.
+
+### 3.18 일반 Flate 내부 할당의 요청 예산 연결 (2026-10-15)
+
+메인테이너의 다음 절편 승인으로 일반 Flate의 내부 작업 공간을 먼저 보완했다.
+시작 head `bc5ff569022bd296c3bfe2f904118b9e81d488e4`와 기존 WIP를 유지한 같은
+2단계 절편이다. JPEG private allocation은 실제 호출 경로를 다시 감사했으며 이번
+절편에서 제한 완료로 표시하지 않는다.
+
+**원인과 구현:** 기존 `bounded::decode`는 Flate 출력만 `BoundedOutput`으로 제한했다.
+`flate2::read::ZlibDecoder/DeflateDecoder`의 state/window 예약에는 요청 context가
+없어, codec 한도가 **1 byte여도 출력이 빈 정상 zlib 스트림이 성공**했다. 정식 검사로
+이 실패를 확인하고 `flate_limited → zlib_limited::Stream → inflate::init → allocator`
+경로를 연결했다. 실제 예약량을 `charge_codec_allocation`으로 개별·누적 예산에 먼저
+반영한 뒤 `try_reserve_exact`를 사용한다. PNG 압축도 같은 allocator/RAII 수명 관리를
+공유하며 기존 압축 정책은 유지한다. dependency 버전·lock은 3.17에서 추가 변경하지 않았다.
+
+- pinned zlib-rs 0.6.7의 inflate init은 state와 32 KiB window/padding을 한 번에
+  예약한다. 실제 요청은 Native **47,561 bytes**, wasm32 **47,365 bytes**였다.
+  고정 구조체 크기를 테스트 기대값으로 쓰지 않고 실제 정상 예약량의 미만/정확/초과
+  한도와 누적·반복 호출을 검사한다. 두 ABI의 차이와 전체 RSS는 구분한다.
+- zlib 실패 후 raw Deflate 대체 경로는 유지한다. 첫 시도의 해제와 별개로 비용은 같은
+  요청 누적값에 남으며, resource 실패에는 대체 경로를 실행하지 않는다. 출력은 4 KiB
+  stack buffer에서 bounded writer로 보낸다. 정상 종료·checksum 실패·잘린 입력·뒤따르는
+  PDF 바이트의 기존 동작을 보호했다. 잘린 입력 검사는 수정 전에도 통과했으므로 새 결함
+  검출로 세지 않는다.
+- context는 mutable lifetime으로 빌려 해제까지 이동하지 못하게 하고, 생성 때 고정한
+  압축/해제 mode로 init/step/end를 호출한다. input/output 길이는 u32 경계에서 나누고
+  반환 시 pointer를 지운다. dependency 예약·alignment·해제와 callback의 실제 호출은
+  `flate-scratch-probe/allocation-audit-ko.md`, dependency hash는 `dependency-source.json`에 있다.
+- 정식 소비 경로 검사는 작은 codec 한도를 content/path, constructor xref, inline Image와
+  Image XObject에 전달해 fatal 오류 및 재시도 거부를 확인했다. 정상 content/image 대조군은
+  별도 요청으로 성공하며 픽셀도 보존한다. 실제 PDF의 정상 xref/본문 경로는 아래 실물
+  frontend 검사로 대조했다.
+
+**최종 실행 결과** — `output/pr-review/issue7911/` 기준.
+
+| 검증 | 결과 | 증거 |
+| --- | --- | --- |
+| 수정 전 빈 Flate의 private limit | 기존/대조 **79 PASS**, 새 guard **1 FAIL** | `logs/flate-before.log` |
+| 정식 Native 자원 계약 | **84 PASS / 0 FAIL** | `logs/flate-contracts-final.log` |
+| 기존 frontend·명시 여백 | **4 + 1 PASS** | `logs/flate-frontend.log`, `logs/flate-margin.log` |
+| 추가 Native Flate 경계·복귀 | **35 PASS** | `flate-scratch-probe/native-results.json` |
+| fresh Docker WASM Flate 경계·복귀 | **34 PASS** | `flate-scratch-probe/wasm-results.json` |
+| shared allocator의 fresh WASM PNG | **24 PASS**, 이전 PNG 8종 byte 동일 | `logs/flate-wasm-png.log`, `flate-scratch-probe/png-bytes.json` |
+| fresh WASM samples/masks/JPEG | **48 PASS** | `logs/flate-wasm-samples.log` |
+| 기존 WASM CCITT·codec·잘못된 입력·inline | **24 + 6 + 2 + 4 PASS** | `logs/flate-wasm-existing.log` |
+| Native 추가 작은 한도·정상 복귀 | **36 PASS** | `flate-scratch-probe/native-controls-results.json` |
+| 실물 PNG·frontend | **9개 PNG** 독립 Poppler 픽셀 동일·3.17 PNG byte 동일; **3개 HWPX** Native/WASM 및 3.17 byte 동일 | `flate-scratch-probe/native-controls-results.json`, `logs/flate-native-controls.log` |
+| root/backend lib Clippy | Native/Docker WASM 모두 `-D warnings` PASS | `logs/flate-native-*-clippy.log`, `logs/flate-docker-wasm.log` |
+| fmt·suite policy·diff | PASS, policy base `463c48cc228170b576c832591b76826116e86a49` | `logs/flate-fmt-check.log`, `logs/flate-policy.log`, `logs/flate-diff-check.log` |
+
+정식 tests/cases에는 자원 계약 6건을 추가했다. 기존 필터 출력 경계 검사의 4 KiB
+누적 예산은 출력 한도와 codec 내부 한도를 분리하도록 1 MiB로 조정하고, 누적값을
+`출력 + 계상된 codec 예약`으로 검사했다. 낮은 codec·누적 한도는 새 검사에서 직접
+실행한다. 조판 검사·golden·시각 gate를 완화한 것이 아니다. Native 35건에는 정상 크기를
+측정하는 1건이 포함되어 WASM 34건과 수가 다르다.
+
+루트 locked wrapper와 Docker Rust 1.93.1로 진단용 fresh WASM을 생성했다. 크기는
+**21,461,770 bytes**, SHA-256은
+`4fc48759f76b69b2885ba8031be563c564742ca30762f4ae2497a4bd38456440`다.
+소스·test·manifest·입력·JS/WASM 25개 hash는 `flate-scratch-probe/source-final.json`에
+고정했다. 실제 Rust frontend 검증이며 제품 공개 API/Worker·Studio 검증과 구분한다.
+기존 제품 pkg/Studio 사용자 WIP는 변경하지 않았다.
+
+**다음 경계:** JPEG의 image adapter는 limits 적용 전 header를 해석하고 실제 decode 때
+다시 해석한다. zune-jpeg metadata·progressive/MCU·row/upsampling·worker 예약 및 CMYK의
+jpeg-decoder 별도 plane/metadata 예약에 요청 context를 전달하는 보안 패치가 남는다.
+extended XMP는 연속 offset·완전성 확인 후 재조립하므로 선언 길이만으로 무조건 예약한다고
+단정하지 않는다. 객체/색 공간 cache·font 할당 감사, 공개 API/Worker·패키지 소비·전체
+회귀·전쪽 한컴 시각 검증도 남아 있다. `parser_allocation_bounds_proven=false`를 유지한다.
+이번 결과는 일반 Flate의 할당 경계 완료이며 2단계 전체 완료나 비신뢰 입력 배포 준비
+완료가 아니다. remote push·PR 상태 변경은 수행하지 않았다.
+
+### 3.19 RGB/Gray JPEG의 실제 예약에 요청 예산 연결 (2026-10-16)
+
+다음 절편 승인에 따라 `bc5ff569022bd296c3bfe2f904118b9e81d488e4`와 기존 WIP를
+유지하고 JPEG의 zune 경로를 보완했다. 일반 이미지 소비자·CMYK 별도 디코더와
+구분한 같은 2단계의 보안 절편이며 backend 기능 축소는 하지 않았다.
+
+**위반 계약과 수정 전 증거:** 기존 제한 경로는 JPEG 입력·출력만 계상했다. libjpeg로
+생성한 19×17 RGB JPEG에 32 KiB EXIF payload 네 개를 추가하면, 입력 증가량
+131,112 bytes만 codec 누적값에 반영됐다. 교체되며 해제된 metadata 131,072 bytes가
+빠져 있었다. 동일 검사의 수정 전 실행은 의도한 assertion에서 FAIL했고, 보정 후
+누적 증가량은 **262,184 bytes**로 PASS했다. `jpeg-alloc-probe/before.log`, `after.log`와
+정식 `replaced_jpeg_metadata_reservations_remain_in_the_request_budget`에 연결했다.
+고정 codec 구조체 크기를 이 기대값으로 사용하지 않았다.
+
+**구현 경로:** `PdfImage::to_png_bytes_with_budget → decode_jpeg_with_budget →
+jpeg_limited::decode → JpegDecoder::set_allocation_budget → decode_headers/decode_into →
+Allocator::reserve → ImportBudget::charge_codec_allocation → try_reserve_exact`.
+
+- 기존 zune-jpeg **0.5.15** 소스를 별도 `rhwp-zune-jpeg 0.5.15-rhwp.1` local dependency로
+  고정했다. `publish=false`, zune-core **0.5.3**이며 보안 patch·상류 source hash·license는
+  `vendor/rhwp-zune-jpeg/`에 보존한다. `image`의 registry zune와 CMYK jpeg-decoder는
+  교체하지 않는다. 현재 workspace rustfmt에 의한 상류 소스 서식 차이는 있다.
+- header 전에 빌린 요청 context를 metadata·component·MCU·baseline 별도 scan 계수·
+  progressive plane·row/upsampling·worker resize까지 전달했다. 크기 곱·증가를 검사하고
+  요청 한도 승인 후 fallible reserve한다. Vec 증가 시 전체 새 예약량을 계상한다.
+  해제된 메모리도 누적 비용에서 빼지 않으며 allocator overhead/RSS와 구분한다.
+- EXIF/IPTC/XMP/ICC/MPF/gain-map payload와 collection 증가를 제한한다. Extended XMP는
+  GUID·전체 크기·연속 offset·완전성을 확인한 뒤 조립한다. 큰 미완성 선언은 조립 공간을
+  예약하지 않는다. sort는 추가 할당이 없는 unstable sort이며 offset 합산은 checked다.
+- 동일한 non-strict·색 공간 선택을 유지한다. 기존 owned input copy도 남겨서 제한하며,
+  출력은 별도 fallible 예약 후 decode_into로 채운다. 각 호출 뒤 sticky budget을 먼저
+  확인해 한도 초과가 일반 이미지 오류나 부분 성공으로 바뀌지 않게 한다.
+- 원래 CMYK Adobe 반전 경로는 유지한다. 일반 JPEG의 `info()` clone·`icc_profile()`
+  조립 accessor는 이 소비 경로에서 호출하지 않는다. 임의 reader 구현·오류 문자열·고정
+  구조체·CPU/전체 heap 격리까지 검증한 것으로 해석하지 않는다.
+
+**집중 검증 결과** — `output/pr-review/issue7911/` 기준.
+
+| 검증 | 결과 | 증거 |
+| --- | --- | --- |
+| 정식 자원 계약 | **87 PASS / 0 FAIL** (새 계약 3건 포함) | `logs/jpeg-contracts-final.log` |
+| frontend·명시 여백 | **4 + 1 PASS** | `logs/jpeg-frontend.log`, `logs/jpeg-margin.log` |
+| Native 실제 예약 거부 | 14 입력의 **229개 예약**을 하나씩 거부, 모두 AllocationLimit | `jpeg-alloc-probe/native-traces.json` |
+| fresh Docker WASM 실제 예약·한도 | 동일 **229개 예약**, 개별/누적/반복 **80건 PASS** | `jpeg-alloc-probe/wasm-jpeg-results.json` |
+| JPEG 픽셀 보존 | Native 16개가 기존 decoder 픽셀 동일; WASM 16개가 3.18 WASM과 PNG byte 동일, 실제 PDF XObject 소비 경로도 동일 | `jpeg-alloc-probe/native-pixels.json`, `wasm-jpeg-results.json` |
+| 기존 WASM PNG·Flate | PNG **24**, Flate **34 PASS**, 이전 PNG 8종 byte 동일 | `logs/jpeg-wasm-png.log`, `jpeg-wasm-flate.log`, `jpeg-wasm-png-bytes.log` |
+| 기존 WASM samples/masks/JPEG | **48 PASS** | `logs/jpeg-wasm-controls.log` |
+| 기존 WASM CCITT·codec·invalid·inline | **24 + 6 + 2 + 4 PASS** | `logs/jpeg-wasm-existing.log` |
+| Native 추가 작은 한도·정상 복귀 | **36 PASS** | `jpeg-alloc-probe/native-controls-results.json` |
+| 실물 PNG·frontend 보존 | **9 PNG** 독립 Poppler 픽셀·기존 PNG byte 동일; **3 HWPX** Native/WASM 및 이전 결과 byte 동일 | `logs/jpeg-native-controls.log`, `jpeg-alloc-probe/native-controls-results.json` |
+| root/backend lib Clippy | Native·Docker WASM `-D warnings` PASS | `logs/jpeg-native-*-clippy.log`, `logs/jpeg-docker-clippy-final.log` |
+| fmt·suite policy·diff | PASS; base `463c48cc228170b576c832591b76826116e86a49` | `logs/jpeg-fmt.log`, `jpeg-policy.log`, `jpeg-diff-check.log` |
+
+예약 진단에는 4:4:4·4:2:2·4:2:0, baseline/progressive, Gray, 비인터리브 baseline,
+혼합 sampling, 여러 metadata, 완전/미완성 extended XMP가 포함된다. horizontal sampling
+대조군은 통과했으나, worker resize가 기존 capacity를 넘어 **새 예약이 생기는 분기**는 이 입력에서
+관측되지 않았다. 이 증가 분기는 정적 연결 확인이며 실행 검증 완료로 표시하지 않는다.
+16개 JPEG 중 CMYK 2개에는 Native와 WASM 사이 채널값 **최대 1, 각 23개 채널** 차이가
+있다. 각 플랫폼의 수정 전후 출력은 동일하며 이번 RGB/Gray 보정의 회귀가 아니다.
+
+정식 새 검사는 반복 metadata 비용·sticky/request 격리·10개 기본 JPEG 픽셀 보존이다.
+`tests/fixtures/issue7911_jpeg/README.md`에 입력 생성 방식과 버전을 기록했다. 합성 codec
+계약이며 조판 golden을 등록한 것이 아니다. 기존 입력-copy 검사의 중간 한도에서는
+이제 private component 예약도 먼저 거절될 수 있어 `input+output`을 반드시 계상했다는
+가정을 `input` 선행 예약 보존으로 수정했다. 큰 한도에서는 픽셀 보존을 계속 검사한다.
+첫 84건 실행에는 새 3건이 누락된 준비 오류가 있었으므로 최종 87건 로그만 최종 결과로
+사용한다. 검증용 WASM harness의 닫는 괄호 오류도 수정 후 새 wrapper 빌드로 확인했다.
+
+**별도 lint 제한:** 추가로 실행한 vendor 단독 strict Clippy는 통과하지 않았다. 동일
+1.93.1·manifest 조건의 상류 원본은 129건, patch는 128건을 진단했다. 상류 SIMD cast·
+MSRV·문서/style 경고가 남고, 보정으로 worker의 함수 길이 경고 1건이 추가됐다.
+`jpeg-alloc-probe/lint-comparison.json`에 대조했다. 이를 root/backend lib PASS에 섞지
+않으며 최종 제출 전 vendor lint 정책·정리 범위 검토가 남는다. 경고를 숨기는 allow는
+추가하지 않았다.
+
+최종 Docker locked wrapper 산출물은 **21,389,097 bytes**, SHA-256
+`afc3d22b3415df5371c889f3acc59b6091caf9756b38c475accf4d4cd51b48b1`이다.
+source·manifest·fixture·probe·WASM hash는 `jpeg-alloc-probe/source-final.json`에 고정한다.
+제품 pkg/Studio의 사용자 WIP는 변경하지 않았다. 자료는 optional Rust PDF frontend와
+codec 검증이며 공개 API·Worker·Studio·한컴 전쪽 시각 검증을 대신하지 않는다.
+
+메인테이너 직접 확인용 복사본은 `/mnt/e/tmp/issue7911-stage2-review/`에 준비했다.
+`wasm/`의 전체 12쪽·원본 7/8쪽 HWPX, `native/` 대조본, `source/`의 입력 PDF와
+`jpeg/`의 입력·양쪽 PNG를 포함하며 55개 파일의 동일 hash를 복사 후 확인했다.
+
+**다음 경계:** CMYK의 jpeg-decoder metadata·progressive/plane·worker 실제 예약을
+요청 context에 연결하는 보안 보완이 우선이다. worker resize 증가 분기의 실행 증거,
+객체/색 공간 cache·font 할당 감사, 공개 API/Worker·패키지 소비·전체 회귀·전쪽 한컴
+시각 검증도 남는다. `parser_allocation_bounds_proven=false`를 유지하며 2단계 전체 완료나
+비신뢰 입력 배포 준비 완료로 표시하지 않는다. remote push·PR 상태 변경은 하지 않았다.
+
+### 3.20 CMYK JPEG의 실제 예약에 요청 예산 연결 (2026-10-16)
+
+작업 계속 승인에 따라 같은 HEAD `bc5ff569022bd296c3bfe2f904118b9e81d488e4`와
+기존 WIP를 보존하고 CMYK의 별도 jpeg-decoder 경로를 보완했다. 이번 절편은 보안
+예약 계약이며 색상 변환·backend 기능 축소나 공개 API 연결은 하지 않았다.
+
+**독립 기대값과 수정 전후:** 19×17 CMYK JPEG의 APP1에 32 KiB EXIF payload를
+네 번 넣었다. 원래 CMYK 경로는 입력을 빌리고 출력만 계상하므로 입력 증가
+131,112 bytes에도 codec 누적 증가가 **0 bytes**였다. EXIF payload 131,072 bytes가
+누적값에 포함되어야 한다는 검사가 의도한 assertion에서 FAIL했다. 보정 후에는
+marker 임시 버퍼와 EXIF 복사 예약을 모두 포함해 **262,168 bytes 증가**, PNG는 동일하다.
+`cmyk-alloc-probe/before.log`, `after.log`와 정식
+`cmyk_jpeg_replaced_metadata_is_charged_before_reservation`에 연결했다.
+
+**실제 소비 경로:** `PdfImage::to_png_bytes_with_budget → decode_jpeg_with_budget →
+Decoder::new_with_allocation_budget → read_info/decode → Allocator::reserve/charge →
+ImportBudget::charge_codec_allocation → try_reserve_exact`.
+
+- jpeg-decoder **0.3.2**를 별도 `rhwp-jpeg-decoder 0.3.2-rhwp.1` local dependency로
+  고정했다. 상류 checksum·source hash·revision·license·patch 설명은
+  `vendor/rhwp-jpeg-decoder/`에 보존한다. 기존 registry decoder·일반 이미지 경로,
+  Adobe 반전·색 변환·IDCT·기본 Rayon 기능과 worker 선택은 유지한다.
+- 생성자 table과 header 이전부터 요청 context를 전달한다. APP/COM metadata,
+  반복 EXIF/XMP/PSIR·ICC chunk, Huffman scratch/table, frame/scan collection,
+  progressive/MCU/lossless plane·row, interleaved 출력과 행별 upsampling을 계상한다.
+  크기 연산을 검사하고 Vec는 fallible reserve한다. 교체·해제한 예약도 누적 비용에 남긴다.
+- worker plane은 호출 스레드에서 예약한 뒤 Immediate·Rayon·std-thread에 소유권을
+  넘긴다. Immediate의 고정 4-slot은 배열과 계상된 scope Box로 표현한다. Rayon의
+  행별 실패는 `try_for_each`, 미완료 progressive의 row 복사 실패는 scoped iterator의
+  Result로 전달한다. 한도 초과 뒤 일반 이미지 오류나 부분 성공으로 바뀌지 않도록
+  각 decoder 호출 후 sticky budget을 먼저 확인한다.
+- 고정 크기 quantization Arc·worker Box·generic upsampler Box는 payload를 먼저
+  계상하되 stable Rust의 infallible 생성자는 유지한다. allocator overhead, thread/channel·
+  스케줄러, 오류 문자열, 임의 reader, RSS·CPU 전체 제한은 이번 입증 범위가 아니다.
+  제한 PDF 경로가 호출하지 않는 `icc_profile()` accessor의 추가 조립 예약도 제외한다.
+
+**최종 집중 검증** — `output/pr-review/issue7911/` 기준.
+
+| 검증 | 결과 | 증거 |
+| --- | --- | --- |
+| 정식 자원 계약 | **91 PASS / 0 FAIL**, 새 계약 4건 포함 | `logs/cmyk-contracts-final.log` |
+| frontend·명시 여백 | **4 + 1 PASS** | `logs/cmyk-issue_7911_pdf_frontend.log`, `cmyk-issue_7911_explicit_text_margin.log` |
+| Native 예약 거부 | 23개 입력 **3,607건 PASS**; 큰 병렬 입력은 위치 표본 외에 종류별 **50건** 추가 | `cmyk-alloc-probe/native-traces.json`, `native-large-kind-denials.json` |
+| std-thread 경로 | 3개 입력의 예약 거부 **76건**, 기존 픽셀 동일 | `cmyk-alloc-probe/native-thread-results.json` |
+| fresh Docker WASM | 23개 입력 예약 거부 **3,607건**, 한도·반복 **110건 PASS** | `cmyk-alloc-probe/wasm-cmyk-results.json` |
+| Native 출력 보존 | raw sample **23개** registry decoder와 동일; PNG **22개**, 정상 CMYK legacy PNG 대조 **14개** 동일, 누적 경계 **66건** | `cmyk-alloc-probe/native-pixels.json` |
+| WASM 출력 보존 | PNG **22개** 직전 WASM과 byte 동일, 실제 PDF XObject 소비 경로와도 동일 | `cmyk-alloc-probe/wasm-cmyk-results.json` |
+| 기존 WASM 대조군 | samples/masks **48건**, CCITT·codec·invalid·inline **24+6+2+4건 PASS** | `logs/cmyk-wasm-masks.log`, `cmyk-wasm-existing.log` |
+| 기존 Native·실물 | 작은 한도 **36건**, 실물 PNG **9개** Poppler 픽셀·이전 byte 동일, HWPX **3개** 이전 및 Native/WASM byte 동일 | `cmyk-alloc-probe/native-controls-results.json`, `logs/cmyk-native-controls.log` |
+| Clippy | root/backend lib Native·Docker WASM `-D warnings` PASS; 새 fork lib Native 기본·no-default 및 Docker WASM PASS | `logs/cmyk-*-clippy.log`, `cmyk-docker-final.log` |
+| fmt·정책·diff | PASS, 정책 base `463c48cc228170b576c832591b76826116e86a49` | `logs/cmyk-fmt.log`, `cmyk-policy-final.log`, `cmyk-diff-check.log` |
+
+예약 입력은 CMYK/YCCK baseline·progressive·분리 scan·미완료 progressive·sampling·
+metadata와 8/12-bit lossless를 포함한다. CMYK 선언과 실제 RGB/Gray JPEG가 다른
+경계 대조군도 포함하므로 전부를 정상 CMYK 문서라고 표현하지 않는다. 12-bit lossless는
+decoder sample을 독립 midpoint **2048**과 대조했고, 기존 제품 PNG 경로의 미지원 상태는
+유지했다. 8-bit lossless midpoint **128**도 확인했다. 큰 Native 병렬 입력은 실행 순서가
+바뀔 수 있어 예약 번호 표본만으로 종류별 분기를 입증하지 않고 이름으로 거부하는
+추가 검사를 수행했다. Native/WASM 간에는 기존 IDCT·색 변환의 채널값 최대 **2** 차이가
+있으며 같은 플랫폼의 수정 전후 결과가 동일하다는 보존 근거와 구분한다.
+
+정식 검사는 반복 metadata 비용·sticky/request 격리·실제 PDF XObject 오류 전파·
+큰 worker와 lossless의 출력 보존이다. 입력 생성 근거는
+`tests/fixtures/issue7911_jpeg/README.md`와 `make_cmyk_scans.c`에 기록했다.
+조판 fixture/golden 추가가 아니다. 초기 시험의 private field 접근 컴파일 오류와 새 fork의
+상류 WASM cfg/lint 오류는 수정 후 위 최종 검사로 확인했다. 마지막 테스트 source 변경 뒤
+생긴 generated harness drift는 파생 suite를 재준비해 정책 검사를 통과시켰으며, 정식 source
+91건의 성공을 정책 drift로 바꾸거나 파생 파일을 stage하지 않았다.
+
+최종 Docker WASM은 **21,489,783 bytes**, SHA-256
+`e4c4739fb6d83f25c328ef9ca7b641ff194adb07a8b1a2790380be8718713ac2`이다.
+소스·lock·fixture·probe·출력 hash는 `cmyk-alloc-probe/source-final.json`에 고정한다.
+직접 확인용 JPEG/Native PNG/WASM PNG **67개**는
+`/mnt/e/tmp/issue7911-stage2-review/cmyk/`에 복사하고 hash 일치를 확인했다.
+상위 `wasm/`의 HWPX 3개는 새 결과와 동일하므로 기존 확인 파일을 덮어쓰지 않았다.
+제품 pkg/Studio 및 다른 worktree의 사용자 변경은 보존했다.
+
+**다음 경계:** 객체/색 공간 cache·font 할당 감사, 3.19 zune worker resize 증가 분기의
+실행 증거와 vendor 단독 lint 정리가 남는다. 공개 API/Worker·패키지 소비·전체 회귀·
+전쪽 한컴 시각 검증은 이후 게이트다. `parser_allocation_bounds_proven=false`를 유지하며
+2단계 전체 완료·비신뢰 입력 배포 준비 완료로 표시하지 않는다. remote push·PR 변경·
+커밋·merge는 수행하지 않았다.
+
+### 3.21 객체·색 공간의 소유 데이터 복사 예산 (2026-10-16)
+
+메인테이너의 “계속 작업 진행하세요” 지시에 따라 같은 2단계를 이어갔다. 시작 HEAD는
+`bc5ff569022bd296c3bfe2f904118b9e81d488e4`, 정책 base는
+`463c48cc228170b576c832591b76826116e86a49`다. 이전 JPEG/Flate 보완 WIP와
+공유 `target/pr-review`를 보존했다. 커밋·원격 push·PR 상태 변경은 수행하지 않았다.
+
+#### 실제 경로와 수정
+
+- `document.rs::load_object` → `load_object_inner`의 일반·double-check·recovery cache hit,
+  `load_uncompressed_object_impl`의 cache 보관, `load_compressed_object`의 반환 복사에
+  `object_copy::{clone_object,clone_dictionary}`를 연결했다. `String`·name·배열 slot·
+  사전 key/value slot과 내부 소유 payload를 checked arithmetic으로 합산하고, 요청의
+  **남은 누적 decoded 예산을 먼저 소비한 뒤** fallible reserve와 복사를 수행한다.
+  원본 스트림 bytes와 요청 budget은 공유하며, 읽기 전용 Form subtype 조회는 전체 복사를 제거했다.
+- `page_image_handles` → `collect_handles_from_do`/`collect_image_handles_from_form_xobject`의
+  resources·XObject 사전, `build_color_space_map`, 두 image-handle builder의 사전 복사도
+  같은 경계를 사용한다. 색 공간의 읽기 전용 조회는 빌린 객체를 사용하고 Indexed base의
+  수정 가능한 사본은 계상한다. 제한 오류가 빈 사전·부분 handle 성공으로 숨겨지지 않는다.
+- 객체 메타데이터는 스트림 출력 버퍼와 구분한다. 첫 통합 실행은 새 객체 복사에
+  `stream_bytes` cap까지 적용해 기존 작은 스트림/텍스트 cap의 관측을 먼저 막았다.
+  해당 적용을 제거하고 누적 요청 예산과 fallible reserve는 유지했다. 스트림/텍스트/PNG
+  출력 cap과 codec cap, 실제 색 변환·샘플 해석·Document IR 배치는 변경하지 않았다.
+- 계상 대상은 **요청한 payload/collection slot의 누적 작업량**이다. HashMap bucket의 여유,
+  allocator overhead, cache index HashMap/VecDeque 성장, 전체 live heap/RSS의 증명이 아니다.
+  legacy 비제한 API는 기존 Object clone을 사용한다.
+
+#### 결함 재현과 검사 변경
+
+`object-cache-probe/before.log`: 4,097-byte 문자열을 가진 중첩 객체의 warm load에서
+기존 계상 증가량이 **0 bytes**여서 assertion이 실패했다. 새 정식 검사 6개 중 5개는
+수정 전 실패, 1개는 기존에도 통과한 오류 전파 대조군이다
+(`contracts-before.log`: 5 FAIL/1 PASS). 보완 후 6개와 기존 출력 경계 4개를 묶은
+실행은 10 PASS였다(`ten-contracts.log`).
+
+첫 전체 집중 실행은 93 PASS/4 FAIL이었다(`logs/object-cache-contracts.log`).
+그중 stream/텍스트 cap 검사 2개는 구현의 메타데이터 cap 분리로 복구했다. 기존 검사 2개는
+계상 범위가 넓어진 것을 반영했다: content 반환은 초기 parse/cache 준비 비용을 분리한 뒤
+매번 **정확히 4 bytes**, XObject raw 반환은 같은 객체의 metadata-copy 비용과 실제
+**6 bytes** 반환을 합쳐 미만·정확·초과 경계를 검사한다. inline raw는 여전히 6 bytes다.
+누적 한도·sticky 실패·새 요청 복구 기대값을 완화하지 않았다. 조판 baseline 변경은 없다.
+
+#### 최종 검증
+
+| 검사 | 최종 결과 | 증거 (`output/pr-review/issue7911/` 기준) |
+| --- | --- | --- |
+| Native 정식 자원 계약 | **97 PASS / 0 FAIL** | `logs/object-cache-contracts-final.log` |
+| frontend·명시 여백 계약 | **4 + 1 PASS** | `logs/object-cache-issue_7911_*.log` |
+| 실제 작은 이미지 예산 경계 | **36 PASS** | `object-cache-probe/native-controls-results.json` |
+| fresh Docker WASM 계약 | 신규 6 + 기존 출력 경계 4 = **10 PASS** | `object-cache-probe/wasm-results.json` |
+| 실물 Indexed 이미지 9개 | Native/WASM 모두 Poppler 기준 픽셀 동일, 이전 출력 보존 | `object-cache-probe/{native-controls-results,wasm-results}.json` |
+| 실물 12쪽 PDF 전체/7쪽/8쪽 | Native/WASM HWPX 3개가 이전 Native/WASM과 byte-identical | 같은 JSON, `native-real-frontend/`, `wasm/` |
+| Native root/backend lib Clippy | 모두 `-D warnings` PASS | `logs/object-cache-root-clippy.log`, `object-cache-backend-clippy-final.log` |
+| Docker WASM root/backend lib Clippy | 모두 `-D warnings` PASS | `logs/object-cache-docker-final.log` |
+| fmt·suite 정책·diff | 모두 PASS, 위 고정 base와 비교 | `logs/object-cache-{fmt,policy,diff-check}.log` |
+
+정식 검사는 `tests/cases/issue_7911_pdf_resource_limits.rs`에 추가했다. synthetic 객체·색 공간
+데이터는 자원 계약이며 한컴 조판 golden이 아니다. 최종 WASM은 Docker에서 루트
+`scripts/wasm-pack-locked.sh`로 **기존 진단 crate**를 빌드한 결과다. 제품 root pkg/Studio
+공개 API를 갱신하거나 전체 Worker/시각 gate를 통과했다는 의미가 아니다.
+
+WASM SHA-256: `ca6e86e7965404fda69c3b0d3cfa62a3dc83db1d417c5f63a2fca2b94c7a2a01`, 크기 **21,565,064 bytes**.
+source/테스트·입력·증거 목록은 `object-cache-probe/source-final.json`에 고정했다.
+첫 Native 4개 실패 로그와 초기 WASM 빌드 로그도 보존했으며 최종 source 증거와 구별한다.
+실물 `nested_table_text_caption-2020.pdf`의 전체/선택 변환은 각각
+**1,431,027 / 15,175 / 15,777 bytes**다. 기존에 전달한
+`E:\tmp\issue7911-stage2-review\{native,wasm}\`의 6개 HWPX도 현재 결과와
+byte 동일함을 재확인했다(`delivery-verification.json`). 기존 사용자 파일은 덮어쓰지 않았다.
+
+**다음 경계:** `load_fonts`의 전역 cross-document cache는 현재 요청 budget과의 격리를
+추가 검증해야 한다. `FontInfo::truetype_cmap`의 lazy 파싱, TrueType format12의 선언 범위
+확장, Type1/CFF encoding·Unicode memo와 font/cache index 예약도 남아 있다. 실제 코드
+지점은 `object-cache-probe/next-font-audit.md`에 기록했으며 아직 실행 재현/보완 완료로
+판정하지 않았다. 3.19 zune worker 증가 분기·vendor lint, 공개 API/Worker·패키지 소비·
+전체 회귀·전쪽 한컴 시각 검증도 이후 게이트다. `parser_allocation_bounds_proven=false`를
+유지한다. 이번 절편을 전체 객체/cache/font 할당 안전성 또는 2단계 전체 완료로 표시하지 않는다.
+
+### 3.22 폰트 전역 캐시 격리와 TrueType cmap 예약 경계 (2026-10-16)
+
+메인테이너의 “계속 작업 진행하세요” 지시로 같은 2단계를 이어갔다. HEAD와 정책 base는
+3.21과 동일하다. 이전 WIP·공용 review target을 보존했으며 커밋·원격 push·PR 상태 변경은
+수행하지 않았다. 새 public PDF API나 Studio 연결을 완료한 절편은 아니다.
+
+#### 재현·구현 경로
+
+- `document.rs::load_fonts → load_fonts_impl`의 global FontInfo cache에서 제한 없는
+  이전 문서의 폰트를 재사용하면 새 요청의 CID metric 한도를 우회했다. 제한된 요청은
+  global get/insert를 모두 우회하고 문서 내부 cache만 공유한다. legacy 간 공유는 유지한다.
+  resources/font 직접 객체 복사는 기존 bounded copy를 사용하며 lazy/fallback 뒤 sticky
+  오류를 확인해 실패를 빈 폰트·부분 성공으로 숨기지 않는다.
+- `FontInfo::from_dict → import_budget`이 원래 요청 context를 보관한다. 소비 위치는
+  simple font의 `truetype_cmap` lazy parsing과 Type0의
+  `extract_truetype_cmap_from_descriptor`다. 후자는 별도 eager 경로임을 확인해 함께 연결했다.
+  이미 성공한 lazy 결과도 원래 요청이 실패하면 다시 성공으로 반환하지 않는다.
+- `TrueTypeCMap::from_font_data_with_budget`는 sfnt table/subtable offset·길이 범위를
+  확인한다. format 4가 뒤 table bytes까지 glyph 배열로 읽던 경계를 닫았다. format
+  0/4/6/12·symbol map의 확장 작업을 `font_entries`와 누적 decoded 예산으로 선계상하고
+  fallible reserve한다. format 4 scratch는 별도로 계상하며 format 12의 역구간·Unicode/
+  glyph overflow를 거부한다. 중복/덮어쓰기 항목도 작업량에 포함한다.
+- 두 TrueType map은 immutable Arc로 공유해 `FontInfo` clone과 cmap donation에서
+  무계상 deep copy를 만들지 않는다. 모든 FontInfo 필드·cache index·allocator overhead나
+  live heap/RSS를 증명한 것은 아니다. 기존 한도 수치나 조판 baseline을 완화하지 않았다.
+- 독립 근거는 [OpenType cmap 명세](https://learn.microsoft.com/en-us/typography/opentype/spec/cmap)의
+  table/subtable 길이, format 4의 상대 offset, format 12의 연속 code/GID 관계다.
+  새 검사는 synthetic 자원 계약이며 한컴 조판 fixture/golden이 아니다.
+
+#### 검증과 입력 수정의 구분
+
+`font-cmap-probe/before.log`의 신규 반례 7개는 수정 전 모두 실패했다. 전역 cache의
+요청 한도 우회·요청 간 Arc 공유, lazy mapping 무계상·오류 뒤 재사용, GID wrap을 검출했다.
+보완 후 같은 반례와 실제 FontFile2 simple/CID 경로, format 0/4/6/12·symbol 경계,
+큰 선언·table 밖 glyph 읽기를 합친 **14개**가 Native와 새 Docker WASM에서 통과했다.
+
+추가 경로 검사의 첫 입력은 simple font의 FontDescriptor를 직접 dictionary로 만들었으나,
+현재 backend가 이 형태를 소비하지 않아 embedded font가 없었다(`diagnosis.log`). 정상
+간접 FontDescriptor로 입력을 고쳐 실제 FontFile2 경로를 검증했다. 이를 구현 결함 해결
+실적으로 세지 않았다. 별도 TrueType 기존 unit 실행은 5 PASS/18 FAIL이었으며, 원인은
+합성 생성기가 directory length를 0으로 써 놓은 것이었다(`module-tests-initial.log`).
+실제 직렬화 길이로 생성기를 보정한 뒤 **23 PASS**였다. 매핑 기대값은 변경하지 않았다.
+첫 Docker Clippy의 `manual_is_multiple_of` 1건은 수정 후 다시 통과했다.
+정식 검사를 추가한 뒤 source weight가 바뀌면서 이전 generated suite와 runner의 동적
+배정이 달라졌다. 보조 검사 두 묶음의 최초 0건 실행과 suite drift는 통과로 세지 않고
+`logs/font-cmap-stale-suites-*`에 보존했다. 최종 source 고정 후 `--prepare`를 다시 실행해
+frontend **4건**, 여백 **1건**을 실제 실행하고 base 정책 검사도 통과했다. 자원 **111건**은
+처음부터 올바른 suite에서 실제 실행됐으므로 생성 파일 갱신만을 이유로 반복하지 않았다.
+
+| 최종 검사 | 결과 | 증거 (`output/pr-review/issue7911/` 기준) |
+| --- | --- | --- |
+| Native 정식 자원 계약 | **111 PASS / 0 FAIL** (기존 97 + 신규 14) | `logs/font-cmap-final-issue_7911_pdf_resource_limits.log` |
+| frontend·명시 여백 | **4 + 1 PASS** | `logs/font-cmap-final-issue_7911_pdf_*.log`, `logs/font-cmap-final-issue_7911_explicit_text_margin.log` |
+| 기존 TrueType parser unit | **23 PASS**, source module 직접 컴파일 | `font-cmap-probe/module-tests-final.log` |
+| fresh Docker WASM 새 계약 | **14 PASS** | `font-cmap-probe/wasm-results.json` |
+| 작은 이미지 budget 대조군 | **36 PASS** | `font-cmap-probe/native-controls-results.json` |
+| 실물 Indexed 이미지 9개 | Native/WASM 모두 Poppler 픽셀 일치·기존 출력 보존 | 두 controls/results JSON |
+| 실물 12쪽 PDF 전체/7쪽/8쪽 | Native/WASM HWPX **3개 모두 기존 bytes 보존** | `font-cmap-probe/{native-real-frontend,wasm}/`, 두 JSON |
+| Native·Docker WASM root/backend lib Clippy | **모두 PASS**, `-D warnings` | `logs/font-cmap-{root-clippy,backend-clippy,docker-final}.log` |
+| fmt·suite/unit 정책·diff | **PASS**, 고정 base 비교 | `logs/font-cmap-{fmt,policy,unit-policy,diff-check}.log` |
+
+최종 WASM SHA-256: `145c93230bfc9526008163267452508bb2cd2578efd5084d869cd86bb6492249`, **23,050,719 bytes**.
+Docker에서 기존 진단 crate를 루트 `scripts/wasm-pack-locked.sh`로 빌드했다. 제품 root
+pkg/Studio의 공개 import 경로는 아직 연결하지 않았다. source·입력·명령·로그·산출물
+해시는 `font-cmap-probe/source-final.json`에 고정했다. 최종 Native 묶음 명령은
+`font-cmap-probe/native-final.sh`, WASM 실행은 `font-cmap-probe/smoke.mjs`다.
+이전 `E:\tmp\issue7911-stage2-review\{native,wasm}\`의 6개 HWPX와 현재 결과도
+byte 동일함을 확인했다(`delivery-verification.json`). 사용자 전달 파일은 덮어쓰지 않았다.
+
+**다음 경계:** Type1/CFF encoding·glyph name·Unicode memo·font/cache index 예약과
+FontInfo의 나머지 payload 복사가 남는다(`font-cmap-probe/next-font-audit.md`).
+3.19 zune worker 증가 분기/vendor lint, 공개 API/Worker·패키지 소비·전체 회귀·전쪽
+한컴 시각 검증도 남아 있다. `parser_allocation_bounds_proven=false`를 유지하며
+이 결과를 전체 font 할당 안전성·2단계 완료·비신뢰 입력 배포 준비 완료로 표시하지 않는다.
+
+### 3.23 중간 점검과 제품 전체 경로 우선 결정 (2026-10-16)
+
+메인테이너는 현재 작업의 분할정복 흐름을 점검한 뒤 “전체적인 구현 완료부터 한 후,
+백로그의 세부 항목들을 구현해나가는 방식”을 지시했다. 보안 보완은 실제 목표에 필요하지만
+제품 CLI/WASM 연결을 계속 뒤로 미루는 선행 조건으로 확장하지 않도록 순서를 변경한다.
+
+- 수행·구현계획에 **전체 기능 구현 → 세부 백로그 → 최종 통합 검증**을 반영했다.
+- 미완료 폰트·캐시·JPEG 실행 경계·vendor lint·패키지·시각·최종 검증은
+  [B01–B12](../plans/task_m100_7911_backlog.md)로 이관했다. 이관은 해결이나 검증 통과가 아니다.
+- 다음 구현은 F1 Parser/Core → F2 CLI → F3 제품 WASM/Worker → F4 실제 렌더·저장·재열기다.
+  기능을 막는 결함은 해당 경로에서 처리하고 나머지 세부 발견은 백로그에 기록한다.
+- 3.22에서 이미 보완한 전역 폰트 cache 요청 격리·TrueType cmap 공유를 다시 미완료로
+  나열하던 4절을 정정했다. 남은 font/cache index·payload는 B03에 구분했다.
+- 기존 자원 제한·정상 대조군·미지원 정책을 유지한다. `parser_allocation_bounds_proven=false`와
+  비신뢰 입력 배포 보류는 로컬 기능 구현 순서 변경과 별개다.
+- 이번 변경은 계획·백로그·진행 기록에 한정한다. Rust/WASM·fixture·dependency·원본 증거는
+  바꾸지 않으며 코드 변경이 없다는 이유로 같은 빌드·검사를 반복하지 않는다. 문서의 변경을
+  과거 `source-final.json` 실행 결과에 포함된 것처럼 표시하지 않는다.
+- 현재 단계의 구현·기록을 로컬 checkpoint로 보존한 뒤 다음 단계 문서를 시작한다.
+  이 결정만으로 새 단계의 기능 구현이나 원격 push·Ready·merge·close를 수행했다고 쓰지 않는다.
+- 문서 4개의 내부 상대 링크·변경분 whitespace와 신규 백로그의 절 anchor를 확인했다.
+  사전 기록한 소스·fixture·의존성 2,841개 파일의 해시 변경은 0개다. 실행 기록은
+  `output/pr-review/issue7911/implementation-flow-20261016/`의 `doc-links.log`와
+  `verification.json`에 보존한다. 소스 빌드·회귀는 재실행하지 않았다.
+
+### 3.24 devel 승격의 공동 구현 목적 정정 (2026-10-16)
+
+메인테이너는 POC의 devel 승격이 완전한 코드의 배포를 위한 것이 아니라, 구현할 빈자리를
+코드에 마련하여 기여자들이 참여하고 함께 만드는 방식임을 명확히 했다. 3.23에 이어
+백로그 전체 완료를 통합 선행 조건으로 남긴 해석을 정정한다.
+
+- 기반 기능 연결 → 현재 범위 검증·devel 통합 → 기여자와 후속 구현 순서를 계획에 반영했다.
+- [구현계획 6.3](../plans/task_m100_7911_impl.md#63-devel-통합과-배포의-판정-분리)에서
+  devel 통합과 배포 판정을 분리했다. 현재 주장한 동작·기존 기능·적용 검증은 확인하고,
+  명시된 미완성 후속 기능의 존재만으로 기반 통합을 막지 않는다.
+- 백로그에는 통합 전 검증/후속 기여/배포 준비를 구분하고 기여 진입 코드·기존 검사·
+  공개 재현 자료의 준비 조건을 연결했다. 모두를 메인테이너가 완료해야 하는 목록으로 쓰지 않는다.
+- 현재 제품 연결·통합 검증·공개 인계 자료는 여전히 준비 중이다. 이번 정정은 기능 완성이나
+  개별 검증 통과·원격 merge 승인·릴리즈 준비 완료 판정이 아니다.
+- 계획·백로그·보고만 수정하며 기존 코드·증거를 유지한다. 일반 Markdown 보완에 대해
+  변경분과 새 상대 링크를 확인하고 Rust/WASM 빌드·회귀는 반복하지 않는다.
+
+### 3.25 원격 devel 동기화 전 checkpoint (2026-10-16)
+
+메인테이너가 원격 devel 동기화 후 다음 작업 진행을 지시했다. `upstream/devel`을 fetch해
+`f5251e7de4`를 확인했다. 로컬 devel은 160개, 현재 작업 HEAD는 공통 조상 기준 원격 측
+179개 커밋이 뒤에 있다. 후속 실제 병합·정책 base·검증은 3단계 기록에서 고정한다.
+
+3.14–3.22의 구현과 집중 검증, 3.23–3.24의 계획·백로그 정정을 로컬 checkpoint에 함께
+보존한다. 문서 정리 전 기록한 소스·fixture·의존성 2,841개 해시 변경은 0개다.
+이 커밋은 미완료 백로그의 해결이나 전체 보안·회귀·시각 검증 완료를 뜻하지 않는다.
+기본 작업공간의 수정된 Studio JS는 별도로 보존하고, 새 제품 WASM으로 교체하지 않는다.
+
+## 4. 현재 미완료와 다음 작업
+
+- **우선 구현:** 공통 format detect/`ParsedDocument`/Core·CLI·제품 WASM API는 아직
+  PDF에 연결하지 않았다. 다음 시작점은 [F1](../plans/task_m100_7911_impl.md#61-제품-기능을-완결하는-실행-순서)이다.
+- **이후 세부 보완:** 폰트·캐시·추가 자원 감사와 JPEG 미관측 경계·vendor lint는 B01–B07,
+  최신 보정판 패키지 소비는 B08이다. 이미 확인한 라이브러리/probe 결과와 제품 경로를 구분한다.
+- **통합 범위 검증과 후속 분리:** 현재 제출 범위의 출력·회귀·CI는 B06/B09–B12에서
+  적용 범위를 확인한다. 나머지 기능·안전성·패키지 보완은 기여 일감으로 이어가며
+  상세 분류는 백로그 1절을 따른다.
+- 제품 연결·현재 범위 검증이 남아 PR 준비는 아직 미완료다. 전체 백로그 미완료 자체를
+  통합 차단 사유로 쓰지 않는다. 기본 비활성·외부 비신뢰 입력 배포 보류는 별도로 유지한다.
+  #7913은 승인된 WIP Draft이며 로컬 후속 구현과 원격 checkpoint가 다르다.
+- 세부 일감의 현재 상태·완료 증거는 백로그를 정본으로 삼고 이곳에 중복 목록을 누적하지 않는다.

@@ -1,0 +1,19 @@
+[package]
+name = "rhwp-jpeg-decoder"
+version = "0.3.2-rhwp.1"
+edition = "2021"
+rust-version = "1.61"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/image-rs/jpeg-decoder"
+publish = false
+[workspace]
+[lib]
+name = "jpeg_decoder_limited"
+path = "src/lib.rs"
+[features]
+default = ["rayon"]
+nightly_aarch64_neon = []
+platform_independent = []
+[dependencies.rayon]
+version = "1.5.1"
+optional = true

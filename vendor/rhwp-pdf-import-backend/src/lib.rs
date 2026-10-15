@@ -169,12 +169,14 @@ pub mod document;
 pub mod import_limits;
 pub mod lexer;
 pub mod object;
+mod object_copy;
 pub mod objstm;
 pub mod parser;
 /// Parser configuration options
 pub mod parser_config;
 pub mod xref;
 pub mod xref_reconstruction;
+mod zlib_limited;
 
 // Stream decoders
 pub mod decoders;

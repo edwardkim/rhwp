@@ -9,9 +9,12 @@ pub mod gap_statistics;
 pub mod geometric_spacing;
 pub mod hierarchical;
 pub mod images;
+mod jpeg_input;
+mod jpeg_limited;
 pub mod page_labels;
 pub mod paths;
 pub mod pattern_detector;
+mod png_limited;
 pub mod status;
 pub mod structured;
 pub mod synthetic_structure;
@@ -51,3 +54,5 @@ pub use synthetic_structure::{SyntheticStructureConfig, SyntheticStructureGenera
 pub use text::{SpanMergingConfig, TextExtractionConfig, TextExtractor};
 pub use warnings::{Warning, WarningCategory, WarningSink};
 pub use xmp::{XmpExtractor, XmpMetadata};
+
+mod jpeg_cmyk_limited;

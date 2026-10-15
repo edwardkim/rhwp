@@ -107,7 +107,7 @@ pub struct PdfImportLimits {
     pub cmap_entries: usize,
     /// Maximum conservative byte-scan work across CMap parses.
     pub cmap_scan_bytes: usize,
-    /// Maximum CID width/vertical metric expansion work across fonts.
+    /// Maximum CID metric and TrueType mapping expansion work across fonts.
     pub font_entries: usize,
     /// Maximum page-tree edge depth and concurrent indirect-object loads.
     pub reference_depth: usize,

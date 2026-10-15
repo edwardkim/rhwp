@@ -359,6 +359,13 @@ version = "1.1"
 features = ["zlib-rs"]
 default-features = false
 
+# The allocator callbacks are internal API: keep the audited implementation pinned.
+# Already used transitively by flate2; no native zlib dependency is introduced.
+[dependencies.zlib-rs]
+version = "=0.6.7"
+default-features = false
+features = ["std", "__internal-api"]
+
 [dependencies.fontdb]
 version = "0.24"
 optional = true
@@ -674,3 +681,16 @@ codegen-units = 1
 panic = "abort"
 inherits = "release"
 strip = true
+
+[dependencies.zune-jpeg-limited]
+package = "rhwp-zune-jpeg"
+version = "=0.5.15-rhwp.1"
+path = "../rhwp-zune-jpeg"
+
+[dependencies.zune-core]
+version = "=0.5.3"
+
+[dependencies.jpeg-decoder-limited]
+package = "rhwp-jpeg-decoder"
+version = "=0.3.2-rhwp.1"
+path = "../rhwp-jpeg-decoder"

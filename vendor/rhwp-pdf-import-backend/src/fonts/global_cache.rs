@@ -218,6 +218,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             cid_to_gid_map: None,

@@ -101,6 +101,63 @@ CCITT 오류 6개를 거부하고 정상 Group 3/4의 12개 조합 및 1x1 사�
 전체 이미지/메모리 안전성 완료로 표시하지 않는다. 현재 아카이브의 독립 소비자 결과는
 2단계 기록에서 구분한다.
 
+### WSL 후속: Indexed CCITT와 인라인 이미지
+
+- 제한된 Indexed CCITT는 pass-through된 압축 bytes를 palette index로 해석하지 않는다.
+  기존 bounded Group 3/4 decoder로 먼저 풀고, PDF `BlackIs1`의 sample polarity와
+  Indexed `/Decode`의 반올림·유효 index 범위를 적용한 뒤 palette를 조회한다.
+  같은 Decode 해석 결과로 `decode_folded_in` 상태도 기록해 변환 여부를 보존한다.
+- 직접 색상표는 필요한 prefix만 요청 예산으로 복사하며, 참조 stream palette는 같은
+  문서의 decode context를 사용한다. 잘못된 hival·짧은 palette를 거부하고 RGB 확장·Lab
+  palette 변환의 할당 전 예산을 계상한다. 기본 feature와 비제한 API 계약은 유지한다.
+- 인라인 `BI/ID/EI`에서 만든 합성 XObject stream에도 문서의 `ImportBudget`을 보존한다.
+  내용 stream에서 추출한 뒤 예산 없는 일반 filter 경로로 우회하던 연결을 고쳤다.
+- 수정 전 Indexed 반례 3개와 인라인 stream 상한 반례 1개의 실패를 확인했다.
+  정상 Group 3/4·색상표·누적량·filter chain·오류 후 재사용 경계를 작은 입력으로 검증했다.
+  Native 자원 67개·frontend/여백 5개와 backend Native/Docker WASM lib Clippy가 통과했다.
+  fresh Docker WASM에서도 CCITT 24조합·이미지 상태·개별/인라인 한도·오류 후 정상 입력,
+  실물 이미지 9회 및 frontend 3건을 확인했다.
+  실행 결과·명령·source 식별자는 `mydocs/working/task_m100_7911_stage2.md` 3.14를 따른다.
+  독립 Poppler와의 이미지 픽셀 대조는 페이지 조판·한컴 Print Visual Sweep이 아니다.
+- 남은 색 공간·mask·객체/cache 복사·embedded font·PNG private scratch/CPU 감사와
+  제품 공개 API·Worker 게이트는 유지한다. 전체 parser allocation 검증 완료로 표시하지 않는다.
+
+### WSL 후속: 샘플·색 변환과 mask 오류 경계
+
+- 제한된 샘플 경로는 Decode range·component LUT·unpack 출력·16-bit reduction을
+  예약 전에 같은 요청 codec/누적 예산으로 계상한다. 행 단위 padding과 참조 Decode를
+  보존하고 잘못된 bit depth 및 잘린 변환 입력을 오류로 반환한다. legacy 복구는 유지한다.
+- CMYK/Gray→RGB의 최종 출력과 JPEG decoded pixel payload에도 같은 예산을 연결했다.
+  RGB 소유 버퍼는 불필요한 복제 없이 소비한다. 기존 반전/색 정책은 그대로 대조한다.
+  PNG/JPEG private scratch·optional CMM 내부 할당은 이 결과로 검증 완료하지 않는다.
+- 제한된 image handle은 독립 그림으로 가져올 때 적용할 수 없는 `/Mask`, `/SMask`,
+  stencil을 명시적으로 거부한다. frontend는 `PDF_IMAGE_UNSUPPORTED`를 반환하며
+  선택된 뒤쪽 페이지의 오류를 부분 성공으로 반환하지 않는다. null·false의 정상 의미와
+  renderer가 mask를 직접 적용하는 legacy 경로는 유지한다. mask 보존 구현이 아니다.
+- 수정 전 새 반례 5개가 각각 실패했고 최종 Native 자원 72개, frontend·여백 5개,
+  Native/Docker WASM backend·root library Clippy가 통과했다. fresh Docker WASM의
+  추가 경계 40개·기존 CCITT/inline 대조군과 실물 이미지 9개·frontend 3건도 통과했다.
+  명령·범위·실행 소스와 남은 게이트는 `mydocs/working/task_m100_7911_stage2.md` 3.15를
+  따른다. 전쪽 시각 검증이나 전체 parser allocation 검증 완료로 표시하지 않는다.
+
+### WSL 후속: PNG 제한 출력과 JPEG 입력 복사
+
+- 제한 PNG 변환은 `png_limited`의 8-bit Gray/RGB 저장 DEFLATE 블록 writer를 쓴다.
+  최대 16 KiB 단일 scratch를 요청 예산으로 선계상·fallible 예약하며 출력 길이·누적량·
+  CRC/Adler·최종 블록을 생성한다. 일반 PNG encoder의 압축 전체 Vec을 만들지 않는다.
+  비제한 API는 기존 adaptive 압축을 유지한다. 새 dependency는 추가하지 않았다.
+- PNG 픽셀은 보존되지만 압축을 하지 않아 크기가 늘어난다. 실물 9회는 합계
+  36,323 → 15,252,683 bytes이며 제품 통합 전 보관 비용과 제한 가능한 압축 경로를
+  검토해야 한다. ZIP/HWPX의 재압축 효과를 PNG 자체의 비용과 혼동하지 않는다.
+- `image` JPEG adapter의 input 복사 payload를 header parse 전에 계상했다.
+  JPEG metadata·progressive/MCU/upsampling 및 CMYK worker의 private scratch는
+  여전히 미검증이다. 이 보정을 전체 JPEG 할당 제한으로 설명하지 않는다.
+- 수정 전 Native 2개/WASM 8개 실패를 확인했다. 보정 후 Native 자원 77개·frontend/여백
+  5개, 추가 fresh Docker WASM 경계 41개와 기존 이미지/mask 대조군이 통과했다.
+  Native/WASM 실물 이미지 9회는 Poppler와 같고, HWPX 3건은 비-PNG entry와 픽셀을
+  보존했다. library Clippy와 source·증거는 2단계 기록 3.16을 따른다.
+  공개 제품 API·Worker·전쪽 시각·전체 parser allocation 검증 완료는 아니다.
+
 후속 Brotli 보완은 `brotli-decompressor =6.0.1`의 custom allocator/stream API로
 private scratch를 할당 전 계상한다. 별도 개별 할당 32 MiB와 문서 누적 작업 예산을
 같이 적용한다. 초기 상태 할당 실패 확인·표준 window·부분 출력 실패 처리를 추가했다.
@@ -129,3 +186,93 @@ rhwp import metadata의 `parser_allocation_bounds_proven`는 이 게이트가 �
 workspace patch에만 의존하지 않지만, crates.io 소비자를 위해서는 이 내부 dependency의
 별도 배포 모델이 확정되어야 한다. `cargo package --list` 확인만으로 packaged consumer의
 빌드나 배포가 검증됐다고 판단하지 않는다.
+
+### PNG 압축 복구와 JPEG 입력 예약 경계
+
+- 제한 PNG의 저장 DEFLATE 블록은 안전한 scratch 경로였으나 실물 9회 합계가 15,252,683
+  bytes로 증가했다. `png_limited`를 streaming zlib 압축으로 교체했다. 원본 행을 빌리고
+  고정 16 KiB stack 출력 버퍼를 IDAT에 직접 쓴다. 압축 전체 Vec은 만들지 않는다.
+- 이미 flate2가 사용하던 `zlib-rs =0.6.7`의 `__internal-api`에 exact 제약을 두고, 동일
+  `ImportBudget`을 custom allocator에 연결했다. state/window/hash/pending/symbols와 내부
+  alignment 여유 전체를 선계상한 뒤 `try_reserve_exact`로 예약한다. 단일 allocation·해제,
+  pointer lifetime과 적용 API는 해당 버전 소스에서 감사했으며 버전 변경 시 재감사한다.
+  C allocator/native zlib를 추가하지 않았다. 고정 stack·allocator overhead·전체 RSS는
+  요청 payload counter와 구분한다. 일반 Flate decoder의 후속 allocator 보완은 아래 절을 따른다.
+- 실물 PNG 9회는 35,939 bytes로 줄고 독립 Poppler와 픽셀이 일치했다. 비제한 API의 기존
+  adaptive encoder는 유지한다. 제한 경로는 filter None이므로 모든 입력의 압축률이나
+  legacy container byte 일치를 보장하지 않는다.
+- `jpeg_input::Input`은 image adapter의 `read_to_end`에서 원본 payload를 선계상한 뒤
+  fallible exact reservation·복사를 수행한다. RGB/Gray JPEG pixel 정책은 유지하며 CMYK의
+  별도 decoder는 변경하지 않는다. JPEG metadata/progressive/MCU/worker private allocation
+  감사 완료가 아니다. 세부 검증과 source hash는 2단계 보고서 3.17에 연결한다.
+
+
+### 일반 Flate 내부 예약 경계
+
+- 제한 Flate는 `flate_limited`에서 `zlib_limited`의 요청 allocator를 사용한다. PNG도 같은
+  allocator/RAII를 공유한다. pinned 0.6.7 init의 단일 state/window 예약을 개별·누적 예산으로
+  먼저 계상하고 fallible 예약한다. 4 KiB stack 출력은 기존 bounded writer를 거친다.
+- zlib→raw Deflate 호환 경로는 유지하며 실패한 첫 시도의 비용을 되돌리지 않는다.
+  resource 오류는 즉시 전파하고, 완전 종료·checksum 확인 전에 부분 성공을 반환하지 않는다.
+  비제한 Flate API는 변경하지 않았다. dependency 변경 시 allocator·pointer 경로 재감사가 필요하다.
+- 수정 전 codec 한도 1 byte에서 빈 스트림이 성공하는 반례를 확인했다. 최종 Native 84개
+  자원 계약, fresh Docker WASM 경계, PNG/HWPX byte 보존은 2단계 보고서 3.18을 따른다.
+  JPEG private allocation·나머지 font/cache·Worker·전체 자원 상한은 여전히 미완료다.
+
+
+## Request-bounded RGB/Gray JPEG internals (#7911, Stage2 slice 3.19)
+
+`extractors/jpeg_limited.rs` installs the request context before JPEG headers and
+retains it through decode. The separate local `rhwp-zune-jpeg` 0.5.15-rhwp.1
+security patch gates metadata/component/MCU/progressive/upsampling reservations;
+see `../rhwp-zune-jpeg/RHWP_PATCHES.md`. Ordinary `image` consumers and the
+Adobe-aware CMYK decoder remain unchanged. Output color policy and PNG pixels
+are compared against those independent legacy consumers. CMYK internals and
+non-codec font/cache allocations remain unproven; the global completion flag
+remains false.
+
+## CMYK JPEG 요청 예약 보완 (#7911, 2단계 3.20)
+
+`decode_jpeg_with_budget`의 4-component 분기에만 별도 local `rhwp-jpeg-decoder`
+0.3.2-rhwp.1과 `jpeg_cmyk_limited::Request`를 연결했다. context는 생성자 table·header
+이전에 설치하며 metadata·Huffman·progressive/MCU/lossless·worker plane·행별 upsampling과
+출력의 실제 예약을 계상한다. 외부에서 추정 출력 크기를 미리 계상하던 호출은 실제 decoder
+예약으로 대체했고 stream cap·PDF/header 크기 대조·Adobe 반전·색 변환은 유지한다.
+호출 후 sticky budget을 우선 확인해 자원 오류를 일반 이미지 오류로 숨기지 않는다.
+
+일반 registry jpeg-decoder와 zune 경로는 유지한다. 자세한 변경·고정 Arc/Box 및 scheduler,
+accessor 등 입증 경계는 `../rhwp-jpeg-decoder/RHWP_PATCHES.md`와 단계 보고 3.20을 따른다.
+이 보완도 전체 parser 할당 입증이나 공개 API/Worker·전쪽 시각 검증 완료가 아니다.
+
+### 객체·색 공간의 소유 payload 복사 (2026-10-16)
+
+- 제한된 `load_object`의 일반/재확인/recovery cache hit, uncompressed cache 보관,
+  object-stream 반환 복사는 동일한 `object_copy` 경계를 사용한다. 문자열·이름·배열 slot·
+  사전 key/value slot의 checked 합계를 요청 누적 예산에 먼저 계상하고,
+  실제 String/Vec/HashMap 복사는 fallible reserve 이후 수행한다. 메타데이터 복사에
+  스트림 출력의 개별 cap을 적용하지 않는다. StreamData는 원래처럼
+  bytes와 요청 context를 공유한다. legacy 무제한 경로의 Object clone 의미는 유지한다.
+- Form subtype 조회는 객체 전체 복사 대신 빌린 사전에서 판정한다. lazy image enumeration의
+  page/Form resources·XObject 사전·색 공간 사전·inline 사전 및 handle 소유 사전도 복사
+  경계를 사용한다. 색 공간 읽기 전용 조회는 직접 객체를 빌리고, 실패한 요청이 빈 사전이나
+  부분 handle 성공으로 바뀌지 않도록 상위 경계의 sticky 검사를 유지한다.
+- 이 계상은 요청한 payload와 collection slot 작업량이다. HashMap bucket 여유·allocator
+  overhead·cache index의 HashMap/VecDeque 성장·RSS·폰트 내부 할당 전체의 상한을
+  입증하지 않는다. `parser_allocation_bounds_proven=false`를 유지한다.
+
+### WSL 후속: 요청별 폰트 캐시와 TrueType cmap
+
+- 제한된 `PdfDocument`는 전역 FontInfo cache를 읽거나 채우지 않는다. 문서 내부 캐시와
+  legacy 문서 간 공유는 유지한다. `load_fonts`는 lazy mapping/fallback 후 sticky 오류를
+  다시 확인하며, 직접 resources/font 객체 복사는 기존 bounded copy를 사용한다.
+- FontInfo가 원래 요청의 budget을 보관한다. simple TrueType lazy 파싱과 CID descendant
+  FontFile2 파싱에 같은 context를 전달한다. cmap/table 길이·offset을 확인한 뒤 format
+  0/4/6/12와 symbol mapping의 확장 작업·예약을 선계상하고 fallible reserve한다.
+  format 4 scratch도 계상하며 format 12의 역구간·Unicode/GID overflow를 거부한다.
+- TrueType map은 immutable Arc로 공유해 clone/donation 시 전체 map을 다시 할당하지
+  않는다. 다른 FontInfo 필드의 clone·Type1/CFF encoding·Unicode memo·cache index까지
+  제한했다고 주장하지 않는다. 요청 예산은 누적 작업량이며 전체 live heap/RSS가 아니다.
+- OpenType `cmap`의 table/subtable 길이를 사용하는 변경에 맞춰 기존 synthetic unit
+  builder의 0-byte directory length를 실제 직렬화 길이로 보정했다. 기대 매핑은 유지한다.
+  근거: https://learn.microsoft.com/en-us/typography/opentype/spec/cmap
+- 재현·검증·남은 범위는 `mydocs/working/task_m100_7911_stage2.md` 3.22를 따른다.

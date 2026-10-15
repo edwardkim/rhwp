@@ -71,6 +71,9 @@ pub struct FontInfo {
     /// Initialized on first access via `truetype_cmap()` accessor to avoid
     /// the 10-25ms per-font extraction cost when ToUnicode resolves all chars.
     pub truetype_cmap: std::sync::OnceLock<Option<TrueTypeCMap>>,
+    /// Originating import request, retained for lazy font program parsing.
+    /// None for legacy, unbounded documents; never shared across requests.
+    pub import_budget: Option<Arc<crate::import_limits::ImportBudget>>,
     /// Lazily-extracted embedded TrueType/CFF `post`-table glyph names,
     /// indexed by GID. `None` element = no name for that GID (post format 3,
     /// or the glyph name table is absent). Used by §9.10.2 Priority 3c
@@ -367,6 +370,9 @@ impl FontInfo {
     /// Get the TrueType cmap, lazily extracting it on first access.
     /// Returns `None` if the font is not TrueType or has no embedded data.
     pub fn truetype_cmap(&self) -> Option<&TrueTypeCMap> {
+        if let Some(budget) = &self.import_budget {
+            budget.check().ok()?;
+        }
         self.truetype_cmap
             .get_or_init(|| {
                 if !self.is_truetype_font {
@@ -376,7 +382,10 @@ impl FontInfo {
                 if font_data.is_empty() {
                     return None;
                 }
-                match TrueTypeCMap::from_font_data(font_data) {
+                match TrueTypeCMap::from_font_data_with_budget(
+                    font_data,
+                    self.import_budget.as_deref(),
+                ) {
                     Ok(cmap) if !cmap.is_empty() => {
                         log::info!(
                             "Lazy-extracted TrueType cmap for font '{}': {} mappings",
@@ -1504,6 +1513,7 @@ impl FontInfo {
             descent,
             embedded_font_data,
             truetype_cmap: truetype_cmap_lock,
+            import_budget: doc.import_budget().cloned(),
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font,
             cid_to_gid_map,
@@ -2021,7 +2031,10 @@ impl FontInfo {
         if font_data.is_empty() {
             return None;
         }
-        match TrueTypeCMap::from_font_data(&font_data) {
+        match TrueTypeCMap::from_font_data_with_budget(
+            &font_data,
+            doc.import_budget().map(AsRef::as_ref),
+        ) {
             Ok(cmap) if !cmap.is_empty() => {
                 log::info!(
                     "Font '{}': Extracted TrueType cmap from descendant CIDFont ({} mappings)",
@@ -6702,6 +6715,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -6746,6 +6760,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -6793,6 +6808,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -6837,6 +6853,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -6887,6 +6904,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -6938,6 +6956,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -6988,6 +7007,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7036,6 +7056,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7182,6 +7203,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7318,6 +7340,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7372,6 +7395,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7419,6 +7443,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7470,6 +7495,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7517,6 +7543,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7564,6 +7591,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7615,6 +7643,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7662,6 +7691,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7709,6 +7739,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7760,6 +7791,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7806,6 +7838,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7852,6 +7885,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7898,6 +7932,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7944,6 +7979,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -7990,6 +8026,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -8036,6 +8073,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -8082,6 +8120,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -8128,6 +8167,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -8422,6 +8462,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -8480,6 +8521,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -8534,6 +8576,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -8594,6 +8637,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -8659,6 +8703,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -10840,6 +10885,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             cid_to_gid_map: None,
@@ -10895,6 +10941,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             cid_to_gid_map: None,
@@ -10946,6 +10993,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             cid_to_gid_map: None,
@@ -10995,6 +11043,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             cid_to_gid_map: None,
@@ -11050,6 +11099,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,
@@ -11202,6 +11252,7 @@ mod tests {
             descent: -0.35,
             embedded_font_data: None,
             truetype_cmap: std::sync::OnceLock::new(),
+            import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),
             is_truetype_font: false,
             widths: None,

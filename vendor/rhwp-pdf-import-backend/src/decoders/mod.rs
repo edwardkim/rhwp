@@ -22,6 +22,7 @@ mod brotli;
 pub(crate) mod ccitt;
 mod dct;
 mod flate;
+mod flate_limited;
 mod jbig2;
 pub(crate) mod jpx;
 mod lzw;

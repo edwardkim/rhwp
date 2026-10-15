@@ -3452,6 +3452,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47b34b781b31e5d73e9fbc8689c70551fd1ade9a19e3e28cfec8580a79290cc4"
 
 [[package]]
+name = "rhwp-jpeg-decoder"
+version = "0.3.2-rhwp.1"
+dependencies = [
+ "rayon",
+]
+
+[[package]]
 name = "rhwp-pdf-import-backend"
 version = "0.3.78-rhwp.1"
 dependencies = [
@@ -3514,6 +3521,8 @@ dependencies = [
  "quick-xml 0.42.0",
  "rayon",
  "regex",
+ "rhwp-jpeg-decoder",
+ "rhwp-zune-jpeg",
  "rsa",
  "serde",
  "serde-wasm-bindgen",
@@ -3541,6 +3550,15 @@ dependencies = [
  "web-sys",
  "weezl 0.2.1",
  "x509-parser",
+ "zlib-rs",
+ "zune-core",
+]
+
+[[package]]
+name = "rhwp-zune-jpeg"
+version = "0.5.15-rhwp.1"
+dependencies = [
+ "zune-core",
 ]
 
 [[package]]
