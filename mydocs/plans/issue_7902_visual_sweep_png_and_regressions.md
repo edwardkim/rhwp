@@ -60,6 +60,10 @@ Issue: #7902. 작업지시: 먼저 SVG 출력을 최소화하는 Visual Sweep을
 
 ## 증거와 디스크
 
+#7923 머지 후 `2efefc6a1` 위로 리베이스한 통합 검증은
+[3단계 기록](../working/task_m100_7902_stage3.md)에서 이어간다. 이전 통과 결과와 새 source의
+Native/fresh WASM·회귀 결과를 구분하고 원래 19문서 범위를 유지한다.
+
 검증 중인 원시 기록은 ignored `output/pr-review/issue7902-render-repair-20261014/`에 저장한다.
 과거 실행 기록의 원래 경로는 단계별 증거에 남기되, 종료 뒤에는 **`output/pr-review` 전체**를
 점검해 필요 없는 로그·중간 출력·중복 산출물을 정리한다. 필요한 원본·기준 PDF·글꼴·현재 재현 자료와
