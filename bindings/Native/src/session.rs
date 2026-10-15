@@ -30,7 +30,7 @@ thread_local! {
 #[derive(Deserialize)]
 #[serde(tag = "op", rename_all = "camelCase", deny_unknown_fields)]
 enum Request {
-    Info,
+    Info {},
     PageSize { page: u32 },
     Render { page: u32, scale: f64 },
 }
@@ -163,7 +163,7 @@ pub unsafe extern "C" fn rhwp_session_request(
             let mut host = host.borrow_mut();
             let session = host.sessions.get(&handle).ok_or_else(invalid_handle)?;
             match request {
-                Request::Info => Ok(json!({"ok":true,"pageCount":session.document().page_count(),"revision":session.revision()})),
+                Request::Info {} => Ok(json!({"ok":true,"pageCount":session.document().page_count(),"revision":session.revision()})),
                 Request::PageSize { page } => Ok(json!({"ok":true,"page":page,"size":session.page_size(page)?})),
                 Request::Render { page, scale } => {
                     let frame = session.render_page(page, scale)?;
