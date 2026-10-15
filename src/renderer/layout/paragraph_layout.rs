@@ -1333,10 +1333,11 @@ struct EquationTacLineVars {
 
 /// [#2003] run 방출 루프의 줄-스코프 읽기 스칼라 묶음.
 #[derive(Clone, Copy)]
-struct RunEmitVars {
+struct RunEmitVars<'a> {
     stored_tac_assignment: bool,
     trailing_space_limit: usize,
     natural_prefix_runs: usize,
+    body_field_runs: &'a [bool],
     baseline: f64,
     raw_lh: f64,
     alignment: crate::model::style::Alignment,
@@ -2283,7 +2284,8 @@ fn compute_line_extra_spacing(
     available_width: f64,
     tab_width: f64,
 ) -> (f64, f64, f64) {
-    let fit_width = centered_measure.map_or(total_text_width, |measure| measure.width(0.0));
+    let fit_width = centered_measure.map_or(total_text_width, |measure| measure.width(0.0))
+        + leading_space_plan.field_fit_adjustment(styles);
     let fit_char_count = centered_measure.map_or(total_char_count, |measure| measure.char_count);
     // 음수 자간은 마지막 글자의 advance도 줄이지만 실제 glyph 잉크 폭은 줄이지 않는다.
     // 나눔정렬에서 advance만 셀 끝에 맞추면 정상 폭으로 그린 마지막 glyph가 clip을
@@ -2413,11 +2415,8 @@ fn compute_line_extra_spacing(
         // 표시 텍스트의 공백 76개 전부에 붙어 쪽번호가 종이 밖 x≈20,163px 로
         // 밀려났다. 폭(`total_text_width`)·글자수(`total_char_count`)는 이미 표시
         // 텍스트 기준이라 여기만 축이 달랐다.
-        let all_chars: Vec<char> = comp_line
-            .runs
-            .iter()
-            .flat_map(|r| effective_text_for_metrics(r).chars())
-            .collect();
+        let spacing_chars = leading_space_plan.spacing_chars();
+        let all_chars: Vec<char> = spacing_chars.iter().map(|(ch, _)| *ch).collect();
         let trailing_spaces = all_chars
             .iter()
             .rev()
@@ -2456,7 +2455,12 @@ fn compute_line_extra_spacing(
             0.0
         };
         if interior_spaces > 0 {
-            let spacing_char_count = total_char_count - leading_space_plan.leading_spaces;
+            let spacing_char_count = total_char_count
+                - leading_space_plan.leading_spaces
+                - leading_space_plan.field_char_count();
+            if spacing_char_count == 0 {
+                return (0.0, 0.0, 0.0);
+            }
             let split_ink_overhang = if alignment == Alignment::Split {
                 trailing_glyph_ink_overhang()
             } else {
@@ -2569,9 +2573,19 @@ fn compute_line_extra_spacing(
                 )
             } else {
                 // 같은 가시 폭과 글자 수로 저장 줄·합성 줄의 배분을 정한다.
-                let visible_body_count =
-                    visible_count - leading_space_plan.leading_spaces.min(visible_count);
-                let slots = visible_body_count - 1;
+                let visible_body_count = spacing_chars[..visible_count]
+                    .iter()
+                    .skip(leading_space_plan.leading_spaces)
+                    .filter(|(_, field)| !field)
+                    .count();
+                let slots = spacing_chars[..visible_count.saturating_sub(1)]
+                    .iter()
+                    .skip(leading_space_plan.leading_spaces)
+                    .filter(|(_, field)| !field)
+                    .count();
+                if slots == 0 {
+                    return (0.0, 0.0, 0.0);
+                }
                 let raw = slack / slots as f64;
                 let avg_char_w = (visible_text_width
                     - leading_space_plan.natural_width(styles, tab_width))
@@ -2592,16 +2606,31 @@ fn compute_line_extra_spacing(
         // 마지막 글자가 slack/N 만큼 안쪽으로 밀려 문단마다 오른쪽 끝이
         // 어긋난다(한컴은 줄 길이와 무관하게 오른쪽 끝을 문단 폭에 맞춘다).
         // 말미 공백은 보이는 글자가 아니므로 분배 대상과 기준 폭에서 제외한다.
-        let trailing_spaces = comp_line
-            .runs
+        let spacing_chars = if leading_space_plan
+            .body_field_runs
+            .iter()
+            .any(|field| *field)
+        {
+            leading_space_plan.spacing_chars()
+        } else {
+            comp_line
+                .runs
+                .iter()
+                .flat_map(|run| run.text.chars().map(|ch| (ch, false)))
+                .collect()
+        };
+        let trailing_spaces = spacing_chars
             .iter()
             .rev()
-            .flat_map(|r| r.text.chars().rev())
-            .take_while(|c| *c == ' ')
+            .take_while(|(ch, _)| *ch == ' ')
             .count()
             .min(trailing_space_limit);
-        let visible_count = total_char_count.saturating_sub(trailing_spaces);
-        if visible_count <= 1 {
+        let visible_count = spacing_chars.len().saturating_sub(trailing_spaces);
+        let slots = spacing_chars[..visible_count.saturating_sub(1)]
+            .iter()
+            .filter(|(_, field)| !field)
+            .count();
+        if slots == 0 {
             (0.0, 0.0, 0.0)
         } else {
             let trailing_width = if trailing_spaces > 0 {
@@ -2616,7 +2645,7 @@ fn compute_line_extra_spacing(
                 0.0
             };
             let visible_width = total_text_width - trailing_width;
-            let raw = (available_width - visible_width) / (visible_count - 1) as f64;
+            let raw = (available_width - visible_width) / slots as f64;
             if suppress_cell_overflow_spacing && raw < 0.0 {
                 (0.0, 0.0, 0.0)
             } else {
@@ -6837,7 +6866,8 @@ impl LayoutEngine {
             } else {
                 Some(comp_line.char_start)
             };
-            let leading_space_plan = LeadingSpacePlan::new(comp_line, first_inline_pos);
+            let leading_space_plan = LeadingSpacePlan::new(comp_line, first_inline_pos)
+                .with_body_fields(para.map_or(&[], |p| p.layout_field_values.as_slice()));
             let trailing_space_limit = trailing_space_limit_after_last_inline_object(
                 comp_line,
                 line_tac_offsets_for_width
@@ -7200,6 +7230,7 @@ impl LayoutEngine {
                     stored_tac_assignment: stored_tac_assignment.is_some(),
                     trailing_space_limit,
                     natural_prefix_runs: leading_space_plan.natural_prefix_runs,
+                    body_field_runs: &leading_space_plan.body_field_runs,
                     baseline,
                     raw_lh,
                     alignment,
@@ -7957,13 +7988,14 @@ impl LayoutEngine {
         para_topbottom_line_vpos_base: Option<(i32, f64)>,
         col_area: &LayoutRect,
         kerning_layout_session: &mut KerningLayoutSession<'_>,
-        vars: RunEmitVars,
+        vars: RunEmitVars<'_>,
         st: RunEmitState,
     ) -> RunEmitState {
         let RunEmitVars {
             stored_tac_assignment,
             trailing_space_limit,
             natural_prefix_runs,
+            body_field_runs,
             baseline,
             raw_lh,
             alignment,
@@ -8262,17 +8294,11 @@ impl LayoutEngine {
             }
             text_style.line_x_offset = x - col_area.x;
             // 분모·수렴 측정과 같은 계획의 선행 공백 런만 자연 폭으로 방출한다.
-            text_style.extra_word_spacing = if run_idx < natural_prefix_runs {
-                0.0
-            } else {
-                extra_word_sp
-            };
-            text_style.extra_char_spacing = if run_idx < natural_prefix_runs {
-                0.0
-            } else {
-                extra_char_sp
-            };
-            text_style.extra_dash_advance = extra_dash_sp;
+            let body_field = body_field_runs.get(run_idx).copied().unwrap_or(false);
+            let fixed_spacing = run_idx < natural_prefix_runs || body_field;
+            text_style.extra_word_spacing = if fixed_spacing { 0.0 } else { extra_word_sp };
+            text_style.extra_char_spacing = if fixed_spacing { 0.0 } else { extra_char_sp };
+            text_style.extra_dash_advance = if body_field { 0.0 } else { extra_dash_sp };
             // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
             // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
             // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
@@ -8706,15 +8732,20 @@ impl LayoutEngine {
                                 let seg_text: String =
                                     run_chars[seg_start..rel_pos].iter().collect();
                                 // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
-                                let seg_w = estimate_text_width_exact(&seg_text, &text_style);
+                                let seg_display = run.display_for_model_range(seg_start, rel_pos);
+                                let seg_w = estimate_text_width_exact(
+                                    seg_display.as_deref().unwrap_or(&seg_text),
+                                    &text_style,
+                                );
                                 let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
                                     kerning_layout_session,
                                     ExactFontSlot::new(run.char_style_id, run.lang_index),
-                                    &seg_text,
+                                    seg_display.as_deref().unwrap_or(&seg_text),
                                     &text_style,
                                     seg_w,
                                     0,
                                     run.char_overlap.is_none()
+                                        && seg_display.is_none()
                                         && !seg_text.chars().any(|character| {
                                             matches!(character, '\t' | '\n' | '\r')
                                         }),
@@ -8740,7 +8771,7 @@ impl LayoutEngine {
                                         baseline,
                                         field_marker: FieldMarkerType::None,
                                         layout_positions: seg_layout_positions,
-                                        display_text: None,
+                                        display_text: seg_display,
                                     }),
                                     BoundingBox::new(sub_x, y, seg_w, line_height),
                                 );
@@ -8791,17 +8822,23 @@ impl LayoutEngine {
                         if seg_start < run_chars.len() {
                             let seg_text: String = run_chars[seg_start..].iter().collect();
                             // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
-                            let seg_w = estimate_text_width_exact(&seg_text, &text_style);
+                            let seg_display =
+                                run.display_for_model_range(seg_start, run_chars.len());
+                            let seg_w = estimate_text_width_exact(
+                                seg_display.as_deref().unwrap_or(&seg_text),
+                                &text_style,
+                            );
                             let trailing_space_count = line_trailing_space_by_run[run_idx]
                                 .min(run_chars.len().saturating_sub(seg_start));
                             let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
                                 kerning_layout_session,
                                 ExactFontSlot::new(run.char_style_id, run.lang_index),
-                                &seg_text,
+                                seg_display.as_deref().unwrap_or(&seg_text),
                                 &text_style,
                                 seg_w - extra_word_sp * trailing_space_count as f64,
                                 trailing_space_count,
                                 run.char_overlap.is_none()
+                                    && seg_display.is_none()
                                     && !seg_text
                                         .chars()
                                         .any(|character| matches!(character, '\t' | '\n' | '\r')),
@@ -8827,7 +8864,7 @@ impl LayoutEngine {
                                     baseline,
                                     field_marker: FieldMarkerType::None,
                                     layout_positions: seg_layout_positions,
-                                    display_text: None,
+                                    display_text: seg_display,
                                 }),
                                 BoundingBox::new(sub_x, y, seg_w, line_height),
                             );
@@ -8911,15 +8948,20 @@ impl LayoutEngine {
                             );
                         }
                         // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
-                        let seg_w = estimate_text_width_exact(&seg_text, &seg_style);
+                        let seg_display = run.display_for_model_range(seg_start, tac_rel);
+                        let seg_w = estimate_text_width_exact(
+                            seg_display.as_deref().unwrap_or(&seg_text),
+                            &seg_style,
+                        );
                         let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
                             kerning_layout_session,
                             ExactFontSlot::new(run.char_style_id, run.lang_index),
-                            &seg_text,
+                            seg_display.as_deref().unwrap_or(&seg_text),
                             &seg_style,
                             seg_w,
                             0,
                             run.char_overlap.is_none()
+                                && seg_display.is_none()
                                 && !seg_text
                                     .chars()
                                     .any(|character| matches!(character, '\t' | '\n' | '\r')),
@@ -8947,7 +8989,7 @@ impl LayoutEngine {
                                     baseline,
                                     field_marker: FieldMarkerType::None,
                                     layout_positions: seg_layout_positions,
-                                    display_text: None,
+                                    display_text: seg_display,
                                 }),
                                 BoundingBox::new(x, y, seg_w, line_height),
                             );
@@ -9416,7 +9458,8 @@ impl LayoutEngine {
                     }
                     // tac 폭만큼 x 전진 (+ TAC 표 outMargin 좌/우 — Issue #3396)
                     x += tac_w + tac_table_om.0 + tac_table_om.1;
-                    sub_char_offset += 1;
+                    // 개체 뒤의 원문 자리표도 아래 나머지 TextRun이 소유한다.
+                    // 개체를 그렸다는 이유로 모델 scalar를 한 번 더 소비하지 않는다.
                     seg_start = tac_rel;
                 }
 
@@ -9434,17 +9477,23 @@ impl LayoutEngine {
                             &composed.tab_extended,
                         );
                     }
-                    let seg_w = estimate_text_width(&remaining, &seg_style);
+                    let seg_display = run.display_for_model_range(seg_start, run_chars.len());
+                    let seg_w = if let Some(display) = &seg_display {
+                        estimate_text_width_exact(display, &seg_style)
+                    } else {
+                        estimate_text_width(&remaining, &seg_style)
+                    };
                     let trailing_space_count =
                         line_trailing_space_by_run[run_idx].min(remaining.chars().count());
                     let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
                         kerning_layout_session,
                         ExactFontSlot::new(run.char_style_id, run.lang_index),
-                        &remaining,
+                        seg_display.as_deref().unwrap_or(&remaining),
                         &seg_style,
                         seg_w - extra_word_sp * trailing_space_count as f64,
                         trailing_space_count,
                         run.char_overlap.is_none()
+                            && seg_display.is_none()
                             && !remaining
                                 .chars()
                                 .any(|character| matches!(character, '\t' | '\n' | '\r')),
@@ -9471,7 +9520,7 @@ impl LayoutEngine {
                                 baseline,
                                 field_marker: FieldMarkerType::None,
                                 layout_positions: seg_layout_positions,
-                                display_text: None,
+                                display_text: seg_display,
                             }),
                             BoundingBox::new(x, y, seg_w, line_height),
                         );

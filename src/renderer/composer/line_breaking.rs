@@ -1067,6 +1067,10 @@ fn prepare_paragraph_kerning(
     space_metric: SpaceMetric,
     inline_controls: &[FlowInlineControl],
 ) -> Option<PreparedParagraphKerning> {
+    // 모델 한 칸→표시 여러 글자의 값은 현재 scalar 커닝 투영의 지원 범위 밖이다.
+    if !para.layout_field_values.is_empty() {
+        return None;
+    }
     let paragraph_requests_kerning = if para.char_shapes.is_empty() {
         styles
             .char_styles
@@ -1488,6 +1492,23 @@ fn resolved_letter_spacing_px(
             resolved_letter_spacing(styles, style_id, char_lang)
         })
         .collect()
+}
+
+fn resolved_paragraph_letter_spacing(
+    para: &Paragraph,
+    text_chars: &[char],
+    styles: &ResolvedStyleSet,
+) -> Vec<f64> {
+    let mut values =
+        resolved_letter_spacing_px(text_chars, &para.char_offsets, &para.char_shapes, styles);
+    for (position, value) in &para.layout_field_values {
+        if let Some(spacing) = values.get_mut(*position) {
+            let shape = para.char_shape_id_at(*position).unwrap_or(0);
+            let lang = value.chars().next().map(detect_lang_category).unwrap_or(0);
+            *spacing = resolved_letter_spacing(styles, shape, lang);
+        }
+    }
+    values
 }
 
 /// fit test 에 쓰는 후보 폭. 펜이 전진하는 폭과 **다른 값**이다.
@@ -3370,6 +3391,45 @@ fn stamp_indentation(lines: &mut [LineSeg], first_line_index: usize, (first, res
     }
 }
 
+fn apply_resolved_field_tokens(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    inline: &[FlowInlineControl],
+    tokens: &mut Vec<BreakToken>,
+) {
+    if para.layout_field_values.is_empty() {
+        return;
+    }
+    let mut resolved = Vec::new();
+    for token in tokens.drain(..) {
+        let field = match &token {
+            BreakToken::Space { idx, .. } => Some(*idx),
+            BreakToken::Text {
+                start_idx, end_idx, ..
+            } if *end_idx == *start_idx + 1 => Some(*start_idx),
+            _ => None,
+        }
+        .and_then(|position| {
+            super::resolved_fields::token_width(para, position, styles)
+                .map(|(width, size)| (position, width + inline_width_px_at(inline, position), size))
+        });
+        if let Some((position, width, size)) = field {
+            resolved.push(BreakToken::Text {
+                start_idx: position,
+                end_idx: position + 1,
+                base_width: width,
+                width,
+                max_font_size: size,
+                base_char_widths: vec![width],
+                char_widths: vec![width],
+            });
+        } else {
+            resolved.push(token);
+        }
+    }
+    *tokens = resolved;
+}
+
 /// Lay out the small scalar/Picture-band paragraph subset through a
 /// caller-owned physical frame.
 ///
@@ -3407,7 +3467,15 @@ fn layout_paragraph_in_frame_impl(
         .then(|| inline_frame_input::project(para, styles, dpi))
         .flatten();
     let para = projected.as_ref().map_or(para, |(input, _)| input);
-    let text_chars = para.text.chars().collect::<Vec<_>>();
+    let mut text_chars = para.text.chars().collect::<Vec<_>>();
+    // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
+    // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
+    for (position, _) in &para.layout_field_values {
+        if let Some(character) = text_chars.get_mut(*position) {
+            *character = '\u{0015}';
+        }
+    }
+
     // 문단 끝의 빈 run도 마지막 물리 줄의 글자 상자를 소유한다. 가시 글자와
     // 별개인 종단 CharShapeRef를 보존해야 줄 높이·간격·베이스라인을 프레임의
     // 공통 결과로 게시할 수 있다. 앞선 줄이나 개체 마커의 글꼴에는 적용하지 않는다.
@@ -3486,6 +3554,7 @@ fn layout_paragraph_in_frame_impl(
         space_metric,
         &inline_controls,
     );
+    apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
     let prepared_kerning = allow_kerning
         .then(|| {
             prepare_paragraph_kerning(para, &text_chars, styles, space_metric, &inline_controls)
@@ -3517,7 +3586,7 @@ fn layout_paragraph_in_frame_impl(
         && para_style
             .is_some_and(|style| style.alignment == crate::model::style::Alignment::Justify))
     .then(|| {
-        tokenize_paragraph_with_regenerated_space_metric(
+        let mut tokens = tokenize_paragraph_with_regenerated_space_metric(
             &text_chars,
             &para.char_offsets,
             &para.char_shapes,
@@ -3526,10 +3595,11 @@ fn layout_paragraph_in_frame_impl(
             korean_break_unit,
             SpaceMetric::Stored,
             &inline_controls,
-        )
+        );
+        apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
+        tokens
     });
-    let mut letter_spacing_px =
-        resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles);
+    let mut letter_spacing_px = resolved_paragraph_letter_spacing(para, &text_chars, styles);
     if projected.is_some() {
         for control in &inline_controls {
             letter_spacing_px[control.char_position] = 0.0;
@@ -4692,7 +4762,15 @@ fn reflow_line_segs_impl(
         return false;
     }
 
-    let text_chars: Vec<char> = para.text.chars().collect();
+    let mut text_chars: Vec<char> = para.text.chars().collect();
+    // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
+    // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
+    for (position, _) in &para.layout_field_values {
+        if let Some(character) = text_chars.get_mut(*position) {
+            *character = '\u{0015}';
+        }
+    }
+
     let text_len = text_chars.len();
     let inline_controls = flow_inline_controls(para);
 
@@ -4719,6 +4797,7 @@ fn reflow_line_segs_impl(
         reflow_space_metric,
         &inline_controls,
     );
+    apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
     let prepared_kerning = prepare_paragraph_kerning(
         para,
         &text_chars,
@@ -4844,7 +4923,7 @@ fn reflow_line_segs_impl(
         TabFill::for_paragraph(para_style, indent_px, available_width_px),
         korean_break_unit,
         condense_min_space,
-        &resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles),
+        &resolved_paragraph_letter_spacing(para, &text_chars, styles),
         reflow_start_idx,
         reflow_is_first_line,
         kerning_break_session.as_mut(),
@@ -4864,7 +4943,7 @@ fn reflow_line_segs_impl(
             TabFill::for_paragraph(para_style, indent_px, available_width_px),
             korean_break_unit,
             condense_min_space,
-            &resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles),
+            &resolved_paragraph_letter_spacing(para, &text_chars, styles),
             reflow_start_idx,
             reflow_is_first_line,
             None,
