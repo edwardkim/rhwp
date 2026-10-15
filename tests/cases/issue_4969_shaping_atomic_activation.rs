@@ -770,14 +770,15 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
         .map(|(_, bytes)| bytes.len())
         .sum::<usize>();
     assert_eq!(font_payload_bytes, 2_519_996);
-    // P45 adds these root knownFeatures capabilities to every export, including
+    // P45/P46 add these root knownFeatures capabilities to every export, including
     // rejected publication. They describe writer support, not this fixture's
     // glyphs or resources. Account for exactly their JSON strings + separators
     // while retaining the original payload/structure size receipts unchanged.
-    const ADDED_CAPABILITIES: [&str; 3] = [
+    const ADDED_CAPABILITIES: [&str; 4] = [
         "text.glyphOutline.colorLayers.colrV1.sourceOver",
         "text.glyphOutline.colorLayers.colrV1.clip",
         "text.glyphOutline.svgGlyph.fontEmBox",
+        "paint.pageBackground.imageEffects",
     ];
     let capability_wire_bytes = ADDED_CAPABILITIES
         .iter()
