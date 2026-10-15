@@ -912,26 +912,14 @@ pub(super) fn prepare_glyph_outline(
 }
 
 fn drawable_rect(bbox: BoundingBox) -> Option<Rect> {
-    ([
-        bbox.x,
-        bbox.y,
-        bbox.width,
-        bbox.height,
-        bbox.x + bbox.width,
-        bbox.y + bbox.height,
-    ]
-    .into_iter()
-    .all(finite_scalar)
-        && bbox.width > 0.0
-        && bbox.height > 0.0)
-        .then(|| {
-            Rect::from_xywh(
-                bbox.x as f32,
-                bbox.y as f32,
-                bbox.width as f32,
-                bbox.height as f32,
-            )
-        })
+    crate::paint::paint_op::bbox_is_finite_positive(bbox).then(|| {
+        Rect::from_xywh(
+            bbox.x as f32,
+            bbox.y as f32,
+            bbox.width as f32,
+            bbox.height as f32,
+        )
+    })
 }
 
 fn svg_glyph_image(
