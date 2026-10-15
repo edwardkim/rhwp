@@ -4687,7 +4687,7 @@ export class CanvasKitLayerRenderer {
         } else if (primitive.kind === 'circle') {
           canvas.drawCircle(primitive.x, primitive.y, primitive.radius, paint);
         } else if (primitive.points.length > 0) {
-          const path = this.pathFromCommands([
+          const path = this.createCommandPath([
             { type: 'moveTo', x: primitive.points[0][0], y: primitive.points[0][1] },
             ...primitive.points.slice(1).map(([x, y]) => ({ type: 'lineTo' as const, x, y })),
             ...(primitive.closed ? [{ type: 'closePath' as const }] : []),
