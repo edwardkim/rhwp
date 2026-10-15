@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { LayerGlyphOutlineOp, LayerPathCommand } from '../src/core/types.ts';
+import type { LayerGlyphOutlineOp, LayerPathCommand, LayerTextRunOp } from '../src/core/types.ts';
+import { selectLayerTextVariantsForLeaf } from '../src/view/canvaskit/text-variant-selection.ts';
 import {
   glyphOutlinePayloadResourceKey,
   glyphOutlinePayloadStatus,
@@ -199,6 +200,49 @@ test('run baseline rejects finite f64 overflow and accepts both exact f32 limits
   }
 });
 
+test('monochrome fill and stroke require a complete run transform before admission', () => {
+  for (const create of [monochrome, stroked]) {
+    expectAccepted(create());
+    for (const placement of [undefined, {}, { baselineY: 0 }, { runToPage: undefined }]) {
+      const op: LayerGlyphOutlineOp = create();
+      op.placement = placement;
+      expectRejected(op);
+    }
+    const incomplete: LayerGlyphOutlineOp = create();
+    incomplete.placement!.runToPage = { a: 1, b: 0, c: 0, d: 1, e: 0 } as ReturnType<typeof affine>;
+    expectRejected(incomplete);
+  }
+});
+
+test('missing monochrome run transforms keep the whole TextRun fallback selected', () => {
+  for (const create of [monochrome, stroked]) {
+    const outline: LayerGlyphOutlineOp = {
+      ...create(),
+      variant: { equivalenceGroup: 'run', variantId: 'outline', variantKind: 'glyphOutline' },
+    };
+    const fallback: LayerTextRunOp = {
+      type: 'textRun', bbox: outline.bbox, text: '가',
+      variant: { equivalenceGroup: 'run', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+    };
+    const select = () => selectLayerTextVariantsForLeaf(
+      [outline, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+    );
+    assert.deepEqual([...select()], [outline]);
+    delete outline.placement!.runToPage;
+    assert.deepEqual([...select()], [fallback]);
+  }
+});
+
+test('payload-local transforms remain optional for color, bitmap and SVG glyphs', () => {
+  const color: LayerGlyphOutlineOp = colrv0();
+  const image: LayerGlyphOutlineOp = bitmap();
+  const vector: LayerGlyphOutlineOp = svg();
+  delete color.colorLayers!.layers![0].transformToRun;
+  delete image.bitmapGlyph!.transformToRun;
+  delete vector.svgGlyph!.transformToRun;
+  for (const op of [color, image, vector]) expectAccepted(op);
+});
+
 const AFFINE_CASES = [
   { name: 'run placement', create: monochrome, transform: (op: LayerGlyphOutlineOp) => op.placement!.runToPage! },
   { name: 'COLRv0 layer', create: colrv0, transform: (op: LayerGlyphOutlineOp) => op.colorLayers!.layers![0].transformToRun! },
@@ -250,6 +294,7 @@ for (const [kind, fields] of [
 const BOUNDS_CASES = [
   { name: 'bitmap placement', create: bitmap, bounds: (op: LayerGlyphOutlineOp) => op.bitmapGlyph!.placement! },
   { name: 'SVG viewBox', create: svg, bounds: (op: LayerGlyphOutlineOp) => op.svgGlyph!.viewBox! },
+  { name: 'SVG destination', create: svg, bounds: (op: LayerGlyphOutlineOp) => op.bbox },
 ];
 
 for (const fixture of BOUNDS_CASES) {
@@ -278,6 +323,39 @@ for (const fixture of BOUNDS_CASES) {
     });
   }
 }
+
+test('SVG destination bounds must exist and have positive extents', () => {
+  for (const bounds of [undefined, null,
+    { x: 0, y: 0, width: 0, height: 1 },
+    { x: 0, y: 0, width: 1, height: -1 },
+  ]) {
+    const op = svg();
+    op.bbox = bounds as typeof op.bbox;
+    expectRejected(op);
+  }
+});
+
+test('SVG destination overflow keeps the complete TextRun fallback selected', () => {
+  const outline: LayerGlyphOutlineOp = {
+    ...svg(),
+    variant: { equivalenceGroup: 'run', variantId: 'svg', variantKind: 'glyphOutline' },
+  };
+  const fallback: LayerTextRunOp = {
+    type: 'textRun', bbox: outline.bbox, text: '가',
+    variant: { equivalenceGroup: 'run', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+  };
+  const select = () => selectLayerTextVariantsForLeaf(
+    [outline, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+  );
+  assert.deepEqual([...select()], [outline]);
+  for (const bounds of [
+    { x: 1e100, y: 0, width: 1, height: 1 },
+    { x: F32_MAX, y: 0, width: F32_MAX, height: 1 },
+  ]) {
+    outline.bbox = bounds;
+    assert.deepEqual([...select()], [fallback]);
+  }
+});
 
 for (const field of ['width', 'height'] as const) {
   test(`SVG intrinsic ${field} rejects finite f64 overflow and accepts exact f32::MAX`, () => {
