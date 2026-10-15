@@ -681,3 +681,32 @@ Native lib 전체는 exit0이며 나머지는 완료 전이다.
 rowbreak전체16PASS다. 이는 정식 Cargo/lint gate를 대체하지 않는다.
 대표 확대는`ccc-audit/ccc-p77-4x.png`와`chemical-p57-bottom.png`다.
 수용 근거인 전쪽 TSV는 위 f528 최종 원장을 재사용하며 생산 코드는 이 감사로 변경하지 않았다.
+
+### 추가 Native feature 결과와 사용자 기준 재확인
+
+Native lib는3859+15+165+2개 PASS,기존ignore12개다. 이후 Native CLI/그림/
+직접 PDF/배경/차트/SIXEL 선택 source는 각각 exit0으로 끝났다.
+`issue_4961_font_decision_trace`는8PASS·1FAIL이었다. 실패 검사가 원본`task-001`의
+face를 시스템에서 찾지 못해 custom Noto fallback을 쓸 것이라고 가정하고 있었다.
+이 호스트는 원본 face를 공급하므로 실제 선택은 system이었으며 custom inventory의
+손실로 판정할 증거가 아니었다. paint와 observer의 기존 우선순위는 변경하지 않는다.
+
+해당 검사는 배치 정답지가 아닌 renderer snapshot 계약이므로 입력 font table만
+저장소의 실제 custom face`Noto Sans KR`를 요청하는 합성 대조군으로 설정했다.
+`set_document`로 파생 상태도 재구축하고,custom 기록의 실제 resolved face와
+`nativeGlyphCoverageObserved`를 함께 검사한다. 기존 입력·그림·시스템 font 설정은
+수정하지 않았다. 보존한 debug 라이브러리로 수정 source를 직접 컴파일한 선행 검사는
+1PASS(0.96초)다. Native 정식 Cargo 재실행 및 중단 뒤 남은 새7902/doctest는 대기다.
+
+사용자는 쪽수 복구 예외 없이 **현행 전체 페이지 일대일 무회귀를 입증할 때까지 PR 보류**를
+선택했다. overfill의 기준49/Print48을 승인 예외로 처리하지 않으며,.06227%p 하락도
+해제되지 않았다. 머지·PR 생성·지침 완화는 수행하지 않는다.
+
+요청에 따라 다시 fetch한`upstream/devel`은`a5e88ad682c805e1d845502ddc9521b94ea8eccd`로
+변경되지 않았다. 따라서 불필요한 리베이스는 수행하지 않았다.
+
+본문 넘침의 원인을 분리하기 위해 새로 추가했던 종료 흐름 전달9줄만 뺀 진단 producer를
+공용 target에서 빌드했다.원본 source를 즉시 바이트 복원했고 진단 CLI를 별도 보존했다.
+이는 채택한 구현이나 제출 head가 아니며 같은 조건의 rowbreak15쪽/nested104쪽/정책연구
+본문 넘침과 비교해 해당 일반화가 필요한지 확인하는 실험이다. 명령·source diff·해시는
+`flow-end-ablation-result.json`,실행 상태는`flow-end-ablation-run.log`에 있다.

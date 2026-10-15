@@ -404,8 +404,16 @@ fn standalone_native_trace_requires_a_prepared_renderer_snapshot() {
 fn prepared_native_renderer_snapshot_preserves_custom_font_inventory() {
     use rhwp::renderer::skia::SkiaLayerRenderer;
 
-    let core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
+    let mut core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
         .expect("public fixture parses");
+    // 이 검사는 배치 정답지가 아니라 준비된 renderer의 inventory 계약이다.
+    // 원본 face가 시스템에 설치됐는지에 따라 fallback이 달라지지 않도록,
+    // 저장소에서 실제 공급하는 custom face를 요청한 합성 대조군으로 조회한다.
+    let mut source = core.document().clone();
+    for face in source.doc_info.font_faces.iter_mut().flatten() {
+        face.name = "Noto Sans KR".into();
+    }
+    core.set_document(source);
     let custom_fonts = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource");
     let renderer = SkiaLayerRenderer::new().with_font_paths(&[custom_fonts]);
     let trace: serde_json::Value = serde_json::from_str(
@@ -426,11 +434,12 @@ fn prepared_native_renderer_snapshot_preserves_custom_font_inventory() {
         "the prepared custom font inventory must be observable"
     );
     assert!(custom_records.iter().all(|record| {
-        record["paint"]["native"]["capabilities"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|capability| capability == "nativeGlyphCoverageObserved")
+        record["paint"]["native"]["resolved"] == "Noto Sans KR"
+            && record["paint"]["native"]["capabilities"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|capability| capability == "nativeGlyphCoverageObserved")
     }));
 }
 
