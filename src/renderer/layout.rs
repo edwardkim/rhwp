@@ -3698,6 +3698,7 @@ pub(crate) use paragraph_layout::ensure_min_baseline;
 pub(crate) use paragraph_layout::{assign_numbering_markers, list_marker_geometry};
 pub(crate) use shape_layout::normalized_single_line_inline_textbox_host;
 pub(crate) use table_layout::border_style_has_diagonal;
+pub(crate) use table_layout::SavedZeroOriginWitness;
 // [#4149] 셀 커서 fast path 프로브 (document_core::queries::cursor_rect 전용)
 pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
