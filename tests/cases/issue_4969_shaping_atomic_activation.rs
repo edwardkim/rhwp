@@ -770,14 +770,16 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
         .map(|(_, bytes)| bytes.len())
         .sum::<usize>();
     assert_eq!(font_payload_bytes, 2_519_996);
-    // P45 adds these root knownFeatures capabilities to every export, including
+    // P45/P46/P47 add these root knownFeatures capabilities to every export, including
     // rejected publication. They describe writer support, not this fixture's
     // glyphs or resources. Account for exactly their JSON strings + separators
     // while retaining the original payload/structure size receipts unchanged.
-    const ADDED_CAPABILITIES: [&str; 3] = [
+    const ADDED_CAPABILITIES: [&str; 5] = [
         "text.glyphOutline.colorLayers.colrV1.sourceOver",
         "text.glyphOutline.colorLayers.colrV1.clip",
         "text.glyphOutline.svgGlyph.fontEmBox",
+        "paint.pageBackground.imageEffects",
+        "layer.visualBounds",
     ];
     let capability_wire_bytes = ADDED_CAPABILITIES
         .iter()
@@ -803,8 +805,82 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
                 "added capability must occur exactly once: {feature}"
             );
         }
+        let used = value["usedFeatures"].as_array().expect("used capabilities");
+        assert_eq!(
+            used.iter()
+                .filter(|entry| entry.as_str() == Some("layer.visualBounds"))
+                .count(),
+            1,
+            "P47 visual bounds are declared exactly once as used"
+        );
+        let visual_feature_bytes = serde_json::to_string("layer.visualBounds")
+            .expect("JSON visual bounds capability")
+            .len()
+            + 1;
+
+        // P47 exports recording bounds separately from unchanged logical boxes.
+        // This receipt checks field shape and canonical wire cost; it does not
+        // establish new geometry goldens or replace visual-bounds geometry tests.
+        // Only actual layer nodes are visited, never arbitrary metadata.
+        let mut nodes = vec![&value["root"]];
+        let mut visual_count = 0;
+        let mut empty_group_count = 0;
+        let mut visual_wire_bytes = 0;
+        while let Some(node) = nodes.pop() {
+            if let Some(visual) = node.get("visualBounds") {
+                let object = visual.as_object().expect("visual bounds object");
+                assert_eq!(object.len(), 4, "only x/y/width/height belong to the bbox");
+                let [x, y, width, height] = ["x", "y", "width", "height"].map(|key| {
+                    let scalar = visual[key].as_f64().expect("numeric visual bound");
+                    assert!(scalar.is_finite(), "finite visual bound {key}");
+                    scalar
+                });
+                assert!(
+                    width > 0.0 && height > 0.0,
+                    "only nonempty visual extents are exported"
+                );
+                assert!((x + width).is_finite() && (y + height).is_finite());
+                let field = format!(
+                    ",\"visualBounds\":{{\"x\":{x:.3},\"y\":{y:.3},\"width\":{width:.3},\"height\":{height:.3}}}"
+                );
+                assert!(
+                    json.contains(&field),
+                    "visual bounds use canonical three-decimal encoding"
+                );
+                visual_wire_bytes += field.len();
+                visual_count += 1;
+            } else {
+                assert_eq!(
+                    node["kind"], "group",
+                    "only empty fixture groups lack visible ink"
+                );
+                assert!(node["children"]
+                    .as_array()
+                    .expect("empty group children")
+                    .is_empty());
+                empty_group_count += 1;
+            }
+            match node["kind"].as_str().expect("layer node kind") {
+                "group" => nodes.extend(node["children"].as_array().expect("group children")),
+                "clipRect" => nodes.push(node.get("child").expect("clip child")),
+                "leaf" => {
+                    assert!(node["ops"].is_array(), "leaf operations");
+                }
+                kind => panic!("unexpected fixture layer kind: {kind}"),
+            }
+        }
+        assert_eq!(
+            visual_count, 11,
+            "each nonempty fixture layer has one visual box"
+        );
+        assert_eq!(empty_group_count, 2);
+        assert_eq!(
+            json.matches("\"visualBounds\":").count(),
+            visual_count,
+            "no visual metadata outside the accounted layer nodes"
+        );
         json.len()
-            .checked_sub(capability_wire_bytes)
+            .checked_sub(capability_wire_bytes + visual_feature_bytes + visual_wire_bytes)
             .expect("capability wire overhead")
     };
     let accepted_publication_bytes = publication_json_bytes(&accepted_json, &accepted);
