@@ -8420,6 +8420,7 @@ impl LayoutEngine {
                 inline_tab_cursor_render,
                 !self.profile.get().hwp3_external_realign(),
             );
+            let mut resolved_tab_block = false;
             if pending_right_leader_digit_render {
                 if run.text.trim().is_empty() {
                     pending_right_leader_digit_render = true;
@@ -8443,6 +8444,7 @@ impl LayoutEngine {
                                 text_style.font_size * 0.25
                             };
                             x = col_area.x + target - gap - digit_w;
+                            resolved_tab_block = true;
                         }
                     }
                     pending_right_leader_digit_render = false;
@@ -8487,90 +8489,93 @@ impl LayoutEngine {
                         }
                         _ => {}
                     }
-                    // [#6800] **같은 재배치가 그 탭 런의 advance 도 정한다.**
-                    //
-                    // 오른쪽/가운데 탭의 전진량은 "탭 스톱까지"가 아니라 "뒤따르는
-                    // 블록이 스톱에 맞도록 필요한 만큼"이다. 그런데 런 폭은
-                    // `estimate_text_width` 가 낸 **탭 스톱까지** 값이 그대로 남아,
-                    // 그 런이 뒤 런을 통째로 덮은 것처럼 보였다
-                    // (1192000-202100017 1쪽: `"  - 	"` 런이 x=221.8 w=496.0 인데
-                    //  다음 런은 x=249.1 — 468.7px 가짜 겹침으로 계수된다).
-                    // 잉크는 안 겹치므로 출력은 불변이지만, `text_overlap_baseline`
-                    // 래칫이 그 가짜 겹침을 세어 **진짜 글자겹침을 가린다.**
-                    //
-                    // 아래 leader 보정과 **같은 `x`** 를 쓴다 — 재배치가 정한 값
-                    // 하나로 bbox·리더 기하가 함께 정해진다. 여기서만 하므로
-                    // ① 이 재배치를 유발한 **논리적 끝 탭**의 런에만 닿고
-                    // ② 탭 뒤에 가시문자가 있는 런은 애초에 `pending` 을 세우지
-                    //    않으므로 대상이 아니며
-                    // ③ 재배치가 없는 줄의 런은 전혀 건드리지 않는다.
-                    if let Some(tab_run_idx) = line_node.children.iter().rposition(|n| {
-                        matches!(&n.node_type, RenderNodeType::TextRun(tr) if TextRunNode::ends_with_alignment_tab(tr.display_or_text()))
-                    }) {
-                        let tab_run_x = line_node.children[tab_run_idx].bbox.x;
-                        // 탭 런과 현재 런 사이에 이미 emit 된 런(공백 only carry-over)이
-                        // 있으면 그 앞까지가 이 탭의 전진량이다.
-                        let end_x = line_node.children[tab_run_idx + 1..]
-                            .iter()
-                            .filter(|n| matches!(n.node_type, RenderNodeType::TextRun(_)))
-                            .map(|n| n.bbox.x)
-                            .fold(x, f64::min);
-                        let width = match &mut line_node.children[tab_run_idx].node_type {
-                            RenderNodeType::TextRun(run) => {
-                                run.resolve_trailing_tab_end(
-                                    (end_x - tab_run_x).max(0.0),
-                                    (x - tab_run_x).max(0.0),
-                                )
-                            }
-                            _ => None,
-                        };
-                        if let Some(width) = width {
-                            let old_width = line_node.children[tab_run_idx].bbox.width;
-                            line_node.children[tab_run_idx].bbox.width = width;
-                            // 이미 생성한 같은 런의 장식도 동일한 확정 끝을 사용한다.
-                            // 장식은 TextRun보다 먼저 생성되므로 tab_run_idx 앞도 순회한다.
-                            // 원 PR #6801의 c7dade57c 보정 취지를 유지한다.
-                            // 다른 TextRun이나 크기가 다른 개체의 상자는 수정하지 않는다.
-                            for node in &mut line_node.children {
-                                if !matches!(node.node_type, RenderNodeType::TextRun(_))
-                                    && (node.bbox.x - tab_run_x).abs() <= 0.5
-                                    && (node.bbox.width - old_width).abs() <= 0.5
-                                {
-                                    node.bbox.width = (tab_run_x + width - node.bbox.x).max(0.0);
-                                }
-                            }
-                        }
-                    }
-                    // [Task #279] 직전 run 의 leader 끝 위치를 페이지번호 시작 x 직전까지 단축.
-                    // 한컴은 페이지번호 폭에 따라 리더 길이가 달라지도록 조판한다 (한 자리 vs
-                    // 두 자리 페이지번호의 leader 끝점이 다름). cross-run RIGHT 정렬 후
-                    // tab_leaders 가 있는 직전 TextRun 을 거슬러 찾아 마지막 항목 end_x 를 보정.
-                    // 공백 only run carry-over 케이스 대비 — 가장 마지막 TextRun 이 공백 run 이고
-                    // leader 가 없으면 그 이전 (\t 가진 leader-bearing) TextRun 을 찾음.
-                    if let Some(prev_run_node) = line_node.children.iter_mut().rev().find(|n| {
-                        if let RenderNodeType::TextRun(tr) = &n.node_type {
-                            !tr.style.tab_leaders.is_empty()
-                        } else {
-                            false
-                        }
-                    }) {
-                        let prev_bbox_x = prev_run_node.bbox.x;
-                        if let RenderNodeType::TextRun(prev_text_run) = &mut prev_run_node.node_type
-                        {
-                            let space_gap = if text_style.font_size > 0.0 {
-                                text_style.font_size * 0.25
-                            } else {
-                                3.0
-                            };
-                            for leader in &mut prev_text_run.style.tab_leaders {
-                                let new_end_x = (x - prev_bbox_x - space_gap).max(leader.start_x);
-                                if new_end_x < leader.end_x {
-                                    leader.end_x = new_end_x;
-                                }
-                            }
-                        }
-                    }
+                    resolved_tab_block = true;
                 } // end else (non-blank run)
+            }
+            // 명시적 cross-run 탭과 숫자 리더 fallback이 확정한 같은 끝을 소비한다.
+            if resolved_tab_block {
+                // [#6800] **같은 재배치가 그 탭 런의 advance 도 정한다.**
+                //
+                // 오른쪽/가운데 탭의 전진량은 "탭 스톱까지"가 아니라 "뒤따르는
+                // 블록이 스톱에 맞도록 필요한 만큼"이다. 그런데 런 폭은
+                // `estimate_text_width` 가 낸 **탭 스톱까지** 값이 그대로 남아,
+                // 그 런이 뒤 런을 통째로 덮은 것처럼 보였다
+                // (1192000-202100017 1쪽: `"  - 	"` 런이 x=221.8 w=496.0 인데
+                //  다음 런은 x=249.1 — 468.7px 가짜 겹침으로 계수된다).
+                // 잉크는 안 겹치므로 출력은 불변이지만, `text_overlap_baseline`
+                // 래칫이 그 가짜 겹침을 세어 **진짜 글자겹침을 가린다.**
+                //
+                // 아래 leader 보정과 **같은 `x`** 를 쓴다 — 재배치가 정한 값
+                // 하나로 bbox·리더 기하가 함께 정해진다. 여기서만 하므로
+                // ① 이 재배치를 유발한 **논리적 끝 탭**의 런에만 닿고
+                // ② 탭 뒤에 가시문자가 있는 런은 애초에 `pending` 을 세우지
+                //    않으므로 대상이 아니며
+                // ③ 재배치가 없는 줄의 런은 전혀 건드리지 않는다.
+                if let Some(tab_run_idx) = line_node.children.iter().rposition(|n| {
+                    matches!(&n.node_type, RenderNodeType::TextRun(tr) if TextRunNode::ends_with_alignment_tab(tr.display_or_text()))
+                }) {
+                    let tab_run_x = line_node.children[tab_run_idx].bbox.x;
+                    // 탭 런과 현재 런 사이에 이미 emit 된 런(공백 only carry-over)이
+                    // 있으면 그 앞까지가 이 탭의 전진량이다.
+                    let end_x = line_node.children[tab_run_idx + 1..]
+                        .iter()
+                        .filter(|n| matches!(n.node_type, RenderNodeType::TextRun(_)))
+                        .map(|n| n.bbox.x)
+                        .fold(x, f64::min);
+                    let width = match &mut line_node.children[tab_run_idx].node_type {
+                        RenderNodeType::TextRun(run) => {
+                            run.resolve_trailing_tab_end(
+                                (end_x - tab_run_x).max(0.0),
+                                (x - tab_run_x).max(0.0),
+                            )
+                        }
+                        _ => None,
+                    };
+                    if let Some(width) = width {
+                        let old_width = line_node.children[tab_run_idx].bbox.width;
+                        line_node.children[tab_run_idx].bbox.width = width;
+                        // 이미 생성한 같은 런의 장식도 동일한 확정 끝을 사용한다.
+                        // 장식은 TextRun보다 먼저 생성되므로 tab_run_idx 앞도 순회한다.
+                        // 원 PR #6801의 c7dade57c 보정 취지를 유지한다.
+                        // 다른 TextRun이나 크기가 다른 개체의 상자는 수정하지 않는다.
+                        for node in &mut line_node.children {
+                            if !matches!(node.node_type, RenderNodeType::TextRun(_))
+                                && (node.bbox.x - tab_run_x).abs() <= 0.5
+                                && (node.bbox.width - old_width).abs() <= 0.5
+                            {
+                                node.bbox.width = (tab_run_x + width - node.bbox.x).max(0.0);
+                            }
+                        }
+                    }
+                }
+                // [Task #279] 직전 run 의 leader 끝 위치를 페이지번호 시작 x 직전까지 단축.
+                // 한컴은 페이지번호 폭에 따라 리더 길이가 달라지도록 조판한다 (한 자리 vs
+                // 두 자리 페이지번호의 leader 끝점이 다름). cross-run RIGHT 정렬 후
+                // tab_leaders 가 있는 직전 TextRun 을 거슬러 찾아 마지막 항목 end_x 를 보정.
+                // 공백 only run carry-over 케이스 대비 — 가장 마지막 TextRun 이 공백 run 이고
+                // leader 가 없으면 그 이전 (\t 가진 leader-bearing) TextRun 을 찾음.
+                if let Some(prev_run_node) = line_node.children.iter_mut().rev().find(|n| {
+                    if let RenderNodeType::TextRun(tr) = &n.node_type {
+                        !tr.style.tab_leaders.is_empty()
+                    } else {
+                        false
+                    }
+                }) {
+                    let prev_bbox_x = prev_run_node.bbox.x;
+                    if let RenderNodeType::TextRun(prev_text_run) = &mut prev_run_node.node_type {
+                        let space_gap = if text_style.font_size > 0.0 {
+                            text_style.font_size * 0.25
+                        } else {
+                            3.0
+                        };
+                        for leader in &mut prev_text_run.style.tab_leaders {
+                            let new_end_x = (x - prev_bbox_x - space_gap).max(leader.start_x);
+                            if new_end_x < leader.end_x {
+                                leader.end_x = new_end_x;
+                            }
+                        }
+                    }
+                }
             }
             text_style.line_x_offset = x - col_area.x - tab_origin_shift;
             // 분모·수렴 측정과 같은 계획의 선행 공백 런만 자연 폭으로 방출한다.
