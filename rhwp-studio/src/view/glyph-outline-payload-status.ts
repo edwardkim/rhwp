@@ -45,7 +45,7 @@ const COLRV1_SUPPORTED_NODE_KINDS = new Set([
 
 function hasMonochromePaths(op: LayerGlyphOutlineOp): boolean {
   return Array.isArray(op.paths) && op.paths.length > 0 && op.paths.length <= 4096
-    && isOptionalFiniteAffine(op.placement?.runToPage)
+    && isFiniteAffine(op.placement?.runToPage)
     && op.paths.every(path => !!path && isValidPathCommands(path.commands)
       && (path.fillRule === undefined || isSupportedFillRule(path.fillRule)));
 }
@@ -71,8 +71,8 @@ export function glyphOutlinePayloadStatus(
   if (!hasExclusivePayloadFamily(op, payloadKind)) {
     return { payloadKind, supported: false, reason: 'unsupportedOutlinePayload', detail: 'mixedPayloadFamily' };
   }
-  // Legacy outline payloads may omit placement, but supplied values still have
-  // to fit the portable f32 scalar contract used by the producer and CanvasKit.
+  // Legacy non-monochrome payloads may omit placement; supplied values must
+  // fit the portable f32 scalar contract used by the producer and CanvasKit.
   if (!isOptionalFiniteAffine(op.placement?.runToPage)
     || (op.placement?.baselineY !== undefined && !isPortableGlyphScalar(op.placement.baselineY))) {
     return { payloadKind, supported: false, reason: 'unsupportedOutlinePayload', detail: 'invalidPlacement' };
@@ -445,6 +445,7 @@ function hasBitmapGlyphContract(op: LayerGlyphOutlineOp): boolean {
 
 function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
   const glyph = op.svgGlyph;
+  const destination = glyph?.fontEmBox ?? op.bbox;
   return !!glyph
     && typeof glyph.svgRef === 'number'
     && glyph.staticSanitized === true
@@ -454,10 +455,12 @@ function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && glyph.interactivityAllowed !== true
     && glyph.viewBox !== undefined
     && isPositiveBounds(glyph.viewBox)
+    && destination !== undefined
+    && isPositiveBounds(destination)
     && isOptionalFiniteAffine(glyph.transformToRun)
-    && (glyph.intrinsicSize === undefined || (
-      isPortableGlyphScalar(glyph.intrinsicSize?.width) && glyph.intrinsicSize.width > 0
-      && isPortableGlyphScalar(glyph.intrinsicSize?.height) && glyph.intrinsicSize.height > 0
+    && (glyph.intrinsicSize === undefined || (glyph.intrinsicSize !== null
+      && isPortableGlyphScalar(glyph.intrinsicSize.width) && glyph.intrinsicSize.width > 0
+      && isPortableGlyphScalar(glyph.intrinsicSize.height) && glyph.intrinsicSize.height > 0
     ))
     && (glyph.fontEmBox === undefined || isPositiveBounds(glyph.fontEmBox));
 }
