@@ -531,12 +531,26 @@ function fixedBounds(value: number | undefined): string {
 }
 
 function isPositiveBounds(bounds: { x?: number; y?: number; width?: number; height?: number }): boolean {
-  return bounds !== null && isPortableGlyphScalar(bounds.x)
-    && isPortableGlyphScalar(bounds.y)
-    && isPortableGlyphScalar(bounds.width)
-    && isPortableGlyphScalar(bounds.height)
-    && bounds.width > 0
-    && bounds.height > 0
-    && isPortableGlyphScalar(bounds.x + bounds.width)
-    && isPortableGlyphScalar(bounds.y + bounds.height);
+  if (bounds === null || !isPortableGlyphScalar(bounds.x)
+    || !isPortableGlyphScalar(bounds.y)
+    || !isPortableGlyphScalar(bounds.width)
+    || !isPortableGlyphScalar(bounds.height)
+    || !isPortableGlyphScalar(bounds.x + bounds.width)
+    || !isPortableGlyphScalar(bounds.y + bounds.height)) {
+    return false;
+  }
+  const x = Math.fround(bounds.x);
+  const y = Math.fround(bounds.y);
+  const width = Math.fround(bounds.width);
+  const height = Math.fround(bounds.height);
+  // Native Skia adds narrowed components; CanvasKit XYWHRect narrows f64
+  // endpoints instead. Both rectangles must remain finite and nonempty.
+  const nativeRight = Math.fround(x + width);
+  const nativeBottom = Math.fround(y + height);
+  const canvasKitRight = Math.fround(bounds.x + bounds.width);
+  const canvasKitBottom = Math.fround(bounds.y + bounds.height);
+  return width > 0 && height > 0
+    && Number.isFinite(nativeRight) && Number.isFinite(nativeBottom)
+    && nativeRight > x && nativeBottom > y
+    && canvasKitRight > x && canvasKitBottom > y;
 }
