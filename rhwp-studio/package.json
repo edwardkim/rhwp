@@ -48,6 +48,7 @@
     "e2e:renderer-contract": "node e2e/renderer-contract.test.mjs",
     "e2e:layer-export-issue536": "node e2e/layer-export-issue536.test.mjs",
     "e2e:canvas-metric-recovery": "node e2e/canvas-metric-recovery.test.mjs",
+    "e2e:middle-dot-canvas-paint": "node e2e/run-with-vite.mjs -- node e2e/middle-dot-canvas-paint.test.mjs --mode=headless",
     "e2e:issue-4430-content-loss": "node e2e/content-loss-save-issue4430.test.mjs --mode=headless",
     "e2e:issue-2214": "node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless",
     "e2e:issue-3815": "node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --continuous-only",

@@ -395,8 +395,8 @@ pub unsafe extern "C" fn rhwp_native_host_request(
             HostRequest::WorkerCreate { config } => HOST.with(|host| {
                 let mut host = host.borrow_mut();
                 if host.workers.len() >= 4 { return Err(NativeHostError::LimitExceeded("release finished workers before creating more (max 4)".into())); }
-                let runtime = match NativeRuntime::spawn(config) { Ok(runtime) => runtime, Err(error) => return Ok(json!({"ok":false,"code":error.code(),"error":error.to_string()})) };
                 let worker = next_handle()?;
+                let runtime = match NativeRuntime::spawn(config) { Ok(runtime) => runtime, Err(error) => return Ok(json!({"ok":false,"code":error.code(),"error":error.to_string()})) };
                 host.workers.insert(worker,runtime);
                 Ok(json!({"ok":true,"worker":worker}))
             }),
@@ -599,15 +599,25 @@ fn next_handle() -> Result<u64, NativeHostError> {
         .map_err(|_| NativeHostError::LimitExceeded("handle space exhausted".into()))
 }
 
-fn response(f: impl FnOnce() -> Result<Value, NativeHostError>) -> *mut c_char {
+pub(crate) fn response(f: impl FnOnce() -> Result<Value, NativeHostError>) -> *mut c_char {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
     let value = match result {
         Ok(Ok(value)) => value,
         Ok(Err(error)) => json!({"ok":false,"code":error.code(),"error":error.to_string()}),
         Err(_) => {
-            // 이후 호출이 부분 mutation 상태를 소비하지 않도록 이 스레드 세션을 폐기한다.
-            HOST.with(|host| *host.borrow_mut() = Host::default());
-            json!({"ok":false,"code":"panic","error":"native host panicked; thread handles invalidated"})
+            // Discard possibly partial synchronous mutations. Worker shutdown
+            // is asynchronous: retain its handle until status/release proves
+            // no thread can still execute code from the shared library.
+            HOST.with(|host| {
+                let mut host = host.borrow_mut();
+                host.sessions.clear();
+                host.buffers.clear();
+                host.buffer_bytes = 0;
+                for worker in host.workers.values_mut() {
+                    worker.close();
+                }
+            });
+            json!({"ok":false,"code":"panic","error":"native host panicked; sessions and buffers invalidated, workers closing; wait for workerStatus and workerRelease before unloading"})
         }
     };
     CString::new(value.to_string())

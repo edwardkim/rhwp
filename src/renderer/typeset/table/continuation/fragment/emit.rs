@@ -1,4 +1,4 @@
-//! 수용한 표 조각, 대기 중인 주석, 커서 이동을 원래 순서대로 반영한다.
+//! 수용한 조각의 배치, 대기 중인 각주 처리, 커서 전진을 원래 순서대로 확정한다.
 
 use crate::renderer::typeset::{
     hwpunit_to_px, is_synthetic_line_seg, row_geometry_table, table, BlockTableRowScan, PageItem,
@@ -70,6 +70,7 @@ impl TypesetEngine {
         let BlockTableRowScan {
             source_frame_band,
             consumed,
+            accepted_end_row_box,
             mut end_row,
             split_block_start,
             split_end_cut,
@@ -88,8 +89,9 @@ impl TypesetEngine {
         .filter(|(cut, height, _)| {
             cut == &split_end_cut && end_row_height_override == Some(*height)
         });
-        // 컷은 내용을 소비하지만 셀의 선언 최소 높이는 빈 물리 공간도 소유한다.
-        // 앞 내용 컷으로 높이를 추정하지 않고 실제로 수용한 상자를 이어받는다.
+        // 컷은 내용을 소비하며, 선언된 셀 최소 높이는 빈 물리 공간도 차지한다.
+        // 앞선 내용 컷으로 상자 높이를 추정하지 않고,
+        // 실제로 수용한 상자를 이어받는다.
         let stored_row_frame = end_row.checked_sub(1).and_then(|row| {
             if split_end_limit <= 0.0
                 || split_end_cut.is_empty()
@@ -98,8 +100,9 @@ impl TypesetEngine {
             {
                 return None;
             }
-            // 프레임 소유는 배치와 같은 예약 전 원본 본문 높이를 사용한다.
-            // 각주와 영역은 아래의 수용 예산을 제한하며 원본 최소 높이를 없애지 않는다.
+            // 프레임 소유를 판단할 때는 그리기와 동일하게 예약 공간을 빼기 전의 원본 본문 높이를 쓴다.
+            // 각주와 영역은 아래에서 수용 가능 범위를 제한하며,
+            // 원본이 소유한 최소 공간의 존재 여부를 바꾸지는 않는다.
             let declared = layout_engine
                 .stored_full_width_row_declared_height(
                     table,
@@ -130,17 +133,19 @@ impl TypesetEngine {
             let accepted_scan_height = end_row_height_override.unwrap_or(current_content);
             let before_row = (consumed - accepted_scan_height).max(0.0);
             let available = (avail_for_rows - before_row).max(0.0);
-            // 스캐너의 덮어쓴 높이는 수용한 내용 컷만 나타낼 수 있다. 이는 하한이며
-            // 저장 행의 빈 물리 띠까지 예약했다는 증거가 아니다. 조각의 가용 공간에
-            // 그 띠를 배정하고 실제 상자를 원장에 남긴다.
-            // 뒤 내용 컷은 앞쪽에 이미 수용한 물리 상자가 아니다. 특히 저장 쪽의
-            // 재시작은 높은 원본 프레임 안에 가운데 정렬 그림을 남길 수 있다.
-            // 미래 내용 높이 대신 실제로 배치한 상자만 차감한다.
+            // 스캔의 높이 재정의는 수용한 내용 컷만 나타낼 수 있다.
+            // 이 값은 하한이며, 저장 행의 빈 물리 밴드가 이미 예약됐다는
+            // 증거는 아니다. 가용 조각에 해당 밴드를 배정하고,
+            // 실제 상자를 누적 기록에 반영한다.
+            // 뒤쪽 내용 컷은 앞쪽 페이지에서 이미 수용한 물리 상자가 아니다.
+            // 특히 저장된 쪽 경계에서 좌표가 되감기면 높은 원본 프레임 안에
+            // 가운데 정렬된 그림이 남을 수 있다. 앞으로 배치할 내용의 높이가 아니라,
+            // 실제로 배치한 상자만 차감한다.
             let source_space = (declared - used).max(0.0).min(available);
             let height = accepted_scan_height.max(current_content).max(source_space);
             Some((row, used, height, accepted_scan_height))
         });
-        // 행 컷이 소비한 내용과 header의 요구 높이. 저장 상자의 빈 밴드는
+        // 행 컷이 소비한 내용과 머리행의 요구 높이. 저장 상자의 빈 밴드는
         // 아래에서 별도로 물리 점유에 포함하며 컷 유닛을 더 소비하지 않는다.
         let mut partial_height: f64 =
             consumed + header_overhead + hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi);
@@ -229,7 +234,7 @@ impl TypesetEngine {
             end_row_height_override = Some(height - header_overhead);
             partial_height = height;
         }
-        // #7095의 동일한 쪽 하단 상자를 저장 rowspan 경계에도 적용한다.
+        // #7095의 동일한 쪽 하단 상자를 저장 병합 셀 경계에도 적용한다.
         // 내용 컷과 물리 빈 밴드를 분리하며 다음 조각은 실제 남은 행에서 재개한다.
         let stored_rowspan_frame = (is_continuation
             && start_cut.is_empty()
@@ -266,7 +271,7 @@ impl TypesetEngine {
         }
 
         // 저장 첫 조각의 상자는 내용 컷만으로 표현되지 않는 빈 하단 밴드도 소유한다.
-        // 뒤 조각의 유닛은 그대로 남기며, 이 밴드를 내용 tail에서 차감하지 않는다.
+        // 뒤 조각의 유닛은 그대로 남기며, 이 밴드를 내용 잔여에서 차감하지 않는다.
         let saved_block_opening_frame = (!is_continuation
             && cursor_row == 0
             && start_cut.is_empty())
@@ -308,7 +313,7 @@ impl TypesetEngine {
         })
         .flatten();
         // 종료 행의 원본 프레임은 현재 컷의 내용 높이와 독립적으로 닫힌다.
-        // 마지막 한 행의 이어받기일 때 동일 높이를 예약과 paint에 전달한다.
+        // 마지막 한 행의 이어받기일 때 동일 높이를 예약과 그리기에 전달한다.
         if is_continuation
             && cursor_row + 1 == end_row
             && split_end_cut.is_empty()
@@ -609,15 +614,15 @@ impl TypesetEngine {
             });
         }
         // 종료 조각의 실제 프레임과 뒤 저장 줄이 아래 여백을 닫으면 동일한
-        // 배치 계획으로 예약과 paint 흐름을 함께 전진시킨다.
+        // 배치 계획으로 예약과 그리기 흐름을 함께 전진시킨다.
         if is_continuation
             && end_row >= row_count
             && split_end_limit == 0.0
             && fragment_placement.is_none()
-            // [#5585] 끝 조각 뒤 흐름을 중첩 자식의 저장 빈 Enter(`terminal_host_spacing`)가
+            // [#5585] 끝 조각 뒤 흐름을 중첩 자식의 저장 빈 엔터 줄(`terminal_host_spacing`)가
             // 소유하면 그 간격이 이미 표 아래를 닫는다. 바깥 아래 여백을 따로 열면 둘을
             // 겹쳐 더한다 — 한글 2024 PDF 86712 26쪽: 조각 아래 괘선 145.76px 뒤 다음 표
-            // 193.87px 은 Enter 간격만 더한 위치다(여백까지 더하면 +1.9px).
+            // 193.87px 은 엔터 줄 간격만 더한 위치다(여백까지 더하면 +1.9px).
             && terminal_host_spacing <= 0.0
             && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
             && !st.profile.session_edited()
@@ -654,7 +659,7 @@ impl TypesetEngine {
             }
         }
         // 원본 첫 상자가 마지막 줄의 뒤 간격 안에서 끝나면 모든 컷 유닛을 보존하고
-        // 예약과 paint가 같은 선언 물리 프레임을 소비한다.
+        // 예약과 그리기가 같은 선언 물리 프레임을 소비한다.
         let two_frame_successor_origin =
             input
                 .source
@@ -788,8 +793,8 @@ impl TypesetEngine {
                     });
             }
         }
-        // 끝 조각의 원본 조회는 스캔 이후 여백을 예약할 수 있다. 최종 수용한
-        // 예약에서 아직 소유되지 않은 흐름의 남은 몫을 계산한다.
+        // 종료 프레임의 원본 정보를 조회하면서 스캔 이후 여백이 예약됐을 수 있다.
+        // 최종 수용한 예약량을 기준으로 아직 소유되지 않은 흐름 잔여를 구한다.
         // 끝 조각의 물리 상자와 아래 바깥여백은 같은 영역을 소유한다.
         // 엄격 예산·캡션 등이 이미 예약한 몫을 다시 더하지 않는다.
         let terminal_flow_outer_bottom =
@@ -798,9 +803,8 @@ impl TypesetEngine {
             input.prepared.host_spacing_after_only + terminal_flow_outer_bottom;
         let commit_fragment = |st: &mut TypesetState, owner_height: f64, terminal: bool| {
             if let Some(mut placement) = fragment_placement {
-                // 끝이 아닌 컷은 다음 내용을 소유할 수 없다. 끝 조각의 원본
-                // 원점은 유지하되, 간격을 소비하는 경로에서는 그 원점이
-                // 최종 수용된 물리 하단과 일치해야 한다.
+                // 끝 조각이 아닌 컷은 후속 문단을 소유할 수 없다. 끝 조각의 원본 원점은
+                // 유지하되, 간격을 소비하는 경로에서는 최종 수용한 물리 하단과 일치해야 한다.
                 if !terminal {
                     placement.stored_successor_line_origin = None;
                 }
@@ -838,7 +842,7 @@ impl TypesetEngine {
             }
         };
 
-        // [Task #1046 Stage 2 진단] walk 결과 — fragment 경계/소비 높이. 동작 불변.
+        // [작업 #1046 2단계 진단] 순회 결과 — 조각 경계/소비 높이. 동작 불변.
         if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
             eprintln!(
                 "TABLE_SPLIT_RESULT: pi={} sec={} cursor_row={} end_row={} consumed={:.1} partial_h={:.1} split_end_limit={:.1} avail_for_rows={:.1} fits={}",
@@ -849,8 +853,8 @@ impl TypesetEngine {
 
         if end_row >= row_count && split_end_limit == 0.0 {
             let skip_terminal_empty_sliver = is_continuation
-                // 재조판한 선언 꼬리는 마지막 내용 유닛 뒤에도 실제 물리 공간을 소유한다.
-                // 이 프레임을 빈 잔여 조각으로 판단해 제거하지 않는다.
+                // 재조판한 선언 잔여는 마지막 내용 유닛 뒤에도 실제 물리 공간을 차지한다.
+                // 이 프레임을 작은 빈 조각으로 간주해 지우지 않는다.
                 && !(start_row_height_override.is_some()
                     && layout_engine.row_uses_reflow_physical_frame(table, cursor_row))
                 && !start_cut.is_empty()
@@ -974,9 +978,9 @@ impl TypesetEngine {
                     fragment_row_heights: input.fragment_row_heights.map(<[f64]>::to_vec),
                     end_row_owns_stored_frame: false,
                 });
-                // 마지막 fragment: spacing_after만 포함 (Paginator engine.rs:1051 동일)
-                // host line advance/positive offset은 원 anchor 조각의 계약이며,
-                // continuation 끝에서 다시 더하면 다음 본문을 이중으로 민다(#2439).
+                // 마지막 조각: spacing_after만 포함 (페이지 분할기 engine.rs:1051과 동일)
+                // 호스트 줄 전진과 양의 오프셋은 원래 앵커 조각의 계약이며,
+                // 이어받기 끝에서 다시 더하면 다음 본문을 이중으로 민다(#2439).
                 let occupied = host_before_overhead
                     + vert_offset_overhead
                     + partial_height
@@ -1026,9 +1030,9 @@ impl TypesetEngine {
                     relax_terminal_table_footnote_fit && is_continuation,
                     false,
                 );
-                // terminal fragment에 들어가지 못한 URL 각주는 새 page의 footer
-                // lane에 먼저 예약한다. 다음 본문은 그 reservation을 보고 같은
-                // page에 fit하거나 필요할 때만 다음 page로 분할된다.
+                // 끝 조각에 들어가지 못한 URL 각주는 새 쪽의 하단 각주
+                // 영역에 먼저 예약한다. 다음 본문은 그 예약량을 보고 같은
+                // 쪽에 들어가거나 필요할 때만 다음 쪽으로 분할된다.
                 while continuation.pending_table_footnote_fragment.is_some()
                     || continuation.next_table_footnote < table_footnotes.len()
                 {
@@ -1074,8 +1078,8 @@ impl TypesetEngine {
         }
 
         // 최종 행의 컷이 모든 가시 유닛을 소비했다면 다음 조각은 없다.
-        // 컷을 지우면 원래 행 높이가 복원되므로 paint 컷은 그대로 보존하고,
-        // 빈 후속 페이지를 할당하기 전에 continuation만 종료한다.
+        // 컷을 지우면 원래 행 높이가 복원되므로 그리기 컷은 그대로 보존하고,
+        // 빈 후속 페이지를 할당하기 전에 이어받기만 종료한다.
         let terminal_cut_consumed = input.closes_terminal_content_cut(
             end_row,
             split_end_limit,
@@ -1108,10 +1112,35 @@ impl TypesetEngine {
             0.0
         };
 
-        // 완료 행 경계를 가로지르는 원본 병합 셀은 끝 물리 쪽의 띠도
-        // 소유한다. 수용한 조각의 원점으로 예약하고, 실제 그리기에 쓰는
-        // 동일하게 확장된 행 상자에서 그 셀의 유닛을 선택한다.
-        let accepted_straddle_end_band = if split_end_limit == 0.0
+        // 쪽 끝 빈 띠는 실제 물리 경계와 수용한 조각 상자의 차이다.
+        // 원본 프레임이 이미 예약한 띠는 그리기 높이에 다시 더하지 않는다.
+        let unreserved_page_end_band = if split_block_start.is_some() {
+            0.0
+        } else if let Some(frame_rows) = budget.reflow_frame_avail_for_rows {
+            // 물리 경계에는 아래 바깥여백과 실제 각주 공간이 이미 반영돼 있다.
+            (frame_rows + header_overhead - partial_height).max(0.0)
+        } else {
+            let outer_bottom = (hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi)
+                - fragment_outer_bottom_overhead)
+                .max(0.0);
+            (avail_for_rows + header_overhead - partial_height - outer_bottom).max(0.0)
+        };
+        // 원본 병합 셀은 실제 문단 유지 지시를 만족한 컷의 쪽 끝 물리 띠도 소유한다.
+        // 이웃 셀에 문단 내부 컷이 있어도 내용 컷을 넓히지 않고 빈 상자를 함께 센다.
+        let plain_paragraph_cut = split_end_limit > 0.0
+            && end_row > cursor_row
+            && layout_engine.row_cut_respects_plain_paragraph_keeps(
+                row_geometry_table,
+                end_row - 1,
+                if end_row - 1 == cursor_row {
+                    start_cut
+                } else {
+                    &[]
+                },
+                &split_end_cut,
+                styles,
+            );
+        if (split_end_limit == 0.0 || plain_paragraph_cut)
             && split_block_start.is_none()
             && end_row > cursor_row
             && table_footnotes.is_empty()
@@ -1123,21 +1152,37 @@ impl TypesetEngine {
             && row_geometry_table.cells.iter().any(|cell| {
                 usize::from(cell.row) < end_row
                     && end_row < usize::from(cell.row) + usize::from(cell.row_span)
-            }) {
-            let outer_bottom = (hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi)
-                - fragment_outer_bottom_overhead)
-                .max(0.0);
-            let band = (avail_for_rows + header_overhead - partial_height - outer_bottom).max(0.0);
-            if band > 0.0 {
-                let last_row = end_row - 1;
-                let last_height = end_row_height_override.unwrap_or(cut_row_h[last_row]);
-                end_row_height_override = Some(last_height + band);
-                partial_height += band;
-            }
-            band
-        } else {
-            0.0
-        };
+            })
+            && unreserved_page_end_band > 0.0
+        {
+            let last_row = end_row - 1;
+            let last_height = end_row_height_override
+                .or_else(|| {
+                    accepted_end_row_box
+                        .filter(|(row, _)| *row == last_row)
+                        .map(|(_, height)| height)
+                })
+                .unwrap_or_else(|| {
+                    if plain_paragraph_cut {
+                        // 컷 뒤의 내용을 담은 전체 행 높이는 앞 조각의 물리 상자가 아니다.
+                        layout_engine.row_cut_content_height(
+                            row_geometry_table,
+                            last_row,
+                            if last_row == cursor_row {
+                                start_cut
+                            } else {
+                                &[]
+                            },
+                            &split_end_cut,
+                            styles,
+                        )
+                    } else {
+                        cut_row_h[last_row]
+                    }
+                });
+            end_row_height_override = Some(last_height + unreserved_page_end_band);
+            partial_height += unreserved_page_end_band;
+        }
 
         let accepted_straddle_cells = if !start_cut_is_block && split_block_start.is_none() {
             layout_engine.accepted_straddle_fragment_units(
@@ -1155,9 +1200,19 @@ impl TypesetEngine {
                 styles,
             )
         } else {
-            straddle_page_bands.clone()
+            // 블록 컷은 위의 일반 행 상자를 수용하지 않았다. 이전 합을 새 물리
+            // 점유로 오인하지 않도록 내용 컷만 보존하고 상자 원장은 무효화한다.
+            straddle_page_bands
+                .iter()
+                .cloned()
+                .map(|mut carry| {
+                    carry.accepted_physical_height = None;
+                    carry
+                })
+                .collect()
         };
-        // 중간 또는 내용이 완전히 소비된 최종 컷 fragment 배치
+
+        // 중간 또는 내용이 완전히 소비된 최종 컷 조각 배치
         let complete_physical_end_cut = split_block_start.is_none()
             && split_end_limit > 0.0
             && end_row_height_override.is_some()
@@ -1227,9 +1282,9 @@ impl TypesetEngine {
             fragment_row_heights: input.fragment_row_heights.map(<[f64]>::to_vec),
             end_row_owns_stored_frame: is_continuation && stored_complete_extent.is_some(),
         });
-        // 저장 host 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
-        // host·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).
-        // 첫 조각의 위는 흐름 커서가 아니라 host 저장 vpos 다 — 렌더러가 그 자리에 칠하고,
+        // 저장 호스트 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
+        // 호스트·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).
+        // 첫 조각의 위는 흐름 커서가 아니라 호스트의 저장 vpos 다 — 렌더러가 그 자리에 칠하고,
         // 흐름은 저장 사다리보다 늦을 수 있다(7062: 흐름 484.3 ↔ 저장 488.8, 156645214:
         // 116.3 ↔ 121.0). 흐름으로 재면 첫 상자가 그만큼 커져 끝 상자가 모자란다.
         let single_cell_box_height = if declared_opening_frame {
@@ -1251,10 +1306,10 @@ impl TypesetEngine {
                         .iter()
                         .find(|seg| !is_synthetic_line_seg(seg))
                         .map(|seg| {
-                            // [#7418] 저장 앵커는 문단 상단이다. host 글을 선방출했으면
-                            // `vert_offset_overhead` 는 host 뒤 흐름 기준이라, 같은 기준으로
-                            // 맞추려면 앵커에도 host 높이를 더한다(156403546 3쪽: 섞이면 첫
-                            // 상자가 host 만큼 커져 끝 조각의 1×1 칸 연장 16.8px 가 사라졌다).
+                            // [#7418] 저장 앵커는 문단 상단이다. 호스트 글을 선방출했으면
+                            // `vert_offset_overhead` 는 호스트 뒤 흐름 기준이라, 같은 기준으로
+                            // 맞추려면 앵커에도 호스트 높이를 더한다(156403546 3쪽: 섞이면 첫
+                            // 상자가 호스트만큼 커져 끝 조각의 1×1 칸 연장 16.8px 가 사라졌다).
                             hwpunit_to_px(
                                 seg.vertical_pos
                                     .saturating_sub(st.vpos_page_base.unwrap_or(0)),
@@ -1289,8 +1344,8 @@ impl TypesetEngine {
         if let Some((row, used, height)) = accepted_stored_row_frame {
             continuation.stored_row_box_sum = Some((row, used + height));
         }
-        // [#2238] 중간 fragment 가시높이 부기 — used_height(flush 시 current_height)
-        // 표시용. advance 직후 current_height 가 리셋되므로 흐름/기하 불변.
+        // [#2238] 중간 조각의 가시 높이 기록 — used_height(페이지 확정 시 current_height)
+        // 표시용. 전진 직후 current_height 가 리셋되므로 흐름/기하 불변.
         st.advance_flow_by(
             host_before_overhead
                 + vert_offset_overhead
@@ -1318,28 +1373,44 @@ impl TypesetEngine {
             continuation.finish(row_count, true);
             return TableContinuationIteration::Complete;
         }
-        let source_frame_closes_body = !is_continuation
+        // 인증한 첫 상자의 실제 하단이 소유한 inset을 뒤 조각까지 전달한다.
+        // 기본 본문 끝과 Native 저장 프레임의 기존 inset을 각각 확인하며,
+        // 단순히 원본 표라는 이유로 뒤 내용 예산을 줄이지 않는다.
+        let source_frame_body_bottom_inset = (!is_continuation
             && stored_complete_extent.is_some()
             && table.caption.is_none()
-            && st.current_zone_y_offset == 0.0
-            && fragment_placement.is_some_and(|placement| {
-                budget.source_frame_bottom.is_some_and(|source_bottom| {
-                    let bottom = placement.table_top + partial_height;
-                    (bottom - source_bottom).abs()
-                        <= hwpunit_to_px(2, self.dpi)
-                            + f64::EPSILON * source_bottom.abs().max(1.0) * 4.0
-                })
+            && st.current_zone_y_offset == 0.0)
+            .then_some(fragment_placement)
+            .flatten()
+            .zip(budget.source_frame_bottom)
+            .and_then(|(placement, source_bottom)| {
+                let bottom = placement.table_top + partial_height;
+                let inset = source_bottom - bottom;
+                let tolerance =
+                    hwpunit_to_px(2, self.dpi) + f64::EPSILON * source_bottom.abs().max(1.0) * 4.0;
+                if inset.abs() <= tolerance {
+                    Some(0.0)
+                } else {
+                    let native_inset = hwpunit_to_px(
+                        crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                        self.dpi,
+                    );
+                    (st.profile.hwp5_stored_pagination_layout()
+                        && table.row_count > 1
+                        && (inset - native_inset).abs() <= tolerance)
+                        .then_some(inset)
+                }
             });
         commit_fragment(st, caption_extra + partial_height, false);
         if !is_continuation && stored_complete_extent.is_some() {
             // 내용 컷과 독립적으로 인증한 첫 조각 상자가 실제 지면을 차지했다.
             // 다음 조각의 여백은 같은 커서 사실을 예산·배치가 함께 소비한다.
             continuation.stored_fragment_outer_frame = true;
-            continuation.stored_fragment_closes_body = source_frame_closes_body;
+            continuation.stored_fragment_body_bottom_inset = source_frame_body_bottom_inset;
         }
-        // 큰 RowBreak 표가 기존 각주를 이미 가진 page에서 시작할 때에는 첫 fragment의
-        // cell-footnote를 같은 lane에 섞지 않는다. 그 page의 기존 각주(표 25의
-        // 105·106)를 보존하고, 표가 이어지는 fresh page에서 cell-footnote를 순서대로
+        // 큰 RowBreak 표가 기존 각주를 이미 가진 쪽에서 시작할 때에는 첫 조각의
+        // 셀 각주를 같은 영역에 섞지 않는다. 그 쪽의 기존 각주(표 25의
+        // 105·106)를 보존하고, 표가 이어지는 새 쪽에서 셀 각주를 순서대로
         // 배치해야 원본 HWP/PDF의 107–111 / 112– 분할을 재현한다.
         let defer_large_first_fragment_notes = st.profile.hwp5_stored_pagination_layout()
             && queue_table_footnotes
@@ -1368,7 +1439,7 @@ impl TypesetEngine {
         }
         st.advance_column_or_new_page();
 
-        // 커서 전진 — [Task #993] 컷은 절대 유닛 인덱스이므로 누적 없이 대입.
+        // 커서 전진 — [작업 #993] 컷은 절대 유닛 인덱스이므로 누적 없이 대입.
         let empty_opening_next_height = input
             .prepared
             .empty_opening_row_frame
@@ -1457,6 +1528,14 @@ impl TypesetEngine {
                             styles,
                         ))
             });
+        // 여러 행에 걸친 셀은 일반 행의 내용 유닛을 모두 소비했더라도
+        // 이 조각 경계를 넘어 물리 공간을 소유한다.
+        // 재조판은 해당 블록 안에서 일반 셀의 최소 높이를 중복 반영하지 않지만,
+        // 여러 행에 걸친 셀이 소유한 잔여 밴드까지 없애서는 안 된다.
+        let crossing_span_owns_tail = table.cells.iter().any(|cell| {
+            (cell.row as usize) < end_row
+                && cell.row as usize + (cell.row_span as usize).max(1) > end_row
+        });
         let next_start_row_height_override = source_opening_row_frame
             .as_ref().map(|(_, _, remaining)| *remaining)
             .or(empty_opening_next_height)
@@ -1536,8 +1615,9 @@ impl TypesetEngine {
                 if end_row_height_override != Some(opening) {
                     return None;
                 }
-                // 첫 빈 조각은 그림 유닛이 아니라 물리 공간을 소비했다.
-                // 겹치는 완전한 행의 내용 상자에서 첫 조각을 차감하지 않고 남은 소유 유닛의 전체 높이를 이어받는다.
+                // 빈 시작 조각은 그림 유닛을 소비하지 않고 물리 공간만 차지했다.
+                // 겹치는 완전 행의 내용 상자에서 시작 조각을 빼지 않고,
+                // 남은 소유 유닛의 전체 높이를 이어받는다.
                 Some(layout_engine.row_cut_content_height(table, row, &next_cut, &[], styles))
             })
             .or_else(|| {
@@ -1549,8 +1629,9 @@ impl TypesetEngine {
                 let full = if let Some(height) = carried {
                     height
                 } else {
-                    // 최소 높이가 전체 내용의 점유 높이를 넘을 때만 물리 꼬리를 생성한다.
-                    // 내용이 요구하는 높이는 남은 유닛에 이미 반영되어 있으므로 중복해서 이어받지 않는다.
+                    // 최소 높이가 전체 내용의 점유 높이보다 클 때만 물리 잔여가 생긴다.
+                    // 내용에서 비롯된 높이는 이미 남은 유닛으로 표현되므로,
+                    // 이중으로 이어받지 않는다.
                     layout_engine.reflow_row_physical_minimum(table, row, styles)?
                 };
                 let start = if row == cursor_row { start_cut.as_slice() } else { &[] };
@@ -1615,9 +1696,16 @@ impl TypesetEngine {
                     .then_some(height)
                 })();
                 base_remaining.or_else(|| {
-                // 저장된 첫 프레임은 다음 프레임의 유닛을 소비하지 않고 빈 공간을 소유한다.
-                // 원본 행의 최소 높이는 이어받기 커서를 통해 스캔과 실제 그리기에 공유한다.
-                if !first_fragment_blank_band || !st.profile.hwp5_stored_pagination_layout() {
+                // 저장된 시작 프레임은 다음 프레임의 유닛을 소비하지 않고 빈 공간을 소유한다.
+                // 원본 행의 최소 높이는 이어받기 커서를 통해
+                // 스캔과 그리기가 공유한다.
+                // 원본 HWPX에도 동일한 행 최소 높이가 저장된다. 한/글은
+                // 분할 셀 높이를 각 조각 상자 높이의 합으로 기록한다
+                // (36308670 1·2쪽: 2024 PDF에서 35618HU = 394.6 + 80.3px).
+                if !first_fragment_blank_band
+                    || !(st.profile.hwp5_stored_pagination_layout()
+                        || st.profile.hwpx_stored_layout())
+                {
                     return None;
                 }
                 let row = end_row.checked_sub(1)?;
@@ -1661,7 +1749,24 @@ impl TypesetEngine {
                 let remaining = minimum - end_row_height_override?;
                 let content =
                     layout_engine.row_cut_content_height(table, row, &next_cut, &[], styles);
-                (remaining > content + 0.5).then_some(remaining)
+                // 이어받은 잔여는 다음 단에서 하나의 시작 행 프레임으로 소비한다
+                // (스캔은 저장된 이어받기 밴드를 다시 자르지 않는다).
+                // 잔여 높이가 해당 단보다 크면 하나의 프레임이 아니므로,
+                // 내용 컷이 계속 이어받기를 소유한다(113424 3쪽:
+                // 선언 잔여 1271.7px > 본문 956.2px이며, 한컴 2024 PDF는
+                // 내용에 따라 행을 3·4쪽으로 이어 배치한다).
+                let repeated_header: f64 = if table.repeat_header {
+                    table
+                        .leading_header_rows()
+                        .iter()
+                        .map(|&r| mt.row_heights.get(r).copied().unwrap_or(0.0) + mt.cell_spacing)
+                        .sum()
+                } else {
+                    0.0
+                };
+                (remaining > content + 0.5
+                    && remaining + repeated_header <= st.available_height() + 0.5)
+                    .then_some(remaining)
                 })
             })
             .or_else(|| end_row_height_override
@@ -1671,7 +1776,8 @@ impl TypesetEngine {
                 table, end_row.saturating_sub(1),
                 if end_row - 1 == cursor_row { start_cut } else { &[] }, &next_cut, styles,
             ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
-                && !layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1)))
+                && (!layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1))
+                    || crossing_span_owns_tail))
             .and_then(|limit| {
             let row = end_row.checked_sub(1)?;
             // 같은 일반 행을 다시 나누는 경우 앞 조각까지 차감한 물리 상자에서
@@ -1687,20 +1793,16 @@ impl TypesetEngine {
                 ) {
                 return None;
             }
-            // [#5714] 압축된 끝행의 빈 tail 밴드는 **물리적으로 이어지는
-            // 것이 있을 때만** 다음 조각으로 넘어간다: intra-row 컷이면 그
-            // 행 자신이 이어지고, 행 경계 끝이면 경계를 가로지르는 rowspan
-            // 셀의 선언 공간이 이어진다(76076 p36 의 24.1px 밴드 — 한컴 PDF
+            // [#5714] 압축된 끝행의 빈 잔여 띠는 **물리적으로 이어지는
+            // 것이 있을 때만** 다음 조각으로 넘어간다: 행 내부 컷이면 그
+            // 행 자신이 이어지고, 행 경계 끝이면 경계를 가로지르는 병합
+            // 셀의 선언 공간이 이어진다(76076 36쪽의 24.1px 밴드 — 한컴 PDF
             // 실측, r8 rs=7 셀이 경계를 걸침). 둘 다 아니면 완결된 행의
-            // 선언 잔여는 쪽 경계에서 죽는다 — rowspan 없는 19×2 표에서
-            // 이 tail(11.0px)이 다음 조각 첫 행(새 행, 3줄 59.3px)에
+            // 선언 잔여는 쪽 경계에서 죽는다 — 병합 셀 없는 19×2 표에서
+            // 이 잔여(11.0px)가 다음 조각 첫 행(새 행, 3줄 59.3px)에
             // 씌워져 글자가 아래 행과 포개졌다(한컴 PDF 는 밴드 없이 새
             // 행을 전체 높이로 시작).
-            let tail_band_continues = split_end_limit > 0.0
-                || table.cells.iter().any(|cell| {
-                    (cell.row as usize) < end_row
-                        && cell.row as usize + (cell.row_span as usize).max(1) > end_row
-                });
+            let tail_band_continues = split_end_limit > 0.0 || crossing_span_owns_tail;
             if std::env::var("RHWP_DIAG_5714").is_ok() {
                 eprintln!(
                     "DIAG_5714 FRAG pi={} cursor_row={} end_row={} limit={:.1} full={:.1} tail={:.1} split_end_limit={:.1} continues={}",
@@ -1713,18 +1815,12 @@ impl TypesetEngine {
             // 늘리지 않는다. 다음 스캔이 이 컷에서 실제 수용할 유닛을 선택한다.
             (tail > 0.5 && tail_band_continues).then_some(tail)
         }));
-        // [#7531] 행 경계에서 끝난 조각의 쪽 끝 빈 띠는 그 경계를 넘는 걸침 칸이 차지한다.
-        // 행 안에서 끊긴 조각도 남은 물리 공간은 같은 띠다(끝 행이 쪽을 채우면 0).
+        // 이미 예약한 띠와 이번 조각의 미예약 띠를 각각 한 번만 이어받는다.
+        // 미예약 띠는 실제 행 상자를 늘리기 전에 계산해 예약과 paint가 공유한다.
         let page_end_band = if split_block_start.is_some() {
             0.0
         } else {
-            // 한/글은 쪽 끝 행 상자를 본문 바닥에서 표 바깥 아래 여백을 뺀 자리까지 늘린다.
-            let outer_bottom = (hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi)
-                - fragment_outer_bottom_overhead)
-                .max(0.0);
-            source_frame_band.max(reserved_straddle_end_band)
-                + accepted_straddle_end_band
-                + (avail_for_rows + header_overhead - partial_height - outer_bottom).max(0.0)
+            source_frame_band.max(reserved_straddle_end_band) + unreserved_page_end_band
         };
         continuation.straddle_page_bands =
             crate::renderer::layout::LayoutEngine::straddle_page_bands_after_fragment(
@@ -1755,7 +1851,7 @@ impl TypesetEngine {
     }
 
     /// 다음 실제 흐름 문단이 증언한 마지막 표 여백만 수용한다.
-    /// deferred float 앞에서 이미 채운 문단은 이 조각의 후속 문단이 아니다.
+    /// 지연 배치하는 떠 있는 개체 앞에서 이미 채운 문단은 이 조각의 후속 문단이 아니다.
     fn consume_stored_terminal_empty_line_gap(
         &self,
         st: &mut TypesetState,
