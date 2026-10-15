@@ -134,6 +134,7 @@ impl TypesetEngine {
                         && progress.scan.consumed + height <= v.avail_for_rows
                 }) {
                     progress.scan.consumed += height;
+                    progress.scan.accepted_end_row_box = Some((r, height));
                     progress.r += 1;
                     progress.scan.end_row = progress.r;
                     continue;

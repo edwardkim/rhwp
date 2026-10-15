@@ -5993,6 +5993,32 @@ export class HwpDocument {
         }
     }
     /**
+     * 지정 페이지의 셀 경계만 조회한다. 전체 셀 선택 API의 범위는 유지한다.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {number} control_idx
+     * @param {number} page
+     * @returns {string}
+     */
+    getTableCellBboxesAtPage(section_idx, parent_para_idx, control_idx, page) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getTableCellBboxesAtPage(this.__wbg_ptr, section_idx, parent_para_idx, control_idx, page);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * 경로 기반 표 셀 바운딩박스 조회 (중첩 표용).
      *
      * 반환: JSON 배열 `[{"cellIdx":N,"row":N,"col":N,...,"x":F,"y":F,"w":F,"h":F}, ...]`

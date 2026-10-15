@@ -305,7 +305,7 @@ fn shade_values_are_a_subset_of_hancom_own_conversion() {
         ("samples/hwp3-sample4.hwp", "samples/hwp3-sample4-hwp5.hwp"),
         (
             "samples/hwp3-sample10.hwp",
-            "samples/hwp3-sample10-hwp5.hwp",
+            "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp",
         ),
         (
             "samples/hwp3-sample11.hwp",

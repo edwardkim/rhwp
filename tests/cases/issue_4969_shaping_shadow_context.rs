@@ -35,8 +35,7 @@ use std::sync::Arc;
 use wasm_bindgen_test::wasm_bindgen_test;
 
 const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
-const SOURCE_HAN: &[u8] =
-    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Regular.otf");
 const HAPPINESS: &[u8] =
     include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
 const EXACT_INSTANCE_SMOKE: &[u8] = include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");

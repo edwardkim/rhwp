@@ -212,12 +212,25 @@ pub(crate) struct HeightCursor {
     /// 간격을 그리는 문단 경로를 타지 않으므로 `vpos_corrected_end_y` 의 `sb_N` 사전 차감
     /// 대상이 아니다. layout 만 세운다.
     pub curr_item_is_table_fragment: bool,
+    /// [#7665] 미주 흐름에서 **미주의 첫 문단**(렌더가 번호 장식을 붙이는 문단, 조판 `ep_idx == 0`)
+    /// 인 전역 문단 번호. 새 문항 제목 판정은 이 소유 경계로 한다 — 첫 문단이 「문」 으로
+    /// 시작하는지(번호 장식 `문1)` 의 대리값)로 읽으면 같은 미주 안 `문서…` 본문도 제목이 된다.
+    /// 미주 흐름 단에서만 호출자가 채운다.
+    pub endnote_note_first_paras: std::sync::Arc<std::collections::HashSet<usize>>,
+    /// [#7702] 쪽/단 첫 항목인 이어지는 부분 문단의 연속 줄이 합성 줄이라 #5820 의 기준을
+    /// 그 줄에서 세우지 못했다. 다음 저장 문단이 자기 실제 흐름 위치로 기준을 세운다.
+    pub seed_lazy_base_from_next_stored: bool,
 }
 
 #[path = "height_cursor_lazy_base.rs"]
 mod lazy_base_rounding;
 
 impl HeightCursor {
+    /// [#7665] 미주 흐름 문단이 미주의 첫 문단(새 문항 제목)인가 — 소유 경계.
+    fn starts_endnote(&self, para_index: usize) -> bool {
+        self.endnote_note_first_paras.contains(&para_index)
+    }
+
     /// 컬럼 진입 시 생성. `vpos_page_base` 초기값은 호출자가 첫 PageItem 에서 산출.
     pub(crate) fn new(
         dpi: f64,
@@ -254,6 +267,8 @@ impl HeightCursor {
             trimmed_prev_spacing_before_px: 0.0,
             session_edited: false,
             curr_item_is_table_fragment: false,
+            endnote_note_first_paras: Default::default(),
+            seed_lazy_base_from_next_stored: false,
         }
     }
 
@@ -277,8 +292,32 @@ impl HeightCursor {
             return y_offset;
         }
         let Some(prev_pi) = self.prev_layout_para else {
+            // [#7702] #5820 확장 — 연속 줄이 합성이면 첫 저장 문단에서 기준을 세운다. 세우지
+            // 않으면 다음 문단이 이 문단 끝에서 기준을 거꾸로 재는데, 그 역산식은 끝 줄간격·
+            // 아래 간격을 트림한 조판 흐름을 전제해 그리기 흐름에서는 그만큼 아래로 밀린다
+            // (HWP5-nopassword 15쪽 pi=215: 1168 HU = 15.6px). 조판은 같은 자리에서 앞 합성
+            // 문단의 연속 사다리로 같은 기준을 얻는다.
+            if self.seed_lazy_base_from_next_stored {
+                if let Some(seg) = paragraphs
+                    .get(item_para)
+                    .and_then(|para| para.line_segs.first())
+                    .filter(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    })
+                {
+                    self.seed_lazy_base_from_next_stored = false;
+                    let delta_hu =
+                        ((y_offset - self.col_area_y) / self.dpi * 7200.0).round() as i32;
+                    let base = seg.vertical_pos - delta_hu;
+                    if base >= 0 {
+                        self.vpos_lazy_base = Some(base);
+                    }
+                }
+            }
             return y_offset;
         };
+        // 표시는 리셋 바로 뒤 한 문단에만 유효하다.
+        self.seed_lazy_base_from_next_stored = false;
         if item_para == prev_pi {
             return y_offset;
         }
@@ -753,14 +792,58 @@ impl HeightCursor {
                     }
                 })
                 .flatten();
-            let lazy_base = source_continuous_base.unwrap_or_else(|| {
-                lazy_base_rounding::resolve_lazy_base(
-                    prev_vpos_end,
-                    y_delta_hu,
-                    trailing_ls_hu,
-                    self.trimmed_prev_spacing_before_px,
-                )
-            });
+            // [#7702] 그리기 흐름이 앞 문단 마지막 줄 뒤에서 «끝 줄간격 + 아래 간격» 을 실제로
+            // 소비했으면(흐름 위치 − 줄 바닥이 그 합과 같으면), 그 바닥을 사다리의 같은 자리
+            // (그 줄의 `vpos + 줄 높이`)에 맞대 기준을 세운다. 아래 역산식은 그 간격을 트림한
+            // 조판 흐름을 전제해, 간격이 든 그리기에서는 기준이 낮아져 다음 문단이 내려간다
+            // (HWP5-nopassword 3쪽 표 뒤 빈 문단 → 제목: 1168 HU = 15.6px). 끝 줄간격만 소비한
+            // 경우는 위 `rendered_spent_trailing` 이, 소비 증거가 없으면 종전 식이 맡는다.
+            let prev_spacing_after_px = styles
+                .para_styles
+                .get(prev_para.para_shape_id as usize)
+                .map(|style| style.spacing_after)
+                .unwrap_or(0.0);
+            let flow_bottom_base = self
+                .prev_item_flow_line_bottom_y
+                // 음수 줄간격(줄이 겹치는 문단)은 흐름이 그 간격을 어떻게 소비했는지 이 등식으로
+                // 판독할 수 없다 — 종전 식에 맡긴다(issue7333 aaaaaa 35쪽).
+                .filter(|_| {
+                    // 앞 문단의 사다리가 rhwp 가 다시 세운 좌표일 때만 쓴다(합성 줄이거나, 로드
+                    // 재구성이 원본 vpos 를 옮겨 적은 저장 줄). 한/글 원본 사다리를 그대로 쓰는
+                    // 문단은 옛 줄 나눔을 담을 수 있어 흐름과 맞대지 않는다(1790387 67쪽: 저장
+                    // 5줄, 한/글 출력 4줄 그림 문단 뒤 문단이 26.4px 밀림).
+                    let rebuilt_ladder = synthetic_prev_seg
+                        || prev_para
+                            .source_line_seg_vertical_pos
+                            .as_ref()
+                            .and_then(|source| source.first())
+                            .zip(prev_para.line_segs.first())
+                            .is_some_and(|(source, model)| *source != model.vertical_pos);
+                    rebuilt_ladder
+                        && prev_para.controls.is_empty()
+                        && prev_spacing_after_px > 0.5
+                        && seg.line_spacing >= 0
+                })
+                .filter(|bottom| {
+                    let spent = y_offset - bottom;
+                    let stored =
+                        hwpunit_to_px(seg.line_spacing.max(0), self.dpi) + prev_spacing_after_px;
+                    (spent - stored).abs() < 0.1
+                })
+                .map(|bottom| {
+                    seg.vertical_pos.saturating_add(seg.line_height)
+                        - ((bottom - self.col_area_y) / self.dpi * 7200.0).round() as i32
+                });
+            let lazy_base = source_continuous_base
+                .or(flow_bottom_base)
+                .unwrap_or_else(|| {
+                    lazy_base_rounding::resolve_lazy_base(
+                        prev_vpos_end,
+                        y_delta_hu,
+                        trailing_ls_hu,
+                        self.trimmed_prev_spacing_before_px,
+                    )
+                });
             if lazy_base < 0 {
                 // 역산 무효(자리차지 표 등): 이전 개체 높이가 sequential y 에 이미
                 // 반영된 상태다. 여기서 vpos 보정을 적용하면 단 상단으로 되감겨
@@ -772,17 +855,11 @@ impl HeightCursor {
                     );
                 }
                 let compact_endnote_question_title = self.suppress_large_forward_jump
-                    && paragraphs
-                        .get(item_para)
-                        .map(|p| p.text.trim_start().starts_with('문'))
-                        .unwrap_or(false)
+                    && self.starts_endnote(item_para)
                     && seg.line_spacing > 1000;
                 let compact_zero_gap_endnote_title_boundary = self.suppress_large_forward_jump
                     && self.endnote_between_notes_hu == 0
-                    && paragraphs
-                        .get(item_para)
-                        .map(|p| p.text.trim_start().starts_with('문'))
-                        .unwrap_or(false)
+                    && self.starts_endnote(item_para)
                     && seg.line_spacing > 0
                     && seg.line_spacing <= 800;
                 if compact_zero_gap_endnote_title_boundary {
@@ -1051,8 +1128,9 @@ impl HeightCursor {
                 && y_offset > self.col_area_y + self.col_area_height * 0.75)
             || compact_endnote_bottom_rewind
             || compact_endnote_tac_picture_rewind;
-        // 재구성한 두 줄 사이의 vpos는 저장된 문단 앞 간격의 증거가 아니다.
-        // 앞 줄의 실제 끝에서 현재 문단을 시작하고, 앞 간격은 배치가 한 번 더한다.
+        // [#7702] 로드 재구성 사다리도 문단 앞 간격을 담는다(`document.rs` 재구성이 `앞 아래 +
+        // 뒤 위` 를 더한다). 그래서 합성 줄 사이도 저장 줄처럼 앞 간격을 미리 빼고 스냅한다 —
+        // 빼지 않으면 앞 간격이 스냅 목표와 배치에 두 번 들어간다(issue5929 어울림 앵커 문단).
         // Section reflow can preserve the original source origins while
         // rebuilding a continuous cursor without paragraph-before spacing.
         // If the source gap equals that declared spacing and the rebuilt gap
@@ -1066,11 +1144,7 @@ impl HeightCursor {
         let skip_prededuct = self.skip_spacing_before_prededuct
             || rebuilt_before_not_consumed
             || inline_host_without_stored_anchor
-            || table_host_line_is_top_after_table_host
-            || (synthetic_prev_seg
-                && paragraphs
-                    .get(item_para)
-                    .is_some_and(|para| crate::renderer::para_has_no_stored_line_segs(para)));
+            || table_host_line_is_top_after_table_host;
         // This rebuilt axis omits paragraph-before bands already consumed by
         // preceding flow items. Its absolute origin therefore cannot snap the
         // current item. The accepted previous item's end owns the origin;
@@ -1128,11 +1202,8 @@ impl HeightCursor {
             .map(|bottom| bottom.max(prev_content_bottom_y))
             .unwrap_or(prev_content_bottom_y);
         let follows_tall_inline_item = self.suppress_large_forward_jump && seg.line_height > 1500;
-        let current_is_compact_endnote_title = self.suppress_large_forward_jump
-            && paragraphs
-                .get(item_para)
-                .map(|p| p.text.trim_start().starts_with('문'))
-                .unwrap_or(false);
+        let current_is_compact_endnote_title =
+            self.suppress_large_forward_jump && self.starts_endnote(item_para);
         let prev_line_carries_note_gap = seg.line_spacing > 1000;
         let compact_endnote_question_title =
             current_is_compact_endnote_title && prev_line_carries_note_gap;
@@ -1210,16 +1281,10 @@ impl HeightCursor {
                     .get(item_para)
                     .map(para_is_treat_as_char_picture_only)
                     .unwrap_or(false));
-        let follows_endnote_title = self.suppress_large_forward_jump
-            && paragraphs
-                .get(prev_pi)
-                .map(|p| p.text.trim_start().starts_with('문'))
-                .unwrap_or(false);
-        let current_is_endnote_title = self.suppress_large_forward_jump
-            && paragraphs
-                .get(item_para)
-                .map(|p| p.text.trim_start().starts_with('문'))
-                .unwrap_or(false);
+        let follows_endnote_title =
+            self.suppress_large_forward_jump && self.starts_endnote(prev_pi);
+        let current_is_endnote_title =
+            self.suppress_large_forward_jump && self.starts_endnote(item_para);
         // page-path compact 미주 하단의 새 문항 제목은 저장 vpos가 이미
         // 제목/다음 본문을 분리하는 경우가 있다. 기존 95% 꼬리 조건은
         // 2022-09 p17 문29처럼 하단 1줄 차이에서 제목만 아래로 눌러
@@ -2283,6 +2348,11 @@ mod tests {
         )
     }
 
+    /// 미주 첫 문단(새 문항 제목)으로 표시한다 — 렌더의 `endnote_note_first_paras` 와 같은 소유 경계.
+    fn mark_note_first(c: &mut HeightCursor, para_index: usize) {
+        std::sync::Arc::make_mut(&mut c.endnote_note_first_paras).insert(para_index);
+    }
+
     fn compact_endnote_cursor(page_base: Option<i32>) -> HeightCursor {
         HeightCursor::new(
             DPI, COL_Y, COL_H, COL_Y, page_base, false, false, false, true,
@@ -2532,6 +2602,7 @@ mod tests {
         c.prev_layout_para = Some(0);
         let mut ps = vec![para(0, 70100, 900, 0, 5000), para(0, 70150, 900, 0, 5000)];
         ps[1].text = "문11)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(1030.0, 1, &ps, &styles(0.0));
         assert!((got - 1030.0).abs() < 1e-6, "got={got}");
@@ -2549,6 +2620,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문30)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(980.0, 1, &ps, &styles(0.0));
         assert!(got < 980.0, "got={got}");
@@ -2566,6 +2638,7 @@ mod tests {
         ];
         ps[0].text = "구하는 확률은".to_string();
         ps[1].text = "문29)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(946.0, 1, &ps, &styles(0.0));
         let expected = 100.0 + 62000.0 / 75.0 - 4.0;
@@ -2627,6 +2700,7 @@ mod tests {
             para(0, 70150, 900, 0, 5000),
         ];
         ps[1].text = "문23)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(980.0, 1, &ps, &styles(0.0));
 
@@ -2645,6 +2719,7 @@ mod tests {
         let prev = para(0, 681_069, 900, 5669, 5000);
         let mut curr = para(0, 706_832, 900, 452, 5000);
         curr.text = "문23)".to_string();
+        mark_note_first(&mut c, 1);
 
         let y_offset = 961.65;
         let got = c.vpos_adjust(y_offset, 1, &[prev, curr], &styles(0.0));
@@ -2668,6 +2743,7 @@ mod tests {
         let prev = para(0, 57_000, 900, 5669, 5000);
         let mut curr = para(0, 62_250, 900, 452, 5000);
         curr.text = "문16)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(950.0, 1, &[prev, curr], &styles(0.0));
         let expected = 930.0;
@@ -2691,6 +2767,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문29)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(650.0, 1, &ps, &styles(0.0));
         let expected = 650.0 + 1984.0 / 75.0 + 40.0;
@@ -2713,6 +2790,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문29)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(120.0, 1, &ps, &styles(0.0));
 
@@ -2731,6 +2809,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문22)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(450.0, 1, &ps, &styles(0.0));
         let expected = 450.0 + 1984.0 / 75.0;
@@ -2754,6 +2833,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문23)".to_string();
+        mark_note_first(&mut c, 1);
 
         let y_offset = 147.19;
         let end_y = COL_Y + (742719.0 - 719467.0) / 75.0;
@@ -2777,6 +2857,7 @@ mod tests {
             para(0, 108025, 900, 452, 5000),
         ];
         ps[1].text = "문19)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(650.0, 1, &ps, &styles(0.0));
         let expected = 650.0 + 1984.0 / 75.0;
@@ -2804,6 +2885,7 @@ mod tests {
         prev.text = " ( ㉡)".to_string();
         let mut curr = para(0, 1140848, 900, 452, 5000);
         curr.text = "문29)".to_string();
+        mark_note_first(&mut c, 1);
 
         let y_offset = 656.61;
         let got = c.vpos_adjust(y_offset, 1, &[prev, curr], &styles(0.0));
@@ -2827,6 +2909,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문13)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(500.0, 1, &ps, &styles(0.0));
         let expected = 500.0 - 1984.0 / 75.0 + 10.0;
@@ -2849,6 +2932,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문8)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(500.0, 1, &ps, &styles(0.0));
         let expected = 510.0;
@@ -2872,6 +2956,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문8)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(500.0, 1, &ps, &styles(0.0));
         let expected = 500.0 + 5669.0 / 75.0;
@@ -2896,6 +2981,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문13)".to_string();
+        mark_note_first(&mut c, 1);
 
         let y_offset = 419.63;
         let got = c.vpos_adjust(y_offset, 1, &ps, &styles(0.0));
@@ -2921,6 +3007,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문26)".to_string();
+        mark_note_first(&mut c, 1);
 
         let y_offset = 639.45;
         let end_y = COL_Y + (773893.0 - 736951.0) / 75.0;
@@ -2947,6 +3034,7 @@ mod tests {
             para(0, 164586, 900, 452, 5000),
         ];
         ps[1].text = "문27)".to_string();
+        mark_note_first(&mut c, 1);
 
         let y_offset = 990.0;
         let got = c.vpos_adjust(y_offset, 1, &ps, &styles(0.0));
@@ -2971,6 +3059,7 @@ mod tests {
         ];
         ps[0].text = "에서".to_string();
         ps[1].text = "문25)".to_string();
+        mark_note_first(&mut c, 1);
 
         let got = c.vpos_adjust(969.89, 1, &ps, &styles(30.0));
         let expected = 909.89;
@@ -2993,6 +3082,7 @@ mod tests {
         ];
         ps[0].text = "따라서".to_string();
         ps[1].text = "문28)".to_string();
+        mark_note_first(&mut c, 1);
 
         let y_offset = 216.0;
         let end_y = COL_Y + (994892.0 - 984738.0) / 7200.0 * DPI;
@@ -3013,6 +3103,7 @@ mod tests {
         c.prev_layout_para = Some(0);
         let mut ps = vec![para(0, 70100, 900, 0, 5000), para(0, 70150, 900, 0, 5000)];
         ps[0].text = "문11)".to_string();
+        mark_note_first(&mut c, 0);
 
         let got = c.vpos_adjust(1030.0, 1, &ps, &styles(0.0));
         assert!((got - 1030.0).abs() < 1e-6, "got={got}");
@@ -3025,6 +3116,7 @@ mod tests {
         c.prev_layout_para = Some(0);
         let mut ps = vec![para(0, 70100, 900, 0, 5000), para(0, 70150, 900, 0, 5000)];
         ps[0].text = "문27)".to_string();
+        mark_note_first(&mut c, 0);
         ps[1].line_segs.push(LineSeg {
             vertical_pos: 71502,
             line_height: 900,
@@ -3119,6 +3211,7 @@ mod tests {
         c.prev_layout_para = Some(0);
         let mut curr = para(0, 2800, 900, 0, 5000); // prev 내용 바닥(1900+900) → stored gap≈0
         curr.text = "문11)".to_string();
+        mark_note_first(&mut c, 1);
         let ps = vec![multiline_prev_with_injected_gap(), curr];
         let y_in = 100.0 + 2800.0 / 75.0; // page_path end_y 와 동일 → stored gap 0
         let got = c.vpos_adjust(y_in, 1, &ps, &styles(0.0));
@@ -3137,6 +3230,7 @@ mod tests {
         c.prev_layout_para = Some(0);
         let mut curr = para(0, 3550, 900, 0, 5000); // 2800 + 750(=10px) → stored gap 10px
         curr.text = "문13)".to_string();
+        mark_note_first(&mut c, 1);
         let ps = vec![multiline_prev_with_injected_gap(), curr];
         let y_in = 100.0 + 2800.0 / 75.0;
         let got = c.vpos_adjust(y_in, 1, &ps, &styles(0.0));
@@ -3156,6 +3250,7 @@ mod tests {
         let prev = para(0, 1900, 900, 1984, 5000); // 단일줄, ls=1984
         let mut curr = para(0, 2800, 900, 0, 5000);
         curr.text = "문11)".to_string();
+        mark_note_first(&mut c, 1);
         let ps = vec![prev, curr];
         let y_in = 100.0 + 2800.0 / 75.0;
         let got = c.vpos_adjust(y_in, 1, &ps, &styles(0.0));
@@ -3174,6 +3269,7 @@ mod tests {
         let mut curr = para(0, 1012850, 900, 452, 5000);
         prev.text = "따라서 이다.".to_string();
         curr.text = "문24)".to_string();
+        mark_note_first(&mut c, 1);
 
         let y_in = 831.44;
         let got = c.vpos_adjust(y_in, 1, &[prev, curr], &styles(0.0));
@@ -3223,6 +3319,7 @@ mod tests {
         let prev = para(0, 1900, 900, 1984, 5000); // 단일줄 빈 separator, ls=1984(주입 7mm)
         let mut curr = para(0, 2800, 900, 0, 5000);
         curr.text = "문7)".to_string();
+        mark_note_first(&mut c, 1);
         let ps = vec![prev, curr];
         // end_y = 100 + 2800/75 = 137.333. y_offset=160 → safe_backtrack(end_y<y_offset-8,
         // end_y>=prev_content_bottom=160-1984/75=133.55, mid-column) 발동 → 베이스라인 cram.
@@ -3252,6 +3349,7 @@ mod tests {
         let prev = para(0, 1900, 900, 5669, 5000);
         let mut curr = para(0, 3550, 900, 0, 5000); // y_offset보다 10px 아래 저장 vpos
         curr.text = "문10)".to_string();
+        mark_note_first(&mut c, 1);
         let ps = vec![prev, curr];
         let y_offset = 100.0 + 2800.0 / 75.0;
 
@@ -3280,6 +3378,7 @@ mod tests {
         let prev = para(0, 1900, 900, 180, 5000); // 자연 trailing(180 < 1984)
         let mut curr = para(0, 2800, 900, 0, 5000);
         curr.text = "문7)".to_string();
+        mark_note_first(&mut c, 1);
         let ps = vec![prev, curr];
         let base_before = c.vpos_page_base;
         let got = c.vpos_adjust(160.0, 1, &ps, &styles(0.0));

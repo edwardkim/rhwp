@@ -54,6 +54,7 @@ pub mod pdf;
 pub mod pdf_raster_fidelity;
 pub mod pua_oldhangul;
 pub mod raster_pixels;
+pub(crate) mod reflow_float_host_line;
 pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
@@ -843,6 +844,61 @@ pub fn linear_gradient_axis(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64,
         cx + dx * half,
         cy + dy * half,
     )
+}
+
+/// 선형 그러데이션의 첫 색은 원본 중심에, 마지막 색은 양쪽 끝에 놓인다.
+/// 한컴 Print의 0/50/100% 중심 대조군에서 50%는 두 방향, 끝 중심은 한 방향 램프다.
+/// step/stepCenter로 이미 편 stop의 순서·불연속도 함께 보존한다.
+pub(crate) fn linear_gradient_color_stops(
+    gradient: &GradientFillInfo,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+) -> (Vec<ColorRef>, Vec<f64>) {
+    let positions: Vec<_> =
+        (0..gradient.colors.len())
+            .map(|i| {
+                gradient.positions.get(i).copied().unwrap_or_else(|| {
+                    i as f64 / gradient.colors.len().saturating_sub(1).max(1) as f64
+                })
+            })
+            .collect();
+    if gradient.gradient_type != 1
+        || gradient.colors.len() < 2
+        || !(0..=100).contains(&gradient.center_x)
+        || !(0..=100).contains(&gradient.center_y)
+        || width <= 0.0
+        || height <= 0.0
+    {
+        return (gradient.colors.clone(), positions);
+    }
+    let (x0, y0, x1, y1) = linear_gradient_axis(gradient.angle, x, y, width, height);
+    let dx = x1 - x0;
+    let dy = y1 - y0;
+    let length_squared = dx * dx + dy * dy;
+    if length_squared <= 0.0 {
+        return (gradient.colors.clone(), positions);
+    }
+    let cx = x + width * f64::from(gradient.center_x) / 100.0;
+    let cy = y + height * f64::from(gradient.center_y) / 100.0;
+    // 유효한 0..100% 중심은 상자 안이다. 정사영의 끝자리 부동소수 오차만 정규화한다.
+    let center = (((cx - x0) * dx + (cy - y0) * dy) / length_squared).clamp(0.0, 1.0);
+    let mut colors = Vec::with_capacity(gradient.colors.len() * 2);
+    let mut stops = Vec::with_capacity(gradient.colors.len() * 2);
+    if center > 0.0 {
+        for (&color, &position) in gradient.colors.iter().zip(&positions).rev() {
+            colors.push(color);
+            stops.push(center * (1.0 - position));
+        }
+    }
+    if center < 1.0 {
+        for (&color, &position) in gradient.colors.iter().zip(&positions) {
+            colors.push(color);
+            stops.push(center + (1.0 - center) * position);
+        }
+    }
+    (colors, stops)
 }
 
 /// 선 렌더링 스타일
@@ -2816,14 +2872,14 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         // 굵게 렌더됨. 한컴 돋움 획 두께(페이지 밀도 0.265)에 근접한
         // 'Noto Sans KR ExtraLight'(rsvg 페이지 밀도 0.277)를 무거운 Noto 직전에 삽입 —
         // 시스템 고딕 렌더는 무영향, Noto 폴백만 가볍게 교체.
-        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
+        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',sans-serif";
     }
     // 고정폭 키워드
     let lower = font_family.to_ascii_lowercase();
     if (font_family.contains("KoPub돋움체") || lower.contains("kopub dotum"))
         && (font_family.contains("Light") || lower.contains("light"))
     {
-        return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
+        return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',sans-serif";
     }
     // BatangChe is fixed-width serif. Its stored glyph advances are replayed
     // independently of the paint fallback; choosing a sans coding face here
@@ -2832,7 +2888,7 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         || lower.contains("batangche")
         || lower.contains("kopub batang")
     {
-        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',serif";
     }
     if font_family.contains("굴림체")
         || lower.contains("gulimche")
@@ -2849,9 +2905,9 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         // Serif: Windows → macOS(Bold 보유 우선) → macOS 기본 → Android → 오픈소스 → 한컴 → 리눅스 시스템 → generic
         // Nanum Myeongjo 는 macOS 10.9+ 기본 설치이며 Bold variant 보유.
         // AppleMyungjo 보다 앞에 두어야 macOS Chrome 에서 CJK 글리프 bold 매칭 성공.
-        // 'Source Han Serif K Old Hangul' (Task #528): @font-face unicode-range 가 옛한글
+        // 'RHWP Old Hangul' (Task #528): @font-face unicode-range 가 옛한글
         // 영역 (U+1100-11FF, U+A960-A97F, U+D7B0-D7FF) 만 매칭하므로 일반 한글에 영향 없음.
-        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',serif";
     }
     // 세리프 키워드 (영문) — "serif" 포함하되 "sans" 부분 문자열을 가진 폰트명 전체 제외
     if lower.contains("times")
@@ -2862,13 +2918,13 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         || lower.contains("gungsuh")
         || (lower.contains("serif") && !lower.contains("sans"))
     {
-        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',serif";
     }
     // Sans-serif: Windows → macOS/iOS → Android → 오픈소스 → 한컴 → generic
-    // 'Source Han Serif K Old Hangul' (Task #528): unicode-range 옛한글 자모 영역 한정
+    // 'RHWP Old Hangul' (Task #528): unicode-range 옛한글 자모 영역 한정
     // 'Noto Sans KR ExtraLight' (Task #1224): 무거운 Noto CJK Regular 폴백 직전에 삽입해
     // 한컴 돋움 획 두께에 근접시킴. 시스템 고딕 우선 → 부재 시에만 ExtraLight 매칭.
-    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif"
+    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',sans-serif"
 }
 
 /// `generic_fallback` 에 굵기 힌트를 얹는다. bold 는 ExtraLight 를 제거한다 (#3772).
@@ -3988,8 +4044,8 @@ mod tests {
 
     #[test]
     fn test_generic_fallback() {
-        let serif = "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
-        let sans = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
+        let serif = "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',serif";
+        let sans = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',sans-serif";
         // Task #1224: ExtraLight 가 무거운 Noto 직전에 위치하는지 명시 검증
         assert!(sans.contains("'Noto Sans KR ExtraLight','Noto Sans KR'"));
         // [#4086] 하이픈 표기는 어떤 폰트와도 매칭되지 않는다 — 실제 패밀리명은

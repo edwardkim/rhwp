@@ -3,6 +3,7 @@
 //! This module is available only with the `native-skia` feature.
 
 mod equation_conv;
+mod fill;
 mod font_lookup;
 mod glyph_replay;
 mod image_conv;

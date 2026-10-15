@@ -74,12 +74,29 @@ Cargo 검증을 시작하기 전에는 target 하위 directory와 실행 중인 
 `target/pr-review`와 shared target/debug, target/release, target/release-test,
 target/wasm32-unknown-unknown, 다른 작업의 산출물은 삭제 대상으로 가정하지 않는다.
 
+디스크 공간이 부족하면 공유 빌드 캐시를 정리하기 전에 종료된 검증용 Chromium/Puppeteer
+임시 프로필의 삭제를 검토한다. 기본 후보는 24시간 이상 지난 항목이며 실행 중인 프로세스의
+경로·열린 파일 참조와 잠금 PID를 확인한 뒤 정확한 임시 경로만 정리한다. 현재 프로필·일반
+사용자 프로필·검증 증적은 보존하고 삭제 목록·확인 근거·전후 여유 공간을 로그에 남긴다.
+Linux Snap 경로와 상세 절차는 [디스크 공간 정리](../dev_environment_guide.md#디스크-공간이-부족할-때)를 따른다.
+
+`target/pr-review`의 종료된 오래된 증분 캐시도 디스크 정리 후보로 권장한다. 공유 target을
+사용하는 Cargo·rustc·wasm-pack·wasm-opt 작업이 모두 종료된 뒤 사용하지 않는 정확한
+`incremental` 하위 캐시 경로만 삭제한다. target 전체·프로필 디렉터리·실행 파일·`deps`·
+`.fingerprint`와 다른 작업의 산출물은 보존하고, 삭제 경로·확인 근거·전후 여유 공간을 기록한다.
+
 ~~~bash
 find "${rhwp_review_source_dir:?기본 작업공간 경로를 먼저 고정하세요}/target" -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
 pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 ~~~
 
 ### 고정 review target과 실행 환경
+
+각 OS의 [빌드 병렬도 예시](../dev_environment_guide.md#빌드-병렬도)는 `CARGO_BUILD_JOBS`의
+시작값으로 **논리 CPU 수 − 2, 최소 1개**를 권장한다. 강제값은 아니며 Native·WASM·테스트
+컴파일의 메모리·동시 작업·빌드 성능에 맞게 조절한다. 테스트 실행 스레드와 구분하며,
+fresh WASM의 `codegen-units=16`도 환경에 따라 조절할 수 있는 권장값이다. WASM용 설정은
+해당 빌드 명령 범위에만 적용한다.
 
 먼저 **기본 작업공간의 저장소 루트에서**, review worktree로 이동하기 전에 절대 경로를 고정한다.
 이 변수는 같은 셸에서 이후 검증 전체에 유지한다. 이미 review worktree에 있다면 기본 작업공간으로 돌아가

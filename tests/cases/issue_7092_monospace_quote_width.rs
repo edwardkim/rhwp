@@ -27,11 +27,10 @@
 //!   수정 전 rhwp 는 둘 다 0.299 였다.
 //! ```
 //!
-//! ## 반례
+//! ## 비고정폭 face — #7702
 //!
-//! 비고정폭 face 는 이 변경의 범위 밖이다. 같은 이름이 TrueType/HFT 두 realization 으로
-//! 갈리고(휴먼명조 `‘` 정본 1.010 ↔ 0.24) 기호 슬롯 선택 축이 따로 있다. 아래 둘째 시험이
-//! 그 face 의 종전 폭 유지를 잠근다.
+//! 곡선 따옴표는 한/글이 **영문 슬롯** 글꼴로 재고 그린다. 영문 슬롯이 TrueType 휴먼명조면
+//! 그 글리프(`HMKMM.TTF` 512/512)대로 전각이다. 아래 둘째 시험이 그 정본 값을 잠근다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -116,21 +115,24 @@ fn monospace_quotes_advance_full_width() {
     }
 }
 
-/// 반례 — 비고정폭 face 는 종전 폭을 유지한다.
+/// [#7702] 비고정폭 TrueType 휴먼명조의 따옴표도 적힌 전각 폭으로 전진한다.
 ///
-/// `156467175` 의 `(이하‘대구염색공단’)` 은 정본이 1.010 em 이지만, 같은 이름의 Type3
-/// 실현은 0.24 이고 기호 슬롯 선택 축이 남아 있어 이 변경이 손대지 않는다. 폭을 함께
-/// 넓히면 `issue6284` 14쪽 표가 본문 바닥을 +51.9px 넘는 것을 실측으로 확인했다.
+/// `156467175` 의 `(이하‘대구염색공단’)` — 정본
+/// `pdf/issue7235/156467175_press_release_header_logo_p1-2020.pdf` 가 휴먼명조 TrueType
+/// 글꼴로 `‘` 0.936 em · `’` 0.926 em 을 놓는다(같은 줄 자간 포함). 수정 전 rhwp 는
+/// 전각 글리프를 0.3 em 으로 눌러 0.277 em(자간 포함) 이었다.
 #[test]
-fn proportional_font_quotes_keep_their_previous_width() {
+fn proportional_truetype_quotes_follow_the_hancom_advance() {
     let advances = advances_for("휴먼명조", &[(SAMPLE_156467175, 1)]);
-    assert!(
-        !advances.is_empty(),
-        "휴먼명조 따옴표가 하나도 없다 — 반례 표본 전제가 깨졌다"
+    assert_eq!(
+        advances.len(),
+        2,
+        "휴먼명조 따옴표 `‘`·`’` 두 개를 봐야 한다 — 관측: {advances:?}"
     );
-    let widened: Vec<_> = advances.iter().filter(|adv| **adv > 0.5).collect();
-    assert!(
-        widened.is_empty(),
-        "휴먼명조 따옴표는 이 변경의 범위 밖이라 종전 0.300 em 이어야 한다. 넓어진 것: {widened:?}"
-    );
+    for (adv, oracle) in advances.iter().zip([0.926, 0.936]) {
+        assert!(
+            (adv - oracle).abs() <= 0.02,
+            "휴먼명조 따옴표는 정본 {oracle:.3} em 이어야 한다(수정 전 0.277) — got {adv:.3}, 전체 {advances:?}"
+        );
+    }
 }

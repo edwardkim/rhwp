@@ -212,11 +212,7 @@ impl TypesetEngine {
                     + no_separator_tail_extra_bleed;
         let next_endnote_title_fit_height = if ep_idx + 1 == en_ctrl.paragraphs.len() {
             endnote_refs.get(en_ref_idx + 1).and_then(|next_ref| {
-                let next_host = paragraphs.get(next_ref.para_index)?;
-                let Control::Endnote(next_ctrl) = next_host.controls.get(next_ref.control_index)?
-                else {
-                    return None;
-                };
+                let next_ctrl = next_ref.resolve(paragraphs)?;
                 let mut next_para = next_ctrl.paragraphs.first()?.clone();
                 prepend_endnote_marker_text(&mut next_para, next_ctrl);
 
@@ -237,11 +233,7 @@ impl TypesetEngine {
         };
         let next_endnote_first_para_fit_height = if ep_idx + 1 == en_ctrl.paragraphs.len() {
             endnote_refs.get(en_ref_idx + 1).and_then(|next_ref| {
-                let next_host = paragraphs.get(next_ref.para_index)?;
-                let Control::Endnote(next_ctrl) = next_host.controls.get(next_ref.control_index)?
-                else {
-                    return None;
-                };
+                let next_ctrl = next_ref.resolve(paragraphs)?;
                 let mut next_para = next_ctrl.paragraphs.first()?.clone();
                 prepend_endnote_marker_text(&mut next_para, next_ctrl);
 
@@ -260,11 +252,7 @@ impl TypesetEngine {
         };
         let next_next_endnote_first_para_fit_height = if ep_idx + 1 == en_ctrl.paragraphs.len() {
             endnote_refs.get(en_ref_idx + 2).and_then(|next_ref| {
-                let next_host = paragraphs.get(next_ref.para_index)?;
-                let Control::Endnote(next_ctrl) = next_host.controls.get(next_ref.control_index)?
-                else {
-                    return None;
-                };
+                let next_ctrl = next_ref.resolve(paragraphs)?;
                 let mut next_para = next_ctrl.paragraphs.first()?.clone();
                 prepend_endnote_marker_text(&mut next_para, next_ctrl);
 
@@ -285,12 +273,7 @@ impl TypesetEngine {
             endnote_refs
                 .get(en_ref_idx + 1)
                 .and_then(|next_ref| {
-                    let next_host = paragraphs.get(next_ref.para_index)?;
-                    let Control::Endnote(next_ctrl) =
-                        next_host.controls.get(next_ref.control_index)?
-                    else {
-                        return None;
-                    };
+                    let next_ctrl = next_ref.resolve(paragraphs)?;
                     Some(next_ctrl.paragraphs.iter().take(8).any(|next_para| {
                         if !para_is_treat_as_char_picture_only(next_para) {
                             return false;

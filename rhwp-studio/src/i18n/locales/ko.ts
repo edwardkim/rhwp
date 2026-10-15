@@ -7,6 +7,9 @@
  */
 
 const catalog = {
+  "dialog.fill.keepGradient": "기존 그라데이션 유지",
+  "dialog.fill.keepImage": "기존 그림 배경 유지",
+  "dialog.fill.keepExisting": "기존 채우기 유지",
   "command.edit.compareDocuments.label": "문서 비교",
   "command.edit.compareDocuments.splitLabel": "문서 비교 ",
   "command.edit.compareDocuments.toolbarLabel": "문서\n비교",

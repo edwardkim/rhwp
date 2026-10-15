@@ -427,6 +427,8 @@ function workflowRunMatchesPull(run, identity) {
   // GitHub can return an empty pull_requests array for fork runs. In that case the
   // repository + branch + exact SHA guards in selectLatestWorkflowRun remain the
   // authority. When association data exists, reject runs from another PR/base.
+  // 연결 PR의 head.sha는 이후 push에 맞춰 갱신된다. 실행 SHA는 아래 호출자의
+  // run.head_sha 검사로 확인하며 가변 PR 메타데이터와 중복 대조하지 않는다.
   if (pulls.length === 0) return true;
   return pulls.some((pull) => (
     Number(pull?.number || 0) === Number(identity.pullNumber || 0)
@@ -436,7 +438,6 @@ function workflowRunMatchesPull(run, identity) {
       || String(pull?.base?.sha || '') === String(identity.baseSha || '')
     )
     && String(pull?.head?.ref || '') === String(identity.headBranch || '')
-    && String(pull?.head?.sha || '') === String(identity.headSha || '')
   ));
 }
 

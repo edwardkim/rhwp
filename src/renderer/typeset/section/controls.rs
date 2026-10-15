@@ -2,7 +2,7 @@
 use crate::renderer::typeset::{
     body_pile_stays_on_anchor_page, estimate_footnote_note_height, flow_noninline_picture,
     has_majority_fullpage_images, hwpunit_to_px, notes, Control, DeferredSquarePictureControl,
-    EndnoteRef, FootnoteRef, FootnoteSource, PageItem, Paragraph, ResolvedStyleSet, TypesetEngine,
+    FootnoteRef, FootnoteSource, PageItem, Paragraph, ResolvedStyleSet, TypesetEngine,
     TypesetState,
 };
 impl TypesetEngine {
@@ -99,7 +99,17 @@ impl TypesetEngine {
             .count();
 
         // 인라인 컨트롤 처리: 도형/그림/수식/각주 (Paginator engine.rs:509-525 동일)
+        // [#7860] 표 셀(중첩 표 포함) 안 미주도 소유 경로와 함께 문서 순서로 모은다.
+        let endnote_refs =
+            crate::renderer::pagination::paragraph_endnote_refs(section_index, para_idx, para);
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+            // [Task #836] 미주 수집 — 문서 끝에 모아서 렌더
+            for (en_ref, _) in endnote_refs
+                .iter()
+                .filter(|(en_ref, _)| en_ref.control_index == ctrl_idx)
+            {
+                st.collect_endnote(en_ref.clone());
+            }
             // [#1995] 다수 전면 이미지: 각 전면 그림을 새 페이지에 단독 배치.
             if is_multi_fullpage_img_para && fullpage_img_ctrls.contains(&ctrl_idx) {
                 st.force_new_page();
@@ -628,15 +638,6 @@ impl TypesetEngine {
                         native_hwp5_footnote_break,
                     );
                     self.reserve_current_body_note_area(st, paragraphs, styles);
-                }
-                Control::Endnote(en_ctrl) => {
-                    // [Task #836] 미주 수집 — 문서 끝에 모아서 렌더
-                    st.collect_endnote(EndnoteRef {
-                        number: en_ctrl.number,
-                        section_index,
-                        para_index: para_idx,
-                        control_index: ctrl_idx,
-                    });
                 }
                 _ => {}
             }

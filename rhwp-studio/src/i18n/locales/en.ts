@@ -7,6 +7,9 @@
  */
 
 const catalog = {
+  "dialog.fill.keepGradient": "Keep existing gradient",
+  "dialog.fill.keepImage": "Keep existing image fill",
+  "dialog.fill.keepExisting": "Keep existing fill",
   "command.edit.compareDocuments.label": "Compare Documents",
   "command.edit.compareDocuments.splitLabel": "Compare Documents ",
   "command.edit.compareDocuments.toolbarLabel": "Compare\nDocuments",

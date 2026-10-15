@@ -344,10 +344,18 @@ fn issue4967_combined_evidence_keeps_unowned_legacy_geometry_unmodelled() {
     .expect("HWP3 evidence JSON");
     let lines = evidence["lines"].as_array().expect("line evidence");
     assert!(!lines.is_empty());
-    assert!(lines.iter().all(|line| {
-        line["storedRow"]["disposition"] == "unmodelled"
-            && line["storedRow"]["reason"] == "frameProvenanceIncomplete"
-    }));
+    for line in lines {
+        assert_eq!(line["storedRow"]["disposition"], "unmodelled");
+        let width = line["frame"]["width"].as_f64().expect("실제 줄 상자 폭");
+        // 유효한 실제 상자도 HWP3의 저장 프레임 소유를 입증하지 못한다.
+        // 폭이 없는 줄은 프레임 출처 판정에 앞서 실제 상자 자체가 무효다.
+        let reason = if width.is_finite() && width > 0.0 {
+            "frameProvenanceIncomplete"
+        } else {
+            "invalidActualFrame"
+        };
+        assert_eq!(line["storedRow"]["reason"], reason, "{line}");
+    }
 }
 
 #[test]

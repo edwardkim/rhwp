@@ -20,8 +20,7 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
-const SOURCE_HAN: &[u8] =
-    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Regular.otf");
 const HAPPINESS: &[u8] =
     include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
 const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");

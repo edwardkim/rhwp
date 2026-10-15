@@ -115,16 +115,18 @@ impl TypesetEngine {
                 prepend_endnote_marker_text(&mut en_para_copy, en_ctrl);
             }
             let prev_render_endnote_para_local_idx = last_render_endnote_para_local_idx;
+            // [#7665] 직전 렌더 미주 문단이 미주의 첫 문단(번호 장식을 받은 새 문항 제목)인가 —
+            // 「문」 접두사가 아니라 소유 경계(`ep_idx == 0`)로 읽는다.
             let prev_rendered_endnote_is_title = prev_render_endnote_para_local_idx
-                .and_then(|idx| st.endnote_paragraphs.get(idx))
-                .map(|p| p.text.trim_start().starts_with('문'))
-                .unwrap_or(false);
+                .and_then(|idx| st.endnote_para_sources.get(idx))
+                .is_some_and(|src| src.note_para_index == 0);
             let en_para_local_idx = st.endnote_paragraphs.len();
             st.append_endnote_paragraph(en_para_copy);
             st.append_endnote_source(EndnoteParaSource {
                 section_index: en_ref.section_index,
                 para_index: en_ref.para_index,
                 control_index: en_ref.control_index,
+                cell_path: en_ref.cell_path.clone(),
                 note_para_index: ep_idx,
             });
             last_render_endnote_para_local_idx = Some(en_para_local_idx);
@@ -1332,6 +1334,7 @@ impl TypesetEngine {
                         section_index: en_ref.section_index,
                         para_index: en_ref.para_index,
                         control_index: en_ref.control_index,
+                        cell_path: en_ref.cell_path.clone(),
                         note_para_index: ep_idx + 1,
                     });
                     last_render_endnote_para_local_idx = Some(st.endnote_paragraphs.len() - 1);

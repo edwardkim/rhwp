@@ -467,6 +467,12 @@ impl TypesetEngine {
                     };
                     // 전체 개체 상자를 첫 조각으로 바꾸면서 빠진 바깥 위 여백도
                     // 예약·배치가 소비할 같은 원점에 한 번만 포함한다.
+                    // 저장 줄 없이 계산한 host 글줄은 `from_computed_*host` 가 모든 글줄이 문단
+                    // 기준 오프셋 위끝 전에 끝날 때만 이 배치를 만든다 — 저장 글줄이 표 앞에서
+                    // 끝나는 #7531 형상과 같은 독립 밴드라 글줄이 표 위 여백을 소유하지 않는다.
+                    // 첫 조각 예산(`host_before_overhead`)은 이미 그 여백을 예약하므로 원점도
+                    // 같이 연다(70833 12쪽 `pi=83`: 한/글 2020 괘선 275.06px = 제목 줄 상단
+                    // 235.6 + 오프셋 23.79 + 바깥 위 1.88 + 캡션 2.67 + 캡션 간격 11.33).
                     if !reflow_empty_host
                         && (crate::renderer::float_placement::stored_hwpx_cut_owns_outer_frame(
                             st.profile.hwpx_stored_layout() && !st.profile.hwp5_origin_hwpx() && !st.profile.session_edited(),
@@ -496,7 +502,8 @@ impl TypesetEngine {
                         && matches!(table.page_break, crate::model::table::TablePageBreak::RowBreak)
                         && crate::renderer::float_placement::ParagraphFloatPlacement::stored_host_lines_are_valid(
                             para, table, ctrl_idx,
-                        ))) {
+                        )) || (para_has_non_whitespace_text(para)
+                        && fmt.computed_host_lines.is_some())) {
                         let top_margin = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
                         fragment.table_top += top_margin;
                         fragment.occupied_bottom += top_margin;

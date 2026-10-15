@@ -987,6 +987,13 @@ jobs:
       - name: Format check
         run: cargo fmt --all -- --check
 
+      - name: Validate Visual Sweep PNG contracts
+        run: |
+          rhwp_visual_contract_env="${RUNNER_TEMP}/rhwp-visual-sweep-contracts"
+          python3 -m venv "$rhwp_visual_contract_env"
+          "$rhwp_visual_contract_env/bin/python" -m pip install Pillow==12.3.0 fonttools==4.64.0
+          "$rhwp_visual_contract_env/bin/python" -m unittest discover -s scripts/tests -p 'test_visual_sweep*.py'
+
       - name: Validate CI impact classifier
         run: |
           node --test scripts/tests/ci-impact-classifier.test.cjs
@@ -1424,6 +1431,9 @@ jobs:
           fi
           echo "CHROME_PATH=$chrome_path" >> "$GITHUB_ENV"
           echo "PUPPETEER_EXECUTABLE_PATH=$chrome_path" >> "$GITHUB_ENV"
+
+      - name: Validate Visual Sweep Canvas font binding
+        run: VISUAL_SWEEP_CHROME="$CHROME_PATH" node --test scripts/tests/visual-sweep-canvas-fonts.browser.mjs
 
       # [#5959] 스냅샷 예산 축출 회귀 게이트(#5769) — 실 wasm 과 실 브라우저를
       # 구동해야 하므로 스텁 wasm 을 쓰는 unit 모드가 아닌 package 모드에서만 단다.

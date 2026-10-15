@@ -31,8 +31,11 @@
 
 - 한컴 PDF 오라클은 일반 Git blob으로 커밋한다. Git LFS pointer를 사용하지 않는다.
 - 파일 하나의 크기는 **50 MiB(52,428,800 bytes) 미만**이어야 한다. 정확히 50 MiB도 거부한다.
-- 상한을 넘으면 그대로 커밋하지 않는다. 재현 범위를 보존하는 축소 fixture, 페이지 발췌 또는 외부
-  증적 중 적절한 방식을 별도 이슈에서 승인받는다.
+- **50 MiB 이상 PDF는 로컬에만 보관하고 commit·push·PR 첨부에서 제외한다.** 저장소 밖의
+  안정적인 로컬 경로에 보관하고, 저장소 안에 둘 경우 `.git/info/exclude`에 정확한 경로를 등록한다.
+  출처·바이트 수·SHA-256·전체 쪽수·Print/검증 명령과 전쪽 Native/fresh WASM TSV·대표 PNG를 기록한다.
+  전쪽 PDF를 분할해 업로드하거나 보관 방식·커밋 예외 합의를 기본 절차로 요청하지 않는다.
+  [대용량 PDF 검증 기록](../mydocs/manual/pr_review/visual_fixture_evidence.md#원본-fixture와-기준-pdf-보존)을 따른다.
 - 기존 파일을 교체할 때는 변환 환경과 변경 이유를 남기고, 필요한 경우 전후 SHA-256을 기록한다.
 - LFS pointer, PDF magic 오류, 폐기된 최상위 경로, 크기 상한은 다음 검사로 확인한다.
 

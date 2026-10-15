@@ -1,6 +1,6 @@
 use skia_safe::{
     paint, png_encoder, surfaces, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder,
-    PathEffect, RRect, Rect, Typeface,
+    PathEffect, RRect, Rect,
 };
 use std::collections::{BTreeSet, HashMap, HashSet};
 
@@ -25,8 +25,8 @@ use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, St
 
 use super::equation_conv::{render_equation, EquationFonts};
 use super::font_lookup::{
-    collect_system_families, legacy_typeface_for_style, match_system_family_style,
-    SystemFontFamilies,
+    collect_system_families, legacy_typeface_for_style, match_supplied_family,
+    match_system_family_style, SuppliedTypefaces, SystemFontFamilies,
 };
 use super::glyph_replay::{
     construct_glyph_font, finite_scalar, glyph_run_minimum_byte_cost, prepare_glyph_outline,
@@ -379,14 +379,14 @@ const FORM_CJK_FAMILIES: &[&str] = &[
 pub struct SkiaLayerRenderer {
     font_mgr: FontMgr,
     /// 사용자 지정 폰트 디렉토리에서 미리 로드한 폰트 캐시.
-    /// key = primary face name (Typeface::family_name), value = Typeface.
+    /// key = primary or SFNT family name, value = the same supplied Typeface.
     /// SVG 의 `--font-path` 와 같은 패턴으로 ttfs 디렉토리의 한컴 전용 폰트 (HY견명조 등) 도 사용 가능.
-    custom_typefaces: HashMap<String, Typeface>,
+    custom_typefaces: SuppliedTypefaces,
     /// [#3300] 번들 최후-폴백 폰트(ttfs/opensource). custom 과 분리해 해석
     /// 체인에서 custom·시스템 매칭 **뒤**에만 선다 — custom 에 섞으면 깊은
     /// 폴백(Noto Sans KR)이 시스템 1순위(문서 지정 맑은 고딕 등)를 제치고
     /// 본문 전체를 폴백 서체로 렌더한다(r23 발산 −6.9pp).
-    bundled_typefaces: HashMap<String, Typeface>,
+    bundled_typefaces: SuppliedTypefaces,
     /// 시스템에 실제 존재하는 font family 목록.
     /// headless macOS 에서 missing family 를 CoreText 에 넘기면 downloadable font
     /// lookup IPC가 영구 대기할 수 있어, match_family_style 호출 전 사전 필터로 사용한다.
@@ -409,8 +409,8 @@ impl SkiaLayerRenderer {
         }
         SKIA_FONT_BASE.with(|(font_mgr, system_families)| Self {
             font_mgr: font_mgr.clone(),
-            custom_typefaces: HashMap::new(),
-            bundled_typefaces: HashMap::new(),
+            custom_typefaces: SuppliedTypefaces::new(),
+            bundled_typefaces: SuppliedTypefaces::new(),
             system_families: system_families.clone(),
         })
     }
@@ -439,13 +439,14 @@ impl SkiaLayerRenderer {
     fn load_typefaces_from_dirs(
         font_mgr: &FontMgr,
         dirs: &[std::path::PathBuf],
-        into: &mut HashMap<String, Typeface>,
+        into: &mut SuppliedTypefaces,
     ) {
         for dir in dirs {
             if !dir.exists() {
                 continue;
             }
             if let Ok(entries) = std::fs::read_dir(dir) {
+                let mut directory_faces = SuppliedTypefaces::new();
                 for entry in entries.flatten() {
                     let path = entry.path();
                     let ext = path
@@ -459,9 +460,23 @@ impl SkiaLayerRenderer {
                         let skia_data = skia_safe::Data::new_copy(&data);
                         if let Some(typeface) = font_mgr.new_from_data(skia_data, None) {
                             let family = typeface.family_name();
-                            into.entry(family).or_insert(typeface);
+                            for family in super::font_lookup::supplied_family_names(&data, &family)
+                            {
+                                let faces = directory_faces.entry(family).or_default();
+                                if !faces
+                                    .iter()
+                                    .any(|face| face.font_style() == typeface.font_style())
+                                {
+                                    faces.push(typeface.clone());
+                                }
+                            }
                         }
                     }
+                }
+                // 먼저 지정한 디렉터리의 family 공급을 유지하고,
+                // 그 디렉터리 안에서는 요청 스타일을 고를 수 있게 모두 보존한다.
+                for (family, faces) in directory_faces {
+                    into.entry(family).or_insert(faces);
                 }
             }
         }
@@ -478,6 +493,30 @@ impl SkiaLayerRenderer {
         let bundled_dirs = crate::renderer::font_paths::bundled_font_dirs();
         Self::load_typefaces_from_dirs(&self.font_mgr, &bundled_dirs, &mut self.bundled_typefaces);
         self
+    }
+
+    /// 이미 공급한 family를 문서의 요청 이름에 명시적으로 연결한다.
+    /// `with_font_paths` 이후 호출하며 실제 폰트 메타데이터와 기본 폴백은 변경하지 않는다.
+    /// 이 renderer에 적재된 스타일 목록을 공유하고 글자별 coverage 검사는 그대로 적용한다.
+    pub fn with_font_family_alias(
+        mut self,
+        requested: &str,
+        supplied: &str,
+    ) -> LayerRenderResult<Self> {
+        if requested.trim().is_empty() {
+            return Err(HwpError::RenderError(
+                "요청 글꼴 이름이 비어 있습니다".into(),
+            ));
+        }
+        let faces = self
+            .custom_typefaces
+            .get(supplied)
+            .cloned()
+            .ok_or_else(|| {
+                HwpError::RenderError(format!("공급되지 않은 글꼴 family: {supplied}"))
+            })?;
+        self.custom_typefaces.insert(requested.to_owned(), faces);
+        Ok(self)
     }
 
     /// 기본 native Skia paint와 동일한 후보 사다리에서 문자별 typeface 결정을 읽는다.
@@ -1091,17 +1130,17 @@ impl SkiaLayerRenderer {
                                 bbox.width as f32,
                                 bbox.height as f32,
                             );
-                            if let Some(color) = background
-                                .gradient
-                                .as_ref()
-                                .and_then(|gradient| gradient.colors.first().copied())
-                                .or(background.background_color)
-                            {
-                                let mut paint = Paint::default();
-                                paint.set_anti_alias(true);
-                                paint.set_style(paint::Style::Fill);
-                                paint.set_color(colorref_to_skia(color, 1.0));
-                                canvas.draw_rect(rect, &paint);
+                            let gradient_fill = background.gradient.as_ref().and_then(|gradient| {
+                                super::fill::gradient_paint(gradient, bbox, 1.0)
+                            });
+                            if let Some(fill) = gradient_fill {
+                                canvas.draw_rect(rect, &fill);
+                            } else if let Some(color) = background.background_color {
+                                let mut fill = Paint::default();
+                                fill.set_anti_alias(true);
+                                fill.set_style(paint::Style::Fill);
+                                fill.set_color(colorref_to_skia(color, 1.0));
+                                canvas.draw_rect(rect, &fill);
                             }
                             if let Some(image) = &background.image {
                                 // 일반 RealPic 쪽 배경의 밝기·대비는 색조 조정일 뿐
@@ -1332,16 +1371,8 @@ impl SkiaLayerRenderer {
                             if let Some(fill) = rect
                                 .gradient
                                 .as_ref()
-                                .and_then(|gradient| gradient.colors.first().copied())
-                                .map(|color| {
-                                    let mut paint = Paint::default();
-                                    paint.set_anti_alias(true);
-                                    paint.set_style(paint::Style::Fill);
-                                    paint.set_color(colorref_to_skia(
-                                        color,
-                                        rect.style.opacity as f32,
-                                    ));
-                                    paint
+                                .and_then(|gradient| {
+                                    super::fill::gradient_paint(gradient, bbox, rect.style.opacity)
                                 })
                                 .or_else(|| make_fill_paint(&rect.style))
                             {
@@ -1651,7 +1682,7 @@ impl SkiaLayerRenderer {
     fn make_form_font(&self, size: f32) -> Font {
         let style = FontStyle::default();
         for family in FORM_CJK_FAMILIES {
-            if let Some(tf) = self.custom_typefaces.get(*family).cloned() {
+            if let Some(tf) = match_supplied_family(&self.custom_typefaces, family, style) {
                 return Font::new(tf, size);
             }
             if let Some(tf) =
@@ -1661,7 +1692,7 @@ impl SkiaLayerRenderer {
             }
             // [#3300] 시스템 폰트가 없는 headless 환경에서는 번들 폰트가
             // custom·system 뒤의 최후 폴백으로 form caption의 한국어를 구제한다.
-            if let Some(tf) = self.bundled_typefaces.get(*family).cloned() {
+            if let Some(tf) = match_supplied_family(&self.bundled_typefaces, family, style) {
                 return Font::new(tf, size);
             }
         }
@@ -1741,10 +1772,7 @@ impl SkiaLayerRenderer {
                     skia_safe::font_style::Slant::Upright
                 },
             );
-            let typeface = self
-                .custom_typefaces
-                .get(&label.font_family)
-                .cloned()
+            let typeface = match_supplied_family(&self.custom_typefaces, &label.font_family, style)
                 .or_else(|| {
                     match_system_family_style(
                         &self.font_mgr,
@@ -1753,7 +1781,9 @@ impl SkiaLayerRenderer {
                         style,
                     )
                 })
-                .or_else(|| self.bundled_typefaces.get(&label.font_family).cloned());
+                .or_else(|| {
+                    match_supplied_family(&self.bundled_typefaces, &label.font_family, style)
+                });
             let font = typeface
                 .map(|tf| Font::new(tf, label.font_size as f32))
                 .unwrap_or_else(|| self.make_form_font(label.font_size as f32));
@@ -2652,7 +2682,7 @@ mod tests {
     }
 
     #[test]
-    fn renders_shape_fallback_fills_for_gradient_pattern_ellipse_path_and_line() {
+    fn renders_gradient_and_fallback_fills_for_pattern_ellipse_path_and_line() {
         let gradient = GradientFillInfo {
             gradient_type: 1,
             angle: 0,
@@ -2714,6 +2744,7 @@ mod tests {
                 ..Default::default()
             },
         );
+        let gradient_bounds = BoundingBox::new(2.0, 2.0, 10.0, 8.0);
         let tree = PageLayerTree::new(
             40.0,
             40.0,
@@ -2721,7 +2752,7 @@ mod tests {
                 BoundingBox::new(0.0, 0.0, 40.0, 40.0),
                 None,
                 vec![
-                    PaintOp::rectangle(BoundingBox::new(2.0, 2.0, 10.0, 8.0), gradient_rect),
+                    PaintOp::rectangle(gradient_bounds, gradient_rect),
                     PaintOp::rectangle(BoundingBox::new(16.0, 2.0, 10.0, 8.0), pattern_rect),
                     PaintOp::ellipse(BoundingBox::new(2.0, 12.0, 10.0, 10.0), ellipse),
                     PaintOp::path(BoundingBox::new(2.0, 24.0, 10.0, 10.0), path),
@@ -2733,13 +2764,25 @@ mod tests {
             .render_raster_with_options(&tree, RasterRenderOptions::default())
             .expect("render shapes");
         let image = decode_rgba(&output.bytes);
-        let gradient_pixel = *image.get_pixel(4, 4);
+        let gradient_x = (gradient_bounds.x + gradient_bounds.width * 0.5) as u32;
+        let gradient_upper = *image.get_pixel(
+            gradient_x,
+            (gradient_bounds.y + gradient_bounds.height * 0.25) as u32,
+        );
+        let gradient_lower = *image.get_pixel(
+            gradient_x,
+            (gradient_bounds.y + gradient_bounds.height * 0.75) as u32,
+        );
         let pattern_pixel = *image.get_pixel(18, 4);
         let ellipse_pixel = *image.get_pixel(7, 17);
         let path_pixel = *image.get_pixel(7, 29);
         let line_pixel = *image.get_pixel(24, 30);
 
-        assert_channel(gradient_pixel, 2, 180, 255);
+        // Source stops are blue at the top and red at the bottom. A solid
+        // first-color fallback cannot satisfy both halves of this contract.
+        assert!(gradient_upper[2] > gradient_upper[0]);
+        assert!(gradient_lower[0] > gradient_lower[2]);
+        assert!(gradient_upper[2] > gradient_lower[2]);
         assert_channel(pattern_pixel, 1, 180, 255);
         assert_channel(ellipse_pixel, 0, 180, 255);
         assert_channel(path_pixel, 2, 180, 255);

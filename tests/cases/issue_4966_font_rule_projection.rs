@@ -144,8 +144,8 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
     let v2_rules = v2["rules"].as_array().expect("current v2 rules");
 
     assert_eq!(v1_rules.len(), 830);
-    assert_eq!(v2["summary"]["activeRuleCount"], 831);
-    assert_eq!(v2["summary"]["retiredRuleCount"], 2);
+    assert_eq!(v2["summary"]["activeRuleCount"], 833);
+    assert_eq!(v2["summary"]["retiredRuleCount"], 4);
 
     let mut expected_semantics: BTreeMap<_, _> = v1_rules
         .iter()
@@ -158,13 +158,21 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
         })
         .collect();
     // v1 봉인은 변경하지 않는다. 독립적으로 기록된 교체와 추가만 활성 의미에 반영한다.
-    let changes: [serde_json::Value; 2] = [
+    let changes: [serde_json::Value; 4] = [
         serde_json::from_str(include_str!(
             "../../assets/font-rules/changes/issue-7023-batangche-serif-supply.json"
         ))
         .unwrap(),
         serde_json::from_str(include_str!(
             "../../assets/font-rules/changes/issue-6936-new-gulim-face-identity.json"
+        ))
+        .unwrap(),
+        serde_json::from_str(include_str!(
+            "../../assets/font-rules/changes/issue-4969-oldhangul-license-webfont.json"
+        ))
+        .unwrap(),
+        serde_json::from_str(include_str!(
+            "../../assets/font-rules/changes/issue-4969-oldhangul-license-canvaskit.json"
         ))
         .unwrap(),
     ];
@@ -199,29 +207,45 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
             .insert(retired_id.to_owned(), replacement_id.to_owned())
             .is_none());
     }
-    let addition: serde_json::Value = serde_json::from_str(include_str!(
-        "../../assets/font-rules/changes/issue-7196-ygodic230-metric-name.json"
-    ))
-    .expect("기록된 #7196 폰트 규칙 추가");
-    assert_eq!(addition["expectedDelta"]["activeRuleDelta"], 1);
-    assert_eq!(
-        addition["expectedDelta"]["projectionId"],
-        "rust-layout-metric"
-    );
-    let operations = addition["operations"].as_array().expect("추가 작업");
-    assert_eq!(operations.len(), 1);
-    let operation = &operations[0];
-    assert_eq!(operation["type"], "add-rule");
-    let mut added = operation["rule"].clone();
-    added["status"] = "active".into();
-    added["projections"] = serde_json::json!([added["projection"]]);
-    let added_id = added["ruleId"].as_str().expect("추가 규칙 ID").to_owned();
-    assert!(expected_semantics
-        .insert(
-            added_id.clone(),
-            semantic_rule(&added, source_boundary(&added))
-        )
-        .is_none());
+    let mut added_by_projection: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for (payload, projection) in [
+        (
+            include_str!("../../assets/font-rules/changes/issue-7196-ygodic230-metric-name.json"),
+            "rust-layout-metric",
+        ),
+        (
+            include_str!("../../assets/font-rules/changes/issue-5884-noto-symbols2-webfont.json"),
+            "canvas2d-webfont",
+        ),
+        (
+            include_str!("../../assets/font-rules/changes/issue-5884-noto-symbols2-canvaskit.json"),
+            "canvaskit-sfnt",
+        ),
+    ] {
+        // 공개 프로그램 공급 두 건도 기록된 add-rule만 의미 비교에 반영한다.
+        let addition: serde_json::Value =
+            serde_json::from_str(payload).expect("기록된 폰트 규칙 추가");
+        assert_eq!(addition["expectedDelta"]["activeRuleDelta"], 1);
+        assert_eq!(addition["expectedDelta"]["projectionId"], projection);
+        let operations = addition["operations"].as_array().expect("추가 작업");
+        assert_eq!(operations.len(), 1);
+        let operation = &operations[0];
+        assert_eq!(operation["type"], "add-rule");
+        let mut added = operation["rule"].clone();
+        added["status"] = "active".into();
+        added["projections"] = serde_json::json!([added["projection"]]);
+        let added_id = added["ruleId"].as_str().expect("추가 규칙 ID").to_owned();
+        assert!(expected_semantics
+            .insert(
+                added_id.clone(),
+                semantic_rule(&added, source_boundary(&added))
+            )
+            .is_none());
+        added_by_projection
+            .entry(projection.to_owned())
+            .or_default()
+            .push(added_id);
+    }
     let v2_semantics: BTreeMap<_, _> = v2_rules
         .iter()
         .filter(|rule| rule["status"] == "active")
@@ -256,8 +280,8 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
                 replacements.get(id).map(String::as_str).unwrap_or(id)
             })
             .collect();
-        if projection == "rust-layout-metric" {
-            v1_rule_ids.push(added_id.as_str());
+        if let Some(additions) = added_by_projection.get(projection) {
+            v1_rule_ids.extend(additions.iter().map(String::as_str));
         }
         let v2_rule_ids: Vec<_> = projection_rules(&v2, projection)
             .into_iter()

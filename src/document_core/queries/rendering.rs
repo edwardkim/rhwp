@@ -4815,7 +4815,6 @@ impl DocumentCore {
             assign_master_pages_for_section(&mut result, section_index, section, &None, &None);
             result
         };
-        let completed_page_count = result.pages.len() as u32;
         if self.pagination.len() <= section_index {
             self.pagination
                 .resize_with(section_index + 1, || PaginationResult {
@@ -4862,6 +4861,11 @@ impl DocumentCore {
         }
         self.deferred_pagination_descriptor = None;
         self.invalidate_page_tree_cache();
+        self.body_page_field_error = None;
+        let field_breaks =
+            vec![std::collections::HashSet::new(); self.document.sections.len().max(1)];
+        self.settle_body_page_fields(&field_breaks);
+        let completed_page_count = self.pagination[section_index].pages.len() as u32;
         DeferredPaginationStepResult {
             state: DeferredPaginationJobState::Complete,
             revision,
@@ -4930,13 +4934,15 @@ impl DocumentCore {
         let sec_count = self.document.sections.len().max(1);
         let empty_breaks: Vec<std::collections::HashSet<usize>> =
             vec![std::collections::HashSet::new(); sec_count];
+        self.body_page_field_error = None;
         self.paginate_pass(&empty_breaks);
+        self.settle_body_page_fields(&empty_breaks);
         // [#2424] full path가 최신 dirty state를 반영했으므로 deferred target을 소비한다.
         // 이후 resumable job도 shadow result commit 성공 시 같은 수명 규칙을 적용한다.
         self.deferred_pagination_descriptor = None;
     }
 
-    fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
+    pub(super) fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
         // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
         self.ensure_exact_font_measurement_contexts();
@@ -5210,7 +5216,7 @@ impl DocumentCore {
                     profile,
                 )
             } else {
-                use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral, EndnoteRef};
+                use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral};
                 use crate::renderer::typeset::TypesetEngine;
                 // [미주 배치 — Hancom EndnoteEndOfSection vs EndnoteEndOfDocument]
                 // rhwp 는 지금까지 구역마다 미주를 그 구역 끝에 렌더했으나(END_OF_SECTION),
@@ -5239,18 +5245,14 @@ impl DocumentCore {
                             continue;
                         }
                         for (pi, para) in sec_j.paragraphs.iter().enumerate() {
-                            for (ci, ctrl) in para.controls.iter().enumerate() {
-                                if let crate::model::control::Control::Endnote(en) = ctrl {
-                                    acc.push(DeferredEndnote {
-                                        reff: EndnoteRef {
-                                            number: en.number,
-                                            section_index: sj,
-                                            para_index: pi,
-                                            control_index: ci,
-                                        },
-                                        endnote: (**en).clone(),
-                                    });
-                                }
+                            // [#7860] 표 셀 안 미주도 본문 수집과 같은 경로·순서로 모은다.
+                            for (reff, en) in
+                                crate::renderer::pagination::paragraph_endnote_refs(sj, pi, para)
+                            {
+                                acc.push(DeferredEndnote {
+                                    reff,
+                                    endnote: en.clone(),
+                                });
                             }
                         }
                     }
@@ -7587,6 +7589,9 @@ impl DocumentCore {
         page_num: u32,
         header_footer_override: Option<(usize, bool, u8)>,
     ) -> Result<PageRenderTree, HwpError> {
+        if let Some(error) = &self.body_page_field_error {
+            return Err(HwpError::RenderError(error.clone()));
+        }
         use crate::model::style::HeadType;
         use crate::renderer::layout::resolve_numbering_id;
         use crate::renderer::pagination::PageItem;

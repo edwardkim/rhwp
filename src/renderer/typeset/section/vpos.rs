@@ -46,6 +46,11 @@ impl TypesetEngine {
                             0
                         } else {
                             seg.vertical_pos
+                                - paragraphs.get(para_idx).map_or(0, |first| {
+                                    crate::renderer::layout::synthesized_first_margin_hu(
+                                        first, styles, self.dpi,
+                                    )
+                                })
                         }
                     }),
             );
@@ -60,6 +65,20 @@ impl TypesetEngine {
                     }),
             );
             st.record_vpos_ladder_validity(false);
+        }
+        // [#7824] 합성 줄(`TAG_IMPLEMENTATION_PROPERTY`)만 가진 문단이 흐름에 들어오면 이 쪽의
+        // 사다리는 한/글 사다리가 아니다 — 로드 재구성이 그 문단에 rhwp 의 누적 좌표를 주므로,
+        // 뒤 저장 문단의 쪽-상대 vpos 와 같은 좌표계가 아니다. 그러면 뒤 저장 문단의 스냅이
+        // 성립하지 않아, 스냅이 되돌려 준다는 전제의 간격 트림(`flow_advance_height`)분이 흐름에서
+        // 그냥 사라진다(HWP5-nopassword 14쪽: 트림 8회 ≈125px, 그리기는 본문 아래 100px 넘침).
+        // `#2279 ①-2` 가 말하는 «합성 혼합 사다리» 를 여기서 표시한다.
+        if paragraphs.get(para_idx).is_some_and(|para| {
+            !para.line_segs.is_empty()
+                && para.line_segs.iter().all(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                })
+        }) {
+            st.mark_vpos_ladder_dirty();
         }
         let mut hc = HeightCursor {
             dpi: self.dpi,
@@ -96,6 +115,9 @@ impl TypesetEngine {
             min_flow_floor: f64::MIN,
             session_edited: self.profile.get().session_edited(),
             curr_item_is_table_fragment: false,
+            // 본문 조판: 미주 제목 갈래는 `suppress_large_forward_jump` 아래에서만 발화한다.
+            endnote_note_first_paras: Default::default(),
+            seed_lazy_base_from_next_stored: false,
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는

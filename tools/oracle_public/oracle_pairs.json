@@ -9755,13 +9755,13 @@
       "reason": "no_oracle_pdf"
     },
     {
-      "sample": "samples/hwp3-sample10-hwp5.hwp",
+      "sample": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp",
       "stem": "hwp3-sample10-hwp5",
       "sourceFormat": "hwp",
       "reason": "no_oracle_pdf"
     },
     {
-      "sample": "samples/hwp3-sample10-hwpx.hwpx",
+      "sample": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
       "stem": "hwp3-sample10-hwpx",
       "sourceFormat": "hwpx",
       "reason": "no_oracle_pdf"

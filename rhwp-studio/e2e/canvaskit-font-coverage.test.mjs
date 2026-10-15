@@ -15,7 +15,7 @@ import { selectLayerTextVariantsForLeaf } from '../src/view/canvaskit/text-varia
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fontPath = path.resolve(studioRoot, '../assets/fonts/NotoSansKR-Regular.woff2');
 const symbolFontPath = path.resolve(studioRoot, '../assets/fonts/D2Coding-Regular.woff2');
-const oldHangulFontPath = path.resolve(studioRoot, '../assets/fonts/SourceHanSerifK-OldHangul-subset.woff2');
+const oldHangulFontPath = path.resolve(studioRoot, '../assets/fonts/RHWPOldHangul-Regular.woff2');
 const exactFaceFontPath = path.resolve(studioRoot, '../tests/fixtures/fonts/RHWPExactFaceSmoke.ttc');
 const canvasKitBundle = path.resolve(studioRoot, 'node_modules/canvaskit-wasm/bin/full');
 const CanvasKit = await CanvasKitInit({

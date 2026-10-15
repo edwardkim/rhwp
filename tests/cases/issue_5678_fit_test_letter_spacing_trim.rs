@@ -9,8 +9,7 @@ use rhwp::document_core::DocumentCore;
 use rhwp::model::paragraph::{CharShapeRef, Paragraph};
 use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp};
 
-const SOURCE_HAN: &[u8] =
-    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Regular.otf");
 const TEXT: &str = "가나다라마바사아자차";
 
 fn document_with_spacing(spacing: i8, content_width_hwp: u32) -> DocumentCore {

@@ -1,12 +1,9 @@
-use std::collections::HashMap;
-
-use skia_safe::{
-    font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder, Typeface,
-};
+use skia_safe::{font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder};
 
 use super::font_lookup::{
-    match_system_family_style, select_typeface_for_character, text_family_candidates,
-    typeface_candidates_for_families, SystemFontFamilies,
+    match_supplied_family, match_system_family_style, select_typeface_for_character,
+    text_family_candidates, typeface_candidates_for_families, SuppliedTypefaces,
+    SystemFontFamilies,
 };
 
 use crate::renderer::equation::ast::MatrixStyle;
@@ -23,8 +20,8 @@ const EQ_FONT_FAMILY: &str =
 pub(super) struct EquationFonts<'a> {
     pub(super) font_mgr: &'a FontMgr,
     pub(super) system_families: &'a SystemFontFamilies,
-    pub(super) custom_typefaces: &'a HashMap<String, Typeface>,
-    pub(super) bundled_typefaces: &'a HashMap<String, Typeface>,
+    pub(super) custom_typefaces: &'a SuppliedTypefaces,
+    pub(super) bundled_typefaces: &'a SuppliedTypefaces,
 }
 
 pub(super) fn render_equation(
@@ -66,19 +63,19 @@ fn render_box(
     match &lb.kind {
         LayoutKind::HancomGlyphs(run) => {
             let family = crate::renderer::equation::hancom_glyphs::FONT_FAMILY;
-            let typeface = fonts
-                .custom_typefaces
-                .get(family)
-                .or_else(|| fonts.bundled_typefaces.get(family))
-                .cloned()
-                .or_else(|| {
-                    match_system_family_style(
-                        fonts.font_mgr,
-                        fonts.system_families,
-                        family,
-                        FontStyle::normal(),
-                    )
-                });
+            let typeface =
+                match_supplied_family(fonts.custom_typefaces, family, FontStyle::normal())
+                    .or_else(|| {
+                        match_supplied_family(fonts.bundled_typefaces, family, FontStyle::normal())
+                    })
+                    .or_else(|| {
+                        match_system_family_style(
+                            fonts.font_mgr,
+                            fonts.system_families,
+                            family,
+                            FontStyle::normal(),
+                        )
+                    });
             let mut font = if let Some(typeface) = typeface {
                 Font::new(typeface, fs as f32)
             } else {

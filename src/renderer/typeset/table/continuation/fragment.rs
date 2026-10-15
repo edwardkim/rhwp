@@ -28,7 +28,7 @@ struct FragmentStart {
     start_cut_is_block: bool,
     start_row_height_override: Option<f64>,
     stored_fragment_outer_frame: bool,
-    stored_fragment_closes_body: bool,
+    stored_fragment_body_bottom_inset: Option<f64>,
     start_cut: Vec<usize>,
     /// [#7531] 이 조각에서 쪽을 넘어온 걸침 칸의 끝 행 높이에서 덜 양 `(행, px)`.
     straddle_row_relief: Vec<(usize, f64)>,
@@ -117,6 +117,8 @@ struct FragmentBudget {
     source_first_fragment_overflow_allowance: f64,
     header_overhead: f64,
     avail_for_rows: f64,
+    /// 일반 재조판 행의 선언 최소 높이가 소비할 paint 하단. 블록 컷은 별도 ledger를 쓴다.
+    reflow_frame_avail_for_rows: Option<f64>,
     /// [#7095] 본문을 통째로 담은 1×1 RowBreak 쪽 조각 형상인지.
     single_cell_fragment_shape: bool,
     /// [#7095] 저장 host 원점이 있는 조각이 칠하는 상자 높이(px). 원점이 없는 조각은
@@ -149,23 +151,53 @@ impl TypesetEngine {
                 source.styles,
             )
         };
+        // 완결한 독립 문단 뒤에서 시작해도 앞 조각의 쪽 끝 띠는 병합 셀 소유다.
+        // 시작 행의 부분 상자는 컷/override가 맡고, 뒤의 온전한 끝 행만 띠를 덜 센다.
+        let starts_after_complete_paragraph = !continuation.start_cut_is_block
+            && !continuation.start_cut.is_empty()
+            && prepared
+                .layout_engine
+                .row_cut_completes_unlinked_plain_paragraphs(
+                    source.row_geometry_table,
+                    continuation.row,
+                    &[],
+                    &continuation.start_cut,
+                    source.styles,
+                );
+        // 실제 수용 상자 원장이 있는 일반 컷은 문단 내부 시작도 같은 상자를 소비한다.
+        // 원장이 끊긴 블록 경로는 기존 완결 문단/온전한 시작의 판정을 유지한다.
+        let has_actual_span_ledger = !continuation.straddle_page_bands.is_empty()
+            && continuation
+                .straddle_page_bands
+                .iter()
+                .all(|carry| carry.accepted_physical_height.is_some());
         // 이 계획은 앞 조각의 실제 상자와 빈 띠를 이미 차감한 공통 결과다.
         // 기존 별도 띠 차감을 다시 적용하면 예약과 paint의 행 높이가 달라진다.
         let physical_rows = self.stored_fragment_row_plan(st, prepared, continuation, source);
         let straddle_row_relief = if physical_rows.is_some()
             || continuation.start_cut_is_block
-            || !continuation.start_cut.is_empty()
-            || continuation.start_row_height_override.is_some()
+            || ((!continuation.start_cut.is_empty()
+                || continuation.start_row_height_override.is_some())
+                && !starts_after_complete_paragraph
+                && !has_actual_span_ledger)
         {
             Vec::new()
         } else {
-            prepared.layout_engine.straddle_page_band_relief(
+            let mut relief = prepared.layout_engine.straddle_page_band_relief(
                 source.row_geometry_table,
                 &source.measured_table.row_heights,
                 continuation.row,
+                &start_cut,
+                continuation.start_row_height_override,
                 &continuation.straddle_page_bands,
                 source.styles,
-            )
+            );
+            if !continuation.start_cut.is_empty()
+                || continuation.start_row_height_override.is_some()
+            {
+                relief.retain(|(row, _)| *row > continuation.row);
+            }
+            relief
         };
         let relieve = |heights: &Vec<f64>| {
             let mut heights = heights.clone();
@@ -195,7 +227,7 @@ impl TypesetEngine {
             start_cut_is_block: continuation.start_cut_is_block,
             start_row_height_override: continuation.start_row_height_override,
             stored_fragment_outer_frame: continuation.stored_fragment_outer_frame,
-            stored_fragment_closes_body: continuation.stored_fragment_closes_body,
+            stored_fragment_body_bottom_inset: continuation.stored_fragment_body_bottom_inset,
             start_cut,
         };
         let fragment_measurement = physical_rows.as_ref().map(|rows| {

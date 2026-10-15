@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-14
+last_verified: 2026-10-15
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -29,8 +29,10 @@ PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과
 
 검증에 사용한 HWP/HWPX/PDF는 [검증 입력 커밋 확인](pr_review/intake_and_review.md#28-검증-입력-커밋-확인)을
 모든 정식 PR review의 공통 항목으로 점검한다. 수용 근거로 쓴 파일은 검토 대상 commit에 포함하고,
-실제로 실행한 파일과 commit의 내용이 같은지 확인한다. `korea_downloads`, 임시 output 또는 외부 첨부에만
-있는 파일로 검증을 완료 처리하지 않는다. 기존에 커밋된 동일 파일은 재사용하며 중복 사본을 추가하지 않는다.
+실제로 실행한 파일과 commit의 내용이 같은지 확인한다. 단, **50 MiB(52,428,800바이트) 이상 PDF는
+로컬에만 보관하고 PR에 포함하지 않으며**, 공통 입력 확인의 로컬 파일·SHA·전쪽 검증 증거로 점검한다.
+그 외 파일은 `korea_downloads`, 임시 output 또는 외부 첨부에만 두고 검증을 완료 처리하지 않는다.
+기존에 커밋된 동일 파일은 재사용하며 중복 사본을 추가하지 않는다.
 
 rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator가 매개하는 외부 PR을
 구분한다. 권한과 변경 위치가 다르므로 한 경로의 예외를 다른 경로에 일반화하지 않는다.

@@ -215,7 +215,22 @@ impl TypesetEngine {
                     || source_cut_opens_outer_top
                     || (input.start.stored_fragment_outer_frame
                         && st.current_height <= 0.5
-                        && std::ptr::eq(row_geometry_table, table)))
+                        && std::ptr::eq(row_geometry_table, table))
+                    // [#7685] 이어지는 RowBreak 조각은 쪽 위에서 표의 바깥 위 여백을 다시
+                    // 연다 — 위 세 형상은 그 일반 규칙의 부분집합이다. 한/글 정본 조각 상자
+                    // 208건 중 180건이 「본문 위 + 선언 outMargin.top」 에 정확히 놓인다
+                    // (#6976 원장). 행 경계에서 시작하는 조각만 — 칸 중간에서 이어지는
+                    // 조각은 칸 조각 계약(#7095 등)이 소유하고, issue1949 55쪽처럼 한/글
+                    // 내용이 그 여백 없이 놓이는 사례가 있다. 앞에서 이미 연 경우
+                    // (`repeats_outer_margin`)는 다시 더하지 않는다. 그리는 쪽
+                    // (`table_partial`)도 같은 조각에서 연다.
+                    || (!table.common.treat_as_char
+                        && matches!(
+                            table.page_break,
+                            crate::model::table::TablePageBreak::RowBreak
+                        )
+                        && start_cut.iter().all(|&unit| unit == 0)
+                        && host_before_overhead < 0.5))
                 && !strict_following_plain_text_fit
                 && !single_cell_page_fragment
                 && !recursive_overlay_frame
@@ -543,6 +558,8 @@ impl TypesetEngine {
                 };
             // 쪽 중간의 첫 조각은 기존 fit 예산을 유지한다. 반복 프레임 하단은
             // 그 첫 수용 상자의 종료 인증에도 쓰되, 내용 컷의 예산으로 바꾸지 않는다.
+            let source_bottom =
+                source_bottom - input.start.stored_fragment_body_bottom_inset.unwrap_or(0.0);
             let fit_bottom =
                 if is_continuation || body_filling_source_frame || single_cell_page_fragment {
                     source_bottom
@@ -1599,7 +1616,7 @@ impl TypesetEngine {
         // 첫 수용 상자가 본문을 닫은 원본은 뒤 조각도 같은 바깥 프레임 안에서
         // 컷을 선택한다. 실제 종료의 빈 띠는 스캔 뒤 원본 소유 컷에서 확인한다.
         let avail_for_rows = if is_continuation
-            && input.start.stored_fragment_closes_body
+            && input.start.stored_fragment_body_bottom_inset.is_some()
             && st.current_height <= 0.5
             && st.current_zone_y_offset == 0.0
             && std::ptr::eq(row_geometry_table, table)
@@ -1614,6 +1631,56 @@ impl TypesetEngine {
         } else {
             avail_for_rows
         };
+
+        // 일반 재조판 행의 빈 물리 띠는 paint와 같은 하단을 소유한다.
+        // 블록 ledger의 가용량을 줄이지 않고 일반 행 컷에만 이 경계를 전달한다.
+        // 원점 덮어쓰기와 캡션·반복 머리 행 예약 이후의 좌표를 소비한다.
+        let reflow_frame_avail_for_rows = (!table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            ))
+        .then(|| {
+            let body_filling = crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
+                para,
+                table,
+                st.layout.body_area.height,
+                self.dpi,
+                st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout(),
+                st.profile.session_edited(),
+            );
+            let frame_boundary = if is_continuation
+                || prepared.host_frame
+                    != (
+                        st.pages.len(),
+                        st.current_column,
+                        st.current_zone_y_offset.to_bits(),
+                    ) {
+                st.available_height()
+            } else {
+                first_fragment_actual_footnote_boundary.unwrap_or(table_available)
+            }
+            .min(st.inline_flow_column().height);
+            let bottom = crate::renderer::float_placement::rowbreak_fragment_frame_bottom(
+                table,
+                frame_boundary,
+                self.dpi,
+                body_filling,
+            );
+            let top = fragment_placement.map_or(
+                fragment_flow_origin + host_before_overhead + vert_offset_overhead,
+                |placement| placement.table_top,
+            );
+            (bottom
+                - top
+                - caption_extra
+                - header_overhead
+                - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi))
+            .max(0.0)
+            // 닫힌 원본 첫 프레임은 쪽 본문보다 작은 실제 물리 상자일 수 있다.
+            // 일반 내용 예산과 그리기·이어받기 띠에 같은 상한을 적용한다.
+            .min(accepted_source_frame_limit.unwrap_or(f64::MAX))
+        });
 
         // [Task #1046 Stage 2 진단] 첫/연속 fragment 의 가용공간 분해 — 렌더러
         // y_start 점프(vert_offset)·host_before 와의 정합 확인용. 동작 불변(게이트).
@@ -1672,6 +1739,7 @@ impl TypesetEngine {
             source_first_fragment_overflow_allowance,
             header_overhead,
             avail_for_rows,
+            reflow_frame_avail_for_rows,
             single_cell_fragment_shape,
             single_cell_box_height,
         }

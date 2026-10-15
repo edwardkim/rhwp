@@ -119,9 +119,9 @@ pub fn draw_image_bytes(
     let brightness_contrast_filter = |brightness: i8, contrast: i8| {
         let brightness = brightness.clamp(-100, 100) as f32 / 100.0;
         let slope = (100.0 + contrast.clamp(-100, 100) as f32) / 100.0;
-        // Skia color-matrix의 translation 열은 0..255 색상 범위를 쓴다.
-        // SVG filter의 정규화된 intercept와 동일한 색조가 되도록 변환한다.
-        let intercept = ((0.5 - 0.5 * slope) + brightness) * 255.0;
+        // Skia의 matrix_4x5는 정규화된 RGBA에 적용된 뒤 0..1로 제한된다.
+        // SVG와 같은 절편을 전달한다. 255를 곱하면 양수 밝기의 그림이 흰색으로 소실된다.
+        let intercept = (0.5 - 0.5 * slope) + brightness;
         color_filters::matrix_row_major(
             &[
                 slope, 0.0, 0.0, 0.0, intercept, 0.0, slope, 0.0, 0.0, intercept, 0.0, 0.0, slope,

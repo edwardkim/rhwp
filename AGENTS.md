@@ -157,6 +157,9 @@
   **완료된 페이지**의 Native/fresh WASM 2px 관용 실루엣 일치율이 각각 **98% 이상**이고 독립 PDF와
   직접 확대 판독까지 완료됐으면, 그 페이지는 독립 기대 좌표를 **±2px** 허용 오차로 고정할 수 있다.
   문서 전체가 98% 이상일 필요는 없다. 페이지·DPI·좌표계·SHA·TSV·PNG 증거를 기록하고 관계 검사도 유지한다.
+  문서마다 변경한 핵심 위치를 보호한다. 같은 핵심 동작을 검증할 수 있는 완료 페이지 중
+  Native/fresh WASM **양쪽 일치율의 최솟값**이 **100% → 99%대 → 98%대**인 순서로 우선 선정한다.
+  표 시작·이어받기·종료·후속 본문·수식·각주 등 해당 변경의 중요한 경계도 검사에 포함한다.
   고정한 쪽은 이후에도 양쪽 98% 이상을 유지해야 한다. 100%로 개선은 허용하며 한쪽이라도 98% 미만이면 회귀로 판정한다.
   [페이지별 px 회귀 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.
   정확한 기존 검사는 유지하고 구현을 고친다. 세부 절차는
@@ -276,6 +279,18 @@
 
 ## 문서와 검증
 
+- **대용량 PDF 보관**: **50 MiB(52,428,800바이트) 이상 PDF는 로컬에만 보관하고 PR에 포함하지 않는다.**
+  저장소 밖의 안정적인 로컬 경로에 보존한다. 저장소 안에 둘 경우 `.git/info/exclude`에 정확한 경로를
+  등록한다. 출처·바이트 수·SHA-256·전체 쪽수·
+  생성/검증 명령과 전쪽 Native/fresh WASM TSV·대표 PNG를 기록한다. 입력 커밋 확인의
+  [대용량 PDF 로컬 보관](mydocs/manual/pr_review/intake_and_review.md#28-검증-입력-커밋-확인)
+  항목을 적용하며 검증 범위와 시각 gate는 유지한다.
+- **빌드 병렬도 권장값**: Linux·macOS·Windows의 Cargo 빌드 잡 수는
+  **논리 CPU 수 − 2, 최소 1개**를 시작값으로 권장한다. 고정된 의무값이 아니며 메모리 여유,
+  동시 작업, 실제 빌드 성능에 맞게 `CARGO_BUILD_JOBS`를 조절한다. Linux는 `nproc`, macOS는
+  `sysctl -n hw.logicalcpu`, Windows PowerShell은 `[Environment]::ProcessorCount`로 계산한다.
+  테스트 실행의 `--test-threads`와 구분하며, OS별 예시와 fresh WASM의 `codegen-units=16`
+  권장값은 [빌드 병렬도](mydocs/manual/dev_environment_guide.md#빌드-병렬도)를 참고한다.
 - **로컬 Rust·WASM 산출물 재사용**: 일반 개발·이슈 수정·PR review의 기본
   `CARGO_TARGET_DIR`/`--target-dir`는 모든 운영체제에서 **각 host의 기본 rhwp 작업공간 아래
   `target/pr-review` 한 곳**이다. worktree 검증에서도 그 동일한 절대 경로를 전달한다. 이 경로의
@@ -286,6 +301,19 @@
   다른 실행 중인 Cargo 작업의 산출물과 충돌할 우려가 있으면 새 경로를 만드는 대신
   실행 중인 작업·소유자를 먼저 확인하고, 필요할 때만 사용자가 별도 경로를 지시한다.
   `target/pr-review`은 공유 캐시이므로 임의로 삭제·초기화하지 않는다.
+- **디스크 공간 부족 시 Chromium 임시 프로필 정리 권고**: 빌드 캐시 정리에 앞서 종료된
+  검증용 Chromium/Puppeteer 임시 프로필의 용량을 확인하고 삭제를 검토한다. Linux Snap의
+  `/tmp/snap-private-tmp/snap.chromium/tmp/` 등이 대상이며, 기본 후보는 24시간 이상 지난
+  미사용 항목이다. 경과 시간만으로 종료를 판단하지 않고 실행 중인 프로세스의 경로·열린 파일
+  참조와 잠금 PID를 확인한다. 현재 사용 중인 프로필·일반 사용자 프로필·검증 증적은 보존하며,
+  삭제 경로·사용 중 아님을 확인한 근거·전후 여유 공간을 기록한다. 구체적인 절차는
+  [디스크 공간 정리](mydocs/manual/dev_environment_guide.md#디스크-공간이-부족할-때)를 따른다.
+- **종료된 증분 캐시 정리 권고**: 디스크 공간이 부족하면 `target/pr-review` 안의 종료된
+  오래된 증분 캐시도 정리 후보로 확인한다. 공유 target을 사용하는 Cargo·rustc·wasm-pack·
+  wasm-opt 작업이 모두 종료된 뒤, 사용하지 않는 정확한 `incremental` 하위 캐시 경로만
+  지정해 삭제한다. target 전체·프로필 디렉터리·실행 파일·`deps`·`.fingerprint`와 다른 작업의
+  산출물은 보존한다. 삭제 목록·확인 근거·전후 여유 공간을 기록하며 캐시는 이후 빌드에서
+  재생성될 수 있다. 세부 확인은 위 디스크 공간 정리 절차를 따른다.
 - **Studio 개발 서버에 WASM 반영**: Rust/WASM 변경을 `npx vite --host 0.0.0.0 --port 7700`
   같은 `rhwp-studio` 개발 서버에서 확인할 때는 반드시 **저장소 루트
   (`scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서

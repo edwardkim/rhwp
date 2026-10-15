@@ -949,6 +949,9 @@ pub(crate) fn color_ref_to_css(color: crate::model::ColorRef) -> String {
 /// HWPX `faceColor="none"` 은 파서가 이미 `FillType::None` 으로 읽지만(#1172), HWP 는
 /// 단색 레코드로 남는다. `color_ref_to_css` 가 상위 바이트를 버리므로 이 판정이 없으면
 /// '색 없음'이 흰색 단색으로 보인다.
+///
+/// 그러데이션·그림은 개체 속성 조회와 같은 `gradient`·`image` 로 알린다. `none` 으로 알리면
+/// 읽은 속성을 그대로 다시 쓰는 호출이 채우기를 지운다(`create_border_fill_from_json`).
 pub(crate) fn fill_json_values(
     fill: &crate::model::style::Fill,
 ) -> (&'static str, String, String, i32) {
@@ -964,6 +967,8 @@ pub(crate) fn fill_json_values(
                 s.pattern_type,
             )
         }
+        (FillType::Gradient, _) => ("gradient", "#ffffff".to_string(), "#000000".to_string(), 0),
+        (FillType::Image, _) => ("image", "#ffffff".to_string(), "#000000".to_string(), 0),
         _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
     }
 }

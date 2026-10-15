@@ -56,6 +56,7 @@ impl TypesetEngine {
         let BlockTableRowScan {
             source_frame_band,
             mut consumed,
+            mut accepted_end_row_box,
             mut end_row,
             mut split_block_start,
             mut split_end_cut,
@@ -81,6 +82,7 @@ impl TypesetEngine {
             rowbreak_use_row_offsets,
             ..
         } = block;
+        let prior_end_row = end_row;
         let keep_scanning = (|| {
             // [Task #1025] 연속분 커서가 블록 중간이면 블록 시작 컷을 적용.
             let blk_start_cut: &[usize] = if r == cursor_row { &start_cut } else { &[] };
@@ -295,9 +297,14 @@ impl TypesetEngine {
             end_row = r;
             false
         })();
+        // 여러 행을 함께 수용한 블록 높이를 단일 행 상자로 넘기지 않는다.
+        if end_row > prior_end_row {
+            accepted_end_row_box = None;
+        }
         let scan = BlockTableRowScan {
             source_frame_band,
             consumed,
+            accepted_end_row_box,
             end_row,
             split_block_start,
             split_end_cut,

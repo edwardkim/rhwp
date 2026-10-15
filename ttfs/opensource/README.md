@@ -9,21 +9,32 @@
 |------|------|---------|------|
 | `NotoSansKR-Regular.ttf` | Noto Sans KR Regular (wght 400, 한글+라틴+글머리/도형 subset) | SIL OFL 1.1 (`NotoSansKR-OFL.txt`) | Task #2190 — CanvasKit 기본 typeface의 KS 기호/Box Drawing coverage |
 | `NotoSansKR-ExtraLight.ttf` | Noto Sans KR ExtraLight (wght 200, 한글+라틴 서브셋) | SIL OFL 1.1 (`NotoSansKR-OFL.txt`) | Task #1224 — 한컴 돋움(Haansoft Dotum)·돋움·굴림 계열의 **획 두께 정합** 대체 |
-| `SourceHanSerifK-OldHangul-subset.otf` | Source Han Serif K Old Hangul subset | SIL OFL 1.1 (`../../assets/fonts/SourceHanSerifK-OFL.txt`) | Task #4969 — exact-source old Hangul·vertical shaping fixture |
+| `RHWPOldHangul-Regular.otf` | RHWP Old Hangul subset | SIL OFL 1.1 (`../../assets/fonts/SourceHanSerifK-OFL.txt`) | Task #4969 — exact-source old Hangul·vertical shaping fixture |
 
-### Source Han Old Hangul SFNT 재현
+### RHWP Old Hangul 수정본과 SFNT 재현
 
-웹 canonical WOFF2를 runtime에서 해제하지 않고, FontTools 4.62.1과 Brotli 1.2.0으로 결정적으로 OTF를 만든다.
+Adobe Source Han Serif K에서 추출된 서브셋이다. 수정본의 family·full name·PostScript 이름과
+CFF 내부 face 이름을 `RHWP Old Hangul` 계열로 변경하고 원본 저작권·OFL 고지는 보존했다.
+문서의 원래 요청 이름과 수정본 공급은 렌더러 대체 규칙으로 연결한다.
+글리프 charstring 2,215개와 advance·cmap·GSUB·GPOS는 이름 변경 전후 동일하다.
+
+이름 재지정과 웹·Native 출력은 다음 명령으로 재생성한다.
+
+```bash
+python3 scripts/rename-old-hangul-font.py --source assets/fonts/RHWPOldHangul-Regular.woff2
+```
+
+웹 WOFF2를 runtime에서 해제하지 않고 다음 명령으로도 OTF를 만들 수 있다.
 
 ```bash
 fonttools ttLib.woff2 decompress \
-  assets/fonts/SourceHanSerifK-OldHangul-subset.woff2 \
-  -o ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf
+  assets/fonts/RHWPOldHangul-Regular.woff2 \
+  -o ttfs/opensource/RHWPOldHangul-Regular.otf
 ```
 
-- input SHA-256: `9e419cd16df2ea3b220aa7751320d956ac2493440ba412484d98325078f09d43`
-- output SHA-256: `2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1`
-- output bytes: 456,688
+- input SHA-256: `1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab`
+- output SHA-256: `0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4`
+- output bytes: 456,660
 - glyph order·2,215개 outline canonical digest:
   `1acbf3beaa5fc89482271c9653f709655a483a8124f2adcd070c323117b08bc8`
 

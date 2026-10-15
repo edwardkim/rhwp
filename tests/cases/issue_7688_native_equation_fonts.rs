@@ -49,11 +49,14 @@ fn equations_only(node: &mut LayerNode, chars: &mut BTreeSet<char>) -> usize {
     }
 }
 
-fn render(tree: &PageLayerTree, fonts: &[PathBuf]) -> image::RgbaImage {
-    let png = SkiaLayerRenderer::new()
-        .with_font_paths(fonts)
-        .render_png(tree)
-        .unwrap();
+fn render(tree: &PageLayerTree, fonts: &[PathBuf], substitute: bool) -> image::RgbaImage {
+    let mut renderer = SkiaLayerRenderer::new().with_font_paths(fonts);
+    if substitute {
+        renderer = renderer
+            .with_font_family_alias("Haansoft Batang", "RHWP Equation Contract")
+            .unwrap();
+    }
+    let png = renderer.render_png(tree).unwrap();
     image::load_from_memory(&png).unwrap().to_rgba8()
 }
 
@@ -66,10 +69,23 @@ fn ink(image: &image::RgbaImage) -> u64 {
 
 #[test]
 fn real_equations_use_custom_outlines_and_skip_a_face_without_hangul() {
-    const REGULAR: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
+    const REGULAR: &[u8] = include_bytes!("../fixtures/fonts/RHWPEquationCJKRegular.ttf");
+    const GENERAL: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
     const LIGHT: &[u8] = include_bytes!("../fixtures/fonts/RHWPEquationCJKLight.ttf");
     const LATIN: &[u8] = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf");
+    for bytes in [REGULAR, LIGHT, LATIN] {
+        let face = ttf_parser::Face::parse(bytes, 0).unwrap();
+        let families: Vec<_> = face
+            .names()
+            .into_iter()
+            .filter(|name| matches!(name.name_id, 1 | 16))
+            .filter_map(|name| name.to_string())
+            .collect();
+        assert!(!families.is_empty());
+        assert!(families.iter().all(|name| name == "RHWP Equation Contract"));
+    }
     let regular = Fonts::new("regular", REGULAR);
+    let general = Fonts::new("general-fallback", GENERAL);
     let light = Fonts::new("light", LIGHT);
     let latin = Fonts::new("latin", LATIN);
     let core = DocumentCore::from_bytes(include_bytes!("../../samples/eq-01.hwp")).unwrap();
@@ -90,9 +106,9 @@ fn real_equations_use_custom_outlines_and_skip_a_face_without_hangul() {
                 "negative fixture has {ch}"
             );
         }
-        let regular_image = render(&tree, std::slice::from_ref(&regular.0));
-        let light_image = render(&tree, std::slice::from_ref(&light.0));
-        // The OFL source's wght=400 outlines contain more ink than wght=200.
+        let regular_image = render(&tree, std::slice::from_ref(&regular.0), true);
+        let light_image = render(&tree, std::slice::from_ref(&light.0), true);
+        // The OFL Regular program contains more ink than the ExtraLight program.
         // The old equation path ignores both custom faces and paints identical pixels.
         assert!(
             regular_image != light_image,
@@ -100,12 +116,29 @@ fn real_equations_use_custom_outlines_and_skip_a_face_without_hangul() {
         );
         assert!(ink(&regular_image) > ink(&light_image));
         assert!(ink(&light_image) > 0);
-        let fallback_image = render(&tree, &[latin.0.clone(), regular.0.clone()]);
-        // Latin-only Batang is first for CJK equation text, but its missing glyph
-        // must fall through to the same real Noto Sans KR outline as the control.
+        let fallback_image = render(&tree, &[latin.0.clone(), general.0.clone()], true);
+        let fallback_reference = render(&tree, std::slice::from_ref(&general.0), false);
+        // 첫 수식 family를 명시적으로 공급해 실제 프로그램의 양성 대조를 한다.
+        // 음성 대조는 첫 공급 프로그램에 한글이 없을 때의 정상 family 사다리다.
+        // 시스템의 앞선 명조 글꼴이 뒤의 Noto보다 먼저 선택되는 계약도 보존한다.
         assert!(
-            regular_image == fallback_image,
+            fallback_reference == fallback_image,
             "a missing CJK glyph masked the supplied fallback"
         );
     }
+}
+
+#[test]
+fn explicit_font_substitution_rejects_missing_supply_and_empty_requests() {
+    assert!(SkiaLayerRenderer::new()
+        .with_font_family_alias("Haansoft Batang", "RHWP Equation Contract")
+        .is_err());
+    let supplied = Fonts::new(
+        "empty-request",
+        include_bytes!("../fixtures/fonts/RHWPEquationCJKRegular.ttf"),
+    );
+    assert!(SkiaLayerRenderer::new()
+        .with_font_paths(std::slice::from_ref(&supplied.0))
+        .with_font_family_alias(" ", "RHWP Equation Contract")
+        .is_err());
 }

@@ -40,6 +40,7 @@ impl TypesetEngine {
             can_intra_split,
             is_continuation,
             avail_for_rows,
+            reflow_frame_avail_for_rows,
             header_overhead,
             landscape_rowbreak_bleed,
             landscape_whole_row_tolerance,
@@ -60,6 +61,7 @@ impl TypesetEngine {
         let BlockTableRowScan {
             source_frame_band,
             mut consumed,
+            mut accepted_end_row_box,
             mut end_row,
             mut split_block_start,
             mut split_end_cut,
@@ -75,6 +77,19 @@ impl TypesetEngine {
             rowspan_touched,
             cs,
             straddle_page_bands,
+        };
+        let scan_start_row = r;
+        let consumed_before_row = consumed;
+        let reflow_minimum = layout_engine.reflow_row_physical_minimum(table, r, styles);
+        let ordinary_row_can_split = !rowspan_touched[r]
+            || (mt.allows_row_break_split() && can_intra_split && mt.is_row_splittable(r));
+        let owns_plain_row_frame = ordinary_row_can_split
+            && reflow_minimum.is_some()
+            && layout_engine.row_has_plain_reflow_line_units(table, r, styles);
+        let avail_for_rows = if owns_plain_row_frame {
+            reflow_frame_avail_for_rows.map_or(avail_for_rows, |height| avail_for_rows.min(height))
+        } else {
+            avail_for_rows
         };
         let keep_scanning = (|| {
             // rowspan 셀이 걸친 행 — 기본은 MeasuredTable 높이로 통째 배치한다.
@@ -108,7 +123,16 @@ impl TypesetEngine {
             if rowspan_touched[r] && !rowbreak_rowspan_row_splittable {
                 // 실제로 수용한 앞 행들의 높이(consumed)를 사용한다. 이전 행의
                 // 증분까지 포함하며, 늘린 높이가 안 맞으면 원래 높이로 되돌리지 않는다.
-                let h = row_query.required_height(cut_row_h[r], consumed, cs_before);
+                // 이어받는 시작 행은 앞 조각이 이미 그린 몫을 뺀 높이다 — 시작 컷 뒤 남은
+                // 내용과 앞 조각이 넘긴 물리 꼬리 중 큰 쪽(`whole_row_height`). 행 전체
+                // 높이로 세면 앞 쪽에서 그린 rowspan 띠가 이 쪽에서 한 번 더 들어간다
+                // (1342000 30쪽: 11행 꼬리 8.5px 대신 60.4px, 정본보다 세 줄 일찍 끊김).
+                let base = if r == cursor_row && !start_cut.is_empty() {
+                    row_query.whole_row_height(start_cut, whole_row_fit_h)
+                } else {
+                    cut_row_h[r]
+                };
+                let h = row_query.required_height(base, consumed, cs_before);
                 if r == cursor_row || consumed + cs_before + h <= avail_for_rows {
                     consumed += cs_before + h;
                     r += 1;
@@ -1071,6 +1095,16 @@ impl TypesetEngine {
                 && layout_engine
                     .row_plain_restart_capacity_cut(table, r, styles)
                     .is_some_and(|cut| cut == res.end_cut);
+            // 수용한 글줄 컷은 이웃 셀의 실제 문단 유지 지시를 확인한다.
+            // 컷 유닛의 소유로 판정하고, 아래 실제 표시 높이·예산 검사는 유지한다.
+            let plain_paragraph_keep_contract = layout_engine
+                .row_cut_respects_plain_paragraph_keeps(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                );
             // 저장된 물리 컷 근거가 없는 다줄 행에서 현재 쪽에 첫 유닛 하나만
             // 남고 행 전체가 새 쪽에 들어가면 행 경계에서 이월한다. 내용 높이가
             // 25px을 조금 넘는다는 이유만으로 첫 줄을 떼면 한컴의 행 시작과
@@ -1106,6 +1140,7 @@ impl TypesetEngine {
                     single_line_cell && multi_line_cell
                 }
                 && row_total <= (st.layout.body_area.height - header_overhead).max(0.0)
+                && !plain_paragraph_keep_contract
                 && !cellbreak_complete_unit_keep
                 && !stored_plain_reset_boundary_keep
                 && !landscape_boundary_band_keep
@@ -1134,6 +1169,7 @@ impl TypesetEngine {
             if r > cursor_row
                 && (defer_single_unit_row_start
                     || (!cellbreak_complete_unit_keep
+                        && !plain_paragraph_keep_contract
                         && !stored_page_reset_keep
                         && !stored_plain_reset_boundary_keep
                         && !landscape_boundary_band_keep
@@ -1413,9 +1449,50 @@ impl TypesetEngine {
             // 실제 수용한 높이만 소유하며 예약과 paint가 이 같은 상자를 쓴다.
             end_row_height_override = Some(consumed);
         }
+        // 선언 최소 높이를 이어받는 행의 앞 상자도 실제 수용한 높이다.
+        // 같은 값을 예약 결과와 PageItem에 실어 paint가 더 작은 상자로
+        // 다시 계산한 뒤 잔여에서 더 큰 높이를 빼는 일을 막는다.
+        if !keep_scanning
+            && owns_plain_row_frame
+            && end_row_height_override.is_none()
+            && split_end_limit > 0.0
+            && split_block_start.is_none()
+            && end_row == scan_start_row + 1
+        {
+            if let Some(minimum) = reflow_minimum {
+                let accepted_height = consumed - consumed_before_row - cs_before;
+                if accepted_height > 0.0 {
+                    let available = (avail_for_rows - consumed_before_row - cs_before).max(0.0);
+                    let remaining = if scan_start_row == cursor_row {
+                        start_row_height_override.unwrap_or(minimum)
+                    } else {
+                        minimum
+                    };
+                    // 빈 물리 띠도 이 행이 소유한다. 내용 컷 뒤의 여백을
+                    // 공통 하단까지 예약하고 같은 앞 상자에서 잔여를 뺀다.
+                    let frame_height = if accepted_height <= available {
+                        remaining.min(available).max(accepted_height)
+                    } else {
+                        accepted_height
+                    };
+                    consumed += frame_height - accepted_height;
+                    end_row_height_override = Some(frame_height);
+                }
+            }
+        }
+        // 높이를 다시 추정하지 않고 이번 일반 행이 실제 수용한 증분을 보존한다.
+        // 다음 행을 이월한 경우에는 앞서 수용한 행의 결과를 그대로 유지한다.
+        if end_row > scan_start_row {
+            accepted_end_row_box = (split_end_cut.is_empty() && split_block_start.is_none())
+                .then_some((
+                    end_row - 1,
+                    (consumed - consumed_before_row - cs_before).max(0.0),
+                ));
+        }
         let scan = BlockTableRowScan {
             source_frame_band,
             consumed,
+            accepted_end_row_box,
             end_row,
             split_block_start,
             split_end_cut,

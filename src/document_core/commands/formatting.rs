@@ -260,6 +260,8 @@ impl DocumentCore {
             .get(sec_idx)?
             .endnote_para_sources
             .get(local_idx)
+            // [#7860] 편집 명령은 본문 문단의 미주 주소만 받는다. 표 셀 안 미주는 제외한다.
+            .filter(|src| src.cell_path.is_empty())
             .cloned()
     }
 

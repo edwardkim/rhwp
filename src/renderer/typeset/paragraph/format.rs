@@ -97,7 +97,13 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     let trailing_ls = line_spacings.last().copied().unwrap_or(0.0);
     let height_for_fit = {
         let metric = (total_height - trailing_ls - spacing_after).max(0.0);
-        let vpos_metric = if para.controls.is_empty() {
+        // [#7824] 저장 사다리의 줄 범위는 한/글이 계산한 원본 줄일 때만 상한이 된다.
+        // 합성 사다리는 문단 위 간격을 포함하지 않으므로 적합성 상한으로 쓰지 않는다.
+        // 문단 아래 간격은 위 metric에서 이미 한 번 제외했다.
+        let authored_line_segs = para.line_segs.iter().all(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        });
+        let vpos_metric = if para.controls.is_empty() && authored_line_segs {
             para.line_segs
                 .first()
                 .zip(para.line_segs.last())
@@ -252,6 +258,7 @@ fn recompose_for_flow(
                     &ctx.float_carve_evidence(),
                     known_square_band,
                     ctx.profile().hwpx_stored_layout(),
+                    ctx.uniform_filler_ladder(),
                 )
             } else {
                 None

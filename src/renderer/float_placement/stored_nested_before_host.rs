@@ -6,7 +6,7 @@ use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::table::{Cell, Table};
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
-fn original_lines(para: &Paragraph) -> bool {
+pub(super) fn original_lines(para: &Paragraph) -> bool {
     para.raw_break_type == 0
         && !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
