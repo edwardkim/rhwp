@@ -644,12 +644,19 @@ impl SkiaLayerRenderer {
 
     /// Render only an enclosing integer pixel window on the full-page grid.
     ///
-    /// Only this window allocates a bitmap. Negative/off-page origins are
-    /// padded with the normal clear color; page ink is clipped to the same
-    /// ceil(page size * scale) bounds as a full render. This replays the same
-    /// layer tree and does not implement subtree culling or a GPU surface.
-    /// Page extents and window endpoints must fit the exact f32 integer range
-    /// [-2^24, 2^24], so the device-space origin translation loses no pixels.
+    /// Replay uses the full page's surface size and device origin, then copies
+    /// the intersecting pixels without resampling. Even an exact integer CTM
+    /// translation can change Skia antialiasing, so a translated small surface
+    /// cannot satisfy the full-page crop contract. Off-page pixels retain the
+    /// normal clear color. This is not subtree culling or a GPU surface.
+    ///
+    /// Output dimensions/pixels still use `options`. Independently, the working
+    /// raster is limited to 16,384 per dimension and 16,777,216 pixels; working
+    /// N32 plus output RGBA bytes together cannot exceed 128 MiB. These bounds
+    /// exclude Skia intermediates/caches and are not a whole-process RSS limit.
+    /// Geometry and output limits are checked first. A wholly off-page window
+    /// needs no working raster, but still obeys the output and peak-byte limits.
+    /// Page extents/window endpoints must be within [-2^24, 2^24] pixels.
     pub fn render_region_pixels_with_options(
         &self,
         tree: &PageLayerTree,
@@ -811,39 +818,7 @@ impl SkiaLayerRenderer {
             )));
         }
 
-        let mut surface = surfaces::raster_n32_premul((width, height))
-            .ok_or_else(|| HwpError::RenderError("Skia raster surface 생성 실패".to_string()))?;
-        let canvas = surface.canvas();
-        let clear_color = if let Some(color) = options.background_color {
-            colorref_to_skia(color, 1.0)
-        } else if options.transparent {
-            Color::from_argb(0, 0, 0, 0)
-        } else {
-            Color::WHITE
-        };
-        canvas.clear(clear_color);
-        if let Some(region) = region {
-            canvas.translate((-(region.origin_x as f32), -(region.origin_y as f32)));
-            // Clip in scaled page pixels before applying logical-page scale.
-            // Clipping to the logical page rectangle would change fractional
-            // right/bottom edge pixels compared with the full raster surface.
-            canvas.clip_rect(
-                Rect::from_wh(region.page_width as f32, region.page_height as f32),
-                skia_safe::ClipOp::Intersect,
-                false,
-            );
-        }
-        if options.scale != 1.0 {
-            canvas.scale((options.scale as f32, options.scale as f32));
-        }
-
-        let outer_setup_time = total_start.elapsed();
-        let replay =
-            self.render_page_to_canvas_with_options(canvas, tree, options.scale as f32, false)?;
-
-        let encode_start = Instant::now();
-        let image = surface.image_snapshot();
-        // N32는 host에 따라 BGRA다. Skia에 RGBA를 명시해서 읽는다.
+        // N32 is platform-dependent; output always has explicit RGBA channels.
         let info = skia_safe::ImageInfo::new(
             (width, height),
             skia_safe::ColorType::RGBA8888,
@@ -853,23 +828,123 @@ impl SkiaLayerRenderer {
         let stride = info.min_row_bytes();
         let byte_count = stride
             .checked_mul(height as usize)
-            .ok_or_else(|| HwpError::RenderError("raster byte count overflow".into()))?;
+            .ok_or_else(|| HwpError::ResourceLimit("raster byte count overflow".into()))?;
+        let (surface_width, surface_height, origin_x, origin_y) = match region {
+            Some(region) => (
+                region.page_width,
+                region.page_height,
+                region.origin_x,
+                region.origin_y,
+            ),
+            None => (width, height, 0, 0),
+        };
+        // Use wide arithmetic even though admitted region endpoints fit 2^24.
+        let left = i64::from(origin_x).max(0);
+        let top = i64::from(origin_y).max(0);
+        let right = (i64::from(origin_x) + i64::from(width)).min(i64::from(surface_width));
+        let bottom = (i64::from(origin_y) + i64::from(height)).min(i64::from(surface_height));
+        let intersects = left < right && top < bottom;
+        if region.is_some() {
+            const MAX_WORKING_DIMENSION: i32 = 16_384;
+            const MAX_WORKING_PIXELS: u64 = 16 * 1024 * 1024;
+            const MAX_PEAK_BITMAP_BYTES: u64 = 128 * 1024 * 1024;
+            let limit = || HwpError::ResourceLimit("raster region working budget exceeded".into());
+            let working_bytes = if intersects {
+                let working_pixels = (surface_width as u64)
+                    .checked_mul(surface_height as u64)
+                    .ok_or_else(limit)?;
+                if surface_width > MAX_WORKING_DIMENSION
+                    || surface_height > MAX_WORKING_DIMENSION
+                    || working_pixels > MAX_WORKING_PIXELS
+                {
+                    return Err(limit());
+                }
+                // raster_n32_premul uses tightly packed four-byte N32 pixels.
+                working_pixels.checked_mul(4).ok_or_else(limit)?
+            } else {
+                0
+            };
+            let peak = working_bytes
+                .checked_add(u64::try_from(byte_count).map_err(|_| limit())?)
+                .ok_or_else(limit)?;
+            if peak > MAX_PEAK_BITMAP_BYTES {
+                return Err(limit());
+            }
+        }
+
+        let clear_color = if let Some(color) = options.background_color {
+            colorref_to_skia(color, 1.0)
+        } else if options.transparent {
+            Color::from_argb(0, 0, 0, 0)
+        } else {
+            Color::WHITE
+        };
         let mut bytes = vec![0u8; byte_count];
-        if !image.read_pixels(
-            &info,
-            &mut bytes,
-            stride,
-            (0, 0),
-            skia_safe::image::CachingHint::Disallow,
-        ) {
-            return Err(HwpError::RenderError("Skia RGBA pixel read failed".into()));
+        if region.is_some() && clear_color.a() != 0 {
+            // The clear policy is either fully opaque or transparent black, so
+            // these channels already satisfy the premultiplied RGBA contract.
+            let rgba = [
+                clear_color.r(),
+                clear_color.g(),
+                clear_color.b(),
+                clear_color.a(),
+            ];
+            for pixel in bytes.chunks_exact_mut(4) {
+                pixel.copy_from_slice(&rgba);
+            }
         }
         let nanos = |duration: Duration| duration.as_nanos().min(u128::from(u64::MAX)) as u64;
-        let mut diagnostics = replay.diagnostics;
-        diagnostics.raster_setup_time_ns =
-            nanos(outer_setup_time.saturating_add(replay.setup_time));
-        diagnostics.raster_replay_time_ns = nanos(replay.replay_time);
-        diagnostics.raster_encode_time_ns = nanos(encode_start.elapsed());
+        let mut diagnostics = LayerRenderDiagnostics::default();
+        if intersects {
+            let mut surface = surfaces::raster_n32_premul((surface_width, surface_height))
+                .ok_or_else(|| {
+                    HwpError::RenderError("Skia raster surface 생성 실패".to_string())
+                })?;
+            let canvas = surface.canvas();
+            canvas.clear(clear_color);
+            // Full-page and region replay have identical CTM and device clip.
+            if options.scale != 1.0 {
+                canvas.scale((options.scale as f32, options.scale as f32));
+            }
+            let outer_setup_time = total_start.elapsed();
+            let replay =
+                self.render_page_to_canvas_with_options(canvas, tree, options.scale as f32, false)?;
+
+            let encode_start = Instant::now();
+            let image = surface.image_snapshot();
+            let copy_info = skia_safe::ImageInfo::new(
+                ((right - left) as i32, (bottom - top) as i32),
+                skia_safe::ColorType::RGBA8888,
+                skia_safe::AlphaType::Premul,
+                None,
+            );
+            let destination_x = (left - i64::from(origin_x)) as usize;
+            let destination_y = (top - i64::from(origin_y)) as usize;
+            let destination = destination_y
+                .checked_mul(stride)
+                .and_then(|row| {
+                    destination_x
+                        .checked_mul(4)
+                        .and_then(|column| row.checked_add(column))
+                })
+                .ok_or_else(|| HwpError::ResourceLimit("raster copy offset overflow".into()))?;
+            if !image.read_pixels(
+                &copy_info,
+                &mut bytes[destination..],
+                stride,
+                (left as i32, top as i32),
+                skia_safe::image::CachingHint::Disallow,
+            ) {
+                return Err(HwpError::RenderError("Skia RGBA pixel read failed".into()));
+            }
+            diagnostics = replay.diagnostics;
+            diagnostics.raster_setup_time_ns =
+                nanos(outer_setup_time.saturating_add(replay.setup_time));
+            diagnostics.raster_replay_time_ns = nanos(replay.replay_time);
+            diagnostics.raster_encode_time_ns = nanos(encode_start.elapsed());
+        } else {
+            diagnostics.raster_setup_time_ns = nanos(total_start.elapsed());
+        }
         diagnostics.raster_total_time_ns = nanos(total_start.elapsed());
         Ok((
             RasterPixels {

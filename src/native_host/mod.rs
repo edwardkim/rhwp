@@ -25,7 +25,10 @@ pub enum NativeHostError {
 
 impl From<HwpError> for NativeHostError {
     fn from(error: HwpError) -> Self {
-        Self::Core(error)
+        match error {
+            HwpError::ResourceLimit(message) => Self::LimitExceeded(message),
+            other => Self::Core(other),
+        }
     }
 }
 
