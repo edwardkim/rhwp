@@ -1101,3 +1101,30 @@ Native/fresh 각각8조건79쪽 전쪽90%·독립 쪽수 일치다. 자산관리
 전체 default nextest는 별도 실행 중이며 최종 통과로 기록하지 않는다. 기준2ef의 전쪽
 대조와 나머지 문서별 중요 위치 점검도 계속한다. #4138 분할 입력은 아직196/독립197쪽으로
 미해결이며 검사나 기대 쪽수를 제거하지 않았다.
+
+
+## C31. 최신 devel 확인과 HFT ASCII 자연 폭 교차 검증
+
+사용자 요청에 따라 fetch/ls-remote로 최신 devel을 먼저 확인했다. 기준은 여전히
+`2efefc6a1f9812a188e32c1cb283e9ef7962ea3e`이며 HEAD에 포함되어 재리베이스하지 않았다.
+사용자 orders/PR 초안의 SHA는 보존했다. PR 생성 직전에도 원격 head를 다시 확인한다.
+
+#4138의 148쪽부터 이어진 앞당김은 저장4줄을 실제3줄로 다시 합치는 반례로 확인했다.
+독립 원본115쪽 Print와 같은 입력의 분할197쪽 Print에서 비공백 ASCII77개의
+CharProc SHA와1000em 자연 폭이 일치했다. 기존1024em 표와 다른28개만 최근접값으로
+보정하고 공백·미확인17개·다른 face·한글 범위는 보존했다. 실제 glyph 프로그램을
+TTF에서 추출하거나 줄 정렬 간격을 자연 폭으로 쓰지 않았다.
+출처·glyph SHA·old/new는 [교차 검증 폭](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hft-ascii-followthrough/independent-natural-widths.json)과
+[변경값](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hft-ascii-followthrough/changes.json)에 있다.
+
+같은 저장본의 원문4줄/실제3줄 FAIL → 원문4줄/실제4줄 PASS, 전체쪽수196→197이다.
+집중 nextest81PASS0FAIL(8.702초), Native build1m48s/fmt PASS.
+그러나 Native 전197쪽은 최저25.59247%, 미달7쪽(23/60/130/149/153/169/176)이다.
+147/148/149쪽 review를 직접 확인했고149쪽의 영문 혼합 줄바꿈 차이를 남겼다.
+원본115쪽 Native 최저90.52654%, 미달0을 유지했다. fresh web/no-opt 빌드는 완료됐고
+root/Studio와 frozen JS/WASM hash 일치를 확인했다. fresh WASM 전쪽 비교는 진행 중이다.
+쪽수 복원을 전쪽 시각 수용으로
+보고하지 않으며, 이 미달을 고정하는 새 회귀나 px 검사를 추가하지 않았다.
+전체 default nextest는 이전 fbb source에서10383건 중10374PASS9FAIL45skip이었으며,
+현재 후보의 전체 통과로 재인용하지 않는다. 로그·전쪽 TSV·대표 PNG는 ignored
+`output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/hft-ascii-followthrough/`에 보존한다.

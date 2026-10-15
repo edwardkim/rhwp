@@ -1,0 +1,176 @@
+{
+  "parent": "fbb4c91c1e24ea5059c432d2c40dfc9d85167158",
+  "upstreamDevel": "2efefc6a1f9812a188e32c1cb283e9ef7962ea3e",
+  "upstreamChanged": false,
+  "before": {
+    "storedRows": 4,
+    "paintedRows": 3,
+    "testExitCode": 101,
+    "pages": 196
+  },
+  "after": {
+    "storedRows": 4,
+    "paintedRows": 4,
+    "testExitCode": 0,
+    "pages": 197
+  },
+  "focused": {
+    "tests": 81,
+    "passed": 81,
+    "failed": 0,
+    "seconds": 8.702
+  },
+  "nativeWhole": [
+    {
+      "backend": "native",
+      "case": "giant4138-tab-period",
+      "seconds": 109.27026975003537,
+      "pages": 197,
+      "minimum": 25.59247,
+      "below90": [
+        23,
+        60,
+        130,
+        149,
+        153,
+        169,
+        176
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 23,
+            "tolerant_content_match_percent": 89.91824
+          },
+          {
+            "page": 60,
+            "tolerant_content_match_percent": 89.83142
+          },
+          {
+            "page": 130,
+            "tolerant_content_match_percent": 25.59247
+          },
+          {
+            "page": 149,
+            "tolerant_content_match_percent": 82.18998
+          },
+          {
+            "page": 153,
+            "tolerant_content_match_percent": 86.30871
+          },
+          {
+            "page": 169,
+            "tolerant_content_match_percent": 89.43934
+          },
+          {
+            "page": 176,
+            "tolerant_content_match_percent": 83.06128
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 197,
+          "pdf": 197
+        },
+        "page_count_mismatch": false
+      },
+      "directInspectionPending": true
+    },
+    {
+      "backend": "native",
+      "case": "giant4138-original",
+      "seconds": 49.00786724995123,
+      "pages": 115,
+      "minimum": 90.52654,
+      "below90": [],
+      "gate": {
+        "status": "not_evaluated",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 115,
+          "pdf": 115
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      },
+      "directInspectionPending": true
+    },
+    {
+      "backend": "wasm",
+      "case": "giant4138-tab-period",
+      "seconds": 64.98042637499748,
+      "pages": 197,
+      "minimum": 25.65135,
+      "below90": [
+        23,
+        60,
+        130,
+        149,
+        153,
+        169,
+        176
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 23,
+            "tolerant_content_match_percent": 89.91824
+          },
+          {
+            "page": 60,
+            "tolerant_content_match_percent": 89.83142
+          },
+          {
+            "page": 130,
+            "tolerant_content_match_percent": 25.65135
+          },
+          {
+            "page": 149,
+            "tolerant_content_match_percent": 82.18998
+          },
+          {
+            "page": 153,
+            "tolerant_content_match_percent": 86.30871
+          },
+          {
+            "page": 169,
+            "tolerant_content_match_percent": 89.43934
+          },
+          {
+            "page": 176,
+            "tolerant_content_match_percent": 83.08024
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 197,
+          "pdf": 197
+        },
+        "page_count_mismatch": false
+      },
+      "directInspectionPending": true
+    }
+  ],
+  "freshWasmBuild": {
+    "complete": true,
+    "localNoOpt": true,
+    "packageHashes": {
+      "rhwp.js": "009b53a277844df11b6d9f00a0cab0b29e449d3e46f00a24dca42a6fed9696ed",
+      "rhwp_bg.wasm": "3a328a7f47c4376d6545a6379e45b8b3ee1b4d327183f7b5332500b9621c9173",
+      "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390"
+    }
+  },
+  "wholeWasmStatus": "running",
+  "prReady": false,
+  "remaining": "분할 입력 Native7쪽 미달, fresh WASM 전쪽 및 다른 회귀 실패 보정 중",
+  "ignoredEvidence": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/hft-ascii-followthrough"
+}
