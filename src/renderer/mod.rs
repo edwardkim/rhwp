@@ -441,6 +441,9 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub metric_font_family: Option<String>,
+    /// 확인된 원본 글리프만 사용하는 부분 메트릭. 미확인 글자는 표시 face에 남는다.
+    #[serde(skip_serializing)]
+    pub original_glyph_metric_family: Option<String>,
     /// [#7387] 명시적으로 확인한 공백 전진폭(em). 주로
     /// `CharShape.use_font_space`가 켜진 run의 **영문 슬롯** 글꼴 폭이며,
     /// 저장 문서의 독립 출력에서 다른 폭이 확인되면 프로필이 덮어쓸 수 있다.
@@ -508,6 +511,8 @@ pub struct TextStyle {
 pub struct LatinSlotMetrics {
     pub font_family: String,
     pub metric_font_family: Option<String>,
+    /// 확인된 원본 글리프만 사용하는 부분 메트릭. 미확인 글자는 표시 face에 남는다.
+    pub original_glyph_metric_family: Option<String>,
     pub font_metric_trusted: bool,
     pub letter_spacing: f64,
     pub ratio: f64,
@@ -736,6 +741,7 @@ impl Default for TextStyle {
             native_pua_metrics: None,
             glyph_fallback_advance_explicit: false,
             metric_font_family: None,
+            original_glyph_metric_family: None,
             font_space_em: None,
             layout_half_space: false,
             regenerated_font_metrics: false,

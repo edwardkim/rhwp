@@ -149,3 +149,54 @@ test('exact SFNT maxp proof distinguishes the selected TTC face and rejects malf
   const woff = readFileSync(new URL('../public/fonts/D2Coding-Regular.woff2', import.meta.url));
   assert.equal(canvasKitSfntGlyphCount(woff.buffer.slice(woff.byteOffset, woff.byteOffset + woff.byteLength)), null);
 });
+
+function tableRange(data: ArrayBuffer, tag: number): {offset: number; length: number} {
+  const view = new DataView(data);
+  for (let i = 0; i < view.getUint16(4, false); i++) {
+    const at = 12 + i * 16;
+    if (view.getUint32(at, false) === tag) return {
+      offset: view.getUint32(at + 8, false), length: view.getUint32(at + 12, false),
+    };
+  }
+  throw new Error(`missing table ${tag}`);
+}
+
+test('legacy profile headers preserve glyphs, hints, metrics and complete cmap ranges', () => {
+  const original = fixtureBuffer('RHWPBitmapSvgGlyphSmoke.ttf');
+  const malformed = original.slice(0);
+  const view = new DataView(malformed);
+  const cmap = tableRange(malformed, 0x636d6170);
+  const subtable = cmap.offset + view.getUint32(cmap.offset + 8, false);
+  assert.equal(view.getUint16(subtable + 2, false), 32);
+  view.setUint16(subtable + 2, 31, false); // all arrays are present; declaration is one byte short
+  const maxp = tableRange(malformed, 0x6d617870);
+  view.setUint16(maxp.offset + 14, 4, false); // TrueType has only Z0 and Z1
+  const unchanged = malformed.slice(0);
+  const normalized = canvasKitFontFaceData(malformed, 0);
+  assert.ok(normalized);
+  const output = new DataView(normalized);
+  const outMaxp = tableRange(normalized, 0x6d617870);
+  const outCmap = tableRange(normalized, 0x636d6170);
+  const outSubtable = outCmap.offset + output.getUint32(outCmap.offset + 8, false);
+  assert.equal(output.getUint16(outMaxp.offset + 14, false), 2);
+  assert.equal(output.getUint16(outSubtable + 2, false), 32);
+  assert.deepEqual(new Uint8Array(malformed), new Uint8Array(unchanged), 'caller bytes stay immutable');
+  for (let i = 0; i < view.getUint16(4, false); i++) {
+    const at = 12 + i * 16; const tag = view.getUint32(at, false);
+    const before = tableRange(original, tag); const after = tableRange(normalized, tag);
+    const a = new Uint8Array(original.slice(before.offset, before.offset + before.length));
+    const b = new Uint8Array(normalized.slice(after.offset, after.offset + after.length));
+    if (tag === 0x68656164) { a.fill(0, 8, 12); b.fill(0, 8, 12); }
+    assert.deepEqual(b, a, 'restored metadata and all executable payload match the valid source');
+  }
+});
+
+test('an incomplete range-offset cmap is not guessed from surrounding bytes', () => {
+  const malformed = fixtureBuffer('RHWPBitmapSvgGlyphSmoke.ttf');
+  const view = new DataView(malformed); const cmap = tableRange(malformed, 0x636d6170);
+  const sub = cmap.offset + view.getUint32(cmap.offset + 8, false);
+  view.setUint16(sub + 2, 31, false); view.setUint16(sub + 30, 2, false);
+  const normalized = canvasKitFontFaceData(malformed, 0);
+  assert.ok(normalized);
+  assert.deepEqual(new Uint8Array(normalized), new Uint8Array(malformed), 'unsupported mappings still reach the browser validator unchanged');
+});

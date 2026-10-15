@@ -58,6 +58,7 @@ pub struct ResolvedCharStyle {
     /// `HCI Poppy` 가 그 경우이며, 그 치환(`Palatino Linotype`)은 정본 ASCII 24,662자
     /// 대조에서 중앙 오차 0.0040 em 으로 이미 맞다 — 건드리지 않는다.
     pub font_families_metric_face: Vec<Option<String>>,
+    pub font_families_original_glyph_metric_face: Vec<Option<String>>,
     /// [#7387] 처음에는 `CharShape.use_font_space`가 켜진 run의 **영문 슬롯**(1)
     /// 공백 글리프 폭이다. 저장 문서 프로필에서 독립 출력에 맞게 보정할 수 있다.
     /// `None`이면 일반 글꼴 측정 규칙을 따른다.
@@ -138,6 +139,7 @@ impl Default for ResolvedCharStyle {
             ascii_punct_latin_slot: false,
             explicit_latin_slot: false,
             font_families_metric_face: Vec::new(),
+            font_families_original_glyph_metric_face: Vec::new(),
             font_space_em: None,
             font_size: 12.0,
             font_sizes: Vec::new(),
@@ -271,6 +273,19 @@ impl ResolvedCharStyle {
             0
         };
         self.font_families_metric_face
+            .get(slot)
+            .and_then(Option::as_deref)
+    }
+
+    pub fn original_glyph_metric_face_for_lang(&self, lang_index: usize) -> Option<&str> {
+        let slot = if lang_index < self.font_families.len()
+            && !self.font_families[lang_index].is_empty()
+        {
+            lang_index
+        } else {
+            0
+        };
+        self.font_families_original_glyph_metric_face
             .get(slot)
             .and_then(Option::as_deref)
     }

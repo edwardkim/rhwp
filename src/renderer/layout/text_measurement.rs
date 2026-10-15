@@ -909,6 +909,9 @@ pub(crate) fn resolved_to_text_style(
                 .glyph_fallback_advance_explicit_for_lang(lang_index),
             // [#7391] 폭만 선언 face 의 표로 되돌린다. 표시 글꼴(`font_family`)은 그대로다.
             metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
+            original_glyph_metric_family: cs
+                .original_glyph_metric_face_for_lang(lang_index)
+                .map(str::to_string),
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
             font_space_em: cs.font_space_em,
             layout_half_space: false,
@@ -965,6 +968,9 @@ pub(crate) fn resolved_to_text_style(
                 Box::new(crate::renderer::LatinSlotMetrics {
                     font_family: cs.font_family_for_lang(1).to_string(),
                     metric_font_family: cs.metric_face_for_lang(1).map(str::to_string),
+                    original_glyph_metric_family: cs
+                        .original_glyph_metric_face_for_lang(1)
+                        .map(str::to_string),
                     font_metric_trusted: cs.font_metric_trusted_for_lang(1),
                     letter_spacing: resolved_letter_spacing(styles, char_style_id, 1),
                     ratio: cs.ratio_for_lang(1),
@@ -1711,23 +1717,39 @@ fn char_width_decision_with_hft_tracking<'a>(
                 .unwrap_or(&style.font_family),
         };
         let display_family = latin.map_or(&style.font_family, |l| &l.font_family);
-        let measured_family =
-            crate::renderer::legacy_font_advances::measurement_face(metric_family);
+        let measured_family = crate::renderer::legacy_font_advances::measurement_face(metric_family);
         source_hft_metric = font_metrics_data::is_legacy_hft_metric_face(measured_family);
         let measured_bold = crate::renderer::legacy_font_advances::measurement_bold(
             metric_family,
             style.bold,
             style.regenerated_font_metrics,
         );
-        let mut embedded = measure_char_width_embedded_decision_for_font(
-            measured_family,
-            measured_bold,
-            style.italic,
-            c,
-            font_size,
-            latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
-            latin.is_none() && style.hft_hangul_face,
-        );
+        let original_glyph_face = latin
+            .map_or(style.original_glyph_metric_family.as_deref(), |slot| {
+                slot.original_glyph_metric_family.as_deref()
+            });
+        let original_glyph_em = original_glyph_face.and_then(|face| {
+            font_metrics_data::original_glyph_advance_em(face, style.bold, style.italic, c)
+        });
+        let mut embedded = if let Some(em) = original_glyph_em {
+            EmbeddedWidthDecision {
+                width_px: Some(quantize_hwp_px(font_size * em)),
+                em_fraction: Some(em),
+                width_source: "measuredOriginalGlyph",
+                metric: None,
+                character_match: "hit",
+            }
+        } else {
+            measure_char_width_embedded_decision_for_font(
+                measured_family,
+                measured_bold,
+                style.italic,
+                c,
+                font_size,
+                latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
+                latin.is_none() && style.hft_hangul_face,
+            )
+        };
         // 부분 표의 미수집은 글리프 부재가 아니다. 확인한 원본 폭이 없으면
         // 기존 표시 face의 폭을 보존한다. ASCII 밖의 전각 괄호도 반각으로 줄이지 않는다.
         if (c.is_ascii_graphic() || source_hft_metric)
@@ -1799,7 +1821,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             && !style.hft_hangul_face
             && !style.hft_fullwidth_dot
             // 결측 글리프의 paint 공급과 한컴 호환 전진폭은 독립 계약이다.
-            // 형식 미확인 한글 슬롯의 한점 리더는 독립 Print의 전각 대체
+            // 형식 미확인 슬롯의 한점 리더는 독립 Print의 전각 대체
             // 기호 폭을 보존한다. 명시 glyphFallbacks·검증 TrueType 환경·영문 슬롯은
             // 선언 공급자의 자연 폭을 사용하며 HFT 보호는 위에서 유지한다.
             && (c != '\u{2024}'

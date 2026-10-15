@@ -2359,6 +2359,11 @@ impl Renderer for WebCanvasRenderer {
 
                     let ch = cluster_str.chars().next().unwrap_or(' ');
 
+                    if cluster_str == "․"
+                        && middle_dot::paint_onepoint(&self.ctx, style, font_size, char_x, y, false)
+                    {
+                        continue;
+                    }
                     if cluster_str == "\u{00B7}" {
                         middle_dot::paint(
                             &self.ctx,
@@ -3097,6 +3102,11 @@ impl WebCanvasRenderer {
                 let char_x = x + char_positions[*char_idx] + dx;
                 let char_y = y + dy;
 
+                if cs == "․"
+                    && middle_dot::paint_onepoint(ctx, style, font_size, char_x, char_y, stroke)
+                {
+                    continue;
+                }
                 if cs == "\u{00B7}" {
                     middle_dot::paint(
                         ctx,

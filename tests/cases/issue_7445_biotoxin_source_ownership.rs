@@ -1,7 +1,8 @@
 //! #7445 지정 댓글의 생물독 원본: 독립 PDF 205쪽 전수 시각 수용 후 복구한 회귀.
-//! 현재 Native/실제 fresh WASM 205쪽 최저 92.75882%, 143쪽 98.25150%의
-//! 독립 Print·TSV·래스터 출처는 completed-20261009/stored-anchor-repair/validation.json에 있다.
-//! 절대 픽셀 위치 대신 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사한다.
+//! Native/fresh WASM 전205쪽192DPI 최저92.11790/92.12343%, 미달0.
+//! 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사하고, 양쪽98% 이상인
+//! 중요한 그림 경계만 독립 Print의 ±2 CSSpx로 보호한다. 출처는
+//! completed-20261009/regression-policy-20261015/source-program-and-inline-spacing/validation.json.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;
@@ -175,43 +176,70 @@ fn cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages() {
 #[test]
 fn same_line_pictures_share_the_source_baseline() {
     let core = core();
-    let source = &core.document().sections[SECTION].paragraphs[323];
-    let line = &source.line_segs[0];
-    let ratio = f64::from(line.baseline_distance) / f64::from(line.text_height);
-    let tree = core.build_page_render_tree(167).expect("PDF 168쪽");
-    let mut pictures: Vec<_> = nodes(&tree.root)
-        .into_iter()
-        .filter(|n| {
-            matches!(&n.node_type, RenderNodeType::Image(i)
-            if i.section_index == Some(SECTION) && i.para_index == Some(323))
-        })
-        .collect();
-    pictures.sort_by_key(|n| match &n.node_type {
-        RenderNodeType::Image(i) => i.control_index,
-        _ => None,
-    });
-    assert_eq!(pictures.len(), 3, "PDF 같은 줄의 세 원본 그림");
-    let tallest = pictures.iter().map(|n| n.bbox.height).fold(0.0, f64::max);
-    let reference = pictures[2].bbox.y + pictures[2].bbox.height * ratio;
-    for (index, node) in pictures.iter().enumerate() {
-        let Control::Picture(original) = &source.controls[index] else {
-            panic!("원본 그림 컨트롤");
-        };
-        assert!(original.common.treat_as_char);
-        assert!(original.caption.is_none());
-        let RenderNodeType::Image(image) = &node.node_type else {
-            unreachable!()
-        };
-        assert_eq!(
-            image.control_index,
-            Some(index),
-            "누락·중복 없는 원본 그림 소속"
-        );
-        let own_baseline = node.bbox.y + node.bbox.height * ratio;
-        // 저장 줄의 한 HWP 단위보다 작은 반올림만 허용한다. 출력 px 위치는 고정하지 않는다.
+    // 전205쪽192DPI Native/fresh 최저92.11790/92.12343%.
+    // 같은 세 그림 동작에서 양쪽 최솟값 순으로172쪽99.50266%,168쪽99.39203%.
+    // 독립 Print image matrix의 pt 좌표를96DPI CSSpx로 환산했다.
+    for (page, host, pdf_third_x, pdf_right) in [
+        (172, 371, 477.184, 711.1387),
+        (168, 323, 501.0107, 717.6947),
+    ] {
+        let source = &core.document().sections[SECTION].paragraphs[host];
+        let line = &source.line_segs[0];
+        let ratio = f64::from(line.baseline_distance) / f64::from(line.text_height);
+        let tree = core
+            .build_page_render_tree(page - 1)
+            .expect("독립 PDF 그림 쪽");
+        let mut pictures: Vec<_> = nodes(&tree.root)
+            .into_iter()
+            .filter(|n| {
+                matches!(&n.node_type, RenderNodeType::Image(i)
+                if i.section_index == Some(SECTION) && i.para_index == Some(host))
+            })
+            .collect();
+        pictures.sort_by_key(|n| match &n.node_type {
+            RenderNodeType::Image(i) => i.control_index,
+            _ => None,
+        });
+        assert_eq!(pictures.len(), 3, "같은 줄의 세 원본 그림을 한 번 표시");
+        let tallest = pictures.iter().map(|n| n.bbox.height).fold(0.0, f64::max);
+        let reference = pictures[2].bbox.y + pictures[2].bbox.height * ratio;
+        for (index, node) in pictures.iter().enumerate() {
+            let Control::Picture(original) = &source.controls[index] else {
+                panic!("원본 그림 컨트롤");
+            };
+            assert!(original.common.treat_as_char);
+            assert!(original.caption.is_none());
+            let RenderNodeType::Image(image) = &node.node_type else {
+                unreachable!()
+            };
+            assert_eq!(image.control_index, Some(index), "누락·중복 없는 원본 소속");
+            let own_baseline = node.bbox.y + node.bbox.height * ratio;
+            assert!(
+                ((own_baseline - reference) / tallest).abs() < 1.0 / f64::from(line.text_height),
+                "같은 줄의 그림은 각자 높이에 따른 기준선을 공유"
+            );
+        }
+        let source_extent =
+            rhwp::renderer::hwpunit_to_px(line.segment_width, rhwp::renderer::DEFAULT_DPI);
+        let last = pictures[2];
+        let painted_extent = last.bbox.x + last.bbox.width - pictures[0].bbox.x;
+        // 줄말 공백의 정수 반올림이 분수 글리프 폭과 혼합되지 않도록 원본 폭과 대조한다.
+        if source.line_segs.len() > 1 {
+            assert!((painted_extent - source_extent).abs() <= 4.0 / 75.0,
+                "뒤 줄이 있는 그림 줄은 정렬 상자를 채움:{page}쪽 실제{painted_extent}, 원본{source_extent}");
+        } else {
+            assert!(
+                painted_extent <= source_extent + 4.0 / 75.0,
+                "마지막 줄은 자연 폭을 유지하며 원본 상자 안에 표시"
+            );
+        }
         assert!(
-            ((own_baseline - reference) / tallest).abs() < 1.0 / f64::from(line.text_height),
-            "같은 줄의 그림은 각자 높이에 따른 기준선을 공유해야 합니다"
+            (last.bbox.x - pdf_third_x).abs() <= 2.0,
+            "{page}쪽 세 번째 그림 시작은 독립 Print ±2 CSSpx"
+        );
+        assert!(
+            (last.bbox.x + last.bbox.width - pdf_right).abs() <= 2.0,
+            "{page}쪽 마지막 그림 끝은 독립 Print ±2 CSSpx"
         );
     }
 }

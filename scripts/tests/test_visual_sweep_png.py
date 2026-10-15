@@ -39,6 +39,35 @@ class TerminalCmapTests(unittest.TestCase):
             self.assertIsNone(png.repair_terminal_cmap(self.cmap()[:end], 3))
 
 
+class LegacyProfileHeaderTests(unittest.TestCase):
+    def test_header_repair_preserves_the_valid_program_and_records_provenance(self):
+        from fontTools.ttLib import TTFont
+        fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf'
+        data = bytearray(fixture.read_bytes())
+        records = {data[12+i*16:16+i*16].decode('latin1'): struct.unpack_from('>II', data, 20+i*16)
+                   for i in range(struct.unpack_from('>H', data, 4)[0])}
+        cmap, _ = records['cmap']; maxp, _ = records['maxp']
+        sub = cmap + struct.unpack_from('>I', data, cmap + 8)[0]
+        self.assertEqual(struct.unpack_from('>H', data, sub + 2)[0], 32)
+        struct.pack_into('>H', data, sub + 2, 31)
+        struct.pack_into('>H', data, maxp + 14, 4)
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); inputs = root / 'inputs'; inputs.mkdir()
+            source = inputs / 'legacy.ttf'; source.write_bytes(data)
+            vs = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=sweep.sha256_file, write_json_atomic=sweep.write_json_atomic)
+            record = json.loads(png.font_catalog(vs, root, [inputs], root).read_text())['faces'][0]
+            with TTFont(record['path']) as fixed, TTFont(fixture) as original:
+                self.assertEqual(fixed['maxp'].maxZones, 2)
+                self.assertEqual(fixed.getBestCmap(), original.getBestCmap())
+                for tag in original.reader.keys():
+                    if tag == 'head': continue
+                    self.assertEqual(fixed.reader[tag], original.reader[tag], tag)
+            self.assertEqual(source.read_bytes(), data)
+            self.assertIn('cmap-format4-minimum-length', record['repairs'])
+            self.assertIn('maxp-zone-count', record['repairs'])
+
+
 class FontNameCatalogueTests(unittest.TestCase):
     def test_invalid_legacy_name_preserves_valid_face_and_records_provenance(self):
         from fontTools.ttLib.tables._n_a_m_e import NameRecord

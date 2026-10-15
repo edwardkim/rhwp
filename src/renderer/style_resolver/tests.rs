@@ -5,6 +5,131 @@ use crate::model::document::DocInfo;
 use crate::model::style::*;
 use crate::renderer::DEFAULT_DPI;
 
+    fn type1_legacy_latin_doc_info() -> DocInfo {
+        DocInfo {
+            font_faces: vec![
+                vec![Font {
+                    name: "HCI Poppy".into(),
+                    alt_type: 1,
+                    ..Default::default()
+                }];
+                7
+            ],
+            char_shapes: vec![CharShape {
+                base_size: 7500,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn measured_original_glyph_survives_legacy_type1_display_fallback() {
+        let info = type1_legacy_latin_doc_info();
+        let styles = resolve_styles(&info, DEFAULT_DPI);
+        let style = crate::renderer::layout::resolved_to_text_style(&styles, 0, 1);
+        assert!(style.font_family.starts_with("Palatino Linotype"));
+        assert!(
+            style.metric_font_family.is_none(),
+            "전체 HFT face로 승격하지 않는다"
+        );
+        // 독립 한컴2020/2024 Print의 같은 CharProc SHA와 d1/Widths:605/1000em.
+        // 최종 전진은 기존4HU 장치 격자에 놓이므로 자연 폭과의 차이는 반 격자 이하다.
+        let advance = crate::renderer::layout::estimate_text_width_unrounded("/", &style);
+        assert!(
+            (advance - 60.5).abs() <= 2.0 / 75.0,
+            "확인된 원본 슬래시 전진폭:실제{advance}, 독립60.5"
+        );
+        let fallback = crate::renderer::TextStyle {
+            font_family: "Palatino Linotype".into(),
+            font_size: 100.0,
+            ..Default::default()
+        };
+        for text in ["A", "·"] {
+            assert_eq!(
+                crate::renderer::layout::estimate_text_width_unrounded(text, &style),
+                crate::renderer::layout::estimate_text_width_unrounded(text, &fallback),
+                "확인하지 않은 글자는 기존 표시 프로그램 메트릭을 유지한다:{text}"
+            );
+        }
+        assert_eq!(info.font_faces[1][0].alt_type, 1, "원본 선언은 보존한다");
+    }
+
+    #[test]
+    fn explicit_true_type_program_keeps_its_own_slash_advance() {
+        let info = type1_legacy_latin_doc_info();
+        let environment = crate::renderer::font_environment::FontEnvironment::from_json(
+            r#"{"id":"verified-palatino-program","substitutions":{"HCI Poppy":"Palatino Linotype"},"trueTypeFaces":["Palatino Linotype"]}"#
+        ).unwrap();
+        let styles =
+            resolve_styles_with_variant_environment(&info, DEFAULT_DPI, false, Some(&environment));
+        let style = crate::renderer::layout::resolved_to_text_style(&styles, 0, 1);
+        let fallback = crate::renderer::TextStyle {
+            font_family: "Palatino Linotype".into(),
+            font_size: 100.0,
+            ..Default::default()
+        };
+        assert_eq!(
+            crate::renderer::layout::estimate_text_width_unrounded("/", &style),
+            crate::renderer::layout::estimate_text_width_unrounded("/", &fallback)
+        );
+    }
+
+    #[test]
+    fn onepoint_uses_its_symbol_program_before_glyph_resolution() {
+        let mut info = type1_legacy_latin_doc_info();
+        for fonts in &mut info.font_faces {
+            fonts[0].name = "휴먼명조".into();
+        }
+        info.font_faces[5][0].name = "한양신명조".into();
+        let styles = resolve_styles(&info, DEFAULT_DPI);
+        let style =
+            crate::renderer::layout::resolved_to_text_style(&styles, 0, detect_lang_category('․'));
+        assert_eq!(detect_lang_category('․'), 5);
+        assert!(
+            !style.font_family.starts_with("휴먼명조"),
+            "원본 기호 face 소유"
+        );
+        // 독립 2022 저장본 Print의 T1/T2 U+2024 Widths=1000/em=1000.
+        // 원 휴먼명조 TTF의 결측은 확인했지만 선언만으로 공급 폭을 승격하지 않는다.
+        let width = crate::renderer::layout::estimate_text_width_unrounded("․", &style);
+        assert!(
+            (width - 100.0).abs() <= 2.0 / 75.0,
+            "전각 대체 전진:{width}"
+        );
+        let ink = crate::renderer::render_tree::fullwidth_onepoint_ink(&style, 100.0)
+            .expect("독립 Type3 전각 기호의 공통 잉크 결정");
+        assert!((ink.center_x / 100.0 - 0.5).abs() < 1e-9);
+        assert!((ink.above_baseline / 100.0 - 0.3475).abs() < 1e-9);
+    }
+
+    #[test]
+    fn explicit_onepoint_provider_uses_its_own_advance() {
+        let mut info = type1_legacy_latin_doc_info();
+        for fonts in &mut info.font_faces {
+            fonts[0].name = "휴먼명조".into();
+        }
+        let environment = crate::renderer::font_environment::FontEnvironment::from_json(
+            r#"{"id":"selected-provider","substitutions":{},"trueTypeFaces":["휴먼명조"],"glyphFallbacks":{"휴먼명조":["Haansoft Batang"]}}"#
+        ).unwrap();
+        let styles =
+            resolve_styles_with_variant_environment(&info, DEFAULT_DPI, false, Some(&environment));
+        let style = crate::renderer::layout::resolved_to_text_style(&styles, 0, 0);
+        let width = crate::renderer::layout::estimate_text_width_unrounded("․", &style);
+        assert!(
+            (width - 100.0 * 178.0 / 1024.0).abs() <= 2.0 / 75.0,
+            "명시 공급자 전진:{width}"
+        );
+        assert!(
+            crate::renderer::render_tree::fullwidth_onepoint_ink(&style, 100.0).is_none(),
+            "명시 공급자의 실제 기호를 합성 도형으로 덮지 않는다"
+        );
+    }
+
+    use crate::model::document::DocInfo;
+    use crate::model::style::*;
+    use crate::renderer::DEFAULT_DPI;
+
 fn make_doc_info_with_font() -> DocInfo {
     DocInfo {
         font_faces: vec![

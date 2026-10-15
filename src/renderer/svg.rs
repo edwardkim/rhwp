@@ -3375,6 +3375,16 @@ impl Renderer for SvgRenderer {
                 if cluster_str.chars().all(char::is_whitespace) {
                     continue;
                 }
+                if cluster_str == "․" {
+                    if let Some(ink) = super::render_tree::fullwidth_onepoint_ink(style, font_size)
+                    {
+                        self.output.push_str(&format!(
+                            "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{:.4}\" ry=\"{:.4}\" fill=\"{}\"/>\n",
+                            x + char_positions[*char_idx] + ink.center_x + dx,
+                            y - ink.above_baseline + dy, ink.radius_x, ink.radius_y, shadow_color));
+                        continue;
+                    }
+                }
                 if is_middle_dot(cluster_str) {
                     let adv = cluster_advance(*char_idx, cluster_str);
                     let cx = x + char_positions[*char_idx] + adv / 2.0 + dx;
@@ -3481,6 +3491,18 @@ impl Renderer for SvgRenderer {
                         char_x, y,
                     ));
                     continue;
+                }
+                if cluster_str == "․" {
+                    if let Some(ink) = super::render_tree::fullwidth_onepoint_ink(style, font_size)
+                    {
+                        let origin = x + char_positions[*char_idx];
+                        self.output.push_str(&format!(
+                            "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{:.4}\" ry=\"{:.4}\" fill=\"{}\"/>\n",
+                            origin + ink.center_x, y - ink.above_baseline, ink.radius_x, ink.radius_y, color));
+                        // 원문 문자·오프셋과 검색 가능성을 보존한다.
+                        self.output.push_str(&format!("<text x=\"{origin:.4}\" y=\"{y:.4}\" font-size=\"{font_size}\" fill-opacity=\"0\">․</text>\n"));
+                        continue;
+                    }
                 }
                 if is_middle_dot(cluster_str) {
                     let adv = cluster_advance(*char_idx, cluster_str);

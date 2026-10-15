@@ -65,6 +65,7 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
     sourceOffset: number;
     length: number;
     outputOffset: number;
+    repairedData?: Uint8Array;
   }> = [];
   let outputLength = directoryLength;
   for (let tableIndex = 0; tableIndex < tableCount; tableIndex += 1) {
@@ -84,9 +85,25 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
     tables.push({ recordOffset, sourceOffset: tableOffset, length: tableLength, outputOffset });
   }
   if (tables.length === 0) return null;
+  const maxp = tables.find((table) => view.getUint32(table.recordOffset, false) === 0x6d617870);
+  const glyphCount = maxp && maxp.length >= 6 ? view.getUint16(maxp.sourceOffset + 4, false) : 0;
+  const trueTypeGlyphs = [0x0001_0000, 0x7472_7565].includes(sfntVersion)
+    && tables.some((table) => view.getUint32(table.recordOffset, false) === 0x676c7966 && table.length > 0);
+  for (const table of tables) {
+    const tag = view.getUint32(table.recordOffset, false);
+    const data = bytes.subarray(table.sourceOffset, table.sourceOffset + table.length);
+    if (tag === 0x636d6170) table.repairedData = repairMinimalFormat4Length(data, glyphCount) ?? undefined;
+    if (tag === 0x6d617870 && trueTypeGlyphs && data.byteLength >= 32
+        && view.getUint32(table.sourceOffset, false) === 0x0001_0000
+        && view.getUint16(table.sourceOffset + 14, false) > 2) {
+      // OpenType maxp describes allocation for only Z0/Z1. Executable hint programs stay unchanged.
+      table.repairedData = data.slice();
+      new DataView(table.repairedData.buffer).setUint16(14, 2, false);
+    }
+  }
   outputLength = Math.ceil(outputLength / 4) * 4;
   // Aligned standalone fonts keep their bytes, including the existing cmap repair.
-  if (!collection && tables.length === tableCount && tables.every((table) => table.sourceOffset % 4 === 0)) {
+  if (!collection && tables.length === tableCount && tables.every((table) => table.sourceOffset % 4 === 0 && !table.repairedData)) {
     return repairTerminalFontCmap(fontData.slice(0));
   }
   tables.sort((a, b) => view.getUint32(a.recordOffset, false) - view.getUint32(b.recordOffset, false));
@@ -114,14 +131,21 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
     selected.set(bytes.subarray(table.recordOffset, table.recordOffset + 8), outputRecordOffset);
     selectedView.setUint32(outputRecordOffset + 8, table.outputOffset, false);
     selectedView.setUint32(outputRecordOffset + 12, table.length, false);
-    selected.set(bytes.subarray(table.sourceOffset, table.sourceOffset + table.length), table.outputOffset);
+    selected.set(table.repairedData ?? bytes.subarray(table.sourceOffset, table.sourceOffset + table.length), table.outputOffset);
     if (view.getUint32(table.recordOffset, false) === HEAD_TAG && table.length >= 12) {
       headOffset = table.outputOffset;
     }
   }
 
+  if (headOffset !== null) selectedView.setUint32(headOffset + 8, 0, false);
+  for (let index = 0; index < tables.length; index++) {
+    const table = tables[index]; let sum = 0;
+    for (let byte = 0; byte < table.length; byte += 4) {
+      sum = (sum + selectedView.getUint32(table.outputOffset + byte, false)) >>> 0;
+    }
+    selectedView.setUint32(12 + index * 16 + 4, sum, false);
+  }
   if (headOffset !== null) {
-    selectedView.setUint32(headOffset + 8, 0, false);
     let checksum = 0;
     for (let offset = 0; offset < selected.byteLength; offset += 4) {
       checksum = (checksum + selectedView.getUint32(offset, false)) >>> 0;
@@ -129,4 +153,45 @@ export function normalizeFontFaceData(fontData: ArrayBuffer, faceIndex: number):
     selectedView.setUint32(headOffset + 8, (SFNT_CHECKSUM_MAGIC - checksum) >>> 0, false);
   }
   return repairTerminalFontCmap(selected.buffer);
+}
+
+// A constant-delta format 4 has a fully determined minimum byte count. Repair
+// only a one-byte-short declaration when every complete array is already there.
+// Range-offset glyph arrays and missing bytes remain the browser validator's responsibility.
+function repairMinimalFormat4Length(data: Uint8Array, glyphCount: number): Uint8Array | null {
+  if (data.byteLength < 4 || glyphCount <= 0) return null;
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const count = view.getUint16(2, false); const header = 4 + count * 8;
+  if (header > data.byteLength) return null;
+  const offsets = [...new Set(Array.from({length: count}, (_, index) => view.getUint32(8 + index * 8, false)))].sort((left, right) => left - right);
+  let output: Uint8Array | null = null;
+  for (let subtableIndex = 0; subtableIndex < offsets.length; subtableIndex++) {
+    const offset = offsets[subtableIndex];
+    if (offset < header || offset + 14 > data.byteLength || view.getUint16(offset, false) !== 4) continue;
+    const doubled = view.getUint16(offset + 6, false); const segments = doubled / 2;
+    const minimum = 16 + 8 * segments;
+    const limit = Math.min(data.byteLength, offsets[subtableIndex + 1] ?? data.byteLength);
+    if (doubled % 2 || segments < 1 || minimum > 0xffff || offset + minimum !== limit
+        || view.getUint16(offset + 2, false) + 1 !== minimum
+        || view.getUint16(offset + 14 + 2 * segments, false) !== 0) continue;
+    let previous = -1; let valid = true;
+    for (let index = 0; index < segments; index++) {
+      const end = view.getUint16(offset + 14 + 2 * index, false);
+      const start = view.getUint16(offset + 16 + 2 * segments + 2 * index, false);
+      const delta = view.getUint16(offset + 16 + 4 * segments + 2 * index, false);
+      if (start > end || start <= previous
+          || view.getUint16(offset + 16 + 6 * segments + 2 * index, false) !== 0
+          || (index === segments - 1 && (start !== 0xffff || end !== 0xffff))) { valid = false; break; }
+      for (let code = start; code <= end; code++) {
+        if (((code + delta) & 0xffff) >= glyphCount) { valid = false; break; }
+      }
+      if (!valid) break;
+      previous = end;
+    }
+    if (valid) {
+      output ??= data.slice();
+      new DataView(output.buffer).setUint16(offset + 2, minimum, false);
+    }
+  }
+  return output;
 }

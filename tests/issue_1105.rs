@@ -292,6 +292,71 @@ fn task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom() {
         next.contains("목표시스템 구성"),
         "다음 요구사항도 뒤 쪽에 보존한다"
     );
+    assert_sample16_2022_onepoint_program(&core);
+}
+
+fn assert_sample16_2022_onepoint_program(core: &rhwp::DocumentCore) {
+    // 전64쪽 Native/fresh 최저91.77231/91.77652%. 같은 한점 리더 동작은
+    // 양쪽 최솟값99.20113%인59쪽이 가장 높아 우선 선택했다(다음60쪽99.14881%).
+    // 독립 Print T2/HFT97의13개 원점과1em 프로그램, source-program-and-inline-spacing 증적.
+    let svg = core.render_page_svg_native(58).expect("독립 Print59쪽");
+    let xml = roxmltree::Document::parse(&svg).unwrap();
+    let mut ink: Vec<_> = xml
+        .descendants()
+        .filter(|n| n.has_tag_name("ellipse"))
+        .map(|n| {
+            (
+                n.attribute("cx").unwrap().parse::<f64>().unwrap(),
+                n.attribute("cy").unwrap().parse::<f64>().unwrap(),
+            )
+        })
+        .collect();
+    ink.sort_by(|a, b| a.1.total_cmp(&b.1));
+    let baselines = [
+        298.24, 337.76, 369.28, 408.80, 456.00, 494.56, 572.00, 610.56, 649.76, 688.80, 727.84,
+        759.36, 806.56,
+    ];
+    assert_eq!(
+        ink.len(),
+        baselines.len(),
+        "독립 Print의 모든13개 기호 잉크를 한 번 표시"
+    );
+    let mut source: Vec<_> = xml
+        .descendants()
+        .filter(|n| n.has_tag_name("text") && n.text() == Some("․"))
+        .collect();
+    source.sort_by(|a, b| {
+        a.attribute("y")
+            .unwrap()
+            .parse::<f64>()
+            .unwrap()
+            .total_cmp(&b.attribute("y").unwrap().parse::<f64>().unwrap())
+    });
+    assert_eq!(
+        source.len(),
+        baselines.len(),
+        "원문 기호·검색·순서와 잉크의 일대일 소유"
+    );
+    for (((cx, cy), node), baseline) in ink.iter().zip(source).zip(baselines) {
+        assert_eq!(
+            node.attribute("fill-opacity"),
+            Some("0"),
+            "대체 글리프를 중복 그리지 않음"
+        );
+        let origin = node.attribute("x").unwrap().parse::<f64>().unwrap();
+        assert!(
+            (origin - 136.0).abs() <= 2.0,
+            "독립 Print의 원문 기호 원점 ±2 CSSpx"
+        );
+        assert!(
+            (cx - 144.0).abs() <= 2.0,
+            "독립1em 상자 안 기호 중심 ±2 CSSpx"
+        );
+        assert!(
+            (cy - (baseline - 16.0 * 0.3475)).abs() <= 2.0,
+            "독립 기호 세로 중심 ±2 CSSpx"
+        );
+    }
 }
 
 #[test]

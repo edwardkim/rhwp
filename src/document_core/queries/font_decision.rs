@@ -857,7 +857,12 @@ impl DocumentCore {
                                 .then_some(run.style.ascii_punct_latin.as_deref())
                                 .flatten();
                             latin
-                                .and_then(|slot| slot.metric_font_family.as_deref())
+                                .and_then(|slot| {
+                                    slot.original_glyph_metric_family
+                                        .as_deref()
+                                        .or(slot.metric_font_family.as_deref())
+                                })
+                                .or(run.style.original_glyph_metric_family.as_deref())
                                 .or(run.style.metric_font_family.as_deref())
                                 .unwrap_or(&run.style.font_family)
                         } else {

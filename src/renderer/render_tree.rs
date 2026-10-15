@@ -36,6 +36,32 @@ pub const MIDDLE_DOT_RADIUS_EM: f64 = 0.060;
 /// 실측 중앙값 0.3520~0.3559 로 종전 값이 정확해 유지한다.
 pub const MIDDLE_DOT_CY_OFFSET_EM: f64 = 0.35;
 
+/// 독립 Print의 전각 한점 리더 잉크. 원 프로그램의 결측을 전각으로
+/// 해소한 공통 전진 결정만 소비하며 실제 공급자의 자연 글리프는 보존한다.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct PointInk {
+    pub center_x: f64,
+    pub above_baseline: f64,
+    pub radius_x: f64,
+    pub radius_y: f64,
+}
+
+pub(crate) fn fullwidth_onepoint_ink(style: &TextStyle, draw_font_size: f64) -> Option<PointInk> {
+    let advance = super::layout::char_width_decision(&['․'], &[1], 0, style, true);
+    if advance.width_source != "heuristicFullwidth" {
+        return None;
+    }
+    // 한컴 Print T1/T2의 중심(500,347.5)/1000와 대칭 cubic의 극값.
+    // 굵은 프로그램만20/1000 stroke가 있어 반폭10/1000을 더한다.
+    let outline = if style.bold { 0.01 } else { 0.0 };
+    Some(PointInk {
+        center_x: draw_font_size * style.ratio * 0.5,
+        above_baseline: draw_font_size * 0.3475,
+        radius_x: draw_font_size * style.ratio * (0.07575 + outline),
+        radius_y: draw_font_size * (0.0725 + outline),
+    })
+}
+
 /// [#5698 계열] 탭 점선 리더(채움 종류 3)의 점 간격 / em.
 ///
 /// 한글 2022 정본 실측 — `mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp` 2쪽 목차의 점 1,435개를 글자 좌표로 뽑아

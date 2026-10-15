@@ -2217,6 +2217,7 @@ fn fixed_auto_tab_prefix_by_run(line: &ComposedLine) -> Vec<usize> {
 fn compute_line_extra_spacing(
     comp_line: &ComposedLine,
     leading_space_count: usize,
+    inline_object_count: usize,
     trailing_space_limit: usize,
     leading_space_plan: &LeadingSpacePlan<'_>,
     soft_wrap_separator_width: f64,
@@ -2343,7 +2344,7 @@ fn compute_line_extra_spacing(
                 if let Some(last_run) = comp_line.runs.last() {
                     let mut ts = last_run.text_style(styles);
                     ts.default_tab_width = tab_width;
-                    estimate_text_width(&" ".repeat(trailing_spaces), &ts)
+                    estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts)
                 } else {
                     0.0
                 }
@@ -2382,6 +2383,8 @@ fn compute_line_extra_spacing(
             .count()
             .min(trailing_space_limit);
         let visible_count = all_chars.len() - trailing_spaces;
+        // 그림 등 실제 줄 소유 개체도 가시 요소다. 텍스트가 모두 공백이라는
+        // 이유로 여러 개체 사이의 배분을 막지 않는다.
         // 한 글자만 보이는 줄의 선두 공백은 문단 들여쓰기이지 낱말 사이
         // 배분 지점이 아니다. 양쪽 정렬로 그 공백을 늘리면 단독 항목 기호가
         // 오른쪽 끝으로 이동한다. 자연 폭과 저자의 공백을 보존한다.
@@ -2389,6 +2392,7 @@ fn compute_line_extra_spacing(
             .iter()
             .filter(|ch| !ch.is_whitespace())
             .count()
+            .saturating_add(inline_object_count)
             <= 1
         {
             return (0.0, 0.0, 0.0);
@@ -2417,7 +2421,7 @@ fn compute_line_extra_spacing(
                 let mut ts = last_run.text_style(styles);
                 ts.default_tab_width = tab_width;
                 let trailing_str: String = " ".repeat(trailing_spaces);
-                estimate_text_width(&trailing_str, &ts)
+                estimate_text_width_exact(&trailing_str, &ts)
             } else {
                 0.0
             }
@@ -2507,7 +2511,8 @@ fn compute_line_extra_spacing(
                                 ts.default_tab_width = tab_width;
                                 ts.extra_word_spacing = ews;
                                 ts.extra_char_spacing = ecs;
-                                measured -= estimate_text_width(&" ".repeat(trailing_spaces), &ts);
+                                measured -=
+                                    estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts);
                             }
                         }
                         measured
@@ -2620,7 +2625,7 @@ fn compute_line_extra_spacing(
                 if let Some(last_run) = comp_line.runs.last() {
                     let mut ts = last_run.text_style(styles);
                     ts.default_tab_width = tab_width;
-                    estimate_text_width(&" ".repeat(trailing_spaces), &ts)
+                    estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts)
                 } else {
                     0.0
                 }
@@ -7237,6 +7242,10 @@ impl LayoutEngine {
                 compute_line_extra_spacing(
                     comp_line,
                     leading_space_plan.leading_spaces,
+                    line_tac_offsets_for_width
+                        .iter()
+                        .filter(|(_, width, _)| *width > 0.0)
+                        .count(),
                     trailing_space_limit,
                     &leading_space_plan,
                     soft_wrap_separator_width,
@@ -11736,7 +11745,9 @@ mod issue_4657_distribute_alignment_tests {
     use super::{compute_line_extra_spacing, LeadingSpacePlan};
     use crate::model::style::Alignment;
     use crate::renderer::composer::{ComposedLine, ComposedTextRun};
-    use crate::renderer::layout::text_measurement::{estimate_text_width, resolved_to_text_style};
+    use crate::renderer::layout::text_measurement::{
+        estimate_text_width_exact, resolved_to_text_style,
+    };
     use crate::renderer::style_resolver::ResolvedStyleSet;
 
     fn line(text: &str) -> ComposedLine {
@@ -11806,7 +11817,8 @@ mod issue_4657_distribute_alignment_tests {
         let styles = ResolvedStyleSet::default();
         let mut ts = resolved_to_text_style(&styles, 0, 0);
         ts.default_tab_width = 40.0;
-        let space_w = estimate_text_width(" ", &ts);
+        // 입력 총 폭도 실제 분수 전진을 쓰며 독립적인 오른쪽 끝 계약은 유지한다.
+        let space_w = estimate_text_width_exact(" ", &ts);
         let avail = 368.0;
         let visible_w = 52.5;
         let extra = distribute_extra("기관명 : ", 6, visible_w + space_w, avail);

@@ -323,6 +323,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     let mut font_families_source_hft = Vec::with_capacity(LANG_COUNT);
     let mut font_families_hft_fullwidth_dot = Vec::with_capacity(LANG_COUNT);
     let mut font_families_metric_face: Vec<Option<String>> = Vec::with_capacity(LANG_COUNT);
+    let mut font_families_original_glyph_metric_face = Vec::with_capacity(LANG_COUNT);
     let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
     let mut ratios = Vec::with_capacity(LANG_COUNT);
     let mut font_sizes = Vec::with_capacity(LANG_COUNT);
@@ -399,6 +400,23 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                 .flatten()
                 .map(str::to_string)
         });
+        // type1로 재저장된 HCI Poppy도 독립 Print의 동일한 원본 글리프를 쓴다.
+        // 전체 HFT 표를 선택하는 조건은 보존하고 확인된 부분 표만 별도로 전달한다.
+        font_families_original_glyph_metric_face.push(
+            (!explicit_true_type
+                && original.embedded != Some(true)
+                && original.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin))
+            .then(|| {
+                original
+                    .requested_face
+                    .as_deref()
+                    .filter(|face| {
+                        crate::renderer::font_metrics_data::has_original_glyph_metrics(face)
+                    })
+                    .map(str::to_owned)
+            })
+            .flatten(),
+        );
         font_families.push(decision.css_family_chain.join(","));
 
         // 굵기의 추가 전진은 측정에서 별도로 소비한다. 음수 자간과 상쇄되는
@@ -460,6 +478,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         ascii_punct_latin_slot,
         explicit_latin_slot,
         font_families_metric_face,
+        font_families_original_glyph_metric_face,
         font_space_em,
         font_size,
         font_sizes,

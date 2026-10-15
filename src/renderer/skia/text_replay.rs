@@ -520,6 +520,28 @@ impl SkiaTextReplay<'_> {
                             );
                             continue;
                         }
+                        if cluster == "․" {
+                            if let Some(ink) = crate::renderer::render_tree::fullwidth_onepoint_ink(
+                                style,
+                                font_size as f64,
+                            ) {
+                                let cx = bbox.x
+                                    + char_positions.get(*char_idx).copied().unwrap_or(0.0)
+                                    + ink.center_x
+                                    + dx as f64;
+                                let cy = y + dy as f64 - ink.above_baseline;
+                                canvas.draw_oval(
+                                    Rect::from_xywh(
+                                        (cx - ink.radius_x) as f32,
+                                        (cy - ink.radius_y) as f32,
+                                        (2.0 * ink.radius_x) as f32,
+                                        (2.0 * ink.radius_y) as f32,
+                                    ),
+                                    &text_paint,
+                                );
+                                continue;
+                            }
+                        }
                         if is_middle_dot(cluster) {
                             let advance = cluster_advance(*char_idx, cluster);
                             let cx = bbox.x as f32
