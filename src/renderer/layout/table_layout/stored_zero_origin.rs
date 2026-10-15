@@ -237,12 +237,8 @@ impl LayoutEngine {
         }
         let rows = table.get_raw_row_heights();
         let row = usize::from(cell.row);
-        let Some(prefix) = rows.get(..row) else {
-            return None;
-        };
-        let Some(&height) = rows.get(row) else {
-            return None;
-        };
+        let prefix = rows.get(..row)?;
+        let &height = rows.get(row)?;
         if prefix.iter().any(|&height| height > i32::MAX as u32)
             || height == 0
             || height > i32::MAX as u32
