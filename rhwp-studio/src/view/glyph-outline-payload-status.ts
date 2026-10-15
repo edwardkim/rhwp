@@ -525,11 +525,23 @@ function affineKey(transform: { a?: number; b?: number; c?: number; d?: number; 
 }
 
 function fixed(value: number | undefined): string {
-  return Number.isFinite(value) ? (value ?? 0).toFixed(6) : '-';
+  return fixedDecimalKey(value, 6);
 }
 
 function fixedBounds(value: number | undefined): string {
-  return Number.isFinite(value) ? (value ?? 0).toFixed(3) : '-';
+  return fixedDecimalKey(value, 3);
+}
+
+function fixedDecimalKey(value: number | undefined, precision: 3 | 6): string {
+  if (value === undefined || !Number.isFinite(value)) return '-';
+  // Rust's existing fixed-decimal wire/key preserves signed zero. JSON.parse
+  // preserves it too, but Number.toFixed() erases the sign of an exact -0.
+  if (Object.is(value, -0)) return `-0.${'0'.repeat(precision)}`;
+  // Number.toFixed() switches to exponent notation at 1e21. Every binary64
+  // number at that magnitude is integral, and BigInt(number) retains its exact
+  // integer rather than the shortest (potentially rounded) Number.toString().
+  if (Math.abs(value) >= 1e21) return `${BigInt(value)}.${'0'.repeat(precision)}`;
+  return value.toFixed(precision);
 }
 
 function isPositiveBounds(bounds: { x?: number; y?: number; width?: number; height?: number }): boolean {

@@ -509,3 +509,51 @@ test('decimal wire rejection keeps whole-run fallback selection before and after
   intrinsic.svgGlyph.intrinsicSize.width = 0.000001;
   expectAccepted(intrinsic);
 });
+
+
+const LARGE_KEY_SCALARS = [
+  { value: 1e21, integer: '1000000000000000000000' },
+  { value: F32_MAX, integer: '340282346638528859811704183484516925440' },
+];
+
+for (const { value, integer } of LARGE_KEY_SCALARS) {
+  test(`bitmap and SVG keys keep full fixed decimals for ${value}`, () => {
+    const image = bitmap();
+    Object.assign(image.bitmapGlyph.placement, { x: 0, width: value });
+    image.bitmapGlyph.transformToRun.e = -value;
+    const imageKey = glyphOutlinePayloadResourceKey(image)!;
+    assert.ok(imageKey.includes(`placement:0.000,-8.000,${integer}.000,24.000:`));
+    assert.ok(imageKey.includes(`transform:1.000000,0.000000,0.000000,1.000000,-${integer}.000000,-8.000000`));
+    const vector = svg();
+    Object.assign(vector.svgGlyph.viewBox, { x: 0, width: value });
+    vector.svgGlyph.intrinsicSize.width = value;
+    vector.svgGlyph.transformToRun.f = value;
+    const vectorKey = glyphOutlinePayloadResourceKey(vector)!;
+    assert.ok(vectorKey.includes(`viewBox:0.000,-8.000,${integer}.000,24.000:`));
+    assert.ok(vectorKey.includes(`intrinsicSize:${integer}.000000,24.000000:`));
+    assert.ok(vectorKey.includes(`transform:1.000000,0.000000,0.000000,1.000000,-4.000000,${integer}.000000`));
+    // These are exactly the integral values emitted by Rust's {:.3}/{:.6}
+    // writers. Parsing the wire may not change the resource identity.
+    for (const op of [image, vector]) {
+      const parsed: LayerGlyphOutlineOp = JSON.parse(JSON.stringify(op));
+      assert.equal(glyphOutlinePayloadResourceKey(parsed), glyphOutlinePayloadResourceKey(op));
+      expectAccepted(parsed);
+    }
+  });
+}
+
+test('resource keys preserve negative zero from Rust fixed-decimal geometry', () => {
+  for (const create of [bitmap, svg]) {
+    const op = create();
+    const bounds = 'bitmapGlyph' in op ? op.bitmapGlyph.placement : op.svgGlyph.viewBox;
+    const transform = 'bitmapGlyph' in op ? op.bitmapGlyph.transformToRun : op.svgGlyph.transformToRun;
+    // Rust deliberately preserves the sign in its existing key and JSON wire;
+    // JSON.parse retains it, whereas JavaScript Number.toFixed() erases -0.
+    bounds.x = JSON.parse('-0.000');
+    transform.e = JSON.parse('-0.000000');
+    const key = glyphOutlinePayloadResourceKey(op)!;
+    assert.ok(key.includes('-0.000,-8.000,16.000,24.000'));
+    assert.ok(key.includes('transform:1.000000,0.000000,0.000000,1.000000,-0.000000,-8.000000'));
+    expectAccepted(op);
+  }
+});

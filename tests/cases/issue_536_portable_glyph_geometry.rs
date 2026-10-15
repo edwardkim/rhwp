@@ -827,3 +827,92 @@ fn shared_bitmap_and_svg_selector_preserves_fonts_when_decimal_wire_extents_coll
         }
     }
 }
+
+#[test]
+fn bitmap_and_svg_resource_keys_use_full_fixed_decimals_at_large_f32_values() {
+    for (value, integer) in [
+        (1e21, "1000000000000000000000"),
+        (
+            f64::from(f32::MAX),
+            "340282346638528859811704183484516925440",
+        ),
+    ] {
+        let mut tree = strict_outline_tree();
+        let svg_ref = tree
+            .resources
+            .intern_svg_fragment("<path d=\"M0 0H10V10Z\"/>");
+        let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+            unreachable!()
+        };
+        let PaintOp::GlyphOutline { outline, .. } = &mut ops[1] else {
+            unreachable!()
+        };
+        outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+        outline.paths.clear();
+        outline.svg_glyph = Some(SvgGlyphPayload {
+            svg_ref,
+            view_box: BoundingBox::new(0.0, -3.0, value, 8.0),
+            intrinsic_size: Some(LayerVector { dx: value, dy: 8.0 }),
+            transform_to_run: Some(LayerAffineTransform {
+                e: -value,
+                ..affine()
+            }),
+            ..svg()
+        });
+        let key = outline.payload_resource_key().unwrap();
+        assert!(key.contains(&format!("viewBox:0.000,-3.000,{integer}.000,8.000:")));
+        assert!(key.contains(&format!("intrinsicSize:{integer}.000000,8.000000:")));
+        assert!(key.ends_with(&format!(
+            "transform:1.000000,0.000000,0.000000,1.000000,-{integer}.000000,-3.000000"
+        )));
+        let wire: serde_json::Value = serde_json::from_str(&tree.to_json()).unwrap();
+        let op = &wire["root"]["ops"][1];
+        assert!(op["payloadResourceKey"]
+            .as_str()
+            .unwrap()
+            .starts_with(&format!("{key}:resource:")));
+        assert_eq!(
+            op["svgGlyph"]["intrinsicSize"]["width"].as_f64(),
+            Some(value)
+        );
+        assert_eq!(op["svgGlyph"]["transformToRun"]["e"].as_f64(), Some(-value));
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert!(plan.required_font_families.is_empty());
+        assert!(plan.required_font_families_complete);
+    }
+}
+
+#[test]
+fn bitmap_and_svg_resource_keys_preserve_the_fixed_decimal_negative_zero_sign() {
+    let mut tree = strict_outline_tree();
+    let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+        unreachable!()
+    };
+    let PaintOp::GlyphOutline { outline, .. } = &mut ops[1] else {
+        unreachable!()
+    };
+    outline.payload_kind = GlyphOutlinePayloadKind::BitmapGlyph;
+    outline.paths.clear();
+    outline.bitmap_glyph = Some(BitmapGlyphPayload {
+        placement: BoundingBox::new(-0.0, -3.0, 8.0, 8.0),
+        transform_to_run: Some(LayerAffineTransform {
+            e: -0.0,
+            ..affine()
+        }),
+        ..bitmap()
+    });
+    let key = outline.payload_resource_key().unwrap();
+    assert!(key.contains("placement:-0.000,-3.000,8.000,8.000:"));
+    assert!(key.ends_with("transform:1.000000,0.000000,0.000000,1.000000,-0.000000,-3.000000"));
+    let wire: serde_json::Value = serde_json::from_str(&tree.to_json()).unwrap();
+    let op = &wire["root"]["ops"][1];
+    assert_eq!(op["payloadResourceKey"], key);
+    assert!(op["bitmapGlyph"]["placement"]["x"]
+        .as_f64()
+        .unwrap()
+        .is_sign_negative());
+    assert!(op["bitmapGlyph"]["transformToRun"]["e"]
+        .as_f64()
+        .unwrap()
+        .is_sign_negative());
+}
