@@ -105,3 +105,63 @@ fn explicit_reference_latin_slot_owns_the_bracket_width_and_paint() {
         );
     }
 }
+
+/// 두 원본의 전쪽 Native/fresh 90% 확인 뒤, 설치 프로그램의 다른 언어 이름이
+/// 일반 대체보다 먼저 공급되는 공개 출력 계약을 검사한다. 실제 Native 선택은
+/// 같은 renderer inventory의 trace로 수정 전 Malgun Gothic/후 Dotum을 대조했다.
+#[test]
+fn collection_alias_preserves_requested_face_and_body_in_public_svg() {
+    for (source, page) in [
+        ("samples/issue6031/3249937_asset_management_rules.hwpx", 56),
+        ("samples/issue5756/156732409_superscript_advance.hwp", 2),
+    ] {
+        let core = load(source);
+        let layout: Value =
+            serde_json::from_str(&core.get_page_text_layout_native(page).unwrap()).unwrap();
+        let requested_body: String = layout["runs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|run| run["text"].as_str().unwrap().chars())
+            .filter(|ch| !ch.is_whitespace())
+            .collect();
+        assert!(
+            layout["runs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|run| run["fontFamily"].as_str() == Some("돋움")),
+            "원 글꼴을 사용하는 실제 본문"
+        );
+        let svg = core.render_page_svg_native(page).unwrap();
+        let document = roxmltree::Document::parse(&svg).unwrap();
+        let mut painted_body = String::new();
+        for node in document
+            .descendants()
+            .filter(|node| node.has_tag_name("text"))
+        {
+            // 결측 기호는 별도 공급자의 text node일 수 있다. 본문 보존은
+            // 공급자와 무관하게 모든 paint text를 비교한다.
+            painted_body.extend(
+                node.descendants()
+                    .filter_map(|child| child.text().filter(|_| child.is_text()))
+                    .flat_map(str::chars)
+                    .filter(|ch| !ch.is_whitespace()),
+            );
+            let Some(families) = node.attribute("font-family") else {
+                continue;
+            };
+            let families: Vec<_> = families
+                .split(',')
+                .map(|name| name.trim().trim_matches('\''))
+                .collect();
+            if families.first().copied() != Some("돋움") {
+                continue;
+            }
+            // gulim.TTC face2의 name ID1: 돋움과 Dotum은 같은 프로그램이다.
+            // source를 대체 이름으로 바꾸지 않고 일반 fallback보다 먼저 공급한다.
+            assert_eq!(families.get(1).copied(), Some("Dotum"));
+        }
+        assert_eq!(painted_body, requested_body, "본문의 순서·누락·중복 보존");
+    }
+}

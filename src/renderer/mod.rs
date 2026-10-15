@@ -2855,6 +2855,10 @@ fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
 
 pub(crate) fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     match font_family {
+        // 같은 gulim.TTC의 face 2도 한국어/영문 family 이름이 공존한다.
+        // 이 별칭이 빠지면 Native는 설치된 돋움 대신 맑은 고딕을 선택한다.
+        "돋움" => &["Dotum"],
+        "Dotum" => &["돋움"],
         // gulim.TTC collection face 3의 name ID 1은 같은 프로그램을
         // 한국어 '돋움체'와 영문 'DotumChe'로 등록한다. 영문 이름만 노출하는
         // Native fontdb에서도 원 face를 선언 glyph 대체보다 먼저 공급한다.
