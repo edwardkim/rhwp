@@ -3,7 +3,73 @@
 Issue: #7902. 이미 merge된 PR #7877의 원본 19문서·835쪽 범위를 유지한다.
 1단계 도구 PR #7903과 기록 PR #7906은 실제 merge됐으며 이 이슈는 OPEN이다.
 
-## 현재 확인 상태 — 2026-10-15
+## 최신 devel 리베이스 후 재검증 — 2026-10-15
+
+사용자의 계속 지시에 따라 새 기준 `463c48cc228170b576c832591b76826116e86a49` 위로
+리베이스했다. 현재 head는 `edb51bd2baa60d19f01c3f38818929acde450a96`이며 충돌은 없었다.
+기존9개 커밋은 `range-diff`에서 모두 동일한 패치로 확인됐다. 생성 Studio JS는 파일 해시로
+기존 검증 산출물임을 확인한 뒤 임시 stash했고, 리베이스 후 정확히 복원했다. 이전 사용자
+stash와 다른 worktree는 변경하지 않았다.
+
+아래22단계 통과와835쪽 결과는 **이전 source02c3/basea5의 기록**이다. 새 통합 소스의
+완료 결과로 적용하지 않는다. 새 devel에는 문단 배경·실제 글줄 점유·공통 paint 변경이 있어
+두 보류 경계와 원래 보정 영역, 새 기준/후보 전쪽 및 집중 회귀·lint를 다시 확인했다.
+새 기준에서도 overfill49/48과 WASM104쪽0.06227%p 하락이 재현돼 제출 조건은 미충족이다.
+
+### 현재 재검증 결과 — sourceedb51bd2b/base463c48cc2
+
+| 항목 | 결과 |
+| --- | --- |
+| 후보 Native | 19문서835쪽, 최저91.71770%, 미달·누락0, 독립 Print 쪽수 일치 |
+| 후보 fresh WASM | 19문서835쪽, 최저90.09386%, 미달·누락0, 독립 Print 쪽수 일치 |
+| devel 대조 | Native18문서787쪽 하락0; WASM은 nested HWPX104쪽99.93539→99.87312%로0.06227%p 하락1쪽 |
+| overfill | 새 devel49쪽, 후보/Print48쪽. 기준 TSV 없음·일대일 비교 불가를 그대로 보류 |
+| 집중 Native 회귀 | 새7개·기존 글꼴 진단·새 devel 배경/저장 대조군을 합쳐25/25PASS(69.815초),1062개 필터 제외 |
+| 현재 lint·정책 | fmt·일반/WASM/all-target/Native Skia Clippy·workspace build, manifest·unit tier·CI 분류45개·workflow35개·actionlint 통과 |
+| 신규 검사의 검출력 | 현재 정식 harness의 CLI만 기준/후보로 교체: 기준5FAIL·HWPX 대조1PASS → 후보6PASS. 라이브러리 직접 trace는 이 before 대조에서 제외 |
+| px 검사 프로필 | 실제 검사와 같은2022의 HWP104·overfill43–45쪽도 양쪽98% 이상, 이번2024 PNG와 바이트 동일 |
+| 실제 출력 감사 | 후보 PNG1670개·입력·producer SHA 확인, 모든 재검증 디렉터리의 생성SVG0개 |
+
+Native에서 이전02c3와 달라진30쪽은 chemical 계열24쪽·7336의6쪽 그라데이션 복원이며
+모두 실루엣 상승 또는 동일이다. 독립 Print의 해당 crop도 읽었다. 다른 Native805쪽과
+WASM835쪽은 이전 출력과 바이트 동일하다. 현재 raster에서 review14개와 번호/변경 영역
+확대 crop을 새로 생성해 번호 굵기·기준선·간격, 표/그림/후속 본문을 대조했다. 완전한 픽셀
+일치를 주장하지 않는다. 원시 증거는 `rebase-463c-output-provenance-audit.json`,
+`rebase-463c-native-changed-pixels.json`, `rebase-463c-before-after-cli-contracts.json`,
+`rebase-463c-regression-profiles-audit.json`, `rebase-463c-lint-result.json` 및
+`rebase-463c-candidate-full-{native,wasm}-devel-comparison.json`에 있다.
+
+이전 source02c3의 전체10301PASS를 새 통합 head의 전체 회귀 결과로 재사용하지 않는다.
+현재 head의 전체 Rust 회귀는 미실행이다. 시각 제출 보류가 유지돼 새 PR·push·CI·merge와
+옵션2 기록 PR은 실행하지 않았다. #7902는 OPEN이다. 재차 요청한 rebase는 fetch·원격 ref·
+GitHub API 모두463c48cc2로 이미 포함돼 추가 수행하지 않았으며 기존 생성 JS는 보존했다.
+
+### 새 기준에서 먼저 확인한 경계
+
+- Native 후보 CLI의 소스는 위 `edb51bd2b`, 기준 CLI와 fresh WASM은 깨끗한 detached
+  `463c48cc2`에서 빌드했다. 공용 target은 순차 사용하고 다음 빌드 전에 producer를 복사·해시 고정했다.
+- nested HWPX104쪽 Native는 기준99.39010%, 후보99.66092%다. 후보 PNG는 이전02c3와
+  바이트 동일하며 독립 Print와 표·후속 문단·그림의 순서와 배치를 직접 읽었다.
+- overfill의 새 기준 쪽수도49/Print48이다. 후보는48/Print48이며43–46쪽 Native는
+  99.00924/99.92289/99.95610/99.97079%다. 이전 기준만의 문제가 아니므로 일대일 gate는 유지한다.
+- 새 배경 변경의 `ParagraphFillBand`는 수용한 글줄·실제 Table 노드의 원점을 앵커로 사용한다.
+  `paragraph_layout`의 advance 조건과 band 수집 조건, table 내부 배경 삽입 위치를 대조했다.
+  이 코드 확인을 전체 회귀·시각 무회귀 완료로 대신하지 않는다.
+- 원본19문서의 새 기준/후보 Native·fresh WASM 전쪽 검증은 완료했다.
+  원시 기록은 같은 output의 `rebase-463c-*` 및 `base-463c-*-producer.json`에 보존한다.
+
+### 공용 target의 worktree 전환 캐시 오인 검출
+
+기준 WASM을 빌드한 뒤 후보 wrapper는 Cargo 단계0.65초로 끝났고, WASM 해시가 기준과
+같았다(`edb9588c…`). 소스가 다른 후보의 증거로 사용할 수 없어 캡처 전에 제외했다.
+공용 target·캐시는 지우지 않고 후보 `src/lib.rs`의 mtime만 갱신해 현재 crate 재컴파일을
+유도했다. 코드 내용 변경은 없으며, 로그에서 `/home/tsjang/rhwp`의 실제 컴파일을 확인했다.
+새 후보 WASM은 `b35e1d44ad12f23f6a89fc0508d733c9069ce77db7a3dc219013e80513e8c5eb`로
+기준과 다르다. raw 실패 로그·제외 사유는 `rebase-463c-rejected-candidate-wasm-cache-audit.json`,
+실제 producer는 `rebase-463c-candidate-wasm-producer.json`에 연결했다. wrapper 성공·과거
+source SHA 기록만으로 캐시 산출물의 소스를 단정하지 않는다. Studio 기본 pkg 갱신을 주장하지 않는다.
+
+## 이전 head 확인 상태 — source02c3/basea5
 
 **로컬 필수 실행 검증은 완료했다. PR 제출 조건은 미충족이다.**
 렌더러 검증 소스 SHA는 `02c3b8074430d5d521280404dc84affeb4ab0e31`,
@@ -46,7 +112,7 @@ Chrome 시작 실패1건은 동일 producer로 재시도해 통과했으며 원�
 ## 기준과 승인된 진행
 
 - 브랜치: `fix/pr7877-render-regressions-20261014`.
-- 현재 기준 `upstream/devel`: `a5e88ad682c805e1d845502ddc9521b94ea8eccd`.
+- 아래 보정 이력의 고정 기준 `upstream/devel`: `a5e88ad682c805e1d845502ddc9521b94ea8eccd`.
   아래 c0 측정은 리베이스 이전의 고정 기준 기록이다.
 - 공용 Cargo target: `/home/tsjang/rhwp/target/pr-review`, jobs8, Cargo 순차 실행.
 - 사용자 승인 범위: 원본 출력 보정, Native/fresh WASM 전쪽 대조, 회귀 보강 및 필수 검증.
