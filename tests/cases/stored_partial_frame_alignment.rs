@@ -366,3 +366,54 @@ fn nested_source_frame_keeps_the_opening_paragraph_centered_and_the_tail_owned()
         "이어받기는 원본 다음 문단부터 시작한다"
     );
 }
+
+// 6d542 조판의 전142쪽 Native/fresh WASM 최저92.24506/92.79245% 및 직접 판독.
+// 쪽57: 99.99592/100.00000%, 쪽71: 99.92867/99.93197%.
+// 독립 Print의 실제 글자 원점(96dpi)을 사용한다. 표 하단만 고정하면 이전 보정에서
+// 표 뒤 본문이 약5.1px 당겨지는 결함을 검출하지 못하므로 최종 본문 기준선을 보호한다.
+fn assert_following_body_print_baseline(page: u32, pi: usize, word: &str, print_y: f64) {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn find<'a>(node: &'a RenderNode, pi: usize, word: &str, out: &mut Vec<&'a RenderNode>) {
+        if matches!(&node.node_type,
+            RenderNodeType::TextRun(run) if run.para_index == Some(pi) && run.text.contains(word))
+        {
+            out.push(node);
+        }
+        for child in &node.children {
+            find(child, pi, word, out);
+        }
+    }
+    let core = core();
+    let tree = core.build_page_render_tree(page - 1).expect("완료 페이지");
+    let mut found = Vec::new();
+    find(&tree.root, pi, word, &mut found);
+    assert!(
+        !found.is_empty(),
+        "표 뒤 원본 문단의 해당 글자는 같은 쪽에 있다"
+    );
+    found.sort_by(|a, b| a.bbox.y.total_cmp(&b.bbox.y));
+    let node = found[0];
+    assert_eq!(
+        found.iter().take_while(|n| n.bbox.y == node.bbox.y).count(),
+        1,
+        "첫 대상 글줄의 소유 run을 중복하지 않는다"
+    );
+    let RenderNodeType::TextRun(run) = &node.node_type else {
+        unreachable!()
+    };
+    let actual = node.bbox.y + run.baseline;
+    assert!(
+        (actual - print_y).abs() <= 2.0,
+        "{page}쪽 본문 '{word}': 독립 Print 기준선 {print_y}, 출력 기준선 {actual}"
+    );
+}
+
+#[test]
+fn page_57_following_body_keeps_its_independent_print_baseline() {
+    assert_following_body_print_baseline(57, 559, "이상의", 840.16);
+}
+
+#[test]
+fn page_71_following_body_keeps_its_independent_print_baseline() {
+    assert_following_body_print_baseline(71, 652, "불공정거래행위", 527.52);
+}

@@ -160,11 +160,22 @@ source를 가진 외부 Rust 크레이트는 243개다. 나머지 4개는 현재
 | Gowun Dodum | SIL Open Font License 1.1 | Google Fonts | Sans-serif fallback |
 | D2 Coding (2종) | SIL Open Font License 1.1 | NAVER | Monospace fallback |
 | Spoqa Han Sans | SIL Open Font License 1.1 | github.com/spoqa/spoqa-han-sans | Sans-serif fallback |
-| Source Han Serif K Old Hangul subset | SIL Open Font License 1.1 | Adobe / Google | 옛한글 PUA fallback, `SourceHanSerifK-OFL.txt` 동봉 |
+| RHWP Old Hangul subset | SIL Open Font License 1.1 | Adobe / Google | 옛한글 PUA fallback, `SourceHanSerifK-OFL.txt` 동봉 |
 | Latin Modern Math | GUST Font License | GUST / TeX ecosystem | 수식 fallback |
 | Cafe24 써라운드 | 카페24 무료 배포 | fonts.cafe24.com | 장식체 |
 | Cafe24 슈퍼매직 | 카페24 무료 배포 | fonts.cafe24.com | 장식체 |
-| 행복고딕 (Happiness Sans, 4종) | 무료 배포 | 행복나눔재단 | Sans-serif fallback |
+| 해피니스 산스 (Happiness Sans, 4종) | SIL Open Font License 1.1 | [현대백화점](https://thehyundaifont.com/) | 공식 배포 WOFF2 원본. [동봉 라이선스 PDF](ttfs/redistributable/happiness-sans/HapinessSans_License.pdf)에 저작권·Reserved Font Name·OFL 전문 수록 |
+
+테스트 폰트를 공개 GitHub 저장소에 포함하는 것도 재배포이므로, 제품 번들 여부와 관계없이
+원본의 저작권·라이선스·수정본 명명 조건이 적용된다. 저장소의 MIT 라이선스가 외부 폰트의
+재배포 권한을 대신하지 않는다.
+
+| 경로 | 출처·라이선스 | 비고 |
+| --- | --- | --- |
+| `tests/fixtures/fonts/RHWPEquation*.ttf` (3개) | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처·변형 설명](tests/fixtures/fonts/RHWPEquationFonts.LICENSE.md), [전문](tests/fixtures/fonts/RHWPEquationFonts.OFL.txt). 내부 family는 `RHWP Equation Contract`; 문서의 요청 이름은 렌더러의 명시적 대체 설정으로 연결 |
+| `tests/fixtures/native_font_family_names/family-contract.ttf` | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처](tests/fixtures/native_font_family_names/README.md), [전문](tests/fixtures/native_font_family_names/OFL.txt) |
+| `tests/fixtures/native_font_styles/*.ttf` (2개) | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처·재생성](tests/fixtures/native_font_styles/README.md), [전문](tests/fixtures/native_font_styles/OFL.txt) |
+| 나머지 `tests/fixtures/fonts/`의 TTF·TTC (7개) | 저장소 생성기의 직접 작성 윤곽선, MIT | 각 `*.LICENSE.md`에 생성기·용도 기록. 외부 폰트 수정본과 구별 |
 
 ---
 
@@ -247,3 +258,9 @@ rhwp는 **MIT 라이선스**로 배포된다.
 ---
 
 *이 문서는 `Cargo.toml`, `Cargo.lock`, 각 `package.json`/`package-lock.json`, `assets/fonts/FONTS.md` 기준으로 현행화되었으며, 의존성 업데이트 시 함께 갱신해야 한다.*
+
+배포 폰트의 파일별 SHA·원본 저작권·라이선스 전문은
+[fonts/licenses](assets/fonts/licenses/README.md)에 함께 보존한다. 제품 폰트 37개와
+공개 테스트·Native 원본 18개를 [목록](assets/fonts/licenses/font-notices.json)에 등록하며,
+등록되지 않은 공개 폰트 또는 배포 고지 누락은 `scripts/frontend-font-assets.test.mjs`가 검출한다.
+상용 글꼴의 문서 요청 이름은 대체 설정에서 처리하고, 파생 폰트의 내부 이름으로 사용하지 않는다.

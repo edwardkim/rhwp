@@ -4,6 +4,8 @@
 use rhwp::document_core::native_interaction::{
     NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
 };
+use rhwp::model::control::Control;
+use rhwp::model::table::Table;
 use rhwp::native_host::editor::{NativeCompositionFocusLoss, NativeEditor};
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
 use rhwp::DocumentCore;
@@ -298,6 +300,110 @@ fn issue_536_native_editor_cross_paragraph_replacement_is_one_action() {
     assert_eq!(document.sections[0].paragraphs[0].text, "가나");
     assert_eq!(document.sections[0].paragraphs[1].text, "다라마");
     assert_eq!(editor.selection(), &range);
+}
+
+#[test]
+fn issue_536_native_editor_semantic_middle_paragraph_rejects_replacement_and_preedit() {
+    let mut table = Table::default();
+    table.common.treat_as_char = false;
+    for control in [
+        Control::Table(Box::new(table)),
+        Control::Bookmark(Default::default()),
+    ] {
+        let mut core = core_with_text("ABC");
+        core.split_paragraph_native(0, 0, 2, None).unwrap();
+        core.split_paragraph_native(0, 0, 1, None).unwrap();
+        let mut document = core.document().clone();
+        document.sections[0].paragraphs[1].controls.push(control);
+        core.set_document(document);
+        let mut editor =
+            NativeEditor::new(NativeDocumentSession::from_core(core), selection(0, 0)).unwrap();
+        editor.replace_selection(0, "x").unwrap();
+        editor.undo(revision(&editor)).unwrap();
+        let live_revision = revision(&editor);
+        let range = NativeTextSelection {
+            anchor: position(2, 0),
+            focus: position(0, 1),
+        };
+        editor.set_selection(live_revision, range.clone()).unwrap();
+        let before = format!("{:?}", editor.session().document().document());
+        for replacement in ["", "가😀"] {
+            assert!(matches!(
+                editor.replace_selection(live_revision, replacement),
+                Err(NativeHostError::Unsupported(_))
+            ));
+            assert_eq!(
+                format!("{:?}", editor.session().document().document()),
+                before
+            );
+            assert_eq!(editor.selection(), &range);
+            assert_eq!(revision(&editor), live_revision);
+            assert!(editor.can_redo());
+            assert!(!editor.can_undo());
+        }
+        let id = editor
+            .begin_composition(live_revision)
+            .unwrap()
+            .composition_id
+            .unwrap();
+        assert!(matches!(
+            editor.update_composition(live_revision, id, "가"),
+            Err(NativeHostError::Unsupported(_))
+        ));
+        assert_eq!(
+            format!("{:?}", editor.session().document().document()),
+            before
+        );
+        assert_eq!(editor.selection(), &range);
+        assert_eq!(revision(&editor), live_revision);
+        assert_eq!(editor.composition_id(), Some(id));
+        editor.cancel_composition(live_revision, id).unwrap();
+        assert!(editor.can_redo());
+        assert!(!editor.can_undo());
+    }
+}
+
+#[test]
+fn issue_536_native_editor_semantic_selection_and_identical_noops_preserve_redo() {
+    let mut core = core_with_text("AB");
+    core.split_paragraph_native(0, 0, 1, None).unwrap();
+    let mut document = core.document().clone();
+    document.sections[0].paragraphs[1]
+        .controls
+        .push(Control::Bookmark(Default::default()));
+    core.set_document(document);
+    let mut editor =
+        NativeEditor::new(NativeDocumentSession::from_core(core), selection(0, 0)).unwrap();
+    editor.replace_selection(0, "x").unwrap();
+    editor.undo(revision(&editor)).unwrap();
+    let live_revision = revision(&editor);
+    let range = NativeTextSelection {
+        anchor: position(1, 0),
+        focus: position(1, 1),
+    };
+    editor.set_selection(live_revision, range.clone()).unwrap();
+    let before = format!("{:?}", editor.session().document().document());
+    let noop = editor.replace_selection(live_revision, "B").unwrap();
+    assert!(!noop.document_changed && !noop.history_changed);
+    assert_eq!(noop.selection.anchor, position(1, 1));
+    assert_eq!(noop.selection.focus, position(1, 1));
+    editor.set_selection(live_revision, range.clone()).unwrap();
+    let id = editor
+        .begin_composition(live_revision)
+        .unwrap()
+        .composition_id
+        .unwrap();
+    let preview = editor.update_composition(live_revision, id, "B").unwrap();
+    assert!(!preview.document_changed && !preview.history_changed);
+    let committed = editor.commit_composition(live_revision, id).unwrap();
+    assert!(!committed.document_changed && !committed.history_changed);
+    assert_eq!(
+        format!("{:?}", editor.session().document().document()),
+        before
+    );
+    assert_eq!(revision(&editor), live_revision);
+    assert!(editor.can_redo());
+    assert!(!editor.can_undo());
 }
 
 #[test]

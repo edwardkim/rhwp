@@ -764,7 +764,7 @@ pub(super) fn prepare_fit_budget(
     }
 
     let strict_after_empty_host_float = st.take_strict_paragraph_fit(para);
-    let layout_drift_safety_px = fit::layout_drift_safety_px(paragraphs);
+    let layout_drift_safety_px = fit::paragraph_layout_drift_safety_px(paragraphs, para);
     let prev_is_partial_table =
         matches!(st.current_items.last(), Some(PageItem::PartialTable { .. }));
     let safety = st.take_paragraph_safety_margin(
