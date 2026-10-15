@@ -28,6 +28,7 @@ use std::collections::HashMap;
 
 #[path = "stored_body_frames.rs"]
 mod stored_body_frames;
+mod reparsed_split_cache;
 mod stored_table_tail;
 mod tac_cache_repair;
 
@@ -416,6 +417,7 @@ impl DocumentCore {
 
         tac_cache_repair::repair(&mut doc.document, &doc.styles, DEFAULT_DPI);
         doc.rebuild_embedded_exact_font_sources();
+        doc.repair_reparsed_split_cell_cache();
         doc.recompose_all_with_horizontal_shaping();
         doc.paginate();
 

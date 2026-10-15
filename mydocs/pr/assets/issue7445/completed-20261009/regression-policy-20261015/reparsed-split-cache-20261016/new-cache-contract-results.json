@@ -1,0 +1,38 @@
+{
+  "source": "/Users/tsjang/rhwp-7445-completed-20261009/tests/cases/issue_4138_reparsed_split_frame_cache.rs",
+  "method": "same formal source test harness linked sequentially to four frozen native code producers; compile errors are excluded",
+  "results": [
+    {
+      "candidate": "before-c40",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-e4e6d0c8-20261016/candidate-c40-rebuilt/producer.json",
+      "exitCode": 101,
+      "summary": [
+        "test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s"
+      ]
+    },
+    {
+      "candidate": "before-c44",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-e4e6d0c8-20261016/candidate-c44-split-frame/producer.json",
+      "exitCode": 101,
+      "summary": [
+        "test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.08s"
+      ]
+    },
+    {
+      "candidate": "before-c49",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-f5251e7d-20261016/candidate-c49-frame-admission/producer.json",
+      "exitCode": 101,
+      "summary": [
+        "test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s"
+      ]
+    },
+    {
+      "candidate": "after-c50",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-f5251e7d-20261016/candidate-c50-object-owner/producer.json",
+      "exitCode": 0,
+      "summary": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s"
+      ]
+    }
+  ]
+}

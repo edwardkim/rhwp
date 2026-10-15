@@ -1499,3 +1499,88 @@ giant-current-generated-cache-probe/result.json,
 giant-old-current-cache-field-differences.json, court-*-outline-comparison.json이다.
 새 캐시 보정 뒤 Native/fresh WASM 전쪽·전체 회귀·범위 gate·실제 소비 검증은 다시 필요하다.
 사용자 orders20261013 및 pr7871 초안·원본·PDF·공유 target은 보존했다.
+
+## C43. upstream 재변경 리베이스와 저장 문단 프레임 검증
+
+2026-10-16 KST에 원격 devel을 다시 조회했다. 0c2b60b4에서 f5251e7d로 바뀌어
+현재 작업을 백업 ref/stash 및 파일별 SHA로 보존한 뒤208개 커밋을 재적용했다.
+충돌0건, range-diff208개 모두동일이며 새 HEAD는bad888376d다.
+원격 변경은 PR7936 검토·오늘할일 등 문서3개이고 Rust/Cargo/렌더·검증 도구는 같다.
+사용자 orders20261013/pr7871 초안과 원본·PDF·공용 target은 보존했다.
+
+그 전0c2b60b4 동기화의 PNG alpha decoder 변경은 현재 canonical 도구로 기존
+불변 PNG2267쌍/85조건을 다시 계산해 반영했다. 새 캡처로 기록하지 않는다.
+기준924쪽/backend의39조건은 측정됐지만8조건은 쪽수 불일치로 보류되어 있으므로
+47조건 전체 기준 통과로 보고하지 않는다. ignored rebase-0c2b60b4-20261016의
+rescore-results.json과 각 reuse-provenance.json이 재사용 범위를 고정한다.
+
+기존d9bc 저장본의 줄을 모두 새로 만들거나, 재생성된 컷의 수용 공차로 저장 컷을
+판별한 C43~C48 실험은 정상79~89쪽 또는60쪽을 바꿔 채택하지 않았다.
+독립 한컴 재저장본과2507문단을 대조하니 논리 컷이 바뀐23문단은 모두 줄 원점·폭도
+달랐다. 원점·폭이 같은89쪽 문단1189는 기존 컷이 그대로 유지됐다.
+따라서 글자 폭에 새 epsilon을 더하지 않고, 실제 셀 padding·문단 여백에서 얻은
+ParagraphBox의 원점·폭과 저장 키를 비교한다. clone 계보와 물리 쪽 reset 없는
+누적 사다리가 입증된 native 분할 저장 셀에서만 기존 split reflow producer를 쓴다.
+
+C49는 집중18쪽 최저93.71087%였지만 전쪽에서25·156쪽 중첩 표가 왼쪽으로
+이동해 Native87.81498%/WASM87.82470%로 실패했다. 별도로45쪽의 기존 브랜치 대비
+0.06%p 하락은 계속 추적한다.25·156쪽에서 표만 실은 문단의 공백은 TAC 표 앞의 실제 흐름이며, 그 문단의
+저장 앵커를 텍스트 폭 검증으로 대체한 것이 원인이다. C50은 이 표 호스트의 저장
+줄과 폭0 개체 앵커를 보존하고, 글자 문단·수식 줄만 해당 프레임 계약으로 검증한다.
+새 문서 ID·쪽 번호·고정 좌표 분기나 출력을 숨기는 clamp는 추가하지 않았다.
+
+C50 Native 전쪽은 원본115쪽 최저90.54589%, d9bc 저장197쪽과4a96 현재 저장197쪽
+각각90.24017%로 모두90% 이상이며 독립 Print 쪽수와 같다. 실제2507문단의 text,
+char offsets/shapes, styles, controls는 수정 전과 같고 논리 컷17문단만 바뀌었다.
+원본115/저장197 및 마지막99% 페이지의 기존5회귀는 동결 Native producer에 연결한
+실제 test harness에서5 PASS/0 FAIL(2.27초)이다. 전체 Cargo 회귀 대체 증거는 아니다.
+같은 코드의 fresh WASM web/pkg/no-opt 로컬 대체 빌드는165.176초에 완료했고,
+동결 package·root pkg·Studio public의JS/WASM SHA가 같다. Docker 최적화 비해당이다.
+WASM 전쪽 및 새 source의 전체 Cargo 회귀는 이어서 실행한다.
+
+정본은 ignored regression-policy-audit-20261015/rebase-f5251e7d-20261016 아래
+rebase-result.json, independent-cache-frame-differences.json,
+candidate-c49-frame-admission/REJECTED.json, candidate-c50-object-owner/producer.json,
+wasm-producer.json·model-preservation.json, candidate-c50-giant-whole/,
+focused-4138-c50-result.json이다. 법원 서식1쪽의89.97913% 및 수식 기호·미세 간격의
+확대 대조, 최신 devel 대비 페이지별0.01%p 하락 검토와 전체 제출 gate는 남아 있다.
+이 단계의 전쪽90% 수치만으로 PR 준비 완료·시각 완전 일치를 주장하지 않는다.
+
+C50 fresh WASM 전쪽도 완료했다. 원본115쪽 최저90.45601%, 두 저장본 각197쪽은
+각90.24017%로 Native와 같이 미달0쪽이다. 합계509쪽/backend·1018페이지 쌍의
+정량 확인이며 모든 쪽수는 해당 독립 Print와 같다.60쪽의 잘못된 줄 소속은 수정 전
+FAIL→Native/WASM PASS이고,89쪽 정상 문단의 원래 줄 소속은 양쪽 유지됐다.
+이것은 실제 트리 진단이며 정식 신규 회귀를 이미 추가했다는 뜻이 아니다.
+
+최신 devel과 같은 renderer source·현재 canonical metric을 고정한 비교에서는
+Native 원본115/이전 저장197쪽에0.01%p 이상 하락이 없다. WASM은 원본61쪽
+(최대0.13493%p), 이전 저장7쪽(최대0.03213%p)의 하락이 있어 재검토 상태다.
+현재 저장본의 base는198쪽으로 쪽수 불일치였으므로 이 비교를 통과로 처리하지 않는다.
+같은 명시 빈 환경으로 후보의 원본6쪽/이전 저장7쪽을 재검사해도 하락이 해소되지
+않아 자동/명시 환경 차이만으로 면제하지 않는다.83쪽의 label 뒤 실제 x/width 차이와
+45쪽 수식의0.2px baseline 차이를 계속 추적한다.130쪽 수식의 △·․ 글리프와 간격도
+확대 판독상 차이가 남아 있어 정량90%와 구분한다. 새로운 전체 Cargo nextest는
+이 C50 source manifest로 시작했으며 최종 summary 전에는 통과로 보고하지 않는다.
+
+C50 production source의 전체 nextest는10436PASS/0FAIL/45skip(386.307초)로 끝났다.
+Native/WASM/all-target Clippy·workspace build·fmt와 Native Skia3종도 종료했다.
+Skia root lib3859PASS/12ignore, 내부182PASS, PNG2PASS/PDF4PASS다.
+이는 새2검사 등록 전의 전체 결과이며 최신10438 전체 완료로 바꾸어 보고하지 않는다.
+
+원래d9bc 입력249KiB를 tests/fixtures/issue4138로 byte-identical 보존하고 해당 독립
+PDF도 함께 연결했다. tests/cases/issue_4138_reparsed_split_frame_cache.rs의2검사는
+60/89쪽 줄 소속·유효 컷 보존·문단 누락/중복·줄 포함과25/156쪽 표 앵커·원문 공백·
+중첩 행/내용·쪽 소속을 보호한다. 중간 C40/C44/C49에서 각각1FAIL1PASS였고,
+C50의 실제 같은 검사2PASS(0.80초)다. 캐시 키/앵커를 잘못 바꾼 중간 후보의 실패는
+컴파일 실패로 세지 않았다. source의 actual module을 prepare한 정식 Cargo 경로도
+2PASS(0.801초), manifest/unit-tier·새 all-target Clippy도 통과했다.
+새 검사 범위는 양쪽90% 이상·직접 판독을 마친25/60/89/156쪽으로 제한하며
+97%대 쪽의 절대 px를 새로 고정하지 않았다. 기존 마지막197쪽99.11469%의 px
+보호는 유지했다. [C50 증적과 잔여](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/reparsed-split-cache-20261016/README.md).
+
+시각 하락의 추적에서 한양신명조 숫자/마침표의 현재 자연 폭은 C31의 독립 Type3와
+같지만 PDF의 개별 글자 원점에는 약0.12pt 격자의 누적 반올림이 보였다.
+원본922개·분할926개 숫자 표기 중835/839개는600dpi 가설의 상대 원점 오차가
+0.001pt 이내였다. 나머지 각87개는 원점 위상 등을 더 확인해야 하므로 이 진단을
+일반 조판 규칙으로 승격하거나 source에 보정 상수를 넣지 않았다.
+정본은 ignored type3-position-grid-diagnostic.json과 두 exact PDF SHA다.
