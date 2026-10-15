@@ -423,6 +423,8 @@ function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && glyph.interactivityAllowed !== true
     && glyph.viewBox !== undefined
     && isPositiveBounds(glyph.viewBox)
+    && op.bbox !== undefined
+    && isPositiveBounds(op.bbox)
     && (glyph.intrinsicSize === undefined || (glyph.intrinsicSize !== null
       && isPortableGlyphScalar(glyph.intrinsicSize.width) && glyph.intrinsicSize.width > 0
       && isPortableGlyphScalar(glyph.intrinsicSize.height) && glyph.intrinsicSize.height > 0

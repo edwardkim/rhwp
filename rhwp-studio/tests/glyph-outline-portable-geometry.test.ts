@@ -294,6 +294,7 @@ for (const [kind, fields] of [
 const BOUNDS_CASES = [
   { name: 'bitmap placement', create: bitmap, bounds: (op: LayerGlyphOutlineOp) => op.bitmapGlyph!.placement! },
   { name: 'SVG viewBox', create: svg, bounds: (op: LayerGlyphOutlineOp) => op.svgGlyph!.viewBox! },
+  { name: 'SVG destination', create: svg, bounds: (op: LayerGlyphOutlineOp) => op.bbox },
 ];
 
 for (const fixture of BOUNDS_CASES) {
@@ -322,6 +323,39 @@ for (const fixture of BOUNDS_CASES) {
     });
   }
 }
+
+test('SVG destination bounds must exist and have positive extents', () => {
+  for (const bounds of [undefined, null,
+    { x: 0, y: 0, width: 0, height: 1 },
+    { x: 0, y: 0, width: 1, height: -1 },
+  ]) {
+    const op = svg();
+    op.bbox = bounds as typeof op.bbox;
+    expectRejected(op);
+  }
+});
+
+test('SVG destination overflow keeps the complete TextRun fallback selected', () => {
+  const outline: LayerGlyphOutlineOp = {
+    ...svg(),
+    variant: { equivalenceGroup: 'run', variantId: 'svg', variantKind: 'glyphOutline' },
+  };
+  const fallback: LayerTextRunOp = {
+    type: 'textRun', bbox: outline.bbox, text: '가',
+    variant: { equivalenceGroup: 'run', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+  };
+  const select = () => selectLayerTextVariantsForLeaf(
+    [outline, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+  );
+  assert.deepEqual([...select()], [outline]);
+  for (const bounds of [
+    { x: 1e100, y: 0, width: 1, height: 1 },
+    { x: F32_MAX, y: 0, width: F32_MAX, height: 1 },
+  ]) {
+    outline.bbox = bounds;
+    assert.deepEqual([...select()], [fallback]);
+  }
+});
 
 for (const field of ['width', 'height'] as const) {
   test(`SVG intrinsic ${field} rejects finite f64 overflow and accepts exact f32::MAX`, () => {
