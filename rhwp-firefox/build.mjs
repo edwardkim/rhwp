@@ -125,6 +125,8 @@ const fontFiles = readdirSync(fontDir).filter((f) => f.endsWith('.woff2'));
 for (const font of fontFiles) {
   copy(resolve(fontDir, font), resolve(DIST, 'fonts', font));
 }
+// 폰트 재배포에는 권리자 고지와 라이선스 전문도 필수다. 누락 시 빌드를 실패시킨다.
+cpSync(resolve(fontDir, 'licenses'), resolve(DIST, 'fonts', 'licenses'), { recursive: true });
 console.log(`  woff2 ${fontFiles.length}개 복사`);
 
 // [#3433] 필수 산출물 게이트. copy() 는 원본이 없으면 SKIP 경고만 내고 넘어가므로,

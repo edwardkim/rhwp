@@ -18,7 +18,7 @@ impl TypesetEngine {
         scan: &BlockTableRowScan,
     ) -> Option<(f64, f64)> {
         if !input.start.is_continuation
-            || !input.start.stored_fragment_closes_body
+            || input.start.stored_fragment_body_bottom_inset.is_none()
             || input.start.start_cut_is_block
             || input.row_cursor_is_nested
             || st.current_height > 0.5

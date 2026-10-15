@@ -45,7 +45,10 @@ impl From<crate::document_core::native_interaction::NativeInteractionError> for 
 
 impl From<HwpError> for NativeHostError {
     fn from(error: HwpError) -> Self {
-        Self::Core(error)
+        match error {
+            HwpError::ResourceLimit(message) => Self::LimitExceeded(message),
+            other => Self::Core(other),
+        }
     }
 }
 
