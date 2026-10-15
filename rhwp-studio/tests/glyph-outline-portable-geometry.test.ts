@@ -295,6 +295,15 @@ const BOUNDS_CASES = [
   { name: 'bitmap placement', create: bitmap, bounds: (op: LayerGlyphOutlineOp) => op.bitmapGlyph!.placement! },
   { name: 'SVG viewBox', create: svg, bounds: (op: LayerGlyphOutlineOp) => op.svgGlyph!.viewBox! },
   { name: 'SVG destination', create: svg, bounds: (op: LayerGlyphOutlineOp) => op.bbox },
+  {
+    name: 'SVG fontEmBox destination',
+    create: () => {
+      const op: LayerGlyphOutlineOp = svg();
+      op.svgGlyph!.fontEmBox = { x: -16, y: -12, width: 32, height: 48 };
+      return op;
+    },
+    bounds: (op: LayerGlyphOutlineOp) => op.svgGlyph!.fontEmBox!,
+  },
 ];
 
 for (const fixture of BOUNDS_CASES) {
@@ -354,6 +363,29 @@ test('SVG destination overflow keeps the complete TextRun fallback selected', ()
   ]) {
     outline.bbox = bounds;
     assert.deepEqual([...select()], [fallback]);
+  }
+});
+
+test('SVG fontEmBox is the replay destination instead of the logical bbox', () => {
+  const op: LayerGlyphOutlineOp = svg();
+  op.svgGlyph!.fontEmBox = { x: -16, y: -12, width: 32, height: 48 };
+  for (const bounds of [undefined, null,
+    { x: 1e100, y: 0, width: 1, height: 1 },
+    { x: F32_MAX, y: 0, width: F32_MAX, height: 1 },
+  ]) {
+    op.bbox = bounds as typeof op.bbox;
+    expectAccepted(op);
+  }
+});
+
+test('an invalid SVG fontEmBox does not silently fall back to the logical bbox', () => {
+  for (const bounds of [null,
+    { x: 0, y: 0, width: 0, height: 1 },
+    { x: 0, y: 0, width: 1, height: -1 },
+  ]) {
+    const op: LayerGlyphOutlineOp = svg();
+    op.svgGlyph!.fontEmBox = bounds as NonNullable<typeof op.svgGlyph>['fontEmBox'];
+    expectRejected(op);
   }
 });
 

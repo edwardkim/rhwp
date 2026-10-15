@@ -72,7 +72,7 @@ export function glyphOutlinePayloadStatus(
     return { payloadKind, supported: false, reason: 'unsupportedOutlinePayload', detail: 'mixedPayloadFamily' };
   }
   // Legacy non-monochrome payloads may omit placement; supplied values must
-  // to fit the portable f32 scalar contract used by the producer and CanvasKit.
+  // fit the portable f32 scalar contract used by the producer and CanvasKit.
   if (!isOptionalFiniteAffine(op.placement?.runToPage)
     || (op.placement?.baselineY !== undefined && !isPortableGlyphScalar(op.placement.baselineY))) {
     return { payloadKind, supported: false, reason: 'unsupportedOutlinePayload', detail: 'invalidPlacement' };
