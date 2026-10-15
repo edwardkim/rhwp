@@ -348,11 +348,11 @@ for (const fixture of BOUNDS_CASES) {
       });
       expectRejected(op);
     });
-    test(`${fixture.name} accepts positive subnormal ${extent} at the origin`, () => {
-      for (const size of [2 ** -149, 3 * 2 ** -151]) {
+    test(`${fixture.name} rejects ${extent} that the three-decimal JSON wire rounds to zero`, () => {
+      for (const size of [2 ** -149, 3 * 2 ** -151, 0.00049]) {
         const op = fixture.create();
         Object.assign(fixture.bounds(op), { [origin]: 0, [extent]: size });
-        expectAccepted(op);
+        expectRejected(op);
       }
     });
     test(`${fixture.name} rejects overflowing ${origin} + ${extent} with finite f32 components`, () => {
@@ -456,10 +456,10 @@ for (const field of ['width', 'height'] as const) {
       op.svgGlyph.intrinsicSize[field] = value;
       expectRejected(op);
     }
-    for (const value of [2 ** -149, 3 * 2 ** -151]) {
+    for (const value of [2 ** -149, 3 * 2 ** -151, 0.00000049]) {
       const op = svg();
       op.svgGlyph.intrinsicSize[field] = value;
-      expectAccepted(op);
+      expectRejected(op);
     }
   });
   test(`SVG intrinsic ${field} rejects finite f64 overflow and accepts exact f32::MAX`, () => {
@@ -508,4 +508,137 @@ test('null bitmap placement and SVG viewBox are rejected without throwing', () =
   svgOp.svgGlyph.viewBox = null as unknown as typeof svgOp.svgGlyph.viewBox;
   expectRejected(bitmapOp);
   expectRejected(svgOp);
+});
+
+
+test('decimal wire rejection keeps whole-run fallback selection before and after JSON parsing', () => {
+  for (const fixture of BOUNDS_CASES) {
+    for (const extent of [2 ** -149, 0.00049]) {
+      const outline: LayerGlyphOutlineOp = {
+        ...fixture.create(),
+        variant: { equivalenceGroup: 'wire', variantId: 'outline', variantKind: 'glyphOutline' },
+      };
+      Object.assign(fixture.bounds(outline), { x: 0, width: extent });
+      const fallback: LayerTextRunOp = {
+        type: 'textRun', bbox: monochrome().bbox, text: 'A',
+        variant: { equivalenceGroup: 'wire', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+      };
+      const wire: LayerGlyphOutlineOp = JSON.parse(JSON.stringify(outline));
+      fixture.bounds(wire).width = 0; // Real Rust bbox writer uses exactly three decimals.
+      for (const candidate of [outline, wire]) {
+        const selected = selectLayerTextVariantsForLeaf(
+          [candidate, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+        );
+        assert.deepEqual([...selected], [fallback]);
+        assert.equal(glyphOutlinePayloadResourceKey(candidate), null);
+      }
+    }
+    const representable = fixture.create();
+    Object.assign(fixture.bounds(representable), { x: 0, width: 0.001 });
+    expectAccepted(representable);
+  }
+  const intrinsic = svg();
+  intrinsic.svgGlyph.intrinsicSize.width = 0.000001;
+  expectAccepted(intrinsic);
+});
+
+
+const LARGE_KEY_SCALARS = [
+  { value: 1e21, integer: '1000000000000000000000' },
+  { value: F32_MAX, integer: '340282346638528859811704183484516925440' },
+];
+
+for (const { value, integer } of LARGE_KEY_SCALARS) {
+  test(`bitmap and SVG keys keep full fixed decimals for ${value}`, () => {
+    const image = bitmap();
+    Object.assign(image.bitmapGlyph.placement, { x: 0, width: value });
+    image.bitmapGlyph.transformToRun.e = -value;
+    const imageKey = glyphOutlinePayloadResourceKey(image)!;
+    assert.ok(imageKey.includes(`placement:0.000,-8.000,${integer}.000,24.000:`));
+    assert.ok(imageKey.includes(`transform:1.000000,0.000000,0.000000,1.000000,-${integer}.000000,-8.000000`));
+    const vector = svg();
+    Object.assign(vector.svgGlyph.viewBox, { x: 0, width: value });
+    vector.svgGlyph.intrinsicSize.width = value;
+    vector.svgGlyph.transformToRun.f = value;
+    const vectorKey = glyphOutlinePayloadResourceKey(vector)!;
+    assert.ok(vectorKey.includes(`viewBox:0.000,-8.000,${integer}.000,24.000:`));
+    assert.ok(vectorKey.includes(`intrinsicSize:${integer}.000000,24.000000:`));
+    assert.ok(vectorKey.includes(`transform:1.000000,0.000000,0.000000,1.000000,-4.000000,${integer}.000000`));
+    // These are exactly the integral values emitted by Rust's {:.3}/{:.6}
+    // writers. Parsing the wire may not change the resource identity.
+    for (const op of [image, vector]) {
+      const parsed: LayerGlyphOutlineOp = JSON.parse(JSON.stringify(op));
+      assert.equal(glyphOutlinePayloadResourceKey(parsed), glyphOutlinePayloadResourceKey(op));
+      expectAccepted(parsed);
+    }
+  });
+}
+
+test('resource keys preserve negative zero from Rust fixed-decimal geometry', () => {
+  for (const create of [bitmap, svg]) {
+    const op = create();
+    const bounds = 'bitmapGlyph' in op ? op.bitmapGlyph.placement : op.svgGlyph.viewBox;
+    const transform = 'bitmapGlyph' in op ? op.bitmapGlyph.transformToRun : op.svgGlyph.transformToRun;
+    // Rust deliberately preserves the sign in its existing key and JSON wire;
+    // JSON.parse retains it, whereas JavaScript Number.toFixed() erases -0.
+    bounds.x = JSON.parse('-0.000');
+    transform.e = JSON.parse('-0.000000');
+    const key = glyphOutlinePayloadResourceKey(op)!;
+    assert.ok(key.includes('-0.000,-8.000,16.000,24.000'));
+    assert.ok(key.includes('transform:1.000000,0.000000,0.000000,1.000000,-0.000000,-8.000000'));
+    expectAccepted(op);
+  }
+});
+
+
+const SVG_MAPPING_FAILURES = [
+  { name: 'horizontal scale overflow', view: { x: 0, y: 0, width: 0.001, height: 1 }, dest: { x: 0, y: 0, width: F32_MAX, height: 1 } },
+  { name: 'vertical scale overflow', view: { x: 0, y: 0, width: 1, height: 0.001 }, dest: { x: 0, y: 0, width: 1, height: F32_MAX } },
+  { name: 'scaled source origin overflow', view: { x: 1e20, y: 0, width: 1e14, height: 1 }, dest: { x: 0, y: 0, width: 1e36, height: 1 } },
+  { name: 'composed destination translation overflow', view: { x: -4, y: 0, width: 1, height: 1 }, dest: { x: F32_MAX * 0.75, y: 0, width: F32_MAX * 0.125, height: 1 } },
+  { name: 'scale overflow only after decimal wire rounding', view: { x: 0, y: 0, width: 0.00149, height: 1 }, dest: { x: 0, y: 0, width: F32_MAX * 0.00125, height: 1 } },
+];
+
+for (const fixture of SVG_MAPPING_FAILURES) {
+  test(`SVG ${fixture.name} keeps the complete TextRun fallback`, () => {
+    const outline: LayerGlyphOutlineOp = {
+      ...svg(),
+      bbox: fixture.dest,
+      variant: { equivalenceGroup: 'mapped-svg', variantId: 'outline', variantKind: 'glyphOutline' },
+    };
+    outline.svgGlyph!.viewBox = fixture.view;
+    const fallback: LayerTextRunOp = {
+      type: 'textRun', bbox: monochrome().bbox, text: 'A',
+      variant: { equivalenceGroup: 'mapped-svg', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+    };
+    expectRejected(outline);
+    const selected = selectLayerTextVariantsForLeaf(
+      [outline, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+    );
+    assert.deepEqual([...selected], [fallback]);
+  });
+}
+
+test('SVG finite viewBox-to-destination mapping retains outline admission', () => {
+  for (const [view, dest] of [
+    [{ x: 0, y: 0, width: 0.001, height: 1 }, { x: 0, y: 0, width: 1, height: 1 }],
+    [{ x: -4, y: -8, width: 16, height: 24 }, { x: -10, y: -10, width: 20, height: 20 }],
+  ]) {
+    const op = svg();
+    op.svgGlyph.viewBox = view;
+    op.bbox = dest;
+    expectAccepted(op);
+  }
+});
+
+
+test('SVG mapping admission follows the explicit font em viewport', () => {
+  for (const [compatibilityWidth, emWidth, supported] of [[F32_MAX, 1, true], [1, F32_MAX, false]] as const) {
+    const op: LayerGlyphOutlineOp = svg();
+    op.bbox = { x: 0, y: 0, width: compatibilityWidth, height: 1 };
+    op.svgGlyph!.viewBox = { x: 0, y: 0, width: 0.001, height: 1 };
+    op.svgGlyph!.fontEmBox = { x: 0, y: 0, width: emWidth, height: 1 };
+    if (supported) expectAccepted(op);
+    else expectRejected(op);
+  }
 });
