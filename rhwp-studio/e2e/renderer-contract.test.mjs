@@ -96,13 +96,20 @@ function extractBlockBody(source, signatureIndex, blockName) {
 }
 
 function extractMethodBody(source, methodName) {
-  let signatureIndex = source.indexOf(`private ${methodName}(`);
-  if (signatureIndex === -1) {
-    signatureIndex = source.indexOf(`${methodName}(`);
-  }
-  assert.notEqual(signatureIndex, -1, `missing method ${methodName}`);
+  const signature = source.match(new RegExp(
+    `^\\s*(?:(?:private|public|protected)\\s+)?(?:async\\s+)?${methodName}\\(`, 'm',
+  ));
+  assert.notEqual(signature, null, `missing method ${methodName}`);
 
-  return extractBlockBody(source, signatureIndex, methodName);
+  // Skip the parameter list, including object-valued defaults, before finding
+  // the method body. Declarations are anchored so call sites cannot match.
+  let depth = 1;
+  for (let index = signature.index + signature[0].length; index < source.length; index += 1) {
+    if (source[index] === '(') depth += 1;
+    if (source[index] === ')') depth -= 1;
+    if (depth === 0) return extractBlockBody(source, index + 1, methodName);
+  }
+  throw new Error(`unterminated parameters for ${methodName}`);
 }
 
 function extractSwitchCaseClusterBody(methodBody, caseLabel) {
@@ -182,6 +189,7 @@ function requireSnippet(source, pattern, message) {
 
 const renderOpBody = extractMethodBody(canvaskitSource, 'renderOp');
 const renderNodeBody = extractMethodBody(canvaskitSource, 'renderNode');
+const renderNodeContentsBody = extractMethodBody(canvaskitSource, 'renderNodeContents');
 const diagnosticsBody = extractMethodBody(canvaskitSource, 'diagnostics');
 const makeSurfaceBody = extractMethodBody(canvaskitSource, 'makeSurface');
 const renderPageCanvasKitBody = extractMethodBody(pageRendererSource, 'renderPageCanvasKit');
@@ -206,7 +214,8 @@ const forbiddenCanvas2dApiPatterns = [
   [/\bcreateImageBitmap\s*\(/, 'createImageBitmap'],
   [/\bImageBitmap\b/, 'ImageBitmap'],
   [/\bHTMLImageElement\b/, 'HTMLImageElement'],
-  [/\bnew\s+Image\s*\(/, 'new Image'],
+  [/\bnew\s+(?:globalThis\s*\.\s*)?Image\s*\(/, 'new Image'],
+  [/\bBlob\b/, 'Blob'],
   [/\bDOMParser\b/, 'DOMParser'],
   [/\bXMLSerializer\b/, 'XMLSerializer'],
   [/\bURL\s*\.\s*createObjectURL\s*\(/, 'URL.createObjectURL'],
@@ -314,16 +323,21 @@ assert.deepEqual(
 
 requireSnippet(
   renderNodeBody,
+  /this\.renderNodeContents\(canvas, node, profile, replayPlane, inheritedLayer\);/,
+  'node replay wrapper should delegate through the dispatch helper',
+);
+requireSnippet(
+  renderNodeContentsBody,
   /node\.kind === 'group'[\s\S]*?for \(const child of node\.children\)[\s\S]*?this\.renderNode\(canvas, child,[\s\S]*?\}\s*return;/,
   'group nodes should recurse through children',
 );
 requireSnippet(
-  renderNodeBody,
+  renderNodeContentsBody,
   /node\.kind === 'clipRect'[\s\S]*?this\.renderClipNode\(canvas, node,[\s\S]*?\);\s*return;/,
   'clipRect nodes should go through renderClipNode',
 );
 requireSnippet(
-  renderNodeBody,
+  renderNodeContentsBody,
   /this\.renderLeaf\(canvas, node, profile, replayPlane, activeLayer\);/,
   'leaf nodes should go through renderLeaf',
 );
@@ -364,7 +378,7 @@ requireSnippet(
 );
 requireSnippet(
   makeSurfaceBody,
-  /surfaceRequest\.preference === 'webgpu'[\s\S]*?surfaceFallbackReason = 'webgpuSurfaceUnsupported'[\s\S]*?reuseSoftwareFallbackCanvas/,
+  /surfaceRequest\.preference === 'webgpu'[\s\S]*?surfaceFallbackReason \?\?= 'webgpuSurfaceUnsupported'[\s\S]*?reuseSoftwareFallbackCanvas/,
   'CanvasKit repeated software fallback should preserve the original WebGPU rejection reason',
 );
 requireSnippet(
@@ -549,7 +563,7 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /private findPreparedTypeface\([\s\S]*?const local =[\s\S]*?const bundled =[\s\S]*?if \(local\) return local;[\s\S]*?if \(bundled\) return bundled;/,
+  /private resolvePreparedTypeface\([\s\S]*?let local =[\s\S]*?const bundled =[\s\S]*?if \(local\) return local;[\s\S]*?if \(bundled\) return bundled;/,
   'CanvasKit should prefer an exact prepared local face over its bundled fallback alias',
 );
 requireSnippet(
@@ -1271,6 +1285,7 @@ function runExecutableTextSpecialReplay() {
     fontManager: { family: 'old-hangul-manager' },
   };
   renderer.bundledTypefaceAliases.set('rhwp old hangul', [oldHangulAlias]);
+  renderer.invalidateFontCaches(); // Match the production font registration lifecycle.
   const resolvedOldHangulAlias = renderer.findPreparedTypeface('RHWP Old Hangul');
 
   renderer.renderOp(canvas, {
@@ -1596,6 +1611,10 @@ function runExecutableTextSpecialReplay() {
       positionsComplete: true,
     },
   }, 'screen');
+  const malformedEvents = events.slice(beforeMalformed);
+  // Finite horizontal rotation is admitted by Rust preflight and browser dispatch.
+  // Observe dispatch only; this is not a document raster or placement comparison.
+  const beforeRotatedVisuals = events.length;
   renderer.renderOp(canvas, {
     type: 'textControlMark',
     bbox: { x: 0, y: 0, width: 10, height: 10 },
@@ -1634,6 +1653,8 @@ function runExecutableTextSpecialReplay() {
       positionsComplete: true,
     },
   }, 'screen');
+  const rotatedVisualEvents = events.slice(beforeRotatedVisuals);
+  const beforeInvalidBounds = events.length;
   renderer.renderOp(canvas, {
     type: 'tabLeader',
     bbox: { x: 0, y: 0, width: -1, height: 10 },
@@ -1648,7 +1669,8 @@ function runExecutableTextSpecialReplay() {
   return {
     events,
     mirrorEvents,
-    malformedEvents: events.slice(beforeMalformed),
+    malformedEvents: [...malformedEvents, ...events.slice(beforeInvalidBounds)],
+    rotatedVisualEvents,
     oldHangulAlias,
     rejectedOldHangulAlias,
     resolvedOldHangulAlias,
@@ -1966,6 +1988,8 @@ assert.deepEqual(
   {
     dashedStrokes: 4,
     glyphRuns: 0,
+    tabLeaders: 0,
+    charOverlaps: 0,
     verticalPresentationPunctuation: 0,
     verticalTextRuns: 0,
   },
@@ -2105,11 +2129,11 @@ requireSnippet(
 );
 requireSnippet(
   renderPathBody,
-  /this\.createCommandPath\(op\.commands \?\? \[\], op\.bbox\.x, op\.bbox\.y\)[\s\S]*?this\.drawStyledPath/,
+  /this\.pathFromCommands\(op\.commands \?\? \[\], op\.bbox\.x, op\.bbox\.y\)[\s\S]*?this\.drawStyledPath/,
   'path replay should build command paths before drawing the serialized style',
 );
 requireSnippet(
-  extractMethodBody(canvaskitSource, 'createCommandPath'),
+  extractMethodBody(canvaskitSource, 'pathFromCommands'),
   /new this\.canvasKit\.PathBuilder\(\)[\s\S]*?try\s*\{[\s\S]*?this\.applyPathCommand\(builder,[\s\S]*?return builder\.detach\(\);[\s\S]*?finally\s*\{\s*builder\.delete\(\);/,
   'command paths should use PathBuilder, detach the completed Path, and always release the builder',
 );
@@ -2130,7 +2154,7 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /private drawLineArrows\([\s\S]*?arrow:geometryMissing[\s\S]*?this\.createCommandPath\(head\.commands, 0, 0\)[\s\S]*?head\.filled[\s\S]*?canvas\.drawPath\(path, fill\)/,
+  /private drawLineArrows\([\s\S]*?arrow:geometryMissing[\s\S]*?this\.pathFromCommands\(head\.commands, 0, 0\)[\s\S]*?head\.filled[\s\S]*?canvas\.drawPath\(path, fill\)/,
   'arrow replay should consume producer geometry and fill rather than reinterpret ArrowStyle',
 );
 requireSnippet(
@@ -2155,14 +2179,21 @@ requireSnippet(
 );
 requireSnippet(
   renderFormObjectBody,
-  /op\.formType === 'checkBox'[\s\S]*?op\.formType === 'radioButton'[\s\S]*?op\.formType === 'checkbox'[\s\S]*?op\.formType === 'radio'[\s\S]*?canvas\.drawLine[\s\S]*?const label = op\.caption \|\| op\.text[\s\S]*?this\.renderTextRun/,
-  'form object replay should keep canonical and compatibility checkbox/radio mark names explicit',
+  /formDrawingReplayRejection\(op\)[\s\S]*?if \(rejection\)[\s\S]*?return;[\s\S]*?const drawing = op\.drawing![\s\S]*?for \(const primitive of drawing\.primitives\)[\s\S]*?const label = drawing\.label[\s\S]*?this\.drawStaticControlText[\s\S]*?x: label\.x, y: label\.baseline[\s\S]*?formObject:textReplayFailed/,
+  'form replay should validate and consume producer drawing, preserve its label baseline, and reject failed text replay',
 );
+assert.doesNotMatch(renderFormObjectBody, /op\.(?:formType|caption|text)\b/,
+  'form replay must not rederive geometry or display text from raw control fields');
+const formReplaySource = fs.readFileSync(path.join(canvaskitDirectory, 'form-replay.ts'), 'utf8');
+requireSnippet(formReplaySource, /if \(!drawing\) return 'missingProducerDrawing'/,
+  'form admission should reject a missing producer drawing');
+requireSnippet(canvaskitSource,
+  /private drawStaticControlText\([\s\S]*?this\.paragraphFonts\.source[\s\S]*?MakeFromFontProvider[\s\S]*?unresolvedCodepoints[\s\S]*?getAlphabeticBaseline/,
+  'static labels should consume only prepared Paragraph fonts and reject missing native glyphs');
 assertFootnoteMarkerBaselineReplay(CanvasKitLayerRendererRuntime);
 assert.doesNotMatch(extractSwitchCaseClusterBody(renderOpBody, 'footnoteMarker'), /baseline:\s*op\.bbox\.y/,
   '각주 표식의 기준선은 쪽의 절대 y 좌표가 아닌 줄 내부 값이어야 한다');
 for (const [label, body, baselinePattern] of [
-  ['form object', renderFormObjectBody, /baseline: Math\.max\(10, op\.bbox\.height \* 0\.68\)/],
   ['placeholder', renderPlaceholderBody, /baseline: Math\.max\(10, op\.bbox\.height \* 0\.65\)/],
 ]) {
   requireSnippet(body, baselinePattern, `${label} replay should declare its run-local baseline`);
@@ -2174,7 +2205,7 @@ for (const [label, body, baselinePattern] of [
 }
 requireSnippet(
   renderTextRunBody,
-  /MAX_TEXT_RUN_CODE_POINTS[\s\S]*?this\.recordTextRunCoverageGaps\(op, replayCodePoints\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs[\s\S]*?const drawPass[\s\S]*?const runGlyphIds = new Uint16Array[\s\S]*?canvas\.drawGlyphs\(/,
+  /MAX_TEXT_RUN_CODE_POINTS[\s\S]*?this\.recordTextRunCoverageGaps\(op, replayCodePoints\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs[\s\S]*?const drawPass[\s\S]*?const runGlyphIds = new Uint16Array[\s\S]*?this\.drawCachedGlyphs\(/,
   'textRun replay should validate coverage once and reuse positioned glyphs across paint passes',
 );
 requireSnippet(
@@ -2204,7 +2235,7 @@ requireSnippet(
 );
 requireSnippet(
   renderGlyphRunBody,
-  /this\.glyphRunFonts\.font\(op, this\.currentFontResources\)[\s\S]*?drawCanvasKitGlyphRun\(canvas, op, font, paint\)[\s\S]*?this\.currentReplayFeatureCounts\.glyphRuns \+= 1[\s\S]*?glyphRun:replayFailed[\s\S]*?finally[\s\S]*?paint\.delete/,
+  /this\.glyphRunFonts\.font\(op, this\.currentFontResources\)[\s\S]*?drawCanvasKitGlyphRun\(canvas, op, font, current, x, y\)[\s\S]*?this\.currentReplayFeatureCounts\.glyphRuns \+= 1[\s\S]*?glyphRun:replayFailed[\s\S]*?finally[\s\S]*?paint\.delete/,
   'strict GlyphRun replay should use the verified exact font and release per-draw paint state',
 );
 requireSnippet(
@@ -2219,7 +2250,7 @@ requireSnippet(
 );
 requireSnippet(
   renderTextRunBody,
-  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?const replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?for \(const character of replayText\)[\s\S]*?textRun:visualItemLimitExceeded[\s\S]*?const glyphReplayText = verticalPresentationText \?\? replayText;[\s\S]*?if \(hasLayoutPositions\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs\(glyphReplayText, codePoints\.length\)[\s\S]*?const runPositions = new Float32Array[\s\S]*?runPositions\[\(index - runStart\) \* 2\] = replayPositions!\[index\];[\s\S]*?canvas\.drawGlyphs\(/,
+  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?const replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?for \(const character of replayText\)[\s\S]*?textRun:visualItemLimitExceeded[\s\S]*?const glyphReplayText = verticalPresentationText \?\? replayText;[\s\S]*?if \(hasLayoutPositions\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs\(glyphReplayText, codePoints\.length\)[\s\S]*?const runPositions = new Float32Array[\s\S]*?runPositions\[\(index - runStart\) \* 2\] = replayPositions!\[index\];[\s\S]*?this\.drawCachedGlyphs\(/,
   'textRun replay should bound display projection and preserve serialized advances',
 );
 requireSnippet(
@@ -2532,6 +2563,8 @@ assert.deepEqual(
   {
     dashedStrokes: 0,
     glyphRuns: 0,
+    tabLeaders: 0,
+    charOverlaps: 0,
     verticalPresentationPunctuation: 1,
     verticalTextRuns: 1,
   },
@@ -2898,9 +2931,6 @@ for (const diagnostic of [
   'tabLeader:visualItemLimitExceeded',
   'textDecoration:invalidGeometry',
   'textDecoration:visualItemLimitExceeded',
-  'textControlMark:rotatedText',
-  'tabLeader:rotatedText',
-  'textDecoration:rotatedText',
 ]) {
   assert.equal(
     textSpecialReplay.unsupportedOps.has(diagnostic),
@@ -2908,6 +2938,20 @@ for (const diagnostic of [
     `malformed text visuals should report ${diagnostic}`,
   );
 }
+for (const type of ['textControlMark', 'tabLeader', 'textDecoration']) {
+  assert.equal(
+    textSpecialReplay.unsupportedOps.has(`${type}:rotatedText`),
+    false,
+    `finite horizontal ${type} rotation must remain admitted`,
+  );
+}
+assert.equal(
+  textSpecialReplay.rotatedVisualEvents.filter(
+    event => event.type === 'canvas.rotate' && event.rotation === 15,
+  ).length,
+  3,
+  'each admitted horizontal text visual should dispatch its producer rotation',
+);
 assert.equal(
   textSpecialReplay.unsupportedOps.has('textRun:verticalText'),
   false,
@@ -3015,7 +3059,7 @@ requireSnippet(
 );
 requireSnippet(
   renderColorPaintGraphNodeBody,
-  /node\.kind === 'transform'[\s\S]*?transformNode\?\.childNodeId[\s\S]*?this\.renderColorPaintGraphNode\(canvas, nodesById, transformNode\.childNodeId, visited\)/,
+  /node\.kind === 'transform'[\s\S]*?transformNode\?\.childNodeId[\s\S]*?this\.renderColorPaintGraphNode\(canvas, nodesById, transformNode\.childNodeId, visited, budget, depth \+ 1\)/,
   'glyphOutline color graph replay should keep transform recursion explicit',
 );
 requireSnippet(
@@ -3026,6 +3070,10 @@ requireSnippet(
 
 for (const { label, source } of canvaskitSourceFiles) {
   for (const [pattern, name] of forbiddenCanvas2dApiPatterns) {
+    // Only this bounded preparation adapter may decode a DOM image into SkImage.
+    // All replay modules remain forbidden from using a DOM/Canvas2D fallback.
+    if (label === 'src/view/canvaskit/browser-image-decoder.ts'
+      && ['HTMLImageElement', 'URL.createObjectURL', 'new Image', 'Blob'].includes(name)) continue;
     assert.doesNotMatch(
       source,
       pattern,
@@ -3033,6 +3081,28 @@ for (const { label, source } of canvaskitSourceFiles) {
     );
   }
 }
+
+const browserImageDecoderSource = fs.readFileSync(
+  path.join(canvaskitDirectory, 'browser-image-decoder.ts'), 'utf8',
+);
+requireSnippet(browserImageDecoderSource,
+  /MakeImageFromCanvasImageSource[\s\S]*?decodedImageMatchesEncodedHeader[\s\S]*?decoded\.delete/,
+  'browser image preparation must import into Skia and reject mismatched decoded dimensions');
+requireSnippet(browserImageDecoderSource,
+  /if \(settled\) \{ result\?\.delete\(\); return; \}[\s\S]*?clearTimeout[\s\S]*?image\.onload = null[\s\S]*?revokeObjectURL/,
+  'browser image settlement must release handlers and URLs and dispose late native results');
+requireSnippet(browserImageDecoderSource,
+  /cancel = \(\) => finish\(null\)[\s\S]*?setTimeout\(\(\) => finish\(null\), 10_000\)/,
+  'browser image preparation must remain cancellable and time bounded');
+requireSnippet(canvaskitSource,
+  /this\.disposed \|\| generation !== this\.documentGeneration[\s\S]*?decoded\?\.delete/,
+  'late browser images must be discarded after document changes or disposal');
+requireSnippet(canvaskitSource,
+  /for \(const load of this\.pendingImageLoads\.values\(\)\) load\.cancel\(\)/,
+  'document resource invalidation must cancel every pending browser decode');
+requireSnippet(canvaskitSource,
+  /const encodedHeader = replayableEncodedImageHeader\(bytes\)[\s\S]*?if \(!encodedHeader\)[\s\S]*?return null;[\s\S]*?encodedImageHasStableFrame\(bytes, encodedHeader\)[\s\S]*?decodeBrowserImage\(this\.canvasKit, bytes, encodedHeader\)/,
+  'only bounded static encoded images may reach browser preparation');
 
 for (const { token, path: touchpointPath, kind } of canvaskitParityPlanTouchpoints) {
   assert.ok(

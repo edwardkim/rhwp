@@ -352,6 +352,7 @@ pub fn decode_font_svg_glyph_payload(
         glyph_range: options.glyph_range,
         transform_to_run: options.transform_to_run,
         view_box,
+        font_em_box: None,
         intrinsic_size: options.intrinsic_size,
         static_sanitized: true,
         script_allowed: false,
@@ -861,7 +862,7 @@ impl FontGlyphLowerer<'_, '_> {
         }
         let char_shape_id = run.char_shape_id?;
         let language_index = crate::renderer::style_resolver::detect_lang_category(character);
-        let font = self.fonts.iter().find(|font| {
+        let font = *self.fonts.iter().find(|font| {
             font.char_shape_id == char_shape_id && font.language_index == language_index
         })?;
         self.report.attempted_runs += 1;
@@ -892,40 +893,23 @@ impl FontGlyphLowerer<'_, '_> {
             bbox,
         );
         bitmap_options.baseline_y = run.baseline;
-        let glyph_id_u16 = ttf_parser::GlyphId(glyph_id as u16);
-        let Some(raster) = face.glyph_raster_image(glyph_id_u16, bitmap_options.pixels_per_em)
-        else {
-            self.report.rejected_runs += 1;
-            return None;
+        let bitmap = self.try_bitmap(&font, &face, glyph_id, &bitmap_options);
+        let svg = if bitmap.is_none() {
+            self.try_svg(&font, glyph_id, source_range, bbox, run)
+        } else {
+            None
         };
-        let encoded_bytes = raster.data.len();
-        let decoded_pixels = u64::from(raster.width) * u64::from(raster.height);
-        if self.encoded_resource_bytes.saturating_add(encoded_bytes)
-            > MAX_FONT_NATIVE_ENCODED_BYTES_PER_PAGE
-            || self.decoded_resource_pixels.saturating_add(decoded_pixels)
-                > MAX_FONT_NATIVE_DECODED_PIXELS_PER_PAGE
-        {
-            self.report.rejected_runs += 1;
-            return None;
-        }
-        let bitmap = decode_font_bitmap_glyph_payload(
-            font.bytes,
-            font.face_index,
-            glyph_id,
-            &bitmap_options,
-            self.resources,
-        )
-        .ok();
         let payload_kind = if bitmap.is_some() {
             self.report.emitted_bitmap_glyphs += 1;
-            self.emitted_sidecars += 1;
-            self.encoded_resource_bytes += encoded_bytes;
-            self.decoded_resource_pixels += decoded_pixels;
             GlyphOutlinePayloadKind::BitmapGlyph
+        } else if svg.is_some() {
+            self.report.emitted_svg_glyphs += 1;
+            GlyphOutlinePayloadKind::SvgGlyph
         } else {
             self.report.rejected_runs += 1;
             return None;
         };
+        self.emitted_sidecars += 1;
 
         let equivalence_group = format!("text-{text_source_id}");
         let mut variant = PaintVariantMeta::text_run_default(equivalence_group.clone());
@@ -943,7 +927,7 @@ impl FontGlyphLowerer<'_, '_> {
             payload_kind,
             color_layers: None,
             bitmap_glyph: bitmap,
-            svg_glyph: None,
+            svg_glyph: svg,
             paint_style,
             placement,
             paths: Vec::new(),
@@ -961,6 +945,131 @@ impl FontGlyphLowerer<'_, '_> {
                 reason: Some("fontNativeGlyphPayload".to_string()),
             },
         })
+    }
+
+    fn try_bitmap(
+        &mut self,
+        font: &EmbeddedFontFace<'_>,
+        face: &ttf_parser::Face<'_>,
+        glyph_id: u32,
+        options: &FontBitmapGlyphDecodeOptions,
+    ) -> Option<BitmapGlyphPayload> {
+        let raster = face.glyph_raster_image(
+            ttf_parser::GlyphId(u16::try_from(glyph_id).ok()?),
+            options.pixels_per_em,
+        )?;
+        let pixels = u64::from(raster.width) * u64::from(raster.height);
+        // Keep the existing aggregate guard before PNG decoding. A saturated
+        // page must not repeatedly decompress later rejected glyph strikes.
+        if !self.page_budget_allows(raster.data.len(), pixels) {
+            return None;
+        }
+        let mut scratch = ResourceArena::default();
+        let mut payload = decode_font_bitmap_glyph_payload(
+            font.bytes,
+            font.face_index,
+            glyph_id,
+            options,
+            &mut scratch,
+        )
+        .ok()?;
+        let bytes = scratch.image_bytes(payload.image_ref)?;
+        // The decoder has verified encoded dimensions against the strike and
+        // interned these same source bytes only after the complete PNG check.
+        payload.image_ref = self.resources.intern_image_bytes(bytes);
+        self.encoded_resource_bytes += bytes.len();
+        self.decoded_resource_pixels += pixels;
+        Some(payload)
+    }
+
+    fn try_svg(
+        &mut self,
+        font: &EmbeddedFontFace<'_>,
+        glyph_id: u32,
+        source_range: TextSourceRange,
+        bbox: BoundingBox,
+        run: &crate::renderer::render_tree::TextRunNode,
+    ) -> Option<SvgGlyphPayload> {
+        if !self.page_budget_allows(1, 0) {
+            return None;
+        }
+        let mut scratch = ResourceArena::default();
+        let mut payload = decode_font_svg_glyph_payload(
+            font.bytes,
+            font.face_index,
+            glyph_id,
+            &FontSvgGlyphDecodeOptions::new(source_range, GlyphRange::new(0, 1)),
+            &mut scratch,
+        )
+        .ok()?;
+        let fragment = scratch.svg_fragment(payload.svg_ref)?;
+        if !self.page_budget_allows(fragment.len(), 0)
+            || (payload.view_box.width - payload.view_box.height).abs() > f64::EPSILON
+        {
+            return None;
+        }
+        // OpenType SVG starts at the baseline with a unitsPerEm-square
+        // viewport. A square viewBox maps uniformly to font_size pixels.
+        // Root sizing/transforms and nested viewports need a separate proof.
+        let mut reader = Reader::from_str(fragment);
+        let mut svg_count = 0;
+        loop {
+            match reader.read_event().ok()? {
+                Event::Start(element) | Event::Empty(element)
+                    if element.name().as_ref().eq_ignore_ascii_case("svg") =>
+                {
+                    svg_count += 1;
+                    if svg_count > 1 {
+                        return None;
+                    }
+                    for attribute in element.attributes().with_checks(true) {
+                        let attribute = attribute.ok()?;
+                        if [
+                            "x",
+                            "y",
+                            "width",
+                            "height",
+                            "transform",
+                            "style",
+                            "clip",
+                            "overflow",
+                        ]
+                        .iter()
+                        .any(|name| attribute.key.as_ref().eq_ignore_ascii_case(name))
+                        {
+                            return None;
+                        }
+                    }
+                }
+                Event::Eof => break,
+                _ => {}
+            }
+        }
+        if svg_count != 1 {
+            return None;
+        }
+        payload.font_em_box = Some(BoundingBox::new(
+            bbox.x,
+            bbox.y + run.baseline,
+            run.style.font_size,
+            run.style.font_size,
+        ));
+        if !payload.has_static_sanitized_contract() {
+            return None;
+        }
+        payload.svg_ref = self.resources.intern_svg_fragment(fragment);
+        self.encoded_resource_bytes += fragment.len();
+        Some(payload)
+    }
+
+    fn page_budget_allows(&self, encoded_bytes: usize, decoded_pixels: u64) -> bool {
+        self.encoded_resource_bytes
+            .checked_add(encoded_bytes)
+            .is_some_and(|total| total <= MAX_FONT_NATIVE_ENCODED_BYTES_PER_PAGE)
+            && self
+                .decoded_resource_pixels
+                .checked_add(decoded_pixels)
+                .is_some_and(|total| total <= MAX_FONT_NATIVE_DECODED_PIXELS_PER_PAGE)
     }
 }
 

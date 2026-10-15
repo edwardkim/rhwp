@@ -971,6 +971,15 @@ export interface PageLayerTree {
     major: number;
     minor: number;
   };
+  /** The frontend adapter expands v2 envelopes into the v1 replay shape without changing paint order. */
+  normalizedFromSchema?: { major: 2; minor: number };
+  requiredFeatures?: string[];
+  textV2?: {
+    profile?: string;
+    fallbackPolicy?: string;
+    strictVisualFallbackFree?: boolean;
+    [key: string]: unknown;
+  };
   unit?: 'px';
   coordinateSystem?: string;
   profile?: LayerRenderProfile;
@@ -997,6 +1006,35 @@ export interface PageLayerTree {
   resources?: LayerResources;
   root: LayerNode;
 }
+
+/** Opt-in wire format. Kept separate from LayerPaintOp so v1 consumers cannot silently skip envelopes. */
+export interface LayerTextV2Envelope {
+  type: 'text';
+  id: string;
+  bbox: LayerBounds;
+  paintOrderSlotId: string;
+  selectionPolicy: 'exclusiveVariantSet';
+  defaultVariantId: string;
+  fallbackPolicy: 'required' | 'none';
+  variants: Array<{
+    variantId: string;
+    kind: 'textRun' | 'glyphRun' | 'glyphOutline' | string;
+    requiredFeatures: string[];
+    quality?: string;
+    parts: Array<{
+      partIndex: number;
+      partCount: number;
+      localPaintOrder?: number;
+      payload: LayerTextRunOp | LayerGlyphRunOp | LayerGlyphOutlineOp;
+    }>;
+  }>;
+}
+
+export type LayerNodeV2 =
+  | (Omit<LayerGroupNode, 'children'> & { children: LayerNodeV2[] })
+  | (Omit<LayerClipNode, 'child'> & { child: LayerNodeV2 })
+  | (Omit<LayerLeafNode, 'ops'> & { ops: Array<LayerPaintOp | LayerTextV2Envelope> });
+export type PageLayerTreeV2 = Omit<PageLayerTree, 'root'> & { root: LayerNodeV2 };
 
 export interface LayerResources {
   tableId?: number;
@@ -1058,6 +1096,8 @@ export type LayerNode = LayerGroupNode | LayerClipNode | LayerLeafNode;
 export interface LayerGroupNode {
   kind: 'group';
   bounds: LayerBounds;
+  /** Conservative ink estimate; logical bounds remain independent. */
+  visualBounds?: LayerBounds;
   layer?: LayerInfo;
   groupKind?: { kind: string; [key: string]: unknown };
   cacheHint?: LayerCacheHint;
@@ -1067,6 +1107,7 @@ export interface LayerGroupNode {
 export interface LayerClipNode {
   kind: 'clipRect';
   bounds: LayerBounds;
+  visualBounds?: LayerBounds;
   layer?: LayerInfo;
   clip: LayerBounds;
   clipKind: 'body' | 'tableCell' | 'textBox' | 'generic';
@@ -1076,6 +1117,7 @@ export interface LayerClipNode {
 export interface LayerLeafNode {
   kind: 'leaf';
   bounds: LayerBounds;
+  visualBounds?: LayerBounds;
   layer?: LayerInfo;
   ops: LayerPaintOp[];
 }
@@ -1114,6 +1156,16 @@ export interface LayerPageBackgroundOp {
   borderColor?: string;
   borderWidth?: number;
   gradient?: LayerGradientFill;
+  image?: {
+    fillMode?: string;
+    base64?: string;
+    resourceId?: number;
+    effect?: string;
+    brightness?: number;
+    contrast?: number;
+    opacity?: number;
+    watermark?: boolean;
+  };
 }
 
 export interface LayerTextStyle {
@@ -1346,6 +1398,7 @@ export interface LayerEquationOp {
   type: 'equation';
   bbox: LayerBounds;
   svgContent?: string;
+  svgResourceId?: number;
   color?: string;
   fontSize?: number;
   layoutBox?: LayerEquationLayoutBox;
@@ -1430,7 +1483,8 @@ export interface LayerFormObjectOp {
   text?: string;
   foreColor?: string;
   backColor?: string;
-  value?: boolean;
+  /** Producer i32 selection state; boolean remains accepted for legacy object callers. */
+  value?: number | boolean;
   enabled?: boolean;
   drawing?: {
     primitives: Array<
@@ -1772,6 +1826,8 @@ export interface LayerColorPaintGraphNode {
   radialGradientPath?: LayerColorRadialGradientPathNode;
   sweepGradientPath?: LayerColorSweepGradientPathNode;
   transform?: LayerColorTransformNode;
+  composite?: { sourceNodeId?: number; backdropNodeId?: number; mode?: 'sourceOver' | string };
+  clip?: { childNodeId?: number; clipCommands?: LayerPathCommand[]; fillRule?: string };
   sourceRangeUtf8?: LayerTextRange;
   glyphRange?: LayerTextRange;
   sourceFontRef?: LayerFontColorGlyphRef;
@@ -1823,6 +1879,8 @@ export interface LayerSvgGlyphPayload {
   sourceRangeUtf8?: LayerTextRange;
   glyphRange?: LayerTextRange;
   viewBox?: LayerBounds;
+  /** OpenType SVG의 em square와 baseline을 보존하는 producer 전용 배치. */
+  fontEmBox?: LayerBounds;
   intrinsicSize?: { width?: number; height?: number };
   staticSanitized?: boolean;
   scriptAllowed?: boolean;

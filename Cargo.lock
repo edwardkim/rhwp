@@ -1965,6 +1965,8 @@ name = "rhwp-native-ffi"
 version = "0.1.0"
 dependencies = [
  "rhwp",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

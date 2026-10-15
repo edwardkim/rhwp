@@ -8,22 +8,31 @@ pub(crate) const MAX_GLYPH_FONT_SIZE_PX: f64 = 4096.0;
 pub(crate) const MAX_PORTABLE_GLYPHS_PER_RUN: usize = 4096;
 
 pub mod builder;
+pub mod color_glyph;
 pub mod font;
 pub mod font_glyph;
 mod json;
 pub mod layer_tree;
+mod paint_bounds;
 pub mod paint_op;
 pub mod profile;
 pub mod replay_order;
 pub mod resources;
 pub mod schema;
+mod shaped_measurement;
 pub(crate) mod shaping_glyph;
 pub(crate) mod shaping_glyph_vertical;
 pub mod text_shape;
 pub mod text_v2;
+mod text_v2_export;
+mod text_v2_slots;
 pub mod text_variants;
 
 pub use builder::LayerBuilder;
+pub use color_glyph::{
+    decode_colrv0_color_layers_payload, Colrv0ColorLayersDecodeError,
+    Colrv0ColorLayersDecodeOptions,
+};
 pub use font::{
     BinaryResourceKind, BinaryResourceRef, FontBlobKey, FontBlobResource, FontDigest,
     FontExternalRef, FontFaceKey, FontFaceResource, FontFallbackPolicyId, FontInstanceKey,
@@ -45,17 +54,18 @@ pub use layer_tree::{
 };
 pub use paint_op::{
     BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, ColorGlyphFormat,
-    ColorGradientStop, ColorLayerNode, ColorLayersPayload, ColorLinearGradient,
-    ColorPaintGraphNode, ColorPaintGraphNodeKind, ColorPaintGraphPayload,
-    ColorPaintLinearGradientPathNode, ColorPaintRadialGradientPathNode, ColorPaintSolidPathNode,
-    ColorPaintSweepGradientPathNode, ColorPaintTransformNode, ColorRadialGradient,
-    ColorSweepGradient, FontColorGlyphRef, GlyphCluster, GlyphClusterFlag, GlyphOutlineFillRule,
-    GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin,
-    GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation, GlyphTransform,
-    LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint,
-    LayerPoint, LayerVector, PaintOp, PaintTextStyle, PaintVariantMeta, PaletteRef, ResolvedColor,
-    ResolvedImageKind, ResolvedImagePayload, SvgGlyphPayload, TextDecorationKind, TextRunPlacement,
-    TextVariantKind, TextVariantQuality,
+    ColorGradientStop, ColorLayerNode, ColorLayersPayload, ColorLinearGradient, ColorPaintClipNode,
+    ColorPaintCompositeMode, ColorPaintCompositeNode, ColorPaintGraphNode, ColorPaintGraphNodeKind,
+    ColorPaintGraphPayload, ColorPaintLinearGradientPathNode, ColorPaintRadialGradientPathNode,
+    ColorPaintSolidPathNode, ColorPaintSweepGradientPathNode, ColorPaintTransformNode,
+    ColorRadialGradient, ColorSweepGradient, FontColorGlyphRef, GlyphCluster, GlyphClusterFlag,
+    GlyphOutlineFillRule, GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
+    GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
+    GlyphRunOrientation, GlyphTransform, LayerAffineTransform, LayerGlyphOutlinePaint,
+    LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerPoint, LayerVector, PaintBounds, PaintOp,
+    PaintTextStyle, PaintVariantMeta, PaletteRef, ResolvedColor, ResolvedImageKind,
+    ResolvedImagePayload, SvgGlyphPayload, TextDecorationKind, TextRunPlacement, TextVariantKind,
+    TextVariantQuality,
 };
 pub use profile::RenderProfile;
 pub use replay_order::{
@@ -74,12 +84,19 @@ pub use schema::{
     PAGE_LAYER_TREE_SCHEMA_MINOR_VERSION, PAGE_LAYER_TREE_SCHEMA_VERSION, PAGE_LAYER_TREE_UNIT,
 };
 pub use text_shape::{
-    FontRequest, FontResolver, GlyphRunQuality, NoopFontResolver, ResolvedFontFace,
-    ResolvedGlyphRun, TextShapeDiagnostic, TextShapeLowerer, TextShapeReport,
+    FontRequest, FontResolver, GlyphRunQuality, JustificationMode, LineBreakChangeRisk,
+    LineBreakContextValue, LineBreakShadowReport, NoopFontResolver, ResolvedFontFace,
+    ResolvedGlyphRun, ShapedMeasurementLineReport, ShapedMeasurementPageSummary,
+    ShapedMeasurementParagraphSummary, ShapedMeasurementRunReport, TabStopSummary,
+    TableCellConstraintSummary, TextShapeDiagnostic, TextShapeLowerer, TextShapeReport,
 };
 pub use text_v2::{
     TextV2CompatibilityProfile, TextV2Diagnostics, TextV2LineBreakRisk, TextV2LineBreakRiskLevel,
     TextV2SlotDiagnostic, TextV2ValidationIssue, TextV2ValidationSeverity, TextV2VariantDiagnostic,
+};
+pub use text_v2_slots::{
+    downgrade_text_v2_op_to_v1_compat, LayerTextPaintOpV2, LayerTextVariantPart,
+    LayerTextVariantSet, TextFallbackPolicy,
 };
 pub use text_variants::{
     text_visual_replay_role, validate_text_variant_scope, TextVariantScopeError,

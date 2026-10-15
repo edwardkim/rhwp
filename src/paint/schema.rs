@@ -15,8 +15,8 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    // 23: canonical text-visual source binding, control labels, and producer-owned decoration extents.
-    schema_minor_version: 23,
+    // 25: optional derived visualBounds, independent of logical layer bounds.
+    schema_minor_version: 25,
     resource_table_version: 1,
     resource_table_minor_version: 6,
     unit: "px",
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn layer_tree_schema_constants_match_schema() {
-        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 23);
+        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 25);
         assert_eq!(LAYER_TREE_SCHEMA.resource_table_minor_version, 6);
         assert_eq!(
             LAYER_TREE_SCHEMA,

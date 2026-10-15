@@ -854,7 +854,7 @@ fn image_and_equation_control_labels_replay_as_canonical_ops() {
     let json = tree.to_json();
     assert_eq!(json.matches("\"type\":\"controlLabel\"").count(), 7);
     let json: serde_json::Value = serde_json::from_str(&json).unwrap();
-    assert_eq!(json["schemaMinorVersion"], 23);
+    assert_eq!(json["schemaMinorVersion"], 25);
     assert!(json["usedFeatures"]
         .as_array()
         .unwrap()

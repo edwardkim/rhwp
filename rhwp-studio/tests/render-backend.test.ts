@@ -258,10 +258,11 @@ test('CanvasKit translates a present missing-picture op without a profile gate',
   assert.match(source, /\.every\(Number\.isFinite\)/);
 });
 
-test('CanvasKit form replay accepts the canonical LayerTree form type names', () => {
+test('CanvasKit form replay consumes validated producer drawing rather than deriving control geometry', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(codeOnly(source), /op\.formType === 'checkBox'/);
-  assert.match(codeOnly(source), /op\.formType === 'radioButton'/);
+  assert.match(codeOnly(source), /formDrawingReplayRejection\(op\)/);
+  assert.match(codeOnly(source), /const drawing = op\.drawing!/);
+  assert.match(codeOnly(source), /x: label\.x, y: label\.baseline/);
 });
 
 test('PageLayerTree bridge verifies the returned profile instead of relabeling it', () => {
@@ -376,8 +377,10 @@ test('CanvasKit and comparison canvas bitmap extents preserve fractional page ed
   const pageRenderer = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
   const compareResult = readFileSync(new URL('../src/ui/compare-result-window.ts', import.meta.url), 'utf8');
 
-  assert.match(pageRenderer, /canvas\.width\s*=\s*Math\.max\(1,\s*Math\.ceil\(pageInfo\.width \* renderScale\)\)/);
-  assert.match(pageRenderer, /canvas\.height\s*=\s*Math\.max\(1,\s*Math\.ceil\(pageInfo\.height \* renderScale\)\)/);
+  assert.match(pageRenderer, /const width\s*=\s*Math\.max\(1,\s*Math\.ceil\(pageInfo\.width \* renderScale\)\)/);
+  assert.match(pageRenderer, /const height\s*=\s*Math\.max\(1,\s*Math\.ceil\(pageInfo\.height \* renderScale\)\)/);
+  assert.match(pageRenderer, /if \(canvas\.width !== width\) canvas\.width = width/);
+  assert.match(pageRenderer, /if \(canvas\.height !== height\) canvas\.height = height/);
   assert.match(compareResult, /canvas\.width\s*=\s*Math\.max\(1,\s*Math\.ceil\(info\.width \* scale\)\)/);
   assert.match(compareResult, /canvas\.height\s*=\s*Math\.max\(1,\s*Math\.ceil\(info\.height \* scale\)\)/);
 });
@@ -1194,7 +1197,7 @@ test('GlyphOutline payload resource keys are suppressed for incomplete payloads'
   }), null);
 });
 
-test('GlyphOutline COLRv1 gate reports unsupported graph node kind exactly', () => {
+test('GlyphOutline COLRv1 gate rejects an incomplete composite graph', () => {
   const status = glyphOutlinePayloadStatus({
     type: 'glyphOutline',
     bbox: { x: 0, y: 0, width: 10, height: 10 },
@@ -1208,7 +1211,7 @@ test('GlyphOutline COLRv1 gate reports unsupported graph node kind exactly', () 
     },
   }, { allowColrv1Stage1ColorGraph: true });
   assert.equal(status.reason, 'unsupportedColorGlyph');
-  assert.equal(status.detail, 'colrV1Node:composite');
+  assert.equal(status.detail, 'colrV1InvalidGraph');
 });
 
 test('GlyphOutline COLRv1 gradient graph subset can pass the explicit gate', () => {

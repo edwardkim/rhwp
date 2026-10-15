@@ -53,6 +53,23 @@
       "allowedEvents": ["workflow_dispatch"],
       "allowedActors": ["edwardkim"]
     },
+    ".github/workflows/native-host-package.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": ["matrix", "artifact"],
+      "requiredJobs": [
+        "Package linux-x86_64",
+        "Package macos-aarch64",
+        "Package windows-x86_64"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [
+        "rhwp-native-host-linux-x86_64",
+        "rhwp-native-host-macos-aarch64",
+        "rhwp-native-host-windows-x86_64"
+      ],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
     ".github/workflows/oracle-public-advisory.yml": {
       "executionMode": "direct",
       "sensitiveSurfaces": ["artifact"],

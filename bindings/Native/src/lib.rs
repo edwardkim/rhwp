@@ -1,6 +1,6 @@
 //! C ABI entry points for language bindings.
 //!
-//! The API mirrors the CLI `export-text` and `export-markdown` commands and
+//! The API provides text/Markdown export and opt-in direct PDF export, and
 //! returns a UTF-8 JSON result string. Call `rhwp_string_free` for every string
 //! returned from this module.
 
@@ -10,6 +10,8 @@ use std::os::raw::c_char;
 use std::path::{Path, PathBuf};
 
 use rhwp_core::wasm_api::HwpDocument;
+
+mod session;
 
 const ALL_PAGES: i32 = -1;
 
@@ -47,6 +49,29 @@ pub extern "C" fn rhwp_export_markdown(
     })
 }
 
+/// Export one zero-based page, or all pages (`-1`), to a new PDF file.
+///
+/// The symbol is available in every build. With valid arguments but without
+/// `native-skia`, it returns
+/// `{"ok":false,"code":"featureDisabled",...}` without reading or writing files.
+/// Native rendering uses the print profile and never selects the SVG backend.
+#[no_mangle]
+pub extern "C" fn rhwp_export_pdf_direct(
+    input_path: *const c_char,
+    output_file: *const c_char,
+    page: i32,
+) -> *mut c_char {
+    ffi_result(|| {
+        let input_path = read_utf8(input_path, "input_path")?;
+        let output_file = read_utf8(output_file, "output_file")?;
+        export_pdf_direct_to_file(
+            Path::new(&input_path),
+            Path::new(&output_file),
+            normalize_page(page)?,
+        )
+    })
+}
+
 #[no_mangle]
 pub extern "C" fn rhwp_read_text(input_path: *const c_char, page: i32) -> *mut c_char {
     ffi_result(|| {
@@ -59,8 +84,8 @@ pub extern "C" fn rhwp_read_text(input_path: *const c_char, page: i32) -> *mut c
 ///
 /// # Safety
 ///
-/// `ptr` 은 이 모듈의 `rhwp_export_text`·`rhwp_export_markdown`·`rhwp_read_text` 가
-/// 돌려준 포인터이거나 널이어야 한다. 다른 할당자에서 온 포인터를 넘기거나 같은
+/// `ptr`은 이 라이브러리의 export/read 또는 `rhwp_session_*` 함수가 반환한 JSON
+/// 문자열 포인터이거나 널이어야 한다. 다른 할당자에서 온 포인터를 넘기거나 같은
 /// 포인터를 두 번 넘기면 정의되지 않은 동작이다.
 ///
 /// C ABI 심볼은 바뀌지 않으므로 C#·Swift 등 호출 측 선언은 그대로 쓸 수 있다.
@@ -73,6 +98,104 @@ pub unsafe extern "C" fn rhwp_string_free(ptr: *mut c_char) {
     unsafe {
         drop(CString::from_raw(ptr));
     }
+}
+
+#[cfg(not(feature = "native-skia"))]
+fn export_pdf_direct_to_file(
+    _input_path: &Path,
+    _output_file: &Path,
+    _target_page: Option<u32>,
+) -> Result<String, String> {
+    Ok(concat!(
+        "{\"ok\":false,\"code\":\"featureDisabled\",",
+        "\"error\":\"Direct PDF export requires the native-skia feature.\"}"
+    )
+    .to_string())
+}
+
+#[cfg(feature = "native-skia")]
+fn export_pdf_direct_to_file(
+    input_path: &Path,
+    output_file: &Path,
+    target_page: Option<u32>,
+) -> Result<String, String> {
+    use std::io::{Read, Write};
+
+    use rhwp_core::paint::RenderProfile;
+    use rhwp_core::renderer::pdf::DirectPdfExportOptions;
+
+    const MAX_INPUT_BYTES: u64 = 128 * 1024 * 1024;
+    const MAX_SELECTED_PAGES: u32 = 256;
+
+    // Reject ordinary non-file paths before open (a FIFO could otherwise block).
+    // Recheck the opened handle below; this does not promise race-free path lookup.
+    let path_metadata = fs::metadata(input_path).map_err(|e| {
+        format!(
+            "PDF input metadata failed - {}: {}",
+            input_path.display(),
+            e
+        )
+    })?;
+    if !path_metadata.is_file() {
+        return Err("PDF input must be a regular file.".to_string());
+    }
+    let input = fs::File::open(input_path)
+        .map_err(|e| format!("PDF input read failed - {}: {}", input_path.display(), e))?;
+    let metadata = input
+        .metadata()
+        .map_err(|e| format!("PDF input metadata failed: {}", e))?;
+    if !metadata.is_file() {
+        return Err("PDF input must be a regular file.".to_string());
+    }
+    if metadata.len() > MAX_INPUT_BYTES {
+        return Err("PDF input exceeds the 128 MiB limit.".to_string());
+    }
+    let mut data = Vec::new();
+    input
+        .take(MAX_INPUT_BYTES + 1)
+        .read_to_end(&mut data)
+        .map_err(|e| format!("PDF input read failed: {}", e))?;
+    if data.len() as u64 > MAX_INPUT_BYTES {
+        return Err("PDF input exceeds the 128 MiB limit.".to_string());
+    }
+    let doc =
+        HwpDocument::from_bytes(&data).map_err(|e| format!("PDF input parse failed: {}", e))?;
+    let page_count = doc.page_count();
+    if target_page.is_none() && page_count > MAX_SELECTED_PAGES {
+        return Err("Direct PDF export exceeds the 256 selected-page limit.".to_string());
+    }
+    let pages = select_pages(page_count, target_page)?;
+    let pdf = doc
+        .render_pages_pdf_direct_native_with_profile_and_options(
+            &pages,
+            RenderProfile::Print,
+            &DirectPdfExportOptions::default(),
+        )
+        .map_err(|e| format!("Direct PDF rendering failed: {}", e))?;
+
+    // Preflight and recording of every selected page have completed. Never
+    // truncate an existing file, including input aliases, symlinks or hard links.
+    let mut output = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(output_file)
+        .map_err(|e| {
+            format!(
+                "PDF destination must be a new file - {}: {}",
+                output_file.display(),
+                e
+            )
+        })?;
+    if let Err(error) = output.write_all(&pdf) {
+        drop(output);
+        let _ = fs::remove_file(output_file);
+        return Err(format!(
+            "PDF write failed - {}: {}",
+            output_file.display(),
+            error
+        ));
+    }
+    Ok(success_json(page_count, &[output_file.to_path_buf()], None))
 }
 
 fn export_text_to_dir(

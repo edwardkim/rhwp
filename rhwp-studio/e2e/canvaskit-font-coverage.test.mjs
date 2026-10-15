@@ -207,17 +207,35 @@ const oversizedResourceTableStatus = glyphRunFontCache.replayStatus(glyphRunOp, 
 assert.equal(oversizedResourceTableStatus.replayable, false);
 assert.equal(oversizedResourceTableStatus.reason, 'fontResourceTableTooLarge');
 
+// P46 admits proven horizontal synthetic instances; malformed instance metadata
+// still fails before selection. This checks admission only, without changing pixels.
+for (const [syntheticBold, syntheticItalic] of [[true, false], [false, true], [true, true]]) {
+  const run = {
+    ...glyphRunOp,
+    shapeKey: { ...glyphRunOp.shapeKey,
+      fontInstance: { ...glyphRunOp.shapeKey.fontInstance, syntheticBold, syntheticItalic } },
+  };
+  assert.equal(glyphRunFontCache.replayStatus(run, glyphRunFontResources).replayable, true,
+    'proven horizontal synthetic instances should be eligible for strict GlyphRun selection');
+  const fallback = { type: 'textRun', bbox: glyphRunOp.bbox, text: '\uE104', variant: {
+    equivalenceGroup: run.variant.equivalenceGroup, variantId: 'textRun', variantKind: 'textRun',
+    isDefaultFallback: true,
+  } };
+  assert.deepEqual([...selectLayerTextVariantsForLeaf([fallback, run], () => false,
+    op => glyphRunFontCache.replayStatus(op, glyphRunFontResources).replayable)], [run]);
+}
+
 for (const [name, mutate, expectedReason] of [
   [
-    'synthetic',
+    'synthetic-malformed',
     op => ({
       ...op,
       shapeKey: {
         ...op.shapeKey,
-        fontInstance: { ...op.shapeKey.fontInstance, syntheticBold: true },
+        fontInstance: { ...op.shapeKey.fontInstance, syntheticBold: 'true' },
       },
     }),
-    'syntheticStyleAuthorityPending',
+    'syntheticStyleMalformed',
   ],
   [
     'bidi-direction',

@@ -85,7 +85,7 @@ fn validate_direct_pdf_tree(
     use crate::model::image::ImageEffect;
     use crate::paint::{LayerNode, LayerNodeKind, PaintOp};
     use crate::renderer::render_tree::{BoundingBox, ShapeTransform};
-    use crate::renderer::{ArrowStyle, LineRenderType, PathCommand, ShapeStyle};
+    use crate::renderer::{ArrowStyle, GradientFillInfo, LineRenderType, PathCommand, ShapeStyle};
 
     fn is_valid_skia_scalar(value: f64) -> bool {
         value.is_finite() && value.abs() <= f32::MAX as f64
@@ -127,14 +127,118 @@ fn validate_direct_pdf_tree(
         Ok(())
     }
 
-    fn validate_shape_style(
-        style: &ShapeStyle,
-        has_gradient: bool,
+    fn validate_linear_gradient(
+        gradient: &GradientFillInfo,
+        bbox: BoundingBox,
         page_index: usize,
         op: &str,
     ) -> Result<(), String> {
-        if has_gradient {
-            return Err(unsupported(page_index, op, "gradient fill"));
+        if gradient.gradient_type != 1 {
+            return Err(unsupported(page_index, op, "non-linear gradient fill"));
+        }
+        if !(2..=4096).contains(&gradient.colors.len()) {
+            return Err(unsupported(
+                page_index,
+                op,
+                "gradient color count outside 2..=4096",
+            ));
+        }
+        // Empty positions explicitly request evenly spaced colors. Every
+        // supplied position must be usable unchanged before the shared
+        // source-center expansion; malformed stops are not PDF admission.
+        if !gradient.positions.is_empty()
+            && (gradient.positions.len() != gradient.colors.len()
+                || gradient
+                    .positions
+                    .iter()
+                    .any(|position| !position.is_finite() || !(0.0..=1.0).contains(position))
+                || gradient.positions.windows(2).any(|pair| pair[0] > pair[1]))
+        {
+            return Err(unsupported(
+                page_index,
+                op,
+                "invalid gradient stop positions",
+            ));
+        }
+
+        // Validate the same f32 rectangle consumed by Native. The shader's
+        // common axis and source-center expansion use the original f64 bbox.
+        // Finite f64 components alone do not prove finite edges, nonempty
+        // replay bounds, or distinct shader endpoints after conversion.
+        let bounds = skia_safe::Rect::from_xywh(
+            bbox.x as f32,
+            bbox.y as f32,
+            bbox.width as f32,
+            bbox.height as f32,
+        );
+        if !bounds.is_finite()
+            || bounds.is_empty()
+            || !bounds.width().is_finite()
+            || !bounds.height().is_finite()
+        {
+            return Err(unsupported(
+                page_index,
+                op,
+                "invalid gradient replay bounds",
+            ));
+        }
+        let (colors, positions) = crate::renderer::linear_gradient_color_stops(
+            gradient,
+            bbox.x,
+            bbox.y,
+            bbox.width,
+            bbox.height,
+        );
+        // Keep the 4096-source-color contract. A center inside the box can
+        // produce two ramps, so the actual shader is bounded to 8192 stops.
+        if colors.len() < 2
+            || colors.len() > 8192
+            || colors.len() != positions.len()
+            || positions
+                .iter()
+                .any(|position| !position.is_finite() || !(0.0..=1.0).contains(position))
+            || positions.windows(2).any(|pair| pair[0] > pair[1])
+        {
+            return Err(unsupported(
+                page_index,
+                op,
+                "invalid expanded gradient stop positions",
+            ));
+        }
+        let (x1, y1, x2, y2) = crate::renderer::linear_gradient_axis(
+            gradient.angle,
+            bbox.x,
+            bbox.y,
+            bbox.width,
+            bbox.height,
+        );
+        if [x1, y1, x2, y2]
+            .into_iter()
+            .any(|value| !is_valid_skia_scalar(value))
+        {
+            return Err(unsupported(page_index, op, "invalid gradient axis"));
+        }
+        let dx = x2 as f32 - x1 as f32;
+        let dy = y2 as f32 - y1 as f32;
+        let length_squared = dx * dx + dy * dy;
+        // This initial vector subset requires at least one CSS pixel of axis
+        // and finite f32 squared length. It excludes numerically tiny/huge
+        // shaders rather than relying on Native's solid-color fallback.
+        if !length_squared.is_finite() || length_squared < 1.0 {
+            return Err(unsupported(page_index, op, "invalid gradient axis"));
+        }
+        Ok(())
+    }
+
+    fn validate_shape_style(
+        style: &ShapeStyle,
+        gradient: Option<&GradientFillInfo>,
+        bbox: BoundingBox,
+        page_index: usize,
+        op: &str,
+    ) -> Result<(), String> {
+        if let Some(gradient) = gradient {
+            validate_linear_gradient(gradient, bbox, page_index, op)?;
         }
         if style.pattern.is_some() {
             return Err(unsupported(page_index, op, "pattern fill"));
@@ -199,13 +303,14 @@ fn validate_direct_pdf_tree(
                 for op in ops {
                     validate_bbox(op.bounds(), page_index, "paint operation")?;
                     match op {
-                        PaintOp::PageBackground { background, .. } => {
-                            if background.gradient.is_some() {
-                                return Err(unsupported(
+                        PaintOp::PageBackground { bbox, background } => {
+                            if let Some(gradient) = background.gradient.as_deref() {
+                                validate_linear_gradient(
+                                    gradient,
+                                    *bbox,
                                     page_index,
                                     "page background",
-                                    "gradient fill",
-                                ));
+                                )?;
                             }
                             if !is_valid_skia_scalar(background.border_width)
                                 || background.border_width < 0.0
@@ -261,7 +366,7 @@ fn validate_direct_pdf_tree(
                                 ));
                             }
                         }
-                        PaintOp::Rectangle { rect, .. } => {
+                        PaintOp::Rectangle { bbox, rect } => {
                             validate_transform(rect.transform, page_index, "rectangle")?;
                             if !is_valid_skia_scalar(rect.corner_radius) || rect.corner_radius < 0.0
                             {
@@ -272,25 +377,28 @@ fn validate_direct_pdf_tree(
                             }
                             validate_shape_style(
                                 &rect.style,
-                                rect.gradient.is_some(),
+                                rect.gradient.as_deref(),
+                                *bbox,
                                 page_index,
                                 "rectangle",
                             )?;
                         }
-                        PaintOp::Ellipse { ellipse, .. } => {
+                        PaintOp::Ellipse { bbox, ellipse } => {
                             validate_transform(ellipse.transform, page_index, "ellipse")?;
                             validate_shape_style(
                                 &ellipse.style,
-                                ellipse.gradient.is_some(),
+                                ellipse.gradient.as_deref(),
+                                *bbox,
                                 page_index,
                                 "ellipse",
                             )?;
                         }
-                        PaintOp::Path { path, .. } => {
+                        PaintOp::Path { bbox, path } => {
                             validate_transform(path.transform, page_index, "path")?;
                             validate_shape_style(
                                 &path.style,
-                                path.gradient.is_some(),
+                                path.gradient.as_deref(),
+                                *bbox,
                                 page_index,
                                 "path",
                             )?;
@@ -1862,7 +1970,7 @@ endbfchar <DB80DEB1>";
 
         let bbox = BoundingBox::new(0.0, 0.0, 96.0, 96.0);
         let gradient = GradientFillInfo {
-            gradient_type: 1,
+            gradient_type: 2,
             angle: 0,
             center_x: 50,
             center_y: 50,

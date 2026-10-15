@@ -477,15 +477,15 @@ async function updateLoadProgress(percent: number, label: string): Promise<void>
  * face는 prepareCanvasKitDocument에서 먼저 준비하고, 여기서는 문서 전체 face 및 사용자가
  * 새로 승인한 local face를 보충한 뒤 현재 뷰만 다시 그린다.
  */
-function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined): void {
+function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined, refresh = false): void {
   const renderer = canvasView?.getRenderBackend() === 'canvaskit'
     ? rendererSession?.getCanvasKitRenderer() ?? null
     : null;
-  if (!renderer || !fontNames?.length) return;
-  const requestedFonts = [...fontNames];
+  if (!renderer || (!fontNames?.length && !refresh)) return;
+  const requestedFonts = [...(fontNames ?? [])];
   void (async () => {
     await loadStoredLocalFonts();
-    await renderer.prepareLocalFonts(requestedFonts);
+    await renderer.prepareLocalFonts(requestedFonts, { refresh });
     if (
       renderer === rendererSession?.getCanvasKitRenderer()
       && canvasView?.getRenderBackend() === 'canvaskit'
@@ -1213,7 +1213,7 @@ function setupEventListeners(): void {
 
     if (canvasView.getRenderBackend() === 'canvaskit') {
       // CanvasKit은 browser CSS를 쓰지 않으므로 local SFNT 준비가 끝난 뒤 helper가 한 번 갱신한다.
-      prepareCanvasKitLocalFonts(currentDocumentFonts);
+      prepareCanvasKitLocalFonts(currentDocumentFonts, true);
       return;
     }
     // Canvas2D는 Rust layout과 문서를 다시 열지 않고 현재 보이는 view만 새 family chain으로 그린다.

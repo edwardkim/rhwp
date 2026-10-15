@@ -46,6 +46,7 @@
     "e2e:ime-navigation": "node e2e/run-with-vite.mjs -- node e2e/ime-navigation.test.mjs --mode=headless",
     "e2e:drag-autoscroll": "node e2e/drag-selection-autoscroll.test.mjs",
     "e2e:renderer-contract": "node e2e/renderer-contract.test.mjs",
+    "e2e:layer-export-issue536": "node e2e/layer-export-issue536.test.mjs",
     "e2e:canvas-metric-recovery": "node e2e/canvas-metric-recovery.test.mjs",
     "e2e:middle-dot-canvas-paint": "node e2e/run-with-vite.mjs -- node e2e/middle-dot-canvas-paint.test.mjs --mode=headless",
     "e2e:issue-4430-content-loss": "node e2e/content-loss-save-issue4430.test.mjs --mode=headless",
@@ -87,7 +88,8 @@
     "e2e:issue-6557-merged-row": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-row-boundary-drag.test.mjs --mode=headless",
     "e2e:issue-7403-canvas2d": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless --renderer=canvas2d",
     "e2e:issue-7403": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless",
-    "e2e:select-all-cmd-a": "node e2e/run-with-vite.mjs -- node e2e/select-all-cmd-a.test.mjs --mode=headless"
+    "e2e:select-all-cmd-a": "node e2e/run-with-vite.mjs -- node e2e/select-all-cmd-a.test.mjs --mode=headless",
+    "e2e:glyph-outline-portable-geometry": "node e2e/run-with-vite.mjs -- node e2e/glyph-outline-portable-geometry.test.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.3.4",

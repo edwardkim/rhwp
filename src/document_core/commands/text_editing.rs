@@ -1266,11 +1266,20 @@ impl DocumentCore {
     /// [#4180] 문서 캐럿 메타데이터 스탬핑의 유일한 쓰기 지점 — doc_properties
     /// (재직렬화 경로)와 raw_stream(passthrough 경로) 양쪽에 반영한다.
     pub(crate) fn stamp_caret(&mut self, sec: u32, para: u32, caret_utf16: u32) {
-        self.document.doc_properties.caret_list_id = sec;
-        self.document.doc_properties.caret_para_id = para;
-        self.document.doc_properties.caret_char_pos = caret_utf16;
+        Self::stamp_document_caret(&mut self.document, sec, para, caret_utf16);
+    }
+
+    fn stamp_document_caret(
+        document: &mut crate::model::document::Document,
+        sec: u32,
+        para: u32,
+        caret_utf16: u32,
+    ) {
+        document.doc_properties.caret_list_id = sec;
+        document.doc_properties.caret_para_id = para;
+        document.doc_properties.caret_char_pos = caret_utf16;
         // DocInfo raw_stream 내 캐럿 위치만 surgical update (전체 재직렬화 방지)
-        if let Some(ref mut raw) = self.document.doc_info.raw_stream {
+        if let Some(ref mut raw) = document.doc_info.raw_stream {
             let _ = crate::serializer::doc_info::surgical_update_caret(raw, sec, para, caret_utf16);
         }
     }
@@ -1286,8 +1295,18 @@ impl DocumentCore {
         para_idx: usize,
         char_idx: usize,
     ) {
-        let Some(para) = self
-            .document
+        Self::set_document_caret_position(&mut self.document, section_idx, para_idx, char_idx);
+    }
+
+    /// Use the same scalar-to-UTF16/raw DocInfo contract on an export snapshot.
+    /// The caller validates its address; legacy out-of-range behavior is retained.
+    pub(crate) fn set_document_caret_position(
+        document: &mut crate::model::document::Document,
+        section_idx: usize,
+        para_idx: usize,
+        char_idx: usize,
+    ) {
+        let Some(para) = document
             .sections
             .get(section_idx)
             .and_then(|s| s.paragraphs.get(para_idx))
@@ -1295,7 +1314,7 @@ impl DocumentCore {
             return;
         };
         let caret_utf16 = Self::caret_utf16_at(para, char_idx);
-        self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16);
+        Self::stamp_document_caret(document, section_idx as u32, para_idx as u32, caret_utf16);
     }
 
     pub fn insert_text_native(

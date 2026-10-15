@@ -16,6 +16,8 @@ pub mod eps;
 pub mod error;
 pub use rhwp_contracts::ir_schema;
 pub mod model;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod native_host;
 pub mod ole_chart;
 pub use rhwp_contracts::ontology;
 pub use rhwp_ooxml_chart as ooxml_chart;

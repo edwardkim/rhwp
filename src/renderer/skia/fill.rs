@@ -1,8 +1,8 @@
-//! 사각형 BorderFill의 좌표와 색상 stop을 Native shader로 소비한다.
+//! BorderFill의 좌표와 색상 stop을 모든 Native shape shader가 공유한다.
 
 use skia_safe::{
     gradient::{shaders, Colors, Gradient, Interpolation},
-    paint, Color4f, Paint, TileMode,
+    paint, Color4f, Paint, Rect, TileMode,
 };
 
 use crate::renderer::{render_tree::BoundingBox, GradientFillInfo};
@@ -12,7 +12,17 @@ pub(super) fn gradient_paint(
     bounds: &BoundingBox,
     opacity: f64,
 ) -> Option<Paint> {
-    if gradient.colors.len() < 2 || bounds.width <= 0.0 || bounds.height <= 0.0 {
+    let replay_bounds = Rect::from_xywh(
+        bounds.x as f32,
+        bounds.y as f32,
+        bounds.width as f32,
+        bounds.height as f32,
+    );
+    if gradient.colors.len() < 2
+        || gradient.colors.len() > 4096
+        || !replay_bounds.is_finite()
+        || replay_bounds.is_empty()
+    {
         return None;
     }
     let (source_colors, positions) = crate::renderer::linear_gradient_color_stops(

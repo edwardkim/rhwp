@@ -49,6 +49,9 @@ mod render_patch_boundary;
 mod table_cell_bboxes;
 mod template_automation;
 
+#[cfg(target_arch = "wasm32")]
+mod layer_export;
+
 impl From<HwpError> for JsValue {
     fn from(err: HwpError) -> Self {
         JsValue::from_str(&err.to_string())

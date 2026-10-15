@@ -26,6 +26,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `canvaskit-font-coverage.test.mjs` | 상시 | active | CanvasKit 번들 폰트와 exact TTC GlyphRun 등록/픽셀 replay 검증 | — | npm+CI |  |
 | `canvaskit-font-preparation-issue7688.test.mjs` | 상시 | active | #7688 명시 CanvasKit의 문서 글꼴 준비·Regular/Bold 실제 outline 선택·자원 실패 Canvas2D fallback | group-drawing-02.hwp, 번들 NotoSerifKR | npm e2e:issue-7688-fonts | software surface, 두 face 공급 순서와 screen/print 대조 |
 | `canvaskit-cropped-contain.test.mjs` | 상시 | active | #7235 crop 이후 이미지 비율과 letterbox의 실제 CanvasKit replay 검사 | 합성 이미지 | 수동 | run-with-vite.mjs 경유 |
+| `glyph-outline-portable-geometry.test.mjs` | 상시 | active | #536 strict outline의 유효 좌표 replay와 f32 범위 초과 시 전체 TextRun fallback 픽셀 보존 | 합성 outline·TextRun | npm e2e:glyph-outline-portable-geometry | Chromium software CanvasKit, run-with-vite.mjs 경유 |
 | `issue-7442-nested-table-pointer.test.mjs` | 상시 | active | #7442 F5 선택 후 드래그·일반 hover/resize·Undo·블록 선택·외곽선 클릭 | basic/issue1994_behindtext_table_20200830.hwp | 수동 | fresh WASM 필수 |
 | `issue-6806-zero-shape-resize-undo.test.mjs` | 상시 | active | #6806 저장 높이 0 도형의 실제 WASM 리사이즈·Studio undo/redo | issue6023/30269_reform_recommendation.hwp | 수동 | 기존 누락 항목 등록 |
 | `issue-7333-line-selection.test.mjs` | 상시 | active | #7333 넓은 도형 위 화살표 실클릭 선택과 z-order·undo 무변경 검사 | issue7333/aaaaaa.hwp | npm e2e:issue-7333-line |  |
@@ -52,6 +53,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `export-hwpx.test.mjs` | 상시 | active | Issue #557 — npm/editor RPC + Wrapper 에 exportHwpx / exportHwpVeri | — | 수동 |  |
 | `footnote-delete-confirm.test.mjs` | 상시 | active | #598 본문 각주 삭제 확인창/취소/Undo | footnote-01.hwp | 수동 |  |
 | `footnote-insert.test.mjs` | 상시 | active | footnote-01.hwp 각주 삽입 시 문단 위치 이상 확인 | footnote-01.hwp | 수동 |  |
+| `footnote-marker-replay-contract.mjs` | 유틸 | active | 각주 표식의 줄 내부 기준선과 fallback 계약 | — | 수동 | `renderer-contract.test.mjs`에서 import |
 | `footnote-vpos.test.mjs` | 상시 | active | footnote-01.hwp "원료를" 뒤 스페이스 입력 시 문단 위치 이상 / WASM API 직접 호출로 정확한 재 | footnote-01.hwp | 수동 |  |
 | `form-control.test.mjs` | 상시 | active | 양식 컨트롤 — 셀 커서 진입(#111) + 체크박스 클릭 토글(#112) | form-002.hwpx | 수동 |  |
 | `find-count-edit-refresh.test.mjs` | 상시 | active | #7485 일반 입력·삭제·undo/redo 개수 갱신 1회, 커서 보존과 닫힌 창 검색 0회 | 합성 새 문서 foo foo | 수동 | 실제 Studio 키 이벤트·최적화 WASM |
@@ -92,6 +94,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-4272-nested-table-object-copy.test.mjs` | 상시 | active | #4272 물리 5쪽 3중 중첩 표 객체 선택의 owner path·control index 분리와 Ctrl+C 검증 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272-table-copy | `output/4272/nested-table-object-copy.{json,png}` |
 | `issue-4272-nested-cell-text-selection.test.mjs` | 상시 | active | #4272 중첩 표 안쪽 셀의 전체 cellPath 선택 rect, 실제 마우스 드래그와 Ctrl+C/V | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272 | 물리 5쪽 `23,504`, `output/4272/nested-cell-*.{json,png}` |
 | `issue-536-boxed-pua-canvas2d.test.mjs` | 상시 | active | #536 실제 HWP의 사각 안 숫자 PUA를 기본 Canvas2D가 결정적으로 합성 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-536 | #4122 17쪽 pagination stack 계약 포함 |
+| `layer-export-issue536.test.mjs` | 상시 | active | #536 JSON/value·v2 compat/strict export, font/image byte 생략 4조합, content-key 재조회·입력 변이 격리·편집 후 자원 계약 | test-image.hwpx, render-p35-font-native-bitmap.hwpx, para-001.hwp | npm e2e:layer-export-issue536 | fresh WASM 필수, Chromium·임시 Vite 자체 기동, 비시각 API 검사 |
 | `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache·편람 383쪽 계약 검증 | 2025 행정업무운영 편람(최종).hwp | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
 | `issue-595.test.mjs` | 진단 | hold | 시험지 회귀 실행 제거·파일 보존 | exam_math.hwp | — | legacy-name · 사용자 지시로 실행 진입점 제거 |
 | `issue-6099-probe.mjs` | 진단 | active | #6099 90° 회전 그림 DOM frame/img 실측과 스크린샷 생성 프로브 | samples 하위 지정 파일 | 수동 | legacy-name · 일회성 실측 프로브 |
@@ -118,6 +121,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `pr2260-vscode-zoom-menu.test.mjs` | 상시 | active | [PR #2260 검증] rhwp-vscode 배율 메뉴 — 호스트 Chrome CDP 로 webview 하네스 구동. | — | 수동 |  |
 | `issue-4224-pua-f02fb-small-right-triangle-canvas2d.test.mjs` | 상시 | active | #4224 한컴 문자표 U+F02FB 일반 TextRun을 작은 오른쪽 방향 삼각형으로 Canvas2D 투영 | basic/pau-004.hwp | npm e2e:issue-4224 | raw IR 보존·공개 글꼴 tofu 차단 |
 | `renderer-baseline-native-diff.mjs` | 유틸 | active | 렌더러 baseline — studio vs native 산출 대조 | — | CI |  |
+| `pattern-image-replay-api.mjs` | 유틸 | active | CanvasKit 이미지·반복 shader API 계약 모형 | — | 수동 | `renderer-contract.test.mjs`에서 import |
 | `renderer-baseline-contract.mjs` | 유틸 | active | CanvasKit runtime 실패 진단 정규화 helper | — | 수동 | `renderer-baseline.mjs`에서 import |
 | `renderer-baseline.mjs` | 유틸 | active | 렌더러 baseline 스윕 러너 (manifest 기반 다문서 측정) | — | npm+CI |  |
 | `renderer-contract.test.mjs` | 상시 | active | 렌더러 백엔드 계약 검증 (plane/replay 정합) | — | npm+CI |  |

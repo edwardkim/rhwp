@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -480,6 +481,7 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         ".github/workflows/codeql.yml",
         ".github/workflows/deploy-pages.yml",
         ".github/workflows/gym-release-gate.yml",
+        ".github/workflows/native-host-package.yml",
         ".github/workflows/oracle-public-advisory.yml",
         ".github/workflows/proptest-roundtrip.yml",
         ".github/workflows/release-binary.yml",
@@ -533,6 +535,89 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
                 rejected = verify(invalid)
                 self.assertFalse(rejected["ok"])
                 self.assertIn("Analyze (actions)", "\n".join(rejected["errors"]))
+
+    def test_native_host_packaging_is_manual_read_only_and_sha_pinned(self) -> None:
+        workflow = (REPO_ROOT / ".github/workflows/native-host-package.yml").read_text()
+        trigger = workflow.split("permissions:", 1)[0]
+        self.assertEqual(re.findall(r"^  ([a-z_]+):", trigger, re.M), ["workflow_dispatch"])
+        permissions = workflow.split("permissions:\n", 1)[1].split("\nconcurrency:", 1)[0]
+        self.assertEqual(permissions.strip(), "contents: read")
+        self.assertNotRegex(workflow, r"(?m)^\s+[a-z-]+: write$")
+        self.assertNotIn("secrets.", workflow)
+        self.assertIn("ref: ${{ github.sha }}", workflow)
+        self.assertIn("persist-credentials: false", workflow)
+        actions = re.findall(r"uses: ([^\s#]+)", workflow)
+        self.assertEqual(len(actions), 4)
+        for action in actions:
+            self.assertRegex(action, r"^[\w-]+/[\w-]+@[0-9a-f]{40}$")
+        self.assertIn("cancel-in-progress: false", workflow)
+        self.assertIn("timeout-minutes: 60", workflow)
+
+    def test_native_host_packaging_policy_matches_matrix_and_artifacts(self) -> None:
+        path = ".github/workflows/native-host-package.yml"
+        workflow = (REPO_ROOT / path).read_text()
+        platforms = ["linux-x86_64", "macos-aarch64", "windows-x86_64"]
+        self.assertEqual(re.findall(r"- platform: ([\w-]+)", workflow), platforms)
+        self.assertEqual(re.findall(r"\n\s+target: ([\w-]+)", workflow), [
+            "x86_64-unknown-linux-gnu", "aarch64-apple-darwin", "x86_64-pc-windows-msvc",
+        ])
+        entry = self.policy["workflows"][path]
+        self.assertEqual(entry["executionMode"], "direct")
+        self.assertEqual(entry["allowedEvents"], ["workflow_dispatch"])
+        self.assertEqual(entry["allowedActors"], ["edwardkim"])
+        self.assertEqual(entry["requiredJobs"], [f"Package {platform}" for platform in platforms])
+        self.assertEqual(entry["requiredArtifacts"], [f"rhwp-native-host-{platform}" for platform in platforms])
+        self.assertEqual(entry["requiredSkippedJobs"], [])
+        self.assertIn("name: Package ${{ matrix.platform }}", workflow)
+        self.assertIn("name: rhwp-native-host-${{ matrix.platform }}\n", workflow)
+        self.assertIn("if-no-files-found: error", workflow)
+        self.assertIn("retention-days: 7", workflow)
+        self.assertIn("cargo build --locked --release -p rhwp-native-ffi --features native-skia", workflow)
+        self.assertIn('--source-revision "$GITHUB_SHA"', workflow)
+        self.assertIn("--probe-library", workflow)
+        self.assertIn('/run.py" headless', workflow)
+        self.assertIn("python bindings/Native/tests/package_native_host_contract.py", workflow)
+
+    def test_native_host_promotion_requires_all_platform_jobs_and_artifacts_at_exact_head(self) -> None:
+        path = ".github/workflows/native-host-package.yml"
+        digest = hashlib.sha256((REPO_ROOT / path).read_bytes()).hexdigest()
+        inventory = {
+            "schemaVersion": 1, "baseSha": "a" * 40, "candidateSha": "b" * 40,
+            "entries": [{"path": path, "classification": "executable",
+                         "after": {"sha256": digest}, "riskAxes": ["matrix", "artifact"]}],
+            "policyViolations": [],
+        }
+        inventory["inventorySha256"] = canonical_sha256(inventory)
+        enriched = MODULE.apply_execution_policy(inventory, self.policy)
+        entry = self.policy["workflows"][path]
+        run = {
+            "id": 42, "url": "https://github.com/edwardkim/rhwp/actions/runs/42",
+            "path": path, "event": "workflow_dispatch", "actor": "edwardkim", "executionMode": "direct",
+            "headSha": "b" * 40, "workflowSha256": digest, "paginationComplete": True,
+            "status": "completed", "conclusion": "success",
+            "jobs": [{"name": name, "status": "completed", "conclusion": "success"}
+                     for name in entry["requiredJobs"]],
+            "artifacts": [{"name": name} for name in entry["requiredArtifacts"]],
+        }
+
+        def verify(candidate_run: dict) -> dict:
+            return MODULE.verify_evidence(
+                enriched, [candidate_run], [], now=datetime(2026, 10, 15, tzinfo=UTC),
+                trusted_maintainers=frozenset({"edwardkim"}),
+            )
+
+        self.assertTrue(verify(run)["ok"])
+        for artifact in entry["requiredArtifacts"]:
+            missing = {**run, "artifacts": [item for item in run["artifacts"] if item["name"] != artifact]}
+            self.assertIn(f"missing-artifact:{artifact}", verify(missing)["errors"])
+        for job in entry["requiredJobs"]:
+            failed = {**run, "jobs": [
+                {**item, "conclusion": "skipped"} if item["name"] == job else item
+                for item in run["jobs"]
+            ]}
+            self.assertIn(f"job-not-green:{job}:skipped", verify(failed)["errors"])
+        for changes in ({"event": "push"}, {"headSha": "c" * 40}, {"workflowSha256": "d" * 64}):
+            self.assertFalse(verify({**run, **changes})["ok"])
 
     def test_policy_covers_baseline_and_is_bound_to_inventory_hash(self) -> None:
         self.assertEqual(set(self.policy["workflows"]), self.expected_workflows)

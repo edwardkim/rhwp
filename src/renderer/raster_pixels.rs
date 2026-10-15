@@ -22,6 +22,32 @@ pub struct RasterPixels {
     pub dpi: Option<f64>,
 }
 
+/// A region in logical page coordinates. Scale belongs to `RasterRenderOptions`;
+/// the caller combines zoom and device pixel ratio before rendering.
+///
+/// Negative origins and regions outside the page are allowed. The renderer
+/// returns the enclosing integer pixel window: floor(left/top * scale) through
+/// ceil(right/bottom * scale), without resampling a full-page bitmap.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct RasterRegion {
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+}
+
+/// RGBA pixels and their integer origin on the scaled full-page pixel grid.
+///
+/// `pixels.width`/`height` are the enclosing window size, which can be larger
+/// than the requested logical size after rounding. Outside the full page's
+/// integer raster bounds, pixels retain the requested background/clear color.
+#[derive(Debug, Clone, PartialEq)]
+pub struct RasterRegionPixels {
+    pub pixels: RasterPixels,
+    pub origin_x: i32,
+    pub origin_y: i32,
+}
+
 impl RasterPixels {
     pub fn validate(&self) -> LayerRenderResult<()> {
         let invalid =

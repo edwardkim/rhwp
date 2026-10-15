@@ -1,5 +1,7 @@
 const PNG_SIGNATURE: &[u8; 8] = b"\x89PNG\r\n\x1a\n";
 
+mod svg;
+
 pub(crate) const CANVASKIT_MAX_IMAGE_DIMENSION: u32 = 8192;
 pub(crate) const CANVASKIT_MAX_IMAGE_PIXELS: u64 = 32 * 1024 * 1024;
 
@@ -10,6 +12,7 @@ pub(crate) enum CanvasKitEncodedImageFormat {
     Gif,
     WebP,
     Bmp,
+    Svg,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,6 +37,7 @@ pub(crate) fn canvaskit_encoded_image_header(bytes: &[u8]) -> Option<CanvasKitEn
         .or_else(|| parse_webp_header(bytes))
         .or_else(|| parse_bmp_header(bytes))
         .or_else(|| parse_jpeg_header(bytes))
+        .or_else(|| svg::parse_header(bytes))
 }
 
 fn parse_png_header(bytes: &[u8]) -> Option<CanvasKitEncodedImageHeader> {

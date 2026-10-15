@@ -14,17 +14,19 @@ use crate::renderer::layout::{
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, TextStyle};
 
+use super::font_catalog::TypefaceCatalog;
 use super::font_lookup::{
-    legacy_typeface_for_style, match_system_family_style, select_typeface_for_character,
-    text_typeface_candidates, SuppliedTypefaces, SystemFontFamilies,
+    font_style_for_text, legacy_typeface_for_style, match_system_family_style,
+    select_typeface_for_character, text_typeface_candidates, SystemFontFamilies,
 };
 use super::renderer::colorref_to_skia;
 
 pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
     pub(super) font_mgr: &'a FontMgr,
-    pub(super) custom_typefaces: &'a SuppliedTypefaces,
-    pub(super) bundled_typefaces: &'a SuppliedTypefaces,
+    pub(super) text_shaper: &'a std::cell::OnceCell<Option<skia_safe::Shaper>>,
+    pub(super) custom_typefaces: &'a TypefaceCatalog,
+    pub(super) bundled_typefaces: &'a TypefaceCatalog,
     pub(super) system_families: &'a SystemFontFamilies,
     pub(super) output_options: &'a LayerOutputOptions,
 }
@@ -55,7 +57,7 @@ impl SkiaTextReplay<'_> {
              style: &crate::renderer::TextStyle,
              baseline: f64,
              rotation: f64,
-             is_vertical: bool,
+             _is_vertical: bool,
              char_overlap: Option<&crate::renderer::composer::CharOverlapInfo>| {
                 if text.is_empty() && style.tab_leaders.is_empty() {
                     return;
@@ -71,12 +73,7 @@ impl SkiaTextReplay<'_> {
                 // baseline 이동은 아래 `y` 계산에서 함께 적용한다.
                 let (draw_font_size, _) = style.script_draw_metrics(base_font_size, 0.0);
                 let font_size = draw_font_size as f32;
-                let font_style = match (style.bold, style.italic) {
-                    (true, true) => FontStyle::bold_italic(),
-                    (true, false) => FontStyle::bold(),
-                    (false, true) => FontStyle::italic(),
-                    (false, false) => FontStyle::normal(),
-                };
+                let font_style = font_style_for_text(style);
                 // 1) 사용자 지정 폰트 (--font-path) 우선 검색
                 // 2) 시스템 FontMgr 검색 (한글 fallback chain 포함)
                 // 3) 마지막 fallback (legacy_make_typeface)
@@ -98,9 +95,9 @@ impl SkiaTextReplay<'_> {
                 // 동일 정규 페이스 + stroke 로 합성 굵게를 적용한다 (오라클
                 // PDF 실측: 굵은 헤더가 정규 휴먼명조 임베드로 방출). custom
                 // 공급 후보에 요청 굵기의 페이스가 없으면 embolden 으로
-                // 합성한다. 공급·시스템 매칭이 진짜 bold 페이스를 반환한 경우는
+                // 합성한다. catalog·시스템 매칭이 진짜 bold 페이스를 반환한 경우는
                 // weight 조건에서 제외돼 이중 굵게가 없다.
-                let want_synthetic_bold = style.bold;
+                let want_synthetic_bold = style.is_visually_bold();
                 let finish_font = |tf: Typeface, size: f32| -> Font {
                     let is_bold_face = *tf.font_style().weight() >= 600;
                     let is_slanted_face =
@@ -144,11 +141,10 @@ impl SkiaTextReplay<'_> {
                 };
                 // [#2771] 첨자 baseline 이동 (위 0.3em / 아래 0.15em). 비첨자는 항등.
                 let (_, y) = style.script_draw_metrics(base_font_size, baseline_y);
-                let effective_rotation = if is_vertical {
-                    rotation + 90.0
-                } else {
-                    rotation
-                };
+                // Vertical layout already emits upright glyph bboxes or an
+                // explicit sideways rotation; applying another 90° rotates
+                // upright glyphs and double-rotates sideways runs.
+                let effective_rotation = rotation;
                 if effective_rotation != 0.0 {
                     canvas.save();
                     canvas.rotate(
@@ -322,6 +318,16 @@ impl SkiaTextReplay<'_> {
                     (fs as f32, r as f32)
                 };
                 let has_ratio = (ratio - 1.0).abs() > 0.01;
+                let shaped_spans = if suppress_glyphs {
+                    Vec::new()
+                } else {
+                    super::text_shaping::prepare_shaped_spans(
+                        &clusters,
+                        self.text_shaper,
+                        self.font_mgr,
+                        |text| font_for_text(text, font_size),
+                    )
+                };
                 if !suppress_glyphs
                     && crate::model::color::char_shade(style.shade_color).is_some()
                     && text_width > 0.0
@@ -385,6 +391,37 @@ impl SkiaTextReplay<'_> {
                             draw_styled_line(x1, y, x2, color, 0.5, &[], false);
                             draw_styled_line(x1, y + 1.5, x2, color, 0.5, &[], false);
                         }
+                        11 | 12 => {
+                            if ![x1, y, x2].iter().all(|value| value.is_finite()) || x2 <= x1 {
+                                return;
+                            }
+                            if x2 - x1 > 6.0 * 4096.0 {
+                                draw_styled_line(x1, y, x2, color, 1.0, &[], false);
+                                return;
+                            }
+                            let offsets: &[f32] = if shape == 12 { &[-1.0, 1.0] } else { &[0.0] };
+                            for offset in offsets {
+                                let mut path = skia_safe::PathBuilder::new();
+                                path.move_to((x1, y + offset));
+                                let segments = ((x2 - x1) / 6.0).ceil() as usize;
+                                for index in 0..segments {
+                                    let left = x1 + index as f32 * 6.0;
+                                    let right = (left + 6.0).min(x2);
+                                    let control_y =
+                                        y + offset + if index % 2 == 0 { -1.5 } else { 1.5 };
+                                    path.quad_to(
+                                        ((left + right) / 2.0, control_y),
+                                        (right, y + offset),
+                                    );
+                                }
+                                let mut wave = Paint::default();
+                                wave.set_anti_alias(true);
+                                wave.set_style(paint::Style::Stroke);
+                                wave.set_stroke_width(if shape == 12 { 0.5 } else { 0.7 });
+                                wave.set_color(color);
+                                canvas.draw_path(&path.detach(), &wave);
+                            }
+                        }
                         1 => draw_styled_line(x1, y, x2, color, 1.0, &[3.0, 3.0], false),
                         2 => draw_styled_line(x1, y, x2, color, 1.0, &[1.0, 2.0], false),
                         3 => draw_styled_line(x1, y, x2, color, 1.0, &[6.0, 2.0, 1.0, 2.0], false),
@@ -423,8 +460,31 @@ impl SkiaTextReplay<'_> {
                     } else {
                         text_paint.set_style(paint::Style::Fill);
                     }
-                    for (char_idx, cluster) in clusters.iter() {
-                        // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                    let mut spans = shaped_spans.iter().peekable();
+                    for (cluster_index, (char_idx, cluster)) in clusters.iter().enumerate() {
+                        if spans.peek().is_some_and(|span| cluster_index >= span.end) {
+                            spans.next();
+                        }
+                        if let Some(span) = spans.peek().filter(|span| cluster_index >= span.start)
+                        {
+                            if cluster_index == span.start {
+                                // Keep the producer's start position and the next
+                                // cluster's layout anchor, even when GSUB changes
+                                // the number/width/order of glyphs inside this span.
+                                let char_x = bbox.x as f32
+                                    + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
+                                    + dx;
+                                canvas.save();
+                                canvas.translate((char_x, y as f32 + dy));
+                                if has_ratio {
+                                    canvas.scale((ratio, 1.0));
+                                }
+                                canvas.draw_text_blob(&span.blob, (0.0, 0.0), &text_paint);
+                                canvas.restore();
+                            }
+                            continue;
+                        }
+                        // Preserve advances and decorations without drawing whitespace glyph outlines.
                         if cluster.chars().all(char::is_whitespace) {
                             continue;
                         }
@@ -781,7 +841,7 @@ impl SkiaTextReplay<'_> {
                                style: &crate::renderer::TextStyle,
                                baseline: f64,
                                rotation: f64,
-                               is_vertical: bool,
+                               _is_vertical: bool,
                                is_marker: bool,
                                is_para_end: bool,
                                is_line_break_end: bool| {
@@ -819,11 +879,7 @@ impl SkiaTextReplay<'_> {
             } else {
                 bbox.y + bbox.height
             };
-            let effective_rotation = if is_vertical {
-                rotation + 90.0
-            } else {
-                rotation
-            };
+            let effective_rotation = rotation;
             if effective_rotation != 0.0 {
                 canvas.save();
                 canvas.rotate(

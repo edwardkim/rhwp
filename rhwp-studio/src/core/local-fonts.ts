@@ -31,6 +31,9 @@ export interface LocalFontRecord {
   fullName: string;
   postscriptName: string;
   style: string;
+  /** SFNT의 실제 face 메타데이터. 이름에서 추정한 스타일보다 우선한다. */
+  weightClass?: number;
+  italic?: boolean;
   displayName: string;
   aliases: string[];
   /** face를 실제 Local Font Access 열거로 얻었는지, 이름 presence probe로만 확인했는지 구분한다. */
@@ -209,6 +212,8 @@ interface SfntFontNames {
   fullNames: string[];
   postscriptNames: string[];
   styles: string[];
+  weightClass?: number;
+  italic?: boolean;
 }
 
 interface LocalFontLookup {
@@ -391,14 +396,31 @@ async function readSfntFontNames(fontData: FontData): Promise<SfntFontNames> {
     const directoryLength = 12 + tableCount * 16;
     if (blob.size < directoryLength) return emptySfntFontNames();
     const directory = new DataView(await blob.slice(0, directoryLength).arrayBuffer());
+    const metadata = emptySfntFontNames();
+    let headStyle: number | undefined;
     for (let index = 0; index < tableCount; index += 1) {
       const recordOffset = 12 + index * 16;
-      if (sfntTag(directory, recordOffset) !== 'name') continue;
+      const tag = sfntTag(directory, recordOffset);
+      if (tag !== 'name' && tag !== 'OS/2' && tag !== 'head') continue;
       const offset = directory.getUint32(recordOffset + 8, false);
       const length = directory.getUint32(recordOffset + 12, false);
-      if (offset > blob.size || length > blob.size - offset) return emptySfntFontNames();
-      return parseSfntNameTable(await blob.slice(offset, offset + length).arrayBuffer());
+      if (offset > blob.size || length > blob.size - offset) continue;
+      if (tag === 'name') {
+        Object.assign(metadata, parseSfntNameTable(await blob.slice(offset, offset + length).arrayBuffer()));
+      } else if (tag === 'OS/2' && length >= 6) {
+        const os2 = new DataView(await blob.slice(offset, offset + Math.min(length, 64)).arrayBuffer());
+        const weightClass = os2.getUint16(4, false);
+        if (weightClass >= 1 && weightClass <= 1000) metadata.weightClass = weightClass;
+        if (os2.byteLength >= 64) metadata.italic = (os2.getUint16(62, false) & 0x0201) !== 0;
+      } else if (tag === 'head' && length >= 46) {
+        headStyle = new DataView(await blob.slice(offset, offset + 46).arrayBuffer()).getUint16(44, false);
+      }
     }
+    if (headStyle !== undefined) {
+      metadata.weightClass ??= (headStyle & 1) !== 0 ? 700 : 400;
+      metadata.italic ??= (headStyle & 2) !== 0;
+    }
+    return metadata;
   } catch {
     // 메타데이터 보강 실패는 감지 자체를 실패시키지 않고 API 기본 이름만 사용한다.
   }
@@ -442,6 +464,8 @@ function makeLocalFontRecord(
     fullName: fullNames[0] ?? family,
     postscriptName: postscriptNames[0] ?? '',
     style: styles[0] ?? '',
+    ...(sfntNames.weightClass !== undefined ? { weightClass: sfntNames.weightClass } : {}),
+    ...(sfntNames.italic !== undefined ? { italic: sfntNames.italic } : {}),
     displayName: preferredLocalFontDisplayName(fullNames, families) || family,
     aliases,
     detectionSource,
@@ -467,6 +491,9 @@ function normalizeLocalFontRecords(
       fullNames: [],
       postscriptNames: [],
       styles: [],
+      ...(Number.isInteger(data.weightClass) && data.weightClass! >= 1 && data.weightClass! <= 1000
+        ? { weightClass: data.weightClass } : {}),
+      ...(typeof data.italic === 'boolean' ? { italic: data.italic } : {}),
     }, data.detectionSource === 'font-presence-probe' || data.detectionSource === 'local-font-access'
       ? data.detectionSource
       : defaultSource);

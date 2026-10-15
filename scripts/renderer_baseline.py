@@ -271,7 +271,9 @@ def load_manifest(
                     "minLayerFeatureCounts", {}
                 )
                 allowed_feature_counts = {
+                    "charOverlaps",
                     "dashedStrokes",
+                    "tabLeaders",
                     "verticalPresentationPunctuation",
                     "verticalTextRuns",
                 }
