@@ -98,3 +98,63 @@ PrintMethod0 PDF를 만들었다. 입력·PDF SHA, 실제 engine/version/job과 
 `normal-grid-source.json`, `normal-grid-validation-result.json` 및 `normal-grid-full`에
 19문서835쪽씩 전쪽 비교를 새로 보존한다. 비교 도중 일부 완료 문서의 하락0은 전체 완료가 아니다.
 그 뒤 `audit-normal-grid-full-sweep.py`의 Decimal 대조와 직접 판독을 마쳐야 제출할 수 있다.
+
+
+## 복구 정책의 전쪽 검증 완료와 남은 수치 하락
+
+실제 Native producer SHA-256 `5279ff4827a7bb802a7354e8101f6bc72ebcf0e50c376477e7ab2ab64f481cf3`,
+fresh WASM SHA-256 `e9c37727fad09d0a6f2dca0f1a16f752e5201f970cb2aa65bba6377aa819a4cf`다.
+source는9c1de319b이며 이후0c7bb894a는 기존 회귀의 assertion만 보강했다.
+`normal-grid-runtime-equivalence.json`에서 src·Studio/src tree와 Cargo.toml/lock/build.rs가
+4e2c554b3,9c1de319b,0c7bb894a 사이 모두 같은 Git object임을 확인했다.
+
+| 구분 | Native | fresh WASM |
+| --- | --- | --- |
+| 완료 문서·쪽 |19문서835쪽 |19문서835쪽 |
+| 최저 일치율 |91.39728% |90.20061% |
+|90% 미만·누락·쪽수 불일치 |각0 |각0 |
+| devel 대비0.01%p 이상 하락 |1쪽 |1쪽 |
+| 남은 원본·쪽 |nested HWPX104쪽 |nested HWPX104쪽 |
+| 기준→후보 |99.95853→99.94062% |99.94545→99.92986% |
+| 하락폭 |0.01791%p |0.01559%p |
+
+Native630.62초, WASM921.55초, WASM 빌드 포함 전체1090.09초다.
+두 backend는 독립 실행하고 Cargo 빌드는 공유 target에서 순차 수행했다.
+`normal-grid-{validation-result,develop-comparison}.json`과 각 backend TSV 원본에 연결한다.
+모든 입력/PDF·글꼴·DPI·metric script·backend 조건을 고정한 Decimal 대조이며 **PR은 보류**다.
+이전 전체 원점 정책의 Native131쪽/WASM203쪽 하락을 각각1쪽으로 복구했지만 남은 하락을 면제하지 않는다.
+
+같은 정식 새 assertion을 기존 default CLI의 복사본으로도 실행해 **2/2 PASS**를 확인했다.
+`nested104-source-relation-default-replay-result.json`에 별도로 보존하며 새 default 전체 빌드·전체 회귀
+완료로 보고하지 않는다. 이 단계에서 전체 Rust 회귀는 다시 수행하지 않았다.
+
+현재 전쪽 출력의104쪽 Native/WASM compare·overlay·review를 다시 생성하고 직접 열었다.
+`normal-grid-boundary-review/{native,wasm}/nested-hwpx/review/review_104.png`다.
+원본 표의 이어받기, 뒤 제목/본문/그림과 마지막 두 줄의 순서·내용은 보존한다.
+작은 글자 획·그림 래스터의 차이는 계속 남기며 전체 확대 판독 완료로 승격하지 않는다.
+
+## 남은 차이의 위치와 채택하지 않은 추가 진단
+
+변경 전후의 **원래 전쪽 실루엣 마스크 그대로** 미일치 픽셀의 위치를 연결 성분으로 분류했다.
+값을 다시 맞추기 위한 crop·이동·DPI·색상/2px 임계값 변경은 하지 않았다.
+`nested104-mismatch-locations-v2/result.json`에 픽셀 좌표와 원래 분모·지표를 보존한다.
+
+| backend·정책 | 표 내부 | 뒤 제목 | 그림 | 마지막 본문 | 총 미일치 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Native devel |15 |0 |4 |0 |19 |
+| Native 복구 정책 |15 |0 |5 |7 |27 |
+| Native 이전 전체 원점 정책 |10 |0 |5 |1 |16 |
+| WASM devel |21 |0 |4 |0 |25 |
+| WASM 복구 정책 |21 |0 |5 |6 |32 |
+| WASM 이전 전체 원점 정책 |10 |0 |5 |7 |22 |
+
+**WASM의 이전104쪽 점수 상승은 마지막 본문의 개선 증거가 아니었다.** 표 내부가11픽셀
+개선되는 동안 마지막 본문의 미일치는6→7픽셀로 늘었다. 그러므로 전체 점수 상승을 원인 해결로
+대신하지 않는다. Native의 변화와도 구분한다. CFF 글꼴에만 geometricPrecision을 적용한 별도
+Canvas 진단(v2–v5)은 font 재설정과 measureText까지 포함해도104쪽99.92986%로 같았다.
+CFF 대상 paint125회를 실제 집계했지만 이 진단을 source 보정으로 채택하지 않았다.
+
+PDF 그림은196×240 RGB JPEG이며 입력의 image3.jpg와 바이트가 다르다(각7898/8830바이트).
+압축 차이를 배치 결함이라고 단정하지 않는다. 이 관측으로 원본을 재압축하거나 비교 지표를
+완화하지도 않는다. 후속 조사에서는 실제 추가 미일치 위치와 해당 glyph/그림 소비를 연결하고,
+정확한 저장 프레임을 되돌리거나 다른 영역의 개선으로 원인 검증을 대신하지 않는다.
