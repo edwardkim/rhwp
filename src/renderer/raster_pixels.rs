@@ -28,6 +28,8 @@ pub struct RasterPixels {
 /// Negative origins and regions outside the page are allowed. The renderer
 /// returns the enclosing integer pixel window: floor(left/top * scale) through
 /// ceil(right/bottom * scale), without resampling a full-page bitmap.
+/// Exact pixels use a bounded full-page working raster; a small output window
+/// does not bypass the renderer's independent working-memory limit.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RasterRegion {
     pub x: f64,

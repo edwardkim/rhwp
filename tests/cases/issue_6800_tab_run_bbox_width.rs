@@ -53,106 +53,9 @@ use std::path::Path;
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-const SAMPLE: &str = "samples/issue6800/1192000-202100017-policy-research-report.hwp";
-
-fn maintainer_public_tab_run(core: &DocumentCore) -> serde_json::Value {
-    let layout: serde_json::Value = serde_json::from_str(
-        &core
-            .get_page_text_layout_native(0)
-            .expect("공개 text-layout"),
-    )
-    .expect("text-layout JSON");
-    layout["runs"]
-        .as_array()
-        .expect("runs")
-        .iter()
-        .find(|run| run["text"].as_str() == Some("  - \t"))
-        .expect("대상 끝 탭 런")
-        .clone()
-}
-
-fn maintainer_tab_identity(node: &RenderNode) -> Option<(usize, usize, usize)> {
-    if let RenderNodeType::TextRun(run) = &node.node_type {
-        if run.display_or_text() == "  - \t" {
-            return Some((run.section_index?, run.para_index?, run.char_start?));
-        }
-    }
-    node.children.iter().find_map(maintainer_tab_identity)
-}
-
-/// [#6801] 공개 charX와 bbox는 탭의 같은 확정 advance를 사용한다.
-#[test]
-fn maintainer_public_character_positions_share_the_resolved_tab_end() {
-    let core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
-    let run = maintainer_public_tab_run(&core);
-    let positions: Vec<f64> = run["charX"]
-        .as_array()
-        .expect("charX")
-        .iter()
-        .map(|value| value.as_f64().expect("문자 경계"))
-        .collect();
-    let width = run["w"].as_f64().expect("bbox 폭");
-    assert_eq!(positions.len(), "  - \t".chars().count() + 1);
-    assert_eq!(positions[0], 0.0);
-    assert!(positions.iter().all(|x| x.is_finite() && *x >= 0.0));
-    assert!(positions.windows(2).all(|pair| pair[0] <= pair[1]));
-    assert!(
-        (positions.last().expect("끝 경계") - width).abs() <= 0.2,
-        "bbox만 27.3px로 줄이고 charX 끝을 496.3px에 남기면 안 된다"
-    );
-    assert!(
-        positions[3] > positions[2],
-        "가시 하이픈의 폭은 보존해야 한다"
-    );
-}
-
-/// [#6801] 공개 hit-test도 재측정한 탭 스톱이 아니라 확정 경계를 소비한다.
-#[test]
-fn maintainer_hit_test_uses_the_resolved_trailing_tab_positions() {
-    let core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
-    let run = maintainer_public_tab_run(&core);
-    let tree = core
-        .build_page_render_tree(0)
-        .expect("대상 런의 render tree");
-    let (section_index, paragraph_index, char_start) =
-        maintainer_tab_identity(&tree.root).expect("대상 탭 런의 논리 주소");
-    let x = run["x"].as_f64().expect("런 x");
-    let y = run["y"].as_f64().expect("런 y");
-    let width = run["w"].as_f64().expect("런 폭");
-    let height = run["h"].as_f64().expect("런 높이");
-    let visible_end = run["charX"][3].as_f64().expect("하이픈 끝");
-    assert!(width > visible_end, "탭 앞 공백의 클릭 구간이 필요하다");
-    // 탭 앞 공백의 끝(문자4)과 탭 끝(문자5)은 서로 다른 논리 경계다.
-    // 하이픈 끝을 클릭 구간의 시작으로 쓰면 공백 폭이 달라질 때 탭 앞에
-    // 클릭하고도 탭 끝 좌표를 요구하게 된다. 공개 문자 경계의 중점 양쪽을
-    // 클릭해 각각의 논리 주소와 캐럿 위치를 함께 검사한다.
-    let tab_start = run["charX"][4].as_f64().expect("탭 시작 경계");
-    assert!(tab_start >= visible_end && width >= tab_start);
-    let midpoint = (tab_start + width) * 0.5;
-    for (local_x, offset, expected_x) in
-        [(midpoint - 0.1, 4, tab_start), (midpoint + 0.1, 5, width)]
-    {
-        let hit: serde_json::Value = serde_json::from_str(
-            &core
-                .hit_test_native(0, x + local_x, y + height * 0.5)
-                .expect("공개 hit-test"),
-        )
-        .expect("hit-test JSON");
-        assert_eq!(hit["sectionIndex"].as_u64(), Some(section_index as u64));
-        assert_eq!(hit["paragraphIndex"].as_u64(), Some(paragraph_index as u64));
-        assert_eq!(
-            hit["charOffset"].as_u64(),
-            Some((char_start + offset) as u64),
-            "탭 양쪽 경계의 논리 주소를 보존해야 한다: {hit}"
-        );
-        assert_eq!(hit["cursorRect"]["pageIndex"], 0);
-        let caret_x = hit["cursorRect"]["x"].as_f64().expect("캐럿 x");
-        assert!(
-            (caret_x - (x + expected_x)).abs() <= 0.5,
-            "캐럿은 선택한 공개 문자 경계를 소비해야 한다: {hit}"
-        );
-    }
-}
+// 선행 공백 분리 후 단일 런을 가정한3검사는 사용자 지정으로 #7922에 이관했다.
+// 공유 원본·PDF와 아래 정상 대조 검사는 보존한다.
+const SAMPLE: &str = "mydocs/pr/assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report.hwp";
 
 /// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의
 /// 성공 조건이 아니므로 읽기 실패를 즉시 드러낸다.
@@ -180,47 +83,6 @@ fn lines_with_runs(node: &RenderNode, out: &mut Vec<Vec<(String, f64, f64)>>) {
     for child in &node.children {
         lines_with_runs(child, out);
     }
-}
-
-/// 대상 런과 **논리적 다음 런**을 직접 집어 경계를 고정한다.
-///
-/// ⚠ 종전 시험은 그 쪽 전체의 최대 겹침만 봤다 — 대상 런이 사라져도 0 으로 통과할 수
-/// 있었다(PR #6801 지적).
-#[test]
-fn the_trailing_tab_run_ends_exactly_where_the_next_run_starts() {
-    let bytes = sample();
-    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    assert_eq!(core.page_count(), 1, "쪽수 핀 — 본 수정은 조판 불변");
-
-    let tree = core.build_page_render_tree(0).expect("1쪽 render tree");
-    let mut lines = Vec::new();
-    lines_with_runs(&tree.root, &mut lines);
-
-    let target = lines
-        .iter()
-        .find(|runs| runs.iter().any(|(t, ..)| t == "  - \t"))
-        .expect("1쪽에 `\"  - <TAB>\"` 런이 있는 줄이 있어야 한다");
-
-    let tab_idx = target
-        .iter()
-        .position(|(t, ..)| t == "  - \t")
-        .expect("탭 런");
-    let (_, tab_x, tab_w) = target[tab_idx];
-    let (next_text, next_x, _) = target
-        .get(tab_idx + 1)
-        .expect("탭 런 뒤에 논리적 다음 런이 있어야 한다")
-        .clone();
-
-    assert!(
-        next_text.starts_with("내수면"),
-        "다음 런이 예상 텍스트여야 한다: {next_text:?}"
-    );
-    // 양방향 — 덜 줄여도(겹침) 더 줄여도(가짜 여백) 실패한다.
-    assert!(
-        (tab_x + tab_w - next_x).abs() <= 0.5,
-        "끝 탭 런은 다음 런 시작에서 정확히 끝나야 한다 — #6800 회귀          (탭 런 {tab_x:.1}..{:.1}, 다음 런 {next_x:.1}; 수정 전 폭 496.0 → 717.8 까지)",
-        tab_x + tab_w
-    );
 }
 
 /// ⚠ 음성 — **탭 뒤에 가시문자가 있는 런**은 건드리지 않는다.

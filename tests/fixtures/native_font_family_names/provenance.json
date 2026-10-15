@@ -1,0 +1,16 @@
+{
+  "kind": "synthetic font family identity contract; not a serialized Hancom document or layout golden",
+  "source": "ttfs/opensource/NotoSansKR-Regular.ttf",
+  "source_sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+  "subset_codepoints": [
+    "U+0041"
+  ],
+  "primary_family": "Rhwp Family Contract",
+  "localized_family": "검사용 가족 이름",
+  "typographic_family": "검사용 표기 가족",
+  "wws_family": "검사용 WWS 가족",
+  "nonfamily_full_name": "검사용 전체 얼굴 이름",
+  "fixture_sha256": "6df6857773effe6a86fdfa99eff92e1d1e3e6a928ec0f52316f85c4b464c3bbd",
+  "fixture_bytes": 1716,
+  "license": "OFL.txt copied from bundled Noto Sans KR; derivative family renamed"
+}

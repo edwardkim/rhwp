@@ -35,7 +35,7 @@ thread_local! {
     deny_unknown_fields
 )]
 enum Request {
-    Info,
+    Info {},
     FontState,
     SetFonts {
         paths: Vec<std::path::PathBuf>,
@@ -225,7 +225,7 @@ pub unsafe extern "C" fn rhwp_session_request(
                     #[cfg(not(feature = "native-skia"))]
                     { Err(NativeHostError::FeatureDisabled) }
                 }
-                Request::Info => Ok(json!({"ok":true,"pageCount":session.document().page_count(),"revision":session.revision()})),
+                Request::Info {} => Ok(json!({"ok":true,"pageCount":session.document().page_count(),"revision":session.revision()})),
                 Request::PageSize { page } => Ok(json!({"ok":true,"page":page,"size":session.page_size(page)?})),
                 Request::Render { page, scale } => {
                     let frame = session.render_page(page, scale)?;

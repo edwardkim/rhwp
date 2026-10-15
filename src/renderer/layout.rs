@@ -2351,9 +2351,7 @@ fn inline_equation_count(para: &Paragraph) -> usize {
 }
 
 fn same_endnote_control(a: &EndnoteParaSource, b: &EndnoteParaSource) -> bool {
-    a.section_index == b.section_index
-        && a.para_index == b.para_index
-        && a.control_index == b.control_index
+    a.same_note(b)
 }
 
 fn para_large_tac_picture_or_shape_height_px(para: &Paragraph, dpi: f64) -> Option<f64> {
@@ -2370,12 +2368,6 @@ fn para_large_tac_picture_or_shape_height_px(para: &Paragraph, dpi: f64) -> Opti
             _ => None,
         })
         .reduce(f64::max)
-}
-
-fn endnote_question_number(para: &Paragraph) -> Option<u16> {
-    let text = para.text.trim_start().strip_prefix('문')?;
-    let digits: String = text.chars().take_while(|ch| ch.is_ascii_digit()).collect();
-    (!digits.is_empty()).then(|| digits.parse().ok()).flatten()
 }
 
 fn textless_non_tac_topbottom_object_tail_advance_px(
@@ -2416,10 +2408,9 @@ fn compact_endnote_title_gap_after_single_equation_tail(
     item_ordinal: usize,
     dpi: f64,
 ) -> Option<f64> {
-    let current_is_endnote_question_title = endnote_question_number(current_para).is_some();
+    // 호출자가 새 문항 제목(미주 첫 문단, 소유 경계)일 때만 부른다.
     if item_ordinal > 13
         || prev_endnote_title_gap_px < 50.0
-        || !current_is_endnote_question_title
         || inline_equation_count(prev_para) != 1
     {
         return None;
@@ -3340,6 +3331,33 @@ fn tac_in_front_decoration_fixed_line_spacing_deduction_hu(
         .then_some(-seg.line_spacing)
 }
 
+/// [#7702] 쪽 첫 문단이 합성 줄(`TAG_IMPLEMENTATION_PROPERTY`)로 시작하면 쪽 기준점에서
+/// 뺄 문단 앞 간격(HWPUNIT). 저장 줄이 없는 문단은 한/글이 직접 조판하며 쪽 맨 위에서도
+/// 앞 간격을 둔다(그리기 `paragraph_layout` 의 쪽 상단 갈래가 같은 규칙으로 간격을 둔다).
+/// 기준점이 그 간격을 빼지 않으면 뒤 저장 문단의 스냅이 간격만큼 되감는다(HWP5-nopassword
+/// 20쪽: 제목 앞 간격 284 HU, 뒤 저장 문단 pi=290 이 3.8px 위로). 저장 줄 경우
+/// (`stored_first_margin_is_page_relative`)와 달리 명시적 쪽 나눔 문단도 포함한다 — 그 20쪽
+/// 제목이 `pageBreak="1"` 문단이고, 한/글 2024 PDF 는 거기서도 앞 간격을 둔다.
+pub(crate) fn synthesized_first_margin_hu(
+    first: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> i32 {
+    let synthesized = first.line_segs.first().is_some_and(|seg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+    });
+    if !synthesized {
+        return 0;
+    }
+    styles
+        .para_styles
+        .get(first.para_shape_id as usize)
+        .map(|style| style.spacing_before)
+        .filter(|before| *before > 0.5)
+        .map(|before| px_to_hwpunit(before, dpi))
+        .unwrap_or(0)
+}
+
 pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
     use crate::model::shape::{TextWrap, VertRelTo};
     para.controls.iter().any(|c| match c {
@@ -3546,6 +3564,9 @@ pub struct LayoutEngine {
     endnote_para_base: std::cell::Cell<usize>,
     /// 가상 미주 문단별 원본 위치
     endnote_para_sources: std::cell::RefCell<Vec<EndnoteParaSource>>,
+    /// [#7665] 미주의 첫 문단(번호 장식을 받는 문단, 조판 `ep_idx == 0`)인 렌더 문단 번호.
+    /// 새 문항 제목 판정의 소유 경계 — `set_endnote_para_sources` 에서 한 번 만든다.
+    endnote_note_first_paras: std::cell::RefCell<std::sync::Arc<std::collections::HashSet<usize>>>,
     /// [Task #1246] 현재 섹션 미주의 between-notes 마진(HWPUNIT, 0=미적용). HeightCursor 가 미주
     /// 사이 min-gap 보정(gap 부족 시 끌어올림)에 사용한다. 섹션 렌더 셋업마다 갱신.
     endnote_between_notes_hu: std::cell::Cell<i32>,
@@ -3659,12 +3680,15 @@ mod anchor_box_flow;
 mod border_rendering;
 mod fill_background;
 mod fixed_textbox_flow;
+mod hidden_paragraph_marker;
 mod note_reference;
 mod paragraph_layout;
 mod picture_footnote;
 mod shape_layout;
 mod table_cell_content;
+mod table_inline_picture_origin;
 pub(crate) mod table_layout;
+mod table_paragraph_cut;
 mod table_partial;
 mod table_rows;
 mod text_measurement;
@@ -3687,6 +3711,7 @@ pub(crate) use text_measurement::{
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
 // 직접 검증한다 — pub 노출.
 pub use text_measurement::forces_halfwidth_cjk_quote;
+pub use text_measurement::forces_halfwidth_punct_paint;
 pub use text_measurement::{EmbeddedTextMeasurer, TextMeasurer};
 // [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
 // (PUA substitution 매핑 정합) — pub 노출.
@@ -3749,6 +3774,7 @@ impl LayoutEngine {
             uniform_filler_ladder: std::cell::Cell::new(false),
             endnote_para_base: std::cell::Cell::new(usize::MAX),
             endnote_para_sources: std::cell::RefCell::new(Vec::new()),
+            endnote_note_first_paras: Default::default(),
             endnote_between_notes_hu: std::cell::Cell::new(0),
             column_is_endnote_flow: std::cell::Cell::new(false),
             endnote_separator_above_hu: std::cell::Cell::new(0),
@@ -4316,6 +4342,14 @@ impl LayoutEngine {
     pub fn set_endnote_para_sources(&self, base: usize, sources: &[EndnoteParaSource]) {
         self.endnote_para_base.set(base);
         *self.endnote_para_sources.borrow_mut() = sources.to_vec();
+        *self.endnote_note_first_paras.borrow_mut() = std::sync::Arc::new(
+            sources
+                .iter()
+                .enumerate()
+                .filter(|(_, src)| src.note_para_index == 0)
+                .map(|(local_idx, _)| base + local_idx)
+                .collect(),
+        );
     }
 
     /// [Task #1236] 이 미주 문단의 다음 렌더 문단이 **같은 미주(문제)** 내 연속 문단인지.
@@ -4331,11 +4365,7 @@ impl LayoutEngine {
         };
         let sources = self.endnote_para_sources.borrow();
         match (sources.get(local_idx), sources.get(local_idx + 1)) {
-            (Some(cur), Some(next)) => {
-                cur.section_index == next.section_index
-                    && cur.para_index == next.para_index
-                    && cur.control_index == next.control_index
-            }
+            (Some(cur), Some(next)) => cur.same_note(next),
             _ => false,
         }
     }
@@ -4380,6 +4410,12 @@ impl LayoutEngine {
             .is_some_and(|local| local < self.endnote_para_sources.borrow().len())
     }
 
+    /// [#7665] 렌더 문단이 미주의 첫 문단(새 문항 제목)인가 — 미주 소유 경계.
+    /// 렌더는 이 문단 앞에 번호 장식(`문1)` 등)을 붙이므로 글자 접두사로 읽지 않는다.
+    fn endnote_para_starts_note(&self, para_index: usize) -> bool {
+        self.endnote_note_first_paras.borrow().contains(&para_index)
+    }
+
     fn endnote_para_source_for(&self, para_index: usize) -> Option<EndnoteParaSource> {
         let base = self.endnote_para_base.get();
         let local_idx = para_index.checked_sub(base)?;
@@ -4416,6 +4452,11 @@ impl LayoutEngine {
         let base = self.endnote_para_base.get();
         let local_idx = para_index.checked_sub(base)?;
         let src = self.endnote_para_sources.borrow().get(local_idx)?.clone();
+        // [#7860] 편집 주소는 본문 문단의 미주 컨트롤만 표현한다. 표 셀 안 미주에
+        // 표 컨트롤 주소를 내보내면 엉뚱한 개체를 가리키므로 편집 참조를 만들지 않는다.
+        if !src.cell_path.is_empty() {
+            return None;
+        }
         Some(NoteControlRef {
             kind: "endnote".to_string(),
             section_index: src.section_index,
@@ -7560,10 +7601,14 @@ impl LayoutEngine {
                     } else {
                         last_sig.is_some() && last_sig == cur_sig
                     };
-                    if same_visual
-                        && (last.10 == para_idx || (connects(last.10) && connects(para_idx)))
-                        && (y_start - last.4) < 30.0
-                    {
+                    // 연결(bit 28)은 양쪽 문단이 모두 연결을 허용할 때만 테두리를 잇는다.
+                    // 채움만 있는 문단은 연결돼도 줄간격 틈을 칠하지 않고 맞닿은 범위만 잇는다.
+                    let fill_only = last_sig.is_none() && cur_sig.is_none();
+                    let joined = last.10 == para_idx
+                        || (connects(last.10)
+                            && connects(para_idx)
+                            && (!fill_only || y_start - last.4 <= 0.5));
+                    if same_visual && joined && (y_start - last.4) < 30.0 {
                         last.4 = y_end;
                         last.6 = bottom_inset;
                         // 그룹의 partial_end 는 마지막 range 의 값으로 갱신.
@@ -8114,6 +8159,12 @@ impl LayoutEngine {
                     _ => None,
                 }) {
                     frame.source_origin_hu
+                } else if let Some(PageItem::FullParagraph { para_index }) = col_content.items.first() {
+                    let margin = paragraphs
+                        .get(*para_index)
+                        .map(|first| synthesized_first_margin_hu(first, styles, self.dpi))
+                        .unwrap_or(0);
+                    base - margin
                 } else {
                     base
                 }
@@ -8149,6 +8200,7 @@ impl LayoutEngine {
         // 제목 forward 흐름의 min-gap 보정에 사용. 본문 컬럼은 0 (무영향).
         if col_content.endnote_flow {
             hcursor.endnote_between_notes_hu = self.endnote_between_notes_hu.get();
+            hcursor.endnote_note_first_paras = self.endnote_note_first_paras.borrow().clone();
         }
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
@@ -8471,11 +8523,8 @@ impl LayoutEngine {
                 }
             }
 
-            let current_is_endnote_question_title = col_content.endnote_flow
-                && paragraphs
-                    .get(item_para)
-                    .map(|p| p.text.trim_start().starts_with('문'))
-                    .unwrap_or(false);
+            let current_is_endnote_question_title =
+                col_content.endnote_flow && self.endnote_para_starts_note(item_para);
             let current_endnote_source = if col_content.endnote_flow {
                 self.endnote_para_source_for(item_para)
             } else {
@@ -9092,9 +9141,7 @@ impl LayoutEngine {
                         | PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                         _ => None,
                     })
-                    .and_then(|pi| paragraphs.get(pi))
-                    .map(|p| p.text.trim_start().starts_with('문'))
-                    .unwrap_or(false);
+                    .is_some_and(|pi| self.endnote_para_starts_note(pi));
             if (matches!(
                 item,
                 PageItem::PartialParagraph { start_line, .. } if *start_line > 0
@@ -9149,6 +9196,7 @@ impl LayoutEngine {
                                             as i32
                                 });
                             hcursor.vpos_lazy_base = seed;
+                            hcursor.seed_lazy_base_from_next_stored = seed.is_none();
                         }
                     }
                 }
@@ -9591,15 +9639,10 @@ impl LayoutEngine {
                             });
                     let next_is_new_question = next_para_index
                         .and_then(|next_pi| {
-                            let next_para = paragraphs.get(next_pi)?;
                             let next_source = self.endnote_para_source_for(next_pi)?;
                             let current_source = current_source.as_ref()?;
-                            let same_note = current_source.section_index
-                                == next_source.section_index
-                                && current_source.para_index == next_source.para_index
-                                && current_source.control_index == next_source.control_index;
-                            (endnote_question_number(next_para).is_some() && !same_note)
-                                .then_some(())
+                            let same_note = current_source.same_note(&next_source);
+                            (next_source.note_para_index == 0 && !same_note).then_some(())
                         })
                         .is_some();
                     if next_is_new_question {
@@ -10956,25 +10999,21 @@ impl LayoutEngine {
                     // 저장 anchor부터 다음 계산 본문을 재개해 표 위 gap을 먼저 채운다.
                     y_offset = anchor_y;
                 }
-                // 빈 줄 감추기: 높이 0 처리된 문단은 문단부호만 렌더링하고 y_offset 변경 없음
+                // 조판에서 흡수한 빈 문단은 확정된 흐름 원점에 편집용 부호만 남긴다.
                 if self.hidden_empty_paras.borrow().contains(para_index) {
-                    // 문단부호는 렌더링 (클리핑 바깥에 표시)
                     if let Some(comp) = composed.get(*para_index) {
                         if let Some(para) = paragraphs.get(*para_index) {
                             para_start_y.insert(*para_index, y_offset);
-                            self.layout_paragraph(
+                            self.layout_hidden_paragraph_marker(
                                 tree,
                                 col_node,
                                 para,
-                                Some(comp),
+                                comp,
                                 styles,
                                 col_area,
                                 y_offset,
                                 page_content.section_index,
                                 *para_index,
-                                multi_col_width,
-                                Some(bin_data_content),
-                                ctx.wrap_anchors.get(para_index),
                             );
                         }
                     }
@@ -12075,6 +12114,9 @@ impl LayoutEngine {
                     })
                     .map(|index| (index, comp.lines.len()))
             });
+            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+            // [#7816] 줄 상자에 들여쓰기를 얹을 자리가 모자라면 한/글은 들여쓰기를 버린다.
+            let line_box_width = col_area.width - margin_left - margin_right;
             let effective_margin =
                 if let Some((index, count)) = table_owner_line.filter(|_| t.common.treat_as_char) {
                     // 표도 자신이 속한 글줄의 들여쓰기·내어쓰기와 저장 플래그를 소비한다.
@@ -12085,13 +12127,20 @@ impl LayoutEngine {
                             Some(para),
                             count,
                             true,
+                            line_box_width,
+                            self.dpi,
                         )
-                } else if indent > 0.0 && !stored_first_seg_denies_indent {
+                } else if indent > 0.0
+                    && !stored_first_seg_denies_indent
+                    && crate::renderer::equation_tac_flow::indent_leaves_line_room_hwp(
+                        crate::renderer::px_to_hwpunit(indent, self.dpi),
+                        crate::renderer::px_to_hwpunit(line_box_width, self.dpi),
+                    )
+                {
                     margin_left + indent
                 } else {
                     margin_left
                 };
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
             let table_y_before = y_offset;
             let tbl_is_square = matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
             // [#4533 ⑥] '위 예약' Square float — 저장 사다리가 표 공간을
@@ -14351,6 +14400,14 @@ impl LayoutEngine {
                     .unwrap_or(false);
                 let suppress_empty_anchor_spacing =
                     is_current_empty_para_float && !next_is_empty_topbottom_table_anchor;
+                let reflow_host_tail = para.controls.get(control_index).and_then(|control| {
+                    let Control::Table(table) = control else {
+                        return None;
+                    };
+                    crate::renderer::reflow_float_host_line::trailing_advance(
+                        para, table, comp, styles, self.dpi,
+                    )
+                });
                 if let Some(seg) = para.line_segs.last() {
                     // [#4533 ⑥] 위-예약 Square 판별 재계산(렌더 함수와 동일식) —
                     // 앵커·후속 문단 vpos 동일(붕괴 사다리)이라 후행 간격도 0.
@@ -14468,9 +14525,13 @@ impl LayoutEngine {
                                 next_first.vertical_pos > host_first.vertical_pos
                                     && (next_ladder_y - y_offset).abs() <= 0.5
                             });
-                    if gap > 0 && !ladder_already_at_flow {
+                    if let Some(advance) = reflow_host_tail {
+                        y_offset += advance;
+                    } else if gap > 0 && !ladder_already_at_flow {
                         y_offset += hwpunit_to_px(gap, self.dpi);
                     }
+                } else if let Some(advance) = reflow_host_tail {
+                    y_offset += advance;
                 }
             }
             if let Some((x_start, x_end, raw_top, lane_top, global_y_before, stored_flow_advance)) =

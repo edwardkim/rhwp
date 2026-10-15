@@ -303,7 +303,8 @@ export class CanvasKitGlyphRunFontCache {
       && this.glyphRunTypefaces.size >= MAX_GLYPH_RUN_TYPEFACES) {
       return reject('typefaceLimitExceeded', { exactFaceInstantiated: false });
     }
-    if (!this.typefaceFor(face, blob)) {
+    const typeface = this.typefaceFor(face, blob);
+    if (!typeface) {
       const bytes = this.verifiedFontBlobs.get(this.fontBlobCacheKey(blob));
       const faceSupported = !!bytes && canvasKitFontFaceData(bytes, face.faceIndex) !== null;
       return reject(faceSupported ? 'fontFaceInstantiationFailed' : 'faceIndexUnsupported', {
@@ -321,6 +322,11 @@ export class CanvasKitGlyphRunFontCache {
     const fontKey = this.fontCacheKey(run, face, blob);
     if (!this.glyphRunFonts.has(fontKey) && this.glyphRunFonts.size >= MAX_GLYPH_RUN_FONTS) {
       return reject('fontInstanceLimitExceeded', { exactFaceInstantiated: true });
+    }
+    // All variants are selected before any leaf is drawn. Reserve the actual
+    // Font during admission so budget/allocation failure keeps TextRun selected.
+    if (!this.fontFor(run, fontKey, typeface)) {
+      return reject('fontInstanceInstantiationFailed', { exactFaceInstantiated: true });
     }
     return {
       replayable: true,
@@ -342,19 +348,27 @@ export class CanvasKitGlyphRunFontCache {
   font(run: LayerGlyphRunOp, fontResources: LayerFontResources | undefined): Font | null {
     const status = this.replayStatus(run, fontResources);
     if (!status.replayable) return null;
-    const typeface = this.typefaceFor(status.face, status.blob);
-    if (!typeface) return null;
-    const key = this.fontCacheKey(run, status.face, status.blob);
+    return this.glyphRunFonts.get(this.fontCacheKey(run, status.face, status.blob)) ?? null;
+  }
+
+  private fontFor(run: LayerGlyphRunOp, key: string, typeface: Typeface): Font | null {
     const cached = this.glyphRunFonts.get(key);
     if (cached) return cached;
     if (this.glyphRunFonts.size >= MAX_GLYPH_RUN_FONTS) return null;
     const instance = run.shapeKey.fontInstance;
-    const font = new this.canvasKit.Font(typeface, instance.sizePx);
-    font.setSubpixel(true);
-    font.setEmbolden(instance.syntheticBold === true);
-    font.setSkewX(instance.syntheticItalic === true ? -0.25 : 0);
-    this.glyphRunFonts.set(key, font);
-    return font;
+    let font: Font | null = null;
+    try {
+      font = new this.canvasKit.Font(typeface, instance.sizePx);
+      if (!font) return null;
+      font.setSubpixel(true);
+      font.setEmbolden(instance.syntheticBold === true);
+      font.setSkewX(instance.syntheticItalic === true ? -0.25 : 0);
+      this.glyphRunFonts.set(key, font);
+      return font;
+    } catch {
+      try { font?.delete(); } catch { /* A failed native allocation may already be disposed. */ }
+      return null;
+    }
   }
 
   diagnostics(): { blobs: number; typefaces: number; fonts: number; bytes: number } {

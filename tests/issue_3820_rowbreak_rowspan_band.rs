@@ -54,6 +54,34 @@ fn contains_text(node: &RenderNode, needle: &str) -> bool {
     text_y(node, needle).is_some()
 }
 
+/// 같은 줄(같은 y)의 TextRun 을 x 순으로 이은 글. 한 줄은 언어 슬롯마다 run 이 갈린다 —
+/// 곡선 따옴표는 영문 슬롯 run 이다(#7702).
+fn line_texts(node: &RenderNode) -> Vec<String> {
+    fn collect(node: &RenderNode, out: &mut Vec<(f64, f64, String)>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            out.push((node.bbox.y, node.bbox.x, run.text.clone()));
+        }
+        for child in &node.children {
+            collect(child, out);
+        }
+    }
+    let mut runs = Vec::new();
+    collect(node, &mut runs);
+    runs.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.total_cmp(&b.1)));
+    let mut lines: Vec<(f64, String)> = Vec::new();
+    for (y, _, text) in runs {
+        match lines.last_mut() {
+            Some((line_y, line)) if (*line_y - y).abs() < 0.5 => line.push_str(&text),
+            _ => lines.push((y, text)),
+        }
+    }
+    lines.into_iter().map(|(_, line)| line).collect()
+}
+
+fn contains_line_text(node: &RenderNode, needle: &str) -> bool {
+    line_texts(node).iter().any(|line| line.contains(needle))
+}
+
 fn table_count(node: &RenderNode) -> usize {
     usize::from(matches!(&node.node_type, RenderNodeType::Table(_)))
         + node.children.iter().map(table_count).sum::<usize>()
@@ -199,7 +227,7 @@ fn issue_3820_rowbreak_rowspan_band_keeps_pdf_page_35_36_boundary() {
         "p35 한양중고딕의 과소 공백폭으로 `용`이 앞줄에 남으면 안 됨"
     );
     assert!(
-        contains_text(
+        contains_line_text(
             &p35.root,
             "용기를 들어 올려 부어주는 기계(이하 “볼 리프트”라 한다) 인근에"
         ),
