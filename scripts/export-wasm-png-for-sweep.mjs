@@ -186,7 +186,7 @@ async function main() {
             if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
             const bytes = await response.arrayBuffer();
             for (const family of selected) {
-              const font = new FontFace(JSON.stringify(family), bytes, {weight: String(record.weight), style: record.style});
+              const font = new FontFace(family, bytes, {weight: String(record.weight), style: record.style});
               try { await font.load(); }
               catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
               document.fonts.add(font);

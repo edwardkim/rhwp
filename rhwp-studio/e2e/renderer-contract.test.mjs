@@ -915,7 +915,7 @@ function runExecutableTextReplay(op, {
   renderer.unsupportedOps = unsupportedOps;
   if (usePreparedTypeface) {
     renderer.findPreparedTypeface = (fontFamily) => ({
-      typeface: fontFamily === 'Source Han Serif K Old Hangul'
+      typeface: fontFamily === 'RHWP Old Hangul'
         ? null
         : { face: 'primary' },
       fontManager: shapedTextAvailable ? {} : null,
@@ -1278,15 +1278,15 @@ function runExecutableTextSpecialReplay() {
   renderer.currentShowParagraphMarks = true;
   renderer.currentShowControlCodes = true;
   const incompleteOldHangulAlias = { typeface: { face: 'old-hangul-incomplete' }, fontManager: null };
-  renderer.bundledTypefaceAliases.set('source han serif k old hangul', [incompleteOldHangulAlias]);
-  const rejectedOldHangulAlias = renderer.findPreparedTypeface('Source Han Serif K Old Hangul');
+  renderer.bundledTypefaceAliases.set('rhwp old hangul', [incompleteOldHangulAlias]);
+  const rejectedOldHangulAlias = renderer.findPreparedTypeface('RHWP Old Hangul');
   const oldHangulAlias = {
     typeface: { face: 'old-hangul-alias' },
     fontManager: { family: 'old-hangul-manager' },
   };
-  renderer.bundledTypefaceAliases.set('source han serif k old hangul', [oldHangulAlias]);
+  renderer.bundledTypefaceAliases.set('rhwp old hangul', [oldHangulAlias]);
   renderer.invalidateFontCaches(); // Match the production font registration lifecycle.
-  const resolvedOldHangulAlias = renderer.findPreparedTypeface('Source Han Serif K Old Hangul');
+  const resolvedOldHangulAlias = renderer.findPreparedTypeface('RHWP Old Hangul');
 
   renderer.renderOp(canvas, {
     type: 'charOverlap',

@@ -156,7 +156,7 @@ thread_local! {
     deny_unknown_fields
 )]
 enum Request {
-    Info,
+    Info {},
     PrepareSave {
         format: NativeSaveFormat,
     },
@@ -223,7 +223,7 @@ enum Request {
         direction: NativeVerticalDirection,
         preferred_x: Option<f64>,
     },
-    FontState,
+    FontState {},
     SetFonts {
         paths: Vec<std::path::PathBuf>,
         environment: Option<rhwp_core::renderer::font_environment::FontEnvironment>,
@@ -232,8 +232,8 @@ enum Request {
         revision: u64,
         font_generation: u64,
     },
-    ClearCaches,
-    CacheStats,
+    ClearCaches {},
+    CacheStats {},
     PageSize {
         page: u32,
     },
@@ -444,21 +444,21 @@ pub unsafe extern "C" fn rhwp_session_request(
                 Request::Caret { position } => Ok(json!({"ok":true,"caret":session.document().native_caret_rect(&position)?})),
                 Request::SelectionRects { selection } => Ok(json!({"ok":true,"rects":session.document().native_selection_rects(&selection)?})),
                 Request::MoveVertical { position, direction, preferred_x } => Ok(json!({"ok":true,"movement":session.document().native_move_vertical(&position,direction,preferred_x)?})),
-                Request::FontState => Ok(json!({"ok":true,"state":session.font_state(),"fontGeneration":session.font_generation()})),
+                Request::FontState {} => Ok(json!({"ok":true,"state":session.font_state(),"fontGeneration":session.font_generation()})),
                 Request::SetFonts { paths, environment } => {
                     let changed = record.set_fonts(&paths, environment)?;
                     let session = record.session();
                     Ok(json!({"ok":true,"changed":changed,"state":session.font_state(),"fontGeneration":session.font_generation()}))
                 }
                 Request::IsFrameCurrent { revision, font_generation } => Ok(json!({"ok":true,"current":session.is_frame_current(revision, font_generation)})),
-                Request::ClearCaches => { session.clear_caches(); Ok(json!({"ok":true})) }
-                Request::CacheStats => {
+                Request::ClearCaches {} => { session.clear_caches(); Ok(json!({"ok":true})) }
+                Request::CacheStats {} => {
                     #[cfg(feature = "native-skia")]
                     { Ok(json!({"ok":true,"stats":session.cache_stats()})) }
                     #[cfg(not(feature = "native-skia"))]
                     { Err(NativeHostError::FeatureDisabled) }
                 }
-                Request::Info => {
+                Request::Info {} => {
                     let (can_undo,can_redo,composition_id) = record.editing_info();
                     Ok(json!({"ok":true,"pageCount":session.document().page_count(),"revision":session.revision(),"fontGeneration":session.font_generation(),"canUndo":can_undo,"canRedo":can_redo,"compositionId":composition_id,"isDirty":session.is_dirty()}))
                 },

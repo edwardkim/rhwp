@@ -48,7 +48,8 @@ def run(host):
     assert host.request(a, op="info")["pageCount"] >= 1
     assert host.request(a, op="pageSize", page=0)["size"]["width"] > 0
     assert not host.request(a, op="pageSize", page=2**32 - 1)["ok"]
-    assert not host.request(a, op="info", unexpected=True)["ok"]
+    for operation in ("info", "fontState", "clearCaches", "cacheStats"):
+        assert not host.request(a, op=operation, unexpected=True)["ok"]
     assert not host.request(a, op="render", page=0, scale=-1)["ok"]
     foreign = []
     thread = threading.Thread(target=lambda: foreign.append(host.request(a, op="info")))

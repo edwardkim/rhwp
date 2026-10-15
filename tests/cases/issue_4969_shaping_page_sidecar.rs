@@ -30,8 +30,7 @@ use shaping_publication::{
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
-const SOURCE_HAN: &[u8] =
-    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Regular.otf");
 const SOURCE_HAN_SLOT: ExactFontSlot = ExactFontSlot {
     char_shape_id: 4969,
     language_index: 0,
