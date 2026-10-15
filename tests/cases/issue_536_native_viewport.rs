@@ -198,6 +198,49 @@ fn fractional_regions_replay_groups_clips_and_effects_on_the_full_page_grid() {
 }
 
 #[test]
+fn integer_origin_preserves_antialiased_ellipse_pixels() {
+    // Minimal reproducer: no gradient, group, clip, cache, or rotated shape.
+    // Translating this AA oval by one integer pixel changes edge coverage on
+    // Skia raster surfaces. Compare in page coordinates, without a tolerance.
+    let renderer = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    let bounds = BoundingBox::new(0.0, 0.0, 60.0, 45.0);
+    let page = PageLayerTree::new(
+        60.0,
+        45.0,
+        LayerNode::leaf(
+            bounds,
+            None,
+            vec![PaintOp::ellipse(
+                BoundingBox::new(15.0, 1.25, 10.0, 15.0),
+                EllipseNode::new(
+                    ShapeStyle {
+                        fill_color: Some(0x00ff00),
+                        opacity: 166.0 / 255.0,
+                        ..Default::default()
+                    },
+                    None,
+                ),
+            )],
+        ),
+    );
+    let options = RasterRenderOptions::default();
+    let full = renderer.render_pixels_with_options(&page, options).unwrap();
+    let region = renderer
+        .render_region_pixels_with_options(
+            &page,
+            RasterRegion {
+                x: 1.0,
+                y: 0.0,
+                width: 59.0,
+                height: 45.0,
+            },
+            options,
+        )
+        .unwrap();
+    assert_crop_and_padding(&full, &region, [0; 4]);
+}
+
+#[test]
 fn returned_origin_and_size_enclose_fractional_logical_requests() {
     let renderer = SkiaLayerRenderer::new();
     let region = renderer
@@ -270,9 +313,9 @@ fn negative_and_off_page_windows_preserve_full_raster_clipping_and_padding() {
 }
 
 #[test]
-fn small_region_of_large_page_uses_only_the_region_output_budget() {
+fn small_region_keeps_output_budget_independent_of_the_bounded_working_raster() {
     let renderer = SkiaLayerRenderer::new().with_cache_limits(0, 0);
-    let page = solid_page(10_000.0, 20_000.0);
+    let page = solid_page(1_000.0, 2_000.0);
     let options = RasterRenderOptions {
         max_dimension: 32,
         max_pixels: 32 * 24,
@@ -299,6 +342,121 @@ fn small_region_of_large_page_uses_only_the_region_output_budget() {
         .bytes
         .chunks_exact(4)
         .all(|pixel| pixel == [255, 0, 0, 255]));
+}
+
+#[test]
+fn region_working_and_peak_limits_fail_before_allocating_and_map_to_host_limits() {
+    use rhwp::native_host::{NativeDocumentSession, NativeHostError};
+    use rhwp::HwpError;
+
+    let renderer = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    let small = RasterRegion {
+        x: 0.0,
+        y: 0.0,
+        width: 1.0,
+        height: 1.0,
+    };
+    for page in [
+        solid_page(10_000.0, 20_000.0),
+        solid_page(16_385.0, 1.0),
+        solid_page(4097.0, 4096.0),
+    ] {
+        let error = renderer
+            .render_region_pixels_with_options(&page, small, RasterRenderOptions::default())
+            .unwrap_err();
+        assert!(matches!(&error, HwpError::ResourceLimit(_)));
+        let host_error = NativeHostError::from(error);
+        assert!(matches!(host_error, NativeHostError::LimitExceeded(_)));
+        assert_eq!(host_error.code(), "limitExceeded");
+    }
+    // Each bitmap fits its own limit, but 64 MiB scratch + this output exceeds
+    // the independent 128 MiB peak. Rejection must precede either allocation.
+    let error = renderer
+        .render_region_pixels_with_options(
+            &solid_page(4096.0, 4096.0),
+            RasterRegion {
+                width: 8193.0,
+                height: 2048.0,
+                ..small
+            },
+            RasterRenderOptions::default(),
+        )
+        .unwrap_err();
+    assert!(matches!(error, HwpError::ResourceLimit(_)));
+
+    // No intersection means no scratch; the output itself still obeys peak.
+    let error = renderer
+        .render_region_pixels_with_options(
+            &solid_page(40.0, 30.0),
+            RasterRegion {
+                x: 100.0,
+                width: 8193.0,
+                height: 4096.0,
+                ..small
+            },
+            RasterRenderOptions::default(),
+        )
+        .unwrap_err();
+    assert!(matches!(error, HwpError::ResourceLimit(_)));
+
+    // The caller's output guard remains first, even on an oversized page.
+    let error = renderer
+        .render_region_pixels_with_options(
+            &solid_page(10_000.0, 20_000.0),
+            RasterRegion {
+                width: 2.0,
+                ..small
+            },
+            RasterRenderOptions {
+                max_dimension: 1,
+                ..Default::default()
+            },
+        )
+        .unwrap_err();
+    assert!(matches!(error, HwpError::RenderError(_)));
+
+    let session = NativeDocumentSession::new_blank().unwrap();
+    assert!(matches!(
+        session.render_region(0, small, 64.0),
+        Err(NativeHostError::LimitExceeded(_))
+    ));
+}
+
+#[test]
+fn wholly_off_page_region_needs_no_working_bitmap_and_keeps_clear_color() {
+    let renderer = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    let page = solid_page(10_000.0, 20_000.0);
+    for (background_color, transparent, expected) in [
+        (None, true, [0, 0, 0, 0]),
+        (None, false, [255, 255, 255, 255]),
+        (Some(0x332211), true, [0x11, 0x22, 0x33, 255]),
+    ] {
+        let region = renderer
+            .render_region_pixels_with_options(
+                &page,
+                RasterRegion {
+                    x: -2.0,
+                    y: -3.0,
+                    width: 2.0,
+                    height: 3.0,
+                },
+                RasterRenderOptions {
+                    max_dimension: 3,
+                    max_pixels: 6,
+                    background_color,
+                    transparent,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert_eq!((region.origin_x, region.origin_y), (-2, -3));
+        assert_eq!((region.pixels.width, region.pixels.height), (2, 3));
+        assert!(region
+            .pixels
+            .bytes
+            .chunks_exact(4)
+            .all(|pixel| pixel == expected));
+    }
 }
 
 #[test]

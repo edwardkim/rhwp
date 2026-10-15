@@ -1,13 +1,15 @@
 //! Opt-in native editor state. The document engine itself remains history-free.
 //!
 //! This first surface edits body text only. Offsets are Unicode scalar indices;
-//! cell editing, inline-control affinity and tabs are rejected explicitly.
+//! cell editing, object-bearing paragraph mutations, inline-control affinity
+//! and tabs are rejected explicitly. Read-only selection may span floating objects.
 //! Paragraph split/join and grapheme navigation live in `commands`. OS IME events
 //! and screen coordinates belong to the host, not to this session.
 
 use std::collections::VecDeque;
 
 use crate::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};
+use crate::model::control::Control;
 use crate::DocumentCore;
 
 use super::{NativeDocumentSession, NativeHostError};
@@ -581,6 +583,31 @@ impl NativeEditor {
         }
     }
 
+    /// Scalar body edits cannot preserve semantic controls when removing a
+    /// paragraph. Check the full validated span, including middle paragraphs
+    /// and floating objects that read-only interaction queries may traverse.
+    /// Selection changes and identical-text no-ops do not mutate those controls.
+    pub(super) fn check_body_text_span(
+        core: &DocumentCore,
+        selection: &NativeTextSelection,
+    ) -> Result<(), NativeHostError> {
+        let (start, end) = Self::ordered(selection);
+        for paragraph in &core.document().sections[start.section as usize].paragraphs
+            [start.paragraph as usize..=end.paragraph as usize]
+        {
+            if paragraph.controls.iter().any(|control| {
+                // Core text editing preserves the section/column definitions
+                // carried by blank documents. Other controls are not plain text.
+                !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_))
+            }) {
+                return Err(NativeHostError::Unsupported(
+                    "body text edits cannot include semantic-control paragraphs".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
+
     fn replacement_end(
         selection: &NativeTextSelection,
         text: &str,
@@ -626,6 +653,9 @@ impl NativeEditor {
         selection: &NativeTextSelection,
         text: &str,
     ) -> Result<(), NativeHostError> {
+        // IME previews reach this path independently of replace_selection.
+        // Reject unsupported spans before either core replacement primitive.
+        Self::check_body_text_span(core, selection)?;
         let (start, end) = Self::ordered(selection);
         if start.paragraph == end.paragraph
             && end.scalar_offset - start.scalar_offset <= 8

@@ -1549,7 +1549,11 @@ fn issue_4442_corrected_noto_ascii_advances_change_threshold_wrap_with_kerning_o
     let text_style = resolved_to_text_style(&styles, 0, 1);
     let corrected_width = estimate_text_width_unrounded("AVATAR", &text_style);
     let prior_table_width = 3416.0;
-    assert_eq!(corrected_width, 3633.0);
+    // [#7702] 한/글 장치 격자 단위 합 68118 × 4/75 px.
+    assert!(
+        (corrected_width - 68118.0 * 4.0 / 75.0).abs() < 1e-9,
+        "{corrected_width}"
+    );
     let threshold = (prior_table_width + corrected_width) / 2.0;
 
     let mut para = Paragraph {
@@ -1683,11 +1687,13 @@ fn test_reflow_condense_shrinks_measured_space_width() {
         ..Default::default()
     };
 
-    // Natural width is 50px: 8 latin chars at 5px + 2 spaces at 5px.
-    // condense=20 allows each measured space to shrink by 20%, saving 2px.
+    // [#7702] On the Hancom device grid (ppem 187) a half-width latin char is 94 units
+    // (5.013px) and a space rounds down to 93 units (4.96px): natural width 50.03px.
+    // condense=20 shrinks each space by 20% of 4.96px, saving 1.98px → 48.05px, which
+    // fits a 48.1px box only through condense.
     reflow_line_segs(
         &mut para,
-        ParagraphBox::content_width_px(48.0, 96.0),
+        ParagraphBox::content_width_px(48.1, 96.0),
         &styles,
         96.0,
     );
