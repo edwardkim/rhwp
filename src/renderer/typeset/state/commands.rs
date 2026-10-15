@@ -522,6 +522,18 @@ impl TypesetState {
         self.data.layout = layout;
         self.data.current_zone_column_type = column_type;
     }
+    /// 명시적으로 만든 새 쪽의 첫 영역과 편집용 쪽 정보에 같은 단 배치를 발행한다.
+    /// 쪽 중간 영역 전환은 install_zone_layout을 사용해 기존 쪽 정보를 보존한다.
+    pub(in crate::renderer::typeset) fn install_page_start_layout(
+        &mut self,
+        layout: crate::renderer::page_layout::PageLayoutInfo,
+        column_type: crate::model::page::ColumnType,
+    ) {
+        if let Some(page) = self.data.pages.last_mut() {
+            page.layout = layout.clone();
+        }
+        self.install_zone_layout(layout, column_type);
+    }
     pub(in crate::renderer::typeset) fn advance_zone_origin(&mut self, height: f64) {
         self.data.current_zone_y_offset += height;
     }

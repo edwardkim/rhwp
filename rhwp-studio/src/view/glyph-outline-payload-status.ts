@@ -457,10 +457,14 @@ function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && isPositiveBounds(glyph.viewBox)
     && destination !== undefined
     && isPositiveBounds(destination)
+    && isPortableSvgViewBoxMapping(glyph.viewBox, destination)
+    && isPortableSvgViewBoxMapping(wireBounds(glyph.viewBox), wireBounds(destination))
     && isOptionalFiniteAffine(glyph.transformToRun)
     && (glyph.intrinsicSize === undefined || (glyph.intrinsicSize !== null
       && isPortableGlyphScalar(glyph.intrinsicSize.width) && Math.fround(glyph.intrinsicSize.width) > 0
       && isPortableGlyphScalar(glyph.intrinsicSize.height) && Math.fround(glyph.intrinsicSize.height) > 0
+      && Number(glyph.intrinsicSize.width.toFixed(6)) > 0
+      && Number(glyph.intrinsicSize.height.toFixed(6)) > 0
     ))
     && (glyph.fontEmBox === undefined || isPositiveBounds(glyph.fontEmBox));
 }
@@ -557,14 +561,62 @@ function affineKey(transform: { a?: number; b?: number; c?: number; d?: number; 
 }
 
 function fixed(value: number | undefined): string {
-  return Number.isFinite(value) ? (value ?? 0).toFixed(6) : '-';
+  return fixedDecimalKey(value, 6);
 }
 
 function fixedBounds(value: number | undefined): string {
-  return Number.isFinite(value) ? (value ?? 0).toFixed(3) : '-';
+  return fixedDecimalKey(value, 3);
+}
+
+function fixedDecimalKey(value: number | undefined, precision: 3 | 6): string {
+  if (value === undefined || !Number.isFinite(value)) return '-';
+  // Rust's existing fixed-decimal wire/key preserves signed zero. JSON.parse
+  // preserves it too, but Number.toFixed() erases the sign of an exact -0.
+  if (Object.is(value, -0)) return `-0.${'0'.repeat(precision)}`;
+  // Number.toFixed() switches to exponent notation at 1e21. Every binary64
+  // number at that magnitude is integral, and BigInt(number) retains its exact
+  // integer rather than the shortest (potentially rounded) Number.toString().
+  if (Math.abs(value) >= 1e21) return `${BigInt(value)}.${'0'.repeat(precision)}`;
+  return value.toFixed(precision);
 }
 
 function isPositiveBounds(bounds: { x?: number; y?: number; width?: number; height?: number }): boolean {
+  if (!isPositiveBoundsInReplaySpace(bounds)) return false;
+  // Match preflight before JSON export as well as already serialized payloads.
+  // The three-decimal wire must not turn an admitted extent into zero.
+  return isPositiveBoundsInReplaySpace(wireBounds(bounds));
+}
+
+function wireBounds(bounds: { x?: number; y?: number; width?: number; height?: number }) {
+  return {
+    x: Number(bounds.x!.toFixed(3)),
+    y: Number(bounds.y!.toFixed(3)),
+    width: Number(bounds.width!.toFixed(3)),
+    height: Number(bounds.height!.toFixed(3)),
+  };
+}
+
+function isPortableSvgViewBoxMapping(
+  viewBox: { x?: number; y?: number; width?: number; height?: number },
+  destination: { x?: number; y?: number; width?: number; height?: number },
+): boolean {
+  return [
+    [viewBox.x!, viewBox.width!, destination.x!, destination.width!],
+    [viewBox.y!, viewBox.height!, destination.y!, destination.height!],
+  ].every(([origin, extent, destinationOrigin, destinationExtent]) => {
+    const scale = destinationExtent / extent;
+    const scaledOrigin = origin * scale;
+    const narrowedScale = Math.fround(scale);
+    const narrowedOrigin = Math.fround(Math.fround(origin) * narrowedScale);
+    return isPortableGlyphScalar(scale) && narrowedScale > 0
+      && isPortableGlyphScalar(scaledOrigin)
+      && isPortableGlyphScalar(destinationOrigin - scaledOrigin)
+      && Number.isFinite(narrowedOrigin)
+      && Number.isFinite(Math.fround(Math.fround(destinationOrigin) - narrowedOrigin));
+  });
+}
+
+function isPositiveBoundsInReplaySpace(bounds: { x?: number; y?: number; width?: number; height?: number }): boolean {
   if (bounds === null || !isPortableGlyphScalar(bounds.x)
     || !isPortableGlyphScalar(bounds.y)
     || !isPortableGlyphScalar(bounds.width)

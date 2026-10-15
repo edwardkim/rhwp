@@ -885,7 +885,7 @@ pub(crate) fn render_paragraph_parts(
         .max(serialized_axis_end)
         .saturating_add(injected_prefix_units)
         .saturating_sub(hwp5_only_units);
-    let axis_line_segs = if para.stored_text_partition_is_dirty() {
+    let axis_line_segs = if !crate::serializer::line_cache::can_serialize_line_partition(para) {
         // The retained rows are an edit-reflow template, not a partition of
         // the current text. Omit the cache and let the consumer recompute it.
         &source_line_segs[..0]
