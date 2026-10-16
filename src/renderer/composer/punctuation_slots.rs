@@ -97,7 +97,7 @@ pub(super) fn resolve_run_slots(
         let mut resolved = Vec::new();
         for run in std::mem::take(&mut line.runs) {
             let style = styles.char_styles.get(run.char_style_id as usize);
-            if !run
+            if run.char_overlap.is_some() || !run
                 .text
                 .chars()
                 .any(|ch| slot(ch, run.lang_index, regenerated, style) != run.lang_index)
@@ -109,27 +109,31 @@ pub(super) fn resolve_run_slots(
             // 명시한 영문 속성이 다르면 그 슬롯을 쓰되 뒤 글자의 상속 언어는 유지한다.
             // 겹침 문자·PUA 표시 변환은 이 구성 결과 뒤에서 한 번 수행된다.
             let mut start = 0;
+            let mut model_start = 0;
             let mut lang = run.lang_index;
             let mut origin = run.neutral_space_origin;
-            for (byte, ch) in run.text.char_indices() {
+            for (scalar, (byte, ch)) in run.text.char_indices().enumerate() {
                 let next = slot(ch, run.lang_index, regenerated, style);
                 let next_origin = space_origin(ch, run.lang_index, style);
                 if (next, next_origin) != (lang, origin) {
                     if byte > start {
                         resolved.push(ComposedTextRun {
                             text: run.text[start..byte].to_string(),
+                            display_text: run.display_for_model_range(model_start, scalar),
                             lang_index: lang,
                             neutral_space_origin: origin,
                             ..run.clone()
                         });
                     }
                     start = byte;
+                    model_start = scalar;
                     lang = next;
                     origin = next_origin;
                 }
             }
             if start < run.text.len() {
                 resolved.push(ComposedTextRun {
+                    display_text: run.display_for_model_range(model_start, run.text.chars().count()),
                     text: run.text[start..].to_string(),
                     lang_index: lang,
                     neutral_space_origin: origin,

@@ -2226,3 +2226,32 @@ Native/fresh WASM 전66쪽씩 쪽수66/66·최저93.77937%·90% 미만0쪽이다
 확인한다. cdef 기준의 C71 전체 회귀와 C72/C73 시각 결과는 새 base의 전체 통과로 쓰지 않는다.
 남은 하락 쪽의 '-'는 독립 PDF에서Palatino Linotype인데 현재 paint run은 휴먼명조/Haansoft
 계열이며 폭만 Latin 슬롯을 사용함을 추적했다. 다음 보정은 이 소유와 앞뒤 내용 보존을 확인한다.
+
+
+## C62. 저장 구두점의 측정·paint 슬롯 일치 (2026-10-16)
+
+upstream `0953598d8`로227커밋을 충돌 없이 리베이스하고 사용자 초안·원본·PDF를 보존했다.
+별도 target의 정확한 새 base Native/fresh WASM 빌드가 완료됐다. 기존 cdef 결과를 새 base의
+통과로 재사용하지 않는다. 새 의존성 세 설치 및 frontend compatibility7PASS/Studio TSC도
+확인했으며 새 source 전체 회귀 완료를 뜻하지 않는다.
+
+개인정보10/29/53쪽의 하이픈은 독립 Print에서Palatino Linotype인데 폭과paint 소유가 갈랐다.
+측정의 ASCII 구두점 Latin 슬롯을 저장/재조판 compose도 소비하고 일반 공백 언어·겹침 개체와
+표시 문자열의 scalar 소유는 유지했다. 공통TextRunNode가 각 paint backend로 전달된다.
+Native/fresh WASM 각각 전66쪽·최저93.77937%·미달0쪽,10/29/53은 양쪽100%다.
+동률 첫10쪽에 독립 PDF X85.44/기준선141.76CSSpx±2와 원문·단일 소유·본문 글꼴 관계를
+정식 검사로 추가했다. 실제 전후1FAIL(0.164초)→1PASS(0.153초), 같은 생산 소스의 기존
+composer91PASS다. 첫 테스트 타입 오류는 컴파일 실패로 제외하고 올바른 테스트로 전후를 재실행했다.
+
+추가5문서315쪽도 각 backend에서 쪽수 일치·전쪽90% 이상이다. 실제 Studio 제품 파일열기/
+Canvas2D layer에서 같은 구두점 face/위치를 확인하고 처음 응답한JS/WASM·글꼴 선택TS를
+frozen build/작업장과 대조했다. screenshot/CanvasKit 전체 수용으로 쓰지 않는다.
+첫 기본hostCDP 진단 실패는Mac headless 재실행으로 정정했다. 기본 fresh WASM의 새
+supportsPdfImport API도 존재/false로 확인했다. Mac locked wrapper no-opt 로컬 대체 빌드다.
+
+[독립 근거·전쪽 수치·정식 검사·전후 review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/stored-punctuation-owner-20261016/README.md)에 연결한다.
+새 base의48조건 전쪽 비교·남은 감소·전체 게이트는 미완료다. 사용자가 지적한 issue265 12쪽은
+별도 간격 결함임을 확인했다. 원본 자간0,독립 PDF의한글 glyph폭24CSSpx와 현재24가 같지만,
+PDF는TJ로약1.2CSSpx 추가 전진을 넣어영문 시작점이331.68인 반면현재320.75다.
+제목의 HWP3 굵은 글자 추가 전진을 다음 보정으로 추적하며 글꼴 대체나자간수치 임의수정으로
+숨기지 않는다. 개인정보50쪽의 다른 차이와 혼동하지 않는다. 지침·사용자 초안은 변경하지 않았다.
