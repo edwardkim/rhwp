@@ -3162,6 +3162,16 @@ impl LayoutEngine {
                     for (ctrl_idx, ctrl) in source_controls.iter().enumerate() {
                         match ctrl {
                             Control::Picture(pic) => {
+                                // 공백 줄만 남은 조각은 뒤 글줄의 TAC 그림을 소유하지 않는다.
+                                // 인라인 표와 같은 원본 줄 창 판정을 보완 paint도 소비한다.
+                                if pic.common.treat_as_char
+                                    && stored_control_owned_by_line_window(
+                                        para, ctrl_idx, start_line, end_line,
+                                    )
+                                    .is_some_and(|owned| !owned)
+                                {
+                                    continue;
+                                }
                                 let visible_non_inline_control =
                                     cut_units.map_or(true, |(su, eu)| {
                                         self.cell_cut_starts_non_inline_control(
