@@ -114,6 +114,8 @@ struct FragmentBudget {
     source_first_fragment_row_end: Option<usize>,
     /// Complete source frame: the last row's physical remainder, shared by scan and paint.
     source_complete_frame_last_row: Option<(usize, f64)>,
+    /// 저장 근거가 내용과 남은 빈 띠를 두 조각으로 나눈다고 증언한 첫 조각의 행.
+    source_carried_band_row: Option<usize>,
     source_first_fragment_overflow_allowance: f64,
     header_overhead: f64,
     avail_for_rows: f64,

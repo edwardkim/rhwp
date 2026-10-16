@@ -889,9 +889,29 @@ impl TypesetEngine {
         });
         // 이미 소비한 후속 첫 조각 뒤의 줄이 종료 표의 아래 바깥여백을 소유한다.
         // 현재 실제 행 높이로 닫히는 경우만 마지막 행 수용 예산에 포함한다.
-        if is_continuation && start_cut.is_empty() && std::ptr::eq(row_geometry_table, table) {
+        // 시작 행은 그 행의 물리 상자 전체를, 앞 조각이 내용을 다 소비하고 넘긴 빈 띠로
+        // 시작하면 그 띠(`start_row_height_override`)만 남은 높이로 센다. 띠로 시작하는 끝
+        // 조각도 같은 저장 줄로 아래 바깥여백을 닫는다(1480000-201900698 표 14: 띠 23.04 +
+        // 2행 45.36 + 위·아래 여백 = 후속 vpos 5696 HU).
+        let start_row_remaining = if start_cut.is_empty() {
+            cut_row_h.get(cursor_row).copied()
+        } else {
+            input.start.start_row_height_override.filter(|_| {
+                !input.start.start_cut_is_block
+                    && prepared.layout_engine.row_cut_consumes_all_ordinary_units(
+                        table,
+                        cursor_row,
+                        start_cut,
+                        input.source.styles,
+                    )
+            })
+        };
+        if let Some(start_row_remaining) = start_row_remaining
+            .filter(|_| is_continuation && std::ptr::eq(row_geometry_table, table))
+        {
             if let Some(next) = input.source.paragraphs_all.get(para_idx + 1) {
-                let remaining_height = cut_row_h.iter().skip(cursor_row).sum::<f64>()
+                let remaining_height = start_row_remaining
+                    + cut_row_h.iter().skip(cursor_row + 1).sum::<f64>()
                     + cs * row_count.saturating_sub(cursor_row + 1) as f64;
                 let top = fragment_placement.map_or(
                     st.current_height + host_before_overhead + vert_offset_overhead,
@@ -1733,7 +1753,10 @@ impl TypesetEngine {
                 }),
             scan_row_count,
             saved_first_fragment_source_frame,
-            stored_partial_frame_height: stored_partial_frame.map(|frame| frame.height),
+            stored_partial_frame_height: stored_partial_frame.as_ref().map(|frame| frame.height),
+            source_carried_band_row: stored_partial_frame
+                .as_ref()
+                .and_then(|frame| frame.carried_band_row),
             source_first_fragment_row_end,
             source_complete_frame_last_row,
             source_first_fragment_overflow_allowance,

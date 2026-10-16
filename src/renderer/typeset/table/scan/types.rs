@@ -43,4 +43,6 @@ pub(in crate::renderer::typeset) struct BlockRowScanVars {
     pub(in crate::renderer::typeset) source_terminal_suffix_start: Option<usize>,
     /// 첫 조각에서 0행의 보호 rowspan 묶음을 0행 뒤에서 자른다(이월 게이트의 결정).
     pub(in crate::renderer::typeset) opening_block_cuts_after_first_row: bool,
+    /// 저장 근거가 «내용은 이 조각, 남은 빈 띠는 다음 조각»으로 증언한 행.
+    pub(in crate::renderer::typeset) source_carried_band_row: Option<usize>,
 }

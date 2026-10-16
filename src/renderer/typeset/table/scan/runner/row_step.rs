@@ -209,7 +209,14 @@ impl TypesetEngine {
                     // `해당 없음`처럼 한 행의 텍스트만 먼저 잘려 p19의 source owner가
                     // 앞당겨진다. 한컴은 그 근소한 pseudo-tail은 보존하지 않고 행 전체를
                     // 다음 쪽으로 넘긴다.
-                    if table::scan::row::retains_blank_tail(&probe, visible_height, rest) {
+                    // 저장 근거가 이 행의 컷을 증언하면 추정 문턱(`MIN_TOP_KEEP_PX`) 대신 그 컷을
+                    // 따른다: 내용은 다 들고, 남은 빈 띠는 다음 조각이 잇는다.
+                    let source_certified_band = v.source_carried_band_row == Some(r)
+                        && probe.fully_consumed
+                        && visible_height <= rest + 0.5;
+                    if source_certified_band
+                        || table::scan::row::retains_blank_tail(&probe, visible_height, rest)
+                    {
                         consumed += cs_before + rest;
                         r += 1;
                         end_row = r;
