@@ -192,3 +192,53 @@ fn page_44_keeps_the_empty_line_after_the_stored_row_cut() {
         next_top - empty_top
     );
 }
+
+/// 21761835 2쪽: 행 10~11 칸(c1~c4 rs=2, 7940HU)과 행 11~17 칸(c0 rs=7, 50353HU)이 겹친다.
+/// 한/글 2020 PDF 는 행 10~11 블록을 선언 높이(105.9px)로 그리고, 긴 칸의 남는 높이를 걸침의
+/// 마지막 행 17 에 준다. 1쪽에서 줄어든 칸 (6,0) rs=5 의 남은 몫은 2쪽 행 10 이 받는다.
+/// 수정 전 rhwp 는 행 11 에 긴 칸의 남는 높이를 몰아 블록이 139.7px 였다.
+#[test]
+fn rowspan_extra_goes_to_the_last_row_across_the_page() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn walk<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    let core = core(SAMPLE_21761835);
+    let tree = core.build_page_render_tree(1).expect("2쪽 렌더 트리");
+    let mut nodes = Vec::new();
+    walk(&tree.root, &mut nodes);
+    let cell = |row: u16, col: u16| {
+        nodes
+            .iter()
+            .find_map(|node| match &node.node_type {
+                RenderNodeType::TableCell(cell)
+                    if cell.row == row && cell.col == col && cell.model_cell_index.is_some() =>
+                {
+                    Some((node.bbox.y, node.bbox.y + node.bbox.height))
+                }
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("2쪽 셀 ({row},{col})"))
+    };
+    let block = cell(10, 1);
+    let declared_block = 7940.0 / 75.0;
+    assert!(
+        (block.1 - block.0 - declared_block).abs() <= 0.5,
+        "행 10~11 블록은 선언 {declared_block:.2}px 여야 한다: {:.2}",
+        block.1 - block.0
+    );
+    let row12 = cell(12, 1);
+    assert!(
+        (row12.0 - block.1).abs() <= 0.5,
+        "행 12 는 블록 바로 아래에서 시작한다"
+    );
+    let row17 = cell(17, 1);
+    assert!(
+        row17.1 - row17.0 > 7002.0 / 75.0 + 30.0,
+        "행 17 은 긴 칸의 남는 높이를 받아 선언 93.4px 보다 크다: {:.2}",
+        row17.1 - row17.0
+    );
+}

@@ -169,27 +169,32 @@ impl TypesetEngine {
                         && prefix_known(usize::from(cell.row), accepted_prefix_end.min(row))
                 })
                 .collect();
+            // 앞 조각이 수용한 상자뿐 아니라 이 루프가 방금 다시 푼 행도 걸침의 남은
+            // 요구를 바꾼다.
             if !closing.iter().any(|cell| {
                 let first = cell.row as usize;
-                (first..accepted_prefix_end.min(row))
-                    .any(|prior| (heights[prior] - original[prior]).abs() > 0.5)
+                (first..row).any(|prior| (heights[prior] - original[prior]).abs() > 0.5)
             }) {
                 continue;
             }
             // Whole-row content and single-row declarations provide the floor.
-            // Rows with no single-row owner retain the original unknown-row
-            // distribution rather than inventing a new one here.
-            if !table
+            // A row with no single-row owner is the unknown row of the spans that
+            // close on it: its height is what those spans still require after the
+            // accepted prefix. 한/글은 걸침 칸의 총높이를 쪽을 넘어서도 지킨다 —
+            // `21761835` 표: 칸 (6,0) rs=5 462.6px 가 1쪽에서 449.1px 를 썼으므로
+            // 2쪽 행 10 은 13.6px, 행 10~11 칸(105.9px)의 행 11 은 92.3px 다
+            // (한/글 2020 PDF 2쪽 행 10~11 106px, 행 17 138px).
+            let has_single_row_owner = table
                 .cells
                 .iter()
-                .any(|cell| cell.row as usize == row && cell.row_span == 1)
-            {
-                continue;
-            }
-            let floor =
+                .any(|cell| cell.row as usize == row && cell.row_span == 1);
+            let floor = if has_single_row_owner {
                 prepared
                     .layout_engine
-                    .row_cut_content_height(table, row, &[], &[], source.styles);
+                    .row_cut_content_height(table, row, &[], &[], source.styles)
+            } else {
+                0.0
+            };
             let required = closing.iter().fold(floor, |height, cell| {
                 let first = cell.row as usize;
                 let used = heights[first..row].iter().sum::<f64>()
