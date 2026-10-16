@@ -953,5 +953,12 @@
     "behind": 0,
     "ahead": 209,
     "action": "unchanged from rebased base, no repeated rebase"
+  },
+  "laterFormattingCorrection": {
+    "path": "tests/cases/issue_4138_reparsed_split_frame_cache.rs",
+    "change": "rustfmt only, discovered after C50 case registration in subsequent full fmt check",
+    "focusedPassedAfterRepair": 2,
+    "validation": "../legacy-literal-symbols-20261016/validation.json",
+    "previousWhole10438ResultStillBelongsTo": "b88b666ba4b8739d7b70ffc4a4d631216a5114bb"
   }
 }

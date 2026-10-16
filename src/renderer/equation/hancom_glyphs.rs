@@ -21,6 +21,7 @@ pub(super) enum Role {
     Operator,
     Greek,
     BigOperator,
+    LegacyLiteral,
 }
 
 pub(super) fn is_operator(text: &str) -> bool {
@@ -106,6 +107,15 @@ fn glyph(ch: char, role: Role) -> Option<(char, u16)> {
             }
         }
         Role::BigOperator if ch == '∑' => (0xe067, 739),
+        // A legacy equation's literal triangle and one-dot leader occupy
+        // full symbol slots in Hancom Print. The equation font has no U+2024
+        // cmap entry; its mathematical dot is U+22C5, with that same advance.
+        // Keep this projection in the shared glyph result, not in a painter.
+        Role::LegacyLiteral => match ch {
+            '△' => (0x25b3, 1024),
+            '․' => (0x22c5, 1024),
+            _ => return None,
+        },
         _ => return None,
     };
     Some((char::from_u32(code)?, advance))
@@ -169,6 +179,7 @@ pub(super) fn measure(
         // 정체·ASCII 연산자의 glyph 기준선과 수식 기준선을 구분한다.
         // 저장 컨트롤의 기준선 이동은 개체 전체에 별도로 적용한다.
         baseline_shift: if matches!(role, Role::Variable { italic: false })
+            || matches!(role, Role::LegacyLiteral)
             || matches!(role, Role::Operator) && text.is_ascii()
         {
             fs * if font_family == "HancomEQN" {

@@ -375,6 +375,13 @@ impl EqLayout {
     }
 
     fn layout_text(&self, text: &str, fs: f64) -> LayoutBox {
+        if self.legacy_hft_metrics {
+            if let Some(layout) =
+                self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::LegacyLiteral, fs, 0.0)
+            {
+                return layout;
+            }
+        }
         if let Some(layout) = self.layout_hancom_glyphs(
             text,
             super::hancom_glyphs::Role::Variable {

@@ -1,0 +1,332 @@
+{
+  "status": "partial_PR_hold",
+  "parentHead": "b7879b86a1efdac1cb9528a6a3b90754cc408669",
+  "base": "f5251e7de4e31ee0fb939f352c6ef144bb340bdb",
+  "asBuiltSourceFiles": {
+    "src/renderer/equation/layout.rs": "27281a2ac38ce340c89cc5b66b58d67cc96b1497e6f9309558611449b3a610c8",
+    "src/renderer/equation/hancom_glyphs.rs": "7aa31766458c3455e07b107109effb49f6b8f481e262c211721d53fda6d3fe39"
+  },
+  "formatEquivalence": {
+    "status": "format only after completed capture; source normalized with rustfmt, no rerender or new-head full acceptance claim",
+    "files": [
+      {
+        "path": "src/renderer/equation/hancom_glyphs.rs",
+        "asBuiltOrProbedSha256": "7aa31766458c3455e07b107109effb49f6b8f481e262c211721d53fda6d3fe39",
+        "formattedSha256": "7aa31766458c3455e07b107109effb49f6b8f481e262c211721d53fda6d3fe39",
+        "onlyRustfmtChanged": true
+      },
+      {
+        "path": "src/renderer/equation/layout.rs",
+        "asBuiltOrProbedSha256": "27281a2ac38ce340c89cc5b66b58d67cc96b1497e6f9309558611449b3a610c8",
+        "formattedSha256": "d3ea2b54b5629f099c4b8f2fc75cdd0ff520cde30b7f731fa96df4cb2f02949f",
+        "onlyRustfmtChanged": true
+      },
+      {
+        "path": "tests/cases/issue_4138_legacy_equation_literal_symbols.rs",
+        "asBuiltOrProbedSha256": "e4b085e8bb4b3300d7e4a926145eddc50ccc8eceae38152341f9f81f0551213a",
+        "formattedSha256": "48b73ffe2575b7d79338d28ebf4bbb8da10a369d012ec600aa7bb651a64d9c91",
+        "onlyRustfmtChanged": true
+      },
+      {
+        "path": "tests/cases/issue_4138_reparsed_split_frame_cache.rs",
+        "asBuiltOrProbedSha256": "1a5c7275fc9adc6275956399582606137f77742d6b063a953ecf6725e1d22c0c",
+        "formattedSha256": "3a8e938d94dc09a62303f8a8f57db8b91d55c13b2707c2688bf9c5fa26398caf",
+        "onlyRustfmtChanged": true,
+        "reason": "previous C50 case added after its older fmt gate; latest whole fmt exposed it"
+      }
+    ]
+  },
+  "nativeBinarySha256": "144ea6cbadd9dcafa69e6d2dd4133f704620b76386533247bf19f01002a150e8",
+  "wasm": {
+    "hashes": {
+      "rhwp.js": "009b53a277844df11b6d9f00a0cab0b29e449d3e46f00a24dca42a6fed9696ed",
+      "rhwp_bg.wasm": "16de740f7b22ebc951453aa1f1ebd8d54e8124dc9948ce4f4c2a69027ae254e0",
+      "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390"
+    },
+    "localNoOpt": true,
+    "exitCode": 0,
+    "seconds": 169.51502283400623
+  },
+  "sourceIdentity": "parent b7879b86 plus two production files; hashes above are as-built, rustfmt-only normalization recorded, not a final PR code-head validation claim",
+  "nativeWasmWhole": [
+    {
+      "case": "giant4138-original",
+      "backend": "native",
+      "counts": {
+        "rhwp": 115,
+        "pdf": 115
+      },
+      "pages": 115,
+      "minimum": 90.74868,
+      "below90": [],
+      "tsv": "native-giant4138-original.tsv",
+      "tsvSha256": "70307e9004aefc036fd2c18c7afa23ba3c0986613c08994eb1eba2a61258ac15"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "native",
+      "counts": {
+        "rhwp": 197,
+        "pdf": 197
+      },
+      "pages": 197,
+      "minimum": 90.24017,
+      "below90": [],
+      "tsv": "native-giant4138-tab-period.tsv",
+      "tsvSha256": "dbc14154d2d6d4d4c99684e85047687a10ff1dea0369374331a2f730031560f7"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "native",
+      "counts": {
+        "rhwp": 197,
+        "pdf": 197
+      },
+      "pages": 197,
+      "minimum": 90.24017,
+      "below90": [],
+      "tsv": "native-giant4138-current-ascii.tsv",
+      "tsvSha256": "1d39831c49a30ff6982cd8b9e4c1ffea0cf6e41ee1a853225449cdb762050f29"
+    },
+    {
+      "case": "giant4138-original",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 115,
+        "pdf": 115
+      },
+      "pages": 115,
+      "minimum": 90.63175,
+      "below90": [],
+      "tsv": "wasm-giant4138-original.tsv",
+      "tsvSha256": "2be91c51f106b0653df6d312fbf98847e494b3a6fdeaa42cffa7658753d1c77c"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 197,
+        "pdf": 197
+      },
+      "pages": 197,
+      "minimum": 90.24017,
+      "below90": [],
+      "tsv": "wasm-giant4138-tab-period.tsv",
+      "tsvSha256": "214652178d6e31db36720cce503530b551b0976417d84765af9b35ef82cbe4cb"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 197,
+        "pdf": 197
+      },
+      "pages": 197,
+      "minimum": 90.24017,
+      "below90": [],
+      "tsv": "wasm-giant4138-current-ascii.tsv",
+      "tsvSha256": "f56ae0d398a4762a53f4bf691cd70083987ffdadd96b358860225e9335f40d04"
+    }
+  ],
+  "review": [
+    {
+      "backend": "native",
+      "case": "giant4138-tab-period",
+      "page": 129,
+      "file": "native-giant4138-tab-period-review-129.png",
+      "sha256": "4422671f210646277975d782432b0473bd06dfcd25b9c42f9bae36ad0ac3948d",
+      "directlyInspected": true
+    },
+    {
+      "backend": "native",
+      "case": "giant4138-tab-period",
+      "page": 130,
+      "file": "native-giant4138-tab-period-review-130.png",
+      "sha256": "99f85c57356dd389949b5c56ab7ab927e3a77b6d8f85b4d005d648cb5e08be41",
+      "directlyInspected": true
+    },
+    {
+      "backend": "wasm",
+      "case": "giant4138-original",
+      "page": 76,
+      "file": "wasm-giant4138-original-review-076.png",
+      "sha256": "7234092c963859b4f5292ce36ebfed4b21efde44d0861a7b6626e0de285f0cd8",
+      "directlyInspected": true
+    },
+    {
+      "backend": "wasm",
+      "case": "giant4138-tab-period",
+      "page": 130,
+      "file": "wasm-giant4138-tab-period-review-130.png",
+      "sha256": "51d559b6013a8688921a17678a1eb8488fd4e608e6cf0bfc9d78a3ec87f2054c",
+      "directlyInspected": true
+    }
+  ],
+  "scopeAudit": {
+    "conditions": 47,
+    "matchingSources": [
+      [
+        "giant4138-original",
+        3
+      ],
+      [
+        "giant4138-tab-period",
+        3
+      ],
+      [
+        "giant4138-current-ascii",
+        3
+      ]
+    ],
+    "candidate": "conservative IR scan; not a new whole47 validation",
+    "scannerLinkedLibrary": "C50 frozen native rlib; model/script properties unchanged by the two C51 equation files; diagnostic only"
+  },
+  "equationLibraryTests": {
+    "passed": 148,
+    "failed": 0,
+    "filteredRootTests": 3666,
+    "source": "as-built C51 before rustfmt, focused only"
+  },
+  "invalidDiagnosticAndRecovery": {
+    "staleCopiedRootSha256": "692f64e7df0df2e0a3128d0b0d1bbd966eacd9d293d531ca6351e1909b09e2ea",
+    "staleFile": "librhwp-stale-root-before-c51.rlib",
+    "reason": "--bin refreshed unhashed deps/librhwp.rlib, not top-level librhwp.rlib; initial ad hoc C51 test actually linked C50",
+    "initialAdHocC51ResultInvalid": true,
+    "nativeBinaryAndWholePngResultsUnaffected": true
+  },
+  "remaining": [
+    "court first page below90 and note whitespace wraps unresolved",
+    "existing latest-devel WASM page declines remain held; previous-candidate improvement does not waive fixed-base comparison",
+    "triangle outline and other formula spacing differ slightly from historical Print; not pixel identity or complete formula fidelity",
+    "final broader validation, actual consumer paths, new full suite after this change pending"
+  ],
+  "whole10438History": "b88b666 code before C51, not current source full result",
+  "newFormalRegression": {
+    "path": "tests/cases/issue_4138_legacy_equation_literal_symbols.rs",
+    "finalFocusedPassed": 1,
+    "scope": "real saved input, page ownership/script/text extraction, independent full-em slots/common paint; relation and source-derived sizes, no page absolute px pins"
+  },
+  "existingCacheFocusedPassed": 2,
+  "diagnosticErrorsCorrected": [
+    "initial full PNG mode wrote manifest but not TSV; generated canonical TSV from preserved PNG without rerender",
+    "initial C51 ad hoc rlib was stale top-level C50 file; replaced with actual unhashed deps/librhwp.rlib; before FAIL/after PASS rerun",
+    "whole fmt exposed C50 case added after its older fmt gate; rustfmt applied only",
+    "formatting changed sharding assignment; first cache-focused selected zero tests and is invalid; --prepare rerun then actual two tests passed"
+  ],
+  "fixedBaseComparison": "latest-base-comparison.json",
+  "finalFocusedGates": {
+    "complete": true,
+    "pid": 49692,
+    "steps": [
+      {
+        "name": "literal-prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exitCode": 0,
+        "seconds": 0.9759298749850132
+      },
+      {
+        "name": "literal-manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "f5251e7de4e31ee0fb939f352c6ef144bb340bdb"
+        ],
+        "exitCode": 0,
+        "seconds": 0.4552792910253629
+      },
+      {
+        "name": "literal-unit-tier",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "f5251e7de4e31ee0fb939f352c6ef144bb340bdb"
+        ],
+        "exitCode": 0,
+        "seconds": 10.89794154104311
+      },
+      {
+        "name": "literal-focused",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_4138_legacy_equation_literal_symbols",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--test-threads",
+          "8"
+        ],
+        "exitCode": 0,
+        "seconds": 6.714486000011675
+      },
+      {
+        "name": "literal-cache-focused",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_4138_reparsed_split_frame_cache",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--test-threads",
+          "8"
+        ],
+        "exitCode": 0,
+        "seconds": 7.215676459018141
+      },
+      {
+        "name": "literal-fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exitCode": 0,
+        "seconds": 7.148539458983578
+      },
+      {
+        "name": "literal-alltarget-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exitCode": 0,
+        "seconds": 79.94181162497262
+      }
+    ]
+  },
+  "finalSourceFiles": {
+    "src/renderer/equation/hancom_glyphs.rs": "7aa31766458c3455e07b107109effb49f6b8f481e262c211721d53fda6d3fe39",
+    "src/renderer/equation/layout.rs": "d3ea2b54b5629f099c4b8f2fc75cdd0ff520cde30b7f731fa96df4cb2f02949f",
+    "tests/cases/issue_4138_legacy_equation_literal_symbols.rs": "48b73ffe2575b7d79338d28ebf4bbb8da10a369d012ec600aa7bb651a64d9c91",
+    "tests/cases/issue_4138_reparsed_split_frame_cache.rs": "3a8e938d94dc09a62303f8a8f57db8b91d55c13b2707c2688bf9c5fa26398caf"
+  },
+  "manifest": {
+    "sources": 1505,
+    "staticTestAttributes": 6397,
+    "integrationTargets": 48,
+    "minimumNextestCases": 6288
+  }
+}

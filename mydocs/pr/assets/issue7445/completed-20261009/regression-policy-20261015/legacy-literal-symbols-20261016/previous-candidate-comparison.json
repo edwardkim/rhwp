@@ -1,0 +1,100 @@
+[
+  {
+    "backend": "native",
+    "case": "giant4138-original",
+    "pages": 115,
+    "changed": [
+      [
+        76,
+        "90.54589",
+        "90.74868"
+      ]
+    ],
+    "dropAtLeast0_01": []
+  },
+  {
+    "backend": "native",
+    "case": "giant4138-tab-period",
+    "pages": 197,
+    "changed": [
+      [
+        129,
+        "94.40628",
+        "94.57472"
+      ],
+      [
+        130,
+        "93.71087",
+        "93.84918"
+      ]
+    ],
+    "dropAtLeast0_01": []
+  },
+  {
+    "backend": "native",
+    "case": "giant4138-current-ascii",
+    "pages": 197,
+    "changed": [
+      [
+        129,
+        "94.40628",
+        "94.57472"
+      ],
+      [
+        130,
+        "93.71087",
+        "93.84918"
+      ]
+    ],
+    "dropAtLeast0_01": []
+  },
+  {
+    "backend": "wasm",
+    "case": "giant4138-original",
+    "pages": 115,
+    "changed": [
+      [
+        76,
+        "90.45601",
+        "90.63175"
+      ]
+    ],
+    "dropAtLeast0_01": []
+  },
+  {
+    "backend": "wasm",
+    "case": "giant4138-tab-period",
+    "pages": 197,
+    "changed": [
+      [
+        129,
+        "94.22159",
+        "94.38680"
+      ],
+      [
+        130,
+        "93.67273",
+        "93.80068"
+      ]
+    ],
+    "dropAtLeast0_01": []
+  },
+  {
+    "backend": "wasm",
+    "case": "giant4138-current-ascii",
+    "pages": 197,
+    "changed": [
+      [
+        129,
+        "94.22159",
+        "94.38680"
+      ],
+      [
+        130,
+        "93.67273",
+        "93.80068"
+      ]
+    ],
+    "dropAtLeast0_01": []
+  }
+]

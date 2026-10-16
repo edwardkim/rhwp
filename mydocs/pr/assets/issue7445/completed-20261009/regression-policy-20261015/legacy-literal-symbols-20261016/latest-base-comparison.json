@@ -1,0 +1,459 @@
+{
+  "base": "f5251e7de4e31ee0fb939f352c6ef144bb340bdb",
+  "equivalentBaseEvidence": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-f5251e7d-20261016/latest-base-equivalence.json",
+  "method": "current alpha decoder canonical 2px metric; same source/PDF/fonts/backends, Decimal percentage-point differences",
+  "results": [
+    {
+      "backend": "native",
+      "case": "giant4138-original",
+      "pages": 115,
+      "dropAtLeast0_01": [],
+      "status": "no_drop_in_measured_scope",
+      "baseTsvSha256": "03791a8c4ba2b229e392860944b919515dc976ede6d090ff89d5c863d494843b"
+    },
+    {
+      "backend": "native",
+      "case": "giant4138-tab-period",
+      "pages": 197,
+      "dropAtLeast0_01": [],
+      "status": "no_drop_in_measured_scope",
+      "baseTsvSha256": "fd3ae6d0dd47888a50dce76766871b3e92f686334716f12e0679c851f90dbbf8"
+    },
+    {
+      "backend": "native",
+      "case": "giant4138-current-ascii",
+      "status": "unmeasured_base_page_count_blocked"
+    },
+    {
+      "backend": "wasm",
+      "case": "giant4138-original",
+      "pages": 115,
+      "dropAtLeast0_01": [
+        {
+          "page": 5,
+          "base": "96.69874",
+          "candidate": "96.66313",
+          "drop": "0.03561"
+        },
+        {
+          "page": 10,
+          "base": "97.34966",
+          "candidate": "97.28193",
+          "drop": "0.06773"
+        },
+        {
+          "page": 12,
+          "base": "95.89730",
+          "candidate": "95.85894",
+          "drop": "0.03836"
+        },
+        {
+          "page": 15,
+          "base": "94.79812",
+          "candidate": "94.75928",
+          "drop": "0.03884"
+        },
+        {
+          "page": 16,
+          "base": "97.80035",
+          "candidate": "97.75891",
+          "drop": "0.04144"
+        },
+        {
+          "page": 19,
+          "base": "97.24827",
+          "candidate": "97.22366",
+          "drop": "0.02461"
+        },
+        {
+          "page": 20,
+          "base": "97.27886",
+          "candidate": "97.21835",
+          "drop": "0.06051"
+        },
+        {
+          "page": 21,
+          "base": "97.11811",
+          "candidate": "97.06811",
+          "drop": "0.05000"
+        },
+        {
+          "page": 22,
+          "base": "97.26144",
+          "candidate": "97.22966",
+          "drop": "0.03178"
+        },
+        {
+          "page": 23,
+          "base": "97.23957",
+          "candidate": "97.18186",
+          "drop": "0.05771"
+        },
+        {
+          "page": 25,
+          "base": "96.77045",
+          "candidate": "96.75917",
+          "drop": "0.01128"
+        },
+        {
+          "page": 30,
+          "base": "97.62193",
+          "candidate": "97.54202",
+          "drop": "0.07991"
+        },
+        {
+          "page": 36,
+          "base": "97.49639",
+          "candidate": "97.46459",
+          "drop": "0.03180"
+        },
+        {
+          "page": 37,
+          "base": "97.55448",
+          "candidate": "97.51346",
+          "drop": "0.04102"
+        },
+        {
+          "page": 38,
+          "base": "97.56328",
+          "candidate": "97.52981",
+          "drop": "0.03347"
+        },
+        {
+          "page": 41,
+          "base": "97.60197",
+          "candidate": "97.52222",
+          "drop": "0.07975"
+        },
+        {
+          "page": 43,
+          "base": "97.29474",
+          "candidate": "97.22695",
+          "drop": "0.06779"
+        },
+        {
+          "page": 44,
+          "base": "97.30474",
+          "candidate": "97.24864",
+          "drop": "0.05610"
+        },
+        {
+          "page": 45,
+          "base": "98.02428",
+          "candidate": "97.97392",
+          "drop": "0.05036"
+        },
+        {
+          "page": 46,
+          "base": "97.25151",
+          "candidate": "97.22572",
+          "drop": "0.02579"
+        },
+        {
+          "page": 47,
+          "base": "97.05959",
+          "candidate": "96.93052",
+          "drop": "0.12907"
+        },
+        {
+          "page": 48,
+          "base": "96.45732",
+          "candidate": "96.44421",
+          "drop": "0.01311"
+        },
+        {
+          "page": 49,
+          "base": "97.81435",
+          "candidate": "97.77686",
+          "drop": "0.03749"
+        },
+        {
+          "page": 50,
+          "base": "98.04208",
+          "candidate": "97.95865",
+          "drop": "0.08343"
+        },
+        {
+          "page": 51,
+          "base": "97.44471",
+          "candidate": "97.41892",
+          "drop": "0.02579"
+        },
+        {
+          "page": 55,
+          "base": "97.55400",
+          "candidate": "97.45067",
+          "drop": "0.10333"
+        },
+        {
+          "page": 56,
+          "base": "97.62335",
+          "candidate": "97.60038",
+          "drop": "0.02297"
+        },
+        {
+          "page": 59,
+          "base": "98.14833",
+          "candidate": "98.09375",
+          "drop": "0.05458"
+        },
+        {
+          "page": 60,
+          "base": "97.47498",
+          "candidate": "97.44563",
+          "drop": "0.02935"
+        },
+        {
+          "page": 62,
+          "base": "97.57950",
+          "candidate": "97.53878",
+          "drop": "0.04072"
+        },
+        {
+          "page": 63,
+          "base": "97.41451",
+          "candidate": "97.38515",
+          "drop": "0.02936"
+        },
+        {
+          "page": 67,
+          "base": "97.54593",
+          "candidate": "97.46473",
+          "drop": "0.08120"
+        },
+        {
+          "page": 68,
+          "base": "98.27328",
+          "candidate": "98.20241",
+          "drop": "0.07087"
+        },
+        {
+          "page": 69,
+          "base": "96.73224",
+          "candidate": "96.67014",
+          "drop": "0.06210"
+        },
+        {
+          "page": 70,
+          "base": "96.87149",
+          "candidate": "96.79607",
+          "drop": "0.07542"
+        },
+        {
+          "page": 71,
+          "base": "97.40401",
+          "candidate": "97.38043",
+          "drop": "0.02358"
+        },
+        {
+          "page": 72,
+          "base": "96.56061",
+          "candidate": "96.51963",
+          "drop": "0.04098"
+        },
+        {
+          "page": 74,
+          "base": "96.75254",
+          "candidate": "96.71135",
+          "drop": "0.04119"
+        },
+        {
+          "page": 75,
+          "base": "97.95336",
+          "candidate": "97.92118",
+          "drop": "0.03218"
+        },
+        {
+          "page": 77,
+          "base": "96.71996",
+          "candidate": "96.70313",
+          "drop": "0.01683"
+        },
+        {
+          "page": 79,
+          "base": "97.37217",
+          "candidate": "97.29184",
+          "drop": "0.08033"
+        },
+        {
+          "page": 80,
+          "base": "97.54273",
+          "candidate": "97.50476",
+          "drop": "0.03797"
+        },
+        {
+          "page": 81,
+          "base": "97.20341",
+          "candidate": "97.18469",
+          "drop": "0.01872"
+        },
+        {
+          "page": 82,
+          "base": "97.41159",
+          "candidate": "97.35646",
+          "drop": "0.05513"
+        },
+        {
+          "page": 83,
+          "base": "96.57002",
+          "candidate": "96.43509",
+          "drop": "0.13493"
+        },
+        {
+          "page": 84,
+          "base": "97.16981",
+          "candidate": "97.15918",
+          "drop": "0.01063"
+        },
+        {
+          "page": 85,
+          "base": "97.77876",
+          "candidate": "97.72879",
+          "drop": "0.04997"
+        },
+        {
+          "page": 91,
+          "base": "97.49698",
+          "candidate": "97.44576",
+          "drop": "0.05122"
+        },
+        {
+          "page": 92,
+          "base": "98.03498",
+          "candidate": "97.97784",
+          "drop": "0.05714"
+        },
+        {
+          "page": 93,
+          "base": "96.88611",
+          "candidate": "96.83697",
+          "drop": "0.04914"
+        },
+        {
+          "page": 94,
+          "base": "97.92817",
+          "candidate": "97.88323",
+          "drop": "0.04494"
+        },
+        {
+          "page": 95,
+          "base": "97.33323",
+          "candidate": "97.28763",
+          "drop": "0.04560"
+        },
+        {
+          "page": 97,
+          "base": "97.58039",
+          "candidate": "97.54434",
+          "drop": "0.03605"
+        },
+        {
+          "page": 98,
+          "base": "97.47705",
+          "candidate": "97.39145",
+          "drop": "0.08560"
+        },
+        {
+          "page": 99,
+          "base": "96.99319",
+          "candidate": "96.94497",
+          "drop": "0.04822"
+        },
+        {
+          "page": 100,
+          "base": "97.26574",
+          "candidate": "97.22561",
+          "drop": "0.04013"
+        },
+        {
+          "page": 105,
+          "base": "97.67781",
+          "candidate": "97.64391",
+          "drop": "0.03390"
+        },
+        {
+          "page": 106,
+          "base": "97.59000",
+          "candidate": "97.50826",
+          "drop": "0.08174"
+        },
+        {
+          "page": 107,
+          "base": "98.63184",
+          "candidate": "98.58267",
+          "drop": "0.04917"
+        },
+        {
+          "page": 108,
+          "base": "96.39232",
+          "candidate": "96.37848",
+          "drop": "0.01384"
+        },
+        {
+          "page": 109,
+          "base": "98.75425",
+          "candidate": "98.69395",
+          "drop": "0.06030"
+        }
+      ],
+      "status": "held_devel_drop",
+      "baseTsvSha256": "acba5ab00ae9bf9618c0022341032c788928a21c6ccc45acd835d391de4fc5e1"
+    },
+    {
+      "backend": "wasm",
+      "case": "giant4138-tab-period",
+      "pages": 197,
+      "dropAtLeast0_01": [
+        {
+          "page": 26,
+          "base": "97.69419",
+          "candidate": "97.68042",
+          "drop": "0.01377"
+        },
+        {
+          "page": 31,
+          "base": "97.64930",
+          "candidate": "97.62586",
+          "drop": "0.02344"
+        },
+        {
+          "page": 32,
+          "base": "97.55192",
+          "candidate": "97.51979",
+          "drop": "0.03213"
+        },
+        {
+          "page": 33,
+          "base": "97.00999",
+          "candidate": "96.99415",
+          "drop": "0.01584"
+        },
+        {
+          "page": 34,
+          "base": "96.93524",
+          "candidate": "96.91731",
+          "drop": "0.01793"
+        },
+        {
+          "page": 35,
+          "base": "97.17744",
+          "candidate": "97.15990",
+          "drop": "0.01754"
+        },
+        {
+          "page": 37,
+          "base": "97.48562",
+          "candidate": "97.45546",
+          "drop": "0.03016"
+        }
+      ],
+      "status": "held_devel_drop",
+      "baseTsvSha256": "0c4f4d1275dbcd04b92f02354baec0c85ade27ff85ea954a4ea0fddde339e88c"
+    },
+    {
+      "backend": "wasm",
+      "case": "giant4138-current-ascii",
+      "status": "unmeasured_base_page_count_blocked"
+    }
+  ]
+}
