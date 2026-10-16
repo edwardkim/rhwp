@@ -102,7 +102,7 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
     // 결측을 추정하지 않으며, 다른 weight/style 프로그램에는 적용하지 않는다.
     // U+2027도 같은 원 프로그램에서 결측이고 Haansoft Batang이 공급한다.
     // 설치 프로그램 HMKMM d033df71/HBATANG bef63718의 cmap으로 확인했으며,
-    // 자연 전진은 기존 메트릭과 독립 Print의 178/1024em을 사용한다.
+    // 자연 전진은 기존 메트릭의 178/1024em이며, 독립 Print의 다음 글자 원점으로 대조했다.
     if matches!(ch, '\u{2024}' | '\u{2027}') {
         match (metric.name, metric.em_size, metric.bold, metric.italic) {
             ("HumanMyeongJo", 1024, false, false) => return Some(false),
