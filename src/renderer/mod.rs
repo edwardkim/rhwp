@@ -296,9 +296,15 @@ pub(crate) fn glyph_fit_positions<'a>(
         }
     } else if (style.kerning && validated_replay_positions(replay_text, layout_positions).is_some())
         || style.extra_char_spacing < 0.0
+        || legacy_font_advances::has_bold_tracking(style)
     {
         let mut fit_style = style.clone();
         fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
+        if legacy_font_advances::has_bold_tracking(style) {
+            // 원점만 전진시키는 옛 프로그램의 굵은 자간을 글리프 확대에 쓰지 않는다.
+            // 표시 글꼴·굵기와 자연 메트릭은 유지한다.
+            fit_style.metric_font_family = None;
+        }
         std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, &fit_style))
     } else {
         std::borrow::Cow::Borrowed(char_positions)

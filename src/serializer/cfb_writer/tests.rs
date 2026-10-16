@@ -157,6 +157,7 @@ fn test_full_roundtrip_uncompressed() {
         type_info: None,
         default_name: None,
         subst_font: None,
+        native_program: None,
     });
     doc_info.char_shapes.push(CharShape {
         font_ids: [0; 7],

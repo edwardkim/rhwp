@@ -7,8 +7,10 @@
 use super::style_resolver::ResolvedStyleSet;
 use super::TextStyle;
 use crate::model::document::Document;
+use crate::model::style::NativeFontProgram;
 
 pub(crate) const HUMAN_HFT_METRIC_FACE: &str = "HumanMyeongJo-HFT";
+pub(crate) const HANYANG_HFT_METRIC_FACE: &str = "한양신명조 (HFT)";
 // 실제 표시 family나 파일 이름이 아닌, HWP 꾸밈의 측정 계약 식별자다.
 const MALGUN_BOLD_DECORATION_METRIC_FACE: &str = "MalgunGothic-HancomBoldDecoration";
 
@@ -33,10 +35,16 @@ pub(crate) fn select_native_programs(document: &Document, styles: &mut ResolvedS
                 .font_faces
                 .get(lang)
                 .and_then(|faces| faces.get(font_id as usize));
-            if source_format == SourceFormat::Hwp3
-                && face.is_some_and(|face| !face.is_embedded && face.name == "휴먼명조")
-            {
-                style.font_families_metric_face[lang] = Some(HUMAN_HFT_METRIC_FACE.to_string());
+            if let Some(face) = face.filter(|face| !face.is_embedded) {
+                let metric_face = match face.native_program {
+                    Some(NativeFontProgram::HumanMyeongJo) => Some(HUMAN_HFT_METRIC_FACE),
+                    Some(NativeFontProgram::HanyangSinMyeongJo) => Some(HANYANG_HFT_METRIC_FACE),
+                    None if source_format == SourceFormat::Hwp3 && face.name == "휴먼명조" => Some(HUMAN_HFT_METRIC_FACE),
+                    None => None,
+                };
+                if let Some(metric_face) = metric_face {
+                    style.font_families_metric_face[lang] = Some(metric_face.to_string());
+                }
             }
             // 새 줄 구성에서 사용할 꾸밈 메트릭의 후보를 표시한다. 저장 줄의
             // 실제 굵은 전진에는 적용하지 않으며, 소비자가 줄 메트릭 출처를 함께 전달한다.
@@ -78,7 +86,21 @@ pub(crate) fn measurement_bold(
     requested_bold && !(regenerated_font_metrics && declared == MALGUN_BOLD_DECORATION_METRIC_FACE)
 }
 
-pub(crate) fn bold_advance(style: &TextStyle, ch: char, ordinary_advance: f64) -> f64 {
+/// 원 프로그램의 굵게 속성은 글리프 폭과 별개인 자간을 가진다.
+/// 독립 Print의 Type3 /Widths는 일반 폭과 같고 TJ만 약0.05em 더 전진한다.
+pub(crate) fn has_bold_tracking(style: &TextStyle) -> bool {
+    style.bold && style.metric_font_family.as_deref() == Some(HANYANG_HFT_METRIC_FACE)
+}
+
+pub(crate) fn bold_advance(
+    style: &TextStyle,
+    ch: char,
+    ordinary_advance: f64,
+    em_advance: f64,
+) -> f64 {
+    if has_bold_tracking(style) && !ch.is_whitespace() && !ch.is_control() {
+        return em_advance * 0.05;
+    }
     if style.bold
         && style.metric_font_family.as_deref() == Some(HUMAN_HFT_METRIC_FACE)
         && ('\u{AC00}'..='\u{D7A3}').contains(&ch)

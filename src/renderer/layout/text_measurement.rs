@@ -2074,6 +2074,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             style,
             c,
             base_width_px * ratio + applied_letter_spacing_px,
+            font_size * ratio,
         );
     }
     if c == ' ' && i >= style.unjustified_leading_spaces {

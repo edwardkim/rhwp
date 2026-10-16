@@ -4174,6 +4174,15 @@ fn parse_hwp3_inner(
                 font.alt_name = Some(font_name.clone());
             }
             font.name = mapped_name;
+            // 이름 목록이 가리키는 원 프로그램의 계약을 공통 IR에 전달한다.
+            // 표시 글꼴과 자간 선언은 보존하며 downstream의 포맷 추정을 없앤다.
+            font.native_program = match font.name.as_str() {
+                "휴먼명조" => Some(crate::model::style::NativeFontProgram::HumanMyeongJo),
+                "한양신명조" => {
+                    Some(crate::model::style::NativeFontProgram::HanyangSinMyeongJo)
+                }
+                _ => None,
+            };
             // '옛한글'은 한컴의 HFT face다. HWP3 이름 목록에는 유형 바이트가
             // 없지만 한컴 2020 재저장본은 이 face를 type="HFT"로 보존한다.
             // unknown으로 두면 기존 HFT 치환·폭 규칙을 건너뛰고 고딕으로

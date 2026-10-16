@@ -47,6 +47,14 @@ pub fn border_width_mm_str(index: u8) -> &'static str {
         .unwrap_or("0.1")
 }
 
+/// 원본 프로그램이 일반 글리프 폭 외에 지닌 조판 계약.
+/// 파서가 확정하며 렌더러는 컨테이너 형식을 다시 판별하지 않는다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NativeFontProgram {
+    HumanMyeongJo,
+    HanyangSinMyeongJo,
+}
+
 /// 글꼴 정보 (HWPTAG_FACE_NAME)
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Font {
@@ -75,6 +83,10 @@ pub struct Font {
     /// HWP5 FACE_NAME의 대체 이름/별도 유형과 HWPX `<hh:substFont>`를
     /// 같은 계약으로 전달한다. HWP3 alt_name의 원 이름 추적과는 구분한다.
     pub subst_font: Option<SubstFont>,
+    /// 원본 프로그램의 조판 출처. 문서의 글꼴 선언·자간을 바꾸거나
+    /// 다른 저장 포맷의 원본 속성으로 직렬화하지 않는다.
+    #[serde(skip)]
+    pub native_program: Option<NativeFontProgram>,
 }
 
 /// 문서의 명시 대체 글꼴 (HWP5 FACE_NAME / HWPX `<hh:substFont>`)
