@@ -147,6 +147,13 @@ impl Default for PdfImportLimits {
     }
 }
 
+struct CodecScratch(std::sync::Mutex<Option<Vec<u8>>>);
+impl std::fmt::Debug for CodecScratch {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CodecScratch").finish_non_exhaustive()
+    }
+}
+
 /// Shared accounting with a sticky fatal state; not a global allocation tracker.
 #[derive(Debug)]
 pub struct ImportBudget {
@@ -167,6 +174,8 @@ pub struct ImportBudget {
     xobject_visits: AtomicUsize,
     failed: AtomicBool,
     failure_reason: std::sync::Mutex<Option<&'static str>>,
+    // At most one idle codec block per request; live streams own their blocks.
+    codec_scratch: CodecScratch,
 }
 
 impl ImportBudget {
@@ -214,6 +223,7 @@ impl ImportBudget {
             reference_visits: AtomicUsize::new(0),
             active_references: AtomicUsize::new(0),
             xobject_visits: AtomicUsize::new(0),
+            codec_scratch: CodecScratch(std::sync::Mutex::new(None)),
             failed: AtomicBool::new(false),
             failure_reason: std::sync::Mutex::new(None),
         })
@@ -267,6 +277,39 @@ impl ImportBudget {
     /// Requested private codec bytes charged before allocation, including freed buffers.
     pub fn codec_allocated_bytes(&self) -> usize {
         self.codec_allocated.load(Ordering::Relaxed)
+    }
+
+    pub(crate) fn take_codec_scratch(&self, bytes: usize) -> Result<Option<Vec<u8>>> {
+        self.check()?;
+        if bytes > self.limits.codec_allocation_bytes {
+            return Err(self.reject("codec allocation bytes"));
+        }
+        let mut slot = self
+            .codec_scratch
+            .0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        if slot
+            .as_ref()
+            .is_some_and(|buffer| buffer.capacity() >= bytes)
+        {
+            Ok(slot.take())
+        } else {
+            Ok(None)
+        }
+    }
+    pub(crate) fn recycle_codec_scratch(&self, buffer: Vec<u8>) {
+        let mut slot = self
+            .codec_scratch
+            .0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        if slot
+            .as_ref()
+            .is_none_or(|old| old.capacity() < buffer.capacity())
+        {
+            *slot = Some(buffer);
+        }
     }
 
     pub(crate) fn charge_codec_allocation(&self, amount: usize) -> Result<()> {

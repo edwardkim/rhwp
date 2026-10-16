@@ -106,6 +106,66 @@ impl PdfImage {
         }
     }
 
+    fn apply_opacity(
+        &mut self,
+        opacity: f32,
+        budget: &crate::import_limits::ImportBudget,
+    ) -> Result<()> {
+        if let ImageData::Raw {
+            pixels,
+            format: PixelFormat::RGBA,
+        } = &mut self.data
+        {
+            for row in pixels.chunks_mut(self.width as usize * 4) {
+                budget.check()?;
+                for p in row.chunks_exact_mut(4) {
+                    p[3] = (f32::from(p[3]) * opacity).round() as u8;
+                }
+            }
+            return Ok(());
+        }
+        let rgb: Cow<'_, [u8]> = match &self.data {
+            ImageData::Raw {
+                pixels,
+                format: PixelFormat::RGB,
+            } if self.bits_per_component == 8 => Cow::Borrowed(pixels),
+            ImageData::Jpeg(_) => Cow::Owned(
+                Self::into_rgb_with_budget(self.decode_jpeg_with_budget(budget)?, Some(budget))?
+                    .into_raw(),
+            ),
+            ImageData::Raw { pixels, format } if self.bits_per_component == 8 => Cow::Owned(
+                self.raw_rgb_with_budget(pixels, *format, budget)?
+                    .into_raw(),
+            ),
+            _ => return Err(Error::Unsupported("limited image opacity sample format".into())),
+        };
+        let count = (self.width as usize)
+            .checked_mul(self.height as usize)
+            .ok_or_else(|| budget.reject("image opacity geometry"))?;
+        if rgb.len() != count * 3 {
+            return Err(Error::Image("invalid RGB opacity samples".into()));
+        }
+        let mut pixels = sample_buffer(
+            count
+                .checked_mul(4)
+                .ok_or_else(|| budget.reject("image opacity bytes"))?,
+            Some(budget),
+        )?;
+        for row in rgb.chunks(self.width as usize * 3) {
+            budget.check()?;
+            for c in row.chunks_exact(3) {
+                pixels.extend_from_slice(&[c[0], c[1], c[2], (opacity * 255.0).round() as u8]);
+            }
+        }
+        self.data = ImageData::Raw {
+            pixels,
+            format: PixelFormat::RGBA,
+        };
+        self.bits_per_component = 8;
+        self.color_space = ColorSpace::DeviceRGB;
+        Ok(())
+    }
+
     /// Whether the stored samples are still in the image's raw sample space
     /// (see the field docs for what leaves it).
     pub fn samples_are_raw(&self) -> bool {
@@ -4017,6 +4077,10 @@ pub struct PdfImageHandle<'doc> {
     /// Zero-based index of this image among all images painted on the page,
     /// in content-stream paint order.
     pub paint_order: usize,
+    /// Lexicographic operator invocation path for interleaving paths/images.
+    pub source_order: Vec<usize>,
+    /// Nonstroking alpha constant at this image invocation.
+    pub opacity: f32,
     /// Axis-aligned bounding box of this image in PDF user space, computed
     /// during Phase 1 by applying the current transformation matrix to the
     /// unit rectangle `[0,0,1,1]`.
@@ -4109,6 +4173,11 @@ impl<'doc> PdfImageHandle<'doc> {
         }
         if let Some(mask) = mask {
             mask.apply(&mut image, self.doc.import_budget().expect("bounded mask"))?;
+        }
+        if self.opacity < 1.0 {
+            if let Some(budget) = self.doc.import_budget() {
+                image.apply_opacity(self.opacity, budget)?;
+            }
         }
         self.doc.check_import_budget()?;
 
@@ -4405,6 +4474,8 @@ pub(crate) fn image_handle_from_xobject<'doc>(
         filter_chain,
         is_inline: false,
         paint_order,
+        source_order: Vec::new(),
+        opacity: 1.0,
         bbox,
         clip: super::image_clip::ImageClip::Unbounded,
         rotation_degrees,
@@ -4491,6 +4562,8 @@ pub(crate) fn image_handle_from_inline<'doc>(
         filter_chain,
         is_inline: true,
         paint_order,
+        source_order: Vec::new(),
+        opacity: 1.0,
         bbox,
         clip: super::image_clip::ImageClip::Unbounded,
         rotation_degrees,

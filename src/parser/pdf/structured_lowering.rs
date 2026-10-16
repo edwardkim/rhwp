@@ -795,7 +795,14 @@ pub(super) fn lower(
     let controls = std::mem::take(&mut doc.sections[section].paragraphs[0].controls);
     let mut span_controls = vec![None; page.spans.len()];
     let mut shape_ids = vec![None; page.spans.len()];
-    let mut image_controls = Vec::new();
+    let mut image_controls = vec![0; page.images.len()];
+    for source in array(&report["imageSourceControls"])? {
+        let image = index(&source["image"])?;
+        let control = index(&source["control"])?;
+        *image_controls
+            .get_mut(image)
+            .ok_or("invalid image/control mapping")? = control;
+    }
     let mut rule_controls = vec![None; page.paths.len()];
     for source in array(&report["ruleSourceControls"])? {
         let path = index(&source["path"])?;
@@ -813,7 +820,7 @@ pub(super) fn lower(
     let mut span_cursor = 0;
     for (control_idx, c) in controls.iter().enumerate() {
         match c {
-            Control::Picture(_) => image_controls.push(control_idx),
+            Control::Picture(_) => {}
             Control::Shape(s) => {
                 if let Some(b) = s.drawing().and_then(|d| d.text_box.as_ref()) {
                     let source = *nonempty

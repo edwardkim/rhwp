@@ -2982,26 +2982,26 @@ fn png_output_and_cumulative_limits_include_container_and_repeated_work() {
     }
     // The RGB samples are already decoded and borrowed by the encoder. Only
     // actual compressor reservations and PNG output consume this request;
-    // charge both again on the next call, without phantom image conversions.
+    // reuse the returned compressor block and charge each new encoded output.
     let one_request = scratch + encoded_bytes;
     assert_eq!(normal.decoded_bytes(), one_request);
     for count in [1, 2] {
         for cap in [
-            count * one_request - 1,
-            count * one_request,
-            count * one_request + 1,
+            scratch + count * encoded_bytes - 1,
+            scratch + count * encoded_bytes,
+            scratch + count * encoded_bytes + 1,
         ] {
             let budget = budget(4096, cap);
             for _ in 1..count {
                 image.to_png_bytes_with_budget(&budget).unwrap();
             }
             let result = image.to_png_bytes_with_budget(&budget);
-            if cap < count * one_request {
+            if cap < scratch + count * encoded_bytes {
                 assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
                 assert!(image.to_png_bytes_with_budget(&budget).is_err());
             } else {
                 result.unwrap();
-                assert_eq!(budget.decoded_bytes(), count * one_request);
+                assert_eq!(budget.decoded_bytes(), scratch + count * encoded_bytes);
             }
         }
     }
@@ -3228,7 +3228,7 @@ fn flate_raw_fallback_charges_both_attempts_and_never_retries_resource_failure()
         b"AB"
     );
     let scratch = normal.codec_allocated_bytes();
-    let total = scratch * 2 + 2;
+    let total = scratch + 2;
     for cap in [scratch - 1, scratch, total - 1, total, total + 1] {
         let shared = budget(2, cap);
         let result = decode(&raw, &["FlateDecode"], &shared);
@@ -3243,7 +3243,7 @@ fn flate_raw_fallback_charges_both_attempts_and_never_retries_resource_failure()
             }
         } else {
             assert_eq!(result.unwrap(), b"AB");
-            assert_eq!(shared.codec_allocated_bytes(), scratch * 2);
+            assert_eq!(shared.codec_allocated_bytes(), scratch);
             assert_eq!(shared.decoded_bytes(), total);
         }
     }
@@ -4327,4 +4327,46 @@ fn truetype_format4_scratch_and_maps_obey_cumulative_byte_boundary() {
             doc.check_import_budget().unwrap();
         }
     }
+}
+
+#[test]
+fn png_codec_scratch_reuse_is_request_scoped_and_preserves_changing_pixels() {
+    use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage, PixelFormat};
+    let first = budget(4096, 2 * 1024 * 1024);
+    let second = budget(4096, 2 * 1024 * 1024);
+    for request in [&first, &second] {
+        let mut scratch = 0;
+        for n in 0..100u8 {
+            let input = vec![n, 255 - n, n / 2, 255 - n, n, n / 3];
+            let image = PdfImage::new(
+                2,
+                1,
+                ColorSpace::DeviceRGB,
+                8,
+                ImageData::Raw {
+                    pixels: input.clone(),
+                    format: PixelFormat::RGB,
+                },
+            );
+            let png = image.to_png_bytes_with_budget(request).unwrap();
+            assert_eq!(
+                image::load_from_memory(&png).unwrap().to_rgb8().as_raw(),
+                &input
+            );
+            if n == 0 {
+                scratch = request.codec_allocated_bytes();
+                assert!(scratch > 0);
+            }
+            assert_eq!(
+                request.codec_allocated_bytes(),
+                scratch,
+                "another PNG must reuse its returned codec block"
+            );
+        }
+    }
+    assert_eq!(
+        first.codec_allocated_bytes(),
+        second.codec_allocated_bytes(),
+        "each request owns its own initial allocation"
+    );
 }

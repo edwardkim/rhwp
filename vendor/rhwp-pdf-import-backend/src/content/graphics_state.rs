@@ -295,9 +295,9 @@ pub struct GraphicsState {
     pub flatness: f32,
 
     // Transparency parameters (from ExtGState)
-    /// Fill alpha/opacity (CA): 0.0 (transparent) to 1.0 (opaque)
+    /// Fill alpha/opacity (ca): 0.0 (transparent) to 1.0 (opaque)
     pub fill_alpha: f32,
-    /// Stroke alpha/opacity (ca): 0.0 (transparent) to 1.0 (opaque)
+    /// Stroke alpha/opacity (CA): 0.0 (transparent) to 1.0 (opaque)
     pub stroke_alpha: f32,
     /// Blend mode (BM): Normal, Multiply, Screen, Overlay, etc.
     pub blend_mode: String,
@@ -379,6 +379,16 @@ pub struct SoftMaskForm {
 }
 
 impl GraphicsState {
+    /// Whether the text rendering mode and alpha constants paint any ink.
+    pub(crate) fn text_has_paint(&self) -> bool {
+        match self.render_mode {
+            0 | 4 => self.fill_alpha > 0.0,
+            1 | 5 => self.stroke_alpha > 0.0,
+            2 | 6 => self.fill_alpha > 0.0 || self.stroke_alpha > 0.0,
+            _ => false,
+        }
+    }
+
     /// Create a new graphics state with default values.
     ///
     /// # Examples

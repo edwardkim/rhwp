@@ -7,11 +7,55 @@ use crate::extractors::text::ArtifactType;
 use crate::geometry::Rect;
 use crate::layout::Color;
 
+/// One PDF clipping path, intersected with its parent in page user space.
+#[derive(Debug, Clone)]
+pub struct PathClip {
+    /// Transformed path geometry.
+    pub operations: Vec<PathOperation>,
+    /// W* uses even-odd winding.
+    pub even_odd: bool,
+    /// Previously active clipping path.
+    pub parent: Option<std::sync::Arc<PathClip>>,
+}
+
+/// Paint metadata retained by the bounded positional importer.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct PathPaint {
+    /// Content-stream invocation path, compared lexicographically.
+    pub source_order: Vec<usize>,
+    /// Nonstroking alpha constant (ca).
+    pub fill_alpha: f32,
+    /// Stroking alpha constant (CA).
+    pub stroke_alpha: f32,
+    /// f*/B* select even-odd rather than nonzero winding.
+    pub even_odd: bool,
+    /// Supported page-space clipping region.
+    #[serde(skip)]
+    pub clip: crate::extractors::image_clip::ImageClip,
+    /// Full clipping geometry when a rectangular crop is insufficient.
+    #[serde(skip)]
+    pub clip_path: Option<std::sync::Arc<PathClip>>,
+}
+impl Default for PathPaint {
+    fn default() -> Self {
+        Self {
+            source_order: Vec::new(),
+            fill_alpha: 1.0,
+            stroke_alpha: 1.0,
+            even_odd: false,
+            clip: crate::extractors::image_clip::ImageClip::Unbounded,
+            clip_path: None,
+        }
+    }
+}
+
 /// Vector path content that can be extracted from or written to a PDF.
 ///
 /// This represents vector graphics such as lines, curves, and shapes.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct PathContent {
+    /// Source paint state; independent of reading order.
+    pub paint: PathPaint,
     /// Bounding box of the path
     pub bbox: Rect,
     /// Path operations
@@ -67,6 +111,7 @@ impl PathContent {
     /// Create a new empty path content element.
     pub fn new(bbox: Rect) -> Self {
         Self {
+            paint: PathPaint::default(),
             bbox,
             operations: Vec::new(),
             stroke_color: Some(Color::black()),
@@ -86,6 +131,7 @@ impl PathContent {
     pub fn from_operations(operations: Vec<PathOperation>) -> Self {
         let bbox = Self::compute_bbox(&operations);
         Self {
+            paint: PathPaint::default(),
             bbox,
             operations,
             stroke_color: Some(Color::black()),
@@ -697,6 +743,7 @@ fn dist_point_to_segment(p: (f32, f32), a: (f32, f32), b: (f32, f32)) -> f32 {
 impl Default for PathContent {
     fn default() -> Self {
         Self {
+            paint: PathPaint::default(),
             bbox: Rect::new(0.0, 0.0, 0.0, 0.0),
             operations: Vec::new(),
             stroke_color: Some(Color::black()),

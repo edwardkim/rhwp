@@ -5,6 +5,7 @@
 //! full codec/font/cache allocation bounds are not yet proven.
 mod extract;
 mod lowering;
+mod path_paint;
 mod recognition;
 mod structured_lowering;
 mod table_detection;
@@ -108,6 +109,7 @@ struct ExtractedPage {
     media_box: (f32, f32, f32, f32),
     spans: Vec<TextSpan>,
     images: Vec<PdfImage>,
+    image_orders: Vec<Vec<usize>>,
     paths: Vec<PathContent>,
     // Internal structural evidence only, dropped after each page's lowering.
     snapshot: Value,
@@ -206,7 +208,7 @@ pub fn parse_pdf_with_options(
         let extra = page
             .spans
             .len()
-            .checked_add(cells * 3 + tables.len() * 2 + 1)
+            .checked_add(cells * 3 + tables.len() * 2 + 1 + page.images.len() + page.paths.len())
             .ok_or_else(|| PdfImportError::budget("style count overflow"))?;
         for size in [
             document.doc_info.para_shapes.len(),

@@ -52,6 +52,7 @@ impl ImageClip {
 pub(crate) struct ImageGraphicsState {
     pub ctm: Matrix,
     pub clip: ImageClip,
+    pub alpha: f32,
 }
 
 #[derive(Default)]
@@ -112,11 +113,19 @@ pub(crate) struct ImageClipTracker {
 impl ImageClipTracker {
     pub fn new(ctm: Matrix, clip: ImageClip) -> Self {
         Self {
-            current: ImageGraphicsState { ctm, clip },
+            current: ImageGraphicsState {
+                ctm,
+                clip,
+                alpha: 1.0,
+            },
             saved: Vec::new(),
             path: ClipPath::default(),
             pending: false,
         }
+    }
+
+    pub fn set_alpha(&mut self, alpha: f32) {
+        self.current.alpha = alpha;
     }
 
     pub fn current(&self) -> ImageGraphicsState {

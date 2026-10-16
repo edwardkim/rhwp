@@ -39,7 +39,7 @@ pub(super) fn extract(
             "invalid page dimensions",
         ));
     }
-    let spans = checked(pdf, pdf.extract_spans(page))?;
+    let spans = checked(pdf, pdf.extract_painted_spans(page))?;
     let paths = checked(pdf, pdf.extract_paths(page))?;
     for path in &paths {
         budget.path_operations = budget
@@ -99,7 +99,11 @@ pub(super) fn extract(
         return Err(PdfImportError::budget("page image count exceeds 32"));
     }
     let mut images = Vec::with_capacity(handles.len());
+    let mut image_orders = Vec::with_capacity(handles.len());
     for handle in handles {
+        if handle.opacity == 0.0 {
+            continue;
+        }
         let Some(visible) = handle.clip.visible_bounds(handle.bbox).map_err(|_| {
             PdfImportError::new(
                 "PDF_IMAGE_UNSUPPORTED",
@@ -148,6 +152,7 @@ pub(super) fn extract(
         // Ownership inference and lowering consume the same visible bounds.
         // Keep the full bitmap and CTM so lowering can preserve an editable crop.
         image.set_bbox(visible);
+        image_orders.push(handle.source_order.clone());
         images.push(image);
     }
     let detection = table_detection::detect_ruled_tables(&spans, &paths, &images, media_box)
@@ -185,6 +190,7 @@ pub(super) fn extract(
         media_box,
         spans,
         images,
+        image_orders,
         paths,
         snapshot: json!({"tableDetection": detection, "recognition": recognition}),
     })

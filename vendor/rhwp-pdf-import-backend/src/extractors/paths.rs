@@ -43,9 +43,9 @@ use crate::elements::{LineCap, LineJoin, PathContent, PathOperation};
 use crate::geometry::{Point, Rect};
 use crate::layout::Color;
 
-/// Copy-only graphics state for path extraction (no String/Vec fields).
-/// Enables allocation-free q/Q save/restore unlike the full [`GraphicsState`].
-#[derive(Debug, Clone, Copy)]
+/// Lightweight graphics state: scalar styles and a shared immutable clip chain.
+/// q/Q does not deep-copy path geometry or allocate a full GraphicsState.
+#[derive(Debug, Clone)]
 pub(crate) struct PathGraphicsState {
     pub ctm: Matrix,
     pub stroke_color_rgb: (f32, f32, f32),
@@ -53,6 +53,10 @@ pub(crate) struct PathGraphicsState {
     pub line_width: f32,
     pub line_cap: u8,
     pub line_join: u8,
+    pub fill_alpha: f32,
+    pub stroke_alpha: f32,
+    pub clip_path: Option<std::sync::Arc<crate::elements::PathClip>>,
+    pub dash_pattern: Option<(Vec<f32>, f32)>,
 }
 
 impl PathGraphicsState {
@@ -64,11 +68,15 @@ impl PathGraphicsState {
             line_width: 1.0,
             line_cap: 0,
             line_join: 0,
+            fill_alpha: 1.0,
+            stroke_alpha: 1.0,
+            clip_path: None,
+            dash_pattern: None,
         }
     }
 }
 
-/// Graphics state stack using [`PathGraphicsState`] for allocation-free save/restore.
+/// Graphics state stack using the lightweight [`PathGraphicsState`].
 pub(crate) struct PathGraphicsStateStack {
     stack: Vec<PathGraphicsState>,
 }
@@ -89,7 +97,7 @@ impl PathGraphicsStateStack {
     }
 
     pub fn save(&mut self) {
-        let state = *self.current();
+        let state = self.current().clone();
         self.stack.push(state);
     }
 
@@ -130,16 +138,19 @@ pub enum FillRule {
 pub struct PathExtractor {
     /// Accumulated complete paths
     paths: Vec<PathContent>,
+    pub(crate) paint: crate::elements::PathPaint,
     /// Current path being constructed
     current_operations: Vec<PathOperation>,
     /// Current point (set by MoveTo, LineTo, CurveTo, etc.)
     current_point: Option<Point>,
+    pending_clip: Option<bool>,
     /// Start point of current subpath (for ClosePath)
     subpath_start: Option<Point>,
     /// Current graphics state snapshot (for colors, line style)
     current_stroke_color: Option<Color>,
     current_fill_color: Option<Color>,
     current_line_width: f32,
+    current_dash: Option<(Vec<f32>, f32)>,
     current_line_cap: LineCap,
     current_line_join: LineJoin,
     /// Current transformation matrix for coordinate transformation
@@ -174,12 +185,15 @@ impl PathExtractor {
     pub fn new() -> Self {
         Self {
             paths: Vec::new(),
+            paint: Default::default(),
             current_operations: Vec::new(),
             current_point: None,
+            pending_clip: None,
             subpath_start: None,
             current_stroke_color: Some(Color::black()),
             current_fill_color: None,
             current_line_width: 1.0,
+            current_dash: None,
             current_line_cap: LineCap::Butt,
             current_line_join: LineJoin::Miter,
             ctm: Matrix::identity(),
@@ -387,6 +401,7 @@ impl PathExtractor {
     pub fn update_from_state(&mut self, state: &GraphicsState) {
         self.ctm = state.ctm;
         self.current_line_width = state.line_width;
+        self.current_dash = (!state.dash_pattern.0.is_empty()).then(|| state.dash_pattern.clone());
 
         // Convert line cap (0=butt, 1=round, 2=square)
         self.current_line_cap = match state.line_cap {
@@ -414,7 +429,11 @@ impl PathExtractor {
     /// Update extractor state from a lightweight path graphics state.
     pub(crate) fn update_from_path_state(&mut self, state: &PathGraphicsState) {
         self.ctm = state.ctm;
+        self.paint.fill_alpha = state.fill_alpha;
+        self.paint.stroke_alpha = state.stroke_alpha;
+        self.paint.clip_path = state.clip_path.clone();
         self.current_line_width = state.line_width;
+        self.current_dash = state.dash_pattern.clone();
         self.current_line_cap = match state.line_cap {
             1 => LineCap::Round,
             2 => LineCap::Square,
@@ -586,6 +605,13 @@ impl PathExtractor {
     ///
     /// Used primarily with clipping paths.
     pub fn end_path(&mut self) {
+        if let Some(even_odd) = self.pending_clip.take() {
+            self.paint.clip_path = Some(std::sync::Arc::new(crate::elements::PathClip {
+                operations: self.current_operations.clone(),
+                even_odd,
+                parent: self.paint.clip_path.clone(),
+            }));
+        }
         // Clear current path without creating a PathContent
         self.current_operations.clear();
         self.current_point = None;
@@ -596,14 +622,12 @@ impl PathExtractor {
 
     /// Set clipping path using non-zero winding rule (W operator).
     pub fn clip_non_zero(&mut self) {
-        // Clipping doesn't paint the path, just sets the clipping region
-        // The path is still available for subsequent painting
-        // We don't extract clipping paths as separate content
+        self.pending_clip = Some(false);
     }
 
     /// Set clipping path using even-odd rule (W* operator).
     pub fn clip_even_odd(&mut self) {
-        // Same as clip_non_zero - clipping doesn't create visible content
+        self.pending_clip = Some(true);
     }
 
     // === Helper Methods ===
@@ -614,7 +638,7 @@ impl PathExtractor {
     }
 
     /// Finalize the current path and add it to the extracted paths.
-    fn finalize_path(&mut self, stroke: bool, fill: bool, _rule: FillRule) {
+    fn finalize_path(&mut self, stroke: bool, fill: bool, rule: FillRule) {
         if self.current_operations.is_empty() {
             return;
         }
@@ -625,9 +649,11 @@ impl PathExtractor {
         // Create PathContent
         let mut path = PathContent::new(bbox);
         path.operations = std::mem::take(&mut self.current_operations);
+        path.paint = self.paint.clone();
+        path.paint.even_odd = rule == FillRule::EvenOdd;
 
         // Set stroke properties
-        if stroke {
+        if stroke && self.paint.stroke_alpha > 0.0 {
             path.stroke_color = self.current_stroke_color;
             // The `w` operand is in user space while the path coordinates
             // above were CTM-transformed (§8.4.3.2: the line width is
@@ -638,12 +664,16 @@ impl PathExtractor {
             path.stroke_width = self.current_line_width * self.ctm.stroke_scale();
             path.line_cap = self.current_line_cap;
             path.line_join = self.current_line_join;
+            path.dash_pattern = self.current_dash.as_ref().map(|(dashes, phase)| {
+                let scale = self.ctm.stroke_scale();
+                (dashes.iter().map(|d| d * scale).collect(), phase * scale)
+            });
         } else {
             path.stroke_color = None;
         }
 
         // Set fill properties
-        if fill {
+        if fill && self.paint.fill_alpha > 0.0 {
             path.fill_color = self.current_fill_color;
         } else {
             path.fill_color = None;
@@ -653,6 +683,13 @@ impl PathExtractor {
         // the path was emitted inside a `BDC /OC … EMC` region.
         path.layer = self.current_layer();
 
+        if let Some(even_odd) = self.pending_clip.take() {
+            self.paint.clip_path = Some(std::sync::Arc::new(crate::elements::PathClip {
+                operations: path.operations.clone(),
+                even_odd,
+                parent: self.paint.clip_path.clone(),
+            }));
+        }
         self.paths.push(path);
 
         // Reset state

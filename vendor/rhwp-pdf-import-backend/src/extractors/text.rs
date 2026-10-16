@@ -2272,6 +2272,8 @@ pub struct TextExtractor<'doc> {
     config: TextExtractionConfig,
     /// Configuration for span merging behavior
     merging_config: SpanMergingConfig,
+    /// Visual import excludes text with no painted fill or stroke.
+    visible_paint_only: bool,
     /// Current marked content ID (for Tagged PDFs)
     ///
     /// Tracks the MCID of the currently active marked content sequence.
@@ -2468,6 +2470,7 @@ impl<'doc> TextExtractor<'doc> {
             xobject_decode_count: 0,
             config,
             merging_config: SpanMergingConfig::default(),
+            visible_paint_only: false,
             current_mcid: None,
             mc_actualtext_mcids: HashSet::new(),
             extract_spans: true,      // Default to span mode (PDF spec compliant)
@@ -2496,6 +2499,10 @@ impl<'doc> TextExtractor<'doc> {
             mcid_scope_stack: vec![crate::structure::McidScope::Page(0)],
             import_page_source: None,
         }
+    }
+
+    pub(crate) fn set_visible_paint_only(&mut self, enabled: bool) {
+        self.visible_paint_only = enabled;
     }
 
     pub(crate) fn set_import_page_source(&mut self, page: usize) {
@@ -2823,7 +2830,8 @@ impl<'doc> TextExtractor<'doc> {
     /// Note: artifact filtering is handled separately via span metadata and
     /// downstream filtering, so `inside_artifact` is intentionally not checked here.
     fn is_content_suppressed(&self) -> bool {
-        self.inside_excluded_layer
+        (self.visible_paint_only && !self.state_stack.current().text_has_paint())
+            || self.inside_excluded_layer
             || self.inside_excluded_ink
             || (self.inside_placed_pdf && !self.placed_pdf_keep)
     }
@@ -3581,7 +3589,9 @@ impl<'doc> TextExtractor<'doc> {
     /// answer is one sequential interpreter with suppression at emission,
     /// which retires this predicate along with the prescan branch.
     fn has_emission_filter(&self) -> bool {
-        !self.excluded_inks.is_empty() || !self.excluded_layers.is_empty()
+        self.visible_paint_only
+            || !self.excluded_inks.is_empty()
+            || !self.excluded_layers.is_empty()
     }
 
     fn run_content_stream(&mut self, content_stream: &[u8]) -> Result<()> {
@@ -5839,6 +5849,7 @@ impl<'doc> TextExtractor<'doc> {
                 self.state_stack.current_mut().text_rise = rise;
             },
             Operator::Tr { render } => {
+                self.flush_tj_span_buffer()?;
                 self.state_stack.current_mut().render_mode = render;
             },
 
@@ -6406,27 +6417,19 @@ impl<'doc> TextExtractor<'doc> {
                 self.state_stack.current_mut().flatness = tolerance;
             },
             Operator::SetExtGState { dict_name } => {
-                // ExtGState operator - set graphics state from resource dictionary
-                // PDF Spec: ISO 32000-1:2008, Section 8.4.5
-                //
-                // This operator references an ExtGState dictionary in the page resources
-                // that contains transparency, blend modes, and other graphics state parameters.
-                //
-                // For now, we log the usage. Full implementation would require:
-                // 1. Access to page resources (/ExtGState dictionary)
-                // 2. Loading the named dictionary
-                // 3. Extracting /CA (fill alpha), /ca (stroke alpha), /BM (blend mode), etc.
-                // 4. Updating graphics state accordingly
-                //
-                // Future enhancement: Pass resources to text extractor for full support
-                log::debug!(
-                    "ExtGState '{}' referenced (transparency/blend modes not yet fully supported)",
-                    dict_name
-                );
-
-                // Apply default transparency values for now
-                // In a full implementation, we would look up dict_name in resources
-                // and apply the actual values from the ExtGState dictionary
+                self.flush_tj_span_buffer()?;
+                if self.visible_paint_only {
+                    if let (Some(doc), Some(resources)) = (self.document, self.resources.as_ref()) {
+                        let (fill, stroke) = doc.paint_alpha(resources, &dict_name)?;
+                        let state = self.state_stack.current_mut();
+                        if let Some(alpha) = fill {
+                            state.fill_alpha = alpha;
+                        }
+                        if let Some(alpha) = stroke {
+                            state.stroke_alpha = alpha;
+                        }
+                    }
+                }
             },
             Operator::PaintShading { name } => {
                 // Shading operator - paint gradient/shading pattern
