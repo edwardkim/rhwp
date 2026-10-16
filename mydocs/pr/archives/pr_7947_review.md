@@ -2,9 +2,10 @@
 
 ## 최종 판정
 
-**승인 — #7946·#7855·#7856의 구현·로컬 검증과 정확한 code head의 Full CI를 확인했다.**
-추가 제품 보정 사항은 발견하지 않았다. 이 판정은 아래 해결 범위에 한정하며, 문서-only trailing
-head의 CI 확인과 별도 병합 승인은 남아 있다.
+**승인 — 기능·로컬 검증·code head CI를 확인했고, 메인테이너가 빌드 전용 Ajv 경고의 위험 수용을 결정했다.**
+CodeQL의 중간 심각도 경고 5건은 아래 근거와 사용자의 명시 결정에 따라 `won't fix`로
+dismiss했다. 취약 코드 보정이나 오탐 판정으로 표시하지 않는다. 사용자가 병합·관련 이슈
+종료·후속 처리를 승인했다. 문서 기록 충돌을 해소하고 마지막 head의 검사를 확인한 뒤 병합한다.
 
 | 항목 | 검토 기준 |
 | --- | --- |
@@ -20,6 +21,47 @@ head의 CI 확인과 별도 병합 승인은 남아 있다.
 [visual fixture evidence](../../manual/pr_review/visual_fixture_evidence.md),
 [review-only fast-pass](../../manual/pr_review/review_only_fast_pass.md)다.
 사용자의 “CI가 성공하면 self-review로 진행” 지시에 따라 code head CI 성공 후 이 기록을 작성했다.
+
+### CodeQL 경고 추가 검토 (2026-10-16)
+
+사용자 지적으로 후행 head `13f73cdfbbdd735e976cac444cd2734caad284fb`의
+`github-advanced-security / CodeQL` annotation을 조회했다. check는 success이나 중간 심각도
+5건(`#278`–`#282`, `js/prototype-polluting-assignment`)을 게시했다. 최초 code head의
+JavaScript 분석 `1965967426`(2026-10-16 17:45:43 KST)에서도 이미 같은 경고를 검출했다.
+이전 검토가 check 상태만 보고 annotation을 확인하지 않은 누락이다.
+
+현재 JavaScript 분석 `1966087255`, tested merge `83416a36f7fc3519992de94a9bc5d1c0f3dbe896`,
+CodeQL 2.27.1의 SARIF와 실제 코드를 대조했다. 스키마 조회 후 정리 경로의 TS/JS 네 건과
+codegen scope 한 건으로 나뉜다. 검출 위치는 upstream Ajv 배포본과 바이트가 같지만,
+실제 설치본의 격리 실행에서 codegen prefix 경로가 prototype을 변경하는 것을 재현했다.
+정상 prefix 대조군에는 변경이 없었다. 스키마 조회 대조군은 경고 sink 이전 오류로 종료돼
+해당 삭제 경로의 prototype 변경을 재현했다고 주장하지 않는다.
+
+현재 사용처는 Studio·VS Code의 빌드 도구 개발 의존성이다. PDF/HWP 문서 열기에서 직접
+악용되는 경로를 입증한 결과는 아니다. 객체 사전의 상속 키 조회와 scope 저장을 보정하고
+reserved-key 반례·정상 스키마/코드 생성·빌드 호환성을 검증해야 한다. 경고 일괄 dismiss나
+query/path 제외로 해결하지 않는다. 재현 상세·원 SARIF는 ignored 로컬 증적에만 보존한다.
+
+후행 CI·CodeQL workflow도 success이나 이 경고는 미해결이다. 추가로 최신 devel
+`cdef0073bb24512daf0622dec5051ac62cb8d57e`와는 `mydocs/orders/20261016.md` 한 파일이
+충돌한다. push 전 양쪽 기록을 보존해 문서 범위에서 해소하고 merge tree를 재검증해야 한다.
+
+### 메인테이너의 경고 처리 결정 (2026-10-16)
+
+후속 범위 확인에서 Ajv가 Studio·VS Code의 Node 빌드 도구용 devDependency임을 확인했다.
+Studio 배포 JS/map 9개·VSIX 55파일에 검출 코드가 없고 Chrome·Firefox의 production 모듈
+그래프도 각각 285개 모듈·3개 chunk 중 Ajv/fast-uri 포함 0건이었다. 확장의 별도 runtime
+복사 소스에도 관련 import가 없었다. 실제 prototype 변경 재현은 빌드용 codegen API를 직접
+호출한 진단으로 구분한다.
+
+사용자가 “Dissmiss alert 결정하겠습니다.”로 종료를 명시했다. 이에 경고 #278–#282를
+`won't fix`로 dismiss하고 배포 미포함·빌드 범위 위험 수용을 한국어 사유에 기록했다.
+경고 상태와 처리자 `edwardkim`을 다시 확인했으며 해당 PR의 열린 경고는 0건이었다.
+실제 코드 변경으로 경고를 해결하거나 CodeQL query/path를 제외한 결과가 아니다.
+후행 `13f73cdfb`의 Full CI·CodeQL·Render Diff·Adapter·Proptest 및 정책 status도 모두 성공했다.
+이 결정으로 보안 경고에 따른 보류 사유를 해제한다. 앞선 분석·재현 증거는 유지한다.
+상세 증거는 ignored `pr-preparation/codeql-deployment-scope-ko.md`,
+`codeql-extension-module-graphs.json`, `codeql-dismiss-results.json`에 보존했다.
 
 ## 코드와 구현 주장 대조
 
@@ -112,7 +154,11 @@ audit의 기존 browserslist·baseline-browser-mapping·Studio @babel/core 발�
 
 이 review와 [오늘할일](../../orders/20261016.md)만 single-parent trailing commit으로 추가한다.
 push 전에 최신 base/head의 merge tree에서 공백·문서 링크·기존 오늘 기록 보존을 검사한다.
-trailing head의 실제 fast-pass·required checks·mergeability를 확인하고 별도 병합 승인을 받아야 한다.
+사용자의 “이제 머저하고 close 절차를 진행합니다” 지시로 병합과 후속 처리를 승인받았다.
+최신 devel `cdef0073bb24512daf0622dec5051ac62cb8d57e`와의 오늘할일 EOF 충돌은 이번
+PR section만 공통 내부 경계로 옮겨 해소한다. 최신 base의 타 PR 기록 보존·링크·공백을 실제
+merge tree에서 확인한다. 제품 code·test·workflow·PNG는 변경하지 않는다.
+마지막 trailing head의 실제 fast-pass·required checks·mergeability를 확인한 뒤 일반 squash merge한다.
 검증된 code head CI 성공을 아직 실행 전인 trailing head CI 성공으로 표시하지 않는다.
 
 ### Merge 후 PR comment 계획
