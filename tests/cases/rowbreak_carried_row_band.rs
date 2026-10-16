@@ -71,8 +71,7 @@ fn table_14_carries_row_1_blank_band_to_page_46() {
     let core = core();
 
     // 45쪽(0-기준 44): 0행과 1행의 글자까지. 1행은 내용을 다 쓴 컷으로 끝난다.
-    let (start, end, start_cut, end_cut) =
-        table_fragment(&core, 44).expect("45쪽에 표 14 첫 조각");
+    let (start, end, start_cut, end_cut) = table_fragment(&core, 44).expect("45쪽에 표 14 첫 조각");
     assert_eq!((start, end), (0, 2), "45쪽은 0·1행을 받는다");
     assert!(start_cut.is_empty());
     assert!(
@@ -83,7 +82,10 @@ fn table_14_carries_row_1_blank_band_to_page_46() {
     // 46쪽(0-기준 45): 같은 컷에서 1행을 이어(빈 띠) 2행까지.
     let (start, end, start_cut, _) = table_fragment(&core, 45).expect("46쪽에 표 14 끝 조각");
     assert_eq!((start, end), (1, 3), "46쪽은 1행의 남은 띠부터 잇는다");
-    assert_eq!(start_cut, end_cut, "앞 조각의 끝 컷에서 이어야 유닛 누락·중복이 없다");
+    assert_eq!(
+        start_cut, end_cut,
+        "앞 조각의 끝 컷에서 이어야 유닛 누락·중복이 없다"
+    );
 }
 
 #[test]
