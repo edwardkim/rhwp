@@ -5611,28 +5611,46 @@ pub(crate) fn solve_rowspan_row_heights(
         }
         changed
     };
-    let max_iter = row_heights.len() + constraints.len();
-    for _ in 0..max_iter {
-        let mut progress = add_declared_overflow(row_heights, true);
+    // 먼저 끝나는 미해결 제약을 기다리되, 같은 회차의 해 중에서는
+    // 새 devel의 앞 행 우선 계약을 유지한다. 순환 대기는 진전이 없을 때만 푼다.
+    let ends_before_unresolved = |row_heights: &[f64], row: usize, end: usize| {
+        constraints.iter().any(|&(r, span, _)| {
+            r <= row
+                && row < r + span
+                && r + span < end
+                && (r..r + span).any(|i| row_heights[i] == 0.0)
+        })
+    };
+    let solve_single = |row_heights: &mut [f64], prefer_earliest_end: bool| {
         let mut next_assignment: Option<(usize, f64)> = None;
         for &(r, span, total_h) in constraints {
             let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
             let unknown_rows: Vec<usize> =
                 (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
-            if unknown_rows.len() == 1 {
+            if unknown_rows.len() == 1
+                && !(prefer_earliest_end
+                    && ends_before_unresolved(row_heights, unknown_rows[0], r + span))
+            {
                 let remaining = (total_h - known_sum).max(0.0);
                 let row = unknown_rows[0];
                 if remaining > 0.0 && next_assignment.is_none_or(|(prior, _)| row < prior) {
-                    // 앞 행을 먼저 확정해야 그 행에서 시작하는 짧은 병합
-                    // 경계를 다음 행의 긴 병합 최소보다 먼저 해석할 수 있다.
-                    // 같은 미지 행의 후보는 기존 걸침 수 오름차순을 따른다.
                     next_assignment = Some((row, remaining));
                 }
             }
         }
         if let Some((row, height)) = next_assignment {
             row_heights[row] = height;
-            progress = true;
+            true
+        } else {
+            false
+        }
+    };
+    let max_iter = row_heights.len() + constraints.len();
+    for _ in 0..max_iter {
+        let mut progress = add_declared_overflow(row_heights, true);
+        progress |= solve_single(row_heights, true);
+        if !progress {
+            progress = solve_single(row_heights, false);
         }
         if !progress {
             break;
