@@ -93,3 +93,33 @@ ignored 정본 `output/pr-review/7445-completed-20261009/regression-policy-audit
 C59 code head의 전체 nextest10467PASS/0FAIL/45skip은 이 후보의 새 전체 통과로 재인용하지 않는다.
 이후 전체 회귀·lint/Skia/Studio/Gym·실제 소비 경로,다른 문서의 devel 대비 하락과
 PII 기본 글꼴·법원 서식의 알려진 미세 차이는 아직 검증/보정 대상이다. PR은 아직 준비 완료가 아니다.
+
+
+## 최신 devel4662 재검증
+
+2026-10-16,기준을 `4662c069e557e928ed7968d061121fde90b1f027`로 갱신해 같은 원본·독립PDF·
+96DPI·compat2022·빈 명시 환경·같은 독립HFT/기존TTF 공급으로 전115쪽을 다시 출력했다.
+후보 `8772811f0577bc8a561813f161f45e34194e65b8`의 Rust/Native/WASM source는
+검증된 `bfcb29730a9cf3061bb84d250d9269bb6c17fa3d`와 동일하다. C68은Studio TypeScript 보정이며
+이번 canonical Native/WASM의 새로운 Rust 변경으로 보고하지 않는다.
+
+| 경로 | 최신 devel 최저 | 현재 최저 | 쪽수 | 현재90% 미만 | 0.01%p 이상 하락 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Native | 97.12990% | 97.13453% | 115/115 | 0 | 0 |
+| fresh WASM | 97.11559% | 97.13430% | 115/115 | 0 | 0 |
+
+4쪽은99.98878/99.98877%이며 표의 세 마지막행 내용·하단선·앞뒤 본문을 정본review/overlay로
+다시 판독했다. 기존4회귀가 보호하는 소속·조상clip·원본높이·Print 위/아래±2CSSpx 계약이
+98% 선행 조건을 유지한다. 다른47조건의 미완료·하락을 이 문서의 통과로 상쇄하지 않는다.
+원본 전체와 두 분할197쪽,HWPX115쪽은 서로 다른 입력·독립PDF로 검증한다.
+
+![최신 Native review](latest-4662-native-review.png)
+
+![최신 Native overlay](latest-4662-native-overlay.png)
+
+![최신 fresh WASM review](latest-4662-wasm-review.png)
+
+![최신 fresh WASM overlay](latest-4662-wasm-overlay.png)
+
+ignored 원본은 `regression-policy-audit-20261015/rebase-4662c069-20261016/c68-hwpx-base-paired/`의
+scope·최종results·Native/WASM TSV·Decimal하락목록이다. 두 하락목록은 모두 비어 있다.
