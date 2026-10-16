@@ -79,6 +79,7 @@ mod tests {
 
         let styles = ResolvedStyleSet {
             page_number_char_style_id: None,
+            page_number_font_is_hft: false,
             hwp3_variant: false,
             hft_ascii_halfwidth: false,
             char_styles: vec![ResolvedCharStyle::default()],

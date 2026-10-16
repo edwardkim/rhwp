@@ -16,13 +16,14 @@ use crate::renderer::{boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, 
 
 use super::font_catalog::TypefaceCatalog;
 use super::font_lookup::{
-    font_style_for_text, legacy_typeface_for_style, match_system_family_style,
+    font_style_for_text, legacy_typeface_for_style, match_supplied_family, match_system_family_style,
     select_typeface_for_character, text_typeface_candidates, SystemFontFamilies,
 };
 use super::renderer::colorref_to_skia;
 
 pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
+    pub(super) hft_outline_enabled: bool,
     pub(super) font_mgr: &'a FontMgr,
     pub(super) text_shaper: &'a std::cell::OnceCell<Option<skia_safe::Shaper>>,
     pub(super) custom_typefaces: &'a TypefaceCatalog,
@@ -85,9 +86,28 @@ impl SkiaTextReplay<'_> {
                     self.system_families,
                     self.custom_typefaces,
                     self.bundled_typefaces,
-                    &style.font_family,
+                    &crate::renderer::native_font_family_for_style(style),
                     font_style,
                 );
+                let hft_outline = (self.hft_outline_enabled
+                    && crate::renderer::hft_outline::supports_style(style))
+                .then(|| {
+                    let family = crate::renderer::hft_outline::first_family(&style.font_family);
+                    let face = match_supplied_family(self.custom_typefaces, family, font_style)
+                        .or_else(|| {
+                            match_system_family_style(
+                                self.font_mgr,
+                                self.system_families,
+                                family,
+                                font_style,
+                            )
+                        })
+                        .or_else(|| {
+                            match_supplied_family(self.bundled_typefaces, family, font_style)
+                        })?;
+                    super::hft_outline::HftOutlineReplay::new(&face)
+                })
+                .flatten();
                 let primary_typeface = typeface_chain
                     .first()
                     .map(|candidate| candidate.typeface.clone());
@@ -105,6 +125,11 @@ impl SkiaTextReplay<'_> {
                     font.set_edging(font::Edging::AntiAlias);
                     // 글줄이 정한 소수 원점을 glyph raster에서도 보존한다.
                     font.set_subpixel(true);
+                    // 원본 폭과 기준선으로 배치한 생성 번호의 소수 원점을
+                    // 정수로 반올림하지 않는다. Canvas도 이 원점에서 그린다.
+                    if style.fixed_glyph_advances {
+                        font.set_baseline_snap(false);
+                    }
                     if want_synthetic_bold && !is_bold_face {
                         font.set_embolden(true);
                     }
@@ -302,6 +327,14 @@ impl SkiaTextReplay<'_> {
                 let text = text.as_str();
                 let char_positions =
                     crate::renderer::replay_positions_or_compute(text, style, layout_positions);
+                let fit_positions = style.fixed_glyph_advances.then(|| {
+                    crate::renderer::glyph_fit_positions(
+                        text,
+                        style,
+                        layout_positions,
+                        &char_positions,
+                    )
+                });
                 let clusters = split_into_clusters(text);
                 let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
                 let trim = trim_trailing_spaces.min(trailing);
@@ -625,13 +658,36 @@ impl SkiaTextReplay<'_> {
                                 canvas.restore();
                                 continue;
                             }
-                            if has_ratio {
+                            // 생성자가 원본 폭을 명시한 텍스트만 같은 커닝 전
+                            // 경계를 소비한다. 본문을 일괄 축소·확대하지 않는다.
+                            let fit_scale = fit_positions
+                                .as_deref()
+                                .and_then(|positions| {
+                                    let end = *char_idx + cluster.chars().count();
+                                    let advance = positions.get(end)? - positions.get(*char_idx)?;
+                                    let natural_width =
+                                        f64::from(font.measure_str(cluster, None).0);
+                                    crate::renderer::canvas_cluster_fit_scale(
+                                        style,
+                                        advance,
+                                        natural_width * f64::from(ratio),
+                                        cluster.chars().any(|ch| ch.is_ascii_graphic()),
+                                    )
+                                })
+                                .unwrap_or(1.0) as f32;
+                            if has_ratio || (fit_scale - 1.0).abs() > f32::EPSILON {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
-                                canvas.scale((ratio, 1.0));
-                                canvas.draw_str(cluster, (0.0, 0.0), &font, &text_paint);
+                                canvas.scale((ratio * fit_scale, 1.0));
+                                if !hft_outline.as_ref().is_some_and(|outline| {
+                                    outline.draw(canvas, cluster, &font, (0.0, 0.0), &text_paint)
+                                }) {
+                                    canvas.draw_str(cluster, (0.0, 0.0), &font, &text_paint);
+                                }
                                 canvas.restore();
-                            } else {
+                            } else if !hft_outline.as_ref().is_some_and(|outline| {
+                                outline.draw(canvas, cluster, &font, (char_x, char_y), &text_paint)
+                            }) {
                                 canvas.draw_str(cluster, (char_x, char_y), &font, &text_paint);
                             }
                         }

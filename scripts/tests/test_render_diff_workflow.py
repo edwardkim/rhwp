@@ -28,6 +28,20 @@ class RenderDiffTriggerPolicyTests(unittest.TestCase):
         self.assertIn("      - 'mydocs/tech/text-ir-v2.md'", pull_request_trigger)
         self.assertNotIn("'mydocs/**'", pull_request_trigger)
 
+    def test_font_registration_contract_precedes_pinned_measurement_browser(self) -> None:
+        # 설치 Chrome용 Ubuntu sandbox 경로를 쓰며 측정 Chromium의 pin은 유지한다.
+        contract = "      - name: Validate Visual Sweep Canvas font registration\n"
+        install = "      - name: Install Chromium\n"
+        self.assertEqual(self.workflow.count(contract), 1)
+        self.assertLess(self.workflow.index(contract), self.workflow.index(install))
+        step = self.workflow.split(contract, 1)[1].split("      - name:", 1)[0]
+        self.assertIn(
+            "node --test scripts/tests/visual-sweep-font-registration-browser.test.mjs", step
+        )
+        self.assertNotIn("VISUAL_SWEEP_CHROME", step)
+        self.assertNotIn("--no-sandbox", step)
+        self.assertIn('chromium@"${RHWP_CHROMIUM_BUILD_ID}"', self.workflow)
+
     def test_canvas_uses_the_base_classifier_render_axis(self) -> None:
         self.assertIn(
             "ref: ${{ github.event_name == 'pull_request' "

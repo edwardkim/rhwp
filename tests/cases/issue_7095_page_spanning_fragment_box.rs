@@ -44,14 +44,24 @@ const SAMPLE: &str = "samples/issue7062/tac_object_host_line_height.hwp";
 fn projected_picture_fragment_does_not_claim_a_stored_page_frame() {
     let core = load_sample("samples/issue2004_cell_image_stack.hwp");
     let nodes = page_nodes(&core, 4);
-    let frame = nodes
+    let frames: Vec<_> = nodes
         .iter()
-        .find(|node| {
-            matches!(node.node_type, RenderNodeType::Table { .. })
-                && (node.bbox.width - 635.0).abs() < 1.0
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Table(table)
+                if table.row_count == 1 && table.col_count == 1 && table.cell_context.is_none())
         })
-        .expect("outer picture frame")
-        .bbox;
+        .collect();
+    assert_eq!(frames.len(), 1, "원본 그림 스택을 소유한 바깥 1×1 표");
+    let frame = frames[0].bbox;
+    let mut contents = Vec::new();
+    walk(frames[0], &mut contents);
+    let images: Vec<_> = contents
+        .into_iter()
+        .filter(|node| matches!(&node.node_type, RenderNodeType::Image(_)))
+        .collect();
+    assert_eq!(images.len(), 1, "5쪽 그림의 단일 표 소유");
+    let image = images[0].bbox;
+    assert!(image.y >= frame.y && image.y + image.height <= frame.y + frame.height);
     // Existing Hancom PDF p5: path y=143.121094pt under matrix(1,0,0,-1,0,841).
     // Normalize its 841pt page to the source 84188HU: bottom = 931.48px.
     // Allow 2px for the existing picture projection metric difference; the

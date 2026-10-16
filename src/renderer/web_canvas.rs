@@ -84,6 +84,8 @@ use super::layout::{
 };
 
 #[cfg(target_arch = "wasm32")]
+mod hft_outline;
+#[cfg(target_arch = "wasm32")]
 mod middle_dot;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
@@ -384,6 +386,8 @@ pub struct WebCanvasRenderer {
     active_decoration_trim: usize,
     suppress_text_glyphs: bool,
     metric_descriptor_mismatch: std::cell::Cell<bool>,
+    hft_outline_fonts: Option<super::hft_outline::HftOutlineFonts>,
+    hft_outline_enabled: bool,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -412,7 +416,13 @@ impl WebCanvasRenderer {
             active_decoration_trim: 0,
             suppress_text_glyphs: false,
             metric_descriptor_mismatch: std::cell::Cell::new(false),
+            hft_outline_fonts: None,
+            hft_outline_enabled: false,
         })
+    }
+
+    pub(crate) fn set_hft_outline_fonts(&mut self, fonts: &super::hft_outline::HftOutlineFonts) {
+        self.hft_outline_fonts = Some(fonts.clone());
     }
 
     /// 줌 스케일 설정 (1.0 = 100%, 2.0 = 200%)
@@ -478,6 +488,10 @@ impl WebCanvasRenderer {
 
     /// 레이어 트리를 Canvas에 렌더링
     pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
+        self.hft_outline_enabled = matches!(
+            tree.profile,
+            crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
+        );
         self.show_paragraph_marks = tree.output_options.show_paragraph_marks;
         self.show_control_codes = tree.output_options.show_control_codes;
         self.layer_clip_enabled = tree.output_options.clip_enabled;
@@ -2326,8 +2340,10 @@ impl Renderer for WebCanvasRenderer {
                                 0.0
                             }
                         };
-                        let pin_ascii_advance =
-                            cluster_str.chars().any(|ch| ch.is_ascii_alphanumeric());
+                        let pin_ascii_advance = cluster_str.chars().any(|ch| {
+                            ch.is_ascii_alphanumeric()
+                                || (style.fixed_glyph_advances && ch.is_ascii_graphic())
+                        });
                         // Measured fallback advance already includes script size and
                         // document ratio exactly once. Do not fit it a second time.
                         let fit_scale = if measured_descriptor.is_some() {
@@ -2354,7 +2370,9 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx
                             .scale(ratio * fit_scale.unwrap_or(1.0), 1.0)
                             .unwrap_or(());
-                        let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                        if !self.draw_hft_outline(cluster_str, style, font_size) {
+                            let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                        }
                         self.ctx.restore();
                     }
                 }
