@@ -7,6 +7,11 @@
 - 상태: 2026-10-16 사용자 승인. 명시적 Mask·기본 빌드 구현 뒤, 새 샘플의 SMask·Matte까지 포함하도록 추가 승인
 - 상위 계획: [공동 수행계획](task_m100_7949.md)
 
+2026-10-17 구현 결과: 추가 승인된 SMask·Matte·중복 처리·도형 채움과 표 글자 가시성까지
+보정했다. 최신 devel을 병합한 `337cde286`의 전쪽 Native/fresh Docker WASM 41쪽과
+전체 회귀 10,680건이 통과했다. 아래는 승인된 구현 계약이며 최종 제출 상태와 실제 소비
+경로·남은 범위는 [stage7](../working/task_m100_7949_stage7.md)을 따른다.
+
 ## 1. 변경 값의 실제 소비 경로
 
 | 범위 | 생산 → 소비 → 최종 결과 | 구현·확인 대상 |
@@ -18,8 +23,8 @@
 현재 renderer의 `page_renderer.rs::render_image`에도 명시적 Mask 처리가 있지만,
 그 경로의 실패 시 base image 유지나 codec 추정 fallback은 제한된 제품 import에 복사하지 않는다.
 필요한 의미와 이미 존재하는 제한된 stream decoder를 확인해 공통 해석 또는 작은 전용 합성을 정한다.
-현재는 `images.rs`의 guard와 제품 `extract.rs`의 오류 변환까지 확인했으며,
-합성 이후 lowering·저장·각 backend의 실제 소비 추적은 구현 착수 시 완료할 항목이다.
+착수 시에는 `images.rs`의 guard와 제품 `extract.rs`의 오류 변환까지 확인했다.
+이후 합성 RGBA·lowering·저장·각 backend의 실제 소비 추적을 단계별 보고에 연결했다.
 
 ## 2. #7950 마스크 계약
 
