@@ -10,6 +10,7 @@ mod fill_shader;
 mod font_catalog;
 mod font_lookup;
 mod glyph_replay;
+mod hft_outline;
 mod image_cache;
 mod image_conv;
 mod image_effect;
