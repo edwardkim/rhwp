@@ -3,6 +3,7 @@ import { parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
+import { rasterLineEndpoints } from './canvaskit/raster-stroke.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -1930,7 +1931,7 @@ export class CanvasKitLayerRenderer {
         this.renderEllipse(canvas, op);
         return;
       case 'line':
-        this.renderLine(canvas, op);
+        this.renderLine(canvas, op, profile);
         return;
       case 'path':
         this.renderPath(canvas, op);
@@ -2063,14 +2064,13 @@ export class CanvasKitLayerRenderer {
     }, op.gradient);
   }
 
-  private renderLine(canvas: SkCanvas, op: LayerLineOp): void {
+  private renderLine(canvas: SkCanvas, op: LayerLineOp, profile: LayerRenderProfile): void {
     const style = op.style ?? {};
     const color = style.color ?? '#000000';
     const width = style.width ?? 1;
-    const x1 = op.x1;
-    const y1 = op.y1;
-    const x2 = op.x2;
-    const y2 = op.y2;
+    const matrix = (profile === 'print' || profile === 'highQuality')
+      && typeof canvas.getTotalMatrix === 'function' ? canvas.getTotalMatrix() : undefined;
+    const [x1, y1, x2, y2] = rasterLineEndpoints(op, matrix, profile);
     if (![x1, y1, x2, y2, width].every(Number.isFinite)) {
       this.unsupportedOps.add('line:invalidGeometry');
       return;

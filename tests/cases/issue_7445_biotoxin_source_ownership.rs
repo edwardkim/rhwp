@@ -1,8 +1,8 @@
 //! #7445 지정 댓글의 생물독 원본: 독립 PDF 205쪽 전수 시각 수용 후 복구한 회귀.
-//! Native/fresh WASM 전205쪽192DPI 최저92.11790/92.12343%, 미달0.
+//! C80 Native/fresh WASM 전205쪽96DPI raw 최저93.26163/93.26176%, 미달0.
 //! 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사하고, 양쪽98% 이상인
 //! 중요한 그림 경계만 독립 Print의 ±2 CSSpx로 보호한다. 출처는
-//! completed-20261009/regression-policy-20261015/source-program-and-inline-spacing/validation.json.
+//! completed-20261009/regression-policy-20261015/gray-grid-raster-20261017/README.md.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;
@@ -62,6 +62,62 @@ fn paragraph_runs(root: &RenderNode, host: usize) -> Vec<&RenderNode> {
                 && t.cell_context.is_none())
         })
         .collect()
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn gray_grid_keeps_its_print_coverage_cell_owners_and_pdf_origin() {
+    use rhwp::paint::RenderProfile;
+    use rhwp::renderer::{layer_renderer::LayerRasterRenderer, skia::SkiaLayerRenderer};
+
+    let core = core();
+    assert_eq!(core.page_count(), 205);
+    let Control::Table(source) = &core.document().sections[SECTION].paragraphs[170].controls[0]
+    else {
+        panic!("독립 Print 143쪽의 표42");
+    };
+    let tree = core.build_page_render_tree(142).unwrap();
+    let fragments = tables(&tree.root, 170);
+    assert_eq!(fragments.len(), 1, "39행 표42는 같은 쪽의 온전한 조각");
+    let table = fragments[0];
+    let mut owners = vec![0; source.cells.len()];
+    for child in &table.children {
+        let RenderNodeType::TableCell(cell) = &child.node_type else {
+            continue;
+        };
+        let index = cell.model_cell_index.expect("원본 셀 소속") as usize;
+        owners[index] += 1;
+        let original: String = source.cells[index]
+            .paragraphs
+            .iter()
+            .map(|p| p.text.as_str())
+            .collect();
+        assert_eq!(compact(&text(child)), compact(&original), "셀 내용 보존");
+    }
+    assert!(owners.iter().all(|count| *count == 1), "셀 누락·중복 금지");
+    // 독립 Print의 같은 표 왼쪽75.32·오른쪽707.78 CSSpx, ±2CSSpx.
+    assert!((table.bbox.x - 75.32).abs() <= 2.0);
+    assert!((table.bbox.x + table.bbox.width - 707.78).abs() <= 2.0);
+
+    // C80의 같은 회색 grid 경계143쪽: 양쪽 raw99.97632/99.97501%.
+    // 독립 PDF를96DPI로 인쇄 raster한 내부 선은 x700에서 RGB224다.
+    // 모델 좌표만 검사하면 두 픽셀에 분산되어 사라진 회색 선을 놓치므로
+    // 최종 Native paint에서 같은 독립 위치±2px와 AA 색 차이8을 확인한다.
+    let layer = core
+        .build_page_layer_tree_with_profile(142, RenderProfile::Print)
+        .unwrap();
+    let png = SkiaLayerRenderer::new().render_png(&layer).unwrap();
+    let pixels = image::load_from_memory(&png).unwrap().to_rgb8();
+    for expected_y in [257, 273, 336, 399] {
+        let visible = (expected_y - 2..=expected_y + 2).any(|y| {
+            let color = pixels.get_pixel(700, y).0;
+            color.into_iter().all(|value| value.abs_diff(224) <= 8)
+        });
+        assert!(
+            visible,
+            "표42 회색 선이 독립 Print y{expected_y}±2px에 표시"
+        );
+    }
 }
 
 #[test]
@@ -176,8 +232,8 @@ fn cellbreak_boundary_rows_belong_wholly_to_their_pdf_pages() {
 #[test]
 fn same_line_pictures_share_the_source_baseline() {
     let core = core();
-    // 전205쪽192DPI Native/fresh 최저92.11790/92.12343%.
-    // 같은 세 그림 동작에서 양쪽 최솟값 순으로172쪽99.50266%,168쪽99.39203%.
+    // C80 전205쪽96DPI raw Native/fresh 최저93.26163/93.26176%.
+    // 같은 세 그림 동작의 양쪽 raw 최솟값:172쪽99.99587%,168쪽99.98152%.
     // 독립 Print image matrix의 pt 좌표를96DPI CSSpx로 환산했다.
     for (page, host, pdf_third_x, pdf_right) in [
         (172, 371, 477.184, 711.1387),

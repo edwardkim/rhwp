@@ -4,8 +4,17 @@ use crate::renderer::render_tree::LineNode;
 use crate::renderer::LineRenderType;
 use skia_safe::{Canvas, Paint};
 
-pub(super) fn draw_line(canvas: &Canvas, line: &LineNode, paint: &Paint, antialias: bool) {
-    let (x1, y1, x2, y2) = (line.x1, line.y1, line.x2, line.y2);
+pub(super) fn draw_line(canvas: &Canvas, line: &LineNode, paint: &Paint, antialias: bool, profile: crate::paint::RenderProfile) {
+    let transform = canvas.local_to_device_as_3x3();
+    // 단일 직교 실선의 인쇄 coverage만 공통 계획으로 정한다. 다중선·화살표·
+    // screen·기울임은 원본 좌표를 반환하므로 기존 평행선 재생을 유지한다.
+    let (x1, y1, x2, y2) = crate::renderer::raster_stroke::raster_line_endpoints(
+        line,
+        [transform.scale_x() as f64, transform.skew_y() as f64,
+         transform.skew_x() as f64, transform.scale_y() as f64,
+         transform.translate_x() as f64, transform.translate_y() as f64],
+        profile,
+    );
     let width = line.style.width.max(0.5);
     let segments: &[(f64, f64)] = match line.style.line_type {
         LineRenderType::Single => {

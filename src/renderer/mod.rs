@@ -69,6 +69,7 @@ pub mod pdf_raster_fidelity;
 mod physical_units;
 pub mod pua_oldhangul;
 pub mod raster_pixels;
+pub(crate) mod raster_stroke;
 pub(crate) mod reflow_float_host_line;
 pub(crate) mod reflow_spacing;
 pub mod render_normalization;

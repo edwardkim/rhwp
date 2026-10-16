@@ -405,6 +405,7 @@ pub struct WebCanvasRenderer {
     hft_outline_fonts: Option<super::hft_outline::HftOutlineFonts>,
     hft_outline_enabled: bool,
     high_quality_images: bool,
+    render_profile: crate::paint::RenderProfile,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -436,6 +437,7 @@ impl WebCanvasRenderer {
             hft_outline_fonts: None,
             hft_outline_enabled: false,
             high_quality_images: false,
+            render_profile: crate::paint::RenderProfile::Screen,
         })
     }
 
@@ -501,6 +503,7 @@ impl WebCanvasRenderer {
 
     /// 렌더 트리를 Canvas에 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
+        self.render_profile = crate::paint::RenderProfile::Screen;
         self.render_node(&tree.root);
     }
 
@@ -510,6 +513,7 @@ impl WebCanvasRenderer {
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
         );
+        self.render_profile = tree.profile;
         self.hft_outline_enabled = matches!(
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
@@ -1071,7 +1075,25 @@ impl WebCanvasRenderer {
 
     fn render_line(&mut self, bbox: &BoundingBox, line: &LineNode, restore_transform: bool) {
         self.open_shape_transform(&line.transform, bbox);
-        self.draw_line(line.x1, line.y1, line.x2, line.y2, &line.style);
+        let (x1, y1, x2, y2) = self
+            .ctx
+            .get_transform()
+            .map(|transform| {
+                super::raster_stroke::raster_line_endpoints(
+                    line,
+                    [
+                        transform.a(),
+                        transform.b(),
+                        transform.c(),
+                        transform.d(),
+                        transform.e(),
+                        transform.f(),
+                    ],
+                    self.render_profile,
+                )
+            })
+            .unwrap_or((line.x1, line.y1, line.x2, line.y2));
+        self.draw_line(x1, y1, x2, y2, &line.style);
         if restore_transform {
             self.close_shape_transform_if_needed(&line.transform);
         }

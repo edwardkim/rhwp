@@ -985,10 +985,7 @@ impl SkiaLayerRenderer {
                 canvas,
                 &tree.root,
                 &tree.output_options,
-                matches!(
-                    tree.profile,
-                    crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
-                ),
+                tree.profile,
                 &tree.resources,
                 replay_plane,
                 None,
@@ -1047,7 +1044,7 @@ impl SkiaLayerRenderer {
         canvas: &Canvas,
         node: &LayerNode,
         output_options: &LayerOutputOptions,
-        hft_outline_enabled: bool,
+        profile: crate::paint::RenderProfile,
         resources: &ResourceArena,
         replay_plane: PaintReplayPlane,
         inherited_layer: Option<RenderLayerInfo>,
@@ -1061,6 +1058,10 @@ impl SkiaLayerRenderer {
             diagnostics.output.layer_nodes_replayed =
                 diagnostics.output.layer_nodes_replayed.saturating_add(1);
         }
+        let hft_outline_enabled = matches!(
+            profile,
+            crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
+        );
         let active_layer = node.layer.or(inherited_layer);
         let clip_enabled = output_options.clip_enabled;
         let antialias = cache_context.policy.antialias();
@@ -1236,7 +1237,7 @@ impl SkiaLayerRenderer {
                             target,
                             child,
                             output_options,
-                            hft_outline_enabled,
+                            profile,
                             resources,
                             replay_plane,
                             active_layer,
@@ -1374,7 +1375,7 @@ impl SkiaLayerRenderer {
                         canvas,
                         child,
                         output_options,
-                        hft_outline_enabled,
+                        profile,
                         resources,
                         replay_plane,
                         active_layer,
@@ -1399,7 +1400,7 @@ impl SkiaLayerRenderer {
                     canvas,
                     child,
                     output_options,
-                    hft_outline_enabled,
+                    profile,
                     resources,
                     replay_plane,
                     active_layer,
@@ -1803,7 +1804,7 @@ impl SkiaLayerRenderer {
                             if line.transform.has_transform() {
                                 open_shape_transform(line.transform, bbox);
                             }
-                            draw_line(canvas, line, &make_line_paint(&line.style), antialias);
+                            draw_line(canvas, line, &make_line_paint(&line.style), antialias, profile);
                             draw_arrow_heads(
                                 canvas,
                                 &crate::renderer::arrow::line_heads(
