@@ -57,6 +57,35 @@ const CAPTION_CELL_SENTINEL: usize = 65534;
 mod inline_table_geometry;
 pub(crate) use inline_table_geometry::InlineTableParagraphGeometry;
 mod tab_frame;
+/// 분배 정렬도 다음 글자가 없는 마지막 글리프의 실제 점유 끝을 기준으로 한다.
+/// 마지막 개체 앞 공백과 표시/중첩/주석 제어가 소유한 폭은 일반 글자의 자간으로
+/// 해석하지 않는다. 문자열의 논리 advance와 줄 소속은 그대로 보존한다.
+fn terminal_tracking_for_distribution(
+    line: &ComposedLine,
+    styles: &ResolvedStyleSet,
+    trailing_space_limit: usize,
+) -> f64 {
+    let mut trailing_spaces = 0;
+    for run in line.runs.iter().rev() {
+        let text = run.text.trim_end_matches(' ');
+        trailing_spaces += run.text.len() - text.len();
+        if text.is_empty() {
+            continue;
+        }
+        if trailing_space_limit <= trailing_spaces
+            || run.char_overlap.is_some()
+            || run.display_text.is_some()
+            || run.footnote_marker.is_some()
+            || run.inserted_control_text
+            || text.ends_with(['\t', '\u{FFFC}'])
+            || text.ends_with("---")
+        {
+            return 0.0;
+        }
+        return super::terminal_tracking::glyph_letter_spacing_advance(text, &run.text_style(styles));
+    }
+    0.0
+}
 
 /// 저장 탭 확장 배열의 문단 전체 순번을 현재 줄 시작에서 복원한다.
 fn stored_tab_index_before_line(
@@ -2246,28 +2275,13 @@ fn compute_line_extra_spacing(
         |measure| measure.width(0.0),
     ) + leading_space_plan.field_fit_adjustment(styles);
     let fit_char_count = centered_measure.map_or(total_char_count, |measure| measure.char_count);
-    // 음수 자간은 마지막 글자의 advance도 줄이지만 실제 glyph 잉크 폭은 줄이지 않는다.
-    // 나눔정렬에서 advance만 셀 끝에 맞추면 정상 폭으로 그린 마지막 glyph가 clip을
-    // 넘어가므로, 마지막 가시 글자의 음수 자간만 시각 점유 폭에 되돌린다.
-    let trailing_glyph_ink_overhang = || -> f64 {
-        for run in comp_line.runs.iter().rev() {
-            if let Some(last_visible) = run.text.chars().rev().find(|c| *c != ' ') {
-                if last_visible == '\t' || last_visible == '\u{FFFC}' {
-                    return 0.0;
-                }
-                let mut with_spacing = run.text_style(styles);
-                with_spacing.default_tab_width = tab_width;
-                if with_spacing.letter_spacing >= 0.0 {
-                    return 0.0;
-                }
-                let glyph = last_visible.to_string();
-                let spaced_width = estimate_text_width(&glyph, &with_spacing);
-                with_spacing.letter_spacing = 0.0;
-                let ink_advance = estimate_text_width(&glyph, &with_spacing);
-                return (ink_advance - spaced_width).max(0.0);
-            }
-        }
+    // 글리프 전진의 마지막 signed 자간은 잉크 상자 밖이다. 음수이면 점유 폭을
+    // 되돌리고 양수이면 뒤의 빈 간격을 제외한다. 가운데/오른쪽 정렬과 같은
+    // 글리프 메트릭 질의를 사용하고 소수 폭을 정수로 반올림하지 않는다.
+    let terminal_tracking = if terminal_tracking == 0.0 {
         0.0
+    } else {
+        terminal_tracking_for_distribution(comp_line, styles, trailing_space_limit)
     };
 
     // Task #352: 라인 내 dash leader (3+ 연속 '-') 글자 수 카운트.
@@ -2435,19 +2449,12 @@ fn compute_line_extra_spacing(
             if spacing_char_count == 0 {
                 return (0.0, 0.0, 0.0);
             }
-            let terminal_ink_overhang = if alignment == Alignment::Split {
-                trailing_glyph_ink_overhang()
-            } else if alignment == Alignment::Justify {
-                // 마지막 가시 글자 뒤에는 다음 글자와의 음수 자간이 없다.
-                // 개체 소유까지 확인한 공통 정렬 측정값을 사용한다.
-                (-terminal_tracking).max(0.0)
-            } else {
-                0.0
-            };
-            // 자동 줄바꿈에서 소비한 구분 공백도 원문에 남지만 낱말 사이의
-            // 배분 지점은 아니다. 방출은 그 공백의 자연 전진만 보존한다.
+            // 줄 나눔이 소비한 구분 공백은 다음 줄의 시작 오프셋과 소유를 보존하지만
+            // 가시 내용의 양쪽 정렬 폭에는 포함하지 않는다. 저장 줄과 합성 줄 모두
+            // 같은 내부 공백 수·말미 공백 제외 폭을 사용한다. 별도 합성 분기는
+            // 한컴 Print의 같은 줄을 마지막 공백 한 칸만큼 왼쪽으로 압축했다.
             let rendered_space_slots = interior_spaces;
-            let effective_used = total_text_width - trailing_width + terminal_ink_overhang;
+            let effective_used = total_text_width - trailing_width - terminal_tracking;
             let slack = available_width - effective_used;
             if leader_dashes > 0 && slack > 0.0 {
                 // Task #352: 라인에 dash leader 가 있고 슬랙이 양수면
@@ -2515,7 +2522,7 @@ fn compute_line_extra_spacing(
                                     estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts);
                             }
                         }
-                        measured
+                        measured - terminal_tracking
                     };
                     for _ in 0..3 {
                         let delta = available_width - measure_with(ecs);
@@ -2533,7 +2540,7 @@ fn compute_line_extra_spacing(
         } else if visible_count > 1 {
             // 내부 공백이 없는 줄도 소비한 말미 구분 공백을 가시 폭에서 제외한다.
             // 공백의 논리 advance는 보존하고 가시 글자 사이만 배분한다.
-            let visible_text_width = total_text_width - trailing_width;
+            let visible_text_width = total_text_width - trailing_width - terminal_tracking;
             let slack = available_width - visible_text_width;
             if (justify_spaces_only || alignment == Alignment::Split) && slack > 0.0 {
                 // [#4516] 머리말/꼬리말 예외로만 justify 된 마지막 줄은 한컴처럼
@@ -2632,7 +2639,7 @@ fn compute_line_extra_spacing(
             } else {
                 0.0
             };
-            let visible_width = total_text_width - trailing_width;
+            let visible_width = total_text_width - trailing_width - terminal_tracking;
             let raw = (available_width - visible_width) / slots as f64;
             if suppress_cell_overflow_spacing && raw < 0.0 {
                 (0.0, 0.0, 0.0)
@@ -11588,28 +11595,96 @@ mod issue_2809_split_alignment_tests {
 
     #[test]
     fn split_reserves_last_glyph_ink_when_letter_spacing_is_negative() {
+        // 소스 자간은 글꼴별 원폭과 장치 advance로 환산된다. 선언 px를 그대로
+        // 빼지 않고 실제 마지막 글리프 원점 + 자간 없는 자연 상자를 확인한다.
+        for alignment in [Alignment::Justify, Alignment::Split, Alignment::Distribute] {
+            for tracking in [-6.0, -1.6, 0.0, 1.6] {
+                for text in ["다 같 이", "다 같 이 "] {
+                    let line = ComposedLine {
+                        runs: vec![ComposedTextRun {
+                            text: text.into(),
+                            ..Default::default()
+                        }],
+                        ..split_label_line()
+                    };
+                    let styles = ResolvedStyleSet {
+                        char_styles: vec![ResolvedCharStyle {
+                            font_size: 20.0,
+                            letter_spacing: tracking,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    };
+                    let mut text_style = resolved_to_text_style(&styles, 0, 0);
+                    let total_text_width = super::estimate_text_width_exact(text, &text_style);
+                    let (word, character, dash) = compute_line_extra_spacing(
+                        &line,
+                        0,
+                        usize::MAX,
+                        &LeadingSpacePlan::new(&line, None),
+                        &[],
+                        &styles,
+                        None,
+                        alignment,
+                        true,
+                        alignment != Alignment::Distribute,
+                        false,
+                        alignment == Alignment::Distribute,
+                        false,
+                        false,
+                        false,
+                        false,
+                        text.chars().count(),
+                        total_text_width,
+                        120.0,
+                        40.0,
+                    );
+                    text_style.extra_word_spacing = word;
+                    text_style.extra_char_spacing = character;
+                    let positions = super::compute_char_positions(text, &text_style);
+                    let mut natural_style = text_style.clone();
+                    natural_style.letter_spacing = 0.0;
+                    natural_style.extra_word_spacing = 0.0;
+                    natural_style.extra_char_spacing = 0.0;
+                    let glyph_end =
+                        positions[4] + super::estimate_text_width_exact("이", &natural_style);
+                    assert!(
+                        (glyph_end - 120.0).abs() < 0.001,
+                        "{alignment:?}, tracking={tracking}, {text:?}: glyph end={glyph_end}",
+                    );
+                    assert_eq!(dash, 0.0);
+                    if alignment == Alignment::Distribute {
+                        assert_eq!(word, 0.0);
+                    } else {
+                        assert_eq!(character, 0.0);
+                    }
+                }
+            }
+        }
+        // 줄 끝에 인라인 개체가 있으면 마지막 글자 뒤 자간은 실제 다음 요소의
+        // 시작 전진이다. 개체가 소유하는 끝을 마지막 글자의 상자로 대신하지 않는다.
         let line = split_label_line();
         let styles = ResolvedStyleSet {
             char_styles: vec![ResolvedCharStyle {
-                font_size: 12.0,
-                letter_spacing: -6.0,
+                font_size: 20.0,
+                letter_spacing: -1.6,
                 ..Default::default()
             }],
             ..Default::default()
         };
-        let text_style = resolved_to_text_style(&styles, 0, 0);
-        let total_text_width = estimate_text_width("다 같 이", &text_style);
-        let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
+        let mut ts = resolved_to_text_style(&styles, 0, 0);
+        let natural = super::estimate_text_width_exact("다 같 이", &ts);
+        let (word, character, dash) = compute_line_extra_spacing(
             &line,
+            1,
             0,
-            usize::MAX,
             &LeadingSpacePlan::new(&line, None),
             0.0,
             0.0,
             &[],
             &styles,
             None,
-            Alignment::Split,
+            Alignment::Justify,
             true,
             true,
             false,
@@ -11619,22 +11694,13 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             5,
-            total_text_width,
-            90.0,
+            natural + 24.0,
+            120.0,
             40.0,
         );
-
-        let mut distributed_style = text_style.clone();
-        distributed_style.extra_word_spacing = extra_word;
-        let advance = estimate_text_width("다 같 이", &distributed_style);
-        let mut ink_style = text_style;
-        ink_style.letter_spacing = 0.0;
-        let trailing_ink_overhang =
-            estimate_text_width("이", &ink_style) - estimate_text_width("이", &distributed_style);
-
-        assert!((advance + trailing_ink_overhang - 90.0).abs() < 0.001);
-        assert_eq!(extra_char, 0.0);
-        assert_eq!(extra_dash, 0.0);
+        ts.extra_word_spacing = word;
+        assert!((super::estimate_text_width_exact("다 같 이", &ts) + 24.0 - 120.0).abs() < 0.001);
+        assert_eq!((character, dash), (0.0, 0.0));
     }
 
     /// [#4516] 머리말/꼬리말 예외로만 justify 된 마지막 줄: 공백 없는 영문

@@ -1,5 +1,6 @@
 //! 저장 줄의 음수 정렬 여분은 원본 들여쓰기 접두 원점을 압축하지 않는다.
-//! PII 21쪽과 규제분석 6쪽은 독립 Print의 96 CSSpx 좌표(±2)를 함께 보호한다.
+//! PII 11·21쪽과 규제분석 6쪽은 독립 Print의 96 CSSpx 좌표(±2)를 함께 보호한다.
+//! PII 38쪽의 마지막 글리프는 저장 줄 프레임 안의 점유·내용 관계를 검사한다.
 //! 자산관리 7쪽은 따옴표 윤곽의 추가 판독이 필요하여 원점 정렬·내용 관계만 검사한다.
 //! 원본/Print SHA, 전쪽 Native/fresh WASM 및 페이지 선정 근거는
 //! mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/negative-indent-20261016/README.md.
@@ -211,5 +212,119 @@ fn regulatory_negative_fit_keeps_list_origins_and_complete_cell_content() {
     assert!(
         first.0 >= owner.bbox.x && second.0 < owner.bbox.x + owner.bbox.width,
         "marker belongs inside the right cell"
+    );
+}
+
+// 같은 끝점 동작의 완료 쪽 중 Native/fresh WASM 모두 100%인 11쪽을 px 검사에
+// 우선 선정한다. 실제 결함을 발견한 38쪽(양쪽99.96%대)은 소스 줄 포함 관계로
+// 함께 보존한다. 독립 Print의 좌표는 72pt → 96CSSpx로 환산했다.
+fn terminal_glyph_geometry(line: &RenderNode, para: usize) -> (f64, f64, f64) {
+    let mut nodes = Vec::new();
+    walk(line, &mut nodes);
+    let (node, run, visible) = nodes
+        .into_iter()
+        .rev()
+        .find_map(|node| {
+            let RenderNodeType::TextRun(run) = &node.node_type else {
+                return None;
+            };
+            let visible = run.text.trim_end_matches(' ');
+            (run.para_index == Some(para) && !visible.is_empty()).then_some((node, run, visible))
+        })
+        .unwrap();
+    assert!(run.style.letter_spacing < 0.0, "authored negative tracking");
+    let index = visible.chars().count() - 1;
+    let fallback;
+    let positions = if let Some(positions) = &run.layout_positions {
+        positions
+    } else {
+        fallback = EmbeddedTextMeasurer.compute_char_positions(&run.text, &run.style);
+        &fallback
+    };
+    let x = node.bbox.x + positions[index];
+    let mut natural = run.style.clone();
+    natural.letter_spacing = 0.0;
+    natural.extra_word_spacing = 0.0;
+    natural.extra_char_spacing = 0.0;
+    let glyph = visible.chars().next_back().unwrap().to_string();
+    let glyph_width = EmbeddedTextMeasurer.compute_char_positions(&glyph, &natural)[1];
+    let end = x + glyph_width;
+    let frame_end = line.bbox.x + line.bbox.width;
+    assert!(
+        end <= frame_end + hwpunit_to_px(2, 96.0),
+        "last glyph belongs inside the source line frame, allowing only source-unit rounding: end={end}, frame={frame_end}"
+    );
+    (x, node.bbox.y + run.baseline, end)
+}
+
+#[test]
+fn justified_terminal_glyph_preserves_the_source_frame_and_content() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(root.join("samples/task2097/75544_pii_bunseok.hwpx")).unwrap(),
+    )
+    .unwrap();
+    core.set_hangul2024_compat(false);
+    core.set_font_environment(Some(FontEnvironment::from_json(&std::fs::read_to_string(root.join("mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json")).unwrap()).unwrap())).unwrap();
+    assert_eq!(core.page_count(), 66);
+
+    let page = core.build_page_render_tree(10).unwrap();
+    let mut nodes = Vec::new();
+    walk(&page.root, &mut nodes);
+    let tables = nodes.iter().filter(|n|matches!(&n.node_type,RenderNodeType::Table(t)if t.para_index==Some(110)&&t.control_index==Some(0))).collect::<Vec<_>>();
+    assert_eq!(tables.len(), 1);
+    let cell = tables[0]
+        .children
+        .iter()
+        .find(|n| matches!(&n.node_type,RenderNodeType::TableCell(c)if c.row==1&&c.col==2))
+        .unwrap();
+    let mut content = Vec::new();
+    walk(cell, &mut content);
+    let selected = content
+        .iter()
+        .filter(|n| {
+            matches!(&n.node_type,RenderNodeType::TextLine(l)if l.para_index==Some(0))
+                && text(n, 0).starts_with("이전하는 경우 개인정보 처리방침에")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        selected.len(),
+        1,
+        "source cell and line text identify the owner"
+    );
+    let (x, baseline, _) = terminal_glyph_geometry(selected[0], 0);
+    assert!(
+        (x - 685.7596028645833).abs() <= 2.0,
+        "independent Print page11 final 개 x: {x}"
+    );
+    assert!(
+        (baseline - 268.79998779296875).abs() <= 2.0,
+        "independent Print page11 baseline: {baseline}"
+    );
+    let Control::Table(source) = &core.document().sections[0].paragraphs[110].controls[0] else {
+        panic!("source table")
+    };
+    let source_cell = source
+        .cells
+        .iter()
+        .find(|c| c.row == 1 && c.col == 2)
+        .unwrap();
+    assert_eq!(
+        compact(&text(cell, 0)),
+        compact(&source_cell.paragraphs[0].text),
+        "complete cell paragraph and order"
+    );
+
+    let page = core.build_page_render_tree(37).unwrap();
+    let mut nodes = Vec::new();
+    walk(&page.root, &mut nodes);
+    let selected = nodes.iter().filter(|n|matches!(&n.node_type,RenderNodeType::TextLine(l)if l.para_index==Some(363)&&l.line_index==Some(1))).collect::<Vec<_>>();
+    assert_eq!(selected.len(), 1);
+    assert!(text(selected[0], 363).starts_with("제시하여 개인정보처리자의"));
+    terminal_glyph_geometry(selected[0], 363);
+    assert_eq!(
+        compact(&text(&page.root, 363)),
+        compact(&core.document().sections[0].paragraphs[363].text),
+        "page38 paragraph has no missing or repeated text"
     );
 }
