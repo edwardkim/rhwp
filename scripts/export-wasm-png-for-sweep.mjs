@@ -2,7 +2,7 @@
 // Print Canvas를 PNG로 직접 내보낸다. 각 작업자는 Chrome 하나·탭 하나를 재사용한다.
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
-import {mkdirSync, readFileSync, writeFileSync} from 'node:fs';
+import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import http from 'node:http';
 import {createRequire} from 'node:module';
 import {dirname, join, resolve} from 'node:path';
@@ -38,6 +38,13 @@ export function createSweepServer(files, fontByUrl) {
   });
 }
 
+// Snap Chromium의 /tmp는 host의 /tmp와 다르다. host가 지우는 임시 경로 대신
+// 양쪽에서 같은 파일을 가리키는 검토 output 아래에 전용 프로필을 만든다.
+export function createSweepBrowserProfile(output, index) {
+  mkdirSync(output, {recursive: true});
+  return mkdtempSync(join(resolve(output), `chrome-worker-${index}-`));
+}
+
 async function main() {
   const pkg = option('--pkg'), input = option('--input'), output = option('--out');
   const settings = JSON.parse(readFileSync(option('--options'), 'utf8'));
@@ -52,6 +59,7 @@ async function main() {
     ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
     ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
     ['/source', ['application/octet-stream', readFileSync(input)]],
+    ['/font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
   ]);
   // 실제 공급 목록만 HTTP로 읽을 수 있다. 요청 URL을 파일시스템 경로로 변환하지 않는다.
   const fonts = catalogue.faces.map((face, index) => ({...face, url: `/font/${index}`}));
@@ -70,12 +78,14 @@ async function main() {
   mkdirSync(join(output, 'render_tree'), {recursive: true});
   try {
     async function worker(index) {
-      const browser = await require('puppeteer-core').launch({
-        executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true,
-        protocolTimeout: 180000,
-      });
-      browsers.add(browser);
+      const userDataDir = createSweepBrowserProfile(output, index);
+      let browser;
       try {
+        browser = await require('puppeteer-core').launch({
+          executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true,
+          protocolTimeout: 180000, userDataDir,
+        });
+        browsers.add(browser);
         const page = await browser.newPage();
         await page.goto(`http://127.0.0.1:${server.address().port}`);
         const info = await page.evaluate(async ({compat, environmentJson}) => {
@@ -165,6 +175,7 @@ async function main() {
         }
         // 같은 문서의 필요한 face를 한 번만 공급한다. 데이터는 SVG/base64로 복제하지 않는다.
         const fontInfo = await page.evaluate(async ({pages, fonts, scale}) => {
+          const {installCanvasFont} = await import('/font-registration.mjs');
           const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
           const requested = new Set();
@@ -186,10 +197,8 @@ async function main() {
             if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
             const bytes = await response.arrayBuffer();
             for (const family of selected) {
-              const font = new FontFace(family, bytes, {weight: String(record.weight), style: record.style});
-              try { await font.load(); }
+              try { await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc); }
               catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
-              document.fonts.add(font);
               supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}`);
               loaded.push({family, sourceSha256: record.sourceSha256, sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
             }
@@ -226,7 +235,13 @@ async function main() {
         }
         workers.push({index, pages, fonts: fontInfo, browser: await browser.version()});
         await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
-      } finally { browsers.delete(browser); await browser.close(); }
+      } finally {
+        if (browser) {
+          // 종료에 실패하면 활성 프로필을 지우지 않고 바깥 finally가 다시 닫게 둔다.
+          await browser.close(); browsers.delete(browser);
+        }
+        rmSync(userDataDir, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+      }
     }
     await Promise.all(Array.from({length: workerCount}, (_, index) => worker(index)));
     const expected = wanted || Array.from({length: pageCount}, (_, i) => i + 1);

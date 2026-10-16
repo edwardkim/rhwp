@@ -86,8 +86,8 @@ fn the_page_ending_fragment_box_folds_to_the_hancom_height() {
     let table = top_level_table(&root, 0, false).expect("1쪽 표 pi=0 — 시험 설정");
     let height = table.bbox.height;
     assert!(
-        (height - 977.54).abs() <= 2.5,
-        "① 조각 상자 높이는 한/글 정본(977.54px) 2.5px 안이어야 한다 \
+        (height - 977.54).abs() <= 2.0,
+        "① 조각 상자 높이는 한/글 정본(977.54px) 2px 안이어야 한다 \
          (수정 전 985.40 — 마지막 줄 줄간격 9.60 이 남았다): {height:.2}"
     );
 

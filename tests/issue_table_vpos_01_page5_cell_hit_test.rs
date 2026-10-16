@@ -6,8 +6,9 @@
 //!   - pi=32 ci=0  1x1  "국민이 주도하고 AI가 뒷받침하는 국민주권정부"
 //!   - pi=34 ci=0  1x1  (외곽 wrapper, 내부 1x1 title + 11x3 본문 표)
 //!
-//! 좌표는 `cargo run --bin rhwp -- export-svg samples/table-vpos-01.hwp -p 4 --debug-overlay`
-//! SVG 의 cell-clip 영역에서 측정 (96 DPI).
+//! 클릭점은 원본 셀 경로의 첫 글자 커서 사각형에서 구한다. 배치가 이동해도
+//! 같은 쪽·같은 셀로 들어가는 계약을 검사하며 임시 SVG 좌표를 고정하지 않는다.
+//! Native/fresh WASM·독립 Print의 대상 영역 판독: task_m100_7902_stage3.md.
 //!
 //! [Task #990] pi=33(빈 문단 위 treat-as-char 도형) advance 이중 가산 정정으로
 //! pi=34 외곽 표 및 내부 11x3 표가 30.84px 위로 이동 — pi=34 inner 11x3 좌표 갱신.
@@ -92,15 +93,19 @@ fn inner_cell_click_point(doc: &HwpDocument, cell_index: usize) -> (f64, f64) {
         r#"[{{"controlIndex":0,"cellIndex":0,"cellParaIndex":1}},
             {{"controlIndex":0,"cellIndex":{cell_index},"cellParaIndex":0}}]"#
     );
+    cell_click_point(doc, 34, &path_json)
+}
+
+fn cell_click_point(doc: &HwpDocument, parent_para: u32, path_json: &str) -> (f64, f64) {
     let rect_json = doc
-        .get_cursor_rect_by_path(0, 34, &path_json, 0)
-        .unwrap_or_else(|e| panic!("cursor rect for inner cell {cell_index}: {e:?}"));
+        .get_cursor_rect_by_path(0, parent_para, path_json, 0)
+        .unwrap_or_else(|e| panic!("문단 {parent_para} 원본 셀 경로 {path_json}: {e:?}"));
     let rect: Value = serde_json::from_str(&rect_json)
         .unwrap_or_else(|e| panic!("parse cursor rect `{rect_json}`: {e}"));
     assert_eq!(
         rect["pageIndex"].as_u64(),
         Some(4),
-        "inner cell {cell_index} must live on page index 4, rect={rect_json}"
+        "원본 셀은 5쪽 소유여야 한다: 문단 {parent_para}, 경로 {path_json}, {rect_json}"
     );
     let x = rect["x"].as_f64().expect("cursor x") + 4.0;
     let y = rect["y"].as_f64().expect("cursor y")
@@ -131,7 +136,12 @@ fn assert_nested_inner_cell(hit: &Value, expected_inner_cell_index: usize) {
 #[test]
 fn page5_header_cell0_center_enters_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 113.7, 113.4);
+    let (x, y) = cell_click_point(
+        &doc,
+        30,
+        r#"[{"controlIndex":1,"cellIndex":0,"cellParaIndex":0}]"#,
+    );
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 30, 1);
     assert_eq!(hit["cellIndex"].as_u64(), Some(0), "hit={hit}");
 }
@@ -139,7 +149,12 @@ fn page5_header_cell0_center_enters_cell() {
 #[test]
 fn page5_header_cell1_center_enters_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 433.0, 113.4);
+    let (x, y) = cell_click_point(
+        &doc,
+        30,
+        r#"[{"controlIndex":1,"cellIndex":1,"cellParaIndex":0}]"#,
+    );
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 30, 1);
     assert_eq!(hit["cellIndex"].as_u64(), Some(1), "hit={hit}");
 }
@@ -147,7 +162,12 @@ fn page5_header_cell1_center_enters_cell() {
 #[test]
 fn page5_title_cell_center_enters_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 396.8, 164.0);
+    let (x, y) = cell_click_point(
+        &doc,
+        32,
+        r#"[{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]"#,
+    );
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 32, 0);
     assert_eq!(hit["cellIndex"].as_u64(), Some(0), "hit={hit}");
 }
@@ -159,7 +179,13 @@ fn page5_title_cell_center_enters_cell() {
 #[test]
 fn page5_big_inner_title_cell_returns_nested_path() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 396.8, 260.6);
+    let (x, y) = cell_click_point(
+        &doc,
+        34,
+        r#"[{"controlIndex":0,"cellIndex":0,"cellParaIndex":0},
+            {"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]"#,
+    );
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 34, 0);
     let path = path_tuples(&hit);
     assert!(
