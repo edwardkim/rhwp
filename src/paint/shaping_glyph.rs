@@ -352,7 +352,7 @@ fn run_surface_supported(run: &TextRunNode) -> bool {
         && matches!(run.field_marker, FieldMarkerType::None)
         && !style.bold
         && !style.italic
-        && super::font::glyph_font_size_is_portable(style.font_size)
+        && super::font_size::glyph_font_size_is_portable(style.font_size)
         && style.ratio.is_finite()
         && style.ratio > 0.0
         && style.ratio <= 16.0
@@ -839,7 +839,7 @@ fn project_replay_geometry(
 
     let (draw_font_size_px, draw_x_scale) =
         crate::renderer::condensed_ratio_draw_params(run.style.font_size, run.style.ratio);
-    if !super::font::glyph_font_size_is_portable(draw_font_size_px)
+    if !super::font_size::glyph_font_size_is_portable(draw_font_size_px)
         || !draw_x_scale.is_finite()
         || draw_x_scale <= 0.0
     {
