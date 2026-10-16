@@ -1375,7 +1375,10 @@ pub fn extract_image_from_xobject_at(
             .and_then(|n| n.checked_mul(8))
             .filter(|&n| n > 0 && n <= budget.limits.stream_bytes)
             .ok_or_else(|| budget.reject("image extraction buffer"))?;
-        budget.charge_decoded(worst_buffer)?;
+        // Geometry preflight is not an allocation. Bounded decoders, unpackers
+        // and colour conversion reserve their actual buffers below; do not
+        // additionally charge a fictitious width*height*8 scratch plane.
+        let _ = worst_buffer;
     }
 
     let sample_depth = dict

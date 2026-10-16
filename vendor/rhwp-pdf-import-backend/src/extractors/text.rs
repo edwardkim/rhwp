@@ -2401,6 +2401,9 @@ pub struct TextExtractor<'doc> {
     /// covers `Pattern(_)` in the data model so future pattern-content
     /// walks can populate it.
     mcid_scope_stack: Vec<crate::structure::McidScope>,
+    // Only PdfDocument's canonical root stream may populate the page-op cache.
+    // Public set_page_index alone does not assert source identity.
+    import_page_source: Option<usize>,
 }
 
 impl<'doc> TextExtractor<'doc> {
@@ -2491,14 +2494,18 @@ impl<'doc> TextExtractor<'doc> {
             // extraction. Form XObject `Do` invocations push their
             // own scope on top.
             mcid_scope_stack: vec![crate::structure::McidScope::Page(0)],
+            import_page_source: None,
         }
+    }
+
+    pub(crate) fn set_import_page_source(&mut self, page: usize) {
+        self.import_page_source = Some(page);
     }
 
     /// Stamp this extractor with the page index it is processing.
     ///
     /// Used so spans (and the lookup keys for `/ActualText`) carry the
-    /// correct `McidScope::Page(page_index)` when the extractor is not
-    /// currently inside a Form XObject.
+    /// correct `McidScope::Page(page_index)` outside a Form XObject.
     pub fn set_page_index(&mut self, page_index: u32) {
         // The first entry is always the page scope (Form scopes are
         // pushed on top by `Do` and popped before the extractor
@@ -3579,6 +3586,19 @@ impl<'doc> TextExtractor<'doc> {
 
     fn run_content_stream(&mut self, content_stream: &[u8]) -> Result<()> {
         if let Some(budget) = self.document.and_then(|doc| doc.import_budget()).cloned() {
+            if self.xobject_depth == 0 {
+                if let Some(page) = self.import_page_source {
+                    let operators = self
+                        .document
+                        .expect("request source document")
+                        .parse_page_import_content(page, content_stream, parse_content_stream)?;
+                    for operator in operators {
+                        self.execute_operator(operator)?;
+                        budget.check()?;
+                    }
+                    return Ok(());
+                }
+            }
             return crate::content::parser::execute_content_with_budget(
                 content_stream,
                 &budget,

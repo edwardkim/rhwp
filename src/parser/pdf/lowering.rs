@@ -47,9 +47,18 @@ fn component(width: u32, height: u32) -> ShapeComponentAttr {
 }
 
 fn common(x: f32, y: f32, w: f32, h: f32, id: u32) -> Result<CommonObjAttr, String> {
+    // HWP stores signed page offsets in these u32 bit fields. Extents remain
+    // nonnegative; positions may lie beyond the page origin. Quantize to the
+    // format's 1/100 pt unit, without clamping content to the page boundary.
+    let offset = |v: f32| {
+        if !v.is_finite() || v.abs() > 100000.0 {
+            return Err(format!("unsupported page offset: {v}"));
+        }
+        Ok(((v * 100.0).round() as i32) as u32)
+    };
     Ok(CommonObjAttr {
-        horizontal_offset: hu(x)?,
-        vertical_offset: hu(y)?,
+        horizontal_offset: offset(x)?,
+        vertical_offset: offset(y)?,
         width: hu(w)?,
         height: hu(h)?,
         instance_id: id,
@@ -237,12 +246,15 @@ pub(super) fn lower(
     for image in &page.images {
         let b = image.bbox().ok_or("image has no placement geometry")?;
         let matrix = image.matrix();
-        if image.rotation_degrees() != 0
-            || !matrix.iter().all(|value| value.is_finite())
+        if !matrix.iter().all(|value| value.is_finite())
             || matrix[0] <= 0.0
             || matrix[3] <= 0.0
-            || matrix[1] != 0.0
-            || matrix[2] != 0.0
+            // Off-diagonal entries are physical endpoint displacements in the
+            // image unit square. Only accept those indistinguishable from zero
+            // in HWP's native coordinate unit. The rounded angle alone can be
+            // 360 degrees for a tiny negative value and is not authoritative.
+            || (matrix[1] * 100.0).round() != 0.0
+            || (matrix[2] * 100.0).round() != 0.0
         {
             return Err("rotated/mirrored/sheared image is not supported by this POC".into());
         }

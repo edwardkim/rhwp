@@ -476,7 +476,14 @@ pub fn detect_ruled_tables(
         return Err("invalid page geometry".into());
     }
     let (left, _, _, top) = media_box;
-    let source_edges = edges(paths, left, top)?;
+    // Table inference is optional. Stop its work at the existing cap, while
+    // preserving original paths/text/images for positional lowering. Invalid
+    // source geometry is still fatal; no inferred table is asserted here.
+    let (source_edges, deferred_reason) = match edges(paths, left, top) {
+        Ok(edges) => (edges, None),
+        Err(reason) if reason == "ruled-table edge budget exceeded" => (Vec::new(), Some(reason)),
+        Err(reason) => return Err(reason),
+    };
     let logical_edges = source_edges
         .iter()
         .map(|edge| project_junctions(*edge, &source_edges))
@@ -656,6 +663,7 @@ pub fn detect_ruled_tables(
     }
     Ok(json!({
         "algorithm":"ruling-cellular-topology-v2","coordinateSystem":"points, top-left of MediaBox",
+        "deferredReason":deferred_reason,"sourcePathCount":paths.len(),
         "scope":"stroked axis-aligned ruled grids; geometric candidates, not semantic proof",
         "tolerancePt":EPS,"edgeCount":source_edges.len(),"canonicalEdgeCount":edges.len(),
         "boundaryNormalization":"exact geometric duplicates share coverage; original paint contributors retained",

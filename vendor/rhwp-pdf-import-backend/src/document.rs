@@ -529,6 +529,8 @@ pub struct PdfDocument {
     pub(crate) erase_regions: Mutex<HashMap<usize, Vec<crate::geometry::Rect>>>,
     /// LRU cache of decompressed page content streams, keyed by page index.
     page_content_cache: Mutex<BoundedEntryCache<usize, std::sync::Arc<Vec<u8>>>>,
+    // Adjacent bounded path/image consumers share one page's lexical parse.
+    import_page_operators: Mutex<BoundedEntryCache<usize, Arc<Vec<crate::content::Operator>>>>,
     /// LRU cache of postprocessed [`TextSpan`]s per page. `to_markdown`/`to_html`
     /// reach `extract_spans` twice per page — once directly, once via
     /// `extract_page_tables` → `extract_words` → `page_reading_order`; this serves
@@ -1136,6 +1138,36 @@ impl PdfDocument {
         }
     }
 
+    pub(crate) fn parse_page_import_content(
+        &self,
+        page: usize,
+        data: &[u8],
+        legacy: fn(&[u8]) -> Result<Vec<crate::content::Operator>>,
+    ) -> Result<Vec<crate::content::Operator>> {
+        let Some(budget) = self.import_budget.as_ref() else {
+            return legacy(data);
+        };
+        budget.check()?;
+        let cached = self
+            .import_page_operators
+            .lock_or_recover()
+            .get(&page)
+            .cloned();
+        let operators = match cached {
+            Some(operators) => operators,
+            None => {
+                let operators =
+                    Arc::new(crate::content::parser::parse_content_with_budget(data, budget)?);
+                budget.charge_entries(1)?;
+                self.import_page_operators
+                    .lock_or_recover()
+                    .insert(page, Arc::clone(&operators));
+                operators
+            },
+        };
+        crate::content::operator_copy::copy(&operators, budget)
+    }
+
     /// Deprecated alias for `from_bytes`.
     #[deprecated(since = "0.3.15", note = "Use `from_bytes` instead")]
     pub fn open_from_bytes(data: Vec<u8>) -> Result<Self> {
@@ -1372,6 +1404,7 @@ impl PdfDocument {
             )),
             erase_regions: Mutex::new(HashMap::new()),
             page_content_cache: Mutex::new(BoundedEntryCache::new(64)),
+            import_page_operators: Mutex::new(BoundedEntryCache::new(1)),
             page_spans_cache: Mutex::new(BoundedEntryCache::new(8)),
             search_index: Mutex::new(HashMap::new()),
             page_chars_cache: Mutex::new(BoundedEntryCache::new(8)),
@@ -17383,6 +17416,7 @@ impl PdfDocument {
         // by default; Form XObject Do invocations push their own scope
         // on top of the stack inside the extractor.
         extractor.set_page_index(page_index as u32);
+        extractor.set_import_page_source(page_index);
         if !excluded_layers.is_empty() {
             extractor.set_excluded_layers(excluded_layers);
         }
@@ -17954,6 +17988,9 @@ impl PdfDocument {
 
         // Create text extractor with merged configuration
         let mut extractor = TextExtractor::new().with_merging_config(config);
+        extractor.set_document(self);
+        extractor.set_page_index(page_index as u32);
+        extractor.set_import_page_source(page_index);
 
         // Load fonts from page resources and set resources for XObject access
         if let Some(resources) = page_dict.get("Resources") {
@@ -18449,6 +18486,8 @@ impl PdfDocument {
         // would make the wrong call on any document whose pages differ in size.
         // Harmless before this change only because the clip never ran here.
         extractor.set_page_index(page_index as u32);
+        extractor.set_document(self);
+        extractor.set_import_page_source(page_index);
         if !excluded_layers.is_empty() {
             extractor.set_excluded_layers(excluded_layers);
         }
@@ -19562,19 +19601,22 @@ impl PdfDocument {
             },
         };
 
-        let operators =
-            match self.parse_import_content(&content_data, parse_content_stream_paths_only) {
-                Ok(ops) => ops,
-                Err(e) => {
-                    self.check_import_budget()?;
-                    log::warn!(
-                        "Failed to parse content stream for page {}: {}, returning empty paths",
-                        page_index,
-                        e
-                    );
-                    return Ok(Vec::new());
-                },
-            };
+        let operators = match self.parse_page_import_content(
+            page_index,
+            &content_data,
+            parse_content_stream_paths_only,
+        ) {
+            Ok(ops) => ops,
+            Err(e) => {
+                self.check_import_budget()?;
+                log::warn!(
+                    "Failed to parse content stream for page {}: {}, returning empty paths",
+                    page_index,
+                    e
+                );
+                return Ok(Vec::new());
+            },
+        };
 
         let mut extractor = PathExtractor::new();
         let mut state_stack = PathGraphicsStateStack::new();
@@ -24002,13 +24044,14 @@ impl PdfDocument {
             None => None,
         };
 
-        let operators = match self.parse_import_content(&content_data, parse_content_stream) {
-            Ok(ops) => ops,
-            Err(_) => {
-                self.check_import_budget()?;
-                return Ok(Vec::new());
-            },
-        };
+        let operators =
+            match self.parse_page_import_content(page_index, &content_data, parse_content_stream) {
+                Ok(ops) => ops,
+                Err(_) => {
+                    self.check_import_budget()?;
+                    return Ok(Vec::new());
+                },
+            };
 
         // Resource-name colour-space map for this page scope (§8.6.6 / §8.9.7).
         let cs_map = self.build_color_space_map(resources.as_ref())?;

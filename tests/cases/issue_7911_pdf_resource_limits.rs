@@ -323,6 +323,49 @@ fn decode_limit_does_not_become_empty_paths_success() {
 }
 
 #[test]
+fn page_path_and_image_consumers_share_a_bounded_parse() {
+    let with_text = object_file(&objects(b"BT /F1 12 Tf 10 20 Td (A) Tj ET 0 0 m 1 1 l S", "", ""), "");
+    let all_consumers = PdfDocument::from_bytes_with_limits(with_text, PdfImportLimits {
+        operators: 8,
+        ..Default::default()
+    }).unwrap();
+    assert_eq!(all_consumers.extract_spans(0).unwrap()[0].text, "A");
+    assert_eq!(all_consumers.extract_paths(0).unwrap().len(), 1);
+    assert!(all_consumers.page_image_handles(0).unwrap().is_empty());
+    assert!(all_consumers.check_import_budget().is_ok());
+    let source = object_file(&objects(b"q 1 0 0 1 0 0 cm 0 0 m 1 1 l S Q", "", ""), "");
+    let doc = PdfDocument::from_bytes_with_limits(
+        source,
+        PdfImportLimits {
+            operators: 6,
+            decoded_bytes: 1024 * 1024,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let paths = doc.extract_paths(0).unwrap();
+    assert_eq!(paths.len(), 1);
+    assert_eq!(paths[0].operations.len(), 2);
+    // A separate image consumer sees the same parsed stream; re-parsing it
+    // would exceed six operators. No XObject is fabricated from path paints.
+    assert!(doc.page_image_handles(0).unwrap().is_empty());
+    // Cache hits still copy owned payload under the same cumulative budget.
+    let mut failed = false;
+    for _ in 0..10000 {
+        if doc.page_image_handles(0).is_err() {
+            failed = true;
+            break;
+        }
+    }
+    assert!(failed, "cache hits must not bypass cumulative accounting");
+    assert!(doc.check_import_budget().is_err());
+    assert!(
+        doc.extract_paths(0).is_err(),
+        "failed requests cannot return cached operators"
+    );
+}
+
+#[test]
 fn content_operator_and_graphics_stack_limits_are_request_local() {
     let shared = Arc::new(
         ImportBudget::new(PdfImportLimits {
