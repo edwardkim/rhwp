@@ -876,7 +876,12 @@ impl DocumentCore {
                     paint: PaintDecision::stage3(
                         Some(run.style.font_family.clone()),
                         native_observer.map(|observe| {
-                            observe(&run.style.font_family, ch, run.style.bold, run.style.italic)
+                            observe(
+                                &crate::renderer::native_font_family_for_style(&run.style),
+                                ch,
+                                run.style.bold,
+                                run.style.italic,
+                            )
                         }),
                         native_unavailable_reason,
                     ),
