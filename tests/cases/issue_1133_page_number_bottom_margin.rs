@@ -84,10 +84,30 @@ fn page_number_follows_bottom_margin_but_not_footer_margin() {
 fn page_number_style_control_keeps_independent_baseline() {
     let core = open("samples/issue7336/nested_table_fragment_cut.hwp");
     let actual = number_baseline(&core, 0);
-    // 독립 한컴2020 PDF1쪽의 HCRDotum 기준선이다. 기존5쪽 공차는 변경하지 않는다.
+    let tree = core.build_page_render_tree(0).expect("1쪽");
+    let footer = tree
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Footer))
+        .expect("원본 꼬리말");
+    let source = core.document();
+    let style = source
+        .doc_info
+        .styles
+        .iter()
+        .find(|style| style.local_name == "쪽 번호")
+        .expect("원본 쪽 번호 스타일");
+    let font_em = f64::from(source.doc_info.char_shapes[style.char_shape_id as usize].base_size)
+        * 96.0
+        / 7200.0;
+    // 독립 Print1쪽: 꼬리말 하단1065.82667, 기준선1061.55990,
+    // 글자크기9.951866pt. 하단 여유는 약0.322em이다. 글자 크기에
+    // 상대적인 여유·포함을 검사하며 허용폭은 기존0.6px에 해당한다.
+    let inset_em = (footer.bbox.y + footer.bbox.height - actual) / font_em;
     assert!(
-        (actual - 1_061.559_895_833_333_3).abs() <= 0.6,
-        "기존 쪽번호 스타일 대조군의 실제 기준선{actual}, 독립 PDF1061.55990"
+        (inset_em - 0.322).abs() <= 0.045,
+        "원본 글자크기 대비 꼬리말 하단 여유: {inset_em}em"
     );
 }
 

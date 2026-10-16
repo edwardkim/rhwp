@@ -87,6 +87,12 @@ enum Exempt {
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "commands/document/hft_outline_fonts.rs",
+        "register_hft_outline_font_native",
+        Exempt::SessionState,
+        "#7902: hft_outline_fonts의 paint 전용 프로그램만 등록·교체한다. 문서 IR과 저장 HWP 바이트 보존은 hft_outline_font_contract의 public API 실행으로 검사한다.",
+    ),
+    (
         "font_environment.rs",
         "set_font_environment",
         Exempt::SessionState,
