@@ -1,5 +1,5 @@
 //! #7445 지정 댓글의 생물독 원본: 독립 PDF 205쪽 전수 시각 수용 후 복구한 회귀.
-//! C80 Native/fresh WASM 전205쪽96DPI raw 최저93.26163/93.26176%, 미달0.
+//! C81 Native/fresh WASM 전205쪽96DPI raw 최저95.69921/95.70411%, 미달0.
 //! 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사하고, 양쪽98% 이상인
 //! 중요한 그림 경계만 독립 Print의 ±2 CSSpx로 보호한다. 출처는
 //! completed-20261009/regression-policy-20261015/gray-grid-raster-20261017/README.md.
@@ -54,14 +54,74 @@ fn tables(root: &RenderNode, host: usize) -> Vec<&RenderNode> {
 }
 
 fn paragraph_runs(root: &RenderNode, host: usize) -> Vec<&RenderNode> {
+    paragraph_runs_in(root, SECTION, host)
+}
+
+fn paragraph_runs_in(root: &RenderNode, section: usize, host: usize) -> Vec<&RenderNode> {
     nodes(root)
         .into_iter()
         .filter(|n| {
             matches!(&n.node_type, RenderNodeType::TextRun(t)
-            if t.section_index == Some(SECTION) && t.para_index == Some(host)
+            if t.section_index == Some(section) && t.para_index == Some(host)
                 && t.cell_context.is_none())
         })
         .collect()
+}
+
+#[test]
+fn picture_successor_keeps_caption_and_following_body_below_the_picture() {
+    let core = core();
+    assert_eq!(core.page_count(), 205);
+    let source = &core.document().sections[4].paragraphs;
+    let Control::Picture(picture) = &source[343].controls[0] else {
+        panic!("독립 Print 63쪽의 예측 결과 그림");
+    };
+    let tree = core.build_page_render_tree(62).unwrap();
+    let images: Vec<_> = nodes(&tree.root)
+        .into_iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Image(image)
+            if image.section_index == Some(4) && image.para_index == Some(343))
+        })
+        .collect();
+    assert_eq!(images.len(), 1, "그림의 단일 쪽 소유");
+    let RenderNodeType::Image(image) = &images[0].node_type else {
+        unreachable!();
+    };
+    assert_eq!(image.bin_data_id, picture.image_attr.bin_data_id);
+    let image_bottom = images[0].bbox.y + images[0].bbox.height;
+    let mut previous_bottom = image_bottom;
+    for host in 344..=346 {
+        let runs = paragraph_runs_in(&tree.root, 4, host);
+        assert!(!runs.is_empty(), "캡션·주석·후속 본문의 같은 쪽 소유");
+        let rendered: String = runs.iter().map(|node| text(node)).collect();
+        assert_eq!(
+            compact(&rendered),
+            compact(&source[host].text),
+            "내용 순서·누락·중복"
+        );
+        let top = runs
+            .iter()
+            .map(|node| node.bbox.y)
+            .reduce(f64::min)
+            .unwrap();
+        assert!(top >= previous_bottom, "그림·캡션·주석·본문의 겹침 금지: pi={host}, top={top}, preceding_bottom={previous_bottom}");
+        previous_bottom = runs
+            .iter()
+            .map(|node| node.bbox.y + node.bbox.height)
+            .reduce(f64::max)
+            .unwrap();
+        if host == 344 {
+            // 같은 원본 독립 Print p63: 캡션 잉크 상단699.79083pt,
+            // 그림 하단688.64697pt. C81 전205쪽은 양쪽90% 이상이고
+            // 이 쪽은 raw99.95764/99.95854% 및 review/overlay 직접 판독 완료.
+            assert!((top - 933.05444).abs() <= 2.0, "독립 캡션 원점 ±2CSSpx");
+        }
+    }
+    assert!(
+        (image_bottom - 918.19596).abs() <= 2.0,
+        "그림 자체 원점은 유지"
+    );
 }
 
 #[cfg(feature = "native-skia")]

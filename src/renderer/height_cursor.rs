@@ -531,6 +531,65 @@ impl HeightCursor {
         let Some(prev_para) = paragraphs.get(prev_pi) else {
             return y_offset;
         };
+        // A floating picture does not consume the host's text advance. The
+        // saved successor can nevertheless certify that its line is below the
+        // complete picture. Reconstructing a new lazy origin from that empty
+        // host's cursor loses the original column frame (and lifts captions
+        // into the picture). Pagination and paint retain the same source frame.
+        if !self.session_edited {
+            if let (Some((base, origin)), Some(current)) =
+                (self.stored_column_origin, paragraphs.get(item_para))
+            {
+                let authored = |p: &Paragraph| {
+                    !p.stored_text_partition_is_dirty()
+                        && !p.cell_format_vpos_dirty
+                        && p.source_line_seg_vertical_pos
+                            .as_ref()
+                            .is_none_or(|source| {
+                                source
+                                    .iter()
+                                    .copied()
+                                    .eq(p.line_segs.iter().map(|s| s.vertical_pos))
+                            })
+                        && p.line_segs.iter().all(|s| {
+                            s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && s.line_height > 0
+                        })
+                };
+                if let ([host], Some(next), [Control::Picture(picture)]) = (
+                    prev_para.line_segs.as_slice(),
+                    current.line_segs.first(),
+                    prev_para.controls.as_slice(),
+                ) {
+                    let common = &picture.common;
+                    let (_, height) = super::layout::picture_flow_frame_size_hu(picture);
+                    let picture_end = i64::from(host.vertical_pos)
+                        + i64::from(common.vertical_offset as i32)
+                        + i64::from(height);
+                    if !para_has_visible_text(prev_para)
+                        && authored(prev_para)
+                        && authored(current)
+                        && host.segment_width == 0
+                        && next.segment_width > 0
+                        && !common.treat_as_char
+                        && common.text_wrap == TextWrap::Square
+                        && common.vert_rel_to == VertRelTo::Para
+                        && common.vert_align == crate::model::shape::VertAlign::Top
+                        && common.flow_with_text
+                        && !common.allow_overlap
+                        && height > 0
+                        && host.vertical_pos >= base
+                        && i64::from(next.vertical_pos) >= picture_end
+                        && current.column_type == crate::model::paragraph::ColumnBreakType::None
+                        && origin + hwpunit_to_px(next.vertical_pos - base, self.dpi)
+                            <= self.col_area_y + self.col_area_height
+                    {
+                        self.vpos_page_base = Some(base);
+                        self.vpos_lazy_base = None;
+                        self.col_anchor_y = origin;
+                    }
+                }
+            }
+        }
         // An empty explicit page-break paragraph consumes its real line box,
         // but its zero stored cursor does not locate the successor's saved
         // coordinate frame. Establish that frame from the first text line's
