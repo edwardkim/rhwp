@@ -698,6 +698,9 @@ fn collect_glyph_run_reject_reasons(
     {
         reasons.insert(VariantRejectReason::GlyphIdOutOfRange);
     }
+    // Native and CanvasKit narrow replay geometry to f32. Reject it before
+    // font preflight can omit the TextRun's fallback families.
+    let portable_scalar = |value: f64| value.is_finite() && value.abs() <= f64::from(f32::MAX);
     let placement = run.placement.run_to_page;
     if ![
         placement.a,
@@ -709,21 +712,21 @@ fn collect_glyph_run_reject_reasons(
         run.placement.baseline_y,
     ]
     .into_iter()
-    .all(f64::is_finite)
+    .all(portable_scalar)
     {
         reasons.insert(VariantRejectReason::PlacementNotFinite);
     }
     if run
         .positions
         .iter()
-        .any(|position| !position.x.is_finite() || !position.y.is_finite())
+        .any(|position| !portable_scalar(position.x) || !portable_scalar(position.y))
     {
         reasons.insert(VariantRejectReason::PositionNotFinite);
     }
     if run.advances.as_ref().is_some_and(|advances| {
         advances
             .iter()
-            .any(|advance| !advance.dx.is_finite() || !advance.dy.is_finite())
+            .any(|advance| !portable_scalar(advance.dx) || !portable_scalar(advance.dy))
     }) {
         reasons.insert(VariantRejectReason::AdvanceNotFinite);
     }
