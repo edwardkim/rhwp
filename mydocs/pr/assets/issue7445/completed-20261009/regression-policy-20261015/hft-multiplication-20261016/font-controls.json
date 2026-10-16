@@ -1,0 +1,27 @@
+{
+  "diagnosticOnly": true,
+  "results": [
+    {
+      "case": "before",
+      "values": {
+        "한양신명조": "16",
+        "HY신명조": "16",
+        "휴먼명조": "16",
+        "굴림체": "16",
+        "바탕체": "16",
+        "Palatino Linotype": "8"
+      }
+    },
+    {
+      "case": "after",
+      "values": {
+        "한양신명조": "10",
+        "HY신명조": "16",
+        "휴먼명조": "16",
+        "굴림체": "16",
+        "바탕체": "16",
+        "Palatino Linotype": "8"
+      }
+    }
+  ]
+}

@@ -6,6 +6,7 @@ use rhwp::renderer::{
         hancom_glyphs::GlyphRun,
         layout::{LayoutBox, LayoutKind},
     },
+    layout::{EmbeddedTextMeasurer, TextMeasurer},
     render_tree::{EquationNode, RenderNode, RenderNodeType},
 };
 use rhwp::DocumentCore;
@@ -16,6 +17,55 @@ fn energy(node: &RenderNode) -> Option<&EquationNode> {
         }
     }
     node.children.iter().find_map(energy)
+}
+
+#[test]
+fn body_multiplication_keeps_its_independent_proportional_slot() {
+    let bytes = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/issue1949_giant_cell_nested_tables_perf.hwp"),
+    )
+    .unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+    core.set_hangul2024_compat(true);
+    let tree = core.build_page_render_tree(82).unwrap();
+    fn target(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::TextRun(run)
+            if run.display_or_text().contains("48cm × 66cm"))
+        {
+            return Some(node);
+        }
+        node.children.iter().find_map(target)
+    }
+    let node = target(&tree.root).expect("독립 Print83쪽의 본문 치수 표기 소속");
+    let RenderNodeType::TextRun(run) = &node.node_type else {
+        unreachable!()
+    };
+    let positions = run.layout_positions.clone().unwrap_or_else(|| {
+        EmbeddedTextMeasurer.compute_char_positions(run.display_or_text(), &run.style)
+    });
+    let index = run
+        .display_or_text()
+        .chars()
+        .position(|c| c == '×')
+        .unwrap();
+    // 같은 HFT 프로그램의 독립 원본83쪽/분할140쪽 /Widths=616/1000em.
+    // 장치 전진 격자 오차만 허용하는 원본 글리프 비율이며 절대 px 핀이 아니다.
+    let advance = positions[index + 1] - positions[index];
+    assert!(
+        (advance / run.style.font_size - 0.616).abs() < 0.004,
+        "HFT 곱셈은 대체 TTF의 전각 슬롯으로 넓히지 않음: {advance}"
+    );
+    assert!(
+        (positions.last().unwrap() - node.bbox.width).abs() < 1e-6,
+        "실제 run 상자와 paint의 문자 전진은 같은 결과를 소비"
+    );
+    assert!(
+        core.extract_page_text_native(82)
+            .unwrap()
+            .contains("48cm × 66cm"),
+        "기호와 앞뒤 치수의 원문 소속·순서 보존"
+    );
 }
 fn literal_run(b: &LayoutBox) -> Option<&GlyphRun> {
     match &b.kind {

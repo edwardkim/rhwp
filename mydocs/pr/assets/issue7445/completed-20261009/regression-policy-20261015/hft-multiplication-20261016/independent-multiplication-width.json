@@ -1,0 +1,69 @@
+{
+  "method": "Widths metadata from actual multiplication glyphs in three exact independently printed inputs; source DocInfo declares HFT HanyangSinMyeongJo for applicable slots; no font program payload copied",
+  "measuredEm": 0.616,
+  "overlayUnits": 631,
+  "overlayEm": 1024,
+  "evidence": [
+    {
+      "case": "original",
+      "pdf": "pdf/issue1949_giant_cell_nested_tables_perf-hwp-2024.pdf",
+      "pdfSha256": "9fb08dea604813eed90a0449f29682d400be54dacd413352cc4f680f37cd4a44",
+      "page": 83,
+      "actualGlyphSpan": {
+        "font": "T8",
+        "text": "×"
+      },
+      "width": 616.0,
+      "fontMatrix": [
+        0.001,
+        0.0,
+        0.0,
+        0.001,
+        0.0,
+        0.0
+      ],
+      "charProcSha256": "ce80ce249d3c694461bb2394459e4d7787281c4955d7e9cdf2619ec673f0db61"
+    },
+    {
+      "case": "old-split",
+      "pdf": "pdf/issue4138-tab-period-split-20261015-2024.pdf",
+      "pdfSha256": "687f1404e56a764258c93fb0e59d9fb1dd870b506d36451fbfa833fd207f8294",
+      "page": 140,
+      "actualGlyphSpan": {
+        "font": "T8",
+        "text": "×"
+      },
+      "width": 616.0,
+      "fontMatrix": [
+        0.001,
+        0.0,
+        0.0,
+        0.001,
+        0.0,
+        0.0
+      ],
+      "charProcSha256": "ce80ce249d3c694461bb2394459e4d7787281c4955d7e9cdf2619ec673f0db61"
+    },
+    {
+      "case": "current-split",
+      "pdf": "pdf/issue4138-ascii-split-20261016-2024.pdf",
+      "pdfSha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571",
+      "page": 140,
+      "actualGlyphSpan": {
+        "font": "T8",
+        "text": "×"
+      },
+      "width": 616.0,
+      "fontMatrix": [
+        0.001,
+        0.0,
+        0.0,
+        0.001,
+        0.0,
+        0.0
+      ],
+      "charProcSha256": "ce80ce249d3c694461bb2394459e4d7787281c4955d7e9cdf2619ec673f0db61"
+    }
+  ],
+  "correctedDiagnostic": "initial resource-only 142 page check did not establish actual occurrence; corrected to real p140 and requires exactly three actual glyph spans"
+}

@@ -127,10 +127,18 @@ static HANYANGSINMYEONGJO_BULLET: [u16; 1] = [1024];
 // 일반 구두점0.5em 휴리스틱으로 재지 않는다. 1024HU표의 최근접 값만 쓴다.
 static HANYANGSINMYEONGJO_DOUBLE_QUOTES: [u16; 2] = [452, 452];
 static HANYANGSINMYEONGJO_PLUS_MINUS: [u16; 1] = [632];
+// 독립 원본83쪽·분할140쪽 Print의 같은 HFT 곱셈 글리프는616/1000em이다.
+// 대체 H2MJSM의 전각 폭을 재사용하지 않고 확인한 이 기호만631/1024로 보존한다.
+static HANYANGSINMYEONGJO_MULTIPLICATION: [u16; 1] = [631];
 // 두 독립 Print의 섭씨/화씨 단위는 서로 다른 원문 문자를 보존하며 각각1em이다.
 // U+2109는 기존 범위 누락으로 반각 fallback이었으므로 확인한 이 glyph만 보충한다.
 static HANYANGSINMYEONGJO_FAHRENHEIT: [u16; 1] = [1024];
-static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 14] = [
+static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 15] = [
+    LatinRange {
+        start: 0x00D7,
+        end: 0x00D7,
+        widths: &HANYANGSINMYEONGJO_MULTIPLICATION,
+    },
     // 독립 HWP5 변환본 Print 5쪽의 •도 HFT 전각 글리프다.
     // 굵은 글줄은 이 기본 폭에 한글과 같은 상대 굵은 전진을 적용한다.
     LatinRange {

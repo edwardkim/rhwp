@@ -1,0 +1,298 @@
+{
+  "status": "partial_PR_hold",
+  "parentHead": "8899309b601f4f54067db3143e9d475b95ca1cc0",
+  "base": "f5251e7de4e31ee0fb939f352c6ef144bb340bdb",
+  "sourceIdentity": {
+    "asBuiltOverlay": "844fc61e208a9477846622b8e71ba96b4d4d2d87b9794e822d43118f2a30ff75",
+    "finalOverlay": "4d594adfbaabba9fea44ec4b296b426961fec64ed69a38de8ace5f59737e3dba",
+    "commentEquivalence": [
+      {
+        "path": "src/renderer/font_metrics_overlays.rs",
+        "asBuiltSha256": "844fc61e208a9477846622b8e71ba96b4d4d2d87b9794e822d43118f2a30ff75",
+        "finalSha256": "4d594adfbaabba9fea44ec4b296b426961fec64ed69a38de8ace5f59737e3dba",
+        "change": "one source comment page reference 142 -> actual 140; Rust tokens unchanged"
+      },
+      {
+        "path": "tests/cases/issue_4138_legacy_equation_literal_symbols.rs",
+        "asBuiltSha256": "627e8670bca4f368d033e7e151189cf2e3c3e0259e250b128ede15c9eca7a3ed",
+        "finalSha256": "89081ab2d69bd44f6139a0e0e1f5f88d76a2443a3acaa87d2bbef5409e631f27",
+        "change": "one source comment page reference 142 -> actual 140; Rust tokens unchanged"
+      }
+    ]
+  },
+  "nativeBinarySha256": "85fea607f5759fb846d367dc0c699dcd29293722eeb60264bd6e27af746ecdf1",
+  "nativeRlibSha256": "b0dda074d9b2db267460f7b50273f96e1187fea8cc26d3b4ed3afe7137a8428d",
+  "wasm": {
+    "hashes": {
+      "rhwp.js": "009b53a277844df11b6d9f00a0cab0b29e449d3e46f00a24dca42a6fed9696ed",
+      "rhwp_bg.wasm": "ecbe861689c1f44aa9bc004eaafe142a25d7f525045e6402811febab3e187d0c",
+      "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390"
+    },
+    "build": "locked web/no-opt Mac local alternative, not Docker optimized",
+    "rootAndStudioHashesVerified": true
+  },
+  "whole": [
+    {
+      "case": "giant4138-original",
+      "backend": "native",
+      "counts": {
+        "rhwp": 115,
+        "pdf": 115
+      },
+      "pages": 115,
+      "minimum": 90.74868,
+      "below90": [],
+      "tsv": "native-giant4138-original.tsv",
+      "tsvSha256": "abdf323d9464e92ed9cb1bed60b57b9e42f6452d433e254349e405cee3bfabe3"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "native",
+      "counts": {
+        "rhwp": 197,
+        "pdf": 197
+      },
+      "pages": 197,
+      "minimum": 90.24017,
+      "below90": [],
+      "tsv": "native-giant4138-tab-period.tsv",
+      "tsvSha256": "cd2e2df8939bc43fc0a758178dd8ccfb7476b21b25fb095eb88357edcb70a9f2"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "native",
+      "counts": {
+        "rhwp": 197,
+        "pdf": 197
+      },
+      "pages": 197,
+      "minimum": 90.24017,
+      "below90": [],
+      "tsv": "native-giant4138-current-ascii.tsv",
+      "tsvSha256": "633cfe4ec45f77f01035d8eccb5c1958855bd61ab2e6e1a2546c67337ef2071d"
+    },
+    {
+      "case": "giant4138-original",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 115,
+        "pdf": 115
+      },
+      "pages": 115,
+      "minimum": 90.63175,
+      "below90": [],
+      "tsv": "wasm-giant4138-original.tsv",
+      "tsvSha256": "070e7ab2be60740b4aaddd0a98f832a4924d25748929a85f69ca5d0a2d38d345"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 197,
+        "pdf": 197
+      },
+      "pages": 197,
+      "minimum": 90.24017,
+      "below90": [],
+      "tsv": "wasm-giant4138-tab-period.tsv",
+      "tsvSha256": "7e32d005d56ecb7b40f64e9d82560b02ebb1f31db4c5095fbea1f5a08c9766f8"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 197,
+        "pdf": 197
+      },
+      "pages": 197,
+      "minimum": 90.24017,
+      "below90": [],
+      "tsv": "wasm-giant4138-current-ascii.tsv",
+      "tsvSha256": "071251afcde0134f929a1a5fc78f035a7972d8cf0e7d7dfb3705ee6342c36892"
+    }
+  ],
+  "reviews": [
+    {
+      "backend": "native",
+      "case": "giant4138-original",
+      "page": 83,
+      "review": "native-giant4138-original-review_083.png",
+      "sha256": "38ab59e6a5c98b1dc3ae243eef14e857b67715db33aeed14773a8070cbf704b7"
+    },
+    {
+      "backend": "native",
+      "case": "giant4138-tab-period",
+      "page": 140,
+      "review": "native-giant4138-tab-period-review_140.png",
+      "sha256": "560ccd7ae28b2264e7a052f74872428c15a1ff9da56393469f57d485e7c930aa"
+    },
+    {
+      "backend": "wasm",
+      "case": "giant4138-original",
+      "page": 111,
+      "review": "wasm-giant4138-original-review_111.png",
+      "sha256": "32dc4171e526aac4303139866358aca480fccba93ffad2b37e851b346afa2721"
+    },
+    {
+      "backend": "wasm",
+      "case": "giant4138-current-ascii",
+      "page": 191,
+      "review": "wasm-giant4138-current-ascii-review_191.png",
+      "sha256": "59a36d5ea90e1dce6be2575b4170e095dceefdd6685b9b12bd0c08ba2ed5e68b"
+    }
+  ],
+  "microReview": "multiplication-before-after-detail.png",
+  "formalTests": {
+    "before": "same new body case linked to frozen C51: 1 failed, 1 filtered; 0.49s",
+    "after": "formal prepared Cargo suite: 2 passed, 224 skipped; 0.748s, includes existing equation test",
+    "full10440": "not run; preceding full10438 belongs to b88 before C51/C52"
+  },
+  "gates": {
+    "complete": true,
+    "steps": [
+      {
+        "name": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "f5251e7de4e31ee0fb939f352c6ef144bb340bdb"
+        ],
+        "exitCode": 0,
+        "seconds": 4.375052375020459
+      },
+      {
+        "name": "unit-tier",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "f5251e7de4e31ee0fb939f352c6ef144bb340bdb"
+        ],
+        "exitCode": 0,
+        "seconds": 12.893609833030496
+      },
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exitCode": 0,
+        "seconds": 7.443289000017103
+      },
+      {
+        "name": "alltarget-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exitCode": 0,
+        "seconds": 98.88261908304412
+      }
+    ]
+  },
+  "scope": "47 source conditions scanned recursively, selected source char-shape faces for multiplication: only three giant inputs select HFT HanyangSinMyeongJo; conservative scanner does not replace actual consumer validation",
+  "diagnosticAudit": {
+    "results": [
+      {
+        "case": "base",
+        "failures": [
+          "pre-split baseline is deterministic and matches the committed snapshot",
+          "baseline closes the W1 population and the five measured overlays",
+          "a declared entry count mismatch is rejected instead of silently truncating",
+          "swapping metric order changes composition and lookup projections",
+          "a one-unit stored width change changes metric and exhaustive width projections",
+          "changing the final overlay identity is rejected by the population contract",
+          "the 600-row lineage manifest is deterministic and closes W1/W5 evidence",
+          "unknown provenance cannot omit its reason or be promoted to verified",
+          "a broken W1 link and evidence digest fail closed",
+          "metric identity and semantic hashes must match the Rust source",
+          "all 1,352 candidates close to one row or an approved profile split",
+          "pre-split baseline is deterministic and matches the committed snapshot",
+          "baseline closes the W1 population and the five measured overlays",
+          "a declared entry count mismatch is rejected instead of silently truncating",
+          "swapping metric order changes composition and lookup projections",
+          "a one-unit stored width change changes metric and exhaustive width projections",
+          "changing the final overlay identity is rejected by the population contract",
+          "the 600-row lineage manifest is deterministic and closes W1/W5 evidence",
+          "unknown provenance cannot omit its reason or be promoted to verified",
+          "a broken W1 link and evidence digest fail closed",
+          "metric identity and semantic hashes must match the Rust source",
+          "all 1,352 candidates close to one row or an approved profile split"
+        ],
+        "summary": [
+          "ℹ tests 28",
+          "ℹ suites 0",
+          "ℹ pass 17",
+          "ℹ fail 11",
+          "ℹ cancelled 0",
+          "ℹ skipped 0",
+          "ℹ todo 0",
+          "ℹ duration_ms 888.288791"
+        ]
+      },
+      {
+        "case": "current",
+        "failures": [
+          "pre-split baseline is deterministic and matches the committed snapshot",
+          "baseline closes the W1 population and the five measured overlays",
+          "swapping metric order changes composition and lookup projections",
+          "a one-unit stored width change changes metric and exhaustive width projections",
+          "changing the final overlay identity is rejected by the population contract",
+          "the 600-row lineage manifest is deterministic and closes W1/W5 evidence",
+          "unknown provenance cannot omit its reason or be promoted to verified",
+          "a broken W1 link and evidence digest fail closed",
+          "metric identity and semantic hashes must match the Rust source",
+          "all 1,352 candidates close to one row or an approved profile split",
+          "pre-split baseline is deterministic and matches the committed snapshot",
+          "baseline closes the W1 population and the five measured overlays",
+          "swapping metric order changes composition and lookup projections",
+          "a one-unit stored width change changes metric and exhaustive width projections",
+          "changing the final overlay identity is rejected by the population contract",
+          "the 600-row lineage manifest is deterministic and closes W1/W5 evidence",
+          "unknown provenance cannot omit its reason or be promoted to verified",
+          "a broken W1 link and evidence digest fail closed",
+          "metric identity and semantic hashes must match the Rust source",
+          "all 1,352 candidates close to one row or an approved profile split"
+        ],
+        "summary": [
+          "ℹ tests 28",
+          "ℹ suites 0",
+          "ℹ pass 18",
+          "ℹ fail 10",
+          "ℹ cancelled 0",
+          "ℹ skipped 0",
+          "ℹ todo 0",
+          "ℹ duration_ms 960.31025"
+        ]
+      }
+    ],
+    "sameFailureNames": false,
+    "status": "diagnostic audit, not passed; old population contract and historical document links need separate adjudication",
+    "currentFailureNamesSubsetOfBase": true
+  },
+  "remaining": [
+    "latest fixed devel comparison: WASM original60 pages and old split7 pages decline >=0.01 percentage point; current split baseline count blocked",
+    "court visual shortfall, HFT replacement glyph contour/height including multiplication, remaining equation micro-spacing and physical origin rounding",
+    "current full nextest, remaining submission gates and wider final visual scope / actual36 consumers not complete"
+  ],
+  "diagnosticCorrections": [
+    "initial split p142 selected as multiplication comparison was a no-change control; real source/reference occurrence p140 verified and reviewed",
+    "all three independent evidence rows now require actual multiplication glyph spans, not only shared PDF font resources",
+    "600dpi root matrix and old-pen replay only diagnostic; no printer constants or kerning workaround added to production"
+  ]
+}
