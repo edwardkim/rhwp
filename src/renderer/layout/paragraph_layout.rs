@@ -9018,7 +9018,12 @@ impl LayoutEngine {
                                     None,
                                 )),
                                 BoundingBox::new(hl_x, y, hl_w, line_height),
-                            );
+                            )
+                            // RangeTag markpen is an editing annotation, unlike
+                            // the character's shade/border-fill background above.
+                            // Keep it in the source and interactive tree; the
+                            // shared profile filter omits it from Print/HQ.
+                            .with_editor_only();
                             line_node.children.push(rect_node);
                         }
                     }

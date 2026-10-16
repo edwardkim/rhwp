@@ -1,5 +1,5 @@
 //! #7445 지정 댓글의 생물독 원본: 독립 PDF 205쪽 전수 시각 수용 후 복구한 회귀.
-//! C82 Native/fresh WASM 전205쪽96DPI raw 최저97.00104/96.99896%, 미달0.
+//! C84 Native/fresh WASM 전205쪽96DPI raw 최저97.13499/97.13158%, 미달0.
 //! 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사하고, 양쪽98% 이상인
 //! 중요한 그림 경계만 독립 Print의 ±2 CSSpx로 보호한다. 출처는
 //! completed-20261009/regression-policy-20261015/gray-grid-raster-20261017/README.md.
@@ -66,6 +66,143 @@ fn paragraph_runs_in(root: &RenderNode, section: usize, host: usize) -> Vec<&Ren
                 && t.cell_context.is_none())
         })
         .collect()
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn range_tag_markpen_stays_on_screen_without_leaking_into_printed_cell_content() {
+    use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
+    use rhwp::renderer::{layer_renderer::LayerRasterRenderer, skia::SkiaLayerRenderer};
+
+    fn mark_paints(node: &LayerNode, original: &RenderNode, color: u32) -> usize {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => children
+                .iter()
+                .map(|child| mark_paints(child, original, color))
+                .sum(),
+            LayerNodeKind::ClipRect { child, .. } => mark_paints(child, original, color),
+            LayerNodeKind::Leaf { ops } => ops
+                .iter()
+                .filter(|op| {
+                    matches!(op, PaintOp::Rectangle { bbox, rect }
+                    if rect.style.fill_color == Some(color)
+                    && (bbox.x - original.bbox.x).abs() < 1e-6
+                    && (bbox.y - original.bbox.y).abs() < 1e-6
+                    && (bbox.width - original.bbox.width).abs() < 1e-6
+                    && (bbox.height - original.bbox.height).abs() < 1e-6)
+                })
+                .count(),
+        }
+    }
+
+    let core = core();
+    assert_eq!(core.page_count(), 205);
+    let Control::Table(source) = &core.document().sections[SECTION].paragraphs[174].controls[0]
+    else {
+        panic!("독립 Print 146쪽의 표44");
+    };
+    let tree = core.build_page_render_tree(145).unwrap();
+    let table = tables(&tree.root, 174);
+    assert_eq!(table.len(), 1);
+    let screen = core
+        .build_page_layer_tree_with_profile(145, RenderProfile::Screen)
+        .unwrap();
+    let print = core
+        .build_page_layer_tree_with_profile(145, RenderProfile::Print)
+        .unwrap();
+    let high_quality = core
+        .build_page_layer_tree_with_profile(145, RenderProfile::HighQuality)
+        .unwrap();
+    let renderer = SkiaLayerRenderer::new();
+    let screen_pixels = image::load_from_memory(&renderer.render_png(&screen).unwrap())
+        .unwrap()
+        .to_rgb8();
+    let print_pixels = image::load_from_memory(&renderer.render_png(&print).unwrap())
+        .unwrap()
+        .to_rgb8();
+
+    // 한컴 인쇄 확장의 형광펜은 별도 선택 사항이다. 같은 원본의 독립 Print는
+    // 이 마킹을 출력하지 않는다. 색/좌표로 문서를 고르지 않고 원본 셀에서 찾는다.
+    for index in [33, 39, 57] {
+        let original = &source.cells[index];
+        let tag = original.paragraphs[0]
+            .range_tags
+            .iter()
+            .find(|range| range.tag >> 24 == 2)
+            .expect("원본 RangeTag 형광펜 보존");
+        let color = tag.tag & 0x00ff_ffff;
+        let cell = table[0]
+            .children
+            .iter()
+            .find(|node| {
+                matches!(&node.node_type, RenderNodeType::TableCell(c)
+                if c.model_cell_index == Some(index as u32))
+            })
+            .expect("원본 마킹 셀의 같은 쪽 소유");
+        let expected: String = original
+            .paragraphs
+            .iter()
+            .map(|p| p.text.as_str())
+            .collect();
+        assert_eq!(
+            compact(&text(cell)),
+            compact(&expected),
+            "마킹의 분리로 본문을 제거하지 않음"
+        );
+        let marks: Vec<_> = nodes(cell)
+            .into_iter()
+            .filter(|node| {
+                matches!(&node.node_type, RenderNodeType::Rectangle(rect)
+                if rect.style.fill_color == Some(color))
+            })
+            .collect();
+        assert_eq!(marks.len(), 1, "화면 조판의 원본 형광펜");
+        let mark = marks[0];
+        assert_eq!(mark_paints(&screen.root, mark, color), 1, "화면 마킹 유지");
+        assert_eq!(
+            mark_paints(&print.root, mark, color),
+            0,
+            "기본 인쇄에는 마킹 없음"
+        );
+        assert_eq!(
+            mark_paints(&high_quality.root, mark, color),
+            0,
+            "HQ도 같은 출력 계약"
+        );
+        let rgb = [
+            (color & 255) as u8,
+            ((color >> 8) & 255) as u8,
+            ((color >> 16) & 255) as u8,
+        ];
+        let has_mark_color = |pixels: &image::RgbImage| {
+            let left = mark.bbox.x.floor() as u32;
+            let top = mark.bbox.y.floor() as u32;
+            let right = (mark.bbox.x + mark.bbox.width).ceil() as u32;
+            let bottom = (mark.bbox.y + mark.bbox.height).ceil() as u32;
+            assert!(right <= pixels.width() && bottom <= pixels.height());
+            (top..bottom).any(|y| (left..right).any(|x| pixels.get_pixel(x, y).0 == rgb))
+        };
+        assert!(
+            has_mark_color(&screen_pixels),
+            "최종 화면 paint에 원본 마킹 색 표시"
+        );
+        assert!(
+            !has_mark_color(&print_pixels),
+            "최종 인쇄 paint에 마킹 색 없음"
+        );
+        if index == 33 {
+            let runs: Vec<_> = nodes(cell)
+                .into_iter()
+                .filter(|node| matches!(node.node_type, RenderNodeType::TextRun(_)))
+                .collect();
+            let left = runs.iter().map(|n| n.bbox.x).reduce(f64::min).unwrap();
+            let top = runs.iter().map(|n| n.bbox.y).reduce(f64::min).unwrap();
+            // 전205쪽 양쪽90% 이상·146쪽 양쪽raw100%와 직접 판독 후,
+            // 독립 Print의 Wasp kinin 글자 시작을 ±2CSSpx로 보호한다.
+            assert!((left - 77.23814).abs() <= 2.0);
+            assert!((top - 207.15120).abs() <= 2.0);
+        }
+    }
 }
 
 #[test]
