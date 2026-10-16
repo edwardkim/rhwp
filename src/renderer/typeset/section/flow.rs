@@ -119,6 +119,13 @@ impl TypesetEngine {
             }
             // [#6175] devel 의 known-square-band 인자를 그대로 전달한다 —
             // 위에서 좁힌 col_w(합성 어울림 감폭)와 함께 쓴다.
+            self.format_next_stored_vpos.set(
+                paragraphs
+                    .get(para_idx + 1)
+                    .and_then(|next| next.line_segs.first())
+                    .filter(|line| !is_synthetic_line_seg(line))
+                    .map(|line| line.vertical_pos),
+            );
             let formatted = self.format_paragraph_with_known_square_band(
                 para,
                 composed.get(para_idx),
@@ -127,6 +134,7 @@ impl TypesetEngine {
                 st.wrap_around_derived_band
                     || st.current_column_wrap_anchors.contains_key(&para_idx),
             );
+            self.format_next_stored_vpos.set(None);
             // 줄 단위 어울림 배제: 문단 시작은 개체 위이지만 뒷줄이 개체 사각형과
             // 교차하는 형상(출석부) — 문단 전체 감폭 대신 교차 y 밴드를 anchor 에
             // 실어 layout 이 교차하는 줄만 감폭한다.
