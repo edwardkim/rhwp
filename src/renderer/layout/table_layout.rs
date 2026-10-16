@@ -14096,6 +14096,92 @@ impl LayoutEngine {
                         0.0
                     }
             };
+        // [#7840] 저장 되감김(앞 줄 **시작**보다 앞선 vpos) 뒤의 줄은 새 좌표 프레임이다.
+        // 이어받는 조각의 배치(table_partial)는 그 프레임의 첫 줄을 원점으로 저장 vpos 에
+        // 줄을 놓는다. 측정이 셀 처음부터의 누적을 프레임 지역 vpos 와 비교하면 되감김 뒤의
+        // 저장 간격이 늘 0 이 되어, 조각 예산이 배치보다 작아지고 그 차이만큼 뒤 개체가
+        // 눌린다(148738070 4쪽 중첩 표 둘째 행 174.4 → 146.2px). 측정도 같은 프레임
+        // 원점에서 간격을 채운다. 겹친 줄 상자의 한 걸음은 앞 줄 시작보다 앞서지 않는다.
+        // 배치의 이어받기 스냅(table_partial `resumed_stored_frame_origin`)과 같은 대상:
+        // 1×1 RowBreak 원본 셀의 인증된 저장 프레임. 셀 앞부분의 기존 측정은 그대로 둔다.
+        let resumed_stored_frame_cell = is_block_rowbreak_table
+            && table.row_count == 1
+            && table.col_count == 1
+            // 셀 안 표는 쪽 조각으로 이어받지 않는다 — 배치 스냅도 바깥 조각 표에만 있다.
+            && !self
+                .nested_table_ptrs
+                .borrow()
+                .contains(&(table as *const crate::model::table::Table as usize))
+            && (self.profile.get().hwp5_stored_pagination_layout()
+                || self.direct_hwpx_cell_preserves_stored_frame(cell, table))
+            && !cell
+                .paragraphs
+                .iter()
+                .any(|para| para.stored_text_partition_is_dirty());
+        let stored_vpos_frames: Vec<(usize, usize, i32)> = if resumed_stored_frame_cell {
+            let mut frames = Vec::new();
+            let mut previous: Option<&crate::model::paragraph::LineSeg> = None;
+            for (para_idx, para) in cell.paragraphs.iter().enumerate() {
+                for (line_idx, seg) in para.line_segs.iter().enumerate() {
+                    if line_seg_is_synthetic(seg) {
+                        continue;
+                    }
+                    if previous.is_some_and(|prev| {
+                        seg.vertical_pos < prev.vertical_pos
+                            && is_stored_frame_rewind(prev, seg, para_idx, line_idx)
+                    }) {
+                        frames.push((para_idx, line_idx, seg.vertical_pos.max(0)));
+                    }
+                    previous = Some(seg);
+                }
+            }
+            frames
+        } else {
+            Vec::new()
+        };
+        let snaps_to_stored_frame = |para_idx: usize, line_idx: usize| -> bool {
+            use_vpos_unit_positions
+                || (resumed_stored_frame_cell
+                    && stored_vpos_frames
+                        .iter()
+                        .any(|frame| (frame.0, frame.1) <= (para_idx, line_idx)))
+        };
+        let stored_unit_start_px = |units: &[CellUnit],
+                                    vertical_pos: i32,
+                                    first_unit: bool,
+                                    leading_in_unit: f64,
+                                    para_idx: usize,
+                                    line_idx: usize|
+         -> f64 {
+            let Some(&(frame_para, frame_line, origin)) =
+                stored_vpos_frames
+                    .iter()
+                    .rev()
+                    .find(|(frame_para, frame_line, _)| {
+                        (*frame_para, *frame_line) <= (para_idx, line_idx)
+                    })
+            else {
+                return saved_unit_start_px(vertical_pos, first_unit, leading_in_unit);
+            };
+            let frame_base: f64 = units
+                .iter()
+                .filter(|unit| (unit.para_idx, unit.vis_start) < (frame_para, frame_line))
+                .map(|unit| unit.height)
+                .sum();
+            // 배치 스냅처럼 표 호스트 문단은 앞 간격을 미리 빼지 않는다.
+            let hosts_table = cell.paragraphs.get(para_idx).is_some_and(|para| {
+                para.controls
+                    .iter()
+                    .any(|control| matches!(control, Control::Table(_)))
+            });
+            // 프레임 기준과 유닛 누적은 같은 값을 다른 덧셈 순서로 얻는다. 부동소수 끝자리만
+            // 앞선 목표를 저장 간격으로 읽으면 간격 없는 줄에 vpos_gap_before 가 서서 꼬리
+            // 되감기가 조각을 일찍 끊는다(1382000 33쪽 59 → 57).
+            const FRAME_SNAP_FP_EPSILON_PX: f64 = 1e-6;
+            frame_base + hwpunit_to_px((vertical_pos - origin).max(0), self.dpi)
+                - if hosts_table { 0.0 } else { leading_in_unit }
+                - FRAME_SNAP_FP_EPSILON_PX
+        };
         let para_count = cell.paragraphs.len();
         let cell_has_visible_content = cell
             .paragraphs
@@ -15341,16 +15427,19 @@ impl LayoutEngine {
                                             }
                                         }
                                     }
-                                    if use_vpos_unit_positions
+                                    if snaps_to_stored_frame(pi, 0)
                                         && ri == 0
                                         && fragment_index == 0
                                         && !hard_break_before
                                     {
                                         if let Some(seg) = p.line_segs.first() {
-                                            let mut target_top = saved_unit_start_px(
+                                            let mut target_top = stored_unit_start_px(
+                                                &units,
                                                 seg.vertical_pos,
                                                 pi == 0,
                                                 spacing_before,
+                                                pi,
+                                                0,
                                             );
                                             // [#6095] 중첩 표 호스트의 저장 vpos 가 표
                                             // **아래** host 줄 좌표면(점프가 중첩 표 선언
@@ -15425,10 +15514,16 @@ impl LayoutEngine {
                         let mut uh = *rh;
                         let hard_break_before = reset_before && ri == 0;
                         let mut vpos_gap_before = vpos_gap_before_para && ri == 0;
-                        if use_vpos_unit_positions && ri == 0 && !hard_break_before {
+                        if snaps_to_stored_frame(pi, 0) && ri == 0 && !hard_break_before {
                             if let Some(seg) = p.line_segs.first() {
-                                let mut target_top =
-                                    saved_unit_start_px(seg.vertical_pos, pi == 0, spacing_before);
+                                let mut target_top = stored_unit_start_px(
+                                    &units,
+                                    seg.vertical_pos,
+                                    pi == 0,
+                                    spacing_before,
+                                    pi,
+                                    0,
+                                );
                                 // [#6095] 중첩 표 호스트의 저장 vpos 가 표 **아래**
                                 // host 줄 좌표면(직전 흐름에서의 점프가 중첩 표 선언
                                 // 높이 규모) 표 상단 목표는 vpos − 표 높이다. 그대로
@@ -15773,12 +15868,15 @@ impl LayoutEngine {
                             let hard_break_before =
                                 fragment.hard_break_before || (reset_before && fi == 0);
                             let mut vpos_gap_before = vpos_gap_before_para && fi == 0;
-                            if use_vpos_unit_positions && fi == 0 && !hard_break_before {
+                            if snaps_to_stored_frame(pi, 0) && fi == 0 && !hard_break_before {
                                 if let Some(seg) = p.line_segs.first() {
-                                    let target_top = saved_unit_start_px(
+                                    let target_top = stored_unit_start_px(
+                                        &units,
                                         seg.vertical_pos,
                                         pi == 0,
                                         spacing_before,
+                                        pi,
+                                        0,
                                     );
                                     if target_top > unit_cum {
                                         uh += target_top - unit_cum;
@@ -15910,13 +16008,16 @@ impl LayoutEngine {
                         } else {
                             false
                         };
-                        if use_vpos_unit_positions {
+                        if snaps_to_stored_frame(pi, li) {
                             if let Some(seg) = p.line_segs.get(li) {
                                 if !line_seg_is_synthetic(seg) {
-                                    let target_top = saved_unit_start_px(
+                                    let target_top = stored_unit_start_px(
+                                        &units,
                                         seg.vertical_pos,
                                         pi == 0 && li == 0,
                                         if li == 0 { spacing_before } else { 0.0 },
+                                        pi,
+                                        li,
                                     );
                                     if target_top > unit_cum {
                                         lh += target_top - unit_cum;
@@ -16253,11 +16354,17 @@ impl LayoutEngine {
                 let hard_break_before = reset_before;
                 let mut para_h = para_h;
                 let mut vpos_gap_before = vpos_gap_before_para;
-                if use_vpos_unit_positions {
+                if snaps_to_stored_frame(pi, 0) {
                     if let Some(seg) = p.line_segs.first() {
                         if !line_seg_is_synthetic(seg) {
-                            let target_top =
-                                saved_unit_start_px(seg.vertical_pos, pi == 0, spacing_before);
+                            let target_top = stored_unit_start_px(
+                                &units,
+                                seg.vertical_pos,
+                                pi == 0,
+                                spacing_before,
+                                pi,
+                                0,
+                            );
                             if target_top > unit_cum {
                                 let delta = target_top - unit_cum;
                                 let suppress_hwpx_mixed_nested_gap =
@@ -16382,10 +16489,11 @@ impl LayoutEngine {
                     } else {
                         false
                     };
-                    if use_vpos_unit_positions {
+                    if snaps_to_stored_frame(pi, li) {
                         if let Some(seg) = p.line_segs.get(li) {
                             if !line_seg_is_synthetic(seg) {
-                                let target_top = saved_unit_start_px(
+                                let target_top = stored_unit_start_px(
+                                    &units,
                                     seg.vertical_pos,
                                     pi == 0 && li == 0,
                                     if li == 0
@@ -16396,6 +16504,8 @@ impl LayoutEngine {
                                     } else {
                                         0.0
                                     },
+                                    pi,
+                                    li,
                                 );
                                 if target_top > unit_cum {
                                     let delta = target_top - unit_cum;
