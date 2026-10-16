@@ -1,10 +1,4 @@
-/// A portable GlyphRun size must stay positive in the six-decimal JSON wire.
-pub(crate) fn glyph_font_size_is_portable(size_px: f64) -> bool {
-    size_px.is_finite()
-        && size_px > 0.0
-        && size_px <= super::MAX_GLYPH_FONT_SIZE_PX
-        && super::paint_op::glyph_geometry_wire_scalar(size_px, 6) > 0.0
-}
+pub(crate) use super::font_size::glyph_font_size_is_portable;
 
 /// Export-local identifier for a font blob or collection.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
