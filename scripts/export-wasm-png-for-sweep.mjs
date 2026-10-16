@@ -343,5 +343,10 @@ async function main() {
   }
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main().catch(error => { console.error(error.stack || error); process.exitCode = 1; });
+  // main이 모든 쪽의 hash 기록과 browser/server 종료를 마친 뒤에만 성공한다.
+  // 종료된 Chrome의 pipe handle이 Node를 붙잡아 완료된 캡처가 대기하지 않게 한다.
+  main().then(() => process.exit(0), error => {
+    console.error(error.stack || error);
+    process.exit(1);
+  });
 }

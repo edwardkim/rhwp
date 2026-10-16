@@ -2346,3 +2346,30 @@ raw최저93.77937%·미달0쪽이다. U+2027의 실제 공급자 전진을 반�
 소유·내용 관계 회귀를 추가했다. 실제 부모 source1FAIL→후보1PASS,정상 대조군12PASS다.
 C64의‘정식 테스트 아직 미추가’는 당시 상태이며 현재는 선행 조건을 확인해 추가했다.
 [독립 근거·원본 hash·정식 검사·전후 review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/verified-supplier-advance-20261017/README.md)에 연결한다.
+
+
+## C67. 기본 글꼴 환경의 정확한 base 대조와 캡처 종료 (2026-10-17)
+
+5525 base WASM에는 자동 선택 API가 없지만 기존 `setFontEnvironment(Option<String>)`는
+있다. 현재 실제 선택 결과가 None인 문서는 base에 임의 빈 객체를 넣지 않고 기존 setter의
+실제 JS null로 대조해야 한다. 명시 환경 파일에JSON null이 있으면 문자열"null" 대신JS null을
+전달하도록 adapter를 보완했다. 자동 선택의 API 부족 guard와 일반 객체 전달은 그대로다.
+정상 legacy optional setter가 문자열null을 거부하는 실제 반례가 수정 전FAIL→수정 후PASS,
+Node 관련16PASS이며 실제 browser 등록·launch 실패 정리2PASS다.
+
+현재 동일 source의 자동 선택과 명시 None으로2쪽을 실제 캡처했으며 PNG hash가 모두 같고
+정상 exit0을 확인했다. 기존 base optional setter의 실제 출력도2쪽raw100%다. 처음 진단에서
+서로 다른 base/head source의 PNG byte 동일성까지 요구한 assertion은 실패했으며 보존한다.
+이는 서로 다른 렌더러 버전을 혼동한 진단 가정으로, 같은 source 자동/None 비교로 정정했다.
+이 부분 확인을 base 전체 문서 비교 완료로 확대하지 않는다.
+
+WASM302쪽의 모든 PNG와 완료 manifest가 기록되고 browser 자식도 종료됐는데 Node의
+잔여 pipe로8분 이상 끝나지 않는 실행을 확인했다. 현재 요청한 원 커밋 자체는 그대로 두고,
+별도 PNG CLI의 main이 모든 hash 기록·browser/server 정리를 성공한 뒤에만 exit0,
+실패하면 exit1로 종료하도록 보정했다. 실제2쪽 정상 캡처8.89초 및 launch 실패 계약으로
+성공/실패 종료를 확인했다. 중단한 기존 CLI를 성공 exit로 바꾸어 보고하지 않는다.
+302쪽 PNG는 완료 manifest의 각 hash를 확인한 뒤 canonical PNG pair로 다시 측정했고,
+새 raw gate에서153쪽82.83247% 미달임을 기록했다. 출력 숨김·허용치 변경은 없다.
+
+구체 로그·원래 오류·기존 TSV/gate·새 raw 재분류·실행 정본은 ignored output의
+`rebase-552514f4-20261016/raw-gate-import/`에 보존한다. 초안·PDF·공유 target은 유지한다.

@@ -1,8 +1,11 @@
 // 호스트는 실제 공급만 증명한다. 원 face/대체 face의 선택은 Rust 공통 API가 소유한다.
 export async function applySweepFontEnvironment(doc, environmentJson, preparePrograms) {
   if (environmentJson !== null) {
-    doc.setFontEnvironment(environmentJson);
-    return {source: 'explicit', environment: JSON.parse(environmentJson)};
+    const environment = JSON.parse(environmentJson);
+    // setter의 Option<String> 해제는 문자열 null이 아니라 JS null이다.
+    // 자동 선택이 없는 과거 빌드도 검증자가 명시한 동일 None을 적용할 수 있다.
+    doc.setFontEnvironment(environment === null ? null : environmentJson);
+    return {source: 'explicit', environment};
   }
   if (typeof doc.getDocumentFontSelectionPlan !== 'function'
       || typeof doc.buildFontEnvironmentFromAvailablePrograms !== 'function'

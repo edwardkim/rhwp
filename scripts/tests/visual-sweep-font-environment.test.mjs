@@ -67,6 +67,21 @@ test('자동 선택 API가 없는 과거 빌드는 명시 환경 없이 조용�
   assert.equal(applied, explicit);
 });
 
+test('명시 null 프로필은 선택 API를 추측하지 않고 nullable 환경을 해제한다', async () => {
+  let applied = 'not-called';
+  // 실제 WASM setter는 Option<String>이다. 문자열 "null"은 환경 객체가
+  // 아니며, JS null만 None으로 전달된다. 자동 선택 API는 이 대조군에 없다.
+  const doc = {setFontEnvironment: json => {
+    if (typeof json === 'string') assert.notEqual(JSON.parse(json), null);
+    applied = json;
+  }};
+  const result = await applySweepFontEnvironment(doc, ' \nnull\n', async () => {
+    throw Error('명시한 해제를 임의 자동 선택으로 바꾸면 안 된다');
+  });
+  assert.equal(applied, null);
+  assert.deepEqual(result, {source: 'explicit', environment: null});
+});
+
 test('일반 400 face를 준비하며 내장 face와 없는 후보를 설치 대체로 주장하지 않는다', () => {
   const plan = {requests: [{primary: ['Original', 'Embedded', 'Absent'], substitute: ['Fallback']}],
     embeddedFamilies: ['Embedded']};
