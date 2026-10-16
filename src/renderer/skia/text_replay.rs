@@ -16,8 +16,9 @@ use crate::renderer::{boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, 
 
 use super::font_catalog::TypefaceCatalog;
 use super::font_lookup::{
-    font_style_for_text, legacy_typeface_for_style, match_supplied_family, match_system_family_style,
-    select_typeface_for_character, text_typeface_candidates, SystemFontFamilies,
+    font_style_for_text, legacy_typeface_for_style, match_supplied_family,
+    match_system_family_style, select_typeface_for_character, text_typeface_candidates,
+    SystemFontFamilies,
 };
 use super::renderer::colorref_to_skia;
 
