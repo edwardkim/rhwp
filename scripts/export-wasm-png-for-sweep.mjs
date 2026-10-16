@@ -77,6 +77,18 @@ export function encodeCanvasOnWhitePaper(canvasId) {
   return paper.toDataURL('image/png').split(',')[1];
 }
 
+// getImageData 반복 뒤 Chrome이 readback 경로를 바꾸면 같은 paint 명령도
+// 단독/전쪽 캡처에서 다른 glyph raster가 된다. 첫 context부터 조건을 고정한다.
+// 이미 만든 context에는 뒤의 options가 무시되므로 실제 속성도 확인한다.
+export function preparePrintReadbackCanvas(canvas) {
+  const context = canvas.getContext('2d', {willReadFrequently: true});
+  const attributes = context?.getContextAttributes?.();
+  if (attributes?.willReadFrequently !== true) {
+    throw Error('Print 캡처 Canvas의 최초 2D context에 반복 readback 조건을 적용하지 못했습니다.');
+  }
+  return attributes;
+}
+
 async function main() {
   const pkg = option('--pkg'), input = option('--input'), output = option('--out');
   const settings = JSON.parse(readFileSync(option('--options'), 'utf8'));
@@ -130,6 +142,7 @@ async function main() {
         browsers.add(browser);
         const page = await browser.newPage();
         await page.goto(`http://127.0.0.1:${server.address().port}`);
+        const canvasContext = await page.$eval('#page', preparePrintReadbackCanvas);
         const info = await page.evaluate(async ({compat, environmentJson, fonts}) => {
           const module = await import('/rhwp.js');
           await module.default({module_or_path: '/rhwp_bg.wasm'});
@@ -305,7 +318,7 @@ async function main() {
           pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height});
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
-        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, fontEnvironment: info.fontEnvironment, browser: await browser.version()});
+        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, fontEnvironment: info.fontEnvironment, canvasContext, browser: await browser.version()});
         await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
       } finally {
         if (browser) {

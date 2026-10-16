@@ -1704,3 +1704,37 @@ C53 source/build/hash 검사는 통과했다. 이후 Rust 검증을 순차 실�
 invalid로 분리했고 성공 실행만 사용한다. 번호 토큰을 기존 body-field의1em으로
 예약하는 runtime 진단은 각주1·3 소속은 맞췄으나 각주4를 더 틀리게 하여
 Native90.14068→87.79458%였다. 이 가설은 거절했고 production에 반영하지 않았다.
+
+
+### C48 — 동일 Canvas 명령의 캡처 순서 의존 보정(C54)과 새 devel
+
+HFT 곱셈의 원본 ink 범위와 대체 TTF의 범위를 비교해 균등 축소/중심 진단을 했다.
+83/111/112쪽의 소폭 상승(각 +0.00071/+0.00015/+0.00150%p)은 전체 하락을 해소하지
+않았으며 source/paint에 반영하지 않았다. 표본 윤곽을 복사하거나 페이지별 보정을 넣지 않았다.
+
+고정 base의 명시 빈 FontEnvironment와 현재 기본 환경의 차이를 분리했다. 같은 쪽 묶음의
+47/55/83쪽에서는 base/current 각각 기본/빈 명시 환경의 RGB가 모두 같다.
+구형 base의 새 선택 API 부재는 별도 진단에서 원래 default Canvas API로만 호출해
+환경 대조했으며 canonical 자동 선택 guard는 변경하지 않았다.
+
+반면 같은 최신 frozen WASM·717개 font 공급·192DPI·원본에서47쪽 단독과
+전쪽의 같은 worker 순서(7,15,...111)를 비교하면, layer JSON과 실제 Canvas 호출1264개가
+동일해도 상단 4057개 RGB 픽셀이 달랐다. HyhwpEQ 추가 공급만의 대조는 변화0이었다.
+첫 2D context부터 willReadFrequently=true로 준비하면 단독/다쪽 뒤 출력 RGB가 동일했다.
+실제 요청 속성을 확인하지 않으면, 이미 생성한 context에 나중 options를 주어도 브라우저가
+조용히 무시하므로 최초 context 속성이 다르면 실패하도록 했다. 원본·줄·그리기 명령·DPI·
+2px 기준은 그대로이며 생성 worker 증적에 실제 context 속성을 기록한다.
+
+정식 PNG server 계약6PASS(기존4+첫 context 유지/늦은 초기화 거부2),0FAIL/0skip이다.
+실제 canonical exporter의 현재 helper로도 단독/worker 순서47쪽 RGB 동일 및 실제
+willReadFrequently=true를 확인했다. 이전 일반 context와 새 context의 PNG/점수는
+서로 재사용하지 않는다. 전쪽 base/current를 이 조건으로 다시 캡처하기 전까지 기존
+WASM60+7쪽0.01%p 하락을 면제하거나 새 판정으로 대체하지 않는다.
+정본은 ignored rebase-f5251e7d-20261016/candidate-c54-readback 및
+c54-wasm-order-probe다. 브라우저 초기화·순서 대조이며 전체 시각/전체 Rust gate가 아니다.
+
+후속 전쪽 시작 전 원격을 재조회하니 devel이f525→375aff29498166260a22796d54e67f508c84aada로
+변했다. PR7941의 원본 프레임/HFT 공급 구현과 PR7942 검토 문서가 포함돼 코드 동등
+재사용이 불가능하다. 이 단계 변경을 로컬 커밋하고 사용자 초안/원본을 보존해 리베이스한다.
+새 HFT 원본 공급 매뉴얼을 읽었으며 기존 대체 TTF와 원본 HFT 조건을 섞지 않고 새 base/head
+양쪽 전쪽을 다시 산출해야 한다. 리베이스 전 결과는 새 head 통과로 인용하지 않는다.
