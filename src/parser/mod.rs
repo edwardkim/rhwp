@@ -472,6 +472,12 @@ fn parse_hwp_with_cfb(
         .consume(doc_info_data.len())
         .map_err(ParseError::CfbError)?;
     let (mut doc_info, doc_properties) = parse_doc_info_stream(&doc_info_data, encrypted)?;
+    if let Ok(bytes) = cfb.read_stream_raw_limited(
+        crate::model::native_font_program::HWP_STREAM,
+        crate::model::native_font_program::MAX_BYTES,
+    ) {
+        crate::model::native_font_program::decode(&mut doc_info, &doc_info_data, &bytes);
+    }
     doc_info.raw_stream = Some(doc_info_data);
 
     // 4. BodyText 섹션별 파싱
@@ -941,6 +947,12 @@ fn parse_hwp_with_lenient(
         .consume(doc_info_data.len())
         .map_err(ParseError::CfbError)?;
     let (mut doc_info, doc_properties) = parse_doc_info_stream(&doc_info_data, encrypted)?;
+    if let Ok(bytes) = lenient.read_stream_raw_limited(
+        crate::model::native_font_program::HWP_STREAM,
+        crate::model::native_font_program::MAX_BYTES,
+    ) {
+        crate::model::native_font_program::decode(&mut doc_info, &doc_info_data, &bytes);
+    }
     doc_info.raw_stream = Some(doc_info_data);
 
     // BodyText 섹션별 파싱
@@ -1677,6 +1689,7 @@ fn collect_extra_streams(
         // 이미 파싱된 스트림은 제외
         if path == "/FileHeader"
             || path == "/DocInfo"
+            || path == crate::model::native_font_program::HWP_STREAM
             || path.starts_with("/BodyText/")
             || path.starts_with("/ViewText/")
             || path == "/PrvImage"

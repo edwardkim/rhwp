@@ -2419,3 +2419,17 @@ WMF raw 미달·도로조명 배치 차이·최종 전체 게이트가 남아 PR
 각48조건1745쪽과 전체10514PASS/0FAIL/45skip을 완료했다. sample16 WMF 미달과 추가
 HWP5 저장 출처 회귀는 남아 있으며 후속 gate는 보정을 위해 중단했다. PR 완료로 판정하지 않는다.
 [원인·실제 소비·최종 전후 review/overlay·검증 한계](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/text-host-frame-20261017/README.md)를 보존한다.
+
+## C71. HWP3의 두 저장 경로를 실제 한컴 Print로 검증 (2026-10-17)
+
+HWP5 재열기의 글꼴 프로그램 출처 손실을 복원해 자기 왕복 최대121.053333px→0px로 만들었다.
+여기서 멈추지 않고 실제 저장본의 독립 Print를 확인해 문단 그림의 두 저장 비트 누락과 HWPX의
+OBJ 표시를 추가로 고쳤다. HWP3 파서에서 앵커 속성·머리말/꼬리말8유닛·떠 있는 그림 소유를
+정규화하며 렌더러 문서 예외나 자간 합성은 추가하지 않았다. 정식 실패를 재현한 뒤 최종
+Native Skia2PASS를 확인했다. 98% 이상인3쪽에는 독립 원문 글리프 ±2CSSpx도 추가했다.
+
+원본16쪽, 실제 HWP/HWPX 각16쪽, 빈 셀·기장·영월 대조군6쪽의 Native/fresh WASM 각54쪽은
+전쪽98% 이상이다. 새 저장본 두 형식의 전쪽 최저는 Native99.03367%, WASM99.34905%다.
+공개 WASM 저장 API의 바이트는 Native와 같고 재열기16쪽의 인쇄할 text run 좌표도 같다.
+전체 회귀/48조건/실제 소비36건과 WMF 미달은 여전히 남았으며 PR 준비 완료가 아니다.
+[입력·독립 PDF·생산자·실제 실패/통과·최종 review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hwp-roundtrip-20261017/README.md)에 연결한다.

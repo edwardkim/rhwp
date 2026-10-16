@@ -321,6 +321,12 @@ fn build_common_obj_attr(common: &crate::model::shape::CommonObjAttr) -> u32 {
     if common.treat_as_char {
         attr |= 0x01;
     }
+    if common.flow_with_text {
+        attr |= 1 << 13;
+    }
+    if common.allow_overlap {
+        attr |= 1 << 14;
+    }
     attr |= (match common.vert_rel_to {
         VertRelTo::Paper => 0u32,
         VertRelTo::Page => 1,
@@ -1741,6 +1747,12 @@ fn parse_hwp3_object_dispatch(
 
         let ref_pos = info_buf[8];
         pic.common.treat_as_char = ref_pos == 0;
+        // HWP3의 문단 기준 그림은 본문에 묶인 개체다. 한컴의 독립
+        // HWP3→HWP5 저장본은 본문 영역 제한/겹침 허용 두 비트로 이를
+        // 나타낸다. 둘을 기본 false로 두면 외부 HWP5 조판에서 그림의
+        // 호스트 줄이 사라져 다음 문단과 쪽 경계가 당겨진다.
+        pic.common.flow_with_text = ref_pos == 1;
+        pic.common.allow_overlap = ref_pos == 1;
         if let Some((horz_rel_to, vert_rel_to)) =
             hwp3_object_reference_position(ref_pos, use_password_layout_contract)
         {
@@ -2230,6 +2242,10 @@ fn parse_object_control_char(
         && parsed_table
             .as_ref()
             .is_some_and(|table| !table.common.treat_as_char);
+    let is_non_tac_picture = ch == 11
+        && parsed_picture
+            .as_ref()
+            .is_some_and(|picture| !picture.common.treat_as_char);
     let is_tac_picture_or_shape = ch == 11
         && (parsed_picture
             .as_ref()
@@ -2242,8 +2258,12 @@ fn parse_object_control_char(
             .as_ref()
             .is_some_and(|line| line.common.treat_as_char);
     let is_control_only_marker = text_string.is_empty() && i >= para_info.char_count as usize;
-    let preserve_invisible_anchor_gap = ch == 17 || is_non_tac_table;
-    // ch=15(숨은설명), ch=16(머리말/꼬리말), 비-TAC 표,
+    // 머리말/꼬리말도 실제 8유닛 제어 슬롯을 소유한다. 이를 0으로 세면
+    // 구조 컨트롤과 쪽번호의 슬롯 수가 어긋나 HWPX에서 표식을 글자로 낸다.
+    // 떠 있는 그림은 그림 노드가 내용을 소유하며 본문 대체 글자를 갖지 않는다.
+    let preserve_invisible_anchor_gap =
+        ch == 16 || ch == 17 || is_non_tac_table || is_non_tac_picture;
+    // ch=15(숨은설명), ch=16(머리말/꼬리말), 비-TAC 표·그림,
     // 단독 TAC 그림/도형/선 자리 문단은 화면에 보이는 대체 글자를
     // 만들지 않는다. 미주/각주와 비-TAC 표는 본문 안의 8유닛 앵커 슬롯을
     // 별도로 보존해 컨트롤 위치를 잃지 않게 한다.

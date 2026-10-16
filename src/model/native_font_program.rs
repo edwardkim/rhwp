@@ -1,5 +1,5 @@
-//! rhwp가 저장한 HWPX의 원 글꼴 프로그램 출처를 보존한다.
-//! 표준 글꼴 선언이나 자간에 합성 값을 쓰지 않는다. 외부 편집으로 header가
+//! rhwp가 저장한 HWP5/HWPX의 원 글꼴 프로그램 출처를 보존한다.
+//! 표준 글꼴 선언이나 자간에 합성 값을 쓰지 않는다. 외부 편집으로 DocInfo/header가
 //! 바뀌거나 보조 엔트리가 제거되면 출처를 추정해 복원하지 않는다.
 
 use super::{document::DocInfo, style::NativeFontProgram};
@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 pub(crate) const HWPX_ENTRY: &str = "META-INF/rhwp-native-font-programs.json";
+pub(crate) const HWP_STREAM: &str = "/RhwpNativeFontPrograms";
 pub(crate) const MAX_BYTES: usize = 1024 * 1024;
 
 #[derive(Serialize, Deserialize)]
@@ -41,6 +42,9 @@ pub(crate) fn encode(info: &DocInfo, header: &[u8]) -> Option<Vec<u8>> {
 }
 
 pub(crate) fn decode(info: &mut DocInfo, header: &[u8], bytes: &[u8]) {
+    if bytes.len() > MAX_BYTES {
+        return;
+    }
     let Ok(envelope) = serde_json::from_slice::<Envelope>(bytes) else {
         return;
     };

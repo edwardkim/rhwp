@@ -1,7 +1,6 @@
 //! 원본 프로그램의 굵은 글자 전진 간격과 자연 글리프 폭을 분리한다.
 //! 독립 issue265 Print12쪽 T2/Widths의 한글은1000/1000em, TJ는약0.05em 추가 전진.
-//! Native99.09329/fresh WASM99.09641% 전16쪽 확인 및12쪽 직접 판독 후 추가.
-//! 동일한 혼용 제목 후보12/13/15쪽의 양쪽 최솟값이 가장 높은12쪽(99.65791%)을 선정.
+//! 원문 소유·내용 관계와 독립 Print 3·12쪽의 ±2CSSpx 좌표를 함께 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{
@@ -28,14 +27,14 @@ fn core() -> DocumentCore {
     core
 }
 
-fn paragraph_runs<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+fn paragraph_runs<'a>(node: &'a RenderNode, para_index: usize, out: &mut Vec<&'a RenderNode>) {
     if matches!(&node.node_type, RenderNodeType::TextRun(run)
-        if run.section_index == Some(0) && run.para_index == Some(121))
+        if run.section_index == Some(0) && run.para_index == Some(para_index))
     {
         out.push(node);
     }
     for child in &node.children {
-        paragraph_runs(child, out);
+        paragraph_runs(child, para_index, out);
     }
 }
 
@@ -70,21 +69,59 @@ fn native_bold_title_keeps_independent_origins_and_source_order() {
     let core = core();
     assert_title(&core);
     let bytes = core.export_hwpx_native().expect("HWPX 저장");
-    let mut reparsed = DocumentCore::from_bytes(&bytes).expect("HWPX 재열람");
-    reparsed
-        .set_font_environment(core.font_environment().cloned())
-        .unwrap();
-    for (before, after) in core
-        .document()
-        .doc_info
-        .font_faces
-        .iter()
-        .flatten()
-        .zip(reparsed.document().doc_info.font_faces.iter().flatten())
-    {
-        assert_eq!(before.native_program, after.native_program, "출처 왕복");
+    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(&bytes)).unwrap();
+    let mut section = String::new();
+    std::io::Read::read_to_string(
+        &mut archive.by_name("Contents/section0.xml").unwrap(),
+        &mut section,
+    )
+    .unwrap();
+    assert!(
+        !roxmltree::Document::parse(&section)
+            .unwrap()
+            .descendants()
+            .filter(|node| node.has_tag_name(("http://www.hancom.co.kr/hwpml/2011/paragraph", "t")))
+            .filter_map(|node| node.text())
+            .any(|text| text.contains('\u{fffc}')),
+        "이 원본의 제어문자 표식은 구조/그림 소유로 보존하며 인쇄할 OBJ 글자를 만들지 않는다"
+    );
+    let hwp = core.export_hwp_with_adapter().expect("HWP5 저장");
+    for (format, saved) in [("HWPX", &bytes), ("HWP5", &hwp)] {
+        let mut reparsed = DocumentCore::from_bytes(saved).expect("저장본 재열람");
+        reparsed
+            .set_font_environment(core.font_environment().cloned())
+            .unwrap();
+        assert_eq!(
+            core.document()
+                .doc_info
+                .font_faces
+                .iter()
+                .map(Vec::len)
+                .collect::<Vec<_>>(),
+            reparsed
+                .document()
+                .doc_info
+                .font_faces
+                .iter()
+                .map(Vec::len)
+                .collect::<Vec<_>>(),
+            "{format} 언어별 글꼴 소유"
+        );
+        for (before, after) in core
+            .document()
+            .doc_info
+            .font_faces
+            .iter()
+            .flatten()
+            .zip(reparsed.document().doc_info.font_faces.iter().flatten())
+        {
+            assert_eq!(
+                before.native_program, after.native_program,
+                "{format} 출처 왕복"
+            );
+        }
+        assert_title(&reparsed);
     }
-    assert_title(&reparsed);
     // 프로그램 출처를 일반 HWPX의 글꼴명으로 추정하면 안 된다.
     // 외부 편집/엔트리 제거/알 수 없는 버전은 원래 글꼴 선언을 그대로 읽는다.
     for mutation in ["header", "remove", "version"] {
@@ -100,6 +137,68 @@ fn native_bold_title_keeps_independent_origins_and_source_order() {
         );
         assert_eq!(doc.sections[0].paragraphs[121].text, para_text(&core));
     }
+    for mutation in [
+        "header",
+        "remove",
+        "version",
+        "groups",
+        "malformed",
+        "oversized",
+    ] {
+        let changed = change_hwp_program_metadata(&hwp, mutation);
+        let doc =
+            rhwp::parser::parse_document(&changed).expect("보조 출처가 잘못돼도 표준 문서는 연다");
+        assert!(
+            doc.doc_info
+                .font_faces
+                .iter()
+                .flatten()
+                .all(|font| font.native_program.is_none()),
+            "HWP5 {mutation}의 보조 출처를 추정해 적용하지 않는다"
+        );
+        assert_eq!(doc.sections[0].paragraphs[121].text, para_text(&core));
+        assert!(doc
+            .extra_streams
+            .iter()
+            .all(|(path, _)| path != "/RhwpNativeFontPrograms"));
+    }
+}
+
+fn change_hwp_program_metadata(bytes: &[u8], mutation: &str) -> Vec<u8> {
+    use std::io::{Cursor, Read, Write};
+    let mut cfb = cfb::CompoundFile::open(Cursor::new(bytes.to_vec())).unwrap();
+    let path = "/RhwpNativeFontPrograms";
+    if mutation == "remove" {
+        cfb.remove_stream(path).unwrap();
+    } else {
+        let mut contents = Vec::new();
+        cfb.open_stream(path)
+            .unwrap()
+            .read_to_end(&mut contents)
+            .unwrap();
+        let mut value: Value = serde_json::from_slice(&contents).unwrap();
+        match mutation {
+            "header" => {
+                value["header_sha256"][0] = (value["header_sha256"][0].as_u64().unwrap() ^ 1).into()
+            }
+            "version" => value["version"] = 2.into(),
+            "groups" => {
+                value["programs"].as_array_mut().unwrap().pop();
+            }
+            "malformed" | "oversized" => {}
+            _ => panic!("알 수 없는 변형"),
+        }
+        contents = match mutation {
+            "malformed" => b"{".to_vec(),
+            "oversized" => vec![b' '; 1024 * 1024 + 1],
+            _ => serde_json::to_vec(&value).unwrap(),
+        };
+        cfb.create_stream(path)
+            .unwrap()
+            .write_all(&contents)
+            .unwrap();
+    }
+    cfb.into_inner().into_inner()
 }
 
 fn para_text(core: &DocumentCore) -> &str {
@@ -137,6 +236,54 @@ fn change_program_metadata(bytes: &[u8], mutation: &str) -> Vec<u8> {
 }
 
 fn assert_title(core: &DocumentCore) {
+    let rhwp::model::control::Control::Picture(picture) =
+        &core.document().sections[0].paragraphs[41].controls[0]
+    else {
+        panic!("원문 그림의 소유 문단");
+    };
+    assert!(
+        picture.common.flow_with_text && picture.common.allow_overlap,
+        "독립 한컴 HWP3→HWP5 변환의 문단 앵커 계약: 그림과 호스트의 빈 줄을 함께 보존한다"
+    );
+    assert_eq!(
+        picture.common.attr & ((1 << 13) | (1 << 14)),
+        (1 << 13) | (1 << 14),
+        "IR과 저장 속성의 앵커 계약 일치"
+    );
+    let following_page = core.build_page_render_tree(2).unwrap();
+    let mut following = Vec::new();
+    paragraph_runs(&following_page.root, 43, &mut following);
+    let start = following
+        .iter()
+        .find(|node| text(node).char_start == Some(0))
+        .expect("그림 뒤 본문의 첫 원문 문자");
+    assert!(text(start).text.starts_with("실제 서버들은 고속"));
+    let compact = |s: &str| {
+        s.chars()
+            .filter(|ch| !ch.is_whitespace())
+            .collect::<String>()
+    };
+    assert_eq!(
+        compact(
+            &following
+                .iter()
+                .map(|node| text(node).text.as_str())
+                .collect::<String>()
+        ),
+        compact(&core.document().sections[0].paragraphs[43].text),
+        "그림 뒤 본문의 문자를 같은 쪽에서 한 번씩 원래 순서로 소유한다"
+    );
+    // 원본 Print p3의 첫 글리프 원점(72pt→96CSSpx). 한컴의 직접 HWP5 변환과
+    // 두 저장 비트만 복원한 독립 Print도 같은 위치를 확인한다.
+    for (actual, expected) in [
+        (start.bbox.x, 113.4400024414),
+        (start.bbox.y + text(start).baseline, 708.1599934896),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "그림 뒤 본문 독립 Print±2CSSpx: {actual} vs {expected}"
+        );
+    }
     let para = &core.document().sections[0].paragraphs[121];
     let source = para.text.clone();
     assert_eq!(source, "4. 작업 할당 방식(Scheduling Algorithms)");
@@ -152,7 +299,7 @@ fn assert_title(core: &DocumentCore) {
     assert_eq!(core.page_count(), 16);
     let tree = core.build_page_render_tree(11).unwrap();
     let mut nodes = Vec::new();
-    paragraph_runs(&tree.root, &mut nodes);
+    paragraph_runs(&tree.root, 121, &mut nodes);
     assert_eq!(
         nodes
             .iter()
@@ -245,7 +392,7 @@ fn native_bold_tracking_does_not_stretch_the_actual_glyph() {
     let core = core();
     let tree = core.build_page_render_tree(11).unwrap();
     let mut nodes = Vec::new();
-    paragraph_runs(&tree.root, &mut nodes);
+    paragraph_runs(&tree.root, 121, &mut nodes);
     let source = text(
         nodes
             .into_iter()
