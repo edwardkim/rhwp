@@ -330,8 +330,8 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
 - 실제 GitHub review/comment, issue close, PR close는 승인과 선행 조건이 갖춰진 뒤에만 게시한다.
 - merge 후에는 merge SHA 확인 → 문서·asset의 devel 반영 → 최종 devel sync → issue 상태 확인 및
   comment → branch/worktree/임시 산출물 정리 순서를 지킨다. 임시 산출물은
-  [`output/pr-review` 전체 점검·정리](pr_review/post_merge.md#77-branch-worktree-검토-전용-target-정리)를
-  수행하며 현재 review 하위 경로만으로 한정하지 않는다. 공유 `target/pr-review`는 보존한다. 이때 worktree 정리에는 commit을
+  [`output/` 전체 제거](pr_review/post_merge.md#77-branch-worktree-검토-전용-target-정리)를
+  수행하며 필수 증거를 밖으로 보존한 뒤 디렉터리의 부재까지 확인한다. 공유 `target/pr-review`는 보존한다. 이때 worktree 정리에는 commit을
   만들지 않았더라도 이번 PR의 diff·CI·재현·검증만을 위해 만든 local 검토 worktree를 포함한다. raw image
   URL을 쓰는 comment는 asset이 devel에 존재한 뒤에만 게시한다.
 

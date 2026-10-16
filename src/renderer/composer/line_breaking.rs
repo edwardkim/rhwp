@@ -3103,7 +3103,7 @@ pub(super) fn supports_tac_table_band_frame_controls(para: &Paragraph) -> bool {
             _ => return false,
         }
     }
-    tac_tables == 1
+    tac_tables == 1 || (tac_tables > 1 && crate::renderer::para_has_no_stored_line_segs(para))
 }
 
 pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
@@ -3491,9 +3491,9 @@ fn layout_paragraph_in_frame_impl(
     // (`ListMarkerGeometry::breaker_box`). 게시하는 행 기하(구간)는 마커를 포함한 그대로다 —
     // 한/글 저장 행도 마커 자리부터 시작한다.
     let frame_width_hwp = frame.horizontal.end.saturating_sub(frame.horizontal.start);
-    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs, frame_width_hwp)
-        == (false, false)
-    {
+    let indentation_pattern =
+        reflow_indentation_pattern(para_style, &para.line_segs, frame_width_hwp);
+    let indent_px = if indentation_pattern == (false, false) {
         0.0
     } else {
         para_style.map_or(0.0, |style| style.indent)
@@ -3885,6 +3885,20 @@ fn layout_paragraph_in_frame_impl(
                     }
                 }
 
+                // 반환용 LineSeg 사본만 표시하면 공통 프레임을 다시 읽는 소비자가
+                // 들여쓰기를 잃는다. 확정하는 실제 행에도 같은 기록을 보존한다.
+                let indented = if frame.row_count() == first_row {
+                    indentation_pattern.0
+                } else {
+                    indentation_pattern.1
+                };
+                for segment in &mut segments {
+                    if indented {
+                        segment.source_tag |= LineSeg::TAG_INDENTATION;
+                    } else {
+                        segment.source_tag &= !LineSeg::TAG_INDENTATION;
+                    }
+                }
                 frame.commit_carved_row(metrics, segments)?;
                 break;
             }

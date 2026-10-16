@@ -550,3 +550,7 @@ samples/issue7626/end-run-two-lines.hwpx	2	2
 samples/issue7626/end-run-two-lines.hwp	2	2
 # #7622: 실제 한컴 저장 대조군의 대응 2020 1-up Print 전 1쪽, Native/fresh WASM 99.01152%.
 samples/issue7622/curly_quote_tac_native.hwpx	1	1
+
+# #7419: 같은 원본의 한컴2024 1-up Print 전1쪽, Native/fresh WASM100%, Stage1 SHA·직접 판독.
+samples/issue7419/tac_two_line_cell_no_lineseg.hwpx	1	1
+samples/issue7419/tac_nested_two_line_cell_no_lineseg.hwpx	1	1

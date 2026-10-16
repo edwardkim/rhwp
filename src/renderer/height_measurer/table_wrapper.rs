@@ -6,6 +6,24 @@ use crate::model::table::{Table, TablePageBreak};
 use crate::renderer::float_placement::signed_hwpunit;
 use crate::renderer::hwpunit_to_px;
 
+/// 표 하나와 배치 상자가 없는 마커만 있는 문단의 유일한 자식을 반환한다.
+/// 1×1 모양만으로 여러 자식이나 다른 개체의 소유권을 버리지 않는다.
+pub(crate) fn sole_nested_table_in_paragraph(
+    para: &crate::model::paragraph::Paragraph,
+) -> Option<&Table> {
+    let mut child = None;
+    for control in &para.controls {
+        if let crate::model::control::Control::Table(table) = control {
+            if child.replace(table.as_ref()).is_some() {
+                return None;
+            }
+        } else if !crate::renderer::composer::control_is_width_neutral_marker(control) {
+            return None;
+        }
+    }
+    child
+}
+
 /// 흐름 제한이 없는 문단 기준 표는 셀 안여백·세로 정렬과 독립된 개체다.
 /// 저장된 빈 앵커 줄은 부모의 높이를 소유하며, 자식은 그 부모 원점을 참조한다.
 pub(crate) fn unrestricted_wrapper_frame(table: &Table, nested: &Table, dpi: f64) -> Option<f64> {
@@ -15,6 +33,7 @@ pub(crate) fn unrestricted_wrapper_frame(table: &Table, nested: &Table, dpi: f64
     let [para] = cell.paragraphs.as_slice() else {
         return None;
     };
+    sole_nested_table_in_paragraph(para)?;
     let [line] = para.line_segs.as_slice() else {
         return None;
     };

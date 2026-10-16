@@ -148,10 +148,8 @@ fn transparent_nested_table(table: &crate::model::table::Table) -> &crate::model
     {
         return table;
     }
-    let Some(nested) = para.controls.iter().find_map(|control| match control {
-        Control::Table(table) => Some(table.as_ref()),
-        _ => None,
-    }) else {
+    let Some(nested) = crate::renderer::height_measurer::sole_nested_table_in_paragraph(para)
+    else {
         return table;
     };
 
@@ -360,80 +358,36 @@ impl CellComposedStore {
     fn get(
         &mut self,
         cpi: usize,
-        cell: &crate::model::table::Cell,
+        cell: &Cell,
         inner_width: f64,
         styles: &ResolvedStyleSet,
-        dpi: f64,
-        legacy_hwp3_stored_geometry: bool,
-        repair_stored_overflow: bool,
-        overflow_cache: &crate::renderer::composer::SingleLineOverflowCache,
+        engine: &LayoutEngine,
     ) -> &ComposedParagraph {
         match self {
             CellComposedStore::Eager(v) => &v[cpi],
-            CellComposedStore::Lazy(slots) => {
-                if slots[cpi].is_none() {
-                    let para = &cell.paragraphs[cpi];
-                    let mut comp =
-                        crate::renderer::composer::compose_paragraph_in_context(para, styles);
-                    if cell.text_direction == 0 {
-                        crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
-                            &mut comp,
-                            para,
-                            inner_width,
-                            styles,
-                            dpi,
-                            legacy_hwp3_stored_geometry,
-                            repair_stored_overflow,
-                            overflow_cache,
-                        );
-                    } else {
-                        crate::renderer::composer::recompose_cell_lines_in_frame(
-                            &mut comp,
-                            para,
-                            crate::renderer::composer::ParagraphBox::content_width_px(
-                                inner_width,
-                                dpi,
-                            ),
-                            styles,
-                            dpi,
-                            legacy_hwp3_stored_geometry,
-                        );
-                    }
-                    slots[cpi] = Some(comp);
-                }
-                slots[cpi].as_ref().unwrap()
-            }
+            CellComposedStore::Lazy(slots) => slots[cpi].get_or_insert_with(|| {
+                engine.compose_cell_unit_paragraph(
+                    &cell.paragraphs[cpi],
+                    cell.text_direction,
+                    inner_width,
+                    styles,
+                )
+            }),
         }
     }
 
-    /// 전량 슬라이스가 필요한 경로(세로쓰기 등)를 위한 완전 구성.
+    /// 전량 슬라이스가 필요한 경로도 셀 컷·지연 배치와 같은 조판기를 사용한다.
     fn materialize(
         &mut self,
-        cell: &crate::model::table::Cell,
+        cell: &Cell,
         inner_width: f64,
         styles: &ResolvedStyleSet,
-        dpi: f64,
-        legacy_hwp3_stored_geometry: bool,
-        repair_stored_overflow: bool,
-        overflow_cache: &crate::renderer::composer::SingleLineOverflowCache,
+        engine: &LayoutEngine,
     ) {
         if matches!(self, CellComposedStore::Lazy(_)) {
-            let mut v = Vec::with_capacity(cell.paragraphs.len());
-            for cpi in 0..cell.paragraphs.len() {
-                v.push(
-                    self.get(
-                        cpi,
-                        cell,
-                        inner_width,
-                        styles,
-                        dpi,
-                        legacy_hwp3_stored_geometry,
-                        repair_stored_overflow,
-                        overflow_cache,
-                    )
-                    .clone(),
-                );
-            }
+            let v = (0..cell.paragraphs.len())
+                .map(|cpi| self.get(cpi, cell, inner_width, styles, engine).clone())
+                .collect();
             *self = CellComposedStore::Eager(v);
         }
     }
@@ -1686,30 +1640,12 @@ impl LayoutEngine {
                 // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
                 for (cpi, para) in cell.paragraphs.iter().enumerate() {
                     if let Some(comp) = composed_paras.get_mut(cpi) {
-                        if cell.text_direction == 0 {
-                            crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
-                                comp,
-                                para,
-                                inner_width_for_recompose,
-                                styles,
-                                self.dpi,
-                                self.profile.get().legacy_hwp3_stored_geometry(),
-                                self.profile.get().native_hwp5_layout(),
-                                &self.single_line_overflow_cache,
-                            );
-                        } else {
-                            crate::renderer::composer::recompose_cell_lines_in_frame(
-                                comp,
-                                para,
-                                crate::renderer::composer::ParagraphBox::content_width_px(
-                                    inner_width_for_recompose,
-                                    self.dpi,
-                                ),
-                                styles,
-                                self.dpi,
-                                self.profile.get().legacy_hwp3_stored_geometry(),
-                            );
-                        }
+                        *comp = self.compose_cell_unit_paragraph(
+                            para,
+                            cell.text_direction,
+                            inner_width_for_recompose,
+                            styles,
+                        );
                     }
                 }
                 composed_store = CellComposedStore::Eager(composed_paras);
@@ -2236,15 +2172,7 @@ impl LayoutEngine {
             if cell.text_direction != 0 {
                 // [#4149] 프로브가 세로쓰기 셀을 대상으로 삼는 일은 게이트로 막지만,
                 // 방어적으로 전량 구성 후 동일 경로를 태운다 (좌표 동일).
-                composed_store.materialize(
-                    cell,
-                    inner_width,
-                    styles,
-                    self.dpi,
-                    self.profile.get().legacy_hwp3_stored_geometry(),
-                    self.profile.get().native_hwp5_layout(),
-                    &self.single_line_overflow_cache,
-                );
+                composed_store.materialize(cell, inner_width, styles, self);
                 let vert_inner_area = LayoutRect {
                     x: inner_x,
                     y: cell_y + pad_top,
@@ -2564,16 +2492,7 @@ impl LayoutEngine {
                     (
                         0,
                         composed_store
-                            .get(
-                                cp_idx,
-                                cell,
-                                inner_width,
-                                styles,
-                                self.dpi,
-                                self.profile.get().legacy_hwp3_stored_geometry(),
-                                self.profile.get().native_hwp5_layout(),
-                                &self.single_line_overflow_cache,
-                            )
+                            .get(cp_idx, cell, inner_width, styles, self)
                             .lines
                             .len(),
                     )
@@ -2646,17 +2565,10 @@ impl LayoutEngine {
                 }
 
                 // [#4149] 가시 문단만 여기 도달 — lazy 슬롯은 이 시점에 compose 된다.
-                let composed = composed_store.get(
-                    cp_idx,
-                    cell,
-                    inner_width,
-                    styles,
-                    self.dpi,
-                    self.profile.get().legacy_hwp3_stored_geometry(),
-                    self.profile.get().native_hwp5_layout(),
-                    &self.single_line_overflow_cache,
-                );
+                let composed = composed_store.get(cp_idx, cell, inner_width, styles, self);
 
+                // 재조판 좌표 뷰의 임시 복사본을 원본 주소 기반 캐시에 넘기지 않는다.
+                let source_controls = &para.controls;
                 let frame_paragraph = composed.paragraph_with_frame_geometry(para);
                 let para = frame_paragraph.as_ref();
 
@@ -2737,8 +2649,7 @@ impl LayoutEngine {
                         // 본문이 2쪽으로 밀림). 점프가 중첩 표 선언 높이 규모면
                         // post-table host 줄로 보고 스냅을 건너뛴다 — 표는 자연
                         // 흐름에 그려지고, 후속 문단은 자기 저장 vpos 로 정렬된다.
-                        let nested_tables_px: f64 = para
-                            .controls
+                        let nested_tables_px: f64 = source_controls
                             .iter()
                             .filter_map(|control| match control {
                                 Control::Table(nested) => Some(hwpunit_to_px(
@@ -2808,8 +2719,7 @@ impl LayoutEngine {
                 let mut para_first_line_top: Option<f64> = None;
 
                 // 인라인(treat_as_char) 컨트롤의 총 폭을 미리 계산
-                let total_inline_width: f64 = para
-                    .controls
+                let total_inline_width: f64 = source_controls
                     .iter()
                     .map(|ctrl| match ctrl {
                         Control::Picture(pic) if pic.common.treat_as_char => {
@@ -2828,9 +2738,10 @@ impl LayoutEngine {
                 // `layout_table`의 empty-TAC 경로와 같은 줄별 폭 계약을 partial
                 // RowBreak fragment에도 쓴다. 빈 paragraph의 image controls는 source
                 // char position이 같아도 HWP LINE_SEG가 각각의 flow slot을 보존한다.
+                let control_lines = composed.control_line_indices(para);
                 let tac_line_widths: Vec<f64> = {
                     let mut line_widths = vec![0.0f64; composed.lines.len().max(1)];
-                    for ctrl in &para.controls {
+                    for (index, ctrl) in source_controls.iter().enumerate() {
                         let (is_tac, width) = match ctrl {
                             Control::Picture(pic) if pic.common.treat_as_char => {
                                 (true, hwpunit_to_px(pic.common.width as i32, self.dpi))
@@ -2857,6 +2768,14 @@ impl LayoutEngine {
                             _ => (false, 0.0),
                         };
                         if !is_tac {
+                            continue;
+                        }
+                        if let Some(owner) =
+                            control_lines.as_ref().and_then(|lines| lines.get(index))
+                        {
+                            if let Some(line_width) = line_widths.get_mut(*owner) {
+                                *line_width += width;
+                            }
                             continue;
                         }
                         if composed.lines.len() <= 1 {
@@ -2974,8 +2893,7 @@ impl LayoutEngine {
                     // 별도 저장 원점이 이미 띠를 품는 스냅·선형 셀은 기존 경로를 쓴다.
                     let allow_first_stored_lead = cp_idx == 0
                         && start_line == 0
-                        && para
-                            .controls
+                        && source_controls
                             .iter()
                             .all(crate::renderer::composer::control_is_width_neutral_marker)
                         && single_column_flow.is_none()
@@ -3073,8 +2991,7 @@ impl LayoutEngine {
                     // lineseg 에 맞춰 줄을 나눈다 — 그때 첫 줄의 폭은 합이 아니라 첫
                     // 개체의 폭이다. 합으로 잡으면 `.max(0.0)` 이 0 이 되어 가운데
                     // 정렬 그림이 칸 왼쪽 끝에 붙었다.
-                    let first_inline_width = para
-                        .controls
+                    let first_inline_width = source_controls
                         .iter()
                         .find_map(|ctrl| match ctrl {
                             Control::Picture(pic) if pic.common.treat_as_char => {
@@ -3167,7 +3084,7 @@ impl LayoutEngine {
                     let mut wrapped_tac_flow_bottom: Option<f64> = None;
                     let mut rendered_top_and_bottom_non_inline = false;
                     // [#7418] 이 조각이 중첩 표를 **끝까지** 그렸나 — host 줄간격은 표 뒤에만 선다.
-                    let nested_row_count = para.controls.iter().find_map(|c| match c {
+                    let nested_row_count = source_controls.iter().find_map(|c| match c {
                         Control::Table(t) => Some(t.row_count as usize),
                         _ => None,
                     });
@@ -3176,7 +3093,7 @@ impl LayoutEngine {
                             .zip(nested_row_count)
                             .is_some_and(|((_, end), rows)| end < rows);
 
-                    for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+                    for (ctrl_idx, ctrl) in source_controls.iter().enumerate() {
                         match ctrl {
                             Control::Picture(pic) => {
                                 let visible_non_inline_control =
@@ -3442,7 +3359,7 @@ impl LayoutEngine {
                                             pic.common.text_wrap,
                                             crate::model::shape::TextWrap::Square
                                         )
-                                        && para.controls.iter().any(|ctrl| {
+                                        && source_controls.iter().any(|ctrl| {
                                             matches!(
                                                 ctrl,
                                                 Control::Picture(sibling) if sibling.common.treat_as_char
@@ -4001,6 +3918,14 @@ impl LayoutEngine {
                                 cell_node.children.push(eq_node);
                             }
                             Control::Table(nested_table) => {
+                                let frame_owner = composed
+                                    .frame_owns_inline_table(ctrl_idx)
+                                    .then(|| {
+                                        crate::renderer::composer::control_slot_line_index(
+                                            para, ctrl_idx,
+                                        )
+                                    })
+                                    .flatten();
                                 // 텍스트 줄만 선택된 조각은 같은 문단의 다른 저장 줄에
                                 // 실린 TAC 표를 소유하지 않는다. 실제 중첩 행·재귀 컷이
                                 // 선택된 경우에는 그 컷이 원본 줄 대신 소유권을 정한다.
@@ -4012,6 +3937,10 @@ impl LayoutEngine {
                                     && stored_control_owned_by_line_window(
                                         para, ctrl_idx, start_line, end_line,
                                     )
+                                    .or_else(|| {
+                                        frame_owner
+                                            .map(|owner| start_line <= owner && owner < end_line)
+                                    })
                                     .is_some_and(|owned| !owned)
                                 {
                                     continue;
@@ -4074,7 +4003,14 @@ impl LayoutEngine {
                                                 self.dpi,
                                             )
                                         });
-                                    let nested_y = if matches!(
+                                    let nested_y = if let Some(owner) = frame_owner {
+                                        let base = para
+                                            .line_segs
+                                            .get(start_line)
+                                            .map_or(0, |line| line.vertical_pos);
+                                        let origin = para.line_segs[owner].vertical_pos;
+                                        para_y_before_lines + hwpunit_to_px(origin - base, self.dpi)
+                                    } else if matches!(
                                         stored_host_flow,
                                         Some(StoredNestedHostFlow::BeforeLine { .. })
                                     ) {
@@ -4798,7 +4734,7 @@ impl LayoutEngine {
                             }
                         } else {
                             para_y += self
-                                .paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
+                                .paragraph_top_and_bottom_non_inline_flow_height(&source_controls);
                         }
                     }
                     // [#7418] 저장 줄 없는 빈 host 의 TAC 표 줄 뒤에는 그 줄의 줄간격이 붙는다 —

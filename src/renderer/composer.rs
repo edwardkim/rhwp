@@ -19,6 +19,10 @@ use crate::renderer::layout_frame::LayoutFrame;
 pub use crate::renderer::layout_frame::ParagraphBox;
 
 mod frame_geometry;
+mod nested_table_frames;
+pub(crate) use nested_table_frames::{
+    recompose_cell_lines_with_nested_tables, table_cells_have_no_stored_lines,
+};
 mod resolved_fields;
 mod stored_word_tail;
 
@@ -3055,6 +3059,7 @@ pub(crate) fn recompose_stored_lines_in_frame(
         false,
         false,
         false,
+        &[],
     )
 }
 
@@ -3085,6 +3090,9 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     // 문단들을 다시 나눈다(hwpx-02 2쪽 `…투자대상국에서 제 / 외`). 이때는 저장 행을
     // 부실로 보고 프레임이 다시 채운다.
     stored_rows_untrusted: bool,
+    // 현대 NO_LS 셀의 측정 소유자가 전달한 실측 표 높이다. 이 증거가 없는
+    // 일반/Native 문단의 별도 표 배치 소유권을 새 프레임으로 바꾸지 않는다.
+    measured_inline_table_heights: &[(usize, u32)],
 ) -> Option<ComposedParagraph> {
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
@@ -3119,6 +3127,16 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             matches!(control, crate::model::control::Control::Picture(picture)
                 if picture.common.treat_as_char)
         });
+    let single_tac_table_with_text = para.text.chars().any(|c| !c.is_whitespace())
+        && para
+            .controls
+            .iter()
+            .filter(|control| {
+                matches!(control, crate::model::control::Control::Table(table)
+                    if table.common.treat_as_char)
+            })
+            .count()
+            == 1;
     let frame_admits_controls = line_breaking::supports_cached_body_frame_controls(para)
         || (justified_kopub_picture
             && para.controls.iter().all(|control| {
@@ -3133,10 +3151,9 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
                     && picture.common.text_wrap == crate::model::shape::TextWrap::Square)
                 }))
             && line_breaking::supports_picture_band_frame_controls(para))
-        // [#7160] 글자처럼 취급 **표** host 도 프레임이 받는다 — `inline_control_size_hwp` 가
-        // 그 폭을 인라인 토큰으로 계상하므로 그림과 같은 축이다. 글자 없는 host 는 제외한다:
-        // 줄을 나눌 글자가 없고 표 자리 계약은 다른 경로가 갖는다.
-        || (para.text.chars().any(|c| !c.is_whitespace())
+        // 실측 인라인 표의 현재 프레임은 글자 없는 host와 여러 표도 구성한다.
+        // 나머지 경로는 기존의 보이는 글자+단일 TAC 표 수용 계약을 유지한다.
+        || ((!measured_inline_table_heights.is_empty() || single_tac_table_with_text)
             && line_breaking::supports_tac_table_band_frame_controls(para));
     if !paragraph_box.is_usable() || !frame_admits_controls {
         return None;
@@ -3210,11 +3227,12 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             }
             let mut reconciled = composed.clone();
             reconciled.lines = reflowed.lines;
-            if rejoinable_word_tail {
+            if rejoinable_word_tail || !measured_inline_table_heights.is_empty() {
                 reconciled.frame_geometry =
                     Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
                         line_segs: reflowed_para.line_segs,
                         space_metrics: reflowed_para.layout_space_metrics,
+                        inline_table_heights: measured_inline_table_heights.to_vec(),
                     }));
             }
             // Q2-D5-N1: source NO_LS has no usable width during the initial

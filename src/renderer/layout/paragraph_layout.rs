@@ -3215,14 +3215,15 @@ impl LayoutEngine {
     ) -> Option<f64> {
         if para.stored_text_partition_is_dirty()
             || para.cell_format_vpos_dirty
-            || super::super::para_has_no_stored_line_segs(para)
+            || (super::super::para_has_no_stored_line_segs(para)
+                && !composed.frame_owns_inline_table(control_index))
         {
             return None;
         }
         // Preserve the original PARA_TEXT axis. Projecting controls onto
         // visible characters collapses distinct objects in the same text gap
         // and can put a later-line object back after the preceding picture.
-        let owners = crate::renderer::float_placement::stored_control_line_indices(para)?;
+        let owners = composed.control_line_indices(para)?;
         let owner = *owners.get(control_index)?;
         let line = composed.lines.get(owner)?;
         let positions = para.control_text_positions();
@@ -3296,6 +3297,17 @@ impl LayoutEngine {
         let stored = para.line_segs.get(owner)?;
         // A complete natural saved line owns its horizontal region. Paragraph
         // hanging indent is a reflow input, not a replacement for that region.
+        let current_region = composed.frame_owns_inline_table(control_index).then(|| {
+            let indentation = if stored.tag & LineSeg::TAG_INDENTATION != 0 {
+                style.indent.abs()
+            } else {
+                0.0
+            };
+            (
+                hwpunit_to_px(stored.column_start, self.dpi) + indentation,
+                hwpunit_to_px(stored.segment_width, self.dpi) - indentation,
+            )
+        });
         let stored_region = (stored.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             && stored.column_start >= 0
             && stored.segment_width > 0
@@ -3309,7 +3321,7 @@ impl LayoutEngine {
                 hwpunit_to_px(stored.column_start, self.dpi),
                 hwpunit_to_px(stored.segment_width, self.dpi),
             ));
-        let (left_margin, width) = stored_region.unwrap_or((
+        let (left_margin, width) = current_region.or(stored_region).unwrap_or((
             styled_left,
             (area.width - styled_left - style.margin_right).max(0.0),
         ));
@@ -4492,6 +4504,7 @@ impl LayoutEngine {
                 known_square_band,
                 self.profile.get().hwpx_stored_layout(),
                 self.uniform_filler_ladder.get(),
+                &[],
             )?;
         let line = current.lines.get(line_index)?;
         let font_size = crate::renderer::composed_line_max_font_size(line, para, styles);
@@ -4615,6 +4628,7 @@ impl LayoutEngine {
                         wrap_anchor.is_some(),
                         self.profile.get().hwpx_stored_layout(),
                         self.uniform_filler_ladder.get(),
+                        &[],
                     )
                 } else {
                     None
