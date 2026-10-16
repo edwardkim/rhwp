@@ -129,6 +129,7 @@ import {
 import { getLocalFontRecords, loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, resolveRendererLocalFont,
   hasHostFontProvider, loadRendererLocalFont, getHostFontState, type LocalFontRecord } from '@/core/local-fonts';
 import { hostFontStyle } from '@/core/host-font-requests';
+import { parseCssFontFamilyList } from '@/core/font-substitution';
 import { canvasKitFontFaceData } from './canvaskit/sfnt-face';
 import { projectedSubstituteTargets } from '@/core/font-rule-runtime';
 import type { CanvasKitBundledFontSource } from '@/core/font-loader';
@@ -312,7 +313,7 @@ export interface CanvasKitFontSubstitutionDiagnostic {
   opId?: string;
   requestedFamily: string;
   resolvedFamily: string;
-  source: 'unregisteredDefault' | 'missingGlyphDefault' | 'missingGlyphSymbol' | 'oldHangul' | 'equationDeclaredFallback';
+  source: 'unregisteredDefault' | 'missingGlyphFamily' | 'missingGlyphDefault' | 'missingGlyphSymbol' | 'oldHangul' | 'equationDeclaredFallback';
   kind: 'unregisteredFallback' | 'glyphCoverageFallback';
 }
 
@@ -3069,6 +3070,20 @@ export class CanvasKitLayerRenderer {
         if (hasLayoutPositions) {
           const primaryGlyphIds = font.getGlyphIDs(glyphReplayText, codePoints.length);
           candidateGlyphIds = [primaryGlyphIds];
+          if (primaryGlyphIds.some(glyphId => glyphId === 0)) {
+            // CSS의 선언 순서를 보존한다. 위치/전진은 공통 replayPositions를 사용하며
+            // 기본·기호 대체 face보다 먼저 준비된 명시적 후보의 glyph coverage를 본다.
+            for (const fallback of this.findPreparedFamilyFallbacks(style.fontFamily, style)) {
+              if (fallback.typeface === typeface) continue;
+              const fallbackFont = this.makeFont(fallback.typeface, fontSize);
+              adjustFont(fallbackFont, fallback);
+              fallbackFonts.push(fallbackFont);
+              candidateFonts.push(fallbackFont);
+              candidateFontSources.push('missingGlyphFamily');
+              candidateFontFamilies.push(fallback.fontFamily ?? 'Declared family fallback');
+              candidateGlyphIds.push(fallbackFont.getGlyphIDs(glyphReplayText, codePoints.length));
+            }
+          }
           oldHangulTypeface = hasOldHangul
             ? this.findPreparedTypeface(OLD_HANGUL_FONT_FAMILY)
             : null;
@@ -3547,10 +3562,20 @@ export class CanvasKitLayerRenderer {
           adjustFont(textFont);
           let glyphIds = textFont.getGlyphIDs(displayText, Array.from(displayText).length);
           if (glyphIds.some(glyphId => glyphId === 0)) {
-            for (const fallbackTypeface of [this.defaultTypeface, this.symbolFallbackTypeface]) {
+            const fallbacks: CanvasKitLocalTypeface[] = [
+              ...this.findPreparedFamilyFallbacks(style.fontFamily, style),
+              { typeface: this.defaultTypeface, fontManager: this.defaultFontManager,
+                fontFamily: this.defaultFontFamily },
+              { typeface: this.symbolFallbackTypeface, fontManager: null, fontFamily: null },
+            ];
+            const visited = new Set<Typeface>();
+            for (const fallback of fallbacks) {
+              const fallbackTypeface = fallback.typeface;
               if (!fallbackTypeface || fallbackTypeface === primaryTypeface) continue;
+              if (visited.has(fallbackTypeface)) continue;
+              visited.add(fallbackTypeface);
               fallbackCandidate = this.makeFont(fallbackTypeface, innerFontSize);
-              adjustFont(fallbackCandidate, null);
+              adjustFont(fallbackCandidate, fallback);
               const fallbackGlyphIds = fallbackCandidate.getGlyphIDs(
                 displayText,
                 Array.from(displayText).length,
@@ -4223,6 +4248,18 @@ export class CanvasKitLayerRenderer {
         : null;
     }
     return null;
+  }
+
+  private findPreparedFamilyFallbacks(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface[] {
+    const selected: CanvasKitLocalTypeface[] = [];
+    const visited = new Set<Typeface>();
+    for (const family of parseCssFontFamilyList(fontFamily ?? '').slice(1)) {
+      const prepared = this.findPreparedTypeface(family, style);
+      if (!prepared?.typeface || visited.has(prepared.typeface)) continue;
+      visited.add(prepared.typeface);
+      selected.push(prepared);
+    }
+    return selected;
   }
 
   private recordFontSubstitution(diagnostic: CanvasKitFontSubstitutionDiagnostic): void {

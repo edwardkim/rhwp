@@ -2472,3 +2472,53 @@ Rust 소스/테스트는 이 정리로 바꾸지 않았다. 추적 중인 Markdo
 문서 변경 전 사본과 정리 결과도 같은 ignored 디렉터리에 보존한다. 이 경로는 로컬 진단용이며
 영구 제출 증적 링크가 아니다. 현재 head의 최종 판정은 새 전쪽 측정·필수 게이트와 Markdown
 요약으로 별도 기록한다. 최종 대표 PNG의 코멘트 사용 목록과 문서 링크 검토는 아직 남았다.
+
+## C74. 실제 CanvasKit의 선언 글꼴 후보 소비 보정 (2026-10-17)
+
+실제 `2912735_court_report_form.hwp`를 열어 검증하면서 U+2024 `․`의
+`textRun:glyphMapping`을 재현했다. 설치 굴림에는 이 문자가 없고 스타일의 두 번째 후보
+Haansoft Dotum에는 있다. Native/WASM의 공통 스타일은 이미 같은 family 목록을 제공했지만
+CanvasKit은 첫 family를 확인한 뒤 기본·기호 face로 건너뛰었다.
+
+준비된 명시적 후보를 선언 순서와 weight/slant로 선택해 공통 글리프 위치를 소비하도록
+TextRun/CharOverlap을 보정했다. Host 메타데이터 수집도 같은 목록을 요청한다. primary의
+준비 차단과 미지원 glyph 진단을 유지하며 새 source `missingGlyphFamily`로 실제 선택을 남긴다.
+공개 SFNT 실제 렌더링 검사는 수정 전 exit1→수정 후 exit0, screen/print의5개 관계를 확인했다.
+Host 준비는 유효한 fixture에서 bold만 요청하는 실제1FAIL→전체13PASS다. 최초 Host 진단의
+누락된 `style` 필드는 입력 오류로 구분해 보존하고 최종 RED/PASS에 사용하지 않았다.
+
+실제 법원 서식은 보정 뒤2쪽×두 profile의4개 PNG를 생성하고 준비 검사를 통과했다.
+unsupported0·숨은 Canvas2D overlay 없음이며 1쪽 선택은 `굴림→Haansoft Dotum`이다.
+초기 JS/WASM 및3개 TS 모듈의10개 응답이 실제 frozen package/현재 원문과 일치했다.
+정본 Poppler96DPI 직접 비교는1쪽96.91413%, 빈2쪽100%이며 review/overlay를 직접 판독했다.
+정식192DPI Native/fresh WASM 전2쪽의90.14068/90.15480%와 구분한다.
+이 문서의 미달98% 페이지에 실제 배치 px 핀은 추가하지 않았다.
+
+`59b1f5b204` Rust 전체10514PASS/0FAIL/45skip(실행388.991초, 빌드 포함522.723초),
+Skia lib3861+별도 lib182 PASS/12ignore, PNG2/PDF4, fmt/Native·WASM·all-target Clippy,
+workspace/release build, doc8PASS/3ignore, manifest/unit tiers를 포함한18게이트는 종료했다.
+이번 TS 수정본의 TypeScript와 Studio2032PASS/0FAIL/2skip도 완료했다.
+Gym 변경8개 파일을 포함한 Python 단위 검사는3170실행/0FAIL/skip1,10.086초다.
+E2E 원장은 새 검사와 기존 누락3개를 등록하고 제거된 ruler 실행 파일의 유령 행을 정리해
+156파일/156행/오류0이다. 시험지 검사를 복원하지 않았다.
+
+전쪽 검증은 각48조건1745쪽을 끝냈다. Native 최저76.25384%, WASM70.65059%이며,
+두 경로 각각 sample16 HWP·같은 HWP alias·HWPX의18/35쪽만90% 미만이다.
+UI 변경 감지로 최초62조건에서 종료한 뒤, Native/직접 WASM exporter가 변경된 두 Studio
+모듈을 읽지 않고 frozen binary/package·나머지1157개 guard 입력이 같은 것을 확인했다.
+기존62개를 보존하고 남은WASM34개만 완료했다. 최초 중단 기록·별도 소비 경로 입증을 남겼고
+원래 생산자 manifest를 덮어쓰지 않았다. 별도로 고정 devel 대비0.01%p 이상 하락은
+Native11쪽/WASM91쪽이며, 최대는 거대 표 원본 WASM80쪽의0.72286%p다.
+이 하락과 WMF 미달을 해결하기 전에는 PR을 생성하지 않는다.
+
+실제 HWP3 원본·HWP/HWPX 저장본의3/12쪽도 Native와 실제 Studio Canvas2D에서 대조했다.
+정본96DPI PDF raster를 재사용한6쪽/경로에서 Native 최저99.65333%, Canvas2D99.38154%다.
+초기 PyMuPDF 별도 raster 비교는 진단용으로 보존하고 이 최종 수치에 혼합하지 않았다.
+복수쪽 layer 로그의 파일명이 겹친 자료를 서로 같은 쪽으로 비교한87대1 보조 진단도
+무효이며 소속·기하 동일의 증거로 사용하지 않았다. 실제 PNG·초기 응답·입력/빌드 해시와
+공통 위치 소비의 검사·코드 연결을 사용한다.
+
+[원본·PDF·cmap·실제 RED/PASS·선택 face·최종 이미지 계획](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/font-family-fallback-20261017/README.md)에 기록했다.
+원시 로그·중간 JSON·모든 PNG는 ignored `regression-policy-audit-20261015/rebase-fe5725dc-20261017/`
+아래에 보존한다. 제출 대표 PNG 두 개와 Markdown만 추가했으며 원본·PDF·글꼴과 사용자 초안은
+이 TS 보정으로 변경하지 않았다. 지침 변경·원격 push/PR/merge는 수행하지 않았다.
