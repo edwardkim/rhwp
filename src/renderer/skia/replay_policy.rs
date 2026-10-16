@@ -33,9 +33,9 @@ impl ReplayPolicy {
             RenderProfile::Print | RenderProfile::HighQuality
         ) || self.prefer_vector
         {
-            ImageSampling::linear_mipmap()
+            ImageSampling::linear_mipmap().with_profile(self.profile)
         } else {
-            ImageSampling::linear()
+            ImageSampling::linear().with_profile(self.profile)
         }
     }
 

@@ -4,6 +4,7 @@ import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
 import { rasterLineEndpoints } from './canvaskit/raster-stroke.ts';
+import * as bitmapRasterWasm from '@wasm/rhwp.js';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -1937,7 +1938,7 @@ export class CanvasKitLayerRenderer {
         this.renderPath(canvas, op);
         return;
       case 'image':
-        this.renderImage(canvas, op);
+        this.renderImage(canvas, op, profile);
         return;
       case 'textRun':
         this.renderTextRun(canvas, op);
@@ -2179,7 +2180,7 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private renderImage(canvas: SkCanvas, op: LayerImageOp): void {
+  private renderImage(canvas: SkCanvas, op: LayerImageOp, profile: LayerRenderProfile = this.currentProfile): void {
     if (!op.base64 && op.imageRef === undefined && !op.sourceImageKey) {
       this.recordImageFailure(op, 'dataMissing', null);
       this.unsupportedOps.add('image:dataMissing');
@@ -2191,7 +2192,7 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('image:decodeFailed');
       return;
     }
-    this.withImageTransform(canvas, op.bbox, op.transform, () => this.drawImageOp(canvas, image, op));
+    this.withImageTransform(canvas, op.bbox, op.transform, () => this.drawImageOp(canvas, image, op, undefined, profile));
   }
 
   private renderGlyphRun(canvas: SkCanvas, op: LayerGlyphRunOp): void {
@@ -2607,7 +2608,7 @@ export class CanvasKitLayerRenderer {
     );
   }
 
-  private drawImageOp(canvas: SkCanvas, image: SkImage, op: LayerImageOp, bitmapFiltering?: 'nearest' | 'linear'): void {
+  private drawImageOp(canvas: SkCanvas, image: SkImage, op: LayerImageOp, bitmapFiltering?: 'nearest' | 'linear', profile: LayerRenderProfile = 'screen'): void {
     if (imageCropSelectionIsEmpty(op.crop)) return;
     const imageWithDimensions = image as SkImage & { width?: unknown; height?: unknown };
     const widthMember = imageWithDimensions.width;
@@ -2669,6 +2670,51 @@ export class CanvasKitLayerRenderer {
         dstH * (matrix ? Math.hypot(matrix[1], matrix[4]) : 1),
       );
       const explicitFiltering = bitmapFiltering ?? (binaryEffectWasApplied ? 'nearest' : sourceFiltering);
+      // 실제 crop은 기존 source 선택을 유지한다. Glyph bitmap은 이 메서드의
+      // 기본 Screen 경로를 사용하므로 그림용 축소를 글꼴에 적용하지 않는다.
+      if (!crop && explicitFiltering === undefined && !binaryEffectWasApplied
+        && this.preferRasterDepth === 0 && (profile === 'print' || profile === 'highQuality')) {
+        if (matrix && matrix.length === 9 && matrix[6] === 0 && matrix[7] === 0 && matrix[8] === 1
+          && matrix[1] === 0 && matrix[3] === 0 && matrix[0] > 0 && matrix[4] > 0
+          && dstW * matrix[0] < imageWidth && dstH * matrix[4] < imageHeight) {
+          const query = (bitmapRasterWasm as unknown as {
+            prepareBitmapRaster?: (
+              bytes: Uint8Array, destination: Float64Array, matrix: Float64Array, profile: string,
+            ) => { bytes: Uint8Array; bbox: Float64Array } | undefined;
+          }).prepareBitmapRaster;
+          if (typeof query !== 'function') {
+            this.unsupportedOps.add('image:bitmapRasterBindingUnavailable');
+          } else {
+            let prepared: ReturnType<typeof query>;
+            try {
+              prepared = query(
+                image.encodeToBytes() ?? new Uint8Array(),
+                new Float64Array([dstX, dstY, dstW, dstH]),
+                new Float64Array([matrix[0], matrix[3], matrix[1], matrix[4], matrix[2], matrix[5]]),
+                profile,
+              );
+            } catch {
+              this.unsupportedOps.add('image:bitmapRasterPreparationFailed');
+            }
+            if (prepared) {
+              const filtered = this.canvasKit.MakeImageFromEncoded(prepared.bytes);
+              if (!filtered) {
+                this.unsupportedOps.add('image:bitmapRasterDecodeFailed');
+              } else {
+                try {
+                  const [x, y, width, height] = prepared.bbox;
+                  this.drawImageRect(canvas, filtered,
+                    this.canvasKit.XYWHRect(0, 0, filtered.width(), filtered.height()),
+                    this.canvasKit.XYWHRect(x, y, width, height), opacity);
+                  return;
+                } finally {
+                  filtered.delete?.();
+                }
+              }
+            }
+          }
+        }
+      }
       const useMipmaps = explicitFiltering === undefined && !binaryEffectWasApplied
         && this.currentProfile !== 'fastPreview' && this.preferRasterDepth === 0
         && (this.renderMode === 'compat' || this.currentProfile === 'print' || this.currentProfile === 'highQuality')

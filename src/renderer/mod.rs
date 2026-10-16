@@ -12,6 +12,8 @@ use crate::model::style::{LineSpacingType, UnderlineType};
 pub(crate) mod arrow;
 pub(crate) mod blank_band;
 pub(crate) mod boxed_digit_geometry;
+#[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
+pub(crate) mod bitmap_raster;
 pub mod canvas;
 pub mod canvas_text_font;
 pub mod canvaskit_policy;

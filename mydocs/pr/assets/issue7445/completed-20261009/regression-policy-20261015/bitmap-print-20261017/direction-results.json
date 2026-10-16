@@ -1,0 +1,250 @@
+[
+  {
+    "backend": "native",
+    "case": "roadmap302",
+    "rows": [
+      {
+        "page": "9",
+        "tolerant_content_match_percent": "98.99580",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.99580",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "152",
+        "tolerant_content_match_percent": "98.54435",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "95.88493",
+        "silhouette_boundary_reconciled_pixels": "1003"
+      },
+      {
+        "page": "153",
+        "tolerant_content_match_percent": "99.57173",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "91.00093",
+        "silhouette_boundary_reconciled_pixels": "1561"
+      },
+      {
+        "page": "154",
+        "tolerant_content_match_percent": "99.42086",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.42086",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "295",
+        "tolerant_content_match_percent": "99.13653",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.13653",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "296",
+        "tolerant_content_match_percent": "100.00000",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "100.00000",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counts": {
+      "rhwp": 302,
+      "pdf": 302
+    },
+    "scope": "selected production candidate direction only; not whole or formal regression acceptance"
+  },
+  {
+    "backend": "native",
+    "case": "biotoxin205",
+    "rows": [
+      {
+        "page": "55",
+        "tolerant_content_match_percent": "99.98793",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.98793",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "63",
+        "tolerant_content_match_percent": "99.95764",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.95764",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "137",
+        "tolerant_content_match_percent": "97.12915",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.12915",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "143",
+        "tolerant_content_match_percent": "99.97632",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.97632",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "146",
+        "tolerant_content_match_percent": "100.00000",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "100.00000",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counts": {
+      "rhwp": 205,
+      "pdf": 205
+    },
+    "scope": "selected production candidate direction only; not whole or formal regression acceptance"
+  },
+  {
+    "backend": "native",
+    "case": "none-image-fill",
+    "rows": [
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "99.95831",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.95831",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "9",
+        "tolerant_content_match_percent": "99.90692",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.90692",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counts": {
+      "rhwp": 14,
+      "pdf": 14
+    },
+    "scope": "selected production candidate direction only; not whole or formal regression acceptance"
+  },
+  {
+    "backend": "wasm",
+    "case": "roadmap302",
+    "rows": [
+      {
+        "page": "9",
+        "tolerant_content_match_percent": "98.99329",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.99329",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "152",
+        "tolerant_content_match_percent": "98.54423",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "95.88460",
+        "silhouette_boundary_reconciled_pixels": "1003"
+      },
+      {
+        "page": "153",
+        "tolerant_content_match_percent": "99.57173",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "91.00093",
+        "silhouette_boundary_reconciled_pixels": "1561"
+      },
+      {
+        "page": "154",
+        "tolerant_content_match_percent": "99.42386",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.42386",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "295",
+        "tolerant_content_match_percent": "99.13485",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.13485",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "296",
+        "tolerant_content_match_percent": "100.00000",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "100.00000",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counts": {
+      "rhwp": 302,
+      "pdf": 302
+    },
+    "scope": "selected production candidate direction only; not whole or formal regression acceptance"
+  },
+  {
+    "backend": "wasm",
+    "case": "biotoxin205",
+    "rows": [
+      {
+        "page": "55",
+        "tolerant_content_match_percent": "99.99232",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.99232",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "63",
+        "tolerant_content_match_percent": "99.95854",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.95854",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "137",
+        "tolerant_content_match_percent": "97.13157",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.13157",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "143",
+        "tolerant_content_match_percent": "99.97500",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.97500",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "146",
+        "tolerant_content_match_percent": "100.00000",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "100.00000",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counts": {
+      "rhwp": 205,
+      "pdf": 205
+    },
+    "scope": "selected production candidate direction only; not whole or formal regression acceptance"
+  },
+  {
+    "backend": "wasm",
+    "case": "none-image-fill",
+    "rows": [
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "99.95816",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.95816",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "9",
+        "tolerant_content_match_percent": "99.90691",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.90691",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counts": {
+      "rhwp": 14,
+      "pdf": 14
+    },
+    "scope": "selected production candidate direction only; not whole or formal regression acceptance"
+  }
+]

@@ -83,3 +83,114 @@ fn chart_png_renders_text_labels() {
         "카테고리 라벨 밴드 잉크 0 (title={title}) — 조각 래스터 텍스트 소실(#2293)"
     );
 }
+
+// #7445: 원본 PNG 산점도의 전302쪽 수용 후 추가한 Print 축소 경계.
+// 독립 PDF·Native/fresh WASM raw 최저91.00093%와 review/overlay는
+// mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/bitmap-print-20261017/ 참조.
+#[test]
+fn reduced_scatter_plot_preserves_every_interior_grid_band() {
+    use rhwp::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp, RenderProfile};
+    use rhwp::renderer::{
+        layer_renderer::{LayerRasterRenderer, RasterRenderOptions},
+        skia::SkiaLayerRenderer,
+    };
+
+    fn image_op(node: &LayerNode) -> Option<&PaintOp> {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => children.iter().find_map(image_op),
+            LayerNodeKind::ClipRect { child, .. } => image_op(child),
+            LayerNodeKind::Leaf { ops } => {
+                ops.iter().find(|op| matches!(op, PaintOp::Image { .. }))
+            }
+        }
+    }
+
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue5941/1490000-201600081_roadmap_research.hwp");
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    core.set_hangul2024_compat(true);
+    assert_eq!(core.page_count(), 302);
+    let layer = core
+        .build_page_layer_tree_with_profile(152, RenderProfile::Print)
+        .unwrap();
+    let op = image_op(&layer.root)
+        .expect("독립 Print153쪽 산점도")
+        .clone();
+    let PaintOp::Image {
+        bbox,
+        image,
+        resolved,
+    } = &op
+    else {
+        unreachable!()
+    };
+    let bytes = resolved
+        .as_deref()
+        .map(|p| p.data.as_slice())
+        .or(image.data.as_deref())
+        .expect("원본 그림 픽셀");
+    let source = image::load_from_memory(bytes).unwrap().to_rgb8();
+    let (width, height) = source.dimensions();
+    let (first, end) = (width / 4, width * 3 / 4);
+    let gray = |p: &image::Rgb<u8>| {
+        let [r, g, b] = p.0;
+        r.abs_diff(g) <= 2 && g.abs_diff(b) <= 2 && r < 240
+    };
+    // 원본의 중앙 절반을 가로지르는 회색 줄만 추출한다. 축 바깥 그림
+    // 테두리·점/문자·색 선은 제외하며 y 좌표 목록을 기대값으로 복사하지 않는다.
+    let rows: Vec<_> = (1..height - 1)
+        .filter(|&y| {
+            (first..end)
+                .filter(|&x| gray(source.get_pixel(x, y)))
+                .count()
+                * 10
+                >= (end - first) as usize * 9
+        })
+        .collect();
+    assert!(rows.len() >= 5, "원본 산점도의 수평 격자선");
+    let scene = PageLayerTree::with_profile(
+        layer.page_width,
+        layer.page_height,
+        LayerNode::leaf(*bbox, None, vec![op.clone()]),
+        RenderProfile::Print,
+    );
+    let png = SkiaLayerRenderer::new()
+        .render_png_with_options(
+            &scene,
+            RasterRenderOptions {
+                transparent: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    let output = image::load_from_memory(&png).unwrap().to_rgb8();
+    let sx = bbox.width / f64::from(width);
+    let sy = bbox.height / f64::from(height);
+    // 첫/끝 줄은 축 테두리다. 내부의 반복 격자를 모두 검사한다.
+    for &y in rows.iter().skip(1).take(rows.len() - 2) {
+        let center = (bbox.y + (f64::from(y) + 0.5) * sy - 0.5).round() as u32;
+        let left = (bbox.x + f64::from(first) * sx).round() as u32;
+        let right = (bbox.x + f64::from(end) * sx).round() as u32;
+        let mut preserved = 0;
+        let mut sampled = 0;
+        for x in left..right {
+            let source_x = ((f64::from(x) + 0.5 - bbox.x) / sx).floor() as u32;
+            let original = source.get_pixel(source_x.min(width - 1), y);
+            if !gray(original) {
+                continue;
+            }
+            // 독립 Print의 같은 내부 격자선은 중앙 구간에서 모두
+            // RGB232 이하의 연결된 선을 갖는다. raw 실루엣과 같은 명암
+            // 경계에서 원본 행의90% 이상 열이 이어져 보여야 한다.
+            // 위치는 원본 행과 그림 영역의 비율에서만 유도한다.
+            let visible = (center.saturating_sub(2)..=center + 2)
+                .any(|row| output.get_pixel(x, row).0.into_iter().all(|v| v <= 232));
+            sampled += 1;
+            preserved += usize::from(visible);
+        }
+        assert!(
+            sampled > 0 && preserved * 10 >= sampled * 9,
+            "원본 grid 행{y}: 신호를 보존한 열{preserved}/{sampled}; 원본 격자선의 연속 표시 유지"
+        );
+    }
+}

@@ -42,6 +42,8 @@ use crate::renderer::style_resolver::{
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::DEFAULT_DPI;
 
+#[cfg(target_arch = "wasm32")]
+mod bitmap_raster;
 mod canvas_metrics;
 mod hyperlink;
 mod layout_generation;

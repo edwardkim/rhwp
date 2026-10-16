@@ -2818,6 +2818,31 @@ impl Renderer for WebCanvasRenderer {
 
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
         let _sampling = self.image_sampling_scope(data, None, w, h);
+        let prepared = self.ctx.get_transform().ok().and_then(|matrix| {
+            crate::renderer::bitmap_raster::prepare_bitmap(
+                data,
+                BoundingBox::new(x, y, w, h),
+                [
+                    matrix.a(),
+                    matrix.b(),
+                    matrix.c(),
+                    matrix.d(),
+                    matrix.e(),
+                    matrix.f(),
+                ],
+                self.render_profile,
+            )
+        });
+        let (data, x, y, w, h) = match prepared.as_ref() {
+            Some(prepared) => (
+                prepared.bytes.as_slice(),
+                prepared.bbox.x,
+                prepared.bbox.y,
+                prepared.bbox.width,
+                prepared.bbox.height,
+            ),
+            None => (data, x, y, w, h),
+        };
         let key = hash_bytes(data);
 
         let decoded = DECODED_CANVAS_CACHE.with(|cache| {
@@ -2997,6 +3022,16 @@ impl WebCanvasRenderer {
         dw: f64,
         dh: f64,
     ) {
+        // None/Zoom도 잘리지 않은 전체 source를 선택할 수 있다. 이 경우
+        // 같은 draw_image 경로를 사용해 Native와 한 번만 축소한 결과를 공유한다.
+        if let Some((width, height)) =
+            crate::renderer::image_resolver::render_image_dimensions(data)
+        {
+            if sx == 0.0 && sy == 0.0 && sw == width && sh == height {
+                self.draw_image(data, dx, dy, dw, dh);
+                return;
+            }
+        }
         let _sampling = self.image_sampling_scope(data, Some((sw, sh)), dw, dh);
         let key = hash_bytes(data);
 

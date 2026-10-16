@@ -1,0 +1,19 @@
+{
+  "formal": {
+    "case": "issue_2293_chart_png_text",
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "filtered": 232,
+    "seconds": 0.646,
+    "buildSeconds": 109,
+    "logSha256": "2acadfba37f1b729ed48d6f91af6d025632d67fb3bf71501898e9633a66feb3b"
+  },
+  "unitTier": {
+    "passed": true,
+    "sourceTests": 4103,
+    "modules": 296,
+    "logSha256": "f25e4b7e2f66f796f522ee1a05b3649505b64c9ed65b1899229d40b22cbe59df"
+  },
+  "scope": "focused validation; full nextest/lints/Skia all not yet complete"
+}
