@@ -33,6 +33,7 @@ pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
 pub(crate) mod hft_ascii_evidence;
+pub(crate) mod hft_outline;
 pub mod html;
 pub mod hyperlinks;
 pub(crate) mod image_header;
@@ -280,6 +281,14 @@ pub struct TextStyle {
     pub font_family: String,
     /// 글꼴 크기 (px)
     pub font_size: f64,
+    /// 저장 글줄 없이 생성한 텍스트의 원본 글자 폭을 paint에도 적용한다.
+    /// HFT 자동 쪽번호는 HFT 메트릭으로 정렬하므로 대체 TTF의 자연 폭을
+    /// 그대로 그리면 숫자·장식의 점유 폭이 달라진다. 본문은 기존 계약을 쓴다.
+    #[serde(skip_serializing)]
+    pub fixed_glyph_advances: bool,
+    /// 표시용 대체 face와 구분한 원본 언어 슬롯의 HFT 선언이다.
+    #[serde(skip_serializing)]
+    pub source_font_is_hft: bool,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -586,6 +595,8 @@ impl Default for TextStyle {
             supplemental_metrics: None,
             font_family: String::new(),
             font_size: 0.0,
+            fixed_glyph_advances: false,
+            source_font_is_hft: false,
             color: 0,
             bold: false,
             italic: false,
@@ -2719,6 +2730,25 @@ fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
         ],
         _ => &[],
     }
+}
+
+/// Native paint와 진단이 같은 요청 사다리를 사용한다.
+/// 저장 줄이 없는 HFT 번호는 원 face의 설치 별칭을 함께 찾는다.
+pub(crate) fn native_font_family_for_style(style: &TextStyle) -> std::borrow::Cow<'_, str> {
+    if !style.fixed_glyph_advances {
+        return std::borrow::Cow::Borrowed(&style.font_family);
+    }
+    std::borrow::Cow::Owned(
+        style
+            .font_family
+            .split(',')
+            .flat_map(|family| {
+                let family = family.trim();
+                std::iter::once(family).chain(installed_render_font_aliases(family).iter().copied())
+            })
+            .collect::<Vec<_>>()
+            .join(","),
+    )
 }
 
 fn internal_font_family_members(font_family: &str) -> Vec<&str> {
