@@ -280,12 +280,13 @@ pub(super) fn fit_measured_for_host(
                 // 하는 일과 같다 (float-stack-defer 2쪽 표 3쪽 분열).
                 // 저장 표 선언 높이와 셀 저장 줄 사다리라는 같은 증거는 원본 HWPX 에도
                 // 있다 — 한/글은 형식으로 조판을 가르지 않는다(편람 hwp·hwpx 정본 동일).
-                let native_empty_rowbreak = (profile().hwp5_stored_pagination_layout()
+                // 셀 나눔도 원본 총높이·끝 행의 빈 여유는 같은 계약으로 소비한다.
+                let stored_declared_tail = (profile().hwp5_stored_pagination_layout()
                     || profile().hwpx_stored_layout())
                     && !table.common.treat_as_char
                     && matches!(
                         table.page_break,
-                        crate::model::table::TablePageBreak::RowBreak
+                        crate::model::table::TablePageBreak::RowBreak | crate::model::table::TablePageBreak::CellBreak
                     )
                     && table.row_count > 1;
                 native_empty_rowbreak_nested_tail
@@ -294,7 +295,7 @@ pub(super) fn fit_measured_for_host(
                     })
                     .flatten()
                     .or_else(|| {
-                        native_empty_rowbreak
+                        stored_declared_tail
                             .then(|| {
                                 fit_measured_table_declared_tail_to_declared_height(
                                     measured, table, dpi,

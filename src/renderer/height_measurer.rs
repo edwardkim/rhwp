@@ -1495,7 +1495,36 @@ pub fn fit_measured_table_declared_tail_to_declared_height(
     table: &Table,
     dpi: f64,
 ) -> Option<MeasuredTable> {
-    let row_count = measured.row_heights.len();
+    let rows = fit_stored_declared_tail_row_heights(
+        &measured.row_heights,
+        measured.cell_spacing,
+        table,
+        dpi,
+    )?;
+    let spacing_total = measured.cell_spacing * rows.len().saturating_sub(1) as f64;
+    let previous_body_height = measured.row_heights.iter().sum::<f64>() + spacing_total;
+    let caption_and_spacing = (measured.total_height - previous_body_height).max(0.0);
+    let mut fitted = measured.clone();
+    fitted.row_heights = rows;
+    fitted.cumulative_heights = vec![0.0; fitted.row_heights.len() + 1];
+    for (index, height) in fitted.row_heights.iter().enumerate() {
+        let spacing = if index > 0 { fitted.cell_spacing } else { 0.0 };
+        fitted.cumulative_heights[index + 1] = fitted.cumulative_heights[index] + height + spacing;
+    }
+    fitted.total_height =
+        fitted.row_heights.iter().sum::<f64>() + spacing_total + caption_and_spacing;
+    Some(fitted)
+}
+
+/// 측정 캐시 유무와 관계없이 같은 실제 행 높이·원본 줄 하한으로 끝 행을 확정한다.
+/// 호출자는 수정하지 않은 저장 표의 조판 계약을 확인한다.
+pub fn fit_stored_declared_tail_row_heights(
+    row_heights: &[f64],
+    cell_spacing: f64,
+    table: &Table,
+    dpi: f64,
+) -> Option<Vec<f64>> {
+    let row_count = row_heights.len();
     if row_count < 2 || table.row_count as usize != row_count || table.common.height == 0 {
         return None;
     }
@@ -1530,7 +1559,7 @@ pub fn fit_measured_table_declared_tail_to_declared_height(
         })
         .map(|cell| hwpunit_to_px(cell.height as i32, dpi))
         .fold(0.0f64, f64::max);
-    if declared_tail <= 0.0 || (measured.row_heights[last_row] - declared_tail).abs() > 0.5 {
+    if declared_tail <= 0.0 || (row_heights[last_row] - declared_tail).abs() > 0.5 {
         return None;
     }
 
@@ -1572,10 +1601,10 @@ pub fn fit_measured_table_declared_tail_to_declared_height(
         return None;
     }
 
-    let spacing_total = measured.cell_spacing * row_count.saturating_sub(1) as f64;
+    let spacing_total = cell_spacing * row_count.saturating_sub(1) as f64;
     let target_body_height = hwpunit_to_px(table.common.height as i32, dpi);
     let target_row_sum = (target_body_height - spacing_total).max(0.0);
-    let current_row_sum = measured.row_heights.iter().sum::<f64>();
+    let current_row_sum = row_heights.iter().sum::<f64>();
     let reduction = current_row_sum - target_row_sum;
     // 반올림 급(≤0.5px)은 건드리지 않는다. 회수량의 상한은 비율이 아니라 마지막 행의 저장
     // 내용 하한(아래 검사)과 되감기 없는 사다리(위 검사)다 — 한/글은 표 선언 높이를 지키며
@@ -1587,21 +1616,13 @@ pub fn fit_measured_table_declared_tail_to_declared_height(
     if reduction <= 0.5 {
         return None;
     }
-    let target_tail = measured.row_heights[last_row] - reduction;
+    let target_tail = row_heights[last_row] - reduction;
     if target_tail < content_floor - 0.5 {
         return None;
     }
 
-    let mut fitted = measured.clone();
-    fitted.row_heights[last_row] = target_tail;
-    fitted.cumulative_heights = vec![0.0; row_count + 1];
-    for (idx, row_height) in fitted.row_heights.iter().enumerate() {
-        let spacing = if idx > 0 { fitted.cell_spacing } else { 0.0 };
-        fitted.cumulative_heights[idx + 1] = fitted.cumulative_heights[idx] + row_height + spacing;
-    }
-    let previous_body_height = current_row_sum + spacing_total;
-    let caption_and_spacing = (measured.total_height - previous_body_height).max(0.0);
-    fitted.total_height = target_row_sum + spacing_total + caption_and_spacing;
+    let mut fitted = row_heights.to_vec();
+    fitted[last_row] = target_tail;
     Some(fitted)
 }
 

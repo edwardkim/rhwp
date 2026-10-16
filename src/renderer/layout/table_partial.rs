@@ -4652,7 +4652,7 @@ impl LayoutEngine {
                                         );
                                         rendered_bottom - nested_y
                                     } else {
-                                        self.layout_table(
+                                        let rendered_height = self.layout_table(
                                             tree,
                                             &mut cell_node,
                                             nested_table,
@@ -4753,7 +4753,32 @@ impl LayoutEngine {
                                                 nested_table,
                                                 styles,
                                             ),
-                                        )
+                                        );
+                                        if owns_nested_start {
+                                            if let Some(frame) = stored_float_frame.filter(|frame| {
+                                                matches!(frame.flow, crate::renderer::float_placement::ParagraphFloatFlow::Exclusion)
+                                                    && split_ref.is_none_or(|split| {
+                                                        split.start_row == 0
+                                                            && split.end_row == usize::from(nested_table.row_count)
+                                                            && split.offset_within_start == 0.0
+                                                            && split.content_offset == 0.0
+                                                            && split.recursive_cut.is_none()
+                                                            && frame.table_top + split.visible_height
+                                                                + hwpunit_to_px(i32::from(nested_table.outer_margin_bottom), self.dpi)
+                                                                >= frame.occupied_bottom
+                                                    })
+                                            }) {
+                                                // 온전한 source child를 소유한 Exclusion 개체의
+                                                // 물리 상자는 행의 글줄 viewport와 별개다.
+                                                // 측정도 쓰는 같은 프레임의 끝까지 clip을 열고,
+                                                // 부분 scalar/row 컷의 미소유 꼬리는 열지 않는다.
+                                                if matches!(&cell_node.node_type, RenderNodeType::TableCell(cell) if cell.clip) {
+                                                    cell_node.bbox.height = cell_node.bbox.height
+                                                        .max(frame.occupied_bottom - cell_node.bbox.y);
+                                                }
+                                            }
+                                        }
+                                        rendered_height
                                     };
                                     let visible_table_h = split_info
                                         .as_ref()
