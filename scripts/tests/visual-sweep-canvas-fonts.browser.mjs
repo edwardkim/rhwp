@@ -41,6 +41,12 @@ test('공급한 실제 font program을 Canvas PNG가 대체 글꼴 없이 사용
     export const version=()=> 'canvas-font-contract-adapter';
     export class HwpDocument {
       pageCount(){return 1;} setHangul2024Compat(){} free(){}
+      getDocumentFontSelectionPlan(){return '{"environmentId":null,"requests":[]}';}
+      buildFontEnvironmentFromAvailablePrograms(programs){
+        if(programs!=='[]')throw Error('Canvas adapter has no document substitutions');
+        return 'null';
+      }
+      setFontEnvironment(){throw Error('Canvas adapter must retain its original environment');}
       getPageLayerTreeWithProfile(){return '{"fontResources":{"faces":[],"blobs":[]}}';}
       getPageRenderTree(){return '{"type":"Page","bbox":{"x":0,"y":0,"w":500,"h":70}}';}
       renderPageToCanvasFilteredWithProfile(_page,canvas){
@@ -73,7 +79,7 @@ test('공급한 실제 font program을 Canvas PNG가 대체 글꼴 없이 사용
     const face = new FontFace('IndependentFontReference', bytes);
     await face.load();document.fonts.add(face);
     const canvas = document.createElement('canvas');canvas.width=500;canvas.height=70;
-    const c=canvas.getContext('2d');c.fillStyle='white';c.fillRect(0,0,500,70);
+    const c=canvas.getContext('2d',{willReadFrequently:true});c.fillStyle='white';c.fillRect(0,0,500,70);
     c.fillStyle='black';c.font='20px IndependentFontReference';c.fillText(text,10,35);
     return canvas.toDataURL('image/png').split(',')[1];
   }, {base64: font.toString('base64'), text: sampleText});

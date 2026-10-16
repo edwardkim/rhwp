@@ -1738,3 +1738,52 @@ c54-wasm-order-probe다. 브라우저 초기화·순서 대조이며 전체 시�
 재사용이 불가능하다. 이 단계 변경을 로컬 커밋하고 사용자 초안/원본을 보존해 리베이스한다.
 새 HFT 원본 공급 매뉴얼을 읽었으며 기존 대체 TTF와 원본 HFT 조건을 섞지 않고 새 base/head
 양쪽 전쪽을 다시 산출해야 한다. 리베이스 전 결과는 새 head 통과로 인용하지 않는다.
+
+
+### C49 — 최신375aff29 리베이스와 HFT 공급 경계 재검증(C55)
+
+PR 준비 전 원격을 fetch해 f525→375aff29498166260a22796d54e67f508c84aada 변경을 확인했다.
+214개 커밋을 리베이스했고 range-diff는203개 동일/11개 변경이다. 새 upstream의 HFT source
+표식·CFF 원본 윤곽 replay·glyph fit_positions·물리 frame 및 optional header 계약을 유지하면서
+이 브랜치의 저장 분할·물리 빈 밴드·공통 글꼴 환경·실제 family 검증을 결합했다. 충돌한
+일반/첫 frame의 여백을 이중 계상하지 않으며 upstream의 동일 end_cut 계약을 유지했다.
+결합된 Native fit 블록은 rustfmt만 후속 적용했다. backup ref
+`backup/7445-before-rebase-375aff29-20261016`와 보존 stash를 유지했다. 사용자 초안과
+미추적 입력24개의 SHA가 복원 후 모두 같다. 후속 fetch에서도375aff29가 그대로였고
+현재 HEAD의 조상임을 확인했다. 원본/PDF·다른 작업장·공유 target은 변경/삭제하지 않았다.
+
+새 기준 집중9묶음45PASS,PNG server6PASS,fmt/manifest 준비 및 Native/fresh WASM 빌드가
+통과했다. Mac WASM은 locked wrapper의 web/pkg/no-opt 로컬 대체 빌드다. 루트 pkg·Studio
+public·동결 package의 JS/WASM SHA가 같다. 새 registerHftOutlineFont JS 바인딩도 동기화했다.
+이것은 새 전체 nextest/Skia/lint/Studio/actual36 완료가 아니다.
+
+upstream의 실제 브라우저 계약은 최초2PASS2FAIL이었다. 합성 adapter가 새 글꼴 선택 API를
+구현하지 않은 것과,300×700 원본 직사각형의 AA fringe까지 본체로 세는 오류였다. adapter에
+대체 후보가 없는 명시 계약을 추가하고,독립 PNG의 최초 readback context도 같은 조건으로
+설정했다. 직사각형은128 이상 alpha의 본체를 측정한다. 원본 1000UPM/900advance에 따른
+40px에서36px advance·12×28px 본체 기대값은 그대로다. 실제 Chrome에서4PASS0FAIL을
+확인했다. 실물 silhouette의 threshold·2px·90/98 기준을 바꾸지 않았다.
+
+별도 전체 한글 표본의 원본 HFT 공급을 ubuntu-ted2에서 읽기 전용으로 가져왔다. specimen PDF
+SHA86be09a49b9744eb3c1bf38d9f6ae7d86dfda8744f4e5e8cc3e12ed5cc69bc70,
+CFF font SHA7257416630313e6989c7690847f2c372a3d5106a2c215a6e16ee03573fe995dd다.
+7쪽의 U+AC00–D7A3 전체11172자 순서·glyph stream hash·원본 matrix를 확인하고,CFF 윤곽의
+모든 명령·전진폭·rounded xMin bearing을 전수 대조했다. 불일치0이다. 첫 검사에서 원본 임시
+charstring의 private dict를 연결하지 않아 중단된 결과는 사용하지 않았고 연결 후 완료했다.
+시스템에 설치하거나 글꼴/표본 PDF를 Git에 추가하지 않았다. 대상 정답 PDF에서 글자를
+추출해 공급 글꼴을 만든 것이 아니다.
+
+현재 후보의 독립 HFT/기존 TTF 공급 조건을 분리해 원본115쪽·과거/현재 분할197쪽·법원2쪽의
+선택15쪽씩 Native/fresh WASM 총60쪽을 산출했다. 이 선택 쪽은 모두90% 이상이며 전체 쪽수는
+각115/197/197/2로 맞는다. HFT 공급 시 Native·WASM의 원본47쪽96.13764/96.13761,
+83쪽97.36097/97.36097,115쪽99.46144/99.46143%다. 같은 WASM worker에서 공급 OTF의
+실제 registeredFamily/source hash와 willReadFrequently=true를 확인했다. 원본47/83쪽의
+상단 확대를 직접 판독했으나 수식 전체·미세 간격 완료로 확대하지 않는다. 법원 각주 간격과
+줄 소속 차이도 남는다. 선택 쪽/공급 보완만으로 전쪽 수용이나98% px 핀 추가를 판정하지 않는다.
+
+정본은 ignored `regression-policy-audit-20261015/rebase-375aff29-20261016`의 before/after,
+range-diff,candidate-c55 producer/steps 및 focus 결과다. raw TSV/JSON/log와 원본 font는
+커밋하지 않았다. 새 fixed375aff29의 Native 및 fresh WASM도 순차 빌드·동결 중이다.
+이전 f525의 전체 회귀/TSV는 이력이고 새 head 통과로 인용하지 않는다. 같은 공급·안정된
+readback 조건의 base/current 전쪽 비교,0.01%p 하락·쪽수/내용·확대 판독과 나머지 제출 gate는
+계속 검증한다. 지침을 수정하지 않았으며 PR 생성/merge 완료 상태가 아니다.
