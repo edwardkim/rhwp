@@ -13953,6 +13953,8 @@ impl LayoutEngine {
             && self.stored_cell_paragraph_has_zero_before_origin(cell, 0, styles);
         let declared_opening_reset = self.declared_nested_opening_frame_reset(table);
         let joint_zero_origin_boundary = self.stored_joint_zero_origin_boundary(cell, table);
+        let cell_uses_overlapping_line_boxes =
+            crate::renderer::cell_uses_overlapping_line_boxes(&cell.paragraphs);
         let is_stored_frame_rewind = |prev: &crate::model::paragraph::LineSeg,
                                       cur: &crate::model::paragraph::LineSeg,
                                       current_para: usize,
@@ -14022,6 +14024,12 @@ impl LayoutEngine {
             }
             let prev_end = prev.vertical_pos.saturating_add(prev.line_height);
             if cur.vertical_pos < 0 || prev_end <= 0 || cur.vertical_pos >= prev_end {
+                return false;
+            }
+            // [#5585] 줄 상자가 겹치는 사다리에서는 앞 줄 바닥보다 앞선 vpos 가 평범한
+            // 한 걸음이다. 되감김은 앞 줄의 시작보다 뒤로 갈 때뿐이며, `line_reset_before`
+            // 와 같은 계약을 저장 프레임 경계에도 적용한다(#7840: 148738070 p64→p65).
+            if cell_uses_overlapping_line_boxes && cur.vertical_pos >= prev.vertical_pos {
                 return false;
             }
             if before_origin_frame_break {
@@ -14108,8 +14116,6 @@ impl LayoutEngine {
         // `issue_2097` · row-cut 단위시험) — 되감김이 우연히 `[앞 줄 시작, 앞 줄 바닥)`
         // 구간에 떨어지는 문서가 있다. 그래서 **겹침 걸음이 계통적인 셀**에서만 좁힌다.
         // 셋 이상이면 "겹치는 줄 상자" 가 이 사다리의 서명이다. 한두 건은 우연이다.
-        let cell_uses_overlapping_line_boxes =
-            crate::renderer::cell_uses_overlapping_line_boxes(&cell.paragraphs);
         let preserve_linear_single_cell_vpos = is_block_rowbreak_table
             && table.row_count == 1
             && table.col_count == 1
