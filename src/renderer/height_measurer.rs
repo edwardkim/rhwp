@@ -5650,18 +5650,52 @@ pub(crate) fn solve_rowspan_row_heights(
         }
         changed
     };
-    let max_iter = row_heights.len() + constraints.len();
-    for _ in 0..max_iter {
-        let mut progress = add_declared_overflow(row_heights, true);
+    // 미지 행은 그 행을 걸친 제약 가운데 **가장 먼저 끝나는** 제약이 정한다. 긴 걸침이 첫 행을
+    // 먼저 채우면 짧은 걸침의 선언이 깨지고 긴 칸의 남는 높이가 첫 행에 몰린다 —
+    // `21761835_jeonjik_exemption_table.hwpx` 표: 행 11~17 칸(671.4px)이 미지 행 11 을 136.0px 로
+    // 채워, 행 10~11 칸(105.9px)의 블록이 139.7px 가 됐다. 한/글 2020 PDF 는 행 10~11 을 106px 로
+    // 그리고 남는 높이를 걸침의 마지막 행 17 에 준다(93.4 → 138px).
+    let ends_before_unresolved = |row_heights: &[f64], row: usize, end: usize| {
+        constraints.iter().any(|&(r, span, _)| {
+            r <= row
+                && row < r + span
+                && r + span < end
+                && (r..r + span).any(|i| row_heights[i] == 0.0)
+        })
+    };
+    // 이 우선은 진전이 있을 때만 건다. 엇갈린 2행 걸침이 사슬처럼 겹친 표는 알려진 끝 행에서만
+    // 풀린다(편람 376쪽 안쪽 표: 행 5~6·6~7·7~8·8~9 칸, 행 9 만 1행 칸). 우선 규칙만으로 회차가
+    // 멈추면 종전처럼 미지 행 하나인 제약 하나를 풀고 다시 우선 규칙으로 돌아간다.
+    let solve_single = |row_heights: &mut [f64], prefer_earliest_end: bool, only_first: bool| {
+        let mut progress = false;
         for &(r, span, total_h) in constraints {
             let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
             let unknown_rows: Vec<usize> =
                 (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
-            if unknown_rows.len() == 1 {
+            if unknown_rows.len() == 1
+                && !(prefer_earliest_end
+                    && ends_before_unresolved(row_heights, unknown_rows[0], r + span))
+            {
                 let remaining = (total_h - known_sum).max(0.0);
+                // 0 은 미지 표지와 같아 상태가 바뀌지 않는다. 한 개만 푸는 회차는 다음 제약으로 간다.
+                if only_first && remaining <= 0.0 {
+                    continue;
+                }
                 row_heights[unknown_rows[0]] = remaining;
                 progress = true;
+                if only_first {
+                    break;
+                }
             }
+        }
+        progress
+    };
+    let max_iter = row_heights.len() + constraints.len();
+    for _ in 0..max_iter {
+        let mut progress = add_declared_overflow(row_heights, true);
+        progress |= solve_single(row_heights, true, false);
+        if !progress {
+            progress = solve_single(row_heights, false, true);
         }
         if !progress {
             break;
