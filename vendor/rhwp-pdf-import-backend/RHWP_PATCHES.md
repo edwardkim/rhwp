@@ -22,6 +22,15 @@ rhwp 내부 보안 패치 dependency이며, 원 저작권·라이선스·NOTICE�
 - MIT 선택지로 사용하며 `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`, `TRADEMARKS.md`를 보존한다.
 - 외부 배포 승인이 없으므로 `publish = false`다. 별도 게시·배포는 수행하지 않았다.
 
+## 내장 폰트 고지 보완
+
+- 폰트 바이너리 네 개는 upstream 원본 그대로 유지한다. 공개 저장소의
+  `assets/fonts/licenses/font-notices.json`에 SHA-256과 각 폰트의 name table 저작권을 등록한다.
+- `src/fonts/assets/LICENSE-DejaVu`는 두 DejaVu 폰트에 내장된 Bitstream Vera·Arev 고지
+  전문으로 보완한다. Noto Emoji에는 저작권과 OFL 1.1 전문을 `LICENSE-NotoEmoji`로 동봉하고,
+  Droid Sans Fallback에는 기존 패키지 루트의 Apache 2.0 전문을 연결한다.
+- 원본 archive의 파일 해시 목록은 수정하지 않으며, 이 고지 변경은 원본과의 차이로 남긴다.
+
 ## 보안 패치 경계
 
 - `PdfDocument::from_bytes_with_limits`에서 요청별 `ImportBudget`을 생성한다.

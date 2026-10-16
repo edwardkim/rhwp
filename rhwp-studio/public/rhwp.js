@@ -5345,6 +5345,23 @@ export class HwpDocument {
         return ret[0] >>> 0;
     }
     /**
+     * 가져온 PDF의 원본 쪽/출력 구역 대응·경고·임시 문단 정책을 JSON으로 반환한다.
+     * 편집 후 현재 쪽수가 아닌 가져오기 시점의 진단이다. 다른 형식은 `null`이다.
+     * @returns {string}
+     */
+    getPdfImportDiagnostics() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.hwpdocument_getPdfImportDiagnostics(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * 그림 컨트롤의 속성을 조회한다.
      *
      * 반환: JSON `{ width, height, treatAsChar, ... }`
@@ -5767,7 +5784,7 @@ export class HwpDocument {
         return v2;
     }
     /**
-     * 원본 파일 형식을 반환한다 ("hwp", "hwpx", 또는 "hml").
+     * 원본 파일 형식을 반환한다 ("hwp", "hwpx", "hml", 또는 "pdf").
      * @returns {string}
      */
     getSourceFormat() {
@@ -6619,6 +6636,23 @@ export class HwpDocument {
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
+    }
+    /**
+     * PDF 전체 또는 선택 쪽을 공통 IR로 가져온다 (`pdf-import` opt-in).
+     * options.sourcePages는 0-based 증가 배열이며 생략하면 전체 쪽이다.
+     * 동기 실행이므로 브라우저에서 취소/시간 제한이 필요하면 Worker에서 호출한다.
+     * @param {Uint8Array} data
+     * @param {any} options
+     * @returns {HwpDocument}
+     */
+    static importPdf(data, options) {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_importPdf(ptr0, len0, options);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return HwpDocument.__wrap(ret[0]);
     }
     /**
      * [Task #741 후속] 외부 file path 그림 영역 영역 binary data 영역 inject.
@@ -8600,6 +8634,24 @@ export class HwpDocument {
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
+    }
+    /**
+     * 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
+     * @param {string} family
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {boolean}
+     */
+    registerHftOutlineFont(family, bytes, face_index) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerHftOutlineFont(this.__wbg_ptr, ptr0, len0, ptr1, len1, face_index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
     }
     /**
      * [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목을 절단한다.

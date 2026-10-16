@@ -3,18 +3,22 @@ Bundled fallback fonts (enabled only with the `cjk-form-fonts` cargo feature)
 
 These fonts are embedded to bake non-Latin / emoji form-field values when an
 interactive form is flattened. They are redistributed under their original
-open-source licenses.
+open-source licenses. Font binaries and their embedded notices are unchanged.
 
 DroidSansFallbackFull.ttf
-  Droid Sans Fallback — © Google Inc.
+  Digitized data copyright Google Corporation © 2006
   Licensed under the Apache License, Version 2.0.
+  Full license: ../../../LICENSE-APACHE (the backend package root).
   https://www.apache.org/licenses/LICENSE-2.0
   Source: Android Open Source Project (frameworks/base/data/fonts).
 
 NotoEmoji-Regular.ttf
-  Noto Emoji (monochrome) — © Google Inc. and contributors.
+  Copyright 2013 Google Inc. All Rights Reserved.
   Licensed under the SIL Open Font License, Version 1.1.
+  Full copyright and license: LICENSE-NotoEmoji in this directory.
   https://scripts.sil.org/OFL
   Source: https://github.com/googlefonts/noto-emoji
 
-The DejaVu fonts in this directory are covered separately by LICENSE-DejaVu.
+The DejaVu fonts in this directory are covered separately by LICENSE-DejaVu,
+which preserves the complete Bitstream Vera and Arev notices from their name
+metadata. The DejaVu modifications are in the public domain.

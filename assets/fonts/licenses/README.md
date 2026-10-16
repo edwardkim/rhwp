@@ -11,7 +11,7 @@
 ## 라이선스
 
 - Latin Modern Math는 GUST Font License와 그 문서가 참조하는 LPPL 전문을 동봉한다.
-- 나머지는 SIL OFL 1.1이다. 각 권리자의 고지·Reserved Font Name 조건과 파생본 OFL 유지
+- 나머지 canonical 폰트는 SIL OFL 1.1이다. 각 권리자의 고지·Reserved Font Name 조건과 파생본 OFL 유지
   조건을 따른다. 폰트 자체를 단독 판매하지 않는다.
 - 카페24와 해피니스 산스의 PDF는 공식 ZIP에 동봉된 원문 그대로다. 카페24 PDF는 OFL 1.1을
   명시하며, 영어 라이선스 본문은 `SIL-OFL-1.1.txt`에도 보존한다.
@@ -45,9 +45,15 @@
 - Pretendard 9개, Cafe24 2개, Happiness 4개, Spoqa Han Sans 1개 WOFF2는 공식 배포 파일과
   바이트가 일치한다. 고운 글꼴의 OFL에는 Reserved Font Name 선언이 없으며 원본 저작권·OFL을 보존한다.
   Noto 파생본도 원문에 명시된 예약 이름 `Source`를 primary 이름에 사용하지 않는다.
-- 목록의 `repositoryOnlyFonts` 18개는 공개 GitHub에 포함되는 테스트·Native 원본이다.
-  외부 파생본에는 OFL, 직접 생성한 합성 fixture 7개에는 저장소 MIT 전문이 적용된다.
-  제품 폰트 37개와 합쳐 독립 폰트 파일 55개를 모두 SHA와 고지에 연결한다.
+- 목록의 `repositoryOnlyFonts` 24개는 공개 GitHub에 포함되는 테스트·Native 원본과
+  PDF backend의 내장 폰트다. 직접 생성한 합성 fixture에는 저장소 MIT 전문이 적용되며,
+  외부 폰트는 각 항목에 명시한 원 라이선스를 따른다.
+  canonical 폰트 37개와 합쳐 독립 폰트 파일 61개를 모두 SHA와 고지에 연결한다.
+- PDF backend의 DejaVu Sans 두 파일은 내장 name table의 Bitstream Vera·Arev 고지 전문을
+  `vendor/rhwp-pdf-import-backend/src/fonts/assets/LICENSE-DejaVu`에 보존한다.
+  Droid Sans Fallback은 backend 루트의 `LICENSE-APACHE`와 원 저작권 고지에,
+  Noto Emoji는 같은 assets 폴더의 `LICENSE-NotoEmoji`(OFL 1.1 전문)에 연결한다.
+  backend의 소스 코드 라이선스를 이 폰트들에 대신 적용하지 않는다.
 
 ## 공식 원본의 WOFF2 재생성
 

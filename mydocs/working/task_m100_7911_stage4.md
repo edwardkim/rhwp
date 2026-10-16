@@ -204,4 +204,49 @@ PR 본문·향후 merge 댓글에 사용할 최종 asset은
 `integration-20261016/{native,wasm}-review/hwp/`에 있다. 본문에는 실제 최종 code SHA를,
 향후 댓글에는 실제 merge SHA를 사용하는 `edwardkim/rhwp` raw URL로 PNG를 직접 표시한다.
 후속 self-review에서 이 계획과 B10-1의 남은 차이를 확인하며, 게시 승인 후 `--body-file`과
-API 재조회로 본문·asset·SHA 정합을 검증한다. 중간 로그·TSV·JSON·생성 WASM/JS는 커밋하지 않는다.
+API 재조회로 본문·asset·SHA 정합을 검증한다. 중간 로그·TSV·JSON과 ignored `pkg/`·WASM은
+커밋하지 않는다. Git 추적 중인 `rhwp-studio/public/rhwp.js`의 동기화는 아래 정정을 따른다.
+
+## 9. 원격 CI 실패 보정과 추적 바인딩 동기화
+
+사용자 승인으로 `47bec72fa`를 push하고 Draft #7913의 한국어 본문·대표 이미지 8개를
+게시했다. [CI run 38853814694](https://github.com/edwardkim/rhwp/actions/runs/38853814694)의
+Frontend package gates에서 `Verify font asset contracts`만 실패했다. Rust lint, Native Skia,
+네 테스트 worker와 네 archive build는 성공했으며 `Build & Test` 실패는 집계 결과다.
+같은 head의 CodeQL도 성공했다. 현재 단계를 CI 통과·self-review 완료로 표시하지 않는다.
+
+원인은 vendored backend의 DejaVu Sans 두 파일, Droid Sans Fallback, Noto Emoji 네 파일을
+공개 폰트 목록에 등록하지 않은 것이다. CI와 같은 `frontend-font-assets.test.mjs`의
+`every public repository font has matching bytes and redistribution notices`를 로컬에서
+실행해 동일한 FAIL을 확인했다. `font-notices.json`에 각 파일의 SHA-256·name table 저작권·
+라이선스 전문 경로를 추가한 뒤 같은 검사가 PASS했다. 검사나 폰트 목록 수집 경로는 바꾸지 않았다.
+
+DejaVu에는 name table의 Bitstream Vera·Arev 고지 전문을 복원했고 Noto Emoji에는 원
+저작권과 OFL 1.1 전문을 동봉했다. Droid Sans Fallback은 기존 backend 루트의 Apache 2.0
+전문에 연결한다. 네 폰트의 바이트는 `UPSTREAM_FILES.json`의 원본 해시와 모두 일치한다.
+로그·메타데이터는 ignored `output/pr-review/issue7911/ci-fix-20261016/`에 보존한다.
+
+`public/rhwp.js`까지 로컬 전용 산출물로 제외한 앞선 구분은 정정한다. 이 파일은 Git 추적
+대상이고, 이번 PDF API `importPdf`·`getPdfImportDiagnostics` 및 병합한 devel의
+`registerHftOutlineFont` 바인딩을 담으므로 이번 PR과 관련 있다. 이미 검증한 Docker
+default-off 패키지의 JS를 그대로 반영했으며 수동으로 생성 코드를 편집하지 않았다.
+public의 ignored WASM도 같은 default-off 빌드로 맞췄다. 실제 WASM 초기화·HWP 3쪽 열기와
+첫 쪽 SVG, 진단 `null`, HFT 메서드 존재 및 기본 PDF 가져오기 `PDF_IMPORT_DISABLED`를 확인했다.
+검증용 Studio의 `@wasm`은 계속 루트 `pkg/`의 기존 feature-on 쌍을 읽는다.
+
+- public JS SHA-256: `44dd23e266ca0c8e4fb54e17d39741bd3682565bd21d7320e0c1016032538641`
+- public WASM SHA-256: `a9af265d47540202e841c8279049e9e31241ea310274ce98fdaf187d7be5f602`
+- 실제 실행: `ci-fix-20261016/public-bindings-runtime.json`, 바인딩 선언 검사: `bindings.log`
+
+Studio·Chrome·Firefox의 `npm run build`와 VS Code의 `npm run compile`을 통과했다.
+Chrome·Firefox·VS Code의 첫 로컬 시도는 해당 worktree의 `node_modules`가 없어 실패했으며,
+각 lockfile의 `npm ci --no-audit --no-fund` 후 같은 명령을 재실행해 통과했다. lockfile은
+변경하지 않았다. 이 환경 준비 실패를 제품 결함으로 계산하지 않는다.
+패키지를 만든 뒤 CI와 같은 폰트 검사 8건, 확장 배포 검사 3건, VS Code 개요 검사 6건이
+모두 통과했다(`frontend-after.log`, 총 17건). 변경 Markdown 5개의 내부 링크와
+`git diff --check`도 통과했다.
+
+이번 보정에는 Rust 소스·폰트 바이트·조판 규칙 변경이 없다. 4–7절에서 검증한 Docker
+산출물과 시각 증거를 재사용하며 동일 Rust/WASM 빌드와 전체 회귀를 반복하지 않는다.
+원격 devel을 다시 fetch한 결과는 계속 `375aff294`다. 승인된 원격 갱신 범위에서 보정본을
+push하고 새 head CI를 확인한다. Draft, B10-1과 후속 백로그는 유지한다.
