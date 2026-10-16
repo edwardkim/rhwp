@@ -188,6 +188,9 @@ HWPX/HWP 저장본을 같은 제품 API로 재열어 12쪽을 확인했다. 합�
 순서·누락과 저장 형식별 재열기를 검사했다. 옵션의 잘못된 타입·음수·소수·NaN·overflow·
 중복·역순·빈 배열·원본 범위 초과, 손상/과대 입력의 code도 확인했다.
 
+**F4 정정:** 위 실물 HWP 재열기 검사는 쪽수만 확인했다. 그림 보존이나 한컴 열기의
+통과 근거가 아니며, 메인테이너가 발견한 실제 실패와 보정은 아래 7절에서 처리한다.
+
 기본 Docker WASM은 새 API와 기존 생성자에서 `PDF_IMPORT_DISABLED`로 거부하고 기존
 HWP는 열었다. 활성 Worker의 일반 실패 뒤 같은 후보 Worker가 정상 입력을 처리했다.
 1ms deadline 및 워밍업한 후보의 1ms abort는 현재 3쪽 문서를 보존했고, 재생성 뒤 정상
@@ -229,3 +232,282 @@ F4의 선행 조건으로 삼지 않으며, 기본 비활성·미입증 진단�
 Windows 확인용 복사본은 `E:\tmp\issue7911-stage3-wasm-20261016\`에 둔다.
 원격 push·PR 상태 변경은 수행하지 않았다. 최종 source hash와 로컬 commit은
 `source-final.json`·`completion.json`에 연결한다.
+
+## 7. F4 HWP 그림 참조 손상 보정 (2026-10-16)
+
+메인테이너가 F3 산출 HWPX는 한컴에서 정상 열리지만 HWP는 손상 경고가 나고, Studio에서
+HWP를 재열면 그림이 보이지 않는다고 보고했다. 현재 기능 경로의 저장 결함으로 먼저
+처리한다. 후속 보안 백로그나 시각 허용 차이로 이관하지 않는다.
+
+### 7.1 원인과 수정 전 증거
+
+- 재현 source: `5eaccb0ed070348252a09d6b21c36635464a0317`.
+- 원본 PDF: `pdf/issue5875/nested_table_text_caption-2020.pdf`.
+- 실패 산출물: `output/pr-review/issue7911/wasm-integration-20261016/worker-all.hwp`,
+  SHA-256 `90dba729fc1b310919c7e018737c0e71ccf90dd46fe334b7b7cba7e9700afc82`.
+  기존 산출물과 Windows 복사본을 덮어쓰지 않는다.
+- `parser/pdf/lowering.rs::lower`가 PNG payload와 `BinDataType::Embedding`을 만들면서
+  wire 속성 `attr`는 기본값 0으로 남겼다. `serializer/doc_info.rs::serialize_bin_data`는
+  `attr`를 그대로 쓰지만 본문은 `data_type`에 따라 storage ID·확장자를 쓴다. 결과는
+  LINK 헤더 + EMBEDDING payload로 어긋난 레코드다. HWPX는 이 wire 속성을 쓰지 않는다.
+- 독립 계약은 [HWP5 명세 표 17·18](../tech/한글문서파일형식_5.0_revision1.3.md)의
+  포함 그림 유형 `0x0001`, 기본 압축·미접근 상태 0이다. PDF에서 생성하는 포함 PNG의
+  모델·wire 속성을 일치시킨다. 기존 HWP 원본 raw 기록이나 공통 렌더 좌표를 변경하지 않는다.
+- 실패 HWP의 CFB에는 PNG 13개가 있으나 13개 BIN_DATA 모두 attr=0이다. 재열기 SVG는
+  12쪽 모두 그림 0개다. 같은 파일의 해당 속성만 1로 바꾼 진단본에서는 쪽별 그림 수가
+  `2,1,3,1,2,2,0,0,0,0,2,0`으로 복원되고 저장 전과 각 쪽의 그림 바이트가 동일하다.
+- 제품 Worker 검사를 쪽별 그림 내용·중복 수까지 보강한 뒤 기존 Docker WASM에서 실행해
+  `Worker hwp page 1 preserves embedded image content and multiplicity` 실패를 확인했다.
+  HWPX 대조 경로는 이 검사에서 통과했다. 새 합성 검사는 두 쪽의 서로 다른 RGB 이미지로
+  저장 형식별 참조·PNG 바이트·픽셀 보존을 검사하며 조판 위치 golden을 만들지 않는다.
+
+진단 증적은 `output/pr-review/issue7911/hwp-save-20261016/`의 `before.json`,
+`image-diagnosis.json`, `before-wasm-single.log`다.
+
+**메인테이너 재확인:** attr만 보정한 진단본은 Studio에서 그림이 보이지만 한컴의 손상
+경고는 남는다. 그림 참조 보정의 효과와 HWP 상호운용 실패를 분리한다. 해당 보정만 반영한
+Docker WASM의 실제 Worker 검사도 쪽별 그림 내용·중복 수를 포함해 79항목 통과했다
+(`attr-wasm.log`). 이것으로 한컴 열기까지 완료라고 판정하지 않는다.
+
+### 7.2 HWP 저장 전용 변환 누락 조사
+
+PDF frontend는 HWPX scaffold를 바탕으로 일반 IR을 만들지만, HWP export snapshot의
+출처 분기는 Hwpx/Hwp3/Hml만 처리했다. 이 때문에 그림 attr 보정 후에도 PDF의 임시
+FileHeader 버전 `0.0.0.0`, 구역당 PAGE_BORDER_FILL 1개, 개체 local version 0 등이
+그대로 HWP에 기록된다. 파일 버전 계약은 HWP5 명세 표 3, 구역/개체 materialization은
+기존 HWP adapter와 독립 한컴 저장본을 대조한다. HWPX 직렬화·재파싱을 제품 경로에
+넣거나 PDF 출처를 다른 형식으로 가장하지 않고, HWP 저장 스냅숏에서 처리한다.
+
+- 정상 HWPX를 한컴 2020(`11.0.0.9136`)에서 HWP로 저장하는 대조군은 성공했다.
+  job `62f153df-57dc-4edd-9b5b-1e9194950f9c`, `hancom/hwpx-control-hancom.hwp`,
+  SHA-256 `b47ca4904a274f87b6ede429b05831c6c280b90422dc7bebaed3c9556d4f1f27`.
+- 같은 HWPX를 rhwp의 기존 HWP adapter로 변환한 진단본도 한컴 열기·HWPX 저장에
+  성공했다. job `454a9517-3e06-4e7f-9b31-52d9b88126e2`, `mcp-adapter-status.json`.
+  이 경로는 원인 분리를 위한 대조군이며 PDF 직접 저장의 성공 증거가 아니다.
+- 원래 HWP와 attr-only HWP의 자동 변환은 각각 180초 제한에 실패했다. 자동 timeout
+  자체를 손상 확정으로 쓰지 않으며, 손상 경고는 메인테이너의 직접 확인 결과다.
+
+PDF HWP export의 수정 경계는 `prepare_hwp_export_snapshot → convert_if_hwpx_source(Pdf)
+→ convert_to_hwp_ir(false) → serializer`다. 버전 5.1, PBF 세 레코드, 구역 control과
+문단/개체 전용 metadata를 기존 공통 변환으로 구성한다. HWPX 전용 그림 밝기/대비 교환과
+원출처 marker는 적용하지 않는다. 어댑터 없는 public `export_hwp_native`도 PDF 출처에서는
+같은 스냅숏을 사용한다. 기존 HWP/HWPX/HWP3/HML 경로의 분기·변환은 유지한다.
+
+합성 파일 형식 검사는 수정 전 `native: HWP5 version`(0 != 5)로 실패했다
+(`before-wire-contract.log`). 같은 결함은 실제 Worker 검사에서도 `Worker HWP save
+declares HWP5 wire version`으로 검출했다(`before-wire-wasm.log`). 버전 바이트만 보정한
+별도 진단본의 자동 변환도 180초 제한에 실패했으므로, 버전만 바꾸어 완료로 삼지 않는다.
+
+### 7.3 직접 저장본의 독립 한컴 검증
+
+수정 후 Native frontend 11건 및 CLI·감지 7건이 통과했다
+(`after-wire-contract.log`, `cli-detection.log`). 파일 형식 회귀는 Native/adapter/snapshot
+세 진입점의 HWP5 버전·구역 PBF·원문 내용 및 다른 출처 marker 부재를 검사하고, HWP 저장
+전후 HWPX 바이트와 PDF live provenance 보존을 확인한다. 그림 회귀는 서로 다른 두 RGB
+이미지의 참조·내용·픽셀을 검사한다. 조판 좌표나 page-count golden을 추가하지 않았다.
+
+실물 직접 저장본 `wire-fixed.hwp` SHA-256은
+`422a435ed4dc1dcc2f37995e8e854e5e584536b798537d5bbb5b0d7a562cab14`다.
+한컴 2020 `11.0.0.9136` 열기·HWPX 재저장에 성공했다(job
+`e97a488f-ead8-4021-8f44-4409520d1ec9`). 재저장 후 12개 구역의 텍스트 순서·내용,
+그림 13개·표 13개를 보존했다(`hancom-content-result.json`; XML의 혼합 내용/tail 포함).
+동일 HWP의 PDF 인쇄도 12쪽으로 성공했다(job `6c45a5d3-0449-4e92-91fd-860afadaa1ea`,
+`pdf_print_method=0`, `hancom2020_pdf_driver_one_up`).
+
+HWPX 저장본은 F3와 바이트 동일하다. Native 재열기 시 그림 13개는 쪽별 내용·중복 수가
+보존된다. HWP 7·8쪽의 텍스트 y가 attr-only 진단본보다 약 6.39px 아래로 이동한 것은
+저장 전 제품 IR/Worker 및 HWPX의 같은 위치로 복귀한 결과다(`wire-render-comparison.json`).
+
+HWP/HWPX 각각을 한컴에서 Print한 12쪽 중 11쪽은 96dpi raster가 동일하다
+(`hancom-format-print-comparison.json`). 8쪽의 “의하며6㎸접촉” 부분 간격 차이는 남는다.
+원본 PDF와의 문단·셀 간격 차이도 관측되므로 **F4 전쪽 시각 일치 완료는 아니다**.
+이번 파일 열기·내용 보존 결과를 Native/fresh WASM 90% 시각 gate로 승격하지 않는다.
+
+직접 확인용 파일은 `E:\tmp\issue7911-hwp-fix-20261016\pdf-direct-save-fixed.hwp`,
+같은 이름의 `-2020.pdf`다. 앞선 `worker-all-bindata-diagnostic.hwp`는 실패 증거로
+보존하며, 메인테이너의 새 직접 확인과 최종 Docker WASM 검증 결과를 이어 기록한다.
+
+메인테이너가 새 HWP의 정상 열기를 확인했으나 내용 보완을 요청했다. 같은 코드의 최종
+Docker WASM 실제 Worker 검사는 80항목 통과했고, Worker HWP는 위 Native HWP와
+SHA-256이 동일하다(`wire-wasm.log`, `wire-wasm/browser-result.json`). 이는 파일 구조·
+그림 참조 보존 결과이며 아래에 드러난 한컴의 실제 배치 누락을 면제하지 않는다.
+
+### 7.4 11쪽 그림 10의 한컴 표시 누락
+
+메인테이너가 11쪽 `[그림 10]`이 한컴에서 보이지 않는다고 특정했다. 원본 PDF는 같은
+쪽에 그림 9(107×158px)와 그림 10(81×225px)이 있지만, 직접 저장 HWP의 독립 Print에는
+그림 9만 남는다. 같은 HWPX의 Print도 동일하다. 그림 10의 PNG·셀 소유·참조는 저장되어
+있으므로 데이터 유실과 표시 누락을 구별한다. 원래 표 앞쪽 행들이 늘어나 해당 행이 용지
+아래로 밀려 잘린다. `hwp-save-20261016/p11/{source,hwp,hwpx}.png`에 원본과 실패 출력을
+보존했다.
+
+원인은 `structured_lowering.rs`의 일반 표 분기가 물리 길이 `x`를 `hu(2*x)`로 반올림해
+문단 여백 IR에 넣는 데 있다. 홀수 결과는 serializer의 HwpUnitChar `CHAR` 단위가 된다.
+반면 중첩 표 분기는 기존 `physical_margin(x)`의 `2*hu(x)`를 사용해 물리 단위를 보존한다.
+독립 한컴 재저장본에서 번호 26의 저장 줄 시작은 2,230에서 11,145 HWPUNIT으로 늘고,
+번호 29는 15,943에서 79,710으로 늘었다. 반면 짝수로 기록된 번호 28은 9,086을 유지했다.
+
+소비 경로는 `paragraph.margin_left / flow.spacing_before·after → PARA_SHAPE 직렬화 및
+HWPX HwpUnitChar → 한컴 재조판 → 셀 요구 높이·뒤 행/그림 원점`이다. rhwp의 저장 LineSeg
+재사용에서는 원래 좌표가 남아 이 오류를 가렸으므로 재열기 그림 개수만으로 검증할 수 없다.
+페이지 번호·문서 ID 예외 없이 일반 표의 세 물리 여백 생산 지점도 같은 helper를 사용한다.
+라인/그림 크기·행의 선언 높이·그림 payload·기존 문서 serializer는 변경하지 않는다.
+
+원인 분리용 HWPX에서 `CHAR` 단위만 `HWPUNIT`으로 바꾼 진단본을 한컴 2020에서 Print했다
+(job `d6f3fcc9-3237-4fc9-b59d-0fb90d26059e`, 12쪽). 11쪽에 그림 10과 캡션이 복원됐다.
+이 수동 진단은 제품 출력 성공으로 대신하지 않으며 새 Native/Docker WASM 저장본을 이어
+검증한다. 진단 Print와 원본 PDF의 전쪽 실루엣은 1·11쪽이 90% 미만이며, 그림 복원과 전체
+조판 일치 완료를 구분한다. 실제 출력 보완 전 조판 golden/기대값을 새로 추가하지 않는다.
+
+
+제품 코드가 생성한 `p11/flow-fixed.hwp`(SHA-256
+`f13522a8725420486e1725220f14c3366bd23ff6c69698289f43f3687216ef9d`)의
+한컴 2020 Print도 성공했다(job `fcf7d97e-ef11-4dd2-b58b-5de1645be0f7`, 12쪽).
+11쪽의 그림 9·10과 두 캡션, 뒤의 번호 30 행이 모두 보인다. 원본의 그림 10 데이터
+크기 81×225px에 해당하는 이미지의 전체 사각형이 Print 용지 안에 포함됨을 확인했다.
+새 HWP/HWPX의 12쪽 모두 그림 내용·중복 수가 저장 전과 같다(`p11/flow-image-result.json`).
+잘못된 CHAR 여백은 45개에서 0개로 바뀌었다(`p11/physical-unit-check.json`).
+Windows 직접 확인본은 `E:\tmp\issue7911-hwp-fix-20261016\pdf-direct-save-p11-fixed.hwp`,
+동명 `.hwpx`·`-2020.pdf`·`-page11.png`다. 이전 실패본은 유지한다.
+
+메인테이너가 위 HWP를 한컴에서 열어 **그림 10 표시를 확인**했다. 이 판정은 해당 표시
+누락의 해소이며 전쪽 조판 일치 완료를 의미하지 않는다.
+
+### 7.5 3쪽 그림 4의 오른쪽 자르기 누락
+
+메인테이너가 원본 HWP에서 그림 자르기 **오른쪽 43.01mm**를 직접 확인했다.
+원본 `samples/issue5875/nested_table_text_caption.hwp`의 해당 그림은 BIN0006.jpg,
+1924×1196px·300dpi이며 저장 crop은 `(0,0,106220,89700)`이다. 저장 crop의 right는
+보존 영역의 오른쪽 좌표로, 속성창에 표시된 제거 길이와 구분한다. 75 HU/px로 환산한
+보존 너비 비율은 73.6105%다. JPEG 해상도로 환산한 제거 길이는 약 42.99mm로,
+사용자가 관측한 43.01mm와 약 0.02mm 차이가 있으며 그 표시 차이의 원인은 미검증이다.
+
+원본 PDF의 세 이미지 조각은 전체 폭 360.526pt를 갖지만 `W* n`의 자르기 영역은
+219.602–485.019pt, 폭 265.417pt다. 보존 너비 비율 73.6194%는 원본 HWP와 대응한다.
+용지 위에서 숨겨진 폭 약 33.55mm와 속성창 43.01mm는 이미지 배율이 적용되는 서로 다른
+좌표계다. HWP 변환본은 전체 이미지 프레임 크기는 거의 유지하면서 이 자르기를 누락해
+원본 PDF에서 보이지 않던 오른쪽을 표시한다. 셀 너비에 맞춘 임의 축소로 처리할 사안이 아니다.
+
+증적은 `hwp-save-20261016/p3/original-hwp-dump.txt`,
+`original-crop-correspondence.json`, `content-stream.txt`, `image-geometry.json`이다.
+PDF clip → 가시 그림 영역 → HWP/HWPX 그림 자르기 계약의 보완 대상으로 확인했으며,
+사용자의 일시 중지 지시 이후 **제품 코드 수정·새 빌드 없이 진단만 수행**했다.
+
+
+메인테이너가 코드 구현과 결과 확인 준비를 승인해 작업을 재개했다. 독립 근거는 원본 HWP의
+자르기 속성·원본 PDF의 `W* n`과 [ISO 32000-1 §8.5.4](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf)다.
+구현 경로는 `page/Form operator → image handle clip + 전체 CTM → extract의 visible bbox
+→ table recognition의 소유 영역 / lowering의 그림 프레임·crop → 기존 Picture 직렬화·paint`다.
+전체 PNG는 유지하며 한쪽에서 계산한 가시 영역을 소유 추론과 그림 프레임이 공유한다.
+현재 path는 q/Q stack에 넣지 않고, clip은 path 종료에서 교차한 뒤 graphics state로 복원한다.
+Form의 BBox·Matrix와 부모 clip도 같은 page 좌표로 합성한다. 사각형이 아닌 clip은 bbox로
+대체하지 않고 명시적 미지원 오류로 처리한다. 텍스트·vector path clipping은 이번 보정 범위
+밖으로 유지한다. 경계 검증은 q/Q 복원·누적 교차·빈 교차·Form 변환·비사각형 거부를 포함한다.
+
+제품 Native 보정본의 HWP/HWPX를 한컴 2020 `11.0.0.9136`의 one-up Print로 검증했다.
+HWP job `88b2e367-697c-498c-b9af-ed7e574dd6bb`, HWPX job
+`ce3a0d75-cb00-44a5-be0a-4adc5cc4c454` 모두 12쪽이며 3쪽 raster는 동일하다.
+메인테이너가 `E:\tmp\issue7911-hwp-fix-20261016\pdf-direct-save-p3-fixed.hwp`의
+3쪽 그림 4에 대해 **시각 판정 통과**를 확인했다. PNG payload 13개와 페이지별 개수
+`[2,1,3,1,2,2,0,0,0,0,2,0]`는 유지된다. 11쪽 그림 10의 표시도 보존했다.
+
+원본 PDF 기준 Native Skia 전쪽 TSV는 최저 90.14609%(11쪽), 3쪽 96.84817%다
+(`p3/native-source-scores/crop-hwp/silhouette.tsv`). 별도로 같은 HWP의 한컴 Print와
+대조하면 3쪽은 98.48492%지만 1쪽 68.40217%, 11쪽 78.54899%의 기존 재조판 차이가
+남는다(`p3/native-hancom-scores/silhouette.tsv`). 두 비교의 기준을 합치지 않으며
+이번 3쪽 통과를 F4 전체 완료나 신규 조판 golden 등록의 근거로 확대하지 않는다.
+
+진단 PDF의 자르기 경계 12건은 수정 후 모두 통과했고, 수정 전은 무자르기 대조군만
+통과했다(`p3/boundaries/results.json`). 이는 ignored 진단 증거이며 정식 렌더링 회귀
+추가와 구분한다. Native feature-on Clippy와 WASM feature-on Clippy는 통과했다.
+정식 집중 회귀 130건(자원 111, CLI 5, frontend 11, 명시 여백 1, 형식 감지 2)도
+통과했다(`p3/focused-tests.log`). 최종 전체 회귀·lint 묶음은 B11에 남는다.
+
+**원본 그림과 PDF 조각의 구분:** 메인테이너가 변환 HWP에서 그림이 3개로 선택됨을
+확인해 원본을 다시 대조했다. 원본 HWP의 BIN0006.jpg는 1924×1196px 하나지만,
+독립 PDF 3쪽에는 이미 이미지 XObject 193·194·195가 각각 1924×399, 1924×399,
+1924×398px로 위에서 아래로 연속 배치되어 있다(`pdfimages -f 3 -l 3 -list`).
+현재 importer는 이 3개 paint 객체를 보존한다. 이번 보정은 각 조각의 clip을 복원한
+것이며 원래의 단일 편집 객체를 추론·합성하지 않는다. 세 조각의 병합은 B09의 후속
+편집 구조 복원 범위로 기록하며, 인접성만으로 무조건 합치는 규칙은 추가하지 않는다.
+
+추가 대조군 `/mnt/e/tmp/rhwp_nested_table_text_caption.pdf`는 메인테이너가 원본 HWP를
+rhwp에서 PDF로 출력한 파일이다(SHA-256
+`eaa6bebee5241bf44eb94d3d36b15f19df8c51eb447e99ae218307fbdd7c4e17`,
+Chrome 155 / Skia PDF m155, 12쪽). 3쪽에는 1924×1196px의 XObject 15 **하나**가 있다.
+내장 JPEG 202,269 bytes의 SHA-256은 원본 BIN0006.jpg와 동일한
+`b7da82df8c92b840c7a88d6850410abc9d8a37d0d4ae1c62b05a876a70dac42e`다.
+clip의 page x 범위는 219.71968–485.26328pt이고 전체 이미지 폭은 360.74130pt다.
+보존 비율은 원본 crop의 73.6105%와 대응하며 3쪽 PNG에서도 오른쪽 숨김이 유지된다.
+같은 PDF를 보정 Native importer로 HWPX에 다시 저장해 3쪽 그림이 1개이고
+`imgClip=(0,0,106220,89700)`임을 확인했다. 한컴 출력 PDF의 3분할과 rhwp 출력 PDF의
+단일 객체를 구분한다. 이 추가 PDF는 출력 구조 대조군이며 독립 한컴 정답지로 사용하지 않는다.
+증거: `p3/rhwp-export/{page3-content.txt,clips.json,reimport-pictures.json,page3.png}`.
+
+최종 Docker WASM은 같은 source snapshot(`p3/source-state.json`)에서
+`docker compose -p rhwp --env-file .env.docker run --rm --no-deps -e CARGO_BUILD_JOBS=4 wasm`
+안의 feature-on WASM Clippy와 루트 `scripts/wasm-pack-locked.sh --target web --out-dir pkg
+--features pdf-import`로 생성했다(`p3/docker-build.log`). WASM SHA-256은
+`8e6089aec417c6097eabc8d01248fd8c608da8114dfff2a16a835476dbcb5c1d`이며
+root pkg·Studio public·실제 Chrome 155의 WASM fetch가 일치한다. 공개 API/실제 Worker
+검사 80항목·Worker 5개가 통과했다(`p3/wasm.log`, `p3/wasm/browser-result.json`).
+Worker가 만든 HWP의 SHA-256은 Native와 같은
+`ac245bae37b408b5c4af69ab39f6ef53505a47433034fc34288714704a107d99`다.
+동일 바이트를 이유로 한컴 Print를 중복 생성하지 않았다.
+
+`scripts/visual_sweep.py --silhouette-only --hwp p3/crop-fixed.hwp --pdf
+pdf/issue5875/nested_table_text_caption-2020.pdf --key crop-hwp --rhwp-bin p3/candidate/rhwp
+--wasm-pkg pkg --compat 2022 --dpi 96 --embed-fonts --font-path p11/fonts`로 12쪽을
+새 Canvas 출력했다(여기서 p3/p11은 위 증적 디렉터리의 약칭). 전쪽 최저 90.16832%(11쪽),
+3쪽 96.82916%이며 Native와 같은 자르기 영역·세 조각 연결·표 내부 포함을 PNG로 직접
+확인했다(`p3/wasm-source-scores/crop-hwp/silhouette.tsv`,
+`p3/wasm-review/crop-hwp/{review/review_003.png,overlay/overlay_003.png}`).
+첫 실행의 Chrome 경로 탐색 실패는 증거로 보존하고 설치된 Chrome 154 경로를 명시해
+성공했다. 제품 오류가 아니다. 저장 HWP의 한컴 Print 기준 WASM은 3쪽 97.84876%지만
+1·11쪽은 각각 68.72149%·78.74329%이며 기존 F4 차이로 남는다.
+
+Studio `http://localhost:7791/?review=issue7911-p3-image-clip&lang=ko`에 같은 저장본을
+열고 3/12쪽 표시·브라우저 오류 없음·실제 WASM 해시를 확인했다(`p3/studio-result.json`,
+`p3/studio-page3.png`). Windows `p3-review/index.html`에도 새 WASM 비교 PNG를 추가했다.
+요약은 `p3/validation-result.json`이다. 이 결과는 3쪽 자르기 보정의 제품 검증이며
+F4 전체·B11 최종 회귀·배포 준비 완료가 아니다. remote push·PR 상태 변경은 하지 않았다.
+
+메인테이너가 rhwp 출력 PDF의 단일 그림·자르기 보존 대조까지 **시각 판정 통과**로
+확인했다. 남은 순서는 저장본 한컴 재조판의 1·11쪽 차이 정리 → F4 보고·checkpoint →
+최신 devel 정합 확인과 B11 통합 검증 → 기존 Draft #7913 갱신·CI·self-review·병합이다.
+이번 판정을 미확인 1·11쪽의 예외 승인으로 확대하지 않는다. 그림 조각 병합·추가 자원
+감사 등 후속 백로그 전체 소진은 기반 통합의 선행 조건이 아니며, 원격 반영은 별도 승인
+범위에 따른다. 변경 없는 산출물과 유효한 검증은 재사용한다.
+
+## 8. F4 저장·재열기 보정 checkpoint와 후속 이관 (2026-10-16)
+
+메인테이너는 위 남은 절차 중 **1·11쪽 재조판 차이의 해결을 백로그에 기록해 나중에
+구현하고, 2번인 현재 기능 검증 정리·로컬 커밋을 진행**하도록 지시했다. 이에 따라
+[B10-1](../plans/task_m100_7911_backlog.md#21-b10-1--저장-hwp의-한컴-재조판-시-111쪽-배치-차이)에
+원본·변환본·독립 Print·전쪽 TSV·관측값·진입 코드·완료 조건을 연결했다. 직전 7.5절의
+“1·11쪽 차이 정리 후 checkpoint” 순서는 이 지시로 대체된다. 해당 두 쪽의 수치상
+미달과 후속 구현 상태는 유지하며 다른 결함·미검증까지 면제하지 않는다.
+
+이번 로컬 checkpoint는 다음 범위를 보존한다.
+
+- PDF 포함 그림의 BIN_DATA 속성과 HWP 저장 스냅숏의 버전·구역·개체 레코드를 정합화해
+  그림 참조와 한컴 열기를 복구했다. HWP/HWPX 저장·재열기의 데이터 계약을 검사했다.
+- 일반 표의 물리 여백 단위를 일치시켜 11쪽 그림 10 표시를 복구했다.
+- PDF 사각형 clip·Form 변환을 그림 프레임과 crop으로 전달해 3쪽의 숨긴 영역을 보존했다.
+  원본 그림 payload와 PDF 조각 수는 유지하며 임의 병합은 후속으로 남겼다.
+- 최종 Native 집중 130건·실제 Docker WASM/Worker 80항목, Native/WASM feature-on
+  lib Clippy, 12쪽 원본 PDF 비교 및 사용자 시각 판정을 7.5절의 증거로 재사용한다.
+  제품 source hash가 같음을 확인해 이번 문서·범위 정리 때문에 빌드나 시각 검사를 반복하지 않았다.
+
+지원 제한은 기본 `pdf-import` 비활성, `parser_allocation_bounds_proven=false`, 비사각형
+그림 clip 미지원, 텍스트/vector clipping·논리 문단/그림 병합의 불완전 복원이다.
+1·11쪽 저장본 재조판 차이는 승인된 후속 범위다. 전체 편집·기존 포맷 호환성·전체
+Rust 회귀·workspace/all-targets lint·최신 devel 병합은 다음 통합 검증에서 판정한다.
+이번 결과를 전체 시각 일치·PR Ready·배포 준비 완료로 표시하지 않는다.
+
+소스·정식 검사·backend patch 기록·계획/보고서를 함께 커밋한다. 검증용
+`rhwp-studio/public/rhwp.js`와 ignored WASM·PDF·PNG·TSV·로그는 로컬에 그대로 보존하고
+source commit에서 제외한다. `.env.local`과 generated suite도 포함하지 않는다.
+최종 로컬 commit·검증 source의 일치·남은 작업공간 상태는
+`output/pr-review/issue7911/hwp-save-20261016/p3/checkpoint-completion.json`에 기록한다.
+이번 단계에서 remote push·PR 갱신·Ready·merge는 수행하지 않는다.

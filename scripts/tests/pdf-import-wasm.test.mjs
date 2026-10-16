@@ -150,9 +150,26 @@ test('Docker product WASM: public API, active document isolation and real Worker
         check(svg.every(s => s.includes('<svg')), 'Worker renders every imported page');
         const hwpx = await session.exportDocument('hwpx');
         const hwp = await session.exportDocument('hwp');
-        for (const saved of [hwpx, hwp]) {
+        // Page counts alone do not detect broken BinData references after save.
+        const imageSources = svg => [...new DOMParser().parseFromString(svg, 'image/svg+xml').querySelectorAll('image')]
+          .map(image => image.getAttribute('href') || image.getAttributeNS('http://www.w3.org/1999/xlink', 'href')).sort();
+        const expectedImages = svg.map(imageSources);
+        check(expectedImages.some(images => images.length > 0), 'real PDF exercises embedded images');
+        const reopenedSvg = {};
+        for (const [format, saved] of [['hwpx', hwpx], ['hwp', hwp]]) {
           const reopened = new wasm.HwpDocument(saved);
-          check(reopened.pageCount() === 12, 'Worker save reopens 12 pages'); reopened.free();
+          try {
+            check(reopened.pageCount() === 12, `Worker ${format} save reopens 12 pages`);
+            if (format === 'hwp') {
+              check(JSON.parse(reopened.getDocumentInfo()).version.startsWith('5.'),
+                'Worker HWP save declares HWP5 wire version');
+            }
+            reopenedSvg[format] = svg.map((_, p) => reopened.renderPageSvg(p));
+            for (let p = 0; p < svg.length; p++) {
+              check(JSON.stringify(imageSources(reopenedSvg[format][p])) === JSON.stringify(expectedImages[p]),
+                `Worker ${format} page ${p + 1} preserves embedded image content and multiplicity`);
+            }
+          } finally { reopened.free(); }
         }
         await rejectsCode(session.importPdf(real, { sourcePages: [99] }), 'PDF_PAGE_SELECTION');
         const afterFailureWorkers = workers;
@@ -176,7 +193,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
         check(recovered.pageCount === 1 && recovered.diagnostics.pages[0].sourcePage === 1, 'normal input after Worker recreation');
         check(real.byteLength > 0, 'caller PDF buffer not detached');
         return { checked, workers, terminatedBeforeDispose: terminated, diagnostics: loaded.diagnostics,
-          hwpx: Array.from(hwpx), hwp: Array.from(hwp), svg };
+          hwpx: Array.from(hwpx), hwp: Array.from(hwp), svg, reopenedSvg };
       } finally { session.dispose(); }
     }, { hasDefault: !!defaultPkg });
     assert.deepEqual(errors, []);
@@ -190,6 +207,13 @@ test('Docker product WASM: public API, active document isolation and real Worker
       writeFileSync(join(evidence, 'worker-svg', `${String(i + 1).padStart(3, '0')}.svg`), svg);
       return { page: i + 1, sha256: hash(svg) };
     });
+    for (const [format, pages] of Object.entries(result.reopenedSvg)) {
+      mkdirSync(join(evidence, `reopened-${format}-svg`), { recursive: true });
+      result.reopenedSvg[format] = pages.map((svg, i) => {
+        writeFileSync(join(evidence, `reopened-${format}-svg`, `${String(i + 1).padStart(3, '0')}.svg`), svg);
+        return { page: i + 1, sha256: hash(svg) };
+      });
+    }
     writeFileSync(join(evidence, 'browser-result.json'), JSON.stringify({ ...result, sources, browser: await browser.version(), visualJudgment: 'not_evaluated_F4_pending' }, null, 2));
     console.log(`${result.checked.length} assertions, ${result.workers} actual Workers; all 12 pages rendered/saved`);
   } finally {

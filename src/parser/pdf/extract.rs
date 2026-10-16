@@ -100,6 +100,16 @@ pub(super) fn extract(
     }
     let mut images = Vec::with_capacity(handles.len());
     for handle in handles {
+        let Some(visible) = handle.clip.visible_bounds(handle.bbox).map_err(|_| {
+            PdfImportError::new(
+                "PDF_IMAGE_UNSUPPORTED",
+                "non-rectangular image clipping is not supported",
+            )
+        })?
+        else {
+            // This paint operation has an empty intersection with the active clip.
+            continue;
+        };
         let pixels = u64::from(handle.width) * u64::from(handle.height);
         budget.image_pixels = budget
             .image_pixels
@@ -112,7 +122,7 @@ pub(super) fn extract(
         }
         let decoded = handle.decode();
         pdf.check_import_budget().map_err(PdfImportError::backend)?;
-        let image = decoded.map_err(|error| match error {
+        let mut image = decoded.map_err(|error| match error {
             pdf_oxide::error::Error::Unsupported(_) => PdfImportError::new(
                 "PDF_IMAGE_UNSUPPORTED",
                 "image codec or mask is not supported by the bounded import path",
@@ -125,6 +135,9 @@ pub(super) fn extract(
                 "decoded image dimensions differ from declaration",
             ));
         }
+        // Ownership inference and lowering consume the same visible bounds.
+        // Keep the full bitmap and CTM so lowering can preserve an editable crop.
+        image.set_bbox(visible);
         images.push(image);
     }
     let detection = table_detection::detect_ruled_tables(&spans, &paths, &images, media_box)

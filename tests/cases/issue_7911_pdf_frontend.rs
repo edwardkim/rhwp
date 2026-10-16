@@ -30,6 +30,10 @@ fn pdf(pages: &[(&str, &str)]) -> Vec<u8> {
         pages.len(),
         kids.join(" ")
     );
+    encode_pdf(&objects)
+}
+
+fn encode_pdf(objects: &[String]) -> Vec<u8> {
     let mut output = b"%PDF-1.4\n".to_vec();
     let mut offsets = Vec::new();
     for (i, object) in objects.iter().enumerate() {
@@ -53,6 +57,77 @@ fn pdf(pages: &[(&str, &str)]) -> Vec<u8> {
     output
 }
 
+#[test]
+fn embedded_images_keep_their_bytes_and_references_in_both_save_formats() {
+    use rhwp::{model::bin_data::BinDataType, parser, DocumentCore};
+    // Two unfiltered RGB XObjects with distinct, independently specified pixels.
+    // This checks the file-format/data contract, not a layout or pixel-position golden.
+    let mut objects = vec![
+        "<< /Type /Catalog /Pages 2 0 R >>".into(),
+        "<< /Type /Pages /Count 2 /Kids [3 0 R 6 0 R] >>".into(),
+    ];
+    for pixel in ["RGB", "CMY"] {
+        let page = objects.len() + 1;
+        let content = "q 20 0 0 30 10 100 cm /Im1 Do Q";
+        objects.push(format!("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /XObject << /Im1 {} 0 R >> >> /Contents {} 0 R >>", page + 2, page + 1));
+        objects.push(format!(
+            "<< /Length {} >>\nstream\n{content}\nendstream",
+            content.len()
+        ));
+        objects.push(format!("<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Length 3 >>\nstream\n{pixel}\nendstream"));
+    }
+    let core = DocumentCore::from_bytes(&encode_pdf(&objects)).unwrap();
+    let expected = [b"RGB", b"CMY"];
+    for (format, bytes) in [
+        ("HWP", core.export_hwp_native().unwrap()),
+        ("HWP adapter", core.export_hwp_with_adapter().unwrap()),
+        ("HWPX", core.export_hwpx_native().unwrap()),
+    ] {
+        let saved = parser::parse_document(&bytes).unwrap();
+        assert_eq!(saved.sections.len(), expected.len(), "{format}");
+        assert_eq!(saved.bin_data_content.len(), expected.len(), "{format}");
+        for (section, pixel) in saved.sections.iter().zip(expected) {
+            let pictures: Vec<_> = section
+                .paragraphs
+                .iter()
+                .flat_map(|p| &p.controls)
+                .filter_map(|c| match c {
+                    Control::Picture(pic) => Some(pic),
+                    _ => None,
+                })
+                .collect();
+            assert_eq!(
+                pictures.len(),
+                1,
+                "{format}: picture belongs to its source page"
+            );
+            let reference = pictures[0].image_attr.bin_data_id;
+            let descriptor = &saved.doc_info.bin_data_list[usize::from(reference) - 1];
+            assert_eq!(descriptor.data_type, BinDataType::Embedding, "{format}");
+            let content = saved
+                .bin_data_content
+                .iter()
+                .find(|c| c.id == descriptor.storage_id)
+                .unwrap();
+            let decoded = image::load_from_memory(&content.data.load())
+                .unwrap()
+                .into_rgb8();
+            assert_eq!(decoded.dimensions(), (1, 1));
+            assert_eq!(
+                decoded.as_raw(),
+                pixel,
+                "{format}: original pixel data survives save"
+            );
+            let original = &core.document().bin_data_content[usize::from(reference) - 1];
+            assert_eq!(
+                content.data.load(),
+                original.data.load(),
+                "{format}: encoded PNG is preserved"
+            );
+        }
+    }
+}
+
 fn texts(document: &rhwp::model::document::Document) -> Vec<String> {
     document
         .sections
@@ -70,6 +145,48 @@ fn texts(document: &rhwp::model::document::Document) -> Vec<String> {
                 .collect()
         })
         .collect()
+}
+
+#[test]
+fn hwp_save_materializes_wire_contract_without_mutating_pdf_or_hwpx() {
+    use rhwp::DocumentCore;
+    let core =
+        DocumentCore::from_bytes(&pdf(&[("FIRST", "Helvetica"), ("SECOND", "Courier")])).unwrap();
+    let hwpx_before = core.export_hwpx_native().unwrap();
+    let snapshot = core.prepare_hwp_export_snapshot();
+    for (format, bytes) in [
+        ("native", core.export_hwp_native().unwrap()),
+        ("adapter", core.export_hwp_with_adapter().unwrap()),
+        ("snapshot", snapshot.serialize().unwrap()),
+    ] {
+        let saved = rhwp::parser::parse_document(&bytes).unwrap();
+        // HWP5 specification table 3: major 5 denotes the emitted CFB format.
+        assert_eq!(saved.header.version.major, 5, "{format}: HWP5 version");
+        assert_eq!(saved.doc_properties.section_count, 2, "{format}");
+        assert_eq!(texts(&saved), ["FIRST", "SECOND"], "{format}");
+        for section in &saved.sections {
+            // The independent Hancom HWP control and the existing HWP adapter
+            // require three PAGE_BORDER_FILL records per section (#3676/#5933).
+            assert_eq!(
+                section.section_def.extra_page_border_fills.len(),
+                2,
+                "{format}"
+            );
+            assert!(matches!(
+                section.paragraphs[0].controls[0],
+                Control::SectionDef(_)
+            ));
+        }
+        assert!(
+            !saved.extra_streams.iter().any(|(path, _)| {
+                path == rhwp::model::document::HWPX_ORIGIN_STREAM_PATH
+                    || path == rhwp::model::document::HWP3_ORIGIN_STREAM_PATH
+            }),
+            "PDF conversion must not invent another source format"
+        );
+    }
+    assert_eq!(core.document().provenance.format, SourceFormat::Pdf);
+    assert_eq!(core.export_hwpx_native().unwrap(), hwpx_before);
 }
 
 #[test]

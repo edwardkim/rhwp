@@ -132,7 +132,7 @@ pub(super) fn lower(
     let mut rule_sources = Vec::new();
     let mut warnings = vec![
         "positional text boxes, not semantic paragraph/table reconstruction".to_string(),
-        "PDF paint ordering, clipping, transparency and embedded fonts are not reconstructed"
+        "PDF paint ordering, text/path clipping, transparency and embedded fonts are not reconstructed"
             .into(),
     ];
 
@@ -238,6 +238,7 @@ pub(super) fn lower(
         let b = image.bbox().ok_or("image has no placement geometry")?;
         let matrix = image.matrix();
         if image.rotation_degrees() != 0
+            || !matrix.iter().all(|value| value.is_finite())
             || matrix[0] <= 0.0
             || matrix[3] <= 0.0
             || matrix[1] != 0.0
@@ -256,6 +257,10 @@ pub(super) fn lower(
             .map_err(|e| e.to_string())?;
         let storage = (doc.bin_data_content.len() + 1) as u16;
         doc.doc_info.bin_data_list.push(BinData {
+            // HWP5 table 18: embedded payloads use type 1, default compression,
+            // and NotAccessed. The binary writer emits this attribute verbatim.
+            // Leaving it at 0 labels the storage-id/extension payload as a link.
+            attr: 0x0001,
             data_type: BinDataType::Embedding,
             storage_id: storage,
             extension: Some("png".into()),
@@ -267,11 +272,25 @@ pub(super) fn lower(
             data: BinDataBytes::Loaded(data),
         });
         let attrs = common(b.x - left, top - b.y - b.height, b.width, b.height, id)?;
+        // PDF clips are in page user space; HWP crop coordinates select a region
+        // of the full bitmap. The visible frame and the selected pixels have the
+        // same proportions, preserving scale instead of fitting all pixels into
+        // a smaller cell. PDF y points up, image crop y points down.
+        let img_dim = (image.width() * 75, image.height() * 75);
+        let crop_x = |x: f32| {
+            ((f64::from(x) - f64::from(matrix[4])) / f64::from(matrix[0]) * f64::from(img_dim.0))
+                .round() as i32
+        };
+        let crop_y = |y: f32| {
+            ((f64::from(matrix[5]) + f64::from(matrix[3]) - f64::from(y)) / f64::from(matrix[3])
+                * f64::from(img_dim.1))
+            .round() as i32
+        };
         let pic = Picture {
             shape_attr: component(attrs.width, attrs.height),
             common: attrs,
             instance_id: id,
-            img_dim: (image.width() * 75, image.height() * 75),
+            img_dim,
             // Picture uses packed point pairs, not separate X/Y arrays.
             border_x: [0, 0, hu(b.width)? as i32, 0],
             border_y: [
@@ -281,9 +300,10 @@ pub(super) fn lower(
                 hu(b.height)? as i32,
             ],
             crop: CropInfo {
-                right: (image.width() * 75) as i32,
-                bottom: (image.height() * 75) as i32,
-                ..Default::default()
+                left: crop_x(b.x),
+                top: crop_y(b.y + b.height),
+                right: crop_x(b.x + b.width),
+                bottom: crop_y(b.y),
             },
             image_attr: ImageAttr {
                 bin_data_id: storage,

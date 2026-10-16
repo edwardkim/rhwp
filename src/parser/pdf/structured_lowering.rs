@@ -229,10 +229,8 @@ fn paragraph(
     };
     style.margin_left = if centered {
         0
-    } else if fixed_line_height {
-        physical_margin(number(&first["bbox"]["x"])? - cell_x)?
     } else {
-        hu(2. * (number(&first["bbox"]["x"])? - cell_x))? as i32
+        physical_margin(number(&first["bbox"]["x"])? - cell_x)?
     };
     style.margin_right = 0;
     style.indent = 0;
@@ -715,22 +713,15 @@ impl TableBuilder<'_> {
                 if picture {
                     // Place the inter-item gap before the inline image's flow origin.
                     if let Some(style) = previous_style {
-                        doc.doc_info.para_shapes[style as usize].spacing_after = if family {
-                            physical_margin(gap)?
-                        } else {
-                            hu(2. * gap)? as i32
-                        };
+                        doc.doc_info.para_shapes[style as usize].spacing_after =
+                            physical_margin(gap)?;
                     } else {
                         cell.padding.top = i16::try_from(hu(gap)?)
                             .map_err(|_| "cell padding exceeds format range")?;
                     }
                 } else {
                     doc.doc_info.para_shapes[item.paragraph.para_shape_id as usize]
-                        .spacing_before = if family {
-                        physical_margin(gap)?
-                    } else {
-                        hu(2. * gap)? as i32
-                    };
+                        .spacing_before = physical_margin(gap)?;
                 }
                 if flow_index == 0 && item.paragraph.controls.is_empty() {
                     // Stored cell starts own their lead in the frame, not flow_before.

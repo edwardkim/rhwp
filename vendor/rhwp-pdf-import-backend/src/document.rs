@@ -23976,8 +23976,9 @@ impl PdfDocument {
         &self,
         page_index: usize,
     ) -> Result<Vec<crate::extractors::images::PdfImageHandle<'_>>> {
-        use crate::content::parse_content_stream_images_only;
+        use crate::content::parse_content_stream;
         use crate::content::Operator;
+        use crate::extractors::image_clip::{ImageClip, ImageClipTracker};
         use crate::extractors::images::image_handle_from_inline;
 
         self.require_authenticated()?;
@@ -24001,14 +24002,13 @@ impl PdfDocument {
             None => None,
         };
 
-        let operators =
-            match self.parse_import_content(&content_data, parse_content_stream_images_only) {
-                Ok(ops) => ops,
-                Err(_) => {
-                    self.check_import_budget()?;
-                    return Ok(Vec::new());
-                },
-            };
+        let operators = match self.parse_import_content(&content_data, parse_content_stream) {
+            Ok(ops) => ops,
+            Err(_) => {
+                self.check_import_budget()?;
+                return Ok(Vec::new());
+            },
+        };
 
         // Resource-name colour-space map for this page scope (§8.6.6 / §8.9.7).
         let cs_map = self.build_color_space_map(resources.as_ref())?;
@@ -24042,39 +24042,26 @@ impl PdfDocument {
         };
 
         let mut handles = Vec::new();
-        let mut ctm_stack = vec![crate::content::Matrix::identity()];
+        let (left, bottom, right, top) = self.get_page_visible_box(page_index)?;
+        let page_clip = ImageClip::transformed_rectangle(
+            crate::content::Matrix::identity(),
+            [left, bottom, right, top],
+        );
+        let mut graphics = ImageClipTracker::new(crate::content::Matrix::identity(), page_clip);
         let mut paint_order: usize = 0;
         let mut xobject_stack: Vec<crate::object::ObjectRef> = Vec::new();
 
         for op in operators {
+            graphics.apply(&op);
+            let state = graphics.current();
             match op {
-                Operator::SaveState => {
-                    if let Some(current) = ctm_stack.last() {
-                        ctm_stack.push(*current);
-                    }
-                },
-                Operator::RestoreState => {
-                    if ctm_stack.len() > 1 {
-                        ctm_stack.pop();
-                    }
-                },
-                Operator::Cm { a, b, c, d, e, f } => {
-                    if let Some(current) = ctm_stack.last_mut() {
-                        let m = crate::content::Matrix { a, b, c, d, e, f };
-                        *current = m.multiply(current);
-                    }
-                },
                 Operator::Do { name } => {
                     if let Some(ref xobj_dict_map) = xobject_dict {
-                        let ctm = ctm_stack
-                            .last()
-                            .copied()
-                            .unwrap_or_else(crate::content::Matrix::identity);
                         if let Ok(mut more) = self.collect_handles_from_do(
                             &name,
                             xobj_dict_map,
                             resources.as_ref(),
-                            ctm,
+                            state,
                             &mut paint_order,
                             &mut xobject_stack,
                         ) {
@@ -24083,13 +24070,10 @@ impl PdfDocument {
                     }
                 },
                 Operator::InlineImage { dict, data } => {
-                    let ctm = ctm_stack
-                        .last()
-                        .copied()
-                        .unwrap_or_else(crate::content::Matrix::identity);
-                    if let Some(handle) =
-                        image_handle_from_inline(self, &dict, data, ctm, paint_order, &cs_map)
+                    if let Some(mut handle) =
+                        image_handle_from_inline(self, &dict, data, state.ctm, paint_order, &cs_map)
                     {
+                        handle.clip = state.clip;
                         handles.push(handle);
                         paint_order += 1;
                     }
@@ -24113,7 +24097,7 @@ impl PdfDocument {
         name: &str,
         xobject_dict: &std::collections::HashMap<String, Object>,
         resources: Option<&Object>,
-        ctm: crate::content::Matrix,
+        state: crate::extractors::image_clip::ImageGraphicsState,
         paint_order: &mut usize,
         xobject_stack: &mut Vec<crate::object::ObjectRef>,
     ) -> Result<Vec<crate::extractors::images::PdfImageHandle<'s>>> {
@@ -24147,14 +24131,15 @@ impl PdfDocument {
             "Image" => {
                 if let Some(ref_obj) = xobject_ref_opt {
                     let cs_map = self.build_color_space_map(resources)?;
-                    if let Some(h) = image_handle_from_xobject(
+                    if let Some(mut h) = image_handle_from_xobject(
                         self,
                         ref_obj,
                         xobj_dict,
-                        ctm,
+                        state.ctm,
                         *paint_order,
                         &cs_map,
                     ) {
+                        h.clip = state.clip;
                         *paint_order += 1;
                         Ok(vec![h])
                     } else {
@@ -24170,7 +24155,7 @@ impl PdfDocument {
                         ref_obj,
                         &xobject,
                         parent_res,
-                        ctm,
+                        state,
                         paint_order,
                         xobject_stack,
                     )
@@ -24191,7 +24176,7 @@ impl PdfDocument {
     /// content.
     ///
     /// Unlike the materialised path, we do not cache "raw" handles — we compose
-    /// the full CTM (`parent_ctm * form_matrix`) at entry and let every inner
+    /// the full CTM at entry and let every inner
     /// handle (and nested Form) naturally receive the final geometry. This is
     /// simpler for the two-phase API and produces correct `bbox`/`rotation_degrees`
     /// / `ctm` fields on the returned handles.
@@ -24200,12 +24185,13 @@ impl PdfDocument {
         xobject_ref: crate::object::ObjectRef,
         xobject: &Object,
         parent_resources: &Object,
-        parent_ctm: crate::content::Matrix,
+        parent_state: crate::extractors::image_clip::ImageGraphicsState,
         paint_order: &mut usize,
         xobject_stack: &mut Vec<crate::object::ObjectRef>,
     ) -> Result<Vec<crate::extractors::images::PdfImageHandle<'s>>> {
-        use crate::content::parse_content_stream_images_only;
+        use crate::content::parse_content_stream;
         use crate::content::Operator;
+        use crate::extractors::image_clip::{ImageClip, ImageClipTracker};
         use crate::extractors::images::image_handle_from_inline;
 
         // Cycle detection — identical policy to the materialised extraction path.
@@ -24276,55 +24262,52 @@ impl PdfDocument {
             },
         };
 
-        // Parse with the fast images-only parser (same as the materialised path).
-        let operators =
-            match self.parse_import_content(&stream_data, parse_content_stream_images_only) {
-                Ok(ops) => ops,
-                Err(_) => {
-                    xobject_stack.pop();
-                    return Ok(Vec::new());
-                },
-            };
+        // Keep path operators: image clipping depends on the current path.
+        let operators = match self.parse_import_content(&stream_data, parse_content_stream) {
+            Ok(ops) => ops,
+            Err(_) => {
+                xobject_stack.pop();
+                return Ok(Vec::new());
+            },
+        };
 
-        // Critical CTM composition:
-        // Start the form's internal graphics state with `parent_ctm * form_matrix`.
-        // Every image (and nested Form) discovered inside will then have its
-        // handle's bbox/rotation/ctm computed with the *final* transform that
-        // will be active when the image is painted on the page.
-        let start_ctm = parent_ctm.multiply(&form_matrix);
-        let mut ctm_stack = vec![start_ctm];
+        // Matrix::multiply uses row-vector concatenation: form coordinates first,
+        // then the caller's page transform.
+        let start_ctm = form_matrix.multiply(&parent_state.ctm);
+        let form_bounds = xobj_dict
+            .get("BBox")
+            .and_then(Object::as_array)
+            .filter(|a| a.len() == 4)
+            .and_then(|a| {
+                let mut values = [0.0f32; 4];
+                for (dst, value) in values.iter_mut().zip(a) {
+                    *dst = value
+                        .as_real()
+                        .map(|v| v as f32)
+                        .or_else(|| value.as_integer().map(|v| v as f32))?;
+                }
+                Some(values)
+            });
+        let clip =
+            parent_state
+                .clip
+                .intersect(form_bounds.map_or(ImageClip::Unsupported, |bounds| {
+                    ImageClip::transformed_rectangle(start_ctm, bounds)
+                }));
+        let mut graphics = ImageClipTracker::new(start_ctm, clip);
         let mut handles = Vec::new();
 
         for op in operators {
+            graphics.apply(&op);
+            let state = graphics.current();
             match op {
-                Operator::SaveState => {
-                    if let Some(current) = ctm_stack.last() {
-                        ctm_stack.push(*current);
-                    }
-                },
-                Operator::RestoreState => {
-                    if ctm_stack.len() > 1 {
-                        ctm_stack.pop();
-                    }
-                },
-                Operator::Cm { a, b, c, d, e, f } => {
-                    if let Some(current) = ctm_stack.last_mut() {
-                        let m = crate::content::Matrix { a, b, c, d, e, f };
-                        *current = m.multiply(current);
-                    }
-                },
-
                 Operator::Do { name } => {
                     if let Some(ref xobj_d) = form_xobject_dict {
-                        let current_ctm = ctm_stack
-                            .last()
-                            .copied()
-                            .unwrap_or_else(crate::content::Matrix::identity);
                         if let Ok(mut more) = self.collect_handles_from_do(
                             &name,
                             xobj_d,
                             Some(&form_resources),
-                            current_ctm,
+                            state,
                             paint_order,
                             xobject_stack,
                         ) {
@@ -24334,19 +24317,16 @@ impl PdfDocument {
                 },
 
                 Operator::InlineImage { dict, data } => {
-                    let current_ctm = ctm_stack
-                        .last()
-                        .copied()
-                        .unwrap_or_else(crate::content::Matrix::identity);
                     let cs_map = self.build_color_space_map(Some(&form_resources))?;
-                    if let Some(h) = image_handle_from_inline(
+                    if let Some(mut h) = image_handle_from_inline(
                         self,
                         &dict,
                         data,
-                        current_ctm,
+                        state.ctm,
                         *paint_order,
                         &cs_map,
                     ) {
+                        h.clip = state.clip;
                         handles.push(h);
                         *paint_order += 1;
                     }

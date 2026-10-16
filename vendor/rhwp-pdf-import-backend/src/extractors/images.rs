@@ -3945,6 +3945,8 @@ pub struct PdfImageHandle<'doc> {
     /// during Phase 1 by applying the current transformation matrix to the
     /// unit rectangle `[0,0,1,1]`.
     pub bbox: crate::geometry::Rect,
+    /// Active clipping region in the same PDF user-space coordinates.
+    pub clip: super::image_clip::ImageClip,
     /// Rotation angle in degrees (0, 90, 180, or 270), derived from the CTM
     /// during Phase 1.
     pub rotation_degrees: f32,
@@ -4315,6 +4317,7 @@ pub(crate) fn image_handle_from_xobject<'doc>(
         is_inline: false,
         paint_order,
         bbox,
+        clip: super::image_clip::ImageClip::Unbounded,
         rotation_degrees,
         ctm,
         doc,
@@ -4400,6 +4403,7 @@ pub(crate) fn image_handle_from_inline<'doc>(
         is_inline: true,
         paint_order,
         bbox,
+        clip: super::image_clip::ImageClip::Unbounded,
         rotation_degrees,
         ctm,
         doc,

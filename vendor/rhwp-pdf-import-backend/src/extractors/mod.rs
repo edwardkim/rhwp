@@ -8,6 +8,7 @@ pub mod forms;
 pub mod gap_statistics;
 pub mod geometric_spacing;
 pub mod hierarchical;
+pub mod image_clip;
 pub mod images;
 mod jpeg_input;
 mod jpeg_limited;

@@ -276,3 +276,15 @@ accessor 등 입증 경계는 `../rhwp-jpeg-decoder/RHWP_PATCHES.md`와 단계 �
   builder의 0-byte directory length를 실제 직렬화 길이로 보정했다. 기대 매핑은 유지한다.
   근거: https://learn.microsoft.com/en-us/typography/opentype/spec/cmap
 - 재현·검증·남은 범위는 `mydocs/working/task_m100_7911_stage2.md` 3.22를 따른다.
+
+### 편집용 이미지 추출의 사각형 clip 보존 (#7911, F4)
+
+- `page_image_handles`의 page/Form 경로는 CTM과 clip을 함께 추적한다. W/W*는
+  path 종료 시 교차하며 q/Q는 graphics state를 복원한다. 현재 path는 별도로 유지한다.
+  Form의 Matrix·BBox와 부모 clip도 같은 page 좌표계에서 합성한다.
+- handle은 전체 이미지 CTM·payload와 가시 영역을 구분한다. frontend는 가시 영역을
+  소유권·프레임·HWP/HWPX crop에 사용하며 원본 bitmap을 임의 축소하거나 합치지 않는다.
+  빈 교차는 paint하지 않고, 비사각형 clip은 사각형 bbox로 근사하지 않고 미지원으로 알린다.
+- 기존 legacy 이미지 추출 API, 텍스트/vector clipping은 이번 수정 범위 밖이다.
+  전체 할당 경계 입증을 의미하지 않으며 `parser_allocation_bounds_proven=false`를 유지한다.
+  명세·경계 실행·실물 한컴 출력 근거는 3단계 보고서 7.5를 따른다.

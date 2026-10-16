@@ -208,7 +208,7 @@ pub fn convert_hwpx_to_hwp_ir(doc: &mut Document) -> AdapterReport {
     report
 }
 
-/// HWPX/HWP3 출처 IR 을 HWP 직렬화기가 기대하는 형태로 정규화한다.
+/// HWPX/HWP3/PDF 출처 IR 을 HWP 직렬화기가 기대하는 형태로 정규화한다.
 ///
 /// 한컴 HWP5 스트림은 출처와 관계없이 구역당 `PAGE_BORDER_FILL` 레코드 세 개를
 /// 요구한다. HWPX 원본의 단일 BOTH XML 구조 보존은 이 변환을 생략하는 대신,
@@ -2523,6 +2523,20 @@ fn adapt_cell_list_attr(cell: &mut Cell, report: &mut AdapterReport) {
 ///
 /// 호출자: `DocumentCore::export_hwp_with_adapter()` (Stage 5 에서 추가).
 pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> AdapterReport {
+    // PDF lowering creates semantic IR, not an existing HWP5 stream. Materialize
+    // its wire-only fields on the export snapshot just as for other non-HWP
+    // inputs. Use the 5.1 record schema supported by the writer; a scaffold's
+    // default 0.0.0.0 header is not an HWP file version. Do not add HWPX/HWP3
+    // origin markers or apply the HWPX-only picture tone/extra-data conversion.
+    if matches!(source_format, FileFormat::Pdf) {
+        doc.header.version = HwpVersion {
+            major: 5,
+            minor: 1,
+            build: 0,
+            revision: 0,
+        };
+        return convert_to_hwp_ir(doc, false);
+    }
     // [#5933] HWPML(HML) 출처는 HWPX 전용 보정을 타면 안 되지만, **HWP5 스트림 계약**인
     // 구역당 `HWPTAG_PAGE_BORDER_FILL` 3개(#3676)는 출처와 무관하게 지켜야 한다.
     //
