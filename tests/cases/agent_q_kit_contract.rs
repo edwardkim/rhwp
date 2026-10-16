@@ -81,7 +81,12 @@ fn help_lists_fifty_commands() {
 fn every_registered_command_accepts_help() {
     let output = run(&["--help"]);
     assert_eq!(output.status.code(), Some(0), "{output:?}");
-    let commands: Vec<_> = String::from_utf8_lossy(&output.stdout)
+    let help = String::from_utf8_lossy(&output.stdout);
+    // 사용법·예시에도 같은 실행 접두어가 있으므로 실제 하위 명령 절만 읽는다.
+    let commands: Vec<_> = help
+        .split_once("하위 명령:\n")
+        .expect("kit 하위 명령 목록")
+        .1
         .lines()
         .filter_map(|line| {
             line.strip_prefix("  rhwp-q kit ")

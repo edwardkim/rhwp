@@ -87,6 +87,9 @@ fn all_query_commands_explain_arguments_options_examples_and_outputs() {
             let text = String::from_utf8(output.stdout).unwrap();
             let prefix = format!("  rhwp-q {command} ");
             let children: Vec<_> = text
+                .split_once("하위 명령:\n")
+                .expect("그룹의 하위 명령 목록")
+                .1
                 .lines()
                 .filter_map(|line| line.strip_prefix(&prefix)?.split_whitespace().next())
                 .collect();
