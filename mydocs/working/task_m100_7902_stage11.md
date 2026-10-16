@@ -64,3 +64,29 @@ Native producer와 이 producer/원점 경로는 추가 WASM 전용 보완에서
 `stage11-final-full`에서 새 WASM19문서·835쪽 재검증을 실행 중이다. 분류 수정 뒤 전체 Rust를
 다시 실행해 최종0실패를 확인하고 Native Skia3종과 필수 lint를 마무리한다. 기존 Native 전쪽
 재사용은 WASM 전용 자식이 실제 소비 경로에 포함되지 않는 근거로만 판단한다.
+
+
+## HWP/HWPX104쪽의 같은 핵심 경계
+
+HWP104쪽도 Native99.95192%·WASM99.93860%다. 두 형식의 각 실제 PNG가 backend별로
+SHA-256 동일하며 각각의 독립 PDF raster도 같다. 두 PDF에서 별도로 추출한 세 기준선과
+그림 네 변도 일치했다. `stage11-hwp-hwpx-104-reading-identity.json`에 실제 hash·독립 좌표를
+보존했다. 같은 실제 raster의 확대 판독을 연결하고 HWP·HWPX 원본을 모두 같은 정식 검사에서
+실행하도록 보완했다. 14개 완료 페이지 **검사**가 보호하는 문서·쪽 수와 검사 함수 수는 구분한다.
+
+
+## 보완 후 전체 결과
+
+- 수정 후 전체 release-test: **10,427 PASS·45 skipped·실패0**, exit0.
+  compile4분40초·실행697.251초다. 새 양식별104쪽 검사도 실제 PASS했다.
+- 최종 WASM19문서·835쪽은 전쪽90% 이상·쪽수 일치·누락0이며 Native835쪽과 함께
+  devel 대비0.01%p 이상 하락0쪽이다. 두 backend 전체 최대 하락0.00846%p다.
+- 새 WASM의835개 실제 PNG와19개 TSV는 frozen3a 산출물과 각각 바이트까지 같았다.
+  새 producer로 재생성한 사실과 이전 같은 raster의 직접 판독을 구분해 연결한다.
+  `stage11-final-develop-comparison.json`, `stage11-rerender-pixel-identity.json`에 기록했다.
+- 최저 쪽102의 Native/WASM review를 추가 생성해 본문 줄 구성·부호·목록·영문 괄호와
+  하단 표를 판독했다. 하단 표의 남은 괘선 높이 차이는 base에도 있고 현재와 그 영역 픽셀·
+  표 bbox가 같다(`stage11-page102-existing-region.json`). 이 변경으로 해결했다고 주장하거나
+  기준 좌표를 새로 고정하지 않는다. 동일한 초기 출력 차이와 현재 회귀를 구분한다.
+- Native Skia 공식3종·필수 lint·최종 GitHub 절차는 아직 남아 있다. 위 결과만으로 PR 준비
+  완료나 CI·merge 완료로 판정하지 않는다.
