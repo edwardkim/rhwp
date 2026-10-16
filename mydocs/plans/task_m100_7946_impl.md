@@ -1,11 +1,30 @@
-# Task #7946 — Studio PDF 직접 열기 구현계획
+# Task #7946·#7855·#7856 — Studio PDF 직접 열기와 의존성 보정 구현계획
 
 - Issue: [#7946](https://github.com/edwardkim/rhwp/issues/7946)
+- 공동 처리: [#7855](https://github.com/edwardkim/rhwp/issues/7855), [#7856](https://github.com/edwardkim/rhwp/issues/7856)
 - 기준 SHA: `4662c069e557e928ed7968d061121fde90b1f027`
 - 상태: 구현 전, 계획 승인 대기
 - 상위 계획: [수행계획](task_m100_7946.md)
 
 ## 1. 제품 연결 계약
+
+### 1.1 의존성 호환성 보정
+
+먼저 Studio·VS Code·frontend-metrics의 manifest/lockfile과 추가 사용 경로를 조사한다.
+#7855의 5.0.12 일원화와 #7856의 목표 안정 버전 확인은 별도 판정으로 기록한다.
+호환되는 상위 패키지 갱신을 우선하며 없으면 저장소에서 재설치 가능한 소스 패치/어댑터를
+검토한다. 직접 호출과 transitive 소비자 계약을 확인하지 않은 전역 override는 사용하지 않는다.
+
+- brace-expansion 2.x 소비자의 함수형 CommonJS 호출을 5.x named `expand` 계약과 대조한다.
+  쉼표 대안·중첩·숫자/문자 범위·escape·빈/잘못된 패턴·확장 제한과 실제 glob 선택을 검증한다.
+- Ajv의 fast-uri 3.x 의존 선언과 실제 소비 API를 목표 버전에 맞춘다.
+  `$id`/`$ref`·상대 참조·fragment·escape·host/port·오류/타입 계약을 대조한다.
+- 영향 manifest와 lockfile을 함께 갱신하고 package integrity·Node engine·라이선스와
+  로컬/CI 지원 환경을 확인한다. 설치된 파일만 고치는 패치는 허용하지 않는다.
+- 두 의존성의 새 버전 조회·보안 권고 확인·audit은 구현 단계에서 실제 공식 정보로 수행한다.
+  현재 문서의 버전은 이슈 목표와 로컬 lockfile 관측이며 최신 배포판 검증 완료를 뜻하지 않는다.
+
+### 1.2 PDF 직접 열기
 
 PDF 지원 빌드에서는 파일 열기·fallback input·드롭으로 PDF 바이트를 기존 제품 loader에
 전달한다. `HwpDocument` → 공통 IR → 기존 Canvas 렌더 경로를 사용하며 PDF→HWPX
@@ -24,6 +43,8 @@ PDF 지원 빌드에서는 파일 열기·fallback input·드롭으로 PDF 바�
 
 | 위치 | 변경 | 확인할 소비 지점 |
 | --- | --- | --- |
+| `rhwp-studio/`, `scripts/frontend-metrics/`의 manifest·lockfile 및 필요한 상위 소비자 패치 | #7855의 5.0.12 일원화 | 설치 그래프 전 경로·CommonJS/named API·glob/확장 제한·metrics 파일 선택 |
+| `rhwp-studio/`, `rhwp-vscode/` 및 추가 발견 경로의 manifest·lockfile/소비자 패치 | #7856의 fast-uri 갱신 | Ajv 스키마·참조 URI 처리·webpack/VS Code 패키징 |
 | `src/wasm_api.rs` 및 바인딩 | feature-on/off capability 조회 | 초기화 뒤 실제 WASM 응답, 이전 bundle fallback |
 | `rhwp-studio/src/core/wasm-bridge.ts` | capability·PDF 진단 접근, 기존 원자적 load 재사용 | 후보 생성·convertToEditable 이후 commit/실패 복구 |
 | `rhwp-studio/src/command/file-system-access.ts`, `file-open-picker.ts` | capability별 파일 형식·picker options | File System Access와 fallback input이 같은 목록 소비 |
@@ -41,20 +62,26 @@ PDF File System Access handle은 입력/최근 문서 정보로 취급하고 출
 
 ## 3. 검증 순서
 
-1. 작은 계약 검사: on/off·이전 WASM, picker/fallback/drop, 취소·잘못된 확장자,
+1. 의존성 보정 전/후의 glob·Ajv URI 회귀를 확인한다. 영향 패키지에서 `npm ci`와 대상
+   `npm ls --all`을 실행해 버전 수렴·invalid 없음·재설치 재현성·resolved/integrity를 확인한다.
+   개발 의존성을 포함한 audit 전후와 대상 권고·새 유입·잔여 발견을 기록한다.
+2. 작은 PDF 계약 검사: on/off·이전 WASM, picker/fallback/drop, 취소·잘못된 확장자,
    손상/한도 오류 뒤 현재 문서·다음 정상 입력, 원본 PDF 덮어쓰기 방지.
-2. Docker `wasm` 서비스와 locked wrapper로 루트 web package를 PDF-on으로 생성한다.
+3. 갱신된 의존성에서 Studio `npm test`·`npm run build`와 PWA/service worker 생성,
+   루트의 `node scripts/frontend-metrics.mjs`, VS Code `npm run compile`·`npm run package`를 실행한다.
+   metrics의 의도한 PDF UI 소스 변화와 의존성에 의한 파일 선택·분석 변화는 같은 입력으로 구분한다.
+4. Docker `wasm` 서비스와 locked wrapper로 루트 web package를 PDF-on으로 생성한다.
    기존 공용 Docker target/cache를 재사용하고 pkg/public JS·WASM SHA를 확인한다.
    별도 검증 디렉터리에 default-off package도 확보해 실제 비활성 계약을 확인한다.
    Native 검사는 기본 작업공간 `/home/edward/mygithub/rhwp/target/pr-review`를 재사용한다.
-3. 실제 CDP Chrome의 정식 UI로 원본 PDF를 직접 연다. 12쪽·스크롤·쪽 이동, 3쪽 crop과
+5. 실제 CDP Chrome의 정식 UI로 원본 PDF를 직접 연다. 12쪽·스크롤·쪽 이동, 3쪽 crop과
    11쪽 그림 9/10·캡션 및 오류 없음, 실제 로드 WASM SHA를 기록한다.
    HWP/HWPX/HML 기존 공개 대조군의 열기·렌더·문서 교체도 확인한다.
-4. 원본 PDF와 새 직접 입력 결과의 전쪽 Native/fresh WASM TSV를 먼저 산출한다.
+6. 원본 PDF와 새 직접 입력 결과의 전쪽 Native/fresh WASM TSV를 먼저 산출한다.
    각 backend 최저 90% 이상·미달/누락 0·12쪽 일치 및 대표 영역 직접 판독을 수행한다.
    이전 저장 HWP/HWPX의 비교를 새 PDF 직접 입력 검증으로 대신하지 않는다.
    B10-1 한컴 재조판 미달은 분리해 유지한다.
-5. [변경 범위별 검증](../manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)에
+7. [변경 범위별 검증](../manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)에
    맞춰 Studio 타입/검사·바인딩 검사를 실행한다. Rust 변경에는 fmt·Native/WASM/workspace
    Clippy·workspace build와 base SHA 고정 정책 검사를 순차 적용한다.
    긴 전체 회귀·PR CI는 정본의 승인 절차를 따르고 이미 충분한 증거를 불필요하게 반복하지 않는다.
@@ -69,5 +96,7 @@ PDF File System Access handle은 입력/최근 문서 정보로 취급하고 출
 원본·기준 PDF·사용 글꼴·code SHA·실제 WASM 해시와 실행 명령을 단계 보고서에서 연결한다.
 50 MiB 이상 PDF는 로컬에만 보존하며 기존 공개 12쪽 PDF를 우선 사용한다.
 
-계획 승인 → 구현·집중 검사 → 단계 보고·커밋 → 실제 WASM·시각 검증 → 최종 보고·
-승인된 원격 반영/PR 순서다. 지금은 계획 문서만 작성하며 제품 source·정식 UI는 변경하지 않는다.
+계획 승인 → 의존성 보정·집중 검사 → PDF UI 구현·단계 보고·커밋 → 통합 빌드·실제 WASM·
+시각 검증 → 최종 보고·승인된 원격 반영/PR 순서다. 세 이슈는 동일 브랜치·PR로 진행하며
+검증은 이슈별 완료 조건에 연결한다. 지금은 공동 범위의 계획만 보완하며 제품 source·lockfile·
+정식 UI는 변경하지 않는다.
