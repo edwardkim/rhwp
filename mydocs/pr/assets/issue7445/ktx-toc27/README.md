@@ -2,7 +2,7 @@
 
 [기존 #7445 등록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-6063592661)에
 동일 문서·증상으로 연결합니다. [원문](KTX.hwp), [새 한컴 Print PDF](KTX-hwp-2020.pdf),
-[이전 2022 참고 PDF](KTX-2022.pdf), [전체 비교와 이관 범위](transfer-validation.json)를 보존합니다.
+[이전 2022 참고 PDF](KTX-2022.pdf), 전체 비교와 이관 범위（로컬 중간 자료 `transfer-validation.json`）를 보존합니다.
 
 | 출력 | 2쪽 | 26쪽 | 전체 쪽수 |
 | --- | ---: | ---: | --- |
@@ -14,7 +14,7 @@
 [26쪽 review](current-p026-review.png)를 직접 판독했습니다. 이관은 출력 개선이나 승인 완료가 아닙니다.
 
 현재 실패한 `svg_snapshot::issue_267_ktx_toc_page` 한 함수와 해당 렌더 corpus 두 행만
-제거했습니다. [제거 전 함수](issue_267_removed.rs.txt)와 [종전 골든](ktx-toc-page-before.svg)은
+제거했습니다. [제거 전 함수](issue_267_removed.rs.txt)와 종전 골든（로컬 중간 자료 `ktx-toc-page-before.svg`）은
 자동 회귀 수집 밖에 보존합니다. OVR 자동 프리셋의 해당 입력도 제거했습니다. 같은 원문의 기존 정상 탭·리더·page-hide·hit parity와
 IR 왕복 계약은 이관 자산을 사용해 유지하며 기대값은 변경하지 않았습니다. 새 회귀 함수는 없습니다.
 

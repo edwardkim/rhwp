@@ -147,7 +147,7 @@ CanvasKit 요청의 개인정보 입력은 문서 preflight의 기존 작업 한
 
 실제 Skia CLI는 명시적 `--font-environment` 옵션을 지원하지 않으므로 지원되는 Native 글꼴 치환 환경과 기준 compat를 사용했습니다. Studio는 oracle 환경을 주입하지 않은 기본 제품 환경입니다. 전쪽 Visual Sweep의 명시적 기준 환경과 이 실제 출력 환경을 구분해 JSON에 기록했습니다. 최초 하네스의 지원하지 않는 옵션 및 host 브라우저 모드 실패도 output에 보존했고, Mac headless Chrome과 올바른 옵션으로 다시 캡처했습니다. 이 실행 오류를 제품 회귀나 통과로 섞지 않았습니다.
 
-최종 [검증 JSON](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/final_validation.json)에 입력·독립 PDF·코드·비교기·Native/WASM producer hash, 실제 backend/profile, 필수 검증 명령과 결과를 기록했습니다.
+최종 검증 JSON（로컬 중간 자료 `final_validation.json`）에 입력·독립 PDF·코드·비교기·Native/WASM producer hash, 실제 backend/profile, 필수 검증 명령과 결과를 기록했습니다.
 
 - [sample16 HWP 35쪽 Native review](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/sample16-p035-native-review.png): **94.35054%**.
 - [개인정보 42쪽 Native review](../pr/assets/issue7445/completed-20261009/rebase-repair-20261013/pii-p042-native-review.png): **99.99358%**.

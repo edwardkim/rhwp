@@ -27,7 +27,7 @@
 - 제거 전 두 함수는 최신 후보 개별 실행에서 실제 FAIL이었다. 제거 후 남은 관련 함수는 **3 PASS / 0 FAIL / 183 skip**, 11.079초, exit 0이다.
 - 처음 집중 명령의 suite12/13은 해당 모듈 등록이 없어 exit4/0tests였다. 이를 성공으로 기록하지 않고 현재 registry의 suite001에서 위3건을 다시 실행했다. fmt의 끝 빈줄은 정리하고 최종 확인했다.
 
-[입력·기준·빌드·검사 해시 및 결과](../pr/assets/issue7445/completed-20261009/education-page-pins/validation.json),
+입력·기준·빌드·검사 해시 및 결과（로컬 중간 자료 `validation.json`）,
 [고정 devel 26쪽 review](../pr/assets/issue7445/completed-20261009/education-page-pins/base-native-p026-review.png),
 [현재 26쪽 review](../pr/assets/issue7445/completed-20261009/education-page-pins/current-native-p026-review.png).
 

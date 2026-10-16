@@ -16,7 +16,7 @@ PDF는 2쪽이며 마지막은 빈 쪽이다. 사용자가 한컴의 원본도 2
 
 원 이슈 #6034에도 마지막 빈 꼬리쪽과 각주 간격 잔여가 기록돼 있다. 닫힌 이슈라는 이유만으로 회귀를 삭제하지 않는다. 기존 770..790px 핀과 9줄 단정은 전쪽 수용 후 독립 내용·각주 소속과 비겹침 관계로 다시 판단한다. 이번 단계에서는 생산 코드·테스트·baseline을 변경하지 않았다.
 
-[입력·PDF 출처와 비교 요약](../pr/assets/issue7445/completed-20261009/court-manual-reference/validation.json).
+입력·PDF 출처와 비교 요약（로컬 중간 자료 `validation.json`）.
 
 ![첫 쪽 수정 전 Native·PDF·overlay](../pr/assets/issue7445/completed-20261009/court-manual-reference/before-review-p001.png)
 

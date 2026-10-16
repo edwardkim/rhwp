@@ -1,8 +1,0 @@
-{
-  "result": {
-    "error": "SyntaxError: Invalid font data in ArrayBuffer."
-  },
-  "messages": [
-    "OTS parsing error: OS/2: misaligned table"
-  ]
-}

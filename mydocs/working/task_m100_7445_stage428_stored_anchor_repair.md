@@ -2,7 +2,7 @@
 
 - 브랜치: `fix/7445-completed-20261009`
 - 고정 devel: `21ed64071f81f35f37618717693bd30f727392c9`
-- 증적: [validation.json](../pr/assets/issue7445/completed-20261009/stored-anchor-repair/validation.json)
+- 증적: validation.json（로컬 중간 자료 `validation.json`）
 - 전체 회귀의 27개 실패가 모두 해결된 상태는 아니다. 전체 재실행과 사용자 승인 뒤에만 PR을 진행한다.
 
 ## 구현 근거와 소비 경로

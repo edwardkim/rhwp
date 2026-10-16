@@ -15,4 +15,4 @@ Native CLI와 Studio가 사용하던 공통 글꼴 선택을 WASM PNG 실행기�
 - 원래 초기화 계약 검사: 수정 전3건 중 의도한 첫 조판 검사1FAIL·나머지2PASS. 수정 후 공급·내장·명시·과거 API·hash/로드 실패·서버 계약 Node12PASS,기존 Visual Sweep Python142PASS.
 - `review.png`와 같은 좌표의 `review-detail.png`를 직접 판독했다. 본문 줄 구성·표 이어받기·좌측 병합 셀의 내용 소속과 외곽이 대응하며 글자 래스터 차이는 남아 있다. 픽셀 완전 일치를 주장하지 않는다.
 
-[전쪽 TSV·실제 공급 face/hash·생산자와 결과](evidence.json)에 연결했다. 이 결과는5쪽 실행기 보정 검증이며 원43조건·추가 대상·전체 회귀·실제 소비 경로36건의 최신 완료를 대신하지 않는다. 이전 `canonical-font-environment-candidate-v27`은 driver가 C25를 참조한 진단이며 출처를 정정했고 최종 결과로 사용하지 않았다.
+전쪽 TSV·실제 공급 face/hash·생산자와 결과（로컬 중간 자료 `evidence.json`）에 연결했다. 이 결과는5쪽 실행기 보정 검증이며 원43조건·추가 대상·전체 회귀·실제 소비 경로36건의 최신 완료를 대신하지 않는다. 이전 `canonical-font-environment-candidate-v27`은 driver가 C25를 참조한 진단이며 출처를 정정했고 최종 결과로 사용하지 않았다.

@@ -22,11 +22,11 @@
 
 문서별 전쪽 TSV와 독립 추출값은 아래 증거에 있다.
 
-- [편집 표·제목](issue7490-fit-prefix/evidence.json): 원본1쪽, 서로 다른 정확한 편집 입력 두 종류도 각각 전1쪽 검증했다.20444를20445의 두 줄 기대값과 혼동하지 않았다.
-- [일·생활 균형 지수](worklife-squeeze/evidence.json): 전6쪽 최저99.08366 /99.08514%.
-- [자산관리규정](asset-picture-successor/evidence.json): 전60쪽 최저90.54804 /90.54058%.
-- [영월 독립 프레임](yeongwol-final-ledger/independent-frame.json): 전4쪽 최저98.05546 /97.72386%.3쪽 월별누계의 관계 검사는 그대로다.
-- [현재 소규모 전쪽 대조](current-small-whole-results.json), [Native 소스·실행 파일](current-native-producer.json), [fresh WASM](current-wasm-producer.json).
+- 편집 표·제목（로컬 중간 자료 `evidence.json`）: 원본1쪽, 서로 다른 정확한 편집 입력 두 종류도 각각 전1쪽 검증했다.20444를20445의 두 줄 기대값과 혼동하지 않았다.
+- 일·생활 균형 지수（로컬 중간 자료 `evidence.json`）: 전6쪽 최저99.08366 /99.08514%.
+- 자산관리규정（로컬 중간 자료 `evidence.json`）: 전60쪽 최저90.54804 /90.54058%.
+- 영월 독립 프레임（로컬 중간 자료 `independent-frame.json`）: 전4쪽 최저98.05546 /97.72386%.3쪽 월별누계의 관계 검사는 그대로다.
+- 현재 소규모 전쪽 대조（로컬 중간 자료 `current-small-whole-results.json`）, Native 소스·실행 파일（로컬 중간 자료 `current-native-producer.json`）, fresh WASM（로컬 중간 자료 `current-wasm-producer.json`）.
 
 수납대장4쪽100%는 마지막 표의 별도 경계를 보호한다. 월별 셀이 있는3쪽의 px 수용 근거가 아니다.
 일·생활1쪽의 더 높은 점수도6쪽 SQUEEZE 셀을 대신하지 않는다. 토지이용3·4쪽 분할은
@@ -42,7 +42,7 @@ Native89.32950 /WASM89.35068% →98.74064 /98.76872%다.
 
 집중 검증은68/68→71/71→73/73 PASS다. 자산관리규정의 기존 검사도 포함한
 최종75건은74PASS/1FAIL이다. 새 px 검사는 모두 통과했으나 기존 HFT 굵은 한글
-전진 계약이 실패했다. [실행 결과](px-focused-validation.json)에 남겼으며 검사 제거·완화 없이
+전진 계약이 실패했다. 실행 결과（로컬 중간 자료 `px-focused-validation.json`）에 남겼으며 검사 제거·완화 없이
 구현을 계속 보정해야 한다. 전체 기존 회귀 교정·전체 PR 검증 완료를 뜻하지 않는다.
 
 확대 PNG의 배열은 독립 PDF → Native → fresh WASM 순서다.
@@ -56,8 +56,8 @@ Native89.32950 /WASM89.35068% →98.74064 /98.76872%다.
 
 ## C33/C38 후속 검증
 
-[누름틀·빈 문단 소유](field-prefix-consumer-repair/validation.json)와
-[원본 기호·그림 배분](source-program-and-inline-spacing/validation.json)에 버전별 증거를 연결한다.
+누름틀·빈 문단 소유（로컬 중간 자료 `validation.json`）와
+원본 기호·그림 배분（로컬 중간 자료 `validation.json`）에 버전별 증거를 연결한다.
 C38은 Native/fresh 각465쪽(2022 저장본64, 생물독소205, 원본 HWP5 64,
 개인정보 기본/명시각66)의 전쪽90%를 확인했다. Native/fresh의 같은 동작 점수
 최솟값을 기준으로2022 저장본59쪽99.20113%(다음60쪽99.14881%)를 선택했다.

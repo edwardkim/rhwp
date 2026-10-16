@@ -35,7 +35,7 @@
 - manifest 준비 후 고정 base를 지정한 check와 fmt가 통과했다. 남은 규제분석·low-slack·교육과정 관련 기존 함수는 **7 PASS / 0 FAIL / 1084 skip**, 11.263초, exit0이다. locked nextest release-test, threads8로 실행했다.
 - 원장 전체와 전체 nextest는 아직 다시 실행하지 않았다. 이 집중 결과를 전체 통과로 보고하지 않는다.
 
-[해시·명령 결과·범위 기록](../pr/assets/issue7445/completed-20261009/cgmp-fidelity/validation.json),
+해시·명령 결과·범위 기록（로컬 중간 자료 `validation.json`）,
 [현재35쪽](../pr/assets/issue7445/completed-20261009/cgmp-fidelity/cgmp-current-p035-review.png),
 [현재36쪽](../pr/assets/issue7445/completed-20261009/cgmp-fidelity/cgmp-current-p036-review.png).
 로그는 ignored `output/pr-review/7445-completed-20261009/stage405-existing-transfers-remaining/`,

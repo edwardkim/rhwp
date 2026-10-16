@@ -4,7 +4,7 @@
 전74쪽 진단입니다. 이전 댓글은 대표 4쪽만 확인한 결과였으며 전쪽 통과 근거가 아니었습니다.
 [원본](aift.hwp), [새 한컴 한 쪽씩 Print PDF](aift-hwp-2020.pdf),
 [이전 2022 참고 PDF](aift-2022.pdf), [제거 전 함수](issue_147_removed.rs.txt),
-[종전 골든](aift-page3-before.svg)의 바이트와 해시를 보존합니다.
+종전 골든（로컬 중간 자료 `aift-page3-before.svg`）의 바이트와 해시를 보존합니다.
 
 | 출력 | 전체 최저값 | 90% 미만 쪽 | 전체 쪽수·누락 |
 | --- | ---: | --- | --- |
@@ -14,7 +14,7 @@
 현재 코드에서 새로 생겼던 19쪽 미달은 구현을 먼저 고쳤습니다. 최종 19쪽 92.75015%,
 20쪽 93.86002%이며 새 미달 쪽은 없습니다. 첫 조각 높이·빈 이어받기 테두리와 뒤 본문을
 직접 확인했습니다. 이 문서 전체가 정상 피델리티를 갖춘 것으로 보고하지 않습니다.
-[전쪽 근거와 보정 출처](../completed-20261009/aift-first-frame-validation.json).
+전쪽 근거와 보정 출처（로컬 중간 자료 `aift-first-frame-validation.json`）.
 
 활성 검증에서 제거한 함수는 `svg_snapshot::issue_147_aift_page3` 한 개입니다.
 전체 SVG 문자열의 fallback font-family 차이를 기대값 갱신으로 숨기지 않습니다.
@@ -25,7 +25,7 @@
 공유 입력이므로 필요한 소비자까지 참조를 점검했습니다. HWPX 대응본은 이번 HWP 검증으로
 측정하지 않았으며 `samples/hwpx/aift.hwpx`와 해당 PDF·기존 검사들은 그대로입니다.
 
-[이전/새 경로·제거와 유지 범위](transfer-validation.json)에 검사 결과를 연결합니다.
+이전/새 경로·제거와 유지 범위（로컬 중간 자료 `transfer-validation.json`）에 검사 결과를 연결합니다.
 전쪽 TSV·로그·중간 산출물은 ignored `output/pr-review/7445-completed-20261009/`에 있고
 커밋에는 최종 요약·원문/Print·필요한 대표 PNG만 포함합니다.
 

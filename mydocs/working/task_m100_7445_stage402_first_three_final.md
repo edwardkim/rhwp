@@ -26,7 +26,7 @@
 
 ## 증적과 남은 범위
 
-[입력·빌드 해시와 결과 요약](../pr/assets/issue7445/completed-20261009/final-first-three-validation.json),
+입력·빌드 해시와 결과 요약（로컬 중간 자료 `final-first-three-validation.json`）,
 [규제분석 10쪽](../pr/assets/issue7445/completed-20261009/final-first-three-regulatory17-p010-review.png),
 [11쪽](../pr/assets/issue7445/completed-20261009/final-first-three-regulatory17-p011-review.png),
 [15쪽](../pr/assets/issue7445/completed-20261009/final-first-three-regulatory17-p015-review.png),

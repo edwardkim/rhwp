@@ -37,7 +37,7 @@ Native는 native-skia, fresh WASM은 Chrome Canvas2D다. 기존 SVG raster 점�
 기존 탭 폭·순서·셀 소유·여백 관계 검사는 유지했고 절대 좌표 assertion5개를 더했다.
 
 - `issue_7344_field_marker_stored_tac_lines`: **4 PASS / 0 FAIL**,0.029초. 새 검사5개 포함.
-- [Native/fresh 증거 및 독립 좌표](../pr/assets/issue7445/completed-20261009/pixel-regression-20261014/evidence.json)
+- Native/fresh 증거 및 독립 좌표（로컬 중간 자료 `evidence.json`）
 - [누름틀 Native review](../pr/assets/issue7445/completed-20261009/pixel-regression-20261014/field-marker1-native-review.png)
 - [누름틀 fresh WASM review](../pr/assets/issue7445/completed-20261009/pixel-regression-20261014/field-marker1-wasm-review.png)
 - [가운데 정렬 Native review](../pr/assets/issue7445/completed-20261009/pixel-regression-20261014/broken-ladder1-native-review.png)

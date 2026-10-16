@@ -1114,8 +1114,8 @@ Native/fresh 각각8조건79쪽 전쪽90%·독립 쪽수 일치다. 자산관리
 CharProc SHA와1000em 자연 폭이 일치했다. 기존1024em 표와 다른28개만 최근접값으로
 보정하고 공백·미확인17개·다른 face·한글 범위는 보존했다. 실제 glyph 프로그램을
 TTF에서 추출하거나 줄 정렬 간격을 자연 폭으로 쓰지 않았다.
-출처·glyph SHA·old/new는 [교차 검증 폭](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hft-ascii-followthrough/independent-natural-widths.json)과
-[변경값](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hft-ascii-followthrough/changes.json)에 있다.
+출처·glyph SHA·old/new는 교차 검증 폭（로컬 중간 자료 `independent-natural-widths.json`）과
+변경값（로컬 중간 자료 `changes.json`）에 있다.
 
 같은 저장본의 원문4줄/실제3줄 FAIL → 원문4줄/실제4줄 PASS, 전체쪽수196→197이다.
 집중 nextest81PASS0FAIL(8.702초), Native build1m48s/fmt PASS.
@@ -1143,7 +1143,7 @@ Print(8430f817…, preprocessing 없음)로 확인했다. 기본/2024 모드의 
 독립 Print trace의 첫 글자x/첫·끝 baseline을 ±2 CSSpx로 보호하고,196→197쪽의 원문
 누락·중복·여섯 줄 소속·셀 안 포함·겹침 없음도 함께 검사했다. 새 검사는 이전fbb의196쪽
 FAIL→현재197쪽PASS(실제 rustc --test)이며, 원본115/저장197 검사는 유지했다.
-[입력·전쪽 수치·독립 원점·review](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/validation.json).
+입력·전쪽 수치·독립 원점·review（로컬 중간 자료 `validation.json`）.
 
 #6389의 합성 세션과#5846의 기본 제품 경로가 결측U+2024를 전각으로 기대하던 검사를
 C19의 독립 Print/실제 기호 공급자 계약으로 교정했다. 원 글꼴의 TrueType 선언 승격을
@@ -1158,7 +1158,7 @@ Native/fresh 최저93.72832%, 미달0이다. #5821 제목은 SVG의 한 자리 x
 글리프·폭·힌팅·cmap 등 payload는 head checksum 외에 모두 동일하며, 두 준비 경로의
 결과SHA도badb9944…로 동일하다. Node5PASS1FAIL→6PASS, Python1FAIL→전체21PASS,
 글꼴 환경Node9PASS·Studio tsc PASS다. 글꼴 바이너리는 커밋하지 않았다.
-[준비·fixture 교정 증거](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/font-program-preparation/validation.json).
+준비·fixture 교정 증거（로컬 중간 자료 `validation.json`）.
 
 집중Native Skia13건은13PASS. 기존 공개 paint/재조판 계약의integration 이관 파일도
 기존 원본 계약을 유지한다. default feature의 영향 범위45건은41PASS4FAIL이며,
@@ -1191,7 +1191,7 @@ leading_spaces/natural_prefix_runs→최종 glyph spacing이 같은 경계를 �
 
 집중 Native Skia22PASS0FAIL(1.609초), Native build/fresh web no-opt 빌드·fmt 완료.
 전체 회귀와 #1105/생물독소 경계 보정 등은 남아 있으며 PR 준비 완료가 아니다.
-[전쪽 수치·출처·대표 확대 이미지](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/field-prefix-consumer-repair/validation.json).
+전쪽 수치·출처·대표 확대 이미지（로컬 중간 자료 `validation.json`）.
 
 
 ## C34. 문단 내부 컷 허용과 고아 줄 예외의 분리
@@ -1217,7 +1217,7 @@ Native/fresh192DPI 비교를 끝냈고 쪽수205/205이다. 같은192DPI의 수�
 영향 범위 default nextest45건은44PASS1FAIL(2.977초), 남은 실패는#1105의
 2022 저장본 낱말 소속이다. 이는 전체 회귀 결과가 아니다. Native/fresh build·fmt
 완료이며 최신 전체 회귀 및 범위별 필수 게이트는 보정 뒤 다시 실행한다.
-[원인·빌드·전후·전쪽 수치·대표 review](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/biotoxin-row-ownership/validation.json).
+원인·빌드·전후·전쪽 수치·대표 review（로컬 중간 자료 `validation.json`）.
 
 
 ## C35/C36 진행. 원본 글리프의 부분 폭·실제 그림 배분·브라우저 글꼴 준비
@@ -1319,7 +1319,7 @@ Docker 최적화 통과가 아니다. 공통 태은명조 준비·루트/Studio 
 누락·중복0을 확인했다. 현재 선택한 합계56건은56PASS/0FAIL이며 전체 회귀와 구분한다.
 생성 suite/manifest를 커밋하지 않는다.
 
-[생산자·원본/PDF·전쪽 수치·독립 기호·중요 쪽 선택·직접 판독 이미지](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/source-program-and-inline-spacing/validation.json).
+생산자·원본/PDF·전쪽 수치·독립 기호·중요 쪽 선택·직접 판독 이미지（로컬 중간 자료 `validation.json`）.
 최신 전체 회귀, 남은 완료 문서 범위, 최신 devel 대비 비교, 실제 소비 경로와 범위별
 게이트가 끝나기 전 PR 완료로 판정하지 않는다. 사용자 초안·샘플/PDF·공유 target은 보존했다.
 
@@ -2451,3 +2451,24 @@ Native Skia2PASS를 확인했다. 98% 이상인3쪽에는 독립 원문 글리�
 보존한 뒤 prepare로 정정했다. 로그·두 stdout·줄 단위 diff는 ignored
 `output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-fe5725dc-20261017/font-program-hwp5-c90/q5-dump-contract/`에 보존한다.
 이 focused 결과를 새 head의 전체 회귀·후속 게이트 완료로 쓰지 않는다.
+
+## C73. 검증 중간 산출물의 최종 PR 트리 제외 (2026-10-17)
+
+현행 `visual_fixture_evidence.md`의 최종 증적 허용 목록을 적용했다. 고정 base
+`fe5725dc384689b45d60ef8ea4c83138bc2701d8` 이후 이 브랜치에서 추가한 자산만 조사했다.
+생성 TSV213개·분석/metric/실행 JSON184개·진단 SVG2개, 총399개/4,684,384바이트를
+ignored output으로 보존한 뒤 최종 Git 트리에서 제외했다. 모든 파일을 SHA256으로 대조하고
+완전한 사본을 먼저 만든 뒤 제거했으며 기존 base의 자산·원본·PDF·PNG는 제거하지 않았다.
+
+실제로 `include_str!`/`read_to_string`으로 소비하는 `pii5846-reference-font-environment.json`과
+`project2097-reference-font-environment.json`은 정식 입력이므로 유지했다. 두 입력의 원본 내용과
+Rust 소스/테스트는 이 정리로 바꾸지 않았다. 추적 중인 Markdown25개의126개 중간 파일 링크는
+로컬 자료명 인용으로 바꾸고 본문의 수치·판정·실패 이력은 유지했다. 사용자의 미추적 PR 초안과
+오늘할일은 수정하지 않았다. 그 초안에 있는 과거 경로는 사용자가 보존한 초안의 일부다.
+
+로컬 복구·진단 경로는
+`output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-fe5725dc-20261017/artifact-retention-audit/`다.
+`retained-intermediates/<기존 저장소 상대 경로>`에 원래 바이트를 유지하고 후보별 SHA·실행 소비자·
+문서 변경 전 사본과 정리 결과도 같은 ignored 디렉터리에 보존한다. 이 경로는 로컬 진단용이며
+영구 제출 증적 링크가 아니다. 현재 head의 최종 판정은 새 전쪽 측정·필수 게이트와 Markdown
+요약으로 별도 기록한다. 최종 대표 PNG의 코멘트 사용 목록과 문서 링크 검토는 아직 남았다.

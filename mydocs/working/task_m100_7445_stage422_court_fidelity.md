@@ -31,7 +31,7 @@ Issue: #7445의 제출 후보 검증 중 발견한 #6034 대조군. 브랜치는
 
 관련 nextest는 locked release-test·threads=8로 **5 PASS / 0 FAIL / 필터 제외 877**, 실행 1.419초, exit 0이다. #6034 관계 검사, #5734 그림 셀, #6448 TAC 표와 후속 문단, 정책연구의 닫힌 분할 프레임 두 기존 대조군이 통과했다. 이 결과는 전체 회귀 통과가 아니다. 수정 전에는 1쪽 출력과 잘못된 px 전제의 기존 실패가 기록돼 있다. 최종 후보는 내용 보존 관계와 2쪽 소유를 통과한다.
 
-[원본·PDF·빌드·전쪽 TSV·nextest 요약](../pr/assets/issue7445/completed-20261009/court-fidelity/validation.json).
+원본·PDF·빌드·전쪽 TSV·nextest 요약（로컬 중간 자료 `validation.json`）.
 
 ![최종 첫 쪽 Native·PDF·overlay](../pr/assets/issue7445/completed-20261009/court-fidelity/review_001.png)
 

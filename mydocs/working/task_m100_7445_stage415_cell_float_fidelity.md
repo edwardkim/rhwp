@@ -66,11 +66,11 @@ Native의 전체 2쪽 layout-anomaly는 본문 넘침·용지 밖·텍스트 겹
 
 ## 증거
 
-- [Native 전쪽 TSV](../pr/assets/issue7445/completed-20261009/cell-float-fidelity/native-silhouette.tsv)
-- [fresh WASM 전쪽 TSV](../pr/assets/issue7445/completed-20261009/cell-float-fidelity/fresh-silhouette.tsv)
+- Native 전쪽 TSV（로컬 중간 자료 `native-silhouette.tsv`）
+- fresh WASM 전쪽 TSV（로컬 중간 자료 `fresh-silhouette.tsv`）
 - [1쪽 리뷰](../pr/assets/issue7445/completed-20261009/cell-float-fidelity/native-review_001.png)
 - [2쪽 리뷰](../pr/assets/issue7445/completed-20261009/cell-float-fidelity/native-review_002.png)
-- [소스·입력·빌드·WASM 해시와 검증 결과](../pr/assets/issue7445/completed-20261009/cell-float-fidelity/validation.json)
+- 소스·입력·빌드·WASM 해시와 검증 결과（로컬 중간 자료 `validation.json`）
 
 전체 로그는 ignored `output/pr-review/7445-completed-20261009/stage415-cell-float-physical-frame/`에
 보관하며 커밋하지 않는다. 입력/PDF 정본은 그대로 보존한다.

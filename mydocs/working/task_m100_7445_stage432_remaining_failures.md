@@ -922,7 +922,7 @@ byte-identical입니다. 11쪽은 `新` 글리프 영역 288픽셀의 래스터 
 이는 개별 `rustc --test` 실행이며 최신 전체 Cargo nextest를 대신하지 않습니다.
 새 테스트 함수는 추가하지 않았습니다. manifest와 unit-tier 정책도 통과했습니다.
 
-증적: [현재 기준 요약](../pr/assets/issue7445/completed-20261009/current-base-qualification/empty-slot-and-hwp3-title-current-base.json),
+증적: 현재 기준 요약（로컬 중간 자료 `empty-slot-and-hwp3-title-current-base.json`）,
 [보도자료 8쪽 Native review](../pr/assets/issue7445/completed-20261009/current-base-qualification/press-empty-slot-p008-native-review.png),
 [fresh WASM review](../pr/assets/issue7445/completed-20261009/current-base-qualification/press-empty-slot-p008-wasm-review.png).
 TSV·실행 로그는 ignored `output/pr-review/7445-completed-20261009/stage458-empty-line-cut-ownership/`에 보존했습니다.
@@ -1013,7 +1013,7 @@ production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수
   `--prepare` 뒤 실제 1건을 실행했고, 0건을 PASS로 기록하지 않았습니다. 임시 counterfactual
   생성기의 rustfmt 문자열 불일치도 소스를 변경하기 전에 검출해 정정했습니다. 최초 로그를 유지합니다.
 - 정본 요약과 대표 Native/fresh review·overlay는
-  [개인정보 빈 행 보정 요약](../pr/assets/issue7445/completed-20261009/current-base-qualification/pii-empty-row-current-base.json)에
+  개인정보 빈 행 보정 요약（로컬 중간 자료 `pii-empty-row-current-base.json`）에
   연결했습니다. TSV·로그·중간 JSON·실행기는 ignored output의 stage479·stage483·stage484·stage485에
   보존하며 커밋하지 않습니다.
 - 최신 fetched devel `bfa28a77a2714482f647ee6a7b9aa7f7876d8404`에는 표 분할·글꼴·문서 흐름
@@ -1045,9 +1045,9 @@ production prefix는 원 후보와 byte-identical입니다. 기존 단위 함수
 - 해당 원본은 고정 devel의 Native/fresh 전1쪽99.96864%로 선행 수용을 확인했습니다. 보정 후 결재문서 전1쪽 Native/fresh99.97837%, 같은 모듈의 깨진 셀 사다리99.52965%, 저장 줄 없는 첫 셀 문단95.45311%로 모두90% 이상입니다. 두 대조군에도 같은 공백 규칙이 적용되어 결재란이 각각1px·1/3px 이동하므로 바이트 무변경이라고 주장하지 않습니다. 표·내용·후속 문단을 review로 확인했으며 미세 글꼴 획/전진 차이는 픽셀 동일로 보고하지 않습니다.
 - `stage510`의10 PASS는 파생 suite 배정이 오래되어 #6803과 #7344가 필터에서 빠진 실행입니다. 실제 실패 함수의 통과로 기록하지 않았습니다. source 변경 후 `--prepare`로 suite를 다시 만들고 `stage513`에서 필요한 모듈과 함수별 실행 수를 검사합니다. 집중 실행은 **18 PASS / 0 FAIL / 1,060 SKIP**, 47.468초, exit0으로 완료했습니다. #6803 3개·#6981 7개·종료 캡션 3개·#7344 4개·본문 넘침 partition3 1개가 실제 실행되었음을 함수 이름별로 확인했습니다. fmt와 고정 base 대비 manifest/unit 정책도 통과했습니다.
 - 춘천 HWPX는 동일 원문·Print PDF 고정 devel 전15쪽 Native/fresh 최저45.18405%·미달5쪽, 현재 후보45.02910%·미달7쪽입니다. 6쪽의 행 소속 차이를 직접 확인했습니다. #7391과 #7728의 실제 남은 범위를 대조했으며 같은 미완료 결함이 아니어서 [#7834](https://github.com/edwardkim/rhwp/issues/7834)를 등록하고 #7445에 실제 하위 이슈로 연결했습니다. 대표 본문의 표·개수와 후속 상태도 API로 재확인했습니다.
-- 춘천의 본문 넘침 래칫 입력과 기존0행만 원문 보존 후 활성 실행에서 분리했습니다. [보존 inventory](../pr/assets/issue7445/deferred-regressions-20261012/transfer-inventory.json), helper 전체 `.rs.txt`와 원장 행 `.tsv.txt`를 남겼습니다. 원본·PDF 및 범위 밖의 정상 검사는 유지합니다. 미달2쪽 추가와 본문 넘침0→1건은 새 악화로 추적하며, 이관을 출력 보정 완료로 처리하지 않습니다.
+- 춘천의 본문 넘침 래칫 입력과 기존0행만 원문 보존 후 활성 실행에서 분리했습니다. 보존 inventory（로컬 중간 자료 `transfer-inventory.json`）, helper 전체 `.rs.txt`와 원장 행 `.tsv.txt`를 남겼습니다. 원본·PDF 및 범위 밖의 정상 검사는 유지합니다. 미달2쪽 추가와 본문 넘침0→1건은 새 악화로 추적하며, 이관을 출력 보정 완료로 처리하지 않습니다.
 
-- [경계 검증 요약](../pr/assets/issue7445/completed-20261009/rebased-boundaries-20261012/validation.json)
+- 경계 검증 요약（로컬 중간 자료 `validation.json`）
 - [근린생활시설3쪽 Native review](../pr/assets/issue7445/completed-20261009/rebased-boundaries-20261012/land5-native-p003-review.png)
 - [근린생활시설3쪽 fresh review](../pr/assets/issue7445/completed-20261009/rebased-boundaries-20261012/land5-wasm-p003-review.png)
 - [결재문서1쪽 Native review](../pr/assets/issue7445/completed-20261009/rebased-boundaries-20261012/field-marker1-native-p001-review.png)

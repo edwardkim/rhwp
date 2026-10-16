@@ -14,7 +14,7 @@
 로그·TSV·중간 JSON은 ignored output에 보존하고 커밋하지 않는다.
 
 - 로그: `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage426-full-nextest/nextest.log`
-- 실행 요약: [validation.json](../pr/assets/issue7445/completed-20261009/full-nextest/validation.json)
+- 실행 요약: validation.json（로컬 중간 자료 `validation.json`）
 - 원본 실패 블록: `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage426-full-nextest/failures.txt`
 
 ## 판정 순서

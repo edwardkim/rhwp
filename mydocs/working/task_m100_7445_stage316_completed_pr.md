@@ -148,7 +148,7 @@ Studio 빌드는 아직 fresh WASM의 타입 파일이 없어 실패했으므로
 - 세 기존 테스트 함수는 유지했고 신규 함수형 테스트·fixture 추가와 생산 코드 변경은 없습니다.
   본문 선택 helper가 목차·후속 반복 문구까지 유일하다고 본 준비 오류를 원본 본문 소유로 교정했습니다.
   최종 개별 실행은 3 PASS / 0 FAIL / 241 filtered, 0.110초입니다. 중간 helper 실패를 유효한 RED로 쓰지 않습니다.
-- [전쪽·devel·기존 검사 전후 증적](../pr/assets/issue7445/completed-20261009/sample16-existing-relations-validation.json),
+- 전쪽·devel·기존 검사 전후 증적（로컬 중간 자료 `sample16-existing-relations-validation.json`）,
   [3쪽 review](../pr/assets/issue7445/completed-20261009/sample16-p003-existing-relations-review.png)를 포함합니다.
   전쪽 TSV·실행 로그는 ignored output에만 보존합니다. 다른 실패와 전체 검증이 남아 PR 준비 완료는 아닙니다.
 
@@ -183,7 +183,7 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
   고정한 49.2px를 없애고 UI 기준선이 실제 이중 선 사이에 속하는지 검사합니다.
   본문과 종이 기준 선택 검사는 유지했고 생산 구현 변경이나 신규 테스트 함수 추가는 없습니다.
 - 수정한 기존 테두리 검사 1 PASS / 0 FAIL / 4008 skipped, 0.209초입니다.
-  [전쪽·기본 환경·빌드 산출물 증적](../pr/assets/issue7445/completed-20261009/sample16-page-border-relation-validation.json)과
+  전쪽·기본 환경·빌드 산출물 증적（로컬 중간 자료 `sample16-page-border-relation-validation.json`）과
   [첫 쪽 review](../pr/assets/issue7445/completed-20261009/sample16-p001-page-border-relation-review.png)를 포함합니다.
   최종 전체 검증과 다른 실제 실패 판정은 남아 있습니다.
 
@@ -287,7 +287,7 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
   17쪽을 다시 내보냈습니다. Native/fresh 쪽수 17/17, 최저 95.29505%,
   미달 0이며 raw SVG·최종 PNG 17개가 각각 모두 동일합니다.
 - 2쪽 95.60601%, 10쪽 95.29505%를 직접 review로 확인했습니다.
-  [최종 요약 증적](../pr/assets/issue7445/completed-20261009/regulatory17-shared-outer-frame-native-fresh-validation.json),
+  최종 요약 증적（로컬 중간 자료 `regulatory17-shared-outer-frame-native-fresh-validation.json`）,
   [2쪽 review](../pr/assets/issue7445/completed-20261009/regulatory17-p002-shared-outer-frame-review.png),
   [10쪽 review](../pr/assets/issue7445/completed-20261009/regulatory17-p010-shared-outer-frame-review.png)를 포함합니다.
   글꼴 바이너리·raw TSV·로그·가설 진단 이미지는 커밋하지 않습니다.
@@ -346,7 +346,7 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
 - 완료 대조군의 최신 Native 재출력은 규제분석 17쪽 최저 **95.29505%**, 개인정보
   선언 환경 66쪽 최저 **90.30272%**, 각각 미달 0이며 쪽수가 독립 PDF와 일치합니다.
   fresh WASM 검증은 아직 진행 전입니다. 이전 bundle 결과를 현재 보정의 증거로 쓰지 않습니다.
-- [요약 증적](../pr/assets/issue7445/completed-20261009/footnote1937-padding-bound-validation.json),
+- 요약 증적（로컬 중간 자료 `footnote1937-padding-bound-validation.json`）,
   [8쪽 review](../pr/assets/issue7445/completed-20261009/footnote1937-p008-padding-bound-review.png),
   [25쪽 review](../pr/assets/issue7445/completed-20261009/footnote1937-p025-padding-bound-review.png)를 보존합니다.
   TSV·실행 로그·실패 가설 patch·원본 해시는 ignored stage328-footnote-diagnostic에 있습니다.
@@ -424,7 +424,7 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
 - Mac no-opt fresh WASM 빌드 성공 뒤 실제 Chrome의 16쪽을 재출력했습니다.
   Native/fresh TSV와 PNG 16개가 각각 모두 동일합니다. 3쪽 58.82809%·8쪽 54.75895%는 남아 있으며,
   전체 gate exit 1은 정상 보류입니다. 새 회귀·관계형 검사 변경이나 전체 완료 기록은 하지 않습니다.
-- [요약 증적](../pr/assets/issue7445/completed-20261009/issue265-stored-page-boundary-validation.json),
+- 요약 증적（로컬 중간 자료 `issue265-stored-page-boundary-validation.json`）,
   [6쪽 review](../pr/assets/issue7445/completed-20261009/issue265-p006-stored-page-boundary-review.png),
   [7쪽 review](../pr/assets/issue7445/completed-20261009/issue265-p007-stored-page-boundary-review.png)를 커밋합니다.
   로그·원본 TSV·임시 진단 패치·raw source 추출은 ignored output에 유지합니다.
@@ -461,7 +461,7 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
   검사 본문·baseline·공차·원본·PDF는 변경하지 않습니다. Native layout-anomaly의 전체 16쪽 판정은 0건입니다.
 - 이 단계의 fresh WASM은 아직 재빌드하지 않았습니다. Native 진단과 이전 fresh를 혼동하지 않으며,
   8쪽 표 후행 간격 보정 뒤 같은 원본 전체의 최신 Native/fresh를 검증합니다. 새 회귀 변경·전체 수용은 보류합니다.
-- [요약 증적](../pr/assets/issue7445/completed-20261009/issue265-caption-frame-validation.json),
+- 요약 증적（로컬 중간 자료 `issue265-caption-frame-validation.json`）,
   [3쪽 review](../pr/assets/issue7445/completed-20261009/issue265-p003-caption-frame-review.png),
   [8쪽 review](../pr/assets/issue7445/completed-20261009/issue265-p008-caption-frame-review.png)를 포함합니다.
   실행 로그·TSV·독립 PDF 글자 좌표 진단은 ignored output에 유지합니다.
@@ -503,7 +503,7 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
 - 원본·왕복·CharShape·합성 쪽나눔·overflow와 캡션 표의 기존 검사 **20 PASS / 0 FAIL / 1,280 skipped**,
   3.204초입니다. 신규 함수·fixture·baseline·공차 변경 없이 같은 source의 Mac no-opt fresh 빌드도 성공했습니다.
   생성된 public JS 복사본은 이 작업의 빌드 차이임을 확인하고 HEAD로 복원했습니다. ignored pkg는 검증한 fresh를 유지합니다.
-- [최종 요약](../pr/assets/issue7445/completed-20261009/issue265-owned-table-spacing-validation.json),
+- 최종 요약（로컬 중간 자료 `issue265-owned-table-spacing-validation.json`）,
   [3쪽 review](../pr/assets/issue7445/completed-20261009/issue265-p003-owned-table-spacing-review.png),
   [8쪽 review](../pr/assets/issue7445/completed-20261009/issue265-p008-owned-table-spacing-review.png)와 standalone overlay를 포함합니다.
   폐기한 문단 전체 간격 진단·로그·TSV는 ignored output에만 남깁니다.
@@ -537,7 +537,7 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
   검사 수정 없이 통과했습니다. 같은 원본 HWP3→HWPX render-diff는 16/16쪽·구조 차이 0·변위 0·PASS입니다.
 - 보완한 기존 두 함수의 최종 집중 실행은 **2 PASS / 0 FAIL / 239 skipped**, 0.020초입니다.
   source diff는 없고 검증한 fresh pkg도 유지합니다. 다른 58건은 실제 현재 실패로 남아 있어 PR 생성은 보류합니다.
-- [관계 검사·실제 RED/최종 PASS 요약](../pr/assets/issue7445/completed-20261009/issue265-existing-relations-validation.json),
+- 관계 검사·실제 RED/최종 PASS 요약（로컬 중간 자료 `issue265-existing-relations-validation.json`）,
   [다중 줄 캡션 표 review](../pr/assets/issue7445/completed-20261009/caption6078-p001-owned-line-review.png)를 포함합니다.
   전체 실패 이름·명령·로그는 ignored `stage334-issue265-relations/`에 유지합니다.
 
@@ -578,7 +578,7 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
   진단 전용이며 새 fixture·회귀로 등록하거나 정상 시각 수용 자료로 간주하지 않습니다.
 - 9쪽 review를 직접 열어 그림·캡션 소속, 중복 없음, 뒤 여백을 확인했습니다. 기준 PDF의
   로고 테두리 등 작은 차이는 남아 있으며 픽셀 동일을 주장하지 않습니다.
-- [보정·시각·회귀·음성 대조 요약](../pr/assets/issue7445/completed-20261009/issue265-picture-content-bottom-validation.json),
+- 보정·시각·회귀·음성 대조 요약（로컬 중간 자료 `issue265-picture-content-bottom-validation.json`）,
   [9쪽 review](../pr/assets/issue7445/completed-20261009/issue265-p009-content-bottom-review.png),
   [9쪽 overlay](../pr/assets/issue7445/completed-20261009/issue265-p009-content-bottom-overlay.png)를 보존합니다.
   전체 TSV·명령·로그·진단 스크립트는 ignored `stage335-failure-source-review/`에 있습니다.
@@ -601,7 +601,7 @@ Native/fresh 모두 같은 결과이며, 전체 입력/PDF SHA와 실행·글꼴
   첫 줄 vpos=1000HU, 원시 앞 간격=2000입니다. 같은 셀에 뒤 중첩 표가 있습니다.
   `stored_block_cell_flow`의 첫 원점·점유 높이, 세로 정렬 높이와 최종 배치 시작점을
   이어서 확인해야 합니다. 고정 좌표나 단순 패딩 추가로 맞추지 않습니다.
-- [현재 source 전쪽 검토 요약](../pr/assets/issue7445/completed-20261009/rowbreak18-current-source-review.json),
+- 현재 source 전쪽 검토 요약（로컬 중간 자료 `rowbreak18-current-source-review.json`）,
   [13쪽 review](../pr/assets/issue7445/completed-20261009/rowbreak18-p013-current-review.png),
   [13쪽 overlay](../pr/assets/issue7445/completed-20261009/rowbreak18-p013-current-overlay.png)를 보존합니다.
   코멘트의 기존 본문은 변경하지 않았고 완료 꼬리를 추가하지 않았습니다. 미달 원본을 새 회귀로
@@ -687,7 +687,7 @@ Center/Bottom이 부분 컷 때문에 Top으로 바뀌는 것입니다. 그때�
   기존 실패 67개 중 해결 11개·잔여 56개는 그대로이며 전체 회귀 재실행 결과가 아닙니다.
 - 13쪽 review를 직접 열어 첫 제목·항목 3/4·두 중첩 안내 상자·마지막 본문과 표 외곽,
   뒤 페이지 번호를 확인했습니다. 글꼴 획·기호 크기·상자 모서리의 작은 차이는 남아 있습니다.
-  [검증 요약](../pr/assets/issue7445/completed-20261009/rowbreak18-initial-band-validation.json),
+  검증 요약（로컬 중간 자료 `rowbreak18-initial-band-validation.json`）,
   [13쪽 review](../pr/assets/issue7445/completed-20261009/rowbreak18-p013-initial-band-review.png),
   [13쪽 overlay](../pr/assets/issue7445/completed-20261009/rowbreak18-p013-initial-band-overlay.png)를 보존합니다.
   원시 TSV·로그·진단 파일은 ignored output에만 있습니다. 기존 코멘트 5869840624는 아직
@@ -723,7 +723,7 @@ Center/Bottom이 부분 컷 때문에 Top으로 바뀌는 것입니다. 그때�
   측정값 거부·문서와 폰트 세대 대조군도 유지해 통과했습니다.
 - 기존 실패 67건에서 확인된 해결은 **14건**, 잔여는 **53건**입니다. 전체 nextest 재실행은
   아직 하지 않았고 다른 실패·최종 시각 게이트가 남습니다.
-  [합성 계약·소비 경로·검증 요약](../pr/assets/issue7445/completed-20261009/canvas-provider-contract-validation.json)을
+  합성 계약·소비 경로·검증 요약（로컬 중간 자료 `canvas-provider-contract-validation.json`）을
   포함하며 원시 로그는 ignored output에만 보존합니다.
 
 
@@ -771,7 +771,7 @@ expectation/baseline을 갱신하지 않습니다. 현재 8쪽에서 본문 아�
   원점을 측정 커서가 잃는 경계를 추적합니다. 정상 입력에서 실제 앞 내용과 이어지는 지연
   기준은 보존해야 합니다. 앞 그림·캡션·호스트 줄의 점유를 생산한 결과부터 측정/paint까지
   대조하고, 같은 원본의 전쪽 90%를 확보하기 전에는 이 문서의 회귀 기대값을 변경하지 않습니다.
-- [기각·대조군·실제 소비 경로 요약](../pr/assets/issue7445/completed-20261009/converted16-origin-candidate-rejected.json),
+- 기각·대조군·실제 소비 경로 요약（로컬 중간 자료 `converted16-origin-candidate-rejected.json`）,
   [기각 후보의 정상 대조군 1쪽 review](../pr/assets/issue7445/completed-20261009/regulatory17-p001-lazy-origin-rejected-review.png)를
   보존합니다. 기존 devel 동결 CLI를 이용한 선별은 이관 판정이 아니며 정확한 base 출처와
   fresh 대조를 확인해야 합니다. 잔여 53건·PR 미준비 상태는 유지합니다.
@@ -852,7 +852,7 @@ HWP3 변환본도 원본 줄의 앞 끝·그림/여백/캡션·호스트 줄·�
   같은 차이이며 원문 번호를 임의로 더하지 않았습니다. 해당 잔여를 완전 일치로 표현하지 않습니다.
   같은 원본 6쪽의 분할 문단 76 넘침 1건도 확인되어 다음 단계에서 독립 PDF와
   원본 분할 경계로 판정합니다. 아직 기존 실패 53건·최종 전체 검증·PR 생성은 남습니다.
-- [요약 증적](../pr/assets/issue7445/completed-20261009/converted16-picture-frame-validation.json),
+- 요약 증적（로컬 중간 자료 `converted16-picture-frame-validation.json`）,
   [8쪽 review](../pr/assets/issue7445/completed-20261009/converted16-p008-picture-frame-review.png),
   [8쪽 overlay](../pr/assets/issue7445/completed-20261009/converted16-p008-picture-frame-overlay.png)를
   커밋하고 원시 TSV·로그·동결 빌드·pkg는 ignored output에만 보존합니다.
@@ -907,7 +907,7 @@ HWP3 변환본도 원본 줄의 앞 끝·그림/여백/캡션·호스트 줄·�
   최신 전체 nextest 재실행과 최종 게이트·PR 생성은 아직 남습니다.
 - GitHub live devel SHA는 기준 `21ed64071f81f35f37618717693bd30f727392c9`와 같음을
   확인했습니다. 불필요한 리베이스를 하지 않았습니다.
-  [요약 증적](../pr/assets/issue7445/completed-20261009/converted16-stored-cut-validation.json),
+  요약 증적（로컬 중간 자료 `converted16-stored-cut-validation.json`）,
   [6쪽 review](../pr/assets/issue7445/completed-20261009/converted16-p006-stored-cut-review.png),
   [7쪽 review](../pr/assets/issue7445/completed-20261009/converted16-p007-stored-cut-review.png)를
   최종 overlay와 같이 커밋하고, raw TSV·로그·빌드는 ignored output에 보존합니다.
@@ -922,7 +922,7 @@ HWP3 변환본도 원본 줄의 앞 끝·그림/여백/캡션·호스트 줄·�
 기존 실패 67건 중 확인된 해결은 **16건**, 잔여는 **51건**입니다. 실패가 남은 원본의
 시각·저장 소유를 먼저 판정하고 정상 검사에는 생산 보정, 틀린 검사에는 독립 근거에
 따른 의미 교정을 적용합니다. 실패 목록을 숨기거나 일괄 제거하지 않습니다.
-[정확한 head·개별 결과·로그 해시](../pr/assets/issue7445/completed-20261009/remaining-blockers-revalidation.json)를
+정확한 head·개별 결과·로그 해시（로컬 중간 자료 `remaining-blockers-revalidation.json`）를
 포함하며 원시 로그는 ignored output의 `stage345-remaining-blockers/remaining-nextest.log`입니다.
 
 
@@ -956,7 +956,7 @@ affine를 검사합니다. fallback TextRun 보존, common 대안 한 개, 같�
 현재 생산 코드와 16쪽 Native/fresh pkg는 직전 수용 후보와 같으므로 시각 sweep을
 문서 기록만을 위해 반복하지 않았습니다. 확인된 원래 실패 해결 **17건**,
 잔여 **50건**이며 전체 재검증·최종 게이트·PR 준비는 남습니다.
-[독립 단위 근거·검사·실제 소비·로그 해시](../pr/assets/issue7445/completed-20261009/common-glyph-ratio-contract-validation.json)를
+독립 단위 근거·검사·실제 소비·로그 해시（로컬 중간 자료 `common-glyph-ratio-contract-validation.json`）를
 커밋하고 원시 로그는 ignored output에 보존합니다.
 
 
@@ -975,7 +975,7 @@ affine를 검사합니다. fallback TextRun 보존, common 대안 한 개, 같�
 반복 타임아웃으로 종료를 추정하거나 2024/재직렬화 입력을 같은 정본으로 대신하지 않았습니다.
 원본·검사·기대값을 유지합니다. 이 문서는 독립 Print 확보·전3쪽 Native/fresh·확대 판독
 전까지 좁게 보류하며, 다른 잔여 실패 분석은 계속 진행합니다.
-[입력 동일성·두 terminal job·보류 근거](../pr/assets/issue7445/completed-20261009/superscript3-reference-conversion-hold.json)를
+입력 동일성·두 terminal job·보류 근거（로컬 중간 자료 `superscript3-reference-conversion-hold.json`）를
 포함하며 endpoint·token·환경 파일 내용은 출력하거나 커밋하지 않았습니다.
 
 
@@ -1009,7 +1009,7 @@ RGB 반전 필터를 확인합니다. 실제 curve fixture와 나머지 음성 �
 exit 0입니다. 생산 코드·fixture·baseline·새 테스트 함수 변경은 없습니다.
 전체 원래 실패 67건 중 확인된 해결은 **20건**, 잔여는 **47건**입니다. 이는 개별
 재검증 집계이며 최신 전체 nextest 통과나 PR 준비 완료를 뜻하지 않습니다.
-[독립 연산 근거·변경 범위·실행 로그 해시](../pr/assets/issue7445/completed-20261009/wmf-mask-resource-contract-validation.json)를
+독립 연산 근거·변경 범위·실행 로그 해시（로컬 중간 자료 `wmf-mask-resource-contract-validation.json`）를
 커밋하며 원시 로그는 ignored output에 보존합니다.
 
 
@@ -1050,7 +1050,7 @@ Native 괘선이 PDF보다 옅은 기존 차이를 유지하며 100% 픽셀 동�
 생성 public glue는 pkg 동일성을 확인한 뒤 기존 tracked 파일로 복원했습니다.
 확인된 원래 실패 해결 **22건**, 잔여 **45건**이고 최신 전체 nextest와 최종
 게이트·PR 생성은 남아 있습니다.
-[소스·입력/기준 해시·전체 쪽별 결과·로그/빌드 근거](../pr/assets/issue7445/completed-20261009/table-enter-host-line-validation.json),
+소스·입력/기준 해시·전체 쪽별 결과·로그/빌드 근거（로컬 중간 자료 `table-enter-host-line-validation.json`）,
 [32회 입력 review](../pr/assets/issue7445/completed-20261009/table-enter-table32-p001-review.png),
 [30행 표 review](../pr/assets/issue7445/completed-20261009/table-enter-table30-p001-review.png),
 [33회 입력의 빈2쪽 review](../pr/assets/issue7445/completed-20261009/table-enter-table33-p002-review.png)를
@@ -1073,7 +1073,7 @@ Native 괘선이 PDF보다 옅은 기존 차이를 유지하며 100% 픽셀 동�
 그 문서 전체의 새로운 시각 승인이나 좌표 기대 변경은 아닙니다. 기존 검사·
 fixture·baseline·생산 코드는 추가로 변경하지 않았습니다.
 확인된 원래 실패 해결은 **24건**, 잔여는 **43건**입니다.
-[정확한 head·45개 개별 결과·원시 로그 해시](../pr/assets/issue7445/completed-20261009/remaining-after-host-fix-validation.json)를
+정확한 head·45개 개별 결과·원시 로그 해시（로컬 중간 자료 `remaining-after-host-fix-validation.json`）를
 포함하며 최신 전체 nextest·필수 최종 게이트·PR 생성은 아직 남습니다.
 
 
@@ -1122,7 +1122,7 @@ threads8·exit0입니다. 기존 3쪽 기대값은 그대로이며 Stage350에�
 SVG **119쪽 모두 byte-identical**입니다. Native·fresh WASM·fmt는 exit0이고
 생성 public glue는 기존 tracked 파일로 복원했습니다. 확인된 원래 실패 해결은
 **25건**, 잔여는 **42건**이며 최신 전체 nextest·최종 필수 게이트·PR은 남습니다.
-[입력/소스/빌드 해시·전쪽 결과·검증 근거](../pr/assets/issue7445/completed-20261009/tac3-stale-cell-cache-validation.json),
+입력/소스/빌드 해시·전쪽 결과·검증 근거（로컬 중간 자료 `tac3-stale-cell-cache-validation.json`）,
 [표 전체 2쪽 review](../pr/assets/issue7445/completed-20261009/tac3-cell-cache-p002-review.png),
 [뒤 본문 3쪽 review](../pr/assets/issue7445/completed-20261009/tac3-cell-cache-p003-review.png)를
 1쪽 및 각 overlay와 함께 보존합니다. 원시 TSV·로그·진단 사본은 ignored output에 남깁니다.
@@ -1142,7 +1142,7 @@ SVG **119쪽 모두 byte-identical**입니다. Native·fresh WASM·fmt는 exit0�
 **1 PASS / 42 FAIL**, 47.945s·threads8·exit100을
 확인했습니다. #6448은 동일 함수에서 재통과했고 다른42개 실패는 계속 분석합니다.
 원래67개 중 해결 확인25개/잔여42개이며 최신 전체 nextest 통과가 아닙니다.
-[개별 결과·정확한 head·실행 로그 해시](../pr/assets/issue7445/completed-20261009/remaining-after-cell-cache-validation.json)를
+개별 결과·정확한 head·실행 로그 해시（로컬 중간 자료 `remaining-after-cell-cache-validation.json`）를
 커밋합니다. 이 재검증에서 생산 코드·기대값·fixture·baseline은 추가 수정하지 않았습니다.
 
 
@@ -1181,7 +1181,7 @@ byte-identical이고 정상 대조119쪽 SVG는 이전 후보와 모두 동일�
 저장 pitch·공개 API 회귀·RenderTree 관계를 별도로 확인했습니다. 숫자의
 래스터 차이는 남고100% 픽셀 동일 주장은 아닙니다.
 
-[소스/빌드·입력·Print job·TSV·회귀 근거](../pr/assets/issue7445/completed-20261009/ole-empty-host-line-validation.json),
+소스/빌드·입력·Print job·TSV·회귀 근거（로컬 중간 자료 `ole-empty-host-line-validation.json`）,
 [HWP 편집본 review](../pr/assets/issue7445/completed-20261009/ole-enter-hwp-p001-review.png),
 [HWPX 편집본 review](../pr/assets/issue7445/completed-20261009/ole-enter-hwpx-p001-review.png),
 [HWP 편집본 Print](../../pdf/issue2069/ole-enter-hwp-2020.pdf),
@@ -1204,7 +1204,7 @@ byte-identical이고 정상 대조119쪽 SVG는 이전 후보와 모두 동일�
 코드 후보 `16149f0fc1db6a19be3dff5878b4728a8aa4b728`에서 선택42개 실제 실행은
 **4 PASS / 38 FAIL**, 52.023s·threads8·exit100입니다.
 #2069의 기존4개 재통과를 확인했고 다른38개 실패는 유지했습니다.
-[개별 결과·head·원시 로그 해시](../pr/assets/issue7445/completed-20261009/remaining-after-ole-host-validation.json)를
+개별 결과·head·원시 로그 해시（로컬 중간 자료 `remaining-after-ole-host-validation.json`）를
 커밋합니다. 원래 실패67개 중 해결 확인29개/잔여38개이며 최신 전체
 nextest나 PR 준비 완료가 아닙니다. 추가 생산 코드·기대값·baseline 변경은 없습니다.
 
@@ -1230,7 +1230,7 @@ nextest나 PR 준비 완료가 아닙니다. 추가 생산 코드·기대값·ba
 정확한 base21ed64071의 Native/fresh 원본 출력과 독립 Print를 대조해
 현재 회귀와 기존 문제를 구분하고 원인 계층을 확정합니다. 생산 코드·회귀
 기대값·baseline·원본은 그대로입니다.
-[진단·쪽별 수치·입력 해시](../pr/assets/issue7445/completed-20261009/civil-margin-contract-diagnostic.json),
+진단·쪽별 수치·입력 해시（로컬 중간 자료 `civil-margin-contract-diagnostic.json`）,
 [원본2쪽 review](../pr/assets/issue7445/completed-20261009/civil-margin-before-p002-review.png)를
 overlay와 함께 보존합니다. 현재 원본의 시각 수용이나 검사 수정 완료가 아닙니다.
 
@@ -1268,7 +1268,7 @@ output의 전용 exporter로 실제 Chrome에서 그대로인 base WASM을 로�
 사용하도록 수정합니다. 기존 함수의 기대값은 유지합니다. 내부 Table 여백만
 바꾼 진단 사본은 저장/재열기에서 원래 여백이 남았으므로, 해당 성공 Print를
 여백0 반례의 독립 기준으로 사용하지 않고 진단 output에만 보존했습니다.
-[정확한 base·빌드/입력 해시·전체 시각 증거](../pr/assets/issue7445/completed-20261009/exact-devel-civil-regression-proof.json),
+정확한 base·빌드/입력 해시·전체 시각 증거（로컬 중간 자료 `exact-devel-civil-regression-proof.json`）,
 [devel2쪽 review](../pr/assets/issue7445/completed-20261009/civil-develop-p002-review.png)를
 overlay와 함께 커밋합니다. 현재 후보의 회귀 해결이나 최종 검증 통과는 아닙니다.
 
@@ -1310,7 +1310,7 @@ SVG는 이전 검증 후보와 모두 byte-identical이고 fmt도 통과했습�
 임시 진단 출력은 소스에서 제거했습니다. 최신 전체 nextest 및 PR 준비는
 아직 완료되지 않았으며 기존 실패 목록을 다음 단계에서 재실행합니다.
 
-[원본·빌드·RED/GREEN·전체 시각 증거](../pr/assets/issue7445/completed-20261009/civil-rewind-frame-validation.json),
+원본·빌드·RED/GREEN·전체 시각 증거（로컬 중간 자료 `civil-rewind-frame-validation.json`）,
 [1쪽 review](../pr/assets/issue7445/completed-20261009/civil-rewind-after-p001-review.png),
 [2쪽 review](../pr/assets/issue7445/completed-20261009/civil-rewind-after-p002-review.png).
 
@@ -1331,7 +1331,7 @@ SVG는 이전 검증 후보와 모두 byte-identical이고 fmt도 통과했습�
 없습니다. 최초 전체 실패 67개 중 통과 확인은 **30개**, 잔여는 **37개**입니다.
 최신 전체 nextest·필수 최종 검증·PR 준비 완료가 아니므로 실패를 숨기거나
 이 실행을 전체 통과로 기록하지 않습니다.
-[정확한 head·개별 결과·로그 해시](../pr/assets/issue7445/completed-20261009/remaining-after-rewind-frame-validation.json).
+정확한 head·개별 결과·로그 해시（로컬 중간 자료 `remaining-after-rewind-frame-validation.json`）.
 
 
 ## 보정 359 사전 분석: 한 쪽 법원 서식의 독립 기준 확보
@@ -1374,7 +1374,7 @@ Native PDF를 정본으로 대신하지 않습니다. 기준 미확보 상태에
 임시 진단 빌드이므로 다음 생산 검증에서 복원된 소스로 다시 빌드해야 합니다.
 현재 후보의 별도 Native CLI·fresh pkg는 진단 전 생산 출력 그대로입니다.
 
-[원본·정확한 base/후보·원인 분리·소스 복원·변환 job 증거](../pr/assets/issue7445/completed-20261009/court-reference-width-diagnostic.json).
+원본·정확한 base/후보·원인 분리·소스 복원·변환 job 증거（로컬 중간 자료 `court-reference-width-diagnostic.json`）.
 
 
 ## 보정 360 사전 분석: 합성 WMF 컨테이너 계약
@@ -1405,7 +1405,7 @@ Visual Sweep은 이 범위에 비해당이며 실제 문서 수용으로 보고�
 새 테스트 함수·fixture를 추가하지 않았고 fmt도 통과했습니다. 직전 잔여
 37개 중 WMF 한 함수의 통과를 추가 확인했으며 최신 전체·잔여 목록 실행은
 아직 하지 않았습니다. PR 준비 완료가 아닙니다.
-[합성 입력 범위·RED/GREEN·로그 해시·검사 계약](../pr/assets/issue7445/completed-20261009/wmf-container-contract-validation.json).
+합성 입력 범위·RED/GREEN·로그 해시·검사 계약（로컬 중간 자료 `wmf-container-contract-validation.json`）.
 
 
 ## 보정 361 사전 분석: KTX 목차의 SVG 고정 검사
@@ -1437,7 +1437,7 @@ engine=2020 job은 성공했고 실제 한컴 11.0.0.9136 / Print method=0 /
 `re_review_required`만 보류 결과로 기록해 계속하며 다른 오류는 중단합니다.
 기대값·골든·검사는 아직 변경하지 않았고 PR 준비 완료가 아닙니다.
 
-[원본·실제 Print·PDF 해시·base 미달 근거](../pr/assets/issue7445/completed-20261009/ktx-reference-print-validation.json),
+원본·실제 Print·PDF 해시·base 미달 근거（로컬 중간 자료 `ktx-reference-print-validation.json`）,
 [devel 2쪽 review](../pr/assets/issue7445/completed-20261009/ktx-base-p002-review.png),
 [devel 26쪽 review](../pr/assets/issue7445/completed-20261009/ktx-base-p026-review.png).
 
@@ -1475,7 +1475,7 @@ base 두 backend는 2쪽 50.35805%, 26쪽 71.16440%, 현재 Native/fresh는
 파일 생성 없이 종료됐고, --prepare로 동기화 후 28 suites+20 exceptions=
 48/48과 --check가 통과했습니다. 예산을 확대하지 않았습니다. 실제 기본
 harness는 로컬 생성 산출물이며 다음 전체 검증은 canonical packing을 사용합니다.
-[전체 비교·원본/Print 해시·제거와 유지 범위](../pr/assets/issue7445/ktx-toc27/transfer-validation.json).
+전체 비교·원본/Print 해시·제거와 유지 범위（로컬 중간 자료 `transfer-validation.json`）.
 
 
 ### 보정 361 canonical 재검증 완료
@@ -1584,7 +1584,7 @@ package/lock·font asset이 이전 commit과 같고, 재사용 대조 4·44·72�
 현재 Chrome 재캡처 PNG도 이전 PNG와 바이트까지 같았습니다. 전74쪽을
 모두 새로 캡처한 것으로 표시하지 않습니다.
 
-[소스·빌드·전쪽 결과·대표 PNG·재사용 출처](../pr/assets/issue7445/completed-20261009/aift-first-frame-validation.json).
+소스·빌드·전쪽 결과·대표 PNG·재사용 출처（로컬 중간 자료 `aift-first-frame-validation.json`）.
 
 
 ## 보정 366 사전 분석과 범위: AIFT 전체 SVG 고정 검사 이관
@@ -1606,7 +1606,7 @@ URL은 공개 증거로 쓰지 않았으며 최종 PR 게시 뒤 안정 링크�
 정상 함수와 assertion, 비렌더링 IR 두 baseline 행은 유지합니다. HWPX는
 이번 검증으로 이관하지 않습니다. 폰트 원장의 입력·parity 재현 명령과 gym
 진단도 같은 입력의 새 경로를 사용하며 폰트 메트릭·기대 건수는 변경하지 않습니다.
-[파일 해시와 제거/유지 범위](../pr/assets/issue7445/aift74/transfer-validation.json).
+파일 해시와 제거/유지 범위（로컬 중간 자료 `transfer-validation.json`）.
 유지 검사가 완료된 뒤 결과를 연결하며 최종 전체 검증은 아직 완료 전입니다.
 
 
@@ -1646,7 +1646,7 @@ engine=2020으로 원본의 한 쪽씩 Print PDF를 각각 확보했습니다. c
 3쪽·20,077 bytes, cp-02는 4쪽·21,993 bytes이며 actual Hancom
 11.0.0.9136·Print method=0을 확인했습니다. 검증 정본은 `pdf/rnote/`에
 바이트 그대로 보존합니다.
-[원본·Print 출처](../pr/assets/issue7445/completed-20261009/rnote-copy-reference-validation.json).
+원본·Print 출처（로컬 중간 자료 `rnote-copy-reference-validation.json`）.
 
 
 ### 보정 367 원본 전쪽 비교와 새 회귀 확인
@@ -1672,7 +1672,7 @@ ignored output에 보존했습니다. 수정 구현에서 정답을 역산하지
 `fb16131c-a88c-48e6-a49b-941285771919`를 요청했습니다. 기준 출력
 완료·직접 비교 전에는 편집 경로의 한컴 일치로 판정하지 않습니다.
 
-[원본의 전쪽 값·출처와 대표 PNG](../pr/assets/issue7445/completed-20261009/rnote-original-visual-validation.json).
+원본의 전쪽 값·출처와 대표 PNG（로컬 중간 자료 `rnote-original-visual-validation.json`）.
 새 source/test 변경은 아직 없으며 #3587 검사들은 그대로입니다.
 
 
@@ -1689,7 +1689,7 @@ ignored output에 보존했습니다. 수정 구현에서 정답을 역산하지
 추가하지 않았습니다. 최초 원본2쪽의 새 여백 회귀와 편집 후 남은 내용의
 쪽 이동을 공통 원점·점유 끝 소비 경로에서 고친 뒤 전쪽 Native/fresh를
 다시 확인해야 합니다.
-[편집 인수·실행 파일·원문/PDF 해시·쪽수](../pr/assets/issue7445/completed-20261009/rnote-enter-reference-validation.json).
+편집 인수·실행 파일·원문/PDF 해시·쪽수（로컬 중간 자료 `rnote-enter-reference-validation.json`）.
 
 ## 보정 368 사전 분석: 형제 표의 호스트 간격과 과대 표 이월
 
@@ -1732,7 +1732,7 @@ WASM 빌드 출처를 구분해 보존하며 철회 뒤 최종 후보의 증거�
 않습니다. 초기 fmt check의 줄바꿈 차이는 fmt 후 수정했고 manifest도
 다시 준비·확인했습니다. 아직 최종 전체 검증과 PR 제출은 보류입니다.
 
-[전쪽 값·실험 출처·수용/기각 범위와 PNG](../pr/assets/issue7445/completed-20261009/rnote-host-gap-partial-validation.json).
+전쪽 값·실험 출처·수용/기각 범위와 PNG（로컬 중간 자료 `rnote-host-gap-partial-validation.json`）.
 
 같은 실험 빌드의 전쪽 fresh WASM에서도 두 원본의 2쪽은100%입니다.
 Mac no-opt 대체 빌드이며 Docker 최적화 검증이 아닙니다. 철회된 guard가
@@ -1802,7 +1802,7 @@ unit tier 검사, Mac no-opt fresh WASM 대체 빌드를 완료했습니다.
 별도 미완료입니다. 남은 이전 실패 31개는 최신 코드 재실행이 필요하며,
 최종 전체 회귀와 Skia 게이트는 아직 완료되지 않았습니다.
 
-[전쪽 값·빌드 출처·대표 PNG·잔여 범위](../pr/assets/issue7445/completed-20261009/rnote-shared-frame-native-fresh-validation.json).
+전쪽 값·빌드 출처·대표 PNG·잔여 범위（로컬 중간 자료 `rnote-shared-frame-native-fresh-validation.json`）.
 
 
 ## 보정 370: 남은 31개 정확 이름 개별 재검증
@@ -1818,7 +1818,7 @@ unit tier 검사, Mac no-opt fresh WASM 대체 빌드를 완료했습니다.
 기대값을 갱신하거나 회귀를 제거하지 않습니다. 최신 전체 nextest와 Skia는
 아직 미실행이며 PR 준비 완료로 표시하지 않습니다.
 
-[31개 실행·명령·exit·남은 25개](../pr/assets/issue7445/completed-20261009/remaining-after-rnote-validation.json).
+31개 실행·명령·exit·남은 25개（로컬 중간 자료 `remaining-after-rnote-validation.json`）.
 
 보정 369 요약 증적은 반복된 전체 글꼴 inventory를 개수·정본 배열 해시와
 원본 manifest 해시로 압축했습니다. 원래 상세 inventory는 ignored output에
@@ -1871,7 +1871,7 @@ WASM 검사 소비자가 같은 필드만 이관하도록 맞춥니다. 시각 �
 4쪽과 한컴 label 가림은 남아 있으며 다른 저장 원점·개체 의미를 추적합니다.
 진단 사본은 ignored output에 보존하고 기존 정본을 대체하지 않습니다.
 
-[원시 높이·fresh 동일 입력·독립 Print 작업·전쪽 대조](../pr/assets/issue7445/completed-20261009/rnote-export-height-diagnostic.json).
+원시 높이·fresh 동일 입력·독립 Print 작업·전쪽 대조（로컬 중간 자료 `rnote-export-height-diagnostic.json`）.
 
 
 #4961의 선언 검사는 통과했지만 기존 #4962 비시험지 검사가
@@ -1916,7 +1916,7 @@ unit tier 검사와 Mac no-opt fresh WASM 대체 빌드를 모두 통과했습�
 않습니다. rnote Enter 편집본의 독립 Print 차이, 최종 전체 nextest/Skia와
 PR/CI/merge·후속 처리는 아직 완료되지 않았습니다.
 
-[시험지 보존·원시 선언/글리프 근거·15개 실행·lint/build·잔여 목록](../pr/assets/issue7445/completed-20261009/font-diagnostic-exam-removal-validation.json).
+시험지 보존·원시 선언/글리프 근거·15개 실행·lint/build·잔여 목록（로컬 중간 자료 `font-diagnostic-exam-removal-validation.json`）.
 
 
 ## 보정 373: Enter 저장 호스트 끝 진단 결과
@@ -1929,7 +1929,7 @@ Print 전쪽 PNG는 이전 같은 Enter Print와 동일합니다. 캐시 끝만 
 변경도 생산 코드에 적용하지 않습니다. 원본과 기준은 보존하며 편집 출력의
 원인 해결로 보고하지 않습니다.
 
-[독립 작업 ID·입력/출력 해시·전쪽 불변 판독](../pr/assets/issue7445/completed-20261009/rnote-host-tail-diagnostic.json).
+독립 작업 ID·입력/출력 해시·전쪽 불변 판독（로컬 중간 자료 `rnote-host-tail-diagnostic.json`）.
 
 ## 보정 374: 최신 커밋의 31개 개별 실행 완료
 
@@ -1939,7 +1939,7 @@ Print 전쪽 PNG는 이전 같은 Enter Print와 동일합니다. 캐시 끝만 
 모든 실행의 명시적 summary·exit code가 있습니다. 이제 23건은 이 커밋의
 실패 재현 결과입니다. 최신 전체 nextest 통과를 뜻하지 않습니다.
 
-[31개 최신 정확 이름 실행·23개 실패](../pr/assets/issue7445/completed-20261009/remaining-latest-exact-validation.json).
+31개 최신 정확 이름 실행·23개 실패（로컬 중간 자료 `remaining-latest-exact-validation.json`）.
 
 ## 보정 375 사전 분석: 정책연구 215→216쪽 회귀의 첫 소비 경계
 
@@ -1959,7 +1959,7 @@ Print 전쪽 PNG는 이전 같은 Enter Print와 동일합니다. 캐시 끝만 
 약 98px가 추가되는 지점을 보정해야 합니다. 아직 구현이나 전쪽 시각
 완료로 보고하지 않습니다.
 
-[devel/현재 스냅숏·24쪽 구조·독립 PDF·분석](../pr/assets/issue7445/completed-20261009/policy-page-origin-analysis.json).
+devel/현재 스냅숏·24쪽 구조·독립 PDF·분석（로컬 중간 자료 `policy-page-origin-analysis.json`）.
 
 ### 보정 375 원인 계층과 구현 전 계약
 
@@ -2009,7 +2009,7 @@ Native 전215쪽 TSV는 완료했지만 **11쪽 미달, 최저 210쪽 29.66633%*
 렌더 트리의 실제 표시 번호를 별도로 읽고 독립 PDF와 대조해 67쪽
 78~85, 84쪽 131~133, 85쪽 134~136, 88쪽 139가 일치함을 확인했습니다.
 
-[입력·독립 PDF·전쪽 출력 동일성·미달 분류·각주 증거](../pr/assets/issue7445/completed-20261009/policy-relocated-successor-validation.json),
+입력·독립 PDF·전쪽 출력 동일성·미달 분류·각주 증거（로컬 중간 자료 `policy-relocated-successor-validation.json`）,
 [24쪽 review PNG](../pr/assets/issue7445/completed-20261009/policy-relocated-successor-p024-review.png),
 [25쪽 review PNG](../pr/assets/issue7445/completed-20261009/policy-relocated-successor-p025-review.png).
 
@@ -2028,7 +2028,7 @@ Native 전215쪽 TSV는 완료했지만 **11쪽 미달, 최저 210쪽 29.66633%*
 실행한 결과로 사용하지 않습니다. 빌드 소스와 이후 같은 helper import·
 format 정리의 차이를 증적에 구분했습니다.
 
-[31개 정확 이름 실행과 남은 20개 실패](../pr/assets/issue7445/completed-20261009/remaining-after-policy-page-restoration.json).
+31개 정확 이름 실행과 남은 20개 실패（로컬 중간 자료 `remaining-after-policy-page-restoration.json`）.
 
 ## 보정 377 사전 분석: 단일 자리차지 표 앞의 간격 복원 가정
 
@@ -2080,7 +2080,7 @@ Native와 실제 Chrome fresh WASM으로 재캡처했습니다. PNG 입력 해�
 완료하지 않았습니다. 이전 31개 중 실패 20개 기록을 최신 전체 결과로
 대신하지 않으며 PR 생성·승인·통합은 계속 보류합니다.
 
-[입력·빌드·전쪽 출력/캡처 재사용·회귀 요약](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-validation.json),
+입력·빌드·전쪽 출력/캡처 재사용·회귀 요약（로컬 중간 자료 `policy-single-float-spacing-validation.json`）,
 [Native 210쪽 review](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-native-review.png),
 [Native overlay](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-native-overlay.png),
 [fresh WASM 210쪽 review](../pr/assets/issue7445/completed-20261009/policy-single-float-spacing-p210-fresh-wasm-review.png),
@@ -2143,7 +2143,7 @@ raw SVG·렌더 트리를 전215쪽 내보내 대조했습니다. 변경은
 검사를 확인해 이 보정을 커밋합니다. 최종 전체 nextest 및 나머지 제출
 게이트는 아직 미완료이므로 PR 생성·승인·통합은 계속 보류합니다.
 
-[입력·빌드·전쪽 검증·8쪽 증적 목록](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-validation.json),
+입력·빌드·전쪽 검증·8쪽 증적 목록（로컬 중간 자료 `policy-resolved-fragment-top-validation.json`）,
 [157쪽 보정 전](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-native-before-review.png),
 [157쪽 Native review](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-native-review.png),
 [157쪽 Native overlay](../pr/assets/issue7445/completed-20261009/policy-resolved-fragment-top-p157-native-overlay.png),
@@ -2206,7 +2206,7 @@ PR 생성·승인·통합은 보류합니다. 다음 미달 28쪽의 그림 호�
 좌우 두 조각으로 나뉘어 있고, 캡션 종료 뒤에 호스트 한 줄이 재가산되는
 소비 경로를 별도로 분석했습니다. 이 단계에는 28쪽 구현을 섞지 않습니다.
 
-[입력·빌드·전쪽 검증 요약](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-validation.json),
+입력·빌드·전쪽 검증 요약（로컬 중간 자료 `policy-relocated-measured-frame-validation.json`）,
 [11쪽 보정 전](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-native-before-review.png),
 [Native review](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-native-review.png),
 [Native overlay](../pr/assets/issue7445/completed-20261009/policy-relocated-measured-frame-p011-native-overlay.png),
@@ -2274,7 +2274,7 @@ fresh WASM raw SVG·렌더 트리는 각각 전215쪽에서 28쪽만 바뀌었�
 아니므로 정본 환경의 완료를 대신하지 않습니다. 위치 차이와 실제 글꼴 공급을
 분리해 확인하고, 전체 검증·PR/CI·머지·후속 처리 완료까지 목표를 유지합니다.
 
-[입력·빌드·전쪽 검증 요약](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-validation.json),
+입력·빌드·전쪽 검증 요약（로컬 중간 자료 `policy-caption-wrap-fragments-validation.json`）,
 [28쪽 보정 전](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-native-before-review.png),
 [Native review](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-native-review.png),
 [Native overlay](../pr/assets/issue7445/completed-20261009/policy-caption-wrap-fragments-p028-native-overlay.png),
@@ -2336,7 +2336,7 @@ fmt·Native Clippy·문서 링크는 확인했으며, 최종 전체 lint/회귀�
 exit 1의 재검토 보류 상태입니다. 잔여 개별 검사와 최종 전체 검증도 남아
 있으므로 PR을 아직 생성하지 않습니다.
 
-- [검증 요약](../pr/assets/issue7445/completed-20261009/policy-trailing-empty-host-validation.json)
+- 검증 요약（로컬 중간 자료 `policy-trailing-empty-host-validation.json`）
 - [176쪽 Native 비교](../pr/assets/issue7445/completed-20261009/policy-trailing-empty-host-p176-native-review.png)
 - [176쪽 실제 Chrome fresh 비교](../pr/assets/issue7445/completed-20261009/policy-trailing-empty-host-p176-fresh-review.png)
 
@@ -2398,7 +2398,7 @@ lint/Skia·다른 영향 문서의 최종 비교도 완료되지 않았습니다
 전체 215쪽과 두 backend에서 검증합니다. 한 쪽의 높은 진단값만으로
 글꼴 환경 수용이나 전쪽 완료를 판단하지 않습니다.
 
-- [검증 요약](../pr/assets/issue7445/completed-20261009/policy-interior-tac-gap-validation.json)
+- 검증 요약（로컬 중간 자료 `policy-interior-tac-gap-validation.json`）
 - [184쪽 Native 비교](../pr/assets/issue7445/completed-20261009/policy-interior-tac-gap-p184-native-review.png)
 - [184쪽 실제 Chrome fresh 비교](../pr/assets/issue7445/completed-20261009/policy-interior-tac-gap-p184-fresh-review.png)
 
@@ -2412,7 +2412,7 @@ output에서 정리했습니다. 원본 전체 SVG·렌더 트리·PNG·TSV·pkg
 - 57·58쪽은 후속 저장 문단의 원점에 든 아래 바깥여백을 표 상자 높이에서 제외했습니다. 59쪽은 비점유 단 정의를 첫 빈 줄의 원점 보존 판정에서 허용했고, 실제 소비자가 없던 가림 선언을 제거했습니다. 앞 분석에서 이를 높이 소비 선언으로 설명한 것은 철회합니다. 66쪽은 정확한 자식 유닛 투영에 legacy 첫 유닛을 다시 예약하던 중복을 제거했습니다.
 - 같은 원본과 독립 Print PDF의 Native/fresh 전66쪽은 모두 최저90.30272%, 미달0쪽입니다. 전쪽 원시 PNG와 TSV도 두 경로에서 바이트 동일합니다. 57·58·59·66쪽 review를 직접 판독했습니다. Mac locked no-opt를 Docker 최적화 빌드로 보고하지 않습니다.
 - 기존 #5846 한 함수를 보강했습니다. 절대 px 좌표 대신 원본 상대 원점·여백·줄 상자와 두 쪽 원문의 단일 분할을 검사합니다. 같은 검사에서 보정 전 b99는57·58·59·66쪽 관계 모두 검출하여1FAIL(exit100), 보정 코드에서는1PASS(exit0)입니다. 별도 기존 경계18개도 PASS이며 새 테스트 함수는 없습니다.
-- 정본: [검증 요약](../pr/assets/issue7445/completed-20261009/rebased-pii-20261012/validation.json), 같은 폴더의57·58·59·66쪽 대표 PNG. 로그·전쪽 TSV·실행 상태는 ignored `output/pr-review/7445-completed-20261009/stage520`~`stage525`에 보존합니다.
+- 정본: 검증 요약（로컬 중간 자료 `validation.json`）, 같은 폴더의57·58·59·66쪽 대표 PNG. 로그·전쪽 TSV·실행 상태는 ignored `output/pr-review/7445-completed-20261009/stage520`~`stage525`에 보존합니다.
 - 실행 wrapper의 두 경로/선택 오류는 출력 결함과 구분해 기록했습니다. fresh TSV 뒤 잘못된 review 경로는 기존 PNG에서 패널만 생성하여 복구했고 재캡처하지 않았습니다. 기존18개 선택에 없던 suite024의5846은 올바른 suite에서 별도로 실행했습니다.
 - 최종41문서/1048쪽씩 검증, 실제 Skia/Studio 출력, 전체 회귀·lint는 새 커밋에서 계속합니다. #7720의 Closes는 최종 통합 검증 뒤 확정하고, #7445와 미완료 #7834는 Refs로 유지합니다. PR 게시 승인은 아직 받지 않았습니다.
 
@@ -2440,7 +2440,7 @@ text-layout 비율의 차이로 중단한 기록은 보존했고, 생산 소스 
 GREEN만 별도로 실행했습니다. 컴파일 오류를 RED로 세거나 실패를 숨기지
 않았습니다.
 
-- [요약 증적](../pr/assets/issue7445/completed-20261009/verified-human-gothic-20261012/validation.json)
+- 요약 증적（로컬 중간 자료 `validation.json`）
 - [10쪽 Native review](../pr/assets/issue7445/completed-20261009/verified-human-gothic-20261012/regulatory-p010-native-review.png)
 - [10쪽 fresh WASM review](../pr/assets/issue7445/completed-20261009/verified-human-gothic-20261012/regulatory-p010-wasm-review.png)
 
@@ -2473,7 +2473,7 @@ Print PDF의 전 60쪽을 새로 산출했습니다. 양쪽 최저 **91.86922%, 
 같은 두 함수에서 보정 전 **2 FAIL/exit 100**, 보정 후 **2 PASS/exit 0**를
 확인했고 카운터팩추얼 실행 뒤 생산 소스를 정확히 복원했습니다.
 
-- [요약 증적](../pr/assets/issue7445/completed-20261009/asset-quote-boundary-20261012/validation.json)
+- 요약 증적（로컬 중간 자료 `validation.json`）
 - [20쪽 Native review](../pr/assets/issue7445/completed-20261009/asset-quote-boundary-20261012/asset-p020-native-review.png)
 - [20쪽 fresh WASM review](../pr/assets/issue7445/completed-20261009/asset-quote-boundary-20261012/asset-p020-wasm-review.png)
 
@@ -2512,7 +2512,7 @@ TSV는 전쪽 바이트 동일합니다. 3·7·40·42·47·57·58·59·60·64·6
 준비 전 값으로 선택한 최초 실행 오류는 보존했고 생산 소스를 복원한 뒤
 정확한 suite에서 재검증했습니다.
 
-- [요약 증적](../pr/assets/issue7445/completed-20261009/verified-hy-gothic-20261012/validation.json)
+- 요약 증적（로컬 중간 자료 `validation.json`）
 - [66쪽 첫 줄 review](../pr/assets/issue7445/completed-20261009/verified-hy-gothic-20261012/pii-p066-first-line-review.png)
 - [66쪽 Native review](../pr/assets/issue7445/completed-20261009/verified-hy-gothic-20261012/pii-p066-native-review.png)
 - [66쪽 fresh WASM review](../pr/assets/issue7445/completed-20261009/verified-hy-gothic-20261012/pii-p066-wasm-review.png)
@@ -2563,7 +2563,7 @@ TSC 및 WASM32 Clippy를 확인했습니다.
 CanvasKit의 기존 bounded preflight fallback/직접 replay 계약 실패는 보존하며,
 이를 CanvasKit 성공으로 세지 않습니다.
 
-- [요약 증적](../pr/assets/issue7445/completed-20261009/canvas-selected-program-20261012/validation.json)
+- 요약 증적（로컬 중간 자료 `validation.json`）
 - [66쪽 실제 Canvas 보정 전 review](../pr/assets/issue7445/completed-20261009/canvas-selected-program-20261012/canvas-p066-before-review.png)
 - [66쪽 실제 Canvas 보정 후 review](../pr/assets/issue7445/completed-20261009/canvas-selected-program-20261012/canvas-p066-after-review.png)
 - [66쪽 실제 Canvas 보정 후 overlay](../pr/assets/issue7445/completed-20261009/canvas-selected-program-20261012/canvas-p066-after-overlay.png)
@@ -2598,9 +2598,9 @@ remote push·PR 생성 전에 사용자의 승인을 받습니다.
 기존 세 함수의 합성·실물 계약에 호환 전각/명시된 기호 자연 폭의 관계와 원문
 직렬화 보존을 함께 검사합니다. 새 테스트 함수·고정 px·회귀 baseline 삭제는 없습니다.
 
-- [전후·빌드 입력·전쪽 검증](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-validation.json)
-- [독립 Print 기호 근거](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-independent-evidence.json)
-- [Native TSV](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-native.tsv) / [fresh WASM TSV](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-wasm.tsv)
+- 전후·빌드 입력·전쪽 검증（로컬 중간 자료 `sample16-2022-compatibility-dot-validation.json`）
+- 독립 Print 기호 근거（로컬 중간 자료 `sample16-2022-compatibility-dot-independent-evidence.json`）
+- Native TSV（로컬 중간 자료 `sample16-2022-compatibility-dot-native.tsv`） / fresh WASM TSV（로컬 중간 자료 `sample16-2022-compatibility-dot-wasm.tsv`）
 - [40쪽 review PNG](../pr/assets/issue7445/completed-20261009/sample16-2022-compatibility-dot-p040-review.png)
 
 Studio의 원래 29개 실제 캡처는 보존합니다. CanvasKit 요청 일부는 기존 문서

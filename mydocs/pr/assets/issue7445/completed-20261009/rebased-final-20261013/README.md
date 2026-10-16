@@ -2,10 +2,10 @@
 
 검증 후보: `a7ce883cbbb284b83740e63e2b4f03502996104d`. 제출 시 추가되는 증적 commit은 제품·회귀 코드를 변경하지 않습니다.
 
-- [전체 로컬 검증](final-validation.json)
-- [전쪽 비교 요약·원본/PDF/환경 해시](whole-visual-summary.json)
-- [실제 Native Skia·Studio Canvas2D/CanvasKit 검증](actual-consumer-summary.json)
-- [대표 변경·사용자 지적 영역 직접 판독](direct-inspection.json)
+- 전체 로컬 검증（로컬 중간 자료 `final-validation.json`）
+- 전쪽 비교 요약·원본/PDF/환경 해시（로컬 중간 자료 `whole-visual-summary.json`）
+- 실제 Native Skia·Studio Canvas2D/CanvasKit 검증（로컬 중간 자료 `actual-consumer-summary.json`）
+- 대표 변경·사용자 지적 영역 직접 판독（로컬 중간 자료 `direct-inspection.json`）
 
 [전쪽 Native·fresh WASM TSV 원본 ZIP](https://github.com/user-attachments/files/33360752/7445-final-native-fresh-wasm-tsv.zip) · SHA-256 `8cf352615813da4e9b802cf28b50978d6b0809953c2c2a5609748ada2e8b70fb`. ZIP 내부 `native/<입력>/silhouette.tsv`, `wasm/<입력>/silhouette.tsv`로 구분하며 TSV는 Git에 커밋하지 않습니다.
 

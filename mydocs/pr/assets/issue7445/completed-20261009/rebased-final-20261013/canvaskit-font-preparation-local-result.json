@@ -1,7 +1,0 @@
-{
-  "head": "a7ce883cbbb284b83740e63e2b4f03502996104d",
-  "exitCode": 0,
-  "command": "node e2e/canvaskit-font-preparation-issue7688.test.mjs --mode=headless",
-  "host": "local Mac Chrome",
-  "earlierRemoteAddressFailureRetained": true
-}

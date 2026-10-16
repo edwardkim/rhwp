@@ -6,7 +6,7 @@
 대체 글꼴로 넘어갔다. 원본115쪽·과거 분할197쪽의 독립 한컴2024 Print에서
 두 기호의 Type3 `/Widths`는 각각1000/1000em이다. 설치한 공통 HyhwpEQ의
 삼각형과 수학 곱셈점도 각각1024/1024em이며 U+2024 cmap은 없다.
-[독립 glyph 계약](independent-glyph-contract.json)에 원본/PDF·glyph program·글꼴
+독립 glyph 계약（로컬 중간 자료 `independent-glyph-contract.json`）에 원본/PDF·glyph program·글꼴
 SHA와 범위를 기록했다. Type3와 설치 글꼴의 윤곽이 완전히 같다는 주장은 하지 않는다.
 
 기존 수식 글리프 경로에서 literal을 `△`와 수학 곱셈점 `⋅`로 투영하고
@@ -29,8 +29,8 @@ WASM은 locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌�
 
 각509쪽, 합계1018쌍을 새로 비교했다.90% 미달0쪽이며, 직전 C50과 비교해
 원본76쪽·각 저장본129/130쪽만 개선되고 다른 페이지는 같은 점수다.
-[전쪽 TSV·producer·비교와 잔여](validation.json),
-[직전 후보 비교](previous-candidate-comparison.json)를 함께 확인한다.
+전쪽 TSV·producer·비교와 잔여（로컬 중간 자료 `validation.json`）,
+직전 후보 비교（로컬 중간 자료 `previous-candidate-comparison.json`）를 함께 확인한다.
 
 ## 직접 판독과 회귀
 
@@ -55,7 +55,7 @@ C50에서 실패하고 C51에서 통과했다. 최신 정식 Cargo 경로도1PAS
 ## 제출 보류와 증거 한계
 
 기존 최신 devel 대비 WASM 원본61쪽·과거 저장본7쪽의0.01%p 이상 하락은 남는다.
-[고정 base 비교 목록](latest-base-comparison.json)에 하락을 보존했다.
+고정 base 비교 목록（로컬 중간 자료 `latest-base-comparison.json`）에 하락을 보존했다.
 현재 저장본의 base 쪽수 차이도 미검증으로 유지한다. 법원 서식의90% 미달·공백 줄바꿈,
 최종 전체 회귀·범위 gate와 실제 소비 경로 검증도 남아 PR은 보류한다.
 `b88b666b`의 전체10438PASS는 C51 이전 코드의 기록이다.

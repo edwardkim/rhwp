@@ -47,4 +47,4 @@ Skia lib3859PASS/12ignore+내부182PASS·PNG2PASS·PDF4PASS도 확인했다.
 
 devel 대비 WASM 원본61쪽·과거 저장7쪽의0.01%p 이상 하락, 법원 서식1쪽 미달,
 기호·미세 간격과 실제 소비 경로 검증이 남아 PR은 보류한다.
-[입력/PDF·producer·SHA·명령·전쪽 TSV·각 gate와 잔여](validation.json)를 따른다.
+입력/PDF·producer·SHA·명령·전쪽 TSV·각 gate와 잔여（로컬 중간 자료 `validation.json`）를 따른다.

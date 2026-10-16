@@ -32,7 +32,7 @@
 
 전체 로그·실행 명령·중간 진단은 ignored `output/pr-review/7445-completed-20261009/stage419-first-three-relational/`에 보존한다. `.log`는 커밋하지 않는다.
 
-[동일 원본·PDF 해시와 Native/fresh 전쪽 TSV 요약](../pr/assets/issue7445/completed-20261009/first-three-relational/validation.json).
+동일 원본·PDF 해시와 Native/fresh 전쪽 TSV 요약（로컬 중간 자료 `validation.json`）.
 
 ## 실행 자원 조정
 

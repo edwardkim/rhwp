@@ -1,8 +1,0 @@
-{
-  "result": {
-    "error": "SyntaxError: Invalid font data in ArrayBuffer."
-  },
-  "messages": [
-    "OTS parsing error: Table directory is not correctly ordered\nTable directory is not correctly ordered\nmaxp: Bad maxZones: 4\nmaxp: Failed to parse table"
-  ]
-}

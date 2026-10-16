@@ -36,7 +36,7 @@ parser의 `decode`가 공통 Font IR을 복원하고 기존 `select_native_progr
 
 ## 검증과 미완료
 
-[기계 증적](validation.json)에 정확한 base·parent·소스 hash·명령·원문 식별자를 기록했다.
+기계 증적（로컬 중간 자료 `validation.json`）에 정확한 base·parent·소스 hash·명령·원문 식별자를 기록했다.
 수정 전 CLI는 exit3/최대28px, 수정 후 exit0/0px다. 관련8개 case 집중41건은41PASS/0FAIL,
 7.520초다. 첫 보정 진단40PASS/1FAIL은 바깥 글줄을 중복 세던 검사 선택 오류로 보존했고,
 원본 셀 문단으로 정정한 최종41PASS만 판정에 사용했다.

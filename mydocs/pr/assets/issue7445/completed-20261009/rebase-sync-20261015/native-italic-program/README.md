@@ -10,7 +10,7 @@
 
 - 공개 Native PNG 검사2건: 동일한 직립 face·원점·advance에서 기울임은 위쪽 잉크를 오른쪽으로 옮겨야 한다. 실제 Italic/Oblique 프로그램은 요청 비트로 이중 기울어지지 않아야 한다. 수정 전1FAIL/1PASS,수정 후 정식 nextest2PASS(0.109초). 원본 fixture 프로그램은 기존 공개 테스트용 글꼴이며 새 글꼴 바이너리를 추가하지 않았다.
 - Native 빌드·manifest·fmt/check 통과. Mac fresh WASM web/no-opt 로컬 대체 빌드 후 루트pkg/Studio public hash 일치. 이 변경 모듈은 Native 전용이다.
-- Native/fresh WASM 각각6문서42쪽 전쪽90% 이상·독립 쪽수 일치: 프로젝트2,변환본16,법원2,위첨자3,그림 채움14,근린시설 표5. 각 TSV와 수치는 [evidence.json](evidence.json)에 있다. 문서별 원래96/192DPI 조건을 유지했다.
+- Native/fresh WASM 각각6문서42쪽 전쪽90% 이상·독립 쪽수 일치: 프로젝트2,변환본16,법원2,위첨자3,그림 채움14,근린시설 표5. 각 TSV와 수치는 evidence.json（로컬 중간 자료 `evidence.json`）에 있다. 문서별 원래96/192DPI 조건을 유지했다.
 - 프로젝트2쪽 Native 최저93.81061%,fresh WASM93.79837%. 같은 명시 글꼴 환경의 고정 devel463c48cc2 대비 양쪽 전2쪽0.01%p 이상 하락0쪽. Native 첫 쪽은 직전 후보93.93027%보다 낮지만 고정 devel92.88471%보다 높다. 이 차이를 숨기지 않는다.
 - `review.png`를 직접 열어 직립으로 남던 글자가 기울어진 것을 확인했다. 글자 굵기·일부 간격·밑줄의 잔여 차이는 남아 있으며 완전 일치를 주장하지 않는다.
 
