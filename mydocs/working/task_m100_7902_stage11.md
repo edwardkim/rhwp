@@ -61,8 +61,8 @@ Native producer와 이 producer/원점 경로는 추가 WASM 전용 보완에서
 104쪽 추가 검사는 같은 핵심 경계인 표 종료→제목·본문→그림→후속 문단을 보호하므로
 다른 의미의 높은 점수 쪽으로 대체하지 않았다.
 
-`stage11-final-full`에서 새 WASM19문서·835쪽 재검증을 실행 중이다. 분류 수정 뒤 전체 Rust를
-다시 실행해 최종0실패를 확인하고 Native Skia3종과 필수 lint를 마무리한다. 기존 Native 전쪽
+`stage11-final-full`에서 새 WASM19문서·835쪽 재검증을 완료했다. 분류 수정 뒤 전체 Rust도
+다시 실행해 최종0실패를 확인했다. Native Skia3종과 필수 lint를 이어 확인한다. 기존 Native 전쪽
 재사용은 WASM 전용 자식이 실제 소비 경로에 포함되지 않는 근거로만 판단한다.
 
 
@@ -88,5 +88,53 @@ SHA-256 동일하며 각각의 독립 PDF raster도 같다. 두 PDF에서 별도
   하단 표를 판독했다. 하단 표의 남은 괘선 높이 차이는 base에도 있고 현재와 그 영역 픽셀·
   표 bbox가 같다(`stage11-page102-existing-region.json`). 이 변경으로 해결했다고 주장하거나
   기준 좌표를 새로 고정하지 않는다. 동일한 초기 출력 차이와 현재 회귀를 구분한다.
-- Native Skia 공식3종·필수 lint·최종 GitHub 절차는 아직 남아 있다. 위 결과만으로 PR 준비
-  완료나 CI·merge 완료로 판정하지 않는다.
+- Native Skia 공식3종은 exit0이다. 라이브러리3861+15+165+2=**4043 PASS·12 ignored**,
+  필수 그림/직접 PDF와 HFT·TTF 원점 통합 검사는 **11 PASS**다. 컴파일과 실행의 최종 종료를
+  확인했으며 필터0건·중간 빌드 출력을 통과로 세지 않았다.
+- Python Visual Sweep152개, HFT 준비10개, CI Node224개·workflow Python44개,
+  수정 workflow2개의 actionlint가 모두 통과했다. 기존 source unit-tier policy도 확인했다.
+- 최종12개 review와12개 standalone overlay를 기존 실제 PNG로 합성했다. SVG는 생성하지
+  않았다. [증적 설명](../pr/assets/issue7902-final-20261016/README.md)에 입력·원본 SHA·페이지와
+  직접 판독을 연결한다. 원본19개·독립 PDF19개 모두 실제 HEAD Git blob과 SHA가 같다.
+- PR 준비 중 fetch한 devel은 여전히 `f5251e7de`다. 변경이 없어 리베이스하지 않았다.
+  추가 Native feature의 글꼴 추적·원본 내용 경계16개도 모두 PASS했다.
+- 필수 fmt/재확인, 기본 Clippy, WASM Clippy, workspace build, workspace all-target Clippy,
+  고정 base manifest 검사가 전부 exit0이다. 순차 Cargo jobs8·공용 target을 유지했다.
+  `stage11-final-lint.json`에 각 명령·종료값·시간을 보존했다. source unit-tier도 exit0이다.
+- [기준/후보 전체 TSV76개](https://gist.github.com/jangster77/c62ec80625417cef370c6258132baee2)를
+  압축 없이 제출했다. API에서 README 포함77파일의 바이트/SHA 일치를 재확인했다.
+  최종 GitHub CI·merge는 이후 실제 head에서 확인하며 로컬 통과와 구분한다.
+
+완료 페이지54출력의 최종 점수도 모두98% 이상이다. 기존 확대 판독과 최종 PNG가50/54개
+바이트까지 같고 독립 PDF raster는54개 모두 같다. 달라진4개는 Native/WASM×HWP/HWPX
+104쪽이며 위 새 직접 판독과 같은 형식별 raster 동일성으로 연결한다.
+`stage11-completed-page-raster-reuse-audit.json`에 점수·원본/최종 PNG와 PDF SHA를 보존했다.
+따라서 과거 producer의 판독을 새 출력으로 바꾸어 보고하지 않으며 실제 같은 raster만 재사용한다.
+
+## 실행 명령과 제출 경계
+
+저장소 루트에서 `CARGO_BUILD_JOBS=8`,
+`CARGO_TARGET_DIR=/home/tsjang/rhwp/target/pr-review`를 사용했다.
+
+```bash
+cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/tsjang/rhwp/target/pr-review \
+  --tests --test-threads 12 --no-fail-fast
+cargo test --locked --profile release-test \
+  --target-dir /home/tsjang/rhwp/target/pr-review \
+  --features native-skia --lib -- --test-threads 12
+RHWP_SWEEP_TEST_WASM_PKG=output/pr-review/issue7902-render-repair-20261014/stage11-fresh-wasm \
+  node --test scripts/tests/visual-sweep-canvas-fonts.browser.mjs \
+  scripts/tests/visual-sweep-font-registration-browser.test.mjs
+```
+
+fresh WASM은 같은 source의 dev/no wasm-opt 빌드다. 최적화한 배포 package로 보고하지 않는다.
+전쪽 `visual_sweep.py` 실행의 문서별 원본·Print·compat·9개 공급 font 경로와 실제 argv는
+`stage9-final-full-native-result.json`, `stage11-final-full-wasm-result.json`에 보존한다.
+공통 옵션은 `--rasterizer png --embed-fonts full --dpi 96 --page-workers 2 --silhouette-only`다.
+WASM은 고정 `--wasm-pkg stage11-fresh-wasm`을 추가했고 Native CLI도 고정 복제본을 사용했다.
+정확한 명령·SHA를 보존하는 이 최종 원시 기록은 output 정리에서도 재현 자료로 유지한다.
+
+로컬 준비는 완료됐다. 사용자 승인한 collaborator self PR로 제출하고 정확한 code head의 CI를
+확인한 뒤 merge한다. 개별 PR review·오늘할일은 사용자 선택 옵션2의 별도 문서 PR로 처리한다.
+`#7445` 하위 이슈의 다른 Print/축소본·인쇄 배율·편집/캐시 계약을 이19문서 증거로 종료하지 않는다.
