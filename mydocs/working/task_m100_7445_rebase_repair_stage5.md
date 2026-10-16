@@ -1972,3 +1972,45 @@ ignored 정본 `output/pr-review/7445-completed-20261009/regression-policy-audit
 원본 로그·TSV·프로그램/빌드 출처를 보존한다. 새 devel의 공통 조건 전쪽 하락 비교,이 source의
 전체 회귀·나머지 gate와 실제 소비 경로,법원 서식 및 자산관리 따옴표는 남아 있다.
 PR 준비 완료가 아니며 지침은 수정하지 않았다.
+
+
+## C55. C67 전체 게이트 완료와 Studio 선언 SFNT 소비 복구
+
+C54 code head `bfcb29730a9cf3061bb84d250d9269bb6c17fa3d`의 새 전체 nextest는
+**10482PASS/0FAIL/45skip**,476.220초(빌드 포함954.375초)다. fmt,Native/WASM/전체target
+Clippy,workspace build,Skia root3861PASS/12ignore+다른lib182PASS,PNG2/PDF4,
+manifest/unit-tier,TypeScript,Studio2013PASS/2skip,Gym3170실행실패0/skip1을 확인했다.
+`full-gates-c67/state.json`의 모든 실제 exit0과 최종 summary를 확인했으며 C53 실패 결과와 구분한다.
+
+유효한 공통 명시 FontEnvironment로 C67의5문서146쪽×Native/fresh WASM을 재출력해
+기본/기존 검증 공급292PNG와 byte-identical임을 먼저 입증했다. 같은 조건의 최신 고정
+base4662 Native/fresh WASM은 첫5문서에서33건의0.01%p 이상 하락을 검출했다.
+법원 서식은base1/독립PDF2쪽으로 미검증이며 누락 쪽을 잘라 비교하지 않았다.
+유효 비교288쪽·전체47조건 미완료다. C67의90% 통과와 별개로 제출을 보류한다.
+PII38·규제분석16·자산관리31의 base/current 정본 review/overlay를 추가 산출·직접 열었다.
+PII38의 줄 소속/수는 같으나 일부 폭이0.1~0.2CSSpx 달라졌다. 해당 하락은 아직 해결하지 않았다.
+
+실제 C67 소비36건(Native12+Studio12+정상대조군12)의 실행/초기화는 성공했지만 직접 판독에서
+PII42 Studio의 줄바꿈과 표 하단 오류를 확인했다. 정상대조군12건은Canvas2D4+CanvasKit8이다.
+기본 product load를 사용했으며 실제 지원하지 않는 PII/고용노동부CanvasKit을 수용하지 않았다.
+
+원인은 선언 FontFace 공급자만 기존 공통 SFNT 정규화를 빠뜨린 데 있었다. 실제 설치
+HY신명조·HY중고딕은 원시 bytes로 SyntaxError,기존 정규화 bytes로 정상 로드됐다.
+동일 `normalizeFontFaceData`로 glyph/hmtx를 보존해 공급하고 실제 로드 프로그램의
+TrueType 형식 여부를 공통 snapshot에 전달했다. 형식 미확인 bytes와TTC는 기존 보호를 유지한다.
+기존 Rust가 검증한 face만 메트릭을 신뢰하며 문서별 강제 치환·기준 조정은 없다.
+수정 전 정규화 반례1PASS1FAIL → 수정 후SFNT 포함10PASS,전체Studio2014PASS/0FAIL/2skip,
+TypeScript PASS다. 테스트 fixture·glyph/hmtx 보존과 표시 별칭의 byte 동일성을 함께 검사한다.
+
+새 실제 Studio24캡처는JS/WASM48응답·변경TS24응답의 초기 source/hash가 일치하며 오류0이다.
+PII42 print는46.64253→99.75687%(96CSSDPI)로 복구됐다. 나머지5문서10화면/인쇄 및
+정상대조군12캡처는 이전과 byte-identical이다. Rust/WASM은 이TS 보정에서 바뀌지 않아
+C67 frozen Native12와 코드·빌드 동일성 범위에서 연결한다. 다시 Rust 전체를 실행했다고 쓰지 않는다.
+[전후 canonical review·overlay와 실제 소비·검사 근거](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/studio-declared-program-20261016/README.md)에
+정리했다. 이 단일 페이지 실제 소비 점수를 전쪽192DPI 수용이라고 해석하지 않는다.
+
+독립 Poppy ASCII Print에서 복원한 private 부분 공급으로 자산관리 따옴표 윤곽을 조사했다.
+목표 문서/PDF를 글꼴 생성 재료로 쓰지 않았다. 조건부 전60쪽은90% 이상이지만 기존 공급보다
+5/10쪽이0.01%p 이상 하락해 기본 공급으로 수용하지 않았다. 글꼴/PDF 바이너리는 커밋하지 않았다.
+자산관리·일가정 양립 제목 굵기,법원 미세 간격·전체 최신base 비교와 기존33하락도 남아 있다.
+PR 준비 완료가 아니며 지침·사용자 오늘할일/리뷰 초안은 변경하지 않았다.

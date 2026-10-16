@@ -1,5 +1,6 @@
 import { registerLoadedLocalFontFace } from './font-loader.ts';
 import { loadLocalFontBytes, resolveLocalFont } from './local-fonts.ts';
+import { normalizeFontFaceData } from './sfnt-face.ts';
 
 export interface DocumentFontSelectionPlan {
   environmentId: string | null;
@@ -13,6 +14,7 @@ interface LoadedProgram {
   bytes: ArrayBuffer;
   programId: string;
   face: FontFace;
+  trueType: boolean;
 }
 
 let programGeneration = 0;
@@ -29,14 +31,20 @@ async function loadLocalProgram(query: string): Promise<LoadedProgram | null> {
   if (cached) return cached;
   try {
     // 원본 API face의 바이트를 직접 로드한다. 읽기/형식 실패는 공급 완료가 아니다.
-    const bytes = await loadLocalFontBytes(query);
+    const original = await loadLocalFontBytes(query);
     // The approved API returns bytes for the matched face. A native local()
     // cascade can silently replace missing glyphs with LastResort. Let the
     // browser consume that same program directly, including its cmap.
-    if (!bytes || (bytes.byteLength >= 4 && new DataView(bytes).getUint32(0) === 0x74746366)) return null;
+    if (!original || (original.byteLength >= 4 && new DataView(original).getUint32(0) === 0x74746366)) return null;
+    // FontFace와 CanvasKit의 기존 공통 SFNT 준비를 쓴다. 원본의 glyph/hmtx는
+    // 유지하며 디렉터리·cmap 등 브라우저가 거부하는 메타데이터만 같은 방식으로 준비한다.
+    const bytes = normalizeFontFaceData(original, 0);
+    if (!bytes) return null;
     const face = new FontFace(query, bytes);
     await face.load();
-    const program = { query, family: query, bytes, programId: `browser-local-${++programGeneration}`, face };
+    const signature = bytes.byteLength >= 4 ? new DataView(bytes).getUint32(0) : 0;
+    const trueType = signature === 0x00010000 || signature === 0x74727565;
+    const program = { query, family: query, bytes, programId: `browser-local-${++programGeneration}`, face, trueType };
     loadedPrograms.set(query, program);
     return program;
   } catch {
@@ -49,7 +57,7 @@ async function loadLocalProgram(query: string): Promise<LoadedProgram | null> {
 export async function prepareDeclaredLocalPrograms(
   plan: DocumentFontSelectionPlan,
   isCurrent: () => boolean,
-): Promise<Array<{ query: string; family: string; programId: string }>> {
+): Promise<Array<{ query: string; family: string; programId: string; trueType: boolean }>> {
   const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute]))];
   if (names.length > 1024 || typeof FontFace === 'undefined') return [];
   const programs = new Map<string, LoadedProgram>();
@@ -78,6 +86,6 @@ export async function prepareDeclaredLocalPrograms(
       }
     }
   }
-  // 바이트 로드 성공을 문서의 TrueType 메트릭 신뢰 선언으로 승격하지 않는다.
-  return [...programs.values()].map(({ query, family, programId }) => ({ query, family, programId }));
+  // 로드한 프로그램 형식만 전달한다. 메트릭 신뢰는 Rust가 검증된 face에 한해 결정한다.
+  return [...programs.values()].map(({ query, family, programId, trueType }) => ({ query, family, programId, trueType }));
 }
