@@ -791,6 +791,12 @@ jobs:
         working-directory: rhwp-studio
         run: npm ci
 
+      # 글꼴 등록 계약은 설치 Chrome의 정상 sandbox로 실행한다.
+      # 실제 Render Diff의 고정 Chromium과 캡처 조건은 아래에서 별도로 준비한다.
+      - name: Validate Visual Sweep Canvas font registration
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
+        run: node --test scripts/tests/visual-sweep-font-registration-browser.test.mjs
+
       - name: Install Chromium
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
