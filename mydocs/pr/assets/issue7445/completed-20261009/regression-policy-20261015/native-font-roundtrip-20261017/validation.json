@@ -1,0 +1,179 @@
+{
+  "parent": "6ef66438bbe13fb89f9ae3016f09ffeb24a9e071",
+  "base": "fe5725dc384689b45d60ef8ea4c83138bc2701d8",
+  "sourceSha256": {
+    "src/model/mod.rs": "d486ac87de0c243235c97ee5cbc3fc88127576fb046f5ab95544551b04aa73ce",
+    "src/model/style.rs": "ebcc1e2e751a8c69458dd6fecc514022dfa6646a7915909c71c28fb522a9804c",
+    "src/model/native_font_program.rs": "87bf2c2bb6c4f9485ef230ef8e987711b8c7f147c880c0a16d2f6dc43cb6384d",
+    "src/parser/hwpx/mod.rs": "9469204b99ed0ebd3a3022e527bec53854e8c458a9f96ff7ad0762d15744a5b1",
+    "src/serializer/hwpx/mod.rs": "257cc2f471ae10be4f8577de9fef73cb67bd129a56f1facc29ed22f1749b9b52"
+  },
+  "jobs": 8,
+  "threads": 8,
+  "roundtripBefore": [
+    {
+      "tag": "base",
+      "mode": "roundtrip",
+      "binarySha256": "dc6ae2ced4a53edc0015bbb8a5e099d591c3e541b0dc9b226f093992436519fa",
+      "exitCode": 0,
+      "status": "PASS",
+      "maxDisp": 0.0,
+      "overPages": 0,
+      "hardStructPages": 0,
+      "regression": false,
+      "pageCountA": 16,
+      "pageCountB": 16
+    },
+    {
+      "tag": "base",
+      "mode": "identical-pair",
+      "binarySha256": "dc6ae2ced4a53edc0015bbb8a5e099d591c3e541b0dc9b226f093992436519fa",
+      "exitCode": 0,
+      "status": "PASS",
+      "maxDisp": 0.0,
+      "overPages": 0,
+      "hardStructPages": 0,
+      "regression": false,
+      "pageCountA": 16,
+      "pageCountB": 16
+    },
+    {
+      "tag": "candidate",
+      "mode": "roundtrip",
+      "binarySha256": "867a9db5d3e82f6f5886e9f81b09fb155a54254fc721f1e566cab325b10f12ab",
+      "exitCode": 3,
+      "status": "OVER",
+      "maxDisp": 28.0,
+      "overPages": 13,
+      "hardStructPages": 0,
+      "regression": true,
+      "pageCountA": 16,
+      "pageCountB": 16
+    },
+    {
+      "tag": "candidate",
+      "mode": "identical-pair",
+      "binarySha256": "867a9db5d3e82f6f5886e9f81b09fb155a54254fc721f1e566cab325b10f12ab",
+      "exitCode": 0,
+      "status": "PASS",
+      "maxDisp": 0.0,
+      "overPages": 0,
+      "hardStructPages": 0,
+      "regression": false,
+      "pageCountA": 16,
+      "pageCountB": 16
+    }
+  ],
+  "roundtripAfter": {
+    "status": "PASS",
+    "maxDisp": 0.0,
+    "overPages": 0,
+    "hardStructPages": 0,
+    "regression": false,
+    "pageCountA": 16,
+    "pageCountB": 16
+  },
+  "focus": {
+    "exitCode": 0,
+    "seconds": 37.49757641600445,
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_010",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_014",
+      "--test",
+      "regression_suite_015",
+      "--test",
+      "regression_suite_018",
+      "-E",
+      "test(issue_6706_stored_inline_control_rows::) | test(issue_7445_asset_cell_frame::) | test(issue_7418_ascii_punct_uses_latin_slot::) | test(issue_6172_pua_boxed_number_advance::) | test(issue_7445_native_bold_tracking::) | test(issue_4961_font_decision_trace::) | test(render_diff_json_contract::) | test(provenance_contract::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "testsRun": 41,
+    "passed": 41,
+    "failed": 0,
+    "skippedBySelection": 1552
+  },
+  "nodeWasmExistingPackage": {
+    "passed": 2,
+    "failed": 0,
+    "scope": "C85 package consumer selection only; not a fresh C86 WASM build"
+  },
+  "profileSourcesProvenOnFixedBase": [
+    {
+      "profile": "exact-face",
+      "oldRecordId": "page:0:run:1:char:0",
+      "source": {
+        "sectionIndex": 0,
+        "paragraphIndex": 1,
+        "nestedPath": [],
+        "charOffset": 0,
+        "charShapeId": 0
+      },
+      "sourceCharacter": "초"
+    },
+    {
+      "profile": "missing-face",
+      "oldRecordId": "page:0:run:46:char:1",
+      "source": {
+        "sectionIndex": 0,
+        "paragraphIndex": 7,
+        "nestedPath": [],
+        "charOffset": 22,
+        "charShapeId": 318
+      },
+      "sourceCharacter": "1"
+    },
+    {
+      "profile": "document-substitute",
+      "oldRecordId": "page:0:run:3:char:0",
+      "source": {
+        "sectionIndex": 0,
+        "paragraphIndex": 3,
+        "nestedPath": [
+          1,
+          1,
+          0
+        ],
+        "charOffset": 0,
+        "charShapeId": 89
+      },
+      "sourceCharacter": "2"
+    }
+  ],
+  "limitations": [
+    "Full nextest and mandatory gates on this source remain pending.",
+    "Private HWPX metadata preserves rhwp reopen semantics, not a claim about preservation by external office applications.",
+    "Known WMF raw failures and lighting physical frame remain unresolved."
+  ],
+  "logsRoot": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-fe5725dc-20261017/failure-repair-c86",
+  "nativeLibClippy": {
+    "exitCode": 0,
+    "secondsReported": 127,
+    "warnings": 0
+  },
+  "manifest": {
+    "sources": 1525,
+    "staticAttrs": 6604,
+    "integrationTargets": 48
+  },
+  "unitTiers": {
+    "tests": 4103,
+    "modules": 296,
+    "baselineRaised": false
+  }
+}

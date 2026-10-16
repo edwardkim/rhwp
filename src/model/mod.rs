@@ -16,6 +16,7 @@ pub mod hyperlink;
 pub mod hyperlink_format;
 pub(crate) mod identity;
 pub mod image;
+pub(crate) mod native_font_program;
 pub mod page;
 pub mod paragraph;
 pub mod path;

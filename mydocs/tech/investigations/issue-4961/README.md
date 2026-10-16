@@ -80,6 +80,12 @@ refactor의 historical digest 차이는 `ledgerSourceDrift`로 노출한다.
 | missing face | `HCI Poppy` → `Palatino Linotype` style substitution → exact metric |
 | document substitute | `KoPubWorld돋움체 Light` + 문서 `HCR Batang` → heuristic advance |
 
+구두점 paint 슬롯 분리로 missing-face의 run 수는136→145가 됐지만 원문607문자와
+글꼴 결정은 보존됐다. 프로필 문자는 고정 run 번호 대신 원본 구역·문단·중첩 경로·
+문자 오프셋·글자모양 ID로 한 번만 결합한다. `baselineRecordId`는 당시 관측값이다.
+missing-face의607문자/607record/누락0 기대값은 유지하며, run 수는 같은 공개
+text-layout의 실제 run 수와 대조한다. 다른 문서의 기존 count와 이관된 배치 핀의 범위는 유지한다.
+
 동일 객체 상태의 HWP/HWPX는 record와 `layoutHash`가 같다. 현재 공개 E2E에서는 사용자의
 시험지 작업 분리 지시에 따라 `3-10월_교육_통합_2022.hwp/.hwpx` 입력과 해당 형식 쌍의
 해시 검사를 제거했습니다. 원본 문서와 PDF는 보존하며 시험지 렌더링 수용을 주장하지 않습니다.

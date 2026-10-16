@@ -24,10 +24,13 @@ function readTrace(document, maxCharacters = MANIFEST.options.maxCharacters) {
   const bytes = new Uint8Array(fs.readFileSync(path.join(ROOT, document.path)));
   const hwp = new wasmModule.HwpDocument(bytes);
   try {
-    return JSON.parse(hwp.getFontDecisionTrace(
+    const trace = JSON.parse(hwp.getFontDecisionTrace(
       document.page,
       JSON.stringify({ maxCharacters }),
     ));
+    const layout = JSON.parse(hwp.getPageTextLayout(document.page));
+    assert.equal(trace.counts.runsSeen, layout.runs.length, `${document.id}: public run count`);
+    return trace;
   } finally {
     hwp.free();
   }
@@ -85,7 +88,7 @@ test('공개 HWP/HWPX fixture의 exact, missing, substFont 계보가 WASM에서 
     const deferredPins = new Set(document.renderPinsDeferredToIssue7445 ?? []);
     if (!deferredPins.has('expectedCounts')) {
       for (const [key, value] of Object.entries(document.expectedCounts)) {
-        assert.equal(first.counts[key], value, `${document.id}: ${key}`);
+        assert.deepEqual(first.counts[key], value, `${document.id}: ${key}`);
       }
       if (document.validateRunOwnership) {
         const core = new wasmModule.HwpDocument(new Uint8Array(fs.readFileSync(path.join(ROOT, document.path))));

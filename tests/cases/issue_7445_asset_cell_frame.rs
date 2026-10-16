@@ -281,7 +281,8 @@ fn picture_successor_keeps_source_gap_and_independent_print_baseline() {
         "그림 뒤 제목 baseline: 실제{painted_baseline}, 독립 Print{independent_baseline}"
     );
     let heading_run = find_node(heading_line, &|node| {
-        matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text == "전산시스템(")
+        matches!(&node.node_type, RenderNodeType::TextRun(run)
+            if run.para_index == Some(heading_index) && run.text.starts_with("전산시스템"))
     })
     .expect("같은 제목의 첫 한글 원점");
     assert!(

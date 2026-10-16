@@ -81,6 +81,11 @@ fn the_hyphen_in_a_hangul_run_advances_with_latin_slot_metrics() {
     );
     let text: Vec<char> = run["text"].as_str().unwrap().chars().collect();
     let hyphen = text.iter().position(|c| *c == '-').expect("`-`");
+    assert_eq!(run["charStart"].as_u64().unwrap() + hyphen as u64, 2);
+    assert_eq!(
+        run["fontFamily"], "Palatino Linotype",
+        "독립 Print의 구두점 face"
+    );
     let char_x: Vec<f64> = run["charX"]
         .as_array()
         .expect("charX")

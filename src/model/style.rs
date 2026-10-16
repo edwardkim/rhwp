@@ -49,7 +49,7 @@ pub fn border_width_mm_str(index: u8) -> &'static str {
 
 /// 원본 프로그램이 일반 글리프 폭 외에 지닌 조판 계약.
 /// 파서가 확정하며 렌더러는 컨테이너 형식을 다시 판별하지 않는다.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum NativeFontProgram {
     HumanMyeongJo,
     HanyangSinMyeongJo,

@@ -68,6 +68,75 @@ fn source_ops<'a>(value: &'a Value, key: &str, out: &mut Vec<&'a Value>) {
 #[test]
 fn native_bold_title_keeps_independent_origins_and_source_order() {
     let core = core();
+    assert_title(&core);
+    let bytes = core.export_hwpx_native().expect("HWPX 저장");
+    let mut reparsed = DocumentCore::from_bytes(&bytes).expect("HWPX 재열람");
+    reparsed
+        .set_font_environment(core.font_environment().cloned())
+        .unwrap();
+    for (before, after) in core
+        .document()
+        .doc_info
+        .font_faces
+        .iter()
+        .flatten()
+        .zip(reparsed.document().doc_info.font_faces.iter().flatten())
+    {
+        assert_eq!(before.native_program, after.native_program, "출처 왕복");
+    }
+    assert_title(&reparsed);
+    // 프로그램 출처를 일반 HWPX의 글꼴명으로 추정하면 안 된다.
+    // 외부 편집/엔트리 제거/알 수 없는 버전은 원래 글꼴 선언을 그대로 읽는다.
+    for mutation in ["header", "remove", "version"] {
+        let changed = change_program_metadata(&bytes, mutation);
+        let doc = rhwp::parser::parse_document(&changed).unwrap();
+        assert!(
+            doc.doc_info
+                .font_faces
+                .iter()
+                .flatten()
+                .all(|font| font.native_program.is_none()),
+            "{mutation}"
+        );
+        assert_eq!(doc.sections[0].paragraphs[121].text, para_text(&core));
+    }
+}
+
+fn para_text(core: &DocumentCore) -> &str {
+    &core.document().sections[0].paragraphs[121].text
+}
+
+fn change_program_metadata(bytes: &[u8], mutation: &str) -> Vec<u8> {
+    use std::io::{Cursor, Read, Write};
+    let mut source = zip::ZipArchive::new(Cursor::new(bytes)).unwrap();
+    let mut destination = zip::ZipWriter::new(Cursor::new(Vec::new()));
+    for index in 0..source.len() {
+        let mut entry = source.by_index(index).unwrap();
+        let name = entry.name().unwrap().to_string();
+        let mut contents = Vec::new();
+        entry.read_to_end(&mut contents).unwrap();
+        if name == "Contents/header.xml" && mutation == "header" {
+            contents.extend_from_slice(b"<!-- external edit -->");
+        }
+        if name == "META-INF/rhwp-native-font-programs.json" {
+            if mutation == "remove" {
+                continue;
+            }
+            if mutation == "version" {
+                let mut value: Value = serde_json::from_slice(&contents).unwrap();
+                value["version"] = 2.into();
+                contents = serde_json::to_vec(&value).unwrap();
+            }
+        }
+        destination
+            .start_file(name, zip::write::SimpleFileOptions::default())
+            .unwrap();
+        destination.write_all(&contents).unwrap();
+    }
+    destination.finish().unwrap().into_inner()
+}
+
+fn assert_title(core: &DocumentCore) {
     let para = &core.document().sections[0].paragraphs[121];
     let source = para.text.clone();
     assert_eq!(source, "4. 작업 할당 방식(Scheduling Algorithms)");
