@@ -55,6 +55,39 @@ fn advance(record: &Value) -> f64 {
 }
 
 #[test]
+fn gulim_missing_point_publishes_the_measured_supplier_to_paint() {
+    // 프로그램 cmap·독립 PDF 공급자 계약이며 법원 서식의 미달 배치를 고정하지 않는다.
+    let mut program = core("굴림", "가․가", None);
+    let original = program.export_hwp_native().unwrap();
+    let dot = record(&program, "․");
+    assert_eq!(dot["document"]["face"], "굴림");
+    assert_eq!(
+        dot["layoutName"]["cssFamilyChain"],
+        serde_json::json!(["굴림", "Haansoft Dotum"]),
+        "확인된 Gulim cmap 결측은 독립 Print의 측정 공급자에 연결"
+    );
+    let hangul = record(&program, "가");
+    assert!(
+        (advance(&dot) / advance(&hangul) - 178.0 / 1024.0).abs() <= 4.0 / advance(&hangul),
+        "실제 HDOTUM 프로그램의 자연 전진을 유지"
+    );
+    program
+        .set_font_environment(Some(
+            FontEnvironment::from_json(
+                r#"{"id":"caller-gulim-glyphs","substitutions":{},"glyphFallbacks":{"굴림":["HCR Dotum"]}}"#,
+            )
+            .unwrap(),
+        ))
+        .unwrap();
+    assert_eq!(
+        record(&program, "․")["layoutName"]["cssFamilyChain"],
+        serde_json::json!(["굴림", "HCR Dotum"]),
+        "호출자가 지정한 공급 체인은 기본 체인보다 우선"
+    );
+    assert_eq!(program.export_hwp_native().unwrap(), original);
+}
+
+#[test]
 fn measured_original_glyph_survives_legacy_type1_display_fallback() {
     let core = core("HCI Poppy", "A/A·", None);
     let slash = record(&core, "/");

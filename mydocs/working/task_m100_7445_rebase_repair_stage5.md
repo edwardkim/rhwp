@@ -1674,3 +1674,33 @@ hash·manifest/unit-tier/fmt/all-target Clippy를 확인했다. 추가 출처 �
 감사 전체 통과로 보고하지 않는다. 최신 devel 대비 WASM 원본60쪽·과거 분할7쪽 하락과
 생성본 base 쪽수 불일치로 PR은 보류한다. 전체10440건·나머지 제출 gate/시각 범위·
 actual36은 아직 완료하지 않았다.
+
+
+### C47 — 변경 없는 devel 확인과 Gulim 결측 글리프 공급자(C53)
+
+원격 devel은 f5251e7d 그대로여서 리베이스를 반복하지 않았다. 실제 glyph 선택을
+추적해 U+2024의 측정은 Haansoft Dotum인데 paint는 HCR Dotum인 단절을 확인했다.
+기존 공통 fallback producer에 이미 검증한 Gulim 공급자를 연결했다. source610개 문자와
+metric 결과는 그대로이며 실제 Native face가 바뀐14개는 모두 이 점이다.54조건의
+source+cmap 차집합에서 후보도 법원 서식뿐이다. 전체 backend 무영향으로 확대하지 않는다.
+
+정식 신규 intrinsic 공급자 계약은 실제 수정 전1FAIL→수정 후5PASS(기존4건 포함),
+정상 font-environment5PASS다. Native/fresh WASM 빌드·root/Studio 파일 hash와
+fmt/manifest/unit-tier/all-target Clippy를 확인했다. 전2쪽의 최저는 Native90.14068/
+WASM90.15243%,빈 마지막 쪽100%,독립 Print와2/2쪽이다. 확대 판독에서 점 공급자는
+복원됐으나 각주 공백·줄 소속과 본문 미세 간격이 남아 시각 완료나 PR 완료로 판정하지 않는다.
+[근거·명령/해시·대표 review·잔여](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/gulim-point-supplier-20261016/README.md).
+
+47개 Print CTM 조사에서36조건은 장치 양자화 가설과 같고3조건은 .12 identity scale,
+8조건은 PDF의 모든 페이지가 blank여서 CTM 미측정이었다. 전부 같은 printer 상수로
+일괄 변환하는 구현을 추가하지 않았다. HFT ASCII 자연 윤곽 중심 진단은47/55/83쪽에서
+소폭 개선됐지만 fixed devel WASM 하락을 해소하지 못했고 production에 반영하지 않았다.
+이 ad hoc 진단 rustc가 fresh WASM 완료20초 전에 실행된 순차 컴파일 위반을 뒤늦게
+확인했다. frozen rlib를 읽어 별도 경로에 링크한 진단이며 shared output은 수정하지 않았고
+C53 source/build/hash 검사는 통과했다. 이후 Rust 검증을 순차 실행했다.
+
+추가로 같은 source의 Native/fresh WASM SVG를 embed/Chrome raster로 소비시켜
+양쪽 전2쪽90.14943/100%,2/2쪽을 확인했다. 옵션 누락으로 즉시 실패한 첫 SVG 진단은
+invalid로 분리했고 성공 실행만 사용한다. 번호 토큰을 기존 body-field의1em으로
+예약하는 runtime 진단은 각주1·3 소속은 맞췄으나 각주4를 더 틀리게 하여
+Native90.14068→87.79458%였다. 이 가설은 거절했고 production에 반영하지 않았다.

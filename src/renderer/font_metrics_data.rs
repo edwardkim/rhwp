@@ -137,6 +137,9 @@ pub(crate) fn verified_program_glyph_fallback_families(face: &str) -> &'static [
     // Haansoft Batang으로 출력한다. 이름 별칭은 기존 메트릭 선택기가 해소한다.
     match find_metric(face, false, false).map(|found| found.metric.name) {
         Some("HumanMyeongJo" | "DotumChe") => &["Haansoft Batang"],
+        // Gulim U+2024의 측정도 아래 verified_missing_glyph_supplier가
+        // HDOTUM에 맡긴다. 같은 공급자를 실제 paint 후보에도 전달한다.
+        Some("Gulim") => &["Haansoft Dotum"],
         _ => &[],
     }
 }
