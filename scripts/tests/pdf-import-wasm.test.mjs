@@ -92,6 +92,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
       const controlBytes = new Uint8Array(await (await fetch('/control.hwp')).arrayBuffer());
       if (hasDefault) {
         const disabled = await import('/default/rhwp.js'); await disabled.default();
+        check(disabled.HwpDocument.supportsPdfImport() === false, 'default runtime advertises PDF disabled');
         throwsCode(() => disabled.HwpDocument.importPdf(bytes, {}), 'PDF_IMPORT_DISABLED');
         throwsCode(() => new disabled.HwpDocument(bytes), 'PDF_IMPORT_DISABLED');
         const control = new disabled.HwpDocument(controlBytes);
@@ -99,6 +100,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
         control.free();
       }
       const wasm = await import('/pkg/rhwp.js'); await wasm.default();
+      check(wasm.HwpDocument.supportsPdfImport() === true, 'PDF runtime advertises PDF enabled');
       const all = new wasm.HwpDocument(bytes);
       check(all.pageCount() === 3 && all.getSourceFormat() === 'pdf', 'constructor imports all PDF pages');
       all.free();

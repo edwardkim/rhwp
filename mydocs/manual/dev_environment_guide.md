@@ -253,6 +253,35 @@ bind mount는 hard-link를 지원하지 않아 Cargo가 실패할 수 있으므�
 이 파일을 남기면 wasm-pack이 임시 최적화 결과를 다시 입력으로 열거해 무한 실행 또는
 `*-opt.wasm-opt.wasm` 실패로 이어질 수 있다. (#4089)
 
+### Studio에서 PDF 직접 열기 (선택 기능)
+
+기본 WASM은 PDF 가져오기가 꺼져 있다. PDF를 검증할 때는 저장소 루트에서 동일한 Docker
+서비스와 cache를 사용하여 기능을 포함한다. `.env.docker`는 위 표준 준비 절차를 재사용한다.
+
+```bash
+docker compose --env-file .env.docker run --rm --no-deps wasm sh -ec '
+  finish() {
+    status=$?
+    chown -R "$HOST_UID:$HOST_GID" pkg
+    chown "$HOST_UID:$HOST_GID" rhwp-studio/public/rhwp.js rhwp-studio/public/rhwp_bg.wasm
+    exit "$status"
+  }
+  trap finish EXIT
+  rm -f pkg/*-opt.wasm
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg --features pdf-import
+'
+```
+
+이후 위 wrapper가 동기화한 pkg/public의 JS·WASM SHA-256을 확인하고 Studio 개발 서버를
+시작·새로고침한다. 파일 → 열기(Ctrl/Cmd+O) 또는 문서 영역 드롭으로 PDF를 직접 열 수 있다.
+지원 여부는 실제 WASM의 `HwpDocument.supportsPdfImport()` 결과로 결정한다. 이전 bundle이나
+PDF-off 빌드에서는 PDF를 열기 목록에 추가하지 않으며 HWP/HWPX/HML 열기는 유지한다.
+
+PDF 원본은 입력으로 보존한다. 첫 저장은 HWP/HWPX 출력 형식을 선택하며, 원본 핸들에
+내용을 덮어쓰지 않는다. 현재 Studio 가져오기는 동기 WASM 호출이므로 진행 표시가 취소나
+시간 제한을 보장하지 않는다. PDF의 줄/문단 복원·지원 제한과 parser allocation 감사는
+별도 범위이며, 자세한 API/Worker 계약은 [공용 PDF 모듈](../../rhwp-shared/pdf/README.md)을 따른다.
+
 Docker를 사용할 수 없는 호스트에서 원인을 분리하는 **진단용** 네이티브 경로는 아래와 같다.
 `--no-opt` 결과는 최적화된 배포 산출물을 대체하지 않는다. 모든 OS의 native Cargo/WASM 검증은
 [고정 review target 준비](pr_review/local_validation.md#고정-review-target과-실행-환경)를 기본 작업공간에서 먼저

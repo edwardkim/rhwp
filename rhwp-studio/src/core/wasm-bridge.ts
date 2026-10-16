@@ -9,6 +9,7 @@ import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns
 import type { CharShapeRun } from './types';
 import type { HyperlinkTarget, HyperlinkContext } from './hyperlink';
 import * as wasmExports from '@wasm/rhwp.js';
+import { hasPdfImportCapability } from './pdf-import-capability';
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
@@ -520,6 +521,15 @@ export class WasmBridge {
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
     this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
     return this.getDocumentInfo();
+  }
+
+  hasPdfImportCapability(): boolean {
+    return hasPdfImportCapability(HwpDocument);
+  }
+
+  getPdfImportDiagnostics(): Record<string, unknown> | null {
+    const api = this.doc as unknown as { getPdfImportDiagnostics?: () => string } | null;
+    return api?.getPdfImportDiagnostics ? JSON.parse(api.getPdfImportDiagnostics()) : null;
   }
 
   loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): void {

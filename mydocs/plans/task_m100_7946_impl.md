@@ -3,7 +3,7 @@
 - Issue: [#7946](https://github.com/edwardkim/rhwp/issues/7946)
 - 공동 처리: [#7855](https://github.com/edwardkim/rhwp/issues/7855), [#7856](https://github.com/edwardkim/rhwp/issues/7856)
 - 기준 SHA: `4662c069e557e928ed7968d061121fde90b1f027`
-- 상태: 2026-10-16 공동 계획 구현 승인·착수, [의존성 단계 결과](../working/task_m100_7946_stage1.md)
+- 상태: 2026-10-16 승인된 공동 구현·집중/시각 검증 완료. [의존성 단계 결과](../working/task_m100_7946_stage1.md), [PDF UI·Docker/시각 결과](../working/task_m100_7946_stage2.md). 최종 PR 검증·원격 반영 대기
 - 상위 계획: [수행계획](task_m100_7946.md)
 
 ## 1. 제품 연결 계약

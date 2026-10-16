@@ -1394,6 +1394,7 @@ jobs:
             rhwp-chrome/package-lock.json
             rhwp-firefox/package-lock.json
             rhwp-vscode/package-lock.json
+            scripts/frontend-metrics/package-lock.json
 
       - name: Install frontend package dependencies
         run: |
@@ -1404,6 +1405,12 @@ jobs:
 
       - name: Verify WASM bindings and editor embed contract
         run: node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+
+      - name: Verify build dependency compatibility
+        run: |
+          npm --prefix scripts/frontend-metrics ci --no-audit --prefer-offline
+          node --test scripts/tests/frontend-dependency-compat.test.mjs
+          node scripts/frontend-metrics.mjs --out output/frontend-metrics/metrics.json --summary output/frontend-metrics/summary.md
 
       - name: Run editor package tests when declared
         run: npm --prefix npm/editor test --if-present

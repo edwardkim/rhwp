@@ -598,6 +598,12 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 현재 WASM 빌드에서 PDF 입력을 사용할 수 있는지 문서 생성 전에 조회한다.
+    #[wasm_bindgen(js_name = supportsPdfImport)]
+    pub fn supports_pdf_import() -> bool {
+        cfg!(all(feature = "pdf-import", target_arch = "wasm32"))
+    }
+
     /// PDF 전체 또는 선택 쪽을 공통 IR로 가져온다 (`pdf-import` opt-in).
     /// options.sourcePages는 0-based 증가 배열이며 생략하면 전체 쪽이다.
     /// 동기 실행이므로 브라우저에서 취소/시간 제한이 필요하면 Worker에서 호출한다.

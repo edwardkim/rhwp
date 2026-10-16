@@ -11181,6 +11181,14 @@ export class HwpDocument {
         }
     }
     /**
+     * 현재 WASM 빌드에서 PDF 입력을 사용할 수 있는지 문서 생성 전에 조회한다.
+     * @returns {boolean}
+     */
+    static supportsPdfImport() {
+        const ret = wasm.hwpdocument_supportsPdfImport();
+        return ret !== 0;
+    }
+    /**
      * 저장 상태와 현재 상태를 교환한다. 같은 ID로 Undo/Redo를 수행한다.
      * @param {number} id
      */
@@ -11614,9 +11622,32 @@ function __wbg_get_imports() {
             const ret = typeof(arg0) === 'function';
             return ret;
         },
+        __wbg___wbindgen_is_null_7d13f41e1a2d5140: function(arg0) {
+            const ret = arg0 === null;
+            return ret;
+        },
+        __wbg___wbindgen_is_object_a2790eb24c211ea0: function(arg0) {
+            const val = arg0;
+            const ret = typeof(val) === 'object' && val !== null;
+            return ret;
+        },
         __wbg___wbindgen_is_undefined_6cff064c44e0d823: function(arg0) {
             const ret = arg0 === undefined;
             return ret;
+        },
+        __wbg___wbindgen_number_get_136b9679cab35cfb: function(arg0, arg1) {
+            const obj = arg1;
+            const ret = typeof(obj) === 'number' ? obj : undefined;
+            getDataViewMemory0().setFloat64(arg0 + 8 * 1, isLikeNone(ret) ? 0 : ret, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, !isLikeNone(ret), true);
+        },
+        __wbg___wbindgen_string_get_d154f1e671052120: function(arg0, arg1) {
+            const obj = arg1;
+            const ret = typeof(obj) === 'string' ? obj : undefined;
+            var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            var len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         },
         __wbg___wbindgen_throw_bb96b2010945f0bc: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
@@ -11726,6 +11757,10 @@ function __wbg_get_imports() {
             const ret = Reflect.get(arg0, arg1);
             return ret;
         }, arguments); },
+        __wbg_get_unchecked_e20b893aeafc3fca: function(arg0, arg1) {
+            const ret = arg0[arg1 >>> 0];
+            return ret;
+        },
         __wbg_height_e56f6fb197710e09: function(arg0) {
             const ret = arg0.height;
             return ret;
@@ -11758,6 +11793,14 @@ function __wbg_get_imports() {
                 result = false;
             }
             const ret = result;
+            return ret;
+        },
+        __wbg_isArray_6339f732981044bf: function(arg0) {
+            const ret = Array.isArray(arg0);
+            return ret;
+        },
+        __wbg_length_ecfa2c63d3d0d82c: function(arg0) {
+            const ret = arg0.length;
             return ret;
         },
         __wbg_lineTo_9495a068a4f48283: function(arg0, arg1, arg2) {
@@ -11798,6 +11841,10 @@ function __wbg_get_imports() {
             const ret = Array.of(arg0, arg1);
             return ret;
         },
+        __wbg_ownKeys_49880e0197268893: function() { return handleError(function (arg0) {
+            const ret = Reflect.ownKeys(arg0);
+            return ret;
+        }, arguments); },
         __wbg_push_adb0107829f02d75: function(arg0, arg1) {
             const ret = arg0.push(arg1);
             return ret;
