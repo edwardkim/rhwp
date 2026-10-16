@@ -100,6 +100,31 @@ fn worst_text_line_overhang(node: &RenderNode, bottom: f64) -> f64 {
     worst
 }
 
+fn source_table_fragment(node: &RenderNode) -> Option<&RenderNode> {
+    if let RenderNodeType::Table(meta) = &node.node_type {
+        if meta.section_index == Some(0)
+            && meta.para_index == Some(6)
+            && meta.control_index == Some(0)
+            && meta.cell_context.is_none()
+        {
+            return Some(node);
+        }
+    }
+    node.children.iter().find_map(source_table_fragment)
+}
+
+fn painted_text(node: &RenderNode, out: &mut String) {
+    if !node.visible || node.editor_only {
+        return;
+    }
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        out.push_str(&run.text);
+    }
+    for child in &node.children {
+        painted_text(child, out);
+    }
+}
+
 /// 원본 표 소속의 이 셀이 전쪽에서 그린 문단 인덱스 — 실제 paint 순서.
 fn fragment_ranges() -> Vec<Vec<usize>> {
     let path = document_path();
@@ -175,6 +200,63 @@ fn the_fragments_partition_the_cell_exactly_once() {
         ranges.iter().flatten().copied().collect::<Vec<_>>(),
         (0..source_cell.paragraphs.len()).collect::<Vec<_>>(),
         "원본의 모든 문단을 순서대로 한 번씩 보존해야 한다"
+    );
+
+    // 전쪽 90% 이상 확인 뒤 같은 표 종료를 검증할 수 있는 완료 페이지 중
+    // Native/fresh WASM 양쪽 100%인 5쪽을 선택했다(96CSS DPI, compat2022).
+    // 독립 Print의 실제 외곽 path 좌표다. bbox 측정값에서 기대값을 만들지 않는다.
+    // 증적: regression-policy-20261015/land-default-environment-20261016/README.md.
+    let core = DocumentCore::from_bytes(&std::fs::read(document_path()).expect("원본 읽기"))
+        .expect("마지막 조각 문서");
+    let tree = core
+        .build_page_render_tree((core.page_count() - 1) as u32)
+        .expect("마지막 쪽 실제 배치");
+    let fragment = source_table_fragment(&tree.root).expect("같은 원본 표의 종료 조각");
+    for (edge, actual, expected) in [
+        ("left", fragment.bbox.x, 58.368),
+        ("top", fragment.bbox.y, 92.538656),
+        ("right", fragment.bbox.x + fragment.bbox.width, 698.663981),
+        ("bottom", fragment.bbox.y + fragment.bbox.height, 376.068034),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "독립 Print 5쪽 종료 표의 {edge}: expected={expected}, actual={actual}"
+        );
+    }
+    let last_source_cell = source
+        .cells
+        .iter()
+        .max_by_key(|cell| (cell.row, cell.col))
+        .expect("원본 마지막 셀");
+    let last_paragraph = last_source_cell
+        .paragraphs
+        .iter()
+        .rev()
+        .find(|paragraph| !paragraph.text.trim().is_empty())
+        .expect("원본의 마지막 내용");
+    let last_cell = fragment
+        .children
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type, RenderNodeType::TableCell(cell)
+            if cell.row == last_source_cell.row && cell.col == last_source_cell.col)
+        })
+        .expect("종료 조각 안의 같은 원본 셀");
+    assert!(
+        last_cell.bbox.y >= fragment.bbox.y
+            && last_cell.bbox.y + last_cell.bbox.height <= fragment.bbox.y + fragment.bbox.height,
+        "마지막 셀은 종료 조각 안에 포함돼야 한다"
+    );
+    let mut text = String::new();
+    painted_text(last_cell, &mut text);
+    let compact = |text: &str| {
+        text.chars()
+            .filter(|character| !character.is_whitespace())
+            .collect::<String>()
+    };
+    assert!(
+        compact(&text).ends_with(&compact(&last_paragraph.text)),
+        "종료 위치만 맞추고 원본 마지막 문단을 잘라서는 안 된다"
     );
 }
 
