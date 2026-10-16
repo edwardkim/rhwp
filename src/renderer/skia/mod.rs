@@ -6,6 +6,7 @@ mod equation_conv;
 mod fill;
 mod font_lookup;
 mod glyph_replay;
+mod hft_outline;
 mod image_conv;
 mod renderer;
 mod text_replay;

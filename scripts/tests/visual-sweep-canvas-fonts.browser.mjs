@@ -1,5 +1,6 @@
+import './hft-outline-font-selection.browser.mjs';
 // 실제 Chrome·FontFace·공개 Noto 글꼴로 PNG exporter의 글꼴 연결을 검사한다.
-// HWP 엔진 대신 1쪽 Canvas adapter를 사용해 브라우저 글꼴 공급 계약을 격리한다.
+// 아래 adapter 계약과, import한 실제 WASM의 HFT face 선택 계약을 각각 실행한다.
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {spawn} from 'node:child_process';
