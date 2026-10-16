@@ -193,6 +193,7 @@ fn render_page_to_canvas_filtered_with_profile_impl(
     canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
     let mut renderer = WebCanvasRenderer::new(canvas)?;
+    renderer.set_hft_outline_fonts(&document.hft_outline_fonts);
     renderer.show_paragraph_marks = document.show_paragraph_marks;
     renderer.show_control_codes = document.show_control_codes;
     renderer.set_scale(scale);
@@ -258,6 +259,7 @@ fn render_page_patch_to_canvas_filtered_with_profile_impl(
     }
 
     let mut renderer = WebCanvasRenderer::new(canvas)?;
+    renderer.set_hft_outline_fonts(&document.hft_outline_fonts);
     renderer.show_paragraph_marks = document.show_paragraph_marks;
     renderer.show_control_codes = document.show_control_codes;
     renderer.set_scale(scale);
@@ -659,6 +661,18 @@ impl HwpDocument {
         .map_err(JsValue::from)
     }
 
+    /// 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
+    #[wasm_bindgen(js_name = registerHftOutlineFont)]
+    pub fn register_hft_outline_font(
+        &mut self,
+        family: &str,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<bool, JsValue> {
+        self.register_hft_outline_font_native(family, bytes, face_index)
+            .map_err(JsValue::from)
+    }
+
     /// 이미 등록된 exact font source slot에 명시 variable-font instance 요청을 설정한다.
     /// JSON DTO의 검증·canonicalization·mutation 권위는 native command 한 곳에만 둔다.
     #[wasm_bindgen(js_name = setExactFontInstance)]
@@ -836,6 +850,7 @@ impl HwpDocument {
         canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
+        renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.set_scale(scale);
@@ -875,6 +890,7 @@ impl HwpDocument {
         canvas.set_height(scaled_canvas_extent(tree.root.bbox.height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
+        renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.set_scale(scale);
@@ -978,6 +994,7 @@ impl HwpDocument {
         canvas.set_height(scaled_canvas_extent(tree.root.bbox.height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
+        renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.set_scale(scale);
