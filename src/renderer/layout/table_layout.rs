@@ -16835,6 +16835,42 @@ impl LayoutEngine {
             }
         }
 
+        // [#7840] 빈 앵커의 host 글줄은 제자리에 남고 그림 띠만 뒤로 미룬다. 저장 사다리가
+        // 다음 문단을 그 띠 높이만큼만 전진시켰으면(다음 문단 vpos − 앵커 줄 vpos == 띠)
+        // host 글줄은 띠 안에 놓인 것이다. 이미 계상한 host 글줄 높이를 띠에서 빼야 같은
+        // 띠를 두 번 세지 않는다 — 156465345 4쪽: 그림 18298HU 앵커가 글줄 22.03px +
+        // 띠 243.97px 로 계상돼 그림이 다음 쪽으로 밀리고 한/글에 없는 쪽 하나가 생겼다.
+        let stored_profile = (self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().hwpx_stored_layout())
+            && !self.profile.get().session_edited();
+        let mut charged_host_line_h = std::collections::HashMap::<usize, f64>::new();
+        for unit in units.iter().filter(|unit| unit.vis_start < unit.vis_end) {
+            *charged_host_line_h.entry(unit.para_idx).or_default() += unit.height;
+        }
+        let stored_band_owns_host_line = |para_idx: usize, band: f64| -> bool {
+            stored_profile
+                && cell
+                    .paragraphs
+                    .get(para_idx)
+                    .and_then(|para| para.line_segs.first())
+                    .zip(
+                        cell.paragraphs
+                            .get(para_idx + 1)
+                            .and_then(|next| next.line_segs.first()),
+                    )
+                    .is_some_and(|(line, next)| {
+                        let synthetic =
+                            crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+                        line.tag & synthetic == 0
+                            && next.tag & synthetic == 0
+                            && (hwpunit_to_px(
+                                next.vertical_pos.saturating_sub(line.vertical_pos),
+                                self.dpi,
+                            ) - band)
+                                .abs()
+                                <= 1.0
+                    })
+        };
         let mut reordered = Vec::with_capacity(units.len());
         let mut pending = Vec::new();
         for (idx, mut unit) in units.into_iter().enumerate() {
@@ -16849,6 +16885,16 @@ impl LayoutEngine {
                             para, self.dpi,
                         )
                     {
+                        let height = if stored_band_owns_host_line(unit.para_idx, height) {
+                            (height
+                                - charged_host_line_h
+                                    .get(&unit.para_idx)
+                                    .copied()
+                                    .unwrap_or(0.0))
+                            .max(0.0)
+                        } else {
+                            height
+                        };
                         unit.height = height;
                         unit.non_inline_control_range = Some((0, para.controls.len() - 1));
                     }
