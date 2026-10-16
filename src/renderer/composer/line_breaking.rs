@@ -117,8 +117,9 @@ pub(crate) enum BreakToken {
         /// 777줄)에서 자간 적용 후 폭을 기준으로 하면 음수 자간 문단이 한 줄에 덜 담았다.
         condense_base: f64,
         max_font_size: f64,
-        /// A visible object sharing this offset cannot hang beyond the row.
-        has_inline_control: bool,
+        /// 이 자리에 함께 놓인 글자처럼 취급 개체의 폭(px, 없으면 0). `width` 에 들어 있다.
+        /// 개체는 줄 끝에 걸 수 없지만 그 뒤 공백은 다른 공백처럼 줄 끝에 건다.
+        inline_width: f64,
     },
     /// 탭 (줄 바꿈 가능 지점, 폭은 줄 위치에 따라 동적)
     Tab { idx: usize, max_font_size: f64 },
@@ -484,7 +485,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 width: space_metric.space_advance(&ts) + inline_width,
                 condense_base: space_metric.space_advance(&unspaced),
                 max_font_size: font_size,
-                has_inline_control: inline_width > 0.0,
+                inline_width,
             });
             i += 1;
             continue;
@@ -1378,11 +1379,18 @@ fn overflowing_space_cut(
     width_hwp: i32,
     savings_hwp: i32,
     available_hwp: i32,
-    has_inline_control: bool,
+    // 공백 앞에 놓인 개체의 끝(개체가 없으면 None)과 그 시점까지의 condense 절감.
+    inline_object_end: Option<(i32, i32)>,
 ) -> Option<usize> {
     if condensed_line_width_hwp(width_hwp, savings_hwp) <= available_hwp {
         None
-    } else if !has_inline_control {
+    } else if inline_object_end.is_none_or(|(object_end_hwp, object_savings_hwp)| {
+        // [#7840] 개체 자체는 줄 끝에 걸 수 없지만, 개체가 상자 안에 들어가면 넘치는 것은
+        // 뒤따르는 공백뿐이고 그 공백은 다른 공백처럼 줄 끝에 건다 — 156465345 꼬리말:
+        // 로고 셋이 48112 HU 로 48190 상자 안에 들지만 마지막 공백 432 HU 까지 더해
+        // 넘친다고 판정해 셋째 로고를 둘째 줄로 내렸다(한/글은 한 줄, x=632.5px).
+        condensed_line_width_hwp(object_end_hwp, object_savings_hwp) <= available_hwp
+    }) {
         Some(space_idx + 1)
     } else if space_idx > line_start {
         Some(space_idx)
@@ -1985,7 +1993,7 @@ fn fill_one_interval(
                 width,
                 condense_base,
                 max_font_size,
-                has_inline_control,
+                inline_width,
             } => {
                 let previous_line_max_fs = cursor.line_max_fs;
                 if *max_font_size > cursor.line_max_fs {
@@ -2005,7 +2013,8 @@ fn fill_one_interval(
                     cursor.lw + space_hwp,
                     cursor.line_space_savings + space_savings,
                     eff_w(cursor.is_first_line),
-                    *has_inline_control,
+                    (*inline_width > 0.0)
+                        .then(|| (cursor.lw + to_hwp(*inline_width), cursor.line_space_savings)),
                 ) {
                     let absorbed = cut > *idx;
                     // [#7418] 줄 끝에 건 공백이 문단의 마지막 글자면 문단이 여기서 끝난다 —
@@ -5498,7 +5507,7 @@ mod fill_cursor_tests {
                 width: 20.0,
                 condense_base: 20.0,
                 max_font_size: 12.0,
-                has_inline_control: true,
+                inline_width: 20.0,
             },
             text(2, 3),
         ];
@@ -5509,6 +5518,28 @@ mod fill_cursor_tests {
                 .map(|l| (l.start_idx, l.end_idx))
                 .collect::<Vec<_>>(),
             vec![(0, 1), (1, 2), (2, 3)]
+        );
+
+        // [#7840] 반례: 개체(12)는 상자(25)에 들고 넘치는 것은 뒤 공백(8)뿐이다. 공백은
+        // 줄 끝에 걸고 개체는 이 줄에 남는다.
+        let tokens = [
+            text(0, 1),
+            BreakToken::Space {
+                idx: 1,
+                width: 20.0,
+                condense_base: 8.0,
+                max_font_size: 12.0,
+                inline_width: 12.0,
+            },
+            text(2, 3),
+        ];
+        let lines = collect_one_interval_at_a_time(&tokens, &chars, 25.0, 0.0, 48.0, 0, 0, 0, true);
+        assert_eq!(
+            lines
+                .iter()
+                .map(|l| (l.start_idx, l.end_idx))
+                .collect::<Vec<_>>(),
+            vec![(0, 2), (2, 3)]
         );
     }
 
@@ -5573,7 +5604,7 @@ mod fill_cursor_tests {
                 width: 5.0,
                 condense_base: 5.0,
                 max_font_size: 12.0,
-                has_inline_control: false,
+                inline_width: 0.0,
             },
             BreakToken::Text {
                 start_idx: 3,
