@@ -670,7 +670,10 @@ fn is_horizontal_union_object(t: &RenderNodeType) -> bool {
 fn deep_vertical_union_bbox(node: &RenderNode) -> BoundingBox {
     fn vertical_extent(node: &RenderNode, min_y: &mut f64, max_bottom: &mut f64) {
         for child in &node.children {
-            if !child.visible || child.editor_only {
+            // 빈 운반 줄은 커서·흐름의 높이를 소유하지만 그 상자를 그리지는 않는다.
+            // 세로 그리기 합집합에서도 기존 판정을 재사용한다. 공백·장식·대체 표시·
+            // 개체 자식은 이 조건을 얻지 않으며 조판/배치의 점유 높이는 바꾸지 않는다.
+            if !child.visible || child.editor_only || is_empty_text_carrier(child) {
                 continue;
             }
             if child.bbox.height > 0.0 && child.bbox.width > 0.0 {
@@ -1973,6 +1976,8 @@ pub fn run(args: &[String]) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[path = "empty_carrier_off_canvas.rs"]
+    mod empty_carrier_off_canvas;
     use crate::renderer::render_tree::{
         BoundingBox, RectangleNode, RenderLayerInfo, RenderNode, RenderNodeType, TableCellNode,
         TableNode, TextLineNode, TextRunNode,

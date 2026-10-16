@@ -1,5 +1,6 @@
 //! 문서 생성/로딩/저장/설정 관련 native 메서드
 
+mod hft_outline_fonts;
 mod reflowed_table_frames;
 
 use crate::document_core::validation::{
@@ -307,6 +308,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles,
             canvas_metrics: None,
+            hft_outline_fonts: Default::default(),
             font_environment: None,
             composed: Vec::new(),
             body_page_field_error: None,

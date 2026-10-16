@@ -787,6 +787,10 @@ impl SkiaLayerRenderer {
                 canvas,
                 &tree.root,
                 &tree.output_options,
+                matches!(
+                    tree.profile,
+                    crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
+                ),
                 &tree.resources,
                 replay_plane,
                 None,
@@ -803,6 +807,7 @@ impl SkiaLayerRenderer {
         canvas: &Canvas,
         node: &LayerNode,
         output_options: &LayerOutputOptions,
+        hft_outline_enabled: bool,
         resources: &ResourceArena,
         replay_plane: PaintReplayPlane,
         inherited_layer: Option<RenderLayerInfo>,
@@ -936,6 +941,7 @@ impl SkiaLayerRenderer {
         };
         let text_replay = SkiaTextReplay {
             canvas,
+            hft_outline_enabled,
             font_mgr: &self.font_mgr,
             custom_typefaces: &self.custom_typefaces,
             bundled_typefaces: &self.bundled_typefaces,
@@ -968,6 +974,7 @@ impl SkiaLayerRenderer {
                         canvas,
                         child,
                         output_options,
+                        hft_outline_enabled,
                         resources,
                         replay_plane,
                         active_layer,
@@ -983,6 +990,7 @@ impl SkiaLayerRenderer {
                         canvas,
                         child,
                         output_options,
+                        hft_outline_enabled,
                         resources,
                         replay_plane,
                         active_layer,
@@ -1006,6 +1014,7 @@ impl SkiaLayerRenderer {
                     canvas,
                     child,
                     output_options,
+                    hft_outline_enabled,
                     resources,
                     replay_plane,
                     active_layer,
