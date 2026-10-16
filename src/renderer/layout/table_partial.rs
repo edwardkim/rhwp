@@ -5491,6 +5491,9 @@ impl LayoutEngine {
             None
         };
         let recursive_overlay_frame = self.reflow_recursive_overlay_frame(table, styles);
+        // 아래 흐름 갈래가 이 조각의 바깥 위 여백을 이미 열었는가. 같은 여백을 다시 여는
+        // 조각 형상 규칙(single_cell_page_fragment 등)이 한 번 더 더하지 않게 한다.
+        let mut flow_branch_opened_outer_top = false;
         let y_start = if let Some(top) = resolved_table_top {
             top
         } else if recursive_overlay_frame {
@@ -5532,6 +5535,7 @@ impl LayoutEngine {
             if reclaims_previous_host_margin {
                 prev_table_end
             } else if repeat_fragment_outer_margin {
+                flow_branch_opened_outer_top = true;
                 // 엄격한 Native HWP 조건에 해당하는 형상은 그린 앞 조각과 그 하단 여백을 흐름 기준으로 삼고,
                 // 현재 조각의 상단 여백을 연다. 양수 개체 오프셋은 첫 조각에만 적용한다.
                 // 이 순서로 2쪽의 965HU 간격(앞 하단 283 + 현재 상단 283 + 오프셋 399)을 복원하고,
@@ -5730,6 +5734,9 @@ impl LayoutEngine {
             && stored_reset_paint_geometry.is_none()
             && resolved_table_top.is_none()
             && !recursive_overlay_frame
+            // [#7840] 빈 host 반복 여백 갈래가 이미 연 위 여백을 조각 형상 규칙이 다시 열면
+            // 이어받는 조각이 여백만큼 한 번 더 내려간다(148738070 2~5쪽 102.04 vs 정본 98.26).
+            && !flow_branch_opened_outer_top
         {
             y_start + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
         } else {
