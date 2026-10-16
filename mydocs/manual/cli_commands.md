@@ -77,15 +77,15 @@ Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면
 기본 첫 쪽만 stdout에 출력하며 흰 배경·256색으로 변환한다. `native-skia`가 필요하다.
 옵션·종료 코드·terminal/SSH 검증은 [Sixel 출력 가이드](export_sixel_command.md)를 따른다.
 
-## PDF 가져오기 (기본 비활성)
+## PDF 가져오기 (기본 포함)
 
-`pdf-import` feature를 켠 빌드에서 PDF를 공통 Document IR로 가져와 HWPX 또는 HWP로 저장한다.
+기본 빌드에 포함된 `pdf-import`로 PDF를 공통 Document IR로 가져와 HWPX 또는 HWP로 저장한다.
 devel에서 함께 구현하는 기능이며, parser 전체 할당 경계는 아직 미입증이다.
 현재 한도는 입력 16 MiB, 원본 문서 전체 1~128쪽이다. 선택 가져오기에서도 이 원본 한도를
 적용하며 암호화 PDF는 지원하지 않는다.
 
 ```bash
-cargo build --locked --profile release-test --bin rhwp --features pdf-import \
+cargo build --locked --profile release-test --bin rhwp \
   --target-dir "${rhwp_review_target_dir:?기본 작업공간의 공용 target/pr-review 절대 경로를 지정하세요}"
 
 # 전체 쪽
@@ -110,7 +110,7 @@ rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
   진단에 남긴다. 원본 좌표를 담는 `diagnostics.pages`는 비신뢰 문서 파생 필드로 표시한다.
 - 암호 옵션은 이 명령에서 거부한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
   `export-hwpx`의 암호 옵션을 사용한다.
-- feature-off 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은
+- `--no-default-features`로 PDF를 제외한 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은
   `PDF_IMPORT_DISABLED`(exit 1)다. `capabilities.formats.read`에는 feature-on일 때만 PDF를 넣는다.
 
 feature-on에서는 기존 `info input.pdf --json`, `export-svg input.pdf`,

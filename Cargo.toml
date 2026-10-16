@@ -305,7 +305,7 @@ console_error_panic_hook = { version = "0.1", optional = true }
 subsecond = { version = "=0.7.10", optional = true }
 
 [features]
-default = ["console_error_panic_hook"]
+default = ["console_error_panic_hook", "pdf-import"]
 pdf-import = ["dep:pdf_oxide", "dep:office_oxide"]
 native-skia = ["dep:resvg", "dep:skia-safe", "dep:icy_sixel"]
 subsecond-dev = ["dep:subsecond"]

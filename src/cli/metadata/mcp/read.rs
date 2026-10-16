@@ -292,7 +292,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_import_pdf",
-            "PDF 전체 또는 선택 원본 쪽을 HWPX/HWP로 가져온다. 기본 비활성 pdf-import 빌드가 필요하며 전체 parser 할당 경계는 아직 미입증이다. 원본 덮어쓰기는 거부한다.",
+            "PDF 전체 또는 선택 원본 쪽을 HWPX/HWP로 가져온다. 기본 포함 pdf-import 기능을 사용하며 전체 parser 할당 경계는 아직 미입증이다. 원본 덮어쓰기는 거부한다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {

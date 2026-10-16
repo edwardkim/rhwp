@@ -102,7 +102,7 @@ pub(crate) fn import_pdf(args: &[String]) -> i32 {
 #[cfg(not(feature = "pdf-import"))]
 fn execute(options: ImportArgs<'_>) -> Result<(), (i32, String)> {
     let _ = (options.input, options.output, options.ranges, options.json);
-    Err((EXIT_RUNTIME, "PDF_IMPORT_DISABLED: PDF 가져오기는 기본 비활성입니다. cargo build --features pdf-import --bin rhwp 로 빌드하세요.".into()))
+    Err((EXIT_RUNTIME, "PDF_IMPORT_DISABLED: 이 빌드는 PDF 가져오기가 제외되었습니다. cargo build --features pdf-import --bin rhwp 로 빌드하세요.".into()))
 }
 
 #[cfg(feature = "pdf-import")]

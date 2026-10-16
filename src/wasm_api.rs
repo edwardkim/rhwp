@@ -604,7 +604,7 @@ impl HwpDocument {
         cfg!(all(feature = "pdf-import", target_arch = "wasm32"))
     }
 
-    /// PDF 전체 또는 선택 쪽을 공통 IR로 가져온다 (`pdf-import` opt-in).
+    /// PDF 전체 또는 선택 쪽을 공통 IR로 가져온다 (기본 포함 `pdf-import`).
     /// options.sourcePages는 0-based 증가 배열이며 생략하면 전체 쪽이다.
     /// 동기 실행이므로 브라우저에서 취소/시간 제한이 필요하면 Worker에서 호출한다.
     #[wasm_bindgen(js_name = importPdf)]

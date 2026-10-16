@@ -72,7 +72,7 @@ const DRM_PROTECTED_HINT: &str =
 const EMPTY_FILE_CODE: &str = "EMPTY_FILE";
 const EMPTY_FILE_HINT: &str = "빈 파일(0 바이트)입니다.";
 pub(crate) const PDF_IMPORT_DISABLED_HINT: &str =
-    "실험적 PDF 가져오기는 pdf-import feature를 활성화한 빌드에서 사용할 수 있습니다.";
+    "이 빌드는 PDF 가져오기가 제외되었습니다. pdf-import feature를 포함해 다시 빌드하세요.";
 
 /// HWP5 완전 문서 열기가 선택하는 핵심 스트림 출력 예산.
 ///

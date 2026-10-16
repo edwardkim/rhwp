@@ -263,7 +263,7 @@ pub(super) fn print() {
     println!();
     println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json]");
     println!(
-        "      PDF 전체 또는 선택 쪽을 가져오기. cargo build --features pdf-import --bin rhwp 필요"
+        "      PDF 전체 또는 선택 쪽을 가져오기 (기본 포함 pdf-import; 제외 빌드는 재빌드 필요)"
     );
     println!("      --source-pages <목록>  원본 쪽 0-based 증가 목록·포함 범위. 생략하면 전체 쪽");
     println!("      --json                 stdout에 저장 결과·원본 쪽/구역 대응·진단 JSON 한 개");

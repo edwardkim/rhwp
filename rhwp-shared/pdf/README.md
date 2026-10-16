@@ -1,13 +1,13 @@
 # PDF 가져오기 Worker 세션 (#7911)
 
-기본 비활성 `pdf-import` 제품 경로를 브라우저에서 실행하는 저장소 공용 모듈이다.
+기본 포함 `pdf-import` 제품 경로를 브라우저에서 실행하는 저장소 공용 모듈이다.
 `import-worker.js`는 루트 `pkg/rhwp.js`를 직접 사용한다. POC 모듈이나 HWPX 중간 변환을
 사용하지 않는다. npm 배포 패키지의 export는 아직 연결하지 않는다.
 Studio의 PDF-on 파일 열기·드롭은 제품 WASM 생성자를 통해 공통 IR을 직접 사용한다.
 현재 Studio는 동기 문서 API를 사용하므로 이 Worker 세션과는 별도 수명주기다.
 전체 Worker 편집기 전환과 패키지 배포는 후속 범위다.
 
-Studio 빌드·실행은 [PDF 직접 열기](../../mydocs/manual/dev_environment_guide.md#studio에서-pdf-직접-열기-선택-기능)를 따른다.
+Studio 빌드·실행은 [PDF 직접 열기](../../mydocs/manual/dev_environment_guide.md#studio에서-pdf-직접-열기)를 따른다.
 
 ## 빌드와 사용
 
@@ -15,7 +15,7 @@ Studio 빌드·실행은 [PDF 직접 열기](../../mydocs/manual/dev_environment
 유지하는 방법은 [개발 환경 가이드](../../mydocs/manual/dev_environment_guide.md)를 따른다.
 
 ```sh
-scripts/wasm-pack-locked.sh --target web --out-dir pkg --features pdf-import
+scripts/wasm-pack-locked.sh --target web --out-dir pkg
 ```
 
 서버에서 `rhwp-shared/pdf/`와 `pkg/`의 상대 경로를 보존해 제공한다. 모듈 Worker를 허용하는
@@ -63,12 +63,13 @@ try {
 
 ```sh
 node --test rhwp-shared/pdf/import-session.test.js
-PDF_IMPORT_DEFAULT_PKG=/검증용/기본-pkg \
+PDF_IMPORT_DISABLED_PKG=/검증용/명시적-feature-off-pkg \
 PDF_IMPORT_EVIDENCE=output/pr-review/issue7911/wasm-runtime \
 node --test scripts/tests/pdf-import-wasm.test.mjs
 ```
 
 두 번째 검사는 실제 브라우저, 루트 제품 JS/WASM, 실제 12쪽 PDF와 합성 API 입력을 사용한다.
-`PDF_IMPORT_DEFAULT_PKG`가 없으면 feature-off 실행을 생략하며 feature-on은 항상 필수다.
+`PDF_IMPORT_DISABLED_PKG`에는 `--no-default-features --features console_error_panic_hook`로
+만든 별도 bundle을 전달한다. 미지정이면 feature-off 실행을 생략하며 기본 feature-on은 항상 필수다.
 생성자·엄격한 선택 옵션·진단·전쪽 SVG·HWP/HWPX 재열기·같은 Worker의 실패 후 복구·후보
 취소/시간 초과·재생성을 확인한다. 자동화는 시각 일치율과 사용자 판정을 대신하지 않는다.

@@ -1,8 +1,8 @@
 //! Experimental PDF frontend. Emits common IR without serializing/reparsing HWPX.
 //!
-//! `pdf-import` is opt-in. The internal backend limits decoded outputs, but full
-//! codec/font/cache allocation bounds are not yet proven. Do not expose this
-//! frontend to untrusted inputs in a release.
+//! `pdf-import` is enabled by default and can be excluded with
+//! `--no-default-features`. The internal backend limits decoded outputs, but
+//! full codec/font/cache allocation bounds are not yet proven.
 mod extract;
 mod lowering;
 mod recognition;
@@ -269,7 +269,7 @@ pub fn parse_pdf_with_options(
             paragraph_policy: "observed-lines; authored paragraph boundaries are not recovered",
             parser_allocation_bounds_proven: false,
             warnings: vec![
-                "Experimental opt-in frontend; upstream allocation bounds remain unproven",
+                "Experimental PDF frontend; upstream allocation bounds remain unproven",
                 "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
                 "Deferred table families retain positional content; inspect page diagnostics",
             ],

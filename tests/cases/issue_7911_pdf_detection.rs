@@ -19,7 +19,7 @@ fn non_pdf_public_wrapper_has_no_pdf_import_diagnostics() {
 
 #[cfg(not(feature = "pdf-import"))]
 #[test]
-fn default_build_rejects_pdf_with_actionable_feature_code() {
+fn explicit_feature_off_build_rejects_pdf_with_actionable_feature_code() {
     use rhwp::parser::{parse_document, parse_document_with_password, ParseError};
     let bytes = b"%PDF-1.4\n";
     for result in [

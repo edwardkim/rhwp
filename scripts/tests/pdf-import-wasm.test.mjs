@@ -12,7 +12,7 @@ import { findChrome } from '../rasterize-svg-webfonts.mjs';
 const root = resolve(import.meta.dirname, '../..');
 const evidence = resolve(process.env.PDF_IMPORT_EVIDENCE || join(root, 'output/pr-review/issue7911/wasm-runtime'));
 const pkg = resolve(process.env.PDF_IMPORT_PKG || join(root, 'pkg'));
-const defaultPkg = process.env.PDF_IMPORT_DEFAULT_PKG;
+const disabledPkg = process.env.PDF_IMPORT_DISABLED_PKG;
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 
 function syntheticPdf() {
@@ -48,7 +48,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
   }
   for (const name of ['rhwp.js', 'rhwp_bg.wasm']) {
     add(`/pkg/${name}`, join(pkg, name), name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript');
-    if (defaultPkg) add(`/default/${name}`, join(defaultPkg, name), name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript');
+    if (disabledPkg) add(`/disabled/${name}`, join(disabledPkg, name), name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript');
   }
   for (const name of ['import-worker.js', 'import-session.js']) {
     add(`/rhwp-shared/pdf/${name}`, join(root, 'rhwp-shared/pdf', name), 'text/javascript');
@@ -70,13 +70,13 @@ test('Docker product WASM: public API, active document isolation and real Worker
     const require = createRequire(join(root, 'rhwp-studio/package.json'));
     const puppeteer = require('puppeteer-core');
     browser = cdp
-      ? await puppeteer.connect({ browserURL: cdp })
+      ? await puppeteer.connect({ browserURL: cdp, defaultViewport: null })
       : await puppeteer.launch({ executablePath: findChrome(), headless: true });
     page = await browser.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(String(error)));
     await page.goto(`http://127.0.0.1:${server.address().port}`);
-    const result = await page.evaluate(async ({ hasDefault }) => {
+    const result = await page.evaluate(async ({ hasDisabled }) => {
       const checked = [];
       function check(value, name) { if (!value) throw Error(name); checked.push(name); }
       function throwsCode(fn, code) {
@@ -90,9 +90,9 @@ test('Docker product WASM: public API, active document isolation and real Worker
       const bytes = new Uint8Array(await (await fetch('/synthetic.pdf')).arrayBuffer());
       const real = new Uint8Array(await (await fetch('/real.pdf')).arrayBuffer());
       const controlBytes = new Uint8Array(await (await fetch('/control.hwp')).arrayBuffer());
-      if (hasDefault) {
-        const disabled = await import('/default/rhwp.js'); await disabled.default();
-        check(disabled.HwpDocument.supportsPdfImport() === false, 'default runtime advertises PDF disabled');
+      if (hasDisabled) {
+        const disabled = await import('/disabled/rhwp.js'); await disabled.default();
+        check(disabled.HwpDocument.supportsPdfImport() === false, 'explicit feature-off runtime advertises PDF disabled');
         throwsCode(() => disabled.HwpDocument.importPdf(bytes, {}), 'PDF_IMPORT_DISABLED');
         throwsCode(() => new disabled.HwpDocument(bytes), 'PDF_IMPORT_DISABLED');
         const control = new disabled.HwpDocument(controlBytes);
@@ -197,7 +197,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
         return { checked, workers, terminatedBeforeDispose: terminated, diagnostics: loaded.diagnostics,
           hwpx: Array.from(hwpx), hwp: Array.from(hwp), svg, reopenedSvg };
       } finally { session.dispose(); }
-    }, { hasDefault: !!defaultPkg });
+    }, { hasDisabled: !!disabledPkg });
     assert.deepEqual(errors, []);
     for (const format of ['hwpx', 'hwp']) {
       const bytes = Buffer.from(result[format]);
