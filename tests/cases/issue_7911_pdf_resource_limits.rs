@@ -3199,7 +3199,9 @@ fn flate_scratch_and_output_have_independent_exact_limits() {
         }
     }
     for count in [1, 2, 3] {
-        let required = count * (scratch + 2);
+        // The request owns one reusable codec block; each successful decode
+        // still allocates and charges its distinct two-byte output.
+        let required = scratch + count * 2;
         for cap in [required - 1, required, required + 1] {
             let shared = budget(2, cap);
             for _ in 1..count {
@@ -3211,7 +3213,7 @@ fn flate_scratch_and_output_have_independent_exact_limits() {
                 assert!(decode(&bytes, &["FlateDecode"], &shared).is_err());
             } else {
                 assert_eq!(result.unwrap(), b"AB");
-                assert_eq!(shared.codec_allocated_bytes(), count * scratch);
+                assert_eq!(shared.codec_allocated_bytes(), scratch);
                 assert_eq!(shared.decoded_bytes(), required);
             }
         }

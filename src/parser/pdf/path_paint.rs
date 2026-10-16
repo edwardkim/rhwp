@@ -80,17 +80,17 @@ pub(super) fn lower(
     }
     // A single closed polygon has an exact editable HWP counterpart. Multiple
     // subpaths (including holes) must keep one winding calculation instead.
-    if path.stroke_color.is_none()
-        && path.fill_color.is_some()
-        && path.matrix.is_none()
-        && matches!(path.operations.first(), Some(PathOperation::MoveTo(..)))
-        && path.operations[1..]
-            .iter()
-            .all(|o| matches!(o, PathOperation::LineTo(..) | PathOperation::ClosePath))
-        && !path.operations[..path.operations.len() - 1]
-            .iter()
-            .any(|o| matches!(o, PathOperation::ClosePath))
-    {
+    if let Some(fill_color) = path.fill_color.filter(|_| {
+        path.stroke_color.is_none()
+            && path.matrix.is_none()
+            && matches!(path.operations.first(), Some(PathOperation::MoveTo(..)))
+            && path.operations[1..]
+                .iter()
+                .all(|o| matches!(o, PathOperation::LineTo(..) | PathOperation::ClosePath))
+            && !path.operations[..path.operations.len() - 1]
+                .iter()
+                .any(|o| matches!(o, PathOperation::ClosePath))
+    }) {
         let b = path.bbox;
         if !matches!(
             path.paint.clip,
@@ -134,7 +134,7 @@ pub(super) fn lower(
                         fill: Fill {
                             fill_type: FillType::Solid,
                             solid: Some(SolidFill {
-                                background_color: rgb(path.fill_color.unwrap()),
+                                background_color: rgb(fill_color),
                                 pattern_color: 0,
                                 pattern_type: -1,
                             }),
@@ -345,7 +345,6 @@ pub(super) fn lower(
                 .dash_pattern
                 .as_ref()
                 .and_then(|(d, p)| tiny_skia::StrokeDash::new(d.clone(), *p)),
-            ..Default::default()
         };
         pixmap.stroke_path(
             &path_data,
