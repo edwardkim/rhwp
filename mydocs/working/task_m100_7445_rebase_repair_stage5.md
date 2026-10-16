@@ -2197,3 +2197,32 @@ Native/fresh WASM 모두 C71과 전18쪽 수치가 동일하므로 소스 회귀
 [원인·전쪽 수치·정식 회귀·전후 review와 overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/negative-spacing-glyph-20261016/README.md)에 연결한다.
 남은 WASM9/10/28/29/50/52/53쪽과 다른 문서 감소는 계속 보정하며 새 전체 회귀·실제 소비·
 최신 upstream 확인 후 PR을 진행한다. 지침·사용자 초안·원본·기준 PDF·공유 target은 보존했다.
+
+
+## C61. 공유 수평 경계의 색상 소유 복원 (2026-10-16)
+
+개인정보9/28/52쪽의 검은 수평선은 아래 셀의 명시 흰 상단과 충돌했으나 기존 병합이
+먼저 수집한 검은색을 남긴 결과다. 원본 한컴 Print와 아래 상단만 파랑으로 바꾼 별도2쪽
+진단 Print에서 아래 셀 색상의 소유를 확인했다. 진단 입력은 원본 수용 PDF를 대체하지 않는다.
+같은 굵기·종류의 수평 경계에서 아래 상단을 우선하고, 하단은 기존 아래 상단을 보존한다.
+None·선 굵기·서로 다른 종류의 우선순위와 수직선은 유지했다. 일반/부분/중첩 표의 공통
+`collect_cell_borders` → `render_edge_borders` → 각 backend의 LineNode 소비에 적용한다.
+
+Native/fresh WASM 전66쪽씩 쪽수66/66·최저93.77937%·90% 미만0쪽이다. Native의 devel 대비
+0.01%p 이상 감소는0쪽, WASM은7쪽→4쪽(10/29/50/53)으로 줄었다.28쪽은Native99.65899→
+99.90314%,WASM99.66192→99.90397%다.9/28/52의 같은 경계 중 양쪽 최솟값이 가장 높은
+28쪽에 독립 Print의 선 시작·끝·Y좌표를 ±2CSSpx로 보호했다. 셀 내부·옆 검은 선 보존 관계도
+유지하며9/28쪽에서 원본/역순 셀 배열을 대조한다. 두 backend의28쪽 review와 overlay를
+직접 열어 흰 구간과 정상 이웃 선·본문을 판독했다. 캡처192DPI/테스트96CSSpx를 구분한다.
+
+정식 `shared_horizontal_edge_uses_the_lower_cell_color_in_either_cell_order`는 정확한 수정 전
+구현에서1FAIL(검정0 vs 흰색16777215,0.165초) → 수정 후1PASS(0.690초)다. 같은 테스트 함수가
+네 입력 조건을 검사하며 네 테스트로 합산하지 않는다. 기존 border 단위 대조9건도9PASS다.
+새 검사 추가 전에 원본의 새 Native/fresh WASM 전쪽90%를 확인했다. 지침은 변경하지 않았다.
+
+[독립 근거·전쪽 수치·정식 검사·전후 review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/shared-horizontal-edge-20261016/README.md)에 연결한다.
+이 검증 도중 최신 upstream/devel `0953598d8e08af5e9149b3e4cdbbbf2f5f2bae64`(#7947)을
+확인하고 fetch했다. 보정을 커밋한 뒤 사용자 초안을 보존하여 리베이스하고 영향·지침을 다시
+확인한다. cdef 기준의 C71 전체 회귀와 C72/C73 시각 결과는 새 base의 전체 통과로 쓰지 않는다.
+남은 하락 쪽의 '-'는 독립 PDF에서Palatino Linotype인데 현재 paint run은 휴먼명조/Haansoft
+계열이며 폭만 Latin 슬롯을 사용함을 추적했다. 다음 보정은 이 소유와 앞뒤 내용 보존을 확인한다.
