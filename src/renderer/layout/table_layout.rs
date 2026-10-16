@@ -23,8 +23,9 @@ mod stored_span_content;
 mod stored_span_reservation;
 mod stored_span_row_owner;
 mod stored_terminal_row_frame;
+mod stored_text_frame_owner;
 mod stored_zero_origin;
-mod unit_diagnostics;
+pub(super) mod unit_diagnostics;
 mod wrapper_cell_viewport;
 pub(super) use stored_nested_host_flow::StoredNestedHostFlow;
 
@@ -2715,24 +2716,6 @@ impl LayoutEngine {
         table.common.height > 0
             && height + i64::from(table.cell_spacing) * i64::from(table.row_count.saturating_sub(1))
                 > i64::from(table.common.height)
-    }
-
-    pub(crate) fn native_stored_table_has_fragment_frames(
-        &self,
-        table: &crate::model::table::Table,
-    ) -> bool {
-        self.profile.get().hwp5_stored_pagination_layout()
-            && !self.profile.get().session_edited()
-            && !table.common.treat_as_char
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            )
-            && !self
-                .render_normalization
-                .borrow()
-                .table_text_reflowed(table)
-            && Self::stored_row_boxes_exceed_object_frame(table)
     }
 
     pub(crate) fn native_stored_row_has_text_frame_boundary(
@@ -13908,9 +13891,7 @@ impl LayoutEngine {
         ) && !table.common.treat_as_char;
         let direct_hwpx_stored_frame_cell =
             self.direct_hwpx_cell_has_declared_stored_frame(cell, table);
-        let native_text_frame_cell = cell.row_span == 1
-            && self.native_stored_table_has_fragment_frames(table)
-            && stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi);
+        let original_text_frame_cell = self.original_stored_text_frame_cell(cell, table, styles);
         let before_space_proves_local_origin = is_block_rowbreak_table
             && !self
                 .render_normalization
@@ -14725,7 +14706,7 @@ impl LayoutEngine {
                 && self.stored_two_line_row_cut_frame(table, usize::from(cell.row), styles);
             // 같은 인증을 강제 컷과 저장 프레임 플래그가 소비한다.
             // 양수 문단 앞 간격도 원본 셀의 공유 좌표계가 입증한 재시작을 소유한다.
-            let source_text_frame_reset = native_text_frame_cell
+            let source_text_frame_reset = original_text_frame_cell
                 && pi > 0
                 && cell.paragraphs.get(pi - 1).is_some_and(|previous| {
                     stored_plain_text_paragraph_frame_reset(previous, p, styles, self.dpi)
@@ -16162,7 +16143,9 @@ impl LayoutEngine {
                     })
                     .sum();
                 let para_h = if let Some(advance) = stored_empty_successor_advance {
-                    spacing_before + advance
+                    // 저장 전진량은 현재 앞 간격까지 포함한다. 온전한 셀과
+                    // 조각 paint도 이 결과를 그대로 소비하므로 다시 더하지 않는다.
+                    advance
                 } else if let Some(advance) = stored_frame_empty_advance {
                     spacing_before + advance + spacing_after
                 } else if let Some(advance) = stored_overlap_spacer_advance_px {
@@ -16345,7 +16328,7 @@ impl LayoutEngine {
                         h
                     };
                     if let Some(advance) = stored_empty_successor_advance {
-                        lh = spacing_before + advance;
+                        lh = advance;
                     } else if let Some(advance) = stored_overlap_spacer_advance_px {
                         // 접기 대신 저장 전진량을 그대로 점유로 쓴다 (위 #6923 주석).
                         lh = advance;
@@ -18365,6 +18348,32 @@ impl LayoutEngine {
         }
         if table.common.text_wrap != crate::model::shape::TextWrap::TopAndBottom {
             return 0.0;
+        }
+
+        // 원본 셀 선언보다 앞 프레임의 잉크·여백이 이미 큰 경우에는 실제
+        // 글줄 상자까지 확장한다. 다음 프레임으로 전진하는 마지막 줄간격까지
+        // 덧붙이면 앞 조각과 그 안의 가운데 정렬을 한 간격씩 늘리게 된다.
+        // 선택 유닛의 누적 끝이 원본 잉크 끝과 일치하는 첫 프레임만 인증한다.
+        if cell.row_span == 1
+            && cell.height > 0
+            && cell.height < 0x8000_0000
+            && Self::stored_in_paragraph_unit_is_original_restart(cell, next_unit)
+        {
+            let (_, _, top, bottom) = self.resolve_stored_nested_cell_padding(cell, table, styles);
+            let padding = top + bottom;
+            let source_ink = hwpunit_to_px(
+                previous_seg
+                    .vertical_pos
+                    .saturating_add(previous_seg.line_height),
+                self.dpi,
+            ) + padding;
+            let selected_ink = consumed_before_px + last_unit_height_px - trim + padding;
+            let epsilon = hwpunit_to_px(2, self.dpi);
+            if source_ink > hwpunit_to_px(cell.height as i32, self.dpi) + epsilon
+                && (selected_ink - source_ink).abs() <= epsilon
+            {
+                return trim;
+            }
         }
 
         if self.stored_zero_origin_text_frame_break(table, cell, previous_seg, next_seg) {
@@ -20447,12 +20456,14 @@ impl LayoutEngine {
     ) -> Option<f64> {
         if start_cut.iter().any(|cut| *cut > 0)
             || self
-                .stored_plain_restart_cut(table, row, styles, false)?
+                .stored_plain_restart_cut(table, row, styles, true)?
                 .as_slice()
                 != end_cut
         {
             return None;
         }
+        // 재시작은 내용 컷을 허용하지만 선언 셀 높이의 빈 띠를 입증하지 않는다.
+        // 원본 줄 끝·간격·여백이 선언 상자를 닫는 컷에만 그 최소 높이를 예약한다.
         let minimum = table
             .cells
             .iter()
@@ -20885,7 +20896,6 @@ impl LayoutEngine {
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
         ) && !table.common.treat_as_char;
-        let native_table_fragment_frames = self.native_stored_table_has_fragment_frames(table);
         for (i, cell) in row_cells.iter().enumerate() {
             // Parallel cells own their padding independently. A short sibling
             // with larger padding must not shorten this cell's content band.
@@ -20895,9 +20905,8 @@ impl LayoutEngine {
                     .copied()
                     .unwrap_or(0.0);
             let units = self.cell_units(cell, table, styles);
-            let native_text_frame_cell = native_table_fragment_frames
-                && cell.row_span == 1
-                && stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi);
+            let original_text_frame_cell =
+                self.original_stored_text_frame_cell(cell, table, styles);
             let source_row_height = self.stored_full_width_row_source_height(table, row, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
             let nested_header = self.nested_continuation_header_height(cell, &units, start, styles);
@@ -21028,7 +21037,7 @@ impl LayoutEngine {
                         || self.stored_joint_zero_origin_boundary(cell, table)
                             == Some((u.para_idx, u.vis_start))
                         || self.stored_cut_has_zero_before_origin(cell, table, styles, j)
-                        || (native_text_frame_cell
+                        || (original_text_frame_cell
                             && u.vis_start == 0
                             && u.para_idx.checked_sub(1).is_some_and(|previous_idx| {
                                 stored_plain_text_paragraph_frame_reset(
@@ -23819,13 +23828,15 @@ impl LayoutEngine {
         let Some(child) = children.next() else {
             return 0.0;
         };
-        if children.next().is_some() || !child.repeat_header {
+        if children.next().is_some() {
             return 0.0;
         }
-        let headers = child.leading_header_rows();
-        if headers.is_empty() {
-            return 0.0;
-        }
+        // 앞쪽 바깥여백은 제목행 반복 여부와 별개인 이어받기 상자의 공간이다.
+        let headers = if child.repeat_header {
+            child.leading_header_rows()
+        } else {
+            Vec::new()
+        };
         let heights = self.resolve_row_heights(
             child,
             child.col_count as usize,
@@ -23838,8 +23849,9 @@ impl LayoutEngine {
         let outer_margin = if child.common.treat_as_char {
             0.0
         } else {
+            // 마지막 유닛은 생산자의 terminal_band로 아래 여백을 이미 소유한다.
+            // 시작 띠에서 다시 더하면 뒤 문단이 같은 여백만큼 한 번 더 밀린다.
             hwpunit_to_px(child.outer_margin_top as i32, self.dpi)
-                + hwpunit_to_px(child.outer_margin_bottom as i32, self.dpi)
         };
         outer_margin
             + headers

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-10
+last_verified: 2026-10-14
 ---
 
 # 로컬 사전 검증
@@ -13,7 +13,9 @@ PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유
 
 로컬 검증 로그(`*.log`)는 저장소의 ignored `output/pr-review/<review-id>/logs/`에 기록한다.
 `/private/tmp`이나 추적되는 문서·asset 경로에 로그를 만들거나 커밋하지 않는다. PR review 문서에는
-실행 head·명령·결과와 필요한 증적의 위치를 요약한다. merge 뒤 해당 review의 `output` 정리는
+실행 head·명령·결과와 필요한 증적의 위치를 요약한다. 검토 종료 뒤에는 **`output/pr-review` 전체**의
+불필요한 산출물을 점검·정리한다. 검토별 저장 경로가 정리 범위를 제한하지 않는다. 삭제 전 사용·소유·
+증적 보존 확인, 활성 작업·공유 캐시의 보존과 정리 결과 기록은
 [merge 후속 처리](post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
 
 기존 렌더링 회귀가 실패하면 검사부터 바꾸지 않는다. **원본 입력 출력 보정 → 독립 한컴 Print PDF와
@@ -794,7 +796,7 @@ git branch -D prN-merge-test
 ~~~
 
 merge가 시작되지 않았거나 Already up to date면 abort는 생략한다. 이 절은 simulation branch만 정리한다.
-fetch branch, review branch, docs-only branch, worktree, 검토 소유 임시 산출물은 review 종료 뒤
+fetch branch, review branch, docs-only branch, worktree와 `output/pr-review` 전체의 불필요한 산출물은 review 종료 뒤
 [merge 후속 처리](post_merge.md)의 최종 종료 게이트에서 정리한다.
 
 ## 4.5 전체 Rust 회귀 sharding 실측
