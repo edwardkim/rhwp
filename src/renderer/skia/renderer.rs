@@ -172,10 +172,7 @@ fn prepare_native_glyph_run(
     {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::DirectionUnsupported);
     }
-    if !finite_scalar(run.shape_key.font_instance.size_px)
-        || run.shape_key.font_instance.size_px <= 0.0
-        || run.shape_key.font_instance.size_px > crate::paint::MAX_GLYPH_FONT_SIZE_PX
-    {
+    if !crate::paint::font::glyph_font_size_is_portable(run.shape_key.font_instance.size_px) {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::FontInstanceInvalid);
     }
     if run.glyph_ids.len() != run.positions.len() {
