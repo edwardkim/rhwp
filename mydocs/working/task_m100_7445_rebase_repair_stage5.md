@@ -2119,3 +2119,44 @@ C67 대비 PII12/26와 규제분석2의 미세 감소는 전후 이미지를 보
 C70 정본 nextest 집중 검사는4PASS/0FAIL(0.171초,228skip)이다. 검사 설명 수정 뒤
 생성 묶음이 이전 배정을 유지해 처음0건 선택됐으나 통과로 쓰지 않았다. 마지막 prepare 후
 derive/generated 일치를 확인하고 실제4건을 실행했다. fmt·Native/WASM Clippy도 통과했다.
+
+
+## C59. 부모 분할 뒤 자식의 저장 총높이 출처 보정 (2026-10-16)
+
+새 upstream/devel `cdef0073bb24512daf0622dec5051ac62cb8d57e`(#7948) 위로224개 커밋을
+충돌 없이 리베이스했다. C70은 `cab7f21ab90e760ea5b3d1f1088e82370d2f10bd`가 됐으며,
+사용자 오늘할일·PR7871 초안과 미추적 입력/PDF의 보존 hash를 대조했다. 예전 base의
+전체 회귀·시각 결과를 새 head 통과로 재인용하지 않는다.
+
+#4138의 자식 표81은 원본 HWP/HWPX에서 선언 총높이가 유효하지만 부모 셀을 폭 변경해
+분할한 저장본에서는 끝 행의 자연 점유를 유지한다. 동일 입력의 한컴2020/2024 교차
+Print도 같은 괘선을 보여 포맷·세대 예외가 아님을 확인했다. 부모의 기존 재조판 출처를
+직접 자식 overlay에 기록하고, 공통 행 높이 resolver의 캐시/비캐시 총높이 맞춤이 함께
+소비하도록 했다. 자식 자체의 셀 선언·글줄·문자와 개별 선언 높이 신뢰는 유지한다.
+body/flow 높이·CellUnit 예산·컷과 실제 표 paint가 같은 행 높이를 사용하며 뒤의
+common-height 맞춤도 무효한 부모 상속 프레임을 재사용하지 않는다.
+
+원본 HWP115·HWPX115와 두 분할본197씩 각 backend624쪽, 총1248쪽을 새 Native/fresh WASM에서
+산출했다. 모든 쪽수 일치·90% 미만0쪽이며 전체 최저 Native90.27729/WASM90.21662%다.
+분할7쪽은89.10530→Native97.68947/WASM97.68959%,10쪽은14.06920→Native96.61078/
+WASM96.55518%다. 양쪽의7·10쪽과 원본 대조군4쪽 review/overlay를 함께 열어 표 끝과
+뒤 본문, 빈 줄 점유와 첫 수식의 복원을 확인했다. 미세한 글리프·수식 간격 잔여는 남긴다.
+
+정식 `split_parent_keeps_child_row_occupancy_and_the_following_blank_owner`는 수정 직전
+정확한 부모에서1FAIL(0.70초, 끝 행67.613333 vs source5331HU) → 새 구현의 파일4PASS
+(2.802초,220skip)다. 새 함수 본문이 전후 동일함도 rustfmt 정규화로 대조했다.
+7→8·9→10의 빈 문단 소유와 다음 본문/수식 관계, 원문 보존·원본 유효 프레임을 보호한다.
+편집본7~10쪽은98% 미만이므로 관계 검사다. 같은 자식의 원본 HWPX4쪽은 양쪽99.98%대여서
+독립 Print의 시작·끝 괘선을 ±2CSSpx로 함께 보호한다. 다른 고득점 쪽은 이 자식 표의
+프레임 대조군이 아니다. 기존115/197쪽·분할177쪽99%대 검사는 유지했다.
+
+archive 이전 소스 빌드가 공유 target의 후보를 재사용한 초기 producer는 같은 binary hash로
+사용 전에 발견해 INVALID로 보존했다. source bytes를 바꾸지 않고 archive mtime을 갱신해
+실제 재컴파일한 뒤 다른 binary와 위 FAIL을 확인했다. 후보 Cargo 검증도 소스 byte hash를
+확인하고 소유 source mtime을 갱신했다. 사용자 초안·공유 target·원본·PDF는 보존했다.
+
+[입력/PDF·생산 hash·전쪽 결과·회귀·전후 review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/host-total-frame-20261016/README.md)에 연결한다.
+로컬 정본은 `regression-policy-audit-20261015/rebase-cdef0073-20261016/` 아래
+`c71-whole-*`, `candidate-c71`, `c71-canonical-fixture.log`다. Mac WASM은 no-opt 로컬 대체
+빌드이며 root pkg/Studio public/frozen hash만 확인했다. 새 Studio 실제 소비·전체48조건의
+새 base/head 비교·전체 nextest/게이트와 제목·따옴표 잔여 보정은 아직 남아 있어 PR 보류다.

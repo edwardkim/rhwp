@@ -181,3 +181,138 @@ fn a_blank_prefix_line_does_not_paint_the_next_pages_picture() {
         );
     }
 }
+
+// C71: 원본 HWP/HWPX115쪽과 두 분할본197쪽의 양쪽 전쪽624쪽 검증 후 추가.
+// 편집본7~10쪽은 관계로 보호하고, 원본 HWPX4쪽(양쪽99.98%대)은 독립 좌표를 함께 보호.
+// 증적: stage5 C59 및 host-total-frame-20261016/README.md.
+#[test]
+fn split_parent_keeps_child_row_occupancy_and_the_following_blank_owner() {
+    for sample in SAVED {
+        let d = load(sample);
+        assert_eq!(d.page_count(), 197);
+        let source = body(&d);
+        let Control::Table(child) = &source.paragraphs[81].controls[0] else {
+            panic!("source child")
+        };
+        let p = d.build_page_render_tree(6).unwrap().root;
+        let q = d.build_page_render_tree(7).unwrap().root;
+        let t = table(&p, 81);
+        let last = t
+            .children
+            .iter()
+            .filter(|n| matches!(&n.node_type,RenderNodeType::TableCell(c)if c.row==2))
+            .collect::<Vec<_>>();
+        assert_eq!(last.len(), 3, "원본 마지막 행의 세 셀 소유 보존");
+        for cell in last {
+            let RenderNodeType::TableCell(c) = &cell.node_type else {
+                unreachable!()
+            };
+            let declared = child
+                .cells
+                .iter()
+                .find(|x| x.row == c.row && x.col == c.col)
+                .unwrap();
+            assert!(
+                cell.bbox.height + 96.0 / 7200.0 >= f64::from(declared.height) * 96.0 / 7200.0,
+                "분할 뒤 자식의 마지막 행 점유를 옛 총높이로 압축하지 않음: actual={}, sourceHU={}",
+                cell.bbox.height,
+                declared.height
+            );
+        }
+        let mut a = Vec::new();
+        walk(&p, &mut a);
+        assert!(
+            !a.iter().any(
+                |n| matches!(&n.node_type,RenderNodeType::TextLine(l)if l.para_index==Some(86))
+            ),
+            "다음 쪽의 빈 줄 소유를 앞 쪽에 소비하지 않음"
+        );
+        let blank = line(&q, 86);
+        assert!(text(blank).trim().is_empty());
+        let next = line(&q, 87);
+        assert!(next.bbox.y >= blank.bbox.y + blank.bbox.height);
+        let mut all = Vec::new();
+        walk(&p, &mut all);
+        let actual = all
+            .into_iter()
+            .filter(|n| matches!(&n.node_type,RenderNodeType::TextLine(l)if l.para_index==Some(85)))
+            .map(text)
+            .collect::<String>();
+        assert_eq!(
+            compact(&actual),
+            compact(&source.paragraphs[85].text),
+            "앞 쪽 마지막 문단을 누락·중복 없이 보존"
+        );
+        let before_formula = d.build_page_render_tree(8).unwrap().root;
+        let formula_page = d.build_page_render_tree(9).unwrap().root;
+        let mut prev = Vec::new();
+        walk(&before_formula, &mut prev);
+        assert!(
+            !prev.iter().any(
+                |n| matches!(&n.node_type,RenderNodeType::TextLine(l)if l.para_index==Some(110))
+            ),
+            "수식 앞 빈 줄은 독립 Print와 같은 다음 쪽 소유"
+        );
+        let blank = line(&formula_page, 110);
+        let formula = line(&formula_page, 111);
+        assert!(text(blank).trim().is_empty());
+        assert!(
+            formula.bbox.y >= blank.bbox.y + blank.bbox.height,
+            "빈 줄의 점유 뒤에 수식 줄을 배치"
+        );
+    }
+    for (sample, compat24) in [
+        (ORIGINAL, true),
+        (
+            "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+            false,
+        ),
+    ] {
+        let mut d = DocumentCore::from_bytes(
+            &fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample)).unwrap(),
+        )
+        .unwrap();
+        d.set_hangul2024_compat(compat24);
+        assert_eq!(d.page_count(), 115);
+        let Control::Table(child) = &body(&d).paragraphs[81].controls[0] else {
+            panic!("original child")
+        };
+        let p = d.build_page_render_tree(3).unwrap().root;
+        let t = table(&p, 81);
+        assert!(
+            (t.bbox.height - f64::from(child.common.height) * 96.0 / 7200.0).abs()
+                <= 2.0 * 96.0 / 7200.0,
+            "편집하지 않은 호스트의 유효한 자식 총높이 프레임 유지"
+        );
+        for rendered in &t.children {
+            let RenderNodeType::TableCell(c) = &rendered.node_type else {
+                continue;
+            };
+            let original = child
+                .cells
+                .iter()
+                .find(|cell| cell.row == c.row && cell.col == c.col)
+                .unwrap();
+            let expected = original
+                .paragraphs
+                .iter()
+                .map(|para| para.text.as_str())
+                .collect::<String>();
+            assert_eq!(
+                compact(&text(rendered)),
+                compact(&expected),
+                "원본 중첩 셀의 내용 순서·누락·중복 보호"
+            );
+        }
+        if !compat24 {
+            // 같은 child81의 편집 전 총높이 대조군. 다른 고득점 쪽은 이 표의 프레임을 검증하지 않는다.
+            // 독립 한컴2020 Print4쪽, 72pt→96CSSpx. Native99.98878/WASM99.98877%.
+            near(t.bbox.y, 969.658691, "원본 HWPX4쪽의 중첩 표 시작 괘선");
+            near(
+                t.bbox.y + t.bbox.height,
+                1071.308024,
+                "원본 HWPX4쪽의 중첩 표 마지막 괘선",
+            );
+        }
+    }
+}

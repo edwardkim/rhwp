@@ -81,6 +81,7 @@ pub struct RenderNormalizationOverlay {
     nested_table_widths_by_path: HashMap<RenderPath, Arc<NestedTableWidthProjection>>,
     nested_table_widths_by_pointer: HashMap<usize, Arc<NestedTableWidthProjection>>,
     text_reflowed_tables_by_pointer: HashSet<usize>,
+    nested_tables_with_reflowed_hosts: HashSet<usize>,
     stored_nested_text_frames_by_pointer: HashMap<usize, Arc<StoredNestedTextFrames>>,
 }
 
@@ -193,11 +194,22 @@ impl RenderNormalizationOverlay {
             if cell.width >= 0x8000_0000 {
                 continue;
             }
+            // 폭을 바꿔 저장한 부모 셀의 상속 프레임은 자식의 현재 총높이를
+            // 인증하지 않는다. 자식의 셀·글줄은 보존하되 그 선언 총높이에
+            // 맞추려고 내용/행 선언으로 얻은 자연 높이를 다시 축소하지 않는다.
+            let host_reflowed = crate::renderer::typeset::is_reparsed_single_column_cell_split_row(
+                owner_table,
+                usize::from(cell.row),
+            );
             for (paragraph_index, paragraph) in cell.paragraphs.iter().enumerate() {
                 for (control_index, control) in paragraph.controls.iter().enumerate() {
                     let Control::Table(nested) = control else {
                         continue;
                     };
+                    if host_reflowed {
+                        self.nested_tables_with_reflowed_hosts
+                            .insert(nested.as_ref() as *const Table as usize);
+                    }
 
                     let mut nested_path = path.clone();
                     nested_path.entries.push(RenderPathEntry::TableCell {
@@ -292,6 +304,13 @@ impl RenderNormalizationOverlay {
     #[inline]
     pub(crate) fn table_text_reflowed(&self, table: &Table) -> bool {
         self.text_reflowed_tables_by_pointer
+            .contains(&(table as *const Table as usize))
+    }
+
+    /// 글자 재조판 여부와 별개인 부모 호스트 프레임의 무효화 출처다.
+    #[inline]
+    pub(crate) fn nested_table_has_reflowed_host(&self, table: &Table) -> bool {
+        self.nested_tables_with_reflowed_hosts
             .contains(&(table as *const Table as usize))
     }
 }
