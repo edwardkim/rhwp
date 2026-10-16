@@ -253,6 +253,12 @@ bind mount는 hard-link를 지원하지 않아 Cargo가 실패할 수 있으므�
 이 파일을 남기면 wasm-pack이 임시 최적화 결과를 다시 입력으로 열거해 무한 실행 또는
 `*-opt.wasm-opt.wasm` 실패로 이어질 수 있다. (#4089)
 
+서로 다른 worktree를 같은 Docker `/app`과 named target volume에 연결할 때는 source의
+수정 시각이 캐시보다 오래되어 이전 worktree의 산출물이 재사용될 수 있다. 짧은 build 성공이나
+pkg/public의 동일 해시만으로 source 일치를 판정하지 않는다. 기준 source SHA와 실제 JS/API의
+추가·제거 내용을 대조하고, 불일치 산출물은 증거에서 제외한 뒤 변경 패키지의 재컴파일을 확인한다.
+공유 cache 전체를 삭제해 해결하지 않는다.
+
 ### Studio에서 PDF 직접 열기 (선택 기능)
 
 기본 WASM은 PDF 가져오기가 꺼져 있다. PDF를 검증할 때는 저장소 루트에서 동일한 Docker
