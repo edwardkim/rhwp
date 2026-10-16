@@ -911,7 +911,7 @@ pub(crate) fn resolved_to_text_style(
             metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
             original_glyph_metric_family: cs
                 .original_glyph_metric_face_for_lang(lang_index)
-                .map(Box::<str>::from),
+                .map(|face| std::sync::Arc::new(face.to_owned())),
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
             font_space_em: cs.font_space_em,
             layout_half_space: false,
@@ -970,7 +970,7 @@ pub(crate) fn resolved_to_text_style(
                     metric_font_family: cs.metric_face_for_lang(1).map(str::to_string),
                     original_glyph_metric_family: cs
                         .original_glyph_metric_face_for_lang(1)
-                        .map(Box::<str>::from),
+                        .map(|face| std::sync::Arc::new(face.to_owned())),
                     font_metric_trusted: cs.font_metric_trusted_for_lang(1),
                     letter_spacing: resolved_letter_spacing(styles, char_style_id, 1),
                     ratio: cs.ratio_for_lang(1),

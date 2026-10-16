@@ -1924,3 +1924,51 @@ PII21쪽99.63147/99.63145%,규제분석6쪽99.97096/99.96430%에서 독립 Print
 새 devel의 전쪽 비교·Decimal0.01%p 하락 검증·새 전체 회귀와 나머지 게이트를 이어간다.
 PII 기본 글꼴 선택,법원 서식 미세 차이,자산관리 따옴표가 남아 있어 PR 준비 완료가 아니다.
 이전 code head의10467PASS를 새 통과로 인용하지 않았다. 지침은 수정하지 않았다.
+
+
+## C54. 렌더 노드의 원본 메트릭 이름 공유와 검증 공급 구분
+
+C53 code head `e2606b157a56a5d612c66083200bd57a9c8cd067`의 전체 nextest는
+**10482PASS/0FAIL/45skip**,실행420.503초(빌드 포함827.568초)로 완료했다.
+Skia root3861PASS/12ignore+다른lib182PASS,PNG2/PDF4PASS,manifest/unit-tier,
+workspace build,Studio TypeScript 및2013PASS/2skip,Gym3170건실패0/skip1도 확인했다.
+Native/전체 target Clippy 두 단계는 같은 `large_enum_variant`로 실패했고 WASM Clippy는 통과했다.
+이 상태를 전체 제출 통과라고 표시하지 않았다.
+
+원본 부분 글리프 메트릭 이름을 런마다 소유 복제하던 `Option<Box<str>>`를 불변
+`Option<Arc<String>>`로 공유했다. 기존 공개 enum 전체를 boxing하거나 경고를 허용하지 않았다.
+이름·좌표·폭·조판 분기·직렬화 필드는 바꾸지 않았다. 실제 64bit Native 크기는
+TextStyle352→344,TextRunNode/RenderNodeType568→560바이트이며 두 번째 PathNode360은 같다.
+이제Native/WASM/전체 target Clippy가 모두 통과하고 관련 집중5묶음15건도 통과했다.
+
+새 Native와 fresh WASM 각11조건159쪽은 C53과 PNG SHA가 모두 같고,Native 공개 render-tree
+JSON도 전쪽 byte-identical이다. 기존 확대 판독과 잔여를 이 동일성 범위에서 유지한다.
+Native SHA `c7b07be5f4a1febdc12e85c299fc14dbc53222997767714aa688f27ff22acae4`,WASM SHA `4aa788552a60b640e1f438c1976190e633eb5f06da013b17b18ac86b7997f3f0`,
+JS SHA `6961f07addf370125d69f096e1dbcafdc9922424537815a14708b2b6309ec409`다. locked no-opt Mac 대체 빌드194.946초이며
+root/public/동결 package가 일치한다. 이 source의 새 전체 회귀는 별도로 수행한다.
+
+PII의 기본 선택 미달을 좁은 공급 대조로 조사했다. 원본의 한양신명조는 여섯 언어 슬롯 모두
+TTF 선언이다. 모든 문서에 동명의 변환 HFT 프로그램(F)을 추가한 과거 공급은 이 문서의
+Print TTF 프로그램과 다르므로 별도 조건으로 보존한다. 해당 private HFT 공급을 제외하고
+실제 TTF 공급/기존 시스템 글꼴만 사용한 **기본 자동 선택**은 Native/fresh WASM 전66쪽
+각최저93.75247%,미달0이다. 두 backend 모두 기존 독립 검증 명시 환경과66쪽 PNG가
+전부 byte-identical이다. 기본 선택을 명시 환경으로 몰래 대체하지 않았고,일반 CFF를 TTF가
+아니라고 일괄 배제하는 엔진 예외도 추가하지 않았다.
+
+추가 기본 조건을 합하면 backend당12조건225쪽(전쪽6조건212쪽+경계13쪽,전쪽문서는5개)이다.
+입력/PDF·192DPI·compat2022·2px90%는 그대로다. 이전 전체F 조건의 미달/하락 자료는 삭제하지
+않고 구별했으며 새 devel에서도 동일한 유효 공급 조건으로 비교를 다시 수행해야 한다.
+원래 HFT를 사용하는 문서의 공급은 이 PII 대조를 이유로 바꾸지 않는다.
+
+C53 실제 Studio 기본 Canvas2D3문서 screen/print6캡처는 초기 JS/WASM13응답이 동결 빌드와
+일치했고 초기화/자원 오류0이었다. 이6캡처는 C53의 실제 소비 경로 근거이며 이 메모리 보정
+뒤 실제 초기화를 재검증했다고 보고하지 않는다. 로컬 CSS family명만으로 실제 face byte 동일성을
+주장하지 않고 FontFace 입력 bytes와 네트워크 응답 hash 기록을 구분했다.
+
+ignored 정본 `output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-4662c069-20261016/`의
+`full-gates-c66/`, `candidate-c67/`, `c67-*-storage-output-comparison.json`,
+`c67-storage-size-diagnostic.json`, `pii-default-valid-supply-{native,wasm}/`,
+`pii-homonymous-program-source-declarations.json`, `pii-default-declared-output-equivalence.json`에
+원본 로그·TSV·프로그램/빌드 출처를 보존한다. 새 devel의 공통 조건 전쪽 하락 비교,이 source의
+전체 회귀·나머지 gate와 실제 소비 경로,법원 서식 및 자산관리 따옴표는 남아 있다.
+PR 준비 완료가 아니며 지침은 수정하지 않았다.

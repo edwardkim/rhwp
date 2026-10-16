@@ -442,8 +442,9 @@ pub struct TextStyle {
     #[serde(skip_serializing)]
     pub metric_font_family: Option<String>,
     /// 확인된 원본 글리프만 사용하는 부분 메트릭. 미확인 글자는 표시 face에 남는다.
+    /// 불변 이름을 공유하여 런 복제와 enum의 인라인 메모리를 줄인다.
     #[serde(skip_serializing)]
-    pub original_glyph_metric_family: Option<Box<str>>,
+    pub original_glyph_metric_family: Option<std::sync::Arc<String>>,
     /// [#7387] 명시적으로 확인한 공백 전진폭(em). 주로
     /// `CharShape.use_font_space`가 켜진 run의 **영문 슬롯** 글꼴 폭이며,
     /// 저장 문서의 독립 출력에서 다른 폭이 확인되면 프로필이 덮어쓸 수 있다.
@@ -512,7 +513,8 @@ pub struct LatinSlotMetrics {
     pub font_family: String,
     pub metric_font_family: Option<String>,
     /// 확인된 원본 글리프만 사용하는 부분 메트릭. 미확인 글자는 표시 face에 남는다.
-    pub original_glyph_metric_family: Option<Box<str>>,
+    /// 불변 이름을 공유하여 런 복제와 enum의 인라인 메모리를 줄인다.
+    pub original_glyph_metric_family: Option<std::sync::Arc<String>>,
     pub font_metric_trusted: bool,
     pub letter_spacing: f64,
     pub ratio: f64,

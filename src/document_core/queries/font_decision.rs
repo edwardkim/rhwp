@@ -860,9 +860,14 @@ impl DocumentCore {
                                 .and_then(|slot| {
                                     slot.original_glyph_metric_family
                                         .as_deref()
+                                        .map(String::as_str)
                                         .or(slot.metric_font_family.as_deref())
                                 })
-                                .or(run.style.original_glyph_metric_family.as_deref())
+                                .or(run
+                                    .style
+                                    .original_glyph_metric_family
+                                    .as_deref()
+                                    .map(String::as_str))
                                 .or(run.style.metric_font_family.as_deref())
                                 .unwrap_or(&run.style.font_family)
                         } else {
