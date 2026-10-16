@@ -1,5 +1,7 @@
 //! Issue #4969 W10-Q2-D3: page sidecars lower losslessly but remain dormant.
 
+#[path = "../../src/paint/font_size.rs"]
+mod font_size;
 #[path = "../../src/renderer/kerning.rs"]
 mod kerning;
 #[path = "../../src/renderer/shaping.rs"]
