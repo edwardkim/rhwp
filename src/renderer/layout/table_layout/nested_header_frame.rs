@@ -67,6 +67,12 @@ impl LayoutEngine {
         let mut previous = None;
         let mut height = 0.0;
         for unit in units.iter().take(end).skip(start) {
+            // 실제 자식 컷을 가진 유닛의 제목행은 continuation 높이와
+            // 자식 RowCut 상자에서 이미 예약한다. 행 원자의 추가 예약과
+            // 중복하면 내용 컷이 실제 프레임보다 먼저 끝난다.
+            if unit.nested_table_fragment.is_some() {
+                continue;
+            }
             if previous == Some(unit.para_idx) {
                 continue;
             }

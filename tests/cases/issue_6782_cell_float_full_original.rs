@@ -159,9 +159,11 @@ fn the_ccc_image_is_restored_in_its_original_fragment_cell() {
         assert_eq!(data.bin_data_id, 79, "원본 CCC 이미지 참조 보존");
         assert_eq!(data.para_index, Some(118));
     }
-    // engine 2020 기준 y=235.9. 현재 오차 약 2.8px를 명시적으로 제한한다.
+    // 독립 Print의 그림 상단235.903px. 같은77쪽의 Native99.97569%,
+    // fresh WASM99.97568%와 셀 경계·그림 확대 판독을 확인했다.
+    // 98% 완료 페이지 계약에 따라 기존3px 공차를2px로 줄인다.
     assert!(
-        (image.bbox.y - 235.9).abs() <= 3.0,
+        (image.bbox.y - 235.903).abs() <= 2.0,
         "CCC 위치: {:?}",
         image.bbox
     );
