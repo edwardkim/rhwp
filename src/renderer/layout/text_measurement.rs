@@ -1815,8 +1815,9 @@ fn char_width_decision_with_hft_tracking<'a>(
         // cmap이 실제 결측을 입증한 경우만 다음 face로 측정한다. 나머지는 기존
         // backend 보충 측정에 남긴다. 선택기가 같은 regular 프로그램으로 faux bold를
         // 해소한 경우만 그 cmap을 소비하며, 다른 weight/style 프로그램의 부재는 추정하지 않는다.
-        if matches!(embedded.width_source, "metricCharacterMiss" | "metricMiss")
-            && verified_primary_missing
+        // 합성 좁은 기호 overlay의 폭 hit는 실제 glyph 공급의 증거가 아니다.
+        // cmap 결측이 확인되면 paint와 같은 선언 공급자의 자연 전진을 우선한다.
+        if verified_primary_missing
             && !c.is_whitespace()
             && !style.hft_hangul_face
             && !style.hft_fullwidth_dot

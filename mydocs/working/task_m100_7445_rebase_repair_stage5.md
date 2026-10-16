@@ -2280,3 +2280,69 @@ overlay에서 제목·소제목·본문·쪽말을 직접 판독했으며 제품
 정확한0953 base에서 원본/변환본 기존 미달도 전쪽 별도 확인했으나 현재 개선 완료 문서를 제거하지
 않는다. Native PNG/fresh WASM의 두 조건64쪽 검증이며48조건 전체/새 전체 회귀/전역actual 완료는
 아니다. 개인정보50쪽·다른 감소와 새 전체 게이트를 계속 확인한다. 지침·사용자 초안은 보존했다.
+
+
+## C64. 최신 devel #7951 리베이스와 검증 재개 (2026-10-16)
+
+사용자 요청에 따라 upstream을 fetch하고 `552514f423ec91f1b7171f6e6b0882a4efe034f2`
+(#7951)로229커밋을 리베이스했다. 새 HEAD는 `6295fd0dcf4a7dab0d4b5b643a2551209d632243`다.
+`table_layout.rs`의 충돌은 upstream의 `has_separate_table_units`와 이 브랜치의
+`stored_inline_line_owners`를 함께 유지해 해결했다. 프레임이 이미 소유하는 표 밴드와
+각각의 저장 글줄 소유를 별도 fallback으로 다시 합치지 않는다. source-controls 보존도 유지했다.
+range-diff에서229개 대응을 확인했고,3개의 차이는 upstream 문맥·이 소유권 통합이다.
+동시 상태 조회로 추정되는 일시 index 잠금은 이미 사라졌음을 확인해 같은 rebase를 재개했으며
+잠금 파일을 강제로 삭제하지 않았다. 보정2파일·사용자 초안·미추적27파일은 stash/백업과 hash로
+보존했다. stash `c59929867832d3dbcf3a0c0d48d053209c45d78b`와 이전 backup ref도 유지한다.
+
+새 post_merge/workflow 지침은 필수 증거를 output 밖으로 보존한 뒤 최종 종료 시 output 전체의
+부재를 확인하도록 바뀌었다. 현재 실행 자료를 삭제하거나 지침 파일을 별도로 수정하지 않았다.
+새 source의 Native build/fmt 및 Mac fresh WASM locked web/no-opt 로컬 대체 빌드는 통과했다.
+Docker 최적화 수용을 뜻하지 않는다. 집중 검사 #7419 14PASS, #4138 5PASS, 굵은 자간2PASS다.
+전체 nextest·48조건 전쪽·정확한 새 base 대비 비교·실제 소비 전역 검증은 아직 미완료다.
+
+개인정보의 결측 U+2027 공급 전진 보정은 아직 미커밋이다. 이전 base C77의 명시 기준 환경과
+실제 자동 환경은 Native/fresh WASM 각66쪽90% 이상이며 각 backend의 전쪽 PNG가 동일했다.
+자동 선택이 명시한 이름은 HYMyeongJo-Extra였고 기준 프로필은 HYmjrE여서 JSON 이름만으로
+동등을 가정하지 않았다. 반대로 빈 명시 환경은 자동 환경과 다르고 미달을 보였으므로 그 실행은
+실제 기본 환경의 수용·회귀 근거에서 제외했다. 따라서 새 기호 위치 회귀 추가도 선행 조건에서
+중단됐으며 정식 테스트 파일을 아직 추가하지 않았다. 이전 전체 검증 통과로 재인용하지 않는다.
+
+새 전쪽 driver가 설치되지 않은 독립 Hangul 윤곽용 HGSMJ 원본 폴더까지 자동 선택에 제공해
+기본 face 가용성을 바꾼 것을 확인했다. 이 출력은 별도 공급 조건의 진단으로 보존하고 쪽 경계에서
+중단한다. 실제 기본 공급 검증은 공통 확인된 글꼴과 Library/Fonts로 다시 수집 중이다. 명시
+프로필은 원래 값을 유지하고 None은 자동 공급 선택으로 실행한다. 임의 빈 환경으로 대체하지
+않는다. 원본48조건1745쪽/각 backend와 새 upstream 경계13조건19쪽/각 backend를 별도로
+기록하며 쪽수·누락·90%·직접 판독·새 base 대비0.01%p 감소를 계속 확인한다.
+
+실행 정본·소스/입력 hash·보존 원장·리베이스/range-diff·현재 로그는 ignored output의
+`regression-policy-audit-20261015/rebase-552514f4-20261016/`에 있다. 공유 target과 원본/PDF는
+보존했고 사용자 초안은 커밋에 섞지 않았다.
+
+
+## C65. ubuntu-ted3 raw 판정 커밋 이식 (2026-10-17)
+
+사용자가 지정한 `737d2cea2eeb6fa7eb5afda393eb0f96c1df12fb`를 SSH fetch 후
+`c4b85db287`로 체리픽했다. 같은 커밋의17파일을 적용했고, 없던 #7751 stage5 보고서는
+원 커밋의 전체56줄을 보존해 modify/delete 충돌을 해결했다. 다른 원격 커밋은 적용하지 않았다.
+판정 코드·네 테스트 파일은 원 커밋과 byte-identical이다. 현재 브랜치에만 있던 지침 문맥은
+보존했다. 원래 사용자 초안·보정 작업의 tracked diff도 byte-identical하게 보존했다.
+
+90% 통과·98% px 보호·후보 선정·0.01%p 감소 비교는 `silhouette_raw_match_percent`를
+사용한다. `tolerant_content_match_percent`는 색상 경계 보정의 진단값이다. raw 역시2px
+이웃 허용 뒤의 실루엣이며 엄격 RGB 일치율이라는 뜻이 아니다. Visual Sweep Python160PASS다.
+기존 TSV의 raw 값 계산은 바뀌지 않아 원본 TSV/gate를 보존한 별도 재분류 원장을 만들었다.
+현재 whole driver도 raw 최저·미달 목록을 사용하도록 변경하고 완료 건만 재사용해 이어 수집한다.
+
+새 raw 기준에서는 생물독소143쪽(Native86.88424%,WASM89.99173%),sample16의18/35쪽
+(원본·별칭·HWPX),로드맵153쪽(양쪽82.83247%)이90% 미달이다. 보정값 통과로 면제하지
+않고 원본·독립 PDF·기준 base와 직접 대조한다. 전쪽 수집은 아직 진행 중이며 이 목록을 최종
+전체 결과로 제시하지 않는다. PR 준비 완료·새 전체 회귀 통과를 주장하지 않는다.
+
+## C66. 실제 결측 기호 공급자의 전진과 독립 px 보호 (2026-10-17)
+
+C64 이후 새 #7951 base 후보의 개인정보 명시/자동 환경은 각각 Native/fresh WASM66쪽
+raw최저93.77937%·미달0쪽이다. U+2027의 실제 공급자 전진을 반영해50쪽을 양쪽99.998%대로
+개선했다. 같은 핵심 제목 중 raw 최솟값이 가장 높은50쪽을 골라 독립 Print±2CSSpx·원문·
+소유·내용 관계 회귀를 추가했다. 실제 부모 source1FAIL→후보1PASS,정상 대조군12PASS다.
+C64의‘정식 테스트 아직 미추가’는 당시 상태이며 현재는 선행 조건을 확인해 추가했다.
+[독립 근거·원본 hash·정식 검사·전후 review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/verified-supplier-advance-20261017/README.md)에 연결한다.
