@@ -83,7 +83,10 @@ fn document(picture_vpos: i32) -> DocumentCore {
         text_paragraph("앞 문단", line(300, 20_000, 660)),
         text_paragraph("둘째 문단", line(20_960, 24_000, 660)),
         picture_paragraph,
-        text_paragraph("뒤 문단", line(picture_vpos + PICTURE_HEIGHT + 660, 1_100, 660)),
+        text_paragraph(
+            "뒤 문단",
+            line(picture_vpos + PICTURE_HEIGHT + 660, 1_100, 660),
+        ),
     ];
     doc.sections.push(section);
 
