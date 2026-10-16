@@ -69,7 +69,14 @@ pub(in crate::renderer::typeset) fn place(
         dpi,
     );
 
-    if paragraph::try_absorb_rowbreak_guide(st, prev_is_partial_table, para, paragraphs, para_idx) {
+    if paragraph::try_absorb_rowbreak_guide(
+        st,
+        prev_is_partial_table,
+        para,
+        paragraphs,
+        para_idx,
+        dpi,
+    ) {
         return;
     }
 

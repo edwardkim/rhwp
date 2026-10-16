@@ -585,6 +585,20 @@ impl HeightCursor {
             .get(item_para)
             .and_then(|p| p.line_segs.first())
             .map(|ls| ls.vertical_pos);
+        // 앞 문단의 저장 좌표가 이 단 높이 밖이면 그 줄은 앞 쪽 좌표계에 남은 값이다
+        // (분할 표 뒤 빈 문단이 표 시작 쪽의 vpos 를 갖는 경우). 되감긴 현재 문단의
+        // 기준을 그 값에서 역산하지 않고 순차 흐름을 따른다(1480000 44쪽: pi=264
+        // vpos 72003 > 단 높이 71153HU, pi=265 를 trailing 간격만큼 더 내리지 않는다).
+        let col_height_hu = (self.col_area_height * 7200.0 / self.dpi).round() as i32;
+        if !self.session_edited
+            && prev_para.controls.is_empty()
+            && !para_has_visible_text(prev_para)
+            && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && seg.vertical_pos > col_height_hu
+            && curr_first_vpos.is_some_and(|curr| curr < seg.vertical_pos)
+        {
+            return y_offset;
+        }
         if !self.session_edited
             && self.stored_column_origin.is_some_and(|(base, _)| {
                 paragraphs
