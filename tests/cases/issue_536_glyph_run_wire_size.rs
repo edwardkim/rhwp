@@ -143,3 +143,59 @@ fn nominal_glyph_run_producer_requires_a_positive_wire_font_size() {
         .unwrap();
     assert_eq!(serialized["shapeKey"]["fontInstance"]["sizePx"], 0.000_001);
 }
+
+#[test]
+fn glyph_run_geometry_outside_replay_scalar_range_preserves_fonts() {
+    let (control, report) = glyph_run_tree(16.0);
+    assert_eq!(report.emitted_glyph_runs, 1);
+    for value in [f64::from(f32::MAX) * 2.0, -f64::from(f32::MAX) * 2.0] {
+        for field in 0..4 {
+            let mut tree = control.clone();
+            let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+                unreachable!("leaf fixture");
+            };
+            let run = ops
+                .iter_mut()
+                .find_map(|op| match op {
+                    PaintOp::GlyphRun { run, .. } => Some(run),
+                    _ => None,
+                })
+                .unwrap();
+            let reason = match field {
+                0 => {
+                    run.positions[0].x = value;
+                    VariantRejectReason::PositionNotFinite
+                }
+                1 => {
+                    run.advances.as_mut().unwrap()[0].dx = value;
+                    VariantRejectReason::AdvanceNotFinite
+                }
+                2 => {
+                    run.placement.run_to_page.e = value;
+                    VariantRejectReason::PlacementNotFinite
+                }
+                _ => {
+                    run.placement.baseline_y = value;
+                    VariantRejectReason::PlacementNotFinite
+                }
+            };
+            let selection =
+                analyze_text_variant_selection(&tree, TextVariantSelectionOptions::canvaskit());
+            assert_eq!(
+                selection[0].selected_variant_kind,
+                Some(TextVariantKind::TextRun),
+                "field={field}, value={value}"
+            );
+            assert!(selection[0]
+                .rejected_variants
+                .iter()
+                .any(|variant| variant.reasons.contains(&reason)));
+            let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+            assert!(plan
+                .required_font_families
+                .iter()
+                .any(|family| family == "wire fallback family"));
+            assert!(plan.required_font_families_complete);
+        }
+    }
+}
