@@ -812,8 +812,16 @@ pub(super) fn try_absorb_rowbreak_guide(
     para: &Paragraph,
     paragraphs: &[Paragraph],
     para_idx: usize,
+    dpi: f64,
 ) -> bool {
-    if empty::hide_rowbreak_guide(prev_is_partial_table, para, paragraphs, para_idx) {
+    if empty::hide_rowbreak_guide(
+        prev_is_partial_table,
+        para,
+        paragraphs,
+        para_idx,
+        st.current_height,
+        dpi,
+    ) {
         st.hide_empty_paragraph(para_idx);
         return true;
     }
