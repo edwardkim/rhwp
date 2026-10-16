@@ -652,7 +652,33 @@ fn resolve_line_metrics(
     // 다만 이것은 한글 2020/2022 정합 모델이 아니다. 일부 Paper 앵커 개체는 실제 렌더
     // extent 를 page-local pagination 에 반영해야 하며, #2019 v3 에서 이 부분을 다시
     // 풀어야 한다. 자리차지·tac=true 는 helper 에서 제외되어 예약 유지.
-    if crate::renderer::layout::para_is_floating_overlay_anchor(para) {
+    // [#7840] 이 축소의 전제는 «저장 줄이 떠 있는 개체의 위치 보조값일 뿐 흐름을 밀지
+    // 않는다» 이다. 원본 사다리가 다음 문단을 바로 이 줄의 `줄 높이 + 줄간격` 만큼 전진시켜
+    // 두었으면 한/글은 그 줄 상자를 흐름에 실었다(1150200 1쪽: 글앞 직선 앵커 빈 문단
+    // vpos 1800 → 다음 문단 4700 = 1800 + 1000 + 1900). 그 줄은 축소하지 않는다.
+    // 같은 vpos 에 겹쳐 앉은 앵커들(#2019 74312 다단 구역)은 전진이 없으므로 종전대로다.
+    let stored_ladder_advances_anchor_line = (ctx.profile().hwp5_stored_pagination_layout()
+        || ctx.profile().hwpx_stored_layout())
+        && !ctx.profile().session_edited()
+        && !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && matches!(para.line_segs.as_slice(), [line]
+        if line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && line.line_height > 0
+            && line.line_spacing >= 0
+            && ctx.next_stored_vpos().is_some_and(|next| {
+                i64::from(next)
+                    == i64::from(line.vertical_pos)
+                        + i64::from(line.line_height)
+                        + i64::from(line.line_spacing)
+            }));
+    if stored_ladder_advances_anchor_line
+        && crate::renderer::layout::para_is_floating_overlay_anchor(para)
+    {
+        let line = &para.line_segs[0];
+        line_heights = vec![hwpunit_to_px(line.line_height, ctx.dpi())];
+        line_spacings = vec![hwpunit_to_px(line.line_spacing, ctx.dpi())];
+    } else if crate::renderer::layout::para_is_floating_overlay_anchor(para) {
         let (lh, ls) = empty_paragraph_fallback_line_metrics(
             para,
             styles,

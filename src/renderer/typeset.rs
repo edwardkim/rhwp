@@ -323,6 +323,9 @@ pub struct TypesetEngine {
     /// 문단 자신의 테두리 inset과 구분한다.
     float_carve_evidence:
         std::cell::RefCell<Vec<crate::renderer::float_placement::FloatCarveEvidence>>,
+    /// [#7840] 본문 흐름이 지금 구성하는 문단 바로 뒤 문단의 첫 저장 줄 vpos.
+    /// 흐름 진입에서만 set 하고 구성 직후 비운다 — 다른 구성 경로는 None 을 본다.
+    format_next_stored_vpos: std::cell::Cell<Option<i32>>,
     render_normalization:
         std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
 }
@@ -3444,6 +3447,7 @@ impl TypesetEngine {
             section_column_spacing_hu: std::cell::Cell::new(None),
             uniform_filler_ladder: std::cell::Cell::new(false),
             float_carve_evidence: std::cell::RefCell::new(Vec::new()),
+            format_next_stored_vpos: std::cell::Cell::new(None),
             render_normalization: std::sync::Arc::new(
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
@@ -3498,11 +3502,16 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         column_width_px: Option<f64>,
         endnote: bool,
+        next_stored_vpos: Option<i32>,
     ) -> DumpFormattedParagraphHeight {
         let fmt = if endnote {
             self.format_endnote_paragraph(para, composed, styles, column_width_px)
         } else {
-            self.format_paragraph(para, composed, styles, column_width_px)
+            // 본문 흐름과 같은 다음 문단 저장 vpos 를 실어 같은 구성 결과를 진단한다.
+            self.format_next_stored_vpos.set(next_stored_vpos);
+            let fmt = self.format_paragraph(para, composed, styles, column_width_px);
+            self.format_next_stored_vpos.set(None);
+            fmt
         };
         DumpFormattedParagraphHeight {
             total: fmt.total_height,
@@ -3854,6 +3863,7 @@ impl TypesetEngine {
             &self.profile,
             &self.uniform_filler_ladder,
             &self.float_carve_evidence,
+            self.format_next_stored_vpos.get(),
         );
         paragraph::format::format_paragraph_for_flow(
             &context,

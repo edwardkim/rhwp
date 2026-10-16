@@ -6475,12 +6475,21 @@ impl DocumentCore {
         } else {
             None
         };
+        let next_stored_vpos = (para_index + 1 < body_len)
+            .then(|| paragraphs.get(para_index + 1))
+            .flatten()
+            .and_then(|next| next.line_segs.first())
+            .filter(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            .map(|line| line.vertical_pos);
         Some(typesetter.dump_formatted_paragraph_height(
             para,
             composed,
             &self.styles,
             column_width_px,
             para_index >= body_len,
+            next_stored_vpos,
         ))
     }
 

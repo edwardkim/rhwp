@@ -38,14 +38,25 @@ fn sample() -> Option<Vec<u8>> {
     if let Ok(path) = std::env::var("RHWP_ISSUE5585_SAMPLE") {
         return std::fs::read(path).ok();
     }
+    // Linux·macOS 작업공간은 홈 아래에 같은 코퍼스를 둔다. 이 경로가 없으면 Windows
+    // 밖에서 시험이 조용히 건너뛰어 7쪽→9쪽 회귀가 드러나지 않는다(#7840).
+    let home_root = std::env::var_os("HOME").map(|home| {
+        std::path::PathBuf::from(home)
+            .join("hwpdocs_10k_share")
+            .join("korea_policy_downloads")
+    });
     let roots = [
-        concat!(
+        Some(std::path::PathBuf::from(concat!(
             r"C:\Users\planet\hwpdocs_10k_share",
             r"\korea_policy_downloads"
-        ),
-        concat!(r"D:\hwpdocs_10k_share", r"\korea_policy_downloads"),
+        ))),
+        Some(std::path::PathBuf::from(concat!(
+            r"D:\hwpdocs_10k_share",
+            r"\korea_policy_downloads"
+        ))),
+        home_root,
     ];
-    for base in roots {
+    for base in roots.into_iter().flatten() {
         let Ok(entries) = std::fs::read_dir(base) else {
             continue;
         };

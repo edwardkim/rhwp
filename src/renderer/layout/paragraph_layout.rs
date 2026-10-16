@@ -3292,8 +3292,11 @@ impl LayoutEngine {
             styles,
             style.alignment == Alignment::Center,
         );
-        let indent = if owner == 0 { style.indent } else { 0.0 };
-        let styled_left = (style.margin_left + indent).max(0.0);
+        // 글줄 경로와 같은 줄별 들여쓰기 규칙(첫 줄 들여쓰기·나머지 줄 내어쓰기).
+        let styled_left =
+            super::table_layout::effective_margin_left_line(style.margin_left, style.indent, owner)
+                .max(0.0);
+        let line_indent = styled_left - style.margin_left.max(0.0);
         let stored = para.line_segs.get(owner)?;
         // A complete natural saved line owns its horizontal region. Paragraph
         // hanging indent is a reflow input, not a replacement for that region.
@@ -3308,6 +3311,14 @@ impl LayoutEngine {
                 hwpunit_to_px(stored.segment_width, self.dpi) - indentation,
             )
         });
+        // [#7840] 저장 `column_start` 가 문단 자신의 `margin_left` 로 설명되면 그 영역은
+        // 여백까지만 담고 줄 들여쓰기는 담지 않는다 — 글줄은 그 위에 들여쓰기를 더해 놓인다.
+        // 같은 줄의 글자처럼 취급 개체도 같은 원점을 쓴다(148738070 4쪽 내어쓰기 둘째 줄의
+        // 중첩 표: 저장 cs 550HU 에서 내어쓰기 13.33px 를 빠뜨려 정본보다 13px 왼쪽).
+        let column_start_is_own_margin = stored
+            .column_start
+            .abs_diff(super::super::px_to_hwpunit(style.margin_left, self.dpi))
+            <= EMPTY_LINE_OWN_MARGIN_TOLERANCE_HU as u32;
         let stored_region = (stored.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             && stored.column_start >= 0
             && stored.segment_width > 0
@@ -3317,10 +3328,17 @@ impl LayoutEngine {
                 .saturating_add(super::super::px_to_hwpunit(style.margin_right, self.dpi))
                 .abs_diff(super::super::px_to_hwpunit(area.width, self.dpi))
                 <= 1)
-            .then_some((
-                hwpunit_to_px(stored.column_start, self.dpi),
-                hwpunit_to_px(stored.segment_width, self.dpi),
-            ));
+            .then(|| {
+                let indent = if column_start_is_own_margin {
+                    line_indent
+                } else {
+                    0.0
+                };
+                (
+                    hwpunit_to_px(stored.column_start, self.dpi) + indent,
+                    (hwpunit_to_px(stored.segment_width, self.dpi) - indent).max(0.0),
+                )
+            });
         let (left_margin, width) = current_region.or(stored_region).unwrap_or((
             styled_left,
             (area.width - styled_left - style.margin_right).max(0.0),
