@@ -620,8 +620,31 @@ impl TypesetEngine {
             };
         // [Task #1145] RowBreak 표도 작은 rowspan 제목/라벨 블록은 내부 hard-break가
         // 없으면 중간 행에서 자르지 않는다. 일반 RowBreak 행 경계 분할은 유지한다.
+        // RowBreak(«나눔») 표는 쪽 끝에서 rowspan 칸도 자른다 — 0행이 잔여에 들고 0행에서
+        // 시작하는 rowspan 칸의 내용이 0행 안에 다 들 때. 1480000-201900698 표 9·17 은
+        // 잔여 56.6px 에 0행 47.0px 가 들어 0행 뒤에서 자른다(표의 저장 높이 3526 HU 도
+        // 0행과 같다). #1145 표본처럼 그 조건이 안 서면 기존대로 묶음을 통째로 넘긴다.
+        // 0행이 제목 행이면 그 조각에는 본문이 없다 — 한/글은 제목 행만 쪽 끝에 두지 않고
+        // 표를 넘긴다(1613000-202200037 pi=1143 `용어(A→Z)`, task1753 pi=51).
+        let first_row_is_header = !table.leading_header_rows().is_empty();
+        let first_row_holds_rowspan_opening = first_block_has_protectable_rowspan
+            && !first_row_is_header
+            && mt.rowbreak_block_first_row_holds_opening(
+                0,
+                mt.row_heights
+                    .first()
+                    .copied()
+                    .unwrap_or(0.0)
+                    .max(cut_row_h.first().copied().unwrap_or(0.0)),
+                remaining_on_page,
+            );
+        // 묶음 전체가 남은 공간에 들면 #1145 대로 통째로 둔다 — 자르는 것은 묶음이 넘칠 때뿐이다.
+        let opening_rowspan_block_cuts_after_first_row =
+            first_row_holds_rowspan_opening && remaining_on_page < first_block_h;
         let first_block_protected = first_block_has_protectable_rowspan
-            && (!mt.allows_row_break_split() || !first_rowbreak_block_has_hard_break);
+            && (!mt.allows_row_break_split()
+                || (!first_rowbreak_block_has_hard_break
+                    && !opening_rowspan_block_cuts_after_first_row));
         // CellBreak는 병합 셀 그룹 전체를 단위로 판정한다. 실제 page-larger는
         // 아래 fresh-page fit과 scan의 블록 컷으로 구분한다.
         // [#2097] 이월 게이트는 스캔과 같은 측정 공간을 본다: 스캔은 cut_row_h
@@ -1180,6 +1203,7 @@ impl TypesetEngine {
         });
         let prepared = BlockTableContinuationPreparedState {
             first_anchor_offset_consumed,
+            opening_rowspan_block_cuts_after_first_row,
             host_placement: source_single_cell_first_placement.or(fragment_host_placement),
             host_frame,
             empty_opening_row_frame,

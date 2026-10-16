@@ -41,4 +41,6 @@ pub(in crate::renderer::typeset) struct BlockRowScanVars {
     pub(in crate::renderer::typeset) start_cut_is_block: bool,
     pub(in crate::renderer::typeset) start_row_height_override: Option<f64>,
     pub(in crate::renderer::typeset) source_terminal_suffix_start: Option<usize>,
+    /// 첫 조각에서 0행의 보호 rowspan 묶음을 0행 뒤에서 자른다(이월 게이트의 결정).
+    pub(in crate::renderer::typeset) opening_block_cuts_after_first_row: bool,
 }

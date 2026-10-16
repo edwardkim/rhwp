@@ -119,6 +119,9 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     /// 첫 행을 전혀 소비하지 못해 저장 호스트 쪽을 떠난 실제 전이 사실.
     /// 예산과 출력은 새 쪽에서 문단 앵커 거리를 다시 적용하지 않는다.
     pub(in crate::renderer::typeset) first_anchor_offset_consumed: bool,
+    /// 이월 게이트가 확정한 사실: 0행에서 시작하는 보호 rowspan 묶음이 첫 쪽 잔여에 안 들고
+    /// 0행만 든다. 행 스캔은 이 값으로 묶음을 0행 뒤에서 자른다(다시 판정하지 않는다).
+    pub(in crate::renderer::typeset) opening_rowspan_block_cuts_after_first_row: bool,
     /// 현재 host frame에서 확정한 좌표. 다른 단으로 진행하면 앵커 거리는 소진된다.
     pub(in crate::renderer::typeset) host_placement:
         Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
