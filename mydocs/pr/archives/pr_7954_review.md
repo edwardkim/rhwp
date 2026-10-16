@@ -18,8 +18,8 @@ normal merge·post_merge다. 아직 실행 전인 trailing CI와 merge를 성공
 - 규모가 1,000줄을 넘으므로 대형 PR modifier로 별도 코드 검토·전체 회귀·merge simulation을 수행한다. normal merge 경로다.
 - 작성 시 API 상태는 mergeable=true / clean이며, merge 직전에 최신 SHA와 check를 재조회한다.
 
-base route: collaborator_self_merge.md  
-modifiers: intake_and_review.md, local_validation.md, rework_and_exceptions.md, review_only_fast_pass.md, post_merge.md  
+base route: collaborator_self_merge.md
+modifiers: intake_and_review.md, local_validation.md, rework_and_exceptions.md, review_only_fast_pass.md, post_merge.md
 loaded documents: pr_review_workflow.md와 위 기본·보조 문서, docs_and_git_workflow.md, dev_environment_guide.md.
 
 ## 범위와 코드 검토
