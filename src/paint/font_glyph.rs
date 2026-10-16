@@ -641,7 +641,7 @@ impl FontGlyphLowerer<'_, '_> {
         }
 
         let units_per_em = f64::from(face.units_per_em());
-        if units_per_em <= 0.0 || !run.style.font_size.is_finite() || run.style.font_size <= 0.0 {
+        if units_per_em <= 0.0 || !super::font::glyph_font_size_is_portable(run.style.font_size) {
             self.report.rejected_glyph_runs += 1;
             return None;
         }
