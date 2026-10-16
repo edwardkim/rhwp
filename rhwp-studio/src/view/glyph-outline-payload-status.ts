@@ -241,6 +241,7 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
             && isPortableGlyphScalar(node.radialGradientPath.gradient?.cy)
             && isPortableGlyphScalar(node.radialGradientPath.gradient?.radius)
             && (node.radialGradientPath.gradient?.radius ?? 0) > 0
+            && Number(node.radialGradientPath.gradient.radius.toFixed(6)) > 0
             && isValidColorGradientStops(node.radialGradientPath.gradient?.stops)
             && isSupportedFillRule(node.radialGradientPath.fillRule);
         case 'sweepGradientPath':
@@ -397,10 +398,11 @@ function isSupportedFullCircleSweepGradient(
   startAngleDegrees: number | undefined,
   endAngleDegrees: number | undefined,
 ): boolean {
+  const isFullCircle = (start: number, end: number) => start < end && Math.abs(end - start - 360) <= 1e-9;
   return isPortableGlyphScalar(startAngleDegrees)
     && isPortableGlyphScalar(endAngleDegrees)
-    && (startAngleDegrees ?? 0) < (endAngleDegrees ?? 0)
-    && Math.abs((endAngleDegrees ?? 0) - (startAngleDegrees ?? 0) - 360) <= 1e-9;
+    && isFullCircle(startAngleDegrees, endAngleDegrees)
+    && isFullCircle(Number(startAngleDegrees.toFixed(6)), Number(endAngleDegrees.toFixed(6)));
 }
 
 function isSupportedFillRule(fillRule: string | undefined): boolean {
@@ -426,6 +428,7 @@ function isStrictStroke(stroke: LayerGlyphOutlineOp['stroke']): boolean {
   return !!stroke
     && isPortableGlyphScalar(stroke.width)
     && (stroke.width ?? 0) > 0
+    && Number(stroke.width.toFixed(6)) > 0
     && stroke.join === 'miter'
     && stroke.cap === 'butt'
     && isPortableGlyphScalar(stroke.miterLimit)

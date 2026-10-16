@@ -246,8 +246,7 @@ fn build_vertical_leaf_glyph_run(
 ) -> Result<LayerGlyphRunPaint, VerticalGlyphLinePublicationRejectReason> {
     let paint_style = PaintTextStyle::from(&fallback.style);
     if !paint_style.is_fill_only_glyph_replay()
-        || !paint_style.font_size.is_finite()
-        || paint_style.font_size <= 0.0
+        || !super::font::glyph_font_size_is_portable(paint_style.font_size)
     {
         return Err(VerticalGlyphLinePublicationRejectReason::UnsupportedFallbackStyle);
     }
