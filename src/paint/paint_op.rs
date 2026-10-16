@@ -1102,10 +1102,14 @@ fn color_gradient_stops_are_valid(stops: &[ColorGradientStop]) -> bool {
 }
 
 fn color_sweep_is_supported_full_circle(start_angle_degrees: f64, end_angle_degrees: f64) -> bool {
+    let is_full_circle = |start: f64, end: f64| start < end && (end - start - 360.0).abs() <= 1e-9;
     portable_glyph_scalar(start_angle_degrees)
         && portable_glyph_scalar(end_angle_degrees)
-        && start_angle_degrees < end_angle_degrees
-        && (end_angle_degrees - start_angle_degrees - 360.0).abs() <= 1e-9
+        && is_full_circle(start_angle_degrees, end_angle_degrees)
+        && is_full_circle(
+            glyph_geometry_wire_scalar(start_angle_degrees, 6),
+            glyph_geometry_wire_scalar(end_angle_degrees, 6),
+        )
 }
 
 fn graph_leaf_metadata_is_valid(node: &ColorPaintGraphNode) -> bool {
@@ -1205,6 +1209,7 @@ impl ColorPaintGraphPayload {
                         || !portable_glyph_scalar(gradient_path.gradient.cy)
                         || !portable_glyph_scalar(gradient_path.gradient.radius)
                         || gradient_path.gradient.radius <= 0.0
+                        || glyph_geometry_wire_scalar(gradient_path.gradient.radius, 6) <= 0.0
                         || !color_gradient_stops_are_valid(&gradient_path.gradient.stops)
                     {
                         return false;
@@ -1660,8 +1665,8 @@ fn svg_view_box_mapping_is_portable(view_box: BoundingBox, destination: Bounding
     })
 }
 
-fn glyph_geometry_wire_scalar(value: f64, precision: usize) -> f64 {
-    // Keep this identical to json.rs's bbox (3) and intrinsic-size (6) writers.
+pub(crate) fn glyph_geometry_wire_scalar(value: f64, precision: usize) -> f64 {
+    // Match json.rs: bbox components use 3 decimals, other glyph geometry uses 6.
     format!("{value:.precision$}").parse().unwrap_or(f64::NAN)
 }
 
@@ -1724,6 +1729,7 @@ impl GlyphOutlineStrokeStyle {
     pub fn is_strict_subset(&self) -> bool {
         portable_glyph_scalar(self.width)
             && self.width > 0.0
+            && glyph_geometry_wire_scalar(self.width, 6) > 0.0
             && portable_glyph_scalar(self.miter_limit)
             && self.miter_limit >= 1.0
             && matches!(self.join, GlyphOutlineStrokeJoin::Miter)
