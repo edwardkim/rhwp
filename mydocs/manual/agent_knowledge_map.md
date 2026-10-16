@@ -323,10 +323,10 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 `edit set-cell` 은 `oldText` 때문에 `untrustedContent:true`,
 `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 341개 필드
+### 2-2. 전수 사전 — 342개 필드
 
-`capabilities` 의 `recordFields` 고유 **333개**와 그 밖의 실측·참조 필드를 합친
-341개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **334개**와 그 밖의 실측·참조 필드를 합친
+342개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -511,6 +511,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 | `output` | string | **실제로 저장된 경로. 저장했을 때만 실린다** — dry-run·치환 0건이면 키 자체가 없다 | 산출 계열 13종 |
 | `outputFormat` | string | 산출 형식(`hwp5`·`hwpx`·`csv`) — 입력 형식 보존 규약의 결과 | `run`·`table-to-csv`·`csv-to-table`·`edit` |
 | `bytes` | number | 산출물 크기 | `export-pdf`·`export-hwpx`·`export-hml`·`export-doclang`·`convert`·`build-from-ingest`·`thumbnail` |
+| `diagnostics` | object | PDF 가져오기 진단. 원본 쪽·좌표 대응(`pages`)은 문서 파생 값이며 경고·처리 정책과 구분한다. `parserAllocationBoundsProven:false`는 전체 할당 경계 미입증을 뜻한다 | `import-pdf` |
 | `changedPages` | number[]\|null | **재조판 후 0 기준으로 바뀐 쪽.** `null` = 확정 불가(전체를 봐야 한다). dry-run 은 항상 `null` | `edit` 3종·`csv-to-table`·`run` |
 | `verify` | object\|null | `{identical,diffCount}` 자기검증 결과. `--verify` 를 주지 않으면 **`null`** (실측) | `run`·`export-hwpx`·`csv-to-table`·`convert`·`edit` |
 | `verifyPages` | object\|null | 쪽 수 대조 결과. `--verify-pages` 없으면 `null` | `export-hwpx`·`convert` |

@@ -112,6 +112,7 @@ LIVE = {
 
 # 계약만 장에 붙는 사유 — 없는 명령은 공통 사유를 쓴다.
 CONTRACT_ONLY_REASON = {
+    "import-pdf": "pdf-import feature 활성 빌드에서 PDF를 HWPX/HWP로 가져온다. 기본 빌드는 PDF_IMPORT_DISABLED로 거부한다. 활성 경로 검증은 tests/cases/issue_7911_pdf_cli.rs와 scripts/tests/pdf-import-wasm.test.mjs 참조.",
     "batch": "NDJSON 스트림(stdin 목록) 명령 — 단일 봉투 표본 형식과 달라 계약만 싣는다. 실행 규약은 rhwp-bulk-pipeline 스킬 참조.",
     "mcp-serve": "상주 서버 — 표본 실행이 세션을 남긴다. 통합 규약은 rhwp-mcp-session 스킬과 mcp_integration_guide 참조.",
     "keygen": "비밀키 파일을 만드는 명령 — 표본이라도 키 재료를 저장소 문서에 싣지 않는다.",
@@ -143,7 +144,7 @@ FAMILIES = [
     ("30_편집과_계획", "편집·계획 — 원본 무훼손 변경",
      ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit apply-endnote-shape", "edit set-chart-data", "edit insert-number", "edit insert-image", "edit redact", "edit sanitize", "run"]),
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
-     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "export-sixel", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document"]),
+     ["convert", "import-pdf", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "export-sixel", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document"]),
     ("50_검증_사다리", "검증 사다리 — 판정은 데이터다",
      ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip",
       "layout-anomaly",

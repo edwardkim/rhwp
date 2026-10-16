@@ -7,6 +7,7 @@
 - 브랜치: `task_m100_7911`; 조사 head `92df2f3cbdc7012f5e91635512ceda68debecfac`
 - 최초 base: `origin/devel` `a5e88ad682c805e1d845502ddc9521b94ea8eccd`
 - 2026-10-16 통합 기준: `upstream/devel` `f5251e7de4e31ee0fb939f352c6ef144bb340bdb`; 로컬 devel 동기화 및 작업 브랜치 merge `672acadd7d2309e5c0294a98c2142e240ed6f1a9` 완료. [3단계 기록](../working/task_m100_7911_stage3.md).
+- 최종 통합 기준: `upstream/devel` `375aff29498166260a22796d54e67f508c84aada`, merge `4665335997911f667d4c49d699da4de0fb45ca91`. [4단계 통합 검증](../working/task_m100_7911_stage4.md) 완료; 원격 반영·CI는 남음.
 - POC: `poc/pdf-ir` `6bc3847e0ff3e1302736914859903f3c9c51bb69`
 
 현재 순서·완료 경계는 [6절](#6-구현-순서와-승인), 세부 일감·상태·종료 증거의 정본은
@@ -374,7 +375,7 @@ macOS 작성 당시 경로는 해당 host의 기록이며 현재 worktree별 tar
 | 1 (완료) | 호출 경로 조사, 이 구현계획, stage1 보고·commit | 메인테이너 구현계획 승인 완료 |
 | 2 (checkpoint 정리) | POC·frontend·기존 보안 보정과 집중 증거 보존, 미완료 ID 인계 | stage2 기록·commit 후 3단계; 잔여 보안 항목은 미완료 유지 |
 | 3 (F1–F3 완료, F4 저장 보정 checkpoint) | F1–F4 제품 전체 경로 및 기본 오류 복구 | 실제 CLI·제품 WASM 실행, 렌더·저장·재열기와 정상 대조군 확인, 보고·commit |
-| 4 | 현재 범위의 통합 검증·기여 진입점·미완료 인계 | 적용 검증·보고와 원격 통합 승인; 전체 백로그 완료를 전제하지 않음 |
+| 4 (로컬 검증·갱신안 완료) | 현재 범위의 통합 검증·기여 진입점·미완료 인계 | 적용 검증·보고와 원격 통합 승인; 전체 백로그 완료를 전제하지 않음 |
 | 후속 | 기여자·메인테이너의 백로그별 구현·검증, 배포 준비 | 개별 변경의 수용 조건과 배포할 지원 범위의 검증 |
 
 ### 6.1 제품 기능을 완결하는 실행 순서
@@ -420,7 +421,7 @@ macOS 작성 당시 경로는 해당 host의 기록이며 현재 worktree별 tar
 유지하며 devel에 코드가 있다는 이유로 자동 배포나 비신뢰 입력 수용을 활성화하지 않는다.
 원격 통합 자체는 별도 승인을 따른다. 현재 F1–F3 제품 연결과 F4의 저장·재열기 보정을 실행 확인했다. 2026-10-16 메인테이너 지시로
 저장본 한컴 재조판의 1·11쪽 차이를 B10-1에 기록해 후속 구현으로 이관한다. 이는 해당 차이의
-해결 또는 수치상 통과를 뜻하지 않는다. 현재 보고·로컬 커밋 뒤 최종 통합 검증으로 이어간다.
+해결 또는 수치상 통과를 뜻하지 않는다. 이후 4단계에서 최신 devel 통합·현재 범위의 로컬 검증을 완료했다.
 
 PR 경로는 `collaborator_self_merge`를 기본으로 `intake_and_review`, `local_validation`,
 `visual_fixture_evidence`, `rework_and_exceptions`를 적용한다. 9,337줄 POC 도입을
@@ -431,5 +432,7 @@ PR 경로는 `collaborator_self_merge`를 기본으로 `intake_and_review`, `loc
 
 2026-10-16 지시는 위 순서에 따른 로컬 제품 구현과 후속 백로그 처리를 승인한다.
 원격 push·Ready 전환·merge·close·외부 crate 게시·기본 feature 활성화의 포괄 승인은 아니다.
-현재 **저장·재열기 보정 checkpoint를 정리하는 단계이며 PR 준비 완료는 아니다**.
-최신 devel 정합·전체 회귀·CI·self-review 및 원격 반영 승인은 다음 단계다.
+현재 **최신 devel 통합과 승인 범위의 로컬 검증, PR 갱신안 준비를 완료했다**.
+전체 Rust 회귀·실제 Worker·편집 저장·원본 PDF 전쪽 비교 결과와 증거 재사용 경계는
+[4단계 보고](../working/task_m100_7911_stage4.md)에 기록했다. 원격 반영 승인·새 code head CI·
+self-review·후행 CI·Ready 및 병합은 다음 절차다. B10-1과 후속 보안·패키지 일감은 유지한다.

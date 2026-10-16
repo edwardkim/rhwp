@@ -815,6 +815,22 @@
       "note": "문서를 열지 않는다 — run 계획서 문법의 자기서술(JSON Schema)이다.",
       "category": "엔진-전용",
       "forbiddenSlots": []
+    },
+    "import-pdf": {
+      "note": "본문은 저장 파일에 있다. 진단의 원본 좌표는 문서 파생 값이며, 경고·문단 정책은 엔진 상수다.",
+      "origins": {
+        "diagnostics.pages": "PDF MediaBox와 추출 span의 원본 좌표·쪽 대응"
+      },
+      "untrusted": [
+        "diagnostics.pages"
+      ],
+      "category": "특수-표면",
+      "forbiddenSlots": [
+        "system_prompt",
+        "output_filename",
+        "log_title",
+        "tool_argument_path"
+      ]
     }
   }
 }

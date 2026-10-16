@@ -5,7 +5,7 @@
 - 관리: 메인테이너 작업 브랜치 `task_m100_7911`; 후속 구현은 기여자와 분담
 - 정본 계획: [수행계획](task_m100_7911.md), [구현계획](task_m100_7911_impl.md)
 - 이관 근거: [2단계 기록 3.22](../working/task_m100_7911_stage2.md#322-폰트-전역-캐시-격리와-truetype-cmap-예약-경계-2026-10-16)
-- 현재 위치: **F1 공통 Parser/Core·F2 선택 CLI·F3 공개 WASM/Worker 연결 후 F4 진행 중. 실물 HWP의 파일 구조·11쪽 그림 누락·3쪽 자르기 보정과 저장·재열기 검증을 정리했다. 저장본 한컴 재조판의 1·11쪽 차이는 메인테이너 지시로 B10-1에 이관하고 로컬 checkpoint를 남긴다. 세부 보완은 아래에 유지한다.**
+- 현재 위치: **F1–F4의 현재 제품 연결·저장 보정과 최신 devel 통합의 로컬 검증 완료. [4단계](../working/task_m100_7911_stage4.md)에 전체 회귀, 실제 Worker·편집 저장, 원본 PDF 전쪽 비교와 산출물 비용을 기록했다. 저장본 한컴 재조판 1·11쪽 차이는 승인된 B10-1 후속 구현이며, 원격 #7913 갱신·CI·self-review·병합은 남아 있다.**
 
 ## 1. 진행 규칙
 
@@ -55,12 +55,12 @@
 | B04 · 후속 보안 | 객체/색 공간 cache index·문자 생성·postprocess 및 frontend 수집의 남은 경계. 3.21은 소유 payload 복사만 검증 | 실제 `parse_pdf_with_options` → 추출 → recognition/lowering → Document 반환에서 기존 제한을 소비하지 않는 컬렉션·문자·진단 생성 경로를 목록화. 필요한 선행 제한과 정상 출력 보존을 검사하고 도달하지 않는 backend API는 근거와 함께 비해당 분리 | 대기·미검증 |
 | B05 · 보안 증거 | zune JPEG worker horizontal resize. [3.19](../working/task_m100_7911_stage2.md#319-rgbgray-jpeg의-실제-예약에-요청-예산-연결-2026-10-16)에서 실제 capacity 증가 분기 미관측 | 증가 분기를 소비하는 최소 정상 입력/한도 반례 확보, 예약 전 거절·정상 픽셀·오류 복구를 Native/WASM에서 실행. 해당 feature 경로에서 도달 불가라면 코드와 실행 근거로 판정 | 대기·실행 증거 부족 |
 | B06 · 제출 품질 | vendor 단독 strict Clippy. `jpeg-alloc-probe/lint-comparison.json`; 원본 129·patch 128건, 신규 worker 함수 길이 경고 1건 포함 | 고정 toolchain·feature로 upstream과 patch를 구분하고 보정이 만든 진단 해결. 적용 lint 정책과 원본 진단 처리 근거를 명시. blanket allow로 숨기거나 root lib PASS와 합치지 않음 | 대기·실행 실패 확인 |
-| B07 · 자원 계약 | 개별/누적 예산의 적용 범위·CPU·메모리 비용. 기존 제한은 총 heap/RSS 상한의 증명이 아님 | 제품 경로와 실제 활성 의존 graph에 대한 적용/미적용 경계 확정. 별도 이미지 64/128 MiB 초기 제안과 구현된 공통 예산의 차이를 명시·정합화. F3에서 실제 Worker의 deadline·취소·세션 보존·재생성을 확인했다. 여기에 자원 소진/지연 입력을 추가 검증하고 Native/WASM 비용 측정. 안전성 주장은 입증한 경계로 한정 | 대기·미검증 |
+| B07 · 자원 계약 | 개별/누적 예산의 적용 범위·CPU·메모리 비용. 기존 제한은 총 heap/RSS 상한의 증명이 아님 | 제품 경로와 실제 활성 의존 graph에 대한 적용/미적용 경계 확정. 별도 이미지 64/128 MiB 초기 제안과 구현된 공통 예산의 차이를 명시·정합화. F3에서 실제 Worker의 deadline·취소·세션 보존·재생성을 확인했다. 여기에 자원 소진/지연 입력을 추가 검증하고 Native/WASM 비용 측정. 안전성 주장은 입증한 경계로 한정. 4단계에 실제 12쪽 변환 비용·WASM 크기와 관측 memory capacity를 기록했으나 추출/인식/lowering별 시간과 일반 상한은 미측정 | 진행·일부 비용 측정, 일반 상한 미검증 |
 | B08 · 패키지·배포 | backend와 zune/jpeg-decoder 보정판, root optional dependency와 저장소 공용 PDF Worker(`rhwp-shared/pdf/`). 과거 package 증거는 최근 fork 변경 전이며 Worker의 npm export·앱 UI 채택은 아직 미연결 | 실제 배포 graph·정확한 버전·라이선스/NOTICE·고지·archive 내용 확인. 저장소 path 우회 없는 packaged Native/WASM 소비자가 동일 보정판을 사용하는지 검증. 외부 게시 권한/절차를 정리하되 `cargo publish`는 별도 승인 | 대기·최신 통합본 미검증 |
 | B09 · 출력 보완 | 12쪽 PDF의 semantic table 보류 7개 쪽·3쪽 모호한 소유권, 줄 단위 임시 Paragraph·fallback. 원본 HWP의 단일 그림이 PDF에는 3개 XObject로 나뉘며 현재 변환은 3개를 보존한다 | F4 제품 진단으로 실제 보류 쪽과 원본 대응 확인. 표 확정·fallback의 내용 누락/중복·소유권·배치 결함을 구분해 승인 범위의 결함 보정. Deferred를 임의 Complete로 바꾸지 않으며 완전한 논리 문단 복원으로 범위를 넓히지 않음. 후속 그림 조각 병합은 CTM·픽셀 경계·clip·paint 순서의 연속성과 별도 그림 반례를 입증한 뒤 수행 | 대기·기존 제한/미검증 |
-| B10 · 시각·편집 호환 | F3의 BIN_DATA 유형과 HWP 저장 구조를 보정해 한컴 열기·13개 그림 참조를 복구했다. 11쪽 그림 10의 표시 누락은 일반 표의 물리 여백이 CHAR 단위로 저장되어 앞 행이 늘어난 별도 결함이다. 새 직접 HWP의 한컴 Print에서 그림·캡션 복원을 확인했다. 3쪽 PDF clip 누락도 보정했으며 두 지점의 사용자 시각 판정은 통과했다. [3단계 7절](../working/task_m100_7911_stage3.md#7-f4-hwp-그림-참조-손상-보정-2026-10-16) | 현재 기능 결함부터 보정. 원본 PDF와 제품 출력, 저장본의 독립 한컴 Print를 구분해 전체 쪽수·내용·표 소속·전쪽 TSV·직접 확대 판독. 쪽수나 byte 동일성을 한컴 열기/시각 증거로 대신하지 않음 | 진행·현재 그림·저장 보정 사용자 통과, 1·11쪽 차이는 승인된 후속 B10-1. 최종 통합 시 편집·호환 검증 범위를 확인 |
-| B11 · 최종 회귀 | default/feature-on 전체 lint, workspace/all-targets, 전체 Rust 회귀·Native Skia, 기존 HWP/HWPX/HML | 집중/시각 결과 뒤 정본 절차로 최종 제품 head 검증. baseline 완화 없이 회귀 수정. 긴 PR-CI 성격 검증의 별도 승인 절차 유지 | 대기·미실행 |
-| B12 · 최종 통합 | `f5251e7de` devel 동기화·merge 완료; 제품 bundle 비용, 최종 PR 문서·CI·Ready 판정 남음 | 원격 base 확인·필요한 통합 후 영향 검증. 최종 제품 bundle 크기/시간 측정(크기 축소 목표 없음), 본문·증적·head 정합 확인. 원격 push/Ready/merge/close는 별도 승인 | 진행·최종 통합 미실행 |
+| B10 · 시각·편집 호환 | F3의 BIN_DATA 유형과 HWP 저장 구조를 보정해 한컴 열기·13개 그림 참조를 복구했다. 11쪽 그림 10의 표시 누락은 일반 표의 물리 여백이 CHAR 단위로 저장되어 앞 행이 늘어난 별도 결함이다. 새 직접 HWP의 한컴 Print에서 그림·캡션 복원을 확인했다. 3쪽 PDF clip 누락도 보정했으며 두 지점의 사용자 시각 판정은 통과했다. [3단계 7절](../working/task_m100_7911_stage3.md#7-f4-hwp-그림-참조-손상-보정-2026-10-16) | 현재 기능 결함부터 보정. 원본 PDF와 제품 출력, 저장본의 독립 한컴 Print를 구분해 전체 쪽수·내용·표 소속·전쪽 TSV·직접 확대 판독. 쪽수나 byte 동일성을 한컴 열기/시각 증거로 대신하지 않음 | 현재 범위 검증 완료·사용자 승인 출력 보존. 통합본의 원본 PDF 12쪽 Native/WASM·실제 텍스트 편집 저장·재열기 통과. B10-1은 후속 대기 |
+| B11 · 최종 회귀 | default/feature-on 전체 lint, workspace/all-targets, 전체 Rust 회귀·Native Skia, 기존 HWP/HWPX/HML | 집중/시각 결과 뒤 정본 절차로 최종 제품 head 검증. baseline 완화 없이 회귀 수정. 긴 PR-CI 성격 검증의 별도 승인 절차 유지 | 로컬 완료·전체 10,435건, PDF 집중 130건, Native Skia, default/on lint·실제 Worker 통과. 원격 CI는 B12 |
+| B12 · 최종 통합 | 최종 devel `375aff294` 동기화·merge `466533599` 완료. 제품 bundle 비용·본문·대표 이미지 준비 완료; 원격 갱신·CI·Ready 판정 남음 | 원격 base 확인·필요한 통합 후 영향 검증. 최종 제품 bundle 크기/시간 측정(크기 축소 목표 없음), 본문·증적·head 정합 확인. 원격 push/Ready/merge/close는 별도 승인 | 진행·로컬 통합·PR 갱신안 준비 완료, 원격 반영·CI 미실행 |
 
 B01–B04는 아직 실제 결함을 모두 재현한 목록이 아니라 미검증 경계다. B06은 별도 lint
 실패가 관측된 항목이다. B09는 명시된 지원 제한과 출력 결함 가능성을 구분해 처리한다.
@@ -73,6 +73,7 @@ B01–B04는 아직 실제 결함을 모두 재현한 목록이 아니라 미검
 - **관측:** 같은 저장 HWP의 Native/WASM 화면과 한컴 재인쇄를 대조하면 1쪽 68.40217% / 68.72149%, 11쪽 78.54899% / 78.74329%다. 별도의 원본 PDF 기준 비교는 전쪽 Native/WASM 최저 90.14609% / 90.16832%이므로 두 기준을 혼동하지 않는다. 그림 10 누락과 3쪽 clip 누락은 이미 보정·사용자 확인한 범위다.
 - **진입점/조사:** `src/parser/pdf/structured_lowering.rs`의 문단 물리 여백·셀 흐름 및 `lowering.rs`의 위치 정보를 공통 IR → HWP export snapshot → 한컴 재조판과 대조한다. 원인과 기대값을 먼저 확인하며 px 보정이나 기존 측정값 고정으로 맞추지 않는다.
 - **완료 조건:** 같은 입력/저장본/독립 Print의 전체 쪽수·내용·그림 소속을 보존하고 관련 전쪽 Native/fresh Docker WASM TSV 90% 이상 및 1·11쪽 확대 판독을 확인한다. 그 후 독립 계약에 따른 관계형 회귀를 추가한다. 기존 올바른 검사·원본·실패 출력은 보존한다.
+- **영구 재현 입력:** `samples/issue7911/pdf-import-nested-table.{hwp,hwpx}` 및 `pdf/issue7911/pdf-import-{hwp,hwpx}-hancom2020.pdf`. 4단계 저장본은 기존 보정본과 바이트가 같고 Native/WASM 12쪽 픽셀도 같아 기존 독립 Print와 미달 수치를 재사용한다. 새 입력이나 새 Print로 바꾸지 않았다.
 - **증거:** `p3/native-hancom-scores/silhouette.tsv`, `p3/wasm-hancom-scores/silhouette.tsv`, `p3/hancom-png/`, `p3/native-source-scores/`, `p3/wasm-source-scores/` (위 증적 디렉터리 기준). 이번 후속 이관은 다른 미검증 경로나 배포 준비의 포괄 면제가 아니다.
 
 ## 3. 이미 확보한 결과와 재사용 경계
@@ -89,10 +90,10 @@ B01–B04는 아직 실제 결함을 모두 재현한 목록이 아니라 미검
 
 ## 4. 현재 진행 위치
 
-- **현재 실행:** checkpoint `966af9575` 및 devel merge `672acadd7` 후 F1 공통 Parser/Core·F2 선택 CLI·F3 공개 WASM/Worker 연결 완료, F4의 HWP 손상·11쪽 그림 10·3쪽 clip 보정과 사용자 확인, fresh Docker WASM 80항목·전쪽 원본 PDF 비교 통과. 저장본의 한컴 재조판 차이는 승인된 후속 B10-1로 이관. [3단계 기록](../working/task_m100_7911_stage3.md)에 새 통합본 결과를 기록한다.
-- **기능 checkpoint:** F1–F3 연결과 F4의 현재 저장·재열기 보정 검증 완료. 1·11쪽 배치 차이는 B10-1 후속 구현으로 남기고 현재 단계의 보고·로컬 커밋을 진행한다. 전체 편집·호환 범위 및 최종 회귀는 다음 통합 검증에서 판정한다.
+- **현재 실행:** 최종 devel `375aff294` 통합 후 [4단계](../working/task_m100_7911_stage4.md)의 로컬 검증 완료. 실제 Worker 83항목과 편집 저장 19항목 통과, HWP/HWPX 전쪽 Native/WASM은 이전 승인 출력과 동일하다.
+- **기능 checkpoint:** F1–F4의 현재 범위와 통합 로컬 검증 완료. 확인한 텍스트 편집·저장 여정을 모든 편집·호환 범위의 완료로 확대하지 않는다. 1·11쪽 한컴 재조판은 B10-1 후속 대기다.
 - **백로그 보완 완료:** 미충족. 각 항목의 상태는 2절을 따르며 B10-1은 명시적으로 후속 구현 대기다.
-- **devel 통합 준비:** 미충족. 최신 devel 정합·현재 통합 범위 최종 검증·기여 인계 자료가 남아 있다.
+- **devel 통합 준비:** 로컬 검증·기여 진입점·본문·대표 증거 준비 완료. 원격 반영 승인, 새 head CI, self-review·후행 CI와 병합 승인 미완료.
 - **배포 준비:** 별도 미충족. 기본 비활성·`parser_allocation_bounds_proven=false` 유지.
 - 2026-10-16: 실행 순서 변경과 일감 이관만 기록했다. 이 문서로 실행 실패·미검증을 통과로
   바꾸거나 원격 PR 상태를 변경하지 않았다.

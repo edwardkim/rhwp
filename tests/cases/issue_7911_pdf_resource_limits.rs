@@ -37,7 +37,7 @@ fn object_file(objects: &[Vec<u8>], trailer: &str) -> Vec<u8> {
     let mut offsets = Vec::new();
     for (i, object) in objects.iter().enumerate() {
         offsets.push(bytes.len());
-        write!(bytes, "{} 0 obj\n", i + 1).unwrap();
+        writeln!(bytes, "{} 0 obj", i + 1).unwrap();
         bytes.extend(object);
         bytes.extend(b"\nendobj\n");
     }

@@ -220,6 +220,10 @@ test('Docker product WASM: public API, active document isolation and real Worker
     await page?.close();
     if (cdp) await browser?.disconnect();
     else await browser?.close();
-    await new Promise(resolve => server.close(resolve));
+    const closed = new Promise(resolve => server.close(resolve));
+    // CDP clients can leave speculative HTTP connections open after the tab closes.
+    // This fixture owns the server, so retire its sockets before awaiting shutdown.
+    server.closeAllConnections();
+    await closed;
   }
 });
