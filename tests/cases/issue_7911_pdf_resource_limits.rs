@@ -2394,11 +2394,10 @@ fn limited_sample_geometry_and_decode_do_not_silently_fabricate_pixels() {
 }
 
 #[test]
-fn limited_import_rejects_unapplied_image_masks_instead_of_dropping_them() {
+fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
     use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
     for (extra, mask_object) in [
         ("/Mask [0 0 0 0 0 0]", b"null".to_vec()),
-        ("/Mask 7 0 R", b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ImageMask true /BitsPerComponent 1 /Length 1 >>\nstream\n\x80\nendstream".to_vec()),
         ("/SMask 7 0 R", b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Length 1 >>\nstream\n\x80\nendstream".to_vec()),
     ] {
         let entries = format!("/Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB {extra}");
@@ -2410,6 +2409,122 @@ fn limited_import_rejects_unapplied_image_masks_instead_of_dropping_them() {
         // Legacy image extraction still serves callers that apply masks
         // themselves; this restriction belongs to bounded handle import.
         assert!(PdfDocument::from_bytes(source).unwrap().page_image_handles(0).unwrap()[0].decode().is_ok());
+    }
+    // Explicit 1-bit masks are now applied, rather than blanket-rejected.
+    // PDF Reference 1.7 4.8.5: 0 paints under Decode [0 1], and [1 0]
+    // reverses the stencil. These are decoded-resource contracts, not layout
+    // baselines: verify actual PNG alpha independently of paint interpolation.
+    for (width, height, mw, mh, bits, decode, compressed, expected) in [
+        (
+            8,
+            1,
+            8,
+            1,
+            vec![0x55],
+            "",
+            false,
+            vec![255, 0, 255, 0, 255, 0, 255, 0],
+        ),
+        (
+            8,
+            1,
+            8,
+            1,
+            vec![0x55],
+            "/Decode [1 0]",
+            false,
+            vec![0, 255, 0, 255, 0, 255, 0, 255],
+        ),
+        (
+            9,
+            2,
+            9,
+            2,
+            vec![0x00, 0x7f, 0xff, 0x80],
+            "",
+            false,
+            [vec![255; 9], vec![0; 9]].concat(),
+        ),
+        (
+            4,
+            2,
+            2,
+            1,
+            vec![0x40],
+            "",
+            false,
+            vec![255, 255, 0, 0, 255, 255, 0, 0],
+        ),
+        (
+            8,
+            1,
+            8,
+            1,
+            vec![0x55],
+            "",
+            true,
+            vec![255, 0, 255, 0, 255, 0, 255, 0],
+        ),
+    ] {
+        let samples = if compressed { flate(&bits) } else { bits };
+        let filter = if compressed {
+            "/Filter /FlateDecode"
+        } else {
+            ""
+        };
+        let mut mask = format!("<< /Subtype /Image /Width {mw} /Height {mh} /ImageMask true /BitsPerComponent 1 {decode} {filter} /Length {} >>\nstream\n", samples.len()).into_bytes();
+        mask.extend(samples);
+        mask.extend(b"\nendstream");
+        let source = indexed_image_pdf(
+            &[10u8, 20, 30].repeat(width * height),
+            &format!("/Width {width} /Height {height} /BitsPerComponent 8 /ColorSpace /DeviceRGB /Mask 7 0 R"),
+            &mask,
+        );
+        let imported = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+        let rgba = image::load_from_memory(&imported.document.bin_data_content[0].data.load())
+            .unwrap()
+            .to_rgba8();
+        assert_eq!(rgba.pixels().map(|p| p.0[3]).collect::<Vec<_>>(), expected);
+        assert!(rgba.pixels().all(|p| p.0[..3] == [10, 20, 30]));
+    }
+    // Wrong lengths/Decode and dangling refs must fail, not return an opaque
+    // base picture. Unsupported mask families remain explicit errors above.
+    for (label, reference, mask) in [
+        ("short samples", "7 0 R", b"<< /ImageMask true /Width 9 /Height 1 /BitsPerComponent 1 /Length 1 >>\nstream\n\x00\nendstream".as_slice()),
+        ("invalid Decode", "7 0 R", b"<< /ImageMask true /Width 1 /Height 1 /BitsPerComponent 1 /Decode [0 0] /Length 1 >>\nstream\n\x00\nendstream".as_slice()),
+        ("invalid sample depth", "7 0 R", b"<< /ImageMask true /Width 1 /Height 1 /BitsPerComponent false /Length 1 >>\nstream\n\x00\nendstream".as_slice()),
+    ] {
+        let source = indexed_image_pdf(&[10, 20, 30], &format!("/Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Mask {reference}"), mask);
+        let error = parse_pdf_with_options(&source, &PdfImportOptions::default()).err().expect("invalid mask must fail atomically");
+        assert_eq!(error.code, "PDF_PARSE_FAILED", "{label}: {error:?}");
+    }
+    // A missing xref target deliberately forbids the unbounded object-recovery
+    // scan under request limits; this is a sticky resource failure, not a
+    // malformed sample error.
+    let dangling = indexed_image_pdf(&[10, 20, 30], "/Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Mask 900 0 R", b"null");
+    let error = parse_pdf_with_options(&dangling, &PdfImportOptions::default())
+        .err().expect("dangling mask cannot trigger unbounded recovery");
+    assert_eq!(error.code, "PDF_RESOURCE_LIMIT");
+    // The newly introduced RGBA output is reserved before allocation. RGB
+    // needs 9 bytes; the composited 3-pixel RGBA result needs 12 bytes.
+    let source = indexed_image_pdf(&[10u8, 20, 30].repeat(3), "/Width 3 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Mask 7 0 R", b"<< /ImageMask true /Width 3 /Height 1 /BitsPerComponent 1 /Length 1 >>\nstream\n\x00\nendstream");
+    for cap in [11, 12] {
+        let doc = PdfDocument::from_bytes_with_limits(
+            source.clone(),
+            PdfImportLimits {
+                codec_allocation_bytes: cap,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let handles = doc.page_image_handles(0).unwrap();
+        let result = handles[0].decode();
+        if cap == 11 {
+            assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+            assert!(doc.check_import_budget().is_err());
+        } else {
+            assert!(result.is_ok());
+        }
     }
     for inline in [false, true] {
         let source = if inline {
