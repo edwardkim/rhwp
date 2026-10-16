@@ -321,6 +321,45 @@ impl TypesetEngine {
                 || self.render_normalization.table_text_reflowed(table),
                 |row| Self::row_has_no_text_or_controls(table, row),
             );
+            // 행 전체가 들어가도 이 행이 쪽의 마지막 행이 되고(뒤에 최소 상단 높이도 안
+            // 남음), 셀 저장 줄이 한 셀의 뒷줄을 새 원점(vpos 0)에서 다시 시작하면, 그것은
+            // 한컴이 기록한 이 행의 쪽 컷이다. 기록된 줄에서 자르고 나머지를 다음 쪽에서
+            // 잇는다(1480000 30·38·43·57쪽: 2줄 행의 둘째 줄 vpos=0, 한/글 2020 PDF 는
+            // 둘째 줄을 다음 쪽 첫머리에 둔다. 기록이 없는 표 15·18 은 쪽 끝 행을 가르지
+            // 않는다). 행이 쪽 중간에 오면 기록을 따르지 않는다.
+            let rest_after_whole_row = avail_for_rows - consumed - cs_before - row_total;
+            let stored_restart_page_cut = (whole_row_fits
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && r + 1 < row_count
+                && rest_after_whole_row < MIN_TOP_KEEP_PX
+                && mt.allows_row_break_split()
+                && !table.common.treat_as_char
+                && !rowspan_touched[r]
+                && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                && !st.profile.session_edited()
+                && !self.render_normalization.table_text_reflowed(table))
+            .then(|| layout_engine.row_plain_restart_capacity_cut(table, r, styles))
+            .flatten()
+            .filter(|cut| {
+                layout_engine.row_cut_content_height(table, r, &[], cut, styles)
+                    <= avail_for_rows - consumed - cs_before + 0.5
+            });
+            if let Some(cut) = stored_restart_page_cut {
+                let physical = (avail_for_rows - consumed - cs_before).max(0.0);
+                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                    eprintln!(
+                        "DIAG_SCAN STORED_RESTART_PAGE_CUT r={} cut={:?} rest_after={:.1}",
+                        r, cut, rest_after_whole_row
+                    );
+                }
+                end_row = r + 1;
+                split_end_limit = layout_engine.row_cut_content_height(table, r, &[], &cut, styles);
+                split_end_cut = cut;
+                end_row_height_override = Some(physical);
+                consumed += cs_before + physical;
+                return false;
+            }
             if whole_row_fits {
                 // 행 전체가 예산 안에 들어감.
                 bleed_absorbed_row_height = None;

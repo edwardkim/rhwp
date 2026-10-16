@@ -25,6 +25,7 @@ use rhwp::document_core::DocumentCore;
 
 const SAMPLE_1480000: &str = "samples/issue5941/1480000-201900698-native-neartop-reset.hwp";
 const SAMPLE_21761835: &str = "samples/hwpx/21761835_jeonjik_exemption_table.hwpx";
+const SAMPLE_1613000: &str = "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp";
 const SAMPLE_1342000: &str =
     "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp";
 
@@ -139,4 +140,15 @@ fn rowspan_block_end_row_closes_at_page_bottom() {
     // 4쪽(0-기준 3)은 41행, 5쪽(4)은 57행으로 시작한다.
     assert_whole_row_boundary(&core, 3, 4, 41);
     assert_whole_row_boundary(&core, 4, 4, 57);
+}
+
+/// 1613000 용어 비교 표(`pi=1143`, 32×5): 17·28행은 rhwp 에서 통째로 들어가지만 그 쪽의 마지막
+/// 행이고, 셀 저장 줄이 뒷줄을 새 원점(vpos 0)에서 다시 시작한다. 한/글 2020 PDF 는 17행을
+/// `Performance`/`Criteria`, 28행을 `(역량 단위에서`/`사용)` 에서 126·127쪽 끝에 가른다.
+#[test]
+fn stored_restart_cuts_the_last_row_of_a_page() {
+    let core = core(SAMPLE_1613000);
+    assert_eq!(core.page_count(), 204, "한/글 2020 PDF 와 같은 204쪽");
+    assert_split_row_boundary(&core, 125, 1143, 17);
+    assert_split_row_boundary(&core, 126, 1143, 28);
 }
