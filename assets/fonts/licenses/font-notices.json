@@ -698,6 +698,28 @@
       ]
     },
     {
+      "repositoryPath": "tests/fixtures/fonts/RHWPHftOutline.otf",
+      "sha256": "c3eb4ea18997f2a79442f80e51e421bfe496edb431a9247f27dafd4fcc305dda",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
+      ]
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/RHWPHftOutlineJamo.otf",
+      "sha256": "4b83808ea8cfc6f20c2c03b7259155e1aa205f4f24f5b54ce0e6137ca431c588",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
+      ]
+    },
+    {
       "repositoryPath": "tests/fixtures/fonts/RHWPHostFixture-Italic.ttf",
       "sha256": "b6f6f576995a976e35eb4323a39633352060ad6b884fd791152a8fce1b1c1e81",
       "license": "MIT",
