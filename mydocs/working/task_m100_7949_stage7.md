@@ -6,7 +6,7 @@
 - 회귀·CI source: `2ba7411b4`
 - 통합 source: `337cde2865bf6c926fdcd53018d420fb19207b24`
 - 통합 devel: `552514f423ec91f1b7171f6e6b0882a4efe034f2` (#7951)
-- 상태: 최신 devel 통합 후 전쪽 시각·전체 회귀·필수 lint 통과. 원격 push·PR 등록 승인 대기
+- 상태: PR #7953 등록 후 CI 분류 누락 보완. 로컬 정책 검사 통과, 새 head GitHub Actions 확인 대기
 
 ## 실제 회귀와 수정 근거
 
@@ -123,4 +123,35 @@ Studio는 `http://localhost:7798/?review=issue7949-type002-paint-337cde286&lang=
 
 새 사용자 PDF 원본은 공개 권한이 확인되지 않아 Git에 포함하지 않는다. 공개 PR 그림은
 자체 작성 합성 PDF로 준비한다. 전체 parser 할당 증명은 여전히 false이며 추가 codec·
-전체 paint 지원·배포를 완료했다고 주장하지 않는다. 원격 push·PR·CI·merge는 아직 수행하지 않았다.
+전체 paint 지원·배포를 완료했다고 주장하지 않는다. 위는 PR 등록 전 로컬 검증 기록이며,
+등록 후 CI 보정은 아래에 구분한다. merge는 수행하지 않았다.
+
+## PR #7953 CI 분류 누락 보완
+
+등록 head `0d81865ad11be30753ce864ac93d9064e1864981`의
+[CI 38928996516](https://github.com/edwardkim/rhwp/actions/runs/38928996516)는
+`Lint (fmt, clippy, WASM check)`의 CI 영향 분류 계약 검사에서 실패했다.
+`test_native_skia_integration_targets_are_classifier_inputs`가 새 workflow 실행 대상인
+`tests/cases/issue_7950_pdf_paint.rs`의 classifier 소유 목록 누락을 검출했다.
+`Build & Test`와 CI Impact Policy 실패는 이 선행 실패에 따른 집계 결과다.
+같은 head의 기본 Rust archive worker 4개, Native Skia와 CodeQL은 성공했다.
+당시 Render Diff는 진행 중이므로 성공으로 기록하지 않는다.
+
+`NATIVE_SKIA_RUST_FILES`에 해당 source를 등록하고 기존 Node 분류 검사의 입력 목록에도
+추가했다. 이 파일만 수정한 PR에서도 `rust_required=true`, `native_skia_required=true`가
+되어 실제 PNG 검사를 실행해야 한다. Canvas를 소비하는 변경이 아니므로 이 입력만으로
+`render_required`를 켜지 않는다. workflow event·permission·runner·check 이름은 같다.
+운영 변경은 O2 라우팅 보정이며, 되돌림은 이 분류 목록 항목과 대응 검사 항목의 revert다.
+
+- 기존 Python 계약 검사: 수정 전 같은 누락으로 FAIL → 수정 후 PASS.
+- 실제 classifier: `native_skia_required=false` → `true`, Rust는 `true`, Canvas는 `false` 유지.
+- Node classifier·policy·controller·evidence·duration·report: **224 PASS**.
+- Python CI·policy·CodeQL·fast-pass·wiring·archive·duration: **120 PASS**.
+- 로그·전후 JSON: ignored `output/pr-review/issue7949/ci-failure-20261017/`.
+
+앞선 로컬 workflow 35건은 wiring·policy·archive 세 모듈이었으며, 이번에 실패한
+`test_ci_impact_workflow` 모듈은 포함하지 않았다. 이번 보정에서는 CI의 해당 step에 있는
+Node/Python 명령 전체와 관련 workflow 검사를 실행했다. 제품 Rust·WASM·시각 asset은
+변하지 않아 앞선 제품 실행과 전쪽 시각 증거를 재사용하며, 새 제품 빌드로 표시하지 않는다.
+기존 원격 반영·PR·CI 승인 범위에서 보정 commit을 push한 뒤 새 head CI를 확인한다.
+이 기록은 self-review·오늘할일 trailing 기록 또는 merge 승인이 아니다.
