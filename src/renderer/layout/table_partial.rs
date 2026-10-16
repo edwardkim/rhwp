@@ -1404,20 +1404,15 @@ impl LayoutEngine {
                 && self
                     .saved_nested_single_cell_frame_height(table, start_cut, end_cut, styles)
                     .is_some();
-            let plain_cut_frame_owns_alignment = end_row_source_frame_candidate
+            // 재귀 자식의 셀 상자는 명시적 override가 없어도 선택 컷 높이를 쓴다.
+            // 원본 재시작에서 끝난 조각은 그 실제 상자 안에 선택 줄만 정렬한다.
+            let plain_cut_frame_owns_alignment = is_split_end_row
+                && !is_block_split
+                && !start_cut_is_block
+                && (cell_row != start_row || start_cut.iter().all(|cut| *cut == 0))
                 && self
-                    .stored_plain_cut_frame_minimum(
-                        table,
-                        cell_row,
-                        if cell_row == start_row {
-                            start_cut
-                        } else {
-                            &[]
-                        },
-                        end_cut,
-                        styles,
-                    )
-                    .is_some();
+                    .row_plain_restart_capacity_cut(table, cell_row, styles)
+                    .is_some_and(|cut| cut == end_cut);
             let cut_frame_owns_alignment = is_continuation
                 && start_row_height_override.is_some()
                 && cell_row == start_row
@@ -2215,6 +2210,27 @@ impl LayoutEngine {
                         + frame.paragraph_origin_offset_px(inner_height, effective_align, self.dpi)
                 })
                 .unwrap_or(text_y_start);
+
+            super::table_layout::unit_diagnostics::trace_alignment(
+                cell,
+                (cell_y, text_y_start),
+                (
+                    cell_h,
+                    pad_top + pad_bottom,
+                    total_content_height,
+                    centered_content_height,
+                ),
+                effective_align,
+                &[
+                    ("frame", frame_owns_alignment),
+                    ("ordinary", ordinary_source_frame_owns_alignment),
+                    ("opening", align_saved_opening_frame),
+                    ("closing", closing_source_frame_owns_alignment),
+                    ("full_width", full_width_row_frame_owns_alignment),
+                    ("restart_span", original_restart_span_owns_alignment),
+                ],
+                cut_units,
+            );
 
             // 세로쓰기 셀: 별도 레이아웃 경로 (가로 레이아웃 루프 대신)
             if cell.text_direction != 0 {
@@ -4554,11 +4570,7 @@ impl LayoutEngine {
                                                                 .iter()
                                                                 .all(|cut| *cut == 0))
                                                             || (!nested_table.common.treat_as_char
-                                                                && recursive_cut.start_row > 0
-                                                                && nested_table.repeat_header
-                                                                && !nested_table
-                                                                    .leading_header_rows()
-                                                                    .is_empty()))
+                                                                && recursive_cut.start_row > 0))
                                                         .then(|| {
                                                             nested_y
                                                                 + hwpunit_to_px(
@@ -4720,7 +4732,10 @@ impl LayoutEngine {
                                     };
                                     let visible_table_h = split_info
                                         .as_ref()
-                                        .filter(|_| mixed_nested_split.is_some())
+                                        .filter(|_| {
+                                            mixed_nested_split.is_some()
+                                                || nested_cursor_split.is_some()
+                                        })
                                         .map(|split| split.flow_height)
                                         .unwrap_or(table_h_rendered);
                                     if std::env::var_os("RHWP_DIAG_SCAN").is_some() {

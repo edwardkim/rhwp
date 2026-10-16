@@ -358,6 +358,12 @@ legacy TTF는 종료 비문자만 `.notdef`로 고친 공급 사본을 사용하
 그려 캡처하고, 준비 실패·쪽 누락·중복이면 중단한다. 내장 글꼴은 WASM의 기존 Canvas API가
 소비한다. private 공급 글꼴과 `font_resources`는 공개 증적이나 Git에 포함하지 않는다.
 
+WASM PNG 작업자는 출력 폴더 아래 `chrome-worker-<번호>-*`에 전용 Chrome 프로필을
+만들고, 브라우저 종료를 확인한 뒤 제거한다. Snap Chromium도 host와 같은 경로를
+사용하도록 `/tmp` 대신 이 경로를 사용한다. 시작 실패 시에도 생성한 프로필을 정리하며,
+브라우저 종료에 실패하면 실행 중인 프로필을 삭제하지 않는다. 수동 정리가 필요하면
+해당 경로를 사용하는 Chrome이 종료됐는지 먼저 확인한다.
+
 `--rasterizer svg` 진단에서 CLI는 같은 원본의 `export-svg --font-style --profile print`가 만든 글꼴 별칭과 note-shape 메타데이터를 제공한다.
 Sweep은 `@font-face`만 WASM SVG에 보충하며 텍스트·좌표·그리기 노드는 수정하지 않는다.
 이후 기존 Chrome webfont rasterizer로 비교·overlay·review PNG를 생성한다. 별도 HTML에
@@ -392,6 +398,23 @@ venv/bin/python scripts/visual_sweep.py \
 사용 glyph의 outline/advance를 유지한 유효한 subset은 full 모드로 전달할 수 있다. 브라우저
 OTS 오류나 LastResort가 있으면 성공 캡처로 세지 않는다. 원 face를 공급한 정합성 검증과
 실제 Studio fallback 환경의 비교는 서로 다른 증거로 구분한다.
+
+원본이 HFT `한양신명조`이고 같은 이름의 TTF 대체 윤곽이 실제 원본과 다르면,
+[독립 전체 한글 표본으로 원본 HFT 글꼴 공급 준비](hft_original_font_supply.md)를 사용할 수 있다.
+대상 정답 PDF를 글꼴 소스로 쓰지 않는다. 기존 대체 공급 결과를 보존하고, 준비한 같은 원본
+글꼴을 공급한 devel/head의 전쪽 Native/fresh WASM을 모두 다시 비교한다.
+
+직접 PNG의 Print/HighQuality 경로는 원본 언어 슬롯이 HFT이고 실제 공급 face가 일반 CFF1일 때,
+기존 글자 원점·크기·장평에서 같은 윤곽을 재생한다. Native는 실제 선택 Typeface를 확인한다.
+fresh WASM의 exporter는 `FontFace.load()`·`document.fonts.add()` 뒤 같은 바이트를
+`doc.registerHftOutlineFont(family, bytes, faceIndex)`에 전달한다. 구형 WASM에 이 메서드가
+없으면 기존 FontFace 경로를 사용한다. 글꼴 파일의 이름만 보고 다른 프로그램을 찾지 않는다.
+
+다른 호스트에서 이 선택 경로를 사용할 때도 실제 적재한 바이트를 등록해야 한다.
+등록은 paint 세션만 갱신하며 문서·측정·줄 구성은 변경하지 않는다. 반환 boolean은 바인딩 변경
+여부다. 지원하지 않는 프로그램으로 교체하면 이전 윤곽 바인딩을 해제한다. 일반 TTF,
+화면 프로필, 지원하지 않는 효과·복합 cluster·누락 glyph는 기존 글꼴 painter를 사용한다.
+원본 HFT 윤곽의 공급 정합성은 위 독립 표본 절차와 전쪽 비교로 별도 확인한다.
 
 Sweep은 Native/WASM의 선택 SVG를 캡처하거나 resume checkpoint를 재사용하기 전에
 임베딩 폰트의 Unicode `cmap`을 검사한다. 이를 위해 임베딩 모드는 Python `fonttools`가
