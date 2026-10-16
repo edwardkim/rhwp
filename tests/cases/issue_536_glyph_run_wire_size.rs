@@ -103,7 +103,12 @@ fn glyph_run_selection_keeps_fallback_fonts_when_font_size_collapses_on_wire() {
             .reasons
             .contains(&VariantRejectReason::FontInstanceInvalid)));
         let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
-        assert_eq!(plan.required_font_families, ["wire fallback family"]);
+        // This PUA fixture also requires the normal Old Hangul fallback.
+        // Rejection must retain the requested family alongside that policy.
+        assert!(plan
+            .required_font_families
+            .iter()
+            .any(|family| family == "wire fallback family"));
         assert!(plan.required_font_families_complete);
     }
 }
@@ -114,7 +119,12 @@ fn nominal_glyph_run_producer_requires_a_positive_wire_font_size() {
         let (tree, report) = glyph_run_tree(size);
         assert_eq!(report.emitted_glyph_runs, 0, "size={size}");
         let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
-        assert_eq!(plan.required_font_families, ["wire fallback family"]);
+        // This PUA fixture also requires the normal Old Hangul fallback.
+        // Rejection must retain the requested family alongside that policy.
+        assert!(plan
+            .required_font_families
+            .iter()
+            .any(|family| family == "wire fallback family"));
         assert!(plan.required_font_families_complete);
     }
     let (tree, report) = glyph_run_tree(0.000_001);
