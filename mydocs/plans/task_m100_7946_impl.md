@@ -3,7 +3,7 @@
 - Issue: [#7946](https://github.com/edwardkim/rhwp/issues/7946)
 - 공동 처리: [#7855](https://github.com/edwardkim/rhwp/issues/7855), [#7856](https://github.com/edwardkim/rhwp/issues/7856)
 - 기준 SHA: `4662c069e557e928ed7968d061121fde90b1f027`
-- 상태: 구현 전, 계획 승인 대기
+- 상태: 2026-10-16 공동 계획 구현 승인·착수, [의존성 단계 결과](../working/task_m100_7946_stage1.md)
 - 상위 계획: [수행계획](task_m100_7946.md)
 
 ## 1. 제품 연결 계약
@@ -98,5 +98,5 @@ PDF File System Access handle은 입력/최근 문서 정보로 취급하고 출
 
 계획 승인 → 의존성 보정·집중 검사 → PDF UI 구현·단계 보고·커밋 → 통합 빌드·실제 WASM·
 시각 검증 → 최종 보고·승인된 원격 반영/PR 순서다. 세 이슈는 동일 브랜치·PR로 진행하며
-검증은 이슈별 완료 조건에 연결한다. 지금은 공동 범위의 계획만 보완하며 제품 source·lockfile·
-정식 UI는 변경하지 않는다.
+검증은 이슈별 완료 조건에 연결한다. 사용자의 “시작하세요” 지시로 구현을 승인받았다.
+의존성 단계는 upstream FileList 갱신과 로컬 Ajv 어댑터·선언 패치로 진행했다.

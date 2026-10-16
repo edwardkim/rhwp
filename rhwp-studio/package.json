@@ -95,10 +95,16 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vite-plugin-pwa": "^2.0.0",
-    "workbox-window": "^7.4.1"
+    "workbox-window": "^7.4.1",
+    "ajv": "file:../vendor/npm/ajv"
   },
   "overrides": {
-    "serialize-javascript": "7.0.5"
+    "serialize-javascript": "7.0.5",
+    "ajv@^8.0.0": "$ajv",
+    "jake": {
+      "filelist": "2.0.2"
+    },
+    "brace-expansion": "5.0.12"
   },
   "dependencies": {
     "@noble/hashes": "^2.4.0",

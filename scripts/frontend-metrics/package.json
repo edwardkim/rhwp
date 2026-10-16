@@ -11,5 +11,8 @@
     "eslint": "10.6.0",
     "eslint-plugin-sonarjs": "4.1.0",
     "typescript": "6.0.3"
+  },
+  "overrides": {
+    "brace-expansion": "5.0.12"
   }
 }

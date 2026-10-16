@@ -121,6 +121,10 @@
     "ts-loader": "^9.6.2",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "webpack": "^5.111.1",
-    "webpack-cli": "^7.2.3"
+    "webpack-cli": "^7.2.3",
+    "ajv": "file:../vendor/npm/ajv"
+  },
+  "overrides": {
+    "ajv@^8.0.0": "$ajv"
   }
 }
