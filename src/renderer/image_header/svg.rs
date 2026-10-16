@@ -13,7 +13,9 @@ pub(super) fn parse_header(bytes: &[u8]) -> Option<CanvasKitEncodedImageHeader> 
         .ok()?
         .trim_start_matches('\u{feff}');
     let mut reader = Reader::from_str(source);
+    reader.config_mut().check_comments = true;
     let mut depth = 0usize;
+    let mut style_depth = 0usize;
     let mut elements = 0usize;
     let mut dimensions = None;
     let mut closed = false;
@@ -92,9 +94,21 @@ pub(super) fn parse_header(bytes: &[u8]) -> Option<CanvasKitEncodedImageHeader> 
                     closed = root;
                 } else {
                     depth += 1;
+                    if lower_name == "style" {
+                        style_depth += 1;
+                    }
                 }
             }
-            Event::End(_) => {
+            Event::End(element) => {
+                if element
+                    .name()
+                    .as_ref()
+                    .rsplit(':')
+                    .next()?
+                    .eq_ignore_ascii_case("style")
+                {
+                    style_depth = style_depth.checked_sub(1)?;
+                }
                 depth = depth.checked_sub(1)?;
                 closed = depth == 0;
             }
@@ -109,10 +123,21 @@ pub(super) fn parse_header(bytes: &[u8]) -> Option<CanvasKitEncodedImageHeader> 
                     return None;
                 }
             }
+            Event::Comment(comment) => {
+                // Browser admission rejects XML comments inside CSS rather
+                // than changing the tokens scanned for external resources.
+                if style_depth != 0
+                    || comment.as_ref().chars().any(|character| {
+                        matches!(character, '\u{0}'..='\u{8}' | '\u{b}' | '\u{c}' | '\u{e}'..='\u{1f}' | '\u{fffe}' | '\u{ffff}')
+                    })
+                {
+                    return None;
+                }
+            }
             Event::DocType(_) | Event::GeneralRef(_) | Event::PI(_) => return None,
             Event::Decl(_) if elements != 0 => return None,
             Event::Eof => break,
-            Event::Comment(_) | Event::Decl(_) => {}
+            Event::Decl(_) => {}
         }
     }
     if depth != 0 || !closed {
