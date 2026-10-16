@@ -279,12 +279,7 @@ impl SkiaTextReplay<'_> {
                 let char_positions =
                     crate::renderer::replay_positions_or_compute(text, style, layout_positions);
                 let fit_positions = style.fixed_glyph_advances.then(|| {
-                    crate::renderer::glyph_fit_positions(
-                        text,
-                        style,
-                        layout_positions,
-                        &char_positions,
-                    )
+                    crate::renderer::glyph_fit_positions(text, style, layout_positions, &char_positions)
                 });
                 let clusters = split_into_clusters(text);
                 let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();

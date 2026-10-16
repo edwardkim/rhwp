@@ -277,9 +277,9 @@ pub(crate) fn replay_positions_or_compute<'a>(
 
 /// 글리프 폭 맞춤(SVG `textLength`, Canvas `scaleX`)에 쓸 문자 경계를 돌려준다.
 ///
-/// 커닝은 글자 사이만 좁힌다. 커닝한 경계로 폭을 맞추면 쌍의 앞 글자가 커닝만큼
-/// 눌린다. 커닝을 요청한 run이 layout positions로 그려지면 커닝 전 경계로 폭을
-/// 맞추고, 그리는 자리는 호출자의 layout positions를 그대로 쓴다.
+/// 커닝과 음수 배분 간격은 글자 사이만 좁힌다. 그 경계로 폭을 맞추면 글리프도
+/// 눌리므로, 폭 맞춤에는 해당 간격 전의 경계를 사용한다. 음수 간격의 최소 전진폭
+/// clamp를 역산하지 않고 같은 측정기로 다시 계산하며, 그리는 원점은 보존한다.
 pub(crate) fn glyph_fit_positions<'a>(
     replay_text: &str,
     style: &TextStyle,
@@ -289,9 +289,17 @@ pub(crate) fn glyph_fit_positions<'a>(
     if layout::has_hft_bold_tracking(style) {
         // 원본 HFT의 굵기 간격은 글자 원점만 전진시키며 intrinsic 폭은 유지한다.
         // backend는 원래 char_positions를 위치로, 이 경계를 glyph-fit 폭으로 쓴다.
-        std::borrow::Cow::Owned(layout::compute_glyph_fit_positions(replay_text, style))
-    } else if style.kerning && validated_replay_positions(replay_text, layout_positions).is_some() {
-        std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, style))
+        {
+            let mut fit_style = style.clone();
+            fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
+            std::borrow::Cow::Owned(layout::compute_glyph_fit_positions(replay_text, &fit_style))
+        }
+    } else if (style.kerning && validated_replay_positions(replay_text, layout_positions).is_some())
+        || style.extra_char_spacing < 0.0
+    {
+        let mut fit_style = style.clone();
+        fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
+        std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, &fit_style))
     } else {
         std::borrow::Cow::Borrowed(char_positions)
     }
@@ -615,9 +623,8 @@ impl TextStyle {
     /// 폭에 포함하면 영문·숫자 glyph 자체가 가로로 늘어난다. 문자 위치 계산은
     /// 그대로 두고, glyph 맞춤 단계에서만 이 간격을 제외한다.
     ///
-    /// 음수 값은 셀 오버플로우 보정(#2189)에서 glyph까지 layout advance에
-    /// 맞추는 기존 계약이므로 그대로 유지한다. 최소 advance clamp 때문에
-    /// intrinsic 폭을 안전하게 역산할 수도 없다. 따라서 양수 간격만 제외한다.
+    /// 음수 간격은 `glyph_fit_positions`에서 간격 전의 폭을 다시 측정한다.
+    /// 그 결과를 이곳에서 다시 늘리지 않는다. 양수 간격만 여기서 제외한다.
     pub(crate) fn glyph_fit_advance(&self, layout_cluster_advance: f64) -> Option<f64> {
         if !layout_cluster_advance.is_finite() || !self.extra_char_spacing.is_finite() {
             return None;
@@ -670,8 +677,8 @@ impl TextStyle {
 /// Canvas 폰트의 실측 폭을 레이아웃 advance에 맞출 때 적용할 배율을 계산한다.
 ///
 /// 양수 문자 간격은 다음 cluster의 시작 위치를 바꾸는 값이므로 glyph 폭 맞춤과
-/// 분리한다. 음수 간격은 #2189 셀 오버플로우 보정의 기존 glyph-fit 계약을
-/// 유지하고, 양수 배분 간격만 `glyph_fit_advance`로 제외한다.
+/// 분리한다. 음수 간격은 `glyph_fit_positions`에서 다시 측정한 폭을 사용하고,
+/// 양수 배분 간격만 `glyph_fit_advance`로 제외한다.
 pub(crate) fn canvas_cluster_fit_scale(
     style: &TextStyle,
     layout_cluster_advance: f64,

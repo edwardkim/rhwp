@@ -581,7 +581,7 @@ fn extra_char_spacing_does_not_expand_ascii_glyph_width() {
 }
 
 #[test]
-fn negative_extra_char_spacing_preserves_existing_svg_glyph_fit() {
+fn negative_extra_char_spacing_moves_origins_without_compressing_svg_glyphs() {
     let base_style = TextStyle {
         font_size: 20.0,
         font_family: "돋움".to_string(),
@@ -609,8 +609,8 @@ fn negative_extra_char_spacing_preserves_existing_svg_glyph_fit() {
         let base_length = text_length_of(base_output, glyph);
         let spaced_length = text_length_of(spaced_output, glyph);
         assert!(
-            (spaced_length - (base_length - 2.0)).abs() < 0.001,
-            "음수 셀 보정은 기존 SVG glyph-fit 폭을 유지해야 함: \
+            (spaced_length - base_length).abs() < 0.001,
+            "음수 배분 간격은 글리프의 자연 폭을 유지해야 함: \
              glyph={glyph}, base={base_length}, spaced={spaced_length}"
         );
     }
