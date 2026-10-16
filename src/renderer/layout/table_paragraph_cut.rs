@@ -31,6 +31,7 @@ impl LayoutEngine {
             styles,
             (true, CutSource::Stored),
         )
+        .is_some()
     }
 
     /// 수용한 글줄의 컷은 이웃 셀의 실제 문단 유지 지시를 함께 확인한다.
@@ -51,6 +52,7 @@ impl LayoutEngine {
             styles,
             (false, CutSource::Stored),
         )
+        .is_some()
     }
 
     /// 재조판한 일반 텍스트의 온전한 글줄도 같은 문단 유지 지시를 따른다.
@@ -71,8 +73,30 @@ impl LayoutEngine {
             styles,
             (false, CutSource::Reflow),
         )
+        .is_some()
     }
 
+    /// 위 유지 계약을 만족하는 컷 가운데 진행 중인 셀 하나 이상이 문단 끝에서 끝나는가.
+    /// 모든 진행 셀이 문단 안에서 끊기면 false다.
+    pub(crate) fn row_cut_keeps_close_a_plain_paragraph(
+        &self,
+        table: &Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        self.row_cut_plain_paragraph_contract(
+            table,
+            row,
+            start_cut,
+            end_cut,
+            styles,
+            (false, CutSource::Stored),
+        ) == Some(true)
+    }
+
+    /// 계약을 만족하면 `Some(문단 끝 컷 존재 여부)`, 아니면 `None`.
     fn row_cut_plain_paragraph_contract(
         &self,
         table: &Table,
@@ -81,7 +105,7 @@ impl LayoutEngine {
         end_cut: &[usize],
         styles: &ResolvedStyleSet,
         (require_complete_paragraphs, source): (bool, CutSource),
-    ) -> bool {
+    ) -> Option<bool> {
         let profile = self.profile.get();
         let table_reflowed = self
             .render_normalization
@@ -93,17 +117,16 @@ impl LayoutEngine {
             || table.common.treat_as_char
             || (matches!(source, CutSource::Stored) && table_reflowed)
         {
-            return false;
+            return None;
         }
         let mut has_kept_cut = false;
+        let mut closes_paragraph = false;
         for (index, cell_index) in Self::row_cut_cell_order(table, row).into_iter().enumerate() {
             let cell = &table.cells[cell_index];
             let units = self.cell_units(cell, table, styles);
-            let Some(&end) = end_cut.get(index) else {
-                return false;
-            };
+            let &end = end_cut.get(index)?;
             if end > units.len() {
-                return false;
+                return None;
             }
             if end == units.len() {
                 continue;
@@ -114,7 +137,7 @@ impl LayoutEngine {
                 || cell.text_direction != 0
                 || cell.paragraphs.iter().any(|para| !para.controls.is_empty())
             {
-                return false;
+                return None;
             }
             let closing = &units[end - 1];
             let following = &units[end];
@@ -122,47 +145,47 @@ impl LayoutEngine {
             if !complete
                 && (require_complete_paragraphs || !closing.continues_same_paragraph(following))
             {
-                return false;
+                return None;
             }
-            let Some(paragraph) = cell.paragraphs.get(closing.para_idx) else {
-                return false;
-            };
+            let paragraph = cell.paragraphs.get(closing.para_idx)?;
             if paragraph.text.trim().is_empty() {
-                return false;
+                return None;
             }
             match source {
                 CutSource::Stored => {
+                    // 저장 글줄이 없는 문단(한/글이 줄 정보를 남기지 않은 셀)도 문단 끝 컷은 글줄
+                    // 분할 없이 문단 경계를 그대로 쓴다. 문단 안 컷만 저장 글줄을 요구한다
+                    // (80168 60쪽 표 `pi=516` 행 12: 두 문단 셀의 첫 문단 끝에서 한/글이 쪽을 가른다).
                     if paragraph.stored_text_partition_is_dirty()
                         || paragraph.cell_format_vpos_dirty
-                        || paragraph.line_segs.is_empty()
+                        || (paragraph.line_segs.is_empty() && !complete)
                         || paragraph
                             .line_segs
                             .iter()
                             .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
                     {
-                        return false;
+                        return None;
                     }
                 }
                 CutSource::Reflow => {
                     if !(table_reflowed || crate::renderer::para_has_no_stored_line_segs(paragraph))
                         || !closing.has_visible_line()
                     {
-                        return false;
+                        return None;
                     }
                 }
             }
-            let Some(style) = styles.para_styles.get(paragraph.para_shape_id as usize) else {
-                return false;
-            };
+            let style = styles.para_styles.get(paragraph.para_shape_id as usize)?;
             if (complete && style.keep_with_next)
                 || (!complete && (style.keep_lines || style.widow_orphan))
             {
-                return false;
+                return None;
             }
             // 문단 유지 지시가 없는 내부 컷도 유효한 글줄 경계다.
             // 엄격한 완결 문단 질의는 위에서 내부 컷을 이미 제외했다.
             has_kept_cut = true;
+            closes_paragraph |= complete;
         }
-        has_kept_cut
+        has_kept_cut.then_some(closes_paragraph)
     }
 }
