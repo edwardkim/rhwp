@@ -218,6 +218,7 @@ impl TypesetEngine {
                 .opening_rowspan_block_cuts_after_first_row
                 && !is_continuation
                 && cursor_row == 0,
+            source_carried_band_row: budget.source_carried_band_row,
         };
         let run_scan = |vars: BlockRowScanVars| {
             let mut scan = self.scan_block_table_split_rows(
