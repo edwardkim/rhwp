@@ -26,7 +26,7 @@ use super::float_placement::{
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
-use super::height_measurer::{fit_measured_table_to_declared_height, MeasuredTable};
+use super::height_measurer::MeasuredTable;
 use super::page_layout::{LayoutRect, PageLayoutInfo};
 use super::pagination::{
     ColumnContent, EndnoteParaSource, FootnoteRef, FootnoteSource, PageContent, PageItem,
@@ -11981,18 +11981,23 @@ impl LayoutEngine {
                 .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
             let fitted_visible_mt = if is_current_visible_para_float {
                 raw_mt.map(|measured| {
-                    // typeset format_table 과 같은 가드 — 편집 세션이거나 중첩 표
-                    // 없는 텍스트 행이 선언 행높이를 1.5배 넘게 초과했으면(셀 편집
-                    // 성장) 압축하지 않는다(압축하면 커진 행의 몫을 다른 행이
-                    // 빼앗겨 내부가 위로 밀린다).
                     if self.profile.get().session_edited()
-                        || crate::renderer::height_measurer::measured_table_has_grown_text_row(
+                        || super::height_measurer::measured_table_has_grown_text_row(
                             measured, t, self.dpi,
                         )
                     {
                         measured.clone()
                     } else {
-                        fit_measured_table_to_declared_height(measured, t, self.dpi)
+                        // Original float rows use the same closing-frame plan
+                        // as pagination, including hosts with caption text.
+                        super::typeset::fit_measured_for_host(
+                            para,
+                            t,
+                            Some(measured),
+                            self.dpi,
+                            || self.profile.get(),
+                        )
+                        .unwrap_or_else(|| measured.clone())
                     }
                 })
             } else {

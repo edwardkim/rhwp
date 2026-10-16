@@ -1468,7 +1468,7 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
     Some(fitted)
 }
 
-/// [#5906] 빈 host의 비-TAC RowBreak 표에서 **마지막 행만 저장 선언(cellSz)으로
+/// [#5906] 미편집 저장 자리차지 표에서 **마지막 행만 저장 선언(cellSz)으로
 /// 잡히고 그 안에 여유가 남을 때**, 앞 행 경계는 그대로 두고 마지막 행에서만
 /// 측정−선언 드리프트를 회수한다.
 ///
@@ -1488,8 +1488,9 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
 /// 패딩) 아래로는 내려가지 않는 범위에서만 한다. 마지막 행이 콘텐츠에 밀려 커진
 /// 행이면(측정 ≠ 선언) 회수할 여유가 없다고 보고 손대지 않는다.
 ///
-/// 호출자는 native HWP5 의 빈 TopAndBottom host 라는 저장 계약을 별도로 확인해야
-/// 한다. 이 helper 는 마지막 행의 형상과 측정/선언 차이만 검증한다.
+/// 호출자는 HWP5/HWPX의 미편집 TopAndBottom 저장 프레임을 확인한다.
+/// 호스트의 캡션 글자 유무는 행 프레임의 유효성 근거가 아니다.
+/// 이 helper는 마지막 행의 형상과 측정/선언 차이만 검증한다.
 pub fn fit_measured_table_declared_tail_to_declared_height(
     measured: &MeasuredTable,
     table: &Table,

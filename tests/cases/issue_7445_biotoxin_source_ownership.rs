@@ -1,5 +1,5 @@
 //! #7445 지정 댓글의 생물독 원본: 독립 PDF 205쪽 전수 시각 수용 후 복구한 회귀.
-//! C81 Native/fresh WASM 전205쪽96DPI raw 최저95.69921/95.70411%, 미달0.
+//! C82 Native/fresh WASM 전205쪽96DPI raw 최저97.00104/96.99896%, 미달0.
 //! 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사하고, 양쪽98% 이상인
 //! 중요한 그림 경계만 독립 Print의 ±2 CSSpx로 보호한다. 출처는
 //! completed-20261009/regression-policy-20261015/gray-grid-raster-20261017/README.md.
@@ -66,6 +66,113 @@ fn paragraph_runs_in(root: &RenderNode, section: usize, host: usize) -> Vec<&Ren
                 && t.cell_context.is_none())
         })
         .collect()
+}
+
+#[test]
+fn captioned_table_keeps_header_rows_and_reclaims_only_the_closing_slack() {
+    let core = core();
+    assert_eq!(core.page_count(), 205);
+    let host = &core.document().sections[4].paragraphs[303];
+    let Control::Table(source) = &host.controls[0] else {
+        panic!("독립 Print 55쪽의 표20");
+    };
+    assert!(!compact(&host.text).is_empty(), "가시 캡션 호스트 반례");
+    let tree = core.build_page_render_tree(54).unwrap();
+    let fragments: Vec<_> = nodes(&tree.root)
+        .into_iter()
+        .filter(|n| {
+            matches!(&n.node_type, RenderNodeType::Table(t)
+            if t.section_index == Some(4) && t.para_index == Some(303)
+                && t.control_index == Some(0))
+        })
+        .collect();
+    assert_eq!(fragments.len(), 1, "표20의 온전한 단일 쪽 소유");
+    let table = fragments[0];
+    let cells: Vec<_> = table
+        .children
+        .iter()
+        .filter_map(|node| {
+            if let RenderNodeType::TableCell(cell) = &node.node_type {
+                Some((cell, node))
+            } else {
+                None
+            }
+        })
+        .collect();
+    let mut owners = vec![0; source.cells.len()];
+    for (cell, node) in &cells {
+        let index = cell.model_cell_index.expect("원본 셀 소속") as usize;
+        owners[index] += 1;
+        let original: String = source.cells[index]
+            .paragraphs
+            .iter()
+            .map(|p| p.text.as_str())
+            .collect();
+        assert_eq!(
+            compact(&text(node)),
+            compact(&original),
+            "셀 내용 순서·누락·중복"
+        );
+        for run in nodes(node)
+            .into_iter()
+            .filter(|n| matches!(n.node_type, RenderNodeType::TextRun(_)))
+        {
+            assert!(
+                run.bbox.y >= node.bbox.y
+                    && run.bbox.y + run.bbox.height <= node.bbox.y + node.bbox.height,
+                "글줄은 자기 셀 안에 표시"
+            );
+        }
+    }
+    assert!(owners.iter().all(|count| *count == 1));
+    let cell_at = |row, col| {
+        cells
+            .iter()
+            .find(|(c, _)| c.row == row && c.col == col)
+            .unwrap()
+            .1
+    };
+    let raw = cell_at(0, 1);
+    let reads = cell_at(1, 1);
+    let closing = cell_at(2, 0);
+    let name = cell_at(0, 0);
+    let declared_rows = source.get_row_heights();
+    // 독립 Print도 앞 두 행의 원본 cellSz와 Name의 두 행 병합을 보존한다.
+    // 캡션 유무로 모든 행을 비례 축소하면 이 계약을 깨뜨린다.
+    assert!((raw.bbox.height - declared_rows[0] as f64 / 75.0).abs() < 1.0 / 75.0);
+    assert!((reads.bbox.height - declared_rows[1] as f64 / 75.0).abs() < 1.0 / 75.0);
+    assert!((name.bbox.height - raw.bbox.height - reads.bbox.height).abs() < 1.0 / 75.0);
+    assert!((reads.bbox.y - raw.bbox.y - raw.bbox.height).abs() < 1.0 / 75.0);
+    assert!((closing.bbox.y - reads.bbox.y - reads.bbox.height).abs() < 1.0 / 75.0);
+    assert!(
+        closing.bbox.height < declared_rows[2] as f64 / 75.0,
+        "끝 행의 빈 여유만 회수"
+    );
+    assert!((table.bbox.height - source.common.height as f64 / 75.0).abs() < 1.0 / 75.0);
+    // C82 양쪽 전205쪽90% 이상, 이 쪽 raw99.98793/99.99232% 및 직접 판독.
+    // 독립 Print 수평 괘선 y=899.176/946.165/998.588/1029.275 CSSpx.
+    for (actual, expected) in [
+        (raw.bbox.y, 899.176),
+        (reads.bbox.y, 946.165),
+        (closing.bbox.y, 998.588),
+        (closing.bbox.y + closing.bbox.height, 1029.275),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "독립 Print의 행 경계 ±2CSSpx: {actual} vs {expected}"
+        );
+    }
+    let caption = paragraph_runs_in(&tree.root, 4, 303);
+    assert_eq!(
+        compact(&caption.iter().map(|n| text(n)).collect::<String>()),
+        compact(&host.text)
+    );
+    assert!(
+        caption
+            .iter()
+            .all(|n| n.bbox.y + n.bbox.height <= table.bbox.y),
+        "캡션은 표 위에 보존"
+    );
 }
 
 #[test]

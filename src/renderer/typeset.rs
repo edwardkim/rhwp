@@ -3119,6 +3119,7 @@ mod state;
 mod stored_table_frame;
 use state::TypesetState;
 mod table;
+pub(crate) use table::fit_measured_for_host;
 
 /// [#2279 OMIT-eager] 저장 ladder 의 spacing-누락(OMIT) 서명 사전 판별.
 ///
