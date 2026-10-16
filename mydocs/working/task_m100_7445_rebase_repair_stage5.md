@@ -2433,3 +2433,21 @@ Native Skia2PASS를 확인했다. 98% 이상인3쪽에는 독립 원문 글리�
 공개 WASM 저장 API의 바이트는 Native와 같고 재열기16쪽의 인쇄할 text run 좌표도 같다.
 전체 회귀/48조건/실제 소비36건과 WMF 미달은 여전히 남았으며 PR 준비 완료가 아니다.
 [입력·독립 PDF·생산자·실제 실패/통과·최종 review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hwp-roundtrip-20261017/README.md)에 연결한다.
+
+## C72. HWP3 제어 슬롯 보정 뒤 진단 출력 계약 확인 (2026-10-17)
+
+`2367d2bd2a`의 전체 nextest는10514실행·10513PASS·1FAIL·45skip, 실행302.143초로
+끝났다. 실패는 `q5_diagnostic_output_contract::dump_filtered_human_stdout_is_byte_stable`다.
+같은 원본의 C87/final C90 frozen CLI stdout을 직접 대조해 바뀐 줄을 모두 확인했다.
+머리말/꼬리말의8유닛 제어 슬롯 보존에 따라 `cc=55→63`, 그 슬롯 뒤의 CS 위치가
+`33/38/54→41/46/62`로 바뀌었으며 원문·글자모양·줄 메트릭·제어 목록과 출력 형식은 같다.
+렌더링 좌표나 허용치를 바꾸지 않고 이 네 필드가 반영된 진단 바이트 해시만 갱신했다.
+원문과 실물 저장본의 전16쪽 시각·글리프 소유 검증은 C71의 독립 Print 근거를 유지한다.
+
+수정 전 stdout SHA256은 `9d12a0c03b8a545ad1979a4af552b28da6aa07d9a3e465dc3c0d0ce5786b7cbe`,
+수정 후는 `eb282345c08d913ea0a51fd420c76b516d08c73c1dd9741189197f81bc696d93`다.
+`--prepare` 뒤 정식 `run-rust-test.mjs q5_diagnostic_output_contract`는3PASS/0FAIL,
+0.666초다. 최초 focused 명령의 suite 배정 불일치에 따른0tests/exit4는 검사 결과가 아니며
+보존한 뒤 prepare로 정정했다. 로그·두 stdout·줄 단위 diff는 ignored
+`output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-fe5725dc-20261017/font-program-hwp5-c90/q5-dump-contract/`에 보존한다.
+이 focused 결과를 새 head의 전체 회귀·후속 게이트 완료로 쓰지 않는다.
