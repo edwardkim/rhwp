@@ -250,3 +250,14 @@ Chrome·Firefox·VS Code의 첫 로컬 시도는 해당 worktree의 `node_module
 산출물과 시각 증거를 재사용하며 동일 Rust/WASM 빌드와 전체 회귀를 반복하지 않는다.
 원격 devel을 다시 fetch한 결과는 계속 `375aff294`다. 승인된 원격 갱신 범위에서 보정본을
 push하고 새 head CI를 확인한다. Draft, B10-1과 후속 백로그는 유지한다.
+
+
+## 10. Code head CI 성공과 self-merge 승인
+
+`d6bde7307d29bef99b725ca3533a721605146eda`의 [CI](https://github.com/edwardkim/rhwp/actions/runs/38856414501),
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/38856414563), Render Diff·Adapter·Proptest와
+정책 검사가 모두 성공했다. check 33 success·5 정책상 skipped, 실패·대기 0을 확인했다.
+2026-10-16 사용자가 CI 성공 후 Ready 전환·self-merge를 승인했고 Ready 전환을 수행했다.
+[Self-review](../pr/archives/pr_7913_review.md)와 오늘할일·계획 상태만 문서-only trailing
+commit으로 추가한다. 이 기록 시점의 merge는 수행 전이며 exact trailing CI·merge tree를
+확인한 뒤 진행한다. #7911과 B10-1 등 백로그는 유지한다.

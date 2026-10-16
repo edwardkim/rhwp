@@ -7,7 +7,7 @@
 - 브랜치: `task_m100_7911`; 조사 head `92df2f3cbdc7012f5e91635512ceda68debecfac`
 - 최초 base: `origin/devel` `a5e88ad682c805e1d845502ddc9521b94ea8eccd`
 - 2026-10-16 통합 기준: `upstream/devel` `f5251e7de4e31ee0fb939f352c6ef144bb340bdb`; 로컬 devel 동기화 및 작업 브랜치 merge `672acadd7d2309e5c0294a98c2142e240ed6f1a9` 완료. [3단계 기록](../working/task_m100_7911_stage3.md).
-- 최종 통합 기준: `upstream/devel` `375aff29498166260a22796d54e67f508c84aada`, merge `4665335997911f667d4c49d699da4de0fb45ca91`. [4단계 통합 검증](../working/task_m100_7911_stage4.md) 완료; 원격 반영 후 CI 폰트 고지 누락 보정·새 head CI 확인 중.
+- 최종 통합 기준: `upstream/devel` `375aff29498166260a22796d54e67f508c84aada`, merge `4665335997911f667d4c49d699da4de0fb45ca91`. [4단계 통합 검증](../working/task_m100_7911_stage4.md) 완료; 폰트 고지 보정 head `d6bde7307`의 CI 성공·Ready 전환 완료; 승인된 self-merge 진행 중.
 - POC: `poc/pdf-ir` `6bc3847e0ff3e1302736914859903f3c9c51bb69`
 
 현재 순서·완료 경계는 [6절](#6-구현-순서와-승인), 세부 일감·상태·종료 증거의 정본은
@@ -435,4 +435,4 @@ PR 경로는 `collaborator_self_merge`를 기본으로 `intake_and_review`, `loc
 현재 **최신 devel 통합과 승인 범위의 로컬 검증, PR 갱신안 준비를 완료했다**.
 전체 Rust 회귀·실제 Worker·편집 저장·원본 PDF 전쪽 비교 결과와 증거 재사용 경계는
 [4단계 보고](../working/task_m100_7911_stage4.md)에 기록했다. 원격 반영 승인·47bec72fa push와 본문 갱신을 마쳤다. CI 폰트 고지 누락을
-보정한 새 code head CI·self-review·후행 CI·Ready 및 병합은 다음 절차다. B10-1과 후속 보안·패키지 일감은 유지한다.
+보정한 `d6bde7307`의 CI 성공·Ready 전환과 self-review 기록을 완료했다. 사용자 승인에 따라 문서-only 후행 CI·병합을 진행한다. B10-1과 후속 보안·패키지 일감은 유지한다.
