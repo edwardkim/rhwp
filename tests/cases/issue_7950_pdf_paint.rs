@@ -202,3 +202,109 @@ fn path_image_path_source_order_survives_lowering_and_save() {
         "white foreground follows red image"
     );
 }
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn inferred_table_cannot_cover_its_labels_with_retained_positional_paint() {
+    let grid = "0 0 0 RG 1 w 40 40 m 260 40 l S 40 100 m 260 100 l S 40 160 m 260 160 l S 40 40 m 40 160 l S 150 40 m 150 160 l S 260 40 m 260 160 l S ";
+    let background = "0 0.5 1 rg 40 100 220 60 re f ";
+    let text = "0 0 0 rg BT /F1 12 Tf 70 130 Td (H1) Tj ET BT /F1 12 Tf 180 130 Td (H2) Tj ET BT /F1 12 Tf 70 70 Td (B1) Tj ET BT /F1 12 Tf 180 70 Td (B2) Tj ET ";
+    let decoration = "1 0 0 rg 10 180 10 10 re f ";
+    let cases = [
+        (
+            "background-before-grid",
+            format!("{background}{grid}{decoration}{text}"),
+            true,
+        ),
+        (
+            "background-after-grid",
+            format!("{grid}{background}{text}"),
+            true,
+        ),
+        ("plain-table", format!("{grid}{decoration}{text}"), false),
+    ];
+    let binary =
+        std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").into());
+    for (name, content, colored) in cases {
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let scratch = Scratch(
+            std::env::temp_dir().join(format!("rhwp-table-paint-{}-{stamp}", std::process::id())),
+        );
+        std::fs::create_dir_all(&scratch.0).unwrap();
+        let source = scratch.0.join("source.pdf");
+        let saved = scratch.0.join("saved.hwpx");
+        std::fs::write(&source, pdf(&content)).unwrap();
+        let result = Command::new(&binary)
+            .arg("import-pdf")
+            .arg(&source)
+            .arg(&saved)
+            .arg("--json")
+            .output()
+            .unwrap();
+        assert!(
+            result.status.success(),
+            "{name}: {}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        let document = rhwp::parser::parse_document(&std::fs::read(&saved).unwrap()).unwrap();
+        if !colored {
+            assert_eq!(
+                controls(&document)
+                    .filter(|c| matches!(c, Control::Table(_)))
+                    .count(),
+                1,
+                "disjoint decoration must not disable sound table inference"
+            );
+        }
+        let output = scratch.0.join("png");
+        let rendered = Command::new(&binary)
+            .arg("export-png")
+            .arg(&saved)
+            .args(["--profile", "print", "--dpi", "96", "--json", "-o"])
+            .arg(&output)
+            .output()
+            .unwrap();
+        assert!(
+            rendered.status.success(),
+            "{name}: {}",
+            String::from_utf8_lossy(&rendered.stderr)
+        );
+        let pngs: Vec<_> = std::fs::read_dir(&output)
+            .unwrap()
+            .map(|e| e.unwrap().path())
+            .filter(|p| p.extension().is_some_and(|e| e == "png"))
+            .collect();
+        assert_eq!(pngs.len(), 1, "{name}: all cells belong to one source page");
+        let image = image::open(&pngs[0]).unwrap().into_rgba8();
+        // Independent input geometry: MediaBox 300x200 pt, columns 40/150/260,
+        // rows 40/100/160. Exclude the grid strokes and inspect each cell's
+        // interior. No expected coordinate is taken from the lowered model.
+        let scale = f64::from(image.width()) / 300.0;
+        for (bottom, top) in [(40.0, 100.0), (100.0, 160.0)] {
+            for (left, right) in [(40.0, 150.0), (150.0, 260.0)] {
+                let x0 = ((left + 10.0) * scale).ceil() as u32;
+                let x1 = ((right - 10.0) * scale).floor() as u32;
+                let y0 = ((200.0 - top + 10.0) * scale).ceil() as u32;
+                let y1 = ((200.0 - bottom - 10.0) * scale).floor() as u32;
+                let mut ink = 0;
+                let mut blue = 0;
+                for y in y0..y1 {
+                    for x in x0..x1 {
+                        let p = image.get_pixel(x, y);
+                        ink += usize::from(p[3] > 128 && p[0] < 80 && p[1] < 80 && p[2] < 80);
+                        blue += usize::from(
+                            p[3] > 250 && p[0] < 3 && p[1].abs_diff(128) < 3 && p[2] > 252,
+                        );
+                    }
+                }
+                assert!(ink > 0, "{name}: visible label missing inside source cell {left}..{right}/{bottom}..{top}");
+                if colored && bottom == 100.0 {
+                    assert!(blue > 0, "{name}: original blue cell background missing");
+                }
+            }
+        }
+    }
+}
