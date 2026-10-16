@@ -987,3 +987,128 @@ fn shared_svg_selector_keeps_fallback_fonts_when_view_box_mapping_overflows() {
         assert!(plan.required_font_families_complete);
     }
 }
+
+#[test]
+fn shared_selector_preserves_fonts_when_positive_six_decimal_scalars_disappear() {
+    for family in ["stroke", "radial"] {
+        for (value, admitted) in [
+            (f64::from(f32::from_bits(1)), false),
+            (1e-7, false),
+            (1e-6, true),
+        ] {
+            let mut tree = strict_outline_tree();
+            let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+                unreachable!()
+            };
+            let PaintOp::GlyphOutline { outline, .. } = &mut ops[1] else {
+                unreachable!()
+            };
+            if family == "stroke" {
+                outline.payload_kind = GlyphOutlinePayloadKind::MonochromeFillStroke;
+                outline.stroke = Some(GlyphOutlineStrokeStyle {
+                    color: 0,
+                    width: value,
+                    join: GlyphOutlineStrokeJoin::Miter,
+                    cap: GlyphOutlineStrokeCap::Butt,
+                    miter_limit: 4.0,
+                    paint_order: GlyphOutlinePaintOrder::FillThenStroke,
+                });
+            } else {
+                outline.payload_kind = GlyphOutlinePayloadKind::ColorLayers;
+                outline.paths.clear();
+                let mut layers = colrv1(ColorPaintGraphNodeKind::RadialGradientPath);
+                layers.paint_graph.as_mut().unwrap().nodes[0]
+                    .radial_gradient_path
+                    .as_mut()
+                    .unwrap()
+                    .gradient
+                    .radius = value;
+                outline.color_layers = Some(layers);
+            }
+            let wire: serde_json::Value = serde_json::from_str(&tree.to_json()).unwrap();
+            let op = &wire["root"]["ops"][1];
+            let exported = if family == "stroke" {
+                &op["stroke"]["width"]
+            } else {
+                &op["colorLayers"]["paintGraph"]["nodes"][0]["radialGradientPath"]["gradient"]
+                    ["radius"]
+            };
+            assert_eq!(exported.as_f64(), Some(if admitted { 1e-6 } else { 0.0 }));
+            let options = TextVariantSelectionOptions {
+                allow_colrv1_stage1_color_graph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            };
+            let report = &analyze_text_variant_selection(&tree, options)[0];
+            assert_eq!(
+                report.selected_variant_kind,
+                Some(if admitted {
+                    TextVariantKind::GlyphOutline
+                } else {
+                    TextVariantKind::TextRun
+                }),
+                "{family}: {value}"
+            );
+            assert_eq!(report.fallback_required, !admitted);
+            let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+            assert_eq!(
+                plan.required_font_families.is_empty(),
+                admitted,
+                "{family}: {value}"
+            );
+            if !admitted {
+                assert_eq!(plan.required_font_families, ["Test"]);
+            }
+            assert!(plan.required_font_families_complete);
+        }
+    }
+}
+
+#[test]
+fn shared_selector_requires_full_circle_sweep_on_the_decimal_wire() {
+    for (start, end, admitted) in [
+        (0.000_000_499_8, 360.000_000_500_2, false),
+        (0.000_001, 360.000_001, true),
+    ] {
+        let mut tree = strict_outline_tree();
+        let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+            unreachable!()
+        };
+        let PaintOp::GlyphOutline { outline, .. } = &mut ops[1] else {
+            unreachable!()
+        };
+        outline.payload_kind = GlyphOutlinePayloadKind::ColorLayers;
+        outline.paths.clear();
+        let mut layers = colrv1(ColorPaintGraphNodeKind::SweepGradientPath);
+        let gradient = &mut layers.paint_graph.as_mut().unwrap().nodes[0]
+            .sweep_gradient_path
+            .as_mut()
+            .unwrap()
+            .gradient;
+        gradient.start_angle_degrees = start;
+        gradient.end_angle_degrees = end;
+        outline.color_layers = Some(layers);
+        let wire: serde_json::Value = serde_json::from_str(&tree.to_json()).unwrap();
+        let gradient = &wire["root"]["ops"][1]["colorLayers"]["paintGraph"]["nodes"][0]
+            ["sweepGradientPath"]["gradient"];
+        let wire_span = gradient["endAngleDegrees"].as_f64().unwrap()
+            - gradient["startAngleDegrees"].as_f64().unwrap();
+        assert_eq!((wire_span - 360.0).abs() <= 1e-9, admitted);
+        let options = TextVariantSelectionOptions {
+            allow_colrv1_stage1_color_graph: true,
+            ..TextVariantSelectionOptions::canvaskit_strict_outline()
+        };
+        assert_eq!(
+            analyze_text_variant_selection(&tree, options)[0].selected_variant_kind,
+            Some(if admitted {
+                TextVariantKind::GlyphOutline
+            } else {
+                TextVariantKind::TextRun
+            })
+        );
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(plan.required_font_families.is_empty(), admitted);
+        if !admitted {
+            assert_eq!(plan.required_font_families, ["Test"]);
+        }
+    }
+}

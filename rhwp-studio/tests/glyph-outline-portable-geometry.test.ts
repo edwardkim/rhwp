@@ -598,3 +598,50 @@ test('SVG finite viewBox-to-destination mapping retains outline admission', () =
     expectAccepted(op);
   }
 });
+
+
+function expectWholeRunWireSelection(candidate: LayerGlyphOutlineOp, supported: boolean) {
+  const outline: LayerGlyphOutlineOp = {
+    ...candidate,
+    variant: { equivalenceGroup: 'decimal-wire', variantId: 'outline', variantKind: 'glyphOutline' },
+  };
+  const fallback: LayerTextRunOp = {
+    type: 'textRun', bbox: monochrome().bbox, text: 'A',
+    variant: { equivalenceGroup: 'decimal-wire', variantId: 'text', variantKind: 'textRun', isDefaultFallback: true },
+  };
+  assert.deepEqual([...selectLayerTextVariantsForLeaf(
+    [outline, fallback], op => glyphOutlinePayloadStatus(op, ALL_PAYLOADS).supported,
+  )], [supported ? outline : fallback]);
+}
+
+for (const family of ['stroke', 'radial'] as const) {
+  test(`${family} admission preserves positivity on the six-decimal wire`, () => {
+    for (const value of [2 ** -149, 1e-7, 1e-6]) {
+      const op: LayerGlyphOutlineOp = family === 'stroke' ? stroked() : colrv1('radialGradientPath');
+      if (family === 'stroke') op.stroke!.width = value;
+      else op.colorLayers!.paintGraph!.nodes![1].radialGradientPath!.gradient!.radius = value;
+      const wire: LayerGlyphOutlineOp = structuredClone(op);
+      if (family === 'stroke') wire.stroke!.width = Number(value.toFixed(6));
+      else wire.colorLayers!.paintGraph!.nodes![1].radialGradientPath!.gradient!.radius = Number(value.toFixed(6));
+      for (const candidate of [op, wire]) {
+        if (value === 1e-6) expectAccepted(candidate);
+        else expectRejected(candidate);
+        expectWholeRunWireSelection(candidate, value === 1e-6);
+      }
+    }
+  });
+}
+
+test('COLRv1 sweep must remain a full circle after six-decimal export', () => {
+  for (const [start, end, supported] of [[0.0000004998, 360.0000005002, false], [0.000001, 360.000001, true]] as const) {
+    const op = colrv1('sweepGradientPath');
+    Object.assign(op.colorLayers!.paintGraph!.nodes![1].sweepGradientPath!.gradient!, { startAngleDegrees: start, endAngleDegrees: end });
+    const wire: LayerGlyphOutlineOp = structuredClone(op);
+    Object.assign(wire.colorLayers!.paintGraph!.nodes![1].sweepGradientPath!.gradient!, { startAngleDegrees: Number(start.toFixed(6)), endAngleDegrees: Number(end.toFixed(6)) });
+    for (const candidate of [op, wire]) {
+      if (supported) expectAccepted(candidate);
+      else expectRejected(candidate);
+      expectWholeRunWireSelection(candidate, supported);
+    }
+  }
+});
