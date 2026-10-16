@@ -14,6 +14,9 @@ use std::borrow::Cow;
 use std::cmp::min;
 use std::path::Path;
 
+#[path = "image_mask_limited.rs"]
+mod image_mask_limited;
+
 /// A PDF image with metadata and pixel data.
 ///
 /// Represents an image extracted from a PDF, including dimensions,
@@ -456,7 +459,12 @@ impl PdfImage {
                         && self.ccitt_params.is_some()
                 });
 
-                if ccitt_budget.is_none()
+                if *format == PixelFormat::RGBA && self.bits_per_component == 8 {
+                    if expected_gray.checked_mul(4) != Some(pixels.len()) {
+                        return Err(Error::Image("invalid RGBA image length".into()));
+                    }
+                    write_pixels(pixels, image::ColorType::Rgba8.into())?;
+                } else if ccitt_budget.is_none()
                     && *format == PixelFormat::Grayscale
                     && matches!(self.color_space, ColorSpace::DeviceGray | ColorSpace::CalGray)
                     && pixels.len() == expected_gray
@@ -536,6 +544,11 @@ impl PdfImage {
         let mut rgb = sample_buffer(size, Some(budget))?;
         match format {
             PixelFormat::RGB => rgb.extend_from_slice(pixels),
+            PixelFormat::RGBA => {
+                for pixel in pixels.chunks_exact(4) {
+                    rgb.extend_from_slice(&pixel[..3]);
+                }
+            },
             PixelFormat::Grayscale => {
                 for &gray in pixels {
                     rgb.extend_from_slice(&[gray; 3]);
@@ -784,6 +797,11 @@ impl PdfImage {
                     .map(image::DynamicImage::ImageLuma8)
                 } else {
                     match (format, self.color_space) {
+                        (PixelFormat::RGBA, _) => {
+                            image::RgbaImage::from_raw(self.width, self.height, pixels.clone())
+                                .ok_or_else(|| Error::Decode("Invalid RGBA dimensions".into()))
+                                .map(image::DynamicImage::ImageRgba8)
+                        },
                         (PixelFormat::RGB, ColorSpace::DeviceRGB) => {
                             image::ImageBuffer::<image::Rgb<u8>, Vec<u8>>::from_raw(
                                 self.width,
@@ -812,6 +830,7 @@ impl PdfImage {
                                     self.build_icc_transform().as_ref(),
                                 ),
                                 PixelFormat::RGB => pixels.clone(),
+                                PixelFormat::RGBA => unreachable!("handled above"),
                             };
                             image::ImageBuffer::<image::Rgb<u8>, Vec<u8>>::from_raw(
                                 self.width,
@@ -838,7 +857,7 @@ pub enum ImageData {
     Raw {
         /// Raw pixel bytes.
         pixels: Vec<u8>,
-        /// Pixel format (RGB, Grayscale, CMYK).
+        /// Pixel format (RGB, RGBA, Grayscale, CMYK).
         format: PixelFormat,
     },
 }
@@ -905,6 +924,8 @@ impl ColorSpace {
 pub enum PixelFormat {
     /// RGB format (3 bytes per pixel).
     RGB,
+    /// RGB with straight alpha (4 bytes per pixel), after explicit masking.
+    RGBA,
     /// Grayscale format (1 byte per pixel).
     Grayscale,
     /// CMYK format (4 bytes per pixel).
@@ -917,6 +938,7 @@ impl PixelFormat {
         match self {
             PixelFormat::Grayscale => 1,
             PixelFormat::RGB => 3,
+            PixelFormat::RGBA => 4,
             PixelFormat::CMYK => 4,
         }
     }
@@ -2382,6 +2404,9 @@ fn expand_indexed_to_rgb_with_context(
                 continue;
             }
             match base_fmt {
+                PixelFormat::RGBA => {
+                    return Err(Error::Image("Indexed base cannot contain alpha".into()));
+                },
                 PixelFormat::RGB => out.extend_from_slice(&palette[off..off + 3]),
                 PixelFormat::Grayscale => {
                     let g = palette[off];
@@ -2784,6 +2809,8 @@ fn icc_matches_format(
 ) -> Option<&crate::color::Transform> {
     let t = transform?;
     let needed = match format {
+        // Mask composition has already converted colour samples to RGB.
+        PixelFormat::RGBA => return None,
         PixelFormat::RGB => 3,
         PixelFormat::Grayscale => 1,
         PixelFormat::CMYK => 4,
@@ -2806,6 +2833,12 @@ fn save_raw_as_png(
     use image::{ImageBuffer, ImageFormat, Luma, Rgb};
 
     match format {
+        PixelFormat::RGBA => {
+            let img = image::RgbaImage::from_raw(width, height, pixels.to_vec())
+                .ok_or_else(|| Error::Image("Invalid RGBA image dimensions".into()))?;
+            img.save_with_format(path, ImageFormat::Png)
+                .map_err(|e| Error::Image(format!("Failed to save PNG: {e}")))
+        },
         PixelFormat::RGB => {
             // RGB source through an ICC profile (Adobe RGB, ProPhoto, wide-
             // gamut cameras) → convert to sRGB before writing. With no
@@ -2860,6 +2893,9 @@ fn save_raw_as_jpeg(
     use image::{ImageBuffer, ImageFormat, Luma, Rgb};
 
     match format {
+        PixelFormat::RGBA => Err(Error::Unsupported(
+            "JPEG cannot preserve image transparency; save as PNG".into(),
+        )),
         PixelFormat::RGB => {
             let rgb = match icc_matches_format(transform, format) {
                 Some(t) => t.convert_rgb_buffer(pixels),
@@ -3989,17 +4025,17 @@ impl<'doc> PdfImageHandle<'doc> {
             PdfImageSource::Inline { stream_object, .. } => (stream_object, None),
         };
 
-        if self.doc.import_budget().is_some() {
+        let mask = if let Some(budget) = self.doc.import_budget() {
             // The limited handle path imports the image as an independent IR
-            // picture. Unlike the renderer, it has no mask compositor or
-            // current nonstroking colour. Never return the base pixels while
-            // silently dropping Table 89's transparency/stencil semantics.
+            // picture. Compose supported explicit masks, and reject semantics
+            // requiring a soft-mask compositor or current nonstroking colour.
+            // Never return the base pixels while silently dropping a mask.
             // The legacy extractor remains available to renderer callers that
             // apply these masks themselves.
             let dict = obj
                 .as_dict()
                 .ok_or_else(|| Error::Image("invalid image object".into()))?;
-            for key in ["Mask", "SMask", "ImageMask"] {
+            for key in ["SMask", "ImageMask"] {
                 if let Some(value) = dict.get(key) {
                     let value = resolve_image_object(Some(self.doc), value)?;
                     let absent = matches!(*value, crate::object::Object::Null)
@@ -4009,7 +4045,10 @@ impl<'doc> PdfImageHandle<'doc> {
                     }
                 }
             }
-        }
+            image_mask_limited::Mask::read(self.doc, dict.get("Mask"), budget)?
+        } else {
+            None
+        };
 
         // Pass the active resource ColorSpace map so a resource-name
         // `/ColorSpace` (e.g. `/CS0`) resolves the same way the renderer does.
@@ -4021,6 +4060,9 @@ impl<'doc> PdfImageHandle<'doc> {
             Some(&self.color_space_resources)
         };
         let mut image = extract_image_from_xobject(Some(self.doc), obj, obj_ref, cs_map)?;
+        if let Some(mask) = mask {
+            mask.apply(&mut image, self.doc.import_budget().expect("bounded mask"))?;
+        }
         self.doc.check_import_budget()?;
 
         // Use pre-computed bbox and rotation from Phase 1 — no need to call
