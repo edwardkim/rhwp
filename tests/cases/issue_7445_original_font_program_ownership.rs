@@ -162,3 +162,129 @@ fn explicit_onepoint_provider_uses_its_own_advance() {
     );
     assert_ne!(dot["layoutMetric"]["widthSource"], "heuristicFullwidth");
 }
+
+#[test]
+fn hyphenation_point_selects_the_symbol_slot_before_glyph_fallback() {
+    // 한컴2020 Print의 교차 슬롯 probe: 한글=한컴바탕, 영문=한컴돋움,
+    // 기호=함초롬돋움일 때 U+2027은 HCRDotum이다. 한글/영문 앞 모두 같다.
+    for text in ["가‧나", "A‧B"] {
+        let core = core("한컴바탕", text, Some("함초롬돋움"));
+        let point = record(&core, "‧");
+        assert_eq!(point["document"]["face"], "함초롬돋움");
+        assert_eq!(point["document"]["languageSlot"], 5);
+        // 표시 폴백 전에 source 슬롯을 결정하며 모델 문자열은 보존한다.
+        assert_eq!(core.document().sections[0].paragraphs[0].text, text);
+    }
+}
+
+#[test]
+fn worklife_symbol_point_preserves_source_and_independent_completed_page_position() {
+    // C93 Native/fresh WASM 전6쪽90% 이상. 변경 경계인5쪽은 각각
+    // raw99.93989/99.94147%,96DPI 직접 review/overlay 판독 완료.
+    // 독립 Print T19의 원점292.641388/83.428825pt를96CSSpx로 환산한다.
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(root.join("samples/issue6145/worklife_balance_index_156607916.hwpx"))
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(core.page_count(), 6);
+    let (pi, text) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, p)| p.text.contains("모든 지역에서") && p.text.contains("국‧공립"))
+        .map(|(i, p)| (i, p.text.clone()))
+        .unwrap();
+    let offset = text.chars().position(|c| c == '‧').unwrap();
+    let tree = core.build_page_render_tree(4).unwrap();
+    fn collect<'a>(
+        n: &'a rhwp::renderer::render_tree::RenderNode,
+        pi: usize,
+        v: &mut Vec<&'a rhwp::renderer::render_tree::RenderNode>,
+    ) {
+        if matches!(&n.node_type, rhwp::renderer::render_tree::RenderNodeType::TextRun(r)
+            if r.section_index==Some(0) && r.para_index==Some(pi))
+        {
+            v.push(n);
+        }
+        for c in &n.children {
+            collect(c, pi, v);
+        }
+    }
+    let mut nodes = vec![];
+    collect(&tree.root, pi, &mut nodes);
+    let rebuilt: String = nodes
+        .iter()
+        .map(|n| match &n.node_type {
+            rhwp::renderer::render_tree::RenderNodeType::TextRun(r) => r.text.as_str(),
+            _ => unreachable!(),
+        })
+        .collect();
+    assert_eq!(rebuilt, text, "원문 순서·누락·중복 보호");
+    let selected: Vec<_> = nodes
+        .iter()
+        .filter(|n| {
+            matches!(&n.node_type,
+        rhwp::renderer::render_tree::RenderNodeType::TextRun(r)
+        if r.char_start==Some(offset) && r.text=="‧")
+        })
+        .collect();
+    assert_eq!(selected.len(), 1);
+    let next: Vec<_> = nodes
+        .iter()
+        .filter(|n| {
+            matches!(&n.node_type,
+        rhwp::renderer::render_tree::RenderNodeType::TextRun(r)
+        if r.char_start==Some(offset+1) && r.text.starts_with('공'))
+        })
+        .collect();
+    assert_eq!(next.len(), 1);
+    assert!(
+        selected[0].bbox.x + selected[0].bbox.width <= next[0].bbox.x + 0.01,
+        "다음 본문의 앞에서 종료"
+    );
+    assert!((selected[0].bbox.x - 390.1885172526042).abs() <= 2.0);
+    assert!((next[0].bbox.x - 401.2225341796875).abs() <= 2.0);
+    let layer: Value = serde_json::from_str(
+        &core
+            .get_page_layer_tree_with_options_native(
+                4,
+                rhwp::paint::RenderProfile::Print,
+                rhwp::paint::LayerJsonOptions {
+                    omit_image_bytes: true,
+                    omit_font_bytes: true,
+                },
+            )
+            .unwrap(),
+    )
+    .unwrap();
+    fn find<'a>(v: &'a Value, key: &str, out: &mut Vec<&'a Value>) {
+        match v {
+            Value::Object(o) => {
+                if v["type"] == "textRun" && v["source"]["stableSourceKey"] == key {
+                    out.push(v)
+                }
+                for x in o.values() {
+                    find(x, key, out)
+                }
+            }
+            Value::Array(a) => {
+                for x in a {
+                    find(x, key, out)
+                }
+            }
+            _ => {}
+        }
+    }
+    let mut ops = vec![];
+    find(
+        &layer,
+        &format!("section:0/para:{pi}/char:{offset}"),
+        &mut ops,
+    );
+    assert_eq!(ops.len(), 1);
+    let baseline = ops[0]["placement"]["runToPage"]["f"].as_f64().unwrap();
+    assert!((baseline - 111.23843383789062).abs() <= 2.0);
+    assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
+}

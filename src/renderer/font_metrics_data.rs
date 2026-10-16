@@ -136,7 +136,7 @@ pub(crate) fn verified_program_glyph_fallback_families(face: &str) -> &'static [
     // 독립 개인정보 Print의 같은 제목도 휴먼명조 사이에서 이 기호만
     // Haansoft Batang으로 출력한다. 이름 별칭은 기존 메트릭 선택기가 해소한다.
     match find_metric(face, false, false).map(|found| found.metric.name) {
-        Some("HumanMyeongJo" | "DotumChe") => &["Haansoft Batang"],
+        Some("HumanMyeongJo" | "DotumChe" | "HYSinMyeongJo-Medium") => &["Haansoft Batang"],
         // Gulim U+2024의 측정도 아래 verified_missing_glyph_supplier가
         // HDOTUM에 맡긴다. 같은 공급자를 실제 paint 후보에도 전달한다.
         Some("Gulim") => &["Haansoft Dotum"],
@@ -156,7 +156,12 @@ pub(crate) fn verified_missing_glyph_supplier(
         // HBATANG.TTF의 hmtx 178/1024도 같은 자연 전진을 확인한다.
         ("DotumChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
         // 법원 서식 Print의 Haansoft Dotum CID 3과 HDOTUM hmtx의 대응.
-        ("Gulim", 1024, false, false, '\u{2024}') => Some("Haansoft Dotum"),
+        ("Gulim", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Dotum"),
+        // 기호 슬롯을 HY신명조 TTF로 지정한 독립2020 Print의 두 점은
+        // HBATANG이다. HFT 한양신명조의 전진은 해당 overlay가 보존한다.
+        ("HYSinMyeongJo-Medium", 1024, false, false, '\u{2024}' | '\u{2027}') => {
+            Some("Haansoft Batang")
+        }
         _ => None,
     }
 }

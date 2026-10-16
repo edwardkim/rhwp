@@ -25,7 +25,9 @@ fn ops<'a>(v: &'a Value, out: &mut Vec<&'a Value>) {
     match v {
         Value::Object(o) => {
             if v["type"] == "textRun"
-                && v["source"]["stableSourceKey"] == "section:0/para:458/char:3"
+                && v["source"]["stableSourceKey"]
+                    .as_str()
+                    .is_some_and(|key| key.starts_with("section:0/para:458/char:"))
             {
                 out.push(v)
             }
@@ -67,12 +69,18 @@ fn missing_hyphenation_point_keeps_its_supplier_advance_and_source_order() {
                 .collect::<String>(),
             source
         );
-        let selected:Vec<_>=ns.iter().filter(|n|matches!(&n.node_type,RenderNodeType::TextRun(r)if r.char_start==Some(3)&&r.text=="목적‧수단 간 비례적 타당성")).collect();
-        assert_eq!(selected.len(), 1);
+        let selected: Vec<_> = ns
+            .iter()
+            .filter(|n| {
+                matches!(&n.node_type,
+            RenderNodeType::TextRun(r) if r.char_start == Some(5) && r.text == "‧")
+            })
+            .collect();
+        assert_eq!(selected.len(), 1, "기호 슬롯의 원문 scalar는 단일 소유");
         let RenderNodeType::TextRun(r) = &selected[0].node_type else {
             unreachable!()
         };
-        assert!(r.style.font_family.contains("휴먼명조"));
+        assert!(r.style.font_family.contains("HYSinMyeongJo-Medium"));
         assert!(r.style.font_family.contains("Haansoft Batang"));
         assert!(r.style.bold);
         let j: Value = serde_json::from_str(
@@ -90,25 +98,29 @@ fn missing_hyphenation_point_keeps_its_supplier_advance_and_source_order() {
         .unwrap();
         let mut found = vec![];
         ops(&j["root"], &mut found);
-        assert_eq!(found.len(), 1);
-        let op = found[0];
-        let clusters = op["clusters"].as_array().unwrap();
-        let origin = |offset: u64| {
-            let c: Vec<_> = clusters
+        let fragment = |offset: usize| {
+            let key = format!("section:0/para:458/char:{offset}");
+            let selected: Vec<_> = found
                 .iter()
-                .filter(|c| c["textRangeUtf16"]["start"] == offset)
+                .copied()
+                .filter(|v| v["source"]["stableSourceKey"] == key)
                 .collect();
-            assert_eq!(c.len(), 1);
-            op["placement"]["runToPage"]["e"].as_f64().unwrap()
-                + c[0]["origin"]["x"].as_f64().unwrap()
+            assert_eq!(selected.len(), 1);
+            selected[0]
         };
-        let point = origin(2);
-        let next = origin(3);
+        let point_op = fragment(5);
+        let next_op = fragment(6);
+        let origin = |op: &Value| {
+            op["placement"]["runToPage"]["e"].as_f64().unwrap()
+                + op["clusters"][0]["origin"]["x"].as_f64().unwrap()
+        };
+        let point = origin(point_op);
+        let next = origin(next_op);
         assert!(next > point);
         // 독립 Print: 기호105.36pt, 다음 '수'108pt, 기준선109.56pt. 96CSSpx±2.
         assert!((point - 140.48).abs() <= 2.0);
         assert!((next - 144.0).abs() <= 2.0, "실제 공급자 다음 원점: {next}");
-        assert!((op["placement"]["runToPage"]["f"].as_f64().unwrap() - 146.08).abs() <= 2.0);
+        assert!((point_op["placement"]["runToPage"]["f"].as_f64().unwrap() - 146.08).abs() <= 2.0);
         assert_eq!(core.document().sections[0].paragraphs[458].text, source);
     }
 }

@@ -133,7 +133,16 @@ static HANYANGSINMYEONGJO_MULTIPLICATION: [u16; 1] = [631];
 // 두 독립 Print의 섭씨/화씨 단위는 서로 다른 원문 문자를 보존하며 각각1em이다.
 // U+2109는 기존 범위 누락으로 반각 fallback이었으므로 확인한 이 glyph만 보충한다.
 static HANYANGSINMYEONGJO_FAHRENHEIT: [u16; 1] = [1024];
-static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 15] = [
+// worklife 독립 Print p3..5 T14/T19의 ToUnicode=2027, Widths=500,
+// FontMatrix=.001. 기호 슬롯을 교차한 한컴2020 probe도 같은 HFT 전진이다.
+// TrueType HYSinMyeongJo의 cmap 결측/대체 글리프 폭과는 다른 프로그램이다.
+static HANYANGSINMYEONGJO_HYPHENATION_POINT: [u16; 1] = [512];
+static HANYANGSINMYEONGJO_LATIN_RANGES: [LatinRange; 16] = [
+    LatinRange {
+        start: 0x2027,
+        end: 0x2027,
+        widths: &HANYANGSINMYEONGJO_HYPHENATION_POINT,
+    },
     LatinRange {
         start: 0x00D7,
         end: 0x00D7,

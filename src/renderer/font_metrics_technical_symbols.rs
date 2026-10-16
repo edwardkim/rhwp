@@ -106,7 +106,11 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
     if matches!(ch, '\u{2024}' | '\u{2027}') {
         match (metric.name, metric.em_size, metric.bold, metric.italic) {
             ("HumanMyeongJo", 1024, false, false) => return Some(false),
+            // H2MJSM.TTF/gulim.TTC의 실제 cmap 결측. 서로 다른 기호
+            // 슬롯을 교차한 Print에서 각각 HBATANG/HDOTUM 공급도 확인했다.
+            ("HYSinMyeongJo-Medium" | "Gulim", 1024, false, false) => return Some(false),
             ("Haansoft Batang", 1024, false, false) => return Some(true),
+            ("Haansoft Dotum", 1024, false, false) => return Some(true),
             _ => {}
         }
     }
