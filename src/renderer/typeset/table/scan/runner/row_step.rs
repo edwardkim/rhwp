@@ -809,18 +809,23 @@ impl TypesetEngine {
                             )
                         })
                         .flatten();
-                    // 저장 셀 내용이 모두 남은 물리 띠에 들어가고 이 행을 지나 이어지는 걸침
-                    // 칸이 없으면, 한컴은 행을 이 쪽 끝에서 닫는다. 선언 높이의 남은 빈 띠는
-                    // 소유자가 없어 다음 쪽으로 넘기지 않는다(21761835 한/글 2020 PDF: 블록
-                    // 53–56 의 끝 56행이 4쪽 끝에서 닫히고 5쪽은 57행으로 시작한다).
+                    // 저장 셀 내용이 모두 남은 물리 띠에 들어가고, 선언 높이가 그 띠를 말미 행
+                    // 압축 허용치 이내로만 넘고, 이 행을 지나 이어지는 걸침 칸이 없으면 한컴은
+                    // 행 밴드를 띠로 압축해 이 쪽 끝에서 닫는다. 남은 빈 띠는 다음 쪽으로 넘기지
+                    // 않는다. 한/글 2020 PDF 실측(선언 − 띠): 21761835 56행 4.8px·1342000
+                    // 115행 1.1px·56행 9.9px 는 닫히고 다음 쪽이 다음 행으로 시작하며,
+                    // 1342000 43행 15.5px 는 다음 쪽 첫머리에 빈 띠가 남는다.
                     // 걸침 칸이 이어지면 한컴은 그 칸의 총높이를 지켜 남은 높이를 뒤 행에
-                    // 준다(블록 60–69: 68행이 5쪽에서 8px 줄고 6쪽 69행이 선언보다 9px
-                    // 크다). 그 경우는 아래 띠 이월로 같은 총량을 남긴다.
+                    // 준다(21761835 블록 60–69: 68행이 5쪽에서 8px 줄고 6쪽 69행이 선언보다
+                    // 9px 크다). 그 경우는 아래 띠 이월로 같은 총량을 남긴다.
                     let rowspan_continues_past_row = table.cells.iter().any(|cell| {
                         let start = cell.row as usize;
                         cell.row_span > 1 && start <= r && start + cell.row_span as usize > r + 1
                     });
-                    if let Some(band) = physical_band.filter(|_| !rowspan_continues_past_row) {
+                    if let Some(band) = physical_band.filter(|band| {
+                        !rowspan_continues_past_row
+                            && row_total <= band + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+                    }) {
                         end_row_height_override = Some(band);
                         consumed += cs_before + band;
                         if std::env::var("RHWP_DIAG_SCAN").is_ok() {
