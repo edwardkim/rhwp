@@ -667,8 +667,8 @@ fn test_svg_draw_text_corner_quote_uses_halfwidth_text_length() {
     let base_quote_length = text_length_of(&base_output, "「");
     let negative_quote_length = text_length_of(&negative_output, "「");
     assert!(
-        (negative_quote_length - (base_quote_length - 2.0)).abs() < 0.001,
-        "음수 셀 보정은 낫표의 기존 SVG glyph-fit 폭을 유지해야 함: \
+        (negative_quote_length - base_quote_length).abs() < 0.001,
+        "음수 배분 간격은 낫표의 자연 glyph-fit 폭을 줄이면 안 됨: \
          base={base_quote_length}, negative={negative_quote_length}"
     );
     assert!(

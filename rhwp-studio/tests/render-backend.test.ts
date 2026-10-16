@@ -251,8 +251,13 @@ test('CanvasKit contains malformed images and bounds both decode caches', () => 
 
 test('CanvasKit translates a present missing-picture op without a profile gate', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(codeOnly(source), /op\.kind === 'missingPicture'/);
-  assert.doesNotMatch(codeOnly(source), /profile === 'print' \|\| profile === 'highQuality'/);
+  const code = codeOnly(source);
+  const placeholder = code.slice(code.indexOf('private renderPlaceholder('), code.indexOf('private drawStyledShape('));
+  assert.match(placeholder, /private renderPlaceholder\(canvas: SkCanvas, op: LayerPlaceholderOp\): void/);
+  assert.match(placeholder, /op\.kind === 'missingPicture'/);
+  // Other paint operations may use the print profile. Missing-picture replay
+  // itself has no profile input and must keep its geometry in every profile.
+  assert.doesNotMatch(placeholder, /profile === 'print' \|\| profile === 'highQuality'/);
   assert.match(codeOnly(source), /this\.renderPlaceholder\(canvas, op\)/);
   assert.match(codeOnly(source), /MAX_PLACEHOLDER_DASH_SEGMENTS_PER_AXIS = 2048/);
   assert.match(source, /\.every\(Number\.isFinite\)/);
