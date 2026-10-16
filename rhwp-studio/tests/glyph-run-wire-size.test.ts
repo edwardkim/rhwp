@@ -15,6 +15,7 @@ const bytes = new Uint8Array(fs.readFileSync(new URL(
 )));
 
 function fixture(sizePx: number) {
+  const instantiatedSizes: number[] = [];
   const digest = bytesToHex(blake3(bytes));
   const key = `font:blake3:${bytes.byteLength}:${digest}`;
   const resources: LayerFontResources = {
@@ -24,6 +25,13 @@ function fixture(sizePx: number) {
   };
   const cache = new CanvasKitGlyphRunFontCache({
     Typeface: { MakeTypefaceFromData: () => ({ delete() {} }) },
+    Font: class {
+      constructor(_typeface: unknown, size: number) { instantiatedSizes.push(size); }
+      setSubpixel() {}
+      setEmbolden() {}
+      setSkewX() {}
+      delete() {}
+    },
   } as unknown as CanvasKit);
   cache.registerResources(resources, { fontBlobs: [bytes], fontBlobKeys: [key] });
   const fallback: LayerTextRunOp = {
@@ -48,12 +56,12 @@ function fixture(sizePx: number) {
       clusterMismatchCount: 0, missingGlyphCount: 0, usedFallbackFontCount: 0,
     },
   };
-  return { cache, resources, fallback, glyph };
+  return { cache, resources, fallback, glyph, instantiatedSizes };
 }
 
 test('GlyphRun wire font-size collapse keeps the complete TextRun fallback', () => {
   for (const size of [Number.MIN_VALUE, 0.00000049]) {
-    const { cache, resources, fallback, glyph } = fixture(size);
+    const { cache, resources, fallback, glyph, instantiatedSizes } = fixture(size);
     try {
       const wire: LayerGlyphRunOp = JSON.parse(JSON.stringify(glyph));
       // write_shape_key serializes sizePx with six fixed decimal places.
@@ -68,6 +76,7 @@ test('GlyphRun wire font-size collapse keeps the complete TextRun fallback', () 
         );
         assert.deepEqual([...selected], [fallback]);
       }
+      assert.deepEqual(instantiatedSizes, []);
     } finally {
       cache.clear();
     }
@@ -76,9 +85,11 @@ test('GlyphRun wire font-size collapse keeps the complete TextRun fallback', () 
 
 test('GlyphRun admits the smallest positive six-decimal wire font size', () => {
   for (const size of [0.000001, 16, 4096]) {
-    const { cache, resources, fallback, glyph } = fixture(size);
+    const { cache, resources, fallback, glyph, instantiatedSizes } = fixture(size);
     try {
       assert.equal(cache.replayStatus(glyph, resources).replayable, true);
+      assert.deepEqual(instantiatedSizes, [size]);
+      assert.equal(cache.diagnostics().fonts, 1);
       const selected = selectLayerTextVariantsForLeaf(
         [fallback, glyph], () => false, op => cache.replayStatus(op, resources).replayable,
       );
