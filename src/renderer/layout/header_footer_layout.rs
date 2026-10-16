@@ -86,6 +86,40 @@ impl LayoutEngine {
         } else {
             0.0
         };
+        // [#7840] 저장 줄(LINE_SEG)이 없는 머리말/꼬리말 문단도 본문·칸과 같은 줄 나눔으로
+        // 줄 상자를 세운다. 줄 높이는 글자처럼 취급한 개체까지 포함한 점유 높이다 —
+        // composer 의 저장 줄 부재 폴백은 글자 크기만으로 줄을 만들어, 156465345 꼬리말의
+        // 49.1px 로고 셋이 12px 줄에 실렸고 BOTTOM 정렬이 그 12px 를 내용 높이로 읽어
+        // 로고를 33.3px 아래로 밀었다(한/글은 밴드 위끝에 그린다). 문서 IR 은 바꾸지 않는다.
+        // 위의 세로 정렬 판정은 계속 **저장** 줄만 읽는다 — 합성 줄 높이는 추정이라 그
+        // 계약(줄 높이 합을 정확히 알 때만)을 채우지 못한다.
+        let reflowed_hf_paragraphs: Vec<Paragraph>;
+        let hf_paragraphs = if hf_paragraphs.iter().any(|para| para.line_segs.is_empty()) {
+            reflowed_hf_paragraphs = hf_paragraphs
+                .iter()
+                .map(|para| {
+                    let mut para = para.clone();
+                    if para.line_segs.is_empty() {
+                        let paragraph_box =
+                            crate::renderer::layout_frame::ParagraphBox::content_for_style(
+                                area.width,
+                                styles.para_styles.get(para.para_shape_id as usize),
+                                self.dpi,
+                            );
+                        crate::renderer::composer::reflow_line_segs(
+                            &mut para,
+                            paragraph_box,
+                            styles,
+                            self.dpi,
+                        );
+                    }
+                    para
+                })
+                .collect();
+            reflowed_hf_paragraphs.as_slice()
+        } else {
+            hf_paragraphs
+        };
         let mut y_offset = area.y
             + match vert_align {
                 1 => slack / 2.0,
