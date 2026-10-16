@@ -182,7 +182,12 @@ fn partition_dump_path(path: &str, part: usize) -> String {
 /// 로드·렌더 실패는 이 게이트의 관심사가 아니다(파싱 회귀는 기존 스위트가 잡는다).
 fn count_doc(path: &Path) -> Option<u64> {
     let bytes = std::fs::read(path).ok()?;
-    let doc = DocumentCore::from_bytes(&bytes).ok()?;
+    let mut doc = DocumentCore::from_bytes(&bytes).ok()?;
+    // 이 원본은 독립2024 Print와 같은 compat의 전48쪽 Native/fresh WASM을 검증했다.
+    // 이미 보정한 원본을 과거 #7812 이관만으로 활성 검사에서 제외하지 않는다.
+    if path.ends_with("samples/table_giant_cell_overfill.hwpx") {
+        doc.set_hangul2024_compat(true);
+    }
     let opts = AnomalyOptions::default();
     let page_count = doc.page_count();
     let mut total = 0u64;
@@ -199,7 +204,7 @@ fn count_doc(path: &Path) -> Option<u64> {
 
 fn off_canvas_does_not_grow_partition(part: usize) {
     let buckets = partition_samples(collect_samples(), PARTITIONS);
-    let mut samples = buckets
+    let samples = buckets
         .into_iter()
         .nth(part)
         .unwrap_or_else(|| panic!("없는 partition: {part}"));
@@ -207,9 +212,6 @@ fn off_canvas_does_not_grow_partition(part: usize) {
         !samples.is_empty(),
         "off-canvas partition {part} 이 비어 있음"
     );
-    // #7812: 다른 브랜치의 보정 대상은 원본을 보존하고 활성 회귀에서 분리한다.
-    // partition 배정 뒤 제외하므로 다른 문서의 배정은 바뀌지 않는다.
-    samples.retain(|(_, rel)| rel != "table_giant_cell_overfill.hwpx");
     let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
     let baseline = load_baseline();
 
