@@ -5,7 +5,7 @@
 - 관리: 메인테이너 작업 브랜치 `task_m100_7911`; 후속 구현은 기여자와 분담
 - 정본 계획: [수행계획](task_m100_7911.md), [구현계획](task_m100_7911_impl.md)
 - 이관 근거: [2단계 기록 3.22](../working/task_m100_7911_stage2.md#322-폰트-전역-캐시-격리와-truetype-cmap-예약-경계-2026-10-16)
-- 현재 위치: **최신 devel 병합·F1 공통 Parser/Core·F2 선택 CLI 완료. 다음은 F3 공개 WASM/Worker이며 세부 보완은 아래에 유지한다.**
+- 현재 위치: **최신 devel 병합·F1 공통 Parser/Core·F2 선택 CLI·F3 공개 WASM/Worker 완료. 다음은 F4 실물 편집/저장·시각 검증이며 세부 보완은 아래에 유지한다.**
 
 ## 1. 진행 규칙
 
@@ -55,8 +55,8 @@
 | B04 · 후속 보안 | 객체/색 공간 cache index·문자 생성·postprocess 및 frontend 수집의 남은 경계. 3.21은 소유 payload 복사만 검증 | 실제 `parse_pdf_with_options` → 추출 → recognition/lowering → Document 반환에서 기존 제한을 소비하지 않는 컬렉션·문자·진단 생성 경로를 목록화. 필요한 선행 제한과 정상 출력 보존을 검사하고 도달하지 않는 backend API는 근거와 함께 비해당 분리 | 대기·미검증 |
 | B05 · 보안 증거 | zune JPEG worker horizontal resize. [3.19](../working/task_m100_7911_stage2.md#319-rgbgray-jpeg의-실제-예약에-요청-예산-연결-2026-10-16)에서 실제 capacity 증가 분기 미관측 | 증가 분기를 소비하는 최소 정상 입력/한도 반례 확보, 예약 전 거절·정상 픽셀·오류 복구를 Native/WASM에서 실행. 해당 feature 경로에서 도달 불가라면 코드와 실행 근거로 판정 | 대기·실행 증거 부족 |
 | B06 · 제출 품질 | vendor 단독 strict Clippy. `jpeg-alloc-probe/lint-comparison.json`; 원본 129·patch 128건, 신규 worker 함수 길이 경고 1건 포함 | 고정 toolchain·feature로 upstream과 patch를 구분하고 보정이 만든 진단 해결. 적용 lint 정책과 원본 진단 처리 근거를 명시. blanket allow로 숨기거나 root lib PASS와 합치지 않음 | 대기·실행 실패 확인 |
-| B07 · 자원 계약 | 개별/누적 예산의 적용 범위·CPU·메모리 비용. 기존 제한은 총 heap/RSS 상한의 증명이 아님 | 제품 경로와 실제 활성 의존 graph에 대한 적용/미적용 경계 확정. 별도 이미지 64/128 MiB 초기 제안과 구현된 공통 예산의 차이를 명시·정합화. F3 Worker 취소·복구에 자원 소진/지연 입력을 추가 검증하고 Native/WASM 비용 측정. 안전성 주장은 입증한 경계로 한정 | 대기·미검증 |
-| B08 · 패키지·배포 | backend와 zune/jpeg-decoder 보정판, root optional dependency. 과거 package 증거는 최근 fork 변경 전 | 실제 배포 graph·정확한 버전·라이선스/NOTICE·고지·archive 내용 확인. 저장소 path 우회 없는 packaged Native/WASM 소비자가 동일 보정판을 사용하는지 검증. 외부 게시 권한/절차를 정리하되 `cargo publish`는 별도 승인 | 대기·최신 통합본 미검증 |
+| B07 · 자원 계약 | 개별/누적 예산의 적용 범위·CPU·메모리 비용. 기존 제한은 총 heap/RSS 상한의 증명이 아님 | 제품 경로와 실제 활성 의존 graph에 대한 적용/미적용 경계 확정. 별도 이미지 64/128 MiB 초기 제안과 구현된 공통 예산의 차이를 명시·정합화. F3에서 실제 Worker의 deadline·취소·세션 보존·재생성을 확인했다. 여기에 자원 소진/지연 입력을 추가 검증하고 Native/WASM 비용 측정. 안전성 주장은 입증한 경계로 한정 | 대기·미검증 |
+| B08 · 패키지·배포 | backend와 zune/jpeg-decoder 보정판, root optional dependency와 저장소 공용 PDF Worker(`rhwp-shared/pdf/`). 과거 package 증거는 최근 fork 변경 전이며 Worker의 npm export·앱 UI 채택은 아직 미연결 | 실제 배포 graph·정확한 버전·라이선스/NOTICE·고지·archive 내용 확인. 저장소 path 우회 없는 packaged Native/WASM 소비자가 동일 보정판을 사용하는지 검증. 외부 게시 권한/절차를 정리하되 `cargo publish`는 별도 승인 | 대기·최신 통합본 미검증 |
 | B09 · 출력 보완 | 12쪽 PDF의 semantic table 보류 7개 쪽·3쪽 모호한 소유권, 줄 단위 임시 Paragraph·fallback | F4 제품 진단으로 실제 보류 쪽과 원본 대응 확인. 표 확정·fallback의 내용 누락/중복·소유권·배치 결함을 구분해 승인 범위의 결함 보정. Deferred를 임의 Complete로 바꾸지 않으며 완전한 논리 문단 복원으로 범위를 넓히지 않음 | 대기·기존 제한/미검증 |
 | B10 · 시각·편집 호환 | 새 제품 head의 Native/fresh WASM 전쪽 비교·생성 HWPX/HWP 한컴 Print·편집 재열기 미실행 | 원본 PDF와 제품 출력, 저장본의 독립 한컴 Print를 구분해 전체 쪽수·내용·표 소속·전쪽 TSV·직접 확대 판독. 미달 출력 보정 후 관련 회귀를 추가/변경. 기존 POC 점수·byte 동일성을 최종 시각 증거로 재사용하지 않음 | 대기·미검증 |
 | B11 · 최종 회귀 | default/feature-on 전체 lint, workspace/all-targets, 전체 Rust 회귀·Native Skia, 기존 HWP/HWPX/HML | 집중/시각 결과 뒤 정본 절차로 최종 제품 head 검증. baseline 완화 없이 회귀 수정. 긴 PR-CI 성격 검증의 별도 승인 절차 유지 | 대기·미실행 |
@@ -80,8 +80,8 @@ B01–B04는 아직 실제 결함을 모두 재현한 목록이 아니라 미검
 
 ## 4. 현재 진행 위치
 
-- **현재 실행:** checkpoint `966af9575` 및 devel merge `672acadd7` 후 F1 공통 Parser/Core·F2 선택 CLI 연결 완료, 다음 F3 공개 WASM/Worker. [3단계 기록](../working/task_m100_7911_stage3.md)에 새 통합본 결과를 기록한다.
-- **기능 구현 완료:** 미충족. F1·F2의 전체/선택 CLI는 실행 확인했고 F3–F4의 공개 WASM/Worker·현재 범위 최종 검증이 남았다.
+- **현재 실행:** checkpoint `966af9575` 및 devel merge `672acadd7` 후 F1 공통 Parser/Core·F2 선택 CLI·F3 공개 WASM/Worker 연결 완료, 다음 F4 실물 편집/저장·시각 검증. [3단계 기록](../working/task_m100_7911_stage3.md)에 새 통합본 결과를 기록한다.
+- **기능 구현 완료:** 미충족. F1–F3의 CLI·실제 제품 WASM/Worker는 실행 확인했고 F4의 실물 편집/저장·시각 검증과 현재 범위 최종 검증이 남았다.
 - **백로그 보완 완료:** 미충족. B01–B12는 대기 상태다.
 - **devel 통합 준비:** 미충족. 제품 연결과 현재 통합 범위 검증·기여 인계 자료가 남아 있다.
 - **배포 준비:** 별도 미충족. 기본 비활성·`parser_allocation_bounds_proven=false` 유지.

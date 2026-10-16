@@ -73,6 +73,22 @@ fn texts(document: &rhwp::model::document::Document) -> Vec<String> {
 }
 
 #[test]
+fn public_wrapper_exposes_import_snapshot_without_inventing_saved_pdf_provenance() {
+    let source = pdf(&[("FIRST", "Helvetica"), ("SECOND", "Courier")]);
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&source).unwrap();
+    let metadata: serde_json::Value =
+        serde_json::from_str(&document.get_pdf_import_diagnostics()).unwrap();
+    assert_eq!(metadata["sourcePageCount"], 2);
+    assert_eq!(metadata["pages"][0]["sourcePage"], 0);
+    assert_eq!(metadata["pages"][1]["outputSection"], 1);
+    assert_eq!(metadata["parserAllocationBoundsProven"], false);
+    assert!(!metadata["paragraphPolicy"].as_str().unwrap().is_empty());
+    let reopened =
+        rhwp::wasm_api::HwpDocument::from_bytes(&document.export_hwpx_native().unwrap()).unwrap();
+    assert_eq!(reopened.get_pdf_import_diagnostics(), "null");
+}
+
+#[test]
 fn all_pages_share_valid_style_pools_and_unique_instance_ids() {
     let source = pdf(&[("FIRST", "Helvetica"), ("SECOND", "Courier")]);
     let imported = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();

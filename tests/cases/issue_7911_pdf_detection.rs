@@ -9,6 +9,14 @@ fn pdf_signature_is_detected_even_without_import_feature() {
     }
 }
 
+#[test]
+fn non_pdf_public_wrapper_has_no_pdf_import_diagnostics() {
+    let document =
+        rhwp::wasm_api::HwpDocument::from_bytes(include_bytes!("../../samples/hwp_table_test.hwp"))
+            .unwrap();
+    assert_eq!(document.get_pdf_import_diagnostics(), "null");
+}
+
 #[cfg(not(feature = "pdf-import"))]
 #[test]
 fn default_build_rejects_pdf_with_actionable_feature_code() {

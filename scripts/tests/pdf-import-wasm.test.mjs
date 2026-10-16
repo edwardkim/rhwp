@@ -1,0 +1,201 @@
+// Product WASM/Worker contract. Requires Docker-built root pkg with pdf-import.
+// This checks connectivity/content/session ownership, not visual fidelity.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+import http from 'node:http';
+import { findChrome } from '../rasterize-svg-webfonts.mjs';
+
+const root = resolve(import.meta.dirname, '../..');
+const evidence = resolve(process.env.PDF_IMPORT_EVIDENCE || join(root, 'output/pr-review/issue7911/wasm-runtime'));
+const pkg = resolve(process.env.PDF_IMPORT_PKG || join(root, 'pkg'));
+const defaultPkg = process.env.PDF_IMPORT_DEFAULT_PKG;
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+
+function syntheticPdf() {
+  const objects = ['<< /Type /Catalog /Pages 2 0 R >>', ''];
+  const kids = [];
+  for (const text of ['FIRST', 'SECOND', 'THIRD']) {
+    const page = objects.length + 1;
+    kids.push(`${page} 0 R`);
+    const content = `BT /F1 12 Tf 30 140 Td (${text}) Tj ET`;
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /Font << /F1 ${page + 2} 0 R >> >> /Contents ${page + 1} 0 R >>`);
+    objects.push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+    objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+  }
+  objects[1] = `<< /Type /Pages /Count 3 /Kids [${kids.join(' ')}] >>`;
+  let pdf = '%PDF-1.4\n';
+  const offsets = [];
+  objects.forEach((object, i) => { offsets.push(pdf.length); pdf += `${i + 1} 0 obj\n${object}\nendobj\n`; });
+  const xref = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  pdf += offsets.map(offset => `${String(offset).padStart(10, '0')} 00000 n \n`).join('');
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return Buffer.from(pdf);
+}
+
+test('Docker product WASM: public API, active document isolation and real Worker recovery', { timeout: 180_000 }, async () => {
+  mkdirSync(evidence, { recursive: true });
+  const files = new Map();
+  const sources = {};
+  function add(url, path, mime) {
+    const bytes = readFileSync(path);
+    files.set(url, [mime, bytes]);
+    sources[url] = { path, sha256: hash(bytes), bytes: bytes.length };
+  }
+  for (const name of ['rhwp.js', 'rhwp_bg.wasm']) {
+    add(`/pkg/${name}`, join(pkg, name), name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript');
+    if (defaultPkg) add(`/default/${name}`, join(defaultPkg, name), name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript');
+  }
+  for (const name of ['import-worker.js', 'import-session.js']) {
+    add(`/rhwp-shared/pdf/${name}`, join(root, 'rhwp-shared/pdf', name), 'text/javascript');
+  }
+  add('/real.pdf', join(root, 'pdf/issue5875/nested_table_text_caption-2020.pdf'), 'application/pdf');
+  add('/control.hwp', join(root, 'samples/hwp_table_test.hwp'), 'application/octet-stream');
+  files.set('/synthetic.pdf', ['application/pdf', syntheticPdf()]);
+  const server = http.createServer((req, res) => {
+    if (req.url === '/') { res.setHeader('Content-Type', 'text/html'); res.end('<!doctype html><meta charset="utf-8">'); return; }
+    const file = files.get(req.url);
+    if (!file) { res.writeHead(404).end(); return; }
+    res.setHeader('Content-Type', file[0]); res.end(file[1]);
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  let browser;
+  let page;
+  const cdp = process.env.CHROME_CDP;
+  try {
+    const require = createRequire(join(root, 'rhwp-studio/package.json'));
+    const puppeteer = require('puppeteer-core');
+    browser = cdp
+      ? await puppeteer.connect({ browserURL: cdp })
+      : await puppeteer.launch({ executablePath: findChrome(), headless: true });
+    page = await browser.newPage();
+    const errors = [];
+    page.on('pageerror', error => errors.push(String(error)));
+    await page.goto(`http://127.0.0.1:${server.address().port}`);
+    const result = await page.evaluate(async ({ hasDefault }) => {
+      const checked = [];
+      function check(value, name) { if (!value) throw Error(name); checked.push(name); }
+      function throwsCode(fn, code) {
+        try { fn(); } catch (error) { check(String(error).includes(code), `${code}: ${error}`); return; }
+        throw Error(`expected ${code}`);
+      }
+      async function rejectsCode(promise, code) {
+        try { await promise; } catch (error) { check(error.code === code, `${code}: ${error}`); return; }
+        throw Error(`expected ${code}`);
+      }
+      const bytes = new Uint8Array(await (await fetch('/synthetic.pdf')).arrayBuffer());
+      const real = new Uint8Array(await (await fetch('/real.pdf')).arrayBuffer());
+      const controlBytes = new Uint8Array(await (await fetch('/control.hwp')).arrayBuffer());
+      if (hasDefault) {
+        const disabled = await import('/default/rhwp.js'); await disabled.default();
+        throwsCode(() => disabled.HwpDocument.importPdf(bytes, {}), 'PDF_IMPORT_DISABLED');
+        throwsCode(() => new disabled.HwpDocument(bytes), 'PDF_IMPORT_DISABLED');
+        const control = new disabled.HwpDocument(controlBytes);
+        check(control.getPdfImportDiagnostics() === 'null' && control.pageCount() > 0, 'feature-off HWP unaffected');
+        control.free();
+      }
+      const wasm = await import('/pkg/rhwp.js'); await wasm.default();
+      const all = new wasm.HwpDocument(bytes);
+      check(all.pageCount() === 3 && all.getSourceFormat() === 'pdf', 'constructor imports all PDF pages');
+      all.free();
+      const selected = wasm.HwpDocument.importPdf(bytes, { sourcePages: [0, 2] });
+      const diagnostics = JSON.parse(selected.getPdfImportDiagnostics());
+      check(selected.pageCount() === 2, 'explicit selection page count');
+      check(JSON.stringify(diagnostics.pages.map(p => [p.sourcePage, p.outputSection])) === '[[0,0],[2,1]]', 'source/output section mapping');
+      check(diagnostics.parserAllocationBoundsProven === false && diagnostics.paragraphPolicy && diagnostics.warnings.length, 'incomplete bounds and paragraph policy exposed');
+      const text = doc => Array.from({ length: doc.pageCount() }, (_, p) => {
+        const xml = new DOMParser().parseFromString(doc.renderPageSvg(p), 'image/svg+xml');
+        return [...xml.querySelectorAll('text')].map(t => t.textContent).join('');
+      });
+      check(JSON.stringify(text(selected)) === '["FIRST","THIRD"]', 'selected content and order');
+      for (const save of ['exportHwp', 'exportHwpx']) {
+        const reopen = new wasm.HwpDocument(selected[save]());
+        check(JSON.stringify(text(reopen)) === '["FIRST","THIRD"]', `${save} reopen content`);
+        check(reopen.getPdfImportDiagnostics() === 'null', `${save} reopen has no invented PDF provenance`);
+        reopen.free();
+      }
+      for (const option of [null, 1, '0,2', [], { sourcePage: [0] }]) {
+        throwsCode(() => wasm.HwpDocument.importPdf(bytes, option), 'PDF_IMPORT_OPTIONS');
+      }
+      for (const pages of [[], [2, 1], [1, 1], [3], [-1], [0.5], [NaN], [Infinity], [4294967296], ['1'], [null], [true], new Uint32Array([0]), [1n], Array(1), Array(129).fill(0)]) {
+        throwsCode(() => wasm.HwpDocument.importPdf(bytes, { sourcePages: pages }), 'PDF_PAGE_SELECTION');
+      }
+      for (const options of [undefined, {}]) {
+        const full = wasm.HwpDocument.importPdf(bytes, options);
+        check(full.pageCount() === 3, 'omitted selection imports all'); full.free();
+      }
+      throwsCode(() => wasm.HwpDocument.importPdf(new Uint8Array([0]), {}), 'PDF_INVALID_INPUT');
+      throwsCode(() => wasm.HwpDocument.importPdf(new TextEncoder().encode('%PDF-1.4\n'), {}), 'PDF_PARSE_FAILED');
+      throwsCode(() => wasm.HwpDocument.importPdf(new Uint8Array(16 * 1024 * 1024 + 1), {}), 'PDF_RESOURCE_LIMIT');
+      check(JSON.stringify(text(selected)) === '["FIRST","THIRD"]', 'failed direct import preserves existing document');
+      selected.free();
+      const { PdfImportSession } = await import('/rhwp-shared/pdf/import-session.js');
+      let workers = 0, terminated = 0;
+      const session = new PdfImportSession({ workerFactory: () => {
+        workers++;
+        const worker = new Worker('/rhwp-shared/pdf/import-worker.js', { type: 'module' });
+        const original = worker.terminate.bind(worker);
+        worker.terminate = () => { terminated++; original(); };
+        return worker;
+      } });
+      try {
+        const loaded = await session.importPdf(real, {}, { timeoutMs: 60_000 });
+        check(loaded.pageCount === 12 && loaded.diagnostics.pages.length === 12, 'Worker full real 12-page PDF');
+        const svg = [];
+        for (let p = 0; p < 12; p++) svg.push(await session.renderPageSvg(p));
+        check(svg.every(s => s.includes('<svg')), 'Worker renders every imported page');
+        const hwpx = await session.exportDocument('hwpx');
+        const hwp = await session.exportDocument('hwp');
+        for (const saved of [hwpx, hwp]) {
+          const reopened = new wasm.HwpDocument(saved);
+          check(reopened.pageCount() === 12, 'Worker save reopens 12 pages'); reopened.free();
+        }
+        await rejectsCode(session.importPdf(real, { sourcePages: [99] }), 'PDF_PAGE_SELECTION');
+        const afterFailureWorkers = workers;
+        check((await session.inspect()).pageCount === 12, 'ordinary failure preserves active Worker');
+        await rejectsCode(session.importPdf(new Uint8Array([0])), 'PDF_INVALID_INPUT');
+        await rejectsCode(session.importPdf(new TextEncoder().encode('%PDF-1.4\n')), 'PDF_PARSE_FAILED');
+        await rejectsCode(session.importPdf(new Uint8Array(16 * 1024 * 1024 + 1)), 'PDF_RESOURCE_LIMIT');
+        const valid = await session.importPdf(real, { sourcePages: [0, 6, 7] }, { timeoutMs: 60_000 });
+        check(workers === afterFailureWorkers && valid.pageCount === 3, 'same Worker failure then normal input');
+        check(valid.diagnostics.pages.map(p => p.sourcePage).join() === '0,6,7', 'Worker source selection');
+        await rejectsCode(session.importPdf(real, {}, { timeoutMs: 1 }), 'PDF_IMPORT_TIMEOUT');
+        check((await session.inspect()).pageCount === 3, 'timeout preserves active document');
+        // Warm the candidate, then abort a real import attempt (no in-WASM phase timing claim).
+        await rejectsCode(session.importPdf(real, { sourcePages: [99] }), 'PDF_PAGE_SELECTION');
+        const abort = new AbortController();
+        const aborted = session.importPdf(real, {}, { signal: abort.signal, timeoutMs: 60_000 });
+        setTimeout(() => abort.abort(), 1);
+        await rejectsCode(aborted, 'PDF_IMPORT_CANCELLED');
+        check((await session.inspect()).pageCount === 3, 'abort preserves active document');
+        const recovered = await session.importPdf(bytes, { sourcePages: [1] }, { timeoutMs: 60_000 });
+        check(recovered.pageCount === 1 && recovered.diagnostics.pages[0].sourcePage === 1, 'normal input after Worker recreation');
+        check(real.byteLength > 0, 'caller PDF buffer not detached');
+        return { checked, workers, terminatedBeforeDispose: terminated, diagnostics: loaded.diagnostics,
+          hwpx: Array.from(hwpx), hwp: Array.from(hwp), svg };
+      } finally { session.dispose(); }
+    }, { hasDefault: !!defaultPkg });
+    assert.deepEqual(errors, []);
+    for (const format of ['hwpx', 'hwp']) {
+      const bytes = Buffer.from(result[format]);
+      writeFileSync(join(evidence, `worker-all.${format}`), bytes);
+      result[format] = { bytes: bytes.length, sha256: hash(bytes) };
+    }
+    mkdirSync(join(evidence, 'worker-svg'), { recursive: true });
+    result.svg = result.svg.map((svg, i) => {
+      writeFileSync(join(evidence, 'worker-svg', `${String(i + 1).padStart(3, '0')}.svg`), svg);
+      return { page: i + 1, sha256: hash(svg) };
+    });
+    writeFileSync(join(evidence, 'browser-result.json'), JSON.stringify({ ...result, sources, browser: await browser.version(), visualJudgment: 'not_evaluated_F4_pending' }, null, 2));
+    console.log(`${result.checked.length} assertions, ${result.workers} actual Workers; all 12 pages rendered/saved`);
+  } finally {
+    await page?.close();
+    if (cdp) await browser?.disconnect();
+    else await browser?.close();
+    await new Promise(resolve => server.close(resolve));
+  }
+});

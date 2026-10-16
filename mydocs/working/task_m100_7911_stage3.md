@@ -136,3 +136,96 @@ Native CLI lint는 `cargo clippy --locked -p rhwp --bin rhwp [--features pdf-imp
 (원본 1·7·8쪽), `selected-svg/`다. 실행 바이너리는 같은 디렉터리의 `candidate/rhwp`다.
 기능 경로 진행은 **F1·F2 완료 → F3 공개 WASM/Worker → F4 편집·저장·시각 검증**이다.
 세부 보완 B01–B12의 완료를 이 순서의 선행 조건으로 되돌리지 않는다.
+
+## 6. F3 공개 WASM API와 Worker (2026-10-16)
+
+다음 작업 승인으로 F3를 구현·검증했다. 기존 제품에는 문서 소유 Worker가 없고
+`tools/pdf-ir-poc/browser/worker.js`만 있었다. POC의 HWPX 변환·재파싱 경로를 옮기지 않고,
+공통 frontend/Core를 소비하는 공개 API와 저장소 공용 `rhwp-shared/pdf/` 세션을 연결했다.
+
+- `HwpDocument.importPdf(bytes, options)`는 JS 객체의 `sourcePages`를 엄격히 검사하고
+  `DocumentCore::from_pdf_bytes`를 호출한다. 전체 생성자는 F1 경로를 그대로 소비한다.
+  `getPdfImportDiagnostics()`는 Core metadata를 JSON으로 반환한다. 다른 형식·저장본
+  재열기는 `null`이며 저장된 HWP/HWPX를 PDF 원본으로 가장하지 않는다.
+- JS 옵션 경계는 객체/배열 구분, 알려진 키, 유한 정수·개수·증가 순서와 narrowing 전 범위를
+  확인한다. 실제 원본 쪽 범위·전체 입력 제한은 기존 frontend가 다시 검사한다.
+  오류 code는 JS로 전달하며 feature-off API는 `PDF_IMPORT_DISABLED`로 거부한다.
+- Worker는 루트 `pkg/rhwp.js`를 직접 import하며 변환 IR을 직렬화하지 않고 문서를 소유한다.
+  `PdfImportSession`은 현재 문서와 후보를 다른 Worker에 둔다. 후보의 가져오기·진단 생성
+  성공 응답 뒤에만 교체하고 이전 Worker를 해제한다. 일반 입력 오류는 후보를 재사용한다.
+- 소유자 스레드의 AbortSignal/deadline은 후보를 terminate하고 다음 요청에서 재생성한다.
+  실패·취소·시간 초과가 현재 문서를 바꾸지 않는 것과, 이미 완료된 문서의 렌더/저장 요청을
+  취소하면 그 Worker도 해제되는 것을 구분한다. 초기화 실패·WASM trap은 재사용하지 않는다.
+  요청 id와 종료한 채널의 pending 정리로 늦은 응답이 문서를 교체하지 못하게 한다.
+- 원본 Uint8Array는 유지한다. 길이를 제한한 view만 복사·transfer하여 큰 backing buffer를
+  그대로 복제하지 않는다. 동기 WASM 중 cancel 메시지 처리나 전체 heap 상한을 주장하지 않는다.
+- 사용법과 실행 검사는 `rhwp-shared/pdf/README.md`, 공개 API는 `npm/README.md`에 연결했다.
+  세션 검사는 기존 Studio `npm test` 수집에 포함한다. npm 배포 export·Studio 파일 열기 UI를
+  자동 활성화하지 않으며 패키지 소비/후속 채택은 B08에 남긴다.
+
+### 6.1 실행 증적과 완료 판정
+
+증적 디렉터리: `output/pr-review/issue7911/wasm-integration-20261016/`.
+F3 완료. 최종 실행 결과·source/artifact hash는 아래 기록과 ignored JSON에 고정한다.
+API/세션 계약 검사는 조판 golden이 아니며 전체 한컴 시각 일치를 뜻하지 않는다.
+
+
+Native 집중 검사는 frontend 9건·feature-on 감지/기존 HWP 진단 2건·feature-off 3건,
+총 14건 통과했다. 양쪽 feature의 Native lib Clippy와 Docker WASM lib Clippy도
+`-D warnings`로 통과했다. `fmt`, 파생 manifest, source-unit 정책은 base `f5251e7de`로
+통과했다. 명령·exit status는 `native-results.json`, Docker 명령 로그는 `docker-build.log`다.
+
+Worker 채널 정식 검사는 6건 통과했다(`session-tests-final.log`). 후보 실패와 기존 문서
+보존·같은 후보 재사용, abort/늦은 응답/재생성, deadline/fatal 오류, pre-abort/중복 요청/
+dispose, load/clone 오류, 입력 view 복사 범위를 확인한다. 이 결과는 mock Worker의 소유권
+검사이며 실제 브라우저 검증과 구분한다. 실제 제품 WASM 검사는 별도로 아래에 기록한다.
+
+
+실제 CDP Chrome `155.0.8059.40`에서 **57개 확인 항목 통과**다(`browser.log`,
+`browser-result.json`). 별도 탭에서 루트 제품 JS/WASM을 로드했으며 5개 실제 Worker로
+전체 12쪽·선택 원본 0/6/7쪽·다음 정상 입력을 처리했다. 12쪽 모두 SVG를 산출했고
+HWPX/HWP 저장본을 같은 제품 API로 재열어 12쪽을 확인했다. 합성 3쪽 입력은 선택 내용의
+순서·누락과 저장 형식별 재열기를 검사했다. 옵션의 잘못된 타입·음수·소수·NaN·overflow·
+중복·역순·빈 배열·원본 범위 초과, 손상/과대 입력의 code도 확인했다.
+
+기본 Docker WASM은 새 API와 기존 생성자에서 `PDF_IMPORT_DISABLED`로 거부하고 기존
+HWP는 열었다. 활성 Worker의 일반 실패 뒤 같은 후보 Worker가 정상 입력을 처리했다.
+1ms deadline 및 워밍업한 후보의 1ms abort는 현재 3쪽 문서를 보존했고, 재생성 뒤 정상
+1쪽 선택이 성공했다. 이 검사는 실제 가져오기 시도를 취소한 결과이며 WASM 내부의 특정
+명령 시점·악성 CPU 소진 입력·총 heap 상한을 입증하지 않는다(B07 유지).
+
+Docker 기본/활성 빌드는 각각 한 번 실행했다. 원본 Rust 소스는 빌드 중 변경하지 않았고
+JS 세션/검사 수정만 반영해 최종 실행했다. 명령은 같은 Compose 서비스에서 두 구성의
+WASM lib Clippy 뒤 `scripts/wasm-pack-locked.sh --target web --out-dir
+output/pr-review/issue7911/wasm-integration-20261016/default-pkg`, 이어서
+`scripts/wasm-pack-locked.sh --target web --out-dir pkg --features pdf-import`다.
+기존 `rhwp_wasm-target`을 재사용했으며 cache 초기화는 하지 않았다.
+
+- 제품 WASM SHA-256: `542dc26e412a78c5ce63521af040f10dbe75f0b53a36f9ae055e6213d6942ffc`
+- 제품 glue SHA-256: `db6f74738d59e98ce74e22d1d30ee6e0436a291336912889e569dc9125f48989`
+- 루트 pkg와 Studio public의 두 파일은 각각 동일하다(`artifact-sync.json`). generated public
+  glue는 검증 산출물로 보존하며 이번 source commit에는 포함하지 않는다.
+- 최적화 WASM: 기본 12,568,410 bytes, PDF 활성 17,108,303 bytes. 같은 제품 빌드 구성의
+  이번 관측값이며 크기 축소 작업으로 범위를 넓히지 않는다.
+- 생성 타입 선언/기존 js_name export 검사도 1건 통과했다(`bindings.log`). 새 테스트의
+  브라우저 의존성은 동일 lock의 `npm ci --no-audit --prefer-offline`로 준비했다.
+- Native F2와 Worker의 전체 HWPX는 바이트 동일하다. SHA-256은
+  `22bee8064e0d88223242f5ed61069ee49879229f6dee53add334596960750b82`다. 공통 경로
+  보존 근거이며 원본 PDF/한컴과의 시각 일치 증거로 사용하지 않는다.
+
+실제 브라우저 명령은 `CHROME_CDP=http://localhost:19222`,
+`PDF_IMPORT_DEFAULT_PKG=<위 증적/default-pkg>`, `PDF_IMPORT_EVIDENCE=<위 증적>`를
+지정한 `node --test scripts/tests/pdf-import-wasm.test.mjs`다. 공개 실행 스크립트가
+선택한 바이트만 HTTP로 제공하며 실제 로드한 JS/WASM·원본의 hash를 기록한다.
+
+### 6.2 다음 경계
+
+**F1·F2·F3 완료 → F4 실물 문서의 편집·저장·재열기 및 전쪽 시각 검증**이다.
+이번 단계는 PDF frontend의 조판/추출 규칙을 변경하지 않았다. 전체 Rust/workspace/Skia
+회귀와 최종 PR 게이트는 B11/F4 이후 제출 범위 검증에 남아 있다. B01–B12 전체 소진을
+F4의 선행 조건으로 삼지 않으며, 기본 비활성·미입증 진단도 유지한다.
+
+출력은 위 증적의 `worker-all.hwpx`, `worker-all.hwp`, `worker-svg/`다.
+Windows 확인용 복사본은 `E:\tmp\issue7911-stage3-wasm-20261016\`에 둔다.
+원격 push·PR 상태 변경은 수행하지 않았다. 최종 source hash와 로컬 commit은
+`source-final.json`·`completion.json`에 연결한다.
