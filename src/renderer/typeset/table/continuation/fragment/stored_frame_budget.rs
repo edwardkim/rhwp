@@ -1,12 +1,17 @@
 //! A genuine first fragment owns its declared physical space, not the next row.
 
-use crate::renderer::typeset::{BlockTableRowScan, TypesetEngine, TypesetState};
+use crate::renderer::typeset::{
+    hwpunit_to_px, is_synthetic_line_seg, BlockTableRowScan, TypesetEngine, TypesetState,
+};
 
 use super::{FragmentBudget, FragmentInput};
 
 pub(super) struct StoredPartialFragment {
     pub(super) height: f64,
     pub(super) complete_last_row: Option<(usize, f64)>,
+    /// 저장 근거(첫 조각 프레임 + 후속 문단 원점)가 «내용은 이 조각, 남은 빈 띠는 다음
+    /// 조각»으로 증언한 행. 행 스캔은 이 행에서 추정 문턱 대신 저장 컷을 따른다.
+    pub(super) carried_band_row: Option<usize>,
 }
 
 impl TypesetEngine {
@@ -257,6 +262,7 @@ impl TypesetEngine {
         let height = saved_frame?.0.min(available);
         let mut before = 0.0;
         let mut complete_last_row = None;
+        let mut carried_band_row = None;
         for (row, row_height) in input.prepared.cut_row_heights.iter().enumerate() {
             if row > 0 {
                 before += input.prepared.cell_spacing;
@@ -328,8 +334,26 @@ impl TypesetEngine {
                 // 완전 행의 압축에는 기존 행 경계의 신뢰 근거를 유지한다.
                 // 행 내부 조각의 엄격한 상한은 저장 앵커/본문 예산에서 인증하고,
                 // 빈 띠의 소유는 스캔 뒤 실제 원본 부분 컷에서 따로 확인한다.
+                // 내용이 들어도 한/글이 이 행의 남은 빈 띠를 다음 쪽 첫머리로 넘겼다는 저장
+                // 근거가 있으면 행을 프레임 안에서 완료하지 않는다 — 되감긴 후속 문단의
+                // 원점이 «남은 띠 + 뒤 행들 + 표 바깥 여백»과 같다(1480000-201900698 표 14
+                // pi=275: 23.04 + 45.36 + 7.55 = 75.95px = 후속 vpos 5696 HU).
+                let carried_band_recorded = stored_successor_records_carried_row_band(
+                    source.paragraphs_all,
+                    source.para_index,
+                    source.row_geometry_table,
+                    &input.prepared.cut_row_heights,
+                    input.prepared.cell_spacing,
+                    row,
+                    *row_height - remaining,
+                    self.dpi,
+                );
                 if declared_height_is_credible && complete_owners && fits {
-                    complete_last_row = Some((row, remaining));
+                    if carried_band_recorded {
+                        carried_band_row = Some(row);
+                    } else {
+                        complete_last_row = Some((row, remaining));
+                    }
                 }
                 break;
             }
@@ -338,6 +362,46 @@ impl TypesetEngine {
         Some(StoredPartialFragment {
             height,
             complete_last_row,
+            carried_band_row,
         })
     }
+}
+
+/// 표 문단 뒤 문단의 첫 저장 줄이 «`row` 의 남은 물리 띠(`band`)를 다음 쪽 첫머리로 넘긴
+/// 배치»의 끝 원점과 같은가. 그 원점 = 띠 + `row` 뒤 행들 + 행 간격 + 표 바깥 위·아래 여백.
+/// 남은 행이 다음 쪽 안에서 끝나는 표에서만 원점이 그 배치를 직접 증언한다.
+#[allow(clippy::too_many_arguments)]
+fn stored_successor_records_carried_row_band(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    para_idx: usize,
+    table: &crate::model::table::Table,
+    row_heights: &[f64],
+    cell_spacing: f64,
+    row: usize,
+    band: f64,
+    dpi: f64,
+) -> bool {
+    if band <= 0.5 || row + 1 > row_heights.len() {
+        return false;
+    }
+    let Some(next) = paragraphs.get(para_idx + 1) else {
+        return false;
+    };
+    if next.stored_text_partition_is_dirty() || next.cell_format_vpos_dirty {
+        return false;
+    }
+    let Some(line) = next
+        .line_segs
+        .first()
+        .filter(|line| !is_synthetic_line_seg(line))
+    else {
+        return false;
+    };
+    let tail_rows = row_heights.len() - (row + 1);
+    let tail = row_heights[row + 1..].iter().sum::<f64>() + cell_spacing * tail_rows as f64;
+    let margins = hwpunit_to_px(
+        i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
+        dpi,
+    );
+    (hwpunit_to_px(line.vertical_pos, dpi) - (band + tail + margins)).abs() <= 0.5
 }
