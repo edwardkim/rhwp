@@ -152,3 +152,43 @@ fn stored_restart_cuts_the_last_row_of_a_page() {
     assert_split_row_boundary(&core, 125, 1143, 17);
     assert_split_row_boundary(&core, 126, 1143, 28);
 }
+
+/// 1480000 표 12(`pi=263`) 118행은 둘째 줄이 vpos 0 에서 다시 시작하는 저장 쪽 컷이다. 한/글 2020
+/// PDF 는 43쪽 끝에 첫 줄을 두고 44쪽 첫머리에서 `L40-like isoform X1` 을 잇는다. 표 뒤 빈 문단
+/// `pi=264` 는 표 시작 쪽의 옛 vpos(72003)를 갖지만, 되감긴 다음 문단 `pi=265` 의 저장 위치가 그
+/// 빈 줄 한 줄을 담을 자리를 남기므로 한/글은 빈 줄을 그린다. 그 뒤 `pi=265` 는 빈 줄의 저장 전진
+/// (lh 1100 + ls 880)만큼 아래에서 시작하며 trailing 줄간격을 한 번 더 받지 않는다.
+#[test]
+fn page_44_keeps_the_empty_line_after_the_stored_row_cut() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn walk<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    let core = core(SAMPLE_1480000);
+    assert_split_row_boundary(&core, 42, 263, 118);
+
+    let tree = core.build_page_render_tree(43).expect("44쪽 렌더 트리");
+    let mut nodes = Vec::new();
+    walk(&tree.root, &mut nodes);
+    let line_top = |para: usize| {
+        nodes.iter().find_map(|node| match &node.node_type {
+            RenderNodeType::TextLine(line)
+                if line.section_index == Some(4) && line.para_index == Some(para) =>
+            {
+                Some(node.bbox.y)
+            }
+            _ => None,
+        })
+    };
+    let empty_top = line_top(264).expect("44쪽에 표 뒤 빈 문단 pi=264 의 줄이 있어야 한다");
+    let next_top = line_top(265).expect("44쪽 문단 pi=265");
+    let stored_advance = (1100.0 + 880.0) / 75.0;
+    assert!(
+        (next_top - empty_top - stored_advance).abs() <= 0.5,
+        "pi=265 는 빈 줄의 저장 전진({stored_advance:.2}px)만큼 아래에서 시작해야 한다: {:.2}",
+        next_top - empty_top
+    );
+}
