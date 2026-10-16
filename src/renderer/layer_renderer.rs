@@ -728,10 +728,7 @@ fn collect_glyph_run_reject_reasons(
         reasons.insert(VariantRejectReason::AdvanceNotFinite);
     }
     let font_size = run.shape_key.font_instance.size_px;
-    if !font_size.is_finite()
-        || font_size <= 0.0
-        || font_size > crate::paint::MAX_GLYPH_FONT_SIZE_PX
-    {
+    if !crate::paint::font::glyph_font_size_is_portable(font_size) {
         reasons.insert(VariantRejectReason::FontInstanceInvalid);
     }
 }

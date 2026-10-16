@@ -266,7 +266,8 @@ export class CanvasKitGlyphRunFontCache {
       return reject('variationUnsupported', { variationSupported: false });
     }
     const fontSize = run.shapeKey.fontInstance.sizePx;
-    if (!Number.isFinite(fontSize) || fontSize <= 0 || fontSize > 4096) {
+    if (!Number.isFinite(fontSize) || fontSize <= 0 || fontSize > 4096
+      || Number(fontSize.toFixed(6)) <= 0) {
       return reject('fontInstanceInvalid');
     }
 
