@@ -1,0 +1,142 @@
+//! 쪽 끝에 첫 줄만 들어가는 짧은 행을 언제 나누고 언제 통째로 넘기는가.
+//!
+//! 1480000-201900698 표 15·18(구역 4 `pi=278`·`pi=292`, 151×6 RowBreak, 걸침 칸 없음, 셀 저장
+//! 되감김 없음)에서 한/글 2020 PDF 는 쪽 끝 행을 한 번도 가르지 않는다.
+//! - 표 15 75행(2줄, 첫 조각 12px)은 47쪽 18.8px 띠에 첫 줄이 들어가도 48쪽으로 통째 간다.
+//! - 표 15 110행·표 18 76행(1줄, 선언 18.9px)은 띠에 글줄은 들어가도 선언 높이가 안 들어가
+//!   49·53쪽으로 통째 간다. 빈 꼬리만 넘기지 않는다.
+//! - 표 18 117행(3줄, 첫 조각 24px)은 54쪽으로 통째 간다.
+//!
+//! 수정 전 rhwp 는 문단 안 글줄 컷을 25px 최소 상단 기준에서 면제하고(75·117행), 저장 쪽 컷
+//! 기록이 없는 표에서도 1줄 행의 빈 꼬리를 다음 쪽으로 넘겨(76·110행) 48·49·53·54쪽이 한 줄씩
+//! 어긋났다.
+//!
+//! 반례: 1342000 교육과정 지도 표(구역 5 `pi=14`)의 120·127행은 위 행에서 내려온 걸침 칸이
+//! 행 윗변을 가로지른다. 한/글 2020 PDF 는 두 행을 165·166쪽 끝에 첫 줄만 남기고 나눈다.
+//!
+//! 21761835 전직 면제 표(hwpx, `pi=4`, 78×5)에서 한/글 2020 PDF(저장소
+//! `pdf/task2146/21761835_jeonjik_exemption_table-2020.pdf`, MCP 재변환본과 텍스트 동일)는
+//! 41행을 4쪽에 통째로 두고, 걸침 칸 블록 53–56 의 끝 56행(내용 65px, 선언 88px)을 4쪽 끝
+//! 83px 띠에서 닫은 뒤 5쪽을 57행으로 시작한다. 수정 전 rhwp 는 41행을 3·4쪽에 가르거나,
+//! 41행을 고친 뒤에는 56행의 빈 띠 5px 를 5쪽 첫머리로 넘겼다.
+#![cfg(not(target_arch = "wasm32"))]
+
+use rhwp::document_core::DocumentCore;
+
+const SAMPLE_1480000: &str = "samples/issue5941/1480000-201900698-native-neartop-reset.hwp";
+const SAMPLE_21761835: &str = "samples/hwpx/21761835_jeonjik_exemption_table.hwpx";
+const SAMPLE_1342000: &str =
+    "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp";
+
+fn core(sample: &str) -> DocumentCore {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
+    let bytes =
+        std::fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
+    DocumentCore::from_bytes(&bytes).unwrap_or_else(|error| panic!("parse {sample}: {error:?}"))
+}
+
+/// (startRow, endRow, startCut, endCut) — 쪽 `page`(0-기준)에 놓인 표 `para` 조각.
+fn table_fragment(core: &DocumentCore, page: u32, para: u64) -> (u64, u64, Vec<u64>, Vec<u64>) {
+    let items = core.dump_page_items_json(Some(page));
+    let cut = |item: &serde_json::Value, key: &str| -> Vec<u64> {
+        item.get(key)
+            .and_then(|v| v.as_array())
+            .map(|cut| cut.iter().filter_map(|u| u.as_u64()).collect())
+            .unwrap_or_default()
+    };
+    items
+        .as_array()
+        .and_then(|pages| pages.first())
+        .and_then(|page| page.get("columns"))
+        .and_then(|columns| columns.as_array())
+        .into_iter()
+        .flatten()
+        .filter_map(|column| column.get("items").and_then(|items| items.as_array()))
+        .flatten()
+        .find(|item| {
+            item.get("paraIndex").and_then(|v| v.as_u64()) == Some(para)
+                && item.get("kind").and_then(|v| v.as_str()) == Some("partialTable")
+        })
+        .map(|item| {
+            (
+                item.get("startRow").and_then(|v| v.as_u64()).unwrap_or(0),
+                item.get("endRow").and_then(|v| v.as_u64()).unwrap_or(0),
+                cut(item, "startCut"),
+                cut(item, "endCut"),
+            )
+        })
+        .unwrap_or_else(|| panic!("{}쪽에 표 pi={para} 조각이 없다", page + 1))
+}
+
+/// 쪽 `page` 가 행 `row` 를 처음부터 통째로 받고, 앞쪽은 그 행을 갖지 않는다.
+fn assert_whole_row_boundary(core: &DocumentCore, page: u32, para: u64, row: u64) {
+    let (_, prev_end, _, prev_end_cut) = table_fragment(core, page - 1, para);
+    let (start, _, start_cut, _) = table_fragment(core, page, para);
+    assert_eq!(
+        (prev_end, start),
+        (row, row),
+        "{}쪽은 {row}행 앞에서 끝나고 {}쪽이 {row}행으로 시작해야 한다",
+        page,
+        page + 1
+    );
+    assert!(
+        prev_end_cut.is_empty() && start_cut.is_empty(),
+        "{row}행은 나뉘지 않아야 한다: 앞 끝 컷 {prev_end_cut:?}, 시작 컷 {start_cut:?}"
+    );
+}
+
+/// 쪽 `page` 끝에서 행 `row` 가 나뉘고, 다음 쪽이 같은 컷에서 잇는다.
+fn assert_split_row_boundary(core: &DocumentCore, page: u32, para: u64, row: u64) {
+    let (_, end, _, end_cut) = table_fragment(core, page, para);
+    let (start, _, start_cut, _) = table_fragment(core, page + 1, para);
+    assert_eq!(
+        (end, start),
+        (row + 1, row),
+        "{}쪽 끝과 {}쪽 첫머리가 모두 {row}행이어야 한다",
+        page + 1,
+        page + 2
+    );
+    assert!(
+        end_cut.iter().any(|units| *units > 0),
+        "{row}행은 {}쪽에 첫 줄을 남겨야 한다: 끝 컷 {end_cut:?}",
+        page + 1
+    );
+    assert_eq!(
+        start_cut, end_cut,
+        "앞 조각의 끝 컷에서 이어야 유닛 누락·중복이 없다"
+    );
+}
+
+#[test]
+fn table_15_moves_short_bottom_rows_whole() {
+    let core = core(SAMPLE_1480000);
+    assert_eq!(core.page_count(), 205, "한/글 2020 PDF 와 같은 205쪽");
+    // 48쪽(0-기준 47)은 75행, 49쪽(48)은 110행으로 시작한다.
+    assert_whole_row_boundary(&core, 47, 278, 75);
+    assert_whole_row_boundary(&core, 48, 278, 110);
+}
+
+#[test]
+fn table_18_moves_short_bottom_rows_whole() {
+    let core = core(SAMPLE_1480000);
+    // 53쪽(0-기준 52)은 76행, 54쪽(53)은 117행으로 시작한다.
+    assert_whole_row_boundary(&core, 52, 292, 76);
+    assert_whole_row_boundary(&core, 53, 292, 117);
+}
+
+#[test]
+fn rows_inside_a_crossing_rowspan_still_split_after_one_line() {
+    let core = core(SAMPLE_1342000);
+    // 165쪽(0-기준 164) 끝의 120행, 166쪽(165) 끝의 127행.
+    assert_split_row_boundary(&core, 164, 14, 120);
+    assert_split_row_boundary(&core, 165, 14, 127);
+}
+
+#[test]
+fn rowspan_block_end_row_closes_at_page_bottom() {
+    let core = core(SAMPLE_21761835);
+    assert_eq!(core.page_count(), 6, "한/글 2020 PDF 와 같은 6쪽");
+    // 4쪽(0-기준 3)은 41행, 5쪽(4)은 57행으로 시작한다.
+    assert_whole_row_boundary(&core, 3, 4, 41);
+    assert_whole_row_boundary(&core, 4, 4, 57);
+}

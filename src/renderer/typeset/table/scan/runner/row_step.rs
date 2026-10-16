@@ -809,20 +809,42 @@ impl TypesetEngine {
                     && row_total > budget + 0.5;
                 if band_cut_ok {
                     end_row = r + 1;
-                    split_end_cut = res.end_cut.clone();
-                    split_end_limit = budget.max(res.consumed_height);
                     let physical_band = row_start_cut
                         .is_empty()
                         .then(|| {
                             layout_engine.stored_complete_row_cut_band(
                                 table,
                                 r,
-                                &split_end_cut,
+                                &res.end_cut,
                                 avail_for_rows - consumed - cs_before,
                                 styles,
                             )
                         })
                         .flatten();
+                    // 저장 셀 내용이 모두 남은 물리 띠에 들어가고 이 행을 지나 이어지는 걸침
+                    // 칸이 없으면, 한컴은 행을 이 쪽 끝에서 닫는다. 선언 높이의 남은 빈 띠는
+                    // 소유자가 없어 다음 쪽으로 넘기지 않는다(21761835 한/글 2020 PDF: 블록
+                    // 53–56 의 끝 56행이 4쪽 끝에서 닫히고 5쪽은 57행으로 시작한다).
+                    // 걸침 칸이 이어지면 한컴은 그 칸의 총높이를 지켜 남은 높이를 뒤 행에
+                    // 준다(블록 60–69: 68행이 5쪽에서 8px 줄고 6쪽 69행이 선언보다 9px
+                    // 크다). 그 경우는 아래 띠 이월로 같은 총량을 남긴다.
+                    let rowspan_continues_past_row = table.cells.iter().any(|cell| {
+                        let start = cell.row as usize;
+                        cell.row_span > 1 && start <= r && start + cell.row_span as usize > r + 1
+                    });
+                    if let Some(band) = physical_band.filter(|_| !rowspan_continues_past_row) {
+                        end_row_height_override = Some(band);
+                        consumed += cs_before + band;
+                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                            eprintln!(
+                                "DIAG_SCAN BAND_CLOSE r={} band={:.1} content={:.1} row_total={:.1}",
+                                r, band, res.consumed_height, row_total
+                            );
+                        }
+                        return false;
+                    }
+                    split_end_cut = res.end_cut.clone();
+                    split_end_limit = budget.max(res.consumed_height);
                     end_row_height_override = physical_band;
                     consumed += cs_before + physical_band.unwrap_or(split_end_limit);
                     if std::env::var("RHWP_DIAG_SCAN").is_ok() {
@@ -897,7 +919,8 @@ impl TypesetEngine {
                 } else if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
-                } else if layout_engine.stored_single_line_row_is_fragmentable(table, r, styles)
+                } else if table_storage_declares_splits
+                    && layout_engine.stored_single_line_row_is_fragmentable(table, r, styles)
                     && !rowspan_touched[r]
                     && layout_engine
                         .stored_ordinary_row_cut_height(
@@ -911,6 +934,10 @@ impl TypesetEngine {
                 {
                     // 한 줄은 온전히 소유하고, 선언 높이의 빈 꼬리만 다음 쪽으로 넘긴다.
                     // 내용 컷과 실제 물리 상자는 refit 뒤 공통 쪽 경계에서 확정한다.
+                    // 빈 꼬리를 따로 이월하는 근거는 표의 저장 셀 되감김(한컴이 기록한 쪽
+                    // 컷)이다. 그런 기록이 없는 표에서 한컴은 선언 높이가 안 들어가는 한 줄
+                    // 행을 통째로 다음 쪽에 넘긴다(1480000 표 18 76행: 52쪽 띠 17.5px <
+                    // 선언 18.9px, 한컴 정본 53쪽이 76행으로 시작).
                     let physical = avail_for_rows - consumed - cs_before;
                     end_row = r + 1;
                     split_end_cut = res.end_cut.clone();
@@ -1146,14 +1173,25 @@ impl TypesetEngine {
                     .is_some_and(|cut| cut == res.end_cut);
             // 수용한 글줄 컷은 이웃 셀의 실제 문단 유지 지시를 확인한다.
             // 컷 유닛의 소유로 판정하고, 아래 실제 표시 높이·예산 검사는 유지한다.
+            // 저장 컷의 고아 면제는 걸침 또는 완결 문단에서만 적용한다.
+            // 새 devel의 재조판 계약은 저장 사다리 인증과 구분해 유지한다.
             let plain_paragraph_keep_contract =
-                layout_engine.row_cut_respects_plain_paragraph_keeps(
+                (layout_engine.row_cut_respects_plain_paragraph_keeps(
                     table,
                     r,
                     row_start_cut,
                     &res.end_cut,
                     styles,
-                ) || layout_engine.reflow_row_cut_respects_plain_paragraph_keeps(
+                ) && (table.cells.iter().any(|cell| {
+                    let start = cell.row as usize;
+                    start < r && start + cell.row_span as usize > r
+                }) || layout_engine.row_cut_keeps_close_a_plain_paragraph(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                ))) || layout_engine.reflow_row_cut_respects_plain_paragraph_keeps(
                     table,
                     r,
                     row_start_cut,
