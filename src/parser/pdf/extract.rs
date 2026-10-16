@@ -1,6 +1,6 @@
 use super::{
-    recognition, table_detection, Budget, ExtractedPage, PdfImportError, MAX_DOCUMENT_IMAGE_PIXELS,
-    MAX_SOURCE_SPANS, MAX_TEXT_BYTES,
+    Budget, ExtractedPage, MAX_DOCUMENT_IMAGE_PIXELS, MAX_SOURCE_SPANS, MAX_TEXT_BYTES,
+    PdfImportError, recognition, table_detection,
 };
 use pdf_oxide::PdfDocument;
 use serde_json::json;
@@ -129,11 +129,21 @@ pub(super) fn extract(
             ),
             other => PdfImportError::backend(other),
         })?;
-        if image.width() != handle.width || image.height() != handle.height {
-            return Err(PdfImportError::new(
-                "PDF_IMAGE_UNSUPPORTED",
-                "decoded image dimensions differ from declaration",
-            ));
+        // Handle decode validates the codec's declared dimensions before mask
+        // composition. A higher-resolution mask may then increase the bitmap
+        // resolution without changing CTM/visible bounds. Account those pixels
+        // as well; a 2x2 colour image must not hide a large alpha plane.
+        let decoded_pixels = u64::from(image.width()) * u64::from(image.height());
+        if decoded_pixels > pixels {
+            budget.image_pixels = budget
+                .image_pixels
+                .checked_add(decoded_pixels - pixels)
+                .ok_or_else(|| PdfImportError::budget("composited image pixel count overflow"))?;
+            if decoded_pixels > 16_000_000 || budget.image_pixels > MAX_DOCUMENT_IMAGE_PIXELS {
+                return Err(PdfImportError::budget(
+                    "composited image pixel budget exceeded",
+                ));
+            }
         }
         // Ownership inference and lowering consume the same visible bounds.
         // Keep the full bitmap and CTM so lowering can preserve an editable crop.

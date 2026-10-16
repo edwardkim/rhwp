@@ -1,59 +1,114 @@
-//! Explicit 1-bit masks for request-bounded, independent IR pictures.
-//! PDF Reference 1.7 §4.8.5, pp.350–351: sample 0 paints the base image under
-//! Decode [0 1]; [1 0] reverses it. Both images map to the same unit square.
+//! Request-bounded image masks. PDF Reference 1.7 §§4.8.5, 7.5.4:
+//! explicit stencils have inverse polarity to DeviceGray soft-mask alpha.
+//! Matte preblending is undone in the source colour space, before conversion.
 
 use super::{
-    limited_decode_ranges, resolve_image_object, sample_buffer, ColorSpace, Error, ImageData,
-    PdfImage, PixelFormat, Result,
+    limited_decode_ranges, sample_buffer, ColorSpace, Error, ImageData, PdfImage, PixelFormat,
+    Result,
 };
 use crate::{document::PdfDocument, import_limits::ImportBudget, object::Object};
+use std::borrow::Cow;
+use std::collections::HashMap;
+
+// Resolve chains with an explicit request depth bound as well as the loader's
+// cumulative visit accounting. A cycle cannot start an unbounded recovery loop.
+fn resolve<'a>(
+    doc: &PdfDocument,
+    object: &'a Object,
+    budget: &ImportBudget,
+) -> Result<Cow<'a, Object>> {
+    let mut object = Cow::Borrowed(object);
+    let mut depth = 0;
+    while let Some(reference) = object.as_reference() {
+        budget.check()?;
+        if depth >= budget.limits.reference_depth {
+            return Err(budget.reject("image mask reference depth"));
+        }
+        object = Cow::Owned(doc.load_object(reference)?);
+        depth += 1;
+    }
+    Ok(object)
+}
 
 pub(super) struct Mask {
     width: u32,
     height: u32,
     stride: usize,
-    reversed: bool,
-    bits: Vec<u8>,
+    bpc: usize,
+    decode: (f32, f32),
+    soft: bool,
+    samples: Vec<u8>,
+    matte: Option<[f32; 3]>,
+    jpeg_decode: Option<[(f32, f32); 3]>,
+    other_source_decode: bool,
 }
 
 impl Mask {
     pub(super) fn read(
         doc: &PdfDocument,
-        object: Option<&Object>,
+        base: &HashMap<String, Object>,
+        color_spaces: Option<&HashMap<String, Object>>,
         budget: &ImportBudget,
     ) -> Result<Option<Self>> {
-        let Some(object) = object else {
-            return Ok(None);
+        // Table 4.39: a non-null SMask overrides Mask; never multiply their
+        // alphas or reject an ignored colour-key mask instead of using SMask.
+        let soft = base
+            .get("SMask")
+            .map(|v| resolve(doc, v, budget))
+            .transpose()?;
+        let (object, soft) = match soft {
+            Some(object) if !matches!(*object, Object::Null) => (object, true),
+            _ => match base.get("Mask") {
+                Some(object) => (resolve(doc, object, budget)?, false),
+                None => return Ok(None),
+            },
         };
-        let object = resolve_image_object(Some(doc), object)?;
         if matches!(*object, Object::Null) {
             return Ok(None);
         }
         let Object::Stream { dict, .. } = &*object else {
-            return Err(Error::Unsupported("limited image import colour-key Mask".into()));
+            return Err(if !soft && matches!(*object, Object::Array(_)) {
+                Error::Unsupported("limited image import colour-key Mask".into())
+            } else {
+                Error::Image("image mask must be a stream".into())
+            });
         };
-        let entry = |key: &str| {
-            dict.get(key)
-                .map(|v| resolve_image_object(Some(doc), v))
-                .transpose()
+        let entry = |key: &str| dict.get(key).map(|v| resolve(doc, v, budget)).transpose();
+        let stencil = entry("ImageMask")?;
+        let bpc = entry("BitsPerComponent")?;
+        let bpc = if soft {
+            if entry("Subtype")?.as_deref().and_then(Object::as_name) != Some("Image")
+                || entry("Type")?
+                    .is_some_and(|v| !matches!(*v, Object::Null) && v.as_name() != Some("XObject"))
+                || stencil.is_some_and(|v| !matches!(*v, Object::Null | Object::Boolean(false)))
+                || entry("ColorSpace")?.as_deref().and_then(Object::as_name) != Some("DeviceGray")
+            {
+                return Err(Error::Image(
+                    "SMask requires a DeviceGray image, not a stencil".into(),
+                ));
+            }
+            match bpc.as_deref().and_then(Object::as_integer) {
+                Some(n @ (1 | 2 | 4 | 8)) => n as usize,
+                Some(16) => return Err(Error::Unsupported("limited 16-bit SMask".into())),
+                _ => return Err(Error::Image("invalid SMask BitsPerComponent".into())),
+            }
+        } else {
+            if stencil.as_deref().and_then(Object::as_bool) != Some(true)
+                || !matches!(bpc.as_deref(), None | Some(Object::Null | Object::Integer(1)))
+            {
+                return Err(Error::Image("explicit Mask must be a 1-bit image mask".into()));
+            }
+            1
         };
-        if entry("ImageMask")?.as_deref().and_then(Object::as_bool) != Some(true)
-            || !matches!(
-                entry("BitsPerComponent")?.as_deref(),
-                None | Some(Object::Null | Object::Integer(1))
-            )
-        {
-            return Err(Error::Image("explicit Mask must be a 1-bit image mask".into()));
-        }
         for key in ["Mask", "SMask"] {
             if entry(key)?.is_some_and(|v| !matches!(*v, Object::Null)) {
-                return Err(Error::Unsupported("nested explicit image mask".into()));
+                return Err(Error::Unsupported("nested image mask".into()));
             }
         }
         if entry("Interpolate")?
             .is_some_and(|v| !matches!(*v, Object::Null | Object::Boolean(false)))
         {
-            return Err(Error::Unsupported("interpolated explicit image mask".into()));
+            return Err(Error::Unsupported("interpolated image mask".into()));
         }
         let dimension = |key: &str| -> Result<u32> {
             entry(key)?
@@ -61,59 +116,163 @@ impl Mask {
                 .and_then(Object::as_integer)
                 .and_then(|n| u32::try_from(n).ok())
                 .filter(|&n| n != 0)
-                .ok_or_else(|| Error::Image(format!("invalid explicit Mask /{key}")))
+                .ok_or_else(|| Error::Image(format!("invalid image mask /{key}")))
         };
         let width = dimension("Width")?;
         let height = dimension("Height")?;
-        let stride = (width as usize).div_ceil(8);
+        let stride = (width as usize)
+            .checked_mul(bpc)
+            .map(|n| n.div_ceil(8))
+            .ok_or_else(|| budget.reject("mask row size"))?;
         let expected = stride
             .checked_mul(height as usize)
             .filter(|&n| n <= budget.limits.stream_bytes)
-            .ok_or_else(|| budget.reject("explicit mask sample bytes"))?;
-        // Bound expanded sampling work as well as packed bytes, including a
-        // mask whose resolution differs from the base image.
+            .ok_or_else(|| budget.reject("mask sample bytes"))?;
         if u64::from(width) * u64::from(height) > 16_000_000 {
-            return Err(budget.reject("explicit mask pixels"));
+            return Err(budget.reject("mask pixels"));
         }
-        let decode = limited_decode_ranges(Some(doc), dict.get("Decode"), 1, budget)?;
-        let reversed = match decode.as_deref() {
-            None | Some([(0.0, 1.0)]) => false,
-            Some([(1.0, 0.0)]) => true,
-            _ => return Err(Error::Image("invalid explicit Mask Decode".into())),
+        let ranges = limited_decode_ranges(Some(doc), dict.get("Decode"), 1, budget)?;
+        let decode = ranges.as_deref().map_or((0.0, 1.0), |v| v[0]);
+        if !soft && !matches!(decode, (0.0, 1.0) | (1.0, 0.0)) {
+            return Err(Error::Image("invalid explicit Mask Decode".into()));
+        }
+        let matte = match entry("Matte")? {
+            None => None,
+            Some(v) if matches!(*v, Object::Null) => None,
+            Some(v) if soft => {
+                // Do not undo preblending after an ICC/CMYK conversion or an
+                // Indexed palette lookup: those are not source RGB samples.
+                let cs = base
+                    .get("ColorSpace")
+                    .ok_or_else(|| Error::Image("missing base ColorSpace".into()))?;
+                let cs = resolve(doc, cs, budget)?;
+                let cs = match cs
+                    .as_name()
+                    .and_then(|name| color_spaces.and_then(|map| map.get(name)))
+                {
+                    Some(resource) => resolve(doc, resource, budget)?,
+                    None => cs,
+                };
+                let components = match cs.as_name() {
+                    Some("DeviceRGB") => 3,
+                    Some("DeviceGray") => 1,
+                    _ => {
+                        return Err(Error::Unsupported("limited Matte source colour space".into()))
+                    },
+                };
+                let values = v
+                    .as_array()
+                    .filter(|a| a.len() == components)
+                    .ok_or_else(|| {
+                        Error::Image(
+                            "Matte component count differs from source colour space".into(),
+                        )
+                    })?;
+                let mut matte = [0.0; 3];
+                for (i, value) in values.iter().enumerate() {
+                    let value = resolve(doc, value, budget)?;
+                    matte[i] = value
+                        .as_integer()
+                        .map(|n| n as f64)
+                        .or_else(|| value.as_real())
+                        .filter(|n| n.is_finite() && (0.0..=1.0).contains(n))
+                        .ok_or_else(|| Error::Image("invalid Matte colour component".into()))?
+                        as f32;
+                }
+                if components == 1 {
+                    matte = [matte[0]; 3];
+                }
+                Some(matte)
+            },
+            Some(_) => return Err(Error::Image("Matte requires SMask".into())),
         };
-        // Only lossless packed samples implemented here. In particular a
-        // pass-through JPEG/JBIG2/CCITT buffer is never mistaken for mask bits.
-        match dict.get("Filter") {
+        match entry("Filter")?.as_deref() {
             None | Some(Object::Null) => {},
             Some(Object::Name(name)) if name == "FlateDecode" => {},
             Some(Object::Array(names))
                 if names.len() == 1 && names[0].as_name() == Some("FlateDecode") => {},
-            _ => return Err(Error::Unsupported("limited explicit Mask filter".into())),
+            _ => return Err(Error::Unsupported("limited image mask filter".into())),
         }
         if entry("DecodeParms")?.is_some_and(|v| !matches!(*v, Object::Null)) {
-            return Err(Error::Unsupported("limited explicit Mask DecodeParms".into()));
+            return Err(Error::Unsupported("limited image mask DecodeParms".into()));
         }
-        let bits = object.decode_stream_data_with_budget(budget)?;
-        if bits.len() != expected {
-            return Err(Error::Image("explicit Mask sample length differs from dimensions".into()));
+        // The raw extractor folds Decode into samples; its JPEG pass-through
+        // intentionally does not. Carry it to the JPEG composition boundary.
+        let jpeg_decode = if base
+            .get("Decode")
+            .is_some_and(|v| !matches!(v, Object::Null))
+        {
+            let cs = base
+                .get("ColorSpace")
+                .ok_or_else(|| Error::Image("missing base ColorSpace".into()))?;
+            let cs = resolve(doc, cs, budget)?;
+            let cs = match cs
+                .as_name()
+                .and_then(|name| color_spaces.and_then(|map| map.get(name)))
+            {
+                Some(resource) => resolve(doc, resource, budget)?,
+                None => cs,
+            };
+            match cs.as_name() {
+                Some("DeviceRGB" | "DeviceGray") => {
+                    let n = if cs.as_name() == Some("DeviceGray") {
+                        1
+                    } else {
+                        3
+                    };
+                    let ranges = limited_decode_ranges(Some(doc), base.get("Decode"), n, budget)?;
+                    ranges.map(|r| {
+                        if n == 1 {
+                            [r[0]; 3]
+                        } else {
+                            [r[0], r[1], r[2]]
+                        }
+                    })
+                },
+                _ => None, // Non-JPEG paths already apply their own Decode.
+            }
+        } else {
+            None
+        };
+        let other_source_decode = base
+            .get("Decode")
+            .is_some_and(|v| !matches!(v, Object::Null))
+            && jpeg_decode.is_none();
+        let samples = object.decode_stream_data_with_budget(budget)?;
+        if samples.len() != expected {
+            return Err(Error::Image("mask sample length differs from dimensions".into()));
         }
         Ok(Some(Self {
             width,
             height,
             stride,
-            reversed,
-            bits,
+            bpc,
+            decode,
+            soft,
+            samples,
+            matte,
+            jpeg_decode,
+            other_source_decode,
         }))
     }
 
     pub(super) fn apply(self, image: &mut PdfImage, budget: &ImportBudget) -> Result<()> {
-        let count = (image.width as usize)
-            .checked_mul(image.height as usize)
-            .filter(|&n| n > 0)
+        if self.matte.is_some() && (self.width != image.width || self.height != image.height) {
+            return Err(Error::Image("Matte requires matching base and SMask dimensions".into()));
+        }
+        let width = image.width.max(self.width);
+        let height = image.height.max(self.height);
+        let count = (width as usize)
+            .checked_mul(height as usize)
+            .filter(|&n| n > 0 && n <= 16_000_000)
             .ok_or_else(|| budget.reject("masked image geometry"))?;
         let size = count
             .checked_mul(4)
             .ok_or_else(|| budget.reject("masked RGBA size"))?;
+        let jpeg = matches!(image.data, ImageData::Jpeg(_));
+        if jpeg && self.other_source_decode {
+            return Err(Error::Unsupported("limited masked JPEG Decode colour space".into()));
+        }
         let rgb = match &image.data {
             ImageData::Jpeg(_) => PdfImage::into_rgb_with_budget(
                 image.decode_jpeg_with_budget(budget)?,
@@ -129,25 +288,52 @@ impl Mask {
             _ => return Err(Error::Unsupported("limited masked base image sample depth".into())),
         };
         let mut rgba = sample_buffer(size, Some(budget))?;
-        for y in 0..image.height {
+        let max = ((1 << self.bpc) - 1) as u8;
+        for y in 0..height {
             budget.check()?;
-            // Nearest samples at pixel centres in the common image unit square.
-            let my = ((2 * u64::from(y) + 1) * u64::from(self.height)
-                / (2 * u64::from(image.height))) as usize;
-            for x in 0..image.width {
-                let mx = ((2 * u64::from(x) + 1) * u64::from(self.width)
-                    / (2 * u64::from(image.width))) as usize;
-                let bit = (self.bits[my * self.stride + mx / 8] >> (7 - mx % 8)) & 1;
-                let alpha = if (bit == 0) != self.reversed { 255 } else { 0 };
-                let pixel = (y as usize * image.width as usize + x as usize) * 3;
-                rgba.extend_from_slice(&rgb.as_raw()[pixel..pixel + 3]);
-                rgba.push(alpha);
+            // Pixel centres in the common image unit square; no change to CTM,
+            // clipping, bounding boxes or final image ownership/placement.
+            let my = ((2 * u64::from(y) + 1) * u64::from(self.height) / (2 * u64::from(height)))
+                as usize;
+            let by = ((2 * u64::from(y) + 1) * u64::from(image.height) / (2 * u64::from(height)))
+                as usize;
+            for x in 0..width {
+                let mx = ((2 * u64::from(x) + 1) * u64::from(self.width) / (2 * u64::from(width)))
+                    as usize;
+                let bx = ((2 * u64::from(x) + 1) * u64::from(image.width) / (2 * u64::from(width)))
+                    as usize;
+                let offset = mx * self.bpc;
+                let raw = (self.samples[my * self.stride + offset / 8]
+                    >> (8 - self.bpc - offset % 8))
+                    & max;
+                let value = (self.decode.0
+                    + raw as f32 * (self.decode.1 - self.decode.0) / max as f32)
+                    .clamp(0.0, 1.0);
+                let alpha = if self.soft { value } else { 1.0 - value };
+                let pixel = (by * image.width as usize + bx) * 3;
+                for c in 0..3 {
+                    let mut value = rgb.as_raw()[pixel + c] as f32;
+                    if let Some(ranges) = self.jpeg_decode.as_ref().filter(|_| jpeg) {
+                        value = (ranges[c].0 + value / 255.0 * (ranges[c].1 - ranges[c].0))
+                            .clamp(0.0, 1.0)
+                            * 255.0;
+                    }
+                    let value = match self.matte {
+                        Some(m) if alpha > 0.0 => m[c] * 255.0 + (value - m[c] * 255.0) / alpha,
+                        Some(_) => 0.0, // RGB is irrelevant when fully transparent.
+                        None => value,
+                    };
+                    rgba.push(value.round().clamp(0.0, 255.0) as u8);
+                }
+                rgba.push((alpha * 255.0).round() as u8);
             }
         }
         image.data = ImageData::Raw {
             pixels: rgba,
             format: PixelFormat::RGBA,
         };
+        image.width = width;
+        image.height = height;
         image.color_space = ColorSpace::DeviceRGB;
         image.bits_per_component = 8;
         image.ccitt_params = None;

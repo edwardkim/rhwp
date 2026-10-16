@@ -4025,27 +4025,30 @@ impl<'doc> PdfImageHandle<'doc> {
             PdfImageSource::Inline { stream_object, .. } => (stream_object, None),
         };
 
+        let cs_map = if self.color_space_resources.is_empty() {
+            None
+        } else {
+            Some(&self.color_space_resources)
+        };
         let mask = if let Some(budget) = self.doc.import_budget() {
             // The limited handle path imports the image as an independent IR
-            // picture. Compose supported explicit masks, and reject semantics
-            // requiring a soft-mask compositor or current nonstroking colour.
+            // picture. Compose image alpha, while standalone stencils still
+            // require the graphics state's current nonstroking colour.
             // Never return the base pixels while silently dropping a mask.
             // The legacy extractor remains available to renderer callers that
             // apply these masks themselves.
             let dict = obj
                 .as_dict()
                 .ok_or_else(|| Error::Image("invalid image object".into()))?;
-            for key in ["SMask", "ImageMask"] {
-                if let Some(value) = dict.get(key) {
-                    let value = resolve_image_object(Some(self.doc), value)?;
-                    let absent = matches!(*value, crate::object::Object::Null)
-                        || (key == "ImageMask" && value.as_bool() == Some(false));
-                    if !absent {
-                        return Err(Error::Unsupported(format!("limited image import /{key}")));
-                    }
+            if let Some(value) = dict.get("ImageMask") {
+                let value = resolve_image_object(Some(self.doc), value)?;
+                let absent =
+                    matches!(*value, crate::object::Object::Null) || value.as_bool() == Some(false);
+                if !absent {
+                    return Err(Error::Unsupported("limited image import /ImageMask".into()));
                 }
             }
-            image_mask_limited::Mask::read(self.doc, dict.get("Mask"), budget)?
+            image_mask_limited::Mask::read(self.doc, dict, cs_map, budget)?
         } else {
             None
         };
@@ -4054,12 +4057,16 @@ impl<'doc> PdfImageHandle<'doc> {
         // `/ColorSpace` (e.g. `/CS0`) resolves the same way the renderer does.
         // `None` when empty preserves the original decode path for the common
         // case where the image's colour space needs no resource lookup.
-        let cs_map = if self.color_space_resources.is_empty() {
-            None
-        } else {
-            Some(&self.color_space_resources)
-        };
         let mut image = extract_image_from_xobject(Some(self.doc), obj, obj_ref, cs_map)?;
+        // Validate codec output against the source declaration before a mask
+        // compositor may increase the bitmap resolution in the same unit square.
+        if self.doc.import_budget().is_some()
+            && (image.width != self.width || image.height != self.height)
+        {
+            return Err(Error::Unsupported(
+                "decoded image dimensions differ from declaration".into(),
+            ));
+        }
         if let Some(mask) = mask {
             mask.apply(&mut image, self.doc.import_budget().expect("bounded mask"))?;
         }
