@@ -1654,7 +1654,7 @@ fn svg_view_box_mapping_is_portable(view_box: BoundingBox, destination: Bounding
     })
 }
 
-fn glyph_geometry_wire_scalar(value: f64, precision: usize) -> f64 {
+pub(crate) fn glyph_geometry_wire_scalar(value: f64, precision: usize) -> f64 {
     // Match json.rs: bbox components use 3 decimals, other glyph geometry uses 6.
     format!("{value:.precision$}").parse().unwrap_or(f64::NAN)
 }
