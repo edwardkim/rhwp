@@ -1,11 +1,12 @@
 //! Keep shared SVG-image eligibility within the browser's bounded XML subset.
-use rhwp::paint::{LayerNode, PageLayerTree, PaintOp};
+use rhwp::paint::{LayerNode, PageLayerTree, PaintOp, RenderProfile};
 use rhwp::renderer::canvaskit_policy::{
-    analyze_canvaskit_replay_plan, CanvasKitReplayMode, CanvasKitReplayStatus,
+    analyze_canvaskit_document_preflight, analyze_canvaskit_replay_plan,
+    CanvasKitPreflightPageBuild, CanvasKitReplayMode, CanvasKitReplayStatus,
 };
 use rhwp::renderer::render_tree::{BoundingBox, PageBackgroundImage, PageBackgroundNode};
 
-fn status(contents: &str) -> CanvasKitReplayStatus {
+fn state(contents: &str) -> (CanvasKitReplayStatus, bool) {
     let svg = format!(
         r#"<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">{contents}<path d="M0 0L10 10"/></svg>"#
     );
@@ -36,15 +37,25 @@ fn status(contents: &str) -> CanvasKitReplayStatus {
     );
     let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
     assert_eq!(plan.items.len(), 1);
-    plan.items[0].status
+    let preflight = analyze_canvaskit_document_preflight(
+        1,
+        CanvasKitReplayMode::Default,
+        RenderProfile::Screen,
+        |_, _| {
+            Ok::<_, String>(CanvasKitPreflightPageBuild::Complete {
+                tree: Box::new(tree.clone()),
+                prelower_work_units: 0,
+            })
+        },
+    );
+    assert!(preflight.complete);
+    (plan.items[0].status, preflight.eligible)
 }
 
 fn assert_rejected(contents: &str) {
-    assert!(
-        !matches!(
-            status(contents),
-            CanvasKitReplayStatus::Direct | CanvasKitReplayStatus::DirectRequired
-        ),
+    assert_eq!(
+        state(contents),
+        (CanvasKitReplayStatus::DirectRequired, false),
         "{contents:?}"
     );
 }
@@ -86,8 +97,8 @@ fn ordinary_comments_and_comment_free_styles_remain_direct_candidates() {
         "<style>path{fill:red}</style>",
     ] {
         assert_eq!(
-            status(contents),
-            CanvasKitReplayStatus::Direct,
+            state(contents),
+            (CanvasKitReplayStatus::Direct, true),
             "{contents:?}"
         );
     }
