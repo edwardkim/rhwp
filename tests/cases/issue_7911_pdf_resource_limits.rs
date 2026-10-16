@@ -2551,7 +2551,7 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
     for (label, base, base_entries, samples, mask_entries, expected) in [
         (
             "gray8 alpha",
-            vec![20, 40, 60].repeat(4),
+            [20, 40, 60].repeat(4),
             "/Width 4 /Height 1 /ColorSpace /DeviceRGB",
             vec![0, 64, 128, 255],
             "/Width 4 /Height 1 /BitsPerComponent 8",
@@ -2564,7 +2564,7 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
         ),
         (
             "reversed alpha",
-            vec![20, 40, 60].repeat(3),
+            [20, 40, 60].repeat(3),
             "/Width 3 /Height 1 /ColorSpace /DeviceRGB",
             vec![0, 128, 255],
             "/Width 3 /Height 1 /BitsPerComponent 8 /Decode [1 0]",
@@ -2596,7 +2596,7 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
         ),
         (
             "different resolution",
-            vec![20, 40, 60].repeat(4),
+            [20, 40, 60].repeat(4),
             "/Width 4 /Height 1 /ColorSpace /DeviceRGB",
             vec![0x40],
             "/Width 2 /Height 1 /BitsPerComponent 1",
