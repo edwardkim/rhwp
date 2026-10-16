@@ -785,6 +785,59 @@ fn table_count(controls: &[Control]) -> usize {
         .sum()
 }
 
+fn paint_frame(control: &Control) -> Option<&CommonObjAttr> {
+    match control {
+        Control::Shape(shape) => Some(shape.common()),
+        Control::Picture(picture) => Some(&picture.common),
+        Control::Table(table) => Some(&table.common),
+        _ => None,
+    }
+}
+
+/// Body table paint can use the flow plane, whereas positional source controls
+/// paint in front of text. A retained backdrop can consequently cover table
+/// labels even with a larger table z-order. Promote only when no earlier
+/// overlapping positional paint would cross that plane boundary.
+fn table_paint_layer(
+    controls: &[Control],
+    consumed: &BTreeSet<usize>,
+    bounds: &Value,
+) -> Result<i32, String> {
+    let last = consumed
+        .iter()
+        .filter_map(|&i| controls.get(i).and_then(paint_frame))
+        .map(|c| c.z_order)
+        .max()
+        .ok_or("table has no source paint")?;
+    let (x, y, width, height) = (
+        number(&bounds["x"])?,
+        number(&bounds["y"])?,
+        number(&bounds["width"])?,
+        number(&bounds["height"])?,
+    );
+    for (i, control) in controls.iter().enumerate() {
+        if consumed.contains(&i) {
+            continue;
+        }
+        let Some(frame) = paint_frame(control) else {
+            continue;
+        };
+        if frame.z_order > last {
+            continue;
+        }
+        let cx = (frame.horizontal_offset as i32) as f32 / 100.;
+        let cy = (frame.vertical_offset as i32) as f32 / 100.;
+        if cx < x + width
+            && cx + frame.width as f32 / 100. > x
+            && cy < y + height
+            && cy + frame.height as f32 / 100. > y
+        {
+            return Err("positional backdrop cannot share inferred table flow plane".into());
+        }
+    }
+    Ok(last)
+}
+
 pub(super) fn lower(
     page: &ExtractedPage,
     doc: &mut Document,
@@ -866,13 +919,19 @@ pub(super) fn lower(
         let border_start = doc.doc_info.border_fills.len();
         let tab_start = doc.doc_info.tab_defs.len();
         let mut candidate_removed = BTreeSet::new();
-        let built = builder.build(
-            doc,
-            candidate,
-            &mut candidate_removed,
-            &mut BTreeSet::new(),
-            family,
-        );
+        let built = builder
+            .build(
+                doc,
+                candidate,
+                &mut candidate_removed,
+                &mut BTreeSet::new(),
+                family,
+            )
+            .and_then(|mut table| {
+                table.common.z_order =
+                    table_paint_layer(&controls, &candidate_removed, &grid["bbox"])?;
+                Ok(table)
+            });
         match built {
             Ok(table) => {
                 removed.extend(candidate_removed);
