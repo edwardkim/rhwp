@@ -151,7 +151,17 @@ impl TypesetEngine {
                 straddle_page_bands,
             };
             let block = block_query.candidate(r);
-            let step = if (block.protected || block.rowbreak_rowspan_block) && block.b_start == r {
+            // 이월 게이트(`prepare`)가 확정한 첫 조각의 0행 컷을 그대로 소비한다.
+            // 표 중간의 묶음과 잔여에 통째로 드는 묶음은 기존 보호를 그대로 둔다.
+            let protected_block_cuts_after_first_row = v.opening_block_cuts_after_first_row
+                && r == 0
+                && block.b_start == r
+                && block.protected
+                && !block.rowbreak_rowspan_block;
+            let step = if (block.protected || block.rowbreak_rowspan_block)
+                && block.b_start == r
+                && !protected_block_cuts_after_first_row
+            {
                 self.scan_rowspan_block_step(input, progress, block, cs_before)
             } else {
                 self.scan_ordinary_row_step(input, progress, cs_before)
