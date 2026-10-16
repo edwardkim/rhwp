@@ -7,6 +7,7 @@ license = "MIT"
 repository = "https://github.com/edwardkim/rhwp"
 autotests = false
 autoexamples = false
+autobins = false
 
 [workspace]
 exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder"]
@@ -24,6 +25,14 @@ crate-type = ["rlib", "cdylib"]
 [[bin]]
 name = "rhwp"
 path = "src/main.rs"
+
+[[bin]]
+name = "rhwp-q"
+path = "src/bin/rhwp-q/main.rs"
+
+[[bin]]
+name = "rhwp-agent"
+path = "src/bin/rhwp-agent/main.rs"
 
 [[bin]]
 name = "font-metric-gen"
@@ -475,6 +484,10 @@ path = "tools/fixture_generators/build_issue_5800_fixture.rs"
 [[example]]
 name = "font_metric_coverage_worker"
 path = "tools/diagnostics/font_metric_coverage_worker.rs"
+
+[profile.dev]
+# 로컬 실행 파일의 크기를 줄이되 함수·파일·줄 단위 역추적 정보는 유지한다.
+debug = 1
 
 [profile.release]
 lto = true

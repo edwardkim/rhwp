@@ -7,6 +7,8 @@ last_verified: 2026-10-16
 
 # rhwp CLI 명령어 매뉴얼
 
+별도 조회 도구의 하위 명령·기존 rhwp-q-* 이관은 [rhwp-q 매뉴얼](rhwp_query_cli.md)을 따른다.
+
 `rhwp` 바이너리의 전체 명령을 정리한다. 권위 출처는 `src/main.rs` 의 명령 디스패치이며,
 `rhwp --help` 와 본 문서를 함께 현행화한다.
 
