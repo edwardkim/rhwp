@@ -306,20 +306,24 @@ impl Mask {
                 let raw = (self.samples[my * self.stride + offset / 8]
                     >> (8 - self.bpc - offset % 8))
                     & max;
-                let value = (self.decode.0
-                    + raw as f32 * (self.decode.1 - self.decode.0) / max as f32)
-                    .clamp(0.0, 1.0);
+                let value = (f64::from(self.decode.0)
+                    + f64::from(raw) * (f64::from(self.decode.1) - f64::from(self.decode.0))
+                        / f64::from(max))
+                .clamp(0.0, 1.0);
                 let alpha = if self.soft { value } else { 1.0 - value };
                 let pixel = (by * image.width as usize + bx) * 3;
                 for c in 0..3 {
-                    let mut value = rgb.as_raw()[pixel + c] as f32;
+                    let mut value = f64::from(rgb.as_raw()[pixel + c]);
                     if let Some(ranges) = self.jpeg_decode.as_ref().filter(|_| jpeg) {
-                        value = (ranges[c].0 + value / 255.0 * (ranges[c].1 - ranges[c].0))
-                            .clamp(0.0, 1.0)
+                        value = (f64::from(ranges[c].0)
+                            + value / 255.0 * (f64::from(ranges[c].1) - f64::from(ranges[c].0)))
+                        .clamp(0.0, 1.0)
                             * 255.0;
                     }
                     let value = match self.matte {
-                        Some(m) if alpha > 0.0 => m[c] * 255.0 + (value - m[c] * 255.0) / alpha,
+                        Some(m) if alpha > 0.0 => {
+                            f64::from(m[c]) * 255.0 + (value - f64::from(m[c]) * 255.0) / alpha
+                        },
                         Some(_) => 0.0, // RGB is irrelevant when fully transparent.
                         None => value,
                     };
