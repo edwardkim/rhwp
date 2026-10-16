@@ -2409,3 +2409,13 @@ paint run 분리로 깨진 기존 검사 선택은 원문·셀·문자 출처로
 유지했다. 실패11건을 포함한 집중41건은41PASS/0FAIL이다. 새 전체 통과로 확대하지 않는다.
 [원인·소비 경로·기계 증적·남은 검증](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/native-font-roundtrip-20261017/README.md)에 연결한다.
 WMF raw 미달·도로조명 배치 차이·최종 전체 게이트가 남아 PR은 아직 생성하지 않았다.
+
+## C70. 본문 호스트의 첫 저장 표 프레임 복원 (2026-10-17)
+
+표의 첫 프레임 인증이 유효해도 호스트에 본문이 있으면 빈 밴드를 버리던 추가 가정을 제거했다.
+저장 프레임과 실제 컷을 흐름 예약·셀 CENTER 배치가 함께 소비한다. 기존 검사에 원본 HU 높이,
+셀 중심·전쪽 원문 순서·누락·중복 관계를 보완했고 수정 전1FAIL/1PASS→수정 후2PASS다.
+조명2쪽 Native/fresh WASM의1쪽은각96.77948/96.83194%,2쪽99.97851%다.
+각48조건1745쪽과 전체10514PASS/0FAIL/45skip을 완료했다. sample16 WMF 미달과 추가
+HWP5 저장 출처 회귀는 남아 있으며 후속 gate는 보정을 위해 중단했다. PR 완료로 판정하지 않는다.
+[원인·실제 소비·최종 전후 review/overlay·검증 한계](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/text-host-frame-20261017/README.md)를 보존한다.

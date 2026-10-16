@@ -540,21 +540,8 @@ impl TypesetEngine {
             && (split_block_start.is_none() || saved_block_opening_frame.is_some())
             && (end_row_height_override.is_none() || declared_row_minimum_owns_override)
             && std::ptr::eq(table, row_geometry_table)
-            && (crate::renderer::float_placement::object_only_saved_table_anchor(
-                input.source.paragraph,
-                table,
-            ) || body_filling_source_frame
-                || saved_closing_frame.is_some()
-                || saved_block_opening_frame.is_some()
-                || (crate::renderer::float_placement::stored_rowbreak_outer_frame_host(
-                    input.source.paragraph,
-                    table,
-                ) && layout_engine.row_cut_starts_intra_paragraph_stored_frame(
-                    table,
-                    end_row - 1,
-                    &split_end_cut,
-                    styles,
-                )))
+            // 첫 상자의 출처와 컷은 표 자체가 인증한다. 앞 문단의 가시
+            // 텍스트는 앵커 원점을 정하지만, 표 프레임의 빈 밴드를 없애지 않는다.
             && saved_opening_frame.is_some_and(|frame_height| {
                 (frame_height >= opening_frame_required_height
                     || saved_block_opening_frame.is_some())
