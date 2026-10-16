@@ -55,6 +55,11 @@ SMask와 RGB 그림의 Matte를 사용한다. 기존 구현은 이 유형을 명
   지원하지 않는 필터를 무시하지 않는다. 이미지 XObject의 SMask와 graphics-state soft mask는 구분한다.
 - 새 샘플 19쪽의 Native/fresh Docker WASM TSV·실제 Studio 열기와 이미지 경계를 확인한다.
   첫 샘플에 승인된 시각 예외를 새 샘플로 자동 확장하지 않는다.
+- 통합 실행에서 반복 header가 9쪽째 누적 해제량 한도를 넘겼다. 실제 phase 계측으로
+  이미 해제된 Raw RGB/RGBA의 PNG 출력에 수행하지 않는 decode/색 변환 3회분이 추가 예약됨을
+  확인했다. 같은 borrowed-sample 결과를 예산과 encoder가 함께 소비하고 실제 zlib scratch·
+  출력은 계속 예약한다. Mask 합성의 RGB 복사도 빌려 쓰는 경로로 제거한다. 256MiB 누적 한도,
+  버퍼별 한도·sticky 실패는 유지하며 실제 예약량 경계 검사로 검증한다.
 
 ## 3. #7949 기본 빌드 계약
 

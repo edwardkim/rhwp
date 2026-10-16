@@ -2930,8 +2930,10 @@ fn png_output_and_cumulative_limits_include_container_and_repeated_work() {
             );
         }
     }
-    // Existing conservative image work + actual scratch + encoded output.
-    let one_request = 2 * 4 * 3 + scratch + encoded_bytes;
+    // The RGB samples are already decoded and borrowed by the encoder. Only
+    // actual compressor reservations and PNG output consume this request;
+    // charge both again on the next call, without phantom image conversions.
+    let one_request = scratch + encoded_bytes;
     assert_eq!(normal.decoded_bytes(), one_request);
     for count in [1, 2] {
         for cap in [

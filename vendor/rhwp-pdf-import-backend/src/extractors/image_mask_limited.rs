@@ -273,18 +273,38 @@ impl Mask {
         if jpeg && self.other_source_decode {
             return Err(Error::Unsupported("limited masked JPEG Decode colour space".into()));
         }
-        let rgb = match &image.data {
-            ImageData::Jpeg(_) => PdfImage::into_rgb_with_budget(
-                image.decode_jpeg_with_budget(budget)?,
-                Some(budget),
-            )?,
-            ImageData::Raw { pixels, format } if image.bits_per_component == 8 => {
-                image.raw_rgb_with_budget(pixels, *format, budget)?
+        let rgb: Cow<'_, [u8]> = match &image.data {
+            ImageData::Raw {
+                pixels,
+                format: PixelFormat::RGB,
+            } if image.bits_per_component == 8 => {
+                let expected = (image.width as usize)
+                    .checked_mul(image.height as usize)
+                    .and_then(|n| n.checked_mul(3));
+                if expected != Some(pixels.len()) {
+                    return Err(Error::Image("invalid masked RGB sample length".into()));
+                }
+                Cow::Borrowed(pixels)
             },
-            _ if image.ccitt_params.is_some() => PdfImage::into_rgb_with_budget(
-                image.decode_ccitt_with_budget(budget)?,
-                Some(budget),
-            )?,
+            ImageData::Jpeg(_) => Cow::Owned(
+                PdfImage::into_rgb_with_budget(
+                    image.decode_jpeg_with_budget(budget)?,
+                    Some(budget),
+                )?
+                .into_raw(),
+            ),
+            ImageData::Raw { pixels, format } if image.bits_per_component == 8 => Cow::Owned(
+                image
+                    .raw_rgb_with_budget(pixels, *format, budget)?
+                    .into_raw(),
+            ),
+            _ if image.ccitt_params.is_some() => Cow::Owned(
+                PdfImage::into_rgb_with_budget(
+                    image.decode_ccitt_with_budget(budget)?,
+                    Some(budget),
+                )?
+                .into_raw(),
+            ),
             _ => return Err(Error::Unsupported("limited masked base image sample depth".into())),
         };
         let mut rgba = sample_buffer(size, Some(budget))?;
@@ -313,7 +333,7 @@ impl Mask {
                 let alpha = if self.soft { value } else { 1.0 - value };
                 let pixel = (by * image.width as usize + bx) * 3;
                 for c in 0..3 {
-                    let mut value = f64::from(rgb.as_raw()[pixel + c]);
+                    let mut value = f64::from(rgb[pixel + c]);
                     if let Some(ranges) = self.jpeg_decode.as_ref().filter(|_| jpeg) {
                         value = (f64::from(ranges[c].0)
                             + value / 255.0 * (f64::from(ranges[c].1) - f64::from(ranges[c].0)))

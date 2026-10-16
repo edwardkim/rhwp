@@ -400,16 +400,44 @@ impl PdfImage {
         }
         // Includes pixel decode, conversion and temporary RGB output. This is
         // accounted work, not a promise about the codec's private scratch heap.
-        budget.charge_decoded(
-            raw_size
-                .checked_mul(3)
-                .ok_or_else(|| budget.reject("image work overflow"))?,
-        )?;
+        if self.borrowed_png_samples().is_none() {
+            budget.charge_decoded(
+                raw_size
+                    .checked_mul(3)
+                    .ok_or_else(|| budget.reject("image work overflow"))?,
+            )?;
+        }
         let mut buffer = budget.output();
         let result = self.encode_png(&mut buffer, Some(budget));
         budget.check()?;
         result?;
         Ok(buffer.finish())
+    }
+
+    // This result is consumed by both budget accounting and encoding. Already
+    // decoded samples need no image-sized decode/conversion scratch: PNG feeds
+    // borrowed rows into the audited compressor and bounded output writer.
+    fn borrowed_png_samples(&self) -> Option<(&[u8], usize)> {
+        let ImageData::Raw { pixels, format } = &self.data else {
+            return None;
+        };
+        if self.bits_per_component != 8 || self.ccitt_params.is_some() {
+            return None;
+        }
+        let channels = match format {
+            PixelFormat::RGBA => 4,
+            PixelFormat::RGB => 3,
+            PixelFormat::Grayscale
+                if matches!(self.color_space, ColorSpace::DeviceGray | ColorSpace::CalGray) =>
+            {
+                1
+            },
+            _ => return None,
+        };
+        let size = (self.width as usize)
+            .checked_mul(self.height as usize)?
+            .checked_mul(channels)?;
+        (pixels.len() == size).then_some((pixels, channels))
     }
 
     fn encode_png(
@@ -445,6 +473,15 @@ impl PdfImage {
             .map_err(|e| Error::Encode(format!("Failed to encode PNG: {}", e)))
         };
 
+        if let Some((pixels, channels)) = self.borrowed_png_samples() {
+            let color = match channels {
+                1 => image::ColorType::L8,
+                3 => image::ColorType::Rgb8,
+                4 => image::ColorType::Rgba8,
+                _ => unreachable!("validated borrowed PNG samples"),
+            };
+            return write_pixels(pixels, color.into());
+        }
         match &self.data {
             ImageData::Raw { pixels, format } => {
                 let expected_gray = (self.width as usize)
