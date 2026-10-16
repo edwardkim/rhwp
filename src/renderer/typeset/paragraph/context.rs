@@ -13,6 +13,7 @@ pub(in crate::renderer::typeset) struct ParagraphFormatContext<'a> {
     profile: &'a Cell<LayoutCompatibilityProfile>,
     uniform_filler_ladder: &'a Cell<bool>,
     float_carve_evidence: &'a RefCell<Vec<FloatCarveEvidence>>,
+    next_stored_vpos: Option<i32>,
 }
 
 impl<'a> ParagraphFormatContext<'a> {
@@ -21,13 +22,20 @@ impl<'a> ParagraphFormatContext<'a> {
         profile: &'a Cell<LayoutCompatibilityProfile>,
         uniform_filler_ladder: &'a Cell<bool>,
         float_carve_evidence: &'a RefCell<Vec<FloatCarveEvidence>>,
+        next_stored_vpos: Option<i32>,
     ) -> Self {
         Self {
             dpi,
             profile,
             uniform_filler_ladder,
             float_carve_evidence,
+            next_stored_vpos,
         }
+    }
+
+    /// 본문 흐름에서 구성 중인 문단 바로 뒤 문단의 첫 저장 줄 vpos(없으면 None).
+    pub(super) fn next_stored_vpos(&self) -> Option<i32> {
+        self.next_stored_vpos
     }
 
     pub(super) fn dpi(&self) -> f64 {

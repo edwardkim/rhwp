@@ -119,6 +119,13 @@ impl TypesetEngine {
             }
             // [#6175] devel 의 known-square-band 인자를 그대로 전달한다 —
             // 위에서 좁힌 col_w(합성 어울림 감폭)와 함께 쓴다.
+            self.format_next_stored_vpos.set(
+                paragraphs
+                    .get(para_idx + 1)
+                    .and_then(|next| next.line_segs.first())
+                    .filter(|line| !is_synthetic_line_seg(line))
+                    .map(|line| line.vertical_pos),
+            );
             let mut formatted = self.format_paragraph_with_known_square_band(
                 para,
                 composed.get(para_idx),
@@ -127,6 +134,7 @@ impl TypesetEngine {
                 st.wrap_around_derived_band
                     || st.current_column_wrap_anchors.contains_key(&para_idx),
             );
+            self.format_next_stored_vpos.set(None);
             // HWP5 컨테이너는 파서의 raw 출처 봉인으로 편집 여부를 확인할 수 있다.
             // HWPX/원본 HWP3는 같은 출처 봉인이 없으므로 이 저장 증언 경로에 넣지 않는다.
             // 편집 중 복제한 줄을 정상 저장 원점으로 믿지 않고 기존 소유자에 남긴다.

@@ -6530,6 +6530,14 @@ impl DocumentCore {
         } else {
             None
         };
+        let next_stored_vpos = (para_index + 1 < body_len)
+            .then(|| paragraphs.get(para_index + 1))
+            .flatten()
+            .and_then(|next| next.line_segs.first())
+            .filter(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            .map(|line| line.vertical_pos);
         Some(typesetter.dump_formatted_paragraph_height(
             para,
             composed,
@@ -6542,6 +6550,7 @@ impl DocumentCore {
                     .flat_map(|page| &page.column_contents)
                     .find_map(|column| column.inline_flow_plans.get(&para_index))
             }),
+            next_stored_vpos,
         ))
     }
 
