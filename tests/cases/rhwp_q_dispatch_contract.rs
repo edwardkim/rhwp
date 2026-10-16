@@ -1,5 +1,10 @@
 //! 조회 CLI 통합의 공개 진입점·인자 전달 계약.
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/root_binary_contract.rs"
+));
+
 use std::process::{Command, Output};
 
 fn run(args: &[&str]) -> Output {
@@ -191,4 +196,18 @@ fn help_describes_actual_kit_options_and_keeps_help_as_a_query_value() {
     let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(value["query"], "--help");
     assert_eq!(value["command"], "search-all");
+}
+
+#[test]
+fn root_binary_inventory_rejects_extra_replaced_or_automatically_discovered_targets() {
+    let cargo = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml"));
+    assert_root_binary_contract(cargo);
+    assert_root_binary_contract(&format!("{cargo}\n# [[bin]]은 설명용 주석이다.\n"));
+    for invalid in [
+        cargo.replace("autobins = false", "autobins = true"),
+        cargo.replace("src/bin/rhwp-q/main.rs", "src/bin/unapproved/main.rs"),
+        format!("{cargo}\n[[bin]]\nname = \"unapproved\"\npath = \"src/bin/unapproved.rs\"\n"),
+    ] {
+        assert!(std::panic::catch_unwind(|| assert_root_binary_contract(&invalid)).is_err());
+    }
 }
