@@ -324,11 +324,18 @@ fn decode_limit_does_not_become_empty_paths_success() {
 
 #[test]
 fn page_path_and_image_consumers_share_a_bounded_parse() {
-    let with_text = object_file(&objects(b"BT /F1 12 Tf 10 20 Td (A) Tj ET 0 0 m 1 1 l S", "", ""), "");
-    let all_consumers = PdfDocument::from_bytes_with_limits(with_text, PdfImportLimits {
-        operators: 8,
-        ..Default::default()
-    }).unwrap();
+    let with_text = object_file(
+        &objects(b"BT /F1 12 Tf 10 20 Td (A) Tj ET 0 0 m 1 1 l S", "", ""),
+        "",
+    );
+    let all_consumers = PdfDocument::from_bytes_with_limits(
+        with_text,
+        PdfImportLimits {
+            operators: 8,
+            ..Default::default()
+        },
+    )
+    .unwrap();
     assert_eq!(all_consumers.extract_spans(0).unwrap()[0].text, "A");
     assert_eq!(all_consumers.extract_paths(0).unwrap().len(), 1);
     assert!(all_consumers.page_image_handles(0).unwrap().is_empty());
