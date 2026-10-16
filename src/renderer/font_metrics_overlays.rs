@@ -18,14 +18,27 @@ struct OriginalGlyphMetric {
 // #7445: pdf/hwp3-sample16-hwp5-hwp-2024.pdf 23쪽의 HCI Poppy Type3.
 // 슬래시 네 군데의 /Widths와 CharProc d1이 모두 605/1000이다.
 // 표시 폴백 Palatino의 656/2048은 원본 HFT 글리프의 폭이 아니다.
-static ORIGINAL_GLYPH_METRICS: &[OriginalGlyphMetric] = &[OriginalGlyphMetric {
-    face: "HCI Poppy",
-    bold: false,
-    italic: false,
-    character: '/',
-    advance_units: 605,
-    em_units: 1000,
-}];
+static ORIGINAL_GLYPH_METRICS: &[OriginalGlyphMetric] = &[
+    OriginalGlyphMetric {
+        face: "HCI Poppy",
+        bold: false,
+        italic: false,
+        character: '/',
+        advance_units: 605,
+        em_units: 1000,
+    },
+    // worklife_balance_index_156607916-2020.pdf p4/p5 T10의
+    // ToUnicode 002B와 Widths605/FontMatrix.001. 대체 Palatino의
+    // 0.5em으로 재면 괄호 안 다음 숫자가 기호마다 약1.75CSSpx 당겨진다.
+    OriginalGlyphMetric {
+        face: "HCI Poppy",
+        bold: false,
+        italic: false,
+        character: '+',
+        advance_units: 605,
+        em_units: 1000,
+    },
+];
 
 // samples/hwp3-empty-cell.hwp의 HCI Tulip regular: 독립 한컴 2020 Print
 // pdf/hwp3-empty-cell-2020.pdf /T1의 ToUnicode와 /Widths, FontMatrix 0.001.

@@ -2598,3 +2598,42 @@ C75 집중 캡처는 이후6조건/276쪽(각 backend138쪽), 쪽수 일치·raw
 합계8건을 통과했다. 첫 페이지 검사에서 없는 BoundingBox.right 메서드를 사용한 컴파일
 오류는 수정했으며 결함 재현이나 통과로 세지 않는다. 전후 source/producer·선정 근거와 양쪽 직접 판독 이미지는
 [기호 슬롯 보정 증적](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hyphenation-symbol-owner-20261017/README.md)에 연결한다.
+
+
+## C76 — HCI Poppy 원본 '+' 자연 전진 보정 후보 (2026-10-17)
+
+부모는 C75 로컬 커밋 `bd153fa40fba5e9890efe8dda90d5f3f178579e0`이다.
+C75 이후에도 남은 일·생활균형4쪽의 같은 문자 원점을 독립 Print와 대조했다.
+`(+1.2점...)`, `(+1.0점...)`의 '+' 뒤부터 각각 약1.75CSSpx씩 당겨지며,
+마지막 숫자/본문은 약3.3px 차이가 있었다. source charPr100/128은 보통체·정체,
+LATIN HCI Poppy이며 독립4/5쪽 T10의 ToUnicode002B/Widths605/FontMatrix.001이다.
+표시 대체 Palatino의0.5em을 원본 HFT 전진으로 쓰던 부분 메트릭 누락이다.
+
+기존 부분 `OriginalGlyphMetric`에 확인한 보통체 '+'605/1000만 추가했다.
+composition/측정/paint가 이미 공유하는 원본 glyph metric 경로를 사용하고
+문서 ID·위치·영역 조건이나 좌표 보정은 추가하지 않았다. 미확인 문자·스타일과
+명시 TrueType 프로그램 선택은 기존 계약을 유지한다. 사양상 '+' 전부를 넓히지 않는다.
+
+공개 글꼴 결정 API의 `original_hci_plus_keeps_its_independent_type3_advance`는
+같은 source에서 수정 전8건7PASS/1FAIL(0.082초) → 수정 후8PASS/0FAIL(0.079초)이다.
+독립 자연 전진과 원문 보존을 검사하며 실물 배치 골든이 아니다.
+이후 같은 원본6쪽·동일 PDF/글꼴/compat2022/96DPI·raw2px 조건으로 Native/fresh WASM
+캡처를 시작했다. 현재 Native 빌드 진행 중이며 시각 결과·devel 무회귀·전체 회귀·실제 소비
+수용을 앞당겨 주장하지 않는다. source/test는 아직 커밋하지 않았다.
+정본 로그·입력/PDF 증거·producer는 ignored output의
+`regression-policy-audit-20261015/rebase-fe5725dc-20261017/hci-original-plus-c94/`에 보존한다.
+
+
+C76 전6쪽 Native/fresh WASM 캡처는 이후 각각6/6쪽·90% 미만0으로 완료했다.
+최저97.56458/97.56205%,4쪽99.00620/98.99872%,5쪽99.94332/99.94496%다.
+고정 devel과 Decimal로 전6쪽을 각각 비교한0.01%p 이상 하락은 양쪽0쪽이다.
+부모 대비3쪽 감소0.00655/0.00653%p도 원장에 남겼으며 평균으로 상쇄하지 않았다.
+다른 문서나 WMF/giant 잔여의 통과를 주장하지 않는다.
+
+반복 '+'가 같은 물리 줄에서 누적되는4쪽을 중요 경계로 골라, 전쪽90%·해당 쪽
+Native/fresh WASM98%·직접 판독 뒤 독립±2CSSpx와 원문/순서/단일 소유 검사를 추가했다.
+부모 메트릭으로 **같은9개 검사**를 실행해7PASS/2FAIL(0.085초), 후보에서
+9PASS/0FAIL(0.085초)이다. 마지막 숫자 원점344.493334 vs 독립347.8113607CSSpx에서
+실제로 실패했다. 부모 재현용 임시 원본 파일은 finally에서 캡처와 동일한 후보 SHA로 복원했다.
+이후 테스트 서두의 주석만 갱신했고 실행한 함수 본문과 동일함을 별도 검증했다.
+[자연 전진·전체 수치·반복 경계 선정·독립 px·대표 review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hci-original-plus-20261017/README.md)에 연결한다.

@@ -1,6 +1,6 @@
-//! 원본의 부분 글리프 전진과 기호 슬롯은 공개 글꼴 결정 API로 검증한다.
-//! 물리 페이지의 임시 배치를 고정하지 않는 프로그램 메트릭 계약이다.
-//! 독립 Print 프로그램과 전쪽/중요 px 증적은 source-program-and-inline-spacing/validation.json.
+//! 원본 글꼴 프로그램·기호 소유는 공개 글꼴 결정 API로 확인한다.
+//! 전쪽 Native/fresh WASM90%와 해당 쪽98%·직접 판독을 마친 실물 경계는
+//! 내용 관계와 독립±2CSSpx로 함께 보호한다. 근거: stage5 C75/C76 보고서.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{renderer::font_environment::FontEnvironment, DocumentCore};
@@ -286,5 +286,135 @@ fn worklife_symbol_point_preserves_source_and_independent_completed_page_positio
     assert_eq!(ops.len(), 1);
     let baseline = ops[0]["placement"]["runToPage"]["f"].as_f64().unwrap();
     assert!((baseline - 111.23843383789062).abs() <= 2.0);
+    assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
+}
+
+#[test]
+fn original_hci_plus_keeps_its_independent_type3_advance() {
+    // 일·생활균형 독립 Print 4/5쪽 T10: ToUnicode002B,
+    // Widths605, FontMatrix.001. 표시 Palatino의 반각 폭을 원본 폭으로 쓰지 않는다.
+    let program = core("HCI Poppy", "A+A", None);
+    let plus = record(&program, "+");
+    assert!(
+        (advance(&plus) - 7500.0 * 0.605).abs() <= 2.0,
+        "HCI 원본 +의 자연 전진: {}",
+        advance(&plus)
+    );
+    assert_eq!(plus["layoutMetric"]["widthSource"], "measuredOriginalGlyph");
+    assert_eq!(program.document().sections[0].paragraphs[0].text, "A+A");
+}
+
+#[test]
+fn worklife_repeated_plus_keeps_the_following_value_on_its_independent_origin() {
+    // C94: 전6쪽 Native/fresh WASM90% 이상, devel 대비0.01%p 하락0.
+    // 같은 물리 줄의 반복 '+' 누적 경계는4쪽(99.00620/98.99872%)에 있다.
+    // 독립 Print의 마지막 전남(+1.0...)에서 '1'/'점' 앞 소수점 원점을 보호한다.
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(root.join("samples/issue6145/worklife_balance_index_156607916.hwpx"))
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(core.page_count(), 6);
+    let (pi, text) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, p)| p.text.contains("충북(+1.2") && p.text.contains("전남(+1.0"))
+        .map(|(i, p)| (i, p.text.clone()))
+        .unwrap();
+    let start = text.find("전남(+1.0").unwrap();
+    let digit = text[..start].chars().count() + "전남(+".chars().count();
+    let tree = core.build_page_render_tree(3).unwrap();
+    fn collect<'a>(
+        n: &'a rhwp::renderer::render_tree::RenderNode,
+        pi: usize,
+        out: &mut Vec<&'a rhwp::renderer::render_tree::TextRunNode>,
+    ) {
+        if let rhwp::renderer::render_tree::RenderNodeType::TextRun(r) = &n.node_type {
+            if r.section_index == Some(0) && r.para_index == Some(pi) {
+                out.push(r)
+            }
+        }
+        for c in &n.children {
+            collect(c, pi, out)
+        }
+    }
+    let mut runs = vec![];
+    collect(&tree.root, pi, &mut runs);
+    assert_eq!(
+        runs.iter().map(|r| r.text.as_str()).collect::<String>(),
+        text
+    );
+    let owner: Vec<_> = runs
+        .iter()
+        .filter(|r| {
+            r.char_start
+                .is_some_and(|i| i <= digit && digit < i + r.text.chars().count())
+        })
+        .collect();
+    assert_eq!(owner.len(), 1);
+    let source_start = owner[0].char_start.unwrap();
+    let local = digit - source_start;
+    assert_eq!(owner[0].text.chars().nth(local), Some('1'));
+    let layer: Value = serde_json::from_str(
+        &core
+            .get_page_layer_tree_with_options_native(
+                3,
+                rhwp::paint::RenderProfile::Print,
+                rhwp::paint::LayerJsonOptions {
+                    omit_image_bytes: true,
+                    omit_font_bytes: true,
+                },
+            )
+            .unwrap(),
+    )
+    .unwrap();
+    fn find<'a>(v: &'a Value, key: &str, out: &mut Vec<&'a Value>) {
+        match v {
+            Value::Object(o) => {
+                if v["type"] == "textRun" && v["source"]["stableSourceKey"] == key {
+                    out.push(v)
+                }
+                for x in o.values() {
+                    find(x, key, out)
+                }
+            }
+            Value::Array(a) => {
+                for x in a {
+                    find(x, key, out)
+                }
+            }
+            _ => {}
+        }
+    }
+    let mut ops = vec![];
+    find(
+        &layer,
+        &format!("section:0/para:{pi}/char:{source_start}"),
+        &mut ops,
+    );
+    assert_eq!(ops.len(), 1);
+    let op = ops[0];
+    let x = |offset: usize| {
+        let cs: Vec<_> = op["clusters"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|c| c["textRangeUtf16"]["start"] == offset)
+            .collect();
+        assert_eq!(cs.len(), 1);
+        op["placement"]["runToPage"]["e"].as_f64().unwrap() + cs[0]["origin"]["x"].as_f64().unwrap()
+    };
+    assert!(local > 0);
+    assert!(x(local - 1) < x(local) && x(local) < x(local + 1));
+    // PDF 260.8585205/267.095398pt →96CSSpx. 192/96DPI를 혼용하지 않는다.
+    assert!(
+        (x(local) - 347.8113606770833).abs() <= 2.0,
+        "반복 '+' 뒤 숫자: {}",
+        x(local)
+    );
+    assert!((x(local + 1) - 356.127197265625).abs() <= 2.0);
+    assert!((op["placement"]["runToPage"]["f"].as_f64().unwrap() - 997.9493815104166).abs() <= 2.0);
     assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
 }
