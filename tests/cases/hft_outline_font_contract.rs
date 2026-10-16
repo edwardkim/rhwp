@@ -21,6 +21,8 @@ fn registering_paint_source_preserves_document_and_replaces_unsupported_programs
     ];
     core.set_document(document);
     let before = core.get_document_info();
+    let document_before = format!("{:?}", core.document());
+    let saved_before = rhwp::serializer::serialize_document(core.document()).unwrap();
     assert!(!core
         .register_hft_outline_font_native("Absent family", CFF, 0)
         .unwrap());
@@ -52,6 +54,16 @@ fn registering_paint_source_preserves_document_and_replaces_unsupported_programs
         core.get_document_info(),
         before,
         "paint 등록은 저장 문서·쪽수를 바꾸지 않는다"
+    );
+    assert_eq!(
+        format!("{:?}", core.document()),
+        document_before,
+        "저장 IR·raw 상태를 보존한다"
+    );
+    assert_eq!(
+        rhwp::serializer::serialize_document(core.document()).unwrap(),
+        saved_before,
+        "paint registry는 실제 저장 HWP 바이트에 반영되지 않는다"
     );
     assert!(core
         .register_hft_outline_font_native(FAMILY, &[], 0)

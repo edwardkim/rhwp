@@ -52,7 +52,16 @@ ignored 루트 `output/pr-review/issue7902-render-repair-20261014/`:
 devel 대비 최대 하락0.00661%p이며 **0.01%p 이상 하락0쪽**이다.
 `stage9-native-decimal-audit.json`에835쪽 전부의 원값과 Decimal 차이를 보존했다.
 
-WASM 후보/기준 전쪽 비교와 최종 release-test 전체 nextest는 실행 중이다. Rust는 jobs8,
-공용 `target/pr-review`, 실행12threads, `--no-fail-fast`로 수행한다. PNG 검증은 고정 복제
-바이너리/패키지를 사용하므로 실행 중인 Cargo가 producer를 바꾸지 않는다. 전체 결과는 아직
-미검증이며 Native 수치만으로 최종 승인·PR 준비 완료로 변경하지 않는다.
+WASM 후보/기준도 각각19문서·835쪽이 완료됐다. 후보 최저90.20061%,90% 미만·누락·쪽수
+불일치0건이며 양쪽 전체의 최대 하락은0.00846%p로 **0.01%p 이상 하락0쪽**이다.
+`stage9-final-develop-comparison.json`의 `complete`와 `numericGatesPassed`가 true다.
+이 결과는 고정 source3a의 결과이며 [11단계](task_m100_7902_stage11.md)의 추가 보완을
+포함하는 fresh WASM 증거로 바꾸어 보고하지 않는다.
+
+전체 release-test는 컴파일13분54초·실행752.073초, **10,425 PASS·1 FAIL·45 skipped**로 끝났다.
+실패는 `issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked`이며 새
+`register_hft_outline_font_native`를 무효화 분류 목록에 넣지 않은1건이다. 렌더 출력 실패가
+아니다. paint 세션 전용 분류와 실제 저장 HWP 바이트 불변 검사로 보완하며 실패를 숨기지 않는다.
+Rust는 jobs8·공용 `target/pr-review`·실행12threads·`--no-fail-fast`로 수행했다.
+PNG 검증은 고정 복제 바이너리/패키지를 써서 Cargo가 producer를 바꾸지 않았다. 남은 보완과
+필수 검사 완료 전에는 최종 승인·PR 준비 완료로 변경하지 않는다.

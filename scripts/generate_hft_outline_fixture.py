@@ -35,5 +35,19 @@ def generate():
     builder.save(destination)
 
 
+def generate_jamo():
+    from fontTools.ttLib import TTFont
+    root = Path(__file__).resolve().parents[1] / 'tests/fixtures/fonts'
+    with TTFont(root / 'RHWPHftOutline.otf', recalcTimestamp=False) as font:
+        # 원래 face에도 옛자모가 있을 때 전용 face 선택을 덮어쓰는 결함을 검출한다.
+        for table in font['cmap'].tables:
+            if table.isUnicode():
+                table.cmap[0xA960] = 'uniAC00'
+        font.save(root / 'RHWPHftOutlineJamo.otf')
+
+
 if __name__ == '__main__':
-    generate()
+    import sys
+    if '--jamo-only' not in sys.argv:
+        generate()
+    generate_jamo()

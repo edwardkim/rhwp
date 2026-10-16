@@ -402,3 +402,49 @@ fn image_stack_hwp_page_five_keeps_all_four_picture_edges_inside_its_cell() {
 fn image_stack_hwpx_page_five_keeps_all_four_picture_edges_inside_its_cell() {
     stack_picture("samples/issue2004_cell_image_stack.hwpx");
 }
+
+#[test]
+fn hft_hwpx_page_104_keeps_source_face_and_post_table_body_origins() {
+    let core = load(
+        "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+        false,
+    );
+    let root = core.build_page_render_tree(103).unwrap().root;
+    // 독립 Print p104의 span origin을 72pt→96dpi로 환산한다.
+    // 양쪽98%·직접 판독: #7902 10/11단계의 frozen source3a 증거와 최종 재검증.
+    let heading = baseline(&root, "11.2.8조종장치와조작장치의손잡이", 374.310954);
+    let body = baseline(&root, "11.2.8.1육상착륙장치가있는경우", 425.455037);
+    let successor = baseline(&root, "11.2.8.2동력장치조작손잡이", 882.235840);
+    let picture = image(&root);
+    edges(picture, [270.894674, 514.157308, 532.513346, 833.487956]);
+    assert!(bottom(heading) < body.bbox.y);
+    assert!(
+        bottom(body) < picture.bbox.y && bottom(picture) < successor.bbox.y,
+        "앞 본문·그림·뒤 본문의 순서와 비겹침"
+    );
+    for line in [heading, body, successor] {
+        let mut descendants = Vec::new();
+        walk(line, &mut descendants);
+        let hangul: Vec<_> = descendants
+            .into_iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextRun(run)
+                    if run
+                        .display_or_text()
+                        .chars()
+                        .any(|ch| ('가'..='힣').contains(&ch)) =>
+                {
+                    Some(run)
+                }
+                _ => None,
+            })
+            .collect();
+        assert!(!hangul.is_empty(), "실제 원본의 한글 run을 검사한다");
+        for run in hangul {
+            assert!(
+                run.style.source_font_is_hft,
+                "원본 HFT 선언이 resolver에서 실제 paint style까지 전달돼야 한다"
+            );
+        }
+    }
+}

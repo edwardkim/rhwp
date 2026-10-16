@@ -5,7 +5,12 @@ use crate::renderer::{hft_outline::supports_style, PathCommand, TextStyle};
 
 impl WebCanvasRenderer {
     pub(super) fn draw_hft_outline(&self, text: &str, style: &TextStyle, font_size: f64) -> bool {
-        if !self.hft_outline_enabled || !supports_style(style) {
+        // 이 cluster는 호출자가 old_hangul_descriptor로 전환해 그린다.
+        // 원래 family의 CFF에도 glyph가 있어도 우선 선택된 전용 face를 덮지 않는다.
+        if !self.hft_outline_enabled
+            || !supports_style(style)
+            || crate::renderer::contains_old_hangul_jamo(text)
+        {
             return false;
         }
         let mut chars = text.chars();
