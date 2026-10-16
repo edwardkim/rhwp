@@ -1,6 +1,6 @@
 use super::{
-    Budget, ExtractedPage, MAX_DOCUMENT_IMAGE_PIXELS, MAX_SOURCE_SPANS, MAX_TEXT_BYTES,
-    PdfImportError, recognition, table_detection,
+    recognition, table_detection, Budget, ExtractedPage, PdfImportError, MAX_DOCUMENT_IMAGE_PIXELS,
+    MAX_SOURCE_SPANS, MAX_TEXT_BYTES,
 };
 use pdf_oxide::PdfDocument;
 use serde_json::json;
