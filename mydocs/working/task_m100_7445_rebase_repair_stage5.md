@@ -1894,3 +1894,33 @@ fresh WASM은 Mac locked wrapper --no-opt 로컬 대체 빌드이며 root pkg/St
 pkg 해시가 같다. 실제 Studio 초기화·새 전체 회귀 및 lint/Skia/Studio/Gym은 아직 별도 검증 대상이다.
 동시에 수집 중인 다른 문서의 devel 대비 하락,PII 기본 글꼴 선택과 법원 서식의 미세 간격도
 남아 있다. PR 전체 준비 완료로 보고하지 않는다.
+
+
+## C53. devel4662 리베이스와 음수 정렬의 원본 들여쓰기 보존
+
+#7913 `4662c069e557e928ed7968d061121fde90b1f027` 위로218개 커밋을 충돌 없이
+리베이스했다. parent `2d7787f29af697c38a96ed5eac034d237fb64e6a`에서 후보와 사용자
+초안은 SHA가 동일하게 복원됐다. range-diff의 기존 JS 메서드는 새 upstream에도 있어 중복만
+사라졌고 실제 바인딩은 보존됐다.
+
+저장 줄이 상자보다 넓을 때 원본 선두 공백까지 압축하던 두 조건을 제거했다.
+원본 접두 원점과 TAC/필드/자동 탭 경계를 보존하고 남은 압축은 본문 분배가 소비한다.
+측정·실제 TextRun·PaintOp·Native/Canvas가 같은 배열과 원점을 사용한다.
+새 기준에서 이 보정만 뺀 라이브러리의 의미 검사3FAIL → 후보3PASS를 확인했다.
+실제 glyph 원점을 사용해 run 분할 차이를 검사하지 않도록 초기 진단도 바로잡았다.
+
+새 Native/fresh WASM 각11조건159쪽(전쪽5문서146쪽+경계13쪽)은90% 미만0이다.
+관련 기존7묶음19PASS,새 정식 suite3PASS/0FAIL(0.177초)다.
+PII21쪽99.63147/99.63145%,규제분석6쪽99.97096/99.96430%에서 독립 Print의
+원점 ±2CSSpx와 내용·소속 관계를 함께 보호한다. 같은 음수 들여쓰기 동작의 후보 중
+양쪽 최솟값이 가장 높은 쪽이다. 자산관리7쪽98.27891/98.26808%에는 기존 따옴표
+윤곽 차이가 있어 새 px 핀을 보류하고 목록 원점·내용 관계만 추가했다.
+
+[전후 review PNG와 입력·쪽별 선정·생산 출처](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/negative-indent-20261016/README.md)에
+증적을 정리했다. Mac fresh WASM은 locked no-opt 로컬 대체186.528초이며 실제 Studio 초기화는
+미검증이다. ignored 정본은 `output/pr-review/7445-completed-20261009/regression-policy-audit-20261015/rebase-4662c069-20261016/`이다.
+로그·raw TSV/JSON·글꼴은 커밋하지 않는다.
+
+새 devel의 전쪽 비교·Decimal0.01%p 하락 검증·새 전체 회귀와 나머지 게이트를 이어간다.
+PII 기본 글꼴 선택,법원 서식 미세 차이,자산관리 따옴표가 남아 있어 PR 준비 완료가 아니다.
+이전 code head의10467PASS를 새 통과로 인용하지 않았다. 지침은 수정하지 않았다.
