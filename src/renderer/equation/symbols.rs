@@ -606,6 +606,20 @@ pub fn lookup_symbol(cmd: &str) -> Option<&'static str> {
         }
     }
 
+    // 3차: [#7390] 전부 대문자로 쓴 그리스 문자 이름은 대문자 그리스 문자다.
+    // 한/글 2020 Print 실측(`pdf/issue7390/eq-uppercase-greek-2020.pdf`): `SIGMA` → Σ,
+    // `DELTA` → Δ, `OMEGA` → Ω, `PI` → Π, `ALPHA`·`GAMMA`·`THETA`·`LAMBDA`·`PHI`·`PSI`·`XI`
+    // 모두 대문자 그리스 문자이고 `sigma`/`Sigma` 와 구별된다. 종전에는 표에 없어
+    // 글자 그대로 「SIGMA」로 찍혔다(1790387 31쪽 `SIGMA _{k} y _{ik}`).
+    if cmd.len() >= 2 && cmd == upper && cmd.bytes().all(|b| b.is_ascii_uppercase()) {
+        let mut capitalized = String::with_capacity(cmd.len());
+        capitalized.push_str(&cmd[..1]);
+        capitalized.push_str(&cmd[1..].to_ascii_lowercase());
+        if let Some(s) = GREEK_UPPER.get(capitalized.as_str()) {
+            return Some(s);
+        }
+    }
+
     None
 }
 
