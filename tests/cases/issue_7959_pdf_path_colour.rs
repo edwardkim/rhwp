@@ -108,3 +108,58 @@ fn named_path_colours_survive_lowering_and_final_svg_paint() {
     let icc = core.render_page_svg_native(2).unwrap().to_ascii_lowercase();
     assert!(icc.contains("#00ff00") && icc.contains("#ff0000"));
 }
+
+#[test]
+fn named_space_cycles_fail_sticky_without_poisoning_the_next_request() {
+    use std::io::Write;
+    let content = b"/Loop cs 1 sc 10 10 50 50 re f";
+    let mut stream = format!("<< /Length {} >>\nstream\n", content.len()).into_bytes();
+    stream.extend_from_slice(content);
+    stream.extend_from_slice(b"\nendstream");
+    let objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>".to_vec(),
+        b"<< /Type /Pages /Count 1 /Kids [3 0 R] >>".to_vec(),
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /ColorSpace << /Loop /Loop >> >> /Contents 4 0 R >>".to_vec(),
+        stream,
+    ];
+    let mut input = b"%PDF-1.4\n".to_vec();
+    let mut offsets = Vec::new();
+    for (index, object) in objects.iter().enumerate() {
+        offsets.push(input.len());
+        writeln!(input, "{} 0 obj", index + 1).unwrap();
+        input.extend_from_slice(object);
+        input.extend_from_slice(b"\nendobj\n");
+    }
+    let xref = input.len();
+    write!(input, "xref\n0 5\n0000000000 65535 f \n").unwrap();
+    for offset in offsets {
+        writeln!(input, "{offset:010} 00000 n ").unwrap();
+    }
+    write!(
+        input,
+        "trailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n"
+    )
+    .unwrap();
+    let failed = PdfDocument::from_bytes_with_limits(
+        input,
+        pdf_oxide::import_limits::PdfImportLimits {
+            reference_depth: 8,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert!(matches!(
+        failed.extract_paths(0),
+        Err(pdf_oxide::error::Error::ImportResourceLimit(_))
+    ));
+    assert!(
+        failed.check_import_budget().is_err(),
+        "colour resolution failure must remain sticky"
+    );
+    let next = PdfDocument::from_bytes_with_limits(PDF.to_vec(), Default::default()).unwrap();
+    assert_eq!(
+        color(next.extract_paths(0).unwrap()[1].fill_color),
+        Some((255, 255, 255))
+    );
+    next.check_import_budget().unwrap();
+}

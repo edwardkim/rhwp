@@ -79,3 +79,21 @@ test binary hash를 `f6/colour-tests-evidence.json`에 고정했다. 따라서 �
 명령·binary/source hash·원본/전후 PNG·전쪽 TSV는 ignored
 `output/pr-review/issue7957/f5/`와 `f6/`에 보존한다. `parserAllocationBoundsProven=false`를 유지한다.
 기본 Studio 7700과 그 bundle·사용자 타입 변경은 보존하며 검증 서버는 7797을 사용한다.
+
+### 색상 checkpoint 검증 완료와 다음 범위
+
+runtime `8684913e0`의 workspace Clippy와 전체 회귀 10,595건이 모두 통과했다(45 skip).
+새 색상 회귀 3건은 별도 실행에서 수정 전 3 FAIL / 수정 후 3 PASS이며, 마지막 검사는
+색 공간 이름 순환의 sticky 한도와 다음 요청의 격리를 확인한다. 전체 회귀가 종료된 뒤
+정식 Cargo suite에 편입한다. 이전 runtime의 Native Skia 추가 검사는 실행하지 않고
+새 글꼴 보정 이후의 최종 검증에 합친다.
+
+전쪽 fresh WASM도 313쪽 중 312쪽이 90% 이상이며 Native와 동일하게 operators 12쪽만
+미달이다. 사용자가 이 쪽도 이번에 보정하도록 승인했으므로, 후속 백로그·시각 예외로
+이관하지 않는다. 색상 보정에 대한 사용자의 통과 판정은 유지하고 다음 단계에서 PDF
+글꼴 이름과 실제 선택·글자 간격을 추적한다.
+
+Cargo suite 편입 뒤 `run-rust-test.mjs issue_7959_pdf_path_colour -- --cargo-profile release-test
+--target-dir <공용 target>`도 정식 회귀 3건 PASS다. 위 10,595건과 구분하여 합계
+10,598건의 서로 겹치지 않는 실행 결과를 확보했다. 다음 단계의 글꼴 runtime 변경에는
+이 결과를 그대로 최종 검증으로 적용하지 않는다.
