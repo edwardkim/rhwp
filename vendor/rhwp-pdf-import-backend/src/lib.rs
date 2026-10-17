@@ -170,11 +170,11 @@ pub mod import_limits;
 pub mod lexer;
 pub mod object;
 mod object_copy;
-mod path_color;
 pub mod objstm;
 pub mod parser;
 /// Parser configuration options
 pub mod parser_config;
+mod path_color;
 mod stream_parameters_limited;
 pub mod xref;
 pub mod xref_reconstruction;
