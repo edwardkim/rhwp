@@ -541,6 +541,8 @@ impl DocumentCore {
             // [#4898] 이 구역의 저장 lineseg 가 배치 권위를 갖는지 먼저 판정한다 —
             // 권위가 있으면 0높이 lineseg(한컴이 접어 둔 숨은 블록)를 재조판하지 않는다.
             let section_sized = Self::section_has_sized_lineseg(section);
+            let unpositioned_body = include_empty
+                && super::source_line_ladder::body_ladder_is_unpositioned(&section.paragraphs);
             let page_def = &section.section_def.page_def;
             let column_def = Self::find_initial_column_def(&section.paragraphs);
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
@@ -574,6 +576,11 @@ impl DocumentCore {
             let mut reflowed_paras: std::collections::HashSet<usize> =
                 std::collections::HashSet::new();
             for (pi, para) in section.paragraphs.iter_mut().enumerate() {
+                if unpositioned_body {
+                    // 미계산 원점의 캐시를 일부만 재사용하면 낡은 높이·간격이 새
+                    // vpos 체인에 섞인다. 원본 파일은 보존하고 본문 캐시만 무효화한다.
+                    para.replace_line_segs(Vec::new());
+                }
                 // 본문 문단 reflow
                 // [#2195 stage68] 본문 텍스트 NO_LS 확장(stage1)은 기각 — 후속 축
                 // (전각 폴백·pad 규칙·스트레치·after_for_fit)이 게이트 정합을 대체했고,
