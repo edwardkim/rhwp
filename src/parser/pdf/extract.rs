@@ -116,9 +116,24 @@ pub(super) fn extract(
     // Inspect declared image extents before pixel decode. Enumerating handles
     // still decompresses content upstream and is not a parser allocation bound.
     let handles = checked(pdf, pdf.page_image_handles(page), "image_handles", page)?;
-    if handles.len() > 32 {
-        return Err(PdfImportError::budget("page image count exceeds 32"));
+    // Count actual paint placements, not unique resources. Reusing one image
+    // with another CTM/clip/opacity is real output and must not be deduplicated.
+    // Reserve before decode and before allocating the lowered image vectors.
+    let next = budget
+        .image_placements
+        .checked_add(handles.len())
+        .ok_or_else(|| PdfImportError::budget("image placement count overflow"))?;
+    if next > budget.policy.max_document_image_placements {
+        return Err(
+            PdfImportError::budget("document image placement budget exceeded").limit(
+                "document image placements",
+                budget.image_placements,
+                handles.len(),
+                budget.policy.max_document_image_placements,
+            ),
+        );
     }
+    budget.image_placements = next;
     let mut images = Vec::with_capacity(handles.len());
     let mut image_orders = Vec::with_capacity(handles.len());
     for handle in handles {

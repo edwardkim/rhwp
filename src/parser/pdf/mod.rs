@@ -212,6 +212,7 @@ struct Budget {
     spans: usize,
     text_bytes: usize,
     image_pixels: u64,
+    image_placements: usize,
     path_operations: usize,
     cells: usize,
 }
@@ -270,6 +271,7 @@ pub fn parse_pdf_with_policy(
         || policy.max_selected_pages > u16::MAX as usize
         || policy.max_path_operations == 0
         || policy.max_document_path_operations == 0
+        || policy.max_document_image_placements == 0
     {
         return Err(PdfImportError::budget("invalid PDF import policy"));
     }

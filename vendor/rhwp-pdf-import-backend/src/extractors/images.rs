@@ -172,6 +172,125 @@ impl PdfImage {
         self.samples_are_raw
     }
 
+    /// Bake a convex page-space clip and affine placement into an RGBA frame.
+    /// The rectangle is storage geometry only; pixels outside the real boundary
+    /// remain transparent. Axis-aligned editable crops keep their existing path.
+    fn apply_affine_clip(
+        &mut self,
+        ctm: crate::content::Matrix,
+        clip: &super::image_clip::ImageClip,
+        frame: crate::geometry::Rect,
+        interpolate: bool,
+        budget: &crate::import_limits::ImportBudget,
+    ) -> Result<()> {
+        let [a, b, c, d, e, f] = [ctm.a, ctm.b, ctm.c, ctm.d, ctm.e, ctm.f].map(f64::from);
+        let determinant = a * d - b * c;
+        if !determinant.is_finite() || determinant == 0.0 {
+            return Err(Error::Unsupported("singular clipped image matrix".into()));
+        }
+        let (sw, sh) = (self.width as usize, self.height as usize);
+        if sw == 0 || sh == 0 {
+            return Err(Error::Image("empty clipped image samples".into()));
+        }
+        // The clip edge is geometric, even for a one-pixel solid image. Match
+        // the product's compound-path raster density, retaining higher source
+        // density. This changes storage resolution, never the physical frame.
+        let density_x = ((d * sw as f64).hypot(b * sh as f64) / determinant.abs()).max(3.0);
+        let density_y = ((c * sw as f64).hypot(a * sh as f64) / determinant.abs()).max(3.0);
+        let width = (f64::from(frame.width) * density_x).ceil();
+        let height = (f64::from(frame.height) * density_y).ceil();
+        if !width.is_finite()
+            || !height.is_finite()
+            || width < 1.0
+            || height < 1.0
+            || width > 16_384.0
+            || height > 16_384.0
+            || width * height > 16_000_000.0
+        {
+            return Err(budget.reject("clipped image raster dimensions"));
+        }
+        let (width, height) = (width as usize, height as usize);
+        let mut output = sample_buffer(width * height * 4, Some(budget))?;
+        // Use the existing bounded codec/colour conversion; existing alpha is
+        // retained. Both this conversion and the destination are charged.
+        self.apply_opacity(1.0, budget)?;
+        let ImageData::Raw {
+            pixels,
+            format: PixelFormat::RGBA,
+        } = &self.data
+        else {
+            return Err(Error::Image("clipped image requires RGBA samples".into()));
+        };
+        if sw.checked_mul(sh).and_then(|n| n.checked_mul(4)) != Some(pixels.len()) {
+            return Err(Error::Image("invalid clipped image sample length".into()));
+        }
+        let sample = |x: isize, y: isize| {
+            // PDF interpolation extends edge samples at the unit-square edge.
+            let x = x.clamp(0, sw as isize - 1) as usize;
+            let y = y.clamp(0, sh as isize - 1) as usize;
+            &pixels[(y * sw + x) * 4..(y * sw + x + 1) * 4]
+        };
+        for y in 0..height {
+            budget.check()?;
+            let py = f64::from(frame.y)
+                + f64::from(frame.height) * (1.0 - (y as f64 + 0.5) / height as f64);
+            for x in 0..width {
+                let px =
+                    f64::from(frame.x) + f64::from(frame.width) * (x as f64 + 0.5) / width as f64;
+                let u = (d * (px - e) - c * (py - f)) / determinant;
+                let v = (-b * (px - e) + a * (py - f)) / determinant;
+                if !(0.0..=1.0).contains(&u)
+                    || !(0.0..=1.0).contains(&v)
+                    || !clip.contains(crate::geometry::Point::new(px as f32, py as f32))
+                {
+                    output.extend_from_slice(&[0; 4]);
+                } else if !interpolate {
+                    output.extend_from_slice(sample(
+                        (u * sw as f64).floor() as isize,
+                        ((1.0 - v) * sh as f64).floor() as isize,
+                    ));
+                } else {
+                    let (sx, sy) = (u * sw as f64 - 0.5, (1.0 - v) * sh as f64 - 0.5);
+                    let (ix, iy) = (sx.floor() as isize, sy.floor() as isize);
+                    let (fx, fy) = (sx - sx.floor(), sy - sy.floor());
+                    let mut channels = [0.0; 4];
+                    for (dx, dy, w) in [
+                        (0, 0, (1.0 - fx) * (1.0 - fy)),
+                        (1, 0, fx * (1.0 - fy)),
+                        (0, 1, (1.0 - fx) * fy),
+                        (1, 1, fx * fy),
+                    ] {
+                        let p = sample(ix + dx, iy + dy);
+                        channels[3] += f64::from(p[3]) * w;
+                        for k in 0..3 {
+                            channels[k] += f64::from(p[k]) * f64::from(p[3]) * w;
+                        }
+                    }
+                    let mut rgba = [0; 4];
+                    rgba[3] = channels[3].round() as u8;
+                    if channels[3] > 0.0 {
+                        for k in 0..3 {
+                            rgba[k] = (channels[k] / channels[3]).round() as u8;
+                        }
+                    }
+                    output.extend_from_slice(&rgba);
+                }
+            }
+        }
+        self.width = width as u32;
+        self.height = height as u32;
+        self.data = ImageData::Raw {
+            pixels: output,
+            format: PixelFormat::RGBA,
+        };
+        self.color_space = ColorSpace::DeviceRGB;
+        self.bits_per_component = 8;
+        self.set_bbox(frame);
+        self.set_matrix([frame.width, 0.0, 0.0, frame.height, frame.x, frame.y]);
+        self.set_rotation_degrees(0);
+        Ok(())
+    }
+
     /// Record that the stored samples have been transformed out of the raw
     /// sample space.
     pub(crate) fn set_samples_are_raw(&mut self, raw: bool) {
@@ -4185,6 +4304,25 @@ impl<'doc> PdfImageHandle<'doc> {
 
         // Use pre-computed bbox and rotation from Phase 1 — no need to call
         // back into document.rs helpers here.
+        if let (super::image_clip::ImageClip::Polygon(_), Some(budget)) =
+            (&self.clip, self.doc.import_budget())
+        {
+            let frame = self
+                .clip
+                .visible_bounds(self.bbox)?
+                .ok_or_else(|| Error::Image("empty image clip".into()))?;
+            let interpolate = obj
+                .as_dict()
+                .and_then(|d| d.get("Interpolate"))
+                .map(|v| {
+                    resolve_image_object(Some(self.doc), v).map(|o| o.as_bool().unwrap_or(false))
+                })
+                .transpose()?
+                .unwrap_or(false);
+            image.apply_affine_clip(self.ctm, &self.clip, frame, interpolate, budget)?;
+            self.doc.check_import_budget()?;
+            return Ok(image);
+        }
         image.set_bbox(self.bbox);
         image.set_matrix([
             self.ctm.a, self.ctm.b, self.ctm.c, self.ctm.d, self.ctm.e, self.ctm.f,

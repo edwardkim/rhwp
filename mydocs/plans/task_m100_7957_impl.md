@@ -130,3 +130,45 @@ fresh Docker WASM TSV와 영향 영역 판독으로 확인하고 기존 색상 �
 Rust/Node/browser 검증 범위는 [7단계 결과](../working/task_m100_7957_stage7.md)에 연결했다.
 Type3 원 glyph·전체 parser 할당 증명의 미완료 경계는 유지한다. 원격 반영/PR을 준비하는
 시점에 최신 devel 통합 여부를 확인하며 이번 로컬 검증을 미실행 원격 CI의 성공으로 표시하지 않는다.
+
+
+### 2026-10-17 추가 범위 — #7966 이미지 배치 예산
+
+사용자가 `exceeds_32.pdf`도 이번 공동 처리에 포함하도록 승인했다. 19쪽 중 6쪽에는
+18개 Image XObject가 35회 실제 배치된다. `handles.len() > 32`라는 페이지 고정 제한을
+요청 전체의 `max_document_image_placements`로 대체한다. 기본값은 기존 XObject 방문의
+유한한 요청 규모(10,000)와 연결하며, 신뢰 호스트는 더 낮은 값을 지정할 수 있다.
+개별·누적 픽셀 및 decoded/codec·XObject·연산·pool 제한은 유지한다. 정적인 개수의
+상향만으로 자원 제한 전체를 해결했다고 주장하지 않는다.
+
+실제 소비 경로는 page/Form/inline의 paint handle → 요청 누적 예약 → decode/clip →
+이미지·source_order → 공통 lowering/최종 paint다. 같은 자원의 실제 반복 배치는 모두
+보존한다. invisible handle도 열거 작업으로 보수적으로 계상하며 기존 숨김 동작은 바꾸지 않는다.
+열거 전 할당 자체의 완전한 경계는 이번 보정의 증명이 아니다.
+
+새 원본 19쪽과 32회 초과 생성 대조군의 전쪽 Native/fresh Docker WASM을 먼저 비교한 뒤,
+관계형 출력 회귀와 요청 누적·경계/초과·실패 뒤 복구 계약을 검증한다. 기존 여섯 원본의
+기준 TSV 불가 예외는 새 원본도 기준 거절을 확인한 뒤 같은 신규 지원 입력으로 기록한다.
+이미 진행된 f6096ff5 빌드·검증은 변경 전 증거로 보존하고 추가 소스에 재인용하지 않는다.
+
+
+#### #7966 추가 실패 — 7쪽 Form BBox의 affine clip
+
+32회 제한 보정 후에는 7쪽만 `non-rectangular image clipping`으로 거절됐다. 나머지 18쪽과
+XObject/Form/inline 33회 생성 대조군은 실제 공개 WASM으로 가져왔다. 이 결과를 19쪽 전체
+완료로 표시하지 않는다. 7쪽 Form 239의 BBox는 `[0 0 180.01 50.018]`, 호출 CTM의 두
+비대각 성분은 `-1.88e-7`이다. 축에 정확히 평행한 경계만 인정하던 ClipPath가 이 실제
+변환을 Unsupported로 분류했다. epsilon으로 회전 성분을 지우거나 bbox만을 clip으로 쓰지 않는다.
+
+이미지 경로에 한해 최대 32 꼭짓점의 직선 볼록 clip과 교집합을 보존하고, 원래 CTM의
+역변환·실제 clip 내부 판정으로 RGBA를 구성한다. 투명도/마스크를 먼저 합성하고 새로운
+축 정렬 저장 프레임·matrix를 함께 생산해 lowering의 crop이 동일한 결과를 소비한다.
+프레임은 정확한 물리 경계이며 ceil은 저장 픽셀 수에만 적용한다. 기하학적 clip 품질은
+기존 compound-path와 같은 최소 3 pixels/point, 더 높은 원본 해상도는 보존한다. 기존의
+RGBA·codec·decoded 예약, 16M 픽셀 및 유한한 dimensions 한도를 적용한다.
+
+직사각형 crop은 기존 편집 가능한 crop 경로를 유지한다. 별도 alpha compositor가 없는
+vector paint의 clip 해석은 기존의 원래 경로 처리를 유지한다. 곡선·오목·복합 clip과
+32 꼭짓점 초과는 미지원으로 남긴다. bbox 하나로 내용 유출을 숨기는 지원으로 확대하지 않는다.
+양·음 winding, reflection, 실제 회전 Form BBox, 저해상도 원색 그림의 대각 clip 대조군으로
+동일 프레임·내용·투명도를 확인한 뒤 최종 producer의 전체 gate를 수행한다.

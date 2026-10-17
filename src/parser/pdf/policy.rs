@@ -10,6 +10,9 @@ pub struct PdfImportPolicy {
     pub max_selected_pages: usize,
     pub max_path_operations: usize,
     pub max_document_path_operations: usize,
+    /// Emitted image placements across selected pages, including repeated paint
+    /// of one resource. Pixel/decode limits independently bound bitmap work.
+    pub max_document_image_placements: usize,
     pub backend: PdfImportLimits,
 }
 
@@ -31,6 +34,9 @@ impl Default for PdfImportPolicy {
             max_selected_pages: super::MAX_PAGES,
             max_path_operations: 20_000,
             max_document_path_operations: 1_000_000,
+            // Same finite request scale as XObject visits; inline images also
+            // consume a placement even though they do not invoke an XObject.
+            max_document_image_placements: backend.xobject_visits,
             backend,
         }
     }

@@ -20378,7 +20378,7 @@ impl PdfDocument {
 
         let parent_paint = extractor.paint.clone();
         use crate::extractors::image_clip::{ImageClip, ImageClipTracker};
-        let mut clip = parent_paint.clip;
+        let mut clip = parent_paint.clip.clone();
         if let Some(bounds) = xobject_dict
             .get("BBox")
             .and_then(Object::as_array)
@@ -24261,7 +24261,8 @@ impl PdfDocument {
             crate::content::Matrix::identity(),
             [left, bottom, right, top],
         );
-        let mut graphics = ImageClipTracker::new(crate::content::Matrix::identity(), page_clip);
+        let mut graphics =
+            ImageClipTracker::for_images(crate::content::Matrix::identity(), page_clip);
         let mut paint_order: usize = 0;
         let mut xobject_stack: Vec<crate::object::ObjectRef> = Vec::new();
 
@@ -24519,9 +24520,9 @@ impl PdfDocument {
             parent_state
                 .clip
                 .intersect(form_bounds.map_or(ImageClip::Unsupported, |bounds| {
-                    ImageClip::transformed_rectangle(start_ctm, bounds)
+                    ImageClip::transformed_image_rectangle(start_ctm, bounds)
                 }));
-        let mut graphics = ImageClipTracker::new(start_ctm, clip);
+        let mut graphics = ImageClipTracker::for_images(start_ctm, clip);
         graphics.set_alpha(parent_state.alpha);
         let mut handles = Vec::new();
 
