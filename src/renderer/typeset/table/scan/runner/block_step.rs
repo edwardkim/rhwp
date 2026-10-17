@@ -269,12 +269,12 @@ impl TypesetEngine {
                     )
                 });
                 if let Some((height, last)) = complete_row_frame {
-                    // 완전 행 prefix의 물리 상자와 다음 행 소유권을 함께 넘긴다.
-                    // 양수 부분 컷을 남기면 다음 커서가 end_row - 1에서 재개해
-                    // 이미 끝난 행의 빈 상자를 다시 배치한다.
+                    // 물리 행 상자는 완료하되 병합 칸의 소비 유닛은 그대로 보존한다.
+                    // 다음 조각은 이 수용 상자를 장부에서 확인해 완료 prefix의
+                    // 물리 높이를 재사용하지 않고, 같은 컷으로 내용 중복도 막는다.
                     split_block_start = Some(b_start);
-                    split_end_cut.clear();
-                    split_end_limit = 0.0;
+                    split_end_cut = selected.cut_res.end_cut.clone();
+                    split_end_limit = selected.cut_res.consumed_height;
                     end_row_height_override = Some(last);
                     consumed += cs_before + height;
                     return false;

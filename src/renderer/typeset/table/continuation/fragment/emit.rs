@@ -1034,6 +1034,7 @@ impl TypesetEngine {
                         row: end_row,
                         complete_cut: split_end_cut.is_empty() && split_end_limit <= 0.0,
                         block_start: split_block_start,
+                        cut: &split_end_cut,
                         last_height: end_row_height_override,
                         restart_frame_closes_body: false,
                     },
@@ -1452,6 +1453,7 @@ impl TypesetEngine {
                 complete_cut: (split_end_cut.is_empty() && split_end_limit <= 0.0)
                     || (complete_physical_end_cut && source_restart_frame_closes_body),
                 block_start: split_block_start,
+                cut: &split_end_cut,
                 // 걸침 칸이 다음 조각에서 세는 앞 행 상자는 그린 상자다 — 내용 컷 행에서 닫는 선으로 줄인 몫은
                 // 병합 칸의 뒤 조각이 잇는다(fragment_ghost_vrules 14·15쪽 (34,1): 앞+뒤 = 선언 326.96px, 한/글
                 // 2020 15쪽 첫 행 237.3px). 같은 행 자신의 다음 부분(`next_start_row_height_override`)은 원장 값을

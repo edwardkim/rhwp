@@ -8,10 +8,11 @@ use crate::renderer::typeset::{
 use super::super::TableContinuationCursor;
 use super::FragmentInput;
 
-pub(super) struct StoredFragmentEnd {
+pub(super) struct StoredFragmentEnd<'a> {
     pub(super) row: usize,
     pub(super) complete_cut: bool,
     pub(super) block_start: Option<usize>,
+    pub(super) cut: &'a [usize],
     pub(super) last_height: Option<f64>,
     pub(super) restart_frame_closes_body: bool,
 }
@@ -274,17 +275,41 @@ impl TypesetEngine {
         cursor: &TableContinuationCursor,
         source: BlockTableContinuationSource<'_>,
     ) -> Option<Vec<f64>> {
+        let table = source.row_geometry_table;
+        let layout = &prepared.layout_engine;
+        if cursor.start_cut_is_block {
+            let (first, last, _) = source.measured_table.row_block_for(cursor.row);
+            let end = layout.row_block_cut_complete_prefix_end(
+                table,
+                (first, last),
+                &cursor.start_cut,
+                source.styles,
+            )?;
+            // 내용 컷만으로 빈 물리 공간까지 끝났다고 추정하지 않는다.
+            // 앞 emit이 실제로 수용한 온전한 행 상자가 있는 prefix만 제외한다.
+            if first != cursor.row
+                || !(first..end).all(|row| {
+                    cursor
+                        .accepted_row_boxes
+                        .get(row)
+                        .copied()
+                        .flatten()
+                        .is_some_and(|height| height.is_finite() && height > 0.0)
+                })
+            {
+                return None;
+            }
+            let mut heights = source.measured_table.row_heights.clone();
+            heights[first..end].fill(0.0);
+            return Some(heights);
+        }
         let keeps_source_boxes = self.stored_header_physical_rows(st, source)
             || prepared
                 .layout_engine
                 .has_stored_continuous_spans(source.row_geometry_table);
-        if !keeps_source_boxes
-            || cursor.start_cut_is_block
-            || !cursor.accepted_row_boxes.iter().any(Option::is_some)
-        {
+        if !keeps_source_boxes || !cursor.accepted_row_boxes.iter().any(Option::is_some) {
             return None;
         }
-        let table = source.row_geometry_table;
         // 이 높이는 앞 emit이 생산해 시작 행 스캔과 paint에 그대로 넘긴
         // 물리 상자다. 앞 쪽 상자와 합쳐 이후 병합 종료 행의 요구를 잰다.
         let resumed_row_box = cursor.stored_restart_row_box.and_then(|(row, before)| {
@@ -435,14 +460,32 @@ impl TypesetEngine {
         st: &TypesetState,
         cursor: &mut TableContinuationCursor,
         input: FragmentInput<'_>,
-        end: StoredFragmentEnd,
+        end: StoredFragmentEnd<'_>,
     ) {
+        let complete_block_prefix =
+            end.block_start
+                .zip(end.last_height)
+                .is_some_and(|(first, height)| {
+                    let (_, last, _) = input.source.measured_table.row_block_for(first);
+                    height.is_finite()
+                        && height > 0.0
+                        && input
+                            .prepared
+                            .layout_engine
+                            .row_block_cut_complete_prefix_end(
+                                input.source.row_geometry_table,
+                                (first, last),
+                                end.cut,
+                                input.source.styles,
+                            )
+                            == Some(end.row)
+                });
         let keeps_source_boxes = self.stored_header_physical_rows(st, input.source)
             || input
                 .prepared
                 .layout_engine
                 .has_stored_continuous_spans(input.source.row_geometry_table);
-        if !keeps_source_boxes || input.start.start_cut_is_block {
+        if (!keeps_source_boxes && !complete_block_prefix) || input.start.start_cut_is_block {
             return;
         }
         let heights = input
@@ -456,13 +499,17 @@ impl TypesetEngine {
         // A partial end block can contain several rows. None of those boxes
         // is a whole-row measurement. Without an explicit closing height the
         // final row can also fold during paint; its physical box is unknown.
-        let whole_end = end.block_start.unwrap_or_else(|| {
-            if end.complete_cut && end.last_height.is_some() {
-                end.row
-            } else {
-                end.row.saturating_sub(1)
-            }
-        });
+        let whole_end = if complete_block_prefix {
+            end.row
+        } else {
+            end.block_start.unwrap_or_else(|| {
+                if end.complete_cut && end.last_height.is_some() {
+                    end.row
+                } else {
+                    end.row.saturating_sub(1)
+                }
+            })
+        };
         cursor.accepted_row_boxes.resize(heights.len(), None);
         if let Some((row, before)) = cursor.stored_restart_row_box {
             if row == input.start.cursor_row && row + 1 < end.row {
