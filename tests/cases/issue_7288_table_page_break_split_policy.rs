@@ -95,6 +95,7 @@ fn build(page_break: u8, lines: usize) -> DocumentCore {
     }
     doc.set_table_properties_native(0, LEAD, 0, &format!(r#"{{"pageBreak":{page_break}}}"#))
         .expect("«쪽 경계에서» 설정");
+    // 강제 줄바꿈 없이 자동 줄바꿈으로 높이를 만든다. CR은 이제 실제 LF로 정규화된다.
     for i in (1..=lines).rev() {
         doc.insert_text_in_cell_native(
             0,
@@ -103,7 +104,7 @@ fn build(page_break: u8, lines: usize) -> DocumentCore {
             0,
             0,
             0,
-            &format!("줄{i} 한글 본문 내용입니다 길게 씁니다.\r"),
+            &format!("줄{i} 한글 본문 내용입니다 길게 씁니다."),
         )
         .expect("첫 행 칸 텍스트");
     }
