@@ -1,0 +1,75 @@
+# planet6897 열린 PR 11개 체리픽 통합 계획 — 2026-10-18
+
+## 요청·기준·작업 경로
+
+사용자는 열린 PR들의 **체리픽 머지와 후속 처리**, 리뷰어 지정 선행과 필요한 메인터너 보정을 명시했다.
+원 PR을 각각 직접 merge하지 않고 최신 devel 위 한 브랜치에 기능 commit을 누적 적용한다.
+
+- 기준 devel: `8766fb47d8ec11547f0d2ae941c53cc3c9780ab2`.
+- 작업 브랜치: `review/planet6897-20261018`, 기본 작업공간 `/home/tsjang/rhwp`.
+- 11개 모두 non-draft. 먼저 `jangster77` reviewer 지정을 완료했고, 원 author·공동 저자·fork와 `-x` 출처를 보존한다.
+- 원 PR source 47 commit의 Git cherry 검사에서 기준 devel과 patch-equivalent인 commit은 없었다. PR 안의 merge commit도 없었다.
+- 기본 경로: collaborator_external_pr 9.1.1. 보조: intake/local_validation, multi_pr_update_branch, visual_fixture_evidence, renderer backend, 대형 PR(#7965), CI 후 review-only trailing, post_merge.
+
+## 적용 순서
+
+| 원 PR | 고정 source SHA | commit 수 | 변경 |
+| --- | --- | ---: | --- |
+| [#7934](https://github.com/edwardkim/rhwp/pull/7934) | `a60c275e8abbce2c6cb9e4277422b7084b13e830` | 4 | fix(layout): 병합 격자 표 열 경계를 저장 칸 폭 누적으로 푼다 (#7933) |
+| [#7956](https://github.com/edwardkim/rhwp/pull/7956) | `dfafbbbf50c9c2cf778174aa3c7c208e99e91c8b` | 9 | fix(조판): #7840 저장 프레임 되감김 오판·이어받기·꼬리말 TAC 줄 상자 — 148738070·1150200·156465345 쪽수 PDF 일치 |
+| [#7965](https://github.com/edwardkim/rhwp/pull/7965) | `f95faf3a57cccc1304ab253fa8db40b3e8442ea4` | 20 | fix(조판): RowBreak 표 분할·이어받기를 저장 쪽 경계 기록대로 — 1342000 쪽 수 415 일치·21761835·1480000·1613000 (부분 개선) |
+| [#7967](https://github.com/edwardkim/rhwp/pull/7967) | `2004d296003b0a75c823a00c4ac09486ed672385` | 4 | fix(renderer): 문단 테두리 묶음 아래 변에 2px 기본 여백을 더하지 않는다 (#7888) |
+| [#7968](https://github.com/edwardkim/rhwp/pull/7968) | `4fde7ae18c1c5ded4ed7c645e72db682ce58b088` | 4 | fix(text): KoPubWorld 계열을 KoPub 전진폭 표로 재고 바탕체 한글을 936/1000 으로 둔다 (#7702) |
+| [#7973](https://github.com/edwardkim/rhwp/pull/7973) | `6df857e2c1b164a6016f6ea50f0299da6bbe5587` | 1 | fix(renderer): 낡은 저장 host 줄이 자란 중첩 TAC 표를 못 담으면 초과분·재조판 줄간격을 측정과 배치가 함께 센다 (#7872) |
+| [#7975](https://github.com/edwardkim/rhwp/pull/7975) | `dbdbdd8b3a7b7510e047be23979b8366b84536fc` | 1 | fix(equation): rm·it 는 수식 끝까지 지속되는 글꼴 상태이고 뒤 공백 명령은 간격이다 (#7873) |
+| [#7976](https://github.com/edwardkim/rhwp/pull/7976) | `7f85ab9b0198edbd68d848e43b370831407c33bd` | 1 | fix(equation): 수식 스크립트의 +-·-+ 축약을 ±·∓ 명령 토큰으로 읽는다 (#7865) |
+| [#7979](https://github.com/edwardkim/rhwp/pull/7979) | `7377b745bce39aa28dca444b1df1b8c90a4598a2` | 1 | fix(search): 찾아 바꾸기가 새 글자에 지운 글자의 글자 모양을 자리대로 잇는다 (#7866) |
+| [#7982](https://github.com/edwardkim/rhwp/pull/7982) | `7ffd13b64aa90110070d5c47eb6043b1d83af4df` | 1 | fix(layout): 자리차지 표 항목이 조판기가 독립 항목으로 내보낸 같은 문단의 TAC 표를 다시 그리지 않는다 (#7330) |
+| [#7987](https://github.com/edwardkim/rhwp/pull/7987) | `fe5d9ebd5260eca29c23e913d8b81cc1c209ccac` | 1 | fix(equation): 전부 대문자로 쓴 그리스 문자 이름을 대문자 그리스 문자로 읽는다 (#7390) |
+
+## 프로젝트 적합성과 구현 검토
+
+표·문단/수식/글꼴·편집의 한컴 호환 개선이라는 프로젝트 범위에 맞는지를 주장별로 검토한다.
+단순 원문 존재·쪽수·종전 CI를 시각 일치나 측정/배치 계약의 증거로 바꾸어 쓰지 않는다.
+현재 devel의 Unicode source-span 검색/치환, PDF 입력·paint 및 공개 WASM API 변경을 충돌 해결에서도 보존한다.
+
+- #7934: 저장 칸 폭의 차분 제약과 비적용 반례, 측정/배치의 실제 폭 소비자를 추적한다. 합성 1쪽 통과로 실문서 미달을 면제하지 않는다.
+- #7956/#7965: 저장 프레임·물리 높이·여백·컷/이월·최종 배치까지 실제 일반/특수 경로를 확인한다. 작성자가 명시한 기존/새 하락을 별도 확인한다.
+- #7967/#7968: 문단 테두리와 폰트 메트릭의 독립 근거를 확인한다. 온새미로의 빈 쪽/폰트·저장 줄 문제와 편람의 최신 보정을 함께 살핀다.
+- #7973: 변형 fixture와 실제 제보 원본을 구분한다. 저장 정보 유효성·낡은 host 줄 간격·둘째 표 내용 보존과 뒤 내용까지 확인한다.
+- #7975/#7976/#7987: 독립 한컴 수식의 명령·글꼴 상태·공백·기호·분수/첨자 경계를 확대 대조한다. 수정 구현을 재인용한 기대값이나 미달 문서의 golden 잠금을 수용하지 않는다.
+- #7979: 한컴 실제 치환 쌍의 모양 상속과 Unicode source-span을 본문/칸, 실제 편집·저장·재열기에서 함께 확인한다.
+- #7982: 독립 PageItem 소유와 paint 한 번 계약을 실제 문단/구역 경계에서도 대조한다. 노드 수뿐 아니라 순서·뒤 내용·겹침을 검증한다.
+
+## 현재 알려진 검증 주의점
+
+원 PR 본문은 #7965의 다수 90% 미달, #7956의 55025 p5 하락, #7968의 새 미달/하락,
+#7976의 fixture 점수 하락, #7975의 합성 증적 51~61%, #7967의 온새미로 47/46쪽 등을 명시했다.
+이는 **작성자 기록이며 이 서버 최신 통합 head의 실행 결과가 아니다**. 전체를 체리픽한 결과로 다시 확인하고 필요한 범위의 메인터너 보정을 별도 commit에 담는다.
+대표 쪽 상승·기존 이슈·평균·CI 녹색을 90% gate나 devel 대비 0.01%p 하락 조건의 면제로 사용하지 않는다.
+
+## 실행·검증 순서
+
+1. 기준 Native Skia CLI와 fresh WASM을 기본 작업공간의 같은 고정 공용 target에서 순차 빌드하고 producer를 ignored output에 보존한다. 빌드를 기다리며 체리픽을 지연시키지 않도록 동일 기준에서 만든 별도 integration-source worktree에서 먼저 누적 적용한다. 기준 빌드가 끝나면 원래 작업공간으로 검토 브랜치를 복귀시킨다. 모든 Cargo 작업은 공용 target에서 순차 실행한다.
+2. 위 순서의 기능·증적 commit을 -x 누적 체리픽한다. 충돌·적용 SHA와 원 기여/메인터너 변경을 구분한다.
+3. 원본/PDF는 기존 저장본을 먼저 찾고 SHA·저장 제품·Print 경로를 확인한다. 비공개 원본은 korea_downloads에서 찾는다. 50MiB 이상 PDF는 local-only 보존 계약을 따른다. 글꼴은 실제 시스템 등록/명시 경로를 공급하며 복사·이름 변경·배포하지 않는다.
+4. 고정 devel과 통합 후보의 전쪽 Native/fresh WASM raw TSV를 같은 입력/PDF/글꼴/profile/compat/DPI로 산출한다. 작은 경계와 대표/미달 PNG 직접 판독을 먼저 하고 필요한 보정 뒤 갱신한다.
+5. 각 페이지 raw 90%·쪽수/내용 보존과 devel 대비 0.01%p 이상 하락 0을 확인한다. 실제 결함과 부족한 증거는 완료로 쓰지 않는다. 통과한 범위에서만 관계형 회귀를 정비하고, 완료 98% 이상 페이지의 핵심 경계에 독립 ±2px 보호를 높은 점수 순으로 추가한다.
+6. 필수 lint·workspace·focused·전체 nextest·Native Skia 3종·fresh WASM·해당 편집/브라우저 검증을 최종 source에서 순차 완료한다. 새 fixture의 7개 래칫·보안 입력 계약을 확인하고 CI 개별 호출을 추가하지 않는다.
+7. 준비된 후보를 upstream 임시 head의 통합 PR로 제출한다. 정확한 code CI가 성공한 뒤에만 원 PR별 archive 리뷰/구현 기록과 오늘할일을 같은 PR trailing 문서로 추가하고 merge-tree/링크/기존 기록 보존을 확인한다.
+8. trailing CI·실제 fast-pass·최신 head·MERGEABLE/CLEAN을 확인해 정상 merge한다. source PR별 검증·해결 범위만 안내하고 실제 완료한 원 PR을 통합 완료로 close한다.
+9. duration 결과·devel sync·이슈 종료/부분 해결 구분·댓글을 확인한 뒤 이번 소유 임시 branch/ref와 사용 종료한 root output 전체를 정리한다. 원 fork·기본 작업공간·공유 target/pr-review·golden SVG는 보존한다. 추가 문서 PR을 만들지 않는다.
+
+작업 로그와 중간 JSON/TSV는 `output/pr-review/planet6897-20261018/`에 보존한다. 최종 TSV·대표 PNG·입력/producer 근거는 정식 증적 경로와 PR 본문에 연결한다.
+
+## 작업지시자 지적 영역 — 추가 보정 필수
+
+사용자가 아래 원 PR 이미지를 직접 지정하고 추가 메인터너 보정을 요청했다. 같은 immutable SHA의 Git blob에서 이미지를 꺼내 확인했다. 이 이미지는 **원 PR의 과거 캡처**이며 최신 통합 head의 증거로 재사용하지 않는다.
+
+| 원 PR·페이지 | 사용자 지정 이미지 | 직접 관찰과 이후 확인 |
+| --- | --- | --- |
+| #7965 / 1342000 p202 | `devel_table_scan_regression/1342000-p202-overlay-wasm.png`, source f95faf3a5 | 마지막 행의 글줄 겹침·가로 경계 차이. 해당 셀의 컷/예약·최종 행 높이·줄 소속·내용 보존을 독립 PDF와 대조한다. |
+| #7982 / 야간방호일지 p1 | `float-sibling-tac-7330/36374873-p001-after.png`, source 7ffd13b64 | 표 뒤 붙임 문단이 PDF보다 아래. 중복 Table 제거에 더해 뒤 문단의 저장 줄·빈 줄·표 점유 끝과 실제 원점을 확인한다. |
+| #7934 / 80168 p17 | `table_merged_grid_column_boundaries/80168_p017_overlay_after.png`, source a60c275e8 | 아래쪽 행 높이와 가로 경계 어긋남. 열 경계 외에 중첩 표/텍스트 점유·바깥 행 높이까지 확인한다. |
+
+해당 페이지의 기존 점수가 높아도 지적 영역은 완료로 판정하지 않는다. 통합 후 실제 Native/fresh WASM의 같은 페이지·확대 영역을 다시 출력하고 원인 보정 전후를 비교한다.
