@@ -23485,10 +23485,17 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         start: usize,
         end: usize,
+        boundary_row: usize,
         styles: &ResolvedStyleSet,
     ) -> bool {
         if cell.row_span <= 1 {
             return false;
+        }
+        if start == 0
+            && self.stored_span_closed_grid_frame_owner(table, cell, boundary_row, styles)
+                == Some(end)
+        {
+            return true;
         }
         let units = self.cell_units(cell, table, styles);
         if start == 0

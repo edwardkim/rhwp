@@ -286,7 +286,12 @@ impl TypesetEngine {
         // 위치가 앞 문단의 흐름 끝이다. 글자 유무·TAC·개체 조합으로 저장 줄을
         // 다시 판정하거나 paint에서 별도의 높이를 누적하지 않는다.
         // 다른 단의 항목이나 부분 문단은 이 전체 문단 완료의 소유자가 아니다.
-        if y != st.current_height && y >= 0.0 && y <= st.available_height() {
+        // 같은 원본 HU 좌표의 변환·누적 오차는 흐름 이동이 아니다. f64의
+        // 끝자리 차이로 완료 경계를 새로 기록하면 실제 이동이 없는 문단까지
+        // 다른 저장 원점의 절대 끝으로 되감는다.
+        let flow_moved = crate::renderer::px_to_hwpunit(y, self.dpi)
+            != crate::renderer::px_to_hwpunit(st.current_height, self.dpi);
+        if flow_moved && y >= 0.0 && y <= st.available_height() {
             if let Some(crate::renderer::typeset::PageItem::FullParagraph {
                 para_index: previous,
             }) = st.current_items.last()

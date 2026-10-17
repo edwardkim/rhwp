@@ -1503,7 +1503,7 @@ impl LayoutEngine {
                     && cell.vertical_align != crate::model::table::VerticalAlign::Top
                     && straddle_cut_units.is_some_and(|(start, end)| {
                         self.stored_plain_spanning_frame_owns_alignment(
-                            cell, table, start, end, styles,
+                            cell, table, start, end, end_row, styles,
                         ) || (start > 0
                             && end >= self.cell_units(cell, table, styles).len()
                             && straddle_page_bands.iter().any(|carry| {
