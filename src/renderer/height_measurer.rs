@@ -6,7 +6,8 @@
 mod rowspan_block;
 mod table_wrapper;
 pub(crate) use table_wrapper::{
-    sole_nested_table_in_paragraph, unrestricted_wrapper_frame, TableWrapperVerticalFrame,
+    sole_nested_table_in_paragraph, unrestricted_wrapper_frame, whole_table_frame_height,
+    TableWrapperVerticalFrame,
 };
 
 use super::composer::{compose_paragraph, ComposedParagraph, SingleLineOverflowCache};

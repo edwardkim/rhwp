@@ -120,20 +120,12 @@ pub(super) fn format(
         )
     };
 
-    let unrestricted_wrapper = crate::renderer::height_measurer::transparent_table_wrapper_child(
+    let effective_height = crate::renderer::height_measurer::whole_table_frame_height(
         table,
-    )
-    .is_some_and(|nested| {
-        crate::renderer::height_measurer::unrestricted_wrapper_frame(table, nested, dpi).is_some()
-    });
-    let effective_height = if profile().hwp5_stored_pagination_layout()
-        || profile().hwpx_stored_layout()
-        || unrestricted_wrapper
-    {
-        crate::renderer::height_measurer::unwrapped_table_whole_height(table, effective_height, dpi)
-    } else {
-        effective_height
-    };
+        effective_height,
+        dpi,
+        profile().hwp5_stored_pagination_layout() || profile().hwpx_stored_layout(),
+    );
     let total_height = effective_height + host_spacing.before + host_spacing.after;
 
     // 표 셀 내 각주 높이 사전 계산 (Paginator engine.rs:565-581 동일)

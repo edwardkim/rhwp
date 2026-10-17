@@ -801,9 +801,33 @@ impl TypesetEngine {
             (input.prepared.terminal_outer_bottom_flow - terminal_outer_bottom_overhead).max(0.0);
         let host_spacing_after_only =
             input.prepared.host_spacing_after_only + terminal_flow_outer_bottom;
-        // `terminal_successor_gap`: 끝 조각 뒤 문단이 증언한 표 아래 간격(공통 helper
-        // `native_text_frame_terminal_successor_gap`). 있으면 paint 와 같은 값으로 흐름 끝을
-        // 정하고 호스트 아래 간격으로 다시 덮어쓰지 않는다.
+        // 행을 나누려고 이월했더라도 결국 통째 표로 확정하면 외곽 프레임을
+        // 그대로 소비한다. 자식 행 합으로 예약한 뒤 더 큰 whole 상자를 그리지 않는다.
+        if cursor_row == 0
+            && !is_continuation
+            && start_cut.is_empty()
+            && end_row >= row_count
+            && split_end_limit == 0.0
+            && end_row_height_override.is_none()
+        {
+            let whole_height = crate::renderer::height_measurer::whole_table_frame_height(
+                table,
+                partial_height,
+                self.dpi,
+                st.profile.hwp5_stored_pagination_layout(),
+            );
+            if whole_height > partial_height
+                && whole_height > avail_for_rows + 0.1
+                && !st.current_items.is_empty()
+            {
+                st.advance_column_or_new_page();
+                return TableContinuationIteration::Skipped;
+            }
+            partial_height = whole_height;
+        }
+
+        // `terminal_successor_gap`: 끝 조각 뒤 문단이 증언한 공통 간격이 있으면
+        // paint와 같은 흐름 끝을 사용하고 호스트 아래 간격으로 다시 덮어쓰지 않는다.
         let commit_fragment = |st: &mut TypesetState,
                                owner_height: f64,
                                terminal: bool,

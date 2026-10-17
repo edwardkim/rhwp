@@ -123,3 +123,20 @@ impl TableWrapperVerticalFrame {
             .unwrap_or_else(|| self.height(child_height))
     }
 }
+
+/// 통째 배치는 측정·분할 후 통째 확정에서도 동일한 외곽 프레임을 소비한다.
+/// 재조판 HWPX는 기존 측정 높이를 쓰며 독립 자식 프레임은 자기 계약을 유지한다.
+pub(crate) fn whole_table_frame_height(
+    table: &Table,
+    measured: f64,
+    dpi: f64,
+    native_hwp5: bool,
+) -> f64 {
+    let independent = super::transparent_table_wrapper_child(table)
+        .is_some_and(|nested| unrestricted_wrapper_frame(table, nested, dpi).is_some());
+    if native_hwp5 || independent {
+        super::unwrapped_table_whole_height(table, measured, dpi)
+    } else {
+        measured
+    }
+}
