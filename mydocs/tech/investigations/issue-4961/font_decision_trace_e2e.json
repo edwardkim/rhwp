@@ -110,8 +110,8 @@
         "normalizedFace": "KoPubWorld돋움체 Light",
         "layoutStepKind": "documentSubstFont",
         "metricMatchKind": "none",
-        "metricCharacterMatch": "notApplicable",
-        "widthSource": "heuristicHalfwidth"
+        "metricCharacterMatch": "hit",
+        "widthSource": "kopubTable"
       }
     }
   ],
