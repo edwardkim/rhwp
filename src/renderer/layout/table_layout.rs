@@ -21847,8 +21847,7 @@ impl LayoutEngine {
                         || hwp5_page_scale_cross_para_reset
                         || shared_empty_frame)
                     && (strict_saved_frame_break
-                        || ((rewind_internal_hard_break_orphan
-                            || !relaxed_hard_break
+                        || ((!relaxed_hard_break
                             || (!u.empty_spacer
                                 && (h + unit_fit_height > avail_height
                                     || avail_height - h <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
@@ -25729,9 +25728,25 @@ impl LayoutEngine {
             })
     }
 
-    /// Plain row units use a physical page box. A nested projection or object
-    /// viewport has its own advance ledger and cannot borrow that page budget.
+    /// 재조판 글줄 여부와 물리 본문 상자를 쓰는지 여부는 별도 계약이다.
     pub(crate) fn row_has_plain_reflow_line_units(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        self.row_has_plain_line_units(table, row, styles)
+            && Self::row_cut_cell_order(table, row).iter().any(|&index| {
+                table.cells[index]
+                    .paragraphs
+                    .iter()
+                    .any(crate::renderer::para_has_no_stored_line_segs)
+            })
+    }
+
+    /// 일반 글줄은 저장 여부와 무관하게 같은 물리 본문 하단을 쓴다.
+    /// 중첩 투영·개체 viewport는 별도 원장을 가지므로 이 예산을 빌리지 않는다.
+    pub(crate) fn row_has_plain_line_units(
         &self,
         table: &crate::model::table::Table,
         row: usize,
@@ -25746,12 +25761,6 @@ impl LayoutEngine {
         }
         let owners = Self::row_cut_cell_order(table, row);
         !owners.is_empty()
-            && owners.iter().any(|&index| {
-                table.cells[index]
-                    .paragraphs
-                    .iter()
-                    .any(crate::renderer::para_has_no_stored_line_segs)
-            })
             && owners.iter().all(|&index| {
                 let cell = &table.cells[index];
                 cell.paragraphs

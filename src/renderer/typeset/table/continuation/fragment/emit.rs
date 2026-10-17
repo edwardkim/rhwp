@@ -1362,6 +1362,11 @@ impl TypesetEngine {
                 ledger_end_row_trim = (ledger_band - band).max(0.0);
                 // 걸침 몫으로 정한 끝 행 상자는 원본 프레임이다 — 배치가 끝 줄간격으로 다시 접지 않는다.
                 span_band_owns_end_row = span_rule && band > 0.5;
+                // 문단 컷의 수용 원장도 같은 걸침 몫과 물리 행 상자를 소비한다.
+                if plain_paragraph_cut {
+                    span_band_owns_end_row = true;
+                    span_band_row_box = Some((last_row, last_height + ledger_band));
+                }
             } else {
                 // 예약(`consumed`)은 이 행을 끝 컷 높이(`split_end_limit`)로 셌다. 쪽 끝까지의 방은
                 // 그 위에 남은 띠를 더한 값이고, 상자는 끝 컷 내용(`last_height`) 이상·걸침 칸의
