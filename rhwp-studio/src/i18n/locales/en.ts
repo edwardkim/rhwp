@@ -7,6 +7,7 @@
  */
 
 const catalog = {
+  "editor.crossSectionSelectionUnsupported": "Editing a selection across sections is not supported yet. Select and edit one section at a time.",
   "dialog.fill.keepGradient": "Keep existing gradient",
   "dialog.fill.keepImage": "Keep existing image fill",
   "dialog.fill.keepExisting": "Keep existing fill",

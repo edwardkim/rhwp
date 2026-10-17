@@ -1,4 +1,6 @@
 import { isBodyControl } from './picture-hit-policy';
+import { showToast } from '@/ui/toast';
+import { t } from '@/i18n/index';
 import { WasmBridge } from '@/core/wasm-bridge';
 import { isCharFormatError, CharFormatRecoveryError } from '@/core/char-format-error';
 import type { DeferredFocusedPagePatch } from '@/core/wasm-bridge';
@@ -4634,8 +4636,12 @@ export class InputHandler {
   }
 
   canDeleteSelectionInFormMode(): boolean {
-    if (this.editMode !== 'form') return true;
     const sel = this.cursor.getSelectionOrdered();
+    if (sel && sel.start.sectionIndex !== sel.end.sectionIndex) {
+      showToast({ message: t('editor.crossSectionSelectionUnsupported') });
+      return false;
+    }
+    if (this.editMode !== 'form') return true;
     if (!sel) return this.canEditCurrentFormField();
     if (!this.isSameTextContainer(sel.start, sel.end)) return false;
     const fi = this.getFormFieldInfoAt(sel.start);
