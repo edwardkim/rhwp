@@ -1240,16 +1240,19 @@ impl TypesetEngine {
 
         // 쪽 끝 빈 띠는 실제 물리 경계와 수용한 조각 상자의 차이다.
         // 원본 프레임이 이미 예약한 띠는 그리기 높이에 다시 더하지 않는다.
+        // 반복 머리행 등으로 paint 상자가 예약보다 작아져도 이미 쓴 예산을
+        // 빈 공간으로 다시 수용하지 않는다. 내용 컷과 물리 예약은 별개다.
+        let reserved_fragment_height = partial_height.max(consumed + header_overhead);
         let ledger_page_end_band = if split_block_start.is_some() {
             0.0
         } else if let Some(frame_rows) = budget.reflow_frame_avail_for_rows {
             // 물리 경계에는 아래 바깥여백과 실제 각주 공간이 이미 반영돼 있다.
-            (frame_rows + header_overhead - partial_height).max(0.0)
+            (frame_rows + header_overhead - reserved_fragment_height).max(0.0)
         } else {
             let outer_bottom = (hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi)
                 - fragment_outer_bottom_overhead)
                 .max(0.0);
-            (avail_for_rows + header_overhead - partial_height - outer_bottom).max(0.0)
+            (avail_for_rows + header_overhead - reserved_fragment_height - outer_bottom).max(0.0)
         };
         // 그리는 띠는 비끝 조각 닫는 선(본문 아래 − 바깥 아래 여백 − 100HU)까지다(한/글 2020: 1613000
         // 구역 1·3 표 아래 731.79·712.91px = 본문 아래 − 3.77 − 1.43). 닫는 선 아래 몫은 걸침 칸이
