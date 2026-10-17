@@ -21,7 +21,7 @@ fn ignore_case_replacement_preserves_textbox_suffix() {
         );
         let mut doc = DocumentCore::from_bytes(hml.as_bytes()).unwrap();
         doc.replace_all_native(query, "Z", false).unwrap();
-        assert_eq!(doc.grep("X", true, None)[0].text, "ZX");
+        assert_eq!(doc.grep("Z", true, None)[0].text, "ZX");
     }
 }
 
@@ -37,7 +37,7 @@ fn ignore_case_replacement_preserves_text_after_expanded_match() {
                 _ => doc.replace_nth_native(query, "Z", false, 0).unwrap(),
             };
             assert_eq!(
-                doc.grep("X", true, None)[0].text,
+                doc.grep("Z", true, None)[0].text,
                 "ZX",
                 "{operation}: {text}"
             );
@@ -64,9 +64,9 @@ fn ignore_case_search_reports_original_match_length() {
     let mut doc = DocumentCore::new_empty();
     doc.insert_text_native(0, 0, 0, "İX İX").unwrap();
     doc.replace_nth_native("i\u{307}", "Z", false, 1).unwrap();
-    assert_eq!(doc.grep("X", true, None)[0].text, "İX ZX");
+    assert_eq!(doc.grep("Z", true, None)[0].text, "İX ZX");
     doc.replace_all_native("i\u{307}", "Z", true).unwrap();
-    assert_eq!(doc.grep("X", true, None)[0].text, "İX ZX");
+    assert_eq!(doc.grep("Z", true, None)[0].text, "İX ZX");
 }
 
 #[test]
@@ -84,11 +84,11 @@ fn ignore_case_replacement_preserves_cell_and_equation_suffixes() {
         );
         let mut doc = DocumentCore::from_bytes(hml.as_bytes()).unwrap();
         doc.replace_all_native(query, "Z", false).unwrap();
-        assert_eq!(doc.grep("X", true, None)[0].text, "ZX");
+        assert_eq!(doc.grep("Z", true, None)[0].text, "ZX");
 
         let mut doc = DocumentCore::new_empty();
         doc.insert_equation_native(0, 0, 0, text, 1000, 0).unwrap();
         doc.replace_all_native(query, "Z", false).unwrap();
-        assert_eq!(doc.grep("X", true, None)[0].text, "ZX");
+        assert_eq!(doc.grep("Z", true, None)[0].text, "ZX");
     }
 }
