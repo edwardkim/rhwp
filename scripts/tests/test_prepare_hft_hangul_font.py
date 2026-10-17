@@ -67,6 +67,13 @@ class OriginalHftFontTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unsupported glyph operator'):
             self.tool.restore_outline('1000 0 0 -200 1000 1000 d1 2 0 0 2 0 0 cm')
 
+    def test_width_only_type3_cannot_supply_an_original_glyph_outline(self):
+        # 한컴 Print는 실제 글자를 별도 이미지로 그리고 검색용 Type3에는
+        # 전진폭·문자 매핑만 남길 수 있다. 이 스트림으로 빈 글꼴을 만들면
+        # 실제 원본 글꼴을 공급했다고 오판하고 정상 한글까지 지워 버린다.
+        with self.assertRaisesRegex(ValueError, 'Empty source glyph outline'):
+            self.tool.restore_outline('1000 0 0 -200 1000 1000 d1 f')
+
     def test_horizontal_bearing_keeps_original_outline_origin(self):
         for left, expected in [('10.25', 10), ('-12.75', -13)]:
             width, charstring = self.tool.restore_outline(

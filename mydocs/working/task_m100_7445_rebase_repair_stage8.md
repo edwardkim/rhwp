@@ -538,3 +538,27 @@ C100을 로컬 중간 커밋으로 정리하며 PR 생성·완료·전체 시각
 `wasm-producer.json`, `fresh-wasm-step.json`이다. Native/WASM 각6·33·40·63쪽의 canonical
 review/overlay는 같은 전쪽 캡처에서 생성했다. 수식 확대 판독의 잔여 차이, sample11 미달,
 최신 전체 회귀·실제 Studio 검증이 남아 있으므로 PR 준비 완료는 아니다.
+
+
+### HFT 원본 공급 진단에서 빈 Type3 방지
+
+sample11 본문의 요청 face는 원본 HFT `고딕`이다. 대상 문서/PDF의 글자를 가져오지 않고
+빈 HWPX에서 별도 전체 현대 한글11172자 표본을 만들어, engine2020·한컴11.0.0.9136·
+PrintMethod0·one-up으로 출력했다(job e62e43d1-c0c2-41c4-8ca7-0d5b6c36a4cd,
+입력b511b069…·PDF e78a062f…). 해당 Print는 실제 ink를 이미지 자원에 두고 Type3에는
+검색 문자·전진폭만 남긴다. 이런 스트림의 hash608개가 대상 PDF와 같아도 원본 윤곽 공급
+증거가 아니다. 만들어진 CFF의 모든 한글 윤곽이 비어 있음을 확인했다.
+
+이 진단 글꼴과 공급 후 캡처는 `font-source-diagnostic/INVALID-font-probe.txt`로 무효화했다.
+시스템 설치·공개 배포를 하지 않았고, 기존 글꼴 환경·시각 수용 증거와 섞지 않는다.
+원래 공급 환경의 C101 Native50쪽70.55984→77.95033% 개선은 도형 변환 보정에 대한
+별도 증거이며, 글꼴 공급 진단의47.87584/55.66478%를 정상 후보 점수로 사용하지 않는다.
+
+`prepare_hft_hangul_font.py`가 전진폭만 있는 Type3를 빈 원본 글꼴로 받아들이지 않도록
+실제 윤곽 경계를 검사한다. 새 검사 수정 전11건 중1FAIL→수정 후11PASS를 확인했다.
+첫 경계 계산에서 PrivateDict가 없는 자체 진단 오류도 같은 범위에서 고쳤으며 실패 로그를
+보존했다. 실제 빈 표본 restore는 출력 파일을 만들지 않고 거부한다. 기존 유효한 독립
+한양신명조11172자 표본은 계속 복원되고, 기존 생성본과 cmap·hmtx·11173개 CFF glyph program
+(.notdef 포함)이 모두 동일하다. 이 도구 검증은 sample11의 전쪽 시각 완료를 뜻하지 않는다.
+정본은 ignored `hwp3-drawing-frame-c101/font-source-diagnostic/`의 `guard-before.log`,
+`guard-after-v2.log`, `guard-result.json`, `positive-glyph-identity.json`이다.

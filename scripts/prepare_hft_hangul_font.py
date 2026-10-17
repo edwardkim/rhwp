@@ -13,6 +13,7 @@ import zipfile
 import xml.etree.ElementTree as ET
 import pymupdf
 from fontTools.fontBuilder import FontBuilder
+from fontTools.cffLib import PrivateDict
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.misc.roundTools import otRound
 
@@ -104,7 +105,11 @@ def restore_outline(stream):
         operands = []
     if pen is None or operands:
         raise ValueError('Incomplete glyph program')
-    return width, pen.getCharString()
+    charstring = pen.getCharString()
+    charstring.private = PrivateDict()
+    if charstring.calcBounds(None) is None:
+        raise ValueError('Empty source glyph outline; text mapping and advance alone are not a font source')
+    return width, charstring
 
 
 def validate_face(face):
