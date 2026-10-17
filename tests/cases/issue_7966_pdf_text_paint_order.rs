@@ -69,3 +69,43 @@ fn covered_text_keeps_its_source_owner_and_paint_order_through_lowering_and_save
         check(&DocumentCore::from_bytes(&bytes).unwrap());
     }
 }
+
+fn imported_by_cli() -> rhwp::DocumentCore {
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let folder =
+        std::env::temp_dir().join(format!("rhwp-pdf-contract-{}-{stamp}", std::process::id()));
+    struct Scratch(std::path::PathBuf);
+    impl Drop for Scratch {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+    std::fs::create_dir(&folder).unwrap();
+    let scratch = Scratch(folder);
+    let input = scratch.0.join("input.pdf");
+    let output = scratch.0.join("imported.hwpx");
+    std::fs::write(&input, PDF).unwrap();
+    let binary =
+        std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").into());
+    let result = std::process::Command::new(binary)
+        .arg("import-pdf")
+        .arg(input)
+        .arg(&output)
+        .arg("--json")
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    rhwp::DocumentCore::from_bytes(&std::fs::read(output).unwrap()).unwrap()
+}
+
+#[test]
+fn cli_covered_text_remains_in_the_original_paint_plane() {
+    check(&imported_by_cli());
+}

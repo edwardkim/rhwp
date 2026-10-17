@@ -4561,6 +4561,24 @@ impl<'doc> TextExtractor<'doc> {
     }
 
     /// This matches the behavior of industry-standard PDF tools.
+    fn same_painted_span_style(left: &TextSpan, right: &TextSpan) -> bool {
+        // Positional lowering emits one character style per text box. Reading
+        // order may glue emphasis runs, but paint must retain each source style.
+        left.font_name == right.font_name
+            && left.font_size == right.font_size
+            && left.font_weight == right.font_weight
+            && left.is_italic == right.is_italic
+            && left.is_monospace == right.is_monospace
+            && left.color == right.color
+            && left.char_spacing == right.char_spacing
+            && left.word_spacing == right.word_spacing
+            && left.horizontal_scaling == right.horizontal_scaling
+            && left.text_rise == right.text_rise
+            && left.wmode == right.wmode
+            && left.rotation_degrees == right.rotation_degrees
+            && left.mirrored == right.mirrored
+    }
+
     fn merge_adjacent_spans(&mut self) {
         if self.spans.is_empty() {
             return;
@@ -4606,14 +4624,15 @@ impl<'doc> TextExtractor<'doc> {
             };
 
             if self.visible_paint_only
-                && self
-                    .span_paint_orders
-                    .get(&current.sequence)
-                    .map(|(_, group)| group)
-                    != self
+                && (!Self::same_painted_span_style(&current, &span)
+                    || self
                         .span_paint_orders
-                        .get(&span.sequence)
+                        .get(&current.sequence)
                         .map(|(_, group)| group)
+                        != self
+                            .span_paint_orders
+                            .get(&span.sequence)
+                            .map(|(_, group)| group))
             {
                 merged.push(current);
                 current_span = Some(span);
