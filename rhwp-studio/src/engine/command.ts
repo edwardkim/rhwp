@@ -1552,12 +1552,12 @@ export class InsertTextInHeaderFooterCommand implements EditCommand {
     private charOffset: number,
     private text: string,
   ) {
-    this.lastContext = hfEditContext(target, paraIdx, charOffset + text.length);
+    this.lastContext = hfEditContext(target, paraIdx, charOffset + charCount(text));
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
     wasm.insertTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.text);
-    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset + this.text.length);
+    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset + charCount(this.text));
     return hfFnStubPosition(this.target.sectionIdx);
   }
 
@@ -1737,12 +1737,12 @@ export class InsertTextInFootnoteCommand implements EditCommand {
     private charOffset: number,
     private text: string,
   ) {
-    this.lastContext = fnEditContext(target, innerParaIdx, charOffset + text.length);
+    this.lastContext = fnEditContext(target, innerParaIdx, charOffset + charCount(text));
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
     wasm.insertTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.charOffset, this.text);
-    this.lastContext = fnEditContext(this.target, this.innerParaIdx, this.charOffset + this.text.length);
+    this.lastContext = fnEditContext(this.target, this.innerParaIdx, this.charOffset + charCount(this.text));
     return hfFnStubPosition(this.target.sectionIdx);
   }
 

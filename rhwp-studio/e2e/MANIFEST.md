@@ -160,7 +160,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `topmost-hittest.test.mjs` | 상시 | active | E2E 테스트 (Issue #1280 v2): 겹침 클릭 = "최상단 개체" 선택 | textbox-under-image.hwp | 수동 |  |
 | `topmost-lifecycle.test.mjs` | 상시 | active | E2E 테스트 (Issue #1280 v2): 겹침 최상단 선택 → 연산 lifecycle | textbox-under-image.hwp | 수동 |  |
 | `typesetting.test.mjs` | 상시 | active | 조판 품질 검증 (문단부호 표시 상태) | — | 수동 |  |
-| `undo-contracts.test.mjs` | 상시 | active | 편집 undo 계약 실동작 검증 (Task #2301) | — | npm e2e:undo |  |
+| `undo-contracts.test.mjs` | 상시 | active | 편집 undo 계약 실동작 검증 (Task #2301), #7977 HF/FN 보조 평면 문자 입력·undo/redo | — | npm e2e:undo |  |
 | `undo-delete-fragment-bytes.test.mjs` | 상시 | active | [#5769] 다문단 선택 삭제 조각 undo 저장 바이트 왕복 동일성 (Delete 키 → Ctrl+Z → exportHwp 대조) | — | npm e2e:undo-delete-fragment-bytes |  |
 | `undo-depth-issue5769.test.mjs` | 상시 | active | [#5769] 혼합 세션(선택 삭제+재입력 R라운드) 실효 undo 깊이 무축출 계약 — 슬롯 합 0·조각 경로 다수 라운드(≥⌈R/2⌉, 짧아진 문단은 refill 분기)·스택 전량 복원·새 문서 상태 복귀. 회귀 시 예산 축출로 ③④가 깨진다 | — | npm e2e:undo-depth | E2E_DEPTH_ROUNDS 로 스모크 |
 | `undo-object-selection.test.mjs` | 상시 | active | E2E: undo/redo 후 개체/표 선택 stale ref 해제 (Task #2303) /  / 계약: undo/r | — | npm e2e:undo-object-selection |  |

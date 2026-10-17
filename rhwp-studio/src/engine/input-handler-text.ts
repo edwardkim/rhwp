@@ -740,7 +740,7 @@ export function onInput(this: any, e?: InputEvent): void {
       this.wasm.insertTextInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, text);
       // [Task #2337] 히스토리 기록 → 본문 스냅샷 undo 가 이 편집을 무언 파괴하지 않게 한다.
       this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, paraIdx, charOffset, text) });
-      this.cursor.setHfCursorPosition(paraIdx, charOffset + text.length);
+      this.cursor.setHfCursorPosition(paraIdx, charOffset + charCount(text));
       this.afterEdit();
     } catch (err) {
       console.error('[HF-input] insertTextInHeaderFooter 실패:', err);
@@ -759,7 +759,7 @@ export function onInput(this: any, e?: InputEvent): void {
       const charOffset = this.cursor.fnCharOffset;
       this.wasm.insertTextInFootnote(target.sectionIdx, target.paraIdx, target.controlIdx, innerParaIdx, charOffset, text);
       this.executeOperation({ kind: 'record', command: new InsertTextInFootnoteCommand(target, innerParaIdx, charOffset, text) });
-      this.cursor.setFnCursorPosition(innerParaIdx, charOffset + text.length);
+      this.cursor.setFnCursorPosition(innerParaIdx, charOffset + charCount(text));
       this.afterEdit();
     } catch (err) {
       console.error('[FN-input] insertTextInFootnote 실패:', err);
