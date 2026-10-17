@@ -478,9 +478,8 @@ impl DocumentCore {
         length: usize,
         new_text: &str,
     ) -> Result<String, HwpError> {
-        // 삭제 후 삽입
-        self.delete_text_native(sec, para, char_offset, length)?;
-        self.insert_text_native(sec, para, char_offset, new_text)?;
+        // [#7866] 지우고 넣는 두 단계가 아니라 모양을 잇는 한 단계 바꾸기.
+        self.replace_text_inheriting_char_shapes_native(sec, para, char_offset, length, new_text)?;
         let new_len = new_text.chars().count();
         Ok(format!(
             "{{\"ok\":true,\"charOffset\":{},\"newLength\":{}}}",
@@ -509,8 +508,14 @@ impl DocumentCore {
         };
 
         let new_len = new_text.chars().count();
-        self.delete_text_native(hit.sec, hit.para, hit.char_offset, hit.length)?;
-        self.insert_text_native(hit.sec, hit.para, hit.char_offset, new_text)?;
+        // [#7866] 새 글자는 지운 글자의 모양을 자리대로 잇는다.
+        self.replace_text_inheriting_char_shapes_native(
+            hit.sec,
+            hit.para,
+            hit.char_offset,
+            hit.length,
+            new_text,
+        )?;
 
         Ok(format!(
             "{{\"ok\":true,\"sec\":{},\"para\":{},\"charOffset\":{},\"newLength\":{}}}",
@@ -600,8 +605,12 @@ impl DocumentCore {
                     };
                     replace_char_range(&mut equation.script, hit.char_offset, hit.length, new_text);
                 } else {
-                    nested_para.delete_text_at(hit.char_offset, hit.length);
-                    nested_para.insert_text_at(hit.char_offset, new_text);
+                    // [#7866] 새 글자는 지운 글자의 모양을 자리대로 잇는다(한/글 찾아 바꾸기).
+                    nested_para.replace_text_inheriting_char_shapes(
+                        hit.char_offset,
+                        hit.length,
+                        new_text,
+                    );
                     affected_cell_paragraphs.push((hit.sec, cell.parent_para, cell.path.clone()));
                 }
                 count += 1;
@@ -646,8 +655,8 @@ impl DocumentCore {
                     .paragraphs
                     .get_mut(hit.para)
                     .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
-                para.delete_text_at(hit.char_offset, hit.length);
-                para.insert_text_at(hit.char_offset, new_text);
+                // [#7866] 새 글자는 지운 글자의 모양을 자리대로 잇는다(한/글 찾아 바꾸기).
+                para.replace_text_inheriting_char_shapes(hit.char_offset, hit.length, new_text);
                 affected_body_paragraphs.push((hit.sec, hit.para));
                 count += 1;
                 affected_sections.push(hit.sec);
