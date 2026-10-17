@@ -488,6 +488,21 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/text_editing.rs",
+        "delete_text_native",
+        Exempt::DelegatesTo("apply_body_text_edit"),
+        "[#7866] 본문 글자 편집의 공통 꼬리(그림 밴드 분기·raw_stream 무효화·재조판·캐럿)를 \
+         `apply_body_text_edit` 로 추출했다. 이 함수는 삭제 클로저와 이벤트만 더한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "replace_text_inheriting_char_shapes_native",
+        Exempt::DelegatesTo("apply_body_text_edit"),
+        "[#7866] 지운 글자의 모양을 잇는 한 단계 바꾸기 — 무효화·재조판은 `delete_text_native` \
+         와 같은 `apply_body_text_edit` 가 수행한다. issue_7866_replace_inherits_char_shapes 가 \
+         저장·재열기 뒤 모양 보존을 검사한다.",
+    ),
+    (
+        "commands/text_editing.rs",
         "insert_text_in_cell_native",
         Exempt::DelegatesTo("replace_text_in_cell_native_impl"),
         "얇은 래퍼 — 실제 삽입·무효화는 `_impl` 이 수행.",
