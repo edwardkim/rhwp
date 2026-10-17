@@ -6,6 +6,30 @@ use crate::model::table::{Cell, Table, TablePageBreak};
 use super::{LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
+    /// 같은 원본 좌표계에서 진행하는 일반 셀은 한 저장 행 프레임이다.
+    /// 다른 행/표의 재시작이나 앞 행 rowspan의 존재로 이 프레임을 나누지 않는다.
+    pub(crate) fn row_has_single_stored_plain_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let owners = self.indexed_row_cut_cell_order(table, row);
+        !owners.is_empty()
+            && owners.iter().any(|&index| {
+                table.cells[index]
+                    .paragraphs
+                    .iter()
+                    .any(|paragraph| paragraph.text.chars().any(|c| !c.is_whitespace()))
+            })
+            && owners.iter().all(|&index| {
+                let cell = &table.cells[index];
+                self.stored_plain_text_cell_frame(table, cell)
+                    && super::stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi)
+                    && !super::stored_plain_text_cell_has_frame_reset(cell, styles, self.dpi)
+            })
+    }
+
     /// 일반 부분 컷의 저장 글줄은 중첩 개체의 물리 조각을 입증하지 않는다.
     /// 해당 행의 실제 소유자 전부가 원본 일반 글줄 상자를 공유하는지 확인한다.
     pub(crate) fn row_has_original_plain_text_owners(
