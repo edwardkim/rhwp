@@ -596,3 +596,32 @@ v2의6쪽 PNG가 v1 Native 보정 PNG와 바이트 동일함을 확인해 직접
 `independent-leaf-quads.json`, `before.log`, `v2/focused.log`, `v2/source.json`, `v2/producer.json`,
 `v2/focus-results.json`, `v2/visual-v1-v2-comparison.json`이다. 새 fresh WASM·전쪽·전체 회귀는
 아직 이 후보에서 완료하지 않았으며, font/꼬리말/도형 잔여를 계속 보정한다.
+
+
+### C102 꼬리말 종류가 소유하는 바닥 정렬 복원
+
+원본 HWP3의16번 컨트롤은 종류·적용 범위·본문을 저장한다. 파서는 Footer로 구분하면서도
+공통 Header의 기본 TOP 정렬0을 그대로 남겼다. 원본 sample11의 독립 한컴2020 재저장본
+(be089566…)은 꼬리말 BOTTOM을 선언한다. 파서에서 Footer 종류를 공통 list_attr BOTTOM으로
+정규화하고, raw bytes·짝/홀/양쪽 적용·본문을 보존한다. 원본에 없는 선언 밴드 높이는
+만들지 않는다. 실제 소비는 공통 layout_header_footer_paragraphs 및 바닥 밴드 배치이므로
+HWP3 전용 paint 예외를 추가하지 않는다.
+
+합성 저장 필드 계약은 수정 전2건1PASS1FAIL(TOP0≠BOTTOM2)→수정 후 통과이며, 원본 파서·
+관련 왕복/그룹/수식/페이지/폰트 집중110건 모두 PASS(0.771초), fmt·manifest·Native 빌드
+2분24초도 통과했다. 현재 전체 소스 ledger와 frozen Native는 ignored hwp3-footer-source-c102에
+고정했다. 이 체크포인트는 C94 이후 아직 dirty인 파서 변경을 함께 소비한 결과이며,
+해당 이전 변경을 이 커밋에 섞지 않고 C102 두 부분만 stage한다.
+
+같은 원본·독립 PDF·글꼴의 Native 직접 비교에서 sample11은151쪽을 유지한다.
+2쪽77.31158→80.46413%,50쪽77.95033→80.93424%,56쪽86.87615→89.06767%로 개선했다.
+1쪽86.00231%는 PNG 동일이다. sample16은64쪽을 유지하며6/33/40쪽95.56838/99.25546/
+94.38750%와 PNG가 모두 동일하다. 50쪽 canonical review와 overlay를 직접 열어 꼬리말
+원점 개선을 확인했고, 키보드/허브 면 누락·본문 글꼴/간격 차이가 남은 것도 확인했다.
+90% 미만 쪽을 수용하거나 새 실제 배치 회귀를 추가하지 않는다. 전쪽 fresh WASM·최종 전체
+회귀 및 실제 Studio는 여전히 남아 있다.
+
+진단용 HWPX에서 선언 밴드3600HU까지 복사한 후보는 바닥 정렬만 옮긴 후보보다 나빴다.
+원본에 없는 수치를 넣지 않았으며 해당 진단 입력을 원본 시각 통과로 인용하지 않는다.
+정본은 ignored hwp3-footer-source-c102/{before.log,focused.log,source.json,producer.json,
+focus-state.json} 및 focus/after-sample11/{review,overlay}이다.

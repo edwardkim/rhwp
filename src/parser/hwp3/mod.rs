@@ -2375,26 +2375,7 @@ fn parse_object_control_char(
             hidden_comment,
         )));
     } else if ch == 16 {
-        let apply_to = match info_buf.get(9).copied().unwrap_or(0) {
-            1 => crate::model::header_footer::HeaderFooterApply::Even,
-            2 => crate::model::header_footer::HeaderFooterApply::Odd,
-            _ => crate::model::header_footer::HeaderFooterApply::Both,
-        };
-        let is_footer = info_buf.get(8).copied().unwrap_or(0) == 1;
-
-        if is_footer {
-            let mut footer = crate::model::header_footer::Footer::default();
-            footer.paragraphs = nested_paragraphs;
-            footer.apply_to = apply_to;
-            footer.raw_ctrl_extra = info_buf.clone();
-            controls.push(crate::model::control::Control::Footer(Box::new(footer)));
-        } else {
-            let mut header = crate::model::header_footer::Header::default();
-            header.paragraphs = nested_paragraphs;
-            header.apply_to = apply_to;
-            header.raw_ctrl_extra = info_buf.clone();
-            controls.push(crate::model::control::Control::Header(Box::new(header)));
-        }
+        controls.push(hwp3_header_footer_control(&info_buf, nested_paragraphs));
     } else if ch == 17 {
         let is_endnote = (&info_buf[10..12]).read_u16::<LittleEndian>().unwrap_or(0) == 1;
 
@@ -6891,5 +6872,80 @@ mod tests {
             hwp3_object_reference_position(3, false),
             Some((HorzRelTo::Paper, VertRelTo::Paper))
         );
+    }
+}
+
+/// V3 머리말/꼬리말 저장 종류·적용 범위를 공통 컨트롤로 옮긴다.
+fn hwp3_header_footer_control(
+    info: &[u8],
+    paragraphs: Vec<crate::model::paragraph::Paragraph>,
+) -> crate::model::control::Control {
+    use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
+    let apply_to = match info.get(9).copied().unwrap_or(0) {
+        1 => HeaderFooterApply::Even,
+        2 => HeaderFooterApply::Odd,
+        _ => HeaderFooterApply::Both,
+    };
+    if info.get(8).copied().unwrap_or(0) == 1 {
+        let mut footer = Footer::default();
+        footer.paragraphs = paragraphs;
+        footer.apply_to = apply_to;
+        // V3 꼬리말은 아래 여백 밴드의 아래끝에 정렬한다. 한컴의 독립
+        // 재저장도 BOTTOM으로 정규화한다. 원본에 없는 밴드 높이는 만들지 않는다.
+        footer.list_attr = 2 << 21;
+        footer.raw_ctrl_extra = info.to_vec();
+        crate::model::control::Control::Footer(Box::new(footer))
+    } else {
+        let mut header = Header::default();
+        header.paragraphs = paragraphs;
+        header.apply_to = apply_to;
+        header.raw_ctrl_extra = info.to_vec();
+        crate::model::control::Control::Header(Box::new(header))
+    }
+}
+
+#[cfg(test)]
+mod header_footer_source_contract_tests {
+    use super::*;
+    use crate::model::control::Control;
+    use crate::model::header_footer::HeaderFooterApply;
+    use crate::model::paragraph::Paragraph;
+
+    #[test]
+    fn footer_kind_owns_bottom_alignment_and_keeps_scope_and_content() {
+        let mut source = [0_u8; 10];
+        source[8] = 1;
+        source[9] = 1;
+        let paragraphs = vec![Paragraph {
+            text: "footer source".into(),
+            ..Default::default()
+        }];
+        let Control::Footer(footer) = hwp3_header_footer_control(&source, paragraphs) else {
+            panic!("V3 꼬리말 종류");
+        };
+        assert_eq!(
+            (footer.list_attr >> 21) & 3,
+            2,
+            "독립 한컴 V3 재저장의 꼬리말은 subList BOTTOM"
+        );
+        assert_eq!(footer.apply_to, HeaderFooterApply::Even);
+        assert_eq!(footer.raw_ctrl_extra, source);
+        assert_eq!(footer.paragraphs[0].text, "footer source");
+        assert_eq!(
+            footer.text_height, 0,
+            "원본에 없는 선언 밴드 높이를 만들지 않는다"
+        );
+    }
+
+    #[test]
+    fn header_kind_keeps_its_top_anchor_instead_of_footer_alignment() {
+        let mut source = [0_u8; 10];
+        source[9] = 2;
+        let Control::Header(header) = hwp3_header_footer_control(&source, Vec::new()) else {
+            panic!("V3 머리말 종류");
+        };
+        assert_eq!((header.list_attr >> 21) & 3, 0);
+        assert_eq!(header.apply_to, HeaderFooterApply::Odd);
+        assert_eq!(header.raw_ctrl_extra, source);
     }
 }
