@@ -244,15 +244,7 @@ impl TypesetEngine {
                     &band_fill,
                 );
                 end_row = selected.end_row(&block_query, &block, blk_start_cut);
-                if let Some((height, last)) = complete_row_frame {
-                    split_block_start = Some(b_start);
-                    split_end_cut = selected.cut_res.end_cut.clone();
-                    split_end_limit = selected.cut_res.consumed_height;
-                    end_row_height_override = Some(last);
-                    consumed += cs_before + height;
-                    return false;
-                }
-                if let Some(band) = selected.complete_row_boundary_band(
+                let complete_row_band = selected.complete_row_boundary_band(
                     &block_query,
                     &block,
                     blk_start_cut,
@@ -263,7 +255,31 @@ impl TypesetEngine {
                         !is_continuation && cursor_row == 0,
                         self.dpi,
                     ),
-                ) {
+                );
+                let complete_row_frame = complete_row_frame.or_else(|| {
+                    // 저장 병합 상자가 쪽 끝 띠를 소유하면 기존 밴드 계약을 따른다.
+                    if complete_row_band.is_some() {
+                        return None;
+                    }
+                    selected.complete_row_boundary_frame(
+                        &block_query,
+                        &block,
+                        blk_start_cut,
+                        budget,
+                    )
+                });
+                if let Some((height, last)) = complete_row_frame {
+                    // 완전 행 prefix의 물리 상자와 다음 행 소유권을 함께 넘긴다.
+                    // 양수 부분 컷을 남기면 다음 커서가 end_row - 1에서 재개해
+                    // 이미 끝난 행의 빈 상자를 다시 배치한다.
+                    split_block_start = Some(b_start);
+                    split_end_cut.clear();
+                    split_end_limit = 0.0;
+                    end_row_height_override = Some(last);
+                    consumed += cs_before + height;
+                    return false;
+                }
+                if let Some(band) = complete_row_band {
                     // 빈 컷은 완전 행 경계다. 블록 시작 표시는 빈 공간을 다음
                     // 완전 행 상자에 합칠 소유권이며 내용 컷으로 해석하지 않는다.
                     split_block_start = Some(b_start);

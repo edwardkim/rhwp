@@ -8,7 +8,7 @@
 - 기준 devel: `8766fb47d8ec11547f0d2ae941c53cc3c9780ab2`.
 - 작업 브랜치: `review/planet6897-20261018`, 기본 작업공간 `/home/tsjang/rhwp`.
 - 11개 모두 non-draft. 먼저 `jangster77` reviewer 지정을 완료했고, 원 author·공동 저자·fork와 `-x` 출처를 보존한다.
-- 원 PR source 47 commit의 Git cherry 검사에서 기준 devel과 patch-equivalent인 commit은 없었다. PR 안의 merge commit도 없었다.
+- 초기 원 PR source 47 commit의 Git cherry 검사에서 기준 devel과 patch-equivalent인 commit은 없었다. 이후 #7965의 재작성된 기존20개는 stable patch-id가 모두 일치함을 확인하고 새2개만 추가해 총49개를 적용했다. PR 안의 merge commit은 없었다.
 - 기본 경로: collaborator_external_pr 9.1.1. 보조: intake/local_validation, multi_pr_update_branch, visual_fixture_evidence, renderer backend, 대형 PR(#7965), CI 후 review-only trailing, post_merge.
 
 ## 적용 순서
@@ -17,7 +17,7 @@
 | --- | --- | ---: | --- |
 | [#7934](https://github.com/edwardkim/rhwp/pull/7934) | `a60c275e8abbce2c6cb9e4277422b7084b13e830` | 4 | fix(layout): 병합 격자 표 열 경계를 저장 칸 폭 누적으로 푼다 (#7933) |
 | [#7956](https://github.com/edwardkim/rhwp/pull/7956) | `dfafbbbf50c9c2cf778174aa3c7c208e99e91c8b` | 9 | fix(조판): #7840 저장 프레임 되감김 오판·이어받기·꼬리말 TAC 줄 상자 — 148738070·1150200·156465345 쪽수 PDF 일치 |
-| [#7965](https://github.com/edwardkim/rhwp/pull/7965) | `f95faf3a57cccc1304ab253fa8db40b3e8442ea4` | 20 | fix(조판): RowBreak 표 분할·이어받기를 저장 쪽 경계 기록대로 — 1342000 쪽 수 415 일치·21761835·1480000·1613000 (부분 개선) |
+| [#7965](https://github.com/edwardkim/rhwp/pull/7965) | `4c83c6112a038cf0e30ee164e12c4c0a98f4e6af` | 22 | fix(조판): RowBreak 표 분할·이어받기를 저장 쪽 경계 기록대로 — 1342000 쪽 수 415 일치·21761835·1480000·1613000 (부분 개선) |
 | [#7967](https://github.com/edwardkim/rhwp/pull/7967) | `2004d296003b0a75c823a00c4ac09486ed672385` | 4 | fix(renderer): 문단 테두리 묶음 아래 변에 2px 기본 여백을 더하지 않는다 (#7888) |
 | [#7968](https://github.com/edwardkim/rhwp/pull/7968) | `4fde7ae18c1c5ded4ed7c645e72db682ce58b088` | 4 | fix(text): KoPubWorld 계열을 KoPub 전진폭 표로 재고 바탕체 한글을 936/1000 으로 둔다 (#7702) |
 | [#7973](https://github.com/edwardkim/rhwp/pull/7973) | `6df857e2c1b164a6016f6ea50f0299da6bbe5587` | 1 | fix(renderer): 낡은 저장 host 줄이 자란 중첩 TAC 표를 못 담으면 초과분·재조판 줄간격을 측정과 배치가 함께 센다 (#7872) |
@@ -127,3 +127,39 @@
 - **완전 행 prefix의 물리 끝**: 80168 p17의 컷은 row8의 모든 내용만 소비하고 row9 이후 유닛은0이다. 기존 `SelectedBlockCut::end_row`는 컷의 물리 높이51.1px가 row8의44.1px를 넘는다는 이유로 미소비 row9를 열어6.9px 빈 칸과 괘선을 만든다. 기존 완전 행 경계 인증으로 원본 끝 row9(반열린 끝)를 고르고, 같은 컷의 물리 높이를 마지막 소유 행의 override로 전달한다. `complete_row_boundary_frame`의 예약 높이도 물리 컷 이상으로 보존해 paint만 커지는 불일치를 만들지 않는다. 부분 유닛 컷·이어받기는 이 완전 prefix 계약으로 바꾸지 않으며 #7336 등 기존 부분 컷 대조가 필요하다.
 
 80168 p93은 `keep_with_next=false` 제목 pi782가 PDF p92 하단에 있지만 rhwp p93 상단으로 밀린다. 기존 `native_hwp5_circled_rowbreak_table_heading_requires_fresh_page`가 동그라미 글자·빈 줄·1×1 표 조합으로 묶음을 추정하는 경로를 확인했다. 이 가정의 독립 근거와 기존76076 대조는 조사 중이며 아직 코드를 변경하지 않았다.
+
+
+### 체리픽 선행 순서 재정렬과 완전 행 커서 후속 보정
+
+사용자 지시에 따라 추가 source 두 개(`27bd84bf3`, `4c83c6112`)를 #7965의 기존20개 뒤로
+옮겨 **기여자49개 → 메인터너 보정5개** 순서로 interactive rebase했다. 계획 commit은 맨 앞에
+유지했다. 재정렬 head는 `dd846c62e9f3191cc65be84d8df0f7b479f675c8`이며, 이전
+`ffdf1c478d64cd667396855fd21938ec92d32b8a`와 최종 tree가 동일하고 원저자·저자일·출처
+trailer49개가 보존됨을 확인했다. `upstream/devel`은 다시 fetch해도 `8766fb47d8`로 동일했다.
+ignored output의 `source-order-rebase-result.json`과 `cherry-pick-mapping.json`에 전후 SHA가 있다.
+
+이 head(candidate5)의 Native 빌드는6분3초·exit0이며 fresh WASM도 exit0으로 종료됐다.
+Native SHA-256은 `0803fbf729e1e469ed34b33589a1063c816e0148c2b1fc7665bb164e445046e4`다.
+Native 지적 쪽 raw는 야간방호97.73177%, 80168 p17 **99.47393%**, 1342000 p202 **99.89483%**다.
+그러나 80168 p18은 직전98.38128%에서 **44.22378%**로 내려갔다. p17만 개선됐다는 이유로
+완료 처리하지 않는다. 원본 nested의 유효 여백 보정은21.90060→89.50846%로 개선됐지만 미달이다.
+
+실제 호출 연결은 `SelectedBlockCut::end_row`의 완전 prefix(끝9) → block_step의 양수
+`split_end_limit`·잔존 cut vector → emit의 `continuation.advance(..., partial=true)` → 다음 조각
+시작8이다. trace에서 `FRAGMENT rows=0..9 ... cut=[2,2,1,1,1,0,0,0,0,0]` 뒤
+`rows=8..24`가 확인됐다. 즉 물리 끝만 바꾸고 부분 컷 커서를 남겨 끝난 행을 다시 열었다.
+
+후속 보정은 기존 `row_block_cut_is_complete_row_boundary`의 원본 유닛 인증을 통과한 컷의
+공통 `complete_row_boundary_frame` 결과를 소비한다. 최소 orphan 높이 미만인 경우뿐 아니라
+인증된 완전 prefix 모두에서 물리 행 상자와 **빈 끝 컷·0 부분 limit**을 함께 전달해 다음 행에서
+재개한다. 기존 저장 병합 상자의 쪽 끝 밴드 인증은 우선 유지한다. 부분 유닛·hard break·편집·재조판
+경로는 이 완전 행 계약으로 바꾸지 않는다. 같은 source의 Native/fresh WASM, p17→18 내용 보존과
+다른 source 경계는 새 코드에서 재검증할 예정이며 아직 **미검증**이다. 기대값을 바꾸지 않았다.
+
+#7873 원본의 빈 pi8은9pt/100% 스타일인데 높이13878HU·간격540HU를 가진다. 한컴2020
+재저장 대조본(job `ab136fd2-90f5-4233-b4a4-11b3893f59a7`, 11.0.0.9136,
+`input_preprocess=none`)은 같은 빈 줄을900HU·간격0으로 다시 계산한다. 첫 메타 문단도
+1000→900HU로 재계산됐다. 대조 HWP SHA-256은
+`6febf8b23007179b4108494c45ae2917efc8119ccd357784dc585be4d7fc698a`다.
+원본 HWPX의 보존 줄 좌표는 모두0이며 일부 본문은 줄 배열도 없다. 이 혼합 입력의 수용과
+재조판 계약은 조사 중이다. 대조본 통과를 원본 통과로 대신하지 않으며 원본·PDF를 교체하지 않는다.
