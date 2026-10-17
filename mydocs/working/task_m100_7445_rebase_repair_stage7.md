@@ -60,3 +60,37 @@ raw97.50476%로 같고, 원점도 과거 snap으로 옮기면96.81942%로 낮아
 Native와 WASM 모두 sample16의65vs64 불일치로 canonical 전체 비교가 종료되어 잘라 만든 TSV가 없다.
 WASM giant80은 새 기준97.54273→후보97.50476%,0.03797%p 하락이 남는다.
 지표가 같은 paint-width-only 진단이나 수치가 낮아진 과거 snap 진단을 생산 코드로 채택하지 않았다.
+
+
+## C87 후보 — 같은 런의 쪽번호도 동일한 오른쪽 탭 끝점 사용
+
+HEAD acd4c6e316의 전체 nextest는10664건 중10662PASS/2FAIL/45skip,
+실행466.433초(컴파일 포함765.119초)로 끝났다. 실패는 기존 issue1116의
+HWP3/HWP5 목차 오른쪽 끝 정렬 두 검사다. 기준을 바꾸거나 검사를 제거하지 않았다.
+사용자 수동 Print p2의26개 숫자 블록 오른쪽 끝은 모두641.405396CSSpx다.
+현재 출력은641.4933과637.159967의 두 그룹이며 차이는17.3333px 글자 크기의
+0.25em이다. 숫자15/16/20 등은 탭과 같은 런에 있어 C85의 교차 런 보정 밖에 있었다.
+
+`right_leader_tab_target_rel → estimate_text_width_exact → 문단 폭`과
+`right_leader_tab_target_rel → compute_char_positions → TextRun 문자 위치`를
+대조했다. 공통 helper가 숫자 끝점에서 리더 뒤 여백0.25em을 빼고 있었다.
+숫자 블록은 탭 정지에 정렬하고 리더 여백은 선의 끝에만 적용하도록 그 감산을 제거했다.
+명시적 LEFT/DECIMAL·비숫자·일반 탭 경로와 리더 앞뒤 여백 규칙은 바꾸지 않았다.
+문서명·쪽번호·목표 좌표에 의한 구현 분기는 없다.
+
+최종 후보 source의 기존 issue1116은13PASS(0.364초), 글꼴/탭 소유 대조군16PASS
+(0.176초), WMF 포함 마스크17PASS(0.109초)다. 13건의 최초 후보 실행도13PASS(0.291초)였고,
+그 뒤 불필요해진 지역 변수만 제거한 최종 source로 다시 실행했다.
+세부 시간/종료 코드는 ignored `toc-anchor-repair/`의 로그·pipeline-commands.json을
+정본으로 한다. 이 집중 검사 통과를 새 전체 회귀 통과로 보고하지 않는다.
+새 Native/fresh WASM·전64쪽·실제 Studio 소비와 최종 전체 gate는 후속 검증 중이다.
+
+기존 acd4 실제 Studio96DPI p2/18/41 review/overlay도 직접 열었다. p2의 일부 숫자
+오정렬은 raw99.23573%이어도 결함으로 유지했고, p18 분홍 패널 복원과 세부 WMF
+글자/선 차이를 구분했다. p41 HCI 기호와 내용 순서는 보존하지만 glyph raster 차이는 남는다.
+이 범위는 portable compat2024 전64쪽과 별개인 실제 제품 default2022 경로다.
+
+전64쪽 최저인63쪽도 양쪽 review/overlay로 따로 대조한다. 원문 한양신명조 기호 슬롯의
+○는 metric trace에서 heuristicFullwidth이며, 기준보다 큰 원 모양이 보인다.
+이를 글자 유무·폰트 설치만으로 해결됐다고 하거나 새 정상 golden으로 고정하지 않는다.
+Native93.07399/WASM95.87967%는 이전 acd4 출력의 수치이며 새 후보 통과 수치가 아니다.

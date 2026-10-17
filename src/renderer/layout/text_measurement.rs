@@ -243,13 +243,15 @@ fn tab_suffix_is_ascii_page_number(chars: &[char], start: usize) -> bool {
     seen_digit
 }
 
-fn right_leader_tab_target_rel(style: &TextStyle, font_size: f64) -> Option<f64> {
+// A right tab anchors the block end. Leader padding belongs to its drawn line,
+// not to the tab stop, including when tab and digits occupy the same run.
+fn right_leader_tab_target_rel(style: &TextStyle) -> Option<f64> {
     style
         .tab_stops
         .iter()
         .rev()
         .find(|tab| tab.tab_type == 1 && tab.fill_type != 0)
-        .map(|tab| tab.position - font_size * 0.25 - style.line_x_offset)
+        .map(|tab| tab.position - style.line_x_offset)
         .filter(|target| target.is_finite())
 }
 
@@ -609,7 +611,7 @@ impl EmbeddedTextMeasurer {
                         && !has_more_tabs_after
                         && tab_suffix_is_ascii_page_number(&chars, i + 1)
                     {
-                        if let Some(target_rel) = right_leader_tab_target_rel(style, font_size) {
+                        if let Some(target_rel) = right_leader_tab_target_rel(style) {
                             let seg_w =
                                 measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                             total = (target_rel - seg_w).max(total);
@@ -707,7 +709,6 @@ impl EmbeddedTextMeasurer {
         style: &TextStyle,
         include_hft_bold_tracking: bool,
     ) -> Vec<f64> {
-        let (font_size, _ratio, _tab_w) = style_params(style);
         // [#2132] 인라인 탭 divergent 경로 훅 — HWP5 raw ext 인코딩 legacy 해석 유지
         // (Issue #630 Stage 4/6, Task #874 계열 — 원본 무변경 이동).
         let inline_tab_x = |i: usize,
@@ -767,7 +768,7 @@ impl EmbeddedTextMeasurer {
                 && !has_more_tabs_after
                 && tab_suffix_is_ascii_page_number(&chars, i + 1)
             {
-                if let Some(target_rel) = right_leader_tab_target_rel(style, font_size) {
+                if let Some(target_rel) = right_leader_tab_target_rel(style) {
                     let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
                     x = (target_rel - seg_w).max(x);
                 } else {
