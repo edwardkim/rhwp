@@ -6,6 +6,7 @@ use crate::document_core::helpers::get_textbox_from_shape;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
+use crate::model::paragraph::normalize_text_newlines;
 
 /// 병적으로 깊은 중첩(손상/악의적 문서)에서 순회가 스택을 태우지 않게 하는 상한.
 /// `grep` / `table_extract::MAX_NEST_DEPTH` / `explain` / `hidden_text` / `chart_extract` 와
@@ -479,6 +480,8 @@ impl DocumentCore {
         length: usize,
         new_text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(new_text);
+        let new_text = normalized.as_ref();
         // 삭제 후 삽입
         self.delete_text_native(sec, para, char_offset, length)?;
         self.insert_text_native(sec, para, char_offset, new_text)?;
@@ -500,6 +503,8 @@ impl DocumentCore {
         new_text: &str,
         case_sensitive: bool,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(new_text);
+        let new_text = normalized.as_ref();
         if query.is_empty() {
             return Ok(r#"{"ok":false}"#.to_string());
         }
@@ -552,6 +557,8 @@ impl DocumentCore {
         case_sensitive: bool,
         occurrence: Option<usize>,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(new_text);
+        let new_text = normalized.as_ref();
         if query.is_empty() {
             return Ok(r#"{"ok":true,"count":0}"#.to_string());
         }
