@@ -418,3 +418,160 @@ fn worklife_repeated_plus_keeps_the_following_value_on_its_independent_origin() 
     assert!((op["placement"]["runToPage"]["f"].as_f64().unwrap() - 997.9493815104166).abs() <= 2.0);
     assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
 }
+
+#[test]
+fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
+    use rhwp::document_core::CanvasMetricReply;
+    use rhwp::renderer::supplemental_metrics::{MetricBackend, MetricContext};
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(root.join("samples/issue6145/worklife_balance_index_156607916.hwpx"))
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(core.page_count(), 6);
+    let (pi, text) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, p)| p.text.contains("’22년 기준 지수 세부 영역별 결과"))
+        .map(|(i, p)| (i, p.text.clone()))
+        .unwrap();
+    let year = text[..text.find("22년").unwrap()].chars().count();
+    let context = MetricContext {
+        document_generation: 1,
+        font_generation: 1,
+        backend: MetricBackend::Canvas2d,
+    };
+    let batch = core.collect_canvas_metric_requests(context).unwrap();
+    // The actual Studio fallback measured the source HFT quote as a full em.
+    // Feed that real observation through the public preparation/selection path.
+    let replies = batch
+        .requests
+        .iter()
+        .map(|r| CanvasMetricReply {
+            key: r.key.clone(),
+            cluster: r.cluster.clone(),
+            font: r.font.clone(),
+            resolved_font: r.font.clone(),
+            measured_advance_px: 20.0,
+        })
+        .collect();
+    core.register_canvas_metric_replies(context, batch.revision, replies)
+        .unwrap();
+    core.select_canvas_metrics(true).unwrap();
+    let layer: Value = serde_json::from_str(
+        &core
+            .get_canvas_page_layer_tree_with_options_native(
+                3,
+                rhwp::paint::RenderProfile::Print,
+                rhwp::paint::LayerJsonOptions {
+                    omit_image_bytes: true,
+                    omit_font_bytes: true,
+                },
+            )
+            .unwrap(),
+    )
+    .unwrap();
+    fn collect<'a>(value: &'a Value, prefix: &str, out: &mut Vec<&'a Value>) {
+        match value {
+            Value::Object(o) => {
+                if value["type"] == "textRun"
+                    && value["source"]["stableSourceKey"]
+                        .as_str()
+                        .is_some_and(|key| key.starts_with(prefix))
+                {
+                    out.push(value);
+                }
+                for child in o.values() {
+                    collect(child, prefix, out);
+                }
+            }
+            Value::Array(a) => {
+                for child in a {
+                    collect(child, prefix, out);
+                }
+            }
+            _ => {}
+        }
+    }
+    let mut ops = vec![];
+    collect(&layer, &format!("section:0/para:{pi}/char:"), &mut ops);
+    assert_eq!(
+        ops.iter()
+            .map(|r| r["text"].as_str().unwrap())
+            .collect::<String>(),
+        text,
+        "The heading keeps every source character exactly once and in order"
+    );
+    let owners: Vec<_> = ops
+        .iter()
+        .filter(|r| r["source"]["stableSourceKey"] == format!("section:0/para:{pi}/char:{year}"))
+        .collect();
+    assert_eq!(owners.len(), 1);
+    assert!(owners[0]["text"].as_str().unwrap().starts_with("22"));
+    let x = owners[0]["placement"]["runToPage"]["e"].as_f64().unwrap();
+    // C80: Native/fresh WASM all6 pages >=90%; p4=99.04483/99.03763%.
+    // Independent2020 Print p4 H2hdrM year origin82.3953476pt ->96CSSpx.
+    // T16 quote ToUnicode2019, Widths225, FontMatrix.001; no font hmtx inference.
+    assert!(
+        (x - 109.86046346028646).abs() <= 2.0,
+        "year after HFT quote: {x}"
+    );
+    assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
+    assert_eq!(core.page_count(), 6);
+}
+
+#[test]
+fn declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries() {
+    use rhwp::renderer::supplemental_metrics::{MetricBackend, MetricContext};
+    let context = MetricContext {
+        document_generation: 1,
+        font_generation: 1,
+        backend: MetricBackend::Canvas2d,
+    };
+    let mut program = core("한양중고딕", "’A", None);
+    let ttf_source = program.document().clone();
+    assert_ne!(
+        record(&program, "’")["layoutMetric"]["widthSource"],
+        "measuredOriginalGlyph"
+    );
+    assert!(program
+        .collect_canvas_metric_requests(context)
+        .unwrap()
+        .requests
+        .iter()
+        .any(|r| r.cluster == "’"));
+    let mut hft = ttf_source.clone();
+    for face in hft.doc_info.font_faces.iter_mut().flatten() {
+        face.alt_type = 2;
+    }
+    program.set_document(hft.clone());
+    let quote = record(&program, "’");
+    assert_eq!(
+        quote["layoutMetric"]["widthSource"],
+        "measuredOriginalGlyph"
+    );
+    assert!((advance(&quote) - 7500.0 * 225.0 / 1000.0).abs() <= 2.0);
+    assert!(!program
+        .collect_canvas_metric_requests(context)
+        .unwrap()
+        .requests
+        .iter()
+        .any(|r| r.cluster == "’"));
+    program.set_font_environment(Some(FontEnvironment::from_json(r#"{"id":"explicit-true-type-quote","substitutions":{},"trueTypeFaces":["한양중고딕"]}"#).unwrap())).unwrap();
+    assert_ne!(
+        record(&program, "’")["layoutMetric"]["widthSource"],
+        "measuredOriginalGlyph"
+    );
+    program.set_font_environment(None).unwrap();
+    hft.doc_info
+        .char_shapes
+        .iter_mut()
+        .for_each(|cs| cs.bold = true);
+    program.set_document(hft);
+    assert_ne!(
+        record(&program, "’")["layoutMetric"]["widthSource"],
+        "measuredOriginalGlyph"
+    );
+}

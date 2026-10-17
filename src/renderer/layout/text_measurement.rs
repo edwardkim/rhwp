@@ -1729,7 +1729,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                 slot.original_glyph_metric_family.as_deref()
             });
         let original_glyph_em = original_glyph_face.and_then(|face| {
-            font_metrics_data::original_glyph_advance_em(face, style.bold, style.italic, c)
+            font_metrics_data::declared_original_glyph_advance_em(face, style.bold, style.italic, c)
         });
         let mut embedded = if let Some(em) = original_glyph_em {
             EmbeddedWidthDecision {

@@ -68,6 +68,27 @@ static HCI_TULIP_REGULAR_ADVANCES: &[(char, u16)] = &[
     (']', 332),
 ];
 
+// 독립 Print의 원본 HFT 자연 폭. 호출자가 선언 프로그램을 확인한 경우만 쓴다.
+// worklife_balance_index_156607916-2020.pdf p4 T16 ToUnicode2019:
+// Widths225, FontMatrix.001, CharProc d1=225. 국립국어원2022 p3 T9에서도
+// 좌우2018/2019는225/1000. 동명 TTF나 표시 대체의 전각 폭으로 확장하지 않는다.
+pub(crate) fn has_declared_original_glyph_metrics(face: &str) -> bool {
+    has_original_glyph_metrics(face) || face == "한양중고딕"
+}
+
+pub(crate) fn declared_original_glyph_advance_em(
+    face: &str,
+    bold: bool,
+    italic: bool,
+    character: char,
+) -> Option<f64> {
+    original_glyph_advance_em(face, bold, italic, character).or_else(|| {
+        (face == "한양중고딕" && !bold && !italic
+            && matches!(character, '\u{2018}' | '\u{2019}'))
+            .then_some(225.0 / 1000.0)
+    })
+}
+
 pub(crate) fn has_original_glyph_metrics(face: &str) -> bool {
     face == "HCI Tulip"
         || ORIGINAL_GLYPH_METRICS

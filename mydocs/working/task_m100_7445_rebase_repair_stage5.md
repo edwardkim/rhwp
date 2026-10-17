@@ -2671,6 +2671,125 @@ FAIL/PASS로 세지 않았다. 48조건 IR 중 이 선언은 해당 문서에서
 추가 런타임 import39행도 함께 동기화했다. API를 수동 수정한 것은 아니며 실제 초기화
 응답 hash 검증은 새 head의 전체 소비 검증에 남긴다.
 
-선택 순서의 추가 대조본3개는 한컴2020 Print queue에 제출했다. 현재 queued 상태이므로
-그 결과를 혼합 선언 순서의 독립 수용 근거로 사용하지 않는다. 원본6쪽의 단일 중첩 선언
-수용과 구분하며 ignored `order-probes/`의 기존 job ID로 계속 확인한다.
+선택 순서의 추가 대조본3개도 한컴2020 Print를 완료했다(11.0.0.9136,
+preprocess none). 중첩 선언보다 앞의 오른쪽 선언은 기존 중앙 선언이, 뒤의 오른쪽
+선언은 오른쪽이, 뒤의 NONE은 번호 없음이 선택됐다. 각6쪽·총18쪽의 Native 선택과
+독립 PDF의 번호·원점이 모두 일치했고, 번호 원점 차이는 ±2CSSpx 안이다.
+본문·다른 ZIP entry를 보존한 메타데이터 진단이며 파생3문서의 전쪽 래스터 수용이나
+새 golden의 근거로 확대하지 않는다. ignored `order-probes/selection-evaluation.json`에
+18개 관측값과 실제 job별 Print 증적을 보존했다. 원본6쪽의 전쪽 시각 수용과 구분한다.
+
+## C78 — 새 기준의 입력 신원·WASM 기본 환경과 giant80 하락 분리 (2026-10-17)
+
+현재07a656abfb의 전체 회귀는 **10646PASS/0FAIL/45skip**, 실행384.966초(컴파일 포함
+명령722.53초)로 완료했다. release build도561.65초·exit0이며 release lib는
+3986PASS/0FAIL/12ignore·명령472.94초다. Skia lib도4043PASS/0FAIL/12ignore다.
+다른 gate는 실행 중이며 이 수를 중복 없는 전체 검사 수로 합산하지 않는다.
+48조건의 실제 원본/PDF96개 참조를 현재 commit blob과 바이트 대조했다.
+output tab-period 원본은 커밋된 fixture와 동일하며 사용자 초안 두 파일의 SHA도 유지했다.
+
+고정 기준 WASM에 새 자동 글꼴 선택 API가 없어 첫 집중 실행이 중단됐다. 시각 실패로
+세지 않고 기본 환경46조건의 공개 None setter가 무변경임을 확인했다. canonical의 기존
+명시 None 경로로 기준을 재실행하며 후보 자동 선택은 그대로 유지했다.
+
+원본 giant80은 Native94.40109→96.82269%, fresh WASM97.54273→96.81942%다.
+WASM0.72331%p 하락이므로 PR을 보류한다. 최다 추가 불일치1177픽셀은 표 하단의
+한 행에 집중됐다. 같은 render tree 뒤의 장치 선 정렬을 우회한 미채택 대조는97.50476%로
+회복했지만 기준 대비0.03797%p 잔여가 있어 수용하지 않았다. 임의 좌표·색·기준은 바꾸지 않았다.
+[독립 경로·같은 조건·직접 판독한 canonical review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/giant-border-direction-20261017/README.md)에
+연결했다. 이 쪽의 신규 실물 px 검사는98% 미달로 보류한다. 아직 시작 전이던 전쪽 queue는
+API 오류의 반복을 막기 위해 종료했고 호환 조건을 기록한 대체 driver를 gate 통과 대기 상태로 실행했다.
+WMF와 다른 하락·전체 소비 검증을 완료로 올리지 않는다.
+
+## C79 — 후속 수정의 실제 소비 경계 보완과 초기 응답 관측 복구 (2026-10-17)
+
+기존 실제36관측을 유지하고 회색 격자143쪽, 일·생활4/5쪽, 법원1쪽, 개인정보50쪽,
+giant80쪽, 원본 HWP3의3쪽, 첨자 보도자료1쪽을 추가했다. Native28·Canvas2D28·
+기존 지원 대조12의 총68관측이다. 원본·PDF·profile을 바꾸지 않았고 별도 reference
+글꼴 환경을 실제 제품에 주입하지 않는다. Native28 PNG를 생성했고, 선택143쪽은
+96DPI screen86.88424/print99.97632%다. screen과 독립 Print의 대조는 별도 진단으로
+구분하며 print의 전205쪽 자격·전체 소비 완료를 이 한 쪽으로 대신하지 않는다.
+
+Studio28 PNG가 처음 모두 생성됐지만20,589,325바이트의 초기 WASM 응답이 Chrome
+검사기 cache에서 제거되어 해시를 검증하지 못했다. 제품 초기화 오류는0이나 이 실행은
+통과로 처리하지 않았다. PNG·보고서를 `studio-unverified-buffer`에 보존했다.
+Puppeteer가 응답 본문을 읽는 같은 CDP session에, 탐색 전 resource64MiB/total256MiB
+관측 buffer를 설정했다. 제품·paint·비교기·빌드 산출물은 변경하지 않았다.
+Native28은 해시를 보존해 유지하고 Studio28과 지원 대조12만 다시 실행한다.
+새 초기화 요청의 실제 JS/WASM 해시 검증과 전쪽·직접 판독은 여전히 필수다.
+
+giant 조사에서는48조건의 원본 PageDef와 독립 PDF 행렬도 대조했다.33조건은600DPI
+장치 크기와 정수 point 용지의 비율로 설명되지만 같은 용지에서 명목0.12pt 변환도
+관측됐다. 이 관측을 문서별 또는 전체 출력의 임의 축소 보정으로 채택하지 않았다.
+실행 중 gate·68소비·전쪽 비교의 최종 결과와 잔여 회귀는 계속 확인한다.
+
+
+## C80. 실제 Studio 소제목의 HFT 작은따옴표 전진 추적
+
+HEAD07a656의 실제68관측은 초기 JS/WASM80응답이 동결 빌드와 일치하고, Print34관측이
+90% 이상이다. 그러나 확대 판독에서 일·생활4쪽 제목이 약14CSSpx 넓어 완료로 판정하지
+않았다. 공개 레이어의 소유 `section:0/para:40/char:2` 작은따옴표는 실제 Canvas에서20px,
+portable Native/fresh WASM에서는6px이고, 뒤의 `22` 원점은125.56/111.56CSSpx다.
+HY헤드라인M 한글 자체는 두 경로에서20px로 같아서 제목 글꼴의 합성 bold 가설은 버렸다.
+
+독립 Print4쪽 T16은 ToUnicode2019, Widths225, FontMatrix.001이며 CharProc d1도225다.
+국립국어원2022 독립 Print3쪽 T9의2018/2019도 각각225/1000이다. TJ로 보정된 글자
+사이 간격이나 설치 TTF의 hmtx를 자연 전진으로 재인용하지 않았다. 원문은 영문 슬롯의
+`한양중고딕` HFT(type2)다. 표시 대체의 전각 Canvas 측정이 원본의 좁은 기호 overlay를
+대체하여 뒤 글자를 밀었다.
+
+생산 경로는 `선언 프로그램/언어 슬롯 → ResolvedCharStyle의 원본 부분 메트릭 face →
+char_width_decision의 자연 전진 → 조판과 TextRun cluster → Canvas Print paint`다.
+확인한 원본 기호는 측정 요청 수집과 배치 모두 `measuredOriginalGlyph`를 소비하게 하는
+후보다. 동명 type1 TTF·호출자의 명시 TrueType 선택·내장 face와 미확인 굵기/기울임을
+원본 HFT로 승격하지 않는다. 문서 ID나 제목 좌표로 분기하지 않는다.
+
+정식 회귀는 실제 전체 문서의 Canvas 요청/응답/선택과 최종 Print 레이어를 통과한다.
+기존9검사 PASS에서 새 검사만 FAIL(실제10건9PASS1FAIL,0.075초)이며 실패는
+`22` 원점125.56 대 독립 PDF109.86046±2CSSpx다. 전체6쪽 Native/fresh WASM은 각각
+최저97.61944/97.61696%, 해당4쪽99.04483/99.03763%와 직접 판독을 선행 근거로 쓴다.
+수정 후10건 모두PASS(0.087초),동명TTF·명시TrueType·미확인굵기대조를 포함해11건
+모두PASS(0.081초)다. 새 source의 전6쪽 Native/fresh WASM은 최저97.61125/97.60876%,
+90% 미만0이며 고정b7a53880 대비0.01%p 이상 하락0이다. 중요한4쪽은99.05194/99.04478%,
+5/6쪽 PNG는 이전 각backend와SHA256이 같아 기존 판독을 재사용했다. Native/WASM3/4쪽의
+review/overlay를 직접 열어 변경 경계와 다음 본문/차트를 확인했다. 전체48조건 검증으로
+확대하지 않는다. 실제Studio Print4쪽은97.65392→98.84117%,따옴표20→4.5px,
+다음숫자125.56→110.04CSSpx로 복구됐다. 초기JS/WASM2응답이 새빌드와 같고 공개최종
+layer의 source소유/다음원점과 PNG를 함께 확인했다. 화면의 세부글리프/기준선 잔여와
+3쪽의 기존 차이는 남는다. Native148.153초·freshWASM223.149초·실제Studio19.464초이며
+Mac web/no-opt 대체 빌드다. 수정 후 전체회귀/나머지gate/전체actual68은 아직 미실행이다.
+대표 전후[review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hft-quote-canvas-20261017/README.md)를 보존했다.
+기존 whole 큐는 현재 캡처 묶음 종료/공유 lock 획득 뒤33조건의
+완료 증거를 보존하고 멈췄다. 이전27gate 통과는 이전 코드 결과다.
+
+ignored 정본 `output/pr-review/7445-completed-20261009/rebase-b7a53880-20261017/` 아래
+`worklife4-title-current-diagnosis/`, `actual-07a656abfb/`,
+`paired-whole-07a656abfb-legacy-default/stopped-for-source-correction.json`에
+실제 layer/layout/FontFace bytes hash·독립 PDF Widths·수정 전 로그를 보존한다.
+
+## C81. 사용자가 제공한 수동 Print PDF와 WMF 기준 분리
+
+사용자의 `win10-ted:C:/temp/hwp3-sample16-hwp5-2024.pdf`를
+`pdf/hwp3-sample16-hwp5-lossless-2024.pdf`로 가져왔다. SHA256
+`9d0a504f5344f39b770d84eba613567feb7910eded9fbb125ad4e7b0bab6b589`,2465097바이트,
+64쪽/Hwp2024 13.0.0.3901/Hancom PDF1.3.0.550이다. Windows 저장소 입력과 현재 Mac
+입력의 SHA256은6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45로
+같다.64쪽 본문 텍스트 순서를 보존하고18/35쪽에서만 기존 JPEG 안의 WMF 글자가 추가
+추출된다. 두 쪽의 그림은 DCT JPEG+mask에서 Flate 이미지/벡터로 바뀌었다.
+
+동일07a656 실제 PNG의 전64쪽을 새 독립 PDF로 재계산했다. Native18/35쪽은
+97.39890/95.60085%,WASM은97.20565/95.49007%다. 원도형의 서버/글자/선 보존을
+review와 standalone overlay로 직접 판독했다. 기존 JPEG 출력을 낮은 점수의 유일한
+원인으로 단정하지 않으며 미세 WMF 패턴/윤곽 차이는 남는다.
+
+새 기준 전쪽 최저는Native86.66605/WASM86.73251%이며2/41쪽이 둘 다90% 미만이다.
+이 두 쪽의 제목 자간/글자 원점 차이도 직접 확인하여 기준을 곧바로 교체하거나 통과 쪽만
+합성한 PDF로 판정하지 않았다. 원문 휴먼명조는HFT 선언이며, 기존 PDF는TTF 휴먼명조를
+내장하지만 새 PDF의 해당 출력은Type3다. Mac/Windows의HMKMM.TTF 파일은 같은SHA
+`d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6`다. 파일 유무만으로
+이 차이를 해결 불가능한 글꼴 예외라고 판정하지 않는다. 두 기준 모두 보존하고 실제 원본
+프로그램/굵은 전진/공백 차이를 이어서 조사한다. raw90 문턱·2px·DPI는 변경하지 않았다.
+
+정본 `manual-pdf-20261017/`의 retrieval·pdf-correspondence·manual-host-input-identity·
+results JSON, backend별 전64쪽 TSV와2/18/35/41쪽 review/overlay에 근거를 보존한다.
+로그/중간JSON/글꼴 bytes는 커밋하지 않는다. PR 준비는 미완료다.

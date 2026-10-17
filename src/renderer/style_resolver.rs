@@ -401,17 +401,21 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                 .map(str::to_string)
         });
         // type1로 재저장된 HCI Poppy도 독립 Print의 동일한 원본 글리프를 쓴다.
-        // 전체 HFT 표를 선택하는 조건은 보존하고 확인된 부분 표만 별도로 전달한다.
+        // 전체 HFT 표 선택은 보존한다. 추가 HFT 부분 폭은 명시 type2 선언에서만
+        // 전달하며 같은 이름의 TTF·명시 TrueType 환경·내장 글꼴은 승격하지 않는다.
         font_families_original_glyph_metric_face.push(
             (!explicit_true_type
                 && original.embedded != Some(true)
-                && original.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin))
+                && (original.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin)
+                    || original.alt_type == Some(2)))
             .then(|| {
                 original
                     .requested_face
                     .as_deref()
                     .filter(|face| {
-                        crate::renderer::font_metrics_data::has_original_glyph_metrics(face)
+                        crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(
+                            face,
+                        )
                     })
                     .map(str::to_owned)
             })
