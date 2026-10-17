@@ -69,7 +69,7 @@ after(() => {
   }
 });
 
-test('five backend projections are deterministic and close all 836 active registry rules', () => {
+test('five backend projections are deterministic and close all 841 active registry rules', () => {
   const registry = readRegistry();
   const first = buildProjectionBundle(registry);
   const second = buildProjectionBundle(registry);
@@ -81,14 +81,14 @@ test('five backend projections are deterministic and close all 836 active regist
     registry,
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
-  assert.equal(first.manifest.summary.activeRuleCount, 836);
+  assert.equal(first.manifest.summary.activeRuleCount, 841);
   assert.equal(first.manifest.summary.retiredRuleCount, registry.rules.filter(rule => rule.status === 'retired').length);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
     'canvas2d-webfont': 154,
     'canvaskit-sfnt': 159,
-    'rust-layout-metric': 68,
-    'rust-layout-name': 174,
+    'rust-layout-metric': 70,
+    'rust-layout-name': 177,
   });
   assert.deepEqual(
     Object.fromEntries(first.outputs.map(output => [
@@ -100,10 +100,10 @@ test('five backend projections are deterministic and close all 836 active regist
       // Existing #4969 supply rules were already active before #7958.
       'canvas2d-webfont': '74158e11fbaeabda7894841a43751aa2724842bd140e2ed48cdc7dd4ce362435',
       'canvaskit-sfnt': 'b118ebc3e757da4ec107fbb80cf8aeee6c64e30601113b86492eda3b888e4e8e',
-      // #7196: 같은 실물 글꼴의 한글 이름을 기존 영문 메트릭에 연결한다.
-      'rust-layout-metric': '10448dda2d70a29dba5346245af09d7e308262e94486e9a3da046b183921c44c',
-      // #7958 / #7959 add three name-table identities; other planes stay unchanged.
-      'rust-layout-name': '3f146878a046daacf08a9d8d63e7134ab0eef9014858657df786b4cd3803e61c',
+      // #7196 / #7966: preserve same-program metric identities, including styled PDF faces.
+      'rust-layout-metric': 'b36c884e942ec501bde20a9dbf8f09fb06d2fed3638e06020a754fb7ad669ef8',
+      // #7958 / #7959 / #7966 preserve PostScript name and full-face identities.
+      'rust-layout-name': '399777eec1e7e184aef01d8b5bba4ef58e9a5a9ea121da94bed922fcf616bbd6',
     },
   );
 });
@@ -221,7 +221,7 @@ test('retired rules remain in the registry but never reach runtime projections',
   const paint = bundle.outputs.find(output => output.projectionId === 'canvas2d-paint');
   assert.equal(paint.ruleCount, 280);
   assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
-  assert.equal(bundle.manifest.summary.activeRuleCount, 835);
+  assert.equal(bundle.manifest.summary.activeRuleCount, 840);
   assert.equal(bundle.manifest.summary.retiredRuleCount, previousRetiredCount + 1);
 });
 

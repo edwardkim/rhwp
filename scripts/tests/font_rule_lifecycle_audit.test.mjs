@@ -132,12 +132,12 @@ test('current registry retains migration, introduction and replacement provenanc
   const trace = traceWithReferences(registry.rules.map(rule => rule.ruleId));
   const audit = buildFontRuleLifecycleAudit(trace, registry, { root: ROOT });
 
-  // Four historical replacements, five prior additions and three PDF name identities.
-  assert.equal(audit.trace.ruleReferenceCount, 840);
-  assert.equal(audit.trace.uniqueRuleIdCount, 840);
+  // Four historical replacements and fifteen active introductions, including five #7966 identity rules.
+  assert.equal(audit.trace.ruleReferenceCount, 845);
+  assert.equal(audit.trace.uniqueRuleIdCount, 845);
   assert.deepEqual(audit.summary, {
     carriedForwardActive: 826,
-    introducedActive: 10,
+    introducedActive: 15,
     historicalReferenceOnly: 0,
     traceSourceDrift: 0,
     retired: 0,
@@ -151,10 +151,15 @@ test('current registry retains migration, introduction and replacement provenanc
     'rule.issue-4969.oldhangul-license-webfont',
     'rule.issue-5884.noto-symbols2.canvaskit',
     'rule.issue-5884.noto-symbols2.webfont',
+    'rule.rust-metric.97a520bd286dc482c765',
+    'rule.rust-metric.d3b78b2bdea7d0531b5f',
     'rule.rust-metric.ygodic230-name',
     'rule.rust-style-resolution.100b7126dfe0ddd2d55c',
     'rule.rust-style-resolution.14713c8b701c74678152',
     'rule.rust-style-resolution.1ce3e788a4c6198b4799',
+    'rule.rust-style-resolution.95cdb8836bbe2ab25687',
+    'rule.rust-style-resolution.b1f7fd94d0b7349f050c',
+    'rule.rust-style-resolution.d145573b4a0a8f0207a1',
     'rule.rust-style-resolution.dada52dd12498becd0dd',
     'rule.studio-supply.batangche-serif.canvas2d',
   ]);

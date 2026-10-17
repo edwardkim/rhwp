@@ -172,3 +172,12 @@ vector paint의 clip 해석은 기존의 원래 경로 처리를 유지한다. �
 32 꼭짓점 초과는 미지원으로 남긴다. bbox 하나로 내용 유출을 숨기는 지원으로 확대하지 않는다.
 양·음 winding, reflection, 실제 회전 Form BBox, 저해상도 원색 그림의 대각 clip 대조군으로
 동일 프레임·내용·투명도를 확인한 뒤 최종 producer의 전체 gate를 수행한다.
+
+#### #7966 직접 판독 뒤 추가 승인 — 연결선·글꼴·간격
+
+작업지시자는 19쪽의 남은 출력 차이도 이번에 보정하도록 승인했다. 6쪽의 `s`
+close-and-stroke 누락은 페이지·Form interpreter 모두에서 같은 path extractor로 전달한다.
+Bold PostScript 이름은 설치된 full face 정체성을 보존하고, 측정의 metric alias도
+별도 canonical 결정면에서 연결한다. Regular로의 무조건 치환은 하지 않는다.
+독립 경계와 실제 6·7쪽부터 대조한 뒤 고정 소스의 최종 gate를 진행한다.
+실행 근거·결과는 [9단계](../working/task_m100_7957_stage9.md)에 연결한다.

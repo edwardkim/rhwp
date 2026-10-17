@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
-    "26ebe0b4da163f72d340a7235d77fef63f7b232e2feb10746d35f245a808e678";
+    "d257f3b55823a16e4ba2d356538e1f78c2774a6f866823ecd5818a44fdf8f840";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "3f146878a046daacf08a9d8d63e7134ab0eef9014858657df786b4cd3803e61c";
+    "399777eec1e7e184aef01d8b5bba4ef58e9a5a9ea121da94bed922fcf616bbd6";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -2989,6 +2989,57 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         mode: "direct",
         metric_entry_ids: &[],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.d145573b4a0a8f0207a1",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("MalgunGothicBold"),
+        target_face_or_policy: "Malgun Gothic Bold",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.b1f7fd94d0b7349f050c",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("Arial-BoldMT"),
+        target_face_or_policy: "Arial Bold",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.95cdb8836bbe2ab25687",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("Wingdings-Regular"),
+        target_face_or_policy: "Wingdings",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
 ];
 
 #[rustfmt::skip]
@@ -3519,6 +3570,15 @@ pub(crate) fn find_font_rule_layout_name(
         }
         ("rust-style-resolution.ttf", "MalgunGothic") => {
             Some(&FONT_RULE_LAYOUT_NAME_RULES[173])
+        }
+        ("rust-style-resolution.ttf", "MalgunGothicBold") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[174])
+        }
+        ("rust-style-resolution.ttf", "Arial-BoldMT") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[175])
+        }
+        ("rust-style-resolution.ttf", "Wingdings-Regular") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[176])
         }
         _ => None,
     }

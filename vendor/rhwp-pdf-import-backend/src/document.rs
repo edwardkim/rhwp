@@ -19874,6 +19874,9 @@ impl PdfDocument {
                 Operator::Stroke => {
                     extractor.stroke();
                 },
+                Operator::CloseAndStroke => {
+                    extractor.close_and_stroke();
+                },
                 Operator::Fill => {
                     extractor.fill(FillRule::NonZero);
                 },
@@ -20515,6 +20518,7 @@ impl PdfDocument {
 
                 // Path painting operators
                 Operator::Stroke => extractor.stroke(),
+                Operator::CloseAndStroke => extractor.close_and_stroke(),
                 Operator::Fill => extractor.fill(FillRule::NonZero),
                 Operator::FillEvenOdd => extractor.fill(FillRule::EvenOdd),
                 Operator::CloseFillStroke => extractor.close_fill_and_stroke(FillRule::NonZero),

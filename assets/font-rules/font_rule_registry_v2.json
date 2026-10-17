@@ -44,6 +44,16 @@
       "changeSetId": "issue-7959.malgun-postscript-identity",
       "path": "assets/font-rules/changes/issue-7959-malgun-postscript-identity.json",
       "sha256": "9af4b0a40b0109ff7193bcd69205ed95b1e6474498b7fc5948aa44bb1d022849"
+    },
+    {
+      "changeSetId": "issue-7966.postscript-layout-name",
+      "path": "assets/font-rules/changes/issue-7966-postscript-layout-name.json",
+      "sha256": "63aaae1650a7df78feb9d16e20c679cc24499559c98ed92012430ff8c0daebba"
+    },
+    {
+      "changeSetId": "issue-7966.postscript-layout-metric",
+      "path": "assets/font-rules/changes/issue-7966-postscript-layout-metric.json",
+      "sha256": "11fae7cb24b36e78ae21025701378a9eb8b81f93cc0c3603a76e9bd05a56a7b1"
     }
   ],
   "evidenceRecords": [
@@ -110,6 +120,14 @@
       "parentEvidenceIds": [],
       "sha256": "968cd976cfcba1fe511f7f37fd1154e9c004265b0ff55a432f7770fd39fcfd58",
       "source": "assets/font-rules/evidence/issue-7959-postscript-identity.json"
+    },
+    {
+      "evidenceId": "evidence.issue-7966.postscript-styles",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Installed SFNT family/full/PostScript names and OS/2 weight. Metadata only, no font bytes. PDF FontDescriptor weight 700 is independently retained. Full face targets keep Bold; neither bold identity aliases to a regular name.",
+      "parentEvidenceIds": [],
+      "sha256": "0d348703c2d9d027af77c42fda6293f61f63aef8af6205e6b595bc39cd1fd337",
+      "source": "assets/font-rules/evidence/issue-7966-postscript-styles.json"
     }
   ],
   "issue": 5955,
@@ -43761,9 +43779,188 @@
       "status": "active",
       "supply": null,
       "targetFaceOrPolicy": "맑은 고딕"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 174,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.d145573b4a0a8f0207a1",
+      "selectionTupleSha256": "ee4a6522a15903461a5ddb6b39d615e1e453fb0ffef2c0d576d5d1321d86eb88",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "MalgunGothicBold",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Malgun Gothic Bold"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 175,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.b1f7fd94d0b7349f050c",
+      "selectionTupleSha256": "573b4590a1cfb99436d64f4fb89f4dff7876378685310cc171e7f090aaed7171",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "Arial-BoldMT",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Arial Bold"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 176,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.95cdb8836bbe2ab25687",
+      "selectionTupleSha256": "a8042c45e4dfe76b6f177cf4b0ef1a03185b64e09cf4d720f5811233980923dd",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "Wingdings-Regular",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Wingdings"
+    },
+    {
+      "conditions": {},
+      "decisionPlane": "layout-metric",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-metric",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [
+        "font-metric.cb5db76c0649913e4438",
+        "font-metric.1beeab194e16e4a6107d"
+      ],
+      "order": null,
+      "projectionSequence": 68,
+      "projections": [
+        {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "metric-surrogate",
+      "ruleId": "rule.rust-metric.97a520bd286dc482c765",
+      "selectionTupleSha256": "1d553548323bc05107d5d1ad7c9761b94541b6ab2a9a1c0f234f36430901ff34",
+      "sourceBoundaryId": "rust-metric.metric-alias",
+      "sourceFace": "Malgun Gothic Bold",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Malgun Gothic"
+    },
+    {
+      "conditions": {},
+      "decisionPlane": "layout-metric",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-metric",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [
+        "font-metric.b5fafcd791a4af142ef1",
+        "font-metric.6edd92d6f8127459749a",
+        "font-metric.a94242c0b0f23c0e97fd",
+        "font-metric.a04310c5f53100889fc3"
+      ],
+      "order": null,
+      "projectionSequence": 69,
+      "projections": [
+        {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "metric-surrogate",
+      "ruleId": "rule.rust-metric.d3b78b2bdea7d0531b5f",
+      "selectionTupleSha256": "96b9563572e9061c2413d052d0ed962a91a129067aee998bc4ce1ff36ec8080d",
+      "sourceBoundaryId": "rust-metric.metric-alias",
+      "sourceFace": "Arial Bold",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Arial"
     }
   ],
-  "rulesSha256": "1e0725a2b0819b4f4f0f0e37396ca7806299c325039d9bad15bc0a61141714bd",
+  "rulesSha256": "c5dfc832aed0996b85307aacdce61c3fb1a2f8fbe816b5f2494ce7ac2d04a293",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -43775,15 +43972,15 @@
   },
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 836,
+    "activeRuleCount": 841,
     "countsByProjection": {
       "canvas2d-paint": 281,
       "canvas2d-webfont": 154,
       "canvaskit-sfnt": 159,
-      "rust-layout-metric": 68,
-      "rust-layout-name": 174
+      "rust-layout-metric": 70,
+      "rust-layout-name": 177
     },
     "retiredRuleCount": 4,
-    "ruleCount": 840
+    "ruleCount": 845
   }
 }
