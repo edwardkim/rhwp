@@ -15,10 +15,10 @@ const pkg = resolve(process.env.PDF_IMPORT_PKG || join(root, 'pkg'));
 const disabledPkg = process.env.PDF_IMPORT_DISABLED_PKG;
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 
-function syntheticPdf() {
+function syntheticPdf(pageCount = 3) {
   const objects = ['<< /Type /Catalog /Pages 2 0 R >>', ''];
   const kids = [];
-  for (const text of ['FIRST', 'SECOND', 'THIRD']) {
+  for (const text of Array.from({length: pageCount}, (_, i) => ['FIRST', 'SECOND', 'THIRD'][i] ?? `PAGE_${i + 1}`)) {
     const page = objects.length + 1;
     kids.push(`${page} 0 R`);
     const content = `BT /F1 12 Tf 30 140 Td (${text}) Tj ET`;
@@ -26,7 +26,7 @@ function syntheticPdf() {
     objects.push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
     objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
   }
-  objects[1] = `<< /Type /Pages /Count 3 /Kids [${kids.join(' ')}] >>`;
+  objects[1] = `<< /Type /Pages /Count ${pageCount} /Kids [${kids.join(' ')}] >>`;
   let pdf = '%PDF-1.4\n';
   const offsets = [];
   objects.forEach((object, i) => { offsets.push(pdf.length); pdf += `${i + 1} 0 obj\n${object}\nendobj\n`; });
@@ -56,6 +56,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
   add('/real.pdf', join(root, 'pdf/issue5875/nested_table_text_caption-2020.pdf'), 'application/pdf');
   add('/control.hwp', join(root, 'samples/hwp_table_test.hwp'), 'application/octet-stream');
   files.set('/synthetic.pdf', ['application/pdf', syntheticPdf()]);
+  files.set('/synthetic-many-pages.pdf', ['application/pdf', syntheticPdf(162)]);
   const server = http.createServer((req, res) => {
     if (req.url === '/') { res.setHeader('Content-Type', 'text/html'); res.end('<!doctype html><meta charset="utf-8">'); return; }
     const file = files.get(req.url);
@@ -101,6 +102,8 @@ test('Docker product WASM: public API, active document isolation and real Worker
       }
       const wasm = await import('/pkg/rhwp.js'); await wasm.default();
       check(wasm.HwpDocument.supportsPdfImport() === true, 'PDF runtime advertises PDF enabled');
+      const policy = JSON.parse(wasm.HwpDocument.getPdfImportPolicy());
+      check(policy.schemaVersion === 1 && Number.isSafeInteger(policy.backend.inputBytes), 'runtime supplies the policy used before transfer');
       const all = new wasm.HwpDocument(bytes);
       check(all.pageCount() === 3 && all.getSourceFormat() === 'pdf', 'constructor imports all PDF pages');
       all.free();
@@ -114,6 +117,10 @@ test('Docker product WASM: public API, active document isolation and real Worker
         return [...xml.querySelectorAll('text')].map(t => t.textContent).join('');
       });
       check(JSON.stringify(text(selected)) === '["FIRST","THIRD"]', 'selected content and order');
+      const manyBytes = new Uint8Array(await (await fetch('/synthetic-many-pages.pdf')).arrayBuffer());
+      const late = wasm.HwpDocument.importPdf(manyBytes, { sourcePages: [128, 161] });
+      check(late.pageCount() === 2 && JSON.stringify(text(late)) === '["PAGE_129","PAGE_162"]', 'source indices beyond the former page ceiling stay distinct from selected count');
+      late.free();
       for (const save of ['exportHwp', 'exportHwpx']) {
         const reopen = new wasm.HwpDocument(selected[save]());
         check(JSON.stringify(text(reopen)) === '["FIRST","THIRD"]', `${save} reopen content`);
@@ -123,7 +130,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
       for (const option of [null, 1, '0,2', [], { sourcePage: [0] }]) {
         throwsCode(() => wasm.HwpDocument.importPdf(bytes, option), 'PDF_IMPORT_OPTIONS');
       }
-      for (const pages of [[], [2, 1], [1, 1], [3], [-1], [0.5], [NaN], [Infinity], [4294967296], ['1'], [null], [true], new Uint32Array([0]), [1n], Array(1), Array(129).fill(0)]) {
+      for (const pages of [[], [2, 1], [1, 1], [3], [-1], [0.5], [NaN], [Infinity], [4294967296], ['1'], [null], [true], new Uint32Array([0]), [1n], Array(1), Array(policy.maxSelectedPages + 1).fill(0)]) {
         throwsCode(() => wasm.HwpDocument.importPdf(bytes, { sourcePages: pages }), 'PDF_PAGE_SELECTION');
       }
       for (const options of [undefined, {}]) {
@@ -132,7 +139,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
       }
       throwsCode(() => wasm.HwpDocument.importPdf(new Uint8Array([0]), {}), 'PDF_INVALID_INPUT');
       throwsCode(() => wasm.HwpDocument.importPdf(new TextEncoder().encode('%PDF-1.4\n'), {}), 'PDF_PARSE_FAILED');
-      throwsCode(() => wasm.HwpDocument.importPdf(new Uint8Array(16 * 1024 * 1024 + 1), {}), 'PDF_RESOURCE_LIMIT');
+      throwsCode(() => wasm.HwpDocument.importPdf(new Uint8Array(policy.backend.inputBytes + 1), {}), 'PDF_RESOURCE_LIMIT');
       check(JSON.stringify(text(selected)) === '["FIRST","THIRD"]', 'failed direct import preserves existing document');
       selected.free();
       const { PdfImportSession } = await import('/rhwp-shared/pdf/import-session.js');
@@ -178,7 +185,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
         check((await session.inspect()).pageCount === 12, 'ordinary failure preserves active Worker');
         await rejectsCode(session.importPdf(new Uint8Array([0])), 'PDF_INVALID_INPUT');
         await rejectsCode(session.importPdf(new TextEncoder().encode('%PDF-1.4\n')), 'PDF_PARSE_FAILED');
-        await rejectsCode(session.importPdf(new Uint8Array(16 * 1024 * 1024 + 1)), 'PDF_RESOURCE_LIMIT');
+        await rejectsCode(session.importPdf(new Uint8Array(policy.backend.inputBytes + 1)), 'PDF_RESOURCE_LIMIT');
         const valid = await session.importPdf(real, { sourcePages: [0, 6, 7] }, { timeoutMs: 60_000 });
         check(workers === afterFailureWorkers && valid.pageCount === 3, 'same Worker failure then normal input');
         check(valid.diagnostics.pages.map(p => p.sourcePage).join() === '0,6,7', 'Worker source selection');

@@ -19,6 +19,8 @@ impl Default for PdfImportPolicy {
             // Absolute request work ceilings, narrowed to the selected page count
             // after the bounded page-tree traversal. These are not live-heap limits.
             operators: 4_000_000,
+            spans: 120_000,
+            entries: 400_000,
             decoded_bytes: 2 * 1024 * 1024 * 1024,
             ..PdfImportLimits::default()
         };
@@ -40,6 +42,14 @@ impl PdfImportPolicy {
             .backend
             .operators
             .min(pages.saturating_mul(100_000).max(250_000));
+        self.backend.spans = self
+            .backend
+            .spans
+            .min(pages.saturating_mul(1_000).max(40_000));
+        self.backend.entries = self
+            .backend
+            .entries
+            .min(pages.saturating_mul(2_000).max(100_000));
         self.backend.decoded_bytes = self.backend.decoded_bytes.min(
             pages
                 .saturating_mul(64 * 1024 * 1024)

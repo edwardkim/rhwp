@@ -174,6 +174,7 @@ pub mod objstm;
 pub mod parser;
 /// Parser configuration options
 pub mod parser_config;
+mod stream_parameters_limited;
 pub mod xref;
 pub mod xref_reconstruction;
 mod zlib_limited;

@@ -27,7 +27,6 @@ pub const MAX_INPUT_BYTES: usize = pdf_oxide::import_limits::DEFAULT_INPUT_BYTES
 /// Maximum selected pages; adapters must bound range expansion before allocation.
 pub const MAX_PAGES: usize = 1024;
 const MAX_POOL_ENTRIES: usize = u16::MAX as usize;
-const MAX_SOURCE_SPANS: usize = 40_000;
 const MAX_TEXT_BYTES: usize = 2 * 1024 * 1024;
 const MAX_DOCUMENT_IMAGE_PIXELS: u64 = 64_000_000;
 
@@ -323,6 +322,11 @@ pub fn parse_pdf_with_policy(
         .map_err(|error| {
             PdfImportError::backend(error).at("selection_policy", None, Some(&request))
         })?;
+    request
+        .restrict_structure_limits(policy.backend.spans, policy.backend.entries)
+        .map_err(|error| {
+            PdfImportError::backend(error).at("selection_policy", None, Some(&request))
+        })?;
     let mut document = lowering::new_document().map_err(|_| {
         PdfImportError::new("PDF_LOWERING_FAILED", "IR scaffold initialization failed")
     })?;
@@ -362,7 +366,6 @@ pub fn parse_pdf_with_policy(
             document.doc_info.border_fills.len(),
             document.doc_info.tab_defs.len(),
             document.doc_info.font_faces[0].len(),
-            document.doc_info.char_shapes.len(),
             document.bin_data_content.len(),
         ] {
             if size.checked_add(extra).is_none_or(|n| n > MAX_POOL_ENTRIES) {
@@ -370,6 +373,17 @@ pub fn parse_pdf_with_policy(
                     "document resource ID budget exceeded",
                 ));
             }
+        }
+        // Character-shape references are u32 (CharShapeRef), unlike the u16
+        // paragraph/font/binary IDs above. Do not impose their narrower range.
+        if document
+            .doc_info
+            .char_shapes
+            .len()
+            .checked_add(extra)
+            .is_none_or(|n| n > u32::MAX as usize)
+        {
+            return Err(PdfImportError::budget("character shape ID budget exceeded"));
         }
         let section = document.sections.len();
         document.sections.push(template.clone());

@@ -1638,7 +1638,7 @@ impl PdfDocument {
         obj_ref: ObjectRef,
     ) -> Result<Vec<u8>> {
         if let Some(budget) = &self.import_budget {
-            return stream_obj.decode_stream_data_with_budget(budget);
+            return crate::stream_parameters_limited::decode(self, stream_obj, budget);
         }
         if matches!(stream_obj, Object::Null) {
             return Ok(Vec::new());
@@ -3817,8 +3817,12 @@ impl PdfDocument {
 
         // Corrupted objects degrade to Null so extraction can continue on
         // partial PDFs rather than aborting.
-        let mut obj =
-            match crate::parser::parse_object_with_budget(&data, self.import_budget.as_ref()) {
+        let mut obj = if let Some(budget) = &self.import_budget {
+            crate::parser::parse_indirect_with_budget(&data, budget, |reference| {
+                self.load_object(reference)
+            })?
+        } else {
+            match crate::parser::parse_object_with_budget(&data, None) {
                 Ok((_, parsed_obj)) => parsed_obj,
                 Err(e) => {
                     self.check_import_budget()?;
@@ -3840,7 +3844,8 @@ impl PdfDocument {
                     );
                     Object::Null
                 },
-            };
+            }
+        };
 
         // Decrypt string values inside this uncompressed object before
         // caching. Skip the /Encrypt dict (its entries are key material)

@@ -1,6 +1,6 @@
 use super::{
     recognition, table_detection, Budget, ExtractedPage, PdfImportError, MAX_DOCUMENT_IMAGE_PIXELS,
-    MAX_SOURCE_SPANS, MAX_TEXT_BYTES,
+    MAX_TEXT_BYTES,
 };
 use pdf_oxide::PdfDocument;
 use serde_json::json;
@@ -77,7 +77,7 @@ pub(super) fn extract(
         .spans
         .checked_add(spans.len())
         .ok_or_else(|| PdfImportError::budget("span count overflow"))?;
-    if spans.len() > 20_000 || paths.len() > 20_000 || budget.spans > MAX_SOURCE_SPANS {
+    if spans.len() > 20_000 || paths.len() > 20_000 || budget.spans > budget.policy.backend.spans {
         return Err(PdfImportError::budget("extracted element budget exceeded"));
     }
     for span in &spans {

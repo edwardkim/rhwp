@@ -4422,3 +4422,114 @@ fn selected_work_restrictions_preserve_consumption_and_never_raise_limits() {
     assert_eq!(next.snapshot().failure.unwrap().used, Some(40));
     assert!(budget(100, 100).restrict_work_limits(0, 1).is_err());
 }
+
+#[test]
+fn indirect_stream_length_preserves_binary_tail_bytes() {
+    for bytes in [vec![1, 13], vec![1, 10], vec![1, 13, 10], vec![1, 32]] {
+        let mut parts = objects(&bytes, "", "");
+        let mut content = b"<< /Length 6 0 R >>\nstream\n".to_vec();
+        content.extend_from_slice(&bytes);
+        content.extend_from_slice(b"\nendstream");
+        parts[3] = content;
+        parts.push(bytes.len().to_string().into_bytes());
+        let doc = PdfDocument::from_bytes_with_limits(
+            object_file(&parts, ""),
+            PdfImportLimits::default(),
+        )
+        .unwrap();
+        let object = doc
+            .load_object(pdf_oxide::object::ObjectRef::new(4, 0))
+            .unwrap();
+        let pdf_oxide::object::Object::Stream { data, .. } = object else {
+            panic!("stream required")
+        };
+        assert_eq!(&data[..], bytes);
+    }
+}
+
+#[test]
+fn indirect_predictors_and_filter_specific_parameters_preserve_samples() {
+    use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
+    for first_predictor in [false, true] {
+        let pixels = [10, 20, 30];
+        let (data, filter, params, columns) = if first_predictor {
+            let inner = flate(&pixels);
+            let mut predicted = vec![0];
+            predicted.extend_from_slice(&inner);
+            (
+                flate(&predicted),
+                "/Filter [/FlateDecode /FlateDecode]",
+                "/DecodeParms [7 0 R null]",
+                inner.len(),
+            )
+        } else {
+            (
+                flate(&[0, 10, 20, 30]),
+                "/Filter /FlateDecode",
+                "/DecodeParms 7 0 R",
+                3,
+            )
+        };
+        let mut parts = objects(b"/Im Do", "", "");
+        parts[2] = b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /XObject << /Im 6 0 R >> >> /Contents 4 0 R >>".to_vec();
+        let mut image = format!("<< /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceRGB /BitsPerComponent 8 {filter} {params} /Length {} >>\nstream\n", data.len()).into_bytes();
+        image.extend_from_slice(&data);
+        image.extend_from_slice(b"\nendstream");
+        parts.push(image);
+        parts.push(b"<< /Predictor 15 /Colors 1 /Columns 8 0 R /BitsPerComponent 8 >>".to_vec());
+        parts.push(columns.to_string().into_bytes());
+        let source = object_file(&parts, "");
+        let imported = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+        let rgb = image::load_from_memory(&imported.document.bin_data_content[0].data.load())
+            .unwrap()
+            .to_rgb8();
+        assert_eq!(rgb.get_pixel(0, 0).0, pixels);
+        // A cycle cannot silently discard predictor semantics or escape the request.
+        parts[6] = b"7 0 R".to_vec();
+        assert_eq!(
+            parse_pdf_with_options(&object_file(&parts, ""), &PdfImportOptions::default())
+                .err()
+                .unwrap()
+                .code,
+            "PDF_RESOURCE_LIMIT"
+        );
+    }
+}
+
+#[test]
+fn interpolated_soft_mask_resamples_alpha_without_changing_rgb() {
+    use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
+    for (flag, decode, expected) in [
+        ("false", "", [0, 0, 255, 255]),
+        ("true", "", [0, 64, 191, 255]),
+        ("true", "/Decode [1 0]", [255, 191, 64, 0]),
+    ] {
+        let mask=format!("<< /Subtype /Image /Width 2 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Interpolate {flag} {decode} /Length 2 >>\nstream\n");
+        let mut mask = mask.into_bytes();
+        mask.extend_from_slice(&[0, 255]);
+        mask.extend_from_slice(b"\nendstream");
+        let source = indexed_image_pdf(
+            &[20, 40, 60].repeat(4),
+            "/Width 4 /Height 1 /ColorSpace /DeviceRGB /BitsPerComponent 8 /SMask 7 0 R",
+            &mask,
+        );
+        let imported = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+        let rgba = image::load_from_memory(&imported.document.bin_data_content[0].data.load())
+            .unwrap()
+            .to_rgba8();
+        assert_eq!(rgba.pixels().map(|p| p.0[3]).collect::<Vec<_>>(), expected);
+        assert!(rgba.pixels().all(|p| p.0[..3] == [20, 40, 60]));
+        let doc = PdfDocument::from_bytes_with_limits(
+            source,
+            PdfImportLimits {
+                codec_allocation_bytes: 15,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(matches!(
+            doc.page_image_handles(0).unwrap()[0].decode(),
+            Err(Error::ImportResourceLimit(_))
+        ));
+    }
+}

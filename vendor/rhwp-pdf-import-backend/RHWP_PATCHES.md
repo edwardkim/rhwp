@@ -309,3 +309,17 @@ accessor 등 입증 경계는 `../rhwp-jpeg-decoder/RHWP_PATCHES.md`와 단계 �
   이 값은 누적 작업 관측이며 cache identity·실제 paint·원래 한도 소비를 바꾸지 않는다.
 - 상세 backend 문자열은 Rust의 opt-in 로컬 진단에 보존한다. 기본 사용자 오류의 code/message는
   유지하고 `parserAllocationBoundsProven=false` 및 기존 할당 감사 백로그를 유지한다.
+
+
+### #7957–#7963 요청 정책·stream·마스크 후속
+
+요청의 최초 거절량/limit·stage·쪽과 parse/cache 관측을 보존한다. root product policy는 입력 64 MiB와
+선택 쪽 기반의 유한한 작업 ceiling을 공급한다. backend 기본 구조 한도와 실제 buffer/codec 예약은
+별도다. 같은 요청의 work/structure 한도는 낮출 수 있지만 소비량이나 sticky 실패를 초기화하지 않는다.
+위치 가져오기는 사용하지 않는 전쪽 머리말 분류를 제외하고 페이지 lexical parse/decoded bytes를 공유한다.
+JPEG actual reservation hooks·bounded PNG 예약과 중복하던 3×RGBA 가상 allowance를 제거했다.
+
+bounded stream은 간접 Length로 binary 길이를 먼저 확정하고 Filter/DecodeParms 간접 값과 filter별
+predictor를 해석한다. 무제한 legacy codec으로 fallback하지 않는다. 마스크 Interpolate는 sample-centre
+bilinear alpha를 적용하며 기존 Decode/Matte/clip와 사전 RGBA 예약을 유지한다. 이 결과는 전체 parser
+heap 할당 증명이나 모든 PDF paint 지원 완료가 아니다. source와 실행 증거는 task #7957 단계 보고를 따른다.

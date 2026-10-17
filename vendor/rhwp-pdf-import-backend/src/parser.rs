@@ -180,6 +180,53 @@ pub fn parse_object_with_budget<'a>(
     parse_object_at(input, 0, budget, true)
 }
 
+/// Resolve a top-level stream's indirect Length before slicing binary bytes.
+/// ISO 32000-1 7.3.8.2 permits an indirect length. A checksum byte equal to CR
+/// followed by the delimiter LF must not be mistaken for a CRLF delimiter.
+pub(crate) fn parse_indirect_with_budget(
+    input: &[u8],
+    budget: &Arc<ImportBudget>,
+    resolve: impl Fn(ObjectRef) -> Result<Object>,
+) -> Result<Object> {
+    let parse_error = || Error::Decode("invalid bounded indirect object".into());
+    let (remaining, tok) = token(input).map_err(|_| parse_error())?;
+    if !matches!(tok, Token::DictStart) {
+        let parsed = parse_object_with_budget(input, Some(budget));
+        budget.check()?;
+        return parsed.map(|(_, object)| object).map_err(|_| parse_error());
+    }
+    budget.charge_object()?;
+    let parsed = parse_dictionary(remaining, 0, Some(budget), true);
+    budget.check()?;
+    let (remaining, object) = parsed.map_err(|_| parse_error())?;
+    let Ok((stream_input, Token::StreamStart)) = token(remaining) else {
+        return Ok(object);
+    };
+    let Object::Dictionary(dict) = object else {
+        unreachable!()
+    };
+    let mut length = dict.get("Length").cloned();
+    for _ in 0..budget.limits.reference_depth {
+        let Some(Object::Reference(reference)) = length.as_ref() else {
+            break;
+        };
+        length = Some(resolve(*reference)?);
+    }
+    let length = match length {
+        Some(Object::Reference(_)) => return Err(budget.reject("stream Length reference depth")),
+        Some(Object::Integer(n)) => Some(usize::try_from(n).map_err(|_| parse_error())?),
+        None | Some(Object::Null) => None,
+        _ => return Err(parse_error()),
+    };
+    let parsed = parse_stream_data(stream_input, &dict, Some(budget), length);
+    budget.check()?;
+    let (_, data) = parsed.map_err(|_| parse_error())?;
+    Ok(Object::Stream {
+        dict,
+        data: crate::import_limits::StreamData::bounded(data, Some(budget)),
+    })
+}
+
 pub(crate) fn parse_content_operand<'a>(
     input: &'a [u8],
     budget: Option<&Arc<ImportBudget>>,
@@ -293,7 +340,8 @@ fn parse_object_body<'a>(
                 };
 
                 // Parse the stream data
-                let (final_input, stream_data) = parse_stream_data(stream_input, &dict, budget)?;
+                let (final_input, stream_data) =
+                    parse_stream_data(stream_input, &dict, budget, None)?;
 
                 return Ok((
                     final_input,
@@ -326,6 +374,7 @@ fn parse_stream_data<'a>(
     input: &'a [u8],
     dict: &HashMap<String, Object>,
     budget: Option<&Arc<ImportBudget>>,
+    resolved_length: Option<usize>,
 ) -> IResult<&'a [u8], Vec<u8>> {
     // SPEC COMPLIANCE: PDF Spec ISO 32000-1:2008, Section 7.3.8.1 states that
     // the 'stream' keyword must be followed by either CRLF or LF, but NOT CR alone.
@@ -371,9 +420,12 @@ fn parse_stream_data<'a>(
     };
 
     // Get the length from the dictionary
-    if let Some(length_obj) = dict.get("Length") {
-        if let Some(length) = length_obj.as_integer() {
-            let length = length as usize;
+    if let Some(length) = resolved_length.or_else(|| {
+        dict.get("Length")
+            .and_then(Object::as_integer)
+            .and_then(|n| usize::try_from(n).ok())
+    }) {
+        {
             if length <= input.len() {
                 // Read exactly 'length' bytes
                 let stream_data =
@@ -384,7 +436,7 @@ fn parse_stream_data<'a>(
                 let ws_result: nom::IResult<&[u8], &[u8]> =
                     nom::bytes::complete::take_while(|c: u8| c.is_ascii_whitespace())(remaining);
                 if let Ok((remaining, _)) = ws_result {
-                    if let Ok((remaining, _)) = token(remaining) {
+                    if let Ok((remaining, Token::StreamEnd)) = token(remaining) {
                         return Ok((remaining, stream_data));
                     }
                 }

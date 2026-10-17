@@ -214,6 +214,8 @@ pub struct ImportBudget {
     decoded: AtomicUsize,
     decoded_limit: AtomicUsize,
     operator_limit: AtomicUsize,
+    span_limit: AtomicUsize,
+    entry_limit: AtomicUsize,
     codec_allocated: AtomicUsize,
     objects: AtomicUsize,
     entries: AtomicUsize,
@@ -271,6 +273,8 @@ impl ImportBudget {
             decoded: AtomicUsize::new(0),
             decoded_limit: AtomicUsize::new(limits.decoded_bytes),
             operator_limit: AtomicUsize::new(limits.operators),
+            span_limit: AtomicUsize::new(limits.spans),
+            entry_limit: AtomicUsize::new(limits.entries),
             codec_allocated: AtomicUsize::new(0),
             objects: AtomicUsize::new(0),
             entries: AtomicUsize::new(0),
@@ -309,6 +313,23 @@ impl ImportBudget {
             0,
             self.operator_limit.load(Ordering::Relaxed),
             "content operators",
+        )
+    }
+
+    /// Narrow output/metadata work without clearing previously consumed values.
+    pub fn restrict_structure_limits(&self, spans: usize, entries: usize) -> Result<()> {
+        self.check()?;
+        if spans == 0 || entries == 0 {
+            return Err(self.reject("zero structure budget"));
+        }
+        self.span_limit.fetch_min(spans, Ordering::Relaxed);
+        self.entry_limit.fetch_min(entries, Ordering::Relaxed);
+        self.charge(&self.spans, 0, self.span_limit.load(Ordering::Relaxed), "emitted spans")?;
+        self.charge(
+            &self.entries,
+            0,
+            self.entry_limit.load(Ordering::Relaxed),
+            "collection entries",
         )
     }
 
@@ -493,7 +514,12 @@ impl ImportBudget {
     }
 
     pub(crate) fn charge_entries(&self, count: usize) -> Result<()> {
-        self.charge(&self.entries, count, self.limits.entries, "collection entries")
+        self.charge(
+            &self.entries,
+            count,
+            self.entry_limit.load(Ordering::Relaxed),
+            "collection entries",
+        )
     }
 
     pub(crate) fn charge_operator(&self) -> Result<()> {
@@ -508,7 +534,7 @@ impl ImportBudget {
         self.charge(&self.text_bytes, amount, self.limits.text_bytes, "shown text bytes")
     }
     pub(crate) fn charge_span(&self) -> Result<()> {
-        self.charge(&self.spans, 1, self.limits.spans, "emitted spans")
+        self.charge(&self.spans, 1, self.span_limit.load(Ordering::Relaxed), "emitted spans")
     }
 
     pub(crate) fn cmap_source(&self, bytes: usize) -> Result<()> {
