@@ -6,7 +6,7 @@
 - 기본 경로: `collaborator_self_merge`.
 - 추가 적용: `intake_and_review`, `local_validation`, `visual_fixture_evidence`.
 - 읽은 권위 문서: `pr_review_workflow.md`, `pr_review/README.md`와 위 네 자식 문서.
-- 제품 commit: `6b072955e9b83d8f7729133eda5e93536ee453f5`.
+- 착수 시 제품 commit: `6b072955e9b83d8f7729133eda5e93536ee453f5`.
 - 시작 HEAD: `88535330fdce00379c0f6284d182f2a116d4efb3` (제품 검증 후 문서만 추가).
 - 새 fetch의 upstream/devel: `515bd72dcde0eecdeece333666b675354b7fa91d`.
   HEAD가 이를 포함하며 추가 통합은 필요 없다.
@@ -14,7 +14,10 @@
 - 기존 Native/Docker WASM·집중 검사·전쪽 시각 TSV와 사용자 판정은 stage1의 동일 소스 증거를 재사용한다.
   새 제품 소스 변경이 없으므로 동일 WASM을 반복 빌드하지 않는다.
 
-## 실행 중
+## 착수 시 실행 범위
+
+아래 착수 기록 이후 exact-base 비교에서 축소 회귀를 발견해 보정했다. 최종 source와
+재사용·새 실행의 구분은 뒤의 보정본 기록을 따른다.
 
 `output/pr-review/backlog-7949/validation-next/plan-ko.md`의 순서로 미완료 lint·전체 Rust·Studio·
 공개 PDF API/실제 Worker·npm 소비 경계를 검증한다. 개별 명령·시각·종료값·로그는 같은 경로의
@@ -90,7 +93,102 @@ fingerprint 로그에서 candidate의 `path_color.rs` 변경을 인식해 vendor
   판정했다. devel이 거절하는 13개만 동일 입력의 미지원 오류 → 정상 열기·독립 PDF 전쪽 90% 이상으로
   평가한다. 양쪽에서 열리는 정상 대조군의 Native/fresh WASM 페이지별 하락 비교는 그대로 수행한다.
   원래 90%·쪽수·직접 판독 기준이나 공통 대조군의 하락 허용치를 완화한 승인이 아니다.
-- 개인 type002 PDF는 저장소 밖에만 있다. `intake_and_review.md` 2.8의 50 MiB 미만 입력 보존 조건에
-  해당하므로, 미준수 상태를 감추지 않고 공개 가능한 입력/별도 범위 판정과 구분한다.
+- 개인 정상 PDF는 승인된 후속 계획 4절의 개인정보 보존 범위에 따라 저장소 밖에만 보관한다.
+  50 MiB 미만이지만 이를 공개 fixture로 옮기지 않으며, 공개 재현 입력 22개·저장 입력 42개와
+  구분한다. 공개 본문에는 해당 정상 대조군의 집계만 기록한다.
 - PR 번호별 self-review·오늘할일은 PR 등록 뒤 정확한 code head CI 성공 후 작성한다.
 - 검증과 본문·대표 이미지·생성 명령까지 로컬로 준비한 다음 원격 반영 승인을 요청한다.
+
+## 최종 source와 증거 연결
+
+코드·정식 검사 후보는 `ce8997a4dc4c900602e65ba8f662e8bd98b719c9`다. 변경된 Rust/WASM runtime
+16개 파일이 Docker 빌드 source `b2e0f32ba`와 bytes가 같으며 pkg와 Studio/public의 실제
+glue/WASM도 일치한다. `validation-next/final-artifact-reuse-proof.json`에 해시를 보존했다.
+TS guard 이후 TypeScript 검사와 실제 Studio 소비 경로도 통과했다. 문서·대표 PNG를 추가한다는
+이유로 같은 WASM을 다시 빌드하지 않는다.
+
+최종 SVG 실제 export·Chrome raster 공개 22쪽도 최저 92.64496%다. 확대 source/crop 창은
+PNG 선언 → 최종 draw의 device 변환에서 소비한다. Native는 `skia/image_conv.rs`의
+`draw_image_rect_with_sampling_options`, WebCanvas는 `image_sampling_scope`의 `get_transform`,
+CanvasKit은 draw 행렬·source rect, DOM은 실제 natural/crop 창·displayScale·devicePixelRatio를
+사용한다. SVG는 intrinsic 96-DPI frame이며 외부 viewer의 임의 zoom은 미검증이다.
+줄/쪽·bbox·높이 계산은 변경하지 않으므로 pagination·rowspan의 컷 계약은 비해당이다.
+
+공통 27쪽에 추가 축소 1쪽을 합친 28쪽의 exact-base 하락은 Native/WASM 각각 0쪽이다.
+`validation-next/final-visual-summary.json`은 전체 41쪽의 누락·90% 미만 0쪽과 직접 판독을
+연결한다. 색상 키의 숨김 칸·원색, stencil의 현재 색/투명 칸, 저해상도 확대 경계의 비교를
+다시 직접 확인했고 대표 PNG는 이 최종 캡처에서 복사했다. checker의 기존 tone 차이와
+시각 통과 판정은 위 두 번째 사용자 판정을 따른다.
+
+전체 Rust/lint의 최종 실행은 `validation-final/validation-results.json`에 기록 중이다.
+완료한 frontend/실제 Worker 로그와 새 source의 추가 소비 경로 검사를 연결하며, 초기 중단된
+release lib 실행을 통과로 세지 않는다. 최종 결과가 모두 확정된 뒤 PR 준비 완료로 기록한다.
+
+### 전체 통합 실행에서 확인한 기존 거절 기대값
+
+첫 release lib 검사는 3,986건 통과·기존 12건 생략으로 완료됐다. 전체 nextest는
+10,816건 중 10,815건 통과·1건 실패·45건 생략이었다. 실패한
+`issue_7911_pdf_resource_limits::limited_import_preserves_supported_masks_and_rejects_unsupported_masks`는
+이번에 지원한 색상 키 배열을 여전히 `PDF_IMAGE_UNSUPPORTED`로 기대했다.
+
+`bf00da2dc5fbf5a5462f3f94b7c44eccfd39bb7b`는 이 검사만 보정했다. 원색 검정의 Mask 일치와
+빨강 대조군을 각각 alpha 0/255로 검사하고, inline/XObject stencil의 set/clear bit를 투명/검정
+칠로 검사한다. 이는 입력 sample 계약이며 실물 배치 px나 그림 golden이 아니다.
+기존 DCT SMask 미지원·잘못된 Decode/길이·매달린 참조·예약 한도는 유지한다. 뒤쪽 미지원 입력의
+전체 import 원자성 검사는 이제 정상 지원하는 색상 키 대신 기존 미지원 DCT SMask로 보호한다.
+정식 #7911 모듈 **123건 통과**로 변경 경계와 나머지 자원 계약을 함께 확인했다.
+
+제품 source·fixture·sampling이 바뀌지 않아 기존 Native/fresh WASM·직접 시각 판정과 성공한
+release lib 검사를 재사용한다. `src`·`crates`·vendor의 Rust/manifest/lock 변경이 없음을 확인하고,
+기존 전체 실행과 실패 로그는 `validation-final/attempt1/`에 별도로 보존했다. 새 test head의 lint·
+전체 통합 재실행과 미완료 Native Skia·doc 검사는 같은 공용 target에서 순차 실행한다.
+
+집중 검사 뒤 단일 항목 loop의 Clippy 지적을 같은 동작의 블록으로 정리하고 포맷했다.
+최종 검사 코드 head는 `0e8ad837cc6d4ce86b21427e44e9c7204d56040d`다. 이 변경도 테스트 함수의 블록/포맷만이며
+제품 Rust/TS·입력·시각 출력은 그대로다. 해당 lint 실패는 `validation-final/attempt2/`에
+보존했고 새 lint 묶음은 통과했다.
+
+## 최종 결과 — 로컬 PR 준비 완료
+
+검증한 code/test head는 `0e8ad837cc6d4ce86b21427e44e9c7204d56040d`다.
+후속 기록·대표 PNG만 추가하며 제품·테스트·입력의 bytes는 바꾸지 않는다.
+
+| 최종 게이트 | 결과 |
+| --- | --- |
+| fmt, manifest/base SHA, unit-tier | 통과 |
+| Native/WASM32 Clippy, workspace build/all-target Clippy | 모두 통과 |
+| release lib | 3,986 통과·12 생략; 변경 없는 lib source의 성공 결과 재사용 |
+| release-test 전체 nextest | 10,816 통과·45 생략 |
+| Native Skia lib | 4,043 통과·12 생략 |
+| Native Skia 그림 placeholder / direct PDF | 2 / 14 통과 |
+| doc | 8 통과·3 생략 |
+| Studio 전체 / 소비 경로 후속 / editor / frontend | 2,315 통과·2 생략 / 6 / 32 / 3 통과 |
+| Studio TypeScript, editor 선언, package dry-run | 통과 |
+| 실제 PDF API/Worker·오류 복구 | 115 assertions·Worker 7개·12쪽 render/save 통과 |
+
+모든 명령·종료값은 `validation-final/validation-results.json`, 집계는
+`validation-final/final-result-summary.json`에 있다. 필터로 선택한 Native 검사에서는
+선택 밖의 함수를 실행한 것으로 세지 않았다. 기존 90% 기준·golden·허용치는 완화하지 않았다.
+프로토콜 검사 `schemaMinorVersion` 25→26만 additive field와 함께 변경했다.
+
+전쪽 raw TSV는 Native/WASM 각각 공개 22쪽·정상 19쪽에서 미달·누락 0쪽이다.
+공통 28쪽의 devel 대비 하락도 양쪽 0쪽이다. Native/fresh WASM의 같은 최종 PNG에서
+canonical `make_compares`·`make_overlay_compares`·`make_review_panels`로 대표 패널을 만들었다.
+`final-review-panels/manifest.json`에 source/reference hash와 metric gate를 기록했으며 제품을
+다시 렌더하지 않았다. silhouette-only의 `not_evaluated` 원본은 변경하지 않고 metric gate와
+사용자 직접 판정을 별도로 연결했다.
+
+재현용 공개 PDF 22개·HWP/HWPX 42개와 inventories는 이미 commit했다. 최종 대표 review·
+standalone overlay·compare PNG는 `mydocs/pr/assets/issue_7974/`에 보존하고 한국어 PR 본문에
+실제 Markdown 이미지로 넣는다. private 정상 문서·폰트·로그·TSV·중간 JSON·생성 glue/WASM·
+pkg·환경 파일은 source commit에 넣지 않는다.
+
+사용자 확인 화면은 `E:\tmp\issue7974-final-review-20261017\index.html`이며 같은 캡처의
+공식 비교 패널 링크와 사용자 통과 판정도 연결했다. Studio 7795는 유지한다. 비교용으로만 만든
+`/tmp/rhwp-7974-base-20261017`은 base producer·evidence를 보존하고 활성 cwd가 없음을 확인한 뒤
+제거했다. 기본 작업공간·7700·기존 WIP·공유 target은 보존했다.
+
+원격 devel은 마지막 fetch에서도 기준 `515bd72dcde0eecdeece333666b675354b7fa91d`와 같다.
+한국어 PR 본문·대표 이미지·생성 명령까지 로컬로 준비했으며 원격 push·PR 생성은 아직 하지 않았다.
+등록 뒤 정확한 code head CI 성공 시 self-review·오늘할일을 준비하고 이후 merge 조건을 확인한다.
+이 기록은 PR ready·merge·이슈 종료 승인이나 남은 백로그 완료를 뜻하지 않는다.

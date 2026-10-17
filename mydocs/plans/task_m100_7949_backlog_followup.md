@@ -6,7 +6,7 @@
 - 작업 기준: fetch한 `upstream/devel` `515bd72dcde0eecdeece333666b675354b7fa91d`
 - 로컬 브랜치: `task_m100_7974`
 - 작업공간: `/home/edward/mygithub/rhwp-backlog7949`
-- 상태: [#7974](https://github.com/edwardkim/rhwp/issues/7974) 첫 구현과 집중 검증 완료. 2026-10-17 사용자 직접 시각 판정 통과 후 전체 검증·로컬 PR 준비 승인, stage2 실행 중
+- 상태: [#7974](https://github.com/edwardkim/rhwp/issues/7974) 첫 구현·전체 로컬 검증 완료. 2026-10-17 보정본 사용자 직접 시각 판정 통과, [stage2 결과](../working/task_m100_7974_stage2.md)에 따라 원격 push·PR 등록 별도 승인 대기
 - 이전 이슈 #7949·#7950은 CLOSED 상태로 유지한다. 새 후속 번호를 예측하지 않는다.
 
 ## 1. 확인한 범위와 분할 순서

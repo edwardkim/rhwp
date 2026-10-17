@@ -28,7 +28,8 @@ The actual public import/save/reopen tests are in
 `tests/cases/issue_7974_pdf_source_masks.rs`. Source-texture sample positions are
 sample indices; no document layout position or renderer hash is pinned.
 
-Validation: `mydocs/working/task_m100_7974_stage1.md`. Original PDFs were independently
+Validation: [initial implementation](../../mydocs/working/task_m100_7974_stage1.md)
+and [final validation](../../mydocs/working/task_m100_7974_stage2.md). Original PDFs were independently
 rasterized at 96 DPI with Poppler, then compared with Native Skia and fresh Docker
 WASM Canvas/SVG. `gray16-key` uses MuPDF as the reference: Poppler collapses adjacent
 16-bit values (32767/32768) in this case and fails to preserve their different alpha.
