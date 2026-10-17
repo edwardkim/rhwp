@@ -21841,14 +21841,15 @@ impl LayoutEngine {
                 // 바닥 예산에 들지 않는다 — 편람 289쪽 TAC 4×4 표는 이 여백 17px 때문에만
                 // 남은 공간을 넘어, 한/글이 그 쪽에 앉힌 표를 저장 되감김 자리에서 넘겼다.
                 let unit_fit_height = u.height - self.nested_atom_invisible_tail(cell, u, styles);
+                // 앞 행에서 걸친 다른 칸은 이 문단의 물리 쪽 경계를 인증하지 않는다.
+                // 실제로 끊을 때의 고아 줄 재검토에는 아래의 걸침 정보를 유지한다.
                 if j > start
                     && (u.hard_break_before
                         || body_frame_reset
                         || hwp5_page_scale_cross_para_reset
                         || shared_empty_frame)
                     && (strict_saved_frame_break
-                        || ((rewind_internal_hard_break_orphan
-                            || !relaxed_hard_break
+                        || ((!relaxed_hard_break
                             || (!u.empty_spacer
                                 && (h + unit_fit_height > avail_height
                                     || avail_height - h <= HARD_BREAK_REMAINING_TOLERANCE_PX)))

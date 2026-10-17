@@ -773,3 +773,33 @@ snapshot이 공유 산출물 `librhwp.rlib`를 덮어쓴 뒤 root fingerprint가
 layout의 정체 m/s와 가시 역따옴표 없음,본문 칼럼 포함과 독립 원점을 검사한다.
 두 case의 새 실행과 수정 전 FAIL은 아직 미검증이다. 추가 입력·기대값 근거가 전쪽 시각 gate를
 완화하는 것은 아니며 전체 PR의1342000/156465345 등 미해결 범위와 최종 gate는 그대로 남는다.
+
+### 공개 원본 실행 결과와 걸침 칸의 강제 경계 재검토
+
+`84e796d80ce95ff11066772290a0dafccdf44551`에서 원본 nested/파생 nested2건, 원본 rm1건,
+기존 rm 계약7건의 정식 Cargo 검사10건이 모두 PASS했다. `--prepare` 후 suite 정책 검사도
+기준6ed1682c3으로 PASS했다. source를 바꾸지 않은 전157쪽 시각 증거와 후보25의6건 결과를
+구분해 연결했다. `candidate26-original-focused-results.json`과 case별 log에 실제 건수와
+commit을 기록했다. frozen 기준 rlib에 **같은 정식 case source**를 직접 링크한 Rust 검사도
+컴파일 성공 뒤 실행했고 원본 nested는(첫 행3,둘째 행0) 대 기대(3,3),원본 rm은 가시
+역따옴표로 각각 FAIL했다. 이 before 진단은 정식 current Cargo gate와 구분한다.
+
+1342000은 후보23의 최신 Native review를 다시 생성했다.81쪽 raw85.84021%에서 독립
+Print는 광주 셀의 `제6조(사회적경제활성화지원계획 수립 등)`을 그 쪽에 둔다. 현재는
+원본 row14 col3의 앞3유닛 뒤에서 잘라 그 제목을82쪽에 둔다. 원본 저장 정보는 실제 HWP
+레코드이고 해당 문단의 keepWithNext/keepLines/widowOrphan은 모두 false다.
+현재 trace의 content budget85.8px,앞3유닛 합52px,제목17.333px이므로 제목은 들어간다.
+잔여33.8px로32px 문턱도 원인이 아니다. 실제 강제 break 조건의 prior-rowspan 플래그가
+해당 reset을 무조건 쪽 경계로 올리는 것이 원인이다. 독립 소유 인증 조건은 성립하지 않는다.
+
+후보13은 prior-span 강제 조건과32px 조건3경로를 동시에 바꿔417쪽 회귀를 만들었다.
+이번에는 ordinary RowCut의 **강제 break 사유에서 prior-span만 제거**하고 실제 break의
+고아 줄 재검토에는 같은 플래그를 유지한다.32px 정책·block/offset block·저장 프레임/공유 셀
+인증·실제 예산과 paint는 바꾸지 않는다. 걸친 라벨의 존재가 내용 문단의 물리 경계라는
+잘못된 가정만 제거한다. 문서 ID·숫자·새 예외 분기는 추가하지 않는다.
+
+생산/소비는 동일 CellUnit의 저장 reset/내용 높이 → ordinary advance_row_cut의 실제 예산과
+확정 end_cut → scan이 예약한 물리 밴드 → 같은 start/end cut을 읽는 continuation 배치다.
+먼저81–84/202–203쪽과415쪽·80168의157쪽 및 기존 걸침 칸/빈 줄/원본 대조를 진단한다.
+새 source에서 direction·전쪽 Native/fresh WASM·직접 판독·관련 정식 회귀는 아직 미검증이다.
+90% 미달 대상에 새 fixture·기대값을 추가하거나 이전 source의 통과를 승계하지 않는다.
