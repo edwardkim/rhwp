@@ -1090,6 +1090,37 @@ fn declared_height_lands_on_a_row_boundary(
     false
 }
 
+/// 개체 선언 높이가 선언 행 경계 `k` 에 떨어지고, 그 앞 행들은 측정이 선언과 같으며 경계를
+/// 닫는 행 `k-1` 만 내용으로 선언보다 자랐는가. 그러면 개체 높이는 그 행을 선언 높이에서
+/// 나누는 첫 조각 높이다 (#7147 의 행 경계 판정을, 끝 행이 자란 경우로 넓힌다).
+fn declared_fragment_closes_on_a_grown_row(
+    measured: &MeasuredTable,
+    table: &Table,
+    target_body_height: f64,
+    dpi: f64,
+) -> bool {
+    let mut cumulative = 0.0f64;
+    for row in 0..measured.row_heights.len() {
+        if row > 0 {
+            cumulative += measured.cell_spacing;
+        }
+        let declared = declared_row_height_px(table, row, dpi);
+        if declared <= 0.0 {
+            return false;
+        }
+        cumulative += declared;
+        let measured_row = measured.row_heights[row];
+        if (cumulative - target_body_height).abs() <= 0.5 {
+            // 경계를 닫는 행은 선언보다 자랐고 다음 행이 남아 있어야 조각 경계다.
+            return measured_row > declared + 0.5 && row + 1 < measured.row_heights.len();
+        }
+        if (measured_row - declared).abs() > 0.5 || cumulative > target_body_height + 0.5 {
+            return false;
+        }
+    }
+    false
+}
+
 pub fn fit_measured_table_to_declared_height(
     measured: &MeasuredTable,
     table: &Table,
@@ -1143,6 +1174,13 @@ pub(crate) fn fit_measured_table_to_declared_height_with_outcome(
     if measured_rows_match_declared(&fitted, table, dpi)
         && declared_height_lands_on_a_row_boundary(&fitted, table, target_body_height, dpi)
     {
+        return (fitted, false);
+    }
+    // 첫 조각의 마지막 행만 내용으로 자란 표도 같다. 그 행은 선언 높이만큼 첫 쪽에 놓이고
+    // 나머지 줄은 다음 쪽으로 이어진다(1613000 185쪽 29×3 표: 개체 58227HU = 행 0–26 선언 합,
+    // 행 26 은 두 줄로 38.4px 까지 자라지만 한/글 2020 정본은 첫 줄만 185쪽에 두고 둘째 줄을
+    // 186쪽 첫머리에 둔다. 앞 행들은 모두 선언 28.4·45.4·27.3px 그대로다).
+    if declared_fragment_closes_on_a_grown_row(&fitted, table, target_body_height, dpi) {
         return (fitted, false);
     }
 

@@ -801,7 +801,13 @@ impl TypesetEngine {
             (input.prepared.terminal_outer_bottom_flow - terminal_outer_bottom_overhead).max(0.0);
         let host_spacing_after_only =
             input.prepared.host_spacing_after_only + terminal_flow_outer_bottom;
-        let commit_fragment = |st: &mut TypesetState, owner_height: f64, terminal: bool| {
+        // `terminal_successor_gap`: 끝 조각 뒤 문단이 증언한 표 아래 간격(공통 helper
+        // `native_text_frame_terminal_successor_gap`). 있으면 paint 와 같은 값으로 흐름 끝을
+        // 정하고 호스트 아래 간격으로 다시 덮어쓰지 않는다.
+        let commit_fragment = |st: &mut TypesetState,
+                               owner_height: f64,
+                               terminal: bool,
+                               terminal_successor_gap: Option<f64>| {
             if let Some(mut placement) = fragment_placement {
                 // 끝 조각이 아닌 컷은 후속 문단을 소유할 수 없다. 끝 조각의 원본 원점은
                 // 유지하되, 간격을 소비하는 경로에서는 최종 수용한 물리 하단과 일치해야 한다.
@@ -824,19 +830,26 @@ impl TypesetEngine {
                     placement.flow = crate::renderer::float_placement::ParagraphFloatFlow::NextLine;
                 }
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
-                st.align_flow_to(
+                let successor_flow_end = terminal_successor_gap.filter(|_| terminal).map(|gap| {
+                    placement.table_top + owner_height + terminal_outer_bottom_overhead + gap
+                });
+                st.align_flow_to(successor_flow_end.unwrap_or(
                     placement.occupied_bottom
                         + if terminal {
                             input.prepared.host_spacing_after_only
                         } else {
                             0.0
                         },
-                );
+                ));
                 if terminal {
+                    // 뒤 문단의 저장 줄이 이미 표 아래에 있다고 증언하면(공통 간격) 그 문단 시작
+                    // (위 간격 포함)을 표 영역이 다시 밀지 않는다 — 배제 띠는 흐름 끝까지만.
                     st.add_visible_float_exclusion(VisibleFloatExclusion {
                         para_index: para_idx,
                         top: placement.table_top,
-                        bottom: placement.occupied_bottom,
+                        bottom: successor_flow_end.map_or(placement.occupied_bottom, |end| {
+                            end.min(placement.occupied_bottom)
+                        }),
                     });
                 }
             }
@@ -885,6 +898,7 @@ impl TypesetEngine {
                 continuation.finish(row_count, false);
                 return TableContinuationIteration::Complete;
             }
+            let mut terminal_successor_gap = None;
 
             // 나머지 전부가 현재 페이지에 들어감
             let bottom_caption_extra = if !caption_is_top {
@@ -995,7 +1009,7 @@ impl TypesetEngine {
                     + partial_height
                     + bottom_caption_extra
                     + terminal_outer_bottom_overhead;
-                let terminal_spacing = is_continuation
+                terminal_successor_gap = is_continuation
                     .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
                     .flatten()
                     .and_then(|(_, next)| {
@@ -1007,7 +1021,8 @@ impl TypesetEngine {
                             st.inline_flow_column().y + st.current_height + occupied,
                             styles,
                         )
-                    })
+                    });
+                let terminal_spacing = terminal_successor_gap
                     .unwrap_or(host_spacing_after_only + terminal_host_spacing);
                 if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
                     eprintln!("DIAG_SCAN FLOW_END pi={para_idx} row={cursor_row} cont={is_continuation} current={:.3} occupied={occupied:.3} terminal_spacing={terminal_spacing:.3} outer={} terminal_flow={:.3} reserved={terminal_outer_bottom_overhead:.3} host_tags={:?} next_line={:?}", st.current_height, table.outer_margin_bottom, input.prepared.terminal_outer_bottom_flow, input.source.paragraph.line_segs.iter().map(|line| line.tag).collect::<Vec<_>>(), input.source.paragraphs_all.get(para_idx + 1).and_then(|para| para.line_segs.first()).map(|line| (line.vertical_pos, line.tag)));
@@ -1019,6 +1034,7 @@ impl TypesetEngine {
                 st,
                 caption_extra + partial_height + bottom_caption_extra,
                 true,
+                terminal_successor_gap,
             );
             if queue_table_footnotes {
                 self.register_queued_table_footnotes(
@@ -1396,7 +1412,7 @@ impl TypesetEngine {
                 + fragment_outer_bottom_overhead,
         );
         if terminal_cut_consumed {
-            let terminal_spacing = is_continuation
+            let terminal_successor_gap = is_continuation
                 .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
                 .flatten()
                 .and_then(|(_, next)| {
@@ -1408,11 +1424,17 @@ impl TypesetEngine {
                         st.inline_flow_column().y + st.current_height,
                         styles,
                     )
-                })
-                .unwrap_or(host_spacing_after_only + terminal_host_spacing);
-            st.advance_flow_by(terminal_spacing);
+                });
+            st.advance_flow_by(
+                terminal_successor_gap.unwrap_or(host_spacing_after_only + terminal_host_spacing),
+            );
             self.consume_stored_terminal_empty_line_gap(st, &input, is_continuation);
-            commit_fragment(st, caption_extra + partial_height, true);
+            commit_fragment(
+                st,
+                caption_extra + partial_height,
+                true,
+                terminal_successor_gap,
+            );
             continuation.finish(row_count, true);
             return TableContinuationIteration::Complete;
         }
@@ -1444,7 +1466,7 @@ impl TypesetEngine {
                         .then_some(inset)
                 }
             });
-        commit_fragment(st, caption_extra + partial_height, false);
+        commit_fragment(st, caption_extra + partial_height, false, None);
         if !is_continuation && stored_complete_extent.is_some() {
             // 내용 컷과 독립적으로 인증한 첫 조각 상자가 실제 지면을 차지했다.
             // 다음 조각의 여백은 같은 커서 사실을 예산·배치가 함께 소비한다.

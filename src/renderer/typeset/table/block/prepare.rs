@@ -460,6 +460,7 @@ impl TypesetEngine {
                     } else {
                         placement.for_first_fragment(
                             table,
+                            placement_para_start_height,
                             applied_before,
                             host_line_height,
                             self.dpi,
