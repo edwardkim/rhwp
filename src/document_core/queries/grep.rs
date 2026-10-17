@@ -31,6 +31,7 @@ pub struct GrepMatch {
     /// 문단 텍스트 내 매치 시작 위치 (문자 단위).
     #[serde(rename = "charOffset")]
     pub char_offset: usize,
+    length: usize,
     /// 매치 길이 (문자 단위).
     pub length: usize,
     /// 매치가 속한 문단의 전체 텍스트.
@@ -101,7 +102,7 @@ pub struct EquationRef {
 }
 
 /// 매치 주변 발췌를 만든다 (앞뒤 `WINDOW` 문자).
-fn make_context(text: &str, offset: usize, length: usize) -> String {
+fn make_context(text: &str, offset: usize, length: usize, length: usize) -> String {
     const WINDOW: usize = 40;
     let chars: Vec<char> = text.chars().collect();
     let start = offset.saturating_sub(WINDOW);
@@ -246,7 +247,6 @@ impl DocumentCore {
         }
         let page_index = self.build_paragraph_page_index();
         let table_row_pages = self.build_table_row_page_index();
-        let qlen = query.chars().count();
         let mut out: Vec<GrepMatch> = Vec::new();
 
         for (sec_idx, section) in self.document.sections.iter().enumerate() {
@@ -257,6 +257,7 @@ impl DocumentCore {
                     |page: Option<u32>,
                      text: &str,
                      offset: usize,
+                     length: usize,
                      cell: Option<CellRef>,
                      textbox: Option<TextBoxRef>,
                      equation: Option<EquationRef>,
@@ -266,9 +267,9 @@ impl DocumentCore {
                         paragraph: para_idx,
                         page,
                         char_offset: offset,
-                        length: qlen,
+                        length,
                         text: text.to_string(),
-                        context: make_context(text, offset, qlen),
+                        context: make_context(text, offset, length),
                         cell,
                         textbox,
                         equation,
@@ -286,6 +287,7 @@ impl DocumentCore {
                 };
                 let make = |text: &str,
                             offset: usize,
+                            length: usize,
                             cell: Option<CellRef>,
                             textbox: Option<TextBoxRef>,
                             equation: Option<EquationRef>| {
@@ -293,6 +295,7 @@ impl DocumentCore {
                         page,
                         text,
                         offset,
+                        length,
                         cell,
                         textbox,
                         equation,
@@ -314,8 +317,10 @@ impl DocumentCore {
                         .or(page)
                 };
 
-                for offset in super::search_query::find_matches(&para.text, query, case_sensitive) {
-                    out.push(make(&para.text, offset, None, None, None));
+                for (offset, length) in
+                    super::search_query::find_matches(&para.text, query, case_sensitive)
+                {
+                    out.push(make(&para.text, offset, length, None, None, None));
                     if limit.is_some_and(|n| out.len() >= n) {
                         return out;
                     }
@@ -352,7 +357,7 @@ impl DocumentCore {
                                         } else {
                                             None
                                         };
-                                        for offset in super::search_query::find_matches(
+                                        for (offset, length) in super::search_query::find_matches(
                                             &cp.text,
                                             query,
                                             case_sensitive,
@@ -361,6 +366,7 @@ impl DocumentCore {
                                                 match_page,
                                                 &cp.text,
                                                 offset,
+                                                length,
                                                 Some(addr.clone()),
                                                 None,
                                                 None,
@@ -378,15 +384,18 @@ impl DocumentCore {
                                         {
                                             match nested_control {
                                                 Control::Equation(equation) => {
-                                                    for offset in super::search_query::find_matches(
-                                                        &equation.script,
-                                                        query,
-                                                        case_sensitive,
-                                                    ) {
+                                                    for (offset, length) in
+                                                        super::search_query::find_matches(
+                                                            &equation.script,
+                                                            query,
+                                                            case_sensitive,
+                                                        )
+                                                    {
                                                         let mut hit = make_at(
                                                             match_page,
                                                             &equation.script,
                                                             offset,
+                                                            length,
                                                             Some(addr.clone()),
                                                             None,
                                                             Some(EquationRef {
@@ -430,7 +439,7 @@ impl DocumentCore {
                                         }
                                         None => (None, None),
                                     };
-                                    for offset in super::search_query::find_matches(
+                                    for (offset, length) in super::search_query::find_matches(
                                         &tp.text,
                                         query,
                                         case_sensitive,
@@ -439,6 +448,7 @@ impl DocumentCore {
                                             page,
                                             &tp.text,
                                             offset,
+                                            length,
                                             None,
                                             Some(TextBoxRef {
                                                 control: ctrl_idx,
@@ -457,15 +467,18 @@ impl DocumentCore {
                                     {
                                         match nested_control {
                                             Control::Equation(equation) => {
-                                                for offset in super::search_query::find_matches(
-                                                    &equation.script,
-                                                    query,
-                                                    case_sensitive,
-                                                ) {
+                                                for (offset, length) in
+                                                    super::search_query::find_matches(
+                                                        &equation.script,
+                                                        query,
+                                                        case_sensitive,
+                                                    )
+                                                {
                                                     out.push(make_at(
                                                         page,
                                                         &equation.script,
                                                         offset,
+                                                        length,
                                                         None,
                                                         Some(TextBoxRef {
                                                             control: ctrl_idx,
@@ -514,7 +527,7 @@ impl DocumentCore {
                                                             } else {
                                                                 None
                                                             };
-                                                            for offset in
+                                                            for (offset, length) in
                                                                 super::search_query::find_matches(
                                                                     &cp.text,
                                                                     query,
@@ -525,6 +538,7 @@ impl DocumentCore {
                                                                     match_page,
                                                                     &cp.text,
                                                                     offset,
+                                                                    length,
                                                                     None,
                                                                     Some(TextBoxRef {
                                                                         control: ctrl_idx,
@@ -549,7 +563,7 @@ impl DocumentCore {
                                                             {
                                                                 match inner_control {
                                                                     Control::Equation(equation) => {
-                                                                        for offset in super::search_query::find_matches(
+                                                                        for (offset, length) in super::search_query::find_matches(
                                                                             &equation.script,
                                                                             query,
                                                                             case_sensitive,
@@ -558,6 +572,7 @@ impl DocumentCore {
                                                                                 match_page,
                                                                                 &equation.script,
                                                                                 offset,
+                        length,
                                                                                 None,
                                                                                 Some(TextBoxRef {
                                                                                     control: ctrl_idx,
@@ -602,12 +617,13 @@ impl DocumentCore {
                         // #3419(export-text/markdown 쪽 수식 텍스트화)와는 별개 경로였다.
                         // 표 셀·글상자와 동일하게 본문 문단 순회 중 함께 검색한다.
                         Control::Equation(eq) => {
-                            for offset in
+                            for (offset, length) in
                                 super::search_query::find_matches(&eq.script, query, case_sensitive)
                             {
                                 out.push(make(
                                     &eq.script,
                                     offset,
+                                    length,
                                     None,
                                     None,
                                     Some(EquationRef { control: ctrl_idx }),

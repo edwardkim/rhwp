@@ -73,16 +73,16 @@ fn replace_char_range(text: &mut String, offset: usize, length: usize, replaceme
     *text = chars.into_iter().collect();
 }
 
-/// 문단 텍스트에서 query를 검색하여 모든 매치 오프셋을 반환한다.
+/// 문단 텍스트에서 query를 검색하여 모든 매치의 원문 문자 (오프셋, 길이)를 반환한다.
 ///
 /// [#3283] `grep`(주소를 가진 검색)이 같은 매칭 규칙을 쓰도록 크레이트에 공개한다 —
 /// 검색과 치환이 다른 규칙을 쓰면 "찾았는데 못 바꾸는" 어긋남이 생긴다.
-pub(crate) fn find_matches(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
+pub(crate) fn find_matches(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, usize)> {
     find_in_text(text, query, case_sensitive)
 }
 
-/// 문단 텍스트에서 query를 검색하여 모든 매치 오프셋을 반환
-fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
+/// 문단 텍스트에서 query를 검색하여 모든 매치의 원문 문자 (오프셋, 길이)를 반환
+fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, usize)> {
     if query.is_empty() || text.is_empty() {
         return vec![];
     }
@@ -96,14 +96,14 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
         }
         for i in 0..=chars.len() - qlen {
             if chars[i..i + qlen] == qchars[..] {
-                results.push(i);
+                results.push((i, qlen));
             }
         }
     } else {
         // `to_lowercase()` 는 한 원문 문자를 여러 문자로 확장할 수 있다(예: `İ` →
         // `i` + COMBINING DOT ABOVE). lower-case 버퍼의 인덱스를 그대로 반환하면
         // 호출자가 기대하는 원문 문자 오프셋이 밀린다. 각 확장 문자를 원문 문자
-        // 인덱스에 연결해 검색은 folded 텍스트에서 하되 주소는 원문 기준으로 돌려준다.
+        // 인덱스에 연결해 검색은 folded 텍스트에서 하되 시작과 끝은 원문 기준으로 돌려준다.
         let chars: Vec<(char, usize)> = text
             .chars()
             .enumerate()
@@ -123,7 +123,9 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
                 .map(|(c, _)| *c)
                 .eq(qchars.iter().copied())
             {
-                results.push(chars[i].1);
+                let offset = chars[i].1;
+                let length = chars[i + qlen - 1].1 + 1 - offset;
+                results.push((offset, length));
             }
         }
     }
@@ -132,15 +134,15 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
 
 /// 문서 본문에서 query의 첫 번째 매치만 반환 (표/글상자 내부 제외, early-exit)
 fn search_first_body(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Option<SearchHit> {
-    let qlen = query.chars().count();
     for (sec_idx, section) in doc.document.sections.iter().enumerate() {
         for (para_idx, para) in section.paragraphs.iter().enumerate() {
-            if let Some(&offset) = find_in_text(&para.text, query, case_sensitive).first() {
+            if let Some(&(offset, length)) = find_in_text(&para.text, query, case_sensitive).first()
+            {
                 return Some(SearchHit {
                     sec: sec_idx,
                     para: para_idx,
                     char_offset: offset,
-                    length: qlen,
+                    length,
                     cell_context: None,
                     is_text_box: false,
                     equation_control: None,
@@ -166,13 +168,12 @@ fn push_container_hits(
     case_sensitive: bool,
     results: &mut Vec<SearchHit>,
 ) {
-    let qlen = query.chars().count();
-    for offset in find_in_text(&container.text, query, case_sensitive) {
+    for (offset, length) in find_in_text(&container.text, query, case_sensitive) {
         results.push(SearchHit {
             sec: sec_idx,
             para: para_idx,
             char_offset: offset,
-            length: qlen,
+            length,
             cell_context: cell.cloned(),
             is_text_box,
             equation_control: None,
@@ -183,12 +184,12 @@ fn push_container_hits(
     // 별도 equation_control 로 표시해 커서 이동 대상에서는 제외한다.
     for (equation_index, control) in container.controls.iter().enumerate() {
         if let Control::Equation(equation) = control {
-            for offset in find_in_text(&equation.script, query, case_sensitive) {
+            for (offset, length) in find_in_text(&equation.script, query, case_sensitive) {
                 results.push(SearchHit {
                     sec: sec_idx,
                     para: para_idx,
                     char_offset: offset,
-                    length: qlen,
+                    length,
                     cell_context: cell.cloned(),
                     is_text_box,
                     equation_control: Some(equation_index),
@@ -851,39 +852,39 @@ mod tests {
 
     #[test]
     fn find_in_text_case_sensitive() {
-        assert_eq!(find_in_text("hello world", "world", true), vec![6]);
+        assert_eq!(find_in_text("hello world", "world", true), vec![(6, 5)]);
         assert_eq!(
             find_in_text("hello world", "World", true),
-            Vec::<usize>::new()
+            Vec::<(usize, usize)>::new()
         );
     }
 
     #[test]
     fn find_in_text_case_insensitive() {
-        assert_eq!(find_in_text("Hello World", "hello", false), vec![0]);
-        assert_eq!(find_in_text("Hello World", "WORLD", false), vec![6]);
+        assert_eq!(find_in_text("Hello World", "hello", false), vec![(0, 5)]);
+        assert_eq!(find_in_text("Hello World", "WORLD", false), vec![(6, 5)]);
     }
 
     #[test]
     fn ignore_case_returns_original_char_offset_after_unicode_lowercase_expansion() {
         // `İ`가 두 lower-case 문자로 확장돼도 `stan`의 시작은 원문 2번째 문자다.
-        assert_eq!(find_matches("Aİstanbul", "stan", false), vec![2]);
+        assert_eq!(find_matches("Aİstanbul", "stan", false), vec![(2, 4)]);
     }
 
     #[test]
     fn find_in_text_multiple_matches() {
-        assert_eq!(find_in_text("abcabc", "abc", true), vec![0, 3]);
+        assert_eq!(find_in_text("abcabc", "abc", true), vec![(0, 3), (3, 3)]);
     }
 
     #[test]
     fn find_in_text_empty_inputs() {
-        assert_eq!(find_in_text("", "abc", true), Vec::<usize>::new());
-        assert_eq!(find_in_text("abc", "", true), Vec::<usize>::new());
+        assert_eq!(find_in_text("", "abc", true), Vec::<(usize, usize)>::new());
+        assert_eq!(find_in_text("abc", "", true), Vec::<(usize, usize)>::new());
     }
 
     #[test]
     fn find_in_text_korean() {
-        assert_eq!(find_in_text("안녕하세요 세계", "세계", true), vec![6]);
-        assert_eq!(find_in_text("가나가나", "가나", true), vec![0, 2]);
+        assert_eq!(find_in_text("안녕하세요 세계", "세계", true), vec![(6, 2)]);
+        assert_eq!(find_in_text("가나가나", "가나", true), vec![(0, 2), (2, 2)]);
     }
 }
