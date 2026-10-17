@@ -16,7 +16,7 @@ fn authentic(line: &LineSeg) -> bool {
 
 impl LayoutEngine {
     /// 순수 재조판 행에서 마지막 빈 줄도 자기 줄 상자와 다음 줄의 간격을 구분한다.
-    /// 저장된 줄 높이는 그대로 보존하고, 쪽 밖으로 이월하는 뒤 간격만 반환한다.
+    /// 공통 조판 결과의 줄 높이는 보존하고, 쪽 밖으로 이월하는 뒤 간격만 반환한다.
     pub(super) fn plain_reflow_empty_line_cut_spacing(
         &self,
         table: &Table,
@@ -46,6 +46,25 @@ impl LayoutEngine {
             || paragraph.cell_format_vpos_dirty
         {
             return 0.0;
+        }
+        if crate::renderer::para_has_no_stored_line_segs(paragraph) {
+            // 빈 문단의 합성 줄도 원본 저장 줄로 오인하지 않는다. 비어 있지 않은
+            // 재조판 문단과 같은 측정 결과에서 줄 상자와 뒤 간격을 구분한다.
+            let (left, right, _, _) = self.resolve_cell_padding(cell, table);
+            let width =
+                hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table);
+            let inner_width =
+                crate::renderer::composer::cell_inner_text_width(width, left, right, self.dpi);
+            let composed = self.compose_cell_unit_paragraph(
+                paragraph,
+                cell.text_direction,
+                inner_width,
+                styles,
+            );
+            return composed.lines.get(unit.vis_start).map_or(0.0, |line| {
+                hwpunit_to_px(line.line_spacing.max(0), self.dpi)
+                    .min((unit.height - hwpunit_to_px(line.line_height, self.dpi)).max(0.0))
+            });
         }
         let Some(line) = paragraph
             .line_segs
