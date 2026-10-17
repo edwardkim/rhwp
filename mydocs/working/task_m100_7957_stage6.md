@@ -43,6 +43,39 @@ ICCBased는 ICC CMM이 없는 제품 경로의 Alternate 또는 N에 따른 규�
 - fresh Docker WASM·같은 7쪽 직접 Canvas 비교·정식 색상 회귀의 선행 gate와 최종 회귀는
   이 checkpoint 뒤 진행한다. 아직 원격 push·PR 생성·완료 처리는 하지 않았다.
 
+### 새 Docker WASM과 직접 시각 판정
+
+동일 runtime source `8684913e0`를 Docker에서 빌드했다. WASM SHA-256은
+`c44975b3639fb05c3a37188da80af5bff7ea00c381f877a21bf81143168c38b7`이며 pkg/public이
+일치한다. 실제 Studio 7797의 Network 응답 body가 이 hash와 일치하고, PDF 파일 선택 경로에서
+4쪽 로드·browser 오류 없음도 확인했다. 해당 4쪽의 fresh WASM 일치율은
+97.79679 / 99.77118 / 99.62293 / 99.03310%다. 사용자가 이 보정본을 직접 확인하여
+**“시각 판정 통과”**로 판정했다. 이 판정은 이 문서의 배경·표제·괘선 보정에 연결한다.
+
+생성 색상 대조군도 fresh Canvas 전쪽 100%이며 Native와 같은 세 쪽을 직접 판독했다.
+그 뒤 `issue_7959_pdf_path_colour.rs`와 생성 PDF를 추가했다. q/Q·Device 전환·page/Form scope·
+ICCBased Alternate와 stroke의 입력 색·객체 소유/순서, 최종 SVG까지의 색 보존을 보호한다.
+수정 전 CLI의 최종 SVG에 같은 색 assertion을 적용한 결과는 FAIL, 보정 후 PASS다.
+이 실행은 수정 전 Rust test binary 자체를 실행한 결과와 구분한다. 새 Rust 검사 실행 결과는
+진행 중인 통합 검사 뒤 이어 기록한다. 테스트/자료 추가만으로 동일 Rust runtime의 WASM을
+재빌드하지 않는다.
+
+보존된 F5 debug 라이브러리에 같은 Rust 회귀 소스를 연결해 실제 실행한 결과는 2 FAIL이며,
+원인은 이름 기반 색 값이 검정으로 남는 것과 최종 SVG의 회색/RGB paint 누락이다.
+새 release-test 라이브러리에 연결한 실행은 2 PASS다. compiler·profile 차이·입력·원본 라이브러리·
+test binary hash를 `f6/colour-tests-evidence.json`에 고정했다. 따라서 앞선 CLI 단독 증거와
+별개로 Rust 회귀 자체의 수정 전 결함 검출도 실행했다. Cargo suite 편입 확인은 이어 진행한다.
+
+새 Docker WASM의 실제 browser API/Worker 검사는 84 assertion·실제 Worker 5개·대조 문서
+12쪽 render/save를 통과했다. 입력 크기 경계 등 F2/F3의 변경되지 않은 계약은 앞서 구분한
+검증을 보존하고 반복하지 않았다.
+
+전쪽 Native 313쪽 중 312쪽이 90% 이상이며 `content_operators.pdf` 12쪽만 88.96829%다.
+글꼴·글자 간격 차이이며 색상 보정 전 `995be944b`의 WASM에서도 89.87994%로 관측됐다.
+최초 devel 기준과의 동일 출력 여부는 이 관측만으로 확정하지 않는다. 다른 문서의 미달을 위
+사용자 판정으로 면제하지 않는다. 대표 PNG·전후 비교는 `E:\tmp\issue7957-colour-review-20261017\index.html`에
+복사했으며 모든 이미지 링크는 같은 폴더의 상대 경로다.
+
 명령·binary/source hash·원본/전후 PNG·전쪽 TSV는 ignored
 `output/pr-review/issue7957/f5/`와 `f6/`에 보존한다. `parserAllocationBoundsProven=false`를 유지한다.
 기본 Studio 7700과 그 bundle·사용자 타입 변경은 보존하며 검증 서버는 7797을 사용한다.
