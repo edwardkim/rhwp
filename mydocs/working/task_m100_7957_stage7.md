@@ -101,3 +101,18 @@ set의 세 식별자를 기존 canonical 생성식으로 바로잡았다. 기존
 바꾸지 않고, 연결 검사를 완화하지 않았다. 모든 active layout-name 174개의 ID가 실제
 trace 생성식과 연결되는 Node 검사를 추가하여 관련 검사 49 PASS다. 새 source의 public
 Rust trace 및 최종 빌드 검증을 다시 수행하며 위 판정·PNG를 다른 source로 바꿔 기록하지 않는다.
+
+### 간격 회귀의 공개 최소 재현
+
+합성 단일 TJ 양성 대조군은 수정 전에도 통과하므로 결함 검출 증거로 채택하지 않았다.
+실제 결함 경계인 서로 다른 text object의 위치 기반 간격을 가진 최소 Type3 PDF를
+별도로 만들었다. 첫 줄은 물리 간격, 둘째는 연속 문자, 셋째는 음수 TJ kerning이다.
+font bytes·원 문서를 포함하지 않는 생성본이며 독립 Poppler / Native / fresh WASM
+전쪽 100%와 같은 배율 판독 뒤 정식 검사를 추가했다. 기본 fallback과 같은 HCR Batang
+외부 프로그램을 명시적으로 공급한 합성 계약이며 일반 Type3 원 glyph 일치 증거로 확대하지 않는다.
+
+같은 Rust 검사 소스를 보존한 수정 전 라이브러리에 연결해 실행하면 첫 줄의
+`가나다라` / `가나 다라` 차이로 FAIL, `4d3ab26fe` 라이브러리에서는 1 PASS다.
+IR만 보지 않고 최종 TextLine의 내용·위아래 순서·상대 점유 폭 및 HWP/HWPX 저장 후
+재열기까지 검사했다. 과거 px 또는 hash 핀은 추가하지 않았다. 공개 입력과 생성 절차는
+`pdf/issue7958/`, 원본 로그·TSV·PNG는 `f7/final/`, 검출 실행은 `f8/word-tests-*`에 있다.
