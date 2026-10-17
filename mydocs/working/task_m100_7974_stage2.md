@@ -192,3 +192,22 @@ pkg·환경 파일은 source commit에 넣지 않는다.
 한국어 PR 본문·대표 이미지·생성 명령까지 로컬로 준비했으며 원격 push·PR 생성은 아직 하지 않았다.
 등록 뒤 정확한 code head CI 성공 시 self-review·오늘할일을 준비하고 이후 merge 조건을 확인한다.
 이 기록은 PR ready·merge·이슈 종료 승인이나 남은 백로그 완료를 뜻하지 않는다.
+
+## 원격 등록과 code-head CI 후 self-review
+
+후속 사용자 승인으로 후보 `dcd70ea411a70fe7b45ddc89d8156dac51f8798f`를 upstream에 push하고
+devel 대상 [Open PR #7980](https://github.com/edwardkim/rhwp/pull/7980)을 등록했다.
+한국어 본문의 UTF-8 bytes와 실제 Markdown 이미지 8개의 원격 bytes를 확인했다.
+해당 code head의 CI·CodeQL·Render Diff·Adapter·Proptest·Controller가 모두 성공했고,
+35 check는 31 success·4 skipped, 실패·진행 중 0이었다. 실제 run URL과 판정은
+[self-review](../pr/archives/pr_7980_review.md)에 기록했다.
+
+이후 #7981 병합으로 devel은 `42dade44e3a603015cecb7e9731928e3c3c8bd05`로 전진했다.
+기본 feature를 전개한 lib token·manifest와 #7981의 독립 feature-only bytes/12쪽 동등성을 대조하여
+기본 모드 출력의 기존 기준 증거를 재사용했다. source branch에 devel을 반복 병합하지 않았다.
+기준 TSV의 원 producer `515bd72dcd`를 유지하며 새 base에서 재렌더했다고 보고하지 않는다.
+
+2026-10-17 사용자는 self-review 진행을 승인했다. 실제 코드·소비 경로·입력 64개의 commit 동일성·
+최종 PNG를 대조했고 새 code 보정은 없었다. 로컬·시각 검사를 반복하지 않고 self-review와 오늘할일을
+문서-only trailing commit으로 반영한다. push 전 최신 base/head의 merge tree·링크·양쪽 오늘할일
+기록 보존을 확인하며, 후행 CI·병합·이슈 종료는 각각 실제 결과와 승인 뒤에만 완료로 기록한다.
