@@ -1046,3 +1046,19 @@ scan은 이미904.320px 가용을 온전히 예약했다. emit은 반복 머리�
 확인했지만 임의100HU 상수를 넣지 않았다. ignored `candidate39-checkpoint.json`,
 `candidate37-p92-physical-trace.log`, `independent-pdf-93-95-grid-source.json`에 원본·출력
 근거를 연결했다. 전체 PR 준비·확대 판독·base 무회귀·전쪽 Native/fresh WASM gate는 미완료다.
+
+
+후보40 `bcb6e06e4` Native 진단 빌드는3분44초·exit0이다.1342000 10쪽과80168 22쪽은
+후보39와 같지만6803 4쪽 PNG도후보39와 바이트 동일하다. 따라서 예약 높이 max는 이
+회귀를 해결하지 못했으며 효과를 입증하지 못한 이 변경은 제거한다. fresh WASM은
+후보40에서 실행하지 않았다.
+
+원인은 budget 생산 지점의 두 소비 경로였다. `source_frame_bottom`은 앞 조각이 인증한
+`stored_fragment_body_bottom_inset`을 이미 뺀 경계다. 내용 선택의 `avail_for_rows`는
+이 경계를 사용하지만, 일반 행의 빈 띠 예산 `reflow_frame_avail_for_rows`는 helper로
+본문 하단을 다시 구해 원본 inset을 되돌렸다.6803의 차이는100HU=1.3333px이며 새 상수는
+필요하지 않다. 기존 이어받기 경계 조건을 `continued_source_frame_bottom` 결과로 묶어
+내용 예산과 빈 띠 예산이 함께 소비하게 한다. 현재 각주/영역이 더 좁으면 그 경계를
+유지한다. render 출력의 clamp나 문서별 분기는 추가하지 않는다. 첫 조각·인증된 inset이
+없는 경로는 기존 계약을 유지한다.6803 전5쪽과1342000 개선6경계/94쪽·80168 집중22쪽을
+새 Native에서 확인하고, 복구되면 같은 head의 fresh WASM으로 재확인한다.

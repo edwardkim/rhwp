@@ -1660,22 +1660,20 @@ impl TypesetEngine {
         };
         // 첫 수용 상자가 본문을 닫은 원본은 뒤 조각도 같은 바깥 프레임 안에서
         // 컷을 선택한다. 실제 종료의 빈 띠는 스캔 뒤 원본 소유 컷에서 확인한다.
-        let avail_for_rows = if is_continuation
+        let continued_source_frame_bottom = (is_continuation
             && input.start.stored_fragment_body_bottom_inset.is_some()
             && st.current_height <= 0.5
             && st.current_zone_y_offset == 0.0
-            && std::ptr::eq(row_geometry_table, table)
-        {
+            && std::ptr::eq(row_geometry_table, table))
+        .then_some(source_frame_bottom)
+        .flatten();
+        let avail_for_rows = continued_source_frame_bottom.map_or(avail_for_rows, |bottom| {
             let top = fragment_placement.map_or(
                 st.current_height + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
             ) + caption_extra;
-            source_frame_bottom.map_or(avail_for_rows, |bottom| {
-                avail_for_rows.min((bottom - top - header_overhead).max(0.0))
-            })
-        } else {
-            avail_for_rows
-        };
+            avail_for_rows.min((bottom - top - header_overhead).max(0.0))
+        });
 
         // 일반 재조판 행의 빈 물리 띠는 paint와 같은 하단을 소유한다.
         // 블록 ledger의 가용량을 줄이지 않고 일반 행 컷에만 이 경계를 전달한다.
@@ -1712,6 +1710,9 @@ impl TypesetEngine {
                 self.dpi,
                 body_filling,
             );
+            // 내용 컷이 이미 소비한 원본 하단 inset을 빈 띠 예산에서 되돌리지 않는다.
+            // 현재 각주 등으로 좁아진 본문과 인증한 이어받기 프레임의 교집합이다.
+            let bottom = continued_source_frame_bottom.map_or(bottom, |saved| bottom.min(saved));
             let top = fragment_placement.map_or(
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
