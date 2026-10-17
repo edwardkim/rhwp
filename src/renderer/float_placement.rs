@@ -3887,6 +3887,7 @@ impl ParagraphFloatPlacement {
     pub fn for_first_fragment(
         mut self,
         table: &Table,
+        paragraph_top: f64,
         applied_spacing_before: f64,
         host_line_height: f64,
         dpi: f64,
@@ -3894,10 +3895,26 @@ impl ParagraphFloatPlacement {
         // 부분 조각은 전체 저장 프레임의 후속 줄 원점을 증명하지 않는다.
         self.stored_successor_line_origin = None;
         let box_tail = self.occupied_bottom - self.table_top;
-        let paragraph_anchor = self.anchor_y - applied_spacing_before;
+        // 문단 기준 오프셋은 문단 윗변(위 간격 앞)에서 센다. 생성 경로마다 앵커가 저장 줄 윗변
+        // (`from_stored_host`)이거나 이미 문단 윗변(`from_stored_head_host` 등)이라, 앵커가 호출자의
+        // 문단 시작과 같으면 위 간격을 다시 빼지 않고 호스트 줄 하한은 그 줄 윗변(문단 시작 + 위
+        // 간격, 저장 원점이 있으면 그 원점)에서 센다. 한/글 정본: 1613000 185쪽 29×3 표(문단 윗변
+        // 94.03 + 오프셋 86.47 + 바깥 위 3.77), issue1880 1·4쪽 자리차지 표(문단 윗변 + 오프셋).
+        let anchor_is_paragraph_top =
+            applied_spacing_before > 0.5 && (self.anchor_y - paragraph_top).abs() <= 0.5;
+        let (paragraph_anchor, host_origin) = if anchor_is_paragraph_top {
+            (
+                self.anchor_y,
+                self.stored_host_origin
+                    .filter(|origin| (origin - applied_spacing_before - self.anchor_y).abs() <= 0.5)
+                    .unwrap_or(self.anchor_y + applied_spacing_before),
+            )
+        } else {
+            (self.anchor_y - applied_spacing_before, self.anchor_y)
+        };
         let positioned_top =
             paragraph_anchor + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
-        self.table_top = positioned_top.max(self.anchor_y + host_line_height);
+        self.table_top = positioned_top.max(host_origin + host_line_height);
         self.occupied_bottom = self.table_top + box_tail;
         self
     }
