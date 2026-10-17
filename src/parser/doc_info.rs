@@ -16,7 +16,7 @@ use crate::model::document::{DocInfo, DocProperties, RawRecord};
 use crate::model::style::{
     Alignment, BorderFill, BorderLine, BorderLineType, Bullet, CenterLine, CharShape, DiagonalLine,
     Fill, FillType, Font, GradientFill, ImageFill, ImageFillMode, LineSpacingType, Numbering,
-    NumberingHead, ParaShape, SolidFill, Style, TabDef, TabItem, UnderlineType,
+    NumberingHead, ParaShape, SolidFill, Style, SubstFont, TabDef, TabItem, UnderlineType,
 };
 
 /// DocInfo 파싱 에러
@@ -294,11 +294,28 @@ pub(crate) fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         .read_hwp_string()
         .map_err(|e| DocInfoError::IoError(e.to_string()))?;
 
-    let alt_name = if attr & 0x80 != 0 {
-        let _alt_type = r.read_u8().unwrap_or(0);
-        r.read_hwp_string().ok()
+    // [#7092] 대체 글꼴은 이름과 **유형**(0 알 수 없음·1 TTF·2 HFT)이 한 쌍이다. 한/글은
+    // 같은 이름의 TTF 가 없는 face(`한양중고딕`)를 이 유형으로 가른다 — 대체 TTF
+    // `HY중고딕` 이면 그 TrueType, 대체 HFT `한양중고딕` 이면 자기 HFT 글리프로 그린다.
+    // 이름만 `alt_name` 에 두고 유형을 버리면 렌더러가 가를 수 없고, HWPX 저장
+    // (`<hh:substFont type=…>`)에서도 대체 글꼴이 통째로 사라졌다. HWPX 파서와 같은
+    // `subst_font` 에 둘을 함께 둔다. `alt_name` 은 종전 소비자를 위해 그대로 남긴다.
+    let (alt_name, subst_font) = if attr & 0x80 != 0 {
+        let alt_type = r.read_u8().unwrap_or(0);
+        let alt_name = r.read_hwp_string().ok();
+        let subst_font = alt_name
+            .as_ref()
+            .filter(|face| !face.is_empty())
+            .map(|face| SubstFont {
+                face: face.clone(),
+                font_type: alt_type,
+                is_embedded: false,
+                bin_item_id_ref: String::new(),
+                resolved_bin_data_id: None,
+            });
+        (alt_name, subst_font)
     } else {
-        None
+        (None, None)
     };
 
     let type_info = if attr & 0x40 != 0 {
@@ -333,8 +350,7 @@ pub(crate) fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         alt_name,
         type_info,
         default_name,
-        // HWP5 FACE_NAME 에는 HWPX substFont 개념이 없다.
-        subst_font: None,
+        subst_font,
     })
 }
 
