@@ -2942,7 +2942,7 @@ impl LayoutEngine {
     /// issue1880 2쪽: 표 조각 아래 960 뒤 빈 문단 줄 = vpos 68152 = 965.4px, 한/글 2024 정본).
     /// 저장 vpos 는 그 쪽 원점 기준이라 호스트 vpos 보다 클 수도 있다. 저장 줄이 조각 아래 간격을
     /// 기본보다 넓히는 경우(다른 쪽 나눔의 낡은 vpos)는 증거로 쓰지 않는다 — 간격은 0 이하만 받는다.
-    fn text_host_terminal_successor_gap(
+    pub(crate) fn text_host_terminal_successor_gap(
         &self,
         host: &Paragraph,
         next: &Paragraph,

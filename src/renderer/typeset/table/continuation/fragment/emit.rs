@@ -964,11 +964,35 @@ impl TypesetEngine {
                 // 통째 표로 되돌리면 원래 행 높이가 복원되어 예약 하단을 넘는다.
                 && end_row_height_override.is_none()
             {
+                // 한 쪽에 통째로 든 첫 조각도 끝 조각이다. 문단 기준 자리차지 표가 호스트 글줄을
+                // 지나 놓이면 뒤 문단 줄은 표 상자(위 오프셋·바깥 여백 포함) 아래 자기 저장 줄에
+                // 놓인다 — 끝 조각과 같은 공통 helper 로 흐름 끝을 정한다(1613000 191쪽 pi=9:
+                // 상자 아래 631.9 = 다음 줄 vpos 47394, 한/글 2020 정본).
+                let whole_box_bottom = host_before_overhead
+                    + vert_offset_overhead
+                    + partial_height
+                    + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+                let whole_successor_flow_end = st
+                    .table_flow_successor(para_idx, input.source.paragraphs_all)
+                    .and_then(|(_, next)| {
+                        layout_engine.text_host_terminal_successor_gap(
+                            input.source.paragraph,
+                            next,
+                            table,
+                            &st.inline_flow_column(),
+                            st.inline_flow_column().y + st.current_height + whole_box_bottom,
+                            styles,
+                        )
+                    })
+                    .map(|gap| st.current_height + whole_box_bottom + gap);
                 st.append_item(PageItem::Table {
                     para_index: para_idx,
                     control_index: ctrl_idx,
                 });
-                st.advance_flow_by(partial_height + host_spacing_total);
+                match whole_successor_flow_end {
+                    Some(end) => st.align_flow_to(end),
+                    None => st.advance_flow_by(partial_height + host_spacing_total),
+                }
             } else {
                 self.record_stored_fragment_rows(
                     st,
