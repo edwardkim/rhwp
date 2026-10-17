@@ -203,3 +203,58 @@ fn no_text_line_falls_off_the_paper() {
         "글줄이 용지 밖으로 나갔다 — #6803 회귀          (최대 초과 {worst:.1}px @ {worst_page}쪽; 수정 전 +1,015.1px @ 3쪽)"
     );
 }
+
+/// 원본 개체가 닫은 본문 프레임에 끝 행 상자가 포함된다.
+/// 6803 4쪽의 분할 행은 내용 컷과 별개로 이 저장 상한을 지킨다.
+/// 글줄·개체 순서와 전쪽 문단 보존은 위의 기존 관계 검사도 함께 유지한다.
+///
+/// 9d66b9277,96dpi/print/compat2022: 전5쪽 Native/fresh WASM 최저96.09324/96.90417%.
+/// 원본 SHA-256:2482b695bc92c0cafe661af63c54acea834b6927bf9c666bdf47299910e3801d.
+/// pdf/1376496-neighborhood-facility-land-table-2020.pdf:
+/// ef7ac0c12d37f8b96f1af5e2d67e812151d9b9862c4f42824fee8bc04a5dda12.
+/// 독립 Print와 양쪽4쪽 review를 직접 판독했다. 원본 한 저장 단위의 양자화만 허용하고
+/// 화면의 절대 px 위치는 고정하지 않는다. 계획서의 후보42 검증 기록을 따른다.
+#[test]
+fn closing_row_stays_inside_the_original_body_frame() {
+    use rhwp::model::control::Control;
+    let bytes = std::fs::read(document_path()).expect("#6803 정식 입력");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    core.set_hangul2024_compat(false);
+    assert_eq!(core.page_count(), 5, "독립 Print 전쪽과 내용 쪽수");
+    let Control::Table(source) = &core.document().sections[0].paragraphs[6].controls[0] else {
+        panic!("원본 문단 소유 표");
+    };
+    let source_height = f64::from(source.common.height) * 96.0 / 7200.0;
+    let source_unit = 96.0 / 7200.0;
+    fn find_table(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Table(meta)
+            if meta.section_index == Some(0) && meta.para_index == Some(6)
+                && meta.control_index == Some(0) && meta.cell_context.is_none())
+        {
+            return Some(node);
+        }
+        node.children.iter().find_map(find_table)
+    }
+    fn cell(table: &RenderNode, row: u16, col: u16) -> &RenderNode {
+        let mut cells = table.children.iter().filter(|node| {
+            matches!(&node.node_type, RenderNodeType::TableCell(meta) if meta.row == row && meta.col == col)
+        });
+        let selected = cells.next().expect("직접 소유한 칸");
+        assert!(cells.next().is_none(), "행·열 소유는 유일");
+        selected
+    }
+    let page = core.build_page_render_tree(3).expect("4쪽 render tree");
+    let table = find_table(&page.root).expect("원본 표의 4쪽 조각");
+    let header = cell(table, 0, 0);
+    let ending = cell(table, 13, 4);
+    assert!(
+        ending.bbox.y >= header.bbox.y + header.bbox.height,
+        "끝 행은 반복 머리행 뒤"
+    );
+    let frame_end = header.bbox.y + source_height;
+    let ending_bottom = ending.bbox.y + ending.bbox.height;
+    assert!(
+        ending_bottom <= frame_end + source_unit,
+        "끝 행 상자가 원본 본문 프레임 밖의 빈 띠를 다시 수용했다: end={ending_bottom:.8}, frame={frame_end:.8} (원본1HU 허용)"
+    );
+}
