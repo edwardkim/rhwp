@@ -541,3 +541,46 @@ inline 개체를 담은 공백·탭·다음 가시 텍스트는 건너뛰지 않
 Native/fresh WASM이 사용한다.새 후보에서 원본 pi1052의5줄·글자 보존,120쪽 직접 Print
 비교,157쪽 및1342000의415쪽·원본 gist·기존 압축 자간/끝 공백 대조군을 확인한다.
 새 입력/기대값/회귀 fixture는 추가하지 않았으며 수정 후 결과는 아직 미검증이다.
+
+
+### 새 devel 리베이스와 빈 줄의 뒤 간격
+
+후보19 `9d61f167b38e3b8cd0241448eda8b869712e043d` 진단 Native 빌드는 exit0이다.
+80168 p120은83.82588→98.46728%이고, 원본 pi1052의6줄→5줄과 전체175자 보존을 확인했다.
+157쪽과1342000의415쪽, 다른 집중 페이지의 이전 개선값도 유지했다. compare_120.png를
+직접 열어 종합결론과 그 뒤 문단이 Print와 같은 줄·높이에 놓임을 확인했다. 원본 입력과
+끝 공백은 수정하지 않았다. 최종 기본 최적화·fresh WASM 검증은 남아 있다.
+
+새 upstream/devel `6ed1682c3267ea786734eb2e75252916a861d1fd`(#8004) 위로69개
+검토 commit을 리베이스했다. 새 head는 `ed96e5dcaaa210d88e18dac7e141c92ac6ac3afe`다.
+원본49개→메인터너 보정 순서, author·email·author date·제목과 untracked PDF4개의 SHA를
+보존했다.48번째 원본 #7979에서 검색 치환1곳의 충돌은 upstream CRLF 정규화 후 모양 상속
+치환을 호출하도록 해결했다. 다른 range-diff 차이는 upstream이 이미18일로 갱신한 문서 날짜다.
+11개 원 PR은 jangster77 reviewer를 requested_reviewers API에서 모두 재확인했다.
+새 CRLF/비중첩 검색과 기존 글자 모양 상속은 새 head에서 다시 검증해야 한다.
+
+최신 기준은 별도 Git index의 checkout-index로 ignored source snapshot에 준비했다.
+전체 tracked snapshot diff=0과 Cargo/Cargo.lock/vendor/svg2pdf/saved/blank2010/wasm wrapper/
+줄 나눔 source의 blob 동일성을 확인했다. 기본 작업공간의 검토 branch와 index를 보존했고,
+검증 source snapshot은 Git worktree로 등록하지 않았다. 기준 Native 기본 최적화 빌드는 동일한
+절대 target/pr-review·jobs8에서7분9초·exit0으로 완료했다. 기준 실행 파일의 SHA-256은
+`a4fd58a0f9712b1b25da8ec683ecc3fe97ab744ed336ccc44f4ca91e167b7db9`다.
+기준80168의157쪽 Native TSV를 산출 중이며 기준 WASM은 아직 미검증이다.
+
+20쪽의 왼쪽 신설 표식은 raw98%여도 한 줄 아래다. 원본 왼쪽26번째 빈 문단은18.667px의
+유효 줄 상자와14.933px의 다음 줄 간격을 갖는다. 현재는 빈 문단이라는 이유로 줄 끝 간격을
+제외하지 않아 해당 빈 줄 하나를 첫 쪽에 수용하지 못한다.109쪽도 같은 혼합 행에서 원본
+빈 문단의 뒤 간격 때문에 다음 제목 앞에 빈 줄이 남는다. 유효 빈 줄의 높이를0으로 만들지 않는다.
+
+공통 `reflow_cut_trailing_spacing`이 순수 재조판 TopAndBottom 행의 빈 줄도 같은 계약으로
+처리하게 한다. 진짜 저장 LineSeg의 line_height를 보존하고 unit.height에 포함된 line_spacing만
+줄 끝에서 분리한다. 저장 첫 빈 줄과 다음 저장 줄이 전체 전진을 인증하는 기존
+`stored_empty_restart_owns_advance`는 우선 보존한다. 중첩·개체·세로쓰기·편집으로 무효화된
+저장 정보·공백 글자/장식이 있는 문단은 이번 경로의 근거로 사용하지 않는다.
+
+생산/소비는 동일 CellUnit과 원본 빈 줄 메트릭 → 컷 후보 물리 높이 → 확정 행 예약과 남은
+커서 → 같은 native_saved_reset_cut_trailing_trim을 읽는 실제 셀 프레임이다. 새 helper는
+기존 원본 빈 줄 프레임 모듈에 두며 문서별 숫자나 ID 분기를 넣지 않는다. 새 후보의20·109쪽
+개선, 실제 빈 줄 상자 보존, 기존 명시적 빈 줄 프레임 대조군,157/415쪽, mixed-tail/21761835/
+#6803/#5862와 리베이스 편집 대조군은 아직 미검증이다. 결과 전에 시각 완료·새 회귀 테스트
+추가·PR 제출로 진행하지 않는다.

@@ -18703,8 +18703,10 @@ impl LayoutEngine {
             return 0.0;
         }
         let closing = &units[end_cut - 1];
-        if closing.empty_spacer
-            || closing.vis_start >= closing.vis_end
+        if closing.empty_spacer {
+            return self.plain_reflow_empty_line_cut_spacing(table, cell, closing, styles);
+        }
+        if closing.vis_start >= closing.vis_end
             || closing.mixed_nested_fragment
             || closing.non_inline_control_range.is_some()
         {
