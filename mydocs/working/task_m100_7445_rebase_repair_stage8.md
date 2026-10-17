@@ -562,3 +562,37 @@ PrintMethod0·one-up으로 출력했다(job e62e43d1-c0c2-41c4-8ca7-0d5b6c36a4cd
 (.notdef 포함)이 모두 동일하다. 이 도구 검증은 sample11의 전쪽 시각 완료를 뜻하지 않는다.
 정본은 ignored `hwp3-drawing-frame-c101/font-source-diagnostic/`의 `guard-before.log`,
 `guard-after-v2.log`, `guard-result.json`, `positive-glyph-identity.json`이다.
+
+
+### C101 그룹 자식의 틀 좌표·평행사변형 복원
+
+HWP3 표68은 상대 위치와 틀 기준 절대 위치를 구분하고 표70은 평행사변형 세 꼭짓점을 저장한다.
+기존 파서는 offset 메타데이터와 정수 각도만 남겼다. 공통 group paint는 이미 합성된
+render_tx/ty·2D affine을 소비하므로 자식들이 원점에 겹치고 전단·뒤집기·시작 꼭짓점이 사라졌다.
+원본 헤더1390개를 일시 진단으로 읽고 추적 코드는 제거했다. 원본 문단1803의26개 구조 중
+실제 도형20개의 누적 상대 위치는 독립 한컴 재저장본의 틀 기준 위치와 모두 일치한다.
+이20개 세 꼭짓점도 순환 시작점을 구분한 뒤 독립 출력의 위치와 최대4.000488HU 차이로
+대응한다. 이는 원본 단위·독립 변환의 원인 진단이며 신규 실제 배치 px 핀이 아니다.
+
+파서에서 실제 자식 도형의 absolute_pos와 세 꼭짓점을 공통 전체 affine으로 정규화하고,
+공통 직렬화 helper로 동일 행렬을 보존한다. 렌더러에 HWP3 분기를 추가하지 않았다.
+최상위 단독 개체의 기존 흐름 앵커는 유지한다. 구조용 컨테이너는 독립 재저장과 같이
+identity를 유지하며 자식이 자기 틀 좌표를 소유한다. 첫 후보가 이 구분 없이 빈 그룹에도
+이동을 부여해 기존1892의 identity 계약1건이 실패했다(집중38건37PASS1FAIL).
+검사를 변경하지 않고 구조용 그룹을 보정한 v2에서 파서9건+관련 왕복/깊이/flip/그라데이션/
+소스 페이지/폰트 계약38건, 합계47건이 모두 통과했다. 첫 새 계약3건은 수정 전1PASS2FAIL이며,
+행렬 쌍=그룹 깊이+1·단독 앵커·기존1892·151/64쪽 왕복도 유지한다.
+
+v2 fmt·manifest check 및 Native 빌드156.31초가 통과했다. 실제 Native 원본50쪽 raw는
+70.55984→77.95033%로 개선했지만 여전히90% 미만이다. 원본 sample11의1/56쪽86.00231/
+86.87615%, sample16의6/33/40쪽95.56838/99.25546/94.38750%는 그대로다.
+v2의6쪽 PNG가 v1 Native 보정 PNG와 바이트 동일함을 확인해 직접 판독한 도형 개선·잔여도
+그대로 연결한다. source/painter 후보47PASS가 전151쪽 수용을 대신하지 않는다.
+
+이 커밋의 drawing.rs에는 앞서 C94에서 검증한 dash·둥근 모서리 정규화도 현재 파일 상태로
+포함된다. C100 원본64쪽 양쪽 결과가 이미 이 변경을 포함했고, 이번 gradient·border 집중
+검사도 유지됐다. 다른 parser/paragraph/Skia dirty 변경과 사용자 초안은 이 커밋에서 보존한다.
+정본은 ignored `hwp3-drawing-frame-c101/`의 `raw-headers.json`, `independent-group-translation.json`,
+`independent-leaf-quads.json`, `before.log`, `v2/focused.log`, `v2/source.json`, `v2/producer.json`,
+`v2/focus-results.json`, `v2/visual-v1-v2-comparison.json`이다. 새 fresh WASM·전쪽·전체 회귀는
+아직 이 후보에서 완료하지 않았으며, font/꼬리말/도형 잔여를 계속 보정한다.

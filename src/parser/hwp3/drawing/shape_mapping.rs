@@ -208,7 +208,7 @@ pub(super) fn map_to_shape_object(
         }
     }
 
-    let shape_attr = ShapeComponentAttr {
+    let mut shape_attr = ShapeComponentAttr {
         offset_x: (header.relative_pos[0] as i64 * HWP3_UNIT_SCALE as i64)
             .clamp(i32::MIN as i64, i32::MAX as i64) as i32,
         offset_y: (header.relative_pos[1] as i64 * HWP3_UNIT_SCALE as i64)
@@ -220,6 +220,28 @@ pub(super) fn map_to_shape_object(
         rotation_angle,
         ..Default::default()
     };
+
+    // V3 표68의 absolute_pos는 그림 틀 기준 위치다. 표70의 세 점은
+    // 개체 로컬 평행사변형을 저장한다. 각도 하나로 줄이면 전단·뒤집기와
+    // 시작 꼭짓점을 잃으므로 공통 ShapeComponentAttr의 전체 affine으로 옮긴다.
+    // 컨테이너는 구조만 소유하고, 자식의 absolute_pos가 이미 모든 부모 이동을 포함한다.
+    if !matches!(&final_shape, ShapeObject::Group(_)) {
+        shape_attr.render_tx = f64::from(header.absolute_pos[0]) * f64::from(HWP3_UNIT_SCALE);
+        shape_attr.render_ty = f64::from(header.absolute_pos[1]) * f64::from(HWP3_UNIT_SCALE);
+        if let Some(rot) = &header.rotation_attr {
+            let width = f64::from(header.object_size[0]);
+            let height = f64::from(header.object_size[1]);
+            if width > 0.0 && height > 0.0 {
+                let p = rot.parallelogram.map(f64::from);
+                shape_attr.render_sx = (p[2] - p[0]) / width;
+                shape_attr.render_c = (p[3] - p[1]) / width;
+                shape_attr.render_b = (p[4] - p[2]) / height;
+                shape_attr.render_sy = (p[5] - p[3]) / height;
+                shape_attr.render_tx += p[0] * f64::from(HWP3_UNIT_SCALE);
+                shape_attr.render_ty += p[1] * f64::from(HWP3_UNIT_SCALE);
+            }
+        }
+    }
 
     let arrow_attr = ((header.basic_attr.arrow_start & 0x3F) << 10)
         | ((header.basic_attr.arrow_end & 0x3F) << 16)
