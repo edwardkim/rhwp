@@ -117,3 +117,11 @@ decoded 누적 256 MiB, frontend 개별 path 20,000 operations·문서 누적 80
 2026-10-17 사용자가 “계획 승인·구현 시작”으로 승인했다. F1부터 순서대로 구현한다.
 계획 승인을 수정 후 검증·시각 통과·배포 준비의 완료로 표시하지 않는다.
 단계가 바뀌면 현재 변경을 commit하고 다음 보고를 시작한다.
+
+### 2026-10-17 사용자 범위 확장: operators 12쪽
+
+사용자가 남은 12쪽도 이번에 보정하도록 승인했다. PDF의 영문/PostScript 이름과
+설치 family의 동일성을 먼저 확인하고 canonical font-rule v2 절차로 연결한다.
+이름이 없는 Type3는 별도 fallback 범위로 구분한다. PDF TJ의 위치 기반 단어 간격은
+기존 표 변환의 공통 복원을 일반 positional 텍스트에서도 소비하도록 한다. 전쪽 Native/
+fresh Docker WASM TSV와 영향 영역 판독으로 확인하고 기존 색상 통과 증거와 구분한다.

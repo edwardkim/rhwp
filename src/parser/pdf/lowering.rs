@@ -376,7 +376,8 @@ pub(super) fn lower(
         )?;
         let width = attrs.width;
         let height = attrs.height;
-        let mut paragraph = text_para(&span.text, shape, width, height);
+        let text = super::structured_lowering::span_text_with_spaces(span);
+        let mut paragraph = text_para(&text, shape, width, height);
         paragraph.para_shape_id = single_line_id;
         paragraph.char_count_msb = true;
         let rect = RectangleShape {

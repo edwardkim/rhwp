@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
-    "807590ecc4fba3102fde4a2236ee091fac91b5a19851b76d61a61014a5ee4086";
+    "65c792f4982a53086440ee786f77065f865e96ba1d5a234cfc9e53154a80b20f";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "b619cf7584628d61d930696b1b9a8a6c9c08301b1343463cae054b7dc5c0f142";
+    "3c06886a60197430bdef2a30617e4927cc934776b53b6f948aff90484244361d";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -2938,6 +2938,40 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         mode: "direct",
         metric_entry_ids: &[],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.h2hdrm-identity-0",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("H2hdrM"),
+        target_face_or_policy: "HY헤드라인M",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.h2hdrm-identity-1",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("HYHeadLine-Medium"),
+        target_face_or_policy: "HY헤드라인M",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
 ];
 
 #[rustfmt::skip]
@@ -3459,6 +3493,12 @@ pub(crate) fn find_font_rule_layout_name(
         }
         ("rust-style-resolution.ttf", "굵은안상수체") => {
             Some(&FONT_RULE_LAYOUT_NAME_RULES[170])
+        }
+        ("rust-style-resolution.ttf", "H2hdrM") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[171])
+        }
+        ("rust-style-resolution.ttf", "HYHeadLine-Medium") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[172])
         }
         _ => None,
     }
