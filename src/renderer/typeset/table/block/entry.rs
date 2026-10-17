@@ -1066,7 +1066,22 @@ impl TypesetEngine {
                 .and_then(|seg| {
                     line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
                 })
-                .is_some_and(|bounds| saved_bounds_overlap_current_flow(bounds, st.current_height));
+                .is_some_and(|bounds| {
+                    // 저장 줄 윗변은 호스트 위 간격을 지난 자리다. 흐름이 아직 그 간격 앞에
+                    // 있으면(쪽 첫 줄이 아니어서 간격이 적용될 자리) 간격을 더한 흐름으로도 대조한다
+                    // (1613000 188쪽: 앞 문단 끝 88 + 위 간격 40 = 저장 줄 128, 한/글은 여기서 분할).
+                    // 뒤 문단의 저장 줄이 되감기면 원본은 표 뒤에서 새 쪽을 시작했다 — 표를 통째
+                    // 넘긴 증거와 구별되지 않으므로 이 보조 대조를 쓰지 않는다(hwpspec 표 40: 한/글은
+                    // 다음 쪽 맨 위에 통째).
+                    saved_bounds_overlap_current_flow(bounds, st.current_height)
+                        || (!st.current_items.is_empty()
+                            && !next_rewinds_after_table
+                            && fmt.spacing_before > 0.0
+                            && saved_bounds_overlap_current_flow(
+                                bounds,
+                                st.current_height + fmt.spacing_before,
+                            ))
+                });
             let saved_anchor_splits_here = st.has_stored_line_segs
                 // HWPX stores the source anchor as the physical fragment
                 // owner. Native HWP needs the visible-bounds check because a

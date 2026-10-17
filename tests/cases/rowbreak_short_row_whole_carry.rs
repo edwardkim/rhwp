@@ -154,6 +154,26 @@ fn stored_restart_cuts_the_last_row_of_a_page() {
     assert_split_row_boundary(&core, 126, 1143, 28);
 }
 
+/// 1613000 구역 2 첫 표(`pi=1`, 29×3)의 개체 높이 58227HU 는 행 0–26 선언 합과 정확히 같다(행 경계).
+/// 그 경계를 닫는 26행과 28행만 두 줄로 선언보다 자랐다. 한/글 2020 PDF 는 셀 높이를 지키며
+/// 26행 첫 줄(`4.1.1 시설교육의`)까지를 185쪽에 두고 둘째 줄(`에 적용되는 규정을 설명`)을 186쪽에서 잇는다.
+/// 186쪽 표 조각 뒤 빈 문단 `pi=2` 는 저장 줄(vpos 7069)대로 표 바로 아래에 놓이므로 `pi=4` 표는 186쪽에
+/// 21행(`2.3 팀 행동`)까지 담고, 187쪽 끝에서 끝난 뒤 188쪽은 `과목 3` 제목과 `pi=7` 표 첫 조각으로 시작한다.
+/// 수정 전 rhwp 는 행을 0.906 배로 줄여 `pi=1` 을 185쪽에 통째로 두었고(186쪽 `pi=4` 0..25행),
+/// 186–191쪽 내용이 한/글과 어긋났다. 줄이기만 막으면 표 조각 뒤 문단이 호스트 아래 간격만큼 밀려
+/// 188쪽에 제목만 남고 `pi=7` 이 189쪽으로 넘어간다.
+#[test]
+fn grown_boundary_row_continues_and_successor_keeps_its_stored_line() {
+    let core = core(SAMPLE_1613000);
+    assert_split_row_boundary(&core, 184, 1, 26);
+    assert_whole_row_boundary(&core, 186, 4, 21);
+    let (start, _, start_cut, _) = table_fragment(&core, 187, 7);
+    assert!(
+        start == 0 && start_cut.is_empty(),
+        "188쪽은 제목 뒤에 pi=7 표를 0행부터 시작해야 한다: 시작 {start}행 {start_cut:?}"
+    );
+}
+
 /// 1480000 표 12(`pi=263`) 118행은 둘째 줄이 vpos 0 에서 다시 시작하는 저장 쪽 컷이다. 한/글 2020
 /// PDF 는 43쪽 끝에 첫 줄을 두고 44쪽 첫머리에서 `L40-like isoform X1` 을 잇는다. 표 뒤 빈 문단
 /// `pi=264` 는 표 시작 쪽의 옛 vpos(72003)를 갖지만, 되감긴 다음 문단 `pi=265` 의 저장 위치가 그

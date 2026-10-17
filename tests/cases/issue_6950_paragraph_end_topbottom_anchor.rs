@@ -45,9 +45,20 @@ fn first_fragment_uses_paragraph_reference_not_text_or_outer_box() {
                 table_top: 100.0 + spacing + 4129.0 / 75.0 + f64::from(margin) / 75.0,
                 occupied_bottom: 400.0 + spacing + 4129.0 / 75.0 + f64::from(margin) / 75.0,
             };
-            let fragment = whole.for_first_fragment(&table, spacing, 20.0, 96.0);
+            let fragment = whole.for_first_fragment(&table, 100.0, spacing, 20.0, 96.0);
             let expected = (100.0 + 4129.0 / 75.0_f64).max(100.0 + spacing + 20.0);
             assert!((fragment.table_top - expected).abs() < 1e-8);
+            // 문단 윗변을 앵커로 갖는 생성 경로도 위 간격을 두 번 빼지 않고 같은 첫 조각을 만든다.
+            let paragraph_anchored = ParagraphFloatPlacement {
+                anchor_y: 100.0,
+                ..whole
+            }
+            .for_first_fragment(&table, 100.0, spacing, 20.0, 96.0);
+            assert!(
+                (paragraph_anchored.table_top - expected).abs() < 1e-8,
+                "spacing {spacing}: {} != {expected}",
+                paragraph_anchored.table_top
+            );
             assert_eq!(
                 fragment.anchor_y, whole.anchor_y,
                 "text anchor does not move"
@@ -128,7 +139,9 @@ fn floating_band_consumes_flow_only_when_the_tail_line_has_insufficient_space() 
                 );
                 assert_eq!(wrapped.paragraph_end(30.0, 5.0), top + 105.0);
                 assert_eq!(
-                    wrapped.for_first_fragment(&table, 0.0, 20.0, 96.0).flow,
+                    wrapped
+                        .for_first_fragment(&table, 10.0, 0.0, 20.0, 96.0)
+                        .flow,
                     wrapped.flow
                 );
                 assert_eq!(

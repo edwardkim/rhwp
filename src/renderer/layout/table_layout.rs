@@ -2870,6 +2870,16 @@ impl LayoutEngine {
         fragment_bottom: f64,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
+        if let Some(gap) = self.text_host_terminal_successor_gap(
+            host,
+            next,
+            table,
+            column,
+            fragment_bottom,
+            styles,
+        ) {
+            return Some(gap);
+        }
         let original_plain_frame = self.stored_plain_fragment_table(table);
         let legacy_text_frame = self.stored_table_has_physical_text_frames(table, styles)
             && table.common.vertical_offset == 0
@@ -2922,6 +2932,82 @@ impl LayoutEngine {
         let gap_hu = next_line.vertical_pos.checked_sub(occupied_hu)?;
         (gap_hu >= 0 && fragment_bottom <= column.y + column.height)
             .then(|| hwpunit_to_px(gap_hu, self.dpi))
+    }
+
+    /// 글자가 있는 호스트도, 호스트 글줄이 모두 표 위에서 끝나는 문단 기준 자리차지 표라면 표의
+    /// 마지막 조각 뒤 다음 문단은 마지막 조각 쪽의 자기 저장 원점(vpos)을 따른다. 자리차지 표가 밀어낸
+    /// 그 줄은 표 아래에 바로 놓이고, 호스트 아래 간격과 그 문단 위 간격은 표 영역에 흡수된다 —
+    /// 간격은 다음 문단 위 간격만큼 음수일 수 있지만 줄 윗변은 조각 아래보다 올라가지 않는다
+    /// (1613000 186쪽: 호스트 "과목 1: 훈련의 구성" · 29×3 표 마지막 조각 아래 166.3 + 바깥 아래
+    /// 3.77, 빈 문단 줄 = vpos 7069 = 169.85px 로 한/글 2020 정본과 같다. 위 간격 40·호스트 아래 24 없음.
+    /// issue1880 2쪽: 표 조각 아래 960 뒤 빈 문단 줄 = vpos 68152 = 965.4px, 한/글 2024 정본).
+    /// 저장 vpos 는 그 쪽 원점 기준이라 호스트 vpos 보다 클 수도 있다. 저장 줄이 조각 아래 간격을
+    /// 기본보다 넓히는 경우(다른 쪽 나눔의 낡은 vpos)는 증거로 쓰지 않는다 — 간격은 0 이하만 받는다.
+    fn text_host_terminal_successor_gap(
+        &self,
+        host: &Paragraph,
+        next: &Paragraph,
+        table: &crate::model::table::Table,
+        column: &LayoutRect,
+        fragment_bottom: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let profile = self.profile.get();
+        if !fragment_bottom.is_finite()
+            || !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || profile.session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || !para_has_visible_text(host)
+            || !matches!(host.controls.as_slice(), [Control::Table(_)])
+            || table.common.treat_as_char
+            || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+            || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+            || host.stored_text_partition_is_dirty()
+            || host.cell_format_vpos_dirty
+            || next.stored_text_partition_is_dirty()
+            || next.cell_format_vpos_dirty
+            || !next.controls.is_empty()
+            || !matches!(
+                next.column_type,
+                crate::model::paragraph::ColumnBreakType::None
+            )
+        {
+            return None;
+        }
+        let synthetic = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+        let (Some(host_first), Some(host_last)) = (host.line_segs.first(), host.line_segs.last())
+        else {
+            return None;
+        };
+        let next_line = next.line_segs.first()?;
+        if host.line_segs.iter().any(|line| line.tag & synthetic != 0)
+            || next_line.tag & synthetic != 0
+            || next_line.vertical_pos < 0
+        {
+            return None;
+        }
+        // 호스트 글줄이 표 위에서 끝나야 표가 그 글줄을 지나 다음 쪽으로 이어진 것이다.
+        let host_text_bottom = i64::from(host_last.vertical_pos) + i64::from(host_last.line_height)
+            - i64::from(host_first.vertical_pos);
+        if i64::from(signed_hwpunit(table.common.vertical_offset)) < host_text_bottom {
+            return None;
+        }
+        let next_before = styles
+            .para_styles
+            .get(next.para_shape_id as usize)?
+            .spacing_before;
+        let line_top = column.y + hwpunit_to_px(next_line.vertical_pos, self.dpi);
+        if line_top + 0.5 < fragment_bottom
+            || fragment_bottom > column.y + column.height
+            || line_top > column.y + column.height
+        {
+            return None;
+        }
+        let gap = line_top - next_before - fragment_bottom;
+        (gap >= -next_before - 0.5 && gap <= 0.5).then_some(gap)
     }
 
     /// 셀 안 비-TAC 자리차지 개체가 표 흐름에 요구하는 세로 범위.
