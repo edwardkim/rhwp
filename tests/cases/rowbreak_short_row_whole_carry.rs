@@ -242,3 +242,63 @@ fn rowspan_extra_goes_to_the_last_row_across_the_page() {
         row17.1 - row17.0
     );
 }
+
+/// 21761835 2·3쪽: 칸 (20,0) rs=5(18898HU, 251.97px)가 쪽 끝 행 20 을 지나 행 24 까지 간다.
+/// 한/글 2020 PDF 는 행 20 첫 조각을 본문 끝까지(59px) 그리고, 3쪽 행 20 조각에 남은 빈 꼬리
+/// 한 줄을 위아래 패딩과 함께(17px) 둔다. 걸침 칸이 덮는 행 조각 합(59+17+56+51+25+43 ≈ 251px)이 선언 높이를 지킨다.
+/// 수정 전 rhwp 는 2쪽 끝에 7.8px 빈 띠를 남기고(행 20 조각 51px), 3쪽 행 20 을 13.5px 로 그려 합이 248.4px 였다.
+#[test]
+fn crossing_rowspan_owns_the_page_end_band() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn walk<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    let core = core(SAMPLE_21761835);
+    let cell = |page: u32, row: u16, col: u16| {
+        let tree = core.build_page_render_tree(page).expect("렌더 트리");
+        let mut nodes = Vec::new();
+        walk(&tree.root, &mut nodes);
+        nodes
+            .iter()
+            .find_map(|node| match &node.node_type {
+                RenderNodeType::TableCell(cell)
+                    if cell.row == row && cell.col == col && cell.model_cell_index.is_some() =>
+                {
+                    Some((node.bbox.y, node.bbox.y + node.bbox.height))
+                }
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("{}쪽 셀 ({row},{col})", page + 1))
+    };
+    let first = cell(1, 20, 1);
+    // 저장 줄 3개(1272HU 간격, 마지막 줄 1000HU)와 위아래 패딩 141HU.
+    let content = (2.0 * 1272.0 + 1000.0 + 141.0 + 141.0) / 75.0;
+    assert!(
+        first.1 - first.0 > content + 4.0,
+        "2쪽 행 20 조각은 내용({content:.2}px) 아래 쪽 끝 띠까지 차지한다: {:.2}",
+        first.1 - first.0
+    );
+    let resumed = cell(2, 20, 1);
+    let line_with_padding = (1000.0 + 141.0 + 141.0) / 75.0;
+    assert!(
+        (resumed.1 - resumed.0 - line_with_padding).abs() <= 0.5,
+        "3쪽 행 20 조각은 빈 줄 하나와 위아래 패딩({line_with_padding:.2}px)이다: {:.2}",
+        resumed.1 - resumed.0
+    );
+    // 걸침 칸 (20,0) 의 총높이는 쪽을 넘어서도 보존된다: 2쪽 행 20 조각 + 3쪽 행 20~24.
+    let span: f64 = first.1 - first.0
+        + (20..=24)
+            .map(|row| {
+                let (top, bottom) = cell(2, row, 1);
+                bottom - top
+            })
+            .sum::<f64>();
+    let declared_span = 18898.0 / 75.0;
+    assert!(
+        (span - declared_span).abs() <= 1.5,
+        "걸침 칸 (20,0) 이 덮는 행 조각 합은 선언 {declared_span:.2}px 다: {span:.2}"
+    );
+}
