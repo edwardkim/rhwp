@@ -54,6 +54,16 @@ impl<'a> CellCutFrame<'a> {
     }
 
     pub(super) fn height(&self, end: usize, content_advance: f64) -> f64 {
+        if let Some(frame) = self.engine.stored_aligned_opening_cell_frame(
+            self.table,
+            self.cell,
+            self.units,
+            self.start,
+            end,
+            self.styles,
+        ) {
+            return frame.physical_height;
+        }
         let trim = self.engine.native_saved_reset_cut_trailing_trim(
             self.table,
             self.cell,

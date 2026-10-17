@@ -5,6 +5,7 @@ mod nested_header_frame;
 mod plain_cell_flow;
 mod reflowed_nested_row;
 mod row_block_cut;
+mod stored_aligned_cut_frame;
 mod stored_body_closed_frame;
 mod stored_column_boundaries;
 mod stored_complete_block_cut;
@@ -21630,6 +21631,25 @@ impl LayoutEngine {
             let mut applied_trailing_trim = 0.0f64;
             while j < units.len() {
                 let u = &units[j];
+                // 정렬 여유 공간도 이번 조각의 실제 요구 높이다. 같은 공통
+                // 프레임을 예약·paint가 소비하며 원래 내용 합만으로 수용하지 않는다.
+                if j > start
+                    && self
+                        .stored_aligned_opening_cell_frame(
+                            table,
+                            cell,
+                            &units,
+                            start,
+                            j + 1,
+                            styles,
+                        )
+                        .is_some_and(|frame| {
+                            frame.content_requirement()
+                                > avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX
+                        })
+                {
+                    break;
+                }
                 // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
                 if start > 0
                     && units[start..=j]
@@ -21847,8 +21867,7 @@ impl LayoutEngine {
                         || hwp5_page_scale_cross_para_reset
                         || shared_empty_frame)
                     && (strict_saved_frame_break
-                        || ((rewind_internal_hard_break_orphan
-                            || !relaxed_hard_break
+                        || ((!relaxed_hard_break
                             || (!u.empty_spacer
                                 && (h + unit_fit_height > avail_height
                                     || avail_height - h <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
@@ -22134,6 +22153,24 @@ impl LayoutEngine {
             let mut h = 0.0f64;
             while j < units.len() {
                 let u = &units[j];
+                // 일반 블록 예산은 물리 높이다. offset 블록의 CellCutFrame과
+                // 같은 첫 조각을 검사하며 row_y 이후의 실제 잔여 공간을 쓴다.
+                if j > start
+                    && self
+                        .stored_aligned_opening_cell_frame(
+                            table,
+                            cell,
+                            &units,
+                            start,
+                            j + 1,
+                            styles,
+                        )
+                        .is_some_and(|frame| {
+                            frame.physical_height > cell_avail + ROW_CUT_CAPACITY_FP_EPSILON_PX
+                        })
+                {
+                    break;
+                }
                 // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
                 if start > 0
                     && units[start..=j]
@@ -22286,7 +22323,11 @@ impl LayoutEngine {
             if j > start {
                 h += nested_header;
             }
-            if self
+            if let Some(frame) =
+                self.stored_aligned_opening_cell_frame(table, cell, &units, start, j, styles)
+            {
+                h = frame.physical_height;
+            } else if self
                 .native_first_line_restart_cut_trailing_trim(table, cell, &units, start, j, styles)
                 > 0.0
             {
@@ -25993,7 +26034,11 @@ impl LayoutEngine {
                     self.dpi,
                 )
             };
-            let h = if is_whole_row {
+            let h = if let Some(frame) =
+                self.stored_aligned_opening_cell_frame(table, cell, &units, su, eu, styles)
+            {
+                frame.physical_height
+            } else if is_whole_row {
                 if no_ls_label_cell {
                     cell_h_px
                 } else {
