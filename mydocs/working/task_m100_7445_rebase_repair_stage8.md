@@ -514,3 +514,27 @@ Print before job은 `11a4debc-3d0c-4888-90da-e1cae7888983`, after는
 `edited-print-pair-geometry.json`, `edited-visual-results.json`이다. 이 국소 검증 후에도 원본
 전쪽 Native/fresh WASM, 다른 변경 범위와 최종 전체 회귀·lint·실제 Studio 소비는 남아 있다.
 C100을 로컬 중간 커밋으로 정리하며 PR 생성·완료·전체 시각 수용은 계속 보류한다.
+
+
+### C100 원본64쪽 Native·fresh WASM 전쪽 결과
+
+같은 원본 `hwp3-sample16.hwp`(559fd948…)와 독립 한컴2020 Print64쪽(8f0bfd27…)을
+고정 devel515bd72d와 C100 생산자로 각각 다시 비교했다. C100은 로컬 체크포인트4aca2f1a20과
+`legacy-equation-frame-c100/source.json`에 고정한 기존 dirty HWP3·Native 소스까지 포함한다.
+깨끗한 Git head만 빌드한 최종 PR 검증으로 표현하지 않는다.
+
+| 경로 | fixed515 최저 | C100 최저 | C100 미달/쪽수 | 기준 대비0.01%p 이상 하락 |
+| --- | ---: | ---: | --- | ---: |
+| Native Skia Print |16.40830%|94.38750%|0 /64=64|0|
+| fresh WASM Print Canvas |15.26304%|94.46126%|0 /64=64|0|
+
+192DPI·compat2022·원값2px 기준을 유지했다. WASM은 locked wrapper의 web/no-opt Mac 로컬
+대체 빌드이며 Docker 최적화 통과가 아니다. root pkg와 Studio/public JS/WASM 해시가 일치하고,
+원본 HWP3에 실제 substitute 요청이 없음을 확인한 동일 None 환경을 base/후보 모두에 적용했다.
+실제 Studio 초기화 응답과 CanvasKit 소비는 아직 이 결과에 포함되지 않는다.
+
+정본은 ignored `rebase-515bd72d-20261017/legacy-equation-frame-c100/`의
+`native-whole/paired-result.json`, `wasm-whole/paired-result.json`, 각각의 전64쪽 `silhouette.tsv`,
+`wasm-producer.json`, `fresh-wasm-step.json`이다. Native/WASM 각6·33·40·63쪽의 canonical
+review/overlay는 같은 전쪽 캡처에서 생성했다. 수식 확대 판독의 잔여 차이, sample11 미달,
+최신 전체 회귀·실제 Studio 검증이 남아 있으므로 PR 준비 완료는 아니다.
