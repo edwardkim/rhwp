@@ -323,3 +323,12 @@ bounded stream은 간접 Length로 binary 길이를 먼저 확정하고 Filter/D
 predictor를 해석한다. 무제한 legacy codec으로 fallback하지 않는다. 마스크 Interpolate는 sample-centre
 bilinear alpha를 적용하며 기존 Decode/Matte/clip와 사전 RGBA 예약을 유지한다. 이 결과는 전체 parser
 heap 할당 증명이나 모든 PDF paint 지원 완료가 아니다. source와 실행 증거는 task #7957 단계 보고를 따른다.
+
+### #7971: JPEG extraction buffer preflight
+
+Encoded JPEG extraction keeps compressed data, not an eight-byte-per-pixel plane.
+The same storage-branch decision now excludes only that path from the conservative
+geometry preflight; raw and other codec preflights remain. RGB/Gray/CMYK JPEG header
+validation, actual output/private codec reservations, RGB conversion and bounded PNG
+output continue to enforce individual and cumulative request limits. DCT filter chains
+and inline JPEGs consume this same decision. No default limit or bitmap geometry changes.

@@ -56,6 +56,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
   add('/real.pdf', join(root, 'pdf/issue5875/nested_table_text_caption-2020.pdf'), 'application/pdf');
   add('/placements.pdf', join(root, 'pdf/issue7966/image-placement-controls.pdf'), 'application/pdf');
   add('/slides.pdf', join(root, 'pdf/issue7966/exceeds-32.pdf'), 'application/pdf');
+  add('/scan-buffers.pdf', join(root, 'pdf/issue7971/scan-jpeg-buffer-controls.pdf'), 'application/pdf');
   add('/colour-source.pdf', join(root, 'samples/issue7959/bounded-import-path.pdf'), 'application/pdf');
   add('/control.hwp', join(root, 'samples/hwp_table_test.hwp'), 'application/octet-stream');
   files.set('/synthetic.pdf', ['application/pdf', syntheticPdf()]);
@@ -119,6 +120,25 @@ test('Docker product WASM: public API, active document isolation and real Worker
           check(xml.querySelectorAll('image').length === 33, `page ${p + 1} preserves every repeated image paint`);
         }
       } finally { repeated.free(); }
+      const scanBytes = new Uint8Array(await (await fetch('/scan-buffers.pdf')).arrayBuffer());
+      const scans = wasm.HwpDocument.importPdf(scanBytes, {});
+      try {
+        check(scans.pageCount() === 5, 'scan-sized JPEG buffers import all five source pages');
+        for (let p = 0; p < 5; p++) {
+          const xml = new DOMParser().parseFromString(scans.renderPageSvg(p), 'image/svg+xml');
+          check(xml.querySelectorAll('image').length === 1, `scan page ${p + 1} retains its source image`);
+        }
+        for (const [name, saved] of [['hwp', scans.exportHwp()], ['hwpx', scans.exportHwpx()]]) {
+          const reopened = new wasm.HwpDocument(saved);
+          try {
+            check(reopened.pageCount() === 5, `scan JPEG ${name} save/reopen preserves all pages`);
+            for (let p = 0; p < 5; p++) {
+              const xml = new DOMParser().parseFromString(reopened.renderPageSvg(p), 'image/svg+xml');
+              check(xml.querySelectorAll('image').length === 1, `scan JPEG ${name} page ${p + 1} keeps its image`);
+            }
+          } finally { reopened.free(); }
+        }
+      } finally { scans.free(); }
       const colourBytes = new Uint8Array(await (await fetch('/colour-source.pdf')).arrayBuffer());
       const colourDoc = wasm.HwpDocument.importPdf(colourBytes, {});
       try {

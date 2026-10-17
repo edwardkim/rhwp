@@ -1550,16 +1550,50 @@ pub fn extract_image_from_xobject_at(
 
     let width = dimension("Width")?;
     let height = dimension("Height")?;
+    let filter_names = if let Some(filter_obj) = dict.get("Filter") {
+        match filter_obj {
+            Object::Name(name) => vec![name.clone()],
+            Object::Array(filters) => filters
+                .iter()
+                .filter_map(|f| f.as_name().map(String::from))
+                .collect(),
+            _ => vec![],
+        }
+    } else {
+        vec![]
+    };
+
+    let has_dct = filter_names.iter().any(|name| name == "DCTDecode");
+    let is_jpeg_only = has_dct && filter_names.len() == 1;
+    let is_jpeg_chain = has_dct && filter_names.len() > 1;
+
+    let is_jbig2 = filter_names
+        .iter()
+        .any(|n| n.eq_ignore_ascii_case("JBIG2Decode"));
+
+    let is_jpx = filter_names
+        .iter()
+        .any(|n| n.eq_ignore_ascii_case("JPXDecode"));
+
+    let is_ccitt = filter_names
+        .iter()
+        .any(|n| n.eq_ignore_ascii_case("CCITTFaxDecode"));
+
+    // Match the actual storage branch below. JPEG keeps encoded bytes here;
+    // its RGB/CMYK decoder, conversions and PNG writer reserve real buffers.
+    // A fictitious eight-byte plane is not an individual JPEG allocation.
+    let encoded_jpeg = (is_jpeg_only || is_jpeg_chain) && !is_jbig2 && !is_jpx;
     if let Some(budget) = doc.and_then(|doc| doc.import_budget()) {
-        let worst_buffer = (width as usize)
-            .checked_mul(height as usize)
-            .and_then(|n| n.checked_mul(8))
-            .filter(|&n| n > 0 && n <= budget.limits.stream_bytes)
-            .ok_or_else(|| budget.reject("image extraction buffer"))?;
-        // Geometry preflight is not an allocation. Bounded decoders, unpackers
-        // and colour conversion reserve their actual buffers below; do not
-        // additionally charge a fictitious width*height*8 scratch plane.
-        let _ = worst_buffer;
+        budget.check()?;
+        if !encoded_jpeg {
+            // Preserve the existing conservative preflight for other codecs.
+            // This is not an allocation and is not charged as decoded work.
+            let _worst_buffer = (width as usize)
+                .checked_mul(height as usize)
+                .and_then(|n| n.checked_mul(8))
+                .filter(|&n| n > 0 && n <= budget.limits.stream_bytes)
+                .ok_or_else(|| budget.reject("image extraction buffer"))?;
+        }
     }
 
     let sample_depth = dict
@@ -1692,35 +1726,6 @@ pub fn extract_image_from_xobject_at(
         .map(crate::color::RenderingIntent::from_pdf_name)
         .unwrap_or_default();
 
-    let filter_names = if let Some(filter_obj) = dict.get("Filter") {
-        match filter_obj {
-            Object::Name(name) => vec![name.clone()],
-            Object::Array(filters) => filters
-                .iter()
-                .filter_map(|f| f.as_name().map(String::from))
-                .collect(),
-            _ => vec![],
-        }
-    } else {
-        vec![]
-    };
-
-    let has_dct = filter_names.iter().any(|name| name == "DCTDecode");
-    let is_jpeg_only = has_dct && filter_names.len() == 1;
-    let is_jpeg_chain = has_dct && filter_names.len() > 1;
-
-    let is_jbig2 = filter_names
-        .iter()
-        .any(|n| n.eq_ignore_ascii_case("JBIG2Decode"));
-
-    let is_jpx = filter_names
-        .iter()
-        .any(|n| n.eq_ignore_ascii_case("JPXDecode"));
-
-    let is_ccitt = filter_names
-        .iter()
-        .any(|n| n.eq_ignore_ascii_case("CCITTFaxDecode"));
-
     // Bit depth of the buffer actually stored: raised to 8 when a transform
     // below (sub-byte unpack, /Decode application, 16-bit reduction) rewrites
     // the samples as one byte per component.
@@ -1777,7 +1782,7 @@ pub fn extract_image_from_xobject_at(
             decode_jpx_image(xobject, obj_ref, doc, &color_space, indexed, target)?;
         jpx_decoded_dims = Some((dec_w, dec_h));
         data
-    } else if is_jpeg_only || is_jpeg_chain {
+    } else if encoded_jpeg {
         let decoded = if let (Some(d), Some(ref_id)) = (doc.as_ref(), obj_ref) {
             d.decode_stream_with_encryption(xobject, ref_id)?
         } else {

@@ -47,3 +47,15 @@ buffer 크기는 구분한다.
 
 실제 명령·오류·5개 이미지 geometry·독립 추출은 ignored
 `output/pr-review/issue7957/extraction-buffer-20261017/`에 보존한다.
+
+
+## 우선 경계 결과
+
+수정 전 새 자원 계약 3건이 모두 `image extraction buffer`로 FAIL했다. 수정 후
+기존 자원 계약을 포함한 122건이 PASS했고, 원본/생성 PDF 모두 기본 CLI에서 5쪽 저장에
+성공했다. 이는 전쪽 시각 통과나 새 source의 전체 회귀 통과를 뜻하지 않는다.
+`before-resource.log`, `after-resource.log`, `after-import.json`에 실제 실행을 보존한다.
+추가 체인·inline 경계까지 정식 검사에 포함해 최종 source를 고정하고 Native Skia와
+Docker 제품 WASM 및 최종 전체 검증을 진행한다. 이 source의 사전 guard 변경은
+`encoded_jpeg`라는 동일 판정을 추정 검사와 실제 `ImageData::Jpeg` 생산 분기가 함께 소비한다.
+JPEG2000/JBIG2가 앞서 선택되는 조합은 이 제외 조건에 해당하지 않는다.

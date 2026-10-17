@@ -4533,3 +4533,172 @@ fn interpolated_soft_mask_resamples_alpha_without_changing_rgb() {
         ));
     }
 }
+
+// Resource-policy contracts: compressed JPEG storage is not an allocated
+// eight-byte-per-pixel plane. Actual codec and PNG buffers retain their caps.
+fn jpeg_extraction_cap_bytes() -> Vec<u8> {
+    let rgb = vec![73u8; 64 * 64 * 3];
+    let mut jpeg = Vec::new();
+    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut jpeg, 90)
+        .encode(&rgb, 64, 64, image::ExtendedColorType::Rgb8)
+        .unwrap();
+    jpeg
+}
+
+fn jpeg_extraction_cap_source() -> Vec<u8> {
+    indexed_image_pdf(
+        &jpeg_extraction_cap_bytes(),
+        "/Width 64 /Height 64 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Filter /DCTDecode",
+        b"null",
+    )
+}
+
+fn jpeg_cap_png(source: Vec<u8>, limits: PdfImportLimits) -> Result<Vec<u8>, Error> {
+    let doc = PdfDocument::from_bytes_with_limits(source, limits)?;
+    let image = doc.page_image_handles(0)?[0].decode()?;
+    image.to_png_bytes_with_budget(doc.import_budget().unwrap())
+}
+
+#[test]
+fn jpeg_extraction_uses_actual_rgb_gray_and_cmyk_buffer_reservations() {
+    for (jpeg, space) in [
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/RGB-0-0.jpg").as_slice(),
+            "DeviceRGB",
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/L-0-0.jpg").as_slice(),
+            "DeviceGray",
+        ),
+        (
+            include_bytes!("../fixtures/issue7911_jpeg/CMYK-0-0.jpg").as_slice(),
+            "DeviceCMYK",
+        ),
+    ] {
+        let source = indexed_image_pdf(
+            jpeg,
+            &format!(
+                "/Width 19 /Height 17 /BitsPerComponent 8 /ColorSpace /{space} /Filter /DCTDecode"
+            ),
+            b"null",
+        );
+        let expected = jpeg_cap_png(source.clone(), Default::default()).unwrap();
+        // 19*17*4 = 1292 fits; 19*17*8 = 2584 does not. The compressed
+        // fixture also fits, independently of its decoded geometry.
+        assert_eq!(
+            jpeg_cap_png(
+                source,
+                PdfImportLimits {
+                    stream_bytes: 2400,
+                    ..Default::default()
+                }
+            )
+            .unwrap(),
+            expected,
+            "{space}: request limits must preserve decoded samples"
+        );
+    }
+}
+
+#[test]
+fn jpeg_extraction_pixel_buffer_cap_remains_exact_and_request_local() {
+    let source = jpeg_extraction_cap_source();
+    let expected = jpeg_cap_png(source.clone(), Default::default()).unwrap();
+    for cap in [64 * 64 * 4 - 1, 64 * 64 * 4, 64 * 64 * 4 + 1] {
+        let doc = PdfDocument::from_bytes_with_limits(
+            source.clone(),
+            PdfImportLimits {
+                stream_bytes: cap,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let image = doc.page_image_handles(0).unwrap()[0].decode().unwrap();
+        let result = image.to_png_bytes_with_budget(doc.import_budget().unwrap());
+        if cap < 64 * 64 * 4 {
+            assert!(matches!(
+                result,
+                Err(Error::ImportResourceLimit("image pixel buffer"))
+            ));
+            assert!(doc.check_import_budget().is_err());
+            assert!(doc.page_image_handles(0).is_err());
+        } else {
+            assert_eq!(result.unwrap(), expected);
+        }
+    }
+    assert_eq!(jpeg_cap_png(source, Default::default()).unwrap(), expected);
+}
+
+#[test]
+fn jpeg_extraction_keeps_private_codec_caps_after_compressed_storage() {
+    let source = jpeg_extraction_cap_source();
+    let doc = PdfDocument::from_bytes_with_limits(
+        source.clone(),
+        PdfImportLimits {
+            stream_bytes: 64 * 64 * 4,
+            codec_allocation_bytes: 8192,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let image = doc.page_image_handles(0).unwrap()[0].decode().unwrap();
+    assert!(matches!(
+        image.to_png_bytes_with_budget(doc.import_budget().unwrap()),
+        Err(Error::ImportResourceLimit(_))
+    ));
+    assert!(doc.check_import_budget().is_err());
+    assert!(doc.page_image_handles(0).is_err());
+    assert!(!jpeg_cap_png(source, Default::default()).unwrap().is_empty());
+}
+
+#[test]
+fn raw_extraction_keeps_its_existing_geometry_guard() {
+    let source = indexed_image_pdf(
+        &vec![73; 64 * 64 * 3],
+        "/Width 64 /Height 64 /BitsPerComponent 8 /ColorSpace /DeviceRGB",
+        b"null",
+    );
+    let doc = PdfDocument::from_bytes_with_limits(
+        source,
+        PdfImportLimits {
+            stream_bytes: 20_000,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert!(matches!(
+        doc.page_image_handles(0).unwrap()[0].decode(),
+        Err(Error::ImportResourceLimit("image extraction buffer"))
+    ));
+    assert!(doc.check_import_budget().is_err());
+}
+
+#[test]
+fn jpeg_extraction_filter_chains_and_inline_share_actual_buffer_reservations() {
+    let hex = jpeg_extraction_cap_bytes()
+        .iter()
+        .map(|b| format!("{b:02X}"))
+        .collect::<String>()
+        + ">";
+    let expected = jpeg_cap_png(jpeg_extraction_cap_source(), Default::default()).unwrap();
+    for inline in [false, true] {
+        let source = if inline {
+            let content = format!("BI /W 64 /H 64 /BPC 8 /CS /RGB /F [/AHx /DCT] ID {hex} EI");
+            object_file(&objects(content.as_bytes(), "", ""), "")
+        } else {
+            indexed_image_pdf(hex.as_bytes(),
+                "/Width 64 /Height 64 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Filter [/ASCIIHexDecode /DCTDecode]", b"null")
+        };
+        assert_eq!(
+            jpeg_cap_png(
+                source,
+                PdfImportLimits {
+                    stream_bytes: 64 * 64 * 4,
+                    ..Default::default()
+                }
+            )
+            .unwrap(),
+            expected
+        );
+    }
+}
