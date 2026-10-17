@@ -7740,32 +7740,25 @@ impl LayoutEngine {
 
             let mut border_nodes = Vec::new();
             let mut background_nodes = Vec::new();
-            let groups_len = groups.len();
             for (
-                gi,
-                (
-                    bf_id,
-                    x,
-                    y_start,
-                    w,
-                    y_end,
-                    top_inset,
-                    bottom_inset,
-                    is_partial_start,
-                    is_partial_end,
-                    first_para_idx,
-                    _,
-                    range_indices,
-                ),
-            ) in groups.clone().into_iter().enumerate()
+                bf_id,
+                x,
+                y_start,
+                w,
+                y_end,
+                top_inset,
+                bottom_inset,
+                is_partial_start,
+                is_partial_end,
+                _,
+                _,
+                range_indices,
+            ) in groups.into_iter()
             {
                 let height = y_end - y_start;
                 if height <= 0.0 {
                     continue;
                 }
-                // 인접한 다른 border 그룹 (간격 < 4px) 과는 inset 충돌 회피.
-                let prev_touches = gi > 0 && (y_start - groups[gi - 1].4) < 4.0;
-                let next_touches = gi + 1 < groups_len && (groups[gi + 1].2 - y_end) < 4.0;
                 let idx = (bf_id as usize).saturating_sub(1);
                 let border_style = styles.border_styles.get(idx);
                 let borders = border_style.map(|bs| bs.borders);
@@ -7780,19 +7773,11 @@ impl LayoutEngine {
                             .fold(0.0, f64::max)
                     })
                     .unwrap_or(0.0);
-                // Task #321 v6: ParaShape::border_spacing 정식 반영 + stroke 있을 때 default 2px 최소.
-                // 인접 border 그룹과 충돌 방지를 위해 인접 경계는 inset 0.
-                let default_min_inset: f64 = if connects(first_para_idx) { 2.0 } else { 0.0 };
-                let top_pad = if stroke_width > 0.0 && !prev_touches {
-                    top_inset.max(default_min_inset)
-                } else {
-                    top_inset
-                };
-                let bot_pad = if stroke_width > 0.0 && !next_touches {
-                    bottom_inset.max(default_min_inset)
-                } else {
-                    bottom_inset
-                };
+                // [#7888] 상자 위·아래 변은 묶음 범위에서 문단 모양의 테두리 위·아래 간격만큼만
+                // 넓힌다. 종전의 최소 2px 여백(Task #321 v6 의 시각 여유 추정)은 한/글 PDF 에
+                // 없다 — 온새미로 NOTE 쪽·exam_kor 4·20쪽·exam_eng 8쪽 아래 변이 2.0px 아래였다.
+                let top_pad = top_inset;
+                let bot_pad = bottom_inset;
                 // Task #469: cross-column / cross-page 로 이어진 partial 박스의 후속 부분은
                 // 이전/다음 컬럼에서 이미 inset 이 적용되었으므로 여기서 다시 col_top/col_bot
                 // 너머로 박스를 확장하면 안 된다 (헤더선/꼬리말선과 충돌).
