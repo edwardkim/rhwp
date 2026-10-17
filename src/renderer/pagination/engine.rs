@@ -1181,7 +1181,7 @@ impl Paginator {
         Option<crate::model::control::PageNumberPos>,
     ) {
         let mut hf_entries = Vec::new();
-        let mut page_number_pos = None;
+        let page_number_pos = crate::renderer::pagination::collect_page_number_pos(paragraphs);
         for (pi, para) in paragraphs.iter().enumerate() {
             for (ci, control) in para.controls.iter().enumerate() {
                 match control {
@@ -1203,7 +1203,6 @@ impl Paginator {
                         };
                         hf_entries.push((pi, r, false, f.apply_to));
                     }
-                    Control::PageNumberPos(pos) => page_number_pos = Some(pos.clone()),
                     Control::Table(table) => {
                         crate::renderer::pagination::collect_nested_header_footer_controls(
                             table,

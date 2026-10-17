@@ -2637,3 +2637,40 @@ Native/fresh WASM98%·직접 판독 뒤 독립±2CSSpx와 원문/순서/단일 �
 실제로 실패했다. 부모 재현용 임시 원본 파일은 finally에서 캡처와 동일한 후보 SHA로 복원했다.
 이후 테스트 서두의 주석만 갱신했고 실행한 함수 본문과 동일함을 별도 검증했다.
 [자연 전진·전체 수치·반복 경계 선정·독립 px·대표 review/overlay](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/hci-original-plus-20261017/README.md)에 연결한다.
+
+
+## C77 — 표 셀 안의 구역 쪽번호 보존 (2026-10-17)
+
+새 base b7a53880의 리베이스 뒤 C76 경계를 다시 열어 보다가 PDF의 하단 쪽번호가
+부모 Native/fresh WASM 전6쪽에서 누락된 것을 확인했다. 점수 통과와 별개로 보정했다.
+원문/공개 IR의 셀 안 PageNumberPos를 두 조판 경로가 수집하지 않던 원인이다.
+공통 소스 순서 질의가 선택한 위치를 기존 PageContent와 공통 Footer/print paint가
+그대로 소비하며, 머리말/꼬리말 전용 인터페이스·감추기·새 번호의 계약은 유지했다.
+
+독립 Print6쪽의 쪽번호 복원 후 전쪽 Native97.61944/fresh WASM97.61696%,
+각6/6쪽·90% 미만0이다. 같은 동작의 후보 중 양쪽 최솟값이 가장 높은 마지막6쪽
+99.99225/99.99226%를 독립±2CSSpx 검사 대상으로 선정하고 양쪽 review/overlay를 열었다.
+전6쪽의 꼬리말 외 export render-tree JSON은 부모와 같았다. actual legacy Paginator도
+6쪽의 위치5·번호1~6을 선택했지만 이를 legacy 시각 통과로 확대하지 않았다.
+
+새 정식 관계/최종 print px 검사: **수정 전1FAIL(0.044초) → 수정 후1PASS(0.066초), 같은 검사 소스**. 원본 셀 선언·단일 번호·쪽 소속·
+꼬리말 내부 포함·원문 보존과 독립 마지막 쪽 원점을 함께 확인한다.
+수정 전 코드를 임시 적용한 동안 finally 복원하고 같은 검사로 FAIL→PASS를 확인한다.
+캡처 소스의 후속 들여쓰기만 바뀐 것은 rustfmt 표준 출력의 byte 동일성으로 구분했다.
+최종 head 빌드·전쪽 비교는 별도 잔여다.
+
+[독립 근거·선정과 전후 PNG](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/nested-page-number-20261017/README.md)에
+입력/PDF·producer SHA, 소비 경로, 실제 원점과 기준선 잔여−1.2964CSSpx를 연결했다.
+ignored `rebase-b7a53880-20261017/nested-page-number-c95/`에 전쪽 TSV·실행 원문을 보존한다.
+헤더 전용 helper의 인자 확장으로 발생한 초기2개 컴파일 오류는 폐기했고 정식 결함
+FAIL/PASS로 세지 않았다. 48조건 IR 중 이 선언은 해당 문서에서만 관측됐지만, 전체
+시각/회귀·필수 gate·실제 소비 검증과 WMF/다른 devel 하락은 계속 남아 있다.
+
+정상 대조군은 split-paragraph 감추기/새 번호5건·쪽 정보1건·기호 원본/중요 위치9건,
+총15건PASS이며 새1건과 합쳐16건PASS다. fresh WASM wrapper가 생성한 Studio glue의
+추가 런타임 import39행도 함께 동기화했다. API를 수동 수정한 것은 아니며 실제 초기화
+응답 hash 검증은 새 head의 전체 소비 검증에 남긴다.
+
+선택 순서의 추가 대조본3개는 한컴2020 Print queue에 제출했다. 현재 queued 상태이므로
+그 결과를 혼합 선언 순서의 독립 수용 근거로 사용하지 않는다. 원본6쪽의 단일 중첩 선언
+수용과 구분하며 ignored `order-probes/`의 기존 job ID로 계속 확인한다.

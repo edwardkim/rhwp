@@ -386,6 +386,29 @@ pub struct HeaderFooterRef {
     pub table_path: Vec<HeaderFooterTableStep>,
 }
 
+/// 두 조판 경로가 공유하는 구역의 마지막 쪽번호 위치 선언이다.
+pub(crate) fn collect_page_number_pos(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> Option<crate::model::control::PageNumberPos> {
+    // 쪽번호 위치는 표 셀 안에 저장돼도 구역의 출력 컨트롤이다.
+    // 최상위 문단의 기존 마지막 선언 선택을 셀의 소스 순서까지 확장한다.
+    // 머리말/꼬리말 내용 자체를 구역 선언으로 끌어올리지는 않는다.
+    paragraphs.iter().rev().find_map(|para| {
+        para.controls
+            .iter()
+            .rev()
+            .find_map(|control| match control {
+                Control::PageNumberPos(pos) => Some(pos.clone()),
+                Control::Table(table) => table
+                    .cells
+                    .iter()
+                    .rev()
+                    .find_map(|cell| collect_page_number_pos(&cell.paragraphs)),
+                _ => None,
+            })
+    })
+}
+
 /// 표 셀 안에 중첩된 Header/Footer 컨트롤을 재귀적으로 수집한다.
 ///
 /// `base_path` 는 바깥 문단에서 `table` 까지 내려온 경로(마지막 단계의 셀/문단은
