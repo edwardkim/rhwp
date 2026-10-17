@@ -102,6 +102,12 @@ static HANYANGJUNGGOTHIC_LATIN_0: [u16; 95] = [
 /// 같은 문서의 `휴먼명조` 는 정본에서 TrueType(`INPILL+휴먼명조`)으로 나가고 `/W` 가
 /// 1.001 em 이다 — 빌려 온 전각값이 그쪽에는 맞는다. 그래서 이 정정은 U+00B7 한 글자,
 /// 한양중고딕 한 글꼴로 한정한다. 나머지 한양 셋은 앵커된 실측이 없어 손대지 않는다.
+///
+/// 이 표는 한/글이 **자기 HFT 글리프로 그리는 실현**(위 두 문서 모두 FACE_NAME 대체 글꼴이
+/// HFT `한양중고딕`)의 값이다. 문서가 대체 글꼴로 TTF `HY중고딕` 을 적으면 한/글은 그
+/// TrueType(정본 자원 `H2gtrM`)으로 그리고 `·` 도 1024/1024 라, 그 경우는
+/// `style_resolver::verified_ttf_substitute` 가 측정 face 를 `HY중고딕` 으로 돌려 이 표를
+/// 타지 않는다(#7092 78494·75544·issue1891_external_bindata_link).
 static HANYANGJUNGGOTHIC_B7: [u16; 1] = [390];
 static HANYANGJUNGGOTHIC_LATIN_RANGES: [LatinRange; 8] = [
     LatinRange {
