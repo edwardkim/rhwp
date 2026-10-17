@@ -134,7 +134,12 @@ impl LayoutEngine {
             let start = start_cut.get(index).copied().unwrap_or(0);
             if end <= start
                 || cell.text_direction != 0
-                || cell.paragraphs.iter().any(|para| !para.controls.is_empty())
+                || cell.paragraphs.iter().any(|para| {
+                    !para
+                        .controls
+                        .iter()
+                        .all(crate::renderer::composer::control_is_width_neutral_marker)
+                })
             {
                 return None;
             }

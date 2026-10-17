@@ -18727,9 +18727,19 @@ impl LayoutEngine {
         let inner_width =
             crate::renderer::composer::cell_inner_text_width(width, left, right, self.dpi);
         let comp = self.compose_cell_unit_paragraph(para, cell.text_direction, inner_width, styles);
-        // CellUnit 전진은 다음 줄 원점까지의 간격을 보존한다. 현재 조각의
-        // 점유는 마지막 줄 상자에서 끝나므로 문단 중간 컷도 뒤 줄간격을 뺀다.
-        // 문단 뒤 여백은 실제 문단을 닫은 컷에서만 제외한다.
+        // 본문을 전진시키는 행 밴드만 문단 내부의 줄 뒤 간격을 쪽 밖으로 이월한다.
+        // 어울림/배경 개체는 고유 프레임 안에서 같은 문단의 전진량을 보존한다.
+        if closing.vis_end != comp.lines.len()
+            && !matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
+        {
+            return 0.0;
+        }
+        // 물리 쪽이 끝나면 마지막 줄의 뒤 간격은 다음 줄과 함께 이월한다.
+        // 문단을 닫은 컷만 문단 뒤 간격도 이월한다. 중첩/개체 경로는 위에서
+        // 제외했으므로 부모 viewport의 자식 유닛 소유를 바꾸지 않는다.
         let Some(line) = comp.lines.get(closing.vis_end - 1) else {
             return 0.0;
         };
@@ -25734,6 +25744,12 @@ impl LayoutEngine {
         }
         let owners = Self::row_cut_cell_order(table, row);
         !owners.is_empty()
+            && owners.iter().any(|&index| {
+                table.cells[index]
+                    .paragraphs
+                    .iter()
+                    .any(crate::renderer::para_has_no_stored_line_segs)
+            })
             && owners.iter().all(|&index| {
                 let cell = &table.cells[index];
                 cell.paragraphs

@@ -93,7 +93,15 @@ impl TypesetEngine {
         let owns_plain_row_frame = ordinary_row_can_split
             && (reflow_minimum.is_some() || continuing_reflow_minimum)
             && plain_reflow_line_units;
-        let avail_for_rows = if owns_plain_row_frame {
+        // 본문을 전진시키는 재조판 줄은 선언 최소 높이가 없어도 같은 물리 하단을 쓴다.
+        // paint의 바깥여백/쪽 끝 경계를 넘는 줄을 먼저 소비한 뒤 잘라내지 않는다.
+        let plain_reflow_body_band = ordinary_row_can_split
+            && matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
+            && layout_engine.row_has_plain_reflow_line_units(table, r, styles);
+        let avail_for_rows = if owns_plain_row_frame || plain_reflow_body_band {
             reflow_frame_avail_for_rows.map_or(avail_for_rows, |height| avail_for_rows.min(height))
         } else {
             avail_for_rows
