@@ -306,6 +306,26 @@ impl Tokenizer {
             return Some(Token::new(TokenType::Symbol, s, start));
         }
 
+        // [#7865] 한컴 수식 편집기의 `+-`·`-+` 축약은 ±·∓ 다. `PLUSMINUS`·`MINUSPLUS` 명령
+        // 토큰으로 돌려 symbols 표의 기존 매핑을 탄다. `+->` 는 `+` 뒤 화살표이고,
+        // `<-+` 의 `-+` 는 `<` 뒤 부호 둘이므로 종전대로 나눈다(따옴표 안은 read_quoted 가
+        // 먼저 먹는다).
+        if ch == '+' && next == '-' && third != '>' {
+            self.pos += 2;
+            return Some(Token::new(TokenType::Command, "PLUSMINUS", start));
+        }
+        if ch == '-' && next == '+' {
+            let prev = if self.pos > 0 {
+                self.chars[self.pos - 1]
+            } else {
+                '\0'
+            };
+            if prev != '<' {
+                self.pos += 2;
+                return Some(Token::new(TokenType::Command, "MINUSPLUS", start));
+            }
+        }
+
         // -> (화살표 축약)
         if ch == '-' && next == '>' {
             self.pos += 2;
