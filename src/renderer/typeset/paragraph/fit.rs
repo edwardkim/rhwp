@@ -36,20 +36,16 @@ pub(in crate::renderer::typeset) fn paragraph_layout_drift_safety_px(
     }
 }
 
-pub(in crate::renderer::typeset) fn exclusion_probe_height(
-    fmt: &FormattedParagraph,
-    hwpx_stored_layout: bool,
-) -> f64 {
-    if hwpx_stored_layout {
-        // 배제 영역은 첫 글줄의 실제 높이로 짚는다. 뒤 줄간격은 다음 흐름이
-        // 소비할 공간이며, 표 위에 들어가는 잉크를 표 아래로 밀 근거가 아니다.
-        fmt.line_heights
-            .first()
-            .copied()
-            .unwrap_or(fmt.height_for_fit)
-    } else {
-        0.0
-    }
+pub(in crate::renderer::typeset) fn exclusion_probe_height(fmt: &FormattedParagraph) -> f64 {
+    // 배제 영역은 첫 글줄의 실제 높이로 짚는다. 뒤 줄간격은 다음 흐름이
+    // 소비할 공간이며, 표 위에 들어가는 잉크를 표 아래로 밀 근거가 아니다.
+    // [#7687] 프로파일과 무관하다 — 한/글은 HWP5 저장본(hwpspec pi=132)과 저장 줄 없는
+    // HWPX(합성 H4) 모두 줄 상자가 띠에 걸리면 띠 아래로 보낸다. 배치의 `item_probe_height`
+    // (Task #1794 로 HWP5 까지 적용)와 같은 축이다.
+    fmt.line_heights
+        .first()
+        .copied()
+        .unwrap_or(fmt.height_for_fit)
 }
 
 /// 저장 tail의 하단이 본문 안에 있다는 source 증거가 있을 때, 현재 조판 흐름이 그

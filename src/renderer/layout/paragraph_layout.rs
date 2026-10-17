@@ -937,8 +937,12 @@ pub(super) fn empty_no_lineseg_paragraph_metrics(
     // 완전한 em 줄박스를 부여한다. 두 장부(판정·그리기)가 같은 규칙을 가져야 렌더 y 와
     // 단 경계가 일치한다.
     let controls_flow_neutral = crate::renderer::empty_host_controls_are_flow_neutral(para);
+    // [#7687] 다중 자리차지 host 의 표는 줄 밖(띠)에 놓이므로 host 줄도 완전한 em 줄박스다
+    // (합성 H1~H6 정본: 첫 띠 끝 + 21.3px 뒤에 다음 줄).
+    let textless_coanchored_host =
+        crate::renderer::float_placement::is_textless_coanchored_float_host(para);
     if !para.text.trim().is_empty()
-        || !(para.controls.is_empty() || controls_flow_neutral)
+        || !(para.controls.is_empty() || controls_flow_neutral || textless_coanchored_host)
         || !para.line_segs.is_empty()
         || (para.char_count == 0 && para.controls.is_empty())
     {
@@ -4490,7 +4494,16 @@ impl LayoutEngine {
         line_index: usize,
         known_square_band: bool,
     ) -> Option<f64> {
-        if !para.line_segs.is_empty() || !para.controls.is_empty() || para.text.trim().is_empty() {
+        // [#7680] 자리차지·글앞/글뒤 개체만 가진 host 의 글줄(표 뒤 post-text)도 평범한 글줄이다 —
+        // 줄 안에 놓이는 TAC 개체·수식이 없을 때만 재조판 줄 높이로 짚는다.
+        let controls_are_floats_only = para.controls.iter().all(|control| match control {
+            Control::Table(table) => !table.common.treat_as_char,
+            Control::Picture(picture) => !picture.common.treat_as_char,
+            Control::Shape(shape) => !shape.common().treat_as_char,
+            Control::Equation(_) => false,
+            _ => true,
+        });
+        if !para.line_segs.is_empty() || !controls_are_floats_only || para.text.trim().is_empty() {
             return None;
         }
         let comp = composed?;
@@ -4513,8 +4526,13 @@ impl LayoutEngine {
                 self.profile.get().hwpx_stored_layout(),
                 self.uniform_filler_ladder.get(),
                 &[],
-            )?;
-        let line = current.lines.get(line_index)?;
+            );
+        // [#7680] 프레임 재조판이 없는 host(자리차지 개체만 가진 문단)는 조합 줄의 높이로 짚는다 —
+        // 줄 높이는 프레임 폭과 무관한 글자모양 값이다.
+        let line = match current.as_ref() {
+            Some(current) => current.lines.get(line_index)?,
+            None => comp.lines.get(line_index)?,
+        };
         let font_size = crate::renderer::composed_line_max_font_size(line, para, styles);
         let (height, _) = crate::renderer::corrected_line_metrics(
             hwpunit_to_px(line.line_height, self.dpi),
