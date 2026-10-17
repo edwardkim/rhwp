@@ -59,7 +59,7 @@ impl EqParser {
                 let node = if super::super::symbols::is_relation_symbol(&val) {
                     EqNode::MathSymbol(val)
                 } else {
-                    literal_font(EqNode::Text(val), roman_literal)
+                    literal_font(self.styled_text(val), roman_literal)
                 };
                 self.try_parse_scripts(node)
             }
@@ -177,10 +177,11 @@ impl EqParser {
                 }
             }
             TokenType::Number => EqNode::Number(val),
-            TokenType::Text => literal_font(EqNode::Text(val), roman_literal),
+            TokenType::Text => literal_font(self.styled_text(val), roman_literal),
             TokenType::Quoted => literal_font(EqNode::Quoted(val), roman_literal),
             TokenType::Symbol => EqNode::Symbol(val),
-            _ => EqNode::Text(val),
+            TokenType::Whitespace => whitespace_node(&val),
+            _ => self.styled_text(val),
         }
     }
 }

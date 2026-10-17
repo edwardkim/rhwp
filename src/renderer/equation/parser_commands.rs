@@ -257,14 +257,33 @@ impl EqParser {
         {
             // 한컴의 rm/it은 단일 인자가 아니라 현재 그룹 안의 글꼴 전환이다.
             // 명시적 공백을 인자로 소비하지 않고 Row에서 다음 전환까지 적용한다.
-            if matches!(cmd_lower.as_str(), "rm" | "it") {
+            if self.document_terms && matches!(cmd_lower.as_str(), "rm" | "it") {
                 return EqNode::FontStyle {
                     style,
                     body: Box::new(EqNode::Empty),
                 };
             }
+            // [#7873] 글꼴 명령과 다음 글자 사이의 공백 명령(`` ` ``·`~`)은 간격이지 body 가
+            // 아니다. 한/글은 `4 rm ``m` 을 «4 m»(m 로만체)으로 그린다 — 공백을 그대로
+            // 두고 그 뒤에 글꼴을 적용한다. 종전에는 공백 토큰이 body 로 들어가 역따옴표
+            // 글자가 찍히고 뒤 단위 글자는 기본 이탤릭으로 남았다.
+            let mut leading = Vec::new();
+            while self.current_type() == TokenType::Whitespace
+                && matches!(self.current_value(), "`" | "~")
+            {
+                leading.push(whitespace_node(self.current_value()));
+                self.pos += 1;
+            }
+            if !self.document_terms && matches!(style, FontStyleKind::Roman | FontStyleKind::Italic)
+            {
+                // `rm`/`it` 는 수식 끝까지 지속되는 상태 전환이다(구조체 주석 참고).
+                // 명령 자체는 자리를 차지하지 않고, 이후 글자 식별자가 `styled_text` 로
+                // 감싸진다.
+                self.font_state = Some(style);
+                return EqNode::Row(leading).simplify();
+            }
             // 다음 토큰이 구조 명령어(LEFT, RIGHT 등)이면 body 없이 반환
-            // rm P it LEFT(...) 에서 it이 LEFT를 body로 먹지 않도록
+            // bold LEFT(...) 에서 bold 가 LEFT 를 body 로 먹지 않도록
             let body = if self.current_type() == TokenType::Command
                 && is_structure_command(&self.current_value().to_ascii_uppercase())
             {
@@ -272,10 +291,15 @@ impl EqParser {
             } else {
                 self.parse_single_or_group()
             };
-            return EqNode::FontStyle {
+            let styled = EqNode::FontStyle {
                 style,
                 body: Box::new(body),
             };
+            if leading.is_empty() {
+                return styled;
+            }
+            leading.push(styled);
+            return EqNode::Row(leading);
         }
 
         // Unicode 기호 매핑 — 함수보다 우선 (hwpeq inf=∞ vs LaTeX \inf=infimum 충돌 방지)
@@ -303,7 +327,7 @@ impl EqParser {
             return self.finish_command_atom(node, attach_scripts);
         }
 
-        let node = super::atoms::literal_font(EqNode::Text(cmd.to_string()), roman_literal);
+        let node = super::atoms::literal_font(self.styled_text(cmd.to_string()), roman_literal);
         self.finish_command_atom(node, attach_scripts)
     }
 }

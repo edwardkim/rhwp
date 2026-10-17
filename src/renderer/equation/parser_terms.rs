@@ -4,6 +4,14 @@ use super::{EqNode, EqParser, TokenType};
 
 impl EqParser {
     pub(super) fn parse_element(&mut self) -> EqNode {
+        let start = self.pos;
+        let state_before = self.font_state;
+        let node = self.parse_element_inner();
+        self.last_element = Some((start, state_before));
+        node
+    }
+
+    fn parse_element_inner(&mut self) -> EqNode {
         if self.document_terms && self.pos >= self.term_limit {
             return EqNode::Empty;
         }
