@@ -1149,7 +1149,25 @@ impl TypesetEngine {
                 &split_end_cut,
                 styles,
             );
-        if (split_end_limit == 0.0 || plain_paragraph_cut)
+        // 컷이 한/글이 기록한 저장 쪽 재시작(다음 유닛 첫 줄 vpos 0)과 정확히 맞으면 그 쪽 경계는
+        // 원본의 것이다. 문단 유지 계약을 만족한 컷과 같이 쪽 끝 띠를 걸침 칸의 몫으로 센다
+        // (`21761835` 2쪽 행 20: 진행 칸이 빈 문단 뒤 vpos 0 재시작에서 끊긴다).
+        let stored_page_reset_cut = split_end_limit > 0.0
+            && end_row > cursor_row
+            && layout_engine.row_cut_ends_at_stored_page_reset(
+                row_geometry_table,
+                end_row - 1,
+                if end_row - 1 == cursor_row {
+                    start_cut
+                } else {
+                    &[]
+                },
+                &split_end_cut,
+                styles,
+            );
+        let mut stored_reset_band_owns_end_row = false;
+        let mut stored_reset_band_row_box = None;
+        if (split_end_limit == 0.0 || plain_paragraph_cut || stored_page_reset_cut)
             && split_block_start.is_none()
             && end_row > cursor_row
             && table_footnotes.is_empty()
@@ -1172,7 +1190,7 @@ impl TypesetEngine {
                         .map(|(_, height)| height)
                 })
                 .unwrap_or_else(|| {
-                    if plain_paragraph_cut {
+                    if plain_paragraph_cut || stored_page_reset_cut {
                         // 컷 뒤의 내용을 담은 전체 행 높이는 앞 조각의 물리 상자가 아니다.
                         layout_engine.row_cut_content_height(
                             row_geometry_table,
@@ -1189,8 +1207,32 @@ impl TypesetEngine {
                         cut_row_h[last_row]
                     }
                 });
-            end_row_height_override = Some(last_height + unreserved_page_end_band);
-            partial_height += unreserved_page_end_band;
+            // 저장 쪽 재시작 컷만으로 이 경로에 든 조각은 걸침 칸의 선언에 남는 몫까지만 띠를
+            // 준다. 몫이 없으면 한/글도 띠를 비워 둔다(70833 2쪽: 표가 973px 에서 끝난다).
+            if split_end_limit == 0.0 || plain_paragraph_cut {
+                end_row_height_override = Some(last_height + unreserved_page_end_band);
+                partial_height += unreserved_page_end_band;
+            } else {
+                // 예약(`consumed`)은 이 행을 끝 컷 높이(`split_end_limit`)로 셌다. 쪽 끝까지의 방은
+                // 그 위에 남은 띠를 더한 값이고, 상자는 끝 컷 내용(`last_height`) 이상·걸침 칸의
+                // 남는 몫 이하다.
+                let room = split_end_limit + unreserved_page_end_band;
+                if let Some(band) = self.crossing_span_page_end_band(
+                    st,
+                    continuation,
+                    input,
+                    (last_row, &[], &split_end_cut),
+                    last_height,
+                    (room - last_height).max(0.0),
+                    cut_row_h,
+                ) {
+                    let row_box = last_height + band;
+                    end_row_height_override = Some(row_box);
+                    partial_height += row_box - split_end_limit;
+                    stored_reset_band_owns_end_row = true;
+                    stored_reset_band_row_box = Some((last_row, row_box));
+                }
+            }
         }
 
         let accepted_straddle_cells = if !start_cut_is_block && split_block_start.is_none() {
@@ -1289,7 +1331,10 @@ impl TypesetEngine {
             straddle_row_relief: straddle_row_relief.clone(),
             straddle_page_bands: accepted_straddle_cells.clone(),
             fragment_row_heights: input.fragment_row_heights.map(<[f64]>::to_vec),
-            end_row_owns_stored_frame: is_continuation && stored_complete_extent.is_some(),
+            // 저장 쪽 재시작 컷에서 걸침 칸의 몫으로 수용한 끝 행 상자도 원본 프레임이다.
+            // 배치는 이 상자를 끝 줄간격 접기로 다시 줄이지 않는다.
+            end_row_owns_stored_frame: is_continuation
+                && (stored_complete_extent.is_some() || stored_reset_band_owns_end_row),
         });
         // 저장 호스트 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
         // 호스트·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).
@@ -1856,6 +1901,7 @@ impl TypesetEngine {
             split_end_limit > 0.0,
         );
         continuation.start_row_height_override = next_start_row_height_override;
+        continuation.stored_reset_band_row_box = stored_reset_band_row_box;
         if let Some(((_, row, cut, height), _)) = stored_rowspan_frame {
             continuation.row = row;
             continuation.start_cut = cut;

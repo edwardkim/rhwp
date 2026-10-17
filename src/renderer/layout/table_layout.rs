@@ -20723,7 +20723,21 @@ impl LayoutEngine {
         }
         let Some(next) = cell.paragraphs.get(unit.para_idx + 1) else {
             // 종료 host의 빈 꼬리는 자체 줄 높이만으로 흐름 소유를 증명하지 못한다.
-            return false;
+            // 다만 저장 줄이 새 쪽 원점(vpos 0)에서 다시 시작했다면 한/글이 그 줄을 새 쪽
+            // 조각에 놓았다는 기록이다(`21761835` 3쪽 행 20: 빈 꼬리 한 줄 + 위아래 패딩 =
+            // 한/글 2020 PDF 17px).
+            return !cell.dirty_flag
+                && unit.page_frame_reset_before
+                && unit.stored_frame_break_before
+                && para.controls.is_empty()
+                && !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
+                && matches!(
+                    para.line_segs.as_slice(),
+                    [line] if line.vertical_pos == 0
+                        && line.line_height > 0
+                        && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                );
         };
         if !para.controls.is_empty() || !next.controls.is_empty() {
             return false;
