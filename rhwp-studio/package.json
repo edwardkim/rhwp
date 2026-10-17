@@ -4,6 +4,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "e2e:cross-section-selection": "node e2e/run-with-vite.mjs -- node e2e/cross-section-selection.test.mjs --mode=headless",
     "dev": "vite",
     "subsecond:install": "DX_VERSION=$(node ../scripts/dioxus-cli-version.mjs) && cargo install dioxus-cli --version \"$DX_VERSION\" --locked --root ../target/dioxus-cli",
     "subsecond:serve": "cd .. && target/dioxus-cli/bin/dx serve --web --package rhwp-subsecond --features subsecond-dev --hot-patch --port 7711 --addr 127.0.0.1 --open false --interactive true --inject-loading-scripts false",
