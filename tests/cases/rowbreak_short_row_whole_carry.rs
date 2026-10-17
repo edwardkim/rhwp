@@ -26,6 +26,7 @@ use rhwp::document_core::DocumentCore;
 const SAMPLE_1480000: &str = "samples/issue5941/1480000-201900698-native-neartop-reset.hwp";
 const SAMPLE_21761835: &str = "samples/hwpx/21761835_jeonjik_exemption_table.hwpx";
 const SAMPLE_1613000: &str = "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp";
+const SAMPLE_70833: &str = "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp";
 const SAMPLE_1342000: &str =
     "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp";
 
@@ -300,5 +301,32 @@ fn crossing_rowspan_owns_the_page_end_band() {
     assert!(
         (span - declared_span).abs() <= 1.5,
         "걸침 칸 (20,0) 이 덮는 행 조각 합은 선언 {declared_span:.2}px 다: {span:.2}"
+    );
+}
+
+/// 반례: 70833 2쪽 표(`pi=13`, 20×13)는 쪽 끝 행 6 을 지나 이어지는 걸침 칸이 있고 끝 행이 저장 쪽
+/// 재시작에서 끊기지만, 걸침 칸과 나뉜 행 모두 선언에 남는 몫이 없다. 한/글 2020 PDF 는 표를 973px 에서
+/// 끝내고 본문 끝(1046.9px)까지의 띠를 비워 둔다. 몫 없이 띠를 주면 표가 1036px 까지 늘어난다.
+#[test]
+fn crossing_rowspan_without_declared_slack_leaves_the_band_empty() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn bottom(node: &RenderNode) -> f64 {
+        let own = match &node.node_type {
+            RenderNodeType::TableCell(cell) if cell.model_cell_index.is_some() => {
+                node.bbox.y + node.bbox.height
+            }
+            _ => f64::MIN,
+        };
+        node.children.iter().map(bottom).fold(own, f64::max)
+    }
+    let core = core(SAMPLE_70833);
+    let tree = core.build_page_render_tree(1).expect("2쪽 렌더 트리");
+    let body = core.dump_page_items_json(Some(1));
+    let area = &body[0]["bodyArea"];
+    let body_bottom = area["y"].as_f64().unwrap() + area["height"].as_f64().unwrap();
+    let table_bottom = bottom(&tree.root);
+    assert!(
+        body_bottom - table_bottom > 30.0,
+        "남는 몫이 없으면 쪽 끝 띠는 비어 남는다: 표 끝 {table_bottom:.2}, 본문 끝 {body_bottom:.2}"
     );
 }
