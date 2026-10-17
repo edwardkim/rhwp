@@ -413,6 +413,44 @@ fn successful_import_reports_consumed_policy_and_request_local_work() {
 }
 
 #[test]
+fn positional_selection_never_extracts_unselected_pages_for_header_classification() {
+    use rhwp::parser::pdf::{parse_pdf_with_policy, PdfImportPolicy};
+    let first = "BT /F1 12 Tf 20 100 Td (SELECTED) Tj ET";
+    let second = format!("{} BT /F1 12 Tf 20 100 Td (OTHER) Tj ET", "q Q ".repeat(30));
+    let objects = vec![
+        "<< /Type /Catalog /Pages 2 0 R >>".into(),
+        "<< /Type /Pages /Count 2 /Kids [3 0 R 5 0 R] >>".into(),
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /Font << /F1 7 0 R >> >> /Contents 4 0 R >>".into(),
+        format!("<< /Length {} >>\nstream\n{first}\nendstream", first.len()),
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>".into(),
+        format!("<< /Length {} >>\nstream\n{second}\nendstream", second.len()),
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>".into(),
+    ];
+    let source = encode_pdf(&objects);
+    let mut policy = PdfImportPolicy::default();
+    policy.backend.operators = 8;
+    let result = parse_pdf_with_policy(
+        &source,
+        &PdfImportOptions {
+            source_pages: Some(vec![0]),
+        },
+        policy,
+    )
+    .unwrap();
+    assert_eq!(texts(&result.document), ["SELECTED"]);
+    assert_eq!(result.metadata.resource_usage.content_parse_calls, 1);
+    assert_eq!(result.metadata.resource_usage.operators, 5);
+    assert!(parse_pdf_with_policy(
+        &source,
+        &PdfImportOptions {
+            source_pages: Some(vec![1])
+        },
+        policy
+    )
+    .is_err());
+}
+
+#[test]
 fn blank_pages_are_not_silently_dropped() {
     let imported = parse_pdf_with_options(
         &pdf(&[("", "Helvetica"), ("OK", "Helvetica")]),

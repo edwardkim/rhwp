@@ -4401,3 +4401,24 @@ fn png_codec_scratch_reuse_is_request_scoped_and_preserves_changing_pixels() {
         "each request owns its own initial allocation"
     );
 }
+
+#[test]
+fn selected_work_restrictions_preserve_consumption_and_never_raise_limits() {
+    let request = budget(100, 100);
+    request.charge_decoded(40).unwrap();
+    request.restrict_work_limits(60, 10).unwrap();
+    request.restrict_work_limits(100, 20).unwrap();
+    request.charge_decoded(20).unwrap();
+    assert!(request.charge_decoded(1).is_err());
+    let failure = request.snapshot().failure.unwrap();
+    assert_eq!(
+        (failure.used, failure.requested, failure.limit),
+        (Some(60), Some(1), Some(60))
+    );
+    assert!(request.restrict_work_limits(100, 100).is_err());
+    let next = budget(100, 100);
+    next.charge_decoded(40).unwrap();
+    assert!(next.restrict_work_limits(39, 10).is_err());
+    assert_eq!(next.snapshot().failure.unwrap().used, Some(40));
+    assert!(budget(100, 100).restrict_work_limits(0, 1).is_err());
+}

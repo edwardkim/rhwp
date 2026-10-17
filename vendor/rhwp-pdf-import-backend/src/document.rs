@@ -12855,7 +12855,7 @@ impl PdfDocument {
             HashSet::new(),
             true,
         )?;
-        let spans = self.postprocess_spans(page_index, spans)?;
+        let spans = self.postprocess_spans_for_import(page_index, spans)?;
         self.check_import_budget()?;
         Ok(spans)
     }
@@ -13307,6 +13307,26 @@ impl PdfDocument {
         page_index: usize,
         raw_spans: Vec<crate::layout::TextSpan>,
     ) -> Result<Vec<crate::layout::TextSpan>> {
+        self.postprocess_spans_inner(page_index, raw_spans, true)
+    }
+
+    fn postprocess_spans_for_import(
+        &self,
+        page_index: usize,
+        raw_spans: Vec<crate::layout::TextSpan>,
+    ) -> Result<Vec<crate::layout::TextSpan>> {
+        // Positional import retains painted headers and footers. Semantic
+        // artifact classification is unused by lowering and must not extract
+        // every unselected source page to classify the requested one.
+        self.postprocess_spans_inner(page_index, raw_spans, false)
+    }
+
+    fn postprocess_spans_inner(
+        &self,
+        page_index: usize,
+        raw_spans: Vec<crate::layout::TextSpan>,
+        classify_running_artifacts: bool,
+    ) -> Result<Vec<crate::layout::TextSpan>> {
         let mut spans = raw_spans;
 
         self.drop_offpage_spans(page_index, &mut spans);
@@ -13489,7 +13509,9 @@ impl PdfDocument {
         // normalized text recurs on >=50% of pages and sits near the top or
         // bottom of the page are flagged as artifacts so downstream filters
         // drop them.
-        self.mark_running_artifact_spans(page_index, &mut spans)?;
+        if classify_running_artifacts {
+            self.mark_running_artifact_spans(page_index, &mut spans)?;
+        }
 
         // Normalize Unicode typographic spaces (U+2000–U+200B, U+202F, U+205F)
         // to ASCII space. Some PDF producers encode word separators as hair-space
@@ -17484,7 +17506,7 @@ impl PdfDocument {
             return Ok(Vec::new());
         }
 
-        let content_data = match self.get_page_content_data(page_index) {
+        let content_data = match self.cached_page_content(page_index) {
             Ok(data) => data,
             Err(e) => {
                 log::warn!(
@@ -18060,7 +18082,7 @@ impl PdfDocument {
         }
 
         // Get content stream data — skip page on decode failure (Annex I)
-        let content_data = match self.get_page_content_data(page_index) {
+        let content_data = match self.cached_page_content(page_index) {
             Ok(data) => data,
             Err(e) => {
                 log::warn!(
@@ -18304,9 +18326,12 @@ impl PdfDocument {
     /// surfacing their inks here would create plates that stay empty.
     pub fn get_page_inks_deep(&self, page_index: usize) -> Result<Vec<String>> {
         let resources = self.page_resources_for_inks(page_index)?;
-        let content_data = self.get_page_content_data(page_index)?;
-        let operators =
-            self.parse_import_content(&content_data, crate::content::parse_content_stream)?;
+        let content_data = self.cached_page_content(page_index)?;
+        let operators = self.parse_page_import_content(
+            page_index,
+            &content_data,
+            crate::content::parse_content_stream,
+        )?;
 
         let mut ink_names: Vec<String> = Vec::new();
         let mut visited: std::collections::HashSet<crate::object::ObjectRef> =
@@ -18552,7 +18577,7 @@ impl PdfDocument {
             reason: "Page is not a dictionary".to_string(),
         })?;
 
-        let content_data = match self.get_page_content_data(page_index) {
+        let content_data = match self.cached_page_content(page_index) {
             Ok(data) => data,
             Err(e) => {
                 log::warn!(
@@ -19685,7 +19710,7 @@ impl PdfDocument {
         })?;
 
         // Get content stream data — skip page on decode failure (Annex I)
-        let content_data = match self.get_page_content_data(page_index) {
+        let content_data = match self.cached_page_content(page_index) {
             Ok(data) => data,
             Err(e) => {
                 self.check_import_budget()?;
@@ -24225,7 +24250,7 @@ impl PdfDocument {
             reason: "Page is not a dictionary".to_string(),
         })?;
 
-        let content_data = self.get_page_content_data(page_index)?;
+        let content_data = self.cached_page_content(page_index)?;
 
         let resources = match page_dict.get("Resources") {
             Some(res) => {
@@ -24623,7 +24648,7 @@ impl PdfDocument {
         })?;
 
         // Get content stream
-        let content_data = self.get_page_content_data(page_index)?;
+        let content_data = self.cached_page_content(page_index)?;
 
         // Resolve resources
         let resources = match page_dict.get("Resources") {
@@ -24638,14 +24663,17 @@ impl PdfDocument {
         };
 
         // Parse content stream with image-only fast path (skips BT/ET text blocks)
-        let operators =
-            match self.parse_import_content(&content_data, parse_content_stream_images_only) {
-                Ok(ops) => ops,
-                Err(_) => {
-                    // If content stream parsing fails, return empty
-                    return Ok(Vec::new());
-                },
-            };
+        let operators = match self.parse_page_import_content(
+            page_index,
+            &content_data,
+            parse_content_stream_images_only,
+        ) {
+            Ok(ops) => ops,
+            Err(_) => {
+                // If content stream parsing fails, return empty
+                return Ok(Vec::new());
+            },
+        };
 
         let mut images = Vec::new();
         let mut ctm_stack = vec![crate::content::Matrix::identity()];

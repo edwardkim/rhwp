@@ -458,9 +458,11 @@ impl PdfImage {
         if ![1, 2, 4, 8].contains(&self.bits_per_component) {
             return Err(Error::Unsupported("limited import image sample depth".into()));
         }
-        // Includes pixel decode, conversion and temporary RGB output. This is
-        // accounted work, not a promise about the codec's private scratch heap.
-        if self.borrowed_png_samples().is_none() {
+        // Legacy raw conversion still needs its conservative work allowance.
+        // JPEG reservations now flow through the audited RGB/CMYK decoder hooks,
+        // into_rgb_with_budget and the bounded PNG compressor/output writer.
+        // Charging an additional imaginary 3*RGBA buffer counted that work twice.
+        if self.borrowed_png_samples().is_none() && !matches!(self.data, ImageData::Jpeg(_)) {
             budget.charge_decoded(
                 raw_size
                     .checked_mul(3)

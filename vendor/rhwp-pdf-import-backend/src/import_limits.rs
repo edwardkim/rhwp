@@ -212,6 +212,8 @@ pub struct ImportBudget {
     /// Immutable request policy.
     pub limits: PdfImportLimits,
     decoded: AtomicUsize,
+    decoded_limit: AtomicUsize,
+    operator_limit: AtomicUsize,
     codec_allocated: AtomicUsize,
     objects: AtomicUsize,
     entries: AtomicUsize,
@@ -267,6 +269,8 @@ impl ImportBudget {
         Ok(Self {
             limits,
             decoded: AtomicUsize::new(0),
+            decoded_limit: AtomicUsize::new(limits.decoded_bytes),
+            operator_limit: AtomicUsize::new(limits.operators),
             codec_allocated: AtomicUsize::new(0),
             objects: AtomicUsize::new(0),
             entries: AtomicUsize::new(0),
@@ -287,6 +291,25 @@ impl ImportBudget {
             page_stream_cache_hits: AtomicUsize::new(0),
             form_stream_cache_hits: AtomicUsize::new(0),
         })
+    }
+
+    /// Narrow work ceilings once the host knows the selected pages. Existing
+    /// consumption and the first failure remain intact; this can never raise a
+    /// limit. Call before starting extraction workers.
+    pub fn restrict_work_limits(&self, decoded: usize, operators: usize) -> Result<()> {
+        self.check()?;
+        if decoded == 0 || operators == 0 {
+            return Err(self.reject("zero work budget"));
+        }
+        self.decoded_limit.fetch_min(decoded, Ordering::Relaxed);
+        self.operator_limit.fetch_min(operators, Ordering::Relaxed);
+        self.charge_decoded(0)?;
+        self.charge(
+            &self.operators,
+            0,
+            self.operator_limit.load(Ordering::Relaxed),
+            "content operators",
+        )
     }
 
     /// Fail once any previous operation exhausted this request.
@@ -447,7 +470,12 @@ impl ImportBudget {
 
     /// Charge before allocating or extending an output buffer.
     pub fn charge_decoded(&self, amount: usize) -> Result<()> {
-        self.charge(&self.decoded, amount, self.limits.decoded_bytes, "document decoded bytes")
+        self.charge(
+            &self.decoded,
+            amount,
+            self.decoded_limit.load(Ordering::Relaxed),
+            "document decoded bytes",
+        )
     }
 
     /// Charge the requested flat and owned payload bytes before a cache copy.
@@ -469,7 +497,12 @@ impl ImportBudget {
     }
 
     pub(crate) fn charge_operator(&self) -> Result<()> {
-        self.charge(&self.operators, 1, self.limits.operators, "content operators")
+        self.charge(
+            &self.operators,
+            1,
+            self.operator_limit.load(Ordering::Relaxed),
+            "content operators",
+        )
     }
     pub(crate) fn charge_text(&self, amount: usize) -> Result<()> {
         self.charge(&self.text_bytes, amount, self.limits.text_bytes, "shown text bytes")

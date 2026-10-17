@@ -317,6 +317,12 @@ pub fn parse_pdf_with_policy(
         );
     }
     let selected = selected_pages(options, count, &policy)?;
+    let policy = policy.for_selected_pages(selected.len());
+    request
+        .restrict_work_limits(policy.backend.decoded_bytes, policy.backend.operators)
+        .map_err(|error| {
+            PdfImportError::backend(error).at("selection_policy", None, Some(&request))
+        })?;
     let mut document = lowering::new_document().map_err(|_| {
         PdfImportError::new("PDF_LOWERING_FAILED", "IR scaffold initialization failed")
     })?;
