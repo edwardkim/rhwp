@@ -21609,8 +21609,6 @@ impl LayoutEngine {
                     .copied()
                     .unwrap_or(0.0);
             let units = self.cell_units(cell, table, styles);
-            let original_text_frame_cell =
-                self.original_stored_text_frame_cell(cell, table, styles);
             let source_row_height = self.stored_full_width_row_source_height(table, row, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
             let nested_header = self.nested_continuation_header_height(cell, &units, start, styles);
@@ -21735,22 +21733,15 @@ impl LayoutEngine {
                         height <= avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX
                             && h + height > avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX
                     });
+                // 표 전체가 여러 저장 프레임을 가진다는 사실만으로 각 문단의
+                // 원점 되감김을 현재 쪽의 강제 끝으로 보지 않는다. 해당 경계의
+                // 선언·본문·공유 셀 소유가 입증되지 않으면 실제 가용 높이로 나눈다.
                 let strict_saved_frame_break = u.stored_frame_break_before
                     && (plain_zero_origin_boundary
                         || body_frame_reset
                         || self.stored_joint_zero_origin_boundary(cell, table)
                             == Some((u.para_idx, u.vis_start))
                         || self.stored_cut_has_zero_before_origin(cell, table, styles, j)
-                        || (original_text_frame_cell
-                            && u.vis_start == 0
-                            && u.para_idx.checked_sub(1).is_some_and(|previous_idx| {
-                                stored_plain_text_paragraph_frame_reset(
-                                    &cell.paragraphs[previous_idx],
-                                    &cell.paragraphs[u.para_idx],
-                                    styles,
-                                    self.dpi,
-                                )
-                            }))
                         || declared_saved_frame_break
                         || self.cut_starts_saved_zero_origin_text_frame(table, cell, &units, j)
                         || (j == 1

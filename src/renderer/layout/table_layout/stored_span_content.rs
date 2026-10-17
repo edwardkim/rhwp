@@ -272,7 +272,10 @@ impl LayoutEngine {
                     {
                         fit += 1;
                     }
-                    self.snap_units_to_stored_cell_reset(cell, table, styles, su, fit)
+                    // 수용 상자에 들어가는 유닛은 그대로 소비한다. 원점0 근처라고
+                    // 한 유닛 되감으면 들어가는 줄을 다음 조각으로 잘못 미룬다.
+                    // 독립적으로 인증된 저장 owner는 위 경로에서 이미 선택했다.
+                    fit
                 })
                 .max(su)
         } else {
