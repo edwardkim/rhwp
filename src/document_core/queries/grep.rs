@@ -31,7 +31,6 @@ pub struct GrepMatch {
     /// 문단 텍스트 내 매치 시작 위치 (문자 단위).
     #[serde(rename = "charOffset")]
     pub char_offset: usize,
-    length: usize,
     /// 매치 길이 (문자 단위).
     pub length: usize,
     /// 매치가 속한 문단의 전체 텍스트.
@@ -102,7 +101,7 @@ pub struct EquationRef {
 }
 
 /// 매치 주변 발췌를 만든다 (앞뒤 `WINDOW` 문자).
-fn make_context(text: &str, offset: usize, length: usize, length: usize) -> String {
+fn make_context(text: &str, offset: usize, length: usize) -> String {
     const WINDOW: usize = 40;
     let chars: Vec<char> = text.chars().collect();
     let start = offset.saturating_sub(WINDOW);
