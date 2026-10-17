@@ -669,3 +669,41 @@ metric face → 공통 char_width_decision의 전진 굵기 선택 → 토큰 �
 backend별 보정·폭 clamp·fit 허용치 변경은 없다. 내부 metric 식별자는 font file/family의
 이름 변경이 아니며 저장본·시스템 글꼴에는 쓰지 않는다. 후보23에서57/133/134와 전157쪽,
 76076의 정상 경계·원본 gist·집중 입력 및 Native/fresh WASM 양쪽을 다시 확인해야 한다.
+
+
+### 후보23 전쪽 결과와 완료 페이지의 정식 회귀 검사
+
+후보23 `f7ddf477e88933b22f6f6ce67837c6430f231696`은 기본 release-test opt3 Native
+5분15초·fresh WASM codegen16 4분56초 빌드가 모두 exit0이다.80168 전157쪽은 두 경로
+모두 독립 PDF157쪽과 일치하며 최저 Native94.75686%/WASM94.95563%다.90% 미만은0쪽이다.
+새 기준6ed1682c3 대비 각각50쪽 개선했지만, Native30쪽−0.01543%p/85쪽−0.01145%p와
+WASM30쪽−0.04175%p가 남아 전체 PR은 재검토 상태다.90% 통과를 승인으로 바꾸지 않는다.
+
+전쪽·producer·입력/PDF·전체 글꼴 파일 해시·래스터 조건을 대조한 근거는
+`candidate23-vs-baseline6ed-{native,wasm}-merged-80168-verified-comparison.json`이다.
+Native 집계 드라이버는 다중 target summary를 단일 target으로 가정해 후처리에서 실패했다.
+실제 visual_sweep은 전157쪽 exit0으로 완료했으며, 기존 완성 summary에서 해당 key만
+복원하고 binary SHA와 전쪽 범위를 검증했다. 재렌더나 판정값 변경으로 덮지 않았고
+`candidate23-native-summary-recovery.json`에 실제 단계 결과와 후처리 실패를 분리했다.
+같은 드라이버의 문서별 snapshot을 보정해 이후 WASM 전쪽 산출은 후처리까지 exit0이다.
+
+90쪽은 Native/WASM100%/100%로 먼저 선정했다. 원본 Table760의 마지막 행과 계획 글줄,
+독립 PDF의 괘선·기준선·원점을±2px로 보호하며 소유·포함·이전 본문 중복 없음도 검사한다.
+133쪽은99.90063%/99.97526%,139쪽은100%/99.95091%다. Native와 WASM의 해당 review를
+직접 열어 법 조항의 줄바꿈·내용 순서·다음 조항 위치와 중첩 표의4줄·부모 안 포함을 대조했다.
+Native90쪽 review도 새로 생성해 WASM90쪽과 독립 PDF의 같은 영역을 확인했다.
+
+정식 검사는 `tests/cases/regulatory_analysis_completed_pages.rs`에 둔다.133쪽의 첫 법
+조항13줄·첫 줄 끝 사업시/다음 줄 행자는,139쪽의 원본 절대 폭·첫 줄 임대/다음 줄 주택의
+공급량과 전 내용 보존도 검사한다. bbox nominal 상단과 PDF glyph 상단을 혼동하지 않고
+독립 글자 기준선·원점을 고정한다. 새 HWP/PDF/golden은 만들지 않았다. 자동 수집 manifest의
+regression_suite_019로 매핑됨을 --print로 확인했다. 새 Rust 검사의 실행과 수정 전 코드에서
+같은 Rust 검사가 의도한 이유로 실패하는 검증은 아직 남아 있으며 통과로 기록하지 않는다.
+기존 코드의 캡처된 전후 RenderTree 차이와 실제 Rust 검사 실행은 구분한다.
+
+30/85쪽의 굵은 숫자 원점은 새 측정이 독립 PDF에 더 가깝지만 픽셀 하락 원인은 미검증이다.
+이를 글꼴 예외나 허용치 완화로 면제하지 않는다. PDF600dpi 원점 격자 가설은2024에서
+x81.25%/y98.91%이고2020 대응본에서는 거의 성립하지 않아 일반 규칙의 근거로 채택하지
+않았다. 좌표를 snap/clamp하거나 문서별 조건을 추가하지 않았다. 야간방호일지 전1쪽은
+두 경로 모두 기준보다 개선·하락0쪽·90% 이상이며,98% 미달이므로 px 고정 대상으로 삼지 않는다.
+다른 원 PR 문서·기준 쪽수 불일치와 미달 문서·전체 Rust/lint/Skia/Studio 검증은 계속 남아 있다.
