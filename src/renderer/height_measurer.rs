@@ -655,10 +655,56 @@ pub(crate) fn no_ls_tac_table_host_trailing_spacing_px(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<f64> {
-    if !crate::renderer::para_has_no_stored_line_segs(p)
+    if !crate::renderer::para_has_no_stored_line_segs(p) {
+        return None;
+    }
+    reflowed_tac_table_host_trailing_spacing_px(p, styles, dpi)
+}
+
+/// [#7872] 저장 줄이 있는 TAC 표 host 가 **낡은** 줄인가 — 칸 내용이 자라난 표의 점유
+/// 높이(`occupied_px`: 자란 행 합 + 바깥 위·아래 여백)가 저장 줄 높이를 넘는다.
+///
+/// 한/글은 저장 줄이 담지 못하는 표를 그 줄대로 그릴 수 없어 그 줄을 다시 조판한다
+/// (`samples/issue7872/nested-tac-row-drop.hwpx` 의 저장 줄 전부를 지운 변형이 한/글
+/// Print PDF 에서 원본과 같은 쪽을 낸다). 측정·배치는 그 줄을 저장 줄 없는 host 와
+/// 같은 규칙(점유 높이 + 글자 크기로 잰 줄간격)으로 센다. 둘째 문단부터 `vpos=0` 인
+/// 붕괴 사다리 칸에서만 쓴다 — 온전한 사다리는 저장 좌표가 증언이다.
+pub(crate) fn stored_tac_table_host_line_outgrown(
+    p: &Paragraph,
+    occupied_px: f64,
+    dpi: f64,
+) -> bool {
+    if crate::renderer::para_has_no_stored_line_segs(p)
         || p.text
             .chars()
             .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+        || p.controls.is_empty()
+        || !p
+            .controls
+            .iter()
+            .all(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
+    {
+        return false;
+    }
+    let line = p
+        .line_segs
+        .iter()
+        .map(|seg| hwpunit_to_px(seg.line_height.max(0), dpi))
+        .fold(0.0f64, f64::max);
+    line + 0.5 < occupied_px
+}
+
+/// TAC 표만 품은 빈 host 줄 뒤의 줄간격(px) — 글자 크기로 잰 값. 저장 줄 유무를 따지지
+/// 않는다. 저장 줄 없는 host 는 [`no_ls_tac_table_host_trailing_spacing_px`], 낡은 저장
+/// 줄 host 는 [`stored_tac_table_host_line_outgrown`] 판정 뒤에 이 값을 쓴다.
+pub(crate) fn reflowed_tac_table_host_trailing_spacing_px(
+    p: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<f64> {
+    if p.text
+        .chars()
+        .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
         || p.controls.is_empty()
         || !p
             .controls
@@ -2663,6 +2709,85 @@ impl HeightMeasurer {
             .sum()
     }
 
+    /// 저장 호스트 줄이 중첩 표의 **선언** 높이는 품지만, 칸 내용이 자라난 **실측**
+    /// 높이는 못 담을 때 그 초과분(px)의 합.
+    ///
+    /// `unabsorbed_nested_tables_height` 는 `lh ≥ 선언` 이면 표를 줄이 흡수했다고 보고
+    /// 건너뛴다. 그러나 선언 높이로만 적힌 줄(둘째 문단부터 vpos=0 인 붕괴 사다리,
+    /// 생성기 저장본)은 중첩 표의 칸이 내용만큼 자란 뒤의 높이를 모른다. 페인트는
+    /// `resolve_row_heights` 로 자란 행을 그대로 그리므로(#7140) 측정이 선언에 머물면
+    /// 칸이 짧게 재어지고, 뒤 중첩 표가 칸 viewport 에 잘려 행이 사라진다(#7872:
+    /// 1×1 문항 틀 900HU, 둘째 글자처럼 취급 표의 ④⑤ 행 소실).
+    ///
+    /// 붕괴 사다리·NO_LS 의 additive 경로에서만 더한다. 온전한 사다리는 저장 좌표가
+    /// 흡수의 증언이므로 그대로 둔다.
+    fn outgrown_absorbed_nested_tables_height(
+        &self,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        depth: usize,
+    ) -> f64 {
+        if depth >= Self::MAX_NESTED_DEPTH {
+            return 0.0;
+        }
+        let para_count = paragraphs.len();
+        paragraphs
+            .iter()
+            .enumerate()
+            .map(|(pidx, p)| {
+                let para_max_lh = p.line_segs.iter().map(|s| s.line_height).max().unwrap_or(0);
+                if para_max_lh <= 0 {
+                    return 0.0;
+                }
+                let line = hwpunit_to_px(para_max_lh, self.dpi);
+                let mut occupied = 0.0f64;
+                let excess: f64 = p
+                    .controls
+                    .iter()
+                    .filter_map(|ctrl| {
+                        let Control::Table(nested) = ctrl else {
+                            return None;
+                        };
+                        if crate::renderer::float_placement::nested_table_is_overlay(nested)
+                            || para_max_lh < nested.common.height as i32
+                        {
+                            return None;
+                        }
+                        let stretch = self.render_normalization.nested_table_width_scale(nested);
+                        let mt = self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
+                        let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
+                        let om = hwpunit_to_px(nested.outer_margin_top as i32, self.dpi)
+                            + hwpunit_to_px(nested.outer_margin_bottom as i32, self.dpi);
+                        let needed = mt.total_height.max(declared) + om;
+                        occupied = occupied.max(needed);
+                        (needed > line + 0.5).then_some(needed - line)
+                    })
+                    .sum();
+                if excess <= 0.0 {
+                    return 0.0;
+                }
+                // 낡은 host 줄의 저장 줄간격은 생성기 값이다(표 선언 높이의 비율). 한/글은
+                // 그 줄을 다시 조판하므로 줄 뒤 간격도 저장 줄 없는 host 와 같은 글자 크기
+                // 기준 값으로 바꾼다. `text_height` 가 칸의 마지막 문단이 아닌 줄에만 저장
+                // 줄간격을 더했으므로 같은 조건에서만 맞바꾼다.
+                let spacing_swap = if pidx + 1 < para_count
+                    && stored_tac_table_host_line_outgrown(p, occupied, self.dpi)
+                {
+                    let stored = p
+                        .line_segs
+                        .iter()
+                        .map(|seg| hwpunit_to_px(seg.line_spacing, self.dpi))
+                        .fold(0.0f64, f64::max);
+                    reflowed_tac_table_host_trailing_spacing_px(p, styles, self.dpi)
+                        .map_or(0.0, |reflowed| reflowed - stored)
+                } else {
+                    0.0
+                };
+                excess + spacing_swap
+            })
+            .sum()
+    }
+
     fn cell_stored_block_flow(
         &self,
         cell: &crate::model::table::Cell,
@@ -3459,7 +3584,13 @@ impl HeightMeasurer {
                     // outMargin — 이 additive 경로 한정, 한글 검산 160.1)으로 가산.
                     let nested_sum =
                         self.unabsorbed_nested_tables_height(&cell.paragraphs, styles, depth);
-                    text_height + nested_sum
+                    // [#7872] 줄이 흡수한 표라도 자란 칸 내용의 초과분은 페인트가 그린다.
+                    let outgrown = self.outgrown_absorbed_nested_tables_height(
+                        &cell.paragraphs,
+                        styles,
+                        depth,
+                    );
+                    text_height + nested_sum + outgrown
                 } else if has_nested_table_in_cell {
                     // 마지막 문단의 마지막 LINE_SEG의 vpos + line_height
                     let last_seg_end: i32 = cell
@@ -5122,6 +5253,11 @@ impl HeightMeasurer {
                     } else if ladder_collapsed || all_no_ls {
                         mc.total_content_height
                             + self.unabsorbed_nested_tables_height(frame_paragraphs, styles, depth)
+                            + self.outgrown_absorbed_nested_tables_height(
+                                frame_paragraphs,
+                                styles,
+                                depth,
+                            )
                     } else {
                         let nested_bottom =
                             self.cell_nested_controls_bottom(cell, styles, depth, mc_cell_w);

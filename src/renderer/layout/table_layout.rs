@@ -4020,6 +4020,23 @@ impl LayoutEngine {
         } else {
             None
         };
+        if std::env::var("RHWP_DIAG_TAC").is_ok() {
+            eprintln!(
+                "[DIAG_TAC viewport] depth={} meta={:?} col_area=({:.1},{:.1},{:.1},{:.1}) y_start={:.1} row_y_end={:.1} explicit_split={:?} inferred={:?}",
+                depth,
+                table_meta,
+                col_area.x,
+                col_area.y,
+                col_area.width,
+                col_area.height,
+                y_start,
+                row_y.last().copied().unwrap_or(0.0),
+                nested_split.map(|s| (s.start_row, s.end_row, s.visible_height)),
+                inferred_viewport_split
+                    .as_ref()
+                    .map(|s| (s.start_row, s.end_row, s.visible_height)),
+            );
+        }
         let nested_split = nested_split.or(inferred_viewport_split.as_ref());
         let repeated_headers = self.nested_header_frame(
             table,
@@ -7677,6 +7694,9 @@ impl LayoutEngine {
             // 일반 칸까지 밀면 칸 상자 밖 글이 아래 본문과 겹친다.
             let split_cell_tac_flow = fragment_cut_units.is_some();
             let mut tac_flow_bottom: Option<f64> = None;
+            // [#7872] 붕괴 사다리 칸의 TAC 표 host 저장 줄이 자란 표를 담지 못하면 그 줄은
+            // 재조판 줄이다 — 뒤 줄간격을 저장 줄 없는 host 와 같은 값으로 전진한다.
+            let mut stored_tac_host_outgrown = false;
             // [#5712] 같은 문단에서 앞서 배치된 비-TAC TopAndBottom 중첩 표가
             // para_y 를 전진시켰는지 — co-anchored TAC 표의 적층 판별에 쓴다.
             let mut prior_float_table_stacked = false;
@@ -9415,6 +9435,17 @@ impl LayoutEngine {
                                     ),
                                 );
                                 inline_x += tac_om_l + tac_w + tac_om_r;
+                                // [#7872] 저장 host 줄이 자란 표를 담지 못하면 그 줄 뒤 간격을
+                                // 재조판 값으로 전진한다(아래 `stored_tac_host_outgrown` 소비).
+                                if !crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
+                                    && crate::renderer::height_measurer::stored_tac_table_host_line_outgrown(
+                                        para,
+                                        self.calc_nested_table_height(nested_table, styles),
+                                        self.dpi,
+                                    )
+                                {
+                                    stored_tac_host_outgrown = true;
+                                }
                                 // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
                                 let new_bottom = para_y_before_compose + table_h;
                                 if new_bottom > para_y {
@@ -9615,6 +9646,21 @@ impl LayoutEngine {
                                     styles,
                                 ),
                             );
+                            if nested_table.common.treat_as_char
+                                && !crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
+                                && crate::renderer::height_measurer::stored_tac_table_host_line_outgrown(
+                                    para,
+                                    table_h
+                                        + hwpunit_to_px(
+                                            i32::from(nested_table.outer_margin_top)
+                                                + i32::from(nested_table.outer_margin_bottom),
+                                            self.dpi,
+                                        ),
+                                    self.dpi,
+                                )
+                            {
+                                stored_tac_host_outgrown = true;
+                            }
                             if let Some(advance) = self.nested_table_flow_advance(
                                 nested_table,
                                 para,
@@ -9675,7 +9721,14 @@ impl LayoutEngine {
             let tac_host_closing_spacing =
                 crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
                     para, styles, self.dpi,
-                );
+                )
+                .or_else(|| {
+                    stored_tac_host_outgrown.then(|| {
+                        crate::renderer::height_measurer::reflowed_tac_table_host_trailing_spacing_px(
+                            para, styles, self.dpi,
+                        )
+                    }).flatten()
+                });
             // 실제 TAC 종료 문단에서만 원문 유닛 소유를 조회한다. 일반 글줄마다
             // 셀 전체 유닛을 다시 순회하지 않는다.
             let owns_tac_host_end = tac_host_closing_spacing.is_some()
@@ -11023,6 +11076,32 @@ impl LayoutEngine {
                             group_advance + advance
                         };
                         flow_y = flow_y.max(group_top + group_advance);
+                    }
+                }
+            }
+            // [#7872] 저장 host 줄이 자란 표를 담지 못하면 그 줄은 재조판 줄이다 — 줄 뒤
+            // 간격을 저장 줄 없는 host 와 같은 글자 크기 기준 값으로 전진한다. 측정
+            // (`outgrown_absorbed_nested_tables_height`)이 같은 값으로 바꿔 센다.
+            if pidx + 1 < paragraphs.len() {
+                let occupied = para
+                    .controls
+                    .iter()
+                    .filter_map(|control| match control {
+                        Control::Table(table) if table.common.treat_as_char => {
+                            Some(self.calc_nested_table_height(table, styles))
+                        }
+                        _ => None,
+                    })
+                    .fold(0.0f64, f64::max);
+                if crate::renderer::height_measurer::stored_tac_table_host_line_outgrown(
+                    para, occupied, self.dpi,
+                ) {
+                    if let Some(spacing) =
+                        crate::renderer::height_measurer::reflowed_tac_table_host_trailing_spacing_px(
+                            para, styles, self.dpi,
+                        )
+                    {
+                        flow_y += spacing;
                     }
                 }
             }
