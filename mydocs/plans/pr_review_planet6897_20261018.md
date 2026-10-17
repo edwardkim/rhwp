@@ -635,3 +635,37 @@ Native run 오른쪽727.3px가 부모712.5px를 넘는 반례다. 두 원본 모
 뒤집은 두 입력의 선언 폭 보존으로 재검토한다. 실문서의 px 기대값·fixture는 추가하지 않는다.
 후보22의139쪽·76076 p33/34/81/82,157/82/415쪽 쪽수, 기존 정상 표와 새 빈 줄 경계의
 검증 결과는 아직 미검증이며 수정 뒤 Native/fresh WASM에서 다시 확인해야 한다.
+
+
+### 후보22의 폭 보정 결과와 진하게 꾸밈의 전진폭
+
+후보22 `bc4aa3d69eab2a8c11b2e4b131a14edbcba760fa` 진단 Native 빌드는 exit0이다.
+80168 p139는79.76161→100%이고 전157쪽 쪽수를 유지했다.76076은 전82쪽 유지,
+p33/p34=93.00932/91.21163% 그대로이며 p81은97.56622→97.99302%,p82는92.72683%다.
+21761835 기하와 빈 줄6925/7086, mixed-tail 두 입력의 이전 배치도 유지했다.
+새 head의 whole Native/fresh WASM과 전체 회귀는 아직 미검증이다.
+
+후보21의 전157쪽은 새 기준6ed1682c3 대비 Native와 fresh WASM 각각43쪽 개선·0.01%p
+이상 하락0쪽이다. 입력/PDF·글꼴 파일·래스터 조건과 binary/WASM producer SHA도 실제
+summary와 대조했다. Native 미달은133/134/139, WASM은 여기에57쪽89.94942%가 추가된다.
+Native의3쪽만으로 양쪽 검증 완료라고 하지 않는다. WASM109쪽 review도 직접 열어
+제목과8개 항목·표 외곽이 독립 Print와 같은 위치임을 확인했다.
+
+133쪽 첫 줄의 숫자54는 PDF에서 굵은 glyph 폭9.264px와 실제 원점 간격8.8px가 다르다.
+굵은 괄호도 glyph 폭5.712px지만 전진은4.8px다. 이는 보통체 숫자0.55em/괄호 약0.3em
+계약이며, 진하게 속성이 선택한 glyph의 폭을 그대로 전진으로 쓰는 가정이 틀렸다.
+같은 PDF 전쪽과 별도의 한컴2020 HWPX Print156쪽에서 같은 굵은 숫자 간격0.55em을
+확인했다. `malgun-bold-pdf-natural-advance-witness.json`의 원점·glyph 폭·PDF SHA에
+근거를 남겼으며 PDF의 글꼴 프로그램을 디스크로 추출하거나 배포하지 않았다.
+
+HWP5/HWPX에서 보통체 맑은 고딕을 선언하고 진하게 꾸밈을 준 경우만, 기존 source metric
+선택 경로에 보통체 전진 계약을 게시한다. 표시 family·bold와 원본 CharShape는 그대로다.
+명시한 Bold face·italic·임베디드 프로그램·PDF/HWP3 입력에는 새 계약을 옮기지 않는다.
+이 구분은 선언 face와 꾸밈이라는 형식/글꼴 계약이며 문서별 숫자나 위치 조건이 아니다.
+
+생산/소비는 resolve_styles_for_document의 언어별 원본 metric 선택 → 동일 TextStyle/Latin
+metric face → 공통 char_width_decision의 전진 굵기 선택 → 토큰 채움/줄 구성과 동일 문자
+경계를 읽는 실제 배치다. 표시 굵기와 layout 폭을 분리한 기존 공통 구조를 재사용하며
+backend별 보정·폭 clamp·fit 허용치 변경은 없다. 내부 metric 식별자는 font file/family의
+이름 변경이 아니며 저장본·시스템 글꼴에는 쓰지 않는다. 후보23에서57/133/134와 전157쪽,
+76076의 정상 경계·원본 gist·집중 입력 및 Native/fresh WASM 양쪽을 다시 확인해야 한다.

@@ -1638,9 +1638,11 @@ fn char_width_decision_with_hft_tracking<'a>(
         let measured_family =
             crate::renderer::legacy_font_advances::measurement_face(metric_family);
         source_hft_metric = font_metrics_data::is_legacy_hft_metric_face(measured_family);
+        let measured_bold =
+            crate::renderer::legacy_font_advances::measurement_bold(metric_family, style.bold);
         let mut embedded = measure_char_width_embedded_decision_for_font(
             measured_family,
-            style.bold,
+            measured_bold,
             style.italic,
             c,
             font_size,
