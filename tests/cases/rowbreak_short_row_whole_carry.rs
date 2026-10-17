@@ -174,6 +174,17 @@ fn grown_boundary_row_continues_and_successor_keeps_its_stored_line() {
     );
 }
 
+/// 1613000 191쪽: 새 쪽 첫머리에 통째로 든 18×3 표(구역 2 `pi=9`, 문단 기준 자리차지, 세로 오프셋
+/// 86.5px)의 상자는 바깥 아래 여백까지 631.9px 에서 닫히고, 뒤 빈 문단 `pi=10` 줄은 그 아래 자기 저장
+/// 줄(vpos 47394)에 놓인다. 그래서 `pi=11` 제목 뒤 46×3 표 첫 조각은 한/글 2020 PDF 처럼 `1.2 교육 계획`
+/// (행 4)까지 담고 192쪽이 행 5(`1.2.1`)로 시작한다. 수정 전 rhwp 는 이 표의 흐름에 세로 오프셋을
+/// 넣지 않아 뒤 문단이 14.5px 위에서 시작했고, 첫 조각이 행 5 까지 담아 192–193쪽이 한 행씩 밀렸다.
+#[test]
+fn whole_table_on_a_fresh_page_leaves_its_successor_on_the_stored_line() {
+    let core = core(SAMPLE_1613000);
+    assert_whole_row_boundary(&core, 191, 11, 5);
+}
+
 /// 1480000 표 12(`pi=263`) 118행은 둘째 줄이 vpos 0 에서 다시 시작하는 저장 쪽 컷이다. 한/글 2020
 /// PDF 는 43쪽 끝에 첫 줄을 두고 44쪽 첫머리에서 `L40-like isoform X1` 을 잇는다. 표 뒤 빈 문단
 /// `pi=264` 는 표 시작 쪽의 옛 vpos(72003)를 갖지만, 되감긴 다음 문단 `pi=265` 의 저장 위치가 그
