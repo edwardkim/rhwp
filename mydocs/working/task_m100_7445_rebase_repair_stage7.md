@@ -94,3 +94,44 @@ HWP3/HWP5 목차 오른쪽 끝 정렬 두 검사다. 기준을 바꾸거나 검�
 ○는 metric trace에서 heuristicFullwidth이며, 기준보다 큰 원 모양이 보인다.
 이를 글자 유무·폰트 설치만으로 해결됐다고 하거나 새 정상 golden으로 고정하지 않는다.
 Native93.07399/WASM95.87967%는 이전 acd4 출력의 수치이며 새 후보 통과 수치가 아니다.
+
+
+### C87 전쪽·실제 소비와 기존 리더 핀 보완
+
+production code4541014e3e와 같은 source의 새 Native148.492초/fresh WASM196.611초를
+사용했다. Mac locked wrapper web/no-opt 대체 빌드이며 Docker 최적화 통과가 아니다.
+수동 Print64쪽 전체는 Native93.07399/WASM95.87967%·미달0·쪽수64/64다.
+2쪽은97.57913→97.97410%,98.33185→98.71502%로 각각 개선됐고, 이전 후보 전64쪽
+대비0.01%p 이상 하락은 양쪽0쪽이다. 이는 이전 후보 비교이며 upstream 비교가 아니다.
+같은 source의19쪽 raw99.43242/99.61477%와 PNG byte identity도 확인했다.
+
+Native/fresh WASM2쪽 review/overlay를 직접 열어 숫자 끝점 정렬과 한 탭의 단일 리더를
+확인했다. 실제 Studio default2022 Canvas2D Print96DPI는99.33039%이며 초기화 응답
+JS/WASM2개의 hash가 새 동결 package와 일치한다. 그 review/overlay도 직접 열었다.
+실제96DPI 결과를 portable192DPI 쪽의98% 자격으로 바꿔 쓰지 않았다.
+
+전쪽 검증 뒤 기존 `sample16_hwp5_toc_leaders_stop_before_page_numbers`의x650 핀을
+같은 글줄의 실제 숫자 glyph를 리더가 침범하지 않는 관계로 바꿨다. 숫자는 리더 시작과
+font-size에서 얻은 같은 글줄 관계로 찾고 고정된 용지 영역으로 선택하지 않는다.
+같은 issue1116의13개 검사는 모두 유지하여13PASS(0.354초)를 확인했다.
+처음 body 수정으로 suite weight가 달라진 뒤 derive만 보고 실행한 시도는0건/exit4였다.
+이 실행은 무효로 보존하고 --prepare로 실제15번 suite를 재생성한 뒤13건을 실행했다.
+0건을 통과 증거로 합산하지 않는다. source·원본·독립 기대값·허용치는 변경하지 않았다.
+
+[전쪽 TSV·전후 review/overlay·실제 Studio 소비](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/toc-anchor-20261017/README.md)를 연결했다.
+전체 nextest·필수 gate·전체48조건의 새 devel 비교·실제68경로는 별도로 남아 있다.
+
+### 추가 원본 HWP3의 기준 확인 — 완료 범위와 구분
+
+issue1116의 원본 HWP3도 별도로 확인했다. 기존 Cairo PDF를 독립 한컴 출력으로
+승격하지 않고 원본SHA559fd94860cf836d5800436d56055c23a73e59eedef3da273a5ba365e6ed9e16에서
+engine2020의 실제 한컴11.0.0.9136 Print(method0,one-up)을 새로 확보했다.
+PDF SHA8f0bfd27ae567481e244f39de6f7b596b3afa8b227dce895d4ebf9cebc416bd0,
+64쪽/2150230바이트이며 기존 PDF·원본은 보존했다. 출력 job은
+`e5e48314-3620-40cb-a9a8-b90ce3e31348`이다.
+현재64쪽의 최저는Native13.84189/WASM14.60170%,각44쪽 미달이다.
+3쪽 review/overlay를 직접 대조해 본문 세로 배치·도형·글자 차이를 확인했다.
+변환된 HWP5 수동 Print64쪽의 완료 결과와 원본 HWP3 결과를 섞지 않는다.
+원본 HWP3는 기존48조건 밖의 추가 자격 조사이며, 현재 전쪽 개선 완료를 주장하지 않는다.
+같은 새 PDF/글꼴/compat2022의 고정 devel 전쪽 비교는 진행 중이다.
+이 조사에서 기존 원본 HWP3 검사·기대값을 삭제하거나 낮추지 않았다.
