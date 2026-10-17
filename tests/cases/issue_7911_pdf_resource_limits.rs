@@ -2482,8 +2482,24 @@ fn limited_sample_geometry_and_decode_do_not_silently_fabricate_pixels() {
 #[test]
 fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
     use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
+    // #7974 supports colour keys: the black source sample matches all three
+    // original component ranges and is transparent; the red control remains
+    // opaque (PDF 1.7 4.8.5).
+    let keyed = indexed_image_pdf(
+        &[0, 0, 0, 255, 0, 0],
+        "/Width 2 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Mask [0 0 0 0 0 0]",
+        b"null",
+    );
+    let imported = parse_pdf_with_options(&keyed, &PdfImportOptions::default()).unwrap();
+    let rgba = image::load_from_memory(&imported.document.bin_data_content[0].data.load())
+        .unwrap()
+        .to_rgba8();
+    assert_eq!(rgba.dimensions(), (2, 1));
+    assert_eq!(
+        rgba.pixels().map(|p| p.0).collect::<Vec<_>>(),
+        [[0, 0, 0, 0], [255, 0, 0, 255]]
+    );
     for (extra, mask_object) in [
-        ("/Mask [0 0 0 0 0 0]", b"null".to_vec()),
         ("/SMask 7 0 R", b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /DCTDecode /Length 1 >>\nstream\n\x80\nendstream".to_vec()),
     ] {
         let entries = format!("/Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB {extra}");
@@ -2782,20 +2798,29 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
     for inline in [false, true] {
         let source = if inline {
             object_file(
-                &objects(b"BI /W 1 /H 1 /IM true /BPC 1 ID \x80 EI", "", ""),
+                &objects(b"BI /W 2 /H 1 /IM true /BPC 1 ID \x80 EI", "", ""),
                 "",
             )
         } else {
             indexed_image_pdf(
                 &[0x80],
-                "/Width 1 /Height 1 /ImageMask true /BitsPerComponent 1",
+                "/Width 2 /Height 1 /ImageMask true /BitsPerComponent 1",
                 b"null",
             )
         };
-        let err = parse_pdf_with_options(&source, &PdfImportOptions::default())
-            .err()
-            .expect("stencil import requires the painting colour");
-        assert_eq!(err.code, "PDF_IMAGE_UNSUPPORTED");
+        // #7974 supplies the current painting colour for both invocation
+        // paths. Default Decode [0 1] leaves the set bit transparent and paints
+        // the clear bit with the default black nonstroking colour.
+        let imported = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+        let rgba = image::load_from_memory(&imported.document.bin_data_content[0].data.load())
+            .unwrap()
+            .to_rgba8();
+        assert_eq!(rgba.dimensions(), (2, 1));
+        assert_eq!(
+            rgba.pixels().map(|p| p.0).collect::<Vec<_>>(),
+            [[0, 0, 0, 0], [0, 0, 0, 255]],
+            "inline={inline}"
+        );
     }
     // Null dictionary values are absent, and a false ImageMask is ordinary
     // colour data (ISO 32000-1 7.3.9 and Table 89).
@@ -2814,14 +2839,16 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
         [10, 20, 30]
     );
 
-    // A later masked page must fail the whole import, while selecting just the
-    // ordinary first page remains valid. No partially built IR may escape.
+    // A later unsupported mask codec must fail the whole import, while
+    // selecting just the ordinary first page remains valid. Keep the atomicity
+    // contract with DCT SMask, rather than a now-supported colour-key array.
     let mut pages = objects(b"/Im Do", "", "");
     pages[1] = b"<< /Type /Pages /Count 2 /Kids [3 0 R 7 0 R] >>".to_vec();
     pages[2] = b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /XObject << /Im 6 0 R >> >> /Contents 4 0 R >>".to_vec();
     pages.push(b"<< /Subtype /Image /Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Length 3 >>\nstream\nABC\nendstream".to_vec());
     pages.push(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /XObject << /Im 8 0 R >> >> /Contents 4 0 R >>".to_vec());
-    pages.push(b"<< /Subtype /Image /Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /Mask [0 0 0 0 0 0] /Length 3 >>\nstream\nABC\nendstream".to_vec());
+    pages.push(b"<< /Subtype /Image /Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB /SMask 9 0 R /Length 3 >>\nstream\nABC\nendstream".to_vec());
+    pages.push(b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /DCTDecode /Length 1 >>\nstream\n\x80\nendstream".to_vec());
     let source = object_file(&pages, "");
     for source_pages in [None, Some(vec![1])] {
         let error = parse_pdf_with_options(&source, &PdfImportOptions { source_pages })
