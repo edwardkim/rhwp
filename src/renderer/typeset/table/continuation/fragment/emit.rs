@@ -1862,7 +1862,7 @@ impl TypesetEngine {
             })
             .or_else(|| {
                 let row = end_row.checked_sub(1)?;
-                let minimum = layout_engine.reflow_row_physical_minimum(table, row, styles);
+                let minimum = layout_engine.reflow_row_physical_minimum(table, row, mt.row_heights[row], styles);
                 // 블록 컷은 여러 행의 셀 슬롯이다. 마지막 일반 행의 최소와
                 // 빼서 시작 행 잔여로 넘기면 이미 소비한 행의 빈 띠를 재생성한다.
                 if split_block_start.is_some()

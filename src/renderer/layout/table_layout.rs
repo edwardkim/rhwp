@@ -25750,12 +25750,13 @@ impl LayoutEngine {
     }
 
     /// 단일 행 셀의 선언 최소 높이 중 전체 내용 점유 밖의 공간만 물리 잔여를 갖는다.
-    /// 앞 행의 rowspan은 다른 셀의 공간이며 이 독립 최소 높이를 없애지 않는다.
-    /// 해석된 행 높이의 rowspan 배분은 쓰지 않고 스캔과 이어받기가 같은 원본값을 읽는다.
+    /// 앞 행의 rowspan 존재만으로 독립 최소 높이를 없애지 않는다. 다만 병합 행의
+    /// 공통 높이 배분에서 앞 행이 이미 차지한 공간을 원본 선언값으로 다시 예약하지 않는다.
     pub(crate) fn reflow_row_physical_minimum(
         &self,
         table: &crate::model::table::Table,
         row: usize,
+        row_frame_height: f64,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         let table_reflowed = self
@@ -25771,7 +25772,7 @@ impl LayoutEngine {
                     && Self::cell_has_plain_reflow_paragraphs(cell, table_reflowed)
             })
             .filter_map(|cell| {
-                let minimum = hwpunit_to_px(cell.height as i32, self.dpi);
+                let minimum = hwpunit_to_px(cell.height as i32, self.dpi).min(row_frame_height);
                 let end = self.cell_units(cell, table, styles).len();
                 let content = self.cell_cut_visible_height(cell, table, styles, 0, end);
                 // 다른 칸의 긴 내용이 이 칸의 독립 최소를 지우지 않는다.
