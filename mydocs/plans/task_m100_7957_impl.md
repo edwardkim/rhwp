@@ -82,6 +82,16 @@ decoded 누적 256 MiB, frontend 개별 path 20,000 operations·문서 누적 80
 
 ### F5 — 통합·직접 판독·최종 검증
 
+- 2026-10-17 사용자 지적에 따라 `bounded_import_path.pdf`의 검정 텍스트 배경도 포함한다.
+  원본은 `/Cs1 cs` 뒤 `1 1 1 sc`로 흰 도형을 그리지만 path extractor가 이 색 명령을
+  소비하지 않아 이전 검정을 사용했다. `ColorSpace` 자원 → q/Q에 보존하는 해석된 색 공간 →
+  페이지/Form 공통 colour operator → `PathContent.fill_color/stroke_color` →
+  `src/parser/pdf/path_paint.rs`의 IR fill/벡터 paint → Native/WASM 출력 순서로 보정한다.
+  `rg/g/k`의 색 공간 전환, 이름 충돌이 있는 Form scope, stroke와 `SCN/scn`, 저장·복원을
+  반례로 사용한다. ISO 32000-1:2008 8.6.5.5·8.6.8(Table 74)를 근거로 하며 문서별
+  예외나 흰색 덮어씌우기로 출력을 숨기지 않는다. ICC CMM이 없는 bounded 제품 경로는
+  명시적 Alternate/규정된 N별 기본 공간을 사용하고, 다른 색 공간 전체 지원으로 확대해
+  보고하지 않는다. 변경 전 313쪽 WASM TSV·10595 PASS는 변경 전 결과로 보존한다.
 - 절편별 작은 경계·영향 페이지 판독 뒤 최종 소스의 Native와 실제 Docker WASM을 만든다.
   root pkg/public과 Studio 실제 fetch의 hash를 확인한다. 기존 7700을 임의로 교체하지 않고
   별도 review 서버/탭을 사용한다.

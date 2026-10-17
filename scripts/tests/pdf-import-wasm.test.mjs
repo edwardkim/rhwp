@@ -56,7 +56,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
   add('/real.pdf', join(root, 'pdf/issue5875/nested_table_text_caption-2020.pdf'), 'application/pdf');
   add('/control.hwp', join(root, 'samples/hwp_table_test.hwp'), 'application/octet-stream');
   files.set('/synthetic.pdf', ['application/pdf', syntheticPdf()]);
-  files.set('/synthetic-many-pages.pdf', ['application/pdf', syntheticPdf(162)]);
+  files.set('/synthetic-many-pages.pdf', ['application/pdf', syntheticPdf(1025)]);
   const server = http.createServer((req, res) => {
     if (req.url === '/') { res.setHeader('Content-Type', 'text/html'); res.end('<!doctype html><meta charset="utf-8">'); return; }
     const file = files.get(req.url);
@@ -118,8 +118,9 @@ test('Docker product WASM: public API, active document isolation and real Worker
       });
       check(JSON.stringify(text(selected)) === '["FIRST","THIRD"]', 'selected content and order');
       const manyBytes = new Uint8Array(await (await fetch('/synthetic-many-pages.pdf')).arrayBuffer());
-      const late = wasm.HwpDocument.importPdf(manyBytes, { sourcePages: [128, 161] });
-      check(late.pageCount() === 2 && JSON.stringify(text(late)) === '["PAGE_129","PAGE_162"]', 'source indices beyond the former page ceiling stay distinct from selected count');
+      throwsCode(() => wasm.HwpDocument.importPdf(manyBytes, {}), 'PDF_RESOURCE_LIMIT');
+      const late = wasm.HwpDocument.importPdf(manyBytes, { sourcePages: [128, 1024] });
+      check(late.pageCount() === 2 && JSON.stringify(text(late)) === '["PAGE_129","PAGE_1025"]', 'source indices beyond the former page ceiling stay distinct from selected count');
       late.free();
       for (const save of ['exportHwp', 'exportHwpx']) {
         const reopen = new wasm.HwpDocument(selected[save]());

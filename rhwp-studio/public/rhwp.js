@@ -5362,6 +5362,22 @@ export class HwpDocument {
         }
     }
     /**
+     * Worker가 입력을 복사하기 전에 제품의 실제 요청 한도를 조회한다.
+     * @returns {string}
+     */
+    static getPdfImportPolicy() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.hwpdocument_getPdfImportPolicy();
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * 그림 컨트롤의 속성을 조회한다.
      *
      * 반환: JSON `{ width, height, treatAsChar, ... }`

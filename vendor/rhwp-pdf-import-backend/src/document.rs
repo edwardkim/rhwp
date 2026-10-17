@@ -19705,7 +19705,6 @@ impl PdfDocument {
         use crate::content::{parse_content_stream_paths_only, Operator};
         use crate::elements::{LineCap, LineJoin};
         use crate::extractors::paths::{FillRule, PathExtractor, PathGraphicsStateStack};
-        use crate::layout::Color;
 
         // Get page object and content stream
         let page = self.get_page(page_index)?;
@@ -19747,6 +19746,7 @@ impl PdfDocument {
 
         let mut extractor = PathExtractor::new();
         let mut state_stack = PathGraphicsStateStack::new();
+        extractor.update_from_path_state(state_stack.current());
 
         // Resolve and set page resources for XObject processing
         if let Some(resources) = page_dict.get("Resources") {
@@ -19772,6 +19772,9 @@ impl PdfDocument {
             extractor.paint.source_order = vec![ordinal];
             extractor.paint.clip = clips.current().clip;
             clips.apply(&op);
+            if self.process_path_color_operator(&op, &mut extractor, state_stack.current_mut())? {
+                continue;
+            }
             match op {
                 // Graphics state operators
                 Operator::SaveState => {
@@ -19787,36 +19790,6 @@ impl PdfDocument {
                     // PDF spec ISO 32000-1:2008 §8.3.4: cm concatenates as M_cm × CTM
                     state.ctm = new_matrix.multiply(&state.ctm);
                     extractor.set_ctm(state.ctm);
-                },
-
-                // Color operators (stroke)
-                Operator::SetStrokeRgb { r, g, b } => {
-                    state_stack.current_mut().stroke_color_rgb = (r, g, b);
-                    extractor.set_stroke_color(Color::new(r, g, b));
-                },
-                Operator::SetStrokeGray { gray } => {
-                    state_stack.current_mut().stroke_color_rgb = (gray, gray, gray);
-                    extractor.set_stroke_color(Color::new(gray, gray, gray));
-                },
-                Operator::SetStrokeCmyk { c, m, y, k } => {
-                    let (r, g, b) = crate::color::cmyk_to_rgb(c, m, y, k);
-                    state_stack.current_mut().stroke_color_rgb = (r, g, b);
-                    extractor.set_stroke_color(Color::new(r, g, b));
-                },
-
-                // Color operators (fill)
-                Operator::SetFillRgb { r, g, b } => {
-                    state_stack.current_mut().fill_color_rgb = (r, g, b);
-                    extractor.set_fill_color(Color::new(r, g, b));
-                },
-                Operator::SetFillGray { gray } => {
-                    state_stack.current_mut().fill_color_rgb = (gray, gray, gray);
-                    extractor.set_fill_color(Color::new(gray, gray, gray));
-                },
-                Operator::SetFillCmyk { c, m, y, k } => {
-                    let (r, g, b) = crate::color::cmyk_to_rgb(c, m, y, k);
-                    state_stack.current_mut().fill_color_rgb = (r, g, b);
-                    extractor.set_fill_color(Color::new(r, g, b));
                 },
 
                 Operator::SetExtGState { dict_name } => {
@@ -20251,7 +20224,6 @@ impl PdfDocument {
         use crate::content::{parse_content_stream_paths_only, Matrix, Operator};
         use crate::elements::{LineCap, LineJoin};
         use crate::extractors::paths::FillRule;
-        use crate::layout::Color;
 
         if let Some(budget) = &self.import_budget {
             budget.xobject_visit()?;
@@ -20451,6 +20423,9 @@ impl PdfDocument {
             extractor.paint.source_order.push(ordinal);
             extractor.paint.clip = clips.current().clip;
             clips.apply(&op);
+            if self.process_path_color_operator(&op, extractor, state_stack.current_mut())? {
+                continue;
+            }
             match op {
                 // Graphics state operators
                 Operator::SaveState => {
@@ -20468,34 +20443,6 @@ impl PdfDocument {
                     extractor.set_ctm(state.ctm);
                 },
 
-                // Color and line style operators — must update both state_stack
-                // and extractor so q/Q save/restore works correctly.
-                Operator::SetStrokeRgb { r, g, b } => {
-                    state_stack.current_mut().stroke_color_rgb = (r, g, b);
-                    extractor.set_stroke_color(Color::new(r, g, b));
-                },
-                Operator::SetStrokeGray { gray } => {
-                    state_stack.current_mut().stroke_color_rgb = (gray, gray, gray);
-                    extractor.set_stroke_color(Color::new(gray, gray, gray));
-                },
-                Operator::SetStrokeCmyk { c, m, y, k } => {
-                    let (r, g, b) = crate::color::cmyk_to_rgb(c, m, y, k);
-                    state_stack.current_mut().stroke_color_rgb = (r, g, b);
-                    extractor.set_stroke_color(Color::new(r, g, b));
-                },
-                Operator::SetFillRgb { r, g, b } => {
-                    state_stack.current_mut().fill_color_rgb = (r, g, b);
-                    extractor.set_fill_color(Color::new(r, g, b));
-                },
-                Operator::SetFillGray { gray } => {
-                    state_stack.current_mut().fill_color_rgb = (gray, gray, gray);
-                    extractor.set_fill_color(Color::new(gray, gray, gray));
-                },
-                Operator::SetFillCmyk { c, m, y, k } => {
-                    let (r, g, b) = crate::color::cmyk_to_rgb(c, m, y, k);
-                    state_stack.current_mut().fill_color_rgb = (r, g, b);
-                    extractor.set_fill_color(Color::new(r, g, b));
-                },
                 Operator::SetExtGState { dict_name } => {
                     if let Some(resources) = extractor.current_resources() {
                         let (fill, stroke) = self.paint_alpha(resources, &dict_name)?;
