@@ -76,9 +76,7 @@ impl LayoutEngine {
         for (index, cell_index) in Self::row_cut_cell_order(table, row).into_iter().enumerate() {
             let cell = &table.cells[cell_index];
             let units = self.cell_units(cell, table, styles);
-            let Some(&end) = end_cut.get(index) else {
-                return None;
-            };
+            let &end = end_cut.get(index)?;
             if end > units.len() {
                 return None;
             }
@@ -101,9 +99,7 @@ impl LayoutEngine {
             {
                 return None;
             }
-            let Some(paragraph) = cell.paragraphs.get(closing.para_idx) else {
-                return None;
-            };
+            let paragraph = cell.paragraphs.get(closing.para_idx)?;
             if paragraph.text.trim().is_empty()
                 || paragraph.stored_text_partition_is_dirty()
                 || paragraph.cell_format_vpos_dirty
@@ -115,9 +111,7 @@ impl LayoutEngine {
             {
                 return None;
             }
-            let Some(style) = styles.para_styles.get(paragraph.para_shape_id as usize) else {
-                return None;
-            };
+            let style = styles.para_styles.get(paragraph.para_shape_id as usize)?;
             if (complete && style.keep_with_next)
                 || (!complete && (style.keep_lines || style.widow_orphan))
             {
