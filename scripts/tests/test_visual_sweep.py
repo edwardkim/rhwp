@@ -447,13 +447,13 @@ class PdfRasterFillStateTests(unittest.TestCase):
 
     def test_stroke_width_cannot_erase_or_change_a_filled_rectangle(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            for fill in ["f", "f*"]:
+            for rule, fill in [("nonzero", "f"), ("evenodd", "f*")]:
                 with self.subTest(fill=fill):
                     outputs = []
                     for index, state in enumerate(["", ".14 w "]):
-                        source = Path(directory) / f"source-{fill}-{index}.pdf"
+                        source = Path(directory) / f"source-{rule}-{index}.pdf"
                         source.write_bytes(self.pdf(state + f"0 g 10 20 60 .12 re {fill}\n"))
-                        prefix = Path(directory) / f"page-{fill}-{index}"
+                        prefix = Path(directory) / f"page-{rule}-{index}"
                         for command in SWEEP.pdf_raster_commands(source, 96, prefix, [1]):
                             subprocess.run(command, check=True, capture_output=True)
                         with Image.open(prefix.with_name(prefix.name + "-1.png")) as raster:
