@@ -21848,9 +21848,7 @@ impl LayoutEngine {
                         || shared_empty_frame)
                     && (strict_saved_frame_break
                         || ((!relaxed_hard_break
-                            || (!u.empty_spacer
-                                && (h + unit_fit_height > avail_height
-                                    || avail_height - h <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
+                            || (!u.empty_spacer && h + unit_fit_height > avail_height))
                             && !units[start..j].iter().all(|unit| unit.empty_spacer)
                             && !tiny_fragment_waste))
                 {
