@@ -5,7 +5,8 @@
 - 준비 기준: `devel` / `upstream/devel` `7d01ef610f378157b79d36ef23e8ed4a3c8ab051`
 - Issue: [#7998](https://github.com/edwardkim/rhwp/issues/7998), 담당 edwardkim, milestone v1.0.0
 - 상태: 2026-10-17 작업지시자가 계획·이슈 등록·구현을 승인했다. 최신 devel 동기화와 담당 지정을 확인하고 `task_m100_7998`에서 구현한다.
-- 새 이슈 번호는 등록 전 예측하지 않는다. 승인 후 동일 증상·작업 담당을 확인하고 최신 devel에서 작업 브랜치를 만든다.
+- 진행: [1차 구현·검증](../working/task_m100_7998_stage1.md), [세부 후속 일감](task_m100_7998_backlog.md).
+  관측/후보/보류 경로를 연결했으며 새 지역 가설의 최종 IR 소비와 기존 시각 미달은 남아 있다.
 - 관련 범위: [#7911](https://github.com/edwardkim/rhwp/issues/7911)의 제품 PDF frontend와
   [기존 백로그 B09](task_m100_7911_backlog.md). 닫힌 기반 이슈를 이번 개선의 완료 근거로 삼지 않는다.
 

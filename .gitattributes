@@ -97,3 +97,6 @@ pdf/two-digits-table-wrap-2020.pdf -text -diff
 # Issue #7333 stored input and visual references are binary evidence.
 samples/issue7333/*.hwp -text -diff
 pdf/issue7333/*.pdf -text -diff
+
+# #7998 독립 PDF 격자의 xref·stream 바이트를 텍스트 변환 없이 보존한다.
+pdf/issue7998/solid-control.pdf -text -diff

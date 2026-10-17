@@ -163,6 +163,16 @@ test('Docker product WASM: public API, active document isolation and real Worker
       check(selected.pageCount() === 2, 'explicit selection page count');
       check(JSON.stringify(diagnostics.pages.map(p => [p.sourcePage, p.outputSection])) === '[[0,0],[2,1]]', 'source/output section mapping');
       check(diagnostics.parserAllocationBoundsProven === false && diagnostics.paragraphPolicy && diagnostics.warnings.length, 'incomplete bounds and paragraph policy exposed');
+      check(diagnostics.pages.every(p => p.tableInference && !p.tableInference.glyphs), 'default PDF diagnostics omit source glyph ledger');
+      const observed = wasm.HwpDocument.importPdf(bytes, { sourcePages: [0], includeTableInference: true });
+      try {
+        const ledger = JSON.parse(observed.getPdfImportDiagnostics()).pages[0].tableInference;
+        check(ledger.ruleVersion === 'tsg-observations-v1' && ledger.glyphs.map(g => g.text).join('') === 'FIRST', 'opt-in table observations preserve source glyphs');
+        check(new Set(ledger.glyphs.map(g => g.id)).size === ledger.glyphs.length, 'table observation IDs are unique');
+      } finally { observed.free(); }
+      for (const flag of ['true', 1, null, []]) {
+        throwsCode(() => wasm.HwpDocument.importPdf(bytes, { includeTableInference: flag }), 'PDF_IMPORT_OPTIONS');
+      }
       const text = doc => Array.from({ length: doc.pageCount() }, (_, p) => {
         const xml = new DOMParser().parseFromString(doc.renderPageSvg(p), 'image/svg+xml');
         return [...xml.querySelectorAll('text')].map(t => t.textContent).join('');
@@ -246,9 +256,11 @@ test('Docker product WASM: public API, active document isolation and real Worker
         await rejectsCode(session.importPdf(new Uint8Array([0])), 'PDF_INVALID_INPUT');
         await rejectsCode(session.importPdf(new TextEncoder().encode('%PDF-1.4\n')), 'PDF_PARSE_FAILED');
         await rejectsCode(session.importPdf(new Uint8Array(policy.backend.inputBytes + 1)), 'PDF_RESOURCE_LIMIT');
-        const valid = await session.importPdf(real, { sourcePages: [0, 6, 7] }, { timeoutMs: 60_000 });
+        const valid = await session.importPdf(real, { sourcePages: [0, 6, 7], includeTableInference: true }, { timeoutMs: 60_000 });
         check(workers === afterFailureWorkers && valid.pageCount === 3, 'same Worker failure then normal input');
         check(valid.diagnostics.pages.map(p => p.sourcePage).join() === '0,6,7', 'Worker source selection');
+        check(valid.diagnostics.pages.every(p => Array.isArray(p.tableInference.glyphs)
+          && Array.isArray(p.tableInference.candidates)), 'Worker transports opt-in table observations and hypotheses');
         await rejectsCode(session.importPdf(real, {}, { timeoutMs: 1 }), 'PDF_IMPORT_TIMEOUT');
         check((await session.inspect()).pageCount === 3, 'timeout preserves active document');
         // Warm the candidate, then abort a real import attempt (no in-WASM phase timing claim).

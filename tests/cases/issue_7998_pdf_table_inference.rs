@@ -154,3 +154,75 @@ fn subpoint_strokes_remain_observations_and_periodic_coverage_is_not_paint() {
         );
     }
 }
+
+#[test]
+fn supported_solid_grid_keeps_unique_cell_content_through_both_save_formats() {
+    use rhwp::{model::control::Control, DocumentCore};
+    // Independently authored PDF: four closed faces, A/B above C/D. Visual evidence:
+    // task_m100_7998_stage1.md — Native 100%, fresh Docker WASM 99.53052%,
+    // both 1 page at 96dpi, including direct border/content inspection.
+    let input = include_bytes!("../../pdf/issue7998/solid-control.pdf");
+    let core = DocumentCore::from_pdf_bytes(input, &PdfImportOptions::default()).unwrap();
+    assert_eq!(core.pdf_metadata().unwrap().pages[0].semantic_tables, 1);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let saved = rhwp::parser::parse_document(&bytes).unwrap();
+        assert_eq!(saved.sections.len(), 1);
+        let controls: Vec<_> = saved.sections[0]
+            .paragraphs
+            .iter()
+            .flat_map(|p| &p.controls)
+            // HWP serialization also emits section/column definitions; they are not paint.
+            .filter(|c| {
+                matches!(
+                    c,
+                    Control::Table(_) | Control::Shape(_) | Control::Picture(_)
+                )
+            })
+            .collect();
+        assert!(
+            saved.sections[0]
+                .paragraphs
+                .iter()
+                .all(|p| !p.text.chars().any(|c| matches!(c, 'A' | 'B' | 'C' | 'D'))),
+            "source characters must not also remain in the outer paragraph"
+        );
+        assert_eq!(
+            controls.len(),
+            1,
+            "source text/rules must not also remain as duplicate floating controls"
+        );
+        let Control::Table(table) = controls[0] else {
+            panic!("supported geometry must remain an editable table");
+        };
+        assert_eq!((table.row_count, table.col_count), (2, 2));
+        let cells: std::collections::BTreeMap<_, _> = table
+            .cells
+            .iter()
+            .map(|cell| {
+                (
+                    (cell.row, cell.col),
+                    cell.paragraphs
+                        .iter()
+                        .map(|p| p.text.as_str())
+                        .collect::<String>(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            cells,
+            std::collections::BTreeMap::from([
+                ((0, 0), "A".into()),
+                ((0, 1), "B".into()),
+                ((1, 0), "C".into()),
+                ((1, 1), "D".into())
+            ])
+        );
+        assert!(table
+            .cells
+            .iter()
+            .all(|c| c.row_span == 1 && c.col_span == 1));
+    }
+}
