@@ -1,8 +1,6 @@
 //! 구역 문단 처리의 place_paragraph_flow 단계. 조건·예약·발행 순서를 유지한다.
 use crate::renderer::typeset::{
-    hwpunit_to_px, is_synthetic_line_seg,
-    native_hwp5_circled_rowbreak_table_heading_requires_fresh_page,
-    native_hwp5_first_footnote_overlap_break_line, notes,
+    hwpunit_to_px, is_synthetic_line_seg, native_hwp5_first_footnote_overlap_break_line, notes,
     original_hwpx_tac_filled_page_keeps_short_trail, synth_square_wrap_rects, ComposedParagraph,
     Control, Issue2424TypesetProfile, MeasuredTable, PageDef, PageItem, Paragraph,
     ResolvedStyleSet, TypesetEngine, TypesetState,
@@ -198,11 +196,6 @@ impl TypesetEngine {
             native_hwp5_footnote_break =
                 native_hwp5_first_footnote_overlap_break_line(&st, para, &formatted, self.dpi);
             let is_last_in_section = para_idx + 1 == paragraphs.len();
-            if native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
-                &st, para, &formatted, paragraphs, para_idx, self.dpi,
-            ) {
-                st.advance_column_or_new_page();
-            }
             // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
             self.vpos_snap_current_height(
                 st,
