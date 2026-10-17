@@ -1095,6 +1095,59 @@ export class HwpDocument {
      */
     getPageLayerTree(page_num: number): string;
     /**
+     * Opt-in schema-v2 export; the existing schema-v1 API is unchanged.
+     */
+    getPageLayerTreeV2Compat(page: number): string;
+    getPageLayerTreeV2CompatWithProfile(page: number, profile: string): string;
+    /**
+     * Opt-in schema-v2 export; the existing schema-v1 API is unchanged.
+     */
+    getPageLayerTreeV2StrictGlyphOutline(page: number): string;
+    getPageLayerTreeV2StrictGlyphOutlineWithProfile(page: number, profile: string): string;
+    /**
+     * Opt-in schema-v2 export; the existing schema-v1 API is unchanged.
+     */
+    getPageLayerTreeV2StrictGlyphRun(page: number): string;
+    getPageLayerTreeV2StrictGlyphRunWithProfile(page: number, profile: string): string;
+    /**
+     * Object adapter with owned binary resources. No WASM-memory views escape.
+     */
+    getPageLayerTreeValue(page: number): any;
+    /**
+     * Object adapter with owned binary resources. No WASM-memory views escape.
+     */
+    getPageLayerTreeValueV2Compat(page: number): any;
+    getPageLayerTreeValueV2CompatWithProfile(page: number, profile: string): any;
+    /**
+     * Only content-addressed keys supplied by the caller omit an array slot.
+     */
+    getPageLayerTreeValueV2CompatWithProfileAndResourceKeys(page: number, profile: string, known_image_keys: any, known_svg_keys: any): any;
+    /**
+     * Object adapter with owned binary resources. No WASM-memory views escape.
+     */
+    getPageLayerTreeValueV2StrictGlyphOutline(page: number): any;
+    getPageLayerTreeValueV2StrictGlyphOutlineWithProfile(page: number, profile: string): any;
+    /**
+     * Only content-addressed keys supplied by the caller omit an array slot.
+     */
+    getPageLayerTreeValueV2StrictGlyphOutlineWithProfileAndResourceKeys(page: number, profile: string, known_image_keys: any, known_svg_keys: any): any;
+    /**
+     * Object adapter with owned binary resources. No WASM-memory views escape.
+     */
+    getPageLayerTreeValueV2StrictGlyphRun(page: number): any;
+    getPageLayerTreeValueV2StrictGlyphRunWithProfile(page: number, profile: string): any;
+    /**
+     * Only content-addressed keys supplied by the caller omit an array slot.
+     */
+    getPageLayerTreeValueV2StrictGlyphRunWithProfileAndResourceKeys(page: number, profile: string, known_image_keys: any, known_svg_keys: any): any;
+    getPageLayerTreeValueWithProfile(page: number, profile: string): any;
+    /**
+     * Only content-addressed keys supplied by the caller omit an array slot.
+     * Optional byte-omission flags preserve the current source-image/font key
+     * APIs; omitted flags retain the original four-argument inline contract.
+     */
+    getPageLayerTreeValueWithProfileAndResourceKeys(page: number, profile: string, known_image_keys: any, known_svg_keys: any, omit_font_bytes?: boolean | null, omit_image_bytes?: boolean | null): any;
+    /**
      * 페이지 레이어 트리를 profile 별로 반환한다.
      *
      * [Task #3315] `omit_image_bytes` 를 `true` 로 주면 `sourceImageKey`를 낼 수 있는 그림만
@@ -1168,6 +1221,10 @@ export class HwpDocument {
      * 편집 후 현재 쪽수가 아닌 가져오기 시점의 진단이다. 다른 형식은 `null`이다.
      */
     getPdfImportDiagnostics(): string;
+    /**
+     * Worker가 입력을 복사하기 전에 제품의 실제 요청 한도를 조회한다.
+     */
+    static getPdfImportPolicy(): string;
     /**
      * 그림 컨트롤의 속성을 조회한다.
      *
@@ -2795,6 +2852,24 @@ export interface InitOutput {
     readonly hwpdocument_getPageHide: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_getPageInfo: (a: number, b: number) => [number, number, number, number];
     readonly hwpdocument_getPageLayerTree: (a: number, b: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2Compat: (a: number, b: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2CompatWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2StrictGlyphOutline: (a: number, b: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2StrictGlyphOutlineWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2StrictGlyphRun: (a: number, b: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeV2StrictGlyphRunWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_getPageLayerTreeValue: (a: number, b: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2Compat: (a: number, b: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2CompatWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2CompatWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphOutline: (a: number, b: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphOutlineWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphOutlineWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphRun: (a: number, b: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphRunWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueV2StrictGlyphRunWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueWithProfile: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly hwpdocument_getPageLayerTreeValueWithProfileAndResourceKeys: (a: number, b: number, c: number, d: number, e: any, f: any, g: number, h: number) => [number, number, number];
     readonly hwpdocument_getPageLayerTreeWithProfile: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_getPageOfPosition: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_getPageOverlayImages: (a: number, b: number) => [number, number, number, number];
@@ -2810,6 +2885,7 @@ export interface InitOutput {
     readonly hwpdocument_getParagraphCount: (a: number, b: number) => [number, number, number];
     readonly hwpdocument_getParagraphLength: (a: number, b: number, c: number) => [number, number, number];
     readonly hwpdocument_getPdfImportDiagnostics: (a: number) => [number, number];
+    readonly hwpdocument_getPdfImportPolicy: () => [number, number];
     readonly hwpdocument_getPictureProperties: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getPositionOfPage: (a: number, b: number) => [number, number, number, number];
     readonly hwpdocument_getScanItems: (a: number) => [number, number];
