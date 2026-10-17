@@ -738,11 +738,26 @@ impl TypesetState {
         &mut self,
         probe_height: f64,
     ) {
+        self.apply_visible_float_exclusions_absorbing(probe_height, 0.0);
+    }
+
+    /// 자리차지 배제 띠를 짚는다. `probe_height` 는 첫 줄 상자 높이(줄간격 제외)이며, 줄이 띠에서
+    /// 시작하거나 **걸치면** 띠 아래로 보낸다 — 한/글은 프로파일과 무관하게 줄 상자 단위로 띠를
+    /// 피한다(#7687 합성 H1~H6·hwpspec pi=132 저장 사다리, #7680 host 글줄). 종전에는 HWPX 저장
+    /// 프로파일만 걸침을 짚어 HWP5 의 post-text 가 띠 위에 놓였다.
+    ///
+    /// `absorbed_spacing_before` 는 띠 아래로 보낼 때 띠 안에서 흡수되는 문단 앞 간격이다 — 첫 줄
+    /// 윗변 = `max(흐름 + 앞 간격, 띠 끝)` (#6761 저장 사다리 90/90, 합성 H6 정본). 호출자가
+    /// 그 뒤에 앞 간격을 더하므로 그만큼 덜 보낸다. 배치의 `band_absorbed_spacing_before` 와 짝.
+    pub(in crate::renderer::typeset) fn apply_visible_float_exclusions_absorbing(
+        &mut self,
+        probe_height: f64,
+        absorbed_spacing_before: f64,
+    ) {
         if self.data.visible_float_exclusions.is_empty() {
             return;
         }
 
-        let use_overlap_probe = self.data.profile.hwpx_stored_layout() && probe_height > 0.0;
         self.data
             .visible_float_exclusions
             .retain(|zone| self.data.current_height < zone.bottom - 0.5);
@@ -751,9 +766,10 @@ impl TypesetState {
         for zone in &self.data.visible_float_exclusions {
             let starts_in_zone = jump_to + 0.5 >= zone.top && jump_to < zone.bottom;
             let overlaps_zone =
-                use_overlap_probe && jump_to < zone.top && jump_to + probe_height > zone.top + 0.5;
+                probe_height > 0.0 && jump_to < zone.top && jump_to + probe_height > zone.top + 0.5;
             if starts_in_zone || overlaps_zone {
-                jump_to = jump_to.max(zone.bottom);
+                let target = (zone.bottom - absorbed_spacing_before.max(0.0)).max(zone.top);
+                jump_to = jump_to.max(target);
             }
         }
 

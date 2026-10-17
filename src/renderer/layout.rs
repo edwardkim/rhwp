@@ -8,8 +8,8 @@ use super::composer::{
 };
 use super::float_placement::{
     empty_host_physical_ladder_extras_hu, empty_offset_float_deferred_text_ladder_hu,
-    horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
-    native_empty_host_rowbreak_line_advance_hu,
+    horizontal_range, is_para_topbottom_float, is_textless_coanchored_float_host,
+    native_empty_host_physical_outer_box_paint_inset, native_empty_host_rowbreak_line_advance_hu,
     original_hwpx_column_rowbreak_equal_outer_margin_hu,
     para_relative_left_aligned_outer_margin_left_hu, signed_hwpunit,
     square_float_outer_margin_top_hu, stored_empty_anchor_band_host_line_advance_hu,
@@ -927,6 +927,11 @@ fn is_deferred_blank_para_float_stack_anchor(
             .get(*para_index)
             .map(para_has_visible_text)
             .unwrap_or(true)
+        // [#7687] 양수 오프셋 표를 품은 다중 자리차지 host 의 빈 줄은 첫 띠 아래에 실제로
+        // 놓이는 흐름 요소다(조판이 같은 줄을 전진시킨다) — 일반 글줄 경로로 그린다.
+        || paragraphs
+            .get(*para_index)
+            .is_some_and(is_textless_coanchored_float_host)
     {
         return false;
     }
@@ -9201,6 +9206,23 @@ impl LayoutEngine {
                             probe_line,
                             col_content.wrap_anchors.contains_key(&item_para),
                         )
+                        .or_else(|| {
+                            // [#7687] 저장 줄 없는 **빈** 문단의 줄 상자도 띠에 걸리면 띠 아래로
+                            // 간다(합성 H4 정본). 빈 문단 메트릭은 FullParagraph 배치와 같은 helper.
+                            (crate::renderer::para_has_no_stored_line_segs(para)
+                                && para.text.trim().is_empty())
+                            .then(|| {
+                                paragraph_layout::empty_no_lineseg_paragraph_metrics(
+                                    para,
+                                    styles,
+                                    styles.para_styles.get(para.para_shape_id as usize),
+                                    self.profile.get().hwp3_layout(),
+                                    self.dpi,
+                                )
+                                .map(|(line_height, _, _)| line_height)
+                            })
+                            .flatten()
+                        })
                     })
                     .unwrap_or(item_probe_height);
                 let mut jump_to = y_offset;
@@ -9234,10 +9256,15 @@ impl LayoutEngine {
                 // 겹친 채 그대로 두고, 다음 잉크 줄부터 표 아래에서 재개한다
                 // (36477266 p2 pi7 ' ': 한글 유지 y 425..439, 표 하단 583.2 직후
                 // 4.3px 에서 pi8 재개 — PDF 실측). hwpx stored layout 한정.
+                // [#7687] 저장 줄이 **있는** 문단에 한한다 — 그 예외의 근거가 저장 사다리다.
+                // 저장 줄 없이 재조판하는 빈 문단은 한/글 2020 이 띠 아래로 보낸다(합성 H4 정본:
+                // 넷째 빈 문단이 둘째 표 띠에 걸려 띠 아래 467.5 로, 글은 488.9).
                 let item_para_inkless = self.profile.get().hwpx_stored_layout()
-                    && paragraphs
-                        .get(item_para)
-                        .is_some_and(|p| p.controls.is_empty() && !para_has_non_whitespace_text(p));
+                    && paragraphs.get(item_para).is_some_and(|p| {
+                        p.controls.is_empty()
+                            && !para_has_non_whitespace_text(p)
+                            && !crate::renderer::para_has_no_stored_line_segs(p)
+                    });
                 // [#6761] 자리차지 표 밴드 뒤 문단의 **앞 간격은 밴드 안에서 소비된다** — 첫 줄
                 // top 은 `max(흐름 + 앞 간격, 밴드 하단)` 이다. 문단 layout 이 첫 줄 앞에 이
                 // 간격을 더하므로 밴드로 밀 때 그만큼 덜 민다.
@@ -9250,9 +9277,15 @@ impl LayoutEngine {
                 // 그려 마지막 표가 본문 바닥을 넘었다. typeset 은 이미 저장 자리로 회계한다.
                 // HWPX 코퍼스는 흡수 8 · 가산 4(쪽 원점 없는 연속 vpos 생성기)로 갈리므로 HWP5
                 // 저장 사다리 프로필에만 적용한다.
+                // [#7687] 저장 줄 없이 재조판하는 문단도 흡수한다 — 한/글 2020 Print 정본(합성
+                // H6: 앞 간격 있는 문단이 둘째 표 띠 끝 467.7 에 바로 선다). 저장 줄 있는 HWPX 는
+                // 생성기별로 갈려 종전대로 둔다. 조판 `apply_visible_float_exclusions_absorbing` 과 짝.
                 let band_absorbed_spacing_before = match item {
                     PageItem::FullParagraph { .. }
-                        if self.profile.get().hwp5_stored_pagination_layout() =>
+                        if self.profile.get().hwp5_stored_pagination_layout()
+                            || paragraphs
+                                .get(item_para)
+                                .is_some_and(crate::renderer::para_has_no_stored_line_segs) =>
                     {
                         paragraphs
                             .get(item_para)
@@ -12849,6 +12882,9 @@ impl LayoutEngine {
                 let issue2439_visible_host_stack = profile.hwp5_stored_pagination_layout()
                     && page_content.column_contents.len() == 1
                     && is_current_visible_para_float
+                    // [#7687] 글자 없는 다중 자리차지 host 는 양수 오프셋 표를 흐름에 싣지
+                    // 않는다(조판의 같은 가드와 짝). 서명문 host 전용이다.
+                    && para_has_non_whitespace_text(para)
                     && signed_hwpunit(t.common.vertical_offset) > 0
                     && has_preceding_coanchored_float
                     && para
@@ -14117,7 +14153,11 @@ impl LayoutEngine {
                     matches!(
                         c,
                         Control::Table(t)
-                            if is_para_topbottom_float(&t.common) && !para_has_visible_text(para)
+                            if is_para_topbottom_float(&t.common)
+                                && !para_has_visible_text(para)
+                                // [#7687] 양수 오프셋 표를 품은 글자 없는 다중 자리차지 host 는
+                                // lane 적층이 아니라 아래 visible-host 공동 앵커 경로로 간다.
+                                && !is_textless_coanchored_float_host(para)
                     )
                 })
                 .unwrap_or(false);
@@ -14168,6 +14208,9 @@ impl LayoutEngine {
                     para_y_for_table += anchor_offset;
                 }
             }
+            // [#7687] 글자 없는 host 라도 자리차지 표가 둘 이상이고 양수 오프셋 표가 있으면 글 있는
+            // host 와 같은 공동 앵커 모델이다 — 조판 `place_table_with_text` 의 같은 술어와 짝.
+            let is_textless_coanchored_host = is_textless_coanchored_float_host(para);
             let is_current_visible_para_float = para
                 .controls
                 .get(control_index)
@@ -14176,7 +14219,8 @@ impl LayoutEngine {
                         c,
                         Control::Table(t)
                             if is_para_topbottom_float(&t.common)
-                                && para_has_non_whitespace_text(para)
+                                && (para_has_non_whitespace_text(para)
+                                    || is_textless_coanchored_host)
                     )
                 })
                 .unwrap_or(false);

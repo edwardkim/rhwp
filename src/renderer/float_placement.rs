@@ -5471,6 +5471,49 @@ pub(crate) fn resolve_picture_exclusion(
 }
 
 /// A non-TAC `TopAndBottom` object positioned from its host paragraph.
+/// [#7687] 글자 없는(빈·공백뿐인) host 문단에 문단 기준 자리차지(TopAndBottom) 표가 둘 이상
+/// 매달리고 그중 양수 세로 오프셋 표가 있는 **다중 자리차지 host** 인가.
+///
+/// 한/글 2020 규칙(정본 실측 — `samples/한글문서파일형식_5.0_revision1.3.hwp` 구역 3 pi=130 의
+/// 저장 사다리 10810/12910/28197 과 합성 H1~H6 Print PDF): 오프셋 0 표는 흐름을 자기 띠 끝까지
+/// 전진시키고 host 줄 상자는 그 띠 **아래**에 놓인다. 양수 오프셋 표는 흐름을 전진시키지 않는
+/// 배제 띠일 뿐이다. 뒤 문단은 평범한 줄로 표 사이 틈을 채우다가 줄 상자가 띠에 걸리면 그 줄만
+/// 띠 아래로 간다(앞 간격은 띠 안에서 흡수). 곧 글이 있는 host 의 공동 앵커 모델과 같은 규칙이라
+/// 조판·배치 모두 그 경로로 보낸다.
+///
+/// 범위는 정본이 있는 형상 — 자리차지 표가 **정확히 둘**이고 첫 표(컨트롤 순서)가 오프셋 0,
+/// 둘째 표가 양수 오프셋 — 으로 한정한다. 첫 표부터 양수 오프셋이거나(정책연구 pi=515 95HU,
+/// `issue1639_empty_host_positive_only_float` 200/50/800HU) 표가 셋 이상인 빈 host 는 한/글이
+/// 표끼리 어떻게 쌓는지 독립 근거가 없어 종전 lane 적층 경로를 유지한다(samples A/B 에서
+/// 넓은 술어가 그 문서들의 표를 겹쳤다).
+pub(crate) fn is_textless_coanchored_float_host(para: &Paragraph) -> bool {
+    if para_has_non_whitespace_text(para) {
+        return false;
+    }
+    let mut offsets = para.controls.iter().filter_map(|control| match control {
+        Control::Table(table) if is_para_topbottom_float(&table.common) => {
+            Some(signed_hwpunit(table.common.vertical_offset))
+        }
+        _ => None,
+    });
+    let first = offsets.next();
+    let second = offsets.next();
+    let third = offsets.next();
+    matches!((first, second, third), (Some(0), Some(offset), None) if offset > 0)
+}
+
+/// 문단 기준 자리차지 표 가운데 **마지막**(컨트롤 순서) 표인가 — host 줄 상자는 그 표 뒤에서 한 번
+/// 계상한다.
+pub(crate) fn is_last_para_topbottom_float(para: &Paragraph, control_index: usize) -> bool {
+    para.controls
+        .iter()
+        .enumerate()
+        .rfind(|(_, control)| {
+            matches!(control, Control::Table(table) if is_para_topbottom_float(&table.common))
+        })
+        .is_some_and(|(index, _)| index == control_index)
+}
+
 pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
     !common.treat_as_char
         && matches!(common.text_wrap, TextWrap::TopAndBottom)
