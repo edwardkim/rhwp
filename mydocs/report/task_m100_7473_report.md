@@ -1,128 +1,124 @@
-# #7473 PR Render Diff release WASM 검증·CI 비용 결과
+# #7473 PDF 기능 추가 후 PR Render Diff 재측정 — 2026-10-18
 
-[Issue #7473](https://github.com/edwardkim/rhwp/issues/7473) · [Draft PR #7474](https://github.com/edwardkim/rhwp/pull/7474)
+[PR #7474](https://github.com/edwardkim/rhwp/pull/7474) · [의존 PR #7488](https://github.com/edwardkim/rhwp/pull/7488)
 
 ## 결론
 
-PR Render Diff에서 배포와 같은 release + wasm-opt 경로를 검증하도록 전환할 수 있다.
-동일 코드의 dev/release 각 3회가 모두 성공했고, 각 실행의 PNG 43개가 프로필·반복 간 byte 단위로 같았다.
-다만 캐시 없는 전체 job 중앙값은 **8분 20초 → 12분 40초(+4분 20초, +52%)**다.
-검증 경로 정렬이라는 기여 효과와 추가 CI 비용을 함께 판단해야 한다.
+PDF import가 기본 feature인 최신 devel을 통합하고 #7488의 cdylib opt-in을 #7474에 적용했다.
+dev·기존 release·cdylib release 각 3회, 총 9회가 성공했다. PNG 43개는 모든 실행에서 byte 단위로
+같았고 실제 WASM 응답 162건도 각각 빌드 manifest와 일치했다.
 
-wasm-opt/마무리는 약 118초로 후속 비용 절감 조사 가치가 있다. 현재 PR은 검증 경로와 관측을
-정리하며, 캐시 구현은 별도 검증 후 별도 PR로 다룬다. 이번 표본은 모두 cache miss이므로
-캐시 적중 시 절감량이나 최적화 결과 재사용의 안전성을 입증하지 않는다.
+동일 CPU별 WASM wrapper 시간은 cdylib 적용 후 **9V74 약 1.5%, 7763 약 6.7% 감소**했다.
+그러나 CPU별 표본이 1~2회이고 서로 다른 VM이므로 확정 개선율이나 유의한 성능 개선으로 주장하지 않는다.
+전체 job 감소는 각각 약 6초·41초다. dev 대비 release 검증 비용은 여전히 전체 job 기준 약 8분 증가한다.
+#7488의 과거 warm n=1 결과인 9.48%를 이번 cold CI에 적용해서는 안 된다.
 
-## 구현과 검증 범위
+코드 검증은 통과했다. #7474는 추가 CI 비용과 명령 단위 LTO 정책을 검토할 수 있도록 Draft를 유지한다.
+#7488은 메인테이너 직접 승인 후 반영 가능한 Ready 후보이며 아직 승인·병합되지 않았다.
 
-- PR 실행은 release로 고정하고 수동 실행에만 dev/release 비교 입력을 제공한다.
-- 기존 locked wrapper를 통해 빌드하며 tool 실행 명령·버전·SHA-256, source/lockfile 및 산출물 hash를 보존한다.
-- E2E 앱 탐색 전에 CDP 관측을 연결해 실제 수신 WASM 응답을 manifest와 대조한다.
-  별도 fetch로 확인하지 않으며, 응답 누락·오류·불일치 및 release의 opt 실행 누락은 실패한다.
-- Cargo·bindgen 준비/실행·opt/마무리 근사 시간을 Actions step/job 시간과 구분해 기록한다.
+## 통제 조건과 해석 범위
 
-로컬 구현·검증 명령과 이전 운영 기준선은 [작업 기록](../working/task_m100_7473_stage1.md),
-입력 hash와 self-review는 [PR 검토 기록](../pr/archives/pr_7474_review.md)에 있다.
-Rust 제품 코드·Cargo 프로필·렌더링 알고리즘·시각 기준값은 바꾸지 않았다.
+- 고정 base: `6ed1682c3267ea786734eb2e75252916a861d1fd`.
+- 고정 코드 후보: `0eb4cc2ffde257a15080d0add104247c941fcbf9`.
+- #7488 원 head: `e8e57b36d4703556128dae31e37eaa9acdceee0d`. merge로 원 이력을 보존했다.
+- 동일 source·fixture·lockfile, `write-images=true`, 개별 GitHub hosted VM, 논리 CPU 4개.
+- Ubuntu 24.04 image `20261012.334.1`, Linux `6.17.0-1022-azure`, Rust `1.93.1`, wasm-pack `0.15.0`.
+- wasm-bindgen `0.2.127`, release wasm-opt `117 -O`; 도구 executable hash는 실행 간 같다.
+- Cargo cache **9/9 miss**, matched key 없음. 측정 ref는 restore-only이며 seed를 저장하지 않았다.
+- 새 cache key는 profile·crate type·LTO 정책을 구분한다. 캐시 hit 성능은 이번 측정 범위 밖이다.
+- CPU는 EPYC 9V74·EPYC 7763·Xeon 6973P-C로 섞였다. 조건별 통합 중앙값을 최적화 효과로 비교하지 않는다.
 
-## 통제 조건과 측정 방법
+`dev/auto`는 standard, `release/standard`는 기존 rlib+cdylib와 Cargo manifest LTO 설정,
+`release/cdylib`는 cdylib와 명령 단위 `profile.release.lto=false`를 사용한다.
+release 두 경로 모두 wasm-opt를 실제 수행하지만 **배포 빌드와 플래그까지 동일하다는 뜻은 아니다**.
+PR 경로는 release/cdylib로 고정하며 수동 실행에서 세 조건을 재현할 수 있다.
 
-측정 source SHA는 `ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f`다. 동일 SHA를 가리키는
-6개의 측정 ref에서 `PR Render Diff`를 `workflow_dispatch`로 실행했다.
-각 `wasm-profile=dev/release`, `write-images=true`이며 동일 branch concurrency에 의한 취소를
-피하려고 ref를 분리했다. 작업 tree는 모두 clean이고 fixture/lockfile은 동일하다.
+wall은 helper 내부 빌드 시간, step은 metadata 수집 등을 포함하는 Actions 시간이다.
+전체 job은 Canvas visual diff 시작부터 끝까지로 큐 대기·preflight는 제외한다.
+Cargo·bindgen·opt 시간은 로그 수신 경계 근사이며 독점 CPU 시간으로 해석하지 않는다.
+VM 부하·네트워크는 통제하지 못했다. PDF 기능만의 비용을 분리한 ablation 실험은 아니다.
 
-| 조건 | 6회 공통 값 |
-| --- | --- |
-| Runner image | Ubuntu 24.04 / `20260920.314.1` |
-| 브라우저 | Chrome `152.0.7946.0`, Chromium build `1660786` |
-| 설치 폰트 패키지 | fonts-dejavu-core `2.37-8`, 저장소 폰트·fixture 동일 |
-| Rust / wasm-pack | `1.93.1` / `0.15.0` |
-| wasm-bindgen | `0.2.127`, executable hash 동일 |
-| release wasm-opt | `117`, `-O`, executable hash 동일 |
-| Cargo cache | 6/6 miss, matched key 없음, 측정 ref에서 저장 없음 |
-| 작업 병렬도 | Cargo 기본값, 개별 GitHub hosted VM |
+## 실행별 결과
 
-Actions attempt별 jobs API의 step/job 시작·종료 시각을 사용했다. 전체 job은 Canvas visual diff의
-시작부터 종료까지이며 workflow 큐 대기·preflight는 포함하지 않는다. Cargo·bindgen·opt 구간은
-로그 수신 경계의 wall 근사다. bindgen 구간에는 도구 준비가, opt 구간에는 패키징 마무리가
-포함될 수 있으므로 독점 CPU 시간이나 격리된 프로세스 실행 시간으로 해석하지 않는다.
-WASM step은 측정 wrapper 외부의 metadata 수집 등도 포함한다.
+단위: 초. 모든 run은 attempt 1, 동일 코드 후보에서 성공했다.
 
-새 관측 workflow 안에서 프로필만 비교했다. 이전 workflow 전체와 새 workflow 전체의 관측 오버헤드를
-분리한 실험은 아니다. VM의 CPU·네트워크 부하는 고정하지 못했고 표본은 각 3회다.
+| 조건·반복 | CPU | wrapper wall | WASM step | Cargo 근사 | opt/마무리 근사 | 전체 job |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| [dev 1](https://github.com/edwardkim/rhwp/actions/runs/39073001510) | 7763 | 149.144 | 160 | 134.617 | — | 627 |
+| [release standard 1](https://github.com/edwardkim/rhwp/actions/runs/39072999119) | 9V74 | 599.171 | 609 | 423.772 | 167.863 | 1031 |
+| [release cdylib 1](https://github.com/edwardkim/rhwp/actions/runs/39073003282) | 7763 | 662.695 | 674 | 484.543 | 169.738 | 1113 |
+| [dev 2](https://github.com/edwardkim/rhwp/actions/runs/39073302072) | 9V74 | 121.112 | 130 | 107.922 | — | 542 |
+| [release standard 2](https://github.com/edwardkim/rhwp/actions/runs/39073307122) | 9V74 | 597.802 | 607 | 423.602 | 166.039 | 1012 |
+| [release cdylib 2](https://github.com/edwardkim/rhwp/actions/runs/39073312286) | 6973P-C | 702.087 | 712 | 457.709 | 235.571 | 1164 |
+| [dev 3](https://github.com/edwardkim/rhwp/actions/runs/39073316898) | 7763 | 150.605 | 160 | 136.630 | — | 615 |
+| [release standard 3](https://github.com/edwardkim/rhwp/actions/runs/39073320923) | 7763 | 710.405 | 722 | 526.245 | 174.667 | 1154 |
+| [release cdylib 3](https://github.com/edwardkim/rhwp/actions/runs/39073325398) | 9V74 | 589.384 | 603 | 416.285 | 164.341 | 1016 |
 
-## 실행별 관측값
+## CPU별 비교
 
-단위: 초. Cargo와 opt는 로그 경계 근사, 나머지는 Actions API 값이다.
+동일 모델 안에서도 대응 VM 비교가 아니며 표본이 작다. 단위: 초, 각 셀은 중앙값(표본 수).
 
-| 실행 | WASM step | Cargo 근사 | opt/마무리 근사 | Canvas/PDF | Readiness | 전체 job | 결과 |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| [dev 1](https://github.com/edwardkim/rhwp/actions/runs/36436604581/job/108976114154) | 122 | 99.613 | — | 58 | 84 | 498 | 성공 |
-| [release 1](https://github.com/edwardkim/rhwp/actions/runs/36436608897/job/108976158258) | 443 | 303.178 | 120.887 | 43 | 72 | 788 | 성공 |
-| [dev 2](https://github.com/edwardkim/rhwp/actions/runs/36436613036/job/108976187638) | 127 | 104.478 | — | 58 | 84 | 525 | 성공 |
-| [release 2](https://github.com/edwardkim/rhwp/actions/runs/36436617318/job/108976190130) | 421 | 285.084 | 118.144 | 43 | 72 | 760 | 성공 |
-| [dev 3](https://github.com/edwardkim/rhwp/actions/runs/36436621337/job/108976198072) | 114 | 93.463 | — | 58 | 85 | 500 | 성공 |
-| [release 3](https://github.com/edwardkim/rhwp/actions/runs/36436626093/job/108976558861) | 369 | 236.616 | 118.129 | 37 | 65 | 677 | 성공 |
+| CPU | dev wall | standard wall | cdylib wall | standard→cdylib | 전체 job standard→cdylib |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| EPYC 9V74 | 121.112 (1) | 598.487 (2) | 589.384 (1) | -9.103 / -1.52% | 1021.5→1016 (-5.5) |
+| EPYC 7763 | 149.875 (2) | 710.405 (1) | 662.695 (1) | -47.710 / -6.72% | 1154→1113 (-41) |
+| Xeon 6973P-C | 미측정 | 미측정 | 702.087 (1) | 비교 불가 | 비교 불가 |
 
-## 중앙값과 범위
+dev→cdylib의 전체 job 차이는 9V74 542→1016초(+474), 7763 621→1113초(+492)다.
+CPU 혼합 상태의 실제 관측 중앙값은 dev 615초, standard 1031초, cdylib 1113초이나,
+**이 세 숫자로 cdylib가 느려졌다고 결론 내릴 수 없다**. 특히 Intel 표본은 cdylib에만 있다.
+release opt/마무리는 약 164~236초이며 이번 wrapper 변경으로 제거되지 않는다.
+추가 최적화 판단에는 같은 runner에서 순서를 교차한 반복 비교와 실제 cache hit 검증이 필요하다.
 
-단위: 초, `중앙값 (최소–최대)`.
+## 출력·검증 결과
 
-| 측정 항목 | dev, n=3 | release, n=3 |
-| --- | ---: | ---: |
-| WASM build step | 122 (114–127) | 421 (369–443) |
-| Cargo 근사 | 99.613 (93.463–104.478) | 285.084 (236.616–303.178) |
-| bindgen 준비/실행 근사 | 9.081 (8.583–9.686) | 4.671 (4.082–4.746) |
-| wasm-opt/마무리 근사 | 실행하지 않음 | 118.144 (118.129–120.887) |
-| Native CLI step | 122 (117–125) | 119 (100–124) |
-| Canvas/PDF step | 58 (58–58) | 43 (37–43) |
-| Readiness step | 84 (84–85) | 72 (65–72) |
-| 전체 Canvas job | 500 (498–525) | 760 (677–788) |
+- 9회 모두 Canvas 3/3, 직접 PDF gate 3/3, CanvasKit readiness 8/8 통과.
+- 실제 앱에서 관측한 WASM 응답 각 18건, 총 162건이 해당 실행 manifest와 일치했다.
+- 각 실행 PNG 43개(시각/PDF 27 + readiness 16)의 파일 집합과 SHA-256이 모두 같았다.
+- 각 빌드 조건 안에서는 3회 WASM·JS bytes/hash가 재현됐다. standard/cdylib release의 JS는 같다.
+- 두 release WASM 바이너리는 다르다. PNG 동등성을 바이너리 동등성으로 확대하지 않는다.
+- report-only PDF 경고는 기존과 같은 4개다. 직접 PDF gate와 별개이며 기준값을 완화하지 않았다.
+- 대표 KTX 1쪽의 지도·시간/요금표와 table-border-style의 표·세로 글줄을 직접 판독했다.
+  KTX 요금표 머리글의 기존 겹침은 남아 있다. 출력 보존 검증이며 한컴 정합·기존 시각 결함 해결은 주장하지 않는다.
+- 별도 한컴 기준 PDF나 전쪽 silhouette TSV를 새로 생성하지 않았다. 조판 알고리즘 수정은 비해당이다.
 
-WASM build 중앙값은 +299초(3.45배), 전체 job은 +260초다. 시각 검사 구간은 이 표본에서 짧았으나
-3회만으로 일반적인 성능 개선을 단정하지 않는다. 서로 다른 중앙값의 차이를 합산해 정확한 시간
-분해로 취급할 수 없다. release Cargo 약 285초가 가장 큰 구간이고, opt 약 118초는 WASM step의
-약 28%, 전체 job의 약 16%에 해당한다.
+| 빌드 | WASM bytes | WASM SHA-256 |
+| --- | ---: | --- |
+| dev | 55707545 | `00989694eda270f5c579543a58a43fe23da5b6dd799b2840088512551dc1fdba` |
+| release standard | 17809310 | `53d52a44ea3691fa3c774cdc749f96cce0d057d7ae596c8e45f5c4387a674087` |
+| release cdylib | 17756530 | `39cc9e7587fabb776e80e5f30825a4694ebea2bba3745ba679b0b17b34df3caf` |
 
-## 출력과 실제 WASM 소비 확인
+대표 이미지는 cdylib 1 실행의 원본 PNG다. 나머지 8회와 해시가 같다.
 
-| 검사 | 관측 결과 |
-| --- | --- |
-| Ubuntu Canvas/PDF 및 readiness | 6회 성공, readiness 각각 8/8 통과 |
-| 실제 WASM 응답 hash | 각 18건, 총 108건이 해당 실행의 source/profile/artifact와 일치 |
-| PNG 프로필·반복 비교 | 실행마다 43개(시각/PDF 27 + readiness 16), dev 1 기준 변경 0 |
-| WASM 반복 재현 | 프로필별 3회 bytes/hash 동일 |
-| 대표 CI 이미지 직접 판독 | dev 1/release 1의 KTX p1 지도·시간/요금표와 table-border-style 표·세로 글줄의 위치/형태 동일 |
-| macOS 로컬 readiness | dev/release 공통 7/8, table-border-style의 visualParityFailed를 보존 |
+![KTX 1쪽 — 기존 요금표 머리글 겹침 보존](../pr/assets/issue_7473/20261018/ktx-p01-layer.png)
 
-CI WASM은 dev 41,227,131 bytes, release 11,341,620 bytes다. SHA-256과 tool hash는 아래 JSON에 있다.
-PNG 동등성은 프로필 변경으로 관측한 출력 차이가 없다는 증거다. 한컴 정합이나 로컬 renderer 간
-기존 차이 해결을 주장하지 않는다. macOS 실패는 Ubuntu 통과와 분리해 기록하며 기준값을 완화하지 않았다.
+![CanvasKit table-border-style](../pr/assets/issue_7473/20261018/table-border-style.png)
 
-최종 코드의 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/36436443999),
-[PR Render Diff](https://github.com/edwardkim/rhwp/actions/runs/36436442474),
-[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/36436443955) 및 CI Impact Policy가 성공했다.
-초기 후보 `a4220e1`의 Lint 실패는 trusted policy 경로 mirror 누락으로, 최종 후보에서 수정했다.
-이 초기 실행과 서로 다른 SHA의 예비 측정은 위 6회 통계에 포함하지 않았다.
+## 코드 검증과 리뷰
 
-## 후속 개선 순서
+정확한 후보 `0eb4cc2ff`의 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/39072973013),
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39072973012),
+[PR Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39072973025),
+[Adapter](https://github.com/edwardkim/rhwp/actions/runs/39072973002),
+[Proptest](https://github.com/edwardkim/rhwp/actions/runs/39072973042)가 성공했다.
+check 집계는 34 success·5 skipped, 실패·미완료 0건이다. 별도 PR Render Diff 실행은 위 9회 통계에 넣지 않았다.
 
-1. 이 PR의 배포 프로필 검증과 추가 CI 비용을 maintainer가 검토한다. PR은 Draft로 유지한다.
-2. 후속 조사에서 trusted default branch seed와 PR restore의 실제 적중률·복원 비용을 확인한다.
-   Cargo가 가장 큰 구간이므로 opt 캐시만으로 전체 비용을 해결한다고 가정하지 않는다.
-3. 같은 opt 입력이 반복되는 빈도와 약 118초 비용이 warm CI에서도 남는지 측정한다.
-4. 반복 비용이 확인되면 입력 WASM·도구 executable/version·옵션을 key에 반영하는 결과 캐시를
-   별도 PR로 검증한다. miss/hit 결과 동등성, 잘못된 key의 무효화, 신뢰 경계, 캐시 다운로드 비용을
-   확인하고 실제 순절감량으로 채택 여부를 결정한다.
+로컬에서는 wrapper/render/workflow/Docker focused 28개, Python workflow 전체 192개,
+Node CI 정책·WASM 소비 검사 102개를 통과했다. actionlint·shell/Python/Node 구문·변경 링크·공백도 검사했다.
+로컬 Rust toolchain이 없어 로컬 전체 Rust 회귀는 실행하지 않았다. 실제 Rust 빌드와 브라우저 검증은 위 CI 결과다.
+[검토 기록](../pr/archives/pr_7474_review.md) · [통합과 되돌리기](../pr/archives/pr_7474_review_impl.md)
 
-현재까지는 검증 경로 정렬과 비용 측정이 완료됐고, 캐시 최적화 효과는 미검증이다.
-별도 캐시 구현·ready 전환·merge·이슈 종료는 수행하지 않았다.
+## 이전 측정과 증적 보존
 
-## 증적
+2026-09-28 후보의 dev/release WASM step 중앙값은 122/421초, 전체 job은 500/760초였다.
+현재 standard release step은 609초 중앙값이다. 비용 증가 자체는 관측했지만 코드·PDF feature·runner image·CPU가
+함께 바뀌었으므로 증가량 전부를 PDF에 귀속하지 않는다.
+[이전 보고서](https://github.com/edwardkim/rhwp/blob/9d05998e09e4698391fe44f543abdd66ddc86c99/mydocs/report/task_m100_7473_report.md),
+[이전 시간 원자료](assets/issue-7473/ci-results.json), [이전 출력 증거](assets/issue-7473/ci-evidence.json)는 과거 자료다.
+과거 macOS readiness 7/8도 이번 Ubuntu 8/8 결과와 구분한다.
 
-- [CI 실행·시간·도구·산출물 원자료 요약](assets/issue-7473/ci-results.json)
-- [환경·readiness·PNG 해시·소비 증거 집계](assets/issue-7473/ci-evidence.json)
-- 각 실행 링크의 `render-diff-artifacts`에 build log/manifest/consumption, PNG, baseline report가 있다.
-  Actions artifact 보존 기간은 14일이며, 위 JSON은 repository에 남긴다.
-- 원본 다운로드는 로컬 `output/issue-7473/ci-controlled/`에 보존했다.
+이번 9개 run의 `render-diff-artifacts`에 build log/manifest/consumption·PNG·baseline report가 있다.
+artifact ZIP의 GitHub SHA-256을 다운로드 후 검증했다. 보존 기간은 14일이다.
+다운로드 원본과 API 집계는 로컬 `output/pr-review/7474/`에 보관하며 원시 JSON/log를 새로 커밋하지 않는다.
+위 표·WASM hash·대표 PNG는 저장소에 남긴다. 12개 입력의 blob/hash 확인은 검토 기록에 있다.
+측정용 임시 ref를 정리해도 run URL과 source SHA로 실행을 식별할 수 있다.
