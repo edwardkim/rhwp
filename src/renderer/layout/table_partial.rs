@@ -6612,7 +6612,7 @@ impl LayoutEngine {
                     // 독립 최소를 가진 칸이 수용한 빈 띠만 보존한다.
                     // scan과 같은 소유 판정으로 일반 내용 행의 여백을 늘리지 않는다.
                     || ((self.row_has_continuing_reflow_minimum(table, row, styles)
-                        || self.reflow_row_physical_minimum(table, row, resolved_row_heights[row], styles).is_some_and(
+                        || self.reflow_row_physical_minimum(table, row, resolved_row_heights[row], Some(end_cut), styles).is_some_and(
                             |minimum| end_row_height_override.is_some_and(|height| height <= minimum + 0.5),
                         ))
                         && self.row_has_plain_reflow_line_units(table, row, styles))

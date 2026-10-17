@@ -80,7 +80,7 @@ impl TypesetEngine {
         };
         let scan_start_row = r;
         let consumed_before_row = consumed;
-        let reflow_minimum = layout_engine.reflow_row_physical_minimum(table, r, mt.row_heights[r], styles);
+        let reflow_minimum = layout_engine.reflow_row_physical_minimum(table, r, mt.row_heights[r], None, styles);
         let continuing_reflow_minimum =
             layout_engine.row_has_continuing_reflow_minimum(table, r, styles);
         let plain_reflow_line_units =
@@ -838,7 +838,13 @@ impl TypesetEngine {
                 if layout_engine.row_uses_reflow_physical_frame(table, r)
                     && (r == cursor_row && start_row_height_override.is_some()
                         || layout_engine
-                            .reflow_row_physical_minimum(table, r, mt.row_heights[r], styles)
+                            .reflow_row_physical_minimum(
+                                table,
+                                r,
+                                mt.row_heights[r],
+                                Some(&res.end_cut),
+                                styles,
+                            )
                             .is_some())
                     && mt.allows_row_break_split()
                     && row_total > rest + 0.5

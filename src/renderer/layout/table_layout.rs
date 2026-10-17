@@ -25757,12 +25757,29 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         row: usize,
         row_frame_height: f64,
+        accepted_cut: Option<&[usize]>,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         let table_reflowed = self
             .render_normalization
             .borrow()
             .table_text_reflowed(table);
+        // 병합 밴드의 일반 셀 내용이 모두 끝났으면 기존 밴드가 행을 닫는다.
+        // 미소비 유닛이 있는 실제 분할만 독립 셀의 최소 높이를 이어받는다.
+        if Self::row_has_prior_rowspan_cover(table, row)
+            && accepted_cut.is_some_and(|cut| {
+                cut.is_empty()
+                    || Self::row_cut_cell_order(table, row).iter().enumerate().all(
+                        |(slot, &index)| {
+                            cut.get(slot).is_none_or(|&end| {
+                                end >= self.cell_units(&table.cells[index], table, styles).len()
+                            })
+                        },
+                    )
+            })
+        {
+            return None;
+        }
         table
             .cells
             .iter()

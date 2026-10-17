@@ -1862,7 +1862,7 @@ impl TypesetEngine {
             })
             .or_else(|| {
                 let row = end_row.checked_sub(1)?;
-                let minimum = layout_engine.reflow_row_physical_minimum(table, row, mt.row_heights[row], styles);
+                let minimum = layout_engine.reflow_row_physical_minimum(table, row, mt.row_heights[row], Some(&next_cut), styles);
                 // 블록 컷은 여러 행의 셀 슬롯이다. 마지막 일반 행의 최소와
                 // 빼서 시작 행 잔여로 넘기면 이미 소비한 행의 빈 띠를 재생성한다.
                 if split_block_start.is_some()
@@ -2036,7 +2036,7 @@ impl TypesetEngine {
                 table, end_row.saturating_sub(1),
                 if end_row - 1 == cursor_row { start_cut } else { &[] }, &next_cut, styles,
             ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
-                && layout_engine.reflow_row_physical_minimum(table, end_row.saturating_sub(1), styles).is_none()
+                && layout_engine.reflow_row_physical_minimum(table, end_row.saturating_sub(1), mt.row_heights[end_row.saturating_sub(1)], Some(&next_cut), styles).is_none()
                 && !(complete_physical_end_cut && crossing_span_owns_tail)
                 && (!layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1))
                     || crossing_span_owns_tail))
