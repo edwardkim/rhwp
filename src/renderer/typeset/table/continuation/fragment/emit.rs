@@ -1515,8 +1515,7 @@ impl TypesetEngine {
             straddle_row_relief: straddle_row_relief.clone(),
             straddle_page_bands: accepted_straddle_cells.clone(),
             fragment_row_heights: input.fragment_row_heights.map(<[f64]>::to_vec),
-            // 걸침 칸·나뉜 행의 몫으로 쪽 끝 띠까지 수용한 끝 행 상자도 원본 프레임이다.
-            // 배치는 이 상자를 끝 줄간격 접기로 다시 줄이지 않는다.
+            // 스캔이 수용한 저장 띠와 첫/이어받기 끝 행 상자를 paint에서도 보존한다.
             end_row_owns_stored_frame: source_frame_band > 0.0
                 || (is_continuation && stored_complete_extent.is_some())
                 || span_band_owns_end_row,
