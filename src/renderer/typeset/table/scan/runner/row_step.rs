@@ -339,7 +339,11 @@ impl TypesetEngine {
                     <= avail_for_rows - consumed - cs_before + 0.5
             });
             if let Some(cut) = stored_restart_page_cut {
-                let physical = (avail_for_rows - consumed - cs_before).max(0.0);
+                // 잘린 끝 행 상자는 남은 쪽 공간이 아니라 공통 상자(max(선언, 컷 내용))다.
+                let content = layout_engine.row_cut_content_height(table, r, &[], &cut, styles);
+                let physical = layout_engine
+                    .stored_restart_end_row_box(table, r, &cut, styles)
+                    .min((avail_for_rows - consumed - cs_before).max(0.0));
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                     eprintln!(
                         "DIAG_SCAN STORED_RESTART_PAGE_CUT r={} cut={:?} rest_after={:.1}",
@@ -347,7 +351,7 @@ impl TypesetEngine {
                     );
                 }
                 end_row = r + 1;
-                split_end_limit = layout_engine.row_cut_content_height(table, r, &[], &cut, styles);
+                split_end_limit = content;
                 split_end_cut = cut;
                 end_row_height_override = Some(physical);
                 consumed += cs_before + physical;
