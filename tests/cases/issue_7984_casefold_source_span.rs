@@ -30,6 +30,7 @@ fn ignore_case_replacement_preserves_text_after_expanded_match() {
     for (text, query) in [("İX", "i\u{307}"), ("i\u{307}X", "İ")] {
         for operation in ["one", "all", "nth"] {
             let mut doc = DocumentCore::new_empty();
+            doc.create_blank_document_native().unwrap();
             doc.insert_text_native(0, 0, 0, text).unwrap();
             match operation {
                 "one" => doc.replace_one_native(query, "Z", false).unwrap(),
@@ -49,6 +50,7 @@ fn ignore_case_replacement_preserves_text_after_expanded_match() {
 fn ignore_case_search_reports_original_match_length() {
     for (text, query, length) in [("İX", "i\u{307}", 1), ("i\u{307}X", "İ", 2)] {
         let mut doc = DocumentCore::new_empty();
+        doc.create_blank_document_native().unwrap();
         doc.insert_text_native(0, 0, 0, text).unwrap();
         assert_eq!(
             serde_json::from_str::<serde_json::Value>(
@@ -62,6 +64,7 @@ fn ignore_case_search_reports_original_match_length() {
         assert_eq!(doc.grep(query, false, None)[0].length, length);
     }
     let mut doc = DocumentCore::new_empty();
+    doc.create_blank_document_native().unwrap();
     doc.insert_text_native(0, 0, 0, "İX İX").unwrap();
     doc.replace_nth_native("i\u{307}", "Z", false, 1).unwrap();
     assert_eq!(doc.grep("Z", true, None)[0].text, "İX ZX");
@@ -87,6 +90,7 @@ fn ignore_case_replacement_preserves_cell_and_equation_suffixes() {
         assert_eq!(doc.grep("Z", true, None)[0].text, "ZX");
 
         let mut doc = DocumentCore::new_empty();
+        doc.create_blank_document_native().unwrap();
         doc.insert_equation_native(0, 0, 0, text, 1000, 0).unwrap();
         doc.replace_all_native(query, "Z", false).unwrap();
         assert_eq!(doc.grep("Z", true, None)[0].text, "ZX");
