@@ -73,7 +73,7 @@ fn replace_char_range(text: &mut String, offset: usize, length: usize, replaceme
     *text = chars.into_iter().collect();
 }
 
-/// 문단 텍스트에서 query를 검색하여 모든 매치의 원문 문자 (오프셋, 길이)를 반환한다.
+/// 문단 텍스트에서 query를 검색하여 겹치지 않는 매치의 원문 문자 (오프셋, 길이)를 반환한다.
 ///
 /// [#3283] `grep`(주소를 가진 검색)이 같은 매칭 규칙을 쓰도록 크레이트에 공개한다 —
 /// 검색과 치환이 다른 규칙을 쓰면 "찾았는데 못 바꾸는" 어긋남이 생긴다.
@@ -81,12 +81,14 @@ pub(crate) fn find_matches(text: &str, query: &str, case_sensitive: bool) -> Vec
     find_in_text(text, query, case_sensitive)
 }
 
-/// 문단 텍스트에서 query를 검색하여 모든 매치의 원문 문자 (오프셋, 길이)를 반환
+/// 문단 텍스트에서 query를 검색하여 겹치지 않는 매치의 원문 문자 (오프셋, 길이)를 반환
 fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, usize)> {
     if query.is_empty() || text.is_empty() {
         return vec![];
     }
     let mut results = vec![];
+    // 치환도 이 범위를 역순으로 소비하므로, 앞 매치와 겹치면 후속 원문까지 삭제된다.
+    let mut match_end = 0;
     if case_sensitive {
         let chars: Vec<char> = text.chars().collect();
         let qchars: Vec<char> = query.chars().collect();
@@ -95,8 +97,9 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, us
             return results;
         }
         for i in 0..=chars.len() - qlen {
-            if chars[i..i + qlen] == qchars[..] {
+            if i >= match_end && chars[i..i + qlen] == qchars[..] {
                 results.push((i, qlen));
+                match_end = i + qlen;
             }
         }
     } else {
@@ -118,14 +121,16 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, us
             return results;
         }
         for i in 0..=chars.len() - qlen {
-            if chars[i..i + qlen]
-                .iter()
-                .map(|(c, _)| *c)
-                .eq(qchars.iter().copied())
+            if chars[i].1 >= match_end
+                && chars[i..i + qlen]
+                    .iter()
+                    .map(|(c, _)| *c)
+                    .eq(qchars.iter().copied())
             {
                 let offset = chars[i].1;
                 let length = chars[i + qlen - 1].1 + 1 - offset;
                 results.push((offset, length));
+                match_end = offset + length;
             }
         }
     }
