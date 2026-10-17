@@ -1376,6 +1376,8 @@ export interface LayerPathOp {
 export interface LayerImageOp {
   type: 'image';
   bbox: LayerBounds;
+  /** Explicit source sampling; absent preserves the output profile policy. */
+  imageInterpolation?: 'nearest' | 'linear';
   mime?: string;
   base64?: string;
   imageRef?: number | string;

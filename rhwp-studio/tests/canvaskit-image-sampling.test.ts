@@ -65,3 +65,12 @@ test('bitmap glyph filtering remains explicit and does not enable mipmaps', () =
       { filtering: bitmapFiltering, mipmaps: false });
   }
 });
+
+test('PDF source sampling survives replay while binary pixel effects keep nearest', () => {
+  for (const imageInterpolation of ['nearest', 'linear'] as const) {
+    assert.deepEqual(sampling({ imageInterpolation }),
+      { filtering: imageInterpolation, mipmaps: false });
+    assert.deepEqual(sampling({ imageInterpolation, effect: 'blackWhite' }),
+      { filtering: 'nearest', mipmaps: false });
+  }
+});

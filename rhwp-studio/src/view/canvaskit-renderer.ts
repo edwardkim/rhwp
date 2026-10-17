@@ -2574,12 +2574,15 @@ export class CanvasKitLayerRenderer {
       // grayscale and tone retain the profile's ordinary sampling policy.
       const binaryEffectWasApplied = !!canvasKitImageEffectKey(op)
         && (op.effect === 'blackWhite' || op.effect === 'pattern8x8');
-      const useMipmaps = bitmapFiltering === undefined && !binaryEffectWasApplied
+      const sourceFiltering = op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
+        ? op.imageInterpolation : undefined;
+      const explicitFiltering = bitmapFiltering ?? (binaryEffectWasApplied ? 'nearest' : sourceFiltering);
+      const useMipmaps = explicitFiltering === undefined && !binaryEffectWasApplied
         && this.currentProfile !== 'fastPreview' && this.preferRasterDepth === 0
         && (this.renderMode === 'compat' || this.currentProfile === 'print' || this.currentProfile === 'highQuality')
         && ((crop?.width ?? imageWidth) > dstW * 1.2 || (crop?.height ?? imageHeight) > dstH * 1.2);
       this.drawImageRect(canvas, image, src, this.canvasKit.XYWHRect(dstX, dstY, dstW, dstH), opacity,
-        bitmapFiltering ?? (binaryEffectWasApplied ? 'nearest' : 'linear'), useMipmaps);
+        explicitFiltering ?? (binaryEffectWasApplied ? 'nearest' : 'linear'), useMipmaps);
     };
 
     const fillMode = op.fillMode ?? 'fitToSize';

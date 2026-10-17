@@ -121,3 +121,15 @@ Mask/SMask/Matte를 정상 대조군으로 유지한다. 손상 입력을 정상
   것으로 표시하지 않는다. 해당 항목은 1절의 후속 절편에 남긴다.
 
 사용자 승인으로 #7974를 등록했다. assignee edwardkim, milestone v1.0.0, bug·pdf 라벨과 본문 UTF-8을 API 재조회했다. 원격 push·PR은 아직 수행하지 않았다.
+
+## 6. 첫 구현 중 확인한 경계
+
+샘플별 조판 조건을 추가하지 않는다. base image와 stream mask의 `Interpolate`가 같거나
+다른 plane이 상수일 때는 하나의 RGBA sampling으로 표현할 수 있다. 두 plane 모두 변하며
+보간 선택이 다른 경우에는 기존 RGBA compositor·profile 처리를 유지한다. 이를 새 미지원
+오류로 바꾸면 이미 지원하던 type002 원본이 거절되므로 해당 회귀를 제거한다. 두 sampling을
+정확히 보존하는 별도 plane 표현은 후속 백로그이며, 이번 구현의 해결 범위로 주장하지 않는다.
+
+16비트 원색 샘플의 colour-key 비교는 PDF 사양 및 MuPDF 출력과 일치한다. Poppler가
+32767·32768 인접 샘플을 8비트로 축소한 뒤 구분하지 못하는 대조 차이는 별도 기록한다.
+원본 샘플 판정을 Poppler의 축소 출력에 맞추어 변경하지 않는다.

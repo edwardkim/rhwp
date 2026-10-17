@@ -1046,6 +1046,17 @@ impl PaintOp {
                 let resolved = resolved.as_deref().or(fallback.as_ref());
                 // [#7193] 소비자가 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
                 write_bbox(buf, image.paint_bbox(bbox));
+                if let Some(interpolate) = image
+                    .data
+                    .as_deref()
+                    .and_then(crate::renderer::image_resolver::png_sampling::interpolation)
+                {
+                    let _ = write!(
+                        buf,
+                        ",\"imageInterpolation\":\"{}\"",
+                        if interpolate { "linear" } else { "nearest" }
+                    );
+                }
                 // [#3315] 키가 있는 op 만 base64 를 생략할 수 있다 — 소비자가 그 키로
                 // `getSourceImageBytes` 를 불러 같은 바이트를 받는다. 키를 낼 수 없는 합성
                 // 그림(`bin_data_id == 0`)은 되찾을 길이 없으므로 종전대로 싣는다.
