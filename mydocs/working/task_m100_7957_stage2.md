@@ -50,7 +50,7 @@ Colors 3·Columns 1376·BPC 8이다. qpdf가 해제한 RGB 크기는 3,170,304 b
 - 초기 `cargo fmt --all`은 새 worktree에 generated suite 준비가 없어 실패했다.
   `--prepare` 뒤 성공했다. 이 준비 오류를 제품 결함의 수정 전 FAIL로 세지 않는다.
 - 오류 객체의 상세 context는 boxing해 기존 오류 반환 경로에 큰 inline 오류를 강제하지 않는다.
-- Native frontend·resource 집중 검사 114 PASS, Native library Clippy `-D warnings` 통과.
+- Native resource 집중 검사 114 PASS, Native library Clippy `-D warnings` 통과.
   명령·로그는 `focused-tests.log`, `native-clippy.log`에 있다. 전체 검사·WASM32 lint를
   실행한 결과가 아니며, backend public 관측 필드의 문서 보완 뒤 Native Clippy도 통과했다.
 - 한도·image/parse 호환 보정, 최종 Docker WASM·실제 Studio/Worker·전쪽 TSV·전체 회귀·

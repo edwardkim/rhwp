@@ -15,13 +15,15 @@ pub struct PdfImportPolicy {
 
 impl Default for PdfImportPolicy {
     fn default() -> Self {
+        let backend = PdfImportLimits::default();
         Self {
             schema_version: 1,
-            max_source_pages: super::MAX_PAGES,
+            // Source traversal is independently bounded by the backend visit budget.
+            max_source_pages: backend.reference_visits,
             max_selected_pages: super::MAX_PAGES,
             max_path_operations: 20_000,
             max_document_path_operations: 80_000,
-            backend: PdfImportLimits::default(),
+            backend,
         }
     }
 }

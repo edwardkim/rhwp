@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
 
 /// Shared input ceiling for the frontend and this decoder policy.
-pub const DEFAULT_INPUT_BYTES: usize = 16 * 1024 * 1024;
+pub const DEFAULT_INPUT_BYTES: usize = 64 * 1024 * 1024;
 
 /// Stream bytes retain the originating request's budget through object clones.
 #[derive(Clone, Debug, Default)]

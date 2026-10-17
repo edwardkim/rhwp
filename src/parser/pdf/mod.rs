@@ -25,7 +25,7 @@ pub use policy::PdfImportPolicy;
 /// Product adapters may stop reading after this limit plus one byte.
 pub const MAX_INPUT_BYTES: usize = pdf_oxide::import_limits::DEFAULT_INPUT_BYTES;
 /// Maximum selected pages; adapters must bound range expansion before allocation.
-pub const MAX_PAGES: usize = 128;
+pub const MAX_PAGES: usize = 1024;
 const MAX_POOL_ENTRIES: usize = u16::MAX as usize;
 const MAX_SOURCE_SPANS: usize = 40_000;
 const MAX_TEXT_BYTES: usize = 2 * 1024 * 1024;
@@ -223,7 +223,15 @@ fn selected_pages(
     policy: &PdfImportPolicy,
 ) -> Result<Vec<usize>, PdfImportError> {
     match &options.source_pages {
-        None => Ok((0..count).collect()),
+        None if count <= policy.max_selected_pages => Ok((0..count).collect()),
+        None => Err(
+            PdfImportError::budget("selected page count exceeds request policy").limit(
+                "selected pages",
+                0,
+                count,
+                policy.max_selected_pages,
+            ),
+        ),
         Some(pages)
             if !pages.is_empty()
                 && pages.len() <= policy.max_selected_pages
@@ -247,14 +255,34 @@ pub fn parse_pdf_with_options(
     bytes: &[u8],
     options: &PdfImportOptions,
 ) -> Result<PdfImportResult, PdfImportError> {
-    let policy = PdfImportPolicy::default();
+    parse_pdf_with_policy(bytes, options, PdfImportPolicy::default())
+}
+
+/// Import with an explicit trusted-host policy. Limits remain finite and request-local;
+/// callers can lower them without duplicating the parser's validation or accounting.
+pub fn parse_pdf_with_policy(
+    bytes: &[u8],
+    options: &PdfImportOptions,
+    policy: PdfImportPolicy,
+) -> Result<PdfImportResult, PdfImportError> {
+    if policy.schema_version != 1
+        || policy.max_source_pages == 0
+        || policy.max_selected_pages == 0
+        || policy.max_selected_pages > u16::MAX as usize
+        || policy.max_path_operations == 0
+        || policy.max_document_path_operations == 0
+    {
+        return Err(PdfImportError::budget("invalid PDF import policy"));
+    }
     if bytes.len() > policy.max_input_bytes() {
-        return Err(PdfImportError::budget("input exceeds 16 MiB").limit(
-            "input bytes",
-            0,
-            bytes.len(),
-            policy.max_input_bytes(),
-        ));
+        return Err(
+            PdfImportError::budget("input exceeds request byte limit").limit(
+                "input bytes",
+                0,
+                bytes.len(),
+                policy.max_input_bytes(),
+            ),
+        );
     }
     if !bytes.starts_with(b"%PDF-") {
         return Err(PdfImportError::new(
@@ -282,9 +310,11 @@ pub fn parse_pdf_with_options(
         error
     })?;
     if count == 0 || count > policy.max_source_pages {
-        return Err(PdfImportError::budget("PDF must have 1 to 128 pages")
-            .limit("source pages", 0, count, policy.max_source_pages)
-            .at("page_tree", None, Some(&request)));
+        return Err(
+            PdfImportError::budget("source page count exceeds request policy")
+                .limit("source pages", 0, count, policy.max_source_pages)
+                .at("page_tree", None, Some(&request)),
+        );
     }
     let selected = selected_pages(options, count, &policy)?;
     let mut document = lowering::new_document().map_err(|_| {
