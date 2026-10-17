@@ -4,6 +4,28 @@
 use rhwp::document_core::DocumentCore;
 
 #[test]
+fn ignore_case_replacement_preserves_textbox_suffix() {
+    for (text, query) in [("İX", "i\u{307}"), ("i\u{307}X", "İ")] {
+        let hml = format!(
+            r#"<HWPML Version="2.91"><HEAD/><BODY><SECTION>
+          <P><TEXT><RECTANGLE X0="0" X1="5000" X2="5000" X3="0" Y0="0" Y1="0" Y2="2400" Y3="2400">
+            <SHAPEOBJECT><SIZE Width="5000" Height="2400"/></SHAPEOBJECT>
+            <DRAWINGOBJECT><SHAPECOMPONENT XPos="0" YPos="0" OriWidth="5000" OriHeight="2400" CurWidth="5000" CurHeight="2400"/>
+              <LINESHAPE Width="0" Style="Solid" EndCap="Flat" Alpha="0"/>
+              <DRAWTEXT><TEXTMARGIN Left="0" Right="0" Top="0" Bottom="0"/><PARALIST>
+                <P><TEXT><CHAR>{text}</CHAR></TEXT></P>
+              </PARALIST></DRAWTEXT>
+            </DRAWINGOBJECT>
+          </RECTANGLE></TEXT></P>
+        </SECTION></BODY><TAIL/></HWPML>"#
+        );
+        let mut doc = DocumentCore::from_bytes(hml.as_bytes()).unwrap();
+        doc.replace_all_native(query, "Z", false).unwrap();
+        assert_eq!(doc.grep("X", true, None)[0].text, "ZX");
+    }
+}
+
+#[test]
 fn ignore_case_replacement_preserves_text_after_expanded_match() {
     for (text, query) in [("İX", "i\u{307}"), ("i\u{307}X", "İ")] {
         for operation in ["one", "all", "nth"] {
