@@ -1,5 +1,11 @@
 # Task #7949·#7950 — 후속 백로그
 
+2026-10-17 후속 착수: 사용자가 지정한 원본 commit
+`b7a5388034ee66f58a7e1d5363974e83b6374f57`의 이 문서는 현재 devel과 동일하다.
+최신 `upstream/devel` `515bd72dcde0eecdeece333666b675354b7fa91d`에서 실행한
+남은 결함과 분할 처리 순서는 [후속 수행·구현계획](task_m100_7949_backlog_followup.md)에
+연결한다. 아래 기존 시각 판정과 예외는 당시 기록이며 최신 출력의 통과로 재해석하지 않는다.
+
 - Issue: [#7949](https://github.com/edwardkim/rhwp/issues/7949), [#7950](https://github.com/edwardkim/rhwp/issues/7950)
 - 작성일: 2026-10-16 (Asia/Seoul)
 - 사용자 결정: 첫 재현 PDF의 출력 차이는 “후속 백로그 분리·시각 예외 수용”
