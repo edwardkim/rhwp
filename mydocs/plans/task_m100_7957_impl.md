@@ -189,3 +189,7 @@ Bold PostScript 이름은 설치된 full face 정체성을 보존하고, 측정�
 TSV는 그대로 보존하며 조판 통과로 표시하지 않는다. 이 범위 예외는 `exceeds_32.pdf`의
 남은 출력 차이 보정에는 적용하지 않는다. 후속 조건은
 [공동 처리 백로그](task_m100_7957_backlog.md)에 기록한다.
+
+최종 통합 source의 연속 text style 보존, 자원 전용 범위와 실제 전체 검증 결과는
+[11단계 결과](../working/task_m100_7957_stage11.md)에 연결한다. 이 기록은 아직 실행하지
+않은 원격 CI·self-review·병합·이슈 종료를 완료로 표시하지 않는다.

@@ -56,6 +56,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
   add('/real.pdf', join(root, 'pdf/issue5875/nested_table_text_caption-2020.pdf'), 'application/pdf');
   add('/placements.pdf', join(root, 'pdf/issue7966/image-placement-controls.pdf'), 'application/pdf');
   add('/slides.pdf', join(root, 'pdf/issue7966/exceeds-32.pdf'), 'application/pdf');
+  add('/colour-source.pdf', join(root, 'samples/issue7959/bounded-import-path.pdf'), 'application/pdf');
   add('/control.hwp', join(root, 'samples/hwp_table_test.hwp'), 'application/octet-stream');
   files.set('/synthetic.pdf', ['application/pdf', syntheticPdf()]);
   files.set('/synthetic-many-pages.pdf', ['application/pdf', syntheticPdf(1025)]);
@@ -118,6 +119,21 @@ test('Docker product WASM: public API, active document isolation and real Worker
           check(xml.querySelectorAll('image').length === 33, `page ${p + 1} preserves every repeated image paint`);
         }
       } finally { repeated.free(); }
+      const colourBytes = new Uint8Array(await (await fetch('/colour-source.pdf')).arrayBuffer());
+      const colourDoc = wasm.HwpDocument.importPdf(colourBytes, {});
+      try {
+        check(colourDoc.pageCount() === 4, 'source text-style PDF imports every page');
+        const xml = new DOMParser().parseFromString(colourDoc.renderPageSvg(0), 'image/svg+xml');
+        const paints = [...xml.querySelectorAll('text')].flatMap(n =>
+          [...n.textContent].map(c => [c, n.getAttribute('fill')?.toLowerCase() || '#000000']));
+        function hasWordColour(word, colour) {
+          const found = paints.map((_, i) => paints.slice(i, i + word.length))
+            .filter(run => run.map(v => v[0]).join('') === word);
+          return found.length === 1 && found[0].every(v => v[1] === colour);
+        }
+        check(hasWordColour('Website:', '#000000'), 'black label retains its own source text style');
+        check(hasWordColour('https://ostday.kr', '#0563c1'), 'source URL colour survives contiguous text assembly');
+      } finally { colourDoc.free(); }
       const all = new wasm.HwpDocument(bytes);
       check(all.pageCount() === 3 && all.getSourceFormat() === 'pdf', 'constructor imports all PDF pages');
       all.free();

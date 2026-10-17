@@ -6,11 +6,11 @@
 후속 처리하도록 승인했다. 입력 허용 크기와 실패 후 복구의 통과를 조판 일치로 해석하지 않는다.
 
 대상은 `samples/issue7962/`의 생성기와 16 MiB 경계 PDF다. 입력·SHA·생성 절차는 해당
-폴더와 `samples/issue7957/README.md`에 보존한다. 현재 runtime `bba967e7e5d08e28b3ad19a247a622cea59d31ec`의
+폴더와 `samples/issue7957/README.md`에 보존한다. 최종 runtime `9c6c48c091e0780f805d91a045561b5994c7a6aa`의
 Native 최저 raw 일치율은 73.54167%, 같은 source의 fresh Docker WASM은 78.19253%다.
 고정 devel `9415b920c8dec299e8ada69b01dbd1c3c044f1f1`에도 같은 기존 차이가 있다.
 
-실행 자료는 ignored `output/pr-review/issue7957/paint-order-20261017/`의 `candidate/scores/*/size/`,
+실행 자료는 ignored `output/pr-review/issue7957/paint-style-20261017/`의 `candidate/scores/*/size/`,
 기준 자료는 `../integration-20261017/base/scores/*/size/`에 있다. 추가 Nimbus Sans 공급 진단도
 출력 차이를 해소하지 못했으며 제품 구현 변경이나 통과 증거로 삼지 않는다.
 
