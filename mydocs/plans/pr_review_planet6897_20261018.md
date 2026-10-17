@@ -1122,3 +1122,22 @@ Native/fresh WASM 실행 파일 해시를 확인해 동일 원본/PDF·글꼴 �
 진단이고 최종 기본opt3 전체 gate를 대신하지 않는다.5쪽의 실제 하락과1342000 미달,
 80168 기존 하락·156465345 첫 쪽 미달 및 원래11PR 전체 잔여 검증은 계속 해결 대상이다.
 PR 제출·CI·review/오늘할일·merge·후속 처리는 완료로 표시하지 않는다.
+
+
+후보43 `8bbd7c990`에서 생성 suite028의 정식 Cargo focused4 검증을 실행했다.
+`CARGO_BUILD_JOBS=8 CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 cargo test --locked
+--profile release-test --features native-skia --target-dir /home/tsjang/rhwp/target/pr-review
+--config profile.release-test.package.rhwp.opt-level=1 --test regression_suite_028
+issue_6803_split_start_row_rowspan_end_cut:: -- --test-threads 4`는 컴파일 포함227초·exit0,
+4PASS·0FAIL·239filtered였다. 실행 전후 head/추적 파일의 변경 없음도 확인했다.
+`candidate43-focused-6803.log`와 결과 JSON에 명령·source SHA·case SHA·종료 결과가 있다.
+생산 코드가 후보42와 같고 변경은 case/계획서뿐이므로 시각 증거의 생산자는 정확히
+후보42로 표기하며, 후보43에서 새로 fresh WASM을 빌드했다고 기록하지 않는다.
+
+6803 5쪽은 점수만으로 되돌릴 좌표를 고르지 않았다. 독립 Print에서 A14 기준선175.04px,
+고정 devel의 typed tree174.38666667px,후보42의175.05333333px를 확인했다. 원본 기대
+위치에는 더 가깝지만 raw 하락은 그대로 존재하며 이 관찰로0.01%p gate를 면제하지 않는다.
+남은 글자 모양/픽셀 차이의 원인은 아직 미검증이다. PDF 좌표와 두 실제 생산자의 관측은
+`6803-independent-pdf-borders-baselines.json`과 `6803-tail-baselines-producer.json`에
+보존했다. 현재 전체 상태와 원래11PR의 미완료 범위는 `candidate43-checkpoint.json`에
+기록했다. 전체 회귀·기본opt3·다른 원본의 전쪽 검증이나 remote PR/CI/merge가 완료된 것은 아니다.
