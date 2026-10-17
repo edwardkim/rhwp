@@ -1,7 +1,6 @@
 //! 문단 경계의 완결성을 실제 셀 유닛 소유로 판정한다.
 
 use super::LayoutEngine;
-use crate::model::paragraph::LineSeg;
 use crate::model::table::{Table, TablePageBreak};
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -106,13 +105,14 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         (require_complete_paragraphs, source): (bool, CutSource),
     ) -> Option<bool> {
+        // 유지 속성은 실제 줄 구성의 계약이다. 저장 LineSeg가 없거나 편집으로
+        // 재생성됐다는 이유로 완결한 문단 컷을 고정 px 고아 기준에 넘기지 않는다.
         let profile = self.profile.get();
         let table_reflowed = self
             .render_normalization
             .borrow()
             .table_text_reflowed(table);
         if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-            || profile.session_edited()
             || table.page_break != TablePageBreak::RowBreak
             || table.common.treat_as_char
             || (matches!(source, CutSource::Stored) && table_reflowed)
@@ -133,7 +133,6 @@ impl LayoutEngine {
             }
             let start = start_cut.get(index).copied().unwrap_or(0);
             if end <= start
-                || cell.dirty_flag
                 || cell.text_direction != 0
                 || cell.paragraphs.iter().any(|para| !para.controls.is_empty())
             {

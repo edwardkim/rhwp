@@ -21835,11 +21835,8 @@ impl LayoutEngine {
                         || hwp5_page_scale_cross_para_reset
                         || shared_empty_frame)
                     && (strict_saved_frame_break
-                        || ((rewind_internal_hard_break_orphan
-                            || !relaxed_hard_break
-                            || (!u.empty_spacer
-                                && (h + unit_fit_height > avail_height
-                                    || avail_height - h <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
+                        || ((!relaxed_hard_break
+                            || (!u.empty_spacer && h + unit_fit_height > avail_height))
                             && !units[start..j].iter().all(|unit| unit.empty_spacer)
                             && !tiny_fragment_waste))
                 {
@@ -22092,7 +22089,6 @@ impl LayoutEngine {
         let mut hit_hard_break = false;
         let mut fully_consumed = true;
         let mut consumed_height = 0.0f64;
-        const HARD_BREAK_REMAINING_TOLERANCE_PX: f64 = 32.0;
         let block_has_top_and_bottom_flow = cells
             .iter()
             .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
@@ -22159,9 +22155,7 @@ impl LayoutEngine {
                     && u.hard_break_before
                     && (strict_saved_frame_break
                         || ((!relaxed_hard_break
-                            || (!u.empty_spacer
-                                && (h + u.height > avail_height
-                                    || avail_height - h <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
+                            || (!u.empty_spacer && h + u.height > avail_height))
                             && !units[start..j].iter().all(|unit| unit.empty_spacer)))
                 {
                     if !strict_saved_frame_break
