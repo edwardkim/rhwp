@@ -26,7 +26,8 @@ use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
-    is_page_bottom_fixed_float, is_para_topbottom_float, signed_hwpunit,
+    is_last_para_topbottom_float, is_page_bottom_fixed_float, is_para_topbottom_float,
+    is_textless_coanchored_float_host, signed_hwpunit,
     stored_visible_anchor_band_host_line_advance_from_vpos, FloatLaneSet,
 };
 use crate::renderer::height_cursor::HeightCursor;
@@ -4668,8 +4669,12 @@ impl TypesetEngine {
             st.mark_page_absolute_top_table();
         }
         let vertical_offset = Self::get_table_vertical_offset(table);
-        let is_visible_para_float =
-            is_para_topbottom_float(&table.common) && para_has_non_whitespace_text(para);
+        // [#7687] 글자 없는 host 라도 자리차지 표가 둘 이상이고 양수 오프셋 표가 있으면 한/글은
+        // 글 있는 host 와 같은 공동 앵커 모델(첫 띠는 흐름 전진, 양수 오프셋은 배제 띠, host 줄은
+        // 첫 띠 아래)로 조판한다 — 술어·근거는 `is_textless_coanchored_float_host`.
+        let is_textless_coanchored_host = is_textless_coanchored_float_host(para);
+        let is_visible_para_float = is_para_topbottom_float(&table.common)
+            && (para_has_non_whitespace_text(para) || is_textless_coanchored_host);
         // 단 오른쪽 밖으로 통째로 벗어난 자리차지 개체는 본문 세로 공간을 차지하지
         // 않는다(재현 문서 D: horz=단 227.6mm, A4 폭 210mm — 화면 밖). 이 계약은
         let signed_vertical_offset = vertical_offset as i32;
@@ -4900,6 +4905,9 @@ impl TypesetEngine {
             && st.col_count == 1
             && st.current_zone_y_offset.abs() < 0.5
             && is_visible_para_float
+            // [#7687] 글자 없는 다중 자리차지 host 의 저장 사다리는 양수 오프셋 표를 흐름에
+            // 싣지 않는다(hwpspec pi=130: host 줄 10810 = 첫 띠 끝). 서명문 host 전용이다.
+            && para_has_non_whitespace_text(para)
             && signed_vertical_offset > 0
             && has_preceding_coanchored_float
             && para
@@ -5021,12 +5029,12 @@ impl TypesetEngine {
                 placement.table_top = table_top;
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 placement.occupied_bottom
-            } else if signed_vertical_offset <= 0 {
-                // 흐름을 바로 전진시키는 표는 paint와 같이 아래 바깥여백까지
-                // 소비한다. 양수 오프셋의 배제 밴드는 후속 재개 경로가 소비한다.
-                table_bottom + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
             } else {
-                table_bottom
+                // 흐름을 바로 전진시키는 표는 paint와 같이 아래 바깥여백까지
+                // 소비한다. 양수 오프셋의 배제 밴드도 배치(`layout`)의 zone 과 같이 아래
+                // 바깥여백까지 담는다 — 한/글 저장 사다리가 띠 끝을 `오프셋 + 위여백 +
+                // 높이 + 아래여백` 으로 적는다(hwpspec pi=132 28197, #7687).
+                table_bottom + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
             };
             // 단 오른쪽 밖 개체는 배제 영역도 만들지 않는다 — 배제 영역을 만들면
             // 뒤따르는 본문 표가 그만큼 밀려 마지막 블록이 다음 쪽으로 넘어간다.
@@ -5336,7 +5344,16 @@ impl TypesetEngine {
                 // 첫 표 offset=0 뒤의 양수-offset 표가 아래로 밀렸을 때 이 동기화가
                 // 없으면 서명란이 두 번째 표의 상단에 겹치고 flow도 한 표 높이만큼
                 // 과소 소비된다. 선행 제목은 pre-table 경로라 영향 없다.
-                st.apply_visible_float_exclusions(post_height);
+                // [#7680] 줄 상자가 띠에 **걸리기만 해도** 그 줄은 띠 아래로 간다 — 첫 줄 높이로
+                // 짚는다(전체 post 높이로 짚으면 멀리 있는 띠까지 넘긴다). hwpspec pi=133 의
+                // 「참고문헌」은 첫 띠 끝 603.9 에서 시작해 둘째 띠 607.7~ 에 걸쳤는데 HWP5 는
+                // 겹침 프로브가 꺼져 있어 띠 위에 그대로 놓였다(정본 849.5 vs 672.6).
+                let first_post_line_height = fmt
+                    .line_heights
+                    .get(post_table_start)
+                    .copied()
+                    .unwrap_or(post_height);
+                st.apply_visible_float_exclusions(first_post_line_height);
                 if issue2439_visible_host_stack && is_last_table {
                     // 마지막 표의 exclusion은 표 본체까지만 담는다. 한컴 저장 흐름은
                     // 그 뒤의 outer-bottom과 host LineSeg 간격을 거친 뒤 서명문을
@@ -5404,6 +5421,44 @@ impl TypesetEngine {
                 next_vpos,
             ) {
                 st.advance_flow_by(hwpunit_to_px(line_advance, self.dpi));
+            } else if is_textless_coanchored_host
+                && para.text.is_empty()
+                && is_last_para_topbottom_float(para, ctrl_idx)
+                && total_lines > 0
+                && !para.controls.iter().any(|control| {
+                    matches!(control, Control::Table(candidate)
+                        if crate::renderer::empty_host_line_absorbed_by_topbottom_float(
+                            para, &candidate.common))
+                })
+            {
+                // [#7687] 빈 host 의 줄 상자는 첫 띠 아래에 놓이고(hwpspec pi=130 저장 host 줄
+                // 10810 = 첫 띠 끝, 합성 H1~H6 도 같음), 그 줄이 양수 오프셋 띠에 걸리면 그 줄만
+                // 띠 아래로 간다. 폭 0 으로 저장된 흡수 줄(#7470)은 종전대로 띠에 든다.
+                // 글 있는 host 의 post-text 와 같은 계약으로 낸다 — 줄 항목(`PartialParagraph`
+                // 0..1, 저장 줄 host 는 위 [#2813] 이연 항목이 이미 냈다)·띠 위에 남는 앞 간격만
+                // 소비·흐름 전진. 배치는 그 항목을 같은 띠 프로브로 놓는다.
+                st.apply_visible_float_exclusions(fmt.line_heights[0]);
+                if st.current_height > para_start_height + 0.5 {
+                    let spacing =
+                        crate::renderer::float_placement::float_pushed_line_spacing_before(
+                            para_start_height,
+                            fmt.spacing_before,
+                            st.current_height,
+                        );
+                    st.consume_float_pushed_line_spacing(para_idx, spacing);
+                }
+                let host_line_already_emitted = st.current_items.iter().any(|item| {
+                    matches!(item, PageItem::PartialParagraph { para_index, start_line: 0, .. }
+                        if *para_index == para_idx)
+                });
+                if !host_line_already_emitted {
+                    st.append_item(PageItem::PartialParagraph {
+                        para_index: para_idx,
+                        start_line: 0,
+                        end_line: 1,
+                    });
+                }
+                st.advance_flow_by(fmt.line_advance(0));
             }
         }
 
