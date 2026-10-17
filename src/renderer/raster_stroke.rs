@@ -13,6 +13,7 @@ pub(crate) fn raster_line_endpoints(
     line: &LineNode,
     matrix: [f64; 6],
     profile: RenderProfile,
+    paint_width: f64,
 ) -> (f64, f64, f64, f64) {
     let original = (line.x1, line.y1, line.x2, line.y2);
     let style = &line.style;
@@ -22,6 +23,8 @@ pub(crate) fn raster_line_endpoints(
         || style.start_arrow != ArrowStyle::None
         || style.end_arrow != ArrowStyle::None
         || style.shadow.is_some()
+        || !paint_width.is_finite()
+        || paint_width <= 0.0
         || !style.width.is_finite()
         || style.width <= 0.0
         || ![line.x1, line.y1, line.x2, line.y2]
@@ -49,7 +52,7 @@ pub(crate) fn raster_line_endpoints(
     } else {
         return original;
     };
-    let device_width = style.width * (a * nx + c * ny).hypot(b * nx + d * ny);
+    let device_width = paint_width * (a * nx + c * ny).hypot(b * nx + d * ny);
     if !(0.0..1.0).contains(&device_width) || device_width == 0.0 {
         return original;
     }

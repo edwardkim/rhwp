@@ -2793,3 +2793,59 @@ review와 standalone overlay로 직접 판독했다. 기존 JPEG 출력을 낮�
 정본 `manual-pdf-20261017/`의 retrieval·pdf-correspondence·manual-host-input-identity·
 results JSON, backend별 전64쪽 TSV와2/18/35/41쪽 review/overlay에 근거를 보존한다.
 로그/중간JSON/글꼴 bytes는 커밋하지 않는다. PR 준비는 미완료다.
+
+
+## C82. 수동 Print의 굵은 원본 프로그램 전진 분리
+
+같은 입력·수동 PDF의192DPI/compat2024 실제 PNG 전64쪽을 C81 후보에서 다시 산출했다.
+Native 최저91.42959%,fresh WASM91.41871%,각90% 미만0쪽이며 쪽수64/64다.
+독립 p2 Type3 휴먼명조1000폭+TJ−48/−56(장치 격자 포함 약1.05em)에 맞춰
+기존 HFT 굵은 한글 전진 규칙을 휴먼명조에 확장했다. 명시 TrueType·공백·영문·기호와
+휴먼명조 bullet은 보존한다. 이는 90% 수치 통과이며 확대 판독 완료·전체 검증 통과가 아니다.
+Native/WASM41쪽과 WMF18/35쪽의 canonical review/overlay를 직접 열었으며,
+41쪽 혼합 소제목과 WMF의 일부 패턴·색상 차이는 계속 확인한다.
+
+41쪽의 `<`, `>`, `=`는 영문 원본 HCI Poppy 굵은 글리프다. 수동 PDF T5의
+ToUnicode003C/003E/003D,Widths605,FontMatrix.001 및 각 CharProc d1=605를
+독립 확인했다. 표시 폴백의0.5em으로 재면 `<별첨1>` 뒤 한글과 가운데 제목의
+원점이 어긋난다. 확인된 세 굵은 글리프에만605/1000 자연 전진을 전달하는
+후보를 검증한다. 미확인 regular/italic·전체 face를 추정하지 않는다.
+
+경로는 `원본 언어 슬롯/선언 face·style → 기존 부분 원본 메트릭 바인딩 →
+char_width_decision → 공통 TextRun clusters → Native/WASM paint`다.
+문서명·쪽번호·목표 좌표에 의한 구현 분기는 없다. 이 후보의 전쪽/소비 경계·
+수정 전 FAIL/후 PASS 회귀와 최신 head 전체 gate는 아직 완료하지 않았다.
+90% 선행 조건만으로 보이는 잔여 간격 결함을 면제하거나 정상 golden에 고정하지 않는다.
+정본은 ignored `manual-pdf-20261017/candidate-hft-bold*/`이며 원본 PDF와 이전 결과를 보존한다.
+
+
+## C83–C85. 실제 paint 폭·원본 굵은 전진·TAC 리더 소유
+
+C82 HCI Poppy 굵은 `<>=`의 독립605/1000 전진을 적용한 전64쪽 최저는
+Native93.07399/WASM93.06437%다. C83은 LineOp의 선언 폭으로 snap한 뒤 WebCanvas가
+최소0.5CSSpx로 다시 칠하던 경계를 actual paint 폭 공통 소비로 바꾼다. NativeSkia는
+실제 Paint 폭을 helper에 전달하고 같은 Paint를 소비하며 CanvasKit도 해결한 single 폭을
+공유한다. 수동 spy는 Canvas 인수를 바꾸지 않고 실제 호출을 관찰했고7경계FAIL→0FAIL이다.
+공개 좌표 소수3자리 직렬화 대조0.0005CSSpx는 시각 gate 변경이 아니다.
+
+C84는 독립 Print p2 Hanyang HFT 굵은【】와 휴먼명조 한글의5% 전진을 보존하며,
+기존 native_program bold_advance가 소유하는5%를 중복 가산하지 않는다. C85는 TAC가
+TextRun을 나눌 때 원본 tab_leaders를 탭 없는 앞 조각에 복제하던 오류를 제거한다.
+각 조각의 실제 탭만 리더를 소유하고 오른쪽 탭 정지의 숫자 원점은 측정/배치가 같은
+helper를 소비한다. 리더 여백 때문에 숫자 정지점을 다시 옮기던0.25em 감산을 없앴다.
+
+최종 C85 전64쪽은 Native93.07399/WASM95.87967%·쪽수64/64·미달0이다.
+p2는97.57913/98.33185%,p41은97.39690/98.52930%, 중요한 p19는
+99.43242/99.61477%다. p19는 같은 원본 굵은 제목 중 양쪽 최저가 가장 높은 쪽이며
+review/overlay를 직접 열어 본문para412와 다음 상자를 대조했다. 독립 PDF의 '터'
+x299.676676/y636.159993 CSSpx를 ±2CSSpx로 검사하고 내용/소유도 함께 보존한다.
+세 source 변경을 되돌린 비교는16건12PASS4FAIL(0.169초), 복원 후16PASS(0.174초)다.
+컴파일 포함121.731/165.002초이며 C83은 양쪽에 남아 있으므로 exact HEAD 비교가 아니다.
+최초 목차 오선택 검사와 source compile 결과를 의도한 재현으로 사용하지 않았다.
+
+[전쪽 TSV·대표 review/overlay·독립 기대값](../pr/assets/issue7445/completed-20261009/regression-policy-20261015/manual-hft-leaders-20261017/README.md)을 보존했다.
+거대 셀80쪽은 default fresh WASM97.50476%로 고정b7a53880 대비0.03797%p 하락하여
+보류다. 한양신명조 독립 원본 프로그램 공급의 다른 조건에서는 base97.44767→head97.46125%지만
+Native97.36494→96.75743%이므로 대체 수용하지 않는다. 문서별 임의 좌표/색상 보정은 없다.
+수동 WMF 원본과 Windows GDI+의 분홍색 패널도 직접 확인했으며 회색 패턴 잔여를 추적 중이다.
+전체48조건/최신gate/실제68소비는 아직 통과로 주장하지 않는다.

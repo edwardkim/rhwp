@@ -2072,7 +2072,8 @@ export class CanvasKitLayerRenderer {
     const width = style.width ?? 1;
     const matrix = (profile === 'print' || profile === 'highQuality')
       && typeof canvas.getTotalMatrix === 'function' ? canvas.getTotalMatrix() : undefined;
-    const [x1, y1, x2, y2] = rasterLineEndpoints(op, matrix, profile);
+    const singlePaintWidth = Math.max(0.3, width);
+    const [x1, y1, x2, y2] = rasterLineEndpoints(op, matrix, profile, singlePaintWidth);
     if (![x1, y1, x2, y2, width].every(Number.isFinite)) {
       this.unsupportedOps.add('line:invalidGeometry');
       return;
@@ -2090,12 +2091,13 @@ export class CanvasKitLayerRenderer {
           y2,
           { ...style, color: shadow.color, width },
           shadow.opacity,
+          singlePaintWidth,
         );
       } finally {
         canvas.restore();
       }
     }
-    this.drawCompoundLine(canvas, x1, y1, x2, y2, style, 1);
+    this.drawCompoundLine(canvas, x1, y1, x2, y2, style, 1, singlePaintWidth);
     // A zero-length straight line has no endpoint direction, matching the producer.
     if (x1 !== x2 || y1 !== y2) this.drawLineArrows(canvas, op.arrowHeads, style, color, width);
   }
@@ -5318,6 +5320,7 @@ export class CanvasKitLayerRenderer {
     y2: number,
     style: LayerLineStyle,
     opacity: number,
+    resolvedSingleWidth?: number,
   ): void {
     const width = style.width ?? 1;
     const color = style.color ?? '#000000';
@@ -5327,7 +5330,9 @@ export class CanvasKitLayerRenderer {
     const nx = lineLen > 0 ? -dy / lineLen : 0;
     const ny = lineLen > 0 ? dx / lineLen : 1;
     for (const [widthRatio, offsetRatio] of this.compoundLineSegments(style.lineType)) {
-      const paint = this.makeStrokePaint(color, Math.max(0.3, width * widthRatio), opacity);
+      const paintWidth = widthRatio === 1 && offsetRatio === 0 && resolvedSingleWidth !== undefined
+        ? resolvedSingleWidth : Math.max(0.3, width * widthRatio);
+      const paint = this.makeStrokePaint(color, paintWidth, opacity);
       const ox = nx * width * offsetRatio;
       const oy = ny * width * offsetRatio;
       try {

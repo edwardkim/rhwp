@@ -1075,6 +1075,7 @@ impl WebCanvasRenderer {
 
     fn render_line(&mut self, bbox: &BoundingBox, line: &LineNode, restore_transform: bool) {
         self.open_shape_transform(&line.transform, bbox);
+        let paint_width = line.style.dash.canvas_width(line.style.width);
         let (x1, y1, x2, y2) = self
             .ctx
             .get_transform()
@@ -1090,13 +1091,127 @@ impl WebCanvasRenderer {
                         transform.f(),
                     ],
                     self.render_profile,
+                    paint_width,
                 )
             })
             .unwrap_or((line.x1, line.y1, line.x2, line.y2));
-        self.draw_line(x1, y1, x2, y2, &line.style);
+        self.draw_line_with_resolved_width(x1, y1, x2, y2, &line.style, paint_width);
         if restore_transform {
             self.close_shape_transform_if_needed(&line.transform);
         }
+    }
+
+    fn draw_line_with_resolved_width(
+        &mut self,
+        x1: f64,
+        y1: f64,
+        x2: f64,
+        y2: f64,
+        style: &LineStyle,
+        width: f64,
+    ) {
+        let color = color_to_css(style.color);
+        let (lx1, ly1, lx2, ly2) = (x1, y1, x2, y2);
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let line_len = dx.hypot(dy);
+
+        // 그림자
+        if let Some(ref shadow) = style.shadow {
+            let opacity = if shadow.alpha > 0 {
+                1.0 - (shadow.alpha as f64 / 255.0)
+            } else {
+                1.0
+            };
+            let r = shadow.color & 0xFF;
+            let g = (shadow.color >> 8) & 0xFF;
+            let b = (shadow.color >> 16) & 0xFF;
+            self.ctx
+                .set_shadow_color(&format!("rgba({},{},{},{:.2})", r, g, b, opacity));
+            self.ctx.set_shadow_offset_x(shadow.offset_x);
+            self.ctx.set_shadow_offset_y(shadow.offset_y);
+            self.ctx.set_shadow_blur(2.0);
+        }
+
+        self.ctx.set_stroke_style_str(&color);
+        self.set_line_dash(&style.dash);
+        if let Some(intervals) = &style.dash_pattern {
+            let pattern = js_sys::Array::new();
+            for value in intervals {
+                pattern.push(&JsValue::from_f64(*value));
+            }
+            let _ = self.ctx.set_line_dash(&pattern);
+        }
+
+        // 이중선/삼중선: SVG draw_multi_line과 동일한 오프셋 비율 방식
+        // (width_ratio, offset_ratio) — offset은 선 중심으로부터의 거리 비율
+        match style.line_type {
+            super::LineRenderType::Double
+            | super::LineRenderType::ThickThinDouble
+            | super::LineRenderType::ThinThickDouble
+            | super::LineRenderType::ThinThickThinTriple => {
+                let lines: Vec<(f64, f64)> = match style.line_type {
+                    super::LineRenderType::Double => {
+                        vec![(0.30, -0.35), (0.30, 0.35)]
+                    }
+                    super::LineRenderType::ThickThinDouble => {
+                        // 굵은선(위)-얇은선(아래)
+                        vec![(0.4, -0.30), (0.2, 0.40)]
+                    }
+                    super::LineRenderType::ThinThickDouble => {
+                        // 얇은선(위)-굵은선(아래)
+                        vec![(0.2, -0.40), (0.4, 0.30)]
+                    }
+                    super::LineRenderType::ThinThickThinTriple => {
+                        vec![(0.15, -0.425), (0.30, 0.0), (0.15, 0.425)]
+                    }
+                    _ => vec![],
+                };
+
+                let (nx, ny) = if line_len > 0.0 {
+                    (-dy / line_len, dx / line_len)
+                } else {
+                    (0.0, 1.0)
+                };
+
+                for (width_ratio, offset_ratio) in &lines {
+                    let lw = (width * width_ratio).max(0.3);
+                    let off = width * offset_ratio;
+                    let ox = nx * off;
+                    let oy = ny * off;
+                    self.ctx.set_line_width(lw);
+                    self.ctx.begin_path();
+                    self.ctx.move_to(lx1 + ox, ly1 + oy);
+                    self.ctx.line_to(lx2 + ox, ly2 + oy);
+                    self.ctx.stroke();
+                }
+            }
+            _ => {
+                // Single line
+                self.ctx.set_line_width(width);
+                self.ctx.begin_path();
+                self.ctx.move_to(lx1, ly1);
+                self.ctx.line_to(lx2, ly2);
+                self.ctx.stroke();
+            }
+        }
+
+        let _ = self.ctx.set_line_dash(&js_sys::Array::new());
+        self.ctx.set_line_cap("butt");
+
+        // 그림자 해제
+        if style.shadow.is_some() {
+            self.ctx.set_shadow_color("transparent");
+            self.ctx.set_shadow_offset_x(0.0);
+            self.ctx.set_shadow_offset_y(0.0);
+            self.ctx.set_shadow_blur(0.0);
+        }
+        draw_arrow_heads(
+            &self.ctx,
+            &super::arrow::line_heads((x1, y1, x2, y2), style),
+            &color,
+            width,
+        );
     }
 
     fn render_ellipse(
@@ -2706,110 +2821,7 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_line(&mut self, x1: f64, y1: f64, x2: f64, y2: f64, style: &LineStyle) {
-        let color = color_to_css(style.color);
-        let width = style.dash.canvas_width(style.width);
-        let (lx1, ly1, lx2, ly2) = (x1, y1, x2, y2);
-        let dx = x2 - x1;
-        let dy = y2 - y1;
-        let line_len = dx.hypot(dy);
-
-        // 그림자
-        if let Some(ref shadow) = style.shadow {
-            let opacity = if shadow.alpha > 0 {
-                1.0 - (shadow.alpha as f64 / 255.0)
-            } else {
-                1.0
-            };
-            let r = shadow.color & 0xFF;
-            let g = (shadow.color >> 8) & 0xFF;
-            let b = (shadow.color >> 16) & 0xFF;
-            self.ctx
-                .set_shadow_color(&format!("rgba({},{},{},{:.2})", r, g, b, opacity));
-            self.ctx.set_shadow_offset_x(shadow.offset_x);
-            self.ctx.set_shadow_offset_y(shadow.offset_y);
-            self.ctx.set_shadow_blur(2.0);
-        }
-
-        self.ctx.set_stroke_style_str(&color);
-        self.ctx.set_line_width(width);
-        self.set_line_dash(&style.dash);
-        if let Some(intervals) = &style.dash_pattern {
-            let pattern = js_sys::Array::new();
-            for value in intervals {
-                pattern.push(&JsValue::from_f64(*value));
-            }
-            let _ = self.ctx.set_line_dash(&pattern);
-        }
-
-        // 이중선/삼중선: SVG draw_multi_line과 동일한 오프셋 비율 방식
-        // (width_ratio, offset_ratio) — offset은 선 중심으로부터의 거리 비율
-        match style.line_type {
-            super::LineRenderType::Double
-            | super::LineRenderType::ThickThinDouble
-            | super::LineRenderType::ThinThickDouble
-            | super::LineRenderType::ThinThickThinTriple => {
-                let lines: Vec<(f64, f64)> = match style.line_type {
-                    super::LineRenderType::Double => {
-                        vec![(0.30, -0.35), (0.30, 0.35)]
-                    }
-                    super::LineRenderType::ThickThinDouble => {
-                        // 굵은선(위)-얇은선(아래)
-                        vec![(0.4, -0.30), (0.2, 0.40)]
-                    }
-                    super::LineRenderType::ThinThickDouble => {
-                        // 얇은선(위)-굵은선(아래)
-                        vec![(0.2, -0.40), (0.4, 0.30)]
-                    }
-                    super::LineRenderType::ThinThickThinTriple => {
-                        vec![(0.15, -0.425), (0.30, 0.0), (0.15, 0.425)]
-                    }
-                    _ => vec![],
-                };
-
-                let (nx, ny) = if line_len > 0.0 {
-                    (-dy / line_len, dx / line_len)
-                } else {
-                    (0.0, 1.0)
-                };
-
-                for (width_ratio, offset_ratio) in &lines {
-                    let lw = (width * width_ratio).max(0.3);
-                    let off = width * offset_ratio;
-                    let ox = nx * off;
-                    let oy = ny * off;
-                    self.ctx.set_line_width(lw);
-                    self.ctx.begin_path();
-                    self.ctx.move_to(lx1 + ox, ly1 + oy);
-                    self.ctx.line_to(lx2 + ox, ly2 + oy);
-                    self.ctx.stroke();
-                }
-            }
-            _ => {
-                // Single line
-                self.ctx.set_line_width(width);
-                self.ctx.begin_path();
-                self.ctx.move_to(lx1, ly1);
-                self.ctx.line_to(lx2, ly2);
-                self.ctx.stroke();
-            }
-        }
-
-        let _ = self.ctx.set_line_dash(&js_sys::Array::new());
-        self.ctx.set_line_cap("butt");
-
-        // 그림자 해제
-        if style.shadow.is_some() {
-            self.ctx.set_shadow_color("transparent");
-            self.ctx.set_shadow_offset_x(0.0);
-            self.ctx.set_shadow_offset_y(0.0);
-            self.ctx.set_shadow_blur(0.0);
-        }
-        draw_arrow_heads(
-            &self.ctx,
-            &super::arrow::line_heads((x1, y1, x2, y2), style),
-            &color,
-            width,
-        );
+        self.draw_line_with_resolved_width(x1, y1, x2, y2, style, style.dash.canvas_width(style.width));
     }
 
     fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, style: &ShapeStyle) {

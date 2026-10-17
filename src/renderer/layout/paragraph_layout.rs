@@ -2218,6 +2218,22 @@ fn unjustified_leading_spaces_by_run(line: &ComposedLine, limit: usize) -> Vec<u
         .collect()
 }
 
+// 오른쪽 탭 정지는 숫자 블록의 끝이다. 리더 여백으로 정지점을 옮기지 않는다.
+fn right_leader_number_origin(
+    tab: &TabStop,
+    has_inline_tab: bool,
+    effective_margin_left: f64,
+    available_width: f64,
+    digit_width: f64,
+) -> f64 {
+    let target = if !has_inline_tab && available_width > 0.0 {
+        effective_margin_left + available_width
+    } else {
+        tab.position
+    };
+    target - digit_width
+}
+
 /// A left automatic tab fixes the label's end position. Distribution belongs
 /// to text after that anchor, including when character styles split the label.
 fn fixed_auto_tab_prefix_by_run(line: &ComposedLine) -> Vec<usize> {
@@ -8505,19 +8521,15 @@ impl LayoutEngine {
                             .rev()
                             .find(|tab| tab.tab_type == 1 && tab.fill_type != 0)
                         {
-                            let digit_w = estimate_text_width(run.text.trim(), &text_style);
-                            let target =
-                                if composed.tab_extended.is_empty() && available_width > 0.0 {
-                                    effective_margin_left + available_width
-                                } else {
-                                    tab.position
-                                };
-                            let gap = if composed.tab_extended.is_empty() {
-                                0.0
-                            } else {
-                                text_style.font_size * 0.25
-                            };
-                            x = col_area.x + target - gap - digit_w;
+                            let digit_w = estimate_text_width_exact(run.text.trim(), &text_style);
+                            x = col_area.x
+                                + right_leader_number_origin(
+                                    tab,
+                                    !composed.tab_extended.is_empty(),
+                                    effective_margin_left,
+                                    available_width,
+                                    digit_w,
+                                );
                             resolved_tab_block = true;
                         }
                     }
@@ -9305,6 +9317,8 @@ impl LayoutEngine {
                     if seg_start < tac_rel {
                         let seg_text: String = run_chars[seg_start..tac_rel].iter().collect();
                         let mut seg_style = text_style.for_text_fragment(seg_start);
+                        // 상위 런의 리더를 상속하지 않고, 탭을 소유한 조각에서 다시 계산한다.
+                        seg_style.tab_leaders.clear();
                         seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
                         // [Issue #6179] 이 조각의 마지막 탭 뒤에 TAC 개체가 오면,
                         // 되밀기 폭에 그 개체 폭을 포함시킨다 (조각 경계로 잘려
@@ -9840,6 +9854,8 @@ impl LayoutEngine {
                 let remaining: String = run_chars[seg_start..].iter().collect();
                 if !remaining.is_empty() {
                     let mut seg_style = text_style.for_text_fragment(seg_start);
+                    // 상위 런의 리더를 상속하지 않고, 탭을 소유한 조각에서 다시 계산한다.
+                    seg_style.tab_leaders.clear();
                     seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
                     if has_tabs && remaining.contains('\t') {
                         let positions = compute_char_positions(&remaining, &seg_style);
@@ -9904,6 +9920,8 @@ impl LayoutEngine {
                 } else if is_last_run {
                     // 마지막 run이 tac로 끝나는 경우: 빈 TextRun으로 is_para_end 표시
                     let mut seg_style = text_style.for_text_fragment(seg_start);
+                    // 상위 런의 리더를 상속하지 않고, 탭을 소유한 조각에서 다시 계산한다.
+                    seg_style.tab_leaders.clear();
                     seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
                     let sub_run_id = tree.next_id();
                     let sub_run_node = RenderNode::new(
@@ -10499,18 +10517,13 @@ impl LayoutEngine {
                             .find(|tab| tab.tab_type == 1 && tab.fill_type != 0)
                         {
                             let digit_w = estimate_text_width_exact(run.text.trim(), &ts);
-                            let target =
-                                if composed.tab_extended.is_empty() && available_width > 0.0 {
-                                    effective_margin_left + available_width
-                                } else {
-                                    tab.position
-                                };
-                            let gap = if composed.tab_extended.is_empty() {
-                                0.0
-                            } else {
-                                ts.font_size * 0.25
-                            };
-                            est_x = target - gap - digit_w;
+                            est_x = right_leader_number_origin(
+                                tab,
+                                !composed.tab_extended.is_empty(),
+                                effective_margin_left,
+                                available_width,
+                                digit_w,
+                            );
                         }
                     }
                     pending_right_leader_digit_est = false;

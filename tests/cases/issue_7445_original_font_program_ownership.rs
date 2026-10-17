@@ -575,3 +575,260 @@ fn declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries() {
         "measuredOriginalGlyph"
     );
 }
+
+fn sample16_layer_ops<'a>(value: &'a Value, kind: &str, prefix: &str, out: &mut Vec<&'a Value>) {
+    match value {
+        Value::Object(object) => {
+            if value["type"] == kind
+                && value["source"]["stableSourceKey"]
+                    .as_str()
+                    .is_some_and(|key| key.starts_with(prefix))
+            {
+                out.push(value);
+            }
+            for child in object.values() {
+                sample16_layer_ops(child, kind, prefix, out);
+            }
+        }
+        Value::Array(array) => {
+            for child in array {
+                sample16_layer_ops(child, kind, prefix, out);
+            }
+        }
+        _ => {}
+    }
+}
+fn sample16_assert_tab_owner(label: &str) {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(root.join("samples/hwp3-sample16-hwp5.hwp")).unwrap(),
+    )
+    .unwrap();
+    core.set_hangul2024_compat(true);
+    let (pi, text) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, p)| p.text.contains(label) && p.text.contains('\t'))
+        .map(|(i, p)| (i, p.text.clone()))
+        .unwrap();
+    let layer: Value = serde_json::from_str(
+        &core
+            .get_page_layer_tree_with_options_native(
+                1,
+                rhwp::paint::RenderProfile::Print,
+                rhwp::paint::LayerJsonOptions {
+                    omit_image_bytes: true,
+                    omit_font_bytes: true,
+                },
+            )
+            .unwrap(),
+    )
+    .unwrap();
+    let prefix = format!("section:0/para:{pi}/char:");
+    let mut texts = vec![];
+    let mut leaders = vec![];
+    sample16_layer_ops(&layer, "textRun", &prefix, &mut texts);
+    sample16_layer_ops(&layer, "tabLeader", &prefix, &mut leaders);
+    assert_eq!(
+        texts
+            .iter()
+            .map(|op| op["text"].as_str().unwrap())
+            .collect::<String>(),
+        text,
+        "원문 순서·누락·중복"
+    );
+    assert_eq!(
+        leaders.len(),
+        text.chars().filter(|&c| c == '\t').count(),
+        "탭 하나의 리더가 도형 앞뒤에 중복되지 않음"
+    );
+    for leader in leaders {
+        let owner: Vec<_> = texts
+            .iter()
+            .filter(|op| op["source"]["stableSourceKey"] == leader["source"]["stableSourceKey"])
+            .collect();
+        assert_eq!(owner.len(), 1);
+        assert!(
+            owner[0]["text"].as_str().unwrap().contains('\t'),
+            "탭이 없는 앞 조각은 리더를 그리지 않음"
+        );
+        let source_start: usize = owner[0]["source"]["stableSourceKey"]
+            .as_str()
+            .unwrap()
+            .strip_prefix(&prefix)
+            .unwrap()
+            .parse()
+            .unwrap();
+        let tab_local = owner[0]["text"]
+            .as_str()
+            .unwrap()
+            .chars()
+            .position(|c| c == '\t')
+            .unwrap();
+        assert_eq!(text.chars().nth(source_start + tab_local), Some('\t'));
+        let number = texts.last().unwrap();
+        for span in leader["leaders"].as_array().unwrap() {
+            assert!(
+                leader["bbox"]["x"].as_f64().unwrap() + span["endX"].as_f64().unwrap()
+                    <= number["bbox"]["x"].as_f64().unwrap(),
+                "리더는 뒤 쪽번호를 침범하지 않음"
+            );
+        }
+    }
+    assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
+}
+#[test]
+fn sample16_inline_object_fragments_keep_each_leader_with_its_source_tab() {
+    sample16_assert_tab_owner("추진목적");
+}
+#[test]
+fn sample16_ordinary_tab_keeps_its_single_source_owner() {
+    sample16_assert_tab_owner("추진방향");
+}
+
+#[test]
+fn sample16_hft_bold_heading_preserves_content_and_independent_completed_page_origin() {
+    // 독립 Print p19 /T4의 기준선과 뒤 글자. 최종 양쪽 raw98% 자격은 stage5에 기록한다.
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(root.join("samples/hwp3-sample16-hwp5.hwp")).unwrap(),
+    )
+    .unwrap();
+    core.set_hangul2024_compat(true);
+    let (pi, text) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, p)| p.text.starts_with("3. 원격지 재해복구센터") && p.text.contains("Disaster"))
+        .map(|(i, p)| (i, p.text.clone()))
+        .unwrap();
+    let layer: Value = serde_json::from_str(
+        &core
+            .get_page_layer_tree_with_options_native(
+                18,
+                rhwp::paint::RenderProfile::Print,
+                rhwp::paint::LayerJsonOptions {
+                    omit_image_bytes: true,
+                    omit_font_bytes: true,
+                },
+            )
+            .unwrap(),
+    )
+    .unwrap();
+    let prefix = format!("section:0/para:{pi}/char:");
+    let mut ops = vec![];
+    sample16_layer_ops(&layer, "textRun", &prefix, &mut ops);
+    assert_eq!(
+        ops.iter()
+            .map(|op| op["text"].as_str().unwrap())
+            .collect::<String>(),
+        text
+    );
+    let tail = text.chars().position(|c| c == '터').unwrap();
+    let mut origins = vec![];
+    for op in ops {
+        let start: usize = op["source"]["stableSourceKey"]
+            .as_str()
+            .unwrap()
+            .strip_prefix(&prefix)
+            .unwrap()
+            .parse()
+            .unwrap();
+        for cluster in op["clusters"].as_array().unwrap() {
+            let local = cluster["textRangeUtf16"]["start"].as_u64().unwrap() as usize;
+            if start + local == tail {
+                assert_eq!(op["text"].as_str().unwrap().chars().nth(local), Some('터'));
+                origins.push((
+                    op["placement"]["runToPage"]["e"].as_f64().unwrap()
+                        + cluster["origin"]["x"].as_f64().unwrap(),
+                    op["placement"]["runToPage"]["f"].as_f64().unwrap()
+                        + cluster["origin"]["y"].as_f64().unwrap(),
+                ));
+            }
+        }
+    }
+    assert_eq!(origins.len(), 1);
+    assert!(
+        (origins[0].0 - 299.6766764322917).abs() <= 2.0,
+        "원본 HFT 굵은 전진 뒤 '터': {:?}",
+        origins[0]
+    );
+    assert!((origins[0].1 - 636.1599934895834).abs() <= 2.0);
+    assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
+}
+#[test]
+fn hft_human_bold_tracking_preserves_regular_ttf_spaces_and_native_program_ownership() {
+    let mut program = core("휴먼명조", "가 •", None);
+    let mut source = program.document().clone();
+    for font in source.doc_info.font_faces.iter_mut().flatten() {
+        font.alt_type = 2;
+    }
+    program.set_document(source.clone());
+    let plain = record(&program, "가");
+    let space = record(&program, " ");
+    let bullet = record(&program, "•");
+    for shape in &mut source.doc_info.char_shapes {
+        shape.bold = true;
+    }
+    program.set_document(source.clone());
+    assert!(
+        (advance(&record(&program, "가")) / advance(&plain) - 1.05).abs() <= 2.0 / advance(&plain)
+    );
+    assert_eq!(advance(&record(&program, " ")), advance(&space));
+    assert_eq!(advance(&record(&program, "•")), advance(&bullet));
+    program.set_font_environment(Some(FontEnvironment::from_json(r#"{"id":"selected-human-ttf-control","substitutions":{},"trueTypeFaces":["휴먼명조"]}"#).unwrap())).unwrap();
+    assert_eq!(advance(&record(&program, "가")), advance(&plain));
+    program.set_font_environment(None).unwrap();
+    for font in source.doc_info.font_faces.iter_mut().flatten() {
+        font.native_program = Some(rhwp::model::style::NativeFontProgram::HumanMyeongJo);
+    }
+    program.set_document(source);
+    let final_advance = record(&program, "가")["layoutMetric"]["finalAdvanceHwpunit"]
+        .as_f64()
+        .unwrap();
+    assert!(
+        (final_advance - 7500.0 * 1.05).abs() <= 4.0,
+        "원 프로그램의 bold 추적을 중복하지 않음:{final_advance}"
+    );
+}
+
+#[test]
+fn original_hci_bold_comparison_glyphs_preserve_style_and_ttf_boundaries() {
+    let mut program = core("HCI Poppy", "A<=>A", None);
+    let mut source = program.document().clone();
+    for font in source.doc_info.font_faces.iter_mut().flatten() {
+        font.alt_type = 2;
+    }
+    for shape in &mut source.doc_info.char_shapes {
+        shape.bold = true;
+    }
+    program.set_document(source.clone());
+    for c in ["<", ">", "="] {
+        let decision = record(&program, c);
+        assert_eq!(
+            decision["layoutMetric"]["widthSource"],
+            "measuredOriginalGlyph"
+        );
+        // 수동2024 Print T5: Widths605/FontMatrix.001, 각각 CharProc d1도605.
+        assert!((advance(&decision) - 7500.0 * 0.605).abs() <= 2.0);
+    }
+    program.set_font_environment(Some(FontEnvironment::from_json(r#"{"id":"explicit-hci-bold-ttf","substitutions":{"HCI Poppy":"Palatino Linotype"},"trueTypeFaces":["Palatino Linotype"]}"#).unwrap())).unwrap();
+    for c in ["<", ">", "="] {
+        assert_ne!(
+            record(&program, c)["layoutMetric"]["widthSource"],
+            "measuredOriginalGlyph"
+        );
+    }
+    program.set_font_environment(None).unwrap();
+    for shape in &mut source.doc_info.char_shapes {
+        shape.italic = true;
+    }
+    program.set_document(source);
+    for c in ["<", ">", "="] {
+        assert_ne!(
+            record(&program, c)["layoutMetric"]["widthSource"],
+            "measuredOriginalGlyph"
+        );
+    }
+}

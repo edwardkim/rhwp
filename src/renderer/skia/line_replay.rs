@@ -14,6 +14,7 @@ pub(super) fn draw_line(canvas: &Canvas, line: &LineNode, paint: &Paint, antiali
          transform.skew_x() as f64, transform.scale_y() as f64,
          transform.translate_x() as f64, transform.translate_y() as f64],
         profile,
+        paint.stroke_width() as f64,
     );
     let width = line.style.width.max(0.5);
     let segments: &[(f64, f64)] = match line.style.line_type {

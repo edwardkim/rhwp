@@ -1914,16 +1914,32 @@ fn char_width_decision_with_hft_tracking<'a>(
                 "notApplicable"
             };
         }
-        // 한양신명조 HFT 굵은 한글·전각 bullet은 일반체 폭에 5%를 더해 전진한다.
+        // 독립 Print로 확인한 한양신명조/휴먼명조 HFT 굵은 한글은
+        // 일반체 폭에 5%를 더해 전진한다. 한양신명조의 전각 bullet과
+        // 독립 수동 Print p2로 확인한 굵은 【】에도 같은 추적을 쓴다.
         // 자산관리규정 Print의 Type3 글리프는 1000폭에 TJ -52.6을 쓰며,
-        // 출력 글꼴 크기 반올림을 포함하면 원본 em의 1.05배다. 공백·기호와
-        // 실제 TrueType 선택, 별도 Bold 메트릭이 있는 글꼴에는 적용하지 않는다.
+        // sample16의 수동2024 Print p2 휴먼명조도 Widths1000에 TJ−48/−56이다.
+        // 출력 격자를 포함하면 원본 em의 약1.05배다. 공백·나머지 기호와
+        // 실제 TrueType 선택, 별도 Bold 메트릭에는 적용하지 않는다. native_program의
+        // 기존 bold_advance가 이 추적을 소유할 때도 두 번 더하지 않는다.
         if style.hft_fullwidth_dot
             && style.bold
             && latin.is_none()
-            && (('\u{AC00}'..='\u{D7A3}').contains(&c) || c == '\u{2022}')
+            && (('\u{AC00}'..='\u{D7A3}').contains(&c) || matches!(c, '\u{2022}' | '【' | '】'))
+            && !matches!(
+                style.metric_font_family.as_deref(),
+                Some(
+                    crate::renderer::legacy_font_advances::HUMAN_HFT_METRIC_FACE
+                        | crate::renderer::legacy_font_advances::HANYANG_HFT_METRIC_FACE
+                )
+            )
             && embedded.metric.is_some_and(|metric| {
-                metric.bold_fallback && metric.metric.name == "HanyangSinMyeongJo"
+                metric.bold_fallback
+                    && match metric.metric.name {
+                        "HanyangSinMyeongJo" => true,
+                        "HumanMyeongJo" => ('\u{AC00}'..='\u{D7A3}').contains(&c),
+                        _ => false,
+                    }
             })
         {
             if let Some(width) = embedded.width_px {

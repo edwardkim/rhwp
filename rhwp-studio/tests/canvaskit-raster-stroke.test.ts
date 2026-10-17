@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { LayerLineOp } from '../src/core/types.ts';
-import { rasterLineEndpoints } from '../src/view/canvaskit/raster-stroke.ts';
+import { rasterLineEndpoints as resolvedRasterLineEndpoints } from '../src/view/canvaskit/raster-stroke.ts';
+
+const rasterLineEndpoints = (
+  line: LayerLineOp,
+  matrix: Parameters<typeof resolvedRasterLineEndpoints>[1],
+  profile: Parameters<typeof resolvedRasterLineEndpoints>[2],
+) => resolvedRasterLineEndpoints(line, matrix, profile, Math.max(0.3, line.style?.width ?? 1));
 
 const identity = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 const line: LayerLineOp = {

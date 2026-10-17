@@ -19,6 +19,33 @@ struct OriginalGlyphMetric {
 // 슬래시 네 군데의 /Widths와 CharProc d1이 모두 605/1000이다.
 // 표시 폴백 Palatino의 656/2048은 원본 HFT 글리프의 폭이 아니다.
 static ORIGINAL_GLYPH_METRICS: &[OriginalGlyphMetric] = &[
+    // 수동 Hancom2024 Print sample16 p41 T5: ToUnicode003C/003E/003D,
+    // Widths605·FontMatrix.001·각 CharProc d1=605. 굵은 원본 HCI Poppy를
+    // 표시 폴백의 반각 기호로 재면 혼합 소제목의 뒤 한글이 당겨진다.
+    OriginalGlyphMetric {
+        face: "HCI Poppy",
+        bold: true,
+        italic: false,
+        character: '<',
+        advance_units: 605,
+        em_units: 1000,
+    },
+    OriginalGlyphMetric {
+        face: "HCI Poppy",
+        bold: true,
+        italic: false,
+        character: '>',
+        advance_units: 605,
+        em_units: 1000,
+    },
+    OriginalGlyphMetric {
+        face: "HCI Poppy",
+        bold: true,
+        italic: false,
+        character: '=',
+        advance_units: 605,
+        em_units: 1000,
+    },
     OriginalGlyphMetric {
         face: "HCI Poppy",
         bold: false,

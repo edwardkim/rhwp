@@ -5,6 +5,7 @@ export function rasterLineEndpoints(
   line: LayerLineOp,
   matrix: ArrayLike<number> | undefined,
   profile: LayerRenderProfile,
+  paintWidth: number,
 ): [number, number, number, number] {
   const original: [number, number, number, number] = [line.x1, line.y1, line.x2, line.y2];
   const style = line.style ?? {};
@@ -12,7 +13,8 @@ export function rasterLineEndpoints(
   if (!['print', 'highQuality'].includes(profile) || !matrix || matrix.length !== 9
     || (style.lineType ?? 'single') !== 'single' || (style.dash ?? 'solid') !== 'solid'
     || (style.startArrow ?? 'none') !== 'none' || (style.endArrow ?? 'none') !== 'none'
-    || line.arrowHeads?.length || style.shadow || !Number.isFinite(width) || width <= 0
+    || line.arrowHeads?.length || style.shadow || !Number.isFinite(paintWidth) || paintWidth <= 0
+    || !Number.isFinite(width) || width <= 0
     || !original.every(Number.isFinite) || !Array.from(matrix).every(Number.isFinite)
     || matrix[6] !== 0 || matrix[7] !== 0 || matrix[8] !== 1) return original;
 
@@ -27,7 +29,7 @@ export function rasterLineEndpoints(
   if (dx !== 0 && dy === 0) [nx, ny] = [0, 1];
   else if (dx === 0 && dy !== 0) [nx, ny] = [1, 0];
   else return original;
-  const deviceWidth = width * Math.hypot(a * nx + c * ny, b * nx + d * ny);
+  const deviceWidth = paintWidth * Math.hypot(a * nx + c * ny, b * nx + d * ny);
   if (!(deviceWidth > 0 && deviceWidth < 1)) return original;
   const px = a * line.x1 + c * line.y1 + e;
   const py = b * line.x1 + d * line.y1 + f;
