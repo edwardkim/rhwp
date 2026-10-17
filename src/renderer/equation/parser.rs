@@ -65,18 +65,6 @@ pub struct EqParser {
     /// 현재 재귀 깊이. 중첩 게이트웨이(`parse_command`/`parse_group`/
     /// `parse_paren_group`)에서 증감하여 무한 재귀·깊은 트리를 막는다.
     depth: u32,
-    /// [#7873] 글자 식별자 노드에 현재 `rm`/`it` 상태를 적용한다.
-    fn styled_text(&self, text: String) -> EqNode {
-        let node = EqNode::Text(text);
-        match self.font_state.filter(|_| !self.document_terms) {
-            Some(style) => EqNode::FontStyle {
-                style,
-                body: Box::new(node),
-            },
-            None => node,
-        }
-    }
-
     /// LParen 인덱스 → 매칭 RParen 인덱스 사전계산 결과. `paren_then_script` 의
     /// 매 호출당 O(n) 전방 스캔을 O(1) 조회로 바꿔, 괄호가 많은/깊은 입력에서의
     /// O(n^2) 행(hang)을 없앤다. LParen 이 아니거나 짝이 없으면 `tokens.len()`.
@@ -123,6 +111,18 @@ impl EqParser {
         Self {
             document_terms: true,
             ..Self::new(tokens)
+        }
+    }
+
+    /// [#7873] 글자 식별자 노드에 현재 `rm`/`it` 상태를 적용한다.
+    fn styled_text(&self, text: String) -> EqNode {
+        let node = EqNode::Text(text);
+        match self.font_state.filter(|_| !self.document_terms) {
+            Some(style) => EqNode::FontStyle {
+                style,
+                body: Box::new(node),
+            },
+            None => node,
         }
     }
 
