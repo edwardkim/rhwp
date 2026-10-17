@@ -49,6 +49,9 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     /// 원본 쪽 재시작 컷이 실제 수용한 미완료 행 상자. 내용 컷과 별도로
     /// 보존하고 같은 행의 뒤 상자가 수용되면 완료 행 장부에 합산한다.
     pub(in crate::renderer::typeset) stored_restart_row_box: Option<(usize, f64)>,
+    /// 저장 쪽 재시작 컷에서 걸침 칸의 몫으로 쪽 끝 띠까지 수용한 끝 행 상자 `(행, px)`.
+    /// 다음 조각의 행 계획이 이 상자와 남은 내용을 그 행의 물리 상자로 쓴다.
+    pub(in crate::renderer::typeset) stored_reset_band_row_box: Option<(usize, f64)>,
     /// 인증된 첫 물리 조각을 실제 수용한 사실. 뒤 조각의 바깥 프레임을
     /// 예산과 배치가 같은 원점에서 한 번만 다시 열도록 전달한다.
     pub(in crate::renderer::typeset) stored_fragment_outer_frame: bool,
