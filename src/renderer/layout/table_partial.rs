@@ -1364,9 +1364,22 @@ impl LayoutEngine {
                 && !is_block_split
                 && !start_cut_is_block
                 && (cell_row != start_row || start_cut.iter().all(|cut| *cut == 0))
-                && self
+                && (self
                     .row_plain_restart_capacity_cut(table, cell_row, styles)
-                    .is_some_and(|cut| cut == end_cut);
+                    .is_some_and(|cut| cut == end_cut)
+                    // 문단 경계의 저장 쪽 재시작(다음 문단 첫 줄 vpos 0)도 같은 원본 조각이다.
+                    // 1342000 31쪽 행 24 경남 칸(valign Center): 한/글 2020 PDF 는 이 조각 안
+                    // 6줄을 가운데 정렬해 첫 줄을 조각 위 9.8px 에 둔다(위 정렬이면 3.8px).
+                    // 칸 하나뿐인 표는 칸이 곧 표 조각이라 한/글이 위에서부터 흘린다
+                    // (rowbreak-problem-pages 13쪽·1382000 20쪽 1×1 Center 칸: 첫 줄이 위 정렬 자리).
+                    || table.cells.len() > 1
+                        && self.row_cut_ends_at_stored_page_reset(
+                        table,
+                        cell_row,
+                        &[],
+                        end_cut,
+                        styles,
+                    ));
             let cut_frame_owns_alignment = is_continuation
                 && start_row_height_override.is_some()
                 && cell_row == start_row
