@@ -199,6 +199,7 @@ struct ExtractedPage {
     import_budget: std::sync::Arc<pdf_oxide::import_limits::ImportBudget>,
     media_box: (f32, f32, f32, f32),
     spans: Vec<TextSpan>,
+    span_orders: Vec<Vec<usize>>,
     images: Vec<PdfImage>,
     image_orders: Vec<Vec<usize>>,
     paths: Vec<PathContent>,

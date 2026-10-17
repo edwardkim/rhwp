@@ -22,3 +22,10 @@
 Form 호출 CTM의 두 비대각 성분 `-1.88e-7`과 원래 BBox를 그대로 해석한다.
 새 지원은 최대 32 꼭짓점의 직선 볼록 경계이며, 다른 곡선·오목·복합 경계는 미지원이다.
 RGBA 저장 프레임과 matrix를 함께 생산하며, 원래 물리 경계를 bbox 하나로 대신하지 않는다.
+
+- `close-stroke-controls.pdf`: `generate_close_stroke.py`로 생성하는 2쪽.
+  페이지·두 단계 중첩 Form의 `s = h S`, 열린 `S`와 후속 채움의 분리·색상을 대조한다.
+- `text-paint-order-controls.pdf`: `generate_text_paint_order.py`로 생성하는 3쪽.
+  페이지·중첩 Form·반복 Form의 문자를 나중의 불투명 path/image가 덮는다.
+  글자는 삭제하는 대신 원래 paint 소속을 유지해야 한다. 실루엣만으로는 유색 내부의
+  잘못된 글자색을 검출하지 못하므로 실제 PNG와 source 순서를 함께 검증한다.

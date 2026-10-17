@@ -144,7 +144,7 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
     let v2_rules = v2["rules"].as_array().expect("current v2 rules");
 
     assert_eq!(v1_rules.len(), 830);
-    assert_eq!(v2["summary"]["activeRuleCount"], 836);
+    assert_eq!(v2["summary"]["activeRuleCount"], 841);
     assert_eq!(v2["summary"]["retiredRuleCount"], 4);
 
     let mut expected_semantics: BTreeMap<_, _> = v1_rules
@@ -233,6 +233,16 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
             ),
             "rust-layout-name",
         ),
+        (
+            include_str!("../../assets/font-rules/changes/issue-7966-postscript-layout-name.json"),
+            "rust-layout-name",
+        ),
+        (
+            include_str!(
+                "../../assets/font-rules/changes/issue-7966-postscript-layout-metric.json"
+            ),
+            "rust-layout-metric",
+        ),
     ] {
         // 공개 프로그램 공급 두 건도 기록된 add-rule만 의미 비교에 반영한다.
         let addition: serde_json::Value =
@@ -310,7 +320,7 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
 fn canonical_layout_name_projection_reaches_public_trace() {
     let registry = registry();
     let rules = projection_rules(&registry, "rust-layout-name");
-    assert_eq!(rules.len(), 174);
+    assert_eq!(rules.len(), 177);
 
     let legacy_keys: BTreeSet<(&str, &str)> = rules
         .iter()
@@ -357,7 +367,7 @@ fn canonical_layout_name_projection_reaches_public_trace() {
         observed.insert(rule["ruleId"].as_str().expect("ruleId"));
     }
 
-    assert_eq!(observed.len() + priority_shadowed.len(), 174);
+    assert_eq!(observed.len() + priority_shadowed.len(), 177);
     assert_eq!(priority_shadowed.len(), 34);
 
     let sentinel = public_trace_record("__rhwp_w7_unregistered_font__", 1, "가");
@@ -375,7 +385,7 @@ fn canonical_layout_name_projection_reaches_public_trace() {
 fn canonical_layout_metric_projection_reaches_public_lookup() {
     let registry = registry();
     let rules = projection_rules(&registry, "rust-layout-metric");
-    assert_eq!(rules.len(), 68);
+    assert_eq!(rules.len(), 70);
 
     for rule in rules {
         let source = source_face(rule);

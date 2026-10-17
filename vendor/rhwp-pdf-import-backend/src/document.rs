@@ -12865,6 +12865,36 @@ impl PdfDocument {
         Ok(spans)
     }
 
+    /// Positional import marks paired with the full content-stream paint path.
+    /// Reading-order extraction remains a separate API and never supplies z-order.
+    pub fn extract_ordered_painted_spans(
+        &self,
+        page_index: usize,
+    ) -> Result<Vec<(crate::layout::TextSpan, Vec<usize>)>> {
+        self.check_import_budget()?;
+        let mut orders = HashMap::new();
+        let spans = self.extract_spans_impl_with_orders(
+            page_index,
+            crate::extractors::TextExtractionConfig::default(),
+            HashSet::new(),
+            HashSet::new(),
+            true,
+            Some(&mut orders),
+        )?;
+        let spans = self.postprocess_spans_for_import(page_index, spans)?;
+        let result = spans
+            .into_iter()
+            .map(|span| {
+                let order = orders
+                    .remove(&span.sequence)
+                    .ok_or_else(|| Error::Unsupported("missing text paint order".into()))?;
+                Ok((span, order))
+            })
+            .collect();
+        self.check_import_budget()?;
+        result
+    }
+
     /// Resolve nonstroking `ca` and stroking `CA` in the active resource scope.
     pub(crate) fn paint_alpha(
         &self,
@@ -17495,6 +17525,25 @@ impl PdfDocument {
         excluded_inks: HashSet<String>,
         visible_paint_only: bool,
     ) -> Result<Vec<crate::layout::TextSpan>> {
+        self.extract_spans_impl_with_orders(
+            page_index,
+            config,
+            excluded_layers,
+            excluded_inks,
+            visible_paint_only,
+            None,
+        )
+    }
+
+    fn extract_spans_impl_with_orders(
+        &self,
+        page_index: usize,
+        config: crate::extractors::TextExtractionConfig,
+        excluded_layers: HashSet<String>,
+        excluded_inks: HashSet<String>,
+        visible_paint_only: bool,
+        paint_orders: Option<&mut HashMap<usize, Vec<usize>>>,
+    ) -> Result<Vec<crate::layout::TextSpan>> {
         if self.is_encrypted_unreadable() {
             log::warn!("PDF is encrypted and could not be decrypted; returning no spans");
             return Ok(Vec::new());
@@ -17554,6 +17603,9 @@ impl PdfDocument {
         }
 
         let spans = extractor.extract_text_spans(&content_data)?;
+        if let Some(orders) = paint_orders {
+            *orders = extractor.take_span_paint_orders();
+        }
         // Drain MCIDs whose in-stream /ActualText was applied during
         // extraction and stash on the document so the struct-tree-
         // scope applier honours MC-scope-wins precedence (§14.9.4).

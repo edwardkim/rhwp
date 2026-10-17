@@ -315,17 +315,8 @@ pub(super) fn lower(
         id += 1;
     }
 
-    paint_orders.sort_by(|a, b| a.1.cmp(&b.1));
-    for (z, (control, _)) in paint_orders.iter().enumerate() {
-        match &mut owner.controls[*control] {
-            Control::Shape(s) => s.common_mut().z_order = z as i32,
-            Control::Picture(p) => p.common.z_order = z as i32,
-            _ => {}
-        }
-    }
-
     let mut unknown_fonts = 0;
-    for span in &page.spans {
+    for (span_index, span) in page.spans.iter().enumerate() {
         if span.text.is_empty() {
             continue;
         }
@@ -397,11 +388,21 @@ pub(super) fn lower(
             },
             ..Default::default()
         };
+        paint_orders.push((owner.controls.len(), page.span_orders[span_index].clone()));
         owner
             .controls
             .push(Control::Shape(Box::new(ShapeObject::Rectangle(rect))));
         id += 1;
     }
+    paint_orders.sort_by(|a, b| a.1.cmp(&b.1));
+    for (z, (control, _)) in paint_orders.iter().enumerate() {
+        match &mut owner.controls[*control] {
+            Control::Shape(s) => s.common_mut().z_order = z as i32,
+            Control::Picture(p) => p.common.z_order = z as i32,
+            _ => {}
+        }
+    }
+
     if unknown_fonts > 0 {
         warnings.push(format!(
             "{unknown_fonts} spans have Unknown font; explicit fallback used"

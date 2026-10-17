@@ -33,3 +33,28 @@ Native/fresh Docker WASM의 전쪽 TSV·대표 PNG, 요청 정책·공개 API/Wo
 증적은 ignored `output/pr-review/issue7957/fidelity-20261017/`에 보존한다.
 현재 승인은 로컬 보정·검증과 이미 승인된 devel 대상 Open PR까지다. merge·이슈 종료는
 수행하지 않는다. `parserAllocationBoundsProven=false`의 미완료 경계도 유지한다.
+
+## 중간 판독과 공통 paint 순서 보정
+
+`f1f13d226`의 Native에서는 close-stroke 2쪽·배치 수 3쪽·affine clip 3쪽이 전쪽
+100%, 원본 19쪽이 최저 99.31446%였다. 실제 6쪽 연결선과 7쪽 글꼴은 개선됐지만,
+6쪽의 뒤에서 가려져야 할 `Automotive`·`Global Test`가 앞에 다시 그려졌다.
+이 상태를 완료로 판정하지 않는다. 추가 수정이 확인된 시점에 진행 중인 해당 Docker
+최적화를 중단했다(exit 137, 의도한 중단이며 OOM·제품 실패가 아니다). 이전 단계의
+완성된 Docker producer와 중간 Native producer는 보존한다.
+
+원인은 path/image만 content operator의 계층적 source order로 정렬하고 텍스트는
+나중에 별도의 큰 z-order로 추가하던 positional lowering이다. 좌표나 단어를 이용해
+숨기지 않는다. TextExtractor가 같은 full parser의 페이지 ordinal과 Form 호출 경로를
+기록하고, Tj buffer의 첫 paint 소속 → span sequence의 요청 내부 sidecar → import의
+span/order 쌍 → shape·image·text 전체 z-order 정렬로 전달한다. public TextSpan 구조나
+검색용 reading-order 의미를 변경하지 않는다. 시각 import에서 서로 다른 paint 소속의
+span을 기하학적으로 합치거나 중복 제거하지 않는다. 비텍스트 mark 앞에서 대기 중인
+텍스트 buffer를 먼저 방출한다. source-order sidecar의 entry·snapshot 복사는 기존 요청
+ledger를 소비하며, 전체 할당 증명이 완료됐다는 주장은 여전히 하지 않는다.
+
+독립 `text-paint-order-controls.pdf`는 페이지·중첩 Form·반복 중첩 Form에서 텍스트를
+후속 불투명 사각형과 그림으로 덮는다. 원문 문자열은 IR에 남아야 하지만 최종 paint에서는
+가려져야 한다. 변경 전에는 두 문자열이 덮는 개체 위에 보였다. 이 대조군의 변경 전
+실루엣 값도 100%다. 유색 내부의 다른 글자색은 실루엣 점수로 잡히지 않으므로,
+이 실패는 동일 영역의 실제 PNG·색상 및 개체 소유/순서로 입증한다.

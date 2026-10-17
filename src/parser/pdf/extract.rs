@@ -44,7 +44,10 @@ pub(super) fn extract(
             "invalid page dimensions",
         ));
     }
-    let spans = checked(pdf, pdf.extract_painted_spans(page), "text", page)?;
+    let (spans, span_orders): (Vec<_>, Vec<_>) =
+        checked(pdf, pdf.extract_ordered_painted_spans(page), "text", page)?
+            .into_iter()
+            .unzip();
     let paths = checked(pdf, pdf.extract_paths(page), "paths", page)?;
     for path in &paths {
         let next = budget
@@ -224,6 +227,7 @@ pub(super) fn extract(
             .ok_or_else(|| PdfImportError::budget("missing backend request budget"))?,
         media_box,
         spans,
+        span_orders,
         images,
         image_orders,
         paths,
