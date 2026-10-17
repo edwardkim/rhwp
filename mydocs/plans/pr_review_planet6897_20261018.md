@@ -226,3 +226,45 @@ p18 render tree의 `적정성`은 candidate6에만 있고 candidate7과 독립 P
 다음 후보의 미계산 본문 처리에서는 재계산 전에 기존 `replace_line_segs(Vec::new())`로 본문
 캐시를 무효화한다. 낡은 개체 줄 간격과 tag를 template으로 재사용하지 않고 기존 reflow 함수가
 생성 표식이 있는 LineSeg를 만든다. 원본 파일·문자·control·셀의 원본 캐시는 바꾸지 않는다.
+
+
+### 최신 devel 재기반과 걸침 셀의 실제 수용 컷
+
+`upstream/devel`의10개 새 commit을 받아 `4296fa045df2743a0eaa1b0cc71b2a3c1dd90bb6` 위로
+리베이스했다. 후보9 head는 `39d85c284f14f91a1a7a1f819dfb9156209f184f`다. 코드 충돌은 없고,
+59개 patch의 range-diff가 모두 동일하다. 원 기여49개가 메인터너 보정보다 앞서며 author·date와
+미추적 PDF4개도 보존했다. 일시적인 index lock은 이미 해제된 것을 확인해 continue했으며
+lock 파일을 제거하지 않았다. Native 빌드5분41초·fresh WASM6분19초가 exit0으로 완료됐다.
+실행 명령·산출물 SHA는 ignored `candidate9-*-build-results.json`, 재기반과49개 출처 대응은
+`upstream-4296fa045-rebase-result.json`·`cherry-pick-mapping.json`에 있다. 후보9 Native의
+원본2건은99.89402%·98.48018%, 집중8개 중156465345 p1은88.71602%로 미달이다.
+후보9 나머지 Native/fresh WASM 실행과 아래 변경 후 검증은 아직 완료되지 않았다.
+
+직전 후보8 원본2건의 fresh WASM도99.91495%·98.24952%다. Native/WASM compare를 직접
+판독해 중첩 표의 보기①–⑤와 후속 내용, rm 수식·분수와 본문의 대응을 확인했다. 이 수치는
+리베이스 전 producer의 결과이며 최종 head 검증으로 대신하지 않는다. 리베이스 중 잠시
+없어진 수식 입력2개의 ENOENT는 환경 오류로 구분했고 같은 동결 WASM으로 재실행해 통과했다.
+
+1342000 구역1 pi10의 Sejong 걸침 칸(행17·열3)은 p82에서238.346667px를 수용했지만,
+종료 RowCut `[1,1]`은 경계 행18의 **다른 일반 셀**을 가리킨다. 기존 코드는 이 컷의 짧은
+내용 높이를 걸침 셀의 소비 공간으로 재사용해 유닛0..0을 선택했고, 다음 조각은 처음부터
+다시 그렸다. 원본 저장 줄은 유닛13(문단11)에서0으로 되감기며 독립 Print p83의 소유와
+대응한다. 원본·PDF·후보7 unit trace와 p82–85 독립 PDF 텍스트를 보존했다.
+
+공통 `rowbreak_straddle_cut_units`는 원래 저장 프레임 owner 인증을 유지하되 일반 fallback의
+종료 예산을 **자기 실제 수용 상자 높이**로 잰다. 이 선택 결과는
+`accepted_straddle_fragment_units` → `StraddleCellCarry.fragment_cut/next_unit` → 다음 조각과
+`table_partial`의 우선 컷 경로로 전달된다. 별도 장부가 없는 시작 행의 rowspan paint fallback도
+같은 helper를 호출한다. 일반 셀 RowCut 높이로 다시 추측하던 중복 공식을 제거했다.
+공통 메서드는 기존 작은 `stored_span_content.rs`로 옮기고 물리 높이와 내용 유닛의 역할을
+같은 모듈에 둔다. 별도의 문서 ID·높이 상수·출력 숨김을 추가하지 않는다.
+
+대조 경계는 #6803의 시작 행 걸침 칸(5쪽 전체), #5862의8쪽 끝 글줄 보존, 1342000
+p82→83의 저장 되감김과 p84 후속 표, 기존 보정 p202→203, 80168 p17→18이다. 위 사례의
+수정 전 동결 render tree를 보존했다. 새로운 구현은 아직 빌드·실행 전이다. 전쪽 gate 미달
+문서의 기대값·golden을 갱신하거나 새 렌더링 회귀를 추가하지 않았다.
+
+80168 p93의 별도 잔여 원인도 좁혔다. 통째 이월된 래퍼 표가 자식106.04px만 수용하고
+밖의116.67px 최소 프레임을 소비하지 않는다. 실제 paint는194.15px까지 도달하나 수용
+`occupied_bottom=109.8`을 다시 적용해 흐름이185.4px로 되돌아간다. 이 경로의 전체 프레임
+fit·emit·paint를 같은 높이로 연결하는 보정은 다음 단계이며 아직 적용하지 않았다.

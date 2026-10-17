@@ -1717,40 +1717,26 @@ impl LayoutEngine {
                         su = su.max(physical_start);
                     }
                 }
-                // [#6803] 조각 **시작 행에서 시작해 끝 행을 넘는** rowspan 셀은 끝 컷을
-                // 받지 못한다. `end_cut` 은 `end_row-1` 행의 부기라 그 셀이 담기지 않고
-                // (`apply_end == false` → `eu == usize::MAX`), 시작 행에 걸린 탓에
-                // `#1748` 의 높이-기반 구제(`is_rowbreak_straddle`)는 `!is_in_split_row`
-                // 조건에서 막힌다. 그래서 조각이 **다음 쪽이 다시 그릴 몫까지** 배치한다
-                // (1376496 3쪽: 셀 r=8 rs=6 이 pi=0..66 을 전부 그려 글줄이 용지 아래
-                // 1,015px, `export-text` 3쪽 `A1` 이 2 대신 6).
-                //
-                // 같은 셀이 다음 조각에서는 `is_rowbreak_straddle` 로 높이 컷을 받아
-                // 정확히 이어받는다 — 두 경로의 비대칭만 메운다. 시작 컷(`su`)은 그대로
-                // 두고 끝만 이 조각의 셀 상자 높이로 정한다.
+                // 시작 행의 걸침 셀도 수용 단계와 같은 상자·원본 유닛 컷을 쓴다.
+                // 옆 셀의 RowCut 높이로 끝을 다시 추정하면 병합 내용이 누락·반복된다.
                 if eu == usize::MAX && cell.row_span > 1 && cell_end_row > render_range_end {
-                    // ⚠ 셀 상자 높이(`cell_h`)로 재면 **한 유닛 모자란다**. 선언 행높이
-                    // 합(861.7px)이 실제 조판(880.1px)보다 짧아 경계 줄이 상자 밖에서
-                    // 시작하기 때문이다(`#5862` 가 clip 을 그 줄까지 늘리는 바로 그
-                    // 어긋남). 그러면 `pi=33` 이 어느 쪽에도 안 남는다.
-                    //
-                    // 대신 다음 조각이 `is_rowbreak_straddle` 에서 `su` 를 구할 때 쓰는
-                    // **같은 식**으로 잰다 — 온전 행은 컷 측정 높이, 경계 행은 컷까지의
-                    // 높이. 그래서 `이 조각의 eu == 다음 조각의 su` 가 산술적으로
-                    // 보장된다(같은 파일 아래 `#1748` 주석의 관찰 그대로다).
-                    let boundary_row = render_range_end.saturating_sub(1);
-                    let consumed_h = self.rowbreak_cut_prefix_height(
+                    let (_, accepted_end) = self.rowbreak_straddle_cut_units(
                         table,
                         cell,
-                        boundary_row,
+                        start_row,
+                        render_range_end,
+                        start_cut,
+                        start_cut_is_block,
+                        start_row_height_override,
                         end_cut,
+                        is_block_split,
+                        end_row_height_override,
+                        cell_h,
                         resolved_row_heights,
+                        straddle_page_bands,
                         styles,
                     );
-                    let fit = self
-                        .cell_units_fitting_height(cell, table, styles, consumed_h - pad_top)
-                        .max(su);
-                    eu = self.snap_units_to_stored_cell_reset(cell, table, styles, su, fit);
+                    eu = accepted_end.max(su);
                 }
                 Some((su, eu))
             } else if is_rowbreak_straddle {
