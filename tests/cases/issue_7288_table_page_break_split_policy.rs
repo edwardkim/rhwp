@@ -186,7 +186,20 @@ fn none_moves_the_whole_table_instead_of_splitting() {
 #[test]
 fn other_values_still_split() {
     for page_break in [1u8, 2] {
-        let doc = build(page_break, 100);
+        let mut doc = build(page_break, 100);
+        // 두 행 전체가 한 쪽에 맞으면 CELL도 나눌 이유가 없다. 둘째 행도 채운다.
+        for i in (1..=100).rev() {
+            doc.insert_text_in_cell_native(
+                0,
+                LEAD,
+                0,
+                1,
+                0,
+                0,
+                &format!("줄{i} 한글 본문 내용입니다 길게 씁니다."),
+            )
+            .expect("둘째 행 칸 텍스트");
+        }
         let fs = frags(&doc);
         assert!(
             !fs.is_empty(),
