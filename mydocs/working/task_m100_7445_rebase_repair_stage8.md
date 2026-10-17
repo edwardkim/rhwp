@@ -442,3 +442,75 @@ setter의 명시적 None이라는 API 차이를 확인한 정상 실행만 위 �
 이 결과는 #7970의 선택된7공개 입력 경계다. 그 PR의 모든365쪽, 원래 HWP 보정 전쪽,
 C99 이후의 전체 회귀·fresh build·Studio 소비가 끝났다는 주장이 아니다. PR 보류를 유지하며
 원본 HWP3 수식 프레임의 흐름 높이·기준선, 넓은 글꼴 경로의 실제 선택, 원래 검증 범위를 계속 보정한다.
+
+### C100 저장 수식 프레임의 독립 근거
+
+C99 이후 원본 HWP3를 내용 변경 없이 HWPX로 내보낸 대조군은 원본6쪽 Native PNG와
+SHA까지 같다. 그 HWPX의 두 equation `sz@protect`만1로 바꾼 진단에서는 source width/height,
+script, baseLine, lock과 다른 ZIP member를 그대로 보존했다. 현재 Native는 보호 여부에 따라
+같은 수식을39.04px 또는37.44px 높이로 소비하고 뒤 문단을1.6px씩 다르게 배치한다.
+진단 점수93.71521→95.53246은 입력 속성 변경의 탐색 결과이며 원본 구현 개선 수치가 아니다.
+또한 protect는 EqLayout의 Latin projection에도 영향을 주므로 점수 상승 전부를 프레임 효과로
+단정하지 않는다. 실제 수정에서는 원본 속성과 glyph projection을 바꾸지 않는다.
+
+두 진단 입력을 각각 Hancom11.0.0.9136 / engine2020 / Print method0 /
+`hancom2020_pdf_driver_one_up`으로 인쇄했다. control job은
+`1f06c960-3f17-4bd5-b846-6fb06e2fce47`, protected job은
+`f736827a-d125-4310-8470-a7f55137aeaf`다. 두 PDF는64쪽 모두 decoded page content와
+텍스트·좌표가 완전히 같다. 첫 수식 본문 baseline621.60pt, 분모628.68pt 등도 같다.
+기준은 `pdf/hwp3-equation-frame-{control,protected}-20261017-2020.pdf`와 ignored
+`equation-frame-probe/independent-protect-pair-geometry.json`이다. 기존 원본 Print PDF를
+교체하지 않았다. 이 계약은 크기 보호 UI flag만으로 저장 HFT 프레임을 무효화하지 않는다는
+근거이며 모든 수식·편집 경로를 검증했다는 뜻이 아니다.
+
+소비 사슬은 equation common width/height·baseline → `flow_metrics_hwp` → compositor의
+inline control 크기·저장 줄 equation baseline 보완 → paragraph/shape/table 배치 →
+EquationNode와 실제 glyph projection이다. 현재 `flow_metrics_hwp`는 HYhwpEQ 안의 한글을
+대체한다는 이유만으로 저장 HFT 상자까지 AST 크기/기준선으로 바꾼다. legacy HFT의 논리
+프레임과 대체 glyph paint를 분리하고, 현대 CJK intrinsic 경로는 정상 대조군으로 유지한다.
+과거 CJK intrinsic 양성 대조군인 정책연구88쪽의 실제 원본 수식은 `Equation Version 60`임을
+확인했다. 원본·한컴 물리 기대값 없이 그 경로를 함께 되돌리지 않는다.
+
+편집 producer도 점검한다. `apply_equation_properties`는 실제 script/fontSize 변경 때만
+크기를 갱신하지만 generic `EqLayout::new`로 계산한다. 저장 legacy 프레임을 보존하려면
+편집 시에도 그 수식의 metric context에서 새 크기를 생산해야 한다. source 프레임 보존,
+baseline 속성 편집, 현대 CJK 정상 대조군의 synthetic 계약3건을 먼저 수정 전 실행 중이며,
+실제 편집 후 producer/paint 일관성은 별도 FAIL→PASS와 반례로 확인한다. 아직 구현·검증
+완료 또는 새 전쪽 수용으로 표시하지 않는다.
+
+### C100 구현과 집중 결과
+
+유효한 legacy HFT 선언 프레임(width/height 양수)은 CJK paint 대체만으로 버리지 않도록
+`flow_metrics_hwp`를 보정했다. 없는 프레임의 intrinsic 경로와 현대 CJK 경로는 유지한다.
+문서 ID나 HWP3 전용 renderer 분기를 추가하지 않았다. 실제 script/fontSize 편집은 legacy
+수식의 paint context에서 새 크기를 생산하고, 명시한 축의 크기와 크기를 바꾸지 않는 속성 편집
+계약은 유지한다. 이로써 source 보존과 편집 후 새 크기 생성의 소유를 분리했다.
+
+- 수정 전 계약3건은1PASS/2FAIL(0.021초)로 두 오류를 실제 재현했다.
+- 보정 후 수식 모듈155PASS/0FAIL(0.271초), manifest prepare/check(base515)·fmt 통과.
+- Native 빌드 exit0/124초, frozen binary SHA
+  `64c846b36df44097820b34dc39241ec58e128a62d6e759c0f630f7522db09524`.
+- **변경 없는 원본 sample16의6쪽** raw93.71521→95.56838%,64쪽 유지.
+  canonical review와 overlay를 직접 열어 뒤 본문의 전진이 복구됐고 분자·괄호의 미세 차이는
+  남는 것을 확인했다.95%라는 수치로 이 잔여를 완료 판정하지 않는다.
+- sample16의33쪽99.25546%와215쪽 연구보고서의88쪽95.38166%는 before/after PNG SHA까지 같다.
+  후자는 현대 CJK intrinsic 양성 대조군이며 전215쪽 완료 근거로 대신하지 않는다.
+- 현재 manifest로 실제 suite를 도출해 수식 삽입·setter·raw 보존·원본 HWP3 소속·legacy 기호와
+  #4138 원본115/분할197쪽을 포함한6묶음22건을 실행했다:22PASS/0FAIL/1408skip,3.931초.
+  소스 재배정 경로를 hardcode하지 않았고0 tests 실행을 통과로 세지 않았다.
+
+실제 public CLI에서 같은 시작 입력에 `가가가 over 나`로 편집했다. 이전 setter의 저장 폭은
+4080HU(54.4CSSpx)인데 실제 재열기 paint 폭은62.7CSSpx였고, C100은4704HU(62.72CSSpx)를
+저장하여 두 소비자를 일치시킨다. 이는 구현 계산값을 기대값으로 고정한 좌표 핀이 아니다.
+변경된 각 저장본 자체를 독립 한컴 Print로 인쇄해 비교했다. 두 Print의 차이는6쪽에만 있고
+다른63쪽은 content stream·텍스트/geometry가 동일하다. 각자의 기준과 Native를 비교한6쪽은
+이전96.05192%, 보정96.76771%이며64쪽을 유지한다. 서로 다른 저장본의 PDF를 섞어 비교하지 않았다.
+Print before job은 `11a4debc-3d0c-4888-90da-e1cae7888983`, after는
+`83491b43-43be-4974-a64c-59e42e8983a1`이며 양쪽 Hancom11.0.0.9136/engine2020/method0/
+`hancom2020_pdf_driver_one_up` 실행 증거를 확인했다.
+
+정본은 ignored `rebase-515bd72d-20261017/legacy-equation-frame-c100/`의 source/producer,
+`before.log`, `equation-module.log`, `focused-regressions.log`, `focus-results.json`,
+`edited-print-pair-geometry.json`, `edited-visual-results.json`이다. 이 국소 검증 후에도 원본
+전쪽 Native/fresh WASM, 다른 변경 범위와 최종 전체 회귀·lint·실제 Studio 소비는 남아 있다.
+C100을 로컬 중간 커밋으로 정리하며 PR 생성·완료·전체 시각 수용은 계속 보류한다.

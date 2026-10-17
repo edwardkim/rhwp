@@ -94,6 +94,20 @@ pub fn intrinsic_size_hwp(script: &str, font_size: u32) -> (u32, u32) {
     )
 }
 
+/// Legacy edits must produce the logical HFT frame used by their painter.
+/// The modern editor's existing sizing contract remains unchanged.
+pub(crate) fn edited_size_hwp(equation: &crate::model::control::Equation) -> (u32, u32) {
+    if !uses_legacy_hft_metrics(equation) {
+        return intrinsic_size_hwp(&equation.script, equation.font_size);
+    }
+    let ast = parser::EqParser::new(tokenizer::tokenize(&equation.script)).parse();
+    let layout = layout::EqLayout::for_equation(equation, super::DEFAULT_DPI).layout(&ast);
+    (
+        super::px_to_hwpunit(layout.width, super::DEFAULT_DPI).max(1) as u32,
+        super::px_to_hwpunit(layout.height, super::DEFAULT_DPI).max(1) as u32,
+    )
+}
+
 /// 수학 글꼴 HYhwpEQ에는 한글 cmap이 없으므로 한글은 본문 대체 글꼴로 그린다.
 /// 일반 수식의 저장 프레임과 보호된 크기는 유지한다. 독립 한컴 출력에서
 /// 확인한 글자 줄·윗줄·단일 위첨자·BOX의 낡은 캐시만 논리 상자로 재발행한다.
@@ -123,7 +137,14 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
     if let Some(metrics) = uncached_flow_metrics::metrics(equation) {
         return metrics;
     }
+    // An HFT control's declared logical slot remains authoritative when its
+    // CJK paint uses another face. Missing frames still need intrinsic sizing;
+    // actual legacy edits refresh the slot in their producer, not during paint.
+    let stored_legacy_frame = uses_legacy_hft_metrics(equation)
+        && equation.common.width > 0
+        && equation.common.height > 0;
     if !equation.common.size_protect
+        && !stored_legacy_frame
         && equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
         && equation
             .script
@@ -417,4 +438,86 @@ pub(crate) fn positioned_cjk_text(text: &str, font_size: f64, width: f64) -> Vec
             (ch, origin)
         })
         .collect()
+}
+
+#[cfg(test)]
+mod flow_frame_tests {
+    use super::*;
+    use crate::model::control::Equation;
+
+    fn stored_legacy_cjk_equation() -> Equation {
+        let mut equation = Equation {
+            script: "가 over 나".into(),
+            font_name: "HYhwpEQ".into(),
+            font_size: 1200,
+            baseline: 67,
+            ..Default::default()
+        };
+        equation.common.width = 10_000;
+        equation.common.height = 2808;
+        equation
+    }
+
+    #[test]
+    fn legacy_cjk_fallback_does_not_replace_the_stored_flow_frame() {
+        let mut equation = stored_legacy_cjk_equation();
+        let unprotected = flow_metrics_hwp(&equation);
+        equation.common.size_protect = true;
+        assert_eq!(
+            unprotected,
+            flow_metrics_hwp(&equation),
+            "CJK paint fallback must not change a stored HFT object's flow frame"
+        );
+        assert_eq!(unprotected.0, equation.common.width);
+        assert_eq!(unprotected.1, equation.common.height);
+    }
+
+    #[test]
+    fn legacy_cjk_baseline_percentage_owns_inline_alignment() {
+        let mut equation = stored_legacy_cjk_equation();
+        let first = flow_metrics_hwp(&equation);
+        equation.baseline = 80;
+        let second = flow_metrics_hwp(&equation);
+        assert_eq!((first.0, first.1), (second.0, second.1));
+        assert!(second.2 > first.2, "baseline editing must change alignment");
+    }
+
+    #[test]
+    fn modern_cjk_reflow_keeps_its_existing_intrinsic_path() {
+        let mut equation = stored_legacy_cjk_equation();
+        equation.version_info = "Equation Version 60".into();
+        let reflowed = flow_metrics_hwp(&equation);
+        equation.common.size_protect = true;
+        assert_ne!(reflowed, flow_metrics_hwp(&equation));
+    }
+
+    #[test]
+    fn legacy_script_edit_refreshes_the_frame_in_its_paint_context() {
+        let mut equation = stored_legacy_cjk_equation();
+        let old_frame = (equation.common.width, equation.common.height);
+        crate::DocumentCore::apply_equation_properties(
+            &mut equation,
+            96.0,
+            r#"{"script":"가가가 over 나"}"#,
+        );
+        assert_ne!(old_frame, (equation.common.width, equation.common.height));
+        // Observe the public edit producer and the independently exercised
+        // equation painter's context, rather than the generic modern estimator.
+        let ast = parser::EqParser::new(tokenizer::tokenize(&equation.script)).parse();
+        let paint = layout::EqLayout::for_equation(&equation, 96.0).layout(&ast);
+        assert!(
+            (super::super::hwpunit_to_px(equation.common.width as i32, 96.0) - paint.width).abs()
+                <= 1.0 / 75.0
+        );
+        assert!(
+            (super::super::hwpunit_to_px(equation.common.height as i32, 96.0) - paint.height).abs()
+                <= 1.0 / 75.0
+        );
+        crate::DocumentCore::apply_equation_properties(
+            &mut equation,
+            96.0,
+            r#"{"script":"가가가가 over 나", "width":7777}"#,
+        );
+        assert_eq!(equation.common.width, 7777, "explicit width remains owned");
+    }
 }

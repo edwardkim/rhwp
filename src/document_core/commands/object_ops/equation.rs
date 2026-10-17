@@ -308,8 +308,7 @@ impl DocumentCore {
         let explicit_height = json_u32(props_json, "height").is_some();
         let size_driver_changed = eq.script != script_before || eq.font_size != font_size_before;
         if size_driver_changed && (!explicit_width || !explicit_height) {
-            let (width, height) =
-                crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
+            let (width, height) = crate::renderer::equation::edited_size_hwp(eq);
             if !explicit_width {
                 eq.common.width = width;
             }
