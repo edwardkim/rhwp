@@ -124,11 +124,6 @@ pub(super) fn draw_image_bytes(
     contrast: i8,
     sampling: ImageSampling,
 ) -> bool {
-    let sampling = match super::super::image_resolver::png_sampling::interpolation(bytes) {
-        Some(false) => ImageSampling::nearest(),
-        Some(true) => ImageSampling::linear(),
-        None => sampling,
-    };
     // 빈 자르기 선택은 정상적인 빈 출력이며 누락 그림 대체 표시 대상이 아니다.
     if crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
         return true;
@@ -395,6 +390,25 @@ pub(super) fn draw_image_bytes(
     });
 
     let draw_image_rect = |src: Option<Rect>, dst: Rect| {
+        let matrix = canvas.local_to_device_as_3x3();
+        let source = src.unwrap_or(Rect::from_xywh(0., 0., decoded_width, decoded_height));
+        let interpolation = super::super::image_resolver::png_sampling::magnification(
+            super::super::image_resolver::png_sampling::interpolation(bytes),
+            (source.width() as f64, source.height() as f64),
+            (
+                (dst.width() * matrix.scale_x().hypot(matrix.skew_y())) as f64,
+                (dst.height() * matrix.skew_x().hypot(matrix.scale_y())) as f64,
+            ),
+        );
+        let sampling = if binary_preprocessed {
+            sampling
+        } else {
+            match interpolation {
+                Some(false) => ImageSampling::nearest(),
+                Some(true) => ImageSampling::linear(),
+                None => sampling,
+            }
+        };
         if let Some(src) = src.as_ref() {
             canvas.draw_image_rect_with_sampling_options(
                 &image,

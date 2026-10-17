@@ -25,3 +25,30 @@ pub(crate) fn preserve(source: &[u8], output: &mut Vec<u8>) {
         output.splice(33..33, source[33..47].iter().copied());
     }
 }
+
+/// PDF 32000-1 8.9.5.3 defines interpolation for source samples enlarged onto
+/// device pixels. Minification still needs the backend's coverage/prefilter;
+/// forcing point sampling there discards source pixels (and thin image lines).
+pub(crate) fn magnification(
+    declared: Option<bool>,
+    source: (f64, f64),
+    destination: (f64, f64),
+) -> Option<bool> {
+    if [source.0, source.1, destination.0, destination.1]
+        .iter()
+        .any(|v| !v.is_finite() || *v <= 0.)
+        || destination.0 < source.0
+        || destination.1 < source.1
+    {
+        return None;
+    }
+    declared
+}
+
+pub(crate) fn dimensions(data: &[u8]) -> Option<(f64, f64)> {
+    interpolation(data)?;
+    Some((
+        u32::from_be_bytes(data[16..20].try_into().ok()?) as f64,
+        u32::from_be_bytes(data[20..24].try_into().ok()?) as f64,
+    ))
+}

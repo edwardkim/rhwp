@@ -1895,10 +1895,21 @@ impl SvgRenderer {
     }
 
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
-        let interpolation = img
-            .data
-            .as_deref()
-            .and_then(super::image_resolver::png_sampling::interpolation);
+        let interpolation = img.data.as_deref().and_then(|data| {
+            let (width, height) = super::image_resolver::png_sampling::dimensions(data)?;
+            let source = img.crop.map_or((width, height), |crop| {
+                let (_, _, w, h) =
+                    compute_image_crop_src(crop, img.original_size_hu, width, height);
+                (w, h)
+            });
+            let frame = img.transform.effective_image_bbox(&img.paint_bbox(bbox));
+            // SVG's intrinsic page uses the renderer's 96-DPI coordinate system.
+            super::image_resolver::png_sampling::magnification(
+                super::image_resolver::png_sampling::interpolation(data),
+                source,
+                (frame.width, frame.height),
+            )
+        });
         if let Some(interpolate) = interpolation {
             let rendering = if interpolate { "auto" } else { "pixelated" };
             let _ = write!(self.output, "<g style=\"image-rendering:{rendering}\">");

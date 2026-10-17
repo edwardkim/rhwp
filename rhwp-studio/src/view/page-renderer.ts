@@ -23,6 +23,7 @@ import {
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
 import { imageCropSelectionIsEmpty, imageCropSourceRect } from './image-crop-scale.ts';
+import { magnificationFiltering } from './image-sampling.ts';
 import {
   drawPageMarginGuides,
   type PageMarginGuideEdges,
@@ -693,9 +694,6 @@ export class PageRenderer {
       // 그림 효과(회색조/흑백/밝기/명암) — WASM canvas 경로(render_image)와 달리
       // DOM flow-image 경로는 필터가 누락돼 원본 컬러로 렌더되던 문제를 고친다.
       if (image.filter) element.style.filter = image.filter;
-      if (image.imageInterpolation !== undefined) {
-        element.style.imageRendering = image.imageInterpolation === 'nearest' ? 'pixelated' : 'auto';
-      }
       const applyCrop = () =>
         applyFlowImageCrop(element, image, displayScale, frameWidth, frameHeight);
       element.addEventListener('load', applyCrop, { once: true });
@@ -1611,6 +1609,15 @@ function applyFlowImageCrop(
     image.crop ?? undefined,
     image.originalSizeHu,
   );
+  if (image.imageInterpolation !== undefined) {
+    const pixelRatio = globalThis.devicePixelRatio || 1;
+    const filtering = magnificationFiltering(
+      image.imageInterpolation,
+      source?.width ?? element.naturalWidth, source?.height ?? element.naturalHeight,
+      frameWidth * displayScale * pixelRatio, frameHeight * displayScale * pixelRatio,
+    );
+    element.style.imageRendering = filtering === 'nearest' ? 'pixelated' : 'auto';
+  }
   if (!source) {
     element.style.left = '0';
     element.style.top = '0';

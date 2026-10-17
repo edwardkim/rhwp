@@ -68,6 +68,7 @@ import {
   type CanvasKitSurfaceRequest,
 } from './render-backend';
 import { imageCropSelectionIsEmpty } from './image-crop-scale.ts';
+import { magnificationFiltering } from './image-sampling.ts';
 import {
   boundedCanvasKitSourceImageKey,
   canvasKitImageCacheKey,
@@ -2574,8 +2575,13 @@ export class CanvasKitLayerRenderer {
       // grayscale and tone retain the profile's ordinary sampling policy.
       const binaryEffectWasApplied = !!canvasKitImageEffectKey(op)
         && (op.effect === 'blackWhite' || op.effect === 'pattern8x8');
-      const sourceFiltering = op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
-        ? op.imageInterpolation : undefined;
+      const matrix = canvas.getTotalMatrix?.();
+      const sourceFiltering = magnificationFiltering(
+        op.imageInterpolation,
+        crop?.width ?? imageWidth, crop?.height ?? imageHeight,
+        dstW * (matrix ? Math.hypot(matrix[0], matrix[3]) : 1),
+        dstH * (matrix ? Math.hypot(matrix[1], matrix[4]) : 1),
+      );
       const explicitFiltering = bitmapFiltering ?? (binaryEffectWasApplied ? 'nearest' : sourceFiltering);
       const useMipmaps = explicitFiltering === undefined && !binaryEffectWasApplied
         && this.currentProfile !== 'fastPreview' && this.preferRasterDepth === 0
