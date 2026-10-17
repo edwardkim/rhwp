@@ -1334,70 +1334,6 @@ impl LayoutEngine {
                     styles,
                 )
             });
-            // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
-            // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
-            let cut_units: Option<(usize, usize)> = if let Some(cut) = straddle_page_bands
-                .iter()
-                .find(|carry| carry.cell_index == cell_idx)
-                .and_then(|carry| carry.fragment_cut)
-            {
-                Some(cut)
-            } else if is_in_split_row {
-                let (mut su, mut eu) = cell_cut_window(
-                    table,
-                    cell,
-                    start_cut_is_block,
-                    is_block_split,
-                    is_split_start_row,
-                    split_start_block,
-                    is_split_end_row,
-                    split_end_block,
-                    start_cut,
-                    end_cut,
-                    None,
-                    start_row,
-                    end_row.saturating_sub(1),
-                );
-                // 조각의 종료 BlockCut이 이 병합 셀을 소유하더라도 시작 RowCut은 소유하지 않는다.
-                // 종료 슬롯을 보존하고, 예약과 동일한 물리 시작 앞부분을 소비한다.
-                if straddle_start_uncovered && !start_cut_is_block {
-                    if let Some((physical_start, _)) = straddle_cut_units {
-                        su = su.max(physical_start);
-                    }
-                }
-                // 시작 행의 걸침 셀도 수용 단계와 같은 상자·원본 유닛 컷을 쓴다.
-                // 옆 셀의 RowCut 높이로 끝을 다시 추정하면 병합 내용이 누락·반복된다.
-                if eu == usize::MAX && cell.row_span > 1 && cell_end_row > render_range_end {
-                    let (_, accepted_end) = self.rowbreak_straddle_cut_units(
-                        table,
-                        cell,
-                        start_row,
-                        render_range_end,
-                        start_cut,
-                        start_cut_is_block,
-                        start_row_height_override,
-                        end_cut,
-                        is_block_split,
-                        end_row_height_override,
-                        cell_h,
-                        resolved_row_heights,
-                        straddle_page_bands,
-                        styles,
-                    );
-                    eu = accepted_end.max(su);
-                }
-                Some((su, eu))
-            } else if is_rowbreak_straddle {
-                straddle_cut_units
-            } else {
-                None
-            };
-            // 정렬 소유는 줄 구성 창을 고르기 전에 확정한다. 같은 컷의
-            // 물리 높이를 수용 단계가 예약했고 아래 paint도 같은 내용을 정렬한다.
-            let stored_aligned_opening_frame = cut_units.and_then(|(start, end)| {
-                let units = self.cell_units(cell, table, styles);
-                self.stored_aligned_opening_cell_frame(table, cell, &units, start, end, styles)
-            });
             // 저장 텍스트 병합 셀의 마지막 조각은 남은 소유 유닛을 최종 물리 셀 상자 안에서 정렬한다.
             // 연속된 원본 줄 위치도 포함하며, 선택한 컷을 아래 줄 구성과 실제 그리기에 재사용한다.
             let stored_restart_span_frame_owns_alignment = !is_in_split_row
@@ -1624,8 +1560,7 @@ impl LayoutEngine {
                         start > 0 && end >= self.cell_units(cell, table, styles).len()
                     });
             let frame_owns_alignment = !descendant_owns_closing_band
-                && (stored_aligned_opening_frame.is_some()
-                    || ordinary_source_frame_owns_alignment
+                && (ordinary_source_frame_owns_alignment
                     || closing_source_frame_owns_alignment
                     || complete_plain_suffix_frame
                     || heading_frame_owns_alignment
@@ -1751,6 +1686,64 @@ impl LayoutEngine {
             };
             let inner_height = (content_cell_h - pad_top - pad_bottom).max(0.0);
 
+            // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
+            // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
+            let cut_units: Option<(usize, usize)> = if let Some(cut) = straddle_page_bands
+                .iter()
+                .find(|carry| carry.cell_index == cell_idx)
+                .and_then(|carry| carry.fragment_cut)
+            {
+                Some(cut)
+            } else if is_in_split_row {
+                let (mut su, mut eu) = cell_cut_window(
+                    table,
+                    cell,
+                    start_cut_is_block,
+                    is_block_split,
+                    is_split_start_row,
+                    split_start_block,
+                    is_split_end_row,
+                    split_end_block,
+                    start_cut,
+                    end_cut,
+                    None,
+                    start_row,
+                    end_row.saturating_sub(1),
+                );
+                // 조각의 종료 BlockCut이 이 병합 셀을 소유하더라도 시작 RowCut은 소유하지 않는다.
+                // 종료 슬롯을 보존하고, 예약과 동일한 물리 시작 앞부분을 소비한다.
+                if straddle_start_uncovered && !start_cut_is_block {
+                    if let Some((physical_start, _)) = straddle_cut_units {
+                        su = su.max(physical_start);
+                    }
+                }
+                // 시작 행의 걸침 셀도 수용 단계와 같은 상자·원본 유닛 컷을 쓴다.
+                // 옆 셀의 RowCut 높이로 끝을 다시 추정하면 병합 내용이 누락·반복된다.
+                if eu == usize::MAX && cell.row_span > 1 && cell_end_row > render_range_end {
+                    let (_, accepted_end) = self.rowbreak_straddle_cut_units(
+                        table,
+                        cell,
+                        start_row,
+                        render_range_end,
+                        start_cut,
+                        start_cut_is_block,
+                        start_row_height_override,
+                        end_cut,
+                        is_block_split,
+                        end_row_height_override,
+                        cell_h,
+                        resolved_row_heights,
+                        straddle_page_bands,
+                        styles,
+                    );
+                    eu = accepted_end.max(su);
+                }
+                Some((su, eu))
+            } else if is_rowbreak_straddle {
+                straddle_cut_units
+            } else {
+                None
+            };
             let line_ranges: Option<Vec<(usize, usize)>> = cut_units
                 .map(|(su, eu)| self.cell_line_ranges_from_cut(cell, table, styles, su, eu));
             let authenticated_hwpx_frame =
@@ -2036,9 +2029,7 @@ impl LayoutEngine {
                 .then(|| self.declared_nested_opening_cut_height(table, start_cut, end_cut, styles))
                 .flatten()
                 .map(|frame| frame - pad_top - pad_bottom);
-            let centered_content_height = if let Some(frame) = stored_aligned_opening_frame {
-                frame.content_height
-            } else if let Some(height) = declared_opening_content_height {
+            let centered_content_height = if let Some(height) = declared_opening_content_height {
                 // 인증한 프레임은 원본 잉크 경계에서 끝난다. 첫 빈 띠와 문단 사이 빈 띠도
                 // 내용에 속하며, 보이는 줄 전진량만 합산할 때 빠져도 소유를 보존한다.
                 height
@@ -2156,12 +2147,7 @@ impl LayoutEngine {
                     cell_y + pad_top + (align_inner_height - centered_content_height).max(0.0) / 2.0
                 }
                 VerticalAlign::Bottom => {
-                    cell_y
-                        + pad_top
-                        + (align_inner_height
-                            - stored_aligned_opening_frame
-                                .map_or(total_content_height, |frame| frame.content_height))
-                        .max(0.0)
+                    cell_y + pad_top + (align_inner_height - total_content_height).max(0.0)
                 }
             };
             let text_y_start = stored_empty_picture_frame
