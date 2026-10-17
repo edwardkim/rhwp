@@ -1297,7 +1297,7 @@ impl TypesetEngine {
             && mt.allows_row_break_split()
             && row_geometry_table.cells.iter().any(|cell| {
                 cell.row_span > 1
-                    && crate::renderer::layout::table_partial::cell_crosses_fragment_end(
+                    && crate::renderer::layout::cell_crosses_fragment_end(
                         cell,
                         end_row,
                         &split_end_cut,

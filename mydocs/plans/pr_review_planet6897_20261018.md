@@ -1008,3 +1008,8 @@ partial paint는 이 등호 경계를 포함하지만 emit의 물리 띠 수용�
 accepted_straddle_fragment_units/이어받기 장부 → end_row_owns_stored_frame → partial paint의
 연결을 유지한다.94/95쪽 외곽과 글줄·다음 쪽 소유, 이미 개선한6쪽·80168과 정상 대조군을
 새 source에서 먼저 확인한다. 새 실물 회귀는 문서 전쪽 Native/fresh WASM90% 후에 추가한다.
+
+후보38 `9e97838ee` 빌드는exit101로 종료했다. typeset에서 private `table_partial`
+모듈을 직접 지정한 E0603이며 렌더 산출물은 없다. layout의 기존 내부 re-export 경계로
+함수 하나만 공개해 호출 경로를 교정한다. 모듈 전체의 공개 범위는 변경하지 않는다.
+이후 새 source를 빌드하며 실패 결과를 시각 검증으로 재사용하지 않는다.

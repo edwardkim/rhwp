@@ -235,11 +235,7 @@ impl TypesetEngine {
                 cell.row_span > 1
                     && cell.height > 0
                     && cell.height < 0x8000_0000
-                    && crate::renderer::layout::table_partial::cell_crosses_fragment_end(
-                        cell,
-                        row + 1,
-                        end_cut,
-                    )
+                    && crate::renderer::layout::cell_crosses_fragment_end(cell, row + 1, end_cut)
             })
             .map(|cell| {
                 let first = usize::from(cell.row);
