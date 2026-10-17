@@ -45,3 +45,15 @@ none에서는 fill이 보존되고 무관한 선폭 상태가 결과를 바꾸�
 Unicode 검색/편집 보정이며 이번 PDF 추론·renderer 및 reference 파일과 겹치지 않는다.
 제품 소스가 바뀌므로 이 base를 통합하고 전체 검증을 한 번 수행한다. 기준/후보 producer는
 기존 산출물을 덮어쓰기 전에 별도 보존하고 새 base의 Native/fresh Docker WASM을 준비한다.
+
+## 실제 face 확인과 lint 보정
+
+새 base의 실제 Skia renderer snapshot에 같은 공급 경로를 전달한 trace를 실행했다.
+기본/혼잡 디렉터리에서는 본문 Batang 677문자가 system Noto Sans KR로 선택됐다.
+Batang TTC만 든 디렉터리를 공급하면 같은 문자가 custom Batang으로 선택됐다. 별도 Gulim
+5문자와 DotumChe 69문자의 fallback은 구분해 기록했다(`native-face-summary.json`).
+전체 검증도 양쪽 producer에 동일한 Batang 디렉터리를 공급하며 원본 파일 hash를 고정한다.
+
+root Clippy가 `table_detection.rs`의 bool-then filter_map 한 곳을 검출했다. 같은 순서·조건의
+filter/map으로 바꾸며 경계/배치 계약이나 직렬화 값은 바꾸지 않는다. 실패 로그는 보존하고,
+새 고정 head에서 root 및 후속 필수 lint를 통과한 뒤 후보 build·시각·전체 회귀를 진행한다.

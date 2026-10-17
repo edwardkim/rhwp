@@ -872,8 +872,9 @@ pub fn detect_ruled_tables(
         "logicalBoundaries":edges.iter().enumerate().map(|(i,e)|json!({
             "id":format!("logical:{i}"),"horizontal":e.horizontal,"at":e.at,"from":e.from,"to":e.to,
             "paintKind":e.paint_kind,"periodicGapPt":e.periodic_gap,
-            "sourceBoundaryIds":logical_edges.iter().enumerate().filter_map(|(raw,logical)|
-                (geometry_key(logical)==geometry_key(e)).then(||format!("boundary:{raw}"))).collect::<Vec<_>>()
+            "sourceBoundaryIds":logical_edges.iter().enumerate()
+                .filter(|(_,logical)| geometry_key(logical)==geometry_key(e))
+                .map(|(raw,_)|format!("boundary:{raw}")).collect::<Vec<_>>()
         })).collect::<Vec<_>>(),
         "junctionModel":"centerline intersections supported by perpendicular stroke ink and quantization tolerance",
         "nestedSearch":"verified-parent-cell regions; unclaimed complete evidence only",
