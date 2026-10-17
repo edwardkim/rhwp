@@ -553,6 +553,14 @@ fn start_cut_covers_cell(
     }
 }
 
+/// 끝 행을 내용 컷으로 나누면 그 행에서 끝나는 셀도 조각 경계를 지난다.
+/// 내용 선택과 실제 행 상자 수용이 동일한 끝 경계를 사용한다.
+pub(crate) fn cell_crosses_fragment_end(cell: &Cell, end_row: usize, end_cut: &[usize]) -> bool {
+    let first = usize::from(cell.row);
+    let end = first + usize::from(cell.row_span);
+    first < end_row && (end > end_row || (end == end_row && !end_cut.is_empty()))
+}
+
 /// [#4128 추출] 행내 `row_span==1` 셀의 col 오름차순 컷 벡터 서수.
 /// `advance_row_cut` 부기와 동일한 순서 (기존 인라인 식의 명명).
 fn single_row_cut_index(
@@ -1216,12 +1224,10 @@ impl LayoutEngine {
             // 셀 박스 아래로 흘러넘치고(+13px 잉크), 연속 페이지에선 처음부터
             // 재렌더(중복)된다. 높이 기반 유닛 컷으로 가시 줄 범위를 제한한다.
             let straddles_fragment_start = cell_row < start_row && cell_end_row > start_row;
-            let straddles_fragment_end = cell_row < render_range_end
-                && (cell_end_row > render_range_end
-                    || (cell_end_row == render_range_end
-                        && (!end_cut.is_empty()
-                            || (end_row_height_override.is_some()
-                                && self.cell_uses_plain_reflow_units(cell, table)))));
+            let straddles_fragment_end = cell_crosses_fragment_end(cell, render_range_end, end_cut)
+                || (cell_row < render_range_end && cell_row + usize::from(cell.row_span) == render_range_end
+                    && end_row_height_override.is_some()
+                    && self.cell_uses_plain_reflow_units(cell, table));
             // [#6024] block-split 조각이라도 **컷이 비어 있는 쪽 경계**(행 경계
             // 컷)의 straddle rowspan 셀은 split-block 범위(is_in_split_row)에
             // 잡히지 않는다 — 그대로 두면 연속 조각이 병합 셀 내용을 처음부터

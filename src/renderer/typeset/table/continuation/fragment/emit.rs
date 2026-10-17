@@ -1296,8 +1296,12 @@ impl TypesetEngine {
                 .table_text_reflowed(row_geometry_table)
             && mt.allows_row_break_split()
             && row_geometry_table.cells.iter().any(|cell| {
-                usize::from(cell.row) < end_row
-                    && end_row < usize::from(cell.row) + usize::from(cell.row_span)
+                cell.row_span > 1
+                    && crate::renderer::layout::table_partial::cell_crosses_fragment_end(
+                        cell,
+                        end_row,
+                        &split_end_cut,
+                    )
             })
             && ledger_page_end_band > 0.0
         {
