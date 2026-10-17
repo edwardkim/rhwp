@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
-    "65c792f4982a53086440ee786f77065f865e96ba1d5a234cfc9e53154a80b20f";
+    "a86268c11e495c66044dd79c58ae7d61fe9342b04388372720a3a9ec799b9f73";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "3c06886a60197430bdef2a30617e4927cc934776b53b6f948aff90484244361d";
+    "66b43b1bf7e94cd945f458bcfb952df002169b49ab81707b8e0a49a77cb43ef5";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -2972,6 +2972,23 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         mode: "direct",
         metric_entry_ids: &[],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.malgun-regular-identity",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("MalgunGothic"),
+        target_face_or_policy: "맑은 고딕",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
 ];
 
 #[rustfmt::skip]
@@ -3499,6 +3516,9 @@ pub(crate) fn find_font_rule_layout_name(
         }
         ("rust-style-resolution.ttf", "HYHeadLine-Medium") => {
             Some(&FONT_RULE_LAYOUT_NAME_RULES[172])
+        }
+        ("rust-style-resolution.ttf", "MalgunGothic") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[173])
         }
         _ => None,
     }

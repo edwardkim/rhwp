@@ -1,5 +1,5 @@
 {
-  "contentBundleSha256": "eea2b82c53d8aea0c779d2b386a51251a4059e2c9300692343daa2a1c516bffe",
+  "contentBundleSha256": "d3264b54e113829788fe8b4e6ef18e76a3534593b569fcf6e6dc119c6f74ffeb",
   "generatedBy": {
     "path": "scripts/font_rule_projection_gen.mjs",
     "sha256": "2070ed0d1823b54e94d89f64555fe88debeb8a16cad7342f3ab1ffba5d0d54fd"
@@ -8,14 +8,14 @@
   "kind": "font-rule-backend-projection-manifest",
   "outputs": [
     {
-      "contentSha256": "c610d7a411d5acf24b68c0963006dcfbce72111b0ab295b58e046c86ff3f93bf",
-      "inputSha256": "65c792f4982a53086440ee786f77065f865e96ba1d5a234cfc9e53154a80b20f",
+      "contentSha256": "01dc1a7ae2d0127132d4016ccf3d92d5cd8679da0b020718ea3e2e2def0fb73b",
+      "inputSha256": "a86268c11e495c66044dd79c58ae7d61fe9342b04388372720a3a9ec799b9f73",
       "language": "rust",
       "ownership": "generated-whole-file",
       "path": "src/renderer/font_rule_projections/layout_name.rs",
       "projectionId": "rust-layout-name",
-      "projectionSha256": "3c06886a60197430bdef2a30617e4927cc934776b53b6f948aff90484244361d",
-      "ruleCount": 173
+      "projectionSha256": "66b43b1bf7e94cd945f458bcfb952df002169b49ab81707b8e0a49a77cb43ef5",
+      "ruleCount": 174
     },
     {
       "contentSha256": "b71c36d187013ef8f5f486ebc2760e300afe2388a2433acf27f9873310b57be7",
@@ -58,13 +58,13 @@
       "ruleCount": 159
     }
   ],
-  "projectionBundleSha256": "01fb30969d254318b230f445f05adbeb3045f46e21722057df8fa29ae5a44ec7",
+  "projectionBundleSha256": "e6b84a3f143db44c24ecbcb20c9a67a52e66edf0c614403d23d1489a38d11096",
   "registry": {
-    "activeRuleCount": 835,
+    "activeRuleCount": 836,
     "path": "assets/font-rules/font_rule_registry_v2.json",
     "retiredRuleCount": 4,
-    "rulesSha256": "0591a692b77bfb11a2f9e77819a02c911e5484990738d0624bf071e6e9df99f0",
-    "sha256": "fccd7875ef01273af3176f7aaec79bba043e1c536f7f749874c7a9e973aa35d2"
+    "rulesSha256": "e62f3bb9b5811710db00571e7ae3370dd685d32c9a4d6cf90f9b825d7b0fa055",
+    "sha256": "bcb11c7be438ba6e97b03e03c968b0b09a3f55437e2e1e40eb371caf4d3d82d0"
   },
   "schema": {
     "path": "assets/font-rules/font_rule_projection_manifest.schema.json",
@@ -73,13 +73,13 @@
   "schemaVersion": "2.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 835,
+    "activeRuleCount": 836,
     "countsByProjection": {
       "canvas2d-paint": 281,
       "canvas2d-webfont": 154,
       "canvaskit-sfnt": 159,
       "rust-layout-metric": 68,
-      "rust-layout-name": 173
+      "rust-layout-name": 174
     },
     "outputCount": 5,
     "retiredRuleCount": 4

@@ -44,3 +44,42 @@ v2 registry change set의 다른 네 projection semantic hash는 변경 전과 �
 최대 추가 공백 수는 원문 문자 수보다 작아 원래 2MiB 추출 문자열 한도의 2배 이내다.
 새 객체·glyph별 textbox는 만들지 않는다. 최종 Native/fresh WASM 전쪽 검증은 아래에
 연결하며 위 진단본 점수를 제품 수정본의 결과로 재인용하지 않는다.
+
+## 제품 Native 검증
+
+runtime `d6af03754`의 실제 Native Skia CLI SHA-256은
+`20c30eb2b075023a3b838de640a17532c99677a52165787fdf6434f0f9fa41b6`다.
+6개 원본 313쪽을 모두 새로 출력하여 전체 쪽수가 독립 원본 PDF와 일치했다.
+12쪽은 88.96829→96.40680%이며 전체 Native TSV에 90% 미만·누락이 없다.
+같은 원본/쪽을 색상 checkpoint와 비교한 점수 하락도 없다. F7 전쪽 TSV·원 PNG와
+`native-score-summary.json`에 기록했다. 생성 저장본에 이름만 바꾼 앞선 진단과 구분한다.
+
+본문의 간격 복원은 12쪽 외에도 operators 5–11쪽에서 개선을 보였다. 원점·표제 테두리·
+줄 소속을 유지하면서 원본 PDF처럼 단어 사이가 구분되는지 직접 대조했다.
+최저 90% 통과가 Type3 원 glyph의 완전 재현을 뜻하지 않는다. 그 glyph의 획과 원의
+크기 차이는 여전히 fallback의 제한이며, 이름이 있는 H2hdrM의 문제와 구분한다.
+
+기존 유한 규칙은 유지했고 새 이름 동일성 규칙은 다음 두 개다.
+
+- `H2hdrM` → `HY헤드라인M`
+- `HYHeadLine-Medium` → `HY헤드라인M`
+
+글꼴을 공급하지 않은 Linux Studio에서 원본 글꼴이 저절로 설치되는 것은 아니다.
+Windows의 실제 프로그램을 공급한 Visual Sweep과 일반 fallback만 가능한 환경을
+구분한다. 검증용 Studio 탭에는 같은 원본 프로그램을 로컬로만 공급하고 그 hash를
+기록한다. 파일을 저장소에 추가하거나 스토어 패키지에 포함하지 않는다.
+
+### 동일 원인의 regular Malgun 별칭
+
+같은 확대 비교에서 `MalgunGothic` regular의 Native 획이 지나치게 가는 것도 확인했다.
+설치 파일 name table의 동일성으로 `MalgunGothic` → `맑은 고딕`을 별도 #7959 change
+set에 추가했다. `malgunbd.ttf`의 `MalgunGothicBold`는 다른 굵기 프로그램이라는
+반례를 기록하며 regular 이름으로 합치지 않았다. PDF가 추출한 별도 bold 속성은 유지한다.
+다른 네 projection의 의미는 그대로다. 앞선 H2 두 이름 보정용 WASM 빌드는 최적화
+단계에서 중단하여 이 추가 보정과 합친 source로 한 번 검증한다. 그 미완료 산출물을
+fresh WASM 검증 결과로 사용하지 않는다.
+
+font-rule 전체 수는 기존 833 + 새 이름 동일성 3 = active 836이다. 관련 Rust/Node
+검사는 원래 830개 sealed 의미와 공개 change set만으로 기대 의미를 재구성하여
+추가 규칙·기존 규칙·retired 이력을 모두 대조한다. 생성 harness의 소스 weight drift도
+재생성·check로 해소했다. 이전 집중 실행은 0 tests로 종료되어 검증 통과로 세지 않는다.

@@ -132,29 +132,38 @@ test('current registry retains migration, introduction and replacement provenanc
   const trace = traceWithReferences(registry.rules.map(rule => rule.ruleId));
   const audit = buildFontRuleLifecycleAudit(trace, registry, { root: ROOT });
 
-  // 봉인된 830개 중 #7023·#6936의 두 교체와 #7196의 한 이름 추가를 구별한다.
-  assert.equal(audit.trace.ruleReferenceCount, 833);
-  assert.equal(audit.trace.uniqueRuleIdCount, 833);
+  // Four historical replacements, five prior additions and three PDF name identities.
+  assert.equal(audit.trace.ruleReferenceCount, 840);
+  assert.equal(audit.trace.uniqueRuleIdCount, 840);
   assert.deepEqual(audit.summary, {
-    carriedForwardActive: 828,
-    introducedActive: 3,
+    carriedForwardActive: 826,
+    introducedActive: 10,
     historicalReferenceOnly: 0,
     traceSourceDrift: 0,
     retired: 0,
-    replaced: 2,
+    replaced: 4,
     dangling: 0,
   });
   assert.deepEqual(audit.references
     .filter(reference => reference.resolution === 'introduced-active')
     .map(reference => reference.ruleId).sort(), [
+    'rule.issue-4969.oldhangul-license-canvaskit',
+    'rule.issue-4969.oldhangul-license-webfont',
+    'rule.issue-5884.noto-symbols2.canvaskit',
+    'rule.issue-5884.noto-symbols2.webfont',
     'rule.rust-metric.ygodic230-name',
     'rule.rust-style-resolution.100b7126dfe0ddd2d55c',
+    'rule.rust-style-resolution.h2hdrm-identity-0',
+    'rule.rust-style-resolution.h2hdrm-identity-1',
+    'rule.rust-style-resolution.malgun-regular-identity',
     'rule.studio-supply.batangche-serif.canvas2d',
   ]);
   assert.deepEqual(audit.references
     .filter(reference => reference.status === 'retired')
     .map(reference => reference.ruleId).sort(), [
     'rule.rust-style-resolution.b6c97b846cf79ce168fa',
+    'rule.studio-supply.0aab2d58429b52047acb.canvas2d',
+    'rule.studio-supply.0aab2d58429b52047acb.canvaskit',
     'rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d',
   ]);
 });
@@ -173,9 +182,9 @@ test('the complete W1 rule population closes as lifecycle or historical referenc
   const audit = buildFontRuleLifecycleAudit(trace, registry, { root: ROOT });
 
   assert.equal(audit.trace.ruleReferenceCount, 1507);
-  // 역사적 W1은 두 원 규칙의 교체를 보존하고, 나중에 추가한 규칙을 포함하지 않는다.
-  assert.equal(audit.summary.carriedForwardActive, 828);
-  assert.equal(audit.summary.replaced, 2);
+  // 역사적 W1은 네 원 규칙의 교체를 보존하고, 나중에 추가한 규칙을 포함하지 않는다.
+  assert.equal(audit.summary.carriedForwardActive, 826);
+  assert.equal(audit.summary.replaced, 4);
   assert.equal(audit.summary.introducedActive, 0);
   assert.equal(audit.summary.historicalReferenceOnly, 677);
   assert.equal(audit.summary.dangling, 0);
