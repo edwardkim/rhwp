@@ -1,0 +1,60 @@
+{
+  "parentHead": "ac5d062c8d7e0194c3254cf58ee925bd055b94a7",
+  "base": "9415b920c8dec299e8ada69b01dbd1c3c044f1f1",
+  "candidateDiff": "src/wmf/converter/svg/ternary_raster_operator.rs contained monochrome AND mask rule",
+  "results": {
+    "native": {
+      "pages": 64,
+      "minimumRaw": 93.07399,
+      "below90": 0,
+      "pages18and19": {
+        "18": "98.01466",
+        "19": "99.43242"
+      }
+    },
+    "wasm": {
+      "pages": 64,
+      "minimumRaw": 95.87967,
+      "below90": 0,
+      "pages18and19": {
+        "18": "97.96086",
+        "19": "99.61477"
+      }
+    }
+  },
+  "directReview": [
+    "Native18 review and overlay",
+    "WASM18 review and overlay",
+    "Native19 review and overlay",
+    "WASM19 review and overlay"
+  ],
+  "formalRegressions": {
+    "before": {
+      "run": 17,
+      "passed": 15,
+      "failed": 2,
+      "seconds": 0.137
+    },
+    "after": {
+      "run": 17,
+      "passed": 17,
+      "failed": 0,
+      "seconds": 0.097
+    },
+    "rebasedFontOwner": {
+      "run": 16,
+      "passed": 16,
+      "failed": 0
+    },
+    "intendedBeforeFailuresFound": true,
+    "sourceRestored": true
+  },
+  "upstreamComparison": "Native/WASM base sample16 is65 pages versus independent Print64; canonical comparison failed without truncation. Native giant80 base94.40109 vs candidate96.82269; WASM base97.54273 vs candidate97.50476.",
+  "remaining": [
+    "new fixed-base complete per-page comparisons: manual reference mismatch65vs64 retained",
+    "latest source complete regression and gates",
+    "all48 documents and actual68 consumers",
+    "giant80 default WASM decline0.03797pp confirmed versus9415b920"
+  ],
+  "frozenProducerProductionSourceHashesMatch": true
+}

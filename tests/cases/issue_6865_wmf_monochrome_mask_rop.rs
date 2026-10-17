@@ -525,3 +525,68 @@ fn assert_xor_pattern_pixels(svg: &str, middle: [i32; 4], reversed: bool) {
         }
     }
 }
+
+/// 마스크 밖은 두 XOR이 상쇄된다. 안쪽 흑백 무늬가 checker일 필요는 없다.
+#[test]
+fn contained_non_checker_mask_keeps_the_original_brush_as_its_only_paint() {
+    let mut pattern = dib_pattern_brush(1);
+    pattern[6 + 2 + 2 + 40 + 8] = 0;
+    // 완전 안쪽·한쪽 경계 공유·8단위보다 작은 마스크에도 같은 비트 항등식이다.
+    for middle in [
+        blit_rect(DPA, 14, 15, 30, 20),
+        blit_rect(DPA, 11, 10, 49, 50),
+        blit_rect(DPA, 31, 25, 2, 3),
+    ] {
+        let svg = finish_sequence(
+            mask_prefix(pattern.clone(), middle),
+            &[select_object(0), brush_blit(PATINVERT)],
+        );
+        assert_pattern_only_selects_brush_paint(&svg);
+    }
+}
+
+/// 사용자 제공 한컴2024 Print64쪽과 Windows GDI+에서 확인한 분홍색 패널이다.
+/// 좌표를 고정하지 않고 실물 WMF의 브러시와 역흑백 mask 소유를 검사한다.
+#[test]
+fn sample16_pink_panels_preserve_their_original_brush_and_contained_mask() {
+    let input = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-sample16-hwp5.hwp"),
+    )
+    .expect("원본 HWP");
+    let document = rhwp::parser::parse_hwp(&input).expect("원본 파싱");
+    let image = document
+        .bin_data_content
+        .iter()
+        .find(|data| data.id == 3 && data.extension.eq_ignore_ascii_case("wmf"))
+        .expect("원본 서버 도해 BIN0003.WMF");
+    let svg = to_svg(&image.data.load());
+    let xml = roxmltree::Document::parse(&svg).expect("변환 SVG");
+    let paints: Vec<_> = xml
+        .descendants()
+        .filter(|node| {
+            node.attribute("fill") == Some("#FFCCFF")
+                && !node.ancestors().any(|owner| owner.has_tag_name("defs"))
+        })
+        .collect();
+    assert!(!paints.is_empty(), "독립 출력의 원본 분홍색 paint 보존");
+    for paint in paints {
+        let reference = paint
+            .attribute("mask")
+            .expect("흑백 패턴으로 분홍색을 덮지 않음");
+        let id = reference
+            .strip_prefix("url(#")
+            .and_then(|value| value.strip_suffix(')'))
+            .expect("소유 mask 참조");
+        let mask = xml
+            .descendants()
+            .find(|node| node.attribute("id") == Some(id))
+            .expect("같은 SVG의 mask");
+        assert!(mask.has_tag_name("mask"));
+        assert_eq!(mask.attribute("mask-type"), Some("luminance"));
+        assert!(
+            mask.descendants()
+                .any(|node| node.attribute("filter").is_some()),
+            "검정 비트가 원본 브러시를 선택하도록 역마스크 보존"
+        );
+    }
+}
