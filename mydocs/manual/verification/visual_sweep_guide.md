@@ -742,13 +742,17 @@ python3 scripts/visual_sweep.py \
 있다. 이 값은 PDF raster와 rhwp SVG raster 양쪽에 같은 배율로 적용된다. 기본값은
 96dpi이며 0 이하 값은 허용하지 않는다.
 
-PDF PNG는 `pdftoppm -thinlinemode shape`로 생성한다. 1px보다 얇은 선을 원래
-너비에 비례한 coverage로 그려 SVG의 안티앨리어싱과 비교한다. 원본 PDF의 선 두께·색상,
-내용 이진화 임계값·2px 공차·90% gate는 바꾸지 않는다. 실행 manifest의
-`provenance.pdf_rasterizer.thin_line_mode`에 이 설정을 기록한다. 과거 기본 모드의 PNG·TSV는
-그 출처를 유지하며 새 결과로 덮어쓰지 않는다. 새 설정으로 다시 비교할 때는 같은 원본·PDF와
-Native/fresh WASM 출력의 해시를 고정하고 전쪽 TSV를 산출한다. 숫자 상승만으로 수용하지 않고
-원본 선과 독립 PDF의 두께·색상, 변경 영역의 review PNG를 함께 확인한다.
+PDF PNG는 `pdftoppm -thinlinemode none`으로 생성한다. Poppler의 기본 모드를 명시하여
+픽셀 경계로 선을 이동시키는 향상 처리를 피한다. 과거 `shape` 설정은 coverage 보존을
+의도했지만, #7998의 독립 PDF 대조군에서 stroke 폭만 바꿔도 같은 `f`/`f*` 사각형의
+농도가 바뀌거나 채움이 사라졌다(Poppler 24.02.0). 실제 견적서도 Cairo·MuPDF와 대조하여
+향상 모드의 fill 손실을 구분했다. 작은 계약은 `PdfRasterFillStateTests`에 있다.
+원본 PDF/제품 도형의 두께·색상, 내용 이진화 임계값·DPI·2px 공차·90% gate는 바꾸지 않는다.
+실행 manifest의 `provenance.pdf_rasterizer.thin_line_mode`에 설정을 기록한다. 과거
+`shape`/기본 모드의 PNG·TSV는 출처를 유지하며 새 결과로 덮어쓰지 않는다. 설정 보정 전후를
+판정할 때 같은 원본·PDF와 Native/fresh WASM 출력 해시를 고정하고 전쪽 TSV를 산출한다.
+최신 devel과 후보도 같은 reference 설정으로 비교한다. 숫자 상승만으로 수용하지 않고
+독립 입력의 fill 보존·stroke 상태 불변성과 실제 변경 영역의 review PNG를 함께 확인한다.
 
 옵션의 의미는 [Poppler의 pdftoppm 문서](https://skia.googlesource.com/third_party/poppler/+/master/utils/pdftoppm.1)에 따른다.
 
