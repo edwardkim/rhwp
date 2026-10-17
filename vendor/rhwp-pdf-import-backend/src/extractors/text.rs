@@ -2278,7 +2278,9 @@ pub struct TextExtractor<'doc> {
     /// Visual import excludes text with no painted fill or stroke.
     visible_paint_only: bool,
     paint_source_order: Vec<usize>,
-    span_paint_orders: HashMap<usize, Vec<usize>>,
+    /// Adjacent text paints may share word assembly until a non-text mark or Form boundary.
+    paint_group: usize,
+    span_paint_orders: HashMap<usize, (Vec<usize>, usize)>,
     /// Current marked content ID (for Tagged PDFs)
     ///
     /// Tracks the MCID of the currently active marked content sequence.
@@ -2477,6 +2479,7 @@ impl<'doc> TextExtractor<'doc> {
             merging_config: SpanMergingConfig::default(),
             visible_paint_only: false,
             paint_source_order: Vec::new(),
+            paint_group: 0,
             span_paint_orders: HashMap::new(),
             current_mcid: None,
             mc_actualtext_mcids: HashSet::new(),
@@ -3609,6 +3612,7 @@ impl<'doc> TextExtractor<'doc> {
         let prefix = self.paint_order_snapshot()?;
         let mut ordinal = 0;
         let mut execute = |this: &mut Self, operator: Operator| -> Result<()> {
+            let form_boundary = this.visible_paint_only && matches!(&operator, Operator::Do { .. });
             if this.visible_paint_only {
                 this.paint_source_order = prefix.clone();
                 this.paint_source_order.push(ordinal);
@@ -3627,10 +3631,18 @@ impl<'doc> TextExtractor<'doc> {
                         | Operator::InlineImage { .. }
                 ) {
                     this.flush_tj_span_buffer()?;
+                    this.advance_paint_group()?;
                 }
             }
             ordinal += 1;
-            this.execute_operator(operator)
+            this.execute_operator(operator)?;
+            if form_boundary {
+                // A Form may end with buffered text. Keep its marks apart from
+                // the caller's next run even if there was no path/image inside.
+                this.flush_tj_span_buffer()?;
+                this.advance_paint_group()?;
+            }
+            Ok(())
         };
         let result = if let Some(budget) =
             self.document.and_then(|doc| doc.import_budget()).cloned()
@@ -3683,12 +3695,21 @@ impl<'doc> TextExtractor<'doc> {
                     .try_reserve(1)
                     .map_err(|_| budget.reject("text paint order allocation"))?;
             }
-            self.span_paint_orders.insert(sequence, order);
+            self.span_paint_orders
+                .insert(sequence, (order, self.paint_group));
         }
         Ok(())
     }
 
-    pub(crate) fn take_span_paint_orders(&mut self) -> HashMap<usize, Vec<usize>> {
+    fn advance_paint_group(&mut self) -> Result<()> {
+        self.paint_group = self
+            .paint_group
+            .checked_add(1)
+            .ok_or_else(|| crate::error::Error::Unsupported("text paint group overflow".into()))?;
+        Ok(())
+    }
+
+    pub(crate) fn take_span_paint_orders(&mut self) -> HashMap<usize, (Vec<usize>, usize)> {
         std::mem::take(&mut self.span_paint_orders)
     }
 
@@ -4585,8 +4606,14 @@ impl<'doc> TextExtractor<'doc> {
             };
 
             if self.visible_paint_only
-                && self.span_paint_orders.get(&current.sequence)
-                    != self.span_paint_orders.get(&span.sequence)
+                && self
+                    .span_paint_orders
+                    .get(&current.sequence)
+                    .map(|(_, group)| group)
+                    != self
+                        .span_paint_orders
+                        .get(&span.sequence)
+                        .map(|(_, group)| group)
             {
                 merged.push(current);
                 current_span = Some(span);

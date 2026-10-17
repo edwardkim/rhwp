@@ -54,6 +54,8 @@ test('Docker product WASM: public API, active document isolation and real Worker
     add(`/rhwp-shared/pdf/${name}`, join(root, 'rhwp-shared/pdf', name), 'text/javascript');
   }
   add('/real.pdf', join(root, 'pdf/issue5875/nested_table_text_caption-2020.pdf'), 'application/pdf');
+  add('/placements.pdf', join(root, 'pdf/issue7966/image-placement-controls.pdf'), 'application/pdf');
+  add('/slides.pdf', join(root, 'pdf/issue7966/exceeds-32.pdf'), 'application/pdf');
   add('/control.hwp', join(root, 'samples/hwp_table_test.hwp'), 'application/octet-stream');
   files.set('/synthetic.pdf', ['application/pdf', syntheticPdf()]);
   files.set('/synthetic-many-pages.pdf', ['application/pdf', syntheticPdf(1025)]);
@@ -90,6 +92,8 @@ test('Docker product WASM: public API, active document isolation and real Worker
       }
       const bytes = new Uint8Array(await (await fetch('/synthetic.pdf')).arrayBuffer());
       const real = new Uint8Array(await (await fetch('/real.pdf')).arrayBuffer());
+      const placements = new Uint8Array(await (await fetch('/placements.pdf')).arrayBuffer());
+      const slides = new Uint8Array(await (await fetch('/slides.pdf')).arrayBuffer());
       const controlBytes = new Uint8Array(await (await fetch('/control.hwp')).arrayBuffer());
       if (hasDisabled) {
         const disabled = await import('/disabled/rhwp.js'); await disabled.default();
@@ -104,6 +108,16 @@ test('Docker product WASM: public API, active document isolation and real Worker
       check(wasm.HwpDocument.supportsPdfImport() === true, 'PDF runtime advertises PDF enabled');
       const policy = JSON.parse(wasm.HwpDocument.getPdfImportPolicy());
       check(policy.schemaVersion === 1 && Number.isSafeInteger(policy.backend.inputBytes), 'runtime supplies the policy used before transfer');
+      check(Number.isSafeInteger(policy.maxDocumentImagePlacements) && policy.maxDocumentImagePlacements >= 99,
+        'runtime exposes the bounded cumulative image placement policy');
+      const repeated = wasm.HwpDocument.importPdf(placements, {});
+      try {
+        check(repeated.pageCount() === 3, 'XObject, Form and inline placement pages remain distinct');
+        for (let p = 0; p < 3; p++) {
+          const xml = new DOMParser().parseFromString(repeated.renderPageSvg(p), 'image/svg+xml');
+          check(xml.querySelectorAll('image').length === 33, `page ${p + 1} preserves every repeated image paint`);
+        }
+      } finally { repeated.free(); }
       const all = new wasm.HwpDocument(bytes);
       check(all.pageCount() === 3 && all.getSourceFormat() === 'pdf', 'constructor imports all PDF pages');
       all.free();
@@ -153,6 +167,11 @@ test('Docker product WASM: public API, active document isolation and real Worker
         return worker;
       } });
       try {
+        const painted = await session.importPdf(slides, {}, { timeoutMs: 60_000 });
+        check(painted.pageCount === 19 && painted.diagnostics.pages.length === 19, 'Worker imports all 19 image-rich PDF pages');
+        const sixth = new DOMParser().parseFromString(await session.renderPageSvg(5), 'image/svg+xml');
+        check(sixth.querySelectorAll('image').length >= 35, 'Worker preserves the formerly rejected image placements');
+        check((await session.renderPageSvg(6)).includes('<svg'), 'Worker renders the affine-clipped image page');
         const loaded = await session.importPdf(real, {}, { timeoutMs: 60_000 });
         check(loaded.pageCount === 12 && loaded.diagnostics.pages.length === 12, 'Worker full real 12-page PDF');
         const svg = [];

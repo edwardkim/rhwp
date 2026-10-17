@@ -12887,6 +12887,7 @@ impl PdfDocument {
             .map(|span| {
                 let order = orders
                     .remove(&span.sequence)
+                    .map(|(order, _group)| order)
                     .ok_or_else(|| Error::Unsupported("missing text paint order".into()))?;
                 Ok((span, order))
             })
@@ -17542,7 +17543,7 @@ impl PdfDocument {
         excluded_layers: HashSet<String>,
         excluded_inks: HashSet<String>,
         visible_paint_only: bool,
-        paint_orders: Option<&mut HashMap<usize, Vec<usize>>>,
+        paint_orders: Option<&mut HashMap<usize, (Vec<usize>, usize)>>,
     ) -> Result<Vec<crate::layout::TextSpan>> {
         if self.is_encrypted_unreadable() {
             log::warn!("PDF is encrypted and could not be decrypted; returning no spans");

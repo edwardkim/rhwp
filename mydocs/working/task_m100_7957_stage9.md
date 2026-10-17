@@ -58,3 +58,40 @@ ledger를 소비하며, 전체 할당 증명이 완료됐다는 주장은 여전
 가려져야 한다. 변경 전에는 두 문자열이 덮는 개체 위에 보였다. 이 대조군의 변경 전
 실루엣 값도 100%다. 유색 내부의 다른 글자색은 실루엣 점수로 잡히지 않으므로,
 이 실패는 동일 영역의 실제 PNG·색상 및 개체 소유/순서로 입증한다.
+
+## 16 MiB 자원 대조군의 범위 판정
+
+작업지시자는 크기 경계 생성본을 자원 정책 검증으로 한정하고 Helvetica 글꼴·간격 차이는
+[백로그 B1](../plans/task_m100_7957_backlog.md)로 분리하도록 승인했다. 해당 TSV의 미달과
+producer를 그대로 기록하며 현재 공동 처리의 조판 통과 문서에 포함하지 않는다.
+`exceeds_32.pdf`의 출력 차이는 계속 이번 보정 범위다.
+
+## 고정 runtime의 Native 검증
+
+`bba967e7e5d08e28b3ad19a247a622cea59d31ec`의 별도 보존 CLI로 360쪽을 출력했다.
+자원 전용 생성본 1쪽을 제외한 359쪽은 전쪽 raw 90% 이상이며, 원본 19쪽의 최저값은
+99.31522%, 공통 nested 대조군의 최저값은 90.14458%다. 고정 devel 대비 측정 가능한
+공통 대조군에서 0.01 percentage point 이상 하락은 없다. Native 결과만으로 fresh WASM
+완료를 선언하지 않는다. 최종 producer·전쪽 TSV는 ignored `paint-order-20261017/`에 보존한다.
+
+글꼴 projection 정식 검사 3건도 통과했다. 첫 실행은 suite manifest를 갱신하지 않아
+검사가 0건 선택됐으므로 통과로 세지 않았다. 기존 공용 target을 유지한 채 manifest를
+명시적으로 준비한 뒤 3건이 실제 실행됐으며, 캐시 삭제나 소스 touch는 하지 않았다.
+
+## 필수 회귀에서 발견한 연속 텍스트 경계
+
+고정 runtime `bba967e7`의 360쪽 Native/fresh Docker WASM을 완료했다. 자원 전용 1쪽을
+제외한 359쪽은 양쪽 모두 raw 90% 이상이고 원본 19쪽 최저값은 Native 99.31522%,
+WASM 99.40106%다. 새 8개 관계 검사와 공개 API/Worker 92 assertion도 통과했다.
+이 결과를 다음 보정 source의 결과로 바꿔 쓰지 않는다.
+
+이후 필수 `issue_7958_pdf_positioned_word_gaps` 검사가 FAIL했다. 독립 생성본은 같은 줄의
+두 Tj text object 사이에 물리적 단어 간격을 가진다. 새 paint order가 모든 Tj의 소속을
+분리해, 중간에 다른 paint가 없는 이 경우에도 기존의 `가나 다라` 복원을 막았다.
+최종 PNG가 100%여도 편집 가능한 문자열 계약이 충족되지 않았으므로 검사를 완화하지 않는다.
+
+연속 텍스트는 비텍스트 mark 전까지 같은 paint group에서 기존 간격 복원을 허용한다.
+path/image paint와 Form 진입·종료는 group을 분리하며 최종 z-order는 여전히 첫 원본
+operator의 계층적 source order다. 중간의 도형·그림을 넘어서 텍스트를 합치지 않는다.
+단어 간격의 수정 전 FAIL / 보정 후 PASS와 가림·Form 반례를 먼저 확인한 뒤 새 producer로
+Native/fresh Docker WASM과 필수 gate를 다시 판정한다. 자료는 ignored `paint-group-20261017/`에 둔다.
