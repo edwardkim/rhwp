@@ -2697,32 +2697,6 @@ impl Renderer for WebCanvasRenderer {
         self.draw_ellipse_with_gradient(cx, cy, rx, ry, style, None);
     }
 
-    fn image_sampling_scope(
-        &self,
-        data: &[u8],
-        source: Option<(f64, f64)>,
-        w: f64,
-        h: f64,
-    ) -> Option<ImageSmoothingScope> {
-        let declared = super::image_resolver::png_sampling::interpolation(data)?;
-        let source = source.or_else(|| super::image_resolver::png_sampling::dimensions(data))?;
-        let matrix = self.ctx.get_transform().ok()?;
-        let selected = super::image_resolver::png_sampling::magnification(
-            Some(declared),
-            source,
-            (
-                w * matrix.a().hypot(matrix.b()),
-                h * matrix.c().hypot(matrix.d()),
-            ),
-        )?;
-        let previous = self.ctx.image_smoothing_enabled();
-        self.ctx.set_image_smoothing_enabled(selected);
-        Some(ImageSmoothingScope {
-            context: self.ctx.clone(),
-            previous,
-        })
-    }
-
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
         let _sampling = self.image_sampling_scope(data, None, w, h);
         let key = hash_bytes(data);
@@ -2837,6 +2811,32 @@ impl Renderer for WebCanvasRenderer {
 
 #[cfg(target_arch = "wasm32")]
 impl WebCanvasRenderer {
+    fn image_sampling_scope(
+        &self,
+        data: &[u8],
+        source: Option<(f64, f64)>,
+        w: f64,
+        h: f64,
+    ) -> Option<ImageSmoothingScope> {
+        let declared = super::image_resolver::png_sampling::interpolation(data)?;
+        let source = source.or_else(|| super::image_resolver::png_sampling::dimensions(data))?;
+        let matrix = self.ctx.get_transform().ok()?;
+        let selected = super::image_resolver::png_sampling::magnification(
+            Some(declared),
+            source,
+            (
+                w * matrix.a().hypot(matrix.b()),
+                h * matrix.c().hypot(matrix.d()),
+            ),
+        )?;
+        let previous = self.ctx.image_smoothing_enabled();
+        self.ctx.set_image_smoothing_enabled(selected);
+        Some(ImageSmoothingScope {
+            context: self.ctx.clone(),
+            previous,
+        })
+    }
+
     /// crop 영역만 표시하는 drawImage (9인자 버전)
     fn draw_image_cropped(
         &mut self,
