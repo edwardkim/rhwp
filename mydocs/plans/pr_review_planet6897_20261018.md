@@ -740,3 +740,36 @@ snapshot tracked production diff=0도 별도 Git index로 확인했다. 근거�
 109쪽 양쪽 첫 내용의 기준 줄 불일치다. snapshot tracked production diff=0과 같은 test
 bytes를 확인했다. `baseline6ed-completed-six-before-results.json`에 명령·suite·test SHA와
 제외한 시도를 분리해 기록했다. 현 브랜치의6건 실행은 다음 검증에서 판정한다.
+
+### 후보25의6건 통과와 공개 원본 보존
+
+`d9fb129450352103fca5c6ffa4cac7cf24dc5273`의 정식 Cargo 검사는6 PASS/0 FAIL이다.
+실제 실행은 `candidate25-completed-six-tests.log`와 results JSON에 남겼다. 최초의6 FAIL은
+snapshot이 공유 산출물 `librhwp.rlib`를 덮어쓴 뒤 root fingerprint가 남아 기준 라이브러리를
+링크한 실행이었다. 해당 rlib에는 후보의 metric 식별자가 없었고 frozen 후보 CLI에는 있었다.
+이를 구현 회귀로 세지 않았다. src/lib.rs의 mtime만 갱신해 같은 target에서 root를 다시
+빌드하니5분14초 뒤6건 모두 PASS했고 rlib 식별자도 돌아왔다. source byte SHA는 전후 동일하다.
+캐시 삭제·별도 target·기대값 완화는 없으며 실패한 시도와 `candidate25-shared-rlib-cache-collision.json`을
+보존했다. 이후 before 진단을 위해 기준 rlib도 ignored evidence에 SHA 고정해 복사했다.
+
+원 PR11개의 최신 GitHub head를 다시 확인했고49개 적용 mapping과 모두 일치한다.
+#7965도 최신4c83c6112가 이미 source22번째로 들어 있다. 추가 미적용 head는 없었다.
+`source-current-heads-verified-against-integration.json`에 최신 source와 실제 integration ancestor를 연결했다.
+
+공개 gist30376497aa887e4383aeacbcea01729a의 고정 버전964ff137a에서 받은 원본 두 입력과
+이미 산출된 독립 Print를 정식 경로로 byte-identical 보존한다. 글꼴·비활성 여백·저장 줄·본문을
+변경하지 않으며 기존 파생 fixture도 남긴다. 새 PDF 변환은 실행하지 않았다.
+
+| 원본 입력 | 독립 PDF | 원본 SHA-256 / PDF SHA-256 |
+| --- | --- | --- |
+| `tests/fixtures/issue7872/nested-tac-row-drop-original.hwpx` | `pdf/issue7872/nested-tac-row-drop-original-2020.pdf` | `b9f285f0ce01773c9c64240392477a374e5c67bef00eabe0ace36af66ccae0ba` / `bb8f105fb46aa5dafd81e717f7f1ea2a506defaaf7e23248024ff34812df5993` |
+| `tests/fixtures/issue7873/eq-rm-quarterspace-original.hwpx` | `pdf/issue7873/eq-rm-quarterspace-original-2020.pdf` | `351d4b8b482dadffa2cf3a79037ad9397563ab670ce33c3770254c35d5c20a93` / `5db93c43998d89a9000f964f1a170ec4c46d5ff9e250090b40afca04a6760b93` |
+
+후보23 production의 전1쪽 Native/WASM raw는 nested99.89402/99.91495%,rm98.48018/98.24952%다.
+양쪽 최신 review/overlay를 직접 열어 선택지④⑤의 보존과 수식 단위 정체·분수·앞뒤 간격을
+대조했다. `candidate23-{native,wasm}-original-direct-review/`에 같은 원본·PDF·생산자 증적을 둔다.
+원본 nested는 기존 소유/순서/포함 검사 전체와④⑤의 독립 원점/기준선±2px를 실행하도록 보완한다.
+원본 rm은 AST helper만 검사하지 않고 실제 문서의3개 EquationNode 소유·스크립트 순서·최종
+layout의 정체 m/s와 가시 역따옴표 없음,본문 칼럼 포함과 독립 원점을 검사한다.
+두 case의 새 실행과 수정 전 FAIL은 아직 미검증이다. 추가 입력·기대값 근거가 전쪽 시각 gate를
+완화하는 것은 아니며 전체 PR의1342000/156465345 등 미해결 범위와 최종 gate는 그대로 남는다.

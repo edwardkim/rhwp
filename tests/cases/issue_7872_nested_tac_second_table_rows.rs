@@ -40,9 +40,8 @@ use std::path::Path;
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 
-fn page0() -> (DocumentCore, PageRenderTree) {
-    let path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/issue7872/nested-tac-row-drop.hwpx");
+fn page0(input: &str) -> (DocumentCore, PageRenderTree) {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(input);
     let bytes = std::fs::read(&path)
         .unwrap_or_else(|error| panic!("#7872 fixture 읽기 {}: {error}", path.display()));
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
@@ -97,9 +96,8 @@ fn cells_by_row(table: &RenderNode) -> Vec<(u16, &RenderNode)> {
         .collect()
 }
 
-#[test]
-fn second_nested_tac_table_keeps_its_second_row_when_outer_cell_is_short() {
-    let (core, tree) = page0();
+fn assert_second_nested_rows(input: &str) -> PageRenderTree {
+    let (core, tree) = page0(input);
     assert_eq!(core.page_count(), 1, "한/글 Print PDF 와 같은 1쪽");
 
     let outer = outer_cell(&tree);
@@ -164,5 +162,47 @@ fn second_nested_tac_table_keeps_its_second_row_when_outer_cell_is_short() {
                 outer.bbox.y
             );
         }
+    }
+    tree
+}
+
+#[test]
+fn second_nested_tac_table_keeps_its_second_row_when_outer_cell_is_short() {
+    assert_second_nested_rows("samples/issue7872/nested-tac-row-drop.hwpx");
+}
+
+/// 공개 gist 원본은 글꼴·비활성 여백·저장 줄·본문을 바꾸지 않았다.
+/// b9f285f0ce01773c9c64240392477a374e5c67bef00eabe0ace36af66ccae0ba.
+/// 독립 Print: pdf/issue7872/nested-tac-row-drop-original-2020.pdf (1쪽),
+/// bb8f105fb46aa5dafd81e717f7f1ea2a506defaaf7e23248024ff34812df5993.
+/// 후보 f7ddf477e의96dpi print Native99.89402/WASM99.91495%와 직접 판독 후
+/// 마지막 행의 실제 글자 원점/기준선을±2px로 보호한다. 관계 검사도 동일하게 실행한다.
+#[test]
+fn original_gist_preserves_second_row_ownership_and_independent_print_positions() {
+    let tree =
+        assert_second_nested_rows("tests/fixtures/issue7872/nested-tac-row-drop-original.hwpx");
+    let second = nested_tables(outer_cell(&tree))[1];
+    fn find_run(node: &RenderNode, marker: char) -> Vec<&RenderNode> {
+        let mut out = Vec::new();
+        if matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text.contains(marker)) {
+            out.push(node);
+        }
+        for child in &node.children {
+            out.extend(find_run(child, marker));
+        }
+        out
+    }
+    for (marker, independent_x) in [('④', 58.88), ('⑤', 166.4)] {
+        let runs = find_run(second, marker);
+        assert_eq!(runs.len(), 1, "원본 선택지의 누락/중복 없음");
+        let node = runs[0];
+        let RenderNodeType::TextRun(run) = &node.node_type else {
+            unreachable!()
+        };
+        assert!((node.bbox.x - independent_x).abs() <= 2.0);
+        assert!(
+            (node.bbox.y + run.baseline - 255.2).abs() <= 2.0,
+            "독립 Print 마지막 행 기준선255.2px"
+        );
     }
 }
