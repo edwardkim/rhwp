@@ -2170,10 +2170,15 @@ fn fill_one_interval(
                 // 음수 자간을 되돌리면 이미 상자 안에 담긴 마지막 글자만 다음 줄로
                 // 밀리고 작성된 줄바꿈 앞에 빈약한 추가 줄이 생긴다. 실제 전진폭
                 // 초과와 일반 자동 줄바꿈의 마지막 자간 판정은 그대로 검사한다.
-                let at_written_line_end = matches!(
-                    tokens.get(ti + 1),
-                    None | Some(BreakToken::LineBreak { .. })
-                );
+                // 문단 끝 공백은 마지막 가시 글자의 압축 자간 계약을 바꾸지 않는다.
+                // 공백의 실제 이월·보존은 Space 분기가 결정한다. 개체가 차지한 공백과
+                // 탭은 건너뛰지 않아 뒤의 실제 배치 소유를 잃지 않는다.
+                let at_written_line_end = tokens[ti + 1..]
+                    .iter()
+                    .find(|token| {
+                        !matches!(token, BreakToken::Space { inline_width, .. } if *inline_width == 0.0)
+                    })
+                    .is_none_or(|token| matches!(token, BreakToken::LineBreak { .. }));
                 let w_hwp_fit = if at_written_line_end
                     && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0
                 {
