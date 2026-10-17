@@ -47,6 +47,43 @@ Native·Canvas의 실제 변환 행렬과 crop을 소비하고, CanvasKit도 dra
 검증 계획이며 새 Native/fresh WASM 검증 완료를 뜻하지 않는다. 새 코드에 영향을 받는 빌드·
 시각·전체 회귀는 새 결과로 갱신하고 기존 stage1 결과와 구분한다.
 
+작은 축소 대조군의 기준 PDF는 RGB 127 회색, 수정 전 실제 WASM은 RGB 0 검정이다.
+양쪽 실루엣은 100%여서 색상·픽셀 직접 판독을 별도로 기록한다. 새 회귀를 점수만으로 통과시키지 않는다.
+원래 후보의 Native 대조도 27쪽 중 8쪽 하락(최대 1.44636%p)을 확인했다.
+
+보정 중 WASM 보조 함수를 trait impl에 잘못 배치한 컴파일 오류를 자체 impl으로 옮겼다.
+또한 새 base worktree를 빌드한 뒤 공유 target이 오래된 mtime의 candidate vendor 산출물을
+최신으로 보아 재사용한 경우를 실제 새 마스크 열기 smoke에서 검출했다. 잘못된 producer로
+Native 시각 검증을 완료하지 않았다. `shared-target-refresh.json`의 정확한 9개 소스/manifest
+mtime만 갱신했고 전후 bytes SHA는 동일하다. 공유 cache 전체를 삭제하지 않았다.
+fingerprint 로그에서 candidate의 `path_color.rs` 변경을 인식해 vendor와 의존 root를 다시
+컴파일하는지 확인한다. source 전환 후에는 producer 해시뿐 아니라 새 기능의 실제 열기 smoke로
+소비하는 라이브러리도 확인한다. 첫 컴파일 실패·중단 로그와 잘못된 producer 실행은 보존한다.
+
+## 보정본의 완료된 선행 검증과 두 번째 사용자 판정
+
+- Rust/WASM 제품 source: `b2e0f32ba`와 동일한 Rust 입력. 후속 변경은 TS의 잘못된 선언 fallback
+  보존과 정식 회귀·공개 입력·기록이다. Native producer와 실제 새 마스크 열기 smoke를 연결했다.
+- 새 Docker WASM SHA-256: `50ead3ca44c8f807f44aec6e575b4d61426b1b8828bd182d1864fcd440770f57`.
+  실제 Studio Canvas2D·CanvasKit 초기화 응답 bytes도 이 해시다. DOM flow도 실제 decode·pixelated를 확인했다.
+- 작은 공개 입력 22쪽 + 개인 정상 문서 19쪽의 Native/fresh WASM 전쪽 raw TSV를 새로 산출했다.
+  공개 최저는 기존 linear control의 Native 92.92381%, WASM 92.64496%다. 16-bit은 새 출력과 MuPDF가
+  양쪽 100%다. 정상 19쪽 최저는 Native 99.12816%, WASM 99.54466%다.
+- exact-base 공통 27쪽의 양쪽 0.01%p 이상 하락은 각각 0쪽이다. 추가 축소 입력 한 쪽도 base/current
+  Native와 WASM의 픽셀이 각각 같다. 축소 checker의 PDF gray 127 / Native 99 / WASM 77은 기존 필터
+  차이로 남으며 새 정확한 색상 golden으로 고정하지 않는다. 원색을 하나 버린 이전 WASM gray 0과 구분한다.
+- 실제 Native-skia 기능을 켠 정식 #7974 집중 **8건 통과**. 기존 sampling/save 검사에 source coverage
+  소실 반례를 보완했다. HWP/HWPX 저장·재열기까지 포함한다. layout 좌표나 회색 kernel 값은 고정하지 않는다.
+- 포맷 후 source byte weight가 바뀌어 파생 suite가 달라진 첫 집중 실행은 **0건**이므로 통과가 아니다.
+  포맷 완료 후 prepare/check를 다시 수행해 실제 module 배정과 필터를 맞추고 위 8건을 실행했다.
+- Studio 전체 **2,315 통과·조건부 2 생략**, 뒤 소비 경로 보완 **6건 통과**, editor **32건 통과**,
+  frontend binding/embed·declaration·package dry-run 통과. 실제 PDF API/Worker·오류 복구 검사도 새 WASM으로 통과했다.
+- 전체 Rust 회귀와 새 code의 lint는 남아 있다. 실행 로그는 `validation-final/`에 이어 저장한다.
+
+2026-10-17 사용자는 보정 비교 화면 `E:\tmp\issue7974-final-review-20261017\index.html`의
+확대 경계·추가 축소 대조군·기존 문서 9쪽과 남은 기존 tone 차이를 제시받고 **“시각 판정 통과”**로
+회신했다. 이 판정을 원격 push·PR 등록·merge 승인으로 확대하지 않는다.
+
 ## PR 준비에 남은 판정
 
 - 새 지원 입력의 기준 TSV 부재는 2026-10-17 사용자가 **“신규 지원 예외·공통 대조군 비교 승인”**으로

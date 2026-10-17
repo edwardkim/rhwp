@@ -10,6 +10,19 @@ The source dictionaries and packed bytes are the independent test contract.
 - `smask-overrides-key`: SMask takes precedence over the deliberately invalid Mask array.
 - `low-resolution-mask`, `unmasked-control`, `linear-control`: final image sampling,
   including the existing Interpolate=true smoothing control.
+- `gray-padding`, `stencil-resource-colour`, `cmyk-key`, `inline-stencil`: packed
+  stride, named colour resources, four source components and inline image paint.
+- `explicit-mask`, `highres-smask`, `smask-matte`, `scaled`: self-authored normal
+  controls retained from the earlier #7949 validation archive, byte for byte.
+
+`minification-control` is an equal black/white checker reduced by two in each
+axis. It protects source coverage, not an exact gray/kernel: the unchanged base
+Native and WASM filters differ from Poppler's gray value. Direct review passed.
+
+`inputs.json` records all 22 source hashes and independent reference engines.
+`saved/` retains the exact public HWP/HWPX files used for save/reopen validation,
+with their source/generator/hash inventory. They are derived input documents,
+not expected screenshots or renderer goldens. Each public input has one page.
 
 The actual public import/save/reopen tests are in
 `tests/cases/issue_7974_pdf_source_masks.rs`. Source-texture sample positions are

@@ -6,6 +6,7 @@ export function magnificationFiltering(
   deviceWidth: number,
   deviceHeight: number,
 ): 'nearest' | 'linear' | undefined {
+  if (declared !== 'nearest' && declared !== 'linear') return undefined;
   if (![sourceWidth, sourceHeight, deviceWidth, deviceHeight]
     .every(value => Number.isFinite(value) && value > 0)
     || deviceWidth < sourceWidth || deviceHeight < sourceHeight) return undefined;

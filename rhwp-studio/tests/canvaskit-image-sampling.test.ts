@@ -17,6 +17,7 @@ after(async () => { await vite?.close(); });
 function sampling(op: Record<string, unknown>, {
   sourceSize = 100, destinationSize = 20, profile = 'highQuality', renderMode = 'default',
   rasterDepth = 0, bitmapFiltering = undefined as 'nearest' | 'linear' | undefined,
+  deviceScale = 1,
 } = {}) {
   const calls: unknown[][] = [];
   const renderer = Object.create(rendererPrototype);
@@ -27,7 +28,7 @@ function sampling(op: Record<string, unknown>, {
   });
   // drawImageOp consumes imageForOp's successfully prepared image. This checks
   // sampling dispatch, not a document's pixel layout or Hancom appearance.
-  renderer.drawImageOp({}, { width: () => sourceSize, height: () => sourceSize }, {
+  renderer.drawImageOp({ getTotalMatrix: () => [deviceScale, 0, 0, 0, deviceScale, 0, 0, 0, 1] }, { width: () => sourceSize, height: () => sourceSize }, {
     type: 'image', bbox: { x: 0, y: 0, width: destinationSize, height: destinationSize }, ...op,
   }, bitmapFiltering);
   assert.equal(calls.length, 1);
@@ -41,6 +42,15 @@ test('grayscale and tone retain linear interpolation and high quality downsample
     assert.deepEqual(sampling(op, { sourceSize: 2, destinationSize: 8 }),
       { filtering: 'linear', mipmaps: false });
   }
+});
+
+test('PDF interpolation uses the device transform rather than the logical frame alone', () => {
+  assert.deepEqual(sampling({ imageInterpolation: 'invalid' }),
+    { filtering: 'linear', mipmaps: true });
+  assert.deepEqual(sampling({ imageInterpolation: 'nearest' }),
+    { filtering: 'linear', mipmaps: true });
+  assert.deepEqual(sampling({ imageInterpolation: 'nearest' }, { deviceScale: 10 }),
+    { filtering: 'nearest', mipmaps: false });
 });
 
 test('only prepared binary effects force nearest without mipmaps', () => {

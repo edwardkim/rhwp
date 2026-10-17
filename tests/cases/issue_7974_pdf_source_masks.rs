@@ -169,6 +169,36 @@ fn sampling_declaration_survives_both_save_formats_and_svg_replay() {
             assert_eq!(textures(doc)[0].dimensions(), (2, 2));
         }
     }
+    #[cfg(feature = "native-skia")]
+    {
+        // Every interior destination footprint covers both black and white
+        // source samples. Point sampling loses one of them; coverage filtering
+        // produces intermediate ink. Do not pin a backend-specific gray value
+        // or document pixel coordinate (PDF 32000-1 8.9.5.3 leaves the kernel open).
+        let core = fixture("minification-control");
+        for doc in std::iter::once(&core).chain(saved(&core).iter()) {
+            let bytes = doc
+                .render_page_png_native_with_profile_and_export_options(
+                    0,
+                    rhwp::paint::RenderProfile::Print,
+                    &rhwp::document_core::queries::rendering::PngExportOptions {
+                        dpi: Some(96.),
+                        ..Default::default()
+                    },
+                )
+                .unwrap();
+            let output = image::load_from_memory(&bytes).unwrap().into_rgb8();
+            let ink = output.pixels().filter(|p| p.0 != [255; 3]).count();
+            let mixed = output
+                .pixels()
+                .filter(|p| p[0] > 0 && p[0] < 255 && p[0] == p[1] && p[1] == p[2])
+                .count();
+            assert!(
+                ink > 0 && mixed > ink / 2,
+                "minification discarded source coverage"
+            );
+        }
+    }
 }
 
 #[test]
