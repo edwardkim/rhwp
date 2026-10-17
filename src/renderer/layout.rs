@@ -15088,6 +15088,20 @@ impl LayoutEngine {
                     if ci == control_index {
                         continue;
                     }
+                    // [#7330] 조판기가 이 TAC 표를 같은 쪽의 독립 항목(`PageItem::Table`)으로
+                    // 이미 내보냈으면 그 항목이 그린다. 여기서 또 그리면 같은 자리에 두 번
+                    // 칠한다 — 36374873 결재란 3×4(pi=3 ci=1): render tree 에 같은 bbox 의
+                    // Table 둘, 글자 겹침 10건. 독립 항목이 없는 문단(공백만 앞선 TAC 등)은
+                    // 종전대로 이 경로가 그린다.
+                    let emitted_as_own_item = page_content.column_contents.iter().any(|cc| {
+                        cc.items.iter().any(|it| {
+                            matches!(it, PageItem::Table { para_index: pi, control_index: c, .. }
+                                if *pi == para_index && *c == ci)
+                        })
+                    });
+                    if emitted_as_own_item {
+                        continue;
+                    }
                     if let Control::Table(inline_t) = ctrl {
                         if inline_t.common.treat_as_char
                             && crate::renderer::height_measurer::is_tac_table_inline_in_para(
