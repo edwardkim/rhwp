@@ -83,3 +83,21 @@ font-rule 전체 수는 기존 833 + 새 이름 동일성 3 = active 836이다. 
 검사는 원래 830개 sealed 의미와 공개 change set만으로 기대 의미를 재구성하여
 추가 규칙·기존 규칙·retired 이력을 모두 대조한다. 생성 harness의 소스 weight drift도
 재생성·check로 해소했다. 이전 집중 실행은 0 tests로 종료되어 검증 통과로 세지 않는다.
+
+일반 `MalgunGothicBold` 전체 face를 regular family로 합치는 것은 font name만을 가진
+다른 입력에서 굵기를 잃을 수 있으므로 이번 이름 규칙에 넣지 않았다. 지금 문제였던
+regular PS 이름의 잘못된 대체와 glyph 굵기 검증을 우선 완료한다.
+
+### 직접 판정과 추적 연결 보완
+
+사용자는 `975655b49`의 Docker WASM(`60a17a1b…`)을 실제 Studio에서 확인하여
+12쪽의 **시각 판정 통과**를 승인했다. Native 96.40680%, fresh WASM 96.80514%다.
+`E:\tmp\issue7958-font-review-20261017\index.html`에 원본·전후 PNG를 복사했다.
+이 source의 전쪽 Native/fresh WASM은 모두 313쪽이며 각 문서에 90% 미만이 없다.
+
+별도 public font trace 회귀에서는 새 규칙의 임의 서술형 ruleId가 기존 trace의 canonical
+candidate identity와 연결되지 않아 1 FAIL을 검출했다. 아직 공개하지 않은 신규 change
+set의 세 식별자를 기존 canonical 생성식으로 바로잡았다. 기존 규칙·선택 tuple·글꼴·좌표는
+바꾸지 않고, 연결 검사를 완화하지 않았다. 모든 active layout-name 174개의 ID가 실제
+trace 생성식과 연결되는 Node 검사를 추가하여 관련 검사 49 PASS다. 새 source의 public
+Rust trace 및 최종 빌드 검증을 다시 수행하며 위 판정·PNG를 다른 source로 바꿔 기록하지 않는다.

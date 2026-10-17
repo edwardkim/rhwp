@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
-    "a86268c11e495c66044dd79c58ae7d61fe9342b04388372720a3a9ec799b9f73";
+    "26ebe0b4da163f72d340a7235d77fef63f7b232e2feb10746d35f245a808e678";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "66b43b1bf7e94cd945f458bcfb952df002169b49ab81707b8e0a49a77cb43ef5";
+    "3f146878a046daacf08a9d8d63e7134ab0eef9014858657df786b4cd3803e61c";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -2939,7 +2939,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         metric_entry_ids: &[],
     },
     GeneratedFontRuleProjection {
-        rule_id: "rule.rust-style-resolution.h2hdrm-identity-0",
+        rule_id: "rule.rust-style-resolution.14713c8b701c74678152",
         source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
@@ -2956,7 +2956,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         metric_entry_ids: &[],
     },
     GeneratedFontRuleProjection {
-        rule_id: "rule.rust-style-resolution.h2hdrm-identity-1",
+        rule_id: "rule.rust-style-resolution.1ce3e788a4c6198b4799",
         source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
@@ -2973,7 +2973,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         metric_entry_ids: &[],
     },
     GeneratedFontRuleProjection {
-        rule_id: "rule.rust-style-resolution.malgun-regular-identity",
+        rule_id: "rule.rust-style-resolution.dada52dd12498becd0dd",
         source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",

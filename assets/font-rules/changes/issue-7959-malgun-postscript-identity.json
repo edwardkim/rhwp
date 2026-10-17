@@ -42,7 +42,7 @@
         },
         "projectionSequence": 173,
         "relationType": "style-fallback",
-        "ruleId": "rule.rust-style-resolution.malgun-regular-identity",
+        "ruleId": "rule.rust-style-resolution.dada52dd12498becd0dd",
         "sourceBoundaryId": "rust-style-resolution.ttf",
         "sourceFace": "MalgunGothic",
         "supply": null,
@@ -51,7 +51,7 @@
       "type": "add-rule"
     }
   ],
-  "parentRegistrySha256": "fccd7875ef01273af3176f7aaec79bba043e1c536f7f749874c7a9e973aa35d2",
+  "parentRegistrySha256": "62e401a784f727471a1ad2bc5da983e306bcfc39131c665b1dc099f5aa6355a2",
   "schemaVersion": "2.0",
   "sequence": 9
 }

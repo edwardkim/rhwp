@@ -153,9 +153,9 @@ test('current registry retains migration, introduction and replacement provenanc
     'rule.issue-5884.noto-symbols2.webfont',
     'rule.rust-metric.ygodic230-name',
     'rule.rust-style-resolution.100b7126dfe0ddd2d55c',
-    'rule.rust-style-resolution.h2hdrm-identity-0',
-    'rule.rust-style-resolution.h2hdrm-identity-1',
-    'rule.rust-style-resolution.malgun-regular-identity',
+    'rule.rust-style-resolution.14713c8b701c74678152',
+    'rule.rust-style-resolution.1ce3e788a4c6198b4799',
+    'rule.rust-style-resolution.dada52dd12498becd0dd',
     'rule.studio-supply.batangche-serif.canvas2d',
   ]);
   assert.deepEqual(audit.references

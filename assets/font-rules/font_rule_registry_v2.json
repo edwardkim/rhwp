@@ -38,12 +38,12 @@
     {
       "changeSetId": "issue-7958.h2hdrm-postscript-identity",
       "path": "assets/font-rules/changes/issue-7958-h2hdrm-postscript-identity.json",
-      "sha256": "b083cd68b38ff0526df3dc504491c3b8297584218e2a2027ca90bf860665cb2a"
+      "sha256": "d04a756721112256a849a0fbee447d615921cbc8ac926e4ee99c1bb08da49d26"
     },
     {
       "changeSetId": "issue-7959.malgun-postscript-identity",
       "path": "assets/font-rules/changes/issue-7959-malgun-postscript-identity.json",
-      "sha256": "12ea29d2e7cc528c0b1e12bb7e1265148cb6019fb1760f4ee44d36030769c9cc"
+      "sha256": "9af4b0a40b0109ff7193bcd69205ed95b1e6474498b7fc5948aa44bb1d022849"
     }
   ],
   "evidenceRecords": [
@@ -43684,7 +43684,7 @@
         }
       ],
       "relationType": "style-fallback",
-      "ruleId": "rule.rust-style-resolution.h2hdrm-identity-0",
+      "ruleId": "rule.rust-style-resolution.14713c8b701c74678152",
       "selectionTupleSha256": "5b834431ba9566a9aa30b0e91b5666c15232e6272fdc1e9080129bee39261ab1",
       "sourceBoundaryId": "rust-style-resolution.ttf",
       "sourceFace": "H2hdrM",
@@ -43719,7 +43719,7 @@
         }
       ],
       "relationType": "style-fallback",
-      "ruleId": "rule.rust-style-resolution.h2hdrm-identity-1",
+      "ruleId": "rule.rust-style-resolution.1ce3e788a4c6198b4799",
       "selectionTupleSha256": "f00bf83eb9479db39744380ec8ad733f1cd1dd10380051b8dc30e5f57e9502ee",
       "sourceBoundaryId": "rust-style-resolution.ttf",
       "sourceFace": "HYHeadLine-Medium",
@@ -43754,7 +43754,7 @@
         }
       ],
       "relationType": "style-fallback",
-      "ruleId": "rule.rust-style-resolution.malgun-regular-identity",
+      "ruleId": "rule.rust-style-resolution.dada52dd12498becd0dd",
       "selectionTupleSha256": "7c15eecec50562fdcffe9d73a84acf875f2e71f04e0ecaeb6284705e2fdec958",
       "sourceBoundaryId": "rust-style-resolution.ttf",
       "sourceFace": "MalgunGothic",
@@ -43763,7 +43763,7 @@
       "targetFaceOrPolicy": "맑은 고딕"
     }
   ],
-  "rulesSha256": "e62f3bb9b5811710db00571e7ae3370dd685d32c9a4d6cf90f9b825d7b0fa055",
+  "rulesSha256": "1e0725a2b0819b4f4f0f0e37396ca7806299c325039d9bad15bc0a61141714bd",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"

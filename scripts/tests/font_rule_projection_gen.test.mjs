@@ -103,7 +103,7 @@ test('five backend projections are deterministic and close all 836 active regist
       // #7196: 같은 실물 글꼴의 한글 이름을 기존 영문 메트릭에 연결한다.
       'rust-layout-metric': '10448dda2d70a29dba5346245af09d7e308262e94486e9a3da046b183921c44c',
       // #7958 / #7959 add three name-table identities; other planes stay unchanged.
-      'rust-layout-name': '66b43b1bf7e94cd945f458bcfb952df002169b49ab81707b8e0a49a77cb43ef5',
+      'rust-layout-name': '3f146878a046daacf08a9d8d63e7134ab0eef9014858657df786b4cd3803e61c',
     },
   );
 });
@@ -350,4 +350,24 @@ test('BatangChe supply retains serif paint without changing its metric rule', ()
   const metric = active.find(rule => rule.projections[0].id === 'rust-layout-metric');
   assert.equal(metric.targetFaceOrPolicy, 'BatangChe');
   assert.equal(supply.lifecycle.predecessorRuleIds.length, 1);
+});
+
+// The existing public trace links finite style decisions by this canonical
+// candidate identity. A schema-valid descriptive ruleId cannot satisfy it.
+test('layout-name rule IDs remain joinable by the public font decision trace', () => {
+  const registry = readRegistry();
+  for (const rule of registry.rules.filter(rule =>
+    rule.status === 'active' && rule.projections[0].id === 'rust-layout-name')) {
+    const identity = {
+      sourceBoundaryId: rule.sourceBoundaryId,
+      candidateKind: 'finite-mapping',
+      sourceFace: rule.sourceFace,
+      targetOrPolicy: rule.targetFaceOrPolicy,
+      conditions: rule.conditions,
+      order: rule.order,
+    };
+    assert.equal(rule.ruleId,
+      `rule.rust-style-resolution.${sha256Text(canonicalJson(identity)).slice(0, 20)}`,
+      rule.sourceFace);
+  }
 });
