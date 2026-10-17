@@ -121,6 +121,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
         }
       } finally { repeated.free(); }
       const scanBytes = new Uint8Array(await (await fetch('/scan-buffers.pdf')).arrayBuffer());
+      const scanImages = svg => [...new DOMParser().parseFromString(svg, 'image/svg+xml').querySelectorAll('image')].map(n => n.getAttribute('href') || n.getAttributeNS('http://www.w3.org/1999/xlink', 'href'));
       const scans = wasm.HwpDocument.importPdf(scanBytes, {});
       try {
         check(scans.pageCount() === 5, 'scan-sized JPEG buffers import all five source pages');
@@ -134,7 +135,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
             check(reopened.pageCount() === 5, `scan JPEG ${name} save/reopen preserves all pages`);
             for (let p = 0; p < 5; p++) {
               const xml = new DOMParser().parseFromString(reopened.renderPageSvg(p), 'image/svg+xml');
-              check(xml.querySelectorAll('image').length === 1, `scan JPEG ${name} page ${p + 1} keeps its image`);
+              check(xml.querySelectorAll('image').length === 1 && JSON.stringify(scanImages(reopened.renderPageSvg(p))) === JSON.stringify(scanImages(scans.renderPageSvg(p))), `scan JPEG ${name} page ${p + 1} keeps its image bytes`);
             }
           } finally { reopened.free(); }
         }
@@ -203,6 +204,9 @@ test('Docker product WASM: public API, active document isolation and real Worker
         return worker;
       } });
       try {
+        const scanned = await session.importPdf(scanBytes, {}, { timeoutMs: 60_000 });
+        check(scanned.pageCount === 5, 'Worker imports every scan-sized JPEG page');
+        check(scanImages(await session.renderPageSvg(4)).length === 1, 'Worker preserves the final scan image');
         const painted = await session.importPdf(slides, {}, { timeoutMs: 60_000 });
         check(painted.pageCount === 19 && painted.diagnostics.pages.length === 19, 'Worker imports all 19 image-rich PDF pages');
         const sixth = new DOMParser().parseFromString(await session.renderPageSvg(5), 'image/svg+xml');
