@@ -943,6 +943,10 @@ impl TypesetEngine {
                     partial_height += extension;
                 }
             }
+            // [#7677] 끝 조각 뒤 흐름이 조각 하단에서 더 내려간 몫(바깥 아래 여백 등) — host
+            // 글줄을 예약할 때 배치가 같은 자리에서 시작하도록 넘긴다.
+            let mut terminal_host_push = 0.0f64;
+            let mut flow_after_terminal_advance = f64::NAN;
             if cursor_row == 0
                 && !is_continuation
                 && start_cut.is_empty()
@@ -1013,6 +1017,8 @@ impl TypesetEngine {
                     eprintln!("DIAG_SCAN FLOW_END pi={para_idx} row={cursor_row} cont={is_continuation} current={:.3} occupied={occupied:.3} terminal_spacing={terminal_spacing:.3} outer={} terminal_flow={:.3} reserved={terminal_outer_bottom_overhead:.3} host_tags={:?} next_line={:?}", st.current_height, table.outer_margin_bottom, input.prepared.terminal_outer_bottom_flow, input.source.paragraph.line_segs.iter().map(|line| line.tag).collect::<Vec<_>>(), input.source.paragraphs_all.get(para_idx + 1).and_then(|para| para.line_segs.first()).map(|line| (line.vertical_pos, line.tag)));
                 }
                 st.advance_flow_by(occupied + terminal_spacing);
+                terminal_host_push = terminal_spacing;
+                flow_after_terminal_advance = st.current_height;
                 self.consume_stored_terminal_empty_line_gap(st, &input, is_continuation);
             }
             commit_fragment(
@@ -1020,6 +1026,23 @@ impl TypesetEngine {
                 caption_extra + partial_height + bottom_caption_extra,
                 true,
             );
+            // [#7677] 쪽을 넘겨 온 표의 마지막 조각 뒤 host 글줄은 여기서 흐름에 예약한다 —
+            // 흐름은 방금 조각 하단 + 바깥 아래 여백에 섰다(한/글이 그 줄을 두는 자리).
+            if is_continuation {
+                if flow_after_terminal_advance.is_finite() {
+                    terminal_host_push += (st.current_height - flow_after_terminal_advance).max(0.0);
+                }
+                self.post_emit_visible_rowbreak_host_text(
+                    st,
+                    para_idx,
+                    ctrl_idx,
+                    input.source.paragraph,
+                    table,
+                    input.source.composed_all,
+                    styles,
+                    terminal_host_push,
+                );
+            }
             if queue_table_footnotes {
                 self.register_queued_table_footnotes(
                     st,
