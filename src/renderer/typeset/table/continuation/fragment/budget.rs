@@ -1636,7 +1636,7 @@ impl TypesetEngine {
         // 원본 개체가 본문 프레임을 닫으면 내용 컷도 그 물리 상한 안에서
         // 먼저 선택한다. paint에서 줄이는 높이를 앞 조각 원장에 남기지 않는다.
         // 단독 셀의 내용 종료는 이 예산을 채울 의무가 없다.
-        let avail_for_rows = if is_continuation
+        let body_closed_frame_bottom = (is_continuation
             && st.current_height <= 0.5
             && st.current_zone_y_offset == 0.0
             && std::ptr::eq(row_geometry_table, table)
@@ -1644,20 +1644,14 @@ impl TypesetEngine {
                 para,
                 table,
                 st.layout.body_area.height,
-            ) {
-            let top = fragment_placement.map_or(
-                st.current_height + host_before_overhead + vert_offset_overhead,
-                |placement| placement.table_top,
-            ) + caption_extra;
-            let bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
+            ))
+        .then(|| {
+            crate::renderer::float_placement::single_cell_page_fragment_bottom(
                 table,
                 st.layout.body_area.height,
                 self.dpi,
-            );
-            avail_for_rows.min((bottom - top - header_overhead).max(0.0))
-        } else {
-            avail_for_rows
-        };
+            )
+        });
         // 첫 수용 상자가 본문을 닫은 원본은 뒤 조각도 같은 바깥 프레임 안에서
         // 컷을 선택한다. 실제 종료의 빈 띠는 스캔 뒤 원본 소유 컷에서 확인한다.
         let continued_source_frame_bottom = (is_continuation
@@ -1667,7 +1661,14 @@ impl TypesetEngine {
             && std::ptr::eq(row_geometry_table, table))
         .then_some(source_frame_bottom)
         .flatten();
-        let avail_for_rows = continued_source_frame_bottom.map_or(avail_for_rows, |bottom| {
+        // 선언으로 닫힌 본문과 앞 수용 상자로 인증한 하단은 같은 물리 경계 계약이다.
+        // 두 근거가 있으면 좁은 경계를 내용 선택과 빈 띠 계산에 함께 전달한다.
+        let accepted_frame_bottom = match (body_closed_frame_bottom, continued_source_frame_bottom)
+        {
+            (Some(a), Some(b)) => Some(a.min(b)),
+            (a, b) => a.or(b),
+        };
+        let avail_for_rows = accepted_frame_bottom.map_or(avail_for_rows, |bottom| {
             let top = fragment_placement.map_or(
                 st.current_height + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
@@ -1712,7 +1713,7 @@ impl TypesetEngine {
             );
             // 내용 컷이 이미 소비한 원본 하단 inset을 빈 띠 예산에서 되돌리지 않는다.
             // 현재 각주 등으로 좁아진 본문과 인증한 이어받기 프레임의 교집합이다.
-            let bottom = continued_source_frame_bottom.map_or(bottom, |saved| bottom.min(saved));
+            let bottom = accepted_frame_bottom.map_or(bottom, |saved| bottom.min(saved));
             let top = fragment_placement.map_or(
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
