@@ -45,7 +45,7 @@ impl RowScanQuery<'_> {
         (r != cursor_row || (start_cut.is_empty() && start_row_height_override.is_none()))
             && rows
                 .layout_engine
-                .row_has_single_stored_plain_frame(rows.table, r, rows.styles)
+                .row_has_single_stored_plain_frame(rows.table, r)
             && self.required_height(whole_row_fit_h[r], consumed, cs_before) <= fresh_budget
     }
 

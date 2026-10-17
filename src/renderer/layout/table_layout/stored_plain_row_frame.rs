@@ -6,28 +6,48 @@ use crate::model::table::{Cell, Table, TablePageBreak};
 use super::{LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
-    /// 같은 원본 좌표계에서 진행하는 일반 셀은 한 저장 행 프레임이다.
-    /// 다른 행/표의 재시작이나 앞 행 rowspan의 존재로 이 프레임을 나누지 않는다.
-    pub(crate) fn row_has_single_stored_plain_frame(
-        &self,
-        table: &Table,
-        row: usize,
-        styles: &ResolvedStyleSet,
-    ) -> bool {
+    /// 원본 줄과 안여백이 행의 선언 높이를 닫는 단일 프레임을 인증한다.
+    /// 원점이 같은 문단 쌍 하나만으로 전체 셀을 인증하거나, 내용 밖의
+    /// 선언 최소 공간을 함께 이월해야 하는 프레임으로 바꾸지 않는다.
+    pub(crate) fn row_has_single_stored_plain_frame(&self, table: &Table, row: usize) -> bool {
         let owners = self.indexed_row_cut_cell_order(table, row);
-        !owners.is_empty()
-            && owners.iter().any(|&index| {
-                table.cells[index]
-                    .paragraphs
-                    .iter()
-                    .any(|paragraph| paragraph.text.chars().any(|c| !c.is_whitespace()))
-            })
-            && owners.iter().all(|&index| {
-                let cell = &table.cells[index];
-                self.stored_plain_text_cell_frame(table, cell)
-                    && super::stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi)
-                    && !super::stored_plain_text_cell_has_frame_reset(cell, styles, self.dpi)
-            })
+        if owners.is_empty() {
+            return false;
+        }
+        let mut has_text = false;
+        let mut source_end = 0_i64;
+        let mut declared_end = 0_i64;
+        for &index in owners.iter() {
+            let cell = &table.cells[index];
+            if cell.height > i32::MAX as u32 || !self.stored_plain_text_cell_frame(table, cell) {
+                return false;
+            }
+            has_text |= cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .text
+                    .chars()
+                    .any(|character| !character.is_whitespace())
+            });
+            let mut previous_end = None;
+            for line in cell
+                .paragraphs
+                .iter()
+                .flat_map(|paragraph| &paragraph.line_segs)
+            {
+                let origin = i64::from(line.vertical_pos);
+                if previous_end.is_some_and(|end| origin < end) {
+                    return false;
+                }
+                previous_end = Some(origin + i64::from(line.line_height));
+            }
+            let Some(end) = previous_end else {
+                return false;
+            };
+            let padding = cell.effective_padding(&table.padding);
+            source_end = source_end.max(end + i64::from(padding.top) + i64::from(padding.bottom));
+            declared_end = declared_end.max(i64::from(cell.height));
+        }
+        has_text && source_end == declared_end
     }
 
     /// 일반 부분 컷의 저장 글줄은 중첩 개체의 물리 조각을 입증하지 않는다.
