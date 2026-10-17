@@ -13,6 +13,7 @@ pub(super) struct CellCutFrame<'a> {
     units: &'a [CellUnit],
     start: usize,
     padding: f64,
+    preserves_line_slots: bool,
 }
 
 impl<'a> CellCutFrame<'a> {
@@ -33,6 +34,7 @@ impl<'a> CellCutFrame<'a> {
             units,
             start,
             padding: top + bottom,
+            preserves_line_slots: engine.stored_span_cut_preserves_line_slots(table, cell),
         }
     }
 
@@ -79,6 +81,17 @@ impl<'a> CellCutFrame<'a> {
             }
         }
         physical
+    }
+
+    /// 정렬할 병합 칸의 마지막 잉크가 들어가더라도 다음 슬롯 전진을
+    /// 빌려 한 줄을 더 소유하지 않는다. 예약할 가시 상자는 height를 쓴다.
+    pub(super) fn fitting_height(&self, end: usize, content_advance: f64) -> f64 {
+        let physical = self.height(end, content_advance);
+        if self.preserves_line_slots && end > self.start && end < self.units.len() {
+            physical.max(content_advance + self.padding + self.header_height(end))
+        } else {
+            physical
+        }
     }
 }
 
@@ -151,7 +164,7 @@ impl LayoutEngine {
             let cell_relaxed = relaxed_hard_break && units.len() >= GIANT_CELL_RELAXED_MIN_UNITS;
             while j < units.len() {
                 let u = &units[j];
-                let next_physical_height = frame.height(j + 1, h + u.height);
+                let next_physical_height = frame.fitting_height(j + 1, h + u.height);
                 if j > start
                     && u.hard_break_before
                     && (!cell_relaxed

@@ -1502,13 +1502,15 @@ impl LayoutEngine {
                     && cell.row_span > 1
                     && cell.vertical_align != crate::model::table::VerticalAlign::Top
                     && straddle_cut_units.is_some_and(|(start, end)| {
-                        self.stored_plain_spanning_frame_owns_alignment(
-                            cell, table, start, end, end_row, styles,
-                        ) || (start > 0
-                            && end >= self.cell_units(cell, table, styles).len()
-                            && straddle_page_bands.iter().any(|carry| {
-                                carry.cell_index == cell_idx && carry.physical_height > 0.0
-                            }))
+                        self.stored_span_cut_preserves_line_slots(table, cell)
+                            || self.stored_plain_spanning_frame_owns_alignment(
+                                cell, table, start, end, end_row, styles,
+                            )
+                            || (start > 0
+                                && end >= self.cell_units(cell, table, styles).len()
+                                && straddle_page_bands.iter().any(|carry| {
+                                    carry.cell_index == cell_idx && carry.physical_height > 0.0
+                                }))
                     });
             // 하위 원본 행은 끝부분의 빈 띠를 소유한다. 상위 커서는
             // 전체 하위 표를 상위 표의 세로 정렬 띠로 옮기지 않고

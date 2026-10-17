@@ -266,10 +266,16 @@ impl LayoutEngine {
                     // 커서가 바뀌면 원래 행의 누적 높이는 이 유닛들의 높이가 아니다.
                     let units = self.cell_units(cell, table, styles);
                     let mut fit = su.min(units.len());
-                    while fit < units.len()
-                        && self.cell_cut_visible_height(cell, table, styles, su, fit + 1)
-                            <= accepted_height + 0.1
-                    {
+                    let frame = super::row_block_cut::CellCutFrame::new(
+                        self, cell, table, styles, &units, fit,
+                    );
+                    let mut advance = 0.0;
+                    while fit < units.len() {
+                        let next = advance + units[fit].height;
+                        if frame.fitting_height(fit + 1, next) > accepted_height + 0.1 {
+                            break;
+                        }
+                        advance = next;
                         fit += 1;
                     }
                     // 수용 상자에 들어가는 유닛은 그대로 소비한다. 원점0 근처라고
@@ -321,6 +327,17 @@ impl LayoutEngine {
         cell: &Cell,
     ) -> bool {
         cell.row_span > 1 && self.stored_plain_text_cell_frame(table, cell)
+    }
+
+    /// 높이로 고른 원본 병합 칸의 가운데/아래 정렬은 전체 줄 슬롯을
+    /// 수용한 뒤, 같은 컷의 가시 내용으로 실제 물리 상자 안에서 정렬한다.
+    pub(in crate::renderer::layout) fn stored_span_cut_preserves_line_slots(
+        &self,
+        table: &Table,
+        cell: &Cell,
+    ) -> bool {
+        cell.vertical_align != crate::model::table::VerticalAlign::Top
+            && self.stored_plain_text_span_frame(table, cell)
     }
 
     pub(super) fn stored_plain_text_cell_frame(&self, table: &Table, cell: &Cell) -> bool {

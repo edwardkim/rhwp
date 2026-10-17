@@ -23408,7 +23408,11 @@ impl LayoutEngine {
             } else {
                 0.0
             };
-            let source_tail = closing_advance.max(line_tail);
+            let source_tail = if self.stored_span_cut_preserves_line_slots(table, cell) {
+                0.0
+            } else {
+                closing_advance.max(line_tail)
+            };
             if next_height - source_tail > budget + EPS {
                 break;
             }
