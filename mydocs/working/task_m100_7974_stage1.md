@@ -8,8 +8,9 @@
 - 빌드 시 HEAD는 준비 문서 commit `b4b388e2e368689800b7e050950e54fa9758d5c1`이며 제품 변경은 미커밋 상태였다.
   실제 입력 파일 SHA는 ignored `output/pr-review/backlog-7949/source-files.json`과
   `implementation.patch`에 연결한다. 뒤의 테스트·보고 추가는 제품 코드를 바꾸지 않았다.
-- 현재 상태: 제한된 첫 구현·Native/Docker WASM/Studio 집중 검증. 사용자 직접 시각 판정과
-  전체 회귀·lint·Worker/패키지 게이트, PR 준비는 별도 다음 단계다. 이슈 전체 종료로 표시하지 않는다.
+- 현재 상태: 제한된 첫 구현·Native/Docker WASM/Studio 집중 검증과 **사용자 직접 시각 판정 통과**.
+  2026-10-17 사용자가 비교 화면의 마스크 가려짐·확대 경계에 “시각 판정 통과”라고 회신했다.
+  전체 회귀·lint·Worker/패키지 게이트와 PR 준비는 다음 단계이며 실행 승인을 기다린다.
 
 ## 1. 적용한 계약과 실제 소비 경로
 
@@ -113,7 +114,19 @@ pkg 이전 TypeScript module 오류는 실제 빌드 후 해소했다. 구소스
 - Studio: `http://localhost:7795/?review=issue7974-mask&lang=ko`. 기존 7700/메인 작업공간 WIP는 보존했다.
 - 서로 다른 두 sampling plane, MOF 원본 확보·글꼴/간격, 부분 투명 텍스트·graphics-state soft mask·
   blend/text clip·표 의미 승격·추가 codec은 백로그에 남긴다. MOF 원본 경로는 아직 확인되지 않았다.
-- 사용자 직접 시각 판정 뒤 승인된 범위의 전체 회귀·lint·공개 API/Worker/패키지 소비와
+- 사용자 직접 시각 판정은 통과했다. 다음 단계 승인 뒤 전체 회귀·lint·공개 API/Worker/패키지 소비와
   최신 base 하락 비교를 정리한다. 원격 push·PR·이슈 종료는 아직 수행하지 않았다.
 - Docker가 동기화한 `rhwp-studio/public/rhwp.js`는 로컬 실행 산출물로 보존하고 이번 source commit에
   포함하지 않는다. `pkg/`·WASM·중간 증거·`.env`류도 stage하지 않는다. 같은 제품 소스를 반복 빌드하지 않는다.
+
+## 5. 사용자 판정 반영과 재사용 확인
+
+2026-10-17 사용자는 `E:\tmp\issue7974-mask-review-20261017\index.html`과 Studio 7795의
+색상 키·stencil·저해상도 확대에 대한 확인 요청에 **“시각 판정 통과”**라고 회신했다.
+판정 대상 제품 commit은 `6b072955e9b83d8f7729133eda5e93536ee453f5`다.
+새 fetch의 devel도 `515bd72dcde0eecdeece333666b675354b7fa91d`로 같아 추가 통합은 필요 없다.
+기록된 19개 runtime 입력 SHA가 현재 파일과 동일하며 Native/fresh WASM TSV의 raw 값도
+90% 이상임을 기존 자료에서 확인했다. 동일 빌드·집중 검사·시각 캡처를 다시 실행하지 않았다.
+
+다음 검증은 `docs_and_git_workflow.md`의 Internal Task PR Approval에 따른 전체 CI 성격의
+검사 승인 후 수행한다. 이 시각 판정을 원격 push·PR 생성·전체 CI 승인으로 확장하지 않는다.

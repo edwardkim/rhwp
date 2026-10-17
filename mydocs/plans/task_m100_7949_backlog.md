@@ -32,7 +32,7 @@ Native 최저 99.40149%, fresh WASM 99.40886%와 사용자 직접 시각 통과�
 [#7974](https://github.com/edwardkim/rhwp/issues/7974)의 colour-key Mask·독립 stencil과
 최종 sampling 전달을 구현했다. 작은 입력 Native/fresh Docker WASM 전쪽 최저
 92.92381%/92.64496%, 마스크 핵심 재현본은 양쪽 100%다. 실제 Studio Canvas2D·CanvasKit·
-DOM 경로와 저장 재열기도 집중 검증했다. 사용자 직접 시각 판정·전체 회귀·PR 게이트는 남는다.
+DOM 경로와 저장 재열기도 집중 검증했다. 2026-10-17 사용자 직접 시각 판정은 통과했다. 전체 회귀·PR 게이트는 남는다.
 세부 근거와 미검증은 [첫 구현 기록](../working/task_m100_7974_stage1.md)을 따른다.
 
 추가 세부 백로그: base image와 stream mask가 모두 변화하고 서로 다른 Interpolate를 요구할
