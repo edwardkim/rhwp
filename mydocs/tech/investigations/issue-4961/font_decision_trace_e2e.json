@@ -117,7 +117,7 @@
   ],
   "comparisons": {
     "substFeatureDetection": {
-      "withoutSubstFont": "subst-counterpart-hwp",
+      "withoutSubstFont": "exact-face",
       "withSubstFont": "document-substitute-hwpx"
     }
   }
