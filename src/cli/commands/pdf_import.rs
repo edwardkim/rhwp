@@ -10,6 +10,7 @@ struct ImportArgs<'a> {
     // 범위를 펼치기 전에 문법·순서를 검사하고 frontend 한도로 확장량을 제한한다.
     ranges: Option<Vec<(usize, usize)>>,
     json: bool,
+    table_inference: bool,
 }
 
 fn parse_ranges(value: &str) -> Result<Vec<(usize, usize)>, &'static str> {
@@ -45,6 +46,7 @@ fn parse_args(args: &[String]) -> Result<ImportArgs<'_>, &'static str> {
     let mut positionals = Vec::new();
     let mut ranges = None;
     let mut json = false;
+    let mut table_inference = false;
     let mut iter = args.iter();
     while let Some(arg) = iter.next() {
         match arg.as_str() {
@@ -54,12 +56,16 @@ fn parse_args(args: &[String]) -> Result<ImportArgs<'_>, &'static str> {
                 )?);
             }
             "--json" if !json => json = true,
+            "--table-inference" if !table_inference => table_inference = true,
             option if option.starts_with('-') => return Err("알 수 없거나 중복된 옵션입니다."),
             path => positionals.push(path),
         }
     }
     if positionals.len() != 2 {
-        return Err("사용법: rhwp import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json]");
+        return Err("사용법: rhwp import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json] [--table-inference]");
+    }
+    if table_inference && !json {
+        return Err("--table-inference는 --json과 함께 지정하세요. 원본 문자가 포함된 상세 추론 근거를 출력합니다.");
     }
     let input = positionals[0];
     let output = positionals[1];
@@ -79,6 +85,7 @@ fn parse_args(args: &[String]) -> Result<ImportArgs<'_>, &'static str> {
         output,
         ranges,
         json,
+        table_inference,
     })
 }
 
@@ -101,7 +108,13 @@ pub(crate) fn import_pdf(args: &[String]) -> i32 {
 
 #[cfg(not(feature = "pdf-import"))]
 fn execute(options: ImportArgs<'_>) -> Result<(), (i32, String)> {
-    let _ = (options.input, options.output, options.ranges, options.json);
+    let _ = (
+        options.input,
+        options.output,
+        options.ranges,
+        options.json,
+        options.table_inference,
+    );
     Err((EXIT_RUNTIME, "PDF_IMPORT_DISABLED: 이 빌드는 PDF 가져오기가 제외되었습니다. cargo build --features pdf-import --bin rhwp 로 빌드하세요.".into()))
 }
 
@@ -138,17 +151,23 @@ fn execute(options: ImportArgs<'_>) -> Result<(), (i32, String)> {
         .take(MAX_INPUT_BYTES as u64 + 1)
         .read_to_end(&mut bytes)
         .map_err(|e| runtime(e.to_string()))?;
-    let document = DocumentCore::from_pdf_bytes(&bytes, &PdfImportOptions { source_pages })
-        .map_err(|error| {
-            // Core의 기존 InvalidFile 래핑에서 안정 PDF code만 분류한다. 문서 문자열이나
-            // 번역된 설명의 부분 일치로 모든 parse 실패를 사용법 오류로 바꾸지 않는다.
-            let selection = matches!(&error, rhwp::error::HwpError::InvalidFile(message)
+    let document = DocumentCore::from_pdf_bytes(
+        &bytes,
+        &PdfImportOptions {
+            source_pages,
+            include_table_inference: options.table_inference,
+        },
+    )
+    .map_err(|error| {
+        // Core의 기존 InvalidFile 래핑에서 안정 PDF code만 분류한다. 문서 문자열이나
+        // 번역된 설명의 부분 일치로 모든 parse 실패를 사용법 오류로 바꾸지 않는다.
+        let selection = matches!(&error, rhwp::error::HwpError::InvalidFile(message)
                 if message.starts_with("PDF 오류: PDF_PAGE_SELECTION:"));
-            (
-                if selection { EXIT_USAGE } else { EXIT_RUNTIME },
-                error.to_string(),
-            )
-        })?;
+        (
+            if selection { EXIT_USAGE } else { EXIT_RUNTIME },
+            error.to_string(),
+        )
+    })?;
     let hwpx = Path::new(options.output)
         .extension()
         .is_some_and(|e| e.eq_ignore_ascii_case("hwpx"));

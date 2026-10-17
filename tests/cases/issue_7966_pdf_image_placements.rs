@@ -28,6 +28,7 @@ fn image_policy_counts_xobject_form_and_inline_before_decoding() {
     for page in 0..3 {
         let options = PdfImportOptions {
             source_pages: Some(vec![page]),
+            ..PdfImportOptions::default()
         };
         let policy = PdfImportPolicy {
             max_document_image_placements: 33,
@@ -83,6 +84,7 @@ fn image_placement_budget_accumulates_only_across_selected_pages() {
     );
     let options = PdfImportOptions {
         source_pages: Some(vec![0, 2]),
+        ..PdfImportOptions::default()
     };
     let exact = PdfImportPolicy {
         max_document_image_placements: 66,

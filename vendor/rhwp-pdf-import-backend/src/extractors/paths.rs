@@ -142,6 +142,7 @@ pub enum FillRule {
 pub struct PathExtractor {
     /// Accumulated complete paths
     paths: Vec<PathContent>,
+    clip_observations: Option<crate::elements::PathClipObservations>,
     pub(crate) paint: crate::elements::PathPaint,
     /// Current path being constructed
     current_operations: Vec<PathOperation>,
@@ -189,6 +190,7 @@ impl PathExtractor {
     pub fn new() -> Self {
         Self {
             paths: Vec::new(),
+            clip_observations: None,
             paint: Default::default(),
             current_operations: Vec::new(),
             current_point: None,
@@ -615,6 +617,7 @@ impl PathExtractor {
                 even_odd,
                 parent: self.paint.clip_path.clone(),
             }));
+            self.record_clip();
         }
         // Clear current path without creating a PathContent
         self.current_operations.clear();
@@ -693,6 +696,7 @@ impl PathExtractor {
                 even_odd,
                 parent: self.paint.clip_path.clone(),
             }));
+            self.record_clip();
         }
         self.paths.push(path);
 
@@ -744,6 +748,37 @@ impl PathExtractor {
     /// Finish extraction and return all extracted paths.
     pub fn finish(self) -> Vec<PathContent> {
         self.paths
+    }
+
+    /// Opt in without changing ordinary path extraction or inventing painted paths.
+    pub fn observe_clips(&mut self) {
+        self.clip_observations = Some(Default::default());
+    }
+
+    fn record_clip(&mut self) {
+        if let (Some(observations), Some(clip)) =
+            (&mut self.clip_observations, &self.paint.clip_path)
+        {
+            // A diagnostic ledger must not retain arbitrarily many otherwise dead clips.
+            if observations.clips.len() == 16_384 {
+                observations.omitted += 1;
+                return;
+            }
+            observations
+                .clips
+                .push(crate::elements::PathClipObservation {
+                    source_order: self.paint.source_order.clone(),
+                    transform: [
+                        self.ctm.a, self.ctm.b, self.ctm.c, self.ctm.d, self.ctm.e, self.ctm.f,
+                    ],
+                    clip: clip.clone(),
+                });
+        }
+    }
+
+    /// Return original paint and the separately requested clipping ledger.
+    pub fn finish_observed(self) -> (Vec<PathContent>, crate::elements::PathClipObservations) {
+        (self.paths, self.clip_observations.unwrap_or_default())
     }
 
     /// Get the number of paths extracted so far.

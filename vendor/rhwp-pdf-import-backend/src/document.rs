@@ -19755,6 +19755,23 @@ impl PdfDocument {
     /// # }
     /// ```
     pub fn extract_paths(&self, page_index: usize) -> Result<Vec<crate::elements::PathContent>> {
+        self.extract_paths_observed(page_index, false)
+            .map(|(paths, _)| paths)
+    }
+
+    /// Extract paint and a separate ledger of clip operations. A clip is never paint.
+    pub fn extract_paths_with_clips(
+        &self,
+        page_index: usize,
+    ) -> Result<(Vec<crate::elements::PathContent>, crate::elements::PathClipObservations)> {
+        self.extract_paths_observed(page_index, true)
+    }
+
+    fn extract_paths_observed(
+        &self,
+        page_index: usize,
+        observe_clips: bool,
+    ) -> Result<(Vec<crate::elements::PathContent>, crate::elements::PathClipObservations)> {
         use crate::content::{parse_content_stream_paths_only, Operator};
         use crate::elements::{LineCap, LineJoin};
         use crate::extractors::paths::{FillRule, PathExtractor, PathGraphicsStateStack};
@@ -19776,7 +19793,7 @@ impl PdfDocument {
                     page_index,
                     e
                 );
-                return Ok(Vec::new());
+                return Ok((Vec::new(), Default::default()));
             },
         };
 
@@ -19793,11 +19810,14 @@ impl PdfDocument {
                     page_index,
                     e
                 );
-                return Ok(Vec::new());
+                return Ok((Vec::new(), Default::default()));
             },
         };
 
         let mut extractor = PathExtractor::new();
+        if observe_clips {
+            extractor.observe_clips();
+        }
         let mut state_stack = PathGraphicsStateStack::new();
         extractor.update_from_path_state(state_stack.current());
 
@@ -20003,7 +20023,7 @@ impl PdfDocument {
         }
 
         self.check_import_budget()?;
-        Ok(extractor.finish())
+        Ok(extractor.finish_observed())
     }
 
     /// Resolve a `BDC /OC <properties>` property operand to the human-readable

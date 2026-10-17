@@ -48,7 +48,7 @@ pub(super) fn extract(
         checked(pdf, pdf.extract_ordered_painted_spans(page), "text", page)?
             .into_iter()
             .unzip();
-    let paths = checked(pdf, pdf.extract_paths(page), "paths", page)?;
+    let (paths, clips) = checked(pdf, pdf.extract_paths_with_clips(page), "paths", page)?;
     for path in &paths {
         let next = budget
             .path_operations
@@ -220,6 +220,15 @@ pub(super) fn extract(
     .map_err(|_| {
         PdfImportError::new("PDF_RECOGNITION_FAILED", "table ownership inference failed")
     })?;
+    let mut table_inference = super::table_inference::Ledger::observe(
+        &spans,
+        &span_orders,
+        &images,
+        &image_orders,
+        &clips,
+        media_box,
+    );
+    table_inference.reconcile(&detection);
     Ok(ExtractedPage {
         import_budget: pdf
             .import_budget()
@@ -232,5 +241,6 @@ pub(super) fn extract(
         image_orders,
         paths,
         snapshot: json!({"tableDetection": detection, "recognition": recognition}),
+        table_inference,
     })
 }

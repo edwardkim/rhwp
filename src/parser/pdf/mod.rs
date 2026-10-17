@@ -11,6 +11,7 @@ mod recognition;
 mod structured_lowering;
 mod table_detection;
 mod table_hierarchy;
+mod table_inference;
 mod table_topology;
 
 use crate::model::document::Document;
@@ -34,6 +35,9 @@ const MAX_DOCUMENT_IMAGE_PIXELS: u64 = 64_000_000;
 pub struct PdfImportOptions {
     /// Zero-based, strictly increasing source pages. None imports every page.
     pub source_pages: Option<Vec<usize>>,
+    /// Include page-scoped observations and competing table hypotheses in metadata.
+    /// Contains source text; opt-in, local review only.
+    pub include_table_inference: bool,
 }
 
 #[derive(Debug)]
@@ -176,6 +180,7 @@ pub struct PdfPageMetadata {
     pub nested_tables: usize,
     pub deferred_tables: usize,
     pub unsupported_paths: usize,
+    pub table_inference: Value,
 }
 
 #[derive(Debug, Serialize)]
@@ -205,6 +210,7 @@ struct ExtractedPage {
     paths: Vec<PathContent>,
     // Internal structural evidence only, dropped after each page's lowering.
     snapshot: Value,
+    table_inference: table_inference::Ledger,
 }
 
 #[derive(Default)]
@@ -422,6 +428,12 @@ pub fn parse_pdf_with_policy(
             nested_tables: n("semanticNestedTables"),
             deferred_tables: report["deferredTables"].as_array().map_or(0, Vec::len),
             unsupported_paths: n("unsupportedPaths"),
+            table_inference: page.table_inference.report(
+                &page.snapshot["tableDetection"],
+                &report,
+                &page.paths,
+                options.include_table_inference,
+            ),
         });
     }
     document.doc_properties.section_count = u16::try_from(document.sections.len())

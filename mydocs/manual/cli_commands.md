@@ -97,6 +97,9 @@ rhwp import-pdf input.pdf output.hwpx --json
 
 # 원본 1·7·8쪽을 순서대로 가져오기: 0-based, 범위 양 끝 포함
 rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
+
+# 원본 문자·클립·표 후보를 포함한 로컬 상세 진단
+rhwp import-pdf input.pdf review.hwpx --json --table-inference
 ```
 
 - 입력·출력 위치 인자 두 개가 필수이며 출력 확장자는 `.hwpx` 또는 `.hwp`다.
@@ -112,6 +115,11 @@ rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
   원본 쪽과 가져온 구역의 0-based 대응이며 `pageCount`는 Core가 조판한 쪽수다. 이 둘을 동일한
   값으로 가정하지 않는다. `paragraphPolicy`, `warnings`, `parserAllocationBoundsProven=false`도
   진단에 남긴다. 원본 좌표를 담는 `diagnostics.pages`는 비신뢰 문서 파생 필드로 표시한다.
+- `diagnostics.pages[].tableInference`는 후보 수·검출/생성 보류 이유를 요약한다.
+  `--table-inference`는 `--json`과 함께 사용하며 원본 문자, 초기 내용 묶음, 클립과 paint,
+  후보별 지역 축의 상세 근거를 추가한다. 작성 당시 셀 구조의 정답을 의미하지 않는다.
+  원본 문자가 포함되므로 로컬 검토용이며 자료 공개 여부는 별도로 판단한다.
+  WASM `HwpDocument.importPdf(bytes, { includeTableInference: true })`도 같은 진단을 반환한다.
 - 암호 옵션은 이 명령에서 거부한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
   `export-hwpx`의 암호 옵션을 사용한다.
 - `--no-default-features --features wasm-api`로 PDF만 제외한 CLI 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은

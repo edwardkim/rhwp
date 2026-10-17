@@ -258,6 +258,7 @@ fn selection_is_explicit_and_keeps_source_page_mapping() {
         &source,
         &PdfImportOptions {
             source_pages: Some(vec![1]),
+            ..PdfImportOptions::default()
         },
     )
     .unwrap();
@@ -270,6 +271,7 @@ fn selection_is_explicit_and_keeps_source_page_mapping() {
             &source,
             &PdfImportOptions {
                 source_pages: Some(pages),
+                ..PdfImportOptions::default()
             },
         )
         .err()
@@ -292,6 +294,7 @@ fn source_indices_are_independent_of_the_selected_page_ceiling() {
         &source,
         &PdfImportOptions {
             source_pages: Some(vec![128, 161]),
+            ..PdfImportOptions::default()
         },
         policy,
     )
@@ -320,7 +323,8 @@ fn source_indices_are_independent_of_the_selected_page_ceiling() {
             parse_pdf_with_policy(
                 &source,
                 &PdfImportOptions {
-                    source_pages: Some(pages)
+                    source_pages: Some(pages),
+                    ..PdfImportOptions::default()
                 },
                 policy
             )
@@ -433,6 +437,7 @@ fn positional_selection_never_extracts_unselected_pages_for_header_classificatio
         &source,
         &PdfImportOptions {
             source_pages: Some(vec![0]),
+            ..PdfImportOptions::default()
         },
         policy,
     )
@@ -443,7 +448,8 @@ fn positional_selection_never_extracts_unselected_pages_for_header_classificatio
     assert!(parse_pdf_with_policy(
         &source,
         &PdfImportOptions {
-            source_pages: Some(vec![1])
+            source_pages: Some(vec![1]),
+            ..PdfImportOptions::default()
         },
         policy
     )
@@ -517,6 +523,7 @@ fn selected_core_uses_common_loader_and_saved_documents_keep_selected_content() 
     ]);
     let options = PdfImportOptions {
         source_pages: Some(vec![0, 2]),
+        ..PdfImportOptions::default()
     };
     let parsed = parser::parse_pdf_with_metadata(&source, &options).unwrap();
     let mut core = DocumentCore::from_pdf_bytes(&source, &options).unwrap();
@@ -565,6 +572,7 @@ fn common_loader_errors_keep_pdf_codes_and_do_not_poison_later_imports() {
             &source,
             &PdfImportOptions {
                 source_pages: Some(pages),
+                ..PdfImportOptions::default()
             },
         )
         .err()

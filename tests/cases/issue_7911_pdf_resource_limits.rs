@@ -2865,15 +2865,22 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
     pages.push(b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /DCTDecode /Length 1 >>\nstream\n\x80\nendstream".to_vec());
     let source = object_file(&pages, "");
     for source_pages in [None, Some(vec![1])] {
-        let error = parse_pdf_with_options(&source, &PdfImportOptions { source_pages })
-            .err()
-            .expect("whole selected import must fail");
+        let error = parse_pdf_with_options(
+            &source,
+            &PdfImportOptions {
+                source_pages,
+                ..PdfImportOptions::default()
+            },
+        )
+        .err()
+        .expect("whole selected import must fail");
         assert_eq!(error.code, "PDF_IMAGE_UNSUPPORTED");
     }
     let normal = parse_pdf_with_options(
         &source,
         &PdfImportOptions {
             source_pages: Some(vec![0]),
+            ..PdfImportOptions::default()
         },
     )
     .unwrap();
