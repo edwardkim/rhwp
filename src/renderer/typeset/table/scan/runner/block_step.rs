@@ -243,7 +243,7 @@ impl TypesetEngine {
                     &block_row_offsets,
                     &band_fill,
                 );
-                end_row = selected.end_row(&block);
+                end_row = selected.end_row(&block_query, &block, blk_start_cut);
                 if let Some((height, last)) = complete_row_frame {
                     split_block_start = Some(b_start);
                     split_end_cut = selected.cut_res.end_cut.clone();

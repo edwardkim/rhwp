@@ -6,6 +6,30 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 use super::super::LayoutEngine;
 
 impl LayoutEngine {
+    /// 완전히 선택한 원본 행 prefix의 끝. 물리 높이가 다음 행의 시작을
+    /// 넘더라도 다음 행의 유닛을 소비하지 않았으면 그 행을 새로 열지 않는다.
+    pub(crate) fn row_block_cut_complete_prefix_end(
+        &self,
+        table: &Table,
+        block: (usize, usize),
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<usize> {
+        let mut owners = Self::row_block_cells(table, block.0, block.1);
+        owners.sort_by_key(|cell| (cell.row, cell.col));
+        if owners.len() != cut.len() {
+            return None;
+        }
+        let row_end = owners
+            .iter()
+            .zip(cut)
+            .filter(|(_, selected)| **selected > 0)
+            .map(|(cell, _)| usize::from(cell.row) + 1)
+            .max()?;
+        self.row_block_cut_is_complete_row_boundary(table, block, row_end, cut, styles)
+            .then_some(row_end)
+    }
+
     pub(crate) fn stored_complete_block_opening_frame_height(
         &self,
         table: &Table,

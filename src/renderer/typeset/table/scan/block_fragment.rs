@@ -31,13 +31,28 @@ impl<'a> SelectedBlockCut<'a> {
         }
     }
 
-    pub(in crate::renderer::typeset) fn end_row(&self, block: &RowBlockCandidate) -> usize {
+    pub(in crate::renderer::typeset) fn end_row(
+        &self,
+        rows: &RowBlockQuery<'_>,
+        block: &RowBlockCandidate,
+        start: &[usize],
+    ) -> usize {
         let Self {
             cut_res,
             cut_offsets,
             use_offsets,
         } = *self;
         let RowBlockCandidate { b_start, b_end, .. } = *block;
+        if use_offsets && start.is_empty() {
+            if let Some(end) = rows.layout_engine.row_block_cut_complete_prefix_end(
+                rows.table,
+                (b_start, b_end),
+                &cut_res.end_cut,
+                rows.styles,
+            ) {
+                return end;
+            }
+        }
         if use_offsets {
             let mut render_end = b_start + 1;
             for (idx, row_top) in cut_offsets.iter().enumerate() {
@@ -61,7 +76,7 @@ impl<'a> SelectedBlockCut<'a> {
         start: &[usize],
         budget: f64,
     ) -> Option<(f64, f64)> {
-        let end_row = self.end_row(block);
+        let end_row = self.end_row(rows, block, start);
         if !self.use_offsets
             || !start.is_empty()
             || self.cut_res.hit_hard_break
@@ -75,7 +90,12 @@ impl<'a> SelectedBlockCut<'a> {
         {
             return None;
         }
-        let height = rows.fragment_height(block, end_row, start, &self.cut_res.end_cut);
+        // 완전 행도 같은 컷의 병합 소유자가 요구한 물리 높이를 보존한다.
+        // 원본 행 prefix의 끝과 예약 높이를 함께 전달해 paint가 뒤의
+        // 미소비 행에 빈 띠를 배분하지 않게 한다.
+        let height = rows
+            .fragment_height(block, end_row, start, &self.cut_res.end_cut)
+            .max(self.cut_res.occupied_height());
         let before_last = rows.fragment_height(block, end_row - 1, start, &self.cut_res.end_cut)
             + if end_row > block.b_start + 1 {
                 rows.cs
