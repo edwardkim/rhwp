@@ -112,6 +112,7 @@ impl LayoutEngine {
         // 무시하고 fresh 재배치로 쪽을 만충한다(연결맵 p26 = 81줄 실측, #2291).
         // 종전 이 walk 는 hard-break 에서 무조건 정지해 예산 잔여(≤52px)를 버리고
         // 조각 경계가 한글과 어긋났다.
+        const HARD_BREAK_REMAINING_TOLERANCE_PX: f64 = 32.0;
         let block_has_top_and_bottom_flow = cells
             .iter()
             .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
@@ -153,7 +154,11 @@ impl LayoutEngine {
                 let next_physical_height = frame.height(j + 1, h + u.height);
                 if j > start
                     && u.hard_break_before
-                    && (!cell_relaxed || (!u.empty_spacer && next_physical_height > cell_budget))
+                    && (!cell_relaxed
+                        || (!u.empty_spacer
+                            && (next_physical_height > cell_budget
+                                || cell_budget - frame.height(j, h)
+                                    <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
                 {
                     if start > 0 && j == start + 1 && h <= REWIND_ORPHAN_CONT_PX {
                         h += u.height;
