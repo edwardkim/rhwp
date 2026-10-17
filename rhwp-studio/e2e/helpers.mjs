@@ -16,6 +16,7 @@ import { existsSync, readdirSync } from 'fs';
 import os from 'os';
 import { PNG } from 'pngjs';
 import { TestReporter } from './report-generator.mjs';
+import { observeWasmArtifact } from './wasm-artifact-check.mjs';
 
 const MAX_INK_MASK_MATCH_EDGES = 5_000_000;
 const CHROME_CDP = process.env.CHROME_CDP || 'http://172.21.192.1:19222';
@@ -189,6 +190,16 @@ const CANVAS_SELECTOR = '#scroll-container canvas';
 
 /** Vite dev server에서 앱을 로드하고 WASM 초기화 완료 대기 */
 export async function loadApp(page, search = '') {
+  const artifact = await observeWasmArtifact(page);
+  try {
+    await loadAppUnchecked(page, search);
+    await artifact.finish();
+  } finally {
+    await artifact.stop();
+  }
+}
+
+async function loadAppUnchecked(page, search) {
   await page.goto(`${VITE_URL}${search}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   const appReady = page.waitForFunction(() => !!window.__wasm && !!window.__canvasView, {
     timeout: 60000,

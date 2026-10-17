@@ -20,6 +20,8 @@ on:
       - 'assets/fonts/**'
       - 'ttfs/**'
       - 'scripts/renderer_baseline.py'
+      - 'scripts/measure_render_diff_wasm.py'
+      - 'scripts/wasm-pack-locked.sh'
       - 'scripts/renderer_baseline_manifest.json'
       - 'scripts/ci-impact-classifier.cjs'
       - 'scripts/generate_font_glyph_payload_fixture.py'
@@ -38,6 +40,23 @@ on:
       - '.github/workflows/render-diff.yml'
   workflow_dispatch:
     inputs:
+      wasm-profile:
+        description: 'Manual cost comparison only; pull requests always use release'
+        required: false
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - dev
+      wasm-build-mode:
+        description: 'Manual comparison: auto uses cdylib for release and standard for dev'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - standard
+          - cdylib
       fixtures:
         description: 'Comma-separated sample files under rhwp-studio/public/samples'
         required: false
@@ -693,6 +712,7 @@ jobs:
       contents: read
     env:
       RHWP_CHROMIUM_BUILD_ID: '1660786'
+      RHWP_WASM_BUILD_MANIFEST: ${{ github.workspace }}/output/render-diff-build/build.json
 
     steps:
       - name: "Render Diff identity PR #${{ github.event.pull_request.number }} base ${{ github.event.pull_request.base.sha }}"
@@ -749,6 +769,14 @@ jobs:
       # [Task #1667] Render Diff is PR-heavy; pull_request caches are scoped to
       # refs/pull/* and are not reused by other PRs. Keep PR runs restore-only,
       # and allow only trusted manual devel/main seed runs to save a cache.
+      - name: Resolve WASM build configuration
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
+        id: wasm_configuration
+        env:
+          RHWP_WASM_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-profile'] || 'release' }}
+          RHWP_WASM_BUILD_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-build-mode'] || 'cdylib' }}
+        run: python3 scripts/measure_render_diff_wasm.py --profile "$RHWP_WASM_PROFILE" --build-mode "$RHWP_WASM_BUILD_MODE" --describe-build >> "$GITHUB_OUTPUT"
+
       - name: Restore cargo registry & build cache
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         id: render_diff_cargo_cache_restore
@@ -758,13 +786,18 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.toml', '**/Cargo.lock', '.cargo/config*', 'scripts/wasm-pack-locked.sh') }}
           restore-keys: |
-            ${{ runner.os }}-render-diff-cargo-
+            ${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-
 
       - name: Build WASM package
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
-        run: wasm-pack build --target web --dev
+        env:
+          RHWP_WASM_PROFILE: ${{ steps.wasm_configuration.outputs.profile }}
+          RHWP_WASM_BUILD_MODE: ${{ steps.wasm_configuration.outputs.build_mode }}
+          RHWP_CARGO_CACHE_HIT: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-hit || 'false' }}
+          RHWP_CARGO_CACHE_MATCHED_KEY: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-matched-key }}
+        run: python3 scripts/measure_render_diff_wasm.py --profile "$RHWP_WASM_PROFILE" --build-mode "$RHWP_WASM_BUILD_MODE"
 
       - name: Build native CLI for PDF report
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
@@ -778,7 +811,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-primary-key }}
 
       - name: Setup Node.js
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
@@ -818,6 +851,8 @@ jobs:
           node --check e2e/renderer-baseline-native-diff.mjs
           node e2e/renderer-baseline-native-diff.mjs --self-test
           node --check e2e/run-render-diff.mjs
+          node --test tests/wasm-artifact-check.test.ts
+          python3 -m unittest discover -s ../scripts/tests -p test_render_diff_workflow.py
           python3 -m py_compile ../scripts/renderer_baseline.py
           npm run e2e:renderer-contract
           npm run e2e:canvaskit-font-coverage
@@ -856,7 +891,8 @@ jobs:
           for summary in \
             e2e/screenshots/render-diff/summary.md \
             e2e/screenshots/render-diff/pdf-summary.md \
-            ../output/renderer-baseline/canvaskit-readiness/baseline-report.md
+            ../output/renderer-baseline/canvaskit-readiness/baseline-report.md \
+            ../output/render-diff-build/summary.md
           do
             if [ -f "$summary" ]; then
               cat "$summary" >> "$GITHUB_STEP_SUMMARY"
@@ -872,6 +908,7 @@ jobs:
           path: |
             rhwp-studio/e2e/screenshots/render-diff/
             output/e2e/
+            output/render-diff-build/
             output/renderer-baseline/canvaskit-readiness/
             target/rhwp-studio-vite.log
           if-no-files-found: ignore

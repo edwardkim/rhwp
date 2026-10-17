@@ -79,6 +79,8 @@ const RENDER_DIFF_PULL_REQUEST_PATHS = [
   'assets/fonts/**',
   'ttfs/**',
   'scripts/renderer_baseline.py',
+  'scripts/measure_render_diff_wasm.py',
+  'scripts/wasm-pack-locked.sh',
   'scripts/renderer_baseline_manifest.json',
   'scripts/ci-impact-classifier.cjs',
   'scripts/generate_font_glyph_payload_fixture.py',

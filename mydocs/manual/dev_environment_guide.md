@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/dev_environment_guide.md
-last_verified: 2026-08-11
+last_verified: 2026-09-30
 ---
 
 # 개발 환경 가이드
@@ -314,6 +314,22 @@ macOS/Linux의 native WASM 검증은 `wasm-pack`을 직접 실행하지 않는�
 CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg
 ```
 
+WASM release의 산출물 선택을 비교하는 선택 경로는 다음과 같습니다. 기본 동작은 바뀌지 않습니다.
+
+```bash
+RHWP_WASM_CDYLIB_ONLY=1 CARGO_TARGET_DIR=target/pr-review \
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg --release
+```
+
+이 POSIX wrapper 옵션은 `rhwp`의 WASM `cdylib`만 생성합니다. Rust/Cargo 1.93.1에서 기존
+`rlib+cdylib` 빌드는 `lto=true`여도 cross-crate LTO를 실행하지 않으므로, 이 경로는 명령 범위의
+`profile.release.lto=false`로 그 실효 조건을 유지합니다. manifest의 release 설정 문구를 그대로
+적용하는 경로와는 구분합니다. wasm-pack의 wasm-bindgen·wasm-opt·패키징·Studio 동기화는 유지하며,
+Native/Rust 소비자를 위한 rlib 설정은 바꾸지 않습니다. 별도 profile/config/package 인자를 함께
+넘기지 않습니다. CI에서 채택할 때는 기존 release 캐시와 산출물 선택·프로필 키를 구분해야 합니다.
+PowerShell wrapper의 옵션은 아닙니다. 근거와 검증 범위는
+[빌드 비용 조사](https://github.com/edwardkim/rhwp/blob/7aa36953478812711e671d55c16b5daa11cd7a7a/mydocs/report/task_m100_7473_rust_phases.md)를 참고합니다.
+
 반복 실행은 macOS/Linux 셸의 alias로 줄일 수 있습니다. alias는 현재 셸에만 적용하며, 영구 적용이 필요하면
 사용 중인 셸의 초기화 파일에 같은 줄을 넣습니다.
 
@@ -341,6 +357,40 @@ set "CARGO_TARGET_DIR="
 `pkg/` 잔재와 wasm-opt만 분리해 확인한다.
 
 TypeScript와 CSS는 Vite가 다시 읽지만 Rust 변경은 위 빌드가 끝나야 브라우저에 반영된다.
+
+### 개발·시각 CI·배포의 빌드 경로 (#7473)
+
+| 목적 | WASM 경로 | 책임 |
+| --- | --- | --- |
+| 로컬 반복 확인 | 기존 locked wrapper의 `--no-opt` 또는 `--dev` | 빠른 진단. 배포 최적화 검증과 구분 |
+| Frontend package gate | `wasm-pack build --target web --dev` | 타입·unit·package 계약 |
+| PR Render Diff | `python3 scripts/measure_render_diff_wasm.py --profile release --build-mode cdylib` | locked wrapper의 release + cdylib-only + wasm-opt 산출물로 Canvas/PDF 및 readiness 검사 |
+| Full Renderer Sweep / npm / Pages | 기존 `wasm-pack build --target web --release` | 전체 sweep / 배포 |
+
+Render Diff는 `output/render-diff-build/build.json`에 source SHA·프로필·도구 명령/버전/해시·
+산출물 해시·Cargo cache 정보를 저장한다. `build.log`와 `summary.md`의 구간 시간은 로그 수신
+경계의 wall 근사이며 다운로드·설치·마무리 비용을 포함한다. 프로세스 자체 시간과 혼동하지 않는다.
+최적화 실행이 관측되지 않은 release 빌드와 실패한 빌드는 성공 manifest로 인정하지 않는다.
+
+`RHWP_WASM_BUILD_MANIFEST`가 설정된 E2E는 앱 초기화 중 Chrome이 실제 받은
+`rhwp_bg.wasm` 응답의 SHA-256을 대조하고 `consumption/`에 증거를 남긴다.
+manifest가 없는 일반 로컬 E2E는 기존 동작을 유지한다. 단순히 같은 URL을 다시 fetch한 결과를
+사용하지 않는다. 큰 dev WASM을 관측할 수 있도록 CDP 응답 버퍼를 산출물 크기에 맞춘다.
+
+비용 비교는 수동 Render Diff의 `wasm-profile=dev|release`와
+`wasm-build-mode=auto|standard|cdylib`로 **동일 ref SHA**에서 실행한다.
+`auto`는 release에서 cdylib-only, dev에서 기존 rlib+cdylib를 선택한다. release의
+`standard`는 기존 rlib+cdylib 비교군이며 dev+cdylib는 거부한다.
+PR 실행은 항상 release+cdylib이다. cdylib 경로는 #7488의 명령 단위
+`profile.release.lto=false`를 사용하므로 배포 명령·LTO 설정 자체와 동일하다고 표현하지 않는다.
+manifest에는 실제 선택한 crate type·LTO 정책, wrapper/manifest hash와 runner CPU·이미지를 함께 남긴다.
+Cargo cache의 exact key와 fallback prefix 모두 profile·crate type·LTO 정책별로 분리하며,
+저장은 기존처럼 신뢰하는 main/devel 수동 실행에서만 허용한다. 이전 무구분 cache는 복원하지 않는다.
+같은 runner 이미지·
+Rust/도구·Chromium·fixture·폰트·캐시 상태를 확인하고 각 조건의 반복 수와 범위를 공개한다.
+cache-hit=false는 부분 복원일 수도 있으므로 matched key/restore 로그를 함께 읽는다.
+전체 job과 시각 검사 시간은 Actions attempt별 jobs API에서 얻고, 기존 다른 소스의 실행이나
+로컬 시간으로 release 전환의 CI 증가분을 대신하지 않는다. 실행은 원격 CI 승인 후 진행한다.
 
 ## 웹한글컨트롤 호환 층
 
