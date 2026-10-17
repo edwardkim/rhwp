@@ -1406,6 +1406,7 @@ impl TypesetEngine {
             control_index: ctrl_idx,
             paragraph: para,
             paragraphs_all,
+            composed_all,
             table,
             row_geometry_table,
             measured_table: mt,

@@ -5,8 +5,8 @@ mod job;
 mod step;
 
 use crate::renderer::typeset::{
-    paragraph, row_geometry_table, table, FootnoteFragment, MeasuredTable, Paragraph,
-    ResolvedStyleSet, TableCellFootnote, TypesetState,
+    paragraph, row_geometry_table, table, ComposedParagraph, FootnoteFragment, MeasuredTable,
+    Paragraph, ResolvedStyleSet, TableCellFootnote, TypesetState,
 };
 
 /// [#2424] block-table continuation loop의 재개 지점.
@@ -203,6 +203,8 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationSource<'a> {
     pub(in crate::renderer::typeset) control_index: usize,
     pub(in crate::renderer::typeset) paragraph: &'a Paragraph,
     pub(in crate::renderer::typeset) paragraphs_all: &'a [Paragraph],
+    /// [#7677] 마지막 조각 뒤 host 글줄을 예약할 때 쓰는 조합 문단. 재개 작업(host 글 없음)은 빈 슬라이스.
+    pub(in crate::renderer::typeset) composed_all: &'a [ComposedParagraph],
     /// 페이지 항목과 부동 배치 속성은 바깥 표의 것으로 보존한다. 다만 빈 1×1
     /// 래퍼는 측정기와 렌더러가 내부 표를 직접 쓰므로, 행 컷 계산도 같은 유효
     /// 표를 사용해야 `MeasuredTable`의 행 수와 컷 대상 행 수가 일치한다.

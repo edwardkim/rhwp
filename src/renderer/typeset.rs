@@ -5576,6 +5576,97 @@ impl TypesetEngine {
         true
     }
 
+    /// [#7677] 쪽을 넘긴 자리차지(PARA·TopAndBottom) RowBreak 표의 **마지막 조각 뒤** host 글줄을
+    /// 흐름에 예약한다.
+    ///
+    /// 한/글은 그 host 첫 글줄을 마지막 조각 하단 + 표 바깥 아래 여백에 둔다 — 앞 간격은 문단
+    /// 상단(첫 조각이 있던 쪽)에서 이미 소비됐다. 종전엔 typeset 이 이 줄을 예약하지 않아
+    /// layout 만 조각 끝에서 문단을 새로 시작하듯 앞 간격을 다시 더해 그렸고(합성 S 6쪽: 정본
+    /// 조각 하단 +11.3 ↔ rhwp +18.5), 뒤 문단의 쪽 소속 판정도 그 줄 높이만큼 비어 있었다.
+    ///
+    /// 호출 시점은 끝 조각을 커밋한 직후라 흐름이 이미 조각 하단 + 바깥 아래 여백에 서 있다.
+    /// 여기서 `PartialParagraph`(글 줄 범위)를 내고 줄 전진만 더한다. 배치는 조각 하단에서
+    /// 다시 시작하므로, 흐름이 조각 하단보다 더 내려간 몫(`host_push`, 바깥 아래 여백)을
+    /// 확정 앞 간격으로 기록해(`float_pushed_line_spacings`, #7330 계약) 배치가 문단 앞 간격
+    /// 대신 그 값만큼 내려 같은 자리에 줄을 두게 한다. 호스트 글을 앞 쪽에 선방출했거나
+    /// (`pre_emit_visible_rowbreak_host_text`) 같은 쪽에 이미 항목이 있으면 내지 않고, 줄이
+    /// 쪽에 안 들어가면 종전대로 배치의 지연 렌더에 맡긴다.
+    #[allow(clippy::too_many_arguments)]
+    fn post_emit_visible_rowbreak_host_text(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        ctrl_idx: usize,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        composed_all: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        host_push: f64,
+    ) -> bool {
+        if !crate::renderer::float_placement::partial_table_defers_visible_host(
+            para, table, ctrl_idx,
+        ) || st.pre_emitted_host_paras.contains(&para_idx)
+        {
+            return false;
+        }
+        let already_emitted = st.current_items.iter().any(|item| {
+            matches!(item, PageItem::FullParagraph { para_index }
+                | PageItem::PartialParagraph { para_index, .. }
+                if *para_index == para_idx)
+        });
+        if already_emitted {
+            return false;
+        }
+        let Some(comp) = composed_all.get(para_idx) else {
+            return false;
+        };
+        let has_real_text = |line: &crate::renderer::composer::ComposedLine| {
+            line.runs
+                .iter()
+                .any(|run| run.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
+        };
+        let Some(start_line) = comp.lines.iter().position(has_real_text) else {
+            return false;
+        };
+        let end_line = comp
+            .lines
+            .iter()
+            .rposition(has_real_text)
+            .map_or(comp.lines.len(), |i| i + 1);
+        let col_w = st
+            .layout
+            .column_areas
+            .get(st.current_column as usize)
+            .map(|a| a.width)
+            .unwrap_or(st.layout.body_area.width);
+        let host_fmt = self.format_paragraph(para, Some(comp), styles, Some(col_w));
+        let end_line = end_line.min(host_fmt.line_heights.len());
+        if start_line >= end_line {
+            return false;
+        }
+        let host_h = host_fmt.line_advances_sum(start_line..end_line);
+        // 쪽 마지막 줄 뒤 줄간격은 쪽을 채우지 않는다(#6184 와 같은 fit 규약).
+        let trailing_spacing = host_fmt
+            .line_spacings
+            .get(end_line - 1)
+            .copied()
+            .unwrap_or(0.0)
+            .max(0.0);
+        if st.current_height + (host_h - trailing_spacing).max(0.0) > st.available_height() {
+            return false;
+        }
+        st.append_item(PageItem::PartialParagraph {
+            para_index: para_idx,
+            start_line,
+            end_line,
+        });
+        if start_line == 0 {
+            st.record_float_pushed_line_spacing(para_idx, host_push.max(0.0));
+        }
+        st.advance_flow_by(host_h);
+        true
+    }
+
     /// [Task #1753] 지연 이월되는 visible-host 자리차지 표의 후속 문단 선행 채움.
     ///
     /// 한글은 자리차지(TopAndBottom·vert=Para) RowBreak 표가 현재 쪽 잔여 공간에 안
