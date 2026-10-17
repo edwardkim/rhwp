@@ -45,6 +45,28 @@ fn render_box(
     let y = parent_y + lb.y;
 
     match &lb.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            ctx.set_font(&format!(
+                "{:.2}px {}",
+                fs,
+                super::hancom_glyphs::FONT_FAMILY
+            ));
+            ctx.set_fill_style_str(color);
+            for ((glyph, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears)
+            {
+                ctx.save();
+                let _ = ctx.transform(
+                    1.0,
+                    0.0,
+                    -shear,
+                    1.0,
+                    x + offset,
+                    y + lb.baseline + run.baseline_shift,
+                );
+                let _ = ctx.fill_text(&glyph.to_string(), 0.0, 0.0);
+                ctx.restore();
+            }
+        }
         LayoutKind::Row(children) => {
             for child in children {
                 render_box(ctx, child, x, y, color, fs, italic, bold);
@@ -206,15 +228,20 @@ fn render_box(
                 render_box(ctx, sub_box, x, y, color, fs * SCRIPT_SCALE, false, false);
             }
         }
-        LayoutKind::Limit { is_upper, sub } => {
-            // [Task PR #396 후속] SVG 경로 (svg_render.rs::Limit) 와 동일하게 base font_size 사용.
-            // font_size_from_box(lb, fs) 는 lb.height 를 사용하는데, Limit 의 lb 는 "lim + 첨자"
-            // 전체 높이라 base 의 1.5~2 배가 되어 lim 글자가 비정상으로 커지는 정황.
-            let name = if *is_upper { "Lim" } else { "lim" };
-            let fi = fs;
-            set_font(ctx, fi, false, false);
-            ctx.set_fill_style_str(color);
-            let _ = ctx.fill_text(name, x, y + fi * 0.8);
+        LayoutKind::Limit {
+            is_upper,
+            name,
+            sub,
+        } => {
+            if let Some(name) = name {
+                render_box(ctx, name, x, y, color, name.height, false, false);
+            } else {
+                // 일반 글꼴은 첨자를 포함한 전체 상자 높이를 글꼴 크기로 쓰지 않는다.
+                let name = if *is_upper { "Lim" } else { "lim" };
+                set_font(ctx, fs, false, false);
+                ctx.set_fill_style_str(color);
+                let _ = ctx.fill_text(name, x, y + fs * 0.8);
+            }
             if let Some(sub_box) = sub {
                 render_box(ctx, sub_box, x, y, color, fs * SCRIPT_SCALE, false, false);
             }

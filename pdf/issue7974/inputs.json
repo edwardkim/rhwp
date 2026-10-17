@@ -1,0 +1,156 @@
+[
+  {
+    "path": "pdf/issue7974/gray-packed-decode.pdf",
+    "sha256": "7e143ae3a33e5f09ba1375dc5df9bae752c19ba63cab236304bff32112fcc1ee",
+    "bytes": 795,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/gray-padding.pdf",
+    "sha256": "7dddc2738ff90aa115522d1ebbadf1d90d9408b508e8478b7874b7d9427f1585",
+    "bytes": 784,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/indexed-key.pdf",
+    "sha256": "8fcd0f3099a87d75a8a5b8d4d5853f8d1b4686a0b79db2a841644f0f4d5cdfe9",
+    "bytes": 820,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/gray16-key.pdf",
+    "sha256": "c33ed774b6b6efa2099d521231300c7ca31aafc49483883693547f18e22e32ff",
+    "bytes": 793,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "mupdf"
+  },
+  {
+    "path": "pdf/issue7974/rgb-all-components.pdf",
+    "sha256": "397768abaa9c3d46d69dcd28bfce47619b91140569b4528745077a7c6ac3a1d2",
+    "bytes": 797,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/smask-overrides-key.pdf",
+    "sha256": "7f0f70da1c843a4705b46e61f6ab89108bf4378bf823feaedd4a8d24e7a26ae7",
+    "bytes": 964,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/stencil-reverse-padding.pdf",
+    "sha256": "da7fd5f1704df1e5b8154210bccb356be40f835ac3e8af8c9140dffc38cd098c",
+    "bytes": 767,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/stencil-resource-colour.pdf",
+    "sha256": "e9cbf7c1e9c9e30d6e47c5047965e91786f6d698b7491dc4000d0674ba04fe5f",
+    "bytes": 795,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/stencil-alpha.pdf",
+    "sha256": "718c0656c61eefa9d718565d3906f6eb0b56fb928b8ce029933185f3c39ade91",
+    "bytes": 855,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/stencil-form-reuse.pdf",
+    "sha256": "8220dd5935b840b1a2893d30dd9a611357e78f1ccef7e1e5c5025e922380f59f",
+    "bytes": 930,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/colour-key.pdf",
+    "sha256": "3fb7c292053132174bcca28dd5dd8f4da30db33146a547454cddd50f3e791d00",
+    "bytes": 812,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/standalone-stencil.pdf",
+    "sha256": "4a52408920d8612cc493298281aa5792700bad94cb4c4e413b3cdc67a9edf3b4",
+    "bytes": 771,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/low-resolution-mask.pdf",
+    "sha256": "d55093b8aa9a9fadbe8467b3673f159c335219067e1f1a74dd155b6fe6292e62",
+    "bytes": 968,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/unmasked-control.pdf",
+    "sha256": "a02a694d3751132bd789995e2bac63a4758b162ce7002be9f736b1fbf1f59c7e",
+    "bytes": 780,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/explicit-mask.pdf",
+    "sha256": "fac1f596e9d094c455855bcda6eca123fb913134016c99bec7d85005ee815f63",
+    "bytes": 13599,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/highres-smask.pdf",
+    "sha256": "f3e6bcc53c065f5613b247cd2d8ee22c850bcef0b2ce53cbd3cbbe91e9393d47",
+    "bytes": 4911,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/smask-matte.pdf",
+    "sha256": "505fb32ca88265aac1c7496674a04e14326a83a7b036564d8333271fd7bac012",
+    "bytes": 17207,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/scaled.pdf",
+    "sha256": "acfd7d2e7cc0cf598396b25bd6afda699e620a9fc0e413fefc2409f358abc2cd",
+    "bytes": 815,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/linear-control.pdf",
+    "sha256": "5c5d1ddd26944732142e14c5503ce37952b2c0e604e53349f94075a68a6c33f4",
+    "bytes": 798,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/cmyk-key.pdf",
+    "sha256": "d25524f871f5e2fecca8305674f67fa1b1fc931546c42a3bfec3e2c65d9d132e",
+    "bytes": 804,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/inline-stencil.pdf",
+    "sha256": "59e258ed82f5267b815e199d731ddd2d5a9969effb1be749ab0f06cbf8e0af27",
+    "bytes": 621,
+    "provenance": "self-authored PDF dictionary/sample control",
+    "referenceEngine": "poppler"
+  },
+  {
+    "path": "pdf/issue7974/minification-control.pdf",
+    "sha256": "175df40a355880cb4327c609b6bb621b4f5ceb1b3a6469ee04aba34cde3f29fd",
+    "bytes": 2127,
+    "provenance": "self-authored 480x320 equal black/white checker reduced to 240x160 output pixels at 96 DPI",
+    "referenceEngine": "poppler"
+  }
+]

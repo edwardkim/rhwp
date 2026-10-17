@@ -4,6 +4,7 @@ use crate::paint::layer_tree::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
 };
 use crate::paint::paint_op::{PaintOp, TextDecorationKind};
+use crate::paint::paper_viewport::PagePaintContext;
 use crate::paint::profile::RenderProfile;
 use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
 use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
@@ -17,6 +18,7 @@ pub struct LayerBuilder {
     profile: RenderProfile,
     output_options: LayerOutputOptions,
     bin_data_epoch: u32,
+    page_context: Option<PagePaintContext>,
 }
 
 impl LayerBuilder {
@@ -25,6 +27,7 @@ impl LayerBuilder {
             profile,
             output_options: LayerOutputOptions::default(),
             bin_data_epoch: 0,
+            page_context: None,
         }
     }
 
@@ -51,6 +54,10 @@ impl LayerBuilder {
             RenderNodeType::Page(page) => (page.width, page.height),
             _ => (tree.root.bbox.width, tree.root.bbox.height),
         };
+
+        let context = PagePaintContext::new(self.profile, page_width, page_height);
+        let (page_width, page_height) = context.output_size();
+        self.page_context = Some(context);
 
         let root = LayerNode::group(
             tree.root.bbox,
@@ -115,6 +122,14 @@ impl LayerBuilder {
     }
 
     fn build_node(&mut self, node: &RenderNode) -> Option<LayerNode> {
+        if !self.profile.shows_editor_visuals() {
+            if let Some(bbox) = node.print_bbox {
+                let mut print_node = node.clone();
+                print_node.bbox = bbox;
+                print_node.print_bbox = None;
+                return self.build_node(&print_node);
+            }
+        }
         if !node.visible || (node.editor_only && !self.profile.shows_editor_visuals()) {
             return None;
         }
@@ -148,13 +163,16 @@ impl LayerBuilder {
             }
             RenderNodeType::Path(path) => Some(vec![PaintOp::path(node.bbox, path.clone())]),
             RenderNodeType::Image(image) => {
+                let frame = self
+                    .page_context
+                    .map_or(node.bbox, |context| context.image_frame(node, image));
                 let mut ops = vec![PaintOp::image(
-                    node.bbox,
+                    frame,
                     image.clone(),
                     crate::renderer::image_resolver::resolve_image_payload(image),
                 )];
                 if self.output_options.show_control_codes {
-                    ops.push(PaintOp::control_label(node.bbox, "[그림]"));
+                    ops.push(PaintOp::control_label(frame, "[그림]"));
                 }
                 Some(ops)
             }
@@ -176,7 +194,8 @@ impl LayerBuilder {
         };
 
         if let Some(ops) = own_ops {
-            let own_leaf = LayerNode::leaf(node.bbox, Some(node.id), ops).with_layer(node.layer);
+            let own_bounds = ops.first().map_or(node.bbox, PaintOp::bounds);
+            let own_leaf = LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
             // 내부 문단이 없는 사각형도 원본 컨트롤 부호를 출력해야 한다.
             let has_source_marker = self.output_options.show_control_codes
                 && matches!(node.control_code, ControlCode::Rectangle(_));
@@ -773,6 +792,7 @@ mod tests {
                     number: 1,
                     text: "1)".to_string(),
                     base_font_size: 12.0,
+                    baseline: 7.0,
                     font_family: "serif".to_string(),
                     color: 0x00000000,
                     section_index: 0,

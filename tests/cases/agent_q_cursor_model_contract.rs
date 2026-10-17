@@ -5,8 +5,8 @@ use std::path::Path;
 use std::process::{Command, Output};
 
 fn bin() -> String {
-    std::env::var("CARGO_BIN_EXE_rhwp-q-cursor-model")
-        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q-cursor-model").to_string())
+    std::env::var("CARGO_BIN_EXE_rhwp-q")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q").to_string())
 }
 
 fn sample() -> String {
@@ -18,6 +18,7 @@ fn sample() -> String {
 
 fn run(args: &[&str]) -> Output {
     Command::new(bin())
+        .arg("cursor-model")
         .args(args)
         .output()
         .expect("rhwp-q-cursor-model 실행 실패")
@@ -73,7 +74,7 @@ fn missing_file_is_runtime() {
 
 #[test]
 fn source_never_calls_mutators() {
-    let src = include_str!("../../src/bin/rhwp-q-cursor-model.rs");
+    let src = include_str!("../../src/bin/rhwp-q/commands/rhwp-q-cursor-model.rs");
     for needle in [".apply_", ".insert_", ".delete_", ".set_"] {
         assert!(
             !src.contains(needle),

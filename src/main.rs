@@ -114,10 +114,7 @@ fn main() {
             exit_with(cli::queries::structure::export_structure(&args[2..]))
         }
         Some("export-png") => exit_with(cli::outputs::raster::export_png(&args[2..])),
-        // [gym_gpu_raster] GPU 가속 PNG 래스터화 (feature = "gpu"). export-png(native-skia)과
-        // 같은 방식으로 feature 게이팅 — 미빌드 바이너리는 사용법 오류(exit 2)로 안내한다.
-        Some("export-png-gpu") => exit_with(cli::outputs::raster::export_png_gpu(&args[2..])),
-        Some("gpu-info") => exit_with(cli::outputs::raster::gpu_info(&args[2..])),
+        Some("export-sixel") => exit_with(cli::outputs::sixel::export_sixel(&args[2..])),
         Some("export-pdf") => exit_with(cli::outputs::pdf::export_pdf(&args[2..])),
         Some("export-text") => exit_with(cli::outputs::text::export_text(&args[2..])),
         Some("export-markdown") => exit_with(cli::outputs::text::export_markdown(&args[2..])),
@@ -128,6 +125,7 @@ fn main() {
         Some("chart-to-csv") => exit_with(cli::outputs::tabular::chart_to_csv(&args[2..])),
         Some("csv-to-chart") => exit_with(cli::commands::tabular_import::csv_to_chart(&args[2..])),
         Some("export-hwpx") => exit_with(cli::commands::conversion::export_hwpx(&args[2..])),
+        Some("import-pdf") => exit_with(cli::commands::pdf_import::import_pdf(&args[2..])),
         Some("export-hml") => cli::commands::conversion::export_hml(&args[2..]),
         Some("export-doclang") => exit_with(cli::outputs::doclang::export_doclang(&args[2..])),
         Some("export-ir-schema") => exit_with(cmd_export_ir_schema(&args[2..])),
@@ -499,12 +497,16 @@ fn info_json_value(
         rhwp::parser::FileFormat::Hwpx => "hwpx",
         rhwp::parser::FileFormat::Hwp3 => "hwp3",
         rhwp::parser::FileFormat::Hml => "hml",
+        rhwp::parser::FileFormat::Pdf => "pdf",
         // 파싱이 성공한 뒤에는 도달하지 않지만, 계약상 문자열은 고정해 둔다.
         rhwp::parser::FileFormat::DrmProtected => "drm-protected",
         rhwp::parser::FileFormat::Empty => "empty",
         rhwp::parser::FileFormat::Unknown => "unknown",
     };
-    let version = if detected_format == rhwp::parser::FileFormat::Hml {
+    let version = if matches!(
+        detected_format,
+        rhwp::parser::FileFormat::Hml | rhwp::parser::FileFormat::Pdf
+    ) {
         serde_json::Value::Null
     } else {
         serde_json::Value::String(format!(

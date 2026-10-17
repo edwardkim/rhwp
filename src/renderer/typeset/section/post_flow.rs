@@ -25,6 +25,21 @@ impl TypesetEngine {
         // PartialTable 배치 후 page/lazy base 무효화(LINE_SEG lh 가 개체 높이를
         // 반영 못 해 drift 유발 → 직후 paragraph 는 lazy 역산으로 재산출). 단단 전용.
         if st.col_count == 1 {
+            let current_origin_rewinds = st
+                .vpos_prev_layout_para
+                // A table may have emitted several new columns before this
+                // paragraph is finalized. The preceding column's owner is
+                // not a predecessor in the accepted continuation column.
+                // Paint compares only the owners actually placed together.
+                .filter(|previous| {
+                    st.current_items
+                        .iter()
+                        .any(|item| item.para_index() == *previous)
+                })
+                .and_then(|previous| paragraphs.get(previous))
+                .is_some_and(|previous| {
+                    crate::renderer::height_cursor::paragraph_origin_rewinds(previous, para)
+                });
             if st.reset_vpos_after_queued_table_footnote_page {
                 // RowBreak 표가 남은 cell-footnote만 든 fresh page를 만든 경우,
                 // 표 host의 저장 VPOS를 이 새 page 본문에 상속하면 빈 첫 문단도
@@ -32,6 +47,14 @@ impl TypesetEngine {
                 // 본문 문단이 자체 stored VPOS에서 시작하게 한다.
                 st.reset_vpos_cursor();
                 st.acknowledge_queued_footnote_reset(false);
+            } else if current_origin_rewinds {
+                // Paint closes the preceding coordinate frame after this
+                // owner. Apply the same transition before the next fit;
+                // keeping the old page base here makes fit silently trim
+                // advances that paint has already preserved.
+                st.record_previous_layout_paragraph(None);
+                st.record_vpos_page_origin(None);
+                st.record_vpos_lazy_origin(None);
             } else {
                 st.record_previous_layout_paragraph(Some(para_idx));
                 // [#2243] 저장-앵커 사다리 dirty 태깅: 저장 lineseg 없는 문단(생성기
@@ -70,7 +93,14 @@ impl TypesetEngine {
                     // 케이스는 종전대로 무효화. HWPX(기계생성 결재문서 계열) 한정 —
                     // HWP5 native 는 종전 핀 보존 (issue_1418 2026_oss_rst 6쪽).
                     let host_line_covers_object = st.profile.hwpx_stored_layout()
-                        && matches!(last, Some(PageItem::Table { .. }))
+                        // TAC placement closes the object-derived coordinate frame in
+                        // paint. A tall saved line alone cannot keep that frame
+                        // alive for subsequent paragraphs.
+                        && matches!(last, Some(PageItem::Table { para_index, control_index })
+                            if paragraphs.get(*para_index)
+                                .and_then(|host| host.controls.get(*control_index))
+                                .is_some_and(|control| matches!(control, Control::Table(table)
+                                    if !table.common.treat_as_char)))
                         && para.line_segs.first().is_some_and(|s| {
                             s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                                 == 0
@@ -101,15 +131,25 @@ impl TypesetEngine {
                         };
                     // 확정 인라인 끝점은 이미 간격을 소비한 현재 흐름과 연결돼 있다.
                     // 후처리에서 그 기준을 지우면 다음 lazy 역산이 같은 간격을 재가산한다.
+                    // TAC의 advance_end는 흐름 끝만 확정하며 다음 문단의 source
+                    // 좌표 축을 인증하지 않는다. paint도 TAC 완료 뒤 축을 종료한다.
                     let resolved_inline_end = match last {
                         Some(PageItem::Table {
                             para_index,
                             control_index,
-                        }) => st
-                            .inline_placements
-                            .get(&(*para_index, *control_index))
-                            .and_then(|placement| placement.advance_end)
-                            .is_some_and(|end| (end - st.current_height).abs() < 0.01),
+                        }) if paragraphs
+                            .get(*para_index)
+                            .and_then(|host| host.controls.get(*control_index))
+                            .is_some_and(|control| {
+                                matches!(control, Control::Table(table)
+                                if !table.common.treat_as_char)
+                            }) =>
+                        {
+                            st.inline_placements
+                                .get(&(*para_index, *control_index))
+                                .and_then(|placement| placement.advance_end)
+                                .is_some_and(|end| (end - st.current_height).abs() < 0.01)
+                        }
                         _ => false,
                     };
                     // 저장 컷으로 본문을 나눈 어울림 표는 마지막 글줄의 실제
@@ -134,12 +174,30 @@ impl TypesetEngine {
                         && matches!(last, Some(PageItem::PartialTable {
                             is_continuation: true, start_cut, ..
                         }) if start_cut.len() == 1 && start_cut[0] > 0);
+                    // [#7552] 문단 기준 자리차지 표(비-TAC) 뒤에는 렌더(`layout.rs`
+                    // `is_para_float_table`)처럼 쪽 저장 기준을 유지한다. 지우면 뒤 문단이 지연
+                    // 경로로 가고, 빈 표 host 뒤 스냅을 막는 #2243 규칙 때문에 순차 흐름 오차가
+                    // 표마다 쌓여 조판과 렌더가 갈린다(hwpspec 50쪽: 표 다섯 개 −57.8px, 렌더는
+                    // 한/글 괘선과 일치).
+                    let para_float_table = matches!(last, Some(PageItem::Table {
+                        para_index,
+                        control_index,
+                    }) if paragraphs
+                        .get(*para_index)
+                        .and_then(|host| host.controls.get(*control_index))
+                        .is_some_and(|control| matches!(control, Control::Table(t)
+                            if !t.common.treat_as_char
+                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                                && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para))));
+                    if para_float_table {
+                        st.seed_whole_table_column_origin(para_idx, paragraphs);
+                    }
                     if !host_line_covers_object
                         && !resolved_inline_end
                         && !resolved_stored_wrap_fragment
                         && !resolved_stored_page_frame
+                        && !para_float_table
                     {
-                        // Para-float TopAndBottom 표 예외(렌더러 2513)는 Stage E.
                         st.record_vpos_page_origin(None);
                         st.record_vpos_lazy_origin(None);
                     }
@@ -170,7 +228,13 @@ impl TypesetEngine {
                     // 띠 (cs, sw) 를 도출해 후속 문단 매칭에 사용 (한글: 후속 문단을
                     // 표 옆 잔여 띠에 배치 — samples/task1745).
                     if let Some((strip_cs, strip_sw)) =
-                        crate::renderer::text_anchor_square_table_strip(para).or_else(|| {
+                        crate::renderer::stored_empty_square_successor_strip(
+                            para,
+                            paragraphs.get(para_idx + 1),
+                            st.layout.column_width_hu(),
+                        )
+                        .or_else(|| crate::renderer::text_anchor_square_table_strip(para))
+                        .or_else(|| {
                             crate::renderer::empty_host_square_table_left_strip(
                                 para,
                                 st.layout.column_width_hu(),

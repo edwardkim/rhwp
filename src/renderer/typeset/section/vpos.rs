@@ -35,7 +35,7 @@ impl TypesetEngine {
                             || st.profile.hwp5_stored_pagination_layout())
                             && !st.profile.session_edited()
                             && paragraphs.get(para_idx).is_some_and(|first| {
-                                crate::renderer::layout::stored_first_margin_is_page_relative(
+                                crate::renderer::stored_page_origin::stored_first_margin_is_page_relative(
                                     first,
                                     paragraphs.get(para_idx + 1),
                                     styles,
@@ -46,6 +46,11 @@ impl TypesetEngine {
                             0
                         } else {
                             seg.vertical_pos
+                                - paragraphs.get(para_idx).map_or(0, |first| {
+                                    crate::renderer::layout::synthesized_first_margin_hu(
+                                        first, styles, self.dpi,
+                                    )
+                                })
                         }
                     }),
             );
@@ -60,6 +65,20 @@ impl TypesetEngine {
                     }),
             );
             st.record_vpos_ladder_validity(false);
+        }
+        // [#7824] 합성 줄(`TAG_IMPLEMENTATION_PROPERTY`)만 가진 문단이 흐름에 들어오면 이 쪽의
+        // 사다리는 한/글 사다리가 아니다 — 로드 재구성이 그 문단에 rhwp 의 누적 좌표를 주므로,
+        // 뒤 저장 문단의 쪽-상대 vpos 와 같은 좌표계가 아니다. 그러면 뒤 저장 문단의 스냅이
+        // 성립하지 않아, 스냅이 되돌려 준다는 전제의 간격 트림(`flow_advance_height`)분이 흐름에서
+        // 그냥 사라진다(HWP5-nopassword 14쪽: 트림 8회 ≈125px, 그리기는 본문 아래 100px 넘침).
+        // `#2279 ①-2` 가 말하는 «합성 혼합 사다리» 를 여기서 표시한다.
+        if paragraphs.get(para_idx).is_some_and(|para| {
+            !para.line_segs.is_empty()
+                && para.line_segs.iter().all(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                })
+        }) {
+            st.mark_vpos_ladder_dirty();
         }
         let mut hc = HeightCursor {
             dpi: self.dpi,
@@ -80,11 +99,25 @@ impl TypesetEngine {
             uniform_filler_ladder: self.uniform_filler_ladder.get(),
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
-            prev_item_flow_line_bottom_y: None,
+            // 빈 글줄 역시 수용한 구성의 점유 끝을 가진다. 저장 vpos만으로
+            // 간격 소비를 추정하지 않고 실제 fit에서 보존한 끝을 전달한다.
+            prev_item_flow_line_bottom_y: st.vpos_prev_layout_para.and_then(|previous| {
+                let para = paragraphs.get(previous)?;
+                (para.controls.is_empty() && para.line_segs.len() == 1)
+                    .then(|| {
+                        st.paragraph_fragment_content_bottoms
+                            .get(&(previous, 1))
+                            .copied()
+                    })
+                    .flatten()
+            }),
             last_compacted_endnote_title_gap: false,
             min_flow_floor: f64::MIN,
             session_edited: self.profile.get().session_edited(),
             curr_item_is_table_fragment: false,
+            // 본문 조판: 미주 제목 갈래는 `suppress_large_forward_jump` 아래에서만 발화한다.
+            endnote_note_first_paras: Default::default(),
+            seed_lazy_base_from_next_stored: false,
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는
@@ -188,10 +221,31 @@ impl TypesetEngine {
                 y = st.current_height;
             }
         }
+        // [#7552] 글자 없는 자리차지 표 host(세로 오프셋 0)는 스냅이 미리 뺀 앞 간격을 다시
+        // 더하는 글줄이 없다. 후방 이동이 정확히 그 앞 간격뿐이면 흐름 커서를 유지한다 —
+        // 렌더의 `empty_float_vpos_snap_flow_top` 과 같은 판정이고, 조판은 표 위 바깥 여백을
+        // 이미 예약하므로 두 경로 모두 표 윗변이 흐름 + 바깥 위 여백이 된다(hwpspec 50쪽
+        // pi=327 정본 713.8, 그 뒤 pi=328 이 같은 흐름에서 이어진다).
+        if spacing_before_px > 0.5
+            && y < st.current_height
+            && (st.current_height - y - spacing_before_px).abs() <= 0.5
+            && paragraphs.get(para_idx).is_some_and(|para| {
+                !crate::renderer::typeset::para_has_visible_text(para)
+                    && para.controls.len() == 1
+                    && matches!(&para.controls[0], crate::model::control::Control::Table(table)
+                        if !table.common.treat_as_char
+                            && table.common.vertical_offset == 0
+                            && crate::renderer::float_placement::is_para_topbottom_float(&table.common))
+            })
+        {
+            y = st.current_height;
+        }
         // [#2243 진단] snap 입출력 — 동작 불변.
         if std::env::var("RHWP_DIAG_SNAPALL").is_ok() {
             eprintln!(
-                "DIAG_SNAPALL pi={} y_in={:.1} y_out={:.1} base={:?} lazy={:?} anchor={:.1} dirty={}",
+                "DIAG_SNAPALL sec={} page={} pi={} y_in={:.1} y_out={:.1} base={:?} lazy={:?} anchor={:.1} dirty={}",
+                st.section_index,
+                st.pages.len(),
                 para_idx,
                 st.current_height,
                 y,

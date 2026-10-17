@@ -27,12 +27,33 @@ use super::paragraph::placement::ParagraphFragment;
 use super::paragraph::scan::LineScanPage;
 use super::paragraph::split_entry::SplitEntryPage;
 
+use crate::model::{control::Control, paragraph::Paragraph};
 use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::inline_flow::InlineFlowPlan;
 use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(in crate::renderer::typeset) fn table_flow_successor<'a>(
+        &self,
+        host_index: usize,
+        paragraphs: &'a [crate::model::paragraph::Paragraph],
+    ) -> Option<(usize, &'a crate::model::paragraph::Paragraph)> {
+        paragraphs
+            .iter()
+            .enumerate()
+            .skip(
+                self.data
+                    .deferred_table_successor_start
+                    .unwrap_or(host_index + 1)
+                    .max(host_index + 1),
+            )
+            .find(|(index, _)| {
+                !self.data.prefilled_paras.contains(index)
+                    && !self.data.pre_emitted_host_paras.contains(index)
+            })
+    }
+
     /// 빈 단은 배경 개체가 있는 단이 아니다. 통째 표의 별도 여유 경로는
     /// 실제 Shape가 있고 흐름을 점유한 다른 항목이 없을 때만 사용한다.
     pub(super) fn current_column_has_only_overlay_shapes(&self) -> bool {
@@ -110,7 +131,9 @@ impl TypesetState {
         wrap_prefix_len: usize,
         end_line: usize,
         suffix_height: f64,
+        content_height: f64,
     ) {
+        self.record_paragraph_content_bottom((para_idx, end_line), content_height);
         self.data.current_items.push(PageItem::PartialParagraph {
             para_index: para_idx,
             start_line: wrap_prefix_len,
@@ -333,16 +356,27 @@ impl TypesetState {
         continuation: Option<OverlayContinuation>,
     ) {
         if let Some(continuation) = continuation {
-            self.data.pending_overlay_continuations.push((
-                para_idx,
-                ctrl_idx,
-                continuation.first_unfit,
-                continuation.reserve_px,
-            ));
+            let fragment = continuation.row_fragment;
+            self.data.pending_overlay_continuations.push(
+                crate::renderer::pagination::OverlayContinuation {
+                    para_index: para_idx,
+                    control_index: ctrl_idx,
+                    start_row: continuation.first_unfit,
+                    start_cut: fragment
+                        .as_ref()
+                        .map_or_else(Vec::new, |f| f.end_cut.clone()),
+                    start_row_height: fragment.as_ref().map(|f| f.remaining_height),
+                    reserve_px: continuation.reserve_px,
+                },
+            );
             self.data.current_column_overlay_cuts.push((
                 para_idx,
                 ctrl_idx,
-                continuation.first_unfit,
+                crate::renderer::pagination::OverlayCut {
+                    end_row: continuation.first_unfit + usize::from(fragment.is_some()),
+                    end_row_height: fragment.as_ref().map(|f| f.opening_height),
+                    end_cut: fragment.map_or_else(Vec::new, |f| f.end_cut),
+                },
             ));
         }
         // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
@@ -353,6 +387,7 @@ impl TypesetState {
         TableControlPage {
             has_items: !self.data.current_items.is_empty(),
             col_count: self.data.col_count,
+            profile: self.data.profile,
         }
     }
 
@@ -404,12 +439,18 @@ impl TypesetState {
         para_idx: usize,
         ctrl_idx: usize,
         flow: TableHostShapeFlow,
+        accepted_frame: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
     ) {
         self.data.current_items.push(PageItem::Shape {
             para_index: para_idx,
             control_index: ctrl_idx,
         });
-        if let Some(line_h) = flow.tac_separate_line_h {
+        if let Some(frame) = accepted_frame {
+            self.data.current_height = frame.occupied_bottom;
+            self.data
+                .paragraph_float_placements
+                .insert((para_idx, ctrl_idx), frame);
+        } else if let Some(line_h) = flow.tac_separate_line_h {
             self.data.current_height += line_h;
         } else if let Some(extra) = flow.non_tac_pushdown_h {
             self.data.current_height += extra;
@@ -474,19 +515,80 @@ impl TypesetState {
     }
 
     /// 각주 등록 뒤 단일 단의 vpos 관측값을 기존 순서로 확정한다.
-    pub(super) fn commit_deferred_table_anchor(&mut self, para_index: usize) {
+    pub(super) fn commit_deferred_table_anchor(
+        &mut self,
+        para_index: usize,
+        paragraphs: &[Paragraph],
+    ) {
         if self.data.col_count == 1 {
             self.data.vpos_prev_layout_para = Some(para_index);
             if matches!(
                 self.data.current_items.last(),
                 Some(PageItem::Table { .. } | PageItem::PartialTable { .. })
             ) {
-                self.data.vpos_page_base = None;
-                self.data.vpos_lazy_base = None;
+                let preserves_paragraph_frame = match self.data.current_items.last() {
+                    Some(PageItem::Table { para_index, control_index }) => paragraphs
+                        .get(*para_index)
+                        .and_then(|para| para.controls.get(*control_index))
+                        .is_some_and(|control| matches!(control, Control::Table(table)
+                            if crate::renderer::float_placement::is_para_topbottom_float(&table.common))),
+                    _ => false,
+                };
+                if preserves_paragraph_frame {
+                    // Whole paragraph-following tables keep the column's
+                    // source axis in paint. A table opening the column owns
+                    // the same initial origin as build_single_column.
+                    self.seed_whole_table_column_origin(para_index, paragraphs);
+                } else {
+                    self.data.vpos_page_base = None;
+                    self.data.vpos_lazy_base = None;
+                }
                 self.data.vpos_prev_partial_table = matches!(
                     self.data.current_items.last(),
                     Some(PageItem::PartialTable { .. })
                 );
+            }
+        }
+    }
+
+    /// The whole table that opens this column owns paint's initial source axis.
+    pub(super) fn seed_whole_table_column_origin(
+        &mut self,
+        para_index: usize,
+        paragraphs: &[Paragraph],
+    ) {
+        if let Some(PageItem::Table {
+            para_index: first,
+            control_index,
+        }) = self.data.current_items.first()
+        {
+            if *first == para_index {
+                let has_host_line = self.data.current_items.iter().any(|item| {
+                    matches!(
+                        item,
+                        PageItem::FullParagraph { para_index: owner }
+                            | PageItem::PartialParagraph { para_index: owner, start_line: 0, .. }
+                            if owner == first
+                    )
+                }) || paragraphs
+                    .get(*first)
+                    .is_some_and(super::para_has_visible_text);
+                self.data.vpos_page_base = paragraphs.get(*first).and_then(|para| {
+                    crate::renderer::float_placement::stored_table_column_origin(
+                        para,
+                        has_host_line,
+                        self.data
+                            .paragraph_float_placements
+                            .get(&(*first, *control_index)),
+                        self.data.layout.dpi,
+                    )
+                });
+                self.data.vpos_lazy_base = None;
+                self.data.vpos_page_base_stored = self.data.vpos_page_base.is_some()
+                    && paragraphs
+                        .get(*first)
+                        .and_then(|para| para.line_segs.first())
+                        .is_some_and(|line| !super::is_synthetic_line_seg(line));
             }
         }
     }
@@ -780,6 +882,7 @@ impl TypesetState {
             self.flush_column();
             self.data.current_column += 1;
             self.data.current_height = 0.0;
+            self.activate_next_column_stored_frames();
         } else {
             self.advance_column_or_new_page();
         }
@@ -960,6 +1063,7 @@ impl TypesetState {
 
 mod commands;
 mod data;
+mod empty_run;
 pub(super) mod finalize;
 mod notes;
 mod transition;

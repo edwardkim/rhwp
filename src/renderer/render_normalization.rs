@@ -4,6 +4,9 @@
 //! durable cache keys; pointer indexes are rebuilt from the current source IR
 //! and exist only as a fast lookup surface for renderer hot paths.
 
+mod stored_nested_text_frames;
+pub(crate) use stored_nested_text_frames::{StoredNestedTextFrames, StoredTextFrame};
+
 use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::shape::{TextWrap, VertRelTo};
@@ -76,6 +79,7 @@ pub struct RenderNormalizationOverlay {
     nested_table_widths_by_path: HashMap<RenderPath, Arc<NestedTableWidthProjection>>,
     nested_table_widths_by_pointer: HashMap<usize, Arc<NestedTableWidthProjection>>,
     text_reflowed_tables_by_pointer: HashSet<usize>,
+    stored_nested_text_frames_by_pointer: HashMap<usize, Arc<StoredNestedTextFrames>>,
 }
 
 impl RenderNormalizationOverlay {
@@ -84,7 +88,10 @@ impl RenderNormalizationOverlay {
     }
 
     pub fn from_document_reusing(document: &Document, previous: &Self) -> Self {
-        let mut overlay = Self::default();
+        let mut overlay = Self {
+            stored_nested_text_frames_by_pointer: stored_nested_text_frames::collect(document),
+            ..Self::default()
+        };
         let hwp5_stored_pagination_layout =
             document.layout_profile().hwp5_stored_pagination_layout();
         for (section_index, section) in document.sections.iter().enumerate() {
@@ -165,6 +172,18 @@ impl RenderNormalizationOverlay {
             }
         }
         overlay
+    }
+
+    pub(crate) fn stored_nested_text_frames(
+        &self,
+        table: &Table,
+    ) -> Option<Arc<StoredNestedTextFrames>> {
+        if self.table_text_reflowed(table) {
+            return None;
+        }
+        self.stored_nested_text_frames_by_pointer
+            .get(&(table as *const Table as usize))
+            .cloned()
     }
 
     fn collect_nested_tables(

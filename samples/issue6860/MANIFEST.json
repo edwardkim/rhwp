@@ -38,7 +38,19 @@
       "referencePdf": "pdf/3067979-road-lighting-photometric-hancom2020.pdf",
       "referencePdfSha256": "d2ef6b035034036f769a94a550efbfaf6a542d14846e16ad88ad3b53c1e59182",
       "referencePdfPageCount": 2,
-      "contract": "동일 재저장 HWPX와 그 파일에서 생성한 한컴 PDF를 비교한다. 두 쪽을 유지하고 마지막 표 행의 Tilt=<filename> 또는 INCLUDE 또는 NONE 첫 줄은 1쪽에 남으며 2쪽에 중복하지 않는다. 문단 간 저장 vertpos가 0, 0, 다음 한 줄 높이로 이어지는 쪽 경계 증거가 없으면 기존 고아 줄 기준을 유지한다. 기존 절단본과 이 재저장본의 절대 좌표를 동일한 계약으로 취급하지 않는다."
+      "contract": "동일 재저장 HWPX와 그 파일에서 생성한 한컴 Print PDF의 두 쪽을 유지한다. 마지막 표 행의 Tilt=<filename> 또는 INCLUDE 또는 NONE 첫 줄은1쪽에 남고2쪽에 중복하지 않는다. 저장 원점0을1HU로 바꾼 기존 수동 대조군도 실제 앞뒤 줄의 쪽 경계가 남으며, 동일 입력의 독립 Print가 같은 쪽 소속을 확인했다. 양수 원점만으로 경계가 사라졌다고 추론하지 않는다. 절단본·재저장본·수동 대조 입력의 절대 좌표 계약은 구분한다.",
+      "diagnosticReference": {
+        "kind": "existing_test_xml_variant",
+        "generation": "기존 Rust ZipWriter의 Contents/section0.xml에서 vertpos=\"0\"을 vertpos=\"1\"로54개 치환; 한컴 저장 원본이라는 주장이 아니다.",
+        "sourceSha256": "9a067f15b71250c36b45c07be826fb7dc859d2b400504994956d6b40fb815804",
+        "referencePdf": "pdf/semanticist21-20261008/lighting6860-positive-start-diagnostic-v131-lighting6860-positive-start-rust-9a067f15b712-2020.pdf",
+        "referencePdfSha256": "a63ea7029cc7fd946f5a24a86f6d8189d4ca0b367ba731826c023c398ca4f8dd",
+        "referencePdfPageCount": 2,
+        "actualHancomVersion": "11.0.0.9136",
+        "pdfPrintMethod": 0,
+        "pdfOutputMode": "hancom2020_pdf_driver_one_up",
+        "nativeAndFreshWasmMinimum": 93.46641
+      }
     }
   ]
 }

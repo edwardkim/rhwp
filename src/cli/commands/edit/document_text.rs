@@ -82,6 +82,8 @@ pub(super) fn edit_insert_text(args: &[String]) -> i32 {
         eprintln!("{USAGE}");
         return EXIT_USAGE;
     };
+    let normalized = rhwp::model::paragraph::normalize_text_newlines(text);
+    let text = normalized.as_ref();
     if text.is_empty() {
         eprintln!("오류: --text 는 빈 문자열일 수 없습니다.");
         return EXIT_USAGE;

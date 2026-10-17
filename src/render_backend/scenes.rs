@@ -294,6 +294,7 @@ fn footnote_marker_node() -> FootnoteMarkerNode {
         number: 1,
         text: "1)".into(),
         base_font_size: 10.0,
+        baseline: 7.0,
         font_family: "sans-serif".into(),
         color: 0,
         section_index: 0,

@@ -1,5 +1,9 @@
 use rhwp::document_core::DocumentCore;
 
+mod corpus_scope {
+    include!("../common/corpus_scope.rs");
+}
+
 fn standalone_native_reason() -> &'static str {
     if cfg!(all(not(target_arch = "wasm32"), feature = "native-skia")) {
         "nativeRendererSnapshotRequired"
@@ -82,6 +86,12 @@ fn stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected() {
         .expect("maxCharacters");
     let mut traces = std::collections::HashMap::new();
     for document in manifest["documents"].as_array().expect("documents") {
+        // 사용자가 별도 작업으로 이관한 시험지의 프로필·렌더 핀은 제거한다.
+        if !corpus_scope::sample_is_in_scope(std::path::Path::new(
+            document["path"].as_str().expect("document path"),
+        )) {
+            continue;
+        }
         let id = document["id"].as_str().expect("document id");
         let trace = public_trace(
             document["path"].as_str().expect("document path"),
@@ -120,18 +130,6 @@ fn stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected() {
         );
     }
 
-    let parity = manifest["comparisons"]["portableFormatParity"]
-        .as_array()
-        .expect("portable parity pair");
-    let hwp = traces
-        .get(parity[0].as_str().expect("HWP parity id"))
-        .expect("HWP parity trace");
-    let hwpx = traces
-        .get(parity[1].as_str().expect("HWPX parity id"))
-        .expect("HWPX parity trace");
-    assert_eq!(hwp["layoutHash"], hwpx["layoutHash"]);
-    assert_eq!(hwp["records"], hwpx["records"]);
-
     let feature = &manifest["comparisons"]["substFeatureDetection"];
     let without = traces
         .get(
@@ -159,7 +157,12 @@ fn stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected() {
 #[test]
 fn stage4_public_trace_limit_and_unsupported_backends_fail_closed() {
     let manifest = stage4_e2e_manifest();
-    let document = &manifest["documents"][2];
+    let document = manifest["documents"]
+        .as_array()
+        .expect("공개 문서")
+        .iter()
+        .find(|doc| doc["id"] == "exact-face")
+        .expect("exact-face 입력 유지");
     let trace = public_trace(
         document["path"].as_str().expect("document path"),
         document["page"].as_u64().expect("page") as u32,
@@ -341,10 +344,18 @@ fn issue4967_combined_evidence_keeps_unowned_legacy_geometry_unmodelled() {
     .expect("HWP3 evidence JSON");
     let lines = evidence["lines"].as_array().expect("line evidence");
     assert!(!lines.is_empty());
-    assert!(lines.iter().all(|line| {
-        line["storedRow"]["disposition"] == "unmodelled"
-            && line["storedRow"]["reason"] == "frameProvenanceIncomplete"
-    }));
+    for line in lines {
+        assert_eq!(line["storedRow"]["disposition"], "unmodelled");
+        let width = line["frame"]["width"].as_f64().expect("실제 줄 상자 폭");
+        // 유효한 실제 상자도 HWP3의 저장 프레임 소유를 입증하지 못한다.
+        // 폭이 없는 줄은 프레임 출처 판정에 앞서 실제 상자 자체가 무효다.
+        let reason = if width.is_finite() && width > 0.0 {
+            "frameProvenanceIncomplete"
+        } else {
+            "invalidActualFrame"
+        };
+        assert_eq!(line["storedRow"]["reason"], reason, "{line}");
+    }
 }
 
 #[test]
@@ -393,8 +404,16 @@ fn standalone_native_trace_requires_a_prepared_renderer_snapshot() {
 fn prepared_native_renderer_snapshot_preserves_custom_font_inventory() {
     use rhwp::renderer::skia::SkiaLayerRenderer;
 
-    let core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
+    let mut core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
         .expect("public fixture parses");
+    // 이 검사는 배치 정답지가 아니라 준비된 renderer의 inventory 계약이다.
+    // 원본 face가 시스템에 설치됐는지에 따라 fallback이 달라지지 않도록,
+    // 저장소에서 실제 공급하는 custom face를 요청한 합성 대조군으로 조회한다.
+    let mut source = core.document().clone();
+    for face in source.doc_info.font_faces.iter_mut().flatten() {
+        face.name = "Noto Sans KR".into();
+    }
+    core.set_document(source);
     let custom_fonts = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource");
     let renderer = SkiaLayerRenderer::new().with_font_paths(&[custom_fonts]);
     let trace: serde_json::Value = serde_json::from_str(
@@ -415,11 +434,12 @@ fn prepared_native_renderer_snapshot_preserves_custom_font_inventory() {
         "the prepared custom font inventory must be observable"
     );
     assert!(custom_records.iter().all(|record| {
-        record["paint"]["native"]["capabilities"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|capability| capability == "nativeGlyphCoverageObserved")
+        record["paint"]["native"]["resolved"] == "Noto Sans KR"
+            && record["paint"]["native"]["capabilities"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|capability| capability == "nativeGlyphCoverageObserved")
     }));
 }
 

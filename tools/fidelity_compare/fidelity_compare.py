@@ -54,24 +54,6 @@ REG = {
         "samples/21868765*.pdf",
         "참고 PDF: samples/ 동반본(버전·provenance 별도 확인 필요)",
     ),
-    "korexam": Fixture(
-        "korexam",
-        "samples/21_*.hwp",
-        "pdf/21_*-2022.pdf",
-        "기준 PDF: pdf/ 보존 한컴 2022 출력",
-    ),
-    "math": Fixture(
-        "math",
-        "samples/exam_math.hwp",
-        "pdf/exam_math-2022.pdf",
-        "기준 PDF: pdf/ 보존 한컴 2022 출력",
-    ),
-    "eng": Fixture(
-        "eng",
-        "samples/exam_eng.hwp",
-        "pdf/exam_eng-2022.pdf",
-        "기준 PDF: pdf/ 보존 한컴 2022 출력",
-    ),
 }
 
 

@@ -66,7 +66,9 @@ fn password_prepass_bounds_unprotected_xml_members_before_the_reader() {
         if input.is_dir() {
             continue;
         }
-        writer.start_file(input.name(), options()).unwrap();
+        writer
+            .start_file(input.name().expect("ZIP 엔트리 이름"), options())
+            .unwrap();
         std::io::copy(&mut input, &mut writer).unwrap();
     }
     for entry in 0..9 {

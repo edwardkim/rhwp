@@ -9,6 +9,7 @@
 
 use std::path::Path;
 
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
 
@@ -60,8 +61,44 @@ fn assert_table_cell_hit(hit: &Value, x: f64, y: f64) {
 #[test]
 fn issue_4753_page160_table_cells_not_stolen_by_group_child_image() {
     let doc = load_handbook();
-    // 표 bbox ≈ (113.4, 147.4, 532.6, 733.7). 내부 여러 지점이 모두 셀로 들어가야 한다.
-    for &(x, y) in &[(200.0, 250.0), (320.0, 400.0), (500.0, 600.0)] {
-        assert_table_cell_hit(&hit_json(&doc, x, y), x, y);
+    let page = doc.build_page_render_tree(PAGE).expect("160쪽 렌더 트리");
+    fn tables<'a>(node: &'a RenderNode, found: &mut Vec<&'a RenderNode>) {
+        if matches!(&node.node_type, RenderNodeType::Table(t)
+            if t.section_index == Some(TABLE_SECTION as usize)
+            && t.para_index == Some(TABLE_PARENT_PARA as usize)
+            && t.control_index == Some(TABLE_CONTROL as usize))
+        {
+            found.push(node);
+        }
+        for child in &node.children {
+            tables(child, found);
+        }
+    }
+    let mut found = Vec::new();
+    tables(&page.root, &mut found);
+    assert_eq!(found.len(), 1, "160쪽 본문 표의 소유·누락·중복");
+    let cells: Vec<_> = found[0]
+        .children
+        .iter()
+        .filter_map(|node| {
+            if let RenderNodeType::TableCell(cell) = &node.node_type {
+                cell.model_cell_index.map(|index| (node, index))
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert!(cells.len() >= 3, "다른 셀 세 곳을 검사할 수 있어야 한다");
+    for index in [0, cells.len() / 2, cells.len() - 1] {
+        let (cell, model_index) = cells[index];
+        let x = cell.bbox.x + cell.bbox.width / 2.0;
+        let y = cell.bbox.y + cell.bbox.height / 2.0;
+        let hit = hit_json(&doc, x, y);
+        assert_table_cell_hit(&hit, x, y);
+        assert_eq!(
+            hit["cellIndex"].as_u64(),
+            Some(u64::from(model_index)),
+            "클릭한 셀과 hit 소유가 같아야 한다: {hit}"
+        );
     }
 }

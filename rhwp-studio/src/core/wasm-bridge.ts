@@ -1,6 +1,7 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
+import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
 import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
 import { collectHostFontRequests } from './host-font-requests';
 import type { CanvasMetricDocument } from './canvas-metric-session';
@@ -8,10 +9,13 @@ import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns
 import type { CharShapeRun } from './types';
 import type { HyperlinkTarget, HyperlinkContext } from './hyperlink';
 import * as wasmExports from '@wasm/rhwp.js';
+import { hasPdfImportCapability } from './pdf-import-capability';
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
 import { parseCanvasKitDocumentPreflight } from './canvaskit-document-preflight';
+import { LayerResourceStore } from './layer-resource-store';
+import { readLayerTreeTransport, type LayerTreeExportOptions } from './layer-tree-transport';
 import {
   normalizeHmlSaveState,
   parseHmlSaveState,
@@ -277,6 +281,14 @@ function substituteCssFontFamily(cssFont: string): string {
 
 let canvasFontSubstitutionInstalled = false;
 
+const canvasFontResolution = new CanvasFontResolutionScope(
+  font => scopedHostCanvasFont(font) ?? substituteCssFontFamily(font),
+);
+
+function withCanvasFontResolution<T>(session: HostCanvasFontSession | null, operation: () => T): T {
+  return withHostCanvasFonts(session, () => canvasFontResolution.run(operation));
+}
+
 function installCanvasFontSubstitution(): void {
   if (canvasFontSubstitutionInstalled) return;
   if (typeof CanvasRenderingContext2D === 'undefined') return;
@@ -293,7 +305,7 @@ function installCanvasFontSubstitution(): void {
       return descriptor.get!.call(this);
     },
     set(value: string) {
-      descriptor.set!.call(this, scopedHostCanvasFont(String(value)) ?? substituteCssFontFamily(String(value)));
+      descriptor.set!.call(this, canvasFontResolution.resolve(String(value)));
     },
   });
   canvasFontSubstitutionInstalled = true;
@@ -366,7 +378,7 @@ export class WasmBridge {
   }
 
   withPortableMetrics<T>(operation: () => T): T {
-    return withHostCanvasFonts(null, () => withPortableMetrics(this.canvasMetricDocument(), operation));
+    return withCanvasFontResolution(null, () => withPortableMetrics(this.canvasMetricDocument(), operation));
   }
   private initialized = false;
   private _fileName = 'document.hwp';
@@ -376,6 +388,7 @@ export class WasmBridge {
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
+  private readonly layerResourceStore = new LayerResourceStore();
   /** 개발 진단에서만 읽는 wasm 선형 메모리. 일반 wasm-glue에는 없을 수 있다. */
   private wasmLinearMemory: WebAssembly.Memory | null = null;
   /** [#3313] 외부 연결 그림 비동기 주입 완료 훅 — 주입 성공(>0)시에만 호출된다.
@@ -439,6 +452,7 @@ export class WasmBridge {
    */
   releaseDocument(): void {
     this.releaseCanvasFontResources();
+    this.clearLayerResourceCache();
     if (this.doc) {
       try {
         this.doc.free();
@@ -480,6 +494,7 @@ export class WasmBridge {
       this._documentDigest = nextDocumentDigest;
       this._documentGeneration += 1;
       this.releaseCanvasFontResources();
+      this.clearLayerResourceCache();
       if (previousDoc) {
         try {
           previousDoc.free();
@@ -511,6 +526,15 @@ export class WasmBridge {
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
     this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
     return this.getDocumentInfo();
+  }
+
+  hasPdfImportCapability(): boolean {
+    return hasPdfImportCapability(HwpDocument);
+  }
+
+  getPdfImportDiagnostics(): Record<string, unknown> | null {
+    const api = this.doc as unknown as { getPdfImportDiagnostics?: () => string } | null;
+    return api?.getPdfImportDiagnostics ? JSON.parse(api.getPdfImportDiagnostics()) : null;
   }
 
   loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): void {
@@ -588,6 +612,7 @@ export class WasmBridge {
     }
     this._documentGeneration += 1;
     this.releaseCanvasFontResources();
+    this.clearLayerResourceCache();
     console.log(`[WasmBridge] 새 문서 생성: ${info.pageCount}페이지`);
     this.onFileNameChanged?.(this._fileName);
     return info;
@@ -966,7 +991,7 @@ export class WasmBridge {
 
   renderPageToCanvas(pageNum: number, canvas: HTMLCanvasElement, scale = 1.0): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    withHostCanvasFonts(this.hostCanvasFonts, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
+    withCanvasFontResolution(this.hostCanvasFonts, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
   }
 
   /**
@@ -997,18 +1022,18 @@ export class WasmBridge {
       ) => void;
     };
     if (typeof d.renderPageToCanvasFilteredWithProfile === 'function') {
-      withHostCanvasFonts(this.hostCanvasFonts, () => d.renderPageToCanvasFilteredWithProfile!(pageNum, canvas, scale, layerKind, profile));
+      withCanvasFontResolution(this.hostCanvasFonts, () => d.renderPageToCanvasFilteredWithProfile!(pageNum, canvas, scale, layerKind, profile));
       return;
     }
     if (profile !== 'screen') {
       throw new Error('[WasmBridge] 현재 WASM은 profile별 Canvas2D 렌더링을 지원하지 않습니다');
     }
     if (typeof d.renderPageToCanvasFiltered === 'function') {
-      withHostCanvasFonts(this.hostCanvasFonts, () => d.renderPageToCanvasFiltered!(pageNum, canvas, scale, layerKind));
+      withCanvasFontResolution(this.hostCanvasFonts, () => d.renderPageToCanvasFiltered!(pageNum, canvas, scale, layerKind));
       return;
     }
     // 구버전 WASM(public/rhwp.js 등): 레이어 필터 API 없음 → 전체 캔버스 렌더로 폴백
-    withHostCanvasFonts(this.hostCanvasFonts, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
+    withCanvasFontResolution(this.hostCanvasFonts, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
   }
 
   /** 기존 Canvas를 유지한 채 page-space 일부만 filtered replay한다 (#3137 Stage 4). */
@@ -1037,7 +1062,7 @@ export class WasmBridge {
     if (typeof d.renderPagePatchToCanvasFilteredWithProfile !== 'function') {
       throw new Error('[WasmBridge] 현재 WASM은 focused page patch 렌더링을 지원하지 않습니다');
     }
-    withHostCanvasFonts(this.hostCanvasFonts, () => d.renderPagePatchToCanvasFilteredWithProfile!(
+    withCanvasFontResolution(this.hostCanvasFonts, () => d.renderPagePatchToCanvasFilteredWithProfile!(
       pageNum,
       canvas,
       scale,
@@ -1133,38 +1158,23 @@ export class WasmBridge {
     }
   }
 
-  getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {
+  getPageLayerTreeObject(
+    pageNum: number,
+    profile: LayerRenderProfile = 'screen',
+    options: LayerTreeExportOptions = {},
+  ): PageLayerTree {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    const d = this.doc as unknown as {
-      getPageLayerTreeWithProfile?: (
-        p: number,
-        profile: string,
-        omitImageBytes?: boolean,
-        omitFontBytes?: boolean,
-      ) => string;
-      getPageLayerTree?: (p: number) => string;
-      getSourceFontBytes?: (key: string) => Uint8Array;
-    };
-    const hasProfileApi = typeof d.getPageLayerTreeWithProfile === 'function';
-    if (!hasProfileApi && profile !== 'screen') {
-      throw new Error('[WasmBridge] 현재 WASM은 profile별 PageLayerTree를 지원하지 않습니다');
-    }
     const metrics = this.canvasMetricDocument();
-    const json = metrics?.canvasMetricsActive()
-      ? metrics.getCanvasPageLayerTree(pageNum, profile, typeof d.getSourceFontBytes === 'function')
-      : hasProfileApi
-      ? d.getPageLayerTreeWithProfile!(
-        pageNum,
-        profile,
-        false,
-        typeof d.getSourceFontBytes === 'function',
-      )
-      : this.getPageLayerTree(pageNum);
     let parsed: unknown;
-    try {
-      parsed = JSON.parse(json);
-    } catch (error) {
-      throw new Error(`[WasmBridge] PageLayerTree JSON parse 실패 (page=${pageNum}): ${error}`);
+    if ((options.transport ?? 'json') === 'json' && (options.textProfile ?? 'v1Compat') === 'v1Compat'
+      && metrics?.canvasMetricsActive()) {
+      const source = this.doc as unknown as { getSourceFontBytes?: (key: string) => Uint8Array };
+      const json = metrics.getCanvasPageLayerTree(pageNum, profile, typeof source.getSourceFontBytes === 'function');
+      try { parsed = JSON.parse(json); }
+      catch (error) { throw new Error(`[WasmBridge] PageLayerTree JSON parse 실패 (page=${pageNum}): ${error}`); }
+    } else {
+      // Typed/strict exports keep the Rust portable-metrics guard; never switch layout authority silently.
+      parsed = readLayerTreeTransport(this.doc, pageNum, profile, options, this.layerResourceStore);
     }
     if (!parsed || typeof parsed !== 'object') {
       throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): object가 아닙니다`);
@@ -1227,7 +1237,7 @@ export class WasmBridge {
   }
 
   clearLayerResourceCache(): void {
-    /* Reserved for JS-value resource transport builds. JSON export is self-contained. */
+    this.layerResourceStore.clear();
   }
 
   getCanvasKitReplayPlan(
@@ -1868,6 +1878,15 @@ export class WasmBridge {
   getCellInfo(sec: number, parentPara: number, controlIdx: number, cellIdx: number): CellInfo {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getCellInfo(sec, parentPara, controlIdx, cellIdx));
+  }
+
+  /** 현재 페이지의 표 조각만 조회한다. 구 WASM은 기존 hint API로 호환한다. */
+  getTableCellBboxesAtPage(sec: number, parentPara: number, controlIdx: number, page: number): CellBbox[] {
+    if (!this.doc) return [];
+    if (typeof this.doc.getTableCellBboxesAtPage !== 'function') {
+      return this.getTableCellBboxes(sec, parentPara, controlIdx, page);
+    }
+    return JSON.parse(this.doc.getTableCellBboxesAtPage(sec, parentPara, controlIdx, page));
   }
 
   getTableCellBboxes(sec: number, parentPara: number, controlIdx: number, pageHint?: number): CellBbox[] {
@@ -3517,7 +3536,7 @@ export class WasmBridge {
     if (typeof doc.renderHeaderFooterEditPreviewToCanvas !== 'function') {
       throw new Error('현재 WASM은 HF 대표 편집 preview 렌더링을 지원하지 않습니다');
     }
-    withHostCanvasFonts(this.hostCanvasFonts, () => doc.renderHeaderFooterEditPreviewToCanvas!(
+    withCanvasFontResolution(this.hostCanvasFonts, () => doc.renderHeaderFooterEditPreviewToCanvas!(
       pageNum,
       sectionIdx,
       isHeader,

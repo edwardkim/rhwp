@@ -6,6 +6,7 @@ pub(crate) mod doclang;
 pub(crate) mod pdf;
 pub(crate) mod preview;
 pub(crate) mod raster;
+pub(crate) mod sixel;
 pub(crate) mod tabular;
 pub(crate) mod text;
 pub(crate) mod vector;

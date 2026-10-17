@@ -421,8 +421,8 @@ export interface ParaProperties {
   // 탭 설정 탭 속성
   tabAutoLeft?: boolean;
   tabAutoRight?: boolean;
-  tabStops?: { position: number; type: number; fill: number }[];
-  defaultTabSpacing?: number;    // HWPUNIT (읽기 전용, 구역 기본 탭 간격)
+  tabStops?: { position: number; type: number; fill: number }[];  // position 은 HWPUNIT×2 (core/tab-units.ts)
+  defaultTabSpacing?: number;    // HWPUNIT×2 (읽기 전용, 구역 기본 탭 간격)
   // 테두리/배경 탭 속성
   borderFillId?: number;
   borderLeft?: { type: number; width: number; color: string };
@@ -971,6 +971,15 @@ export interface PageLayerTree {
     major: number;
     minor: number;
   };
+  /** The frontend adapter expands v2 envelopes into the v1 replay shape without changing paint order. */
+  normalizedFromSchema?: { major: 2; minor: number };
+  requiredFeatures?: string[];
+  textV2?: {
+    profile?: string;
+    fallbackPolicy?: string;
+    strictVisualFallbackFree?: boolean;
+    [key: string]: unknown;
+  };
   unit?: 'px';
   coordinateSystem?: string;
   profile?: LayerRenderProfile;
@@ -997,6 +1006,35 @@ export interface PageLayerTree {
   resources?: LayerResources;
   root: LayerNode;
 }
+
+/** Opt-in wire format. Kept separate from LayerPaintOp so v1 consumers cannot silently skip envelopes. */
+export interface LayerTextV2Envelope {
+  type: 'text';
+  id: string;
+  bbox: LayerBounds;
+  paintOrderSlotId: string;
+  selectionPolicy: 'exclusiveVariantSet';
+  defaultVariantId: string;
+  fallbackPolicy: 'required' | 'none';
+  variants: Array<{
+    variantId: string;
+    kind: 'textRun' | 'glyphRun' | 'glyphOutline' | string;
+    requiredFeatures: string[];
+    quality?: string;
+    parts: Array<{
+      partIndex: number;
+      partCount: number;
+      localPaintOrder?: number;
+      payload: LayerTextRunOp | LayerGlyphRunOp | LayerGlyphOutlineOp;
+    }>;
+  }>;
+}
+
+export type LayerNodeV2 =
+  | (Omit<LayerGroupNode, 'children'> & { children: LayerNodeV2[] })
+  | (Omit<LayerClipNode, 'child'> & { child: LayerNodeV2 })
+  | (Omit<LayerLeafNode, 'ops'> & { ops: Array<LayerPaintOp | LayerTextV2Envelope> });
+export type PageLayerTreeV2 = Omit<PageLayerTree, 'root'> & { root: LayerNodeV2 };
 
 export interface LayerResources {
   tableId?: number;
@@ -1058,6 +1096,8 @@ export type LayerNode = LayerGroupNode | LayerClipNode | LayerLeafNode;
 export interface LayerGroupNode {
   kind: 'group';
   bounds: LayerBounds;
+  /** Conservative ink estimate; logical bounds remain independent. */
+  visualBounds?: LayerBounds;
   layer?: LayerInfo;
   groupKind?: { kind: string; [key: string]: unknown };
   cacheHint?: LayerCacheHint;
@@ -1067,6 +1107,7 @@ export interface LayerGroupNode {
 export interface LayerClipNode {
   kind: 'clipRect';
   bounds: LayerBounds;
+  visualBounds?: LayerBounds;
   layer?: LayerInfo;
   clip: LayerBounds;
   clipKind: 'body' | 'tableCell' | 'textBox' | 'generic';
@@ -1076,6 +1117,7 @@ export interface LayerClipNode {
 export interface LayerLeafNode {
   kind: 'leaf';
   bounds: LayerBounds;
+  visualBounds?: LayerBounds;
   layer?: LayerInfo;
   ops: LayerPaintOp[];
 }
@@ -1114,6 +1156,16 @@ export interface LayerPageBackgroundOp {
   borderColor?: string;
   borderWidth?: number;
   gradient?: LayerGradientFill;
+  image?: {
+    fillMode?: string;
+    base64?: string;
+    resourceId?: number;
+    effect?: string;
+    brightness?: number;
+    contrast?: number;
+    opacity?: number;
+    watermark?: boolean;
+  };
 }
 
 export interface LayerTextStyle {
@@ -1199,6 +1251,7 @@ export interface LayerTextRunOp {
 
 export interface LayerFootnoteMarkerOp {
   type: 'footnoteMarker';
+  baseline?: number;
   bbox: LayerBounds;
   text: string;
   fontFamily?: string;
@@ -1217,6 +1270,7 @@ export interface LayerShadowStyle {
 }
 
 export interface LayerPatternFill {
+  tileSize?: number;
   patternType?: number;
   patternColor?: string;
   backgroundColor?: string;
@@ -1255,6 +1309,11 @@ export interface LayerGradientFill {
 }
 
 
+export interface LayerArrowHead {
+  filled: boolean;
+  commands: LayerPathCommand[];
+}
+
 export interface LayerLineOp {
   type: 'line';
   bbox: LayerBounds;
@@ -1263,6 +1322,7 @@ export interface LayerLineOp {
   x2: number;
   y2: number;
   style?: LayerLineStyle;
+  arrowHeads?: LayerArrowHead[];
 }
 
 export interface LayerRectangleOp {
@@ -1310,11 +1370,14 @@ export interface LayerPathOp {
   lineStyle?: LayerLineStyle;
   transform?: LayerPathTransform;
   gradient?: LayerGradientFill;
+  arrowHeads?: LayerArrowHead[];
 }
 
 export interface LayerImageOp {
   type: 'image';
   bbox: LayerBounds;
+  /** Explicit source sampling; absent preserves the output profile policy. */
+  imageInterpolation?: 'nearest' | 'linear';
   mime?: string;
   base64?: string;
   imageRef?: number | string;
@@ -1337,9 +1400,11 @@ export interface LayerEquationOp {
   type: 'equation';
   bbox: LayerBounds;
   svgContent?: string;
+  svgResourceId?: number;
   color?: string;
   fontSize?: number;
   layoutBox?: LayerEquationLayoutBox;
+  scaleX?: number;
 }
 
 export interface LayerControlLabelOp {
@@ -1387,6 +1452,7 @@ export interface LayerEquationLayoutBox {
 }
 
 export type LayerEquationLayoutKind =
+  | { type: 'hancomGlyphs'; glyphs: string; positions: number[]; shears?: number[]; baselineShift: number }
   | { type: 'row'; children: LayerEquationLayoutBox[] }
   | { type: 'text'; text: string }
   | { type: 'number'; text: string }
@@ -1400,7 +1466,7 @@ export type LayerEquationLayoutKind =
   | { type: 'subscript'; base: LayerEquationLayoutBox; sub: LayerEquationLayoutBox }
   | { type: 'subSup'; base: LayerEquationLayoutBox; sub: LayerEquationLayoutBox; sup: LayerEquationLayoutBox }
   | { type: 'bigOp'; symbol: string; sub?: LayerEquationLayoutBox; sup?: LayerEquationLayoutBox }
-  | { type: 'limit'; isUpper: boolean; sub?: LayerEquationLayoutBox }
+  | { type: 'limit'; isUpper: boolean; name?: LayerEquationLayoutBox; sub?: LayerEquationLayoutBox }
   | { type: 'matrix'; style: LayerEquationMatrixStyle; cells: LayerEquationLayoutBox[][] }
   | { type: 'rel'; arrow: LayerEquationLayoutBox; over: LayerEquationLayoutBox; under?: LayerEquationLayoutBox }
   | { type: 'eqAlign'; rows: Array<{ left: LayerEquationLayoutBox; right: LayerEquationLayoutBox }> }
@@ -1419,7 +1485,8 @@ export interface LayerFormObjectOp {
   text?: string;
   foreColor?: string;
   backColor?: string;
-  value?: boolean;
+  /** Producer i32 selection state; boolean remains accepted for legacy object callers. */
+  value?: number | boolean;
   enabled?: boolean;
   drawing?: {
     primitives: Array<
@@ -1761,6 +1828,8 @@ export interface LayerColorPaintGraphNode {
   radialGradientPath?: LayerColorRadialGradientPathNode;
   sweepGradientPath?: LayerColorSweepGradientPathNode;
   transform?: LayerColorTransformNode;
+  composite?: { sourceNodeId?: number; backdropNodeId?: number; mode?: 'sourceOver' | string };
+  clip?: { childNodeId?: number; clipCommands?: LayerPathCommand[]; fillRule?: string };
   sourceRangeUtf8?: LayerTextRange;
   glyphRange?: LayerTextRange;
   sourceFontRef?: LayerFontColorGlyphRef;
@@ -1812,6 +1881,8 @@ export interface LayerSvgGlyphPayload {
   sourceRangeUtf8?: LayerTextRange;
   glyphRange?: LayerTextRange;
   viewBox?: LayerBounds;
+  /** OpenType SVG의 em square와 baseline을 보존하는 producer 전용 배치. */
+  fontEmBox?: LayerBounds;
   intrinsicSize?: { width?: number; height?: number };
   staticSanitized?: boolean;
   scriptAllowed?: boolean;

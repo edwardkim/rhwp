@@ -26,6 +26,7 @@ pub(in crate::renderer::typeset) fn plan_fragment(
     avail_for_lines: f64,
     boundary: SplitBoundary,
     used_saved_tail_vpos_fit: bool,
+    require_full_advance: bool,
     current_items: &[PageItem],
 ) -> Option<ParagraphFragment> {
     let SplitBoundary {
@@ -39,6 +40,17 @@ pub(in crate::renderer::typeset) fn plan_fragment(
         0.0
     };
     let part_height = sp_b + part_line_height + part_sp_after;
+
+    // Whole-fit and its split retry consume the same closing flow contract.
+    // A table's hard trailing reservation cannot disappear merely because
+    // the retry emits the whole paragraph through the fragment planner.
+    if require_full_advance
+        && end_line >= line_count
+        && cumulative + part_sp_after > avail_for_lines
+        && !current_items.is_empty()
+    {
+        return None;
+    }
 
     let item = if cursor_line == 0 && end_line >= line_count {
         // 전체가 배치됨 — overflow 재확인

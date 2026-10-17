@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-07-16
+last_verified: 2026-10-14
 ---
 
 # rhwp export-png 명령 매뉴얼
@@ -14,7 +14,7 @@ HWP 문서를 PNG 이미지로 내보내는 native Skia raster backend 도구. P
 ## 사전 조건
 
 - **`native-skia` feature 빌드 필수** (기본 빌드에는 미포함)
-- 빌드: `cargo build --release --features native-skia`
+- 빌드: `cargo build --locked --target-dir target/pr-review -j 8 --features native-skia --bin rhwp`
 
 ## 사용법
 
@@ -27,7 +27,13 @@ rhwp export-png <파일.hwp> [옵션]
 | 옵션 | 단축 | 설명 |
 |------|------|------|
 | `--output <폴더>` | `-o` | 출력 폴더 (기본: `output/`) |
-| `--page <번호>` | `-p` | 특정 페이지만 내보내기 (0부터 시작) |
+| `--page <번호>` | `-p` | 선택 쪽 (0부터 시작, 여러 번 지정 가능, 중복·범위 밖 번호는 실패) |
+| `--json` | | stdout에 전체 쪽수·실제 산출물 경로·bytes JSON만 출력 |
+| `--metadata-only` | | PNG 없이 전체 쪽수 JSON만 출력 |
+| `--render-tree-output <폴더>` | | 같은 문서의 선택 쪽 render tree를 함께 저장 |
+| `--profile <프로필>` | | screen(기본)/print/high-quality/fast-preview |
+| `--compat 2022\|2024` | | 목표 한글 조판 세대 (기본 2022) |
+| `--font-environment <JSON>` | | 명시적인 조판·출력 글꼴 환경 |
 | `--font-path <경로>` | | 폰트 파일 탐색 경로 (여러 번 지정 가능) |
 | `--scale <배율>` | | 렌더링 배율 (기본: 1.0) |
 | `--max-dimension <픽셀>` | | 한 변 최대 픽셀 (longest edge). 자동 scale 계산 |

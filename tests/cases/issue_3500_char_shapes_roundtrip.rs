@@ -7,6 +7,13 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
+
 use rhwp::document_core::DocumentCore;
 use rhwp::model::style::{CharShape, UnderlineType};
 use rhwp::parse_document;
@@ -104,13 +111,29 @@ fn issue_3500_export_hwpx_native_matches_serialize() {
 
 #[test]
 fn same_id_jsonl_matches_catalog() {
-    let jsonl_rows = SAME_ID_JSONL.lines().filter(|l| !l.is_empty()).count();
-    assert_eq!(jsonl_rows, SAME_ID_PARAS.len());
+    let jsonl_rows = SAME_ID_JSONL
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(|line| serde_json::from_str::<serde_json::Value>(line).expect("원본 corpus 행"))
+        .filter(|row| {
+            !exam_fixtures::is_exam_fixture(std::path::Path::new(
+                row["file"].as_str().expect("원본 파일 경로"),
+            ))
+        })
+        .count();
+    let catalog_rows = SAME_ID_PARAS
+        .iter()
+        .filter(|row| !exam_fixtures::is_exam_fixture(std::path::Path::new(row.file)))
+        .count();
+    assert_eq!(jsonl_rows, catalog_rows);
 }
 
 #[test]
 fn planner_keeps_every_same_id_corpus_row() {
-    for row in SAME_ID_PARAS {
+    for row in SAME_ID_PARAS
+        .iter()
+        .filter(|row| !exam_fixtures::is_exam_fixture(std::path::Path::new(row.file)))
+    {
         let refs: Vec<rhwp::model::paragraph::CharShapeRef> = row
             .refs
             .iter()

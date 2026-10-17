@@ -19,6 +19,7 @@ pub mod paragraph;
 pub mod path;
 pub mod provenance;
 pub mod raw_provenance;
+pub mod section_tail;
 pub mod shape;
 pub mod style;
 pub mod table;

@@ -10,6 +10,8 @@ use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile}
 /// 문단 format() 결과: 문단의 실제 렌더링 높이 정보
 #[derive(Debug, Clone)]
 pub(in crate::renderer::typeset) struct FormattedParagraph {
+    /// 구역의 저장 사다리가 무효이면 문단 끝도 저장 좌표로 다시 투영하지 않는다.
+    pub(in crate::renderer::typeset) stored_ladder_is_filler: bool,
     /// Measured remaining inline space on the composed tail line. None means
     /// that this path has no reliable width result (not an implicit overflow).
     pub(in crate::renderer::typeset) tail_line_remaining_width: Option<f64>,
@@ -140,6 +142,23 @@ impl FormattedParagraph {
         ladder_dirty: bool,
         lazy_base: bool,
     ) -> f64 {
+        // 빈 저장 글줄도 물리 슬롯을 소유한다. 글자가 없어 뒤의 가시 줄
+        // 스냅에 맡길 수 없으므로 다단에서도 후행 간격을 매번 버리지 않는다.
+        // 합성·편집·여러 줄은 기존 경로로 남기고 같은 format 결과를 소비한다.
+        if para.text.trim().is_empty()
+            && para.controls.is_empty()
+            && !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && self.line_count() == 1
+            && self.line_heights[0] > 0.0
+            && matches!(para.line_segs.as_slice(), [line]
+                if line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    && line.vertical_pos >= 0
+                    && line.line_height > 0
+                    && line.line_spacing >= 0)
+        {
+            return self.total_height;
+        }
         // [#6970] 다단에서도 **합성(reflow) lineseg 문단은 트림하지 않는다** — 아래
         // `#2279 ①` 이 단단 경로에 건 가드와 같은 이유다. 트림은 "저장 ladder 가 spacing 을
         // 이미 반영하고 vpos-snap 이 좌표를 복원한다"는 전제 위에 서는데, 합성 문단에는 그
@@ -188,14 +207,30 @@ impl FormattedParagraph {
                 self.spacing_before, self.total_height, self.height_for_fit
             );
         }
+        // Normalization's rebuilt ladder no longer restores the original
+        // outside spacing. Preserve its actual composed advances rather than
+        // trimming against an anchor in a different coordinate frame.
+        let ladder_rebuilt = para
+            .source_line_seg_vertical_pos
+            .as_ref()
+            .is_some_and(|source| {
+                source.len() != para.line_segs.len()
+                    || source
+                        .iter()
+                        .zip(&para.line_segs)
+                        .any(|(vpos, line)| *vpos != line.vertical_pos)
+            });
         if para.controls.is_empty()
             && has_authoritative_seg
             && !ladder_dirty
+            && !ladder_rebuilt
             && (sa_trim || sb_trim)
             && self.height_for_fit > 0.0
             && self.height_for_fit + 0.5 < self.total_height
         {
-            return self.height_for_fit.min(self.total_height);
+            // Fit excludes outside after-space; the accepted flow still
+            // carries that band to the successor's origin.
+            return (self.height_for_fit + self.spacing_after).min(self.total_height);
         }
         self.total_height
     }

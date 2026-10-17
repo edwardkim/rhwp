@@ -18,6 +18,14 @@ use crate::model::shape::Caption;
 use crate::renderer::layout_frame::LayoutFrame;
 pub use crate::renderer::layout_frame::ParagraphBox;
 
+mod frame_geometry;
+mod nested_table_frames;
+pub(crate) use nested_table_frames::{
+    recompose_cell_lines_with_nested_tables, table_cells_have_no_stored_lines,
+};
+mod resolved_fields;
+mod stored_word_tail;
+
 /// 글자겹침(CharOverlap) 렌더링 정보
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct CharOverlapInfo {
@@ -55,6 +63,14 @@ pub struct ComposedTextRun {
 impl ComposedTextRun {
     pub(crate) fn text_style(&self, styles: &ResolvedStyleSet) -> TextStyle {
         let mut style = resolved_to_text_style(styles, self.char_style_id, self.lang_index);
+        if mapped_symbol_fonts::owns_shadowed_circle_font(self) {
+            // 표시 기호 한 글자만 실제 프로그램을 선택한다. 본문과 IR의 글꼴은 보존한다.
+            style.font_family = format!(
+                "{},{}",
+                mapped_symbol_fonts::SHADOWED_CIRCLE_FONT,
+                style.font_family
+            );
+        }
         if self.supplemental_metrics_blocked {
             style.supplemental_metrics = None;
         }
@@ -79,6 +95,7 @@ impl ComposedTextRun {
     }
 }
 
+mod mapped_symbol_fonts;
 pub(crate) mod supplemental_clusters;
 
 /// 구성된 줄 (LineSeg 기반)
@@ -145,6 +162,8 @@ pub struct ComposedParagraph {
     /// 탭 확장 데이터 (HWP tab_extended / HWPX 인라인 탭)
     /// ext[0]=width, ext[1]=leader/fill_type, ext[2]=tab_type
     pub tab_extended: Vec<[u16; 7]>,
+    /// 재조판 프레임이 발행한 줄 좌표와 공백 규칙. 원본 모델은 그대로 보존한다.
+    pub(crate) frame_geometry: Option<std::sync::Arc<frame_geometry::FrameGeometry>>,
     /// Q2-C에서 qualified된 dormant shaping 결과. D1은 수명만 composition
     /// owner로 넘기며 line breaking·layout·paint는 아직 이 값을 소비하지 않는다.
     pub(crate) horizontal_shaping:
@@ -377,52 +396,6 @@ fn compose_paragraph_scoped(
     let para = synth_para.as_ref().unwrap_or(para);
 
     let mut lines = compose_lines(para);
-    if crate::renderer::para_has_no_stored_line_segs(para) {
-        if let Some(styles) = metric_styles {
-            for line in &mut lines {
-                let mut runs = Vec::new();
-                for run in std::mem::take(&mut line.runs) {
-                    let punct_latin = styles
-                        .char_styles
-                        .get(run.char_style_id as usize)
-                        .is_some_and(|style| style.ascii_punct_latin_slot);
-                    if !punct_latin
-                        || !run
-                            .text
-                            .chars()
-                            .any(|ch| !ch.is_ascii() && is_latin_slot_punct(ch))
-                    {
-                        runs.push(run);
-                        continue;
-                    }
-                    let mut start = 0;
-                    let mut lang = run.lang_index;
-                    for (byte, ch) in run.text.char_indices() {
-                        let next = reflow_punctuation_slot(ch, run.lang_index, punct_latin);
-                        if next != lang {
-                            if byte > start {
-                                runs.push(ComposedTextRun {
-                                    text: run.text[start..byte].to_string(),
-                                    lang_index: lang,
-                                    ..run.clone()
-                                });
-                            }
-                            start = byte;
-                            lang = next;
-                        }
-                    }
-                    if start < run.text.len() {
-                        runs.push(ComposedTextRun {
-                            text: run.text[start..].to_string(),
-                            lang_index: lang,
-                            ..run
-                        });
-                    }
-                }
-                line.runs = runs;
-            }
-        }
-    }
     let inline_controls = identify_inline_controls(para);
 
     // treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 수집
@@ -443,7 +416,11 @@ fn compose_paragraph_scoped(
                 }
                 Control::Equation(eq) if eq.common.treat_as_char => {
                     // HWP 저장값을 사용 — 한컴 편집기가 실제 폰트로 계산한 정확한 너비
-                    Some((pos, crate::renderer::equation::flow_width_hwp(eq) as i32, i))
+                    Some((
+                        pos,
+                        crate::renderer::equation::inline_advance_width_hwp(eq),
+                        i,
+                    ))
                 }
                 Control::Form(f) if f.common.treat_as_char => Some((pos, f.width as i32, i)),
                 Control::Table(t)
@@ -565,6 +542,7 @@ fn compose_paragraph_scoped(
         footnote_positions,
         tab_extended: para.tab_extended.clone(),
         horizontal_shaping: None,
+        frame_geometry: None,
     };
 
     // CharOverlap 글자를 조합된 텍스트에 삽입
@@ -580,6 +558,9 @@ fn compose_paragraph_scoped(
     if protect_metrics {
         supplemental_clusters::preserve_boundaries(&mut composed, &para.text, metric_styles);
     }
+
+    mapped_symbol_fonts::split_mapped_symbol_font_runs(&mut composed);
+    resolved_fields::apply(para, &mut composed);
 
     composed
 }
@@ -654,7 +635,24 @@ pub(crate) fn tac_host_trailing_spacing(
         && para.line_segs.len() == 1
         && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         && owned_rowbreak_tac_height(para, control_index).is_some();
-    if current_owned_row
+    // 같은 문단의 뒤 글줄이 표 줄의 전체 간격 끝에서 시작하면 그 간격을
+    // 줄 흐름과 표 배치에 모두 보존한다. 문단 경계의 별도 계약은 유지한다.
+    let stored_successor_owns_full_gap = native_stored_layout
+        && !para.stored_text_partition_is_dirty()
+        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && para.line_segs.windows(2).any(|pair| {
+            std::ptr::eq(&pair[0], seg)
+                && pair[1].tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && pair[1].text_start > seg.text_start
+                && seg
+                    .vertical_pos
+                    .checked_add(seg.line_height)
+                    .and_then(|end| end.checked_add(seg.line_spacing))
+                    == Some(pair[1].vertical_pos)
+        });
+    if stored_successor_owns_full_gap {
+        spacing
+    } else if current_owned_row
         || (native_stored_layout
             && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             && !para.stored_text_partition_is_dirty())
@@ -662,6 +660,40 @@ pub(crate) fn tac_host_trailing_spacing(
         spacing / 2.0
     } else {
         spacing
+    }
+}
+
+/// 다음 문단을 현재 프레임에서 재조판하면 저장 vpos가 간격의 나머지를
+/// 복원하지 않는다. 마지막 저장 TAC 줄은 후행 간격 전량을 흐름에 남긴다.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn tac_host_trailing_spacing_at_boundary(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    control_index: usize,
+    seg: &LineSeg,
+    hwpx_stored_layout: bool,
+    native_stored_layout: bool,
+    dpi: f64,
+) -> f64 {
+    if native_stored_layout
+        && !para.stored_text_partition_is_dirty()
+        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && para
+            .line_segs
+            .last()
+            .is_some_and(|last| std::ptr::eq(last, seg))
+        && next_para.is_some_and(crate::renderer::para_has_no_stored_line_segs)
+    {
+        crate::renderer::hwpunit_to_px(seg.line_spacing.max(0), dpi)
+    } else {
+        tac_host_trailing_spacing(
+            para,
+            control_index,
+            seg,
+            hwpx_stored_layout,
+            native_stored_layout,
+            dpi,
+        )
     }
 }
 
@@ -701,17 +733,65 @@ pub(crate) fn tac_next_line_full_spacing(
             .is_some_and(|last| std::ptr::eq(last, seg))
         && next_para.is_some_and(|next| {
             (current_owned_row || !next.stored_text_partition_is_dirty())
-                && next.line_segs.first().is_some_and(|first| {
-                    (current_owned_row || first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
-                        && seg
-                            .vertical_pos
-                            .saturating_add(seg.line_height)
-                            .saturating_add(seg.line_spacing)
-                            .saturating_add(current_spacing_after_hu)
-                            .saturating_add(next_spacing_before_hu)
-                            == first.vertical_pos
-                })
+                && (next.line_segs.is_empty()
+                    || next.line_segs.first().is_some_and(|first| {
+                        (current_owned_row || first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                            && stored_tac_successor_delta_hu(
+                                para,
+                                seg,
+                                first,
+                                current_spacing_after_hu.saturating_add(next_spacing_before_hu),
+                            )
+                            .is_some_and(|delta| {
+                                seg.line_height
+                                    .checked_add(seg.line_spacing)
+                                    .and_then(|advance| {
+                                        advance.checked_add(current_spacing_after_hu)
+                                    })
+                                    .and_then(|advance| advance.checked_add(next_spacing_before_hu))
+                                    == Some(delta)
+                            })
+                    }))
         })
+}
+
+/// 다음 저장 원점과 표 소유 줄의 거리. 쪽으로 통째 이월된 단일 TAC 줄은
+/// 호스트에 이전 쪽 vpos가 남아도 후속 문단이 새 쪽의 0 원점에서 상자를 닫는다.
+/// 줄 높이가 바깥여백 포함 개체 상자와 같고 후속 원점이 정확히 닫힐 때만 그
+/// 좌표계 전환을 사용한다. 측정과 실제 배치가 같은 거리 계약을 소비한다.
+pub(crate) fn stored_tac_successor_delta_hu(
+    para: &Paragraph,
+    seg: &LineSeg,
+    successor: &LineSeg,
+    paragraph_spacing_hu: i32,
+) -> Option<i32> {
+    let closing_advance = seg
+        .line_height
+        .checked_add(seg.line_spacing)?
+        .checked_add(paragraph_spacing_hu)?;
+    let reset_closes_owned_line = successor.vertical_pos < seg.vertical_pos
+        && successor.vertical_pos == closing_advance
+        && para.line_segs.len() == 1
+        && !para.cell_format_vpos_dirty
+        && successor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && stored_first_tac_line(para).is_some_and(|first| std::ptr::eq(first, seg))
+        && para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            == 1
+        && !para.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::Picture(_) | Control::Shape(_) | Control::Equation(_)
+            )
+        });
+    if reset_closes_owned_line {
+        Some(successor.vertical_pos)
+    } else {
+        successor.vertical_pos.checked_sub(seg.vertical_pos)
+    }
 }
 
 /// 저장된 서로 다른 물리 줄을 소유한 빈/공백 캐리어 TAC 표의 흐름.
@@ -797,13 +877,17 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
     for (ci, control) in para.controls.iter().enumerate() {
         let table = match control {
             Control::Table(table) if table.common.treat_as_char => table,
+            // [#7344] 누름틀 시작 마커는 원시 스트림의 8유닛 칸만 차지하고 줄 상자를
+            // 만들지 않는다(결재문서 `본문` 누름틀이 표 문단 첫머리에 놓인다). 같은 문단에서
+            // 닫히는 필드는 위 `empty_control_stream_position`이 이미 거른다.
             Control::SectionDef(_)
             | Control::ColumnDef(_)
             | Control::Header(_)
             | Control::Footer(_)
             | Control::PageNumberPos(_)
             // 감추기는 쪽 표시 설정이며 본문 글줄을 점유하지 않는다.
-            | Control::PageHide(_) => continue,
+            | Control::PageHide(_)
+            | Control::Field(_) => continue,
             _ => return None,
         };
         let owner = control_line_seg_index(para, ci)?;
@@ -899,6 +983,20 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
 /// (`2d973021c`가 `samples/rowbreak-problem-pages.hwpx`에서 고친 오버랩이 이 경우다).
 /// `line_segs`가 비어 있으면(레이아웃 전/미저장 캡션) `compose_paragraph`로만 계산한다.
 pub fn caption_height_px(caption: &Option<Caption>, dpi: f64) -> f64 {
+    caption_height_px_in_context(caption, None, dpi)
+}
+
+/// [`caption_height_px`] 에 글자 모양을 더한 판. 저장 줄이 없는 **빈** 캡션 문단의 줄 높이를
+/// 그 문단 글자 크기로 잡는다 — 캡션을 실제로 그리는 `layout_caption` 이 그 크기의 줄 하나를
+/// 그리므로 측정과 배치가 같은 높이를 쓴다. 글자 모양이 없으면 종전 기본값(400 HU)이다.
+///
+/// 78494 10쪽: 표 위 캡션은 빈 문단 하나(글자 2pt = 200 HU, 저장 줄 없음)다. 기본값 400 HU 로
+/// 재면 표가 2.67px 아래로 밀린다(rhwp 245.93, 한/글 2020 243.09; 200 HU 면 243.27).
+pub(crate) fn caption_height_px_in_context(
+    caption: &Option<Caption>,
+    styles: Option<&ResolvedStyleSet>,
+    dpi: f64,
+) -> f64 {
     let caption = match caption {
         Some(c) => c,
         None => return 0.0,
@@ -922,7 +1020,19 @@ pub fn caption_height_px(caption: &Option<Caption>, dpi: f64) -> f64 {
 
         let composed = compose_paragraph(para);
         if composed.lines.is_empty() {
-            composed_height += hwpunit_to_px(DEFAULT_LINE_HEIGHT_HWPUNIT, dpi); // 기본 줄 높이
+            let own_font_size = styles
+                .filter(|_| para.line_segs.is_empty())
+                .and_then(|styles| {
+                    let id = para
+                        .char_shape_id_at(0)
+                        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?;
+                    styles.char_styles.get(id as usize)
+                })
+                .map(|style| style.font_size)
+                .filter(|size| *size > 0.0);
+            composed_height +=
+                own_font_size.unwrap_or_else(|| hwpunit_to_px(DEFAULT_LINE_HEIGHT_HWPUNIT, dpi));
+        // 기본 줄 높이
         } else {
             for (i, line) in composed.lines.iter().enumerate() {
                 let line_h = hwpunit_to_px(line.line_height, dpi);
@@ -1817,21 +1927,11 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
 }
 
 /// Legacy Latin 구두점인가 — [`crate::renderer::TextStyle::ascii_punct_latin`] 가
-/// 있는 run 에서 한/글은 이 글자를 영문 슬롯 글꼴로 잰다.
-/// `76076` 한컴 2024 PDF의 가운뎃점·작은따옴표도 Palatino Linotype 슬롯이다.
-/// 한글 face 자체의 가운뎃점 폭과 HFT 한점 리더는 이 슬롯 조건 밖이다.
+/// 있는 run 에서 한/글은 이 ASCII 구두점을 영문 슬롯 글꼴로 잰다.
+/// 가운뎃점·곡선 따옴표는 이 조건과 무관하게 언제나 영문 슬롯이다
+/// ([`detect_lang_category`], #7702).
 pub(crate) fn is_latin_slot_punct(ch: char) -> bool {
-    ch.is_ascii_punctuation() || matches!(ch, '\u{00B7}' | '\u{2018}' | '\u{2019}')
-}
-
-/// Newly composed neutral punctuation shares one explicit slot between width and paint.
-/// Stored runs retain their own inherited face; ASCII keeps its existing metric rule.
-pub(crate) fn reflow_punctuation_slot(ch: char, inherited: usize, punct_latin: bool) -> usize {
-    if punct_latin && !ch.is_ascii() && is_latin_slot_punct(ch) {
-        1
-    } else {
-        inherited
-    }
+    ch.is_ascii_punctuation()
 }
 
 /// 글자의 언어 슬롯. 중립 문자는 앞 글자 언어(`carry`)를 따른다. `punct_latin` 인 글자
@@ -1857,19 +1957,23 @@ pub(crate) fn is_lang_neutral(ch: char) -> bool {
         0x0000..=0x0020 |
         // ASCII 구두점/기호 (영문자/숫자 제외)
         0x0021..=0x002F | 0x003A..=0x0040 | 0x005B..=0x0060 | 0x007B..=0x007F |
-        // Latin-1 Supplement 구두점 (문자 제외)
-        0x00A0..=0x00BF
+        // Latin-1 Supplement 구두점 (문자 제외). `°`·`·` 는 영문 슬롯 글자라 중립이 아니다
+        // ([`detect_lang_category`], #7702).
+        0x00A0..=0x00AF | 0x00B1..=0x00B6 | 0x00B8..=0x00BF
     )
 }
 
 /// 문단 내 인라인 컨트롤(표/도형)의 위치를 식별한다.
 /// [#6706] 줄 끝 개체와 다음 줄 첫 글자는 같은 가시 위치로 투영될 수 있다.
-/// 원본 줄 구성이 유지되고 그 충돌이 실제 존재할 때 원 기록으로 개체 소유 줄을 복원한다.
-/// 재조판된 줄이나 경계 충돌이 없는 인라인 개체들은 기존 문자 범위 배정을 그대로 쓴다.
-pub(crate) fn stored_tac_line_assignment(
+/// 조합 결과가 현재 문단의 줄 경계·메트릭을 그대로 소비하고 충돌이 존재할 때
+/// UTF-16 제어 슬롯으로 개체 소유 줄을 복원한다. 저장 줄과 편집 재조판 줄은
+/// 각각의 출처 안에서만 적용하며 둘을 섞은 사다리는 수용하지 않는다.
+/// 이 조회는 저장 캐시의 수용 조건을 변경하거나 옛 줄을 재조판에 적용하지 않는다.
+pub(crate) fn composed_tac_line_assignment(
     para: &Paragraph,
     comp: &ComposedParagraph,
 ) -> Option<Vec<(usize, usize)>> {
+    let computed_rows = para.line_segs.first()?.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
     if super::equation_tac_flow::uses_equation_only_flow(para, comp)
         || para.char_offsets.is_empty()
         || comp.lines.len() != para.line_segs.len()
@@ -1880,7 +1984,7 @@ pub(crate) fn stored_tac_line_assignment(
             .zip(&para.line_segs)
             .enumerate()
             .any(|(i, (line, seg))| {
-                seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                (seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0) != computed_rows
                     || line.line_height != stored_line_box_height(seg)
                     || line.segment_width != seg.segment_width
                     || line.char_start
@@ -1891,14 +1995,11 @@ pub(crate) fn stored_tac_line_assignment(
     {
         return None;
     }
-    let raw = para.control_utf16_positions();
     let assignments: Vec<(usize, usize)> = comp
         .tac_controls
         .iter()
         .map(|(_, _, ci)| {
-            let start = *raw.get(*ci)?;
-            let owner =
-                (0..para.line_segs.len()).rfind(|&i| para.line_seg_text_start(i) <= start)?;
+            let owner = control_slot_line_index(para, *ci)?;
             Some((*ci, owner))
         })
         .collect::<Option<_>>()?;
@@ -1912,6 +2013,13 @@ pub(crate) fn stored_tac_line_assignment(
                     .is_some_and(|next| *pos >= next.char_start)
             });
     collapsed_boundary.then_some(assignments)
+}
+
+/// 보이는 다음 글자와 확장 제어 슬롯이 같은 논리 위치여도 원시 줄 소속은 다를 수 있다.
+/// 저장/현재 재조판 사다리의 UTF-16 경계로 조회하며 높이의 우연한 일치는 사용하지 않는다.
+pub(crate) fn control_slot_line_index(para: &Paragraph, control_index: usize) -> Option<usize> {
+    let start = *para.control_utf16_positions().get(control_index)?;
+    (0..para.line_segs.len()).rfind(|&line| para.line_seg_text_start(line) <= start)
 }
 
 fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
@@ -2950,6 +3058,8 @@ pub(crate) fn recompose_stored_lines_in_frame(
         float_carve_evidence,
         false,
         false,
+        false,
+        &[],
     )
 }
 
@@ -2975,6 +3085,14 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
     known_square_band: bool,
     hwpx_stored_layout: bool,
+    // [hwpx-02] 구역의 저장 줄 사다리가 통짜 합성값(`stored_line_ladder_is_uniform_filler`)
+    // 이면 문단마다 한 줄이라는 저장 분할도 조판 결과가 아니다. 한/글 2022 PDF 는 그
+    // 문단들을 다시 나눈다(hwpx-02 2쪽 `…투자대상국에서 제 / 외`). 이때는 저장 행을
+    // 부실로 보고 프레임이 다시 채운다.
+    stored_rows_untrusted: bool,
+    // 현대 NO_LS 셀의 측정 소유자가 전달한 실측 표 높이다. 이 증거가 없는
+    // 일반/Native 문단의 별도 표 배치 소유권을 새 프레임으로 바꾸지 않는다.
+    measured_inline_table_heights: &[(usize, u32)],
 ) -> Option<ComposedParagraph> {
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
@@ -3009,6 +3127,16 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             matches!(control, crate::model::control::Control::Picture(picture)
                 if picture.common.treat_as_char)
         });
+    let single_tac_table_with_text = para.text.chars().any(|c| !c.is_whitespace())
+        && para
+            .controls
+            .iter()
+            .filter(|control| {
+                matches!(control, crate::model::control::Control::Table(table)
+                    if table.common.treat_as_char)
+            })
+            .count()
+            == 1;
     let frame_admits_controls = line_breaking::supports_cached_body_frame_controls(para)
         || (justified_kopub_picture
             && para.controls.iter().all(|control| {
@@ -3023,10 +3151,9 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
                     && picture.common.text_wrap == crate::model::shape::TextWrap::Square)
                 }))
             && line_breaking::supports_picture_band_frame_controls(para))
-        // [#7160] 글자처럼 취급 **표** host 도 프레임이 받는다 — `inline_control_size_hwp` 가
-        // 그 폭을 인라인 토큰으로 계상하므로 그림과 같은 축이다. 글자 없는 host 는 제외한다:
-        // 줄을 나눌 글자가 없고 표 자리 계약은 다른 경로가 갖는다.
-        || (para.text.chars().any(|c| !c.is_whitespace())
+        // 실측 인라인 표의 현재 프레임은 글자 없는 host와 여러 표도 구성한다.
+        // 나머지 경로는 기존의 보이는 글자+단일 TAC 표 수용 계약을 유지한다.
+        || ((!measured_inline_table_heights.is_empty() || single_tac_table_with_text)
             && line_breaking::supports_tac_table_band_frame_controls(para));
     if !paragraph_box.is_usable() || !frame_admits_controls {
         return None;
@@ -3041,37 +3168,23 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             .unwrap_or(0),
     );
     frame.kopub_justified_space = justified_kopub_picture;
-    // 새로 채운 줄이 짧아졌다는 이유만으로 정상 저장 분할을 무효화하지 않는다.
-    // 마지막 자동 줄바꿈 때문에 한글 어절의 나머지만 마지막 줄에 남고,
-    // 이 프레임에서 앞부분과 다시 합칠 수 있는 경우에만 보정한다.
-    // 완결된 마지막 어절이나 여러 어절은 저장된 경계를 유지한다.
-    let rejoinable_word_tail = justified_kopub_picture
-        && para.line_segs.len() > 1
-        && !para.text.contains('\n')
-        && !para.stored_text_partition_is_dirty()
-        && !frame.models_exclusions()
-        && {
-            let chars: Vec<_> = para.text.chars().collect();
-            let (start, _) = utf16_range_to_text_range(
-                &para.char_offsets,
-                para.line_seg_text_start(para.line_segs.len() - 1),
-                u32::MAX,
-                chars.len(),
-            );
-            let is_syllable = |c: char| ('\u{ac00}'..='\u{d7a3}').contains(&c);
-            start > 0
-                && start < chars.len()
-                && is_syllable(chars[start - 1])
-                && chars[start..].iter().copied().all(is_syllable)
-        }
-        && {
-            let mut probe = frame.clone();
-            let mut input = para.clone();
-            input.line_segs.clear();
-            line_breaking::layout_paragraph_in_frame(&input, &mut probe, styles, dpi)
-                .is_some_and(|rows| rows.len() < para.line_segs.len())
-        };
-    let stale = rejoinable_word_tail
+    // 마지막 자동 줄바꿈이 나눈 어절은 현재 프레임의 실제 줄 구성으로 재검토한다.
+    // 글꼴 이름이 같은 재조판 규칙의 적용 범위를 정하지 않는다.
+    let rejoinable_word_tail = !legacy_hwp3_stored_geometry
+        && stored_word_tail::can_rejoin_stored_word_tail(
+            para,
+            &frame,
+            styles,
+            dpi,
+            justified_kopub_picture,
+        );
+    // 번호를 모른 채 만든 합성/편집 줄은 새 필드 토큰으로 다시 채운다.
+    // 원본 저장 줄의 소속과 원점은 기존 수용 계약으로 계속 검증한다.
+    let stale = (!para.layout_field_values.is_empty()
+        && (para.stored_text_partition_dirty
+            || crate::renderer::para_has_no_stored_line_segs(para)))
+        || rejoinable_word_tail
+        || (stored_rows_untrusted && !para.line_segs.is_empty())
         || stored_rows_are_stale(composed, para, inner_width_px, styles)
         || line_breaking::remeasured_equation_start_row(para).is_some();
     match line_breaking::resolve_stored_line_segs_in_frame(
@@ -3114,6 +3227,14 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             }
             let mut reconciled = composed.clone();
             reconciled.lines = reflowed.lines;
+            if rejoinable_word_tail || !measured_inline_table_heights.is_empty() {
+                reconciled.frame_geometry =
+                    Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
+                        line_segs: reflowed_para.line_segs,
+                        space_metrics: reflowed_para.layout_space_metrics,
+                        inline_table_heights: measured_inline_table_heights.to_vec(),
+                    }));
+            }
             // Q2-D5-N1: source NO_LS has no usable width during the initial
             // composition handoff. The physical frame is the first owner that
             // knows the final intervals, so prepare Q2-C again only after that
@@ -3224,36 +3345,6 @@ fn preserve_context_resolved_runs(source: &ComposedParagraph, reflowed: &mut Com
         run: &'a ComposedTextRun,
     }
 
-    fn projected_display(
-        run: &ComposedTextRun,
-        take_start: usize,
-        take_end: usize,
-    ) -> Option<String> {
-        let display = run.display_text.as_ref()?;
-        let model_len = run.text.chars().count();
-        if take_start == 0 && take_end == model_len {
-            return Some(display.clone());
-        }
-        if display.chars().count() == model_len {
-            return Some(
-                display
-                    .chars()
-                    .skip(take_start)
-                    .take(take_end - take_start)
-                    .collect(),
-            );
-        }
-
-        let text: String = run
-            .text
-            .chars()
-            .skip(take_start)
-            .take(take_end - take_start)
-            .collect();
-        let expanded = expand_pua_display_text(&text);
-        (expanded != text).then_some(expanded)
-    }
-
     // Only these payloads are owned by the already context-resolved source.
     // Style and language partitions remain the Frame composition's property.
     let mut context_spans = Vec::new();
@@ -3314,7 +3405,7 @@ fn preserve_context_resolved_runs(source: &ComposedParagraph, reflowed: &mut Com
                     .skip(take_start)
                     .take(take_end - take_start)
                     .collect();
-                piece.display_text = projected_display(&run, take_start, take_end);
+                piece.display_text = run.display_for_model_range(take_start, take_end);
                 if take_start != 0 || take_end != run_len {
                     piece.footnote_marker = None;
                     piece.char_overlap = None;
@@ -3326,7 +3417,7 @@ fn preserve_context_resolved_runs(source: &ComposedParagraph, reflowed: &mut Com
                 {
                     let source_start = piece_start - span.start;
                     let source_end = piece_end - span.start;
-                    piece.display_text = projected_display(span.run, source_start, source_end);
+                    piece.display_text = span.run.display_for_model_range(source_start, source_end);
                     let owns_whole_payload = piece_start == span.start && piece_end == span.end;
                     piece.footnote_marker = owns_whole_payload
                         .then_some(span.run.footnote_marker)

@@ -121,6 +121,10 @@ const webviewConfig = {
           from: path.resolve(__dirname, "node_modules", "@noble", "hashes", "LICENSE"),
           to: path.resolve(__dirname, "dist", "licenses", "noble-hashes-LICENSE.txt"),
         },
+        {
+          from: path.resolve(__dirname, "..", "assets", "fonts", "licenses"),
+          to: path.resolve(__dirname, "dist", "media", "fonts", "licenses"),
+        },
         // 필수 오픈소스 폰트만 번들 (크기 최적화)
         ...[
           "NotoSerifKR-Regular.woff2", "NotoSerifKR-Bold.woff2",

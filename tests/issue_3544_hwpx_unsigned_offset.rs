@@ -20,7 +20,10 @@ fn sample_path() -> std::path::PathBuf {
 /// ZIP 바이트에서 Contents/section*.xml 을 이어붙여 돌려준다.
 fn section_xml_of(bytes: &[u8]) -> String {
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("ZIP 열기 실패");
-    let names: Vec<String> = zip.file_names().map(str::to_string).collect();
+    let names: Vec<String> = zip
+        .file_names()
+        .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+        .collect();
     let mut xml = String::new();
     for name in names {
         if name.starts_with("Contents/section") && name.ends_with(".xml") {

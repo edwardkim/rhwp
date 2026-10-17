@@ -11,6 +11,7 @@ pub mod ast;
 #[cfg(target_arch = "wasm32")]
 pub mod canvas_render;
 pub(crate) mod dispatch;
+pub mod hancom_glyphs;
 pub mod layout;
 pub(crate) mod legacy_hwpeq;
 pub mod parser;
@@ -36,6 +37,16 @@ pub(crate) fn stored_vertical_scale(height: f64, intrinsic_height: f64, font_siz
         height / intrinsic_height
     } else {
         1.0
+    }
+}
+
+/// A Hancom linear glyph run paints at natural size while the stored object
+/// advance still owns the following text. This is also observed after Hancom Save.
+pub(crate) fn stored_horizontal_scale(width: f64, layout: &layout::LayoutBox) -> f64 {
+    if hancom_glyphs::is_linear(layout) || layout.width <= 0.0 || width <= 0.0 {
+        1.0
+    } else {
+        width / layout.width
     }
 }
 
@@ -82,6 +93,42 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
 
 pub(crate) fn flow_width_hwp(equation: &crate::model::control::Equation) -> u32 {
     flow_metrics_hwp(equation).0
+}
+
+fn inline_horizontal_margins(equation: &crate::model::control::Equation) -> (i32, i32) {
+    if equation.common.treat_as_char {
+        (
+            i32::from(equation.common.margin.left),
+            i32::from(equation.common.margin.right),
+        )
+    } else {
+        (0, 0)
+    }
+}
+
+pub(crate) fn inline_advance_width_hwp(equation: &crate::model::control::Equation) -> i32 {
+    let (left, right) = inline_horizontal_margins(equation);
+    (flow_width_hwp(equation) as i32)
+        .saturating_add(left)
+        .saturating_add(right)
+}
+
+/// The composer reserves this slot including margins. Each painter consumes
+/// its content box from those same margins; subsequent text keeps the slot advance.
+pub(crate) fn inline_content_box(
+    equation: &crate::model::control::Equation,
+    slot: super::render_tree::BoundingBox,
+    dpi: f64,
+) -> super::render_tree::BoundingBox {
+    let (left, right) = inline_horizontal_margins(equation);
+    let left_px = super::hwpunit_to_px(left, dpi);
+    let right_px = super::hwpunit_to_px(right, dpi);
+    super::render_tree::BoundingBox::new(
+        slot.x + left_px,
+        slot.y,
+        slot.width - left_px - right_px,
+        slot.height,
+    )
 }
 
 pub(crate) fn flow_height_hwp(equation: &crate::model::control::Equation) -> u32 {

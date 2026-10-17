@@ -38,10 +38,12 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | hmac | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/MACs | HWPX 무결성 |
 | image | 0.25.10 | MIT OR Apache-2.0 | image-rs/image | BMP/JPEG/PNG 디코딩 |
 | js-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM JS interop |
+| office_oxide | 0.1.9 | MIT OR Apache-2.0 | yfedoseev/office_oxide | `pdf-import` optional 호환성 제약; PDF 전이 의존성 |
 | paste | 1.0.15 | MIT OR Apache-2.0 | dtolnay/paste | 매크로 보조 |
 | pbkdf2 | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/password-hashes | HWPX 키 파생 |
 | pcx | 0.2.5 | MIT OR Apache-2.0 OR WTFPL | kryptan/pcx | PCX 이미지 디코딩 |
 | pdf-writer | 0.12.1 | MIT OR Apache-2.0 | typst/pdf-writer | PDF 출력 |
+| rhwp-pdf-import-backend | 0.3.78-rhwp.1 | MIT OR Apache-2.0 | edwardkim/rhwp | `pdf-import` optional; `pdf_oxide 0.3.78` 기반 내부 보안 패치, 코드 import alias `pdf_oxide` |
 | quick-xml | 0.41.0 | MIT | tafia/quick-xml | HWPX XML 파싱 |
 | resvg | 0.47.0 | Apache-2.0 OR MIT | linebender/resvg | native-skia SVG raster (optional) |
 | roxmltree | 0.21.1 | MIT OR Apache-2.0 | RazrFalcon/roxmltree | XML 검증·정규화 |
@@ -68,8 +70,10 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 ### 전체 Rust 의존성 요약
 
-`cargo metadata --locked` 기준 package entry는 247개이며, 그중 registry 또는 Git
-source를 가진 외부 Rust 크레이트는 243개다. 나머지 4개는 현재 workspace 패키지다.
+전체 의존성은 현재 `Cargo.toml` / `Cargo.lock`과 선택한 feature·target을 함께 기준으로 확인한다.
+`cargo metadata --locked --features pdf-import --filter-platform wasm32-unknown-unknown` 등으로
+해당 구성의 resolve graph를 확인하며, lockfile에 존재한다는 이유만으로 최종 배포물에 포함된다고
+간주하지 않는다. 과거 workspace의 package 개수는 현재 의존성 총수로 사용하지 않는다.
 
 주요 라이선스군:
 
@@ -77,6 +81,7 @@ source를 가진 외부 Rust 크레이트는 243개다. 나머지 4개는 현재
 - MIT 단독
 - Apache-2.0 OR MIT
 - BSD-2-Clause / BSD-3-Clause
+- BSD-3-Clause AND MIT (`brotli`, PDF 전이 의존성)
 - Zlib
 - Unlicense
 - 0BSD
@@ -87,6 +92,183 @@ source를 가진 외부 Rust 크레이트는 243개다. 나머지 4개는 현재
 
 > 모든 Rust 의존성은 MIT, Apache-2.0, BSD, Zlib, Unlicense, 0BSD, ISC 등 permissive license 계열이거나
 > permissive option을 포함하며, rhwp의 MIT 라이선스와 호환된다.
+
+### PDF 입력 의존성의 고지
+
+`pdf-import`는 기본 비활성이며, 활성화할 때 `rhwp-pdf-import-backend =0.3.78-rhwp.1`과
+`office_oxide =0.1.9`를 모두 `default-features = false`로 사용한다.
+`office_oxide` 직접 버전 제약은 `pdf_oxide 0.3.78`과의 컴파일 호환성을 위한 것이며,
+rhwp가 Office 입력 형식 지원을 추가했다는 뜻은 아니다.
+내부 backend는 Brotli private scratch를 요청별로 제한하기 위해
+`brotli-decompressor =6.0.1`도 직접 사용한다. 해당 crate의 라이선스 표기는
+`BSD-3-Clause/MIT`이며 기존 `brotli 9.0.0`의 `BSD-3-Clause AND MIT`와 구별한다.
+감사한 Native/WASM 구성에서는 `std`만 활성화하고 `unsafe`/FFI feature는 활성화하지 않는다.
+
+내부 backend는 메인테이너의 별도 승인에 따라 `pdf_oxide 0.3.78`을 보존한 보안 패치다.
+크기 최적화용 소스 추출은 하지 않는다. 수정판을 공식 PDFOxide release로 표시하지 않으며,
+원본·변경 범위·배포 제한은 [패치 기록](vendor/rhwp-pdf-import-backend/RHWP_PATCHES.md),
+원본 파일별 hash는 `vendor/rhwp-pdf-import-backend/UPSTREAM_FILES.json`에 보존한다.
+원래 MIT/Apache 라이선스·NOTICE·상표 정책도 해당 directory에 유지한다.
+내부 Rust dependency는 `rlib`만 생성한다. 원본 C API·writer 소스는 보존하지만 이 내부
+package를 독립 cdylib/staticlib 제품으로 배포하는 계약은 제공하지 않는다.
+`publish = false`이며 외부 게시·배포와 게시된 rhwp library 소비자 지원은 아직 완료하지 않았다.
+
+아래 고지는 해당 버전 crate 배포본의 `NOTICE`와 `LICENSE-MIT` 원문이다.
+두 crate의 재배포에는 dual license 중 MIT 선택지를 적용한다. 이 고지와 각 전이 의존성의
+라이선스·저작권 고지는 실제 Native/WASM 배포물의 문서 또는 고지 자료에도 함께 제공해야 한다.
+제품명·패키지명·로고의 상표 사용 권한은 소스 코드 라이선스와 별개다.
+
+#### PDFOxide 0.3.78 NOTICE
+
+```text
+PDFOxide
+Copyright (c) 2025-2026 Yury Fedoseev and the PDFOxide project contributors
+
+PDFOxide is the product; "pdf_oxide" is the name of its packages/crate.
+
+This product is licensed under the terms of the MIT license OR the
+Apache License, Version 2.0, at your option. See LICENSE-MIT and
+LICENSE-APACHE for the full license texts.
+
+Copyright in the PDFOxide code base is held by Yury Fedoseev and the project's
+contributors; contributions are made under the project's Contributor License
+Agreement (see CLA.md) and/or the Developer Certificate of Origin (see
+CONTRIBUTING.md), under which contributors retain ownership of their
+contributions and license them to the project.
+
+"PDFOxide" (the product name) and "pdf_oxide" (the package name), together with
+any associated logo, are trademarks of Yury Fedoseev and are not covered by the
+source-code license. See TRADEMARKS.md.
+
+Portions of this software incorporate third-party open-source components; their
+respective licenses are listed in the dependency manifests (Cargo.toml /
+Cargo.lock and the per-binding package manifests).
+```
+
+#### PDFOxide 0.3.78 MIT License
+
+```text
+Copyright (c) 2025-present Yury Fedoseev
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+#### OfficeOxide 0.1.9 NOTICE
+
+```text
+OfficeOxide
+Copyright (c) 2026 Yury Fedoseev and the OfficeOxide project contributors
+
+OfficeOxide is the product; "office_oxide" is the name of its packages/crate.
+
+This product is licensed under the terms of the MIT license OR the
+Apache License, Version 2.0, at your option. See LICENSE-MIT and
+LICENSE-APACHE for the full license texts.
+
+Copyright in the OfficeOxide code base is held by Yury Fedoseev and the project's
+contributors; contributions are made under the project's Contributor License
+Agreement (see CLA.md) and/or the Developer Certificate of Origin (see
+CONTRIBUTING.md), under which contributors retain ownership of their
+contributions and license them to the project.
+
+"OfficeOxide" (the product name) and "office_oxide" (the package name), together with
+any associated logo, are trademarks of Yury Fedoseev and are not covered by the
+source-code license. See TRADEMARKS.md.
+
+Portions of this software incorporate third-party open-source components; their
+respective licenses are listed in the dependency manifests (Cargo.toml /
+Cargo.lock and the per-binding package manifests).
+```
+
+#### OfficeOxide 0.1.9 MIT License
+
+```text
+Copyright (c) 2026 Yury Fedoseev
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+#### PDFOxide 동봉 폰트
+
+`pdf_oxide 0.3.78` 소스에는 DejaVu Sans Regular/Bold가 `include_bytes!`로 선언되어 있다.
+이 자산이 포함된 배포에 대비해 crate의 `src/fonts/assets/LICENSE-DejaVu` 고지를 보존한다.
+소스에 존재하는 것과 최종 WASM에 포함되는지는 구분하며, 포함 여부를 크기 측정만으로 단정하지 않는다.
+별도 `cjk-form-fonts` / `cjk-render-fallback` 기능의 Droid Sans Fallback·Noto Emoji는
+현재 활성화하지 않는다. 해당 기능 도입 시 별도 폰트 고지도 함께 추가한다.
+
+```text
+DejaVu Fonts — Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved.
+Bitstream Vera is a trademark of Bitstream, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of the fonts accompanying this license ("Fonts") and associated documentation
+files (the "Font Software"), to reproduce and distribute the Font Software,
+including without limitation the rights to use, copy, merge, publish,
+distribute, and/or sell copies of the Font Software, and to permit persons to
+whom the Font Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright and trademark notices and this permission notice shall be
+included in all copies of one or more of the Font Software typefaces.
+
+The Font Software may be modified, altered, or added to, and in particular the
+designs of glyphs or characters in the Fonts may be modified and additional
+glyphs or characters may be added to the Fonts, only if the fonts are renamed
+to names not containing either the words "Bitstream" or the word "Vera".
+
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT,
+TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL BITSTREAM OR THE GNOME FOUNDATION
+BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL,
+SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO
+USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
+```
 
 ---
 
@@ -160,11 +342,22 @@ source를 가진 외부 Rust 크레이트는 243개다. 나머지 4개는 현재
 | Gowun Dodum | SIL Open Font License 1.1 | Google Fonts | Sans-serif fallback |
 | D2 Coding (2종) | SIL Open Font License 1.1 | NAVER | Monospace fallback |
 | Spoqa Han Sans | SIL Open Font License 1.1 | github.com/spoqa/spoqa-han-sans | Sans-serif fallback |
-| Source Han Serif K Old Hangul subset | SIL Open Font License 1.1 | Adobe / Google | 옛한글 PUA fallback, `SourceHanSerifK-OFL.txt` 동봉 |
+| RHWP Old Hangul subset | SIL Open Font License 1.1 | Adobe / Google | 옛한글 PUA fallback, `SourceHanSerifK-OFL.txt` 동봉 |
 | Latin Modern Math | GUST Font License | GUST / TeX ecosystem | 수식 fallback |
 | Cafe24 써라운드 | 카페24 무료 배포 | fonts.cafe24.com | 장식체 |
 | Cafe24 슈퍼매직 | 카페24 무료 배포 | fonts.cafe24.com | 장식체 |
-| 행복고딕 (Happiness Sans, 4종) | 무료 배포 | 행복나눔재단 | Sans-serif fallback |
+| 해피니스 산스 (Happiness Sans, 4종) | SIL Open Font License 1.1 | [현대백화점](https://thehyundaifont.com/) | 공식 배포 WOFF2 원본. [동봉 라이선스 PDF](ttfs/redistributable/happiness-sans/HapinessSans_License.pdf)에 저작권·Reserved Font Name·OFL 전문 수록 |
+
+테스트 폰트를 공개 GitHub 저장소에 포함하는 것도 재배포이므로, 제품 번들 여부와 관계없이
+원본의 저작권·라이선스·수정본 명명 조건이 적용된다. 저장소의 MIT 라이선스가 외부 폰트의
+재배포 권한을 대신하지 않는다.
+
+| 경로 | 출처·라이선스 | 비고 |
+| --- | --- | --- |
+| `tests/fixtures/fonts/RHWPEquation*.ttf` (3개) | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처·변형 설명](tests/fixtures/fonts/RHWPEquationFonts.LICENSE.md), [전문](tests/fixtures/fonts/RHWPEquationFonts.OFL.txt). 내부 family는 `RHWP Equation Contract`; 문서의 요청 이름은 렌더러의 명시적 대체 설정으로 연결 |
+| `tests/fixtures/native_font_family_names/family-contract.ttf` | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처](tests/fixtures/native_font_family_names/README.md), [전문](tests/fixtures/native_font_family_names/OFL.txt) |
+| `tests/fixtures/native_font_styles/*.ttf` (2개) | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처·재생성](tests/fixtures/native_font_styles/README.md), [전문](tests/fixtures/native_font_styles/OFL.txt) |
+| 나머지 `tests/fixtures/fonts/`의 TTF·TTC (7개) | 저장소 생성기의 직접 작성 윤곽선, MIT | 각 `*.LICENSE.md`에 생성기·용도 기록. 외부 폰트 수정본과 구별 |
 
 ---
 
@@ -247,3 +440,9 @@ rhwp는 **MIT 라이선스**로 배포된다.
 ---
 
 *이 문서는 `Cargo.toml`, `Cargo.lock`, 각 `package.json`/`package-lock.json`, `assets/fonts/FONTS.md` 기준으로 현행화되었으며, 의존성 업데이트 시 함께 갱신해야 한다.*
+
+배포 폰트의 파일별 SHA·원본 저작권·라이선스 전문은
+[fonts/licenses](assets/fonts/licenses/README.md)에 함께 보존한다. 제품 폰트 37개와
+공개 테스트·Native 원본 18개를 [목록](assets/fonts/licenses/font-notices.json)에 등록하며,
+등록되지 않은 공개 폰트 또는 배포 고지 누락은 `scripts/frontend-font-assets.test.mjs`가 검출한다.
+상용 글꼴의 문서 요청 이름은 대체 설정에서 처리하고, 파생 폰트의 내부 이름으로 사용하지 않는다.

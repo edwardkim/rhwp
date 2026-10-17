@@ -1,8 +1,20 @@
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
+
 use super::*;
 use crate::model::document::*;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::style::*;
 use crate::parser::cfb_reader::decompress_stream;
+
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
 
 #[test]
 fn test_compress_decompress_roundtrip() {
@@ -62,6 +74,7 @@ fn test_serialize_hwp_cfb_streams() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],
@@ -210,6 +223,7 @@ fn test_full_roundtrip_uncompressed() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],
@@ -291,6 +305,7 @@ fn test_full_roundtrip_compressed() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],
@@ -427,6 +442,11 @@ fn test_serialize_real_hwp_files() {
     for entry in std::fs::read_dir(sample_dir).unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
+        if is_deferred_exam_document(path.to_string_lossy().as_ref())
+            || exam_fixtures::is_exam_fixture(&path)
+        {
+            continue;
+        }
         if path.extension().and_then(|s| s.to_str()) != Some("hwp") {
             continue;
         }
@@ -1681,6 +1701,7 @@ fn test_ole_storage_size_prefix_restored() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],
@@ -1769,6 +1790,7 @@ fn test_compressed_ole_storage_payload_is_deflated() {
                 }],
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         }],

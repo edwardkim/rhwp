@@ -142,3 +142,35 @@ test('문서 변경(clearTableResizeRuntimeCache 모사) 뒤에는 다시 시도
   assert.equal(ensureTableCellBboxCache(host, T, 0), page0Cells);
   assert.equal(host.calls.length, 2);
 });
+
+
+test('현재 페이지 조회를 우선하며 전체 선택 조회를 실행하지 않는다 (#7639)', () => {
+  const host = makeHost(() => { throw new Error('whole-table query must not run'); });
+  const pages: number[] = [];
+  host.wasm.getTableCellBboxesAtPage = (_s, _p, _c, page) => {
+    pages.push(page);
+    // 같은 원본 셀이 여러 페이지 조각에 나타나는 경우에도 pageIndex를 보존한다.
+    return [{ pageIndex: page, cellIdx: 7 }];
+  };
+  assert.deepEqual(ensureTableCellBboxCache(host, T, 0), [{ pageIndex: 0, cellIdx: 7 }]);
+  ensureTableCellBboxCache(host, T, 0);
+  assert.deepEqual(ensureTableCellBboxCache(host, T, 80), [{ pageIndex: 80, cellIdx: 7 }]);
+  assert.deepEqual(pages, [0, 80]);
+  assert.deepEqual(host.calls, []);
+});
+
+test('페이지 조회의 빈 결과와 예외는 전체 표 조회로 확대하지 않는다 (#7639)', () => {
+  for (const throws of [false, true]) {
+    const host = makeHost(() => { throw new Error('whole-table fallback must not run'); });
+    let calls = 0;
+    host.wasm.getTableCellBboxesAtPage = () => {
+      calls++;
+      if (throws) throw new Error('page query error');
+      return [];
+    };
+    assert.equal(ensureTableCellBboxCache(host, T, 2), null);
+    assert.equal(ensureTableCellBboxCache(host, T, 2), null);
+    assert.equal(calls, 1);
+    assert.deepEqual(host.calls, []);
+  }
+});

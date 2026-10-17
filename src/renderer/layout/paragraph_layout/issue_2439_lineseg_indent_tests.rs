@@ -85,6 +85,7 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
     let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle::default(), ResolvedCharStyle::default()],
@@ -128,7 +129,10 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         }],
         active_header: None,
         active_footer: None,

@@ -281,6 +281,8 @@ pub struct Section {
     pub section_def: SectionDef,
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
+    /// 본문 문단 뒤에 저장된 바탕쪽·메모 목록. 본문 raw_stream과 수명을 분리한다.
+    pub trailing_lists: Option<crate::model::section_tail::SectionTail>,
     /// 원본 BodyText 레코드 스트림 바이트 (직렬화 시 원본 복원용)
     /// 편집 시 None으로 초기화하여 재직렬화 유도
     pub raw_stream: Option<Vec<u8>>,

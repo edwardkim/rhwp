@@ -16,6 +16,7 @@ mod crypto;
 pub mod header;
 pub mod reader;
 pub mod section;
+mod tracked_changes;
 pub mod utils;
 
 use std::collections::{HashMap, HashSet};
@@ -456,6 +457,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
 
     // 3. header.xml → DocInfo, DocProperties
     let header_xml = reader.read_file("Contents/header.xml")?;
+    let tracking_visibility = tracked_changes::Visibility::from_header(&header_xml)?;
     // 평문 여백의 단위 전환은 header.xml이 아닌 패키지 xmlVersion에 따른다.
     let physical_plain_margin = hwpx_aux_entries
         .iter()
@@ -527,10 +529,32 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // TAC 계약을 쓴다.
     let _hwp3_origin_guard =
         section::Hwp3OriginSourceGuard::set(has_hwp3_origin && !has_hwp5_origin);
+    // 한/글은 header.xml `secCnt` 가 선언한 수만큼의 앞 구역만 읽는다. spine 이 더 많은
+    // 구역 파일을 나열하면(옛 rhwp 저장본, #1557 이전) 뒤 구역은 문서에 없다.
+    // 선언이 없거나 0 이거나 spine 보다 크면 spine 을 그대로 따른다.
+    let loaded_section_count = header::parse_hwpx_declared_section_count(&header_xml)
+        .filter(|&declared| declared >= 1 && declared < package_info.section_files.len())
+        .unwrap_or(package_info.section_files.len());
+    if loaded_section_count < package_info.section_files.len() {
+        eprintln!(
+            "경고: header.xml secCnt={} < spine 구역 {}개 — 한/글처럼 앞 {}개 구역만 읽는다",
+            loaded_section_count,
+            package_info.section_files.len(),
+            loaded_section_count
+        );
+    }
     let mut sections = Vec::new();
-    for (section_idx, section_href) in package_info.section_files.iter().enumerate() {
+    for (section_idx, section_href) in package_info
+        .section_files
+        .iter()
+        .take(loaded_section_count)
+        .enumerate()
+    {
         let section_xml = reader.read_file(section_href)?;
         let section_xml = canonicalize_bin_item_refs(&section_xml, &package_info.bin_data_items);
+        let section_xml = tracking_visibility
+            .project(&section_xml)?
+            .unwrap_or(section_xml);
         let master_page_refs = match section::collect_hwpx_section_master_page_refs(&section_xml) {
             Ok(refs) => refs,
             Err(e) => {

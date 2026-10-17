@@ -64,6 +64,16 @@ pub fn tab_dot_leader_stroke(font_size: f64) -> (f64, f64, f64) {
     (width, dash, (pitch - dash).max(0.1))
 }
 
+/// 원형 점선 탭(채움 종류 7)의 실제 원 지름·중심 간격(96dpi 좌표).
+///
+/// 한컴 2020 가맹사업 보고서 5쪽의 733개 원은 글자 크기 12.5/13/14pt와
+/// 무관하게 외곽 지름 1.5987px, 간격 3.998px다. 한컴 2024 평가 지침 6쪽의
+/// 575개 원도 같은 값이다. 폰트 비례 점선(종류 3)과 별개인 1.2pt/3pt 패턴이다.
+/// 0 길이 dash의 round cap을 사용해 짧은 타원 대신 원을 그린다.
+pub(crate) fn tab_circle_leader_stroke() -> (f64, f64, f64) {
+    (1.6, 0.0, 4.0)
+}
+
 pub const REAL_PICTURE_WATERMARK_PAGE_OPACITY: f64 = 0.26;
 pub const REAL_PICTURE_WATERMARK_FILL_OPACITY: f64 = 0.15;
 pub const REAL_PICTURE_WATERMARK_OPACITY: f64 = REAL_PICTURE_WATERMARK_PAGE_OPACITY;
@@ -159,6 +169,10 @@ pub struct RenderNode {
     /// 문단 부호·투명 테두리처럼 편집 화면에서만 보여야 하는 보조 표시.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub editor_only: bool,
+    /// 편집 안내문/조판부호의 전진을 적용하기 전 실제 내용 상자.
+    /// 인쇄 레이어는 같은 줄 구성의 이 상자를 소비한다.
+    #[serde(skip)]
+    pub print_bbox: Option<BoundingBox>,
     /// 원본 컨트롤의 식별 결과. 내부 레이아웃 노드 이름과 조판부호를 분리한다.
     #[serde(skip)]
     pub control_code: ControlCode,
@@ -185,6 +199,7 @@ impl RenderNode {
             children: Vec::new(),
             visible: true,
             editor_only: false,
+            print_bbox: None,
             control_code: ControlCode::Automatic,
             header_footer_source: None,
         }
@@ -624,8 +639,10 @@ pub struct FootnoteMarkerNode {
     pub number: u16,
     /// 위첨자 텍스트 ("1)" 등)
     pub text: String,
-    /// 기본 폰트 크기 (본문 크기, 위첨자는 이것의 55%)
+    /// 기본 폰트 크기 (본문 크기)
     pub base_font_size: f64,
+    /// 줄 상자 원점에 대한 참조 번호의 확정 baseline(px).
+    pub baseline: f64,
     /// 폰트 패밀리
     pub font_family: String,
     /// 글자 색
@@ -635,6 +652,16 @@ pub struct FootnoteMarkerNode {
     pub para_index: usize,
     /// 문단 내 컨트롤 인덱스
     pub control_index: usize,
+}
+
+impl FootnoteMarkerNode {
+    /// 독립 한컴 Print에서 8/10/20pt 본문 번호는 본문 크기의 3/4이다.
+    pub fn font_size(base: f64) -> f64 {
+        base * 0.75
+    }
+    pub fn reference_baseline(base: f64, line_baseline: f64) -> f64 {
+        line_baseline - base * 0.21
+    }
 }
 
 /// 양식 개체 렌더 노드
@@ -976,6 +1003,12 @@ pub struct TextRunNode {
 }
 
 impl TextRunNode {
+    /// Same logical end-tab rule as cross-run alignment: saved trailing
+    /// spaces belong to the tab's advance, rather than visible content.
+    pub(crate) fn ends_with_alignment_tab(text: &str) -> bool {
+        text.trim_end_matches([' ', '\u{2007}']).ends_with('\t')
+    }
+
     /// [#6801] 다음 블록 배치가 확정한 끝 탭 경계를 모든 replay 소비자에 전달한다.
     /// 앞선 가시 문자의 폭은 보존하고 뒤 공백/탭만 남은 advance에 맞춘다.
     pub(crate) fn resolve_trailing_tab_end(
@@ -984,7 +1017,7 @@ impl TextRunNode {
         leader_limit_width: f64,
     ) -> Option<f64> {
         let text = self.display_or_text();
-        if !text.ends_with('\t')
+        if !Self::ends_with_alignment_tab(text)
             || !requested_width.is_finite()
             || requested_width < 0.0
             || !leader_limit_width.is_finite()
@@ -2473,56 +2506,6 @@ mod tests {
             RenderNodeType::Image(img) => img.crop,
             _ => None,
         }
-    }
-
-    /// exam_eng.hwp 페이지 2 의 정확한 케이스 (수평 동일 + 세로 인접)
-    /// → LOWER 의 bbox.height 와 crop.bottom 이 UPPER 의 top 까지 축소되어야 한다.
-    #[test]
-    fn test_clip_exam_eng_pattern() {
-        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
-        let lower = make_image_node(
-            tree.next_id(),
-            BoundingBox::new(597.15, 243.59, 408.19, 256.09),
-            5,
-            Some((0, 0, 189900, 120958)),
-        );
-        let upper = make_image_node(
-            tree.next_id(),
-            BoundingBox::new(597.15, 463.17, 408.19, 70.0),
-            5,
-            Some((0, 105958, 189900, 138540)),
-        );
-        let lower_id = lower.id;
-        let upper_id = upper.id;
-        tree.root.children.push(lower);
-        tree.root.children.push(upper);
-
-        tree.clip_overlapping_same_bin_images();
-
-        let l = &tree.root.children[0];
-        assert_eq!(l.id, lower_id);
-        // 새 height = 463.17 - 243.59 = 219.58
-        let bbox = image_bbox(l);
-        assert!(
-            (bbox.height - 219.58).abs() < 0.01,
-            "lower height={}",
-            bbox.height
-        );
-        // 새 crop.bottom = 0 + 120958 * (219.58/256.09) = 103716 (round)
-        let crop = image_crop(l).unwrap();
-        assert_eq!(crop.0, 0);
-        assert_eq!(crop.1, 0);
-        assert_eq!(crop.2, 189900);
-        let expected_cb = (120958_f64 * (219.58 / 256.09)).round() as i32;
-        assert_eq!(crop.3, expected_cb);
-
-        // UPPER 은 변경되지 않음
-        let u = &tree.root.children[1];
-        assert_eq!(u.id, upper_id);
-        let u_bbox = image_bbox(u);
-        assert!((u_bbox.height - 70.0).abs() < 0.01);
-        let u_crop = image_crop(u).unwrap();
-        assert_eq!(u_crop, (0, 105958, 189900, 138540));
     }
 
     /// 다른 bin_id 페어는 무시되어야 한다.

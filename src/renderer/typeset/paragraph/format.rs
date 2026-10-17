@@ -91,11 +91,19 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     };
     let total_height = spacing_before + lines_total + spacing_after + tac_outer_margin_v_px;
 
-    // 적합성 판단용: trailing line_spacing 제외
+    // Page fit ends at the accepted line/object occupancy. Paragraph-after
+    // spacing advances a successor; it cannot push this paragraph's last line
+    // onto another page by itself.
     let trailing_ls = line_spacings.last().copied().unwrap_or(0.0);
     let height_for_fit = {
-        let metric = (total_height - trailing_ls).max(0.0);
-        let vpos_metric = if para.controls.is_empty() {
+        let metric = (total_height - trailing_ls - spacing_after).max(0.0);
+        // [#7824] 저장 사다리의 줄 범위는 한/글이 계산한 원본 줄일 때만 상한이 된다.
+        // 합성 사다리는 문단 위 간격을 포함하지 않으므로 적합성 상한으로 쓰지 않는다.
+        // 문단 아래 간격은 위 metric에서 이미 한 번 제외했다.
+        let authored_line_segs = para.line_segs.iter().all(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        });
+        let vpos_metric = if para.controls.is_empty() && authored_line_segs {
             para.line_segs
                 .first()
                 .zip(para.line_segs.last())
@@ -124,7 +132,11 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         } else {
             None
         };
-        vpos_metric.map(|v| metric.min(v)).unwrap_or(metric)
+        // Stored vpos spans cover line boxes, not the paragraph's outside
+        // spacing. Paint consumes these bands at the accepted flow origin.
+        vpos_metric
+            .map(|v| metric.min(spacing_before + v))
+            .unwrap_or(metric)
     };
 
     // 표 없는 일반 본문에는 배치용 줄 사본을 만들지 않는다.
@@ -188,6 +200,7 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         (available.is_finite() && available > 0.0 && remaining.is_finite()).then_some(remaining)
     })();
     FormattedParagraph {
+        stored_ladder_is_filler: ctx.uniform_filler_ladder(),
         tail_line_remaining_width,
         computed_host_lines,
         square_host_plan: None,
@@ -245,6 +258,8 @@ fn recompose_for_flow(
                     &ctx.float_carve_evidence(),
                     known_square_band,
                     ctx.profile().hwpx_stored_layout(),
+                    ctx.uniform_filler_ladder(),
+                    &[],
                 )
             } else {
                 None
@@ -367,6 +382,18 @@ fn resolve_line_metrics(
         let mut pairs = Vec::with_capacity(comp.lines.len());
         let mut prev_line_reserved_tac_picture_height: Option<f64> = None;
         for (line_idx, line) in comp.lines.iter().enumerate() {
+            if !ctx.profile().session_edited() && !ctx.profile().hwp3_layout() {
+                if let Some(height) = crate::renderer::stored_picture_guide_line_height_px(
+                    para,
+                    comp,
+                    line_idx,
+                    ctx.dpi(),
+                ) {
+                    pairs.push((height, hwpunit_to_px(line.line_spacing, ctx.dpi())));
+                    prev_line_reserved_tac_picture_height = None;
+                    continue;
+                }
+            }
             if let Some(ref hs) = stacked_tac_picture_heights {
                 let ls_px = hwpunit_to_px(line.line_spacing, ctx.dpi());
                 pairs.push((hs[line_idx], ls_px));

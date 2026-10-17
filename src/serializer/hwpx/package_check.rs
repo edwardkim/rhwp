@@ -70,15 +70,32 @@ pub fn check_package(hwpx_bytes: &[u8], doc: &Document) -> PackageCheckReport {
         }
     };
 
-    let names: HashSet<String> = archive.file_names().map(String::from).collect();
+    let names: HashSet<String> = match archive
+        .file_names()
+        .map(|name| name.map(|name| name.into_owned()))
+        .collect::<Result<_, _>>()
+    {
+        Ok(names) => names,
+        Err(error) => {
+            report.push(format!("ZIP 엔트리 이름 읽기 실패: {error}"));
+            return report;
+        }
+    };
 
     // 2. mimetype — 최초 엔트리 + STORED + 내용 일치
     match archive.by_index(0) {
         Ok(mut first) => {
-            if first.name() != "mimetype" {
+            let name = match first.name() {
+                Ok(name) => name,
+                Err(error) => {
+                    report.push(format!("첫 엔트리 이름 읽기 실패: {error}"));
+                    return report;
+                }
+            };
+            if name != "mimetype" {
                 report.push(format!(
                     "mimetype 이 최초 엔트리가 아님 (첫 엔트리: {})",
-                    first.name()
+                    name
                 ));
             } else {
                 if first.compression() != zip::CompressionMethod::Stored {

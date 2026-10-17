@@ -261,6 +261,16 @@ impl DocumentCore {
             .find(|s| s.start_pos <= raw_start)
             .cloned();
         let new_len = text.chars().count();
+        // 다른 컨트롤은 바꾼 글자를 기준으로 옮긴다 — 지운 글자 사이·뒤 갭의 컨트롤은 새 글자 뒤로 간다.
+        let positions: Vec<usize> = candidate
+            .control_text_positions()
+            .into_iter()
+            .map(|at| match at {
+                _ if at <= start => at,
+                _ if at <= end => start + new_len,
+                _ => at - (end - start) + new_len,
+            })
+            .collect();
         // 먼저 삽입하여 빈 필드로 축소되는 중간 상태를 피한다.
         candidate.insert_text_at(start, text);
         candidate.delete_text_at(start + new_len, end - start);
@@ -281,14 +291,15 @@ impl DocumentCore {
         if let Control::Field(f) = &mut candidate.controls[ctrl_idx] {
             f.hyperlink_format = original_format;
         }
+        candidate.rebuild_char_offsets(&positions);
         // 새 글자는 기존 링크 첫 글자의 서식을 이어받는다.
         if let Some(mut shape) = shape {
-            shape.start_pos = raw_start;
-            candidate.char_shapes.retain(|s| s.start_pos != raw_start);
+            let new_start = raw_boundary(&candidate, start);
+            shape.start_pos = new_start;
+            candidate.char_shapes.retain(|s| s.start_pos != new_start);
             candidate.char_shapes.push(shape);
             candidate.char_shapes.sort_by_key(|s| s.start_pos);
         }
-        super::queries::field_query::rebuild_char_offsets(&mut candidate);
         candidate.stored_text_partition_dirty = true;
         self.commit_hyperlink_paragraph(target, candidate, field_id)?;
         Ok(true)

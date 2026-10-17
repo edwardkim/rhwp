@@ -93,6 +93,39 @@ pub(super) fn prepare(
 }
 
 impl TableHostShapeFlow {
+    /// A sequential paragraph-relative shape owns the frame accepted before
+    /// its height advances the cursor. A later saved host line can already
+    /// include this exclusion band; it is not another object origin.
+    pub(super) fn accepted_shape_frame(
+        &self,
+        control: &Control,
+        origin: f64,
+    ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
+        use crate::model::shape::VertAlign;
+        use crate::renderer::float_placement::{ParagraphFloatFlow, ParagraphFloatPlacement};
+        let Control::Shape(shape) = control else {
+            return None;
+        };
+        let common = shape.common();
+        let height = self.non_tac_pushdown_h?;
+        // Nonzero offsets and bottom/center alignment need their own anchor
+        // resolution, rather than substituting the sequential flow origin.
+        if common.vertical_offset != 0
+            || !matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
+        {
+            return None;
+        }
+        Some(ParagraphFloatPlacement {
+            flow: ParagraphFloatFlow::NextLine,
+            anchor_y: origin,
+            stored_host_origin: None,
+            stored_successor_line_origin: None,
+            table_left: None,
+            table_top: origin,
+            occupied_bottom: origin + height,
+        })
+    }
+
     /// TAC의 항목 존재 조건과 float의 단 상단 조건을 구별한다. 예산 조회도 단락 평가한다.
     pub(super) fn needs_advance(
         &self,

@@ -517,7 +517,7 @@ fn write_chart_element<W: Write>(
 ///   run 분할 + lineseg IR 보존/fallback)
 /// - `textDirection` VERTICAL/VERTICALALL 구분은 `TextBox.vertical_all` 로 보존
 /// - `textMargin` 은 subList **뒤** (한컴 원본 순서, footnote-tbox-01 실측),
-///   네 여백 모두 0이면 원본 부재로 간주하여 미방출
+///   명시적 여백은 0도 보존한다. 기존 생성기의 부재/0 기본값은 미방출한다.
 pub fn write_draw_text<W: Write>(
     w: &mut Writer<W>,
     tb: &TextBox,
@@ -586,7 +586,12 @@ pub fn write_draw_text<W: Write>(
 
     end_tag(w, "hp:subList")?;
 
-    if tb.margin_left != 0 || tb.margin_right != 0 || tb.margin_top != 0 || tb.margin_bottom != 0 {
+    if tb.text_margin_explicit
+        || tb.margin_left != 0
+        || tb.margin_right != 0
+        || tb.margin_top != 0
+        || tb.margin_bottom != 0
+    {
         let ml = tb.margin_left.to_string();
         let mr = tb.margin_right.to_string();
         let mt = tb.margin_top.to_string();
@@ -994,8 +999,11 @@ pub(crate) fn write_fill_brush<W: Write>(
                 ImageFillMode::TileHorzBottom => "TILE_HORZ_BOTTOM",
                 ImageFillMode::TileVertLeft => "TILE_VERT_LEFT",
                 ImageFillMode::TileVertRight => "TILE_VERT_RIGHT",
-                ImageFillMode::FitToSize => "FIT",
-                ImageFillMode::Zoom => "ZOOM",
+                ImageFillMode::FitToSize => "TOTAL",
+                // HWP5 mode 15 is emitted as ZOOM by Hancom when saving HWPX.
+                // It is an aspect-preserving fit, not the wildcard TILE fallback.
+                // This writer is shared by shape fills and header BorderFill.
+                ImageFillMode::Zoom | ImageFillMode::None => "ZOOM",
                 ImageFillMode::Total => "TOTAL",
                 ImageFillMode::Center => "CENTER",
                 ImageFillMode::CenterTop => "CENTER_TOP",

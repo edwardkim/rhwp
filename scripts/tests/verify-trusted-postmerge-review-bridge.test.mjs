@@ -258,7 +258,7 @@ async function runWorkflow(t, workflowFile = "ci.yml", options = {}) {
   const finalArtifacts = [{ name: `${mergeArtifactPrefix}-${finalTestedSha}-${finalTree}`, expired: false }];
   const requiredNames = {
     "ci.yml": ["CI preflight", "Build & Test", "Lint (fmt, clippy, WASM check)"],
-    "codeql.yml": ["CodeQL preflight", "Analyze (rust)", "Analyze (javascript-typescript)", "Analyze (python)"],
+    "codeql.yml": ["CodeQL preflight", "Analyze (rust)", "Analyze (javascript-typescript)", "Analyze (python)", "Analyze (actions)"],
     "adapter-diff.yml": ["adapter inter-diff preflight", "adapter inter-diff"],
     "proptest-roundtrip.yml": ["Proptest preflight", "prop roundtrip"],
   }[workflowFile];

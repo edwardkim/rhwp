@@ -48,7 +48,7 @@ fn saved_cross_paragraph_reset_keeps_the_first_line_on_page_one() {
 }
 
 #[test]
-fn nonzero_paragraph_starts_do_not_claim_a_zero_reset_boundary() {
+fn a_positive_local_origin_preserves_the_independently_printed_page_boundary() {
     let mut archive = zip::ZipArchive::new(Cursor::new(sample())).expect("fixture ZIP");
     let mut writer = zip::ZipWriter::new(Cursor::new(Vec::new()));
     for index in 0..archive.len() {
@@ -57,16 +57,20 @@ fn nonzero_paragraph_starts_do_not_claim_a_zero_reset_boundary() {
             zip::write::SimpleFileOptions::default().compression_method(entry.compression());
         if entry.is_dir() {
             writer
-                .add_directory(entry.name(), options)
+                .add_directory(entry.name().expect("ZIP 엔트리 이름"), options)
                 .expect("directory");
             continue;
         }
-        writer.start_file(entry.name(), options).expect("entry");
-        if entry.name() == "Contents/section0.xml" {
+        writer
+            .start_file(entry.name().expect("ZIP 엔트리 이름"), options)
+            .expect("entry");
+        if entry.name().expect("ZIP 엔트리 이름") == "Contents/section0.xml" {
             let mut xml = String::new();
             entry.read_to_string(&mut xml).expect("section XML");
             assert!(xml.contains("vertpos=\"0\""));
-            // 높이/문자/표 구조는 보존하고 0 reset의 증거만 제거한다.
+            // 원점을 1HU로 옮겨도 실제 앞뒤 저장 줄의 되감김은 남는다.
+            // 동일 Rust writer 입력을 직접 한컴 Print한 대조본도 첫 줄을
+            // 1쪽에 남긴다. 양수라는 사실만으로 쪽 경계가 사라졌다고 보지 않는다.
             writer
                 .write_all(xml.replace("vertpos=\"0\"", "vertpos=\"1\"").as_bytes())
                 .expect("modified section");
@@ -76,12 +80,17 @@ fn nonzero_paragraph_starts_do_not_claim_a_zero_reset_boundary() {
     }
     let bytes = writer.finish().expect("ZIP finish").into_inner();
     let doc = HwpDocument::from_bytes(&bytes).expect("대조군 로드");
-    assert!(
-        !page_text(&doc, 0).contains(FIRST_LINE),
-        "저장 reset 없는 행은 기존 고아 줄 기준을 유지한다"
+    assert_eq!(
+        doc.page_count(),
+        2,
+        "같은 대조 입력의 독립 Print는 두 쪽이다"
     );
     assert!(
-        page_text(&doc, 1).contains(FIRST_LINE),
-        "대조군의 첫 줄은 소실하지 않고 이월한다"
+        page_text(&doc, 0).contains(FIRST_LINE),
+        "양수 원점에서도 실제 저장 경계와 Print의 첫 줄 소속을 보존한다"
+    );
+    assert!(
+        !page_text(&doc, 1).contains(FIRST_LINE),
+        "대조군 첫 줄을 이어받는 쪽에 중복하지 않는다"
     );
 }

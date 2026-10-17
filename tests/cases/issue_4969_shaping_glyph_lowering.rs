@@ -1,5 +1,7 @@
 //! Issue #4969 W10-Q2-D3: page sidecars lower losslessly but remain dormant.
 
+#[path = "../../src/paint/font_size.rs"]
+mod font_size;
 #[path = "../../src/renderer/kerning.rs"]
 mod kerning;
 #[path = "../../src/renderer/shaping.rs"]
@@ -86,8 +88,7 @@ use shaping_publication::{
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
-const SOURCE_HAN: &[u8] =
-    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Regular.otf");
 const HAPPINESS: &[u8] =
     include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
 const SLOT: ExactFontSlot = ExactFontSlot {
@@ -200,7 +201,7 @@ fn prepared_sidecar() -> (
 
 fn text_run() -> TextRunNode {
     let mut style = TextStyle::default();
-    style.font_family = "Source Han Serif K Old Hangul".to_string();
+    style.font_family = "RHWP Old Hangul".to_string();
     style.font_size = 10.0;
     style.ratio = 0.8;
     style.kerning = true;

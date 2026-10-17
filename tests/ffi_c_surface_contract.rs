@@ -36,7 +36,7 @@ fn read(path: &str) -> String {
 
 /// Rust `pub [unsafe] extern "C" fn NAME(args) -> ret` 를 파싱한다.
 fn rust_surface() -> Surface {
-    let src = read(RUST_FFI);
+    let src = [read(RUST_FFI), read("bindings/Native/src/session.rs")].join("\n");
     let mut out = Surface::new();
     let mut rest = src.as_str();
 

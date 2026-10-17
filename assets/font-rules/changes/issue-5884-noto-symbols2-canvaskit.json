@@ -1,0 +1,76 @@
+{
+  "changeSetId": "issue-5884.noto-symbols2-canvaskit",
+  "decisionPlane": "supply",
+  "evidenceRecords": [],
+  "expectedDelta": {
+    "activeRuleDelta": 1,
+    "projectionId": "canvaskit-sfnt",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont"
+    ]
+  },
+  "issue": 5884,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-5884.noto-symbols2.canvaskit",
+      "rule": {
+        "conditions": {
+          "profile": "canvaskit-sfnt"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-5884.noto-symbols2-program"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        },
+        "projectionSequence": 158,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-5884.noto-symbols2.canvaskit",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "Noto Sans Symbols2",
+        "supply": {
+          "capabilityAgreement": true,
+          "declaredCapability": "sfnt-source",
+          "fontFamily": "Noto Sans Symbols2",
+          "kind": "canvaskit-plan",
+          "offline": {
+            "sources": [
+              {
+                "aliases": [
+                  "Noto Sans Symbols2"
+                ],
+                "url": "fonts/NotoSansSymbols2-Regular.ttf"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "online": {
+            "sources": [
+              {
+                "aliases": [
+                  "Noto Sans Symbols2"
+                ],
+                "url": "fonts/NotoSansSymbols2-Regular.ttf"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "runtimePlanStatus": "planned"
+        },
+        "targetFaceOrPolicy": "sfnt: fonts/NotoSansSymbols2-Regular.ttf"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "35a7f783600171d2a700c8f9e31015df98336a2cf45d7eb6146a4534a3caa10f",
+  "schemaVersion": "2.0",
+  "sequence": 5
+}

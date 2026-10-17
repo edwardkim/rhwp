@@ -1958,6 +1958,7 @@ mod issue_1151_cell_picture_insert_tests {
                 ..Default::default()
             },
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });
@@ -2658,6 +2659,7 @@ mod issue_1151_v2_tac_toggle_tests {
                 ..Default::default()
             },
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });
@@ -3738,6 +3740,7 @@ mod issue_1280_textbox_creation_tests {
                 ..Default::default()
             },
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });

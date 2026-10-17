@@ -11,6 +11,7 @@ use crate::renderer::{
 pub(in crate::renderer::typeset) struct TableControlPage {
     pub has_items: bool,
     pub col_count: u16,
+    pub profile: crate::model::provenance::LayoutCompatibilityProfile,
 }
 
 pub(super) fn needs_stored_line_advance(
@@ -151,10 +152,21 @@ pub(super) fn uses_decoration_placement(
     // 박스가 글앞으로로 저장돼도 zero-height Shape 로 빠지면 후속 문단이
     // 박스 위로 겹치고 문서가 과소 페이지로 압축된다. 단일컬럼 케이스만
     // 가드하고, multicol overlay anchor 경로(자체 TAC 판정 보유)는 유지.
-    (matches!(
-        table.common.text_wrap,
-        crate::model::shape::TextWrap::InFrontOfText | crate::model::shape::TextWrap::BehindText
-    ) && ((col_count == 1
+    // A fixed paper rectangle with THROUGH wrapping and no page splitting
+    // paints at its paper coordinates. Its geometry is not a body advance;
+    // the host's text line, if any, keeps its own flow ownership.
+    let paper_through = paper_anchored_overlay_table
+        && matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::Through
+        )
+        && table.page_break == crate::model::table::TablePageBreak::None;
+    paper_through
+        || (matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::InFrontOfText
+                | crate::model::shape::TextWrap::BehindText
+        ) && ((col_count == 1
     && !oversized_multirow
     && !table.common.treat_as_char
     // [#6366] 원본 HWPX 문단 기준 글앞으로 다행·다열
@@ -165,6 +177,6 @@ pub(super) fn uses_decoration_placement(
         original_hwpx(),
         table,
     )) || multicol_empty_overlay_anchor
-        || multicol_tac_host_overlay_anchor))
+            || multicol_tac_host_overlay_anchor))
         || horz_fully_outside_column
 }

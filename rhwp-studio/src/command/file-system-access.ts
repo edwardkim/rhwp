@@ -69,6 +69,19 @@ const HWP_OPEN_PICKER_TYPES: FilePickerType[] = [{
   accept: HWP_DOCUMENT_ACCEPT,
 }];
 
+export function documentFileInputAccept(pdfImportEnabled = false): string {
+  return '.hwp,.hwpx,.hml,application/xml,text/xml'
+    + (pdfImportEnabled ? ',.pdf,application/pdf' : '');
+}
+
+export function unsupportedDocumentMessage(fileName: string, pdfImportEnabled: boolean, images = false): string {
+  if (/\.pdf$/i.test(fileName.trim()) && !pdfImportEnabled) {
+    return '현재 빌드는 PDF 가져오기를 지원하지 않습니다.';
+  }
+  const formats = pdfImportEnabled ? 'HWP/HWPX/HML/PDF' : 'HWP/HWPX/HML';
+  return `${formats} 파일${images ? ' 또는 이미지 파일' : ''}만 지원합니다.`;
+}
+
 function pickerTypesForFormat(format: SaveFormat): FilePickerType[] {
   return [SAVE_FORMAT_DETAILS[format].pickerType];
 }
@@ -77,8 +90,9 @@ function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
 }
 
-export function isSupportedDocumentFileName(fileName: string): boolean {
-  return /\.(hwp|hwpx|hml)$/i.test(fileName.trim());
+export function isSupportedDocumentFileName(fileName: string, pdfImportEnabled = false): boolean {
+  return /\.(hwp|hwpx|hml)$/i.test(fileName.trim())
+    || (pdfImportEnabled && /\.pdf$/i.test(fileName.trim()));
 }
 
 export function canUseOpenFilePicker(windowLike: FileSystemWindowLike): boolean {
@@ -104,7 +118,7 @@ async function assertValidSaveHandle(
     const isOriginal = handle === originalHandle
       || await handle.isSameEntry?.(originalHandle) === true;
     if (isOriginal) {
-      throw new Error('HML 원본 파일은 저장 대상으로 선택할 수 없습니다.');
+      throw new Error('원본 파일은 저장 대상으로 선택할 수 없습니다.');
     }
   }
 
@@ -113,14 +127,16 @@ async function assertValidSaveHandle(
   }
 }
 
-export async function pickOpenFileHandle(windowLike: FileSystemWindowLike): Promise<FileSystemFileHandleLike | null> {
+export async function pickOpenFileHandle(windowLike: FileSystemWindowLike, pdfImportEnabled = false): Promise<FileSystemFileHandleLike | null> {
   if (!canUseOpenFilePicker(windowLike)) return null;
 
   try {
     const handles = await windowLike.showOpenFilePicker!({
       excludeAcceptAllOption: true,
       multiple: false,
-      types: HWP_OPEN_PICKER_TYPES,
+      types: pdfImportEnabled
+        ? [{ description: 'HWP/HWPX/HML/PDF 문서', accept: { ...HWP_DOCUMENT_ACCEPT, 'application/pdf': ['.pdf'] } }]
+        : HWP_OPEN_PICKER_TYPES,
     });
     return handles[0] ?? null;
   } catch (error) {

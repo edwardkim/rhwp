@@ -31,7 +31,8 @@ struct Case {
 const LARGER_ANCHOR: &[Case] = &[
     // 자리차지 표, 기준 문자 16pt · 텍스트 12pt
     Case {
-        sample: "samples/task2287/1342000_edu_curriculum_map.hwp",
+        sample:
+            "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
         section: 4,
         para: 12,
         stored_first_line_height: 1600,
@@ -62,15 +63,6 @@ const LARGER_ANCHOR: &[Case] = &[
         text_only_height: 1400,
     },
 ];
-
-/// 대조군: 기준 문자(어울림 표, 10.5pt)가 텍스트(11.5pt)보다 작다 — 줄은 텍스트 크기다.
-const SMALLER_ANCHOR: Case = Case {
-    sample: "samples/exam_kor.hwp",
-    section: 1,
-    para: 33,
-    stored_first_line_height: 1150,
-    text_only_height: 1150,
-};
 
 fn first_line_height_after_edit(case: &Case) -> (i32, i32) {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(case.sample);
@@ -118,14 +110,4 @@ fn reflowed_first_line_keeps_larger_floating_anchor_char_height() {
             case.text_only_height
         );
     }
-}
-
-#[test]
-fn reflowed_first_line_ignores_smaller_floating_anchor_char() {
-    let (stored, reflowed) = first_line_height_after_edit(&SMALLER_ANCHOR);
-    assert_eq!(stored, SMALLER_ANCHOR.stored_first_line_height);
-    assert_eq!(
-        reflowed, SMALLER_ANCHOR.text_only_height,
-        "기준 문자가 텍스트보다 작으면 줄 높이는 텍스트 크기여야 한다"
-    );
 }

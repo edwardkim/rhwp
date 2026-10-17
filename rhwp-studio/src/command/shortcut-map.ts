@@ -23,7 +23,7 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // 한글 IME에서는 e.key가 'ㅁ' 또는 조합 중 'Process'가 되므로 물리 KeyA로 보정한다.
   [{ key: 'a', code: 'KeyA', ctrl: true }, 'edit:select-all'],
 
-  [{ key: 'e', ctrl: true }, 'edit:delete'],
+  [{ key: 'e', code: 'KeyE', ctrl: true }, 'edit:delete'],
   [{ key: 'ㄷ', ctrl: true }, 'edit:delete'],
   // macOS Option+C가 문자 입력으로 해석되어도 물리 C 키를 한컴 호환 모양 복사로 처리한다.
   [{ key: 'c', code: 'KeyC', alt: true }, 'edit:format-copy'],

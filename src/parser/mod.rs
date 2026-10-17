@@ -29,8 +29,11 @@ pub mod hwp_summary;
 pub mod hwpx;
 pub mod ingest;
 pub mod ole_container;
+#[cfg(feature = "pdf-import")]
+pub mod pdf;
 pub mod record;
 pub mod tags;
+pub(crate) mod tracked_viewtext;
 
 use crate::model::bin_data::BinDataContent;
 use crate::model::document::{
@@ -49,6 +52,8 @@ pub enum FileFormat {
     Hwp3,
     /// Standalone HWPML XML
     Hml,
+    /// PDF (실험적 가져오기는 `pdf-import` feature 필요)
+    Pdf,
     /// DRM/보안 컨테이너로 보호된 문서 (미지원 — 감지만, Issue #1982)
     /// Fasoo(`\x9b DRMONE`) / SoftCamp SCDSA(`SCDSA00x`) 등. 복호화는 범위 밖.
     DrmProtected,
@@ -66,6 +71,8 @@ const DRM_PROTECTED_HINT: &str =
     "DRM/보안 컨테이너로 보호된 문서입니다. 한컴오피스 등 DRM 클라이언트에서 보호를 해제한 뒤 저장해 열어주세요.";
 const EMPTY_FILE_CODE: &str = "EMPTY_FILE";
 const EMPTY_FILE_HINT: &str = "빈 파일(0 바이트)입니다.";
+pub(crate) const PDF_IMPORT_DISABLED_HINT: &str =
+    "이 빌드는 PDF 가져오기가 제외되었습니다. pdf-import feature를 포함해 다시 빌드하세요.";
 
 /// HWP5 완전 문서 열기가 선택하는 핵심 스트림 출력 예산.
 ///
@@ -210,6 +217,9 @@ pub fn detect_format(data: &[u8]) -> FileFormat {
     if data.starts_with(FASOO_DRM_SIG) || data.starts_with(SCDSA_SIG) {
         return FileFormat::DrmProtected;
     }
+    if data.starts_with(b"%PDF-") {
+        return FileFormat::Pdf;
+    }
     if data.len() >= 8 {
         // CFB/OLE 시그니처: D0 CF 11 E0 A1 B1 1A E1
         if data[0] == 0xD0 && data[1] == 0xCF && data[2] == 0x11 && data[3] == 0xE0 {
@@ -248,6 +258,8 @@ pub enum ParseError {
     HwpxError(hwpx::HwpxError),
     Hwp3Error(hwp3::Hwp3Error),
     HmlError(hml::HmlError),
+    #[cfg(feature = "pdf-import")]
+    PdfError(pdf::PdfImportError),
     EncryptedDocument,
     /// 감지는 되었으나 지원하지 않는 포맷
     UnsupportedFormat {
@@ -268,6 +280,8 @@ impl std::fmt::Display for ParseError {
             ParseError::HwpxError(e) => write!(f, "HWPX 오류: {}", e),
             ParseError::Hwp3Error(e) => write!(f, "HWP 3.0 오류: {}", e),
             ParseError::HmlError(e) => write!(f, "HML 오류: {}", e),
+            #[cfg(feature = "pdf-import")]
+            ParseError::PdfError(e) => write!(f, "PDF 오류: {}", e),
             ParseError::EncryptedDocument => write!(
                 f,
                 "비밀번호가 필요한 암호 문서입니다 (parse_document_with_password 또는 parse_hwp_with_password 로 비밀번호를 전달하세요)"
@@ -387,7 +401,7 @@ fn parse_hwp_inner_with_limits(
     limits: Hwp5DocumentOpenDecompressionLimits,
 ) -> Result<Document, ParseError> {
     // 1. CFB 컨테이너 열기 (strict → lenient 폴백)
-    match cfb_reader::CfbReader::open(data) {
+    let mut document = match cfb_reader::CfbReader::open(data) {
         Ok(cfb) => parse_hwp_with_cfb(cfb, data, password, limits),
         Err(strict_err) => {
             eprintln!(
@@ -398,7 +412,9 @@ fn parse_hwp_inner_with_limits(
                 .map_err(|_| ParseError::CfbError(strict_err))?;
             parse_hwp_with_lenient(lenient, data, password, limits)
         }
-    }
+    }?;
+    document.seal_section_tail_provenance();
+    Ok(document)
 }
 
 /// 표준 CfbReader로 파싱
@@ -465,6 +481,7 @@ fn parse_hwp_with_cfb(
         encrypted,
         password,
         &mut decompression_budget,
+        &doc_info,
     )?;
 
     // 5-7. 미리보기, BinData, 추가 스트림
@@ -780,35 +797,52 @@ fn apply_hwp3_origin_fixup(doc: &mut Document, summary_hwp3_era: bool) {
     }
 }
 
-/// [#5169] 비배포 문서의 `ViewText/Section{N}` 을 렌더 본문으로 채택할지 판정한다.
-///
-/// 배포용(0x04) 문서만 `ViewText` 를 읽던 종전 규칙은, **변경 추적**(0x4000) 등으로
-/// `BodyText` 와 `ViewText` 가 갈라진 일반 문서에서 rhwp 가 한글이 **렌더하지 않는**
-/// `BodyText` 를 읽게 만들었다(예: 연구계획서 — `BodyText` 표 4·3,540자 vs `ViewText`
-/// 표 10·10,210자). 한글은 `ViewText` 가 있으면 그것을 렌더하므로, 정상 복호되는
-/// `ViewText` 를 우선한다.
-///
-/// 단 일부 문서는 압축 비트가 서 있어도 `ViewText` 가 deflate 로 풀리지 않는 스텁이라
-/// (예: `20250130-hongbo.hwp`), 무조건 우선하면 본문을 잃는다. 그래서 **복호에 성공하고
-/// 첫 레코드가 `PARA_HEADER`(구역 시작 문단) 인 경우에만** 채택하고, 아니면 `None` 을
-/// 돌려 호출부가 `BodyText` 로 폴백하게 한다. 배포용 문서는 이 경로로 오지 않는다
-/// (암호화된 `ViewText` 라 별도 복호 경로가 처리한다).
+/// Decode a non-distribution ViewText paragraph stream, falling back on stubs.
+/// Change-tracking streams contain review history, not just visible content;
+/// DocInfo visibility must be applied before this stream becomes layout IR.
 fn decode_rendered_viewtext(
     raw: Vec<u8>,
     compressed: bool,
     output_limit: usize,
 ) -> Option<Vec<u8>> {
     let decoded = cfb_reader::decode_stream_limited(raw, compressed, output_limit).ok()?;
-    if decoded.len() < 4 {
-        return None;
+    starts_with_paragraph_header(&decoded).then_some(decoded)
+}
+
+fn starts_with_paragraph_header(data: &[u8]) -> bool {
+    data.get(..4).is_some_and(|bytes| {
+        let header = u32::from_le_bytes(bytes.try_into().unwrap());
+        (header & 0x3ff) as u16 == tags::HWPTAG_PARA_HEADER
+    })
+}
+
+/// 암호 문서도 #5169의 ViewText 우선 정책을 따른다. 스텁은 BodyText로 내려가되,
+/// 읽기 오류와 자원 제한 초과는 숨기지 않는다. DocInfo에서 비밀번호는 이미 검증됐다.
+/// 반환값은 복호화된 문단 레코드 스트림이며, 비밀번호나 파생 키가 아니다.
+fn decode_viewtext_paragraph_stream(
+    raw: Result<Vec<u8>, cfb_reader::CfbError>,
+    password: &[u8],
+    compressed: bool,
+    output_limit: usize,
+) -> Result<Option<Vec<u8>>, ParseError> {
+    let raw = match raw {
+        Ok(raw) => raw,
+        Err(cfb_reader::CfbError::StreamNotFound(_)) => return Ok(None),
+        Err(error) => return Err(ParseError::CfbError(error)),
+    };
+    match crypto::decrypt_password_protected_limited(&raw, password, compressed, output_limit) {
+        Ok(decoded) => Ok(starts_with_paragraph_header(&decoded).then_some(decoded)),
+        Err(crypto::CryptoError::WrongPassword) => Ok(None),
+        Err(error) => Err(ParseError::CryptoError(error)),
     }
-    let header = u32::from_le_bytes([decoded[0], decoded[1], decoded[2], decoded[3]]);
-    let tag = (header & 0x3ff) as u16;
-    if tag == tags::HWPTAG_PARA_HEADER {
-        Some(decoded)
-    } else {
-        None
-    }
+}
+
+fn parse_visible_section(
+    data: &[u8],
+    doc_info: &crate::model::document::DocInfo,
+) -> Result<crate::model::document::Section, body_text::BodyTextError> {
+    let projected = tracked_viewtext::project(data, doc_info)?;
+    body_text::parse_body_text_section(projected.as_deref().unwrap_or(data))
 }
 
 /// CfbReader로 섹션들 파싱
@@ -821,6 +855,7 @@ fn parse_sections_strict(
     encrypted: bool,
     password: Option<&[u8]>,
     decompression_budget: &mut Hwp5DocumentOpenDecompressionBudget,
+    doc_info: &crate::model::document::DocInfo,
 ) -> Result<Vec<crate::model::document::Section>, ParseError> {
     let mut sections = Vec::new();
 
@@ -835,23 +870,30 @@ fn parse_sections_strict(
             crypto::decrypt_viewtext_section_limited(&raw, compressed, section_output_limit)
                 .map_err(ParseError::CryptoError)?
         } else if encrypted {
-            // 비밀번호 암호 문서: BodyText raw → 비밀번호 복호화.
-            // read_body_text_section_raw() 가 스트림 경로 탐색
-            // (BodyText/Section{i} → /Section{i}) 을 담당하므로 raw 만 얻어
-            // 복호화+압축해제는 crypto 로 위임한다.
-            let raw = cfb
-                .read_body_text_section_raw_limited(i, section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            crypto::decrypt_password_protected_limited(
-                &raw,
+            let rendered = decode_viewtext_paragraph_stream(
+                cfb.read_viewtext_section_raw_limited(i, section_raw_limit),
                 password.unwrap(),
                 compressed,
                 section_output_limit,
-            )
-            .map_err(ParseError::CryptoError)?
+            )?;
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = cfb
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    crypto::decrypt_password_protected_limited(
+                        &raw,
+                        password.unwrap(),
+                        compressed,
+                        section_output_limit,
+                    )
+                    .map_err(ParseError::CryptoError)?
+                }
+            }
         } else {
-            // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 한글이 렌더하는
-            // 본문이므로 우선한다. 복호 실패·스텁이면 BodyText 로 폴백한다.
+            // ViewText may be the only complete section. Apply its visibility
+            // separately after decoding; existence alone does not mean visible.
             let rendered = cfb
                 .read_viewtext_section_raw_limited(i, section_raw_limit)
                 .ok()
@@ -871,13 +913,16 @@ fn parse_sections_strict(
             .consume(section_data.len())
             .map_err(ParseError::CfbError)?;
 
-        match body_text::parse_body_text_section(&section_data) {
+        match parse_visible_section(&section_data, doc_info) {
             Ok(mut section) => {
                 // 원본 BodyText 스트림 보존 (라운드트립용)
                 section.raw_stream = Some(section_data);
                 sections.push(section);
             }
-            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+            Err(
+                e @ (body_text::BodyTextError::DrawingTextStructure(_)
+                | body_text::BodyTextError::ChangeTrackingStructure(_)),
+            ) => {
                 return Err(ParseError::BodyTextError(e));
             }
             Err(e) => {
@@ -957,17 +1002,27 @@ fn parse_hwp_with_lenient(
             crypto::decrypt_viewtext_section_limited(&raw, compressed, section_output_limit)
                 .map_err(ParseError::CryptoError)?
         } else if encrypted {
-            // 비밀번호 암호 문서: lenient reader 로 raw 섹션 바이트를 얻어 복호화.
-            let raw = lenient
-                .read_body_text_section_raw_limited(i, section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            crypto::decrypt_password_protected_limited(
-                &raw,
+            let rendered = decode_viewtext_paragraph_stream(
+                lenient.read_viewtext_section_raw_limited(i, section_raw_limit),
                 password.unwrap(),
                 compressed,
                 section_output_limit,
-            )
-            .map_err(ParseError::CryptoError)?
+            )?;
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = lenient
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    crypto::decrypt_password_protected_limited(
+                        &raw,
+                        password.unwrap(),
+                        compressed,
+                        section_output_limit,
+                    )
+                    .map_err(ParseError::CryptoError)?
+                }
+            }
         } else {
             // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 우선한다(위 strict
             // 경로와 동일 규칙). 복호 실패·스텁이면 BodyText 로 폴백.
@@ -990,12 +1045,15 @@ fn parse_hwp_with_lenient(
             .consume(section_data.len())
             .map_err(ParseError::CfbError)?;
 
-        match body_text::parse_body_text_section(&section_data) {
+        match parse_visible_section(&section_data, &doc_info) {
             Ok(mut section) => {
                 section.raw_stream = Some(section_data);
                 sections.push(section);
             }
-            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+            Err(
+                e @ (body_text::BodyTextError::DrawingTextStructure(_)
+                | body_text::BodyTextError::ChangeTrackingStructure(_)),
+            ) => {
                 return Err(ParseError::BodyTextError(e));
             }
             Err(e) => {
@@ -1566,6 +1624,32 @@ pub struct HmlImportMetadata {
 pub struct ParsedDocument {
     pub document: Document,
     pub hml_metadata: Option<HmlImportMetadata>,
+    #[cfg(feature = "pdf-import")]
+    pub pdf_metadata: Option<pdf::PdfImportMetadata>,
+}
+
+/// 선택한 PDF 쪽을 공통 IR과 원본 쪽 대응 메타데이터로 가져온다.
+///
+/// 자동 감지 경로와 같은 provenance 봉인을 사용한다. PDF로 다시 저장하는 API가 아니다.
+#[cfg(feature = "pdf-import")]
+pub fn parse_pdf_with_metadata(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+) -> Result<ParsedDocument, ParseError> {
+    parse_pdf_unsealed(data, options).map(seal_parsed_document)
+}
+
+#[cfg(feature = "pdf-import")]
+fn parse_pdf_unsealed(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+) -> Result<ParsedDocument, ParseError> {
+    let result = pdf::parse_pdf_with_options(data, options).map_err(ParseError::PdfError)?;
+    Ok(ParsedDocument {
+        document: result.document,
+        hml_metadata: None,
+        pdf_metadata: Some(result.metadata),
+    })
 }
 
 /// 포맷 자동 감지 후 공통 IR과 입력 메타데이터를 파싱한다.
@@ -1589,7 +1673,10 @@ fn parse_document_inner(
     data: &[u8],
     password: Option<&[u8]>,
 ) -> Result<ParsedDocument, ParseError> {
-    let mut parsed = parse_document_inner_unsealed(data, password)?;
+    parse_document_inner_unsealed(data, password).map(seal_parsed_document)
+}
+
+fn seal_parsed_document(mut parsed: ParsedDocument) -> ParsedDocument {
     // [#4493] 파싱과 모든 load fixup 이 끝난 마지막 지점에서 DocInfo raw 출처를
     // 봉인한다 — 이보다 앞(포맷별 파서 내부)에서 봉인하면 HWP3-변환본 spacing
     // 반감 같은 로드 보정이 봉인을 깨서, 무변경 문서의 원본 바이트 통과가 죽는다.
@@ -1602,7 +1689,7 @@ fn parse_document_inner(
     // 지점에서 봉인한다. DocumentCore 로 열리는 경로는 from_bytes 의 로드 픽스업
     // (손상 lineseg 제거 등) 뒤에 다시 봉인된다.
     parsed.document.seal_body_raw_provenance();
-    Ok(parsed)
+    parsed
 }
 
 fn parse_document_inner_unsealed(
@@ -1645,8 +1732,18 @@ fn parse_document_inner_unsealed(
                     warnings: result.warnings,
                     preserved_fragments: result.preserved_fragments,
                 }),
+                #[cfg(feature = "pdf-import")]
+                pdf_metadata: None,
             })
         }
+        #[cfg(feature = "pdf-import")]
+        FileFormat::Pdf => parse_pdf_unsealed(data, &pdf::PdfImportOptions::default()),
+        #[cfg(not(feature = "pdf-import"))]
+        FileFormat::Pdf => Err(ParseError::UnsupportedFormat {
+            code: "PDF_IMPORT_DISABLED",
+            format: "PDF",
+            hint: PDF_IMPORT_DISABLED_HINT,
+        }),
         FileFormat::DrmProtected => Err(ParseError::UnsupportedFormat {
             code: DRM_PROTECTED_CODE,
             format: drm_format_name(data),
@@ -1669,6 +1766,8 @@ fn without_hml_metadata(document: Document) -> ParsedDocument {
     ParsedDocument {
         document,
         hml_metadata: None,
+        #[cfg(feature = "pdf-import")]
+        pdf_metadata: None,
     }
 }
 
@@ -1815,7 +1914,7 @@ fn extract_thumbnail_from_hwpx(data: &[u8], max_bytes: usize) -> Option<Vec<u8>>
     // Preview/PrvImage.png 또는 Preview/PrvImage.* 탐색
     let entry_name = (0..archive.len()).find_map(|i| {
         let file = archive.by_index(i).ok()?;
-        let name = file.name().to_string();
+        let name = file.name().ok()?.into_owned();
         if name.starts_with("Preview/PrvImage") {
             Some(name)
         } else {

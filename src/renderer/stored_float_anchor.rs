@@ -69,14 +69,7 @@ pub(crate) fn stored_topbottom_object_span(
         // 이 모두 같은 조건을 쓰고, 정본도 같은 말을 한다 —
         // `76076_regulatory_analysis.hwp` pi=323·324 는 (**0**/**0**/566/566) 이고
         // 한/글이 여백을 싣지 않는다(정본 괘선 400.52 로 확인).
-        let uniform = table.outer_margin_top == table.outer_margin_bottom
-            && table.outer_margin_top == table.outer_margin_left
-            && table.outer_margin_top == table.outer_margin_right;
-        let top = if uniform {
-            i64::from(table.outer_margin_top)
-        } else {
-            0
-        };
+        let top = stored_outer_box_table_top_hu(table);
         let offset = if offset_float_follows_inline_line(para, table) {
             i64::from(table.common.vertical_offset)
         } else {
@@ -89,6 +82,20 @@ pub(crate) fn stored_topbottom_object_span(
             top,
             top + i64::from(table.common.height) + i64::from(table.outer_margin_bottom),
         )
+    }
+}
+
+/// 다음 저장 줄로 인증된 바깥 상자 안에서 표 본체가 시작하는 위치.
+/// 사방 균등 여백의 저장 프레임만 위 여백을 본체 앞에 둔다. 비대칭 여백은
+/// 흐름 점유에 포함되어도 같은 그림 원점을 뜻하지 않는다.
+pub(crate) fn stored_outer_box_table_top_hu(table: &Table) -> i64 {
+    if table.outer_margin_top == table.outer_margin_bottom
+        && table.outer_margin_top == table.outer_margin_left
+        && table.outer_margin_top == table.outer_margin_right
+    {
+        i64::from(table.outer_margin_top)
+    } else {
+        0
     }
 }
 

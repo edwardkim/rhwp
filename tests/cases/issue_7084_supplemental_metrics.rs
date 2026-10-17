@@ -59,7 +59,7 @@ fn canvas_font_setup_preserves_positioned_painter_contract() {
     assert_eq!(font.descriptor(), format!("italic bold 12.600px {family}"));
     assert_eq!(
         font.old_hangul_descriptor(),
-        format!("italic bold 12.600px 'Source Han Serif K Old Hangul', {family}")
+        format!("italic bold 12.600px 'RHWP Old Hangul', {family}")
     );
     near(font.draw_size(), 12.6);
     near(font.horizontal_scale(), 0.9);
@@ -266,14 +266,16 @@ fn canvas_registration_rejects_invalid_units_without_changing_paint_defaults() {
 #[test]
 fn missing_advance_is_shared_by_total_and_following_positions() {
     let original = style();
-    near(positions("😀", &original)[1], 10.0); // observed generic 0.5em path
+    // observed generic 0.5em path on the Hancom device grid (#7702): 187.5 → 188 units × 4/75
+    let fallback = 188.0 * 4.0 / 75.0;
+    near(positions("😀", &original)[1], fallback);
     let mut prepared = original.clone();
     let _store = bound(&mut prepared, vec![measured(&original, "😀", 27.5)]);
     let old = positions("😀A한", &original);
     let new = positions("😀A한", &prepared);
     near(new[1], 27.5);
     for i in 1..new.len() {
-        near(new[i] - old[i], 17.5);
+        near(new[i] - old[i], 27.5 - fallback);
     }
     // The public estimate intentionally retains its pre-existing integer rounding.
     let total = EmbeddedTextMeasurer.estimate_text_width("😀A한", &prepared);

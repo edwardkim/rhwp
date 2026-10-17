@@ -1,0 +1,24 @@
+[package]
+name = "rhwp-zune-jpeg"
+version = "0.5.15-rhwp.1"
+edition = "2021"
+rust-version = "1.75.0"
+publish = false
+license = "MIT OR Apache-2.0 OR Zlib"
+description = "Request-bounded security patch of zune-jpeg for rhwp PDF import"
+[workspace]
+[lib]
+name = "zune_jpeg_limited"
+path = "src/lib.rs"
+[features]
+default = ["x86", "neon", "std"]
+x86 = []
+neon = []
+portable_simd = []
+std = ["zune-core/std"]
+log = ["zune-core/log"]
+[dependencies.zune-core]
+version = "=0.5.3"
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = ["cfg(fuzzing)"]

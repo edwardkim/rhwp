@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-12
+last_verified: 2026-10-15
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -22,10 +22,17 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 검토 head의 코드·증거와 대조한다. 비해당도 이유를 적는다. maintainer 일반, collaborator self,
 collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
 
+조판·렌더링 영향 PR은 최신 SHA를 고정한 `upstream/devel`의 전쪽 Native/fresh WASM TSV를
+후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도0.01%p 이상 하락하면90% 이상이어도
+PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과로 상쇄하지 않는다.
+계산·증거·base 갱신은 [devel 대비 실루엣 하락 재검토](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
+
 검증에 사용한 HWP/HWPX/PDF는 [검증 입력 커밋 확인](pr_review/intake_and_review.md#28-검증-입력-커밋-확인)을
 모든 정식 PR review의 공통 항목으로 점검한다. 수용 근거로 쓴 파일은 검토 대상 commit에 포함하고,
-실제로 실행한 파일과 commit의 내용이 같은지 확인한다. `korea_downloads`, 임시 output 또는 외부 첨부에만
-있는 파일로 검증을 완료 처리하지 않는다. 기존에 커밋된 동일 파일은 재사용하며 중복 사본을 추가하지 않는다.
+실제로 실행한 파일과 commit의 내용이 같은지 확인한다. 단, **50 MiB(52,428,800바이트) 이상 PDF는
+로컬에만 보관하고 PR에 포함하지 않으며**, 공통 입력 확인의 로컬 파일·SHA·전쪽 검증 증거로 점검한다.
+그 외 파일은 `korea_downloads`, 임시 output 또는 외부 첨부에만 두고 검증을 완료 처리하지 않는다.
+기존에 커밋된 동일 파일은 재사용하며 중복 사본을 추가하지 않는다.
 
 rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator가 매개하는 외부 PR을
 구분한다. 권한과 변경 위치가 다르므로 한 경로의 예외를 다른 경로에 일반화하지 않는다.
@@ -47,6 +54,25 @@ Rust source 또는 Rust test/baseline helper가 바뀐 PR은 `local_validation.m
 focused test 또는 과거 녹색 CI는 이 선행 lint gate를 대체하지 않는다. GitHub Full CI 재사용은 정확한
 기존 code head를 재검토할 때의 광범위 회귀 생략 규칙일 뿐, maintainer 보정이나 새 code/test/baseline
 commit의 lint 생략 규칙이 아니다.
+
+렌더링 회귀의 추가·변경에는 역할과 관계없이 관련 모든 페이지의 Native/fresh WASM 일치율
+90% 이상을 먼저 입증한다. 기존 회귀가 실패하면 **원본 출력 보정 → 독립 한컴 Print PDF로
+90% 이상 확인 → 필요한 검사 변경** 순서로 처리하며, 실물 배치는 절대 px 좌표·고정 px 영역 대신
+소유·순서·보존·포함·겹침 관계로 검사한다. 기여자·메인터너·콜라보레이터와 승인된 보정에 모두
+적용한다. 다만 **완료된 페이지**의 Native/fresh WASM 2px 관용 실루엣 일치율이 각각98% 이상이고
+독립 PDF와 직접 확대 판독을 마쳤으면 해당 쪽의 독립 기대 좌표를 ±2px 오차로 고정할 수 있다.
+문서 전체98% 이상은 요구하지 않는다. [페이지별 px 회귀 조건](pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.
+상세 조건은 [시각 선행 조건](pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+[기존 기대값 재검토](pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
+
+고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 부적합한 회귀는
+[새 이슈 이관](pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관) 절차로 처리한다.
+동일 입력의 base/head 비교로 기존 미달을 확인하며 현재 수정으로 발생한 회귀는 구현을 고친다.
+base의 시각 근거가 없으면 이관 판정을 보류한다.
+
+90% 이상이어도 [수식·간격 확대 판독](pr_review/visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)은
+필수다. 변경 영역·알려진 차이·사용자 지적 영역의 모양·장평·미세 간격을 같은 배율로 대조하고,
+확인된 결함은 점수 통과로 면제하지 않는다. 점수와 판독 결과를 분리해 완료·승인 여부를 판정한다.
 
 ### 1.1 최종 판정 용어와 원격 조치의 분리
 
@@ -75,9 +101,16 @@ PR 번호는 PR을 생성할 때 채번된다. 따라서 collaborator self PR의
 1. 구현과 로컬 검증이 끝난 후보 commit을 원격 작업 branch에 push한다.
 2. 작업지시자의 PR 생성 승인 후 Open PR을 생성해 번호 `N`을 받는다. 완료된 후보에
    번호만 확보하려고 Draft를 생성하지 않는다.
-3. reviewer assign 승인과 역할별 접수 절차를 수행한 뒤 `pr_N_review.md`와 필요한 오늘할일을
-   작성해 같은 source branch에 review 기록 commit으로 push한다.
-4. review 기록이 포함된 최신 head의 required check를 확인하고, 작업지시자 승인 후 merge한다.
+3. 같은 PR의 정확한 code head SHA에 대한 required check와 변경 범위상 필요한 GitHub Actions가
+   모두 완료되어 성공할 때까지 기다린다. 로컬 검증 성공이나 PR 채번만으로 다음 단계에 가지 않는다.
+4. collaborator self PR은 reviewer를 지정하지 않고 `pr_N_review.md`와 필요한 review_impl·오늘할일에
+   검증한 code SHA, CI run URL과 실제 결과를 기록한다. 문서-only trailing commit을 같은 source
+   branch에 만들고 3.2.1의 push 전 검증을 통과한 뒤 push한다.
+5. review 기록이 포함된 최신 trailing head의 required check를 확인하고, 작업지시자 승인 후 merge한다.
+
+code head CI가 진행 중·실패·취소·미실행이면 review·오늘할일 trailing commit을 만들거나 push하지
+않는다. 코드 보정이 필요하면 새 code head의 CI 성공을 먼저 확인한다. 상세 순서는
+[collaborator self PR의 기록 시점](pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)을 따른다.
 
 외부 contributor PR처럼 PR이 이미 존재하는 경우에는 발급된 번호로 바로 review 접수를 시작한다.
 Draft는 WIP 공유나 조기 검토가 필요하고 그 상태 변경을 작업지시자가 명시적으로 승인한 경우에만
@@ -296,7 +329,9 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
   merge와 stale run force-cancel은 대상 SHA를 확인한 뒤 순차로 실행한다.
 - 실제 GitHub review/comment, issue close, PR close는 승인과 선행 조건이 갖춰진 뒤에만 게시한다.
 - merge 후에는 merge SHA 확인 → 문서·asset의 devel 반영 → 최종 devel sync → issue 상태 확인 및
-  comment → branch/worktree/임시 산출물 정리 순서를 지킨다. 공유 `target/pr-review`는 보존한다. 이때 worktree 정리에는 commit을
+  comment → branch/worktree/임시 산출물 정리 순서를 지킨다. 임시 산출물은
+  [`output/` 전체 제거](pr_review/post_merge.md#77-branch-worktree-검토-전용-target-정리)를
+  수행하며 필수 증거를 밖으로 보존한 뒤 디렉터리의 부재까지 확인한다. 공유 `target/pr-review`는 보존한다. 이때 worktree 정리에는 commit을
   만들지 않았더라도 이번 PR의 diff·CI·재현·검증만을 위해 만든 local 검토 worktree를 포함한다. raw image
   URL을 쓰는 comment는 asset이 devel에 존재한 뒤에만 게시한다.
 

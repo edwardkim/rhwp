@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_METRIC_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_METRIC_INPUT_SHA256: &str =
-    "e6509d5dcdcec0e412acb1773ca9f510ac4ca8a034f0e6e1556be166f32e673a";
+    "668129ddc73e3787dae29a48bb01151898e6c7bbc5e5799c038ca27d4325853d";
 pub(crate) const FONT_RULE_LAYOUT_METRIC_PROJECTION_SHA256: &str =
-    "10448dda2d70a29dba5346245af09d7e308262e94486e9a3da046b183921c44c";
+    "b36c884e942ec501bde20a9dbf8f09fb06d2fed3638e06020a754fb7ad669ef8";
 
 pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -1277,6 +1277,48 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
         mode: "direct",
         metric_entry_ids: &["font-metric.f3e4274740daf2960ec1"],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.97a520bd286dc482c765",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("Malgun Gothic Bold"),
+        target_face_or_policy: "Malgun Gothic",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[
+            "font-metric.cb5db76c0649913e4438",
+            "font-metric.1beeab194e16e4a6107d",
+        ],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.d3b78b2bdea7d0531b5f",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("Arial Bold"),
+        target_face_or_policy: "Arial",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[
+            "font-metric.b5fafcd791a4af142ef1",
+            "font-metric.6edd92d6f8127459749a",
+            "font-metric.a94242c0b0f23c0e97fd",
+            "font-metric.a04310c5f53100889fc3",
+        ],
+    },
 ];
 
 #[rustfmt::skip]
@@ -1487,6 +1529,12 @@ pub(crate) fn find_font_rule_layout_metric(
         }
         "한컴 윤고딕 230" => {
             Some(&FONT_RULE_LAYOUT_METRIC_RULES[67])
+        }
+        "Malgun Gothic Bold" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[68])
+        }
+        "Arial Bold" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[69])
         }
         _ => None,
     }

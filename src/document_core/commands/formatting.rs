@@ -8,7 +8,10 @@ use super::super::helpers::{
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::event::DocumentEvent;
-use crate::renderer::composer::{reflow_line_segs, restamp_indentation, ParagraphBox};
+use crate::renderer::composer::{
+    paragraph_flow_end, recalculate_section_vpos, reflow_line_segs, restamp_indentation,
+    ParagraphBox,
+};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -257,6 +260,8 @@ impl DocumentCore {
             .get(sec_idx)?
             .endnote_para_sources
             .get(local_idx)
+            // [#7860] 편집 명령은 본문 문단의 미주 주소만 받는다. 표 셀 안 미주는 제외한다.
+            .filter(|src| src.cell_path.is_empty())
             .cloned()
     }
 
@@ -1051,6 +1056,7 @@ impl DocumentCore {
             let bf_id = self.create_border_fill_from_json(props_json);
             mods.border_fill_id = Some(bf_id);
         }
+        let stored_end = paragraph_flow_end(&self.document.sections[sec_idx].paragraphs[para_idx]);
         self.apply_char_mods_to_paragraph(sec_idx, para_idx, start_offset, end_offset, &mods)?;
 
         // 텍스트 폭/높이에 영향을 주는 글자 모양 변경 시 LineSeg 재계산.
@@ -1070,15 +1076,22 @@ impl DocumentCore {
             let para_style = styles.para_styles.get(para_shape_id as usize);
             // 본문: 열 상자.
             let paragraph_box = ParagraphBox::body_for_style(col_width, para_style, self.dpi);
-            // 원본 LineSeg 무효화 → reflow가 max_font_size에서 새로 계산
-            self.document.sections[sec_idx].paragraphs[para_idx]
-                .line_segs
-                .clear();
+            // Preserve the saved first-row origin while replacing the composed rows.
             reflow_line_segs(
                 &mut self.document.sections[sec_idx].paragraphs[para_idx],
                 paragraph_box,
                 &styles,
                 self.dpi,
+            );
+            let hwp3 = self.document.layout_profile().hwp3_layout();
+            recalculate_section_vpos(
+                &mut self.document.sections[sec_idx].paragraphs,
+                para_idx,
+                None,
+                stored_end,
+                &styles,
+                self.dpi,
+                hwp3,
             );
         }
 
@@ -1123,6 +1136,7 @@ impl DocumentCore {
             )));
         }
 
+        let stored_end = paragraph_flow_end(&self.document.sections[sec_idx].paragraphs[para_idx]);
         let styles = self.resolve_render_styles();
         let available_box = {
             let section = &self.document.sections[sec_idx];
@@ -1145,6 +1159,16 @@ impl DocumentCore {
             para.apply_char_shape_range(start_offset, end_offset, char_shape_id);
             reflow_line_segs(para, available_box, &styles, self.dpi);
         }
+        let hwp3 = self.document.layout_profile().hwp3_layout();
+        recalculate_section_vpos(
+            &mut self.document.sections[sec_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end,
+            &styles,
+            self.dpi,
+            hwp3,
+        );
 
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_paragraph_deferred_in_batch(sec_idx, para_idx);
@@ -1741,6 +1765,17 @@ impl DocumentCore {
                     )
                 });
             let (old_indent, new_indent) = self.para_shape_indents(base_id, new_id);
+            self.restamp_cell_format_origin(
+                (
+                    sec_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                ),
+                base_id,
+                new_id,
+            )?;
 
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -1828,6 +1863,17 @@ impl DocumentCore {
                 )
             });
         let (old_indent, new_indent) = self.para_shape_indents(old_id, para_shape_id);
+        self.restamp_cell_format_origin(
+            (
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ),
+            old_id,
+            para_shape_id,
+        )?;
         {
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -2217,6 +2263,7 @@ impl DocumentCore {
                     cell_para_idx,
                 )?;
                 cell_para.apply_char_shape_to_entire_text(new_char_shape_id);
+                cell_para.cell_format_vpos_dirty = true;
                 cell_para.text.chars().count()
             };
 
@@ -2227,6 +2274,7 @@ impl DocumentCore {
                 cell_idx,
                 cell_para_idx,
             );
+            self.pending_cell_format_vpos = true;
             self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
             self.document.sections[sec_idx].raw_stream = None;
             self.rebuild_section_deferred_in_batch(sec_idx);
@@ -2244,6 +2292,17 @@ impl DocumentCore {
             _ => self.resolve_style_para_shape_id(style_id, current_psid),
         };
         let (old_indent, new_indent) = self.para_shape_indents(current_psid, new_para_shape_id);
+        self.restamp_cell_format_origin(
+            (
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ),
+            current_psid,
+            new_para_shape_id,
+        )?;
 
         {
             let cell_para = self.get_cell_paragraph_mut(
@@ -2255,6 +2314,7 @@ impl DocumentCore {
             )?;
             cell_para.style_id = style_id as u8;
             cell_para.para_shape_id = new_para_shape_id;
+            cell_para.cell_format_vpos_dirty = true;
             restamp_indentation(&mut cell_para.line_segs, old_indent, new_indent);
             if let Some(old) = old_style {
                 cell_para.replace_style_char_shape_preserving_overrides(
@@ -2273,6 +2333,7 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
+        self.pending_cell_format_vpos = true;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section_deferred_in_batch(sec_idx);

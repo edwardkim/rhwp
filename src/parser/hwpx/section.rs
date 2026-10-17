@@ -1914,11 +1914,10 @@ fn parse_col_line(e: &quick_xml::events::BytesStart, cd: &mut ColumnDef) {
 
 /// <hp:colSz width="..." gap="..."/> 파싱 → ColumnDef.widths/gaps (#4387).
 ///
-/// `sameSz="false"` 일 때 단 개수만큼(최대 255) 반복되는 요소로, 단별 절대
-/// HWPUNIT 너비·뒤 간격을 담는다 (`mydocs/manual/OWPML SCHEMA/ParaList XML
-/// schema.xml:1415` ColumnDefType). HWPX 는 절대값이므로 `proportional_widths`
-/// 는 건드리지 않는다 — `ColumnDef::default()` 의 `false` 가 이미 정답이다
-/// (HWP 5.0 바이너리 파서(body_text.rs)만 비례값이라 true 로 켠다).
+/// `sameSz="false"`일 때 단 개수만큼(최대 255) 반복되는 단별 비례 너비·뒤 간격이다.
+/// 한컴 2020이 직접 재저장한 HWP/HWPX는 모두 8000·768·24000(합계 32768)을
+/// 보존하며 본문 폭을 채운다. 스키마의 정수 타입만으로 절대 HWPUNIT이라 추정하면
+/// HWPX의 단과 뒤 본문이 왼쪽으로 당겨진다. HWP5와 같은 비례 배치 경로로 전달한다.
 ///
 /// [#4387 후속] 스키마상 `width` 는 `xs:positiveInteger`(상한 없음)인데
 /// `ColumnDef.widths/gaps: Vec<HwpUnit16>` 은 i16(최대 32767 HWPUNIT ≈
@@ -1941,6 +1940,7 @@ fn parse_col_sz(e: &quick_xml::events::BytesStart, cd: &mut ColumnDef) {
     }
     cd.widths.push(width);
     cd.gaps.push(gap);
+    cd.proportional_widths = true;
 }
 
 /// XML 정수 속성을 `HwpUnit16`(i16)로 saturating 변환한다.
@@ -2988,6 +2988,7 @@ fn parse_picture(
     let mut padding = crate::model::Padding::default();
     let mut border_x = [0i32; 4];
     let mut border_y = [0i32; 4];
+    let mut border_line: Option<ShapeBorderLine> = None;
     let mut img_dim: (u32, u32) = (0, 0); // [#1389] hp:imgDim 원본 이미지 픽셀 크기
     let mut href: Option<String> = None;
     let mut picture_instance_id = 0;
@@ -3086,6 +3087,12 @@ fn parse_picture(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
+                    b"lineShape" => {
+                        // A picture outline shares the drawing line contract.
+                        // A zero width still has a style; absence and NONE do
+                        // not acquire a default outline.
+                        border_line = Some(parse_line_shape_attr(ce));
+                    }
                     b"sz" => {
                         // 최종 표시 크기 (최우선)
                         for attr in ce.attributes().flatten() {
@@ -3374,6 +3381,11 @@ fn parse_picture(
     pic.padding = padding;
     pic.border_x = border_x;
     pic.border_y = border_y;
+    if let Some(border) = border_line {
+        pic.border_color = border.color;
+        pic.border_width = border.width;
+        pic.border_attr = border;
+    }
     pic.instance_id = picture_instance_id;
     pic.effects = effects;
     pic.caption = caption;
@@ -4535,6 +4547,7 @@ fn parse_draw_text_body(
                         text_box.paragraphs.push(para);
                     }
                     b"textMargin" => {
+                        text_box.text_margin_explicit = true;
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref().as_bytes() {
                                 b"left" => text_box.margin_left = parse_i16(&attr),
@@ -10677,7 +10690,7 @@ mod tests {
             "단별 너비가 파싱돼야 함(#4387)"
         );
         assert_eq!(cd.gaps, vec![500, 0], "단별 간격이 파싱돼야 함(#4387)");
-        assert!(!cd.proportional_widths, "HWPX colSz 는 절대 HWPUNIT");
+        assert!(cd.proportional_widths, "한컴 HWPX colSz는 비례 너비다");
     }
 
     /// [#4387 후속] `colSz@width` 는 스키마상 `xs:positiveInteger`(상한 없음)인데

@@ -73,6 +73,92 @@ git switch -c <work-branch> upstream/devel
 원격 이름이나 쓰기 가능한 원격은 clone 방식과 권한에 따라 다를 수 있다. PR 준비·merge의 역할별 절차는
 [PR 리뷰·통합 워크플로우](pr_review_workflow.md)를 따른다.
 
+## 빌드 병렬도
+
+Native·fresh WASM·테스트 컴파일의 Cargo 빌드 잡 수는 모든 OS에서 **논리 CPU 수 − 2, 최소 1개**를
+시작값으로 권장한다. 강제값은 아니며 메모리 여유, 다른 작업의 CPU 사용량, 실제 빌드 시간에 맞게
+`CARGO_BUILD_JOBS`를 늘리거나 줄일 수 있다. 아래는 권장 시작값을 설정하는 예시이며, CPU 수가
+1개 또는 2개이면 잡 수를 1개로 계산한다.
+
+Linux:
+
+```bash
+rhwp_build_cpu_count="$(nproc)"
+rhwp_build_jobs=$((rhwp_build_cpu_count > 2 ? rhwp_build_cpu_count - 2 : 1))
+export CARGO_BUILD_JOBS="$rhwp_build_jobs"
+```
+
+macOS:
+
+```bash
+rhwp_build_cpu_count="$(sysctl -n hw.logicalcpu)"
+rhwp_build_jobs=$((rhwp_build_cpu_count > 2 ? rhwp_build_cpu_count - 2 : 1))
+export CARGO_BUILD_JOBS="$rhwp_build_jobs"
+```
+
+Windows PowerShell:
+
+```powershell
+$rhwpBuildJobs = [Math]::Max(1, [Environment]::ProcessorCount - 2)
+$env:CARGO_BUILD_JOBS = [string]$rhwpBuildJobs
+```
+
+Windows 대화형 cmd에서는 PowerShell로 수량을 계산한다. `.cmd` 파일에서는 `%J`를 `%%J`로 바꾼다.
+
+```bat
+for /f %J in ('powershell.exe -NoProfile -Command "[Math]::Max(1, [Environment]::ProcessorCount - 2)"') do set "CARGO_BUILD_JOBS=%J"
+```
+
+`--jobs`/`-j`를 명시하면 환경변수보다 우선한다. 환경에 맞춰 조절한 수량을 전달할 수 있다.
+빌드 잡 수는 Cargo의 동시 작업 수이고, `codegen-units`는 crate 내부 코드 생성 분할 수다.
+테스트 실행의 `--test-threads`와도 별개이며, CPU 두 개가 항상 유휴 상태라는 뜻은 아니다.
+공용 `target/pr-review`를 사용하는 Cargo 명령은 잡 수와 무관하게 순차 실행한다.
+
+fresh WASM의 `codegen-units=16`도 권장 시작값이며, 빌드 시간·메모리·출력 크기·실행 성능을 보고
+조절할 수 있다. WASM용 설정은 해당 명령에만 적용해 Native 프로필에 영향을 주지 않도록 한다.
+POSIX 셸에서는 다음처럼 명령 범위를 한정할 수 있다.
+
+```bash
+CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 \
+  CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg
+```
+
+Windows PowerShell에서는 같은 명령을 실행하는 동안만 `$env:CARGO_PROFILE_RELEASE_CODEGEN_UNITS = '16'`을
+설정하고, 종료 후 이전 환경변수 값으로 복원한다. cmd도 WASM 명령 동안만 같은 환경변수를 설정한다.
+설정 변경으로 재컴파일될 수 있으며, 이전 설정으로 시작한 빌드는 새 설정으로 실행한 결과와 구분한다.
+
+## 디스크 공간이 부족할 때
+
+빌드 캐시를 정리하기 전에 **종료된 검증용 Chromium/Puppeteer 임시 프로필**의 용량을
+확인하고 삭제하는 것을 권장한다. PNG 방식의 fresh WASM 검증도 Chromium을 사용하며,
+중단된 실행이 임시 프로필과 캐시를 남길 수 있다. 공유 `target/pr-review`를 임의로
+삭제·초기화하지 않는다.
+
+Linux Snap Chromium의 후보 경로는 `/tmp/snap-private-tmp/snap.chromium/tmp/`다.
+일반 Chromium/Puppeteer와 다른 OS에서는 실제 실행의 임시 경로·`--user-data-dir`를 먼저
+확인한다. 설치 경로나 일반 사용자의 브라우저 프로필을 임시 프로필로 추정하지 않는다.
+
+1. 임시 루트의 용량·항목별 수정 시각·소유자를 확인한다. 기본 후보는 24시간 이상 지난
+   항목이며 환경과 작업에 맞게 보존 기간을 조절할 수 있다. 하위 파일의 최근 변경도 확인한다.
+2. 실행 중인 프로세스의 프로필 경로·작업 디렉터리·열린 파일 참조와 `SingletonLock` 등의
+   잠금 PID를 대조한다. 오래된 시각이나 잠금 파일 존재·부재만으로 종료를 단정하지 않는다.
+   사용 중이거나 판정이 불확실한 항목은 보존한다.
+3. 삭제할 정확한 경로와 사용 중 아님을 확인한 근거를 ignored 검증 로그에 기록한다.
+   삭제 직전에도 경로·소유자·사용 여부를 재확인하고 해당 임시 항목만 제거한다.
+   임시 루트 전체, `.snap`·`.X11-unix` 같은 시스템 항목, 현재 프로필, 일반 사용자 프로필,
+   쿠키·방문 기록이 있는 일반 사용자 데이터와 검증 증적은 일괄 삭제하지 않는다.
+4. 삭제 결과·실패 항목·전후 파일시스템 여유 공간을 기록한다. 예상 삭제 용량과 다른 작업의
+   쓰기·정리가 함께 반영된 실제 여유 공간 증가는 구분한다.
+
+`target/pr-review`의 **종료된 오래된 증분 캐시**도 공간 확보를 위한 정리 후보로 권장한다.
+공유 target을 사용하는 Cargo·rustc·wasm-pack·wasm-opt 작업이 모두 종료된 뒤, 캐시별
+용량·수정 시각·작업 소유와 사용 여부를 확인한다. Native 또는 WASM 프로필 아래
+`incremental`에 있는 사용하지 않는 정확한 캐시 하위 경로만 지정해 삭제하고, 삭제 목록과
+전후 여유 공간을 기록한다. 경과 시간만으로 사용하지 않는다고 단정하거나 `incremental`
+전체를 일괄 삭제하지 않는다. target 전체·프로필 디렉터리·실행 파일·`deps`·`.fingerprint`·
+다른 작업의 산출물은 보존한다. 삭제한 증분 캐시는 이후 빌드에서 재생성될 수 있다.
+
 ## 네이티브 빌드와 테스트
 
 ```bash
@@ -166,6 +252,46 @@ bind mount는 hard-link를 지원하지 않아 Cargo가 실패할 수 있으므�
 재사용하지 않는다. 빌드 시작 시에는 이전에 중단된 wasm-pack이 남긴 `pkg/*-opt.wasm`만 제거한다.
 이 파일을 남기면 wasm-pack이 임시 최적화 결과를 다시 입력으로 열거해 무한 실행 또는
 `*-opt.wasm-opt.wasm` 실패로 이어질 수 있다. (#4089)
+
+서로 다른 worktree를 같은 Docker `/app`과 named target volume에 연결할 때는 source의
+수정 시각이 캐시보다 오래되어 이전 worktree의 산출물이 재사용될 수 있다. 짧은 build 성공이나
+pkg/public의 동일 해시만으로 source 일치를 판정하지 않는다. 기준 source SHA와 실제 JS/API의
+추가·제거 내용을 대조하고, 불일치 산출물은 증거에서 제외한 뒤 변경 패키지의 재컴파일을 확인한다.
+공유 cache 전체를 삭제해 해결하지 않는다.
+
+### Studio에서 PDF 직접 열기
+
+기본 Native·WASM 빌드는 `pdf-import`를 포함한다. 저장소 루트에서 표준 Docker 서비스와
+cache를 사용해 빌드하면 Studio의 PDF 열기를 사용할 수 있다. `.env.docker`는 위 표준 준비
+절차를 재사용한다. 추가 feature 지정은 필요하지 않다.
+
+```bash
+docker compose --env-file .env.docker run --rm --no-deps wasm sh -ec '
+  finish() {
+    status=$?
+    chown -R "$HOST_UID:$HOST_GID" pkg
+    chown "$HOST_UID:$HOST_GID" rhwp-studio/public/rhwp.js rhwp-studio/public/rhwp_bg.wasm
+    exit "$status"
+  }
+  trap finish EXIT
+  rm -f pkg/*-opt.wasm
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg
+'
+```
+
+이후 위 wrapper가 동기화한 pkg/public의 JS·WASM SHA-256을 확인하고 Studio 개발 서버를
+시작·새로고침한다. 파일 → 열기(Ctrl/Cmd+O) 또는 문서 영역 드롭으로 PDF를 직접 열 수 있다.
+지원 여부는 실제 WASM의 `HwpDocument.supportsPdfImport()` 결과로 결정한다. 이전 bundle이나
+`pdf-import`를 제외하고 `wasm-api`를 유지한 빌드에서는 PDF를 열기 목록에 추가하지 않으며
+HWP/HWPX/HML 열기는 유지한다. Studio용 명시적 제외 빌드는
+`--no-default-features --features console_error_panic_hook,wasm-api`를 사용한다.
+`--no-default-features`만 지정하면 라이브러리 소비용으로 JS facade와 자동 start도 제외되므로
+Studio 패키지의 PDF 제외 옵션으로 단독 사용하지 않는다.
+
+PDF 원본은 입력으로 보존한다. 첫 저장은 HWP/HWPX 출력 형식을 선택하며, 원본 핸들에
+내용을 덮어쓰지 않는다. 현재 Studio 가져오기는 동기 WASM 호출이므로 진행 표시가 취소나
+시간 제한을 보장하지 않는다. PDF의 줄/문단 복원·지원 제한과 parser allocation 감사는
+별도 범위이며, 자세한 API/Worker 계약은 [공용 PDF 모듈](../../rhwp-shared/pdf/README.md)을 따른다.
 
 Docker를 사용할 수 없는 호스트에서 원인을 분리하는 **진단용** 네이티브 경로는 아래와 같다.
 `--no-opt` 결과는 최적화된 배포 산출물을 대체하지 않는다. 모든 OS의 native Cargo/WASM 검증은

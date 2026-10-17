@@ -1,0 +1,57 @@
+{
+  "changeSetId": "issue-7959.malgun-postscript-identity",
+  "decisionPlane": "layout-name",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-7959.malgun-name-table",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Installed malgun.ttf nameID 6 MalgunGothic and nameID 1/4 Malgun Gothic / 맑은 고딕 identify the same regular program. The separate bold program is recorded as a counterexample; its full face is not collapsed into the regular identity. Metadata only, no proprietary font bytes.",
+      "parentEvidenceIds": [],
+      "sha256": "968cd976cfcba1fe511f7f37fd1154e9c004265b0ff55a432f7770fd39fcfd58",
+      "source": "assets/font-rules/evidence/issue-7959-postscript-identity.json"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 1,
+    "projectionId": "rust-layout-name",
+    "unchangedProjectionIds": [
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 7959,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-7959.malgun-regular-identity",
+      "rule": {
+        "conditions": {
+          "languageSlot": "all"
+        },
+        "decisionPlane": "layout-name",
+        "evidenceIds": [
+          "evidence.issue-7959.malgun-name-table"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        },
+        "projectionSequence": 173,
+        "relationType": "style-fallback",
+        "ruleId": "rule.rust-style-resolution.dada52dd12498becd0dd",
+        "sourceBoundaryId": "rust-style-resolution.ttf",
+        "sourceFace": "MalgunGothic",
+        "supply": null,
+        "targetFaceOrPolicy": "맑은 고딕"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "62e401a784f727471a1ad2bc5da983e306bcfc39131c665b1dc099f5aa6355a2",
+  "schemaVersion": "2.0",
+  "sequence": 9
+}

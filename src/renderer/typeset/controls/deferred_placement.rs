@@ -83,5 +83,5 @@ pub(in crate::renderer::typeset) fn place(
         },
     );
 
-    st.commit_deferred_table_anchor(deferred.para_index);
+    st.commit_deferred_table_anchor(deferred.para_index, paragraphs);
 }

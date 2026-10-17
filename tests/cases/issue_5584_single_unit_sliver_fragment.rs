@@ -8,22 +8,8 @@
 //! 1쪽에 리셋 경계까지 담는다(4쪽). 수정: 조각 중간 행에서도 capacity cut 이
 //! 저장 프레임 끝 직전(한 유닛 규모 ≤24px)에 멈추면 프레임 끝까지 당긴다 —
 //! 기존 opening_source_frame 계약의 중간 행 판.
-
-use rhwp::document_core::DocumentCore;
-use std::fs;
-use std::path::Path;
-
-const SAMPLE: &str = "samples/issue5584/3232693_employment_support_criteria.hwpx";
-
-#[test]
-fn issue_5584_no_single_unit_sliver_fragment() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let bytes = fs::read(path).expect("read #5584 fixture");
-    let core = DocumentCore::from_bytes(&bytes).expect("parse #5584 fixture");
-
-    assert_eq!(
-        core.page_count(),
-        4,
-        "3232693 은 한글 기준 4쪽이다 (수정 전 rhwp 는 sliver 조각으로 5쪽)"
-    );
-}
+//!
+//! 활성 렌더링 검사는 사용자 지시에 따라 #7822 (#7445 서브이슈)로 이관했다.
+//! 샘플·PDF와 이 Rust 파일은 보존한다. 검사 원문은
+//! `mydocs/pr/assets/issue7445/deferred-regressions-20261011/issue7822-issue_5584_single_unit_sliver_fragment.rs.txt`에 있다.
+//! 해당 이슈의 전쪽 Native/fresh WASM 검증 뒤 관계형 검사로 복원한다.

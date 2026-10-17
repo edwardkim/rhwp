@@ -1,8 +1,10 @@
+import { parseSvgImageHeader } from './svg-image-header.ts';
+
 export const CANVASKIT_MAX_ENCODED_IMAGE_BASE64_LENGTH = 24 * 1024 * 1024;
 export const CANVASKIT_MAX_IMAGE_DIMENSION = 8192;
 export const CANVASKIT_MAX_DECODED_IMAGE_PIXELS = 32 * 1024 * 1024;
 
-export type EncodedImageFormat = 'png' | 'jpeg' | 'gif' | 'webp' | 'bmp';
+export type EncodedImageFormat = 'png' | 'jpeg' | 'gif' | 'webp' | 'bmp' | 'svg';
 
 export interface EncodedImageDimensions {
   width: number;
@@ -18,7 +20,8 @@ export function encodedImageHeader(bytes: Uint8Array): EncodedImageHeader | null
     ?? parseGifHeader(bytes)
     ?? parseWebpHeader(bytes)
     ?? parseBmpHeader(bytes)
-    ?? parseJpegHeader(bytes);
+    ?? parseJpegHeader(bytes)
+    ?? parseSvgImageHeader(bytes);
 }
 
 /** CanvasKit decode 전에 지원 형식과 bounded raster dimensions를 확인한다. */
@@ -43,6 +46,159 @@ export function replayableEncodedImageHeader(bytes: Uint8Array): EncodedImageHea
 
 export function encodedImageIsReplayable(bytes: Uint8Array): boolean {
   return replayableEncodedImageHeader(bytes) !== null;
+}
+
+/** Browser decoder는 애니메이션의 시각이 아니라 단일 정적 프레임만 제공한다. */
+export function encodedImageHasStableFrame(bytes: Uint8Array, header: EncodedImageHeader): boolean {
+  if (header.format === 'gif') return gifHasSingleFrame(bytes);
+  if (header.format === 'webp') return webpHasSingleFrame(bytes);
+  if (header.format === 'png') {
+    let offset = 8;
+    while (offset + 12 <= bytes.length) {
+      const length = readUint32(bytes, offset, false);
+      if (offset + 12 + length > bytes.length) return false;
+      if (bytesEqual(bytes, offset + 4, [0x61, 0x63, 0x54, 0x4c])) return false;
+      if (bytesEqual(bytes, offset + 4, [0x49, 0x45, 0x4e, 0x44])) return offset + 12 === bytes.length;
+      offset += 12 + length;
+    }
+    return false;
+  }
+  return true;
+}
+
+function gifHasSingleFrame(bytes: Uint8Array): boolean {
+  const header = parseGifHeader(bytes);
+  if (!header) {
+    return false;
+  }
+
+  let offset = 13;
+  const packed = bytes[10];
+  const hasGlobalColorTable = (packed & 0x80) !== 0;
+  if (hasGlobalColorTable) {
+    offset += (1 << ((packed & 0x07) + 1)) * 3;
+  }
+  let frameCount = 0;
+  while (offset < bytes.byteLength) {
+    const introducer = bytes[offset];
+    offset += 1;
+    if (introducer === 0x3b) {
+      return frameCount === 1 && offset === bytes.byteLength;
+    }
+    if (introducer === 0x21) {
+      if (offset >= bytes.byteLength) {
+        return false;
+      }
+      offset += 1;
+      const extensionEnd = skipGifSubBlocks(bytes, offset);
+      if (extensionEnd === null) {
+        return false;
+      }
+      offset = extensionEnd;
+      continue;
+    }
+    if (introducer !== 0x2c || offset + 9 > bytes.byteLength) {
+      return false;
+    }
+
+    const frameWidth = readUint16(bytes, offset + 4, true);
+    const frameHeight = readUint16(bytes, offset + 6, true);
+    const framePacked = bytes[offset + 8];
+    if (frameWidth === 0 || frameHeight === 0) {
+      return false;
+    }
+    offset += 9;
+    const hasLocalColorTable = (framePacked & 0x80) !== 0;
+    if (hasLocalColorTable) {
+      offset += (1 << ((framePacked & 0x07) + 1)) * 3;
+    }
+    if (
+      (!hasGlobalColorTable && !hasLocalColorTable)
+      || offset >= bytes.byteLength
+      || bytes[offset] < 2
+      || bytes[offset] > 8
+    ) {
+      return false;
+    }
+    offset += 1;
+    const imageEnd = skipGifSubBlocks(bytes, offset);
+    if (imageEnd === null) {
+      return false;
+    }
+    offset = imageEnd;
+    frameCount += 1;
+    if (frameCount > 1) {
+      return false;
+    }
+  }
+  return false;
+}
+
+function skipGifSubBlocks(bytes: Uint8Array, start: number): number | null {
+  let offset = start;
+  while (offset < bytes.byteLength) {
+    const blockLength = bytes[offset];
+    offset += 1;
+    if (blockLength === 0) {
+      return offset;
+    }
+    if (offset + blockLength > bytes.byteLength) {
+      return null;
+    }
+    offset += blockLength;
+  }
+  return null;
+}
+
+function webpHasSingleFrame(bytes: Uint8Array): boolean {
+  if (!parseWebpHeader(bytes)) {
+    return false;
+  }
+  const riffEnd = readUint32(bytes, 4, true) + 8;
+  if (riffEnd !== bytes.byteLength) {
+    return false;
+  }
+
+  let offset = 12;
+  let imageChunkCount = 0;
+  while (offset < riffEnd) {
+    if (offset + 8 > riffEnd) {
+      return false;
+    }
+    const chunkLength = readUint32(bytes, offset + 4, true);
+    const payloadStart = offset + 8;
+    const chunkEnd = payloadStart + chunkLength;
+    const paddedEnd = chunkEnd + (chunkLength & 1);
+    if (
+      !Number.isSafeInteger(chunkEnd)
+      || !Number.isSafeInteger(paddedEnd)
+      || chunkEnd > riffEnd
+      || paddedEnd > riffEnd
+    ) {
+      return false;
+    }
+
+    if (bytesEqual(bytes, offset, [0x56, 0x50, 0x38, 0x58])) {
+      if (chunkLength < 10 || (bytes[payloadStart] & 0x02) !== 0) {
+        return false;
+      }
+    } else if (
+      bytesEqual(bytes, offset, [0x41, 0x4e, 0x49, 0x4d])
+      || bytesEqual(bytes, offset, [0x41, 0x4e, 0x4d, 0x46])
+    ) {
+      return false;
+    } else if (
+      bytesEqual(bytes, offset, [0x56, 0x50, 0x38, 0x20])
+      || bytesEqual(bytes, offset, [0x56, 0x50, 0x38, 0x4c])
+    ) {
+      imageChunkCount += 1;
+      if (imageChunkCount > 1) {
+        return false;
+      }
+    }
+    offset = paddedEnd;
+  }
+  return offset === riffEnd && imageChunkCount === 1;
 }
 
 export function decodedImageMatchesEncodedHeader(

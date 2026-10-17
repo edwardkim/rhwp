@@ -292,7 +292,7 @@ test('document pagination은 작은 문서의 120ms idle과 명시 boundary에�
   assert.match(inputHandlerSource, /private onInputBlurBound: \(\) => void;/);
   assert.match(
     inputHandlerSource,
-    /this\.onInputBlurBound = \(\) => \{\s*this\.flushDeferredPaginationIfNeeded\('input-blur', false\);\s*\};/,
+    /this\.onInputBlurBound = \(\) => \{\s*this\._imeNavigationGuard\.reset\(\);\s*this\.flushDeferredPaginationIfNeeded\('input-blur', false\);\s*\};/,
   );
   assert.match(inputHandlerSource, /this\.textarea\.addEventListener\('blur', this\.onInputBlurBound\);/);
   assert.match(inputHandlerSource, /this\.textarea\.removeEventListener\('blur', this\.onInputBlurBound\);/);

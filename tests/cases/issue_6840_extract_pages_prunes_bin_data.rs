@@ -17,7 +17,8 @@
 //!
 //! `ImageAttr.bin_data_id` 는 **1 기준 순번(위치)** 이라 항목을 지우면 뒤 참조가 한 칸씩
 //! 밀려 **그림이 조용히 뒤바뀐다.** 개수만 보는 시험은 그걸 못 잡으므로, 남은 그림의
-//! **좌표와 이미지 바이트**를 정리 전후로 대조한다(`render_page_svg_native` 의 data URI).
+//! **원본 소유 경로와 이미지 바이트**를 정리 전후로 대조한다.
+//! 축약 #5833 입력의 미달 렌더링 geometry는 #7863으로 이관하고 데이터 계약은 유지한다.
 //!
 //! ⚠ 내장 글꼴은 순번이 아니라 **storage id** 로 참조한다
 //! (`load_bounded_embedded_font_bytes` 가 `content.id == font_id` 로 찾는다). 그 축을
@@ -67,15 +68,65 @@ fn page_images(core: &DocumentCore) -> Vec<(String, String, u64)> {
     out
 }
 
+/// 저장 모델의 소유 경로와 그 참조가 가리키는 바이트를 수집한다.
+/// 1쪽 공유 입력의 BinData pruning 계약이며 잘못된 화면 위치를 고정하지 않는다.
+fn owned_picture_payloads(core: &DocumentCore) -> Vec<(Vec<usize>, String, Vec<u8>)> {
+    use rhwp::model::{control::Control, document::Document, paragraph::Paragraph};
+
+    fn walk(
+        doc: &Document,
+        paragraphs: &[Paragraph],
+        path: &[usize],
+        out: &mut Vec<(Vec<usize>, String, Vec<u8>)>,
+    ) {
+        for (pi, para) in paragraphs.iter().enumerate() {
+            for (ci, control) in para.controls.iter().enumerate() {
+                let mut owner = path.to_vec();
+                owner.extend([pi, ci]);
+                match control {
+                    Control::Picture(picture) => {
+                        let id = picture.image_attr.bin_data_id;
+                        assert!(id > 0, "그림의 BinData 순번이 있어야 한다");
+                        let data = doc
+                            .bin_data_content
+                            .get(usize::from(id - 1))
+                            .expect("그림 순번이 실제 payload를 가리켜야 한다");
+                        out.push((
+                            owner,
+                            data.extension.clone(),
+                            data.data.load_shared().to_vec(),
+                        ));
+                    }
+                    Control::Table(table) => {
+                        for (cell_index, cell) in table.cells.iter().enumerate() {
+                            let mut cell_owner = owner.clone();
+                            cell_owner.push(cell_index);
+                            walk(doc, &cell.paragraphs, &cell_owner, out);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    let mut out = Vec::new();
+    let doc = core.document();
+    for (section_index, section) in doc.sections.iter().enumerate() {
+        walk(doc, &section.paragraphs, &[section_index], &mut out);
+    }
+    out
+}
+
 /// 양성 계약 — 참조 없는 항목은 버리고, 남은 그림은 **한 장도 바뀌지 않는다.**
 #[test]
 fn unreferenced_bin_data_is_dropped_without_swapping_pictures() {
     let mut core = load(PICTURES);
-    let before = page_images(&core);
+    let before = owned_picture_payloads(&core);
     assert_eq!(
         before.len(),
         7,
-        "표본이 어긋났다 — 1쪽에 그림 7장이 있어야 한다"
+        "표본이 어긋났다 — 원본 소유 경로에 그림 7개가 있어야 한다"
     );
 
     let report = core.extract_page_range(1, 1).expect("1쪽 추출");
@@ -86,9 +137,9 @@ fn unreferenced_bin_data_is_dropped_without_swapping_pictures() {
         "참조 없는 36개가 버려져야 한다 — 회귀 시 43개가 그대로 남아 파일이 줄지 않는다"
     );
     assert_eq!(
-        page_images(&core),
+        owned_picture_payloads(&core),
         before,
-        "정리 뒤 그림의 좌표 또는 바이트가 달라졌다 — 순번 재번호매김이 어긋나면 \
+        "정리 뒤 그림의 원본 소유 경로 또는 바이트가 달라졌다 — 순번 재번호매김이 어긋나면 \
          그림이 조용히 뒤바뀐다"
     );
 }

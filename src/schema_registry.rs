@@ -9,6 +9,10 @@ pub use rhwp_contracts::schema_registry::{
     SIGNING_SCHEMA_VERSION,
 };
 
+/// Opt-in PageLayerTree text envelope major version. This integer version is
+/// independent of the CLI's string envelope version and capabilities axes.
+pub const TEXT_IR_V2_ENVELOPE_SCHEMA_VERSION: u32 = 2;
+
 /// [#gym] scaffold 축 — `rhwp scaffold` 입력 명세(`scaffold_schema_v1`)의 판.
 /// 서명 축과 같은 **입력/교환 파일 형식** 버전이라 capabilities 의
 /// schemaRegistry 축 집합(봉투 계약 축 고정)에는 싣지 않는다.

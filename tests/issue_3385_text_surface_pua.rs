@@ -9,6 +9,11 @@
 //! 렌더 출력은 건드리지 않는다. 두 계약을 함께 고정한다.
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -46,6 +51,9 @@ fn run_export(kind: &str, dir: &Path) -> String {
     let mut all = String::new();
     for entry in std::fs::read_dir(dir).expect("출력 디렉터리") {
         let path = entry.expect("항목").path();
+        if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+            continue;
+        }
         if path.is_file() {
             all.push_str(&std::fs::read_to_string(&path).unwrap_or_default());
         }

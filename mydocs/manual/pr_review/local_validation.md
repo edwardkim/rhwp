@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-07
+last_verified: 2026-10-14
 ---
 
 # 로컬 사전 검증
@@ -13,8 +13,54 @@ PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유
 
 로컬 검증 로그(`*.log`)는 저장소의 ignored `output/pr-review/<review-id>/logs/`에 기록한다.
 `/private/tmp`이나 추적되는 문서·asset 경로에 로그를 만들거나 커밋하지 않는다. PR review 문서에는
-실행 head·명령·결과와 필요한 증적의 위치를 요약한다. merge 뒤 해당 review의 `output` 정리는
+실행 head·명령·결과와 필요한 증적의 위치를 요약한다. 검토 종료 뒤에는 **`output/pr-review` 전체**의
+불필요한 산출물을 점검·정리한다. 검토별 저장 경로가 정리 범위를 제한하지 않는다. 삭제 전 사용·소유·
+증적 보존 확인, 활성 작업·공유 캐시의 보존과 정리 결과 기록은
 [merge 후속 처리](post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
+
+기존 렌더링 회귀가 실패하면 검사부터 바꾸지 않는다. **원본 입력 출력 보정 → 독립 한컴 Print PDF와
+Native/fresh WASM의 관련 모든 페이지에서 90% 이상 확인 → 독립 기대값에 따라 필요한 검사 변경**
+순서로 진행한다. 새 회귀의 추가도 같은 90% 선행 조건을 따른다. 실물 배치는 절대 px 좌표·고정 px
+영역으로 선택하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침 관계로 검사한다. 다만 완료된
+해당 페이지의 Native/fresh WASM `silhouette_raw_match_percent`가 각각98% 이상이고 독립 PDF와 직접 판독을 마쳤으면
+±2px 좌표 고정도 허용한다. 문서 전체98% 이상은 요구하지 않는다.
+[페이지별 px 회귀 조건](visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다. 상세 절차는
+[시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+[기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
+
+현재 브랜치에서 전쪽 Native/fresh WASM 최저 90% 이상·독립 PDF 쪽수 일치·직접 판독을
+확인한 문서는 실패 검사를 먼저 재검토한다. **쪽수 검사도 포함**하며, 잘못된 px·고정 영역·과거
+쪽수 핀은 문단·줄·개체 소속, 내용 순서·보존·포함·겹침 관계로 수정한다. 정확한 독립 기대값은
+유지하고 구현을 고친다. 이미 보정한 문서는 과거 base 미달이나 이슈 등록만으로 제거하지 않는다.
+
+전쪽 Native/fresh WASM 검증과 직접 판독을 마친 **현재 보정 대상 문서**는 기존 회귀가
+통과 중이어도 그 문서를 사용하는 절대 px 좌표·고정 영역 검사를 확인하고 관계 검사로
+바꾼다. 위 페이지별 98% 이상·직접 판독 조건을 충족한 쪽의 ±2px 좌표 검사는 유지·추가할 수 있다.
+대상 문서의 원본 경로를 따라 검사·공용 corpus 참조를 확인하며 다른 문서로 범위를
+확장하지 않는다. 기존 검사 함수 안에서 쪽 소속·내용 순서·누락·중복·포함·겹침을 보호하고,
+독립 PDF 쪽수 대조에는 대응 내용 보존을 함께 검사한다. 원본 글자모양·셀 속성에서 계산한
+크기와 실제 줄·개체의 포함 또는 비율 관계는 유지할 수 있다. 소스 단위를 px로 환산했다는
+이유만으로 이 원본 계약을 제거하지 않는다. 변경 보고에는 기존에 이미 관계 검사였던 범위,
+실제로 교체한 핀, 새로 보완한 내용 관계와 재사용한 시각 증거를 구분해 기록한다.
+
+미달 문서는 **같은 원본·같은 미해결 범위가 기존 이슈에 등록되어 있는지 먼저 확인**한다.
+등록되어 있으면 해당 회귀 함수·assertion·baseline/manifest 및 자동 수집 참조를 제거한 뒤
+남은 검증을 계속한다. 원본·PDF와 범위 밖의 정상 검사는 보존한다. 관련 이슈가 없을 때만
+별도 이슈를 등록하며, **개인의 작업 이슈를 공통 이관 대상으로 자동 지정하지 않는다.**
+상세 판정·기록은 [기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)와
+[기존 이슈 확인·처리](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)를 따른다.
+
+**SHA를 고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 회귀 검사**가
+부적합한 경우에만
+[별도 이슈 이관](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)에 따라 기존 이슈 등록 여부를 먼저 확인하고
+해당 회귀 검사와 HWP/HWPX/PDF를 활성 검증 경로에서 제거·이관한다. 별도 이슈에서
+보정·90% 이상·확대 판독 후 관계형 회귀를 복원한다.
+같은 원본·독립 Print PDF의 base/head 비교로 기존 미달을 입증한다. 현재 수정으로 생긴 회귀는
+구현을 고치며, base가 미검증이면 이관 판정을 보류한다. 이관 범위와 현재 PR의 완료 범위를 구분한다.
+
+90% 이상이어도 [수식·간격 확대 판독](visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을
+수행한다. 변경 영역·알려진 차이·사용자 지적 영역을 같은 배율로 대조해 수식 모양·장평·미세 간격을
+확인하고, 결함이 보이면 전체 회귀를 반복하기 전에 출력 보정과 새 source의 시각 재검증을 진행한다.
 
 모든 PR review Cargo 실행은 기본 증분 빌드를 사용한다. macOS·Linux·Windows 모두 각 host의 **기본 rhwp
 작업공간 아래 `target/pr-review` 한 곳**을 Native·WASM·lint·회귀에 재사용한다. review worktree가 바뀌어도
@@ -30,12 +76,29 @@ Cargo 검증을 시작하기 전에는 target 하위 directory와 실행 중인 
 `target/pr-review`와 shared target/debug, target/release, target/release-test,
 target/wasm32-unknown-unknown, 다른 작업의 산출물은 삭제 대상으로 가정하지 않는다.
 
+디스크 공간이 부족하면 공유 빌드 캐시를 정리하기 전에 종료된 검증용 Chromium/Puppeteer
+임시 프로필의 삭제를 검토한다. 기본 후보는 24시간 이상 지난 항목이며 실행 중인 프로세스의
+경로·열린 파일 참조와 잠금 PID를 확인한 뒤 정확한 임시 경로만 정리한다. 현재 프로필·일반
+사용자 프로필·검증 증적은 보존하고 삭제 목록·확인 근거·전후 여유 공간을 로그에 남긴다.
+Linux Snap 경로와 상세 절차는 [디스크 공간 정리](../dev_environment_guide.md#디스크-공간이-부족할-때)를 따른다.
+
+`target/pr-review`의 종료된 오래된 증분 캐시도 디스크 정리 후보로 권장한다. 공유 target을
+사용하는 Cargo·rustc·wasm-pack·wasm-opt 작업이 모두 종료된 뒤 사용하지 않는 정확한
+`incremental` 하위 캐시 경로만 삭제한다. target 전체·프로필 디렉터리·실행 파일·`deps`·
+`.fingerprint`와 다른 작업의 산출물은 보존하고, 삭제 경로·확인 근거·전후 여유 공간을 기록한다.
+
 ~~~bash
 find "${rhwp_review_source_dir:?기본 작업공간 경로를 먼저 고정하세요}/target" -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
 pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 ~~~
 
 ### 고정 review target과 실행 환경
+
+각 OS의 [빌드 병렬도 예시](../dev_environment_guide.md#빌드-병렬도)는 `CARGO_BUILD_JOBS`의
+시작값으로 **논리 CPU 수 − 2, 최소 1개**를 권장한다. 강제값은 아니며 Native·WASM·테스트
+컴파일의 메모리·동시 작업·빌드 성능에 맞게 조절한다. 테스트 실행 스레드와 구분하며,
+fresh WASM의 `codegen-units=16`도 환경에 따라 조절할 수 있는 권장값이다. WASM용 설정은
+해당 빌드 명령 범위에만 적용한다.
 
 먼저 **기본 작업공간의 저장소 루트에서**, review worktree로 이동하기 전에 절대 경로를 고정한다.
 이 변수는 같은 셸에서 이후 검증 전체에 유지한다. 이미 review worktree에 있다면 기본 작업공간으로 돌아가
@@ -78,6 +141,10 @@ WASM의 `CARGO_TARGET_DIR`는 위에서 고정한 같은 경로를 사용한다.
 검토 명령에는 `--locked`를 넣어 Cargo가 검토 checkout의 `Cargo.lock`을 갱신하지 못하게 한다.
 `run-rust-test.mjs`도 이를 기본 적용한다. lockfile 자체를 의도적으로 바꾸는 의존성 갱신 작업만 별도
 검증에서 이 규칙을 벗어날 수 있다.
+
+새 검사는 기존 자동 수집·suite·Native 실행 경로에서 실제로 실행되는지 먼저 확인한다.
+`ci.yml`에 불필요한 개별 호출을 추가하지 않으며, 실행 누락으로 추가가 필요한 경우에는
+[CI 테스트 호출 추가 기준](../github_operations.md#531-ci-테스트-호출-추가-기준)을 따른다.
 
 `wasm-pack`은 Cargo build 전에 별도 metadata를 실행하므로, WASM 검증은 raw `wasm-pack build` 대신
 아래 wrapper를 사용한다. wrapper는 두 Cargo 호출 모두에 `--locked`를 적용한다.
@@ -379,6 +446,14 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 검사와 영향 페이지 Visual Sweep을 먼저 수행해 수정 방향을 확인한다. 그 뒤 위 범위별 필수 검증을
 완료한다. 이 순서는 필수 검사를 줄이거나 4.3.0의 exact head CI 재사용 조건을 바꾸지 않는다.
 Native 선행 진단과 최종 fresh WASM 출력은 구분하고, 보정 코드가 바뀌면 영향 경계·시각 증적도 갱신한다.
+
+공통 조판·paint·font/resource 또는 실제 출력 소비 경로를 바꾸면
+[출력 백엔드 소비 경로 검증](../verification/renderer_backend_verification.md)에 따라 영향받는
+Canvas·SVG·Native PNG 등의 실제 산출물과 정상 대조군을 추가로 확인한다. 기본 PNG 경로의
+Visual Sweep은 Native Skia와 fresh WASM Canvas에서 직접 출력한다. 별도로 선택한 SVG 진단
+경로의 래스터 PNG는 Canvas·Native Skia의 실제 소비 경로 검증을 대신하지 않는다.
+공통 함수 이후 context·font 선택·합성 경로도 추적하며, 모든 backend 전수 검증 대신 변경한 값의
+실제 소비 경로로 범위를 정한다. 기존 renderer baseline의 report-only 결과와 필수 게이트를 구분한다.
 
 archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
 아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와
@@ -726,7 +801,7 @@ git branch -D prN-merge-test
 ~~~
 
 merge가 시작되지 않았거나 Already up to date면 abort는 생략한다. 이 절은 simulation branch만 정리한다.
-fetch branch, review branch, docs-only branch, worktree, 검토 소유 임시 산출물은 review 종료 뒤
+fetch branch, review branch, docs-only branch, worktree와 `output/pr-review` 전체의 불필요한 산출물은 review 종료 뒤
 [merge 후속 처리](post_merge.md)의 최종 종료 게이트에서 정리한다.
 
 ## 4.5 전체 Rust 회귀 sharding 실측

@@ -2,7 +2,7 @@
 use crate::renderer::typeset::{
     body_pile_stays_on_anchor_page, estimate_footnote_note_height, flow_noninline_picture,
     has_majority_fullpage_images, hwpunit_to_px, notes, Control, DeferredSquarePictureControl,
-    EndnoteRef, FootnoteRef, FootnoteSource, PageItem, Paragraph, ResolvedStyleSet, TypesetEngine,
+    FootnoteRef, FootnoteSource, PageItem, Paragraph, ResolvedStyleSet, TypesetEngine,
     TypesetState,
 };
 impl TypesetEngine {
@@ -99,7 +99,17 @@ impl TypesetEngine {
             .count();
 
         // 인라인 컨트롤 처리: 도형/그림/수식/각주 (Paginator engine.rs:509-525 동일)
+        // [#7860] 표 셀(중첩 표 포함) 안 미주도 소유 경로와 함께 문서 순서로 모은다.
+        let endnote_refs =
+            crate::renderer::pagination::paragraph_endnote_refs(section_index, para_idx, para);
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+            // [Task #836] 미주 수집 — 문서 끝에 모아서 렌더
+            for (en_ref, _) in endnote_refs
+                .iter()
+                .filter(|(en_ref, _)| en_ref.control_index == ctrl_idx)
+            {
+                st.collect_endnote(en_ref.clone());
+            }
             // [#1995] 다수 전면 이미지: 각 전면 그림을 새 페이지에 단독 배치.
             if is_multi_fullpage_img_para && fullpage_img_ctrls.contains(&ctrl_idx) {
                 st.force_new_page();
@@ -157,6 +167,7 @@ impl TypesetEngine {
                                         para_index: para_idx,
                                         control_index: ctrl_idx,
                                         placement,
+                                        following_body_para_index: None,
                                     },
                                 );
                                 continue;
@@ -336,7 +347,10 @@ impl TypesetEngine {
                                     });
                                     crate::renderer::float_placement::stored_picture_successor_with_following_placement(
                                         para, next, following, host_style.spacing_before,
-                                        next_style.spacing_before, frame_vpos, actual_host_flow_y, self.dpi,
+                                        host_style.spacing_after, next_style.spacing_before,
+                                        frame_vpos, actual_host_flow_y,
+                                        Some(st.current_height + hwpunit_to_px(base - frame_vpos, self.dpi)),
+                                        self.dpi,
                                     )
                                 });
                                 if let Some(placement) = saved.filter(|p| {
@@ -432,7 +446,26 @@ impl TypesetEngine {
                                 let mb = hwpunit_to_px(cm.margin.bottom as i32, self.dpi);
                                 let hl = hwpunit_to_px(cm.horizontal_offset as i32, self.dpi);
                                 let hr = hl + hwpunit_to_px(cm.width as i32, self.dpi);
-                                Some((h, h + mb, hl, hr))
+                                // 도형 띠에 흡수된 빈 host 줄도 그림과 같은 판별을 쓴다.
+                                // 문단 측정이 이미 소비한 줄을 다시 예약하면 배치의
+                                // layout_shape_item보다 뒤 콘텐츠의 예산이 작아진다.
+                                let absorbed_host_line =
+                                    if crate::renderer::empty_host_line_absorbed_by_topbottom_float(
+                                        para, cm,
+                                    ) {
+                                        para.line_segs
+                                            .first()
+                                            .map(|seg| {
+                                                hwpunit_to_px(
+                                                    seg.line_height + seg.line_spacing,
+                                                    self.dpi,
+                                                )
+                                            })
+                                            .unwrap_or(0.0)
+                                    } else {
+                                        0.0
+                                    };
+                                Some((h, (h + mb - absorbed_host_line).max(0.0), hl, hr))
                             }
                             _ => None,
                         };
@@ -601,18 +634,10 @@ impl TypesetEngine {
                         paragraphs,
                         ctrl_idx,
                         fn_ctrl,
-                        has_table,
+                        styles,
                         native_hwp5_footnote_break,
                     );
-                }
-                Control::Endnote(en_ctrl) => {
-                    // [Task #836] 미주 수집 — 문서 끝에 모아서 렌더
-                    st.collect_endnote(EndnoteRef {
-                        number: en_ctrl.number,
-                        section_index,
-                        para_index: para_idx,
-                        control_index: ctrl_idx,
-                    });
+                    self.reserve_current_body_note_area(st, paragraphs, styles);
                 }
                 _ => {}
             }

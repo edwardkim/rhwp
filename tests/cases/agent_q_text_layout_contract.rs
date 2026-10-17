@@ -8,8 +8,8 @@ const SAMPLE: &str = "samples/form-01.hwp";
 const TOOL: &str = "rhwp-q-text-layout";
 
 fn tool_bin() -> String {
-    std::env::var("CARGO_BIN_EXE_rhwp-q-text-layout")
-        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q-text-layout").to_string())
+    std::env::var("CARGO_BIN_EXE_rhwp-q")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q").to_string())
 }
 
 fn sample(rel: &str) -> PathBuf {
@@ -18,6 +18,7 @@ fn sample(rel: &str) -> PathBuf {
 
 fn run(args: &[&str]) -> Output {
     Command::new(tool_bin())
+        .arg("text-layout")
         .args(args)
         .output()
         .expect("rhwp-q-text-layout 실행 실패")
@@ -120,7 +121,7 @@ fn out_of_range_page_is_runtime() {
 
 #[test]
 fn source_never_calls_mutators() {
-    let src = include_str!("../../src/bin/rhwp-q-text-layout.rs");
+    let src = include_str!("../../src/bin/rhwp-q/commands/rhwp-q-text-layout.rs");
     for needle in [".apply_", ".insert_", ".delete_", ".set_"] {
         assert!(
             !src.contains(needle),

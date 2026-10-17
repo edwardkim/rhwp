@@ -26,6 +26,8 @@ pub(in crate::renderer::typeset) struct RowBlockQuery<'a> {
     pub(in crate::renderer::typeset) cut_row_h: &'a [f64],
     pub(in crate::renderer::typeset) rowspan_touched: &'a [bool],
     pub(in crate::renderer::typeset) cs: f64,
+    pub(in crate::renderer::typeset) straddle_page_bands:
+        &'a [crate::renderer::pagination::StraddleCellCarry],
 }
 
 pub(in crate::renderer::typeset) struct RowBlockCandidate {
@@ -49,14 +51,15 @@ impl RowBlockQuery<'_> {
             cut_row_h,
             rowspan_touched,
             cs,
+            ..
         } = *self;
         // rowspan 보호 블록 — 블록 전체를 분할 없이 한 단위로.
         let (b_start, b_end, _) = mt.row_block_for(r);
         let block_size = b_end.saturating_sub(b_start);
         let block_has_any_rowspan = block_size >= 2
             && (b_start..b_end).any(|x| rowspan_touched.get(x).copied().unwrap_or(false));
-        let block_has_protectable_rowspan = block_has_any_rowspan
-            && block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+        let block_has_protectable_rowspan =
+            block_has_any_rowspan && mt.rowspan_block_uses_whole_unit(b_start, b_end);
         let rowbreak_hard_break_row =
             if mt.allows_row_break_split() && b_start == r && block_has_protectable_rowspan {
                 layout_engine.row_block_first_internal_hard_break_row(table, b_start, b_end, styles)
@@ -103,26 +106,79 @@ impl RowBlockQuery<'_> {
         }
     }
 
-    pub(in crate::renderer::typeset) fn row_offsets(&self, block: &RowBlockCandidate) -> Vec<f64> {
+    pub(in crate::renderer::typeset) fn row_offsets(
+        &self,
+        block: &RowBlockCandidate,
+        start_cut: &[usize],
+    ) -> Vec<f64> {
+        if block.rowbreak_use_row_offsets {
+            self.row_offsets_for_cut(block, start_cut)
+        } else {
+            Vec::new()
+        }
+    }
+
+    /// 시작 컷이 소비한 행은 다음 조각의 원점을 다시 밀지 않는다.
+    /// 배치와 같은 물리/내용 컷 높이로 남은 행과 행 사이 간격을 구성한다.
+    pub(in crate::renderer::typeset) fn row_offsets_for_cut(
+        &self,
+        block: &RowBlockCandidate,
+        start_cut: &[usize],
+    ) -> Vec<f64> {
         let Self { cut_row_h, cs, .. } = *self;
         let RowBlockCandidate {
             b_start,
             b_end,
             block_size,
-            rowbreak_use_row_offsets,
             ..
         } = *block;
-        if rowbreak_use_row_offsets {
-            let mut offsets = Vec::with_capacity(block_size);
-            let mut top = 0.0;
-            for br in b_start..b_end {
+        let mut offsets = Vec::with_capacity(block_size);
+        let mut top = 0.0;
+        let mut has_row = false;
+        for br in b_start..b_end {
+            if start_cut.is_empty() {
                 offsets.push(top);
                 top += cut_row_h[br] + if br + 1 < b_end { cs } else { 0.0 };
+            } else {
+                let height = self.row_cut_height(block, br, start_cut, &[]);
+                let gap = if has_row && height > 0.0 { cs } else { 0.0 };
+                offsets.push(top + gap);
+                if height > 0.0 {
+                    top += gap + height;
+                    has_row = true;
+                }
             }
-            offsets
-        } else {
-            Vec::new()
         }
+        offsets
+    }
+
+    fn row_cut_height(
+        &self,
+        block: &RowBlockCandidate,
+        row: usize,
+        start: &[usize],
+        end: &[usize],
+    ) -> f64 {
+        self.layout_engine
+            .row_block_cut_physical_height(
+                self.table,
+                (block.b_start, block.b_end),
+                (row, self.mt.row_heights[row]),
+                start,
+                end,
+                self.styles,
+            )
+            .unwrap_or_else(|| {
+                self.layout_engine.row_block_cut_row_content_height(
+                    self.table,
+                    block.b_start,
+                    block.b_end,
+                    row,
+                    start,
+                    end,
+                    self.styles,
+                )
+            })
     }
 
     pub(in crate::renderer::typeset) fn fragment_height(
@@ -132,52 +188,44 @@ impl RowBlockQuery<'_> {
         block_start_cut: &[usize],
         block_end_cut: &[usize],
     ) -> f64 {
-        let Self {
-            layout_engine,
-            table,
-            styles,
-            cut_row_h,
-            cs,
-            ..
-        } = *self;
-        let RowBlockCandidate { b_start, b_end, .. } = *block;
+        self.fragment_extent(block, row_end, block_start_cut, block_end_cut)
+            .0
+    }
+
+    /// 실제로 남아 있는 행의 높이와 그 행 사이 간격을 함께 구한다.
+    /// 앞 조각에서 전부 소비한 행은 배치 상자도, 별도 행 간격도 소유하지 않는다.
+    fn fragment_extent(
+        &self,
+        block: &RowBlockCandidate,
+        row_end: usize,
+        block_start_cut: &[usize],
+        block_end_cut: &[usize],
+    ) -> (f64, f64) {
+        let Self { cut_row_h, cs, .. } = *self;
+        let RowBlockCandidate { b_start, .. } = *block;
         if block_start_cut.is_empty() && block_end_cut.is_empty() {
-            return (b_start..row_end).map(|x| cut_row_h[x]).sum::<f64>()
-                + cs * row_end.saturating_sub(b_start + 1) as f64;
+            let gaps = cs * row_end.saturating_sub(b_start + 1) as f64;
+            return (
+                (b_start..row_end).map(|x| cut_row_h[x]).sum::<f64>() + gaps,
+                gaps,
+            );
         }
 
         let mut total = 0.0;
+        let mut gaps = 0.0;
         let mut has_row = false;
         for br in b_start..row_end {
-            let row_h = if layout_engine.row_block_cut_uses_measured_height(
-                table,
-                (b_start, b_end),
-                br,
-                block_start_cut,
-                block_end_cut,
-                styles,
-            ) {
-                self.mt.row_heights[br]
-            } else {
-                layout_engine.row_block_cut_row_content_height(
-                    table,
-                    b_start,
-                    b_end,
-                    br,
-                    block_start_cut,
-                    block_end_cut,
-                    styles,
-                )
-            };
+            let row_h = self.row_cut_height(block, br, block_start_cut, block_end_cut);
             if row_h > 0.0 {
                 if has_row {
                     total += cs;
+                    gaps += cs;
                 }
                 total += row_h;
                 has_row = true;
             }
         }
-        total
+        (total, gaps)
     }
 
     pub(in crate::renderer::typeset) fn required_height(
@@ -228,6 +276,7 @@ impl RowBlockQuery<'_> {
                 ))
             }
         } else {
+            let (physical_height, gaps) = self.fragment_extent(block, b_end, blk_start_cut, &[]);
             let content_height = layout_engine.row_block_content_height(
                 table,
                 b_start,
@@ -235,10 +284,10 @@ impl RowBlockQuery<'_> {
                 blk_start_cut,
                 &[],
                 styles,
-            ) + cs * block_size.saturating_sub(1) as f64;
+            ) + gaps;
             // 셀 로컬 최대 높이는 행 사이의 물리 빈 공간을 포함하지 않는다.
             // 같은 컷의 행 합을 하한으로 사용해 실제 배치와 예약을 일치시킨다.
-            content_height.max(self.fragment_height(block, b_end, blk_start_cut, &[]))
+            content_height.max(physical_height)
         }
     }
 }

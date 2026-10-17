@@ -9,9 +9,11 @@ use crate::model::control::Control;
 use crate::model::paragraph::LineSeg;
 use crate::model::style::{LineSpacingType, UnderlineType};
 
+pub(crate) mod arrow;
 pub mod canvas;
 pub mod canvas_text_font;
 pub mod canvaskit_policy;
+pub(crate) mod cell_paragraph_spacing;
 pub mod composer;
 pub mod equation;
 pub(crate) mod equation_tac_flow;
@@ -27,16 +29,13 @@ pub(crate) mod font_rule_layout_metric_projection;
 pub(crate) mod font_rule_layout_name_projection;
 pub mod form_appearance;
 pub(crate) mod form_caption;
-pub mod hyperlinks;
-// [gym_gpu_raster] GPU 가속 SVG 래스터화(vello/wgpu). 네이티브 + gpu feature 전용 —
-// native-skia 와 같은 방식으로 선택적 게이팅해 CI는 GPU 없이도 컴파일된다.
-#[cfg(all(not(target_arch = "wasm32"), feature = "gpu"))]
-pub mod gpu;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
 pub(crate) mod hft_ascii_evidence;
+pub(crate) mod hft_outline;
 pub mod html;
+pub mod hyperlinks;
 pub(crate) mod image_header;
 pub mod image_resolver;
 pub mod inline_flow;
@@ -44,6 +43,7 @@ pub(crate) mod kerning;
 pub mod layer_renderer;
 pub mod layout;
 pub(crate) mod layout_frame;
+pub(crate) mod legacy_font_advances;
 pub mod page_layout;
 pub mod page_number;
 pub mod pagination;
@@ -54,6 +54,8 @@ pub mod pdf;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf_raster_fidelity;
 pub mod pua_oldhangul;
+pub mod raster_pixels;
+pub(crate) mod reflow_float_host_line;
 pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
@@ -62,6 +64,8 @@ pub(crate) mod shaping_composition;
 pub(crate) mod shaping_context;
 pub(crate) mod shaping_paragraph;
 pub(crate) mod shaping_publication;
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub mod sixel;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
 #[allow(dead_code)]
@@ -69,7 +73,10 @@ pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
 pub(crate) mod static_svg;
+pub(crate) mod stored_control_frame;
 pub(crate) mod stored_float_anchor;
+mod stored_line_ladder;
+pub(crate) mod stored_page_origin;
 pub mod style_resolver;
 pub mod supplemental_metrics;
 pub mod svg;
@@ -274,6 +281,14 @@ pub struct TextStyle {
     pub font_family: String,
     /// 글꼴 크기 (px)
     pub font_size: f64,
+    /// 저장 글줄 없이 생성한 텍스트의 원본 글자 폭을 paint에도 적용한다.
+    /// HFT 자동 쪽번호는 HFT 메트릭으로 정렬하므로 대체 TTF의 자연 폭을
+    /// 그대로 그리면 숫자·장식의 점유 폭이 달라진다. 본문은 기존 계약을 쓴다.
+    #[serde(skip_serializing)]
+    pub fixed_glyph_advances: bool,
+    /// 표시용 대체 face와 구분한 원본 언어 슬롯의 HFT 선언이다.
+    #[serde(skip_serializing)]
+    pub source_font_is_hft: bool,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -397,6 +412,11 @@ pub struct TextStyle {
     /// 마지막 줄이 상수가 아님을 말한다: 같은 `ufs=1` 이라도 영문 슬롯이 대체 없이
     /// 쓰인 휴먼명조면 그 글꼴의 제 공백 0.5 em 이 나오고, Batang 으로 대체된
     /// 슬롯이면 0.333 em(341/1024)이 나온다.
+    ///
+    /// 영문 슬롯 `KoPub바탕체 Light`(charPr 53·54·59·65 …)는 KoPub 을 **설치한**
+    /// 환경의 같은 문서 정본(`Hwp 2020`, KoPub 서브셋 내장)에서는 연속 공백 덩어리가
+    /// 0.312 em 으로, 그 글꼴의 공백 312/1000 그대로다. 위 0.337 은 KoPub 이 없는
+    /// 환경의 대체 결과로 보이며, rhwp 는 선언 face 의 표를 쓴다(KoPub 전용 표).
     ///
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
@@ -575,6 +595,8 @@ impl Default for TextStyle {
             supplemental_metrics: None,
             font_family: String::new(),
             font_size: 0.0,
+            fixed_glyph_advances: false,
+            source_font_is_hft: false,
             color: 0,
             bold: false,
             italic: false,
@@ -626,6 +648,8 @@ impl Default for TextStyle {
 pub struct PatternFillInfo {
     /// 패턴 종류 (1=가로줄, 2=세로줄, 3=역대각선, 4=대각선, 5=십자, 6=격자)
     pub pattern_type: i32,
+    /// 한컴 인쇄 무늬의 576HU 반복 주기를 현재 출력 DPI로 변환한 값.
+    pub tile_size: f64,
     /// 무늬색
     pub pattern_color: ColorRef,
     /// 배경색
@@ -831,6 +855,61 @@ pub fn linear_gradient_axis(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64,
         cx + dx * half,
         cy + dy * half,
     )
+}
+
+/// 선형 그러데이션의 첫 색은 원본 중심에, 마지막 색은 양쪽 끝에 놓인다.
+/// 한컴 Print의 0/50/100% 중심 대조군에서 50%는 두 방향, 끝 중심은 한 방향 램프다.
+/// step/stepCenter로 이미 편 stop의 순서·불연속도 함께 보존한다.
+pub(crate) fn linear_gradient_color_stops(
+    gradient: &GradientFillInfo,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+) -> (Vec<ColorRef>, Vec<f64>) {
+    let positions: Vec<_> =
+        (0..gradient.colors.len())
+            .map(|i| {
+                gradient.positions.get(i).copied().unwrap_or_else(|| {
+                    i as f64 / gradient.colors.len().saturating_sub(1).max(1) as f64
+                })
+            })
+            .collect();
+    if gradient.gradient_type != 1
+        || gradient.colors.len() < 2
+        || !(0..=100).contains(&gradient.center_x)
+        || !(0..=100).contains(&gradient.center_y)
+        || width <= 0.0
+        || height <= 0.0
+    {
+        return (gradient.colors.clone(), positions);
+    }
+    let (x0, y0, x1, y1) = linear_gradient_axis(gradient.angle, x, y, width, height);
+    let dx = x1 - x0;
+    let dy = y1 - y0;
+    let length_squared = dx * dx + dy * dy;
+    if length_squared <= 0.0 {
+        return (gradient.colors.clone(), positions);
+    }
+    let cx = x + width * f64::from(gradient.center_x) / 100.0;
+    let cy = y + height * f64::from(gradient.center_y) / 100.0;
+    // 유효한 0..100% 중심은 상자 안이다. 정사영의 끝자리 부동소수 오차만 정규화한다.
+    let center = (((cx - x0) * dx + (cy - y0) * dy) / length_squared).clamp(0.0, 1.0);
+    let mut colors = Vec::with_capacity(gradient.colors.len() * 2);
+    let mut stops = Vec::with_capacity(gradient.colors.len() * 2);
+    if center > 0.0 {
+        for (&color, &position) in gradient.colors.iter().zip(&positions).rev() {
+            colors.push(color);
+            stops.push(center * (1.0 - position));
+        }
+    }
+    if center < 1.0 {
+        for (&color, &position) in gradient.colors.iter().zip(&positions) {
+            colors.push(color);
+            stops.push(center + (1.0 - center) * position);
+        }
+    }
+    (colors, stops)
 }
 
 /// 선 렌더링 스타일
@@ -1211,6 +1290,8 @@ pub(crate) fn composed_line_max_font_size(
         })
         .fold(0.0f64, f64::max);
 
+    let reference_max = composed_line_reference_font_size(line, para, styles);
+    let run_max = run_max.max(reference_max);
     if run_max > 0.0 {
         return run_max;
     }
@@ -1231,6 +1312,69 @@ pub(crate) fn composed_line_max_font_size(
         .and_then(|shape_id| styles.char_styles.get(shape_id as usize))
         .map(|style| style.font_size)
         .unwrap_or(0.0)
+}
+
+/// 참조 번호의 명목 글자 크기도 소유 줄의 상자에 참여한다. 표시 글리프가
+/// 3/4 크기여도 그 제어 슬롯의 저장 글자모양을 본문 문자 모양으로 대체하지 않는다.
+pub(crate) fn composed_line_reference_font_size(
+    line: &composer::ComposedLine,
+    para: &crate::model::paragraph::Paragraph,
+    styles: &style_resolver::ResolvedStyleSet,
+) -> f64 {
+    let end = line.char_start
+        + line
+            .runs
+            .iter()
+            .map(|run| run.text.chars().count())
+            .sum::<usize>();
+    let paragraph_end = para.text.chars().count();
+    let positions = para.control_text_positions();
+    let raw_positions = para.control_utf16_positions();
+    para.controls
+        .iter()
+        .enumerate()
+        .filter_map(|(index, control)| {
+            if !matches!(
+                control,
+                crate::model::control::Control::Footnote(_)
+                    | crate::model::control::Control::Endnote(_)
+            ) {
+                return None;
+            }
+            let position = *positions.get(index)?;
+            if position < line.char_start
+                || (position >= end && !(position == end && end == paragraph_end))
+            {
+                return None;
+            }
+            let raw = raw_positions.get(index)?;
+            let shape = para
+                .char_shapes
+                .iter()
+                .rev()
+                .find(|shape| shape.start_pos <= *raw)?;
+            styles
+                .char_styles
+                .get(shape.char_shape_id as usize)
+                .map(|style| style.font_size)
+        })
+        .fold(0.0_f64, f64::max)
+}
+
+/// 외곽선과 같은 채움 상자는 후행 줄간격을 감싼다. 측정·마지막 흐름 경계와
+/// 실제 paragraph border painter가 같은 점유 조건을 소비한다.
+pub(crate) fn paragraph_outline_reserves_line_spacing(
+    border_fill_id: u16,
+    styles: &style_resolver::ResolvedStyleSet,
+) -> bool {
+    border_fill_id
+        .checked_sub(1)
+        .and_then(|index| styles.border_styles.get(usize::from(index)))
+        .is_some_and(|style| {
+            style.borders.iter().any(|border| {
+                !matches!(border.line_type, crate::model::style::BorderLineType::None)
+            })
+        })
 }
 
 /// 공백도 글꼴 줄 상자를 가지지만 개체 대체 문자와 제어 문자에는 가시 글꼴이 없다.
@@ -1405,77 +1549,7 @@ pub(crate) fn paragraph_source_line_metrics_need_reflow(
 ///
 /// 판정이 참이면 호출자는 (1) 줄 metrics 를 저장값이 아니라 글꼴·문단 스타일에서
 /// 다시 뽑고, (2) `vertical_pos` 앵커 스냅을 끈다. 원본 IR 은 건드리지 않는다.
-pub(crate) fn stored_line_ladder_is_uniform_filler(
-    paragraphs: &[crate::model::paragraph::Paragraph],
-    styles: &style_resolver::ResolvedStyleSet,
-) -> bool {
-    /// 사다리 하나로 단정하기 위한 최소 문단 수.
-    const MIN_PARAGRAPHS: usize = 8;
-    /// 저장 advance 와 글꼴 advance 가 어긋나야 하는 최소 비율의 역수 (1/4).
-    const CONTRADICTION_RATIO_DIVISOR: usize = 4;
-
-    if paragraphs.len() < MIN_PARAGRAPHS {
-        return false;
-    }
-
-    let mut tuple: Option<(i32, i32, i32, i32)> = None;
-    let mut prev_vpos: Option<i32> = None;
-    let mut contradicting = 0usize;
-
-    for para in paragraphs {
-        let [seg] = para.line_segs.as_slice() else {
-            return false;
-        };
-        if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-            || seg.line_height <= 0
-            || seg.text_height <= 0
-        {
-            return false;
-        }
-        let current = (
-            seg.line_height,
-            seg.text_height,
-            seg.baseline_distance,
-            seg.line_spacing,
-        );
-        match tuple {
-            None => tuple = Some(current),
-            Some(first) if first != current => return false,
-            _ => {}
-        }
-        // 사다리 걸음은 그 튜플의 advance 와 같아야 한다 — 실측 조판이면 문단마다
-        // 다른 값이 나온다.
-        let step = seg.line_height.saturating_add(seg.line_spacing);
-        if let Some(previous) = prev_vpos {
-            if seg.vertical_pos.saturating_sub(previous) != step {
-                return false;
-            }
-        }
-        prev_vpos = Some(seg.vertical_pos);
-
-        let max_fs = para
-            .char_shapes
-            .iter()
-            .filter_map(|shape| styles.char_styles.get(shape.char_shape_id as usize))
-            .map(|style| style.font_size)
-            .fold(0.0f64, f64::max);
-        if max_fs <= 0.0 {
-            continue;
-        }
-        let (ls_type, ls_val) = styles
-            .para_styles
-            .get(para.para_shape_id as usize)
-            .map(|style| (style.line_spacing_type, style.line_spacing))
-            .unwrap_or((LineSpacingType::Percent, 160.0));
-        let (font_lh, font_ls) = corrected_line_metrics(0.0, 0.0, max_fs, ls_type, ls_val);
-        let stored_advance = hwpunit_to_px(step, DEFAULT_DPI);
-        if (font_lh + font_ls - stored_advance).abs() > 0.5 {
-            contradicting += 1;
-        }
-    }
-
-    contradicting * CONTRADICTION_RATIO_DIVISOR >= paragraphs.len()
-}
+pub(crate) use stored_line_ladder::stored_line_ladder_is_uniform_filler;
 
 /// 저장된 순수 텍스트 줄은 `vertsize`에 내부 여백이 포함되어도 한컴의 줄 진행이
 /// `textheight + spacing`에 맞춰지는 사례가 있다. IR 값은 보존하고 렌더/조판용
@@ -1707,6 +1781,61 @@ fn para_text_is_picture_only_host(para: &crate::model::paragraph::Paragraph) -> 
             || ch <= '\u{001F}'
             || ('\u{E000}'..='\u{F8FF}').contains(&ch)
     })
+}
+
+/// 원본의 다음 줄 원점이 닫는 안내 줄 슬롯. 문단 전체 그림 높이를
+/// 앞 안내 줄의 소유로 취급하지 않는다. 같은 text_start의 그림 줄과
+/// 재조판 줄은 이 계약으로 축소하지 않는다.
+pub(crate) fn stored_picture_guide_line_height_px(
+    para: &crate::model::paragraph::Paragraph,
+    composed: &composer::ComposedParagraph,
+    line_index: usize,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::{control::Control, paragraph::LineSeg};
+
+    if para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || composed.lines.len() != para.line_segs.len()
+    {
+        return None;
+    }
+    let line = para.line_segs.get(line_index)?;
+    let next = para.line_segs.get(line_index + 1)?;
+    if (line.tag | next.tag) & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.vertical_pos < 0
+        || line.text_height <= 0
+        || line.text_height >= line.line_height
+        || line.line_spacing < 0
+        || next.text_start <= line.text_start
+        || line
+            .vertical_pos
+            .checked_add(line.text_height)?
+            .checked_add(line.line_spacing)?
+            != next.vertical_pos
+    {
+        return None;
+    }
+    let mut next_picture_owns_height = false;
+    for (index, control) in para.controls.iter().enumerate() {
+        let owner = layout::control_line_seg_index(para, index);
+        let inline = match control {
+            Control::Picture(picture) => picture.common.treat_as_char,
+            Control::Shape(shape) => shape.common().treat_as_char,
+            Control::Table(table) => table.common.treat_as_char,
+            _ => false,
+        };
+        if inline && owner == Some(line_index) {
+            return None;
+        }
+        if let Control::Picture(picture) = control {
+            next_picture_owns_height |= picture.common.treat_as_char
+                && owner == Some(line_index + 1)
+                && i64::from(picture.common.height) == i64::from(line.line_height)
+                && next.line_height == line.line_height;
+        }
+    }
+    next_picture_owns_height.then(|| hwpunit_to_px(line.text_height, dpi))
 }
 
 /// 쪽 분할 칸의 그림-only 문단에서, 합성 줄이 담은 TAC 그림의 흐름 높이.
@@ -2275,6 +2404,78 @@ pub(crate) fn empty_host_square_table_left_strip(
     (left_width > 0 && left_width < column_width_hu).then_some((0, left_width))
 }
 
+/// A full-width empty anchor does not itself describe the usable side lane.
+/// Authenticate the successor against the object's complete outer width and
+/// its vertical band before exposing the saved strip to composition and paint.
+pub(crate) fn stored_empty_square_successor_strip(
+    host: &crate::model::paragraph::Paragraph,
+    next: Option<&crate::model::paragraph::Paragraph>,
+    column_width_hu: i32,
+) -> Option<(i32, i32)> {
+    use crate::model::{
+        control::Control,
+        paragraph::LineSeg,
+        shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo},
+    };
+    let [Control::Table(table)] = host.controls.as_slice() else {
+        return None;
+    };
+    let [anchor] = host.line_segs.as_slice() else {
+        return None;
+    };
+    let next = next?;
+    let first = next.line_segs.first()?;
+    if table.common.treat_as_char
+        || table.common.text_wrap != TextWrap::Square
+        || table.common.vert_rel_to != VertRelTo::Para
+        || table.common.vert_align != VertAlign::Top
+        || table.common.horz_align != HorzAlign::Left
+        || !matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Para | HorzRelTo::Column
+        )
+        || !host.text.trim().is_empty()
+        || !next.controls.is_empty()
+        || host.stored_text_partition_is_dirty()
+        || next.stored_text_partition_is_dirty()
+        || host.cell_format_vpos_dirty
+        || next.cell_format_vpos_dirty
+        || anchor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || anchor.column_start != 0
+        || anchor.segment_width <= 0
+        || anchor.segment_width > column_width_hu
+        || first.segment_width <= 0
+    {
+        return None;
+    }
+    let object_right =
+        crate::renderer::float_placement::signed_hwpunit(table.common.horizontal_offset)
+            .checked_add(i32::try_from(table.common.width).ok()?)?
+            .checked_add(i32::from(table.outer_margin_left))?
+            .checked_add(i32::from(table.outer_margin_right))?;
+    let top = anchor
+        .vertical_pos
+        .checked_add(crate::renderer::float_placement::signed_hwpunit(
+            table.common.vertical_offset,
+        ))?
+        .checked_add(i32::from(table.outer_margin_top))?;
+    let bottom = top
+        .checked_add(i32::try_from(table.common.height).ok()?)?
+        .checked_add(i32::from(table.outer_margin_bottom))?;
+    (object_right > 0
+        && object_right < column_width_hu
+        && first.column_start == object_right
+        && first.column_start.checked_add(first.segment_width) == Some(anchor.segment_width)
+        && first.vertical_pos >= anchor.vertical_pos
+        && first.vertical_pos < bottom
+        && first
+            .vertical_pos
+            .checked_add(first.line_height)
+            .is_some_and(|end| end > top))
+    .then_some((first.column_start, first.segment_width))
+}
+
 /// 저장 LINE_SEG 가 하나도 없고 가시 글자가 있는 문단인지. 저장 줄이 없으면 host 글자의
 /// 띠·높이 증거가 없어 표 기하로 판단해야 한다(`no_lineseg_square_table_host_band`).
 pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Paragraph) -> bool {
@@ -2286,6 +2487,27 @@ pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Pa
             .text
             .chars()
             .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+}
+
+/// 저장 LINE_SEG 가 없는 host 의 글자가 Square 표 **아래**로 흐르는지.
+///
+/// 문단·단 기준 표가 단 폭을 채워 옆 띠가 없으면 host 글자는 표 아래로 간다. 쪽·종이
+/// 기준 표는 host 흐름 밖의 절대 위치라(#7548) host 글자는 제자리에 남고, 표 상자와
+/// 겹치는 뒤 줄만 배제 영역으로 피한다 — 저장 host 와 같은 순서(글자 → 표)를 쓴다.
+/// typeset(표 앞/뒤 글자 분류)과 layout(host 줄 페인트 소유자)이 같은 판정을 쓴다.
+pub(crate) fn no_lineseg_host_text_flows_below_square_table(
+    para: &crate::model::paragraph::Paragraph,
+    column_width_hu: i32,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+    is_no_lineseg_visible_text_host(para)
+        && !para.controls.iter().any(|control| {
+            matches!(control, crate::model::control::Control::Table(t)
+                if !t.common.treat_as_char
+                    && matches!(t.common.text_wrap, TextWrap::Square)
+                    && matches!(t.common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper))
+        })
+        && no_lineseg_square_table_host_band(para, column_width_hu).is_none()
 }
 
 /// 저장 LINE_SEG 가 없는 host 문단의 Square 표 옆 글자 띠 (cs, sw) HU 도출.
@@ -2510,6 +2732,25 @@ fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     }
 }
 
+/// Native paint와 진단이 같은 요청 사다리를 사용한다.
+/// 저장 줄이 없는 HFT 번호는 원 face의 설치 별칭을 함께 찾는다.
+pub(crate) fn native_font_family_for_style(style: &TextStyle) -> std::borrow::Cow<'_, str> {
+    if !style.fixed_glyph_advances {
+        return std::borrow::Cow::Borrowed(&style.font_family);
+    }
+    std::borrow::Cow::Owned(
+        style
+            .font_family
+            .split(',')
+            .flat_map(|family| {
+                let family = family.trim();
+                std::iter::once(family).chain(installed_render_font_aliases(family).iter().copied())
+            })
+            .collect::<Vec<_>>()
+            .join(","),
+    )
+}
+
 fn internal_font_family_members(font_family: &str) -> Vec<&str> {
     font_family
         .split(',')
@@ -2661,14 +2902,14 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         // 굵게 렌더됨. 한컴 돋움 획 두께(페이지 밀도 0.265)에 근접한
         // 'Noto Sans KR ExtraLight'(rsvg 페이지 밀도 0.277)를 무거운 Noto 직전에 삽입 —
         // 시스템 고딕 렌더는 무영향, Noto 폴백만 가볍게 교체.
-        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
+        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',sans-serif";
     }
     // 고정폭 키워드
     let lower = font_family.to_ascii_lowercase();
     if (font_family.contains("KoPub돋움체") || lower.contains("kopub dotum"))
         && (font_family.contains("Light") || lower.contains("light"))
     {
-        return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
+        return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',sans-serif";
     }
     // BatangChe is fixed-width serif. Its stored glyph advances are replayed
     // independently of the paint fallback; choosing a sans coding face here
@@ -2677,7 +2918,7 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         || lower.contains("batangche")
         || lower.contains("kopub batang")
     {
-        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',serif";
     }
     if font_family.contains("굴림체")
         || lower.contains("gulimche")
@@ -2694,9 +2935,9 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         // Serif: Windows → macOS(Bold 보유 우선) → macOS 기본 → Android → 오픈소스 → 한컴 → 리눅스 시스템 → generic
         // Nanum Myeongjo 는 macOS 10.9+ 기본 설치이며 Bold variant 보유.
         // AppleMyungjo 보다 앞에 두어야 macOS Chrome 에서 CJK 글리프 bold 매칭 성공.
-        // 'Source Han Serif K Old Hangul' (Task #528): @font-face unicode-range 가 옛한글
+        // 'RHWP Old Hangul' (Task #528): @font-face unicode-range 가 옛한글
         // 영역 (U+1100-11FF, U+A960-A97F, U+D7B0-D7FF) 만 매칭하므로 일반 한글에 영향 없음.
-        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',serif";
     }
     // 세리프 키워드 (영문) — "serif" 포함하되 "sans" 부분 문자열을 가진 폰트명 전체 제외
     if lower.contains("times")
@@ -2707,13 +2948,13 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         || lower.contains("gungsuh")
         || (lower.contains("serif") && !lower.contains("sans"))
     {
-        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',serif";
     }
     // Sans-serif: Windows → macOS/iOS → Android → 오픈소스 → 한컴 → generic
-    // 'Source Han Serif K Old Hangul' (Task #528): unicode-range 옛한글 자모 영역 한정
+    // 'RHWP Old Hangul' (Task #528): unicode-range 옛한글 자모 영역 한정
     // 'Noto Sans KR ExtraLight' (Task #1224): 무거운 Noto CJK Regular 폴백 직전에 삽입해
     // 한컴 돋움 획 두께에 근접시킴. 시스템 고딕 우선 → 부재 시에만 ExtraLight 매칭.
-    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif"
+    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',sans-serif"
 }
 
 /// `generic_fallback` 에 굵기 힌트를 얹는다. bold 는 ExtraLight 를 제거한다 (#3772).
@@ -3833,8 +4074,8 @@ mod tests {
 
     #[test]
     fn test_generic_fallback() {
-        let serif = "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
-        let sans = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
+        let serif = "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',serif";
+        let sans = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul',sans-serif";
         // Task #1224: ExtraLight 가 무거운 Noto 직전에 위치하는지 명시 검증
         assert!(sans.contains("'Noto Sans KR ExtraLight','Noto Sans KR'"));
         // [#4086] 하이픈 표기는 어떤 폰트와도 매칭되지 않는다 — 실제 패밀리명은

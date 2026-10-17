@@ -264,9 +264,9 @@ venv/bin/python scripts/visual_sweep.py \
 ### PR #6801 / 이슈 #6800
 
 - [개별 판정 및 댓글 계획](pr_6801_review.md).
-- 입력: [samples/issue6800/1192000-202100017-policy-research-report.hwp](../../../samples/issue6800/1192000-202100017-policy-research-report.hwp), 90,112 bytes.
+- 입력: [samples/issue6800/1192000-202100017-policy-research-report.hwp](../assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report.hwp), 90,112 bytes.
 - 입력 SHA-256: `fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee`.
-- 기준: [pdf/1192000-202100017-policy-research-report-2020.pdf](../../../pdf/1192000-202100017-policy-research-report-2020.pdf), engine 2020, 1쪽, 62,122 bytes.
+- 기준: [pdf/1192000-202100017-policy-research-report-2020.pdf](../assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report-2020.pdf), engine 2020, 1쪽, 62,122 bytes.
 - PDF SHA-256: `34c9173724fa5d2ef5e0b2a796b56c9b564d3f5e0c9224609dffd507921ada48`.
 - 대표 물리 페이지: 1.
 - 시각 판정: 대상 문서는 실제 1쪽이다. sweep의 review_202100017.png는 문서 식별자에서 유래한 파일명이며 대표 PNG를 물리 1쪽으로 정규화했다. 일부 대체 글리프가 남아 있고 픽셀 대조는 charX/hit-test의 직접 검증이 아니므로 공개 API 회귀 결과를 별도로 사용한다.

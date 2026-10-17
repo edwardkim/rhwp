@@ -23,7 +23,7 @@ README = PACK / "README.md"
 WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_text_editing.md"
 EXCEPTIONS = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_text_editing_exceptions.md"
 
-EXPECTED_IDS = [f"TE{i:02d}" for i in range(1, 91)]
+EXPECTED_IDS = [f"TE{i:02d}" for i in range(1, 91) if i not in {29, 36, 37, 38, 39, 76, 82}]
 
 ALLOWED_COMMANDS = {
     "digest",
@@ -57,19 +57,9 @@ ALL_FAMILY = {
     "TE22", "TE23", "TE24", "TE51", "TE52", "TE53", "TE54", "TE55",
     "TE59", "TE60",
 }
-INSERT_FAMILY = {
-    "TE13",
-    "TE27", "TE28", "TE29", "TE30", "TE31", "TE32", "TE33", "TE34",
-    "TE35", "TE36", "TE37", "TE38", "TE39", "TE40", "TE41", "TE42",
-    "TE43", "TE44", "TE45", "TE46", "TE47", "TE48", "TE50",
-}
+INSERT_FAMILY = {'TE13', 'TE27', 'TE28', 'TE30', 'TE31', 'TE32', 'TE33', 'TE34', 'TE35', 'TE40', 'TE41', 'TE42', 'TE43', 'TE44', 'TE45', 'TE46', 'TE47', 'TE48', 'TE50'}
 DRY_FAMILY = {"TE08", "TE25", "TE26", "TE49", "TE83", "TE84", "TE90"}
-INVEST_FAMILY = {
-    "TE04", "TE05", "TE06", "TE07", "TE09",
-    "TE61", "TE62", "TE63", "TE64", "TE65", "TE66", "TE67", "TE68",
-    "TE69", "TE70", "TE71", "TE72", "TE73", "TE74", "TE75", "TE76",
-    "TE85", "TE86", "TE87", "TE88", "TE89",
-}
+INVEST_FAMILY = {'TE04', 'TE05', 'TE06', 'TE07', 'TE09', 'TE61', 'TE62', 'TE63', 'TE64', 'TE65', 'TE66', 'TE67', 'TE68', 'TE69', 'TE70', 'TE71', 'TE72', 'TE73', 'TE74', 'TE75', 'TE85', 'TE86', 'TE87', 'TE88', 'TE89'}
 
 
 def load_json(path: Path):

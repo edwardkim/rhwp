@@ -265,7 +265,9 @@ pub const PROFILES: &[AgentProfile] = &[
         tools: &[
             "hwp_scaffold",
             "hwp_build_from_ingest",
+            "hwp_import_pdf",
             "hwp_export_svg",
+            "hwp_export_png",
             "hwp_export_pdf",
             "hwp_export_markdown",
             "hwp_export_doclang",
@@ -277,6 +279,7 @@ pub const PROFILES: &[AgentProfile] = &[
         session_tools: None,
         recipe: &[
             "hwp_build_from_ingest 로 ingest JSON → HWPX 생성",
+            "PDF 가져오기는 pdf-import 활성 빌드의 hwp_import_pdf 로 HWPX/HWP 저장 (sourcePages 로 원본 쪽 선택)",
             "hwp_export_svg 로 조판 확인 후 hwp_export_pdf 로 발행",
             "웹·LLM 소비용은 hwp_export_markdown, 다운스트림 AI 파이프라인용은 hwp_export_doclang",
             "공개 전에는 hwp_sanitize 로 메타데이터 제거, hwp_redact(dryRun 먼저)로 개인정보 마스킹",
@@ -344,6 +347,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_convert_hwp5",
             "hwp_export_hml",
             "hwp_export_svg",
+            "hwp_export_png",
             "hwp_render_diff",
             "hwp_layout_anomaly",
             "hwp_info",

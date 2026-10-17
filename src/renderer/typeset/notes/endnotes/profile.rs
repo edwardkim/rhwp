@@ -1,6 +1,6 @@
 //! 기존 미주 간격·구분선·SSOT 정책 관측. 정책과 상수는 변경하지 않는다.
 
-use crate::renderer::typeset::{border_width_to_px, hwpunit_to_px, FootnoteShape};
+use crate::renderer::typeset::{hwpunit_to_px, FootnoteShape};
 
 /// [Task #1363] 미주 높이 모델 SSOT 마이그레이션 단계 플래그(`RHWP_EN_SSOT`).
 ///
@@ -72,7 +72,6 @@ pub(in crate::renderer::typeset) struct EndnoteFlowProfile {
     pub(in crate::renderer::typeset) visible_separator: bool,
     pub(in crate::renderer::typeset) absorbed_between_notes_gap: bool,
     pub(in crate::renderer::typeset) compact_separator_below: bool,
-    pub(in crate::renderer::typeset) separator_line_width: u8,
 }
 
 impl EndnoteFlowProfile {
@@ -92,7 +91,6 @@ impl EndnoteFlowProfile {
             visible_separator,
             absorbed_between_notes_gap,
             compact_separator_below,
-            separator_line_width: shape.separator_line_width,
         }
     }
 
@@ -172,15 +170,11 @@ impl EndnoteFlowProfile {
         }
     }
 
+    /// 구분선 영역이 흐름에서 차지하는 높이 = 위 여백 + 아래 여백. 선 굵기는 더하지 않는다
+    /// — 한컴은 구분선을 위 여백 끝에 긋고 첫 미주를 그 자리 + 아래 여백에 놓는다(#6574,
+    /// 3-09·3-10·3-11월 통합 정본 13벌에서 제목 = 선 + 아래 여백 ±1px, 아래 여백 0·7·20mm).
     pub(in crate::renderer::typeset) fn separator_height_px(self, dpi: f64) -> f64 {
-        let line_height = if self.visible_separator {
-            border_width_to_px(self.separator_line_width).max(0.5)
-        } else {
-            0.0
-        };
-        hwpunit_to_px(self.separator_above_hu, dpi)
-            + line_height
-            + hwpunit_to_px(self.separator_below_hu, dpi)
+        hwpunit_to_px(self.separator_above_hu, dpi) + hwpunit_to_px(self.separator_below_hu, dpi)
     }
 }
 
@@ -225,16 +219,12 @@ pub(in crate::renderer::typeset) fn endnote_has_visible_separator(shape: &Footno
     shape.separator_line_type != 0 && shape.separator_line_width != 0
 }
 
+/// 구분선 영역의 흐름 높이(위 여백 + 아래 여백). 선 굵기는 더하지 않는다 —
+/// `EndnoteFlowProfile::separator_height_px` 참조.
 pub(in crate::renderer::typeset) fn endnote_separator_height_px(
     shape: &FootnoteShape,
     dpi: f64,
 ) -> f64 {
-    let line_height = if endnote_has_visible_separator(shape) {
-        border_width_to_px(shape.separator_line_width).max(0.5)
-    } else {
-        0.0
-    };
     hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
-        + line_height
         + hwpunit_to_px(endnote_separator_below_margin(shape) as i32, dpi)
 }

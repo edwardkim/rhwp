@@ -19,7 +19,7 @@
 //! 이 부풀림이 뒤 행을 밀어 `<표 3-4>` 의 마지막 행이 다음 쪽으로 넘어갔고, 그 쪽이
 //! 이 문서의 마지막 여분 쪽이었다.
 //!
-//! ## 겹치는 개체는 여전히 쌓는다 — 반례
+//! ## 기존 반례와 전체 문서 검사의 이관
 //!
 //! 같은 문서 `<표 4-3> 기타 국내 인증 마크` 의 패널 칸은 그림 **세 장이 전부**
 //! `horz=Column(off=123)` 로 **같은 가로 자리**에 있고 실제로 세로로 쌓인다. 여기서
@@ -27,6 +27,8 @@
 //! (`layout-anomaly` off-canvas 0 → 1). 그래서 판정은 단순 `max` 가 아니라
 //! **가로 구간이 겹치는 묶음 안에서만 더하고, 떨어진 묶음 사이에서는 가장 높은 묶음**
 //! 을 쓴다.
+//! 이 반례를 대신하던 전체 103쪽의 고정 px 경계 검사는 #7445 하위 #7739로
+//! 이관한다. 특정 패널의 개체 소유와 문서 전체의 무회귀는 별도로 입증해야 한다.
 //!
 //! ## 기대값의 독립 근거
 //!
@@ -74,15 +76,6 @@ fn cell_texts(node: &RenderNode, current: Option<f64>, out: &mut Vec<(String, f6
     for child in &node.children {
         cell_texts(child, height, out);
     }
-}
-
-/// 페이지 상자를 벗어나는 노드의 최대 이탈량.
-fn max_off_canvas(node: &RenderNode, page_bottom: f64) -> f64 {
-    let own = (node.bbox.y + node.bbox.height - page_bottom).max(0.0);
-    node.children
-        .iter()
-        .map(|child| max_off_canvas(child, page_bottom))
-        .fold(own, f64::max)
 }
 
 fn target_cell_height(core: &DocumentCore) -> (u32, f64) {
@@ -214,21 +207,7 @@ fn equivalent_right_alignment_keeps_the_same_row_height() {
     );
 }
 
-/// 반례 — 가로로 겹치는 개체는 그대로 쌓는다. 접으면 그림이 쪽 밖으로 나간다.
-#[test]
-fn horizontally_overlapping_objects_still_stack() {
-    let core = open();
-    let pages = core.page_count() as u32;
-    let page_bottom = 1122.5;
-    let mut worst: f64 = 0.0;
-    for page in 0..pages {
-        let tree = core.build_page_render_tree(page).expect("render tree");
-        worst = worst.max(max_off_canvas(&tree.root, page_bottom));
-    }
-    assert!(
-        worst <= 1.0,
-        "쪽 상자 밖으로 {worst:.1}px 나간 노드가 있다. 같은 가로 자리에 쌓인 그림 \
-         (`<표 4-3>` 패널 3장)의 높이를 `max` 로 접으면 칸이 284.8px 로 줄어 \
-         122.7px 가 쪽 밖으로 나간다 (#6761 반례)"
-    );
-}
+// 전체 103쪽의 고정 px 경계 검사는 #7445 하위 #7739로 이관한다.
+// 고정 base부터 미달인 문서 전체의 검사를 특정 패널의 정상 배치 근거로 쓰지 않는다.
+// 원본과 영향 쪽의 기존 검사는 보존하며, 이관된 전체 범위는 독립 Print와
+// Native/fresh WASM 전쪽 검증을 마친 뒤 개체 소유·포함 관계로 다시 검증한다.

@@ -777,7 +777,10 @@ pub fn decrypt_hwpx_package(
         let mut input = source
             .by_index(index)
             .map_err(|error| PasswordCryptoError::HwpxZip(error.to_string()))?;
-        let name = input.name().to_string();
+        let name = input
+            .name()
+            .map_err(|error| PasswordCryptoError::HwpxZip(error.to_string()))?
+            .into_owned();
         if input.is_dir() {
             destination
                 .add_directory(name, SimpleFileOptions::default())
@@ -969,7 +972,10 @@ pub fn encrypt_hwpx_package(data: &[u8], password: &[u8]) -> Result<Vec<u8>, Pas
         let mut input = source
             .by_index(index)
             .map_err(|error| PasswordCryptoError::HwpxZip(error.to_string()))?;
-        let name = input.name().to_string();
+        let name = input
+            .name()
+            .map_err(|error| PasswordCryptoError::HwpxZip(error.to_string()))?
+            .into_owned();
         let is_dir = input.is_dir();
         let data = if is_dir {
             Vec::new()

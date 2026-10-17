@@ -90,13 +90,13 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 
 | 입력/기준 경로 | SHA-256 |
 | --- | --- |
-| [pdf/1192000-202100017-policy-research-report-2020.pdf](../../../pdf/1192000-202100017-policy-research-report-2020.pdf) | `34c9173724fa5d2ef5e0b2a796b56c9b564d3f5e0c9224609dffd507921ada48` |
+| [pdf/1192000-202100017-policy-research-report-2020.pdf](../assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report-2020.pdf) | `34c9173724fa5d2ef5e0b2a796b56c9b564d3f5e0c9224609dffd507921ada48` |
 | [pdf/86712_regulatory_analysis-hwp-2024.pdf](../../../pdf/86712_regulatory_analysis-hwp-2024.pdf) | `bc1025b0607bbac01fea960997fa54430fd8dcc2604831b02940e7815cbcf84f` |
 | [pdf/SO-SUEOP-hwp-2020.pdf](../../../pdf/SO-SUEOP-hwp-2020.pdf) | `12f7e011dcf1aaf90484a79c60b7ca853dcea860f135263ac41abf7c9ae613a7` |
 | [pdf/hwpctl_API_v2.4-hwp-2020.pdf](../../../pdf/hwpctl_API_v2.4-hwp-2020.pdf) | `1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74` |
 | [pdf/issue7235/156467175_press_release_header_logo_p1-2020.pdf](../../../pdf/issue7235/156467175_press_release_header_logo_p1-2020.pdf) | `1e791edc71173ec436fbdca3480705a97beade1f496318212440955077763cc2` |
 | [pdf/tac_object_host_line_height-2020.pdf](../../../pdf/tac_object_host_line_height-2020.pdf) | `f90ea6915a842ac2266f4dd737b2829bbb3b72b927b1658577f6ca8c8b9b6051` |
-| [pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf](../../../pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf) | `bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197` |
+| [pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf](../assets/issue7445/education-curriculum-map/existing-hwp-hancom2020-print.pdf) | `bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197` |
 | [samples/86712_regulatory_analysis.hwp](../../../samples/86712_regulatory_analysis.hwp) | `ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88` |
 | [samples/SO-SUEOP.hwp](../../../samples/SO-SUEOP.hwp) | `b5e410d4972b988240eb79f462c75ab3f92ce3415af6ed7f411906cc7498396c` |
 | [samples/basic/request.hwp](../../../samples/basic/request.hwp) | `99e63b90f4aa3197029299ab087bc46225b3c27c0d07d424145b20879b45f12e` |
@@ -105,7 +105,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 | [samples/issue1891/86712_regulatory_analysis.hwpx](../../../samples/issue1891/86712_regulatory_analysis.hwpx) | `0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19` |
 | [samples/issue1891_external_bindata_link.hwpx](../../../samples/issue1891_external_bindata_link.hwpx) | `ce9f7275b9c84e4f032c218b9b6f94cf53c24f6e91fba30be7fd55b17acee924` |
 | [samples/issue6202/156483689-turmeric-industry-standardization.hwp](../../../samples/issue6202/156483689-turmeric-industry-standardization.hwp) | `bd24e80fda9e298ffb05dcdb64c22752a4ed78716b358076db26b2e721e41dc4` |
-| [samples/issue6800/1192000-202100017-policy-research-report.hwp](../../../samples/issue6800/1192000-202100017-policy-research-report.hwp) | `fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee` |
+| [samples/issue6800/1192000-202100017-policy-research-report.hwp](../assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report.hwp) | `fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee` |
 | [pdf/148751598-briefing-2020.pdf](../../../pdf/148751598-briefing-2020.pdf) | `98ce52ec0a6ed25ba73070b22c743cb72d129113456ae3019f417d1b53ee9dd3` |
 | [samples/issue6924/148751598-briefing.hwp](../../../samples/issue6924/148751598-briefing.hwp) | `03c93b021e01652b1ca5ba3a4a301decf9da33484af7d088987327efcb59e610` |
 | [samples/issue7062/tac_object_host_line_height.hwp](../../../samples/issue7062/tac_object_host_line_height.hwp) | `2cf764c89943a23eff17fb8ac5ccaa1958711216b15d5eb29a9a469b97d23abb` |
@@ -118,7 +118,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 | [samples/issue7235/156086935_none_image_fill.hwp](../../../samples/issue7235/156086935_none_image_fill.hwp) | `b12aa445776bef38a003e8679865a9a0ed2f729ecef18099625c976efe64d6ae` |
 | [samples/issue7235/156467175_press_release_header_logo_p1.hwp](../../../samples/issue7235/156467175_press_release_header_logo_p1.hwp) | `559b2760ccb678ae22484bc7de8bc61347fff17d3b980d9bec3f2ecec8e07d57` |
 | [samples/lseg-05-tab.hwp](../../../samples/lseg-05-tab.hwp) | `0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c` |
-| [samples/task2287/1342000_edu_curriculum_map.hwp](../../../samples/task2287/1342000_edu_curriculum_map.hwp) | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
+| [samples/task2287/1342000_edu_curriculum_map.hwp](../assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp) | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
 | [tests/fixtures/issue6802/1400000-200600006_toc_leader_fill-2020.pdf](../../../tests/fixtures/issue6802/1400000-200600006_toc_leader_fill-2020.pdf) | `a55f4f55c89f70273996e30a3fb1885e3b3fcb86f14348824f01f713065ad6a6` |
 | [tests/fixtures/issue6802/1400000-200600006_toc_leader_fill.hwp](../../../tests/fixtures/issue6802/1400000-200600006_toc_leader_fill.hwp) | `e9bc5e78b412876ad3a810d01ba3b5ca5077e921f13cd15dde755c8f537bbeae` |
 | [tests/fixtures/issue6923/148738070_wrapper_table_stored_page_frame-2020.pdf](../../../tests/fixtures/issue6923/148738070_wrapper_table_stored_page_frame-2020.pdf) | `0dde093557a0a11cec2f01af94f3a8dcf5004c30d267f6f5ea3fa5ac65f9b4bf` |

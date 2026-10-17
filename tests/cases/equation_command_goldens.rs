@@ -157,6 +157,9 @@ fn dump_layout(out: &mut String, lb: &LayoutBox, indent: usize) {
         lb.x, lb.y, lb.width, lb.height, lb.baseline
     );
     match &lb.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            let _ = writeln!(out, "{pad}HancomGlyphs({run:?}) {metrics}");
+        }
         LayoutKind::Row(children) => {
             let _ = writeln!(out, "{pad}Row {metrics}");
             for child in children {
@@ -235,7 +238,7 @@ fn dump_layout(out: &mut String, lb: &LayoutBox, indent: usize) {
                 dump_layout(out, sup, indent + 2);
             }
         }
-        LayoutKind::Limit { is_upper, sub } => {
+        LayoutKind::Limit { is_upper, sub, .. } => {
             let _ = writeln!(out, "{pad}Limit(is_upper={is_upper}) {metrics}");
             if let Some(sub) = sub {
                 let _ = writeln!(out, "{pad}  sub:");

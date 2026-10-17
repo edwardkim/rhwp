@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_knowledge_map.md
-last_verified: 2026-09-03
+last_verified: 2026-10-14
 ---
 
 # 에이전트 지식 지도 — rhwp 참조 문서의 단일 진입점
@@ -13,6 +13,11 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 **단일 출처 원칙**: 이 지도는 요약과 앵커만 담는다. 상세 서술·수치·절차의 권위는
 각 canonical 문서([CLI 명령어 매뉴얼](cli_commands.md) 등)에 있으며, 이 지도와
 다르면 그쪽을 따른다. 새 표면이 머지되면 해당 행만 추가한다(기존 행 재서술 금지).
+
+**PR 시각 무회귀를 검토할 때**: 최신 SHA의 upstream/devel과 후보 head의 전쪽
+Native/fresh WASM TSV를 같은 조건·페이지로 비교한다. **0.01%p라도 하락한 쪽이 있으면
+90% 이상이어도 PR 재검토**다. 평균·CI 통과로 대체하지 않는다.
+[권위 절차](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)와 [PR workflow](pr_review_workflow.md)를 먼저 읽는다.
 
 ## 0. 이 지도의 실측 기준
 
@@ -87,7 +92,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 하려는 일 | 명령 (MCP 도구) | 판정 필드 | 권위 |
 |---|---|---|---|
 | 쪽을 SVG 로 | `export-svg --json` (`hwp_export_svg`) | `pages[].path`·`renderedCount` | [CLI 매뉴얼](cli_commands.md) §1 |
-| 쪽을 PNG 로 (VLM 입력) | `export-png --vlm-target claude` | 파일 산출 (`--json` 없음) | [export-png 매뉴얼](export_png_command.md) |
+| 쪽을 PNG 로 (VLM 입력) | `export-png --json --vlm-target claude` (`hwp_export_png`) | `pages[].path`·`renderedCount` | [export-png 매뉴얼](export_png_command.md) |
 | 제출용 PDF | `export-pdf --json` (`hwp_export_pdf`) | `output`·`bytes`·`backend` | [CLI 매뉴얼](cli_commands.md) §export-pdf |
 | 바뀐 쪽만 렌더 | 편집 봉투 `changedPages` → `export-svg -p N` | `changedPages[]` | [표면 플레이북 §9](agent_surface_playbook.md) |
 | 세션 안에서 렌더 | `hwp_doc_render_page` (서버 전용) | `bytes`·`output` | [MCP 가이드](mcp_integration_guide.md) |
@@ -318,10 +323,10 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 `edit set-cell` 은 `oldText` 때문에 `untrustedContent:true`,
 `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 339개 필드
+### 2-2. 전수 사전 — 342개 필드
 
-`capabilities` 의 `recordFields` 고유 **328개**와 그 밖의 실측·참조 필드를 합친
-336개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **334개**와 그 밖의 실측·참조 필드를 합친
+342개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -506,6 +511,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 | `output` | string | **실제로 저장된 경로. 저장했을 때만 실린다** — dry-run·치환 0건이면 키 자체가 없다 | 산출 계열 13종 |
 | `outputFormat` | string | 산출 형식(`hwp5`·`hwpx`·`csv`) — 입력 형식 보존 규약의 결과 | `run`·`table-to-csv`·`csv-to-table`·`edit` |
 | `bytes` | number | 산출물 크기 | `export-pdf`·`export-hwpx`·`export-hml`·`export-doclang`·`convert`·`build-from-ingest`·`thumbnail` |
+| `diagnostics` | object | PDF 가져오기 진단. 원본 쪽·좌표 대응(`pages`)은 문서 파생 값이며 경고·처리 정책과 구분한다. `parserAllocationBoundsProven:false`는 전체 할당 경계 미입증을 뜻한다 | `import-pdf` |
 | `changedPages` | number[]\|null | **재조판 후 0 기준으로 바뀐 쪽.** `null` = 확정 불가(전체를 봐야 한다). dry-run 은 항상 `null` | `edit` 3종·`csv-to-table`·`run` |
 | `verify` | object\|null | `{identical,diffCount}` 자기검증 결과. `--verify` 를 주지 않으면 **`null`** (실측) | `run`·`export-hwpx`·`csv-to-table`·`convert`·`edit` |
 | `verifyPages` | object\|null | 쪽 수 대조 결과. `--verify-pages` 없으면 `null` | `export-hwpx`·`convert` |
@@ -749,9 +755,11 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `outputDir` | string | 여러 파일을 담은 폴더 | `export-svg`·`export-markdown` |
-| `renderedCount` | number | 실제로 렌더한 쪽 수(`-p` 로 좁히면 1) | `export-svg`·`export-pdf`·`export-markdown` |
-| `backend` | string | PDF 백엔드(`svg`·`direct`) | `export-pdf` |
+| `outputDir` | string | 여러 파일을 담은 폴더 | `export-svg`·`export-png`·`export-markdown` |
+| `renderedCount` | number | 실제로 렌더한 쪽 수. PNG의 반복 `-p`는 선택 쪽 수, `--metadata-only`는0 | `export-svg`·`export-png`·`export-pdf`·`export-markdown` |
+| `backend` | string | PDF 백엔드(`svg`·`direct`) 또는 PNG 백엔드(`native-skia`) | `export-pdf`·`export-png` |
+| `comparisonProfile` | string | 출력 프로필(`screen`·`print`). 기본 screen, PDF 시각 비교는 print | `export-png` |
+| `layoutGeneration` | string | 적용한 한컴 호환 조판 세대(`2022`·`2024`) | `export-png` |
 | `mime` | string | 썸네일 MIME. **`.png` 로 저장해도 원본이 GIF 면 `image/gif`** (실측) | `thumbnail` |
 | `doclangVersion` | string | DocLang 판본 | `export-doclang` |
 | `assetsDir` / `assetCount` | string / number | 이진 자원 폴더와 개수 | `export-doclang` |

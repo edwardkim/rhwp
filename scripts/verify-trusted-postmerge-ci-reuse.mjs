@@ -420,7 +420,7 @@ export function frontendOnlyCiRunIsReusable(impact, jobs) {
 export function fullLaneWorkflowJobsAreGreen(workflowFile, jobs) {
   const required = {
     "ci.yml": ["CI preflight", "Build & Test", "Lint (fmt, clippy, WASM check)"],
-    "codeql.yml": ["CodeQL preflight", "Analyze (javascript-typescript)", "Analyze (python)", "Analyze (rust)"],
+    "codeql.yml": ["CodeQL preflight", "Analyze (javascript-typescript)", "Analyze (python)", "Analyze (rust)", "Analyze (actions)"],
     "adapter-diff.yml": ["adapter inter-diff preflight", "adapter inter-diff"],
     "proptest-roundtrip.yml": ["Proptest preflight", "prop roundtrip"],
   }[workflowFile];

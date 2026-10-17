@@ -148,6 +148,9 @@ export class CanvasView {
   private rendererFallbackScheduled = false;
   private canvasMetricRecovery = new CanvasMetricRecovery();
   private activeRendererDecisionKey: string | null = null;
+  private readonly canvasKitResourcePreparations = new WeakMap<HTMLCanvasElement, {
+    decisionKey: string | null; pageIdx: number; ready: boolean;
+  }>();
   private autoRendererReselectionTimer: ReturnType<typeof setTimeout> | null = null;
   private documentLoadPrepared = false;
   private layoutViewportSize = { width: 0, height: 0 };
@@ -1615,6 +1618,28 @@ export class CanvasView {
     let renderedCanvas = canvas;
     const rendererDecisionKey = this.activeRendererDecisionKey;
     try {
+      if (this.pageRenderer.getBackend() === 'canvaskit') {
+        let preparation = this.canvasKitResourcePreparations.get(canvas);
+        if (!preparation || preparation.ready
+          || preparation.decisionKey !== rendererDecisionKey || preparation.pageIdx !== pageIdx) {
+          const pending = this.pageRenderer.prepareCanvasKitPageResources(pageIdx);
+          preparation = { decisionKey: rendererDecisionKey, pageIdx, ready: pending === null };
+          this.canvasKitResourcePreparations.set(canvas, preparation);
+          if (pending) {
+            const expected = preparation;
+            const finish = () => {
+              if (this.canvasKitResourcePreparations.get(canvas) !== expected) return;
+              expected.ready = true;
+              if (this.activeRendererDecisionKey === rendererDecisionKey
+                && this.canvasPool.getCanvas(pageIdx) === canvas && canvas.parentElement) {
+                this.renderCanvas(pageIdx, canvas, renderContext);
+              }
+            };
+            void pending.then(finish, finish);
+          }
+        }
+        if (!preparation.ready) return true;
+      }
       renderResult = this.pageRenderer.renderPage(pageIdx, canvas, renderScale, zoom, dpr, renderContext);
       if (renderResult.renderedCanvas && renderResult.renderedCanvas !== canvas) {
         renderedCanvas = renderResult.renderedCanvas;

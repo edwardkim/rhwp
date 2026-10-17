@@ -64,9 +64,12 @@ impl FontMetric {
             };
             return if w > 0 { Some(w) } else { None };
         }
-        None
+        // 기존 범위는 그대로 우선하며, 확인된 프로그램의 누락 구간만 보충한다.
+        verified_technical_symbol_width(self, ch)
     }
 }
+
+include!("font_metrics_technical_symbols.rs");
 
 /// find_metric의 반환값: 메트릭 + 폴백 정보
 pub struct MetricMatch {

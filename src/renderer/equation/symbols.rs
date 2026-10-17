@@ -133,6 +133,7 @@ static OPERATORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(
         ("TIMES", "×"),
         ("DIV", "÷"),
         ("DIVDE", "÷"),
+        ("DIVIDE", "÷"),
         ("PLUSMINUS", "±"),
         ("PM", "±"),
         ("MINUSPLUS", "∓"),

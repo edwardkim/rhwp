@@ -47,6 +47,16 @@ fn render_box(
     let y = parent_y + lb.y;
 
     match &lb.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            for ((glyph, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears)
+            {
+                svg.push_str(&format!(
+                    "<text x=\"0\" y=\"0\" transform=\"matrix(1 0 {} 1 {:.2} {:.2})\" font-size=\"{:.2}\" fill=\"{}\" font-family=\"{}\">{}</text>\n",
+                    -shear, x + offset, y + lb.baseline + run.baseline_shift, fs, color,
+                    super::hancom_glyphs::FONT_FAMILY, escape_xml(&glyph.to_string()),
+                ));
+            }
+        }
         LayoutKind::Row(children) => {
             for child in children {
                 render_box(svg, child, x, y, color, fs, italic, bold);
@@ -305,18 +315,25 @@ fn render_box(
                 );
             }
         }
-        LayoutKind::Limit { is_upper, sub } => {
-            let name = if *is_upper { "Lim" } else { "lim" };
-            let fi = fs;
-            svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
-                x,
-                y + fi * 0.8,
-                fi,
-                color,
-                EQ_FONT_FAMILY,
-                name,
-            ));
+        LayoutKind::Limit {
+            is_upper,
+            name,
+            sub,
+        } => {
+            if let Some(name) = name {
+                render_box(svg, name, x, y, color, name.height, false, false);
+            } else {
+                let name = if *is_upper { "Lim" } else { "lim" };
+                svg.push_str(&format!(
+                    "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
+                    x,
+                    y + fs * 0.8,
+                    fs,
+                    color,
+                    EQ_FONT_FAMILY,
+                    name,
+                ));
+            }
             if let Some(sub_box) = sub {
                 render_box(
                     svg,

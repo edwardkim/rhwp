@@ -203,6 +203,7 @@ fn footnote_separator_caller_uses_absolute_hwpunit_width() {
         &ResolvedStyleSet::default(),
         &area,
         &shape,
+        &[],
     );
 
     let line = footnote_area
@@ -594,7 +595,10 @@ fn test_build_page_with_paragraph() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -681,7 +685,10 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -744,6 +751,7 @@ fn test_layout_with_composed_styles() {
 
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![
@@ -790,7 +798,10 @@ fn test_layout_with_composed_styles() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -888,6 +899,7 @@ fn test_layout_multi_run_x_position() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![
@@ -929,7 +941,10 @@ fn test_layout_multi_run_x_position() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -982,6 +997,7 @@ fn test_resolved_to_text_style() {
 
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -1020,6 +1036,7 @@ fn test_resolved_to_text_style_with_ratio() {
 
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -1327,7 +1344,10 @@ fn test_layout_table_basic() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -1485,7 +1505,10 @@ fn test_layout_table_cell_positions() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -1985,16 +2008,17 @@ fn test_square_bullet_with_space_preserves_layout() {
         "positions[1] expected 18.4, got {}",
         positions[1]
     );
-    // 공백: 반각(10) + 자간(10×-8% = -0.8) = advance 9.2 (min_clamp 5.0 미작동)
+    // 공백: [#7702] 한/글 장치 격자(ppem 375) — 반각 187.5 를 공백은 내려 187 단위,
+    // 자간 187×-8% = -14.96 → -15 단위, 172 단위 × 4/75 = 9.1733 (min_clamp 5.0 미작동)
     assert!(
-        (positions[2] - 27.6).abs() < 0.01,
-        "positions[2] expected 27.6, got {}",
+        (positions[2] - (18.4 + 172.0 * 4.0 / 75.0)).abs() < 0.01,
+        "positions[2] expected 27.573, got {}",
         positions[2]
     );
     // 가: 전각(20) + 자간(-1.6) = advance 18.4
     assert!(
-        (positions[3] - 46.0).abs() < 0.01,
-        "positions[3] expected 46.0, got {}",
+        (positions[3] - (18.4 + 172.0 * 4.0 / 75.0 + 18.4)).abs() < 0.01,
+        "positions[3] expected 45.973, got {}",
         positions[3]
     );
 }
@@ -2031,6 +2055,7 @@ fn test_tac_leading_width_block_table_full_line() {
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
         horizontal_shaping: None,
+        frame_geometry: None,
     };
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
@@ -2043,7 +2068,7 @@ fn test_tac_leading_width_block_table_full_line() {
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles, None);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None, None);
     // [#2279] 자간 글자폭 비례: 4 spaces × (10 base + 10×-8% = 9.2) = 36.8
     // (min_clamp 5.0 미작동)
     assert!((width - 36.8).abs() < 0.5, "expected ~36.8, got {}", width);
@@ -2129,6 +2154,7 @@ fn test_tac_leading_width_inline_table_partial() {
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
         horizontal_shaping: None,
+        frame_geometry: None,
     };
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
@@ -2140,7 +2166,7 @@ fn test_tac_leading_width_inline_table_partial() {
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles, None);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None, None);
     // "ab" 2 chars, 반각 × font_size/2 = 20*0.5*2 = 20
     assert!((width - 20.0).abs() < 0.5, "expected ~20.0, got {}", width);
 }
@@ -2804,12 +2830,15 @@ fn header_paper_relative_picture_uses_header_frame_origin() {
     assert!((bbox.y - (header_area.y + hwpunit_to_px(2_250, DEFAULT_DPI))).abs() < 0.01);
 }
 
-// [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용된다.
-// 색 채우기는 첫 쪽 여부와 무관하게 유지된다.
+// 쪽 배경의 첫 쪽 제한은 PageDef의 채우기 플래그에 따라
+// 이미지와 색 채우기에 함께 적용된다.
 
 /// 이미지 채우기 + 색 채우기를 가진 쪽 테두리/배경으로 렌더 트리를 만든 뒤
 /// 루트 자식에서 PageBackground 노드를 찾아 (background_color, image 유무) 를 반환.
-fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
+fn page_bg_color_and_image_present(
+    is_section_first: bool,
+    fill_first_only: bool,
+) -> (Option<u32>, bool) {
     use crate::model::bin_data::BinDataContent;
     use crate::model::image::ImageEffect;
     use crate::model::page::PageBorderFill;
@@ -2863,6 +2892,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     };
 
     engine.set_current_page_is_section_first(is_section_first);
+    engine.set_page_border_fill_first_page_only(false, fill_first_only);
     let tree = engine.build_render_tree(
         &page_content,
         &[],
@@ -2884,20 +2914,27 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
         _ => None,
     });
     let bg = bg.expect("PageBackground 노드가 있어야 함");
-    (bg.background_color.is_some(), bg.image.is_some())
+    (bg.background_color, bg.image.is_some())
 }
 
 #[test]
 fn page_bg_image_only_on_section_first_page() {
-    // 구역 첫 쪽: 이미지 채우기 적용
-    let (color_first, image_first) = page_bg_color_and_image_present(true);
+    // 첫 쪽 제한을 명시한 구역의 첫 쪽: 이미지와 색 채우기 적용.
+    let (color_first, image_first) = page_bg_color_and_image_present(true, true);
     assert!(image_first, "구역 첫 쪽에는 배경 이미지가 있어야 한다");
-    assert!(color_first, "색 채우기는 유지되어야 한다");
+    assert_eq!(color_first, Some(0x00F0F0F0), "문서의 색 채우기를 적용한다");
 
-    // 구역 첫 쪽 아님: 이미지 채우기 억제, 색 채우기는 유지
-    let (color_rest, image_rest) = page_bg_color_and_image_present(false);
+    // 같은 구역의 다음 쪽: 채우기를 숨기고 기본 흰 종이만 유지한다.
+    let (color_rest, image_rest) = page_bg_color_and_image_present(false, true);
     assert!(!image_rest, "구역 첫 쪽이 아니면 배경 이미지가 없어야 한다");
-    assert!(color_rest, "이미지가 억제돼도 색 채우기는 유지되어야 한다");
+    assert_eq!(color_rest, Some(0x00FFFFFF), "뒤쪽은 기본 흰 종이 배경이다");
+    // 제한 플래그가 없으면 뒤쪽에서도 같은 이미지 채우기가 남는다.
+    let (color_unrestricted, image_unrestricted) = page_bg_color_and_image_present(false, false);
+    assert!(
+        image_unrestricted,
+        "첫 쪽 제한이 없으면 이미지 채우기를 유지한다"
+    );
+    assert_eq!(color_unrestricted, Some(0x00F0F0F0));
 }
 
 /// [Task #2835] TAC picture/shape 배치 경로의 좌측 margin 이 paragraph_layout.rs

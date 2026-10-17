@@ -39,7 +39,6 @@
 //!   issue6551/113424_evaluation_guideline     0 → 1   Group  우측 +217.9px (35쪽)
 //!   issue6787/16774617-electronic-ballot-form 0 → 2   Image  좌 −9.6 · 우 +178.7px
 //!   task1725/text_footnote_tail_overpagination 15 → 17 · hwpx 16 → 18  Equation 우측 +604.1px
-//!   3-11월_실전_통합 계열 7종                 각 +1   Equation 우측 +32.4px
 //! ```
 //!
 //! 3-11월 계열 6종은 이 워크트리의 기존 건수가 committed baseline 보다 낮다(환경에 따라

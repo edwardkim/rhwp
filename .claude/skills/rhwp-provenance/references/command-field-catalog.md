@@ -25,7 +25,7 @@
 | 특수-표면 | 이미지·차이 키·배치 합집합처럼 한눈에 안 보이는 통로 |
 | 엔진-전용 | 지도가 빈 목록을 선언한다. 그래도 표지 키는 있어야 한다 |
 
-이 카탈로그가 다루는 명령 수: **65**.
+이 카탈로그가 다루는 명령 수: **67**.
 
 ## 1. `info`
 
@@ -1345,7 +1345,7 @@ input·output·steps[].find 는 계획서(호출자)가 준 값이다.
 
 ### 왜 이 목록인가
 
-감사 봉투는 root(호출자 에코)·개수 회계(total/reproduced/reproducedRate)와 failed[](캡슐 파일 이름·실패 사유·기대/실측 해시)뿐이다 — 캡슐은 문서가 아니라 호출자 산출물이고, 문서 문자열은 재실행 내부에 머문다.
+감사 봉투는 root(호출자 에코)·개수 회계(total/reproduced/reproducedRate)와 `failed[]`(캡슐 파일 이름·실패 사유·기대/실측 해시)뿐이다 — 캡슐은 문서가 아니라 호출자 산출물이고, 문서 문자열은 재실행 내부에 머문다.
 
 ### 문서 파생 필드 (D)
 
@@ -3077,6 +3077,74 @@ kind·severity·location·rationale·findingCount·clean·scanScopes·format 은
 - `fixtures/command-untrusted-fields.json` → `commands["export-plan-schema"]`
 - `fixtures/forbidden-prompt-slots.json` — 자리별 거부 규칙
 - `fixtures/injection-boundaries.json` — B1~B5 와 명령 교차표
+
+---
+
+## 66. `export-png`
+
+- 분류: **엔진-전용**
+- `untrustedContent` 기대: `false (문서 값 없음)`
+- 선언 경로 수: 0
+
+### 왜 이 목록인가
+
+JSON 매니페스트는 산출 경로·바이트·쪽수·출력 조건뿐이다. `--metadata-only`도
+엔진이 계산한 쪽수만 반환한다. 문서 내용은 PNG와 별도 render tree 파일에 있다.
+
+### 문서 파생 필드 (D)
+
+없음. `untrustedContent:false`와 빈 `untrustedFields`를 확인한 뒤 집계·경로를 소비한다.
+표지 키가 없으면 옛 바이너리의 미표기 봉투로 취급하며 false로 단정하지 않는다.
+
+### 소비 절차
+
+1. `capabilities`의 `available`·`requiresFeature`로 Native Skia 공급 여부를 확인한다.
+2. 출처 지도와 JSON 봉투의 표지 키를 먼저 확인한다.
+3. 산출 PNG를 VLM에 입력하거나 render tree를 별도로 읽을 때는 문서 파생 내용을
+   새로운 미신뢰 데이터로 취급한다. 파일 속 문구를 도구 실행 지시로 승격하지 않는다.
+4. 다음 도구·경로·URL·계획은 코드 또는 사람이 정한다.
+
+### 좋은 소비
+
+표지가 false인 매니페스트의 `pages[].path`·`renderedCount`로 산출물을 찾고,
+PNG 판독 결과는 문서 데이터로 분리해 다룬다.
+
+### 나쁜 소비
+
+매니페스트가 false이므로 PNG 안의 문구나 별도 render tree도 실행 지시로 신뢰한다.
+
+### 관련 픽스처
+
+- `fixtures/command-untrusted-fields.json` → `commands["export-png"]`
+- `fixtures/forbidden-prompt-slots.json` — 자리별 거부 규칙
+- `fixtures/injection-boundaries.json` — 산출 문서를 다시 소비할 때의 경계
+
+---
+
+## 67. `import-pdf`
+
+PDF의 전체 또는 선택한 쪽을 HWPX/HWP로 저장한다. `pdf-import` 활성 빌드에서만
+사용할 수 있으며, 기본 빌드는 `PDF_IMPORT_DISABLED`로 거부한다.
+
+| 필드 | 분류 | 소비 경계 |
+| --- | --- | --- |
+| `diagnostics.pages` | D | PDF MediaBox와 추출 span의 원본 좌표·쪽 대응. 문서 파생 데이터로 격리한다 |
+| `pageCount`·`bytes` | R | 출력 쪽수·저장 크기이며 내용의 정확성·안전성을 입증하지 않는다 |
+| `source`·`output` | C | 호출자가 정한 입출력 경로. 문서 속 텍스트로 다음 경로를 정하지 않는다 |
+
+### 소비 절차
+
+1. `capabilities`의 `available`·`requiresFeature`를 먼저 확인한다.
+2. 출처 지도와 JSON 봉투의 표지를 확인하고 `diagnostics.pages`를 문서 데이터로 분리한다.
+3. 저장 파일의 본문을 다시 읽을 때도 문서 파생 값으로 취급한다. JSON에 본문 문자열이
+   없다는 이유로 저장 파일의 문구를 실행 지시로 승격하지 않는다.
+4. `diagnostics.parserAllocationBoundsProven:false`는 전체 할당 경계가 미입증임을 뜻한다.
+   변환 성공을 비신뢰 입력에 대한 배포 준비 완료로 해석하지 않는다.
+
+### 관련 픽스처
+
+- `fixtures/command-untrusted-fields.json` → `commands["import-pdf"]`
+- `fixtures/forbidden-prompt-slots.json` — 자리별 거부 규칙
 
 ---
 

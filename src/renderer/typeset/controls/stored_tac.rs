@@ -1,6 +1,8 @@
 //! 저장 줄을 소유한 TAC 표의 수용 판단과 배치 좌표 계산.
 //! composer의 기존 줄 소속·점유 끝점을 재사용하며 새 줄 구성이나 상태 쓰기를 하지 않는다.
 
+pub(in crate::renderer::typeset) mod owned_row;
+
 use super::super::paragraph::metrics::FormattedParagraph;
 use crate::model::{
     control::Control, paragraph::Paragraph, provenance::LayoutCompatibilityProfile,
@@ -115,6 +117,7 @@ pub(super) fn prepare_coanchored_first_line(
             y: origin,
             clearance: 0.0,
             advance_end: Some(end),
+            stored_horizontal_pen: None,
         },
         end,
         rebase_line_origin: false,
@@ -140,13 +143,44 @@ pub(super) fn prepare_computed(
     {
         return None;
     }
-    let [Control::Table(table)] = para.controls.as_slice() else {
-        return None;
-    };
+    // 글 앞/뒤 장식은 보이지만 저장 개체 줄의 흐름을 점유하지 않는다.
+    // 컨트롤 배열의 번호와 표 소유 줄을 구분하고, 원본 저장 줄이 닫는
+    // 상자를 같은 fit/paint 계획으로 전달한다. 자리차지 장식과 다른 표는
+    // 일반 컨트롤 경로에 남기며, 합성 줄의 기존 단축 조건은 유지한다.
+    let mut owned_table = None;
+    for (index, control) in para.controls.iter().enumerate() {
+        match control {
+            Control::Table(table) if table.common.treat_as_char && owned_table.is_none() => {
+                owned_table = Some((index, table));
+            }
+            Control::Table(table)
+                if !table.common.treat_as_char
+                    && !table.common.flow_with_text
+                    && table.caption.is_none()
+                    && !table_has_notes(table)
+                    && matches!(
+                        table.common.text_wrap,
+                        crate::model::shape::TextWrap::InFrontOfText
+                            | crate::model::shape::TextWrap::BehindText
+                    ) => {}
+            Control::Shape(shape)
+                if !shape.common().treat_as_char
+                    && matches!(
+                        shape.common().text_wrap,
+                        crate::model::shape::TextWrap::InFrontOfText
+                            | crate::model::shape::TextWrap::BehindText
+                    ) => {}
+            _ => return None,
+        }
+    }
+    let (control_index, table) = owned_table?;
     let [seg] = para.line_segs.as_slice() else {
         return None;
     };
     let computed = crate::renderer::para_has_no_stored_line_segs(para);
+    if computed && para.controls.len() != 1 {
+        return None;
+    }
     let source_vpos = para
         .source_line_seg_vertical_pos
         .as_ref()
@@ -197,7 +231,7 @@ pub(super) fn prepare_computed(
     }
     let measured = measured_tables
         .iter()
-        .find(|m| m.para_index == para_idx && m.control_index == 0)?;
+        .find(|m| m.para_index == para_idx && m.control_index == control_index)?;
     // 일반 표 포맷과 paint가 소비하는 저장 셀의 뒤 간격 보정을 먼저 적용한다.
     // 보정 전 측정값으로 줄 소유를 거절하면 표 뒤 흐름만 legacy 상한으로 되돌아간다.
     let fitted =
@@ -284,12 +318,13 @@ pub(super) fn prepare_computed(
         return None;
     }
     Some(StoredTacControlPlacement {
-        control_index: 0,
+        control_index,
         inline: InlineBoxPlacement {
             x: 0.0,
             y: origin,
             clearance: 0.0,
             advance_end: Some(end),
+            stored_horizontal_pen: None,
         },
         end,
         rebase_line_origin: !closed_stored_line,
@@ -381,8 +416,9 @@ pub(super) fn prepare(
             ) {
                 hwpunit_to_px(seg.line_spacing, dpi)
             } else {
-                crate::renderer::composer::tac_host_trailing_spacing(
+                crate::renderer::composer::tac_host_trailing_spacing_at_boundary(
                     para,
+                    next_para,
                     control_index,
                     seg,
                     page.profile.hwpx_stored_layout(),
@@ -536,6 +572,7 @@ impl StoredTacPlan {
                 y: self.origin + hwpunit_to_px(line.top, dpi),
                 clearance: 0.0,
                 advance_end: Some(end),
+                stored_horizontal_pen: None,
             },
             end,
             rebase_line_origin: false,

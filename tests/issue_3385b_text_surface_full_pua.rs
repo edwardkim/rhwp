@@ -14,13 +14,17 @@
 //!   2) 렌더는 건드리지 않는다 — `pua_to_text_surface` 는 추출 경로에서만 불린다
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// 머리말·꼬리말 가로선이 PUA 로 조판된 HWP 3.0 문서.
 const LINE_SAMPLE: &str = "samples/hwp3-sample11.hwp";
-/// 책괄호(《》)가 PUA 로 조판된 문서.
-const BRACKET_SAMPLE: &str = "samples/exam_kor.hwp";
+
 /// 중첩 표 안의 Wingdings 계열 글머리표가 반복되는 HWP 5.0 문서.
 const TRIANGLE_BULLET_SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.hwp";
 
@@ -60,6 +64,9 @@ fn export(kind: &str, rel: &str, dir: &Path) -> String {
     let mut all = String::new();
     for entry in std::fs::read_dir(dir).expect("출력 디렉터리") {
         let path = entry.expect("항목").path();
+        if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+            continue;
+        }
         if path.is_file() {
             all.push_str(&std::fs::read_to_string(&path).unwrap_or_default());
         }
@@ -91,25 +98,6 @@ fn heavy_horizontal_line_pua_is_readable_in_extracted_text() {
     assert!(
         text.contains('\u{2501}'),
         "굵은 가로선(━)으로 바뀐 흔적이 없다 — 매핑이 적용되지 않았을 수 있다"
-    );
-    let _ = std::fs::remove_dir_all(&dir);
-}
-
-/// 책괄호 PUA(U+F0854·F0855)도 《 》 로 나온다.
-#[test]
-fn book_bracket_pua_becomes_angle_brackets() {
-    let dir = out_dir("bracket");
-    let text = export("export-text", BRACKET_SAMPLE, &dir);
-    let leaked = pua_chars(&text);
-    assert!(
-        leaked.is_empty(),
-        "추출 텍스트에 PUA 가 남았다 ({}건): {:?}",
-        leaked.len(),
-        &leaked[..leaked.len().min(3)]
-    );
-    assert!(
-        text.contains('\u{300A}') && text.contains('\u{300B}'),
-        "책괄호 《 》 로 바뀌지 않았다"
     );
     let _ = std::fs::remove_dir_all(&dir);
 }

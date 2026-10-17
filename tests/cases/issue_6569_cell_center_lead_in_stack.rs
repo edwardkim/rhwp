@@ -10,7 +10,6 @@
 //!
 //! ```text
 //! 156678235 1쪽 제목 칸   ext 78.13 == content 78.13          → 스택이 품었다 → 빼면 안 됨
-//! #6630 exam_eng 머리 칸  ext 45.37 vs content 37.80 (차=lead) → 스택이 뺐다   → 빼야 함
 //! ```
 //!
 //! 한/글 2024 실측(제목 표): 표 상단 170.57pt, 제목 1행 글자 상단 188.25pt.
@@ -67,43 +66,5 @@ fn centered_cell_does_not_subtract_lead_the_stack_already_holds() {
     assert!(
         top_gap > bottom_gap * 1.1,
         "첫 문단 위 여백이 셀 정렬에서 두 번 빠졌다 — 상단 {top_gap:.2}, 하단 {bottom_gap:.2}"
-    );
-}
-
-/// `#6630` 의 반대 갈래는 그대로 유지된다 — 스택이 `lead` 를 안 품은 칸에서는 계속 뺀다.
-/// `exam_eng` 2쪽 바탕쪽 머리 표의 제목 그림이 그 계약이다.
-#[test]
-fn issue_6630_contract_still_holds_when_stack_excludes_lead() {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/exam_eng.hwp");
-    let Ok(bytes) = std::fs::read(&path) else {
-        return;
-    };
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse exam_eng");
-    let svg = doc.render_page_svg(1).expect("exam_eng 2쪽 SVG");
-
-    // 148.7px 폭 제목 그림의 y — 한/글 149.2(셀 상단 132.3 + 16.9). 종전 결함은 145.5.
-    let mut ys = Vec::new();
-    for open in ["<image ", "<svg "] {
-        for t in svg.split(open).skip(1) {
-            let t = &t[..t.find('>').expect("태그 닫힘")];
-            let num = |n: &str| -> Option<f64> {
-                t.split(&format!("{n}=\""))
-                    .nth(1)
-                    .and_then(|r| r.split('"').next())
-                    .and_then(|v| v.parse().ok())
-            };
-            if num("width").is_some_and(|w| (w - 148.7).abs() < 0.6) {
-                if let Some(y) = num("y") {
-                    ys.push(y);
-                }
-            }
-        }
-    }
-    let Some(y) = ys.into_iter().reduce(f64::min) else {
-        return;
-    };
-    assert!(
-        (y - 149.2).abs() < 2.0,
-        "#6630 계약(스택이 lead 를 안 품은 칸)이 깨졌다 — 제목 그림 y={y:.2} (한/글 149.2)"
     );
 }

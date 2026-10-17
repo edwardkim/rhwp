@@ -210,6 +210,27 @@ fn planned_font_lookup_does_not_descend_below_search_roots() {
             "원 face 파일: {face}"
         );
     }
+    // 앞 루트의 대체 face가 뒤 루트의 원 face를 가리지 않아야 한다.
+    let later = root.join("later");
+    std::fs::create_dir_all(&later).expect("뒤쪽 글꼴 공급 루트");
+    let original = later.join("HMKMM.TTF");
+    std::fs::write(&original, b"original face").expect("원 휴먼명조 후보");
+    let roots = [root.clone(), later];
+    for face in ["휴먼명조", "HumanMyeongJo"] {
+        let mut lookup = plan_svg_font_file_lookup(face, &roots, false);
+        lookup.search_dirs = roots.to_vec();
+        assert_eq!(find_font_file(&lookup), Some(original.clone()));
+    }
+    // 같은 원 face가 두 루트에 있으면 호출자가 먼저 지정한 루트를 사용한다.
+    let first_original = root.join("HMKMM.TTF");
+    std::fs::write(&first_original, b"caller face").expect("앞쪽 원 face 후보");
+    let mut lookup = plan_svg_font_file_lookup("휴먼명조", &roots, false);
+    lookup.search_dirs = roots.to_vec();
+    assert_eq!(find_font_file(&lookup), Some(first_original.clone()));
+    // 원 face가 없을 때만 기존 대체 face를 사용한다.
+    std::fs::remove_file(first_original).expect("앞쪽 원 face 제거");
+    std::fs::remove_file(original).expect("뒤쪽 원 face 제거");
+    assert_eq!(find_font_file(&lookup), Some(root.join("HANBatang.ttf")));
     std::fs::remove_dir_all(root).expect("remove temporary font directory");
 }
 
@@ -840,6 +861,19 @@ fn make_minimal_bmp_2x2() -> Vec<u8> {
     v
 }
 
+fn first_embedded_png(svg: &str) -> image::RgbaImage {
+    use base64::Engine as _;
+    let prefix = "data:image/png;base64,";
+    let start = svg.find(prefix).expect("실제 PNG payload") + prefix.len();
+    let end = start + svg[start..].find('"').expect("data URL 끝");
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(&svg[start..end])
+        .expect("PNG base64");
+    image::load_from_memory(&bytes)
+        .expect("PNG decode")
+        .to_rgba8()
+}
+
 /// 최소 2x2 RGB TIFF를 생성한다 (브라우저가 data URI를 직접 decode하지 못하는 회귀용).
 fn make_minimal_tiff_2x2() -> Vec<u8> {
     use image::{DynamicImage, ImageFormat, Rgb, RgbImage};
@@ -1071,13 +1105,18 @@ fn test_page_background_image_non_realpic_watermark_uses_legacy_opacity() {
         )),
         "non-RealPic PageBackground watermark should apply legacy watermark opacity: {output}"
     );
+    let png = first_embedded_png(output);
+    assert_eq!(png.dimensions(), (2, 2));
+    // 원본 빨강/파랑의 byte 회색조를 먼저 확정한 뒤 화면 B70/C-50을 적용한다.
+    // 독립 Print 대조로 정한 encoded RGB 계약이며 필터 ID 존재로 대신하지 않는다.
+    assert_eq!(png.get_pixel(0, 0).0, [235, 235, 235, 255]);
+    assert_eq!(png.get_pixel(0, 1).0, [212, 212, 212, 255]);
+    assert!(png
+        .pixels()
+        .all(|p| p[0] == p[1] && p[1] == p[2] && p[3] == 255));
     assert!(
-        output.contains("rhwp-img-grayscale"),
-        "non-RealPic PageBackground watermark should keep the image effect filter: {output}"
-    );
-    assert!(
-        output.contains("rhwp-img-bc-b70c-50"),
-        "non-RealPic PageBackground watermark should keep the display brightness/contrast filter: {output}"
+        !output.contains("rhwp-img-bc-"),
+        "bake한 색조를 다시 적용하지 않는다"
     );
 }
 
@@ -1099,13 +1138,14 @@ fn test_page_background_image_uses_display_brightness_contrast_order() {
     renderer.render_page_background_image(&image, &bbox);
 
     let output = renderer.output();
+    let png = first_embedded_png(output);
+    assert_eq!(png.dimensions(), (2, 2));
+    // 화면 B50/C-15: 빨강 원색의 비활성 채널은137이다. raw 순서로 조정하면 다르다.
+    assert_eq!(png.get_pixel(0, 0).0, [255, 137, 137, 255]);
+    assert_eq!(png.get_pixel(0, 1).0, [137, 137, 255, 255]);
     assert!(
-        output.contains("rhwp-img-bc-b50c-15"),
-        "쪽 배경은 raw ImageFill 순서가 아닌 화면 bright/contrast를 써야 한다: {output}"
-    );
-    assert!(
-        !output.contains("rhwp-img-bc-b-15c50"),
-        "raw 저장 순서를 화면 필터에 직접 넘기면 안 된다: {output}"
+        !output.contains("rhwp-img-bc-"),
+        "픽셀에 적용한 색조를 중복 적용하지 않는다"
     );
 }
 
@@ -1221,21 +1261,6 @@ fn test_brightness_contrast_filter_clamp_out_of_range() {
 }
 
 #[test]
-fn test_compute_image_crop_src_exam_kor_header() {
-    // [Task #477] HWP 표준 75 HU/px 룰 적용.
-    // exam_kor.hwp bin_id=27: image 픽셀 2320×354 (= 174000/75 × 26580/75 HU),
-    // crop=(0, 0, 102366, 26580) → 좌측 1364.88px × 354px (= "국어 영역")
-    let (sx, sy, sw, sh) =
-        compute_image_crop_src((0, 0, 102366, 26580), Some((174000, 26580)), 2320.0, 354.0);
-    assert!((sx - 0.0).abs() < 0.01);
-    assert!((sy - 0.0).abs() < 0.01);
-    // 102366 / 75 = 1364.88
-    assert!((sw - 1364.88).abs() < 0.01);
-    // imgDim 세로 범위가 디코딩 이미지 전체 높이에 대응한다.
-    assert!((sh - 354.0).abs() < 0.01);
-}
-
-#[test]
 fn test_compute_image_crop_src_no_crop_full_image() {
     // crop이 원본 전체를 가리키면 src도 이미지 전체와 일치
     let (sx, sy, sw, sh) =
@@ -1301,14 +1326,14 @@ fn test_compute_image_crop_src_issue2817_img_dim_scale() {
 
 #[test]
 fn test_compute_image_crop_src_fallback_when_original_size_missing() {
-    // original_size_hu(imgDim) 부재 시 적응 폴백(#3239): crop right/bottom
-    // (102366, 26580)이 전체 좌표 범위 = 디코딩 2320×354px 에 대응한다고 본다.
-    // pre-#2990 skia 경로(image_conv.rs)와 동일한 해석 — crop 이 전체 범위를
-    // 가리키는 그림(대부분의 무-crop 저장)은 단위와 무관하게 정확하다.
+    // 전체 기준 크기가 없는 crop 끝점은 원본 전체라는 증거가 아니다.
+    // HWPUNIT의 x/y 길이 단위는 동일하므로 source 창의 종횡비를 보존한다.
+    // 두 축에 서로 다른 배율을 적용해 잘린 영역을 전체로 늘리지 않는다.
     let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 102366, 26580), None, 2320.0, 354.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
-    assert!((sw - 2320.0).abs() < 0.01);
+    assert!(sw > 0.0 && sw < 2320.0);
+    assert!((sw / sh - 102366.0 / 26580.0).abs() < 1e-9);
     assert!((sh - 354.0).abs() < 0.01);
 }
 
@@ -1318,11 +1343,11 @@ fn test_compute_image_crop_src_issue3239_non_96dpi_scan_fallback() {
     // 200dpi 스캔(36 HU/px), 디코딩 1654×2340px, crop=(0,0,59520,84240),
     // raw_picture_extra 9바이트로 imgDim 부재.
     // 고정 75 룰이면 src=793.6×1123.2 로 과소 계산되어 좌상단만 2.08배
-    // 확대·절단 렌더된다. 적응 폴백은 전체 이미지를 그대로 돌려준다.
+    // 확대·절단 렌더된다. 독립 200dpi 원본의 단위는 두 축 모두 36 HU/px다.
     let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 59520, 84240), None, 1654.0, 2340.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
-    assert!((sw - 1654.0).abs() < 0.01);
+    assert!((sw - 59520.0 / 36.0).abs() < 0.01);
     assert!((sh - 2340.0).abs() < 0.01);
 }
 

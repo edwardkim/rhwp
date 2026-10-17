@@ -323,6 +323,7 @@ pub(crate) fn extract_shape_transform(
 
 pub(crate) fn drawing_to_shape_style(
     drawing: &crate::model::shape::DrawingObjAttr,
+    dpi: f64,
 ) -> (ShapeStyle, Option<Box<super::super::GradientFillInfo>>) {
     use super::super::GradientFillInfo;
     use crate::model::style::FillType;
@@ -420,6 +421,7 @@ pub(crate) fn drawing_to_shape_style(
         if s.pattern_type > 0 {
             Some(super::super::PatternFillInfo {
                 pattern_type: s.pattern_type,
+                tile_size: super::super::hwpunit_to_px(576, dpi),
                 pattern_color: s.pattern_color,
                 background_color: s.background_color,
             })

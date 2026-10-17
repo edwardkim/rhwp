@@ -1,9 +1,11 @@
 //! 상태의 불변 관측면. 쓰기 권한은 state 소유자에 한정한다.
 use crate::renderer::typeset::{
     ColumnType, DeferredSquarePictureControl, DeferredTableControl, EndnoteParaSource, EndnoteRef,
-    PageContent, PageItem, PageLayoutInfo, Paragraph, VisibleFloatExclusion,
+    FootnoteRef, PageContent, PageItem, PageLayoutInfo, Paragraph, VisibleFloatExclusion,
 };
 pub(in crate::renderer::typeset) struct StateView {
+    pub(in crate::renderer::typeset) deferred_table_successor_start: Option<usize>,
+    pub(super) pending_table_terminal_gap: Option<DeferredTableTerminalGap>,
     /// 완성된 페이지 목록
     pub(in crate::renderer::typeset) pages: Vec<PageContent>,
     /// 현재 단에 쌓이는 항목
@@ -11,6 +13,8 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 수용한 일반 전체/분할 본문의 (문단, 끝 줄)별 단 상대 점유 하단.
     pub(in crate::renderer::typeset) paragraph_fragment_content_bottoms:
         std::collections::HashMap<(usize, usize), f64>,
+    /// 축소된 본문 프레임에서 실제 빈 줄을 이어받은 저장 쪽 경계.
+    pub(in crate::renderer::typeset) saved_empty_run: Option<super::empty_run::SavedEmptyRun>,
     /// 현재 단에서 소비된 높이 (px)
     pub(in crate::renderer::typeset) current_height: f64,
     /// 현재 단 시작 시점의 논리 높이 (px)
@@ -69,6 +73,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 옮겨 밴드 바닥을 확장할 때만 사용한다.
     pub(in crate::renderer::typeset) square_band_top: Option<f64>,
     pub(in crate::renderer::typeset) current_footnote_height: f64,
+    /// 저장 각주 reset 뒤 조각과 그 뒤 번호는 다음 물리 쪽을 소유한다.
+    /// 현재 본문을 먼저 이월하지 않고 실제 쪽 전환 때 같은 순서로 예약한다.
+    pub(in crate::renderer::typeset) deferred_body_footnotes: Vec<(FootnoteRef, f64)>,
     /// 현재 큐 예약은 실제 배치와 같은 본문 하단 앵커를 사용한다.
     pub(in crate::renderer::typeset) current_footnote_body_bottom_reserved: bool,
     /// 현재 쪽은 그림 표시가 있는 앞쪽에서 이월된 HWPX 각주 본문을 소유한다.
@@ -127,10 +134,18 @@ pub(in crate::renderer::typeset) struct StateView {
     >,
     pub(in crate::renderer::typeset) inline_flow_plans:
         std::collections::HashMap<usize, crate::renderer::inline_flow::InlineFlowPlan>,
+    pub(in crate::renderer::typeset) stored_paragraph_flow_ends:
+        std::collections::HashMap<usize, f64>,
+    /// 쪽 상단의 첫 문단이 이미 예약한 저장 앞 간격.
+    pub(in crate::renderer::typeset) stored_column_top_spacings:
+        std::collections::HashMap<usize, crate::renderer::float_placement::StoredColumnTopSpacing>,
     pub(in crate::renderer::typeset) paragraph_float_placements: std::collections::HashMap<
         (usize, usize),
         crate::renderer::float_placement::ParagraphFloatPlacement,
     >,
+    /// [#7330] 현재 단에서 확정한 자리차지 표가 민 host 첫 글줄의 남은 앞 간격.
+    pub(in crate::renderer::typeset) float_pushed_line_spacings:
+        std::collections::HashMap<usize, f64>,
     /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
     pub(in crate::renderer::typeset) inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
@@ -143,6 +158,12 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 현재 호스트를 남기고 다음 쪽의 저장 상단 프레임만 이월한다.
     pub(in crate::renderer::typeset) deferred_next_page_stored_frames:
         Vec<crate::renderer::typeset::DeferredStoredFrameControl>,
+    /// 본문은 현재 단에 남고 개체 상자만 바로 다음 단으로 넘어간다.
+    pub(in crate::renderer::typeset) deferred_next_column_stored_frames:
+        Vec<crate::renderer::typeset::DeferredStoredFrameControl>,
+    /// Source paragraph -> first physical page after its deferred object.
+    pub(in crate::renderer::typeset) deferred_source_frame_body_pages:
+        std::collections::HashMap<usize, usize>,
     /// 저장 그림 상단 예약은 흐름에 반영하고 그림 항목은 단 확정 시 앞에 붙인다.
     pub(in crate::renderer::typeset) page_start_stored_frames:
         Vec<crate::renderer::typeset::DeferredStoredFrameControl>,
@@ -275,18 +296,20 @@ pub(in crate::renderer::typeset) struct StateView {
     ///
     /// overlay 표는 흐름 소비가 0 이라 앵커 쪽에서 다음 쪽 항목을 바로 push 할 수 없다
     /// (다음 쪽은 이후 문단이 흐름을 넘길 때 비로소 생긴다). 그래서 앵커 쪽에서
-    /// "몇 번째 행부터 잘렸는지"만 적어 두고, 단/쪽이 열릴 때 그 시작에 방출한다.
-    /// `(para_index, control_index, start_row, reserve_px)`.
+    /// 행과 셀 유닛의 내용 컷·잔여 점유를 적어 두고, 단/쪽이 열릴 때 방출한다.
+    /// 앵커 컷과 같은 소유 유닛을 `OverlayContinuation`으로 보존한다.
     ///
     /// [#5792] `reserve_px` 는 잔여 행이 새 쪽 흐름에서 예약해야 할 높이다 — 뒤따르는
     /// 흐름이 그 자리를 스스로 만드는 형상(#4514 필러 문단)에서는 0 이다.
-    pub(in crate::renderer::typeset) pending_overlay_continuations: Vec<(usize, usize, usize, f64)>,
+    pub(in crate::renderer::typeset) pending_overlay_continuations:
+        Vec<crate::renderer::pagination::OverlayContinuation>,
     /// [#4568] 현재 단에 이어 그릴 overlay 잔여 행 목록. `flush_column` 에서
     /// `ColumnContent::overlay_continuations` 로 옮긴다.
     pub(in crate::renderer::typeset) current_column_overlay_continuations:
         Vec<crate::renderer::pagination::OverlayContinuation>,
-    /// [#4568] 현재 단의 overlay 표 앵커 컷 — `(para, ctrl, end_row)`.
-    pub(in crate::renderer::typeset) current_column_overlay_cuts: Vec<(usize, usize, usize)>,
+    /// [#4568] 현재 단의 overlay 표 앵커 컷 — `(para, ctrl, cut)`.
+    pub(in crate::renderer::typeset) current_column_overlay_cuts:
+        Vec<(usize, usize, crate::renderer::pagination::OverlayCut)>,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     pub(in crate::renderer::typeset) current_column_wrap_around_paras:
@@ -330,4 +353,12 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [#6753] 직전 문단이 `#2279 ①` 트림으로 흐름에서 뺀 `spacing_before`(px).
     /// lazy 기준 역산이 그 트림분을 기준점에 싣지 않도록 `HeightCursor` 로 넘긴다.
     pub(in crate::renderer::typeset) vpos_prev_trimmed_sb_px: f64,
+}
+
+pub(super) struct DeferredTableTerminalGap {
+    pub(super) para_index: usize,
+    pub(super) control_index: usize,
+    pub(super) flow_end: f64,
+    pub(super) page_index: usize,
+    pub(super) column_index: u16,
 }

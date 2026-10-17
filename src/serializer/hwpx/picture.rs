@@ -109,6 +109,21 @@ pub fn write_picture<W: Write>(
     // [#1501] 그룹 자식 pic 의 transMatrix(render_tx/sx) 보존 — 종전 identity 고정 출력은
     // 그룹 내 자식을 원점·고유크기로 붕괴시켰다. shape.rs 의 raw_rendering 디코더 공유.
     super::shape::write_rendering_info(w, &pic.shape_attr)?;
+    // The outline belongs to the outer object frame, before its crop
+    // rectangle. Keep a stored style even when its width is zero.
+    // A missing/default NONE outline remains absent.
+    if pic.border_attr.attr != 0
+        || pic.border_color != 0
+        || pic.border_width != 0
+        || pic.border_attr.outline_style != 0
+    {
+        let border = crate::model::style::ShapeBorderLine {
+            color: pic.border_color,
+            width: pic.border_width,
+            ..pic.border_attr
+        };
+        super::shape::write_line_shape(w, &border)?;
+    }
     write_img_rect(w, pic)?;
     write_img_clip(w, pic)?;
     write_in_margin(w, pic)?;

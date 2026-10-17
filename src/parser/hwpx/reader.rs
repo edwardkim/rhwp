@@ -90,6 +90,7 @@ fn read_limited_accounted<R: Read>(
 /// HWPX ZIP 컨테이너 리더
 pub struct HwpxReader {
     archive: ZipArchive<Cursor<Vec<u8>>>,
+    file_names: Vec<String>,
     xml_read_remaining: usize,
 }
 
@@ -98,8 +99,15 @@ impl HwpxReader {
     pub fn open(data: &[u8]) -> Result<Self, HwpxError> {
         let cursor = Cursor::new(data.to_vec());
         let archive = ZipArchive::new(cursor)?;
+        // zip 9는 파일명 디코딩 오류를 반환한다. 공개 목록 API를 유지하면서
+        // 손상된 이름을 누락하거나 panic하지 않도록 열기 단계에서 모두 검증한다.
+        let file_names = archive
+            .file_names()
+            .map(|name| name.map(|name| name.into_owned()))
+            .collect::<Result<Vec<_>, _>>()?;
         Ok(HwpxReader {
             archive,
+            file_names,
             xml_read_remaining: MAX_TOTAL_XML_BYTES,
         })
     }
@@ -159,9 +167,10 @@ impl HwpxReader {
         max_bytes: usize,
         charge_xml: bool,
     ) -> Result<Vec<u8>, HwpxError> {
+        let index = self.file_index(path)?;
         let mut file = self
             .archive
-            .by_name(path)
+            .by_index(index)
             .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
         let entry_limit = max_bytes.min(if charge_xml {
             MAX_XML_SIZE
@@ -207,9 +216,10 @@ impl HwpxReader {
     /// [`Self::read_file_bytes_limited`]를 다시 거치므로, 손상된 size 메타데이터를
     /// 신뢰해 상한을 우회하지 않는다.
     pub fn file_size_limited(&mut self, path: &str, max_bytes: usize) -> Result<usize, HwpxError> {
+        let index = self.file_index(path)?;
         let file = self
             .archive
-            .by_name(path)
+            .by_index(index)
             .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
         let max_bytes = max_bytes.min(MAX_BINDATA_SIZE);
         let size = usize::try_from(file.size()).map_err(|_| {
@@ -227,9 +237,18 @@ impl HwpxReader {
         Ok(size)
     }
 
+    fn file_index(&self, path: &str) -> Result<usize, HwpxError> {
+        // zip 9의 이름 조회는 raw bytes를 비교한다. UTF-8 경로는 기존 빠른
+        // 조회를 쓰고, CP437 등 디코딩된 경로는 같은 디렉터리 순서의 인덱스로 읽는다.
+        self.archive
+            .index_for_name(path)
+            .or_else(|| self.file_names.iter().position(|name| name == path))
+            .ok_or_else(|| HwpxError::MissingFile(path.into()))
+    }
+
     /// 아카이브 내 파일 목록을 반환한다.
     pub fn file_names(&self) -> Vec<String> {
-        self.archive.file_names().map(|s| s.to_string()).collect()
+        self.file_names.clone()
     }
 }
 
@@ -241,6 +260,33 @@ mod tests {
     fn test_open_invalid_zip() {
         let result = HwpxReader::open(&[0u8; 100]);
         assert!(result.is_err());
+
+        // 정상 Unicode 및 CP437 파일명은 zip 9의 fallible 조회 뒤에도 보존한다.
+        use std::io::Write;
+        for original_name in ["한.xml", "cafe.xml"] {
+            let mut writer = zip::ZipWriter::new(Cursor::new(Vec::new()));
+            writer
+                .start_file(original_name, zip::write::SimpleFileOptions::default())
+                .unwrap();
+            writer.write_all(b"<root/>").unwrap();
+            let mut bytes = writer.finish().unwrap().into_inner();
+            let expected_name = if original_name == "cafe.xml" {
+                let central = bytes
+                    .windows(4)
+                    .position(|signature| signature == b"PK\x01\x02")
+                    .expect("ZIP 중앙 디렉터리");
+                // CP437의 0x82는 é다. 로컬·중앙 디렉터리 이름을 함께 바꾼다.
+                bytes[30 + 3] = 0x82;
+                bytes[central + 46 + 3] = 0x82;
+                "café.xml"
+            } else {
+                original_name
+            };
+            let mut reader = HwpxReader::open(&bytes).expect("정상 ZIP 이름");
+            assert_eq!(reader.file_names(), vec![expected_name]);
+            assert_eq!(reader.file_size_limited(expected_name, 7).unwrap(), 7);
+            assert_eq!(reader.read_file(expected_name).unwrap(), "<root/>");
+        }
     }
 
     /// [#1946] ODF 암호화 manifest 감지 + 비암호화 manifest 무시.

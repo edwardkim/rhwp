@@ -59,17 +59,20 @@ fn build(page_break: u8, lines: usize) -> DocumentCore {
     }
     doc.set_table_properties_native(0, LEAD, 0, &format!(r#"{{"pageBreak":{page_break}}}"#))
         .expect("«쪽 경계에서» 설정");
-    for i in (1..=lines).rev() {
-        doc.insert_text_in_cell_native(
-            0,
-            LEAD,
-            0,
-            0,
-            0,
-            0,
-            &format!("줄{i} 한글 본문 내용입니다 길게 씁니다.\r"),
-        )
-        .expect("첫 행 칸 텍스트");
+    // 두 행 각각은 한 쪽에 맞지만, 두 행 전체는 한 쪽에 맞지 않게 한다.
+    for cell in 0..2 {
+        for i in (1..=lines).rev() {
+            doc.insert_text_in_cell_native(
+                0,
+                LEAD,
+                0,
+                cell,
+                0,
+                0,
+                &format!("줄{i} 한글 본문 내용입니다 길게 씁니다."),
+            )
+            .expect("행 칸 텍스트");
+        }
     }
     doc
 }
@@ -112,6 +115,11 @@ fn cell_unit_keeps_the_row_whole_where_split_mode_cuts_it() {
         1,
         "«셀 단위로 나눔» 표는 행 0 을 행 **안**에서 자르면 안 된다 — 행이 원자 단위다. \
          행 0 이 놓인 쪽: {cell_unit:?}"
+    );
+    assert_eq!(
+        pages_of_row(&build(1, 100), 1).len(),
+        1,
+        "둘째 행도 한 쪽에 맞아야 한다"
     );
 
     let split_mode = pages_of_row(&build(2, 100), 0);

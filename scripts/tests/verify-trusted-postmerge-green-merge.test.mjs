@@ -35,7 +35,7 @@ async function preflight(name, options = {}) {
     created_at: "2026-09-10T10:00:00Z", run_started_at: "2026-09-10T10:00:00Z",
     status: "completed", conclusion: "success" }];
   const names = name === "ci.yml" ? ["Build & Test"]
-    : name === "codeql.yml" ? ["Analyze (javascript-typescript)", "Analyze (python)", "Analyze (rust)"]
+    : name === "codeql.yml" ? ["Analyze (javascript-typescript)", "Analyze (python)", "Analyze (rust)", "Analyze (actions)"]
     : name === "render-diff.yml" ? ["Canvas visual diff"] : [];
   const jobs = names.map((name, index) => ({ id: index + 100, name, status: "completed", conclusion: "success",
     started_at: "2026-09-10T10:01:00Z",
@@ -109,7 +109,7 @@ test("Render Diff merge candidate must match current base, not a prior base", as
 
 for (const [name, required] of Object.entries({
   "ci.yml": ["CI preflight", "Build & Test", "Lint (fmt, clippy, WASM check)"],
-  "codeql.yml": ["CodeQL preflight", "Analyze (javascript-typescript)", "Analyze (python)", "Analyze (rust)"],
+  "codeql.yml": ["CodeQL preflight", "Analyze (javascript-typescript)", "Analyze (python)", "Analyze (rust)", "Analyze (actions)"],
   "adapter-diff.yml": ["adapter inter-diff preflight", "adapter inter-diff"],
   "proptest-roundtrip.yml": ["Proptest preflight", "prop roundtrip"],
 })) {
@@ -127,4 +127,16 @@ for (const [name, required] of Object.entries({
 test("a source rename into mydocs is not review-only evidence", () => {
   assert.equal(classifyReviewOnlyCommit({ sha: head, parents: [{ sha: bridge }],
     files: [{ filename: "mydocs/a.md", previous_filename: "src/lib.rs", status: "renamed" }] }).kind, "code");
+});
+
+
+test('CodeQL full-lane reuse rejects legacy coverage and failed or skipped Actions', () => {
+  const legacy = ['CodeQL preflight', 'Analyze (javascript-typescript)', 'Analyze (python)', 'Analyze (rust)']
+    .map(name => ({ name, status: 'completed', conclusion: 'success' }));
+  assert.equal(fullLaneWorkflowJobsAreGreen('codeql.yml', legacy), false);
+  for (const conclusion of ['skipped', 'failure', 'neutral']) {
+    assert.equal(fullLaneWorkflowJobsAreGreen('codeql.yml', [...legacy,
+      { name: 'Analyze (actions)', status: 'completed', conclusion },
+    ]), false);
+  }
 });
