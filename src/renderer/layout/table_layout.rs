@@ -20458,6 +20458,27 @@ impl LayoutEngine {
         self.stored_plain_restart_cut(table, row, styles, true)
     }
 
+    /// 셀 저장 줄의 새 원점 재시작에서 자른 쪽 끝 행 상자: max(행 선언 높이, 그 컷까지의 내용 높이).
+    /// 한/글은 남은 쪽 공간을 채우지 않고 이 상자에서 표를 닫는다(1613000 126·127쪽 행 17·28 내용
+    /// 20.0·96.6px, 1480000 43쪽 행 118 선언 18.9px, myeonjeok 1쪽 행 29 선언 31.5px — 한/글 2020).
+    /// scan 이 예약하고 paint 가 끝 줄간격 접기 없이 그대로 그리는 공통 값이다.
+    pub(crate) fn stored_restart_end_row_box(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let declared = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span <= 1)
+            .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+            .fold(0.0f64, f64::max);
+        self.row_cut_content_height(table, row, &[], cut, styles)
+            .max(declared)
+    }
+
     /// A capacity-selected cut may separate distinct original text ranges at
     /// a local restart without proving that the restart forces a new page.
     /// The scanner still has to fit the fragment's actual physical height.

@@ -6712,6 +6712,22 @@ impl LayoutEngine {
                     }))
                 && !owns_accepted_row_frame
                 && !accepted_body_closed_frame
+                // 셀 저장 줄의 새 원점 재시작에서 자른 끝 행은 scan 이 공통 상자
+                // (`stored_restart_end_row_box`)를 예약했다. 같은 컷·같은 상자면 끝 줄간격 접기로
+                // 다시 줄이지 않는다(myeonjeok 1쪽 행 29).
+                && !(!is_block_split
+                    && end_row == fold_row + 1
+                    && end_row_height_override.is_some_and(|height| {
+                        self.row_plain_restart_capacity_cut(table, fold_row, styles)
+                            .is_some_and(|cut| {
+                                cut.as_slice() == end_cut
+                                    && (self.stored_restart_end_row_box(
+                                        table, fold_row, &cut, styles,
+                                    ) - height)
+                                        .abs()
+                                        < 0.01
+                            })
+                    }))
                 && !(end_row_height_override.is_some()
                     && !is_block_split
                     && self
@@ -7243,8 +7259,10 @@ impl LayoutEngine {
         }
         if render_bottom_caption {
             if let Some(ref caption) = table.caption {
-                let caption_y =
-                    table_y + partial_table_height + host_line_spacing + caption_spacing;
+                // 아래 캡션은 통째 표와 같이 표 아래 + 캡션 간격에 놓는다. 호스트 줄간격은 캡션
+                // 뒤 흐름 끝(`caption_total`)에만 속한다(1613000 128쪽 [표 12]: 한/글 2020 은 표
+                // 아래 349 → 캡션 줄 위 12px, 통째 표 120·121쪽과 같은 간격).
+                let caption_y = table_y + partial_table_height + caption_spacing;
                 self.layout_caption(
                     tree,
                     col_node,
