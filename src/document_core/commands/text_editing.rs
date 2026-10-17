@@ -1487,13 +1487,102 @@ impl DocumentCore {
         let apply_delete = |para: &mut Paragraph| {
             para.delete_text_at(char_offset, count);
         };
+        self.apply_body_text_edit(section_idx, para_idx, char_offset, &apply_delete)?;
+
+        self.event_log.push(DocumentEvent::TextDeleted {
+            section: section_idx,
+            para: para_idx,
+            offset: char_offset,
+            count,
+        });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"charOffset\":{}",
+            char_offset
+        )))
+    }
+
+    /// [#7866] 본문 문단의 글자 `char_offset..+length` 를 `text` 로 한 단계에 바꾼다.
+    /// 새 글자는 지운 글자의 글자 모양을 자리대로 잇는다
+    /// ([`Paragraph::replace_text_inheriting_char_shapes`]). 지우기·넣기와 같은 재조판 꼬리를
+    /// 한 번만 거치므로 넣은 글자가 앞 글자의 모양으로 조판됐다가 다시 바뀌는 일이 없다.
+    pub fn replace_text_inheriting_char_shapes_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        length: usize,
+        text: &str,
+    ) -> Result<String, HwpError> {
+        self.validate_body_paragraph_index(section_idx, para_idx)?;
+        let new_chars_count = text.chars().count();
+        let apply_replace = |para: &mut Paragraph| {
+            para.replace_text_inheriting_char_shapes(char_offset, length, text);
+        };
+        self.apply_body_text_edit(
+            section_idx,
+            para_idx,
+            char_offset + new_chars_count,
+            &apply_replace,
+        )?;
+
+        self.event_log.push(DocumentEvent::TextDeleted {
+            section: section_idx,
+            para: para_idx,
+            offset: char_offset,
+            count: length,
+        });
+        self.event_log.push(DocumentEvent::TextInserted {
+            section: section_idx,
+            para: para_idx,
+            offset: char_offset,
+            len: new_chars_count,
+        });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"charOffset\":{}",
+            char_offset + new_chars_count
+        )))
+    }
+
+    fn validate_body_paragraph_index(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<(), HwpError> {
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과 (총 {}개)",
+                section_idx,
+                self.document.sections.len()
+            )));
+        }
+        let section = &self.document.sections[section_idx];
+        if para_idx >= section.paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 인덱스 {} 범위 초과 (총 {}개)",
+                para_idx,
+                section.paragraphs.len()
+            )));
+        }
+        Ok(())
+    }
+
+    /// 본문 문단 글자 편집의 공통 꼬리. 그림 밴드를 거치는 편집이 아니면 raw 스트림을
+    /// 무효화하고 문단에 `apply` 를 적용한 뒤 재조판 → vpos 재계산 → 재구성 → 재페이지네이션을
+    /// 다단 재배치가 수렴할 때까지(최대 3회) 반복한다. 끝으로 `caret_char_offset` 에 캐럿을 둔다.
+    fn apply_body_text_edit(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        caret_char_offset: usize,
+        apply: &dyn Fn(&mut Paragraph),
+    ) -> Result<(), HwpError> {
         let picture_band_applied =
-            self.apply_body_edit_through_picture_band(section_idx, para_idx, &apply_delete)?;
+            self.apply_body_edit_through_picture_band(section_idx, para_idx, apply)?;
 
         if !picture_band_applied {
             // 편집 시 raw 스트림 무효화 (재직렬화 유도)
             self.document.sections[section_idx].raw_stream = None;
-            apply_delete(&mut self.document.sections[section_idx].paragraphs[para_idx]);
+            apply(&mut self.document.sections[section_idx].paragraphs[para_idx]);
 
             // line_segs 재계산 (리플로우) → 재구성 → 재페이지네이션
             // 다단 수렴 루프 (최대 3회)
@@ -1553,8 +1642,8 @@ impl DocumentCore {
 
         // 캐럿 위치 갱신 (DocProperties)
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let caret_utf16_pos = if char_offset < para.char_offsets.len() {
-            para.char_offsets[char_offset]
+        let caret_utf16_pos = if caret_char_offset < para.char_offsets.len() {
+            para.char_offsets[caret_char_offset]
         } else if !para.char_offsets.is_empty() {
             let last = para.char_offsets.len() - 1;
             let last_char = para.text.chars().nth(last);
@@ -1566,17 +1655,7 @@ impl DocumentCore {
             (para.controls.len() as u32) * 8
         };
         self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16_pos);
-
-        self.event_log.push(DocumentEvent::TextDeleted {
-            section: section_idx,
-            para: para_idx,
-            offset: char_offset,
-            count,
-        });
-        Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
-        )))
+        Ok(())
     }
 
     /// 지정된 문단의 line_segs를 컬럼 너비 기반으로 재계산한다.
