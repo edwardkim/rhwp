@@ -889,3 +889,20 @@ PNG를 다시 판독한 뒤 판정한다. 기존 미달/하락 gate와 전체11�
 block/offset block의 분할 정책과 별도 tiny-fragment 조건은 변경하지 않는다. 과거 후보13은
 세 경로를 함께 바꿔417쪽을 만들었으므로 이번에는 ordinary 실제 물리 예산의 소비만 바꿔
 415쪽·영향 쪽과 정상 대조군을 먼저 확인한다. 아직 통과·회귀 추가 완료로 판정하지 않는다.
+
+### Native의 실제 설치 글꼴 선택 확인
+
+같은 후보31 rlib로 Native Skia renderer snapshot을 관측했다. WASM의 unsupported
+Native 항목을 실제 선택 증거로 쓰지 않는다.156465345 전9쪽의 첫 쪽902자 중
+한양중고딕474자는 Noto Sans KR/CJK로 떨어졌고,굴림68자도 Noto로 그렸다.
+`candidate31-156465345-native-font-decision-trace.json`이 실제 요청·후보·선택을 기록한다.
+fontconfig에는 원본 H2GTRM.TTF의 HYGothic-Medium/HY중고딕 family가 설치되어 있다.
+현재 `native_font_family_for_style`는 fixed_glyph_advances일 때만 기존 공통 설치 별칭을
+넣고, 일반 텍스트의 `text_family_candidates`는 그 별칭을 생략한다. 따라서 해결 불가능한
+글꼴 예외로 선언할 근거가 없으며 실제 공급 경로를 먼저 고친다.
+
+Native의 paint/진단이 함께 쓰는 text family 후보 생성에서 기존
+`installed_render_font_aliases`를 재사용한다. 요청 face와 weight base를 먼저 찾고,
+그 다음 이미 정의된 설치 별칭을 넣은 뒤 generic fallback을 적용한다. 폰트 프로그램의
+복사·변경·가족명 위장은 하지 않는다. 새 별칭/기대값은 추가하지 않는다. 글꼴 identity
+진단과 실제156465345 PNG·전쪽 TSV를 별도로 재실행하며 개선 여부는 아직 미검증이다.
