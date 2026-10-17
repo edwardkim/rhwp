@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import re
 import shlex
 import subprocess
@@ -65,11 +66,39 @@ def validate(profile: str, returncode: int, commands: dict) -> None:
         raise RuntimeError("Release validation requires an observed wasm-opt invocation")
 
 
+def build_configuration(profile: str, mode: str) -> dict:
+    if mode == "auto":
+        mode = "cdylib" if profile == "release" else "standard"
+    if mode == "cdylib" and profile != "release":
+        raise ValueError("cdylib-only requires the release profile")
+    return {
+        "profile": profile,
+        "build_mode": mode,
+        "cdylib_only": "1" if mode == "cdylib" else "0",
+        "crate_types": "cdylib" if mode == "cdylib" else "rlib+cdylib",
+        "lto_policy": "override-false" if mode == "cdylib" else "manifest",
+        "cache_variant": f"{profile}-" + (
+            "cdylib-lto-false" if mode == "cdylib" else "rlib-cdylib-lto-manifest"
+        ),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--profile", choices=("dev", "release"), default="release")
+    parser.add_argument("--build-mode", choices=("auto", "standard", "cdylib"), default="auto")
+    parser.add_argument("--describe-build", action="store_true",
+                        help="Emit resolved configuration for GitHub step outputs; do not build")
     parser.add_argument("--output", type=Path, default=ROOT / "output/render-diff-build")
     args = parser.parse_args()
+    try:
+        configuration = build_configuration(args.profile, args.build_mode)
+    except ValueError as error:
+        parser.error(str(error))
+    if args.describe_build:
+        for key, value in configuration.items():
+            print(f"{key}={value}")
+        return 0
     args.output.mkdir(parents=True, exist_ok=True)
     manifest_path = args.output / "build.json"
     # A failed rerun must never expose the previous successful manifest.
@@ -79,12 +108,21 @@ def main() -> int:
         "source_sha": capture("git", "rev-parse", "HEAD"),
         "source_dirty": bool(capture("git", "status", "--porcelain", "--untracked-files=no")),
         "profile": args.profile,
+        "build_configuration": configuration,
         "command": command,
         "rustc": capture("rustc", "--version"),
         "wasm_pack": capture("wasm-pack", "--version"),
         "cargo_cache_hit": os.environ.get("RHWP_CARGO_CACHE_HIT", "unknown"),
         "cargo_cache_matched_key": os.environ.get("RHWP_CARGO_CACHE_MATCHED_KEY", "unknown"),
         "cargo_lock_sha256": digest(ROOT / "Cargo.lock"),
+        "cargo_manifest_sha256": digest(ROOT / "Cargo.toml"),
+        "wrapper_sha256": digest(ROOT / "scripts/wasm-pack-locked.sh"),
+        "runner": {"platform": platform.platform(), "logical_cpus": os.cpu_count(),
+                   "image": os.environ.get("ImageOS"), "image_version": os.environ.get("ImageVersion"),
+                   "cpu_model": next((line.split(":", 1)[1].strip() for line in
+                                      Path("/proc/cpuinfo").read_text().splitlines()
+                                      if line.startswith("model name")), "unknown")
+                   if Path("/proc/cpuinfo").exists() else platform.processor()},
         "cargo_target_dir": os.environ.get("CARGO_TARGET_DIR", "target"),
         "cargo_build_jobs": os.environ.get("CARGO_BUILD_JOBS", "default"),
         "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
@@ -96,7 +134,8 @@ def main() -> int:
         with (args.output / "build.log").open("w") as log:
             child = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT, text=True,
-                                     env={**os.environ, "RUST_LOG": "wasm_pack::child=info"})
+                                     env={**os.environ, "RUST_LOG": "wasm_pack::child=info",
+                                          "RHWP_WASM_CDYLIB_ONLY": configuration["cdylib_only"]})
             for line in child.stdout:
                 elapsed = time.monotonic() - started
                 log.write(f"{elapsed:.6f} {line}")
@@ -126,7 +165,7 @@ def main() -> int:
     rows = "\n".join(f"| {name} | {value if value is not None else 'unobserved'} |"
                      for name, value in result.get("phase_seconds_approx", {}).items())
     (args.output / "summary.md").write_text(
-        f"### Render Diff WASM build ({args.profile})\n\n"
+        f"### Render Diff WASM build ({configuration['cache_variant']})\n\n"
         f"Source: `{result['source_sha']}`; success: `{result['success']}`; "
         f"Cargo cache hit: `{result['cargo_cache_hit']}`.\n\n"
         f"Total: {result.get('wall_seconds', 'unobserved')} s. "

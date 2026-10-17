@@ -48,6 +48,15 @@ on:
         options:
           - release
           - dev
+      wasm-build-mode:
+        description: 'Manual comparison: auto uses cdylib for release and standard for dev'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - standard
+          - cdylib
       fixtures:
         description: 'Comma-separated sample files under rhwp-studio/public/samples'
         required: false
@@ -760,6 +769,14 @@ jobs:
       # [Task #1667] Render Diff is PR-heavy; pull_request caches are scoped to
       # refs/pull/* and are not reused by other PRs. Keep PR runs restore-only,
       # and allow only trusted manual devel/main seed runs to save a cache.
+      - name: Resolve WASM build configuration
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
+        id: wasm_configuration
+        env:
+          RHWP_WASM_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-profile'] || 'release' }}
+          RHWP_WASM_BUILD_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-build-mode'] || 'cdylib' }}
+        run: python3 scripts/measure_render_diff_wasm.py --profile "$RHWP_WASM_PROFILE" --build-mode "$RHWP_WASM_BUILD_MODE" --describe-build >> "$GITHUB_OUTPUT"
+
       - name: Restore cargo registry & build cache
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         id: render_diff_cargo_cache_restore
@@ -769,17 +786,18 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.toml', '**/Cargo.lock', '.cargo/config*', 'scripts/wasm-pack-locked.sh') }}
           restore-keys: |
-            ${{ runner.os }}-render-diff-cargo-
+            ${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-
 
       - name: Build WASM package
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         env:
-          RHWP_WASM_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-profile'] || 'release' }}
+          RHWP_WASM_PROFILE: ${{ steps.wasm_configuration.outputs.profile }}
+          RHWP_WASM_BUILD_MODE: ${{ steps.wasm_configuration.outputs.build_mode }}
           RHWP_CARGO_CACHE_HIT: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-hit || 'false' }}
           RHWP_CARGO_CACHE_MATCHED_KEY: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-matched-key }}
-        run: python3 scripts/measure_render_diff_wasm.py --profile "$RHWP_WASM_PROFILE"
+        run: python3 scripts/measure_render_diff_wasm.py --profile "$RHWP_WASM_PROFILE" --build-mode "$RHWP_WASM_BUILD_MODE"
 
       - name: Build native CLI for PDF report
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
@@ -793,7 +811,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-primary-key }}
 
       - name: Setup Node.js
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}

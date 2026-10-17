@@ -364,7 +364,7 @@ TypeScript와 CSS는 Vite가 다시 읽지만 Rust 변경은 위 빌드가 끝�
 | --- | --- | --- |
 | 로컬 반복 확인 | 기존 locked wrapper의 `--no-opt` 또는 `--dev` | 빠른 진단. 배포 최적화 검증과 구분 |
 | Frontend package gate | `wasm-pack build --target web --dev` | 타입·unit·package 계약 |
-| PR Render Diff | `python3 scripts/measure_render_diff_wasm.py --profile release` | locked wrapper의 release + wasm-opt 산출물로 Canvas/PDF 및 readiness 검사 |
+| PR Render Diff | `python3 scripts/measure_render_diff_wasm.py --profile release --build-mode cdylib` | locked wrapper의 release + cdylib-only + wasm-opt 산출물로 Canvas/PDF 및 readiness 검사 |
 | Full Renderer Sweep / npm / Pages | 기존 `wasm-pack build --target web --release` | 전체 sweep / 배포 |
 
 Render Diff는 `output/render-diff-build/build.json`에 source SHA·프로필·도구 명령/버전/해시·
@@ -377,8 +377,16 @@ Render Diff는 `output/render-diff-build/build.json`에 source SHA·프로필·�
 manifest가 없는 일반 로컬 E2E는 기존 동작을 유지한다. 단순히 같은 URL을 다시 fetch한 결과를
 사용하지 않는다. 큰 dev WASM을 관측할 수 있도록 CDP 응답 버퍼를 산출물 크기에 맞춘다.
 
-비용 비교는 수동 Render Diff의 `wasm-profile=dev|release`로 **동일 ref SHA**에서 실행한다.
-기본값과 PR 실행은 항상 release이며 dev 선택은 수동 비교에만 적용된다. 같은 runner 이미지·
+비용 비교는 수동 Render Diff의 `wasm-profile=dev|release`와
+`wasm-build-mode=auto|standard|cdylib`로 **동일 ref SHA**에서 실행한다.
+`auto`는 release에서 cdylib-only, dev에서 기존 rlib+cdylib를 선택한다. release의
+`standard`는 기존 rlib+cdylib 비교군이며 dev+cdylib는 거부한다.
+PR 실행은 항상 release+cdylib이다. cdylib 경로는 #7488의 명령 단위
+`profile.release.lto=false`를 사용하므로 배포 명령·LTO 설정 자체와 동일하다고 표현하지 않는다.
+manifest에는 실제 선택한 crate type·LTO 정책, wrapper/manifest hash와 runner CPU·이미지를 함께 남긴다.
+Cargo cache의 exact key와 fallback prefix 모두 profile·crate type·LTO 정책별로 분리하며,
+저장은 기존처럼 신뢰하는 main/devel 수동 실행에서만 허용한다. 이전 무구분 cache는 복원하지 않는다.
+같은 runner 이미지·
 Rust/도구·Chromium·fixture·폰트·캐시 상태를 확인하고 각 조건의 반복 수와 범위를 공개한다.
 cache-hit=false는 부분 복원일 수도 있으므로 matched key/restore 로그를 함께 읽는다.
 전체 job과 시각 검사 시간은 Actions attempt별 jobs API에서 얻고, 기존 다른 소스의 실행이나

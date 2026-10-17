@@ -116,6 +116,33 @@ class WasmBuildMeasurementTests(unittest.TestCase):
         cls.measurement = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.measurement)
 
+    def test_build_modes_resolve_to_distinct_cache_and_lto_policies(self):
+        dev = self.measurement.build_configuration("dev", "auto")
+        standard = self.measurement.build_configuration("release", "standard")
+        cdylib = self.measurement.build_configuration("release", "auto")
+        self.assertEqual(dev["cdylib_only"], "0")
+        self.assertEqual(standard["crate_types"], "rlib+cdylib")
+        self.assertEqual(standard["lto_policy"], "manifest")
+        self.assertEqual(cdylib["cdylib_only"], "1")
+        self.assertEqual(cdylib["crate_types"], "cdylib")
+        self.assertEqual(cdylib["lto_policy"], "override-false")
+        self.assertEqual(cdylib, self.measurement.build_configuration("release", "cdylib"))
+        self.assertEqual(len({item["cache_variant"] for item in (dev, standard, cdylib)}), 3)
+        with self.assertRaisesRegex(ValueError, "release"):
+            self.measurement.build_configuration("dev", "cdylib")
+
+    def test_cache_restore_cannot_cross_build_modes_and_save_reuses_primary_key(self):
+        workflow = WORKFLOW_PATH.read_text()
+        restore = workflow.split("      - name: Restore cargo registry & build cache\n")[1].split(
+            "      - name: Build WASM package\n")[0]
+        prefix = "${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-"
+        self.assertIn(f"key: {prefix}", restore)
+        self.assertIn(f"restore-keys: |\n            {prefix}\n", restore)
+        self.assertNotIn("${{ runner.os }}-render-diff-cargo-\n", restore)
+        self.assertIn("key: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-primary-key }}", workflow)
+        self.assertIn("github.event_name == 'workflow_dispatch' && inputs['wasm-build-mode'] || 'cdylib'", workflow)
+        self.assertIn("github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main'", workflow)
+
     def test_release_rejects_missing_optimization_and_failed_build(self):
         with self.assertRaisesRegex(RuntimeError, "wasm-opt"):
             self.measurement.validate("release", 0, {})
