@@ -3,6 +3,68 @@ use crate::renderer::typeset::{
     stored_ladder_encodes_spacing_before, ComposedParagraph, HeightCursor, Paragraph,
     ResolvedStyleSet, TypesetEngine, TypesetState,
 };
+
+/// 저장된 TAC 캐리어의 마지막 줄과 다음 문단이 같은 흐름 끝을 증언하는가.
+/// 공백 줄도 저장 줄 상자를 소유한다. 표가 놓인 앞줄과 뒤 빈 줄 사이의
+/// 개체 회피 공간을 문단의 단순 줄 높이 합으로 다시 소비하면 안 된다.
+fn stored_tac_carrier_has_successor_boundary(
+    previous: &Paragraph,
+    next: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    use crate::model::{control::Control, paragraph::LineSeg};
+    if !previous.text.trim().is_empty()
+        || previous.controls.is_empty()
+        || !previous
+            .controls
+            .iter()
+            .all(|control| matches!(control, Control::Table(table) if table.common.treat_as_char))
+        || !next.controls.is_empty()
+        || previous.line_segs.windows(2).any(|pair| {
+            pair[0]
+                .vertical_pos
+                .checked_add(pair[0].line_height)
+                .is_none_or(|bottom| bottom > pair[1].vertical_pos)
+        })
+        || [previous, next].iter().any(|para| {
+            para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+                || para.line_segs.is_empty()
+                || para.line_segs.iter().any(|line| {
+                    line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                        || line.vertical_pos < 0
+                        || line.line_height <= 0
+                        || line.line_spacing < 0
+                })
+        })
+    {
+        return false;
+    }
+    let Some((last, first)) = previous.line_segs.last().zip(next.line_segs.first()) else {
+        return false;
+    };
+    let Some((before, after)) = styles
+        .para_styles
+        .get(next.para_shape_id as usize)
+        .zip(styles.para_styles.get(previous.para_shape_id as usize))
+        .map(|(next_style, previous_style)| {
+            (next_style.spacing_before, previous_style.spacing_after)
+        })
+    else {
+        return false;
+    };
+    if !before.is_finite() || before < 0.0 || !after.is_finite() || after < 0.0 {
+        return false;
+    }
+    last.vertical_pos
+        .checked_add(last.line_height)
+        .and_then(|end| end.checked_add(last.line_spacing))
+        .and_then(|end| end.checked_add(crate::renderer::px_to_hwpunit(after, dpi)))
+        .and_then(|end| end.checked_add(crate::renderer::px_to_hwpunit(before, dpi)))
+        == Some(first.vertical_pos)
+}
+
 impl TypesetEngine {
     /// 렌더러 `build_single_column` 의 inter-item VPOS_CORR(Stage C `HeightCursor::vpos_adjust`)
     /// 를 페이지네이터에서도 적용해, 단락마다 `+= total_height` 로 누적된 sb·trailing_ls
@@ -280,6 +342,37 @@ impl TypesetEngine {
                 hc.vpos_lazy_base,
                 st.vpos_col_anchor,
             );
+        }
+        // 페이지 배분에서 확정한 다음 저장 시작은 앞 캐리어가 끝나는 같은 경계다.
+        // paint가 TAC를 저장 위치에 그린 뒤 현재 커서에 높이를 다시 더하지
+        // 않도록, 이미 계산한 단 상대 끝을 기존 공통 endpoint 채널로 전달한다.
+        // 성장한 개체가 저장 끝을 넘었거나 새 쪽으로 넘어갈 경계는 수용하지 않는다.
+        if !st.profile.session_edited()
+            && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+            && !st.vpos_ladder_dirty
+            && !hc.uniform_filler_ladder
+            && y > st.current_height + crate::renderer::hwpunit_to_px(1, self.dpi)
+            && y <= st.available_height()
+        {
+            let previous_index = st.current_items.last().and_then(|item| match item {
+                crate::renderer::typeset::PageItem::FullParagraph { para_index } => {
+                    Some(*para_index)
+                }
+                _ => None,
+            });
+            if let Some(previous_index) = previous_index.filter(|&previous| {
+                previous.checked_add(1) == Some(para_idx)
+                    && paragraphs
+                        .get(previous)
+                        .zip(paragraphs.get(para_idx))
+                        .is_some_and(|(previous, next)| {
+                            stored_tac_carrier_has_successor_boundary(
+                                previous, next, styles, self.dpi,
+                            )
+                        })
+            }) {
+                st.record_stored_paragraph_flow_end(previous_index, y);
+            }
         }
         // 재조판 뒤 저장 줄의 원점 연결과 지연 기준 산출을 모두 회수한다.
         st.record_vpos_page_origin(hc.vpos_page_base);

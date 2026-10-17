@@ -73,3 +73,16 @@
 | #7934 / 80168 p17 | `table_merged_grid_column_boundaries/80168_p017_overlay_after.png`, source a60c275e8 | 아래쪽 행 높이와 가로 경계 어긋남. 열 경계 외에 중첩 표/텍스트 점유·바깥 행 높이까지 확인한다. |
 
 해당 페이지의 기존 점수가 높아도 지적 영역은 완료로 판정하지 않는다. 통합 후 실제 Native/fresh WASM의 같은 페이지·확대 영역을 다시 출력하고 원인 보정 전후를 비교한다.
+
+## 누적 적용 완료와 1차 메인터너 보정 후보
+
+- 11개 PR / 47개 원 커밋을 모두 `-x` 체리픽했다. 적용 완료 head: `3a8f25685830e214ee49b11cfd5a38b64af4dfa8`. 원 PR head는 적용 직전 GitHub에서 재확인했고 모두 고정 intake SHA와 같았다.
+- 충돌 1건: #7956 `a8359e632e6f938672c3af88d5dee865e5fe8216` → `d8eef6185`. 최신 devel의 `paragraph_line_indent_for_source`와 `frame_owns_inline_table` 우선순위를 유지하고, 저장 column_start가 자기 문단 여백일 때만 추가 들여쓰기를 적용했다.
+- 기준 Native 빌드 완료: `8766fb47d8ec11547f0d2ae941c53cc3c9780ab2`, 실행 파일 SHA-256 `deadff7c0273b7f3b9a8a3716dfc48cb93b190c11697aaa3face9e78f3b6f848`. 기준 fresh WASM과 후보 검증은 아직 진행 중이다.
+- 기존 1342000 PDF 2종의 p202 raster SHA가 같음을 확인했다. 실제 current-source Print는 원문 대응이 기록된 415쪽 자료(SHA-256 `82fe8eefecbf3ad5176549976a8cd486ac0bb9c113e7ac34510a69ee6ccbf17f`)를 재사용한다. 새 MCP 변환을 하지 않았다.
+
+### 야간방호일지의 측정 → 배치 경로
+
+독립 PDF의 붙임 글줄 원점은 저장 vpos 71077HU와 같은 쪽 원점에서 약 1023.3px이다. 기준 Native는 1052.0px에 놓인다. `typeset/section/vpos.rs`의 다음 문단(pi5) 진입은 246.29 → 926.36px의 저장 스냅을 수용하지만, paint는 앞 TAC 캐리어(pi4)의 저장 위치에 표를 그린 뒤 현재 흐름 978.17px에 다시 52.47px을 더해 1030.64px로 진행한다. 그 뒤 빈 줄·본문이 같은 차이만큼 내려간다.
+
+1차 후보는 순서대로 `vpos_snap_current_height`의 확정 경계 → `record_stored_paragraph_flow_end` → `ColumnContent.stored_paragraph_flow_ends` → `layout.rs`의 마지막 문단 항목 완료 분기로 동일한 끝을 전달한다. 새 좌표 상수나 clamp를 추가하지 않는다. 원본 저장 줄의 연결·완전한 앞 문단 소유·공백 TAC 캐리어·가용 쪽 예산을 확인하며, 편집/합성/되감김·소유가 다른 부분 문단은 비적용이다. 여러 TAC가 있어도 같은 줄이라고 추정하지 않는다. 이 후보의 빌드·실행·Native/fresh WASM 확대 판독과 반례는 아직 **미검증**이다. 다른 두 지적 페이지도 완료로 판정하지 않았다.
