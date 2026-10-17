@@ -2499,18 +2499,32 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
         rgba.pixels().map(|p| p.0).collect::<Vec<_>>(),
         [[0, 0, 0, 0], [255, 0, 0, 255]]
     );
-    for (extra, mask_object) in [
-        ("/SMask 7 0 R", b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /DCTDecode /Length 1 >>\nstream\n\x80\nendstream".to_vec()),
-    ] {
-        let entries = format!("/Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB {extra}");
+    {
+        let (extra, mask_object) = ("/SMask 7 0 R", b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /DCTDecode /Length 1 >>\nstream\n\x80\nendstream".to_vec());
+        let entries =
+            format!("/Width 1 /Height 1 /BitsPerComponent 8 /ColorSpace /DeviceRGB {extra}");
         let source = indexed_image_pdf(&[0, 0, 0], &entries, &mask_object);
-        let doc = PdfDocument::from_bytes_with_limits(source.clone(), PdfImportLimits::default()).unwrap();
-        assert!(matches!(doc.page_image_handles(0).unwrap()[0].decode(), Err(Error::Unsupported(_))), "{extra}");
-        let err = parse_pdf_with_options(&source, &PdfImportOptions::default()).err().expect("mask cannot be silently discarded");
+        let doc = PdfDocument::from_bytes_with_limits(source.clone(), PdfImportLimits::default())
+            .unwrap();
+        assert!(
+            matches!(
+                doc.page_image_handles(0).unwrap()[0].decode(),
+                Err(Error::Unsupported(_))
+            ),
+            "{extra}"
+        );
+        let err = parse_pdf_with_options(&source, &PdfImportOptions::default())
+            .err()
+            .expect("mask cannot be silently discarded");
         assert_eq!(err.code, "PDF_IMAGE_UNSUPPORTED");
         // Legacy image extraction still serves callers that apply masks
         // themselves; this restriction belongs to bounded handle import.
-        assert!(PdfDocument::from_bytes(source).unwrap().page_image_handles(0).unwrap()[0].decode().is_ok());
+        assert!(PdfDocument::from_bytes(source)
+            .unwrap()
+            .page_image_handles(0)
+            .unwrap()[0]
+            .decode()
+            .is_ok());
     }
     // Explicit 1-bit masks are now applied, rather than blanket-rejected.
     // PDF Reference 1.7 4.8.5: 0 paints under Decode [0 1], and [1 0]
