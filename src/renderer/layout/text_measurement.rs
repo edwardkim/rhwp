@@ -1066,8 +1066,15 @@ enum KoPubFamily {
 }
 
 impl KoPubFamily {
+    /// `KoPubWorld돋움체`/`KoPubWorld바탕체` 는 같은 KOPUS 계열의 개정판으로, 글리프
+    /// 전진폭이 KoPub 과 같다. 정본 `pdf/hwpx/hancom-hwp/[2027] 온새미로 1 본교재-hwp-2020.pdf`
+    /// 에 내장된 `KoPubWorldBatangLight`·`KoPubWorldDotumLight` 서브셋의 CIDFont `/W`
+    /// 를 직독하면 한글 936 · 872, 문장부호 312 · 290, 숫자 573 · 563 등 아래 KoPub
+    /// 표와 같은 값만 나온다. 이 이름을 KoPub 으로 읽지 못하면 일반 메트릭 폴백으로
+    /// 한글을 0.953em·공백을 0.457em 으로 재서(정본 0.936·0.5), 그 문서 pi=143 처럼
+    /// 한/글이 한 줄에 담는 줄을 둘로 끊는다.
     fn from_primary(primary_name: &str) -> Option<Self> {
-        let lower = primary_name.to_lowercase();
+        let lower = primary_name.to_lowercase().replace(' ', "");
         // World 배포본은 이름을 달리하지만 독립 Print의 cmap/hmtx와 설치
         // 프로그램의 윤곽·전진이 같다. 바탕 한글은 반올림한0.94 대신936/1000이다.
         if primary_name.contains("KoPubWorld바탕체")
@@ -1080,9 +1087,13 @@ impl KoPubFamily {
             || lower.contains("kopubworlddotum")
         {
             Some(Self::WorldDotum)
-        } else if primary_name.contains("KoPub돋움체") || lower.contains("kopub dotum") {
+        } else if primary_name.contains("KoPub돋움체") || lower.contains("kopubdotum") {
             Some(Self::Dotum)
-        } else if primary_name.contains("KoPub바탕체") || lower.contains("kopub batang") {
+        } else if primary_name.contains("KoPub바탕체")
+            || primary_name.contains("KoPubWorld바탕체")
+            || lower.contains("kopubbatang")
+            || lower.contains("kopubworldbatang")
+        {
             Some(Self::Batang)
         } else {
             None
@@ -1189,12 +1200,16 @@ fn kopub_char_advance_em(primary_name: &str, bold: bool, c: char) -> Option<f64>
         // **치환해** 그린 것 — 치환 글꼴(전각 1.0em)의 폭이 KoPub face 상수로
         // 들어와 있었다. 치환 환경 문서군의 폭은 face 상수가 아니라 치환 경로가
         // 소유해야 한다. 그보다 전의 0.84 도 실물(0.872)과 미세하게 어긋나
-        // r27 을 -11줄 과소시켰다. 바탕체 0.94 는 같은 방법 실측 936/1000 과
-        // 사실상 일치해 유지한다.
+        // r27 을 -11줄 과소시켰다. 바탕체는 같은 방법 실측 936/1000 을 쓴다 — 종전
+        // 0.94 는 «사실상 일치» 로 두었지만 글자당 +3.8HU(10pt·장평 95%)라 34자 줄에서
+        // +1.7px 가 되어, 한/글이 한 줄에 담는 줄을 마지막 한 음절에서 끊었다. 정본
+        // `pdf/hwpx/hancom-hwp/[2027] 온새미로 1 본교재-hwp-2020.pdf` 12쪽 `…이루었는데`
+        // (KoPubWorld바탕체 Light, 장평 95%·자간 −1%) 의 한글 평균 전진 878.9HU =
+        // 936×0.95 − 10. 0.94 면 882.
         let factor = if family == KoPubFamily::Dotum {
             0.872
         } else {
-            0.94
+            0.936
         };
         return Some(factor);
     }
