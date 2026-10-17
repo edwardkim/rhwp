@@ -26,6 +26,7 @@ use rhwp::document_core::DocumentCore;
 const SAMPLE_1480000: &str = "samples/issue5941/1480000-201900698-native-neartop-reset.hwp";
 const SAMPLE_21761835: &str = "samples/hwpx/21761835_jeonjik_exemption_table.hwpx";
 const SAMPLE_1613000: &str = "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp";
+const SAMPLE_MYEONJEOK: &str = "samples/task1700/myeonjeok_wrap_10page.hwp";
 const SAMPLE_70833: &str = "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp";
 const SAMPLE_1342000: &str =
     "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp";
@@ -171,6 +172,102 @@ fn grown_boundary_row_continues_and_successor_keeps_its_stored_line() {
     assert!(
         start == 0 && start_cut.is_empty(),
         "188쪽은 제목 뒤에 pi=7 표를 0행부터 시작해야 한다: 시작 {start}행 {start_cut:?}"
+    );
+}
+
+/// 쪽 `page`(0-기준) 렌더 트리에서 표 칸 (row, col) 의 마지막 상자 (윗변, 아랫변).
+fn cell_box(core: &DocumentCore, page: u32, row: u16, col: u16) -> (f64, f64) {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn walk<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    let tree = core.build_page_render_tree(page).expect("렌더 트리");
+    let mut nodes = Vec::new();
+    walk(&tree.root, &mut nodes);
+    nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TableCell(cell) if cell.row == row && cell.col == col => {
+                Some((node.bbox.y, node.bbox.y + node.bbox.height))
+            }
+            _ => None,
+        })
+        .next_back()
+        .unwrap_or_else(|| panic!("{}쪽 셀 ({row},{col})", page + 1))
+}
+
+/// 셀 저장 줄의 새 원점 재시작(vpos 0)에서 자른 쪽 끝 행은 남은 쪽 공간을 채우지 않는다.
+/// 한/글 2020 PDF 는 그 행을 max(행 선언 높이, 자른 줄까지의 내용 높이) 상자로 닫고 아래 본문을 비운다.
+/// 기대값은 저장 메트릭으로 정한다(셀 위아래 여백 141HU 씩).
+/// - 1613000 127쪽 행 28: 둘째 문단 첫 줄(vpos 5760, lh 1200)까지 = (6960 + 282) HU = 96.56px (선언 17.1px).
+/// - 1613000 126쪽 행 17: 한 줄 lh 1200 = (1200 + 282) HU = 19.76px (선언 17.1px).
+/// - 1480000 43쪽 행 118: 한 줄 lh 900 = 15.76px < 선언 1417 HU = 18.89px.
+/// - myeonjeok 1쪽 행 29: 한 줄 lh 800 = 14.43px < 선언 2362 HU = 31.49px. 끝 줄간격(480HU)을
+///   다시 접지 않는다(한/글 2020 MCP 변환본: 표 아래 ≈ 1080.5px).
+///
+/// 수정 전 rhwp 는 행을 남은 쪽 공간(136·57·39·34.9px)까지 늘려 127쪽 가운데 정렬 칸 글자가 한 줄 아래로 내려갔다.
+#[test]
+fn stored_restart_end_row_closes_at_its_declared_or_cut_content_box() {
+    let px = |hu: f64| hu / 75.0;
+    let cases: [(&str, u32, u16, f64); 4] = [
+        (SAMPLE_1613000, 126, 28, px(6960.0 + 282.0)),
+        (SAMPLE_1613000, 125, 17, px(1200.0 + 282.0)),
+        (SAMPLE_1480000, 42, 118, px(1417.0)),
+        (SAMPLE_MYEONJEOK, 0, 29, px(2362.0)),
+    ];
+    for (sample, page, row, expected) in cases {
+        let core = core(sample);
+        let (top, bottom) = cell_box(&core, page, row, 0);
+        assert!(
+            (bottom - top - expected).abs() <= 0.5,
+            "{sample} {}쪽 행 {row} 끝 상자는 {expected:.2}px 여야 한다: {:.2}",
+            page + 1,
+            bottom - top
+        );
+    }
+}
+
+/// 이어진 표의 끝 조각 아래 캡션은 통째 표와 같은 간격으로 놓인다. 1613000 `[표 12]`(128쪽, `pi=1143`
+/// 끝 조각)와 `[표 11]`(121쪽, 통째)의 표 아래 → 캡션 줄 윗변 간격은 한/글 2020 PDF 에서 모두 12px 다.
+/// 수정 전 rhwp 는 끝 조각에만 호스트 줄간격(700HU = 9.33px)을 캡션 위에 더 넣었다.
+#[test]
+fn continued_table_bottom_caption_keeps_the_whole_table_gap() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn walk<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    let core = core(SAMPLE_1613000);
+    let gap = |page: u32| {
+        let tree = core.build_page_render_tree(page).expect("렌더 트리");
+        let mut nodes = Vec::new();
+        walk(&tree.root, &mut nodes);
+        // 아래 캡션 줄 윗변과 그 바로 위에서 끝나는 표 칸 아랫변의 거리.
+        let caption_top = nodes
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextLine(line) if line.caption_owner.is_some() => Some(node.bbox.y),
+                _ => None,
+            })
+            .fold(f64::MIN, f64::max);
+        assert!(caption_top > f64::MIN, "{}쪽 캡션 줄", page + 1);
+        let table_bottom = nodes
+            .iter()
+            .filter(|node| matches!(node.node_type, RenderNodeType::TableCell(_)))
+            .map(|node| node.bbox.y + node.bbox.height)
+            .filter(|bottom| *bottom <= caption_top + 0.5)
+            .fold(f64::MIN, f64::max);
+        caption_top - table_bottom
+    };
+    let (whole, continued) = (gap(120), gap(127));
+    assert!(
+        (continued - whole).abs() <= 0.5,
+        "끝 조각 캡션 간격 {continued:.2}px 은 통째 표 {whole:.2}px 와 같아야 한다"
     );
 }
 
