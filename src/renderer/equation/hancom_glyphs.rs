@@ -114,6 +114,10 @@ fn glyph(ch: char, role: Role) -> Option<(char, u16)> {
         Role::LegacyLiteral => match ch {
             '△' => (0x25b3, 1024),
             '․' => (0x22c5, 1024),
+            // The legacy equation percent is the mathematical PUA glyph,
+            // not ASCII percent or a generic italic text fallback. Its HFT
+            // logical slot is one em, distinct from the TTF hmtx853/1024.
+            '%' => (0xe042, 1024),
             _ => return None,
         },
         _ => return None,
@@ -179,7 +183,9 @@ pub(super) fn measure(
         // 정체·ASCII 연산자의 glyph 기준선과 수식 기준선을 구분한다.
         // 저장 컨트롤의 기준선 이동은 개체 전체에 별도로 적용한다.
         baseline_shift: if matches!(role, Role::Variable { italic: false })
-            || matches!(role, Role::LegacyLiteral)
+            // The PUA percent shares the number glyphs' mathematical baseline.
+            // The Unicode triangle/dot literals retain the Roman ascent path.
+            || matches!(role, Role::LegacyLiteral) && text != "%"
             || matches!(role, Role::Operator) && text.is_ascii()
         {
             fs * if font_family == "HancomEQN" {

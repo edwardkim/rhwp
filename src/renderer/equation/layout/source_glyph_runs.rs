@@ -41,7 +41,16 @@ impl EqLayout {
         } else {
             super::super::hancom_glyphs::FONT_FAMILY
         };
-        let run = super::super::hancom_glyphs::measure(text, role, fs, self.dpi, pad, family)?;
+        let mut run = super::super::hancom_glyphs::measure(text, role, fs, self.dpi, pad, family)?;
+        if self.legacy_hft_metrics
+            && ((matches!(role, super::super::hancom_glyphs::Role::Operator)
+                && matches!(text, "+" | "-" | "=" | "×"))
+                || (matches!(role, super::super::hancom_glyphs::Role::LegacyLiteral) && text == "%"))
+        {
+            // Legacy HFT operator slots are independent of the TTF glyph's
+            // outline advance (Print: =/+/-/% full em; TIMES .68em).
+            run.width = self.text_width(text, fs, false);
+        }
         Some(LayoutBox {
             font_size: fs,
             x: 0.0,

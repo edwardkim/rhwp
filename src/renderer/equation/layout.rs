@@ -326,11 +326,10 @@ impl EqLayout {
             };
         }
 
-        let mut boxes: Vec<LayoutBox> = self
-            .row_children(children, fs)
-            .into_iter()
-            .filter(|b| b.width > 0.0 || matches!(b.kind, LayoutKind::Newline))
-            .collect();
+        let (source_nodes, mut boxes): (Vec<&EqNode>, Vec<LayoutBox>) = children.iter()
+            .zip(self.row_children(children, fs))
+            .filter(|(_, b)| b.width > 0.0 || matches!(b.kind, LayoutKind::Newline))
+            .unzip();
 
         if boxes.is_empty() {
             return LayoutBox {
@@ -355,7 +354,9 @@ impl EqLayout {
         let mut x = 0.0;
         for index in 0..boxes.len() {
             if self.legacy_hft_metrics && index > 0 {
-                x += legacy_operator_gap(&boxes[index - 1], &boxes[index], fs);
+                // Glyph projection changes paint data, not the AST operator's
+                // logical slot or the source-owned contextual spacing.
+                x += legacy_operator_gap(source_nodes[index - 1], source_nodes[index], fs);
             }
             let b = &mut boxes[index];
             b.x = x;
@@ -762,15 +763,19 @@ fn operand_starts_cjk(node: &EqNode) -> bool {
     }
 }
 
-fn legacy_operator(box_: &LayoutBox) -> Option<&str> {
-    match &box_.kind {
-        LayoutKind::Symbol(symbol) if matches!(symbol.as_str(), "=" | "+" | "-") => Some(symbol),
-        LayoutKind::FontStyle { body, .. } => legacy_operator(body),
+fn legacy_operator(node: &EqNode) -> Option<&str> {
+    match node {
+        EqNode::Symbol(symbol) | EqNode::MathSymbol(symbol)
+            if matches!(symbol.as_str(), "=" | "+" | "-" | "×") =>
+        {
+            Some(symbol)
+        }
+        EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => legacy_operator(body),
         _ => None,
     }
 }
 
-fn legacy_operator_gap(previous: &LayoutBox, current: &LayoutBox, fs: f64) -> f64 {
+fn legacy_operator_gap(previous: &EqNode, current: &EqNode, fs: f64) -> f64 {
     let before = if legacy_operator(previous).is_none() {
         match legacy_operator(current) {
             Some("=") => 0.14,
@@ -892,6 +897,75 @@ mod tests {
         let tokens = tokenize(script);
         let ast = EqParser::new(tokens).parse();
         EqLayout::new(font_size).layout(&ast)
+    }
+
+    #[test]
+    fn legacy_operator_spacing_survives_glyph_projection() {
+        // The independent Hancom Print retains the legacy full operator slot
+        // and the same before/after gaps when painting HYhwpEQ's PUA glyph.
+        // Selecting that glyph must not replace the logical operator role.
+        let equation = crate::model::control::Equation {
+            font_name: "HYhwpEQ".into(),
+            font_size: 1200,
+            ..Default::default()
+        };
+        for script in ["가=나", "가+나", "가-나", "+가"] {
+            let ast = EqParser::new(tokenize(script)).parse();
+            let projected = EqLayout::for_equation(&equation, 96.0).layout(&ast);
+            let mut logical = EqLayout::for_equation(&equation, 96.0);
+            logical.hancom_latin = false;
+            let logical = logical.layout(&ast);
+            assert!(
+                (projected.width - logical.width).abs() < 1e-9,
+                "glyph projection changed {script} advance: {} vs {}",
+                projected.width,
+                logical.width
+            );
+        }
+    }
+
+    #[test]
+    fn legacy_transparent_color_keeps_operator_spacing() {
+        let equation = crate::model::control::Equation {
+            font_name: "HYhwpEQ".into(),
+            font_size: 1200,
+            ..Default::default()
+        };
+        let plain = EqParser::new(tokenize("가=나")).parse();
+        let colored = EqNode::Row(vec![
+            EqNode::Text("가".into()),
+            EqNode::Color {
+                r: 255,
+                g: 0,
+                b: 0,
+                body: Box::new(EqNode::Symbol("=".into())),
+            },
+            EqNode::Text("나".into()),
+        ]);
+        let context = EqLayout::for_equation(&equation, 96.0);
+        assert_eq!(context.layout(&plain).width, context.layout(&colored).width);
+    }
+
+    #[test]
+    fn legacy_percent_selects_equation_pua() {
+        let mut equation = crate::model::control::Equation {
+            font_name: "HYhwpEQ".into(),
+            font_size: 1200,
+            ..Default::default()
+        };
+        let legacy = EqLayout::for_equation(&equation, 96.0).layout_text("%", 16.0);
+        let LayoutKind::HancomGlyphs(run) = legacy.kind else {
+            panic!(
+                "legacy percent must use the equation glyph, got {:?}",
+                legacy.kind
+            );
+        };
+        assert_eq!(run.glyphs, "\u{e042}");
+        // Independent Print stores a full-em HFT slot, not TTF hmtx853/1024.
+        assert_eq!(run.width, 16.0);
+        equation.version_info = "Equation Version 60".into();
+        let modern = EqLayout::for_equation(&equation, 96.0).layout_text("%", 16.0);
+        assert!(matches!(modern.kind, LayoutKind::Text(_)));
     }
 
     #[test]

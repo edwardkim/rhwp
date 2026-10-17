@@ -176,6 +176,9 @@ impl EqLayout {
             .iter()
             .map(|node| {
                 let mut result = self.layout_node(node, fs);
+                if self.legacy_hft_metrics {
+                    return result;
+                }
                 if matches!(node, EqNode::Space(_) | EqNode::Empty) {
                     return result;
                 }
