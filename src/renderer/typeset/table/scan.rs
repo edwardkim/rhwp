@@ -188,26 +188,44 @@ impl RowBlockQuery<'_> {
         block_start_cut: &[usize],
         block_end_cut: &[usize],
     ) -> f64 {
+        self.fragment_extent(block, row_end, block_start_cut, block_end_cut)
+            .0
+    }
+
+    /// 실제로 남아 있는 행의 높이와 그 행 사이 간격을 함께 구한다.
+    /// 앞 조각에서 전부 소비한 행은 배치 상자도, 별도 행 간격도 소유하지 않는다.
+    fn fragment_extent(
+        &self,
+        block: &RowBlockCandidate,
+        row_end: usize,
+        block_start_cut: &[usize],
+        block_end_cut: &[usize],
+    ) -> (f64, f64) {
         let Self { cut_row_h, cs, .. } = *self;
         let RowBlockCandidate { b_start, .. } = *block;
         if block_start_cut.is_empty() && block_end_cut.is_empty() {
-            return (b_start..row_end).map(|x| cut_row_h[x]).sum::<f64>()
-                + cs * row_end.saturating_sub(b_start + 1) as f64;
+            let gaps = cs * row_end.saturating_sub(b_start + 1) as f64;
+            return (
+                (b_start..row_end).map(|x| cut_row_h[x]).sum::<f64>() + gaps,
+                gaps,
+            );
         }
 
         let mut total = 0.0;
+        let mut gaps = 0.0;
         let mut has_row = false;
         for br in b_start..row_end {
             let row_h = self.row_cut_height(block, br, block_start_cut, block_end_cut);
             if row_h > 0.0 {
                 if has_row {
                     total += cs;
+                    gaps += cs;
                 }
                 total += row_h;
                 has_row = true;
             }
         }
-        total
+        (total, gaps)
     }
 
     pub(in crate::renderer::typeset) fn required_height(
@@ -258,6 +276,7 @@ impl RowBlockQuery<'_> {
                 ))
             }
         } else {
+            let (physical_height, gaps) = self.fragment_extent(block, b_end, blk_start_cut, &[]);
             let content_height = layout_engine.row_block_content_height(
                 table,
                 b_start,
@@ -265,10 +284,10 @@ impl RowBlockQuery<'_> {
                 blk_start_cut,
                 &[],
                 styles,
-            ) + cs * block_size.saturating_sub(1) as f64;
+            ) + gaps;
             // 셀 로컬 최대 높이는 행 사이의 물리 빈 공간을 포함하지 않는다.
             // 같은 컷의 행 합을 하한으로 사용해 실제 배치와 예약을 일치시킨다.
-            content_height.max(self.fragment_height(block, b_end, blk_start_cut, &[]))
+            content_height.max(physical_height)
         }
     }
 }

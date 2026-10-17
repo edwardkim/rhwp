@@ -22,7 +22,7 @@ PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유
 Native/fresh WASM의 관련 모든 페이지에서 90% 이상 확인 → 독립 기대값에 따라 필요한 검사 변경**
 순서로 진행한다. 새 회귀의 추가도 같은 90% 선행 조건을 따른다. 실물 배치는 절대 px 좌표·고정 px
 영역으로 선택하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침 관계로 검사한다. 다만 완료된
-해당 페이지의 Native/fresh WASM 실루엣이 각각98% 이상이고 독립 PDF와 직접 판독을 마쳤으면
+해당 페이지의 Native/fresh WASM `silhouette_raw_match_percent`가 각각98% 이상이고 독립 PDF와 직접 판독을 마쳤으면
 ±2px 좌표 고정도 허용한다. 문서 전체98% 이상은 요구하지 않는다.
 [페이지별 px 회귀 조건](visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다. 상세 절차는
 [시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
@@ -141,6 +141,10 @@ WASM의 `CARGO_TARGET_DIR`는 위에서 고정한 같은 경로를 사용한다.
 검토 명령에는 `--locked`를 넣어 Cargo가 검토 checkout의 `Cargo.lock`을 갱신하지 못하게 한다.
 `run-rust-test.mjs`도 이를 기본 적용한다. lockfile 자체를 의도적으로 바꾸는 의존성 갱신 작업만 별도
 검증에서 이 규칙을 벗어날 수 있다.
+
+새 검사는 기존 자동 수집·suite·Native 실행 경로에서 실제로 실행되는지 먼저 확인한다.
+`ci.yml`에 불필요한 개별 호출을 추가하지 않으며, 실행 누락으로 추가가 필요한 경우에는
+[CI 테스트 호출 추가 기준](../github_operations.md#531-ci-테스트-호출-추가-기준)을 따른다.
 
 `wasm-pack`은 Cargo build 전에 별도 metadata를 실행하므로, WASM 검증은 raw `wasm-pack build` 대신
 아래 wrapper를 사용한다. wrapper는 두 Cargo 호출 모두에 `--locked`를 적용한다.
@@ -445,8 +449,9 @@ Native 선행 진단과 최종 fresh WASM 출력은 구분하고, 보정 코드�
 
 공통 조판·paint·font/resource 또는 실제 출력 소비 경로를 바꾸면
 [출력 백엔드 소비 경로 검증](../verification/renderer_backend_verification.md)에 따라 영향받는
-Canvas·SVG·Native PNG 등의 실제 산출물과 정상 대조군을 추가로 확인한다. Native/fresh WASM
-Visual Sweep의 PNG는 SVG raster이므로 Studio Canvas나 Native Skia PNG 검증을 대신하지 않는다.
+Canvas·SVG·Native PNG 등의 실제 산출물과 정상 대조군을 추가로 확인한다. 기본 PNG 경로의
+Visual Sweep은 Native Skia와 fresh WASM Canvas에서 직접 출력한다. 별도로 선택한 SVG 진단
+경로의 래스터 PNG는 Canvas·Native Skia의 실제 소비 경로 검증을 대신하지 않는다.
 공통 함수 이후 context·font 선택·합성 경로도 추적하며, 모든 backend 전수 검증 대신 변경한 값의
 실제 소비 경로로 범위를 정한다. 기존 renderer baseline의 report-only 결과와 필수 게이트를 구분한다.
 

@@ -22,7 +22,7 @@ reviewer는 source PR이 첨부한 before/after나 수치만으로 "시각 검�
 Native/fresh WASM Sweep·검증 범위 TSV 및 대표 PNG 직접 판독이 있어야 수용 근거가 된다.
 
 조판 영향 변경의 검증 범위 전체 TSV와 대표 review PNG에서 각 비교 쪽의
-`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)는 **90% 이상**이어야 한다. 90% 미만 또는
+`silhouette_raw_match_percent`(색상 경계 보정 전2px 내용 실루엣 일치율)는 **90% 이상**이어야 한다. 90% 미만 또는
 지표를 낼 수 없는 쪽이 있으면 스크립트는 review·overlay 산출물과 `pr_review_gate` 기록을 남긴 뒤 실패하며,
 review 문서는 `머지 보류 — 기여자 재검토 필요`로 판정한다. 새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다.
 한컴 PDF 대조는 [Native/fresh WASM 인쇄 프로필](../verification/visual_sweep_guide.md#pdf와-같은-인쇄-프로필)로 수행한다.
@@ -70,7 +70,7 @@ visual sweep을 실제 검토 근거로 쓰면 review 문서에 다음을 모두
 - 직접 판독한 compare, overlay, review PNG의 임시 output 경로
 - 검토한 페이지 수와 자동 후보 수
 - pixel match, visual_accuracy_proxy_percent
-- `tolerant_content_match_percent`와 `pr_review_gate`의 결과. 90% 미만이면 보정·재실행 전 `승인`으로 쓰지 않는다.
+- `silhouette_raw_match_percent`와 `pr_review_gate`의 결과. 90% 미만이면 보정·재실행 전 `승인`으로 쓰지 않는다.
 - 사람이 확인한 결과와 PR 주장과의 관계
 
 대표 review PNG는 파일 경로와 수치만 확인하지 않는다. PR comment나 archive 증적으로 쓰기 전에 실제
@@ -244,7 +244,7 @@ reviewer는 [접수·리뷰 기록의 준수 표](intake_and_review.md#27-조판
 렌더링·조판·페이지 배치 변경에서 새 회귀 테스트나 새 렌더링 fixture/golden을 추가하기 전에,
 같은 원본과 독립 한컴 PDF를 최종 보정 코드의 Native/fresh WASM Visual Sweep으로 비교한다.
 검사 관련 **모든 페이지·fixture·출력 경로를 합친 최저
-`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)가 90% 이상**이어야 한다.
+`silhouette_raw_match_percent`(색상 경계 보정 전2px 내용 실루엣 일치율)가 90% 이상**이어야 한다.
 쪽수 검사는 전체 페이지를 대상으로 하며, 평균값이나 대표 페이지만으로 최저값을 대신하지 않는다.
 
 - 최저값이 90% 미만이거나 측정 불가·기준 PDF 부족·필수 출력 경로 미실행이면 **새 회귀 테스트를
@@ -305,14 +305,17 @@ Visual Sweep으로 위치·줄바꿈·외곽선·글꼴을 별도 판독하고, 
 #### 완료 페이지의 98% 이상 실루엣과 px 좌표 회귀
 
 **문서 전체가 아니라 완료된 페이지별로 판정한다.** 같은 원본·독립 한컴 Print PDF의
-해당 페이지에서 Native와 fresh WASM의 `tolerant_content_match_percent`가 각각
+해당 페이지에서 Native와 fresh WASM의 `silhouette_raw_match_percent`가 각각
 **98% 이상**이고 수식·미세 간격을 포함한 직접 확대 판독을 완료했다면, 그 페이지의 배치를
 독립 PDF에서 확인한 px 좌표와 **±2px 허용 오차**로 고정하는 회귀 검사를 추가·유지할 수 있다.
 다른 페이지가 98% 미만이어도 이 조건을 충족한 페이지에는 적용할 수 있다.
+이 절의98% 및90% 선행 판정·후보 선정·유지는 모두 raw 값 기준이다.
+`tolerant_content_match_percent`의 색상 경계 보정으로 raw 미달을 상쇄하지 않는다.
+raw 역시2px 이웃 허용 후의 값이며, 엄격 RGB 픽셀 일치율이라는 뜻은 아니다.
 
 - 문서마다 변경한 핵심 위치를 보호한다. 표 시작·이어받기·종료·후속 본문·수식·각주 등
   해당 변경의 중요한 경계를 검사에 포함한다. 같은 핵심 동작을 검증할 수 있는 완료 페이지가
-  여러 개면 Native/fresh WASM **양쪽 일치율의 최솟값**을 기준으로 **100% → 99%대 → 98%대**
+  여러 개면 Native/fresh WASM **양쪽 raw 일치율의 최솟값**을 기준으로 **100% → 99%대 → 98%대**
   순서로 우선 선정한다. 각 후보의 backend별 점수와 선정한 페이지·핵심 동작을 기존 증적에 연결한다.
   99%대는 99% 이상 100% 미만, 98%대는 98% 이상 99% 미만이다. 반올림 전 값을 사용한다.
 - 원본·PDF·code head·페이지·Native/fresh WASM TSV·대표 review PNG와 직접 판독 결과를

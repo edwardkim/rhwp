@@ -14,6 +14,10 @@ use crate::renderer::render_tree::{
     REAL_PICTURE_WATERMARK_WHITE_BLEND,
 };
 
+mod picture_adjustments;
+pub(crate) use picture_adjustments::{adjusted_picture_bytes, picture_tone_parameters};
+mod wmf_picture;
+
 // ── 변환 결과 메모 ──
 //
 // 편집 한 번에 레이어 트리가 여러 벌 만들어지고(본문 캔버스 / overlay / JSON),
@@ -36,7 +40,7 @@ const MAX_MEMO_BYTES: usize = 16 * 1024 * 1024;
 const MAX_MEMO_ENTRIES: usize = 64;
 
 /// 변환 종류. 같은 바이트라도 어떤 변환을 거쳤느냐에 따라 결과가 다르다.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Hash)]
 enum Conversion {
     Bmp,
     CmykJpeg,
@@ -47,6 +51,16 @@ enum Conversion {
     RealPictureTone,
     RealPictureFillTone,
     BlackWhite,
+    PictureAdjustment {
+        effect: u8,
+        brightness: i8,
+        contrast: i8,
+    },
+    WmfPictureTone {
+        brightness: i8,
+        contrast: i8,
+        grayscale: bool,
+    },
 }
 
 #[derive(Default)]
@@ -123,7 +137,7 @@ fn conversion_key(conversion: Conversion, data: &[u8]) -> u64 {
     use std::hash::{Hash, Hasher};
 
     let mut hasher = DefaultHasher::new();
-    (conversion as u8).hash(&mut hasher);
+    conversion.hash(&mut hasher);
     data.hash(&mut hasher);
     hasher.finish()
 }
@@ -173,6 +187,34 @@ pub(crate) fn emitted_source_image_bytes(
     data: &[u8],
     variant: crate::paint::SourceImageVariant,
 ) -> (&'static str, std::borrow::Cow<'_, [u8]>) {
+    if let crate::paint::SourceImageVariant::PictureTone {
+        brightness,
+        contrast,
+        effect,
+    } = variant
+    {
+        // 원본 포맷 변환도 inline과 같은 순서다. TIFF/PCX 등의 원본을 CSS에
+        // 넘기거나, 이미 bake한 RGB에 frontend가 다시 효과를 적용하지 않는다.
+        let (mime, converted) = emitted_image_bytes(data, false);
+        if let Some(bytes) = picture_adjustments::picture_tone_effect(effect)
+            .and_then(|effect| adjusted_picture_bytes(&converted, effect, brightness, contrast))
+        {
+            return ("image/png", std::borrow::Cow::Owned(bytes));
+        }
+        return (mime, converted);
+    }
+    if let crate::paint::SourceImageVariant::WmfPictureTone {
+        brightness,
+        contrast,
+        grayscale,
+    } = variant
+    {
+        if let Some(bytes) =
+            wmf_picture::adjusted_wmf_picture_svg(data, brightness, contrast, grayscale)
+        {
+            return ("image/svg+xml", std::borrow::Cow::Owned(bytes));
+        }
+    }
     if variant == crate::paint::SourceImageVariant::BakedBlackWhitePng {
         if let Some(bytes) = blackwhite_bytes_to_png_bytes(data) {
             return ("image/png", std::borrow::Cow::Owned(bytes));
@@ -194,6 +236,11 @@ pub(crate) fn resolved_image_effects(
 }
 
 pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
+    let base = resolve_unadjusted_image_payload(image);
+    picture_adjustments::resolve_picture_tone(image, base)
+}
+
+fn resolve_unadjusted_image_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
     let data = image.data.as_deref()?;
     let mime = detect_image_mime_type(data);
 
@@ -231,6 +278,18 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
         // `<img>` 경로(`getSourceImageBytes`·layer tree base64)는 여기를 지나므로 변환이
         // 여기에도 있어야 한다.
         "image/x-wmf" => {
+            if let Some((brightness, contrast, grayscale)) = wmf_picture_parameters(image) {
+                if let Some(data) =
+                    wmf_picture::adjusted_wmf_picture_svg(data, brightness, contrast, grayscale)
+                {
+                    return Some(ResolvedImagePayload {
+                        data,
+                        mime: "image/svg+xml",
+                        kind: ResolvedImageKind::FormatConverted,
+                        suppress_effects: true,
+                    });
+                }
+            }
             crate::renderer::svg::convert_wmf_to_svg(data).map(|data| ResolvedImagePayload {
                 data,
                 mime: "image/svg+xml",
@@ -344,6 +403,11 @@ pub(crate) fn image_node_with_resolved_payload(
     image: &ImageNode,
     resolved: Option<&ResolvedImagePayload>,
 ) -> ImageNode {
+    let fallback = resolved
+        .is_none()
+        .then(|| resolve_image_payload(image))
+        .flatten();
+    let resolved = resolved.or(fallback.as_ref());
     let mut image = image.clone();
     if let Some(payload) = resolved {
         image.data = Some(payload.data.clone());
@@ -356,12 +420,23 @@ pub(crate) fn image_node_with_resolved_payload(
     image
 }
 
+/// 공통 producer와 지연 로딩 키가 같은 WMF 실사 효과를 선택하는 단일 판정.
+pub(crate) fn wmf_picture_parameters(image: &ImageNode) -> Option<(i8, i8, bool)> {
+    (matches!(image.effect, ImageEffect::RealPic | ImageEffect::GrayScale)
+        && detect_image_mime_type(image.data.as_deref()?) == "image/x-wmf")
+        .then_some((
+            image.brightness,
+            image.contrast,
+            image.effect == ImageEffect::GrayScale,
+        ))
+}
+
 /// 워터마크 bake 대상 판정. `paint::source_image_key` 의 variant 결정과 같은 술어를 써야
 /// 키가 가리키는 바이트와 실제로 내보내는 바이트가 어긋나지 않는다 (Task #3315).
 ///
 /// mime 검사는 포함하지 않는다 — 호출부가 JPEG 분기 안에서 쓴다.
 pub(crate) fn is_watermark_image(image: &ImageNode) -> bool {
-    !matches!(image.effect, ImageEffect::RealPic) && (image.brightness != 0 || image.contrast != 0)
+    !matches!(image.effect, ImageEffect::RealPic) && image.is_watermark()
 }
 
 /// BMP 바이트를 PNG 바이트로 재인코딩한다. 실패 시 None 반환.
@@ -1691,9 +1766,10 @@ mod emitted_bytes_key_agreement_tests {
     }
 
     fn watermarked(mut image: ImageNode) -> ImageNode {
-        // `is_watermark_image` 가 참이 되는 최소 조건.
+        // 일반 색조와 구분되는 두 비영 값의 워터마크 대조군.
         image.effect = ImageEffect::GrayScale;
         image.brightness = 20;
+        image.contrast = -50;
         image
     }
 

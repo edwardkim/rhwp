@@ -1,7 +1,7 @@
 use resvg::{tiny_skia, usvg};
 use skia_safe::{
-    canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, Data, FilterMode,
-    IRect, Image, Matrix, MipmapMode, Paint, Rect, SamplingOptions, TileMode,
+    canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, ColorSpace, Data,
+    FilterMode, IRect, Image, Matrix, MipmapMode, Paint, Rect, SamplingOptions, TileMode,
 };
 use std::sync::{Arc, OnceLock};
 
@@ -193,6 +193,30 @@ pub fn draw_image_bytes(
     };
     let encoded_bytes = normalized_bytes.as_deref().unwrap_or(bytes);
 
+    if let Some(adjusted) = crate::renderer::image_resolver::adjusted_picture_bytes(
+        encoded_bytes,
+        effect,
+        brightness,
+        contrast,
+    ) {
+        return draw_image_bytes(
+            canvas,
+            &adjusted,
+            x,
+            y,
+            width,
+            height,
+            fill_mode,
+            original_size,
+            crop,
+            crop_reference_size,
+            ImageEffect::RealPic,
+            0,
+            0,
+            sampling,
+        );
+    }
+
     let Some(image) = Image::from_encoded(Data::new_copy(encoded_bytes)) else {
         draw_missing_image_placeholder(x, y, width, height);
         return false;
@@ -202,15 +226,35 @@ pub fn draw_image_bytes(
     let mut paint = Paint::default();
     paint.set_anti_alias(true);
     let effect_filter = image_effect_filter(effect);
-    let adjustment_filter = (brightness != 0 || contrast != 0)
-        .then(|| brightness_contrast_filter(brightness, contrast));
+    let has_adjustments = brightness != 0 || contrast != 0;
+    // 회색조와 일반 그림만 SVG의 선형 RGB 보정을 재생한다. 이산 흑백과
+    // 패턴 효과는 별도 계약이므로 기존 Native 경로를 유지한다.
+    let use_linear_adjustments =
+        has_adjustments && matches!(effect, ImageEffect::RealPic | ImageEffect::GrayScale);
+    let adjustment_filter =
+        has_adjustments.then(|| brightness_contrast_filter(brightness, contrast));
     let color_filter = match (effect_filter, adjustment_filter) {
+        (Some(effect), Some(adjustment)) if use_linear_adjustments => {
+            // SVG의 바깥 효과 그룹은 안쪽 밝기·대비 그룹의 결과를 받는다.
+            color_filters::compose(effect, adjustment)
+        }
         (Some(effect), Some(adjustment)) => color_filters::compose(adjustment, effect),
         (Some(effect), None) => Some(effect),
         (None, Some(adjustment)) => Some(adjustment),
         (None, None) => None,
     };
     if let Some(color_filter) = color_filter {
+        // SVG 필터의 기본 색 공간은 linearRGB다. 검증한 일반 그림·회색조의
+        // 보정 체인 전체를 같은 공간에서 계산한다.
+        let color_filter = if use_linear_adjustments {
+            let Some(filter) = color_filter.with_working_color_space(ColorSpace::new_srgb_linear())
+            else {
+                return false;
+            };
+            filter
+        } else {
+            color_filter
+        };
         paint.set_color_filter(color_filter);
     }
 

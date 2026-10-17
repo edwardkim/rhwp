@@ -71,7 +71,7 @@ class DocumentPageCountTests(unittest.TestCase):
         for value in (None, True, float("nan"), float("inf"), -1.0, 101.0):
             with self.subTest(value=value):
                 gate = SWEEP.pr_review_gate(
-                    [{"page": 1, "tolerant_content_match_percent": value}],
+                    [{"page": 1, "silhouette_raw_match_percent": value}],
                     expected_pages=[1],
                 )
                 self.assertEqual(gate["status"], "re_review_required")
@@ -91,7 +91,7 @@ class DocumentPageCountTests(unittest.TestCase):
 
     def test_high_score_cannot_waive_an_extra_document_page(self):
         gate = SWEEP.pr_review_gate(
-            [{"page": 10, "tolerant_content_match_percent": 95.36398}],
+            [{"page": 10, "silhouette_raw_match_percent": 95.36398}],
             expected_pages=[10], document_page_counts={"rhwp": 32, "pdf": 31},
         )
         self.assertEqual(gate["status"], "re_review_required")
@@ -104,7 +104,7 @@ class DocumentPageCountTests(unittest.TestCase):
 
     def test_font_evidence_cannot_override_the_measured_document_page_counts(self):
         gate = SWEEP.pr_review_gate(
-            [{"page": 10, "tolerant_content_match_percent": 85.0}],
+            [{"page": 10, "silhouette_raw_match_percent": 85.0}],
             document_page_counts={"rhwp": 30, "pdf": 31},
             font_mismatch_evidence={
                 "font_issue_unresolvable": True, "layout_geometry_matched": True,
@@ -115,7 +115,7 @@ class DocumentPageCountTests(unittest.TestCase):
 
     def test_equal_document_page_counts_keep_the_existing_threshold(self):
         gate = SWEEP.pr_review_gate(
-            [{"page": 10, "tolerant_content_match_percent": 90.0}],
+            [{"page": 10, "silhouette_raw_match_percent": 90.0}],
             document_page_counts={"rhwp": 31, "pdf": 31},
         )
         self.assertEqual(gate["status"], "passed")

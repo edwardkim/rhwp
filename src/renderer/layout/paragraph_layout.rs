@@ -3292,8 +3292,16 @@ impl LayoutEngine {
             styles,
             style.alignment == Alignment::Center,
         );
-        let indent = if owner == 0 { style.indent } else { 0.0 };
-        let styled_left = (style.margin_left + indent).max(0.0);
+        let indent = crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
+            style.indent,
+            owner,
+            Some(para),
+            composed.lines.len(),
+            true,
+            area.width - style.margin_left - style.margin_right,
+            self.dpi,
+        );
+        let styled_left = style.margin_left + indent;
         let stored = para.line_segs.get(owner)?;
         // A complete natural saved line owns its horizontal region. Paragraph
         // hanging indent is a reflow input, not a replacement for that region.
@@ -3318,8 +3326,8 @@ impl LayoutEngine {
                 .abs_diff(super::super::px_to_hwpunit(area.width, self.dpi))
                 <= 1)
             .then_some((
-                hwpunit_to_px(stored.column_start, self.dpi),
-                hwpunit_to_px(stored.segment_width, self.dpi),
+                hwpunit_to_px(stored.column_start, self.dpi) + indent,
+                hwpunit_to_px(stored.segment_width, self.dpi) - indent,
             ));
         let (left_margin, width) = current_region.or(stored_region).unwrap_or((
             styled_left,

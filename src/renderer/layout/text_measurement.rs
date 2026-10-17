@@ -1087,6 +1087,12 @@ pub(crate) fn kopub_declared_space_em(primary_name: &str) -> Option<f64> {
 
 fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
     let family = KoPubFamily::from_primary(primary_name)?;
+    // KoPub 전용 전각 표가 공통 반각 판정(#6023)을 가리지 않아야 한다.
+    // ｢｣ 등은 한컴 Print에서도 반각이며, 해당 글리프는 실제 메트릭 조회와
+    // 공통 Unicode 반각 폴백에 맡긴다. 전각 ASCII/CJK 폭 표는 그대로 쓴다.
+    if is_unicode_halfwidth_form(c) {
+        return None;
+    }
 
     // [#7390] 공백은 표가 아니라 **반각**이다. 글꼴의 `hmtx`/`/Widths` 는 KoPubDotum
     // 290 · KoPubBatang 312 이지만 한/글은 그 값으로 전진시키지 않는다. 정본
@@ -1119,6 +1125,11 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         if units > 0 {
             return Some(quantize_hwp_px(font_size * f64::from(units) / 1000.0));
         }
+    }
+    // KoPub Dotum/Batang의 세 굵기 모두 U+203B cmap+hmtx 전진폭은900/1000em이다.
+    // 한컴 Print의 장평98%·자간-3%에서도11.36px로 같으며 반각 fallback이 아니다.
+    if c == '※' {
+        return Some(quantize_hwp_px(font_size * 0.9));
     }
     if is_narrow_punctuation(c) {
         return Some(quantize_hwp_px(font_size * 0.3));

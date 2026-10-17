@@ -89,25 +89,25 @@ class PrReviewGateTests(unittest.TestCase):
 
     def test_below_ninety_requires_re_review(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+            [{"page": 3, "silhouette_raw_match_percent": 89.99}],
             font_mismatch_evidence=None,
         )
         self.assertEqual(gate["status"], "re_review_required")
         self.assertEqual(
             gate["below_threshold_pages"],
-            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+            [{"page": 3, "silhouette_raw_match_percent": 89.99}],
         )
 
     def test_ninety_and_above_passes(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 90.0}],
+            [{"page": 3, "silhouette_raw_match_percent": 90.0}],
             font_mismatch_evidence=None,
         )
         self.assertEqual(gate["status"], "passed")
 
     def test_missing_requested_metric_requires_re_review(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 7, "tolerant_content_match_percent": 99.0}],
+            [{"page": 7, "silhouette_raw_match_percent": 99.0}],
             expected_pages=[7, 8],
             font_mismatch_evidence=None,
         )
@@ -117,7 +117,7 @@ class PrReviewGateTests(unittest.TestCase):
     def test_hashed_font_mismatch_evidence_does_not_waive_low_metric(self) -> None:
         evidence = {"path": "scratch/font-mismatch.md", "sha256": "a" * 64}
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 28.4}],
+            [{"page": 3, "silhouette_raw_match_percent": 28.4}],
             font_mismatch_evidence=evidence,
         )
         self.assertEqual(gate["status"], "re_review_required")
@@ -125,7 +125,7 @@ class PrReviewGateTests(unittest.TestCase):
 
     def test_hashed_font_evidence_does_not_waive_missing_page(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 90.0}],
+            [{"page": 3, "silhouette_raw_match_percent": 90.0}],
             expected_pages=[3, 4],
             font_mismatch_evidence={"path": "scratch/font.md", "sha256": "a" * 64},
         )
@@ -135,8 +135,8 @@ class PrReviewGateTests(unittest.TestCase):
     def test_one_low_page_cannot_be_offset_by_high_pages(self) -> None:
         gate = SWEEP.pr_review_gate(
             [
-                {"page": 1, "tolerant_content_match_percent": 100.0},
-                {"page": 2, "tolerant_content_match_percent": 89.99},
+                {"page": 1, "silhouette_raw_match_percent": 100.0},
+                {"page": 2, "silhouette_raw_match_percent": 89.99},
             ],
         )
         self.assertEqual(gate["status"], "re_review_required")

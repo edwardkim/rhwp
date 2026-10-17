@@ -6239,7 +6239,10 @@ impl LayoutEngine {
                     // 여백 상자**의 왼끝을 가리킨다 — 표 자신의 왼끝은 거기서
                     // `outMargin.left` 만큼 안쪽이다. `#6887` 이 어울림(Square) 표
                     // 경로에서 확정한 규칙이고 이 경로만 빠져 있었다.
-                    let om_l = if matches!(table.common.text_wrap, TextWrap::Square) {
+                    let om_l = if matches!(
+                        table.common.text_wrap,
+                        TextWrap::Square | TextWrap::BehindText | TextWrap::InFrontOfText
+                    ) {
                         crate::renderer::float_placement::para_relative_left_aligned_outer_margin_left_hu(table)
                     } else {
                         topbottom_float_outer_margin_left_hu(table)
@@ -6265,6 +6268,9 @@ impl LayoutEngine {
                     // [#7063] 단 기준 왼쪽 정렬 자리차지 표도 같은 여백을 받는다 —
                     // 위 `#6378` 술어는 그 부분집합(원본 HWPX·RowBreak·사방 균등)이다.
                     .or_else(|| topbottom_float_outer_margin_left_hu(table))
+                    .or_else(|| {
+                        crate::renderer::float_placement::overlay_table_outer_margin_left_hu(table)
+                    })
                     .filter(|_| !topbottom_outer_margin_already_applied)
                     .map(|hu| hwpunit_to_px(hu, self.dpi))
                     .unwrap_or(0.0);
@@ -6524,7 +6530,11 @@ impl LayoutEngine {
             // 기준점을 안 옮긴 문단 기준 표는 종전대로 0 이다(근거 없이 넓히지 않는다).
             let om_top_px = if matches!(vert_rel_to, crate::model::shape::VertRelTo::Paper)
                 || para_stored_anchor_y.is_some()
-            {
+                || (matches!(vert_rel_to, crate::model::shape::VertRelTo::Para)
+                    && matches!(
+                        table_text_wrap,
+                        TextWrap::BehindText | TextWrap::InFrontOfText
+                    )) {
                 hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
             } else {
                 0.0
@@ -6622,6 +6632,15 @@ impl LayoutEngine {
                     body_top + v_offset
                 } else {
                     body_top
+                } + if matches!(
+                    table_text_wrap,
+                    TextWrap::BehindText | TextWrap::InFrontOfText
+                ) {
+                    // 본문 제한도 원점과 같은 바깥 상자 좌표계로 적용한다.
+                    // 괘선 상단을 본문 상단에 제한하면 이미 소비한 위여백이 사라진다.
+                    om_top_px
+                } else {
+                    0.0
                 };
                 // [#4514] 문단 기준 다행 RowBreak overlay(글앞/글뒤) 표는 상향 클램프를
                 // 걸지 않는다. 앵커가 쪽 하단 부근이면 body_bottom 클램프가 표를 수백
@@ -8584,6 +8603,7 @@ impl LayoutEngine {
                                 &shape_area,
                                 shape_y,
                                 Alignment::Left,
+                                para.para_shape_id,
                                 styles,
                                 bin_data_content,
                                 clamp_header_negative_para_offset,
@@ -8634,6 +8654,7 @@ impl LayoutEngine {
                                 &inner_area,
                                 shape_anchor_y,
                                 para_alignment,
+                                para.para_shape_id,
                                 styles,
                                 bin_data_content,
                                 clamp_header_negative_para_offset,

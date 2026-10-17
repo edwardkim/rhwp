@@ -33,6 +33,9 @@
 - collaborator·maintainer의 예외 처리와 오늘할일·PR review 문서는 `pr_review_workflow.md`의
   라우팅 결과에 해당하는 역할별 자식 절차를 따른다. 모 문서만 읽고 세부 경로를 추정해 진행하지 않는다.
 - 작업 단계가 바뀌면 현재 단계의 변경을 커밋한 뒤 다음 단계 문서를 시작한다.
+- 새 테스트는 기존 자동 수집·suite·Native 실행 경로를 먼저 확인하고, `ci.yml`에
+  불필요한 개별 호출이나 중복 검증을 추가하지 않는다. 실제 실행 누락이 있을 때의 추가 기준은
+  [CI 테스트 호출 추가 기준](mydocs/manual/github_operations.md#531-ci-테스트-호출-추가-기준)을 따른다.
 - GitHub comment, remote push, PR 생성은 사용자 승인을 받은 뒤 수행한다.
 - Windows PowerShell에서 한글을 포함한 여러 단락의 PR·review·comment 본문은 here-string을
   `gh --body-file -`로 직접 pipe하지 않는다. UTF-8 **without BOM** 임시 Markdown 파일을
@@ -42,7 +45,7 @@
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
-`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)를 페이지별로 확인하며,
+`silhouette_raw_match_percent`(색상 경계 보정 전2px 내용 실루엣 일치율)를 페이지별로 확인하며,
 **한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
 미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
 
@@ -154,11 +157,11 @@
   없으면 이관 대상으로 판정하지 않는다. 별도 이슈에서 90% 이상과 확대 판독 후 관계형 회귀를 복원한다.
   [별도 이슈 이관](mydocs/manual/pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)을 따른다.
   신규 검사와 기존 검사의 변경은 문단·줄·개체의 소유, 내용 순서·보존, 포함·겹침 관계를 기본으로 한다.
-  **완료된 페이지**의 Native/fresh WASM 2px 관용 실루엣 일치율이 각각 **98% 이상**이고 독립 PDF와
+  **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)이 각각 **98% 이상**이고 독립 PDF와
   직접 확대 판독까지 완료됐으면, 그 페이지는 독립 기대 좌표를 **±2px** 허용 오차로 고정할 수 있다.
   문서 전체가 98% 이상일 필요는 없다. 페이지·DPI·좌표계·SHA·TSV·PNG 증거를 기록하고 관계 검사도 유지한다.
   문서마다 변경한 핵심 위치를 보호한다. 같은 핵심 동작을 검증할 수 있는 완료 페이지 중
-  Native/fresh WASM **양쪽 일치율의 최솟값**이 **100% → 99%대 → 98%대**인 순서로 우선 선정한다.
+  Native/fresh WASM **양쪽 raw 일치율의 최솟값**이 **100% → 99%대 → 98%대**인 순서로 우선 선정한다.
   표 시작·이어받기·종료·후속 본문·수식·각주 등 해당 변경의 중요한 경계도 검사에 포함한다.
   고정한 쪽은 이후에도 양쪽 98% 이상을 유지해야 한다. 100%로 개선은 허용하며 한쪽이라도 98% 미만이면 회귀로 판정한다.
   [페이지별 px 회귀 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.
@@ -217,7 +220,7 @@
   경로·임시 output·review 문서 링크만으로 대체하지 않으며, PR head repository와 정확한 head SHA로
   고정한 raw URL을 쓴다. code head가 바뀌면 시각 증적과 본문 URL도 다시 만든다. merge 뒤에는
   같은 asset을 merge SHA로 고정한 URL로 contributor comment에 다시 남긴다.
-  검증 범위의 전체 TSV와 대표 review PNG 중 2px 이웃 관용 내용 실루엣 일치율이 하나라도 **90% 미만**이거나 측정 불가이면
+  검증 범위의 전체 TSV와 대표 review PNG 중 색상 경계 보정 전2px 내용 실루엣 일치율이 하나라도 **90% 미만**이거나 측정 불가이면
   `scripts/visual_sweep.py`의 `pr_review_gate`가 `re_review_required`가 된다. 이 상태에서는 새 PR을 만들지 않고,
   이미 열린 PR은 승인·통합하지 않는다. 기여자는 PDF/overlay 원인을 자기 branch에서 재검토·수정하고 새 head에서
   재실행한 뒤 gate를 통과할 때만 PR을 생성·갱신한다. reviewer는 보류를 기록하며 기여자 변경을 메인터너 보정으로

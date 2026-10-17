@@ -94,7 +94,7 @@ web package를 빌드해야 한다. API가 없는 과거 bundle은 검증을 중
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
-`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)를 페이지별로 확인하며,
+`silhouette_raw_match_percent`(2px 이웃 관용 내용 실루엣 일치율)를 페이지별로 확인하며,
 **한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
 미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
 
@@ -140,7 +140,7 @@ python3 scripts/visual_sweep.py --silhouette-only \
 
 원문 입력 결과는 `output/<실행>-native-scores/<key>/silhouette.tsv` 및 WASM 대응 경로에,
 `--png-pair` 결과는 지정한 `--out` 바로 아래에 저장된다. 각 TSV를 스프레드시트에서 탭 구분으로
-열어 `page`별 `tolerant_content_match_percent`를 Native/WASM 간 대조하고, `below_90`과
+열어 `page`별 `silhouette_raw_match_percent`를 Native/WASM 간 대조하고, `below_90`과
 최저값을 확인한다. 이 값은 **실루엣 일치율 보조값**이며 전체 렌더링 정확도나 구조 일치율이 아니다.
 
 검증 대상 전체 문서에서 Native와 fresh WASM TSV를 각각 먼저 산출하고,
@@ -161,6 +161,9 @@ WASM은 같은 원문·PDF에 `--wasm-pkg pkg`와 검증한 `--rhwp-bin`을 명�
 
 TSV의 첫 세 열은 `page`, `tolerant_content_match_percent`, `below_90`이며,
 `silhouette_raw_match_percent`, `silhouette_boundary_reconciled_pixels`를 뒤에 함께 기록한다.
+**90% gate·devel 대비 하락·98% px 회귀 판정은 모두 `silhouette_raw_match_percent`를 쓴다.**
+`below_90`도 raw 기준이다. 첫 번째 점수 열의 색상 경계 보정값은 진단용이며 판정을 대신하지 않는다.
+raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 지표와는 다르다.
 232 이진화 경계가 유색 PDF 픽셀을 빈 영역으로 오판하는 경우를 구분하기 위해 원값을 보존한다.
 내용 마스크232·2px 반경은 유지하며, 원래 불일치 픽셀 중 같은 위치 양쪽 모두 흰 배경
 (모든 RGB 채널244 이상)이 아니고 RGB 최대 차이가 고정32 이내이면 내용의 존재가 일치한다.
@@ -185,7 +188,7 @@ TSV의 첫 세 열은 `page`, `tolerant_content_match_percent`, `below_90`이며
 위 Native/fresh WASM 명령을 기준 SHA의 producer와 후보 SHA의 producer로 각각 실행한다.
 동일 원본·PDF·글꼴·backend·Print profile·compat·DPI로 문서 전쪽을 비교하며, output은
 `output/pr-review/<id>/base/{native,wasm}`와 `head/{native,wasm}`처럼 분리한다.
-`page`별 `tolerant_content_match_percent`의 **기준−후보가0.01%p 이상이면90% 이상이어도
+`page`별 `silhouette_raw_match_percent`의 **기준−후보가0.01%p 이상이면90% 이상이어도
 PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 혼합은 허용하지 않는다.
 원 소수값·십진수 연산·누락 판정·직접 판독·review 기록은
 [devel 대비 실루엣 하락 재검토](visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
@@ -199,8 +202,7 @@ Native/fresh WASM 최저 일치율이 90% 미만이거나 측정 불가이면 �
 
 실패한 기존 회귀도 **원본 입력 출력 보정 → 관련 모든 페이지의 Native/fresh WASM 일치율 90% 이상
 확인 → 필요한 검사 변경** 순서를 따른다. 절대 px 좌표·고정 px 영역 대신 문단·줄·개체의 소유·순서·
-보존·포함·겹침 관계로 검사한다. 다만 **완료된 페이지**의 Native/fresh WASM 2px 관용 실루엣
-일치율이 각각98% 이상이고 독립 PDF와 직접 확대 판독을 마쳤으면 해당 쪽의 독립 기대 좌표를
+보존·포함·겹침 관계로 검사한다. 다만 **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`가 각각98% 이상이고 독립 PDF와 직접 확대 판독을 마쳤으면 해당 쪽의 독립 기대 좌표를
 ±2px 허용 오차로 고정할 수 있다. 다른 페이지까지98% 이상일 필요는 없으며 관계 검사도 유지한다.
 [페이지별 px 회귀 조건](../pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다. 상세 절차는
 [기존 기대값 재검토](../pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
@@ -236,7 +238,7 @@ Native/fresh WASM 최저 일치율이 90% 미만이거나 측정 불가이면 �
 입증하며 현재 수정으로 생긴 회귀는 구현을 고친다. base 미검증은 이관 근거가 아니다.
 
 조판·렌더링 영향 변경은 Visual Sweep을 반드시 사용하고 검증 범위 전체 TSV와 각 대표 review PNG의
-`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율 보조값)는 **90% 이상**이어야 한다.
+`silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)는 **90% 이상**이어야 한다.
 `scripts/visual_sweep.py`는 90% 미만 또는 측정 불가 페이지가 있으면 PNG와 manifest를 남긴 뒤 exit
 non-zero로 끝내며, manifest의 `pr_review_gate.status`를 `re_review_required`로 기록한다. 이 상태에서는
 새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다. 기여자는 자기 branch에서 PDF와 overlay를 다시 판독해
@@ -998,7 +1000,8 @@ standalone overlay와 review PNG에 이 범례를 함께 표시한다. 이는 �
 | `pixel_match_percent` | 전체 canvas 픽셀 중 임계값 이하로 일치한 비율 |
 | `ink_match_percent` | 양쪽 중 하나라도 내용 픽셀인 영역에서 일치한 비율 |
 | `visual_accuracy_proxy_percent` | 자동 시각 판정 보조 일치율. 잉크 영역이 있으면 `ink_match_percent`, 없으면 `pixel_match_percent` |
-| `tolerant_content_match_percent` | 내용 실루엣의 상대편이 `tolerant_content_match_radius_px` 이웃에 있을 때 일치로 보는 기하 보조값 |
+| `silhouette_raw_match_percent` | 색상 경계 보정 전2px 이웃 허용 실루엣 일치율.90% gate·devel 대비 무회귀·98% px 회귀의 판정값 |
+| `tolerant_content_match_percent` | raw에 같은 위치의 유사 색상 픽셀 경계 보정을 더한 진단용 값. gate 판정에 사용하지 않음 |
 | `diff_bbox` | 차이가 난 픽셀들의 bounding box |
 | `mean_abs_channel_delta` | RGB 채널 평균 절대 차이 |
 | `max_channel_delta` | 페이지 내 최대 RGB 채널 차이 |
@@ -1015,10 +1018,11 @@ PDF raster와 rhwp raster가 얼마나 비슷한지를 보여주는 자동 보�
 - `ink_match_percent = 100 * (1 - ink_diff_pixels / ink_union_pixels)` 이다.
 - `visual_accuracy_proxy_percent`는 잉크 영역이 있으면 `ink_match_percent`, 잉크 영역이 없으면
   `pixel_match_percent`를 쓴다.
-- `tolerant_content_match_percent`는 기본 2px 이웃까지 허용한 내용 실루엣 일치율이다. 글꼴
-  anti-aliasing·sub-pixel rasterization의 프린지를 기하 위치 차이와 분리해 보여 주기 위한 값이며,
-  `ink_match_percent`나 `visual_accuracy_proxy_percent`를 대체하지 않는다. 다만 PR review에서는 위
-  `PR review 실루엣 gate`에 따라 90% 미만을 재검토 신호이자 보류 조건으로 사용한다.
+- `silhouette_raw_match_percent`는 기본2px 이웃까지 허용한 내용 실루엣의 색상 경계 보정 전 값이다.
+  `PR review 실루엣 gate`는 이 raw 값이90% 미만이면 재검토·보류로 판정한다.98% px 허용과
+  devel 대비 하락 비교도 raw를 쓴다. raw는 엄격 RGB 픽셀 일치율을 뜻하지 않는다.
+- `tolerant_content_match_percent`는 이진화 경계에 걸친 유사 색상 픽셀을 추가로 일치 처리한
+  진단값이다. raw가 미달하면 이 값이90% 또는98%를 넘어도 통과로 바꾸지 않는다.
 
 **90% 이상이어도 수식 모양·장평·미세 간격이 정확하다는 뜻은 아니다.** 변경 영역·알려진 차이·
 사용자 지적 영역을 독립 Print PDF와 변경 전·후 Native/fresh WASM의 같은 내용·배율로 확대한다.

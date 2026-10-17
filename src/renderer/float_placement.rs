@@ -2,6 +2,8 @@
 
 mod column_ole;
 pub(crate) use column_ole::column_ole_placement;
+mod overlay_outer_frame;
+pub(crate) use overlay_outer_frame::overlay_table_outer_margin_left_hu;
 
 mod stored_cell_flow_picture;
 pub(crate) use stored_cell_flow_picture::{
@@ -2739,6 +2741,7 @@ pub(crate) fn stored_column_top_spacing_before(
 /// not a height to add to a cursor that may already include leading spacing.
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct StoredParagraphSuccessorFlow {
+    flow_origin_hu: i32,
     content_bottom_hu: i32,
     flow_end_hu: i32,
 }
@@ -2756,10 +2759,16 @@ impl StoredParagraphSuccessorFlow {
         dpi: f64,
     ) -> Option<(f64, f64)> {
         let base = base_hu?;
+        let flow_origin = anchor_y + hwpunit_to_px(self.flow_origin_hu.checked_sub(base)?, dpi);
         let content_bottom =
             anchor_y + hwpunit_to_px(self.content_bottom_hu.checked_sub(base)?, dpi);
         let flow_end = anchor_y + hwpunit_to_px(self.flow_end_hu.checked_sub(base)?, dpi);
-        (current_y.is_finite() && current_y <= content_bottom && content_bottom <= flow_end)
+        // 앞 개체의 실제 점유가 저장 시작을 넘겼으면 같은 저장 축이 아니다.
+        // 내용 하단만 검사하면 짧은 제목을 이미 지난 저장 끝으로 되감게 된다.
+        (current_y.is_finite()
+            && current_y <= flow_origin + hwpunit_to_px(1, dpi)
+            && flow_origin <= content_bottom
+            && content_bottom <= flow_end)
             .then_some((content_bottom, flow_end))
     }
 }
@@ -2945,26 +2954,33 @@ pub(crate) fn stored_paragraph_successor_flow(
     if after.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
         return None;
     }
-    let spacing_after = styles
-        .para_styles
-        .get(para.para_shape_id as usize)?
-        .spacing_after;
+    let own_style = styles.para_styles.get(para.para_shape_id as usize)?;
+    let spacing_before = own_style.spacing_before;
+    let spacing_after = own_style.spacing_after;
     let next_before = styles
         .para_styles
         .get(next.para_shape_id as usize)?
         .spacing_before;
     let hu_per_px = 1.0 / hwpunit_to_px(1, dpi);
+    let flow_origin_hu = para
+        .line_segs
+        .first()?
+        .vertical_pos
+        .checked_sub((spacing_before * hu_per_px).round() as i32)?;
     let content_bottom_hu = last.vertical_pos.checked_add(last.line_height)?;
     let flow_end_hu = content_bottom_hu
         .checked_add(last.line_spacing)?
         .checked_add((spacing_after * hu_per_px).round() as i32)?;
-    (spacing_after.is_finite()
+    (spacing_before.is_finite()
+        && spacing_before >= 0.0
+        && spacing_after.is_finite()
         && spacing_after >= 0.0
         && next_before.is_finite()
         && next_before >= 0.0
         && flow_end_hu.checked_add((next_before * hu_per_px).round() as i32)
             == Some(after.vertical_pos))
     .then_some(StoredParagraphSuccessorFlow {
+        flow_origin_hu,
         content_bottom_hu,
         flow_end_hu,
     })

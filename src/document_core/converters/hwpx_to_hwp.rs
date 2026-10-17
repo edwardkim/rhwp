@@ -884,11 +884,9 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
         // original-width/height 칸을 0으로 쓴다. 이 칸에 imgDim을 복사하면 묶음
         // 그림을 인쇄할 때 한컴이 크기를 다시 해석해 표지가 크게 어긋난다.
         if source_is_hwpx && pic.raw_picture_extra.is_empty() {
-            // HWPX hc:img는 bright, contrast 순서지만 한컴 2020이 HWP5
-            // SC_PICTURE에 저장하는 두 i8 칸은 반대 순서다. HWP5 serializer는
-            // 모델 순서대로 기록하므로 이 경계에서만 바꾼다. raw extra를 함께
-            // 채워 두므로 adapter 재호출 시 다시 교환되지 않는다.
-            std::mem::swap(&mut pic.image_attr.brightness, &mut pic.image_attr.contrast);
+            // 밝기·명암은 의미 IR 그대로 유지한다. HWP5의 명암→밝기 바이트
+            // 순서는 serialize_picture_data가 결정한다. 이 경계에서도 교환하면
+            // HWPX→HWP 저장 시 두 값을 다시 뒤집게 된다(#7751).
             pic.raw_picture_extra.reserve_exact(18);
             pic.raw_picture_extra.push(pic.border_opacity);
             pic.raw_picture_extra

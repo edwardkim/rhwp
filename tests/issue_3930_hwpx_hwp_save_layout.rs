@@ -329,8 +329,10 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
             "한컴 HWPX 저장본처럼 SC_PICTURE original image size는 0으로 쓴다"
         );
     }
-    assert_eq!(grouped_picture.image_attr.brightness, 0);
-    assert_eq!(grouped_picture.image_attr.contrast, 8);
+    // 원본 Contents/section0.xml의 image354는 bright="8" contrast="0"이다.
+    // 저장·재열기에서도 원본 속성 의미를 보존하며 두 필드를 교환하지 않는다.
+    assert_eq!(grouped_picture.image_attr.brightness, 8);
+    assert_eq!(grouped_picture.image_attr.contrast, 0);
 }
 
 /// PDF p144의 자동날인 안내는 같은 빈 host paragraph의 `BehindText` 1×1 table 세 개를

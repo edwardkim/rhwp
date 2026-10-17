@@ -16,7 +16,7 @@ rhwp에 관심을 가져주셔서 감사합니다!
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
-`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)를 페이지별로 확인하며,
+`silhouette_raw_match_percent`(색상 경계 보정 전2px 내용 실루엣 일치율)를 페이지별로 확인하며,
 **한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
 미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
 
@@ -756,7 +756,7 @@ Print PDF와 Native/fresh WASM Visual Sweep에서 관련 모든 페이지가 90%
 90% 이상·확대 판독을 충족한 뒤 관계형 회귀를 복원하세요.
 [별도 이슈 이관](mydocs/manual/pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)을 따릅니다. 기존 px 고정 검사를 바꾸는
 경우에도 이 선행 조건을 충족한 뒤 문단·줄·개체의 소유·순서·보존·포함·겹침 관계로 검사하세요.
-관계 검사를 기본으로 하되, **완료된 페이지**의 Native/fresh WASM 2px 관용 실루엣 일치율이
+관계 검사를 기본으로 하되, **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)이
 각각 **98% 이상**이고 독립 PDF와 직접 확대 판독을 마쳤으면 해당 쪽의 독립 기대 좌표를
 **±2px** 허용 오차로 고정할 수 있습니다. 문서 전체98% 이상은 요구하지 않으며 관계 검사도 유지하세요.
 [페이지별 px 회귀 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따릅니다.
@@ -787,7 +787,7 @@ Print PDF와 Native/fresh WASM Visual Sweep에서 관련 모든 페이지가 90%
 
 렌더링·조판·페이지 배치 변경에서는 **새 회귀 테스트 또는 fixture/golden을 추가하기 전에** 같은
 원본·독립 한컴 PDF의 Native/fresh WASM Visual Sweep을 완료하세요. 관련 모든 페이지·fixture·출력
-경로 중 최저 `tolerant_content_match_percent`가 90% 이상이어야 합니다. 쪽수 검사는 전체 페이지를
+경로 중 최저 `silhouette_raw_match_percent`가 90% 이상이어야 합니다. 쪽수 검사는 전체 페이지를
 비교합니다. 최저값 90% 미만 또는 측정 불가이면 새 회귀 테스트를 추가하지 않고 실제 출력을 먼저
 개선하세요. 평균값·글꼴 예외·CI 성공으로 대신하지 않습니다. 기존 검사·파일의 제거와 이관은 위
 별도 이슈 절차에 따라 실패 근거와 복원 조건을 남겨 처리하세요.

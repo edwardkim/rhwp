@@ -953,6 +953,11 @@ impl PaintOp {
             } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"image\",\"bbox\":");
+                let fallback = resolved
+                    .is_none()
+                    .then(|| crate::renderer::image_resolver::resolve_image_payload(image))
+                    .flatten();
+                let resolved = resolved.as_deref().or(fallback.as_ref());
                 // [#7193] 소비자가 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
                 write_bbox(buf, image.paint_bbox(bbox));
                 // [#3315] 키가 있는 op 만 base64 를 생략할 수 있다 — 소비자가 그 키로
@@ -960,7 +965,7 @@ impl PaintOp {
                 // 그림(`bin_data_id == 0`)은 되찾을 길이 없으므로 종전대로 싣는다.
                 let source_image_key = crate::paint::source_image_key(ctx.bin_data_epoch, image);
                 let omit_bytes = ctx.options.omit_image_bytes && source_image_key.is_some();
-                if let Some(payload) = resolved.as_deref() {
+                if let Some(payload) = resolved {
                     if omit_bytes {
                         let _ = write!(
                             buf,
@@ -1023,10 +1028,7 @@ impl PaintOp {
                     let _ = write!(buf, ",\"originalSizeHu\":[{},{}]", width, height);
                 }
                 let (effect, brightness, contrast) =
-                    crate::renderer::image_resolver::resolved_image_effects(
-                        image,
-                        resolved.as_deref(),
-                    );
+                    crate::renderer::image_resolver::resolved_image_effects(image, resolved);
                 let _ = write!(
                     buf,
                     ",\"effect\":{},\"brightness\":{},\"contrast\":{}",

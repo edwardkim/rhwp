@@ -13,6 +13,7 @@ pub mod font_glyph;
 mod json;
 pub mod layer_tree;
 pub mod paint_op;
+mod paper_viewport;
 pub mod profile;
 pub mod replay_order;
 pub mod resources;
