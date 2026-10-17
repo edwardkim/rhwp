@@ -1101,6 +1101,16 @@ impl PdfDocument {
         limits: crate::import_limits::PdfImportLimits,
     ) -> Result<Self> {
         let budget = std::sync::Arc::new(crate::import_limits::ImportBudget::new(limits)?);
+        Self::from_bytes_with_budget(data, budget)
+    }
+
+    /// Keep the caller's request context available even if construction fails.
+    pub fn from_bytes_with_budget(
+        data: Vec<u8>,
+        budget: std::sync::Arc<crate::import_limits::ImportBudget>,
+    ) -> Result<Self> {
+        budget.check()?;
+        let limits = budget.limits;
         if data.len() > limits.input_bytes {
             return Err(budget.reject("input bytes"));
         }
@@ -1132,6 +1142,7 @@ impl PdfDocument {
         legacy: fn(&[u8]) -> Result<Vec<crate::content::Operator>>,
     ) -> Result<Vec<crate::content::Operator>> {
         if let Some(budget) = &self.import_budget {
+            budget.record_content_parse();
             crate::content::parser::parse_content_with_budget(data, budget)
         } else {
             legacy(data)
@@ -1154,8 +1165,12 @@ impl PdfDocument {
             .get(&page)
             .cloned();
         let operators = match cached {
-            Some(operators) => operators,
+            Some(operators) => {
+                budget.record_page_operator_cache_hit();
+                operators
+            },
             None => {
+                budget.record_content_parse();
                 let operators =
                     Arc::new(crate::content::parser::parse_content_with_budget(data, budget)?);
                 budget.charge_entries(1)?;
@@ -19457,6 +19472,9 @@ impl PdfDocument {
     ) -> Result<std::sync::Arc<Vec<u8>>> {
         self.check_import_budget()?;
         if let Some(data) = self.xobject_stream_cache.lock_or_recover().get(&reference) {
+            if let Some(budget) = &self.import_budget {
+                budget.record_form_stream_cache_hit();
+            }
             return Ok(std::sync::Arc::clone(data));
         }
         let data = std::sync::Arc::new(self.decode_stream_with_encryption(xobject, reference)?);
@@ -19496,6 +19514,9 @@ impl PdfDocument {
         {
             let mut cache = self.page_content_cache.lock_or_recover();
             if let Some(data) = cache.get(&page_index) {
+                if let Some(budget) = &self.import_budget {
+                    budget.record_page_stream_cache_hit();
+                }
                 return Ok(std::sync::Arc::clone(data));
             }
         }

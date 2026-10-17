@@ -604,6 +604,20 @@ impl HwpDocument {
         cfg!(all(feature = "pdf-import", target_arch = "wasm32"))
     }
 
+    /// Worker가 입력을 복사하기 전에 제품의 실제 요청 한도를 조회한다.
+    #[wasm_bindgen(js_name = getPdfImportPolicy)]
+    pub fn get_pdf_import_policy() -> String {
+        #[cfg(feature = "pdf-import")]
+        {
+            serde_json::to_string(&crate::parser::pdf::PdfImportPolicy::default())
+                .expect("PDF policy serialization cannot fail")
+        }
+        #[cfg(not(feature = "pdf-import"))]
+        {
+            "null".to_owned()
+        }
+    }
+
     /// PDF 전체 또는 선택 쪽을 공통 IR로 가져온다 (기본 포함 `pdf-import`).
     /// options.sourcePages는 0-based 증가 배열이며 생략하면 전체 쪽이다.
     /// 동기 실행이므로 브라우저에서 취소/시간 제한이 필요하면 Worker에서 호출한다.

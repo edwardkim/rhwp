@@ -293,6 +293,40 @@ fn invalid_or_over_budget_input_does_not_poison_next_import() {
 }
 
 #[test]
+fn successful_import_reports_consumed_policy_and_request_local_work() {
+    let source = pdf(&[("FIRST", "Helvetica"), ("SECOND", "Courier")]);
+    let imported = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+    let metadata = serde_json::to_value(&imported.metadata).unwrap();
+    assert_eq!(metadata["resourcePolicy"]["schemaVersion"], 1);
+    assert_eq!(
+        metadata["resourcePolicy"]["backend"]["inputBytes"],
+        16 * 1024 * 1024
+    );
+    assert_eq!(
+        metadata["resourceUsage"]["failure"],
+        serde_json::Value::Null
+    );
+    assert!(metadata["resourceUsage"]["operators"].as_u64().unwrap() > 0);
+    assert!(
+        metadata["resourceUsage"]["contentParseCalls"]
+            .as_u64()
+            .unwrap()
+            > 0
+    );
+    assert!(
+        metadata["resourceUsage"]["pageOperatorCacheHits"]
+            .as_u64()
+            .unwrap()
+            > 0
+    );
+    let next = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+    assert_eq!(
+        serde_json::to_value(next.metadata.resource_usage).unwrap(),
+        metadata["resourceUsage"]
+    );
+}
+
+#[test]
 fn blank_pages_are_not_silently_dropped() {
     let imported = parse_pdf_with_options(
         &pdf(&[("", "Helvetica"), ("OK", "Helvetica")]),

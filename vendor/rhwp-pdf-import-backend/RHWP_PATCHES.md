@@ -297,3 +297,15 @@ accessor 등 입증 경계는 `../rhwp-jpeg-decoder/RHWP_PATCHES.md`와 단계 �
 - 기존 legacy 이미지 추출 API, 텍스트/vector clipping은 이번 수정 범위 밖이다.
   전체 할당 경계 입증을 의미하지 않으며 `parser_allocation_bounds_proven=false`를 유지한다.
   명세·경계 실행·실물 한컴 출력 근거는 3단계 보고서 7.5를 따른다.
+
+### 요청 정책·거절 예약과 cache 관측 (#7957–#7963, F1)
+
+- 기본 입력 상수와 직렬화 가능한 `PdfImportLimits`를 제품 정책 조회에 재사용한다.
+  이 절편에서 기존 한도를 높이거나 해제하지 않는다.
+- 최초 거절은 reason과 가능한 used/requested/limit를 함께 보존한다. 실패한 예약은 성공
+  counter에 더하지 않으며 이후 오류로 최초 기록을 덮어쓰지 않는다. sticky 거절은 유지한다.
+- `from_bytes_with_budget`는 생성 실패 뒤에도 호출자가 같은 요청의 관측값을 읽게 한다.
+  page operator/page stream/Form stream의 실제 cache hit와 content parse 호출을 계수한다.
+  이 값은 누적 작업 관측이며 cache identity·실제 paint·원래 한도 소비를 바꾸지 않는다.
+- 상세 backend 문자열은 Rust의 opt-in 로컬 진단에 보존한다. 기본 사용자 오류의 code/message는
+  유지하고 `parserAllocationBoundsProven=false` 및 기존 할당 감사 백로그를 유지한다.

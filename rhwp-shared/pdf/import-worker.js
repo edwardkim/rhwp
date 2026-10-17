@@ -15,6 +15,10 @@ self.onmessage = ({ data }) => {
       initialized = true;
       let result;
       switch (data.method) {
+        case 'policy':
+          result = JSON.parse(HwpDocument.getPdfImportPolicy());
+          if (!result) throw new Error('PDF_IMPORT_DISABLED: PDF import is not compiled in');
+          break;
         case 'importPdf': {
           candidate = HwpDocument.importPdf(data.bytes, data.options);
           result = {

@@ -17,6 +17,35 @@ fn budget(stream: usize, total: usize) -> ImportBudget {
     .unwrap()
 }
 
+#[test]
+fn failed_reservations_keep_first_amount_and_successful_counters() {
+    let request = budget(1024, 3);
+    request.charge_decoded(2).unwrap();
+    request.charge_decoded(2).unwrap_err();
+    let observed = request.snapshot();
+    assert_eq!(observed.decoded_bytes, 2);
+    let failure = observed.failure.unwrap();
+    assert_eq!(failure.reason, "document decoded bytes");
+    assert_eq!(
+        (failure.used, failure.requested, failure.limit),
+        (Some(2), Some(2), Some(3))
+    );
+    request.reject("later failure");
+    assert!(matches!(
+        request.check(),
+        Err(Error::ImportResourceLimit("document decoded bytes"))
+    ));
+    let first = request.snapshot().failure.unwrap();
+    assert_eq!(
+        (first.used, first.requested, first.limit),
+        (Some(2), Some(2), Some(3))
+    );
+    let next = budget(1024, 3);
+    next.charge_decoded(3).unwrap();
+    assert!(next.snapshot().failure.is_none());
+    assert_eq!(next.snapshot().decoded_bytes, 3);
+}
+
 fn decode(data: &[u8], filters: &[&str], budget: &ImportBudget) -> Result<Vec<u8>, Error> {
     decode_stream_with_budget(
         data,

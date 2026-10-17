@@ -6,6 +6,7 @@
 mod extract;
 mod lowering;
 mod path_paint;
+mod policy;
 mod recognition;
 mod structured_lowering;
 mod table_detection;
@@ -13,12 +14,16 @@ mod table_hierarchy;
 mod table_topology;
 
 use crate::model::document::Document;
+use pdf_oxide::import_limits::{ImportBudget, ImportBudgetSnapshot, ImportLimitFailure};
 use pdf_oxide::{elements::PathContent, extractors::PdfImage, layout::TextSpan, PdfDocument};
 use serde::Serialize;
 use serde_json::Value;
+use std::sync::Arc;
+
+pub use policy::PdfImportPolicy;
 
 /// Product adapters may stop reading after this limit plus one byte.
-pub const MAX_INPUT_BYTES: usize = 16 * 1024 * 1024;
+pub const MAX_INPUT_BYTES: usize = pdf_oxide::import_limits::DEFAULT_INPUT_BYTES;
 /// Maximum selected pages; adapters must bound range expansion before allocation.
 pub const MAX_PAGES: usize = 128;
 const MAX_POOL_ENTRIES: usize = u16::MAX as usize;
@@ -36,11 +41,43 @@ pub struct PdfImportOptions {
 pub struct PdfImportError {
     pub code: &'static str,
     pub message: &'static str,
+    /// Opt-in local diagnostics. Display deliberately retains the stable message
+    /// and does not publish backend strings that can contain source document data.
+    pub diagnostics: Option<Box<PdfImportFailure>>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PdfImportFailure {
+    pub stage: &'static str,
+    pub source_page: Option<usize>,
+    pub backend_kind: Option<&'static str>,
+    pub backend_message: Option<String>,
+    pub resource_usage: Option<ImportBudgetSnapshot>,
+    pub frontend_limit: Option<ImportLimitFailure>,
 }
 
 impl PdfImportError {
     fn backend(error: pdf_oxide::error::Error) -> Self {
-        match error {
+        use pdf_oxide::error::Error;
+        let kind = match &error {
+            Error::ImportResourceLimit(_) => "resource_limit",
+            Error::EncryptedPdf => "encrypted",
+            Error::Unsupported(_) => "unsupported",
+            Error::UnsupportedFilter(_) => "unsupported_filter",
+            Error::Image(_) => "image",
+            Error::Font(_) => "font",
+            Error::Decode(_) => "decode",
+            Error::ParseError { .. } => "parse",
+            Error::InvalidPdf(_) => "invalid_pdf",
+            Error::InvalidXref => "xref",
+            Error::ObjectNotFound(..) => "object_not_found",
+            Error::InvalidObjectType { .. } => "object_type",
+            Error::UnexpectedEof => "unexpected_eof",
+            _ => "backend",
+        };
+        let detail = error.to_string();
+        let mut result = match error {
             pdf_oxide::error::Error::ImportResourceLimit(reason) => Self::budget(reason),
             pdf_oxide::error::Error::EncryptedPdf => Self::new(
                 "PDF_ENCRYPTION_UNSUPPORTED",
@@ -50,13 +87,66 @@ impl PdfImportError {
                 "PDF_PARSE_FAILED",
                 "PDF container or extraction could not be processed",
             ),
-        }
+        };
+        result.diagnostics = Some(Box::new(PdfImportFailure {
+            stage: "backend",
+            source_page: None,
+            backend_kind: Some(kind),
+            backend_message: Some(detail),
+            resource_usage: None,
+            frontend_limit: None,
+        }));
+        result
     }
     fn new(code: &'static str, message: &'static str) -> Self {
-        Self { code, message }
+        Self {
+            code,
+            message,
+            diagnostics: None,
+        }
     }
     fn budget(message: &'static str) -> Self {
         Self::new("PDF_RESOURCE_LIMIT", message)
+    }
+
+    fn at(
+        mut self,
+        stage: &'static str,
+        page: Option<usize>,
+        budget: Option<&ImportBudget>,
+    ) -> Self {
+        let failure = self.diagnostics.get_or_insert_with(|| {
+            Box::new(PdfImportFailure {
+                stage,
+                source_page: page,
+                backend_kind: None,
+                backend_message: None,
+                resource_usage: None,
+                frontend_limit: None,
+            })
+        });
+        if matches!(failure.stage, "backend" | "frontend") {
+            failure.stage = stage;
+        }
+        failure.source_page = failure.source_page.or(page);
+        if let Some(budget) = budget {
+            failure.resource_usage = Some(budget.snapshot());
+        }
+        self
+    }
+
+    fn limit(mut self, reason: &'static str, used: usize, requested: usize, limit: usize) -> Self {
+        self = self.at("frontend", None, None);
+        self.diagnostics
+            .as_mut()
+            .expect("frontend context")
+            .frontend_limit = Some(ImportLimitFailure {
+            reason,
+            used: Some(used),
+            requested: Some(requested),
+            limit: Some(limit),
+        });
+        self
     }
 }
 
@@ -97,6 +187,8 @@ pub struct PdfImportMetadata {
     pub paragraph_policy: &'static str,
     pub parser_allocation_bounds_proven: bool,
     pub warnings: Vec<&'static str>,
+    pub resource_policy: PdfImportPolicy,
+    pub resource_usage: ImportBudgetSnapshot,
 }
 
 pub struct PdfImportResult {
@@ -117,6 +209,7 @@ struct ExtractedPage {
 
 #[derive(Default)]
 struct Budget {
+    policy: PdfImportPolicy,
     spans: usize,
     text_bytes: usize,
     image_pixels: u64,
@@ -124,12 +217,16 @@ struct Budget {
     cells: usize,
 }
 
-fn selected_pages(options: &PdfImportOptions, count: usize) -> Result<Vec<usize>, PdfImportError> {
+fn selected_pages(
+    options: &PdfImportOptions,
+    count: usize,
+    policy: &PdfImportPolicy,
+) -> Result<Vec<usize>, PdfImportError> {
     match &options.source_pages {
         None => Ok((0..count).collect()),
         Some(pages)
             if !pages.is_empty()
-                && pages.len() <= MAX_PAGES
+                && pages.len() <= policy.max_selected_pages
                 && pages.iter().all(|p| *p < count)
                 && pages.windows(2).all(|p| p[0] < p[1]) =>
         {
@@ -150,8 +247,14 @@ pub fn parse_pdf_with_options(
     bytes: &[u8],
     options: &PdfImportOptions,
 ) -> Result<PdfImportResult, PdfImportError> {
-    if bytes.len() > MAX_INPUT_BYTES {
-        return Err(PdfImportError::budget("input exceeds 16 MiB"));
+    let policy = PdfImportPolicy::default();
+    if bytes.len() > policy.max_input_bytes() {
+        return Err(PdfImportError::budget("input exceeds 16 MiB").limit(
+            "input bytes",
+            0,
+            bytes.len(),
+            policy.max_input_bytes(),
+        ));
     }
     if !bytes.starts_with(b"%PDF-") {
         return Err(PdfImportError::new(
@@ -161,11 +264,9 @@ pub fn parse_pdf_with_options(
     }
     // Copy only after the input budget check. Upstream internal allocations are
     // a separate, unresolved release gate; extraction counters do not bound them.
-    let pdf = PdfDocument::from_bytes_with_limits(
-        bytes.to_vec(),
-        pdf_oxide::import_limits::PdfImportLimits::default(),
-    )
-    .map_err(PdfImportError::backend)?;
+    let request = Arc::new(ImportBudget::new(policy.backend).map_err(PdfImportError::backend)?);
+    let pdf = PdfDocument::from_bytes_with_budget(bytes.to_vec(), Arc::clone(&request))
+        .map_err(|error| PdfImportError::backend(error).at("container", None, Some(&request)))?;
     if pdf.is_encrypted() {
         return Err(PdfImportError::new(
             "PDF_ENCRYPTION_UNSUPPORTED",
@@ -173,13 +274,19 @@ pub fn parse_pdf_with_options(
         ));
     }
     let count = pdf.page_count();
-    pdf.check_import_budget().map_err(PdfImportError::backend)?;
-    let count = count
-        .map_err(|_| PdfImportError::new("PDF_PARSE_FAILED", "PDF page tree could not be read"))?;
-    if count == 0 || count > MAX_PAGES {
-        return Err(PdfImportError::budget("PDF must have 1 to 128 pages"));
+    pdf.check_import_budget()
+        .map_err(|error| PdfImportError::backend(error).at("page_tree", None, Some(&request)))?;
+    let count = count.map_err(|error| {
+        let mut error = PdfImportError::backend(error).at("page_tree", None, Some(&request));
+        error.message = "PDF page tree could not be read";
+        error
+    })?;
+    if count == 0 || count > policy.max_source_pages {
+        return Err(PdfImportError::budget("PDF must have 1 to 128 pages")
+            .limit("source pages", 0, count, policy.max_source_pages)
+            .at("page_tree", None, Some(&request)));
     }
-    let selected = selected_pages(options, count)?;
+    let selected = selected_pages(options, count, &policy)?;
     let mut document = lowering::new_document().map_err(|_| {
         PdfImportError::new("PDF_LOWERING_FAILED", "IR scaffold initialization failed")
     })?;
@@ -188,10 +295,14 @@ pub fn parse_pdf_with_options(
         .pop()
         .ok_or_else(|| PdfImportError::new("PDF_LOWERING_FAILED", "IR scaffold has no section"))?;
     let mut next_id = 1;
-    let mut budget = Budget::default();
+    let mut budget = Budget {
+        policy,
+        ..Budget::default()
+    };
     let mut pages = Vec::with_capacity(selected.len());
     for source_page in selected {
-        let page = extract::extract(&pdf, source_page, &mut budget)?;
+        let page = extract::extract(&pdf, source_page, &mut budget)
+            .map_err(|error| error.at("extract", Some(source_page), Some(&request)))?;
         // Reserve a conservative upper bound before any u16 resource-ID cast in
         // lowering. All pages share these pools; no page-local IDs are appended.
         let tables = page.snapshot["tableDetection"]["tables"]
@@ -227,7 +338,9 @@ pub fn parse_pdf_with_options(
         let section = document.sections.len();
         document.sections.push(template.clone());
         let lowered = structured_lowering::lower(&page, &mut document, &mut next_id);
-        pdf.check_import_budget().map_err(PdfImportError::backend)?;
+        pdf.check_import_budget().map_err(|error| {
+            PdfImportError::backend(error).at("lower", Some(source_page), Some(&request))
+        })?;
         let report = lowered.map_err(|_| {
             PdfImportError::new("PDF_LOWERING_FAILED", "PDF content could not be lowered")
         })?;
@@ -275,6 +388,8 @@ pub fn parse_pdf_with_options(
                 "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
                 "Deferred table families retain positional content; inspect page diagnostics",
             ],
+            resource_policy: policy,
+            resource_usage: request.snapshot(),
         },
     })
 }
