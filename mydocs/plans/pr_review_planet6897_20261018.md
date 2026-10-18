@@ -1619,3 +1619,61 @@ stored_span_cut_closing_advance를 함께 사용해, 유효한 원본 Center/Bot
 LineSeg가 있다는 사실만으로 일부 새 줄까지 원본 슬롯으로 인증하지 않는다.
 opt-in 유닛 진단에도 현재 줄 출처와 실제 뒤 전진을 표시해64/65와81/82의 경로를
 직접 대조한다. 아직 새 출력은 미실행이며 두 경계와 확대62쪽·전쪽 대조 뒤 판정한다.
+
+
+### 후보64 검증 완료 범위와 종료 상자 회귀의 보완 준비
+
+생산7066cb63d Native 진단opt1은227.95초·exit0이며 SHA는
+dbe7c1ae59d72c122327dc3f1a22cca3e4b0957e27f001f861eb374f5eb3e41f이다.
+fresh WASM은375.9초·exit0, SHA는
+cadfe4619008cbed3861bbce550335682e3521319cc10aaa600f493626d70a8d다.
+이번에는 신호 추적을 붙여 정상 종료했으며 첫143의 원인을 단정하지 않는다.
+원래 target/pr-review/jobs8/codegen16을 재사용했고 카고 실행은 순차였다.
+Native rlib는 실제 deps/librhwp.rlib의 갱신 시각과 SHA
+08ddcff3c1241391236ff76adcadbcd0bcbff1d067a06999e2e619e26afec79d로 별도 고정했다.
+
+1342000의64쪽은Native99.16865/WASM99.20744%,65쪽99.59531/99.61056%다.
+재조판 줄의 source bit를 실제 유닛 진단에서 확인했다. 원본 슬롯81/82쪽은
+98.59170/98.59371%,99.93021/99.95284%로 복구했다. 두 backend의65/81 overlay를
+원래 해상도로 직접 열었고, Print의 줄 소속도 다시 대조했다.64/65쪽 해당 문단은
+[64,65,65,65],81/82쪽 해당 문단은[81,82,82,82,82,82,82]로 양쪽이 같다.
+후보62의 두 번째 소속은[81,81,82,82,82,82,82]로 실패한다. 이 진단은
+line-closure-independent-print-ownership-checks.json이며 정식 회귀로 승격하지 않는다.
+
+전체415쪽의 Native와 fresh WASM은 PDF415쪽과 대응한다. 같은 조건의 후보60과
+엄격 대조해 양쪽 모두64/65 두 쪽만 개선·나머지413쪽 동일·새 하락0쪽이다.
+Native103쪽, WASM102쪽이90% 미만이며 최저61쪽39.01019/39.26241%다.
+80168 전157쪽도 양쪽 PDF와 같고 최저21쪽94.73551/94.95563%로90% 미만0쪽이다.
+Native157쪽은 후보60과 모두 같다. 후보54 이후 남은 하락과 다른 문서의 문제를
+이번 무회귀로 면제하지 않는다. current-head 원본 TSV와 strict comparison JSON은
+candidate64-checkpoint.json에 연결했다.
+
+같은 source의 정식 집중 nextest는30PASS·0FAIL·1924skipped·8바이너리·exit0이다.
+전체306.6초, 검사4.763초다. 이 결과는 전체 Rust/Skia3종/Studio/Windows/lint나
+전체 원래11PR 시각 gate를 대체하지 않는다. Native opt1도 최종opt3 검증은 아니다.
+필수 시각 선행 조건이 미달인1342000에는 새 실물 회귀를 추가하지 않는다.
+
+80168의121쪽은 Native99.66078/WASM99.70370%다. 새 head 양쪽 overlay를
+직접 열고 종료 행을2배 NEAREST crop으로 확대해 표 하단·제목 기준선·4줄의
+내용과 뒤쪽 이어받기를 판독했다. 미세한 글꼴 윤곽/약1px 괘선 차이는 남으며
+문단 내부 컷을 full-page 종료 띠로 늘린 오류는 복구됐다. crop의 원본SHA/영역/
+배율은candidate64-p121-enlargement-evidence.json에 남겼다. 독립PDF 괘선의
+121쪽 하단1033.109375px·마지막 행 상단942.169352px, 제목 기준선
+983.519938/1006.079997px와 본문958.559977/1028.959961px를 PyMuPDF로 추출했다.
+122쪽은 “공급되도록”부터4줄이 이어진다는 독립 Print 텍스트도 확인했다.
+
+이 중요한 내부 컷 경계는 완료 페이지의±2px 회귀와 관계 검사를 함께 보완한다.
+기존 tests/cases/regulatory_analysis_completed_pages.rs의 소유 기반 선택을 재사용하고
+앞 행/제목/본문 포함·동일 행 상자·121/122쪽4+4줄과 원문 전체 보존을 검사한다.
+ignored 제안 검사 실행에서 후보54는 실제하단1045.266667 vsPrint1033.109375로
+FAIL(exit101),후보64는PASS(exit0)다. 컴파일도 양쪽 성공했으며 환경 실패를
+재현으로 세지 않았다. p121-proposed-regression-before-after-results.json에 명령과
+고정 library를 남겼다. 실제 정식 파일에 포함 후 동일 검사와 focused를 재검증한다.
+
+1342000 137/177쪽의 줄 소속은 유지되지만 마지막 행 상자가3.76/17.1px
+작아지고 정렬이달라진 상태는 남는다.177쪽 overlay에서 실제 하단/본문 차이를
+확인했으며95%대 점수로 완료 처리하지 않는다. source row/LineSeg 리셋과
+accepted row ledger를 추가 추적했다. 기록이 없는 이전 행 몫을 선언 높이로
+추정하거나 source reset이 있는 셀의 높이를 모든 조각의 총합으로 단정하지 않는다.
+이는 후속 원인 분석이며 아직 새로운 보정을 구현하거나 수용하지 않았다.
+원래11PR의 잔여 시각/최종 회귀 gate, PR/CI/trailing/merge/후속처리는 계속 남는다.
