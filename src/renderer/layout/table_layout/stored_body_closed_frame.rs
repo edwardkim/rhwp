@@ -153,6 +153,9 @@ impl LayoutEngine {
     }
 
     /// 저장 호스트·개체 높이로 첫 본문 프레임의 종료를 독립적으로 확인한다.
+    /// 호스트 앵커에서 닫히는 상자와 본문 크기로 선언된 뷰포트를 구분한다.
+    /// 호출자는 이어받는 조각에만 사용한다. 첫 앵커와 개체 오프셋은 이미 소비됐어도
+    /// 선언 뷰포트의 상하 여백과 기존 하단 inset은 다음 본문에 남는다.
     /// 내용 높이 또는 현재 출력 좌표를 증거로 쓰지 않는다. 한컴의 정수 HU
     /// 저장 반올림 두 단위만 허용하며, 편집·재조판한 원본에는 적용하지 않는다.
     pub(crate) fn original_body_closed_table_frame(
@@ -170,7 +173,6 @@ impl LayoutEngine {
             || host.stored_text_partition_is_dirty()
             || host.cell_format_vpos_dirty
             || super::super::para_has_non_whitespace_text(host)
-            || !matches!(host.controls.as_slice(), [Control::Table(_)])
             || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
             || line.vertical_pos < 0
             || line.line_height <= 0
@@ -181,7 +183,6 @@ impl LayoutEngine {
             || !table.common.flow_with_text
             || table.common.allow_overlap
             || table.common.vert_align != VertAlign::Top
-            || (table.common.vertical_offset as i32) < 0
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
             || table.row_count <= 1
@@ -210,7 +211,27 @@ impl LayoutEngine {
             self.dpi,
         );
         let frame_bottom_hu = (frame_bottom * 7200.0 / self.dpi).round() as i64;
-        (stored_bottom - frame_bottom_hu).abs() <= 2
+        let anchored_frame = matches!(host.controls.as_slice(), [Control::Table(_)])
+            && (table.common.vertical_offset as i32) >= 0
+            && (stored_bottom - frame_bottom_hu).abs() <= 2;
+        // 같은 호스트의 흐름 표는 각자 독립된 개체 상자를 갖는다. 앵커의 첫 위치나
+        // 형제 개수로 본문 뷰포트를 부정하지 않으며, 다른 개체·겹침은 추정하지 않는다.
+        let flow_table_host = !host.controls.is_empty()
+            && host.controls.iter().all(|control| {
+                matches!(control, Control::Table(peer)
+                    if !peer.common.treat_as_char
+                        && crate::renderer::float_placement::is_para_topbottom_float(&peer.common)
+                        && peer.common.flow_with_text
+                        && !peer.common.allow_overlap)
+            });
+        let declared_frame = i64::from(table.common.height)
+            + i64::from(table.outer_margin_top)
+            + i64::from(table.outer_margin_bottom)
+            + i64::from(
+                crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+            );
+        let body_hu = (body_height * 7200.0 / self.dpi).round() as i64;
+        anchored_frame || (flow_table_host && (declared_frame - body_hu).abs() <= 2)
     }
 
     /// 미소비 셀 모두가 같은 원본 쪽 경계에서 끝나는지 확인한다.
