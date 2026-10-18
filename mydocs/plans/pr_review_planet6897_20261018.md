@@ -1441,3 +1441,34 @@ p65-right-independent-pdf-lines.json및p65-alignment-trace-results.json에연결
 직접확인했다. strace 실행은정상종료해SIGTERM송신자는아직확정되지않았다.
 143을OOM이나무응답문제로단정하지않으며,candidate54-wasm-review-resume-results.json에
 중단실행과캡처재사용을구분했다. 원래11PR의전체gate는계속미완료다.
+
+
+### 후보58 종료 띠 경계 보정 결과
+
+생산5c6932025의Native 진단opt1 빌드는225.7초·exit0이며실행파일 SHA는
+ d3e4ab8c369e46ba2b9dee7b71c925870c1b4e9f50df243affe8f99aa7a2549d이다.
+공용target/jobs8/codegen16을사용했고frozen rlib와생산자JSON을보존했다. 후보56에서
+복구한80168 121쪽99.66078%를유지하며,잘못하락했던1342000 202쪽99.99431%,
+235쪽94.14598%와130/233쪽도후보54수치로회복했다.확대한1342000 25쪽과80168 23쪽
+중후보54와다른값은121쪽의+6.00921%p뿐이다.6803전5쪽/76076두쪽도후보54와같다.
+
+80168은새실행파일로전157쪽을다시산출해PDF와쪽수가같고최저21쪽94.73551%,
+90%미만0쪽이다.엄격한동일조건비교에서후보54보다121쪽만개선·하락0쪽이며,
+현재121쪽overlay를직접열어하단상자/본문의약11px/5.45px차이가줄었음을확인했다.
+기존devel대비글꼴별칭관련작은하락10쪽은이결과로면제하지않는다.원본TSV는
+candidate58-native-all-pages/merged-80168,비교명령과결과는verified-comparison JSON이다.
+
+현재58에서수정한두Rust파일의rustfmt --check는exit0이다.새source의정식focused,
+fresh WASM/전쪽Native1342000/전체Rust/lint/Skia/Studio/Windows는미완료다.
+후보54의30PASS나양쪽85/86쪽98%증거를58의최종게이트로재인용하지않는다.
+Native58의65쪽95.00712%와7쪽의추가하락,95쪽83.69007%등을먼저개선해야하며,
+후보54전쪽103미달을현재58전체결과인것처럼보고하지않는다.원래11PR범위/원격
+PR·CI·trailing·merge·후속처리도그대로남는다. candidate58-checkpoint.json에연결했다.
+
+65쪽원본스타일을frozen54모델로읽은진단도exit0이다.5문단모두앞/뒤간격0,
+Justify/130%이고keep_lines/keep_with_next/widow_orphan은false다.문단뒤간격이
+17.333px였다는가설은성립하지않는다.원본에서다시시작하는문단2..4의마지막저장
+줄끝은12700HU=169.333333px이며,새유닛전진은152px다.원본물리프레임과재조판
+유닛의점유를어디서분리해야할지공통CellCutFrame.height와실제centered_content_height
+소비를대조한다.이는아직구현/검증되지않은후속가설이며임의px고정이나내용숨김으로
+대신하지않는다. p65-styles-results.json과소스/정렬/독립PDF진단에근거를보존했다.
