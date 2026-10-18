@@ -62,7 +62,7 @@ fn hwpx_save_writes_soft_hyphen_as_literal_char() {
     let xml = section_xml(&saved);
 
     assert!(
-        !xml.contains("<hp:hyphen/>"),
+        !xml.contains("<hp:hyphen/>") && !xml.contains("<hp:hypen/>"),
         "소프트 하이픈을 <hp:hyphen/> 요소로 내리면 한글이 그 글자를 버린다"
     );
     assert!(

@@ -741,7 +741,7 @@ fn parse_paragraph_body(
                     }
                     b"t" => {
                         // 텍스트 읽기 (탭 확장 데이터 포함)
-                        let (parts, tab_exts, nb_space_element) =
+                        let (parts, tab_exts, nb_space_element, hyphen_element) =
                             read_text_content_with_tabs(reader)?;
                         text_parts.extend(parts);
                         para.tab_extended.extend(tab_exts);
@@ -749,6 +749,12 @@ fn parse_paragraph_body(
                         // 비트로 요소/리터럴을 갈라 원본 표기를 그대로 되돌린다.
                         if nb_space_element {
                             para.control_mask |= 1u32 << 0x1E;
+                        }
+                        // [#7993] 소프트 하이픈도 요소·리터럴 두 표기가 있다. 요소 표기를
+                        // 만나면 HWP5 제어코드 24 자리(비트 24)를 세워 직렬화기가 요소로
+                        // 되돌리게 한다(#4895 의 출처 표기 보존 계약).
+                        if hyphen_element {
+                            para.control_mask |= 1u32 << 0x18;
                         }
                     }
                     b"tbl" => {
@@ -2109,7 +2115,7 @@ const PAGE_FOOTER_SLOT_PART: &str = "\u{0002}pf";
 /// <hp:t> 텍스트 컨텐츠를 읽는다.
 /// 탭 확장 데이터도 함께 반환 (HWPX 인라인 탭의 leader/type/width)
 fn read_text_content(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
-    let (parts, _, _) = read_text_content_with_tabs(reader)?;
+    let (parts, _, _, _) = read_text_content_with_tabs(reader)?;
     Ok(parts
         .into_iter()
         .filter(|p| p != TITLE_MARK_PART_IGNORE && p != TITLE_MARK_PART_KEEP)
@@ -2135,11 +2141,12 @@ fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
 
 fn read_text_content_with_tabs(
     reader: &mut Reader<&[u8]>,
-) -> Result<(Vec<String>, Vec<[u16; 7]>, bool), HwpxError> {
+) -> Result<(Vec<String>, Vec<[u16; 7]>, bool, bool), HwpxError> {
     let mut parts: Vec<String> = Vec::new();
     let mut text = String::new();
     let mut tab_ext_buf: Vec<[u16; 7]> = Vec::new();
     let mut saw_nb_space_element = false;
+    let mut saw_hyphen_element = false;
     let mut buf = Vec::new();
 
     loop {
@@ -2203,8 +2210,14 @@ fn read_text_content_with_tabs(
                         }
                     }
                     // 소프트 하이픈 — 줄바꿈 자리에서만 보인다. 리터럴 '-' 와 구별해야
-                    // 저장 왕복에서 단어가 갈라지지 않는다(ParaList XML schema.xml:291).
-                    b"hyphen" => text.push('\u{00AD}'),
+                    // 저장 왕복에서 단어가 갈라지지 않는다.
+                    // [#7993] 한/글은 이 요소를 `hp:hypen` 으로 적는다(스키마 문서의 `hyphen`
+                    // 과 다르다 — 저장소 한컴 HWPX 표본 `hypen` 17곳 · `hyphen` 0곳). 한/글은
+                    // `hyphen` 을 모르는 요소로 버리므로 쓰기는 `hypen` 만, 읽기는 두 철자를 받는다.
+                    b"hypen" | b"hyphen" => {
+                        text.push('\u{00AD}');
+                        saw_hyphen_element = true;
+                    }
                     // 제목 차례 표시 — 8유닛 슬롯이라 텍스트가 아니라 조각 마커로 끊는다.
                     // 이걸 흘리면 저장본 축이 8유닛 짧아져 한글이 본문을 통째로 버린다.
                     b"titleMark" => {
@@ -2242,7 +2255,7 @@ fn read_text_content_with_tabs(
     if !text.is_empty() || parts.is_empty() {
         parts.push(text);
     }
-    Ok((parts, tab_ext_buf, saw_nb_space_element))
+    Ok((parts, tab_ext_buf, saw_nb_space_element, saw_hyphen_element))
 }
 
 fn parse_tab_extension(e: &quick_xml::events::BytesStart) -> [u16; 7] {

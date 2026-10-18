@@ -3285,8 +3285,8 @@ impl DocumentCore {
         }
 
         /// 파서만 알 수 있는 **표기 출처** 비트 — 재계산으로 되살릴 수 없으므로 보존한다.
-        /// 지금은 묶음 빈칸(0x1E)만 파서가 세운다(#5174).
-        const REPRESENTATION_ORIGIN_MASK: u32 = 1u32 << 0x001E;
+        /// 묶음 빈칸(0x1E, #5174)과 소프트 하이픈 요소(0x18, #7993)를 파서가 세운다.
+        const REPRESENTATION_ORIGIN_MASK: u32 = (1u32 << 0x001E) | (1u32 << 0x0018);
 
         fn process_para(para: &mut Paragraph) {
             if para.char_shapes.is_empty() {
