@@ -15367,6 +15367,12 @@ impl LayoutEngine {
             // calc_nested_table_height 와 정확히 일치(드리프트 0):
             // Σ row_h + cs*(n-1) + om_top + om_bottom + spacing.
             // 2단계+ 중첩/텍스트 동거 문단은 아래 atom 폴백 유지(범위 외).
+            //
+            // [#7870] 글자처럼 취급(TAC) 중첩 표는 줄 안의 글자 하나다 — 한/글은 그 줄을
+            // 쪽째 넘기고 표를 행 사이에서 나누지 않는다(쪽보다 커도 다음 쪽 머리에 통째로
+            // 놓고 넘친 행은 잘린다). 한/글 2024 합성 대조: 4×4 TAC 표가 쪽 바닥에 걸리면
+            // pageBreak CELL·NONE 모두 다음 쪽으로 통째, 같은 표의 자리차지 판은 행 사이에서
+            // 나뉜다. 행 유닛 분해는 자리차지 표(70833 조문대비표의 안쪽 RowBreak 표 등)만.
             if has_separate_table_units && p.text.trim().is_empty() {
                 let nested_tables: Vec<&crate::model::table::Table> = source_controls
                     .iter()
@@ -15376,6 +15382,7 @@ impl LayoutEngine {
                     })
                     .collect();
                 if nested_tables.len() == 1
+                    && !nested_tables[0].common.treat_as_char
                     && nested_tables[0].row_count >= 2
                     && !matches!(
                         nested_tables[0].page_break,
@@ -18938,14 +18945,37 @@ impl LayoutEngine {
         };
         // `cell_units` 의 atom 분기와 같은 가시 텍스트 판정 — 표와 글자가 함께
         // 있는 문단은 높이가 `line_based_h + nested_h + 4.0` 이라 꼬리가 여백이 아니다.
-        if para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}') {
+        // [#7870] 그 분기는 공백만 있는 줄을 가시 텍스트로 보지 않는다(`trim`) — 표 뒤
+        // 공백 하나가 든 7336 4쪽 TAC 표 문단도 `max(nested_h, line_based_h)` atom 이다.
+        if para
+            .text
+            .chars()
+            .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace())
+        {
             return 0.0;
         }
+        // [#7870] 보이는 상자에는 위·아래 캡션도 든다(행 유닛 갈래의 #6599 와 같은
+        // 셈). 캡션을 빼면 캡션 높이가 «보이지 않는 여백» 으로 잘못 분류된다 —
+        // 2181727 6쪽에서 `<표 1>` 캡션 표가 그 몫만큼 바닥에 앉을 수 있다고 오판했다.
         let nested_h: f64 = para
             .controls
             .iter()
             .map(|ctrl| match ctrl {
-                Control::Table(t) => self.calc_nested_table_height(t.as_ref(), styles),
+                Control::Table(t) => {
+                    let caption_h = match t.caption.as_ref() {
+                        Some(caption)
+                            if matches!(
+                                caption.direction,
+                                CaptionDirection::Top | CaptionDirection::Bottom
+                            ) =>
+                        {
+                            self.calculate_caption_height(&t.caption, styles)
+                                + hwpunit_to_px(caption.spacing as i32, self.dpi)
+                        }
+                        _ => 0.0,
+                    };
+                    self.calc_nested_table_height(t.as_ref(), styles) + caption_h
+                }
                 _ => 0.0,
             })
             .sum();
@@ -18953,6 +18983,25 @@ impl LayoutEngine {
             return 0.0;
         }
         (unit.height - nested_h).max(0.0)
+    }
+
+    /// [#7870] 칸 내용이 다음 조각으로 이어지는 컷 `[start, end)` 의 마지막 유닛이 중첩 표
+    /// atom 이면 그 상자 아래 이송 여백(#5920)은 쪽 경계 밖으로 흐른다. 용량 컷이 `h` 에
+    /// 가시 높이만 더한 것과 같은 회계를 물리 밴드 재맞춤과 세로 정렬 높이에도 준다 —
+    /// 7336 4쪽 가운데 정렬 칸은 이 여백(줄간격 452HU)을 내용으로 세어 칸 내용 전체가
+    /// 3px 위로 올라갔다. 칸 끝까지 소비한 컷은 여백이 칸 상자 안에 남으므로 0 이다.
+    pub(super) fn continued_cut_nested_atom_tail(
+        &self,
+        cell: &crate::model::table::Cell,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if end <= start || end >= units.len() {
+            return 0.0;
+        }
+        self.nested_atom_invisible_tail(cell, &units[end - 1], styles)
     }
 
     fn is_non_inline_control_flow_unit(unit: &CellUnit) -> bool {
@@ -21690,6 +21739,11 @@ impl LayoutEngine {
                     || shared_empty_frame
                     || (u.page_frame_reset_before
                         && self.stored_shared_cell_frame(table, cell, j, styles));
+                // [#7870] 저장 되감김이 relaxed 규칙으로 흡수되는지 볼 때도 아래 용량 컷과
+                // 같은 점유 높이를 쓴다. 중첩 표 atom 의 상자 아래 이송 여백(#5920)은 쪽
+                // 바닥 예산에 들지 않는다 — 편람 289쪽 TAC 4×4 표는 이 여백 17px 때문에만
+                // 남은 공간을 넘어, 한/글이 그 쪽에 앉힌 표를 저장 되감김 자리에서 넘겼다.
+                let unit_fit_height = u.height - self.nested_atom_invisible_tail(cell, u, styles);
                 if j > start
                     && (u.hard_break_before
                         || body_frame_reset
@@ -21699,7 +21753,7 @@ impl LayoutEngine {
                         || ((rewind_internal_hard_break_orphan
                             || !relaxed_hard_break
                             || (!u.empty_spacer
-                                && (h + u.height > avail_height
+                                && (h + unit_fit_height > avail_height
                                     || avail_height - h <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
                             && !units[start..j].iter().all(|unit| unit.empty_spacer)
                             && !tiny_fragment_waste))
@@ -25943,14 +25997,20 @@ impl LayoutEngine {
             } else {
                 self.native_saved_reset_cut_trailing_trim(table, cell, &units, su, eu, styles)
             };
-            let content: f64 =
-                (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0)
-                    + mixed_nested_extra
-                    + if eu > su {
-                        self.nested_continuation_header_height(cell, &units, su, styles)
-                    } else {
-                        0.0
-                    };
+            // [#7870] 여백을 다시 세면 물리 밴드 재맞춤이 그 몫만큼 예산을 줄여 용량 컷이
+            // 방금 앉힌 atom 을 다음 쪽으로 밀어낸다.
+            let nested_atom_tail =
+                self.continued_cut_nested_atom_tail(cell, &units, su, eu, styles);
+            let content: f64 = (units[su..eu].iter().map(|u| u.height).sum::<f64>()
+                - trailing_trim
+                - nested_atom_tail)
+                .max(0.0)
+                + mixed_nested_extra
+                + if eu > su {
+                    self.nested_continuation_header_height(cell, &units, su, styles)
+                } else {
+                    0.0
+                };
             // 온전한 닫힌 저장 프레임의 빈 꼬리는 내용 유닛과 별개의 물리 공간이다.
             // 측정·중첩 배치가 이미 소비한 같은 결과를 전체 행 높이에도 쓴다.
             // 부분 컷은 선택된 CellUnit의 소유 높이를 그대로 유지한다.

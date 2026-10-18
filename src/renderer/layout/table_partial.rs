@@ -2083,10 +2083,12 @@ impl LayoutEngine {
                 let units = self.cell_units(cell, table, styles);
                 cut_units
                     .map(|(start, end)| {
-                        units[start.min(units.len())..end.min(units.len())]
+                        let (start, end) = (start.min(units.len()), end.min(units.len()));
+                        units[start..end]
                             .iter()
                             .map(|unit| unit.height)
                             .sum::<f64>()
+                            - self.continued_cut_nested_atom_tail(cell, &units, start, end, styles)
                     })
                     .unwrap_or(total_content_height)
             } else if effective_align == VerticalAlign::Center && owns_end_tail {
