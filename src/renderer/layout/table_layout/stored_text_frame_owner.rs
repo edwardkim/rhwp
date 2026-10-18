@@ -8,34 +8,6 @@ use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::table::{Cell, Table, TablePageBreak};
 
 impl LayoutEngine {
-    /// 같은 원본 문단 안의 진행하던 글자 범위가 원점0에서 다시 시작하면
-    /// 공유 셀 좌표계와 원본 조각 상자를 함께 확인한다. 다른 문단의 앞 간격으로
-    /// 돌아가는 지역 원점은 이 경계가 아니다. 유닛 생산·컷·배치가 같은 판정을 쓴다.
-    pub(super) fn stored_plain_zero_origin_line_boundary(
-        &self,
-        cell: &Cell,
-        table: &Table,
-        paragraph: &Paragraph,
-        line: usize,
-        styles: &ResolvedStyleSet,
-    ) -> bool {
-        if !self.stored_plain_line_restart(cell, table, paragraph, line) {
-            return false;
-        }
-        let previous = &paragraph.line_segs[line - 1];
-        let shared_native_frame = previous.vertical_pos > 0
-            && self.native_stored_table_has_fragment_frames(table)
-            && self.original_stored_text_frame_cell(cell, table, styles);
-        shared_native_frame
-            || (previous.vertical_pos == 0
-                && self.stored_row_reset_closes_declared_frame(cell, table, previous))
-            || i64::from(previous.vertical_pos)
-                + i64::from(previous.line_height)
-                + i64::from(previous.line_spacing)
-                + i64::from(cell.effective_vertical_padding_hu(&table.padding))
-                == i64::from(cell.height)
-    }
-
     fn original_stored_table_frame_is_usable(&self, table: &Table) -> bool {
         let profile = self.profile.get();
         (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())

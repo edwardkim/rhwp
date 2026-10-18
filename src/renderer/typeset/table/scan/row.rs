@@ -3,7 +3,7 @@
 use super::RowBlockQuery;
 use crate::model::control::Control;
 use crate::renderer::layout::table_layout::RowCutResult;
-use crate::renderer::typeset::MIN_TOP_KEEP_PX;
+use crate::renderer::typeset::{MIN_TOP_KEEP_PX, TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX};
 
 pub(in crate::renderer::typeset) struct RowScanQuery<'a> {
     pub(in crate::renderer::typeset) rows: &'a RowBlockQuery<'a>,
@@ -25,6 +25,36 @@ pub(in crate::renderer::typeset) struct RowBandProbe {
 }
 
 impl RowScanQuery<'_> {
+    /// 통짜/분할 경로가 내용 완결 후 같은 실제 끝 띠를 소비한다.
+    /// 다른 칸의 미래 공간과 이 행에서 닫히는 원본 병합 칸을 구분한다.
+    pub(in crate::renderer::typeset) fn complete_source_band_can_close(
+        &self,
+        row_heights: &[f64],
+        row_total: f64,
+        physical: f64,
+    ) -> bool {
+        let Self {
+            rows,
+            r,
+            cursor_row,
+            ..
+        } = *self;
+        let continues = rows.table.cells.iter().any(|cell| {
+            let first = cell.row as usize;
+            cell.row_span > 1 && first <= r && first + cell.row_span as usize > r + 1
+        });
+        row_total <= physical + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+            && (!continues
+                || rows.layout_engine.stored_closing_span_content_fits(
+                    rows.table,
+                    r,
+                    cursor_row,
+                    row_heights,
+                    physical,
+                    rows.styles,
+                ))
+    }
+
     /// 새 본문에 온전히 들어갈 원본 단일 행 프레임을 함께 이월한다.
     /// 이미 시작한 내용 컷과 한 본문보다 큰 실제 요구는 기존 분할을 유지한다.
     pub(in crate::renderer::typeset) fn keeps_single_stored_frame(

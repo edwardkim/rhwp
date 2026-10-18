@@ -98,17 +98,21 @@ impl TypesetEngine {
             && plain_reflow_line_units;
         // 본문을 전진시키는 일반 글줄은 저장 여부와 무관하게 같은 물리 하단을 쓴다.
         // paint의 바깥여백/쪽 끝 경계를 넘는 줄을 먼저 소비한 뒤 잘라내지 않는다.
-        let plain_body_band = ordinary_row_can_split
-            && matches!(
-                table.common.text_wrap,
-                crate::model::shape::TextWrap::TopAndBottom
-            )
-            && layout_engine.row_has_plain_line_units(table, r, styles);
+        let plain_body_band = matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::TopAndBottom
+        ) && layout_engine.row_has_plain_line_units(table, r, styles);
         let avail_for_rows = if owns_plain_row_frame || plain_body_band {
             reflow_frame_avail_for_rows.map_or(avail_for_rows, |height| avail_for_rows.min(height))
         } else {
             avail_for_rows
         };
+        if avail_for_rows < v.avail_for_rows && std::env::var("RHWP_DIAG_SCAN").is_ok() {
+            eprintln!(
+                "DIAG_SCAN PLAIN_BODY_BUDGET r={} splittable={} legacy={:.6} physical={:.6}",
+                r, ordinary_row_can_split, v.avail_for_rows, avail_for_rows
+            );
+        }
         let keep_scanning = (|| {
             // rowspan 셀이 걸친 행 — 기본은 MeasuredTable 높이로 통째 배치한다.
             //
@@ -227,6 +231,24 @@ impl TypesetEngine {
                         end_row_height_override = Some(opening);
                         split_end_cut = probe.end_cut;
                         split_end_limit = opening;
+                        return false;
+                    }
+                    if probe.fully_consumed
+                        && visible_height <= rest + 0.5
+                        && layout_engine
+                            .stored_complete_row_cut_band(table, r, &probe.end_cut, rest, styles)
+                            .is_some()
+                        && row_query.complete_source_band_can_close(whole_row_fit_h, h, rest)
+                    {
+                        consumed += cs_before + rest;
+                        end_row = r + 1;
+                        end_row_height_override = Some(rest);
+                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                            eprintln!(
+                                "DIAG_SCAN SOURCE_BAND_CLOSE r={} physical={:.6} visible={:.6}",
+                                r, rest, visible_height
+                            );
+                        }
                         return false;
                     }
                     // Stage 76의 긴 declared-row tail은 내용 뒤에 충분한 물리 blank
@@ -999,21 +1021,8 @@ impl TypesetEngine {
                     // 이 행에서 닫히는 원본 병합 칸의 내용도 같은 실제 상자에 들어가면
                     // 그 칸을 완결한다. 다른 칸의 남은 높이는 수용한 행 원장으로 뒤 행이
                     // 다시 계산하며, 이미 끝난 이 행의 빈 꼬리로 예약하지 않는다.
-                    let rowspan_continues_past_row = table.cells.iter().any(|cell| {
-                        let start = cell.row as usize;
-                        cell.row_span > 1 && start <= r && start + cell.row_span as usize > r + 1
-                    });
                     if let Some(band) = physical_band.filter(|band| {
-                        row_total <= band + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
-                            && (!rowspan_continues_past_row
-                                || layout_engine.stored_closing_span_content_fits(
-                                    table,
-                                    r,
-                                    cursor_row,
-                                    whole_row_fit_h,
-                                    *band,
-                                    styles,
-                                ))
+                        row_query.complete_source_band_can_close(whole_row_fit_h, row_total, *band)
                     }) {
                         end_row_height_override = Some(band);
                         consumed += cs_before + band;
