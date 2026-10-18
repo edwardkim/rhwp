@@ -2864,6 +2864,10 @@ fn saved_line_is_anchored_to_current_flow(bounds: (f64, f64), current_height: f6
         && current_height <= top + SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX
 }
 
+/// `fragment_flow_top` 은 이 조각이 흐름에서 시작한 높이, `line_flow_top` 은 판정 중인
+/// 줄의 흐름 위치다. 저장 줄은 그 사이(시작 쪽은 앵커 허용오차만큼 위까지)에 있어야
+/// 같은 좌표계의 저장 위치로 본다 — 흐름이 저장 사다리보다 앞서 있어도(앞 줄들의
+/// 누적 드리프트) 그 조각 안의 저장 줄이면 받고, 조각보다 위의 낡은 좌표는 거부한다.
 fn saved_line_clears_footnote_area(
     current_footnote_height: f64,
     is_single_column: bool,
@@ -2871,7 +2875,8 @@ fn saved_line_clears_footnote_area(
     footnote_safety_margin: f64,
     saved_bounds: Option<(f64, f64)>,
     base_available_height: f64,
-    current_height: f64,
+    fragment_flow_top: f64,
+    line_flow_top: f64,
 ) -> bool {
     current_footnote_height > 0.0
         && is_single_column
@@ -2881,7 +2886,9 @@ fn saved_line_clears_footnote_area(
             top >= 0.0
                 && top <= base_available_height
                 && bottom <= text_limit
-                && saved_line_is_anchored_to_current_flow((top, bottom), current_height)
+                && bottom > top
+                && top <= line_flow_top.max(fragment_flow_top)
+                && fragment_flow_top <= top + SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX
         })
 }
 
@@ -6487,8 +6494,34 @@ mod tests {
                 bounds,
                 1_000.0,
                 current_height,
+                current_height,
             )
         };
+        // [#7695] 조각 시작 200px, 판정 줄의 흐름 위치 250px: 저장 줄이 그 사이면 받는다.
+        let allows_in_fragment = |bounds, fragment_top, line_top| {
+            saved_line_clears_footnote_area(
+                300.0,
+                true,
+                40.0,
+                40.0,
+                bounds,
+                1_000.0,
+                fragment_top,
+                line_top,
+            )
+        };
+        assert!(
+            allows_in_fragment(Some((230.0, 245.0)), 200.0, 250.0),
+            "조각 둘째 줄 이후의 저장 줄은 그 줄의 흐름 위치까지 받는다"
+        );
+        assert!(
+            !allows_in_fragment(Some((250.1, 265.0)), 200.0, 250.0),
+            "저장 줄이 그 줄의 흐름 위치보다 낮으면 받지 않는다"
+        );
+        assert!(
+            !allows_in_fragment(Some((183.9, 198.0)), 200.0, 250.0),
+            "조각 시작보다 허용오차 넘게 위인 저장 줄은 받지 않는다"
+        );
 
         assert!(
             allows(300.0, true, 40.0, Some((200.0, 700.0)), 216.0),
