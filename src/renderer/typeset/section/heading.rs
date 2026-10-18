@@ -31,6 +31,11 @@ impl TypesetEngine {
                 PageItem::FullParagraph { para_index } => Some(*para_index),
                 PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                 PageItem::Table { para_index, .. } => Some(*para_index),
+                // 이어지는 표 조각의 host vpos 는 앞 쪽의 좌표다 — 이 쪽 원점이 아니다.
+                PageItem::PartialTable {
+                    is_continuation: true,
+                    ..
+                } => None,
                 PageItem::PartialTable { para_index, .. } => Some(*para_index),
                 PageItem::Shape { para_index, .. } => Some(*para_index),
                 PageItem::EndnoteSeparator { .. } => None,

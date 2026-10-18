@@ -5471,6 +5471,40 @@ pub(crate) fn float_pushed_line_spacing_before(
     }
 }
 
+/// 분할된 문단 기준 자리차지 표의 이어지는 조각 바로 뒤 문단이 소비할 앞 간격.
+///
+/// 이어지는 조각은 단 위끝에서 시작하고, 뒤 문단의 상단도 그 단 위끝이다. 앞 간격은 문단
+/// 상단에서 재므로 글줄 원점은 `max(단 위끝 + 앞 간격, 조각 점유 끝)` 이다
+/// ([`float_pushed_line_spacing_before`] 와 같은 규칙). 저장 사다리가 뒤 문단 첫 줄을
+/// 표 바깥 상자 바로 뒤(host 줄 + 오프셋 + 바깥 여백 + 높이)에 둘 때만 적용한다 — 교육부
+/// 보도자료 2쪽은 그 자리에 첫 줄을 두지만, 쪽마다 vpos 를 되감는 저장본(rowbreak-problem-
+/// pages 14쪽)은 앞 간격을 더한 자리를 적는다. 조판·출력·저장 사다리 기준이 같은 값을 쓴다.
+pub(crate) fn split_float_successor_spacing_before(
+    fragment_host: &Paragraph,
+    successor: &Paragraph,
+    column_top: f64,
+    spacing_before: f64,
+    fragment_bottom: f64,
+) -> Option<f64> {
+    let table = fragment_host
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Table(table) if is_para_topbottom_float(&table.common) => Some(table),
+            _ => None,
+        })?;
+    let stored = |seg: &&crate::model::paragraph::LineSeg| seg.tag & 0x8000_0000 == 0;
+    let host_line = fragment_host.line_segs.first().filter(stored)?;
+    let successor_line = successor.line_segs.first().filter(stored)?;
+    let box_end = i64::from(host_line.vertical_pos)
+        + i64::from(signed_hwpunit(table.common.vertical_offset))
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.common.height)
+        + i64::from(table.outer_margin_bottom);
+    (i64::from(successor_line.vertical_pos) == box_end)
+        .then(|| float_pushed_line_spacing_before(column_top, spacing_before, fragment_bottom))
+}
+
 /// With no line box, an empty block host places its sole flow table
 /// inside the before/after space already reserved by table formatting. Text and
 /// whitespace hosts retain their own line boxes; negative/absolute positions

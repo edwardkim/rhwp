@@ -354,6 +354,22 @@ pub(super) fn place_fitted_paragraph(
 ) {
     let defer_preceding_float =
         placement::defer_preceding_float(&st.current_items, paragraphs, para_idx, para);
+    let split_float_spacing_before = match st.current_items.last() {
+        Some(PageItem::PartialTable {
+            para_index,
+            is_continuation: true,
+            ..
+        }) => paragraphs.get(*para_index).and_then(|host| {
+            crate::renderer::float_placement::split_float_successor_spacing_before(
+                host,
+                para,
+                st.current_start_height,
+                fmt.spacing_before,
+                st.current_height,
+            )
+        }),
+        _ => None,
+    };
     record_stored_column_top_spacing(st, paragraphs, para_idx, fmt, styles, dpi);
     st.insert_fitted_paragraph(para_idx, defer_preceding_float);
     let stored_successor_flow =
@@ -387,6 +403,20 @@ pub(super) fn place_fitted_paragraph(
                 st.vpos_page_base.is_none(),
             )
         });
+    // 분할 자리차지 표 조각이 앞 간격을 품었으면 흐름에서 그만큼 덜 전진하고, 출력에
+    // 같은 확정 앞 간격을 넘긴다. 트림·저장 끝이 이미 정한 전진은 건드리지 않는다.
+    let absorbed_spacing_before = split_float_spacing_before
+        .filter(|_| {
+            stored_successor_flow.is_none()
+                && stored_guide_advance.is_none()
+                && advance + 0.5 >= fmt.total_height
+        })
+        .map(|spacing| {
+            st.record_float_pushed_line_spacing(para_idx, spacing);
+            (fmt.spacing_before - spacing).max(0.0)
+        })
+        .unwrap_or(0.0);
+    let advance = advance - absorbed_spacing_before;
     if std::env::var("RHWP_DIAG_ADV").is_ok() {
         eprintln!(
             "DIAG_ADV pi={} adv={:.1} total={:.1} h4f={:.1} sb={:.1} sa={:.1} cur={:.1}",
@@ -439,7 +469,7 @@ pub(super) fn place_fitted_paragraph(
         if stored_successor_flow.is_some() {
             advance
         } else {
-            fmt.total_height
+            fmt.total_height - absorbed_spacing_before
         },
         trimmed_spacing_before,
         body_bottom_vpos,
