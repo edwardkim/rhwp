@@ -91,7 +91,13 @@ pub(crate) fn project_stored_soft_wraps(
     let previous = &para.line_segs[para.line_segs.len() - 2];
     if last.is_first_line_of_page()
         || last.is_first_line_of_column()
-        || last.vertical_pos <= previous.vertical_pos
+        || last.vertical_pos == previous.vertical_pos
+        // 같은 가로 상자의 저장 캐시 되감김은 명시적 쪽 경계와 구분한다.
+        || (last.vertical_pos < previous.vertical_pos
+            && (last.vertical_pos < 0
+                || last.column_start != previous.column_start
+                || last.segment_width <= 0
+                || last.segment_width != previous.segment_width))
     {
         return None;
     }
