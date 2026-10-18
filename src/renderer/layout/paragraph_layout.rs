@@ -38,6 +38,13 @@ mod leading_spaces;
 use leading_spaces::{natural_leading_positions, LeadingSpaces};
 
 mod picture_bullet;
+mod list_marker_geometry;
+use list_marker_geometry::{
+    list_marker_geometry_for, marker_text_width, nominal_marker_size,
+};
+pub(crate) use list_marker_geometry::{
+    ListMarkerGeometry,
+};
 mod right_tab_fields;
 use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap,
@@ -750,41 +757,6 @@ pub(crate) fn assign_numbering_markers(
 /// 줄 나눔(`layout_paragraph_in_frame`·`reflow_line_segs`)과 배치
 /// (`layout_composed_paragraph_in_frame`)가 이 값 하나를 쓴다. 스타일은 배치의 마커 스타일
 /// (`numbering_marker_text_style`, 첫 run)과 같은 입력 — 첫 글자의 글자 모양과 언어 — 이다.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub(crate) struct ListMarkerGeometry {
-    /// 실제 마커를 그리는 같은 글자 모양의 크기. 첫 물리 줄 높이에 참여한다.
-    pub font_size_px: f64,
-    /// 첫 줄 시작에 더하는 양.
-    pub first_line_px: f64,
-    /// 이어지는 줄 시작에 더하는 양.
-    pub rest_line_px: f64,
-    /// 마커 글자의 x — 첫 줄 본문 시작 기준(보통 음수).
-    pub marker_dx_px: f64,
-    /// 영역이 있어 마커를 그린다.
-    pub marker_visible: bool,
-}
-
-impl ListMarkerGeometry {
-    pub(crate) fn line_px(&self, visual_line_idx: usize) -> f64 {
-        if visual_line_idx == 0 {
-            self.first_line_px
-        } else {
-            self.rest_line_px
-        }
-    }
-
-    /// 줄 나눔용 상자: `(가용폭에서 뺄 양, 합성 들여쓰기)`.
-    ///
-    /// 줄 채움은 첫 줄에서 `max(들여쓰기,0)`, 이어지는 줄에서 `max(−들여쓰기,0)` 을 뺀다.
-    /// 마커를 얹은 두 차감(첫 줄 R1, 이어지는 줄 R2)을 같은 규칙으로 나타내려면
-    /// `min(R1,R2)` 를 가용폭에서 빼고 `R1 − R2` 를 들여쓰기로 준다.
-    pub(crate) fn breaker_box(&self, indent_px: f64) -> (f64, f64) {
-        let first = indent_px.max(0.0) + self.first_line_px;
-        let rest = (-indent_px).max(0.0) + self.rest_line_px;
-        (first.min(rest), first - rest)
-    }
-}
-
 /// 문단의 목록 마커 기하. 글머리표는 문단 모양만으로, 번호·개요는 문서 순서로 미리 계산한
 /// 번호(#7436, [`assign_numbering_markers`])로 문자열을 정한다. 아직 계산하지 않은 번호
 /// 문단은 폭을 모르므로 `None` 이다.
@@ -817,6 +789,7 @@ pub(crate) fn list_marker_geometry(
         &text,
         head,
         &style,
+        nominal_marker_size(styles, head, char_shape_id, style.font_size),
         para_style.indent,
         para_style.head_type == HeadType::Bullet,
     ))
@@ -840,53 +813,6 @@ fn marker_char_style(styles: &ResolvedStyleSet, head: MarkerHead, text: &str) ->
         .map(crate::renderer::style_resolver::detect_lang_category)
         .unwrap_or(0);
     Some(resolved_to_text_style(styles, id, lang))
-}
-
-fn list_marker_geometry_for(
-    text: &str,
-    head: MarkerHead,
-    style: &TextStyle,
-    indent_px: f64,
-    bullet: bool,
-) -> ListMarkerGeometry {
-    let hu = |v: i16| hwpunit_to_px(v as i32, crate::renderer::DEFAULT_DPI);
-    // 한/글은 ASCII 가 아닌 글머리표 글자를 글자 크기 1em 칸으로 잰다 — 글꼴에 없는 `❍`
-    // (맑은 고딕 10pt, 대체 글꼴 폭 0.97em → 한/글 1000), Wingdings `U+F09F`(글리프 폭
-    // 0.46em → 12pt 에서 한/글 영역 792 = 1200 − 1000 + 600, `chemical-labeling` 54쪽).
-    // ASCII 글머리표(`-`)는 글자 폭 그대로다(`footnote-01` 14pt 반각 706).
-    let glyph_px = if bullet && !text.is_ascii() {
-        style.font_size * text.chars().count() as f64
-    } else {
-        estimate_text_width(text, style)
-    };
-    let distance_px = if head.attr & (1 << 4) != 0 {
-        hu(head.text_distance)
-    } else {
-        style.font_size * head.text_distance as f64 / 100.0
-    };
-    let area_px = (glyph_px + hu(head.width_adjust) + distance_px).max(0.0);
-    let (first_line_px, rest_line_px) = if head.attr & (1 << 3) != 0 {
-        // 첫 줄 본문 = max(영역, 들여쓰기⁺), 이어지는 줄 = 첫 줄 − 들여쓰기.
-        // 문단 들여쓰기가 준 시작 위에 얹는 양은 두 줄이 같다.
-        let extra = (area_px - indent_px.max(0.0)).max(0.0);
-        (extra, extra)
-    } else {
-        (area_px, 0.0)
-    };
-    // 가운데·오른쪽 정렬은 영역에서 본문과의 거리를 뺀 칸 안에서 글자를 옮긴다.
-    let cell_px = area_px - distance_px;
-    let align_dx = match head.attr & 0x03 {
-        1 => ((cell_px - glyph_px) / 2.0).max(0.0),
-        2 => (cell_px - glyph_px).max(0.0),
-        _ => 0.0,
-    };
-    ListMarkerGeometry {
-        font_size_px: style.effective_font_size(),
-        first_line_px,
-        rest_line_px,
-        marker_dx_px: align_dx - area_px,
-        marker_visible: area_px > 0.0,
-    }
 }
 
 pub(super) fn paragraph_active_text_style(
@@ -5669,7 +5595,19 @@ impl LayoutEngine {
                         .para_styles
                         .get(composed.para_style_id as usize)
                         .is_some_and(|ps| ps.head_type == HeadType::Bullet);
-                    list_marker_geometry_for(num_text, *head, &num_style, indent, bullet)
+                    let nominal_size = nominal_marker_size(
+                        styles,
+                        *head,
+                        composed
+                            .lines
+                            .first()
+                            .and_then(|line| line.runs.first())
+                            .map_or(0, |run| run.char_style_id),
+                        num_style.font_size,
+                    );
+                    list_marker_geometry_for(
+                        num_text, *head, &num_style, nominal_size, indent, bullet,
+                    )
                 })
         });
         // 이어지는 조각은 번호를 다시 붙이지 않는다(카운터를 두 번 전진시키지 않으려고
@@ -7301,7 +7239,7 @@ impl LayoutEngine {
                         marker_char_style(styles, *head, num_text).unwrap_or_else(|| {
                             numbering_marker_text_style(styles, para, comp_line.runs.first())
                         });
-                    let num_width = estimate_text_width(num_text, &num_style);
+                    let num_width = marker_text_width(num_text, &num_style);
                     let num_id = tree.next_id();
                     let num_node = if let Some(image) = picture_bullet::image(
                         styles,
