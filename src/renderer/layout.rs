@@ -5003,6 +5003,9 @@ impl LayoutEngine {
                 _ => 0.0,
             }
             + stored_mixed_footer_leading;
+        // [#8008] 이 영역 문단의 테두리/배경 범위만 따로 모은다(아래 끝에서 그림).
+        let parent_border_ranges = std::mem::take(&mut *self.para_border_ranges.borrow_mut());
+        let hf_background_index = area_node.children.len();
         for (i, para) in hf_paragraphs.iter().enumerate() {
             // 테이블 컨트롤이 있으면 테이블 렌더링
             let has_table = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
@@ -5282,6 +5285,20 @@ impl LayoutEngine {
                 break;
             }
         }
+        // [#8008] 머리말·꼬리말 문단의 테두리/배경은 이 영역 안에서 그린다. 문단 배치가 모은
+        // 범위는 본문 단을 시작할 때(`prime_column_layout_env`) 비워지므로, 여기서 그리지
+        // 않으면 배경이 통째로 사라진다(hwpspec 머리말: 회색 띠 위 흰 글씨가 안 보였다).
+        // 표 칸과 같은 방식으로 바깥 범위를 잠시 떼어 두고, 이 영역의 범위만 그린 뒤 되돌린다.
+        self.render_para_border_groups(
+            tree,
+            _composed,
+            area_node,
+            styles,
+            area,
+            bin_data_content,
+            hf_background_index,
+        );
+        *self.para_border_ranges.borrow_mut() = parent_border_ranges;
     }
 
     /// `BOTTOM` footer의 완전한 HWP5 저장 줄 grid가 갖는 첫 줄 선행 간격.
@@ -7714,8 +7731,12 @@ impl LayoutEngine {
                     }
                 }
 
-                if !g.8 && connects(last_pi) && connects(last_pi + 1) {
-                    let next_sig = stroke_sig(para_bf(last_pi + 1));
+                // 머리말·꼬리말 문단은 `usize::MAX - i` 를 문단 번호로 쓰므로 넘침 없이 다음을 찾는다.
+                if let Some(next_pi) = last_pi
+                    .checked_add(1)
+                    .filter(|&next| !g.8 && connects(last_pi) && connects(next))
+                {
+                    let next_sig = stroke_sig(para_bf(next_pi));
                     if next_sig.is_some() && next_sig == group_sig {
                         g.8 = true;
                     }
