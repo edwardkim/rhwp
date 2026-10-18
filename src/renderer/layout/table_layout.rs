@@ -5216,33 +5216,6 @@ impl LayoutEngine {
             return rh;
         }
 
-        // 저장 개체 높이가 모든 원시 행합을 닫는 인라인 표는 온전한
-        // 셀 프레임이다. 첫 쪽만 선언한 분할 표와 최소 높이 셀은 제외한다.
-        let closed_inline_frame = table.common.treat_as_char
-            && table.common.height > 0
-            && i64::from(table.common.height)
-                == self
-                    .indexed_raw_row_heights(table)
-                    .iter()
-                    .map(|&height| i64::from(height))
-                    .sum::<i64>()
-                    + i64::from(table.cell_spacing) * row_count.saturating_sub(1) as i64
-            && table.cells.iter().all(|cell| {
-                cell.row_span == 1
-                    && !cell.paragraphs.is_empty()
-                    && cell.paragraphs.iter().all(|para| {
-                        para.controls.is_empty()
-                            && !para.stored_text_partition_is_dirty()
-                            && !para.line_segs.is_empty()
-                            && para.line_segs.iter().all(|line| {
-                                line.tag
-                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                                    == 0
-                            })
-                    })
-                    && crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
-            });
-
         // 1단계: row_span==1인 셀에서 개별 행 높이 추출
         let coincident_source_height = |cell: &crate::model::table::Cell| {
             ((self.profile.get().hwp5_stored_pagination_layout()
@@ -5334,22 +5307,16 @@ impl LayoutEngine {
                         } else {
                             f64::MAX
                         };
-                        // 온전한 저장 프레임 안에 실효 여백으로 글줄이 들어가면
-                        // 비활성 셀 여백으로 그 프레임을 재성장시키지 않는다.
-                        // 최소 높이·쪽 분할 프레임의 기존 성장 계약은 별도다.
+                        // [#7972] 모순 셀의 재성장 여백은 **실효** 안 여백이다 — `hasMargin=0`
+                        // 칸의 보존 cellMargin 은 한/글이 쓰지 않는다. 표 안 여백 141HU 인
+                        // 156678235(#3386: 14.7 + 1.9×2 = 18.4px)와 표 안 여백 0 인 #7872 〈보기〉
+                        // (12.0px, 보존 cellMargin 141 무시)가 같은 규칙이다. 걸침 칸 경로(아래
+                        // 1-c)와 측정(`Cell::effective_padding`)도 이미 실효 여백을 쓴다.
                         let effective_pad_v = hwpunit_to_px(
                             cell.effective_vertical_padding_hu(&table.padding),
                             self.dpi,
                         );
-                        let raw_pad_v = if suppress_unused_padding
-                            || (closed_inline_frame && line_based + effective_pad_v <= decl_h)
-                        {
-                            effective_pad_v
-                        } else {
-                            hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                                + hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
-                        };
-                        let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
+                        let pad_v = (pad_top + pad_bottom).max(effective_pad_v);
                         self.stored_plain_cell_content_minimum(cell, line_based, effective_pad_v)
                             .unwrap_or_else(|| {
                                 crate::renderer::float_placement::stored_text_cell_required_height(
@@ -11757,12 +11724,18 @@ impl LayoutEngine {
                 900.0
             };
             let nested_table_height = self.calc_nested_table_height(table, styles);
+            // [#7972] 단일 저장 reset 은 표 크기와 무관하게 다음 쪽 source cursor 다
+            // (`native_child_has_stored_frame_boundary` 의 계약 — 한 쪽보다 작은 자식
+            // 셀도 이미 두 쪽에 나뉘어 저장될 수 있다). 종전 "물리 높이 > 본문" 문턱은
+            // 59043 p35 child 를 child 칸의 **비활성** 저장 여백(aim=false 23812/10930HU)
+            // 으로 부풀린 1336px 로만 넘었다. 실효 여백으로 재면 877px 라 legacy 원장으로
+            // 떨어져 reset 을 지우고, p36 이 child 첫 문단부터 다시 그렸다. 한/글은 그
+            // reset(p3 vpos 0)에서 쪽을 나눈다.
             let preserve_single_multi_page_boundary = stored_page_frame_boundaries == 1
                 // HWP5-origin HWPX는 변환 과정에서 단일 로컬 reset을 남길 수
                 // 있으므로 #3637의 31쪽 계약처럼 기존 HWPX 원장을 유지한다.
                 // 이 예외는 원본 HWP5 바이너리의 저장 좌표 계약에만 적용한다.
-                && self.profile.get().hwp5_stored_pagination_layout()
-                && nested_table_height > page_height + 0.5;
+                && self.profile.get().hwp5_stored_pagination_layout();
             // direct HWPX도 물리 한 쪽을 넘는 1×1 표에 저장 reset이 하나 있으면
             // canonical CellUnit의 높이/세분성이 필요하다(#3637: 1740.6px,
             // body 971.3px). 다만 reset은 HWP5 source cursor로 승격하지 않고 아래
@@ -15712,10 +15685,9 @@ impl LayoutEngine {
                         900.0
                     };
                     let total_frag_h: f64 = frags.iter().map(|fragment| fragment.height).sum();
-                    // 저장된 fragment 높이가 표의 물리 행 높이보다 작을 수 있다. 특히
-                    // 59043 p35/p36의 1×1 child는 fragment 합이 body보다 3.6px 작지만
-                    // 실제 행 기하는 1336px라 한 쪽에 들어가지 않는다. fragment 합만
-                    // 보면 이 표를 atom으로 소비해 p36 source owner가 사라진다.
+                    // 저장된 fragment 높이가 표의 물리 행 높이보다 작을 수 있다.
+                    // (59043 p35/p36 의 1×1 child 는 물리 높이가 아니라 단일 저장 reset —
+                    // `native_child_has_stored_frame_boundary` — 으로 펼친다. #7972)
                     // page의 남은 공간이 아니라 문서 고유 물리 높이만 사용해
                     // `cell_units_cache`가 page context에 의존하지 않게 한다.
                     let physical_nested_h = self.calc_nested_table_height(nt, styles);
