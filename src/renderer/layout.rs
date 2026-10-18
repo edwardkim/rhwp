@@ -14241,8 +14241,12 @@ impl LayoutEngine {
                                 || self.profile.get().hwpx_stored_layout())
                         {
                             let segs = &para.line_segs[..=host_text_line_count];
-                            let stored_ok = segs.iter().all(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
-                                && segs.windows(2).all(|w| w[1].vertical_pos > w[0].vertical_pos);
+                            let stored_ok = segs
+                                .iter()
+                                .all(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+                                && segs
+                                    .windows(2)
+                                    .all(|w| w[1].vertical_pos > w[0].vertical_pos);
                             if stored_ok {
                                 let stored = hwpunit_to_px(
                                     segs[host_text_line_count].vertical_pos - segs[0].vertical_pos,
