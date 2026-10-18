@@ -2765,8 +2765,11 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
     )
 }
 
+/// 도형도 그림(#6608)과 같이 머리말 틀 원점에서 오프셋을 잰다 — 국토부 보도자료
+/// 머리말 표지(`PAPER`, 세로 오프셋 −1678 HU)가 한/글 미리보기에서 틀 왼쪽 위에 온전히
+/// 보인다. 용지 원점으로 재면 용지 위로 잘린다.
 #[test]
-fn header_paper_relative_shape_uses_page_origin() {
+fn header_paper_relative_shape_uses_header_frame_origin() {
     let tree = render_tree_with_header_control(Control::Shape(Box::new(ShapeObject::Rectangle(
         RectangleShape {
             common: CommonObjAttr {
@@ -2786,8 +2789,10 @@ fn header_paper_relative_shape_uses_page_origin() {
     let bbox = first_header_child_bbox(&tree, |node_type| {
         matches!(node_type, RenderNodeType::Rectangle(_))
     });
-    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
-    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+    let header_area =
+        PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default()).header_area;
+    assert!((bbox.x - (header_area.x + hwpunit_to_px(1_500, DEFAULT_DPI))).abs() < 0.01);
+    assert!((bbox.y - (header_area.y + hwpunit_to_px(2_250, DEFAULT_DPI))).abs() < 0.01);
 }
 
 /// [#6608] 머리말 안 용지 기준 그림은 물리 용지가 아니라 **머리말 틀 원점**에서
