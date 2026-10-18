@@ -11,7 +11,7 @@ use crate::model::control::{Control, FieldType};
 use crate::model::document::Document;
 use crate::model::event::DocumentEvent;
 use crate::model::page::ColumnDef;
-use crate::model::paragraph::{LineSeg, ParaMeta, Paragraph};
+use crate::model::paragraph::{normalize_text_newlines, LineSeg, ParaMeta, Paragraph};
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::Alignment;
 use crate::renderer::composer::{
@@ -1337,6 +1337,8 @@ impl DocumentCore {
         after_inline_control: bool,
         text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         // 인덱스 범위 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1513,6 +1515,8 @@ impl DocumentCore {
         length: usize,
         text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         self.validate_body_paragraph_index(section_idx, para_idx)?;
         let new_chars_count = text.chars().count();
         let apply_replace = |para: &mut Paragraph| {
@@ -1807,6 +1811,8 @@ impl DocumentCore {
         text: &str,
         paginate_immediately: bool,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         let new_chars_count = text.chars().count();
         let focused_target_is_table_cell = !paginate_immediately
             && is_focused_table_cell_target(
@@ -5727,6 +5733,8 @@ impl DocumentCore {
         char_offset: usize,
         text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         // 깊이 1 표는 일반 셀 삽입 경로가 셀 폭 리플로우와 vpos 재계산을 이미 담당한다.
         // IME가 cellPath를 항상 전달하더라도 같은 편집 계약을 사용해야 한다.
         if path.len() == 1 {

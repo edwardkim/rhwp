@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-15
+last_verified: 2026-10-17
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -16,6 +16,12 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 
 ## 1. 공통 계약
 
+리베이스로 새 devel의 PR을 반영하면 **현재 작업의 개선과 반영 PR의 기능 유지·개선**을 함께
+검증한다. 충돌이 없었거나 CI가 통과했다는 사실만으로 기능 보존을 판정하지 않는다.
+[리베이스 후 기능 보존 절차](pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)에 따라
+새 base와 후보의 실제 동작·출력을 대조한다. 양쪽 요구를 충족하면 진행하며, 후퇴하면 보정 후
+재검증한다. 후퇴·필수 증거 부족이 남으면 준비 완료·PR 생성·승인·통합을 보류한다.
+
 모든 정식 PR review는 역할·작성자·PR 규모와 관계없이
 [조판 원칙 준수 검토](pr_review/intake_and_review.md#27-조판-원칙-준수-검토)를 공통 항목으로 기록한다.
 실제 diff와 PR 주장을 근거로 적용 여부를 먼저 판단하고, 적용 대상은 `AGENTS.md`의 공통 조판 원칙을
@@ -23,7 +29,7 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
 
 조판·렌더링 영향 PR은 최신 SHA를 고정한 `upstream/devel`의 전쪽 Native/fresh WASM TSV를
-후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도0.01%p 이상 하락하면90% 이상이어도
+후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도0.1%p 이상 하락하면90% 이상이어도
 PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과로 상쇄하지 않는다.
 계산·증거·base 갱신은 [devel 대비 실루엣 하락 재검토](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 

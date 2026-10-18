@@ -2521,6 +2521,17 @@ impl DocumentCore {
                     }
                     None => buf.push_str(",\"sourceImageKey\":null"),
                 }
+                if let Some(interpolate) = image
+                    .data
+                    .as_deref()
+                    .and_then(crate::renderer::image_resolver::png_sampling::interpolation)
+                {
+                    let _ = write!(
+                        buf,
+                        ",\"imageInterpolation\":\"{}\"",
+                        if interpolate { "linear" } else { "nearest" }
+                    );
+                }
                 if let Some((left, top, right, bottom)) = image.crop {
                     let _ = write!(
                         buf,

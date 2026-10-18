@@ -210,18 +210,25 @@ fn resolve_name(
     return Ok(PathColorSpace::Unsupported);
 }
 
+struct ColourUpdate {
+    stroke: bool,
+    space: Option<PathColorSpace>,
+    rgb: Option<(f32, f32, f32)>,
+}
+
 impl PdfDocument {
-    /// One colour operator implementation for page and nested Form extraction.
-    pub(crate) fn process_path_color_operator(
+    /// Shared device/resource colour resolution for path and image stencils.
+    fn colour_operator(
         &self,
         op: &Operator,
-        extractor: &mut PathExtractor,
-        state: &mut PathGraphicsState,
-    ) -> Result<bool> {
+        resources: Option<&Object>,
+        stroke_space: PathColorSpace,
+        fill_space: PathColorSpace,
+    ) -> Result<Option<ColourUpdate>> {
         use Operator::*;
         let (stroke, space, rgb) = match op {
             SetStrokeColorSpace { name } | SetFillColorSpace { name } => {
-                let space = resolve_name(self, name, extractor.current_resources(), 0)?;
+                let space = resolve_name(self, name, resources, 0)?;
                 (matches!(op, SetStrokeColorSpace { .. }), Some(space), space.initial())
             },
             SetStrokeColor { components }
@@ -235,11 +242,7 @@ impl PdfDocument {
                 name: None,
             } => {
                 let stroke = matches!(op, SetStrokeColor { .. } | SetStrokeColorN { .. });
-                let space = if stroke {
-                    state.stroke_color_space
-                } else {
-                    state.fill_color_space
-                };
+                let space = if stroke { stroke_space } else { fill_space };
                 (stroke, None, space.rgb(components))
             },
             SetStrokeGray { gray } | SetFillGray { gray } => (
@@ -255,7 +258,57 @@ impl PdfDocument {
                 let space = PathColorSpace::Device(DeviceSpace::Cmyk);
                 (matches!(op, SetStrokeCmyk { .. }), Some(space), space.rgb(&[*c, *m, *y, *k]))
             },
-            _ => return Ok(false),
+            _ => return Ok(None),
+        };
+        Ok(Some(ColourUpdate { stroke, space, rgb }))
+    }
+
+    pub(crate) fn process_image_colour_operator(
+        &self,
+        op: &Operator,
+        resources: Option<&Object>,
+        graphics: &mut crate::extractors::image_clip::ImageClipTracker,
+    ) -> Result<()> {
+        use Operator::*;
+        if !matches!(
+            op,
+            SetFillColorSpace { .. }
+                | SetFillColor { .. }
+                | SetFillColorN { .. }
+                | SetFillGray { .. }
+                | SetFillRgb { .. }
+                | SetFillCmyk { .. }
+        ) {
+            return Ok(());
+        }
+        if matches!(op, SetFillColorN { name: Some(_), .. }) {
+            graphics.set_fill_colour(PathColorSpace::Unsupported, None);
+            return Ok(());
+        }
+        let state = graphics.current();
+        if let Some(update) =
+            self.colour_operator(op, resources, PathColorSpace::GRAY, state.fill_space)?
+        {
+            graphics.set_fill_colour(update.space.unwrap_or(state.fill_space), update.rgb);
+        }
+        Ok(())
+    }
+
+    /// One colour operator implementation for page and nested Form extraction.
+    pub(crate) fn process_path_color_operator(
+        &self,
+        op: &Operator,
+        extractor: &mut PathExtractor,
+        state: &mut PathGraphicsState,
+    ) -> Result<bool> {
+        let Some(ColourUpdate { stroke, space, rgb }) = self.colour_operator(
+            op,
+            extractor.current_resources(),
+            state.stroke_color_space,
+            state.fill_color_space,
+        )?
+        else {
+            return Ok(false);
         };
         let (current_space, color) = if stroke {
             (&mut state.stroke_color_space, &mut state.stroke_color_rgb)

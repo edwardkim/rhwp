@@ -114,7 +114,7 @@ rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
   진단에 남긴다. 원본 좌표를 담는 `diagnostics.pages`는 비신뢰 문서 파생 필드로 표시한다.
 - 암호 옵션은 이 명령에서 거부한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
   `export-hwpx`의 암호 옵션을 사용한다.
-- `--no-default-features`로 PDF를 제외한 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은
+- `--no-default-features --features wasm-api`로 PDF만 제외한 CLI 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은
   `PDF_IMPORT_DISABLED`(exit 1)다. `capabilities.formats.read`에는 feature-on일 때만 PDF를 넣는다.
 
 feature-on에서는 기존 `info input.pdf --json`, `export-svg input.pdf`,

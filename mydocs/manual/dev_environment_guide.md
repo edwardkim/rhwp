@@ -282,9 +282,11 @@ docker compose --env-file .env.docker run --rm --no-deps wasm sh -ec '
 이후 위 wrapper가 동기화한 pkg/public의 JS·WASM SHA-256을 확인하고 Studio 개발 서버를
 시작·새로고침한다. 파일 → 열기(Ctrl/Cmd+O) 또는 문서 영역 드롭으로 PDF를 직접 열 수 있다.
 지원 여부는 실제 WASM의 `HwpDocument.supportsPdfImport()` 결과로 결정한다. 이전 bundle이나
-`--no-default-features`로 PDF를 제외한 빌드에서는 PDF를 열기 목록에 추가하지 않으며
-HWP/HWPX/HML 열기는 유지한다. 명시적 제외 빌드는 `--no-default-features --features
-console_error_panic_hook`를 사용한다.
+`pdf-import`를 제외하고 `wasm-api`를 유지한 빌드에서는 PDF를 열기 목록에 추가하지 않으며
+HWP/HWPX/HML 열기는 유지한다. Studio용 명시적 제외 빌드는
+`--no-default-features --features console_error_panic_hook,wasm-api`를 사용한다.
+`--no-default-features`만 지정하면 라이브러리 소비용으로 JS facade와 자동 start도 제외되므로
+Studio 패키지의 PDF 제외 옵션으로 단독 사용하지 않는다.
 
 PDF 원본은 입력으로 보존한다. 첫 저장은 HWP/HWPX 출력 형식을 선택하며, 원본 핸들에
 내용을 덮어쓰지 않는다. 현재 Studio 가져오기는 동기 WASM 호출이므로 진행 표시가 취소나

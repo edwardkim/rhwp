@@ -14,6 +14,7 @@ export interface FlowImageCrop {
 
 export interface FlowImagePaintOp {
   bbox: FlowImageBbox;
+  imageInterpolation?: 'nearest' | 'linear';
   /**
    * `<img>.src` 로 그대로 넣는 값.
    *
@@ -44,6 +45,7 @@ type LayerNodeLike = {
 };
 
 type LayerPaintOpLike = {
+  imageInterpolation?: unknown;
   type?: unknown;
   bbox?: unknown;
   mime?: unknown;
@@ -115,6 +117,8 @@ export function collectFlowImagePaintOps(
         }
         images.push({
           bbox: op.bbox,
+          ...(op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
+            ? { imageInterpolation: op.imageInterpolation } : {}),
           src: `data:${op.mime};base64,${op.base64}`,
           crop: isFiniteCrop(op.crop) ? op.crop : null,
           originalSizeHu: isPositiveSizeTuple(op.originalSizeHu) ? op.originalSizeHu : null,
@@ -247,6 +251,8 @@ export function flowImageOpsFromNarrowQuery(
 
     images.push({
       bbox: op.bbox,
+      ...(op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
+        ? { imageInterpolation: op.imageInterpolation } : {}),
       src,
       crop: isFiniteCrop(op.crop) ? op.crop : null,
       originalSizeHu: isPositiveSizeTuple(op.originalSizeHu) ? op.originalSizeHu : null,

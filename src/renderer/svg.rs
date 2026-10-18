@@ -24,6 +24,7 @@ use super::{
     PathCommand, PatternFillInfo, Renderer, ShapeStyle, StrokeDash, TextStyle,
 };
 use crate::paint::{PaintOp, TextDecorationKind};
+use std::fmt::Write as _;
 
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
 /// PUA 가 없으면 원본 문자열 그대로 반환 (allocation 없음).
@@ -1894,6 +1895,36 @@ impl SvgRenderer {
     }
 
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
+        let interpolation = img.data.as_deref().and_then(|data| {
+            let (width, height) = super::image_resolver::png_sampling::dimensions(data)?;
+            let source = img.crop.map_or((width, height), |crop| {
+                let (_, _, w, h) =
+                    compute_image_crop_src(crop, img.original_size_hu, width, height);
+                (w, h)
+            });
+            let frame = img.transform.effective_image_bbox(&img.paint_bbox(bbox));
+            // SVG's intrinsic page uses the renderer's 96-DPI coordinate system.
+            super::image_resolver::png_sampling::magnification(
+                super::image_resolver::png_sampling::interpolation(data),
+                source,
+                (frame.width, frame.height),
+            )
+        });
+        if let Some(interpolate) = interpolation {
+            let rendering = if interpolate { "auto" } else { "pixelated" };
+            let _ = write!(self.output, "<g style=\"image-rendering:{rendering}\">");
+        }
+        self.render_image_node_with_sampling(img, bbox);
+        if interpolation.is_some() {
+            self.output.push_str("</g>");
+        }
+    }
+
+    fn render_image_node_with_sampling(
+        &mut self,
+        img: &ImageNode,
+        bbox: &super::render_tree::BoundingBox,
+    ) {
         // 저장 자르기 선택이 비었으면 프레임만 점유하며 원본을 그리지 않는다.
         if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
             return;

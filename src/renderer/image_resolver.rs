@@ -3,6 +3,8 @@ use std::io::Cursor;
 
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
+#[path = "png_sampling.rs"]
+pub(crate) mod png_sampling;
 use crate::renderer::image_header::{
     canvaskit_encoded_image_header, CANVASKIT_MAX_IMAGE_DIMENSION, CANVASKIT_MAX_IMAGE_PIXELS,
 };
@@ -237,7 +239,11 @@ pub(crate) fn resolved_image_effects(
 
 pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
     let base = resolve_unadjusted_image_payload(image);
-    picture_adjustments::resolve_picture_tone(image, base)
+    let mut resolved = picture_adjustments::resolve_picture_tone(image, base);
+    if let (Some(source), Some(payload)) = (image.data.as_deref(), resolved.as_mut()) {
+        png_sampling::preserve(source, &mut payload.data);
+    }
+    resolved
 }
 
 fn resolve_unadjusted_image_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {

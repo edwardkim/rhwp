@@ -68,6 +68,7 @@ import {
   type CanvasKitSurfaceRequest,
 } from './render-backend';
 import { imageCropSelectionIsEmpty } from './image-crop-scale.ts';
+import { magnificationFiltering } from './image-sampling.ts';
 import {
   boundedCanvasKitSourceImageKey,
   canvasKitImageCacheKey,
@@ -2574,12 +2575,20 @@ export class CanvasKitLayerRenderer {
       // grayscale and tone retain the profile's ordinary sampling policy.
       const binaryEffectWasApplied = !!canvasKitImageEffectKey(op)
         && (op.effect === 'blackWhite' || op.effect === 'pattern8x8');
-      const useMipmaps = bitmapFiltering === undefined && !binaryEffectWasApplied
+      const matrix = canvas.getTotalMatrix?.();
+      const sourceFiltering = magnificationFiltering(
+        op.imageInterpolation,
+        crop?.width ?? imageWidth, crop?.height ?? imageHeight,
+        dstW * (matrix ? Math.hypot(matrix[0], matrix[3]) : 1),
+        dstH * (matrix ? Math.hypot(matrix[1], matrix[4]) : 1),
+      );
+      const explicitFiltering = bitmapFiltering ?? (binaryEffectWasApplied ? 'nearest' : sourceFiltering);
+      const useMipmaps = explicitFiltering === undefined && !binaryEffectWasApplied
         && this.currentProfile !== 'fastPreview' && this.preferRasterDepth === 0
         && (this.renderMode === 'compat' || this.currentProfile === 'print' || this.currentProfile === 'highQuality')
         && ((crop?.width ?? imageWidth) > dstW * 1.2 || (crop?.height ?? imageHeight) > dstH * 1.2);
       this.drawImageRect(canvas, image, src, this.canvasKit.XYWHRect(dstX, dstY, dstW, dstH), opacity,
-        bitmapFiltering ?? (binaryEffectWasApplied ? 'nearest' : 'linear'), useMipmaps);
+        explicitFiltering ?? (binaryEffectWasApplied ? 'nearest' : 'linear'), useMipmaps);
     };
 
     const fillMode = op.fillMode ?? 'fitToSize';

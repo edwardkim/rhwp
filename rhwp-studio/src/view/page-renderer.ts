@@ -23,6 +23,7 @@ import {
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
 import { imageCropSelectionIsEmpty, imageCropSourceRect } from './image-crop-scale.ts';
+import { magnificationFiltering } from './image-sampling.ts';
 import {
   drawPageMarginGuides,
   type PageMarginGuideEdges,
@@ -1608,6 +1609,15 @@ function applyFlowImageCrop(
     image.crop ?? undefined,
     image.originalSizeHu,
   );
+  if (image.imageInterpolation !== undefined) {
+    const pixelRatio = globalThis.devicePixelRatio || 1;
+    const filtering = magnificationFiltering(
+      image.imageInterpolation,
+      source?.width ?? element.naturalWidth, source?.height ?? element.naturalHeight,
+      frameWidth * displayScale * pixelRatio, frameHeight * displayScale * pixelRatio,
+    );
+    element.style.imageRendering = filtering === 'nearest' ? 'pixelated' : 'auto';
+  }
   if (!source) {
     element.style.left = '0';
     element.style.top = '0';

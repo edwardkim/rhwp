@@ -16,6 +16,8 @@ use std::path::Path;
 
 #[path = "image_mask_limited.rs"]
 mod image_mask_limited;
+#[path = "image_mask_limited_extra.rs"]
+mod image_mask_limited_extra;
 
 /// A PDF image with metadata and pixel data.
 ///
@@ -78,6 +80,8 @@ pub struct PdfImage {
     /// owed (e.g. a `/Decode [1 0]` inversion) on every sub-byte image.
     #[serde(skip)]
     decode_folded_in: bool,
+    /// Explicit bounded-import sampling, persisted in the PNG resource.
+    interpolate: Option<bool>,
 }
 
 impl PdfImage {
@@ -103,6 +107,7 @@ impl PdfImage {
             rendering_intent: crate::color::RenderingIntent::default(),
             samples_are_raw: true,
             decode_folded_in: false,
+            interpolate: None,
         }
     }
 
@@ -335,6 +340,7 @@ impl PdfImage {
             rendering_intent: crate::color::RenderingIntent::default(),
             samples_are_raw: true,
             decode_folded_in: false,
+            interpolate: None,
         }
     }
 
@@ -382,6 +388,7 @@ impl PdfImage {
             rendering_intent: crate::color::RenderingIntent::default(),
             samples_are_raw: true,
             decode_folded_in: false,
+            interpolate: None,
         }
     }
 
@@ -643,6 +650,7 @@ impl PdfImage {
                     self.height,
                     color.channel_count() as usize,
                     budget,
+                    self.interpolate,
                 );
             }
             PngEncoder::new_with_quality(
@@ -4230,6 +4238,8 @@ pub struct PdfImageHandle<'doc> {
     /// For an Indexed image (`[/Indexed base hival lookup]`, §8.6.6.3), the
     /// resolved de-indexed *base* colour space; `None` for non-Indexed images.
     indexed_base: Option<ColorSpace>,
+    /// Current nonstroking solid colour at this invocation; None is unsupported.
+    pub(crate) stencil_colour: Option<(f32, f32, f32)>,
 }
 
 impl<'doc> PdfImageHandle<'doc> {
@@ -4260,6 +4270,23 @@ impl<'doc> PdfImageHandle<'doc> {
         } else {
             Some(&self.color_space_resources)
         };
+        let interpolation = if let Some(budget) = self.doc.import_budget() {
+            obj.as_dict()
+                .and_then(|d| d.get("Interpolate"))
+                .map(|o| image_mask_limited::resolve(self.doc, o, budget))
+                .transpose()?
+                .as_deref()
+                .map(|o| match o {
+                    crate::object::Object::Null => Ok(false),
+                    crate::object::Object::Boolean(v) => Ok(*v),
+                    _ => Err(Error::Image("invalid image Interpolate flag".into())),
+                })
+                .transpose()?
+                .or(Some(false))
+        } else {
+            None
+        };
+        let mut stencil = false;
         let mask = if let Some(budget) = self.doc.import_budget() {
             // The limited handle path imports the image as an independent IR
             // picture. Compose image alpha, while standalone stencils still
@@ -4272,13 +4299,17 @@ impl<'doc> PdfImageHandle<'doc> {
                 .ok_or_else(|| Error::Image("invalid image object".into()))?;
             if let Some(value) = dict.get("ImageMask") {
                 let value = resolve_image_object(Some(self.doc), value)?;
-                let absent =
-                    matches!(*value, crate::object::Object::Null) || value.as_bool() == Some(false);
-                if !absent {
-                    return Err(Error::Unsupported("limited image import /ImageMask".into()));
-                }
+                stencil = match &*value {
+                    crate::object::Object::Null | crate::object::Object::Boolean(false) => false,
+                    crate::object::Object::Boolean(true) => true,
+                    _ => return Err(Error::Image("invalid ImageMask boolean".into())),
+                };
             }
-            image_mask_limited::Mask::read(self.doc, dict, cs_map, budget)?
+            if stencil {
+                None
+            } else {
+                image_mask_limited::Mask::read(self.doc, obj, cs_map, budget)?
+            }
         } else {
             None
         };
@@ -4287,7 +4318,16 @@ impl<'doc> PdfImageHandle<'doc> {
         // `/ColorSpace` (e.g. `/CS0`) resolves the same way the renderer does.
         // `None` when empty preserves the original decode path for the common
         // case where the image's colour space needs no resource lookup.
-        let mut image = extract_image_from_xobject(Some(self.doc), obj, obj_ref, cs_map)?;
+        let mut image = if stencil {
+            image_mask_limited_extra::stencil(
+                self.doc,
+                obj,
+                self.stencil_colour,
+                self.doc.import_budget().expect("bounded stencil"),
+            )?
+        } else {
+            extract_image_from_xobject(Some(self.doc), obj, obj_ref, cs_map)?
+        };
         // Validate codec output against the source declaration before a mask
         // compositor may increase the bitmap resolution in the same unit square.
         if self.doc.import_budget().is_some()
@@ -4297,8 +4337,50 @@ impl<'doc> PdfImageHandle<'doc> {
                 "decoded image dimensions differ from declaration".into(),
             ));
         }
+        let mask_interpolation = mask
+            .as_ref()
+            .and_then(image_mask_limited::Mask::interpolation);
         if let Some(mask) = mask {
             mask.apply(&mut image, self.doc.import_budget().expect("bounded mask"))?;
+        }
+        image.interpolate = interpolation;
+        if let (Some(base), Some(mask)) = (interpolation, mask_interpolation) {
+            if base != mask {
+                // A single RGBA texture can represent different sampling only
+                // when the other plane is constant. Do not smooth hard mask
+                // edges merely to interpolate the colour plane, or vice versa.
+                let ImageData::Raw {
+                    pixels,
+                    format: PixelFormat::RGBA,
+                } = &image.data
+                else {
+                    unreachable!("composed mask is RGBA")
+                };
+                let budget = self.doc.import_budget().expect("bounded mask");
+                let mut first_rgb: Option<[u8; 3]> = None;
+                let (mut constant_rgb, mut constant_alpha) = (true, true);
+                for (i, p) in pixels.chunks_exact(4).enumerate() {
+                    if i % 4096 == 0 {
+                        budget.check()?;
+                    }
+                    constant_alpha &= p[3] == pixels[3];
+                    if p[3] != 0 {
+                        let rgb = [p[0], p[1], p[2]];
+                        constant_rgb &= first_rgb.is_none_or(|first| first == rgb);
+                        first_rgb = Some(rgb);
+                    }
+                }
+                if (!base && mask && constant_rgb) || (base && !mask && constant_alpha) {
+                    image.interpolate = Some(true);
+                } else {
+                    // A precomposed RGBA resource cannot carry two independent
+                    // sampling planes. Keep the previously supported compositor
+                    // and renderer profile for this case; do not claim that a
+                    // single texture's filtering implements both PDF flags.
+                    // Separate-plane replay remains a follow-up contract.
+                    image.interpolate = None;
+                }
+            }
         }
         if self.opacity < 1.0 {
             if let Some(budget) = self.doc.import_budget() {
@@ -4316,14 +4398,7 @@ impl<'doc> PdfImageHandle<'doc> {
                 .clip
                 .visible_bounds(self.bbox)?
                 .ok_or_else(|| Error::Image("empty image clip".into()))?;
-            let interpolate = obj
-                .as_dict()
-                .and_then(|d| d.get("Interpolate"))
-                .map(|v| {
-                    resolve_image_object(Some(self.doc), v).map(|o| o.as_bool().unwrap_or(false))
-                })
-                .transpose()?
-                .unwrap_or(false);
+            let interpolate = image.interpolate.or(interpolation).unwrap_or(false);
             image.apply_affine_clip(self.ctm, &self.clip, frame, interpolate, budget)?;
             self.doc.check_import_budget()?;
             return Ok(image);
@@ -4633,6 +4708,7 @@ pub(crate) fn image_handle_from_xobject<'doc>(
         )
         .ok()?,
         indexed_base,
+        stencil_colour: Some((0., 0., 0.)),
     })
 }
 
@@ -4724,6 +4800,7 @@ pub(crate) fn image_handle_from_inline<'doc>(
         )
         .ok()?,
         indexed_base,
+        stencil_colour: Some((0., 0., 0.)),
     })
 }
 

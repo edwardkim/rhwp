@@ -12,7 +12,7 @@ use std::collections::HashMap;
 
 // Resolve chains with an explicit request depth bound as well as the loader's
 // cumulative visit accounting. A cycle cannot start an unbounded recovery loop.
-fn resolve<'a>(
+pub(super) fn resolve<'a>(
     doc: &PdfDocument,
     object: &'a Object,
     budget: &ImportBudget,
@@ -30,7 +30,58 @@ fn resolve<'a>(
     Ok(object)
 }
 
-pub(super) struct Mask {
+pub(super) enum Mask {
+    Stream(StreamMask),
+    ColourKey(super::image_mask_limited_extra::ColourKey),
+}
+
+impl Mask {
+    pub(super) fn interpolation(&self) -> Option<bool> {
+        match self {
+            Self::Stream(mask) => Some(mask.interpolate),
+            Self::ColourKey(_) => None,
+        }
+    }
+    pub(super) fn read(
+        doc: &PdfDocument,
+        object: &Object,
+        color_spaces: Option<&HashMap<String, Object>>,
+        budget: &ImportBudget,
+    ) -> Result<Option<Self>> {
+        let base = object
+            .as_dict()
+            .ok_or_else(|| Error::Image("image must be a stream".into()))?;
+        let soft = base
+            .get("SMask")
+            .map(|o| resolve(doc, o, budget))
+            .transpose()?;
+        if soft.as_deref().is_none_or(|o| matches!(o, Object::Null)) {
+            if let Some(value) = base.get("Mask") {
+                let value = resolve(doc, value, budget)?;
+                if let Object::Array(ranges) = &*value {
+                    return super::image_mask_limited_extra::ColourKey::read(
+                        doc,
+                        object,
+                        ranges,
+                        color_spaces,
+                        budget,
+                    )
+                    .map(|m| Some(Self::ColourKey(m)));
+                }
+            }
+        }
+        StreamMask::read(doc, base, color_spaces, budget).map(|m| m.map(Self::Stream))
+    }
+
+    pub(super) fn apply(self, image: &mut PdfImage, budget: &ImportBudget) -> Result<()> {
+        match self {
+            Self::Stream(mask) => mask.apply(image, budget),
+            Self::ColourKey(mask) => mask.apply(image, budget),
+        }
+    }
+}
+
+pub(super) struct StreamMask {
     width: u32,
     height: u32,
     stride: usize,
@@ -44,7 +95,7 @@ pub(super) struct Mask {
     other_source_decode: bool,
 }
 
-impl Mask {
+impl StreamMask {
     pub(super) fn read(
         doc: &PdfDocument,
         base: &HashMap<String, Object>,

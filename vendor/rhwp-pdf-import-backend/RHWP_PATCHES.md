@@ -332,3 +332,23 @@ geometry preflight; raw and other codec preflights remain. RGB/Gray/CMYK JPEG he
 validation, actual output/private codec reservations, RGB conversion and bounded PNG
 output continue to enforce individual and cumulative request limits. DCT filter chains
 and inline JPEGs consume this same decision. No default limit or bitmap geometry changes.
+
+### #7974: source-sample colour keys, stencil and image sampling
+
+- The bounded image handle accepts colour-key `/Mask` arrays. Compare every original
+  Gray/RGB/CMYK/Indexed component before Decode and colour conversion, including
+  packed row padding and 16-bit samples. `/SMask` retains precedence. Unsupported
+  raw-mask codec adapters still return an explicit error.
+- Standalone `/ImageMask` handles retain the current nonstroking colour and alpha
+  for each page/Form/inline invocation. Existing clip, ownership, checked sizes,
+  request reservations and sticky failure/recovery boundaries remain in use.
+- A private ancillary `rhWP` PNG chunk preserves the source sampling declaration
+  through BinData and HWP/HWPX. The product draw consumer uses it for magnification;
+  minification retains each backend's existing coverage filter. Bitmap dimensions,
+  CTM and placement are unchanged.
+- Independent RGB/alpha sampling when both planes vary with different interpolation
+  flags remains a follow-up; existing compositing behaviour is retained. This is
+  not full graphics-state soft-mask/blend support or a parser allocation proof.
+- Public source controls and inventories: `pdf/issue7974/`. Implementation and
+  validation boundaries: `mydocs/working/task_m100_7974_stage1.md` and
+  `mydocs/working/task_m100_7974_stage2.md`.

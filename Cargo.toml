@@ -25,6 +25,8 @@ crate-type = ["rlib", "cdylib"]
 [[bin]]
 name = "rhwp"
 path = "src/main.rs"
+# CLI 는 `wasm_api::HwpDocument` 를 쓴다 — 아래 `wasm-api` feature 참고.
+required-features = ["wasm-api"]
 
 [[bin]]
 name = "rhwp-q"
@@ -315,8 +317,16 @@ console_error_panic_hook = { version = "0.1", optional = true }
 subsecond = { version = "=0.7.10", optional = true }
 
 [features]
-default = ["console_error_panic_hook", "pdf-import"]
+default = ["console_error_panic_hook", "pdf-import", "wasm-api"]
 pdf-import = ["dep:pdf_oxide", "dep:office_oxide", "dep:tiny-skia"]
+# 브라우저 JS 바인딩(`wasm_api`)과 자동 panic hook 초기화·`version` export.
+# npm 패키지·Studio·CLI·Native FFI는 기본값을 사용한다. 다른 wasm-bindgen 앱이
+# 라이브러리로 링크할 때는 `default-features = false`로 facade와 자동 start를 제외한다.
+# 의존성의 start가 있으면 일반 Rust main은 자동 실행되지 않지만, 명시적 start끼리는 연결된다.
+# export를 제외하면 쓰지 않는 렌더러·편집 코드도 링커가 제거할 수 있다.
+# 기본값을 끈 Rust 소비자가 `wasm_api`를 쓰려면 `wasm-api`를 명시적으로 켠다.
+# Cargo feature는 합쳐지므로 다른 의존성이 이 feature를 켜면 다시 포함된다.
+wasm-api = []
 native-skia = ["dep:resvg", "dep:skia-safe", "dep:icy_sixel"]
 subsecond-dev = ["dep:subsecond"]
 
@@ -336,6 +346,8 @@ web-sys = { version = "0.3", features = [
     "CanvasRenderingContext2d",
     "CanvasGradient",
     "CanvasPattern",
+    "DomMatrix",
+    "DomMatrixReadOnly",
     "HtmlCanvasElement",
     "HtmlImageElement",
     "ImageData",
