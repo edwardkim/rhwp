@@ -590,3 +590,154 @@ fn crossing_rowspan_without_declared_slack_leaves_the_band_empty() {
         "남는 몫이 없으면 쪽 끝 띠는 비어 남는다: 표 끝 {table_bottom:.2}, 본문 끝 {body_bottom:.2}"
     );
 }
+
+fn page_nodes(core: &DocumentCore, page: u32) -> rhwp::renderer::render_tree::PageRenderTree {
+    core.build_page_render_tree(page).expect("렌더 트리")
+}
+
+fn walk_nodes<'a>(
+    node: &'a rhwp::renderer::render_tree::RenderNode,
+    out: &mut Vec<&'a rhwp::renderer::render_tree::RenderNode>,
+) {
+    out.push(node);
+    for child in &node.children {
+        walk_nodes(child, out);
+    }
+}
+
+/// 쪽 전체 글자를 공백 없이 잇는다(글자 조각 경계와 무관하게 내용 소속을 본다).
+fn page_text(core: &DocumentCore, page: u32) -> String {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    let tree = page_nodes(core, page);
+    let mut nodes = Vec::new();
+    walk_nodes(&tree.root, &mut nodes);
+    nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+            _ => None,
+        })
+        .collect::<String>()
+        .split_whitespace()
+        .collect()
+}
+
+/// 1×1 바깥 상자(1613000 표 `pi=585`) 안 중첩 표가 쪽을 넘으면 상자도 갈린다.
+/// 셀의 마지막 호스트(문단 4, 2×1 표) 위 저장 줄 간격은 앞 문단 22×2 표가 채운 띠다 — 절대배치 캡의
+/// 증거가 아니다. 그 안 11×4 「실기교육」 표의 개체 높이 6006HU 는 앞 세 행 상자(3042 + 1482 + 1482)의
+/// 합과 정확히 같고, 한/글 2020 PDF 는 58쪽을 머리행·1·2행에서 닫고 59쪽을 3행 「항공기 상승비행」
+/// 부터 잇는다(셀 유닛 [32]). 58쪽 상자 윗변은 본문 위(5670HU) + 바깥 위 여백 283HU = 79.37px
+/// (PDF 윗변 79.0)다. 수정 전 rhwp 는 상자를 선언 높이 920.5px 로 재어 58쪽에 통째로 두고 3–10행과
+/// 캡션을 잘라 버렸다.
+#[test]
+fn nested_table_page_frame_splits_its_single_cell_box() {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    let core = core(SAMPLE_1613000);
+    let (_, _, _, end_cut) = table_fragment(&core, 57, 585);
+    assert_eq!(end_cut, vec![32], "58쪽 끝 컷");
+    let (_, _, start_cut, _) = table_fragment(&core, 58, 585);
+    assert_eq!(start_cut, end_cut, "59쪽은 58쪽 컷에서 잇는다");
+
+    let p58 = page_text(&core, 57);
+    let p59 = page_text(&core, 58);
+    assert!(
+        p58.contains("항공기이륙") && !p58.contains("상승비행"),
+        "58쪽은 2행에서 닫힌다"
+    );
+    assert!(
+        p59.contains("상승비행") && p59.contains("170") && !p59.contains("항공기이륙"),
+        "59쪽은 3행부터 합계 행까지 잇는다"
+    );
+
+    let tree = page_nodes(&core, 57);
+    let mut nodes = Vec::new();
+    walk_nodes(&tree.root, &mut nodes);
+    let top = nodes
+        .iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::Table(table)
+                if table.para_index == Some(585) && table.cell_context.is_none() =>
+            {
+                Some(node.bbox.y)
+            }
+            _ => None,
+        })
+        .expect("58쪽 표 pi=585");
+    let expected = (5670.0 + 283.0) / 75.0;
+    assert!(
+        (top - expected).abs() <= 0.5,
+        "58쪽 상자 윗변은 바깥 위 여백을 한 번만 연 {expected:.2}px 여야 한다: {top:.2}"
+    );
+}
+
+/// 이어진 조각 아래 문단의 저장 줄이 상자 아래 여백과 겹쳐도 그 줄에 놓인다. 1613000 59쪽 표 `pi=585`
+/// 끝 조각·캡션 아래(본문 위 226.93px)보다 다음 빈 문단 `pi=586` 의 저장 줄(vpos 17444 = 232.59px)이
+/// 아래에 있고, 한/글 2020 PDF 는 `pi=587` 「· 그 밖에…」 첫 줄을 본문 위(5670HU) + vpos 20884 HU =
+/// 354.05px(글자 윗변 353.84)에 둔다. 수정 전 rhwp 는 상자 아래에 호스트 아래 간격을 더해 9px 아래에 두었다.
+#[test]
+fn continuation_successor_keeps_its_stored_line_below_the_box() {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    let core = core(SAMPLE_1613000);
+    let tree = page_nodes(&core, 58);
+    let mut nodes = Vec::new();
+    walk_nodes(&tree.root, &mut nodes);
+    let top = nodes
+        .iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::TextLine(line)
+                if line.para_index == Some(587) && line.line_index == Some(0) =>
+            {
+                Some(node.bbox.y)
+            }
+            _ => None,
+        })
+        .expect("59쪽 pi=587 첫 줄");
+    let expected = (5670.0 + 20884.0) / 75.0;
+    assert!(
+        (top - expected).abs() <= 0.5,
+        "pi=587 첫 줄은 저장 줄 {expected:.2}px 에 놓여야 한다: {top:.2}"
+    );
+}
+
+/// 칸 안 어울림 중첩 표가 문단 기준 왼쪽·가로 오프셋 0 을 저장하면 칸 왼쪽 안쪽에 놓인다.
+/// 1613000 58쪽 22×2 「학과교육」 표(셀 폭의 0.96)의 왼끝은 바깥 상자 칸 왼끝 + 칸 안 여백 510HU +
+/// 표 바깥 왼 여백 140HU = 8.67px 안쪽이다(한/글 2020 PDF 괘선 92 → 101px). 수정 전 rhwp 는 좁은 중첩
+/// 표를 칸 가운데에 두어 10px 오른쪽에 그렸다.
+#[test]
+fn square_nested_table_with_zero_offset_keeps_its_left_anchor() {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    let core = core(SAMPLE_1613000);
+    let tree = page_nodes(&core, 57);
+    let mut nodes = Vec::new();
+    walk_nodes(&tree.root, &mut nodes);
+    let cell_x = nodes
+        .iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::Table(table)
+                if table.para_index == Some(585) && table.cell_context.is_none() =>
+            {
+                Some(node.bbox.x)
+            }
+            _ => None,
+        })
+        .expect("58쪽 표 pi=585");
+    let nested_x = nodes
+        .iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::Table(table)
+                if table.row_count == 22
+                    && table.col_count == 2
+                    && table.cell_context.is_some() =>
+            {
+                Some(node.bbox.x)
+            }
+            _ => None,
+        })
+        .expect("58쪽 22×2 중첩 표");
+    let expected = (510.0 + 140.0) / 75.0;
+    assert!(
+        (nested_x - cell_x - expected).abs() <= 0.5,
+        "22×2 표 왼끝은 칸 왼끝에서 {expected:.2}px 안쪽이어야 한다: {:.2}",
+        nested_x - cell_x
+    );
+}

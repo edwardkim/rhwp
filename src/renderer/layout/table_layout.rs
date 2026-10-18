@@ -2726,6 +2726,50 @@ impl LayoutEngine {
                 > i64::from(table.common.height)
     }
 
+    /// 저장 표 개체 높이가 앞 `k`개 행 상자의 합과 같으면 그 `k`를 반환한다.
+    ///
+    /// 한/글은 쪽에서 갈린 중첩 표의 개체 높이로 첫 조각 프레임만 저장한다. 행 상자
+    /// 합이 개체 높이를 넘는 조각 증거(`stored_row_boxes_exceed_object_frame`)
+    /// 가운데, 개체 높이가 정확히 어떤 행 경계에서 닫히는 경우만 그 경계를 쪽 경계로
+    /// 본다. 상자 없는 행(병합만 있는 행·높이 0 선언)이 있으면 경계를 셀 수 없고,
+    /// 병합 칸이 가로지르는 경계도 증거로 쓰지 않는다. 한/글은 HWPUNIT 정수 합으로 저장하므로 근사 일치는 증거로 쓰지 않는다.
+    pub(crate) fn stored_object_frame_row_count(
+        table: &crate::model::table::Table,
+    ) -> Option<usize> {
+        let rows = usize::from(table.row_count);
+        if rows < 2 || table.common.height == 0 || table.common.height >= 0x8000_0000 {
+            return None;
+        }
+        let mut row_heights = vec![None; rows];
+        for cell in &table.cells {
+            if cell.row_span == 1 && cell.height > 0 && cell.height < 0x8000_0000 {
+                if let Some(row_height) = row_heights.get_mut(usize::from(cell.row)) {
+                    *row_height = Some(row_height.unwrap_or(0).max(i64::from(cell.height)));
+                }
+            }
+        }
+        let declared = i64::from(table.common.height);
+        let spacing = i64::from(table.cell_spacing);
+        let mut prefix = 0i64;
+        for (index, row_height) in row_heights.iter().enumerate().take(rows - 1) {
+            prefix += (*row_height)? + if index > 0 { spacing } else { 0 };
+            if prefix == declared {
+                // 병합 칸이 가로지르는 경계는 닫힌 행 경계가 아니다. 그 칸의 상자가
+                // 경계 앞뒤를 함께 소유하므로 개체 높이가 조각을 증언하지 못한다.
+                let boundary = index + 1;
+                let crossed = table.cells.iter().any(|cell| {
+                    let top = usize::from(cell.row);
+                    top < boundary && top + usize::from(cell.row_span.max(1)) > boundary
+                });
+                return (!crossed).then_some(boundary);
+            }
+            if prefix > declared {
+                return None;
+            }
+        }
+        None
+    }
+
     pub(crate) fn native_stored_row_has_text_frame_boundary(
         &self,
         table: &crate::model::table::Table,
@@ -6479,7 +6523,7 @@ impl LayoutEngine {
             let h_offset = hwpunit_to_px(table.common.horizontal_offset as i32, self.dpi);
             if !table.common.treat_as_char
                 && matches!(table.common.text_wrap, TextWrap::Square)
-                && h_offset > 0.5
+                && h_offset >= 0.0
                 && matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
                 && h_offset + table_width <= area_w + 0.5
             {
@@ -11004,6 +11048,8 @@ impl LayoutEngine {
         } else {
             0.0
         };
+        // 앞 문단의 흐름 중첩 표 끝. 뒤 호스트의 저장 갭이 그 표의 띠인지 가린다.
+        let prior_nested_end = std::cell::Cell::new(0.0f64);
         paragraphs
             .iter()
             .enumerate()
@@ -11084,15 +11130,13 @@ impl LayoutEngine {
                     // 호스트가 셀 마지막 문단인 변형도 같은 식으로 갈린다). 흐름형
                     // (lh 미흡수 포함)은 직전 갭이 평범한 줄간격이라 배제되고,
                     // 호스트가 셀 첫 문단이면(49308 조각 셀) 직전 줄이 없어 배제된다.
-                    let prev_end = paragraphs
-                        .iter()
-                        .take(pidx)
-                        .flat_map(|prev| prev.line_segs.iter())
-                        .map(|s| {
-                            hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), self.dpi)
-                        })
-                        .filter(|&e| e <= para_top + 0.5)
-                        .fold(f64::NEG_INFINITY, f64::max);
+                    let prev_end = crate::renderer::float_placement::nested_host_gap_start(
+                        paragraphs,
+                        pidx,
+                        para_top,
+                        prior_nested_end.get(),
+                        self.dpi,
+                    );
                     let gap_before = para_top - prev_end;
                     // 쪽을 넘는 거대 중첩 표는 셀 사다리가 조각-국소라 표를
                     // 기술하지 못한다(49308: nested_h 2664 vs ladder_end 122 —
@@ -11102,11 +11146,13 @@ impl LayoutEngine {
                         && nested_h <= ladder_end
                         && prev_end.is_finite()
                         && gap_before >= nested_h * 0.85;
-                    if anchored_not_flowing {
+                    let bottom = if anchored_not_flowing {
                         candidate.min(ladder_end)
                     } else {
                         candidate
-                    }
+                    };
+                    prior_nested_end.set(prior_nested_end.get().max(bottom));
+                    bottom
                 }
             })
             .fold(0.0f64, f64::max)
@@ -15267,6 +15313,13 @@ impl LayoutEngine {
                             _ => (0.0, 0.0),
                         }
                     };
+                    // 쪽에서 갈린 원본 중첩 표는 개체 높이로 첫 조각만 저장한다. 그 높이가
+                    // 닫는 행 경계는 한/글이 실제로 쪽을 넘긴 자리이므로 셀 내부 쪽 나눔과
+                    // 같이 보존한다. 첫 조각 뒤의 행만 이 경계를 연다.
+                    let stored_object_frame_row = self
+                        .native_stored_table_has_fragment_frames(nt)
+                        .then(|| Self::stored_object_frame_row_count(nt))
+                        .flatten();
                     for (ri, rh) in rhs.iter().enumerate() {
                         // [#4069] CELL 분할 중첩 표는 큰 행을 단일 atom으로 바깥
                         // 원장에 올리지 않는다. 행에서 콘텐츠가 가장 높은 셀의 unit
@@ -15564,7 +15617,8 @@ impl LayoutEngine {
                         }
 
                         let mut uh = *rh;
-                        let hard_break_before = reset_before && ri == 0;
+                        let hard_break_before =
+                            (reset_before && ri == 0) || stored_object_frame_row == Some(ri);
                         let mut vpos_gap_before = vpos_gap_before_para && ri == 0;
                         if use_vpos_unit_positions && ri == 0 && !hard_break_before {
                             if let Some(seg) = p.line_segs.first() {
@@ -22258,6 +22312,11 @@ impl LayoutEngine {
 
         let hard_break_unit = &units[*j];
         let prev = &units[*j - 1];
+        // 중첩 표 행 경계는 글줄이 아니므로 고아 줄 보호의 대상이 아니다. 같은 호스트
+        // 문단을 공유한다고 앞 행을 되감으면 저장 조각 경계보다 한 행 일찍 자른다.
+        if hard_break_unit.nested_row.is_some() && prev.nested_row.is_some() {
+            return;
+        }
         if prev.para_idx == hard_break_unit.para_idx {
             // 이미 같은 문단의 두 줄 이상을 이 조각에 배치했다면 고아 줄이 아니다.
             // 저장 reset 직전 한 줄을 무조건 되감으면 정상 86712의 2+2줄을

@@ -5181,6 +5181,30 @@ pub(crate) fn nested_group_occupied_height(
     flow_height.max(overlay_height)
 }
 
+/// [#4533] 절대배치 캡이 증거로 쓰는 호스트 위 저장 갭의 시작점이다.
+/// 앞 문단의 흐름 중첩 표가 그 갭을 채웠으면 갭은 이 표가 예약한 공간이 아니다.
+/// 저장 줄 끝만 보면 앞 표가 차지한 띠를 이 표의 절대배치 증거로 오인한다.
+pub(crate) fn nested_host_gap_start(
+    paragraphs: &[Paragraph],
+    pidx: usize,
+    para_top: f64,
+    prior_nested_end: f64,
+    dpi: f64,
+) -> f64 {
+    let line_end = paragraphs
+        .iter()
+        .take(pidx)
+        .flat_map(|prev| prev.line_segs.iter())
+        .map(|s| crate::renderer::hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), dpi))
+        .filter(|&e| e <= para_top + 0.5)
+        .fold(f64::NEG_INFINITY, f64::max);
+    if prior_nested_end > 0.0 {
+        line_end.max(prior_nested_end.min(para_top))
+    } else {
+        line_end
+    }
+}
+
 pub(crate) fn nested_table_groups(para: &Paragraph, _hwpx_stored: bool) -> Vec<NestedTableGroup> {
     let lines = para_nested_table_line_indices(para);
     let mut groups: Vec<NestedTableGroup> = Vec::new();

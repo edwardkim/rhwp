@@ -848,11 +848,15 @@ impl TypesetEngine {
                                 styles.para_styles.get(next.para_shape_id as usize)
                             })
                             .map_or(0.0, |style| style.spacing_before);
+                        // 뒤 문단의 저장 줄 윗변(= 흐름 끝 + 그 문단 위 간격)이 상자 아래 이하에
+                        // 있으면 그 줄이 문단을 닫는다. 위 간격이 바깥 아래 여백과 겹쳐도 같다
+                        // (1613000 59쪽: 상자 아래 226.93, 뒤 빈 줄 vpos 17444 = 232.59).
+                        let successor_line = end + successor_before;
                         if successor_before > 0.0
-                            && (end + successor_before - placement.occupied_bottom).abs() <= 0.5
+                            && successor_line >= placement.occupied_bottom - 0.5
                         {
                             placement.stored_successor_line_origin =
-                                Some(placement.occupied_bottom);
+                                Some(successor_line.max(placement.occupied_bottom));
                         }
                     }
                 }

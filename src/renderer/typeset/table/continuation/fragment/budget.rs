@@ -635,7 +635,16 @@ impl TypesetEngine {
                         st.current_zone_y_offset.to_bits(),
                     )
             {
-                p.table_top += hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+                // 흐름 원점(현재 높이 + 호스트 앞 간격)이 이미 위 여백을 담은 계획은
+                // 다시 열지 않는다. 그 간격이 곧 바깥 위 여백이라 더하면 조각이 두 번
+                // 내려간다(1613000 58쪽 1×1 상자: 계획 3.77 + 여백 3.77).
+                let margin = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+                let opened_by_flow =
+                    (p.table_top - (st.current_height + host_before_overhead)).abs() <= 0.01
+                        && host_before_overhead + 0.01 >= margin;
+                if !opened_by_flow {
+                    p.table_top += margin;
+                }
             }
             p
         });
