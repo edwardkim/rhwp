@@ -478,6 +478,52 @@ struct Grid {
     uncertain_connections: usize,
     regularized: bool,
     cell_region_evidence: Value,
+    axis_evidence: Value,
+}
+
+/// Paint observations on a proposed axis set remain distinct from cell ownership.
+fn grid_shared_edges(
+    edges: &[Edge],
+    xs: &[f32],
+    ys: &[f32],
+    allow_partial: bool,
+) -> Result<(Vec<Value>, usize, Sets), String> {
+    let (cols, rows) = (xs.len() - 1, ys.len() - 1);
+    let mut sets = Sets::new(rows * cols);
+    // Connected tiles are only one hypothesis. Missing paint never confirms a passage.
+    let mut uncertain_connections = 0;
+    let mut shared_edges = Vec::new();
+    for row in 0..rows {
+        for col in 0..cols {
+            if col + 1 < cols {
+                let length = ys[row + 1] - ys[row];
+                let covered = coverage(edges, false, xs[col + 1], ys[row], ys[row + 1]);
+                shared_edges.push(json!({"horizontal":false,"at":xs[col+1],"from":ys[row],"to":ys[row+1],
+                    "regularizedCoveragePt":covered,"separatorRole":if covered==0. {"undecided"} else {"separator_candidate"},
+                    "alternatives":if covered==0. {vec!["separate_cells","connected_cells"]} else {vec!["separate_cells"]}}));
+                if covered == 0. {
+                    uncertain_connections += 1;
+                    sets.join(row * cols + col, row * cols + col + 1);
+                } else if !allow_partial && covered < length - EPS {
+                    return Err("partial internal vertical boundary".into());
+                }
+            }
+            if row + 1 < rows {
+                let length = xs[col + 1] - xs[col];
+                let covered = coverage(edges, true, ys[row + 1], xs[col], xs[col + 1]);
+                shared_edges.push(json!({"horizontal":true,"at":ys[row+1],"from":xs[col],"to":xs[col+1],
+                    "regularizedCoveragePt":covered,"separatorRole":if covered==0. {"undecided"} else {"separator_candidate"},
+                    "alternatives":if covered==0. {vec!["separate_cells","connected_cells"]} else {vec!["separate_cells"]}}));
+                if covered == 0. {
+                    uncertain_connections += 1;
+                    sets.join(row * cols + col, (row + 1) * cols + col);
+                } else if !allow_partial && covered < length - EPS {
+                    return Err("partial internal horizontal boundary".into());
+                }
+            }
+        }
+    }
+    Ok((shared_edges, uncertain_connections, sets))
 }
 
 fn grid(edges: &[Edge], allow_linear: bool) -> Result<Grid, String> {
@@ -509,40 +555,8 @@ fn grid(edges: &[Edge], allow_linear: bool) -> Result<Grid, String> {
     {
         return Err("open outer boundary".into());
     }
-    let mut sets = Sets::new(rows * cols);
-    // Connected tiles are only one hypothesis. Missing paint never confirms a passage.
-    let mut uncertain_connections = 0;
-    let mut shared_edges = Vec::new();
-    for row in 0..rows {
-        for col in 0..cols {
-            if col + 1 < cols {
-                let length = ys[row + 1] - ys[row];
-                let covered = coverage(edges, false, xs[col + 1], ys[row], ys[row + 1]);
-                shared_edges.push(json!({"horizontal":false,"at":xs[col+1],"from":ys[row],"to":ys[row+1],
-                    "regularizedCoveragePt":covered,"separatorRole":if covered==0. {"undecided"} else {"separator_candidate"},
-                    "alternatives":if covered==0. {vec!["separate_cells","connected_cells"]} else {vec!["separate_cells"]}}));
-                if covered == 0. {
-                    uncertain_connections += 1;
-                    sets.join(row * cols + col, row * cols + col + 1);
-                } else if covered < length - EPS {
-                    return Err("partial internal vertical boundary".into());
-                }
-            }
-            if row + 1 < rows {
-                let length = xs[col + 1] - xs[col];
-                let covered = coverage(edges, true, ys[row + 1], xs[col], xs[col + 1]);
-                shared_edges.push(json!({"horizontal":true,"at":ys[row+1],"from":xs[col],"to":xs[col+1],
-                    "regularizedCoveragePt":covered,"separatorRole":if covered==0. {"undecided"} else {"separator_candidate"},
-                    "alternatives":if covered==0. {vec!["separate_cells","connected_cells"]} else {vec!["separate_cells"]}}));
-                if covered == 0. {
-                    uncertain_connections += 1;
-                    sets.join(row * cols + col, (row + 1) * cols + col);
-                } else if covered < length - EPS {
-                    return Err("partial internal horizontal boundary".into());
-                }
-            }
-        }
-    }
+    let (shared_edges, uncertain_connections, mut sets) =
+        grid_shared_edges(edges, &xs, &ys, false)?;
     let mut cells = Vec::new();
     for group in sets.groups() {
         let row = group.iter().map(|i| i / cols).min().unwrap();
@@ -603,6 +617,7 @@ fn grid(edges: &[Edge], allow_linear: bool) -> Result<Grid, String> {
             .iter()
             .any(|e| matches!(e.paint_kind, "periodic_carrier" | "dash_carrier")),
         cell_region_evidence: Value::Null,
+        axis_evidence: Value::Null,
     })
 }
 
@@ -646,6 +661,60 @@ fn supported_grid(
     Ok(g)
 }
 
+/// Preserve paint-qualified candidates. Only a complete, content-backed local
+/// interpretation may rescue a rejected or ambiguous paint component.
+fn resolved_grid(
+    component: &[Edge],
+    source: &[Edge],
+    logical: &[Edge],
+    text: &super::text_analysis::ObservedText,
+    orders: &[Vec<usize>],
+    clips: &pdf_oxide::elements::PathClipObservations,
+    media: (f32, f32, f32, f32),
+) -> Result<Grid, String> {
+    let original = supported_grid(component, source, logical, true).map(|mut grid| {
+        cell_regions::select(&mut grid, text, orders, clips, media);
+        grid
+    });
+    if original
+        .as_ref()
+        .is_ok_and(|g| g.cell_region_evidence["status"] == "Selected")
+    {
+        return original;
+    }
+    match cell_regions::local_axes(component, source, text, orders, clips, media) {
+        Ok(candidate) => {
+            // A coarse painted face can contain several directly witnessed
+            // content regions even when its own paint topology has no holes.
+            // Keep an already equivalent paint-qualified result unchanged.
+            if let Ok(grid) = original {
+                let addresses = |g: &Grid| {
+                    g.cells
+                        .iter()
+                        .map(|c| (c.row, c.col, c.rows, c.cols))
+                        .collect::<Vec<_>>()
+                };
+                if grid.xs == candidate.xs
+                    && grid.ys == candidate.ys
+                    && addresses(&grid) == addresses(&candidate)
+                {
+                    return Ok(grid);
+                }
+            }
+            Ok(candidate)
+        }
+        Err(reason) => match original {
+            Ok(mut grid) => {
+                if !grid.cell_region_evidence.is_null() {
+                    grid.cell_region_evidence["localAxisAttempt"] = json!(reason);
+                }
+                Ok(grid)
+            }
+            Err(paint_reason) => Err(format!("{paint_reason}; local content regions: {reason}")),
+        },
+    }
+}
+
 /// Returns geometric table candidates and original content indices, not rhwp Table IR.
 pub fn detect_ruled_tables(
     spans: &[TextSpan],
@@ -678,11 +747,16 @@ pub fn detect_ruled_tables(
     let mut rejected = Vec::new();
     for group in component_groups(&edges) {
         let component: Vec<_> = group.iter().map(|i| edges[*i]).collect();
-        match supported_grid(&component, &source_edges, &logical_edges, true) {
-            Ok(mut g) => {
-                cell_regions::select(&mut g, text, span_orders, clips, media_box);
-                grids.push(g);
-            }
+        match resolved_grid(
+            &component,
+            &source_edges,
+            &logical_edges,
+            text,
+            span_orders,
+            clips,
+            media_box,
+        ) {
+            Ok(g) => grids.push(g),
             Err(reason) => rejected.push(json!({"edgeCount":component.len(),"reason":reason})),
         }
     }
@@ -722,14 +796,21 @@ pub fn detect_ruled_tables(
                 .collect::<Vec<_>>();
             for group in component_groups(&local) {
                 let component = group.iter().map(|i| local[*i]).collect::<Vec<_>>();
-                if let Ok(mut g) = supported_grid(&component, &source_edges, &logical_edges, true) {
+                if let Ok(mut g) = resolved_grid(
+                    &component,
+                    &source_edges,
+                    &logical_edges,
+                    text,
+                    span_orders,
+                    clips,
+                    media_box,
+                ) {
                     if !inside(g.bbox, region)
                         || grids.iter().any(|existing| existing.bbox == g.bbox)
                     {
                         continue;
                     }
                     g.search_region = Some(region);
-                    cell_regions::select(&mut g, text, span_orders, clips, media_box);
                     claimed.extend(
                         g.source_edges
                             .iter()
@@ -759,7 +840,9 @@ pub fn detect_ruled_tables(
             .collect::<Vec<_>>(),
     )?;
     for (i, g) in grids.iter().enumerate() {
-        if g.uncertain_connections > 0 && g.cell_region_evidence["status"] != "Selected" {
+        if (g.uncertain_connections > 0 || !g.axis_evidence.is_null())
+            && g.cell_region_evidence["status"] != "Selected"
+        {
             placements[i].deferred = Some(
                 "absent paint does not establish merged cells; competing separation retained"
                     .into(),
@@ -871,6 +954,39 @@ pub fn detect_ruled_tables(
             return Err("image placement unavailable for table ownership".into());
         }
     }
+    let tables = grids.iter().enumerate().map(|(gi,g)|json!({
+            "bbox":g.bbox,"rows":g.ys.len()-1,"columns":g.xs.len()-1,
+            "xBoundaries":g.xs,"yBoundaries":g.ys,
+            "topology":g.topology,"axisEvidence":g.axis_evidence,
+            "searchRegion":g.search_region,
+            "sharedEdges":g.shared_edges,"uncertainConnections":g.uncertain_connections,
+            "regularizedPeriodicBoundary":g.regularized,
+            "cellInterpretation":if g.cell_region_evidence["status"]=="Selected" {
+                "content-backed active-clip tiling; authored structure unknown"
+            } else if !g.axis_evidence.is_null() { "unresolved active-content local grid" }
+            else {"connected-face hypothesis; absent edges retain separation alternative"},
+            "cellRegionEvidence":g.cell_region_evidence,
+            "sourceBoundarySegments":g.source_edges.iter().map(|edge|json!({
+                "path":edge.source_path,"segment":edge.source_segment,
+                "horizontal":edge.horizontal,"at":edge.at,"from":edge.from,"to":edge.to,
+                "strokeWidth":edge.stroke_width,"operation":edge.source_operation,"paintKind":edge.paint_kind
+            })).collect::<Vec<_>>(),
+            "sourcePathIndices":g.source_edges.iter().map(|edge|edge.source_path)
+                .collect::<std::collections::BTreeSet<_>>().into_iter().filter(|path|
+                    source_edges.iter().filter(|edge|edge.source_path==*path).all(|edge|
+                        g.source_edges.iter().any(|owned|owned.source_segment==edge.source_segment)))
+                .collect::<Vec<_>>(),
+            "hierarchy":{"status":if placements[gi].deferred.is_some(){"Deferred"}else{"Confirmed"},
+                "reason":placements[gi].deferred,"depth":placements[gi].depth,
+                "parent":placements[gi].parent.map(|(table,cell)|json!({"table":table,"cell":cell})),
+                "embedding":placements[gi].embedding.map(|e|json!({"x":e.x,"y":e.y,"width":e.width,"height":e.height}))},
+            "cells":g.cells.iter().enumerate().map(|(ci,c)|json!({"row":c.row,"column":c.col,
+                "rowspan":c.rows,"colspan":c.cols,"bbox":c.bbox,
+                "spanIndices":c.spans,"imageIndices":c.images,
+                "childTableIndices":placements.iter().enumerate().filter_map(|(child,p)|
+                    (p.parent==Some((gi,ci))).then_some(child)).collect::<Vec<_>>()
+            })).collect::<Vec<_>>()
+        })).collect::<Vec<_>>();
     Ok(json!({
         "algorithm":"ruling-cellular-topology-v3","coordinateSystem":"points, top-left of MediaBox",
         "deferredReason":deferred_reason,"sourcePathCount":paths.len(),
@@ -893,38 +1009,7 @@ pub fn detect_ruled_tables(
         })).collect::<Vec<_>>(),
         "junctionModel":"centerline intersections supported by perpendicular stroke ink and quantization tolerance",
         "nestedSearch":"verified-parent-cell regions; unclaimed complete evidence only",
-        "tables":grids.iter().enumerate().map(|(gi,g)|json!({
-            "bbox":g.bbox,"rows":g.ys.len()-1,"columns":g.xs.len()-1,
-            "xBoundaries":g.xs,"yBoundaries":g.ys,
-            "topology":g.topology,
-            "searchRegion":g.search_region,
-            "sharedEdges":g.shared_edges,"uncertainConnections":g.uncertain_connections,
-            "regularizedPeriodicBoundary":g.regularized,
-            "cellInterpretation":if g.cell_region_evidence["status"]=="Selected" {
-                "content-backed active-clip tiling; authored structure unknown"
-            } else {"connected-face hypothesis; absent edges retain separation alternative"},
-            "cellRegionEvidence":g.cell_region_evidence,
-            "sourceBoundarySegments":g.source_edges.iter().map(|edge|json!({
-                "path":edge.source_path,"segment":edge.source_segment,
-                "horizontal":edge.horizontal,"at":edge.at,"from":edge.from,"to":edge.to,
-                "strokeWidth":edge.stroke_width,"operation":edge.source_operation,"paintKind":edge.paint_kind
-            })).collect::<Vec<_>>(),
-            "sourcePathIndices":g.source_edges.iter().map(|edge|edge.source_path)
-                .collect::<std::collections::BTreeSet<_>>().into_iter().filter(|path|
-                    source_edges.iter().filter(|edge|edge.source_path==*path).all(|edge|
-                        g.source_edges.iter().any(|owned|owned.source_segment==edge.source_segment)))
-                .collect::<Vec<_>>(),
-            "hierarchy":{"status":if placements[gi].deferred.is_some(){"Deferred"}else{"Confirmed"},
-                "reason":placements[gi].deferred,"depth":placements[gi].depth,
-                "parent":placements[gi].parent.map(|(table,cell)|json!({"table":table,"cell":cell})),
-                "embedding":placements[gi].embedding.map(|e|json!({"x":e.x,"y":e.y,"width":e.width,"height":e.height}))},
-            "cells":g.cells.iter().enumerate().map(|(ci,c)|json!({"row":c.row,"column":c.col,
-                "rowspan":c.rows,"colspan":c.cols,"bbox":c.bbox,
-                "spanIndices":c.spans,"imageIndices":c.images,
-                "childTableIndices":placements.iter().enumerate().filter_map(|(child,p)|
-                    (p.parent==Some((gi,ci))).then_some(child)).collect::<Vec<_>>()
-            })).collect::<Vec<_>>()
-        })).collect::<Vec<_>>(),
+        "tables":tables,
         "contentOrder":"original extraction index; semantic reading order deferred",
         "composition":"guarded cell-slot substitution; affine unit-square embeddings",
         "rejectedComponents":rejected,"unassignedContent":unassigned,"ambiguousContent":ambiguous

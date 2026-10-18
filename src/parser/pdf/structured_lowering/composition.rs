@@ -1,32 +1,6 @@
 //! Bind hierarchical source paint to actual nested Table owners, deepest first.
 use super::*;
 
-pub(super) fn source_paint_family(grids: &[Value], root: usize) -> Result<bool, String> {
-    for (candidate, grid) in grids.iter().enumerate() {
-        // Content-backed cell separation can have no ink at a shared side.
-        // The uniform-border legacy route would invent that side (or defer on
-        // differing partial rules). Use the same per-cell paint/native plan as
-        // periodic families; semantic ownership does not imply uniform paint.
-        if grid["regularizedPeriodicBoundary"] != true
-            && grid["cellRegionEvidence"]["status"] != "Selected"
-        {
-            continue;
-        }
-        let mut at = candidate;
-        for _ in 0..=16 {
-            if at == root {
-                return Ok(true);
-            }
-            let parent = &grids.get(at).ok_or("missing table ancestor")?["hierarchy"]["parent"];
-            if parent.is_null() {
-                break;
-            }
-            at = index(&parent["table"])?;
-        }
-    }
-    Ok(false)
-}
-
 pub(super) struct Owner {
     pub root: usize,
     pub candidate: usize,
@@ -105,4 +79,35 @@ pub(super) fn table_mut(control: &mut Control, instance: u32) -> Option<&mut Tab
         }
     }
     None
+}
+
+/// Discard whole failed families before any source paint/content is consumed.
+pub(super) fn discard_roots(
+    tables: &mut Vec<Control>,
+    candidates: &mut Vec<usize>,
+    consumed: &mut Vec<BTreeSet<usize>>,
+    preserve: &mut Vec<usize>,
+    held: &mut Vec<Value>,
+    rejected: &BTreeSet<usize>,
+    reason: &str,
+) {
+    let keep_paint = preserve.iter().copied().collect::<BTreeSet<_>>();
+    preserve.clear();
+    for (i, ((table, candidate), removed)) in std::mem::take(tables)
+        .into_iter()
+        .zip(std::mem::take(candidates))
+        .zip(std::mem::take(consumed))
+        .enumerate()
+    {
+        if rejected.contains(&i) {
+            held.push(json!({"candidate":candidate,"reason":reason}));
+        } else {
+            if keep_paint.contains(&i) {
+                preserve.push(tables.len());
+            }
+            tables.push(table);
+            candidates.push(candidate);
+            consumed.push(removed);
+        }
+    }
 }

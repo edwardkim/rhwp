@@ -82,6 +82,10 @@ fn geometry(n: &RenderNode, cell: Option<&RenderNode>) -> usize {
 }
 fn expected(key: &str) -> (&'static str, Vec<Address>) {
     match key {
+        "unwitnessed-cell" => (
+            "MERGEDHEADERLOWERRIGHT",
+            vec![(0, 0, 1, 2), (1, 0, 1, 1), (1, 1, 1, 1)],
+        ),
         "rowspan" => (
             "MERGEDLEFTUPPERRIGHTLOWERRIGHT",
             vec![(0, 0, 2, 1), (0, 1, 1, 1), (1, 1, 1, 1)],
@@ -129,6 +133,7 @@ fn merged_cells_follow_live_content_regions_through_both_save_formats() {
         "rowspan",
         "form-transformed",
         "form-shadowed-font",
+        "unwitnessed-cell",
     ] {
         let c = load(key);
         let (want, addrs) = expected(key);
@@ -208,7 +213,6 @@ fn missing_restored_partial_conflicting_or_empty_scopes_remain_positional() {
         "nonrectangular-clip",
         "competing-scopes",
         "painted-separator-conflict",
-        "unwitnessed-cell",
     ] {
         let c = load(key);
         assert_eq!(
@@ -216,11 +220,7 @@ fn missing_restored_partial_conflicting_or_empty_scopes_remain_positional() {
             0,
             "{key}"
         );
-        let want = if key == "unwitnessed-cell" {
-            "MERGEDHEADERLOWERRIGHT"
-        } else {
-            "MERGEDHEADERLOWERLEFTLOWERRIGHT"
-        };
+        let want = "MERGEDHEADERLOWERLEFTLOWERRIGHT";
         assert_eq!(
             contents(&c),
             want,

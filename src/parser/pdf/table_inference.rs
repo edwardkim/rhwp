@@ -490,7 +490,11 @@ impl Ledger {
                     .map(|v| v.as_f64().unwrap() as f32)
                     .collect();
                 self.candidate(
-                    "paint_boundary",
+                    if table["axisEvidence"].is_object() {
+                        "active_content_clip_tiling"
+                    } else {
+                        "paint_boundary"
+                    },
                     Rect::new(n("x"), n("y"), n("width"), n("height")),
                     xs,
                     ys,
@@ -499,6 +503,10 @@ impl Ledger {
                 if let Some(candidate) = self.candidates.last_mut() {
                     candidate["sourceTableCandidate"] = json!(index);
                     candidate["geometryDecision"] = table["hierarchy"].clone();
+                    if table["axisEvidence"].is_object() {
+                        candidate["axisEvidence"] = table["axisEvidence"].clone();
+                    }
+                    candidate["selectedAxisEvidence"] = table["axisEvidence"].clone();
                 }
             }
         }

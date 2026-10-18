@@ -9,6 +9,72 @@ use pdf_oxide::{
 use serde_json::json;
 use std::collections::BTreeMap;
 
+mod empty_faces;
+mod local_axes;
+pub(super) use local_axes::derive as local_axes;
+
+struct Witness {
+    bounds: Rect,
+    glyphs: Vec<usize>,
+}
+
+/// Share the actual text-show/clip association between axis proposals and owners.
+fn observe(
+    outer: Rect,
+    text: &ObservedText,
+    orders: &[Vec<usize>],
+    clips: &PathClipObservations,
+    media: (f32, f32, f32, f32),
+) -> Result<Vec<Witness>, &'static str> {
+    if text.glyph_observations_incomplete || clips.text_uses_omitted > 0 {
+        return Err("text or active-clip observation incomplete");
+    }
+    let uses = clips
+        .text_uses
+        .iter()
+        .map(|(order, clip)| (order, clip))
+        .collect::<BTreeMap<_, _>>();
+    let mut regions: Vec<Witness> = Vec::new();
+    let mut work = 0usize;
+    for (gi, glyph) in text.glyphs.iter().enumerate() {
+        if glyph.text.is_whitespace() || !super::overlaps(glyph.bounds, outer) {
+            continue;
+        }
+        if glyph.geometry_quality == "uniform_span_approximation"
+            || !super::inside(glyph.bounds, outer)
+        {
+            return Err("content geometry cannot establish cell ownership");
+        }
+        let order = orders
+            .get(glyph.source_span)
+            .ok_or("missing span invocation path")?;
+        let clip = uses.get(order).ok_or("missing text-paint clip witness")?;
+        if clip.is_none() {
+            return Err("text has no active cell clip");
+        }
+        let bounds = effective_clip(clip.as_deref(), media).ok_or("unsupported text clip chain")?;
+        if !super::inside(bounds, outer) || !super::inside(glyph.bounds, bounds) {
+            return Err("glyph or active clip crosses the local exterior");
+        }
+        work += regions.len() + 1;
+        if work > 1_000_000 {
+            return Err("cell region observation work exceeded");
+        }
+        if let Some(region) = regions.iter_mut().find(|r| r.bounds == bounds) {
+            region.glyphs.push(gi);
+        } else {
+            if regions.len() == 512 {
+                return Err("cell region observation count exceeded");
+            }
+            regions.push(Witness {
+                bounds,
+                glyphs: vec![gi],
+            });
+        }
+    }
+    Ok(regions)
+}
+
 fn effective_clip(mut clip: Option<&PathClip>, media: (f32, f32, f32, f32)) -> Option<Rect> {
     let mut bounds = Rect::new(media.0, media.1, media.2 - media.0, media.3 - media.1);
     let mut depth = 0;
@@ -41,44 +107,17 @@ pub(super) fn select(
     clips: &PathClipObservations,
     media: (f32, f32, f32, f32),
 ) {
-    if grid.uncertain_connections == 0 {
+    if grid.uncertain_connections == 0 && grid.axis_evidence.is_null() {
         return;
     }
     grid.cell_region_evidence = json!({"status":"Deferred", "reason":"incomplete content-backed clip tiling",
         "authoredStructure":"unknown", "alternatives":["connected_faces","separate_cells"]});
     let mut run = || -> Result<_, &'static str> {
-        if text.glyph_observations_incomplete || clips.text_uses_omitted > 0 {
-            return Err("text or active-clip observation incomplete");
-        }
-        let uses = clips
-            .text_uses
-            .iter()
-            .map(|(order, clip)| (order, clip))
-            .collect::<BTreeMap<_, _>>();
+        let observed = observe(grid.bbox, text, orders, clips, media)?;
         let mut faces = BTreeMap::<(usize, usize, usize, usize), Vec<usize>>::new();
         let mut work = 0usize;
-        for (gi, glyph) in text.glyphs.iter().enumerate() {
-            if glyph.text.is_whitespace() || !super::overlaps(glyph.bounds, grid.bbox) {
-                continue;
-            }
-            work += 1;
-            if work > 1_000_000 {
-                return Err("cell region observation work exceeded");
-            }
-            if glyph.geometry_quality == "uniform_span_approximation"
-                || !super::inside(glyph.bounds, grid.bbox)
-            {
-                return Err("content geometry cannot establish cell ownership");
-            }
-            let order = orders
-                .get(glyph.source_span)
-                .ok_or("missing span invocation path")?;
-            let clip = uses.get(order).ok_or("missing text-paint clip witness")?;
-            if clip.is_none() {
-                return Err("text has no active cell clip");
-            }
-            let bounds =
-                effective_clip(clip.as_deref(), media).ok_or("unsupported text clip chain")?;
+        for region in observed {
+            let bounds = region.bounds;
             let axis = |values: &[f32], at: f32| {
                 let mut matching = values
                     .iter()
@@ -93,7 +132,7 @@ pub(super) fn select(
                 .ok_or("clip does not match local column end")?;
             let re = axis(&grid.ys, bounds.y + bounds.height)
                 .ok_or("clip does not match local row end")?;
-            if r >= re || c >= ce || !super::inside(glyph.bounds, bounds) {
+            if r >= re || c >= ce {
                 return Err("glyph crosses its observed cell clip");
             }
             let address = (r, c, re - r, ce - c);
@@ -124,10 +163,7 @@ pub(super) fn select(
                     return Err("content clip contradicts a painted separator");
                 }
             }
-            faces.entry(address).or_default().push(gi);
-        }
-        if faces.len() < 2 {
-            return Err("insufficient independent content regions");
+            faces.entry(address).or_default().extend(region.glyphs);
         }
         let (rows, cols) = (grid.ys.len() - 1, grid.xs.len() - 1);
         let mut owners = vec![None; rows * cols];
@@ -140,14 +176,16 @@ pub(super) fn select(
                 }
             }
         }
-        if owners.iter().any(Option::is_none) {
-            return Err("unwitnessed cell region remains");
+        empty_faces::complete(grid, &mut faces, &mut owners, &mut work)?;
+        if faces.len() < 2 {
+            return Err("insufficient independent content regions");
         }
         let keys = faces.keys().copied().collect::<Vec<_>>();
         let topology = table_topology::evidence(rows, cols, &keys)
             .map_err(|_| "invalid content-backed cell topology")?;
         let evidence = faces.iter().map(|(&(r,c,rs,cs),glyphs)| json!({
             "row":r,"column":c,"rowspan":rs,"colspan":cs,
+            "basis":if glyphs.is_empty() {"closed_paint_face"} else {"active_text_clip"},
             "glyphIds":glyphs.iter().map(|i| &text.glyphs[*i].id).collect::<Vec<_>>(),
             "sourceOrders":glyphs.iter().map(|i| &orders[text.glyphs[*i].source_span]).collect::<std::collections::BTreeSet<_>>()
         })).collect::<Vec<_>>();

@@ -729,9 +729,9 @@ pub fn recognize_page(
             if let Some(reason) = &placements[ti].deferred {
                 return Err(reason.clone());
             }
-            if (t["rows"] == 1 || t["columns"] == 1) && placements[ti].parent.is_none() {
-                return Err("invalid grid dimensions".into());
-            }
+            // A single row/column is still a table when the same geometry,
+            // topology and unique-content ownership checks hold. The previous
+            // root-only dimension veto discarded valid local cell results.
             if context.len() + 2 > policy.max_context_depth {
                 return Err("recognition context depth exceeded".into());
             }

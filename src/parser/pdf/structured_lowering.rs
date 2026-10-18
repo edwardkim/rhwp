@@ -91,6 +91,13 @@ fn observed_line_text(
     let mut offset = 0;
     let mut maximum_error: f64 = 0.;
     let mut maximum_baseline_error: f64 = 0.;
+    let mut maximum_origin_error: f64 = 0.;
+    let origin = content
+        .characters
+        .first()
+        .ok_or("empty source line")?
+        .origin;
+    let mut emitted_advance = 0.;
     for glyph in &content.characters {
         let base_id = shape_ids[glyph.span].ok_or("missing source style")?;
         let source = &page.spans[glyph.span];
@@ -113,7 +120,13 @@ fn observed_line_text(
         let fallback = source.font_name.is_empty() || source.font_name == "Unknown";
         // A missing source font needs metric-compatible fallback; declared fonts
         // retain their Tz scaling. Spaces have no outline and own their measured extent.
-        let ratio = if fallback || glyph.character.is_whitespace() {
+        let ratio = if glyph.character.is_whitespace() {
+            // Whitespace has no outline to preserve. Its full observed advance
+            // includes TJ/Tw and displacement across text-show boundaries; using
+            // only the source font's nominal space can falsely exceed spacing's
+            // range and discard an otherwise representable line.
+            (f64::from(glyph.advance) * 96. / 72. / base_width * 100.).round()
+        } else if fallback {
             (f64::from(glyph.nominal_advance) * 96. / 72. / base_width * 100.).round()
         } else {
             f64::from(source.horizontal_scaling).round()
@@ -127,12 +140,19 @@ fn observed_line_text(
             latin.ratio = style.ratio;
         }
         let nominal = estimate_text_width_exact(&text, &style);
-        let desired = f64::from(glyph.advance) * 96. / 72.;
+        // Fit each observed origin, rather than accumulating independently
+        // rounded advances. HWP's integer-percent fields can otherwise drift
+        // over a long line although every individual glyph is nearly correct.
+        let source_start = (f64::from(glyph.origin) - f64::from(origin)) * 96. / 72.;
+        let source_advance = f64::from(glyph.advance) * 96. / 72.;
+        let desired = source_start + source_advance - emitted_advance;
+        // The common final glyph_letter_spacing maps the resolved em value
+        // back to a fraction of glyph width. Keep that actual consumer's unit.
         let guess = (desired / nominal - 1.) * 100.;
         if !guess.is_finite() || !(-52. ..=52.).contains(&guess) {
             return Err("source displacement exceeds HWP spacing range".into());
         }
-        let mut best: Option<(i8, f64)> = None;
+        let mut best: Option<(i8, f64, f64)> = None;
         for spacing in (guess.floor() as i32 - 2)..=(guess.ceil() as i32 + 2) {
             if !(-50..=50).contains(&spacing) {
                 continue;
@@ -141,13 +161,17 @@ fn observed_line_text(
             if let Some(latin) = &mut style.ascii_punct_latin {
                 latin.letter_spacing = style.letter_spacing;
             }
-            let error = (estimate_text_width_exact(&text, &style) - desired).abs();
-            if best.is_none_or(|(_, previous)| error < previous) {
-                best = Some((spacing as i8, error));
+            let measured = estimate_text_width_exact(&text, &style);
+            let error = (measured - desired).abs();
+            if best.is_none_or(|(_, previous, _)| error < previous) {
+                best = Some((spacing as i8, error, measured));
             }
         }
-        let (spacing, error) = best.ok_or("source displacement exceeds HWP spacing range")?;
-        maximum_error = maximum_error.max(error * 72. / 96.);
+        let (spacing, error, measured) =
+            best.ok_or("source displacement exceeds HWP spacing range")?;
+        emitted_advance += measured;
+        maximum_origin_error = maximum_origin_error.max(error * 72. / 96.);
+        maximum_error = maximum_error.max((measured - source_advance).abs() * 72. / 96.);
         let key = (base_id, ratio, spacing, position);
         let id = if ratio == 100 && spacing == 0 && position == 0 {
             base_id
@@ -178,6 +202,7 @@ fn observed_line_text(
         json!({
             "characters":content.characters,
             "maximumAdvanceQuantizationErrorPt":maximum_error,
+            "maximumOriginQuantizationErrorPt":maximum_origin_error,
             "maximumBaselineQuantizationErrorPt":maximum_baseline_error,
             "lineBaselinePt":line.baseline,
             "status":"observed_origins_with_nominal_widths",
@@ -717,7 +742,9 @@ impl TableBuilder<'_> {
             return Err("recognition_deferred".into());
         }
         let preserve_paint = source_paint;
-        let fixed_lines = family || preserve_paint;
+        // Every PDF table consumes the same observed line metrics. Paint style
+        // and whether this is a nested table cannot change source text placement.
+        let fixed_lines = true;
         let mut stroke_styles = BTreeSet::new();
         for c in *controls {
             if let Control::Shape(s) = c {
@@ -1236,7 +1263,10 @@ pub(super) fn lower(
         let border_start = doc.doc_info.border_fills.len();
         let tab_start = doc.doc_info.tab_defs.len();
         let mut candidate_removed = BTreeSet::new();
-        let source_paint = composition::source_paint_family(grids, candidate)?;
+        // All source tables share the same physical cell extents and paint
+        // ownership. A solid/linear root is not proof that a separately rebuilt
+        // uniform border, rounded width or page-owned backdrop is equivalent.
+        let source_paint = true;
         let built = builder
             .build(
                 doc,
@@ -1272,30 +1302,33 @@ pub(super) fn lower(
             }
         }
     }
-    let paint_owners =
-        composition::owners(&tables, &preserve_indices, grids, builder.table_id_base)?;
-    let native_borders = paint_owners
-        .iter()
-        .map(|owner| native_borders::plan(page, &controls, &rule_controls, &grids[owner.candidate]))
-        .collect::<Vec<_>>();
-    let targets = paint_owners
-        .iter()
-        .zip(&native_borders)
-        .map(|(owner, native)| super::table_paint::Target {
-            grid: &grids[owner.candidate],
-            native_border_controls: native.as_ref().map(|n| n.controls.as_slice()),
-        })
-        .collect::<Vec<_>>();
-    let mut extra_paint = Vec::new();
-    let mut paint_fragments = 0;
-    let mut native_border_cells = 0;
-    let mut native_border_fragments = 0;
-    if !targets.is_empty() {
+    let mut paint_owners = Vec::new();
+    let mut native_borders = Vec::new();
+    let mut paint_result = None;
+    let mut paint_work = 0;
+    while !preserve_indices.is_empty() {
+        paint_owners =
+            composition::owners(&tables, &preserve_indices, grids, builder.table_id_base)?;
+        native_borders = paint_owners
+            .iter()
+            .map(|owner| {
+                native_borders::plan(page, &controls, &rule_controls, &grids[owner.candidate])
+            })
+            .collect::<Vec<_>>();
+        let targets = paint_owners
+            .iter()
+            .zip(&native_borders)
+            .map(|(owner, native)| super::table_paint::Target {
+                grid: &grids[owner.candidate],
+                native_border_controls: native.as_ref().map(|n| n.controls.as_slice()),
+            })
+            .collect::<Vec<_>>();
         let plan = super::table_paint::partition(
             &controls,
             &rule_controls,
             &targets,
             &page.snapshot["tableDetection"],
+            &mut paint_work,
         )
         .and_then(|plan| {
             let consumed = table_removed
@@ -1309,6 +1342,33 @@ pub(super) fn lower(
             }
             Ok(plan)
         });
+        if let Err(error) = &plan {
+            if !error.unconsumed_targets.is_empty() {
+                let rejected = error
+                    .unconsumed_targets
+                    .iter()
+                    .map(|&i| paint_owners[i].root)
+                    .collect::<BTreeSet<_>>();
+                composition::discard_roots(
+                    &mut tables,
+                    &mut table_candidates,
+                    &mut table_removed,
+                    &mut preserve_indices,
+                    &mut held,
+                    &rejected,
+                    &error.reason,
+                );
+                continue;
+            }
+        }
+        paint_result = Some(plan);
+        break;
+    }
+    let mut extra_paint = Vec::new();
+    let mut paint_fragments = 0;
+    let mut native_border_cells = 0;
+    let mut native_border_fragments = 0;
+    if let Some(plan) = paint_result {
         match plan {
             Ok(mut plan) => {
                 native_border_fragments = plan.native_border_fragments;
@@ -1385,7 +1445,9 @@ pub(super) fn lower(
                 let mut kept_removed = Vec::new();
                 for (ti, (table, consumed)) in tables.into_iter().zip(table_removed).enumerate() {
                     if preserve_indices.contains(&ti) {
-                        held.push(json!({"candidate":table_candidates[ti],"reason":reason}));
+                        held.push(
+                            json!({"candidate":table_candidates[ti],"reason":reason.to_string()}),
+                        );
                     } else {
                         kept.push(table);
                         kept_removed.push(consumed);

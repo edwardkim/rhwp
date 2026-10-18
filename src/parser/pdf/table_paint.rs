@@ -287,12 +287,38 @@ pub(super) struct PaintPlan {
     pub native_border_fragments: usize,
 }
 
+/// A failed family must not discard independent roots. Only explicitly
+/// identified unconsumed targets may be isolated; all other errors stay atomic.
+pub(super) struct PartitionError {
+    pub reason: String,
+    pub unconsumed_targets: Vec<usize>,
+}
+impl From<String> for PartitionError {
+    fn from(reason: String) -> Self {
+        Self {
+            reason,
+            unconsumed_targets: Vec::new(),
+        }
+    }
+}
+impl From<&str> for PartitionError {
+    fn from(reason: &str) -> Self {
+        reason.to_owned().into()
+    }
+}
+impl std::fmt::Display for PartitionError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.reason.fmt(f)
+    }
+}
+
 pub(super) fn partition(
     controls: &[Control],
     rule_controls: &[Option<usize>],
     targets: &[Target<'_>],
     detection: &Value,
-) -> Result<PaintPlan, String> {
+    work: &mut usize,
+) -> Result<PaintPlan, PartitionError> {
     let mut orientations = BTreeMap::<usize, Option<bool>>::new();
     for boundary in detection["boundaryObservations"]
         .as_array()
@@ -356,7 +382,7 @@ pub(super) fn partition(
         .flatten()
         .copied()
         .collect::<BTreeSet<_>>();
-    let (mut work, mut count) = (0, 0);
+    let mut count = 0;
     for (path, control) in rule_controls.iter().enumerate() {
         let Some(control) = *control else { continue };
         let original = controls.get(control).ok_or("invalid paint control")?;
@@ -420,7 +446,7 @@ pub(super) fn partition(
                     })
             });
             for (ci, cell) in cells.iter().enumerate() {
-                tick(&mut work)?;
+                tick(work)?;
                 let mut clip = *cell;
                 let native_border = targets[ti]
                     .native_border_controls
@@ -474,7 +500,7 @@ pub(super) fn partition(
                 // same subtraction/conservation checks protect flat siblings.
                 let mut pieces = Vec::new();
                 for &unowned in &remaining {
-                    tick(&mut work)?;
+                    tick(work)?;
                     if let Some(piece) = intersection(unowned, clip, line) {
                         pieces.push(piece);
                     }
@@ -485,7 +511,7 @@ pub(super) fn partition(
                     // pictures may have a large transparent frame.
                     if on_axis.is_none() && !required[ti].contains(&control) {
                         for (source_control, c) in controls.iter().enumerate() {
-                            tick(&mut work)?;
+                            tick(work)?;
                             if path_controls.contains(&source_control) {
                                 continue;
                             }
@@ -503,7 +529,7 @@ pub(super) fn partition(
                             }
                         }
                     }
-                    subtract(&mut remaining, piece, line, &mut work)?;
+                    subtract(&mut remaining, piece, line, work)?;
                     owned += measure(piece, line);
                     count += 1;
                     if count > MAX_FRAGMENTS {
@@ -536,8 +562,16 @@ pub(super) fn partition(
         }
         result.removed.insert(control);
     }
-    if required.iter().any(|set| !set.is_subset(&result.removed)) {
-        return Err("unconsumed source boundaries".into());
+    let unconsumed_targets = required
+        .iter()
+        .enumerate()
+        .filter_map(|(i, set)| (!set.is_subset(&result.removed)).then_some(i))
+        .collect::<Vec<_>>();
+    if !unconsumed_targets.is_empty() {
+        return Err(PartitionError {
+            reason: "unconsumed source boundaries".into(),
+            unconsumed_targets,
+        });
     }
     Ok(result)
 }
