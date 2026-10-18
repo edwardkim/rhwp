@@ -59,7 +59,7 @@ impl TypesetEngine {
             mut bleed_absorbed_row_height,
         } = progress;
         let BlockTableRowScan {
-            source_frame_band,
+            mut source_frame_band,
             mut consumed,
             mut accepted_end_row_box,
             mut accepted_start_row_box,
@@ -1725,6 +1725,24 @@ impl TypesetEngine {
             // 같은 원본 컷에서 수용한 물리 상자를 continuation ledger에
             // 넘긴다. 내용 높이를 이미 수용한 빈 공간의 대용으로 쓰지 않는다.
             if end_row == r + 1 && split_end_limit > 0.0 && split_block_start.is_none() {
+                if plain_cut_frame.is_some() {
+                    // 다음 조각도 현재 쪽에 실제로 수용한 빈 공간을 소비한다.
+                    // 높이만 예약하고 이 장부를 비워 두면 병합 칸의 정렬 소유를 잃는다.
+                    let physical = consumed - consumed_before_row - cs_before;
+                    let content = layout_engine.row_cut_content_height(
+                        table,
+                        r,
+                        row_start_cut,
+                        &split_end_cut,
+                        styles,
+                    );
+                    let roundoff = f64::EPSILON
+                        * (physical.abs() + content.abs()).max(1.0)
+                        * (end_row - cursor_row + 2) as f64;
+                    if physical - content > roundoff {
+                        source_frame_band += physical - content;
+                    }
+                }
                 if let Some(height) = plain_cut_frame.or(source_blank_band) {
                     end_row_height_override = Some(height);
                 }

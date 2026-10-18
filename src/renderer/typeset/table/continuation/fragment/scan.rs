@@ -397,7 +397,7 @@ impl TypesetEngine {
                 // paint receives through the last-row override. Otherwise
                 // emit reserves that band a second time as unused page space.
                 let source_frame_height = before_last + end_row_height_override.unwrap_or(0.0);
-                source_frame_band = (source_frame_height - consumed).max(0.0);
+                source_frame_band = (source_frame_band + source_frame_height - consumed).max(0.0);
                 consumed = source_frame_height;
                 // 내용이 끝난 일반 행도 같은 저장 물리 프레임을 사용한다.
                 // 내용 예산으로 빈 밴드를 계산하면 다음 쪽이 그 차이만큼
