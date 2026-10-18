@@ -10,6 +10,10 @@
 //! 열 구획·표 뒤 본문·빈 줄 이어받기도 같은 원본과 독립 PDF로 보호한다.
 //! 좌표는 PDF 글자 원점·기준선·괘선을72pt→96dpi로 환산하며 허용치는±2px다.
 //! 다른 글꼴의 nominal bbox 상단을 PDF glyph bbox 상단과 동일시하지 않는다.
+//! 추가121쪽 종료 컷은7066cb63d에서 Native99.66078/WASM99.70370%이며,
+//! 같은 head의 전157쪽 최저는94.73551/94.95563%다. 독립 PDF의 괘선·기준선과
+//! 121/122쪽 원문 보존을 함께 보호한다. 전후 실패/통과·TSV·확대 PNG는
+//! mydocs/plans/pr_review_planet6897_20261018.md의 후보64 검증 기록에 연결한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -342,4 +346,68 @@ fn absolute_nested_table_keeps_width_and_text_inside_owner_on_completed_page139(
     }
     near(first_run(rows[0]).bbox.x, 209.28);
     baseline(rows[0], 133.76);
+}
+
+#[test]
+fn partial_row_cut_keeps_independent_physical_frame_on_completed_page121() {
+    let core = load();
+    let first = core.build_page_render_tree(120).unwrap();
+    let frame = table(&first.root, 1056);
+    let heading = cell(frame, 7, 1);
+    let body = cell(frame, 7, 2);
+    let previous = cell(frame, 6, 2);
+    contained(heading, frame);
+    contained(body, frame);
+    assert!((previous.bbox.y + previous.bbox.height - body.bbox.y).abs() < 0.05);
+    assert!((heading.bbox.y - body.bbox.y).abs() < 0.05);
+    assert!((heading.bbox.height - body.bbox.height).abs() < 0.05);
+
+    let title = lines(heading, 0);
+    let subtitle = lines(heading, 1);
+    assert_eq!(title.len(), 1, "독립 Print의 제목 줄 소유");
+    assert_eq!(subtitle.len(), 1, "독립 Print의 뒤 제목 줄 소유");
+    assert_eq!(compact(&text(title[0])), "9.도입목표");
+    assert_eq!(compact(&text(subtitle[0])), "및기대효과");
+    for line in title.iter().chain(&subtitle) {
+        contained(line, heading);
+    }
+    let first_rows = lines(body, 0);
+    assert_eq!(first_rows.len(), 4, "독립 Print121쪽의 소유 글줄");
+    assert!(compact(&text(first_rows[3])).ends_with("주택이우선"));
+    for line in &first_rows {
+        contained(line, body);
+    }
+
+    let next = core.build_page_render_tree(121).unwrap();
+    let tail = cell(table(&next.root, 1056), 7, 2);
+    let tail_rows = lines(tail, 0);
+    assert_eq!(tail_rows.len(), 4, "독립 Print122쪽의 이어받기 글줄");
+    assert!(compact(&text(tail_rows[0])).starts_with("공급되도록함으로써"));
+    for line in &tail_rows {
+        contained(line, tail);
+    }
+    let rendered: String = first_rows
+        .iter()
+        .chain(&tail_rows)
+        .map(|line| text(line))
+        .collect();
+    let original = source_table(&core, 1056)
+        .cells
+        .iter()
+        .find(|cell| cell.row == 7 && cell.col == 2)
+        .unwrap();
+    assert_eq!(
+        compact(&rendered),
+        compact(&original.paragraphs[0].text),
+        "인접 쪽 사이 같은 문단의 내용 순서·누락·중복"
+    );
+
+    // 독립 한컴 Print121쪽의 괘선과 글자 기준선. 셀 선택에는 좌표를 사용하지 않는다.
+    near(body.bbox.y, 942.1693522135416);
+    near(frame.bbox.y + frame.bbox.height, 1033.109375);
+    near(body.bbox.y + body.bbox.height, 1033.109375);
+    baseline(title[0], 983.5199381510416);
+    baseline(subtitle[0], 1006.0799967447916);
+    baseline(first_rows[0], 958.5599772135416);
+    baseline(first_rows[3], 1028.9599609375);
 }
