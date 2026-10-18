@@ -309,6 +309,7 @@ impl TypesetEngine {
         prepared: &BlockTableContinuationPreparedState,
         cursor: &TableContinuationCursor,
         source: BlockTableContinuationSource<'_>,
+        physical_start_cut: &[usize],
     ) -> Option<Vec<f64>> {
         let table = source.row_geometry_table;
         let layout = &prepared.layout_engine;
@@ -469,6 +470,27 @@ impl TypesetEngine {
             + usize::from(
                 !cursor.start_cut.is_empty() || cursor.start_row_height_override.is_some(),
             );
+        // 원장의 시작 행은 이전 조각까지 합한 온전한 높이다. 현재 조각의
+        // 미소비 줄 요구에서는 같은 컷으로 다시 연 실제 시작 상자만 뺀다.
+        let fragment_start_height = (!cursor.start_cut_is_block
+            && (!physical_start_cut.is_empty() || cursor.start_row_height_override.is_some()))
+        .then(|| {
+            layout.ordinary_rowbreak_fragment_heights(
+                table,
+                &heights,
+                cursor.row,
+                (cursor.row + 1).min(heights.len()),
+                physical_start_cut,
+                &[],
+                true,
+                cursor.start_row_height_override,
+                None,
+                &[],
+                &cursor.straddle_page_bands,
+                true,
+                source.styles,
+            )[cursor.row]
+        });
         for row in first_whole_row..heights.len() {
             // Only a closing span whose preceding physical boxes changed can
             // invalidate the globally measured remainder. Other rows keep their
@@ -502,13 +524,38 @@ impl TypesetEngine {
                 .cells
                 .iter()
                 .any(|cell| cell.row as usize == row && cell.row_span == 1);
-            let floor = if has_single_row_owner {
+            let mut floor = if has_single_row_owner {
                 prepared
                     .layout_engine
                     .row_cut_content_height(table, row, &[], &[], source.styles)
             } else {
                 0.0
             };
+            // 단일 행 셀이 없어도 이어받은 병합 셀의 빈 문단이 줄 상자를
+            // 소유할 수 있다. paint의 공통 요구를 같은 컷/셀 원장으로 소비한다.
+            if !cursor.start_cut_is_block {
+                if let Some(demand) = layout.straddle_continuation_demand(
+                    table,
+                    row,
+                    cursor.row,
+                    physical_start_cut,
+                    false,
+                    cursor.start_row_height_override,
+                    &heights,
+                    &cursor.straddle_page_bands,
+                    source.styles,
+                    (row + 1, true),
+                ) {
+                    let mut prefix = heights[cursor.row..row].iter().sum::<f64>()
+                        + prepared.cell_spacing * (row - cursor.row) as f64;
+                    if row > cursor.row {
+                        if let Some(first) = fragment_start_height {
+                            prefix += first - heights[cursor.row];
+                        }
+                    }
+                    floor = floor.max((demand - prefix).max(0.0));
+                }
+            }
             let required = closing.iter().fold(floor, |height, cell| {
                 let first = cell.row as usize;
                 let used = heights[first..row].iter().sum::<f64>()
