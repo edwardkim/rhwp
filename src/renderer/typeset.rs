@@ -5417,6 +5417,24 @@ impl TypesetEngine {
         let has_following_tac_table = para.controls.iter().skip(ctrl_idx + 1).any(|control| {
             matches!(control, Control::Table(next) if self.is_effective_tac_table(para, next, fmt))
         });
+        // 표 줄 뒤에 컨트롤만 남은 저장 줄(쪽 번호 감추기 등)은 post-text 로 나가지 않지만
+        // 한/글은 그 줄 상자를 쌓는다. 표 줄 간격과 그 줄들을 여기서 더하고, 마지막 줄
+        // 간격은 아래 terminal 복원이 더한다.
+        let control_only_tail_px = (is_tac
+            && !has_post_text
+            && !has_following_tac_table
+            && tac_table_count == 1
+            && total_lines == para.line_segs.len()
+            && self.tac_table_line_index(para, table, fmt) == Some(0))
+        .then(|| crate::renderer::tac_host_control_only_tail_hu(para, 0))
+        .flatten()
+        .zip(para.line_segs.first().zip(para.line_segs.last()))
+        .map(|(tail, (first, last))| {
+            hwpunit_to_px(first.line_spacing + tail - last.line_spacing, self.dpi)
+        });
+        if let Some(advance) = control_only_tail_px {
+            st.advance_flow_by(advance);
+        }
         let restore_terminal_tac_spacing = is_tac && !has_post_text && !has_following_tac_table;
         if restore_terminal_tac_spacing {
             st.advance_flow_by(fmt.total_height - fmt.height_for_fit);

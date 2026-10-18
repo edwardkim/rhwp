@@ -14946,6 +14946,21 @@ impl LayoutEngine {
                                 self.dpi,
                             )
                         };
+                        // 조판(place_table_with_text)과 같이 표 줄 뒤 컨트롤 전용 저장 줄의
+                        // 줄 상자를 쌓는다.
+                        let single_tac = para
+                            .controls
+                            .iter()
+                            .filter(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
+                            .count()
+                            == 1;
+                        if single_tac && std::ptr::eq(seg, &para.line_segs[0]) {
+                            if let Some(tail) =
+                                crate::renderer::tac_host_control_only_tail_hu(para, 0)
+                            {
+                                y_offset += hwpunit_to_px(tail, self.dpi);
+                            }
+                        }
                     } else if seg.line_spacing < 0 {
                         // 음수 ls (Fixed 줄간격 TAC 표): y를 문단 advance로 리셋 (Task #9)
                         // 표 렌더 높이가 아닌, 일반 문단과 동일한 lh+ls advance 사용
