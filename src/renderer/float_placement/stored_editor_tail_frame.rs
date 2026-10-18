@@ -54,7 +54,7 @@ pub(crate) fn stored_editor_tail_frame(
             .cells
             .iter()
             .filter(|owner| {
-                !std::ptr::eq(*owner, cell)
+                (owner.row != cell.row || owner.col != cell.col)
                     && usize::from(owner.row) == row
                     && owner.row_span == 1
                     && !owner.dirty_flag

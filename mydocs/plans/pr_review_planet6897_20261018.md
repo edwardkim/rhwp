@@ -1275,3 +1275,27 @@ PARA_HEADER char_count의 bit31은6번째에만 있다.6문단은 전부 같은 
 이 가설이 출력에서 개선되지 않거나 다른 정상 경로를 바꾸면 완료로 수용하지 않는다.
 공통 계약의 수정 전후와 빈 줄/공백/내용 초과 반례는 시각 선행 조건과 함께 검증한다.
 현재 전415쪽90% 조건을 만족하지 않으므로 새1342000 실물 회귀는 계속 보류한다.
+
+
+후보50 3c0b5d7c9 Native 진단 빌드는3분47초·exit0이다.1342000 85쪽은58.85806→93.60685%
+로 개선됐고86쪽46.65506/95쪽83.69007은남아 있다.81–84/92–94/202–203쪽은 후보47과
+같다.80168 집중22쪽·6803 전5쪽·76076 두 쪽도 Native 기존 결과를 유지했다. 전쪽 gate
+완료나 fresh WASM 검증으로 보고하지 않는다. 후보50 실행 파일/rlib와 생산자 JSON을
+보존했으며 `candidate50-native-row-frame-direction`에 실제 원본 TSV가 있다.
+
+인증 경계의 별도 ignored 진단에서는 원본 프레임과 dirty/공백 문자, 격자 불일치 검사가
+통과했지만 복사본이 자기 자신을 독립 행 소유자로 인정하는 검사가 실패했다(2PASS·1FAIL).
+소스의 실제 helper 파일을 같은 bytes로 포함하고 frozen 후보50 모델과 연결한 검사이며,
+이 진단을 정식 실물 회귀나 Print 일치의 증거로 승격하지 않는다. 독립 원본 칸의 정체성은
+메모리 주소가 아니라 `(row,col)`이므로 이 비교를 보정한다. clone된 측정 뷰에서도 같은
+원본 칸은 독립 근거가 아니어야 한다. 결과/명령/helper 해시는
+`candidate50-editor-tail-admission-results.json`과 로그에 있다. 같은 원본·공백·격자·복사
+경계를 새 helper에서 재실행한다.
+
+
+복사본의 정체성을 `(row,col)`로 보정한 동일 ignored 진단은3PASS·0FAIL이다.
+`candidate51-editor-tail-admission.log/results.json`에 새 helper bytes와 명령을 남겼다.
+모델은 frozen 후보50, 대상 helper만 새 bytes로 컴파일했으므로 새 전체 Native/fresh WASM
+검증으로 기록하지 않는다. HWPX 파서도 has_para_text를 본문/컨트롤 존재로 정규화한다
+(`parser/hwpx/section.rs`1099). 따라서 이 공통 IR 상태와 원본 줄·격자 인증은 구분하며,
+has_para_text 하나만으로 HWPX의 물리 높이를 판정하지 않는다.
