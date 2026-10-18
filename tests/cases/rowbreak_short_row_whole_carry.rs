@@ -231,6 +231,36 @@ fn stored_restart_end_row_closes_at_its_declared_or_cut_content_box() {
     }
 }
 
+/// 이어받은 행도 셀 저장 줄의 다음 새 원점 재시작에서 닫는다. 1613000 표 `pi=1133`(머리행 + 4쪽에
+/// 걸친 2칸 행 1)의 저장 줄: 왼칸은 9번째 문단 넷째 줄(유닛 40), 오른칸은 16번째 문단 넷째 줄(유닛 37)과
+/// 32번째 문단 첫 줄(유닛 70, 앞 문단 끝 vpos 64940 → 0)에서 vpos 가 0 으로 돌아간다.
+/// 한/글 2020 PDF 는 123쪽을 [40,37], 124쪽을 [51(왼칸 끝),70]에서 닫고 오른칸 32번째 문단
+/// 「다. 시정훈련…」 네 줄을 125쪽에 통째로 둔다. 123쪽 행 상자는 오른칸 재시작 앞 줄 끝
+/// (vpos 66020 + lh 1200) + 셀 위아래 여백 282 = 67502 HU = 900.03px(PDF 표 윗변→아랫변 899.96)다.
+/// 수정 전 rhwp 는 남은 쪽 공간을 채워 [41,37]·[51,72]에서 잘라 124쪽 표가 51px 더 내려갔다.
+#[test]
+fn continued_row_closes_at_its_next_stored_restart() {
+    let core = core(SAMPLE_1613000);
+    let (_, end, _, end_cut) = table_fragment(&core, 122, 1133);
+    assert_eq!((end, end_cut.clone()), (2, vec![40, 37]), "123쪽 끝 컷");
+    let (start, end, start_cut, next_cut) = table_fragment(&core, 123, 1133);
+    assert_eq!(
+        (start, start_cut),
+        (1, end_cut),
+        "124쪽은 123쪽 컷에서 잇는다"
+    );
+    assert_eq!((end, next_cut.clone()), (2, vec![51, 70]), "124쪽 끝 컷");
+    let (_, _, start_cut, _) = table_fragment(&core, 124, 1133);
+    assert_eq!(start_cut, next_cut, "125쪽은 124쪽 컷에서 잇는다");
+    let (top, bottom) = cell_box(&core, 122, 1, 1);
+    let expected = (66020.0 + 1200.0 + 282.0) / 75.0;
+    assert!(
+        (bottom - top - expected).abs() <= 0.5,
+        "123쪽 행 1 상자는 {expected:.2}px 여야 한다: {:.2}",
+        bottom - top
+    );
+}
+
 /// 이어진 표의 끝 조각 아래 캡션은 통째 표와 같은 간격으로 놓인다. 1613000 `[표 12]`(128쪽, `pi=1143`
 /// 끝 조각)와 `[표 11]`(121쪽, 통째)의 표 아래 → 캡션 줄 윗변 간격은 한/글 2020 PDF 에서 모두 12px 다.
 /// 수정 전 rhwp 는 끝 조각에만 호스트 줄간격(700HU = 9.33px)을 캡션 위에 더 넣었다.
