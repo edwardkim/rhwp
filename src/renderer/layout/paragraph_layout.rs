@@ -10871,8 +10871,9 @@ impl LayoutEngine {
         para: &Paragraph,
         _counter: &mut super::AutoNumberCounter, // 더 이상 사용하지 않음 (파싱 시 할당됨)
     ) {
+        let positions = para.control_text_positions();
         // AutoNumber 컨트롤이 있는지 확인
-        for ctrl in &para.controls {
+        for (ci, ctrl) in para.controls.iter().enumerate() {
             if let Control::AutoNumber(an) = ctrl {
                 // 파싱 시점에 할당된 번호를 번호 형식에 맞게 변환 + 장식 문자 적용
                 let num_fmt = NumFmt::from_hwp_format(an.format);
@@ -10896,8 +10897,14 @@ impl LayoutEngine {
                     num_str
                 };
 
-                // 각 줄의 텍스트에서 AutoNumber 위치를 찾아 번호로 대체
-                // HWP5/HWPX/HWP3 공통: 공백 두 개("  ") 패턴 탐색
+                // 파서가 남긴 공백 placeholder 자리를 번호로 바꾼다. `<표 Ⅱ- >`처럼
+                // 앞뒤에 공백이 없는 번호도 제자리에 들어간다.
+                if let Some(&pos) = positions.get(ci) {
+                    if replace_placeholder_char(composed, pos, &num_str) {
+                        return;
+                    }
+                }
+                // placeholder 위치를 모르면 종전처럼 공백 두 개("  ") 패턴을 찾는다.
                 for line in &mut composed.lines {
                     for run in &mut line.runs {
                         if let Some(pos) = run.text.find("  ") {
@@ -10914,6 +10921,29 @@ impl LayoutEngine {
             }
         }
     }
+}
+
+/// 문단 글자 색인 `pos` 의 자동번호 placeholder(공백)를 `text` 로 바꾼다.
+/// 줄·run 의 글자 수로 위치를 찾고, 그 자리가 공백이 아니면 바꾸지 않는다.
+fn replace_placeholder_char(composed: &mut ComposedParagraph, pos: usize, text: &str) -> bool {
+    for line in &mut composed.lines {
+        let mut start = line.char_start;
+        for run in &mut line.runs {
+            if run.inserted_control_text {
+                continue;
+            }
+            let len = run.text.chars().count();
+            if pos < start + len {
+                let Some((byte, ' ')) = run.text.char_indices().nth(pos - start) else {
+                    return false;
+                };
+                run.text.replace_range(byte..byte + 1, text);
+                return true;
+            }
+            start += len;
+        }
+    }
+    false
 }
 
 /// paragraph 의 sibling controls 중 `wrap=TopAndBottom` +
