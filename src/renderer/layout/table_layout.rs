@@ -5,6 +5,7 @@ mod nested_header_frame;
 mod plain_cell_flow;
 mod reflowed_nested_row;
 mod row_block_cut;
+mod row_physical_band;
 mod stored_block_frames;
 mod stored_body_closed_frame;
 mod stored_column_boundaries;
@@ -19473,7 +19474,14 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> RowCutResult {
         let issue2424_started = issue2424_profile_enabled().then(std::time::Instant::now);
-        let result = self.advance_row_cut_inner(table, row, start_cut, avail_height, styles, None);
+        let result = self.advance_row_cut_inner(
+            table,
+            row,
+            start_cut,
+            avail_height,
+            styles,
+            row_physical_band::RowCutCapacity::Content,
+        );
         if let Some(started) = issue2424_started {
             use std::sync::atomic::Ordering::Relaxed;
             ISSUE2424_ADVANCE_ROW_CUT_CALLS.fetch_add(1, Relaxed);
@@ -21656,7 +21664,7 @@ impl LayoutEngine {
         start_cut: &[usize],
         avail_height: f64,
         styles: &ResolvedStyleSet,
-        cell_budget_deltas: Option<&[f64]>,
+        capacity: row_physical_band::RowCutCapacity<'_>,
     ) -> RowCutResult {
         let row_cells: Vec<&crate::model::table::Cell> = self
             .indexed_row_cut_cell_order(table, row)
@@ -21727,7 +21735,8 @@ impl LayoutEngine {
             // Parallel cells own their padding independently. A short sibling
             // with larger padding must not shorten this cell's content band.
             let avail_height = avail_height
-                + cell_budget_deltas
+                + capacity
+                    .deltas()
                     .and_then(|deltas| deltas.get(i))
                     .copied()
                     .unwrap_or(0.0);
@@ -22050,14 +22059,19 @@ impl LayoutEngine {
                     // 물리 쪽 경계에서 제외하면 예산에 들어가는 경우, 그 줄까지
                     // 현 조각에 넣고 다음 문단 hard break 직전에서 멈춘다. source
                     // frame tail 흡수보다 먼저 적용해 본문 하단 침범을 피한다.
-                    let trailing_trim = self.native_saved_reset_cut_trailing_trim(
-                        table,
-                        cell,
-                        &units,
-                        start,
-                        j + 1,
-                        styles,
-                    );
+                    let trailing_trim = match capacity {
+                        row_physical_band::RowCutCapacity::Content => self
+                            .native_saved_reset_cut_trailing_trim(
+                                table,
+                                cell,
+                                &units,
+                                start,
+                                j + 1,
+                                styles,
+                            ),
+                        row_physical_band::RowCutCapacity::Physical(_) => self
+                            .physical_cut_trailing_trim(table, cell, &units, start, j + 1, styles),
+                    };
                     let trimmed_height = h + u.height - trailing_trim;
                     let trimmed_tolerance = capacity_tolerance::for_next_unit(
                         cell,
@@ -22159,8 +22173,14 @@ impl LayoutEngine {
             {
                 hit_hard_break = true;
             }
-            let trailing_trim =
-                self.native_saved_reset_cut_trailing_trim(table, cell, &units, start, j, styles);
+            let trailing_trim = match capacity {
+                row_physical_band::RowCutCapacity::Content => {
+                    self.native_saved_reset_cut_trailing_trim(table, cell, &units, start, j, styles)
+                }
+                row_physical_band::RowCutCapacity::Physical(_) => {
+                    self.physical_cut_trailing_trim(table, cell, &units, start, j, styles)
+                }
+            };
             // The capacity branch has already removed the selected tail.
             // Restore that amount before applying the final cut's shared trim:
             // a later orphan rewind may have changed its closing unit.
@@ -26031,7 +26051,7 @@ impl LayoutEngine {
             let trailing_trim = if is_whole_row {
                 0.0
             } else {
-                self.native_saved_reset_cut_trailing_trim(table, cell, &units, su, eu, styles)
+                self.physical_cut_trailing_trim(table, cell, &units, su, eu, styles)
             };
             // [#7870] 여백을 다시 세면 물리 밴드 재맞춤이 그 몫만큼 예산을 줄여 용량 컷이
             // 방금 앉힌 atom 을 다음 쪽으로 밀어낸다.
@@ -26435,52 +26455,6 @@ impl LayoutEngine {
             padding.push(pad_top + pad_bottom);
         }
         padding
-    }
-
-    /// Select units within the physical row band using each owner's padding.
-    /// Measure the selected cut through the same per-cell content/padding and
-    /// mixed-nested geometry that partial paint consumes, then refit if needed.
-    pub(crate) fn advance_row_cut_for_physical_band(
-        &self,
-        table: &crate::model::table::Table,
-        row: usize,
-        start_cut: &[usize],
-        physical_budget: f64,
-        styles: &ResolvedStyleSet,
-    ) -> (RowCutResult, f64) {
-        let padding = self.row_remaining_visible_cell_padding(table, row, start_cut, styles);
-        let max_padding = padding.iter().copied().fold(0.0, f64::max);
-        let content_budget = (physical_budget - max_padding).max(0.0);
-        if padding.iter().all(|value| *value == max_padding) {
-            return self.advance_row_cut_with_mixed_nested_reserve(
-                table,
-                row,
-                start_cut,
-                content_budget,
-                styles,
-            );
-        }
-        let mut physical_cut_budget = physical_budget;
-        let mut previous_cut = None;
-        loop {
-            let budget = (physical_cut_budget - max_padding).max(0.0);
-            let deltas: Vec<f64> = padding
-                .iter()
-                .map(|value| (physical_cut_budget - value).max(0.0) - budget)
-                .collect();
-            let cut =
-                self.advance_row_cut_inner(table, row, start_cut, budget, styles, Some(&deltas));
-            let visible = self.row_cut_content_height(table, row, start_cut, &cut.end_cut, styles);
-            let excess = (visible - physical_budget).max(0.0);
-            if excess <= ROW_CUT_CAPACITY_FP_EPSILON_PX
-                || physical_cut_budget <= 0.0
-                || previous_cut.as_ref() == Some(&cut.end_cut)
-            {
-                return (cut, budget);
-            }
-            previous_cut = Some(cut.end_cut);
-            physical_cut_budget = (physical_cut_budget - excess).max(0.0);
-        }
     }
 
     /// [#5585] 행을 처음부터 그리는 조각의 위 안 여백 — 보이는 내용이 있는 `row_span == 1`
@@ -28152,8 +28126,12 @@ mod row_cut_tests {
         // (첫 유닛 두 개 + 4px)를 예약 단계가 빠뜨리지 않는지 검사한다.
         // 실제 한컴 출력과의 일치는 별도의 원본 문서 Visual Sweep으로 확인한다.
 
-        for (single_cell, native_recursive) in
+        for (single_cell, native_recursive, physical) in
             [(false, false), (true, false), (false, true), (true, true)]
+                .into_iter()
+                .flat_map(|(single, recursive)| {
+                    [(single, recursive, false), (single, recursive, true)]
+                })
         {
             let eng = LayoutEngine::new(96.0);
             eng.set_layout_profile(crate::model::provenance::LayoutCompatibilityProfile::new(
@@ -28224,8 +28202,11 @@ mod row_cut_tests {
             let mut start = vec![2];
             let mut seen = Vec::new();
             while start[0] < 6 {
-                let (cut, _) =
-                    eng.advance_row_cut_with_mixed_nested_reserve(&t, 0, &start, budget, &styles);
+                let (cut, _) = if physical {
+                    eng.advance_row_cut_for_physical_band(&t, 0, &start, budget, &styles)
+                } else {
+                    eng.advance_row_cut_with_mixed_nested_reserve(&t, 0, &start, budget, &styles)
+                };
                 assert!(cut.end_cut[0] > start[0]);
                 let extra = eng.row_cut_mixed_nested_reserve(&t, 0, &start, &cut.end_cut, &styles);
                 assert!(
@@ -28242,8 +28223,11 @@ mod row_cut_tests {
                 start = cut.end_cut;
             }
             assert_eq!(seen, vec![2, 3, 4, 5], "no omitted or repeated source unit");
-            let (done, _) =
-                eng.advance_row_cut_with_mixed_nested_reserve(&t, 0, &start, budget, &styles);
+            let (done, _) = if physical {
+                eng.advance_row_cut_for_physical_band(&t, 0, &start, budget, &styles)
+            } else {
+                eng.advance_row_cut_with_mixed_nested_reserve(&t, 0, &start, budget, &styles)
+            };
             assert!(done.fully_consumed);
             assert_eq!(
                 done.consumed_height, 0.0,

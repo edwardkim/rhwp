@@ -61,7 +61,7 @@ impl<'a> CellCutFrame<'a> {
     }
 
     fn content_height(&self, end: usize, content_advance: f64) -> f64 {
-        let trim = self.engine.native_saved_reset_cut_trailing_trim(
+        let trim = self.engine.physical_cut_trailing_trim(
             self.table,
             self.cell,
             self.units,
