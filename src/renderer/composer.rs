@@ -552,7 +552,10 @@ fn compose_paragraph_scoped(
     convert_pua_enclosed_numbers(&mut composed);
 
     // Hanyang-PUA 옛한글 / 한컴 PUA와 legacy 제품명 표시 문자열 변환 (렌더링·측정용)
-    convert_pua_display_text(&mut composed);
+    // [#7993] 소프트 하이픈 제어 표기(HWP5 제어코드 24 · HWPX `<hp:hypen/>`) 문단만 줄 끝 규칙을
+    // 쓴다. 리터럴 U+00AD 는 한/글이 보통 글자로 그린다(K-MOOC 보도자료 `K­MOOC` → `K-MOOC`).
+    let soft_hyphen_control = para.control_mask & (1u32 << 0x0018) != 0;
+    convert_pua_display_text(&mut composed, soft_hyphen_control);
 
     // Keep existing display projection intact; inserted control text has no source span.
     if protect_metrics {
@@ -1067,13 +1070,18 @@ pub(crate) fn caption_height_px_in_context(
 /// 바꾸며, 원문 IR·검색·캐럿 offset은 그대로 보존한다.
 ///
 /// 매핑 표: KTUG HanyangPuaTableProject (Public Domain).
-fn convert_pua_display_text(composed: &mut ComposedParagraph) {
+fn convert_pua_display_text(composed: &mut ComposedParagraph, soft_hyphen_control: bool) {
     use super::pua_oldhangul::map_pua_old_hangul;
 
     let product_prefix_starts = legacy_hancom_product_prefix_starts(composed);
     let mut run_char_start = 0usize;
     for line in composed.lines.iter_mut() {
-        for run in line.runs.iter_mut() {
+        // [#7993] 제어 표기 소프트 하이픈은 줄 끝에서만 `-` 로 보이고, 줄 중간에서는
+        // 보이지도 폭을 갖지도 않는다(한/글 2020 Print: task1725 162쪽 `<hp:hypen/>` 16개가
+        // 줄 첫머리에 아무 자국도 남기지 않는다). 모델 글자는 offset 공간에 남기고
+        // 표시 문자열만 바꾼다 — 줄 끝 판정은 이 줄의 마지막 모델 글자다.
+        let line_last_run = line.runs.iter().rposition(|run| !run.text.is_empty());
+        for (run_index, run) in line.runs.iter_mut().enumerate() {
             let chars: Vec<char> = run.text.chars().collect();
             let run_char_end = run_char_start + chars.len();
             let has_product_projection = product_prefix_starts
@@ -1083,7 +1091,13 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
                 pua_plain_text_display(*ch).is_some()
                     || map_pua_old_hangul(*ch).is_some()
                     || map_pua_bullet_char(*ch) != *ch
+                    || (soft_hyphen_control && *ch == '\u{00AD}')
             });
+            let line_end_char = if Some(run_index) == line_last_run {
+                chars.len().checked_sub(1)
+            } else {
+                None
+            };
             if !has_product_projection && !has_pua_display {
                 run_char_start = run_char_end;
                 continue;
@@ -1101,6 +1115,11 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
                 {
                     // `ᄒᆞᆫ` 세 자모가 style/line 경계를 넘더라도 첫 위치에만
                     // `한`을 투영한다. 뒤 두 model char는 offset 공간에만 남긴다.
+                    changed = true;
+                } else if soft_hyphen_control && ch == '\u{00AD}' {
+                    if line_end_char == Some(index) {
+                        display.push('-');
+                    }
                     changed = true;
                 } else if let Some(replacement) = pua_plain_text_display(ch) {
                     display.push_str(replacement);
