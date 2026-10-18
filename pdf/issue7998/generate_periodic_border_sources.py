@@ -20,10 +20,11 @@ def grid(x,y,w,h,periodic=False,mixed=False):
   else:result+=[f'{a} {b} m {c} {d} l S']
   result+=['Q']
  return result
-for key in ['compatible-inner-dot','occluded-inner-dot','phase-shifted-dot','underreach-dot','wrong-width-dot']:
+for key in ['compatible-inner-dot','occluded-inner-dot','phase-shifted-dot','underreach-dot','wrong-width-dot','thin-fill-occluder']:
  periodic=True
  ops=[text('OUTSIDE ABOVE',20,345),*grid(20,130,240,180,periodic,False),text('BEFORE CHILD',30,292),*grid(35,250,90,28,False),text('A',40,268,8),text('B',85,268,8),text('C',40,254,8),text('D',85,254,8),text('AFTER CHILD',30,232),text('UPPER RIGHT',150,292),text('LOWER LEFT',30,202),text('LOWER RIGHT',150,202),text('OUTSIDE AFTER',20,20)]
  if key=='occluded-inner-dot':ops+=['q 1 1 1 rg 18 260 4 18 re f Q']
+ if key=='thin-fill-occluder':ops+=['q 1 1 1 rg 19.5 260 1 18 re f Q']
  stream='\n'.join(ops).encode();objs=[b'<< /Type /Catalog /Pages 2 0 R >>',b'<< /Type /Pages /Count 1 /Kids [3 0 R] >>',b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 360] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>',f'<< /Length {len(stream)} >>\nstream\n'.encode()+stream+b'\nendstream',b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>']
  data=bytearray(b'%PDF-1.4\n');offsets=[]
  for i,v in enumerate(objs,1):offsets.append(len(data));data+=f'{i} 0 obj\n'.encode()+v+b'\nendobj\n'

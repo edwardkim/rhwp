@@ -98,6 +98,53 @@ fn common_mut(c: &mut Control) -> Option<&mut CommonObjAttr> {
         _ => None,
     }
 }
+// Called only for a source path with positive separator evidence in this grid.
+// The original axis determines the side; a fragment's bbox alone never does.
+fn border_side(
+    original: &Control,
+    source: Frame,
+    cell: Frame,
+    horizontal: bool,
+) -> Option<crate::model::border_paint::CellSide> {
+    use crate::model::border_paint::CellSide;
+    let Control::Shape(s) = original else {
+        return None;
+    };
+    let ShapeObject::Rectangle(r) = s.as_ref() else {
+        return None;
+    };
+    if r.drawing.fill.fill_type != FillType::Solid
+        || r.drawing.fill.alpha != 0
+        || r.drawing.text_box.is_some()
+        || r.drawing.border_line.width != 0
+        || r.round_rate != 0
+        || r.drawing.shadow_type != 0
+    {
+        return None;
+    }
+    let (at, a, b, first, last) = if horizontal {
+        (
+            (source.y + source.bottom) / 2,
+            cell.y,
+            cell.bottom,
+            CellSide::Top,
+            CellSide::Bottom,
+        )
+    } else {
+        (
+            (source.x + source.right) / 2,
+            cell.x,
+            cell.right,
+            CellSide::Left,
+            CellSide::Right,
+        )
+    };
+    match ((at - a).abs() <= 1, (at - b).abs() <= 1) {
+        (true, false) => Some(first),
+        (false, true) => Some(last),
+        _ => None,
+    }
+}
 fn source_frame(c: &Control) -> Option<Frame> {
     let c = common(c)?;
     let (x, y) = (
@@ -324,11 +371,15 @@ pub(super) fn partition(
     work: &mut usize,
 ) -> Result<PaintPlan, PartitionError> {
     let mut orientations = BTreeMap::<usize, Option<bool>>::new();
+    let mut stroke_paths = BTreeSet::new();
     for boundary in detection["boundaryObservations"]
         .as_array()
         .ok_or("boundary observations missing")?
     {
         let path = index(&boundary["path"])?;
+        if boundary["paintKind"] == "stroke" {
+            stroke_paths.insert(path);
+        }
         let horizontal = boundary["horizontal"]
             .as_bool()
             .ok_or("invalid boundary orientation")?;
@@ -546,7 +597,19 @@ pub(super) fn partition(
                         // and all other owners; do not paint it a second time.
                         result.native_border_fragments += 1;
                     } else {
-                        result.cells[ti][ci].push(fragment(original, source, piece)?);
+                        let mut fragment = fragment(original, source, piece)?;
+                        if required[ti].contains(&control) && stroke_paths.contains(&path) {
+                            if let Some(side) =
+                                orientation.and_then(|h| border_side(original, source, *cell, h))
+                            {
+                                common_mut(&mut fragment).unwrap().cell_border_paint =
+                                    Some(crate::model::border_paint::CellBorderPaint {
+                                        side,
+                                        source_id: common(original).unwrap().instance_id,
+                                    });
+                            }
+                        }
+                        result.cells[ti][ci].push(fragment);
                     }
                 }
             }

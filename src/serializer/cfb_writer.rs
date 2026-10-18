@@ -240,6 +240,13 @@ fn serialize_hwp_inner(
     // 6. CFB 컨테이너 조립
     let mut content_loss = ContentLossReport::new(SerializedFormat::Hwp);
     let mut extra_streams = doc.extra_streams.clone();
+    extra_streams.retain(|(path, _)| path != crate::model::border_paint::HWP_STREAM);
+    if let Some(bytes) =
+        crate::model::border_paint::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    {
+        extra_streams.push((crate::model::border_paint::HWP_STREAM.into(), bytes));
+        content_loss.record(crate::model::border_paint::native_editing_loss());
+    }
     extra_streams.retain(|(path, _)| path != crate::model::text_clip::HWP_STREAM);
     if let Some(bytes) =
         crate::model::text_clip::encode(doc).map_err(SerializeError::UnsupportedInput)?

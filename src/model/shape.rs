@@ -29,6 +29,9 @@ pub(crate) mod common_obj_offsets {
 /// 개체 공통 속성 (모든 개체에 공통)
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct CommonObjAttr {
+    /// Retained drawing's proven cell-border role; visible geometry stays native.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cell_border_paint: Option<super::border_paint::CellBorderPaint>,
     /// 컨트롤 ID
     pub ctrl_id: u32,
     /// 속성 비트 플래그

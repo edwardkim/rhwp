@@ -135,6 +135,13 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     }
 
     if let Some(bytes) =
+        crate::model::border_paint::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    {
+        z.write_deflated(crate::model::border_paint::HWPX_ENTRY, &bytes)?;
+        ctx.content_loss
+            .record(crate::model::border_paint::native_editing_loss());
+    }
+    if let Some(bytes) =
         crate::model::text_clip::encode(doc).map_err(SerializeError::UnsupportedInput)?
     {
         z.write_deflated(crate::model::text_clip::HWPX_ENTRY, &bytes)?;

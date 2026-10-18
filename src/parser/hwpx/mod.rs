@@ -735,6 +735,12 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     super::populate_link_image_paths(&mut doc);
 
     if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::border_paint::HWPX_ENTRY,
+        crate::model::border_paint::MAX_BYTES,
+    ) {
+        crate::model::border_paint::decode(&mut doc, &bytes);
+    }
+    if let Ok(bytes) = reader.read_file_bytes_limited(
         crate::model::text_clip::HWPX_ENTRY,
         crate::model::text_clip::MAX_BYTES,
     ) {
