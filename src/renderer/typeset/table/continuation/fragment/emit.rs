@@ -1180,16 +1180,12 @@ impl TypesetEngine {
         // (21761835 3쪽: 그 몫을 넘기면 첫 행들이 한/글보다 커진다).
         // 내용 컷으로 끝난 행(`split_end_limit > 0`)은 다음 조각이 같은 행을 잇는 상자라 이 선을 쓰지
         // 않는다(1342000 202·203쪽: 줄이면 다음 쪽 시작 줄이 한 줄 당겨진다). 통째로 받은 끝 행만 닫는다.
-        let unreserved_page_end_band = if split_end_limit > 0.0 {
-            ledger_page_end_band
-        } else {
-            (ledger_page_end_band
-                - hwpunit_to_px(
-                    crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
-                    self.dpi,
-                ))
-            .max(0.0)
-        };
+        let unreserved_page_end_band = (ledger_page_end_band
+            - hwpunit_to_px(
+                crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                self.dpi,
+            ))
+        .max(0.0);
         let mut ledger_end_row_trim = 0.0;
         // 원본 병합 셀은 실제 문단 유지 지시를 만족한 컷의 쪽 끝 물리 띠도 소유한다.
         // 이웃 셀에 문단 내부 컷이 있어도 내용 컷을 넓히지 않고 빈 상자를 함께 센다.
@@ -1256,9 +1252,39 @@ impl TypesetEngine {
             // 그 밖의 내용 컷으로 이 경로에 든 조각은 남는 몫까지만 띠를 준다. 몫이 없으면 한/글도
             // 띠를 비워 둔다(70833 2쪽: 표가 973px 에서 끝난다).
             if split_end_limit == 0.0 || plain_paragraph_cut {
-                end_row_height_override = Some(last_height + unreserved_page_end_band);
-                partial_height += unreserved_page_end_band;
-                ledger_end_row_trim = ledger_page_end_band - unreserved_page_end_band;
+                // 저장 걸침 프레임이 있는 표는 끝 행도 걸침 칸의 몫까지만 띠를 받는다(아래와 같은 규칙,
+                // 1613000 144쪽 행 139: 한/글 38.40px = 행 높이, 띠 없음). 그 밖의 표는 종전처럼 남은 띠 전부.
+                let span_rule = (self.stored_header_physical_rows(st, input.source)
+                    || layout_engine.has_stored_continuous_spans(row_geometry_table))
+                    && super::physical_rows::row_cells_hold_only_text_lines(
+                        row_geometry_table,
+                        last_row,
+                    );
+                let (band, ledger_band) = if span_rule {
+                    let shared = |room: f64| {
+                        self.crossing_span_page_end_band(
+                            st,
+                            continuation,
+                            input,
+                            (last_row, &[], &split_end_cut),
+                            last_height,
+                            room,
+                            cut_row_h,
+                        )
+                        .unwrap_or(0.0)
+                    };
+                    (
+                        shared(unreserved_page_end_band),
+                        shared(ledger_page_end_band),
+                    )
+                } else {
+                    (unreserved_page_end_band, ledger_page_end_band)
+                };
+                end_row_height_override = Some(last_height + ledger_band);
+                partial_height += ledger_band;
+                ledger_end_row_trim = (ledger_band - band).max(0.0);
+                // 걸침 몫으로 정한 끝 행 상자는 원본 프레임이다 — 배치가 끝 줄간격으로 다시 접지 않는다.
+                span_band_owns_end_row = span_rule && band > 0.5;
             } else {
                 // 예약(`consumed`)은 이 행을 끝 컷 높이(`split_end_limit`)로 셌다. 쪽 끝까지의 방은
                 // 그 위에 남은 띠를 더한 값이고, 상자는 끝 컷 내용(`last_height`) 이상·걸침 칸의
@@ -1283,12 +1309,12 @@ impl TypesetEngine {
                     (room - last_height).max(0.0),
                     cut_row_h,
                 ) {
-                    let row_box = last_height + band;
-                    end_row_height_override = Some(row_box);
-                    partial_height += row_box - split_end_limit;
+                    let ledger_box = last_height + ledger_band.unwrap_or(band).max(band);
+                    end_row_height_override = Some(ledger_box);
+                    partial_height += ledger_box - split_end_limit;
                     span_band_owns_end_row = true;
-                    ledger_end_row_trim = (ledger_band.unwrap_or(band) - band).max(0.0);
-                    span_band_row_box = Some((last_row, row_box + ledger_end_row_trim));
+                    ledger_end_row_trim = ledger_box - (last_height + band);
+                    span_band_row_box = Some((last_row, ledger_box));
                 }
             }
         }
@@ -1303,8 +1329,7 @@ impl TypesetEngine {
                 &split_end_cut,
                 is_continuation,
                 start_row_height_override,
-                // 걸침 칸 몫은 닫는 선으로 줄이기 전 상자로 센다(이월 원장과 같은 값).
-                end_row_height_override.map(|height| height + ledger_end_row_trim),
+                end_row_height_override,
                 straddle_row_relief,
                 straddle_page_bands,
                 styles,
@@ -1375,7 +1400,15 @@ impl TypesetEngine {
                 complete_cut: (split_end_cut.is_empty() && split_end_limit <= 0.0)
                     || (complete_physical_end_cut && source_restart_frame_closes_body),
                 block_start: split_block_start,
-                last_height: end_row_height_override.map(|height| height + ledger_end_row_trim),
+                // 걸침 칸이 다음 조각에서 세는 앞 행 상자는 그린 상자다 — 내용 컷 행에서 닫는 선으로 줄인 몫은
+                // 병합 칸의 뒤 조각이 잇는다(fragment_ghost_vrules 14·15쪽 (34,1): 앞+뒤 = 선언 326.96px, 한/글
+                // 2020 15쪽 첫 행 237.3px). 같은 행 자신의 다음 부분(`next_start_row_height_override`)은 원장 값을
+                // 쓴다(1342000 336·337쪽: 넘기면 컷이 한 단위 당겨진다). 통째로 받은 끝 행은 원장 그대로.
+                last_height: if split_end_limit > 0.0 {
+                    end_row_height_override.map(|height| height - ledger_end_row_trim)
+                } else {
+                    end_row_height_override
+                },
                 restart_frame_closes_body: source_restart_frame_closes_body,
             },
         );
@@ -1392,7 +1425,9 @@ impl TypesetEngine {
             is_block_split: split_block_start.is_some(),
             start_cut_is_block,
             row_cursor_is_nested,
-            end_row_height_override,
+            // 그리는 끝 행 상자는 닫는 선으로 줄인 값이다(원장 값 − 줄인 몫).
+            end_row_height_override: end_row_height_override
+                .map(|height| height - ledger_end_row_trim),
             start_row_height_override,
             straddle_row_relief: straddle_row_relief.clone(),
             straddle_page_bands: accepted_straddle_cells.clone(),
@@ -1400,9 +1435,9 @@ impl TypesetEngine {
             // 스캔에서 이미 예약한 빈 저장 띠는 paint의 줄간격이 아니다.
             // 걸침 칸·나뉜 행의 몫으로 쪽 끝 띠까지 수용한 끝 행 상자도 원본 프레임이다.
             // 배치는 이 상자를 끝 줄간격 접기로 다시 줄이지 않는다.
-                        end_row_owns_stored_frame: source_frame_band > 0.0
-                || (is_continuation
-                && (stored_complete_extent.is_some() || span_band_owns_end_row)),
+            end_row_owns_stored_frame: source_frame_band > 0.0
+                || (is_continuation && stored_complete_extent.is_some())
+                || span_band_owns_end_row,
         });
         // 저장 호스트 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
         // 호스트·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).
