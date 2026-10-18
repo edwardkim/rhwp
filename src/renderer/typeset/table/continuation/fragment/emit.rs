@@ -1415,18 +1415,16 @@ impl TypesetEngine {
                     span_band_row_box = Some((last_row, last_height + ledger_band));
                 }
             } else {
-                // 예약(`consumed`)은 이 행을 끝 컷 높이(`split_end_limit`)로 셌다. 쪽 끝까지의 방은
-                // 그 위에 남은 띠를 더한 값이고, 상자는 끝 컷 내용(`last_height`) 이상·걸침 칸의
-                // 남는 몫 이하다.
-                let room = split_end_limit + unreserved_page_end_band;
-                let ledger_room = split_end_limit + ledger_page_end_band;
+                // 스캔은 안여백을 포함한 물리 상자를 이미 consumed에 예약했다.
+                // 남은 띠도 같은 물리 축이다. 내용 전진량 split_end_limit으로
+                // 여유를 다시 만들면 현재 상자의 안여백을 두 번 차감하게 된다.
                 let ledger_band = self.crossing_span_page_end_band(
                     st,
                     continuation,
                     input,
                     (last_row, &[], &split_end_cut),
                     last_height,
-                    (ledger_room - last_height).max(0.0),
+                    ledger_page_end_band,
                     cut_row_h,
                 );
                 if let Some(band) = self.crossing_span_page_end_band(
@@ -1435,12 +1433,19 @@ impl TypesetEngine {
                     input,
                     (last_row, &[], &split_end_cut),
                     last_height,
-                    (room - last_height).max(0.0),
+                    unreserved_page_end_band,
                     cut_row_h,
                 ) {
+                    let row_box = last_height + band;
                     let ledger_box = last_height + ledger_band.unwrap_or(band).max(band);
                     end_row_height_override = Some(ledger_box);
-                    partial_height += ledger_box - split_end_limit;
+                    partial_height += ledger_box - last_height;
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SPAN_END_BAND row={} content={:.6} physical_before={:.6} band={:.6} physical_after={:.6} fragment_after={:.6}",
+                            last_row, split_end_limit, last_height, band, row_box, partial_height,
+                        );
+                    }
                     span_band_owns_end_row = true;
                     ledger_end_row_trim = ledger_box - (last_height + band);
                     span_band_row_box = Some((last_row, ledger_box));
