@@ -7,7 +7,7 @@ use super::{LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
     /// 실제 원본 줄·단일행 선언·걸침 셀의 저장 쪽 재시작이 함께 증명하는 행 상자.
-    /// 편집/재조판과 중첩 개체는 `stored_plain_text_cell_frame`에서 제외한다.
+    /// 편집/재조판과 중첩 개체는 `stored_body_text_cell_frame`에서 제외한다.
     /// 분리 괘선의 간격은 행과 별도 소유자이므로 이 연속 행 상자 계약을 쓰지 않는다.
     pub(crate) fn stored_block_source_rows(
         &self,
@@ -29,7 +29,7 @@ impl LayoutEngine {
             || end_cut.len() != cells.len()
             || cells
                 .iter()
-                .any(|cell| !self.stored_plain_text_cell_frame(table, cell))
+                .any(|cell| !self.stored_body_text_cell_frame(table, cell))
             || !cells.iter().zip(end_cut).any(|(cell, &unit)| {
                 cell.row_span > 1
                     && unit > 0

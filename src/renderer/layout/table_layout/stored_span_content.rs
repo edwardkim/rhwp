@@ -341,6 +341,14 @@ impl LayoutEngine {
     }
 
     pub(super) fn stored_plain_text_cell_frame(&self, table: &Table, cell: &Cell) -> bool {
+        self.stored_body_text_cell_frame(table, cell)
+            && cell.paragraphs.iter().all(|para| para.controls.is_empty())
+    }
+
+    /// 머리말·꼬리말 정의는 별도 쪽 영역의 소유자이며 셀 본문의 개체가 아니다.
+    /// 저장 줄의 유효성은 같은 계약으로 확인하되, 기존 순수 글줄 소비자는 위의
+    /// 더 엄격한 컨트롤 없음 조건을 유지한다.
+    pub(super) fn stored_body_text_cell_frame(&self, table: &Table, cell: &Cell) -> bool {
         let profile = self.profile.get();
         (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             && !profile.session_edited()
@@ -355,7 +363,13 @@ impl LayoutEngine {
             && cell.paragraphs.iter().all(|para| {
                 !para.stored_text_partition_is_dirty()
                     && !para.cell_format_vpos_dirty
-                    && para.controls.is_empty()
+                    && para.controls.iter().all(|control| {
+                        matches!(
+                            control,
+                            crate::model::control::Control::Header(_)
+                                | crate::model::control::Control::Footer(_)
+                        )
+                    })
                     && !para.line_segs.is_empty()
                     && para.line_segs.iter().all(|line| {
                         line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
