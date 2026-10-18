@@ -58,3 +58,8 @@ PDF→HWP/HWPX의 일반 지역 격자 전체, source paint 일반 편집 및 P5
 
 2026-10-19 메인테이너가 같은 제품과 비교 화면에 **시각 판정 통과**를 내렸다.
 실제 Native/Studio API의 편집·양 저장 구조 검증과 함께 적용하며 P4 전체 완료를 뜻하지 않는다.
+
+
+B20 후속 절편은 같은 `independent-roots.pdf`를 재사용하여 하단 19셀도 실제 편집 IR로
+연결했다. 이전의 보류를 영구 기대값으로 고정하지 않았으며, 새 경계 소유·독립 출력·전후
+검사 범위는 [paint 소유 증거](paint-ownership.md)와 [stage10](../../mydocs/working/task_m100_7998_stage10.md)을 따른다.

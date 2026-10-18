@@ -1,0 +1,70 @@
+[
+  {
+    "key": "outside-right",
+    "source": "normal independent Hancom Print local-outer-only.pdf plus explicit red paint rectangle",
+    "rectanglePdfPt": [
+      356.4430145549774,
+      331.55999755859375,
+      0.36,
+      25.55999755859375
+    ],
+    "logicalSourceBounds": {
+      "height": 25.55999755859375,
+      "width": 353.3900146484375,
+      "x": 2.872999906539917,
+      "y": 2.8800048828125
+    },
+    "sha256": "9d623a40430637b5f2cc5691c1a81c521d6c0c42b6c5b5c7975d1ef8d3c88763"
+  },
+  {
+    "key": "outside-bottom",
+    "source": "normal independent Hancom Print local-outer-only.pdf plus explicit red paint rectangle",
+    "rectanglePdfPt": [
+      2.872999906539917,
+      331.01999755859373,
+      353.3900146484375,
+      0.36
+    ],
+    "logicalSourceBounds": {
+      "height": 25.55999755859375,
+      "width": 353.3900146484375,
+      "x": 2.872999906539917,
+      "y": 2.8800048828125
+    },
+    "sha256": "473b14d07770a4bf77fb42205eed02ac865a5022f95cb9b865cfb861f3846d35"
+  },
+  {
+    "key": "crossing-right",
+    "source": "normal independent Hancom Print local-outer-only.pdf plus explicit red paint rectangle",
+    "rectanglePdfPt": [
+      356.0830145549774,
+      331.55999755859375,
+      0.36,
+      25.55999755859375
+    ],
+    "logicalSourceBounds": {
+      "height": 25.55999755859375,
+      "width": 353.3900146484375,
+      "x": 2.872999906539917,
+      "y": 2.8800048828125
+    },
+    "sha256": "48b70eafc0895a41a3a19a288a984472898b853ae185645201bc019d15ec4a85"
+  },
+  {
+    "key": "unrelated-outside",
+    "source": "normal independent Hancom Print local-outer-only.pdf plus explicit red paint rectangle",
+    "rectanglePdfPt": [
+      360.2630145549774,
+      331.55999755859375,
+      2,
+      25.55999755859375
+    ],
+    "logicalSourceBounds": {
+      "height": 25.55999755859375,
+      "width": 353.3900146484375,
+      "x": 2.872999906539917,
+      "y": 2.8800048828125
+    },
+    "sha256": "2c1374625d20aec17e85cdd6c23e0fb4899d5b0463b4003122300ba393325797"
+  }
+]

@@ -1368,9 +1368,19 @@ pub(super) fn lower(
     let mut paint_fragments = 0;
     let mut native_border_cells = 0;
     let mut native_border_fragments = 0;
+    let mut external_boundary_paths = Vec::new();
     if let Some(plan) = paint_result {
         match plan {
             Ok(mut plan) => {
+                external_boundary_paths = rule_controls
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(path, control)| {
+                        control
+                            .is_some_and(|c| plan.external_boundary_controls.contains(&c))
+                            .then_some(path)
+                    })
+                    .collect();
                 native_border_fragments = plan.native_border_fragments;
                 removed.extend(plan.removed);
                 let consumed = table_removed
@@ -1506,6 +1516,8 @@ pub(super) fn lower(
     report["cellOwnedPaintFragments"] = json!(paint_fragments);
     report["nativeBorderCells"] = json!(native_border_cells);
     report["nativeBorderPaintFragments"] = json!(native_border_fragments);
+    report["externalBoundaryPaint"] = json!({"sourcePathIndices":external_boundary_paths,
+        "owner":"unchanged page source control outside logical table frame"});
     report["ruledTableCandidates"] = json!(grids.len());
     report["tableSemantics"] = json!("inferred-from-geometry-not-authored-metadata");
     report["textBoxes"] = json!(owner

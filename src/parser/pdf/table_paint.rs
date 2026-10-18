@@ -285,6 +285,10 @@ pub(super) struct PaintPlan {
     pub removed: BTreeSet<usize>,
     pub retained: Vec<Control>,
     pub native_border_fragments: usize,
+    /// Boundary contributors may lie outside a logical content frame. Such
+    /// physical paint keeps its original page owner, rather than being moved
+    /// into a cell or treated as missing solely because it was not removed.
+    pub external_boundary_controls: BTreeSet<usize>,
 }
 
 /// A failed family must not discard independent roots. Only explicitly
@@ -374,6 +378,7 @@ pub(super) fn partition(
         removed: BTreeSet::new(),
         retained: Vec::new(),
         native_border_fragments: 0,
+        external_boundary_controls: BTreeSet::new(),
     };
     // A path bitmap is still source paint, not a separately placed content
     // image. Intersections between two such paths keep their original z-order.
@@ -562,11 +567,35 @@ pub(super) fn partition(
         }
         result.removed.insert(control);
     }
-    let unconsumed_targets = required
-        .iter()
-        .enumerate()
-        .filter_map(|(i, set)| (!set.is_subset(&result.removed)).then_some(i))
-        .collect::<Vec<_>>();
+    let mut unconsumed_targets = Vec::new();
+    for (ti, required) in required.iter().enumerate() {
+        let mut unresolved = false;
+        for &control in required.difference(&result.removed) {
+            tick(work)?;
+            let original = controls.get(control).ok_or("invalid boundary control")?;
+            let source = source_frame(original).ok_or("boundary paint frame missing")?;
+            let line = match original {
+                Control::Shape(s) => match s.as_ref() {
+                    ShapeObject::Line(l) if l.start.y == l.end.y => Some(true),
+                    ShapeObject::Line(l) if l.start.x == l.end.x => Some(false),
+                    _ => None,
+                },
+                _ => None,
+            };
+            if measure(source, line) > 0 && intersection(source, regions[ti], line).is_none() {
+                // No physical piece belongs to this table. The unchanged
+                // control is still in the page's unremoved source list. A
+                // geometric contributor within the inference tolerance does
+                // not authorize changing its position or clipping its ink.
+                result.external_boundary_controls.insert(control);
+            } else {
+                unresolved = true;
+            }
+        }
+        if unresolved {
+            unconsumed_targets.push(ti);
+        }
+    }
     if !unconsumed_targets.is_empty() {
         return Err(PartitionError {
             reason: "unconsumed source boundaries".into(),
