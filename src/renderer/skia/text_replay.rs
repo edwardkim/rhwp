@@ -661,24 +661,28 @@ impl SkiaTextReplay<'_> {
                             }
                             // 생성자가 원본 폭을 명시한 텍스트만 같은 커닝 전
                             // 경계를 소비한다. 본문을 일괄 축소·확대하지 않는다.
-                            let fit_scale = fit_positions
+                            let (fit_scale, fit_dx) = fit_positions
                                 .as_deref()
                                 .and_then(|positions| {
                                     let end = *char_idx + cluster.chars().count();
                                     let advance = positions.get(end)? - positions.get(*char_idx)?;
-                                    let natural_width =
-                                        f64::from(font.measure_str(cluster, None).0);
-                                    crate::renderer::canvas_cluster_fit_scale(
+                                    let (natural_width, ink) = font.measure_str(cluster, None);
+                                    crate::renderer::canvas_cluster_fit(
                                         style,
+                                        cluster,
                                         advance,
-                                        natural_width * f64::from(ratio),
+                                        f64::from(natural_width * ratio),
+                                        Some(f64::from(ink.width() * ratio)),
                                         cluster.chars().any(|ch| ch.is_ascii_graphic()),
                                     )
                                 })
-                                .unwrap_or(1.0) as f32;
-                            if has_ratio || (fit_scale - 1.0).abs() > f32::EPSILON {
+                                .map_or((1.0, 0.0), |(scale, dx)| (scale as f32, dx as f32));
+                            if has_ratio
+                                || (fit_scale - 1.0).abs() > f32::EPSILON
+                                || fit_dx.abs() > f32::EPSILON
+                            {
                                 canvas.save();
-                                canvas.translate((char_x, char_y));
+                                canvas.translate((char_x + fit_dx, char_y));
                                 canvas.scale((ratio * fit_scale, 1.0));
                                 if !hft_outline.as_ref().is_some_and(|outline| {
                                     outline.draw(canvas, cluster, &font, (0.0, 0.0), &text_paint)

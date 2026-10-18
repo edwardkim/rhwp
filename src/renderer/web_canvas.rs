@@ -2392,30 +2392,29 @@ impl Renderer for WebCanvasRenderer {
                         });
                         // Measured fallback advance already includes script size and
                         // document ratio exactly once. Do not fit it a second time.
-                        let fit_scale = if measured_descriptor.is_some() {
+                        let fit = if measured_descriptor.is_some() {
                             None
                         } else if cluster_advance > 0.0 {
-                            self.ctx
-                                .measure_text(cluster_str)
-                                .ok()
-                                .map(|metrics| metrics.width())
-                                .and_then(|actual_w| {
-                                    super::canvas_cluster_fit_scale(
-                                        style,
-                                        cluster_advance,
-                                        actual_w * ratio,
-                                        pin_ascii_advance,
-                                    )
-                                })
+                            self.ctx.measure_text(cluster_str).ok().and_then(|metrics| {
+                                let ink_width = metrics.actual_bounding_box_left()
+                                    + metrics.actual_bounding_box_right();
+                                super::canvas_cluster_fit(
+                                    style,
+                                    cluster_str,
+                                    cluster_advance,
+                                    metrics.width() * ratio,
+                                    Some(ink_width * ratio),
+                                    pin_ascii_advance,
+                                )
+                            })
                         } else {
                             None
                         };
+                        let (fit_scale, fit_dx) = fit.unwrap_or((1.0, 0.0));
 
                         self.ctx.save();
-                        self.ctx.translate(char_x, y).unwrap_or(());
-                        self.ctx
-                            .scale(ratio * fit_scale.unwrap_or(1.0), 1.0)
-                            .unwrap_or(());
+                        self.ctx.translate(char_x + fit_dx, y).unwrap_or(());
+                        self.ctx.scale(ratio * fit_scale, 1.0).unwrap_or(());
                         if !self.draw_hft_outline(cluster_str, style, font_size) {
                             let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
                         }
