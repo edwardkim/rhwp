@@ -32,3 +32,72 @@ pub(crate) fn underline_multi_lines(shape: u8) -> Option<&'static [(f64, f64)]> 
         _ => None,
     }
 }
+
+/// 글줄 상자 위로 올라가는 장식(위 밑줄·강조점)의 잉크 범위다.
+///
+/// 첫 줄의 이 잉크는 글줄 상자 밖, 본문 영역 위에 놓여 본문 clip에 잘린다.
+/// 글자·글줄 상자를 키우면 캐럿/선택도 바뀌므로 본문 clip 계산에만 쓴다.
+/// 위치는 SVG/Skia 백엔드의 그리기 기하(위 밑줄 `기준선 - 글꼴 + 1`, 강조점
+/// `기준선 - 1.05em` 에 0.3em 글자)와 같다. 회전·세로쓰기·글자겹침은 다루지 않는다.
+pub(crate) fn raised_decoration_ink_bbox(
+    bbox: super::render_tree::BoundingBox,
+    run: &super::render_tree::TextRunNode,
+) -> Option<super::render_tree::BoundingBox> {
+    use crate::model::style::UnderlineType;
+
+    let style = &run.style;
+    let top_underline = style.underline == UnderlineType::Top && style.underline_shape <= 10;
+    let emphasis = (1..=6).contains(&style.emphasis_dot);
+    if !(top_underline || emphasis)
+        || run.char_overlap.is_some()
+        || run.rotation != 0.0
+        || run.is_vertical
+        || bbox.width <= 0.0
+        || !run.display_or_text().chars().any(|ch| ch != '\u{FFFC}')
+    {
+        return None;
+    }
+    let base_size = if style.font_size > 0.0 {
+        style.font_size
+    } else {
+        12.0
+    };
+    let (font_size, baseline) = style.script_draw_metrics(base_size, bbox.y + run.baseline);
+    let mut top = f64::INFINITY;
+    let mut bottom = f64::NEG_INFINITY;
+    if top_underline {
+        // draw_line_shape 의 획 두께: 이중/삼중선(7~10)은 중심에서 최대 1.75px, 그 외 0.5px.
+        let half = match style.underline_shape {
+            7 => 1.35,
+            8 | 9 => 1.45,
+            10 => 1.75,
+            _ => 0.5,
+        };
+        let y = baseline - font_size + 1.0;
+        top = top.min(y - half);
+        bottom = bottom.max(y + half);
+    }
+    if emphasis {
+        // 강조점 글자의 em 상자(기준선 위 1em, 아래 0.25em)를 잉크 범위로 본다.
+        let dot_size = font_size * 0.3;
+        let dot_y = baseline - font_size * 1.05;
+        top = top.min(dot_y - dot_size);
+        bottom = bottom.max(dot_y + dot_size * 0.25);
+    }
+    // 원형 점선(6)만 round cap 이라 선 양 끝이 획 반만큼 번진다.
+    let end_pad = if top_underline && style.underline_shape == 6 {
+        0.5
+    } else {
+        0.0
+    };
+    let ink = super::render_tree::BoundingBox::new(
+        bbox.x - end_pad,
+        top,
+        bbox.width + 2.0 * end_pad,
+        bottom - top,
+    );
+    [ink.x, ink.y, ink.width, ink.height]
+        .iter()
+        .all(|v| v.is_finite())
+        .then_some(ink)
+}
