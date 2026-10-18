@@ -1280,6 +1280,8 @@ export interface LayerLineStyle {
   color?: string;
   width?: number;
   dash?: LayerStrokeDash;
+  /** Physical on/off lengths supplied by the shared border layout. */
+  dashPattern?: number[];
   lineType?: string;
   startArrow?: string;
   endArrow?: string;

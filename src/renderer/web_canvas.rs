@@ -2622,6 +2622,13 @@ impl Renderer for WebCanvasRenderer {
 
         self.ctx.set_stroke_style_str(&color);
         self.set_line_dash(&style.dash);
+        if let Some(intervals) = &style.dash_pattern {
+            let pattern = js_sys::Array::new();
+            for value in intervals {
+                pattern.push(&JsValue::from_f64(*value));
+            }
+            let _ = self.ctx.set_line_dash(&pattern);
+        }
 
         // 이중선/삼중선: SVG draw_multi_line과 동일한 오프셋 비율 방식
         // (width_ratio, offset_ratio) — offset은 선 중심으로부터의 거리 비율

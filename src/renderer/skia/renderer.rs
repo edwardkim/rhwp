@@ -1181,6 +1181,10 @@ impl SkiaLayerRenderer {
             });
             paint.set_color(colorref_to_skia(style.color, 1.0));
             apply_dash(&mut paint, style.dash);
+            if let Some(intervals) = &style.dash_pattern {
+                let intervals = intervals.iter().map(|v| *v as f32).collect::<Vec<_>>();
+                paint.set_path_effect(PathEffect::dash(&intervals, 0.0));
+            }
             paint
         };
         let draw_placeholder = |bbox: crate::renderer::render_tree::BoundingBox, label: &str| {

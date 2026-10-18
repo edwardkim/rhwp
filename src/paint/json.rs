@@ -2909,6 +2909,16 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
         style.start_arrow_size,
         style.end_arrow_size,
     );
+    if let Some(intervals) = &style.dash_pattern {
+        buf.push_str(",\"dashPattern\":[");
+        for (index, value) in intervals.iter().enumerate() {
+            if index > 0 {
+                buf.push(',');
+            }
+            let _ = write!(buf, "{value:.6}");
+        }
+        buf.push(']');
+    }
     if let Some(shadow) = &style.shadow {
         buf.push_str(",\"shadow\":");
         write_shadow_style(buf, shadow);

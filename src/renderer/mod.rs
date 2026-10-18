@@ -931,6 +931,10 @@ pub struct LineStyle {
     pub width: f64,
     /// 선 종류
     pub dash: StrokeDash,
+    /// Explicit physical on/off lengths in scene coordinates. A native border
+    /// can have metrics different from the generic shape dash preset.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dash_pattern: Option<Vec<f64>>,
     /// 선 렌더링 종류 (이중선/삼중선 등)
     pub line_type: LineRenderType,
     /// 시작 화살표

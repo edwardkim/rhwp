@@ -308,9 +308,16 @@ fn project_junctions(edge: Edge, source: &[Edge]) -> Edge {
         source
             .iter()
             .filter(|other| {
+                // Endpoints and the measured repeat gap are f32 observations.
+                // Their arithmetic must not reject an exactly touching junction
+                // solely because (edge.to + gap) rounds below the crossing axis.
+                // This is a roundoff bound, not an extra geometric snap radius.
+                let rounding = 2.0
+                    * f32::EPSILON
+                    * (edge.from.abs() + edge.to.abs() + edge.periodic_gap.abs() + other.at.abs());
                 other.horizontal != edge.horizontal
-                    && other.at >= edge.from - edge.periodic_gap
-                    && other.at <= edge.to + edge.periodic_gap
+                    && other.at >= edge.from - edge.periodic_gap - rounding
+                    && other.at <= edge.to + edge.periodic_gap + rounding
                     && edge.at >= other.from - EPS
                     && edge.at <= other.to + EPS
                     && (other.at - value).abs() <= other.stroke_width / 2. + EPS + edge.periodic_gap

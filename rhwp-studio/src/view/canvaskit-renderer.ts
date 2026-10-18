@@ -4836,7 +4836,9 @@ export class CanvasKitLayerRenderer {
         paint.delete?.();
       }
     }
-    if (!fillShader && !style?.fillColor && !style?.strokeColor && !style?.pattern) {
+    // An explicit transparent style paints nothing. Only an omitted legacy
+    // style requests the default outline; do not invent a text-box frame.
+    if (!fillShader && style === undefined) {
       const paint = this.makeStrokePaint('#000000', 1);
       draw(paint);
       paint.delete?.();
@@ -5011,7 +5013,7 @@ export class CanvasKitLayerRenderer {
       try {
         this.drawStrokeWithDash(style.dash, paint, () => {
           canvas.drawLine(x1 + ox, y1 + oy, x2 + ox, y2 + oy, paint);
-        });
+        }, style.dashPattern);
       } finally {
         paint.delete?.();
       }
@@ -5049,8 +5051,17 @@ export class CanvasKitLayerRenderer {
     dash: LayerStrokeDash | undefined,
     paint: SkPaint,
     draw: () => void,
+    explicitPattern?: number[],
   ): void {
-    const intervals = dash === undefined || dash === 'solid'
+    if (explicitPattern !== undefined && (
+      explicitPattern.length === 0 || explicitPattern.length > 16
+      || explicitPattern.length % 2 !== 0
+      || explicitPattern.some(value => !Number.isFinite(value) || value <= 0)
+    )) {
+      this.unsupportedOps.add('strokeDash:invalidPhysicalPattern');
+      return;
+    }
+    const intervals = explicitPattern ?? (dash === undefined || dash === 'solid'
       ? null
       : dash === 'dash'
         ? [6, 3]
@@ -5060,7 +5071,7 @@ export class CanvasKitLayerRenderer {
             ? [6, 3, 2, 3]
             : dash === 'dashDotDot'
               ? [6, 3, 2, 3, 2, 3]
-              : undefined;
+              : undefined);
     if (intervals === undefined) {
       this.unsupportedOps.add(`strokeDash:${String(dash)}`);
       return;

@@ -718,6 +718,21 @@ pub enum BorderLineType {
     Thin3DReverse,
 }
 
+/// Native cell dot-border metrics, in PDF points. Hancom 2020 Print quantizes
+/// the repeat on its 600dpi device grid. Keep independently measured widths
+/// explicit: unqualified widths must not authenticate a PDF paint conversion.
+pub(crate) fn cell_dot_metrics_pt(width: u8) -> Option<([f64; 2], f64)> {
+    let ticks = match width {
+        3 => [7., 10., 5.],    // 0.2mm
+        5 => [10., 15., 7.],   // 0.3mm
+        7 => [17., 25., 12.],  // 0.5mm
+        11 => [52., 78., 35.], // 1.5mm
+        _ => return None,
+    };
+    let [ink, gap, stroke] = ticks.map(|v| v * 72. / 600.);
+    Some(([ink, gap], stroke))
+}
+
 /// 대각선 정보
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct DiagonalLine {

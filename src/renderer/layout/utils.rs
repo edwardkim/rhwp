@@ -526,6 +526,7 @@ pub(crate) fn drawing_to_line_style(drawing: &crate::model::shape::DrawingObjAtt
         color: border.color,
         width: width.max(0.5),
         dash,
+        dash_pattern: None,
         line_type: line_render_type,
         start_arrow,
         end_arrow,

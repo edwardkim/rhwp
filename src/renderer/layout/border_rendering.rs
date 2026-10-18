@@ -1071,7 +1071,11 @@ pub(crate) fn create_border_line_nodes(
         // 단일선 타입들
         _ => {
             if let Some(dash) = border_line_type_to_dash(border.line_type) {
-                create_single_line(tree, border.color, base_width, dash, x1, y1, x2, y2)
+                with_native_border_pattern(
+                    create_single_line(tree, border.color, base_width, dash, x1, y1, x2, y2),
+                    border.line_type,
+                    border.width,
+                )
             } else {
                 vec![]
             }
@@ -1194,6 +1198,25 @@ fn create_single_line(
     );
     let bbox = line.ink_bbox();
     vec![RenderNode::new(id, RenderNodeType::Line(line), bbox)]
+}
+
+fn with_native_border_pattern(
+    mut nodes: Vec<RenderNode>,
+    kind: BorderLineType,
+    width: u8,
+) -> Vec<RenderNode> {
+    if kind == BorderLineType::Dot {
+        let Some((pattern, _)) = crate::model::style::cell_dot_metrics_pt(width) else {
+            return nodes;
+        };
+        let intervals = pattern.map(|points| points * 96.0 / 72.0).to_vec();
+        for node in &mut nodes {
+            if let RenderNodeType::Line(line) = &mut node.node_type {
+                line.style.dash_pattern = Some(intervals.clone());
+            }
+        }
+    }
+    nodes
 }
 
 fn create_editor_only_line(
@@ -1328,7 +1351,11 @@ fn create_diagonal_line_nodes(
         }
         _ => {
             if let Some(dash) = border_line_type_to_dash(line_type) {
-                create_single_line(tree, color, base_width, dash, x1, y1, x2, y2)
+                with_native_border_pattern(
+                    create_single_line(tree, color, base_width, dash, x1, y1, x2, y2),
+                    line_type,
+                    width_index,
+                )
             } else {
                 vec![]
             }
