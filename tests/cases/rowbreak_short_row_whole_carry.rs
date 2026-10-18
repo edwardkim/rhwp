@@ -26,6 +26,7 @@ use rhwp::document_core::DocumentCore;
 const SAMPLE_1480000: &str = "samples/issue5941/1480000-201900698-native-neartop-reset.hwp";
 const SAMPLE_21761835: &str = "samples/hwpx/21761835_jeonjik_exemption_table.hwpx";
 const SAMPLE_1613000: &str = "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp";
+const SAMPLE_80168: &str = "samples/80168_regulatory_analysis.hwp";
 const SAMPLE_MYEONJEOK: &str = "samples/task1700/myeonjeok_wrap_10page.hwp";
 const SAMPLE_70833: &str = "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp";
 const SAMPLE_1342000: &str =
@@ -269,6 +270,38 @@ fn continued_table_bottom_caption_keeps_the_whole_table_gap() {
         (continued - whole).abs() <= 0.5,
         "끝 조각 캡션 간격 {continued:.2}px 은 통째 표 {whole:.2}px 와 같아야 한다"
     );
+}
+
+/// 걸침 칸 안의 쪽 끝 행은 선언 높이가 남은 공간을 넘쳐도, 내용이 비끝 조각 상자 아래(본문 아래 −
+/// 바깥 아래 여백 − 100HU) 안에 들면 그 쪽에 남고 상자는 그 선에서 닫힌다. 한/글 2020 PDF(1613000 구역 3
+/// 가로 표): 195쪽이 행 43(`4.4`, 선언 20.87px)까지 담고 196쪽이 행 44, 197쪽이 행 71 로 시작하며,
+/// 75×3 표는 201쪽이 행 43, 202쪽이 행 65 로 시작한다. 닫는 선은 저장 용지·여백으로 정한다:
+/// (59528 − 아래 2835 − 꼬리말 2835 − 바깥 아래 283 − 100) HU = 712.99px (PDF 712.91). 행 43 상자는
+/// 그 선 아래로 내려가지 않는다(쪽 끝 띠가 바깥 아래 여백 선 714.33px 까지 채우는 1.3px 차이는 남는다).
+/// 수정 전 rhwp 는 선언 높이로 판정해 0.5px 차로 행 43 을 넘기고 196–202쪽이 한 행씩 밀렸다.
+#[test]
+fn crossing_span_row_closes_at_the_fragment_bottom_line() {
+    let core = core(SAMPLE_1613000);
+    assert_whole_row_boundary(&core, 195, 1, 44);
+    assert_whole_row_boundary(&core, 196, 1, 71);
+    assert_whole_row_boundary(&core, 200, 3, 43);
+    assert_whole_row_boundary(&core, 201, 3, 65);
+    let line = (59528.0 - 2835.0 - 2835.0 - 283.0 - 100.0) / 75.0;
+    let body_line = (59528.0 - 2835.0 - 2835.0 - 283.0) / 75.0;
+    let (top, bottom) = cell_box(&core, 194, 43, 2);
+    assert!(
+        line - top >= 17.09 && bottom <= body_line + 0.5,
+        "195쪽 행 43 은 내용(17.09px)이 닫는 선 {line:.2}px 안에 들고 본문 선 {body_line:.2}px 를 넘지 않아야 한다: {top:.2}..{bottom:.2}"
+    );
+}
+
+/// 반례: 80168 표(`pi=1056`) 행 23(머리 행, 내용 20.67px)은 남은 22.76px 에 들지만 바깥 아래 여백
+/// (141HU)까지 뺀 닫는 선 안에는 들지 않는다. 한/글 2024 PDF 는 이 행을 123쪽 첫머리로 넘기고 122쪽
+/// 행 22 를 쪽 끝까지 늘린다.
+#[test]
+fn crossing_span_row_beyond_the_closing_line_moves_whole() {
+    let core = core(SAMPLE_80168);
+    assert_whole_row_boundary(&core, 122, 1056, 23);
 }
 
 /// 1613000 191쪽: 새 쪽 첫머리에 통째로 든 18×3 표(구역 2 `pi=9`, 문단 기준 자리차지, 세로 오프셋

@@ -45,4 +45,7 @@ pub(in crate::renderer::typeset) struct BlockRowScanVars {
     pub(in crate::renderer::typeset) opening_block_cuts_after_first_row: bool,
     /// 저장 근거가 «내용은 이 조각, 남은 빈 띠는 다음 조각»으로 증언한 행.
     pub(in crate::renderer::typeset) source_carried_band_row: Option<usize>,
+    /// 비끝 조각 상자를 닫을 때 `avail_for_rows` 밖에서 더 빼야 하는 표 바깥 아래 여백
+    /// (선언 여백 − 이 조각 예산이 이미 예약한 몫).
+    pub(in crate::renderer::typeset) unreserved_outer_bottom: f64,
 }

@@ -221,6 +221,48 @@ impl TypesetEngine {
                     let source_certified_band = v.source_carried_band_row == Some(r)
                         && probe.fully_consumed
                         && visible_height <= rest + 0.5;
+                    // 걸침 칸 안의 행은 선언 높이가 넘쳐도 내용이 비끝 조각 상자 아래(본문 아래 −
+                    // 바깥 아래 여백 − `SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU`) 안에 다 들면 이 쪽의
+                    // 끝 행이 된다. 상자는 그 선에서 닫고 다음 조각은 다음 행부터 잇는다(한/글 2020:
+                    // 1613000 195쪽 행 43 선언 20.87 → 19.04px, 200쪽 행 42 선언 25.08 → 20.0px).
+                    // 내용이 그 선을 넘으면 통째로 넘긴다(76076 행 14: 내용 20.7 > 21.8 − 1.33,
+                    // 80168 행 23: 내용 20.67 > 22.76 − 바깥 아래 1.88 − 1.33). 근거가 이어지는 조각뿐이라
+                    // 첫 조각의 0행 걸침 묶음 컷(`rowbreak_rowspan_opening_row_cut`)은 건드리지 않는다.
+                    let fragment_bottom_inset = crate::renderer::hwpunit_to_px(
+                        crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                        self.dpi,
+                    );
+                    let closing_box = rest - v.unreserved_outer_bottom - fragment_bottom_inset;
+                    if v.is_continuation
+                        && !source_certified_band
+                        && !table::scan::row::retains_blank_tail(&probe, visible_height, rest)
+                        && probe.fully_consumed
+                        && row_start_cut.is_empty()
+                        // 이 행에서 닫히는 칸의 내용이 있어야 한다. 새 걸침 칸만 시작하는 행은
+                        // 끝 행 내용으로 잴 것이 없다(1342000 구역 1 표 행 30).
+                        && table
+                            .cells
+                            .iter()
+                            .any(|cell| cell.row as usize == r && cell.row_span <= 1)
+                        && visible_height <= closing_box
+                        && st.profile.hwp5_stored_pagination_layout()
+                        && !st.profile.session_edited()
+                    {
+                        consumed += cs_before + closing_box;
+                        r += 1;
+                        end_row = r;
+                        end_row_height_override = Some(closing_box);
+                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                            eprintln!(
+                                "DIAG_SCAN RSPAN_CLOSE r={} box={:.2} visible={:.2} declared={:.1}",
+                                r - 1,
+                                closing_box,
+                                visible_height,
+                                h
+                            );
+                        }
+                        return false;
+                    }
                     if source_certified_band
                         || table::scan::row::retains_blank_tail(&probe, visible_height, rest)
                     {

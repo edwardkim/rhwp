@@ -219,6 +219,11 @@ impl TypesetEngine {
                 && !is_continuation
                 && cursor_row == 0,
             source_carried_band_row: budget.source_carried_band_row,
+            unreserved_outer_bottom: (crate::renderer::hwpunit_to_px(
+                i32::from(table.outer_margin_bottom),
+                self.dpi,
+            ) - budget.fragment_outer_bottom_overhead)
+                .max(0.0),
         };
         let run_scan = |vars: BlockRowScanVars| {
             let mut scan = self.scan_block_table_split_rows(
