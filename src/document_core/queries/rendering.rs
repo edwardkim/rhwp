@@ -1061,6 +1061,85 @@ fn assign_master_pages_for_section(
     }
 }
 
+/// 구역에 정의된 머리말/꼬리말 컨트롤로 다음 구역에 넘길 carry 를 갱신한다.
+///
+/// 쪽의 active_header 만 보면 쪽에 한 번도 쓰이지 않은 정의(예: 홀수 쪽 하나뿐인 구역의
+/// Even 머리말)가 빠진다. dirty 구역과 dirty 가 아닌 구역이 이 함수 하나를 써야 뒤 구역만
+/// 고쳐 다시 조판할 때 앞 구역에서 물려받는 머리말이 처음 조판과 같아진다. 종전엔 dirty 가
+/// 아닌 구역이 쪽 기준으로 carry 를 만들어, 2구역을 한 글자 고치면 짝수 쪽 머리말이 바뀌었다
+/// (exam_social.hwp 2·4쪽 "2 (사회·문화)" → "2").
+fn update_header_footer_carry_from_section(
+    idx: usize,
+    section: &Section,
+    header_odd: &mut Option<crate::renderer::pagination::HeaderFooterRef>,
+    header_even: &mut Option<crate::renderer::pagination::HeaderFooterRef>,
+    footer_odd: &mut Option<crate::renderer::pagination::HeaderFooterRef>,
+    footer_even: &mut Option<crate::renderer::pagination::HeaderFooterRef>,
+) {
+    use crate::model::header_footer::HeaderFooterApply as HFA;
+    use crate::renderer::pagination::HeaderFooterRef;
+    let mut entries: Vec<(usize, HeaderFooterRef, bool, HFA)> = Vec::new();
+    for (pi, para) in section.paragraphs.iter().enumerate() {
+        for (ci, ctrl) in para.controls.iter().enumerate() {
+            match ctrl {
+                Control::Header(h) => {
+                    entries.push((
+                        pi,
+                        HeaderFooterRef {
+                            para_index: pi,
+                            control_index: ci,
+                            source_section_index: idx,
+                            table_path: Vec::new(),
+                        },
+                        true,
+                        h.apply_to,
+                    ));
+                }
+                Control::Footer(f) => {
+                    entries.push((
+                        pi,
+                        HeaderFooterRef {
+                            para_index: pi,
+                            control_index: ci,
+                            source_section_index: idx,
+                            table_path: Vec::new(),
+                        },
+                        false,
+                        f.apply_to,
+                    ));
+                }
+                Control::Table(table) => {
+                    crate::renderer::pagination::collect_nested_header_footer_controls(
+                        table,
+                        pi,
+                        idx,
+                        ci,
+                        &[],
+                        &mut entries,
+                    );
+                }
+                _ => {}
+            }
+        }
+    }
+
+    for (_, reference, is_header, apply_to) in entries {
+        let (odd, even) = if is_header {
+            (&mut *header_odd, &mut *header_even)
+        } else {
+            (&mut *footer_odd, &mut *footer_even)
+        };
+        match apply_to {
+            HFA::Both => {
+                *odd = Some(reference.clone());
+                *even = Some(reference);
+            }
+            HFA::Odd => *odd = Some(reference),
+            HFA::Even => *even = Some(reference),
+        }
+    }
+}
+
 fn update_master_page_carry_from_section(
     section_index: usize,
     section: &Section,
@@ -5104,25 +5183,16 @@ impl DocumentCore {
                         }
                         carry_last_page_number = last.page_number;
                     }
-                    // 머리말/꼬리말 carry 업데이트 (not-dirty 구역)
-                    for page in &pages.pages {
-                        let is_odd = page.page_number % 2 == 1;
-                        if page.active_header.is_some() {
-                            if is_odd {
-                                carry_header_odd = page.active_header.clone();
-                            } else {
-                                carry_header_even = page.active_header.clone();
-                            }
-                        }
-                        if page.active_footer.is_some() {
-                            if is_odd {
-                                carry_footer_odd = page.active_footer.clone();
-                            } else {
-                                carry_footer_even = page.active_footer.clone();
-                            }
-                        }
-                    }
                 }
+                // 머리말/꼬리말 carry 업데이트 (not-dirty 구역) — dirty 구역과 같은 규칙.
+                update_header_footer_carry_from_section(
+                    idx,
+                    section,
+                    &mut carry_header_odd,
+                    &mut carry_header_even,
+                    &mut carry_footer_odd,
+                    &mut carry_footer_even,
+                );
                 update_master_page_carry_from_section(
                     idx,
                     section,
@@ -5397,69 +5467,14 @@ impl DocumentCore {
             // 머리말/꼬리말 carry 업데이트:
             // 페이지 active_header뿐 아니라 구역에 정의된 머리말 컨트롤도 carry에 반영
             // (짝수 페이지가 없어도 Even 머리말이 다음 구역에 상속되어야 함)
-            {
-                use crate::model::header_footer::HeaderFooterApply as HFA;
-                let mut entries: Vec<(usize, HeaderFooterRef, bool, HFA)> = Vec::new();
-                for (pi, para) in section.paragraphs.iter().enumerate() {
-                    for (ci, ctrl) in para.controls.iter().enumerate() {
-                        match ctrl {
-                            Control::Header(h) => {
-                                entries.push((
-                                    pi,
-                                    HeaderFooterRef {
-                                        para_index: pi,
-                                        control_index: ci,
-                                        source_section_index: idx,
-                                        table_path: Vec::new(),
-                                    },
-                                    true,
-                                    h.apply_to,
-                                ));
-                            }
-                            Control::Footer(f) => {
-                                entries.push((
-                                    pi,
-                                    HeaderFooterRef {
-                                        para_index: pi,
-                                        control_index: ci,
-                                        source_section_index: idx,
-                                        table_path: Vec::new(),
-                                    },
-                                    false,
-                                    f.apply_to,
-                                ));
-                            }
-                            Control::Table(table) => {
-                                crate::renderer::pagination::collect_nested_header_footer_controls(
-                                    table,
-                                    pi,
-                                    idx,
-                                    ci,
-                                    &[],
-                                    &mut entries,
-                                );
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-
-                for (_, reference, is_header, apply_to) in entries {
-                    let (odd, even) = if is_header {
-                        (&mut carry_header_odd, &mut carry_header_even)
-                    } else {
-                        (&mut carry_footer_odd, &mut carry_footer_even)
-                    };
-                    match apply_to {
-                        HFA::Both => {
-                            *odd = Some(reference.clone());
-                            *even = Some(reference);
-                        }
-                        HFA::Odd => *odd = Some(reference),
-                        HFA::Even => *even = Some(reference),
-                    }
-                }
-            }
+            update_header_footer_carry_from_section(
+                idx,
+                section,
+                &mut carry_header_odd,
+                &mut carry_header_even,
+                &mut carry_footer_odd,
+                &mut carry_footer_even,
+            );
 
             // 구역 간 page_number_pos 상속: 이 구역에 PageNumberPos가 없으면 이전 구역 값 사용
             let section_has_own_pnp = result.pages.iter().any(|p| p.page_number_pos.is_some());
