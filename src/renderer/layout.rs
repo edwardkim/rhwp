@@ -4924,8 +4924,6 @@ impl LayoutEngine {
         _composed: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
         area: &LayoutRect,
-        body_area: &LayoutRect,
-        paper_area: &LayoutRect,
         table_area: Option<&LayoutRect>,
         page_index: u32,
         page_number: u32,
@@ -5221,6 +5219,8 @@ impl LayoutEngine {
                     );
                 }
                 // Shape 컨트롤 렌더링 (머리말/꼬리말 내 글상자 등)
+                // 그림(#6608)과 같이 `Paper`/`Page` 기준도 머리말/꼬리말 틀의 원점에서
+                // 잰다 — 용지 원점에 놓으면 음수 오프셋 도형이 용지 밖으로 잘린다.
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if let Control::Shape(_) = ctrl {
                         self.layout_shape(
@@ -5232,8 +5232,8 @@ impl LayoutEngine {
                             if has_tac_shape { hf_shape_section } else { 0 },
                             styles,
                             area,
-                            body_area,
-                            paper_area,
+                            area,
+                            area,
                             y_offset,
                             Alignment::Left,
                             bin_data_content,
@@ -6423,13 +6423,6 @@ impl LayoutEngine {
                                 composed,
                                 styles,
                                 &layout.header_area,
-                                &layout.body_area,
-                                &LayoutRect {
-                                    x: 0.0,
-                                    y: 0.0,
-                                    width: layout.page_width,
-                                    height: layout.page_height,
-                                },
                                 header_table_area.as_ref(),
                                 page_content.page_index,
                                 page_content.page_number,
@@ -6572,13 +6565,6 @@ impl LayoutEngine {
                                 composed,
                                 styles,
                                 &layout.footer_area,
-                                &layout.body_area,
-                                &LayoutRect {
-                                    x: 0.0,
-                                    y: 0.0,
-                                    width: layout.page_width,
-                                    height: layout.page_height,
-                                },
                                 None,
                                 page_content.page_index,
                                 page_content.page_number,
