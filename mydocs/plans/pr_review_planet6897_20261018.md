@@ -3425,3 +3425,67 @@ paint가 수용 후 합을 앞 prefix로 오인하지 않게 한다. 미지의 p
 후보112 de81860a6의 Native 빌드는 모듈 이동 뒤 table_partial 상대 경로가 한 단계
 부족해 E0433·exit101이었다. 동작 재현 실패로 세지 않으며 로그/메타데이터를 보존했다.
 경로를 고친 후보113에서 같은 구현·독립 진단을 다시 검증한다. 원본·기대값은 바꾸지 않는다.
+
+### 후보113 실행 결과 — 145쪽 개선과 전쪽에서 발견한243쪽 하락
+
+2026-10-19 KST 제품 head `ca01d231f39b3a5bfe3a77ab798bf4274e6db19d`의
+Native 진단 opt1 빌드는3분41초 exit0이다. 공용 target/pr-review·jobs8을 사용했고
+frozen CLI SHA-256은 `f279e6cce6b037a29f93d825d8e467c67b94bfaf9d698facf2411d2f8fda9684`다.
+기존 마커10건·완료 페이지 실제 case source8건과 원본 행 너비 진단이 통과했다.
+이 source 연결 진단을 정식 Cargo 전체 회귀로 보고하지 않는다.
+
+같은 ignored 독립 Print 진단 source
+`d689c8e139e93eba579af20f0527e7f2b1bb7a12971baedd593bc5c828b26d0b`를
+후보111/113에 각각 링크했다. 양쪽 compile0이고 보정 전 run101·보정 후 run0이다.
+145쪽 마지막 일반 칸은19.76px에서37.32px로 늘었으며, 글줄150.540000px와
+칸 하단174.533333px는 독립 Print149.973175/175.105347px와 각각 약0.57px 차이다.
+두 원본 문단의144/145쪽 소속·순서·누락/중복 없음, 걸침 종료 칸과 일반 칸의 같은 상자,
+후속 중학교 제목의146쪽 소속 및415쪽 유지도 확인했다. Native review/overlay를 원본
+해상도로 직접 열었고 이전의 큰 높이·글줄 차이가 개선됐다. 작은 획·괘선 차이는 남는다.
+새1342000 정식 회귀는 전쪽 Native/fresh WASM90% 조건 미달로 추가하지 않았다.
+
+먼저 선택45쪽에서는145쪽만 개선되고 하락은 없었다. 그러나 전572쪽 산출물의 조건9개·
+입력/Print/producer 해시·쪽 ID·전체 쪽수를 후보111과 대조하자 **243쪽 하락**을 발견했다.
+선택 검증의 무하락을 전쪽 결과로 일반화하지 않는다. 다음 값은 내부 후보 비교이며 최신
+upstream/devel의 검증을 대신하지 않는다.
+
+| Native 비교 범위 | 결과 |
+| --- | --- |
+| 80168 전157쪽 | 후보111과 전쪽 동일, 최저21쪽94.73551%,90% 미달0쪽 |
+| 1342000 전415쪽 | 최저27쪽64.95642%,90% 미달24쪽으로 이전과 동일 |
+| 1342000 145쪽 | 91.99881→99.98991%,+7.99110%p |
+| 1342000 243쪽 | 99.99648→98.83308%,−1.16340%p,재검토 |
+| 1342000의 나머지 변화 | 246쪽+0.00005%p,359쪽+0.00001%p,그 외 동일 |
+
+243쪽의 전후 overlay도 직접 열었다. 첫 이어받기 행이42.226667px에서43.493333px로
+늘며 뒤 내용의 원점도 달라졌다. 원본 구역13·문단10·셀121col1/2의 선언7532HU와
+앞 상자56.933333px를 확인했다. 기존 물리 행 계획의 잔여와 새 요구가 달라지는 소비
+경로는 아직 원인 규명이 끝나지 않았으며, 선언 높이 또는 과거 점수를 맞추는 예외를
+추가하지 않았다. 해당 하락과 기존24쪽 미달을 해소하기 전에는 완료·승인하지 않는다.
+후보113 fresh WASM은 아직 빌드/실행하지 않았고 후보111 WASM 결과를 대신 적용하지 않는다.
+
+이번 Native 전쪽 실행의 드라이버는 UTC16:06:42에 SIGTERM을 받았다. signal 기록상
+발신자는 PID4030056·comm=codex다. 비교 자식은 이후 전415쪽 TSV와 complete summary를
+남기고 종료했다. 산출물572쪽의 해시·ID·쪽수·producer를 재확인해 별도 recovery 기록에
+연결했지만 자식 exit code는 회수하지 못했다. **정상 종료 코드를 수집한 실행으로 보고하지
+않으며**, 원래 중단된 드라이버 메타데이터도 덮어쓰지 않았다. 이 사건만으로 과거143의
+발신 원인을 해결했다고 주장하지 않는다. 최종 opt3 전쪽 검증은 여전히 별도로 필요하다.
+
+집중 Cargo 첫 실행도 UTC16:11:17에 같은 발신자의 SIGTERM으로 중단돼 통과로 집계하지
+않았다. 중단 로그/메타데이터를 별도 이름으로 보존한 뒤 foreground PTY에서 재실행했다.
+재실행은 현재 manifest --check 뒤9개 case 모듈·8개 binary의 **38건 PASS·exit0**,
+빌드 포함71.81초·검사4.639초이며 head 불변·tracked clean을 확인했다. 재실행 signal
+기록은 start/exit만 있다. 진단 opt1 집중 검사로서 전체 Rust·최종 lint/Skia/Studio/
+Windows 검증을 대신하지 않는다.
+
+증거는 ignored `output/pr-review/planet6897-20261018/`의
+`candidate113-native-build-results.json`, `candidate113-p144-p145-print-physical-tail-results.json`,
+`candidate113-native-all-pages/{merged-80168,curriculum-1342000}/silhouette.tsv`,
+`candidate113-vs-candidate111-native-*-verified-comparison.json`,
+`candidate113-native-full-recovered-artifacts.json`,
+`candidate113-native-full-signal-events.jsonl`, `candidate113-p243-decline-visual-results.json`,
+`candidate113-p243-demand-trace-results.json`, `candidate113-focused.log`,
+`candidate113-focused-results.json`, `candidate113-focused-retry-signal-events.jsonl`,
+`candidate113-interrupted-at-20261018T161117Z-focused*`다.
+원격 push·PR 생성·merge는 미실행이다. **PR 준비 결과와 본문을 먼저 제시하고 사용자 승인을
+받은 뒤 PR을 생성한다**는 최신 지시를 유지한다.
