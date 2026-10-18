@@ -7993,18 +7993,21 @@ impl LayoutEngine {
                                     .max(0.0),
                                 ..inner_area
                             };
-                            // [#6494] 나란히 무리에서는 음수 세로 오프셋을 버린다 — 위 주석 참조.
+                            // The displaced-flow correction cannot apply to overlay
+                            // pictures: they do not move their host paragraph. Their
+                            // signed offset still selects the declared source origin.
+                            let reset_group_flow_offset = side_by_side_float_group && !overlay_para;
                             let flow_offset =
                                 crate::renderer::float_placement::cell_wrap_vertical_offset_hu(
                                     &pic.common,
                                 );
                             let positioned_common = (flow_offset
                                 != signed_hwpunit(pic.common.vertical_offset)
-                                || (side_by_side_float_group
+                                || (reset_group_flow_offset
                                     && signed_hwpunit(pic.common.vertical_offset) < 0))
                                 .then(|| {
                                     let mut c = pic.common.clone();
-                                    c.vertical_offset = if side_by_side_float_group {
+                                    c.vertical_offset = if reset_group_flow_offset {
                                         0
                                     } else {
                                         flow_offset as u32
@@ -8273,6 +8276,11 @@ impl LayoutEngine {
                             );
                             let pic_y = if let Some(origin) = planned_picture_origin {
                                 inner_area.y + origin
+                            } else if overlay_para {
+                                // Overlay paint may straddle the cell edge (e.g.
+                                // a border's half stroke). The cell clip owns its
+                                // visibility; moving the bitmap changes its paint.
+                                pic_y
                             } else {
                                 let cell_top = content_cell_y.min(inner_area.y);
                                 let cell_bottom = (content_cell_y + cell_h)

@@ -29,9 +29,10 @@ Native SHA-256: `4407cc5b5b016e796e64c2a5c1b452910369f6fa90e5c159255825970892491
 fresh Docker WASM SHA-256:
 `c7a6c40044be28a27f1a2d953798a602c1ba5884f6685fda031a10ec9fab02d1`.
 
-`--include-compound-hold`는 PDF dash 연산자를 사용하는 별도 원본도 만든다.
-이 7개는 복합 경계 그림의 보존 경로가 남아 있어 위 활성 회귀에 포함하지 않았다.
-다른 형식으로 바꾼 원본의 통과를 이 원본의 지원으로 보고하지 않는다.
+첫 절편 당시 `--include-compound-hold`로 PDF dash 연산자 원본 7개를 별도 보존했고,
+위 첫 절편 회귀에 포함하지 않았다. 두 번째 절편에서 같은 원본의 복합 경계 보존을
+구현·검증했다. 현재 생성기 옵션은 `--include-compound`이며 과거 이름도 alias로 지원한다.
+[복합 경계 원본과 검증](compound-sources.md)을 따른다. 서로 다른 원본의 증거를 대체하지 않는다.
 경계 침범/교차 2개는 내용 보존을 검사하는 반례이며 작성 객체 복원 goldens가 아니다.
 기준 PDF는 이 독립 원본이며 한컴 열기·인쇄와 최신 devel 비교는 P5에 남는다.
 같은 backend의 이전 P3 PNG 132쪽은 각각 byte-identical이었다. 새 중첩 원본의

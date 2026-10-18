@@ -239,6 +239,38 @@ fn fragment(original: &Control, source: Frame, piece: Frame) -> Result<Control, 
             }
             _ => return Err("unsupported source paint shape".into()),
         },
+        Control::Picture(p) => {
+            // A path bitmap has a physical frame and a selected source region.
+            // Subdivide both by the same map. Reusing the entire bitmap in each
+            // smaller frame would shrink the dash pattern and lose its phase.
+            let old = match original {
+                Control::Picture(p) => p,
+                _ => unreachable!(),
+            };
+            let crop = old.crop;
+            let select = |at: i64, start: i64, end: i64, lo: i32, hi: i32| {
+                let width = end - start;
+                if width <= 0 || hi <= lo || at < start || at > end {
+                    return Err("invalid source paint image selection".to_string());
+                }
+                let offset = ((at - start) * (i64::from(hi) - i64::from(lo)) + width / 2) / width;
+                i32::try_from(i64::from(lo) + offset)
+                    .map_err(|_| "source paint image selection overflow".into())
+            };
+            p.crop = crate::model::image::CropInfo {
+                left: select(piece.x, source.x, source.right, crop.left, crop.right)?,
+                right: select(piece.right, source.x, source.right, crop.left, crop.right)?,
+                top: select(piece.y, source.y, source.bottom, crop.top, crop.bottom)?,
+                bottom: select(piece.bottom, source.y, source.bottom, crop.top, crop.bottom)?,
+            };
+            if p.crop.right <= p.crop.left || p.crop.bottom <= p.crop.top {
+                return Err("cell paint image fragment is below source precision".into());
+            }
+            p.shape_attr = component(w, h);
+            // Picture's eight coordinates are packed point pairs (not X/Y arrays).
+            p.border_x = [0, 0, w as i32, 0];
+            p.border_y = [w as i32, h as i32, 0, h as i32];
+        }
         _ => return Err("unsupported source paint control".into()),
     }
     Ok(c)
@@ -314,6 +346,13 @@ pub(super) fn partition(
         removed: BTreeSet::new(),
         retained: Vec::new(),
     };
+    // A path bitmap is still source paint, not a separately placed content
+    // image. Intersections between two such paths keep their original z-order.
+    let path_controls = rule_controls
+        .iter()
+        .flatten()
+        .copied()
+        .collect::<BTreeSet<_>>();
     let (mut work, mut count) = (0, 0);
     for (path, control) in rule_controls.iter().enumerate() {
         let Some(control) = *control else { continue };
@@ -344,12 +383,22 @@ pub(super) fn partition(
                 ShapeObject::Line(l) if l.start.x == l.end.x => Some(false),
                 _ => return Err("unsupported cell paint shape requires further lowering".into()),
             },
-            Control::Picture(_) => {
-                return Err("compound boundary image needs native cell paint preservation".into())
-            }
+            // These controls come exclusively from positional path lowering,
+            // never the separate source-image list. Their crop keeps native
+            // path winding, alpha and clip; the physical partition stays shared.
+            Control::Picture(_) => None,
             _ => return Err("unsupported cell paint requires further lowering".into()),
         };
-        let orientation = line.or_else(|| orientations.get(&path).copied().flatten());
+        // A bitmap's frame includes the stroke's physical width (and transparent
+        // cap/join padding). Its two sides must belong to their physical cells.
+        // Giving the entire band to one side lets that cell's clip erase the
+        // other half. Outside-root pieces retain their original page owner.
+        let image = matches!(original, Control::Picture(_));
+        let orientation = if image {
+            None
+        } else {
+            line.or_else(|| orientations.get(&path).copied().flatten())
+        };
         let mut remaining = vec![source];
         let mut owned = 0;
         for (ti, cells) in frames.iter().enumerate() {
@@ -399,7 +448,7 @@ pub(super) fn partition(
                         clip.right = source.right
                     }
                 }
-                if required[ti].contains(&control) {
+                if !image && required[ti].contains(&control) {
                     if cell.x == region.x {
                         clip.x = clip.x.min(source.x)
                     }
@@ -428,8 +477,11 @@ pub(super) fn partition(
                     // have independent geometric separator evidence; compound border
                     // pictures may have a large transparent frame.
                     if on_axis.is_none() && !required[ti].contains(&control) {
-                        for c in controls {
+                        for (source_control, c) in controls.iter().enumerate() {
                             tick(&mut work)?;
+                            if path_controls.contains(&source_control) {
+                                continue;
+                            }
                             let text_or_image = matches!(c, Control::Picture(_))
                                 || matches!(c,Control::Shape(s)if s.drawing().is_some_and(|d|d.text_box.is_some()));
                             if text_or_image

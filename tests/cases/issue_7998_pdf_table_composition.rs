@@ -504,3 +504,237 @@ fn crossing_and_interleaved_picture_owners_remain_unconsumed() {
         }
     }
 }
+
+// Source pixel coverage includes cell-owned and retained page fragments. It is
+// independent of the partition helper: PNG IHDR supplies the original extent.
+fn verify_compound_source_pixels(core: &DocumentCore) {
+    use rhwp::model::image::Picture;
+    use std::collections::BTreeMap;
+    fn visit<'a>(paras: &'a [Paragraph], out: &mut BTreeMap<u16, Vec<&'a Picture>>) {
+        for p in paras {
+            for c in &p.controls {
+                match c {
+                    Control::Picture(pic) => {
+                        out.entry(pic.image_attr.bin_data_id).or_default().push(pic)
+                    }
+                    Control::Table(t) => {
+                        for cell in &t.cells {
+                            visit(&cell.paragraphs, out)
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    let mut pics = BTreeMap::new();
+    visit(&core.document().sections[0].paragraphs, &mut pics);
+    for bin in &core.document().bin_data_content {
+        let bytes = bin.data.load();
+        assert_eq!(&bytes[..8], b"\x89PNG\r\n\x1a\n");
+        let width = i64::from(u32::from_be_bytes(bytes[16..20].try_into().unwrap())) * 75;
+        let height = i64::from(u32::from_be_bytes(bytes[20..24].try_into().unwrap())) * 75;
+        let values = pics
+            .get(&bin.id)
+            .expect("original image bytes must have an owner");
+        let mut area = 0i64;
+        for (i, p) in values.iter().enumerate() {
+            let c = p.crop;
+            assert!(
+                c.left >= 0
+                    && c.top >= 0
+                    && c.right > c.left
+                    && c.bottom > c.top
+                    && i64::from(c.right) <= width
+                    && i64::from(c.bottom) <= height
+            );
+            area += i64::from(c.right - c.left) * i64::from(c.bottom - c.top);
+            // Source pixels are not resampled/cropped destructively in bin data.
+            assert_eq!(p.img_dim, (width as u32, height as u32));
+            for q in &values[..i] {
+                let d = q.crop;
+                assert!(
+                    c.right <= d.left
+                        || d.right <= c.left
+                        || c.bottom <= d.top
+                        || d.bottom <= c.top,
+                    "source pixel regions have exactly one owner"
+                );
+            }
+        }
+        assert_eq!(area,width*height,"all source pixels remain in exactly one selected region, including retained page pieces");
+    }
+}
+fn verify_compound_leaf_owners(core: &DocumentCore, key: &str) {
+    fn check(t: &Table, depth: usize, out: &mut Vec<(usize, Vec<String>)>) {
+        let nested = t
+            .cells
+            .iter()
+            .flat_map(|c| &c.paragraphs)
+            .flat_map(|p| &p.controls)
+            .any(|c| matches!(c, Control::Table(_)));
+        if !nested {
+            out.push((
+                depth,
+                t.cells
+                    .iter()
+                    .map(|c| {
+                        c.paragraphs
+                            .iter()
+                            .map(|p| p.text.as_str())
+                            .collect::<String>()
+                    })
+                    .collect(),
+            ));
+        }
+        for c in &t.cells {
+            for p in &c.paragraphs {
+                for control in &p.controls {
+                    if let Control::Table(child) = control {
+                        check(child, depth + 1, out);
+                    }
+                }
+            }
+        }
+    }
+    let root = core.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|c| {
+            if let Control::Table(t) = c {
+                Some(t.as_ref())
+            } else {
+                None
+            }
+        })
+        .unwrap();
+    let mut leaves = Vec::new();
+    check(root, 0, &mut leaves);
+    let depth = if key.ends_with("deep") { 2 } else { 1 };
+    assert_eq!(leaves[0].0, depth);
+    let wanted = if key.ends_with("image") {
+        ["", "B", "C", "D"]
+    } else {
+        ["A", "B", "C", "D"]
+    };
+    assert_eq!(leaves[0].1, wanted);
+    if key.ends_with("siblings") {
+        assert_eq!(leaves.len(), 2);
+        assert_eq!(leaves[1].1, ["E", "F", "G", "H"])
+    } else {
+        assert_eq!(leaves.len(), 1)
+    }
+}
+
+fn verify_compound(core: &DocumentCore, tables: usize, expected: &[char]) {
+    assert_eq!(core.page_count(), 1);
+    assert_eq!(
+        table_count(&core.document().sections[0].paragraphs[0].controls),
+        tables,
+        "actual Table ownership"
+    );
+    let mut chars = Vec::new();
+    model_text(&core.document().sections[0].paragraphs, &mut chars);
+    chars.sort_unstable();
+    assert_eq!(chars, expected);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let (mut painted, mut area) = (Vec::new(), 0.);
+    paint(&tree.root, &mut painted, &mut area);
+    painted.sort_unstable();
+    assert_eq!(painted, expected, "source glyphs reach actual paint once");
+    // A cropped boundary bitmap owns only its physical cell piece; unlike its
+    // unsplit padded source, it must fit the final clipping cell. This also checks
+    // that later anchor reset/clamp did not move the consumed piece.
+    geometry(&tree.root, None);
+    verify_compound_source_pixels(core);
+}
+#[test]
+fn compound_paths_preserve_cells_source_pixels_and_both_save_formats() {
+    for key in [
+        "nested-dash-child",
+        "nested-dash-parent",
+        "nested-dash-both",
+        "nested-dash-first",
+        "nested-dash-image",
+        "nested-dash-siblings",
+        "nested-dash-deep",
+        "compound-phase-alpha",
+        "compound-clipped",
+        "compound-backdrop",
+    ] {
+        let mut core = DocumentCore::from_pdf_bytes(
+            &std::fs::read(base().join(format!("{key}.pdf"))).unwrap(),
+            &PdfImportOptions::default(),
+        )
+        .unwrap();
+        let count = if key.ends_with("siblings") || key.ends_with("deep") {
+            3
+        } else {
+            2
+        };
+        let want = expected(key);
+        verify_compound(&core, count, &want);
+        verify_compound_leaf_owners(&core, key);
+        for data in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let saved = DocumentCore::from_bytes(&data).unwrap();
+            verify_compound(&saved, count, &want);
+            verify_compound_leaf_owners(&saved, key);
+        }
+        let root = core.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Table(_)))
+            .unwrap();
+        let Control::Table(table) = &core.document().sections[0].paragraphs[0].controls[root]
+        else {
+            panic!()
+        };
+        let mut path = Vec::new();
+        assert!(leaf_path(
+            table,
+            root,
+            if key.ends_with("image") { "B" } else { "A" },
+            &mut path
+        ));
+        core.insert_text_in_cell_by_path(0, 0, &path, 0, "X")
+            .unwrap();
+        let mut changed = want.clone();
+        changed.push('X');
+        changed.sort_unstable();
+        verify_compound(&core, count, &changed);
+        for data in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            verify_compound(&DocumentCore::from_bytes(&data).unwrap(), count, &changed);
+        }
+        core.delete_text_in_cell_by_path(0, 0, &path, 0, 1).unwrap();
+        verify_compound(&core, count, &want);
+        for data in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            verify_compound(&DocumentCore::from_bytes(&data).unwrap(), count, &want);
+        }
+    }
+}
+#[test]
+fn compound_foreground_keeps_original_content_owners() {
+    let core = DocumentCore::from_pdf_bytes(
+        &std::fs::read(base().join("compound-foreground.pdf")).unwrap(),
+        &PdfImportOptions::default(),
+    )
+    .unwrap();
+    let want = expected("compound-foreground");
+    let saved = [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ];
+    for c in std::iter::once(core).chain(saved.iter().map(|b| DocumentCore::from_bytes(b).unwrap()))
+    {
+        verify_compound(&c, 0, &want);
+    }
+}

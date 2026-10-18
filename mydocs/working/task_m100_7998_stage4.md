@@ -153,3 +153,141 @@ PDF 14개가 커밋 대상 원본과 바이트 단위로 같았다. `cargo fmt -
 `git diff --check`, suite manifest `--check`는 통과했다. 검토 묶음의 로컬 참조 215개에
 누락이 없으며 메인 Studio 7700의 JS/WASM도 P2부터 보존한 해시와 동일하다.
 `final-local-checks.json`과 `maintainer-decision.json`에 source·판정·남은 범위를 고정했다.
+
+## P4 두 번째 절편 착수 — compound 경계 그림
+
+2026-10-18 다음 절편 진행 승인. 시작 checkpoint는 `f4842a060`이다.
+앞 절편에서 별도로 보존한 PDF dash 원본 7개를 같은 바이트로 사용한다.
+`path_paint::lower`는 점선의 phase·alpha·clip을 물체별 PNG에 보존하고
+`lower_picture`가 원본 이미지 범위/선택 영역과 page frame을 만든다. 그러나
+`table_paint::partition`은 이 Picture 종류를 무조건 거절하여 실제 Table을 발행하지 못한다.
+
+이번 계약은 source frame의 물리 분할과 동일한 비율로 원본 이미지 선택 영역을 나누고,
+같은 경계는 같은 정수 crop 좌표를 사용해 scale·phase·alpha를 보존하는 것이다.
+셀마다 전체 이미지를 축소하거나 투명 여백을 무시해 위치를 맞추지 않는다. 실제 소비는
+fragment의 Picture frame/crop → cell anchor → 공통 picture crop → Native/WASM 및
+양 저장 형식 재열기까지 추적한다. 원본 bin data를 공유하고 이미 소비한 영역을 다시
+부모에게 주지 않는다. 경계 출처·paint 순서·기존 작업/fragment 예산과 fallback은 유지한다.
+
+독립 원본/수정 전 보류·구조/시각·실행 증거는 ignored
+`output/pr-review/issue7998/p4-compound/`(외부 안정 경로의 `semantic-stage3/p4-compound/`)에
+보존한다. compound 장식·내용 그림·전경과 겹치는 paint를 단순 separator로 오인하지 않는
+반례를 대조한다. Native/fresh Docker WASM 직접 판독과 실제 셀 편집·양 저장 검증 뒤에만
+fixture/정식 회귀를 등록한다. 테두리 스타일·행열 편집·B14는 이 절편의 완료 주장에 포함하지 않는다.
+
+### 직접 출력에서 추가로 검출한 소비 경계
+
+초기 crop 보존 검사만으로는 실제 배치·가시성을 입증하지 못했다. Native 직접 출력에서
+① 일반 셀 Picture의 ‘같은 문단에 여러 float’ 보정이 overlay의 음수 오프셋까지 지우고
+셀 안으로 clamp하여 원점을 이동시키는 문제, ② 경계 bitmap의 실제 두께를 한 셀에 모두
+주면 그 셀의 clip이 다른 쪽 절반을 지우는 문제를 검출했다. 첫 출력은 90% 미달이었고,
+원점 보정 뒤에도 선 두께 차이가 남아 정식 fixture를 등록하지 않았다.
+
+`table_layout.rs`의 group-flow offset 보정은 흐름을 밀지 않는 overlay에 적용하지 않고,
+overlay의 실제 원점도 봉쇄로 이동시키지 않는다. 기존
+`cell_wrap_vertical_offset_hu`가 보존하는 signed overlay offset과 일치시킨다.
+부분 표의 Picture 경로는 이 group reset/후행 clamp를 갖지 않으므로 같은 신규 보정은
+비해당이다. 이번 PDF 원본은 각 1쪽의 완전한 표 경로이며 continuation 수정은 아니다.
+TextBox 내장 표의 별도 Picture 경로 전체를 검증했다고 주장하지 않는다.
+
+bitmap은 면적 객체다. source 축으로 선의 전체 두께를 한쪽에 배정하지 않고 실제 셀
+영역으로 분할한다. 가장 안쪽 셀 → 부모 셀 → 쪽 잔여 영역이 각각 소비한 부분만 남긴다.
+원본 이미지 선택 영역의 빈틈·중복 없음뿐 아니라 실제 Image node의 셀 내부 포함과
+source crop에 대한 최종 배치도 검사해 위 두 결함이 검사 밖으로 빠지지 않게 한다.
+초기 실패 캡처는 `pre-anchor-diagnostic/`, `pre-physical-diagnostic/`에 보존한다.
+중단한 Docker 빌드(exit 137)와 그 산출물은 최종 WASM 증거로 쓰지 않는다.
+
+물리 분할에서 다른 source path의 bitmap과 교차할 때 기존 guard가 이를 별도로 삽입한
+내용 그림으로 오인해 보류하는 경계도 확인했다. `ruleSourceControls`의 출처로 path paint와
+내용 Picture를 구분한다. path끼리는 원래 z-order와 물리 분할을 유지하며, 글자나 별도로
+삽입한 그림을 나중에 덮는 path는 계속 보류한다. `compound-foreground`로 이 경계를 대조한다.
+
+### Native 전쪽 선행 결과
+
+최종 source의 지문은 `p4-compound/source-runtime.json`이며 2,444개 파일이다.
+SHA-256은 `46993bd7c858b203bf24262875fec86c2e7d7517da1139106be6a52663510aeb`,
+Native producer는 `ff29632219b8433ef294bcc9f0a2791cd036c19c2083205f08ebeadfe4e6f8a9`다.
+수정 전 producer는 앞 절편의 `4407cc5b…`로 고정했다. root의 오래된 `.rlib`는 빌드 신원
+증거로 사용하지 않았다. 수정 전에는 이 frozen CLI가 실제 발행한 HWPX를 재열어 Table
+소유를 검사했고, 새 의미 소유 검사 1건은 0→2 기대 차이로 FAIL, 전경 보존 1건은 PASS다.
+현재 Native 계약은 10개 합성 family의 실제 소속·crop/원본 좌표·글자·편집·양 저장 형식과
+전경 반례를 통과했다(`contract-before.log`, `contract-after.log`).
+
+58 PDF/69쪽의 PDF·HWP·HWPX, **174건/207쪽** 전쪽 Native 최저는 **97.45634%**,
+오류·미달·누락·쪽수 차이는 0이다. 무편집 저장본 PNG는 직접 PDF 입력과 모두 같다.
+앞 절편의 195쪽 중 기존 지원 범위 174쪽은 PNG가 같고, 그때 보류됐던 원본 7개×3형식의
+21쪽은 실제 Table 발행 뒤 바뀌었다. 자식 셀 삽입·삭제·양 저장 형식 복원 20쪽도
+90% 이상이다. 원본/저장과 편집 복원 결과를 서로의 대용으로 쓰지 않는다.
+
+두 미세 하락은 숨기지 않는다. `nested-dash-parent`는 이전 positional 출력보다
+Native raw **0.01656%p**, 새 `compound-phase-alpha`는 **0.48740%p** 낮다.
+최저값은 각각 99.95631%, 99.48824%다. 후자는 반투명 bitmap 선택 영역의 셀 경계에서
+래스터 농도가 달라지는 경우다. 편집 복원본은 99.48796%이며 원문·소속과 source 영역의
+누락은 검출하지 않았다. 수치·확대 이미지·직접 판정을 구분하고 최종 PR gate를 해제하지 않는다.
+
+실제 한컴 대조군 `cell_behind_text_para_anchor.hwpx` 2쪽과
+`156489219_satellite_pm_release.hwp` 8쪽은 이전 Native PNG와 모두 같다.
+전자는 99.70908% 이상이고 후자에는 base부터 5쪽 84.19045%가 있다. 이 원본을 새 정상
+fixture로 등록하거나 그 점수를 이번 개선의 통과 근거로 사용하지 않는다. 기존 미달 범위는
+P5의 최종 검토 대상으로 남긴다. 현재 변경의 픽셀 회귀는 검출하지 않았다.
+
+정식 기존 표 17건·본문 4건, 관련 한컴 overlay·flow 대조 2건은 통과했다. fresh Docker
+WASM·실제 Studio와 직접 시각 판정은 이 Native 결과와 별개로 진행한다. source가 같으면
+완료한 빌드·캡처를 다시 실행하지 않으며 신규 fixture/회귀는 WASM 선행 조건 뒤 등록한다.
+
+### 두 번째 절편의 최종 검증과 직접 수용
+
+2026-10-18 메인테이너가 실제 Studio의 점선 중첩/내용 그림과 반투명 경계를 확인하고
+**“시각·중첩 구조 통과”**로 판정했다. 요청 당시 Native raw 99.48824%와 이전 positional
+출력 대비 0.48740%p 하락을 공개했다. 후행 WASM 결과도 같은 위치·두께를 보존하며 농도
+차이를 기록했다. WASM의 해당 쪽은 99.47968%, 하락은 0.49549%p다. 부모 점선의 WASM
+하락은 0.01438%p다. 높은 점수로 이 차이를 지우거나 최종 PR 게이트를 면제하지 않는다.
+
+| 검증 | 최종 관측과 기존 증거 |
+|---|---|
+| 원본·무편집 저장 전쪽 | Native/fresh WASM 각각 **174건/207쪽**, 최저 **97.45634% / 97.41574%**. 오류·90% 미달·누락·쪽수 차이 0, 모든 무편집 저장본 PNG는 같은 backend의 직접 PDF 입력과 동일. `comparison.json`, `native/results.json`, `wasm/results.json`. |
+| 편집·양 저장 형식 | 10개 family의 자식 셀 X 삽입·삭제 후 HWP/HWPX 복원 각각 **20쪽**, 최저 Native **99.48796%**, 실제 Studio WASM **99.47924%**. 합계 backend별 **227쪽**. `native-edited-results.json`, `wasm-edited-results.json`. |
+| 실제 Studio | 원래 문자/셀 계층, 현재 경로의 삽입·삭제·저장·재열기 10개 모두 통과, page error 0. 실제 loader 응답 해시는 최종 package와 동일. `studio-result.json`, `studio-cdp.json`, `studio-cdp-alpha.json`. |
+| 이전 지원 범위 | 앞 절편의 195쪽 중 **174쪽 PNG 동일**, 보류됐던 dash 7개×3형식의 21쪽만 의미 표 생성 후 변경. 이전 checkpoint와의 비교이며 최신 devel 검증의 대체가 아니다. |
+| 한컴 원본 대조군 | 앞서 기록한 overlay 2쪽·flow 8쪽은 WASM도 **10쪽 모두 이전 PNG 동일**. overlay 최저 98.45233%, flow의 기존 5쪽 미달 84.52418%는 보존. `hwp-control-comparison.json`. 이 기존 미달은 P5 판정 대상으로 유지한다. |
+| 정식 집중 회귀 | 선행 표/본문/한컴 대조 23건에 합성 6건을 더해 **29건 PASS**. 새 2건은 source PNG 전체 영역·비중복 crop·실제 셀 포함·글자 소속·양 저장 형식을 검사한다. `focused-compound-qualified.log`. 기존 자동 수집 suite를 사용하며 workflow 개별 호출은 추가하지 않았다. |
+
+새 [독립 원본 11개](../../pdf/issue7998/compound-sources.md)는 전쪽 Native/fresh WASM과
+확대 판독·메인테이너 판정 후 정식 fixture로 등록했다. PNG 영역의 합만 확인하지 않고 실제
+최종 Image의 셀 내부 포함을 함께 검사한다. 수정 전 실제 frozen CLI의 HWPX에서 새 의미
+소유 assertion이 실패한 증거와 초기 배치 실패는 위 선행 기록에 연결했다. 처음 정식 suite
+실행은 생성 harness의 과거 배정 때문에 0건으로 끝났고 통과로 세지 않았다. canonical
+`--prepare` 후 실제 6건 실행을 확인했다. harness 생성기는 ignored 산출물이며 기대값이나
+기존 검사를 삭제·완화하지 않았다.
+
+fresh Docker WASM은 빌드 exit 0 확인 뒤 복사한 **19,197,060바이트** package다.
+SHA-256: `3f8ba4e23d4a984def562745fa716a69511de1dc58d2fe9cd91078304d9797ed`.
+`wasm-build-completion.json`, `docker-wasm.log`에 완료와 producer를 기록했다.
+
+```bash
+docker compose -p rhwp --env-file .env.docker run --rm --no-deps \
+  -e CARGO_BUILD_JOBS=6 -e CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 wasm
+python3 output/pr-review/issue7998/p4-compound/validate.py native
+python3 output/pr-review/issue7998/p4-compound/validate.py wasm
+node output/pr-review/issue7998/p4-compound/verify_studio.mjs
+python3 output/pr-review/issue7998/p4-compound/validate_edits.py native
+python3 output/pr-review/issue7998/p4-compound/validate_edits.py wasm
+node scripts/rust-test-suite-manifest.mjs --prepare
+CARGO_BUILD_JOBS=8 node scripts/run-rust-test.mjs issue_7998_pdf_table_composition -- \
+  --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --features native-skia
+```
+
+최종 검토 묶음은 `/mnt/e/tmp/issue7998-semantic-table-review/p4-compound/index.html`
+(`E:\tmp\issue7998-semantic-table-review\p4-compound\index.html`)이다. 원본·이전/현재 출력·
+실제 저장 IR·소유 overlay·편집 복원본과 TSV를 분리해 제공한다. 확대 판독에서 자식 표의
+테두리 양쪽 누락·원점 이동·그림/문자 누락은 검출하지 않았고 반투명/가는 경계의 농도
+차이는 그대로 남겼다. source manifest의 런타임 2,444개는 빌드·캡처 뒤 동일하며 기존/신규
+독립 생성 원본 25개도 저장소 원본과 byte-identical이다. 검토 묶음의 로컬 참조 206개에
+누락이 없다. `cargo fmt --all -- --check`, `git diff --check`, suite manifest `--check`를
+통과했고 메인 Studio 7700의 JS/WASM 해시도 보존됐다. 최종 정합성 결과는
+`final-local-checks.json`에 보존한다.
+
+이번 절편을 로컬 커밋으로 보존한다. 다음은 B14의 긴 inline 그림 host와 테두리 스타일·
+행열 편집, 독립 근거에 따른 병합/지역 격자의 남은 범위다. P5의 최신 devel 병합·공통
+대조군·전체 회귀/lint·Worker/package/자원 정책·최종 한컴 열기/인쇄와 PR 판정은 남아
+있다. 이번 수용을 P4 전체 완료나 원격 push·PR 등록·이슈 종료 승인으로 해석하지 않는다.

@@ -2,7 +2,7 @@ from pathlib import Path
 import hashlib,json,re,argparse
 parser=argparse.ArgumentParser(description='Independent PDF table composition sources')
 parser.add_argument('--output',type=Path,required=True)
-parser.add_argument('--include-compound-hold',action='store_true')
+parser.add_argument('--include-compound','--include-compound-hold',dest='include_compound',action='store_true')
 args=parser.parse_args();out=args.output;out.mkdir(parents=True,exist_ok=True)
 
 def text(s,x,y):return f'BT /F1 10 Tf 1 0 0 1 {x} {y} Tm ({s}) Tj ET'
@@ -62,7 +62,7 @@ for old_key,(original,annotation) in list(cases.items()):
 base_ops,base_annotation=cases['nested-periodic-child']
 cases['nested-periodic-background']=([base_ops[0],'q 0.9 0.95 1 rg 25 185 170 140 re f Q',*base_ops[1:]],{**base_annotation,'sourceBackgroundAreaPt2':23800})
 for key,(ops,annotation) in cases.items():
- if key.startswith('nested-dash-') and not args.include_compound_hold:continue
+ if key.startswith('nested-dash-') and not args.include_compound:continue
  stream='\n'.join(ops).encode();objects=[b'<< /Type /Catalog /Pages 2 0 R >>',b'<< /Type /Pages /Count 1 /Kids [3 0 R] >>',b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 360] /Resources << /Font << /F1 5 0 R >> /XObject << /Im1 6 0 R >> >> /Contents 4 0 R >>',f'<< /Length {len(stream)} >>\nstream\n'.encode()+stream+b'\nendstream',b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',b'<< /Type /XObject /Subtype /Image /Width 2 /Height 2 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Length 12 >>\nstream\n'+bytes([0,120,220,220,120,0,220,120,0,0,120,220])+b'\nendstream']
  data=bytearray(b'%PDF-1.4\n');offsets=[]
  for i,obj in enumerate(objects,1):offsets.append(len(data));data.extend(f'{i} 0 obj\n'.encode()+obj+b'\nendobj\n')
