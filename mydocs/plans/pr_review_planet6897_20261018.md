@@ -2662,11 +2662,12 @@ host_before=0이다. 앞쪽빈컷은generic continuation여백분기를탔지만
 저장호스트/반복제목행을이미물리행예약근거로사용한다. 컷유무로이바깥프레임소유를
 잃게하면예약과최종원점이모두잘못된다.
 
-후보96은기존column_rowbreak_fragment_opens_outer_top를작은stored_header_frame모듈로
-옮기고실제LayoutCompatibilityProfile을받도록한다. 새단상단의이어받기는기존공통
+후보96은작은stored_header_frame모듈에실제LayoutCompatibilityProfile을받는
+stored_rowbreak_fragment_opens_outer_top를둔다. 이공통조회는기존column_rowbreak
+판정을그대로재사용하며반복제목행프레임계약을함께조회한다. 새단상단의이어받기는기존공통
 stored_repeated_header_rowbreak_outer_frame가확인한유효프레임의위여백을내용컷과
 무관하게한번소유한다. 편집세션/무효저장줄/제목행없는표/중첩·중간단시작은이계약에
-포함하지않고기존판정을유지한다. 첫조각/앵커선택/내용소유는바꾸지않으며예산·paint·
-whole-fit·prepare호출이동일함수를소비한다. 문서ID/목표좌표/고정오차는추가하지않는다.
+포함하지않고기존판정을유지한다. 첫조각/앵커선택/내용소유는바꾸지않으며예산·paint의이어받기호출이동일함수를소비한다. 첫조각만조회하는whole-fit/prepare는
+기존column조회와명시적인HWPX허용범위를유지한다. 문서ID/목표좌표/고정오차는추가하지않는다.
 49–51·기존10/7·104쪽·76076반례·80168대조를새생산으로먼저확인한뒤WASM과전쪽을
 진행한다. 기존진단기준과최신devel기준을구분하고원래11PR와전체필수검증은유지한다.

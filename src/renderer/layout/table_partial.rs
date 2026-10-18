@@ -5655,8 +5655,8 @@ impl LayoutEngine {
             );
         let rowbreak_reopens_outer_top = !repeat_fragment_outer_margin
             && enclosing_cell_ctx.is_none()
-            && crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
-                self.profile.get().hwpx_stored_layout(),
+            && crate::renderer::float_placement::stored_rowbreak_fragment_opens_outer_top(
+                self.profile.get(),
                 (self.profile.get().hwpx_stored_layout()
                     || self.profile.get().hwp5_stored_pagination_layout())
                 .then(|| paragraphs.get(para_index))

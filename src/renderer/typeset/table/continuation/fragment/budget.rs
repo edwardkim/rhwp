@@ -181,8 +181,8 @@ impl TypesetEngine {
                     )));
         let fragment_opens_outer_top = std::ptr::eq(row_geometry_table, table)
             && (source_body_frame_opens_outer_top
-                || crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
-                    st.profile.hwpx_stored_layout(),
+                || crate::renderer::float_placement::stored_rowbreak_fragment_opens_outer_top(
+                    st.profile,
                     (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
                         .then_some(para),
                     table,

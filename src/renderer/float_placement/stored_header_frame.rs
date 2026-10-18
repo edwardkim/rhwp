@@ -127,6 +127,34 @@ pub(crate) fn stored_repeated_header_rowbreak_outer_frame(
         && !table.leading_header_rows().is_empty()
 }
 
+/// 반복 제목행의 저장 바깥 프레임은 일반 셀의 내용 컷 뒤에도 유지된다.
+/// 컷은 남은 내용의 소유이며 새 단 상단의 바깥 여백 소유를 바꾸지 않는다.
+/// 예약과 최종 배치가 같은 프로필과 저장 프레임 판정을 사용한다.
+pub(crate) fn stored_rowbreak_fragment_opens_outer_top(
+    profile: LayoutCompatibilityProfile,
+    host: Option<&Paragraph>,
+    table: &Table,
+    is_continuation: bool,
+    start_row: usize,
+    start_cut: &[usize],
+    starts_at_column_top: bool,
+) -> bool {
+    (is_continuation
+        && starts_at_column_top
+        && table.outer_margin_top > 0
+        && host
+            .is_some_and(|para| stored_repeated_header_rowbreak_outer_frame(profile, para, table)))
+        || super::column_rowbreak_fragment_opens_outer_top(
+            profile.hwpx_stored_layout(),
+            host,
+            table,
+            is_continuation,
+            start_row,
+            start_cut,
+            starts_at_column_top,
+        )
+}
+
 /// An entire repeated title block is indivisible when it fits a fresh page.
 /// A following original inline box still owns its recorded slot on this page.
 #[allow(clippy::too_many_arguments)]
