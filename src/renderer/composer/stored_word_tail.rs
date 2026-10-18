@@ -31,7 +31,7 @@ pub(super) fn regenerated_spaces_change_metrics(
         })
 }
 
-/// 저장된 마지막 줄이 앞줄과 같은 영숫자·한글 어절이나 금칙 꼬리인지 확인한다.
+/// 저장된 마지막 줄이 앞줄의 영숫자·한글 어절 중간에서 시작하는지 확인한다.
 /// 명시적 개행·실제 쪽/단 경계·어울림 상자의 경계는 재조판으로 합치지 않는다.
 /// 완결된 마지막 어절은 그대로 보존하며, 같은 번호 마커·스타일·가용 폭을 쓰는
 /// 프레임이 더 적은 줄로 수용할 때만 낡은 자동 줄 경계를 재검토한다.
@@ -52,20 +52,13 @@ pub(super) fn can_rejoin_stored_word_tail(
         u32::MAX,
         chars.len(),
     );
-    // 어절 뒤의 닫는 괄호 등 줄 머리 금칙 문자는 같은 토큰의 꼬리다.
-    // 새 줄에 내려온 어절 조각을 판정할 때 그 문장부호만 분리해 보되,
-    // 실제 프레임 재조판에는 원문 전체를 그대로 전달한다.
-    let tail_end = chars[start.min(chars.len())..]
-        .iter()
-        .rposition(|&ch| !line_breaking::is_line_start_forbidden(ch))
-        .map_or(start, |last| start + last + 1);
+    // 어절을 자른 경계인지는 앞줄 끝과 마지막 줄 첫 글자로 판단한다.
+    // 같은 줄 뒤의 다른 어절·문장부호는 이 경계의 소속을 바꾸지 않는다.
+    // 실제 줄 수 감소는 그 뒤 내용까지 포함한 동일 프레임 조판으로 확인한다.
     if start == 0
         || start >= chars.len()
         || !chars[start - 1].is_alphanumeric()
-        || !chars[start..tail_end]
-            .iter()
-            .copied()
-            .all(char::is_alphanumeric)
+        || !chars[start].is_alphanumeric()
     {
         return false;
     }
