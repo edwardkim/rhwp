@@ -17,6 +17,7 @@ pub(crate) struct StoredEditorTailFrame {
 pub(crate) fn stored_editor_tail_frame(
     cell: &Cell,
     table: &Table,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
 ) -> Option<StoredEditorTailFrame> {
     if cell.dirty_flag
         || cell.text_direction != 0
@@ -76,6 +77,19 @@ pub(crate) fn stored_editor_tail_frame(
             || para.column_type != ColumnBreakType::None
             || !para.controls.is_empty()
             || para.line_segs.is_empty()
+        {
+            return None;
+        }
+        if index >= empty_from
+            && (!para.title_marks.is_empty()
+                || para
+                    .numbering_marker
+                    .text()
+                    .is_some_and(|text| !text.is_empty())
+                || !styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .is_some_and(|style| style.head_type == crate::model::style::HeadType::None))
         {
             return None;
         }

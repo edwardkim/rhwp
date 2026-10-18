@@ -848,6 +848,26 @@ impl TypesetEngine {
                 }
             }
             if res.fully_consumed {
+                // 빈 줄도 점유 상자를 보존한다. 앞 내용 뒤의 완전한 원본 빈 행은
+                // 가시 글자의 고아 기준 대신 그 원본 상자와 실제 띠로 완결한다.
+                let rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                if mt.allows_row_break_split()
+                    && r > cursor_row
+                    && !rowspan_touched[r]
+                    && row_start_cut.is_empty()
+                    && table::scan::row::ordinary_band_row_shape(table, r, row_total, self.dpi)
+                    && layout_engine
+                        .stored_empty_row_frame_height(table, r, styles)
+                        .is_some_and(|height| height <= rest)
+                    && res.consumed_height + padding <= rest
+                {
+                    consumed += cs_before + rest;
+                    end_row = r + 1;
+                    end_row_height_override = Some(rest);
+                    split_end_cut.clear();
+                    split_end_limit = 0.0;
+                    return false;
+                }
                 // A reflowed row can exhaust its content before its declared physical
                 // minimum fits. Cut the blank tail at the accepted page budget and
                 // carry it with the exhausted content cursor; never force the full

@@ -89,6 +89,16 @@ impl TypesetEngine {
             split_block_physical_height: _,
             mut end_row_height_override,
         } = scan;
+        let completed_empty_row_frame = split_block_start.is_none()
+            && split_end_cut.is_empty()
+            && split_end_limit == 0.0
+            && end_row_height_override.is_some()
+            && accepted_end_row_box.is_some_and(|(row, height)| {
+                row + 1 == end_row
+                    && layout_engine
+                        .stored_empty_row_frame_height(row_geometry_table, row, styles)
+                        .is_some_and(|minimum| height >= minimum)
+            });
         let source_first_row_frame =
             layout_engine.saved_first_row_opening_frame(table, styles, st.layout.body_area.height);
         let source_opening_row_frame = (!is_continuation
@@ -1096,7 +1106,7 @@ impl TypesetEngine {
                     straddle_page_bands: straddle_page_bands.clone(),
                     fragment_row_heights: fragment_rows.clone(),
                     fragment_block_frames: fragment_block_frames.clone(),
-                    end_row_owns_stored_frame: false,
+                    end_row_owns_stored_frame: completed_empty_row_frame,
                 });
                 // 마지막 조각: spacing_after만 포함 (페이지 분할기 engine.rs:1051과 동일)
                 // 호스트 줄 전진과 양의 오프셋은 원래 앵커 조각의 계약이며,
@@ -1540,7 +1550,8 @@ impl TypesetEngine {
             // 배치는 이 상자를 끝 줄간격 접기로 다시 줄이지 않는다.
             end_row_owns_stored_frame: source_frame_band > 0.0
                 || (is_continuation && stored_complete_extent.is_some())
-                || span_band_owns_end_row,
+                || span_band_owns_end_row
+                || completed_empty_row_frame,
         });
         // 저장 호스트 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
         // 호스트·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).
