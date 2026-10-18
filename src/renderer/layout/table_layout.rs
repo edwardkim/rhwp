@@ -17039,6 +17039,27 @@ impl LayoutEngine {
                 }
             }
         }
+        if let Some(frame) = self.stored_editor_tail_frame(cell, table) {
+            let prefix = units
+                .iter()
+                .filter(|unit| unit.para_idx < frame.empty_from)
+                .map(|unit| unit.height)
+                .sum::<f64>();
+            let content_end = hwpunit_to_px(frame.content_end_hu, self.dpi);
+            if prefix <= content_end {
+                let mut available = content_end - prefix;
+                for unit in units
+                    .iter_mut()
+                    .filter(|unit| unit.para_idx >= frame.empty_from)
+                {
+                    // 흐름 전진만 원본 프레임의 남은 몫을 소비한다. 원본 문단 색인과
+                    // 가시 줄 범위·LineSeg·글줄 높이는 삭제하거나 변경하지 않는다.
+                    let advance = unit.height.min(available).max(0.0);
+                    available -= advance;
+                    unit.height = advance;
+                }
+            }
+        }
         units
     }
 
@@ -21121,6 +21142,24 @@ impl LayoutEngine {
         (resumed && confirmed_source_boundary).then_some(cut)
     }
 
+    fn stored_editor_tail_frame(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+    ) -> Option<crate::renderer::float_placement::StoredEditorTailFrame> {
+        let profile = self.profile.get();
+        if profile.session_edited()
+            || !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+        {
+            return None;
+        }
+        crate::renderer::float_placement::stored_editor_tail_frame(cell, table)
+    }
+
     fn stored_plain_closed_cell_height(
         &self,
         cell: &crate::model::table::Cell,
@@ -21136,14 +21175,17 @@ impl LayoutEngine {
         {
             return None;
         }
-        crate::renderer::float_placement::stored_plain_closed_cell_ink_height(cell, table).map(
-            |ink| {
+        crate::renderer::float_placement::stored_plain_closed_cell_ink_height(cell, table)
+            .or_else(|| {
+                self.stored_editor_tail_frame(cell, table)
+                    .map(|frame| frame.content_end_hu)
+            })
+            .map(|ink| {
                 hwpunit_to_px(
                     ink + cell.effective_vertical_padding_hu(&table.padding),
                     self.dpi,
                 )
-            },
-        )
+            })
     }
 
     /// A source-owned first line frame may contain blank space after its ink.

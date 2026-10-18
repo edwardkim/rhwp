@@ -3962,6 +3962,10 @@ impl HeightMeasurer {
                     crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
                         cell, table,
                     )
+                    .or_else(|| {
+                        crate::renderer::float_placement::stored_editor_tail_frame(cell, table)
+                            .map(|frame| frame.content_end_hu)
+                    })
                 })
                 .flatten()
                 .map(|ink| {
@@ -4569,6 +4573,10 @@ impl HeightMeasurer {
                     crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
                         cell, table,
                     )
+                    .or_else(|| {
+                        crate::renderer::float_placement::stored_editor_tail_frame(cell, table)
+                            .map(|frame| frame.content_end_hu)
+                    })
                 })
                 .flatten()
                 .map(|ink| {

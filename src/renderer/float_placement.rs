@@ -61,6 +61,9 @@ use super::layout::picture_flow_frame_size_hu;
 use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
 
+mod stored_editor_tail_frame;
+pub(crate) use stored_editor_tail_frame::{stored_editor_tail_frame, StoredEditorTailFrame};
+
 mod stored_square_top_band;
 pub(crate) use stored_square_top_band::{
     stored_empty_line_has_closed_source_box, stored_square_top_band, table_reserved_height_hu,
