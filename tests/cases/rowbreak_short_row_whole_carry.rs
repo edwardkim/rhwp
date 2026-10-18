@@ -294,6 +294,39 @@ fn crossing_span_row_closes_at_the_fragment_bottom_line() {
     );
 }
 
+/// 걸침 칸 안 쪽 끝 행의 이 쪽 상자 = max(컷까지 내용, 행 선언, 걸침 칸마다 «선언 − 이 칸의 앞 행 상자»),
+/// 비끝 조각 닫는 선을 넘지 않는다. 한/글 2020 PDF(1613000 구역 1, 가로 7열 표 `pi=2`·`pi=5`):
+/// - 139쪽 행 49(1줄 컷): 걸침 칸 «7. ACAS»(r48 rs=4, 5128HU) − 행 48(2줄 2882HU) = 29.95px (PDF 29.91).
+/// - 144쪽 행 139(통째, 2줄): 걸침 몫이 행 높이 이하라 띠 없이 2882HU = 38.43px (PDF 38.40).
+/// - 154쪽 행 51(1줄 컷): 걸침 몫이 커서 닫는 선 (59528 − 4252 − 바깥 아래 283 − 100) HU = 731.91px 까지
+///   (PDF 731.79).
+///
+/// 수정 전 rhwp 는 144쪽 행 139 를 쪽 끝까지(53.78px), 154쪽 행 51 을 30.0px 로 그렸다.
+#[test]
+fn crossing_span_end_row_takes_the_larger_span_share_up_to_the_closing_line() {
+    let core = core(SAMPLE_1613000);
+    let px = |hu: f64| hu / 75.0;
+    let row_box = |page: u32, row: u16| {
+        let (top, bottom) = cell_box(&core, page, row, 3);
+        bottom - top
+    };
+    let cases = [(138, 49, px(5128.0 - 2882.0)), (143, 139, px(2882.0))];
+    for (page, row, expected) in cases {
+        let got = row_box(page, row);
+        assert!(
+            (got - expected).abs() <= 0.5,
+            "{}쪽 행 {row} 끝 상자는 {expected:.2}px 여야 한다: {got:.2}",
+            page + 1
+        );
+    }
+    let line = px(59528.0 - 4252.0 - 283.0 - 100.0);
+    let (_, bottom) = cell_box(&core, 153, 51, 3);
+    assert!(
+        (bottom - line).abs() <= 0.5,
+        "154쪽 행 51 은 닫는 선 {line:.2}px 에서 끝나야 한다: {bottom:.2}"
+    );
+}
+
 /// 반례: 80168 표(`pi=1056`) 행 23(머리 행, 내용 20.67px)은 남은 22.76px 에 들지만 바깥 아래 여백
 /// (141HU)까지 뺀 닫는 선 안에는 들지 않는다. 한/글 2024 PDF 는 이 행을 123쪽 첫머리로 넘기고 122쪽
 /// 행 22 를 쪽 끝까지 늘린다.

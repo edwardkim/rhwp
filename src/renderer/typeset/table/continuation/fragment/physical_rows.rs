@@ -16,6 +16,40 @@ pub(super) struct StoredFragmentEnd {
     pub(super) restart_frame_closes_body: bool,
 }
 
+fn declared_row_height(table: &crate::model::table::Table, row: usize, dpi: f64) -> f64 {
+    table
+        .cells
+        .iter()
+        .filter(|cell| usize::from(cell.row) == row && cell.row_span <= 1)
+        .map(|cell| hwpunit_to_px(cell.height as i32, dpi))
+        .fold(0.0f64, f64::max)
+}
+
+/// 행의 칸들이 글줄 유닛 밖의 개체(표·도형·그림·수식·양식)를 품지 않는가. 컷까지의 내용 높이를 글줄로
+/// 잴 수 있는 행에만 걸침 몫 규칙을 쓴다.
+pub(super) fn row_cells_hold_only_text_lines(
+    table: &crate::model::table::Table,
+    row: usize,
+) -> bool {
+    use crate::model::control::Control;
+    table
+        .cells
+        .iter()
+        .filter(|cell| usize::from(cell.row) == row)
+        .flat_map(|cell| cell.paragraphs.iter())
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .all(|control| {
+            !matches!(
+                control,
+                Control::Table(_)
+                    | Control::Shape(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Form(_)
+            )
+        })
+}
+
 impl TypesetEngine {
     pub(super) fn stored_header_fragment_placement(
         &self,
@@ -103,6 +137,86 @@ impl TypesetEngine {
         {
             return None;
         }
+        if !row_cells_hold_only_text_lines(table, row) {
+            return self.legacy_crossing_span_page_end_band(
+                cursor,
+                input,
+                cut,
+                current,
+                band,
+                fragment_rows,
+            );
+        }
+        let cs = input.prepared.cell_spacing;
+        // 한/글은 쪽 끝에서 자른 행의 이 쪽 상자를 max(컷까지 내용, 행 선언 높이, 걸침 칸마다 «선언 높이 −
+        // 이 칸의 앞 행 상자»)로 닫고, 비끝 조각 닫는 선(`band` 상한)을 넘지 않는다. 앞 행 상자를 알 수 없는
+        // 칸(시작 행이 이어받은 컷)은 판정에서 뺀다. 1613000 구역 1 끝 행 실측(한/글 2020): 139쪽 29.91
+        // (걸침 칸 «7. ACAS» 68.37 − 행 48 38.40), 141쪽 17.12(선언), 167쪽 38.40(컷 내용 2줄), 152·154쪽 닫는 선.
+        let remaining = layout.row_cut_content_height(table, row, end_cut, &[], source.styles);
+        let whole_row = layout.row_cut_content_height(table, row, &[], &[], source.styles);
+        // 나뉜 행 자신의 선언·온전한 높이도 쪽을 넘어 보존된다. 두 조각 내용 합이 그보다 작으면
+        // 그 차이가 이 조각의 띠로 쓰일 수 있다(1342000 81·82쪽 행 14: 88 + 280 ≈ 366.9px).
+        // 측정 행 높이에는 두 조각 사이의 줄간격·여백이 겹쳐 들어가므로 선언 높이로 잰다(1613000 2줄 행:
+        // 측정 38.43 − 17.09 − 17.09 = 4.24 는 선언 여유가 아니다).
+        let declared_whole = declared_row_height(table, row, self.dpi);
+        let row_slack = declared_whole.max(0.0) - current - remaining;
+        let _ = whole_row;
+        let declared_row = declared_whole;
+        let first_row = input.start.cursor_row;
+        let span_share = table
+            .cells
+            .iter()
+            .filter(|cell| {
+                let first = usize::from(cell.row);
+                cell.row_span > 1
+                    && cell.height > 0
+                    && cell.height < 0x8000_0000
+                    && first <= row
+                    && row + 1 < first + usize::from(cell.row_span)
+            })
+            .filter_map(|cell| {
+                let first = usize::from(cell.row);
+                // 이어받은 시작 행은 앞 조각과 이 조각에 걸친 한 행이다 — 그 행의 측정 높이를 앞 행 상자로 센다.
+                let prefix = (first..row).try_fold(0.0, |sum, prior| {
+                    let height = if prior < first_row {
+                        cursor.accepted_row_boxes.get(prior).copied().flatten()?
+                    } else if prior == first_row && !input.start.start_cut.is_empty() {
+                        *source.measured_table.row_heights.get(prior)?
+                    } else {
+                        *fragment_rows.get(prior)?
+                    };
+                    Some(sum + height + cs)
+                })?;
+                Some(hwpunit_to_px(cell.height as i32, self.dpi) - prefix)
+            })
+            .fold(f64::NEG_INFINITY, f64::max);
+        // 앞 행 상자를 아는 걸침 칸이 하나도 없으면 몫을 정할 수 없다 — 종전처럼 쪽 끝까지 준다.
+        if span_share == f64::NEG_INFINITY {
+            return Some(band);
+        }
+        let row_box = current
+            .max(declared_row)
+            .max(span_share)
+            .max(current + row_slack);
+        let slack = row_box - current;
+        (slack > 0.5).then(|| band.min(slack))
+    }
+
+    /// 개체를 품은 행의 종전 띠 몫: 걸침 칸마다 «선언 − 앞 행 − 끝 행 하한 − 뒤 행 내용» 의 최솟값과 나뉜 행의
+    /// 선언 보존 몫 중 큰 쪽(21761835 2쪽·1342000 81쪽 근거).
+    fn legacy_crossing_span_page_end_band(
+        &self,
+        cursor: &TableContinuationCursor,
+        input: FragmentInput<'_>,
+        cut: (usize, &[usize], &[usize]),
+        current: f64,
+        band: f64,
+        fragment_rows: &[f64],
+    ) -> Option<f64> {
+        let (row, _, end_cut) = cut;
+        let source = input.source;
+        let table = source.row_geometry_table;
+        let layout = &input.prepared.layout_engine;
         let cs = input.prepared.cell_spacing;
         // 쪽 끝 행 자체도 선언·온전한 내용 높이를 하한으로 가진다(두 조각의 합이 그보다
         // 작으면 남은 조각이 그 차이를 받는다).
