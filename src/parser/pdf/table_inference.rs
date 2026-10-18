@@ -1,5 +1,6 @@
 //! Page-scoped observation and hypothesis ledger. Nothing here asserts authored cells.
 //! Original paint is left to lowering; absent paint never proves a cell passage.
+use super::text_analysis::{ObservedText, MAX_GLYPHS};
 use pdf_oxide::{
     elements::{PathClipObservations, PathContent, PathOperation},
     extractors::PdfImage,
@@ -11,25 +12,10 @@ use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 
 const EPS: f32 = 0.5;
-const MAX_GLYPHS: usize = 32_768;
 const MAX_REGIONS: usize = 512;
 const MAX_CANDIDATES: usize = 128;
 const MAX_TILES: usize = 4096;
 const MAX_WORK: usize = 1_000_000;
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-struct Glyph {
-    id: String,
-    source_span: usize,
-    source_character: usize,
-    text: char,
-    bounds: Rect,
-    baseline: f32,
-    font_size: f32,
-    geometry_quality: &'static str,
-    visibility: &'static str,
-}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -55,7 +41,7 @@ struct Region {
 }
 
 pub(super) struct Ledger {
-    glyphs: Vec<Glyph>,
+    pub text: ObservedText,
     blocks: Vec<Block>,
     regions: Vec<Region>,
     candidates: Vec<Value>,
@@ -153,7 +139,7 @@ impl Ledger {
         media: (f32, f32, f32, f32),
     ) -> Self {
         let mut result = Self {
-            glyphs: Vec::new(),
+            text: ObservedText::observe(spans, media),
             blocks: Vec::new(),
             regions: Vec::new(),
             candidates: Vec::new(),
@@ -163,85 +149,47 @@ impl Ledger {
             source_images: Vec::new(),
             work: 0,
         };
-        for (source_span, span) in spans.iter().enumerate() {
-            let count = span.text.chars().count();
-            if count > MAX_GLYPHS - result.glyphs.len() {
-                result
-                    .incomplete
-                    .insert("glyph observation budget exceeded");
-                break;
-            }
-            let offsets_valid = span.char_x_offsets.len() == count
-                && span.char_x_offsets.iter().all(|x| {
-                    x.is_finite()
-                        && *x >= span.bbox.x - EPS
-                        && *x <= span.bbox.x + span.bbox.width + EPS
-                });
-            let quality = if offsets_valid {
-                "recorded_origins_advance_boxes"
-            } else if span.char_widths.len() == count {
-                "advance_width_boxes"
-            } else {
-                "uniform_span_approximation"
-            };
+        if result.text.glyph_observations_incomplete {
             result
-                .source_spans
-                .push(json!({"id":format!("span:{source_span}"),
-                "sourceOrder":span_orders.get(source_span),"observation":span}));
-            for (source_character, ch) in span.to_chars().into_iter().enumerate() {
-                result.glyphs.push(Glyph {
-                    id: format!("g:{source_span}:{source_character}"),
-                    source_span,
-                    source_character,
-                    text: ch.char,
-                    bounds: page_rect(ch.bbox, media),
-                    baseline: media.3 - ch.origin_y,
-                    font_size: span.font_size,
-                    geometry_quality: quality,
-                    visibility: "painted_run_occlusion_unknown",
-                });
-            }
+                .incomplete
+                .insert("glyph observation budget exceeded");
         }
-        // T0 uses glyph line geometry only, independent of borders and clip regions.
-        let mut order: Vec<_> = (0..result.glyphs.len()).collect();
-        order.sort_by(|a, b| {
-            result.glyphs[*a]
-                .baseline
-                .total_cmp(&result.glyphs[*b].baseline)
-                .then(
-                    result.glyphs[*a]
-                        .bounds
-                        .x
-                        .total_cmp(&result.glyphs[*b].bounds.x),
-                )
-                .then(a.cmp(b))
-        });
-        let mut lines: Vec<Vec<usize>> = Vec::new();
-        for i in order {
-            let glyph = &result.glyphs[i];
-            if let Some(line) = lines.last_mut().filter(|line| {
-                let first = &result.glyphs[line[0]];
-                (first.baseline - glyph.baseline).abs()
-                    <= first.font_size.min(glyph.font_size) * 0.2
-            }) {
-                line.push(i);
-            } else {
-                lines.push(vec![i]);
-            }
+        result.source_spans = spans
+            .iter()
+            .enumerate()
+            .map(|(source_span, span)| {
+                json!({"id":format!("span:{source_span}"),
+                "sourceOrder":span_orders.get(source_span),"observation":span})
+            })
+            .collect();
+        // T0 and region-local recognition consume the same observed row bands.
+        // T0 stays independent of borders; owner-local recognition filters first.
+        let mut by_span = vec![Vec::new(); spans.len()];
+        for (gi, glyph) in result.text.glyphs.iter().enumerate() {
+            by_span[glyph.source_span].push(gi);
         }
-        for mut line in lines {
+        let lines = result
+            .text
+            .lines(&result.text.all_span_indices(), 0.2)
+            .expect("observation's own span indices are valid");
+        for line in lines {
+            let mut line: Vec<_> = line
+                .indices
+                .iter()
+                .flat_map(|i| by_span[*i].iter().copied())
+                .collect();
             line.sort_by(|a, b| {
-                result.glyphs[*a]
+                result.text.glyphs[*a]
                     .bounds
                     .x
-                    .total_cmp(&result.glyphs[*b].bounds.x)
+                    .total_cmp(&result.text.glyphs[*b].bounds.x)
                     .then(a.cmp(b))
             });
             let mut current: Option<Block> = None;
             for i in line {
-                let glyph = &result.glyphs[i];
+                let glyph = &result.text.glyphs[i];
                 let join = current.as_ref().is_some_and(|block| {
-                    let previous = &result.glyphs[*block.glyph_ids.last().unwrap()];
+                    let previous = &result.text.glyphs[*block.glyph_ids.last().unwrap()];
                     glyph.bounds.x - (block.bounds.x + block.bounds.width)
                         <= previous.font_size.min(glyph.font_size) * 0.5
                 });
@@ -353,11 +301,11 @@ impl Ledger {
         let mut conflicts = Vec::new();
         let mut owners = BTreeMap::<usize, Vec<usize>>::new();
         let mut ambiguous_owners = Vec::new();
-        for gi in 0..self.glyphs.len() {
+        for gi in 0..self.text.glyphs.len() {
             if !self.step(1) {
                 break;
             }
-            let g = &self.glyphs[gi];
+            let g = &self.text.glyphs[gi];
             if contains(region, g.bounds) {
                 glyphs.push(gi);
                 let columns: Vec<_> = xs
@@ -755,6 +703,7 @@ impl Ledger {
         detection: &Value,
         lowering: &Value,
         paths: &[PathContent],
+        recognition: &Value,
         full: bool,
     ) -> Value {
         let mut report = json!({"schemaVersion":1,"ruleVersion":"tsg-observations-v1",
@@ -763,7 +712,7 @@ impl Ledger {
             "idScope":"source page and deterministic extraction order",
             "executionState":"EXPORTED",
             "status":if self.incomplete.is_empty() && detection["deferredReason"].is_null(){"observed"}else{"incomplete"},
-            "incompleteReasons":self.incomplete,"glyphCount":self.glyphs.len(),
+            "incompleteReasons":self.incomplete,"glyphCount":self.text.glyphs.len(),
             "initialBlockCount":self.blocks.len(),"clipCount":self.regions.len(),
             "imageCount":self.source_images.len(),
             "candidateCount":self.candidates.len(),"paintPathCount":paths.len(),
@@ -771,12 +720,16 @@ impl Ledger {
             "rejectedComponents":detection["rejectedComponents"],
             "loweringDeferred":lowering["deferredTables"],
             "semanticTables":lowering["semanticTables"],
+            "boundaryPaintPolicy":lowering["boundaryPaintPolicy"],
+            "paragraphMappingPolicy":lowering["paragraphMappingPolicy"],
             "policy":{"axisTolerancePt":EPS,"maxGlyphs":MAX_GLYPHS,"maxClipRegions":MAX_REGIONS,
                 "maxCandidates":MAX_CANDIDATES,"maxTiles":MAX_TILES,"maxWork":MAX_WORK,
                 "lineBaselineEm":0.2,"inlineGapEm":0.5},
             "interpretation":"observations and competing hypotheses, not authored Excel/HWP objects"});
         if full {
-            report["glyphs"] = json!(self.glyphs);
+            report["sourceTypography"] = lowering["sourceTypography"].clone();
+            report["textRecognition"] = recognition.clone();
+            report["glyphs"] = json!(self.text.glyphs);
             report["sourceSpans"] = json!(self.source_spans);
             report["sourceImages"] = json!(self.source_images);
             report["initialBlocks"] = json!(self.blocks);

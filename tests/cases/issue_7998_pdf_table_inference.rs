@@ -157,11 +157,59 @@ fn subpoint_strokes_remain_observations_and_periodic_coverage_is_not_paint() {
 
 #[test]
 fn supported_solid_grid_keeps_unique_cell_content_through_both_save_formats() {
-    use rhwp::{model::control::Control, DocumentCore};
     // Independently authored PDF: four closed faces, A/B above C/D. Visual evidence:
     // task_m100_7998_stage1.md — Native 100%, fresh Docker WASM 99.53052%,
     // both 1 page at 96dpi, including direct border/content inspection.
     let input = include_bytes!("../../pdf/issue7998/solid-control.pdf");
+    assert_cell_content_roundtrip(input);
+}
+
+#[test]
+fn native_periodic_grid_owns_editable_cell_text_and_keeps_its_source_frame() {
+    use rhwp::{renderer::render_tree::RenderNodeType, DocumentCore};
+    // Independently authored 200pt page: 20..180pt outer frame, 100pt row/column
+    // cuts, four letters. Every internal dash is 0.4pt with a 0.6pt empty gap.
+    // Stage3/pass5 evidence: Native 99.94962%, fresh Docker WASM 98.88438%,
+    // 96dpi, one page, borders/letters directly inspected. The former producer
+    // returned zero actual tables; its captures and report are retained.
+    let input = include_bytes!("../../pdf/issue7998/periodic-native-grid.pdf");
+    assert_cell_content_roundtrip(input);
+    let core = DocumentCore::from_pdf_bytes(input, &PdfImportOptions::default()).unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    fn find_table(
+        n: &rhwp::renderer::render_tree::RenderNode,
+    ) -> Option<&rhwp::renderer::render_tree::RenderNode> {
+        if matches!(n.node_type, RenderNodeType::Table(_)) {
+            Some(n)
+        } else {
+            n.children.iter().find_map(find_table)
+        }
+    }
+    let table = find_table(&tree.root).expect("actual table in final output");
+    let source_extent_px = 160.0 * 96.0 / 72.0;
+    assert!(
+        (table.bbox.height - source_extent_px).abs() <= 2.0,
+        "background offsets must not grow the source's row frame: {:?}",
+        table.bbox
+    );
+    assert!((table.bbox.width - source_extent_px).abs() <= 2.0);
+    for cell in &table.children {
+        if !matches!(cell.node_type, RenderNodeType::TableCell(_)) {
+            continue;
+        }
+        for text in cell
+            .children
+            .iter()
+            .filter(|n| matches!(n.node_type, RenderNodeType::TextLine(_)))
+        {
+            assert!(text.bbox.y >= cell.bbox.y);
+            assert!(text.bbox.y + text.bbox.height <= cell.bbox.y + cell.bbox.height);
+        }
+    }
+}
+
+fn assert_cell_content_roundtrip(input: &[u8]) {
+    use rhwp::{model::control::Control, DocumentCore};
     let core = DocumentCore::from_pdf_bytes(input, &PdfImportOptions::default()).unwrap();
     assert_eq!(core.pdf_metadata().unwrap().pages[0].semantic_tables, 1);
     for bytes in [
@@ -224,5 +272,487 @@ fn supported_solid_grid_keeps_unique_cell_content_through_both_save_formats() {
             .cells
             .iter()
             .all(|c| c.row_span == 1 && c.col_span == 1));
+    }
+}
+
+// P1/P2 qualification: Native/fresh Docker WASM full-page minimum 99.20990%
+// across the four new author-annotated PDFs; direct inspection and producer/input
+// hashes: mydocs/working/task_m100_7998_stage3.md (P2 section).
+// Both backends satisfy the visual prerequisite; assertions protect structure/ownership.
+fn assert_pdf_cell_paragraph_case(input: &[u8], centered: bool) {
+    use rhwp::{
+        model::{control::Control, document::Document, style::Alignment, table::Table},
+        DocumentCore,
+    };
+    fn table(doc: &Document) -> &Table {
+        doc.sections[0]
+            .paragraphs
+            .iter()
+            .flat_map(|p| &p.controls)
+            .find_map(|c| match c {
+                Control::Table(t) => Some(t.as_ref()),
+                _ => None,
+            })
+            .expect("actual editable table")
+    }
+    fn texts(doc: &Document) -> Vec<Vec<String>> {
+        let t = table(doc);
+        [(0, 0), (0, 1), (1, 0), (1, 1)]
+            .iter()
+            .map(|&(row, col)| {
+                t.cell_at(row, col)
+                    .unwrap()
+                    .paragraphs
+                    .iter()
+                    .map(|p| p.text.clone())
+                    .collect()
+            })
+            .collect()
+    }
+    fn expected(centered: bool) -> Vec<Vec<String>> {
+        vec![
+            vec!["ALPHA BETA GAMMA".into(), "SECOND".into()],
+            if centered {
+                vec!["ALPHA BETA GAMMA".into()]
+            } else {
+                vec!["FIRST".into(), "SECOND".into()]
+            },
+            vec!["LEFT".into()],
+            vec!["RIGHT".into()],
+        ]
+    }
+    fn assert_source(doc: &Document, centered: bool) {
+        let t = table(doc);
+        assert_eq!((t.row_count, t.col_count), (2, 2));
+        assert_eq!(
+            texts(doc),
+            expected(centered),
+            "visual wraps must not become paragraph ends or hard breaks"
+        );
+        let first = &t.cell_at(0, 0).unwrap().paragraphs[0];
+        assert_eq!(
+            first.serializable_line_segs().len(),
+            2,
+            "one paragraph owns two displayed rows"
+        );
+        assert!(!first.text.contains('\n') && !first.text.contains('\t'));
+        assert_eq!(first.char_offsets.len(), first.text.chars().count());
+        if centered {
+            assert!(
+                doc.doc_info.para_shapes[first.para_shape_id as usize].indent < 0,
+                "source hanging continuation stays editable indentation"
+            );
+            let second = &t.cell_at(0, 1).unwrap().paragraphs[0];
+            assert!(matches!(
+                doc.doc_info.para_shapes[second.para_shape_id as usize].alignment,
+                Alignment::Center
+            ));
+        }
+        let paint_owners = doc.sections[0]
+            .paragraphs
+            .iter()
+            .flat_map(|p| &p.controls)
+            .filter(|c| {
+                matches!(
+                    c,
+                    Control::Table(_) | Control::Shape(_) | Control::Picture(_)
+                )
+            })
+            .count();
+        assert_eq!(
+            paint_owners, 1,
+            "cell text and rules cannot also remain in page-level overlays"
+        );
+    }
+    let mut core = DocumentCore::from_pdf_bytes(input, &PdfImportOptions::default()).unwrap();
+    assert_source(core.document(), centered);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        assert_source(&rhwp::parser::parse_document(&bytes).unwrap(), centered);
+    }
+    let (pi, ci) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(pi, p)| {
+            p.controls
+                .iter()
+                .enumerate()
+                .find_map(|(ci, c)| matches!(c, Control::Table(_)).then_some((pi, ci)))
+        })
+        .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    fn find_table(
+        n: &rhwp::renderer::render_tree::RenderNode,
+    ) -> Option<&rhwp::renderer::render_tree::RenderNode> {
+        if matches!(
+            n.node_type,
+            rhwp::renderer::render_tree::RenderNodeType::Table(_)
+        ) {
+            Some(n)
+        } else {
+            n.children.iter().find_map(find_table)
+        }
+    }
+    for cell in &find_table(&tree.root).unwrap().children {
+        use rhwp::renderer::render_tree::RenderNodeType;
+        if !matches!(cell.node_type, RenderNodeType::TableCell(_)) {
+            continue;
+        }
+        for line in cell
+            .children
+            .iter()
+            .filter(|n| matches!(n.node_type, RenderNodeType::TextLine(_)))
+        {
+            assert!(line.bbox.x >= cell.bbox.x && line.bbox.y >= cell.bbox.y);
+            assert!(
+                line.bbox.x + line.bbox.width
+                    <= cell.bbox.x + cell.bbox.width + f64::EPSILON * 1024.
+            );
+            assert!(
+                line.bbox.y + line.bbox.height
+                    <= cell.bbox.y + cell.bbox.height + f64::EPSILON * 1024.
+            );
+        }
+    }
+    core.insert_text_in_cell_native(0, pi, ci, 0, 0, 0, "IR:")
+        .unwrap();
+    let mut wanted = expected(centered);
+    wanted[0][0].insert_str(0, "IR:");
+    assert_eq!(texts(core.document()), wanted);
+    core.delete_text_in_cell_native(0, pi, ci, 0, 0, 0, 3)
+        .unwrap();
+    assert_eq!(texts(core.document()), expected(centered));
+    core.split_paragraph_in_cell_native(0, pi, ci, 0, 0, 6, None)
+        .unwrap();
+    let mut split = expected(centered);
+    split[0] = vec!["ALPHA ".into(), "BETA GAMMA".into(), "SECOND".into()];
+    assert_eq!(texts(core.document()), split);
+    core.merge_paragraph_in_cell_native(0, pi, ci, 0, 1)
+        .unwrap();
+    assert_eq!(texts(core.document()), expected(centered));
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        assert_eq!(
+            texts(&rhwp::parser::parse_document(&bytes).unwrap()),
+            expected(centered),
+            "edited paragraph boundaries survive serialization"
+        );
+    }
+}
+
+#[test]
+fn pdf_visual_wrap_maps_to_one_editable_paragraph_through_both_save_formats() {
+    assert_pdf_cell_paragraph_case(
+        include_bytes!("../../pdf/issue7998/multiline-cell.pdf"),
+        false,
+    );
+}
+
+#[test]
+fn pdf_multiline_paragraphs_keep_hanging_indent_and_center_alignment() {
+    assert_pdf_cell_paragraph_case(
+        include_bytes!("../../pdf/issue7998/paragraph-origins.pdf"),
+        true,
+    );
+}
+
+// Exact source PDFs qualified on Native and fresh Docker WASM before activation.
+#[test]
+fn pdf_tj_and_split_operators_keep_the_same_editable_word_and_paragraph_boundaries() {
+    for input in [
+        include_bytes!("../../pdf/issue7998/tj-cell.pdf").as_slice(),
+        include_bytes!("../../pdf/issue7998/split-cell.pdf").as_slice(),
+    ] {
+        assert_pdf_cell_paragraph_case(input, false);
+    }
+}
+
+#[test]
+fn published_helvetica_advances_and_trace_use_their_actual_afm_source() {
+    use rhwp::renderer::font_metrics_data::find_metric;
+    let inputs = [
+        (
+            false,
+            false,
+            include_str!("../../data/font-metrics/adobe-core14/Helvetica.afm"),
+        ),
+        (
+            true,
+            false,
+            include_str!("../../data/font-metrics/adobe-core14/Helvetica-Bold.afm"),
+        ),
+        (
+            false,
+            true,
+            include_str!("../../data/font-metrics/adobe-core14/Helvetica-Oblique.afm"),
+        ),
+        (
+            true,
+            true,
+            include_str!("../../data/font-metrics/adobe-core14/Helvetica-BoldOblique.afm"),
+        ),
+    ];
+    for (bold, italic, afm) in inputs {
+        let metric = find_metric("Helvetica", bold, italic).unwrap().metric;
+        assert_eq!(metric.em_size, 1000);
+        for (ch, glyph) in [
+            ('A', "A"),
+            ('I', "I"),
+            ('W', "W"),
+            (' ', "space"),
+            ('\'', "quotesingle"),
+            ('`', "grave"),
+        ] {
+            let record = afm
+                .lines()
+                .find(|line| {
+                    line.split(';')
+                        .any(|part| part.trim() == format!("N {glyph}"))
+                })
+                .unwrap();
+            let width: u16 = record
+                .split(';')
+                .find_map(|part| part.trim().strip_prefix("WX "))
+                .unwrap()
+                .parse()
+                .unwrap();
+            assert_eq!(
+                metric.get_width(ch),
+                Some(width),
+                "{glyph} bold={bold} italic={italic}"
+            );
+        }
+        assert_eq!(
+            metric.get_width('한'),
+            None,
+            "ASCII evidence cannot invent CJK widths"
+        );
+    }
+    assert!(find_metric("HelveticaCorp-Custom", false, false).is_none());
+    let mut core = rhwp::DocumentCore::from_pdf_bytes(
+        include_bytes!("../../pdf/issue7998/multiline-cell.pdf"),
+        &PdfImportOptions::default(),
+    )
+    .unwrap();
+    let trace: Value = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":32}"#)
+            .unwrap(),
+    )
+    .unwrap();
+    let record = trace["records"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["source"]["character"] == "A")
+        .unwrap();
+    assert_eq!(record["layoutMetric"]["matchKind"], "exact");
+    let origin = record["provenance"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|p| p["sourceOwner"] == "adobe-core14-afm")
+        .unwrap();
+    assert_eq!(
+        origin["evidenceAnchor"],
+        "data/font-metrics/adobe-core14/Helvetica.afm"
+    );
+    assert_eq!(origin["reason"], "publishedAfmOutsideHistoricalLedger");
+}
+
+#[test]
+fn pdf_glyph_source_references_remain_unique_when_word_spaces_are_inferred() {
+    let imported = parse_pdf_with_options(
+        include_bytes!("../../pdf/issue7998/split-cell.pdf"),
+        &PdfImportOptions {
+            include_table_inference: true,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let evidence = &imported.metadata.pages[0].table_inference;
+    let mut owned = BTreeSet::new();
+    let mut inferred = 0;
+    for line in evidence["sourceTypography"]["lines"].as_array().unwrap() {
+        assert_eq!(line["status"], "observed_origins_with_nominal_widths");
+        for ch in line["characters"].as_array().unwrap() {
+            let span = ch["span"].as_u64().unwrap() as usize;
+            if let Some(index) = ch["sourceCharacter"].as_u64() {
+                assert!(
+                    owned.insert((span, index)),
+                    "a source scalar cannot belong to two cells/lines"
+                );
+                let source = evidence["sourceSpans"][span]["observation"]["text"]
+                    .as_str()
+                    .unwrap();
+                assert_eq!(
+                    ch["character"].as_str().unwrap(),
+                    source.chars().nth(index as usize).unwrap().to_string()
+                );
+                let prefix: String = source.chars().take(index as usize).collect();
+                assert_eq!(
+                    ch["sourceUtf16"].as_u64().unwrap() as usize,
+                    prefix.encode_utf16().count()
+                );
+            } else {
+                assert_eq!(ch["character"], " ");
+                assert!(ch["sourceUtf16"].is_null());
+                inferred += 1;
+            }
+        }
+    }
+    let original: usize = evidence["sourceSpans"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["observation"]["text"].as_str().unwrap().chars().count())
+        .sum();
+    assert_eq!(
+        owned.len(),
+        original,
+        "all source scalars are preserved exactly once"
+    );
+    assert_eq!(
+        inferred, 1,
+        "the independently authored inter-word gap is not a tab"
+    );
+}
+
+#[test]
+fn pdf_public_page_five_cell_runs_fit_without_losing_the_final_glyphs() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    let mut core = rhwp::DocumentCore::from_pdf_bytes(
+        include_bytes!("../../pdf/pr7704/6778-square-2020.pdf"),
+        &PdfImportOptions::default(),
+    )
+    .unwrap();
+    let tree = core.build_page_render_tree(4).unwrap();
+    fn first_table(n: &RenderNode) -> Option<&RenderNode> {
+        if matches!(n.node_type, RenderNodeType::Table(_)) {
+            Some(n)
+        } else {
+            n.children.iter().find_map(first_table)
+        }
+    }
+    fn runs<'a>(n: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        if matches!(n.node_type, RenderNodeType::TextRun(_)) {
+            out.push(n);
+        }
+        for child in &n.children {
+            runs(child, out);
+        }
+    }
+    let table = first_table(&tree.root).unwrap();
+    let mut endings = String::new();
+    for cell in &table.children {
+        if !matches!(cell.node_type, RenderNodeType::TableCell(_)) {
+            continue;
+        }
+        let mut text = Vec::new();
+        runs(cell, &mut text);
+        for node in text {
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                endings.push_str(&run.text);
+                let hu = rhwp::renderer::hwpunit_to_px(1, 96.);
+                assert!(node.bbox.x >= cell.bbox.x - hu);
+                assert!(
+                    node.bbox.x + node.bbox.width <= cell.bbox.x + cell.bbox.width + hu,
+                    "source glyphs must fit their owning cell, not be hidden by its clip"
+                );
+            }
+        }
+    }
+    assert!(endings.contains("먼지목욕"));
+    assert!(endings.contains("바닥"));
+}
+// PDF p7 row 1/column 3 has four independently visible source lines. Extended
+// tabs own eight HWP stream units; saving must not move later glyphs to new lines.
+#[test]
+fn pdf_extended_tabs_keep_source_cell_lines_after_both_save_formats() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    use rhwp::{
+        model::{control::Control, paragraph::Paragraph},
+        DocumentCore,
+    };
+    fn paragraph_axis(p: &Paragraph) {
+        let mut pos = 0;
+        for (ch, offset) in p.text.chars().zip(&p.char_offsets) {
+            assert_eq!(
+                *offset, pos,
+                "PARA_TEXT uses its extended-character stream axis"
+            );
+            pos += if ch == '\t' { 8 } else { ch.len_utf16() as u32 };
+        }
+        assert_eq!(p.text.chars().count(), p.char_offsets.len());
+    }
+    fn cell(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::TableCell(c) if c.row == 1 && c.col == 3) {
+            Some(node)
+        } else {
+            node.children.iter().find_map(cell)
+        }
+    }
+    fn text(node: &RenderNode) -> String {
+        if let RenderNodeType::TextRun(r) = &node.node_type {
+            r.text.clone()
+        } else {
+            node.children.iter().map(text).collect()
+        }
+    }
+    fn lines(node: &RenderNode, out: &mut Vec<String>) {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            out.push(text(node).chars().filter(|c| !c.is_whitespace()).collect());
+        } else {
+            for child in &node.children {
+                lines(child, out);
+            }
+        }
+    }
+    fn verify(core: &mut DocumentCore) {
+        let table = core.document().sections[6]
+            .paragraphs
+            .iter()
+            .flat_map(|p| &p.controls)
+            .find_map(|c| {
+                if let Control::Table(t) = c {
+                    Some(t)
+                } else {
+                    None
+                }
+            })
+            .unwrap();
+        assert!(table
+            .cells
+            .iter()
+            .flat_map(|c| &c.paragraphs)
+            .any(|p| p.text.contains('\t')));
+        for p in table.cells.iter().flat_map(|c| &c.paragraphs) {
+            paragraph_axis(p);
+        }
+        let tree = core.build_page_render_tree(6).unwrap();
+        let mut actual = Vec::new();
+        lines(cell(&tree.root).unwrap(), &mut actual);
+        assert_eq!(
+            actual,
+            ["·스톨간충분한", "공간확보,공용", "공간과급수시설", "준비"]
+        );
+    }
+    let mut core = DocumentCore::from_pdf_bytes(
+        include_bytes!("../../pdf/pr7704/6778-square-2020.pdf"),
+        &PdfImportOptions::default(),
+    )
+    .unwrap();
+    verify(&mut core);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let mut saved = DocumentCore::from_bytes(&bytes).unwrap();
+        verify(&mut saved);
     }
 }

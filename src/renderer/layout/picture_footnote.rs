@@ -306,6 +306,7 @@ impl LayoutEngine {
         // [#6284] 캡션 문단 조판에 필요하다.
         styles: &ResolvedStyleSet,
     ) {
+        let children_before = parent_node.children.len();
         // [Task #825] 본문 picture 경로 — header_footer_ref = None
         self.layout_picture_full(
             tree,
@@ -321,6 +322,25 @@ impl LayoutEngine {
             cell_ctx,
             styles,
         );
+        if cell_ctx.is_some_and(|ctx| !ctx.in_textbox)
+            && !picture.common.treat_as_char
+            && matches!(picture.common.text_wrap, TextWrap::BehindText)
+        {
+            let stable_index = cell_ctx
+                .and_then(|ctx| ctx.path.last())
+                .map(|entry| {
+                    Self::object_stable_index(entry.cell_para_index, control_index.unwrap_or(0))
+                })
+                .unwrap_or(0);
+            let layer = RenderLayerInfo::new(
+                Some(TextWrap::BehindText),
+                picture.common.z_order,
+                stable_index,
+            );
+            for child in parent_node.children.iter_mut().skip(children_before) {
+                child.set_layer(layer);
+            }
+        }
     }
 
     /// [Task #825] 머리말/꼬리말 picture 전용 — outer Header/Footer 위치 marker 전달.

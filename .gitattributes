@@ -5,6 +5,9 @@ tests/golden_svg/**/*.svg text eol=lf
 assets/fonts/licenses/*.pdf -text -diff
 assets/fonts/licenses/*.txt -text -whitespace
 tests/fixtures/fonts/RHWPEquationFonts.OFL.txt -text -whitespace
+# #7998 Adobe AFM과 CR 전용 개행의 라이선스 전문은 공식 배포 바이트를 보존한다.
+data/font-metrics/adobe-core14/*.afm -text -whitespace
+data/font-metrics/adobe-core14/MustRead.html -text -whitespace
 
 # WMF/EMF 골든도 같은 계약이다. `wmf_emf_goldens` 는 엔진이 LF 로 만든 문자열과 파일을
 # 통째로 비교하는데, `core.autocrlf=true` 로 클론한 Windows 체크아웃에서는 파일만 CRLF 가
@@ -99,4 +102,4 @@ samples/issue7333/*.hwp -text -diff
 pdf/issue7333/*.pdf -text -diff
 
 # #7998 독립 PDF 격자의 xref·stream 바이트를 텍스트 변환 없이 보존한다.
-pdf/issue7998/solid-control.pdf -text -diff
+pdf/issue7998/*.pdf -text -diff

@@ -1,5 +1,9 @@
 //! Hierarchical, evidence-carrying state machines over spatially owned content.
+use super::text_analysis::{
+    line_join, paragraph_layout, LineJoin, ObservedText, ParagraphLayout, TextLine as Line,
+};
 use pdf_oxide::{extractors::PdfImage, geometry::Rect, layout::TextSpan};
+use serde::Serialize;
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -28,8 +32,8 @@ pub struct Region {
     pub obstacles: Vec<Rect>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum ParagraphState {
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub(super) enum ParagraphState {
     Idle,
     Accumulating,
     BoundaryCandidate,
@@ -75,22 +79,29 @@ impl Trace {
     }
 }
 
-struct Line {
-    indices: Vec<usize>,
-    baseline: f32,
-    left: f32,
-    right: f32,
-    top: f32,
-    bottom: f32,
-    font: f32,
-    disjoint: bool,
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct ParagraphProposal {
+    pub status: ParagraphState,
+    pub reason: String,
+    pub context: Vec<String>,
+    pub lines: Vec<Line>,
+    pub line_joins: Vec<LineJoin>,
+    pub layout: Option<ParagraphLayout>,
+    pub span_indices: Vec<usize>,
 }
-impl Line {
-    fn json(&self, spans: &[TextSpan]) -> Value {
-        json!({"spanIndices":self.indices,"baseline":self.baseline,
-            "bbox":Rect::new(self.left,self.top,self.right-self.left,self.bottom-self.top),
-            "fontSize":self.font,"previewText":self.indices.iter().map(|i|spans[*i].text.as_str()).collect::<String>()})
-    }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct RegionRecognition {
+    context: Vec<String>,
+    pub paragraphs: Vec<ParagraphProposal>,
+    transitions: Vec<Value>,
+}
+
+pub(super) struct PageRecognition {
+    pub report: Value,
+    pub cells: BTreeMap<(usize, usize), RegionRecognition>,
 }
 
 fn valid_rect(r: Rect) -> bool {
@@ -98,6 +109,7 @@ fn valid_rect(r: Rect) -> bool {
 }
 
 fn make_lines(
+    observed: &ObservedText,
     spans: &[TextSpan],
     region: &Region,
     media_box: (f32, f32, f32, f32),
@@ -107,7 +119,7 @@ fn make_lines(
     if !valid_rect(region.bbox) || region.span_indices.len() > 20000 {
         return Err("invalid region or span budget".into());
     }
-    let mut indices = region.span_indices.clone();
+    let indices = region.span_indices.clone();
     let unique: BTreeSet<_> = indices.iter().copied().collect();
     if unique.len() != indices.len() {
         return Err("duplicate span ownership in region".into());
@@ -133,88 +145,57 @@ fn make_lines(
             return Err("span does not belong to supplied region".into());
         }
     }
-    indices.sort_by(|a, b| {
-        spans[*b]
-            .bbox
-            .y
-            .total_cmp(&spans[*a].bbox.y)
-            .then(spans[*a].bbox.x.total_cmp(&spans[*b].bbox.x))
-            .then(a.cmp(b))
-    });
-    let mut groups: Vec<Vec<usize>> = Vec::new();
-    for i in indices {
-        let s = &spans[i];
-        if let Some(g) = groups.last_mut().filter(|g| {
-            let first = &spans[g[0]];
-            (first.bbox.y - s.bbox.y).abs()
-                <= policy.baseline_tolerance_em * first.font_size.min(s.font_size)
-        }) {
-            g.push(i);
-        } else {
-            groups.push(vec![i]);
-        }
-    }
-    let mut lines = Vec::new();
-    for mut group in groups {
-        group.sort_by(|a, b| spans[*a].bbox.x.total_cmp(&spans[*b].bbox.x).then(a.cmp(b)));
-        let font = group
-            .iter()
-            .map(|i| spans[*i].font_size)
-            .fold(0.0, f32::max);
-        let line_left = group
-            .iter()
-            .map(|i| spans[*i].bbox.x - left)
-            .fold(f32::INFINITY, f32::min);
-        let right = group
-            .iter()
-            .map(|i| spans[*i].bbox.x - left + spans[*i].bbox.width)
-            .fold(f32::NEG_INFINITY, f32::max);
-        let line_top = group
-            .iter()
-            .map(|i| top - spans[*i].bbox.y - spans[*i].bbox.height)
-            .fold(f32::INFINITY, f32::min);
-        let bottom = group
-            .iter()
-            .map(|i| top - spans[*i].bbox.y)
-            .fold(f32::NEG_INFINITY, f32::max);
-        // A large horizontal discontinuity requires segmentation, not a guessed reading order.
-        let disjoint = group.windows(2).any(|pair| {
-            let (a, b) = (&spans[pair[0]], &spans[pair[1]]);
-            b.bbox.x - (a.bbox.x + a.bbox.width) > 3.0 * font
-        });
-        lines.push(Line {
-            baseline: top - spans[group[0]].bbox.y,
-            indices: group,
-            left: line_left,
-            right,
-            top: line_top,
-            bottom,
-            font,
-            disjoint,
-        });
-    }
-    Ok(lines)
+    observed.lines(&indices, policy.baseline_tolerance_em)
 }
 
 struct ParagraphMachine {
     state: ParagraphState,
+    owner: Rect,
     trace: Trace,
     pending: Vec<Line>,
-    output: Vec<Value>,
+    output: Vec<ParagraphProposal>,
 }
 impl ParagraphMachine {
     fn transition(&mut self, to: ParagraphState, event: &str, reason: &str, evidence: Value) {
         self.trace.record(self.state, to, event, reason, evidence);
         self.state = to;
     }
-    fn emit(&mut self, spans: &[TextSpan], reason: &str) {
+    fn emit(&mut self, _spans: &[TextSpan], reason: &str) {
         if self.pending.is_empty() {
             return;
         }
-        self.output.push(json!({"status":format!("{:?}",self.state),"reason":reason,
-            "context":self.trace.context,"lines":self.pending.iter().map(|l|l.json(spans)).collect::<Vec<_>>(),
-            "spanIndices":self.pending.iter().flat_map(|l|l.indices.iter().copied()).collect::<Vec<_>>() }));
-        self.pending.clear();
+        let layout = paragraph_layout(&self.pending, self.owner);
+        if layout.is_none() && self.state != ParagraphState::Deferred {
+            self.transition(
+                ParagraphState::Deferred,
+                "HoldLayout",
+                "line_origins_need_additional_paragraph_layout",
+                json!({}),
+            );
+        }
+        let lines = std::mem::take(&mut self.pending);
+        let line_joins = (0..lines.len())
+            .map(|i| {
+                if i == 0 {
+                    LineJoin::Start
+                } else {
+                    line_join(&lines[i - 1].preview_text, &lines[i].preview_text)
+                }
+            })
+            .collect();
+        let span_indices = lines
+            .iter()
+            .flat_map(|l| l.indices.iter().copied())
+            .collect();
+        self.output.push(ParagraphProposal {
+            status: self.state,
+            reason: reason.into(),
+            context: self.trace.context.clone(),
+            lines,
+            line_joins,
+            layout,
+            span_indices,
+        });
     }
     fn feed(&mut self, line: Line, spans: &[TextSpan], region: &Region, policy: Policy) {
         if self.pending.is_empty() {
@@ -329,7 +310,7 @@ impl ParagraphMachine {
         }
         self.pending.push(line);
     }
-    fn finish(mut self, spans: &[TextSpan]) -> Value {
+    fn finish(mut self, spans: &[TextSpan]) -> RegionRecognition {
         if !self.pending.is_empty() {
             if self.state != ParagraphState::Deferred {
                 self.transition(
@@ -348,17 +329,22 @@ impl ParagraphMachine {
             }
             self.emit(spans, "region_end");
         }
-        json!({"context":self.trace.context,"paragraphs":self.output,"transitions":self.trace.records})
+        RegionRecognition {
+            context: self.trace.context,
+            paragraphs: self.output,
+            transitions: self.trace.records,
+        }
     }
 }
 
 /// Processes exactly one spatial owner. Confirmed means a rule-based proposal, not authored PDF metadata.
-pub fn recognize_region(
+fn recognize_region(
+    observed: &ObservedText,
     spans: &[TextSpan],
     region: &Region,
     media_box: (f32, f32, f32, f32),
     policy: Policy,
-) -> Result<Value, String> {
+) -> Result<RegionRecognition, String> {
     let (left, bottom, right, top) = media_box;
     if ![left, bottom, right, top].iter().all(|v| v.is_finite())
         || right <= left
@@ -381,9 +367,10 @@ pub fn recognize_region(
     {
         return Err("invalid recognition policy".into());
     }
-    let lines = make_lines(spans, region, media_box, policy)?;
+    let lines = make_lines(observed, spans, region, media_box, policy)?;
     let mut machine = ParagraphMachine {
         state: ParagraphState::Idle,
+        owner: region.bbox,
         pending: Vec::new(),
         output: Vec::new(),
         trace: Trace {
@@ -564,12 +551,13 @@ impl TableMachine {
 }
 
 pub fn recognize_page(
+    observed: &ObservedText,
     spans: &[TextSpan],
     images: &[PdfImage],
     detection: &Value,
     media_box: (f32, f32, f32, f32),
     policy: Policy,
-) -> Result<Value, String> {
+) -> Result<PageRecognition, String> {
     let (left, bottom, right, top) = media_box;
     if ![left, bottom, right, top].iter().all(|v| v.is_finite()) || right <= left || top <= bottom {
         return Err("invalid recognition page".into());
@@ -633,6 +621,7 @@ pub fn recognize_page(
     }
     let mut tables = Vec::new();
     let mut regions = Vec::new();
+    let mut cells = BTreeMap::new();
     let mut reserved = BTreeSet::new();
     let mut span_owners = BTreeMap::<usize, usize>::new();
     let mut image_owners = BTreeMap::<usize, usize>::new();
@@ -811,9 +800,10 @@ pub fn recognize_page(
                 span_indices: indices(&c["spanIndices"])?,
                 obstacles,
             };
-            let result = recognize_region(spans, &region, media_box, policy)?;
+            let result = recognize_region(observed, spans, &region, media_box, policy)?;
             children
                 .push(json!({"cell":ci,"row":c["row"],"column":c["column"],"imageIndices":c["imageIndices"],"childTableIndices":child_tables,"recognition":result}));
+            cells.insert((ti, ci), result);
         }
         machine.step(
             TableEvent::EndCells,
@@ -869,13 +859,14 @@ pub fn recognize_page(
                 .map(|(_, b)| *b)
                 .collect(),
         };
-        regions.push(recognize_region(spans, &region, media_box, policy)?);
+        regions.push(recognize_region(
+            observed, spans, &region, media_box, policy,
+        )?);
     }
-    Ok(
-        json!({"algorithm":"hierarchical-efsm-v2","acceptance":"rule-based proposals, not authored paragraph/table metadata",
+    let report = json!({"algorithm":"hierarchical-efsm-v3-shared-text","acceptance":"rule-based proposals, not authored paragraph/table metadata",
         "policy":{"baselineToleranceEm":policy.baseline_tolerance_em,"alignmentToleranceEm":policy.alignment_tolerance_em,
             "paragraphGapEm":policy.paragraph_gap_em,"maxContextDepth":policy.max_context_depth},
-        "tables":tables,"bodyRegions":regions,"unresolvedContent":ambiguous,"renderingIrChanged":false,
-        "limits":["body columns require explicit segmentation; disjoint runs deferred","nested cell-slot structure inferred; lowering may preserve unresolved content as positioned spans","tagged semantics not reconstructed"]}),
-    )
+        "tables":tables,"bodyRegions":regions,"unresolvedContent":ambiguous,"emission":"typed proposals; actual IR consumption is reported by lowering",
+        "limits":["body columns require explicit segmentation; disjoint runs deferred","nested cell-slot structure inferred; lowering may preserve unresolved content as positioned spans","tagged semantics not reconstructed"]});
+    Ok(PageRecognition { report, cells })
 }

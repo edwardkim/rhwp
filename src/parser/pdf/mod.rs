@@ -12,7 +12,9 @@ mod structured_lowering;
 mod table_detection;
 mod table_hierarchy;
 mod table_inference;
+mod table_paint;
 mod table_topology;
+mod text_analysis;
 
 use crate::model::document::Document;
 use pdf_oxide::import_limits::{ImportBudget, ImportBudgetSnapshot, ImportLimitFailure};
@@ -210,6 +212,7 @@ struct ExtractedPage {
     paths: Vec<PathContent>,
     // Internal structural evidence only, dropped after each page's lowering.
     snapshot: Value,
+    recognition: recognition::PageRecognition,
     table_inference: table_inference::Ledger,
 }
 
@@ -432,6 +435,7 @@ pub fn parse_pdf_with_policy(
                 &page.snapshot["tableDetection"],
                 &report,
                 &page.paths,
+                &page.recognition.report,
                 options.include_table_inference,
             ),
         });

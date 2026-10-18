@@ -75,7 +75,7 @@ fn text_para(text: &str, shape: u32, width: u32, size: u32) -> Paragraph {
         .chars()
         .map(|c| {
             let offset = length;
-            length += c.len_utf16() as u32;
+            length += Paragraph::char_stream_len(c);
             offset
         })
         .collect();
@@ -355,6 +355,37 @@ pub(super) fn lower(
         cs.bold = span.font_weight.is_bold();
         cs.italic = span.is_italic;
         cs.text_color = rgb(span.color);
+        // PDF space advances belong to the source font/text state, not HWP's
+        // default half-em space. Select the existing common IR contract only
+        // when measured origin-to-origin spaces agree with the declared metric.
+        // Nominal char_widths omit TJ/Tw displacement, so they cannot prove it.
+        if let Some(metric) =
+            crate::renderer::font_metrics_data::find_metric(font_name, cs.bold, cs.italic)
+        {
+            if let Some(space) = metric.metric.get_width(' ') {
+                let expected = span.font_size * f32::from(space) / f32::from(metric.metric.em_size);
+                let source_spaces: Vec<_> = span
+                    .text
+                    .chars()
+                    .enumerate()
+                    .filter(|(_, ch)| *ch == ' ')
+                    .map(|(i, _)| {
+                        span.char_x_offsets
+                            .get(i + 1)
+                            .zip(span.char_x_offsets.get(i))
+                            .map(|(next, here)| next - here)
+                    })
+                    .collect();
+                if span.char_x_offsets.len() == span.text.chars().count()
+                    && !source_spaces.is_empty()
+                    && source_spaces
+                        .iter()
+                        .all(|width| width.is_some_and(|width| (width - expected).abs() <= 0.01))
+                {
+                    cs.use_font_space = true;
+                }
+            }
+        }
         let shape = doc.doc_info.char_shapes.len() as u32;
         doc.doc_info.char_shapes.push(cs);
         // On the supported unrotated path, bbox.y is a baseline. Exact font metrics remain a limitation.

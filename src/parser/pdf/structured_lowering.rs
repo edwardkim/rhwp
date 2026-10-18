@@ -1,5 +1,10 @@
 //! Materialize geometry-confirmed grids as editable rhwp tables. Uncertain grids stay positional.
-use super::{lowering::hu, ExtractedPage};
+use super::{
+    lowering::hu,
+    recognition::{ParagraphProposal, ParagraphState},
+    text_analysis::{reconstruct_line, LineJoin, ParagraphLayout, TextAlignment, TextLine},
+    ExtractedPage,
+};
 use crate::model::{
     control::Control,
     document::Document,
@@ -12,7 +17,108 @@ use crate::model::{
     table::{Cell, Table, TablePageBreak, VerticalAlign},
 };
 use serde_json::{json, Value};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
+
+/// Translate observed glyph metrics into the ordinary HWP character contract.
+/// Source-font loss is explicit: width-compatible fallback does not recover its outline.
+fn observed_line_text(
+    page: &ExtractedPage,
+    doc: &mut Document,
+    line: &TextLine,
+    shape_ids: &[Option<u32>],
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    cache: &mut BTreeMap<(u32, u8, i8), u32>,
+) -> Result<(String, Vec<(u32, u32)>, Value), String> {
+    use crate::renderer::{
+        layout::{estimate_text_width, resolved_to_text_style},
+        style_resolver::detect_lang_category,
+    };
+    let content = reconstruct_line(&page.spans, &line.indices)?;
+    let mut runs = Vec::new();
+    let mut offset = 0;
+    let mut maximum_error: f64 = 0.;
+    for glyph in &content.characters {
+        let base_id = shape_ids[glyph.span].ok_or("missing source style")?;
+        let source = &page.spans[glyph.span];
+        let mut style =
+            resolved_to_text_style(styles, base_id, detect_lang_category(glyph.character));
+        let text = glyph.character.to_string();
+        let base_width = estimate_text_width(&text, &style);
+        if !base_width.is_finite() || base_width <= 0. {
+            return Err("glyph advance needs separate shaping".into());
+        }
+        let fallback = source.font_name.is_empty() || source.font_name == "Unknown";
+        // A missing source font needs metric-compatible fallback; declared fonts
+        // retain their Tz scaling. Spaces have no outline and own their measured extent.
+        let ratio = if fallback || glyph.character.is_whitespace() {
+            (f64::from(glyph.nominal_advance) * 96. / 72. / base_width * 100.).round()
+        } else {
+            f64::from(source.horizontal_scaling).round()
+        };
+        if !(50. ..=200.).contains(&ratio) {
+            return Err("source glyph width exceeds HWP ratio range".into());
+        }
+        let ratio = ratio as u8;
+        style.ratio = f64::from(ratio) / 100.;
+        if let Some(latin) = &mut style.ascii_punct_latin {
+            latin.ratio = style.ratio;
+        }
+        let nominal = estimate_text_width(&text, &style);
+        let desired = f64::from(glyph.advance) * 96. / 72.;
+        let guess = (desired / nominal - 1.) * 100.;
+        if !guess.is_finite() || !(-52. ..=52.).contains(&guess) {
+            return Err("source displacement exceeds HWP spacing range".into());
+        }
+        let mut best: Option<(i8, f64)> = None;
+        for spacing in (guess.floor() as i32 - 2)..=(guess.ceil() as i32 + 2) {
+            if !(-50..=50).contains(&spacing) {
+                continue;
+            }
+            style.letter_spacing = style.font_size * f64::from(spacing) / 100.;
+            if let Some(latin) = &mut style.ascii_punct_latin {
+                latin.letter_spacing = style.letter_spacing;
+            }
+            let error = (estimate_text_width(&text, &style) - desired).abs();
+            if best.is_none_or(|(_, previous)| error < previous) {
+                best = Some((spacing as i8, error));
+            }
+        }
+        let (spacing, error) = best.ok_or("source displacement exceeds HWP spacing range")?;
+        maximum_error = maximum_error.max(error * 72. / 96.);
+        let key = (base_id, ratio, spacing);
+        let id = if ratio == 100 && spacing == 0 {
+            base_id
+        } else if let Some(id) = cache.get(&key) {
+            *id
+        } else {
+            if doc.doc_info.char_shapes.len() >= u16::MAX as usize {
+                return Err("PDF character style budget exceeded".into());
+            }
+            let mut character_style = doc.doc_info.char_shapes[base_id as usize].clone();
+            character_style.raw_data = None;
+            character_style.ratios = [ratio; 7];
+            character_style.spacings = [spacing; 7];
+            let id = doc.doc_info.char_shapes.len() as u32;
+            doc.doc_info.char_shapes.push(character_style);
+            cache.insert(key, id);
+            id
+        };
+        if runs.last().is_none_or(|&(_, previous)| previous != id) {
+            runs.push((offset, id));
+        }
+        offset += glyph.character.len_utf16() as u32;
+    }
+    Ok((
+        content.text,
+        runs,
+        json!({
+            "characters":content.characters,
+            "maximumAdvanceQuantizationErrorPt":maximum_error,
+            "status":"observed_origins_with_nominal_widths",
+            "hwpQuantization":"integer-percent ratio and spacing; no source-font outline recovery"
+        }),
+    ))
+}
 
 fn array(v: &Value) -> Result<&Vec<Value>, String> {
     v.as_array()
@@ -45,6 +151,11 @@ fn physical_margin(points: f32) -> Result<i32, String> {
 // Positional boxes and reconstructed table paragraphs must recover the same
 // text from the same glyph origins, before either path measures the line.
 pub(super) fn span_text_with_spaces(span: &pdf_oxide::layout::TextSpan) -> String {
+    if let Ok(content) = reconstruct_line(std::slice::from_ref(span), &[0]) {
+        return content.text;
+    }
+    // Preserve the pre-existing positional path when complete glyph origins
+    // are unavailable. This fallback does not assert recovered word boundaries.
     let mut text = String::new();
     for (j, ch) in span.text.chars().enumerate() {
         if j > 0 {
@@ -117,17 +228,36 @@ fn text_with_tabs(
     Ok((text, runs, tabs, extensions))
 }
 
-fn offsets(text: &str) -> (Vec<u32>, u32) {
-    let mut len = 0;
-    let offsets = text
-        .chars()
-        .map(|c| {
-            let at = len;
-            len += c.len_utf16() as u32;
-            at
-        })
-        .collect();
-    (offsets, len)
+/// Recognition uses text-content UTF-16 positions. Publish every IR position
+/// on the same HWP paragraph stream axis, where an extended tab owns 8 units.
+/// Otherwise save/reopen expands tabs but leaves later styles and line starts
+/// pointing into the preceding line. Floating paint slots are attached later.
+fn finalize_text_axis(para: &mut Paragraph) -> Result<(), String> {
+    let mut content_to_stream = BTreeMap::new();
+    let mut offsets = Vec::with_capacity(para.text.chars().count());
+    let (mut content, mut stream) = (0, 0);
+    for ch in para.text.chars() {
+        content_to_stream.insert(content, stream);
+        offsets.push(stream);
+        content += ch.len_utf16() as u32;
+        stream += Paragraph::char_stream_len(ch);
+    }
+    content_to_stream.insert(content, stream);
+    let convert = |pos| {
+        content_to_stream
+            .get(&pos)
+            .copied()
+            .ok_or_else(|| "PDF text metadata is not on a scalar boundary".to_string())
+    };
+    for shape in &mut para.char_shapes {
+        shape.start_pos = convert(shape.start_pos)?;
+    }
+    for line in &mut para.line_segs {
+        line.text_start = convert(line.text_start)?;
+    }
+    para.char_offsets = offsets;
+    para.char_count = stream + 1;
+    Ok(())
 }
 
 struct FlowItem {
@@ -139,24 +269,27 @@ struct FlowItem {
 fn paragraph(
     page: &ExtractedPage,
     doc: &mut Document,
-    proposal: &Value,
+    proposal: &ParagraphProposal,
     cell_box: &Value,
     shape_ids: &[Option<u32>],
     fixed_line_height: bool,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    typography: &std::cell::RefCell<Vec<Value>>,
 ) -> Result<FlowItem, String> {
-    let lines = array(&proposal["lines"])?;
+    let lines = &proposal.lines;
     let first = lines.first().ok_or("paragraph has no lines")?;
     let cell_x = number(&cell_box["x"])?;
     let cell_width = number(&cell_box["width"])?;
-    let top = number(&first["baseline"])? - number(&first["fontSize"])? * 0.95;
-    let centered = !fixed_line_height
-        && lines.iter().all(|l| {
-            let b = &l["bbox"];
-            let mid =
-                b["x"].as_f64().unwrap_or(f64::NAN) + b["width"].as_f64().unwrap_or(f64::NAN) / 2.;
-            (mid as f32 - cell_x - cell_width / 2.).abs()
-                <= number(&l["fontSize"]).unwrap_or(0.) * 0.75
-        });
+    let top = first.baseline - first.font * 0.95;
+    let layout = proposal
+        .layout
+        .as_ref()
+        .ok_or("paragraph layout deferred")?;
+    let centered = layout.alignment == TextAlignment::Center
+        || (!fixed_line_height
+            && lines.iter().all(|l| {
+                ((l.left + l.right) / 2. - cell_x - cell_width / 2.).abs() <= l.font * 0.75
+            }));
     let mut para = Paragraph::new_empty();
     para.char_count_msb = true;
     para.char_shapes.clear();
@@ -164,35 +297,80 @@ fn paragraph(
     let mut last_end = top;
     let mut utf16 = 0;
     let mut tabs = Vec::new();
+    let mut glyph_styles = BTreeMap::new();
     for (line_no, line) in lines.iter().enumerate() {
-        let indices = refs(&line["spanIndices"])?;
+        let mut materialization = None;
+        let indices = &line.indices;
         if indices.is_empty() {
             return Err("empty recognized line".into());
         }
-        let baseline = number(&line["baseline"])?;
-        let size = number(&line["fontSize"])?;
+        let baseline = line.baseline;
+        let size = line.font;
         let line_top = baseline - size * 0.95;
         let next_top = if let Some(next) = lines.get(line_no + 1) {
-            number(&next["baseline"])? - number(&next["fontSize"])? * 0.95
+            next.baseline - next.font * 0.95
         } else {
             line_top + size
         };
-        let (text, runs) = if fixed_line_height {
-            let (text, runs, line_tabs, extensions) = text_with_tabs(page, &indices, cell_x)?;
-            tabs.extend(line_tabs);
-            para.tab_extended.extend(extensions);
-            (text, runs)
+        let (text, runs): (String, Vec<(u32, u32)>) = if fixed_line_height {
+            let before_styles = doc.doc_info.char_shapes.len();
+            match observed_line_text(page, doc, line, shape_ids, styles, &mut glyph_styles) {
+                Ok((text, runs, evidence)) => {
+                    materialization = Some(evidence);
+                    (text, runs)
+                }
+                Err(reason) => {
+                    doc.doc_info.char_shapes.truncate(before_styles);
+                    glyph_styles.retain(|_, id| (*id as usize) < before_styles);
+                    materialization =
+                        Some(json!({"status":"unverified_legacy_line_frame","reason":reason}));
+                    let (text, runs, line_tabs, extensions) =
+                        text_with_tabs(page, indices, cell_x)?;
+                    tabs.extend(line_tabs);
+                    para.tab_extended.extend(extensions);
+                    (
+                        text,
+                        runs.into_iter()
+                            .map(|(offset, i)| {
+                                shape_ids[i]
+                                    .map(|id| (offset, id))
+                                    .ok_or("missing source style")
+                            })
+                            .collect::<Result<_, _>>()?,
+                    )
+                }
+            }
         } else {
-            text_with_spaces(page, &indices)
+            let (text, runs) = text_with_spaces(page, indices);
+            (
+                text,
+                runs.into_iter()
+                    .map(|(offset, i)| {
+                        shape_ids[i]
+                            .map(|id| (offset, id))
+                            .ok_or("missing source style")
+                    })
+                    .collect::<Result<_, _>>()?,
+            )
         };
-        // Preserve explicit PDF line grouping; paragraph boundaries remain heuristic.
-        if line_no > 0 {
-            para.text.push('\n');
+        // A visual wrap does not terminate an editable paragraph or insert a hard break.
+        // This inferred word separator is recorded separately from source whitespace.
+        if matches!(
+            proposal.line_joins.get(line_no),
+            Some(LineJoin::InferredWordSpace)
+        ) {
+            para.text.push(' ');
             utf16 += 1;
         }
         let line_start = utf16;
-        for (run_offset, i) in runs {
-            let style = shape_ids[i].ok_or("span style was not generated")?;
+        if let Some(mut evidence) = materialization {
+            evidence["context"] = json!(proposal.context);
+            evidence["spans"] = json!(indices);
+            evidence["lineIndex"] = json!(line_no);
+            evidence["paragraphUtf16Start"] = json!(line_start);
+            typography.borrow_mut().push(evidence);
+        }
+        for (run_offset, style) in runs {
             para.char_shapes.push(CharShapeRef {
                 start_pos: utf16 + run_offset,
                 char_shape_id: style,
@@ -210,20 +388,18 @@ fn paragraph(
             column_start: if centered {
                 0
             } else {
-                hu(number(&line["bbox"]["x"])? - cell_x)? as i32
+                hu(line.left - cell_x)? as i32
             },
             segment_width: if centered {
                 hu(cell_width)? as i32
             } else {
-                hu(cell_width - (number(&line["bbox"]["x"])? - cell_x))? as i32
+                hu(cell_width - (line.left - cell_x))? as i32
             },
             tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
         });
         last_end = line_top + size;
     }
-    let (char_offsets, count) = offsets(&para.text);
-    para.char_offsets = char_offsets;
-    para.char_count = count + 1;
+    finalize_text_axis(&mut para)?;
     para.has_para_text = true;
     let mut style = doc.doc_info.para_shapes[0].clone();
     style.raw_data = None;
@@ -239,10 +415,19 @@ fn paragraph(
     style.margin_left = if centered {
         0
     } else {
-        physical_margin(number(&first["bbox"]["x"])? - cell_x)?
+        physical_margin(layout.margin_left)?
     };
     style.margin_right = 0;
-    style.indent = 0;
+    style.indent = if centered {
+        0
+    } else {
+        let value = physical_margin(layout.indent.abs())?;
+        if layout.indent < 0. {
+            -value
+        } else {
+            value
+        }
+    };
     style.spacing_before = 0;
     style.spacing_after = 0;
     if !tabs.is_empty() {
@@ -261,12 +446,13 @@ fn paragraph(
         LineSpacingType::Percent
     };
     style.line_spacing = if fixed_line_height {
-        physical_margin(number(&first["fontSize"])?)?
+        physical_margin(
+            lines
+                .get(1)
+                .map_or(first.font, |next| next.baseline - first.baseline),
+        )?
     } else if lines.len() > 1 {
-        ((number(&lines[1]["baseline"])? - number(&first["baseline"])?)
-            / number(&first["fontSize"])?
-            * 100.)
-            .round() as i32
+        ((lines[1].baseline - first.baseline) / first.font * 100.).round() as i32
     } else {
         100
     };
@@ -335,6 +521,8 @@ struct TableBuilder<'a> {
     shape_ids: &'a [Option<u32>],
     image_controls: &'a [usize],
     rule_controls: &'a [Option<usize>],
+    styles: &'a crate::renderer::style_resolver::ResolvedStyleSet,
+    typography: &'a std::cell::RefCell<Vec<Value>>,
 }
 
 fn cell_border(doc: &mut Document, controls: &[Control], bounds: &Value) -> Result<u16, String> {
@@ -458,6 +646,18 @@ impl TableBuilder<'_> {
         if recognized_table["status"] != "GeometryConfirmed" {
             return Err("recognition_deferred".into());
         }
+        let preserve_paint = grid["regularizedPeriodicBoundary"] == true;
+        if preserve_paint
+            && (family
+                || array(&grid["cells"])?.iter().any(|c| {
+                    c["childTableIndices"]
+                        .as_array()
+                        .is_some_and(|ids| !ids.is_empty())
+                }))
+        {
+            return Err("nested source-paint table requires further lowering".into());
+        }
+        let fixed_lines = family || preserve_paint;
         let mut stroke_styles = BTreeSet::new();
         for c in *controls {
             if let Control::Shape(s) = c {
@@ -485,10 +685,14 @@ impl TableBuilder<'_> {
                 }
             }
         }
-        if !family && stroke_styles.len() != 1 {
+        if !family && !preserve_paint && stroke_styles.len() != 1 {
             return Err("mixed or missing rule styles require further lowering".into());
         }
-        let &(color, width) = stroke_styles.first().ok_or("missing rule style")?;
+        let (color, width) = if preserve_paint {
+            (0, 0)
+        } else {
+            *stroke_styles.first().ok_or("missing rule style")?
+        };
         let mut border = doc
             .doc_info
             .border_fills
@@ -497,7 +701,7 @@ impl TableBuilder<'_> {
             .clone();
         border.raw_data = None;
         for side in &mut border.borders {
-            if family {
+            if family || preserve_paint {
                 side.line_type = BorderLineType::None;
             } else {
                 side.color = color;
@@ -508,14 +712,19 @@ impl TableBuilder<'_> {
         let border_id =
             u16::try_from(doc.doc_info.border_fills.len()).map_err(|e| e.to_string())?;
         let b = &grid["bbox"];
+        let extent = if preserve_paint {
+            Some(super::table_paint::dimensions(grid, None)?)
+        } else {
+            None
+        };
         let mut table = Table {
             row_count: u16::try_from(index(&grid["rows"])?).map_err(|e| e.to_string())?,
             col_count: u16::try_from(index(&grid["columns"])?).map_err(|e| e.to_string())?,
             border_fill_id: border_id,
             page_break: TablePageBreak::None,
             common: CommonObjAttr {
-                width: hu(number(&b["width"])?)?,
-                height: hu(number(&b["height"])?)?,
+                width: extent.map_or_else(|| hu(number(&b["width"])?), |(w, _)| Ok(w))?,
+                height: extent.map_or_else(|| hu(number(&b["height"])?), |(_, h)| Ok(h))?,
                 horizontal_offset: hu(number(&b["x"])?)?,
                 vertical_offset: hu(number(&b["y"])?)?,
                 instance_id: self
@@ -540,11 +749,16 @@ impl TableBuilder<'_> {
             } else {
                 border_id
             };
+            let extent = if preserve_paint {
+                Some(super::table_paint::dimensions(grid, Some(source))?)
+            } else {
+                None
+            };
             let mut cell = Cell::new_empty(
                 index(&source["column"])? as u16,
                 index(&source["row"])? as u16,
-                hu(number(&cb["width"])?)?,
-                hu(number(&cb["height"])?)?,
+                extent.map_or_else(|| hu(number(&cb["width"])?), |(w, _)| Ok(w))?,
+                extent.map_or_else(|| hu(number(&cb["height"])?), |(_, h)| Ok(h))?,
                 cell_border_id,
             );
             cell.col_span = index(&source["colspan"])? as u16;
@@ -556,21 +770,47 @@ impl TableBuilder<'_> {
                 char_shape_id: 0,
             }];
             let mut flow = Vec::new();
-            for proposal in array(&recognized_cell["recognition"]["paragraphs"])? {
-                if family {
-                    // PDF line geometry is evidence even when authored paragraph grouping is unresolved.
-                    for line in array(&proposal["lines"])? {
+            let recognized_text = self
+                .page
+                .recognition
+                .cells
+                .get(&(candidate, cell_idx))
+                .ok_or("missing typed cell text recognition")?;
+            for proposal in &recognized_text.paragraphs {
+                if proposal.status == ParagraphState::Confirmed {
+                    flow.push(paragraph(
+                        page,
+                        doc,
+                        proposal,
+                        cb,
+                        shape_ids,
+                        fixed_lines,
+                        self.styles,
+                        self.typography,
+                    )?);
+                } else if fixed_lines {
+                    // Preserve unresolved appearance without claiming recovered paragraph grouping.
+                    for line in &proposal.lines {
+                        let mut unresolved_line = proposal.clone();
+                        unresolved_line.lines = vec![line.clone()];
+                        unresolved_line.line_joins = vec![LineJoin::Start];
+                        unresolved_line.layout = Some(ParagraphLayout {
+                            alignment: TextAlignment::Left,
+                            margin_left: line.left - number(&cb["x"])?,
+                            indent: 0.,
+                        });
+                        unresolved_line.span_indices = line.indices.clone();
                         flow.push(paragraph(
                             page,
                             doc,
-                            &json!({"lines":[line]}),
+                            &unresolved_line,
                             cb,
                             shape_ids,
                             true,
+                            self.styles,
+                            self.typography,
                         )?);
                     }
-                } else if proposal["status"] == "Confirmed" {
-                    flow.push(paragraph(page, doc, proposal, cb, shape_ids, false)?);
                 } else {
                     return Err("recognition_deferred".into());
                 }
@@ -649,7 +889,7 @@ impl TableBuilder<'_> {
                 picture.common.treat_as_char = true;
                 picture.common.text_wrap = TextWrap::TopAndBottom;
                 picture.common.allow_overlap = false;
-                if family {
+                if fixed_lines {
                     picture.common.flow_with_text = true;
                 }
                 picture.common.vert_rel_to = VertRelTo::Para;
@@ -669,7 +909,7 @@ impl TableBuilder<'_> {
                 ps.margin_left =
                     2 * (original.common.horizontal_offset as i32 - hu(number(&cb["x"])?)? as i32);
                 ps.line_spacing = 100;
-                if family {
+                if fixed_lines {
                     ps.line_spacing_type = LineSpacingType::Fixed;
                     ps.line_spacing = i32::try_from(picture.common.height)
                         .ok()
@@ -705,8 +945,9 @@ impl TableBuilder<'_> {
                     return Err("overlapping cell flow requires additional lowering".into());
                 }
                 let gap = (item.top - cursor).max(0.);
-                if family && flow_index == 0 {
-                    // Cell inset is shared by cached placement and a consumer's fresh reflow.
+                if fixed_lines && flow_index == 0 {
+                    // Derived content-frame inset, not a claim about the author's padding.
+                    // Both cached placement and fresh reflow consume this same frame.
                     cell.padding.top =
                         i16::try_from(hu(gap)?).map_err(|_| "cell padding exceeds format range")?;
                     cursor = item.bottom;
@@ -756,7 +997,9 @@ impl TableBuilder<'_> {
         table.row_sizes = (0..table.row_count)
             .map(|row| table.cells.iter().filter(|c| c.row == row).count() as i16)
             .collect();
-        if family {
+        if preserve_paint {
+            // Page-wide partition attaches paint only after all accepted cell owners are known.
+        } else if family {
             for path in refs(&grid["sourcePathIndices"])? {
                 let control = rule_controls
                     .get(path)
@@ -898,6 +1141,13 @@ pub(super) fn lower(
     }
     let grids = array(&page.snapshot["tableDetection"]["tables"])?;
     let recognized = array(&page.snapshot["recognition"]["tables"])?;
+    let fragment_ids = std::cell::Cell::new(
+        next_id
+            .checked_add(u32::try_from(grids.len()).map_err(|e| e.to_string())?)
+            .ok_or("table instance ID overflow")?,
+    );
+    let styles = crate::renderer::style_resolver::resolve_styles(&doc.doc_info, 96.);
+    let typography = std::cell::RefCell::new(Vec::new());
     let builder = TableBuilder {
         table_id_base: *next_id,
         page,
@@ -908,12 +1158,16 @@ pub(super) fn lower(
         shape_ids: &shape_ids,
         image_controls: &image_controls,
         rule_controls: &rule_controls,
+        styles: &styles,
+        typography: &typography,
     };
     *next_id = next_id
         .checked_add(u32::try_from(grids.len()).map_err(|e| e.to_string())?)
         .ok_or("table instance ID overflow")?;
     let mut removed = BTreeSet::new();
     let mut tables = Vec::new();
+    let mut table_candidates = Vec::new();
+    let mut table_removed = Vec::new();
     let mut held = Vec::new();
     for (candidate, grid) in grids.iter().enumerate() {
         if !grid["hierarchy"]["parent"].is_null() {
@@ -925,6 +1179,8 @@ pub(super) fn lower(
                 .is_some_and(|a| !a.is_empty())
         });
         let style_start = doc.doc_info.para_shapes.len();
+        let char_style_start = doc.doc_info.char_shapes.len();
+        let typography_start = typography.borrow().len();
         let border_start = doc.doc_info.border_fills.len();
         let tab_start = doc.doc_info.tab_defs.len();
         let mut candidate_removed = BTreeSet::new();
@@ -937,30 +1193,132 @@ pub(super) fn lower(
                 family,
             )
             .and_then(|mut table| {
-                table.common.z_order =
-                    table_paint_layer(&controls, &candidate_removed, &grid["bbox"])?;
+                if grid["regularizedPeriodicBoundary"] != true {
+                    table.common.z_order =
+                        table_paint_layer(&controls, &candidate_removed, &grid["bbox"])?;
+                }
                 Ok(table)
             });
         match built {
             Ok(table) => {
-                removed.extend(candidate_removed);
+                table_removed.push(candidate_removed);
+                table_candidates.push(candidate);
                 tables.push(Control::Table(Box::new(table)));
             }
             Err(reason) => {
                 doc.doc_info.para_shapes.truncate(style_start);
+                doc.doc_info.char_shapes.truncate(char_style_start);
+                typography.borrow_mut().truncate(typography_start);
                 doc.doc_info.border_fills.truncate(border_start);
                 doc.doc_info.tab_defs.truncate(tab_start);
                 held.push(json!({"candidate":candidate,"reason":reason}));
             }
         }
     }
+    let preserve_indices = table_candidates
+        .iter()
+        .enumerate()
+        .filter_map(|(i, &candidate)| {
+            (grids[candidate]["regularizedPeriodicBoundary"] == true).then_some(i)
+        })
+        .collect::<Vec<_>>();
+    let targets = preserve_indices
+        .iter()
+        .map(|&i| super::table_paint::Target {
+            grid: &grids[table_candidates[i]],
+        })
+        .collect::<Vec<_>>();
+    let mut extra_paint = Vec::new();
+    let mut paint_fragments = 0;
+    if !targets.is_empty() {
+        let plan = super::table_paint::partition(
+            &controls,
+            &rule_controls,
+            &targets,
+            &page.snapshot["tableDetection"],
+        )
+        .and_then(|plan| {
+            let consumed = table_removed
+                .iter()
+                .flatten()
+                .copied()
+                .chain(plan.removed.iter().copied())
+                .collect::<BTreeSet<_>>();
+            for &ti in &preserve_indices {
+                table_paint_layer(&controls, &consumed, &grids[table_candidates[ti]]["bbox"])?;
+            }
+            Ok(plan)
+        });
+        match plan {
+            Ok(mut plan) => {
+                removed.extend(plan.removed);
+                let consumed = table_removed
+                    .iter()
+                    .flatten()
+                    .copied()
+                    .chain(removed.iter().copied())
+                    .collect::<BTreeSet<_>>();
+                for (target, &ti) in preserve_indices.iter().enumerate() {
+                    let Control::Table(table) = &mut tables[ti] else {
+                        unreachable!()
+                    };
+                    let grid = &grids[table_candidates[ti]];
+                    table.common.z_order = table_paint_layer(&controls, &consumed, &grid["bbox"])?;
+                    for (ci, cell) in table.cells.iter_mut().enumerate() {
+                        for mut paint in std::mem::take(&mut plan.cells[target][ci]) {
+                            let id = fragment_ids.get();
+                            fragment_ids
+                                .set(id.checked_add(1).ok_or("cell paint instance ID overflow")?);
+                            super::table_paint::anchor(
+                                &mut paint,
+                                cell,
+                                &grid["cells"][ci]["bbox"],
+                                id,
+                            )?;
+                            let para = &mut cell.paragraphs[0];
+                            para.controls.push(paint);
+                            para.control_mask |= 0x800;
+                            para.char_count = para
+                                .char_count
+                                .checked_add(8)
+                                .ok_or("cell paint text count overflow")?;
+                            paint_fragments += 1;
+                        }
+                    }
+                }
+                for mut paint in plan.retained {
+                    let id = fragment_ids.get();
+                    fragment_ids.set(id.checked_add(1).ok_or("page paint instance ID overflow")?);
+                    super::table_paint::assign_id(&mut paint, id);
+                    extra_paint.push(paint);
+                }
+            }
+            Err(reason) => {
+                let mut kept = Vec::new();
+                let mut kept_removed = Vec::new();
+                for (ti, (table, consumed)) in tables.into_iter().zip(table_removed).enumerate() {
+                    if preserve_indices.contains(&ti) {
+                        held.push(json!({"candidate":table_candidates[ti],"reason":reason}));
+                    } else {
+                        kept.push(table);
+                        kept_removed.push(consumed);
+                    }
+                }
+                tables = kept;
+                table_removed = kept_removed;
+            }
+        }
+    }
+    removed.extend(table_removed.into_iter().flatten());
     let root_count = tables.len();
+    *next_id = fragment_ids.get();
     let table_count = table_count(&tables);
     let mut retained: Vec<_> = controls
         .into_iter()
         .enumerate()
         .filter_map(|(i, c)| (!removed.contains(&i)).then_some(c))
         .collect();
+    retained.extend(extra_paint);
     retained.extend(tables);
     let owner = &mut doc.sections[section].paragraphs[0];
     owner.controls = retained;
@@ -970,7 +1328,20 @@ pub(super) fn lower(
     report["semanticRootTables"] = json!(root_count);
     report["semanticNestedTables"] = json!(table_count - root_count);
     report["nestedParagraphPolicy"] =
-        json!("PDF lines retained separately; authored paragraph grouping is not asserted");
+        json!("confirmed proposals share Paragraph IR; deferred line frames do not assert authored grouping");
+    report["paragraphMappingPolicy"] = json!({
+        "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+        "deferred": "line frames retained; paragraph grouping unverified",
+        "lineJoins": "inferred wrap connections; original whitespace retained",
+        "bodyRegions": "positional spans; planned P3"
+    });
+    report["sourceTypography"] = json!({
+        "lines": typography.into_inner(),
+        "policy": "recorded glyph origins; inferred spaces independent of span boundaries; HWP integer-percent character metrics",
+        "fontRecovery": "unidentified source fonts use explicit metric-compatible fallback; original outlines remain unverified"
+    });
+    report["boundaryPaintPolicy"] = json!("standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate");
+    report["cellOwnedPaintFragments"] = json!(paint_fragments);
     report["ruledTableCandidates"] = json!(grids.len());
     report["tableSemantics"] = json!("inferred-from-geometry-not-authored-metadata");
     report["textBoxes"] = json!(owner

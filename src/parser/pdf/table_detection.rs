@@ -395,7 +395,7 @@ fn boundary_contributor(edge: &Edge, grid: &Grid, component: &[Edge]) -> bool {
     }
     let target_start = edge.from.max(start);
     let target_end = edge.to.min(end);
-    if target_end - target_start <= EPS {
+    if target_end <= target_start {
         return false;
     }
     let mut cursor = target_start;
@@ -746,9 +746,6 @@ pub fn detect_ruled_tables(
                 "absent paint does not establish merged cells; competing separation retained"
                     .into(),
             );
-        } else if g.regularized {
-            placements[i].deferred =
-                Some("periodic rule carrier requires paint-preserving table lowering".into());
         }
     }
     for _ in 0..=16 {

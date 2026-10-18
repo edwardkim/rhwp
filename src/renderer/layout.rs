@@ -4274,19 +4274,17 @@ impl LayoutEngine {
         paper_images.sort_by_key(Self::paper_node_sort_key);
     }
 
-    /// [#6121] 셀 안 anchored(비 TAC) 개체를 셀 본문 텍스트 위로 올린다.
-    ///
-    /// 한글은 표 칸 문단에 앵커된 자리차지/어울림 개체(글 뒤로 제외)를 칸의 본문
-    /// 텍스트 **위**에 그린다 — 본문 흐름에서 개체가 문단 텍스트 뒤에 일괄
-    /// 페인트되는 계약과 같다. 셀 조립은 문단 순서대로 개체를 즉시 밀어 넣으므로
-    /// 뒤 문단 텍스트가 앞 문단 개체 위에 그려졌다(경찰청 보도자료 머리 칸:
-    /// 흰색 서식-잔재 run 이 container 의 "경 찰 청" drawText 를 파먹음).
-    /// `layout_cell_shape` 가 마킹한 layer(text_wrap·z_order·stable_index)를
-    /// 소비해, 해당 자식들만 z_order 안정 정렬로 셀 children 끝으로 옮긴다 —
-    /// 개체가 이미 셀 마지막 문단 뒤에 있으면 결과 순서는 그대로다.
-    fn lift_cell_anchored_objects_above_text(node: &mut RenderNode) {
+    /// Settle anchored object order inside a cell, preserving its own fill first.
+    /// BehindText is relative to cell content, not to the whole page: after local
+    /// ordering it inherits the table's replay plane along with that content.
+    /// Other anchored objects retain the existing #6121 foreground contract.
+    fn order_cell_anchored_objects(
+        node: &mut RenderNode,
+        inherited_layer: Option<RenderLayerInfo>,
+    ) {
+        let active_layer = node.layer.or(inherited_layer);
         for child in &mut node.children {
-            Self::lift_cell_anchored_objects_above_text(child);
+            Self::order_cell_anchored_objects(child, active_layer);
         }
         if !matches!(node.node_type, RenderNodeType::TableCell(_)) {
             return;
@@ -4296,26 +4294,55 @@ impl LayoutEngine {
                 .layer
                 .is_some_and(|layer| !matches!(layer.text_wrap, Some(TextWrap::BehindText)))
         };
-        if !node.children.iter().any(lifts) {
+        if !node.children.iter().any(|child| child.layer.is_some()) {
             return;
         }
+        // Pure cell decoration has no document owner or layer; it precedes the
+        // first content node. Do not move a behind-text picture below this fill.
+        let content_start = node
+            .children
+            .iter()
+            .position(|child| {
+                child.layer.is_some()
+                    || matches!(child.node_type, RenderNodeType::TextLine(_))
+                    || crate::renderer::render_tree::doc_path_for_node(child).is_some()
+            })
+            .unwrap_or(node.children.len());
+        let content = node.children.split_off(content_start);
         let mut kept: Vec<RenderNode> = Vec::with_capacity(node.children.len());
         let mut lifted: Vec<RenderNode> = Vec::new();
-        for child in node.children.drain(..) {
+        let mut behind: Vec<RenderNode> = Vec::new();
+        for child in content {
             if lifts(&child) {
                 lifted.push(child);
+            } else if child
+                .layer
+                .is_some_and(|layer| matches!(layer.text_wrap, Some(TextWrap::BehindText)))
+            {
+                behind.push(child);
             } else {
                 kept.push(child);
             }
         }
-        lifted.sort_by_key(|child| {
+        let order = |child: &RenderNode| {
             child
                 .layer
                 .map(|layer| (layer.z_order, layer.stable_index))
                 .unwrap_or((0, 0))
-        });
+        };
+        behind.sort_by_key(order);
+        lifted.sort_by_key(order);
+        for child in &mut behind {
+            child.layer = active_layer;
+            if let RenderNodeType::Image(image) = &mut child.node_type {
+                image.text_wrap = active_layer
+                    .and_then(|layer| layer.text_wrap)
+                    .or(Some(TextWrap::Square));
+            }
+        }
+        node.children.extend(behind);
         kept.extend(lifted);
-        node.children = kept;
+        node.children.extend(kept);
     }
 
     /// 빈 줄 감추기 문단 집합 설정
@@ -4888,7 +4915,7 @@ impl LayoutEngine {
         tree.apply_legacy_hancom_product_display_projection();
 
         // [#6121] 셀 안 anchored 개체 ↔ 셀 본문 텍스트 페인트 순서 정합.
-        Self::lift_cell_anchored_objects_above_text(&mut tree.root);
+        Self::order_cell_anchored_objects(&mut tree.root, None);
 
         // [#4515] 최상위 표 y 겹침 자가 검증. paper/overlay 표가 root 에 모두 붙은
         // 페이지 조립 완료 시점에 검사해야 글앞/글뒤 표까지 대상에 들어간다.

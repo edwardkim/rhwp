@@ -210,7 +210,16 @@ pub(super) fn extract(
             }
         }
     }
+    let mut table_inference = super::table_inference::Ledger::observe(
+        &spans,
+        &span_orders,
+        &images,
+        &image_orders,
+        &clips,
+        media_box,
+    );
     let recognition = recognition::recognize_page(
+        &table_inference.text,
         &spans,
         &images,
         &detection,
@@ -220,14 +229,6 @@ pub(super) fn extract(
     .map_err(|_| {
         PdfImportError::new("PDF_RECOGNITION_FAILED", "table ownership inference failed")
     })?;
-    let mut table_inference = super::table_inference::Ledger::observe(
-        &spans,
-        &span_orders,
-        &images,
-        &image_orders,
-        &clips,
-        media_box,
-    );
     table_inference.reconcile(&detection);
     Ok(ExtractedPage {
         import_budget: pdf
@@ -240,7 +241,8 @@ pub(super) fn extract(
         images,
         image_orders,
         paths,
-        snapshot: json!({"tableDetection": detection, "recognition": recognition}),
+        snapshot: json!({"tableDetection": detection, "recognition": recognition.report}),
+        recognition,
         table_inference,
     })
 }
