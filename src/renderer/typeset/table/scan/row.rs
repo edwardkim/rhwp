@@ -132,7 +132,9 @@ impl RowScanQuery<'_> {
                 styles,
                 (r + 1, true),
             )
-            .map_or(height, |need| height.max(need - consumed - cs_before))
+            .map_or(height, |need| {
+                height.max(need.required() - consumed - cs_before)
+            })
     }
 
     pub(in crate::renderer::typeset) fn whole_row_height(

@@ -49,8 +49,8 @@ struct FragmentInput<'a> {
 }
 
 impl FragmentInput<'_> {
-    /// A content cut may finish every unit while retaining its paint cut.
-    /// Scan must reserve the closing band before emit ends that continuation.
+    /// 내용 컷을 보존하면서 마지막 물리 공간도 현재 수용 높이로 닫았는지 확인한다.
+    /// 내용 소진과 물리 종료를 구분하고, 끝 여백 재스캔과 emit이 같은 인증을 쓴다.
     fn closes_terminal_content_cut(
         &self,
         end_row: usize,
@@ -58,6 +58,7 @@ impl FragmentInput<'_> {
         end_cut: &[usize],
         block_start: Option<usize>,
         height_override: Option<f64>,
+        consumed: f64,
     ) -> bool {
         let rows = self.prepared.row_count;
         end_row >= rows
@@ -92,7 +93,12 @@ impl FragmentInput<'_> {
                     self.source.styles,
                     (rows, true),
                 )
-                .is_none_or(|remaining| remaining <= 0.0)
+                .is_none_or(|demand| {
+                    demand.content <= 0.0
+                        && demand.required()
+                            <= consumed
+                                + crate::renderer::layout::table_layout::ROW_CUT_CAPACITY_FP_EPSILON_PX
+                })
     }
 }
 

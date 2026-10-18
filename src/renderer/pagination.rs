@@ -827,10 +827,23 @@ pub struct StraddleCellCarry {
     pub owns_blank_band: bool,
     /// 앞 조각들이 실제 수용한 셀 상자 높이의 합. 물리 상자를 알 수 없는 경로는 None.
     pub accepted_physical_height: Option<f64>,
+    /// PageItem에서 현재 조각을 수용하기 직전의 합. incoming carry에서는 None.
+    pub accepted_before_fragment: Option<f64>,
     /// First unconsumed unit at the fragment's incoming boundary.
     pub next_unit: Option<usize>,
     /// Accepted window for this PageItem; cleared when advancing the cursor.
     pub fragment_cut: Option<(usize, usize)>,
+}
+
+impl StraddleCellCarry {
+    /// 수용 후 snapshot도 현재 조각 직전의 물리 prefix를 제공한다.
+    pub(crate) fn accepted_prefix_physical_height(&self) -> Option<f64> {
+        if self.fragment_cut.is_some() {
+            self.accepted_before_fragment
+        } else {
+            self.accepted_physical_height
+        }
+    }
 }
 
 /// 페이지에 배치되는 개별 항목

@@ -553,7 +553,7 @@ impl TypesetEngine {
                             prefix += first - heights[cursor.row];
                         }
                     }
-                    floor = floor.max((demand - prefix).max(0.0));
+                    floor = floor.max((demand.required() - prefix).max(0.0));
                 }
             }
             let required = closing.iter().fold(floor, |height, cell| {

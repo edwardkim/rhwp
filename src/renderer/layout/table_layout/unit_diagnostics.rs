@@ -77,6 +77,21 @@ pub(super) fn trace_span_remainder(
     }
 }
 
+/// 수용 전 원장과 현재 PageItem snapshot의 같은 종료 요구를 대조한다.
+pub(super) fn trace_continuation_demand(
+    cell: &Cell,
+    heights: (f64, f64),
+    ledger: (Option<f64>, Option<f64>),
+    snapshot: bool,
+) {
+    if selected(cell) {
+        eprintln!(
+            "DIAG_CONTINUATION_DEMAND row={} col={} content={:.6} physical={:.6} prefix={:?} through={:?} snapshot={snapshot}",
+            cell.row, cell.col, heights.0, heights.1, ledger.0, ledger.1,
+        );
+    }
+}
+
 pub(in crate::renderer::layout) fn trace_alignment(
     cell: &Cell,
     position: (f64, f64),

@@ -556,6 +556,7 @@ impl TypesetEngine {
                     &split_end_cut,
                     split_block_start,
                     end_row_height_override,
+                    consumed,
                 ))
             && (input.prepared.caption_overhead > 0.0
                 || budget.terminal_outer_bottom_overhead > budget.fragment_outer_bottom_overhead)

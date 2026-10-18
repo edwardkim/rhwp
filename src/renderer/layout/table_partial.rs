@@ -6086,6 +6086,7 @@ impl LayoutEngine {
                         ) else {
                             continue;
                         };
+                        let need = need.required();
                         let have: f64 = (start_row..=r)
                             .map(|rr| row_heights.get(rr).copied().unwrap_or(0.0))
                             .sum::<f64>()

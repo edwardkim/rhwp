@@ -33,6 +33,7 @@ mod stored_terminal_row_frame;
 mod stored_text_frame_owner;
 mod stored_zero_origin;
 mod tac_host_end;
+mod straddle_continuation;
 pub(crate) use stored_zero_origin::SavedZeroOriginWitness;
 pub(super) mod unit_diagnostics;
 mod wrapper_cell_viewport;
@@ -76,7 +77,7 @@ const ROWBREAK_STALE_PAGE_SCALE_PICTURE_OFFSET_MIN_HU: i32 = -40_000;
 /// 글자 겹침(text-overlap) 18→19건, issue2439 고아 가드 픽스처 0.4px 초과 흡수가
 /// remarks 셋째 줄 소유 회귀로 실증됐다. 그래서 잡음대(≤0.03px)와 실초과(≥0.19px)
 /// 사이의 0.1px 로 고정한다.
-const ROW_CUT_CAPACITY_FP_EPSILON_PX: f64 = 0.1;
+pub(crate) const ROW_CUT_CAPACITY_FP_EPSILON_PX: f64 = 0.1;
 /// 쪽 스케일 칸 바닥값 — `cell_units` 쪽 프레임 판정과 같다. 이보다 작은 칸은
 /// 한 쪽에 들어가므로 [#6114] TAC 그림 높이 회계를 적용하지 않는다.
 const PAGE_SCALE_CELL_HEIGHT_PX: f64 = 800.0;
@@ -25619,6 +25620,7 @@ impl LayoutEngine {
                 ) else {
                     continue;
                 };
+                let need = need.required();
                 let have: f64 = (start_row..=r)
                     .map(|rr| row_heights.get(rr).copied().unwrap_or(0.0))
                     .sum::<f64>()
@@ -25722,6 +25724,11 @@ impl LayoutEngine {
                         None if cell_row >= start_row => Some(height),
                         None => None,
                     },
+                    accepted_before_fragment: match previous {
+                        Some(carry) => carry.accepted_physical_height,
+                        None if cell_row >= start_row => Some(0.0),
+                        None => None,
+                    },
                     next_unit: previous.and_then(|carry| carry.next_unit),
                     fragment_cut: Some((su, eu.min(self.cell_units(cell, table, styles).len()))),
                 })
@@ -25729,76 +25736,6 @@ impl LayoutEngine {
             .collect()
     }
 
-    /// 시작 경계를 걸친 셀의 마지막 행을 온전히 배치할 때 필요한 조각 높이.
-    /// 끝 컷이 있으면 남은 유닛 전부를 받지 않으므로 그 셀의 증분 예약은 제외한다.
-    #[allow(clippy::too_many_arguments)]
-    pub(crate) fn straddle_continuation_demand(
-        &self,
-        table: &crate::model::table::Table,
-        row: usize,
-        start_row: usize,
-        start_cut: &[usize],
-        start_cut_is_block: bool,
-        start_row_height_override: Option<f64>,
-        resolved_row_heights: &[f64],
-        straddle_page_bands: &[crate::renderer::pagination::StraddleCellCarry],
-        styles: &ResolvedStyleSet,
-        fragment_end: (usize, bool),
-    ) -> Option<f64> {
-        if !matches!(
-            table.page_break,
-            crate::model::table::TablePageBreak::RowBreak
-                | crate::model::table::TablePageBreak::CellBreak
-        ) {
-            return None;
-        }
-        let (end_row, end_cut_is_empty) = fragment_end;
-        self.spanning_cells(table)
-            .filter(|cell| {
-                let cell_row = cell.row as usize;
-                let cell_end = cell_row + cell.row_span as usize;
-                // The same-row resume has no RowCut slot, but its remaining
-                // physical band still owns a continuation cut. Reservation must
-                // consume exactly the same eligibility and unit window as paint.
-                let resumes_own_row = super::table_partial::resumes_inside_own_start_row(
-                    table,
-                    cell,
-                    start_row,
-                    start_cut,
-                    start_cut_is_block,
-                    start_row_height_override,
-                    straddle_page_bands,
-                );
-                cell.row_span > 1
-                    && (cell_row < start_row || resumes_own_row)
-                    && cell_end > start_row
-                    && cell_end == row + 1
-                    && (cell_end < end_row || (cell_end == end_row && end_cut_is_empty))
-            })
-            .map(|cell| {
-                let (su, eu) = self.rowbreak_straddle_cut_units(
-                    table,
-                    cell,
-                    start_row,
-                    end_row,
-                    start_cut,
-                    start_cut_is_block,
-                    start_row_height_override,
-                    // The filter above selected a completed owner: no end cut
-                    // covers its last row, even if a later fragment row is cut.
-                    &[],
-                    false,
-                    None,
-                    0.0,
-                    resolved_row_heights,
-                    straddle_page_bands,
-                    styles,
-                );
-                // 보이는 내용과 상하 패딩이 이미 포함된 높이다.
-                self.cell_cut_visible_height(cell, table, styles, su, eu)
-            })
-            .reduce(f64::max)
-    }
 
     /// 수용한 조각의 쪽 끝 빈 띠를 경계를 넘는 걸침 칸마다 누적한다.
     /// 내용 컷과 실제 상자 원장도 보존하고, 경계를 다 지난 칸은 버린다.
@@ -25841,6 +25778,7 @@ impl LayoutEngine {
                         || accepted.is_some_and(|carry| carry.owns_blank_band),
                     accepted_physical_height: accepted
                         .and_then(|carry| carry.accepted_physical_height),
+                    accepted_before_fragment: None,
                     next_unit: accepted.and_then(|carry| {
                         carry.fragment_cut.map(|(_, end)| end).or(carry.next_unit)
                     }),

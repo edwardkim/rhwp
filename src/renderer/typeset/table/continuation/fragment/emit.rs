@@ -1242,6 +1242,7 @@ impl TypesetEngine {
             &split_end_cut,
             split_block_start,
             end_row_height_override,
+            consumed,
         );
 
         // 스캔이 마지막 행 상자에 이미 예약한 빈 띠도 이어받기 장부에 싣는다.
