@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-10-09
+last_verified: 2026-10-17
 ---
 
 # Documentation And Git Workflow
@@ -310,6 +310,9 @@ PR 댓글 톤은 과장하지 않는다. "정말 감사합니다", "정성스러
 ## Branch And PR Rule
 
 - 로컬 작업과 검증의 기준은 최신 `upstream/devel`이다.
+- 리베이스 후에는 현재 수정과 새 base에서 반영한 PR의 기능 유지·개선을 함께 검증한다.
+  [기능 보존 절차](../pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)에 따라
+  후퇴하면 보정·재검증하고, 후퇴·필수 증거 부족이 남으면 PR 진행을 보류한다.
 - 일반 변경은 작업 브랜치에서 검증한 뒤 `devel` 대상 PR로 통합한다. `upstream/devel`에 직접 push하지 않는다.
 - collaborator·maintainer가 원 PR에 보정하거나 merge 후 운영 기록을 반영하는 경우에도
   [PR 리뷰·통합 워크플로우](../pr_review_workflow.md)의 선택표가 지정한 역할별 경로를 따른다.
