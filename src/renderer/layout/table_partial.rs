@@ -6737,6 +6737,7 @@ impl LayoutEngine {
                 // 저장 걸침 칸의 두 조각에 이미 배분한 물리 높이는 옆 칸의
                 // 후행 줄간격이 아니다. 다시 접으면 앞 조각의 공간만 유실된다.
                 && center_saved_spanning_cell.is_none()
+                && !owns_block_row(fold_row)
                 // 이어받은 원본 행은 수용한 빈 띠도 소유한다.
                 && !(fold_row == 0 && start_row == 0 && is_continuation
                     && source_first_row_frame.as_ref().is_some_and(|(cut, _, remaining)| {
