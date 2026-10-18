@@ -7329,8 +7329,12 @@ impl LayoutEngine {
                     }
                 }
 
-                if !g.8 && connects(last_pi) && connects(last_pi + 1) {
-                    let next_sig = stroke_sig(para_bf(last_pi + 1));
+                // 머리말·꼬리말 문단은 `usize::MAX - i` 를 문단 번호로 쓰므로 넘침 없이 다음을 찾는다.
+                if let Some(next_pi) = last_pi
+                    .checked_add(1)
+                    .filter(|&next| !g.8 && connects(last_pi) && connects(next))
+                {
+                    let next_sig = stroke_sig(para_bf(next_pi));
                     if next_sig.is_some() && next_sig == group_sig {
                         g.8 = true;
                     }
