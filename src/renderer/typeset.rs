@@ -5378,12 +5378,51 @@ impl TypesetEngine {
                 );
                 st.consume_float_pushed_line_spacing(para_idx, spacing);
             }
-            st.append_item(PageItem::PartialParagraph {
-                para_index: para_idx,
-                start_line: post_table_start,
-                end_line: total_lines,
-            });
-            st.advance_flow_by(post_height);
+            // [#7678] 자리차지 표 뒤 host 글이 쪽 끝에 걸리면 한/글은 들어가는 줄까지 이 쪽에
+            // 두고 나머지 줄을 다음 쪽 맨 위로 넘긴다(넘긴 줄은 문단 안의 줄이라 앞 간격이
+            // 없다). 종전엔 표 뒤 글 전체를 한 항목으로 붙여 넘친 줄이 본문 하단 아래에
+            // 그려졌다. 줄 fit 은 그 줄의 말미 줄간격을 빼고 잰다(#6184 — 쪽 마지막 줄 뒤의
+            // 간격은 쪽을 채우지 않는다). 첫 줄부터 안 들어가는 경우는 종전 경로에 둔다.
+            let post_split_line = (is_visible_para_float
+                && !table.common.treat_as_char
+                && !session_grown_topbottom_spill
+                && st.current_height + post_height > st.available_height() + 0.5)
+                .then(|| {
+                    let mut used = st.current_height;
+                    let mut fitted = post_table_start;
+                    for line in post_table_start..total_lines {
+                        let height = fmt.line_heights.get(line).copied().unwrap_or(0.0);
+                        if used + height > st.available_height() + 0.5 {
+                            break;
+                        }
+                        used += height + fmt.line_spacings.get(line).copied().unwrap_or(0.0);
+                        fitted = line + 1;
+                    }
+                    fitted
+                })
+                .filter(|&line| line > post_table_start && line < total_lines);
+            if let Some(split_line) = post_split_line {
+                st.append_item(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: post_table_start,
+                    end_line: split_line,
+                });
+                st.advance_flow_by(fmt.line_advances_sum(post_table_start..split_line));
+                st.advance_column_or_new_page();
+                st.append_item(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: split_line,
+                    end_line: total_lines,
+                });
+                st.advance_flow_by(fmt.line_advances_sum(split_line..total_lines));
+            } else {
+                st.append_item(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: post_table_start,
+                    end_line: total_lines,
+                });
+                st.advance_flow_by(post_height);
+            }
             if computed_table_row_end.is_some() {
                 // 개체 줄과 실제로 방출한 본문 줄의 합은 후행 표의 흐름 하한이다.
                 // 같은 단에서만 갱신하며, 본문이 이월되면 이전 단 끝을 유출하지 않는다.
