@@ -40,7 +40,7 @@ use leading_spaces::{natural_leading_positions, LeadingSpaces};
 mod picture_bullet;
 mod list_marker_geometry;
 use list_marker_geometry::{
-    list_marker_geometry_for, marker_text_width, nominal_marker_size,
+    list_marker_geometry_for, marker_text_style, marker_text_width, nominal_marker_size,
 };
 pub(crate) use list_marker_geometry::{
     ListMarkerGeometry,
@@ -756,7 +756,7 @@ pub(crate) fn assign_numbering_markers(
 /// 값은 문단 들여쓰기가 이미 준 줄 시작(`paragraph_line_indent`) **위에** 얹는 양이다.
 /// 줄 나눔(`layout_paragraph_in_frame`·`reflow_line_segs`)과 배치
 /// (`layout_composed_paragraph_in_frame`)가 이 값 하나를 쓴다. 스타일은 배치의 마커 스타일
-/// (`numbering_marker_text_style`, 첫 run)과 같은 입력 — 첫 글자의 글자 모양과 언어 — 이다.
+/// (`numbering_marker_text_style`, 첫 run)과 같은 글자모양을 상속하되 마커 문자열의 언어를 사용한다.
 /// 문단의 목록 마커 기하. 글머리표는 문단 모양만으로, 번호·개요는 문서 순서로 미리 계산한
 /// 번호(#7436, [`assign_numbering_markers`])로 문자열을 정한다. 아직 계산하지 않은 번호
 /// 문단은 폭을 모르므로 `None` 이다.
@@ -777,14 +777,8 @@ pub(crate) fn list_marker_geometry(
         .char_shape_id_at(0)
         .or_else(|| para.char_shapes.first().map(|cs| cs.char_shape_id))
         .unwrap_or(0);
-    let lang = para
-        .text
-        .chars()
-        .next()
-        .map(crate::renderer::style_resolver::detect_lang_category)
-        .unwrap_or(0);
     let style = marker_char_style(styles, head, &text)
-        .unwrap_or_else(|| resolved_to_text_style(styles, char_shape_id, lang));
+        .unwrap_or_else(|| marker_text_style(styles, char_shape_id, &text));
     Some(list_marker_geometry_for(
         &text,
         head,
@@ -807,12 +801,7 @@ fn marker_char_style(styles: &ResolvedStyleSet, head: MarkerHead, text: &str) ->
     if id == u32::MAX || id == 0 || (id as usize) >= styles.char_styles.len() {
         return None;
     }
-    let lang = text
-        .chars()
-        .next()
-        .map(crate::renderer::style_resolver::detect_lang_category)
-        .unwrap_or(0);
-    Some(resolved_to_text_style(styles, id, lang))
+    Some(marker_text_style(styles, id, text))
 }
 
 pub(super) fn paragraph_active_text_style(
@@ -896,12 +885,16 @@ fn numbering_marker_text_style(
     styles: &ResolvedStyleSet,
     para: Option<&Paragraph>,
     first_run: Option<&ComposedTextRun>,
+    marker_text: &str,
 ) -> TextStyle {
-    if let Some(run) = first_run {
-        run.text_style(styles)
-    } else {
-        paragraph_active_text_style(styles, para, 0).0
-    }
+    let id = para
+        .and_then(|p| {
+            p.char_shape_id_at(0)
+                .or_else(|| p.char_shapes.first().map(|shape| shape.char_shape_id))
+        })
+        .or_else(|| first_run.map(|run| run.char_style_id))
+        .unwrap_or(0);
+    marker_text_style(styles, id, marker_text)
 }
 
 fn para_float_horz_intersects_column(
@@ -5589,6 +5582,7 @@ impl LayoutEngine {
                                 styles,
                                 para,
                                 composed.lines.first().and_then(|l| l.runs.first()),
+                                num_text,
                             )
                         });
                     let bullet = styles
@@ -5606,7 +5600,12 @@ impl LayoutEngine {
                         num_style.font_size,
                     );
                     list_marker_geometry_for(
-                        num_text, *head, &num_style, nominal_size, indent, bullet,
+                        num_text,
+                        *head,
+                        &num_style,
+                        nominal_size,
+                        indent,
+                        bullet,
                     )
                 })
         });
@@ -7237,7 +7236,12 @@ impl LayoutEngine {
                 ) {
                     let num_style =
                         marker_char_style(styles, *head, num_text).unwrap_or_else(|| {
-                            numbering_marker_text_style(styles, para, comp_line.runs.first())
+                            numbering_marker_text_style(
+                                styles,
+                                para,
+                                comp_line.runs.first(),
+                                num_text,
+                            )
                         });
                     let num_width = marker_text_width(num_text, &num_style);
                     let num_id = tree.next_id();

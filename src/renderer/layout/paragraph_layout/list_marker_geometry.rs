@@ -1,6 +1,6 @@
 //! 번호·글머리표가 공통으로 점유하는 줄 앞 영역과 마커 문자열 측정.
 
-use super::super::text_measurement::estimate_text_width_exact;
+use super::super::text_measurement::{estimate_text_width_exact, resolved_to_text_style};
 use super::{hwpunit_to_px, MarkerHead, ResolvedStyleSet, TextStyle};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -36,6 +36,21 @@ impl ListMarkerGeometry {
         let rest = (-indent_px).max(0.0) + self.rest_line_px;
         (first.min(rest), first - rest)
     }
+}
+
+/// 글자모양을 본문에서 상속해도 언어별 크기·장평·글꼴은 마커 문자열로 선택한다.
+/// ASCII 번호를 첫 한글 run의 슬롯으로 재거나 그리지 않는다.
+pub(super) fn marker_text_style(
+    styles: &ResolvedStyleSet,
+    char_shape_id: u32,
+    text: &str,
+) -> TextStyle {
+    let lang = text
+        .chars()
+        .next()
+        .map(crate::renderer::style_resolver::detect_lang_category)
+        .unwrap_or(0);
+    resolved_to_text_style(styles, char_shape_id, lang)
 }
 
 /// 마커 뒤 거리는 별도 속성이므로 문자열 마지막 글자 뒤 자간은 번호 너비에 넣지 않는다.
