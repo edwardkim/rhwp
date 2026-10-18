@@ -13079,6 +13079,14 @@ impl LayoutEngine {
                     // 이미 더 아래면 max 라 영향 없다.
                     let table_y_start = if is_current_visible_para_float
                         && signed_hwpunit(t.common.vertical_offset) > 0
+                        && !crate::renderer::float_placement::visible_host_text_flows_below_offset_float(
+                            para,
+                            t,
+                            paragraphs
+                                .get(para_index + 1)
+                                .and_then(|next| next.line_segs.first())
+                                .map(|seg| seg.vertical_pos),
+                        )
                     {
                         let host_line_px = para
                             .line_segs
@@ -13340,7 +13348,17 @@ impl LayoutEngine {
                     None
                 };
                 y_offset = if is_current_visible_para_float {
-                    let mut flow_y = if signed_hwpunit(t.common.vertical_offset) > 0 {
+                    // 오프셋 안에 글줄이 들어가지 않는 host 는 표 아래에서 글을 잇는다.
+                    let mut flow_y = if signed_hwpunit(t.common.vertical_offset) > 0
+                        && !crate::renderer::float_placement::visible_host_text_flows_below_offset_float(
+                            para,
+                            t,
+                            paragraphs
+                                .get(para_index + 1)
+                                .and_then(|next| next.line_segs.first())
+                                .map(|seg| seg.vertical_pos),
+                        )
+                    {
                         if issue2439_visible_host_stack {
                             // #2439: 저장된 두 표 visible-host 형상은 후행 표가 선행
                             // 표 아래로 밀려난 높이까지 host 흐름이 실제로 소비한다.
