@@ -1,6 +1,8 @@
 //! 문단 경계의 완결성을 실제 셀 유닛 소유로 판정한다.
 
 use super::LayoutEngine;
+use crate::model::paragraph::NumberingMarker;
+use crate::model::style::HeadType;
 use crate::model::table::{Table, TablePageBreak};
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -31,6 +33,48 @@ impl LayoutEngine {
             (true, CutSource::Stored),
         )
         .is_some()
+    }
+
+    /// 실제 목록의 완결 항목 사이에는 문단 내부 고아 줄이 없다.
+    /// 일반 제목의 문자 모양으로 목록을 추정하지 않고 paint의 마커를 확인한다.
+    pub(crate) fn row_cut_closes_independent_list_items(
+        &self,
+        table: &Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if !self.row_cut_completes_unlinked_plain_paragraphs(table, row, start_cut, end_cut, styles)
+        {
+            return false;
+        }
+        let mut has_item = false;
+        for (index, cell_index) in Self::row_cut_cell_order(table, row).into_iter().enumerate() {
+            let cell = &table.cells[cell_index];
+            let units = self.cell_units(cell, table, styles);
+            let end = end_cut[index];
+            if end == units.len() {
+                continue;
+            }
+            let paragraph = &cell.paragraphs[units[end - 1].para_idx];
+            let style = &styles.para_styles[paragraph.para_shape_id as usize];
+            let has_marker = match style.head_type {
+                HeadType::Number => matches!(
+                    &paragraph.numbering_marker,
+                    NumberingMarker::Text(text, _) if !text.trim().is_empty()
+                ),
+                HeadType::Bullet => {
+                    super::paragraph_layout::bullet_marker_text(style, styles).is_some()
+                }
+                _ => false,
+            };
+            if !has_marker {
+                return false;
+            }
+            has_item = true;
+        }
+        has_item
     }
 
     /// 수용한 글줄의 컷은 이웃 셀의 실제 문단 유지 지시를 함께 확인한다.

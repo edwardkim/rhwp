@@ -1398,6 +1398,14 @@ impl TypesetEngine {
                 );
             let plain_internal_cut_keep =
                 plain_paragraph_keep_contract && !plain_cut_completes_paragraphs;
+            let complete_list_item_keep = plain_cut_completes_paragraphs
+                && layout_engine.row_cut_closes_independent_list_items(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                );
             let plain_cut_frame = plain_cut_completes_paragraphs
                 .then(|| {
                     row_query.plain_cut_physical_height(
@@ -1479,6 +1487,7 @@ impl TypesetEngine {
                 && (defer_single_unit_row_start
                     || (!cellbreak_complete_unit_keep
                         && !plain_internal_cut_keep
+                        && !complete_list_item_keep
                         && !stored_page_reset_keep
                         && !stored_plain_reset_boundary_keep
                         && !landscape_boundary_band_keep

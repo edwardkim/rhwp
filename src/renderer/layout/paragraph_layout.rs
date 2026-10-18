@@ -573,7 +573,7 @@ fn inline_table_stored_line_top_offset_px(
 }
 
 /// 글머리표 문단의 마커 문자열. 없거나 그릴 수 없으면 `None`.
-fn bullet_marker_text(
+pub(super) fn bullet_marker_text(
     para_style: &crate::renderer::style_resolver::ResolvedParaStyle,
     styles: &ResolvedStyleSet,
 ) -> Option<(String, MarkerHead)> {
