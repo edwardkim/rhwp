@@ -45,6 +45,38 @@ pub fn web_command(uri: &str) -> Result<String, HwpError> {
         command.push(c);
     }
     command.push_str(";1;0;0;");
+    checked_length(command)
+}
+
+/// 문서 내부 책갈피 링크의 한컴 Command(`?<이름>;0;0;0;`)를 만든다.
+/// 한컴 실측(HWP `hwpctl_Action_Table__v1.1.hwp`, HWPX `TargetType=BOOKMARK`)처럼 `\ : ;`만 escape한다.
+pub fn bookmark_command(name: &str) -> Result<String, HwpError> {
+    if name.trim().is_empty() || name.chars().any(char::is_control) {
+        return Err(HwpError::InvalidField(
+            "책갈피 이름이 비어 있거나 제어 문자를 포함합니다".into(),
+        ));
+    }
+    let mut command = String::with_capacity(name.len() + 8);
+    command.push('?');
+    for c in name.chars() {
+        if matches!(c, '\\' | ':' | ';') {
+            command.push('\\');
+        }
+        command.push(c);
+    }
+    command.push_str(";0;0;0;");
+    checked_length(command)
+}
+
+/// Command가 문서 내부 책갈피 링크이면 책갈피 이름을 돌려준다.
+pub fn command_bookmark(command: &str) -> Option<String> {
+    command_uri(command)
+        .strip_prefix('?')
+        .filter(|name| !name.is_empty())
+        .map(str::to_string)
+}
+
+fn checked_length(command: String) -> Result<String, HwpError> {
     // HWP5 CTRL_HEADER의 command 길이는 u16 UTF-16 code unit 수다.
     if command.encode_utf16().count() > u16::MAX as usize {
         return Err(HwpError::InvalidField(

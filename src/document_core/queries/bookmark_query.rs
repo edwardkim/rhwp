@@ -264,6 +264,15 @@ impl DocumentCore {
         }
     }
 
+    /// 하이퍼링크 대상 검사: 점 책갈피 컨트롤과 블록 책갈피 필드(`%bmk`) 이름을 모두 본다.
+    pub(crate) fn has_bookmark_named(&self, name: &str) -> bool {
+        self.collect_bookmarks().iter().any(|b| b.name == name)
+            || self.collect_all_fields().iter().any(|f| {
+                f.field.field_type == crate::model::control::FieldType::Bookmark
+                    && f.field.ctrl_data_name.as_deref() == Some(name)
+            })
+    }
+
     /// 내부: 모든 책갈피 수집 (중첩 구조 포함)
     fn collect_bookmarks(&self) -> Vec<BookmarkInfo> {
         let mut result = vec![];

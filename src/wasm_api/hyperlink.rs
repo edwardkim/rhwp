@@ -14,7 +14,10 @@ struct InsertOptions {
     target: HyperlinkTarget,
     start: usize,
     end: usize,
-    uri: String,
+    #[serde(default)]
+    uri: Option<String>,
+    #[serde(default)]
+    bookmark: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -22,7 +25,15 @@ struct InsertOptions {
 struct UpdateOptions {
     target: HyperlinkTarget,
     field_id: u32,
-    uri: String,
+    #[serde(default)]
+    uri: Option<String>,
+    #[serde(default)]
+    bookmark: Option<String>,
+}
+
+/// 링크 대상은 웹 주소 `uri` 또는 문서 내부 책갈피 이름 `bookmark` 중 정확히 하나다.
+fn one_destination_error() -> JsValue {
+    JsValue::from_str("uri와 bookmark 중 하나만 지정해야 합니다")
 }
 
 #[derive(Deserialize)]
@@ -59,17 +70,31 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = insertHyperlinkEx)]
     pub fn insert_hyperlink_ex(&mut self, options_json: &str) -> Result<u32, JsValue> {
         let o: InsertOptions = parse(options_json)?;
-        self.core
-            .insert_hyperlink_native(&o.target, o.start, o.end, &o.uri)
-            .map_err(Into::into)
+        match (&o.uri, &o.bookmark) {
+            (Some(uri), None) => self
+                .core
+                .insert_hyperlink_native(&o.target, o.start, o.end, uri),
+            (None, Some(name)) => self
+                .core
+                .insert_bookmark_hyperlink_native(&o.target, o.start, o.end, name),
+            _ => return Err(one_destination_error()),
+        }
+        .map_err(Into::into)
     }
 
     #[wasm_bindgen(js_name = updateHyperlinkEx)]
     pub fn update_hyperlink_ex(&mut self, options_json: &str) -> Result<bool, JsValue> {
         let o: UpdateOptions = parse(options_json)?;
-        self.core
-            .update_hyperlink_native(&o.target, o.field_id, &o.uri)
-            .map_err(Into::into)
+        match (&o.uri, &o.bookmark) {
+            (Some(uri), None) => self
+                .core
+                .update_hyperlink_native(&o.target, o.field_id, uri),
+            (None, Some(name)) => self
+                .core
+                .update_bookmark_hyperlink_native(&o.target, o.field_id, name),
+            _ => return Err(one_destination_error()),
+        }
+        .map_err(Into::into)
     }
 
     #[wasm_bindgen(js_name = replaceHyperlinkTextEx)]
