@@ -463,34 +463,39 @@ impl TypesetEngine {
             heights[cursor.row] = height;
         }
         let accepted_prefix_end = cursor.row + usize::from(start_row_box.is_some());
-        // A resumed first row owns a cut, not a complete source row. Keep its
-        // existing cut/remaining-band contract while later whole rows consume
-        // the accepted physical prefix from earlier fragments.
-        let first_whole_row = cursor.row
-            + usize::from(
-                !cursor.start_cut.is_empty() || cursor.start_row_height_override.is_some(),
-            );
+        // 내용 컷 또는 일반 셀이 없는 잔여 상자만 현재 행의 부분 소유다.
+        // 온전한 다음 행에도 이전 행의 빈 띠가 전달될 수 있으므로 override의
+        // 존재만으로 건너뛰지 않는다. 이 행의 최종 요구를 뒤 병합 행도 소비한다.
+        let first_row_is_partial = !cursor.start_cut.is_empty()
+            || crate::renderer::layout::LayoutEngine::carried_span_row_physical_height(
+                table,
+                cursor.row,
+                &cursor.start_cut,
+                cursor.start_cut_is_block,
+                cursor.start_row_height_override,
+            )
+            .is_some();
+        let first_whole_row = cursor.row + usize::from(first_row_is_partial);
         // 원장의 시작 행은 이전 조각까지 합한 온전한 높이다. 현재 조각의
         // 미소비 줄 요구에서는 같은 컷으로 다시 연 실제 시작 상자만 뺀다.
-        let fragment_start_height = (!cursor.start_cut_is_block
-            && (!physical_start_cut.is_empty() || cursor.start_row_height_override.is_some()))
-        .then(|| {
-            layout.ordinary_rowbreak_fragment_heights(
-                table,
-                &heights,
-                cursor.row,
-                (cursor.row + 1).min(heights.len()),
-                physical_start_cut,
-                &[],
-                true,
-                cursor.start_row_height_override,
-                None,
-                &[],
-                &cursor.straddle_page_bands,
-                true,
-                source.styles,
-            )[cursor.row]
-        });
+        let fragment_start_height =
+            (!cursor.start_cut_is_block && first_row_is_partial).then(|| {
+                layout.ordinary_rowbreak_fragment_heights(
+                    table,
+                    &heights,
+                    cursor.row,
+                    (cursor.row + 1).min(heights.len()),
+                    physical_start_cut,
+                    &[],
+                    true,
+                    cursor.start_row_height_override,
+                    None,
+                    &[],
+                    &cursor.straddle_page_bands,
+                    true,
+                    source.styles,
+                )[cursor.row]
+            });
         for row in first_whole_row..heights.len() {
             // Only a closing span whose preceding physical boxes changed can
             // invalidate the globally measured remainder. Other rows keep their
