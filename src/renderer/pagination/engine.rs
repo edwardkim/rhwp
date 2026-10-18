@@ -2853,6 +2853,7 @@ impl Paginator {
                         straddle_row_relief: Vec::new(),
                         straddle_page_bands: Vec::new(),
                         fragment_row_heights: None,
+                        fragment_block_frames: Vec::new(),
                         end_row_owns_stored_frame: false,
                     });
                     // 마지막 부분 표: spacing_after도 포함 (레이아웃과 일치)
@@ -2880,6 +2881,7 @@ impl Paginator {
                 straddle_row_relief: Vec::new(),
                 straddle_page_bands: Vec::new(),
                 fragment_row_heights: None,
+                fragment_block_frames: Vec::new(),
                 end_row_owns_stored_frame: false,
             });
             st.advance_column_or_new_page();

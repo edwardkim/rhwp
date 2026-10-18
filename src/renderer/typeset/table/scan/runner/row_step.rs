@@ -66,6 +66,7 @@ impl TypesetEngine {
             mut split_block_start,
             mut split_end_cut,
             mut split_end_limit,
+            split_block_physical_height,
             mut end_row_height_override,
         } = scan;
         let block_query = table::scan::RowBlockQuery {
@@ -1776,6 +1777,7 @@ impl TypesetEngine {
             split_block_start,
             split_end_cut,
             split_end_limit,
+            split_block_physical_height,
             end_row_height_override,
         };
         ScanStep {

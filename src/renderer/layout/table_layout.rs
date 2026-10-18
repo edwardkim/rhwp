@@ -5,6 +5,7 @@ mod nested_header_frame;
 mod plain_cell_flow;
 mod reflowed_nested_row;
 mod row_block_cut;
+mod stored_block_frames;
 mod stored_body_closed_frame;
 mod stored_column_boundaries;
 mod stored_complete_block_cut;

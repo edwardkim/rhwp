@@ -67,6 +67,17 @@ impl TypesetEngine {
         let stored_complete_extent = self
             .stored_partial_fragment_complete_extent(input, budget, &scan)
             .or_else(|| self.stored_body_closing_fragment_extent(st, input, budget, &scan));
+        let block_acceptance = self.accept_stored_block_frame(continuation, input, budget, &scan);
+        let mut fragment_block_frames = mt.fragment_block_frames.clone();
+        let fragment_rows = if let Some(accepted) = &block_acceptance {
+            let range = (accepted.frame.start, accepted.frame.end);
+            if !fragment_block_frames.contains(&range) {
+                fragment_block_frames.push(range);
+            }
+            Some(accepted.rows.clone())
+        } else {
+            input.fragment_row_heights.map(<[f64]>::to_vec)
+        };
         let BlockTableRowScan {
             source_frame_band,
             consumed,
@@ -75,6 +86,7 @@ impl TypesetEngine {
             split_block_start,
             split_end_cut,
             split_end_limit,
+            split_block_physical_height: _,
             mut end_row_height_override,
         } = scan;
         let source_first_row_frame =
@@ -149,6 +161,9 @@ impl TypesetEngine {
         // 아래에서 별도로 물리 점유에 포함하며 컷 유닛을 더 소비하지 않는다.
         let mut partial_height: f64 =
             consumed + header_overhead + hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi);
+        if let Some(accepted) = &block_acceptance {
+            partial_height += accepted.extra;
+        }
         if let Some((height, last_height)) = stored_complete_extent {
             partial_height = height;
             end_row_height_override = Some(last_height);
@@ -1079,7 +1094,8 @@ impl TypesetEngine {
                     start_row_height_override,
                     straddle_row_relief: straddle_row_relief.clone(),
                     straddle_page_bands: straddle_page_bands.clone(),
-                    fragment_row_heights: input.fragment_row_heights.map(<[f64]>::to_vec),
+                    fragment_row_heights: fragment_rows.clone(),
+                    fragment_block_frames: fragment_block_frames.clone(),
                     end_row_owns_stored_frame: false,
                 });
                 // 마지막 조각: spacing_after만 포함 (페이지 분할기 engine.rs:1051과 동일)
@@ -1518,8 +1534,10 @@ impl TypesetEngine {
             start_row_height_override,
             straddle_row_relief: straddle_row_relief.clone(),
             straddle_page_bands: accepted_straddle_cells.clone(),
-            fragment_row_heights: input.fragment_row_heights.map(<[f64]>::to_vec),
-            // 스캔이 수용한 저장 띠와 첫/이어받기 끝 행 상자를 paint에서도 보존한다.
+            fragment_row_heights: fragment_rows.clone(),
+            fragment_block_frames: fragment_block_frames.clone(),
+            // 걸침 칸·나뉜 행의 몫으로 쪽 끝 띠까지 수용한 끝 행 상자도 원본 프레임이다.
+            // 배치는 이 상자를 끝 줄간격 접기로 다시 줄이지 않는다.
             end_row_owns_stored_frame: source_frame_band > 0.0
                 || (is_continuation && stored_complete_extent.is_some())
                 || span_band_owns_end_row,
@@ -2133,6 +2151,7 @@ impl TypesetEngine {
                 },
                 page_end_band,
             );
+        continuation.stored_block_frame = block_acceptance.map(|accepted| accepted.frame);
         continuation.advance(
             end_row,
             split_block_start,

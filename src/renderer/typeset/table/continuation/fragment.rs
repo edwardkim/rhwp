@@ -13,6 +13,7 @@ mod coanchored_origin;
 mod emit;
 mod physical_rows;
 mod scan;
+mod stored_block_frames;
 mod stored_frame_budget;
 
 pub(super) struct FragmentProfile {
@@ -241,6 +242,11 @@ impl TypesetEngine {
         let fragment_measurement = physical_rows.as_ref().map(|rows| {
             let mut measured = source.measured_table.clone();
             measured.row_heights.clone_from(rows);
+            if let Some(frame) = &continuation.stored_block_frame {
+                measured
+                    .fragment_block_frames
+                    .push((frame.start, frame.end));
+            }
             measured.cumulative_heights = vec![0.0];
             for (row, &height) in rows.iter().enumerate() {
                 let spacing = if row > 0 { measured.cell_spacing } else { 0.0 };

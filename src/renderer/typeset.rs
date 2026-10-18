@@ -7257,6 +7257,7 @@ mod tests {
                 straddle_row_relief: Vec::new(),
                 straddle_page_bands: Vec::new(),
                 fragment_row_heights: None,
+                fragment_block_frames: Vec::new(),
                 end_row_owns_stored_frame: false,
             }]),
             page_with_items(vec![PageItem::PartialTable {
@@ -7275,6 +7276,7 @@ mod tests {
                 straddle_row_relief: Vec::new(),
                 straddle_page_bands: Vec::new(),
                 fragment_row_heights: None,
+                fragment_block_frames: Vec::new(),
                 end_row_owns_stored_frame: false,
             }]),
         ];

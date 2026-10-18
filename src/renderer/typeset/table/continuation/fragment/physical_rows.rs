@@ -275,6 +275,23 @@ impl TypesetEngine {
     ) -> Option<Vec<f64>> {
         let table = source.row_geometry_table;
         let layout = &prepared.layout_engine;
+        if let Some(frame) = cursor
+            .stored_block_frame
+            .as_ref()
+            .filter(|frame| cursor.start_cut_is_block && cursor.row == frame.start)
+        {
+            let rows = layout.stored_block_remaining_rows(
+                table,
+                (frame.start, frame.end),
+                &frame.rows,
+                frame.accepted,
+                &cursor.start_cut,
+                source.styles,
+            );
+            let mut heights = source.measured_table.row_heights.clone();
+            heights[frame.start..frame.end].copy_from_slice(&rows);
+            return Some(heights);
+        }
         if cursor.start_cut_is_block {
             let (first, last, _) = source.measured_table.row_block_for(cursor.row);
             let end = layout.row_block_cut_complete_prefix_end(

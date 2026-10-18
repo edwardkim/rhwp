@@ -1503,7 +1503,13 @@ impl LayoutEngine {
                 && !is_block_split
                 && !start_cut_is_block
                 && end_row_height_override.is_some();
-            let stored_span_frame_owns_alignment = stored_restart_span_frame_owns_alignment
+            let accepted_block_frame_owns_alignment = measured_table.is_some_and(|measured| {
+                measured.fragment_block_frames.iter().any(|&(first, end)| {
+                    first <= cell_row && cell_row + usize::from(cell.row_span) <= end
+                })
+            });
+            let stored_span_frame_owns_alignment = accepted_block_frame_owns_alignment
+                || stored_restart_span_frame_owns_alignment
                 || is_rowbreak_straddle
                     && cell.row_span > 1
                     && cell.vertical_align != crate::model::table::VerticalAlign::Top
@@ -5758,6 +5764,21 @@ impl LayoutEngine {
             table.common.treat_as_char,
             false,
         );
+        let owns_block_row = |row: usize| {
+            measured_table.is_some_and(|measured| {
+                measured
+                    .fragment_block_frames
+                    .iter()
+                    .any(|&(first, end)| first <= row && row < end)
+            })
+        };
+        if let Some(measured) = measured_table {
+            for (row, height) in row_heights.iter_mut().enumerate() {
+                if owns_block_row(row) {
+                    *height = measured.row_heights[row];
+                }
+            }
+        }
         // [Task #1748] 컷 걸침 rowspan 셀의 이전 프래그먼트 소비 높이 재계산용 —
         // 2b 컷 오버라이드 이전의 원본 행 높이 (프래그먼트 무관 값).
         let resolved_row_heights = row_heights.clone();
@@ -5795,7 +5816,7 @@ impl LayoutEngine {
                 None
             };
             for r in rows_to_set {
-                if r >= row_count {
+                if r >= row_count || owns_block_row(r) {
                     continue;
                 }
                 let rowspan_touched = table.cells.iter().any(|c| {
@@ -5941,6 +5962,11 @@ impl LayoutEngine {
                     }
                 }
                 for (bs, be) in blocks {
+                    if measured_table
+                        .is_some_and(|measured| measured.fragment_block_frames.contains(&(bs, be)))
+                    {
+                        continue;
+                    }
                     let mut target = 0.0f64;
                     for c in table.cells.iter().filter(|c| {
                         c.row_span > 1 && (c.row as usize) >= bs && (c.row as usize) < be
@@ -5999,7 +6025,11 @@ impl LayoutEngine {
                 for &(row, amount) in straddle_row_relief {
                     let cut_end_row = !end_cut.is_empty() && row + 1 == end_row;
                     let cut_start_row = !start_cut.is_empty() && row == start_row;
-                    if (start_row..end_row).contains(&row) && !cut_end_row && !cut_start_row {
+                    if (start_row..end_row).contains(&row)
+                        && !cut_end_row
+                        && !cut_start_row
+                        && !owns_block_row(row)
+                    {
                         if let Some(height) = row_heights.get_mut(row) {
                             *height = (*height - amount).max(0.0);
                         }
@@ -6009,7 +6039,7 @@ impl LayoutEngine {
                 // 빈 꼬리 밴드도 이 조각의 실제 행 높이다. 걸침 셀 요구와 비교하기
                 // 전에 적용해 typeset의 누적 예약과 같은 높이 공간을 사용한다.
                 if let Some(limit) = start_row_height_override {
-                    if start_row < row_count {
+                    if start_row < row_count && !owns_block_row(start_row) {
                         // 이어받은 물리 높이는 남은 행의 최소 점유다. 스캐너의
                         // RowScanQuery::whole_row_height와 같이 현재 컷의 내용과
                         // 유효 여백을 보존한다. 이 조각을 다시 자른 경우에는 아래
@@ -6091,7 +6121,10 @@ impl LayoutEngine {
         // `min`이 남은 75px band를 다시 버리므로, 여기서 limit은 상한이 아니라
         // fragment-local row height다.
         if let Some(limit) = end_row_height_override {
-            if let Some(last) = end_row.checked_sub(1).filter(|r| *r < row_count) {
+            if let Some(last) = end_row
+                .checked_sub(1)
+                .filter(|r| *r < row_count && !owns_block_row(*r))
+            {
                 row_heights[last] = limit.max(0.0);
             }
         }

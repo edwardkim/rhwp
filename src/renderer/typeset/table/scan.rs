@@ -174,6 +174,15 @@ impl RowBlockQuery<'_> {
         start: &[usize],
         end: &[usize],
     ) -> f64 {
+        if !start.is_empty()
+            && end.is_empty()
+            && self
+                .mt
+                .fragment_block_frames
+                .contains(&(block.b_start, block.b_end))
+        {
+            return self.mt.row_heights[row];
+        }
         self.layout_engine
             .row_block_cut_physical_height(
                 self.table,

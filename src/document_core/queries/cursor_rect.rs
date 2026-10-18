@@ -3109,6 +3109,7 @@ impl DocumentCore {
             straddle_row_relief,
             straddle_page_bands,
             fragment_row_heights,
+            fragment_block_frames,
             end_row_owns_stored_frame,
         }) = col.items.first()
         else {
@@ -3328,6 +3329,7 @@ impl DocumentCore {
                 .map(|(measured, rows)| {
                     let mut measured = measured.clone();
                     measured.row_heights = rows.to_vec();
+                    measured.fragment_block_frames = fragment_block_frames.clone();
                     measured
                 });
         let pt_mt = fragment_measurement.as_ref().or(pt_mt);
