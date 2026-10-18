@@ -5336,7 +5336,7 @@ impl TypesetEngine {
                     .get(post_table_start)
                     .copied()
                     .unwrap_or(post_height);
-                st.apply_visible_float_exclusions(first_post_line_height);
+                st.apply_visible_float_exclusions(first_post_line_height, None);
                 if issue2439_visible_host_stack && is_last_table {
                     // 마지막 표의 exclusion은 표 본체까지만 담는다. 한컴 저장 흐름은
                     // 그 뒤의 outer-bottom과 host LineSeg 간격을 거친 뒤 서명문을
@@ -5480,7 +5480,7 @@ impl TypesetEngine {
                 // 글 있는 host 의 post-text 와 같은 계약으로 낸다 — 줄 항목(`PartialParagraph`
                 // 0..1, 저장 줄 host 는 위 [#2813] 이연 항목이 이미 냈다)·띠 위에 남는 앞 간격만
                 // 소비·흐름 전진. 배치는 그 항목을 같은 띠 프로브로 놓는다.
-                st.apply_visible_float_exclusions(fmt.line_heights[0]);
+                st.apply_visible_float_exclusions(fmt.line_heights[0], None);
                 if st.current_height > para_start_height + 0.5 {
                     let spacing =
                         crate::renderer::float_placement::float_pushed_line_spacing_before(
@@ -7206,6 +7206,7 @@ mod tests {
                 stored_column_top_spacings: Default::default(),
                 paragraph_float_placements: Default::default(),
                 float_pushed_line_spacings: Default::default(),
+                page_band_flow_starts: Default::default(),
             }],
             active_header: None,
             active_footer: None,

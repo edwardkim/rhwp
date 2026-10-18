@@ -467,6 +467,11 @@ impl TypesetEngine {
                 .iter()
                 .filter_map(|(para, spacing)| to_local(*para).map(|local| (local, *spacing)))
                 .collect(),
+            page_band_flow_starts: st
+                .page_band_flow_starts
+                .iter()
+                .filter_map(|(para, start)| to_local(*para).map(|local| (local, *start)))
+                .collect(),
         };
         let scratch = crate::renderer::layout::LayoutEngine::new(self.dpi);
         self.prime_section_cell_context(&scratch);

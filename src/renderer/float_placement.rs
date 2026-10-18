@@ -4428,6 +4428,42 @@ impl ObjectPlacementFrame<'_> {
         (x, y)
     }
 
+    /// [#7696] 쪽·종이 기준 자리차지(TopAndBottom) 그림·도형의 바깥 여백 포함 세로 밴드
+    /// `(top, bottom)` (절대 y px). 자리차지 개체는 그 세로 구간에서 본문을 받지 않는다.
+    /// 조판(흐름 배제 구간)과 배치(문단 시작 점프)가 이 한 계산을 공유한다.
+    /// 단과 가로로 겹치지 않거나 문단 기준·글자처럼 취급 개체면 `None`.
+    pub(crate) fn page_anchored_topbottom_band(&self, control: &Control) -> Option<(f64, f64)> {
+        let common = match control {
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            _ => return None,
+        };
+        if common.treat_as_char
+            || common.text_wrap != TextWrap::TopAndBottom
+            || !matches!(common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper)
+            || common.width == 0
+            || common.height == 0
+        {
+            return None;
+        }
+        let width = hwpunit_to_px(
+            common.width as i32 + i32::from(common.margin.left) + i32::from(common.margin.right),
+            self.dpi,
+        );
+        let height = hwpunit_to_px(
+            common.height as i32 + i32::from(common.margin.top) + i32::from(common.margin.bottom),
+            self.dpi,
+        );
+        let (x, y) = self.position(common, width, height);
+        if ![x, y].iter().all(|v| v.is_finite())
+            || x + width <= self.column.x + 0.5
+            || x >= self.column.x + self.column.width - 0.5
+        {
+            return None;
+        }
+        Some((y, y + height))
+    }
+
     /// 실제 출력과 같은 여백·캡션 포함 상자. 흐름에 영향을 주는 Square 그림만 등록한다.
     /// `allow_overlap`은 floating 개체 간 허용이며 TAC 줄의 어울림을 취소하지 않는다.
     pub(crate) fn picture_exclusion(

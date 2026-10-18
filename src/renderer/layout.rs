@@ -6950,6 +6950,7 @@ impl LayoutEngine {
             stored_column_top_spacings: placements.stored_column_top_spacings,
             paragraph_float_placements: placements.paragraph_float_placements,
             float_pushed_line_spacings: placements.float_pushed_line_spacings,
+            page_band_flow_starts: placements.page_band_flow_starts,
         };
         let page_content = PageContent {
             page_index: 0,
@@ -8511,6 +8512,17 @@ impl LayoutEngine {
                         "DBG5699 pi={} y_before={:.1} y_now={:.1} floor={:.1}",
                         item_para, y_before_vpos_adjust, y_offset, hcursor.min_flow_floor
                     );
+                }
+            }
+            // [#7696] 쪽·종이 기준 자리차지 그림·도형의 밴드가 민 문단은 측정이 확정한 시작
+            // (밴드 하단)에서 그린다. 배치는 밴드를 따로 판정하지 않는다 — 측정과 배치가 같은
+            // 줄 시작을 써야 쪽 넘김과 그리기가 갈라지지 않는다.
+            if item_is_paragraph {
+                if let Some(&start) = col_content.page_band_flow_starts.get(&item_para) {
+                    let band_start = col_area.y + start;
+                    if band_start > y_offset + 0.5 {
+                        y_offset = band_start;
+                    }
                 }
             }
             // Empty Square sibling 표 직전의 본문은 같은 물리 페이지의 raw LINE_SEG
@@ -16724,6 +16736,7 @@ pub(crate) struct EndnoteColumnPlacements {
         crate::renderer::float_placement::ParagraphFloatPlacement,
     >,
     pub(crate) float_pushed_line_spacings: std::collections::HashMap<usize, f64>,
+    pub(crate) page_band_flow_starts: std::collections::HashMap<usize, f64>,
 }
 
 /// [#6574] 한/글 글자 상자에서 기준선 위가 차지하는 비율. 글자 상자는 기준선 위 85% ·

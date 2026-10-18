@@ -795,7 +795,11 @@ pub(super) fn prepare_fit_budget(
     } else {
         0.0
     };
-    st.apply_visible_float_exclusions_absorbing(exclusion_probe_height, absorbed_spacing_before);
+    st.apply_visible_float_exclusions_absorbing(
+        exclusion_probe_height,
+        absorbed_spacing_before,
+        Some(para_idx),
+    );
     let footnote_margin_addback =
         st.take_paragraph_footnote_margin_addback(strict_after_empty_host_float);
     let tail_overflow =
