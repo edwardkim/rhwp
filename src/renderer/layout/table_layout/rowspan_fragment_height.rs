@@ -114,6 +114,12 @@ impl LayoutEngine {
                     any_crossing |= band > 0.5;
                     required - others - band
                 };
+                unit_diagnostics::trace_span_remainder(
+                    cell,
+                    cursor_row,
+                    accepted,
+                    (required, others, actual_others, band, remaining),
+                );
                 demand = demand.max(remaining);
                 original = original.max(required - others);
             }

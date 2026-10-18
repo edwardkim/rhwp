@@ -42,6 +42,22 @@ pub(super) fn trace_units(cell: &Cell, units: &[CellUnit]) {
     }
 }
 
+/// 같은 종료 행의 요구에서 실제 상자와 추정 띠 중 어느 원장을 썼는지 확인한다.
+pub(super) fn trace_span_remainder(
+    cell: &Cell,
+    cursor_row: usize,
+    accepted: Option<f64>,
+    heights: (f64, f64, f64, f64, f64),
+) {
+    if selected(cell) {
+        let (required, estimated_prefix, actual_prefix, band, remaining) = heights;
+        eprintln!(
+            "DIAG_SPAN_REMAINDER row={} col={} cursor={} accepted={accepted:?} required={required:.6} estimated_prefix={estimated_prefix:.6} actual_prefix={actual_prefix:.6} band={band:.6} remaining={remaining:.6}",
+            cell.row, cell.col, cursor_row,
+        );
+    }
+}
+
 pub(in crate::renderer::layout) fn trace_alignment(
     cell: &Cell,
     position: (f64, f64),
