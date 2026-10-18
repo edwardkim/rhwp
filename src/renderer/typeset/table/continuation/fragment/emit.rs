@@ -1290,12 +1290,16 @@ impl TypesetEngine {
             ))
         .max(0.0);
         let mut ledger_end_row_trim = 0.0;
-        // 진행 중인 셀이 문단을 완결한 컷과 문단 내부의 허용된 컷은 다르다.
-        // 내부 컷의 허용만으로 쪽 끝의 빈 물리 띠까지 소유했다고 판정하지 않는다.
-        // 문단 끝 컷은 공통 유닛 계약을 쓰고, 내부 컷은 아래 잔여 예산을 확인한다.
+        // 내용 컷을 넘는 셀과 뒤 행까지 이어지는 물리 걸침은 다르다.
+        // 같은 공통 경계에 빈 컷을 질의하면 내용 컷 없이도 뒤 행이 남는지 알 수 있다.
+        // 뒤 행이 없는 내부 컷의 허용만으로 빈 종료 띠까지 소유했다고 판정하지 않는다.
+        let span_has_following_rows = row_geometry_table.cells.iter().any(|cell| {
+            cell.row_span > 1
+                && crate::renderer::layout::cell_crosses_fragment_end(cell, end_row, &[])
+        });
         let plain_paragraph_cut = split_end_limit > 0.0
             && end_row > cursor_row
-            && layout_engine.row_cut_keeps_close_a_plain_paragraph(
+            && layout_engine.row_cut_respects_plain_paragraph_keeps(
                 row_geometry_table,
                 end_row - 1,
                 if end_row - 1 == cursor_row {
@@ -1305,7 +1309,19 @@ impl TypesetEngine {
                 },
                 &split_end_cut,
                 styles,
-            );
+            )
+            && (span_has_following_rows
+                || layout_engine.row_cut_keeps_close_a_plain_paragraph(
+                    row_geometry_table,
+                    end_row - 1,
+                    if end_row - 1 == cursor_row {
+                        start_cut
+                    } else {
+                        &[]
+                    },
+                    &split_end_cut,
+                    styles,
+                ));
         // 문단 유지 계약 밖의 내용 컷(저장 쪽 재시작이나 예산 컷)도, 끝 행을 지나 이어지는 걸침 칸이
         // 있으면 같은 경로로 든다. 다만 띠는 나뉜 행이나 걸침 칸의 선언에 남는 몫까지만 준다
         // (아래 `crossing_span_page_end_band`). 21761835 2쪽 행 20(빈 문단 뒤 vpos 0 재시작),
