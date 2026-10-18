@@ -1384,9 +1384,20 @@ impl TypesetEngine {
                     &res.end_cut,
                     styles,
                 );
-            // 최소 조각 검사와 수용·배치가 같은 물리 상자를 소비한다. 저장 경계의
-            // 별도 계약은 유지하되, 문단 허용만으로 높이를 면제하지 않는다.
-            let plain_cut_frame = plain_paragraph_keep_contract
+            // 문단 내부 컷의 고아 줄 계약과 문단 사이 새 행 조각의 최소 점유는 다르다.
+            // 내부 컷은 실제 문단 유지 지시를 따르고, 진행 셀이 모두 문단 끝에서
+            // 나뉘는 조각은 수용·배치가 공유하는 물리 상자로 최소 점유를 확인한다.
+            let plain_cut_completes_paragraphs = plain_paragraph_keep_contract
+                && layout_engine.row_cut_completes_unlinked_plain_paragraphs(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                );
+            let plain_internal_cut_keep =
+                plain_paragraph_keep_contract && !plain_cut_completes_paragraphs;
+            let plain_cut_frame = plain_cut_completes_paragraphs
                 .then(|| {
                     row_query.plain_cut_physical_height(
                         &res.end_cut,
@@ -1466,6 +1477,7 @@ impl TypesetEngine {
             if r > cursor_row
                 && (defer_single_unit_row_start
                     || (!cellbreak_complete_unit_keep
+                        && !plain_internal_cut_keep
                         && !stored_page_reset_keep
                         && !stored_plain_reset_boundary_keep
                         && !landscape_boundary_band_keep
