@@ -47,9 +47,10 @@ pub(super) fn marker_text_style(
 ) -> TextStyle {
     let lang = text
         .chars()
-        .next()
+        .find(|&ch| !crate::renderer::composer::is_lang_neutral(ch))
         .map(crate::renderer::style_resolver::detect_lang_category)
-        .unwrap_or(0);
+        // 독립 ASCII 구두점에는 따라갈 본문 언어가 없다. 마커 자체의 Latin 슬롯을 쓴다.
+        .unwrap_or_else(|| if text.is_ascii() { 1 } else { 0 });
     resolved_to_text_style(styles, char_shape_id, lang)
 }
 
