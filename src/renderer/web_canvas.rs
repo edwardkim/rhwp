@@ -2298,7 +2298,7 @@ impl Renderer for WebCanvasRenderer {
 
                     let ch = cluster_str.chars().next().unwrap_or(' ');
 
-                    if cluster_str == "\u{00B7}" {
+                    if super::render_tree::is_vector_middle_dot(cluster_str) {
                         middle_dot::paint(
                             &self.ctx,
                             &char_positions,
@@ -2953,7 +2953,7 @@ impl WebCanvasRenderer {
                 let char_x = x + char_positions[*char_idx] + dx;
                 let char_y = y + dy;
 
-                if cs == "\u{00B7}" {
+                if super::render_tree::is_vector_middle_dot(cs) {
                     middle_dot::paint(
                         ctx,
                         char_positions,

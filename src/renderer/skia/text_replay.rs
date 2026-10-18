@@ -482,7 +482,7 @@ impl SkiaTextReplay<'_> {
                         0.0
                     }
                 };
-                let is_middle_dot = |cluster: &str| cluster == "\u{00B7}";
+                let is_middle_dot = crate::renderer::render_tree::is_vector_middle_dot;
                 let draw_text_pass = |color: Color, stroke_width: f32, dx: f32, dy: f32| {
                     let mut text_paint = Paint::default();
                     text_paint.set_anti_alias(true);
