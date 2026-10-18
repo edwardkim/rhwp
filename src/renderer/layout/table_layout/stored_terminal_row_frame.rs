@@ -9,6 +9,8 @@ impl LayoutEngine {
     /// 현재 조각에서 시작해 이 행에서 끝나는 병합 칸은 수용한 행 상자에서 완결한다.
     /// 다른 칸이 뒤 행으로 이어진다는 사실은 이 칸의 빈 꼬리를 다시 여는 근거가 아니다.
     /// 앞 쪽에서 시작한 칸과 개체·저장 재시작은 이 원본 전체 내용 검사로 추정하지 않는다.
+    /// 이 행에서 끝나는 병합 칸이 없으면 추가로 완결해야 할 소유자도 없다.
+    /// 일반 칸의 원본·내용 완결 여부는 호출자가 같은 실제 띠로 확인한다.
     pub(crate) fn stored_closing_span_content_fits(
         &self,
         table: &Table,
@@ -21,16 +23,14 @@ impl LayoutEngine {
         if !physical.is_finite() || physical <= 0.0 || row >= row_heights.len() {
             return false;
         }
-        let mut closing = table
+        let spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
+        table
             .cells
             .iter()
             .filter(|cell| {
                 cell.row_span > 1 && cell.row as usize + cell.row_span as usize == row + 1
             })
-            .peekable();
-        let spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
-        closing.peek().is_some()
-            && closing.all(|cell| {
+            .all(|cell| {
                 let first = cell.row as usize;
                 if first < first_row
                     || !self.stored_plain_text_cell_frame(table, cell)
