@@ -417,6 +417,17 @@ impl TypesetState {
             .float_pushed_line_spacings
             .insert(para_idx, spacing);
     }
+    /// [#7677] 흐름이 이미 전진한 몫(마지막 표 조각 뒤 바깥 아래 여백)을 host 첫 글줄의 확정
+    /// 앞 간격으로 **기록만** 한다 — 배치는 조각 하단에서 그만큼 내려 같은 자리에 줄을 둔다.
+    pub(in crate::renderer::typeset) fn record_float_pushed_line_spacing(
+        &mut self,
+        para_idx: usize,
+        spacing: f64,
+    ) {
+        self.data
+            .float_pushed_line_spacings
+            .insert(para_idx, spacing);
+    }
     pub(in crate::renderer::typeset) fn record_paragraph_float_placement(
         &mut self,
         key: (usize, usize),

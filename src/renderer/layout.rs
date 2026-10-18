@@ -15242,7 +15242,16 @@ impl LayoutEngine {
         // [Task #1755] typeset 이 host 텍스트 줄을 이월 전 쪽에 PartialParagraph 로
         // pre-emit 한 문단은 fragment 쪽 host 렌더(첫 부분/마지막 뒤 모두)를 억제한다.
         let host_pre_emitted = self.pre_emitted_host_paras.borrow().contains(&para_index);
+        // [#7677] typeset 이 마지막 조각 뒤 host 글줄을 이 쪽에 `PartialParagraph` 로 예약했으면
+        // (`post_emit_visible_rowbreak_host_text`) 그 항목이 그 줄을 그린다 — 조각 끝에서 문단을
+        // 새로 시작하듯 앞 간격을 다시 더하는 지연 렌더를 하지 않는다.
+        let host_item_emitted = page_content.column_contents.iter().any(|cc| {
+            cc.items.iter().any(|item| {
+                matches!(item, PageItem::PartialParagraph { para_index: pi, .. } if *pi == para_index)
+            })
+        });
         let render_deferred_rowbreak_host_text_after = !host_pre_emitted
+            && !host_item_emitted
             && defer_visible_rowbreak_host_text.is_some_and(|row_count| {
                 is_continuation && end_cut.is_empty() && end_row >= row_count
             });

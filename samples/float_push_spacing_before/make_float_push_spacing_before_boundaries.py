@@ -21,7 +21,7 @@ engine 2020)로 HWP 저장한 저장 LineSeg 와 같은 엔진의 Print PDF 가 
 뼈대(secPr·colPr·header·패키지 파일)는 공개 샘플 samples/issue2527_empty_linesegs.hwpx 에서
 가져오고 rhwp 출처 표식(META-INF/rhwp-hwp5-origin)은 넣지 않는다. 생성물에는 linesegarray 가 없다.
 
-사용: python3 samples/float_push_spacing_before/make_float_push_spacing_before_boundaries.py [--continuation] <출력.hwpx>
+사용: python3 samples/float_push_spacing_before/make_float_push_spacing_before_boundaries.py [--continuation|--continuation-s] <출력.hwpx>
 (저장소 루트에서)
 """
 import re
@@ -30,6 +30,9 @@ import zipfile
 
 src = zipfile.ZipFile('samples/issue2527_empty_linesegs.hwpx')
 continuation = '--continuation' in sys.argv[1:]
+# [#7677] `--continuation-s` 는 S 쪽만 붙인다(C 쪽은 #7678 의 쪽 끝 넘침이라 gate 문서에서 뺀다).
+continuation_s_only = '--continuation-s' in sys.argv[1:]
+continuation = continuation or continuation_s_only
 out = [a for a in sys.argv[1:] if not a.startswith('--')][0]
 hdr = src.read('Contents/header.xml').decode('utf8')
 pp0 = re.search(r'<hh:paraPr id="0".*?</hh:paraPr>', hdr, re.S).group(0)
@@ -110,6 +113,7 @@ if continuation:
     rows = [[f'{r + 1}행', f'{(r + 1) * 1000:,}', '-'] for r in range(20)]
     body.append(host(80, 304, rows, 2000, (140, 852), 'S. 넘어간 표 조각 뒤 host 의 첫 글줄', pp=1))
     body.append(para(81, t('S 뒤 문단이다.')))
+if continuation and not continuation_s_only:
     # C 쪽: 표 뒤 여러 줄 글이 쪽 끝을 넘어 다음 쪽으로 이어진다(이어받은 줄).
     body.append(para(300, t('C 쪽 첫 문단이다.'), page_break=True))
     for i in range(37):
