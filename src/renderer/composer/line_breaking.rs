@@ -4994,21 +4994,29 @@ fn reflow_line_segs_impl(
         } else {
             Vec::new()
         };
-    let forced_inline_line = (split_stale_cell_reflow || edited_tac_table)
-        .then(|| {
-            inline_control_requires_own_line(
-                para,
-                &occupied_controls,
-                &text_chars,
-                &line_breaks,
-                available_width_px,
-                table_indent_px,
-                reflow_is_first_line,
-                styles,
-                reflow_space_metric,
-            )
-        })
-        .flatten();
+    // 마지막 글자 뒤의 글자처럼 취급 개체는 뒤 글자가 없어 채움 토큰에 폭이 실리지 않는다
+    // (`flow_inline_controls`). 채움이 그 앞에서 줄을 나눌 수 없으므로 표와 같은 개체 줄
+    // 판정을 받는다. 판정이 없으면 넓은 그림이 앞 글자와 한 줄에 남아 오른쪽 여백을 넘는다.
+    let terminal_inline_control = inline_controls.is_empty()
+        && occupied_controls
+            .iter()
+            .any(|&(position, ..)| position == text_len);
+    let forced_inline_line =
+        (split_stale_cell_reflow || edited_tac_table || terminal_inline_control)
+            .then(|| {
+                inline_control_requires_own_line(
+                    para,
+                    &occupied_controls,
+                    &text_chars,
+                    &line_breaks,
+                    available_width_px,
+                    table_indent_px,
+                    reflow_is_first_line,
+                    styles,
+                    reflow_space_metric,
+                )
+            })
+            .flatten();
     let floating_anchors = floating_anchor_char_font_sizes(para, styles);
     let preserved_prefix_len = preserved_prefix.len();
     let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
