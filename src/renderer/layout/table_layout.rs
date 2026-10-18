@@ -21,6 +21,7 @@ mod stored_nested_padding;
 mod stored_nested_source_cut;
 mod stored_nested_text_frames;
 mod stored_ordinary_row_frame;
+mod stored_page_unit_frames;
 mod stored_plain_cell_minimum;
 mod stored_plain_row_frame;
 mod stored_shared_cell_frame;
@@ -17063,6 +17064,7 @@ impl LayoutEngine {
                 }
             }
         }
+        self.preserve_source_page_frame_extents(cell, table, styles, &mut units);
         units
     }
 

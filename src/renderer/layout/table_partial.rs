@@ -2043,9 +2043,15 @@ impl LayoutEngine {
                 .then(|| self.declared_nested_opening_cut_height(table, start_cut, end_cut, styles))
                 .flatten()
                 .map(|frame| frame - pad_top - pad_bottom);
+            let stored_page_content_height = cut_units.and_then(|(start, end)| {
+                self.stored_cell_cut_alignment_height(cell, table, styles, start, end)
+            });
             let centered_content_height = if let Some(height) = declared_opening_content_height {
                 // 인증한 프레임은 원본 잉크 경계에서 끝난다. 첫 빈 띠와 문단 사이 빈 띠도
                 // 내용에 속하며, 보이는 줄 전진량만 합산할 때 빠져도 소유를 보존한다.
+                height
+            } else if let Some(height) = stored_page_content_height {
+                // 같은 컷의 예약이 보존한 원본 쪽 프레임을 정렬에도 사용한다.
                 height
             } else if selected_frame_owns_alignment {
                 // 수용한 종료 프레임은 선택한 가시 줄을 정렬한다. 다음 쪽으로

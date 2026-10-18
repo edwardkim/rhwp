@@ -14,6 +14,7 @@ pub(super) struct CellCutFrame<'a> {
     start: usize,
     padding: f64,
     preserves_line_slots: bool,
+    source_page_frame: Option<crate::renderer::float_placement::StoredTextPageFrame>,
 }
 
 impl<'a> CellCutFrame<'a> {
@@ -26,6 +27,9 @@ impl<'a> CellCutFrame<'a> {
         start: usize,
     ) -> Self {
         let (_, _, top, bottom) = engine.resolve_stored_nested_cell_padding(cell, table, styles);
+        let preserves_line_slots = engine.stored_span_cut_preserves_line_slots(table, cell);
+        let source_page_frame =
+            engine.stored_page_frame_for_unit(cell, table, units, start, top + bottom);
         Self {
             engine,
             cell,
@@ -34,7 +38,8 @@ impl<'a> CellCutFrame<'a> {
             units,
             start,
             padding: top + bottom,
-            preserves_line_slots: engine.stored_span_cut_preserves_line_slots(table, cell),
+            preserves_line_slots,
+            source_page_frame,
         }
     }
 
@@ -55,7 +60,7 @@ impl<'a> CellCutFrame<'a> {
         }
     }
 
-    pub(super) fn height(&self, end: usize, content_advance: f64) -> f64 {
+    fn content_height(&self, end: usize, content_advance: f64) -> f64 {
         let trim = self.engine.native_saved_reset_cut_trailing_trim(
             self.table,
             self.cell,
@@ -64,7 +69,36 @@ impl<'a> CellCutFrame<'a> {
             end,
             self.styles,
         );
-        let content = (content_advance - trim).max(0.0) + self.header_height(end);
+        (content_advance - trim).max(0.0) + self.header_height(end)
+    }
+
+    /// 온전히 선택한 원본 쪽 프레임은 새 글줄이 덜 차지해도 같은 점유 끝을 가진다.
+    /// 예약과 실제 정렬은 이 결과를 함께 사용한다. 문단 내부 컷에는 적용하지 않는다.
+    pub(super) fn stored_content_height(&self, end: usize, content_advance: f64) -> Option<f64> {
+        let frame = self.source_page_frame?;
+        let last = self.units.get(end.checked_sub(1)?)?;
+        if end <= self.start
+            || last.para_idx + 1 != frame.end_paragraph
+            || self
+                .units
+                .get(end)
+                .is_some_and(|next| next.para_idx == last.para_idx)
+        {
+            return None;
+        }
+        Some(
+            self.content_height(end, content_advance)
+                .max(crate::renderer::hwpunit_to_px(
+                    frame.content_height_hu,
+                    self.engine.dpi,
+                )),
+        )
+    }
+
+    pub(super) fn height(&self, end: usize, content_advance: f64) -> f64 {
+        let content = self
+            .stored_content_height(end, content_advance)
+            .unwrap_or_else(|| self.content_height(end, content_advance));
         let physical = if content > 0.0 {
             content + self.padding
         } else {
@@ -96,6 +130,22 @@ impl<'a> CellCutFrame<'a> {
 }
 
 impl LayoutEngine {
+    pub(in crate::renderer::layout) fn stored_cell_cut_alignment_height(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start: usize,
+        end: usize,
+    ) -> Option<f64> {
+        let units = self.cell_units(cell, table, styles);
+        let start = start.min(units.len());
+        let end = end.clamp(start, units.len());
+        let advance = units[start..end].iter().map(|unit| unit.height).sum();
+        CellCutFrame::new(self, cell, table, styles, &units, start)
+            .stored_content_height(end, advance)
+    }
+
     /// RowBreak rowspan 블록에서 셀의 행 시작 y를 반영해 컷을 전진시킨다.
     ///
     /// 일반 `advance_row_block_cut`은 블록 안의 모든 셀에 같은 예산을 주기 때문에,

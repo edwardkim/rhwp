@@ -43,6 +43,8 @@ pub(crate) use picture_anchor::stored_picture_anchor_delta;
 pub(crate) use square_lane::{
     square_successor_starts_beside_table, stored_line_lane_probe, StoredLineLaneProbe,
 };
+mod stored_text_page_frame;
+pub(crate) use stored_text_page_frame::{stored_text_page_frame, StoredTextPageFrame};
 
 use std::ops::Range;
 
