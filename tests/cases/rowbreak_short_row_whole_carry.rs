@@ -277,7 +277,7 @@ fn continued_table_bottom_caption_keeps_the_whole_table_gap() {
 /// 가로 표): 195쪽이 행 43(`4.4`, 선언 20.87px)까지 담고 196쪽이 행 44, 197쪽이 행 71 로 시작하며,
 /// 75×3 표는 201쪽이 행 43, 202쪽이 행 65 로 시작한다. 닫는 선은 저장 용지·여백으로 정한다:
 /// (59528 − 아래 2835 − 꼬리말 2835 − 바깥 아래 283 − 100) HU = 712.99px (PDF 712.91). 행 43 상자는
-/// 그 선 아래로 내려가지 않는다(쪽 끝 띠가 바깥 아래 여백 선 714.33px 까지 채우는 1.3px 차이는 남는다).
+/// 쪽 끝 띠를 포함해 그 선에서 끝난다.
 /// 수정 전 rhwp 는 선언 높이로 판정해 0.5px 차로 행 43 을 넘기고 196–202쪽이 한 행씩 밀렸다.
 #[test]
 fn crossing_span_row_closes_at_the_fragment_bottom_line() {
@@ -287,11 +287,10 @@ fn crossing_span_row_closes_at_the_fragment_bottom_line() {
     assert_whole_row_boundary(&core, 200, 3, 43);
     assert_whole_row_boundary(&core, 201, 3, 65);
     let line = (59528.0 - 2835.0 - 2835.0 - 283.0 - 100.0) / 75.0;
-    let body_line = (59528.0 - 2835.0 - 2835.0 - 283.0) / 75.0;
     let (top, bottom) = cell_box(&core, 194, 43, 2);
     assert!(
-        line - top >= 17.09 && bottom <= body_line + 0.5,
-        "195쪽 행 43 은 내용(17.09px)이 닫는 선 {line:.2}px 안에 들고 본문 선 {body_line:.2}px 를 넘지 않아야 한다: {top:.2}..{bottom:.2}"
+        line - top >= 17.09 && (bottom - line).abs() <= 0.5,
+        "195쪽 행 43 은 내용(17.09px)이 들고 상자가 닫는 선 {line:.2}px 에서 끝나야 한다: {top:.2}..{bottom:.2}"
     );
 }
 
