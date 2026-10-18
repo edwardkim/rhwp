@@ -109,9 +109,9 @@ impl TypesetEngine {
         ) && !self.render_normalization.table_text_reflowed(source.table)
     }
 
-    /// 쪽 끝 행 `row` 를 지나 뒤 행까지 이어지는 저장 걸침 칸이, 앞 행 상자·이 행의
-    /// 하한(두 조각 내용 합과 온전한 행 높이 중 큰 값)·뒤 행의 최소 높이를 빼고도 남기는
-    /// 선언 몫.
+    /// 쪽 끝 내용 컷에 걸리는 병합 칸의 최소 높이 중 현재 조각이 소유하는 잔여다.
+    /// 앞서 수용한 물리 행 상자와 현재 조각을 차감한다. 후속 행으로 이어지는 칸은
+    /// 같은 행의 남은 내용과 뒤 행의 높이도 예약한다.
     /// 한/글은 걸침 칸의 총높이를 쪽을 넘어서도 지키며, 그 몫이 있으면 쪽 끝의 빈 띠를
     /// 이 행 조각이 차지한다(`21761835` 2쪽 행 20: 칸 (20,0) rs=5 252px, 한/글 2020 PDF
     /// 행 20 첫 조각 59px = 내용 51px + 본문 끝까지의 띠). 몫이 없으면 띠는 비어 남는다.
@@ -257,7 +257,11 @@ impl TypesetEngine {
                         layout.row_cut_content_height(table, later, &[], &[], source.styles) + cs
                     })
                     .sum::<f64>();
-                Some(hwpunit_to_px(cell.height as i32, self.dpi) - prefix - row_floor - after)
+                // 이 행에서 끝나는 병합 칸의 잔여 최소 높이는 현재 조각에 속한다.
+                // 일반 셀의 뒤쪽 내용 컷은 별도로 공간을 점유하며, 그 미래 점유를
+                // 현재 병합 칸의 남은 최소 높이에서 미리 공제하면 종료 상자가 줄어든다.
+                let owned_row_floor = if end == row + 1 { current } else { row_floor };
+                Some(hwpunit_to_px(cell.height as i32, self.dpi) - prefix - owned_row_floor - after)
             })
             .try_fold(f64::INFINITY, |least, slack| Some(least.min(slack?)))
             .filter(|slack| slack.is_finite())
