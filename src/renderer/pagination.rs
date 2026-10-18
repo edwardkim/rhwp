@@ -1355,7 +1355,9 @@ impl PaginationResult {
                         page_band_flow_starts: cc
                             .page_band_flow_starts
                             .iter()
-                            .map(|(&pi, &start)| ((pi as i64 + offset as i64).max(0) as usize, start))
+                            .map(|(&pi, &start)| {
+                                ((pi as i64 + offset as i64).max(0) as usize, start)
+                            })
                             .collect(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,
