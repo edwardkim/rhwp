@@ -2749,6 +2749,8 @@ impl HeightMeasurer {
         } else {
             0.0
         };
+        // 앞 문단의 흐름 중첩 표 끝. 뒤 호스트의 저장 갭이 그 표의 띠인지 가린다.
+        let prior_nested_end = std::cell::Cell::new(0.0f64);
         paragraphs
             .iter()
             .enumerate()
@@ -2834,15 +2836,13 @@ impl HeightMeasurer {
                     // 호스트가 셀 마지막 문단인 변형도 같은 식으로 갈린다). 흐름형
                     // (lh 미흡수 포함)은 직전 갭이 평범한 줄간격이라 배제되고,
                     // 호스트가 셀 첫 문단이면(49308 조각 셀) 직전 줄이 없어 배제된다.
-                    let prev_end = paragraphs
-                        .iter()
-                        .take(pidx)
-                        .flat_map(|prev| prev.line_segs.iter())
-                        .map(|s| {
-                            hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), self.dpi)
-                        })
-                        .filter(|&e| e <= para_top + 0.5)
-                        .fold(f64::NEG_INFINITY, f64::max);
+                    let prev_end = crate::renderer::float_placement::nested_host_gap_start(
+                        paragraphs,
+                        pidx,
+                        para_top,
+                        prior_nested_end.get(),
+                        self.dpi,
+                    );
                     let gap_before = para_top - prev_end;
                     // [#5723] 호스트가 **셀 첫 문단**인데 그 줄의 저장 vpos 가 표
                     // 높이 이상으로 내려가 있으면(셀 상단→줄 갭 = 표 공간), 그 줄은
@@ -2881,11 +2881,13 @@ impl HeightMeasurer {
                         && nested_h <= ladder_end
                         && prev_end.is_finite()
                         && gap_before >= nested_h * 0.85;
-                    if anchored_not_flowing {
+                    let bottom = if anchored_not_flowing {
                         candidate.min(ladder_end)
                     } else {
                         candidate
-                    }
+                    };
+                    prior_nested_end.set(prior_nested_end.get().max(bottom));
+                    bottom
                 }
             })
             .fold(0.0f64, f64::max)

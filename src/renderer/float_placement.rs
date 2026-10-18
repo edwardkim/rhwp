@@ -3826,28 +3826,18 @@ impl ParagraphFloatPlacement {
             ParagraphFloatFlow::Exclusion | ParagraphFloatFlow::StoredSquareWrap => text_flow_end,
             ParagraphFloatFlow::EmptyHost => self.occupied_bottom,
             ParagraphFloatFlow::NextLine => {
-                // 실제 저장 호스트 줄은 개체 뒤에서도 자기 줄 상자를 점유한다.
-                // 인증된 뒤 줄 원점에 포함된 간격을 다시 더하지 않는다.
-                if let Some(end) = self
+                // A certified successor line at or below the accepted frame
+                // bottom already closes this paragraph. Adding the host's
+                // trailing space again would move that same successor beyond
+                // its source line; the successor consumes its own before-space
+                // at that origin once.
+                match self
                     .stored_successor_line_origin
-                    .filter(|end| end.is_finite() && *end >= self.occupied_bottom)
+                    .filter(|origin| origin.is_finite() && *origin >= self.occupied_bottom - 0.5)
                 {
-                    return text_flow_end.max(end);
+                    Some(origin) => text_flow_end.max(origin.max(self.occupied_bottom)),
+                    None => text_flow_end.max(self.occupied_bottom + spacing_after),
                 }
-                // A certified successor at the accepted frame bottom already
-                // closes this paragraph. Adding the host's trailing space
-                // again would move that same successor beyond its source box.
-                let source_closes_paragraph = self
-                    .stored_successor_line_origin
-                    .is_some_and(|origin| (origin - self.occupied_bottom).abs() <= 0.5);
-                text_flow_end.max(
-                    self.occupied_bottom
-                        + if source_closes_paragraph {
-                            0.0
-                        } else {
-                            spacing_after
-                        },
-                )
             }
             ParagraphFloatFlow::StoredPicture { next_flow_y } => next_flow_y,
         }
@@ -5179,6 +5169,30 @@ pub(crate) fn nested_group_occupied_height(
         }
     }
     flow_height.max(overlay_height)
+}
+
+/// [#4533] 절대배치 캡이 증거로 쓰는 호스트 위 저장 갭의 시작점이다.
+/// 앞 문단의 흐름 중첩 표가 그 갭을 채웠으면 갭은 이 표가 예약한 공간이 아니다.
+/// 저장 줄 끝만 보면 앞 표가 차지한 띠를 이 표의 절대배치 증거로 오인한다.
+pub(crate) fn nested_host_gap_start(
+    paragraphs: &[Paragraph],
+    pidx: usize,
+    para_top: f64,
+    prior_nested_end: f64,
+    dpi: f64,
+) -> f64 {
+    let line_end = paragraphs
+        .iter()
+        .take(pidx)
+        .flat_map(|prev| prev.line_segs.iter())
+        .map(|s| crate::renderer::hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), dpi))
+        .filter(|&e| e <= para_top + 0.5)
+        .fold(f64::NEG_INFINITY, f64::max);
+    if prior_nested_end > 0.0 {
+        line_end.max(prior_nested_end.min(para_top))
+    } else {
+        line_end
+    }
 }
 
 pub(crate) fn nested_table_groups(para: &Paragraph, _hwpx_stored: bool) -> Vec<NestedTableGroup> {
