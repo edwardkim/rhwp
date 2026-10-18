@@ -1345,6 +1345,21 @@ impl TypesetEngine {
         // (아래 `crossing_span_page_end_band`). 21761835 2쪽 행 20(빈 문단 뒤 vpos 0 재시작),
         // 1342000 200쪽 행 75(예산 컷) 모두 한/글이 쪽 끝까지 채운다.
         let other_content_cut = split_end_limit > 0.0 && !plain_paragraph_cut;
+        // 스캔이 같은 내용 컷 밖의 빈 띠를 이미 예약했어도 그 상자의 소유는 남는다.
+        // 추가 높이가 0이라는 이유로 소유를 지우면 paint가 끝 행을 다시 접고,
+        // 다음 조각도 실제 수용한 상자를 잃는다. 자연 내용 높이만으로 추정하지 않는다.
+        let reserved_plain_end_band = plain_paragraph_cut
+            && accepted_partial_row_box.is_some_and(|(row, height)| {
+                row + 1 == end_row
+                    && height
+                        > layout_engine.row_cut_content_height(
+                            row_geometry_table,
+                            row,
+                            if row == cursor_row { start_cut } else { &[] },
+                            &split_end_cut,
+                            styles,
+                        )
+            });
         let mut span_band_owns_end_row = false;
         let mut span_band_row_box = None;
         if (split_end_limit == 0.0 || plain_paragraph_cut || other_content_cut)
@@ -1364,7 +1379,7 @@ impl TypesetEngine {
                         &split_end_cut,
                     )
             })
-            && ledger_page_end_band > 0.0
+            && (ledger_page_end_band > 0.0 || reserved_plain_end_band)
         {
             let last_row = end_row - 1;
             let last_height = end_row_height_override
