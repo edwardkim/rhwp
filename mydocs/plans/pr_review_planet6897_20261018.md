@@ -1606,3 +1606,16 @@ SHA ab284ec77515e54c7b0b218747641dab777e9f45b7b2e6d8e12427f964c65957로
 다시 고정한 뒤 컴파일/실행 exit0을 확인했다. 이 실패는 제품 결함이 아닌 진단 환경
 오류다. Native62 소속 진단의 첫 --compat2022 옵션도 잘못된 명령으로 분리 보존하고
 실제 CLI 계약 --compat 2022로 수정 후 성공했다. source/입력 변경은 없었다.
+
+
+### 후보64 현재 줄 출처를 같은 컷 수용 경로에 전달
+
+ComposedParagraph.paragraph_with_frame_geometry가 제공하는 실제 줄의
+TAG_IMPLEMENTATION_PROPERTY를 CellUnit.reflowed_line_slot으로 보존했다.
+같은 현재 줄 메트릭의 following_line_advance와 짝을 이룬다. 분리 간격을
+발행하지 않은 atom은 종전 계약을 유지한다. 일반 높이 walk와 블록 CellCutFrame은
+stored_span_cut_closing_advance를 함께 사용해, 유효한 원본 Center/Bottom 슬롯에는
+종전 수용을, 새 프레임의 재조판 줄에는 실제 잉크 상자 수용을 적용한다. 원본 셀에
+LineSeg가 있다는 사실만으로 일부 새 줄까지 원본 슬롯으로 인증하지 않는다.
+opt-in 유닛 진단에도 현재 줄 출처와 실제 뒤 전진을 표시해64/65와81/82의 경로를
+직접 대조한다. 아직 새 출력은 미실행이며 두 경계와 확대62쪽·전쪽 대조 뒤 판정한다.

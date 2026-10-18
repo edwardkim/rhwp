@@ -380,6 +380,21 @@ impl LayoutEngine {
             })
     }
 
+    /// 유효한 저장 슬롯은 기존 수용 계약을 유지한다. 새 프레임이 발행한
+    /// 줄은 실제 다음 줄간격을 구분하며 원본 슬롯을 재사용한 것으로 취급하지 않는다.
+    pub(super) fn stored_span_cut_closing_advance(
+        &self,
+        table: &Table,
+        cell: &Cell,
+        unit: &CellUnit,
+    ) -> f64 {
+        if self.stored_span_cut_preserves_line_slots(table, cell) && !unit.reflowed_line_slot {
+            0.0
+        } else {
+            self.stored_span_line_tail_spacing(unit)
+        }
+    }
+
     pub(super) fn stored_span_line_tail_spacing(&self, unit: &CellUnit) -> f64 {
         if unit.empty_spacer
             || unit.vis_start >= unit.vis_end

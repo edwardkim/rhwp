@@ -1817,6 +1817,8 @@ pub(super) struct CellUnit {
     pub(super) height: f64,
     /// 실제 합성 글줄 뒤 다음 줄로 가는 간격. 컷 끝의 잉크 점유와 구분한다.
     following_line_advance: f64,
+    /// 현재 줄은 원본 저장 슬롯 대신 재조판 프레임이 발행한 줄인가.
+    reflowed_line_slot: bool,
     /// 마지막 자식 내용과 함께 예약하는 부모 호스트 종료 줄. 자식 viewport에는 포함하지 않는다.
     nested_host_closing_line_height: f64,
     /// 이 유닛 앞에 vpos 리셋(셀 내부 페이지 분할)이 있는가.
@@ -14023,6 +14025,7 @@ impl LayoutEngine {
                 .map(|(pi, li, advance)| CellUnit {
                     height: hwpunit_to_px(advance, self.dpi),
                     following_line_advance: 0.0,
+                    reflowed_line_slot: false,
                     hard_break_before: false,
                     stored_frame_break_before: false,
                     page_frame_reset_before: false,
@@ -14063,6 +14066,7 @@ impl LayoutEngine {
             return vec![CellUnit {
                 height: hwpunit_to_px(frame.content_height_hu, self.dpi),
                 following_line_advance: 0.0,
+                reflowed_line_slot: false,
                 hard_break_before: false,
                 stored_frame_break_before: false,
                 page_frame_reset_before: false,
@@ -14536,6 +14540,7 @@ impl LayoutEngine {
                     units.push(CellUnit {
                         height: h,
                         following_line_advance: 0.0,
+                        reflowed_line_slot: false,
                         hard_break_before: false,
                         stored_frame_break_before: false,
                         page_frame_reset_before: false,
@@ -14572,6 +14577,7 @@ impl LayoutEngine {
                 units.push(CellUnit {
                     height: non_inline_h,
                     following_line_advance: 0.0,
+                    reflowed_line_slot: false,
                     hard_break_before: false,
                     stored_frame_break_before: false,
                     page_frame_reset_before: false,
@@ -15725,6 +15731,7 @@ impl LayoutEngine {
                                     units.push(CellUnit {
                                         height: uh,
                                         following_line_advance: 0.0,
+                                        reflowed_line_slot: false,
                                         hard_break_before,
                                         stored_frame_break_before,
                                         page_frame_reset_before: hard_break_before,
@@ -15898,6 +15905,7 @@ impl LayoutEngine {
                         units.push(CellUnit {
                             height: uh,
                             following_line_advance: 0.0,
+                            reflowed_line_slot: false,
                             hard_break_before,
                             // The host's frame boundary belongs to its first
                             // nested row. Project it once, just like the host's
@@ -16152,6 +16160,7 @@ impl LayoutEngine {
                             units.push(CellUnit {
                                 height: uh,
                                 following_line_advance: 0.0,
+                                reflowed_line_slot: false,
                                 hard_break_before,
                                 stored_frame_break_before: fragment.stored_frame_break_before,
                                 page_frame_reset_before: false,
@@ -16275,6 +16284,7 @@ impl LayoutEngine {
                         units.push(CellUnit {
                             height: lh,
                             following_line_advance: 0.0,
+                            reflowed_line_slot: false,
                             hard_break_before,
                             stored_frame_break_before: stored_frame_break_before(li),
                             // 일반 글줄 경로와 같이 가시성 게이트 전의 저장
@@ -16445,6 +16455,7 @@ impl LayoutEngine {
                             units.push(CellUnit {
                                 height: fragment.height,
                                 following_line_advance: 0.0,
+                                reflowed_line_slot: false,
                                 hard_break_before: fragment.hard_break_before,
                                 stored_frame_break_before: fragment.stored_frame_break_before,
                                 page_frame_reset_before: false,
@@ -16645,6 +16656,7 @@ impl LayoutEngine {
                 units.push(CellUnit {
                     height: para_h,
                     following_line_advance,
+                    reflowed_line_slot: p.line_segs.last().is_some_and(line_seg_is_synthetic),
                     // [Task #1488] 비가시 빈 문단(중첩표 없음)의 오버레이 리셋은 페이지를
                     // 강제 분할하지 않는다 — 여분 빈 연속 페이지 방지. 중첩표가 있으면
                     // 가시 콘텐츠를 가지므로 리셋 보존.
@@ -16800,6 +16812,10 @@ impl LayoutEngine {
                     units.push(CellUnit {
                         height: lh,
                         following_line_advance,
+                        reflowed_line_slot: p
+                            .line_segs
+                            .get(last_fragment)
+                            .is_some_and(line_seg_is_synthetic),
                         // [Task #1488] 비가시(빈 텍스트) 오버레이 스페이서 문단이 만든 vpos
                         // 리셋은 페이지를 강제 분할하지 않는다. 셀 안에서 본문 텍스트 위에
                         // 겹쳐 놓인 빈 문단(동일/역방향 vpos)들이 리셋마다 페이지를 1장씩
@@ -23497,7 +23513,7 @@ impl LayoutEngine {
             // 조각 끝은 실제 글줄 상자를 소유한다. 다음 줄로 가는 간격은
             // 합성 줄을 만든 생산자의 값으로 구분하며 저장 줄 인덱스로 재추측하지 않는다.
             let line_tail = if stored_text_span && n + 1 < units.len() {
-                self.stored_span_line_tail_spacing(&units[n])
+                self.stored_span_cut_closing_advance(table, cell, &units[n])
             } else {
                 0.0
             };
@@ -26906,6 +26922,7 @@ mod row_cut_tests {
         CellUnit {
             height,
             following_line_advance: 0.0,
+            reflowed_line_slot: false,
             hard_break_before,
             stored_frame_break_before: hard_break_before,
             page_frame_reset_before: false,
@@ -26949,6 +26966,7 @@ mod row_cut_tests {
         CellUnit {
             height,
             following_line_advance: 0.0,
+            reflowed_line_slot: false,
             hard_break_before: false,
             stored_frame_break_before: false,
             page_frame_reset_before: false,

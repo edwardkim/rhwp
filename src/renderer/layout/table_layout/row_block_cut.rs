@@ -76,7 +76,7 @@ impl<'a> CellCutFrame<'a> {
                 .stored_plain_text_span_frame(self.table, self.cell)
         {
             self.engine
-                .stored_span_line_tail_spacing(&self.units[end - 1])
+                .stored_span_cut_closing_advance(self.table, self.cell, &self.units[end - 1])
         } else {
             0.0
         };
@@ -133,9 +133,11 @@ impl<'a> CellCutFrame<'a> {
     pub(super) fn fitting_height(&self, end: usize, content_advance: f64) -> f64 {
         let physical = self.height(end, content_advance);
         if self.preserves_line_slots && end > self.start && end < self.units.len() {
-            let following_advance = self
-                .engine
-                .stored_span_line_tail_spacing(&self.units[end - 1]);
+            let following_advance = self.engine.stored_span_cut_closing_advance(
+                self.table,
+                self.cell,
+                &self.units[end - 1],
+            );
             physical
                 .max(content_advance - following_advance + self.padding + self.header_height(end))
         } else {

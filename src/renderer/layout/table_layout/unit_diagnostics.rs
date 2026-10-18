@@ -26,8 +26,9 @@ pub(super) fn trace_units(cell: &Cell, units: &[CellUnit]) {
     for (index, unit) in units.iter().enumerate() {
         let seg = cell.paragraphs[unit.para_idx].line_segs.get(unit.vis_start);
         eprintln!(
-            "DIAG_CELL_UNIT row={} col={} span={} index={} height={:.6} para={} lines={}..{} hard_break={} stored_frame_break={} page_frame_reset={} source={:?} nested_row={:?} nested_cut={:?}",
-            cell.row, cell.col, cell.row_span, index, unit.height, unit.para_idx,
+            "DIAG_CELL_UNIT row={} col={} span={} index={} height={:.6} following={:.6} reflowed_slot={} para={} lines={}..{} hard_break={} stored_frame_break={} page_frame_reset={} source={:?} nested_row={:?} nested_cut={:?}",
+            cell.row, cell.col, cell.row_span, index, unit.height,
+            unit.following_line_advance, unit.reflowed_line_slot, unit.para_idx,
             unit.vis_start, unit.vis_end, unit.hard_break_before,
             unit.stored_frame_break_before, unit.page_frame_reset_before,
             seg.map(|seg| (seg.vertical_pos, seg.line_height, seg.line_spacing)),
