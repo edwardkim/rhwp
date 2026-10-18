@@ -4274,6 +4274,44 @@ impl LayoutEngine {
         paper_images.sort_by_key(Self::paper_node_sort_key);
     }
 
+    /// 셀 문단의 글 뒤로 그림은 그 칸의 본문 텍스트 뒤에 깔리되 표와 함께 그려진다.
+    ///
+    /// 한글은 본문의 글 뒤로 개체를 먼저 그리고, 표는 칸 안 개체와 함께 그 위에
+    /// 그린다. `ImageNode.text_wrap` 의 BehindText 는 replay 를 쪽 전체 BehindText
+    /// plane 으로 올려 보내므로, 흐름 표 칸의 그림이 쪽 기준 글 뒤로 도형(흰 채우기
+    /// 등) 아래에 깔려 사라졌다. 칸 안 그림은 칸 배경 바로 뒤(본문 텍스트 아래)로
+    /// 옮기고 쪽 plane 분류에서 뺀다. 개체 배치형 표 안이면 표의 layer 가 plane 을
+    /// 정하므로 결과가 같다.
+    fn keep_cell_behind_text_pictures_in_cell(cell: &mut RenderNode) {
+        let behind = |child: &RenderNode| {
+            child.layer.is_none()
+                && matches!(
+                    &child.node_type,
+                    RenderNodeType::Image(img) if img.text_wrap == Some(TextWrap::BehindText)
+                )
+        };
+        if !cell.children.iter().any(behind) {
+            return;
+        }
+        let (mut pictures, mut rest): (Vec<_>, Vec<_>) = cell.children.drain(..).partition(behind);
+        for picture in &mut pictures {
+            if let RenderNodeType::Image(img) = &mut picture.node_type {
+                img.text_wrap = None;
+            }
+        }
+        // 칸 배경(색·무늬·그림 채우기)은 `render_cell_background` 가 맨 앞에 둔다.
+        let background = rest
+            .iter()
+            .take_while(|child| match &child.node_type {
+                RenderNodeType::Rectangle(_) => true,
+                RenderNodeType::Image(img) => img.fill_mode.is_some(),
+                _ => false,
+            })
+            .count();
+        rest.splice(background..background, pictures);
+        cell.children = rest;
+    }
+
     /// [#6121] 셀 안 anchored(비 TAC) 개체를 셀 본문 텍스트 위로 올린다.
     ///
     /// 한글은 표 칸 문단에 앵커된 자리차지/어울림 개체(글 뒤로 제외)를 칸의 본문
@@ -4291,6 +4329,7 @@ impl LayoutEngine {
         if !matches!(node.node_type, RenderNodeType::TableCell(_)) {
             return;
         }
+        Self::keep_cell_behind_text_pictures_in_cell(node);
         let lifts = |child: &RenderNode| {
             child
                 .layer
