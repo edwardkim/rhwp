@@ -4761,8 +4761,26 @@ impl LayoutEngine {
                 float: &mut BoundingBox,
                 node: &RenderNode,
                 float_subtree: bool,
+                inside_textbox: bool,
             ) {
-                let cb = &node.bbox;
+                let mut cb = node.bbox;
+                // 위 밑줄·강조점은 글줄 상자 위로 그려져 첫 줄에서 본문 clip 에 잘린다.
+                // 글자 상자는 캐럿/선택이 쓰므로 키우지 않고 clip 에만 잉크를 합친다.
+                // 글상자 안은 글상자 자체 clip 이 자르므로 반영하지 않는다.
+                if !inside_textbox {
+                    if let RenderNodeType::TextRun(run) = &node.node_type {
+                        if let Some(ink) =
+                            super::text_decoration::raised_decoration_ink_bbox(cb, run)
+                        {
+                            let right = (cb.x + cb.width).max(ink.x + ink.width);
+                            let bottom = (cb.y + cb.height).max(ink.y + ink.height);
+                            cb.x = cb.x.min(ink.x);
+                            cb.y = cb.y.min(ink.y);
+                            cb.width = right - cb.x;
+                            cb.height = bottom - cb.y;
+                        }
+                    }
+                }
                 let is_float = float_subtree || is_floating_object(node);
                 let target: &mut BoundingBox = if is_float { &mut *float } else { &mut *flow };
                 let child_bottom = cb.y + cb.height;
@@ -4786,15 +4804,17 @@ impl LayoutEngine {
                     RenderNodeType::TableCell(ref cell) if cell.clip
                 );
                 if !clips_descendants {
+                    let inside_textbox =
+                        inside_textbox || matches!(node.node_type, RenderNodeType::TextBox);
                     for child in &node.children {
-                        expand_clip(flow, float, child, is_float);
+                        expand_clip(flow, float, child, is_float, inside_textbox);
                     }
                 }
             }
             let mut flow_clip = body_bbox;
             let mut float_clip = body_bbox;
             for child in &body_node.children {
-                expand_clip(&mut flow_clip, &mut float_clip, child, false);
+                expand_clip(&mut flow_clip, &mut float_clip, child, false, false);
             }
             // [#5855] 부동 개체 clip 의 하한은 **용지 하단**이다.
             //
