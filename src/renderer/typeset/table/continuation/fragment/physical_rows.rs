@@ -261,11 +261,28 @@ impl TypesetEngine {
                 // 일반 셀의 뒤쪽 내용 컷은 별도로 공간을 점유하며, 그 미래 점유를
                 // 현재 병합 칸의 남은 최소 높이에서 미리 공제하면 종료 상자가 줄어든다.
                 let owned_row_floor = if end == row + 1 { current } else { row_floor };
-                Some(hwpunit_to_px(cell.height as i32, self.dpi) - prefix - owned_row_floor - after)
+                let slack = hwpunit_to_px(cell.height as i32, self.dpi)
+                    - prefix - owned_row_floor - after;
+                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                    eprintln!(
+                        "DIAG_SPAN_BAND_OWNER sec={} pi={} row={} first={} end={} declared={:.6} prefix={:.6} current={:.6} row_floor={:.6} after={:.6} slack={:.6}",
+                        st.section_index, source.para_index, row, first, end,
+                        hwpunit_to_px(cell.height as i32, self.dpi), prefix,
+                        current, owned_row_floor, after, slack,
+                    );
+                }
+                Some(slack)
             })
             .try_fold(f64::INFINITY, |least, slack| Some(least.min(slack?)))
             .filter(|slack| slack.is_finite())
             .unwrap_or(f64::NEG_INFINITY);
+        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+            eprintln!(
+                "DIAG_SPAN_BAND_RESULT sec={} pi={} row={} current={:.6} remaining={:.6} whole={:.6} row_slack={:.6} span_slack={:.6} available={:.6}",
+                st.section_index, source.para_index, row, current, remaining,
+                whole_row, row_slack, slack, band,
+            );
+        }
         let slack = slack.max(row_slack);
         (slack > 0.5).then(|| band.min(slack))
     }

@@ -1819,3 +1819,12 @@ HEAD/추적 파일 무변경을 확인했다. frozen rlib는 이 정식 실행�
 2026-10-18T03:45:02Z fetch의upstream/devel은6ed1682c3 그대로이며
 현재HEAD1303601cc의조상이다(120/0). 사용자 지시대로 불필요한 rebase 없이
 유지했다. untracked PDF4건을 보존했다. 이 기록은 PR 준비/승인 완료가 아니다.
+
+
+### 종료 띠 입력 원장의 opt-in 진단
+
+다음 Native 진단 빌드에서는공통 crossing_span_page_end_band의 선택 결과를
+바꾸지 않고 RHWP_DIAG_SCAN을 켠 실행에만 각병합 칸의선언·앞수용합·현재
+상자·미래 예약·잔여와행 자체의whole/current/remaining/row_slack을 출력한다.
+행28의1.346667px와행52의17px가어느독립 최소 높이에서 오는지구분한다.
+진단 추가로회귀·시각 통과를 주장하지 않으며 실제 frozen 생산SHA를기록한다.
