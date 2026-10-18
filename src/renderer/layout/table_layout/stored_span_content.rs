@@ -380,7 +380,7 @@ impl LayoutEngine {
             })
     }
 
-    pub(super) fn stored_span_line_tail_spacing(&self, cell: &Cell, unit: &CellUnit) -> f64 {
+    pub(super) fn stored_span_line_tail_spacing(&self, unit: &CellUnit) -> f64 {
         if unit.empty_spacer
             || unit.vis_start >= unit.vis_end
             || unit.nested_row.is_some()
@@ -389,10 +389,6 @@ impl LayoutEngine {
         {
             return 0.0;
         }
-        cell.paragraphs
-            .get(unit.para_idx)
-            .and_then(|para| para.line_segs.get(unit.vis_end - 1))
-            .map(|line| hwpunit_to_px(line.line_spacing, self.dpi).min(unit.height.max(0.0)))
-            .unwrap_or(0.0)
+        unit.following_line_advance.min(unit.height.max(0.0))
     }
 }

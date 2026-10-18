@@ -1815,6 +1815,8 @@ enum RecursiveBlockPreludeRole {
 pub(super) struct CellUnit {
     /// 유닛 높이 (px). [#5880] table_partial 의 조각 원점 보정이 소비분 합산에 읽는다.
     pub(super) height: f64,
+    /// 실제 합성 글줄 뒤 다음 줄로 가는 간격. 컷 끝의 잉크 점유와 구분한다.
+    following_line_advance: f64,
     /// 마지막 자식 내용과 함께 예약하는 부모 호스트 종료 줄. 자식 viewport에는 포함하지 않는다.
     nested_host_closing_line_height: f64,
     /// 이 유닛 앞에 vpos 리셋(셀 내부 페이지 분할)이 있는가.
@@ -14020,6 +14022,7 @@ impl LayoutEngine {
                 .into_iter()
                 .map(|(pi, li, advance)| CellUnit {
                     height: hwpunit_to_px(advance, self.dpi),
+                    following_line_advance: 0.0,
                     hard_break_before: false,
                     stored_frame_break_before: false,
                     page_frame_reset_before: false,
@@ -14059,6 +14062,7 @@ impl LayoutEngine {
             // 작은 빈 줄만 먼저 소비하면 그림의 흐름 공간이 뒤 조각으로 갈라진다.
             return vec![CellUnit {
                 height: hwpunit_to_px(frame.content_height_hu, self.dpi),
+                following_line_advance: 0.0,
                 hard_break_before: false,
                 stored_frame_break_before: false,
                 page_frame_reset_before: false,
@@ -14531,6 +14535,7 @@ impl LayoutEngine {
                     let h = non_inline_h.min(FILLER_UNIT_PX);
                     units.push(CellUnit {
                         height: h,
+                        following_line_advance: 0.0,
                         hard_break_before: false,
                         stored_frame_break_before: false,
                         page_frame_reset_before: false,
@@ -14566,6 +14571,7 @@ impl LayoutEngine {
                 }
                 units.push(CellUnit {
                     height: non_inline_h,
+                    following_line_advance: 0.0,
                     hard_break_before: false,
                     stored_frame_break_before: false,
                     page_frame_reset_before: false,
@@ -15718,6 +15724,7 @@ impl LayoutEngine {
 
                                     units.push(CellUnit {
                                         height: uh,
+                                        following_line_advance: 0.0,
                                         hard_break_before,
                                         stored_frame_break_before,
                                         page_frame_reset_before: hard_break_before,
@@ -15890,6 +15897,7 @@ impl LayoutEngine {
                         }
                         units.push(CellUnit {
                             height: uh,
+                            following_line_advance: 0.0,
                             hard_break_before,
                             // The host's frame boundary belongs to its first
                             // nested row. Project it once, just like the host's
@@ -16143,6 +16151,7 @@ impl LayoutEngine {
                             }
                             units.push(CellUnit {
                                 height: uh,
+                                following_line_advance: 0.0,
                                 hard_break_before,
                                 stored_frame_break_before: fragment.stored_frame_break_before,
                                 page_frame_reset_before: false,
@@ -16265,6 +16274,7 @@ impl LayoutEngine {
                         }
                         units.push(CellUnit {
                             height: lh,
+                            following_line_advance: 0.0,
                             hard_break_before,
                             stored_frame_break_before: stored_frame_break_before(li),
                             // 일반 글줄 경로와 같이 가시성 게이트 전의 저장
@@ -16434,6 +16444,7 @@ impl LayoutEngine {
                         for fragment in fragment_heights {
                             units.push(CellUnit {
                                 height: fragment.height,
+                                following_line_advance: 0.0,
                                 hard_break_before: fragment.hard_break_before,
                                 stored_frame_break_before: fragment.stored_frame_break_before,
                                 page_frame_reset_before: false,
@@ -16613,8 +16624,27 @@ impl LayoutEngine {
                         }
                     }
                 }
+                let following_line_advance = if source_controls.is_empty()
+                    && para_has_visible_text
+                    && stored_empty_successor_advance.is_none()
+                    && stored_frame_empty_advance.is_none()
+                    && stored_overlap_spacer_advance_px.is_none()
+                    && !collapse_empty_rowbreak_spacer
+                    && (!is_last_para || (para_count > 1 && table.common.treat_as_char))
+                {
+                    comp.lines.last().map_or(0.0, |line| {
+                        if line.runs.iter().any(|run| !run.text.trim().is_empty()) {
+                            hwpunit_to_px(line.line_spacing, self.dpi).max(0.0)
+                        } else {
+                            0.0
+                        }
+                    })
+                } else {
+                    0.0
+                };
                 units.push(CellUnit {
                     height: para_h,
+                    following_line_advance,
                     // [Task #1488] 비가시 빈 문단(중첩표 없음)의 오버레이 리셋은 페이지를
                     // 강제 분할하지 않는다 — 여분 빈 연속 페이지 방지. 중첩표가 있으면
                     // 가시 콘텐츠를 가지므로 리셋 보존.
@@ -16753,8 +16783,23 @@ impl LayoutEngine {
                             }
                         }
                     }
+                    // 줄간격은 실제 조판 결과에서 한 번 생산한다. 빈 줄·개체의
+                    // 대체 점유나 저장 spacer는 글줄 뒤의 여백으로 추측하지 않는다.
+                    let following_line_advance = if source_controls.is_empty()
+                        && line.runs.iter().any(|run| !run.text.trim().is_empty())
+                        && include_trailing_ls
+                        && stored_empty_successor_advance.is_none()
+                        && stored_overlap_spacer_advance_px.is_none()
+                        && !collapse_empty_rowbreak_spacer
+                        && !collapse_stored_square_picture_source_line
+                    {
+                        ls.max(0.0)
+                    } else {
+                        0.0
+                    };
                     units.push(CellUnit {
                         height: lh,
+                        following_line_advance,
                         // [Task #1488] 비가시(빈 텍스트) 오버레이 스페이서 문단이 만든 vpos
                         // 리셋은 페이지를 강제 분할하지 않는다. 셀 안에서 본문 텍스트 위에
                         // 겹쳐 놓인 빈 문단(동일/역방향 vpos)들이 리셋마다 페이지를 1장씩
@@ -23449,17 +23494,15 @@ impl LayoutEngine {
             let next_height = h + units[n].height;
             let closing_advance =
                 self.native_saved_reset_cut_trailing_trim(table, cell, &units, 0, n + 1, styles);
-            // A physical fragment can end between ordinary source lines as
-            // well as at a saved restart. Its final line owns the line box;
-            // its following spacing advances toward the next owner. The final
-            // whole-cell unit already excludes that spacing in cell_units.
+            // 조각 끝은 실제 글줄 상자를 소유한다. 다음 줄로 가는 간격은
+            // 합성 줄을 만든 생산자의 값으로 구분하며 저장 줄 인덱스로 재추측하지 않는다.
             let line_tail = if stored_text_span && n + 1 < units.len() {
-                self.stored_span_line_tail_spacing(cell, &units[n])
+                self.stored_span_line_tail_spacing(&units[n])
             } else {
                 0.0
             };
             let source_tail = if self.stored_span_cut_preserves_line_slots(table, cell) {
-                0.0
+                line_tail
             } else {
                 closing_advance.max(line_tail)
             };
@@ -26862,6 +26905,7 @@ mod row_cut_tests {
     ) -> CellUnit {
         CellUnit {
             height,
+            following_line_advance: 0.0,
             hard_break_before,
             stored_frame_break_before: hard_break_before,
             page_frame_reset_before: false,
@@ -26904,6 +26948,7 @@ mod row_cut_tests {
     fn recursive_block_unit(height: f64, role: RecursiveBlockPreludeRole) -> CellUnit {
         CellUnit {
             height,
+            following_line_advance: 0.0,
             hard_break_before: false,
             stored_frame_break_before: false,
             page_frame_reset_before: false,

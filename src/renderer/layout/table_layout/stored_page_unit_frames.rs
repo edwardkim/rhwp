@@ -56,7 +56,8 @@ impl LayoutEngine {
             let advance = units[start..end]
                 .iter()
                 .map(|unit| unit.height)
-                .sum::<f64>();
+                .sum::<f64>()
+                - self.stored_span_line_tail_spacing(&units[end - 1]);
             let required = hwpunit_to_px(frame.content_height_hu, self.dpi);
             if required > advance {
                 // 실제 마지막 글줄·가시 범위는 유지하고, 그 뒤 원본 빈 점유만 전진한다.

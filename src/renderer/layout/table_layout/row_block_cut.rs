@@ -69,7 +69,18 @@ impl<'a> CellCutFrame<'a> {
             end,
             self.styles,
         );
-        (content_advance - trim).max(0.0) + self.header_height(end)
+        let following_advance = if end > self.start
+            && end < self.units.len()
+            && self
+                .engine
+                .stored_plain_text_span_frame(self.table, self.cell)
+        {
+            self.engine
+                .stored_span_line_tail_spacing(&self.units[end - 1])
+        } else {
+            0.0
+        };
+        (content_advance - trim.max(following_advance)).max(0.0) + self.header_height(end)
     }
 
     /// 온전히 선택한 원본 쪽 프레임은 새 글줄이 덜 차지해도 같은 점유 끝을 가진다.
@@ -117,12 +128,16 @@ impl<'a> CellCutFrame<'a> {
         physical
     }
 
-    /// 정렬할 병합 칸의 마지막 잉크가 들어가더라도 다음 슬롯 전진을
-    /// 빌려 한 줄을 더 소유하지 않는다. 예약할 가시 상자는 height를 쓴다.
+    /// 실제 글줄 상자까지 수용하면 뒤 줄간격은 다음 소유자로 넘길 수 있다.
+    /// 빈 줄·개체 등 분리한 간격이 없는 유닛은 종전의 전체 슬롯을 예약한다.
     pub(super) fn fitting_height(&self, end: usize, content_advance: f64) -> f64 {
         let physical = self.height(end, content_advance);
         if self.preserves_line_slots && end > self.start && end < self.units.len() {
-            physical.max(content_advance + self.padding + self.header_height(end))
+            let following_advance = self
+                .engine
+                .stored_span_line_tail_spacing(&self.units[end - 1]);
+            physical
+                .max(content_advance - following_advance + self.padding + self.header_height(end))
         } else {
             physical
         }
