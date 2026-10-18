@@ -96,16 +96,16 @@ impl SourceFrameQuery<'_> {
         // resets require a coherent cell coordinate stream and original row
         // boxes extending beyond the declared object frame; local zeros alone
         // do not establish a source-owned cut.
-        let native_text_source_frame = layout_engine
-            .native_stored_row_has_text_frame_boundary(table, r, styles)
-            && !rowspan_touched.get(r).copied().unwrap_or(true);
+        // 일반 칸의 저장 컷은 단일 행 칸의 유닛 순서를 사용한다. 다른 칸에서
+        // 이어지는 rowspan은 별도 물리 원장을 가지며 이 컷의 소유를 지우지 않는다.
+        let native_text_source_frame =
+            layout_engine.native_stored_row_has_text_frame_boundary(table, r, styles);
         let stored_source_frame = ((native_text_source_frame
             || (profile.hwpx_stored_layout()
                 && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
                 && layout_engine.row_has_single_visible_source_cell(table, r, styles)))
             && !table.common.treat_as_char
-            && mt.allows_row_break_split()
-            && !rowspan_touched.get(r).copied().unwrap_or(true))
+            && mt.allows_row_break_split())
         .then(|| layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles))
         .flatten();
         let terminal_source_frame = profile.hwpx_stored_layout()
