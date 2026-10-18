@@ -3164,3 +3164,62 @@ y690.773px에, 다음 문단을130쪽 y141.013px에 둔다. 현재는 두 문단
 먼저129/130·142쪽과 정상 대조군32/33·80168 60/61쪽을 실행하고, 방향이 맞으면
 기존 경계·전쪽 Native/fresh WASM을 검증한다.1342000의 새 정식 검사는 전쪽90% 충족 전까지
 추가하지 않는다. 이는 실행 전 가설이며 결과가 없으면 개선 완료로 기록하지 않는다.
+
+### 후보109 실행 결과 — Native 미달 감소와 남은 이월
+
+제품/검사 head `82c3f1ca1985c2f4e886284d851a326009e1720f`의 Native 진단 opt1
+빌드는 exit0이다. frozen CLI SHA-256은
+`923bdcb3630c5041423ea794aa8ad41eefe62f72e773cfb1f21b3dc48f2281d6`이다.
+공용 target/jobs8을 유지했으며 build·전쪽·집중 검사에서 SIGTERM 수신 기록은 없다.
+
+원본 row102col8의 실제 호출은 `height=57.333333`, `available=92.346667`,
+`unit_height=20`, `hard=true`, `stored=true`, `local_zero_origin=true`인 경계에서
+최종 `strict=false`였다. 다른 강제 경계 근거 없이 로컬 원점 하나가 이전 컷을 강제한
+경로임을 확인했다. 동일한 ignored Print 진단 source를 보정 전후에 링크했다.
+양쪽 compile0, 후보108 run101은 문제 문단의 실제 쪽130/기대129 때문에 실패했고,
+후보109 run0은 해당 문단129쪽 y691.533333px, 다음 문단130쪽 y141.760000px로
+Print y690.773112/141.013173px 및 내용 한 번 보존 조건을 통과했다.
+이 진단을1342000의 새 정식 회귀로 등록하지 않았다.
+
+전572쪽 Native TSV를 완료했다.80168은157/PDF157, 후보108 대비 전쪽 동일이며
+최저94.73551%로 모두90% 이상이다.1342000은415/PDF415, 미달50→32쪽,
+최저27쪽64.95642%다. 후보108과 입력·Print·글꼴·raster/계산 조건9개 및 페이지 PDF
+해시를 대조했다.27쪽 개선·3쪽 하락이며,130쪽78.14645→99.11852%,
+255쪽75.04626→97.96826%,256쪽70.28088→98.86019%다.
+129–137·252–262·336–337쪽 등의 개선을 유지했지만138쪽81.89251→77.38575%,
+139쪽81.04840→79.46584%,140쪽81.59574→79.41016%는 새 하락으로 재검토한다.
+이는 내부 후보 비교이며 최신 upstream/devel과의 검증 완료로 쓰지 않는다.
+
+129쪽 overlay·130쪽 review를 원본 해상도로 열어 마지막/첫 문단 소속과 표 괘선을
+직접 대조했다. 작은 잉크·괘선 차이는 남는다.32/33쪽98.11808/100%,
+80168 60/61쪽98.74752/98.09685%와165–167쪽을 포함한 작은 대조군도 유지했다.
+기존 마커10건, 실제 완료 페이지 case8건과 source 폭 진단은 PASS다.
+현재 head에서 manifest `--check` 후 실제 Cargo nextest 8모듈·7binary·32건을
+실행해32 PASS·exit0을 확인했다. 실행 중 head 불변·tracked clean도 확인했다.
+진단용 opt1 검사이며 최종 opt3·전체 Rust 검증을 대신하지 않는다.
+
+증거는 ignored `output/pr-review/planet6897-20261018/`의
+`candidate109-native-build-results.json`, `candidate109-native-all-pages-results.json`,
+`candidate109-native-all-pages/{merged-80168,curriculum-1342000}/silhouette.tsv`,
+`candidate109-vs-candidate108-recovery-native-curriculum-1342000-verified-comparison.json`,
+`candidate109-p129-p130-print-owner-results.json`, `candidate109-focused.log`,
+`candidate109-focused-results.json`, `candidate109-local-origin-overlay-results.json`이다.
+새 source의 fresh WASM은 아직 미실행이다. 알려진 큰 배치 차이를 먼저 보정하며,
+후보108의 WASM 결과를 이 source의 통과 증거로 재사용하지 않는다.
+
+#### 다음 원인 확인 범위
+
+새 Native/Print의 같은 원문 첫 줄을130–142쪽에서 대응했다.136쪽까지 위치 차이는
+대체로1px 안팎이고,137쪽 row177의 첫 문단이 Print137쪽/Native138쪽으로 갈린 뒤
+138–142쪽의 뒤 내용에 약40px가 누적된다. 따라서 row216만 따로 움직이지 않는다.
+원본 row177col8의 두 줄은 vpos200/1700HU이며 reset이 없다. 실제 CellUnit은20/16px다.
+대상 호출을 `pi=8 sec=5`로 구분한 trace는 rows171..177을538.173333px에서 끝내고
+579.04px 예산의 나머지를 남긴다. 다른 구역 `pi=2 sec=14`의 SOURCE_SPAN_DEFER는
+해당 증거에서 제외했다.
+
+`stored_initial_plain_text_frame_height → opening_source_frames → row_step의 early
+opening_frame gate`는 새 rowspan 셀의 첫 저장 문단 전체를 일반 행 진입의 선행 조건으로
+쓴다. 원본 row177에는4줄 첫 문단을 가진 rowspan 셀이 있어 남은 약40.87px보다 크다.
+이 경로가 실제 조기 이월을 결정했는지 추가 확인하고, 줄 소유·정렬·keep 계약과 실제
+분할/paint를 함께 대조한다. 아직 이 가설을 보정·검증 완료로 판정하지 않는다.
+전체11PR 범위와 최종 검증, PR 생성 전 사용자 승인 조건은 유지한다.
