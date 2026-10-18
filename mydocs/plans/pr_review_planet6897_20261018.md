@@ -1196,10 +1196,10 @@ fold 판정도 같은 명시적 블록 소유를 소비하게 보완한다. 스�
 
 ### 후보47 블록 프레임 검증 결과
 
-생산 코드7152ff6ee에서 Native 진단opt1 빌드는3분45초·exit0이며 fresh WASM은
+생산 코드7152ff6ee에서 Native 진단opt1 빌드는3분46초·exit0이며 fresh WASM은
 compile4분27초,패키징 포함약4분48초·exit0이다. jobs8·codegen16·기본 작업공간의 공용
 `target/pr-review`를 순서대로 사용했고,25초 진행 출력과 같은 실행 핸들의 조회를 유지했다.
-새 Native SHA-256은afe04558783ff2d0dbe63c48fe614196c83f6309a9b480f2667e1e948cd878b1,
+새 Native SHA-256은6b998a4bf418beaa884db341c168371696d7dc20d1bf8ebca0ef411552f7b3bb,
 WASM은9adcf8c66763e6bab9b9e590fe517676bb83e7a7252752cf399c54962f0c8307이다.
 각 빌드 결과 JSON과 `candidate47-frozen-library.json`에 생산자와 명령을 고정했다.
 
