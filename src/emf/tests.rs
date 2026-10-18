@@ -407,7 +407,7 @@ fn parses_rectangle_and_ellipse() {
 #[test]
 fn parses_polyline16_with_points() {
     let mut b = header_prefix();
-    // EMR_POLYLINE16 (0x56): RectL(16) + count(4) + POINTS[3] (4B each) = 32B
+    // EMR_POLYLINE16 (0x57): RectL(16) + count(4) + POINTS[3] (4B each) = 32B
     let mut p = Vec::new();
     for v in [0i32, 0, 100, 100] {
         p.extend_from_slice(&v.to_le_bytes());
@@ -417,7 +417,7 @@ fn parses_polyline16_with_points() {
         p.extend_from_slice(&x.to_le_bytes());
         p.extend_from_slice(&y.to_le_bytes());
     }
-    push_record(&mut b, 0x56, &p);
+    push_record(&mut b, 0x57, &p);
     push_eof(&mut b);
 
     let recs = parse_emf(&b).expect("parse");
@@ -441,7 +441,7 @@ fn polyline16_rejects_unbounded_point_count() {
         p.extend_from_slice(&v.to_le_bytes());
     }
     p.extend_from_slice(&u32::MAX.to_le_bytes()); // count (조작된 값)
-    push_record(&mut b, 0x56, &p);
+    push_record(&mut b, 0x57, &p);
     push_eof(&mut b);
 
     let recs = parse_emf(&b).expect("count가 남은 바이트 기준으로 상한이 걸려 정상 파싱돼야 함");
@@ -545,7 +545,7 @@ fn convert_to_svg_polyline_and_ellipse() {
         p.extend_from_slice(&x.to_le_bytes());
         p.extend_from_slice(&y.to_le_bytes());
     }
-    push_record(&mut b, 0x56, &p);
+    push_record(&mut b, 0x57, &p);
 
     // Ellipse 0,0-40,40
     let mut p = Vec::new();
@@ -587,7 +587,7 @@ fn convert_to_svg_polygon_closes_shape() {
         p.extend_from_slice(&x.to_le_bytes());
         p.extend_from_slice(&y.to_le_bytes());
     }
-    push_record(&mut b, 0x57, &p);
+    push_record(&mut b, 0x56, &p);
     push_eof(&mut b);
 
     let svg = convert_to_svg(&b, (0.0, 0.0, 10.0, 10.0)).expect("convert");
