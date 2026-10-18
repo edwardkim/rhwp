@@ -89,6 +89,7 @@ impl TypesetEngine {
             if (opening || closing) && height <= avail_for_rows {
                 return BlockTableRowScan {
                     source_frame_band: 0.0,
+                    plain_cut_owns_blank_band: false,
                     consumed: height,
                     accepted_end_row_box: None,
                     accepted_start_row_box: None,
@@ -114,6 +115,7 @@ impl TypesetEngine {
                 if frame.opening_height <= avail_for_rows + 0.5 {
                     return BlockTableRowScan {
                         source_frame_band: 0.0,
+                        plain_cut_owns_blank_band: false,
                         consumed: frame.opening_height,
                         accepted_end_row_box: None,
                         accepted_start_row_box: None,
@@ -143,6 +145,7 @@ impl TypesetEngine {
                 if opening <= avail_for_rows + 0.1 {
                     return BlockTableRowScan {
                         source_frame_band: 0.0,
+                        plain_cut_owns_blank_band: false,
                         consumed: opening,
                         accepted_end_row_box: None,
                         accepted_start_row_box: None,
@@ -164,6 +167,7 @@ impl TypesetEngine {
                 {
                     return BlockTableRowScan {
                         source_frame_band: 0.0,
+                        plain_cut_owns_blank_band: false,
                         consumed: 0.0,
                         accepted_end_row_box: None,
                         accepted_start_row_box: None,
@@ -256,6 +260,7 @@ impl TypesetEngine {
                 vars,
                 BlockTableRowScan {
                     source_frame_band: 0.0,
+                    plain_cut_owns_blank_band: false,
                     consumed: 0.0,
                     accepted_end_row_box: None,
                     accepted_start_row_box: None,
@@ -337,6 +342,7 @@ impl TypesetEngine {
         };
         let BlockTableRowScan {
             mut source_frame_band,
+            mut plain_cut_owns_blank_band,
             mut consumed,
             mut accepted_end_row_box,
             mut accepted_start_row_box,
@@ -519,6 +525,7 @@ impl TypesetEngine {
                             );
                         }
                         source_frame_band = refit.source_frame_band;
+                        plain_cut_owns_blank_band = refit.plain_cut_owns_blank_band;
                         consumed = refit.consumed;
                         end_row = refit.end_row;
                         split_block_start = refit.split_block_start;
@@ -591,6 +598,7 @@ impl TypesetEngine {
                     // 양수 저장 앵커 때문에 이월을 무한 반복하지 않아야 한다.
                     return BlockTableRowScan {
                         source_frame_band: 0.0,
+                        plain_cut_owns_blank_band: false,
                         consumed: 0.0,
                         accepted_end_row_box: None,
                         accepted_start_row_box: None,
@@ -616,6 +624,7 @@ impl TypesetEngine {
                 });
                 if refit.end_row > cursor_row && refit.consumed > 0.0 {
                     source_frame_band = refit.source_frame_band;
+                    plain_cut_owns_blank_band = refit.plain_cut_owns_blank_band;
                     consumed = refit.consumed;
                     end_row = refit.end_row;
                     split_block_start = refit.split_block_start;
@@ -832,6 +841,7 @@ impl TypesetEngine {
 
         BlockTableRowScan {
             source_frame_band,
+            plain_cut_owns_blank_band,
             consumed,
             accepted_end_row_box,
             accepted_start_row_box,

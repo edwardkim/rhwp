@@ -60,6 +60,7 @@ impl TypesetEngine {
         } = progress;
         let BlockTableRowScan {
             source_frame_band,
+            mut plain_cut_owns_blank_band,
             mut consumed,
             mut accepted_end_row_box,
             mut accepted_start_row_box,
@@ -1728,6 +1729,20 @@ impl TypesetEngine {
                 // 실제 상자는 아래 accepted_partial_row_box로 전달한다. 내용 대비
                 // 빈 공간을 원래 측정 행의 추가 띠로 기록하면, 실제 앞 상자를
                 // 모르는 걸침 칸의 추정 높이에서 같은 공간을 다시 덜게 된다.
+                if plain_cut_frame.is_some() {
+                    let physical = consumed - consumed_before_row - cs_before;
+                    let content = layout_engine.row_cut_content_height(
+                        table,
+                        r,
+                        row_start_cut,
+                        &split_end_cut,
+                        styles,
+                    );
+                    let roundoff = f64::EPSILON
+                        * (physical.abs() + content.abs()).max(1.0)
+                        * (end_row - cursor_row + 2) as f64;
+                    plain_cut_owns_blank_band |= physical - content > roundoff;
+                }
                 if let Some(height) = plain_cut_frame.or(source_blank_band) {
                     end_row_height_override = Some(height);
                 }
@@ -1840,6 +1855,7 @@ impl TypesetEngine {
         }
         let scan = BlockTableRowScan {
             source_frame_band,
+            plain_cut_owns_blank_band,
             consumed,
             accepted_end_row_box,
             accepted_start_row_box,

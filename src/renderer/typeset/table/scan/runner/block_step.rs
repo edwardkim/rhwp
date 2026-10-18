@@ -55,6 +55,7 @@ impl TypesetEngine {
         } = progress;
         let BlockTableRowScan {
             source_frame_band,
+            mut plain_cut_owns_blank_band,
             mut consumed,
             mut accepted_end_row_box,
             mut accepted_start_row_box,
@@ -319,6 +320,7 @@ impl TypesetEngine {
         })();
         // 여러 행을 함께 수용한 블록 높이를 단일 행 상자로 넘기지 않는다.
         if end_row > prior_end_row {
+            plain_cut_owns_blank_band = false;
             accepted_end_row_box = None;
             accepted_partial_row_box = None;
             if prior_end_row <= cursor_row {
@@ -327,6 +329,7 @@ impl TypesetEngine {
         }
         let scan = BlockTableRowScan {
             source_frame_band,
+            plain_cut_owns_blank_band,
             consumed,
             accepted_end_row_box,
             accepted_start_row_box,

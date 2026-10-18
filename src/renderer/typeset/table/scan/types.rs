@@ -6,6 +6,8 @@ pub(in crate::renderer::typeset) struct BlockTableRowScan {
     /// 독립 저장 프레임이 측정 행의 예약보다 추가로 소유한 물리 공간.
     /// 일반 컷의 실제 상자와 내용의 차이는 원래 측정 행의 추가 띠가 아니다.
     pub(in crate::renderer::typeset) source_frame_band: f64,
+    /// 일반 컷을 수용할 때 확정한 빈 상자 소유. 추정 행의 추가 높이가 아니다.
+    pub(in crate::renderer::typeset) plain_cut_owns_blank_band: bool,
     /// 일반 행 스캔에서 실제 수용한 마지막 완전 행의 색인과 높이.
     pub(in crate::renderer::typeset) accepted_end_row_box: Option<(usize, f64)>,
     /// 일반 스캔의 첫 행이 실제 예약한 물리 상자. 재스캔도 같은 결과를 넘긴다.
