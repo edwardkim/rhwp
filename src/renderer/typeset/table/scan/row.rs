@@ -55,30 +55,6 @@ impl RowScanQuery<'_> {
                 ))
     }
 
-    /// 새 본문에 온전히 들어갈 원본 단일 행 프레임을 함께 이월한다.
-    /// 이미 시작한 내용 컷과 한 본문보다 큰 실제 요구는 기존 분할을 유지한다.
-    pub(in crate::renderer::typeset) fn keeps_single_stored_frame(
-        &self,
-        whole_row_fit_h: &[f64],
-        consumed: f64,
-        cs_before: f64,
-        fresh_budget: f64,
-    ) -> bool {
-        let Self {
-            rows,
-            r,
-            cursor_row,
-            start_cut,
-            start_row_height_override,
-            ..
-        } = *self;
-        (r != cursor_row || (start_cut.is_empty() && start_row_height_override.is_none()))
-            && rows
-                .layout_engine
-                .row_has_single_stored_plain_frame(rows.table, r)
-            && self.required_height(whole_row_fit_h[r], consumed, cs_before) <= fresh_budget
-    }
-
     /// 앞 행이 실제 수용한 높이를 차감한다. 원본 측정 행과 컷용 행 높이를 합치지 않는다.
     pub(in crate::renderer::typeset) fn required_height(
         &self,

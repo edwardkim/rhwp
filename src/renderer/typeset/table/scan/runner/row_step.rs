@@ -128,12 +128,6 @@ impl TypesetEngine {
                 start_cut_is_block,
                 start_row_height_override,
             };
-            let keeps_single_stored_frame = row_query.keeps_single_stored_frame(
-                whole_row_fit_h,
-                consumed,
-                cs_before,
-                (st.base_available_height() - header_overhead).max(0.0),
-            );
             let opening_available = (avail_for_rows - consumed - cs_before).max(0.0);
             let opening_frame = opening_source_frames.get(r).copied().unwrap_or(0.0);
             if r > cursor_row
@@ -146,10 +140,8 @@ impl TypesetEngine {
                 end_row = r;
                 return false;
             }
-            let rowbreak_rowspan_row_splittable = mt.allows_row_break_split()
-                && can_intra_split
-                && row_units_splittable
-                && !keeps_single_stored_frame;
+            let rowbreak_rowspan_row_splittable =
+                mt.allows_row_break_split() && can_intra_split && row_units_splittable;
             if rowspan_touched[r] && !rowbreak_rowspan_row_splittable {
                 // 실제로 수용한 앞 행들의 높이(consumed)를 사용한다. 이전 행의
                 // 증분까지 포함하며, 늘린 높이가 안 맞으면 원래 높이로 되돌리지 않는다.
@@ -595,11 +587,10 @@ impl TypesetEngine {
                     // 정본: 편람 PDF 158→159쪽이 큰 행을 통째로 넘기며 앞쪽 바닥을 비운다.
                     let row_needs_whole_band = r == cursor_row
                         && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
-                    !keeps_single_stored_frame
-                        && (!(crate::renderer::typeset::none_table_is_atomic_here(table)
+                    !(crate::renderer::typeset::none_table_is_atomic_here(table)
                         || crate::renderer::typeset::cell_unit_row_is_atomic_here(table))
                         || table_storage_declares_splits
-                        || row_needs_whole_band)
+                        || row_needs_whole_band
                 },
                 physical_minimum_splittable,
             );
