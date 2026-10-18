@@ -26,6 +26,7 @@ impl Default for Policy {
 }
 
 pub struct Region {
+    pub body: bool,
     pub context: Vec<String>,
     pub bbox: Rect,
     pub span_indices: Vec<usize>,
@@ -102,6 +103,16 @@ pub(super) struct RegionRecognition {
 pub(super) struct PageRecognition {
     pub report: Value,
     pub cells: BTreeMap<(usize, usize), RegionRecognition>,
+    pub body: Vec<BodyRecognition>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct BodyRecognition {
+    pub bbox: Rect,
+    pub span_indices: Vec<usize>,
+    #[serde(flatten)]
+    pub recognition: RegionRecognition,
 }
 
 fn valid_rect(r: Rect) -> bool {
@@ -217,6 +228,25 @@ impl ParagraphMachine {
             return;
         }
         if self.state == ParagraphState::Deferred {
+            let previous = self.pending.last().unwrap();
+            let clear_boundary = region.body
+                && (line.baseline - previous.baseline
+                    > policy.paragraph_gap_em * previous.font.max(line.font)
+                    || region
+                        .obstacles
+                        .iter()
+                        .any(|b| b.y >= previous.bottom - 0.5 && b.y + b.height <= line.top + 0.5));
+            if clear_boundary {
+                self.emit(spans, "unresolved_region_ended");
+                self.transition(
+                    ParagraphState::Idle,
+                    "ResumeAfterBoundary",
+                    "independent_boundary_after_deferred_content",
+                    json!({}),
+                );
+                self.feed(line, spans, region, policy);
+                return;
+            }
             self.transition(
                 ParagraphState::Deferred,
                 "LineObserved",
@@ -234,8 +264,9 @@ impl ParagraphMachine {
             || (line.right - previous.right).abs() <= tol
             || ((line.left + line.right) - (previous.left + previous.right)).abs() / 2.0 <= tol;
         let first_indent = self.pending.len() == 1
-            && line.left < previous.left
-            && previous.left - line.left <= 2.0 * em;
+            && (region.body || line.left < previous.left)
+            && line.left != previous.left
+            && (previous.left - line.left).abs() <= 2.0 * em;
         let size_change = previous.font.max(line.font) / previous.font.min(line.font) > 1.25;
         let object_boundary = region
             .obstacles
@@ -256,9 +287,18 @@ impl ParagraphMachine {
                 "region_segmentation_unknown",
                 evidence,
             );
-        } else if object_boundary || gap > policy.paragraph_gap_em * em {
+        } else if object_boundary
+            || gap > policy.paragraph_gap_em * em
+            || (region.body && size_change)
+        {
             let reason = if object_boundary {
-                "intervening_image"
+                if region.body {
+                    "intervening_object"
+                } else {
+                    "intervening_image"
+                }
+            } else if region.body && size_change {
+                "body_typographic_boundary"
             } else {
                 "large_baseline_gap"
             };
@@ -795,6 +835,7 @@ pub fn recognize_page(
                 obstacles.push(rect(&candidates[*child]["bbox"])?);
             }
             let region = Region {
+                body: false,
                 context: cell_context,
                 bbox: rect(&c["bbox"])?,
                 span_indices: indices(&c["spanIndices"])?,
@@ -847,26 +888,67 @@ pub fn recognize_page(
         .filter(|(i, s)| !s.text.is_empty() && !reserved.contains(i))
         .map(|(i, _)| i)
         .collect();
-    if !remaining.is_empty() {
+    let mut body = Vec::new();
+    let partitions = super::body_regions::partition(spans, &remaining, media_box);
+    let partition_error = partitions.as_ref().err().cloned();
+    let partitions = partitions.unwrap_or_else(|_| {
+        if remaining.is_empty() {
+            Vec::new()
+        } else {
+            vec![super::body_regions::Partition {
+                bounds: page_bounds,
+                spans: remaining,
+            }]
+        }
+    });
+    for (i, partition) in partitions.into_iter().enumerate() {
+        let mut obstacles: Vec<_> = image_boxes.iter().copied().collect();
+        for t in candidates {
+            if let Ok(b) = rect(&t["bbox"]) {
+                obstacles.push(b);
+            }
+        }
+        // Only the geometric intersection belongs to this owner. The original
+        // image/table and its paint are not clipped or modified.
+        let clipped = obstacles
+            .into_iter()
+            .filter_map(|b| {
+                let x = b.x.max(partition.bounds.x);
+                let y = b.y.max(partition.bounds.y);
+                let right = (b.x + b.width).min(partition.bounds.x + partition.bounds.width);
+                let bottom = (b.y + b.height).min(partition.bounds.y + partition.bounds.height);
+                (right > x && bottom > y).then(|| Rect::new(x, y, right - x, bottom - y))
+            })
+            .collect();
         let region = Region {
-            context: vec!["page".into(), "unsegmented-body".into()],
-            bbox: page_bounds,
-            span_indices: remaining,
-            obstacles: image_boxes
-                .iter()
-                .enumerate()
-                .filter(|(i, _)| !image_owners.contains_key(i))
-                .map(|(_, b)| *b)
-                .collect(),
+            body: true,
+            context: vec!["page".into(), format!("body-region:{i}")],
+            bbox: partition.bounds,
+            span_indices: partition.spans.clone(),
+            obstacles: clipped,
         };
-        regions.push(recognize_region(
-            observed, spans, &region, media_box, policy,
-        )?);
+        let mut recognized = recognize_region(observed, spans, &region, media_box, policy)?;
+        if let Some(reason) = &partition_error {
+            for p in &mut recognized.paragraphs {
+                p.status = ParagraphState::Deferred;
+                p.reason = reason.clone();
+            }
+        }
+        body.push(BodyRecognition {
+            bbox: region.bbox,
+            span_indices: partition.spans,
+            recognition: recognized,
+        });
     }
-    let report = json!({"algorithm":"hierarchical-efsm-v3-shared-text","acceptance":"rule-based proposals, not authored paragraph/table metadata",
+    regions.extend(body.iter().map(|r| json!(r)));
+    let report = json!({"algorithm":"hierarchical-efsm-v4-body-regions","acceptance":"rule-based proposals, not authored paragraph/table metadata",
         "policy":{"baselineToleranceEm":policy.baseline_tolerance_em,"alignmentToleranceEm":policy.alignment_tolerance_em,
             "paragraphGapEm":policy.paragraph_gap_em,"maxContextDepth":policy.max_context_depth},
         "tables":tables,"bodyRegions":regions,"unresolvedContent":ambiguous,"emission":"typed proposals; actual IR consumption is reported by lowering",
-        "limits":["body columns require explicit segmentation; disjoint runs deferred","nested cell-slot structure inferred; lowering may preserve unresolved content as positioned spans","tagged semantics not reconstructed"]});
-    Ok(PageRecognition { report, cells })
+        "limits":["body whitespace partitions require repeated gutter evidence; ambiguous runs retained","nested cell-slot structure inferred; lowering may preserve unresolved content as positioned spans","tagged semantics not reconstructed"]});
+    Ok(PageRecognition {
+        report,
+        cells,
+        body,
+    })
 }

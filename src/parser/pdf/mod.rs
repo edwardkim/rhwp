@@ -3,6 +3,7 @@
 //! `pdf-import` is enabled by default and can be excluded with
 //! `--no-default-features`. The internal backend limits decoded outputs, but
 //! full codec/font/cache allocation bounds are not yet proven.
+mod body_regions;
 mod extract;
 mod lowering;
 mod path_paint;

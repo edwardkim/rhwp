@@ -602,3 +602,131 @@ manifest 검사를 통과했다. generated suite/manifest나 개별 CI 호출은
 `cargo fmt --all -- --check`와 `git diff --check`도 통과했다. formal test/문서 추가 후
 runtime fingerprint와 fixture 11개의 source byte 해시가 그대로인지 마지막으로 확인했다.
 `fixture-admission.json`은 외부 증적으로만 보존하며 로그·중간 JSON·사적 견적서는 커밋하지 않는다.
+
+### P3 착수 — 본문 지역·실제 문단 (2026-10-18)
+
+메인테이너가 다음 절편 진행을 승인했다. 위반 계약은 본문의 typed 문단 제안이 실제
+IR에 소비되지 않고 원래 span마다 TextBox로 저장되는 점이다. 페이지 전체를 한 owner로
+사용하면 같은 baseline의 두 단이 섞이고, Deferred 상태가 뒤의 정상 문단도 삼킨다.
+원본의 물리 글줄과 원래 작성 문단의 정답은 구분한다.
+
+이번 절편은 공백 구역의 재귀 분할로 본문 owner를 먼저 확정하고, 셀과 동일한
+`ParagraphProposal → paragraph → Paragraph/LineSeg` adapter를 본문 frame 안에서도
+소비한다. 여러 baseline에 걸친 두 텍스트 집합과 연속 gutter가 있을 때만 단 분할을
+선택한다. 제목이 gutter를 가로지르면 수평 분할 뒤 다시 판정한다. 한 줄의 큰 간격만으로
+두 단을 확정하지 않는다. 모호한 문단은 source fallback에 남기고, 독립적인 큰 간격·
+개체 경계 뒤의 정상 문단부터 다시 판정한다. 재그룹화로 source paint 순서가 바뀌는
+중첩은 보류한다. 문서 ID·관측 개수에 맞추는 분기는 추가하지 않는다.
+
+수정 전 독립 기대값은 외부 `p3-body/make_sources.py`의 원본 연산자·주석으로 정한다:
+두 줄 한 문단/두 문단, 같은 높이의 두 단·넓은 제목, 양방향 첫 줄 들여쓰기·목록,
+모호한 한 줄 뒤 정상 문단, 중간 그림과 source paint 중첩, span/TJ/연산 순서 변형,
+본문의 혼합 기준선. 이 PDF들은 시각 선행 조건을 충족하기 전 정식 회귀에 등록하지 않는다.
+
+값 추적은 source 범위 → 공통 ObservedText의 owner-local TextLine → typed 문단 →
+공통 paragraph adapter의 run·LineSeg/문단 속성 → region TextBox의 누적 vpos →
+shape_layout의 저장 줄 수용/편집 후 재조판 → 공통 draw다. source vpos를 frame 전체의
+누적 좌표로 발행해 renderer의 별도 overflow/원점 재선택 경계를 확인한다. 본문 frame의
+문단 소속·읽기 순서와 원문·공백, 삽입/삭제·분할/병합·양 저장 형식을 실제로 확인한다.
+
+#### P3 진단과 수평 메트릭 소비 보정
+
+첫 Native 구현은 독립 글줄/문단 대조군의 실제 IR을 만들었으나 실물 2·3쪽이
+86.04008/87.57048%로 하락했다(`p3-body/initial-native/`). 폭 표현이 보류된 줄을
+기존 탭 frame으로 그대로 묶을 수 있다는 가정이 잘못됐다. 본문은 공통 paragraph
+결과를 한 번 준비한 뒤, 실제로 표현 가능한 문단만 연속 frame으로 원자적으로 발행한다.
+실제 한도를 벗어난 문단과 paint 순서가 교차하는 문단은 원래 span 소유를 유지한다.
+실패한 준비의 글자/문단/tab 스타일과 진단을 rollback하며 뒤 정상 문단은 계속 처리한다.
+그림·표가 사이에 있으면 본문 frame을 분리한다. 이 단계는 그림을 문단 안으로 옮기는
+P4 합성을 완료했다는 뜻이 아니다.
+
+이후 TJ 변형을 비교해 `observed_line_text`가 **정수 반올림한 폭**으로 장평·자간을
+계산하지만 실제 배치는 소수 폭을 쓴다는 공통 계약 위반을 찾았다. 10pt Helvetica의
+2.5pt 합성 공백은 HWP 반각 6.667px와 비교해야 하는데 7px로 반올림해 장평이 50%보다
+작다는 잘못된 판정을 만들었다. `estimate_text_width_exact`를 ratio·nominal·spacing
+후보 비교 모두에 사용했다. 허용 범위는 넓히지 않았다. 이전 라이브러리에서 동일 본문
+회귀 함수가 문단 그룹 누락으로 FAIL하고, 정수 폭 진단본은 TJ 사례에서 FAIL했다.
+소수 폭 보정본은 13개 실제 편집/양 저장 대조군과 paint 보존 검사 모두 통과했다.
+
+독립 Adobe AFM의 `SECOND` 전진폭은 42.78pt다. 실제 RenderTree의 글리프 점유 폭은
+이전 42.16pt에서 소수 폭 보정 후 42.88pt로 바뀌었다. 문자열 bbox를 복원 폭으로 다시
+쓰거나 이전 100% 점수를 유지하려 정수 폭으로 되돌리지 않는다. 그럼에도 이전 P2 대비
+일부 raw 점수가 작게 낮아졌으므로 전쪽 비교와 직접 판독을 별도 기록하고 재검토 상태를
+자동 해제하지 않는다.
+
+본문 가용 폭은 ink bbox 합집합과 구분한다. 페이지와 gutter 분할로 owner를 정해야
+같은 문단의 두 가운데 정렬 줄을 내어쓰기로 잘못 바꾸지 않는다. centered 대조군의
+연산자 좌표는 독립 Adobe Helvetica AFM에서 폭 61.69/37.78pt를 계산해 정확히 x=200pt
+가운데가 되도록 정했다. 처음 작성한 좌표의 주석 오류는 source 생성기 진단본으로 따로
+보존했고, 그 잘못된 source를 제품 FAIL 증거로 세지 않는다. 수정된 source도 초기 ink
+owner 구현에서는 LEFT, 페이지 owner 구현에서는 CENTER로 확인했다.
+
+#### P3 첫 본문 절편 결과와 검토 경계
+
+런타임 기준은 `77bf8d0dd715acf00f661b4969544a83076c3f22` 위의 P3 변경이다.
+`p3-body/source-final-runtime.json`은 `src`·vendor·Cargo 입력의 파일별 지문이며 SHA-256은
+`15d8f4056047674934f027706c432be774549ab57a527600da11dcc9fbaa6fa0`이다.
+캡처 뒤 변경은 테스트·fixture·문서뿐이며 런타임 지문이 그대로인지 재확인했다.
+Native producer는 `4c048d888a4a2ff1c64123125ab87a6ec4bcba05471d8584cfbc85934b8a6987`,
+fresh Docker WASM은 `b360c49ed3a435374d3c4dbf28ed82a6b37f813df3e20491f14558f331292fc8`이다.
+기존 task Studio 7793의 실제 loader 응답이 이 WASM 19,244,812바이트를 읽었다.
+메인 작업공간과 Studio 7700의 산출물은 변경하지 않았다.
+
+| 구현 주장 | 실제 검증과 결과 |
+|---|---|
+| 본문 소유 구역 안에서 복수 문단 발행 | 독립 14개 원본의 실제 저장 HWPX 문단·줄 구성과 source 제안을 구분했다. 편집 가능한 13개와 paint 중첩 보존 1개다. 실물 보고서의 본문 문단은 페이지별 1/3/2/1/3/3/2/5/2/2/1/1, 총 26개다. 작성 당시 전체 문단 수의 정답을 주장하지 않는다. |
+| 원문·공백·읽기 순서와 실제 paint 보존 | `issue_7998_pdf_body_paragraphs` 4건은 독립 생성 계약의 문단·fallback 단일 소유, 실제 TextRun 내용·순서, 줄 간 비중첩, 단 분리·제목/그림 앞뒤 관계를 검사했다. 절대 px 위치를 고정하지 않았다. |
+| 실제 편집·양 저장 형식 | 13개 대조군에서 Native 및 실제 Studio WASM의 삽입/삭제·문단 split/merge·HWP/HWPX 재열기가 통과했다. `studio-result.json`의 page error는 0이다. 동일 원문 복원 뒤의 관계와 무편집 시각 보존은 구분한다. |
+| 수정 전 결함 검출 | 외부 `contract-final-before.log`의 동일 4개 함수 중 의미 문단·단 소유·소수 폭 3건은 의도한 원인으로 FAIL, paint 보존 대조군은 PASS였다. producer는 앞서 보존한 `p2-baselines/pre-deferred-position/` 라이브러리이며 정확한 77bf8d0 producer로 부르지 않는다. 정확한 77bf8d0 CLI의 `before-native/` 저장 XML에도 새 의미 문단이 없는 사실을 별도로 대조했다. |
+| 전쪽 시각과 저장 보존 | 독립 14개·기존 대조군 17개·실물 2개, 33원본/44쪽 × PDF·HWP·HWPX = backend별 99건/132쪽. Native 최저 97.45634%, fresh WASM 최저 97.41574%, 90% 미달·쪽수 차이·누락 0. 각 backend의 저장본 PNG는 직접 PDF 입력과 모두 동일하다. |
+| 기존 셀 경계 유지 | 기존 `issue_7998_pdf_table_inference` 정식 17건 PASS. 새 본문 정식 4건도 자동 수집 harness에서 실제 실행해 PASS했다. 기존 검사를 완화하거나 CI 개별 호출을 추가하지 않았다. |
+
+실행 명령과 로그는 외부 안정 경로
+`/home/edward/mydev/rhwp-review-evidence/pdf-table-feedback-20261017/semantic-stage3/p3-body/`에
+보존한다. task의 ignored `output/pr-review/issue7998/p3-body/`가 이곳을 가리킨다.
+
+```bash
+# Native: native-exact-build.log, release-test 최적화 producer (exit 0)
+cargo build --locked --profile release-test --features native-skia --bin rhwp \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review
+docker compose -p rhwp --env-file .env.docker run --rm --no-deps \
+  -e CARGO_BUILD_JOBS=6 -e CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 wasm
+# Docker exit 0, 7m29s; pkg를 p3-body/pkg에 보존한 뒤 사용
+python3 output/pr-review/issue7998/p3-body/validate.py native
+python3 output/pr-review/issue7998/p3-body/validate.py wasm
+node output/pr-review/issue7998/p3-body/verify_studio.mjs
+node scripts/run-rust-test.mjs issue_7998_pdf_table_inference -- \
+  --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --features native-skia
+node scripts/run-rust-test.mjs issue_7998_pdf_body_paragraphs -- \
+  --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --features native-skia
+```
+
+각 `native/visual/<key>-<format>/silhouette.tsv`와 `wasm/visual/…/silhouette.tsv`,
+각 run manifest·PNG·render tree가 전쪽 원본 증거다. 독립 PDF 14개는 양 backend·두 저장
+형식 90% 선행 조건과 확대 판독 후 `pdf/issue7998/` 및 정식 suite에 등록했다.
+`body-sources.md`에 원본 SHA와 전 형식 최저값을 기록했다. 생성 주석이 구현 결과의 재인용이
+아닌 원본 연산자의 기대 계약이다. glyph 폭 검사는 Adobe AFM 42.78pt와 HWP 정수 %·
+HWPUNIT의 독립 반올림 오차 범위를 사용한다. 한컴 열기·인쇄 통합 확인은 P5로 남긴다.
+
+검토 묶음은 `/mnt/e/tmp/issue7998-semantic-table-review/p3-body/index.html`
+(`E:\tmp\issue7998-semantic-table-review\p3-body\index.html`)이다. 입력·양 저장본·전쪽
+TSV, 원본 위의 인식 문단/글줄 제안과 실제 IR 글줄·읽기 순서, 실제 저장 문단 표를 분리해
+제공한다. Studio 7793의 `?review=issue7998-p3-body&lang=ko` 새 탭에는 넓은 제목과
+두 단의 원본을 실제로 열었으며 글상자별 실제 문단 배열 1/2/2개를 확인했다.
+
+**절편 간 재검토:** P2 77bf8d0 대비 Native는 기존 기준선 대조군 8쪽이
+0.02842–0.02870%p, 보고서 9쪽이 0.03766%p 낮다. WASM은 같은 8쪽이
+0.02894–0.02923%p, 보고서 6쪽이 0.14555%p 낮다. `comparison.json`은 raw 원래
+소수값을 Decimal로 비교한다. 높은 절대 점수·다른 쪽의 향상으로 이를 상쇄하지 않는다.
+확대 판독에서 소유/내용 누락·새 줄바꿈·외곽 변화는 검출하지 않았지만 자간/글리프의 작은
+위치 차이는 남아 별도 비교 화면을 제공했다. 정확한 소수 폭을 잘못된 정수 폭으로 되돌려
+점수만 복구하지 않는다. **이 비교는 upstream/devel 최종 검증의 대체가 아니다.**
+메인테이너의 P3 직접 시각·구조 판정과 차이 검토는 대기 중이며, 최종 PR 생성/통합 게이트를
+통과했다고 보고하지 않는다. P5에서 최신 devel 기준과 전쪽 비교·남은 차이를 다시 판정한다.
+
+**남은 범위:** 보고서의 실제 typography는 관측 원점/메트릭 218줄·legacy 15줄이다.
+본문에는 자간 한도 보류 21개 제안, 해소되지 않은 구역 끝 11개, 문단 frame 중첩 1개,
+장평 한도 1개 제안이 source 소유로 남는다. 한 줄/한 문단 단위가 섞인 보류 사유의 건수이며
+삭제한 문단 수가 아니다. 그림/표와의 완전한 의미 합성·병합/중첩·셀 편집은 P4,
+요청 전체 자원 경계·Worker/package·전체 회귀·lint·한컴 검증과 최신 devel 통합은 P5다.
+이번 절편은 로컬 구현·검토 준비이며 #7998 전체 완료나 비신뢰 입력 배포 준비 완료가 아니다.

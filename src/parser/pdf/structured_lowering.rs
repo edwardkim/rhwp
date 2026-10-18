@@ -1,4 +1,5 @@
 //! Materialize geometry-confirmed grids as editable rhwp tables. Uncertain grids stay positional.
+mod body;
 use super::{
     lowering::hu,
     recognition::{ParagraphProposal, ParagraphState},
@@ -80,7 +81,7 @@ fn observed_line_text(
     cache: &mut BTreeMap<(u32, u8, i8, i8), u32>,
 ) -> Result<(String, Vec<(u32, u32)>, Value), String> {
     use crate::renderer::{
-        layout::{estimate_text_width, resolved_to_text_style},
+        layout::{estimate_text_width_exact, resolved_to_text_style},
         style_resolver::detect_lang_category,
     };
     let content = reconstruct_line(&page.spans, &line.indices)?;
@@ -100,7 +101,10 @@ fn observed_line_text(
         let mut style =
             resolved_to_text_style(styles, base_id, detect_lang_category(glyph.character));
         let text = glyph.character.to_string();
-        let base_width = estimate_text_width(&text, &style);
+        // Glyph reconstruction and actual run placement must use the same
+        // fractional width. Rounding each scalar can invent an unsupported
+        // ratio (e.g. a 2.5pt TJ separator measured as 7 instead of 6.667px).
+        let base_width = estimate_text_width_exact(&text, &style);
         if !base_width.is_finite() || base_width <= 0. {
             return Err("glyph advance needs separate shaping".into());
         }
@@ -120,7 +124,7 @@ fn observed_line_text(
         if let Some(latin) = &mut style.ascii_punct_latin {
             latin.ratio = style.ratio;
         }
-        let nominal = estimate_text_width(&text, &style);
+        let nominal = estimate_text_width_exact(&text, &style);
         let desired = f64::from(glyph.advance) * 96. / 72.;
         let guess = (desired / nominal - 1.) * 100.;
         if !guess.is_finite() || !(-52. ..=52.).contains(&guess) {
@@ -135,7 +139,7 @@ fn observed_line_text(
             if let Some(latin) = &mut style.ascii_punct_latin {
                 latin.letter_spacing = style.letter_spacing;
             }
-            let error = (estimate_text_width(&text, &style) - desired).abs();
+            let error = (estimate_text_width_exact(&text, &style) - desired).abs();
             if best.is_none_or(|(_, previous)| error < previous) {
                 best = Some((spacing as i8, error));
             }
@@ -1375,6 +1379,17 @@ pub(super) fn lower(
     let root_count = tables.len();
     *next_id = fragment_ids.get();
     let table_count = table_count(&tables);
+    let (body_frames, body_mapping) = body::lower(
+        page,
+        doc,
+        &controls,
+        &span_controls,
+        &shape_ids,
+        &styles,
+        &typography,
+        &mut removed,
+        next_id,
+    );
     let mut retained: Vec<_> = controls
         .into_iter()
         .enumerate()
@@ -1382,6 +1397,7 @@ pub(super) fn lower(
         .collect();
     retained.extend(extra_paint);
     retained.extend(tables);
+    retained.extend(body_frames);
     let owner = &mut doc.sections[section].paragraphs[0];
     owner.controls = retained;
     owner.char_count = 1 + owner.controls.len() as u32 * 8;
@@ -1395,8 +1411,9 @@ pub(super) fn lower(
         "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
         "deferred": "line frames retained; paragraph grouping unverified",
         "lineJoins": "inferred wrap connections; original whitespace retained",
-        "bodyRegions": "positional spans; planned P3"
+        "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained"
     });
+    report["bodyParagraphMapping"] = body_mapping;
     report["sourceTypography"] = json!({
         "lines": typography.into_inner(),
         "policy": "recorded glyph origins; inferred spaces independent of span boundaries; HWP integer-percent character metrics",

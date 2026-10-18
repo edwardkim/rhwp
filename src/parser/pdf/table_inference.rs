@@ -722,6 +722,7 @@ impl Ledger {
             "semanticTables":lowering["semanticTables"],
             "boundaryPaintPolicy":lowering["boundaryPaintPolicy"],
             "paragraphMappingPolicy":lowering["paragraphMappingPolicy"],
+            "bodyParagraphMapping":lowering["bodyParagraphMapping"],
             "policy":{"axisTolerancePt":EPS,"maxGlyphs":MAX_GLYPHS,"maxClipRegions":MAX_REGIONS,
                 "maxCandidates":MAX_CANDIDATES,"maxTiles":MAX_TILES,"maxWork":MAX_WORK,
                 "lineBaselineEm":0.2,"inlineGapEm":0.5},
