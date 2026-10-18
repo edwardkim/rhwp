@@ -82,6 +82,8 @@ impl TypesetEngine {
             source_frame_band,
             consumed,
             accepted_end_row_box,
+            accepted_start_row_box,
+            accepted_partial_row_box,
             mut end_row,
             split_block_start,
             split_end_cut,
@@ -89,6 +91,19 @@ impl TypesetEngine {
             split_block_physical_height: _,
             mut end_row_height_override,
         } = scan;
+        // 일반 스캔이 예약한 부분 행 상자를 paint와 원장이 그대로 소비한다.
+        // 블록 컷과 원장 계약 밖의 표에는 일반 행의 증분을 적용하지 않는다.
+        if split_block_start.is_none()
+            && split_end_limit > 0.0
+            && (self.stored_header_physical_rows(st, input.source)
+                || layout_engine.has_stored_continuous_spans(row_geometry_table))
+        {
+            end_row_height_override = end_row_height_override.or_else(|| {
+                accepted_partial_row_box
+                    .filter(|(row, _)| row + 1 == end_row)
+                    .map(|(_, height)| height)
+            });
+        }
         let completed_empty_row_frame = split_block_start.is_none()
             && split_end_cut.is_empty()
             && split_end_limit == 0.0
@@ -1084,6 +1099,7 @@ impl TypesetEngine {
                         complete_cut: split_end_cut.is_empty() && split_end_limit <= 0.0,
                         block_start: split_block_start,
                         cut: &split_end_cut,
+                        first_height: accepted_start_row_box,
                         last_height: end_row_height_override,
                         restart_frame_closes_body: false,
                     },
@@ -1535,6 +1551,7 @@ impl TypesetEngine {
                     || (complete_physical_end_cut && source_restart_frame_closes_body),
                 block_start: split_block_start,
                 cut: &split_end_cut,
+                first_height: accepted_start_row_box,
                 // 걸침 칸이 다음 조각에서 세는 앞 행 상자는 그린 상자다 — 내용 컷 행에서 닫는 선으로 줄인 몫은
                 // 병합 칸의 뒤 조각이 잇는다(fragment_ghost_vrules 14·15쪽 (34,1): 앞+뒤 = 선언 326.96px, 한/글
                 // 2020 15쪽 첫 행 237.3px). 같은 행 자신의 다음 부분(`next_start_row_height_override`)은 원장 값을
@@ -1880,7 +1897,9 @@ impl TypesetEngine {
                     return None;
                 }
                 layout_engine.stored_shared_frame_row_remainder(
-                    table, row, &next_cut, &mt.row_heights, end_row_height_override, styles,
+                    table, row, &next_cut,
+                    input.fragment_row_heights.unwrap_or(&mt.row_heights),
+                    end_row_height_override, styles,
                 )
             })
             .or_else(|| {
@@ -2109,7 +2128,13 @@ impl TypesetEngine {
             // 내용 측정 높이는 앞 프레임의 줄간격도 담을 수 있다. 이미 닫힌
             // 앞 상자를 그 합에서 빼서 미소비 물리 공간으로 넘기지 않는다.
             // 수용한 잔여가 없으면 원본 행의 선언 최소 상자만 빈 띠를 소유한다.
-            let full = carried.or_else(|| {
+            // 앞 조각의 실제 상자로 다시 푼 병합 종료 행은 그 공통 계획의
+            // 최소 높이를 소비한다. 원시 선언으로 돌아가면 새 잔여를 잃는다.
+            let resolved = (split_block_start.is_none())
+                .then_some(input.fragment_row_heights)
+                .flatten()
+                .and_then(|rows| rows.get(row).copied());
+            let full = carried.or(resolved).or_else(|| {
                 let declared = *table.get_raw_row_heights().get(row)?;
                 (declared <= i32::MAX as u32)
                     .then(|| hwpunit_to_px(declared as i32, self.dpi))

@@ -13,6 +13,7 @@ pub(super) struct StoredFragmentEnd<'a> {
     pub(super) complete_cut: bool,
     pub(super) block_start: Option<usize>,
     pub(super) cut: &'a [usize],
+    pub(super) first_height: Option<(usize, f64)>,
     pub(super) last_height: Option<f64>,
     pub(super) restart_frame_closes_body: bool,
 }
@@ -282,6 +283,13 @@ impl TypesetEngine {
                 st.section_index, source.para_index, row, current, remaining,
                 whole_row, row_slack, slack, band,
             );
+            eprintln!(
+                "DIAG_SPAN_BAND_BOUNDARY sec={} pi={} row={} cut={:?} original_reset={} zero_frame={} stored_reset={}",
+                st.section_index, source.para_index, row, end_cut,
+                layout.row_cut_ends_at_original_plain_text_reset(table, row, &[], end_cut, source.styles),
+                layout.row_cut_ends_at_saved_zero_origin_frame(table, row, &[], end_cut, source.styles),
+                layout.row_cut_ends_at_stored_page_reset(table, row, &[], end_cut, source.styles),
+            );
         }
         let slack = slack.max(row_slack);
         (slack > 0.5).then(|| band.min(slack))
@@ -343,7 +351,10 @@ impl TypesetEngine {
             || prepared
                 .layout_engine
                 .has_stored_continuous_spans(source.row_geometry_table);
-        if !keeps_source_boxes || !cursor.accepted_row_boxes.iter().any(Option::is_some) {
+        if !keeps_source_boxes
+            || (!cursor.accepted_row_boxes.iter().any(Option::is_some)
+                && cursor.pending_row_box.is_none())
+        {
             return None;
         }
         // 이 높이는 앞 emit이 생산해 시작 행 스캔과 paint에 그대로 넘긴
@@ -388,7 +399,23 @@ impl TypesetEngine {
                 );
                 before + remaining.max(whole_row - before)
             });
-        let start_row_box = resumed_row_box
+        let pending_row_box = cursor.pending_row_box.and_then(|(row, before)| {
+            (row == cursor.row && !cursor.start_cut.is_empty()).then(|| {
+                let content = prepared.layout_engine.row_cut_content_height(
+                    table,
+                    row,
+                    &cursor.start_cut,
+                    &[],
+                    source.styles,
+                );
+                before
+                    + cursor
+                        .start_row_height_override
+                        .map_or(content, |height| content.max(height))
+            })
+        });
+        let start_row_box = pending_row_box
+            .or(resumed_row_box)
             .or(completed_start_row_box)
             .or(span_carry_row_box);
         // A cut's start owner subtracts every preceding physical row of its
@@ -547,6 +574,32 @@ impl TypesetEngine {
             })
         };
         cursor.accepted_row_boxes.resize(heights.len(), None);
+        // 부분 상자만으로 완료 행이라고 선언하지 않는다. 다음 행으로 실제
+        // 전진한 일반 스캔의 첫 상자가 있어야 앞 조각의 합을 확정한다.
+        if let Some((row, before)) = cursor.pending_row_box {
+            if row == input.start.cursor_row
+                && !input.start.start_cut.is_empty()
+                && (row + 1 < end.row || row + 1 == end.row && end.complete_cut)
+            {
+                if let Some((_, current)) = end
+                    .first_height
+                    .filter(|(owner, height)| *owner == row && height.is_finite() && *height >= 0.0)
+                {
+                    let current = if row + 1 == end.row {
+                        end.last_height.unwrap_or(current)
+                    } else {
+                        current
+                    };
+                    cursor.accepted_row_boxes[row] = Some(before + current);
+                    if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                        eprintln!("TABLE_CLOSED_PARTIAL_ROW: pi={} row={} before={:.6} current={:.6} total={:.6}",
+                            input.source.para_index, row, before, current, before + current);
+                    }
+                    cursor.pending_row_box = None;
+                    cursor.stored_restart_row_box = None;
+                }
+            }
+        }
         if let Some((row, before)) = cursor.stored_restart_row_box {
             if row == input.start.cursor_row && row + 1 < end.row {
                 if let Some(current) = input.start.start_row_height_override {
@@ -564,6 +617,23 @@ impl TypesetEngine {
                     .filter(|&(owner, _)| owner == row)
                     .map_or(0.0, |(_, height)| height);
                 cursor.stored_restart_row_box = Some((row, before + height));
+            }
+        }
+        // 같은 행을 다시 나눴으면 수용한 상자만 더한다. 내용 컷은 별도로
+        // 이어받으며, 이 누적을 블록 높이나 원본 행 추정값으로 채우지 않는다.
+        if !end.complete_cut && end.block_start.is_none() && !end.cut.is_empty() {
+            if let (Some(row), Some(height)) = (end.row.checked_sub(1), end.last_height) {
+                if height.is_finite() && height >= 0.0 {
+                    let before = cursor
+                        .pending_row_box
+                        .filter(|(owner, _)| *owner == row)
+                        .map_or(0.0, |(_, height)| height);
+                    cursor.pending_row_box = Some((row, before + height));
+                    if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+                        eprintln!("TABLE_PENDING_ROW: pi={} row={} before={:.6} current={:.6} total={:.6}",
+                            input.source.para_index, row, before, height, before + height);
+                    }
+                }
             }
         }
         if first >= whole_end {

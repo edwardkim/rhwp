@@ -8,6 +8,10 @@ pub(in crate::renderer::typeset) struct BlockTableRowScan {
     pub(in crate::renderer::typeset) source_frame_band: f64,
     /// 일반 행 스캔에서 실제 수용한 마지막 완전 행의 색인과 높이.
     pub(in crate::renderer::typeset) accepted_end_row_box: Option<(usize, f64)>,
+    /// 일반 스캔의 첫 행이 실제 예약한 물리 상자. 재스캔도 같은 결과를 넘긴다.
+    pub(in crate::renderer::typeset) accepted_start_row_box: Option<(usize, f64)>,
+    /// 마지막 미완료 일반 행이 실제 예약한 상자. 완전 행 원장과 구분한다.
+    pub(in crate::renderer::typeset) accepted_partial_row_box: Option<(usize, f64)>,
     pub(in crate::renderer::typeset) end_row: usize,
     pub(in crate::renderer::typeset) split_block_start: Option<usize>,
     pub(in crate::renderer::typeset) split_end_cut: Vec<usize>,

@@ -48,6 +48,9 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     /// Complete row boxes actually accepted in preceding stored fragments.
     /// Repeated headers and content cuts are separate owners.
     pub(in crate::renderer::typeset) accepted_row_boxes: Vec<Option<f64>>,
+    /// 아직 끝내지 않은 일반 행의 앞 조각들이 실제로 차지한 물리 높이의 합.
+    /// 다음 행으로 전진한 뒤에만 완전 행 원장에 합산한다.
+    pub(in crate::renderer::typeset) pending_row_box: Option<(usize, f64)>,
     /// 원본 쪽 재시작 컷이 실제 수용한 미완료 행 상자. 내용 컷과 별도로
     /// 보존하고 같은 행의 뒤 상자가 수용되면 완료 행 장부에 합산한다.
     pub(in crate::renderer::typeset) stored_restart_row_box: Option<(usize, f64)>,
@@ -88,6 +91,7 @@ impl TableContinuationCursor {
         self.start_cut.clear();
         self.start_cut_is_block = false;
         self.start_row_height_override = None;
+        self.pending_row_box = None;
         self.is_continuation = true;
     }
 
@@ -108,6 +112,9 @@ impl TableContinuationCursor {
             self.start_cut.clear();
             self.start_cut_is_block = false;
         }
+        if self.pending_row_box.is_some_and(|(row, _)| row < self.row) {
+            self.pending_row_box = None;
+        }
         self.is_continuation = true;
         self.fragments_emitted = self.fragments_emitted.saturating_add(1);
     }
@@ -123,6 +130,7 @@ impl TableContinuationCursor {
         self.start_row_height_override = None;
         self.straddle_page_bands.clear();
         self.stored_block_frame = None;
+        self.pending_row_box = None;
         if emitted_fragment {
             self.fragments_emitted = self.fragments_emitted.saturating_add(1);
         }

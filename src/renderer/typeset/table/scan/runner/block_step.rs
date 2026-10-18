@@ -57,6 +57,8 @@ impl TypesetEngine {
             source_frame_band,
             mut consumed,
             mut accepted_end_row_box,
+            mut accepted_start_row_box,
+            mut accepted_partial_row_box,
             mut end_row,
             mut split_block_start,
             mut split_end_cut,
@@ -318,11 +320,17 @@ impl TypesetEngine {
         // 여러 행을 함께 수용한 블록 높이를 단일 행 상자로 넘기지 않는다.
         if end_row > prior_end_row {
             accepted_end_row_box = None;
+            accepted_partial_row_box = None;
+            if prior_end_row <= cursor_row {
+                accepted_start_row_box = None;
+            }
         }
         let scan = BlockTableRowScan {
             source_frame_band,
             consumed,
             accepted_end_row_box,
+            accepted_start_row_box,
+            accepted_partial_row_box,
             end_row,
             split_block_start,
             split_end_cut,
