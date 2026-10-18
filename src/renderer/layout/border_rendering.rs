@@ -562,6 +562,33 @@ pub(crate) fn apply_cellzone_border_fill(
     }
 }
 
+/// 셀 영역(cellzone) 테두리 덮어쓰기와 표 외곽 테두리 보충을 엣지 그리드에 적용한다.
+///
+/// 비분할 표와 쪽을 넘는 표 조각이 같은 규칙을 쓰도록 한곳에 둔다. `cells`·`zones`
+/// 의 행 주소는 그리드와 같은 행 공간(조각이면 조각-지역 행)이어야 한다.
+pub(crate) fn apply_table_border_overrides(
+    h_edges: &mut [Vec<Option<BorderLine>>],
+    v_edges: &mut [Vec<Option<BorderLine>>],
+    table_border_fill_id: u16,
+    zones: &[TableZone],
+    cells: &[Cell],
+    styles: &ResolvedStyleSet,
+) {
+    let style = |id: u16| {
+        (id > 0)
+            .then(|| styles.border_styles.get(id as usize - 1))
+            .flatten()
+    };
+    for zone in zones {
+        if let Some(zone_bs) = style(zone.border_fill_id) {
+            apply_cellzone_border_fill(h_edges, v_edges, &zone_bs.borders, zone, cells);
+        }
+    }
+    if let Some(table_bs) = style(table_border_fill_id) {
+        apply_table_outer_border_fill(h_edges, v_edges, &table_bs.borders, cells);
+    }
+}
+
 /// 표 자신의 `borderFillIDRef` 를 바깥 네 변의 **빈 슬롯**에만 보충한다.
 ///
 /// 칸 occupancy 만으로 막으면 일러두기 틀처럼 바깥 칸이 NONE 인 변
