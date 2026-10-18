@@ -91,19 +91,6 @@ impl TypesetEngine {
             split_block_physical_height: _,
             mut end_row_height_override,
         } = scan;
-        // 일반 스캔이 예약한 부분 행 상자를 paint와 원장이 그대로 소비한다.
-        // 블록 컷과 원장 계약 밖의 표에는 일반 행의 증분을 적용하지 않는다.
-        if split_block_start.is_none()
-            && split_end_limit > 0.0
-            && (self.stored_header_physical_rows(st, input.source)
-                || layout_engine.has_stored_continuous_spans(row_geometry_table))
-        {
-            end_row_height_override = end_row_height_override.or_else(|| {
-                accepted_partial_row_box
-                    .filter(|(row, _)| row + 1 == end_row)
-                    .map(|(_, height)| height)
-            });
-        }
         let completed_empty_row_frame = split_block_start.is_none()
             && split_end_cut.is_empty()
             && split_end_limit == 0.0
@@ -1280,6 +1267,21 @@ impl TypesetEngine {
             0.0
         };
 
+        // 독립 저장 프레임이 먼저 물리 상자를 확정한다. 내용 예약만으로
+        // override의 존재를 미리 만들면 그 프레임의 선택 조건이 달라진다.
+        // 프레임 없는 일반 컷만 스캔의 수용 증분을 paint와 원장에 넘긴다.
+        if split_block_start.is_none()
+            && split_end_limit > 0.0
+            && (self.stored_header_physical_rows(st, input.source)
+                || layout_engine.has_stored_continuous_spans(row_geometry_table))
+        {
+            end_row_height_override = end_row_height_override.or_else(|| {
+                accepted_partial_row_box
+                    .filter(|(row, _)| row + 1 == end_row)
+                    .map(|(_, height)| height)
+            });
+        }
+
         // 쪽 끝 빈 띠는 실제 물리 경계와 수용한 조각 상자의 차이다.
         // 원본 프레임이 이미 예약한 띠는 그리기 높이에 다시 더하지 않는다.
         let ledger_page_end_band = if split_block_start.is_some() {
@@ -1447,7 +1449,15 @@ impl TypesetEngine {
                     st,
                     continuation,
                     input,
-                    (last_row, &[], &split_end_cut),
+                    (
+                        last_row,
+                        if last_row == cursor_row {
+                            start_cut
+                        } else {
+                            &[]
+                        },
+                        &split_end_cut,
+                    ),
                     last_height,
                     unreserved_page_end_band,
                     cut_row_h,

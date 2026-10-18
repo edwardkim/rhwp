@@ -127,7 +127,7 @@ impl TypesetEngine {
         band: f64,
         fragment_rows: &[f64],
     ) -> Option<f64> {
-        let (row, _, end_cut) = cut;
+        let (row, start_cut, end_cut) = cut;
         let source = input.source;
         let table = source.row_geometry_table;
         let layout = &input.prepared.layout_engine;
@@ -228,6 +228,10 @@ impl TypesetEngine {
         // 나뉜 행 자신의 선언·온전한 높이도 쪽을 넘어 보존된다. 두 조각 내용 합이 그보다 작으면
         // 그 차이가 이 조각의 띠로 쓰일 수 있다(1342000 81·82쪽 행 14: 88 + 280 ≈ 366.9px).
         let row_slack = whole_row - current - remaining;
+        // 원본이 확인한 쪽 재시작에서는 남은 내용이 다음 물리 프레임의
+        // 소유자다. 그 몫을 현재 병합 종료 상자의 빈 띠로 먼저 쓰지 않는다.
+        let stored_frame_end =
+            layout.row_cut_ends_at_stored_page_reset(table, row, start_cut, end_cut, source.styles);
         let first_row = input.start.cursor_row;
         let slack = table
             .cells
@@ -261,7 +265,11 @@ impl TypesetEngine {
                 // 이 행에서 끝나는 병합 칸의 잔여 최소 높이는 현재 조각에 속한다.
                 // 일반 셀의 뒤쪽 내용 컷은 별도로 공간을 점유하며, 그 미래 점유를
                 // 현재 병합 칸의 남은 최소 높이에서 미리 공제하면 종료 상자가 줄어든다.
-                let owned_row_floor = if end == row + 1 { current } else { row_floor };
+                let owned_row_floor = if end == row + 1 && !stored_frame_end {
+                    current
+                } else {
+                    row_floor
+                };
                 let slack = hwpunit_to_px(cell.height as i32, self.dpi)
                     - prefix - owned_row_floor - after;
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {
