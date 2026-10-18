@@ -48,7 +48,7 @@ impl LayoutEngine {
                 let cell_end = cell_row + cell.row_span as usize;
                 // 같은 행 재개도 남은 물리 띠를 소유한다. 예약과 paint는
                 // 동일한 원본 셀·내용 창과 수용 전 prefix를 소비한다.
-                let resumes_own_row = super::table_partial::resumes_inside_own_start_row(
+                let resumes_own_row = super::super::table_partial::resumes_inside_own_start_row(
                     table,
                     cell,
                     start_row,
