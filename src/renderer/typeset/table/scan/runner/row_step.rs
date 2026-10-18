@@ -157,8 +157,10 @@ impl TypesetEngine {
                 // 내용과 앞 조각이 넘긴 물리 꼬리 중 큰 쪽(`whole_row_height`). 행 전체
                 // 높이로 세면 앞 쪽에서 그린 rowspan 띠가 이 쪽에서 한 번 더 들어간다
                 // (1342000 30쪽: 11행 꼬리 8.5px 대신 60.4px, 정본보다 세 줄 일찍 끊김).
-                let base = if r == cursor_row && !start_cut.is_empty() {
-                    row_query.whole_row_height(start_cut, whole_row_fit_h)
+                let base = if r == cursor_row {
+                    // 일반 컷 슬롯이 없는 병합 행도 전달된 물리 잔여를 소비한다.
+                    // 컷과 override가 없으면 종전 atomic 행 높이를 그대로 쓴다.
+                    row_query.whole_row_height(start_cut, cut_row_h)
                 } else {
                     cut_row_h[r]
                 };
