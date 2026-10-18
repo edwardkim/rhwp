@@ -254,8 +254,13 @@ impl TypesetEngine {
                         cv < pv && pv > 5000
                     }
                 } else {
+                    // 직전 줄이 쪽 위쪽에서 시작해도(한 줄짜리 쪽 높이 TAC 표 등)
+                    // 그 줄의 끝이 쪽 하단부면 cv==0 은 쪽 경계다. 시작 vpos(pv)만
+                    // 보면 이 경계를 놓쳐 다음 문단을 같은 쪽에 겹쳐 놓는다.
+                    // 단 pv==0 이면 저장 vpos 가 없는(모두 0) 문단일 수 있어 제외한다.
                     (cv == 0
-                            && pv > 5000
+                            && pv > 0
+                            && prev_vpos_end > 5000
                             && !hwp3_content_vpos_zero_reset
                             && !para_is_page_bottom_fixed_table_anchor(para)
                             // [#6535 잔여] 쪽-앵커 블록의 vpos=0 은 절대배치 산물이지
