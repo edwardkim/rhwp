@@ -130,8 +130,11 @@ B22는 현재 PDF frontend가 note를 새로 발행해서 생긴 결함이 아�
 소유 목록 감사에서 드러난 기존 native 표시 결함이다. 발견한 세부 native 결함을
 자동으로 이번 PDF 표/문단 작업의 다음 필수 구현 범위로 추가하지 않는다.
 `E:\tmp\issue7998-text-clip-lists-review\diagnostic-notes\`에 같은 실제 진단 저장본도
-복사했다. 바탕쪽 시각·구조의 직접 판정은 비교 화면/Studio 탭에서 요청한 상태이며,
-판정 전 이를 최종 통과로 기록하지 않는다.
+복사했다. 2026-10-19 작업지시자가 코드 checkpoint `3f9434a1f5e886e4da159ec7fe0bc7c56b925aa1`의
+비교 화면과 Studio 7793을 확인해 **“바탕쪽 시각·구조 통과”**로 판정했다.
+판정 범위는 바탕쪽 반복·양 저장 후 가림 보존이며, B21 예외와 각주 표시·미주 독립
+인쇄 비교의 미완료 범위는 그대로 유지한다. 제품 source가 바뀌지 않아 기존 Native/
+fresh WASM·실제 Studio·집중 검사 결과를 재사용하고 빌드·캡처를 반복하지 않았다.
 
 캡션·메모/숨은 설명 목록, 회전/resize·cache와 clipped table continuation,
 한컴 native 비사각 표현/외부 재저장·strict glyph-only V2는 기존 B19 경계에 유지한다.
