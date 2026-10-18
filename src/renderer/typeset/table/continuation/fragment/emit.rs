@@ -1098,7 +1098,8 @@ impl TypesetEngine {
             // 흐름은 방금 조각 하단 + 바깥 아래 여백에 섰다(한/글이 그 줄을 두는 자리).
             if is_continuation {
                 if flow_after_terminal_advance.is_finite() {
-                    terminal_host_push += (st.current_height - flow_after_terminal_advance).max(0.0);
+                    terminal_host_push +=
+                        (st.current_height - flow_after_terminal_advance).max(0.0);
                 }
                 self.post_emit_visible_rowbreak_host_text(
                     st,
