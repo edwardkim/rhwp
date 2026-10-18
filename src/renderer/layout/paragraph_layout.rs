@@ -2284,9 +2284,48 @@ fn compute_line_extra_spacing(
     available_width: f64,
     tab_width: f64,
 ) -> (f64, f64, f64) {
-    let fit_width = centered_measure.map_or(total_text_width, |measure| measure.width(0.0))
-        + leading_space_plan.field_fit_adjustment(styles);
-    let fit_char_count = centered_measure.map_or(total_char_count, |measure| measure.char_count);
+    // 글자 뒤 말미 공백은 줄 밖에 매달리므로 넘침 판정에서 뺀다. 가운데 정렬 측정은
+    // 이미 빼고 잰다. 공백까지 세면 칸에 들어가는 `120,283 ` 같은 숫자를
+    // 공백 폭만큼 눌렀다(정렬은 #7081 이후 공백을 빼고 한다).
+    let (trailing_fit_width, trailing_fit_count) = if centered_measure.is_some() {
+        (0.0, 0)
+    } else {
+        let trailing_spaces = comp_line
+            .runs
+            .iter()
+            .flat_map(|run| run.text.chars())
+            .rev()
+            .take_while(|ch| *ch == ' ')
+            .count()
+            .min(trailing_space_limit);
+        let has_visible = comp_line
+            .runs
+            .iter()
+            .any(|run| run.text.chars().any(|ch| ch != ' '));
+        match comp_line.runs.last() {
+            Some(last_run) if trailing_spaces > 0 && has_visible => {
+                let mut ts = last_run.text_style(styles);
+                ts.default_tab_width = tab_width;
+                // 밑줄·취소선 친 공백은 보이는 내용이라 줄 맞춤 계약을 유지한다.
+                if ts.underline != crate::renderer::UnderlineType::None || ts.strikethrough {
+                    (0.0, 0)
+                } else {
+                    (
+                        estimate_text_width(&" ".repeat(trailing_spaces), &ts),
+                        trailing_spaces,
+                    )
+                }
+            }
+            _ => (0.0, 0),
+        }
+    };
+    let fit_width = centered_measure.map_or(total_text_width - trailing_fit_width, |measure| {
+        measure.width(0.0)
+    }) + leading_space_plan.field_fit_adjustment(styles);
+    let fit_char_count = centered_measure
+        .map_or(total_char_count - trailing_fit_count, |measure| {
+            measure.char_count
+        });
     // 음수 자간은 마지막 글자의 advance도 줄이지만 실제 glyph 잉크 폭은 줄이지 않는다.
     // 나눔정렬에서 advance만 셀 끝에 맞추면 정상 폭으로 그린 마지막 glyph가 clip을
     // 넘어가므로, 마지막 가시 글자의 음수 자간만 시각 점유 폭에 되돌린다.
@@ -2671,8 +2710,9 @@ fn compute_line_extra_spacing(
                     styles,
                     centered_measure,
                     tab_width,
-                    fit_char_count,
-                    fit_width,
+                    // 수렴 측정은 말미 공백을 포함한 줄 전체를 잰다.
+                    fit_char_count + trailing_fit_count,
+                    fit_width + trailing_fit_width,
                     available_width,
                 ),
                 0.0,
