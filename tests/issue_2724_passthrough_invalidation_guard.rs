@@ -133,14 +133,26 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
         "hyperlink.rs",
         "insert_hyperlink_native",
-        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
-        "검증한 필드 삽입 후보를 공통 commit helper에 넘긴다. helper가 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
+        Exempt::DelegatesTo("insert_hyperlink_command"),
+        "웹 주소 Command를 공통 삽입 경로에 넘긴다. 그 경로가 commit helper로 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "insert_bookmark_hyperlink_native",
+        Exempt::DelegatesTo("insert_hyperlink_command"),
+        "책갈피 Command를 공통 삽입 경로에 넘긴다. 그 경로가 commit helper로 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
     ),
     (
         "hyperlink.rs",
         "update_hyperlink_native",
-        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
-        "주소가 바뀐 경우에만 공통 commit helper로 적용한다. helper가 구역 raw_stream을 무효화하며 동일 주소는 무변경이다 (#6963).",
+        Exempt::DelegatesTo("update_hyperlink_command"),
+        "주소가 바뀐 경우에만 공통 수정 경로가 commit helper로 적용한다. helper가 구역 raw_stream을 무효화하며 동일 주소는 무변경이다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "update_bookmark_hyperlink_native",
+        Exempt::DelegatesTo("update_hyperlink_command"),
+        "대상 책갈피가 바뀐 경우에만 공통 수정 경로가 commit helper로 적용한다. 동일 대상은 무변경이다 (#6963).",
     ),
     (
         "hyperlink.rs",
