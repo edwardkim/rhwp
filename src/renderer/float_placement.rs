@@ -30,8 +30,8 @@ mod stored_cut_outer_frame;
 mod stored_header_frame;
 pub(crate) use stored_cut_outer_frame::stored_hwpx_cut_owns_outer_frame;
 pub(crate) use stored_header_frame::{
-    stored_repeated_header_rowbreak_outer_frame, stored_rowbreak_outer_frame_host,
-    stored_whole_header_next_page_placement,
+    stored_independent_table_frame_host, stored_repeated_header_rowbreak_outer_frame,
+    stored_rowbreak_outer_frame_host, stored_whole_header_next_page_placement,
 };
 mod stored_span_opening;
 pub(crate) use stored_span_opening::{stored_span_opening_frame, StoredSpanOpeningFrame};
@@ -1647,59 +1647,8 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
     // 빈 저장 앵커와 표제 아래에 열리는 표는 같은 개체 프레임이다.
     // 표제의 쪽나눔 유무는 Para 앵커가 소유하는 바깥 여백을 바꾸지 않는다.
     // 표제의 글줄 잉크와 표의 바깥 여백은 별도로 소유하며 캡션 간격도 별도로 계산한다.
-    let native_object_frame = native_host.is_some_and(|para| {
-        if object_only_saved_table_anchor(para, table) || reflow_empty_table_host(para, table) {
-            return true;
-        }
-        // 각주·미주는 호스트 글줄에 속하며 표의 독립 바깥 프레임을 없애지 않는다.
-        // 다른 개체가 함께 있으면 단일 표 프레임으로 판정하지 않는다.
-        let table_control_index = para
-            .controls
-            .iter()
-            .position(|control| matches!(control, Control::Table(_)));
-        let single_table_with_notes = para
-            .controls
-            .iter()
-            .filter(|control| matches!(control, Control::Table(_)))
-            .count()
-            == 1
-            && para.controls.iter().all(|control| {
-                matches!(
-                    control,
-                    Control::Table(_) | Control::Footnote(_) | Control::Endnote(_)
-                )
-            });
-        // 여러 저장 글줄도 개체 앞에서 모두 끝나면 같은 바깥 프레임을 소유한다.
-        // 앵커 계획과 같은 유효성 판정을 소비하므로 되감긴 원본 줄은 받아들이지 않는다.
-        if single_table_with_notes
-            && table_control_index.is_some_and(|index| {
-                ParagraphFloatPlacement::text_head_control_position(para, index).is_some()
-            })
-            && table_control_index.is_some_and(|index| {
-                ParagraphFloatPlacement::stored_host_lines_are_valid(para, table, index)
-            })
-            && para
-                .line_segs
-                .first()
-                .is_some_and(|line| line.vertical_pos >= 0)
-            && !para.cell_format_vpos_dirty
-        {
-            return true;
-        }
-        let [line] = para.line_segs.as_slice() else {
-            return false;
-        };
-        para_has_non_whitespace_text(para)
-            && single_table_with_notes
-            && !para.stored_text_partition_is_dirty()
-            && !para.cell_format_vpos_dirty
-            && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            && line.vertical_pos >= 0
-            && line.line_height > 0
-            && table.common.vert_rel_to == VertRelTo::Para
-            && matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
-            && signed_hwpunit(table.common.vertical_offset) >= line.line_height
-    });
+    let native_object_frame =
+        native_host.is_some_and(|para| stored_independent_table_frame_host(para, table));
     // 저장 앵커가 첫 글줄 안에서 시작하면 그 글줄이 표 위 여백을 이미 소유한다.
     // 독립된 본문 밴드 뒤에서 시작하는 앵커만 첫 조각과 다음 쪽에 여백을 연다.
     // [#5585] 이어받은 조각의 이 계약은 저장 HWPX 와 저장 쪽 나눔을 쓰는 HWP5 에 같다 —

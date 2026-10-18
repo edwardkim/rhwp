@@ -172,7 +172,6 @@ impl LayoutEngine {
             || profile.session_edited()
             || host.stored_text_partition_is_dirty()
             || host.cell_format_vpos_dirty
-            || super::super::para_has_non_whitespace_text(host)
             || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
             || line.vertical_pos < 0
             || line.line_height <= 0
@@ -211,7 +210,10 @@ impl LayoutEngine {
             self.dpi,
         );
         let frame_bottom_hu = (frame_bottom * 7200.0 / self.dpi).round() as i64;
-        let anchored_frame = matches!(host.controls.as_slice(), [Control::Table(_)])
+        let empty_host = !super::super::para_has_non_whitespace_text(host);
+        let anchored_frame = ((empty_host
+            && matches!(host.controls.as_slice(), [Control::Table(_)]))
+            || crate::renderer::float_placement::stored_independent_table_frame_host(host, table))
             && (table.common.vertical_offset as i32) >= 0
             && (stored_bottom - frame_bottom_hu).abs() <= 2;
         // 같은 호스트의 흐름 표는 각자 독립된 개체 상자를 갖는다. 앵커의 첫 위치나
@@ -231,7 +233,7 @@ impl LayoutEngine {
                 crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
             );
         let body_hu = (body_height * 7200.0 / self.dpi).round() as i64;
-        anchored_frame || (flow_table_host && (declared_frame - body_hu).abs() <= 2)
+        anchored_frame || (empty_host && flow_table_host && (declared_frame - body_hu).abs() <= 2)
     }
 
     /// 미소비 셀 모두가 같은 원본 쪽 경계에서 끝나는지 확인한다.
