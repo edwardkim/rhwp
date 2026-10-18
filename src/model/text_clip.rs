@@ -99,6 +99,8 @@ fn visit(paras: &mut [Paragraph], f: &mut impl FnMut(u32, &mut TextBox), depth: 
                         visit(&mut c.paragraphs, f, depth + 1)
                     }
                 }
+                Control::Header(h) => visit(&mut h.paragraphs, f, depth + 1),
+                Control::Footer(h) => visit(&mut h.paragraphs, f, depth + 1),
                 _ => {}
             }
         }
@@ -169,6 +171,8 @@ fn collect(
                         collect(&c.paragraphs, records, counts, depth + 1)
                     }
                 }
+                Control::Header(h) => collect(&h.paragraphs, records, counts, depth + 1),
+                Control::Footer(h) => collect(&h.paragraphs, records, counts, depth + 1),
                 _ => {}
             }
         }

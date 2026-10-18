@@ -220,6 +220,16 @@ impl RenderNode {
         self.layer = Some(layer);
     }
 
+    /// Move absolute source-paint geometry with its content, independently of
+    /// viewport/bbox expansion. The caller owns the subtree's actual movement.
+    pub(crate) fn translate_paint_clip_y(&mut self, dy: f64) {
+        if let Some(paths) = &mut self.paint_clip {
+            for path in paths {
+                *path = path.map(|x, y| (x, y + dy));
+            }
+        }
+    }
+
     /// 출력/인쇄 profile에서 제외할 편집 전용 노드로 표시한다.
     pub fn with_editor_only(mut self) -> Self {
         self.editor_only = true;

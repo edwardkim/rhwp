@@ -10928,6 +10928,7 @@ impl LayoutEngine {
     /// 영역(바닥 `1009.2`) 안이라 선이 본문 마지막 글줄을 가로질렀다.
     /// 한/글 정본(engine 2020)은 같은 선을 `1028.2` 에 그린다.
     fn translate_node_payload_y(node: &mut RenderNode, dy: f64) {
+        node.translate_paint_clip_y(dy);
         match &mut node.node_type {
             RenderNodeType::Line(line) => {
                 line.y1 += dy;

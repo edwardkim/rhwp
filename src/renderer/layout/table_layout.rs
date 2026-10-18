@@ -816,6 +816,7 @@ fn ensure_fragment_horizontal_frame_inside_clip(
 
 pub(super) fn translate_render_subtree_y(node: &mut RenderNode, delta_y: f64) {
     node.bbox.y += delta_y;
+    node.translate_paint_clip_y(delta_y);
     if let RenderNodeType::Line(line) = &mut node.node_type {
         line.y1 += delta_y;
         line.y2 += delta_y;

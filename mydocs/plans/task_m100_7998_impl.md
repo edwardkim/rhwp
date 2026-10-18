@@ -440,3 +440,11 @@ P4 전체 완료나 최종 PR 준비 완료로 표시하지 않는다.
 재저장 보존은 미검증으로 유지한다. 기존 B20의 330쪽은 양 backend에서 PNG 동일이다.
 범위·검증·후속 좌표/metadata audit는 [stage11](../working/task_m100_7998_stage11.md)과
 B19 backlog에 연결한다. P5 전체 검증/최신 devel 비교 및 원격 제출은 아직 진행하지 않는다.
+
+2026-10-19 B19 두 번째 절편은 [stage12](../working/task_m100_7998_stage12.md)에 연결했다.
+실제 Footer 후처리에서 source clip도 내용과 같은 이동을 받게 하고, Header/Footer
+문단 목록의 rhwp 보조 metadata를 왕복시켰다. 새 27쪽과 영향 클립 24쪽/backend를
+Native/fresh WASM으로 재출력했고 직접 **시각·편집 구조 통과** 판정을 받았다.
+이전 정상 330쪽은 경로 감사와 기존 증거를 재사용하며 최종 head 전쪽 재검증으로 세지 않는다.
+한컴 native 가림·다른 문단 목록·회전/resize 및 실제 clipped table continuation 경계는
+B19에 유지한다. P5 최신 devel 비교·전체 회귀·원격 제출은 별도 단계다.
