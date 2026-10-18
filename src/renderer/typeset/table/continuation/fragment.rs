@@ -320,9 +320,15 @@ impl TypesetEngine {
             // footnote/footer capacity; a narrower budget has this clearance.
             let extra =
                 (budget.page_avail - budget.physical_content_limit + spanning_bottom).max(0.0);
+            // 원본 프레임·각주 등이 행 예산을 이미 좁혔으면 그 차이만큼 하단 여유가
+            // 확보돼 있다. 머리행은 내용 공간이지 여유가 아니므로 먼저 제외한다.
+            // 넓은 page_avail의 차감량을 좁은 행 예산에서도 다시 빼지 않는다.
+            let reserved_row_clearance =
+                (budget.page_avail - budget.header_overhead - budget.avail_for_rows).max(0.0);
+            let row_extra = (extra - reserved_row_clearance).max(0.0);
             budget.fragment_outer_bottom_overhead = spanning_bottom;
             budget.page_avail -= extra;
-            budget.avail_for_rows = (budget.avail_for_rows - extra).max(0.0);
+            budget.avail_for_rows = (budget.avail_for_rows - row_extra).max(0.0);
             if extra > 0.0 {
                 scan = self.scan_table_fragment(st, input, &budget, profile);
             }
