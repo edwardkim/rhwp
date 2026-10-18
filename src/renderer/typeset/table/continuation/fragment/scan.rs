@@ -218,6 +218,7 @@ impl TypesetEngine {
             reflow_frame_avail_for_rows,
             header_overhead,
             landscape_rowbreak_bleed,
+            has_table_footnotes: !input.prepared.table_footnotes.is_empty(),
             landscape_whole_row_tolerance,
             landscape_short_row_tolerance,
             landscape_short_row_max_height,

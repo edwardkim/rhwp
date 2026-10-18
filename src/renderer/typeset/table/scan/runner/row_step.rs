@@ -1384,6 +1384,24 @@ impl TypesetEngine {
                     &res.end_cut,
                     styles,
                 );
+            // 최소 조각 검사와 수용·배치가 같은 물리 상자를 소비한다. 저장 경계의
+            // 별도 계약은 유지하되, 문단 허용만으로 높이를 면제하지 않는다.
+            let plain_cut_frame = plain_paragraph_keep_contract
+                .then(|| {
+                    row_query.plain_cut_physical_height(
+                        &res.end_cut,
+                        split_total,
+                        (avail_for_rows - consumed - cs_before).max(0.0),
+                        owns_plain_row_frame,
+                        !v.has_table_footnotes
+                            && !st.profile.session_edited()
+                            && !self.render_normalization.table_text_reflowed(table),
+                    )
+                })
+                .flatten();
+            let split_total = plain_cut_frame.unwrap_or(split_total);
+            let row_split_min_keep_uses_painted_height =
+                row_split_min_keep_uses_painted_height || plain_cut_frame.is_some();
             // 저장된 물리 컷 근거가 없는 다줄 행에서 현재 쪽에 첫 유닛 하나만
             // 남고 행 전체가 새 쪽에 들어가면 행 경계에서 이월한다. 내용 높이가
             // 25px을 조금 넘는다는 이유만으로 첫 줄을 떼면 한컴의 행 시작과
@@ -1695,7 +1713,7 @@ impl TypesetEngine {
             // 같은 원본 컷에서 수용한 물리 상자를 continuation ledger에
             // 넘긴다. 내용 높이를 이미 수용한 빈 공간의 대용으로 쓰지 않는다.
             if end_row == r + 1 && split_end_limit > 0.0 && split_block_start.is_none() {
-                if let Some(height) = source_blank_band {
+                if let Some(height) = plain_cut_frame.or(source_blank_band) {
                     end_row_height_override = Some(height);
                 }
                 if let Some(height) = layout_engine.saved_single_cell_opening_frame_height(

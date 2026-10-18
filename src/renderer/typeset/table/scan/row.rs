@@ -25,6 +25,48 @@ pub(in crate::renderer::typeset) struct RowBandProbe {
 }
 
 impl RowScanQuery<'_> {
+    /// 문단 유지 계약을 통과한 컷이 실제로 소유할 상자를 수용 전에 확정한다.
+    /// 내용 높이만으로 최소 조각을 검사한 뒤 paint에서 상자를 늘리지 않는다.
+    /// 반환값은 누적 예약과 부분 행 상자에 함께 전달한다.
+    pub(in crate::renderer::typeset) fn plain_cut_physical_height(
+        &self,
+        end_cut: &[usize],
+        visible_height: f64,
+        available_height: f64,
+        owns_minimum: bool,
+        fills_page_end: bool,
+    ) -> Option<f64> {
+        let table = self.rows.table;
+        if fills_page_end
+            && table.cells.iter().any(|cell| {
+                cell.row_span > 1
+                    && crate::renderer::layout::cell_crosses_fragment_end(cell, self.r + 1, end_cut)
+            })
+        {
+            return Some(available_height.max(visible_height));
+        }
+        if !owns_minimum {
+            return None;
+        }
+        let minimum = self.rows.layout_engine.reflow_row_physical_minimum(
+            table,
+            self.r,
+            self.rows.mt.row_heights[self.r],
+            Some(end_cut),
+            self.rows.styles,
+        )?;
+        let remaining = if self.r == self.cursor_row {
+            self.start_row_height_override.unwrap_or(minimum)
+        } else {
+            minimum
+        };
+        Some(if visible_height <= available_height {
+            remaining.min(available_height).max(visible_height)
+        } else {
+            visible_height
+        })
+    }
+
     /// 통짜/분할 경로가 내용 완결 후 같은 실제 끝 띠를 소비한다.
     /// 다른 칸의 미래 공간과 이 행에서 닫히는 원본 병합 칸을 구분한다.
     pub(in crate::renderer::typeset) fn complete_source_band_can_close(
