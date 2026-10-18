@@ -728,6 +728,16 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     {
         doc.provenance.hwp3_lineage = true;
     }
+    // [#7994] 간격 저장값 표지가 붙은 HWP3→HWP5 변환본 산출물은 HWP5 파서와 같은 렌더용
+    // 반감을 다시 건다 — 원본 `.hwp` 렌더와 이 HWPX 재열기 렌더가 같아진다.
+    if doc.hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
+        == Some(crate::model::document::HWP3_ORIGIN_SPACING_STORED)
+    {
+        for ps in &mut doc.doc_info.para_shapes {
+            ps.spacing_before /= 2;
+            ps.spacing_after /= 2;
+        }
+    }
 
     // [Task #873] BinData Link 타입 의 외부 file path 영역 영역 Picture.external_path 영역
     // 전달. 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
