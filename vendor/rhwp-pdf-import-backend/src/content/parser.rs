@@ -379,18 +379,8 @@ pub fn parse_content_stream_paths_only(data: &[u8]) -> Result<Vec<Operator>> {
                 consecutive_errors = 0;
                 let operands = &data[operand_start..op_start];
 
-                // Skip BT/ET text blocks
-                if op == b"BT" {
-                    match scan_to_et(&data[i..]) {
-                        Some(rest) => {
-                            i = len - rest.len();
-                            operand_start = i;
-                        },
-                        None => break,
-                    }
-                    continue;
-                }
-
+                // Colour/graphics operators inside BT/ET remain in effect
+                // outside it (8.6.8). Skip text operators, not the whole block.
                 // Fast-path multi-char operators with numeric operands
                 let fast_op =
                     match op {
@@ -428,10 +418,9 @@ pub fn parse_content_stream_paths_only(data: &[u8]) -> Result<Vec<Operator>> {
                         b"B*" => Some(Operator::FillStrokeEvenOdd),
                         b"b*" => Some(Operator::CloseFillStrokeEvenOdd),
                         b"W*" => Some(Operator::ClipEvenOdd),
-                        // Skip text/color-space/shading operators that don't affect paths
-                        b"ET" | b"Tc" | b"Tw" | b"Tz" | b"TL" | b"Tf" | b"Tr" | b"Ts" | b"Td"
-                        | b"TD" | b"Tm" | b"Tj" | b"TJ" | b"T*" | b"cs" | b"CS" | b"sc" | b"SC"
-                        | b"scn" | b"SCN" | b"ri" | b"sh" | b"EI" => {
+                        // Skip text/shading operators; colour-space operators use full parsing
+                        b"BT" | b"ET" | b"Tc" | b"Tw" | b"Tz" | b"TL" | b"Tf" | b"Tr" | b"Ts"
+                        | b"Td" | b"TD" | b"Tm" | b"Tj" | b"TJ" | b"T*" | b"ri" | b"sh" | b"EI" => {
                             operand_start = i;
                             continue;
                         },

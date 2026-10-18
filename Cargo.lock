@@ -2154,6 +2154,7 @@ dependencies = [
  "subsetter",
  "svg2pdf",
  "svgtypes 0.16.1",
+ "tiny-skia 0.12.0",
  "ttf-parser",
  "unicode-properties",
  "unicode-segmentation",
@@ -2185,6 +2186,8 @@ name = "rhwp-native-ffi"
 version = "0.1.0"
 dependencies = [
  "rhwp",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -34,7 +34,10 @@ function usesHancomEquationGlyphs(root: LayerEquationLayoutBox | undefined): boo
         if (kind.sub) stack.push(kind.sub);
         if (kind.sup) stack.push(kind.sup);
         break;
-      case 'limit': if (kind.sub) stack.push(kind.sub); break;
+      case 'limit':
+        if (kind.name) stack.push(kind.name);
+        if (kind.sub) stack.push(kind.sub);
+        break;
       case 'matrix': stack.push(...kind.cells.flat()); break;
       case 'rel':
         stack.push(kind.arrow, kind.over);

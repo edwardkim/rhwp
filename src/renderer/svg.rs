@@ -24,6 +24,7 @@ use super::{
     PathCommand, PatternFillInfo, Renderer, ShapeStyle, StrokeDash, TextStyle,
 };
 use crate::paint::{PaintOp, TextDecorationKind};
+use std::fmt::Write as _;
 
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
 /// PUA 가 없으면 원본 문자열 그대로 반환 (allocation 없음).
@@ -1739,10 +1740,28 @@ impl SvgRenderer {
             } else {
                 (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime)
             };
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_bytes);
+        let (brightness, contrast) = img.display_brightness_contrast();
+        let adjusted = (!preserve_color_watermark)
+            .then(|| {
+                crate::renderer::image_resolver::adjusted_picture_bytes(
+                    &render_bytes,
+                    img.effect,
+                    brightness,
+                    contrast,
+                )
+            })
+            .flatten();
+        let adjustments_baked = adjusted.is_some();
+        let render_bytes = adjusted.as_deref().unwrap_or(&render_bytes);
+        let render_mime = if adjustments_baked {
+            "image/png"
+        } else {
+            render_mime
+        };
+        let base64_data = base64::engine::general_purpose::STANDARD.encode(render_bytes);
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
 
-        let effect_filter_id = if preserve_color_watermark {
+        let effect_filter_id = if preserve_color_watermark || adjustments_baked {
             None
         } else {
             self.ensure_image_effect_filter(img.effect)
@@ -1751,7 +1770,7 @@ impl SvgRenderer {
             self.output
                 .push_str(&format!("<g filter=\"url(#{})\">\n", fid));
         }
-        let bc_filter_id = if preserve_color_watermark {
+        let bc_filter_id = if preserve_color_watermark || adjustments_baked {
             None
         } else {
             let (brightness, contrast) = img.display_brightness_contrast();
@@ -1876,6 +1895,36 @@ impl SvgRenderer {
     }
 
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
+        let interpolation = img.data.as_deref().and_then(|data| {
+            let (width, height) = super::image_resolver::png_sampling::dimensions(data)?;
+            let source = img.crop.map_or((width, height), |crop| {
+                let (_, _, w, h) =
+                    compute_image_crop_src(crop, img.original_size_hu, width, height);
+                (w, h)
+            });
+            let frame = img.transform.effective_image_bbox(&img.paint_bbox(bbox));
+            // SVG's intrinsic page uses the renderer's 96-DPI coordinate system.
+            super::image_resolver::png_sampling::magnification(
+                super::image_resolver::png_sampling::interpolation(data),
+                source,
+                (frame.width, frame.height),
+            )
+        });
+        if let Some(interpolate) = interpolation {
+            let rendering = if interpolate { "auto" } else { "pixelated" };
+            let _ = write!(self.output, "<g style=\"image-rendering:{rendering}\">");
+        }
+        self.render_image_node_with_sampling(img, bbox);
+        if interpolation.is_some() {
+            self.output.push_str("</g>");
+        }
+    }
+
+    fn render_image_node_with_sampling(
+        &mut self,
+        img: &ImageNode,
+        bbox: &super::render_tree::BoundingBox,
+    ) {
         // 저장 자르기 선택이 비었으면 프레임만 점유하며 원본을 그리지 않는다.
         if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
             return;
@@ -1909,7 +1958,7 @@ impl SvgRenderer {
         // 더 투명하게 합성되는 샘플이 있어 opacity만 별도 프로파일을 사용한다.
         let preserve_color_watermark = img.is_real_picture_watermark_tone_preset();
         // [Issue #1156] 워터마크 판정 = 밝기·대비가 둘 다 0 이 아님 (effect 무관).
-        let is_watermark_image = img.is_watermark();
+        let is_watermark_image = crate::renderer::image_resolver::is_watermark_image(img);
         let mime_type = detect_image_mime_type(data);
 
         // WMF → SVG 변환 (브라우저는 WMF를 렌더링할 수 없으므로 SVG로 변환)
@@ -1969,8 +2018,25 @@ impl SvgRenderer {
                 (std::borrow::Cow::Borrowed(data), mime_type, false)
             };
 
-        // 그림 효과(그레이스케일/흑백) → SVG 필터 래핑
-        let effect_filter_id = if baked_watermark || preserve_color_watermark {
+        let adjusted = (!(baked_watermark || preserve_color_watermark))
+            .then(|| {
+                crate::renderer::image_resolver::adjusted_picture_bytes(
+                    &render_data,
+                    img.effect,
+                    img.brightness,
+                    img.contrast,
+                )
+            })
+            .flatten();
+        let adjustments_baked = adjusted.is_some();
+        let render_data = adjusted.map_or(render_data, std::borrow::Cow::Owned);
+        let render_mime = if adjustments_baked {
+            "image/png"
+        } else {
+            render_mime
+        };
+        // 일반 raster 색조는 공통 helper가 확정한 픽셀을 사용한다.
+        let effect_filter_id = if baked_watermark || preserve_color_watermark || adjustments_baked {
             None
         } else {
             self.ensure_image_effect_filter(img.effect)
@@ -1989,7 +2055,7 @@ impl SvgRenderer {
         // 비-zero) 는 저장값을 그대로 brightness/contrast 필터로 적용한다. JPEG 워터마크는
         // #976의 baked PNG 선보정이 성공하면 런타임 필터를 생략하고, RealPic 색상
         // 워터마크는 #975의 baked PNG 톤 보정으로 처리한다.
-        let bc_filter_id = if baked_watermark || preserve_color_watermark {
+        let bc_filter_id = if baked_watermark || preserve_color_watermark || adjustments_baked {
             None
         } else {
             self.ensure_brightness_contrast_filter(img.brightness, img.contrast)
@@ -4067,7 +4133,7 @@ fn parse_image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
         return Some((w, h.unsigned_abs()));
     }
 
-    None
+    super::svg_fragment::svg_intrinsic_pixel_dimensions(data)
 }
 
 /// 폰트명 → local() 별칭 매핑 (한글명 + 영문명)

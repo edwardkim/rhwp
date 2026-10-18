@@ -861,6 +861,19 @@ fn make_minimal_bmp_2x2() -> Vec<u8> {
     v
 }
 
+fn first_embedded_png(svg: &str) -> image::RgbaImage {
+    use base64::Engine as _;
+    let prefix = "data:image/png;base64,";
+    let start = svg.find(prefix).expect("실제 PNG payload") + prefix.len();
+    let end = start + svg[start..].find('"').expect("data URL 끝");
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(&svg[start..end])
+        .expect("PNG base64");
+    image::load_from_memory(&bytes)
+        .expect("PNG decode")
+        .to_rgba8()
+}
+
 /// 최소 2x2 RGB TIFF를 생성한다 (브라우저가 data URI를 직접 decode하지 못하는 회귀용).
 fn make_minimal_tiff_2x2() -> Vec<u8> {
     use image::{DynamicImage, ImageFormat, Rgb, RgbImage};
@@ -1092,13 +1105,18 @@ fn test_page_background_image_non_realpic_watermark_uses_legacy_opacity() {
         )),
         "non-RealPic PageBackground watermark should apply legacy watermark opacity: {output}"
     );
+    let png = first_embedded_png(output);
+    assert_eq!(png.dimensions(), (2, 2));
+    // 원본 빨강/파랑의 byte 회색조를 먼저 확정한 뒤 화면 B70/C-50을 적용한다.
+    // 독립 Print 대조로 정한 encoded RGB 계약이며 필터 ID 존재로 대신하지 않는다.
+    assert_eq!(png.get_pixel(0, 0).0, [235, 235, 235, 255]);
+    assert_eq!(png.get_pixel(0, 1).0, [212, 212, 212, 255]);
+    assert!(png
+        .pixels()
+        .all(|p| p[0] == p[1] && p[1] == p[2] && p[3] == 255));
     assert!(
-        output.contains("rhwp-img-grayscale"),
-        "non-RealPic PageBackground watermark should keep the image effect filter: {output}"
-    );
-    assert!(
-        output.contains("rhwp-img-bc-b70c-50"),
-        "non-RealPic PageBackground watermark should keep the display brightness/contrast filter: {output}"
+        !output.contains("rhwp-img-bc-"),
+        "bake한 색조를 다시 적용하지 않는다"
     );
 }
 
@@ -1120,13 +1138,14 @@ fn test_page_background_image_uses_display_brightness_contrast_order() {
     renderer.render_page_background_image(&image, &bbox);
 
     let output = renderer.output();
+    let png = first_embedded_png(output);
+    assert_eq!(png.dimensions(), (2, 2));
+    // 화면 B50/C-15: 빨강 원색의 비활성 채널은137이다. raw 순서로 조정하면 다르다.
+    assert_eq!(png.get_pixel(0, 0).0, [255, 137, 137, 255]);
+    assert_eq!(png.get_pixel(0, 1).0, [137, 137, 255, 255]);
     assert!(
-        output.contains("rhwp-img-bc-b50c-15"),
-        "쪽 배경은 raw ImageFill 순서가 아닌 화면 bright/contrast를 써야 한다: {output}"
-    );
-    assert!(
-        !output.contains("rhwp-img-bc-b-15c50"),
-        "raw 저장 순서를 화면 필터에 직접 넘기면 안 된다: {output}"
+        !output.contains("rhwp-img-bc-"),
+        "픽셀에 적용한 색조를 중복 적용하지 않는다"
     );
 }
 

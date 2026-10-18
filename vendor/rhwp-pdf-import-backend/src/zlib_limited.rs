@@ -1,7 +1,8 @@
 //! Private zlib-rs state with request-scoped, fallible allocation.
 //!
 //! Audited against exactly 0.6.7: inflate/deflate init each allocate one block
-//! containing state and all scratch space. Copy/reset/dictionary APIs are not
+//! containing state and all scratch space. Returned blocks may be zeroed and
+//! reused by another synchronous codec in the same request. Copy/reset/dictionary APIs are not
 //! exposed here. Re-audit the allocation and pointer contracts on an upgrade.
 
 use crate::error::{Error, Result};
@@ -41,16 +42,23 @@ unsafe extern "C" fn allocate(opaque: *mut c_void, count: c_uint, size: c_uint) 
         memory.budget.reject("unexpected zlib allocation");
         return std::ptr::null_mut();
     }
-    if memory.budget.charge_codec_allocation(bytes).is_err() {
-        return std::ptr::null_mut();
-    }
-    if memory.bytes.try_reserve_exact(bytes).is_err() {
-        memory.budget.reject("zlib allocation");
-        return std::ptr::null_mut();
+    match memory.budget.take_codec_scratch(bytes) {
+        Ok(Some(buffer)) => memory.bytes = buffer,
+        Ok(None) => {
+            if memory.budget.charge_codec_allocation(bytes).is_err() {
+                return std::ptr::null_mut();
+            }
+            if memory.bytes.try_reserve_exact(bytes).is_err() {
+                memory.budget.reject("zlib allocation");
+                return std::ptr::null_mut();
+            }
+        },
+        Err(_) => return std::ptr::null_mut(),
     }
     // zlib-rs requests alignment overhead and aligns the returned byte buffer
     // internally. Charge the entire request, including that overhead.
     memory.bytes.resize(bytes, 0);
+    memory.bytes.fill(0);
     memory.bytes.as_mut_ptr().cast()
 }
 
@@ -59,7 +67,9 @@ unsafe extern "C" fn free(opaque: *mut c_void, pointer: *mut c_void) {
     // state pointer. The context outlives end and is exclusively borrowed.
     let memory = unsafe { &mut *opaque.cast::<Memory<'_>>() };
     if pointer == memory.bytes.as_mut_ptr().cast() {
-        memory.bytes = Vec::new();
+        memory
+            .budget
+            .recycle_codec_scratch(std::mem::take(&mut memory.bytes));
     }
 }
 

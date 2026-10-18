@@ -16,7 +16,7 @@ rhwp에 관심을 가져주셔서 감사합니다!
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
-`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)를 페이지별로 확인하며,
+`silhouette_raw_match_percent`(색상 경계 보정 전2px 내용 실루엣 일치율)를 페이지별로 확인하며,
 **한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
 미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
 
@@ -145,6 +145,20 @@ CLI·MCP 계약과 현재 공식 배포 대상의 개선은 rhwp 업스트림에
 - **외부 기여자는 `mydocs/orders/YYYYMMDD.md`를 PR에 포함하지 마세요.** 이 파일은 저장소 운영 기록입니다.
   승인된 collaborator self PR의 번호 기반 기록은 아래 역할별 예외를 따릅니다.
 
+### 리베이스 후 기존 기능 확인
+
+리베이스로 새 devel의 PR을 반영했다면, 작업 중인 문제의 개선과 함께 해당 PR의 기능도
+유지되거나 개선되는지 확인하세요. 새 devel과 후보를 같은 입력·환경으로 실행하고, 반영 PR의
+기존 재현 사례·중요한 경계·실제 사용 경로를 대조하세요. 충돌 없이 적용되거나 컴파일·CI가
+통과했다는 사실만으로 기능이 유지됐다고 판단하지 마세요.
+
+기능이나 출력이 후퇴하면 원인을 보정한 뒤 현재 작업과 반영 PR 양쪽을 다시 검증하세요.
+다른 부분의 개선으로 후퇴를 상쇄하지 않으며, 후퇴·필수 증거 부족이 남아 있으면 PR 생성·갱신을
+보류하세요. 유지·개선과 필수 검증을 확인하면 다음 단계로 진행하세요. PR 본문에 반영 PR,
+새 base·후보 SHA, 입력·명령·결과와 보정 후 재검증을 기록하면 됩니다. 별도 내부 review 문서는
+요구하지 않습니다. 렌더링에는 전쪽 Native/fresh WASM TSV와 직접 판독 기준도 함께 적용합니다.
+상세 기준은 [리베이스 후 기능 보존 검증](mydocs/manual/pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)을 따릅니다.
+
 ### 메인터너 검토 기록과의 구분
 
 외부 기여자의 제출 절차는 이 문서의 **코드 기여**, **PR 전 체크리스트**, **회귀 테스트 가이드**가
@@ -206,12 +220,15 @@ PR 생성 시 본문의 `![설명](URL)`에 넣습니다. PR 번호가 나온 �
 검증 대상 전체 페이지의 Native/fresh WASM `silhouette.tsv`에서 비교 쪽수·최저값과
 90% 미만/누락 쪽을 확인하고, 해당 쪽과 구조 차이·대표 경계는 일반 모드의 PNG로 직접 판독합니다.
 전체 페이지의 review/overlay PNG를 일률 생성하거나 첨부할 필요는 없습니다.
-**PR 본문에는 대표 페이지의 이미지와 전체 검증 범위의 TSV 원본 다운로드 링크를 첨부하세요.**
-제출용 TSV는 **Native와 fresh WASM 둘 다 필수**입니다. 두 출력 경로의 TSV를 구분해
-ZIP으로 묶어 PR 본문에 업로드하거나, 검토자가 내려받을 수 있는
-동일 파일의 첨부 링크를 넣습니다. 요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않습니다.
-첨부 파일이 어느 입력·출력 경로·검증 head에 대응하는지 명시하며, TSV는 ignored output에 보존하고
-Git에 커밋하지 않습니다. TSV·입력/출력 provenance와 최저값·미달 페이지를 PR 증거에 연결하세요.
+**PR 본문에는 대표 페이지 이미지와 전체 TSV 원문을 넣으세요. 본문 크기 제한에 걸리면 원본 다운로드 링크로 제출할 수 있습니다.**
+제출용 TSV는 **Native와 fresh WASM 둘 다 필수**입니다. 파일명·출력 경로를 명시한
+`tsv` 코드 블록에 header와 전체 페이지 원문을 그대로 넣을 수 있습니다. 본문 크기 제한에 걸리면
+압축하지 않은 원본을 `mydocs/pr/assets/issue_<이슈번호>/<문서이름>_silhouette.tsv` 등에
+바이트 그대로 복사해 커밋하고 정확한 head SHA의 raw 다운로드 링크로 제출하세요. Native/fresh WASM과
+base/후보는 하위 폴더나 파일명으로 구분합니다. 요약 표·최저값·로컬 output 경로만으로 원본을 대신하지 않습니다.
+입력·출력 경로·실제 검증 source 및 binary/WASM SHA·페이지·TSV SHA-256을 명시하세요.
+[TSV 원본 보존·링크 예시](mydocs/manual/verification/visual_sweep_guide.md#tsv-원문-본문-삽입과-저장소-링크)를 따릅니다.
+GitHub CLI의 파일 첨부 기능이나 외부 Gist 없이 저장소 asset 링크로 제출할 수 있습니다.
 실루엣 계산 방법, 이진화 원값과 색상 경계 대조 픽셀 수도 함께 기록하세요.
 색상 경계 대조는 실제 흰 배경의 그림 누락·위치 차이를 제외하는 근거가 아닙니다.
 기존 PNG 재사용은 원 실행의 코드·빌드·글꼴 조건을 확인하며 새 head 검증으로 표시하지 않습니다.
@@ -222,7 +239,8 @@ TSV 산출 exit0 또는 `not_evaluated`는 승인 판정이 아닙니다. 90% �
 실루엣 일치율은 모두 90% 이상이어야 합니다. `scripts/visual_sweep.py`가 `re_review_required`를 기록하거나 non-zero로 끝나면
 PR을 제출하지 말고 본인 branch에서 PDF·overlay 원인을 재검토·수정한 뒤 새 head에서 gate를 통과할 때만
 PR을 생성·갱신합니다. **90% 미만**이 보류 기준이며 **정확히 90%는 통과**합니다.
-TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않습니다.
+작업 중 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존합니다.
+본문에 원문을 넣거나, 크기 제한 시 최종 TSV 원본만 위 asset 경로에 커밋해 링크합니다. 실행 로그·중간 JSON은 커밋하지 않습니다.
 사용자가 승인한 메인터너 보정도 같은 기준을 충족해야 합니다. 한컴 PDF와 rhwp의 실제 글꼴 차이는
 양쪽 font family와 확인 방법을 적은 UTF-8 증거를 `--font-mismatch-evidence`로 기록할 수 있지만
 확인한 해결 불가능한 글꼴 문제는 [PR 제출 예외 계약](mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의
@@ -756,7 +774,7 @@ Print PDF와 Native/fresh WASM Visual Sweep에서 관련 모든 페이지가 90%
 90% 이상·확대 판독을 충족한 뒤 관계형 회귀를 복원하세요.
 [별도 이슈 이관](mydocs/manual/pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)을 따릅니다. 기존 px 고정 검사를 바꾸는
 경우에도 이 선행 조건을 충족한 뒤 문단·줄·개체의 소유·순서·보존·포함·겹침 관계로 검사하세요.
-관계 검사를 기본으로 하되, **완료된 페이지**의 Native/fresh WASM 2px 관용 실루엣 일치율이
+관계 검사를 기본으로 하되, **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)이
 각각 **98% 이상**이고 독립 PDF와 직접 확대 판독을 마쳤으면 해당 쪽의 독립 기대 좌표를
 **±2px** 허용 오차로 고정할 수 있습니다. 문서 전체98% 이상은 요구하지 않으며 관계 검사도 유지하세요.
 [페이지별 px 회귀 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따릅니다.
@@ -787,7 +805,7 @@ Print PDF와 Native/fresh WASM Visual Sweep에서 관련 모든 페이지가 90%
 
 렌더링·조판·페이지 배치 변경에서는 **새 회귀 테스트 또는 fixture/golden을 추가하기 전에** 같은
 원본·독립 한컴 PDF의 Native/fresh WASM Visual Sweep을 완료하세요. 관련 모든 페이지·fixture·출력
-경로 중 최저 `tolerant_content_match_percent`가 90% 이상이어야 합니다. 쪽수 검사는 전체 페이지를
+경로 중 최저 `silhouette_raw_match_percent`가 90% 이상이어야 합니다. 쪽수 검사는 전체 페이지를
 비교합니다. 최저값 90% 미만 또는 측정 불가이면 새 회귀 테스트를 추가하지 않고 실제 출력을 먼저
 개선하세요. 평균값·글꼴 예외·CI 성공으로 대신하지 않습니다. 기존 검사·파일의 제거와 이관은 위
 별도 이슈 절차에 따라 실패 근거와 복원 조건을 남겨 처리하세요.

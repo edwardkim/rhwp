@@ -655,6 +655,7 @@ impl LayoutEngine {
         inner_area: &LayoutRect,
         para_y: f64,
         para_alignment: Alignment,
+        para_shape_id: u16,
         styles: &ResolvedStyleSet,
         bin_data_content: &[BinDataContent],
         clamp_header_negative_para_offset: bool,
@@ -668,6 +669,7 @@ impl LayoutEngine {
             inner_area,
             para_y,
             para_alignment,
+            para_shape_id,
             styles,
             bin_data_content,
             clamp_header_negative_para_offset,
@@ -686,6 +688,7 @@ impl LayoutEngine {
         inner_area: &LayoutRect,
         para_y: f64,
         para_alignment: Alignment,
+        para_shape_id: u16,
         styles: &ResolvedStyleSet,
         bin_data_content: &[BinDataContent],
         clamp_header_negative_para_offset: bool,
@@ -709,7 +712,18 @@ impl LayoutEngine {
             (x, para_y)
         } else {
             // 셀 내 비-TAC 도형: horz_align/vert_align 속성 기반 배치
-            use crate::model::shape::{HorzAlign, VertAlign, VertRelTo};
+            use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
+            // 문단 기준의 가로 원점은 셀 안에서도 문단 좌우 여백으로 정해진다.
+            // 첫 줄 들여쓰기는 글줄의 속성이므로 떠 있는 도형의 기준에는 더하지 않는다.
+            // TAC는 앞 분기의 확정 글줄 위치를 쓰고, 단·종이 기준은 셀 프레임을 유지한다.
+            let (ref_x, ref_w) = if matches!(child_common.horz_rel_to, HorzRelTo::Para) {
+                let para_style = styles.para_styles.get(para_shape_id as usize);
+                let left = para_style.map_or(0.0, |style| style.margin_left);
+                let right = para_style.map_or(0.0, |style| style.margin_right);
+                (inner_area.x + left, inner_area.width - left - right)
+            } else {
+                (inner_area.x, inner_area.width)
+            };
             let h_offset = hwpunit_to_px(child_common.horizontal_offset as i32, self.dpi);
             let mut vertical_offset = child_common.vertical_offset as i32;
             // 한컴은 머리말 안의 문단 기준 글상자에서 음수 `문단 내 위`를 0처럼 배치한다.
@@ -722,11 +736,9 @@ impl LayoutEngine {
             }
             let v_offset = hwpunit_to_px(vertical_offset, self.dpi);
             let x = match child_common.horz_align {
-                HorzAlign::Right | HorzAlign::Outside => {
-                    inner_area.x + inner_area.width - child_w - h_offset
-                }
-                HorzAlign::Center => inner_area.x + (inner_area.width - child_w) / 2.0 + h_offset,
-                _ => inner_area.x + h_offset,
+                HorzAlign::Right | HorzAlign::Outside => ref_x + ref_w - child_w - h_offset,
+                HorzAlign::Center => ref_x + (ref_w - child_w) / 2.0 + h_offset,
+                _ => ref_x + h_offset,
             };
             let (ref_y, ref_h) = if matches!(child_common.vert_rel_to, VertRelTo::Para) {
                 (para_y, (inner_area.y + inner_area.height - para_y).max(0.0))
@@ -1413,6 +1425,7 @@ impl LayoutEngine {
                                 &shape_area,
                                 shape_y,
                                 shape_alignment,
+                                para.para_shape_id,
                                 styles,
                                 bin_data_content,
                                 false,

@@ -1,4 +1,4 @@
-//! Request-bounded PNG output for 8-bit grayscale and RGB samples.
+//! Request-bounded PNG output for 8-bit grayscale, RGB and RGBA samples.
 //!
 //! Borrowed rows feed a streaming zlib compressor. Its private allocation goes
 //! through a request-scoped, fallible allocator; compressed chunks go directly
@@ -19,9 +19,10 @@ pub(super) fn encode(
     height: u32,
     channels: usize,
     budget: &ImportBudget,
+    interpolate: Option<bool>,
 ) -> Result<()> {
     budget.check()?;
-    if width == 0 || height == 0 || ![1, 3].contains(&channels) {
+    if width == 0 || height == 0 || ![1, 3, 4].contains(&channels) {
         return Err(Error::Image("invalid bounded PNG geometry or channels".into()));
     }
     let row_bytes = (width as usize)
@@ -37,8 +38,18 @@ pub(super) fn encode(
     ihdr[..4].copy_from_slice(&width.to_be_bytes());
     ihdr[4..8].copy_from_slice(&height.to_be_bytes());
     ihdr[8] = 8;
-    ihdr[9] = if channels == 1 { 0 } else { 2 };
+    ihdr[9] = match channels {
+        1 => 0,
+        3 => 2,
+        4 => 6,
+        _ => unreachable!("validated above"),
+    };
     chunk(writer, b"IHDR", &ihdr, &[])?;
+    if let Some(interpolate) = interpolate {
+        // Private, ancillary, unsafe-to-copy PNG chunk. Version 1 declares
+        // source sampling; pixel-changing foreign editors must discard it.
+        chunk(writer, b"rhWP", &[1, u8::from(interpolate)], &[])?;
+    }
     for row in pixels.chunks_exact(row_bytes) {
         // PNG filter None; the source samples remain borrowed.
         feed(&mut compressor, &[0], false, writer)?;

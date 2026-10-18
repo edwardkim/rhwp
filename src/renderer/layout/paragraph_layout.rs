@@ -3292,11 +3292,16 @@ impl LayoutEngine {
             styles,
             style.alignment == Alignment::Center,
         );
-        // 글줄 경로와 같은 줄별 들여쓰기 규칙(첫 줄 들여쓰기·나머지 줄 내어쓰기).
-        let styled_left =
-            super::table_layout::effective_margin_left_line(style.margin_left, style.indent, owner)
-                .max(0.0);
-        let line_indent = styled_left - style.margin_left.max(0.0);
+        let indent = crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
+            style.indent,
+            owner,
+            Some(para),
+            composed.lines.len(),
+            true,
+            area.width - style.margin_left - style.margin_right,
+            self.dpi,
+        );
+        let styled_left = style.margin_left + indent;
         let stored = para.line_segs.get(owner)?;
         // A complete natural saved line owns its horizontal region. Paragraph
         // hanging indent is a reflow input, not a replacement for that region.
@@ -3329,8 +3334,9 @@ impl LayoutEngine {
                 .abs_diff(super::super::px_to_hwpunit(area.width, self.dpi))
                 <= 1)
             .then(|| {
+                // 저장 영역이 문단 여백만 담을 때만 줄 들여쓰기를 더한다(#7840).
                 let indent = if column_start_is_own_margin {
-                    line_indent
+                    indent
                 } else {
                     0.0
                 };

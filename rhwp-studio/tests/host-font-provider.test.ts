@@ -162,6 +162,16 @@ test('Hancom equation glyphs request their actual regular host face without read
     assert.equal(requests.length, 1, 'the same equation face is prepared once');
     assert.equal(requests[0].hostReference?.face.id, 'equation');
     assert.equal(f.reads(), 0, 'request collection is metadata only');
+    const name: LayerEquationLayoutBox = { ...bounds, baseline: 10,
+      kind: { type: 'hancomGlyphs', glyphs: 'lim', positions: [0, 5, 10], baselineShift: 0 } };
+    const limit: LayerEquationLayoutBox = { ...bounds, baseline: 10,
+      kind: { type: 'limit', isUpper: false, name } };
+    tree.root = { kind: 'leaf', bounds, ops: [
+      { type: 'equation', bbox: bounds, layoutBox: limit },
+    ] };
+    assert.equal(collectHostFontRequests(tree)[0]?.hostReference?.face.id, 'equation',
+      '첨자가 없는 극한도 이름이 소비하는 실제 face를 요청한다');
+    assert.equal(f.reads(), 0, '이름의 요청 수집도 글꼴 바이트를 읽지 않는다');
     tree.root = { kind: 'leaf', bounds, ops: [
       { type: 'equation', bbox: bounds, layoutBox: plain },
       { type: 'equation', bbox: bounds, svgContent: '<svg/>' },

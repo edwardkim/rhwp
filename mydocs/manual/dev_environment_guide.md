@@ -259,10 +259,11 @@ pkg/public의 동일 해시만으로 source 일치를 판정하지 않는다. �
 추가·제거 내용을 대조하고, 불일치 산출물은 증거에서 제외한 뒤 변경 패키지의 재컴파일을 확인한다.
 공유 cache 전체를 삭제해 해결하지 않는다.
 
-### Studio에서 PDF 직접 열기 (선택 기능)
+### Studio에서 PDF 직접 열기
 
-기본 WASM은 PDF 가져오기가 꺼져 있다. PDF를 검증할 때는 저장소 루트에서 동일한 Docker
-서비스와 cache를 사용하여 기능을 포함한다. `.env.docker`는 위 표준 준비 절차를 재사용한다.
+기본 Native·WASM 빌드는 `pdf-import`를 포함한다. 저장소 루트에서 표준 Docker 서비스와
+cache를 사용해 빌드하면 Studio의 PDF 열기를 사용할 수 있다. `.env.docker`는 위 표준 준비
+절차를 재사용한다. 추가 feature 지정은 필요하지 않다.
 
 ```bash
 docker compose --env-file .env.docker run --rm --no-deps wasm sh -ec '
@@ -274,14 +275,18 @@ docker compose --env-file .env.docker run --rm --no-deps wasm sh -ec '
   }
   trap finish EXIT
   rm -f pkg/*-opt.wasm
-  scripts/wasm-pack-locked.sh --target web --out-dir pkg --features pdf-import
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg
 '
 ```
 
 이후 위 wrapper가 동기화한 pkg/public의 JS·WASM SHA-256을 확인하고 Studio 개발 서버를
 시작·새로고침한다. 파일 → 열기(Ctrl/Cmd+O) 또는 문서 영역 드롭으로 PDF를 직접 열 수 있다.
 지원 여부는 실제 WASM의 `HwpDocument.supportsPdfImport()` 결과로 결정한다. 이전 bundle이나
-PDF-off 빌드에서는 PDF를 열기 목록에 추가하지 않으며 HWP/HWPX/HML 열기는 유지한다.
+`pdf-import`를 제외하고 `wasm-api`를 유지한 빌드에서는 PDF를 열기 목록에 추가하지 않으며
+HWP/HWPX/HML 열기는 유지한다. Studio용 명시적 제외 빌드는
+`--no-default-features --features console_error_panic_hook,wasm-api`를 사용한다.
+`--no-default-features`만 지정하면 라이브러리 소비용으로 JS facade와 자동 start도 제외되므로
+Studio 패키지의 PDF 제외 옵션으로 단독 사용하지 않는다.
 
 PDF 원본은 입력으로 보존한다. 첫 저장은 HWP/HWPX 출력 형식을 선택하며, 원본 핸들에
 내용을 덮어쓰지 않는다. 현재 Studio 가져오기는 동기 WASM 호출이므로 진행 표시가 취소나

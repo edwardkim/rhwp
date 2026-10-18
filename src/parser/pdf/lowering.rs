@@ -27,12 +27,12 @@ pub(crate) fn hu(points: f32) -> Result<u32, String> {
     Ok((points * 100.0).round() as u32)
 }
 
-fn rgb(c: Color) -> u32 {
+pub(super) fn rgb(c: Color) -> u32 {
     let channel = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as u32;
     channel(c.r) | (channel(c.g) << 8) | (channel(c.b) << 16)
 }
 
-fn component(width: u32, height: u32) -> ShapeComponentAttr {
+pub(super) fn component(width: u32, height: u32) -> ShapeComponentAttr {
     ShapeComponentAttr {
         original_width: width,
         original_height: height,
@@ -46,10 +46,19 @@ fn component(width: u32, height: u32) -> ShapeComponentAttr {
     }
 }
 
-fn common(x: f32, y: f32, w: f32, h: f32, id: u32) -> Result<CommonObjAttr, String> {
+pub(super) fn common(x: f32, y: f32, w: f32, h: f32, id: u32) -> Result<CommonObjAttr, String> {
+    // HWP stores signed page offsets in these u32 bit fields. Extents remain
+    // nonnegative; positions may lie beyond the page origin. Quantize to the
+    // format's 1/100 pt unit, without clamping content to the page boundary.
+    let offset = |v: f32| {
+        if !v.is_finite() || v.abs() > 100000.0 {
+            return Err(format!("unsupported page offset: {v}"));
+        }
+        Ok(((v * 100.0).round() as i32) as u32)
+    };
     Ok(CommonObjAttr {
-        horizontal_offset: hu(x)?,
-        vertical_offset: hu(y)?,
+        horizontal_offset: offset(x)?,
+        vertical_offset: offset(y)?,
         width: hu(w)?,
         height: hu(h)?,
         instance_id: id,
@@ -130,14 +139,49 @@ pub(super) fn lower(
     let mut painted = 0;
     let mut unsupported_paths = 0;
     let mut rule_sources = Vec::new();
+    let mut image_sources = Vec::new();
+    let mut paint_orders = Vec::new();
+    let mut local_path_pictures = 0;
     let mut warnings = vec![
         "positional text boxes, not semantic paragraph/table reconstruction".to_string(),
-        "PDF paint ordering, text/path clipping, transparency and embedded fonts are not reconstructed"
+        "Text/path interleaving, text clipping, blend modes and embedded fonts are not fully reconstructed"
             .into(),
     ];
 
     // Keep straight rules as editable IR shapes even when table inference misses them.
     for (source_path, path) in page.paths.iter().enumerate() {
+        let simple_rule = matches!(
+            path.operations.as_slice(),
+            [PathOperation::MoveTo(..), PathOperation::LineTo(..)]
+        ) && path.stroke_color.is_some()
+            && path.fill_color.is_none()
+            && path.dash_pattern.is_none()
+            && path.matrix.is_none()
+            && path.paint.stroke_alpha == 1.0
+            && match path.paint.clip {
+                pdf_oxide::extractors::image_clip::ImageClip::Unbounded => true,
+                pdf_oxide::extractors::image_clip::ImageClip::Rectangle(clip) => {
+                    let bounds = path.rendered_bbox();
+                    bounds.x >= clip.x
+                        && bounds.y >= clip.y
+                        && bounds.x + bounds.width <= clip.x + clip.width
+                        && bounds.y + bounds.height <= clip.y + clip.height
+                }
+                _ => false,
+            };
+        if !simple_rule {
+            if let Some(control) = super::path_paint::lower(page, path, doc, id)? {
+                local_path_pictures += usize::from(matches!(control, Control::Picture(_)));
+                rule_sources.push(
+                    json!({"path":source_path,"control":owner.controls.len(),"instanceId":id}),
+                );
+                paint_orders.push((owner.controls.len(), path.paint.source_order.clone()));
+                owner.controls.push(control);
+                id += 1;
+            }
+            continue;
+        }
+        paint_orders.push((owner.controls.len(), path.paint.source_order.clone()));
         let [PathOperation::MoveTo(x1, y1), PathOperation::LineTo(x2, y2)] =
             path.operations.as_slice()
         else {
@@ -234,15 +278,18 @@ pub(super) fn lower(
         id += 1;
     }
 
-    for image in &page.images {
+    for (source_image, image) in page.images.iter().enumerate() {
         let b = image.bbox().ok_or("image has no placement geometry")?;
         let matrix = image.matrix();
-        if image.rotation_degrees() != 0
-            || !matrix.iter().all(|value| value.is_finite())
+        if !matrix.iter().all(|value| value.is_finite())
             || matrix[0] <= 0.0
             || matrix[3] <= 0.0
-            || matrix[1] != 0.0
-            || matrix[2] != 0.0
+            // Off-diagonal entries are physical endpoint displacements in the
+            // image unit square. Only accept those indistinguishable from zero
+            // in HWP's native coordinate unit. The rounded angle alone can be
+            // 360 degrees for a tiny negative value and is not authoritative.
+            || (matrix[1] * 100.0).round() != 0.0
+            || (matrix[2] * 100.0).round() != 0.0
         {
             return Err("rotated/mirrored/sheared image is not supported by this POC".into());
         }
@@ -252,71 +299,24 @@ pub(super) fn lower(
                     .into(),
             );
         }
-        let data = image
-            .to_png_bytes_with_budget(&page.import_budget)
-            .map_err(|e| e.to_string())?;
-        let storage = (doc.bin_data_content.len() + 1) as u16;
-        doc.doc_info.bin_data_list.push(BinData {
-            // HWP5 table 18: embedded payloads use type 1, default compression,
-            // and NotAccessed. The binary writer emits this attribute verbatim.
-            // Leaving it at 0 labels the storage-id/extension payload as a link.
-            attr: 0x0001,
-            data_type: BinDataType::Embedding,
-            storage_id: storage,
-            extension: Some("png".into()),
-            ..Default::default()
-        });
-        doc.bin_data_content.push(BinDataContent {
-            id: storage,
-            extension: "png".into(),
-            data: BinDataBytes::Loaded(data),
-        });
-        let attrs = common(b.x - left, top - b.y - b.height, b.width, b.height, id)?;
-        // PDF clips are in page user space; HWP crop coordinates select a region
-        // of the full bitmap. The visible frame and the selected pixels have the
-        // same proportions, preserving scale instead of fitting all pixels into
-        // a smaller cell. PDF y points up, image crop y points down.
-        let img_dim = (image.width() * 75, image.height() * 75);
-        let crop_x = |x: f32| {
-            ((f64::from(x) - f64::from(matrix[4])) / f64::from(matrix[0]) * f64::from(img_dim.0))
-                .round() as i32
-        };
-        let crop_y = |y: f32| {
-            ((f64::from(matrix[5]) + f64::from(matrix[3]) - f64::from(y)) / f64::from(matrix[3])
-                * f64::from(img_dim.1))
-            .round() as i32
-        };
-        let pic = Picture {
-            shape_attr: component(attrs.width, attrs.height),
-            common: attrs,
-            instance_id: id,
-            img_dim,
-            // Picture uses packed point pairs, not separate X/Y arrays.
-            border_x: [0, 0, hu(b.width)? as i32, 0],
-            border_y: [
-                hu(b.width)? as i32,
-                hu(b.height)? as i32,
-                0,
-                hu(b.height)? as i32,
-            ],
-            crop: CropInfo {
-                left: crop_x(b.x),
-                top: crop_y(b.y + b.height),
-                right: crop_x(b.x + b.width),
-                bottom: crop_y(b.y),
-            },
-            image_attr: ImageAttr {
-                bin_data_id: storage,
-                ..Default::default()
-            },
-            ..Default::default()
-        };
-        owner.controls.push(Control::Picture(Box::new(pic)));
+        image_sources.push(json!({"image":source_image,"control":owner.controls.len()}));
+        paint_orders.push((
+            owner.controls.len(),
+            page.image_orders[source_image].clone(),
+        ));
+        owner.controls.push(lower_picture(
+            image,
+            doc,
+            left,
+            top,
+            id,
+            &page.import_budget,
+        )?);
         id += 1;
     }
 
     let mut unknown_fonts = 0;
-    for span in &page.spans {
+    for (span_index, span) in page.spans.iter().enumerate() {
         if span.text.is_empty() {
             continue;
         }
@@ -327,7 +327,12 @@ pub(super) fn lower(
             unknown_fonts += 1;
             "함초롬바탕"
         } else {
-            &span.font_name
+            // ISO 32000-1 9.6.4: a six-uppercase-letter subset tag is not
+            // part of the installed font family/PostScript name.
+            span.font_name
+                .split_once('+')
+                .filter(|(tag, _)| tag.len() == 6 && tag.bytes().all(|b| b.is_ascii_uppercase()))
+                .map_or(span.font_name.as_str(), |(_, family)| family)
         };
         let font_id = if let Some(i) = doc.doc_info.font_faces[0]
             .iter()
@@ -362,7 +367,8 @@ pub(super) fn lower(
         )?;
         let width = attrs.width;
         let height = attrs.height;
-        let mut paragraph = text_para(&span.text, shape, width, height);
+        let text = super::structured_lowering::span_text_with_spaces(span);
+        let mut paragraph = text_para(&text, shape, width, height);
         paragraph.para_shape_id = single_line_id;
         paragraph.char_count_msb = true;
         let rect = RectangleShape {
@@ -382,11 +388,21 @@ pub(super) fn lower(
             },
             ..Default::default()
         };
+        paint_orders.push((owner.controls.len(), page.span_orders[span_index].clone()));
         owner
             .controls
             .push(Control::Shape(Box::new(ShapeObject::Rectangle(rect))));
         id += 1;
     }
+    paint_orders.sort_by(|a, b| a.1.cmp(&b.1));
+    for (z, (control, _)) in paint_orders.iter().enumerate() {
+        match &mut owner.controls[*control] {
+            Control::Shape(s) => s.common_mut().z_order = z as i32,
+            Control::Picture(p) => p.common.z_order = z as i32,
+            _ => {}
+        }
+    }
+
     if unknown_fonts > 0 {
         warnings.push(format!(
             "{unknown_fonts} spans have Unknown font; explicit fallback used"
@@ -412,6 +428,8 @@ pub(super) fn lower(
         "pictures":doc.bin_data_content.len(), "straightRules":lines,
         "paintedRuleRectangles":painted,
         "ruleSourceControls":rule_sources,
+        "imageSourceControls":image_sources,
+        "compoundPathPictures":local_path_pictures,
         "ruleSourceControlScope":"positional controls before table replacement; instance IDs remain stable",
         "singleLineParagraphs":"SQUEEZE",
         "detectedTables":detected, "semanticTables":0,
@@ -421,4 +439,76 @@ pub(super) fn lower(
         "warnings":warnings
     });
     Ok(report)
+}
+
+pub(super) fn lower_picture(
+    image: &pdf_oxide::extractors::PdfImage,
+    doc: &mut Document,
+    left: f32,
+    top: f32,
+    id: u32,
+    budget: &pdf_oxide::import_limits::ImportBudget,
+) -> Result<Control, String> {
+    let b = image.bbox().ok_or("image has no placement geometry")?;
+    let matrix = image.matrix();
+    let data = image
+        .to_png_bytes_with_budget(budget)
+        .map_err(|e| e.to_string())?;
+    let storage = (doc.bin_data_content.len() + 1) as u16;
+    doc.doc_info.bin_data_list.push(BinData {
+        // HWP5 table 18: embedded payloads use type 1, default compression,
+        // and NotAccessed. The binary writer emits this attribute verbatim.
+        // Leaving it at 0 labels the storage-id/extension payload as a link.
+        attr: 0x0001,
+        data_type: BinDataType::Embedding,
+        storage_id: storage,
+        extension: Some("png".into()),
+        ..Default::default()
+    });
+    doc.bin_data_content.push(BinDataContent {
+        id: storage,
+        extension: "png".into(),
+        data: BinDataBytes::Loaded(data),
+    });
+    let attrs = common(b.x - left, top - b.y - b.height, b.width, b.height, id)?;
+    // PDF clips are in page user space; HWP crop coordinates select a region
+    // of the full bitmap. The visible frame and the selected pixels have the
+    // same proportions, preserving scale instead of fitting all pixels into
+    // a smaller cell. PDF y points up, image crop y points down.
+    let img_dim = (image.width() * 75, image.height() * 75);
+    let crop_x = |x: f32| {
+        ((f64::from(x) - f64::from(matrix[4])) / f64::from(matrix[0]) * f64::from(img_dim.0))
+            .round() as i32
+    };
+    let crop_y = |y: f32| {
+        ((f64::from(matrix[5]) + f64::from(matrix[3]) - f64::from(y)) / f64::from(matrix[3])
+            * f64::from(img_dim.1))
+        .round() as i32
+    };
+    let pic = Picture {
+        shape_attr: component(attrs.width, attrs.height),
+        common: attrs,
+        instance_id: id,
+        img_dim,
+        // Picture uses packed point pairs, not separate X/Y arrays.
+        border_x: [0, 0, hu(b.width)? as i32, 0],
+        border_y: [
+            hu(b.width)? as i32,
+            hu(b.height)? as i32,
+            0,
+            hu(b.height)? as i32,
+        ],
+        crop: CropInfo {
+            left: crop_x(b.x),
+            top: crop_y(b.y + b.height),
+            right: crop_x(b.x + b.width),
+            bottom: crop_y(b.y),
+        },
+        image_attr: ImageAttr {
+            bin_data_id: storage,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    Ok(Control::Picture(Box::new(pic)))
 }

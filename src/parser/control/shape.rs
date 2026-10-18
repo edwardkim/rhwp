@@ -942,9 +942,10 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
         bottom: r.read_i16().unwrap_or(0),
     };
 
-    // 이미지 속성
-    pic.image_attr.brightness = r.read_i8().unwrap_or(0);
+    // HWP5 실저장 순서는 명암→밝기다. 의미 IR/HWPX는 밝기→명암으로 읽는다.
+    // 한컴2024의 편람 그림354 HWP→HWPX는 bright=8, contrast=0이다(#7751).
     pic.image_attr.contrast = r.read_i8().unwrap_or(0);
+    pic.image_attr.brightness = r.read_i8().unwrap_or(0);
     let effect = r.read_u8().unwrap_or(0);
     pic.image_attr.effect = match effect {
         1 => ImageEffect::GrayScale,

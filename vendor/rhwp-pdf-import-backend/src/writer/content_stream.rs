@@ -2999,6 +2999,7 @@ mod tests {
         use crate::elements::PathContent;
 
         let path = PathContent {
+            paint: Default::default(),
             operations: vec![
                 PathOperation::MoveTo(0.0, 0.0),
                 PathOperation::LineTo(100.0, 0.0),
@@ -3035,6 +3036,7 @@ mod tests {
         use crate::elements::PathContent;
 
         let path = PathContent {
+            paint: Default::default(),
             operations: vec![
                 PathOperation::MoveTo(0.0, 0.0),
                 PathOperation::LineTo(100.0, 100.0),
@@ -3065,6 +3067,7 @@ mod tests {
         use crate::elements::PathContent;
 
         let path = PathContent {
+            paint: Default::default(),
             operations: vec![PathOperation::Rectangle(0.0, 0.0, 100.0, 100.0)],
             stroke_color: None,
             fill_color: Some(Color {
@@ -3096,6 +3099,7 @@ mod tests {
         use crate::elements::PathContent;
 
         let path = PathContent {
+            paint: Default::default(),
             operations: vec![
                 PathOperation::MoveTo(0.0, 0.0),
                 PathOperation::CurveTo(10.0, 20.0, 30.0, 40.0, 50.0, 60.0),

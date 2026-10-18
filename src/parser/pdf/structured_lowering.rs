@@ -41,6 +41,31 @@ fn physical_margin(points: f32) -> Result<i32, String> {
         .ok_or_else(|| "physical paragraph measure exceeds format range".into())
 }
 
+// PDF TJ displacements can express word spaces without a U+0020 glyph.
+// Positional boxes and reconstructed table paragraphs must recover the same
+// text from the same glyph origins, before either path measures the line.
+pub(super) fn span_text_with_spaces(span: &pdf_oxide::layout::TextSpan) -> String {
+    let mut text = String::new();
+    for (j, ch) in span.text.chars().enumerate() {
+        if j > 0 {
+            if let (Some(x), Some(prev), Some(width)) = (
+                span.char_x_offsets.get(j),
+                span.char_x_offsets.get(j - 1),
+                span.char_widths.get(j - 1),
+            ) {
+                if x - prev - width > span.font_size * 0.2
+                    && !text.ends_with(char::is_whitespace)
+                    && !ch.is_whitespace()
+                {
+                    text.push(' ');
+                }
+            }
+        }
+        text.push(ch);
+    }
+    text
+}
+
 fn text_with_spaces(page: &ExtractedPage, indices: &[usize]) -> (String, Vec<(u32, usize)>) {
     let mut text = String::new();
     let mut runs = Vec::new();
@@ -54,23 +79,7 @@ fn text_with_spaces(page: &ExtractedPage, indices: &[usize]) -> (String, Vec<(u3
             text.push(' ');
         }
         runs.push((text.encode_utf16().count() as u32, i));
-        for (j, ch) in span.text.chars().enumerate() {
-            if j > 0 {
-                if let (Some(x), Some(prev), Some(width)) = (
-                    span.char_x_offsets.get(j),
-                    span.char_x_offsets.get(j - 1),
-                    span.char_widths.get(j - 1),
-                ) {
-                    if x - prev - width > span.font_size * 0.2
-                        && !text.ends_with(char::is_whitespace)
-                        && !ch.is_whitespace()
-                    {
-                        text.push(' ');
-                    }
-                }
-            }
-            text.push(ch);
-        }
+        text.push_str(&span_text_with_spaces(span));
         end = Some(span.bbox.x + span.bbox.width);
     }
     (text, runs)
@@ -785,6 +794,59 @@ fn table_count(controls: &[Control]) -> usize {
         .sum()
 }
 
+fn paint_frame(control: &Control) -> Option<&CommonObjAttr> {
+    match control {
+        Control::Shape(shape) => Some(shape.common()),
+        Control::Picture(picture) => Some(&picture.common),
+        Control::Table(table) => Some(&table.common),
+        _ => None,
+    }
+}
+
+/// Body table paint can use the flow plane, whereas positional source controls
+/// paint in front of text. A retained backdrop can consequently cover table
+/// labels even with a larger table z-order. Promote only when no earlier
+/// overlapping positional paint would cross that plane boundary.
+fn table_paint_layer(
+    controls: &[Control],
+    consumed: &BTreeSet<usize>,
+    bounds: &Value,
+) -> Result<i32, String> {
+    let last = consumed
+        .iter()
+        .filter_map(|&i| controls.get(i).and_then(paint_frame))
+        .map(|c| c.z_order)
+        .max()
+        .ok_or("table has no source paint")?;
+    let (x, y, width, height) = (
+        number(&bounds["x"])?,
+        number(&bounds["y"])?,
+        number(&bounds["width"])?,
+        number(&bounds["height"])?,
+    );
+    for (i, control) in controls.iter().enumerate() {
+        if consumed.contains(&i) {
+            continue;
+        }
+        let Some(frame) = paint_frame(control) else {
+            continue;
+        };
+        if frame.z_order > last {
+            continue;
+        }
+        let cx = (frame.horizontal_offset as i32) as f32 / 100.;
+        let cy = (frame.vertical_offset as i32) as f32 / 100.;
+        if cx < x + width
+            && cx + frame.width as f32 / 100. > x
+            && cy < y + height
+            && cy + frame.height as f32 / 100. > y
+        {
+            return Err("positional backdrop cannot share inferred table flow plane".into());
+        }
+    }
+    Ok(last)
+}
+
 pub(super) fn lower(
     page: &ExtractedPage,
     doc: &mut Document,
@@ -795,7 +857,14 @@ pub(super) fn lower(
     let controls = std::mem::take(&mut doc.sections[section].paragraphs[0].controls);
     let mut span_controls = vec![None; page.spans.len()];
     let mut shape_ids = vec![None; page.spans.len()];
-    let mut image_controls = Vec::new();
+    let mut image_controls = vec![0; page.images.len()];
+    for source in array(&report["imageSourceControls"])? {
+        let image = index(&source["image"])?;
+        let control = index(&source["control"])?;
+        *image_controls
+            .get_mut(image)
+            .ok_or("invalid image/control mapping")? = control;
+    }
     let mut rule_controls = vec![None; page.paths.len()];
     for source in array(&report["ruleSourceControls"])? {
         let path = index(&source["path"])?;
@@ -813,7 +882,7 @@ pub(super) fn lower(
     let mut span_cursor = 0;
     for (control_idx, c) in controls.iter().enumerate() {
         match c {
-            Control::Picture(_) => image_controls.push(control_idx),
+            Control::Picture(_) => {}
             Control::Shape(s) => {
                 if let Some(b) = s.drawing().and_then(|d| d.text_box.as_ref()) {
                     let source = *nonempty
@@ -859,13 +928,19 @@ pub(super) fn lower(
         let border_start = doc.doc_info.border_fills.len();
         let tab_start = doc.doc_info.tab_defs.len();
         let mut candidate_removed = BTreeSet::new();
-        let built = builder.build(
-            doc,
-            candidate,
-            &mut candidate_removed,
-            &mut BTreeSet::new(),
-            family,
-        );
+        let built = builder
+            .build(
+                doc,
+                candidate,
+                &mut candidate_removed,
+                &mut BTreeSet::new(),
+                family,
+            )
+            .and_then(|mut table| {
+                table.common.z_order =
+                    table_paint_layer(&controls, &candidate_removed, &grid["bbox"])?;
+                Ok(table)
+            });
         match built {
             Ok(table) => {
                 removed.extend(candidate_removed);

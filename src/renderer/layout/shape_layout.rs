@@ -3122,17 +3122,33 @@ impl LayoutEngine {
             self.dpi,
         ) {
             let mut paragraphs = text_box.paragraphs.clone();
-            for para in paragraphs
-                .iter_mut()
-                .filter(|para| matrix_textbox_lines_need_reflow(para))
-            {
+            for index in 0..paragraphs.len() {
+                if !matrix_textbox_lines_need_reflow(&paragraphs[index]) {
+                    continue;
+                }
+                let previous_end =
+                    crate::renderer::composer::paragraph_flow_end(&paragraphs[index]);
                 reflow_matrix_textbox_para(
-                    para,
+                    &mut paragraphs[index],
                     inner_area.width,
                     inner_area.height,
                     styles,
                     self.dpi,
                 );
+                // 줄 수가 바뀌면 뒤 문단도 새 흐름 끝에서 이어진다. 저장 쪽/글상자
+                // 리셋은 공통 vpos 재계산기가 보존하며 이전 줄의 끝과 구분한다.
+                if crate::renderer::composer::paragraph_flow_end(&paragraphs[index]) != previous_end
+                {
+                    crate::renderer::composer::recalculate_section_vpos(
+                        &mut paragraphs,
+                        index,
+                        None,
+                        previous_end,
+                        styles,
+                        self.dpi,
+                        false,
+                    );
+                }
             }
             Some(paragraphs)
         } else {

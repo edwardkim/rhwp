@@ -529,6 +529,8 @@ pub struct PdfDocument {
     pub(crate) erase_regions: Mutex<HashMap<usize, Vec<crate::geometry::Rect>>>,
     /// LRU cache of decompressed page content streams, keyed by page index.
     page_content_cache: Mutex<BoundedEntryCache<usize, std::sync::Arc<Vec<u8>>>>,
+    // Adjacent bounded path/image consumers share one page's lexical parse.
+    import_page_operators: Mutex<BoundedEntryCache<usize, Arc<Vec<crate::content::Operator>>>>,
     /// LRU cache of postprocessed [`TextSpan`]s per page. `to_markdown`/`to_html`
     /// reach `extract_spans` twice per page — once directly, once via
     /// `extract_page_tables` → `extract_words` → `page_reading_order`; this serves
@@ -1099,6 +1101,16 @@ impl PdfDocument {
         limits: crate::import_limits::PdfImportLimits,
     ) -> Result<Self> {
         let budget = std::sync::Arc::new(crate::import_limits::ImportBudget::new(limits)?);
+        Self::from_bytes_with_budget(data, budget)
+    }
+
+    /// Keep the caller's request context available even if construction fails.
+    pub fn from_bytes_with_budget(
+        data: Vec<u8>,
+        budget: std::sync::Arc<crate::import_limits::ImportBudget>,
+    ) -> Result<Self> {
+        budget.check()?;
+        let limits = budget.limits;
         if data.len() > limits.input_bytes {
             return Err(budget.reject("input bytes"));
         }
@@ -1130,10 +1142,45 @@ impl PdfDocument {
         legacy: fn(&[u8]) -> Result<Vec<crate::content::Operator>>,
     ) -> Result<Vec<crate::content::Operator>> {
         if let Some(budget) = &self.import_budget {
+            budget.record_content_parse();
             crate::content::parser::parse_content_with_budget(data, budget)
         } else {
             legacy(data)
         }
+    }
+
+    pub(crate) fn parse_page_import_content(
+        &self,
+        page: usize,
+        data: &[u8],
+        legacy: fn(&[u8]) -> Result<Vec<crate::content::Operator>>,
+    ) -> Result<Vec<crate::content::Operator>> {
+        let Some(budget) = self.import_budget.as_ref() else {
+            return legacy(data);
+        };
+        budget.check()?;
+        let cached = self
+            .import_page_operators
+            .lock_or_recover()
+            .get(&page)
+            .cloned();
+        let operators = match cached {
+            Some(operators) => {
+                budget.record_page_operator_cache_hit();
+                operators
+            },
+            None => {
+                budget.record_content_parse();
+                let operators =
+                    Arc::new(crate::content::parser::parse_content_with_budget(data, budget)?);
+                budget.charge_entries(1)?;
+                self.import_page_operators
+                    .lock_or_recover()
+                    .insert(page, Arc::clone(&operators));
+                operators
+            },
+        };
+        crate::content::operator_copy::copy(&operators, budget)
     }
 
     /// Deprecated alias for `from_bytes`.
@@ -1372,6 +1419,7 @@ impl PdfDocument {
             )),
             erase_regions: Mutex::new(HashMap::new()),
             page_content_cache: Mutex::new(BoundedEntryCache::new(64)),
+            import_page_operators: Mutex::new(BoundedEntryCache::new(1)),
             page_spans_cache: Mutex::new(BoundedEntryCache::new(8)),
             search_index: Mutex::new(HashMap::new()),
             page_chars_cache: Mutex::new(BoundedEntryCache::new(8)),
@@ -1590,7 +1638,7 @@ impl PdfDocument {
         obj_ref: ObjectRef,
     ) -> Result<Vec<u8>> {
         if let Some(budget) = &self.import_budget {
-            return stream_obj.decode_stream_data_with_budget(budget);
+            return crate::stream_parameters_limited::decode(self, stream_obj, budget);
         }
         if matches!(stream_obj, Object::Null) {
             return Ok(Vec::new());
@@ -3769,8 +3817,12 @@ impl PdfDocument {
 
         // Corrupted objects degrade to Null so extraction can continue on
         // partial PDFs rather than aborting.
-        let mut obj =
-            match crate::parser::parse_object_with_budget(&data, self.import_budget.as_ref()) {
+        let mut obj = if let Some(budget) = &self.import_budget {
+            crate::parser::parse_indirect_with_budget(&data, budget, |reference| {
+                self.load_object(reference)
+            })?
+        } else {
+            match crate::parser::parse_object_with_budget(&data, None) {
                 Ok((_, parsed_obj)) => parsed_obj,
                 Err(e) => {
                     self.check_import_budget()?;
@@ -3792,7 +3844,8 @@ impl PdfDocument {
                     );
                     Object::Null
                 },
-            };
+            }
+        };
 
         // Decrypt string values inside this uncompressed object before
         // caching. Skip the /Encrypt dict (its entries are key material)
@@ -12796,6 +12849,110 @@ impl PdfDocument {
         Ok(spans)
     }
 
+    /// Extract visually painted spans for positional import. Search extraction
+    /// keeps invisible OCR/accessibility text through `extract_spans` instead.
+    pub fn extract_painted_spans(&self, page_index: usize) -> Result<Vec<crate::layout::TextSpan>> {
+        self.check_import_budget()?;
+        let spans = self.extract_spans_impl(
+            page_index,
+            crate::extractors::TextExtractionConfig::default(),
+            HashSet::new(),
+            HashSet::new(),
+            true,
+        )?;
+        let spans = self.postprocess_spans_for_import(page_index, spans)?;
+        self.check_import_budget()?;
+        Ok(spans)
+    }
+
+    /// Positional import marks paired with the full content-stream paint path.
+    /// Reading-order extraction remains a separate API and never supplies z-order.
+    pub fn extract_ordered_painted_spans(
+        &self,
+        page_index: usize,
+    ) -> Result<Vec<(crate::layout::TextSpan, Vec<usize>)>> {
+        self.check_import_budget()?;
+        let mut orders = HashMap::new();
+        let spans = self.extract_spans_impl_with_orders(
+            page_index,
+            crate::extractors::TextExtractionConfig::default(),
+            HashSet::new(),
+            HashSet::new(),
+            true,
+            Some(&mut orders),
+        )?;
+        let spans = self.postprocess_spans_for_import(page_index, spans)?;
+        let result = spans
+            .into_iter()
+            .map(|span| {
+                let order = orders
+                    .remove(&span.sequence)
+                    .map(|(order, _group)| order)
+                    .ok_or_else(|| Error::Unsupported("missing text paint order".into()))?;
+                Ok((span, order))
+            })
+            .collect();
+        self.check_import_budget()?;
+        result
+    }
+
+    /// Resolve nonstroking `ca` and stroking `CA` in the active resource scope.
+    pub(crate) fn paint_alpha(
+        &self,
+        resources: &Object,
+        name: &str,
+    ) -> Result<(Option<f32>, Option<f32>)> {
+        fn resolve<'a>(
+            doc: &PdfDocument,
+            value: &'a Object,
+        ) -> Result<std::borrow::Cow<'a, Object>> {
+            let mut value = std::borrow::Cow::Borrowed(value);
+            let limit = doc
+                .import_budget
+                .as_ref()
+                .map_or(32, |b| b.limits.reference_depth);
+            let mut depth = 0;
+            while let Some(reference) = value.as_reference() {
+                doc.check_import_budget()?;
+                if depth >= limit {
+                    return Err(doc.import_budget.as_ref().map_or_else(
+                        || Error::Unsupported("ExtGState reference depth".into()),
+                        |b| b.reject("ExtGState reference depth"),
+                    ));
+                }
+                value = std::borrow::Cow::Owned(doc.load_object(reference)?);
+                depth += 1;
+            }
+            Ok(value)
+        }
+        let resources = resolve(self, resources)?;
+        let Some(states) = resources.as_dict().and_then(|d| d.get("ExtGState")) else {
+            return Ok((None, None));
+        };
+        let states = resolve(self, states)?;
+        let Some(state) = states.as_dict().and_then(|d| d.get(name)) else {
+            return Ok((None, None));
+        };
+        let state = resolve(self, state)?;
+        let Some(dict) = state.as_dict() else {
+            return Err(Error::Unsupported("invalid ExtGState".into()));
+        };
+        let alpha = |key: &str| -> Result<Option<f32>> {
+            let Some(value) = dict.get(key) else {
+                return Ok(None);
+            };
+            let value = resolve(self, value)?;
+            let n = value
+                .as_real()
+                .or_else(|| value.as_integer().map(|i| i as f64));
+            match n.filter(|n| n.is_finite() && (0.0..=1.0).contains(n)) {
+                Some(n) => Ok(Some(n as f32)),
+                None => Err(Error::Unsupported("invalid paint alpha".into())),
+            }
+        };
+        Ok((alpha("ca")?, alpha("CA")?))
+    }
+
     fn copy_import_spans(
         &self,
         spans: &[crate::layout::TextSpan],
@@ -13186,6 +13343,26 @@ impl PdfDocument {
         page_index: usize,
         raw_spans: Vec<crate::layout::TextSpan>,
     ) -> Result<Vec<crate::layout::TextSpan>> {
+        self.postprocess_spans_inner(page_index, raw_spans, true)
+    }
+
+    fn postprocess_spans_for_import(
+        &self,
+        page_index: usize,
+        raw_spans: Vec<crate::layout::TextSpan>,
+    ) -> Result<Vec<crate::layout::TextSpan>> {
+        // Positional import retains painted headers and footers. Semantic
+        // artifact classification is unused by lowering and must not extract
+        // every unselected source page to classify the requested one.
+        self.postprocess_spans_inner(page_index, raw_spans, false)
+    }
+
+    fn postprocess_spans_inner(
+        &self,
+        page_index: usize,
+        raw_spans: Vec<crate::layout::TextSpan>,
+        classify_running_artifacts: bool,
+    ) -> Result<Vec<crate::layout::TextSpan>> {
         let mut spans = raw_spans;
 
         self.drop_offpage_spans(page_index, &mut spans);
@@ -13368,7 +13545,9 @@ impl PdfDocument {
         // normalized text recurs on >=50% of pages and sits near the top or
         // bottom of the page are flagged as artifacts so downstream filters
         // drop them.
-        self.mark_running_artifact_spans(page_index, &mut spans)?;
+        if classify_running_artifacts {
+            self.mark_running_artifact_spans(page_index, &mut spans)?;
+        }
 
         // Normalize Unicode typographic spaces (U+2000–U+200B, U+202F, U+205F)
         // to ASCII space. Some PDF producers encode word separators as hair-space
@@ -17321,7 +17500,7 @@ impl PdfDocument {
         page_index: usize,
         config: crate::extractors::TextExtractionConfig,
     ) -> Result<Vec<crate::layout::TextSpan>> {
-        self.extract_spans_impl(page_index, config, HashSet::new(), HashSet::new())
+        self.extract_spans_impl(page_index, config, HashSet::new(), HashSet::new(), false)
     }
 
     fn extract_spans_raw_filtered(
@@ -17335,6 +17514,7 @@ impl PdfDocument {
             crate::extractors::TextExtractionConfig::default(),
             excluded_layers,
             excluded_inks,
+            false,
         )
     }
 
@@ -17344,6 +17524,26 @@ impl PdfDocument {
         config: crate::extractors::TextExtractionConfig,
         excluded_layers: HashSet<String>,
         excluded_inks: HashSet<String>,
+        visible_paint_only: bool,
+    ) -> Result<Vec<crate::layout::TextSpan>> {
+        self.extract_spans_impl_with_orders(
+            page_index,
+            config,
+            excluded_layers,
+            excluded_inks,
+            visible_paint_only,
+            None,
+        )
+    }
+
+    fn extract_spans_impl_with_orders(
+        &self,
+        page_index: usize,
+        config: crate::extractors::TextExtractionConfig,
+        excluded_layers: HashSet<String>,
+        excluded_inks: HashSet<String>,
+        visible_paint_only: bool,
+        paint_orders: Option<&mut HashMap<usize, (Vec<usize>, usize)>>,
     ) -> Result<Vec<crate::layout::TextSpan>> {
         if self.is_encrypted_unreadable() {
             log::warn!("PDF is encrypted and could not be decrypted; returning no spans");
@@ -17361,7 +17561,7 @@ impl PdfDocument {
             return Ok(Vec::new());
         }
 
-        let content_data = match self.get_page_content_data(page_index) {
+        let content_data = match self.cached_page_content(page_index) {
             Ok(data) => data,
             Err(e) => {
                 log::warn!(
@@ -17383,6 +17583,8 @@ impl PdfDocument {
         // by default; Form XObject Do invocations push their own scope
         // on top of the stack inside the extractor.
         extractor.set_page_index(page_index as u32);
+        extractor.set_import_page_source(page_index);
+        extractor.set_visible_paint_only(visible_paint_only);
         if !excluded_layers.is_empty() {
             extractor.set_excluded_layers(excluded_layers);
         }
@@ -17402,6 +17604,9 @@ impl PdfDocument {
         }
 
         let spans = extractor.extract_text_spans(&content_data)?;
+        if let Some(orders) = paint_orders {
+            *orders = extractor.take_span_paint_orders();
+        }
         // Drain MCIDs whose in-stream /ActualText was applied during
         // extraction and stash on the document so the struct-tree-
         // scope applier honours MC-scope-wins precedence (§14.9.4).
@@ -17935,7 +18140,7 @@ impl PdfDocument {
         }
 
         // Get content stream data — skip page on decode failure (Annex I)
-        let content_data = match self.get_page_content_data(page_index) {
+        let content_data = match self.cached_page_content(page_index) {
             Ok(data) => data,
             Err(e) => {
                 log::warn!(
@@ -17954,6 +18159,9 @@ impl PdfDocument {
 
         // Create text extractor with merged configuration
         let mut extractor = TextExtractor::new().with_merging_config(config);
+        extractor.set_document(self);
+        extractor.set_page_index(page_index as u32);
+        extractor.set_import_page_source(page_index);
 
         // Load fonts from page resources and set resources for XObject access
         if let Some(resources) = page_dict.get("Resources") {
@@ -18176,9 +18384,12 @@ impl PdfDocument {
     /// surfacing their inks here would create plates that stay empty.
     pub fn get_page_inks_deep(&self, page_index: usize) -> Result<Vec<String>> {
         let resources = self.page_resources_for_inks(page_index)?;
-        let content_data = self.get_page_content_data(page_index)?;
-        let operators =
-            self.parse_import_content(&content_data, crate::content::parse_content_stream)?;
+        let content_data = self.cached_page_content(page_index)?;
+        let operators = self.parse_page_import_content(
+            page_index,
+            &content_data,
+            crate::content::parse_content_stream,
+        )?;
 
         let mut ink_names: Vec<String> = Vec::new();
         let mut visited: std::collections::HashSet<crate::object::ObjectRef> =
@@ -18424,7 +18635,7 @@ impl PdfDocument {
             reason: "Page is not a dictionary".to_string(),
         })?;
 
-        let content_data = match self.get_page_content_data(page_index) {
+        let content_data = match self.cached_page_content(page_index) {
             Ok(data) => data,
             Err(e) => {
                 log::warn!(
@@ -18449,6 +18660,8 @@ impl PdfDocument {
         // would make the wrong call on any document whose pages differ in size.
         // Harmless before this change only because the clip never ran here.
         extractor.set_page_index(page_index as u32);
+        extractor.set_document(self);
+        extractor.set_import_page_source(page_index);
         if !excluded_layers.is_empty() {
             extractor.set_excluded_layers(excluded_layers);
         }
@@ -19342,6 +19555,9 @@ impl PdfDocument {
     ) -> Result<std::sync::Arc<Vec<u8>>> {
         self.check_import_budget()?;
         if let Some(data) = self.xobject_stream_cache.lock_or_recover().get(&reference) {
+            if let Some(budget) = &self.import_budget {
+                budget.record_form_stream_cache_hit();
+            }
             return Ok(std::sync::Arc::clone(data));
         }
         let data = std::sync::Arc::new(self.decode_stream_with_encryption(xobject, reference)?);
@@ -19381,6 +19597,9 @@ impl PdfDocument {
         {
             let mut cache = self.page_content_cache.lock_or_recover();
             if let Some(data) = cache.get(&page_index) {
+                if let Some(budget) = &self.import_budget {
+                    budget.record_page_stream_cache_hit();
+                }
                 return Ok(std::sync::Arc::clone(data));
             }
         }
@@ -19539,7 +19758,6 @@ impl PdfDocument {
         use crate::content::{parse_content_stream_paths_only, Operator};
         use crate::elements::{LineCap, LineJoin};
         use crate::extractors::paths::{FillRule, PathExtractor, PathGraphicsStateStack};
-        use crate::layout::Color;
 
         // Get page object and content stream
         let page = self.get_page(page_index)?;
@@ -19549,7 +19767,7 @@ impl PdfDocument {
         })?;
 
         // Get content stream data — skip page on decode failure (Annex I)
-        let content_data = match self.get_page_content_data(page_index) {
+        let content_data = match self.cached_page_content(page_index) {
             Ok(data) => data,
             Err(e) => {
                 self.check_import_budget()?;
@@ -19562,22 +19780,26 @@ impl PdfDocument {
             },
         };
 
-        let operators =
-            match self.parse_import_content(&content_data, parse_content_stream_paths_only) {
-                Ok(ops) => ops,
-                Err(e) => {
-                    self.check_import_budget()?;
-                    log::warn!(
-                        "Failed to parse content stream for page {}: {}, returning empty paths",
-                        page_index,
-                        e
-                    );
-                    return Ok(Vec::new());
-                },
-            };
+        let operators = match self.parse_page_import_content(
+            page_index,
+            &content_data,
+            parse_content_stream_paths_only,
+        ) {
+            Ok(ops) => ops,
+            Err(e) => {
+                self.check_import_budget()?;
+                log::warn!(
+                    "Failed to parse content stream for page {}: {}, returning empty paths",
+                    page_index,
+                    e
+                );
+                return Ok(Vec::new());
+            },
+        };
 
         let mut extractor = PathExtractor::new();
         let mut state_stack = PathGraphicsStateStack::new();
+        extractor.update_from_path_state(state_stack.current());
 
         // Resolve and set page resources for XObject processing
         if let Some(resources) = page_dict.get("Resources") {
@@ -19589,8 +19811,23 @@ impl PdfDocument {
             extractor.set_resources(resolved_resources);
         }
 
+        use crate::extractors::image_clip::{ImageClip, ImageClipTracker};
+        let (left, bottom, right, top) = self.get_page_visible_box(page_index)?;
+        let mut clips = ImageClipTracker::new(
+            crate::content::Matrix::identity(),
+            ImageClip::transformed_rectangle(
+                crate::content::Matrix::identity(),
+                [left, bottom, right, top],
+            ),
+        );
         // Process each operator
-        for op in operators {
+        for (ordinal, op) in operators.into_iter().enumerate() {
+            extractor.paint.source_order = vec![ordinal];
+            extractor.paint.clip = clips.current().clip;
+            clips.apply(&op);
+            if self.process_path_color_operator(&op, &mut extractor, state_stack.current_mut())? {
+                continue;
+            }
             match op {
                 // Graphics state operators
                 Operator::SaveState => {
@@ -19608,37 +19845,26 @@ impl PdfDocument {
                     extractor.set_ctm(state.ctm);
                 },
 
-                // Color operators (stroke)
-                Operator::SetStrokeRgb { r, g, b } => {
-                    state_stack.current_mut().stroke_color_rgb = (r, g, b);
-                    extractor.set_stroke_color(Color::new(r, g, b));
-                },
-                Operator::SetStrokeGray { gray } => {
-                    state_stack.current_mut().stroke_color_rgb = (gray, gray, gray);
-                    extractor.set_stroke_color(Color::new(gray, gray, gray));
-                },
-                Operator::SetStrokeCmyk { c, m, y, k } => {
-                    let (r, g, b) = crate::color::cmyk_to_rgb(c, m, y, k);
-                    state_stack.current_mut().stroke_color_rgb = (r, g, b);
-                    extractor.set_stroke_color(Color::new(r, g, b));
-                },
-
-                // Color operators (fill)
-                Operator::SetFillRgb { r, g, b } => {
-                    state_stack.current_mut().fill_color_rgb = (r, g, b);
-                    extractor.set_fill_color(Color::new(r, g, b));
-                },
-                Operator::SetFillGray { gray } => {
-                    state_stack.current_mut().fill_color_rgb = (gray, gray, gray);
-                    extractor.set_fill_color(Color::new(gray, gray, gray));
-                },
-                Operator::SetFillCmyk { c, m, y, k } => {
-                    let (r, g, b) = crate::color::cmyk_to_rgb(c, m, y, k);
-                    state_stack.current_mut().fill_color_rgb = (r, g, b);
-                    extractor.set_fill_color(Color::new(r, g, b));
+                Operator::SetExtGState { dict_name } => {
+                    if let Some(resources) = extractor.current_resources() {
+                        let (fill, stroke) = self.paint_alpha(resources, &dict_name)?;
+                        let state = state_stack.current_mut();
+                        if let Some(alpha) = fill {
+                            state.fill_alpha = alpha;
+                        }
+                        if let Some(alpha) = stroke {
+                            state.stroke_alpha = alpha;
+                        }
+                        extractor.update_from_path_state(state);
+                    }
                 },
 
                 // Line style operators
+                Operator::SetDash { array, phase } => {
+                    let state = state_stack.current_mut();
+                    state.dash_pattern = (!array.is_empty()).then_some((array, phase));
+                    extractor.update_from_path_state(state);
+                },
                 Operator::SetLineWidth { width } => {
                     state_stack.current_mut().line_width = width;
                     extractor.set_line_width(width);
@@ -19700,6 +19926,9 @@ impl PdfDocument {
                 // Path painting operators
                 Operator::Stroke => {
                     extractor.stroke();
+                },
+                Operator::CloseAndStroke => {
+                    extractor.close_and_stroke();
                 },
                 Operator::Fill => {
                     extractor.fill(FillRule::NonZero);
@@ -19770,6 +19999,7 @@ impl PdfDocument {
                 // Skip other operators (text, images, etc.)
                 _ => {},
             }
+            state_stack.current_mut().clip_path = extractor.paint.clip_path.clone();
         }
 
         self.check_import_budget()?;
@@ -20050,7 +20280,6 @@ impl PdfDocument {
         use crate::content::{parse_content_stream_paths_only, Matrix, Operator};
         use crate::elements::{LineCap, LineJoin};
         use crate::extractors::paths::FillRule;
-        use crate::layout::Color;
 
         if let Some(budget) = &self.import_budget {
             budget.xobject_visit()?;
@@ -20203,8 +20432,56 @@ impl PdfDocument {
         // anything this XObject leaves unbalanced (see truncate below).
         let oc_base_depth = extractor.oc_layer_depth();
 
+        let parent_paint = extractor.paint.clone();
+        use crate::extractors::image_clip::{ImageClip, ImageClipTracker};
+        let mut clip = parent_paint.clip.clone();
+        if let Some(bounds) = xobject_dict
+            .get("BBox")
+            .and_then(Object::as_array)
+            .filter(|a| a.len() == 4)
+        {
+            let values: Option<Vec<f32>> = bounds
+                .iter()
+                .map(|o| {
+                    o.as_real()
+                        .or_else(|| o.as_integer().map(|v| v as f64))
+                        .map(|v| v as f32)
+                })
+                .collect();
+            if let Some(v) = values {
+                let matrix = state_stack.current().ctm;
+                let p1 = matrix.transform_point(v[0], v[1]);
+                let p2 = matrix.transform_point(v[2], v[1]);
+                let p3 = matrix.transform_point(v[2], v[3]);
+                let p4 = matrix.transform_point(v[0], v[3]);
+                extractor.paint.clip_path = Some(std::sync::Arc::new(crate::elements::PathClip {
+                    operations: vec![
+                        crate::elements::PathOperation::MoveTo(p1.x, p1.y),
+                        crate::elements::PathOperation::LineTo(p2.x, p2.y),
+                        crate::elements::PathOperation::LineTo(p3.x, p3.y),
+                        crate::elements::PathOperation::LineTo(p4.x, p4.y),
+                        crate::elements::PathOperation::ClosePath,
+                    ],
+                    even_odd: false,
+                    parent: parent_paint.clip_path.clone(),
+                }));
+                state_stack.current_mut().clip_path = extractor.paint.clip_path.clone();
+                clip = clip.intersect(ImageClip::transformed_rectangle(
+                    state_stack.current().ctm,
+                    [v[0], v[1], v[2], v[3]],
+                ));
+            }
+        }
+        let mut clips = ImageClipTracker::new(state_stack.current().ctm, clip);
         // Process operators from the XObject
-        for op in operators {
+        for (ordinal, op) in operators.into_iter().enumerate() {
+            extractor.paint.source_order = parent_paint.source_order.clone();
+            extractor.paint.source_order.push(ordinal);
+            extractor.paint.clip = clips.current().clip;
+            clips.apply(&op);
+            if self.process_path_color_operator(&op, extractor, state_stack.current_mut())? {
+                continue;
+            }
             match op {
                 // Graphics state operators
                 Operator::SaveState => {
@@ -20222,33 +20499,23 @@ impl PdfDocument {
                     extractor.set_ctm(state.ctm);
                 },
 
-                // Color and line style operators — must update both state_stack
-                // and extractor so q/Q save/restore works correctly.
-                Operator::SetStrokeRgb { r, g, b } => {
-                    state_stack.current_mut().stroke_color_rgb = (r, g, b);
-                    extractor.set_stroke_color(Color::new(r, g, b));
+                Operator::SetExtGState { dict_name } => {
+                    if let Some(resources) = extractor.current_resources() {
+                        let (fill, stroke) = self.paint_alpha(resources, &dict_name)?;
+                        let state = state_stack.current_mut();
+                        if let Some(alpha) = fill {
+                            state.fill_alpha = alpha;
+                        }
+                        if let Some(alpha) = stroke {
+                            state.stroke_alpha = alpha;
+                        }
+                        extractor.update_from_path_state(state);
+                    }
                 },
-                Operator::SetStrokeGray { gray } => {
-                    state_stack.current_mut().stroke_color_rgb = (gray, gray, gray);
-                    extractor.set_stroke_color(Color::new(gray, gray, gray));
-                },
-                Operator::SetStrokeCmyk { c, m, y, k } => {
-                    let (r, g, b) = crate::color::cmyk_to_rgb(c, m, y, k);
-                    state_stack.current_mut().stroke_color_rgb = (r, g, b);
-                    extractor.set_stroke_color(Color::new(r, g, b));
-                },
-                Operator::SetFillRgb { r, g, b } => {
-                    state_stack.current_mut().fill_color_rgb = (r, g, b);
-                    extractor.set_fill_color(Color::new(r, g, b));
-                },
-                Operator::SetFillGray { gray } => {
-                    state_stack.current_mut().fill_color_rgb = (gray, gray, gray);
-                    extractor.set_fill_color(Color::new(gray, gray, gray));
-                },
-                Operator::SetFillCmyk { c, m, y, k } => {
-                    let (r, g, b) = crate::color::cmyk_to_rgb(c, m, y, k);
-                    state_stack.current_mut().fill_color_rgb = (r, g, b);
-                    extractor.set_fill_color(Color::new(r, g, b));
+                Operator::SetDash { array, phase } => {
+                    let state = state_stack.current_mut();
+                    state.dash_pattern = (!array.is_empty()).then_some((array, phase));
+                    extractor.update_from_path_state(state);
                 },
                 Operator::SetLineWidth { width } => {
                     state_stack.current_mut().line_width = width;
@@ -20304,6 +20571,7 @@ impl PdfDocument {
 
                 // Path painting operators
                 Operator::Stroke => extractor.stroke(),
+                Operator::CloseAndStroke => extractor.close_and_stroke(),
                 Operator::Fill => extractor.fill(FillRule::NonZero),
                 Operator::FillEvenOdd => extractor.fill(FillRule::EvenOdd),
                 Operator::CloseFillStroke => extractor.close_fill_and_stroke(FillRule::NonZero),
@@ -20356,6 +20624,7 @@ impl PdfDocument {
                 // Skip other operators
                 _ => {},
             }
+            state_stack.current_mut().clip_path = extractor.paint.clip_path.clone();
         }
 
         // Finalize any pending path to prevent state leakage
@@ -20372,6 +20641,7 @@ impl PdfDocument {
             extractor.restore_resources(saved);
         }
 
+        extractor.paint = parent_paint;
         // Restore graphics state
         state_stack.restore();
         extractor.update_from_path_state(state_stack.current());
@@ -23989,7 +24259,7 @@ impl PdfDocument {
             reason: "Page is not a dictionary".to_string(),
         })?;
 
-        let content_data = self.get_page_content_data(page_index)?;
+        let content_data = self.cached_page_content(page_index)?;
 
         let resources = match page_dict.get("Resources") {
             Some(res) => {
@@ -24002,13 +24272,14 @@ impl PdfDocument {
             None => None,
         };
 
-        let operators = match self.parse_import_content(&content_data, parse_content_stream) {
-            Ok(ops) => ops,
-            Err(_) => {
-                self.check_import_budget()?;
-                return Ok(Vec::new());
-            },
-        };
+        let operators =
+            match self.parse_page_import_content(page_index, &content_data, parse_content_stream) {
+                Ok(ops) => ops,
+                Err(_) => {
+                    self.check_import_budget()?;
+                    return Ok(Vec::new());
+                },
+            };
 
         // Resource-name colour-space map for this page scope (§8.6.6 / §8.9.7).
         let cs_map = self.build_color_space_map(resources.as_ref())?;
@@ -24047,11 +24318,20 @@ impl PdfDocument {
             crate::content::Matrix::identity(),
             [left, bottom, right, top],
         );
-        let mut graphics = ImageClipTracker::new(crate::content::Matrix::identity(), page_clip);
+        let mut graphics =
+            ImageClipTracker::for_images(crate::content::Matrix::identity(), page_clip);
         let mut paint_order: usize = 0;
         let mut xobject_stack: Vec<crate::object::ObjectRef> = Vec::new();
 
-        for op in operators {
+        for (ordinal, op) in operators.into_iter().enumerate() {
+            if let Operator::SetExtGState { ref dict_name } = op {
+                if let Some(resources) = resources.as_ref() {
+                    if let Some(alpha) = self.paint_alpha(resources, dict_name)?.0 {
+                        graphics.set_alpha(alpha);
+                    }
+                }
+            }
+            self.process_image_colour_operator(&op, resources.as_ref(), &mut graphics)?;
             graphics.apply(&op);
             let state = graphics.current();
             match op {
@@ -24065,6 +24345,9 @@ impl PdfDocument {
                             &mut paint_order,
                             &mut xobject_stack,
                         ) {
+                            for h in &mut more {
+                                h.source_order.insert(0, ordinal);
+                            }
                             handles.append(&mut more);
                         }
                     }
@@ -24073,6 +24356,9 @@ impl PdfDocument {
                     if let Some(mut handle) =
                         image_handle_from_inline(self, &dict, data, state.ctm, paint_order, &cs_map)
                     {
+                        handle.opacity = state.alpha;
+                        handle.stencil_colour = state.fill_colour;
+                        handle.source_order.push(ordinal);
                         handle.clip = state.clip;
                         handles.push(handle);
                         paint_order += 1;
@@ -24140,6 +24426,8 @@ impl PdfDocument {
                         &cs_map,
                     ) {
                         h.clip = state.clip;
+                        h.opacity = state.alpha;
+                        h.stencil_colour = state.fill_colour;
                         *paint_order += 1;
                         Ok(vec![h])
                     } else {
@@ -24292,12 +24580,20 @@ impl PdfDocument {
             parent_state
                 .clip
                 .intersect(form_bounds.map_or(ImageClip::Unsupported, |bounds| {
-                    ImageClip::transformed_rectangle(start_ctm, bounds)
+                    ImageClip::transformed_image_rectangle(start_ctm, bounds)
                 }));
-        let mut graphics = ImageClipTracker::new(start_ctm, clip);
+        let mut graphics = ImageClipTracker::for_images(start_ctm, clip);
+        graphics.set_alpha(parent_state.alpha);
+        graphics.set_fill_colour(parent_state.fill_space, parent_state.fill_colour);
         let mut handles = Vec::new();
 
-        for op in operators {
+        for (ordinal, op) in operators.into_iter().enumerate() {
+            if let Operator::SetExtGState { ref dict_name } = op {
+                if let Some(alpha) = self.paint_alpha(&form_resources, dict_name)?.0 {
+                    graphics.set_alpha(alpha);
+                }
+            }
+            self.process_image_colour_operator(&op, Some(&form_resources), &mut graphics)?;
             graphics.apply(&op);
             let state = graphics.current();
             match op {
@@ -24311,6 +24607,9 @@ impl PdfDocument {
                             paint_order,
                             xobject_stack,
                         ) {
+                            for h in &mut more {
+                                h.source_order.insert(0, ordinal);
+                            }
                             handles.append(&mut more);
                         }
                     }
@@ -24326,6 +24625,9 @@ impl PdfDocument {
                         *paint_order,
                         &cs_map,
                     ) {
+                        h.opacity = state.alpha;
+                        h.stencil_colour = state.fill_colour;
+                        h.source_order.push(ordinal);
                         h.clip = state.clip;
                         handles.push(h);
                         *paint_order += 1;
@@ -24362,7 +24664,7 @@ impl PdfDocument {
         })?;
 
         // Get content stream
-        let content_data = self.get_page_content_data(page_index)?;
+        let content_data = self.cached_page_content(page_index)?;
 
         // Resolve resources
         let resources = match page_dict.get("Resources") {
@@ -24377,14 +24679,17 @@ impl PdfDocument {
         };
 
         // Parse content stream with image-only fast path (skips BT/ET text blocks)
-        let operators =
-            match self.parse_import_content(&content_data, parse_content_stream_images_only) {
-                Ok(ops) => ops,
-                Err(_) => {
-                    // If content stream parsing fails, return empty
-                    return Ok(Vec::new());
-                },
-            };
+        let operators = match self.parse_page_import_content(
+            page_index,
+            &content_data,
+            parse_content_stream_images_only,
+        ) {
+            Ok(ops) => ops,
+            Err(_) => {
+                // If content stream parsing fails, return empty
+                return Ok(Vec::new());
+            },
+        };
 
         let mut images = Vec::new();
         let mut ctm_stack = vec![crate::content::Matrix::identity()];

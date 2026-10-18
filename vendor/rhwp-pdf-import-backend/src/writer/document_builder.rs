@@ -962,6 +962,7 @@ impl<'a> FluentPageBuilder<'a> {
         let line_y = self.cursor_y + self.text_config.size * 0.5;
         page.elements
             .push(ContentElement::Path(crate::elements::PathContent {
+                paint: Default::default(),
                 operations: vec![
                     crate::elements::PathOperation::MoveTo(self.cursor_x, line_y),
                     crate::elements::PathOperation::LineTo(page.width - 72.0, line_y),
@@ -3462,6 +3463,7 @@ impl DocumentBuilder {
 
                 // Separator line — marked as Layout artifact.
                 page.add_element(&ContentElement::Path(PathContent {
+                    paint: Default::default(),
                     operations: vec![
                         PathOperation::MoveTo(sep_x0, sep_y),
                         PathOperation::LineTo(sep_x1, sep_y),

@@ -1,4 +1,6 @@
+import './picture-tones.browser.mjs';
 import './hft-outline-font-selection.browser.mjs';
+import './wmf-picture-crop.browser.mjs';
 // 실제 Chrome·FontFace·공개 Noto 글꼴로 PNG exporter의 글꼴 연결을 검사한다.
 // 아래 adapter 계약과, import한 실제 WASM의 HFT face 선택 계약을 각각 실행한다.
 import assert from 'node:assert/strict';

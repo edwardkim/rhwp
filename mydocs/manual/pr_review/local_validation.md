@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-14
+last_verified: 2026-10-17
 ---
 
 # 로컬 사전 검증
@@ -22,7 +22,7 @@ PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유
 Native/fresh WASM의 관련 모든 페이지에서 90% 이상 확인 → 독립 기대값에 따라 필요한 검사 변경**
 순서로 진행한다. 새 회귀의 추가도 같은 90% 선행 조건을 따른다. 실물 배치는 절대 px 좌표·고정 px
 영역으로 선택하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침 관계로 검사한다. 다만 완료된
-해당 페이지의 Native/fresh WASM 실루엣이 각각98% 이상이고 독립 PDF와 직접 판독을 마쳤으면
+해당 페이지의 Native/fresh WASM `silhouette_raw_match_percent`가 각각98% 이상이고 독립 PDF와 직접 판독을 마쳤으면
 ±2px 좌표 고정도 허용한다. 문서 전체98% 이상은 요구하지 않는다.
 [페이지별 px 회귀 조건](visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다. 상세 절차는
 [시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
@@ -92,6 +92,33 @@ find "${rhwp_review_source_dir:?기본 작업공간 경로를 먼저 고정하�
 pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 ~~~
 
+### 리베이스로 반영한 PR의 기능 보존 검증
+
+리베이스 뒤에는 현재 작업의 개선과 **새 기준에서 들어온 PR의 기능 유지·개선**을 함께 확인한다.
+충돌 없는 자동 적용도 포함한다. 작성자·reviewer·메인터너 보정·collaborator self PR에 같은 기준을 적용한다.
+
+1. 리베이스 전 base, 새 `upstream/devel`, 리베이스 후 후보의 SHA를 고정한다. 두 base 사이의
+   commit과 병합 PR을 확인하고, 각 PR의 본문·실제 diff·회귀 검사에서 제공하는 기능과 기대 동작을
+   파악한다. 충돌을 해소한 파일만으로 대상을 정하지 않는다.
+2. 들어온 PR별로 후보 변경과의 공통 호출 경로·데이터·조건·backend를 대조한다. 기존 재현 입력과
+   정상 대조군, 중요한 적용·비적용 경계를 골라 **새 devel과 리베이스 후 후보를 같은 조건에서 실행**한다.
+   원래 작업 대상의 검증도 유지한다. 기능상 영향이 없는 PR은 실제 diff·소비 경로를 근거로 비해당
+   사유를 적으며, 시험하지 않았다는 이유로 비해당 처리하지 않는다.
+3. 기능의 실제 소비 지점까지 확인한다. 해당 PR이 다루는 편집·저장·열기·Native ABI·브라우저 동작 등은
+   그 실행 경로에서 검증한다. 조판·렌더링은 같은 원본·독립 한컴 Print PDF의 전쪽 Native/fresh WASM
+   TSV와 review·overlay 직접 판독을 대조한다. 컴파일·전체 CI 성공이나 코드가 남아 있다는 사실만으로
+   기능 보존을 판정하지 않는다.
+4. **기존 기능이 유지되거나 개선되고 현재 작업의 필수 검증도 충족하면 다음 단계로 진행한다.**
+   기능·내용 보존·배치·출력 품질이 하나라도 후퇴하면 구현이나 충돌 해소를 보정하고, 영향받은
+   원래 작업과 반영 PR 양쪽을 새 후보에서 다시 검증한다. 다른 입력의 개선·평균값으로 후퇴를
+   상쇄하거나, 기존 검사·baseline·허용치를 완화해 통과시키지 않는다. 시각 판정은
+   [devel 대비 페이지별 하락 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)과
+   90%·쪽수·내용 보존·확대 판독 조건도 함께 적용한다.
+5. 기존 PR 본문 또는 검토 기록에 `반영 PR/기능 → 새 base/후보 SHA → 입력·명령·실제 결과 →
+   유지/개선/후퇴/미검증 → 보정·재검증 결과`를 연결한다. 리베이스 전 실행은 출처 기록이며 새
+   후보의 검증으로 표시하지 않는다. 실행으로 확인한 후퇴와 필수 증거 부족을 구분하고, 어느 쪽이든
+   해소 전에는 준비 완료·새 PR 생성·승인·통합을 보류한다. 별도 보고서 파일을 중복 작성할 필요는 없다.
+
 ### 고정 review target과 실행 환경
 
 각 OS의 [빌드 병렬도 예시](../dev_environment_guide.md#빌드-병렬도)는 `CARGO_BUILD_JOBS`의
@@ -141,6 +168,10 @@ WASM의 `CARGO_TARGET_DIR`는 위에서 고정한 같은 경로를 사용한다.
 검토 명령에는 `--locked`를 넣어 Cargo가 검토 checkout의 `Cargo.lock`을 갱신하지 못하게 한다.
 `run-rust-test.mjs`도 이를 기본 적용한다. lockfile 자체를 의도적으로 바꾸는 의존성 갱신 작업만 별도
 검증에서 이 규칙을 벗어날 수 있다.
+
+새 검사는 기존 자동 수집·suite·Native 실행 경로에서 실제로 실행되는지 먼저 확인한다.
+`ci.yml`에 불필요한 개별 호출을 추가하지 않으며, 실행 누락으로 추가가 필요한 경우에는
+[CI 테스트 호출 추가 기준](../github_operations.md#531-ci-테스트-호출-추가-기준)을 따른다.
 
 `wasm-pack`은 Cargo build 전에 별도 metadata를 실행하므로, WASM 검증은 raw `wasm-pack build` 대신
 아래 wrapper를 사용한다. wrapper는 두 Cargo 호출 모두에 `--locked`를 적용한다.
@@ -445,8 +476,9 @@ Native 선행 진단과 최종 fresh WASM 출력은 구분하고, 보정 코드�
 
 공통 조판·paint·font/resource 또는 실제 출력 소비 경로를 바꾸면
 [출력 백엔드 소비 경로 검증](../verification/renderer_backend_verification.md)에 따라 영향받는
-Canvas·SVG·Native PNG 등의 실제 산출물과 정상 대조군을 추가로 확인한다. Native/fresh WASM
-Visual Sweep의 PNG는 SVG raster이므로 Studio Canvas나 Native Skia PNG 검증을 대신하지 않는다.
+Canvas·SVG·Native PNG 등의 실제 산출물과 정상 대조군을 추가로 확인한다. 기본 PNG 경로의
+Visual Sweep은 Native Skia와 fresh WASM Canvas에서 직접 출력한다. 별도로 선택한 SVG 진단
+경로의 래스터 PNG는 Canvas·Native Skia의 실제 소비 경로 검증을 대신하지 않는다.
 공통 함수 이후 context·font 선택·합성 경로도 추적하며, 모든 backend 전수 검증 대신 변경한 값의
 실제 소비 경로로 범위를 정한다. 기존 renderer baseline의 report-only 결과와 필수 게이트를 구분한다.
 

@@ -279,17 +279,175 @@ fn selection_is_explicit_and_keeps_source_page_mapping() {
 }
 
 #[test]
+fn source_indices_are_independent_of_the_selected_page_ceiling() {
+    use rhwp::parser::pdf::{parse_pdf_with_policy, PdfImportPolicy};
+    let source = pdf(&vec![("PAGE", "Helvetica"); 162]);
+    let all = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+    assert_eq!(all.metadata.pages.len(), 162);
+    let policy = PdfImportPolicy {
+        max_selected_pages: 2,
+        ..PdfImportPolicy::default()
+    };
+    let selected = parse_pdf_with_policy(
+        &source,
+        &PdfImportOptions {
+            source_pages: Some(vec![128, 161]),
+        },
+        policy,
+    )
+    .unwrap();
+    assert_eq!(selected.metadata.source_page_count, 162);
+    assert_eq!(
+        selected
+            .metadata
+            .pages
+            .iter()
+            .map(|p| p.source_page)
+            .collect::<Vec<_>>(),
+        [128, 161]
+    );
+    assert_eq!(selected.document.sections.len(), 2);
+    let error = parse_pdf_with_policy(&source, &PdfImportOptions::default(), policy)
+        .err()
+        .unwrap();
+    assert_eq!(error.code, "PDF_RESOURCE_LIMIT");
+    assert_eq!(
+        error.diagnostics.unwrap().frontend_limit.unwrap().reason,
+        "selected pages"
+    );
+    for pages in [vec![162], vec![161, 128], vec![128, 128], vec![0, 128, 161]] {
+        assert_eq!(
+            parse_pdf_with_policy(
+                &source,
+                &PdfImportOptions {
+                    source_pages: Some(pages)
+                },
+                policy
+            )
+            .err()
+            .unwrap()
+            .code,
+            "PDF_PAGE_SELECTION"
+        );
+    }
+}
+
+#[test]
+fn input_policy_accepts_exact_limit_and_rejects_before_parsing_over_limit() {
+    use rhwp::parser::pdf::{parse_pdf_with_policy, PdfImportPolicy};
+    let source = pdf(&[("BOUNDARY", "Helvetica")]);
+    for extra in [0, 1] {
+        let mut policy = PdfImportPolicy::default();
+        policy.backend.input_bytes = source.len() + extra;
+        let imported =
+            parse_pdf_with_policy(&source, &PdfImportOptions::default(), policy).unwrap();
+        assert_eq!(texts(&imported.document), ["BOUNDARY"]);
+    }
+    let mut policy = PdfImportPolicy::default();
+    policy.backend.input_bytes = source.len() - 1;
+    let error = parse_pdf_with_policy(&source, &PdfImportOptions::default(), policy)
+        .err()
+        .unwrap();
+    let failure = error.diagnostics.unwrap();
+    assert!(
+        failure.resource_usage.is_none(),
+        "reject before constructor/copy"
+    );
+    let limit = failure.frontend_limit.unwrap();
+    assert_eq!(
+        (limit.used, limit.requested, limit.limit),
+        (Some(0), Some(source.len()), Some(source.len() - 1))
+    );
+    for invalid in [0, u16::MAX as usize + 1] {
+        policy.max_selected_pages = invalid;
+        assert!(parse_pdf_with_policy(&source, &PdfImportOptions::default(), policy).is_err());
+    }
+}
+
+#[test]
 fn invalid_or_over_budget_input_does_not_poison_next_import() {
     for source in [
         b"not pdf".to_vec(),
         b"%PDF-1.4\ninvalid".to_vec(),
-        vec![0; 16 * 1024 * 1024 + 1],
+        vec![0; rhwp::parser::pdf::MAX_INPUT_BYTES + 1],
     ] {
         assert!(parse_pdf_with_options(&source, &PdfImportOptions::default()).is_err());
     }
     let imported =
         parse_pdf_with_options(&pdf(&[("OK", "Helvetica")]), &PdfImportOptions::default()).unwrap();
     assert_eq!(texts(&imported.document), ["OK"]);
+}
+
+#[test]
+fn successful_import_reports_consumed_policy_and_request_local_work() {
+    let source = pdf(&[("FIRST", "Helvetica"), ("SECOND", "Courier")]);
+    let imported = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+    let metadata = serde_json::to_value(&imported.metadata).unwrap();
+    assert_eq!(metadata["resourcePolicy"]["schemaVersion"], 1);
+    assert_eq!(
+        metadata["resourcePolicy"]["backend"]["inputBytes"],
+        64 * 1024 * 1024
+    );
+    assert_eq!(
+        metadata["resourceUsage"]["failure"],
+        serde_json::Value::Null
+    );
+    assert!(metadata["resourceUsage"]["operators"].as_u64().unwrap() > 0);
+    assert!(
+        metadata["resourceUsage"]["contentParseCalls"]
+            .as_u64()
+            .unwrap()
+            > 0
+    );
+    assert!(
+        metadata["resourceUsage"]["pageOperatorCacheHits"]
+            .as_u64()
+            .unwrap()
+            > 0
+    );
+    let next = parse_pdf_with_options(&source, &PdfImportOptions::default()).unwrap();
+    assert_eq!(
+        serde_json::to_value(next.metadata.resource_usage).unwrap(),
+        metadata["resourceUsage"]
+    );
+}
+
+#[test]
+fn positional_selection_never_extracts_unselected_pages_for_header_classification() {
+    use rhwp::parser::pdf::{parse_pdf_with_policy, PdfImportPolicy};
+    let first = "BT /F1 12 Tf 20 100 Td (SELECTED) Tj ET";
+    let second = format!("{} BT /F1 12 Tf 20 100 Td (OTHER) Tj ET", "q Q ".repeat(30));
+    let objects = vec![
+        "<< /Type /Catalog /Pages 2 0 R >>".into(),
+        "<< /Type /Pages /Count 2 /Kids [3 0 R 5 0 R] >>".into(),
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /Font << /F1 7 0 R >> >> /Contents 4 0 R >>".into(),
+        format!("<< /Length {} >>\nstream\n{first}\nendstream", first.len()),
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>".into(),
+        format!("<< /Length {} >>\nstream\n{second}\nendstream", second.len()),
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>".into(),
+    ];
+    let source = encode_pdf(&objects);
+    let mut policy = PdfImportPolicy::default();
+    policy.backend.operators = 8;
+    let result = parse_pdf_with_policy(
+        &source,
+        &PdfImportOptions {
+            source_pages: Some(vec![0]),
+        },
+        policy,
+    )
+    .unwrap();
+    assert_eq!(texts(&result.document), ["SELECTED"]);
+    assert_eq!(result.metadata.resource_usage.content_parse_calls, 1);
+    assert_eq!(result.metadata.resource_usage.operators, 5);
+    assert!(parse_pdf_with_policy(
+        &source,
+        &PdfImportOptions {
+            source_pages: Some(vec![1])
+        },
+        policy
+    )
+    .is_err());
 }
 
 #[test]

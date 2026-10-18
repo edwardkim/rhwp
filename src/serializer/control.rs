@@ -1258,9 +1258,9 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
     w.write_i16(pic.padding.top).unwrap();
     w.write_i16(pic.padding.bottom).unwrap();
 
-    // 이미지 속성
-    w.write_i8(pic.image_attr.brightness).unwrap();
+    // HWP5는 명암→밝기 순서로 저장한다. parser와 대칭인 의미 IR 변환이다.
     w.write_i8(pic.image_attr.contrast).unwrap();
+    w.write_i8(pic.image_attr.brightness).unwrap();
     let effect_val: u8 = match pic.image_attr.effect {
         ImageEffect::RealPic => 0,
         ImageEffect::GrayScale => 1,

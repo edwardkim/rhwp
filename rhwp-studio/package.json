@@ -4,6 +4,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "e2e:cross-section-selection": "node e2e/run-with-vite.mjs -- node e2e/cross-section-selection.test.mjs --mode=headless",
     "dev": "vite",
     "subsecond:install": "DX_VERSION=$(node ../scripts/dioxus-cli-version.mjs) && cargo install dioxus-cli --version \"$DX_VERSION\" --locked --root ../target/dioxus-cli",
     "subsecond:serve": "cd .. && target/dioxus-cli/bin/dx serve --web --package rhwp-subsecond --features subsecond-dev --hot-patch --port 7711 --addr 127.0.0.1 --open false --interactive true --inject-loading-scripts false",
@@ -19,6 +20,7 @@
     "e2e:plugin-lifecycle": "node e2e/plugin-lifecycle.test.mjs --mode=headless",
     "e2e:hwpctrl-plugin": "node e2e/hwpctrl-plugin.test.mjs --mode=headless",
     "e2e:bridge": "node e2e/bridge-lifecycle.test.mjs --mode=headless",
+    "e2e:field-events": "node e2e/embed-field-events.test.mjs --mode=headless",
     "e2e:cell-block-delete-keys": "node e2e/run-with-vite.mjs -- node e2e/cell-block-delete-keys.test.mjs --mode=headless",
     "e2e:bridge-perf": "node e2e/bridge-perf.test.mjs --mode=headless",
     "gate:bridge:quick": "node ../scripts/gate_bridge.mjs --no-e2e --no-hwpctrl-gate",
@@ -46,6 +48,7 @@
     "e2e:ime-navigation": "node e2e/run-with-vite.mjs -- node e2e/ime-navigation.test.mjs --mode=headless",
     "e2e:drag-autoscroll": "node e2e/drag-selection-autoscroll.test.mjs",
     "e2e:renderer-contract": "node e2e/renderer-contract.test.mjs",
+    "e2e:layer-export-issue536": "node e2e/layer-export-issue536.test.mjs",
     "e2e:canvas-metric-recovery": "node e2e/canvas-metric-recovery.test.mjs",
     "e2e:middle-dot-canvas-paint": "node e2e/run-with-vite.mjs -- node e2e/middle-dot-canvas-paint.test.mjs --mode=headless",
     "e2e:issue-4430-content-loss": "node e2e/content-loss-save-issue4430.test.mjs --mode=headless",
@@ -87,7 +90,8 @@
     "e2e:issue-6557-merged-row": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-row-boundary-drag.test.mjs --mode=headless",
     "e2e:issue-7403-canvas2d": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless --renderer=canvas2d",
     "e2e:issue-7403": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless",
-    "e2e:select-all-cmd-a": "node e2e/run-with-vite.mjs -- node e2e/select-all-cmd-a.test.mjs --mode=headless"
+    "e2e:select-all-cmd-a": "node e2e/run-with-vite.mjs -- node e2e/select-all-cmd-a.test.mjs --mode=headless",
+    "e2e:glyph-outline-portable-geometry": "node e2e/run-with-vite.mjs -- node e2e/glyph-outline-portable-geometry.test.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.3.4",

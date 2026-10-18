@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-14
+last_verified: 2026-10-18
 ---
 
 # Collaborator 매개 외부 PR 처리
@@ -29,7 +29,12 @@ maintainer_can_modify가 false이면 이 경로를 쓰지 않는다. maintainer 
 `git worktree add`를 만들지 않는다. 별도 worktree는 주 작업공간이 dirty여서 격리가 꼭 필요하거나
 작업지시자가 명시적으로 요구한 경우에만 쓴다.
 
+Git 명령을 시작하기 전에 [reviewer assign 선행](intake_and_review.md#21-reviewer-assign-선행)에 따라
+**각 원 PR의 reviewer를 지정하고 API로 재확인**한다. 최소 사전 분류 이후의 상세 조사와 local fetch·체리픽은
+이 확인을 통과한 원 PR만 진행한다. 여러 PR 중 미지정·확인 실패한 PR은 누적 적용 목록에서 보류한다.
+
 ~~~bash
+# 선행 조건: 원 PR N의 reviewer 지정과 requested_reviewers API 확인 완료.
 git status --short --branch
 git fetch upstream devel pull/N/head:refs/remotes/upstream/prN-head
 git switch devel
@@ -71,7 +76,7 @@ git diff --check upstream/devel...HEAD
 사용자가 승인한 보정도 이 조건을 면제하지 않는다. 상세 절차는
 [시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
 [기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
-다만 **완료된 페이지**의 Native/fresh WASM 2px 관용 실루엣 일치율이 각각98% 이상이고
+다만 **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)이 각각98% 이상이고
 독립 PDF와 직접 판독을 마쳤으면 ±2px 좌표 고정도 허용한다. 고정한 쪽은 양쪽98% 이상을
 유지해야 하며100%로 개선은 허용한다. 문서 전체98% 이상은 요구하지 않는다.
 [페이지별 px 회귀 조건](visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.

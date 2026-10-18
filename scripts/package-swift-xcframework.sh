@@ -6,14 +6,40 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VERSION="$(awk -F '"' '/^version = / { print $2; exit }' "$ROOT/Cargo.toml")"
 NATIVE_MANIFEST="$ROOT/bindings/Native/Cargo.toml"
+NATIVE_SKIA="${RHWP_NATIVE_SKIA:-0}"
+TARGET_ROOT="$ROOT"
+if COMMON_GIT_DIR="$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
+  TARGET_ROOT="$(dirname "$COMMON_GIT_DIR")"
+fi
+DEFAULT_TARGET_DIR="$TARGET_ROOT/target/pr-review"
+TARGET_DIR="${CARGO_TARGET_DIR:-$DEFAULT_TARGET_DIR}"
+case "$TARGET_DIR" in
+  /*) ;;
+  *) TARGET_DIR="$ROOT/$TARGET_DIR" ;;
+esac
+case "$NATIVE_SKIA" in
+  0) VARIANT="default"; VARIANT_SUFFIX="" ;;
+  1) VARIANT="native-skia"; VARIANT_SUFFIX="-native-skia" ;;
+  *) echo "error: RHWP_NATIVE_SKIA must be 0 or 1."; exit 1 ;;
+esac
+if [[ "${1:-}" == "--help" ]]; then
+  echo "Usage: RHWP_NATIVE_SKIA=0|1 CARGO_TARGET_DIR=<shared-target> $0"
+  echo "Builds Apple slices on macOS. Native Skia direct PDF is opt-in (default: 0)."
+  echo "Default target: $DEFAULT_TARGET_DIR"
+  exit 0
+fi
+if [[ $# -ne 0 ]]; then
+  echo "error: unexpected arguments; use --help."
+  exit 1
+fi
 SWIFT_DIR="$ROOT/bindings/swift"
 HEADER="$SWIFT_DIR/Sources/CRhwpNative/rhwp_native_ffi.h"
-DIST_DIR="$ROOT/dist/swift"
+DIST_DIR="$ROOT/dist/swift/$VARIANT"
 BUILD_DIR="$DIST_DIR/build"
 HEADERS_DIR="$BUILD_DIR/Headers"
 XCFRAMEWORK_NAME="RhwpNative.xcframework"
 XCFRAMEWORK="$BUILD_DIR/$XCFRAMEWORK_NAME"
-ARCHIVE_NAME="rhwp-native-v${VERSION}-apple-xcframework.zip"
+ARCHIVE_NAME="rhwp-native-v${VERSION}-apple-xcframework${VARIANT_SUFFIX}.zip"
 ARCHIVE_PATH="$DIST_DIR/$ARCHIVE_NAME"
 
 DEVICE_TARGET="aarch64-apple-ios"
@@ -47,6 +73,8 @@ fi
 echo "=== RHWP Swift XCFramework packaging ==="
 echo "version: $VERSION"
 echo "output: $ARCHIVE_PATH"
+echo "native-skia: $NATIVE_SKIA"
+echo "cargo target: $TARGET_DIR"
 
 rm -rf "$DIST_DIR"
 mkdir -p "$HEADERS_DIR"
@@ -57,10 +85,13 @@ rustup target add "$DEVICE_TARGET" "${SIM_TARGETS[@]}" "${MACOS_TARGETS[@]}"
 build_target() {
   local target="$1"
   echo "[build] $target"
-  cargo build \
-    --release \
-    --manifest-path "$NATIVE_MANIFEST" \
-    --target "$target"
+  local args=(build --release --locked
+    --manifest-path "$NATIVE_MANIFEST" --target "$target"
+    --target-dir "$TARGET_DIR")
+  if [[ "$NATIVE_SKIA" == "1" ]]; then
+    args+=(--features native-skia)
+  fi
+  cargo "${args[@]}"
 }
 
 build_target "$DEVICE_TARGET"
@@ -73,7 +104,7 @@ done
 
 staticlib_for() {
   local target="$1"
-  echo "$ROOT/bindings/Native/target/$target/release/librhwp_native_ffi.a"
+  echo "$TARGET_DIR/$target/release/librhwp_native_ffi.a"
 }
 
 DEVICE_LIB="$(staticlib_for "$DEVICE_TARGET")"

@@ -18,10 +18,17 @@
 - 지침을 읽었다는 사실은 GitHub 게시, push, merge나 작업 범위 확대의 승인이 아니다.
   실제 사용자 지시와 작업 권한을 따른다.
 
+## 리베이스 후 기능 보존
+
+리베이스로 들어온 PR의 기능이 유지되거나 개선되는지 현재 작업 대상과 함께 검증한다.
+새 devel과 후보의 실제 기능·출력을 대조하고, 후퇴하면 보정 후 재검증한다. 충돌 없음이나
+CI 성공으로 대체하지 않는다. 후퇴·필수 증거 부족이 남으면 PR 생성·승인·통합을 보류한다.
+[공통 검증 절차](mydocs/manual/pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)를 따른다.
+
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
-`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)를 페이지별로 확인하며,
+`silhouette_raw_match_percent`(색상 경계 보정 전2px 내용 실루엣 일치율)를 페이지별로 확인하며,
 **한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
 미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
 
@@ -101,11 +108,11 @@
 
 전쪽 Native/fresh WASM 검증과 직접 판독을 마친 **현재 보정 대상 문서**는 기존 회귀가
 통과 중이어도 그 문서를 사용하는 절대 px 좌표·고정 영역 검사를 확인하고 관계 검사로
-바꾼다. 다만 완료된 페이지의 Native/fresh WASM 2px 관용 실루엣 일치율이 각각 98% 이상이고
+바꾼다. 다만 완료된 페이지의 Native/fresh WASM `silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)이 각각 98% 이상이고
 독립 PDF와 직접 확대 판독까지 완료됐으면, 해당 쪽의 독립 기대 좌표를 ±2px 오차로 유지·추가할 수 있다.
 문서 전체가 98% 이상일 필요는 없다. [페이지별 px 회귀 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.
 문서마다 변경한 핵심 위치를 보호하며, 같은 핵심 동작을 검증할 수 있는 완료 페이지는
-Native/fresh WASM 양쪽 일치율의 최솟값이 **100% → 99%대 → 98%대**인 순서로 우선 선정한다.
+Native/fresh WASM 양쪽 raw 일치율의 최솟값이 **100% → 99%대 → 98%대**인 순서로 우선 선정한다.
 표 시작·이어받기·종료·후속 본문·수식·각주 등 해당 변경의 중요한 경계도 검사에 포함한다.
 고정한 쪽은 양쪽 98% 이상을 유지해야 한다. 100%로 개선은 허용하며 98% 미만으로 떨어지면 회귀로 판정한다.
 대상 문서의 원본 경로를 따라 검사·공용 corpus 참조를 확인하며 다른 문서로 범위를
@@ -160,7 +167,12 @@ Native/fresh WASM 양쪽 일치율의 최솟값이 **100% → 99%대 → 98%대*
   편집 command·parser·model·serializer도 실제 조판 소비 경로에 영향을 주면 적용한다.
   기준 PDF는 저장 버전에 맞는 한컴 [Print 출력 계약](mydocs/manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
   편집 변경은 동일하게 편집한 저장본을 Print 출력한다. PDF 부족은 미검증이며 비해당이 아니다.
-  TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않는다.
+  작업 중 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존한다.
+  최종 제출용 TSV는 PR 본문에 파일별 `tsv` 코드 블록으로 전체 원문을 넣을 수 있다.
+  본문 크기 제한에 걸리면 원본을 `mydocs/pr/assets/issue_<이슈번호>/<문서이름>_silhouette.tsv`
+  등에 바이트 그대로 복사해 커밋하고 정확한 head SHA의 raw 다운로드 링크로 제출한다.
+  Native/fresh WASM과 base/후보는 하위 폴더나 파일명으로 구분한다. 실행 로그·중간 JSON은 커밋하지 않는다.
+  [TSV 원본 보존·링크](mydocs/manual/verification/visual_sweep_guide.md#tsv-원문-본문-삽입과-저장소-링크)를 따른다.
 - 페이지별 TSV 명령·저장 위치는 [「실루엣 보조값만 빠르게 TSV 산출」](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)를 따른다. Native/fresh WASM 예제를 각각 실행한다.
   검증 대상 전체 페이지의 Native/fresh WASM TSV에서 최저값·90% 미만·누락 쪽을 기록하고,
   미달/구조 차이/대표 경계만 비교 PNG를 추가 생성해 직접 판독한다. 대표 PR 이미지 제출은 유지한다.
@@ -183,7 +195,7 @@ Native/fresh WASM 양쪽 일치율의 최솟값이 **100% → 99%대 → 98%대*
   표시한다. 경로·임시 output·review 문서 링크만으로 대신하지 않고, PR head repository와 정확한
   head SHA로 고정한 raw URL을 사용한다. code head가 바뀌면 캡처와 본문 URL도 갱신한다.
   코드 변경 뒤에는 영향 페이지를 다시 캡처하며, CI 녹색·자동 픽셀 점수만으로 대체하지 않는다.
-  `scripts/visual_sweep.py`의 2px 이웃 관용 내용 실루엣 일치율이 대표 review PNG 중 하나라도
+  `scripts/visual_sweep.py`의 색상 경계 보정 전2px 내용 실루엣 일치율이 대표 review PNG 중 하나라도
   90% 미만이거나 측정 불가이면 새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다. 기여자가 자기 branch에서
   원인을 재검토·수정하고 새 head에서 gate를 통과한 뒤에만 PR을 생성·갱신한다. reviewer는 보류를 기록하며
   메인터너 보정으로 대신하지 않는다.

@@ -297,3 +297,58 @@ accessor 등 입증 경계는 `../rhwp-jpeg-decoder/RHWP_PATCHES.md`와 단계 �
 - 기존 legacy 이미지 추출 API, 텍스트/vector clipping은 이번 수정 범위 밖이다.
   전체 할당 경계 입증을 의미하지 않으며 `parser_allocation_bounds_proven=false`를 유지한다.
   명세·경계 실행·실물 한컴 출력 근거는 3단계 보고서 7.5를 따른다.
+
+### 요청 정책·거절 예약과 cache 관측 (#7957–#7963, F1)
+
+- 기본 입력 상수와 직렬화 가능한 `PdfImportLimits`를 제품 정책 조회에 재사용한다.
+  이 절편에서 기존 한도를 높이거나 해제하지 않는다.
+- 최초 거절은 reason과 가능한 used/requested/limit를 함께 보존한다. 실패한 예약은 성공
+  counter에 더하지 않으며 이후 오류로 최초 기록을 덮어쓰지 않는다. sticky 거절은 유지한다.
+- `from_bytes_with_budget`는 생성 실패 뒤에도 호출자가 같은 요청의 관측값을 읽게 한다.
+  page operator/page stream/Form stream의 실제 cache hit와 content parse 호출을 계수한다.
+  이 값은 누적 작업 관측이며 cache identity·실제 paint·원래 한도 소비를 바꾸지 않는다.
+- 상세 backend 문자열은 Rust의 opt-in 로컬 진단에 보존한다. 기본 사용자 오류의 code/message는
+  유지하고 `parserAllocationBoundsProven=false` 및 기존 할당 감사 백로그를 유지한다.
+
+
+### #7957–#7963 요청 정책·stream·마스크 후속
+
+요청의 최초 거절량/limit·stage·쪽과 parse/cache 관측을 보존한다. root product policy는 입력 64 MiB와
+선택 쪽 기반의 유한한 작업 ceiling을 공급한다. backend 기본 구조 한도와 실제 buffer/codec 예약은
+별도다. 같은 요청의 work/structure 한도는 낮출 수 있지만 소비량이나 sticky 실패를 초기화하지 않는다.
+위치 가져오기는 사용하지 않는 전쪽 머리말 분류를 제외하고 페이지 lexical parse/decoded bytes를 공유한다.
+JPEG actual reservation hooks·bounded PNG 예약과 중복하던 3×RGBA 가상 allowance를 제거했다.
+
+bounded stream은 간접 Length로 binary 길이를 먼저 확정하고 Filter/DecodeParms 간접 값과 filter별
+predictor를 해석한다. 무제한 legacy codec으로 fallback하지 않는다. 마스크 Interpolate는 sample-centre
+bilinear alpha를 적용하며 기존 Decode/Matte/clip와 사전 RGBA 예약을 유지한다. 이 결과는 전체 parser
+heap 할당 증명이나 모든 PDF paint 지원 완료가 아니다. source와 실행 증거는 task #7957 단계 보고를 따른다.
+
+### #7971: JPEG extraction buffer preflight
+
+Encoded JPEG extraction keeps compressed data, not an eight-byte-per-pixel plane.
+The same storage-branch decision now excludes only that path from the conservative
+geometry preflight; raw and other codec preflights remain. RGB/Gray/CMYK JPEG header
+validation, actual output/private codec reservations, RGB conversion and bounded PNG
+output continue to enforce individual and cumulative request limits. DCT filter chains
+and inline JPEGs consume this same decision. No default limit or bitmap geometry changes.
+
+### #7974: source-sample colour keys, stencil and image sampling
+
+- The bounded image handle accepts colour-key `/Mask` arrays. Compare every original
+  Gray/RGB/CMYK/Indexed component before Decode and colour conversion, including
+  packed row padding and 16-bit samples. `/SMask` retains precedence. Unsupported
+  raw-mask codec adapters still return an explicit error.
+- Standalone `/ImageMask` handles retain the current nonstroking colour and alpha
+  for each page/Form/inline invocation. Existing clip, ownership, checked sizes,
+  request reservations and sticky failure/recovery boundaries remain in use.
+- A private ancillary `rhWP` PNG chunk preserves the source sampling declaration
+  through BinData and HWP/HWPX. The product draw consumer uses it for magnification;
+  minification retains each backend's existing coverage filter. Bitmap dimensions,
+  CTM and placement are unchanged.
+- Independent RGB/alpha sampling when both planes vary with different interpolation
+  flags remains a follow-up; existing compositing behaviour is retained. This is
+  not full graphics-state soft-mask/blend support or a parser allocation proof.
+- Public source controls and inventories: `pdf/issue7974/`. Implementation and
+  validation boundaries: `mydocs/working/task_m100_7974_stage1.md` and
+  `mydocs/working/task_m100_7974_stage2.md`.

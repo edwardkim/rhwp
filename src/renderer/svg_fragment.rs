@@ -32,6 +32,49 @@ pub(crate) fn find_svg_attr_value<'a>(s: &'a str, attr: &str) -> Option<&'a str>
     None
 }
 
+/// SVG 루트에 명시된 정수 픽셀 크기만 읽는다.
+/// viewBox는 논리 좌표계이며 크기 없는 SVG의 브라우저 source rect 크기가 아니다.
+pub(crate) fn svg_intrinsic_pixel_dimensions(data: &[u8]) -> Option<(u32, u32)> {
+    use quick_xml::events::Event;
+    if !is_svg_prefix(data) {
+        return None;
+    }
+    let mut reader = quick_xml::Reader::from_reader(data);
+    reader.config_mut().trim_text(true);
+    loop {
+        match reader.read_event().ok()? {
+            Event::Decl(_) | Event::Comment(_) | Event::PI(_) => continue,
+            Event::Start(root) | Event::Empty(root) if root.name().as_ref() == "svg" => {
+                let mut width = None;
+                let mut height = None;
+                for attr in root.attributes() {
+                    let attr = attr.ok()?;
+                    let slot = match attr.key.as_ref() {
+                        "width" => &mut width,
+                        "height" => &mut height,
+                        _ => continue,
+                    };
+                    let value = attr
+                        .normalized_value(quick_xml::XmlVersion::Implicit1_0)
+                        .ok()?;
+                    let value = value.trim();
+                    let pixels = value
+                        .strip_suffix("px")
+                        .unwrap_or(value)
+                        .parse::<u32>()
+                        .ok()?;
+                    if pixels == 0 {
+                        return None;
+                    }
+                    *slot = Some(pixels);
+                }
+                return Some((width?, height?));
+            }
+            _ => return None,
+        }
+    }
+}
+
 /// `<image ... href="data:..." .../>` 단일 요소 조각에서 data URL 추출.
 ///
 /// 조건:

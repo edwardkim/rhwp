@@ -106,6 +106,7 @@ import { CENTER_ZOOM_ANCHOR } from '@/view/zoom-anchor';
 import { withBusyCursor } from '@/view/busy-cursor';
 import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
+import { subscribeFieldChanges } from '@/embed/field-events';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
 import { DocumentAgentController } from '@/document-agent/controller';
@@ -479,15 +480,15 @@ async function updateLoadProgress(percent: number, label: string): Promise<void>
  * face는 prepareCanvasKitDocument에서 먼저 준비하고, 여기서는 문서 전체 face 및 사용자가
  * 새로 승인한 local face를 보충한 뒤 현재 뷰만 다시 그린다.
  */
-function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined): void {
+function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined, refresh = false): void {
   const renderer = canvasView?.getRenderBackend() === 'canvaskit'
     ? rendererSession?.getCanvasKitRenderer() ?? null
     : null;
-  if (!renderer || !fontNames?.length) return;
-  const requestedFonts = [...fontNames];
+  if (!renderer || (!fontNames?.length && !refresh)) return;
+  const requestedFonts = [...(fontNames ?? [])];
   void (async () => {
     await loadStoredLocalFonts();
-    await renderer.prepareLocalFonts(requestedFonts);
+    await renderer.prepareLocalFonts(requestedFonts, { refresh });
     if (
       renderer === rendererSession?.getCanvasKitRenderer()
       && canvasView?.getRenderBackend() === 'canvaskit'
@@ -1216,7 +1217,7 @@ function setupEventListeners(): void {
 
     if (canvasView.getRenderBackend() === 'canvaskit') {
       // CanvasKit은 browser CSS를 쓰지 않으므로 local SFNT 준비가 끝난 뒤 helper가 한 번 갱신한다.
-      prepareCanvasKitLocalFonts(currentDocumentFonts);
+      prepareCanvasKitLocalFonts(currentDocumentFonts, true);
       return;
     }
     // Canvas2D는 Rust layout과 문서를 다시 열지 않고 현재 보이는 view만 새 family chain으로 그린다.
@@ -2022,6 +2023,16 @@ installEmbedRuntime({
   hostWindow: window,
   parentWindow: window.parent,
   subscribeDocumentChanged: (listener) => eventBus.on('document-agent-changed', listener),
+  subscribeFieldChanged: (listener) => {
+    // 연결마다 새로 센다 — 직전 누름틀 기억이 다른 세션으로 새지 않게.
+    return subscribeFieldChanges(eventBus, (fieldId) => {
+      try {
+        return wasm.getFieldList().find((field) => field.fieldId === fieldId && !field.cellField)?.name ?? '';
+      } catch {
+        return '';
+      }
+    }, listener);
+  },
   handlers: {
     async ready() {
       await initPromise;
@@ -2066,9 +2077,11 @@ installEmbedRuntime({
         },
       );
     },
-    async getPageSvg(page) {
+    async getPageSvg(page, profile) {
       await initPromise;
-      return wasm.renderPageSvg(page);
+      // 인자 없는 기존 호출은 종전 경로 그대로(화면 렌더). 인쇄·PDF 호스트는 'print' 를 넘겨
+      // editor_only 노드(#3375/#4379)를 뺀 SVG 를 받는다.
+      return profile === undefined ? wasm.renderPageSvg(page) : wasm.renderPageSvgWithProfile(page, profile);
     },
     async exportHwp() {
       await initPromise;

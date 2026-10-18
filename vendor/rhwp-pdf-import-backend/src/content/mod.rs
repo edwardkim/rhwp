@@ -6,6 +6,7 @@
 //! Phase 4
 
 pub mod graphics_state;
+pub(crate) mod operator_copy;
 pub mod operators;
 pub mod parser;
 

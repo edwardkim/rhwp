@@ -30,6 +30,23 @@ export interface DocumentLease {
   readonly generation: number;
 }
 
+/**
+ * 사용자 캐럿의 studio 좌표. 본문 문단이면 `cellPath` 가 비어 있고 `parentParaIndex` 가 그 문단,
+ * 표 칸이면 `parentParaIndex` 가 표를 품은 본문 문단이고 `cellPath` 마지막 칸이 캐럿의 칸이다.
+ * `charOffset` 은 캐럿 문단 안의 글자 번호다(코드 유닛이 아니다).
+ */
+export interface PluginCaret {
+  sectionIndex: number;
+  parentParaIndex: number;
+  cellPath: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>;
+  charOffset: number;
+  /**
+   * 캐럿이 누름틀 경계·내부에 있을 때만 있다. 같은 글자 번호가 누름틀 안(`inside`)과 밖
+   * (`before` 시작 코드 앞 / `after` 끝 코드 뒤)을 모두 뜻할 수 있어, 화면에서 본 쪽을 함께 준다.
+   */
+  field?: { id: number; at: 'inside' | 'before' | 'after' };
+}
+
 /** 트랜잭션 안에서만 쥘 수 있는 문서 접근권. */
 export interface Tx {
   /** 유효한 문서 핸들. lease 가 무효면 `DOCUMENT_RELEASED` 를 던진다. */
@@ -79,6 +96,12 @@ export interface PluginHost {
    */
   loadDocument(bytes: Uint8Array, fileName?: string): Promise<void>;
   createBlankDocument(): void;
+
+  /**
+   * 사용자 캐럿 위치. 문서가 없거나 캐럿이 머리말·꼬리말·각주·글상자 안이면 `null` —
+   * 그 좌표계는 본문·표 칸 좌표로 옮길 수 없다. 읽기 전용이며 캐럿을 움직이지 않는다.
+   */
+  getCaret(): PluginCaret | null;
 
   /** 커맨드·메뉴 조작 표면. */
   readonly automation: StudioAutomation;

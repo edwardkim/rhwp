@@ -2150,6 +2150,20 @@ impl TypesetEngine {
             if let Some(placement) = resolved_host_placement {
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
             }
+            // RowBreak 표를 통째 수용해도 빈 호스트의 흐름 전용 하단여백은
+            // 사라지지 않는다. fit에서는 면제하되, 별도 프레임이 소유하지 않는
+            // 순차 배치에서는 마지막 조각과 같이 후속 흐름에 한 번 전달한다.
+            let unreserved_flow_tail = if resolved_host_placement.is_none()
+                && saved_table_source_frame.is_none()
+                && single_row_object_height_advance.is_none()
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                ) {
+                ft.host_spacing.after - ft.host_spacing.after_for_fit
+            } else {
+                0.0
+            };
             // [#3674 진단] fit 분기 발동 사유 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
                 eprintln!(
@@ -2171,12 +2185,15 @@ impl TypesetEngine {
                 table,
                 fmt,
                 placement_para_start_height,
-                whole_placement_height,
+                whole_placement_height + unreserved_flow_tail,
                 is_first_placed,
                 is_last_placed,
                 ft.strict_following_plain_text_fit,
                 styles,
             );
+            if unreserved_flow_tail > 0.0 {
+                st.record_stored_paragraph_flow_end(para_idx, st.current_height);
+            }
             return None;
         }
 

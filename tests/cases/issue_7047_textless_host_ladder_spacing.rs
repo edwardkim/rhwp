@@ -34,10 +34,11 @@
 //! 886 HU, rec#958 +6.6px = 494 HU, 0.01px 일치).
 //!
 //! 정본(engine 2020 새 PDF)과 3쪽 글자 1,276자를 전량 정합한 최대 |dy| 는
-//! **57.9px → 1.79px** 다. 남은 1.7px 이하는 별개 계열이다 — `table_layout.rs` 가 문단
-//! 기준 떠있는 표에 `outer_margin_top`(283 HWPUNIT = 1.88px) 을 더하지 않는다. 표별 실측
-//! 편차는 1.7 / 1.3 / 0.9px 로 일정하지 않고 그 상한 안에서 흩어지므로, 아래 시험은
-//! 상수 일치가 아니라 **부호와 상한**만 잠근다(후속 과제).
+//! **57.9px → 1.79px**로 개선됐다는 과거 관측이다. 이후 문단 기준 overlay 표의
+//! 바깥여백 반영으로 제목 표는 독립 Print에 더 가까워졌다. 과거 표 y 핀과
+//! "Print보다 반드시 위"라는 부호 조건2건은 현재 정상 출력의 기대값이 아니다.
+//! 원본1쪽이 고정 devel에서도90% 미만이므로 기대값을 현재 px로 갱신하지 않고
+//! #7955에 보존했다. 정상 글상자 사다리·제목 비겹침·하단 로고 관계3건은 유지한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -49,17 +50,6 @@ const FIXTURE: &str = "tests/fixtures/issue_7047/housing-lease-standard-form.hwp
 /// 3쪽 전폭 글상자 세 개의 상단 y(px). 정본 환산값 123.3 / 501.2 / 858.1 과 0.1px 안에서
 /// 같다 — 이 축은 완전히 닫혔다.
 const BOX_TOPS: [f64; 3] = [123.4, 501.2, 858.2];
-
-/// 3쪽 떠있는 제목 표 세 개의 상단 y(px).
-const TABLE_TOPS: [f64; 3] = [108.4, 487.6, 846.2];
-
-/// 정본(한/글 2020 새 PDF) 제목 표 상단. rhwp 는 셋 다 이보다 조금 위다 — 실측 편차는
-/// 1.7 / 1.3 / 0.9px 로 **일정하지 않고**, 문단 기준 떠있는 표가 못 받는
-/// `outer_margin_top`(283 HWPUNIT = 1.88px) 안에서 흩어진다.
-const TABLE_TOPS_ORACLE: [f64; 3] = [110.1, 488.9, 847.1];
-
-/// 그 편차의 상한 — `outer_margin_top` 283 HWPUNIT. 후속 과제의 크기를 이 값으로 못 박는다.
-const TABLE_OM_TOP_LIMIT_PX: f64 = 1.88;
 
 const TOL: f64 = 0.6;
 
@@ -120,35 +110,6 @@ fn textless_float_hosts_advance_by_their_stored_ladder_delta() {
         assert!(
             (have - want).abs() < TOL,
             "글상자 상단 {have:.1} != {want} (전체 {got:?})"
-        );
-    }
-}
-
-/// 떠있는 제목 표 셋도 같은 사다리를 따른다.
-#[test]
-fn the_floating_title_tables_follow_the_same_ladder() {
-    let got = sorted_tops(&page3(), is_title_table);
-    assert_eq!(got.len(), 3, "3쪽 제목 표 셋: {got:?}");
-    for (have, want) in got.iter().zip(TABLE_TOPS) {
-        assert!(
-            (have - want).abs() < TOL,
-            "제목 표 상단 {have:.1} != {want} (전체 {got:?})"
-        );
-    }
-}
-
-/// 표에 남은 편차는 **한 방향**(정본보다 위)이고 `outer_margin_top` 안이어야 한다 — 이
-/// 이슈가 남긴 잔여가 그 한 축뿐이라는 상한이다. 부호가 뒤집히거나 상한을 넘으면 다른 축이
-/// 섞인 것이다.
-#[test]
-fn the_remaining_table_gap_stays_within_the_outer_margin() {
-    let got = sorted_tops(&page3(), is_title_table);
-    assert_eq!(got.len(), 3, "3쪽 제목 표 셋: {got:?}");
-    for (have, oracle) in got.iter().zip(TABLE_TOPS_ORACLE) {
-        let gap = oracle - have;
-        assert!(
-            gap > 0.0 && gap <= TABLE_OM_TOP_LIMIT_PX + 0.05,
-            "표 상단 편차 {gap:.2}px 이 (0, {TABLE_OM_TOP_LIMIT_PX}] 밖이다 (상단 {have:.1})"
         );
     }
 }

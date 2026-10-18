@@ -1,5 +1,5 @@
 //! Strict JS options boundary; the shared frontend owns page-range validation.
-use crate::parser::pdf::{PdfImportOptions, MAX_PAGES};
+use crate::parser::pdf::{PdfImportOptions, PdfImportPolicy};
 use wasm_bindgen::{JsCast, JsValue};
 
 pub(super) fn options(value: JsValue) -> Result<PdfImportOptions, JsValue> {
@@ -28,14 +28,19 @@ pub(super) fn options(value: JsValue) -> Result<PdfImportOptions, JsValue> {
     let pages = pages
         .dyn_into::<js_sys::Array>()
         .map_err(|_| selection_error())?;
-    if pages.length() == 0 || pages.length() as usize > MAX_PAGES {
+    let policy = PdfImportPolicy::default();
+    if pages.length() == 0 || pages.length() as usize > policy.max_selected_pages {
         return Err(selection_error());
     }
     let mut result = Vec::with_capacity(pages.length() as usize);
     for page in pages.iter() {
         let page = page.as_f64().ok_or_else(selection_error)?;
-        // Bound before narrowing to wasm32 usize; the shared frontend has at most MAX_PAGES.
-        if !page.is_finite() || page.fract() != 0.0 || page < 0.0 || page >= MAX_PAGES as f64 {
+        // Source indices and selected count have separate bounds before wasm32 narrowing.
+        if !page.is_finite()
+            || page.fract() != 0.0
+            || page < 0.0
+            || page >= policy.max_source_pages as f64
+        {
             return Err(selection_error());
         }
         let page = page as usize;

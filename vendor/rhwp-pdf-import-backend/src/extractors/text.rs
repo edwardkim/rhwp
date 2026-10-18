@@ -1873,6 +1873,7 @@ fn is_citation_context(
 /// a single logical text span, only breaking on explicit word boundaries.
 #[derive(Debug)]
 struct TjBuffer {
+    source_order: Vec<usize>,
     /// Accumulated Unicode text
     unicode: String,
     /// Text matrix at the start of this buffer
@@ -1992,6 +1993,7 @@ impl TjBuffer {
         state: &crate::content::graphics_state::GraphicsState,
         mcid: Option<u32>,
         cached_font: Option<Arc<FontInfo>>,
+        source_order: Vec<usize>,
     ) -> Self {
         // Pre-compute effective font size: CTM × text_matrix scaling × font_size
         let combined = state.ctm.multiply(&state.text_matrix);
@@ -2036,6 +2038,7 @@ impl TjBuffer {
         let text_pos = state.text_matrix.transform_point(0.0, 0.0);
         let user_pos = state.ctm.transform_point(text_pos.x, text_pos.y);
         Self {
+            source_order,
             unicode: String::new(),
             start_matrix: state.text_matrix,
             font_name: state.font_name.clone(),
@@ -2272,6 +2275,12 @@ pub struct TextExtractor<'doc> {
     config: TextExtractionConfig,
     /// Configuration for span merging behavior
     merging_config: SpanMergingConfig,
+    /// Visual import excludes text with no painted fill or stroke.
+    visible_paint_only: bool,
+    paint_source_order: Vec<usize>,
+    /// Adjacent text paints may share word assembly until a non-text mark or Form boundary.
+    paint_group: usize,
+    span_paint_orders: HashMap<usize, (Vec<usize>, usize)>,
     /// Current marked content ID (for Tagged PDFs)
     ///
     /// Tracks the MCID of the currently active marked content sequence.
@@ -2401,6 +2410,9 @@ pub struct TextExtractor<'doc> {
     /// covers `Pattern(_)` in the data model so future pattern-content
     /// walks can populate it.
     mcid_scope_stack: Vec<crate::structure::McidScope>,
+    // Only PdfDocument's canonical root stream may populate the page-op cache.
+    // Public set_page_index alone does not assert source identity.
+    import_page_source: Option<usize>,
 }
 
 impl<'doc> TextExtractor<'doc> {
@@ -2465,6 +2477,10 @@ impl<'doc> TextExtractor<'doc> {
             xobject_decode_count: 0,
             config,
             merging_config: SpanMergingConfig::default(),
+            visible_paint_only: false,
+            paint_source_order: Vec::new(),
+            paint_group: 0,
+            span_paint_orders: HashMap::new(),
             current_mcid: None,
             mc_actualtext_mcids: HashSet::new(),
             extract_spans: true,      // Default to span mode (PDF spec compliant)
@@ -2491,14 +2507,22 @@ impl<'doc> TextExtractor<'doc> {
             // extraction. Form XObject `Do` invocations push their
             // own scope on top.
             mcid_scope_stack: vec![crate::structure::McidScope::Page(0)],
+            import_page_source: None,
         }
+    }
+
+    pub(crate) fn set_visible_paint_only(&mut self, enabled: bool) {
+        self.visible_paint_only = enabled;
+    }
+
+    pub(crate) fn set_import_page_source(&mut self, page: usize) {
+        self.import_page_source = Some(page);
     }
 
     /// Stamp this extractor with the page index it is processing.
     ///
     /// Used so spans (and the lookup keys for `/ActualText`) carry the
-    /// correct `McidScope::Page(page_index)` when the extractor is not
-    /// currently inside a Form XObject.
+    /// correct `McidScope::Page(page_index)` outside a Form XObject.
     pub fn set_page_index(&mut self, page_index: u32) {
         // The first entry is always the page scope (Form scopes are
         // pushed on top by `Do` and popped before the extractor
@@ -2816,7 +2840,8 @@ impl<'doc> TextExtractor<'doc> {
     /// Note: artifact filtering is handled separately via span metadata and
     /// downstream filtering, so `inside_artifact` is intentionally not checked here.
     fn is_content_suppressed(&self) -> bool {
-        self.inside_excluded_layer
+        (self.visible_paint_only && !self.state_stack.current().text_has_paint())
+            || self.inside_excluded_layer
             || self.inside_excluded_ink
             || (self.inside_placed_pdf && !self.placed_pdf_keep)
     }
@@ -3496,7 +3521,9 @@ impl<'doc> TextExtractor<'doc> {
         self.sort_spans_by_reading_order();
 
         // Deduplicate overlapping spans
-        self.deduplicate_overlapping_spans();
+        if !self.visible_paint_only {
+            self.deduplicate_overlapping_spans();
+        }
 
         // Merge adjacent spans on the same line to reconstruct complete words
         self.merge_adjacent_spans();
@@ -3574,26 +3601,116 @@ impl<'doc> TextExtractor<'doc> {
     /// answer is one sequential interpreter with suppression at emission,
     /// which retires this predicate along with the prescan branch.
     fn has_emission_filter(&self) -> bool {
-        !self.excluded_inks.is_empty() || !self.excluded_layers.is_empty()
+        self.visible_paint_only
+            || !self.excluded_inks.is_empty()
+            || !self.excluded_layers.is_empty()
     }
 
     fn run_content_stream(&mut self, content_stream: &[u8]) -> Result<()> {
-        if let Some(budget) = self.document.and_then(|doc| doc.import_budget()).cloned() {
-            return crate::content::parser::execute_content_with_budget(
-                content_stream,
-                &budget,
-                |op| self.execute_operator(op),
-            );
-        }
-        if self.has_emission_filter() {
-            let operators = parse_content_stream(content_stream)?;
-            for op in operators {
-                self.execute_operator(op)?;
+        // The path/image interpreters use the same full-parser operator ordinals.
+        // A Form's local ordinals extend its caller Do ordinal, never a reading-order index.
+        let prefix = self.paint_order_snapshot()?;
+        let mut ordinal = 0;
+        let mut execute = |this: &mut Self, operator: Operator| -> Result<()> {
+            let form_boundary = this.visible_paint_only && matches!(&operator, Operator::Do { .. });
+            if this.visible_paint_only {
+                this.paint_source_order = prefix.clone();
+                this.paint_source_order.push(ordinal);
+                // A later non-text mark must not absorb an earlier buffered text run.
+                if matches!(
+                    &operator,
+                    Operator::Stroke
+                        | Operator::CloseAndStroke
+                        | Operator::Fill
+                        | Operator::FillEvenOdd
+                        | Operator::FillStroke
+                        | Operator::FillStrokeEvenOdd
+                        | Operator::CloseFillStroke
+                        | Operator::CloseFillStrokeEvenOdd
+                        | Operator::Do { .. }
+                        | Operator::InlineImage { .. }
+                ) {
+                    this.flush_tj_span_buffer()?;
+                    this.advance_paint_group()?;
+                }
+            }
+            ordinal += 1;
+            this.execute_operator(operator)?;
+            if form_boundary {
+                // A Form may end with buffered text. Keep its marks apart from
+                // the caller's next run even if there was no path/image inside.
+                this.flush_tj_span_buffer()?;
+                this.advance_paint_group()?;
             }
             Ok(())
+        };
+        let result = if let Some(budget) =
+            self.document.and_then(|doc| doc.import_budget()).cloned()
+        {
+            if self.xobject_depth == 0 && self.import_page_source.is_some() {
+                let operators = self
+                    .document
+                    .expect("request source document")
+                    .parse_page_import_content(
+                        self.import_page_source.unwrap(),
+                        content_stream,
+                        parse_content_stream,
+                    )?;
+                operators.into_iter().try_for_each(|op| {
+                    execute(self, op)?;
+                    budget.check()
+                })
+            } else {
+                crate::content::parser::execute_content_with_budget(content_stream, &budget, |op| {
+                    execute(self, op)
+                })
+            }
+        } else if self.has_emission_filter() {
+            parse_content_stream(content_stream)?
+                .into_iter()
+                .try_for_each(|op| execute(self, op))
         } else {
             parse_and_execute_text_only(content_stream, |op| self.execute_operator(op))
+        };
+        self.paint_source_order = prefix;
+        result
+    }
+
+    fn paint_order_snapshot(&self) -> Result<Vec<usize>> {
+        if !self.visible_paint_only {
+            return Ok(Vec::new());
         }
+        if let Some(budget) = self.document.and_then(|doc| doc.import_budget()) {
+            budget
+                .charge_cache_copy(self.paint_source_order.len() * std::mem::size_of::<usize>())?;
+        }
+        Ok(self.paint_source_order.clone())
+    }
+
+    fn record_span_paint_order(&mut self, sequence: usize, order: Vec<usize>) -> Result<()> {
+        if self.visible_paint_only {
+            if let Some(budget) = self.document.and_then(|doc| doc.import_budget()) {
+                budget.charge_entries(1)?;
+                self.span_paint_orders
+                    .try_reserve(1)
+                    .map_err(|_| budget.reject("text paint order allocation"))?;
+            }
+            self.span_paint_orders
+                .insert(sequence, (order, self.paint_group));
+        }
+        Ok(())
+    }
+
+    fn advance_paint_group(&mut self) -> Result<()> {
+        self.paint_group = self
+            .paint_group
+            .checked_add(1)
+            .ok_or_else(|| crate::error::Error::Unsupported("text paint group overflow".into()))?;
+        Ok(())
+    }
+
+    pub(crate) fn take_span_paint_orders(&mut self) -> HashMap<usize, (Vec<usize>, usize)> {
+        std::mem::take(&mut self.span_paint_orders)
     }
 
     fn reserve_import_span(&mut self) -> Result<()> {
@@ -4444,6 +4561,24 @@ impl<'doc> TextExtractor<'doc> {
     }
 
     /// This matches the behavior of industry-standard PDF tools.
+    fn same_painted_span_style(left: &TextSpan, right: &TextSpan) -> bool {
+        // Positional lowering emits one character style per text box. Reading
+        // order may glue emphasis runs, but paint must retain each source style.
+        left.font_name == right.font_name
+            && left.font_size == right.font_size
+            && left.font_weight == right.font_weight
+            && left.is_italic == right.is_italic
+            && left.is_monospace == right.is_monospace
+            && left.color == right.color
+            && left.char_spacing == right.char_spacing
+            && left.word_spacing == right.word_spacing
+            && left.horizontal_scaling == right.horizontal_scaling
+            && left.text_rise == right.text_rise
+            && left.wmode == right.wmode
+            && left.rotation_degrees == right.rotation_degrees
+            && left.mirrored == right.mirrored
+    }
+
     fn merge_adjacent_spans(&mut self) {
         if self.spans.is_empty() {
             return;
@@ -4487,6 +4622,22 @@ impl<'doc> TextExtractor<'doc> {
                     continue;
                 },
             };
+
+            if self.visible_paint_only
+                && (!Self::same_painted_span_style(&current, &span)
+                    || self
+                        .span_paint_orders
+                        .get(&current.sequence)
+                        .map(|(_, group)| group)
+                        != self
+                            .span_paint_orders
+                            .get(&span.sequence)
+                            .map(|(_, group)| group))
+            {
+                merged.push(current);
+                current_span = Some(span);
+                continue;
+            }
 
             // Spans drawn under different writing modes must never merge,
             // even when their baselines coincide. A horizontal (`wmode=0`)
@@ -5521,6 +5672,7 @@ impl<'doc> TextExtractor<'doc> {
                                     self.state_stack.current(),
                                     self.current_mcid,
                                     self.cached_current_font.clone(),
+                                    self.paint_order_snapshot()?,
                                 ));
                             }
                             if let Some(ref mut buffer) = self.tj_span_buffer {
@@ -5550,6 +5702,7 @@ impl<'doc> TextExtractor<'doc> {
                                 self.state_stack.current(),
                                 self.current_mcid,
                                 self.cached_current_font.clone(),
+                                self.paint_order_snapshot()?,
                             ));
                         }
 
@@ -5586,6 +5739,7 @@ impl<'doc> TextExtractor<'doc> {
                                 self.state_stack.current(),
                                 self.current_mcid,
                                 self.cached_current_font.clone(),
+                                self.paint_order_snapshot()?,
                             );
                             buffer.unicode.push_str(&actual_text);
                             self.flush_tj_buffer(buffer)?;
@@ -5761,6 +5915,7 @@ impl<'doc> TextExtractor<'doc> {
                             self.state_stack.current(),
                             self.current_mcid,
                             self.cached_current_font.clone(),
+                            self.paint_order_snapshot()?,
                         ));
                     }
                     self.append_and_advance(&text)?;
@@ -5794,6 +5949,7 @@ impl<'doc> TextExtractor<'doc> {
                             self.state_stack.current(),
                             self.current_mcid,
                             self.cached_current_font.clone(),
+                            self.paint_order_snapshot()?,
                         ));
                     }
                     self.append_and_advance(&text)?;
@@ -5819,6 +5975,7 @@ impl<'doc> TextExtractor<'doc> {
                 self.state_stack.current_mut().text_rise = rise;
             },
             Operator::Tr { render } => {
+                self.flush_tj_span_buffer()?;
                 self.state_stack.current_mut().render_mode = render;
             },
 
@@ -6386,27 +6543,19 @@ impl<'doc> TextExtractor<'doc> {
                 self.state_stack.current_mut().flatness = tolerance;
             },
             Operator::SetExtGState { dict_name } => {
-                // ExtGState operator - set graphics state from resource dictionary
-                // PDF Spec: ISO 32000-1:2008, Section 8.4.5
-                //
-                // This operator references an ExtGState dictionary in the page resources
-                // that contains transparency, blend modes, and other graphics state parameters.
-                //
-                // For now, we log the usage. Full implementation would require:
-                // 1. Access to page resources (/ExtGState dictionary)
-                // 2. Loading the named dictionary
-                // 3. Extracting /CA (fill alpha), /ca (stroke alpha), /BM (blend mode), etc.
-                // 4. Updating graphics state accordingly
-                //
-                // Future enhancement: Pass resources to text extractor for full support
-                log::debug!(
-                    "ExtGState '{}' referenced (transparency/blend modes not yet fully supported)",
-                    dict_name
-                );
-
-                // Apply default transparency values for now
-                // In a full implementation, we would look up dict_name in resources
-                // and apply the actual values from the ExtGState dictionary
+                self.flush_tj_span_buffer()?;
+                if self.visible_paint_only {
+                    if let (Some(doc), Some(resources)) = (self.document, self.resources.as_ref()) {
+                        let (fill, stroke) = doc.paint_alpha(resources, &dict_name)?;
+                        let state = self.state_stack.current_mut();
+                        if let Some(alpha) = fill {
+                            state.fill_alpha = alpha;
+                        }
+                        if let Some(alpha) = stroke {
+                            state.stroke_alpha = alpha;
+                        }
+                    }
+                }
             },
             Operator::PaintShading { name } => {
                 // Shading operator - paint gradient/shading pattern
@@ -6826,7 +6975,9 @@ impl<'doc> TextExtractor<'doc> {
         //
         // `ctm_key` was already computed above for the `processed_xobjects` guard.
         let spans_cache_key = (xobject_ref, ctm_key);
-        let has_filters = !self.excluded_layers.is_empty() || !self.excluded_inks.is_empty();
+        let has_filters = self.visible_paint_only
+            || !self.excluded_layers.is_empty()
+            || !self.excluded_inks.is_empty();
         if self.extract_spans && !has_filters && import_budget.is_none() {
             let cached_spans = {
                 doc.xobject_spans_cache
@@ -7402,6 +7553,7 @@ impl<'doc> TextExtractor<'doc> {
         self.span_sequence_counter += 1;
 
         if !self.is_content_suppressed() {
+            self.record_span_paint_order(span.sequence, std::mem::take(&mut buffer.source_order))?;
             self.reserve_import_span()?;
             self.spans.push(span);
         }
@@ -7458,6 +7610,7 @@ impl<'doc> TextExtractor<'doc> {
             self.state_stack.current(),
             self.current_mcid,
             self.cached_current_font.clone(),
+            self.paint_order_snapshot()?,
         );
         let mut _element_count = 0;
 
@@ -7599,6 +7752,7 @@ impl<'doc> TextExtractor<'doc> {
                             self.state_stack.current(),
                             self.current_mcid,
                             self.cached_current_font.clone(),
+                            self.paint_order_snapshot()?,
                         );
                     } else {
                         // Sub-threshold offset: matrix advances but the
@@ -7938,6 +8092,7 @@ impl<'doc> TextExtractor<'doc> {
         // Step 6: Increment sequence counter and add to spans
         self.span_sequence_counter += 1;
         if !self.is_content_suppressed() {
+            self.record_span_paint_order(span.sequence, self.paint_order_snapshot()?)?;
             self.reserve_import_span()?;
             self.spans.push(span);
         }
@@ -8702,6 +8857,7 @@ impl<'doc> TextExtractor<'doc> {
         log::trace!("PUSH space span with offset_semantic={}", span.offset_semantic);
 
         if !self.is_content_suppressed() {
+            self.record_span_paint_order(span.sequence, self.paint_order_snapshot()?)?;
             self.reserve_import_span()?;
             self.spans.push(span);
         }
@@ -8968,6 +9124,10 @@ impl<'doc> TextExtractor<'doc> {
                 );
 
                 if !self.is_content_suppressed() {
+                    self.record_span_paint_order(
+                        span.sequence,
+                        std::mem::take(&mut buffer.source_order),
+                    )?;
                     self.reserve_import_span()?;
                     self.spans.push(span);
                 }
@@ -13069,14 +13229,14 @@ mod tests {
     #[test]
     fn test_tj_buffer_empty() {
         let state = crate::content::graphics_state::GraphicsStateStack::new();
-        let buffer = TjBuffer::new(state.current(), None, None);
+        let buffer = TjBuffer::new(state.current(), None, None, Vec::new());
         assert!(buffer.is_empty());
     }
 
     #[test]
     fn test_tj_buffer_append() {
         let state = crate::content::graphics_state::GraphicsStateStack::new();
-        let mut buffer = TjBuffer::new(state.current(), None, None);
+        let mut buffer = TjBuffer::new(state.current(), None, None, Vec::new());
         buffer.append(b"Hello").unwrap();
         assert!(!buffer.is_empty());
         assert_eq!(buffer.unicode, "Hello");
@@ -13085,7 +13245,7 @@ mod tests {
     #[test]
     fn test_tj_buffer_append_truncates_long_string() {
         let state = crate::content::graphics_state::GraphicsStateStack::new();
-        let mut buffer = TjBuffer::new(state.current(), None, None);
+        let mut buffer = TjBuffer::new(state.current(), None, None, Vec::new());
         // Create a string larger than 32,767 bytes
         let long_bytes = vec![0x41u8; 40_000]; // 40K 'A's
         buffer.append(&long_bytes).unwrap();
@@ -15833,7 +15993,7 @@ mod tests {
     #[test]
     fn test_tj_buffer_with_mcid() {
         let state = crate::content::graphics_state::GraphicsStateStack::new();
-        let buffer = TjBuffer::new(state.current(), Some(42), None);
+        let buffer = TjBuffer::new(state.current(), Some(42), None, Vec::new());
         assert!(buffer.is_empty());
         assert_eq!(buffer.mcid, Some(42));
     }
@@ -16152,7 +16312,7 @@ mod tests {
     fn test_flush_tj_span_buffer_empty_buffer() {
         let mut extractor = TextExtractor::new();
         let state = extractor.state_stack.current().clone();
-        extractor.tj_span_buffer = Some(TjBuffer::new(&state, None, None));
+        extractor.tj_span_buffer = Some(TjBuffer::new(&state, None, None, Vec::new()));
         // Empty buffer should not produce a span
         let before = extractor.spans.len();
         extractor.flush_tj_span_buffer().unwrap();
@@ -16163,7 +16323,7 @@ mod tests {
     fn test_flush_tj_span_buffer_with_content() {
         let mut extractor = TextExtractor::new();
         let state_stack = crate::content::graphics_state::GraphicsStateStack::new();
-        let mut buffer = TjBuffer::new(state_stack.current(), Some(7), None);
+        let mut buffer = TjBuffer::new(state_stack.current(), Some(7), None, Vec::new());
         buffer.append(b"Test").unwrap();
         buffer.accumulated_width = 20.0;
         extractor.tj_span_buffer = Some(buffer);
@@ -17917,7 +18077,7 @@ mod profile_based_space_tests {
             st.font_size = 10.0;
             st.horizontal_scaling = 100.0; // Th = 1.0
         }
-        let mut buffer = TjBuffer::new(extractor.state_stack.current(), None, None);
+        let mut buffer = TjBuffer::new(extractor.state_stack.current(), None, None, Vec::new());
         buffer.char_widths.push(5.0);
         buffer.accumulated_width = 5.0;
 
@@ -17931,7 +18091,7 @@ mod profile_based_space_tests {
         assert!((sum - buffer.accumulated_width).abs() < 1e-4);
 
         // Empty buffer: nothing to fold into, must not panic or fabricate width.
-        let mut empty = TjBuffer::new(extractor.state_stack.current(), None, None);
+        let mut empty = TjBuffer::new(extractor.state_stack.current(), None, None, Vec::new());
         extractor.fold_offset_into_buffer(&mut empty, -120.0);
         assert!(empty.char_widths.is_empty());
         assert_eq!(empty.accumulated_width, 0.0);

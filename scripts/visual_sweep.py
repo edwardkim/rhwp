@@ -111,7 +111,7 @@ COLUMN_X_OVERLAP_LIMIT = 0.55
 QUESTION_MARKER_Y_DRIFT_LIMIT_PX = 42.0
 DEFAULT_PIXEL_DIFF_THRESHOLD = 32
 SILHOUETTE_METHOD = "threshold_boundary_color_support_v1"
-PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT = 90.0
+PR_REVIEW_MIN_RAW_MATCH_PERCENT = 90.0
 VISUAL_SWEEP_RUN_SCHEMA_VERSION = 2
 VISUAL_SWEEP_PAGE_SCHEMA_VERSION = 1
 LARGE_INK_TILE_SIZE = 16
@@ -1044,12 +1044,22 @@ def overlay_summary_for_metrics(
         for item in metrics
         if isinstance(item.get("tolerant_content_match_percent"), (int, float))
     ]
+    raw_matches = [
+        float(item["silhouette_raw_match_percent"])
+        for item in metrics
+        if isinstance(item.get("silhouette_raw_match_percent"), (int, float))
+    ]
     worst_pixel = min(pixel_matches) if pixel_matches else None
     worst_ink = min(ink_matches) if ink_matches else None
     worst_proxy = min(proxy_matches) if proxy_matches else None
     worst_tolerant = min(tolerant_matches) if tolerant_matches else None
     return {
         "compared_pages": len(metrics),
+        "average_silhouette_raw_match_percent": round(sum(raw_matches) / len(raw_matches), 5)
+        if raw_matches else None,
+        "worst_silhouette_raw_match_percent": round(min(raw_matches), 5)
+        if raw_matches else None,
+
         "pixel_diff_threshold": pixel_diff_threshold,
         "average_pixel_match_percent": round(sum(pixel_matches) / len(pixel_matches), 5)
         if pixel_matches
@@ -1096,7 +1106,7 @@ def pr_review_gate(
 ) -> dict[str, object]:
     """생성한 검토 PNG의 PR 검토 판정을 반환한다.
 
-    2px 관용 실루엣 일치율이 90% 미만이면 승인 근거가 되지 않는다.
+    색상 경계 보정 전2px 실루엣(raw) 일치율이 90% 미만이면 승인 근거가 되지 않는다.
     원인 진단용 래스터 산출물은 모두 보존하되 결과 명세에 재검토 필요를 기록하고
     main은 실패로 끝난다. 근거를 갖춘 해결 불가능한 글꼴 차이는 직접 검토한 쪽의
     낮은 점수만 예외로 인정하며 측정 누락은 면제하지 않는다."""
@@ -1107,14 +1117,14 @@ def pr_review_gate(
         page = item.get("page")
         if isinstance(page, int):
             measured_pages.add(page)
-        value = item.get("tolerant_content_match_percent")
+        value = item.get("silhouette_raw_match_percent")
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 <= value <= 100:
             unavailable.append(page)
-        elif value < PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT:
+        elif value < PR_REVIEW_MIN_RAW_MATCH_PERCENT:
             below_threshold.append(
                 {
                     "page": page,
-                    "tolerant_content_match_percent": round(float(value), 5),
+                    "silhouette_raw_match_percent": round(float(value), 5),
                 }
             )
 
@@ -1143,7 +1153,8 @@ def pr_review_gate(
         status = "passed"
     return {
         "status": status,
-        "minimum_tolerant_content_match_percent": PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT,
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": PR_REVIEW_MIN_RAW_MATCH_PERCENT,
         "below_threshold_pages": below_threshold,
         "unavailable_metric_pages": unavailable,
         "font_mismatch_evidence": font_mismatch_evidence,
@@ -1155,7 +1166,7 @@ def pr_review_gate(
 def review_gate_reason(gate: dict[str, object]) -> str:
     """검출된 점수·지표·쪽수 결함을 실제 사유로 표시한다."""
     reasons = [
-        f"p{item.get('page')}={item.get('tolerant_content_match_percent')}%"
+        f"p{item.get('page')}={item.get('silhouette_raw_match_percent')}%"
         for item in gate.get("below_threshold_pages", [])
         if isinstance(item, dict)
     ]
@@ -5292,18 +5303,19 @@ def make_overlay_compares(
 
 
 def review_comment_line(metrics: dict[str, object] | None) -> str:
-    strict_percent = metrics.get("visual_accuracy_proxy_percent") if metrics else None
-    tolerant_percent = metrics.get("tolerant_content_match_percent") if metrics else None
-    if isinstance(strict_percent, (int, float)) and isinstance(tolerant_percent, (int, float)):
-        raw = metrics.get("silhouette_raw_match_percent") if metrics else None
-        boundary_note = f" 이진화 원값 {raw:.2f}%." if isinstance(raw, (int, float)) else ""
-        return (
-            "코멘트: 2px 이웃 관용 내용 실루엣 일치율 보조값 = 약 "
-            f"{tolerant_percent:.2f}% (엄격 내용 픽셀: {strict_percent:.2f}%)." + boundary_note
-        )
-    if isinstance(strict_percent, (int, float)):
-        return f"코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 {strict_percent:.2f}%."
-    return "코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 확인 불가."
+    if not metrics:
+        return "코멘트: raw 실루엣 판정값 = 확인 불가."
+    raw = metrics.get("silhouette_raw_match_percent")
+    if not isinstance(raw, (int, float)):
+        return "코멘트: raw 실루엣 판정값 = 확인 불가."
+    notes = [f"코멘트: 판정값 raw 실루엣(2px 이웃) = {raw:.2f}%."]
+    adjusted = metrics.get("tolerant_content_match_percent")
+    if isinstance(adjusted, (int, float)):
+        notes.append(f"색상 경계 보정값(진단용) {adjusted:.2f}%.")
+    strict = metrics.get("visual_accuracy_proxy_percent")
+    if isinstance(strict, (int, float)):
+        notes.append(f"엄격 내용 픽셀 {strict:.2f}%.")
+    return " ".join(notes)
 
 
 def make_review_panels(
@@ -5442,7 +5454,7 @@ def write_silhouette_tsv(
         for page, details, inputs_for_page in ordered_page_map(silhouette_pair_metrics, pairs, workers):
             value = details["tolerant_content_match_percent"]
             metrics.append({"page": page, **details})
-            stream.write(f"{page}\t{value:.5f}\t{int(value < PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT)}"
+            stream.write(f"{page}\t{value:.5f}\t{int(details['silhouette_raw_match_percent'] < PR_REVIEW_MIN_RAW_MATCH_PERCENT)}"
                          f"\t{details['silhouette_raw_match_percent']:.5f}"
                          f"\t{details['silhouette_boundary_reconciled_pixels']}\n")
             inputs.append(inputs_for_page)

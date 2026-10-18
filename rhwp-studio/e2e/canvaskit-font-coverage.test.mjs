@@ -207,17 +207,35 @@ const oversizedResourceTableStatus = glyphRunFontCache.replayStatus(glyphRunOp, 
 assert.equal(oversizedResourceTableStatus.replayable, false);
 assert.equal(oversizedResourceTableStatus.reason, 'fontResourceTableTooLarge');
 
+// P46 admits proven horizontal synthetic instances; malformed instance metadata
+// still fails before selection. This checks admission only, without changing pixels.
+for (const [syntheticBold, syntheticItalic] of [[true, false], [false, true], [true, true]]) {
+  const run = {
+    ...glyphRunOp,
+    shapeKey: { ...glyphRunOp.shapeKey,
+      fontInstance: { ...glyphRunOp.shapeKey.fontInstance, syntheticBold, syntheticItalic } },
+  };
+  assert.equal(glyphRunFontCache.replayStatus(run, glyphRunFontResources).replayable, true,
+    'proven horizontal synthetic instances should be eligible for strict GlyphRun selection');
+  const fallback = { type: 'textRun', bbox: glyphRunOp.bbox, text: '\uE104', variant: {
+    equivalenceGroup: run.variant.equivalenceGroup, variantId: 'textRun', variantKind: 'textRun',
+    isDefaultFallback: true,
+  } };
+  assert.deepEqual([...selectLayerTextVariantsForLeaf([fallback, run], () => false,
+    op => glyphRunFontCache.replayStatus(op, glyphRunFontResources).replayable)], [run]);
+}
+
 for (const [name, mutate, expectedReason] of [
   [
-    'synthetic',
+    'synthetic-malformed',
     op => ({
       ...op,
       shapeKey: {
         ...op.shapeKey,
-        fontInstance: { ...op.shapeKey.fontInstance, syntheticBold: true },
+        fontInstance: { ...op.shapeKey.fontInstance, syntheticBold: 'true' },
       },
     }),
-    'syntheticStyleAuthorityPending',
+    'syntheticStyleMalformed',
   ],
   [
     'bidi-direction',
@@ -337,6 +355,62 @@ const missingBlobTableStatus = glyphRunFontCache.replayStatus(glyphRunOp, {
 });
 assert.equal(missingBlobTableStatus.replayable, false);
 assert.equal(missingBlobTableStatus.reason, 'fontResourceTableMalformed');
+
+// The renderer selects all leaves before drawing any of them. Admission must
+// reserve the bounded native Font now, or a selected run can disappear later.
+const boundedFontCache = new CanvasKitGlyphRunFontCache(CanvasKit);
+boundedFontCache.registerResources(glyphRunFontResources, glyphRunResources);
+try {
+  const runs = Array.from({ length: 1025 }, (_, index) => ({
+    ...glyphRunOp,
+    variant: { ...glyphRunOp.variant, equivalenceGroup: `font-budget-${index}` },
+    shapeKey: { ...glyphRunOp.shapeKey,
+      fontInstance: { ...glyphRunOp.shapeKey.fontInstance, sizePx: 16 + index / 100 } },
+  }));
+  const fallbacks = runs.map(run => ({
+    type: 'textRun', text: '\uE104', bbox: run.bbox,
+    variant: { ...run.variant, variantId: 'textRun', variantKind: 'textRun', isDefaultFallback: true },
+  }));
+  const selected = runs.map((run, index) => [...selectLayerTextVariantsForLeaf(
+    [fallbacks[index], run], () => false,
+    candidate => boundedFontCache.replayStatus(candidate, glyphRunFontResources).replayable,
+  )]);
+  assert.deepEqual(selected.at(-1), [fallbacks.at(-1)],
+    'the 1025th distinct font must retain its TextRun during preselection');
+  assert.equal(boundedFontCache.replayStatus(runs.at(-1), glyphRunFontResources).reason,
+    'fontInstanceLimitExceeded');
+  assert.equal(boundedFontCache.diagnostics().fonts, 1024);
+  for (let index = 0; index < 1024; index++) {
+    assert.deepEqual(selected[index], [runs[index]]);
+    assert.ok(boundedFontCache.font(runs[index], glyphRunFontResources),
+      'every admitted run must still have its native Font at draw time');
+  }
+} finally {
+  boundedFontCache.clear();
+}
+
+// Allocation and configuration errors must keep the fallback selectable and
+// release any partially constructed Font. The exact face is still real Skia.
+for (const failure of ['constructor', 'configuration']) {
+  let deleted = 0;
+  const failingKit = Object.create(CanvasKit);
+  failingKit.Font = class {
+    constructor() { if (failure === 'constructor') throw new Error('allocation failed'); }
+    setSubpixel() { throw new Error('configuration failed'); }
+    delete() { deleted++; }
+  };
+  const failingCache = new CanvasKitGlyphRunFontCache(failingKit);
+  failingCache.registerResources(glyphRunFontResources, glyphRunResources);
+  try {
+    const status = failingCache.replayStatus(glyphRunOp, glyphRunFontResources);
+    assert.equal(status.replayable, false, `${failure} failure must not suppress TextRun`);
+    assert.equal(status.reason, 'fontInstanceInstantiationFailed');
+    assert.equal(failingCache.diagnostics().fonts, 0);
+    assert.equal(deleted, failure === 'configuration' ? 1 : 0);
+  } finally {
+    failingCache.clear();
+  }
+}
 glyphRunFontCache.clear();
 assert.deepEqual(
   glyphRunFontCache.diagnostics(),

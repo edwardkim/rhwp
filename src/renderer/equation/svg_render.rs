@@ -315,18 +315,25 @@ fn render_box(
                 );
             }
         }
-        LayoutKind::Limit { is_upper, sub } => {
-            let name = if *is_upper { "Lim" } else { "lim" };
-            let fi = fs;
-            svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
-                x,
-                y + fi * 0.8,
-                fi,
-                color,
-                EQ_FONT_FAMILY,
-                name,
-            ));
+        LayoutKind::Limit {
+            is_upper,
+            name,
+            sub,
+        } => {
+            if let Some(name) = name {
+                render_box(svg, name, x, y, color, name.height, false, false);
+            } else {
+                let name = if *is_upper { "Lim" } else { "lim" };
+                svg.push_str(&format!(
+                    "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
+                    x,
+                    y + fs * 0.8,
+                    fs,
+                    color,
+                    EQ_FONT_FAMILY,
+                    name,
+                ));
+            }
             if let Some(sub_box) = sub {
                 render_box(
                     svg,

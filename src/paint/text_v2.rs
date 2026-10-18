@@ -441,10 +441,14 @@ fn collect_node(
                         entry.part_count = entry.part_count.max(variant.part_count);
                         entry.present_parts.insert(variant.part_index);
                         entry.quality = entry.quality.or(variant.quality);
-                        if glyph_outline_is_strict(outline) {
+                        let resource_reason =
+                            glyph_outline_resource_fallback_reason(outline, resources);
+                        if glyph_outline_is_strict(outline) && resource_reason.is_none() {
                             entry.strict_parts.insert(variant.part_index);
                         }
-                        entry.merge_fallback_reason(glyph_outline_fallback_reason(outline));
+                        entry.merge_fallback_reason(
+                            resource_reason.or_else(|| glyph_outline_fallback_reason(outline)),
+                        );
                     }
                     _ => {}
                 }
@@ -549,8 +553,8 @@ fn glyph_run_diagnostics_are_strict(diagnostics: &GlyphRunDiagnostics) -> bool {
 fn glyph_run_is_strict(run: &LayerGlyphRunPaint, resources: &ResourceArena) -> bool {
     glyph_run_diagnostics_are_strict(&run.diagnostics)
         && matches!(run.orientation, GlyphRunOrientation::Horizontal)
-        && !run.shape_key.font_instance.synthetic_bold
-        && !run.shape_key.font_instance.synthetic_italic
+        && run.paint_style.is_simple_glyph_run_replay()
+        && run.shape_key.font_instance.variations.is_empty()
         && matches!(run.direction, TextDirection::Ltr)
         && matches!(run.shape_key.direction, TextDirection::Ltr)
         && run.bidi_level == Some(0)
@@ -579,8 +583,8 @@ fn glyph_run_fallback_reason(
     if run.glyph_transforms.is_some() {
         return Some("glyphTransformAuthorityPending".to_string());
     }
-    if run.shape_key.font_instance.synthetic_bold || run.shape_key.font_instance.synthetic_italic {
-        return Some("syntheticStyleAuthorityPending".to_string());
+    if !run.paint_style.is_simple_glyph_run_replay() {
+        return Some("unsupportedPaintEffect".to_string());
     }
     if !matches!(run.direction, TextDirection::Ltr)
         || !matches!(run.shape_key.direction, TextDirection::Ltr)
@@ -681,8 +685,17 @@ fn glyph_run_font_proof_fallback_reason(
             {
                 return Some("fontBlobDigestMismatch".to_string());
             }
-            if ttf_parser::Face::parse(bytes, face.face_index).is_err() {
-                return Some("faceIndexUnsupported".to_string());
+            match ttf_parser::Face::parse(bytes, face.face_index) {
+                Err(_) => return Some("faceIndexUnsupported".to_string()),
+                Ok(parsed) => {
+                    if run
+                        .glyph_ids
+                        .iter()
+                        .any(|id| *id == 0 || *id >= u32::from(parsed.number_of_glyphs()))
+                    {
+                        return Some("glyphIdOutOfRange".to_string());
+                    }
+                }
             }
         }
         None => {
@@ -698,18 +711,50 @@ fn font_digest_matches_resource_digest(digest: &crate::paint::FontDigest, actual
 
 fn glyph_outline_is_strict(outline: &LayerGlyphOutlinePaint) -> bool {
     glyph_run_diagnostics_are_strict(&outline.diagnostics)
-        && !outline.paths.is_empty()
+        && outline.has_exclusive_payload_family()
+        && crate::paint::paint_op::text_placement_is_finite(&outline.placement)
         && outline.paint_style.is_fill_only_glyph_replay()
         && match outline.payload_kind {
-            GlyphOutlinePayloadKind::MonochromeFill => outline.stroke.is_none(),
-            GlyphOutlinePayloadKind::MonochromeFillStroke => outline
-                .stroke
-                .as_ref()
-                .is_some_and(|stroke| stroke.is_strict_subset()),
+            GlyphOutlinePayloadKind::MonochromeFill => {
+                !outline.paths.is_empty()
+                    && outline.paths.len() <= 4096
+                    && outline.paths.iter().all(|path| {
+                        crate::paint::paint_op::path_commands_are_finite(&path.commands)
+                    })
+            }
+            GlyphOutlinePayloadKind::MonochromeFillStroke => {
+                !outline.paths.is_empty()
+                    && outline.paths.len() <= 4096
+                    && outline.paths.iter().all(|path| {
+                        crate::paint::paint_op::path_commands_are_finite(&path.commands)
+                    })
+                    && outline
+                        .stroke
+                        .as_ref()
+                        .is_some_and(|stroke| stroke.is_strict_subset())
+            }
             GlyphOutlinePayloadKind::ColorLayers
             | GlyphOutlinePayloadKind::BitmapGlyph
-            | GlyphOutlinePayloadKind::SvgGlyph => false,
+            | GlyphOutlinePayloadKind::SvgGlyph => outline.has_payload_resource_key(),
         }
+}
+
+fn glyph_outline_resource_fallback_reason(
+    outline: &LayerGlyphOutlinePaint,
+    resources: &ResourceArena,
+) -> Option<String> {
+    let missing = match outline.payload_kind {
+        GlyphOutlinePayloadKind::BitmapGlyph => outline
+            .bitmap_glyph
+            .as_ref()
+            .is_some_and(|payload| resources.image_bytes(payload.image_ref).is_none()),
+        GlyphOutlinePayloadKind::SvgGlyph => outline
+            .svg_glyph
+            .as_ref()
+            .is_some_and(|payload| resources.svg_fragment(payload.svg_ref).is_none()),
+        _ => false,
+    };
+    missing.then(|| "missingGlyphPayloadResource".to_string())
 }
 
 fn glyph_outline_fallback_reason(outline: &LayerGlyphOutlinePaint) -> Option<String> {
@@ -988,7 +1033,8 @@ mod tests {
                     },
                     baseline_y: 0.0,
                 },
-                glyph_ids: vec![42],
+                // Both fixture TTC faces have maxp.numGlyphs = 2; exactFace is glyph 1.
+                glyph_ids: vec![1],
                 positions: vec![LayerPoint { x: 0.0, y: 0.0 }],
                 advances: None,
                 clusters: vec![GlyphCluster {
@@ -1449,11 +1495,7 @@ mod tests {
 
     #[test]
     fn reports_p42_strict_shape_authority_as_pending() {
-        let cases: [(fn(&mut LayerGlyphRunPaint), &str); 6] = [
-            (
-                |run| run.shape_key.font_instance.synthetic_italic = true,
-                "syntheticStyleAuthorityPending",
-            ),
+        let cases: [(fn(&mut LayerGlyphRunPaint), &str); 5] = [
             (
                 |run| run.direction = TextDirection::Rtl,
                 "bidiDirectionAuthorityPending",

@@ -178,7 +178,10 @@ pub(crate) fn is_used(layout: &super::layout::LayoutBox) -> bool {
                 pending.extend(sub.as_deref());
                 pending.extend(sup.as_deref());
             }
-            LayoutKind::Limit { sub, .. } => pending.extend(sub.as_deref()),
+            LayoutKind::Limit { name, sub, .. } => {
+                pending.extend(name.as_deref());
+                pending.extend(sub.as_deref());
+            }
             LayoutKind::Matrix { cells, .. } => pending.extend(cells.iter().flatten()),
             LayoutKind::Rel { arrow, over, under } => {
                 pending.push(arrow);
