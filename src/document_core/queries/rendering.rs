@@ -5437,6 +5437,7 @@ impl DocumentCore {
                                     ci,
                                     &[],
                                     &mut entries,
+                                    &mut None,
                                 );
                             }
                             _ => {}
@@ -5604,6 +5605,7 @@ impl DocumentCore {
                                     ci,
                                     &[],
                                     &mut entries,
+                                    &mut None,
                                 );
                             }
                             _ => {}
