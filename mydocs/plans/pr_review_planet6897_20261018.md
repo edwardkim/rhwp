@@ -3121,3 +3121,29 @@ merge·원11PR후속처리는남는다. 이번추가는test·기록뿐이고prod
 PASS(run0)다. 기존7건을함께돌린결과로가장하지않으며이실행은선택한새case1건이다.
 같은source SHA와실행명령/출력은candidate108-new-p061-case-before-after-results.json에
 기록했다. 실제Cargo 집중묶음은새case를포함한32건으로다음실행에서확인한다.
+
+### 후보108 정식 집중 검사 결과와 PR 승인 경계
+
+검사 head `948a19ae2235e29b604dc8352b6b5553c762f594`에서 새61쪽 검사를 포함한
+8개 case 모듈·7개 binary의32건을 실제 Cargo nextest로 실행해32 PASS·exit0을 확인했다.
+공용 `target/pr-review`, jobs8, `release-test`의 진단용 opt-level1을 사용했다.
+이는 최종 opt-level3·전체 Rust 검증의 대체 결과가 아니다. 실행 중 head 불변·tracked clean을
+확인했고 실행 종료 뒤 Cargo/rustc 프로세스도 남지 않았다.
+
+첫 시도는 새 case 추가 뒤 suite 파생 파일을 준비하지 않아7건만 실행했다. Cargo 자체는
+exit0이었지만 드라이버의 최소32건 검사가 실패했으므로 검증 미완료로 보존했다.
+`--prepare`로 ignored harness를 생성하고, 고정 base
+`224a326063a5aeab5a1ca8dcaa92918f55843ffc`의 `--check` 통과 뒤 다시 실행했다.
+생성 파일·manifest·CI 설정은 커밋하지 않았다. 재실행 로그에서 새61쪽 검사명과
+8개 모듈의 실제 실행을 확인했으며 SIGTERM 수신 기록은 없다.
+
+증거는 ignored `output/pr-review/planet6897-20261018/`의
+`candidate108-focused-stale-harness-attempt.log`,
+`candidate108-focused-manifest-check.log`, `candidate108-focused.log`,
+`candidate108-focused-results.json`, `candidate108-formal32-retry-signal-events.jsonl`에 있다.
+제품 소스는 `1c875d9a89ba8fcf2c0b2331b44cdbc4a2cf78fb`와 동일하며 차이는 test·기록뿐이다.
+1342000의 전쪽90% 미달50쪽과 기존142/255/256쪽 하락, 전체11PR의 최종 검증은 계속 남는다.
+
+최신 사용자 지시인 **PR 생성 전 승인**을 적용한다. 로컬 보정·검증을 계속하고,
+준비가 완료되면 실제 검증 결과와 PR 본문을 제시한 뒤 생성 승인을 받는다.
+이 기록 시점에 원격 push·PR 생성·merge를 수행하지 않았다.
