@@ -571,6 +571,35 @@ fn resolve_line_metrics(
             // HeightMeasurer의 fallback 측정 정합 범위이므로 typeset 예약 높이는
             // 종전 줄 상자를 유지한다.
             let flow_lh = lh + extra_rows as f64 * (lh + line_spacing_px);
+            // 글자가 없는 개체 줄은 저장 사다리에서 다음 줄과 겹칠 수 있다(통계 보고서
+            // 첫 문단: 조판부호 줄과 글상자 줄이 모두 lh=3403 인데 vpos 500→600). 한글은
+            // 저장 vpos 차이만큼만 전진하므로 줄 상자를 통째로 쌓으면 뒤 내용이 그만큼
+            // (+44px) 밀린다.
+            let stored_overlap_advance = (runs_all_whitespace
+                && comp.lines.len() == para.line_segs.len())
+            .then(|| {
+                para.line_segs
+                    .get(line_idx)
+                    .zip(para.line_segs.get(line_idx + 1))
+            })
+            .flatten()
+            .filter(|(cur, next)| {
+                let authored = |seg: &crate::model::paragraph::LineSeg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                };
+                // 사다리 자체가 겹침을 적은 경우만 — 다음 줄이 줄 상자 안에서 시작한다.
+                authored(cur)
+                    && authored(next)
+                    && next.vertical_pos > cur.vertical_pos
+                    && next.vertical_pos < cur.vertical_pos + cur.line_height + cur.line_spacing
+            })
+            .map(|(cur, next)| hwpunit_to_px(next.vertical_pos - cur.vertical_pos, ctx.dpi()))
+            .filter(|advance| *advance < flow_lh + line_spacing_px);
+            if let Some(advance) = stored_overlap_advance {
+                pairs.push((advance, 0.0));
+                prev_line_reserved_tac_picture_height = None;
+                continue;
+            }
             pairs.push((flow_lh, line_spacing_px));
             prev_line_reserved_tac_picture_height = tac_picture_height;
         }
