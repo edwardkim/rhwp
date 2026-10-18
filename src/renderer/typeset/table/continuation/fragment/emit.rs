@@ -1290,11 +1290,12 @@ impl TypesetEngine {
             ))
         .max(0.0);
         let mut ledger_end_row_trim = 0.0;
-        // 원본 병합 셀은 실제 문단 유지 지시를 만족한 컷의 쪽 끝 물리 띠도 소유한다.
-        // 이웃 셀에 문단 내부 컷이 있어도 내용 컷을 넓히지 않고 빈 상자를 함께 센다.
+        // 진행 중인 셀이 문단을 완결한 컷과 문단 내부의 허용된 컷은 다르다.
+        // 내부 컷의 허용만으로 쪽 끝의 빈 물리 띠까지 소유했다고 판정하지 않는다.
+        // 문단 끝 컷은 공통 유닛 계약을 쓰고, 내부 컷은 아래 잔여 예산을 확인한다.
         let plain_paragraph_cut = split_end_limit > 0.0
             && end_row > cursor_row
-            && layout_engine.row_cut_respects_plain_paragraph_keeps(
+            && layout_engine.row_cut_keeps_close_a_plain_paragraph(
                 row_geometry_table,
                 end_row - 1,
                 if end_row - 1 == cursor_row {
