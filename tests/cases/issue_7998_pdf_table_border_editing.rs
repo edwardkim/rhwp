@@ -131,7 +131,7 @@ fn continuous_sides_are_borders_while_child_gaps_retain_source_paint() {
                             fragments += 1;
                             assert!(
                                 s.common().flow_with_text,
-                                "cell paint follows its paragraph"
+                                "cell paint retains Hancom's restrict-in-page attribute"
                             );
                             assert!(i64::from(s.common().height) <= content, "continuous full-height border must not become a cell content requirement");
                         }

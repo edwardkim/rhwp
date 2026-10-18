@@ -392,8 +392,8 @@ pub(super) fn partition(
             Control::Picture(_) => None,
             _ => return Err("unsupported cell paint requires further lowering".into()),
         };
-        // A bitmap's frame includes the stroke's physical width (and transparent
-        // cap/join padding). Its two sides must belong to their physical cells.
+        // Area paint includes its physical width, whether a bitmap or a filled
+        // stroke quad. Its two sides must belong to their physical cells.
         // Giving the entire band to one side lets that cell's clip erase the
         // other half. Outside-root pieces retain their original page owner.
         let image = matches!(original, Control::Picture(_));
@@ -422,7 +422,11 @@ pub(super) fn partition(
             for (ci, cell) in cells.iter().enumerate() {
                 tick(&mut work)?;
                 let mut clip = *cell;
-                if let Some(h) = on_axis {
+                let native_border = targets[ti]
+                    .native_border_controls
+                    .and_then(|cells| cells.get(ci))
+                    .is_some_and(|set| set.contains(&control));
+                if let Some(h) = on_axis.filter(|_| line.is_some() || native_border) {
                     let (at, lo, hi, outer_lo, outer_hi) = if h {
                         (
                             (source.y + source.bottom) / 2,
@@ -451,7 +455,7 @@ pub(super) fn partition(
                         clip.right = source.right
                     }
                 }
-                if !image && required[ti].contains(&control) {
+                if (line.is_some() || native_border) && required[ti].contains(&control) {
                     if cell.x == region.x {
                         clip.x = clip.x.min(source.x)
                     }
@@ -505,11 +509,7 @@ pub(super) fn partition(
                     if count > MAX_FRAGMENTS {
                         return Err("cell paint fragment budget exceeded".into());
                     }
-                    if targets[ti]
-                        .native_border_controls
-                        .and_then(|cells| cells.get(ci))
-                        .is_some_and(|set| set.contains(&control))
-                    {
+                    if native_border {
                         // This exact physical piece is represented by the
                         // cell's native border. Keep subtraction/conservation
                         // and all other owners; do not paint it a second time.
@@ -572,8 +572,9 @@ pub(super) fn anchor(
     a.vertical_offset = (a.vertical_offset as i32 as i64 - y) as i32 as u32;
     a.horz_rel_to = HorzRelTo::Column;
     a.vert_rel_to = VertRelTo::Para;
-    // Cell-owned background/boundary paint follows its host paragraph during
-    // editing and in Hancom. A page-fixed object ignores the nested cell frame.
+    // Hancom's restrict-in-page bit establishes the cell-local frame here.
+    // It also enforces content extent: the host's paragraph lead must not be
+    // fabricated as cell padding and added to this paint's full frame height.
     a.flow_with_text = true;
     a.treat_as_char = false;
     a.text_wrap = TextWrap::BehindText;

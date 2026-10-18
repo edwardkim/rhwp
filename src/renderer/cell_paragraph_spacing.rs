@@ -13,6 +13,12 @@ impl CellParagraphBefore {
     pub fn occupied_before(&self) -> f64 {
         self.flow_before + self.stored_lead
     }
+
+    /// A floating paragraph anchor precedes its saved text lead. The same lead
+    /// is reserved by text layout; adding it to the floating frame counts it twice.
+    pub fn stored_anchor_top(&self, first_text_top: f64) -> f64 {
+        first_text_top - self.stored_lead
+    }
 }
 
 pub(crate) fn paragraph_before(

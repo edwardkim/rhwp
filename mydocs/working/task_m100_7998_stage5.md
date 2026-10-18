@@ -186,3 +186,9 @@ P5에서 수행하며 `final_pr_ready=false`다. 원격 push·PR 생성·GitHub 
 최종 소스·테스트의 rustfmt 및 PDF를 제외한 staged diff whitespace 검사는 통과했다.
 두 독립 PDF의 xref 행 끝 공백은 PDF 선언 바이트의 일부라 `diff --check`가 보고하지만
 원본·지문을 바꾸지 않는다. 생성기로 두 source의 동일 바이트 재현도 확인했다.
+
+2026-10-18 후속 정정: `flowWithText`의 기술적 의미는 단순한 ‘문단 추종’이 아니라
+한컴 UI의 **쪽 영역 안으로 제한**이다([정오표 §31](../tech/hwp_spec_errata.md)).
+위 인쇄 개선 관측은 보존하되 속성 의미의 설명을 정정한다. 보류했던 source 두 건과
+실제 한컴 저장본의 높이 증가는 [stage6](task_m100_7998_stage6.md)에서 원인 보정·검증했다.
+이 기록의 이전 실패 수치와 producer를 새 결과로 덮어쓰지 않는다.

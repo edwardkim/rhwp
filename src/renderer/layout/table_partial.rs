@@ -1910,7 +1910,7 @@ impl LayoutEngine {
                         .max(unit_content_h)
                         .max(max_inline_h)
                         .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs))
-                        .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs))
+                        .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs, styles))
                 } else {
                     self.calc_composed_paras_content_height(
                         composed_store.eager_slice(),
@@ -1919,7 +1919,7 @@ impl LayoutEngine {
                     )
                     .max(max_inline_h)
                     .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs))
-                    .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs))
+                    .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs, styles))
                 }
             };
 

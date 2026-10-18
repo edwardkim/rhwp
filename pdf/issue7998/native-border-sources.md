@@ -2,8 +2,9 @@
 
 이번 자료는 실물 문서의 좌표를 베낀 golden이 아니라 명시적 PDF 연산으로 만든 작은
 독립 입력이다. `generate_native_border_sources.py --output <폴더>`가 source를 만든다.
-저장소에는 선행 출력 검증을 마친 solid/mixed 두 입력과 인쇄 대조만 등록한다.
-생성기가 함께 만드는 periodic/occluded 부모 반례는 아래 미달·후속 경계로 분리한다.
+B15에서는 선행 출력 검증을 마친 solid/mixed 두 입력과 인쇄 대조만 등록했다.
+생성기가 함께 만드는 periodic/occluded 부모 반례의 당시 미달 증거는 아래에 보존한다.
+후속 B16의 보정·등록은 [paint-save-sources.md](paint-save-sources.md)를 따른다.
 
 ## 독립 기대와 재현
 

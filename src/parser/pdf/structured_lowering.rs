@@ -1005,15 +1005,6 @@ impl TableBuilder<'_> {
                     return Err("overlapping cell flow requires additional lowering".into());
                 }
                 let gap = (item.top - cursor).max(0.);
-                if fixed_lines && flow_index == 0 {
-                    // Derived content-frame inset, not a claim about the author's padding.
-                    // Both cached placement and fresh reflow consume this same frame.
-                    cell.padding.top =
-                        i16::try_from(hu(gap)?).map_err(|_| "cell padding exceeds format range")?;
-                    cursor = item.bottom;
-                    previous_style = Some(item.paragraph.para_shape_id);
-                    continue;
-                }
                 let picture = item.paragraph.controls.first().is_some_and(|c| {
                     matches!(
                         c,
