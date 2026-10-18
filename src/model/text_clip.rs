@@ -101,6 +101,8 @@ fn visit(paras: &mut [Paragraph], f: &mut impl FnMut(u32, &mut TextBox), depth: 
                 }
                 Control::Header(h) => visit(&mut h.paragraphs, f, depth + 1),
                 Control::Footer(h) => visit(&mut h.paragraphs, f, depth + 1),
+                Control::Footnote(n) => visit(&mut n.paragraphs, f, depth + 1),
+                Control::Endnote(n) => visit(&mut n.paragraphs, f, depth + 1),
                 _ => {}
             }
         }
@@ -173,6 +175,8 @@ fn collect(
                 }
                 Control::Header(h) => collect(&h.paragraphs, records, counts, depth + 1),
                 Control::Footer(h) => collect(&h.paragraphs, records, counts, depth + 1),
+                Control::Footnote(n) => collect(&n.paragraphs, records, counts, depth + 1),
+                Control::Endnote(n) => collect(&n.paragraphs, records, counts, depth + 1),
                 _ => {}
             }
         }
@@ -183,6 +187,11 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     let mut counts = BTreeMap::new();
     for s in &doc.sections {
         collect(&s.paragraphs, &mut records, &mut counts, 0);
+        // SectionDef controls mirror this canonical list. Visiting both copies
+        // would falsely report every master-page TextBox as a duplicate owner.
+        for master in &s.section_def.master_pages {
+            collect(&master.paragraphs, &mut records, &mut counts, 0);
+        }
     }
     let mut ids = BTreeSet::new();
     if records.iter().any(|r| {
@@ -240,21 +249,28 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
             &mut |id, _| *counts.entry(id).or_default() += 1,
             0,
         );
+        for master in &mut s.section_def.master_pages {
+            visit(
+                &mut master.paragraphs,
+                &mut |id, _| *counts.entry(id).or_default() += 1,
+                0,
+            );
+        }
     }
     for s in &mut doc.sections {
-        visit(
-            &mut s.paragraphs,
-            &mut |id, tb| {
-                if counts.get(&id) != Some(&1) {
-                    return;
+        let mut restore = |id, tb: &mut TextBox| {
+            if counts.get(&id) != Some(&1) {
+                return;
+            }
+            if let Some(r) = records.get(&id) {
+                if r.fingerprint == fingerprint(tb) {
+                    tb.paint_clip = Some(r.paths.clone());
                 }
-                if let Some(r) = records.get(&id) {
-                    if r.fingerprint == fingerprint(tb) {
-                        tb.paint_clip = Some(r.paths.clone());
-                    }
-                }
-            },
-            0,
-        );
+            }
+        };
+        visit(&mut s.paragraphs, &mut restore, 0);
+        for master in &mut s.section_def.master_pages {
+            visit(&mut master.paragraphs, &mut restore, 0);
+        }
     }
 }
