@@ -3325,3 +3325,76 @@ https://help.hancom.com/hoffice/multi/ko_kr/hwp/table/tableattribute/table%28tab
 먼저93–95·141–145쪽과 이전 개선 쪽을 비교하고, 원본141쪽의 네 줄·다음 항목 소속 및
 80168 기존 검사와 실제 목록/이어붙임 대조군을 확인한다. 새로운1342000 정식 회귀는
 전쪽 Native/fresh WASM90% 전까지 보류한다. 아직 실행 전이며 결과에 따라 가설을 재검토한다.
+
+### 후보111 실행 결과 — 전쪽 Native/fresh WASM과 정식38건
+
+2026-10-19 KST에 제품/검사 head `1853e138d6a434f0e1f74ec65776d91049ef18cd`의
+검증을 완료했다. Native 진단 opt1 빌드는 exit0이고 CLI SHA-256은
+`04d511879353ad6d782fe24043fcb33af4e02d4a9fe88cd52fb873f413014fb3`다.
+fresh WASM opt3 빌드는4분50초 exit0이고 WASM SHA-256은
+`2dd6e7664ee949af7ac5a6b7e310fcd4bfc78af64e23b4dfddc95ff1f81f041f`다.
+공용 target/pr-review·jobs8·codegen-units16을 사용해 순차 실행했다.
+
+같은 ignored Print 진단 source
+`f132f0dc64af5bf4a4b3dd0bfbb027a8a8d9d6013ba7828d20a1ce83e474ec84`를
+후보110/111에 링크했다. 양쪽 compile0, 보정 전 run101은141쪽 row216의 첫 줄이
+Print619.093180px 대신630.473333px여서 실패했다. 보정 후 run0은 네 줄이
+619.906667/639.906667/659.906667/679.906667px로 각각 약0.813487px 차이고,
+다음 행 첫 항목의141쪽 소속과 나머지142쪽 소속·내용 순서/누락/중복을 통과했다.
+원본 파일은 바꾸지 않았다. 메모리 복제 대조군에서 첫 항목에만 keep_with_next를 켰을 때는
+항목들을142쪽으로 넘겼고, 기본 Bullet로 바꾼 경우에는 완결 첫 항목을141쪽에 유지해
+각각 run0이다. 두 합성 대조군의 계약 검사를 편집한 문서의 Print 일치로 보고하지 않는다.
+번호/글머리 실제 마커의 유효성과 문단 완결을 판정하며, 일반 문단·개요·미해소 번호를
+이 새 목록 계약의 증거로 사용하지 않는다.93/94쪽 제목 반례도 동일하게 유지됐다.
+
+실제 Cargo nextest는 현재 head의 manifest --check 뒤9개 case 모듈·8개 binary의
+38건을 실행해38 PASS·exit0이었다. 실행 중 head 불변·tracked clean을 확인했다.
+기존 마커10건과 완료 페이지 case8건도 동일 source를 frozen library에 연결해 PASS다.
+진단 opt1 집중 검사이며 최종 Native opt3·전체 Rust·lint/Skia/Studio/Windows를 대신하지 않는다.
+
+두 문서 전572쪽을 Native와 fresh WASM 각각 산출했다. 모든 페이지 ID·쪽수·입력/Print
+해시와 비교 조건을 확인했다. 후보108과 backend별 조건9개·페이지 PDF 해시를 대조한 결과,
+80168은 양쪽 전쪽 동일,1342000은 양쪽30쪽 개선·하락0쪽이다. 마지막 전쪽 Native 후보109와
+대조해도1342000은9쪽 개선·하락0쪽이다. 이것을 최신 upstream/devel의 전쪽 비교로 쓰지 않는다.
+
+| 문서 | 쪽수 Native/WASM/PDF | Native 최저 raw | WASM 최저 raw | 90% 미달 |
+| --- | --- | --- | --- | --- |
+| 80168 | 157/157/157 | 21쪽94.73551% | 21쪽94.95563% | 양쪽0쪽 |
+| 1342000 | 415/415/415 | 27쪽64.95642% | 27쪽65.34385% | 양쪽24쪽 |
+
+1342000은 마지막 전쪽 후보109의32쪽 미달에서24쪽으로 줄었다. 양쪽 미달 쪽은 동일하며
+26,27,44,47,48,59,60,95,120,154,155,189,228–234,274,275,299,345,414쪽이다.
+Native/WASM raw는141쪽99.65948/99.63593%,142쪽99.99725/99.99890%,
+143쪽99.23902/99.24138%,144쪽99.98008/99.98016%,145쪽91.99881/91.92945%다.
+새1342000 정식 회귀는 전쪽90% 선행 조건 미달로 계속 보류한다.
+
+Native/fresh WASM141쪽 review와145쪽 overlay를 원본 해상도로 직접 열었다.141쪽은
+앞 행의 Center·다음 항목 소속이 Print와 맞게 복구됐다. 작은 잉크/괘선 차이는 남는다.
+145쪽은90% 이상이어도 마지막 셀 상자·글줄 위치 차이가 남아 보정 완료로 판정하지 않는다.
+Native 마지막 행 bbox는19.76px이고 줄 y141.76px다. 독립 PDF 줄은 y149.973175px,
+관련 수평 괘선은 y137.685343/175.105347px다. WASM overlay에서도 같은 배치 차이를 봤다.
+PDF의 획 중심과 RenderNode bbox를 같은 수치로 간주하지 않으며, 실제 남은 공간은 추가 추적한다.
+
+관련 `pi=8 sec=5` 호출은144쪽 row243에서 내용16px·cut=[1,1,1,1,1,1,1]을 수용하고
+실제 앞 상자24.506667px를 전달한다. 다음 조각은 cursor243·동일 start_cut이지만
+start_row_height_override=None이고 내용/패딩19.76px만 수용한다. rowspan240col2는
+이 종료 행에서 끝난다. 일반 행 물리 잔여 helper는 걸침 셀이 있으면 비적용이며,
+reflow 최소 상자와 후속 fallback의 실제 소유·종료 조건을 이어서 확인한다. PDF에 남은
+물리 공간을 단순 줄 간격으로 버리거나, 원본 선언 높이에서 임의로 복원하지 않는다.
+
+증거는 ignored `output/pr-review/planet6897-20261018/`의
+`candidate111-{native,wasm}-build-results.json`,
+`candidate111-{native,wasm}-all-pages/{merged-80168,curriculum-1342000}/silhouette.tsv`,
+`candidate111-vs-candidate108-recovery-{native,wasm}-curriculum-1342000-verified-comparison.json`,
+`candidate111-focused.log`, `candidate111-focused-results.json`,
+`candidate111-p141-p142-print-owner{,-keep-next,-bullet}-results.json`,
+`candidate111-local-origin-overlay-results.json`, `candidate111-list-item-wasm-overlay-results.json`,
+`candidate111-row243-cut-diagnostic.log`다. build/회귀/전쪽의 signal 기록은 모두 start/exit이고
+SIGTERM 수신은 없다. 전쪽 exit1은24쪽 실제 시각 gate 미달이며 실행 중단이 아니다.
+과거143의 발신 원인을 해결했다고 기록하지 않는다.
+
+UTC2026-10-18 15:25:39의 fetch는 upstream/devel224a32606 동일·이미 포함·divergence0/188이다.
+`candidate111-upstream-refresh-20261018T152539Z.json`에 기록했고 불필요한 리베이스를 하지 않았다.
+PR 준비 완료 시 최신 head를 다시 확인한다. 전체11PR·최종 검증 범위는 유지하며,
+24쪽 미달과145쪽 직접 판독 차이를 해결하기 전에는 완료·승인으로 보고하지 않는다.
+PR 생성은 준비된 결과와 본문을 제시한 뒤 사용자 승인을 받는다. 원격 push/PR/merge는 미실행이다.
