@@ -3125,6 +3125,19 @@ pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
     non_tac_pictures <= 1
 }
 
+// Captioned pictures and floating controls have separate layout owners. A
+// caption-free inline picture instead consumes a real slot in this text flow,
+// including at the paragraph end and alongside another inline picture.
+fn supports_inline_picture_frame_controls(para: &Paragraph) -> bool {
+    para.controls
+        .iter()
+        .any(|control| matches!(control, Control::Picture(picture) if picture.common.treat_as_char))
+        && para.controls.iter().all(|control| match control {
+            Control::Picture(picture) => picture.common.treat_as_char && picture.caption.is_none(),
+            other => control_is_width_neutral_marker(other),
+        })
+}
+
 /// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
 ///
 /// 종전 cell reflow는 text token만 줄바꿈한 뒤 첫 LineSeg를 표 높이만큼 키웠다.
@@ -3463,9 +3476,11 @@ fn layout_paragraph_in_frame_impl(
         return None;
     }
 
-    let projected = (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
-        .then(|| inline_frame_input::project(para, styles, dpi))
-        .flatten();
+    let projected = (para.line_segs.is_empty()
+        && (supports_tac_table_band_frame_controls(para)
+            || supports_inline_picture_frame_controls(para)))
+    .then(|| inline_frame_input::project(para, styles, dpi))
+    .flatten();
     let para = projected.as_ref().map_or(para, |(input, _)| input);
     let mut text_chars = para.text.chars().collect::<Vec<_>>();
     // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
@@ -4606,6 +4621,20 @@ fn reflow_line_segs_impl(
     };
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
+
+    if !split_stale_cell_reflow && supports_inline_picture_frame_controls(para) {
+        // An edit invalidates the old text/control partition together. Project
+        // invisible control slots before filling, rather than measuring text
+        // alone and attaching an end-of-paragraph picture during paint. The
+        // returned raw UTF-16 rows are consumed by measurement, paint and save.
+        let mut input = para.clone();
+        input.line_segs.clear();
+        let mut frame = paragraph_box.frame(orig.as_ref().map_or(0, |line| line.vertical_pos));
+        if let Some(lines) = layout_paragraph_in_frame(&input, &mut frame, styles, dpi) {
+            para.replace_line_segs_with_space_metrics(lines, frame.project_space_metrics());
+            return false;
+        }
+    }
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);

@@ -738,3 +738,178 @@ fn compound_foreground_keeps_original_content_owners() {
         verify_compound(&c, 0, &want);
     }
 }
+
+fn inline_host_case(name: &str, explicit_arial: bool) {
+    let key = if name == "two-pictures" {
+        "cell-two-pictures"
+    } else {
+        "cell-picture-first"
+    };
+    let mut core = DocumentCore::from_pdf_bytes(
+        &std::fs::read(base().join(format!("{key}.pdf"))).unwrap(),
+        &PdfImportOptions::default(),
+    )
+    .unwrap();
+    if explicit_arial {
+        // Controlled font selection precedes editing; Hancom's PDF embeds
+        // ArialMT. The original Helvetica -> Haansoft Batang substitution is
+        // separate evidence, not silently treated as this control's output.
+        let mut input = core.document().clone();
+        for fonts in &mut input.doc_info.font_faces {
+            for font in fonts {
+                font.name = "Arial".into();
+            }
+        }
+        core.set_document(input);
+    }
+    let ci = core.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .position(|c| matches!(c, Control::Table(_)))
+        .unwrap();
+    let Control::Table(table) = &core.document().sections[0].paragraphs[0].controls[ci] else {
+        panic!()
+    };
+    let pi = table.cells[0]
+        .paragraphs
+        .iter()
+        .position(|p| p.controls.iter().any(|c| matches!(c, Control::Picture(_))))
+        .unwrap();
+    if matches!(name, "two-pictures" | "long-suffix" | "middle") {
+        core.merge_paragraph_in_cell_native(0, 0, ci, 0, pi + 1)
+            .unwrap();
+    }
+    if name == "outer-margins" {
+        core.set_cell_picture_properties_by_path_native(0,0,
+            &format!(r#"[{{"controlIndex":{ci},"cellIndex":0,"cellParaIndex":{pi}}}]"#),0,
+            r#"{"outerMarginLeft":1500,"outerMarginRight":1500,"outerMarginTop":300,"outerMarginBottom":375}"#).unwrap();
+    }
+    let mut original = Vec::new();
+    model_text(&core.document().sections[0].paragraphs, &mut original);
+    original.sort_unstable();
+    let original_bins: Vec<_> = core
+        .document()
+        .bin_data_content
+        .iter()
+        .map(|b| b.data.load().to_vec())
+        .collect();
+    let text = match name {
+        "short-prefix" => "EDIT ".into(),
+        "outer-margins" => "EDIT EDIT EDIT ".into(),
+        "explicit-break" => "EDIT EDIT\nEDIT EDIT EDIT EDIT EDIT EDIT EDIT EDIT EDIT EDIT ".into(),
+        _ => "EDIT ".repeat(12),
+    };
+    let offset = if name == "long-suffix" {
+        let Control::Table(t) = &core.document().sections[0].paragraphs[0].controls[ci] else {
+            panic!()
+        };
+        t.cells[0].paragraphs[pi].text.chars().count()
+    } else {
+        0
+    };
+    core.insert_text_in_cell_native(0, 0, ci, 0, pi, offset, &text)
+        .unwrap();
+    let mut changed = original.clone();
+    changed.extend(text.chars().filter(|c| !c.is_whitespace()));
+    changed.sort_unstable();
+    let count = if name == "two-pictures" { 2 } else { 1 };
+    verify_inline_host(&core, &changed, count, &original_bins);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        verify_inline_host(
+            &DocumentCore::from_bytes(&bytes).unwrap(),
+            &changed,
+            count,
+            &original_bins,
+        );
+    }
+    core.delete_text_in_cell_native(0, 0, ci, 0, pi, offset, text.chars().count())
+        .unwrap();
+    verify_inline_host(&core, &original, count, &original_bins);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        verify_inline_host(
+            &DocumentCore::from_bytes(&bytes).unwrap(),
+            &original,
+            count,
+            &original_bins,
+        );
+    }
+}
+fn verify_inline_host(core: &DocumentCore, expected: &[char], images: usize, bins: &[Vec<u8>]) {
+    assert_eq!(core.page_count(), 1);
+    let actual: Vec<_> = core
+        .document()
+        .bin_data_content
+        .iter()
+        .map(|b| b.data.load().to_vec())
+        .collect();
+    assert_eq!(actual, bins, "editing preserves original image data");
+    let mut text = Vec::new();
+    model_text(&core.document().sections[0].paragraphs, &mut text);
+    text.sort_unstable();
+    assert_eq!(text, expected);
+    let tree = core.build_page_render_tree(0).unwrap();
+    geometry(&tree.root, None);
+    let mut rendered = Vec::new();
+    paint(&tree.root, &mut rendered, &mut 0.);
+    rendered.sort_unstable();
+    assert_eq!(rendered, expected, "glyphs are neither lost nor duplicated");
+    fn visit(
+        n: &RenderNode,
+        images: &mut Vec<rhwp::renderer::render_tree::BoundingBox>,
+        text: &mut Vec<rhwp::renderer::render_tree::BoundingBox>,
+    ) {
+        if matches!(n.node_type, RenderNodeType::Image(_)) {
+            images.push(n.bbox);
+        }
+        if let RenderNodeType::TextRun(t) = &n.node_type {
+            if !t.text.trim().is_empty() {
+                text.push(n.bbox);
+            }
+        }
+        for c in &n.children {
+            visit(c, images, text)
+        }
+    }
+    let (mut pics, mut glyphs) = (Vec::new(), Vec::new());
+    visit(&tree.root, &mut pics, &mut glyphs);
+    assert_eq!(pics.len(), images);
+    for p in &pics {
+        for t in &glyphs {
+            let overlap = (p.x + p.width).min(t.x + t.width) - p.x.max(t.x) > 0.5
+                && (p.y + p.height).min(t.y + t.height) - p.y.max(t.y) > 0.5;
+            assert!(!overlap,"inline image and visible text occupy separate portions of their rows: {p:?} vs {t:?}");
+        }
+    }
+    if pics.len() == 2 {
+        // Same-row pictures retain the shared baseline while their source sizes
+        // differ. This relation is independent of the chosen absolute origin.
+        let a = pics[0];
+        let b = pics[1];
+        assert!((a.y + a.height * 0.85 - b.y - b.height * 0.85).abs() < 0.5);
+        assert!(a.x + a.width <= b.x + 0.5, "picture order is preserved");
+    }
+}
+#[test]
+fn edited_terminal_picture_uses_a_real_row_and_survives_save_delete() {
+    inline_host_case("long-prefix", false);
+}
+#[test]
+fn inline_picture_controls_keep_text_breaks_margins_and_shared_row_ownership() {
+    for key in [
+        "long-prefix",
+        "short-prefix",
+        "explicit-break",
+        "long-suffix",
+        "middle",
+        "two-pictures",
+        "outer-margins",
+    ] {
+        inline_host_case(key, true);
+    }
+}

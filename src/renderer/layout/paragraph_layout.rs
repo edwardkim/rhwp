@@ -10416,8 +10416,24 @@ impl LayoutEngine {
             .lines
             .get(vars.line_idx + 1)
             .is_some_and(|next| next.char_start == comp_line.char_start && !next.runs.is_empty());
-        let empty_line_tac_allowed =
-            cell_ctx.is_none() || is_caption_cell_context(cell_ctx.as_ref()) || owns_boundary_tac;
+        // A regenerated frame can publish a terminal picture-only row with no
+        // visible characters. Its raw control slot owns that row just as on a
+        // body line. Consume the common inline box here (including margins),
+        // instead of letting the cell fallback infer an image origin again.
+        let generated_picture_row = para.is_some_and(|p| {
+            p.line_segs.get(vars.line_idx).is_some_and(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            }) && !line_tac_offsets.is_empty()
+                && line_tac_offsets.iter().all(|(_, _, ci)| {
+                    matches!(p.controls.get(*ci), Some(Control::Picture(picture))
+                        if picture.common.treat_as_char && picture.caption.is_none())
+                        && super::control_line_seg_index(p, *ci) == Some(vars.line_idx)
+                })
+        });
+        let empty_line_tac_allowed = cell_ctx.is_none()
+            || is_caption_cell_context(cell_ctx.as_ref())
+            || owns_boundary_tac
+            || generated_picture_row;
         if empty_line_tac_allowed && !line_tac_offsets.is_empty() {
             if let (Some(p), Some(bdc)) = (para, bin_data_content) {
                 // TAC 이미지 전체 폭 계산 후 문단 정렬 적용

@@ -291,3 +291,123 @@ CARGO_BUILD_JOBS=8 node scripts/run-rust-test.mjs issue_7998_pdf_table_compositi
 행열 편집, 독립 근거에 따른 병합/지역 격자의 남은 범위다. P5의 최신 devel 병합·공통
 대조군·전체 회귀/lint·Worker/package/자원 정책·최종 한컴 열기/인쇄와 PR 판정은 남아
 있다. 이번 수용을 P4 전체 완료나 원격 push·PR 등록·이슈 종료 승인으로 해석하지 않는다.
+
+## P4 세 번째 절편 — B14 긴 텍스트와 inline 그림 host
+
+2026-10-18 다음 절편 승인, 시작 `9ee2b9dc0`.
+기존 독립 `cell-picture-first.pdf`의 빈 그림 host에 `EDIT ` 12회를 삽입하는 동일
+Native API로 오른쪽 약 3.60px 넘침을 재현했다. `p4-inline-host/probe-before.log`에
+현재 source의 저장 줄·control 위치·실제 RenderTree를 보존했다. 실제 그림 크기·원문은
+보존돼야 하며 글자와 그림의 점유 폭이 가용 폭을 넘으면 다음 물리 줄을 가져야 한다.
+
+현재 입력은 PDF에서 발행한 IR을 실제 편집한 문서다. 단순 수동 LineSeg는 아니다.
+`reflow_cell_paragraph_with_metrics`의 셀/문단 여백 상자 →
+`reflow_line_segs_after_cell_text_edit` → `flow_inline_controls`가 문단 끝 위치의
+그림을 제외한다. 실제 셀 배치는 마지막 run의 end TAC로 그림을 그려 소속을 재추정한다.
+따라서 text-only 2줄 결과 뒤에 그림이 붙고, 후행 정렬은 공간 부족을 해소하지 못한다.
+이 부분을 clamp/그림 축소로 해결하지 않는다. 기존 inline frame projection의 원시
+UTF-16 control 슬롯을 줄 나눔 입력에 포함하고 그 LineSeg를 측정·배치·저장에 전달한다.
+실제 줄/개체 포함·앞뒤 순서·원문/그림 한 번 보존 및 양 저장 형식으로 판정한다.
+
+긴 글자 앞/뒤/명시적 개행, 같은 줄의 복수 그림, 바깥 여백이 있는 짧은 대조군을 대조한다.
+유효한 무편집 저장 줄 재사용·floating/캡션 등 별도 배치 계약은 같은 처리라고 가정하지
+않으며 적용되지 않는 경계를 기록한다. 독립 출력과 Native/fresh Docker WASM 시각 검증
+선행 조건 뒤에만 정식 회귀를 등록한다. 원격 반영·P5 전체 검증은 이번 승인에 포함하지 않는다.
+
+### B14 공통 줄 구성과 실제 소비 경로
+
+변경한 값은 그림의 **raw UTF-16 슬롯과 사방 바깥 여백을 포함한 점유 폭/높이**다.
+`document_core/commands/text_editing.rs::reflow_cell_paragraph_with_metrics`가 셀·문단
+여백 상자를 정하고 `reflow_line_segs_after_cell_text_edit`에 전달한다.
+`composer/line_breaking.rs::reflow_line_segs_impl`은 편집으로 무효가 된 저장 줄을
+제거한 입력을 공통 frame에 넣는다. `inline_frame_input::project`는 가시 문자열을
+바꾸지 않고 문단 끝/같은 글자 경계의 그림도 별도 raw 슬롯으로 보존한다. 기존
+`inline_control_occupied_size_hwp` 결과에 그림 바깥 여백을 더한 상자를 fill이 소비한다.
+frame의 줄·공백 메트릭을 `replace_line_segs_with_space_metrics`로 함께 발행한다.
+
+그 결과를 composer의 실제 줄과 `typeset/paragraph/format.rs`의 줄 점유/advance가
+소비한다. paint의 `paragraph_layout.rs::layout_empty_runs_line`도 생성 태그와
+`control_line_seg_index`의 실제 소속이 맞는 그림 전용 줄을 공통 inline 경로로 그린다.
+이 마지막 소비를 바꾸기 전에는 줄 나눔에서 여백을 예약했어도 셀 fallback이 원점을 다시
+선택해 왼쪽/위 여백이 빠졌다. 최종 그림 원점은 기존 공통 바깥 여백·최고 개체의 기준선
+정렬로 정하고 inline 위치를 등록해 fallback의 중복 배치를 막는다. 이미 존재하는 baseline
+정렬/max 처리는 그대로이며 이번 수정에 별도 clamp·그림 축소·문서별 분기는 없다.
+
+적용은 캡션 없는 inline Picture와 폭을 차지하지 않는 marker만 있는 host다.
+유효한 무편집 저장 줄의 수용 계약, 캡션/floating·다른 layout owner가 섞인 경로,
+`split_stale_cell_reflow`는 기존 경로를 유지한다. pagination/rowspan/continuation의 컷·
+예약·이월 정책은 변경하지 않았으며 이번 절편으로 분할 일반성을 입증했다고 보고하지 않는다.
+
+### B14 독립 근거·수정 전후·최종 검증
+
+증적 루트는 ignored `output/pr-review/issue7998/p4-inline-host/`다. 실제 원본은
+`/home/edward/mydev/rhwp-review-evidence/pdf-table-feedback-20261017/semantic-stage3/p4-inline-host/`에 있다.
+[입력·편집 순서·인쇄 출처](../../pdf/issue7998/inline-host-sources.md)에 작은 독립 Print
+PDF와 인쇄 입력 HWPX의 해시를 연결했다. 원래 face의 재현과 명시적 Arial 대조군을 구분했다.
+한컴 2020이 원래 Helvetica를 Haansoft Batang으로 대체한 `long-suffix`의 Native
+**88.50536%**는 남는다. Arial을 편집 전에 선택한 7개 입력의 실제 Print는 ArialMT를
+포함한다. 이 통과를 원본 글꼴 차이의 해결/예외 승인으로 바꾸지 않으며 B08·P5에 유지한다.
+
+| 검증과 주장 | 실제 관측과 증거 |
+|---|---|
+| 원래 문단 끝 그림 결함 | 시작 `9ee2b9dc0`의 실제 API 재현에서 그림 오른쪽이 셀보다 **3.60px** 넘었다. frozen 이전 CLI의 같은 편집 HWPX는 독립 Print 대비 **68.57022%**, 물리 셀 포함 assertion FAIL이다. 현재 양 형식은 Native **91.74413%**, actual Studio WASM **90.96021%**, 셀 포함 PASS다. `probe-before.log`, `before-geometry.json`, `before-visual/`, `probe-after.log`, `native-edited-visual/`, `wasm-edited-visual/`. |
+| 편집 대조군 7개×양 형식 | 긴 글자 앞/뒤·중간, 명시적 개행, 짧은 글자, 복수 그림, 사방 여백을 실제 API로 편집했다. 독립 한컴 2020 Print 대비 각각 **14쪽**, 최저 Native **91.24106%** / actual WASM **90.35264%**, 오류·미달·쪽수 차이 0. `native-arial-edited-results.json`, `wasm-arial-edited-results.json`, `arial-*-status.json`. |
+| 삭제 후 빈 그림 host | 원래 긴 삽입을 삭제하고 HWP/HWPX로 저장·재열기한 **2쪽**은 원본 PDF 대비 Native **99.99115%** / actual WASM **99.99108%**다. `delete-probe.log`, `restored-studio.json`, `restored-results.json`. 다른 7개 삭제 대조는 API·소유·저장 보존을 검사했으며 이 원본과의 시각 복원 점수를 대신 적용하지 않는다. |
+| 기존 지원 전쪽 | Native/fresh WASM 각각 **174건/207쪽**, 최저 **97.45634% / 97.41574%**. 양쪽 모두 오류·90% 미달·누락·쪽수 차이 0. 앞 절편 같은 backend의 **207쪽 PNG 모두 byte-identical**, 각 무편집 저장본도 직접 PDF 입력과 같다. `native/results.json`, `wasm/results.json`, `*-source-comparison.json`. 최신 devel 비교가 아니라 checkpoint `9ee2b9dc0` 대비다. |
+| 실제 Studio 편집 구조 | Arial 7개와 원래 PDF 직접 입력 1개, 총 **8개**에서 삽입·merge·그림 속성·삭제·양 저장 형식·실제 RenderTree의 셀 포함과 그림 수를 확인했다. API의 원문 순서와 저장 후 소유를 확인했고 page error 0이다. 실제 loader 해시는 아래 fresh package와 같다. `studio-result.json`, `studio-cdp.json`, `studio-cdp-margin.json`. |
+| 정식 집중 회귀 | composition **8건**(기존 6+신규 2), 관련 #6603 **1건**, #7160 **4건**, #6754 **2건**, #6122 **1건**, 합계 **16건 PASS**. `focused-inline-final.log`, `focused-6603.log`, `focused-7160.log`, `focused-6754.log`, `focused-6122.log`. 기존 자동 수집 suite를 사용하고 CI 개별 호출을 추가하지 않았다. |
+
+정식 신규 2건은 위 Native/fresh WASM 선행 조건과 직접 판정 뒤 등록했다.
+원문/paint 글자 누락·중복, 원래 이미지 데이터, 실제 셀 포함·글자/그림 비중첩·그림 순서와
+공유 기준선, 양 저장 형식·삭제 복원을 보호한다. 98% 미만 편집 쪽에 절대 px 좌표나
+SVG 해시를 고정하지 않았다. 결함 검출의 수정 전 증거는 위 frozen 이전 실행의 실제 셀
+포함 assertion이며, 최종 Rust 함수 전체를 이전 라이브러리에서 실행한 것으로 보고하지 않는다.
+
+초기 `before` 이름으로 복사하려던 라이브러리는 이미 첫 후보 빌드가 끝난 산출물이었다.
+`libcandidate-initial.rlib`/`initial-candidate-before-library.json`으로 구분해 이전 producer
+증거에서 제외했다. 실제 수정 전 증거는 빌드 전 `probe-before`와 frozen 이전 CLI다.
+초기 Studio harness도 저장 후 control index가 바뀌는 것을 고정해 마지막 사례에서 실패했다.
+현재 RenderTree에서 경로를 다시 구하도록 진단만 보정했고 8개 모두 실제 실행을 확인했다.
+이 두 진단 오류를 제품 결함·수정 전 FAIL로 세지 않는다.
+
+2026-10-18 메인테이너는 원래 재현과 바깥 여백을 실제 Studio에서 확인하고
+**“시각·편집 구조 통과”**로 판정했다. 원래 Helvetica 대체 차이를 공개한 상태의 판정이다.
+같은 판정을 다시 요청하지 않는다. 직접 확대 판독에서 원래 그림 크기·같은 줄의 두 그림
+기준선·사방 여백과 뒤 문단을 대조했다. 가는 괘선/글꼴 잉크의 농도 차이는 남겼으며
+시각 점수와 실제 편집 구조를 구분한다. 검토 묶음은
+`/mnt/e/tmp/issue7998-semantic-table-review/p4-inline-host/index.html`이다.
+
+### B14 producer·명령과 다음 경계
+
+런타임 2,444개 source manifest SHA-256은
+`6a59224df090e9fea8a5991e3c89bfb86f26831906268eef12e6fef62d020057`다.
+Native: `501539465924136c6c8de5760a0677c931af60aa3b2916e9746fae81267fcfa6`.
+fresh Docker WASM: **19,202,385바이트**,
+`7ff8e7f6ddb12f7d9eba58e16965c71c93df130c4ad69ef006b9c6beab98022f`.
+빌드 exit 0을 확인한 뒤 package를 복사했으며 실제 Studio 응답 해시까지 대조했다.
+로그는 `native-build-row-consumer.log`, `docker-wasm.log`, `wasm-build-completion.json`이다.
+
+```bash
+CARGO_BUILD_JOBS=8 cargo build --locked --profile release-test --features native-skia --bin rhwp \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review
+docker compose -p rhwp --env-file .env.docker run --rm --no-deps \
+  -e CARGO_BUILD_JOBS=6 -e CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 wasm
+python3 output/pr-review/issue7998/p4-inline-host/validate.py native
+python3 output/pr-review/issue7998/p4-inline-host/validate.py wasm
+node output/pr-review/issue7998/p4-inline-host/verify_studio.mjs
+python3 output/pr-review/issue7998/p4-inline-host/validate_edits.py native --arial-control
+python3 output/pr-review/issue7998/p4-inline-host/validate_edits.py wasm --arial-control
+node scripts/rust-test-suite-manifest.mjs --prepare
+CARGO_BUILD_JOBS=8 node scripts/run-rust-test.mjs issue_7998_pdf_table_composition -- \
+  --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --features native-skia
+```
+
+완료한 같은 소스의 빌드·전쪽 캡처를 다시 실행하지 않았다. `cargo fmt --all -- --check`,
+suite manifest `--check`, `git diff --check`와 source/package/검토 링크 정합성은
+`final-local-checks.json`에 기록한다. 메인 Studio 7700의 JS/WASM은 보존하고 task Studio
+7793만 갱신했다. 이번 변경과 보고를 로컬 커밋으로 보존한다.
+
+B14의 이번 공통 inline 그림 계약은 구현·직접 판정을 마쳤다. P4의 테두리 스타일/행열
+편집·독립 병합/지역 격자 근거·보류된 본문 수평 표현과 B08의 원래 글꼴 차이는 남는다.
+P5의 최신 devel 병합·공통 대조군·전체 회귀/lint·Worker/package/자원/취소·최종 한컴
+열기/인쇄와 PR gate도 남는다. 이번 판정은 P4 전체 완료나 원격 push·PR·이슈 종료 승인이 아니다.
