@@ -996,16 +996,24 @@ impl TypesetEngine {
                     // 않는다. 한/글 2020 PDF 실측(선언 − 띠): 21761835 56행 4.8px·1342000
                     // 115행 1.1px·56행 9.9px 는 닫히고 다음 쪽이 다음 행으로 시작하며,
                     // 1342000 43행 15.5px 는 다음 쪽 첫머리에 빈 띠가 남는다.
-                    // 걸침 칸이 이어지면 한컴은 그 칸의 총높이를 지켜 남은 높이를 뒤 행에
-                    // 준다(21761835 블록 60–69: 68행이 5쪽에서 8px 줄고 6쪽 69행이 선언보다
-                    // 9px 크다). 그 경우는 아래 띠 이월로 같은 총량을 남긴다.
+                    // 이 행에서 닫히는 원본 병합 칸의 내용도 같은 실제 상자에 들어가면
+                    // 그 칸을 완결한다. 다른 칸의 남은 높이는 수용한 행 원장으로 뒤 행이
+                    // 다시 계산하며, 이미 끝난 이 행의 빈 꼬리로 예약하지 않는다.
                     let rowspan_continues_past_row = table.cells.iter().any(|cell| {
                         let start = cell.row as usize;
                         cell.row_span > 1 && start <= r && start + cell.row_span as usize > r + 1
                     });
                     if let Some(band) = physical_band.filter(|band| {
-                        !rowspan_continues_past_row
-                            && row_total <= band + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+                        row_total <= band + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+                            && (!rowspan_continues_past_row
+                                || layout_engine.stored_closing_span_content_fits(
+                                    table,
+                                    r,
+                                    cursor_row,
+                                    whole_row_fit_h,
+                                    *band,
+                                    styles,
+                                ))
                     }) {
                         end_row_height_override = Some(band);
                         consumed += cs_before + band;
