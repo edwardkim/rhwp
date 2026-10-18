@@ -49,9 +49,8 @@ impl TypesetEngine {
             })
             .unwrap_or(false);
 
-        let is_terminal_empty_column_break = para_idx + 1 == paragraphs.len()
+        let is_terminal_empty_para = para_idx + 1 == paragraphs.len()
             && st.col_count == 1
-            && para.column_type == ColumnBreakType::Column
             && !has_diff_col_def
             && para.controls.is_empty()
             && para
@@ -59,9 +58,25 @@ impl TypesetEngine {
                 .replace(|c: char| c.is_control(), "")
                 .trim()
                 .is_empty();
-        if is_terminal_empty_column_break {
+        if is_terminal_empty_para && para.column_type == ColumnBreakType::Column {
             // 1단 구역 끝의 빈 단나누기 문단은 다음 단/밴드가 없으므로
             // 별도 빈 페이지를 만들지 않는다.
+            return None;
+        }
+        // 구역 끝 빈 문단의 쪽나누기는 그 문단이 앞 쪽에 어차피 들어가지 않으면
+        // 새 빈 쪽을 열지 않는다 — 한/글 2020 PDF 는 쪽을 꽉 채운 표 뒤의 이런
+        // 문단을 1쪽으로 인쇄한다. 앞 쪽에 자리가 있으면 쪽나누기대로 빈 쪽을
+        // 연다(footnote-01 6쪽). 문단은 앞 쪽에 높이 없이 남겨 캐럿 자리를 둔다.
+        if is_terminal_empty_para
+            && para.column_type == ColumnBreakType::Page
+            && !st.current_items.is_empty()
+            && para.line_segs.first().is_some_and(|seg| {
+                st.current_height + crate::renderer::hwpunit_to_px(seg.line_height, self.dpi)
+                    > st.available_height()
+            })
+        {
+            st.hide_empty_paragraph(para_idx);
+            st.place_unadvanced_empty_paragraph(para_idx);
             return None;
         }
 
