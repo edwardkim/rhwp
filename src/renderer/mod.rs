@@ -589,6 +589,18 @@ pub(crate) fn canvas_cluster_fit_scale(
     None
 }
 
+/// 반각 강제 구두점(`U+2018..=U+2027`, 반각 낫표)을 그릴 때의 가로 배율.
+///
+/// 대체 글꼴의 글리프가 전진폭보다 넓을 때만 전진폭에 맞춰 누른다. 종전에는
+/// 글리프 폭과 무관하게 0.5배로 눌러, 이미 좁은 대체 글리프(곡선 따옴표 등)가
+/// 실선처럼 가늘어지고 전진폭 안에 빈칸이 남았다.
+pub fn halfwidth_punct_paint_scale(advance: f64, glyph_width: f64) -> f64 {
+    if !(advance > 0.0 && glyph_width > 0.0) {
+        return 0.5;
+    }
+    (advance / glyph_width).min(1.0)
+}
+
 impl Default for TextStyle {
     fn default() -> Self {
         Self {

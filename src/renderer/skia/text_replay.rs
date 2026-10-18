@@ -639,7 +639,7 @@ impl SkiaTextReplay<'_> {
                             // 반각 강제 구두점: 측정은 반각(0.3~0.5em)인데 폰트
                             // 글리프가 전각인 문자(휴먼명조 U+2018 등)를 그대로
                             // 그리면 다음 글자와 겹친다. web_canvas 와 동일하게
-                            // 0.5× 수평 축소로 반각 공간에 배치 (한글은 자체
+                            // 전진폭보다 넓은 글리프만 전진폭에 맞춰 누른다 (한글은 자체
                             // 내장 협폭 글리프로 렌더 — 오라클 PDF Type3 실측).
                             let needs_halfwidth_scale = cluster.chars().next().is_some_and(|ch| {
                                 forces_halfwidth_punct_paint(style, ch)
@@ -652,9 +652,16 @@ impl SkiaTextReplay<'_> {
                                     )
                             }) && !has_ratio;
                             if needs_halfwidth_scale {
+                                let end = *char_idx + cluster.chars().count();
+                                let advance = char_positions.get(end).copied().unwrap_or(0.0)
+                                    - char_positions.get(*char_idx).copied().unwrap_or(0.0);
+                                let scale = crate::renderer::halfwidth_punct_paint_scale(
+                                    advance,
+                                    f64::from(font.measure_str(cluster, None).0),
+                                ) as f32;
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
-                                canvas.scale((0.5, 1.0));
+                                canvas.scale((scale, 1.0));
                                 canvas.draw_str(cluster, (0.0, 0.0), &font, &text_paint);
                                 canvas.restore();
                                 continue;
