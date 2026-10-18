@@ -413,36 +413,45 @@ pub(super) fn partition(
                         clip.bottom = clip.bottom.max(source.bottom)
                     }
                 }
-                let Some(piece) = intersection(source, clip, line) else {
-                    continue;
-                };
-                // Only background paint can move below cell text/images. Borders
-                // have independent geometric separator evidence; compound border
-                // pictures may have a large transparent frame.
-                if on_axis.is_none() && !required[ti].contains(&control) {
-                    for c in controls {
-                        tick(&mut work)?;
-                        let text_or_image = matches!(c, Control::Picture(_))
-                            || matches!(c,Control::Shape(s)if s.drawing().is_some_and(|d|d.text_box.is_some()));
-                        if text_or_image
-                            && common(c)
-                                .is_some_and(|c| c.z_order < common(original).unwrap().z_order)
-                            && source_frame(c)
-                                .is_some_and(|f| intersection(f, piece, None).is_some())
-                        {
-                            return Err(
-                                "interleaved cell background requires further lowering".into()
-                            );
-                        }
+                // A deeper cell already owns its part of this source. Parent
+                // cells can consume only the remaining physical pieces. The
+                // same subtraction/conservation checks protect flat siblings.
+                let mut pieces = Vec::new();
+                for &unowned in &remaining {
+                    tick(&mut work)?;
+                    if let Some(piece) = intersection(unowned, clip, line) {
+                        pieces.push(piece);
                     }
                 }
-                subtract(&mut remaining, piece, line, &mut work)?;
-                owned += measure(piece, line);
-                count += 1;
-                if count > MAX_FRAGMENTS {
-                    return Err("cell paint fragment budget exceeded".into());
+                for piece in pieces {
+                    // Only background paint can move below cell text/images. Borders
+                    // have independent geometric separator evidence; compound border
+                    // pictures may have a large transparent frame.
+                    if on_axis.is_none() && !required[ti].contains(&control) {
+                        for c in controls {
+                            tick(&mut work)?;
+                            let text_or_image = matches!(c, Control::Picture(_))
+                                || matches!(c,Control::Shape(s)if s.drawing().is_some_and(|d|d.text_box.is_some()));
+                            if text_or_image
+                                && common(c)
+                                    .is_some_and(|c| c.z_order < common(original).unwrap().z_order)
+                                && source_frame(c)
+                                    .is_some_and(|f| intersection(f, piece, None).is_some())
+                            {
+                                return Err(
+                                    "interleaved cell background requires further lowering".into(),
+                                );
+                            }
+                        }
+                    }
+                    subtract(&mut remaining, piece, line, &mut work)?;
+                    owned += measure(piece, line);
+                    count += 1;
+                    if count > MAX_FRAGMENTS {
+                        return Err("cell paint fragment budget exceeded".into());
+                    }
+                    result.cells[ti][ci].push(fragment(original, source, piece)?);
                 }
-                result.cells[ti][ci].push(fragment(original, source, piece)?);
             }
         }
         if owned == 0 {

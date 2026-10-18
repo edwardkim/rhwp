@@ -1,5 +1,6 @@
 //! Materialize geometry-confirmed grids as editable rhwp tables. Uncertain grids stay positional.
 mod body;
+mod composition;
 use super::{
     lowering::hu,
     recognition::{ParagraphProposal, ParagraphState},
@@ -676,11 +677,12 @@ impl TableBuilder<'_> {
         removed: &mut BTreeSet<usize>,
         stack: &mut BTreeSet<usize>,
         family: bool,
+        source_paint: bool,
     ) -> Result<Table, String> {
         if stack.len() >= 8 || !stack.insert(candidate) {
             return Err("invalid or too-deep nested table composition".into());
         }
-        let result = self.build_inner(doc, candidate, removed, stack, family);
+        let result = self.build_inner(doc, candidate, removed, stack, family, source_paint);
         stack.remove(&candidate);
         result
     }
@@ -692,6 +694,7 @@ impl TableBuilder<'_> {
         removed: &mut BTreeSet<usize>,
         stack: &mut BTreeSet<usize>,
         family: bool,
+        source_paint: bool,
     ) -> Result<Table, String> {
         let Self {
             page,
@@ -712,17 +715,7 @@ impl TableBuilder<'_> {
         if recognized_table["status"] != "GeometryConfirmed" {
             return Err("recognition_deferred".into());
         }
-        let preserve_paint = grid["regularizedPeriodicBoundary"] == true;
-        if preserve_paint
-            && (family
-                || array(&grid["cells"])?.iter().any(|c| {
-                    c["childTableIndices"]
-                        .as_array()
-                        .is_some_and(|ids| !ids.is_empty())
-                }))
-        {
-            return Err("nested source-paint table requires further lowering".into());
-        }
+        let preserve_paint = source_paint;
         let fixed_lines = family || preserve_paint;
         let mut stroke_styles = BTreeSet::new();
         for c in *controls {
@@ -810,7 +803,7 @@ impl TableBuilder<'_> {
                 .get(cell_idx)
                 .ok_or("missing cell geometry")?;
             let cb = &source["bbox"];
-            let cell_border_id = if family {
+            let cell_border_id = if family && !preserve_paint {
                 cell_border(doc, controls, cb)?
             } else {
                 border_id
@@ -891,7 +884,7 @@ impl TableBuilder<'_> {
                 if child_grid["hierarchy"]["parent"] != json!({"table":candidate,"cell":cell_idx}) {
                     return Err("nested cell-slot ownership mismatch".into());
                 }
-                let mut child = self.build(doc, child_id, removed, stack, true)?;
+                let mut child = self.build(doc, child_id, removed, stack, true, source_paint)?;
                 let child_box = &child_grid["bbox"];
                 let top = number(&child_box["y"])?;
                 let bottom = top + number(&child_box["height"])?;
@@ -1235,6 +1228,7 @@ pub(super) fn lower(
     let mut table_candidates = Vec::new();
     let mut table_removed = Vec::new();
     let mut held = Vec::new();
+    let mut preserve_indices = Vec::new();
     for (candidate, grid) in grids.iter().enumerate() {
         if !grid["hierarchy"]["parent"].is_null() {
             continue;
@@ -1250,6 +1244,7 @@ pub(super) fn lower(
         let border_start = doc.doc_info.border_fills.len();
         let tab_start = doc.doc_info.tab_defs.len();
         let mut candidate_removed = BTreeSet::new();
+        let source_paint = composition::source_paint_family(grids, candidate)?;
         let built = builder
             .build(
                 doc,
@@ -1257,9 +1252,10 @@ pub(super) fn lower(
                 &mut candidate_removed,
                 &mut BTreeSet::new(),
                 family,
+                source_paint,
             )
             .and_then(|mut table| {
-                if grid["regularizedPeriodicBoundary"] != true {
+                if !source_paint {
                     table.common.z_order =
                         table_paint_layer(&controls, &candidate_removed, &grid["bbox"])?;
                 }
@@ -1267,6 +1263,9 @@ pub(super) fn lower(
             });
         match built {
             Ok(table) => {
+                if source_paint {
+                    preserve_indices.push(tables.len());
+                }
                 table_removed.push(candidate_removed);
                 table_candidates.push(candidate);
                 tables.push(Control::Table(Box::new(table)));
@@ -1281,17 +1280,12 @@ pub(super) fn lower(
             }
         }
     }
-    let preserve_indices = table_candidates
+    let paint_owners =
+        composition::owners(&tables, &preserve_indices, grids, builder.table_id_base)?;
+    let targets = paint_owners
         .iter()
-        .enumerate()
-        .filter_map(|(i, &candidate)| {
-            (grids[candidate]["regularizedPeriodicBoundary"] == true).then_some(i)
-        })
-        .collect::<Vec<_>>();
-    let targets = preserve_indices
-        .iter()
-        .map(|&i| super::table_paint::Target {
-            grid: &grids[table_candidates[i]],
+        .map(|owner| super::table_paint::Target {
+            grid: &grids[owner.candidate],
         })
         .collect::<Vec<_>>();
     let mut extra_paint = Vec::new();
@@ -1324,12 +1318,20 @@ pub(super) fn lower(
                     .copied()
                     .chain(removed.iter().copied())
                     .collect::<BTreeSet<_>>();
-                for (target, &ti) in preserve_indices.iter().enumerate() {
+                for &ti in &preserve_indices {
                     let Control::Table(table) = &mut tables[ti] else {
                         unreachable!()
                     };
-                    let grid = &grids[table_candidates[ti]];
-                    table.common.z_order = table_paint_layer(&controls, &consumed, &grid["bbox"])?;
+                    table.common.z_order = table_paint_layer(
+                        &controls,
+                        &consumed,
+                        &grids[table_candidates[ti]]["bbox"],
+                    )?;
+                }
+                for (target, owner) in paint_owners.iter().enumerate() {
+                    let table = composition::table_mut(&mut tables[owner.root], owner.instance_id)
+                        .ok_or("source paint owner missing from actual table hierarchy")?;
+                    let grid = &grids[owner.candidate];
                     for (ci, cell) in table.cells.iter_mut().enumerate() {
                         for mut paint in std::mem::take(&mut plan.cells[target][ci]) {
                             let id = fragment_ids.get();
