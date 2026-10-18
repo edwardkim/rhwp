@@ -203,8 +203,11 @@ impl LayoutEngine {
                 {
                     // 실제 앞 상자는 내용과 빈 공간을 이미 함께 포함한다. 원래
                     // 행이나 내용 컷으로 다시 추정한 값에 띠를 덧붙이지 않는다.
+                    // PageItem의 장부는 현재 조각까지 포함한다. 그 단계에서는
+                    // 이미 확정한 fragment_cut을 쓰므로 이를 앞 상자로 재사용하지 않는다.
                     prior_h = carry
                         .accepted_physical_height
+                        .filter(|_| carry.fragment_cut.is_none())
                         .unwrap_or(prior_h + carry.physical_height);
                 }
             }
