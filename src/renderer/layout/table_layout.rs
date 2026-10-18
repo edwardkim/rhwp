@@ -18265,6 +18265,108 @@ impl LayoutEngine {
         })
     }
 
+    /// [#8060] 행의 보이는 칸이 **모두 같은 저장 높이에서 첫 되감김**을 가지면 그 자리는
+    /// 한/글이 저장한 쪽 경계다. 칸 하나의 되감김은 로컬 재시작일 수 있지만(#1658),
+    /// 둘 이상의 칸이 같은 높이에서 함께 되감는 것은 행을 가른 물리 경계다. 그 경계를
+    /// 닫는 줄의 줄간격은 이 조각에 예약하지 않는다(한/글 2024: 조각 = 위 안 여백 +
+    /// 마지막 줄 상자 + 아래 안 여백). 71352 9쪽 4행: `셀[12]` 문단 1·`셀[14]` 줄 1 이
+    /// 모두 1200HU 뒤 `vpos=0` 이다. 빈 칸은 경계를 증언하지 않으므로 세지 않는다.
+    fn stored_row_first_restart_is_joint(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        closing: &CellUnit,
+        next: &CellUnit,
+    ) -> bool {
+        use crate::model::paragraph::LineSeg;
+        let profile = self.profile.get();
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || profile.session_edited()
+            || table.common.treat_as_char
+            || table.page_break != TablePageBreak::RowBreak
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || closing.vis_start >= closing.vis_end
+            || next.vis_start >= next.vis_end
+        {
+            return false;
+        }
+        let continues = (next.para_idx == closing.para_idx && next.vis_start == closing.vis_end)
+            || (next.para_idx == closing.para_idx + 1
+                && next.vis_start == 0
+                && cell
+                    .paragraphs
+                    .get(closing.para_idx)
+                    .is_some_and(|para| closing.vis_end == para.line_segs.len()));
+        if !continues {
+            return false;
+        }
+        // 칸의 첫 되감김: (문단, 줄, 되감김 직전 줄 상자 바닥 HU). 빈 칸은 Some(None).
+        let first_restart =
+            |peer: &crate::model::table::Cell| -> Option<Option<(usize, usize, i64)>> {
+                if peer.dirty_flag
+                    || peer
+                        .paragraphs
+                        .iter()
+                        .all(|para| para.text.trim().is_empty())
+                {
+                    return (!peer.dirty_flag).then_some(None);
+                }
+                let mut previous: Option<&LineSeg> = None;
+                for (pi, para) in peer.paragraphs.iter().enumerate() {
+                    if para.controls.iter().any(|control| {
+                        matches!(
+                            control,
+                            Control::Table(_) | Control::Picture(_) | Control::Shape(_)
+                        )
+                    }) || para.stored_text_partition_is_dirty()
+                        || para.cell_format_vpos_dirty
+                        || para.line_segs.is_empty()
+                    {
+                        return None;
+                    }
+                    for (li, line) in para.line_segs.iter().enumerate() {
+                        if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                            || line.vertical_pos < 0
+                            || line.line_height <= 0
+                        {
+                            return None;
+                        }
+                        if let Some(before) = previous {
+                            let bottom =
+                                i64::from(before.vertical_pos) + i64::from(before.line_height);
+                            if i64::from(line.vertical_pos) < bottom {
+                                return Some(Some((pi, li, bottom)));
+                            }
+                        }
+                        previous = Some(line);
+                    }
+                }
+                Some(None)
+            };
+        let Some(Some((pi, li, height))) = first_restart(cell) else {
+            return false;
+        };
+        if (pi, li) != (next.para_idx, next.vis_start) {
+            return false;
+        }
+        let mut witnesses = 0usize;
+        for peer in table.cells.iter().filter(|peer| peer.row == cell.row) {
+            if peer.row_span != 1 {
+                return false;
+            }
+            match first_restart(peer) {
+                None => return false,
+                Some(None) if peer.paragraphs.iter().all(|p| p.text.trim().is_empty()) => {}
+                Some(Some((_, _, peer_height))) if peer_height == height => witnesses += 1,
+                _ => return false,
+            }
+        }
+        witnesses >= 2
+    }
+
     pub(crate) fn row_cut_ends_at_closed_paragraph_restart(
         &self,
         table: &crate::model::table::Table,
@@ -18312,8 +18414,13 @@ impl LayoutEngine {
         if end_cut > 0 && end_cut < units.len() {
             let next = &units[end_cut];
             let closing = &units[end_cut - 1];
-            if self.stored_closed_paragraph_restart(cell, table, closing, next, styles) {
-                if let Some(line) = cell.paragraphs[closing.para_idx].line_segs.last() {
+            if self.stored_closed_paragraph_restart(cell, table, closing, next, styles)
+                || self.stored_row_first_restart_is_joint(cell, table, closing, next)
+            {
+                if let Some(line) = cell.paragraphs[closing.para_idx]
+                    .line_segs
+                    .get(closing.vis_end.saturating_sub(1))
+                {
                     return hwpunit_to_px(line.line_spacing.max(0), self.dpi).min(
                         (closing.height - hwpunit_to_px(line.line_height, self.dpi)).max(0.0),
                     );
