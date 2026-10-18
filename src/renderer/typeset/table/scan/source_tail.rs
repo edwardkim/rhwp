@@ -24,6 +24,25 @@ pub(in crate::renderer::typeset) struct SourceTailGate {
 }
 
 impl SourceTailQuery<'_> {
+    /// 인증된 저장 프레임이 예산 컷보다 앞서 끝나면 내용 소유를 그 경계로 제한한다.
+    /// 꼬리 확장과 달리 뒤 프레임의 내용을 현재 쪽에 합치지 않는 계약이다.
+    pub(in crate::renderer::typeset) fn frame_contracts_capacity(
+        &self,
+        res: &RowCutResult,
+        stored_source_frame: Option<&RowCutResult>,
+    ) -> bool {
+        stored_source_frame.is_some_and(|frame| {
+            frame.hit_hard_break
+                && frame.end_cut.len() == res.end_cut.len()
+                && frame.end_cut != res.end_cut
+                && frame
+                    .end_cut
+                    .iter()
+                    .zip(&res.end_cut)
+                    .all(|(source, capacity)| source <= capacity)
+        })
+    }
+
     /// 일반 예산 컷 이후 원래 reset/계약/중간 행/profile 순서로 판정한다.
     pub(in crate::renderer::typeset) fn gate(&self, res: &RowCutResult) -> SourceTailGate {
         let Self {

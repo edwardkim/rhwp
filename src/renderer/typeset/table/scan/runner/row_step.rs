@@ -659,21 +659,9 @@ impl TypesetEngine {
                 mid_frame_only,
             } = source_tail_query.gate(&res);
             let mut uses_source_frame_tail = false;
-            if source_tail_enabled {
-                // Capacity can pass an authenticated source frame even when
-                // its measured height is smaller. Such a boundary limits unit
-                // ownership; it is not only a positive height extension.
-                let source_frame_contracts_capacity =
-                    stored_source_frame.as_ref().is_some_and(|frame| {
-                        frame.hit_hard_break
-                            && frame.end_cut.len() == res.end_cut.len()
-                            && frame.end_cut != res.end_cut
-                            && frame
-                                .end_cut
-                                .iter()
-                                .zip(&res.end_cut)
-                                .all(|(source, capacity)| source <= capacity)
-                    });
+            let source_frame_contracts_capacity =
+                source_tail_query.frame_contracts_capacity(&res, stored_source_frame.as_ref());
+            if source_tail_enabled || source_frame_contracts_capacity {
                 let source_tail_cut = if source_frame_contracts_capacity {
                     stored_source_frame
                 } else {
