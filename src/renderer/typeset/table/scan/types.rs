@@ -3,8 +3,8 @@
 /// [#2085] 표 행-스캔 분할점 캐리 (값 왕복). split_end_cut 은 move.
 pub(in crate::renderer::typeset) struct BlockTableRowScan {
     pub(in crate::renderer::typeset) consumed: f64,
-    /// 실제 수용한 조각 상자가 내용 행 높이를 넘어 추가로 소유한 물리 공간.
-    /// 이미 `consumed`에 예약돼 있으므로 그리기 높이를 다시 늘리지 않고 이어받는다.
+    /// 독립 저장 프레임이 측정 행의 예약보다 추가로 소유한 물리 공간.
+    /// 일반 컷의 실제 상자와 내용의 차이는 원래 측정 행의 추가 띠가 아니다.
     pub(in crate::renderer::typeset) source_frame_band: f64,
     /// 일반 행 스캔에서 실제 수용한 마지막 완전 행의 색인과 높이.
     pub(in crate::renderer::typeset) accepted_end_row_box: Option<(usize, f64)>,

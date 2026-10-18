@@ -3024,3 +3024,19 @@ advance_row_cut_inner의strict_saved_frame_break는stored_cut_has_zero_before_or
 prefix·빈 띠를 함께 기록한다. 진단은 계산값을 바꾸지 않는다. 실제 원장 선택을 확인한 뒤
 같은 물리 공간의 중복 차감 여부를 판단하며, 61쪽 Print 정렬과32/33쪽을 함께 보호한다.
 이 단계는 원인 진단이며 시각 gate 통과나 새로운 정식 회귀 추가로 간주하지 않는다.
+
+### 후보105 — 실제 컷 상자의 소유와 추정 행의 추가 띠 분리
+
+진단 d1b71d674의 Native 빌드 exit0 뒤 같은 원본32쪽을 실행했다. 실제 row23col7은
+accepted=135.786667px가 있어 band16.4px를 별도로 차감하지 않는다. 반면 row8col0은
+accepted=None이고 원래 측정 prefix1392.866667px에서 band26.106667px를 추가로 빼고
+있다. 원장을 알 수 없는 경로에 일반 컷의 내용 대비 빈 공간까지 전달한 것이 새 하락 경로다.
+61쪽 row12col2는 actual accepted25.68px, 실제 prior25.68px이며 Center122.733333px다.
+
+실제 조각 상자는 accepted_partial_row_box·accepted_straddle_fragment_units에 이미
+포함되어 있다. 후보105는 일반 컷의 물리 높이와 내용 높이의 차이를 기존 추정 행의 추가 띠에
+누적하지 않는다. emit은 같은 수용 상자와 공통 row_cut_content_height의 같은 컷을 대조해
+빈 공간의 소유를 보존한다. 이 정보는 실제 상자·정렬 소유에 쓰고, 독립 저장 프레임의 추가
+띠 장부와 섞지 않는다. 문서별 조건·행 번호·새 px 허용치나 baseline 변경은 추가하지 않는다.
+먼저32/33·61쪽과 기존26쪽/165–166·80168 기존7건을 확인하고 방향이 맞으면 전쪽·fresh
+WASM으로 진행한다. 아직 후보105 실행 전이며 최종 검증과11개 원PR 처리 범위는 유지한다.
