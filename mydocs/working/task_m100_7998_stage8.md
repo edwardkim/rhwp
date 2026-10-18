@@ -129,7 +129,10 @@ volume 네 개는 생성 시각과 container 부재를 확인하고 제거했다
 실제 WASM 저장본·원문 TSV·실제 저장 셀 주소를 상대 경로로 연결하고 존재 검사를 마쳤다.
 Studio 7793의 `?review=issue7998-cell-colspan`, `?review=issue7998-cell-rowspan`,
 `?review=issue7998-cell-hidden-separate` 새 탭에 PDF를 열어 두었다. 1쪽 및 실제 셀 주소를
-조회했다(`opened-review-tabs.json`). 메인테이너의 **시각·편집 구조 판정은 대기 중**이다.
+조회했다(`opened-review-tabs.json`). **2026-10-19 메인테이너가 “시각·편집 구조 통과”로
+판정했다.** 수용한 범위는 제품 checkpoint `7e34a01408d2204490baf31159311ae19035e5e3`의
+가로·세로 병합 3셀, 내부 선만 감춘 별도 4셀의 표시·선택·편집 구조다.
+이 판정 기록에는 제품 코드 변경이 없으므로 위 빌드·전쪽 캡처와 집중 회귀 결과를 재사용했다.
 
 현재 표는 PDF 페이지 내부의 page-anchored `TablePageBreak::None` 경로다. HWP 일반 표의
 분할·이어받기 호출을 변경한 결과로 주장하지 않는다. paint 축 자체가 부족한 지역 가설,

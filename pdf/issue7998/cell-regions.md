@@ -66,8 +66,9 @@ Arial 프로그램의 OpenType nameID 1=`Arial`, nameID 6=`ArialMT`를 독립 �
 
 실제 producer·명령·원본 TSV·대표 PNG·수정 전 FAIL/후 PASS 및 판정 상태는
 [stage8](../../mydocs/working/task_m100_7998_stage8.md)에 연결했다. 정상 원본 세 개의 Print와
-저장·편집 Print 12개 응답은 로컬 장부에서 출력 계약까지 확인했다. 메인테이너 직접 판정은
-stage8의 최신 상태를 따른다.
+저장·편집 Print 12개 응답은 로컬 장부에서 출력 계약까지 확인했다. 2026-10-19 메인테이너가
+checkpoint `7e34a0140`의 병합 3셀·별도 4셀을 **“시각·편집 구조 통과”**로 수용했다.
+제품 변경 없는 판정 기록이며 위 검증 결과를 재사용한다.
 
 정상 paint 격자가 이미 성립하는 범위의 내용 기반 선택만 검증했다. paint 축 자체가 부족한
 지역 후보의 일반 선택, L자/부분 격자, 빈 구역의 의미 복원, 임의 source paint의 일반 스타일
