@@ -2529,6 +2529,7 @@ impl DocumentCore {
             if hwp3_origin {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
+            Self::restore_hwp3_variant_stored_spacing(&mut doc);
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
             lower_markers(&mut doc);
             serialize(&doc)
@@ -2550,12 +2551,43 @@ impl DocumentCore {
             if hwp3_origin {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
+            Self::restore_hwp3_variant_stored_spacing(&mut doc);
             lower_markers(&mut doc);
             serialize(&doc)
         } else {
             serialize(&self.document)
         };
         serialized.map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
+    /// [#7994] HWP3→HWP5 변환본의 문단 간격은 파서가 렌더용으로 반감한 내부 값이다. 파일에는
+    /// 저장값을 쓰고, HWP3 마커에 «간격 저장값» 표지를 남겨 rhwp 가 다시 열 때 같은 반감을
+    /// 걸게 한다. 반감한 적이 없는 문서(변환본 아님 · 옛 표지 `1` 의 HWPX)는 그대로 둔다.
+    fn restore_hwp3_variant_stored_spacing(doc: &mut crate::model::document::Document) {
+        use crate::model::document::{
+            hwp3_variant_stored_spacing, HWP3_ORIGIN_HWPX_MARKER_PATH, HWP3_ORIGIN_SPACING_STORED,
+        };
+        let halved = doc.is_hwp3_variant
+            || doc.hwpx_aux_entry(HWP3_ORIGIN_HWPX_MARKER_PATH) == Some(HWP3_ORIGIN_SPACING_STORED);
+        if !halved {
+            return;
+        }
+        for ps in &mut doc.doc_info.para_shapes {
+            let (before, after) = hwp3_variant_stored_spacing(ps);
+            ps.spacing_before = before;
+            ps.spacing_after = after;
+        }
+        match doc
+            .hwpx_aux_entries
+            .iter_mut()
+            .find(|(path, _)| path == HWP3_ORIGIN_HWPX_MARKER_PATH)
+        {
+            Some((_, value)) => *value = HWP3_ORIGIN_SPACING_STORED.to_vec(),
+            None => doc.hwpx_aux_entries.push((
+                HWP3_ORIGIN_HWPX_MARKER_PATH.to_string(),
+                HWP3_ORIGIN_SPACING_STORED.to_vec(),
+            )),
+        }
     }
 
     /// HWP3 계보 마커를 export 사본에 심는다(중복 방지).

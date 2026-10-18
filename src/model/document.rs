@@ -28,6 +28,34 @@ pub const HWP3_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp3-origin";
 pub const HWP3_EXTERNAL_REALIGN_STREAM_PATH: &str = "/RhwpHwp3ExternalRealign";
 pub const HWP3_EXTERNAL_REALIGN_HWPX_PATH: &str = "META-INF/rhwp-hwp3-external-realign";
 
+/// [#7994] HWP3 마커 값 — 이 HWPX 의 문단 위·아래 간격은 **저장값**(HWP5 원본과 같은 값)이다.
+///
+/// HWP3→HWP5 변환본(`is_hwp3_variant`)은 파서가 렌더용으로 간격을 반으로 정규화한다. 그
+/// 내부 값을 그대로 쓰면 한/글이 간격을 절반으로 읽어 쪽수가 줄었다(07821 111 → 106쪽).
+/// 이 값이 붙은 HWPX 를 rhwp 가 다시 열 때는 같은 정규화를 다시 걸어 원본 렌더와 같게 한다.
+/// 옛 마커 값(`1`)의 파일은 이미 반감된 값을 담고 있으므로 다시 반감하지 않는다.
+pub const HWP3_ORIGIN_SPACING_STORED: &[u8] = b"2:hwp5-variant-spacing-stored";
+
+/// [#7994] HWP3→HWP5 변환본의 문단 간격 렌더 정규화(파서의 `/2`)를 되돌린 저장값.
+/// 원본 PARA_SHAPE 레코드가 남아 있고 그 값의 절반이 지금 값과 같으면 레코드 값을 쓴다
+/// (홀수 저장값도 정확히 되돌린다). 편집으로 바뀐 값은 두 배로 되돌린다.
+pub fn hwp3_variant_stored_spacing(ps: &crate::model::style::ParaShape) -> (i32, i32) {
+    let raw = |offset: usize| {
+        ps.raw_data
+            .as_ref()
+            .and_then(|bytes| bytes.get(offset..offset + 4))
+            .map(|b| i32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+    };
+    let restore = |current: i32, stored: Option<i32>| match stored {
+        Some(stored) if stored / 2 == current => stored,
+        _ => current.saturating_mul(2),
+    };
+    (
+        restore(ps.spacing_before, raw(16)),
+        restore(ps.spacing_after, raw(20)),
+    )
+}
+
 /// [Issue #1770] HWPX-origin 마커 스트림 경로.
 ///
 /// rhwp 의 HWPX→HWP 변환은 LINE_SEG 를 verbatim 직렬화하므로 산출 HWP5 의 IR 은
