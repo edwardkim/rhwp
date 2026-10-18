@@ -32,6 +32,20 @@ pub(super) fn rgb(c: Color) -> u32 {
     channel(c.r) | (channel(c.g) << 8) | (channel(c.b) << 16)
 }
 
+/// PDF BaseFont may be a PostScript face name, whereas HWP stores a family.
+/// This exact pair is independently present in Arial's OpenType name records
+/// (nameID 6 / nameID 1). Do not guess a family by deleting arbitrary suffixes.
+fn imported_font_family(name: &str) -> &str {
+    let base = name
+        .split_once('+')
+        .filter(|(tag, _)| tag.len() == 6 && tag.bytes().all(|b| b.is_ascii_uppercase()))
+        .map_or(name, |(_, family)| family);
+    match base {
+        "ArialMT" => "Arial",
+        _ => base,
+    }
+}
+
 pub(super) fn component(width: u32, height: u32) -> ShapeComponentAttr {
     ShapeComponentAttr {
         original_width: width,
@@ -325,6 +339,7 @@ pub(super) fn lower(
     }
 
     let mut unknown_fonts = 0;
+    let mut font_identity_mappings = std::collections::BTreeMap::new();
     for (span_index, span) in page.spans.iter().enumerate() {
         if span.text.is_empty() {
             continue;
@@ -336,13 +351,11 @@ pub(super) fn lower(
             unknown_fonts += 1;
             "함초롬바탕"
         } else {
-            // ISO 32000-1 9.6.4: a six-uppercase-letter subset tag is not
-            // part of the installed font family/PostScript name.
-            span.font_name
-                .split_once('+')
-                .filter(|(tag, _)| tag.len() == 6 && tag.bytes().all(|b| b.is_ascii_uppercase()))
-                .map_or(span.font_name.as_str(), |(_, family)| family)
+            imported_font_family(&span.font_name)
         };
+        if font_name == "Arial" && span.font_name != "Arial" {
+            font_identity_mappings.insert(span.font_name.as_str(), font_name);
+        }
         let font_id = if let Some(i) = doc.doc_info.font_faces[0]
             .iter()
             .position(|f| f.name == font_name)
@@ -474,6 +487,7 @@ pub(super) fn lower(
         "singleLineParagraphs":"SQUEEZE",
         "detectedTables":detected, "semanticTables":0,
         "unsupportedPaths":unsupported_paths, "unknownFontSpans":unknown_fonts,
+        "fontIdentityMappings":font_identity_mappings,
         "compatibilityCorrections":["picture-point-pair-layout", "picture-frame-HWPUNIT", "full-image-crop-extent", "explicit-zero-text-margins", "single-line-span-reflow"],
         "hancomCompatibility":"unverified-awaiting-editor-retest",
         "warnings":warnings

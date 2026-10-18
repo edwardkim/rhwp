@@ -3555,6 +3555,11 @@ impl<'doc> TextExtractor<'doc> {
             .spans
             .iter()
             .map(|s| {
+                if self.visible_paint_only {
+                    // Import spans captured the face in its live resource scope;
+                    // the caller may reuse F1 for a different face after Do.
+                    return None;
+                }
                 self.fonts
                     .get(&s.font_name)
                     .map(|f| f.base_font.clone())
@@ -3645,6 +3650,13 @@ impl<'doc> TextExtractor<'doc> {
                         | Operator::CloseFillStrokeEvenOdd
                         | Operator::Do { .. }
                         | Operator::InlineImage { .. }
+                        // Runs on opposite sides of a graphics-state/clip boundary
+                        // must keep their own source order and active clip witness.
+                        | Operator::SaveState
+                        | Operator::RestoreState
+                        | Operator::ClipNonZero
+                        | Operator::ClipEvenOdd
+                        | Operator::EndPath
                 ) {
                     this.flush_tj_span_buffer()?;
                     this.advance_paint_group()?;
@@ -3701,6 +3713,15 @@ impl<'doc> TextExtractor<'doc> {
                 .charge_cache_copy(self.paint_source_order.len() * std::mem::size_of::<usize>())?;
         }
         Ok(self.paint_source_order.clone())
+    }
+
+    fn emitted_font_name(&self, resource: Option<&str>, font: Option<&FontInfo>) -> String {
+        if self.visible_paint_only {
+            if let Some(font) = font.filter(|f| !f.base_font.is_empty()) {
+                return font.base_font.clone();
+            }
+        }
+        resource.unwrap_or("Unknown").to_string()
     }
 
     fn record_span_paint_order(&mut self, sequence: usize, order: Vec<usize>) -> Result<()> {
@@ -7481,10 +7502,8 @@ impl<'doc> TextExtractor<'doc> {
         let is_italic_span = buffer.is_italic;
 
         // Move owned strings out of buffer (avoids clone)
-        let font_name_span = buffer
-            .font_name
-            .take()
-            .unwrap_or_else(|| "Unknown".to_string());
+        let font_name_span =
+            self.emitted_font_name(buffer.font_name.as_deref(), buffer.cached_font.as_deref());
 
         // RTL text correction (#826): use the confidence-gated geometric
         // detector (#537) when `char_widths` gives us per-character user-space
@@ -8088,10 +8107,14 @@ impl<'doc> TextExtractor<'doc> {
             provenance: None,
             text: unicode_text,
             bbox,
-            font_name: state
-                .font_name
-                .clone()
-                .unwrap_or_else(|| "Unknown".to_string()),
+            font_name: self.emitted_font_name(
+                state.font_name.as_deref(),
+                state
+                    .font_name
+                    .as_ref()
+                    .and_then(|n| self.fonts.get(n))
+                    .map(AsRef::as_ref),
+            ),
             font_size: cluster[0].font_size,
             font_weight,
             color: Color::new(
@@ -8828,10 +8851,14 @@ impl<'doc> TextExtractor<'doc> {
             user_pos.y
         );
 
-        let font_name_space = state
-            .font_name
-            .clone()
-            .unwrap_or_else(|| "Unknown".to_string());
+        let font_name_space = self.emitted_font_name(
+            state.font_name.as_deref(),
+            state
+                .font_name
+                .as_ref()
+                .and_then(|n| self.fonts.get(n))
+                .map(AsRef::as_ref),
+        );
         let is_italic_space = state
             .font_name
             .as_ref()
@@ -9063,10 +9090,8 @@ impl<'doc> TextExtractor<'doc> {
                 let is_italic_buf = buffer.is_italic;
 
                 // Move owned strings out of buffer (avoids clone)
-                let font_name_buf = buffer
-                    .font_name
-                    .take()
-                    .unwrap_or_else(|| "Unknown".to_string());
+                let font_name_buf = self
+                    .emitted_font_name(buffer.font_name.as_deref(), buffer.cached_font.as_deref());
 
                 // #537/#826: RTL visual-order detection for the Tj-span
                 // path, via the shared `apply_rtl_verdict` decision point

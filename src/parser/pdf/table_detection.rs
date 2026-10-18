@@ -8,6 +8,8 @@ use pdf_oxide::{
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 
+mod cell_regions;
+
 const EPS: f32 = 0.5;
 const MAX_EDGES: usize = 512;
 const MAX_SOURCE_EDGES: usize = 20_000;
@@ -475,6 +477,7 @@ struct Grid {
     shared_edges: Vec<Value>,
     uncertain_connections: usize,
     regularized: bool,
+    cell_region_evidence: Value,
 }
 
 fn grid(edges: &[Edge], allow_linear: bool) -> Result<Grid, String> {
@@ -599,6 +602,7 @@ fn grid(edges: &[Edge], allow_linear: bool) -> Result<Grid, String> {
         regularized: edges
             .iter()
             .any(|e| matches!(e.paint_kind, "periodic_carrier" | "dash_carrier")),
+        cell_region_evidence: Value::Null,
     })
 }
 
@@ -648,6 +652,9 @@ pub fn detect_ruled_tables(
     paths: &[PathContent],
     images: &[PdfImage],
     media_box: (f32, f32, f32, f32),
+    text: &super::text_analysis::ObservedText,
+    span_orders: &[Vec<usize>],
+    clips: &pdf_oxide::elements::PathClipObservations,
 ) -> Result<Value, String> {
     let (left, bottom, right, top) = media_box;
     if ![left, bottom, right, top].iter().all(|v| v.is_finite()) || right <= left || top <= bottom {
@@ -672,7 +679,10 @@ pub fn detect_ruled_tables(
     for group in component_groups(&edges) {
         let component: Vec<_> = group.iter().map(|i| edges[*i]).collect();
         match supported_grid(&component, &source_edges, &logical_edges, true) {
-            Ok(g) => grids.push(g),
+            Ok(mut g) => {
+                cell_regions::select(&mut g, text, span_orders, clips, media_box);
+                grids.push(g);
+            }
             Err(reason) => rejected.push(json!({"edgeCount":component.len(),"reason":reason})),
         }
     }
@@ -719,6 +729,7 @@ pub fn detect_ruled_tables(
                         continue;
                     }
                     g.search_region = Some(region);
+                    cell_regions::select(&mut g, text, span_orders, clips, media_box);
                     claimed.extend(
                         g.source_edges
                             .iter()
@@ -748,7 +759,7 @@ pub fn detect_ruled_tables(
             .collect::<Vec<_>>(),
     )?;
     for (i, g) in grids.iter().enumerate() {
-        if g.uncertain_connections > 0 {
+        if g.uncertain_connections > 0 && g.cell_region_evidence["status"] != "Selected" {
             placements[i].deferred = Some(
                 "absent paint does not establish merged cells; competing separation retained"
                     .into(),
@@ -889,7 +900,10 @@ pub fn detect_ruled_tables(
             "searchRegion":g.search_region,
             "sharedEdges":g.shared_edges,"uncertainConnections":g.uncertain_connections,
             "regularizedPeriodicBoundary":g.regularized,
-            "cellInterpretation":"connected-face hypothesis; absent edges retain separation alternative",
+            "cellInterpretation":if g.cell_region_evidence["status"]=="Selected" {
+                "content-backed active-clip tiling; authored structure unknown"
+            } else {"connected-face hypothesis; absent edges retain separation alternative"},
+            "cellRegionEvidence":g.cell_region_evidence,
             "sourceBoundarySegments":g.source_edges.iter().map(|edge|json!({
                 "path":edge.source_path,"segment":edge.source_segment,
                 "horizontal":edge.horizontal,"at":edge.at,"from":edge.from,"to":edge.to,

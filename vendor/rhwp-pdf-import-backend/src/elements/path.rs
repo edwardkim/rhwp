@@ -37,6 +37,11 @@ pub struct PathClipObservations {
     pub clips: Vec<PathClipObservation>,
     /// Unrecorded clips remain in the live graphics state; inference is incomplete.
     pub omitted: usize,
+    /// Clip active at an actual text-show operator, keyed by the full invocation path.
+    /// A preceding clip observation alone cannot establish this relationship (q/Q).
+    pub text_uses: Vec<(Vec<usize>, Option<std::sync::Arc<PathClip>>)>,
+    /// Missing uses disqualify clip-based semantic inference, not live PDF paint.
+    pub text_uses_omitted: usize,
 }
 
 /// Paint metadata retained by the bounded positional importer.

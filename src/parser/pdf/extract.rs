@@ -193,10 +193,24 @@ pub(super) fn extract(
         image_orders.push(handle.source_order.clone());
         images.push(image);
     }
-    let detection = table_detection::detect_ruled_tables(&spans, &paths, &images, media_box)
-        .map_err(|_| {
-            PdfImportError::budget("table geometry inference budget or geometry rejected")
-        })?;
+    let mut table_inference = super::table_inference::Ledger::observe(
+        &spans,
+        &span_orders,
+        &images,
+        &image_orders,
+        &clips,
+        media_box,
+    );
+    let detection = table_detection::detect_ruled_tables(
+        &spans,
+        &paths,
+        &images,
+        media_box,
+        &table_inference.text,
+        &span_orders,
+        &clips,
+    )
+    .map_err(|_| PdfImportError::budget("table geometry inference budget or geometry rejected"))?;
     if let Some(tables) = detection["tables"].as_array() {
         for table in tables {
             budget.cells = budget
@@ -210,14 +224,6 @@ pub(super) fn extract(
             }
         }
     }
-    let mut table_inference = super::table_inference::Ledger::observe(
-        &spans,
-        &span_orders,
-        &images,
-        &image_orders,
-        &clips,
-        media_box,
-    );
     let recognition = recognition::recognize_page(
         &table_inference.text,
         &spans,

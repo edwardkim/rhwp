@@ -19797,7 +19797,7 @@ impl PdfDocument {
         page_index: usize,
         observe_clips: bool,
     ) -> Result<(Vec<crate::elements::PathContent>, crate::elements::PathClipObservations)> {
-        use crate::content::{parse_content_stream_paths_only, Operator};
+        use crate::content::{parse_content_stream, parse_content_stream_paths_only, Operator};
         use crate::elements::{LineCap, LineJoin};
         use crate::extractors::paths::{FillRule, PathExtractor, PathGraphicsStateStack};
 
@@ -19825,7 +19825,11 @@ impl PdfDocument {
         let operators = match self.parse_page_import_content(
             page_index,
             &content_data,
-            parse_content_stream_paths_only,
+            if observe_clips {
+                parse_content_stream
+            } else {
+                parse_content_stream_paths_only
+            },
         ) {
             Ok(ops) => ops,
             Err(e) => {
@@ -19870,6 +19874,15 @@ impl PdfDocument {
             extractor.paint.source_order = vec![ordinal];
             extractor.paint.clip = clips.current().clip;
             clips.apply(&op);
+            if matches!(
+                &op,
+                Operator::Tj { .. }
+                    | Operator::TJ { .. }
+                    | Operator::Quote { .. }
+                    | Operator::DoubleQuote { .. }
+            ) {
+                extractor.record_text_clip(self.import_budget().map(AsRef::as_ref))?;
+            }
             if self.process_path_color_operator(&op, &mut extractor, state_stack.current_mut())? {
                 continue;
             }
@@ -20322,7 +20335,9 @@ impl PdfDocument {
         state_stack: &mut crate::extractors::paths::PathGraphicsStateStack,
         depth: usize,
     ) -> Result<()> {
-        use crate::content::{parse_content_stream_paths_only, Matrix, Operator};
+        use crate::content::{
+            parse_content_stream, parse_content_stream_paths_only, Matrix, Operator,
+        };
         use crate::elements::{LineCap, LineJoin};
         use crate::extractors::paths::FillRule;
 
@@ -20391,14 +20406,20 @@ impl PdfDocument {
             },
         };
 
-        let operators =
-            match self.parse_import_content(&stream_data, parse_content_stream_paths_only) {
-                Ok(ops) => ops,
-                Err(e) => {
-                    extractor.pop_xobject_failed();
-                    return Err(e);
-                },
-            };
+        let operators = match self.parse_import_content(
+            &stream_data,
+            if extractor.observing_clips() {
+                parse_content_stream
+            } else {
+                parse_content_stream_paths_only
+            },
+        ) {
+            Ok(ops) => ops,
+            Err(e) => {
+                extractor.pop_xobject_failed();
+                return Err(e);
+            },
+        };
 
         // Get transformation matrix (default to identity)
         let matrix = if let Some(matrix_obj) = xobject_dict.get("Matrix") {
@@ -20524,6 +20545,15 @@ impl PdfDocument {
             extractor.paint.source_order.push(ordinal);
             extractor.paint.clip = clips.current().clip;
             clips.apply(&op);
+            if matches!(
+                &op,
+                Operator::Tj { .. }
+                    | Operator::TJ { .. }
+                    | Operator::Quote { .. }
+                    | Operator::DoubleQuote { .. }
+            ) {
+                extractor.record_text_clip(self.import_budget().map(AsRef::as_ref))?;
+            }
             if self.process_path_color_operator(&op, extractor, state_stack.current_mut())? {
                 continue;
             }

@@ -3,7 +3,13 @@ use super::*;
 
 pub(super) fn source_paint_family(grids: &[Value], root: usize) -> Result<bool, String> {
     for (candidate, grid) in grids.iter().enumerate() {
-        if grid["regularizedPeriodicBoundary"] != true {
+        // Content-backed cell separation can have no ink at a shared side.
+        // The uniform-border legacy route would invent that side (or defer on
+        // differing partial rules). Use the same per-cell paint/native plan as
+        // periodic families; semantic ownership does not imply uniform paint.
+        if grid["regularizedPeriodicBoundary"] != true
+            && grid["cellRegionEvidence"]["status"] != "Selected"
+        {
             continue;
         }
         let mut at = candidate;

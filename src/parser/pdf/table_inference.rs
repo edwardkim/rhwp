@@ -264,6 +264,26 @@ impl Ledger {
                 .insert("backend clip observations omitted");
         }
         result.clip_ids = parents;
+        let uses = clips
+            .text_uses
+            .iter()
+            .map(|(order, clip)| (order, clip))
+            .collect::<BTreeMap<_, _>>();
+        for (i, source) in result.source_spans.iter_mut().enumerate() {
+            if let Some((order, clip)) = span_orders
+                .get(i)
+                .and_then(|order| uses.get(order).map(|clip| (order, *clip)))
+            {
+                source["activeClipWitness"] = json!({"sourceOrder":order,
+                    "kind":"clip_active_at_text_paint",
+                    "clipRegion":clip.as_ref().and_then(|c|
+                        result.clip_ids.get(&(std::sync::Arc::as_ptr(c) as usize))),
+                    "hasClip":clip.is_some()});
+            }
+        }
+        if clips.text_uses_omitted > 0 {
+            result.incomplete.insert("backend text clip uses omitted");
+        }
         result
     }
 

@@ -755,6 +755,38 @@ impl PathExtractor {
         self.clip_observations = Some(Default::default());
     }
 
+    /// Record the live graphics-state clip, never the nearest clip in stream order.
+    pub fn record_text_clip(
+        &mut self,
+        budget: Option<&crate::import_limits::ImportBudget>,
+    ) -> crate::error::Result<()> {
+        if let Some(observations) = &mut self.clip_observations {
+            if observations.text_uses.len() == 32_768 {
+                observations.text_uses_omitted += 1;
+                return Ok(());
+            }
+            if let Some(budget) = budget {
+                budget.charge_entries(1)?;
+                budget.charge_cache_copy(
+                    self.paint.source_order.len() * std::mem::size_of::<usize>(),
+                )?;
+                observations
+                    .text_uses
+                    .try_reserve(1)
+                    .map_err(|_| budget.reject("text clip observation allocation"))?;
+            }
+            observations
+                .text_uses
+                .push((self.paint.source_order.clone(), self.paint.clip_path.clone()));
+        }
+        Ok(())
+    }
+
+    /// Whether the caller requested the clip/use observation ledger.
+    pub fn observing_clips(&self) -> bool {
+        self.clip_observations.is_some()
+    }
+
     fn record_clip(&mut self) {
         if let (Some(observations), Some(clip)) =
             (&mut self.clip_observations, &self.paint.clip_path)
