@@ -2960,7 +2960,6 @@ impl LayoutEngine {
                 .render_normalization
                 .borrow()
                 .table_text_reflowed(table)
-            || !para_has_visible_text(host)
             || !matches!(host.controls.as_slice(), [Control::Table(_)])
             || table.common.treat_as_char
             || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
@@ -2992,7 +2991,10 @@ impl LayoutEngine {
         // 호스트 글줄이 표 위에서 끝나야 표가 그 글줄을 지나 다음 쪽으로 이어진 것이다.
         let host_text_bottom = i64::from(host_last.vertical_pos) + i64::from(host_last.line_height)
             - i64::from(host_first.vertical_pos);
-        if i64::from(signed_hwpunit(table.common.vertical_offset)) < host_text_bottom {
+        // 빈 호스트의 글줄은 글자를 담지 않으므로 표 위에 남을 내용이 없다.
+        if para_has_visible_text(host)
+            && i64::from(signed_hwpunit(table.common.vertical_offset)) < host_text_bottom
+        {
             return None;
         }
         let next_before = styles
@@ -3005,6 +3007,22 @@ impl LayoutEngine {
             || line_top > column.y + column.height
         {
             return None;
+        }
+        // 빈 호스트에서는 뒤 문단이 이 쪽에 저장 줄 그대로 놓인다는 증거가 따로 없다. 그 줄 상자
+        // (줄간격·아래 간격 포함)가 본문 안에 들어야 한다. 넘치면 그 문단은 빈 줄 감추기나 다음 쪽
+        // 이월로 이 쪽에 놓이지 않아 흡수할 위 간격도 없다(1613000 190쪽 `pi=8`).
+        if !para_has_visible_text(host) {
+            let next_after = styles
+                .para_styles
+                .get(next.para_shape_id as usize)
+                .map_or(0.0, |style| style.spacing_after);
+            let line_box = hwpunit_to_px(
+                next_line.line_height + next_line.line_spacing.max(0),
+                self.dpi,
+            );
+            if line_top + line_box + next_after > column.y + column.height + 0.5 {
+                return None;
+            }
         }
         let gap = line_top - next_before - fragment_bottom;
         (gap >= -next_before - 0.5 && gap <= 0.5).then_some(gap)

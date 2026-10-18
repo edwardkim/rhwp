@@ -829,10 +829,34 @@ impl TypesetEngine {
                 {
                     placement.flow = crate::renderer::float_placement::ParagraphFloatFlow::NextLine;
                 }
-                st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 let successor_flow_end = terminal_successor_gap.filter(|_| terminal).map(|gap| {
                     placement.table_top + owner_height + terminal_outer_bottom_overhead + gap
                 });
+                // 다음 줄 계획(NextLine)은 paint 가 문단 끝을 `상자 아래 + 호스트 아래 간격`으로 다시
+                // 정한다. 뒤 문단 저장 줄 윗변이 상자 아래와 같다고 증언하면 공통 인증
+                // (`stored_successor_line_origin`)으로 남겨, paint 도 호스트 아래 간격을 더하지 않고
+                // 그 문단 위 간격을 한 번만 쓰게 한다(1613000 125쪽: 빈 호스트 표 끝 조각·캡션 아래
+                // 156.08 = 다음 빈 줄 vpos 11706). typeset 흐름 끝은 위 `successor_flow_end` 그대로다.
+                if matches!(
+                    placement.flow,
+                    crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                ) {
+                    if let Some(end) = successor_flow_end {
+                        let successor_before = st
+                            .table_flow_successor(para_idx, input.source.paragraphs_all)
+                            .and_then(|(_, next)| {
+                                styles.para_styles.get(next.para_shape_id as usize)
+                            })
+                            .map_or(0.0, |style| style.spacing_before);
+                        if successor_before > 0.0
+                            && (end + successor_before - placement.occupied_bottom).abs() <= 0.5
+                        {
+                            placement.stored_successor_line_origin =
+                                Some(placement.occupied_bottom);
+                        }
+                    }
+                }
+                st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 st.align_flow_to(successor_flow_end.unwrap_or(
                     placement.occupied_bottom
                         + if terminal {

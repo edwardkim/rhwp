@@ -261,6 +261,43 @@ fn continued_row_closes_at_its_next_stored_restart() {
     );
 }
 
+/// 빈 호스트 표의 끝 조각 뒤 문단은, 그 저장 줄 윗변이 표·캡션 상자 아래와 같으면 그 줄에 놓인다.
+/// 1613000 125쪽: 표 `pi=1133` 끝 조각과 아래 캡션이 끝난 자리(본문 위 156.08px)가 다음 빈 문단
+/// `pi=1134` 의 vpos 11706 과 같고, 한/글 2020 PDF 는 `pi=1135` 「ㅇ 관제시설…」 첫 줄을 저장 vpos 15006
+/// 그대로 본문 위(위 여백 2835 + 머리말 2835 HU) + 15006 HU = 275.68px 에 둔다.
+/// 수정 전 rhwp 는 호스트 아래 간격(500HU)과 빈 문단 위 간격(700HU)을 더해 16px 아래에 두었다.
+/// 같은 규칙으로 task2070 72–110쪽이 한/글 2020 변환본과 맞고 전체 쪽수도 315쪽으로 같아진다.
+#[test]
+fn empty_host_terminal_successor_keeps_its_stored_line() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn walk<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    let core = core(SAMPLE_1613000);
+    let tree = core.build_page_render_tree(124).expect("렌더 트리");
+    let mut nodes = Vec::new();
+    walk(&tree.root, &mut nodes);
+    let top = nodes
+        .iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::TextLine(line)
+                if line.para_index == Some(1135) && line.line_index == Some(0) =>
+            {
+                Some(node.bbox.y)
+            }
+            _ => None,
+        })
+        .expect("125쪽 pi=1135 첫 줄");
+    let expected = (2835.0 + 2835.0 + 15006.0) / 75.0;
+    assert!(
+        (top - expected).abs() <= 0.5,
+        "pi=1135 첫 줄은 저장 줄 {expected:.2}px 에 놓여야 한다: {top:.2}"
+    );
+}
+
 /// 이어진 표의 끝 조각 아래 캡션은 통째 표와 같은 간격으로 놓인다. 1613000 `[표 12]`(128쪽, `pi=1143`
 /// 끝 조각)와 `[표 11]`(121쪽, 통째)의 표 아래 → 캡션 줄 윗변 간격은 한/글 2020 PDF 에서 모두 12px 다.
 /// 수정 전 rhwp 는 끝 조각에만 호스트 줄간격(700HU = 9.33px)을 캡션 위에 더 넣었다.
