@@ -564,27 +564,61 @@ impl TextStyle {
     }
 }
 
-/// Canvas 폰트의 실측 폭을 레이아웃 advance에 맞출 때 적용할 배율을 계산한다.
+/// Canvas 폰트의 glyph를 레이아웃 advance 칸에 놓을 `(가로 배율, x 이동)`을 계산한다.
 ///
 /// 양수 문자 간격은 다음 cluster의 시작 위치를 바꾸는 값이므로 glyph 폭 맞춤과
 /// 분리한다. 음수 간격은 #2189 셀 오버플로우 보정의 기존 glyph-fit 계약을
 /// 유지하고, 양수 배분 간격만 `glyph_fit_advance`로 제외한다.
-pub(crate) fn canvas_cluster_fit_scale(
+///
+/// 대체 glyph를 advance로 늘리거나 상자 폭 기준으로 누르면 모양이 망가진다.
+/// - advance보다 좁은 ASCII는 늘리지 않고 칸 가운데에 둔다. 고정폭 원 글꼴의
+///   `1`·`i`·`l`이 최대 2배로 늘어 굵은 글자처럼 보였다.
+/// - advance보다 넓은 기호는 잉크(`ink_width`)가 칸에 들어가면 누르지 않고, 넘칠
+///   때만 잉크를 칸 폭에 맞춘 뒤 상자를 칸 가운데에 둔다. 전각 대체 글꼴의 `μ`·`•`
+///   같은 기호는 넓은 상자 가운데에 좁은 잉크가 있어, 상자 폭으로 누르면 잉크가
+///   0.1~0.5배 실선처럼 눌렸다.
+/// - 한글 음절·한자는 글자 상자를 채우도록 그린 glyph라 종전처럼 상자 폭을
+///   advance에 맞춘다.
+/// - `fixed_glyph_advances` 텍스트(HFT 자동 쪽번호)는 원본 폭 점유 계약이라
+///   종전처럼 상자 폭을 맞추고, ASCII는 양방향으로 맞춘다.
+pub(crate) fn canvas_cluster_fit(
     style: &TextStyle,
+    cluster: &str,
     layout_cluster_advance: f64,
     visual_width: f64,
+    ink_width: Option<f64>,
     pin_ascii_advance: bool,
-) -> Option<f64> {
+) -> Option<(f64, f64)> {
     let cluster_advance =
         style.glyph_fit_advance(layout_cluster_advance)? * style.script_advance_scale();
     if cluster_advance <= 0.0 || visual_width <= 0.0 || style.letter_spacing < 0.0 {
         return None;
     }
-    if pin_ascii_advance {
-        return Some((cluster_advance / visual_width).clamp(0.1, 2.0));
+    let box_scale = cluster_advance / visual_width;
+    if style.fixed_glyph_advances && pin_ascii_advance {
+        // 생성자가 원본 글자 폭을 paint 계약으로 명시한 텍스트(HFT 자동 쪽번호)는
+        // 점유 폭을 원본 폭에 맞춘다.
+        return Some((box_scale.clamp(0.1, 2.0), 0.0));
     }
-    if visual_width > cluster_advance + 0.25 {
-        return Some((cluster_advance / visual_width).clamp(0.1, 1.0));
+    let overflow_tolerance = if pin_ascii_advance { 0.0 } else { 0.25 };
+    if visual_width > cluster_advance + overflow_tolerance {
+        let box_scale = box_scale.clamp(0.1, 1.0);
+        // 한글 음절·한자(통합·확장 A·호환)
+        let fills_em_box = |ch: char| {
+            ('\u{AC00}'..='\u{D7A3}').contains(&ch)
+                || ('\u{3400}'..='\u{9FFF}').contains(&ch)
+                || ('\u{F900}'..='\u{FAFF}').contains(&ch)
+        };
+        let keeps_box_fit = style.fixed_glyph_advances || cluster.chars().any(fills_em_box);
+        let ink_width = ink_width.filter(|width| width.is_finite() && *width > 0.0);
+        let Some(ink_width) = ink_width.filter(|_| !keeps_box_fit) else {
+            return Some((box_scale, 0.0));
+        };
+        let scale = (cluster_advance / ink_width).clamp(box_scale, 1.0);
+        return Some((scale, (cluster_advance - visual_width * scale) / 2.0));
+    }
+    if pin_ascii_advance {
+        return Some((1.0, (cluster_advance - visual_width) / 2.0));
     }
     None
 }
@@ -3514,19 +3548,60 @@ mod tests {
             letter_spacing: -7.5,
             ..Default::default()
         };
-        assert_eq!(canvas_cluster_fit_scale(&style, 7.5, 15.0, false), None);
-        assert_eq!(canvas_cluster_fit_scale(&style, 7.5, 15.0, true), None);
+        assert_eq!(
+            canvas_cluster_fit(&style, "a", 7.5, 15.0, None, false),
+            None
+        );
+        assert_eq!(canvas_cluster_fit(&style, "a", 7.5, 15.0, None, true), None);
     }
 
     #[test]
-    fn non_negative_letter_spacing_keeps_existing_canvas_font_fit_policy() {
+    fn canvas_glyph_fit_never_stretches_and_keeps_symbol_ink() {
         let style = TextStyle::default();
         assert_eq!(
-            canvas_cluster_fit_scale(&style, 7.5, 15.0, false),
-            Some(0.5)
+            canvas_cluster_fit(&style, "가", 7.5, 15.0, None, false),
+            Some((0.5, 0.0))
         );
-        assert_eq!(canvas_cluster_fit_scale(&style, 7.5, 15.0, true), Some(0.5));
-        assert_eq!(canvas_cluster_fit_scale(&style, 15.0, 14.9, false), None);
+        assert_eq!(
+            canvas_cluster_fit(&style, "a", 7.5, 15.0, None, true),
+            Some((0.5, 0.0))
+        );
+        assert_eq!(
+            canvas_cluster_fit(&style, "가", 15.0, 14.9, None, false),
+            None
+        );
+        // 고정폭 원 글꼴의 `1` 칸(0.5em)에 대체 글꼴의 좁은 `1`(0.25em).
+        // 종전에는 2배로 늘려 굵은 글자처럼 보였다.
+        assert_eq!(
+            canvas_cluster_fit(&style, "1", 8.0, 4.0, Some(2.0), true),
+            Some((1.0, 2.0))
+        );
+        // HFT 자동 쪽번호(`fixed_glyph_advances`)는 원본 폭 점유 계약을 유지한다.
+        let fixed = TextStyle {
+            fixed_glyph_advances: true,
+            ..Default::default()
+        };
+        assert_eq!(
+            canvas_cluster_fit(&fixed, "1", 8.0, 4.0, Some(2.0), true),
+            Some((2.0, 0.0))
+        );
+        // 전각 대체 글꼴의 `•`: 상자 16px, 잉크 4px, 칸 6px.
+        // 종전에는 상자를 칸에 맞춰 0.375배로 눌렀다. 잉크가 칸에 들어가므로
+        // 누르지 않고 상자를 칸 가운데에 둔다.
+        assert_eq!(
+            canvas_cluster_fit(&style, "•", 6.0, 16.0, Some(4.0), false),
+            Some((1.0, -5.0))
+        );
+        // 잉크가 칸보다 넓으면 잉크만 칸 폭에 맞춘다 (상자 폭 배율보다 덜 누른다).
+        assert_eq!(
+            canvas_cluster_fit(&style, "μ", 6.0, 16.0, Some(8.0), false),
+            Some((0.75, -3.0))
+        );
+        // 한글 음절은 상자를 채우는 glyph라 종전대로 상자 폭을 맞춘다.
+        assert_eq!(
+            canvas_cluster_fit(&style, "가", 6.0, 16.0, Some(4.0), false),
+            Some((0.375, 0.0))
+        );
     }
 
     #[test]
@@ -3536,8 +3611,8 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            canvas_cluster_fit_scale(&positive, 20.0, 8.0, true),
-            Some(1.0)
+            canvas_cluster_fit(&positive, "a", 20.0, 8.0, None, true),
+            Some((1.0, 0.0))
         );
 
         let negative = TextStyle {
@@ -3545,12 +3620,12 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            canvas_cluster_fit_scale(&negative, 5.0, 8.0, true),
-            Some(0.625)
+            canvas_cluster_fit(&negative, "a", 5.0, 8.0, None, true),
+            Some((0.625, 0.0))
         );
         assert_eq!(
-            canvas_cluster_fit_scale(&negative, 5.0, 8.0, false),
-            Some(0.625)
+            canvas_cluster_fit(&negative, "가", 5.0, 8.0, None, false),
+            Some((0.625, 0.0))
         );
     }
 
