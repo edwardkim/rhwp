@@ -189,6 +189,20 @@ impl TypesetState {
             - self.data.current_zone_y_offset
             - self.data.current_bottom_fixed_exclusion)
             .max(0.0);
+        // 빈 꼬리말 밴드가 각주를 모두 받으면 보수 여백은 각주 자신의 높이를 넘어 본문을
+        // 깎지 않는다. paint 는 각주 영역을 본문 바닥 − 각주 높이에서 연다(1613000 84쪽:
+        // 각주 31.4px, 보수 여백 40px 이 빈 문단 `pi=817` 을 85쪽으로 밀었다).
+        let available = if footnote_penalty <= 0.0 && fn_margin > 0.0 {
+            available.max(
+                (base
+                    - self.data.current_footnote_height
+                    - self.data.current_zone_y_offset
+                    - self.data.current_bottom_fixed_exclusion)
+                    .max(0.0),
+            )
+        } else {
+            available
+        };
         let available = if self.data.profile.hwpx_stored_layout()
             && self.data.deferred_hwpx_note_body
             && self.data.current_footnote_height > 0.0

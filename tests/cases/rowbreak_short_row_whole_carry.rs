@@ -741,3 +741,62 @@ fn square_nested_table_with_zero_offset_keeps_its_left_anchor() {
         nested_x - cell_x
     );
 }
+
+/// 쪽 번호 문단 소속: `page`(0-기준)에 놓인 본문 문단 인덱스 목록.
+fn page_paragraphs(core: &DocumentCore, page: u32) -> Vec<u64> {
+    let items = core.dump_page_items_json(Some(page));
+    items
+        .as_array()
+        .and_then(|pages| pages.first())
+        .and_then(|page| page.get("columns"))
+        .and_then(|columns| columns.as_array())
+        .into_iter()
+        .flatten()
+        .filter_map(|column| column.get("items").and_then(|items| items.as_array()))
+        .flatten()
+        .filter_map(|item| item.get("paraIndex").and_then(|v| v.as_u64()))
+        .collect()
+}
+
+/// 빈 꼬리말 밴드가 각주를 모두 받는 쪽에서 각주 보수 여백(3000HU)은 각주 자신의 높이를 넘어 본문을
+/// 깎지 않는다. 1613000 84쪽은 각주 한 줄(31.4px, 꼬리말 밴드 37.8px 에 들어감)을 갖고, 빈 문단 `pi=817`
+/// 의 저장 줄(vpos 68800 + lh 1400 = 936px)은 각주 구분선(PDF·rhwp 모두 본문 위 950.4px)보다 위다.
+/// 한/글 2020 PDF 는 85쪽을 `pi=818` 「사. 인천국제공항 계류장 관제소」로 시작하고 그 첫 줄을 본문 위 +
+/// vpos 700HU = 84.93px 에 둔다. 수정 전 rhwp 는 보수 여백 40px 로 본문을 931.4px 에서 끊어 `pi=817` 을
+/// 85쪽 첫머리로 넘기고 쪽 전체를 37px 내렸다.
+#[test]
+fn footnote_margin_does_not_cut_body_beyond_the_footnote_height() {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    let core = core(SAMPLE_1613000);
+    let p84 = page_paragraphs(&core, 83);
+    let p85 = page_paragraphs(&core, 84);
+    assert!(
+        p84.contains(&817),
+        "84쪽이 빈 문단 pi=817 을 가진다: {p84:?}"
+    );
+    assert_eq!(
+        p85.first(),
+        Some(&818),
+        "85쪽은 pi=818 로 시작한다: {p85:?}"
+    );
+
+    let tree = page_nodes(&core, 84);
+    let mut nodes = Vec::new();
+    walk_nodes(&tree.root, &mut nodes);
+    let top = nodes
+        .iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::TextLine(line)
+                if line.para_index == Some(818) && line.line_index == Some(0) =>
+            {
+                Some(node.bbox.y)
+            }
+            _ => None,
+        })
+        .expect("85쪽 pi=818 첫 줄");
+    let expected = (5670.0 + 700.0) / 75.0;
+    assert!(
+        (top - expected).abs() <= 0.5,
+        "pi=818 첫 줄은 저장 줄 {expected:.2}px 에 놓여야 한다: {top:.2}"
+    );
+}
