@@ -127,8 +127,8 @@ pub(crate) fn stored_repeated_header_rowbreak_outer_frame(
         && !table.leading_header_rows().is_empty()
 }
 
-/// 반복 제목행의 저장 바깥 프레임은 일반 셀의 내용 컷 뒤에도 유지된다.
-/// 컷은 남은 내용의 소유이며 새 단 상단의 바깥 여백 소유를 바꾸지 않는다.
+/// 한 호스트 안의 연속 부동 표도 각각 독립된 바깥 프레임을 소유한다.
+/// 내용 컷은 새 단 상단에서 그 프레임의 바깥 여백을 제거하지 않는다.
 /// 예약과 최종 배치가 같은 프로필과 저장 프레임 판정을 사용한다.
 pub(crate) fn stored_rowbreak_fragment_opens_outer_top(
     profile: LayoutCompatibilityProfile,
@@ -142,8 +142,10 @@ pub(crate) fn stored_rowbreak_fragment_opens_outer_top(
     (is_continuation
         && starts_at_column_top
         && table.outer_margin_top > 0
-        && host
-            .is_some_and(|para| stored_repeated_header_rowbreak_outer_frame(profile, para, table)))
+        && table.row_count > 1
+        && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+        && !profile.session_edited()
+        && host.is_some_and(stored_flow_table_sequence_host))
         || super::column_rowbreak_fragment_opens_outer_top(
             profile.hwpx_stored_layout(),
             host,
@@ -153,6 +155,43 @@ pub(crate) fn stored_rowbreak_fragment_opens_outer_top(
             start_cut,
             starts_at_column_top,
         )
+}
+
+/// 빈 저장 호스트도 여러 본문 흐름 표를 순서대로 소유할 수 있다.
+/// 단일 셀의 내부 조각과 배경 개체의 좌표 계약을 여기서 추정하지 않는다.
+fn stored_flow_table_sequence_host(host: &Paragraph) -> bool {
+    if !host.text.is_empty()
+        || host.stored_text_partition_is_dirty()
+        || host.cell_format_vpos_dirty
+        || host.line_segs.is_empty()
+        || host.line_segs.iter().any(|line| {
+            line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || line.vertical_pos < 0
+                || line.line_height <= 0
+        })
+        || host.line_segs.windows(2).any(|lines| {
+            lines[1].vertical_pos < lines[0].vertical_pos
+                || lines[1].text_start < lines[0].text_start
+        })
+    {
+        return false;
+    }
+    let mut count = 0;
+    host.controls.iter().all(|control| match control {
+        Control::Table(table) => {
+            count += 1;
+            !table.common.treat_as_char
+                && table.common.flow_with_text
+                && super::is_para_topbottom_float(&table.common)
+                && table.common.vert_rel_to == VertRelTo::Para
+                && matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        }
+        Control::Footnote(_)
+        | Control::Endnote(_)
+        | Control::SectionDef(_)
+        | Control::ColumnDef(_) => true,
+        _ => false,
+    }) && count > 1
 }
 
 /// An entire repeated title block is indivisible when it fits a fresh page.
