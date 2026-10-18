@@ -1289,17 +1289,8 @@ impl LayoutEngine {
                 bin_data_content,
             );
 
-            // 온전한 단일 행은 예약한 실제 셀 상자의 높이를 안 여백에도 사용한다.
-            // 행 내부 컷·높이 덮어쓰기·병합 셀은 기존 컷 측정 계약을 유지한다.
-            let (mut pad_left, mut pad_right, pad_top, pad_bottom) = if cell.row_span == 1
-                && !is_in_split_row
-                && !height_override_clip
-                && self.whole_fragment_row_uses_measured_height(table, cell_row)
-            {
-                self.resolve_cell_padding_for_physical_height(cell, table, cell_h)
-            } else {
-                self.resolve_stored_nested_cell_padding(cell, table, styles)
-            };
+            let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
+                self.resolve_cell_padding(cell, table);
 
             // 실제 cut이 있는 셀은 cursor probe와 전체 렌더링이 같은 문단 창을
             // 소비한다. 다중줄은 padding shrink의 조기 반환, split_proven은 Top

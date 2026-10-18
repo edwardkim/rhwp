@@ -41,7 +41,7 @@ impl LayoutEngine {
         {
             return 0.0;
         }
-        let (_, _, _, bottom) = self.resolve_stored_nested_cell_padding(cell, table, styles);
+        let (_, _, _, bottom) = self.resolve_cell_padding(cell, table);
         bottom.min(closing.height)
     }
 }

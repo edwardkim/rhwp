@@ -95,17 +95,8 @@ impl TableWrapperVerticalFrame {
         }
         let cell = &table.cells[0];
         let padding = cell.effective_padding(&table.padding);
-        let mut top = hwpunit_to_px(i32::from(padding.top), dpi);
-        let mut bottom = hwpunit_to_px(i32::from(padding.bottom), dpi);
-        let guard_height = cell.vertical_padding_guard_height_hu(table);
-        if guard_height < 0x80000000 {
-            let height = hwpunit_to_px(guard_height as i32, dpi);
-            if crate::model::table::Cell::vertical_padding_is_abnormal(height, top + bottom) {
-                let scale = height * 0.5 / (top + bottom);
-                top *= scale;
-                bottom *= scale;
-            }
-        }
+        let top = hwpunit_to_px(i32::from(padding.top), dpi);
+        let bottom = hwpunit_to_px(i32::from(padding.bottom), dpi);
         Self {
             child_top: top + hwpunit_to_px(i32::from(nested.outer_margin_top), dpi),
             child_bottom: bottom + hwpunit_to_px(i32::from(nested.outer_margin_bottom), dpi),
