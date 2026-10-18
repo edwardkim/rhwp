@@ -14307,7 +14307,48 @@ impl LayoutEngine {
                             } else {
                                 0.0
                             };
-                        if !is_column_top {
+                        // [#7679] 같은 문단의 글줄이 이 쪽에서 표 줄보다 먼저 놓였으면 문단 앞
+                        // 간격은 그 글줄이 이미 소비했다. 표 줄은 문단 안의 다음 줄이라 앞 간격을
+                        // 다시 받지 않고, 앞 글줄에서 표 줄까지의 전진은 저장 줄 사다리를 따른다
+                        // (36388027 1쪽: 첫 줄 lh 1400·ls 720 인데 표 줄은 1920HU 아래 — 정본도
+                        // 첫 글줄 상단 + 25.6 + 바깥 위 여백 3.8 = 29.0px 에 표를 둔다).
+                        let host_text_line_count =
+                            control_line_seg_index(para, control_index).unwrap_or(0);
+                        let host_text_precedes = host_text_line_count > 0
+                            && page_content.column_contents.iter().any(|cc| {
+                                cc.items.iter().any(|it| {
+                                    matches!(it, PageItem::PartialParagraph {
+                                        para_index: pi, start_line: 0, end_line,
+                                    } if *pi == para_index && *end_line == host_text_line_count)
+                                })
+                            });
+                        if host_text_precedes
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout())
+                        {
+                            let segs = &para.line_segs[..=host_text_line_count];
+                            let stored_ok = segs.iter().all(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+                                && segs.windows(2).all(|w| w[1].vertical_pos > w[0].vertical_pos);
+                            if stored_ok {
+                                let stored = hwpunit_to_px(
+                                    segs[host_text_line_count].vertical_pos - segs[0].vertical_pos,
+                                    self.dpi,
+                                );
+                                let flowed: f64 = segs[..host_text_line_count]
+                                    .iter()
+                                    .map(|seg| {
+                                        hwpunit_to_px(seg.line_height + seg.line_spacing, self.dpi)
+                                    })
+                                    .sum();
+                                let correction = stored - flowed;
+                                // 저장 사다리와 흐름이 줄 하나 넘게 갈리면 다른 축이다.
+                                let one_line = hwpunit_to_px(segs[0].line_height, self.dpi);
+                                if correction.abs() <= one_line {
+                                    y_offset += correction;
+                                }
+                            }
+                        }
+                        if !is_column_top && !host_text_precedes {
                             let spacing_before = styles
                                 .para_styles
                                 .get(ps_id)
