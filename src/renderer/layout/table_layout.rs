@@ -21873,7 +21873,6 @@ impl LayoutEngine {
                         || body_frame_reset
                         || self.stored_joint_zero_origin_boundary(cell, table)
                             == Some((u.para_idx, u.vis_start))
-                        || self.stored_cut_has_zero_before_origin(cell, table, styles, j)
                         || declared_saved_frame_break
                         || self.cut_starts_saved_zero_origin_text_frame(table, cell, &units, j)
                         || (j == 1
@@ -21961,6 +21960,14 @@ impl LayoutEngine {
                 // 바닥 예산에 들지 않는다 — 편람 289쪽 TAC 4×4 표는 이 여백 17px 때문에만
                 // 남은 공간을 넘어, 한/글이 그 쪽에 앉힌 표를 저장 되감김 자리에서 넘겼다.
                 let unit_fit_height = u.height - self.nested_atom_invisible_tail(cell, u, styles);
+                unit_diagnostics::trace_reset_cut(
+                    cell,
+                    (start, j),
+                    (h, avail_height),
+                    u,
+                    strict_saved_frame_break,
+                    || self.stored_cut_has_zero_before_origin(cell, table, styles, j),
+                );
                 if j > start
                     && (u.hard_break_before
                         || body_frame_reset

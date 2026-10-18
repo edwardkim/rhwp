@@ -42,6 +42,25 @@ pub(super) fn trace_units(cell: &Cell, units: &[CellUnit]) {
     }
 }
 
+/// 로컬 원점 복원과 독립적인 물리 페이지 경계의 판정을 구분한다.
+pub(super) fn trace_reset_cut(
+    cell: &Cell,
+    cut: (usize, usize),
+    budget: (f64, f64),
+    unit: &CellUnit,
+    strict: bool,
+    zero_origin: impl FnOnce() -> bool,
+) {
+    if selected(cell) && unit.page_frame_reset_before {
+        eprintln!(
+            "DIAG_RESET_CUT row={} col={} start={} next={} height={:.6} available={:.6} unit_height={:.6} para={} line={} hard={} stored={} strict={} local_zero_origin={}",
+            cell.row, cell.col, cut.0, cut.1, budget.0, budget.1, unit.height,
+            unit.para_idx, unit.vis_start, unit.hard_break_before,
+            unit.stored_frame_break_before, strict, zero_origin(),
+        );
+    }
+}
+
 /// 같은 종료 행의 요구에서 실제 상자와 추정 띠 중 어느 원장을 썼는지 확인한다.
 pub(super) fn trace_span_remainder(
     cell: &Cell,
