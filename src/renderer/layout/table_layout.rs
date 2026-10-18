@@ -25567,11 +25567,17 @@ impl LayoutEngine {
         // 전에 적용해 typeset의 누적 예약과 같은 높이 공간을 사용한다.
         if let Some(limit) = start_row_height_override {
             if start_row < row_count {
-                // 이어받은 물리 높이는 남은 행의 최소 점유다. 스캐너의
-                // RowScanQuery::whole_row_height와 같이 현재 컷의 내용과
-                // 유효 여백을 보존한다. 이 조각을 다시 자른 경우에는 아래
-                // end_row_height_override가 수용한 컷의 정확한 높이를 소유한다.
-                row_heights[start_row] = row_heights[start_row].max(limit.max(0.0));
+                // 일반 셀의 내용 컷은 남은 내용 최소를 유지한다. 일반 컷을 적을
+                // 슬롯이 없는 병합 행은 전달된 실제 잔여 행 상자를 소비한다.
+                // 이 조각을 다시 자르면 아래 끝 override가 수용한 상자를 소유한다.
+                row_heights[start_row] = Self::carried_span_row_physical_height(
+                    table,
+                    start_row,
+                    start_cut,
+                    false,
+                    Some(limit),
+                )
+                .unwrap_or(row_heights[start_row].max(limit.max(0.0)));
             }
         }
 

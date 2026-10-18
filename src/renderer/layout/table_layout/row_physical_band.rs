@@ -21,6 +21,36 @@ impl<'a> RowCutCapacity<'a> {
 }
 
 impl LayoutEngine {
+    /// 일반 셀이 없어 컷 슬롯이 비어도 시작 행의 잔여 물리 상자는 존재한다.
+    /// 끝나는 병합 셀의 내용 요구는 기존 continuation demand가 별도로 예약한다.
+    /// 블록 컷과 일반 셀 컷은 각자의 내용/물리 상자 계약을 유지한다.
+    pub(crate) fn carried_span_row_physical_height(
+        table: &Table,
+        row: usize,
+        start_cut: &[usize],
+        start_cut_is_block: bool,
+        carried: Option<f64>,
+    ) -> Option<f64> {
+        let height = carried.filter(|height| height.is_finite() && *height >= 0.0)?;
+        if start_cut_is_block
+            || !start_cut.is_empty()
+            || table
+                .cells
+                .iter()
+                .any(|cell| usize::from(cell.row) == row && cell.row_span == 1)
+        {
+            return None;
+        }
+        table
+            .cells
+            .iter()
+            .any(|cell| {
+                let first = usize::from(cell.row);
+                cell.row_span > 1 && first <= row && row < first + usize::from(cell.row_span)
+            })
+            .then_some(height)
+    }
+
     /// 선택한 문단의 다음 줄 전진은 다음 조각에 속한다. 문단 앞/뒤 간격과
     /// 빈 줄·개체의 점유를 추정하지 않고 유닛 생산자가 분리한 값만 소비한다.
     /// 기존 저장 컷의 종료 계약은 그대로 유지한다.

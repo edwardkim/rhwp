@@ -2,7 +2,7 @@
 
 use super::RowBlockQuery;
 use crate::model::control::Control;
-use crate::renderer::layout::table_layout::RowCutResult;
+use crate::renderer::layout::{table_layout::RowCutResult, LayoutEngine};
 use crate::renderer::typeset::{MIN_TOP_KEEP_PX, TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX};
 
 pub(in crate::renderer::typeset) struct RowScanQuery<'a> {
@@ -129,6 +129,17 @@ impl RowScanQuery<'_> {
             styles,
             ..
         } = *rows;
+        if r == self.cursor_row {
+            if let Some(height) = LayoutEngine::carried_span_row_physical_height(
+                table,
+                r,
+                row_start_cut,
+                self.start_cut_is_block,
+                self.start_row_height_override,
+            ) {
+                return height;
+            }
+        }
         if row_start_cut.is_empty() {
             whole_row_fit_h[r]
         } else {
