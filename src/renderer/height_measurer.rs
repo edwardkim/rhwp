@@ -3862,10 +3862,13 @@ impl HeightMeasurer {
                 // 선언 142.2px, 한글은 선언 유지). 초과분이 전적으로 trailing ls 때문이면
                 // (trailing 제외 콘텐츠+pad 가 선언 안) 선언높이로 clamp — 콘텐츠가 진짜
                 // 초과하는 기존 보존 케이스(aift/KTX)는 조건 미충족으로 불변.
-                // RowBreak(행 단위 쪽나눔) 표는 TAC 여부와 무관하게 clamp 제외 —
-                // 분할 배치가 trailing 포함 측정에 정합 (rowbreak-problem-pages p11~13).
+                // 비TAC RowBreak(행 단위 쪽나눔) 표는 clamp 제외 — 분할 배치가 trailing
+                // 포함 측정에 정합 (rowbreak-problem-pages p11~13). TAC 표의 공백 마지막
+                // 문단 trailing 도 저장 선언을 넘기지 않는다 (강원 입사지원서 주소 칸:
+                // 저장 줄 끝 2600HU + 여백 282HU ≤ 선언 2915HU).
                 let cell_last_trailing_ls = if !has_nested_table_in_cell
-                    && !matches!(table.page_break, TablePageBreak::RowBreak)
+                    && !(matches!(table.page_break, TablePageBreak::RowBreak)
+                        && !table.common.treat_as_char)
                 {
                     included_cell_last_trailing_ls
                 } else {
