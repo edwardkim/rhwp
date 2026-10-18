@@ -5336,7 +5336,7 @@ impl TypesetEngine {
                 // 첫 표 offset=0 뒤의 양수-offset 표가 아래로 밀렸을 때 이 동기화가
                 // 없으면 서명란이 두 번째 표의 상단에 겹치고 flow도 한 표 높이만큼
                 // 과소 소비된다. 선행 제목은 pre-table 경로라 영향 없다.
-                st.apply_visible_float_exclusions(post_height);
+                st.apply_visible_float_exclusions(post_height, None);
                 if issue2439_visible_host_stack && is_last_table {
                     // 마지막 표의 exclusion은 표 본체까지만 담는다. 한컴 저장 흐름은
                     // 그 뒤의 outer-bottom과 host LineSeg 간격을 거친 뒤 서명문을
@@ -7015,6 +7015,7 @@ mod tests {
                 stored_column_top_spacings: Default::default(),
                 paragraph_float_placements: Default::default(),
                 float_pushed_line_spacings: Default::default(),
+                page_band_flow_starts: Default::default(),
             }],
             active_header: None,
             active_footer: None,

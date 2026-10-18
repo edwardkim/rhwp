@@ -125,6 +125,11 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) pending_body_wide_top_reserve: f64,
     /// visible text host 의 양수 offset 자리차지 표가 후속 문단을 밀어내는 구간.
     pub(in crate::renderer::typeset) visible_float_exclusions: Vec<VisibleFloatExclusion>,
+    /// [#7696] 현재 단에 방출된 쪽·종이 기준 자리차지 그림·도형의 세로 밴드(단 상대).
+    /// 문단 시작 판정만 이 밴드를 읽는다 — 표·빈 float·쪽 점유 계상은 그대로 둔다.
+    pub(in crate::renderer::typeset) page_anchored_bands: Vec<VisibleFloatExclusion>,
+    /// [#7696] 쪽·종이 기준 밴드가 밀어 확정한 문단 시작(단 상대 px). 배치가 같은 값을 쓴다.
+    pub(in crate::renderer::typeset) page_band_flow_starts: std::collections::HashMap<usize, f64>,
     /// 현재 쪽에 실제 배치된 그림의 점유 영역(용지 좌표). 다음 단에도 간섭할 수 있다.
     pub(in crate::renderer::typeset) side_wrap_exclusions:
         std::collections::BTreeMap<(usize, usize), crate::renderer::layout_frame::FrameExclusion>,

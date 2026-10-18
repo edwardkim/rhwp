@@ -312,6 +312,7 @@ mod tests {
                 stored_column_top_spacings: Default::default(),
                 paragraph_float_placements: Default::default(),
                 float_pushed_line_spacings: Default::default(),
+                page_band_flow_starts: Default::default(),
             }],
             active_header: None,
             active_footer: None,

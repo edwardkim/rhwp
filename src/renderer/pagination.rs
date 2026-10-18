@@ -688,6 +688,9 @@ pub struct ColumnContent {
     /// 소비하는 문단 앞 간격(px, 0 이상). 측정(typeset)이 확정하고 배치(layout)가 같은 값을
     /// 확정 앞 간격으로 소비한다. 키는 문단 인덱스이며 항목이 없으면 이 계약이 아니다.
     pub float_pushed_line_spacings: std::collections::HashMap<usize, f64>,
+    /// [#7696] 쪽·종이 기준 자리차지 그림·도형의 밴드가 밀어 확정한 문단 시작(단 상대 px).
+    /// 측정(typeset)이 확정하고 배치(layout)가 그 문단의 시작으로 소비한다.
+    pub page_band_flow_starts: std::collections::HashMap<usize, f64>,
     /// #6812: 텍스트와 TAC 표가 공유하는 확정 줄 결과(단 상대 좌표).
     pub inline_flow_plans: std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     /// #6812: 분할기에서 확정한 단 기준 TAC 배치. 그림 paint 순서와 무관하다.
@@ -1346,6 +1349,11 @@ impl PaginationResult {
                             .map(|(&pi, &spacing)| {
                                 ((pi as i64 + offset as i64).max(0) as usize, spacing)
                             })
+                            .collect(),
+                        page_band_flow_starts: cc
+                            .page_band_flow_starts
+                            .iter()
+                            .map(|(&pi, &start)| ((pi as i64 + offset as i64).max(0) as usize, start))
                             .collect(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,

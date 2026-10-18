@@ -9203,6 +9203,7 @@ mod tests {
             stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         };
 
         let h = compute_hwp_used_height(&cc, &paragraphs, 96.0).expect("값이 있어야 함");

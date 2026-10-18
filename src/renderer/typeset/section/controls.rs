@@ -243,6 +243,7 @@ impl TypesetEngine {
                                 == (picture_host_origin.0, picture_host_origin.1))
                             .then_some(picture_host_origin.2);
                         st.register_side_wrap_picture(para_idx, ctrl_idx, para, host_top, styles);
+                        st.register_page_anchored_topbottom_band(para_idx, ctrl_idx, para);
                         // 뒤 저장 어울림 줄이 소유 줄의 그림 프레임을 증명한 경우,
                         // 예약과 실제 출력이 같은 앵커 계획을 소비한다.
                         if !self.profile.get().session_edited()

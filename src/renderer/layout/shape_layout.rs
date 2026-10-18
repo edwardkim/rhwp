@@ -4531,6 +4531,13 @@ impl LayoutEngine {
                     continue;
                 }
 
+                // [#7696] 쪽·종이 기준 자리차지 그림·도형은 앵커 문단에서 점프하는 예약이 아니라
+                // 세로 밴드로 계상한다 — 밴드 안에서 시작하는 문단만 밴드 아래로 간다
+                // (`ObjectPlacementFrame::page_anchored_topbottom_band`, 조판과 같은 계산).
+                if matches!(ctrl, Control::Picture(_) | Control::Shape(_)) {
+                    continue;
+                }
+
                 // 수평 겹침 확인
                 if !self.check_horizontal_overlap(common, col_area, body_area) {
                     continue;

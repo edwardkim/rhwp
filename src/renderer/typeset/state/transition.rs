@@ -57,6 +57,8 @@ impl TypesetState {
                 on_first_multicolumn_page: false,
                 pending_body_wide_top_reserve: 0.0,
                 visible_float_exclusions: Vec::new(),
+                page_anchored_bands: Vec::new(),
+                page_band_flow_starts: std::collections::HashMap::new(),
                 side_wrap_exclusions: std::collections::BTreeMap::new(),
                 inline_placements: std::collections::HashMap::new(),
                 inline_flow_plans: std::collections::HashMap::new(),
@@ -333,6 +335,63 @@ impl TypesetState {
         }
     }
 
+    /// [#7696] 쪽·종이 기준 자리차지(TopAndBottom) 그림·도형의 바깥 여백 포함 세로 밴드를
+    /// 현재 단의 흐름 배제 구간으로 등록한다.
+    ///
+    /// 자리차지 개체는 위치와 무관하게 그 세로 구간에서 본문을 받지 않는다. 문단 기준 개체는
+    /// 흐름 전진(pushdown)으로 계상되지만, 쪽·종이 기준 개체는 흐름 밖의 절대 위치라 흐름이
+    /// 밴드에 들어와도 아무도 밀어내지 않았다. 한/글은 밴드 안에서 시작하는 문단을 밴드 아래로
+    /// 보내고, 밴드가 본문 아래까지 이어지면 다음 쪽으로 보낸다(hwpspec 구역 3 표제 쪽:
+    /// 종이 기준 그림 아래 빈 문단의 저장 vpos 가 그림 하단과 같고 정본은 다음 쪽에 둔다).
+    ///
+    /// 실제로 현재 단에 방출한 개체만, 현재 단과 가로로 겹칠 때만 등록한다.
+    pub(in crate::renderer::typeset) fn register_page_anchored_topbottom_band(
+        &mut self,
+        para_index: usize,
+        control_index: usize,
+        para: &Paragraph,
+    ) {
+        let Some(control) = para.controls.get(control_index) else {
+            return;
+        };
+        if !self.data.current_items.iter().any(|item| {
+            matches!(item, PageItem::Shape { para_index: pi, control_index: ci }
+            if *pi == para_index && *ci == control_index)
+        }) {
+            return;
+        }
+        let column = self.inline_flow_column();
+        let paper = crate::renderer::page_layout::LayoutRect {
+            x: 0.0,
+            y: 0.0,
+            width: self.data.layout.page_width,
+            height: self.data.layout.page_height,
+        };
+        let frame = crate::renderer::float_placement::ObjectPlacementFrame {
+            container: &column,
+            column: &column,
+            body: &self.data.layout.body_area,
+            paper: &paper,
+            paragraph_y: column.y,
+            alignment: crate::model::style::Alignment::Left,
+            dpi: self.data.layout.dpi,
+        };
+        let Some((top, bottom)) = frame.page_anchored_topbottom_band(control) else {
+            return;
+        };
+        let (top, bottom) = (top - column.y, bottom - column.y);
+        if bottom <= self.data.current_height + 0.5 {
+            return;
+        }
+        self.data
+            .page_anchored_bands
+            .push(crate::renderer::typeset::VisibleFloatExclusion {
+                para_index,
+                top,
+                bottom,
+            });
+    }
+
     /// [#7548] 저장 줄이 없는 host 의 쪽·종이 기준 어울림 표를 뒤 재조판 문단의 배제
     /// 영역으로 등록한다. 뒤 문단의 측정(`typeset_inline_flow`)과 배치(layout 의
     /// `inline_flow_plans` 소비)가 이 한 상자로 만든 같은 줄 구성을 쓴다. 저장 host 의
@@ -402,6 +461,7 @@ impl TypesetState {
             stored_column_top_spacings: std::mem::take(&mut self.data.stored_column_top_spacings),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
             float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
+            page_band_flow_starts: std::mem::take(&mut self.data.page_band_flow_starts),
         };
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -480,6 +540,7 @@ impl TypesetState {
             stored_column_top_spacings: std::mem::take(&mut self.data.stored_column_top_spacings),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
             float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
+            page_band_flow_starts: std::mem::take(&mut self.data.page_band_flow_starts),
         };
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -529,10 +590,54 @@ impl TypesetState {
                 // 표는 자기 배치 경로(place_table_with_text)가 있으므로 제외한다.
                 _ => continue,
             };
-            if common.treat_as_char
-                || !matches!(common.text_wrap, TextWrap::TopAndBottom)
-                || !matches!(common.vert_rel_to, VertRelTo::Para)
-            {
+            if common.treat_as_char || !matches!(common.text_wrap, TextWrap::TopAndBottom) {
+                continue;
+            }
+            // [#7696] 쪽·종이 기준 개체는 흐름이 아니라 떠나는 쪽의 절대 위치에 밴드를 만든다.
+            // 이 문단의 첫 줄이 그 밴드와 겹쳐 위에 들어가지 못해 다음 쪽으로 넘어간 것이면
+            // 한/글은 줄만 넘기고 개체는 떠나는 쪽에 남긴다(1130000-201300023 정본 105쪽:
+            // 그림은 쪽 아래, 앵커 문단 글은 106쪽 첫머리). 흐름 높이는 소비하지 않는다.
+            if matches!(common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper) {
+                let column = self.inline_flow_column();
+                let paper = crate::renderer::page_layout::LayoutRect {
+                    x: 0.0,
+                    y: 0.0,
+                    width: self.data.layout.page_width,
+                    height: self.data.layout.page_height,
+                };
+                let frame = crate::renderer::float_placement::ObjectPlacementFrame {
+                    container: &column,
+                    column: &column,
+                    body: &self.data.layout.body_area,
+                    paper: &paper,
+                    paragraph_y: column.y,
+                    alignment: crate::model::style::Alignment::Left,
+                    dpi,
+                };
+                let first_line = para
+                    .line_segs
+                    .first()
+                    .map_or(0.0, |seg| hwpunit_to_px(seg.line_height, dpi));
+                let line_top = self.data.current_height;
+                let pushed_by_own_band =
+                    frame
+                        .page_anchored_topbottom_band(ctrl)
+                        .is_some_and(|(top, bottom)| {
+                            let (top, bottom) = (top - column.y, bottom - column.y);
+                            line_top < bottom && line_top + first_line > top + 0.5
+                        });
+                if pushed_by_own_band {
+                    self.data.current_items.push(PageItem::Shape {
+                        para_index: para_idx,
+                        control_index: ctrl_idx,
+                    });
+                    self.data
+                        .page_tail_spilled_floats
+                        .insert((para_idx, ctrl_idx));
+                }
+                continue;
+            }
+            if !matches!(common.vert_rel_to, VertRelTo::Para) {
                 continue;
             }
             let height = hwpunit_to_px(common.height as i32, dpi)
@@ -557,6 +662,7 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn advance_column_or_new_page(&mut self) {
         self.flush_column();
         self.data.visible_float_exclusions.clear();
+        self.data.page_anchored_bands.clear();
         if self.data.current_column + 1 < self.data.col_count {
             self.data.current_column += 1;
             // Task #321: col 0 상단의 body-wide TopAndBottom 표/도형이 차지한 높이를
@@ -693,34 +799,58 @@ impl TypesetState {
         self.data.current_zone_layout = None;
         self.data.on_first_multicolumn_page = false;
         self.data.visible_float_exclusions.clear();
+        self.data.page_anchored_bands.clear();
         self.reset_vpos_cursor();
     }
 
+    /// `para_index` 가 있으면(문단 시작) 쪽·종이 기준 자리차지 밴드도 짚고, 그 밴드가 민
+    /// 시작을 배치에 넘긴다(#7696).
     pub(in crate::renderer::typeset) fn apply_visible_float_exclusions(
         &mut self,
         probe_height: f64,
+        para_index: Option<usize>,
     ) {
-        if self.data.visible_float_exclusions.is_empty() {
+        let page_bands = para_index.is_some() && !self.data.page_anchored_bands.is_empty();
+        if self.data.visible_float_exclusions.is_empty() && !page_bands {
             return;
         }
 
         let use_overlap_probe = self.data.profile.hwpx_stored_layout() && probe_height > 0.0;
+        let current_height = self.data.current_height;
         self.data
             .visible_float_exclusions
-            .retain(|zone| self.data.current_height < zone.bottom - 0.5);
+            .retain(|zone| current_height < zone.bottom - 0.5);
+        self.data
+            .page_anchored_bands
+            .retain(|zone| current_height < zone.bottom - 0.5);
 
-        let mut jump_to = self.data.current_height;
-        for zone in &self.data.visible_float_exclusions {
-            let starts_in_zone = jump_to + 0.5 >= zone.top && jump_to < zone.bottom;
+        let hits = |jump_to: f64, top: f64, bottom: f64| {
+            let starts_in_zone = jump_to + 0.5 >= top && jump_to < bottom;
             let overlaps_zone =
-                use_overlap_probe && jump_to < zone.top && jump_to + probe_height > zone.top + 0.5;
-            if starts_in_zone || overlaps_zone {
+                use_overlap_probe && jump_to < top && jump_to + probe_height > top + 0.5;
+            starts_in_zone || overlaps_zone
+        };
+        let mut jump_to = current_height;
+        for zone in &self.data.visible_float_exclusions {
+            if hits(jump_to, zone.top, zone.bottom) {
                 jump_to = jump_to.max(zone.bottom);
             }
         }
+        let mut pushed_by_page_band = false;
+        if page_bands {
+            for zone in &self.data.page_anchored_bands {
+                if hits(jump_to, zone.top, zone.bottom) {
+                    jump_to = jump_to.max(zone.bottom);
+                    pushed_by_page_band = true;
+                }
+            }
+        }
 
-        if jump_to > self.data.current_height + 0.5 {
+        if jump_to > current_height + 0.5 {
             self.data.current_height = jump_to;
+            if let Some(para_index) = para_index.filter(|_| pushed_by_page_band) {
+                self.data.page_band_flow_starts.insert(para_index, jump_to);
+            }
         }
     }
 

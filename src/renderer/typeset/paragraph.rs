@@ -773,7 +773,7 @@ pub(super) fn prepare_fit_budget(
         layout_drift_safety_px,
     );
     let exclusion_probe_height = fit::exclusion_probe_height(fmt, st.profile.hwpx_stored_layout());
-    st.apply_visible_float_exclusions(exclusion_probe_height);
+    st.apply_visible_float_exclusions(exclusion_probe_height, Some(para_idx));
     let footnote_margin_addback =
         st.take_paragraph_footnote_margin_addback(strict_after_empty_host_float);
     let tail_overflow =
