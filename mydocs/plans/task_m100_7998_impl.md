@@ -426,3 +426,17 @@ Native/fresh WASM 각 330쪽 및 집중 54건을 확인했고 메인테이너가
 P4 일반 경계 스타일/행열 상속, B19 비사각 text paint 및 미확정 격자·본문 메트릭은 유지한다.
 보고서 5쪽의 국소 변화는 이 절편의 판정과 구분해 P5의 최신 devel 최종 gate에서 다시 판단한다.
 P4 전체 완료나 최종 PR 준비 완료로 표시하지 않는다.
+
+
+2026-10-19 B19 조사에서 source clip은 관측됐으나 실제 TextBox paint로 전달되지 않는
+결함을 확인했다. 메인테이너는 **편집 가능한 IR 계약 확장**을 선택했다.
+[stage11](../working/task_m100_7998_stage11.md)의 source clip·공통 IR·실제 paint·rhwp
+저장 재열기 계약을 우선 연결한다. 글자 그림 치환·bbox clamp·원문 삭제는 적용하지 않는다.
+한컴 기본 표현과 rhwp 전용 왕복 보존을 구분하고 native-format 가림·외부 재저장 등
+실제 증거가 없는 경계는 보류한다. 이 절편으로 P4/P5 전체 완료를 선언하지 않는다.
+
+2026-10-19 B19 첫 IR/paint·rhwp 왕복 절편은 직접 시각·편집 구조 판정을 통과했다.
+원문 Paragraph와 actual text-show clip chain을 함께 보존하며, 한컴 기본 표현과 외부
+재저장 보존은 미검증으로 유지한다. 기존 B20의 330쪽은 양 backend에서 PNG 동일이다.
+범위·검증·후속 좌표/metadata audit는 [stage11](../working/task_m100_7998_stage11.md)과
+B19 backlog에 연결한다. P5 전체 검증/최신 devel 비교 및 원격 제출은 아직 진행하지 않는다.

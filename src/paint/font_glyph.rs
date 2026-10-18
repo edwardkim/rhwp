@@ -499,7 +499,9 @@ impl FontGlyphLowerer<'_, '_> {
                     self.lower_node(child);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => self.lower_node(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                self.lower_node(child)
+            }
             LayerNodeKind::Leaf { ops } => self.lower_leaf(ops),
         }
     }

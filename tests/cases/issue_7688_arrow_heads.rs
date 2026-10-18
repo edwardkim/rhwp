@@ -83,7 +83,9 @@ fn native_png_paints_heads_off_the_shaft_in_both_profiles() {
     fn tips(node: &LayerNode, output: &mut Vec<(f64, f64)>) {
         match &node.kind {
             LayerNodeKind::Group { children, .. } => children.iter().for_each(|n| tips(n, output)),
-            LayerNodeKind::ClipRect { child, .. } => tips(child, output),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                tips(child, output)
+            }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     if let PaintOp::Line { line, .. } = op {

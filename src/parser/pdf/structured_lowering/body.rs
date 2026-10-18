@@ -83,6 +83,12 @@ fn prepare<'a>(
     typography: &std::cell::RefCell<Vec<Value>>,
     removed: &BTreeSet<usize>,
 ) -> Result<Prepared<'a>, String> {
+    if p.span_indices
+        .iter()
+        .any(|&i| super::super::text_clip::has_nonrectangular(page.span_clips[i].as_deref()))
+    {
+        return Err("source text clip requires positional editable owner".into());
+    }
     let mut owned = BTreeSet::new();
     for &source in &p.span_indices {
         let control = span_controls[source].ok_or("missing body source owner")?;

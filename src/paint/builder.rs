@@ -122,6 +122,20 @@ impl LayerBuilder {
     }
 
     fn build_node(&mut self, node: &RenderNode) -> Option<LayerNode> {
+        if let Some(paths) = &node.paint_clip {
+            let mut unclipped = node.clone();
+            unclipped.paint_clip = None;
+            let child = self.build_node(&unclipped)?;
+            return Some(LayerNode {
+                bounds: node.bbox,
+                source_node_id: Some(node.id),
+                layer: node.layer,
+                kind: LayerNodeKind::ClipPath {
+                    paths: paths.clone(),
+                    child: Box::new(child),
+                },
+            });
+        }
         if !self.profile.shows_editor_visuals() {
             if let Some(bbox) = node.print_bbox {
                 let mut print_node = node.clone();
@@ -372,7 +386,9 @@ fn line_decoration_trim_target(
                     }
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => scan(child, found),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                scan(child, found)
+            }
         }
     }
     let mut found = None;
@@ -402,7 +418,9 @@ fn publish_line_decoration_trims(node: &mut LayerNode) {
                 publish_line_decoration_trims(child);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => publish_line_decoration_trims(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            publish_line_decoration_trims(child)
+        }
         LayerNodeKind::Leaf { .. } => {}
     }
 }
@@ -417,7 +435,7 @@ fn set_decoration_trim_for_source(
             LayerNodeKind::Group { children, .. } => {
                 set_decoration_trim_for_source(children, source, trim);
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 set_decoration_trim_for_source(std::slice::from_mut(child), source, trim);
             }
             LayerNodeKind::Leaf { ops } => {

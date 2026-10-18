@@ -12030,6 +12030,9 @@ function __wbg_get_imports() {
         __wbg_clip_11b699e637bb5b4c: function(arg0) {
             arg0.clip();
         },
+        __wbg_clip_19f3482515ce11e2: function(arg0, arg1) {
+            arg0.clip(__wbindgen_enum_CanvasWindingRule[arg1]);
+        },
         __wbg_closePath_c56cc36eea49716f: function(arg0) {
             arg0.closePath();
         },
@@ -12389,6 +12392,7 @@ function __wbg_get_imports() {
     };
 }
 
+const __wbindgen_enum_CanvasWindingRule = ["nonzero", "evenodd"];
 const DocumentExportFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_documentexport_free(ptr, 1));

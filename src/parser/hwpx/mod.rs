@@ -734,6 +734,12 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // dir 영역 basename 매칭 영역 image 영역 자동 load. HWP5 parser 와 동일 처리.
     super::populate_link_image_paths(&mut doc);
 
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::text_clip::HWPX_ENTRY,
+        crate::model::text_clip::MAX_BYTES,
+    ) {
+        crate::model::text_clip::decode(&mut doc, &bytes);
+    }
     if let Ok(bytes) =
         reader.read_file_bytes_limited(crate::model::hyperlink_format::HWPX_ENTRY, 16 * 1024 * 1024)
     {

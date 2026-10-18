@@ -103,7 +103,9 @@ fn active_emoji_metric_preserves_unrelated_nominal_grapheme_run() {
     fn has_whole_run(node: &LayerNode) -> bool {
         match &node.kind {
             LayerNodeKind::Group { children, .. } => children.iter().any(has_whole_run),
-            LayerNodeKind::ClipRect { child, .. } => has_whole_run(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                has_whole_run(child)
+            }
             LayerNodeKind::Leaf { ops } => ops.iter().any(|op| {
                 matches!(op,
                 PaintOp::TextRun { run, .. } if run.text == "ᄒᆞᆫ말")
@@ -312,7 +314,9 @@ fn core(ext: &str) -> DocumentCore {
 fn find(node: &LayerNode) -> Option<TextRunNode> {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => children.iter().find_map(find),
-        LayerNodeKind::ClipRect { child, .. } => find(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            find(child)
+        }
         LayerNodeKind::Leaf { ops } => ops.iter().find_map(|op| match op {
             PaintOp::TextRun { run, .. } if run.text.contains('😀') => Some((**run).clone()),
             _ => None,

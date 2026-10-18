@@ -1033,6 +1033,7 @@ export interface LayerTextV2Envelope {
 export type LayerNodeV2 =
   | (Omit<LayerGroupNode, 'children'> & { children: LayerNodeV2[] })
   | (Omit<LayerClipNode, 'child'> & { child: LayerNodeV2 })
+  | (Omit<LayerPathClipNode, 'child'> & { child: LayerNodeV2 })
   | (Omit<LayerLeafNode, 'ops'> & { ops: Array<LayerPaintOp | LayerTextV2Envelope> });
 export type PageLayerTreeV2 = Omit<PageLayerTree, 'root'> & { root: LayerNodeV2 };
 
@@ -1091,7 +1092,7 @@ export interface LayerInfo {
   masterPage?: boolean;
 }
 
-export type LayerNode = LayerGroupNode | LayerClipNode | LayerLeafNode;
+export type LayerNode = LayerGroupNode | LayerClipNode | LayerPathClipNode | LayerLeafNode;
 
 export interface LayerGroupNode {
   kind: 'group';
@@ -1111,6 +1112,12 @@ export interface LayerClipNode {
   layer?: LayerInfo;
   clip: LayerBounds;
   clipKind: 'body' | 'tableCell' | 'textBox' | 'generic';
+  child: LayerNode;
+}
+
+export interface LayerPathClipNode {
+  kind: 'clipPath'; bounds: LayerBounds; visualBounds?: LayerBounds; layer?: LayerInfo;
+  paths: { commands: ({Move:[number,number]} | {Line:[number,number]} | {Cubic:[number,number,number,number,number,number]} | 'Close')[]; even_odd: boolean }[];
   child: LayerNode;
 }
 

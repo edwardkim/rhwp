@@ -744,6 +744,17 @@ impl TableBuilder<'_> {
         let preserve_paint = source_paint;
         // Every PDF table consumes the same observed line metrics. Paint style
         // and whether this is a nested table cannot change source text placement.
+        if page
+            .recognition
+            .cells
+            .iter()
+            .filter(|((table, _), _)| *table == candidate)
+            .flat_map(|(_, region)| &region.paragraphs)
+            .flat_map(|p| &p.span_indices)
+            .any(|&i| super::text_clip::has_nonrectangular(page.span_clips[i].as_deref()))
+        {
+            return Err("source text clip requires positional editable owner".into());
+        }
         let fixed_lines = true;
         let mut stroke_styles = BTreeSet::new();
         for c in *controls {

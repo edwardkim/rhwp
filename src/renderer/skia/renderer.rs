@@ -1379,6 +1379,54 @@ impl SkiaLayerRenderer {
                     render_children(canvas, next_text_source_id)?;
                 }
             }
+            LayerNodeKind::ClipPath { paths, child } => {
+                use crate::model::text_clip::ClipCommand;
+                canvas.save();
+                for clip in paths {
+                    let mut path = skia_safe::PathBuilder::new();
+                    for command in &clip.commands {
+                        match *command {
+                            ClipCommand::Move(x, y) => {
+                                path.move_to((x as f32, y as f32));
+                            }
+                            ClipCommand::Line(x, y) => {
+                                path.line_to((x as f32, y as f32));
+                            }
+                            ClipCommand::Cubic(a, b, c, d, e, f) => {
+                                path.cubic_to(
+                                    (a as f32, b as f32),
+                                    (c as f32, d as f32),
+                                    (e as f32, f as f32),
+                                );
+                            }
+                            ClipCommand::Close => {
+                                path.close();
+                            }
+                        }
+                    }
+                    path.set_fill_type(if clip.even_odd {
+                        skia_safe::PathFillType::EvenOdd
+                    } else {
+                        skia_safe::PathFillType::Winding
+                    });
+                    canvas.clip_path(&path.detach(), None, Some(antialias));
+                }
+                let result = self.render_node(
+                    canvas,
+                    child,
+                    output_options,
+                    hft_outline_enabled,
+                    resources,
+                    replay_plane,
+                    active_layer,
+                    next_text_source_id,
+                    fallback_raster_scale,
+                    strict_resource_failures,
+                    cache_context,
+                );
+                canvas.restore();
+                result?;
+            }
             LayerNodeKind::ClipRect { clip, child, .. } => {
                 if !clip_enabled {
                     return self.render_node(

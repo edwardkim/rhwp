@@ -30,7 +30,9 @@ fn equations_only(node: &mut LayerNode, chars: &mut BTreeSet<char>) -> usize {
         LayerNodeKind::Group { children, .. } => {
             children.iter_mut().map(|n| equations_only(n, chars)).sum()
         }
-        LayerNodeKind::ClipRect { child, .. } => equations_only(child, chars),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            equations_only(child, chars)
+        }
         LayerNodeKind::Leaf { ops } => {
             ops.retain(|op| matches!(op, PaintOp::Equation { .. }));
             for op in ops.iter() {

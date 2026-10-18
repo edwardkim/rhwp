@@ -77,6 +77,7 @@ const KNOWN_TEXT_FEATURES: &[&str] = &[
     "text.displayText",
     "text.vertical.mixedPerGlyph",
     "layer.visualBounds",
+    "paint.textClipPath",
 ];
 
 /// 레이어 트리 JSON 직렬화 옵션 (Task #3315).
@@ -216,6 +217,9 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
         text_variant_features.has_glyph_outline_payload_resource_digest_keys;
     let has_display_text = text_variant_features.has_display_text;
     buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\",\"layer.optionMetadata\",\"layer.visualBounds\"");
+    if text_variant_features.has_text_clip {
+        buf.push_str(",\"paint.textClipPath\"");
+    }
     if has_display_text {
         buf.push_str(",\"text.displayText\"");
     }
@@ -338,7 +342,11 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
         }
         buf.push_str(&json_escape(feature));
     }
-    buf.push_str("],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
+    buf.push_str("],\"requiredFeatures\":[");
+    if text_variant_features.has_text_clip {
+        buf.push_str("\"paint.textClipPath\"");
+    }
+    buf.push_str("],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
     if has_glyph_runs {
         buf.push_str(",\"glyphRun\"");
     }
@@ -368,6 +376,7 @@ struct TextVariantFeatureFlags {
     has_glyph_outline_payload_resource_keys: bool,
     has_glyph_outline_payload_resource_digest_keys: bool,
     has_display_text: bool,
+    has_text_clip: bool,
 }
 
 impl TextVariantFeatureFlags {
@@ -388,6 +397,10 @@ fn collect_text_variant_features(
                 for child in children {
                     stack.push(child);
                 }
+            }
+            LayerNodeKind::ClipPath { child, .. } => {
+                features.has_text_clip = true;
+                stack.push(child);
             }
             LayerNodeKind::ClipRect { child, .. } => stack.push(child),
             LayerNodeKind::Leaf { ops } => {
@@ -489,7 +502,9 @@ fn externalized_text_visuals(root: &LayerNode) -> Vec<&'static str> {
                     stack.push(child);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => stack.push(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                stack.push(child)
+            }
             LayerNodeKind::Leaf { ops } => {
                 has_char_overlap |= ops
                     .iter()
@@ -525,7 +540,9 @@ fn layer_tree_has_op(root: &LayerNode, predicate: impl Fn(&PaintOp) -> bool) -> 
     while let Some(node) = stack.pop() {
         match &node.kind {
             LayerNodeKind::Group { children, .. } => stack.extend(children),
-            LayerNodeKind::ClipRect { child, .. } => stack.push(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                stack.push(child)
+            }
             LayerNodeKind::Leaf { ops } if ops.iter().any(&predicate) => return true,
             LayerNodeKind::Leaf { .. } => {}
         }
@@ -576,6 +593,12 @@ impl LayerNode {
                     child.write_json(buf, text_sources, resources, ctx);
                 }
                 buf.push(']');
+            }
+            LayerNodeKind::ClipPath { paths, child } => {
+                buf.push_str(",\"kind\":\"clipPath\",\"paths\":");
+                buf.push_str(&serde_json::to_string(paths).expect("validated clip geometry"));
+                buf.push_str(",\"child\":");
+                child.write_json(buf, text_sources, resources, ctx);
             }
             LayerNodeKind::ClipRect {
                 clip,

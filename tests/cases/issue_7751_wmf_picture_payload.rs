@@ -61,7 +61,9 @@ fn svg_root_attrs(bytes: &[u8]) -> std::collections::HashMap<String, String> {
 fn find_image(node: &LayerNode) -> Option<&[u8]> {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => children.iter().find_map(find_image),
-        LayerNodeKind::ClipRect { child, .. } => find_image(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            find_image(child)
+        }
         LayerNodeKind::Leaf { ops } => ops.iter().find_map(|op| {
             if let PaintOp::Image {
                 resolved: Some(p), ..

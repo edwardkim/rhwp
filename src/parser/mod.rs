@@ -615,6 +615,14 @@ fn parse_hwp_with_cfb(
     if let Some(idx) = doc
         .extra_streams
         .iter()
+        .position(|(p, _)| p == crate::model::text_clip::HWP_STREAM)
+    {
+        let (_, bytes) = doc.extra_streams.remove(idx);
+        crate::model::text_clip::decode(&mut doc, &bytes);
+    }
+    if let Some(idx) = doc
+        .extra_streams
+        .iter()
         .position(|(p, _)| p == crate::model::hyperlink_format::HWP_STREAM)
     {
         let (_, bytes) = doc.extra_streams.remove(idx);

@@ -1211,7 +1211,7 @@ export class WasmBridge {
       throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): root.kind가 없습니다`);
     }
     const rootKind = (tree.root as { kind?: unknown }).kind;
-    if (rootKind !== 'group' && rootKind !== 'clipRect' && rootKind !== 'leaf') {
+    if (rootKind !== 'group' && rootKind !== 'clipRect' && rootKind !== 'clipPath' && rootKind !== 'leaf') {
       throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): 알 수 없는 root.kind=${String(rootKind)}`);
     }
     if (tree.profile !== profile) {

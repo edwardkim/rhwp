@@ -68,7 +68,9 @@ fn collect_text_visual_roles(node: &LayerNode, roles: &mut Vec<TextVisualReplayR
                 collect_text_visual_roles(child, roles);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_text_visual_roles(child, roles),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_text_visual_roles(child, roles)
+        }
         LayerNodeKind::Leaf { ops } => roles.extend(ops.iter().map(text_visual_replay_role)),
     }
 }
@@ -80,7 +82,9 @@ fn collect_control_labels<'a>(node: &'a LayerNode, labels: &mut Vec<&'a str>) {
                 collect_control_labels(child, labels);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_control_labels(child, labels),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_control_labels(child, labels)
+        }
         LayerNodeKind::Leaf { ops } => labels.extend(ops.iter().filter_map(|op| match op {
             PaintOp::ControlLabel { label, .. } => Some(label.as_str()),
             _ => None,
@@ -91,7 +95,9 @@ fn collect_control_labels<'a>(node: &'a LayerNode, labels: &mut Vec<&'a str>) {
 fn has_missing_picture(node: &LayerNode) -> bool {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => children.iter().any(has_missing_picture),
-        LayerNodeKind::ClipRect { child, .. } => has_missing_picture(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            has_missing_picture(child)
+        }
         LayerNodeKind::Leaf { ops } => ops.iter().any(|op| {
             matches!(
                 op,
@@ -110,7 +116,9 @@ fn body_clip(node: &LayerNode) -> Option<BoundingBox> {
             clip_kind: rhwp::paint::ClipKind::Body,
             ..
         } => Some(*clip),
-        LayerNodeKind::ClipRect { child, .. } => body_clip(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            body_clip(child)
+        }
         LayerNodeKind::Group { children, .. } => children.iter().find_map(body_clip),
         LayerNodeKind::Leaf { .. } => None,
     }
@@ -124,7 +132,9 @@ fn remove_underline_visual(node: &mut LayerNode) {
                 remove_underline_visual(child);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => remove_underline_visual(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            remove_underline_visual(child)
+        }
         LayerNodeKind::Leaf { ops } => {
             ops.retain(|op| {
                 !matches!(
@@ -1342,7 +1352,9 @@ fn soft_wrap_decoration_trim_does_not_depend_on_source_node_id() {
                         clear_trim(child);
                     }
                 }
-                LayerNodeKind::ClipRect { child, .. } => clear_trim(child),
+                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                    clear_trim(child)
+                }
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
                         if let PaintOp::TextDecoration {

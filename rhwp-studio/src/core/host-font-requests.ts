@@ -61,7 +61,7 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
   while (stack.length) {
     const node = stack.pop()!;
     if (node.kind === 'group') stack.push(...node.children);
-    else if (node.kind === 'clipRect') stack.push(node.child);
+    else if ((node.kind === 'clipRect' || node.kind === 'clipPath')) stack.push(node.child);
     else for (const op of node.ops) {
       if (op.type === 'equation' && usesHancomEquationGlyphs(op.layoutBox)) {
         // renderEquationBox의 hancomGlyphs는 Regular HyhwpEQ와 저장 glyph ID를 소비한다.

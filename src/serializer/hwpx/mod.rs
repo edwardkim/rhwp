@@ -134,6 +134,13 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
         }
     }
 
+    if let Some(bytes) =
+        crate::model::text_clip::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    {
+        z.write_deflated(crate::model::text_clip::HWPX_ENTRY, &bytes)?;
+        ctx.content_loss
+            .record(crate::model::text_clip::native_visibility_loss());
+    }
     if let Some(bytes) = crate::model::hyperlink_format::encode(doc) {
         z.write_deflated(crate::model::hyperlink_format::HWPX_ENTRY, &bytes)?;
     }

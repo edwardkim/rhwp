@@ -541,6 +541,16 @@ impl WebCanvasRenderer {
 
     /// 개별 노드 렌더링
     fn render_node(&mut self, node: &RenderNode) {
+        if let Some(paths) = &node.paint_clip {
+            let mut source = node.clone();
+            source.paint_clip = None;
+            self.ctx.save();
+            self.apply_source_clip(paths);
+            self.render_node(&source);
+            self.ctx.restore();
+            return;
+        }
+
         if !node.visible {
             return;
         }
@@ -1342,6 +1352,28 @@ impl WebCanvasRenderer {
         self.ctx.set_text_baseline("alphabetic");
     }
 
+    fn apply_source_clip(&self, paths: &[crate::model::text_clip::TextClipPath]) {
+        use crate::model::text_clip::ClipCommand;
+        for path in paths {
+            self.ctx.begin_path();
+            for command in &path.commands {
+                match *command {
+                    ClipCommand::Move(x, y) => self.ctx.move_to(x, y),
+                    ClipCommand::Line(x, y) => self.ctx.line_to(x, y),
+                    ClipCommand::Cubic(a, b, c, d, e, f) => {
+                        self.ctx.bezier_curve_to(a, b, c, d, e, f)
+                    }
+                    ClipCommand::Close => self.ctx.close_path(),
+                }
+            }
+            self.ctx.clip_with_canvas_winding_rule(if path.even_odd {
+                web_sys::CanvasWindingRule::Evenodd
+            } else {
+                web_sys::CanvasWindingRule::Nonzero
+            });
+        }
+    }
+
     fn render_layer_node(&mut self, node: &LayerNode, inherited_layer: Option<RenderLayerInfo>) {
         let active_layer = node.layer.or(inherited_layer);
         match &node.kind {
@@ -1349,6 +1381,12 @@ impl WebCanvasRenderer {
                 for child in children {
                     self.render_layer_node(child, active_layer);
                 }
+            }
+            LayerNodeKind::ClipPath { paths, child } => {
+                self.ctx.save();
+                self.apply_source_clip(paths);
+                self.render_layer_node(child, active_layer);
+                self.ctx.restore();
             }
             LayerNodeKind::ClipRect {
                 clip,

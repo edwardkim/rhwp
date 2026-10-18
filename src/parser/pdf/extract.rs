@@ -49,6 +49,26 @@ pub(super) fn extract(
             .into_iter()
             .unzip();
     let (paths, clips) = checked(pdf, pdf.extract_paths_with_clips(page), "paths", page)?;
+    let mut uses = std::collections::BTreeMap::new();
+    for (order, clip) in &clips.text_uses {
+        if uses.insert(order, clip).is_some() {
+            return Err(PdfImportError::new(
+                "PDF_TEXT_UNSUPPORTED",
+                "ambiguous text-paint clip witness",
+            ));
+        }
+    }
+    let span_clips = span_orders
+        .iter()
+        .map(|order| {
+            uses.get(order).map(|clip| (*clip).clone()).ok_or_else(|| {
+                PdfImportError::new(
+                    "PDF_TEXT_UNSUPPORTED",
+                    "text-paint clip witness missing or budget exceeded",
+                )
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
     for path in &paths {
         let next = budget
             .path_operations
@@ -244,6 +264,7 @@ pub(super) fn extract(
         media_box,
         spans,
         span_orders,
+        span_clips,
         images,
         image_orders,
         paths,

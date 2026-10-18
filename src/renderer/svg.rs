@@ -553,6 +553,39 @@ impl SvgRenderer {
             .push_str(&format!("<g clip-path=\"url(#{})\">", id));
     }
 
+    pub(super) fn begin_layer_path_clip(
+        &mut self,
+        paths: &[crate::model::text_clip::TextClipPath],
+        id: &str,
+    ) {
+        use crate::model::text_clip::ClipCommand;
+        for (index, path) in paths.iter().enumerate() {
+            let mut d = String::new();
+            for c in &path.commands {
+                use std::fmt::Write;
+                match *c {
+                    ClipCommand::Move(x, y) => {
+                        let _ = write!(d, "M{x} {y} ");
+                    }
+                    ClipCommand::Line(x, y) => {
+                        let _ = write!(d, "L{x} {y} ");
+                    }
+                    ClipCommand::Cubic(a, b, c, d1, e, f) => {
+                        let _ = write!(d, "C{a} {b} {c} {d1} {e} {f} ");
+                    }
+                    ClipCommand::Close => d.push_str("Z "),
+                }
+            }
+            let rule = if path.even_odd { "evenodd" } else { "nonzero" };
+            let name = format!("{id}-{index}");
+            self.defs.push(format!(
+                "<clipPath id=\"{name}\"><path d=\"{d}\" clip-rule=\"{rule}\"/></clipPath>"
+            ));
+            self.output
+                .push_str(&format!("<g clip-path=\"url(#{name})\">"));
+        }
+    }
+
     pub(super) fn end_layer_clip(&mut self) {
         self.output.push_str("</g>\n");
     }
@@ -651,6 +684,17 @@ impl SvgRenderer {
 
     /// 개별 노드를 SVG로 렌더링
     fn render_node(&mut self, node: &RenderNode) {
+        if let Some(paths) = &node.paint_clip {
+            let mut source = node.clone();
+            source.paint_clip = None;
+            self.begin_layer_path_clip(paths, &format!("source-text-{}", node.id));
+            self.render_node(&source);
+            for _ in paths {
+                self.end_layer_clip();
+            }
+            return;
+        }
+
         if !node.visible {
             return;
         }

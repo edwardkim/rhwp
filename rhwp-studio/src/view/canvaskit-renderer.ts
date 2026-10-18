@@ -26,6 +26,7 @@ import type {
   LayerBounds,
   LayerCharOverlapOp,
   LayerClipNode,
+  LayerPathClipNode,
   LayerEllipseOp,
   LayerEquationLayoutBox,
   LayerEquationOp,
@@ -878,7 +879,7 @@ export class CanvasKitLayerRenderer {
       while (nodes.length > 0 && ++work <= 50_000) {
         const node = nodes.pop()!;
         if (node.kind === 'group') nodes.push(...node.children);
-        else if (node.kind === 'clipRect') nodes.push(node.child);
+        else if ((node.kind === 'clipRect' || node.kind === 'clipPath')) nodes.push(node.child);
         else for (const op of node.ops) {
           if (op.type === 'image') this.imageForOp(op);
           else if (op.type === 'pageBackground' && op.image) {
@@ -975,7 +976,7 @@ export class CanvasKitLayerRenderer {
         const node = stack.pop()!;
         if (node.kind === 'group') {
           stack.push(...node.children);
-        } else if (node.kind === 'clipRect') {
+        } else if ((node.kind === 'clipRect' || node.kind === 'clipPath')) {
           stack.push(node.child);
         } else {
           hasPageBackground = node.ops.some((op) => op.type === 'pageBackground');
@@ -1478,7 +1479,7 @@ export class CanvasKitLayerRenderer {
       for (const child of node.children) this.selectTextVariants(child, canvas);
       return;
     }
-    if (node.kind === 'clipRect') {
+    if ((node.kind === 'clipRect' || node.kind === 'clipPath')) {
       this.selectTextVariants(node.child, canvas);
       return;
     }
@@ -1750,8 +1751,8 @@ export class CanvasKitLayerRenderer {
       }
       return;
     }
-    if (node.kind === 'clipRect') {
-      if (!this.currentClipEnabled) {
+    if ((node.kind === 'clipRect' || node.kind === 'clipPath')) {
+      if (!this.currentClipEnabled && node.kind !== 'clipPath') {
         this.renderNode(canvas, node.child, profile, replayPlane, activeLayer);
         return;
       }
@@ -1794,12 +1795,29 @@ export class CanvasKitLayerRenderer {
 
   private renderClipNode(
     canvas: SkCanvas,
-    node: LayerClipNode,
+    node: LayerClipNode | LayerPathClipNode,
     profile: LayerRenderProfile,
     replayPlane: CanvasKitReplayPlane,
     inheritedLayer: LayerInfo | null,
   ): void {
     canvas.save();
+    if (node.kind === 'clipPath') {
+      try {
+        for (const clip of node.paths ?? []) {
+          const data = clip.commands.map(command => command === 'Close' ? 'Z'
+            : 'Move' in command ? `M${command.Move.join(' ')}`
+            : 'Line' in command ? `L${command.Line.join(' ')}` : `C${command.Cubic.join(' ')}`).join(' ');
+          const path = this.canvasKit.Path.MakeFromSVGString(data);
+          if (!path) throw new Error('Source text clip path could not be decoded');
+          try {
+            path.setFillType(clip.even_odd ? this.canvasKit.FillType.EvenOdd : this.canvasKit.FillType.Winding);
+            canvas.clipPath(path, this.canvasKit.ClipOp?.Intersect ?? 0, true);
+          } finally { path.delete(); }
+        }
+        this.renderNode(canvas, node.child, profile, replayPlane, inheritedLayer);
+      } finally { canvas.restore(); }
+      return;
+    }
     canvas.clipRect(
       canvasKitCanonicalClipRect(node.clip, (x, y, width, height) =>
         this.canvasKit.XYWHRect(x, y, width, height),

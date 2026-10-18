@@ -195,7 +195,7 @@ impl CanvasRenderer {
                     self.render_layer_node(child);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 self.render_layer_node(child);
             }
             LayerNodeKind::Leaf { ops } => {

@@ -367,7 +367,7 @@ fn collect_node(
                 );
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             collect_node(
                 child,
                 resources,

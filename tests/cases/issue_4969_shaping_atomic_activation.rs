@@ -113,7 +113,9 @@ fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
                 collect_text_ops(child, ops);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_text_ops(child, ops),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_text_ops(child, ops)
+        }
         LayerNodeKind::Leaf { ops: leaf_ops } => ops.extend(leaf_ops.iter().filter(|op| {
             matches!(
                 op,
@@ -202,7 +204,7 @@ fn mutate_bounded_vertical_glyph_runs(
                 mutate_bounded_vertical_glyph_runs(child, mutate);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             mutate_bounded_vertical_glyph_runs(child, mutate);
         }
         LayerNodeKind::Leaf { ops } => {
@@ -378,7 +380,9 @@ fn find_layer_source_node(node: &LayerNode, source_node_id: u32) -> Option<&Laye
         LayerNodeKind::Group { children, .. } => children
             .iter()
             .find_map(|child| find_layer_source_node(child, source_node_id)),
-        LayerNodeKind::ClipRect { child, .. } => find_layer_source_node(child, source_node_id),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            find_layer_source_node(child, source_node_id)
+        }
         LayerNodeKind::Leaf { .. } => None,
     }
 }

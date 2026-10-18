@@ -2428,6 +2428,10 @@ impl DocumentCore {
                             self.visit(child, active_layer, clip);
                         }
                     }
+                    LayerNodeKind::ClipPath { child, .. } => {
+                        self.cacheable = false;
+                        self.visit(child, active_layer, clip);
+                    }
                     LayerNodeKind::ClipRect {
                         child,
                         clip: node_clip,
@@ -2775,20 +2779,22 @@ impl DocumentCore {
                         );
                     }
                 }
-                LayerNodeKind::ClipRect { child, .. } => collect(
-                    child,
-                    behind,
-                    front,
-                    image_count,
-                    raw_svg_count,
-                    flow_image_count,
-                    flow_raw_svg_count,
-                    has_behind,
-                    has_front,
-                    occlusion,
-                    page_background,
-                    active_layer,
-                ),
+                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                    collect(
+                        child,
+                        behind,
+                        front,
+                        image_count,
+                        raw_svg_count,
+                        flow_image_count,
+                        flow_raw_svg_count,
+                        has_behind,
+                        has_front,
+                        occlusion,
+                        page_background,
+                        active_layer,
+                    )
+                }
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
                         let plane = paint_op_replay_plane_with_layer(op, active_layer);

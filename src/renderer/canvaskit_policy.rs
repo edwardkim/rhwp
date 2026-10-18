@@ -622,7 +622,7 @@ fn count_layer_tree_work_units(
                 }
                 pending.extend(children.iter().rev().map(|child| (child, depth + 1)));
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 if minimum_work_exceeds_limit(work_units, pending.len(), 1, max_work_units) {
                     return CanvasKitBoundedWorkCount::Exceeded;
                 }
@@ -1387,6 +1387,19 @@ impl CanvasKitReplayPlanBuilder {
                     for (index, child) in children.iter().enumerate().rev() {
                         pending.push((child, format!("{path}/group/{index}"), active_layer));
                     }
+                }
+                LayerNodeKind::ClipPath { child, .. } => {
+                    self.push(CanvasKitReplayItem {
+                        path: format!("{path}/clip"),
+                        op_type: "clipPath",
+                        replay_plane: None,
+                        feature: CanvasKitReplayFeature::Clip,
+                        status: CanvasKitReplayStatus::Direct,
+                        reason: CanvasKitReplayReason::DirectReplaySupported,
+                        compat_overlay_allowed: false,
+                        detail: Some("source text path intersection".into()),
+                    });
+                    pending.push((child, format!("{path}/clip/child"), active_layer));
                 }
                 LayerNodeKind::ClipRect {
                     child, clip_kind, ..

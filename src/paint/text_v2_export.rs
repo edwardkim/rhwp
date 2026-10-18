@@ -46,7 +46,9 @@ impl PageLayerTree {
         while let Some(node) = nodes.pop() {
             match &node.kind {
                 LayerNodeKind::Group { children, .. } => nodes.extend(children),
-                LayerNodeKind::ClipRect { child, .. } => nodes.push(child),
+                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                    nodes.push(child)
+                }
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
                         let (variant, expected) = match op {
@@ -119,6 +121,12 @@ impl PageLayerTree {
             "text.variants".to_string(),
             "text.paintOrderSlot".to_string(),
         ]);
+        if value["requiredFeatures"]
+            .as_array()
+            .is_some_and(|v| v.iter().any(|v| v == "paint.textClipPath"))
+        {
+            required_features.insert("paint.textClipPath".into());
+        }
         envelope_node(
             &mut value["root"],
             "root",
@@ -255,7 +263,7 @@ fn envelope_node(
                 }
             }
         }
-        Some("clipRect") => envelope_node(
+        Some("clipRect") | Some("clipPath") => envelope_node(
             &mut node["child"],
             &format!("{path}/clip"),
             strict_kind,

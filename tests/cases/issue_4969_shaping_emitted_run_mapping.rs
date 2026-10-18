@@ -584,7 +584,9 @@ fn collect_product_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>)
                 collect_product_text_ops(child, ops);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_product_text_ops(child, ops),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_product_text_ops(child, ops)
+        }
         LayerNodeKind::Leaf { ops: leaf_ops } => ops.extend(
             leaf_ops
                 .iter()

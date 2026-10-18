@@ -218,6 +218,8 @@ fn collect_visual_bounds(
             .iter()
             .filter_map(|child| collect_visual_bounds(child, clip_enabled, visit))
             .reduce(union),
+        // A conservative visual hull must not pretend that a curved clip is a rectangle.
+        LayerNodeKind::ClipPath { child, .. } => collect_visual_bounds(child, clip_enabled, visit),
         LayerNodeKind::ClipRect { clip, child, .. } => {
             let child = collect_visual_bounds(child, clip_enabled, visit);
             if clip_enabled {

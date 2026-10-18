@@ -16,6 +16,7 @@ mod table_inference;
 mod table_paint;
 mod table_topology;
 mod text_analysis;
+mod text_clip;
 
 use crate::model::document::Document;
 use pdf_oxide::import_limits::{ImportBudget, ImportBudgetSnapshot, ImportLimitFailure};
@@ -208,6 +209,7 @@ struct ExtractedPage {
     media_box: (f32, f32, f32, f32),
     spans: Vec<TextSpan>,
     span_orders: Vec<Vec<usize>>,
+    span_clips: Vec<Option<std::sync::Arc<pdf_oxide::elements::PathClip>>>,
     images: Vec<PdfImage>,
     image_orders: Vec<Vec<usize>>,
     paths: Vec<PathContent>,

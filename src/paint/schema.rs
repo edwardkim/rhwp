@@ -15,8 +15,8 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    // 26: optional explicit source imageInterpolation, independent of profile.
-    schema_minor_version: 26,
+    // 27: mandatory source text path clipping with editable text retained.
+    schema_minor_version: 27,
     resource_table_version: 1,
     resource_table_minor_version: 6,
     unit: "px",
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn layer_tree_schema_constants_match_schema() {
-        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 26);
+        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 27);
         assert_eq!(LAYER_TREE_SCHEMA.resource_table_minor_version, 6);
         assert_eq!(
             LAYER_TREE_SCHEMA,

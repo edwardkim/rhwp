@@ -341,6 +341,9 @@ pub struct DrawingObjAttr {
 /// 글상자 (그리기 개체 내 텍스트)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct TextBox {
+    /// Text-only local HWPUNIT clipping; paragraphs remain editable and untrimmed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paint_clip: Option<Vec<super::text_clip::TextClipPath>>,
     /// LIST_HEADER list_attr (라운드트립 보존용)
     pub list_attr: u32,
     /// HWPX `textDirection="VERTICALALL"` 구분 보존 (#1379).

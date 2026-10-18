@@ -514,7 +514,7 @@ pub(crate) fn lower_vertical_shaping_page_sidecars(
                     lower_node(child, frame, resources, next_text_source_id, claimed);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 lower_node(child, frame, resources, next_text_source_id, claimed);
             }
             LayerNodeKind::Leaf { ops } => {

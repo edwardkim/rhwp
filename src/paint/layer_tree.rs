@@ -171,7 +171,7 @@ impl TextSourceTable {
                     self.collect_from_node(child);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 self.collect_from_node(child);
             }
             LayerNodeKind::Leaf { ops } => {
@@ -209,7 +209,9 @@ pub(crate) fn bind_text_run_sources(node: &mut LayerNode, next_id: &mut u32) {
                 bind_text_run_sources(child, next_id);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => bind_text_run_sources(child, next_id),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            bind_text_run_sources(child, next_id)
+        }
         LayerNodeKind::Leaf { ops } => {
             for op in &mut *ops {
                 if let PaintOp::TextRun { run, source, .. } = op {
@@ -420,6 +422,10 @@ impl LayerNode {
 
 #[derive(Debug, Clone)]
 pub enum LayerNodeKind {
+    ClipPath {
+        paths: Vec<crate::model::text_clip::TextClipPath>,
+        child: Box<LayerNode>,
+    },
     Group {
         children: Vec<LayerNode>,
         cache_hint: CacheHint,

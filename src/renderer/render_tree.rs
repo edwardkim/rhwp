@@ -153,6 +153,9 @@ impl RenderLayerInfo {
 /// 렌더 노드 (페이지 내 렌더링 가능한 요소)
 #[derive(Debug, Clone, Serialize)]
 pub struct RenderNode {
+    /// Source text clipping in absolute page pixels; not a layout height/cut.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paint_clip: Option<Vec<crate::model::text_clip::TextClipPath>>,
     /// 노드 ID
     pub id: NodeId,
     /// 노드 종류
@@ -202,6 +205,7 @@ impl RenderNode {
             print_bbox: None,
             control_code: ControlCode::Automatic,
             header_footer_source: None,
+            paint_clip: None,
         }
     }
 

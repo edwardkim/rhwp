@@ -84,6 +84,9 @@ impl DocumentCore {
                     self.collect_layer_hyperlinks(child, clip, links)?;
                 }
             }
+            LayerNodeKind::ClipPath { child, .. } => {
+                self.collect_layer_hyperlinks(child, clip, links)?;
+            }
             LayerNodeKind::ClipRect {
                 clip: child_clip,
                 child,

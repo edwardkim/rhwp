@@ -434,6 +434,11 @@ pub(super) fn lower(
                 text_box: Some(TextBox {
                     max_width: width,
                     text_margin_explicit: true,
+                    paint_clip: super::text_clip::local_paths(
+                        page.span_clips[span_index].as_deref(),
+                        span.bbox.x,
+                        span.bbox.y + span.font_size * 0.95,
+                    )?,
                     paragraphs: vec![paragraph],
                     ..Default::default()
                 }),
