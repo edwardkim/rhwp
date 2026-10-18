@@ -197,10 +197,16 @@ impl LayoutEngine {
                 .iter()
                 .position(|owner| std::ptr::eq(owner, cell))
             {
-                prior_h += straddle_page_bands
+                if let Some(carry) = straddle_page_bands
                     .iter()
                     .find(|carry| carry.cell_index == index)
-                    .map_or(0.0, |carry| carry.physical_height);
+                {
+                    // 실제 앞 상자는 내용과 빈 공간을 이미 함께 포함한다. 원래
+                    // 행이나 내용 컷으로 다시 추정한 값에 띠를 덧붙이지 않는다.
+                    prior_h = carry
+                        .accepted_physical_height
+                        .unwrap_or(prior_h + carry.physical_height);
+                }
             }
         }
         let accepted_start = table

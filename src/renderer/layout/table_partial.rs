@@ -1521,7 +1521,8 @@ impl LayoutEngine {
                             || (start > 0
                                 && end >= self.cell_units(cell, table, styles).len()
                                 && straddle_page_bands.iter().any(|carry| {
-                                    carry.cell_index == cell_idx && carry.physical_height > 0.0
+                                    carry.cell_index == cell_idx
+                                        && (carry.owns_blank_band || carry.physical_height > 0.0)
                                 }))
                     });
             // 하위 원본 행은 끝부분의 빈 띠를 소유한다. 상위 커서는

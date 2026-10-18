@@ -821,7 +821,10 @@ pub struct WrapAnchorRef {
 #[derive(Debug, Clone, PartialEq)]
 pub struct StraddleCellCarry {
     pub cell_index: usize,
+    /// 원래 측정 행에 추가로 반영하는 저장 프레임 띠. 실제 수용 상자와 구분한다.
     pub physical_height: f64,
+    /// 앞 조각의 실제 빈 상자를 소유한다. 추정 행 높이의 추가 차감량이 아니다.
+    pub owns_blank_band: bool,
     /// 앞 조각들이 실제 수용한 셀 상자 높이의 합. 물리 상자를 알 수 없는 경로는 None.
     pub accepted_physical_height: Option<f64>,
     /// First unconsumed unit at the fragment's incoming boundary.
