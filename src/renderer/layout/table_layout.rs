@@ -6872,9 +6872,12 @@ impl LayoutEngine {
         let prev_cell_square_float = self.cell_has_square_float.get();
         let cell_square_float = cell.paragraphs.iter().any(|p| {
             p.controls.iter().any(|c| {
+                // 어울림 중첩 표도 같은 배제를 만든다(여권 발급 신청서 '배우자의
+                // 로마자 성' 칸: 상자 표 옆 안내문의 저장 cs=23596HU).
                 let common = match c {
                     Control::Picture(pic) => Some(&pic.common),
                     Control::Shape(shape) => Some(shape.common()),
+                    Control::Table(table) => Some(&table.common),
                     _ => None,
                 };
                 common.is_some_and(|cm| {
