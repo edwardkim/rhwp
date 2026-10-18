@@ -1,0 +1,159 @@
+{
+  "base": "6ed1682c3267ea786734eb2e75252916a861d1fd",
+  "parent": "0666befe5b8fbac7c5464ac654dbaf672054d016",
+  "scope": "C253 working source, not final committed-head or whole52/PR acceptance.",
+  "source": "samples/task2097/75544_pii_bunseok.hwpx",
+  "sourceSha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+  "pdf": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+  "pdfSha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+  "compat": "2022",
+  "profile": "print",
+  "dpi": 192,
+  "coordinate": "CSS96",
+  "tolerance": "canonical uncorrected silhouette 2px, gate90%",
+  "sourceHashes": {
+    "src/renderer/layout/paragraph_layout.rs": "ef33c2fe63e05d1588c63747abb93e110bee67a35bb60d212a4ccfa033f17c75",
+    "tests/cases/issue_7445_dash_leader_word_spacing.rs": "57af3815fd5334e416970dad6182cb4685e974fcaa7381fcc91304142bd7f75b"
+  },
+  "native": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "exitCode": 0,
+    "sha256": "4394479ed276067533d28233b8bb540d5b80fcabf0ed53b7c9d7f7c9aef0d598",
+    "source": "source.json"
+  },
+  "wasm": {
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "exitCode": 0,
+    "hashes": {
+      "rhwp.js": "7ba187379818abd095fe6f21cc48b5466f371739135abbe88b008e880ae43837",
+      "rhwp_bg.wasm": "bca79b7240b3d7ba639b52e86bec7126c3d47658f4eff6d6c72d616314988ef4",
+      "rhwp.d.ts": "516dd711bb7744497f04aac485d79ac323465f46f7c8f83012e2fd01b56ed080",
+      "rhwp_bg.wasm.d.ts": "e0acb3a0810a8e8f7208c3eabf1ba1eb6df238a118737d57fa34126fe7703761"
+    },
+    "rootAndStudioPublicFilesVerified": 8,
+    "scope": "Mac locked web/no-opt local alternative, not Docker optimized; actual runtime/full visual validation pending."
+  },
+  "whole": [
+    {
+      "backend": "native",
+      "case": "pii66-declared",
+      "pages": 66,
+      "minimum": "94.12098"
+    },
+    {
+      "backend": "native",
+      "case": "pii66-default",
+      "pages": 66,
+      "minimum": "94.12098"
+    },
+    {
+      "backend": "wasm",
+      "case": "pii66-declared",
+      "pages": 66,
+      "minimum": "93.77937"
+    },
+    {
+      "backend": "wasm",
+      "case": "pii66-default",
+      "pages": 66,
+      "minimum": "93.77937"
+    }
+  ],
+  "pairedAudit": {
+    "pages": 264,
+    "below90": 0,
+    "develDeclines": 0
+  },
+  "directReview": {
+    "scope": "PII original page4 only, current C253. Directly opened both Native/fresh WASM review and overlay.",
+    "page": 4,
+    "dpi": 192,
+    "coordinate": "CSS96; review raster192",
+    "nativeRaw": "100.00000",
+    "wasmRaw": "98.89537",
+    "observations": [
+      "Right cell item symbol and dash start now follow independent Print and original cell content ownership.",
+      "Same rows, ordered original text and source cells retained by formal regression.",
+      "Thin underline/table frame and glyph antialiasing residuals remain; no pixel identity claim."
+    ],
+    "files": [
+      {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-6ed1682c-20261018/dash-spacing-focus-c254/native/pii66-declared/review/review_004.png",
+        "sha256": "01189cb6662bc6e872f157001314c9bf6d18173d9fb41a07708d4711cb770ab4"
+      },
+      {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-6ed1682c-20261018/dash-spacing-focus-c254/native/pii66-declared/overlay/overlay_004.png",
+        "sha256": "377c2279a57895b8ab8372ef0f43e7a3f782f18248cd4bd3128dcef194c947e3"
+      },
+      {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-6ed1682c-20261018/dash-spacing-focus-c254/wasm/pii66-declared/review/review_004.png",
+        "sha256": "e06bedd86ac2dcd08a755b43ed247bbe1401859fdc5c58243b246a97a505f946"
+      },
+      {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-6ed1682c-20261018/dash-spacing-focus-c254/wasm/pii66-declared/overlay/overlay_004.png",
+        "sha256": "8424c7422eeb4c0c2480f61f1d20d2c90f741b64f94372bba0942cebc9766d16"
+      }
+    ],
+    "whole52OrPrAcceptance": false
+  },
+  "residual": "Other documents devel declines remain. Underline, table frame and antialiasing residuals remain. Not pixel-identical.",
+  "fullRegression": {
+    "exitCode": 0,
+    "seconds": 808.0450995409628,
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--build-jobs",
+      "8",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "source": "source.json",
+    "passed": 10938,
+    "failed": 0,
+    "skipped": 45,
+    "testRuntimeSeconds": "405.452",
+    "scope": "Current C253 working-source default-feature full integration suite; not final PR head or whole52 visual acceptance."
+  },
+  "files": {
+    "wasm-declared-before-all-pages.tsv": "ca0f13e6585627cc65febb2e11a863112ef9c8a7e2ae3e670ab3f6952f0d014f",
+    "native-p004-overlay.png": "377c2279a57895b8ab8372ef0f43e7a3f782f18248cd4bd3128dcef194c947e3",
+    "native-pii66-default-all-pages.tsv": "c9377e35c9dae4b9022d82d64fcb0af1632da9fc4abd3b09cc1ded4a4e752661",
+    "native-declared-devel-all-pages.tsv": "0c5f76de198a19820bab56d39baf9740631e109d299311492c94dbcf7daf43a8",
+    "wasm-declared-devel-all-pages.tsv": "917483cefa91dbac56b31a371b78a5b79714f149a53fc0d3a280d2d48172948e",
+    "native-pii66-declared-all-pages.tsv": "c9377e35c9dae4b9022d82d64fcb0af1632da9fc4abd3b09cc1ded4a4e752661",
+    "wasm-pii66-declared-all-pages.tsv": "cc8ef16bd1680fd07dc2ed98b821856ff6f0aab54b11b2e560fd7afc3e87872f",
+    "wasm-p004-review.png": "e06bedd86ac2dcd08a755b43ed247bbe1401859fdc5c58243b246a97a505f946",
+    "native-declared-before-all-pages.tsv": "d2365a40b7e56115b6cae7dda98b43564273e28115632882ae41763a05267fcc",
+    "wasm-p004-overlay.png": "8424c7422eeb4c0c2480f61f1d20d2c90f741b64f94372bba0942cebc9766d16",
+    "wasm-pii66-default-all-pages.tsv": "cc8ef16bd1680fd07dc2ed98b821856ff6f0aab54b11b2e560fd7afc3e87872f",
+    "native-p004-review.png": "01189cb6662bc6e872f157001314c9bf6d18173d9fb41a07708d4711cb770ab4"
+  },
+  "buildSourceLedgerSha256": "6c2c468f3e3df727a710cb8b597e8e6f118232566f352e0b97b68543af97524a",
+  "sourceLedgerLocalPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-6ed1682c-20261018/dash-spacing-repair-c253/source.json"
+}

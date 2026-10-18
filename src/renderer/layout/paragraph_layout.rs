@@ -1286,6 +1286,7 @@ struct RunEmitVars<'a> {
     end: usize,
     extra_char_sp: f64,
     extra_dash_sp: f64,
+    dash_extra_by_run: Option<&'a [f64]>,
     extra_word_sp: f64,
     has_tabs: bool,
     tab_origin_shift: f64,
@@ -2258,6 +2259,7 @@ fn fixed_auto_tab_prefix_by_run(line: &ComposedLine) -> Vec<usize> {
 
 /// [Task #2067] 명시적 정렬 분배와 실제 오버플로우에 따른 여분 간격 계산.
 /// 반환 = (extra_word_sp, extra_char_sp, extra_dash_sp).
+#[cfg(test)]
 #[allow(clippy::too_many_arguments)]
 fn compute_line_extra_spacing(
     comp_line: &ComposedLine,
@@ -2284,6 +2286,134 @@ fn compute_line_extra_spacing(
     available_width: f64,
     tab_width: f64,
 ) -> (f64, f64, f64) {
+    let mut dash_extra_by_run = None;
+    compute_line_extra_spacing_with_dash_plan(
+        comp_line,
+        leading_space_count,
+        inline_object_count,
+        trailing_space_limit,
+        leading_space_plan,
+        soft_wrap_separator_width,
+        terminal_tracking,
+        unjustified_leading_spaces,
+        styles,
+        centered_measure,
+        alignment,
+        in_cell,
+        needs_justify,
+        justify_spaces_only,
+        needs_distribute,
+        has_tabs,
+        renders_synthetic_wrap_trailing_space,
+        suppress_cell_overflow_spacing,
+        converge_auto_shrink_cell,
+        total_char_count,
+        total_text_width,
+        available_width,
+        tab_width,
+        &mut dash_extra_by_run,
+    )
+}
+
+/// 낱말 공백과 대시가 함께 있는 양쪽 정렬 줄의 복원 예산.
+/// 대시는 해당 런의 자연 전진까지만 복원하고 남은 폭은 낱말 공백이 소비한다.
+/// 방출과 같은 정규화 런·표시 문자열을 사용하여 다른 글꼴/크기의 대시에도
+/// 한 런에서 측정한 복원량을 일괄 적용하지 않는다.
+fn justified_dash_restoration(
+    plan: &LeadingSpacePlan<'_>,
+    styles: &ResolvedStyleSet,
+    tab_width: f64,
+    slack: f64,
+    word_slots: usize,
+) -> (f64, f64, Vec<f64>) {
+    let mut capacities = Vec::with_capacity(plan.line.runs.len());
+    let mut counts = Vec::with_capacity(plan.line.runs.len());
+    for (index, run) in plan.line.runs.iter().enumerate() {
+        let field = plan.body_field_runs.get(index).copied().unwrap_or(false);
+        let chars: Vec<char> = effective_text_for_metrics(run).chars().collect();
+        let mut count = 0usize;
+        let mut at = 0;
+        while !field && at < chars.len() {
+            if chars[at] != '-' {
+                at += 1;
+                continue;
+            }
+            let start = at;
+            while at < chars.len() && chars[at] == '-' {
+                at += 1;
+            }
+            // char_width_decision의 런 내부 leader 계약과 같은 소유 범위다.
+            if at - start >= 3 {
+                count += at - start;
+            }
+        }
+        let capacity = if count > 0 {
+            let mut style = run.text_style(styles);
+            style.default_tab_width = tab_width;
+            style.extra_word_spacing = 0.0;
+            style.extra_char_spacing = 0.0;
+            style.extra_dash_advance = 0.0;
+            let natural = estimate_text_width_exact("-", &style);
+            let compressed = estimate_text_width_exact("---", &style) / 3.0;
+            (natural - compressed).max(0.0)
+        } else {
+            0.0
+        };
+        capacities.push(capacity);
+        counts.push(count);
+    }
+    let total_capacity: f64 = capacities
+        .iter()
+        .zip(&counts)
+        .map(|(capacity, count)| capacity * *count as f64)
+        .sum();
+    let restored = slack.min(total_capacity);
+    let fraction = if total_capacity > 0.0 {
+        restored / total_capacity
+    } else {
+        0.0
+    };
+    let extras = capacities
+        .into_iter()
+        .map(|capacity| capacity * fraction)
+        .collect();
+    let count: usize = counts.iter().sum();
+    let average = if count > 0 {
+        restored / count as f64
+    } else {
+        0.0
+    };
+    ((slack - restored) / word_slots as f64, average, extras)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn compute_line_extra_spacing_with_dash_plan(
+    comp_line: &ComposedLine,
+    leading_space_count: usize,
+    inline_object_count: usize,
+    trailing_space_limit: usize,
+    leading_space_plan: &LeadingSpacePlan<'_>,
+    soft_wrap_separator_width: f64,
+    terminal_tracking: f64,
+    unjustified_leading_spaces: &[usize],
+    styles: &ResolvedStyleSet,
+    centered_measure: Option<&CenteredTextLineMeasure>,
+    alignment: Alignment,
+    in_cell: bool,
+    needs_justify: bool,
+    justify_spaces_only: bool,
+    needs_distribute: bool,
+    has_tabs: bool,
+    renders_synthetic_wrap_trailing_space: bool,
+    suppress_cell_overflow_spacing: bool,
+    converge_auto_shrink_cell: bool,
+    total_char_count: usize,
+    total_text_width: f64,
+    available_width: f64,
+    tab_width: f64,
+    dash_extra_by_run: &mut Option<Vec<f64>>,
+) -> (f64, f64, f64) {
+    *dash_extra_by_run = None;
     // 자동 줄바꿈이 소비한 구분 공백은 그 전진을 보존하지만 가시 본문을
     // 압축할 근거가 아니다. 가운데 정렬은 이미 자체 점유 측정을 공유한다.
     let fit_width = centered_measure.map_or(
@@ -2473,10 +2603,18 @@ fn compute_line_extra_spacing(
             let effective_used = total_text_width - trailing_width - terminal_tracking;
             let slack = available_width - effective_used;
             if leader_dashes > 0 && slack > 0.0 {
-                // Task #352: 라인에 dash leader 가 있고 슬랙이 양수면
-                // dash 가 흡수 (PDF elastic leader 동작 모방). 공백·일반
-                // 글자 자연 폭 유지.
-                (0.0, 0.0, slack / leader_dashes as f64)
+                // 독립 Print의 혼합 줄은 대시를 자연 전진까지 복원한 뒤
+                // 남은 폭을 낱말 사이에도 배분한다. 한 글꼴의 복원량을
+                // 다른 런에 재적용하지 않고 같은 계획을 실제 방출에 전달한다.
+                let (word_extra, dash_extra, by_run) = justified_dash_restoration(
+                    leading_space_plan,
+                    styles,
+                    tab_width,
+                    slack,
+                    rendered_space_slots,
+                );
+                *dash_extra_by_run = Some(by_run);
+                (word_extra, 0.0, dash_extra)
             } else if suppress_cell_overflow_spacing && slack < 0.0 {
                 // 셀 내부 폭이 글자 자연 폭보다 작아도 한컴처럼 글자를 압축하지 않는다.
                 // 줄바꿈은 LINE_SEG/리플로우가 결정하고, 그린 글자는 셀 경계에서만 클리핑한다.
@@ -7216,6 +7354,7 @@ impl LayoutEngine {
             } else {
                 vec![0; leading_space_plan.line.runs.len()]
             };
+            let mut dash_extra_by_run = None;
             let (extra_word_sp, extra_char_sp, extra_dash_sp) = if is_hancom_company_pua_logo_line {
                 // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
                 // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
@@ -7234,7 +7373,7 @@ impl LayoutEngine {
                 // authored content and retain the normal line-fit contract.
                 (0.0, 0.0, 0.0)
             } else {
-                compute_line_extra_spacing(
+                compute_line_extra_spacing_with_dash_plan(
                     comp_line,
                     leading_space_plan.leading_spaces,
                     line_tac_offsets_for_width
@@ -7266,6 +7405,7 @@ impl LayoutEngine {
                     total_text_width,
                     available_width,
                     tab_width,
+                    &mut dash_extra_by_run,
                 )
             };
 
@@ -7591,7 +7731,7 @@ impl LayoutEngine {
             // cross-run 탭 감지용 inline_tabs(composed.tab_extended) 커서 — Task #290
             let mut inline_tab_cursor_render = stored_tab_index_before_line(composed, comp_line);
             // 측정에 사용한 줄과 같은 run 분할로 선두 공백의 소유를 재생한다.
-            let emit_line = if extra_word_sp == 0.0 && extra_char_sp == 0.0 {
+            let emit_line = if extra_word_sp == 0.0 && extra_char_sp == 0.0 && dash_extra_by_run.is_none() {
                 comp_line
             } else {
                 leading_space_plan.line.as_ref()
@@ -7635,6 +7775,7 @@ impl LayoutEngine {
                     end,
                     extra_char_sp,
                     extra_dash_sp,
+                    dash_extra_by_run: dash_extra_by_run.as_deref(),
                     extra_word_sp,
                     has_tabs,
                     tab_origin_shift,
@@ -8370,6 +8511,7 @@ impl LayoutEngine {
             end,
             extra_char_sp,
             extra_dash_sp,
+            dash_extra_by_run,
             extra_word_sp,
             has_tabs,
             tab_origin_shift,
@@ -8669,7 +8811,14 @@ impl LayoutEngine {
             let fixed_spacing = run_idx < natural_prefix_runs || body_field;
             text_style.extra_word_spacing = if fixed_spacing { 0.0 } else { extra_word_sp };
             text_style.extra_char_spacing = if fixed_spacing { 0.0 } else { extra_char_sp };
-            text_style.extra_dash_advance = if body_field { 0.0 } else { extra_dash_sp };
+            text_style.extra_dash_advance = if body_field {
+                0.0
+            } else {
+                dash_extra_by_run
+                    .and_then(|extras| extras.get(run_idx))
+                    .copied()
+                    .unwrap_or(extra_dash_sp)
+            };
             text_style.unjustified_leading_spaces = unjustified_leading_spaces[run_idx];
             // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
             // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
@@ -8776,7 +8925,7 @@ impl LayoutEngine {
                 && run_border_fill_id == 0
                 && extra_word_sp.abs() <= f64::EPSILON
                 && extra_char_sp.abs() <= f64::EPSILON
-                && extra_dash_sp.abs() <= f64::EPSILON;
+                && text_style.extra_dash_advance.abs() <= f64::EPSILON;
             // NodeId를 먼저 고정하되 attach가 실패하면 같은 id로 legacy TextRun을
             // 만든다. 따라서 실패는 id hole이나 K1 suppression을 남기지 않는다.
             let reserved_shaping_run_id = shaping_candidate.then(|| tree.next_id());
