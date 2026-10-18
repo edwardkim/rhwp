@@ -213,6 +213,12 @@ impl TypesetEngine {
             start_cut_is_block: input.start.start_cut_is_block,
             start_row_height_override,
             source_terminal_suffix_start: input.prepared.source_terminal_suffix_start,
+            opening_block_cuts_after_first_row: input
+                .prepared
+                .opening_rowspan_block_cuts_after_first_row
+                && !is_continuation
+                && cursor_row == 0,
+            source_carried_band_row: budget.source_carried_band_row,
         };
         let run_scan = |vars: BlockRowScanVars| {
             let mut scan = self.scan_block_table_split_rows(

@@ -209,7 +209,14 @@ impl TypesetEngine {
                     // `해당 없음`처럼 한 행의 텍스트만 먼저 잘려 p19의 source owner가
                     // 앞당겨진다. 한컴은 그 근소한 pseudo-tail은 보존하지 않고 행 전체를
                     // 다음 쪽으로 넘긴다.
-                    if table::scan::row::retains_blank_tail(&probe, visible_height, rest) {
+                    // 저장 근거가 이 행의 컷을 증언하면 추정 문턱(`MIN_TOP_KEEP_PX`) 대신 그 컷을
+                    // 따른다: 내용은 다 들고, 남은 빈 띠는 다음 조각이 잇는다.
+                    let source_certified_band = v.source_carried_band_row == Some(r)
+                        && probe.fully_consumed
+                        && visible_height <= rest + 0.5;
+                    if source_certified_band
+                        || table::scan::row::retains_blank_tail(&probe, visible_height, rest)
+                    {
                         consumed += cs_before + rest;
                         r += 1;
                         end_row = r;
@@ -307,6 +314,49 @@ impl TypesetEngine {
                 || self.render_normalization.table_text_reflowed(table),
                 |row| Self::row_has_no_text_or_controls(table, row),
             );
+            // 행 전체가 들어가도 이 행이 쪽의 마지막 행이 되고(뒤에 최소 상단 높이도 안
+            // 남음), 셀 저장 줄이 한 셀의 뒷줄을 새 원점(vpos 0)에서 다시 시작하면, 그것은
+            // 한컴이 기록한 이 행의 쪽 컷이다. 기록된 줄에서 자르고 나머지를 다음 쪽에서
+            // 잇는다(1480000 30·38·43·57쪽: 2줄 행의 둘째 줄 vpos=0, 한/글 2020 PDF 는
+            // 둘째 줄을 다음 쪽 첫머리에 둔다. 기록이 없는 표 15·18 은 쪽 끝 행을 가르지
+            // 않는다). 행이 쪽 중간에 오면 기록을 따르지 않는다.
+            let rest_after_whole_row = avail_for_rows - consumed - cs_before - row_total;
+            let stored_restart_page_cut = (whole_row_fits
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && r + 1 < row_count
+                && rest_after_whole_row < MIN_TOP_KEEP_PX
+                && mt.allows_row_break_split()
+                && !table.common.treat_as_char
+                && !rowspan_touched[r]
+                && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                && !st.profile.session_edited()
+                && !self.render_normalization.table_text_reflowed(table))
+            .then(|| layout_engine.row_plain_restart_capacity_cut(table, r, styles))
+            .flatten()
+            .filter(|cut| {
+                layout_engine.row_cut_content_height(table, r, &[], cut, styles)
+                    <= avail_for_rows - consumed - cs_before + 0.5
+            });
+            if let Some(cut) = stored_restart_page_cut {
+                // 잘린 끝 행 상자는 남은 쪽 공간이 아니라 공통 상자(max(선언, 컷 내용))다.
+                let content = layout_engine.row_cut_content_height(table, r, &[], &cut, styles);
+                let physical = layout_engine
+                    .stored_restart_end_row_box(table, r, &cut, styles)
+                    .min((avail_for_rows - consumed - cs_before).max(0.0));
+                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                    eprintln!(
+                        "DIAG_SCAN STORED_RESTART_PAGE_CUT r={} cut={:?} rest_after={:.1}",
+                        r, cut, rest_after_whole_row
+                    );
+                }
+                end_row = r + 1;
+                split_end_limit = content;
+                split_end_cut = cut;
+                end_row_height_override = Some(physical);
+                consumed += cs_before + physical;
+                return false;
+            }
             if whole_row_fits {
                 // 행 전체가 예산 안에 들어감.
                 bleed_absorbed_row_height = None;
@@ -790,20 +840,47 @@ impl TypesetEngine {
                     && row_total > budget + 0.5;
                 if band_cut_ok {
                     end_row = r + 1;
-                    split_end_cut = res.end_cut.clone();
-                    split_end_limit = budget.max(res.consumed_height);
                     let physical_band = row_start_cut
                         .is_empty()
                         .then(|| {
                             layout_engine.stored_complete_row_cut_band(
                                 table,
                                 r,
-                                &split_end_cut,
+                                &res.end_cut,
                                 avail_for_rows - consumed - cs_before,
                                 styles,
                             )
                         })
                         .flatten();
+                    // 저장 셀 내용이 모두 남은 물리 띠에 들어가고, 선언 높이가 그 띠를 말미 행
+                    // 압축 허용치 이내로만 넘고, 이 행을 지나 이어지는 걸침 칸이 없으면 한컴은
+                    // 행 밴드를 띠로 압축해 이 쪽 끝에서 닫는다. 남은 빈 띠는 다음 쪽으로 넘기지
+                    // 않는다. 한/글 2020 PDF 실측(선언 − 띠): 21761835 56행 4.8px·1342000
+                    // 115행 1.1px·56행 9.9px 는 닫히고 다음 쪽이 다음 행으로 시작하며,
+                    // 1342000 43행 15.5px 는 다음 쪽 첫머리에 빈 띠가 남는다.
+                    // 걸침 칸이 이어지면 한컴은 그 칸의 총높이를 지켜 남은 높이를 뒤 행에
+                    // 준다(21761835 블록 60–69: 68행이 5쪽에서 8px 줄고 6쪽 69행이 선언보다
+                    // 9px 크다). 그 경우는 아래 띠 이월로 같은 총량을 남긴다.
+                    let rowspan_continues_past_row = table.cells.iter().any(|cell| {
+                        let start = cell.row as usize;
+                        cell.row_span > 1 && start <= r && start + cell.row_span as usize > r + 1
+                    });
+                    if let Some(band) = physical_band.filter(|band| {
+                        !rowspan_continues_past_row
+                            && row_total <= band + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+                    }) {
+                        end_row_height_override = Some(band);
+                        consumed += cs_before + band;
+                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                            eprintln!(
+                                "DIAG_SCAN BAND_CLOSE r={} band={:.1} content={:.1} row_total={:.1}",
+                                r, band, res.consumed_height, row_total
+                            );
+                        }
+                        return false;
+                    }
+                    split_end_cut = res.end_cut.clone();
+                    split_end_limit = budget.max(res.consumed_height);
                     end_row_height_override = physical_band;
                     consumed += cs_before + physical_band.unwrap_or(split_end_limit);
                     if std::env::var("RHWP_DIAG_SCAN").is_ok() {
@@ -850,7 +927,8 @@ impl TypesetEngine {
                 if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
-                } else if layout_engine.stored_single_line_row_is_fragmentable(table, r, styles)
+                } else if table_storage_declares_splits
+                    && layout_engine.stored_single_line_row_is_fragmentable(table, r, styles)
                     && !rowspan_touched[r]
                     && layout_engine
                         .stored_ordinary_row_cut_height(
@@ -864,6 +942,10 @@ impl TypesetEngine {
                 {
                     // 한 줄은 온전히 소유하고, 선언 높이의 빈 꼬리만 다음 쪽으로 넘긴다.
                     // 내용 컷과 실제 물리 상자는 refit 뒤 공통 쪽 경계에서 확정한다.
+                    // 빈 꼬리를 따로 이월하는 근거는 표의 저장 셀 되감김(한컴이 기록한 쪽
+                    // 컷)이다. 그런 기록이 없는 표에서 한컴은 선언 높이가 안 들어가는 한 줄
+                    // 행을 통째로 다음 쪽에 넘긴다(1480000 표 18 76행: 52쪽 띠 17.5px <
+                    // 선언 18.9px, 한컴 정본 53쪽이 76행으로 시작).
                     let physical = avail_for_rows - consumed - cs_before;
                     end_row = r + 1;
                     split_end_cut = res.end_cut.clone();
@@ -1097,14 +1179,29 @@ impl TypesetEngine {
                     .is_some_and(|cut| cut == res.end_cut);
             // 수용한 글줄 컷은 이웃 셀의 실제 문단 유지 지시를 확인한다.
             // 컷 유닛의 소유로 판정하고, 아래 실제 표시 높이·예산 검사는 유지한다.
-            let plain_paragraph_keep_contract = layout_engine
-                .row_cut_respects_plain_paragraph_keeps(
+            // 모든 진행 셀이 문단 안에서 끊기는 컷은 위 행에서 내려온 걸침 칸이 이 행의
+            // 윗변을 가로지를 때만 고아 기준을 면제한다. 그 윗변은 이미 깨끗한 행 경계가
+            // 아니므로 행을 통째로 넘겨도 걸침 칸은 잘린다. 한컴은 1342000 165·166쪽
+            // 120·127행(걸침 칸 안)을 첫 줄만 남기고 나누지만, 걸침 칸이 없는 1480000
+            // 표 15·18 의 75·117행은 첫 줄이 들어가도 통째로 다음 쪽에 넘긴다.
+            // 문단 끝 컷은 종전 계약 그대로다.
+            let plain_paragraph_keep_contract =
+                layout_engine.row_cut_respects_plain_paragraph_keeps(
                     table,
                     r,
                     row_start_cut,
                     &res.end_cut,
                     styles,
-                );
+                ) && (table.cells.iter().any(|cell| {
+                    let start = cell.row as usize;
+                    start < r && start + cell.row_span as usize > r
+                }) || layout_engine.row_cut_keeps_close_a_plain_paragraph(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                ));
             // 저장된 물리 컷 근거가 없는 다줄 행에서 현재 쪽에 첫 유닛 하나만
             // 남고 행 전체가 새 쪽에 들어가면 행 경계에서 이월한다. 내용 높이가
             // 25px을 조금 넘는다는 이유만으로 첫 줄을 떼면 한컴의 행 시작과

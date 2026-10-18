@@ -6,6 +6,17 @@ use crate::model::table::{Cell, Table, TablePageBreak};
 
 use super::{CellUnit, LayoutEngine, ResolvedStyleSet};
 
+/// 원본 셀 문단의 원점0 재시작을 저장 물리 경계로 인증한 근거.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum SavedZeroOriginWitness {
+    /// 행이 표의 선언 첫 개체 프레임(`common.height`) 경계를 가로지르거나, 같은 행의
+    /// 다른 원본 사다리가 같은 경계를 확인한다 — 저장 쪽 나눔과 무관한 기하 근거.
+    OpeningFrame,
+    /// 첫 프레임 뒤 행의 재시작. 저장 당시의 쪽 나눔이 그 행 안에 있었다는 기록일 뿐이라,
+    /// 지금의 흐름에서도 그 행이 쪽 끝에 걸릴 때만 물리 경계가 된다.
+    LaterPage,
+}
+
 impl LayoutEngine {
     /// A completed sibling cannot certify another owner's unfinished cut.
     pub(crate) fn row_cut_ends_at_saved_zero_origin_frame(
@@ -105,18 +116,35 @@ impl LayoutEngine {
         })
     }
 
-    pub(crate) fn row_has_saved_zero_origin_text_frame(&self, table: &Table, row: usize) -> bool {
-        table
+    /// 행의 단일 행 칸에 원본 원점0 재시작이 있으면 그 인증 종류(첫 개체 프레임이 우선).
+    pub(crate) fn row_saved_zero_origin_text_frame(
+        &self,
+        table: &Table,
+        row: usize,
+    ) -> Option<SavedZeroOriginWitness> {
+        let mut found = None;
+        for cell in table
             .cells
             .iter()
             .filter(|cell| cell.row as usize == row && cell.row_span == 1)
-            .any(|cell| {
-                cell.paragraphs.iter().any(|para| {
-                    para.line_segs.windows(2).any(|lines| {
-                        self.stored_zero_origin_text_frame_break(table, cell, &lines[0], &lines[1])
-                    })
-                })
-            })
+        {
+            for para in &cell.paragraphs {
+                for lines in para.line_segs.windows(2) {
+                    match self.stored_zero_origin_text_frame_break_witness(
+                        table, cell, &lines[0], &lines[1],
+                    ) {
+                        Some(SavedZeroOriginWitness::OpeningFrame) => {
+                            return Some(SavedZeroOriginWitness::OpeningFrame)
+                        }
+                        Some(SavedZeroOriginWitness::LaterPage) => {
+                            found = Some(SavedZeroOriginWitness::LaterPage)
+                        }
+                        None => {}
+                    }
+                }
+            }
+        }
+        found
     }
 
     pub(super) fn stored_zero_origin_text_frame_break(
@@ -126,6 +154,18 @@ impl LayoutEngine {
         previous: &LineSeg,
         next: &LineSeg,
     ) -> bool {
+        self.stored_zero_origin_text_frame_break_witness(table, cell, previous, next)
+            .is_some()
+    }
+
+    /// 원점0 재시작이 무엇으로 인증됐는가 — [`SavedZeroOriginWitness`].
+    pub(super) fn stored_zero_origin_text_frame_break_witness(
+        &self,
+        table: &Table,
+        cell: &Cell,
+        previous: &LineSeg,
+        next: &LineSeg,
+    ) -> Option<SavedZeroOriginWitness> {
         let profile = self.profile.get();
         if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             || profile.session_edited()
@@ -151,7 +191,7 @@ impl LayoutEngine {
             || previous.segment_width <= 0
             || previous.segment_width != next.segment_width
         {
-            return false;
+            return None;
         }
         // A paragraph change can reset a writer-local cursor. Require adjacent
         // source lines in this paragraph, then a physical frame or an independent
@@ -185,29 +225,25 @@ impl LayoutEngine {
                     })
                 })
         }) {
-            return false;
+            return None;
         }
         if self.row_shared_zero_origin_frame_peer(table, cell) {
-            return true;
+            return Some(SavedZeroOriginWitness::OpeningFrame);
         }
         // The original opening-frame witness owns positive trailing spacing.
         // A zero-spacing pair alone does not identify a physical page boundary.
         if previous.line_spacing == 0 {
-            return false;
+            return None;
         }
         let rows = table.get_raw_row_heights();
         let row = usize::from(cell.row);
-        let Some(prefix) = rows.get(..row) else {
-            return false;
-        };
-        let Some(&height) = rows.get(row) else {
-            return false;
-        };
+        let prefix = rows.get(..row)?;
+        let &height = rows.get(row)?;
         if prefix.iter().any(|&height| height > i32::MAX as u32)
             || height == 0
             || height > i32::MAX as u32
         {
-            return false;
+            return None;
         }
         let start = prefix.iter().map(|&height| i64::from(height)).sum::<i64>()
             + i64::from(table.cell_spacing) * row as i64;
@@ -220,10 +256,16 @@ impl LayoutEngine {
         // A merged-only row can have no single-row declaration. Zero then
         // contributes only a lower bound: it cannot authenticate an exact
         // opening cut, but cannot erase the known preceding physical space.
-        (prefix.iter().all(|&height| height > 0)
+        if prefix.iter().all(|&height| height > 0)
             && start < frame
-            && frame < start + i64::from(height))
-            || (start >= frame && self.stored_row_boxes_exceed_first_frame(table))
+            && frame < start + i64::from(height)
+        {
+            Some(SavedZeroOriginWitness::OpeningFrame)
+        } else if start >= frame && self.stored_row_boxes_exceed_first_frame(table) {
+            Some(SavedZeroOriginWitness::LaterPage)
+        } else {
+            None
+        }
     }
 
     pub(super) fn cut_starts_saved_zero_origin_text_frame(

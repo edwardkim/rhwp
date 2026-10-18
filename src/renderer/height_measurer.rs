@@ -1090,6 +1090,37 @@ fn declared_height_lands_on_a_row_boundary(
     false
 }
 
+/// 개체 선언 높이가 선언 행 경계 `k` 에 떨어지고, 그 앞 행들은 측정이 선언과 같으며 경계를
+/// 닫는 행 `k-1` 만 내용으로 선언보다 자랐는가. 그러면 개체 높이는 그 행을 선언 높이에서
+/// 나누는 첫 조각 높이다 (#7147 의 행 경계 판정을, 끝 행이 자란 경우로 넓힌다).
+fn declared_fragment_closes_on_a_grown_row(
+    measured: &MeasuredTable,
+    table: &Table,
+    target_body_height: f64,
+    dpi: f64,
+) -> bool {
+    let mut cumulative = 0.0f64;
+    for row in 0..measured.row_heights.len() {
+        if row > 0 {
+            cumulative += measured.cell_spacing;
+        }
+        let declared = declared_row_height_px(table, row, dpi);
+        if declared <= 0.0 {
+            return false;
+        }
+        cumulative += declared;
+        let measured_row = measured.row_heights[row];
+        if (cumulative - target_body_height).abs() <= 0.5 {
+            // 경계를 닫는 행은 선언보다 자랐고 다음 행이 남아 있어야 조각 경계다.
+            return measured_row > declared + 0.5 && row + 1 < measured.row_heights.len();
+        }
+        if (measured_row - declared).abs() > 0.5 || cumulative > target_body_height + 0.5 {
+            return false;
+        }
+    }
+    false
+}
+
 pub fn fit_measured_table_to_declared_height(
     measured: &MeasuredTable,
     table: &Table,
@@ -1143,6 +1174,13 @@ pub(crate) fn fit_measured_table_to_declared_height_with_outcome(
     if measured_rows_match_declared(&fitted, table, dpi)
         && declared_height_lands_on_a_row_boundary(&fitted, table, target_body_height, dpi)
     {
+        return (fitted, false);
+    }
+    // 첫 조각의 마지막 행만 내용으로 자란 표도 같다. 그 행은 선언 높이만큼 첫 쪽에 놓이고
+    // 나머지 줄은 다음 쪽으로 이어진다(1613000 185쪽 29×3 표: 개체 58227HU = 행 0–26 선언 합,
+    // 행 26 은 두 줄로 38.4px 까지 자라지만 한/글 2020 정본은 첫 줄만 185쪽에 두고 둘째 줄을
+    // 186쪽 첫머리에 둔다. 앞 행들은 모두 선언 28.4·45.4·27.3px 그대로다).
+    if declared_fragment_closes_on_a_grown_row(&fitted, table, target_body_height, dpi) {
         return (fitted, false);
     }
 
@@ -5650,18 +5688,52 @@ pub(crate) fn solve_rowspan_row_heights(
         }
         changed
     };
-    let max_iter = row_heights.len() + constraints.len();
-    for _ in 0..max_iter {
-        let mut progress = add_declared_overflow(row_heights, true);
+    // 미지 행은 그 행을 걸친 제약 가운데 **가장 먼저 끝나는** 제약이 정한다. 긴 걸침이 첫 행을
+    // 먼저 채우면 짧은 걸침의 선언이 깨지고 긴 칸의 남는 높이가 첫 행에 몰린다 —
+    // `21761835_jeonjik_exemption_table.hwpx` 표: 행 11~17 칸(671.4px)이 미지 행 11 을 136.0px 로
+    // 채워, 행 10~11 칸(105.9px)의 블록이 139.7px 가 됐다. 한/글 2020 PDF 는 행 10~11 을 106px 로
+    // 그리고 남는 높이를 걸침의 마지막 행 17 에 준다(93.4 → 138px).
+    let ends_before_unresolved = |row_heights: &[f64], row: usize, end: usize| {
+        constraints.iter().any(|&(r, span, _)| {
+            r <= row
+                && row < r + span
+                && r + span < end
+                && (r..r + span).any(|i| row_heights[i] == 0.0)
+        })
+    };
+    // 이 우선은 진전이 있을 때만 건다. 엇갈린 2행 걸침이 사슬처럼 겹친 표는 알려진 끝 행에서만
+    // 풀린다(편람 376쪽 안쪽 표: 행 5~6·6~7·7~8·8~9 칸, 행 9 만 1행 칸). 우선 규칙만으로 회차가
+    // 멈추면 종전처럼 미지 행 하나인 제약 하나를 풀고 다시 우선 규칙으로 돌아간다.
+    let solve_single = |row_heights: &mut [f64], prefer_earliest_end: bool, only_first: bool| {
+        let mut progress = false;
         for &(r, span, total_h) in constraints {
             let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
             let unknown_rows: Vec<usize> =
                 (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
-            if unknown_rows.len() == 1 {
+            if unknown_rows.len() == 1
+                && !(prefer_earliest_end
+                    && ends_before_unresolved(row_heights, unknown_rows[0], r + span))
+            {
                 let remaining = (total_h - known_sum).max(0.0);
+                // 0 은 미지 표지와 같아 상태가 바뀌지 않는다. 한 개만 푸는 회차는 다음 제약으로 간다.
+                if only_first && remaining <= 0.0 {
+                    continue;
+                }
                 row_heights[unknown_rows[0]] = remaining;
                 progress = true;
+                if only_first {
+                    break;
+                }
             }
+        }
+        progress
+    };
+    let max_iter = row_heights.len() + constraints.len();
+    for _ in 0..max_iter {
+        let mut progress = add_declared_overflow(row_heights, true);
+        progress |= solve_single(row_heights, true, false);
+        if !progress {
+            progress = solve_single(row_heights, false, true);
         }
         if !progress {
             break;

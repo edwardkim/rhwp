@@ -74,6 +74,85 @@ impl TypesetEngine {
         ) && !self.render_normalization.table_text_reflowed(source.table)
     }
 
+    /// 쪽 끝 행 `row` 를 지나 뒤 행까지 이어지는 저장 걸침 칸이, 앞 행 상자·이 행의
+    /// 하한(두 조각 내용 합과 온전한 행 높이 중 큰 값)·뒤 행의 최소 높이를 빼고도 남기는
+    /// 선언 몫.
+    /// 한/글은 걸침 칸의 총높이를 쪽을 넘어서도 지키며, 그 몫이 있으면 쪽 끝의 빈 띠를
+    /// 이 행 조각이 차지한다(`21761835` 2쪽 행 20: 칸 (20,0) rs=5 252px, 한/글 2020 PDF
+    /// 행 20 첫 조각 59px = 내용 51px + 본문 끝까지의 띠). 몫이 없으면 띠는 비어 남는다.
+    #[allow(clippy::too_many_arguments)]
+    pub(super) fn crossing_span_page_end_band(
+        &self,
+        st: &TypesetState,
+        cursor: &TableContinuationCursor,
+        input: FragmentInput<'_>,
+        cut: (usize, &[usize], &[usize]),
+        current: f64,
+        band: f64,
+        fragment_rows: &[f64],
+    ) -> Option<f64> {
+        let (row, _, end_cut) = cut;
+        let source = input.source;
+        let table = source.row_geometry_table;
+        let layout = &input.prepared.layout_engine;
+        if band <= 0.5
+            || table.common.treat_as_char
+            || table.page_break != crate::model::table::TablePageBreak::RowBreak
+            || !(self.stored_header_physical_rows(st, source)
+                || layout.has_stored_continuous_spans(table))
+        {
+            return None;
+        }
+        let cs = input.prepared.cell_spacing;
+        // 쪽 끝 행 자체도 선언·온전한 내용 높이를 하한으로 가진다(두 조각의 합이 그보다
+        // 작으면 남은 조각이 그 차이를 받는다).
+        let remaining = layout.row_cut_content_height(table, row, end_cut, &[], source.styles);
+        let whole_row = layout.row_cut_content_height(table, row, &[], &[], source.styles);
+        let row_floor = (current + remaining).max(whole_row);
+        // 나뉜 행 자신의 선언·온전한 높이도 쪽을 넘어 보존된다. 두 조각 내용 합이 그보다 작으면
+        // 그 차이가 이 조각의 띠로 쓰일 수 있다(1342000 81·82쪽 행 14: 88 + 280 ≈ 366.9px).
+        let row_slack = whole_row - current - remaining;
+        let first_row = input.start.cursor_row;
+        let slack = table
+            .cells
+            .iter()
+            .filter(|cell| {
+                let first = usize::from(cell.row);
+                cell.row_span > 1
+                    && cell.height > 0
+                    && cell.height < 0x8000_0000
+                    && first <= row
+                    && row + 1 < first + usize::from(cell.row_span)
+            })
+            .map(|cell| {
+                let first = usize::from(cell.row);
+                let end = first + usize::from(cell.row_span);
+                // 이 칸의 앞 행은 실제로 수용한 상자만 센다. 시작 행이 이어받은 컷이면
+                // 그 앞 조각 몫을 알 수 없으므로 판정하지 않는다.
+                let prefix = (first..row).try_fold(0.0, |sum, prior| {
+                    let height = if prior < first_row {
+                        cursor.accepted_row_boxes.get(prior).copied().flatten()?
+                    } else if prior == first_row && !input.start.start_cut.is_empty() {
+                        return None;
+                    } else {
+                        *fragment_rows.get(prior)?
+                    };
+                    Some(sum + height + cs)
+                })?;
+                let after = (row + 1..end)
+                    .map(|later| {
+                        layout.row_cut_content_height(table, later, &[], &[], source.styles) + cs
+                    })
+                    .sum::<f64>();
+                Some(hwpunit_to_px(cell.height as i32, self.dpi) - prefix - row_floor - after)
+            })
+            .try_fold(f64::INFINITY, |least, slack| Some(least.min(slack?)))
+            .filter(|slack| slack.is_finite())
+            .unwrap_or(f64::NEG_INFINITY);
+        let slack = slack.max(row_slack);
+        (slack > 0.5).then(|| band.min(slack))
+    }
+
     pub(super) fn stored_fragment_row_plan(
         &self,
         st: &TypesetState,
@@ -111,7 +190,32 @@ impl TypesetEngine {
             ))
         .then(|| cursor.accepted_row_boxes.get(cursor.row).copied().flatten())
         .flatten();
-        let start_row_box = resumed_row_box.or(completed_start_row_box);
+        // 앞 조각이 저장 쪽 재시작 컷에서 쪽 끝 띠까지 수용한 행은 그 상자에 이 조각의 몫
+        // (남은 내용과, 행의 온전한 높이에서 앞 상자를 뺀 값 중 큰 것)을 더한 것이 그 행의
+        // 물리 상자다. 걸침의 끝 행은 그만큼을 뺀 선언 몫을 받는다.
+        let span_carry_row_box = cursor
+            .stored_reset_band_row_box
+            .filter(|(row, _)| *row == cursor.row && !cursor.start_cut.is_empty())
+            .map(|(row, before)| {
+                let remaining = prepared.layout_engine.row_cut_content_height(
+                    table,
+                    row,
+                    &cursor.start_cut,
+                    &[],
+                    source.styles,
+                );
+                let whole_row = prepared.layout_engine.row_cut_content_height(
+                    table,
+                    row,
+                    &[],
+                    &[],
+                    source.styles,
+                );
+                before + remaining.max(whole_row - before)
+            });
+        let start_row_box = resumed_row_box
+            .or(completed_start_row_box)
+            .or(span_carry_row_box);
         // A cut's start owner subtracts every preceding physical row of its
         // spanning cell. Do not mix accepted boxes with original estimates for
         // unknown partial rows: that can repeat already consumed source units.
@@ -169,27 +273,32 @@ impl TypesetEngine {
                         && prefix_known(usize::from(cell.row), accepted_prefix_end.min(row))
                 })
                 .collect();
+            // 앞 조각이 수용한 상자뿐 아니라 이 루프가 방금 다시 푼 행도 걸침의 남은
+            // 요구를 바꾼다.
             if !closing.iter().any(|cell| {
                 let first = cell.row as usize;
-                (first..accepted_prefix_end.min(row))
-                    .any(|prior| (heights[prior] - original[prior]).abs() > 0.5)
+                (first..row).any(|prior| (heights[prior] - original[prior]).abs() > 0.5)
             }) {
                 continue;
             }
             // Whole-row content and single-row declarations provide the floor.
-            // Rows with no single-row owner retain the original unknown-row
-            // distribution rather than inventing a new one here.
-            if !table
+            // A row with no single-row owner is the unknown row of the spans that
+            // close on it: its height is what those spans still require after the
+            // accepted prefix. 한/글은 걸침 칸의 총높이를 쪽을 넘어서도 지킨다 —
+            // `21761835` 표: 칸 (6,0) rs=5 462.6px 가 1쪽에서 449.1px 를 썼으므로
+            // 2쪽 행 10 은 13.6px, 행 10~11 칸(105.9px)의 행 11 은 92.3px 다
+            // (한/글 2020 PDF 2쪽 행 10~11 106px, 행 17 138px).
+            let has_single_row_owner = table
                 .cells
                 .iter()
-                .any(|cell| cell.row as usize == row && cell.row_span == 1)
-            {
-                continue;
-            }
-            let floor =
+                .any(|cell| cell.row as usize == row && cell.row_span == 1);
+            let floor = if has_single_row_owner {
                 prepared
                     .layout_engine
-                    .row_cut_content_height(table, row, &[], &[], source.styles);
+                    .row_cut_content_height(table, row, &[], &[], source.styles)
+            } else {
+                0.0
+            };
             let required = closing.iter().fold(floor, |height, cell| {
                 let first = cell.row as usize;
                 let used = heights[first..row].iter().sum::<f64>()
