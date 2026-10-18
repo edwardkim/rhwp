@@ -1689,3 +1689,21 @@ accepted row ledger를 추가 추적했다. 기록이 없는 이전 행 몫을 �
 현재 실제 파일을 suite manifest로 다시 수집하고, 같은 파일의 새 함수를
 frozen54/frozen64 양쪽에 실행해 실패 원인을 재확인한 뒤 정식 suite를 재검증한다.
 아직 이번 파일 변경 후 정식 검증은 완료되지 않았다.
+
+
+### 후보66 정식 파일의 재현과 suite 검증 결과
+
+테스트 소스 d945f4fd8의 실제 파일을 #[path] 모듈로 직접 읽은 동일 함수는
+frozen54에서 실제 하단1045.266667 vs독립 Print1033.109375의±2px 차이로
+FAIL(exit101), frozen64에서는PASS(exit0)였다. 양쪽 컴파일이 성공했으며
+새 테스트 파일SHA와 실제 실행명령은candidate66-p121-actual-regression-before-after-results.json에
+남겼다. 제안 복사본만 통과한 것을 정식 파일의 증거로 쓰지 않았다.
+
+manifest --prepare 후 실제 자동 수집 대상은 regression_suite_013이다. 이전의
+012를 고정해 다시 실행하지 않고 run-rust-test.mjs가 현재 manifest에서 해석하게 했다.
+같은 head에서 이 문서의 정식 nextest는 신규1건을 포함한7PASS·0FAIL·250skipped·
+exit0, 검사1.693초이며 HEAD/추적파일 불변이다. candidate66-completed-pages.log/results.json과
+checkpoint에 전체명령·실행시간·원본해시를 연결했다. 코드7066cb63d의30건과 합치면
+현재 보정 코드에서 서로 다른 집중검사31건을 확인했고, 이를 전체 회귀 통과로 쓰지 않는다.
+시각 producer7066cb63d 이후 변경은 계획 문서와 이 테스트 파일뿐이며, 다음 렌더 수정과
+최종제출에서는 해당 source의 필수 검증과 새 시각 증적을 다시 마련한다.
