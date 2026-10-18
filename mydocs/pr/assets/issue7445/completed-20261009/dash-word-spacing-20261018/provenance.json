@@ -155,5 +155,37 @@
     "native-p004-review.png": "01189cb6662bc6e872f157001314c9bf6d18173d9fb41a07708d4711cb770ab4"
   },
   "buildSourceLedgerSha256": "6c2c468f3e3df727a710cb8b597e8e6f118232566f352e0b97b68543af97524a",
-  "sourceLedgerLocalPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-6ed1682c-20261018/dash-spacing-repair-c253/source.json"
+  "sourceLedgerLocalPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-6ed1682c-20261018/dash-spacing-repair-c253/source.json",
+  "coordinateRegression": {
+    "page": 4,
+    "renderDpi": 192,
+    "coordinate": "CSS96",
+    "independentOrigin": [
+      544.96,
+      193.28
+    ],
+    "tolerancePerAxis": 2.0,
+    "observedCanvasOrigin": [
+      545.0888671875,
+      193.24000549316406
+    ],
+    "beforeCanvasOrigin": [
+      539.559998,
+      193.240005
+    ],
+    "beforeRasterWitness": "C249 frozen C240 trace, previously recorded 5.4CSSpx horizontal difference. The original Cargo before-case failed the word-spacing relation, not a separately executed coordinate assertion.",
+    "defaultFocused": {
+      "passed": 1,
+      "failed": 0,
+      "seconds": ".166"
+    },
+    "nativeSkiaFocused": {
+      "passed": 1,
+      "failed": 0,
+      "seconds": ".168"
+    },
+    "testSourceSha256": "f48b6c73e02011a2207ad308dc593271e264feb0d89871760774beeef1dd83d5",
+    "runtimeSourceUnchangedFromC253": true,
+    "fullSuiteStatus": "10938 PASS/45 skip on C253 before this test-only added assertion; final exact-head full validation pending."
+  }
 }

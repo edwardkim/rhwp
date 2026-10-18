@@ -1,6 +1,9 @@
 //! 독립 Print의 대시 복원 한도와 같은 줄 낱말 간격을 함께 보호한다.
 //! PII 원본66쪽 C250 Native/fresh WASM 전쪽 최저94.12098/93.77937%, 미달0.
-//! 4쪽은99.14237/98.08467%지만 아직 확인된 배치 차이가 있어 절대 px로 고정하지 않는다.
+//! C253 보정 후4쪽 Native100/fresh WASM98.89537%, 양쪽 review/overlay 직접 판독 완료.
+//! DPI192, 좌표CSS96. 독립 Print 기호 원점(544.96,193.28)을 ±2CSSpx로 보호한다.
+//! 입력/PDF/producer SHA·전264쪽TSV·대표PNG: mydocs/pr/assets/issue7445/
+//! completed-20261009/dash-word-spacing-20261018/. 내용 소속 관계도 계속 검사한다.
 //! 같은 p0/charPr8/paraPr47의 좌우 셀을 대조한다. 독립 Print에서 오른쪽 줄의
 //! '-' 전진은 약0.834em, 내부 공백은 약0.65em이다. 여유 전부를 대시에 넣어
 //! 0.884em으로 늘리고 공백을0.5em에 두면 '①'가 왼쪽으로 이동한다.
@@ -120,6 +123,32 @@ fn dash_restoration_keeps_word_spaces_and_original_cell_content() {
             }
         }
     }
+    // 원본 p0의 기호는 위 내용 소속 검사에서 정확히 한 번임을 확인했다.
+    // 기대 좌표는 구현 계산값이 아니라 독립 Print의 H2mjsM 글리프 원점이다.
+    let symbol = nodes(&tree.root)
+        .into_iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) if belongs(run, 3) => run
+                .display_or_text()
+                .chars()
+                .position(|ch| ch == '①')
+                .map(|index| (node, run, index)),
+            _ => None,
+        })
+        .expect("완료된4쪽의 원본 셀 항목 기호");
+    let (node, run, index) = symbol;
+    let measured;
+    let positions = if let Some(positions) = &run.layout_positions {
+        positions
+    } else {
+        measured = EmbeddedTextMeasurer.compute_char_positions(run.display_or_text(), &run.style);
+        &measured
+    };
+    let actual = (node.bbox.x + positions[index], node.bbox.y + run.baseline);
+    assert!(
+        (actual.0 - 544.96).abs() <= 2.0 && (actual.1 - 193.28).abs() <= 2.0,
+        "독립 Print의 항목 기호 원점 ±2CSSpx: {actual:?}"
+    );
     assert_eq!(dash_count, 9, "저장 줄의 대시 소속·개수");
     assert_eq!(
         space_count, 3,
