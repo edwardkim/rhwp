@@ -699,6 +699,44 @@ impl TypesetEngine {
                     }
                 }
             }
+            // 이어받은 행이 저장 줄의 다음 새 원점 재시작까지 이 쪽에 들어가면, 그것은 한/글이
+            // 기록한 이 행의 다음 쪽 경계다. 남은 공간을 더 채우지 않고 그 컷에서 닫는다
+            // (1613000 123·124쪽 표 2행: 용량 컷 [41,37]·[51,72], 저장 재시작 [40,37]·[51,70]).
+            // 재시작이 용량 컷보다 뒤면 예산을 넘으므로 종전 용량 컷을 쓴다.
+            let mut stored_restart_continuation_cut = false;
+            if !row_start_cut.is_empty()
+                && !uses_source_frame_tail
+                && !res.fully_consumed
+                && mt.allows_row_break_split()
+                && !table.common.treat_as_char
+                && !rowspan_touched[r]
+                && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                && !st.profile.session_edited()
+                && !self.render_normalization.table_text_reflowed(table)
+            {
+                if let Some(cut) = layout_engine
+                    .row_stored_restart_cut_after(table, r, row_start_cut, styles)
+                    .filter(|cut| {
+                        cut.len() == res.end_cut.len()
+                            && cut
+                                .iter()
+                                .zip(&res.end_cut)
+                                .all(|(stored, capacity)| stored <= capacity)
+                    })
+                {
+                    let height =
+                        layout_engine.row_cut_content_height(table, r, row_start_cut, &cut, styles);
+                    budget = height;
+                    res = crate::renderer::layout::table_layout::RowCutResult {
+                        end_cut: cut,
+                        hit_hard_break: true,
+                        fully_consumed: false,
+                        consumed_height: height,
+                        physical_height: None,
+                    };
+                    stored_restart_continuation_cut = true;
+                }
+            }
             // [#2236 진단] 인트라 컷 시도 결과 — 동작 불변.
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
@@ -1252,15 +1290,16 @@ impl TypesetEngine {
             // being shorter than the heuristic minimum fragment height.
             // This does not force a source page boundary: the scan selects
             // the cut, and the physical-height budget below still applies.
-            let stored_restart_capacity_keep = (st.profile.hwp5_stored_pagination_layout()
-                || st.profile.hwpx_stored_layout())
-                && mt.allows_row_break_split()
-                && !table.common.treat_as_char
-                && row_start_cut.is_empty()
-                && !self.render_normalization.table_text_reflowed(table)
-                && layout_engine
-                    .row_plain_restart_capacity_cut(table, r, styles)
-                    .is_some_and(|cut| cut == res.end_cut);
+            let stored_restart_capacity_keep = stored_restart_continuation_cut
+                || ((st.profile.hwp5_stored_pagination_layout()
+                    || st.profile.hwpx_stored_layout())
+                    && mt.allows_row_break_split()
+                    && !table.common.treat_as_char
+                    && row_start_cut.is_empty()
+                    && !self.render_normalization.table_text_reflowed(table)
+                    && layout_engine
+                        .row_plain_restart_capacity_cut(table, r, styles)
+                        .is_some_and(|cut| cut == res.end_cut));
             // 수용한 글줄 컷은 이웃 셀의 실제 문단 유지 지시를 확인한다.
             // 컷 유닛의 소유로 판정하고, 아래 실제 표시 높이·예산 검사는 유지한다.
             // 모든 진행 셀이 문단 안에서 끊기는 저장 컷은 위 행에서 내려온 걸침 칸이 이 행의

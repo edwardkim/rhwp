@@ -15328,7 +15328,7 @@ impl LayoutEngine {
                                 self.stored_joint_zero_origin_boundary(cell, nt).is_some()
                             });
                             let row_has_plain_source_boundary = self
-                                .stored_plain_restart_cut(nt, ri, styles, false)
+                                .stored_plain_restart_cut(nt, ri, &[], styles, false)
                                 .is_some();
                             let row_has_fresh_plain_growth = driver.is_some_and(|index| {
                                 self.reflowed_nested_row_content_grew(
@@ -20455,7 +20455,7 @@ impl LayoutEngine {
         row: usize,
         styles: &ResolvedStyleSet,
     ) -> Option<Vec<usize>> {
-        self.stored_plain_restart_cut(table, row, styles, true)
+        self.stored_plain_restart_cut(table, row, &[], styles, true)
     }
 
     /// 셀 저장 줄의 새 원점 재시작에서 자른 쪽 끝 행 상자: max(행 선언 높이, 그 컷까지의 내용 높이).
@@ -20491,16 +20491,84 @@ impl LayoutEngine {
         // The capacity-selected cut, not the number of remaining lines,
         // identifies ownership. A restart may leave a complete multi-line
         // suffix; its actual physical height is still checked by the scanner.
-        self.stored_plain_restart_cut(table, row, styles, false)
+        self.stored_plain_restart_cut(table, row, &[], styles, false)
+    }
+
+    /// 이미 시작 컷에서 이어받은 행의 다음 저장 재시작 컷. 셀마다 시작 컷 뒤 첫 새 원점
+    /// (문단 안 또는 앞 문단이 같은 셀 좌표로 이어진 문단 첫 줄)이 한/글이 기록한 다음 쪽
+    /// 경계다(1613000 123·124쪽 표 2행: 컷 [40,37]·[51,70], 한/글 2020). 재시작이 없는
+    /// 셀은 남은 유닛을 모두 소유한다. 예산 적합은 호출자가 검사한다.
+    pub(crate) fn row_stored_restart_cut_after(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<Vec<usize>> {
+        if start_cut.is_empty() {
+            return None;
+        }
+        self.stored_plain_restart_cut(table, row, start_cut, styles, false)
+    }
+
+    /// 문단 첫 줄의 새 원점이 셀 좌표 재시작인가. 앞 문단도 같은 셀 좌표(첫 줄 양수
+    /// 원점)로 이어져 있어야 하며, 문단마다 0에서 시작하는 지역 원점은 경계가 아니다.
+    fn stored_plain_paragraph_restart(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        previous: &crate::model::paragraph::Paragraph,
+        para: &crate::model::paragraph::Paragraph,
+    ) -> bool {
+        let profile = self.profile.get();
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || cell.dirty_flag
+            || table.common.treat_as_char
+            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || [previous, para].iter().any(|p| {
+                !p.controls.is_empty()
+                    || p.stored_text_partition_is_dirty()
+                    || p.cell_format_vpos_dirty
+            })
+        {
+            return false;
+        }
+        let original = |seg: &crate::model::paragraph::LineSeg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && seg.line_height > 0
+                && seg.line_spacing >= 0
+        };
+        match (
+            previous.line_segs.first(),
+            previous.line_segs.last(),
+            para.line_segs.first(),
+        ) {
+            (Some(first), Some(last), Some(current)) => {
+                original(first)
+                    && original(last)
+                    && original(current)
+                    && first.vertical_pos > 0
+                    && last.vertical_pos > 0
+                    && current.vertical_pos == 0
+                    && last.column_start == current.column_start
+            }
+            _ => false,
+        }
     }
 
     fn stored_plain_restart_cut(
         &self,
         table: &crate::model::table::Table,
         row: usize,
+        start_cut: &[usize],
         styles: &ResolvedStyleSet,
         source_owned: bool,
     ) -> Option<Vec<usize>> {
+        let after_start = !start_cut.is_empty();
         let mut cells: Vec<_> = table
             .cells
             .iter()
@@ -20530,7 +20598,23 @@ impl LayoutEngine {
                 return None;
             }
             let units = self.cell_units(cell, table, styles);
-            let boundary = units.iter().position(|unit| {
+            let start = start_cut.get(cut.len()).copied().unwrap_or(0);
+            if after_start && start >= units.len() {
+                cut.push(units.len());
+                continue;
+            }
+            let boundary = units.iter().enumerate().position(|(index, unit)| {
+                if after_start && index <= start {
+                    return false;
+                }
+                if after_start && unit.vis_start == 0 && unit.para_idx > 0 {
+                    return self.stored_plain_paragraph_restart(
+                        cell,
+                        table,
+                        &cell.paragraphs[unit.para_idx - 1],
+                        &cell.paragraphs[unit.para_idx],
+                    );
+                }
                 cell.paragraphs.get(unit.para_idx).is_some_and(|para| {
                     if source_owned {
                         self.stored_plain_zero_origin_line_boundary(
@@ -20549,7 +20633,11 @@ impl LayoutEngine {
                 resumed = true;
                 let unit = &units[boundary];
                 let para = &cell.paragraphs[unit.para_idx];
-                let previous = &para.line_segs[unit.vis_start - 1];
+                let previous = if unit.vis_start == 0 {
+                    cell.paragraphs[unit.para_idx - 1].line_segs.last()?
+                } else {
+                    &para.line_segs[unit.vis_start - 1]
+                };
                 let current = &para.line_segs[unit.vis_start];
                 let next = para.line_segs.get(unit.vis_start + 1).or_else(|| {
                     cell.paragraphs
@@ -20612,7 +20700,7 @@ impl LayoutEngine {
     ) -> Option<f64> {
         if start_cut.iter().any(|cut| *cut > 0)
             || self
-                .stored_plain_restart_cut(table, row, styles, true)?
+                .stored_plain_restart_cut(table, row, &[], styles, true)?
                 .as_slice()
                 != end_cut
         {
