@@ -278,11 +278,13 @@ fn fragment(original: &Control, source: Frame, piece: Frame) -> Result<Control, 
 
 pub(super) struct Target<'a> {
     pub grid: &'a Value,
+    pub native_border_controls: Option<&'a [BTreeSet<usize>]>,
 }
 pub(super) struct PaintPlan {
     pub cells: Vec<Vec<Vec<Control>>>,
     pub removed: BTreeSet<usize>,
     pub retained: Vec<Control>,
+    pub native_border_fragments: usize,
 }
 
 pub(super) fn partition(
@@ -345,6 +347,7 @@ pub(super) fn partition(
         cells: frames.iter().map(|v| vec![Vec::new(); v.len()]).collect(),
         removed: BTreeSet::new(),
         retained: Vec::new(),
+        native_border_fragments: 0,
     };
     // A path bitmap is still source paint, not a separately placed content
     // image. Intersections between two such paths keep their original z-order.
@@ -502,7 +505,18 @@ pub(super) fn partition(
                     if count > MAX_FRAGMENTS {
                         return Err("cell paint fragment budget exceeded".into());
                     }
-                    result.cells[ti][ci].push(fragment(original, source, piece)?);
+                    if targets[ti]
+                        .native_border_controls
+                        .and_then(|cells| cells.get(ci))
+                        .is_some_and(|set| set.contains(&control))
+                    {
+                        // This exact physical piece is represented by the
+                        // cell's native border. Keep subtraction/conservation
+                        // and all other owners; do not paint it a second time.
+                        result.native_border_fragments += 1;
+                    } else {
+                        result.cells[ti][ci].push(fragment(original, source, piece)?);
+                    }
                 }
             }
         }
@@ -558,6 +572,9 @@ pub(super) fn anchor(
     a.vertical_offset = (a.vertical_offset as i32 as i64 - y) as i32 as u32;
     a.horz_rel_to = HorzRelTo::Column;
     a.vert_rel_to = VertRelTo::Para;
+    // Cell-owned background/boundary paint follows its host paragraph during
+    // editing and in Hancom. A page-fixed object ignores the nested cell frame.
+    a.flow_with_text = true;
     a.treat_as_char = false;
     a.text_wrap = TextWrap::BehindText;
     assign_id(c, id);

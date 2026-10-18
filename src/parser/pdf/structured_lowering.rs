@@ -1,6 +1,7 @@
 //! Materialize geometry-confirmed grids as editable rhwp tables. Uncertain grids stay positional.
 mod body;
 mod composition;
+mod native_borders;
 use super::{
     lowering::hu,
     recognition::{ParagraphProposal, ParagraphState},
@@ -1282,14 +1283,22 @@ pub(super) fn lower(
     }
     let paint_owners =
         composition::owners(&tables, &preserve_indices, grids, builder.table_id_base)?;
+    let native_borders = paint_owners
+        .iter()
+        .map(|owner| native_borders::plan(page, &controls, &rule_controls, &grids[owner.candidate]))
+        .collect::<Vec<_>>();
     let targets = paint_owners
         .iter()
-        .map(|owner| super::table_paint::Target {
+        .zip(&native_borders)
+        .map(|(owner, native)| super::table_paint::Target {
             grid: &grids[owner.candidate],
+            native_border_controls: native.as_ref().map(|n| n.controls.as_slice()),
         })
         .collect::<Vec<_>>();
     let mut extra_paint = Vec::new();
     let mut paint_fragments = 0;
+    let mut native_border_cells = 0;
+    let mut native_border_fragments = 0;
     if !targets.is_empty() {
         let plan = super::table_paint::partition(
             &controls,
@@ -1311,6 +1320,7 @@ pub(super) fn lower(
         });
         match plan {
             Ok(mut plan) => {
+                native_border_fragments = plan.native_border_fragments;
                 removed.extend(plan.removed);
                 let consumed = table_removed
                     .iter()
@@ -1333,6 +1343,24 @@ pub(super) fn lower(
                         .ok_or("source paint owner missing from actual table hierarchy")?;
                     let grid = &grids[owner.candidate];
                     for (ci, cell) in table.cells.iter_mut().enumerate() {
+                        if let Some(native) = &native_borders[target] {
+                            let border = &native.borders[ci];
+                            let id = if let Some(i) =
+                                doc.doc_info.border_fills.iter().position(|b| b == border)
+                            {
+                                i + 1
+                            } else {
+                                doc.doc_info.border_fills.push(border.clone());
+                                doc.doc_info.border_fills.len()
+                            };
+                            cell.border_fill_id = u16::try_from(id).map_err(|e| e.to_string())?;
+                            native_border_cells += usize::from(
+                                border
+                                    .borders
+                                    .iter()
+                                    .any(|b| b.line_type != BorderLineType::None),
+                            );
+                        }
                         for mut paint in std::mem::take(&mut plan.cells[target][ci]) {
                             let id = fragment_ids.get();
                             fragment_ids
@@ -1423,6 +1451,8 @@ pub(super) fn lower(
     });
     report["boundaryPaintPolicy"] = json!("standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate");
     report["cellOwnedPaintFragments"] = json!(paint_fragments);
+    report["nativeBorderCells"] = json!(native_border_cells);
+    report["nativeBorderPaintFragments"] = json!(native_border_fragments);
     report["ruledTableCandidates"] = json!(grids.len());
     report["tableSemantics"] = json!("inferred-from-geometry-not-authored-metadata");
     report["textBoxes"] = json!(owner

@@ -118,8 +118,17 @@ pub(super) fn lower(
     let (left, bottom, right, top) = page.media_box;
     let section = doc.sections.len() - 1;
     let pd = &mut doc.sections[section].section_def.page_def;
-    pd.width = hu(right - left)?;
-    pd.height = hu(top - bottom)?;
+    let width = hu(right - left)?;
+    let height = hu(top - bottom)?;
+    // HWP stores the portrait paper dimensions and applies orientation when
+    // deriving the physical page. A wide MediaBox with portrait orientation
+    // renders locally but Hancom normalizes it to a narrow page on printing.
+    pd.landscape = width > height;
+    (pd.width, pd.height) = if pd.landscape {
+        (height, width)
+    } else {
+        (width, height)
+    };
     pd.margin_left = 0;
     pd.margin_right = 0;
     pd.margin_top = 0;

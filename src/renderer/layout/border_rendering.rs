@@ -30,7 +30,7 @@ impl TableGridTooLarge {
     }
 }
 
-fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
+fn merge_border(a: &BorderLine, b: &BorderLine, prefer_b_on_tie: bool) -> BorderLine {
     if a.line_type == BorderLineType::None {
         return *b;
     }
@@ -42,6 +42,13 @@ fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
     let b_w = border_width_to_px(b.width);
     if (a_w - b_w).abs() > 0.01 {
         return if a_w > b_w { *a } else { *b };
+    }
+
+    // Equal-width, equal-type shared edges use the right cell's left border
+    // or the lower cell's top border (independent Hancom Print, #7998).
+    // The owner is geometric, not whichever cell happens to be visited last.
+    if a.line_type == b.line_type {
+        return if prefer_b_on_tie { *b } else { *a };
     }
 
     let priority = |lt: BorderLineType| -> u8 {
@@ -109,12 +116,12 @@ pub(crate) fn mark_cell_span_interior_covered(
 }
 
 /// 엣지 그리드 슬롯에 테두리를 병합 저장
-fn merge_edge_slot(slot: &mut Option<BorderLine>, border: &BorderLine) {
+fn merge_edge_slot(slot: &mut Option<BorderLine>, border: &BorderLine, prefer_on_tie: bool) {
     if border.line_type == BorderLineType::None {
         return;
     }
     *slot = Some(match *slot {
-        Some(existing) => merge_border(&existing, border),
+        Some(existing) => merge_border(&existing, border, prefer_on_tie),
         None => *border,
     });
 }
@@ -466,25 +473,25 @@ pub(crate) fn collect_cell_borders(
     // 상 테두리
     if row < h_rows {
         for c in col..end_col {
-            merge_edge_slot(&mut h_edges[row][c], &borders[2]);
+            merge_edge_slot(&mut h_edges[row][c], &borders[2], true);
         }
     }
     // 하 테두리
     if end_row < h_rows {
         for c in col..end_col {
-            merge_edge_slot(&mut h_edges[end_row][c], &borders[3]);
+            merge_edge_slot(&mut h_edges[end_row][c], &borders[3], false);
         }
     }
     // 좌 테두리
     if col < v_cols {
         for r in row..end_row {
-            merge_edge_slot(&mut v_edges[col][r], &borders[0]);
+            merge_edge_slot(&mut v_edges[col][r], &borders[0], true);
         }
     }
     // 우 테두리
     if end_col < v_cols {
         for r in row..end_row {
-            merge_edge_slot(&mut v_edges[end_col][r], &borders[1]);
+            merge_edge_slot(&mut v_edges[end_col][r], &borders[1], false);
         }
     }
 }

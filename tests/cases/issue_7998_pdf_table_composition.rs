@@ -60,6 +60,50 @@ fn paint(n: &RenderNode, out: &mut Vec<char>, length: &mut f64) {
         paint(c, out, length);
     }
 }
+
+// These independent sources declare 0.5pt black strokes. A continuous part can
+// now be a native cell border (0.2mm / five Hancom 600dpi ticks), rather than a
+// filled quad. Preserve its centerline extent once, including shared edges;
+// do not mistake the removal of the duplicate quad for missing source paint.
+fn native_border_source_area(root: &RenderNode) -> f64 {
+    use std::collections::BTreeMap;
+    fn collect(n: &RenderNode, lines: &mut BTreeMap<(bool, i64), Vec<(i64, i64)>>) {
+        if let RenderNodeType::Line(l) = &n.node_type {
+            if !n.editor_only && l.style.color == 0 {
+                assert!((l.style.width - 0.8).abs() < 0.01);
+                let hu = |px: f64| (px * 72. / 96. * 100.).round() as i64;
+                if (l.y1 - l.y2).abs() < 0.01 {
+                    lines
+                        .entry((true, hu(l.y1)))
+                        .or_default()
+                        .push((hu(l.x1.min(l.x2)), hu(l.x1.max(l.x2))));
+                } else if (l.x1 - l.x2).abs() < 0.01 {
+                    lines
+                        .entry((false, hu(l.x1)))
+                        .or_default()
+                        .push((hu(l.y1.min(l.y2)), hu(l.y1.max(l.y2))));
+                }
+            }
+        }
+        for child in &n.children {
+            collect(child, lines);
+        }
+    }
+    let mut lines = BTreeMap::new();
+    collect(root, &mut lines);
+    let mut length = 0i64;
+    for intervals in lines.values_mut() {
+        intervals.sort_unstable();
+        let mut end = i64::MIN;
+        for &(a, b) in intervals.iter() {
+            if b > end {
+                length += b - a.max(end);
+                end = b;
+            }
+        }
+    }
+    length as f64 / 100. * 0.5
+}
 fn own_flow(
     n: &RenderNode,
     tables: &mut Vec<(f64, f64)>,
@@ -174,6 +218,7 @@ fn verify(core: &DocumentCore, tables: usize, expected: &[char], line_length: f6
     let tree = core.build_page_render_tree(0).unwrap();
     let (mut chars, mut length) = (Vec::new(), 0.);
     paint(&tree.root, &mut chars, &mut length);
+    length += native_border_source_area(&tree.root);
     chars.sort_unstable();
     assert_eq!(
         chars, expected,
@@ -181,7 +226,7 @@ fn verify(core: &DocumentCore, tables: usize, expected: &[char], line_length: f6
     );
     assert!(
         (length - line_length * 0.5).abs() < 0.5,
-        "independent source stroke-quad area must be conserved: {length} vs {line_length}"
+        "independent source stroke extent must be conserved by quads or native borders: {length} vs {line_length}"
     );
     geometry(&tree.root, None);
     order(&tree.root);
