@@ -69,6 +69,9 @@ fn serialize_hwp_inner(
 ) -> Result<SerializedDocument, SerializeError> {
     crate::model::section_tail::validate_preservation(doc)
         .map_err(SerializeError::UnsupportedInput)?;
+    // HWP3 변환본은 적재 때 파일 값을 보정해 IR 에 담는다. 다시 쓰는 부분만 파일 단위로 되돌린다.
+    let file_units = hwp3_variant_file_units(doc);
+    let doc = file_units.as_ref().unwrap_or(doc);
     // 1. FileHeader 직렬화
     // [Task #1768] 배포용/암호화 문서 강하: IR 은 이미 복호화된 평문이고 본 직렬화는
     // ViewText/DISTRIBUTE_DOC_DATA 를 생성하지 않으므로, 플래그를 유지하면 산출물
@@ -532,6 +535,86 @@ fn find_bin_data_info_with_compress<'a>(
     }
     // 못 찾으면 content에서 직접 추출 (문서 압축 플래그 따름)
     (content.id, &content.extension, doc_compressed)
+}
+
+/// HWP3→HWP5 변환본(`Document::is_hwp3_variant`)의 IR 을 파일 단위로 되돌린 사본.
+///
+/// 파서는 변환본을 열 때 (1) 문단 모양의 문단 위/아래 간격을 반으로 줄이고
+/// (2) 본문 LINE_SEG vertical_pos 에서 누적 문단 위 간격을 뺀다(`parser/mod.rs`).
+/// 원본 바이트를 그대로 쓰는 부분(봉인이 맞는 구역 스트림·문단 모양 레코드)은 영향이 없지만,
+/// 다시 쓰는 구역·문단 모양은 보정된 값이 그대로 파일에 실려 다시 열 때 보정이 한 번 더
+/// 걸린다. 저장할 때마다 vpos 가 줄어 쪽 나눔이 움직이고, 고친 문단 모양은 간격이 반씩 준다.
+///
+/// 원본을 재사용할 부분은 건드리지 않는다 — 고치면 봉인이 깨져 재사용 자체가 막힌다.
+/// 되돌릴 것이 없으면 `None` (사본을 만들지 않는다).
+fn hwp3_variant_file_units(doc: &Document) -> Option<Document> {
+    if !doc.is_hwp3_variant {
+        return None;
+    }
+    let doc_info = &doc.doc_info;
+    let doc_info_reused = !doc_info.raw_stream_dirty
+        && doc_info.raw_stream.is_some()
+        && doc_info.raw_provenance_permits_reuse(&doc.doc_properties);
+    let seals = doc_info
+        .raw_provenance
+        .as_ref()
+        .map(|s| &s.record_seals.para_shapes[..]);
+    let shapes_to_fix: Vec<usize> = if doc_info_reused {
+        Vec::new()
+    } else {
+        doc_info
+            .para_shapes
+            .iter()
+            .enumerate()
+            .filter(|(i, ps)| {
+                ps.raw_data.is_none()
+                    || !crate::model::raw_provenance::record_raw_permitted(seals, *i, *ps)
+            })
+            .map(|(i, _)| i)
+            .collect()
+    };
+    let sections_to_fix: Vec<usize> = doc
+        .sections
+        .iter()
+        .enumerate()
+        .filter(|(_, s)| !s.raw_provenance_permits_reuse())
+        .map(|(i, _)| i)
+        .collect();
+    if shapes_to_fix.is_empty() && sections_to_fix.is_empty() {
+        return None;
+    }
+    let mut out = doc.clone();
+    for i in shapes_to_fix {
+        let ps = &mut out.doc_info.para_shapes[i];
+        ps.spacing_before = ps.spacing_before.saturating_mul(2);
+        ps.spacing_after = ps.spacing_after.saturating_mul(2);
+    }
+    let spacing_before = |id: u16| {
+        doc_info
+            .para_shapes
+            .get(id as usize)
+            .map(|p| p.spacing_before)
+            .unwrap_or(0)
+    };
+    for si in sections_to_fix {
+        // 적재 뒤 새로 생긴 문단은 보정 기록이 없다 — 파서와 같은 규칙(앞 문단 누적 +
+        // 자기 문단 위 간격)으로 이어 계산한다.
+        let mut bias = 0i32;
+        for para in out.sections[si].paragraphs.iter_mut() {
+            if para.line_segs.is_empty() {
+                continue;
+            }
+            bias = para
+                .hwp3_variant_vpos_bias
+                .unwrap_or_else(|| bias.saturating_add(spacing_before(para.para_shape_id)));
+            if bias != 0 {
+                for ls in para.line_segs.iter_mut() {
+                    ls.vertical_pos = ls.vertical_pos.saturating_add(bias);
+                }
+            }
+        }
+    }
+    Some(out)
 }
 
 #[cfg(test)]
