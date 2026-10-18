@@ -1941,6 +1941,127 @@ impl DocumentCore {
             .unwrap_or(-1)
     }
 
+    /// 개체가 실제로 그려진 상자(개체 틀)의 왼쪽 위 꼭짓점 (쪽 절대 좌표, HWPUNIT).
+    /// 회전·대칭된 도형은 현재 크기 상자를 틀 중심에 그리므로 노드 중심에서 틀 크기의 반을 뺀다.
+    fn rendered_object_origin_hu(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        common: &crate::model::shape::CommonObjAttr,
+    ) -> Option<(i32, i32)> {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+        fn find(node: &RenderNode, key: (usize, usize, usize)) -> Option<&RenderNode> {
+            let meta = match &node.node_type {
+                RenderNodeType::Rectangle(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Ellipse(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Path(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Line(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Image(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Group(n) => (n.section_index, n.para_index, n.control_index),
+                _ => (None, None, None),
+            };
+            if meta == (Some(key.0), Some(key.1), Some(key.2)) {
+                return Some(node);
+            }
+            node.children.iter().find_map(|child| find(child, key))
+        }
+        let pages = self.find_pages_for_paragraph(section_idx, para_idx).ok()?;
+        pages.into_iter().find_map(|page| {
+            let tree = self.build_page_tree_cached(page).ok()?;
+            let node = find(&tree.root, (section_idx, para_idx, control_idx))?;
+            let cx = node.bbox.x + node.bbox.width / 2.0;
+            let cy = node.bbox.y + node.bbox.height / 2.0;
+            Some((
+                crate::renderer::px_to_hwpunit(cx, self.dpi) - common.width as i32 / 2,
+                crate::renderer::px_to_hwpunit(cy, self.dpi) - common.height as i32 / 2,
+            ))
+        })
+    }
+
+    /// 렌더링 행렬을 그룹 깊이에 맞는 원본 바이트(이동 + 그룹 단계별 (크기, 회전) 쌍)와
+    /// 합성값으로 함께 기록한다. 바깥 단계 쌍은 단위행렬이고 마지막 쌍이 개체 자신의 것이다.
+    /// 파서와 같은 합성(이동 × 회전 × 크기)이라 HWP/HWPX 저장 후 다시 열어도 같은 행렬이 된다.
+    fn store_group_rendering(
+        sa: &mut crate::model::shape::ShapeComponentAttr,
+        (tx, ty): (f64, f64),
+        sca: [f64; 6],
+        rot: [f64; 6],
+    ) {
+        const IDENTITY: [f64; 6] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0];
+        let trans = [1.0, 0.0, tx, 0.0, 1.0, ty];
+        let mut raw = Vec::with_capacity(2 + 48 + (sa.group_level as usize + 1) * 96);
+        raw.extend_from_slice(&(sa.group_level + 1).to_le_bytes());
+        let pairs = std::iter::repeat((IDENTITY, IDENTITY))
+            .take(sa.group_level as usize)
+            .chain(std::iter::once((sca, rot)));
+        for m in std::iter::once(trans).chain(pairs.flat_map(|(s, r)| [s, r])) {
+            for v in m {
+                raw.extend_from_slice(&v.to_le_bytes());
+            }
+        }
+        sa.raw_rendering = raw;
+        // 회전·크기 행렬은 이동 성분이 없으므로 합성 = [rot × sca | (tx, ty)]
+        sa.render_sx = rot[0] * sca[0] + rot[1] * sca[3];
+        sa.render_b = rot[0] * sca[1] + rot[1] * sca[4];
+        sa.render_c = rot[3] * sca[0] + rot[4] * sca[3];
+        sa.render_sy = rot[3] * sca[1] + rot[4] * sca[4];
+        sa.render_tx = tx;
+        sa.render_ty = ty;
+    }
+
+    /// 최상위 개체를 묶음 로컬 상자 (x, y)로 옮긴다. 최상위에서는 틀 중심에 현재 크기로
+    /// 대칭 후 회전해 그리므로, 같은 모습이 되도록 원래 크기 → 현재 크기 배율, 대칭,
+    /// 회전을 렌더링 행렬에 합성한다. 묶음을 묶으면 손자 행렬(최상위 묶음 좌표계)도 함께 민다.
+    fn place_group_child(child: &mut ShapeObject, x: i32, y: i32) {
+        if let ShapeObject::Group(g) = child {
+            fn shift(children: &mut [ShapeObject], x: f64, y: f64) {
+                for c in children {
+                    let sa = c.shape_attr_mut();
+                    sa.group_level += 1;
+                    let lin = [
+                        sa.render_sx,
+                        sa.render_b,
+                        0.0,
+                        sa.render_c,
+                        sa.render_sy,
+                        0.0,
+                    ];
+                    let t = (sa.render_tx + x, sa.render_ty + y);
+                    DocumentCore::store_group_rendering(sa, t, lin, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+                    if let ShapeObject::Group(g) = c {
+                        shift(&mut g.children, x, y);
+                    }
+                }
+            }
+            shift(&mut g.children, x as f64, y as f64);
+        }
+        let (frame_w, frame_h) = (child.common().width as f64, child.common().height as f64);
+        let sa = child.shape_attr_mut();
+        let positive = |v: u32, fallback: f64| if v > 0 { v as f64 } else { fallback };
+        let cur_w = positive(sa.current_width, frame_w);
+        let cur_h = positive(sa.current_height, frame_h);
+        let sx = cur_w / positive(sa.original_width, cur_w);
+        let sy = cur_h / positive(sa.original_height, cur_h);
+        let fx = if sa.horz_flip { -1.0 } else { 1.0 };
+        let fy = if sa.vert_flip { -1.0 } else { 1.0 };
+        let (sin, cos) = (sa.rotation_angle as f64).to_radians().sin_cos();
+        // 원래 좌표 → 크기·대칭 → 상자 중심 기준 회전 → 틀 중심 (x + w/2, y + h/2)
+        let (hx, hy) = (fx * cur_w / 2.0, fy * cur_h / 2.0);
+        let tx = x as f64 + frame_w / 2.0 - (cos * hx - sin * hy);
+        let ty = y as f64 + frame_h / 2.0 - (sin * hx + cos * hy);
+        sa.offset_x = x;
+        sa.offset_y = y;
+        sa.group_level = 1;
+        sa.is_two_ctrl_id = false; // 그룹 자식은 ctrl_id 1번만
+        Self::store_group_rendering(
+            sa,
+            (tx, ty),
+            [fx * sx, 0.0, 0.0, 0.0, fy * sy, 0.0],
+            [cos, -sin, 0.0, sin, cos, 0.0],
+        );
+    }
+
     // ─── 개체 묶기/풀기 API ──────────────────────────────
     /// 선택된 개체들을 GroupShape로 묶는다.
     /// targets: [(para_idx, control_idx), ...] — 같은 구역 내 Shape 또는 Picture
@@ -1967,13 +2088,7 @@ impl DocumentCore {
 
         // 1) 대상 개체들을 ShapeObject로 수집 (인덱스 유효성 검사 포함)
         let section = &self.document.sections[section_idx];
-        let mut children: Vec<ShapeObject> = Vec::new();
-        let mut group_min_x: i32 = i32::MAX;
-        let mut group_min_y: i32 = i32::MAX;
-        let mut group_max_x: i32 = i32::MIN;
-        let mut group_max_y: i32 = i32::MIN;
-        let mut first_common: Option<CommonObjAttr> = None;
-
+        let mut items: Vec<(usize, usize, ShapeObject)> = Vec::new();
         for &(pi, ci) in targets {
             if pi >= section.paragraphs.len() {
                 return Err(HwpError::RenderError(format!(
@@ -1987,16 +2102,9 @@ impl DocumentCore {
                     ci, pi
                 )));
             }
-            let ctrl = &section.paragraphs[pi].controls[ci];
-            let (common, shape_obj) = match ctrl {
-                Control::Shape(s) => {
-                    let c = s.common().clone();
-                    (c, (**s).clone())
-                }
-                Control::Picture(p) => {
-                    let c = p.common.clone();
-                    (c, ShapeObject::Picture(p.clone()))
-                }
+            let shape_obj = match &section.paragraphs[pi].controls[ci] {
+                Control::Shape(s) => (**s).clone(),
+                Control::Picture(p) => ShapeObject::Picture(p.clone()),
                 _ => {
                     return Err(HwpError::RenderError(format!(
                         "컨트롤 ({},{})은 Shape/Picture가 아닙니다",
@@ -2004,70 +2112,92 @@ impl DocumentCore {
                     )))
                 }
             };
-
-            // 합산 bbox 계산 (HWPUNIT 기준 — horizontal_offset, vertical_offset, width, height)
-            let x1 = common.horizontal_offset as i32;
-            let y1 = common.vertical_offset as i32;
-            let x2 = x1 + common.width as i32;
-            let y2 = y1 + common.height as i32;
-            group_min_x = group_min_x.min(x1);
-            group_min_y = group_min_y.min(y1);
-            group_max_x = group_max_x.max(x2);
-            group_max_y = group_max_y.max(y2);
-
-            if first_common.is_none() {
-                first_common = Some(common);
-            }
-            children.push(shape_obj);
+            items.push((pi, ci, shape_obj));
         }
+        // 묶음 안 자식 순서가 곧 그리기 순서다. 선택 순서가 아니라 원래 z-order(같으면
+        // 문서 순서)로 정렬해야 겹친 개체의 앞뒤가 묶은 뒤에도 그대로다.
+        items.sort_by_key(|(pi, ci, s)| (s.common().z_order, *pi, *ci));
 
+        // 첫 번째 삽입 위치 (원래 개체 중 가장 앞에 있는 것). 묶음은 이 문단에 놓이므로
+        // 위치 기준·배치 속성도 이 개체의 것을 물려받는다(문단 기준이면 기준 문단이 같다).
+        let insert_target = *targets.iter().min().unwrap();
+        let anchor = items
+            .iter()
+            .position(|(pi, ci, _)| (*pi, *ci) == insert_target)
+            .unwrap();
+        let fc = items[anchor].2.common().clone();
+
+        // 개체마다 기준(종이/쪽/단/문단)과 정렬이 달라 오프셋을 그대로 더하면 자리가 바뀐다.
+        // 실제로 그려진 상자 자리를 공통 좌표(쪽 절대 좌표)로 쓴다. 조판 결과가 없으면
+        // 종전처럼 오프셋을 쓴다.
+        let origins: Vec<(i32, i32)> = items
+            .iter()
+            .map(|(pi, ci, s)| self.rendered_object_origin_hu(section_idx, *pi, *ci, s.common()))
+            .collect::<Option<_>>()
+            .unwrap_or_else(|| {
+                items
+                    .iter()
+                    .map(|(_, _, s)| {
+                        let c = s.common();
+                        (c.horizontal_offset as i32, c.vertical_offset as i32)
+                    })
+                    .collect()
+            });
+        let mut group_min_x = i32::MAX;
+        let mut group_min_y = i32::MAX;
+        let mut group_max_x = i32::MIN;
+        let mut group_max_y = i32::MIN;
+        for ((_, _, s), &(x, y)) in items.iter().zip(&origins) {
+            group_min_x = group_min_x.min(x);
+            group_min_y = group_min_y.min(y);
+            group_max_x = group_max_x.max(x + s.common().width as i32);
+            group_max_y = group_max_y.max(y + s.common().height as i32);
+        }
         let group_w = (group_max_x - group_min_x).max(1) as u32;
         let group_h = (group_max_y - group_min_y).max(1) as u32;
-        let fc = first_common.unwrap();
 
-        // 2) 자식 개체의 offset/render 좌표를 그룹 로컬 좌표로 변환
-        for child in &mut children {
-            // 그룹 내 로컬 좌표 계산
-            let new_horz = ((child.common().horizontal_offset as i32 - group_min_x).max(0)) as u32;
-            let new_vert = ((child.common().vertical_offset as i32 - group_min_y).max(0)) as u32;
-            child.common_mut().horizontal_offset = new_horz;
-            child.common_mut().vertical_offset = new_vert;
+        // 묶음 상자를 기준 개체와 같은 기준·정렬에 놓는 오프셋. 같은 기준이면 그려진 자리
+        // 차이가 곧 오프셋 차이고, 가운데/오른쪽 정렬은 폭 차이만큼 더 보정한다.
+        let (anchor_x, anchor_y) = origins[anchor];
+        let (anchor_w, anchor_h) = (fc.width as i32, fc.height as i32);
+        let (dx, dy) = (group_min_x - anchor_x, group_min_y - anchor_y);
+        let (dw, dh) = (group_w as i32 - anchor_w, group_h as i32 - anchor_h);
+        let h_off = fc.horizontal_offset as i32;
+        let v_off = fc.vertical_offset as i32;
+        let group_h_off = match fc.horz_align {
+            HorzAlign::Left | HorzAlign::Inside => h_off + dx,
+            HorzAlign::Center => h_off + dx + dw / 2,
+            HorzAlign::Right | HorzAlign::Outside => h_off - dx - dw,
+        };
+        let group_v_off = match fc.vert_align {
+            VertAlign::Top | VertAlign::Inside => v_off + dy,
+            VertAlign::Center => v_off + dy + dh / 2,
+            VertAlign::Bottom | VertAlign::Outside => v_off - dy - dh,
+        };
 
-            // shape_attr: 렌더링에 사용되는 render_tx/ty와 offset_x/y 설정
-            let sa = match child {
-                ShapeObject::Line(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Rectangle(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Ellipse(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Arc(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Polygon(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Curve(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Group(g) => &mut g.shape_attr,
-                ShapeObject::Picture(p) => &mut p.shape_attr,
-                ShapeObject::Chart(c) => &mut c.drawing.shape_attr,
-                ShapeObject::Ole(o) => &mut o.drawing.shape_attr,
-            };
-            sa.offset_x = new_horz as i32;
-            sa.offset_y = new_vert as i32;
-            sa.group_level = 1;
-            sa.is_two_ctrl_id = false; // 그룹 자식은 ctrl_id 1번만
-            sa.raw_rendering = Vec::new(); // 새로 생성 (직렬화 시 재계산)
-                                           // 렌더러가 사용하는 변환 행렬 값 설정
-            sa.render_tx = new_horz as f64;
-            sa.render_ty = new_vert as f64;
-            sa.render_sx = 1.0;
-            sa.render_sy = 1.0;
-            sa.render_b = 0.0;
-            sa.render_c = 0.0;
+        // 2) 자식을 그룹 로컬 좌표로 옮기되, 그려지던 모습(크기·회전·대칭)은 렌더링 행렬로 보존
+        let new_z_order = items
+            .iter()
+            .map(|(_, _, s)| s.common().z_order)
+            .max()
+            .unwrap();
+        let mut children: Vec<ShapeObject> = Vec::with_capacity(items.len());
+        for ((_, _, mut child), &(x, y)) in items.into_iter().zip(&origins) {
+            let new_horz = x - group_min_x;
+            let new_vert = y - group_min_y;
+            child.common_mut().horizontal_offset = new_horz as u32;
+            child.common_mut().vertical_offset = new_vert as u32;
+            Self::place_group_child(&mut child, new_horz, new_vert);
+            children.push(child);
         }
 
         // 3) GroupShape 조립
-        let new_z_order = self.max_shape_z_order_in_section(section_idx) + 1;
         let group = GroupShape {
             common: CommonObjAttr {
                 ctrl_id: 0x24636f6e, // '$con' — 그룹 컨테이너
                 attr: fc.attr,
-                vertical_offset: group_min_y as u32,
-                horizontal_offset: group_min_x as u32,
+                vertical_offset: group_v_off as u32,
+                horizontal_offset: group_h_off as u32,
                 width: group_w,
                 height: group_h,
                 z_order: new_z_order,
@@ -2105,9 +2235,6 @@ impl DocumentCore {
         // 4) 원래 개체들을 문단에서 제거 (큰 인덱스부터 제거해야 인덱스 밀림 방지)
         let mut sorted_targets: Vec<(usize, usize)> = targets.to_vec();
         sorted_targets.sort_by(|a, b| b.cmp(a)); // 역순 정렬
-
-        // 첫 번째 삽입 위치 (원래 개체 중 가장 앞에 있는 것)
-        let insert_target = *targets.iter().min().unwrap();
 
         for &(pi, ci) in &sorted_targets {
             let para = &mut self.document.sections[section_idx].paragraphs[pi];

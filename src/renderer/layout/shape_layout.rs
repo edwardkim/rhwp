@@ -1374,6 +1374,45 @@ impl LayoutEngine {
                 );
                 parent.children.push(node);
             }
+            ShapeObject::Ellipse(ellipse) => {
+                // 회전된 타원: 원래 상자에 내접한 타원을 베지어 4개로 만들어 아핀 변환한다.
+                // 아핀 변환은 베지어 제어점에 그대로 적용되므로 모양이 정확히 유지된다.
+                // 두 모서리 AABB 폴백은 회전 타원을 축 정렬 타원으로 찌그러뜨렸다.
+                const K: f64 = 0.552_284_749_830_793_4;
+                let (rx, ry) = (
+                    sa.original_width as f64 / 2.0,
+                    sa.original_height as f64 / 2.0,
+                );
+                let pt = |ux: f64, uy: f64| transform_pt(rx + rx * ux, ry + ry * uy);
+                let quarters = [
+                    [(1.0, K), (K, 1.0), (0.0, 1.0)],
+                    [(-K, 1.0), (-1.0, K), (-1.0, 0.0)],
+                    [(-1.0, -K), (-K, -1.0), (0.0, -1.0)],
+                    [(K, -1.0), (1.0, -K), (1.0, 0.0)],
+                ];
+                let start = pt(1.0, 0.0);
+                let mut commands = vec![PathCommand::MoveTo(start.0, start.1)];
+                let (mut min_x, mut min_y, mut max_x, mut max_y) =
+                    (start.0, start.1, start.0, start.1);
+                for q in quarters {
+                    let [c1, c2, end] = q.map(|(ux, uy)| pt(ux, uy));
+                    commands.push(PathCommand::CurveTo(c1.0, c1.1, c2.0, c2.1, end.0, end.1));
+                    for (px, py) in [c1, c2, end] {
+                        min_x = min_x.min(px);
+                        min_y = min_y.min(py);
+                        max_x = max_x.max(px);
+                        max_y = max_y.max(py);
+                    }
+                }
+                commands.push(PathCommand::ClosePath);
+                let (style, gradient) = drawing_to_shape_style(&ellipse.drawing, self.dpi);
+                let node_id = tree.next_id();
+                parent.children.push(RenderNode::new(
+                    node_id,
+                    RenderNodeType::Path(PathNode::new(commands, style, gradient)),
+                    BoundingBox::new(min_x, min_y, max_x - min_x, max_y - min_y),
+                ));
+            }
             _ => {
                 // 그 외 도형(타원, 호, 그림 등): 기본 AABB 방식 폴백
                 let (p0x, p0y) = transform_pt(0.0, 0.0);
