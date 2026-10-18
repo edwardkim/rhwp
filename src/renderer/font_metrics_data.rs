@@ -129,6 +129,16 @@ fn resolve_projected_metric_alias(name: &str) -> (&str, Option<&'static str>) {
     }
 }
 
+/// PostScript 이름의 굵기 접미사(`-Regular`/`-Medium`/`-Bold`)를 떼어 family 와 Bold 여부를 돌려준다.
+fn strip_postscript_weight_suffix(name: &str) -> Option<(&str, bool)> {
+    let (family, weight) = name.rsplit_once('-')?;
+    match weight {
+        "Regular" | "Medium" => Some((family, false)),
+        "Bold" => Some((family, true)),
+        _ => None,
+    }
+}
+
 /// (bold, italic) → 색인 슬롯 번호. 조합이 4개뿐이라 이름당 배열로 선계산한다.
 fn metric_slot_index(bold: bool, italic: bool) -> usize {
     ((bold as usize) << 1) | (italic as usize)
@@ -225,8 +235,19 @@ pub(crate) fn find_metric_decision<'a>(
     bold: bool,
     italic: bool,
 ) -> Option<MetricLookupDecision<'a>> {
-    let (alias_resolved_name, alias_rule_id) = resolve_projected_metric_alias(name);
-    let slots = metric_index().get(alias_resolved_name)?;
+    let (mut alias_resolved_name, mut alias_rule_id) = resolve_projected_metric_alias(name);
+    let mut bold = bold;
+    let slots = match metric_index().get(alias_resolved_name) {
+        Some(slots) => slots,
+        None => {
+            // `Pretendard-Bold`처럼 PostScript 이름으로 저장된 face 는 굵기 접미사를 떼고
+            // family 이름으로 다시 찾는다. `-Bold` 는 Bold 메트릭을 고른다.
+            let (family, suffix_bold) = strip_postscript_weight_suffix(name)?;
+            (alias_resolved_name, alias_rule_id) = resolve_projected_metric_alias(family);
+            bold |= suffix_bold;
+            metric_index().get(alias_resolved_name)?
+        }
+    };
     let selected = slots[metric_slot_index(bold, italic)];
     Some(MetricLookupDecision {
         requested_name: name,
