@@ -337,6 +337,7 @@ impl LayoutEngine {
                 || resolved.engrave
                 || resolved.superscript
                 || resolved.subscript
+                || resolved.baseline_offsets[source_run.lang_index] != 0.0
                 || resolved.emphasis_dot != 0
                 || resolved
                     .letter_spacing_for_lang(source_run.lang_index)

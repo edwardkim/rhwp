@@ -756,3 +756,325 @@ fn pdf_extended_tabs_keep_source_cell_lines_after_both_save_formats() {
         verify(&mut saved);
     }
 }
+
+// Source PDFs, annotation, producer hashes and all-page Native/fresh Docker WASM
+// qualification: task_m100_7998_stage3.md, P2 mixed-baseline slice.
+fn assert_pdf_script_case(
+    mut core: rhwp::DocumentCore,
+    expected: &str,
+    displacement_em: f64,
+    size_ratio: f64,
+) {
+    use rhwp::{
+        model::control::Control,
+        renderer::render_tree::{RenderNode, RenderNodeType},
+        DocumentCore,
+    };
+    fn first_cell(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::TableCell(c) if c.row == 0 && c.col == 0) {
+            Some(node)
+        } else {
+            node.children.iter().find_map(first_cell)
+        }
+    }
+    fn check(
+        core: &DocumentCore,
+        expected: &str,
+        displacement_em: f64,
+        size_ratio: f64,
+        source_lines: bool,
+    ) {
+        let table = core.document().sections[0]
+            .paragraphs
+            .iter()
+            .flat_map(|p| &p.controls)
+            .find_map(|c| {
+                if let Control::Table(t) = c {
+                    Some(t)
+                } else {
+                    None
+                }
+            })
+            .expect("editable Table");
+        let cell = table.cell_at(0, 0).unwrap();
+        assert_eq!(
+            cell.paragraphs
+                .iter()
+                .map(|p| p.text.as_str())
+                .collect::<Vec<_>>(),
+            [expected, "SECOND"]
+        );
+        assert_eq!(
+            table
+                .cell_at(0, 1)
+                .unwrap()
+                .paragraphs
+                .iter()
+                .map(|p| p.text.as_str())
+                .collect::<Vec<_>>(),
+            ["FIRST", "SECOND"]
+        );
+        assert_eq!(table.cell_at(1, 0).unwrap().paragraphs[0].text, "LEFT");
+        assert_eq!(table.cell_at(1, 1).unwrap().paragraphs[0].text, "RIGHT");
+        let tree = core.build_page_render_tree(0).unwrap();
+        let cell = first_cell(&tree.root).unwrap();
+        let lines: Vec<_> = cell
+            .children
+            .iter()
+            .filter(|n| matches!(n.node_type, RenderNodeType::TextLine(_)))
+            .collect();
+        let first = lines.first().unwrap();
+        let runs: Vec<_> = first
+            .children
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextRun(run) => Some((node, run)),
+                _ => None,
+            })
+            .collect();
+        let (ordinary_node, ordinary) = runs.iter().find(|(_, r)| r.text.contains('H')).unwrap();
+        let (script_node, script) = runs
+            .iter()
+            .find(|(_, r)| r.text == "2" || r.text == "12")
+            .expect("source ASCII digit, not a Unicode replacement");
+        let (body_size, body_y) = ordinary.style.script_draw_metrics(
+            ordinary.style.font_size,
+            ordinary_node.bbox.y + ordinary.baseline,
+        );
+        let (small_size, small_y) = script
+            .style
+            .script_draw_metrics(script.style.font_size, script_node.bbox.y + script.baseline);
+        assert!(
+            (small_size / body_size - size_ratio).abs() < 0.001,
+            "source glyph size ratio, no second script scaling"
+        );
+        assert!(
+            ((small_y - body_y) / body_size - displacement_em).abs() < 0.01,
+            "source PDF baseline displacement relative to 10pt, got {}",
+            (small_y - body_y) / body_size
+        );
+        assert!(!script.style.superscript && !script.style.subscript);
+        assert!(small_y > cell.bbox.y && small_y < cell.bbox.y + cell.bbox.height);
+        let continuation = lines.iter().skip(1).find(|line| {
+            line.children
+                .iter()
+                .any(|n| matches!(&n.node_type, RenderNodeType::TextRun(r) if r.text.contains('G')))
+        });
+        if let Some(continuation) = continuation {
+            assert!(continuation.bbox.y > first.bbox.y);
+        } else {
+            assert!(
+                !source_lines,
+                "untouched source retains the authored second line"
+            );
+        }
+    }
+    check(&core, expected, displacement_em, size_ratio, true);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let saved = DocumentCore::from_bytes(&bytes).unwrap();
+        check(&saved, expected, displacement_em, size_ratio, true);
+    }
+    let (pi, ci) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(pi, p)| {
+            p.controls
+                .iter()
+                .enumerate()
+                .find_map(|(ci, c)| matches!(c, Control::Table(_)).then_some((pi, ci)))
+        })
+        .unwrap();
+    core.insert_text_in_cell_native(0, pi, ci, 0, 0, 3, " IR")
+        .unwrap();
+    core.delete_text_in_cell_native(0, pi, ci, 0, 0, 3, 3)
+        .unwrap();
+    check(&core, expected, displacement_em, size_ratio, false);
+    core.split_paragraph_in_cell_native(0, pi, ci, 0, 0, 3, None)
+        .unwrap();
+    core.merge_paragraph_in_cell_native(0, pi, ci, 0, 1)
+        .unwrap();
+    check(&core, expected, displacement_em, size_ratio, false);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let saved = DocumentCore::from_bytes(&bytes).unwrap();
+        check(&saved, expected, displacement_em, size_ratio, false);
+    }
+}
+
+#[test]
+fn pdf_script_scalars_sizes_and_baselines_survive_real_cell_edits_and_both_saves() {
+    for (input, expected, displacement_em, size_ratio) in [
+        (
+            include_bytes!("../../pdf/issue7998/solid-baseline.pdf").as_slice(),
+            "H2O GAMMA",
+            -0.4,
+            0.6,
+        ),
+        (
+            include_bytes!("../../pdf/issue7998/superscript.pdf").as_slice(),
+            "H2O GAMMA",
+            -0.4,
+            0.6,
+        ),
+        (
+            include_bytes!("../../pdf/issue7998/subscript.pdf").as_slice(),
+            "H2O GAMMA",
+            0.3,
+            0.6,
+        ),
+        (
+            include_bytes!("../../pdf/issue7998/leading-script.pdf").as_slice(),
+            "2HO GAMMA",
+            -0.4,
+            0.6,
+        ),
+        (
+            include_bytes!("../../pdf/issue7998/text-rise.pdf").as_slice(),
+            "H2O GAMMA",
+            -0.4,
+            0.6,
+        ),
+        (
+            include_bytes!("../../pdf/issue7998/mixed-sizes.pdf").as_slice(),
+            "H2O GAMMA",
+            0.0,
+            0.8,
+        ),
+        (
+            include_bytes!("../../pdf/issue7998/tm-rise.pdf").as_slice(),
+            "H2O GAMMA",
+            -0.2,
+            1.0,
+        ),
+        (
+            include_bytes!("../../pdf/issue7998/same-font-ts.pdf").as_slice(),
+            "H2O GAMMA",
+            -0.2,
+            1.0,
+        ),
+        (
+            include_bytes!("../../pdf/issue7998/multi-rise.pdf").as_slice(),
+            "H12O GAMMA",
+            -0.4,
+            0.6,
+        ),
+    ] {
+        assert_pdf_script_case(
+            rhwp::DocumentCore::from_pdf_bytes(input, &PdfImportOptions::default()).unwrap(),
+            expected,
+            displacement_em,
+            size_ratio,
+        );
+    }
+}
+
+#[test]
+fn pdf_mixed_fonts_retain_editable_paragraph_boundaries() {
+    assert_pdf_cell_paragraph_case(include_bytes!("../../pdf/issue7998/mixed-fonts.pdf"), false);
+}
+
+#[test]
+fn pdf_small_overlapping_line_is_not_reclassified_as_an_adjacent_script() {
+    let report = inference(
+        include_bytes!("../../pdf/issue7998/separate-small-line.pdf"),
+        true,
+    );
+    let cells = report["textRecognition"]["tables"][0]["cells"]
+        .as_array()
+        .unwrap();
+    let cell = cells
+        .iter()
+        .find(|c| c["row"] == 0 && c["column"] == 0)
+        .unwrap();
+    let lines: Vec<_> = cell["recognition"]["paragraphs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|p| p["lines"].as_array().unwrap())
+        .map(|l| l["previewText"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        lines,
+        ["H", "small", "GAMMA", "SECOND"],
+        "parallel ink is not an inline script; paragraph uncertainty may remain"
+    );
+}
+
+// Same all-page qualification as the mixed-baseline fixtures; see stage3.
+#[test]
+fn pdf_baseline_is_preserved_when_horizontal_metrics_are_deferred() {
+    use rhwp::{
+        renderer::render_tree::{RenderNode, RenderNodeType},
+        DocumentCore,
+    };
+    fn line(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::TextLine(_))
+            && node.children.iter().any(
+                |n| matches!(&n.node_type, RenderNodeType::TextRun(r) if r.text.contains("/m")),
+            )
+        {
+            Some(node)
+        } else {
+            node.children.iter().find_map(line)
+        }
+    }
+    fn check(core: &DocumentCore) {
+        let tree = core.build_page_render_tree(5).unwrap();
+        let line = line(&tree.root).expect("source unit m squared on page six");
+        let runs: Vec<_> = line
+            .children
+            .iter()
+            .filter_map(|n| {
+                if let RenderNodeType::TextRun(r) = &n.node_type {
+                    Some((n, r))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let (body_node, body) = runs.iter().find(|(_, r)| r.text.contains("/m")).unwrap();
+        let (script_node, script) = runs
+            .iter()
+            .find(|(_, r)| r.text.trim_end_matches('\t') == "2")
+            .expect("ASCII digit kept independently of font metrics");
+        let (body_size, body_y) = body
+            .style
+            .script_draw_metrics(body.style.font_size, body_node.bbox.y + body.baseline);
+        let (script_size, script_y) = script
+            .style
+            .script_draw_metrics(script.style.font_size, script_node.bbox.y + script.baseline);
+        // Independent painted PDF glyphs: ordinary baseline 612.8892822266pt,
+        // 2 at 617.68408203125pt; source sizes 11.0279483795 and 7.0722708702pt.
+        assert!(
+            (script_size / body_size - 7.0722708702 / 11.0279483795).abs() < 0.002,
+            "source size retained"
+        );
+        let displacement = (script_y - body_y) / body_size;
+        assert!(
+            (displacement + (617.68408203125 - 612.8892822266) / 11.0279483795).abs() < 0.01,
+            "horizontal uncertainty must not erase independent baseline, got {displacement}"
+        );
+        assert!(
+            !script.style.superscript && !script.style.subscript,
+            "source PDF size is already scaled"
+        );
+    }
+    let core = DocumentCore::from_pdf_bytes(
+        include_bytes!("../../pdf/pr7704/6778-square-2020.pdf"),
+        &PdfImportOptions::default(),
+    )
+    .unwrap();
+    check(&core);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        check(&DocumentCore::from_bytes(&bytes).unwrap());
+    }
+}

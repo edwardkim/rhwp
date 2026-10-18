@@ -243,6 +243,7 @@ fn horizontal_shaping_initial_lane_preflight(
         && !style.engrave
         && !style.superscript
         && !style.subscript
+        && style.baseline_offset == 0.0
         && style.emphasis_dot == 0
         && crate::model::color::char_shade(style.shade_color).is_none();
     let para_style_supported = styles

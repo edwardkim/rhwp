@@ -1911,6 +1911,10 @@ struct TjBuffer {
     /// Avoids two transform_point calls per flush.
     user_pos_x: f32,
     user_pos_y: f32,
+    /// Exact paint origin including Ts transformed through text matrix and CTM.
+    /// Reading-order extraction retains its legacy origin separately.
+    paint_pos_x: f32,
+    paint_pos_y: f32,
     /// Pre-computed horizontal scale factor (CTM × text_matrix).
     /// Used to convert accumulated_width from text space to user space for bbox.
     user_h_scale: f32,
@@ -2037,6 +2041,10 @@ impl TjBuffer {
         // Pre-compute user-space position: text_matrix origin → CTM transform
         let text_pos = state.text_matrix.transform_point(0.0, 0.0);
         let user_pos = state.ctm.transform_point(text_pos.x, text_pos.y);
+        let paint_text_pos = state.text_matrix.transform_point(0.0, state.text_rise);
+        let paint_pos = state
+            .ctm
+            .transform_point(paint_text_pos.x, paint_text_pos.y);
         Self {
             source_order,
             unicode: String::new(),
@@ -2056,6 +2064,8 @@ impl TjBuffer {
             char_widths: Vec::new(),
             user_pos_x: user_pos.x,
             user_pos_y: user_pos.y,
+            paint_pos_x: paint_pos.x,
+            paint_pos_y: paint_pos.y,
             user_h_scale,
             rotation_degrees,
             mirrored: run_is_mirrored(&combined),
@@ -3516,7 +3526,11 @@ impl<'doc> TextExtractor<'doc> {
         // glyphs into a separate Y-band above the body, producing
         // output like `"1,2 ★ 3,4 5 / Chibueze, …"` instead of
         // `"Chibueze,1,2★ Caleb,3,4† …"`.
-        self.snap_superscript_baselines();
+        // Reading-order normalization must not destroy source paint geometry.
+        // Positional import groups lines separately and retains each run's origin.
+        if !self.visible_paint_only {
+            self.snap_superscript_baselines();
+        }
 
         self.sort_spans_by_reading_order();
 
@@ -3526,7 +3540,9 @@ impl<'doc> TextExtractor<'doc> {
         }
 
         // Merge adjacent spans on the same line to reconstruct complete words
-        self.merge_adjacent_spans();
+        if !self.visible_paint_only {
+            self.merge_adjacent_spans();
+        }
 
         // Resolve each span's font resource alias (e.g. "F1") to the resolved
         // /BaseFont name (e.g. "Helvetica", "CIDFont+F1") so extract_spans /
@@ -5548,6 +5564,9 @@ impl<'doc> TextExtractor<'doc> {
                                 && b == buffer.start_matrix.b
                                 && c == buffer.start_matrix.c
                                 && d == buffer.start_matrix.d
+                                // Reading-order jitter tolerance is not a paint
+                                // origin: retain a changed glyph baseline.
+                                && (!self.visible_paint_only || f == buffer.start_matrix.f)
                                 // The raw-matrix band and forward test are kept
                                 // ANDed with the frame-correct rule rather than
                                 // replaced by it. Substituting reads better and
@@ -5972,6 +5991,9 @@ impl<'doc> TextExtractor<'doc> {
                 self.state_stack.current_mut().leading = leading;
             },
             Operator::Ts { rise } => {
+                if self.visible_paint_only {
+                    self.flush_tj_span_buffer()?;
+                }
                 self.state_stack.current_mut().text_rise = rise;
             },
             Operator::Tr { render } => {
@@ -7508,8 +7530,16 @@ impl<'doc> TextExtractor<'doc> {
             provenance: None,
             text,
             bbox: Rect {
-                x: buffer.user_pos_x,
-                y: buffer.user_pos_y,
+                x: if self.visible_paint_only {
+                    buffer.paint_pos_x
+                } else {
+                    buffer.user_pos_x
+                },
+                y: if self.visible_paint_only {
+                    buffer.paint_pos_y
+                } else {
+                    buffer.user_pos_y
+                },
                 width: total_width,
                 height: effective_font_size,
             },
@@ -7925,7 +7955,14 @@ impl<'doc> TextExtractor<'doc> {
         // Per PDF Spec ISO 32000-1:2008 Section 9.4.4
         let text_matrix = state.text_matrix;
         let ctm = state.ctm;
-        let text_pos = text_matrix.transform_point(text_min_x, 0.0);
+        let text_pos = text_matrix.transform_point(
+            text_min_x,
+            if self.visible_paint_only {
+                state.text_rise
+            } else {
+                0.0
+            },
+        );
         let user_pos = ctm.transform_point(text_pos.x, text_pos.y);
 
         // Transform the width as well (accounting for matrix scaling)
@@ -8775,7 +8812,14 @@ impl<'doc> TextExtractor<'doc> {
 
         // Apply CTM to get position in user space
         // Per PDF Spec ISO 32000-1:2008 Section 9.4.4
-        let text_pos = text_matrix.transform_point(0.0, 0.0);
+        let text_pos = text_matrix.transform_point(
+            0.0,
+            if self.visible_paint_only {
+                state.text_rise
+            } else {
+                0.0
+            },
+        );
         let user_pos = ctm.transform_point(text_pos.x, text_pos.y);
 
         log::trace!(
@@ -9069,8 +9113,16 @@ impl<'doc> TextExtractor<'doc> {
                     provenance: None,
                     text,
                     bbox: Rect {
-                        x: buffer.user_pos_x,
-                        y: buffer.user_pos_y,
+                        x: if self.visible_paint_only {
+                            buffer.paint_pos_x
+                        } else {
+                            buffer.user_pos_x
+                        },
+                        y: if self.visible_paint_only {
+                            buffer.paint_pos_y
+                        } else {
+                            buffer.user_pos_y
+                        },
                         width: total_width,
                         height: effective_font_size,
                     },
@@ -9177,7 +9229,14 @@ impl<'doc> TextExtractor<'doc> {
             };
 
             // Calculate character position in user space
-            let text_pos = text_matrix.transform_point(0.0, 0.0);
+            let text_pos = text_matrix.transform_point(
+                0.0,
+                if self.visible_paint_only {
+                    state.text_rise
+                } else {
+                    0.0
+                },
+            );
             let pos = ctm.transform_point(text_pos.x, text_pos.y);
 
             // Calculate effective font size

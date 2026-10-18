@@ -213,26 +213,60 @@ impl ObservedText {
             return Err("span reference out of range".into());
         }
         let mut indices = indices.to_vec();
+        // Ordinary-sized runs establish line anchors before small raised/lowered
+        // runs attach to them. Source baseline coordinates are never snapped.
         indices.sort_by(|a, b| {
-            self.spans[*a]
-                .baseline
-                .total_cmp(&self.spans[*b].baseline)
-                .then(self.spans[*a].bounds.x.total_cmp(&self.spans[*b].bounds.x))
-                .then(a.cmp(b))
+            self.spans[*b]
+                .font_size
+                .total_cmp(&self.spans[*a].font_size)
+                .then(
+                    self.spans[*a]
+                        .baseline
+                        .total_cmp(&self.spans[*b].baseline)
+                        .then(self.spans[*a].bounds.x.total_cmp(&self.spans[*b].bounds.x))
+                        .then(a.cmp(b)),
+                )
         });
         let mut groups: Vec<Vec<usize>> = Vec::new();
         for i in indices {
             let s = &self.spans[i];
-            if let Some(group) = groups.last_mut().filter(|g| {
-                let first = &self.spans[g[0]];
-                (first.baseline - s.baseline).abs()
-                    <= tolerance_em * first.font_size.min(s.font_size)
-            }) {
-                group.push(i);
+            let mut candidates: Vec<_> = groups
+                .iter()
+                .enumerate()
+                .filter_map(|(at, group)| {
+                    let anchor = &self.spans[group[0]];
+                    let delta = (anchor.baseline - s.baseline).abs();
+                    let same_baseline = delta <= tolerance_em * anchor.font_size.min(s.font_size);
+                    let adjacent = group.iter().any(|&member| {
+                        let b = self.spans[member].bounds;
+                        let gap =
+                            (s.bounds.x - (b.x + b.width)).max(b.x - (s.bounds.x + s.bounds.width));
+                        gap >= -anchor.font_size * 0.25 && gap <= anchor.font_size
+                    });
+                    let script = s.font_size < anchor.font_size * 0.85
+                        && delta <= anchor.font_size * 0.5
+                        && adjacent;
+                    (same_baseline || script).then_some((at, delta))
+                })
+                .collect();
+            candidates.sort_by(|a, b| a.1.total_cmp(&b.1));
+            // Equal competing baselines do not establish an owner.
+            let unique = candidates.first().filter(|first| {
+                candidates
+                    .get(1)
+                    .is_none_or(|second| (first.1 - second.1).abs() > 0.001)
+            });
+            if let Some(&(at, _)) = unique {
+                groups[at].push(i);
             } else {
                 groups.push(vec![i]);
             }
         }
+        groups.sort_by(|a, b| {
+            self.spans[a[0]]
+                .baseline
+                .total_cmp(&self.spans[b[0]].baseline)
+        });
         Ok(groups
             .into_iter()
             .map(|mut indices| {
@@ -262,7 +296,14 @@ impl ObservedText {
                     .map(|s| s.bounds.y + s.bounds.height)
                     .fold(f32::NEG_INFINITY, f32::max);
                 TextLine {
-                    baseline: spans[0].baseline,
+                    // A leading small script is not the ordinary line baseline.
+                    // Use the largest observed type size, keeping source x order
+                    // for ties; the other baselines remain per-span observations.
+                    baseline: spans
+                        .iter()
+                        .find(|span| span.font_size == font)
+                        .unwrap()
+                        .baseline,
                     source_ranges: spans.iter().map(|s| s.source.clone()).collect(),
                     preview_text: spans.iter().map(|s| s.text.as_str()).collect(),
                     disjoint: spans

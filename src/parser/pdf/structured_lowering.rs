@@ -19,6 +19,56 @@ use crate::model::{
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 
+fn source_baseline_position(
+    page: &ExtractedPage,
+    doc: &Document,
+    line: &TextLine,
+    span: usize,
+    base_id: u32,
+) -> Result<(i8, f64), String> {
+    let source_delta = page.media_box.3 - page.spans[span].bbox.y - line.baseline;
+    let size = doc.doc_info.char_shapes[base_id as usize].base_size as f64 / 100.;
+    let position = (f64::from(source_delta) / size * 100.).round();
+    if !position.is_finite() || !(-100. ..=100.).contains(&position) {
+        return Err("source baseline displacement exceeds HWP character position range".into());
+    }
+    Ok((
+        position as i8,
+        (size * position / 100. - f64::from(source_delta)).abs(),
+    ))
+}
+
+/// Source baseline is independent of whether horizontal reconstruction succeeds.
+/// Both the legacy tab frame and ordinary paragraphs must retain this property.
+fn positioned_span_style(
+    page: &ExtractedPage,
+    doc: &mut Document,
+    line: &TextLine,
+    span: usize,
+    base_id: u32,
+    cache: &mut BTreeMap<(u32, u8, i8, i8), u32>,
+) -> Result<u32, String> {
+    let (position, _) = source_baseline_position(page, doc, line, span, base_id)?;
+    if position == 0 {
+        return Ok(base_id);
+    }
+    let base = &doc.doc_info.char_shapes[base_id as usize];
+    let key = (base_id, base.ratios[0], base.spacings[0], position);
+    if let Some(id) = cache.get(&key) {
+        return Ok(*id);
+    }
+    if doc.doc_info.char_shapes.len() >= u16::MAX as usize {
+        return Err("PDF character style budget exceeded".into());
+    }
+    let mut style = base.clone();
+    style.raw_data = None;
+    style.char_offsets = [position; 7];
+    let id = doc.doc_info.char_shapes.len() as u32;
+    doc.doc_info.char_shapes.push(style);
+    cache.insert(key, id);
+    Ok(id)
+}
+
 /// Translate observed glyph metrics into the ordinary HWP character contract.
 /// Source-font loss is explicit: width-compatible fallback does not recover its outline.
 fn observed_line_text(
@@ -27,7 +77,7 @@ fn observed_line_text(
     line: &TextLine,
     shape_ids: &[Option<u32>],
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
-    cache: &mut BTreeMap<(u32, u8, i8), u32>,
+    cache: &mut BTreeMap<(u32, u8, i8, i8), u32>,
 ) -> Result<(String, Vec<(u32, u32)>, Value), String> {
     use crate::renderer::{
         layout::{estimate_text_width, resolved_to_text_style},
@@ -37,9 +87,16 @@ fn observed_line_text(
     let mut runs = Vec::new();
     let mut offset = 0;
     let mut maximum_error: f64 = 0.;
+    let mut maximum_baseline_error: f64 = 0.;
     for glyph in &content.characters {
         let base_id = shape_ids[glyph.span].ok_or("missing source style")?;
         let source = &page.spans[glyph.span];
+        // PDF font size already includes script scaling. Preserve it and encode
+        // only the observed displacement in ordinary HWP CHAROFFSET; setting
+        // the superscript flag would shrink a small PDF glyph a second time.
+        let (position, baseline_error) =
+            source_baseline_position(page, doc, line, glyph.span, base_id)?;
+        maximum_baseline_error = maximum_baseline_error.max(baseline_error);
         let mut style =
             resolved_to_text_style(styles, base_id, detect_lang_category(glyph.character));
         let text = glyph.character.to_string();
@@ -85,8 +142,8 @@ fn observed_line_text(
         }
         let (spacing, error) = best.ok_or("source displacement exceeds HWP spacing range")?;
         maximum_error = maximum_error.max(error * 72. / 96.);
-        let key = (base_id, ratio, spacing);
-        let id = if ratio == 100 && spacing == 0 {
+        let key = (base_id, ratio, spacing, position);
+        let id = if ratio == 100 && spacing == 0 && position == 0 {
             base_id
         } else if let Some(id) = cache.get(&key) {
             *id
@@ -98,6 +155,7 @@ fn observed_line_text(
             character_style.raw_data = None;
             character_style.ratios = [ratio; 7];
             character_style.spacings = [spacing; 7];
+            character_style.char_offsets = [position; 7];
             let id = doc.doc_info.char_shapes.len() as u32;
             doc.doc_info.char_shapes.push(character_style);
             cache.insert(key, id);
@@ -114,8 +172,10 @@ fn observed_line_text(
         json!({
             "characters":content.characters,
             "maximumAdvanceQuantizationErrorPt":maximum_error,
+            "maximumBaselineQuantizationErrorPt":maximum_baseline_error,
+            "lineBaselinePt":line.baseline,
             "status":"observed_origins_with_nominal_widths",
-            "hwpQuantization":"integer-percent ratio and spacing; no source-font outline recovery"
+            "hwpQuantization":"integer-percent ratio, spacing and character position; no source-font outline recovery"
         }),
     ))
 }
@@ -322,8 +382,10 @@ fn paragraph(
                 Err(reason) => {
                     doc.doc_info.char_shapes.truncate(before_styles);
                     glyph_styles.retain(|_, id| (*id as usize) < before_styles);
-                    materialization =
-                        Some(json!({"status":"unverified_legacy_line_frame","reason":reason}));
+                    materialization = Some(
+                        json!({"status":"unverified_legacy_line_frame","reason":reason,
+                            "baselinePolicy":"observed_source_position_preserved_independently_of_horizontal_metrics"}),
+                    );
                     let (text, runs, line_tabs, extensions) =
                         text_with_tabs(page, indices, cell_x)?;
                     tabs.extend(line_tabs);
@@ -332,9 +394,9 @@ fn paragraph(
                         text,
                         runs.into_iter()
                             .map(|(offset, i)| {
-                                shape_ids[i]
+                                let base = shape_ids[i].ok_or("missing source style")?;
+                                positioned_span_style(page, doc, line, i, base, &mut glyph_styles)
                                     .map(|id| (offset, id))
-                                    .ok_or("missing source style")
                             })
                             .collect::<Result<_, _>>()?,
                     )
@@ -346,9 +408,9 @@ fn paragraph(
                 text,
                 runs.into_iter()
                     .map(|(offset, i)| {
-                        shape_ids[i]
+                        let base = shape_ids[i].ok_or("missing source style")?;
+                        positioned_span_style(page, doc, line, i, base, &mut glyph_styles)
                             .map(|id| (offset, id))
-                            .ok_or("missing source style")
                     })
                     .collect::<Result<_, _>>()?,
             )

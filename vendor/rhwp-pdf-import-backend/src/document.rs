@@ -13343,7 +13343,7 @@ impl PdfDocument {
         page_index: usize,
         raw_spans: Vec<crate::layout::TextSpan>,
     ) -> Result<Vec<crate::layout::TextSpan>> {
-        self.postprocess_spans_inner(page_index, raw_spans, true)
+        self.postprocess_spans_inner(page_index, raw_spans, true, false)
     }
 
     fn postprocess_spans_for_import(
@@ -13354,7 +13354,7 @@ impl PdfDocument {
         // Positional import retains painted headers and footers. Semantic
         // artifact classification is unused by lowering and must not extract
         // every unselected source page to classify the requested one.
-        self.postprocess_spans_inner(page_index, raw_spans, false)
+        self.postprocess_spans_inner(page_index, raw_spans, false, true)
     }
 
     fn postprocess_spans_inner(
@@ -13362,6 +13362,7 @@ impl PdfDocument {
         page_index: usize,
         raw_spans: Vec<crate::layout::TextSpan>,
         classify_running_artifacts: bool,
+        preserve_script_glyphs: bool,
     ) -> Result<Vec<crate::layout::TextSpan>> {
         let mut spans = raw_spans;
 
@@ -13380,7 +13381,9 @@ impl PdfDocument {
 
         // Re-attach oversized lone leading capitals to their word before the
         // reading-order sort can strand them (drop-cap / table-title initials).
-        Self::merge_drop_cap_initials(&mut spans);
+        if !preserve_script_glyphs {
+            Self::merge_drop_cap_initials(&mut spans);
+        }
 
         // Apply page /Rotate to span geometry BEFORE reading-order sorting.
         //
@@ -13590,7 +13593,12 @@ impl PdfDocument {
         // ground truth keeps in ASCII; gating on token-internal
         // context keeps the desired cases without regressing the
         // affiliation-block pages.
-        Self::apply_super_sub_script_substitutions(&mut spans);
+        // Positional import preserves the original scalar and its glyph size /
+        // baseline. Replacing "2" by "²" would apply script shaping twice and
+        // alter the editable source text. Search/text extraction keeps its policy.
+        if !preserve_script_glyphs {
+            Self::apply_super_sub_script_substitutions(&mut spans);
+        }
 
         // Fold spacing-diacritic spans (´, `, ^, ~, ¨, …) into the
         // base letter of the following span when the diacritic is
@@ -13607,7 +13615,7 @@ impl PdfDocument {
         // spec-aligned positions instead of drifting prefix-sums. Runs last, on
         // the fully post-processed spans, so alignment sees the same text the
         // consumers do.
-        self.stamp_char_x_offsets(page_index, &mut spans);
+        self.stamp_char_x_offsets(page_index, &mut spans, preserve_script_glyphs);
 
         Ok(spans)
     }
@@ -13655,7 +13663,12 @@ impl PdfDocument {
     /// spans (`rotation_degrees != 0`) have been mapped into the displayed frame
     /// (see `postprocess_spans`) and their glyphs run along a rotated axis, so a
     /// horizontal-x stamp would misalign — those individual spans are skipped.
-    fn stamp_char_x_offsets(&self, page_index: usize, spans: &mut [crate::layout::TextSpan]) {
+    fn stamp_char_x_offsets(
+        &self,
+        page_index: usize,
+        spans: &mut [crate::layout::TextSpan],
+        painted: bool,
+    ) {
         // Horizontal-x offsets only make sense in an unrotated frame; the 180°
         // mirror is the one rotation that leaves ALL spans in the displayed frame.
         if self
@@ -13667,7 +13680,16 @@ impl PdfDocument {
             return;
         }
 
-        let accurate = match self.cached_page_chars(page_index) {
+        // Paint spans include Ts in their origin. Match them against the same
+        // painted glyph geometry, not the search cache's normalized baseline.
+        // Otherwise a raised multi-glyph run loses every horizontal anchor.
+        let characters = if painted {
+            self.extract_chars_impl(page_index, HashSet::new(), HashSet::new(), true)
+                .map(std::sync::Arc::new)
+        } else {
+            self.cached_page_chars(page_index)
+        };
+        let accurate = match characters {
             Ok(chars) if !chars.is_empty() => chars,
             _ => return,
         };
@@ -18597,6 +18619,7 @@ impl PdfDocument {
             page_index,
             HashSet::new(),
             HashSet::new(),
+            false,
         )?);
         self.check_import_budget()?;
         self.page_chars_cache
@@ -18618,7 +18641,7 @@ impl PdfDocument {
         excluded_layers: HashSet<String>,
         excluded_inks: HashSet<String>,
     ) -> Result<Vec<crate::layout::TextChar>> {
-        self.extract_chars_impl(page_index, excluded_layers, excluded_inks)
+        self.extract_chars_impl(page_index, excluded_layers, excluded_inks, false)
     }
 
     fn extract_chars_impl(
@@ -18626,6 +18649,7 @@ impl PdfDocument {
         page_index: usize,
         excluded_layers: HashSet<String>,
         excluded_inks: HashSet<String>,
+        visible_paint_only: bool,
     ) -> Result<Vec<crate::layout::TextChar>> {
         use crate::extractors::TextExtractor;
 
@@ -18652,6 +18676,7 @@ impl PdfDocument {
         }
 
         let mut extractor = TextExtractor::new();
+        extractor.set_visible_paint_only(visible_paint_only);
         // Stamp the page index the span path already stamps. The form /BBox
         // clip below resolves the enclosing page through
         // `mcid_scope_stack.first()`, which defaults to `Page(0)`; without this

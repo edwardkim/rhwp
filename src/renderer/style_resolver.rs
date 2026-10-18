@@ -81,6 +81,9 @@ pub struct ResolvedCharStyle {
     pub font_size: f64,
     /// 언어별 상대 크기를 적용한 글리프 크기(px). 기본 줄 크기와 구분한다.
     pub font_sizes: Vec<f64>,
+    /// Language-specific character position, in px from the common line baseline.
+    /// HWP CHAROFFSET is a percentage of the declared base size; positive is down.
+    pub baseline_offsets: [f64; LANG_COUNT],
     /// 진하게
     pub bold: bool,
     /// 기울임
@@ -149,6 +152,7 @@ impl Default for ResolvedCharStyle {
             font_space_em: None,
             font_size: 12.0,
             font_sizes: Vec::new(),
+            baseline_offsets: [0.0; LANG_COUNT],
             bold: false,
             italic: false,
             text_color: 0,
@@ -857,6 +861,9 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_space_em,
         font_size,
         font_sizes,
+        baseline_offsets: cs
+            .char_offsets
+            .map(|offset| font_size * f64::from(offset) / 100.0),
         bold: cs.bold,
         italic: cs.italic,
         text_color: cs.text_color,

@@ -281,6 +281,10 @@ pub struct TextStyle {
     pub font_family: String,
     /// 글꼴 크기 (px)
     pub font_size: f64,
+    /// Character position relative to the line baseline, positive down (px).
+    /// Independent of relative font size and the automatic script-size flags.
+    #[serde(skip_serializing_if = "is_zero_baseline_offset")]
+    pub baseline_offset: f64,
     /// 저장 글줄 없이 생성한 텍스트의 원본 글자 폭을 paint에도 적용한다.
     /// HFT 자동 쪽번호는 HFT 메트릭으로 정렬하므로 대체 TTF의 자연 폭을
     /// 그대로 그리면 숫자·장식의 점유 폭이 달라진다. 본문은 기존 계약을 쓴다.
@@ -462,6 +466,10 @@ pub const SUPERSCRIPT_RISE_EM: f64 = 0.3;
 /// 아래첨자 baseline 하향 이동량 (본문 글꼴 크기 대비 em).
 pub const SUBSCRIPT_DROP_EM: f64 = 0.15;
 
+fn is_zero_baseline_offset(value: &f64) -> bool {
+    *value == 0.0
+}
+
 impl TextStyle {
     /// 위첨자/아래첨자 run 의 **그리기** 글꼴 크기와 baseline 을 계산한다.
     ///
@@ -471,6 +479,7 @@ impl TextStyle {
     ///
     /// HY신명조의 그리기 기준선은 한컴 PDF와 비교한 글꼴 메트릭 차이를 반영한다.
     pub fn script_draw_metrics(&self, base_font_size: f64, baseline_y: f64) -> (f64, f64) {
+        let baseline_y = baseline_y + self.baseline_offset;
         // exam_kor 한컴 PDF 17쪽 T5와 동일 글자 79개의 가로 원점을 맞춰 대조하면
         // SVG의 HY신명조 기준선이 1.43~1.56px 낮다(글꼴 크기 약 15px).
         // 줄 상자와 전진폭은 유지하고 표시 기준선만 글꼴 크기의 0.1em 올린다.
@@ -595,6 +604,7 @@ impl Default for TextStyle {
             supplemental_metrics: None,
             font_family: String::new(),
             font_size: 0.0,
+            baseline_offset: 0.0,
             fixed_glyph_advances: false,
             source_font_is_hft: false,
             color: 0,

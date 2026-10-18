@@ -734,6 +734,22 @@ fn rotate_text(bounds: BoundingBox, logical: BoundingBox, run: &TextRunNode) -> 
 
 fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
     let (font_size, _) = effective_text_font_size_and_baseline(run);
+    // Character position moves ink, not the line's logical flow box. Keep both
+    // extents in the conservative paint bounds so clipping/cache invalidation
+    // cannot drop a raised/lowered glyph. Rotation still uses the original box.
+    let positioned = if run.style.baseline_offset == 0.0 {
+        logical
+    } else {
+        union(
+            logical,
+            BoundingBox::new(
+                logical.x,
+                logical.y + run.style.baseline_offset,
+                logical.width,
+                logical.height,
+            ),
+        )
+    };
     let mut padding: f64 = 0.0;
     if run.style.underline != UnderlineType::None || run.style.strikethrough {
         padding = font_size * 0.2;
@@ -744,13 +760,13 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
     if run.style.emphasis_dot != 0 {
         padding = padding.max(font_size * 0.35);
     }
-    let mut bounds = expand(logical, padding);
+    let mut bounds = expand(positioned, padding);
     if run.style.shadow_type != 0 {
         let offset = BoundingBox::new(
-            logical.x + run.style.shadow_offset_x,
-            logical.y + run.style.shadow_offset_y,
-            logical.width,
-            logical.height,
+            positioned.x + run.style.shadow_offset_x,
+            positioned.y + run.style.shadow_offset_y,
+            positioned.width,
+            positioned.height,
         );
         bounds = union(
             bounds,

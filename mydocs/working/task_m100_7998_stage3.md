@@ -462,3 +462,143 @@ P3 본문 지역·복수 문단과 P4의 표 계층/병합·compound paint·편�
 대조·통합 회귀·lint·패키지·저장본 한컴 열기/인쇄는 남아 있다. 보고서의 다중 줄 문단 42개는
 현재 추론 결과이며 원래 작성 문단 수를 모두 독립 검증한 값이 아니다. 이번 절편의 통과를
 전체 #7998 완료나 최종 PR 준비 완료로 표시하지 않는다. 원격 작업은 수행하지 않았다.
+
+
+### P2 계속 — 혼합 기준선 (2026-10-18, 구현 착수)
+
+위반 계약: PDF에 명시된 작은 글자 크기와 기준선 차이는 서로 다른 속성이다.
+`H2O` 대조군의 2는 6pt·+4pt rise인데 기존 출력은 크기만 보존하고 기준선을
+내렸다. 원인은 painted span 추출기의 reading-order용 `snap_superscript_baselines`와
+PDF lowering의 글자 위치 누락이다. 일반 검색 추출은 유지하고 painted import만
+원래 좌표를 보존한다. line owner의 일반 글자와 작은 첨자를 기하적으로 연결하되
+원래 좌표를 덮어쓰지 않는다. 큰 글자 크기의 기준선을 줄 anchor로 사용하고
+동일 거리의 경쟁 owner는 억지로 선택하지 않는다.
+
+독립 근거: 외부 `p2/next-mixed-baseline/make_sources.py`가 작성한 PDF 연산자·
+source annotation. HWP 5 표33과 한컴 공식 HWPML revision1.2의 CHAROFFSET은
+기준 크기의 -100~100%, 양수 아래·음수 위로 정의한다:
+https://cdn.hancom.com/link/docs/한글문서파일형식3.0_HWPML_revision1.2.pdf .
+PDF의 이미 작은 글자에 superscript flag를 추가해 두 번 축소하지 않는다.
+
+값 추적: source painted span bbox.y → ObservedText의 원래 baseline 및 owner-local
+TextLine anchor → structured_lowering::observed_line_text의 기준선 차이/기준 크기
+→ CharShape.char_offsets → style_resolver의 언어별 baseline_offsets(px)
+→ resolved_to_text_style → TextStyle.script_draw_metrics → CanvasTextFont 및
+SVG/HTML/Skia/paint_bounds의 동일 draw baseline. 가로 측정·선언 줄 상자는
+글자 크기/저장 LineSeg 계약을 유지하며 글자 위치로 텍스트 흐름을 전진시키지 않는다.
+소스 줄 상자·글리프 점유와 실제 앞뒤 줄/셀 포함은 출력으로 별도 확인한다.
+별도 horizontal-shaping/세로쓰기 최적화가 이 필드를 무시하지 않도록 해당 비지원
+경로는 일반 공통 text replay로 보낸다. 스타일 범위를 넘는 위치를 clamp하지 않고
+기존 명시적 보류 경로와 원문을 보존한다.
+
+반례는 위/아래 위치, 첨자 먼저/나중, 혼합 글꼴·크기, 분리되어야 할 다음 줄을
+포함한다. 변경 전 진단본·실제 PNG는 외부 증적에 보존하며 점수만으로 판정하지 않는다.
+
+구현 중 실제 셀 검증에서는 점수가 높아도 의미 표가 0개가 되는 반례를 확인했다.
+`diagnosis-1/`은 H/O reading-order 병합 때문에 `H O`와 떨어진 2가 생겨 셀 flow가
+겹쳤다. painted import는 span을 원문 paint 단위로 유지하며 문단 adapter가 줄을
+묶도록 보정했다. `diagnosis-2/`는 source Ts 좌표는 맞지만 가로 원점의 비교 대상이
+검색용 char cache여서 6pt·4pt rise의 앵커가 사라졌다. 해당 source metadata를
+완화하거나 한 글자만 예외 처리하지 않고, painted char 추출과 span이 같은 Ts/Tm/CTM
+원점을 소비하도록 했다. `Ts`가 바뀔 때와 `Tm` 기준선이 바뀔 때의 buffer 경계도
+보존한다. 검색 추출의 snap/문자 치환/병합·cache는 기존 정책을 유지한다.
+
+backend 진단 `extractor-probe-final.log`에서는 단일/복수 숫자, 위/아래, 선두 첨자,
+같은 글꼴 Ts/Tm 7개 원본의 원래 문자·Y·크기와 완전한 가로 원점 배열을 확인했다.
+이 진단만으로 제품 조판·시각 판정이나 새 fixture 자격을 부여하지 않는다.
+
+### P2 혼합 기준선 — 호출 경계와 독립적인 보존 계약
+
+메인테이너는 `p2-baselines/index.html`의 혼합 기준선 대조군 10개에 **시각 통과**를
+판정했다. 이후 호출 경로 감사에서 수평 메트릭 복원이 실패하는 보고서 6쪽 `m²`와
+일반 실선 표 경로가 원래 글자모양 ID를 사용해 세로 위치를 버리는 별도 결함을 확인했다.
+시각 통과를 이 미검증 경로의 통과로 확대하지 않았다.
+
+`source_baseline_position`은 source baseline과 line anchor의 차이만 계산한다.
+`observed_line_text`의 장평·자간 복원이 성공한 경로뿐 아니라 `text_with_tabs`의
+보류 frame과 `text_with_spaces`의 일반 문단도 `positioned_span_style`로 같은 글자
+위치를 소비한다. 폭이 표현되지 않는다는 이유로 독립적인 세로 속성을 버리지 않으며,
+폭의 장평 범위를 넓히거나 원점을 clamp하지 않는다. style cache의 rollback 이후에도
+원래 크기·폭 속성을 보존한 위치 스타일을 새로 적용한다.
+
+독립 기대값은 보고서 PDF의 실제 glyph 원점이다. 6쪽 `/m`은 11.0279483795pt·
+baseline 612.8892822266pt, `2`는 7.0722708702pt·617.68408203125pt다. 일반 글자 대비
+크기 비율과 기준선 차이를 실제 RenderTree의 공통 draw 결과에서 검사하고, 양 저장
+형식으로 재열어 같은 관계를 확인한다. 수평 보류 상태 자체를 영구 기대값으로 고정하지
+않는다. 작은 숫자에 붙은 배치 탭은 원문 숫자 검사와 구분한다.
+
+두 경로의 동일 회귀 함수는 보정 전 library에서 기준선 차이 0으로 **FAIL**, 보정 후
+library에서는 **PASS**다(`fallback-before.log`, `fallback-after.log`,
+`solid-before.log`, `solid-after.log`).
+보정 전 library·실행 파일·source fingerprint·사용자 판정은 외부
+`p2-baselines/pre-deferred-position/`에 해시와 함께 보존했다. 이 실패는 빌드 오류나
+원문 공백을 제거한 기대값 때문이 아니다.
+
+저장 원문과 편집 후 재조판은 구분한다. 무편집 source/양 저장본은 원래 두 줄을 유지한다.
+실제 삽입·삭제·문단 분할·병합 뒤에는 셀 가용 폭에 따라 `GAMMA`가 첫 줄에 재배치될 수
+있으므로 과거 LineSeg를 고정하지 않는다. 그 경로에서는 원문·이웃 셀 소유와 크기·기준선
+관계를 검증한다. 글자 위치는 ink를 이동하고 줄의 논리 흐름 상자를 이동하지 않는다.
+paint bounds는 원래 상자와 위치 이동 상자를 합쳐 clip/cache 누락을 방지하며 회전
+원점은 원래 상자를 사용한다.
+
+### P2 혼합 기준선 — 최종 출력·편집 검증
+
+증적 루트는 저장소 밖
+`/home/edward/mydev/rhwp-review-evidence/pdf-table-feedback-20261017/semantic-stage3/p2-baselines/`다.
+task의 ignored `output/pr-review/issue7998/p2-baselines`도 같은 위치를 가리킨다.
+source는 `9a1fd0406b44d5c023d1b85af40fa3b670e90216` 위 이번 절편이며
+`source-final-runtime.json`의 src/vendor/Cargo 1,653개 해시를 빌드 전후 대조했다.
+그 manifest의 SHA-256은 `0d4846da56af11d7ce38ae8da04a93b16ec570f564292cb8141b3925a621219c`다.
+테스트/보고서 등록 뒤에도 runtime은 동일하며 시각 빌드·캡처를 반복하지 않는다.
+
+| 실행 | 실제 범위와 결과 |
+|---|---|
+| Native | `cargo build --locked --profile release-test --features native-skia --bin rhwp --target-dir /home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`; 종료 0, 4분. 실행 파일 SHA-256 `10ba28ee0e5e3cde466d96c3faeb57fac6204f60ed756c864b0c61a31a5ab7b6`. |
+| fresh Docker WASM | `docker compose -p rhwp --env-file .env.docker run --rm --no-deps -e CARGO_BUILD_JOBS=6 -e CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 wasm`. root 컴파일 2분55초, wasm-opt 및 package 생성 7분55초 완료 메시지. Docker wrapper 종료는 **143**으로 남아 정상 종료로 보고하지 않는다. 완성된 pkg/public의 바이트 일치와 실제 로드·실행을 별도 확인했다. WASM 19,149,031바이트, SHA-256 `f89dc4e41d6ff89d0ff4de5fc79b610dbf2fefae3ef0c762550de247cadab6e0`. |
+| 전쪽 raw TSV | 독립 기준선 11개·기존 표/문단 대조군 6개·실물 보고서 12쪽·견적서 1쪽, **원본 19개/30쪽**. 각각 직접 PDF와 HWP/HWPX 저장본을 비교해 backend마다 57실행/90쪽이다. Native 최저 **97.45743%**, WASM 최저 **97.41558%**. 180쪽 모두 90% 이상·쪽수 일치·누락 없음. |
+| 무편집 저장본 | 19개 원본의 HWP/HWPX 재열기 PNG는 각 backend에서 직접 PDF import PNG와 전부 바이트 동일하다. 이 검사는 Native CLI가 저장한 파일의 재열기이며 실제 WASM export는 아래 Studio 검사로 구분한다. |
+| 기존 P2 비교 | 양쪽에서 열리는 기존 원본 19쪽씩을 같은 backend의 이전 P2 TSV와 비교해 0.01pp 이상 하락 없음. `final-comparison.json`에 38쪽의 전후 값을 보존했다. |
+| 사용자 판정 보존 | 사용자 통과 10개 대조군의 최종 직접/양 저장본 PNG 30개씩, **총 60개**가 판정본과 바이트 동일하다. 동일 시각 판정을 다시 요청하지 않았다. 추가 실선 표와 보고서 6쪽의 판정은 구현자 직접 판독으로 따로 남긴다. |
+| 실제 Studio | 7793에서 10개 대조군의 PDF 열기 → 삽입/삭제 → 문단 분할/병합 → 실제 WASM HWPX/HWP export·재열기, 70개 상태를 확인했다. 원문·공백·이웃 셀/문단 소속 일치, page error 0. instantiateStreaming이 실제로 받은 `/@fs/.../pkg/rhwp_bg.wasm` 응답을 해시해 위 WASM과 일치했다. main Studio 7700의 JS/WASM 해시는 변경 전과 같다. |
+
+명령 원문·exit·페이지별 TSV는 `native/results.json`, `wasm/results.json`과
+각 `visual/<입력>-<형식>/silhouette.tsv`에 있다. `validate.py native/wasm`은 96dpi,
+compat 2022, Native Skia PNG와 실제 WASM PrintCanvas를 사용했다. 올바른 Batang 공급은
+기존 `output-fixes/batang-only`를 재사용했다. 전체 overlay를 중복 생성하지 않고
+실제 영향 영역을 확대 비교했다.
+
+새 PDF 11개는 양 backend의 직접/양 저장본 시각 조건을 확인한 후에만
+`pdf/issue7998/`에 회귀 입력으로 편입했다. 원래 PDF 연산자와 주석의 해시는 외부
+`make_sources.py`, `*-source-annotation.json`에 보존했다. 일반 실선 표는 별도 생성본이며
+source와 Native/WASM을 직접 비교해 99.97721/99.97686%와 올바른 위치를 확인했다.
+이는 한컴 작성 문서의 원래 문단 메타데이터를 입증한 것이 아니다.
+
+구현자는 보고서 3·5·7쪽의 이전 P2/현재 Native와 현재 WASM을 원본과 확대 대조했다.
+5쪽 `먼지목욕`·`바닥` 끝 글자, 7쪽 네 줄 탭 구성·인접 셀·후속 내용과 6쪽 위첨자를 확인했다.
+이전 P2 대비 WASM 4쪽은 99.73004→99.72187%(0.00817pp), 6쪽은
+99.17763→99.17744%(0.00019pp)로 조금 낮다. 십진수로 canonical 0.01pp 경계를 비교했으며
+이를 하락 0쪽으로 뭉뚱그리지 않는다. 4쪽도 원본/이전/현재를 확대 판독해 새 내용 누락이나
+배치 결함은 확인되지 않았다(`public-p4-wasm-review.png`). 6쪽은 위첨자 위치 보정을
+직접 대조했다. 가는 괘선의 농도와 원래 글꼴 대체의 모양/간격 차이는 남으며, 사용자 과거 판정을 새 SHA의
+포괄 판정으로 바꾸지 않았다. 검토 화면은
+`E:\tmp\issue7998-semantic-table-review\p2-baselines\index.html`이다. 모든 링크·그림은
+폴더를 복사해도 열리도록 상대 경로로 제공한다.
+
+이번 완료 범위는 **혼합 기준선 절편**이다. source typography의 184줄은 관측 원점과
+전진폭을 소비하고 16줄은 원래 글꼴의 장평 범위 문제로 수평 frame에 남는다. 이번에는 그
+줄의 세로 위치도 보존했지만 수평 메트릭 복원을 완료했다고 보고하지 않는다. 보고서의
+다중 줄 문단 42개도 작성 당시 문단 수의 독립 정답이 아니다. B12·P4에서 남은 표현을
+추적하며 다음 실행 절편은 P3 본문 지역·실제 문단 연결이다. P3·P4·P5와 원래 계획의
+전체 회귀·lint·Worker/package·저장본 한컴 열기/인쇄는 미완료이며 원격 반영은 하지 않았다.
+
+정식 집중 회귀는 위에 기록한 `scripts/run-rust-test.mjs issue_7998_pdf_table_inference`
+명령으로 **17건 전부 PASS**다(`focused-final-tests.log`, 209건은 filter로 미실행).
+`--prepare` 뒤 이번 모듈은 `regression_suite_021`에 자동 배정됐으며 기존 자동 수집
+manifest 검사를 통과했다. generated suite/manifest나 개별 CI 호출은 source에 추가하지
+않았다. 새 함수는 실제 셀의 혼합 원문·기준선·크기·편집/저장, 혼합 글꼴 문단 소속,
+분리되어야 할 작은 줄, 보고서의 수평 보류 줄 보존을 확인한다. 일반 실선 표는 같은
+실제 편집·양 저장 helper의 대조군이다. 절대 px/golden/과거 페이지 수 핀은 추가하지 않았다.
+
+`cargo fmt --all -- --check`와 `git diff --check`도 통과했다. formal test/문서 추가 후
+runtime fingerprint와 fixture 11개의 source byte 해시가 그대로인지 마지막으로 확인했다.
+`fixture-admission.json`은 외부 증적으로만 보존하며 로그·중간 JSON·사적 견적서는 커밋하지 않는다.
