@@ -14,6 +14,10 @@
 //! 같은 head의 전157쪽 최저는94.73551/94.95563%다. 독립 PDF의 괘선·기준선과
 //! 121/122쪽 원문 보존을 함께 보호한다. 전후 실패/통과·TSV·확대 PNG는
 //! mydocs/plans/pr_review_planet6897_20261018.md의 후보64 검증 기록에 연결한다.
+//! 61쪽 이어받기 정렬은1c875d9a8의 전157쪽 Native/fresh WASM 최저
+//! 94.73551/94.95563%, 해당쪽 raw98.09685/98.11282%와 직접 review로 확인했다.
+//! 같은 걸침 칸의 마지막 표제를 검증하는 완료 페이지이며, 다른 고득점 쪽은 이 경계를
+//! 대신하지 않는다. 독립 Print 표제 상단122.4px와 원본 Center·앞뒤 쪽 내용 보존을 검사한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -410,4 +414,60 @@ fn partial_row_cut_keeps_independent_physical_frame_on_completed_page121() {
     baseline(subtitle[0], 1006.0799967447916);
     baseline(first_rows[0], 958.5599772135416);
     baseline(first_rows[3], 1028.9599609375);
+}
+
+#[test]
+fn carried_rowspan_label_keeps_its_print_center_and_page_owner() {
+    let core = load();
+    let original = source_table(&core, 516)
+        .cells
+        .iter()
+        .find(|cell| cell.row == 12 && cell.col == 2)
+        .unwrap();
+    assert_eq!(original.row_span, 3);
+    assert_eq!(original.paragraphs.len(), 2);
+    assert_eq!(
+        original.vertical_align,
+        rhwp::model::table::VerticalAlign::Center
+    );
+
+    let first = core.build_page_render_tree(59).unwrap();
+    let last = core.build_page_render_tree(60).unwrap();
+    let opening = cell(table(&first.root, 516), 12, 2);
+    let closing = cell(table(&last.root, 516), 12, 2);
+    assert_eq!(compact(&text(opening)), "일몰설정");
+    assert_eq!(compact(&text(closing)), "예외기준");
+    let rendered = format!("{}{}", text(opening), text(closing));
+    let source: String = original
+        .paragraphs
+        .iter()
+        .map(|para| para.text.as_str())
+        .collect();
+    assert_eq!(
+        compact(&rendered),
+        compact(&source),
+        "앞뒤 쪽의 순서·누락·중복"
+    );
+
+    let opening_lines = lines(opening, 0);
+    let closing_lines = lines(closing, 1);
+    assert_eq!(opening_lines.len(), 1);
+    assert_eq!(closing_lines.len(), 1);
+    contained(opening_lines[0], opening);
+    contained(closing_lines[0], closing);
+
+    // 한컴 Print61쪽의 독립 글자 상단. 좌표로 셀이나 글줄을 선택하지 않는다.
+    near(closing_lines[0].bbox.y, 122.4);
+    let above = closing_lines[0].bbox.y - closing.bbox.y;
+    let below = closing.bbox.y + closing.bbox.height
+        - closing_lines[0].bbox.y
+        - closing_lines[0].bbox.height;
+    assert!(
+        above > 0.0 && below > 0.0,
+        "표제는 자기 셀 안에 있어야 한다"
+    );
+    assert!(
+        (above - below).abs() <= 2.0,
+        "원본 Center의 위·아래 빈 공간"
+    );
 }
