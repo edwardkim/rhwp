@@ -665,6 +665,8 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         layout_space_metrics: _,
         layout_field_values: _,
         numbering_marker: _,
+        // HWP3 변환본 적재 보정 기록 — 파일에 실리는 값이 아니다.
+        hwp3_variant_vpos_bias: _,
     } = a;
 
     macro_rules! f {

@@ -659,6 +659,9 @@ fn normalize_variant_paragraph_vpos(doc: &mut crate::model::document::Document) 
             for ls in para.line_segs.iter_mut() {
                 ls.vertical_pos = ls.vertical_pos.saturating_sub(cumulative_sb);
             }
+            // 저장기가 파일 단위로 되돌릴 수 있게 뺀 값을 남긴다. 되돌리지 않으면 다시 열 때
+            // 같은 보정이 한 번 더 걸려 저장할 때마다 vpos 가 줄어든다(쪽 나눔이 움직인다).
+            para.hwp3_variant_vpos_bias = Some(cumulative_sb);
             let last = para.line_segs.last().unwrap();
             // 주변(saturating_sub/add)과 달리 여기만 raw 덧셈이라 손상 입력의 거대
             // vpos/height 로 i32 오버플로 패닉하던 것을 saturating 으로 맞춘다.

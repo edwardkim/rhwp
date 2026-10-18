@@ -170,6 +170,15 @@ pub struct Paragraph {
     /// 파일에 실리는 값이 아니라 IR 안에서만 의미가 있다.
     #[serde(skip_serializing)]
     pub numbering_marker: NumberingMarker,
+    /// HWP3 변환본 적재 보정(`parser::normalize_variant_paragraph_vpos`)이 이 문단
+    /// `line_segs[*].vertical_pos` 에서 뺀 값.
+    ///
+    /// HWP5 저장기가 다시 쓰는 구역의 vpos 를 파일 단위로 되돌리는 데 쓴다
+    /// (`serializer::cfb_writer::hwp3_variant_file_units`). 되돌리지 않으면 다시 열 때 같은
+    /// 보정이 한 번 더 걸려 저장할 때마다 vpos 가 줄고 쪽 나눔이 움직인다.
+    /// `None` = 보정 대상이 아니었거나 적재 뒤 새로 만든 문단. 파일에 실리는 값이 아니다.
+    #[serde(skip_serializing)]
+    pub hwp3_variant_vpos_bias: Option<i32>,
 }
 
 /// [`Paragraph::numbering_marker`] 의 상태.
@@ -1970,6 +1979,8 @@ impl Paragraph {
             cell_vpos_reset: Some(false),
             // 번호는 문서 순서로 다시 계산해야 하는 파생값이다 (#7436).
             numbering_marker: NumberingMarker::Unresolved,
+            // 새 문단 — 저장기가 앞 문단 보정값에서 이어 계산한다.
+            hwp3_variant_vpos_bias: None,
         };
         for &char_idx in cut_field_ends.iter().rev() {
             new_para.remove_gap_slot(char_idx);
