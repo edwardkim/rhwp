@@ -1668,6 +1668,9 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Line(line) => {
+                // 선 종류 "없음"(0)은 그리지 않는다. 사각형 등은 drawing_to_shape_style 이
+                // 같은 규칙으로 테두리를 끈다. 노드는 남겨 개체 질의·선택은 유지한다.
+                let line_visible = line.drawing.border_line.attr & 0x3F != 0;
                 let sa = &line.drawing.shape_attr;
                 let sx = if sa.original_width > 0 {
                     render_w / hwpunit_to_px(sa.original_width as i32, self.dpi)
@@ -1859,11 +1862,12 @@ impl LayoutEngine {
                         {
                             path_node.line_style = Some(line_style);
                         }
-                        let node = RenderNode::new(
+                        let mut node = RenderNode::new(
                             node_id,
                             RenderNodeType::Path(path_node),
                             BoundingBox::new(render_x, render_y, render_w, render_h),
                         );
+                        node.visible = line_visible;
                         parent.children.push(node);
                     } else {
                         // 제어점 없는 연결선 → 직선으로 렌더링
@@ -1903,11 +1907,12 @@ impl LayoutEngine {
                         line_node.cell_index = cell_index;
                         line_node.cell_para_index = cell_para_index;
                         line_node.outer_table_control_index = outer_table_control_index;
-                        let node = RenderNode::new(
+                        let mut node = RenderNode::new(
                             node_id,
                             RenderNodeType::Line(line_node),
                             BoundingBox::new(render_x, render_y, render_w, render_h),
                         );
+                        node.visible = line_visible;
                         parent.children.push(node);
                     }
                 } else {
@@ -1930,11 +1935,12 @@ impl LayoutEngine {
                     line_node.cell_index = cell_index;
                     line_node.cell_para_index = cell_para_index;
                     line_node.outer_table_control_index = outer_table_control_index;
-                    let node = RenderNode::new(
+                    let mut node = RenderNode::new(
                         node_id,
                         RenderNodeType::Line(line_node),
                         BoundingBox::new(render_x, render_y, render_w, render_h),
                     );
+                    node.visible = line_visible;
                     parent.children.push(node);
                 }
             }
