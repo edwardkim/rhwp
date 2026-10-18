@@ -2645,10 +2645,9 @@ impl LayoutEngine {
             })
     }
 
-    /// Preserve the opening stored paragraph frame when opening a spanning
-    /// cell. A paragraph-local natural rewind closes that source frame; later
-    /// paragraphs and the remaining frames can continue on another page.
-    /// No source frame taller than a fresh column forces a whole-column keep.
+    /// 나눔 금지 문단을 가진 걸침 셀의 첫 저장 프레임을 보호한다.
+    /// 연속 저장 줄만으로 문단 나눔 금지를 추정하지 않는다. 나눌 수 있는
+    /// 문단은 공통 줄 컷과 carry가 소유하며, 새 단보다 큰 프레임도 강제하지 않는다.
     pub(crate) fn stored_initial_plain_text_frame_height(
         &self,
         cell: &crate::model::table::Cell,
@@ -2656,6 +2655,10 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         let para = cell.paragraphs.first()?;
+        let para_style = styles.para_styles.get(para.para_shape_id as usize)?;
+        if !para_style.keep_lines {
+            return None;
+        }
         if !(self.profile.get().hwp5_stored_pagination_layout()
             || self.profile.get().hwpx_stored_layout())
             || self.profile.get().session_edited()
@@ -2705,10 +2708,7 @@ impl LayoutEngine {
             previous = Some(line);
         }
         let (_, _, top, bottom_padding) = self.resolve_cell_padding(cell, table);
-        let before = styles
-            .para_styles
-            .get(para.para_shape_id as usize)?
-            .spacing_before;
+        let before = para_style.spacing_before;
         (first.vertical_pos == crate::renderer::px_to_hwpunit(before, self.dpi))
             .then_some(hwpunit_to_px(bottom as i32, self.dpi) + top + bottom_padding)
     }
