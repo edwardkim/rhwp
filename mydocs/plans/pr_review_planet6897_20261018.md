@@ -1969,3 +1969,39 @@ freshWASM/정식회귀/전쪽을다시수행한다.1342000새실물회귀는전�
 35쪽및앞33/34쪽에서resolved/actual이같아지는지와최종출력을먼저검증한다.
 기존고득점과174/175/250/297/298쪽개선을유지하며새하락을검출한다.
 아직이후후보의통과나PR준비완료를주장하지않는다.
+
+
+### 후보78 전쪽 검증 완료와 다음 저장 경계 보정
+
+`ff1118d49`에서 정식 회귀 31건 전부 PASS(exit0), fresh WASM 빌드 exit0이다.
+80168 전157쪽은 Native 최저94.73551/WASM94.95563이며 후보64와 변화 없다.
+1342000 전415쪽은 양쪽 모두 Print415쪽과 일치한다. Native13개선/5하락/
+98쪽 미달, WASM13개선/5하락/97쪽 미달이다. 최저70쪽은 각각45.76409/44.93이다.
+35쪽은90.12228/90.13488,155쪽은85.95196/86.08267로 후보64 수준을 회복했다.
+137~140·190쪽의 기존 하락은 남아 있으며 90% 미달을 완료 처리하지 않는다.
+출처를 엄격히 비교한 `candidate78-vs-candidate64-<backend>-<document>-verified-comparison.json`
+및 `candidate78-focused-results.json`이 실제 증거다.
+
+Native 전쪽 실행 wrapper는143으로 끝났다. 이미 완성된415쪽 PNG/TSV의
+입력·PDF·실행 파일 SHA와 모든 PNG SHA·쪽수·TSV 값을 재검증한
+`candidate78-native-all-pages-artifact-recovery.json`의 검증 exit0과 wrapper 정상
+종료는 구별한다. 원 wrapper와 미완료 manifest는 그대로 보존했다.
+6803/76076 WASM 대조는 exit0이며,70833은7쪽의 기존0.10242%p 하락,
+21761835는 전6쪽 미달이 남아 있다. 실패 gate를 회귀 통과로 바꾸지 않는다.
+
+69→70쪽의 원본은 구역1 문단7 표46×10이다. 행41 칸4의 원본 문단은
+vpos0/1300/2600/0이며, 첫 문단의 제어는 ColumnDef다. 실제 CellUnit 진단에서는
+마지막 문단이 이미 hard_break/stored_frame_break/page_frame_reset=true다.
+따라서 ColumnDef 때문에 유닛의 저장 경계가 사라졌다는 가설은 기각한다.
+`p70-original-controls-confirmed-result.json`과 `candidate78-p69-unit-owner-trace-result.json`
+은 각각 exit0이다. Print는 앞3문단을69쪽, 마지막 문단을70쪽에 두지만
+현재 scanner는 행41 전체를69쪽에 수용한다.
+
+생산은 원본→cell_units의 저장 경계, 소비는 SourceFrameQuery→scan_ordinary_row_step의
+whole_row_fits/advance_row_cut→fragment emit→최종 셀 배치다. SourceFrameQuery가
+다른 칸의 rowspan_touched를 이유로 일반 칸의 인증된 원본 프레임까지 제외한다.
+다음 보완은 일반 칸의 저장 컷과 병합 칸의 물리 원장을 구분해 기존 공통 컷에 전달한다.
+문서·행 번호나 좌표 상수는 조건에 쓰지 않는다. 앞 병합 칸의 내용·테두리와
+후속 행·본문이 보존되는지 확인하고, 기존64쪽 방향 및80168/6803/76076/
+70833/21761835를 대조한다. 원본 인증 없는 지역0 원점과 편집 후 재조판은 기존
+거부 조건을 유지한다. 새 실물 회귀 추가는 전쪽90% 선행 조건 충족 뒤 진행한다.
