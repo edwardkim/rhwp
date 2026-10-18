@@ -1356,10 +1356,11 @@ impl TypesetEngine {
                     && layout_engine
                         .row_plain_restart_capacity_cut(table, r, styles)
                         .is_some_and(|cut| cut == res.end_cut));
-            // 수용한 글줄 컷은 이웃 셀의 실제 문단 유지 지시를 확인한다.
-            // 컷 유닛의 소유로 판정하고, 아래 실제 표시 높이·예산 검사는 유지한다.
-            // 저장 컷의 고아 면제는 걸침 또는 완결 문단에서만 적용한다.
-            // 새 devel의 재조판 계약은 저장 사다리 인증과 구분해 유지한다.
+            // 컷 유닛의 소유와 이웃 셀의 문단 유지 지시로 HWPX 단일 유닛 이월을 판정한다.
+            // 걸침 칸 안의 컷과 완결 문단 컷은 이 계약을 사용할 수 있다. 다만 문단 분할이
+            // 허용된다는 사실은 현재 쪽의 최소 점유 높이를 증명하지 않으므로, 아래 최소
+            // 높이 검사는 저장 경계·실제 물리 밴드의 별도 근거로 판정한다.
+            // 재조판 계약은 저장 사다리 인증과 구분한다.
             let plain_paragraph_keep_contract =
                 (layout_engine.row_cut_respects_plain_paragraph_keeps(
                     table,
@@ -1447,7 +1448,6 @@ impl TypesetEngine {
             if r > cursor_row
                 && (defer_single_unit_row_start
                     || (!cellbreak_complete_unit_keep
-                        && !plain_paragraph_keep_contract
                         && !stored_page_reset_keep
                         && !stored_plain_reset_boundary_keep
                         && !landscape_boundary_band_keep
