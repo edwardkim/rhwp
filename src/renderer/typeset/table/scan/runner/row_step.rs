@@ -867,6 +867,32 @@ impl TypesetEngine {
                 }
             }
             if res.fully_consumed {
+                // 선언 첫 조각과 실제 본문 잔여가 같은 끝을 증언하면,
+                // 완결한 행 내용은 그 상자 안에서 닫는다. 후속 쪽에서
+                // 이 행의 빈 선언 꼬리를 다시 소비하지 않는다.
+                let opening_frame = (!is_continuation
+                    && cursor_row == 0
+                    && r > cursor_row
+                    && row_start_cut.is_empty()
+                    && !rowspan_touched[r])
+                    .then(|| {
+                        layout_engine.completed_row_closes_opening_source_frame(
+                            table,
+                            r,
+                            &res.end_cut,
+                            (avail_for_rows - consumed - cs_before).max(0.0),
+                            styles,
+                        )
+                    })
+                    .flatten();
+                if let Some(height) = opening_frame {
+                    consumed += cs_before + height;
+                    end_row = r + 1;
+                    end_row_height_override = Some(height);
+                    split_end_cut.clear();
+                    split_end_limit = 0.0;
+                    return false;
+                }
                 // 빈 줄도 점유 상자를 보존한다. 앞 내용 뒤의 완전한 원본 빈 행은
                 // 가시 글자의 고아 기준 대신 그 원본 상자와 실제 띠로 완결한다.
                 let rest = (avail_for_rows - consumed - cs_before).max(0.0);

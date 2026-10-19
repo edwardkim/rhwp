@@ -1933,8 +1933,18 @@ impl TypesetEngine {
                         table, row, start_cut, &next_cut, styles,
                     )
                 }))?;
+                // 잔여 상자를 처음 발행하는 시점이 첫 조각일 필요는 없다.
+                // 이미 기록한 같은 행의 모든 수용 상자를 원본 최소에서 빼고,
+                // 잔여 상자를 이어받았으면 이번 조각만 그 잔여에서 차감한다.
+                let accepted = if carried.is_some() {
+                    opening
+                } else {
+                    continuation.pending_row_box
+                        .filter(|(owner, _)| *owner == row)
+                        .map_or(opening, |(_, height)| height)
+                };
                 let remaining = layout_engine.stored_ordinary_row_remainder(
-                    table, row, &next_cut, opening, carried, styles,
+                    table, row, &next_cut, accepted, carried, styles,
                 )?;
                 (!layout_engine.stored_complete_row_tail_is_line_advance(
                     table, row, &next_cut, remaining, styles,

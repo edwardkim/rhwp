@@ -170,13 +170,13 @@ impl LayoutEngine {
         (available.is_finite() && available >= content && available < full).then_some(available)
     }
 
-    /// 스캔이 수용한 앞 상자를 차감하고 남은 내용도 포함한 물리 높이를 전달한다.
+    /// 같은 원본 또는 이어받은 상자에서 이미 수용한 공간을 한 번만 차감한다.
     pub(crate) fn stored_ordinary_row_remainder(
         &self,
         table: &Table,
         row: usize,
         cut: &[usize],
-        opening: f64,
+        accepted: f64,
         carried: Option<f64>,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
@@ -202,7 +202,7 @@ impl LayoutEngine {
             .map(|cell| self.cell_units(cell, table, styles).len())
             .collect();
         let content = self.stored_ordinary_row_cut_height(table, row, cut, &end, styles)?;
-        (opening > 0.0 && opening < full).then_some((full - opening).max(content))
+        (accepted > 0.0 && accepted < full).then_some((full - accepted).max(content))
     }
 
     /// 종료 줄의 다음 줄 간격만 남은 컷은 새 내용·빈 밴드 소유자를 만들지 않는다.

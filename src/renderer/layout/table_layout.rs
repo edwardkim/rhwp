@@ -23762,8 +23762,7 @@ impl LayoutEngine {
         let mut seen = vec![false; cell.paragraphs.len()];
         let lo = start_unit.min(units.len());
         let hi = end_unit.min(units.len());
-        let flow_range = Self::cell_cut_flow_range(cell, table, &units, lo, hi);
-        for u in &units[flow_range] {
+        for u in units.iter().take(hi).skip(lo) {
             if u.para_idx >= ranges.len() {
                 continue;
             }
@@ -23819,8 +23818,7 @@ impl LayoutEngine {
     ) -> Vec<bool> {
         let units = self.cell_units(cell, table, styles);
         let mut owners = vec![false; cell.paragraphs.len()];
-        let flow_range = Self::cell_cut_flow_range(cell, table, &units, start_unit, end_unit);
-        for unit in &units[flow_range] {
+        for unit in units.iter().take(end_unit).skip(start_unit) {
             if unit.empty_spacer
                 && unit.vis_start == 0
                 && unit.vis_end == 1

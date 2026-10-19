@@ -281,6 +281,43 @@ impl LayoutEngine {
         frame.filter(|height| completed_height <= *height)
     }
 
+    /// 온전한 행의 내용이 개체가 저장한 첫 조각 끝에서 완결되는가.
+    /// 선언 행의 빈 꼬리는 이 첫 상자에 포함되지 않는다. 실제 잔여와
+    /// 저장 상자가 같은 경계를 가리킬 때만 정렬한 내용까지 확인한다.
+    pub(crate) fn completed_row_closes_opening_source_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        end_cut: &[usize],
+        available: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let order = Self::row_cut_cell_order(table, row);
+        if order.is_empty() || order.len() != end_cut.len() || !available.is_finite() {
+            return None;
+        }
+        let epsilon = hwpunit_to_px(2, self.dpi);
+        let mut frame: Option<f64> = None;
+        for (&index, &end) in order.iter().zip(end_cut) {
+            let cell = &table.cells[index];
+            let units = self.cell_units(cell, table, styles);
+            if units.is_empty() || end != units.len() {
+                return None;
+            }
+            let height = self.source_first_cell_frame_height(table, cell)?;
+            if (height - available).abs() > epsilon
+                || frame.is_some_and(|before| (height - before).abs() > epsilon)
+            {
+                return None;
+            }
+            frame = Some(height);
+        }
+        let height = frame?;
+        let content = self.row_cut_content_height(table, row, &[], end_cut, styles);
+        (self.row_aligned_content_bottom(table, row, content, height, styles) <= height)
+            .then_some(height)
+    }
+
     pub(super) fn stored_span_partial_first_frame_owner(
         &self,
         table: &Table,
