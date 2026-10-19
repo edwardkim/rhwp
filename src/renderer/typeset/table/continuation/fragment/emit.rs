@@ -1936,15 +1936,12 @@ impl TypesetEngine {
                 // 잔여 상자를 처음 발행하는 시점이 첫 조각일 필요는 없다.
                 // 이미 기록한 같은 행의 모든 수용 상자를 원본 최소에서 빼고,
                 // 잔여 상자를 이어받았으면 이번 조각만 그 잔여에서 차감한다.
-                let accepted = if carried.is_some() {
-                    opening
-                } else {
-                    continuation.pending_row_box
-                        .filter(|(owner, _)| *owner == row)
-                        .map_or(opening, |(_, height)| height)
-                };
+                let total_accepted = continuation.pending_row_box
+                    .filter(|(owner, _)| *owner == row)
+                    .map_or(opening, |(_, height)| height);
+                let accepted = if carried.is_some() { opening } else { total_accepted };
                 let remaining = layout_engine.stored_ordinary_row_remainder(
-                    table, row, &next_cut, accepted, carried, styles,
+                    table, row, &next_cut, (accepted, total_accepted), carried, styles,
                 )?;
                 (!layout_engine.stored_complete_row_tail_is_line_advance(
                     table, row, &next_cut, remaining, styles,
@@ -2162,9 +2159,9 @@ impl TypesetEngine {
             let resolved = (split_block_start.is_none())
                 .then_some(input.fragment_row_heights)
                 .flatten()
-                // 패딩만 선언한 일반 행의 측정 높이는 내용 전진 합이다.
-                // 이미 닫힌 저장 프레임의 간격을 물리 최소로 다시 넘기지 않는다.
-                .filter(|_| !layout_engine.stored_ordinary_row_declares_only_padding(table, row))
+                // 원본 일반 행의 물리 최소는 아래의 독립 셀 선언에서 조회한다.
+                // 측정 내용 합이나 이미 닫힌 프레임의 간격을 다시 넘기지 않는다.
+                .filter(|_| !layout_engine.stored_ordinary_row_uses_declared_minimum(table, row))
                 .and_then(|rows| rows.get(row).copied());
             let full = carried.or(resolved).or_else(|| {
                 let declared = *table.get_raw_row_heights().get(row)?;

@@ -1718,6 +1718,13 @@ impl TypesetEngine {
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
             );
+            if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
+                eprintln!(
+                    "DIAG_SCAN ROW_PHYSICAL_FRAME pi={para_idx} continuation={is_continuation} body={:.6} available={:.6} column={:.6} frame={frame_boundary:.6} bottom={bottom:.6} accepted={accepted_frame_bottom:?} top={top:.6} header={header_overhead:.6} caption={caption_extra:.6} spacing={}",
+                    st.layout.body_area.height, st.available_height(), st.inline_flow_column().height,
+                    table.outer_cell_spacing_hu(),
+                );
+            }
             bottom
                 - top
                 - caption_extra

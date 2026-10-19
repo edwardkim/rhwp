@@ -5,23 +5,25 @@ use crate::model::table::{Cell, Table};
 use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
-    /// 패딩만 선언한 원본 일반 행에는 내용 유닛과 별도의 최소 본문 상자가 없다.
-    /// 측정한 전체 내용 높이를 물리 최소로 이어받으면 이미 지난 저장 프레임의
-    /// 간격을 다음 조각에 다시 예약하므로, 그 잔여는 실제 내용 컷이 소유한다.
-    pub(crate) fn stored_ordinary_row_declares_only_padding(
+    /// 원본 일반 행의 물리 최소는 셀 선언이며, 여러 저장 프레임의 내용 합이 아니다.
+    /// 병합 칸의 수용 원장이 따로 필요한 행은 이 일반 칸 계약에 포함하지 않는다.
+    pub(crate) fn stored_ordinary_row_uses_declared_minimum(
         &self,
         table: &Table,
         row: usize,
     ) -> bool {
         let owners = Self::row_cut_cell_order(table, row);
         !owners.is_empty()
+            && !table.cells.iter().any(|cell| {
+                cell.row_span > 1
+                    && usize::from(cell.row) <= row
+                    && row < usize::from(cell.row) + usize::from(cell.row_span)
+            })
             && owners.iter().all(|&index| {
                 let cell = &table.cells[index];
-                let padding = cell.effective_padding(&table.padding);
                 usize::from(cell.row) == row
                     && cell.row_span == 1
                     && self.stored_plain_text_cell_frame(table, cell)
-                    && i64::from(cell.height) <= i64::from(padding.top) + i64::from(padding.bottom)
             })
     }
 
@@ -112,7 +114,15 @@ impl LayoutEngine {
         } else {
             0.0
         };
-        Some(selected.iter().map(|unit| unit.height).sum::<f64>() - trailing)
+        // 줄 전진에는 문단 앞 간격도 들어갈 수 있다. last.height와 줄간격의
+        // 단순 비교로 저장 쪽 끝의 전진을 다시 세지 않고, 컷 선택과 같은
+        // 생산자의 종료 간격·보조 spacer 범위를 정렬 높이에도 소비한다.
+        let trim = self.physical_cut_trailing_trim(table, cell, &units, start, end, styles);
+        let range = Self::cell_cut_flow_range(cell, table, &units, start, end);
+        Some(
+            (units[range].iter().map(|unit| unit.height).sum::<f64>() - trailing.max(trim))
+                .max(0.0),
+        )
     }
 
     pub(crate) fn stored_ordinary_row_cut_height(
@@ -196,7 +206,7 @@ impl LayoutEngine {
         table: &Table,
         row: usize,
         cut: &[usize],
-        accepted: f64,
+        accepted: (f64, f64),
         carried: Option<f64>,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
@@ -209,17 +219,19 @@ impl LayoutEngine {
         {
             return None;
         }
+        let (accepted, total_accepted) = accepted;
+        let declared = cells
+            .iter()
+            .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+            .fold(0.0, f64::max);
         if let Some(height) = self.stored_ordinary_closing_text_frame(table, row, cut, styles) {
-            return Some(height);
+            // 저장 마지막 줄 끝은 내용 하한이다. 원본 선언에서 실제 수용한
+            // 모든 앞 조각을 뺀 빈 최소 공간도 같은 마지막 상자가 소유한다.
+            return Some(height.max(declared - total_accepted));
         }
         // 같은 행을 다시 나누면 이전 조각까지 차감한 커서의 물리 잔여를 쓴다.
         // 원본 전체 높이로 돌아가 이미 소비한 공간을 다시 예약하지 않는다.
-        let full = carried.unwrap_or_else(|| {
-            cells
-                .iter()
-                .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
-                .fold(0.0, f64::max)
-        });
+        let full = carried.unwrap_or(declared);
         let end: Vec<_> = cells
             .iter()
             .map(|cell| self.cell_units(cell, table, styles).len())
