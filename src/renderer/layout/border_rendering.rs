@@ -116,14 +116,85 @@ pub(crate) fn mark_cell_span_interior_covered(
     }
 }
 
-/// 엣지 그리드 슬롯에 테두리를 병합 저장
-fn merge_edge_slot(slot: &mut Option<BorderLine>, border: &BorderLine, prefer_on_tie: bool) {
+/// 논리 경계의 소유와 먼저 그린 이웃 선을 함께 보존한다.
+/// 동일한 수평 획의 아래 셀 상단이 최종 색상을 소유해도, 원본 Print는
+/// 위 셀 하단 위에 그 색을 덧그린다. 원본 model에는 paint 상태를 넣지 않는다.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct BorderEdge {
+    line: BorderLine,
+    underpaint_color: Option<u32>,
+    horizontal_top: Option<bool>,
+}
+
+impl From<BorderLine> for BorderEdge {
+    fn from(line: BorderLine) -> Self {
+        Self {
+            line,
+            underpaint_color: None,
+            horizontal_top: None,
+        }
+    }
+}
+
+impl std::ops::Deref for BorderEdge {
+    type Target = BorderLine;
+
+    fn deref(&self) -> &Self::Target {
+        &self.line
+    }
+}
+
+#[derive(Clone, Copy)]
+enum BorderSide {
+    Top,
+    Bottom,
+    Left,
+    Right,
+}
+
+/// 셀 배열 순서와 무관하게 위 셀 하단 → 아래 셀 상단의 paint 순서를 보존한다.
+/// 수직선과 굵기/종류 충돌에는 기존 우선순위를 적용한다.
+fn merge_edge_slot(slot: &mut Option<BorderEdge>, border: &BorderLine, side: BorderSide) {
+    let horizontal_top = match side {
+        BorderSide::Top => Some(true),
+        BorderSide::Bottom => Some(false),
+        BorderSide::Left | BorderSide::Right => None,
+    };
     if border.line_type == BorderLineType::None {
         return;
     }
     *slot = Some(match *slot {
-        Some(existing) => merge_border(&existing, border, prefer_on_tie),
-        None => *border,
+        Some(existing) => {
+            let line = merge_border(&existing, border, matches!(side, BorderSide::Top | BorderSide::Left));
+            let paired_horizontal_sides =
+                horizontal_top.is_some_and(|top| existing.horizontal_top == Some(!top));
+            if paired_horizontal_sides
+                && existing.line_type == border.line_type
+                && existing.width == border.width
+                && existing.color != border.color
+            {
+                BorderEdge {
+                    line,
+                    underpaint_color: Some(if horizontal_top == Some(true) {
+                        existing.color
+                    } else {
+                        border.color
+                    }),
+                    horizontal_top: Some(true),
+                }
+            } else if line == existing.line {
+                existing
+            } else {
+                BorderEdge {
+                    horizontal_top,
+                    ..line.into()
+                }
+            }
+        }
+        None => BorderEdge {
+            horizontal_top,
+            ..(*border).into()
+        },
     });
 }
 
@@ -498,8 +569,8 @@ pub(crate) fn render_spaced_cell_borders(
 /// v_edges[col_boundary][row]: 수직 엣지 (col_boundary 0..=col_count, row 0..row_count)
 /// borders: [좌, 우, 상, 하]
 pub(crate) fn collect_cell_borders(
-    h_edges: &mut [Vec<Option<BorderLine>>],
-    v_edges: &mut [Vec<Option<BorderLine>>],
+    h_edges: &mut [Vec<Option<BorderEdge>>],
+    v_edges: &mut [Vec<Option<BorderEdge>>],
     col: usize,
     row: usize,
     col_span: usize,
@@ -517,25 +588,25 @@ pub(crate) fn collect_cell_borders(
     // 상 테두리
     if row < h_rows {
         for c in col..end_col {
-            merge_edge_slot(&mut h_edges[row][c], &borders[2], true);
+            merge_edge_slot(&mut h_edges[row][c], &borders[2], BorderSide::Top);
         }
     }
     // 하 테두리
     if end_row < h_rows {
         for c in col..end_col {
-            merge_edge_slot(&mut h_edges[end_row][c], &borders[3], false);
+            merge_edge_slot(&mut h_edges[end_row][c], &borders[3], BorderSide::Bottom);
         }
     }
     // 좌 테두리
     if col < v_cols {
         for r in row..end_row {
-            merge_edge_slot(&mut v_edges[col][r], &borders[0], true);
+            merge_edge_slot(&mut v_edges[col][r], &borders[0], BorderSide::Left);
         }
     }
     // 우 테두리
     if end_col < v_cols {
         for r in row..end_row {
-            merge_edge_slot(&mut v_edges[end_col][r], &borders[1], false);
+            merge_edge_slot(&mut v_edges[end_col][r], &borders[1], BorderSide::Right);
         }
     }
 }
@@ -561,8 +632,8 @@ pub(crate) fn collect_cell_borders(
 /// 한복판(x=290.4)에 서고 아래 변도 거기서 끊긴다. 끝 주소의 칸을 찾아
 /// `col + col_span` · `row + row_span` 을 써야 표 오른쪽 끝(x=720.0)까지 간다.
 pub(crate) fn apply_cellzone_border_fill(
-    h_edges: &mut [Vec<Option<BorderLine>>],
-    v_edges: &mut [Vec<Option<BorderLine>>],
+    h_edges: &mut [Vec<Option<BorderEdge>>],
+    v_edges: &mut [Vec<Option<BorderEdge>>],
     zone_borders: &[BorderLine; 4],
     zone: &TableZone,
     cells: &[Cell],
@@ -597,9 +668,9 @@ pub(crate) fn apply_cellzone_border_fill(
         return;
     }
 
-    let overwrite = |slot: &mut Option<BorderLine>, border: &BorderLine| {
+    let overwrite = |slot: &mut Option<BorderEdge>, border: &BorderLine| {
         if border.line_type != BorderLineType::None {
-            *slot = Some(*border);
+            *slot = Some((*border).into());
         }
     };
 
@@ -621,8 +692,8 @@ pub(crate) fn apply_cellzone_border_fill(
 /// 깨진다. 제목 칸만 바깥 SOLID 를 일부 그린 **일러두기 부분 프레임**만
 /// occupancy+NONE 슬롯을 메우고, 칸이 안 덮는 구멍은 종전 fallback 을 둔다.
 pub(crate) fn apply_table_outer_border_fill(
-    h_edges: &mut [Vec<Option<BorderLine>>],
-    v_edges: &mut [Vec<Option<BorderLine>>],
+    h_edges: &mut [Vec<Option<BorderEdge>>],
+    v_edges: &mut [Vec<Option<BorderEdge>>],
     table_borders: &[BorderLine; 4],
     cells: &[Cell],
 ) {
@@ -669,12 +740,12 @@ pub(crate) fn apply_table_outer_border_fill(
 
     let fill_occupied = is_callout_partial_frame(h_edges, v_edges, &h_occupied);
 
-    let fill = |slot: &mut Option<BorderLine>, border: &BorderLine, occupied: bool| {
+    let fill = |slot: &mut Option<BorderEdge>, border: &BorderLine, occupied: bool| {
         if slot.is_none()
             && border.line_type != BorderLineType::None
             && (!occupied || fill_occupied)
         {
-            *slot = Some(*border);
+            *slot = Some((*border).into());
         }
     };
 
@@ -696,7 +767,7 @@ pub(crate) fn apply_table_outer_border_fill(
     }
 }
 
-fn outer_slot_drawn(slot: &Option<BorderLine>) -> bool {
+fn outer_slot_drawn(slot: &Option<BorderEdge>) -> bool {
     slot.as_ref()
         .is_some_and(|border| border.line_type != BorderLineType::None)
 }
@@ -704,8 +775,8 @@ fn outer_slot_drawn(slot: &Option<BorderLine>) -> bool {
 /// 일러두기 틀: 첫 행 제목 칸만 바깥 SOLID 를 일부 그리고, 아래·본문 좌우는
 /// 칸이 NONE 이다. 일반 박스(좌우·아래가 이미 있는 부분 시작 표)는 제외한다.
 fn is_callout_partial_frame(
-    h_edges: &[Vec<Option<BorderLine>>],
-    v_edges: &[Vec<Option<BorderLine>>],
+    h_edges: &[Vec<Option<BorderEdge>>],
+    v_edges: &[Vec<Option<BorderEdge>>],
     h_occupied: &[Vec<bool>],
 ) -> bool {
     let col_count = h_edges[0].len();
@@ -747,8 +818,8 @@ fn is_callout_partial_frame(
 /// row_col_x: 행별 열 누적 위치 (셀별 독립 너비 지원)
 pub(crate) fn render_edge_borders(
     tree: &mut PageLayoutContext,
-    h_edges: &[Vec<Option<BorderLine>>],
-    v_edges: &[Vec<Option<BorderLine>>],
+    h_edges: &[Vec<Option<BorderEdge>>],
+    v_edges: &[Vec<Option<BorderEdge>>],
     row_col_x: &[Vec<f64>],
     row_y: &[f64],
     table_x: f64,
@@ -766,12 +837,15 @@ pub(crate) fn render_edge_borders(
         let ref_row = ri.min(row_count.saturating_sub(1));
         let ref_cx = &row_col_x[ref_row.min(row_col_x.len() - 1)];
         let mut seg_start: Option<usize> = None;
-        let mut seg_border: Option<BorderLine> = None;
+        let mut seg_border: Option<BorderEdge> = None;
 
         for (ci, edge_opt) in h_row.iter().enumerate() {
             let same_style = match (edge_opt, &seg_border) {
                 (Some(e), Some(s)) => {
-                    e.line_type == s.line_type && e.width == s.width && e.color == s.color
+                    e.line_type == s.line_type
+                        && e.width == s.width
+                        && e.color == s.color
+                        && e.underpaint_color == s.underpaint_color
                 }
                 _ => false,
             };
@@ -784,7 +858,7 @@ pub(crate) fn render_edge_borders(
                     if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
                         let x1 = table_x + ref_cx[start];
                         let x2 = table_x + ref_cx[ci];
-                        nodes.extend(create_border_line_nodes(tree, &sb, x1, y, x2, y));
+                        nodes.extend(create_edge_border_line_nodes(tree, &sb, x1, y, x2, y));
                     }
                     seg_start = Some(ci);
                     seg_border = Some(*border);
@@ -793,7 +867,7 @@ pub(crate) fn render_edge_borders(
                 if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
                     let x1 = table_x + ref_cx[start];
                     let x2 = table_x + ref_cx[ci];
-                    nodes.extend(create_border_line_nodes(tree, &sb, x1, y, x2, y));
+                    nodes.extend(create_edge_border_line_nodes(tree, &sb, x1, y, x2, y));
                 }
                 seg_start = None;
                 seg_border = None;
@@ -803,7 +877,7 @@ pub(crate) fn render_edge_borders(
         if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
             let x1 = table_x + ref_cx[start];
             let x2 = table_x + ref_cx.get(h_row.len()).copied().unwrap_or(ref_cx[start]);
-            nodes.extend(create_border_line_nodes(tree, &sb, x1, y, x2, y));
+            nodes.extend(create_edge_border_line_nodes(tree, &sb, x1, y, x2, y));
         }
         if ri == 0 {
             if let Some(clip_y) = top_clip_y {
@@ -815,7 +889,7 @@ pub(crate) fn render_edge_borders(
     // 수직 엣지 렌더링 (행별로 x 위치가 다를 수 있음)
     for (ci, v_col) in v_edges.iter().enumerate() {
         let mut seg_start: Option<usize> = None;
-        let mut seg_border: Option<BorderLine> = None;
+        let mut seg_border: Option<BorderEdge> = None;
         let mut seg_x: f64 = 0.0;
 
         for (ri, edge_opt) in v_col.iter().enumerate() {
@@ -829,6 +903,7 @@ pub(crate) fn render_edge_borders(
                     e.line_type == s.line_type
                         && e.width == s.width
                         && e.color == s.color
+                        && e.underpaint_color == s.underpaint_color
                         && (x - seg_x).abs() < 0.01
                 }
                 _ => false,
@@ -841,7 +916,9 @@ pub(crate) fn render_edge_borders(
                     if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
                         let y1 = table_y + row_y[start];
                         let y2 = table_y + row_y[ri];
-                        nodes.extend(create_border_line_nodes(tree, &sb, seg_x, y1, seg_x, y2));
+                        nodes.extend(create_edge_border_line_nodes(
+                            tree, &sb, seg_x, y1, seg_x, y2,
+                        ));
                     }
                     seg_start = Some(ri);
                     seg_border = Some(*border);
@@ -851,7 +928,9 @@ pub(crate) fn render_edge_borders(
                 if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
                     let y1 = table_y + row_y[start];
                     let y2 = table_y + row_y[ri];
-                    nodes.extend(create_border_line_nodes(tree, &sb, seg_x, y1, seg_x, y2));
+                    nodes.extend(create_edge_border_line_nodes(
+                        tree, &sb, seg_x, y1, seg_x, y2,
+                    ));
                 }
                 seg_start = None;
                 seg_border = None;
@@ -860,7 +939,9 @@ pub(crate) fn render_edge_borders(
         if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
             let y1 = table_y + row_y[start];
             let y2 = table_y + row_y.get(v_col.len()).copied().unwrap_or(row_y[start]);
-            nodes.extend(create_border_line_nodes(tree, &sb, seg_x, y1, seg_x, y2));
+            nodes.extend(create_edge_border_line_nodes(
+                tree, &sb, seg_x, y1, seg_x, y2,
+            ));
         }
     }
 
@@ -909,8 +990,8 @@ fn inset_horizontal_border_group_at_top_clip(nodes: &mut [RenderNode], clip_y: f
 /// 엣지 그리드에서 None 슬롯(투명 테두리)을 찾아 연속 구간을 병합한다.
 pub(crate) fn render_transparent_borders(
     tree: &mut PageLayoutContext,
-    h_edges: &[Vec<Option<BorderLine>>],
-    v_edges: &[Vec<Option<BorderLine>>],
+    h_edges: &[Vec<Option<BorderEdge>>],
+    v_edges: &[Vec<Option<BorderEdge>>],
     h_covered: &[Vec<bool>],
     v_covered: &[Vec<bool>],
     row_col_x: &[Vec<f64>],
@@ -1009,6 +1090,24 @@ pub(crate) fn render_transparent_borders(
         }
     }
 
+    nodes
+}
+
+/// 하나의 논리 경계를 유지하고 공통 paint 단계에 원본 덧그리기를 전달한다.
+fn create_edge_border_line_nodes(
+    tree: &mut PageLayoutContext,
+    edge: &BorderEdge,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+) -> Vec<RenderNode> {
+    let mut nodes = create_border_line_nodes(tree, edge, x1, y1, x2, y2);
+    for node in &mut nodes {
+        if let RenderNodeType::Line(line) = &mut node.node_type {
+            line.underpaint_color = edge.underpaint_color;
+        }
+    }
     nodes
 }
 
@@ -1896,13 +1995,13 @@ mod tests {
     fn table_border_grid(
         border: BorderLine,
     ) -> (
-        Vec<Vec<Option<BorderLine>>>,
-        Vec<Vec<Option<BorderLine>>>,
+        Vec<Vec<Option<BorderEdge>>>,
+        Vec<Vec<Option<BorderEdge>>>,
         Vec<Vec<f64>>,
         Vec<f64>,
     ) {
         (
-            vec![vec![Some(border)], vec![Some(border)]],
+            vec![vec![Some(border.into())], vec![Some(border.into())]],
             vec![vec![None], vec![None]],
             vec![vec![0.0, 100.0]],
             vec![0.0, 20.0],

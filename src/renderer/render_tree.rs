@@ -1294,6 +1294,10 @@ pub struct LineNode {
     pub y2: f64,
     /// 선 스타일
     pub style: LineStyle,
+    /// 공유 경계에서 최종 획보다 먼저 그린 동일 형태의 이웃 획 색상.
+    /// 논리 소유 노드는 하나이며 각 backend는 같은 순서의 paint를 소비한다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub underpaint_color: Option<u32>,
     /// 소속 구역 인덱스
     pub section_index: Option<usize>,
     /// 도형 컨트롤을 소유한 문단 인덱스
@@ -1321,6 +1325,7 @@ impl LineNode {
             x2,
             y2,
             style,
+            underpaint_color: None,
             section_index: None,
             para_index: None,
             control_index: None,
@@ -1329,6 +1334,23 @@ impl LineNode {
             cell_para_index: None,
             outer_table_control_index: None,
         }
+    }
+
+    /// 하나의 논리 선을 원본의 아래 획 → 최종 획 순서로 낮춘다.
+    pub(crate) fn paint_strokes(&self) -> impl Iterator<Item = Self> {
+        let mut primary = self.clone();
+        primary.underpaint_color = None;
+        // 덧그리는 두 획은 하나의 복합 coverage를 만든다. 각 획을 따로
+        // 픽셀 중심에 모으면 아래 획의 원본 가장자리를 과도하게 지운다.
+        if self.underpaint_color.is_some() {
+            primary.style.compound_component = true;
+        }
+        let underpaint = self.underpaint_color.map(|color| {
+            let mut stroke = primary.clone();
+            stroke.style.color = color;
+            stroke
+        });
+        underpaint.into_iter().chain(std::iter::once(primary))
     }
 
     /// 이 선이 실제로 칠하는 **잉크**의 경계 상자. (#6269)

@@ -7,7 +7,7 @@ use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, ShapeStyle, TextStyle};
 use super::border_rendering::{
     build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_edge_borders,
-    render_spaced_cell_borders, render_transparent_borders,
+    render_spaced_cell_borders, render_transparent_borders, BorderEdge,
 };
 use super::text_measurement::{
     is_cjk_char, is_vertical_rotate_char, resolved_to_text_style, vertical_substitute_char,
@@ -900,8 +900,8 @@ impl LayoutEngine {
 
         // 엣지 기반 테두리 수집을 위한 그리드 생성
         use crate::model::style::BorderLine;
-        let mut h_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; col_count]; row_count + 1];
-        let mut v_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; row_count]; col_count + 1];
+        let mut h_edges: Vec<Vec<Option<BorderEdge>>> = vec![vec![None; col_count]; row_count + 1];
+        let mut v_edges: Vec<Vec<Option<BorderEdge>>> = vec![vec![None; row_count]; col_count + 1];
         // 병합 등으로 편집되어 h_edges/v_edges에 기록되지 않는 span 내부 위치를
         // 투명선 가이드에서 제외하기 위한 커버리지 그리드 (§투명선/셀 편집 정합성).
         let mut h_span_covered: Vec<Vec<bool>> = vec![vec![false; col_count]; row_count + 1];

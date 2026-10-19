@@ -260,7 +260,11 @@ impl LayerBuilder {
             RenderNodeType::FootnoteMarker(marker) => {
                 Some(vec![PaintOp::footnote_marker(node.bbox, marker.clone())])
             }
-            RenderNodeType::Line(line) => Some(vec![PaintOp::line(node.bbox, line.clone())]),
+            RenderNodeType::Line(line) => Some(
+                line.paint_strokes()
+                    .map(|stroke| PaintOp::line(node.bbox, stroke))
+                    .collect(),
+            ),
             RenderNodeType::Rectangle(rect) => {
                 Some(vec![PaintOp::rectangle(node.bbox, rect.clone())])
             }

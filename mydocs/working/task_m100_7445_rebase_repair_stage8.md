@@ -4166,3 +4166,102 @@ Native/fresh WASM 전쪽 시각 재검증과 실제 소비 검증은
 있다. 후보는 논리적 흰선 소유만 남기고 먼저 그린 검은선의 paint를 잃는다. 현재 흰선
 소유·셀 배열 역순 대조군을 보존하면서 실제 paint 순서를 공통 출력으로 전달하는 수정이
 다음 과제다. 비교기·이진화·2px·90%·0.1%p 기준은 변경하지 않는다.
+
+
+## C441 공유 수평 경계의 원본 paint 순서와 복합 coverage 보정 후보
+
+독립 Print의 검은 하단 → 흰 상단 순서를 원본 셀 배열 순서와 분리했다. 내부
+`BorderEdge`는 기존 최종 소유 `BorderLine`과 이웃의 먼저 그린 색을 함께 전달한다.
+같은 굵기·종류의 인접 수평 변에만 적용하며 수직/서로 다른 굵기·종류/None 및
+cellzone 덮어쓰기의 기존 우선순위는 유지한다. 원본 model에는 paint 상태를 넣지 않았다.
+이전 검사의 논리 흰선 한 개와 셀 배열 역순 대조군도 유지한다.
+
+`render_edge_borders → LineNode.underpaint_color → LineNode.paint_strokes → LayerBuilder`
+경로가 공통 두 paint op를 만들고 Native Skia·WASM Canvas·CanvasKit JSON·SVG가 소비한다.
+직접 tree를 그리는 SVG/Canvas 경로도 같은 메서드를 쓴다. 개별 bbox·transform·clip·내용
+소유를 바꾸지 않는다. 확장된 각 op에서는 underpaint 상태를 없애 중복 확장을 막는다.
+
+첫199 제안은 색 순서만 전달했다. Native200의9쪽90픽셀은 흰색255에서244로 바뀌었으나
+정본 잉크 경계232보다 연해 raw 점수는 변하지 않았다. 검사나 비교기를 바꾸지 않고,
+`raster_stroke`가 각 획을 픽셀 중심에 모아 겹침 coverage를 과도하게 지우는 소비 경로를
+확인했다. 다음 후보202는 두 획을 기존 `compound_component`로 함께 표시해 원본 겹침
+기하를 보존한다. 기존 다중선의 재스냅 방지와 같은 계약이며 새 문서/쪽 조건이나
+새 backend별 임계값을 만들지 않았다. Studio의 기존 compoundComponent 소비도 사용한다.
+
+Native202 빌드는 exit0이며 frozen CLI SHA는 `807b7912cd969e0e7fcdaf06f584ee033d13740c4f543989aec43cf786830cc0`다.
+같은 source의 fresh WASM204는 실제 root 재컴파일, locked web/pkg/no-opt 로컬 대체 빌드
+exit0이며 WASM SHA는 `f8c3c6e3786959d8f713e42dc3b93023944819ac84b4ca4215eba232b3a0f26b`다.
+root pkg·Studio public과 frozen 패키지가 일치하고 실제7736 초기화 응답207도 대조했다.
+JS는 Vite의 정확한 asset URL/source map 변환, WASM은 바이트 hash를 확인했다.
+실제 초기화 browser는 HeadlessChrome/146.0.7680.76이며 문서 paint/actual36 완료는 아니다.
+207 첫 실행은 --mode 누락으로 기본 Windows CDP 주소 연결만 실패했고, 별도 INVALID에
+보존 후 현재 Mac의 --mode=headless로 바로잡았다. 실제 빌드/whole205에는 영향을 주지 않는다.
+
+Native203 집중9쪽 중9/28/52쪽 raw는99.76631/99.76699/99.76689%에서 각각100%로
+개선됐다.36쪽100%와56/57/58쪽99.99572/99.94182/99.99225%는 유지됐다.
+28쪽 review/overlay를 직접 열어 짧은 획의 잉크·셀 소유·본문을 확인했고57쪽의 이어받은
+본문, 원본 종료 외곽, 후속 표와 문단도 판독했다. 얇은 획·굵은 글자 기준선의 작은 차이는
+남으며 raw100을 RGB100%라고 부르지 않는다. 18/43쪽은99.77614/99.77913%로 변하지 않았다.
+
+현재 전쪽205는 Native 선언/기본 각각66/66·최저94.58132%·미달0을 완료했고,
+fresh WASM 전쪽은 실행 중이다. 두 환경·양 backend의 총264쪽 완료 JSON/TSV와 대표
+판독 및 같은4a07 base 비교를 확인하기 전 전체 수용·0.1%p 무회귀·새 px 검사를 주장하지 않는다.
+기존 정식7검사와 border grid unit/fmt/manifest208도 같은 최종 source로 순차 실행 중이다.
+197의 프레임 단독7PASS를 새 최종 후보의 결과로 바꿔 쓰지 않는다.
+
+### 남은18/43쪽은 원본 프로그램 선택의 별도 문제
+
+206 원값 조사에서 후보WASM18쪽 미일치575개는 본문 상단 꺾쇠 제목에만 있었고,
+43쪽471개도 같은 꺾쇠 문장 세 곳에 있었다. footer가 원인이 아니다. 고정 base의 '<'/'>'
+전진0.5em이 후보0.605em으로 바뀌어 뒤 한글도 약2CSSpx 밀린다.
+독립 PDF18쪽은 PalatinoLinotype-Bold Type0/CIDFontType2,43쪽은 PalatinoLinotype-Roman
+Type0/CIDFontType2이며 ToUnicode와 /W가 두 꺾쇠 모두500/1000em임을 확인했다.
+설치한 pala/palab.ttf의 내부 이름·version5.03·UPEM2048/advance1024도 같은0.5em이다.
+글꼴 결측으로 추정하거나 새 파일을 복사하지 않았다. 입력은 HCI Poppy TTF와 명시
+Palatino Linotype TTF substFont를 선언하지만 현재 원본 HFT 부분 표605가 그 소유를 덮는다.
+`1bcd255a9c6 → a310bcf9825`의 원래 부분 폭 보존 의도와 정식 synthetic type1 검사,
+실제 sample16 프로그램/명시 substFont 유무를 더 대조한 뒤 공통 소유 규칙을 보정한다.
+진짜 type2 HFT/독립 Type3의605를 지우거나 문서 예외로 범위를 줄이지 않는다.
+
+로그·중간 JSON·진단 원문은 ignored repair199~208에만 보존한다. 지침/원격 변경은 없으며
+PR은 전체 필수 검증과 준비 결과를 보고한 뒤 새 승인을 받는다.
+
+
+C441 후속 확인:205의 선언 fresh WASM도 전66/66·최저94.60117%·미달0을 완료했다.
+현재 완료3조건198쪽의 고정4a07 십진수 비교에서 Native 두 환경의0.1%p 하락은0쪽,
+WASM 선언은18쪽0.18407%p·43쪽0.11248%p 두 곳이다.9/28/52쪽은 양 backend100%로
+기존 세 하락이 복구됐다. 기본 WASM66쪽은 여전히 실행 중이므로4조건 완료로 쓰지 않는다.
+최종 runtime의208 기존7검사는 모두PASS(5846 1/1133 3/6860 2/수평 소유1)이며
+추가 border grid unit과 fmt/manifest는 아직 순차 실행 중이다.
+새 px/paint 회귀는 선언 양 backend 전66쪽 조건을 충족한28쪽100%와 직접 W 판독까지
+확인한 뒤 추가한다. 197의 옛 프레임 단독 결과와208 최종 runtime 결과를 구분한다.
+
+
+C441 최종 정리:205는 exit0, 네 조건264쪽 모두 완료했다. 각 조건66/66·90% 미달0,
+Native 최저94.58132%/fresh WASM94.60117%다. 같은 backend의 선언/기본 환경66쪽은
+byte동일하고 전쪽의 table/cell/문단 소유별 공백 제외 본문 순서 차이0이다. 이는 독립 PDF
+텍스트 oracle가 아니라 출력 경로 사이의 일치다. 기존 #5846 원문 소유·종료 검사는 유지했다.
+수정 전후 PNG가 바뀐 쪽은9/28/52/56/57뿐이며 나머지61쪽은 byte동일하다. Native/WASM의
+28쪽과56/57쪽 review/overlay를 직접 판독했고, byte동일한 최저32쪽은 앞 단계 판독과 연결했다.
+고정4a07 대비 Native 하락0쪽, WASM 두 환경은18/43쪽의0.18407/0.11248%p 하락이 남는다.
+
+보호 검사211은 동일 원문을 frozen198/중간199/최종202에 각각 연결해2FAIL→2FAIL→2PASS를
+확인했다. 첫 실패는 흰 논리 경계만 남아 paint순서가 사라지고 Native PNG 잉크도 없는 경우,
+중간 실패는 두 획이 있어도 개별 재스냅으로 잉크가244가 되는 경우다. 최종 suite010도
+2PASS/283선택 제외·0.734초, prepare 뒤 현재manifest 확인·fmt 모두exit0이다. 기존 논리
+한 경계·셀 배열 역순·옆의 단일 검은 경계는 보존하고, 실제 Native PNG의 연속 잉크를
+독립28쪽 ±2CSSpx에서 검사하도록 보강했다. 양쪽100%·전66쪽90%·직접 판독 뒤 추가했다.
+기존7검사와 grid unit9PASS도 최종 source에서 확인했고 다른 lib의 필터0건은 더하지 않았다.
+
+[후보/고정base 전쪽 TSV·전후 비교·대표 PNG·입력과 빌드](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/pii-source-frame-and-overpaint/README.md)를 정리했다.
+기존171/174 TSV는 C439 정본을 재사용하고 새 TSV/PNG는205에서 산출했으며 producer/hash를
+확인했다. 로그·JSON·HFT 표본·글꼴 바이너리는 ignored output에만 남겼다. 전체 회귀와
+실제 소비·다른 문서 검증 및18/43 보정은 남아 있어 PR 완료로 주장하지 않는다.
+
+
+C441 소비 점검의 잔여: 일반 `renderPageToCanvas`/layer-filter 출력은 공통 LayerBuilder를
+소비하지만 `renderPageToCanvasLegacy`와 header/footer edit preview는 WebCanvas.render_tree로
+직접 들어간다. 이 direct path의 Line은 underpaint 확장을 아직 소비하지 않는다. 다음 단계에서
+같은 `paint_strokes`를 전달하고 실제 legacy/preview API를 확인한다. 기존 Native/SVG direct
+소비와 일반 WASM layer의 검증을 이 두 경로의 완료 근거로 확대하지 않는다. 수평선 보호 검사는
+현재 검증된 공통 paint/Native PNG 범위이며 전체 소비 경로 완료·PR 준비를 주장하지 않는다.

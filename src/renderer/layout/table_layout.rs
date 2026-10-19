@@ -318,7 +318,7 @@ use super::border_rendering::{
     apply_cellzone_border_fill, apply_table_outer_border_fill, build_row_col_x,
     collect_cell_borders, create_border_line_nodes, mark_cell_span_interior_covered,
     render_cell_diagonal, render_edge_borders, render_spaced_cell_borders,
-    render_transparent_borders,
+    render_transparent_borders, BorderEdge,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data_bytes;
@@ -4491,8 +4491,8 @@ impl LayoutEngine {
         }
 
         // ── 5. 셀 레이아웃 ──
-        let mut h_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; col_count]; row_count + 1];
-        let mut v_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; row_count]; col_count + 1];
+        let mut h_edges: Vec<Vec<Option<BorderEdge>>> = vec![vec![None; col_count]; row_count + 1];
+        let mut v_edges: Vec<Vec<Option<BorderEdge>>> = vec![vec![None; row_count]; col_count + 1];
         // 병합 등으로 편집되어 h_edges/v_edges에 기록되지 않는 span 내부 위치를
         // 투명선 가이드에서 제외하기 위한 커버리지 그리드 (§투명선/셀 편집 정합성).
         let mut h_span_covered: Vec<Vec<bool>> = vec![vec![false; col_count]; row_count + 1];
@@ -9954,8 +9954,8 @@ impl LayoutEngine {
         row_count: usize,
         table_x: f64,
         table_y: f64,
-        h_edges: &mut Vec<Vec<Option<BorderLine>>>,
-        v_edges: &mut Vec<Vec<Option<BorderLine>>>,
+        h_edges: &mut Vec<Vec<Option<BorderEdge>>>,
+        v_edges: &mut Vec<Vec<Option<BorderEdge>>>,
         h_span_covered: &mut [Vec<bool>],
         v_span_covered: &mut [Vec<bool>],
         row_filter: Option<(usize, usize)>,

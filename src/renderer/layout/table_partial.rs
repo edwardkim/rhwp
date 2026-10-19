@@ -18,7 +18,7 @@ use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit};
 use super::border_rendering::{
     build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_cell_diagonal,
-    render_edge_borders, render_spaced_cell_borders, render_transparent_borders,
+    render_edge_borders, render_spaced_cell_borders, render_transparent_borders, BorderEdge,
 };
 use super::table_layout::{
     border_style_has_diagonal, calc_nested_split_rows, effective_margin_left_line,
@@ -1074,8 +1074,8 @@ impl LayoutEngine {
         header_rows: &[usize],
         render_rows: &[usize],
         render_row_y: &[f64],
-        h_edges: &mut Vec<Vec<Option<BorderLine>>>,
-        v_edges: &mut Vec<Vec<Option<BorderLine>>>,
+        h_edges: &mut Vec<Vec<Option<BorderEdge>>>,
+        v_edges: &mut Vec<Vec<Option<BorderEdge>>>,
         h_span_covered: &mut [Vec<bool>],
         v_span_covered: &mut [Vec<bool>],
         measured_table: Option<&MeasuredTable>,
@@ -6537,9 +6537,9 @@ impl LayoutEngine {
 
         // 엣지 기반 테두리 수집을 위한 그리드 (렌더링 행 기준)
         let render_row_count = render_rows.len();
-        let mut h_edges: Vec<Vec<Option<BorderLine>>> =
+        let mut h_edges: Vec<Vec<Option<BorderEdge>>> =
             vec![vec![None; col_count]; render_row_count + 1];
-        let mut v_edges: Vec<Vec<Option<BorderLine>>> =
+        let mut v_edges: Vec<Vec<Option<BorderEdge>>> =
             vec![vec![None; render_row_count]; col_count + 1];
         // 병합 등으로 편집되어 h_edges/v_edges에 기록되지 않는 span 내부 위치를
         // 투명선 가이드에서 제외하기 위한 커버리지 그리드 (§투명선/셀 편집 정합성).
