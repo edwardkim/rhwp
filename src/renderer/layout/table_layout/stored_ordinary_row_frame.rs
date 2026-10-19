@@ -21,7 +21,7 @@ impl LayoutEngine {
                 usize::from(cell.row) == row
                     && cell.row_span == 1
                     && self.stored_plain_text_cell_frame(table, cell)
-                    && cell.height <= u32::from(padding.top) + u32::from(padding.bottom)
+                    && i64::from(cell.height) <= i64::from(padding.top) + i64::from(padding.bottom)
             })
     }
 
