@@ -1498,7 +1498,7 @@ export type LayerEquationLayoutKind =
   | { type: 'fontGlyph'; text: string; fontFamily: string; outlineGeometry?: LayerFontGlyphGeometry }
   | { type: 'mathSymbol'; text: string; integralGeometry?: LayerIntegralGeometry }
   | { type: 'function'; name: string }
-  | { type: 'fraction'; numer: LayerEquationLayoutBox; denom: LayerEquationLayoutBox; axisHeight: number; ruleThickness?: number }
+  | { type: 'fraction'; numer: LayerEquationLayoutBox; denom: LayerEquationLayoutBox; axisHeight: number; ruleThickness?: number; ruleStart?: number; ruleEnd?: number }
   | { type: 'atop'; top: LayerEquationLayoutBox; bottom: LayerEquationLayoutBox }
   | { type: 'sqrt'; body: LayerEquationLayoutBox; index?: LayerEquationLayoutBox }
   | { type: 'superscript'; base: LayerEquationLayoutBox; sup: LayerEquationLayoutBox }

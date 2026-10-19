@@ -146,6 +146,8 @@ impl EqLayout {
                 numer: Box::new(n_box),
                 denom: Box::new(d_box),
                 axis_height,
+                rule_start: fs * 0.05,
+                rule_end: w - fs * 0.05,
                 // HancomEQN의 U+E06D bbox 높이는 UPM 1024에서 32다.
                 rule_thickness: fs
                     * if self.hancom_eqn {
@@ -312,8 +314,8 @@ fn ends_round_delimiter(value: &LayoutBox) -> bool {
 
 impl EqLayout {
     fn layout_legacy_fraction(&self, numer: &EqNode, denom: &EqNode, fs: f64) -> LayoutBox {
-        let n = self.layout_fraction_operand(numer, fs);
-        let d = self.layout_fraction_operand(denom, fs);
+        let (n, n_registration) = self.layout_fraction_operand(numer, fs);
+        let (d, d_registration) = self.layout_fraction_operand(denom, fs);
 
         let pad = fs * FRAC_LINE_PAD;
         let side_pad = if self.legacy_hft_metrics {
@@ -360,6 +362,14 @@ impl EqLayout {
             axis = baseline - line_height - above;
         }
 
+        // Independent HFT Print at 9/12/18pt places the rule around the operand
+        // content with 0.18em side space (subject to the source print grid).
+        // A CJK run's registration inset advances its glyph, not the rule start.
+        // Keep the existing logical frame and glyph origins; only paint's rule
+        // bounds consume this separate content extent.
+        let rule_start = (n_box.x + n_registration).min(d_box.x + d_registration) - fs * 0.18;
+        let rule_end = (n_box.x + n_box.width).max(d_box.x + d_box.width) + fs * 0.18;
+
         LayoutBox {
             font_size: fs,
             x: 0.0,
@@ -370,6 +380,8 @@ impl EqLayout {
             kind: LayoutKind::Fraction {
                 axis_height: axis,
                 rule_thickness: line_thick,
+                rule_start,
+                rule_end,
                 numer: Box::new(n_box),
                 denom: Box::new(d_box),
             },

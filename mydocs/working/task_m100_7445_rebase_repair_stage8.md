@@ -3268,3 +3268,42 @@ frozen19에서는 두 건 모두 PASS다. `repair26-frame-leading-regression/bef
 `--prepare` 후 정식 Native nextest는2PASS/0FAIL, 실행3.198초·컴파일6분21초·exit0이다.
 formal-native-nextest.log에 결과가 있다. 생성 suite·manifest·로그는 커밋하지 않는다.
 전체 nextest나179조건 보존·실제 제품 소비 검증 완료로 확대하지 않는다.
+
+
+## C426 HFT 분수의 등록 여백과 실제 괘선 범위 분리
+
+C425 뒤 runtimefcf의 fresh WASM8조건921쪽도 전부 완료했다. 저장197쪽 세 조건은
+94.66706%, 원본HWP/HWPX115쪽96.98894%, sample16 HWP5저장64쪽97.99309%,
+일반 수식18쪽 두 조건98.04527/98.08044%다. 각 독립 Print와 쪽수가 일치하고 raw90%
+미달0쪽이다. `repair25-wasm-whole`의 전쪽 TSV와 producer에 보존했다. 이 결과는 아래
+괘선 변경 전 구현의 결과이며 새 괘선 후보의 전쪽 통과로 재인용하지 않는다.
+
+새 원인 경로는 `분수 피연산자 CJK 등록 inset → 공통 Fraction의 내용 범위 → 실제 괘선
+시작·끝 → Native/SVG/Canvas2D/JSON→Studio CanvasKit`이다. 기존 괘선은 논리 상자의
+폭에서 양쪽0.05em을 뺐으므로 한글 대체 face의 선행 등록 여백까지 괘선에 포함했다.
+독립 한컴2024 Print의9/12/18pt 표본에서 분자 원점·폰트 em과 PDF 선분을 직접 대조했다.
+괘선의 내용 바깥 여백은 인쇄 격자의 반올림을 포함해 약0.18em이다(왼쪽0.18666/
+0.17996/0.17331, 오른쪽0.17341/0.19003/0.18671). 사설 글꼴 윤곽을 복사하지 않았다.
+기준 PDF SHA와 선분·원점은 ignored `repair27-legacy-delimiter-diagnosis/
+independent-fraction-rule-metrics.json`에 보존한다.
+
+피연산자 등록 전진을 별도 반환하고 실제 내용 범위에0.18em을 더해 괘선의 시작·끝을
+공통 Fraction 결과로 발행한다. 기존 글리프 원점·논리 폭·높이·줄 소속은 유지한다.
+현대 수식은 기존 괘선 좌표를 그대로 발행한다. 각 backend의 별도 상수 추정을 없애며,
+Studio의 이전 JSON 입력에는 기존 좌표 fallback을 유지한다. 문서/쪽 번호 분기를 추가하지 않았다.
+
+현재 후보27의 Native192DPI 집중14쪽 대조에서 단독 가/나 분수98.32090→100.00000%,
+복합 CJK 표본3쪽은86.29758/81.15219/75.58331%다. 괄호 표본3쪽은75.53038/
+66.84647/55.22232%로 미달이 남는다. sample16 원본3/6/18쪽99.47882/99.40948/
+97.44402%, HWP5저장본3/6/18쪽96.85161/99.02941/98.35911%다. 기존 후보19 대비
+6쪽은각0.00718/0.00692%p 하락하며 사용자 기준0.1%p 이상 하락은14쪽 모두0건이다.
+일반 현대 수식18쪽의16쪽192DPI88.19667%도 이전과 같다. 높은 단독 점수로 미달을
+상쇄하지 않는다. 단독 분수와 저장본6쪽의 review/overlay를 직접 열어 괘선·본문 보존과
+잔여 괄호 차이를 확인했다.100%는2px raw 실루엣이며 엄격 RGB 일치를 뜻하지 않는다.
+
+Native 빌드exit0(5분37초), Studio 타입 검사exit0, 기존 렌더 backend65PASS,
+고정base4a07의 manifest/unit-tier 검사exit0이다. producer·source patch·후보19 대조·
+TSV·PNG·로그는 ignored `repair27-legacy-rule-candidate/`에 보존한다.
+source1840파일 hash를 빌드 전후 확인했다. 새 renderer 회귀/기대값 변경은 아직 추가하지 않았다.
+이 단계는 원인별 구현 보정의 로컬 커밋이며 새 fresh WASM·전쪽·전체 nextest·179조건 보존·
+실제 제품 소비 검증은 계속한다. 기존 두 실패 검사는 그대로 보존한다.

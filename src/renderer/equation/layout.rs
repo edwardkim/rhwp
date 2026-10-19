@@ -218,24 +218,27 @@ impl EqLayout {
             .sum()
     }
 
-    fn layout_fraction_operand(&self, node: &EqNode, fs: f64) -> LayoutBox {
+    fn layout_fraction_operand(&self, node: &EqNode, fs: f64) -> (LayoutBox, f64) {
         let mut body = self.layout_node(node, fs);
         if !self.legacy_hft_metrics || !operand_starts_cjk(node) {
-            return body;
+            return (body, 0.0);
         }
         // 구형 수식의 한글 대체 face가 피연산자 프레임을 시작할 때의 전진이다.
         // 숫자 피연산자나 같은 줄의 뒤 한글 run에는 반복해서 넣지 않는다.
         let inset = fs * 0.22;
         body.x = inset;
-        LayoutBox {
-            font_size: fs,
-            x: 0.0,
-            y: 0.0,
-            width: body.width + inset,
-            height: body.height,
-            baseline: body.baseline,
-            kind: LayoutKind::Row(vec![body]),
-        }
+        (
+            LayoutBox {
+                font_size: fs,
+                x: 0.0,
+                y: 0.0,
+                width: body.width + inset,
+                height: body.height,
+                baseline: body.baseline,
+                kind: LayoutKind::Row(vec![body]),
+            },
+            inset,
+        )
     }
 
     fn layout_node(&self, node: &EqNode, fs: f64) -> LayoutBox {

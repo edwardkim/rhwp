@@ -3143,6 +3143,8 @@ fn write_equation_layout_kind(buf: &mut String, layout: &LayoutBox) {
             denom,
             axis_height,
             rule_thickness,
+            rule_start,
+            rule_end,
         } => {
             buf.push_str("{\"type\":\"fraction\",\"numer\":");
             write_equation_layout_box(buf, numer);
@@ -3150,6 +3152,7 @@ fn write_equation_layout_kind(buf: &mut String, layout: &LayoutBox) {
             write_equation_layout_box(buf, denom);
             let _ = write!(buf, ",\"axisHeight\":{axis_height}");
             let _ = write!(buf, ",\"ruleThickness\":{rule_thickness}");
+            let _ = write!(buf, ",\"ruleStart\":{rule_start},\"ruleEnd\":{rule_end}");
             buf.push('}');
         }
         LayoutKind::Atop { top, bottom } => {
