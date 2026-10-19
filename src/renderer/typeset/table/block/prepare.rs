@@ -588,25 +588,28 @@ impl TypesetEngine {
             };
             host_before + vert_off + fragment_outer_bottom
         };
-        let remaining_on_page = fragment_host_placement.map_or_else(
-            || (table_available - st.current_height - first_frag_overhead).max(0.0),
-            |p| {
-                (table_available
-                    - p.table_top
-                    - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
-                    - table
-                        .caption
-                        .as_ref()
-                        .filter(|cap| {
-                            matches!(cap.direction, CaptionDirection::Top)
-                                && ft.caption_height > 0.0
-                        })
-                        .map_or(0.0, |cap| {
-                            ft.caption_height + hwpunit_to_px(cap.spacing as i32, self.dpi)
-                        }))
-                .max(0.0)
-            },
-        );
+        let remaining_with = |released: f64| {
+            fragment_host_placement.map_or_else(
+                || (table_available + released - st.current_height - first_frag_overhead).max(0.0),
+                |p| {
+                    (table_available + released
+                        - p.table_top
+                        - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                        - table
+                            .caption
+                            .as_ref()
+                            .filter(|cap| {
+                                matches!(cap.direction, CaptionDirection::Top)
+                                    && ft.caption_height > 0.0
+                            })
+                            .map_or(0.0, |cap| {
+                                ft.caption_height + hwpunit_to_px(cap.spacing as i32, self.dpi)
+                            }))
+                    .max(0.0)
+                },
+            )
+        };
+        let remaining_on_page = remaining_with(0.0);
         let (first_block_start, first_block_end, first_block_h) = if row_count > 0 {
             mt.row_block_for(0)
         } else {
@@ -685,6 +688,34 @@ impl TypesetEngine {
                 .unwrap_or(0.0)
                 .max(cut_row_h.first().copied().unwrap_or(0.0))
         };
+        // [#8081] 이월 판정에서 표 자신의 각주 예약을 되돌릴지. 한/글은 각주를 앵커 줄과
+        // 함께 옮긴다 — 첫 단위(위 `split_unit_h`) 안에 각주 앵커가 하나도 없으면 그 각주는
+        // 이 쪽에 오지 않으므로, 표 전체 각주를 미리 뺀 잔여로 첫 단위를 이월하지 않는다.
+        // 조각 스캔의 첫 조각 재맞춤(#2097 `FN_REFIT`)과 같은 앵커 위치·같은 예약 몫을
+        // 쓴다. 1382000 96쪽: 49×2 표의 각주 3)~5) 앵커는 98쪽 행에 있는데 280px 예약이
+        // 잔여를 0 으로 만들어 표 전체가 97쪽으로 갔다(한/글은 96쪽 바닥에 캡션·머리 행·4행).
+        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0)
+            + if st.current_footnote_height <= 0.0 {
+                fn_margin
+            } else {
+                0.0
+            };
+        let first_unit_note_release = if table_fn_reserved > 0.5
+            && !ft.table_footnotes.is_empty()
+            && table::footnotes::first_table_footnote_anchor_offset(
+                &layout_engine,
+                row_geometry_table,
+                styles,
+                &cut_row_h,
+                cs,
+            )
+            .is_some_and(|anchor| anchor >= split_unit_h)
+        {
+            table_fn_reserved
+        } else {
+            0.0
+        };
+        let remaining_on_page_for_first_unit = remaining_with(first_unit_note_release);
         // native HWP5의 이 좁은 그림+caption 형상은 일반 RowBreak table의
         // conservative clean-defer budget보다, 실제 기존 FootnoteArea 경계가
         // 우선한다. `table_total`은 첫 fragment의 host/row/caption fit overhead를
@@ -695,7 +726,7 @@ impl TypesetEngine {
             eprintln!(
                 "DIAG_PRESPLIT pi={} sec={} remaining={:.1} unit_h={:.1} blk=({},{},{:.1}) items={}",
                 para_idx, st.section_index,
-                remaining_on_page,
+                remaining_on_page_for_first_unit,
                 split_unit_h,
                 first_block_start,
                 first_block_end,
@@ -735,7 +766,7 @@ impl TypesetEngine {
             // discard its page owner before that shared plan is consulted.
             && !source_single_cell_first_frame_fits
             && (stored_page_top_tac_table
-                || (remaining_on_page < split_unit_h && !st.current_items.is_empty()))
+                || (remaining_on_page_for_first_unit < split_unit_h && !st.current_items.is_empty()))
         {
             // [#7288] 원자 단위가 새 쪽에 통째로 들어가면 여기서 자르지 않고 이월한다.
             // 값 2 «나눔» 만 그 자리에서 행 내부를 자르고, 값 0 «나누지 않음»·값 1
@@ -796,7 +827,7 @@ impl TypesetEngine {
                 // [#7288] force-split 은 «나눔» 의 갈래다. 값 0·1 표를 한 줄 + padding
                 // 예산으로 현재 쪽에 붙잡으면 정책이 정한 원자 단위가 깨진다.
                 && intra_row_cut_here
-                && remaining_on_page > 0.0
+                && remaining_on_page_for_first_unit > 0.0
                 && !rewound_empty_figure_float_should_defer;
             let min_content = if first_row_splittable {
                 mt.min_first_line_height_for_row(0, 0.0) + mt.max_padding_for_row(0)
@@ -831,7 +862,7 @@ impl TypesetEngine {
             let source_owned_atomic_first_fragment = source_anchor_splits_here
                 && next_rewinds_after_table
                 && first_row_force_splittable
-                && remaining_on_page >= min_content;
+                && remaining_on_page_for_first_unit >= min_content;
             // native HWP5 2행 그림+caption 표는 첫 그림 행만으로 계산한 일반
             // clean-defer budget이 기존 각주의 40px safety buffer 때문에 소폭 부족해도,
             // 표 전체가 실제 FootnoteArea 앞에 끝날 수 있다. 이 경우까지 다음 page로
@@ -848,7 +879,7 @@ impl TypesetEngine {
                 eprintln!(
                     "DIAG_SCAN FIRSTROW_DEFER? pi={} remaining={:.1} unit_h={:.1} min_content={:.1} splittable={} force={} clean_defer={}",
                     para_idx,
-                    remaining_on_page,
+                    remaining_on_page_for_first_unit,
                     split_unit_h,
                     min_content,
                     first_row_splittable,
@@ -858,7 +889,7 @@ impl TypesetEngine {
             }
             if stored_page_top_tac_table
                 || (!first_row_splittable && !first_row_force_splittable)
-                || remaining_on_page < min_content
+                || remaining_on_page_for_first_unit < min_content
                 || multirow_clean_defer
             {
                 // [Task #1753] visible-host 자리차지 RowBreak 표가 다음 쪽으로 이월되기

@@ -55,6 +55,8 @@ impl TypesetEngine {
             header_overhead,
             avail_for_rows,
             reflow_frame_avail_for_rows,
+            reflow_frame_first_fragment_shortfall,
+            first_fragment_shortfall,
             ..
         } = *budget;
         let source_cut_heights = budget.source_complete_frame_last_row.map(|(row, height)| {
@@ -435,34 +437,14 @@ impl TypesetEngine {
             && start_cut.is_empty()
             && is_split_fragment
         {
-            let mut anchor_offsets: Vec<f64> = Vec::new();
-            let mut anchor_unresolved = false;
-            for cell in &row_geometry_table.cells {
-                for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-                    if !cp
-                        .controls
-                        .iter()
-                        .any(|c| matches!(c, Control::Footnote(_)))
-                    {
-                        continue;
-                    }
-                    let row = (cell.row as usize).min(row_count.saturating_sub(1));
-                    let row_prefix: f64 = (0..row).map(|x| cut_row_h[x] + cs).sum();
-                    match layout_engine.cell_para_unit_offset(
-                        cell,
-                        row_geometry_table,
-                        styles,
-                        cp_idx,
-                    ) {
-                        Some(off) => anchor_offsets.push(row_prefix + off),
-                        None => anchor_unresolved = true,
-                    }
-                }
-            }
-            let min_anchor = anchor_offsets.iter().copied().fold(f64::INFINITY, f64::min);
-            let all_beyond =
-                !anchor_unresolved && !anchor_offsets.is_empty() && min_anchor >= consumed - 0.5;
-            if all_beyond {
+            let first_anchor = table::footnotes::first_table_footnote_anchor_offset(
+                layout_engine,
+                row_geometry_table,
+                styles,
+                cut_row_h,
+                cs,
+            );
+            if let Some(min_anchor) = first_anchor.filter(|anchor| *anchor >= consumed - 0.5) {
                 let pad = if mt.allows_row_break_split() {
                     layout_engine.row_remaining_visible_padding_height(
                         row_geometry_table,
@@ -473,11 +455,20 @@ impl TypesetEngine {
                 } else {
                     mt.max_padding_for_row(cursor_row)
                 };
-                let avail_refit = (avail_for_rows + table_fn_reserved).min(min_anchor + pad + 0.1);
+                // [#8081] 0 으로 자른 첫 조각 예산에는 모자란 몫이 빠져 있다 — 되돌린 예약에서
+                // 그 몫을 먼저 갚아야 실제 남은 공간이 된다.
+                let avail_refit = (avail_for_rows + table_fn_reserved - first_fragment_shortfall)
+                    .min(min_anchor + pad + 0.1);
                 if avail_refit > avail_for_rows + 0.5 {
                     let issue2424_refit_started = profile.enabled.then(std::time::Instant::now);
+                    // 일반 행 컷이 따로 쓰는 물리 프레임 상한도 같은 몫을 되돌린다.
+                    let reflow_refit = reflow_frame_avail_for_rows.map(|height| {
+                        height
+                            .max(height + table_fn_reserved - reflow_frame_first_fragment_shortfall)
+                    });
                     let refit = run_scan(BlockRowScanVars {
                         avail_for_rows: avail_refit,
+                        reflow_frame_avail_for_rows: reflow_refit,
                         ..scan_vars
                     });
                     if let Some(started) = issue2424_refit_started {
