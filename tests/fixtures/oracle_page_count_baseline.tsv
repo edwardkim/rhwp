@@ -26,11 +26,10 @@ samples/2022년 국립국어원 업무계획.hwp	35	35
 #     부록 간지 뒤 쪽수         74      71 (−3)    74 (±0)
 #   그 편차는 tests/cases/issue_7009_handbook_structure_landmarks.rs 가 잠근다.
 #   이 줄을 고칠 때는 그 파일도 함께 본다.
-samples/2025 행정업무운영 편람(최종).hwpx	384	382
 samples/20250130-hongbo.hwp	4	4
 samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	30	30
-samples/[2027] 온새미로 1 본교재.hwp	47	47
-samples/[2027] 온새미로 1 본교재.hwpx	47	47
+samples/[2027] 온새미로 1 본교재.hwp	46	46
+samples/[2027] 온새미로 1 본교재.hwpx	46	46
 samples/atop-equation-01.hwp	1	1
 samples/basic/BlogForm_BookReview.hwp	1	1
 samples/basic/BlogForm_MovieReview.hwp	1	1
@@ -204,11 +203,10 @@ samples/issue1663_coanchored_float_orphan.hwpx	2	2
 samples/issue1770_rowsplit_tolerance.hwpx	4	4
 samples/issue1835_tac_stale_height.hwp	3	3
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1
-samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115
-samples/issue1949_giant_cell_nested_tables_perf.hwpx	115	115
 samples/issue1950_hwp3_tab_charoffset.hwp	1	1
 samples/issue2004_cell_image_stack.hwp	8	8
 samples/issue2004_cell_image_stack.hwpx	8	8
+samples/issue2006/1790387_prep_final_report.hwpx	140	140
 samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	5	5
 samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwpx	5	5
 samples/issue2020/passport_application_lawgo.hwp	2	2
@@ -310,7 +308,6 @@ samples/issue5652/표식이있는꺽은선형-행추가.hwp	1	1
 samples/issue5652/표식이있는꺽은선형-행추가.hwpx	1	1
 samples/issue5787/nested_square_table_horz_offset.hwp	1	1
 samples/issue5788/tac_table_missing_anchor_line_spacing.hwp	8	8
-samples/issue5792/2700727_animal_facility_standards.hwpx	6	6
 samples/issue5798/offcolumn_float_table_no_band.hwp	1	1
 samples/issue5809/156518601_p1_square_host.hwpx	1	1
 samples/issue5818/cell_square_logo_text_wrap.hwpx	1	1
@@ -554,3 +551,9 @@ samples/issue7622/curly_quote_tac_native.hwpx	1	1
 # #7419: 같은 원본의 한컴2024 1-up Print 전1쪽, Native/fresh WASM100%, Stage1 SHA·직접 판독.
 samples/issue7419/tac_two_line_cell_no_lineseg.hwpx	1	1
 samples/issue7419/tac_nested_two_line_cell_no_lineseg.hwpx	1	1
+# PR #7600: 같은 원본의 MCP2020 PrintMethod0/1-up PDF와 Native/fresh WASM 전체1쪽 확인.
+# 입력·PDF SHA-256과 실행 job은 mydocs/pr/archives/pr_7600_review.md에 기록한다.
+samples/issue7593/repro-dyad-min-no-script.hwpx	1	1
+samples/issue7593/repro-equation-issue7593.hwpx	1	1
+# 독립 한컴2024 Print 합성 대조군: samples 밖이므로 명시 등록.
+pdf/issue7642-bitmap-crop-palette-print-20261019/bitmap-crop-palette-controls.hwpx	1	1

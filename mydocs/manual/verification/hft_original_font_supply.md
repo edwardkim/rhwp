@@ -12,6 +12,12 @@ last_verified: 2026-10-16
 작성하고, 그 표본의 한컴 Print Type3 윤곽을 로컬 CFF 글꼴로 옮긴다.
 HFT 전체 형식이나 모든 HFT face를 지원하는 변환기가 아니다.
 
+기본 요청 face는 `한양신명조`다. 다른 원본 face를 확인할 때는 `create-specimen`과
+`restore` 양쪽에 같은 `--face 'HY신명조'` 등을 명시하고 Print job과 provenance를
+연결한다. 비슷한 이름을 같은 프로그램으로 간주하지 않는다. 요청 이름·생성 이름만으로
+실제 공급을 증명하지 않으며, 대상의 원 윤곽·전진과 읽기 전용으로 비교해 다르면 공급을
+보류한다. 대상 PDF에서 글꼴을 만들거나 기존 기준 출력·글꼴을 덮어쓰지 않는다.
+
 이 도구는 대상 문서나 대상 정답 PDF에서 글자를 가져오지 않는다. 표본은 U+AC00–U+D7A3
 11,172자를 순서대로 모두 담아야 한다. `restore`는 PDF에서 추출한 문자가 이 전체 순서와
 다르면 거부하므로 일반 문서의 정답 PDF를 원본 글꼴 자료로 사용할 수 없다.
@@ -57,7 +63,7 @@ CFF의 실제 왼쪽 끝 `xMin`은 `hmtx`의 왼쪽 side bearing에도 반올림
 [OpenType hmtx 사양](https://learn.microsoft.com/en-us/typography/opentype/spec/hmtx)의
 CFF 윤곽과 hmtx bearing 일치 조건을 따른다.
 
-범위는 한양신명조 정규체의 현대 한글이다. ASCII·기호·PUA·독립 bold/italic face는 만들지 않으며
+범위는 독립 표본으로 확인한 요청 face 정규체의 현대 한글이다. ASCII·기호·PUA·독립 bold/italic face는 만들지 않으며
 그 글자들은 기존 실제 공급 사다리를 사용한다. 생성 글꼴을 이름만 같은 임의 TTF와 동등하다고
 추정하지 않는다. 준비 뒤 실제 원본 HFT 윤곽과 같은지, 외곽·전진폭·기준선과 대표 PNG를 대조한다.
 원본 윤곽·매핑을 확인하지 못한 범위는 미검증이다.

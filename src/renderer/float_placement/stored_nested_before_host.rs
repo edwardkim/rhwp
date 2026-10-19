@@ -1,14 +1,20 @@
 //! 원본의 빈 호스트 줄 앞에 저장된 표 상자를 측정·배치에서 공유한다.
 
-use super::{hwpunit_to_px, is_para_topbottom_float, ParagraphFloatFlow, ParagraphFloatPlacement};
+use super::{
+    hwpunit_to_px, is_para_topbottom_float, signed_hwpunit, ParagraphFloatFlow,
+    ParagraphFloatPlacement,
+};
 use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::table::{Cell, Table};
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(super) fn original_lines(para: &Paragraph) -> bool {
-    para.raw_break_type == 0
-        && !para.stored_text_partition_is_dirty()
+    para.raw_break_type == 0 && original_line_metrics(para)
+}
+
+fn original_line_metrics(para: &Paragraph) -> bool {
+    !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
         && !para.line_segs.is_empty()
         && para.line_segs.iter().all(|line| {
@@ -81,7 +87,10 @@ pub(crate) fn stored_table_before_host_frame(
         || control_index != 0
         || !matches!(para.controls.as_slice(), [Control::Table(_)])
         || !previous.controls.is_empty()
-        || !next.controls.is_empty()
+        || !(next.controls.is_empty()
+            || (next.line_segs.len() == 1
+                && matches!(next.controls.as_slice(), [Control::Table(_)])
+                && crate::renderer::composer::stored_first_tac_line(next).is_some()))
         || !original_lines(para)
         || !original_lines(previous)
         || !original_lines(next)
@@ -139,5 +148,92 @@ pub(crate) fn stored_table_before_host_frame(
         table_left: None,
         table_top: anchor_y + offset + lead,
         occupied_bottom: host_origin,
+    })
+}
+
+/// 단을 여는 표의 끝과 첫 호스트 줄·다음 줄이 원본 단 축을 닫는다.
+/// 첫 줄의 절대 vpos만으로 축을 만들지 않고 측정한 표 상자도 대조한다.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn stored_opening_table_before_host_frame(
+    para: &Paragraph,
+    next: &Paragraph,
+    table: &Table,
+    control_index: usize,
+    table_height: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let after = next.line_segs.first()?;
+    if !dpi.is_finite()
+        || dpi <= 0.0
+        || !table_height.is_finite()
+        || !is_para_topbottom_float(&table.common)
+        || !table.common.flow_with_text
+        || table.common.treat_as_char
+        || table.caption.is_some()
+        || table.common.vert_align != crate::model::shape::VertAlign::Top
+        || signed_hwpunit(table.common.vertical_offset) < 0
+        || table.common.height > i32::MAX as u32
+        || !para
+            .text
+            .chars()
+            .any(|ch| !ch.is_whitespace() && !ch.is_control())
+        || para.control_text_positions().get(control_index).copied() != Some(0)
+        // 구역·다단 정의는 새 단의 메타데이터다. 쪽/단 강제 나눔과
+        // 구별하며, 호출자가 확인한 빈 단의 원본 프레임을 보존한다.
+        || para.raw_break_type & !0x03 != 0
+        || !matches!(
+            para.column_type,
+            crate::model::paragraph::ColumnBreakType::None
+                | crate::model::paragraph::ColumnBreakType::Section
+                | crate::model::paragraph::ColumnBreakType::MultiColumn
+        )
+        || !original_line_metrics(para)
+        || !original_lines(next)
+        || para.cell_format_vpos_dirty
+        || next.cell_format_vpos_dirty
+        || !next.controls.is_empty()
+    {
+        return None;
+    }
+    if para.controls.iter().enumerate().any(|(index, control)| {
+        index != control_index
+            && !matches!(
+                control,
+                Control::SectionDef(_)
+                    | Control::ColumnDef(_)
+                    | Control::PageNumberPos(_)
+                    | Control::Header(_)
+                    | Control::Footer(_)
+            )
+    }) {
+        return None;
+    }
+    let top = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi)
+        + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+    let bottom = top + table_height + hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+    let source_host = hwpunit_to_px(host.vertical_pos, dpi);
+    if (table_height - hwpunit_to_px(table.common.height as i32, dpi)).abs() > hwpunit_to_px(1, dpi)
+        || (source_host - bottom).abs() > hwpunit_to_px(1, dpi)
+        || host.line_height <= 0
+        || host.line_spacing < 0
+        || host
+            .vertical_pos
+            .checked_add(host.line_height)?
+            .checked_add(host.line_spacing)?
+            != after.vertical_pos
+    {
+        return None;
+    }
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::NextLine,
+        anchor_y: 0.0,
+        stored_host_origin: Some(source_host),
+        stored_successor_line_origin: None,
+        table_left: None,
+        table_top: top,
+        occupied_bottom: bottom,
     })
 }

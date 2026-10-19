@@ -712,14 +712,30 @@ impl TypesetEngine {
                 budget.host_before_overhead,
             ) - header_overhead
                 - before_last;
-            if let Some(height) = layout_engine.stored_ordinary_row_end_frame(
-                row_geometry_table,
-                row,
-                row_start,
-                &split_end_cut,
-                physical.min(avail_for_rows - before_last),
-                styles,
-            ) {
+            let available = physical.min(avail_for_rows - before_last);
+            let inline_frame = layout_engine
+                .stored_inline_restart_row_end_frame(
+                    row_geometry_table,
+                    row,
+                    row_start,
+                    &split_end_cut,
+                    available,
+                    styles,
+                )
+                .filter(|height| *height >= selected);
+            if let Some(height) = inline_frame.or_else(|| {
+                layout_engine.stored_ordinary_row_end_frame(
+                    row_geometry_table,
+                    row,
+                    row_start,
+                    &split_end_cut,
+                    available,
+                    styles,
+                )
+            }) {
+                if inline_frame.is_some() {
+                    source_frame_band += height - selected;
+                }
                 consumed += height - selected;
                 end_row_height_override = Some(height);
             }

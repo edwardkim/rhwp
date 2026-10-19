@@ -33,16 +33,9 @@ pub(crate) fn select_native_programs(document: &Document, styles: &mut ResolvedS
     }
 }
 
-/// HCI Tulip의 한컴 Type3 /Widths는 숫자 0~9 모두498/1000이다.
-/// 확인하지 않은 글자는 기존 표시 대체 글꼴의 메트릭을 유지한다.
-pub(crate) fn digit_width(face: &str, ch: char, font_size: f64) -> Option<f64> {
-    (face == "HCI Tulip" && ch.is_ascii_digit()).then_some(font_size * 0.498)
-}
-
-pub(crate) fn measurement_face<'a>(declared: &'a str, display: &'a str) -> &'a str {
+pub(crate) fn measurement_face(declared: &str) -> &str {
     match declared {
         HUMAN_HFT_METRIC_FACE => "HumanMyeongJo",
-        "HCI Tulip" => display,
         _ => declared,
     }
 }

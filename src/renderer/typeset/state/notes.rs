@@ -223,7 +223,8 @@ impl TypesetState {
             return false;
         };
         let projected = page.layout.footnote_area.height.max(0.0) + added;
-        bottom + column.zone_y_offset <= page.layout.body_area.height - projected + 0.5
+        bottom.content_bottom + column.zone_y_offset
+            <= page.layout.body_area.height - projected + 0.5
     }
 
     /// 분할 문단의 표시가 든 완료 쪽에 통째 각주를 소급 등록한다.

@@ -43,8 +43,13 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     // Reflow has no saved vertical ladder which could restore omitted spacing.
     // Reserve the same paragraph before-space consumed by the composed paint
     // path; otherwise the next object's shared origin rewinds into prior text.
-    let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
-    let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
+    let flow_spacing = crate::renderer::reflow_spacing::plain_text_spacing(para, para_style, 0);
+    let spacing_before = flow_spacing
+        .map(|s| s.before)
+        .unwrap_or_else(|| para_style.map_or(0.0, |s| s.spacing_before));
+    let spacing_after = flow_spacing
+        .map(|s| s.after)
+        .unwrap_or_else(|| para_style.map_or(0.0, |s| s.spacing_after));
     // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
     // 이전 #866 Stage 2 는 paragraph 위·아래 각 +20px (총 +40px) 을 paragraph 자체 height
     // 에 포함시켰으나, typeset 의 zone 전환 패딩(solo_zone_pad +16px enter +16px leave)
@@ -103,7 +108,11 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         let authored_line_segs = para.line_segs.iter().all(|seg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         });
-        let vpos_metric = if para.controls.is_empty() && authored_line_segs {
+        let vpos_metric = if recomposed.is_none()
+            && para.controls.is_empty()
+            && authored_line_segs
+            && !crate::renderer::para_has_no_stored_line_segs(para)
+        {
             para.line_segs
                 .first()
                 .zip(para.line_segs.last())
@@ -199,8 +208,22 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         let remaining = available - text_width - inline_width;
         (available.is_finite() && available > 0.0 && remaining.is_finite()).then_some(remaining)
     })();
+    let exact_reflow_text_box = flow_spacing.is_some()
+        && !known_square_band
+        && !ctx.uniform_filler_ladder()
+        && composed.is_some_and(|comp| {
+            comp.lines.len() == line_heights.len()
+                && comp.lines.len() == line_spacings.len()
+                && !comp.lines.is_empty()
+                && comp.lines.iter().enumerate().all(|(index, line)| {
+                    line_heights[index] > 0.0
+                        && line_heights[index] == hwpunit_to_px(line.line_height, ctx.dpi())
+                        && line_spacings[index] == hwpunit_to_px(line.line_spacing, ctx.dpi())
+                })
+        });
     FormattedParagraph {
         stored_ladder_is_filler: ctx.uniform_filler_ladder(),
+        exact_reflow_text_box,
         tail_line_remaining_width,
         computed_host_lines,
         square_host_plan: None,
@@ -253,7 +276,7 @@ fn recompose_for_flow(
                     inner,
                     styles,
                     ctx.dpi(),
-                    ctx.profile().legacy_hwp3_stored_geometry(),
+                    ctx.profile().stored_geometry_policy(),
                     crate::renderer::composer::StoredRowMissPolicy::Reflow,
                     &ctx.float_carve_evidence(),
                     known_square_band,
@@ -326,28 +349,9 @@ fn resolve_line_metrics(
                 (cw - effective_margin_l - margin_r).max(0.0)
             })
         };
-        // [Task #1472] 변환본은 미주 수식 effective indent 불변 위해 scale 절반(2.0→1.0).
-        let eq_indent_scale = 2.0
-            * if ctx.profile().hwp3_layout() {
-                0.5
-            } else {
-                1.0
-            };
-        let equation_line_available_width_px = |visual_line_idx: usize| {
-            column_width_px.map(|cw| {
-                let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-                let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
-                let effective_margin_l = crate::renderer::equation_tac_flow::
-                    paragraph_effective_margin_left_with_indent_scale(
-                        margin_l,
-                        indent,
-                        visual_line_idx,
-                        eq_indent_scale,
-                    );
-                (cw - effective_margin_l - margin_r).max(0.0)
-            })
-        };
+        // 해소한 들여쓰기 단위는 본문과 수식 줄이 그대로 공유한다.
+        // 수식 전용이라는 이유로 저장 단위를 다시 곱하지 않는다.
+        let equation_line_available_width_px = line_available_width_px;
         // [#2004] 동일 char_start 에 tac(글자처럼) 그림이 다수 앵커되어 각자 한 줄씩
         // 차지하는 "이미지 스택" 문단: tac_control_indices_for_line 의 char-range 매핑이
         // [start, next_start)=[0,0) 로 비어 중간 줄이 empty_tac_guide_line(0 높이)로 붕괴한다

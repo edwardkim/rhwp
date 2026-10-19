@@ -1,5 +1,6 @@
 mod device_context;
 mod node;
+mod saved_device_context;
 mod ternary_raster_operator;
 mod util;
 
@@ -7,7 +8,7 @@ use crate::wmf::{
     converter::{
         svg::{
             device_context::DeviceContext,
-            node::{Data, Node},
+            node::{share_repeated_bitmaps, Data, Node},
             ternary_raster_operator::{BrushOnlyRopSequence, TernaryRasterOperator},
             util::{as_point_string, url_string, Fill, Stroke},
         },
@@ -19,7 +20,7 @@ use crate::wmf::{
 
 #[derive(Default)]
 pub struct SVGPlayer {
-    context_stack: Vec<DeviceContext>,
+    context_stack: Vec<saved_device_context::SavedDeviceContext>,
     context_current: DeviceContext,
     definitions: Vec<Node>,
     /// [#6469] 브러시 전용 ROP 근사의 짧은 PATINVERT → DPA → PATINVERT 상태.
@@ -114,7 +115,13 @@ impl crate::wmf::converter::Player for SVGPlayer {
 
         let mut document = Node::new("svg")
             .set("xmlns", "http://www.w3.org/2000/svg")
+            .set("width", vb_w_i32)
+            .set("height", vb_h_i32)
             .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));
+
+        // 외곽 계산은 원래 image 좌표를 소비한 뒤 끝낸다. 반복 비트맵의
+        // 바이트만 공유하고 실제 요소의 순서·좌표·클립은 그대로 유지한다.
+        let (definitions, elements) = share_repeated_bitmaps(definitions, elements);
 
         if !definitions.is_empty() {
             let mut defs = Node::new("defs");
@@ -1967,17 +1974,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         record_number: usize,
         record: META_RESTOREDC,
     ) -> Result<Self, PlayError> {
-        let context = if record.n_saved_dc < 0 {
-            self.context_current.clone().into()
-        } else if (record.n_saved_dc as usize) < self.context_stack.len() {
-            self.context_stack.remove(record.n_saved_dc as usize).into()
-        } else {
-            None
-        };
-
-        if let Some(ctx) = context {
-            self.context_current = ctx;
-        }
+        self.restore_playback_context(record.n_saved_dc);
 
         Ok(self)
     }
@@ -1992,7 +1989,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         record_number: usize,
         record: META_SAVEDC,
     ) -> Result<Self, PlayError> {
-        self.context_stack.push(self.context_current.clone());
+        self.save_playback_context();
 
         Ok(self)
     }

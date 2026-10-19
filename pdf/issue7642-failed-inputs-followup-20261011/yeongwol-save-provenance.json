@@ -1,0 +1,20 @@
+{
+  "input": "samples/issue5699/20099369_yeongwol_forms.hwp",
+  "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+  "output": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-hancom-2020.hwpx",
+  "output_sha256": "cb1202dab6f940799703149241c1df7b9f428fac057e291878e842495f5f4460",
+  "output_bytes": 61817,
+  "job_id": "ff7aa867-ef00-4fa2-bb28-8c4e5abb8f7b",
+  "target": "hwpx",
+  "engine": "2020",
+  "purpose": "한컴의 HWP3 저장 줄·테두리 해석 진단. 원본 HWP와 독립 Print 기준을 대체하지 않는다.",
+  "metadata": {
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "input_format": "hwp",
+    "format": "hwpx",
+    "bytes": 61817,
+    "input_preprocess": "none",
+    "logical_page_count": null
+  }
+}

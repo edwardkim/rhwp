@@ -30,8 +30,6 @@ impl LayoutEngine {
             || !matches!(table.page_break, TablePageBreak::RowBreak)
             || cell.row_span != 1
             || cell.dirty_flag
-            || cell.col != 0
-            || cell.col_span != table.col_count
             || Self::row_has_prior_rowspan_cover(table, usize::from(cell.row))
         {
             return None;
@@ -72,9 +70,10 @@ impl LayoutEngine {
         })
     }
 
-    /// 원본 한 줄의 상자가 자식 표 전체와 일치할 때만 그 행 유닛의 합을 돌려준다.
-    /// 같은 원장은 측정과 실제 부분 배치가 소비하므로 선언 높이로 컷을 다시 만들지 않는다.
-    pub(super) fn stored_inline_row_frame_height(
+    /// 각 셀의 원본 한 줄이 소유한 자식 표의 실제 점유 높이를 돌려준다.
+    /// 열 전체를 병합하지 않은 셀도 독립된 호스트 줄을 소유한다.
+    /// 같은 행 유닛의 전진량과 명시적으로 계상한 후행 간격을 구분하며 컷은 다시 만들지 않는다.
+    pub(super) fn stored_inline_row_frame_content_height(
         &self,
         table: &Table,
         cell: &Cell,
@@ -83,11 +82,33 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         let first = units.get(index)?;
-        if !first.page_frame_reset_before || first.nested_row != Some(0) {
+        if !first.page_frame_reset_before || first.nested_row.is_some_and(|row| row != 0) {
             return None;
         }
         let frame = self.stored_inline_owner_frame(table, cell, first.para_idx)?;
         let paragraph = &cell.paragraphs[first.para_idx];
+        if first.nested_row.is_none() {
+            // 분할하지 않는 TAC 표는 같은 원본 한 줄을 단일 유닛으로
+            // 소유한다. 자식 행으로 펼쳤는지와 저장 쪽 재시작은 별개다.
+            // 실제 전진이 호스트 줄 높이+줄간격으로 닫힐 때만 인정한다.
+            if first.vis_start != 0
+                || first.vis_end != 1
+                || first.empty_spacer
+                || first.mixed_nested_fragment
+                || first.mixed_nested_trailing
+                || first.nested_table_fragment.is_some()
+                || units
+                    .get(index + 1)
+                    .is_some_and(|next| next.para_idx == first.para_idx)
+            {
+                return None;
+            }
+            let height = crate::renderer::hwpunit_to_px(frame.line_height_hu, self.dpi);
+            let advance = height
+                + crate::renderer::hwpunit_to_px(paragraph.line_segs[0].line_spacing, self.dpi);
+            return ((first.height - advance).abs() <= crate::renderer::hwpunit_to_px(2, self.dpi))
+                .then_some(height);
+        }
         let group: Vec<_> = units[index..]
             .iter()
             .take_while(|unit| unit.para_idx == first.para_idx && unit.nested_row.is_some())
@@ -101,15 +122,25 @@ impl LayoutEngine {
             return None;
         }
         let height: f64 = group.iter().map(|unit| unit.height).sum();
+        // 이 플래그는 다음 저장 줄이 호스트 높이+줄간격에서 시작한다는
+        // 원본 등식으로 계상한 간격이다. 다음 흐름의 전진 공간을 자식 표의
+        // 잉크 높이로 비교하면 온전한 한 줄도 저장 상자를 넘었다고 오판한다.
+        let trailing = group
+            .last()
+            .filter(|unit| unit.host_trailing_spacing_charged)
+            .map_or(0.0, |_| {
+                crate::renderer::hwpunit_to_px(paragraph.line_segs[0].line_spacing.max(0), self.dpi)
+            });
+        let content_height = height - trailing;
         let spacing = styles
             .para_styles
             .get(paragraph.para_shape_id as usize)
             .map_or(0.0, |style| style.spacing_before + style.spacing_after);
         let stored_height = crate::renderer::hwpunit_to_px(frame.line_height_hu, self.dpi);
-        (height.is_finite()
-            && height > 0.0
-            && height <= stored_height + spacing + super::ROW_CUT_CAPACITY_FP_EPSILON_PX)
-            .then_some(height)
+        (content_height.is_finite()
+            && content_height > 0.0
+            && content_height <= stored_height + spacing + super::ROW_CUT_CAPACITY_FP_EPSILON_PX)
+            .then_some(content_height)
     }
 
     /// 조각 첫 유닛이 소유하며 측정에 포함된 원본 표 호스트의 앞 간격이다.
@@ -158,5 +189,66 @@ impl LayoutEngine {
             return None;
         }
         Some((first.para_idx, before))
+    }
+
+    /// 다음 저장 쪽의 TAC를 소비하지 않아도 현재 쪽의 행 상자는 본문 끝을 소유한다.
+    /// 내용 컷과 빈 물리 띠를 분리하며, 원점0 재시작·닫힌 원본 호스트를 함께 확인한다.
+    pub(crate) fn stored_inline_restart_row_end_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        start: &[usize],
+        end: &[usize],
+        available: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if !start.is_empty()
+            || !available.is_finite()
+            || !self.stored_row_boxes_exceed_first_frame(table)
+        {
+            return None;
+        }
+        let cells = Self::row_cut_cell_order(table, row);
+        if cells.is_empty() || cells.len() != end.len() {
+            return None;
+        }
+        let mut owns_restart = false;
+        let mut declared = 0.0_f64;
+        for (&index, &cut) in cells.iter().zip(end) {
+            let cell = table.cells.get(index)?;
+            if cell.row_span != 1 || cell.height > i32::MAX as u32 || cell.dirty_flag {
+                return None;
+            }
+            declared = declared.max(crate::renderer::hwpunit_to_px(cell.height as i32, self.dpi));
+            let units = self.cell_units(cell, table, styles);
+            if cut > units.len() {
+                return None;
+            }
+            if cut == units.len() {
+                continue;
+            }
+            let next = units.get(cut)?;
+            let before = units.get(cut.checked_sub(1)?)?;
+            if !next.hard_break_before
+                || !next.page_frame_reset_before
+                || next.nested_row.is_some_and(|row| row != 0)
+                || next.vis_start != 0
+                || before.para_idx == next.para_idx
+            {
+                return None;
+            }
+            let frame = self.stored_inline_owner_frame(table, cell, next.para_idx)?;
+            if frame.line_top_hu != 0 {
+                return None;
+            }
+            // 같은 유닛의 실제 자식 행·후행 간격을 소유 호스트 상자와 대조한다.
+            self.stored_inline_row_frame_content_height(table, cell, &units, cut, styles)?;
+            owns_restart = true;
+        }
+        let content = self.row_cut_content_height(table, row, start, end, styles);
+        (owns_restart
+            && available > content + crate::renderer::hwpunit_to_px(2, self.dpi)
+            && available < declared)
+            .then_some(available)
     }
 }

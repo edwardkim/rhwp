@@ -405,6 +405,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         "Preview/PrvImage.png",
         crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
         crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
+        crate::model::document::HWP3_EXTERNAL_REALIGN_HWPX_PATH,
     ];
     let mut hwpx_aux_entries: Vec<(String, Vec<u8>)> = Vec::new();
     for path in HWPX_AUX_PATHS {
@@ -543,6 +544,21 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             loaded_section_count
         );
     }
+    let hwp3_page_ownership = (!has_hwp5_origin)
+        .then(|| {
+            hwpx_aux_entries.iter().find_map(|(path, bytes)| {
+                (path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
+                    .then(|| {
+                        crate::model::hwp3_page_ownership::PageOwnership::decode(
+                            bytes,
+                            header_xml.as_bytes(),
+                            loaded_section_count,
+                        )
+                    })
+                    .flatten()
+            })
+        })
+        .flatten();
     let mut sections = Vec::new();
     for (section_idx, section_href) in package_info
         .section_files
@@ -551,10 +567,13 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .enumerate()
     {
         let section_xml = reader.read_file(section_href)?;
+        let stored_xml_digest = hwp3_page_ownership
+            .as_ref()
+            .map(|_| crate::model::hwp3_page_ownership::digest(section_xml.as_bytes()));
         let section_xml = canonicalize_bin_item_refs(&section_xml, &package_info.bin_data_items);
-        let section_xml = tracking_visibility
-            .project(&section_xml)?
-            .unwrap_or(section_xml);
+        let projected_xml = tracking_visibility.project(&section_xml)?;
+        let can_restore_page_ownership = projected_xml.is_none();
+        let section_xml = projected_xml.unwrap_or(section_xml);
         let master_page_refs = match section::collect_hwpx_section_master_page_refs(&section_xml) {
             Ok(refs) => refs,
             Err(e) => {
@@ -564,6 +583,13 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         };
         match section::parse_hwpx_section(&section_xml) {
             Ok(mut section) => {
+                if can_restore_page_ownership {
+                    if let (Some(ownership), Some(xml_digest)) =
+                        (&hwp3_page_ownership, &stored_xml_digest)
+                    {
+                        ownership.restore_section(section_idx, xml_digest, &mut section);
+                    }
+                }
                 let (master_page_hrefs, missing_master_page_refs) =
                     resolve_master_page_hrefs(&master_page_refs, &package_info.master_page_items);
                 for missing_ref in missing_master_page_refs {
