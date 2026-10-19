@@ -3953,9 +3953,9 @@ fn path_bbox(commands: &[PathCommand]) -> (f64, f64, f64, f64) {
 /// HY견명조 `4.34/217`. `font-weight="bold"` 만 넘기면 굵히는 양이 받는 쪽
 /// 몫이라 Chromium 은 이보다 굵게 만든다(#7151).
 ///
-/// 메트릭 DB 에 Bold 항목이 있는 face 는 배치 advance 도 Bold 메트릭으로
-/// 잡았으므로 종전대로 그 face 를 요청한다. DB 에 없는 face 는 어느 쪽인지
-/// 알 근거가 없어 건드리지 않는다.
+/// 메트릭 DB 에 Bold 항목이 있는 face 는 실제 Bold 면이 있으므로 종전대로 그
+/// face 를 요청한다(배치 advance 는 #8079 에 따라 같은 family 보통 면 값).
+/// DB 에 없는 face 는 어느 쪽인지 알 근거가 없어 건드리지 않는다.
 fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Option<f64> {
     /// 한/글 2022 PDF 실측 — `w / Tf`.
     const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
