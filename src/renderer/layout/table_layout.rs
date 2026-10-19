@@ -3640,6 +3640,7 @@ impl LayoutEngine {
             && table.row_count == 1
             && table.col_count == 1
             && table.cells.len() == 1
+            && !wrapper_cell_viewport::owns_paint_or_horizontal_frame(table, styles)
         {
             let cell = &table.cells[0];
             if cell.paragraphs.len() == 1 {
