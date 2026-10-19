@@ -21,12 +21,26 @@ fn find<'a>(node: &'a RenderNode, text: &str) -> Option<&'a TextRunNode> {
 }
 
 fn positions(face: &str, text: &str, size: i32, spacing: i8, bold: bool, italic: bool) -> Vec<f64> {
+    let alt_type = if face == "HCI Poppy" { 2 } else { 1 };
+    positions_as(face, alt_type, text, size, spacing, bold, italic)
+}
+
+/// `alt_type` — 선언 face 종류(1 TrueType · 2 HFT).
+fn positions_as(
+    face: &str,
+    alt_type: u8,
+    text: &str,
+    size: i32,
+    spacing: i8,
+    bold: bool,
+    italic: bool,
+) -> Vec<f64> {
     let mut document = Document::default();
     document.doc_properties.section_count = 1;
     document.doc_info.font_faces = vec![
         vec![Font {
             name: face.to_owned(),
-            alt_type: if face == "HCI Poppy" { 2 } else { 1 },
+            alt_type,
             ..Default::default()
         }];
         7
@@ -109,7 +123,9 @@ fn hci_poppy_unmeasured_ascii_and_unverified_styles_keep_the_display_metric() {
         );
         for (bold, italic) in [(true, false), (false, true), (true, true)] {
             let source = positions("HCI Poppy", "O/O", size, 0, bold, italic);
-            let display = positions("Palatino Linotype", "O/O", size, 0, bold, italic);
+            // [#8079] TrueType 로 선언된 굵은 글자는 보통 면 전진폭을 쓰므로, 표시 face 경로는
+            // 같은 선언 종류(HFT)로 비교한다 — 원본 Type3 표를 쓰는지만 가른다.
+            let display = positions_as("Palatino Linotype", 2, "O/O", size, 0, bold, italic);
             assert_eq!(
                 source, display,
                 "확인하지 않은 style은 기존 표시 face 경로 유지"
