@@ -1303,12 +1303,18 @@ impl TypesetEngine {
         // (21761835 3쪽: 그 몫을 넘기면 첫 행들이 한/글보다 커진다).
         // 내용 컷으로 끝난 행(`split_end_limit > 0`)은 다음 조각이 같은 행을 잇는 상자라 이 선을 쓰지
         // 않는다(1342000 202·203쪽: 줄이면 다음 쪽 시작 줄이 한 줄 당겨진다). 통째로 받은 끝 행만 닫는다.
-        let unreserved_page_end_band = (ledger_page_end_band
-            - hwpunit_to_px(
-                crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
-                self.dpi,
-            ))
-        .max(0.0);
+        let unreserved_page_end_band = if budget.reflow_frame_avail_for_rows.is_some() {
+            // 공통 물리 하단 생산자가 이미 바깥 여백과 inset을 차감했다.
+            // 같은 하단을 예약과 paint가 소비하며 여기서 다시 접지 않는다.
+            ledger_page_end_band
+        } else {
+            (ledger_page_end_band
+                - hwpunit_to_px(
+                    crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                    self.dpi,
+                ))
+            .max(0.0)
+        };
         let mut ledger_end_row_trim = 0.0;
         // 내용 컷을 넘는 셀과 뒤 행까지 이어지는 물리 걸침은 다르다.
         // 같은 공통 경계에 빈 컷을 질의하면 내용 컷 없이도 뒤 행이 남는지 알 수 있다.
@@ -1941,7 +1947,7 @@ impl TypesetEngine {
                     .map_or(opening, |(_, height)| height);
                 let accepted = if carried.is_some() { opening } else { total_accepted };
                 let remaining = layout_engine.stored_ordinary_row_remainder(
-                    table, row, &next_cut, (accepted, total_accepted), carried, styles,
+                    table, row, &next_cut, accepted, carried, styles,
                 )?;
                 (!layout_engine.stored_complete_row_tail_is_line_advance(
                     table, row, &next_cut, remaining, styles,

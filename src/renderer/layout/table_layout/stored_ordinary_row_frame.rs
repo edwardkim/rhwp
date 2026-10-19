@@ -197,7 +197,9 @@ impl LayoutEngine {
             .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
             .fold(0.0, f64::max);
         let content = self.stored_ordinary_row_cut_height(table, row, start, end, styles)?;
-        (available.is_finite() && available >= content && available < full).then_some(available)
+        // 내용이 든 첫 조각은 원본 최소가 들어가면 그 높이에서 닫는다.
+        // 남은 쪽 공간이 선언보다 큰 경우에도 내용 높이로만 축소하지 않는다.
+        (available.is_finite() && available >= content).then_some(full.min(available).max(content))
     }
 
     /// 같은 원본 또는 이어받은 상자에서 이미 수용한 공간을 한 번만 차감한다.
@@ -206,7 +208,7 @@ impl LayoutEngine {
         table: &Table,
         row: usize,
         cut: &[usize],
-        accepted: (f64, f64),
+        accepted: f64,
         carried: Option<f64>,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
@@ -219,16 +221,16 @@ impl LayoutEngine {
         {
             return None;
         }
-        let (accepted, total_accepted) = accepted;
+        if let Some(height) = self.stored_ordinary_closing_text_frame(table, row, cut, styles) {
+            // 독립 저장 마지막 프레임은 그 원점과 줄 끝으로 닫는다.
+            // 전체 선언에는 앞 쪽에서 접힌 전진 간격도 들어갈 수 있으므로
+            // 선언 잔여로 이 프레임을 다시 늘리지 않는다.
+            return Some(height);
+        }
         let declared = cells
             .iter()
             .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
             .fold(0.0, f64::max);
-        if let Some(height) = self.stored_ordinary_closing_text_frame(table, row, cut, styles) {
-            // 저장 마지막 줄 끝은 내용 하한이다. 원본 선언에서 실제 수용한
-            // 모든 앞 조각을 뺀 빈 최소 공간도 같은 마지막 상자가 소유한다.
-            return Some(height.max(declared - total_accepted));
-        }
         // 같은 행을 다시 나누면 이전 조각까지 차감한 커서의 물리 잔여를 쓴다.
         // 원본 전체 높이로 돌아가 이미 소비한 공간을 다시 예약하지 않는다.
         let full = carried.unwrap_or(declared);
