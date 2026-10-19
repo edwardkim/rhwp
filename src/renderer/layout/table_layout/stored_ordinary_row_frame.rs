@@ -221,23 +221,36 @@ impl LayoutEngine {
         {
             return None;
         }
-        if let Some(height) = self.stored_ordinary_closing_text_frame(table, row, cut, styles) {
-            // 독립 저장 마지막 프레임은 그 원점과 줄 끝으로 닫는다.
-            // 전체 선언에는 앞 쪽에서 접힌 전진 간격도 들어갈 수 있으므로
-            // 선언 잔여로 이 프레임을 다시 늘리지 않는다.
-            return Some(height);
-        }
         let declared = cells
             .iter()
             .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
             .fold(0.0, f64::max);
-        // 같은 행을 다시 나누면 이전 조각까지 차감한 커서의 물리 잔여를 쓴다.
-        // 원본 전체 높이로 돌아가 이미 소비한 공간을 다시 예약하지 않는다.
-        let full = carried.unwrap_or(declared);
         let end: Vec<_> = cells
             .iter()
             .map(|cell| self.cell_units(cell, table, styles).len())
             .collect();
+        if let Some(height) = self.stored_ordinary_closing_text_frame(table, row, cut, styles) {
+            // 내용 때문에 자란 행의 선언값에는 앞 쪽에서 접힌 전진 간격도
+            // 들어갈 수 있다. 그 합으로 독립 마지막 프레임을 다시 늘리지 않는다.
+            // 반대로 선언 최소가 전체 내용보다 큰 행은 내용 밖의 빈 공간도
+            // 소유한다. 같은 행의 수용 장부에서 그 최소의 잔여를 이어받는다.
+            let content = self.row_cut_content_height(table, row, &[], &end, styles);
+            let minimum = if declared > content {
+                (carried.unwrap_or(declared) - accepted).max(0.0)
+            } else {
+                0.0
+            };
+            #[cfg(not(target_arch = "wasm32"))]
+            if std::env::var_os("RHWP_DIAG_ROW_TAIL").is_some() {
+                eprintln!(
+                    "DIAG_ROW_TAIL stored row={row} declared={declared:.6} content={content:.6} frame={height:.6} accepted={accepted:.6} carried={carried:?} minimum={minimum:.6} cut={cut:?}"
+                );
+            }
+            return Some(height.max(minimum));
+        }
+        // 같은 행을 다시 나누면 이전 조각까지 차감한 커서의 물리 잔여를 쓴다.
+        // 원본 전체 높이로 돌아가 이미 소비한 공간을 다시 예약하지 않는다.
+        let full = carried.unwrap_or(declared);
         let content = self.stored_ordinary_row_cut_height(table, row, cut, &end, styles)?;
         (accepted > 0.0 && accepted < full).then_some((full - accepted).max(content))
     }
