@@ -117,12 +117,54 @@ impl TypesetEngine {
                         })
                 })
         };
+        // 저장 줄 없는 빈 문단이 비-TAC 어울림 그림·도형만 앵커한 칸은 cell_units 가
+        // 400HU 자리 줄·개체 높이(오프셋 제외)·뒤 줄을 세로로 쌓는다. 측정과 그리기는
+        // 같은 칸을 `max(글줄, 개체 바닥)` 으로 잰다(height_measurer 의 wrap_bottom).
+        // 온전한 행 높이를 쌓기 값으로 예약하면 표 뒤 흐름이 그 차이만큼 내려간다.
+        // 저장 줄 없는 빈 host 의 2행 이하 작은 표로 한정한다 — 본문 표의 그림 칸은
+        // 쌓기 높이가 한/글 행 높이와 맞는다.
+        // 칸 안에서 앵커 문단 뒤에 다른 문단이 이어질 때만 그 뒤 줄이 개체 옆에 놓여
+        // 쌓기가 과대해진다. 앵커 문단 하나뿐인 그림 앵커 칸은 쌓기 예약을 유지한다 —
+        // 줄이면 다음 작은 표의 머리행이 쪽 끝에 홀로 남는다.
+        let unstored_stamp_table = !row_geometry_table.common.treat_as_char
+            && row_geometry_table.row_count <= 2
+            && crate::renderer::para_has_no_stored_line_segs(para)
+            && para.text.trim().is_empty();
+        let row_has_unstored_square_object_anchor = |row: usize| {
+            unstored_stamp_table
+                && layout_engine
+                    .cells_starting_on_row(row_geometry_table, row)
+                    .any(|cell| {
+                        cell.row as usize == row
+                            && cell.row_span == 1
+                            && cell.paragraphs.split_last().is_some_and(|(_, anchors)| {
+                                anchors.iter().any(|cell_para| {
+                                    crate::renderer::para_has_no_stored_line_segs(cell_para)
+                                        && cell_para.text.trim().is_empty()
+                                        && cell_para.controls.iter().any(|control| {
+                                            let common = match control {
+                                                Control::Picture(pic) => &pic.common,
+                                                Control::Shape(shape) => shape.common(),
+                                                _ => return false,
+                                            };
+                                            !common.treat_as_char
+                                                && matches!(
+                                                    common.text_wrap,
+                                                    crate::model::shape::TextWrap::Square
+                                                )
+                                        })
+                                })
+                            })
+                    })
+        };
         let cut_row_h: Vec<f64> = (0..row_count)
             .map(|r| {
                 let has_single_row_cells = layout_engine
                     .cells_starting_on_row(row_geometry_table, r)
                     .any(|c| c.row_span == 1);
-                let row_cut_h = if row_has_stored_square_picture_flow(r) {
+                let row_cut_h = if row_has_stored_square_picture_flow(r)
+                    || row_has_unstored_square_object_anchor(r)
+                {
                     // native HWP5 RowBreak stores the adjacent text LINE_SEG ladder as
                     // the authoritative row height. Recomputing this whole row from
                     // cell_units would add the same Square flow band again.
