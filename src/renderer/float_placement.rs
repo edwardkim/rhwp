@@ -90,9 +90,7 @@ pub(crate) fn stored_plain_closed_cell_ink_height(
     cell: &crate::model::table::Cell,
     table: &Table,
 ) -> Option<i32> {
-    // 앞 띠가 있는 원본도 마지막 줄과 유효 안 여백이 선언 상자를 닫으면
-    // 같은 물리 프레임이다. 아래 닫힘 인증 없이 다른 소비자의 원점 계약을 넓히지 않는다.
-    let ink_end = stored_plain_cell_ink_end(cell, false)?;
+    let ink_end = stored_plain_cell_ink_height(cell)?;
     let padding = cell.effective_vertical_padding_hu(&table.padding);
     ((i64::from(ink_end) + i64::from(padding) - i64::from(cell.height)).abs() <= 1)
         .then_some(ink_end)
@@ -101,13 +99,6 @@ pub(crate) fn stored_plain_closed_cell_ink_height(
 /// Complete original line boxes, including intentional empty lines, in one
 /// natural cell frame. Its last advance does not enlarge the closing ink box.
 pub(crate) fn stored_plain_cell_ink_height(cell: &crate::model::table::Cell) -> Option<i32> {
-    stored_plain_cell_ink_end(cell, true)
-}
-
-fn stored_plain_cell_ink_end(
-    cell: &crate::model::table::Cell,
-    require_zero_start: bool,
-) -> Option<i32> {
     use crate::model::paragraph::LineSeg;
     if cell.dirty_flag || cell.text_direction != 0 || cell.height >= 0x8000_0000 {
         return None;
@@ -128,7 +119,7 @@ fn stored_plain_cell_ink_end(
                 || line.line_height <= 0
                 || line.line_spacing < 0
                 || line.vertical_pos < ink_end
-                || (first && require_zero_start && line.vertical_pos != 0)
+                || (first && line.vertical_pos != 0)
             {
                 return None;
             }
