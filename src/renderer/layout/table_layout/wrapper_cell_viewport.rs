@@ -26,7 +26,7 @@ pub(super) fn owns_paint_or_horizontal_frame(table: &Table, styles: &ResolvedSty
     if has_fill(table.border_fill_id)
         || has_fill(cell.border_fill_id)
         || table
-            .cell_zones
+            .zones
             .iter()
             .any(|zone| has_fill(zone.border_fill_id))
     {
