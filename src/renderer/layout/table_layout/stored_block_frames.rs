@@ -27,9 +27,14 @@ impl LayoutEngine {
         cells.sort_by_key(|cell| (cell.row, cell.col));
         if cells.is_empty()
             || end_cut.len() != cells.len()
-            || cells
-                .iter()
-                .any(|cell| !self.stored_body_text_cell_frame(table, cell))
+            || cells.iter().zip(end_cut).any(|(cell, &end)| {
+                if cell.row_span > 1 {
+                    let units = self.cell_units(cell, table, styles);
+                    !self.stored_body_text_cut_frame(table, cell, &units, end)
+                } else {
+                    !self.stored_body_text_cell_frame(table, cell)
+                }
+            })
             || !cells.iter().zip(end_cut).any(|(cell, &unit)| {
                 cell.row_span > 1
                     && unit > 0
