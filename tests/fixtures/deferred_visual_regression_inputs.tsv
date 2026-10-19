@@ -13,3 +13,4 @@ samples/table_text_anchor_wrap.hwpx	text_overlap,oracle,render_page	7792
 samples/task2287/1342000_edu_curriculum_map.hwp	body,oracle,render_page	7743
 samples/issue5807/coanchored_float_tac_order.hwp	oracle	7821
 samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	text_overlap,off_canvas	7749
+samples/issue7840/156465345_footer_tac_logos.hwp	text_overlap	8095
