@@ -279,25 +279,8 @@ impl LayoutEngine {
                     let frame = super::row_block_cut::CellCutFrame::new(
                         self, cell, table, styles, &units, fit,
                     );
-                    let relaxed_hard_break = self.row_block_relaxes_stored_hard_break(
-                        table,
-                        &Self::row_block_cells(table, start_row, end_row),
-                    );
                     let mut advance = 0.0;
                     while fit < units.len() {
-                        // 원본 프레임의 다음 유닛은 남은 잉크 예산으로 앞당겨 소비하지 않는다.
-                        // 일반 블록 컷이 쓰는 같은 유닛의 소유 경계를 실제 걸침 컷도 소비한다.
-                        if self.stored_span_cut_preserves_line_slots(table, cell)
-                            && !units[fit].reflowed_line_slot
-                            && frame.honors_hard_break_before(
-                                fit,
-                                advance,
-                                accepted_height,
-                                relaxed_hard_break,
-                            )
-                        {
-                            break;
-                        }
                         let next = advance + units[fit].height;
                         if frame.fitting_height(fit + 1, next) > accepted_height + 0.1 {
                             break;
@@ -428,7 +411,13 @@ impl LayoutEngine {
         if self.stored_span_cut_preserves_line_slots(table, cell) && !unit.reflowed_line_slot {
             // 원본 문단 내부에서는 저장 되감김의 trim도 한 줄 슬롯을 대신할 수 없다.
             // 문단을 온전히 닫았을 때만 다음 문단으로 가는 전진을 분리한다.
-            if unit.para_idx == units[end].para_idx {
+            if unit.para_idx == units[end].para_idx
+                || units[start + 1..end]
+                    .iter()
+                    .any(|owned| owned.hard_break_before && !owned.reflowed_line_slot)
+            {
+                // 이미 수용한 저장 프레임 경계를 마지막 문단의 간격으로 접지 않는다.
+                // 경계 자체에서 시작한 컷은 한 프레임 안의 정상 종료 계약을 따른다.
                 0.0
             } else {
                 self.row_cut_capacity_trailing_trim(table, cell, units, start, end, styles)
