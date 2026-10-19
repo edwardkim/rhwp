@@ -3513,3 +3513,54 @@ compile0·run101로 위 높이 관계에서 의도대로 실패했다. 새134200
 시각 선행 조건을 위한 진단이다. 후보114에서 먼저243쪽과 기존145쪽 개선·32/33·61쪽을
 대조한 뒤 하락이 없을 때 전쪽 Native/fresh WASM과 집중 회귀로 확대한다. 아직 수정 후
 결과는 없으며, 전체11PR·최종 필수 검증 및 승인 후 PR 생성 경계를 유지한다.
+
+### 후보114 완료 결과와 다음 리베이스의 출처 기록
+
+리베이스 전 제품 head `8385cbdc52bb5dd57ce583b1ddad6ce0daff6d07`의 Native 진단
+opt1 빌드는3분47초 exit0, fresh WASM opt3 빌드는4분58초 exit0이었다. 공용
+target/pr-review·jobs8을 사용했고 CLI SHA-256은
+`3e44e38b807d1d38bcdf4549ff8cc88fdba8e0a1149a47b153d343d62c982eef`, WASM은
+`695d8022ebd8d56f5df00e58d2c8b6267e5001faa02cb10a29482a12397a6b56`다.
+
+243쪽의 같은 ignored Print 진단은 후보113 compile0/run101에서 후보114 compile0/run0으로
+바뀌었다. 행123/127 높이가37.093333/38.36px에서37.093333/37.093333px로 맞아졌고,
+행122의43.493333px 요구를 유지하며 후속128행 원점은355.466667→354.2px로 복구했다.
+원본415쪽·행122–128의 내용/소속·후속 경계도 통과했다.145쪽 진단도 run0으로
+37.32px 종료 상자·두 문단의144/145쪽 소속·다음 제목146쪽을 유지했다.
+기존 마커10건·완료 페이지 실제 case source8건도 통과했다. 정식 Cargo 집중 검사는
+9개 모듈·8개 binary의38건 PASS·exit0이며 빌드 포함276.21초·검사5.197초다.
+head 불변·tracked clean을 확인했고 전체 Rust 검증으로 확대 해석하지 않는다.
+
+Native/fresh WASM 각각 전572쪽을 새로 산출하고 입력/Print/producer·쪽수·쪽 ID와
+조건9개를 후보111에 대조했다.80168 전157쪽은 양쪽 동일하고 최저 raw는 Native21쪽
+94.73551%, WASM21쪽94.95563%, 미달0쪽이다.1342000은 양쪽415쪽·Print415쪽이며
+최저27쪽64.95642/65.34385%,90% 미달24쪽으로 같았다.145쪽은 Native91.99881→
+99.98991%, WASM91.92945→99.99424%로 개선됐다.243쪽은99.99649/99.99725%로
+복구됐고 후보111보다 양쪽+0.00001%p다.359쪽도 양쪽+0.00001%p이며 나머지는
+동일하다. **양쪽 하락0쪽**이지만 이것은 내부 후보 비교이며 새 devel 기준의 증거가 아니다.
+Native review와 Native/fresh WASM overlay를 원본 해상도로 직접 열어243쪽의 뒤
+경계와145쪽의 종료 상자를 확인했다. 작은 획·괘선 차이는 남는다.
+
+build·집중 회귀·전쪽의 signal 기록은 모두 start/exit만 있고 SIGTERM은 없었다.
+전쪽 driver exit1은 기존24쪽 gate 미달이며 중단이 아니다. 후보114에서 새1342000
+정식 회귀는 추가하지 않았다. 최종 opt3·전체 Rust·lint·Skia·Studio·Windows와
+원래11PR의 전체 검증 범위는 남아 있고, 원격 push/PR/merge는 미실행이다.
+
+증거는 ignored `output/pr-review/planet6897-20261018/`의 `candidate114-*-build-results.json`,
+`candidate114-{native,wasm}-all-pages/{merged-80168,curriculum-1342000}/silhouette.tsv`,
+`candidate114-vs-candidate111-*-verified-comparison.json`, `candidate114-focused-results.json`,
+`candidate114-p243-closing-row-physical-plan-results.json`,
+`candidate114-p144-p145-print-physical-tail-results.json`,
+`candidate114-full-native-overlay-results.json`, `candidate114-list-item-wasm-overlay-results.json`다.
+
+미달27쪽의 기존 원본 대조는 Center 셀·앞 간격0의 첫 문단과 약6.7px의 글줄 차이를
+확인했다. Print 상하 획 중심134.168009/714.656006px와 현재 내용 높이567.76px를
+연결한 자료는 `candidate114-p027-{line-origins-diagnostic,independent-print-rules}.json`,
+`candidate114-p027-source-frame-and-alignment-results.json`에 보존했다. 물리 프레임과
+정렬의 관계는 다음 보정 가설이며 아직 수정/완료로 판정하지 않는다.
+
+2026-10-19의 사용자 리베이스 요청에 따라 fetch한 upstream/devel은224a32606에서
+`4a07d3ae4dd3255a57fb0166b2b2a2dc335a61fa`로 바뀌었다. 새1029 commit은 first-parent
+PR #8064/#8069로 들어왔고 source·font/수식·조판·검증 지침도 바뀌었다. 이 절의 결과는
+**리베이스 전 출처**로 보존하며 새 head의 통과 결과로 재사용하지 않는다. 복구 참조와
+전후 mapping을 남겨 리베이스한 뒤, 새 지침·base의 기능과 현재 작업을 함께 검증한다.
