@@ -69,23 +69,23 @@ pub struct EqParser {
     /// 매 호출당 O(n) 전방 스캔을 O(1) 조회로 바꿔, 괄호가 많은/깊은 입력에서의
     /// O(n^2) 행(hang)을 없앤다. LParen 이 아니거나 짝이 없으면 `tokens.len()`.
     paren_match: Vec<usize>,
-    /// [#7873] `rm`/`it` 가 켠 라틴 글꼴 상태. 한/글 2020 Print 실측: 두 명령은 다음
-    /// 원소 하나가 아니라 그 지점부터 수식 끝까지의 상태 전환이며 `{}`·분수·첨자·
-    /// `LEFT…RIGHT`·`sqrt` 경계를 넘어 지속된다(`{rm a} b`·`{rm a} over {b} c`·
-    /// `a rm b^{c} d`·`rm a LEFT ( b RIGHT ) c` 가 모두 로만체, `rm a it b c` 는 `b c`
-    /// 이탤릭). 글자 식별자가 `Text` 로 만들어질 때 이 상태로 감싼다. `bold` 는 다음
-    /// 원소 하나에만 적용되고(`bold a b` 는 `a` 만 굵게) 그리스 문자는 영향받지 않는다.
-    font_state: Option<FontStyleKind>,
-    /// [#7873] `parse_element` 가 마지막으로 완성한 원소의 (시작 토큰 위치, 그 직전의
-    /// `font_state`). 분수 결합이 분모를 먼저 평가하는 한/글 순서를 재현할 때 분자를
-    /// 다시 읽기 위해 쓴다. 중위 결합이 만든 분수가 마지막 자식이면 `None`.
-    last_element: Option<(usize, Option<FontStyleKind>)>,
     document_terms: bool,
     term_limit: usize,
     /// 독립 Print의 명령형 첨자 오류는 중첩 그룹/행을 포함한 수식 전체에 적용된다.
     invalid_document_script: bool,
     /// 잘못된 구조 인자 뒤 입력만 중단한다. 이미 읽은 앞 항은 유지한다.
     stopped_document_input: bool,
+    /// [#7873] `rm`/`it` 가 켠 라틴 글꼴 상태. 한/글 2020·2024 Print 실측: 두 명령은 다음
+    /// 원소 하나가 아니라 그 지점부터 수식 끝까지의 상태 전환이며 `{}`·분수·첨자·
+    /// `LEFT…RIGHT`·`sqrt` 경계를 넘어 지속된다(`{rm a} b`·`{rm a} over {b} c`·
+    /// `a rm b^{c} d`·`rm a LEFT ( b RIGHT ) c` 가 모두 로만체, `rm a it b c` 는 `b c`
+    /// 이탤릭). 글자 식별자가 만들어질 때 이 상태로 감싼다(`styled_literal`). `bold` 는
+    /// 다음 원소 하나에만 적용되고 그리스 문자는 영향받지 않는다.
+    font_state: Option<FontStyleKind>,
+    /// [#7873] `parse_element` 가 마지막으로 완성한 원소의 (시작 토큰 위치, 그 직전의
+    /// `font_state`). 분수 결합이 분모를 먼저 평가하는 한/글 순서를 재현할 때 분자를
+    /// 다시 읽기 위해 쓴다. 중위 결합이 만든 분수가 마지막 자식이면 `None`.
+    last_element: Option<(usize, Option<FontStyleKind>)>,
 }
 
 impl EqParser {
@@ -98,12 +98,27 @@ impl EqParser {
             pos: 0,
             depth: 0,
             paren_match,
-            font_state: None,
-            last_element: None,
             document_terms: false,
             term_limit,
             invalid_document_script: false,
             stopped_document_input: false,
+            font_state: None,
+            last_element: None,
+        }
+    }
+
+    /// [#7873] 글자 식별자 노드에 글꼴을 적용한다. 문서 백슬래시 문자 전환
+    /// (`roman_literal`)이 우선하고, 그 밖에는 현재 `rm`/`it` 상태로 감싼다.
+    fn styled_literal(&self, node: EqNode, roman_literal: bool) -> EqNode {
+        if roman_literal {
+            return atoms::literal_font(node, true);
+        }
+        match self.font_state {
+            Some(style) => EqNode::FontStyle {
+                style,
+                body: Box::new(node),
+            },
+            None => node,
         }
     }
 
@@ -111,18 +126,6 @@ impl EqParser {
         Self {
             document_terms: true,
             ..Self::new(tokens)
-        }
-    }
-
-    /// [#7873] 글자 식별자 노드에 현재 `rm`/`it` 상태를 적용한다.
-    fn styled_text(&self, text: String) -> EqNode {
-        let node = EqNode::Text(text);
-        match self.font_state.filter(|_| !self.document_terms) {
-            Some(style) => EqNode::FontStyle {
-                style,
-                body: Box::new(node),
-            },
-            None => node,
         }
     }
 
@@ -268,16 +271,13 @@ impl EqParser {
         *over_run += 1;
         self.pos += 1;
         let mut top = children.pop().unwrap_or(EqNode::Empty);
-        // [#7873] 한/글 2020 Print 실측(`a over {rm b} c` → a·c 로만체, `{rm a} over {b} c`
+        // [#7873] 한/글 Print 실측(`a over {rm b} c` → a·b·c 로만체, `{rm a} over {b} c`
         // → b 만 이탤릭): 분수는 **분모를 먼저** 평가하고 그 뒤 분자, 그 뒤 후속 원소
         // 순으로 `rm`/`it` 상태를 잇는다. 분모는 분자 직전 상태에서 읽고, 분자가 상태를
         // 바꾸지 않았는데 분모가 바꿨으면 분자를 분모 뒤 상태로 다시 읽는다. 분자가
         // 중위 결합의 산물(연쇄 분수)이면 다시 읽지 않는다.
-        if self.document_terms {
-            self.last_element = None;
-        }
         let numer = self.last_element.take();
-        let state_before_numer = numer.map_or(self.font_state, |(_, s)| s);
+        let state_before_numer = numer.map_or(self.font_state, |(_, state)| state);
         let state_after_numer = self.font_state;
         self.font_state = state_before_numer;
         let bottom = self.parse_element();
@@ -288,11 +288,12 @@ impl EqParser {
                 let after_denom = self.pos;
                 self.pos = start;
                 let reread = self.parse_element();
-                // 같은 토큰을 같은 규칙으로 읽었으므로 OVER/ATOP 토큰 앞에서 멈춰야 한다.
-                let stopped_at_over = self.current_type() == TokenType::Command
-                    && (Self::cmd_eq(self.current_value(), "OVER")
-                        || Self::cmd_eq(self.current_value(), "ATOP"));
-                if stopped_at_over {
+                // 같은 토큰을 같은 규칙으로 읽었으므로 OVER/ATOP/CHOOSE 앞에서 멈춰야 한다.
+                let stopped_at_infix = self.current_type() == TokenType::Command
+                    && ["OVER", "ATOP", "CHOOSE"]
+                        .iter()
+                        .any(|name| Self::cmd_eq(self.current_value(), name));
+                if stopped_at_infix {
                     top = reread;
                 }
                 self.pos = after_denom;
@@ -549,17 +550,6 @@ impl EqParser {
             b: rgb[2],
             body: Box::new(body),
         }
-    }
-}
-
-/// 공백 명령 토큰 → 간격 노드. `parse_element` 와 단일 인자 자리가 같은 표를 쓴다.
-fn whitespace_node(val: &str) -> EqNode {
-    match val {
-        "~" => EqNode::Space(SpaceKind::Normal),
-        "`" => EqNode::Space(SpaceKind::Thin),
-        "#" => EqNode::Newline,
-        "&" => EqNode::Space(SpaceKind::Tab),
-        _ => EqNode::Empty,
     }
 }
 
