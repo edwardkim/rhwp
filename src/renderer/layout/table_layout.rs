@@ -18265,12 +18265,19 @@ impl LayoutEngine {
         })
     }
 
-    /// [#8060] 행의 보이는 칸이 **모두 같은 저장 높이에서 첫 되감김**을 가지면 그 자리는
-    /// 한/글이 저장한 쪽 경계다. 칸 하나의 되감김은 로컬 재시작일 수 있지만(#1658),
-    /// 둘 이상의 칸이 같은 높이에서 함께 되감는 것은 행을 가른 물리 경계다. 그 경계를
-    /// 닫는 줄의 줄간격은 이 조각에 예약하지 않는다(한/글 2024: 조각 = 위 안 여백 +
-    /// 마지막 줄 상자 + 아래 안 여백). 71352 9쪽 4행: `셀[12]` 문단 1·`셀[14]` 줄 1 이
-    /// 모두 1200HU 뒤 `vpos=0` 이다. 빈 칸은 경계를 증언하지 않으므로 세지 않는다.
+    /// [#8060] 행의 보이는 칸 **둘 이상이 각자 첫 되감김**을 가지면 그 자리는 한/글이 저장한
+    /// 쪽 경계다. 칸 하나의 되감김은 로컬 재시작일 수 있지만(#1658), 둘 이상의 칸이 함께
+    /// 되감는 것은 행을 가른 물리 경계다. 그 경계를 닫는 줄의 줄간격은 이 조각에 예약하지
+    /// 않는다(한/글 2024: 조각 = 위 안 여백 + 마지막 줄 상자 + 아래 안 여백).
+    ///
+    /// 되감는 높이는 칸마다 조금 다를 수 있다 — 쪽 경계는 하나지만 닫는 줄의 크기가 칸마다
+    /// 다르다(71352 42쪽 6행: `셀[20]` 1200HU · `셀[21]` 1100HU 뒤 `vpos=0`). 그래서 닫는 줄
+    /// 바닥의 차이가 **닫는 줄 한 줄 높이 이내**인 칸만 같은 경계의 증언으로 센다. 그보다
+    /// 멀리 떨어진 첫 되감김은 같은 쪽 경계가 아니다(22081993 여러 쪽 칸: 과 이름 칸과
+    /// 분장 사무 칸이 서로 다른 높이에서 처음 되감는다 — 이를 증언으로 세면 첫 조각이 비어
+    /// 121 → 123쪽). 되감김 없이 첫 조각에서 끝나는 칸(71352 6행 `셀[19]` 「⑥」 한 줄)과 빈
+    /// 칸은 경계와 모순되지 않으므로 세지 않고 건너뛴다. 71352 9쪽 4행은 `셀[12]`·`셀[14]`
+    /// 가 같은 1200HU 에서 되감는다.
     fn stored_row_first_restart_is_joint(
         &self,
         cell: &crate::model::table::Cell,
@@ -18303,9 +18310,10 @@ impl LayoutEngine {
         if !continues {
             return false;
         }
-        // 칸의 첫 되감김: (문단, 줄, 되감김 직전 줄 상자 바닥 HU). 빈 칸은 Some(None).
+        // 칸의 첫 되감김 (문단, 줄, 닫는 줄 바닥 HU, 닫는 줄 높이 HU).
+        // 되감김이 없거나 빈 칸은 Some(None), 판정 불가는 None.
         let first_restart =
-            |peer: &crate::model::table::Cell| -> Option<Option<(usize, usize, i64)>> {
+            |peer: &crate::model::table::Cell| -> Option<Option<(usize, usize, i64, i64)>> {
                 if peer.dirty_flag
                     || peer
                         .paragraphs
@@ -18338,7 +18346,7 @@ impl LayoutEngine {
                             let bottom =
                                 i64::from(before.vertical_pos) + i64::from(before.line_height);
                             if i64::from(line.vertical_pos) < bottom {
-                                return Some(Some((pi, li, bottom)));
+                                return Some(Some((pi, li, bottom, i64::from(before.line_height))));
                             }
                         }
                         previous = Some(line);
@@ -18346,7 +18354,7 @@ impl LayoutEngine {
                 }
                 Some(None)
             };
-        let Some(Some((pi, li, height))) = first_restart(cell) else {
+        let Some(Some((pi, li, bottom, line_height))) = first_restart(cell) else {
             return false;
         };
         if (pi, li) != (next.para_idx, next.vis_start) {
@@ -18359,9 +18367,13 @@ impl LayoutEngine {
             }
             match first_restart(peer) {
                 None => return false,
-                Some(None) if peer.paragraphs.iter().all(|p| p.text.trim().is_empty()) => {}
-                Some(Some((_, _, peer_height))) if peer_height == height => witnesses += 1,
-                _ => return false,
+                Some(None) => {}
+                Some(Some((_, _, peer_bottom, peer_line_height)))
+                    if (peer_bottom - bottom).abs() <= line_height.max(peer_line_height) =>
+                {
+                    witnesses += 1
+                }
+                Some(Some(_)) => return false,
             }
         }
         witnesses >= 2
@@ -18414,13 +18426,8 @@ impl LayoutEngine {
         if end_cut > 0 && end_cut < units.len() {
             let next = &units[end_cut];
             let closing = &units[end_cut - 1];
-            if self.stored_closed_paragraph_restart(cell, table, closing, next, styles)
-                || self.stored_row_first_restart_is_joint(cell, table, closing, next)
-            {
-                if let Some(line) = cell.paragraphs[closing.para_idx]
-                    .line_segs
-                    .get(closing.vis_end.saturating_sub(1))
-                {
+            if self.stored_closed_paragraph_restart(cell, table, closing, next, styles) {
+                if let Some(line) = cell.paragraphs[closing.para_idx].line_segs.last() {
                     return hwpunit_to_px(line.line_spacing.max(0), self.dpi).min(
                         (closing.height - hwpunit_to_px(line.line_height, self.dpi)).max(0.0),
                     );
@@ -18652,18 +18659,36 @@ impl LayoutEngine {
         }
         let trim =
             self.native_multirow_saved_reset_trailing_trim(table, cell, units, end_cut, styles);
-        if trim > 0.0 || start_cut != 0 || end_cut == 0 || end_cut > units.len() {
+        let trim = if trim > 0.0 || start_cut != 0 || end_cut == 0 || end_cut > units.len() {
+            trim
+        } else {
+            self.native_intra_para_saved_reset_trailing_trim(
+                table,
+                cell,
+                units,
+                end_cut,
+                units[..end_cut - 1].iter().map(|u| u.height).sum(),
+                units[end_cut - 1].height,
+                styles,
+            )
+        };
+        if trim > 0.0 || end_cut == 0 || end_cut >= units.len() {
             return trim;
         }
-        self.native_intra_para_saved_reset_trailing_trim(
-            table,
-            cell,
-            units,
-            end_cut,
-            units[..end_cut - 1].iter().map(|u| u.height).sum(),
-            units[end_cut - 1].height,
-            styles,
-        )
+        // [#8060] 위 저장 형상별 갈래가 모두 경계를 못 알아봤을 때만 쓴다. 앞에 두면 더 큰
+        // 몫(닫는 전진 등)을 빼는 기존 갈래를 가로채 컷이 커진다(22081993 102쪽 +2px →
+        // 행 전체 이월, 121 → 123쪽).
+        let (closing, next) = (&units[end_cut - 1], &units[end_cut]);
+        if self.stored_row_first_restart_is_joint(cell, table, closing, next) {
+            if let Some(line) = cell.paragraphs[closing.para_idx]
+                .line_segs
+                .get(closing.vis_end.saturating_sub(1))
+            {
+                return hwpunit_to_px(line.line_spacing.max(0), self.dpi)
+                    .min((closing.height - hwpunit_to_px(line.line_height, self.dpi)).max(0.0));
+            }
+        }
+        0.0
     }
 
     /// 두 문단의 원점0 줄은 줄 상자·중간 간격·패딩이 cellSz를 닫을 때 별도 프레임을 소유한다.
