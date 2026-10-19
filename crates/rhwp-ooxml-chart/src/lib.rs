@@ -27,6 +27,8 @@
 
 /// [#4100] 값의 바이트 구간 스캐너 — 편집용. `parser` 는 손실 파서라 재방출에 쓸 수 없다.
 pub mod data;
+mod drawing_style;
+mod legend_layout;
 pub mod parser;
 /// [#4100] 값 구간의 최소 diff 치환.
 pub mod patch;
@@ -56,6 +58,12 @@ pub struct OoxmlChart {
     /// (`c:plotArea` 안 `c:title`)은 제외. 코퍼스는 전건 미지정이라 한컴이 14pt 로 그린다.
     /// 없으면 렌더러가 14pt 를 쓴다.
     pub title_size_pt: Option<f64>,
+    /// 차트 기본 글꼴과 제목·범례의 명시적 글꼴. 없으면 기본 글꼴을 상속한다.
+    pub text_font_family: Option<String>,
+    pub title_font_family: Option<String>,
+    pub legend_font_family: Option<String>,
+    /// 범례 자체의 글자 크기(pt). 생략하면 차트 기본 글자 크기를 상속한다.
+    pub legend_size_pt: Option<f64>,
     pub series: Vec<OoxmlSeries>,
     pub categories: Vec<String>,
     /// 시리즈 중 하나라도 보조축을 쓰면 true
@@ -269,6 +277,9 @@ pub struct OoxmlAxis {
     pub pos: AxisPos,
     /// `c:majorGridlines` 요소 존재 — 이 축의 눈금 위치에 격자선.
     pub major_gridlines: bool,
+    /// 축선과 주 격자선은 서로 다른 spPr 선언을 소비한다.
+    pub line: LineSpec,
+    pub grid_line: LineSpec,
     pub major_tick_mark: TickMark,
     /// `c:delete val="1"` — 축선·눈금·라벨을 그리지 않는다 (격자선은 유지).
     pub deleted: bool,
@@ -370,6 +381,10 @@ impl OoxmlChartType {
 /// 데이터 시리즈 (막대 한 묶음 또는 선 하나)
 #[derive(Debug, Clone, Default)]
 pub struct OoxmlSeries {
+    /// 저장 계열 식별자. 표시 순서나 현재 Vec 색인과 같다고 가정하지 않는다.
+    pub source_index: Option<u32>,
+    /// 계열 자체의 `ser/spPr/ln`. 라벨·표식의 선과 구별한다.
+    pub shape_line: LineSpec,
     pub name: String,
     /// Y 값 (막대/선/원형). 분산형에서는 `c:yVal`.
     pub values: Vec<f64>,
@@ -422,6 +437,16 @@ impl OoxmlChart {
     /// 반환값은 `<g>...</g>` 또는 여러 요소로 구성된 SVG 문자열 조각.
     pub fn render_svg(&self, x: f64, y: f64, w: f64, h: f64) -> String {
         renderer::render_chart_svg(self, x, y, w, h)
+    }
+
+    /// 호스트의 실제 글꼴 측정을 범례의 예약 폭과 배치에 공급한다.
+    pub fn render_svg_with_text_measure(
+        &self,
+        bounds: [f64; 4],
+        measure: &dyn Fn(&str, f64, &str) -> f64,
+    ) -> String {
+        let [x, y, w, h] = bounds;
+        renderer::render_chart_svg_with_text_measure(self, x, y, w, h, measure)
     }
 
     /// 시리즈가 여러 타입을 섞어 쓰는지 (콤보 차트) 여부

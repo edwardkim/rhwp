@@ -25,6 +25,13 @@ impl TypesetEngine {
         // PartialTable 배치 후 page/lazy base 무효화(LINE_SEG lh 가 개체 높이를
         // 반영 못 해 drift 유발 → 직후 paragraph 는 lazy 역산으로 재산출). 단단 전용.
         if st.col_count == 1 {
+            let first_continuation = !st.current_endnote_flow
+                && matches!(st.current_items.first(),
+                    Some(PageItem::PartialParagraph { para_index: owner, start_line, .. })
+                        if *owner == para_idx && *start_line > 0)
+                && matches!(st.current_items.last(),
+                    Some(PageItem::PartialParagraph { para_index: owner, .. })
+                        if *owner == para_idx);
             let current_origin_rewinds = st
                 .vpos_prev_layout_para
                 // A table may have emitted several new columns before this
@@ -47,6 +54,15 @@ impl TypesetEngine {
                 // 본문 문단이 자체 stored VPOS에서 시작하게 한다.
                 st.reset_vpos_cursor();
                 st.acknowledge_queued_footnote_reset(false);
+            } else if first_continuation {
+                // paint의 첫 continuation은 앞 쪽의 문단을 이전 owner로
+                // 이어받지 않는다. 첫 수용 줄의 저장 축은 별도로 보존한다.
+                st.record_previous_layout_paragraph(None);
+                st.record_vpos_page_origin(None);
+                let seed = st.vpos_stored_column_origin.and_then(|(source, anchor)| {
+                    source.checked_sub(crate::renderer::px_to_hwpunit(anchor, self.dpi))
+                });
+                st.record_vpos_lazy_origin(seed);
             } else if current_origin_rewinds {
                 // Paint closes the preceding coordinate frame after this
                 // owner. Apply the same transition before the next fit;
@@ -189,14 +205,63 @@ impl TypesetEngine {
                             if !t.common.treat_as_char
                                 && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
                                 && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para))));
+                    // 저장 TAC의 수용 계획이 발행한 축을 paint와 같은 후처리에서 보존한다.
+                    // 일반 표의 선언 높이만으로 축을 추측하지 않는다.
+                    let accepted_tac_frame = match last {
+                        Some(PageItem::Table {
+                            para_index,
+                            control_index,
+                        }) => st
+                            .inline_placements
+                            .get(&(*para_index, *control_index))
+                            .and_then(|placement| placement.stored_column_frame),
+                        _ => None,
+                    };
+                    let opening_tac_origin = (st.current_start_height == 0.0
+                        && !st.current_endnote_flow
+                        && !st.profile.session_edited()
+                        && (st.profile.hwp5_stored_pagination_layout()
+                            || st.profile.hwpx_stored_layout())
+                        && st.page_start_square_pictures.is_empty()
+                        && st.page_start_stored_frames.is_empty())
+                    .then(|| {
+                        crate::renderer::float_placement::restarted_tac::accepted_column_origin(
+                            &st.current_items,
+                            &st.inline_placements,
+                            paragraphs,
+                            styles,
+                            self.dpi,
+                        )
+                    })
+                    .flatten()
+                    .filter(|(owner, _)| *owner == para_idx);
+                    if let Some((_, origin)) = opening_tac_origin {
+                        // 옛 host vpos는 새 단에서 직전 본문 줄이 아니다.
+                        st.record_previous_layout_paragraph(None);
+                        st.record_vpos_page_origin(Some(origin));
+                        st.record_vpos_lazy_origin(None);
+                        st.record_stored_column_origin(Some((origin, 0.0)));
+                    }
                     if para_float_table {
                         st.seed_whole_table_column_origin(para_idx, paragraphs);
+                    }
+                    if let Some(frame) = accepted_tac_frame {
+                        st.record_vpos_page_origin(Some(frame.source_origin_hu));
+                        st.record_vpos_lazy_origin(None);
+                        st.record_vpos_origin_provenance(true);
+                        st.record_vpos_column_anchor(frame.column_anchor_y);
+                        st.record_stored_column_origin(Some((
+                            frame.source_origin_hu,
+                            frame.column_anchor_y,
+                        )));
                     }
                     if !host_line_covers_object
                         && !resolved_inline_end
                         && !resolved_stored_wrap_fragment
                         && !resolved_stored_page_frame
                         && !para_float_table
+                        && opening_tac_origin.is_none()
+                        && accepted_tac_frame.is_none()
                     {
                         st.record_vpos_page_origin(None);
                         st.record_vpos_lazy_origin(None);

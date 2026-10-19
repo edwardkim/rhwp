@@ -15,6 +15,7 @@ use crate::renderer::height_measurer::{
     fit_stored_hwpx_no_adjust_rowspans, fit_stored_inline_picture_frame,
     trim_stored_hwpx_inline_row_trailing_spacing, MeasuredTable,
 };
+use crate::renderer::hwpunit_to_px;
 use crate::renderer::pagination::estimate_footnote_note_height;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -125,7 +126,10 @@ pub(super) fn format(
     .is_some_and(|nested| {
         crate::renderer::height_measurer::unrestricted_wrapper_frame(table, nested, dpi).is_some()
     });
-    let effective_height = if profile().hwp5_stored_pagination_layout() || unrestricted_wrapper {
+    let effective_height = if profile().hwp5_stored_pagination_layout()
+        || profile().hwpx_stored_layout()
+        || unrestricted_wrapper
+    {
         crate::renderer::height_measurer::unwrapped_table_whole_height(table, effective_height, dpi)
     } else {
         effective_height
@@ -190,6 +194,7 @@ pub(super) fn fit_measured_for_host(
     if crate::renderer::height_measurer::transparent_table_wrapper_child(table).is_some_and(
         |nested| {
             profile().hwp5_stored_pagination_layout()
+                || profile().hwpx_stored_layout()
                 || crate::renderer::height_measurer::unrestricted_wrapper_frame(table, nested, dpi)
                     .is_some()
         },
@@ -221,6 +226,20 @@ pub(super) fn fit_measured_for_host(
     // 가 과대 압축/팽창을 차단한다.
     if is_para_topbottom_float(&table.common) {
         mt.map(|measured| {
+            let body_height = measured.row_heights.iter().sum::<f64>()
+                + measured.cell_spacing * measured.row_heights.len().saturating_sub(1) as f64;
+            if !profile().session_edited()
+                && (profile().hwp5_stored_pagination_layout() || profile().hwpx_stored_layout())
+                && hwpunit_to_px(table.common.height as i32, dpi) > body_height
+                && crate::renderer::table_row_frame::stored_rows_own_body(
+                    table,
+                    &measured.row_heights,
+                    dpi,
+                )
+            {
+                // 실제 내용을 담은 행 선언을 개체의 낡은 전체 캐시로 다시 늘리지 않는다.
+                return measured.clone();
+            }
             let (fitted, shrink_blocked_by_content) =
                 crate::renderer::height_measurer::fit_measured_table_to_declared_height_with_outcome(measured, table, dpi);
             // 빈 앵커는 **확대 방향만**: 한글 규칙 = max(선언, 콘텐츠) — 콘텐츠가

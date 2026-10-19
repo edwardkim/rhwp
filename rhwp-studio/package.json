@@ -94,8 +94,8 @@
     "e2e:glyph-outline-portable-geometry": "node e2e/run-with-vite.mjs -- node e2e/glyph-outline-portable-geometry.test.mjs"
   },
   "devDependencies": {
-    "@types/chrome": "^0.3.4",
-    "puppeteer-core": "^25.13.0",
+    "@types/chrome": "^0.3.5",
+    "puppeteer-core": "^25.14.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vite-plugin-pwa": "^2.0.0",

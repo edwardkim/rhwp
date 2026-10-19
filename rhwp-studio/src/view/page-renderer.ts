@@ -236,7 +236,9 @@ export class PageRenderer {
     this.surfaceLayerCountCache.set(pageIdx, this.canvasSurfaceLayerCount(layers));
     const preferStaticFlow = this.shouldSplitStaticFlow(layers);
     let reuseStaticFlow = this.renderFlowCanvas(pageIdx, canvas, renderScale, preferStaticFlow);
-    const flowImages = reuseStaticFlow && layers.flowImageCount > 0
+    // 좁은 DOM 질의는 Screen payload만 제공한다. 다른 프로필은 같은
+    // 프로필의 static canvas에서 색 전달·표본 정책까지 함께 소비한다.
+    const flowImages = this.renderProfile === 'screen' && reuseStaticFlow && layers.flowImageCount > 0
       ? this.getFlowImagePaintOps(pageIdx)
       : [];
     const usesDomFlowImages =

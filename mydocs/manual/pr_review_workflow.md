@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-17
+last_verified: 2026-10-18
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -104,7 +104,8 @@ merge 전 조건을 먼저 보여주고, 접수 정보·검증·증적은 아래
 PR 번호는 PR을 생성할 때 채번된다. 따라서 collaborator self PR의 번호 기반 review 기록은
 다음 순서로 같은 PR에 포함한다.
 
-1. 구현과 로컬 검증이 끝난 후보 commit을 원격 작업 branch에 push한다.
+1. 구현과 [로컬 사전 검증](pr_review/local_validation.md) 4.3 및 해당 보조 절차의 필수 검증을
+   빠짐없이 완료한 후보 commit을 원격 작업 branch에 push한다. 실패·미실행은 PR CI에 넘기지 않는다.
 2. 작업지시자의 PR 생성 승인 후 Open PR을 생성해 번호 `N`을 받는다. 완료된 후보에
    번호만 확보하려고 Draft를 생성하지 않는다.
 3. 같은 PR의 정확한 code head SHA에 대한 required check와 변경 범위상 필요한 GitHub Actions가
@@ -119,9 +120,12 @@ code head CI가 진행 중·실패·취소·미실행이면 review·오늘할일
 [collaborator self PR의 기록 시점](pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)을 따른다.
 
 외부 contributor PR처럼 PR이 이미 존재하는 경우에는 발급된 번호로 바로 review 접수를 시작한다.
-Draft는 WIP 공유나 조기 검토가 필요하고 그 상태 변경을 작업지시자가 명시적으로 승인한 경우에만
-사용한다. 정확한 생성 순서와 승인 게이트는 [문서와 Git 워크플로우](codex/docs_and_git_workflow.md#internal-task-pr-approval)를
-따른다.
+**일반 제출은 검증을 완료한 Open PR이며, 특별한 사유 없는 Draft 생성은 금지한다.** Draft는
+미완성 설계 논의·WIP 공유 목적과 그 상태 변경을 작업지시자가 명시적으로 승인한 경우에만 사용한다.
+일반 PR 생성 승인, 번호 확보·CI 시작·대기와 필수 검증 실패·미완료는 예외 사유가 아니다.
+예외 Draft의 본문에도 목적·미완료 항목·완료 계획을 적고, Ready 전환 전 필수 검증을 모두 완료한다.
+정확한 생성 순서와 승인 게이트는
+[문서와 Git 워크플로우](codex/docs_and_git_workflow.md#internal-task-pr-approval)를 따른다.
 
 ### 1.3 문서 trailing commit을 위한 반복 동기화 금지
 

@@ -78,6 +78,7 @@ mod tests {
         let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
 
         let styles = ResolvedStyleSet {
+            resolved_dpi: None,
             page_number_char_style_id: None,
             page_number_font_is_hft: false,
             hwp3_variant: false,

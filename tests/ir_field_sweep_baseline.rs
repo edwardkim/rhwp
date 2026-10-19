@@ -57,6 +57,12 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/exam_fixtures.rs"
 ));
+mod retired_exam_baseline_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/retired_exam_baseline_scope.rs"
+    ));
+}
 
 mod preserved_format_inputs {
     include!("common/preserved_format_inputs.rs");
@@ -137,6 +143,7 @@ fn collect(root: &Path, ext: &str, skip_dirs: &[&str]) -> Vec<(PathBuf, String)>
         preserved_format_inputs::append_preserved_hwp5_inputs(&mut acc);
     }
     acc.retain(|(path, _)| !is_exam_fixture(path));
+    acc.retain(|(path, _)| !retired_exam_baseline_scope::is_retired(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     acc
 }

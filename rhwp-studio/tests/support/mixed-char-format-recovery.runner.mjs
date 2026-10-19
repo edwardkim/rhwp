@@ -7,6 +7,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const src = join(dirname(fileURLToPath(import.meta.url)), '../../src');
 registerHooks({
   resolve(specifier, context, next) {
+    // 제품의 JSON 메트릭을 Node의 import attributes 처리로 전달한다.
+    if (specifier.endsWith('.json')) return next(specifier, context);
     if (specifier === '@wasm/rhwp.js') return {
       url: 'data:text/javascript,export default function init(){throw Error("WASM unavailable")};export class HwpDocument{};export function version(){return "test"}',
       shortCircuit: true,

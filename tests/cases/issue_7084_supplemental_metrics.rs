@@ -46,7 +46,7 @@ fn near(a: f64, b: f64) {
 }
 
 #[test]
-fn canvas_font_setup_preserves_positioned_painter_contract() {
+fn canvas_declared_size_and_horizontal_ratio_survive_script_setup() {
     let s = TextStyle {
         bold: true,
         italic: true,
@@ -56,14 +56,18 @@ fn canvas_font_setup_preserves_positioned_painter_contract() {
     };
     let font = CanvasTextFont::for_positioned_text(&s, 100.0);
     let family = rhwp::renderer::canvas_font_family_chain("HCR Batang");
-    assert_eq!(font.descriptor(), format!("italic bold 12.600px {family}"));
+    let script_size = s.font_size * 0.7;
+    assert_eq!(
+        font.descriptor(),
+        format!("italic bold {script_size:.3}px {family}")
+    );
     assert_eq!(
         font.old_hangul_descriptor(),
-        format!("italic bold 12.600px 'RHWP Old Hangul', {family}")
+        format!("italic bold {script_size:.3}px 'RHWP Old Hangul', {family}")
     );
-    near(font.draw_size(), 12.6);
-    near(font.horizontal_scale(), 0.9);
-    near(font.baseline(), 94.0);
+    near(font.draw_size(), script_size);
+    near(font.horizontal_scale(), s.ratio);
+    near(font.baseline() - 100.0, -s.font_size * 0.3);
     let sub = CanvasTextFont::for_positioned_text(
         &TextStyle {
             superscript: false,
@@ -72,23 +76,16 @@ fn canvas_font_setup_preserves_positioned_painter_contract() {
         },
         100.0,
     );
-    near(sub.baseline(), 103.0);
+    near(sub.baseline() - 100.0, s.font_size * 0.15);
     assert_eq!(sub.descriptor(), font.descriptor());
 }
 
 #[test]
-fn measured_canvas_advance_matches_paint_after_ratio_exactly_once() {
-    // Actual measureText outputs, not assumed 1em squares. Include the legacy
-    // condensation threshold and nonpositive-ratio default on both sides.
-    for (ratio, paint_scale) in [
-        (0.64, 0.8),
-        (0.81, 0.9),
-        (0.999, 0.999),
-        (1.0, 1.0),
-        (1.2, 1.2),
-        (0.0, 1.0),
-        (-1.0, 1.0),
-    ] {
+fn canvas_measured_advance_receives_declared_horizontal_ratio_once() {
+    // Provider outputs are independent inputs. Print Tf/CTM keeps vertical size;
+    // Tz applies the declared horizontal ratio, including narrow condensation.
+    for ratio in [0.64, 0.81, 0.999, 1.0, 1.2, 0.0, -1.0] {
+        let paint_scale = if ratio > 0.0 { ratio } else { 1.0 };
         for script in [false, true] {
             let mut s = TextStyle {
                 ratio,
@@ -111,26 +108,28 @@ fn measured_canvas_advance_matches_paint_after_ratio_exactly_once() {
 }
 
 #[test]
-fn canvas_css_rounding_is_not_undone_by_advance_conversion() {
+fn canvas_rounded_css_size_keeps_provider_advance_in_its_measured_frame() {
     let mut s = TextStyle {
         font_size: 13.333333,
         ratio: 0.8,
         ..style()
     };
     let font = CanvasTextFont::for_positioned_text(&s, 0.0);
-    assert!(font.descriptor().starts_with("11.926px "));
+    assert!(font
+        .descriptor()
+        .starts_with(&format!("{:.3}px ", s.font_size)));
     // The provider may have nonlinear optical metrics at this CSS size. Keep
     // its measured result; do not infer it from nominal or unrounded font size.
     let entry = SupplementalMetric::from_canvas_measurement(
         &s,
         "😀",
         font.descriptor(),
-        "11.926px resolved-face".into(),
+        format!("{:.3}px resolved-face", s.font_size),
         16.731,
     )
     .unwrap();
     let _store = bound(&mut s, vec![entry]);
-    near(positions("😀", &s)[1], 16.731 * 0.8_f64.sqrt());
+    near(positions("😀", &s)[1], 16.731 * s.ratio);
 }
 
 #[test]

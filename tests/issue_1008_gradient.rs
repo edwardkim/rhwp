@@ -101,61 +101,8 @@ fn hwpx_sample16_business_box_gradient_colors_materialized() {
     );
 }
 
-/// 격차 C: HWP3 heading decoration ("═══■ 1.추진목적 ■═══") strip 회귀 가드.
-/// fixup_hwp3_heading_decoration 후 paragraph.text 가 decoration 제거된 상태인지 단언.
-#[test]
-fn hwp3_sample16_heading_decoration_stripped() {
-    let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
-    let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
-
-    // pi=70 이 1.추진목적 heading paragraph
-    let para = &doc.sections[0].paragraphs[70];
-    assert!(
-        !para.text.contains('═'),
-        "decoration char ═ 잔존 — heading strip 회귀 (text={:?})",
-        para.text
-    );
-    assert!(
-        !para.text.contains('■'),
-        "marker char ■ 잔존 — heading strip 회귀 (text={:?})",
-        para.text
-    );
-    assert!(
-        para.text.contains("추진목적"),
-        "heading 본문 보존 (text={:?})",
-        para.text
-    );
-}
-
-/// 격차 B: HWP3 Shape border LineType 2~7 → Solid normalization 회귀 가드.
-/// HWP3 raw line_style=2 (Dash per spec) 인 sample16 사업개요 박스 (pi=71) 의
-/// border attr 가 1 (Solid) 로 normalize 되어야 함.
-#[test]
-fn hwp3_sample16_business_box_border_solid() {
-    let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
-    let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
-
-    let para = &doc.sections[0].paragraphs[71];
-    let shape = para
-        .controls
-        .iter()
-        .find_map(|c| match c {
-            Control::Shape(s) => Some(s.as_ref()),
-            _ => None,
-        })
-        .expect("pi=71 Shape control 존재");
-
-    let rect = match shape {
-        ShapeObject::Rectangle(r) => r,
-        other => panic!("expected Rectangle, got {:?}", other),
-    };
-
-    let line_type = (rect.drawing.border_line.attr as u32) & 0x3F;
-    assert_eq!(
-        line_type, 1,
-        "HWP3 raw line_style=2 (Dash) 가 1 (Solid) 로 normalize 되어야 함 (격차 B)"
-    );
-}
+// 원본의 작성 공백·제어 축·점선 및 최종 글상자 소유는 새 이름의
+// tests/cases/verified_hwp3_original_print_boundaries.rs에서 보호한다.
 
 /// 격차 D: HWP3 legacy 폰트명 ("신명조" 등) → 한/글 변환기가 쓰는 이름 ("한양신명조" 등)
 /// 매핑 회귀 가드. 기대값은 한/글 변환본 `samples/hwp3-sample16-hwp5.hwp` 의 글꼴 이름이다

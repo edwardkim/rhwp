@@ -180,6 +180,31 @@ test('Hancom equation glyphs request their actual regular host face without read
   } finally { await setHostFontProvider(null); }
 });
 
+test('서로 다른 한컴 수식 face를 같은 페이지에서 각각 준비하고 기본 face도 보존한다', async () => {
+  const f = fixture();
+  const faces = ['HyhwpEQ', 'HancomEQN'].map((family, index) => ({
+    id: `equation-${index}`, family, fullName: family, postscriptName: family,
+    style: 'Regular', weight: 400, slant: 'normal' as const,
+  }));
+  f.replace({ ...f.snapshot(), faces: [...f.snapshot().faces, ...faces] });
+  const bounds = { x: 0, y: 0, width: 200, height: 100 };
+  const glyph = (fontFamily?: string): LayerEquationLayoutBox => ({
+    ...bounds, baseline: 10,
+    kind: { type: 'hancomGlyphs', fontFamily, glyphs: '\ue007', positions: [0], baselineShift: 0 },
+  });
+  const tree: PageLayerTree = { pageWidth: 200, pageHeight: 100,
+    root: { kind: 'leaf', bounds, ops: [{ type: 'equation', bbox: bounds,
+      layoutBox: { ...bounds, baseline: 10,
+        kind: { type: 'fraction', numer: glyph('HancomEQN'), denom: glyph() } },
+    }] } };
+  try {
+    await setHostFontProvider(f.provider);
+    const requests = collectHostFontRequests(tree);
+    assert.deepEqual(requests.map(r => r.hostReference?.face.id).sort(), ['equation-0', 'equation-1']);
+    assert.equal(f.reads(), 0, '실제 글꼴 바이트를 읽기 전에 두 face를 식별한다');
+  } finally { await setHostFontProvider(null); }
+});
+
 test('detaching during enumeration discards the late catalog and stops notifications', async () => {
   const f = fixture(); const source = new HostFontSource();
   const catalog = deferred<HostFontSnapshot>();
