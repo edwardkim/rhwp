@@ -207,7 +207,7 @@ impl LayoutEngine {
 
     // 문단 간 경계와 문단 내부의 원본 되감김·원점0 경계는 같은 유닛 컷을 소유한다.
     // 이미 출처를 확인한 생산 술어를 재사용하며 문단 간 리셋으로만 소비를 제한하지 않는다.
-    fn stored_ordinary_row_cut_has_boundary(
+    fn stored_ordinary_row_cut_has_physical_frame(
         &self,
         table: &Table,
         row: usize,
@@ -217,6 +217,18 @@ impl LayoutEngine {
     ) -> bool {
         self.row_cut_ends_at_original_plain_text_reset(table, row, start, end, styles)
             || self.row_cut_ends_at_saved_zero_origin_frame(table, row, start, end, styles)
+            // 원본의 진행 줄도 현재 용량에서 나뉠 수 있다. 독립 셀 최소는
+            // 저장 reset과 별개로 실제 내용 컷의 물리 공간을 소유한다.
+            // 앞 내용과 미소비 내용이 모두 있는 컷만 이 근거를 쓴다.
+            // 내용을 마친 원본 종료 프레임의 정렬 여백은 새 꼬리로 이월하지 않는다.
+            || (end
+                .iter()
+                .enumerate()
+                .any(|(index, &to)| to > start.get(index).copied().unwrap_or(0))
+                && !self.row_cut_consumes_all_ordinary_units(table, row, end, styles)
+                && self
+                    .stored_independent_row_minimum(table, row, styles)
+                    .is_some())
     }
 
     /// 저장 쪽 경계에서 선택한 유닛을 실제 마지막 행 상자 안에 놓는다.
@@ -232,7 +244,7 @@ impl LayoutEngine {
         let cells = self.ordinary_row_cells_for_cut(table, row, end, styles)?;
         if !start.is_empty()
             || end.len() != cells.len()
-            || !(self.stored_ordinary_row_cut_has_boundary(table, row, start, end, styles)
+            || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, start, end, styles)
                 || self.row_cut_consumes_all_ordinary_units(table, row, end, styles))
             || !self.row_cut_remaining_is_single_stored_frame(table, row, end, None, styles)
         {
@@ -261,7 +273,7 @@ impl LayoutEngine {
         let cells = self.ordinary_row_cells_for_cut(table, row, cut, styles)?;
         if cut.len() != cells.len()
             || !self.row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles)
-            || !(self.stored_ordinary_row_cut_has_boundary(table, row, &[], cut, styles)
+            || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, &[], cut, styles)
                 || self.stored_single_line_row_is_fragmentable(table, row, styles)
                 || carried.is_some()
                 || self
@@ -441,8 +453,13 @@ impl LayoutEngine {
                     })
                 });
                 !(page_origin_is_shared && has_page_owner)
-                    && (self.stored_ordinary_row_cut_has_boundary(table, row, &[], cut, styles)
-                        || self.stored_single_line_row_is_fragmentable(table, row, styles)
+                    && (self.stored_ordinary_row_cut_has_physical_frame(
+                        table,
+                        row,
+                        &[],
+                        cut,
+                        styles,
+                    ) || self.stored_single_line_row_is_fragmentable(table, row, styles)
                         || self.row_cut_consumes_all_ordinary_units(table, row, cut, styles))
             })
     }

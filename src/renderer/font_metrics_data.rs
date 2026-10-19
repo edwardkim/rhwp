@@ -8,6 +8,10 @@ use std::sync::OnceLock;
 
 use crate::renderer::font_rule_layout_metric_projection::find_font_rule_layout_metric;
 
+#[path = "font_metrics_vertical.rs"]
+mod vertical;
+pub(crate) use vertical::win_descent_em;
+
 #[path = "font_metric_han_santteut.rs"]
 mod han_santteut;
 

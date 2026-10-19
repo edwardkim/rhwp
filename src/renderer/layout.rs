@@ -5274,10 +5274,11 @@ impl LayoutEngine {
         &self,
         layout: &PageLayoutInfo,
         footer_area: &LayoutRect,
-        font_size: f64,
+        style: &TextStyle,
         source_hft: bool,
         source_descent_em: Option<f64>,
     ) -> f64 {
+        let font_size = style.font_size;
         let margin_footer = (layout.page_height - (footer_area.y + footer_area.height)).max(0.0);
         let band_bottom = if margin_footer > 1e-6 {
             footer_area.y + margin_footer
@@ -5294,7 +5295,13 @@ impl LayoutEngine {
         let descent = if source_hft {
             font_size * 0.2
         } else {
-            font_size * source_descent_em.unwrap_or(1.0 / 3.0)
+            let face = super::style_resolver::primary_font_name(
+                style.metric_font_family.as_deref().unwrap_or(&style.font_family),
+            );
+            let descent_em = source_descent_em.or_else(|| {
+                font_metrics_data::win_descent_em(face, style.bold, style.italic)
+            });
+            font_size * descent_em.unwrap_or(1.0 / 3.0)
         };
         band_bottom - descent
     }
@@ -5303,7 +5310,7 @@ impl LayoutEngine {
         &self,
         layout: &PageLayoutInfo,
         page_border_fill: Option<&PageBorderFill>,
-        font_size: f64,
+        style: &TextStyle,
         source_hft: bool,
         source_descent_em: Option<f64>,
     ) -> Option<f64> {
@@ -5316,7 +5323,7 @@ impl LayoutEngine {
         Some(self.footer_page_number_y(
             layout,
             &layout.footer_area,
-            font_size,
+            style,
             source_hft,
             source_descent_em,
         ))
@@ -6216,7 +6223,7 @@ impl LayoutEngine {
                 self.footer_page_number_y(
                     layout,
                     target_area,
-                    font_size,
+                    &page_num_style,
                     styles.page_number_font_is_hft,
                     source_descent_em,
                 )
@@ -6229,7 +6236,7 @@ impl LayoutEngine {
                 self.page_number_baseline_y(
                     layout,
                     page_border_fill,
-                    font_size,
+                    &page_num_style,
                     styles.page_number_font_is_hft,
                     source_descent_em,
                 )

@@ -3854,3 +3854,144 @@ Native Skia lib Clippy94.678초/exit0, 최종fmt와 고정base manifest 검사�
 TSV12개·대표 review/overlay12개와 Native 비교 TSV를 보존했다. 생성 SVG만 완료 뒤
 hash manifest를 남겨 정리했고 삭제 SVG를 재사용 증거로 쓰지 않는다. 전체 회귀의 다른
 실패·최종 전 문서 검증·actual36는 남아 있다. PR 준비 완료가 아니며 PR은 새 승인을 받는다.
+
+
+## C437 자동 쪽번호의 원본 TTF 수직 프레임과 일반 행의 물리 예약
+
+- 부모 head는 `799daa2d4c84780c62a3a4e140dee988f0a7214e`다. 아래 증거를 생산할 당시 후보는
+  미커밋이므로 runtime source/patch와 producer hash를 함께 고정했다. PR 제출 완료가 아니다.
+- C436 전후 PII36의 좌표·스타일은 같지만, 고정 base의 잘못된 Malgun Gothic 표시가 HCR Dotum으로
+  복구되면서 원래 `font_size/3` 수직 추정의 차이가 드러났다. 두 frozen library의 실제 glyph 선택을
+  `repair121`·`repair126`, 같은 좌표·스타일을 `repair125`에서 각각 확인했다.
+- 설치한 원본 `HANDotum.ttf`의 HCR Dotum Regular는 UPEM1000, Win1070/230,
+  hhea1070/-230, Typo830/-170이다. SHA는
+  `1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898`다.
+  파일 바이너리는 제출하지 않는다. PDF descriptor의 Typo descent170과 Win 줄 프레임230은 구분한다.
+- `font_metrics_vertical.rs`는 기존 exact style/alias 선택의 원본 메트릭에 확인된 Win 프레임만 연결한다.
+  공통 `footer_page_number_y`가 최종 TextRun 기준선을 만들고 각 paint가 이를 소비한다.
+  HFT source Type3의0.2em과 확인하지 않은 face/style의 기존 경로는 유지한다.
+  문서 ID·쪽 번호·용지 치수로 나누지 않는다.
+- 독립 PII PDF의1~3쪽은 `cm.y=-.119869`,4~66쪽은 `-.12`이나 원시 번호 Tm6761은 같다.
+  원본7336도 같은 원시 Tm6642에 두 matrix가 사용된다. fine matrix에 맞추려고 문서 엔진에
+  페이지별 PDF driver 이동을 복제하지 않는다. 독립 source 물리 좌표와 Print matrix를 나눠 기록했다.
+- frozen Native130 빌드는114.587초/exit0이다. 수정 전108과 후보130의 PII1/36쪽 실제 PNG 비교:
+  1쪽99.98158→99.98159%,36쪽85.44699→100.00000%(raw2px).
+  별도 pdftoppm36쪽도100%다. review·overlay를 직접 읽어 위치 개선과 남은 래스터 프린지를 확인했다.
+  이100%는 허용2px 실루엣이며 byte 또는 무관용 픽셀 동일을 뜻하지 않는다.
+- fresh WASM134는 locked web/pkg/no-opt 로컬 대체 빌드221.120초/exit0, 실제 root 재컴파일이다.
+  JS `23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591`,
+  WASM `16f54ae3405a51aab03599e8fe6b2c35a8f894fa68d8e3689661356278bb59e5`.
+  root pkg/Studio public 및 새 browser 초기화 응답138을 대조했다. 초기화는 문서 paint/actual36의 증거가 아니다.
+- 기존1133 자동 번호7검사는 그대로 실행해2PASS/5FAIL이다(`repair133`). 기존0.6px raw PDF 좌표와
+  source 물리 좌표의 약1.2px 차이를 확인했지만, 검사 기대값·허용치를 변경하지 않았다.
+  해당 출력의90% 선행 조건과 독립 좌표계 근거 없이 갱신하지 않는다.
+- 대조군6문서의 이전Native/fresh WASM48쪽을 `repair129`에 새 산출했다.
+  footer15/bottom15의3쪽 본문은 이전96 및 고정4a07에서도42%대이며 현재108 PNG는96과 전쪽 byte동일이다.
+  원본1133 HWP/HWPX는 양쪽95%대다. 기존 미달을 현재 회귀나 수용 완료로 바꾸어 쓰지 않는다.
+- 위 여백 대조군의 이어받기 문제는 `repair136`에서 실제 경로와 독립 PDF vector를 대조 중이다.
+  row4의 source cellSz5222HU=69.626667px인데 현재 앞뒤 실제 상자는27.1+22.4=49.5px다.
+  Print의 앞39.477333+뒤30.206667≈69.684px와 달리 물리 최소 공간을 잃고 있다.
+  반복된 안내문으로 row3을 잘못 고른 첫 진단은 INVALID로 별도 보존했으며 row4로 정정했다.
+  `stored_ordinary_row_end_frame`의 저장 reset 인증과 실제 가용 높이 예약,
+  `stored_ordinary_row_remainder`의 같은 수용 상자 차감을 대조한다. paint에서만 상자를 늘리지 않는다.
+- frozen130/134의264쪽 PII Native/fresh WASM 선언/기본 전쪽(`repair137`)과
+  fresh WASM 정상/여백 대조군24쪽(`repair139`)은 driver exit0으로 완료했다.
+  선언 환경은Native 최저94.58132%,WASM94.60117%, 각각미달0/66쪽이다.
+  기본 환경은Native81.70425%,WASM81.96642%, 각각미달4/20/21쪽이다.
+  36쪽은양쪽100%이며 PNG byte는 서로 다르다. 이전108/111 대비0.1%p 이상 하락과98% 이탈은
+  이 PII132쪽/대조군48쪽 비교에서0이다. 고정4a07 Native 선언66쪽도하락0이나,
+  기본22쪽은91.56665→91.36857%(0.19808%p하락)가 남는다. fresh WASM의고정base전쪽 비교는 이 결과가 아니다.
+  fmt와Native Skia libClippy-Dwarnings는각각exit0(10.313/236.085초)이다.
+  결과·TSV·직접 판독·좌표/폰트 감사는 ignored `repair142-page-number-comparison`에 연결했다.
+- `repair137`의마지막source guard·exit0·실제종료를확인한뒤에만분할행후보141을적용했다.
+  CGMP원구현5d22772bf의저장reset계약은유지하며,실제앞/뒤내용이있는용량컷에서
+  독립셀최소도같은물리프레임근거로쓴다. 이미내용을마친첫프레임에가짜빈꼬리를붙이지않는다.
+  같은 조회가 scan의 예약·emit의 잔여·배치의 정렬을 소비한다. 첫 후보143/144에서는
+  실제 호출이 반복 머리행 경로에 한정되어 여백 대조군이 개선되지 않았다. 아래 최종 보정과 구분한다.
+  130/134의 위 결과를 이후 후보의 전쪽 통과로 재인용하지 않는다.
+
+### 실제 수용 예약과 독립 첫 프레임의 우선순위
+
+내용 컷의 보이는 높이로 앞서 수용한 공간을 역산하지 않는다. 일반 행 스캔이 실제 추가한
+`partial_row_reservation`을 refit에도 전달하고, 일반 행의 실제 부분 컷에서 이를 독립 원본의
+물리 상자로 교체한다. 같은 `consumed`와 `end_row_height_override`를 emit이 소비하고
+원본 최소에서 같은 수용 상자를 차감해 다음 조각에 전달한다. 문서·쪽별 분기는 추가하지 않았다.
+완료한 원본 행에는 새 빈 꼬리를 만들지 않고 저장 reset·rowspan 경로도 유지한다.
+
+Native147에서 여백 대조군3쪽은42%대→100%로 복구됐으나, 기존 #6860 엄격 검사는
+첫 조각835.413333px 대신834.106667px를 수용하는 실제 회귀를 검출했다. 이미 인증된
+`saved_first_fragment_source_frame` 안에서 일반 용량 컷의100HU inset을 중복 차감한 원인이다.
+최종159에서는 원본 첫 프레임을 우선하고 해당 경로의 기대값을 변경하지 않았다. 원본 프레임이
+없는 여백 대조군은 일반 물리 예산을 사용한다. 최종 기존 #6035/#6950/#6860/#5585의
+9건과 진단 관계3건이 모두 통과했다(`repair161`). 중간 standalone serde crate 불일치의
+컴파일 실패는 결함 재현으로 세지 않고 맞는 dependency로 재실행한158에 분리했다.
+
+최종 frozen Native159는 빌드128.846618초/exit0이며 CLI SHA는
+`c32526be054fb17ec16a3f373372a6162564a80723e856dea326c51b9ac03736`,
+library SHA는 `354dcf2f4f00aca13cb57cfdfe19161c8024c113de65826275ecf276284f252d`다.
+부모799daa2d와 runtime diff SHA
+`a4dcb9c0890f634afb22e9d8397ec104ed508a4aa21670ac81701b7d57725029` 및
+새 모듈을 포함한2200 source hash를 고정했다. 테스트 추가 뒤에도 runtime 파일은 같은 hash다.
+fresh WASM160은 실제 root 재컴파일219.687032초/exit0이며 locked web/pkg/no-opt Mac
+대체 빌드다. JS SHA는 앞과 같고 WASM SHA는
+`4dd8ae47c19f5377dea85be474d8a3dcfc24a010312bf7c3421562443c632627`다.
+root pkg/Studio public과 새7736 browser 초기 HTTP 응답164를 대조했다. WASM 응답은
+byte동일, JS는 Vite의 정확한 asset URL rewrite·source map 원문을 대조했다. 실제 초기화만의
+증거이며 문서 paint·CanvasKit 준비·actual36 완료로 대신하지 않는다.
+
+### 최종159/160의 회귀 추가 선행 검증과 정식 검사
+
+canonical PDFium/192DPI/compat2022/2px raw 기준으로 네 입력의 전3쪽을 양쪽에서 다시
+산출했다(`repair162`, 네 문서24쪽). 기존 원본·PDF를 그대로 사용했고 새 fixture는 만들지 않았다.
+두 여백 입력의 생성 속성·원본/PDF SHA는 기존
+[`samples/issue1133/MANIFEST.json`](../../samples/issue1133/MANIFEST.json)과 다시 대조했다.
+원본 HWP의 기준은 `pdf/issue7382-regression-review/issue_1133-2020.pdf`,
+원본 HWPX의 기준은 `pdf/hwpx/issue_1133.pdf`다.
+
+| 입력 | Native 전쪽 최저 | fresh WASM 전쪽 최저 | 독립 PDF/양쪽 쪽수 |
+| --- | ---: | ---: | --- |
+| page-number-footer15.hwpx | 95.17397% | 95.18760% | 3/3 |
+| page-number-bottom15.hwpx | 95.17397% | 95.18760% | 3/3 |
+| issue_1133.hwp | 95.17397% | 95.18760% | 3/3 |
+| hwpx/issue_1133.hwpx | 95.17148% | 95.18502% | 3/3 |
+
+두 여백 대조군의2쪽 raw는 Native98.54204%/WASM98.55721%, 이어받기3쪽은 양쪽
+100.00000%다. 같은 경계 중100%인3쪽을 우선 골랐다. 원본·여백 대조군의 최종 review와
+overlay를 직접 판독해 표의 공간·문단 소유·뒤 행과 잉크 프린지를 구분했다. 2px 관용100%를
+엄격 RGB 또는 PNG byte동일로 표현하지 않는다.
+
+새 정식 `tests/cases/issue_1133_partial_row_frame.rs`는 실제 공개 render tree에서 다음을 검사한다.
+두 열의 같은 물리 상자, 행·앞뒤 문단의 쪽 소유, 표제·본문의 누락·중복, 원본 셀 최소의 보존,
+다음 행과의 연속성, 완료한 원본 HWP/HWPX에 빈 꼬리가 생기지 않음이다. 독립 Print 벡터의
+3쪽 위 괘선77.356CSSpx와 다음 행 시작107.562666667CSSpx를 ±2px로 보호한다.
+이는 구현 결과를 기대값으로 복사한 것이 아니며 일반 내용 관계 검사도 함께 유지한다.
+최종 같은 검사 원문으로 frozen143에서1PASS/2FAIL(exit101)→159에서3PASS(exit0)다.
+그 뒤 manifest `--prepare`와 실제 재파생 target으로 정식 Native suite014를 실행해
+3PASS/259선택 제외, test0.048초/전체136.355548초, exit0을 확인했다(`repair167`).
+같은 실제 suite014 NativeSkia Clippy-Dwarnings도90초/exit0이며, 추가 후 fmt와 고정4a07
+manifest 검사는 통과했다(1642 sources/7163 static attrs/48 integration targets).
+기존 자동 번호7검사의 기대값·허용치와 다른 실패 검사는 변경하지 않았다.
+
+최종 전체 TSV8개와 직접 표시할 대표 review/overlay12개를
+[`ordinary-partial-row-frame`](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/ordinary-partial-row-frame/)에 보존한다.
+포함한 원본/PDF8개는 모두 기존 tracked 자료다. 입력/PDF/source/font/도구 hash와 전체 범위,
+좌표 추출 원문·정식 실행 로그는 ignored `repair136`·`repair159`~`repair168`에 남겼다.
+JSON·로그·중간 SVG·글꼴 프로그램은 커밋하지 않는다.
+
+### 현재 미해결과 완료 범위
+
+최종159/160의 집중 검증162는22조건68쪽 실행을 마쳤다. 위 네 문서 외에는7336/biz의
+전6쪽과 기존 번호 검사의 영향 페이지 중심이며 전 문서 검증이 아니다. 도로조명 #6860의
+1쪽은 Native87.50262%/WASM88.99403%로 미달이다. 현재 Native 두 쪽은 보정 전143과
+PNG byte동일이며 고정4a07의74.58351%/69.70042%보다 개선됐어도 수용으로 바꾸지 않는다.
+독립 첫 프레임의 기존 엄격 검사는 복구했지만 제목·캡션 등의 실제 차이는 계속 보정한다.
+각주1937은 선택25쪽95.80137%/95.72257%여도 양쪽51쪽/독립50쪽으로 불일치한다.
+같은 입력/PDF의 출처 hash를 기존 #7382 변환 증거와 확인했고 고정base도51쪽이므로
+현재 수직 프레임 수정의 신규 회귀로 단정하지 않는다. 쪽수 기대값은 갱신하지 않고 원인을 고친다.
+이50쪽 각주 입력을 별도의242쪽 각주 문서와 혼동하지 않는다.
+
+최종159의 fmt/NativeSkia lib Clippy/WASM lib Clippy는 각exit0,
+9.431608/42.933959/70.476223초다(`repair165`). 이는 all-target/workspace/전체 nextest나
+전 문서 Native/fresh WASM·기본 PII 미달/고정base 대비22쪽 하락·actual36의 완료가 아니다.
+130/134의 이전264쪽 sweep을 최종159/160의 전쪽 통과로 재사용하지 않는다.
+미해결 범위와 필수 검증을 계속 처리하며, PR은 결과 보고 뒤 새 사용자 승인을 받아 진행한다.
