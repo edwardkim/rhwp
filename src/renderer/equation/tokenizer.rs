@@ -374,12 +374,18 @@ impl Tokenizer {
         let next = self.peek(1).unwrap_or('\0');
         let third = self.peek(2).unwrap_or('\0');
 
-        // 붙은 ASCII 부호만 축약한다. 공백·Unicode minus·인용은 보존한다.
-        if let Some(symbol) = match (ch, next) {
-            ('+', '-') => Some("±"),
-            ('-', '+') => Some("∓"),
-            _ => None,
-        } {
+        // 문서 모드는 새 저장 수식 경로의 Symbol 계약을 유지한다.
+        // 공개 호환 API는 아래 명령 토큰 계약과 화살표 이웃의 분리를 사용한다.
+        // 공백·Unicode minus·인용은 두 경로 모두 보존한다.
+        if let Some(symbol) = self
+            .document_commands
+            .then(|| match (ch, next) {
+                ('+', '-') => Some("±"),
+                ('-', '+') => Some("∓"),
+                _ => None,
+            })
+            .flatten()
+        {
             self.pos += 2;
             return Some(Token::new(TokenType::Symbol, symbol, start));
         }
@@ -412,7 +418,9 @@ impl Tokenizer {
         }
 
         // 붙은 ASCII 화살표 축약. `<`-`의 명시적 공백은 이 축약이 아니다.
-        if matches!((ch, next), ('-', '>') | ('<', '-')) {
+        if (ch == '-' && next == '>')
+            || (ch == '<' && next == '-' && (self.document_commands || third != '+'))
+        {
             self.pos += 2;
             return Some(Token::new(
                 TokenType::Symbol,

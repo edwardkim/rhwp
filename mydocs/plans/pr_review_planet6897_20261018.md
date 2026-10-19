@@ -3601,3 +3601,19 @@ PR #8064/#8069로 들어왔고 source·font/수식·조판·검증 지침도 바
 이전 후보114의 전쪽 TSV·38PASS는 역사적 자료이며 새 head의 기능 보존이나 제출 gate를 대신하지 않는다.
 새 devel/후보의 실제 Native·fresh WASM 전쪽 대조와 필수 회귀·브라우저·Windows 검증은 계속 필요하다.
 PR 생성은 준비 결과 보고 후 사용자 승인을 받는다.
+
+
+### 리베이스 연결 검증과 수식 API 보완
+
+코드 `595302091b555540d540b6645ebdbceddc626998`에서 Native Skia
+`cargo check --locked --features native-skia --lib --bin rhwp`가1m45s에 exit0,
+새 suite prepare 이후 `cargo fmt --all -- --check`도 exit0이다. 컴파일 검사는 실행 회귀나
+새 devel의 렌더링 보존을 대신하지 않는다.
+
+수식 모듈의 실제 소스를 연결한 별도 진단에서 #7873 검사는 새 EqAlign 필드 때문에 빌드가
+막혔고, #7865 공개 tokenize 검사는 새 문서용 Symbol 분기가 먼저 실행되어2건 실패했다.
+전자는 순회할 rows를 유지하며 새 alignment_marks를 무시하는 pattern으로 API만 보완했다.
+후자는 새 devel이 이미 구분하는 document_commands 모드에서 Symbol·화살표를 보존하고,
+공개 호환 tokenize에서는 기존 명령 토큰·화살표 이웃 분리 계약을 적용한다. 배치 기대값은
+변경하지 않는다. 문서 경로는 새 base의 실제 document_script 토큰과 AST를 함께 대조한다.
+이 진단은 전체 Cargo suite나 Print/Native/fresh WASM 일치 검증이 아니다.
