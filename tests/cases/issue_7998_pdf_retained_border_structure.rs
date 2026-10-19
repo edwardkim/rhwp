@@ -330,14 +330,7 @@ fn snapshot_restore_keeps_original_paint_and_captured_edit_after_text_inverse() 
 }
 
 #[test]
-fn nonuniform_axis_pen_and_invalid_indices_reject_atomically() {
-    // Changing this nonuniform axis needs a new shared-boundary conflict contract.
-    for mode in [2, 3, 5] {
-        let mut c = load_other("nonuniform-axis");
-        let before = c.export_hwpx_native().unwrap();
-        assert!(apply(&mut c, mode).is_err());
-        assert_eq!(c.export_hwpx_native().unwrap(), before);
-    }
+fn invalid_structural_indices_reject_atomically() {
     let mut c = load();
     let before = c.export_hwpx_native().unwrap();
     let ci = root(&c).0;
@@ -801,16 +794,292 @@ fn parallel_line_pens_survive_structural_edits_and_both_saves() {
 }
 
 #[test]
-fn along_line_changes_and_perpendicular_conflicts_reject_atomically() {
-    for (name, modes) in [
-        ("nonuniform-horizontal", vec![0, 1, 4]),
-        ("nonuniform-interval", (0..6).collect()),
-    ] {
-        for mode in modes {
-            let mut c = load_other(name);
-            let before = c.export_hwpx_native().unwrap();
-            assert!(apply(&mut c, mode).is_err());
-            assert_eq!(c.export_hwpx_native().unwrap(), before);
+fn along_line_pen_changes_reject_atomically() {
+    for mode in 0..6 {
+        let mut c = load_other("nonuniform-interval");
+        let before = c.export_hwpx_native().unwrap();
+        assert!(apply(&mut c, mode).is_err());
+        assert_eq!(c.export_hwpx_native().unwrap(), before);
+    }
+}
+
+fn conflict_physical_pens(c: &DocumentCore, vertical: bool, lines: &[u32]) {
+    owned_bands(c);
+    for cell in &root(c).1.cells {
+        let mut seen = [false; 4];
+        for control in cell.paragraphs.iter().flat_map(|p| &p.controls) {
+            let Control::Shape(shape) = control else {
+                continue;
+            };
+            let Some(tag) = shape.common().cell_border_paint else {
+                continue;
+            };
+            use border_paint::CellSide::*;
+            let side = match tag.side {
+                Left => 0,
+                Right => 1,
+                Top => 2,
+                Bottom => 3,
+            };
+            let pen = if vertical {
+                if side < 2 {
+                    lines[usize::from(cell.col) + side]
+                } else {
+                    50
+                }
+            } else if side >= 2 {
+                lines[usize::from(cell.row) + side - 2]
+            } else {
+                70
+            };
+            let want = if side == 0 || side == 2 {
+                pen.div_ceil(2)
+            } else {
+                pen / 2
+            };
+            let got = if side < 2 {
+                shape.common().width
+            } else {
+                shape.common().height
+            };
+            // PDF operator widths, subject only to the existing one-HU crop
+            // projection uncertainty. This is not an output pixel coordinate.
+            assert!((i64::from(got) - i64::from(want)).abs() <= 1);
+            assert!(!seen[side]);
+            seen[side] = true;
         }
+        assert!(seen.into_iter().all(|v| v));
+    }
+}
+
+#[test]
+fn conflicting_axis_inherits_actual_template_and_preserves_losing_style_in_both_saves() {
+    // PDF declares .90/.70pt vertical pens or .90/.50pt horizontal pens.
+    // Independent native BorderFill .4/.2mm Hancom Print confirms the wider
+    // shared edge, then the thinner edge after deleting the original neighbour.
+    for vertical in [true, false] {
+        for mode in 0..6 {
+            let mut c = load_other(if vertical {
+                "nonuniform-axis"
+            } else {
+                "nonuniform-horizontal"
+            });
+            let ci = root(&c).0;
+            let original = c.export_hwpx_native().unwrap();
+            let snapshot = c.save_snapshot_native();
+            let child_before = child(&c);
+            let source_text: Vec<_> = root(&c)
+                .1
+                .cells
+                .iter()
+                .map(|c| text(&c.paragraphs))
+                .collect();
+            let low = if vertical { 70 } else { 50 };
+            let mut lines = if mode < 2 || mode == 4 || mode == 5 {
+                if vertical {
+                    c.insert_table_column_native(
+                        0,
+                        0,
+                        ci,
+                        u16::from(mode == 5),
+                        mode == 1 || mode == 5,
+                    )
+                } else {
+                    c.insert_table_row_native(
+                        0,
+                        0,
+                        ci,
+                        u16::from(mode == 5),
+                        mode == 1 || mode == 5,
+                    )
+                }
+                .unwrap();
+                if mode == 1 || mode == 5 {
+                    vec![90, low, low, low]
+                } else {
+                    vec![90, 90, low, low]
+                }
+            } else {
+                let index = u16::from(mode == 3);
+                if vertical {
+                    c.delete_table_column_native(0, 0, ci, index)
+                } else {
+                    c.delete_table_row_native(0, 0, ci, index)
+                }
+                .unwrap();
+                if mode == 2 {
+                    vec![low, low]
+                } else {
+                    vec![90, low]
+                }
+            };
+            if mode == 4 {
+                if vertical {
+                    c.delete_table_column_native(0, 0, ci, 1)
+                } else {
+                    c.delete_table_row_native(0, 0, ci, 1)
+                }
+                .unwrap();
+                lines = vec![90, low, low];
+            }
+            let mut expected = std::collections::BTreeMap::new();
+            for r in 0..2u16 {
+                for col in 0..2u16 {
+                    let index = if vertical { col } else { r };
+                    let at = match mode {
+                        0 => Some(index + 1),
+                        1 => Some(index + u16::from(index >= 1)),
+                        2 => (index > 0).then_some(index.saturating_sub(1)),
+                        3 => (index == 0).then_some(0),
+                        5 => Some(index),
+                        _ => (index > 0).then_some(1),
+                    };
+                    if let Some(at) = at {
+                        expected.insert(
+                            if vertical { (r, at) } else { (at, col) },
+                            source_text[usize::from(r) * 2 + usize::from(col)].clone(),
+                        );
+                    }
+                }
+            }
+            conflict_physical_pens(&c, vertical, &lines);
+            if mode < 2 {
+                assert_eq!(child(&c), child_before);
+                let new_index = u16::from(mode == 1);
+                for cell in &root(&c).1.cells {
+                    if (if vertical { cell.col } else { cell.row }) == new_index {
+                        assert!(
+                            text(&cell.paragraphs).is_empty(),
+                            "new cells never clone source content"
+                        );
+                        assert!(!cell
+                            .paragraphs
+                            .iter()
+                            .flat_map(|p| &p.controls)
+                            .any(|c| matches!(c, Control::Table(_))));
+                    }
+                }
+            }
+            for bytes in [
+                c.export_hwp_with_adapter_snapshot().unwrap(),
+                c.export_hwpx_native().unwrap(),
+            ] {
+                let mut reopened = DocumentCore::from_bytes(&bytes).unwrap();
+                conflict_physical_pens(&reopened, vertical, &lines);
+                for cell in &root(&reopened).1.cells {
+                    assert_eq!(
+                        text(&cell.paragraphs),
+                        expected
+                            .get(&(cell.row, cell.col))
+                            .cloned()
+                            .unwrap_or_default()
+                    );
+                }
+                if mode == 0 {
+                    let meta = border_paint::encode(reopened.document()).unwrap().unwrap();
+                    assert_eq!(&meta[..8], b"RBPO\0\0\0\x05");
+                    let first = root(&reopened)
+                        .1
+                        .cells
+                        .iter()
+                        .find(|c| c.row == 0 && c.col == 0)
+                        .unwrap();
+                    let losing = first
+                        .paragraphs
+                        .iter()
+                        .flat_map(|p| &p.controls)
+                        .find_map(|c| match c {
+                            Control::Shape(s) => {
+                                s.common().cell_border_paint.and_then(|t| t.cell_pen)
+                            }
+                            _ => None,
+                        })
+                        .expect("the new cell retains its own thinner right/bottom pen");
+                    assert!((i64::from(losing) - i64::from(low)).abs() <= 1);
+                    let rci = root(&reopened).0;
+                    if vertical {
+                        reopened.delete_table_column_native(0, 0, rci, 1)
+                    } else {
+                        reopened.delete_table_row_native(0, 0, rci, 1)
+                    }
+                    .unwrap();
+                    conflict_physical_pens(&reopened, vertical, &[90, low, low]);
+                    for cell in &root(&reopened).1.cells {
+                        let at = if vertical { cell.col } else { cell.row };
+                        let content = text(&cell.paragraphs);
+                        if at == 0 {
+                            assert!(content.is_empty());
+                        } else {
+                            let index = if vertical {
+                                usize::from(cell.row) * 2 + 1
+                            } else {
+                                2 + usize::from(cell.col)
+                            };
+                            assert_eq!(
+                                content, source_text[index],
+                                "only the explicitly deleted source cells disappear"
+                            );
+                        }
+                    }
+                }
+            }
+            c.restore_snapshot_native(snapshot).unwrap();
+            assert_eq!(c.export_hwpx_native().unwrap(), original);
+        }
+    }
+}
+
+#[test]
+fn invalid_losing_pen_sidecar_fails_closed_without_changing_visible_geometry() {
+    let mut c = load_other("nonuniform-axis");
+    let ci = root(&c).0;
+    c.insert_table_column_native(0, 0, ci, 0, false).unwrap();
+    let bytes = border_paint::encode(c.document()).unwrap().unwrap();
+    let mut at = 12;
+    let mut pen_at = None;
+    for _ in 0..u32::from_le_bytes(bytes[8..12].try_into().unwrap()) {
+        let extra = if bytes[at + 28] & 0x80 != 0 { 32 } else { 0 };
+        let end = at + 65 + extra;
+        if u32::from_le_bytes(bytes[end..end + 4].try_into().unwrap()) != 0 {
+            pen_at = Some(end);
+        }
+        at = end + 4;
+    }
+    assert_eq!(at, bytes.len());
+    for invalid in [1, u32::MAX] {
+        let mut data = bytes.clone();
+        let pos = pen_at.unwrap();
+        data[pos..pos + 4].copy_from_slice(&invalid.to_le_bytes());
+        let mut doc = c.document().clone();
+        fn clear(ps: &mut [rhwp::model::paragraph::Paragraph]) {
+            for p in ps {
+                for control in &mut p.controls {
+                    match control {
+                        Control::Shape(s) => {
+                            s.common_mut().cell_border_paint = None;
+                            s.common_mut().outside_cell_border_paint = None;
+                        }
+                        Control::Picture(p) => {
+                            p.common.cell_border_paint = None;
+                            p.common.outside_cell_border_paint = None;
+                        }
+                        Control::Table(t) => {
+                            for c in &mut t.cells {
+                                clear(&mut c.paragraphs);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+        clear(&mut doc.sections[0].paragraphs);
+        let geometry_before = serde_json::to_value(&doc.sections[0].paragraphs).unwrap();
+        border_paint::decode(&mut doc, &data);
+        assert!(border_paint::encode(&doc).unwrap().is_none());
+        assert_eq!(
+            serde_json::to_value(&doc.sections[0].paragraphs).unwrap(),
+            geometry_before
+        );
     }
 }

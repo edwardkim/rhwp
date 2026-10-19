@@ -1354,6 +1354,17 @@ impl Table {
     /// `row_idx`: 기준 행 인덱스, `below`: true면 아래에, false면 위에 삽입.
     /// 반환: Ok(()) 또는 에러 메시지.
     pub fn insert_row(&mut self, row_idx: u16, below: bool) -> Result<(), String> {
+        self.insert_row_inheriting(row_idx, below, |_, _| {})
+    }
+
+    /// Report the actual chosen template, in its shifted coordinates. Consumers
+    /// inherit extra editing metadata without reproducing template selection.
+    pub(crate) fn insert_row_inheriting(
+        &mut self,
+        row_idx: u16,
+        below: bool,
+        mut inherit: impl FnMut(&Cell, &Cell),
+    ) -> Result<(), String> {
         if row_idx >= self.row_count {
             return Err(format!(
                 "행 인덱스 {} 범위 초과 (총 {}행)",
@@ -1448,7 +1459,9 @@ impl Table {
                     // 만드느니 표의 아무 셀이나 템플릿으로 쓴다 (주석의 "아무 셀").
                     .or_else(|| self.cells.first());
                 let new_cell = if let Some(tpl) = template {
-                    Cell::new_from_template(c, target_row, width, new_cell_height, tpl)
+                    let cell = Cell::new_from_template(c, target_row, width, new_cell_height, tpl);
+                    inherit(&cell, tpl);
+                    cell
                 } else {
                     // 셀이 하나도 없는 표 — 상속원이 존재하지 않는 유일한 경우
                     Cell::new_empty(c, target_row, width, new_cell_height, self.border_fill_id)
@@ -1484,6 +1497,15 @@ impl Table {
     ///
     /// `col_idx`: 기준 열 인덱스, `right`: true면 오른쪽에, false면 왼쪽에 삽입.
     pub fn insert_column(&mut self, col_idx: u16, right: bool) -> Result<(), String> {
+        self.insert_column_inheriting(col_idx, right, |_, _| {})
+    }
+
+    pub(crate) fn insert_column_inheriting(
+        &mut self,
+        col_idx: u16,
+        right: bool,
+        mut inherit: impl FnMut(&Cell, &Cell),
+    ) -> Result<(), String> {
         if col_idx >= self.col_count {
             return Err(format!(
                 "열 인덱스 {} 범위 초과 (총 {}열)",
@@ -1566,7 +1588,9 @@ impl Table {
                     // 만드느니 표의 아무 셀이나 템플릿으로 쓴다 (주석의 "아무 셀").
                     .or_else(|| self.cells.first());
                 let new_cell = if let Some(tpl) = template {
-                    Cell::new_from_template(target_col, r, new_col_width, height, tpl)
+                    let cell = Cell::new_from_template(target_col, r, new_col_width, height, tpl);
+                    inherit(&cell, tpl);
+                    cell
                 } else {
                     // 셀이 하나도 없는 표 — 상속원이 존재하지 않는 유일한 경우
                     Cell::new_empty(target_col, r, new_col_width, height, self.border_fill_id)

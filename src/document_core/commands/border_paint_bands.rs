@@ -1,5 +1,6 @@
 //! Exact-width opaque solid bands after a complete source-ink proof.
 //! These are owned border paint, not a nearest native BorderFill width.
+use super::border_paint_structure::StructureEdit;
 use crate::{
     error::HwpError,
     model::{
@@ -15,13 +16,125 @@ use crate::{
         style::{FillType, SolidFill},
     },
 };
+use std::collections::BTreeMap;
+type CellPens = BTreeMap<(u16, u16), [u32; 4]>;
 #[derive(Clone)]
 pub(super) struct Bands {
     /// Full physical pens of vertical/horizontal grid lines, in grid order.
     pub pens: [Vec<u32>; 2],
+    pub cells: CellPens,
     pub color: u32,
     pub cell_z: [i32; 2],
     pub outside_z: [i32; 2],
+}
+impl Bands {
+    pub(super) fn cell_pens(
+        table: &crate::model::table::Table,
+        physical: &[Vec<u32>; 2],
+    ) -> Result<CellPens, HwpError> {
+        let mut out = BTreeMap::new();
+        for cell in &table.cells {
+            let mut own = [
+                physical[0][cell.col as usize],
+                physical[0][cell.col as usize + 1],
+                physical[1][cell.row as usize],
+                physical[1][cell.row as usize + 1],
+            ];
+            let mut seen = [false; 4];
+            for paint in cell.paragraphs.iter().flat_map(|p| &p.controls) {
+                let Control::Shape(shape) = paint else {
+                    continue;
+                };
+                let Some(tag) = shape.common().cell_border_paint else {
+                    continue;
+                };
+                let Some(pen) = tag.cell_pen else { continue };
+                tag.mask().ok_or_else(error)?;
+                let side = tag.side.index();
+                if seen[side] || pen > own[side] {
+                    return Err(error());
+                }
+                seen[side] = true;
+                own[side] = pen;
+            }
+            out.insert((cell.row, cell.col), own);
+        }
+        // A stored losing style must still account for the complete physical
+        // edge together with its neighbour. Metadata cannot authorize new ink.
+        if Self::resolve(table, &out)? != *physical {
+            return Err(error());
+        }
+        Ok(out)
+    }
+    fn resolve(
+        table: &crate::model::table::Table,
+        cells: &CellPens,
+    ) -> Result<[Vec<u32>; 2], HwpError> {
+        let mut edges = BTreeMap::<(usize, u16, u16), u32>::new();
+        for cell in &table.cells {
+            let own = cells.get(&(cell.row, cell.col)).ok_or_else(error)?;
+            for (side, (axis, line, interval)) in [
+                (0, cell.col, cell.row),
+                (0, cell.col + 1, cell.row),
+                (1, cell.row, cell.col),
+                (1, cell.row + 1, cell.col),
+            ]
+            .into_iter()
+            .enumerate()
+            {
+                // Complete opaque solid pens of one colour: the wider cell
+                // border wins, as in native shared-edge resolution. Preserve
+                // the losing own width separately for subsequent deletion.
+                let pen = edges.entry((axis, line, interval)).or_default();
+                *pen = (*pen).max(own[side]);
+            }
+        }
+        let mut result = [
+            vec![0; usize::from(table.col_count) + 1],
+            vec![0; usize::from(table.row_count) + 1],
+        ];
+        for ((axis, line, _), pen) in edges {
+            let slot = &mut result[axis][usize::from(line)];
+            if *slot != 0 && *slot != pen {
+                return Err(error());
+            }
+            *slot = pen;
+        }
+        if result
+            .iter()
+            .flatten()
+            .any(|&p| p < 2 || p > i32::MAX as u32)
+        {
+            return Err(error());
+        }
+        Ok(result)
+    }
+    pub(super) fn edit(
+        &mut self,
+        table: &mut crate::model::table::Table,
+        edit: StructureEdit,
+    ) -> Result<(), HwpError> {
+        let mut cells: CellPens = self
+            .cells
+            .iter()
+            .filter_map(|(&(r, c), &pens)| edit.destination(r, c).map(|at| (at, pens)))
+            .collect();
+        let mut missing = false;
+        edit.apply(table, |new, template| {
+            if let Some(&pens) = cells.get(&(template.row, template.col)) {
+                cells.insert((new.row, new.col), pens);
+            } else {
+                missing = true;
+            }
+        })
+        .map_err(HwpError::RenderError)?;
+        if missing || cells.len() != table.cells.len() {
+            return Err(error());
+        }
+        self.pens = Self::resolve(table, &cells)?;
+        self.cells = cells;
+        Ok(())
+    }
 }
 fn error() -> HwpError {
     HwpError::RenderError("연속 실선 경계 띠의 구조 편집 범위를 표현할 수 없습니다".into())
@@ -102,7 +215,7 @@ pub(super) fn apply(
     doc: &Document,
     parent: &mut Paragraph,
     ti: usize,
-    mut bands: Bands,
+    bands: Bands,
 ) -> Result<(), HwpError> {
     let mut ids = Allocator {
         used: used_instance_ids(doc),
@@ -115,19 +228,9 @@ pub(super) fn apply(
     if t.cells.len() > 4096 {
         return Err(error());
     }
-    // Parallel lines keep their source styles when the other axis changes.
-    // A uniform axis has an unambiguous style for each new boundary. Changing
-    // a nonuniform axis needs a template/conflict contract; never guess which
-    // of two unlike neighbouring source lines should win the new boundary.
     for (axis, count) in [t.col_count, t.row_count].into_iter().enumerate() {
-        let pens = &mut bands.pens[axis];
-        let pen = *pens.first().ok_or_else(error)?;
-        let count = usize::from(count) + 1;
-        if pens.len() != count {
-            if pens.iter().any(|&p| p != pen) {
-                return Err(error());
-            }
-            pens.resize(count, pen);
+        if bands.pens[axis].len() != usize::from(count) + 1 {
+            return Err(error());
         }
     }
     let widths = t.get_column_widths();
@@ -188,7 +291,10 @@ pub(super) fn apply(
             let Control::Shape(shape) = &mut control else {
                 unreachable!()
             };
-            shape.common_mut().cell_border_paint = CellBorderPaint::from_mask(1 << side, source);
+            let mut tag = CellBorderPaint::from_mask(1 << side, source).ok_or_else(error)?;
+            let own = bands.cells.get(&(cell.row, cell.col)).ok_or_else(error)?[side];
+            tag.cell_pen = (own != pens[side]).then_some(own);
+            shape.common_mut().cell_border_paint = Some(tag);
             append(&mut cell.paragraphs[0], control);
         }
         let x = ox + xs[cell.col as usize];

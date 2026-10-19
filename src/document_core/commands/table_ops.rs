@@ -78,10 +78,12 @@ impl DocumentCore {
         row_idx: u16,
         below: bool,
     ) -> Result<String, HwpError> {
-        let (row_count, col_count) =
-            self.mutate_table_structure(section_idx, parent_para_idx, control_idx, |table| {
-                table.insert_row(row_idx, below)
-            })?;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::InsertRow(row_idx, below),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -107,10 +109,12 @@ impl DocumentCore {
         col_idx: u16,
         right: bool,
     ) -> Result<String, HwpError> {
-        let (row_count, col_count) =
-            self.mutate_table_structure(section_idx, parent_para_idx, control_idx, |table| {
-                table.insert_column(col_idx, right)
-            })?;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::InsertColumn(col_idx, right),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -135,10 +139,12 @@ impl DocumentCore {
         control_idx: usize,
         row_idx: u16,
     ) -> Result<String, HwpError> {
-        let (row_count, col_count) =
-            self.mutate_table_structure(section_idx, parent_para_idx, control_idx, |table| {
-                table.delete_row(row_idx)
-            })?;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::DeleteRow(row_idx),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -163,10 +169,12 @@ impl DocumentCore {
         control_idx: usize,
         col_idx: u16,
     ) -> Result<String, HwpError> {
-        let (row_count, col_count) =
-            self.mutate_table_structure(section_idx, parent_para_idx, control_idx, |table| {
-                table.delete_column(col_idx)
-            })?;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::DeleteColumn(col_idx),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);

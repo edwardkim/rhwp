@@ -20,6 +20,7 @@ const MAGIC: &[u8; 8] = b"RBPO\0\0\0\x01";
 const MAGIC_OUTSIDE: &[u8; 8] = b"RBPO\0\0\0\x02";
 const MAGIC_RASTER: &[u8; 8] = b"RBPO\0\0\0\x03";
 const MAGIC_COMPOUND: &[u8; 8] = b"RBPO\0\0\0\x04";
+const MAGIC_CELL_PEN: &[u8; 8] = b"RBPO\0\0\0\x05";
 const HEADER_BYTES: usize = 12;
 const RECORD_BYTES: usize = 65;
 const MAX_RECORDS: usize = (MAX_BYTES - HEADER_BYTES) / RECORD_BYTES;
@@ -42,6 +43,10 @@ pub struct CellBorderPaint {
     /// Zero is the legacy single side. Nonzero is a certified union of sides.
     #[serde(default, skip_serializing_if = "zero")]
     pub sides: u8,
+    /// The cell's own exact pen, when a wider neighbour wins the visible edge.
+    /// Absent for source paint and whenever own and physical widths agree.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cell_pen: Option<u32>,
 }
 fn zero(v: &u8) -> bool {
     *v == 0
@@ -68,9 +73,16 @@ impl CellBorderPaint {
             side: CellSide::from_index(mask.trailing_zeros() as usize),
             source_id,
             sides: if mask.count_ones() > 1 { mask } else { 0 },
+            cell_pen: None,
         })
     }
     pub(crate) fn mask(self) -> Option<u8> {
+        if self
+            .cell_pen
+            .is_some_and(|p| p < 2 || p > i32::MAX as u32 || self.sides != 0)
+        {
+            return None;
+        }
         if self.sides == 0 {
             Some(1 << self.side.index())
         } else if self.sides & !15 == 0
@@ -93,10 +105,14 @@ pub(crate) fn keep_sides(c: &mut Control, mask: u8, outside: bool) -> Option<()>
     };
     if outside {
         let tag = a.outside_cell_border_paint.as_mut()?;
+        let pen = tag.paint.cell_pen;
         tag.paint = CellBorderPaint::from_mask(mask, tag.paint.source_id)?;
+        tag.paint.cell_pen = pen;
     } else {
         let tag = a.cell_border_paint?;
-        a.cell_border_paint = Some(CellBorderPaint::from_mask(mask, tag.source_id)?);
+        let mut kept = CellBorderPaint::from_mask(mask, tag.source_id)?;
+        kept.cell_pen = tag.cell_pen;
+        a.cell_border_paint = Some(kept);
     }
     Some(())
 }
@@ -626,7 +642,7 @@ struct Record {
     raster: bool,
 }
 impl Record {
-    fn write(&self, out: &mut Vec<u8>, compound: bool) {
+    fn write(&self, out: &mut Vec<u8>, compound: bool, cell_pens: bool) {
         let o = self.owner;
         out.extend(self.id.to_le_bytes());
         out.extend(o.table.to_le_bytes());
@@ -657,8 +673,11 @@ impl Record {
         if let Some(frame) = self.outside {
             out.extend(frame);
         }
+        if cell_pens {
+            out.extend(self.paint.cell_pen.unwrap_or(0).to_le_bytes());
+        }
     }
-    fn read(bytes: &[u8], compound: bool) -> Option<Self> {
+    fn read(bytes: &[u8], compound: bool, cell_pens: bool) -> Option<Self> {
         fn take<const N: usize>(b: &[u8], i: &mut usize) -> Option<[u8; N]> {
             let v = b.get(*i..*i + N)?.try_into().ok()?;
             *i += N;
@@ -690,7 +709,7 @@ impl Record {
             }
         };
         let source_id = u32::from_le_bytes(take(bytes, &mut i)?);
-        Some(Self {
+        let mut record = Self {
             id,
             owner,
             paint: if compound {
@@ -700,6 +719,7 @@ impl Record {
                     side,
                     source_id,
                     sides: 0,
+                    cell_pen: None,
                 }
             },
             fingerprint: take(bytes, &mut i)?,
@@ -709,7 +729,13 @@ impl Record {
             } else {
                 None
             },
-        })
+        };
+        if cell_pens {
+            let pen = u32::from_le_bytes(take(bytes, &mut i)?);
+            record.paint.cell_pen = (pen != 0).then_some(pen);
+            record.paint.mask()?;
+        }
+        Some(record)
     }
 }
 
@@ -771,10 +797,15 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     if records.is_empty() {
         return Ok(None);
     }
+    let cell_pens = records.iter().any(|r| r.paint.cell_pen.is_some());
     let size = HEADER_BYTES
         + records
             .iter()
-            .map(|r| RECORD_BYTES + if r.outside.is_some() { 32 } else { 0 })
+            .map(|r| {
+                RECORD_BYTES
+                    + if r.outside.is_some() { 32 } else { 0 }
+                    + if cell_pens { 4 } else { 0 }
+            })
             .sum::<usize>();
     if over_budget || size > MAX_BYTES {
         return Err("cell border paint metadata budget exceeded".into());
@@ -786,8 +817,10 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
         return Err("ambiguous cell border paint ownership".into());
     }
     let mut bytes = Vec::with_capacity(size);
-    let compound = records.iter().any(|r| r.paint.sides != 0);
-    bytes.extend(if compound {
+    let compound = cell_pens || records.iter().any(|r| r.paint.sides != 0);
+    bytes.extend(if cell_pens {
+        MAGIC_CELL_PEN
+    } else if compound {
         MAGIC_COMPOUND
     } else if records.iter().any(|r| r.raster) {
         MAGIC_RASTER
@@ -798,7 +831,7 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     });
     bytes.extend((records.len() as u32).to_le_bytes());
     for r in records {
-        r.write(&mut bytes, compound);
+        r.write(&mut bytes, compound, cell_pens);
     }
     Ok(Some(bytes))
 }
@@ -810,12 +843,14 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
         || (&bytes[..8] != MAGIC
             && &bytes[..8] != MAGIC_OUTSIDE
             && &bytes[..8] != MAGIC_RASTER
-            && &bytes[..8] != MAGIC_COMPOUND)
+            && &bytes[..8] != MAGIC_COMPOUND
+            && &bytes[..8] != MAGIC_CELL_PEN)
     {
         return;
     }
     let count = u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize;
-    let compound = &bytes[..8] == MAGIC_COMPOUND;
+    let cell_pens = &bytes[..8] == MAGIC_CELL_PEN;
+    let compound = cell_pens || &bytes[..8] == MAGIC_COMPOUND;
     let outside_version = &bytes[..8] == MAGIC_OUTSIDE || &bytes[..8] == MAGIC_RASTER || compound;
     let raster_version = &bytes[..8] == MAGIC_RASTER || compound;
     if count > MAX_RECORDS || bytes.len() < HEADER_BYTES + count * RECORD_BYTES {
@@ -825,7 +860,7 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
     let mut records = BTreeMap::new();
     let mut offset = HEADER_BYTES;
     for _ in 0..count {
-        let Some(r) = Record::read(&bytes[offset..], compound) else {
+        let Some(r) = Record::read(&bytes[offset..], compound, cell_pens) else {
             return;
         };
         if (r.outside.is_some() && !outside_version)
@@ -835,7 +870,8 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
         {
             return;
         }
-        offset += RECORD_BYTES + if r.outside.is_some() { 32 } else { 0 };
+        offset +=
+            RECORD_BYTES + if r.outside.is_some() { 32 } else { 0 } + if cell_pens { 4 } else { 0 };
         if r.id == 0 || !ids.insert(r.id) {
             return;
         }

@@ -1,0 +1,703 @@
+{
+  "sourceRuntime": {
+    "base": "7eff6b0a1029d61077ed07e4c1438445733329ea",
+    "sources": {
+      "src/model/table.rs": "8985dcc8d86f5b6f8c79bb1762b97d9a48b7263ed95e207065273bc41a0f8ea6",
+      "src/model/border_paint.rs": "60c144fdbde4e6cdb6a6574cff3775fbcde3191c3fbd0e38437329a5092cfe2a",
+      "src/parser/pdf/table_paint.rs": "3c86b578d55d99258957cee1ae5e9f0b1f0659673a4bf5903f3a267b610f9ee7",
+      "src/document_core/commands/border_paint_bands.rs": "fd25e7ef6877f7b6c4ca0d875ea58504f8b85066b234d0b3ccdb6036f218ecbf",
+      "src/document_core/commands/border_paint_structure.rs": "6c237c523d853cc8a1c6429da04e8aa959214ef703ea389c4f6a238887d26b3f",
+      "src/document_core/commands/table_ops.rs": "87fd0448079512580b23e18eb39298fc44b2492d19fb8da700b9d16b6457e77f"
+    },
+    "nativeSha256": "74c9e837b5cc884d5d67218ff176818b13c65ca709cce0da1aa393f10c919f7e",
+    "wasmSha256": "ea0bb1d816977d2c416b93b8ce930baf0e15dbb0935b0b60009a2a18a55deeda",
+    "glueSha256": "5671802fbb89ed060c3bab7a6f458a78833a7e5ca3e7df8e1699d45098cddeb6",
+    "wasmBytes": 19650162
+  },
+  "referenceContract": "Hancom 2020 Print driver one-up; output 1 page; exact source bytes and SHA per entry",
+  "sharedEdgeRule": [
+    {
+      "axis": "v",
+      "nativeOwnStylesMm": [
+        0.4,
+        0.2
+      ],
+      "states": {
+        "source": {
+          "coordinatePdfPoints": 200.0,
+          "declaredStrokeWidthsPoints": [
+            0.6
+          ],
+          "visibleUnionPenPoints": 0.6
+        },
+        "insert": {
+          "coordinatePdfPoints": 200.0,
+          "declaredStrokeWidthsPoints": [
+            0.6,
+            1.08
+          ],
+          "visibleUnionPenPoints": 1.08
+        },
+        "restored": {
+          "coordinatePdfPoints": 200.0,
+          "declaredStrokeWidthsPoints": [
+            0.6
+          ],
+          "visibleUnionPenPoints": 0.6
+        }
+      }
+    },
+    {
+      "axis": "h",
+      "nativeOwnStylesMm": [
+        0.4,
+        0.2
+      ],
+      "states": {
+        "source": {
+          "coordinatePdfPoints": 540.0,
+          "declaredStrokeWidthsPoints": [
+            0.6
+          ],
+          "visibleUnionPenPoints": 0.6
+        },
+        "insert": {
+          "coordinatePdfPoints": 540.0,
+          "declaredStrokeWidthsPoints": [
+            0.6,
+            1.08
+          ],
+          "visibleUnionPenPoints": 1.08
+        },
+        "restored": {
+          "coordinatePdfPoints": 540.0,
+          "declaredStrokeWidthsPoints": [
+            0.6
+          ],
+          "visibleUnionPenPoints": 0.6
+        }
+      }
+    }
+  ],
+  "visualMinimum": {
+    "native": {
+      "inputs": 59,
+      "pages": 59,
+      "minimum": 97.45731,
+      "newEditsMinimum": 98.66183,
+      "missing": 0,
+      "pageCountMismatch": 0
+    },
+    "wasm": {
+      "inputs": 59,
+      "pages": 59,
+      "minimum": 96.19767,
+      "newEditsMinimum": 96.69192,
+      "missing": 0,
+      "pageCountMismatch": 0
+    }
+  },
+  "maintainerVerdict": "2026-10-19 시각·편집 구조 통과",
+  "references": [
+    {
+      "key": "horizontal-after.hwp",
+      "inputSha256": "5d4883460e7055ec140418d562f3ae8146df7bf526597dce80e12d7a02ca5c27",
+      "pdfSha256": "2db79ec1bf8b8eadc6e95e05fdd016d208504114e022fb7ad9c1f9f222328b0f",
+      "jobId": "be4c9707-a895-45bb-bd07-69506e9f941d",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-after.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-after-hwp-2020.pdf"
+    },
+    {
+      "key": "horizontal-after.hwpx",
+      "inputSha256": "f70664781e27df7457ff37e65ba27b191d180641b7026e148e33bdcddecfedb5",
+      "pdfSha256": "bf9f4d96c3faa4b61d23e76d77cc22f0f9a6f5f6245364e3d94bb7f718ecf578",
+      "jobId": "42ab5d74-2e98-4010-8afd-ba014d938d90",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-after.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-after-hwpx-2020.pdf"
+    },
+    {
+      "key": "horizontal-append.hwp",
+      "inputSha256": "8ac7ee10c08755305bfe0ae8971c93eeb20c116bc7065d3a46ae0d4a07d029b3",
+      "pdfSha256": "31d0bcef1e8eb179251aedd0c209699d3ec895bf0e36a9040590ad62935d3135",
+      "jobId": "c89a23d4-cb59-4d57-a4fc-e8578c72716c",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-append.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-append-hwp-2020.pdf"
+    },
+    {
+      "key": "horizontal-append.hwpx",
+      "inputSha256": "a2138b450856f8e99d06c47d79f97f46bdf1b0a7052731520a64f7191cf0661e",
+      "pdfSha256": "d12fe7732914ebc4ee1ceba48193715210a68027ce78ab431b894b0a171007f4",
+      "jobId": "2580e6b4-83c1-40d2-8bcc-e6f559119e27",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-append.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-append-hwpx-2020.pdf"
+    },
+    {
+      "key": "horizontal-before.hwp",
+      "inputSha256": "111031643e24dc38697a897c6258ea568f03018daff269ac0d424b17b4df05ce",
+      "pdfSha256": "9dd7ec5278e6a71d39d4664d2be29d05df3058419d5edae2a94bb73637fc641d",
+      "jobId": "477b1965-ae57-40cd-ab14-352f4e481971",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-before.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-before-hwp-2020.pdf"
+    },
+    {
+      "key": "horizontal-before.hwpx",
+      "inputSha256": "29bf5cb54135e85c0f3d5321e9de43c0e6ad7c6ed65819a57131f15c185254f4",
+      "pdfSha256": "c594f84dad3b00fa655478c19c841b9c7f87a5baa8a3bb47302d1fe87b3d9395",
+      "jobId": "ad46d2dd-7ece-4068-8966-60f9ceee3ffa",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-before.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-before-hwpx-2020.pdf"
+    },
+    {
+      "key": "horizontal-conflict-restored.hwp",
+      "inputSha256": "5b810c0ef0cd1c425ae7a45af9d42ce8eb2234b05d65783898ce894abd052bb6",
+      "pdfSha256": "aa403cff15c38d1b0cf6311225de754699bb8166507b450ad4eebb9966dc4a02",
+      "jobId": "4941aa7a-db4b-42c9-ac48-9d7e9672b665",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-conflict-restored.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-conflict-restored-hwp-2020.pdf"
+    },
+    {
+      "key": "horizontal-conflict-restored.hwpx",
+      "inputSha256": "9c09a592e1eb706680f6b5a4ce6d066cbb28cceaa02ac40da8b982246f58b078",
+      "pdfSha256": "4d740dfaa2220cad5137782f7d34d94517ac91679612f7c7027ebbdc322663f9",
+      "jobId": "5bf89229-109d-4e8c-99c6-7ec47c379824",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-conflict-restored.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-conflict-restored-hwpx-2020.pdf"
+    },
+    {
+      "key": "horizontal-delete-first.hwp",
+      "inputSha256": "ea59ea173b01539bb6909add25fa15557dc184171307da040537a550fe0398f5",
+      "pdfSha256": "f39b905ee3f4cc260106c6c7ba40bca205430d079dd3a92ee38b54725a25a7d0",
+      "jobId": "25fecb25-b510-4dd3-bbe7-1046d7bc3c5e",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-delete-first.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-delete-first-hwp-2020.pdf"
+    },
+    {
+      "key": "horizontal-delete-first.hwpx",
+      "inputSha256": "6447b810d00faf1dad848f5679938a1cda6b6d1a244bc1a25deabe818617e03b",
+      "pdfSha256": "6f74be3ee6b31f4d4b45c398ad8ab832f5c8d9dfb7c94fcb4be38c9ac286de93",
+      "jobId": "afa554b5-0662-47d0-83ca-1710eeb55692",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-delete-first.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-delete-first-hwpx-2020.pdf"
+    },
+    {
+      "key": "horizontal-delete-last.hwp",
+      "inputSha256": "a863bb97a7dabc29d2614fac53a4d04fa4d5b3a1224dba79c3b2a436d7cae110",
+      "pdfSha256": "b9cb19d4614e6714a63ef9385120cb02d2fed7ab8dacdbc4aaac20ee0a63cdd6",
+      "jobId": "05e1ee79-0a81-4172-b0ba-e5ee079b1128",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-delete-last.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-delete-last-hwp-2020.pdf"
+    },
+    {
+      "key": "horizontal-delete-last.hwpx",
+      "inputSha256": "c8a7a2100cb9779cef77ed0eb081bebb2656b11411802fd7c18d2d9cf8af121c",
+      "pdfSha256": "7f85bb76e7e13868f5d2e71cceb67160b39defede80758556a9dab3560ae8d59",
+      "jobId": "f07bc98f-a224-4d3d-9903-b7715ec8638d",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 2132.60504.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/horizontal-delete-last.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-horizontal-delete-last-hwpx-2020.pdf"
+    },
+    {
+      "key": "native-h-insert.hwpx",
+      "inputSha256": "5987d2042edd636bffd819b836a8cedc40ef749b73d55093e23beac9a5b53553",
+      "pdfSha256": "389e1c73c29e8de595e3216a25e12e522a62945d445cfcc9e9c30cf48167d0a1",
+      "jobId": "6b7bac1b-9413-4ca8-9727-23cf0e68d13c",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/native-h-insert.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-native-h-insert-hwpx-2020.pdf"
+    },
+    {
+      "key": "native-h-restored.hwpx",
+      "inputSha256": "a7f3e9554ffef48daad46f96ebe7515ca6d40684e98adfa2b277bc173fc52612",
+      "pdfSha256": "7446620f974313dee38d4f39895a73fb2e60a70ae88db7c2baa47ce998fb19b7",
+      "jobId": "ff3ee2d8-a5f2-4c46-9e3b-2b07102b8638",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/native-h-restored.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-native-h-restored-hwpx-2020.pdf"
+    },
+    {
+      "key": "native-h-source.hwpx",
+      "inputSha256": "9043a92b3622c0a3594ef96bb2b8424ef7947b668ff5153137765bf9ba5d739c",
+      "pdfSha256": "10af11a8b48b0ade7ec362e5ff5c2300cf3d99e30b458c7fbea71e7354935ad7",
+      "jobId": "06f552be-659d-4e1b-8804-de508f3c9e30",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/native-h-source.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-native-h-source-hwpx-2020.pdf"
+    },
+    {
+      "key": "native-v-insert.hwpx",
+      "inputSha256": "e249e8657fabe0d01474da319d649716ea435b90456d0752d88a9ff28829eb71",
+      "pdfSha256": "6ed01d4689331ba9feb0309d5504bb5edbd1a5b87629f566bed532d86d146911",
+      "jobId": "8ef42f02-dc7c-4a46-891a-928b0deecd83",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/native-v-insert.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-native-v-insert-hwpx-2020.pdf"
+    },
+    {
+      "key": "native-v-restored.hwpx",
+      "inputSha256": "47480807257b6b32f749c5a16da772e20ff4966716feea9c93a8bc412e3aa225",
+      "pdfSha256": "5d49f505da85be97b6199f6eefe8d651159e7c17fc7568b50a8515a0ccde2854",
+      "jobId": "1a831b57-6cd7-4c37-ad1f-2aa47dde3cbc",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/native-v-restored.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-native-v-restored-hwpx-2020.pdf"
+    },
+    {
+      "key": "native-v-source.hwpx",
+      "inputSha256": "d6d10fc88521c35de6da355e1a869aa4c083de5118af7e049dbfc7a2dc1be28c",
+      "pdfSha256": "d354e028f33408f34d40f336d80fdbe1f315366f5cf176cd079b56ef6d56a299",
+      "jobId": "50a7f40a-1dbd-4173-a64f-62864f5fb204",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/native-v-source.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-native-v-source-hwpx-2020.pdf"
+    },
+    {
+      "key": "vertical-after.hwp",
+      "inputSha256": "33d6de847f092609d77b2a35df54faf7bee4373e11bb8f4a3c3a844c309f5f5b",
+      "pdfSha256": "0d716ad3c86a31fdd1eba24f6227344d9980ee1276aaa6bff7a5a1b4ca6ed600",
+      "jobId": "d73c3789-9f91-4855-97d1-b1dafc7e9642",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 2023.0.0.4",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-after.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-after-hwp-2020.pdf"
+    },
+    {
+      "key": "vertical-after.hwpx",
+      "inputSha256": "44cb5d68aef29b31a3267465d57e9c350e4c4f1bd257c51897c41cd40e8563ec",
+      "pdfSha256": "bb6cb994ea2c76a4524450ace7a946b1446240da54b106f5f61427e76a88829d",
+      "jobId": "6954719f-627a-43e1-8b0e-5e006f980651",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-after.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-after-hwpx-2020.pdf"
+    },
+    {
+      "key": "vertical-append.hwp",
+      "inputSha256": "02947edc492492604284c47b769c213a83cf063005a506e85439b33f61a14772",
+      "pdfSha256": "6a57f09bf9990af3262113411d021a95eec8304969e3fb6ffd75d8738b6b9283",
+      "jobId": "91a09c31-b643-4350-8800-1b89f81da456",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-append.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-append-hwp-2020.pdf"
+    },
+    {
+      "key": "vertical-append.hwpx",
+      "inputSha256": "b68b66431a15a1e312381a7d3065a306681908c22998e715f8e309b3b361f89a",
+      "pdfSha256": "a162be040b3d801bc374f9c28ad64aa1719b6a676bafce2bb39877a15d2fc377",
+      "jobId": "1804017b-a404-4030-8af6-7b6d48edc99c",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-append.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-append-hwpx-2020.pdf"
+    },
+    {
+      "key": "vertical-before.hwp",
+      "inputSha256": "6c4383d99006d38186d03ab42fc748757a04c1a802adcd80865a4da9eeedd3e2",
+      "pdfSha256": "6cf62db23f34e6114cb587dc1f2f524d654d170d0b5088d65e1df8d127ddf013",
+      "jobId": "60d15f8d-c272-4a7a-b11a-e6543bddd726",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 16544.0.0.4",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-before.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-before-hwp-2020.pdf"
+    },
+    {
+      "key": "vertical-before.hwpx",
+      "inputSha256": "670279cf5a3d90dc8fc3b8e0c73a41f19e035d468b97998169405c7cae163ef5",
+      "pdfSha256": "28b7462fd0e8453536a1c1ad0ac7b9cfe2394de8853fb317edf52e6f0cafbbca",
+      "jobId": "703d53f0-d64d-42ba-8c51-1d1150948f43",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-before.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-before-hwpx-2020.pdf"
+    },
+    {
+      "key": "vertical-conflict-restored.hwp",
+      "inputSha256": "f80cd9d6ffb23350f7485842339f77ee000ceecbdf6351d13dc6310025df21ea",
+      "pdfSha256": "ff3693476d9727d62aac83e485f9727587bb403f53e75d18266100095d3b2d00",
+      "jobId": "55afdbfe-2e3c-4b4e-b039-2470b2b34d3c",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-conflict-restored.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-conflict-restored-hwp-2020.pdf"
+    },
+    {
+      "key": "vertical-conflict-restored.hwpx",
+      "inputSha256": "6d4ab2bf70de0f43d172a299b18be0d15b8e0b5b736847dcfbc7fe3fd080ec1e",
+      "pdfSha256": "f5e71e4b60e196de66f85d99e93252af81d9cc14a55f490fb01199488a3e3071",
+      "jobId": "91721322-238e-479e-b995-f3f306f285a4",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-conflict-restored.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-conflict-restored-hwpx-2020.pdf"
+    },
+    {
+      "key": "vertical-delete-first.hwp",
+      "inputSha256": "50adc2a850573c6ecf87222ac51375a8223b43de5059bbba3e29ee6072704d8f",
+      "pdfSha256": "27da40dc15187596e438b2eda6e4527c042672514fa697a27f71a0f27aeb4e46",
+      "jobId": "a5b31f8a-9c3f-4b6b-8bbe-3753d5b68bf3",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-delete-first.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-delete-first-hwp-2020.pdf"
+    },
+    {
+      "key": "vertical-delete-first.hwpx",
+      "inputSha256": "8f54fe1e2186eb31dd7d6e3d2b0b2da24c634caf6d21e723ac6ceeef0cbc5560",
+      "pdfSha256": "9e311598455fead951419a0653adfb2b4d1c8cd9fb34013b0850bc9fc56651f5",
+      "jobId": "b75e6bfc-3ae0-4d7d-a8c8-698af6ebcc4a",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-delete-first.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-delete-first-hwpx-2020.pdf"
+    },
+    {
+      "key": "vertical-delete-last.hwp",
+      "inputSha256": "db62f54529f979b593ba58afb833cd4b6f9b30775952cb0c24ab9ad0ccc7a927",
+      "pdfSha256": "ff041046c474fb2bf283916b445459fdc90bc300dd5c1afac64a147df61eef0d",
+      "jobId": "439d5a05-664f-4a93-947d-29f183e36ddd",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-delete-last.hwp",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-delete-last-hwp-2020.pdf"
+    },
+    {
+      "key": "vertical-delete-last.hwpx",
+      "inputSha256": "cff98a03bb00f5c108c5a92800d4180b198831896937e7dd5d560cae72afb3c9",
+      "pdfSha256": "ef080c486facad2b5949e9fa20f9ab101c9b8cfb3189ef93ba7b61eb59393da7",
+      "jobId": "47a0dfcb-986d-4b2b-90a0-e227c762d74f",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "attemptFolder": "/mnt/e/tmp/issue7998-stage25-evidence/remote-print/vertical-delete-last.hwpx",
+      "repositoryPdf": "pdf/issue7998/retained-border-structure/print/conflict-vertical-delete-last-hwpx-2020.pdf"
+    }
+  ]
+}

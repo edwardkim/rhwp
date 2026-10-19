@@ -895,6 +895,7 @@ pub(super) fn partition(
                                         Some(crate::model::border_paint::CellBorderPaint {
                                             side,
                                             sides: 0,
+                                            cell_pen: None,
                                             source_id: common(original).unwrap().instance_id,
                                         });
                                 }
@@ -1019,6 +1020,7 @@ pub(super) fn partition(
                         crate::model::border_paint::CellBorderPaint {
                             side,
                             sides: 0,
+                            cell_pen: None,
                             source_id: common(original).unwrap().instance_id,
                         },
                     )),

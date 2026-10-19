@@ -26,6 +26,44 @@ fn error() -> HwpError {
 }
 type Rect = [f64; 4];
 type Key = (bool, usize, usize); // horizontal, boundary index, interval index
+#[derive(Clone, Copy)]
+pub(super) enum StructureEdit {
+    InsertRow(u16, bool),
+    InsertColumn(u16, bool),
+    DeleteRow(u16),
+    DeleteColumn(u16),
+}
+impl StructureEdit {
+    pub(super) fn apply(
+        self,
+        table: &mut Table,
+        inherit: impl FnMut(&crate::model::table::Cell, &crate::model::table::Cell),
+    ) -> Result<(), String> {
+        match self {
+            Self::InsertRow(i, below) => table.insert_row_inheriting(i, below, inherit),
+            Self::InsertColumn(i, right) => table.insert_column_inheriting(i, right, inherit),
+            Self::DeleteRow(i) => table.delete_row(i),
+            Self::DeleteColumn(i) => table.delete_column(i),
+        }
+    }
+    /// Coordinates of a surviving original cell, never a template guess.
+    pub(super) fn destination(self, row: u16, col: u16) -> Option<(u16, u16)> {
+        Some(match self {
+            Self::InsertRow(i, below) => (
+                row.checked_add(u16::from(u32::from(row) >= u32::from(i) + u32::from(below)))?,
+                col,
+            ),
+            Self::InsertColumn(i, right) => (
+                row,
+                col.checked_add(u16::from(u32::from(col) >= u32::from(i) + u32::from(right)))?,
+            ),
+            Self::DeleteRow(i) if row == i => return None,
+            Self::DeleteColumn(i) if col == i => return None,
+            Self::DeleteRow(i) => (row - u16::from(row > i), col),
+            Self::DeleteColumn(i) => (row, col - u16::from(col > i)),
+        })
+    }
+}
 struct Edge {
     color: u32,
     width: Option<u8>,
@@ -650,9 +688,8 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
         let expected = usize::from(table.row_count) * (usize::from(table.col_count) + 1)
             + usize::from(table.col_count) * (usize::from(table.row_count) + 1);
         // Each complete parallel line has its own source pen. It must remain
-        // continuous through every interval along that line. Mutating the
-        // nonuniform axis still requires a new-boundary conflict contract;
-        // apply() rejects that case before committing this candidate.
+        // continuous through every interval along that line. Cell-template
+        // inheritance subsequently resolves the new physical shared edges.
         if proof.edges.len() != expected {
             return Err(error());
         }
@@ -723,6 +760,7 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
             parent: candidate,
             fills: Vec::new(),
             bands: Some(super::border_paint_bands::Bands {
+                cells: super::border_paint_bands::Bands::cell_pens(table, &pens)?,
                 pens,
                 color: first.color,
                 cell_z: [
@@ -782,13 +820,18 @@ impl DocumentCore {
         si: usize,
         pi: usize,
         ti: usize,
-        edit: impl FnOnce(&mut Table) -> Result<(), String>,
+        edit: StructureEdit,
     ) -> Result<(u16, u16), HwpError> {
         if let Some(mut prepared) = prepare(&self.document, si, pi, ti)? {
             let Control::Table(table) = &mut prepared.parent.controls[ti] else {
                 unreachable!()
             };
-            edit(table).map_err(HwpError::RenderError)?;
+            if let Some(bands) = &mut prepared.bands {
+                bands.edit(table, edit)?;
+            } else {
+                edit.apply(table, |_, _| {})
+                    .map_err(HwpError::RenderError)?;
+            }
             let counts = (table.row_count, table.col_count);
             if let Some(bands) = prepared.bands {
                 super::border_paint_bands::apply(&self.document, &mut prepared.parent, ti, bands)?;
@@ -800,7 +843,8 @@ impl DocumentCore {
             Ok(counts)
         } else {
             let table = self.get_table_mut(si, pi, ti)?;
-            edit(table).map_err(HwpError::RenderError)?;
+            edit.apply(table, |_, _| {})
+                .map_err(HwpError::RenderError)?;
             Ok((table.row_count, table.col_count))
         }
     }
