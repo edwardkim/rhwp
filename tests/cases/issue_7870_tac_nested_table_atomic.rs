@@ -100,10 +100,7 @@ fn outer_cell_fragments(sample: &str) -> Vec<Option<(f64, f64)>> {
                 .as_array()?
                 .iter()
                 .find(|child| child["type"] == "Cell")?;
-            return Some((
-                cell["bbox"]["y"].as_f64()?,
-                cell["bbox"]["h"].as_f64()?,
-            ));
+            return Some((cell["bbox"]["y"].as_f64()?, cell["bbox"]["h"].as_f64()?));
         }
         node["children"].as_array()?.iter().find_map(find)
     }

@@ -26035,7 +26035,9 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         if !self.row_uses_reflow_physical_frame(table, row)
-            || self.reflow_row_physical_minimum(table, row, styles).is_some()
+            || self
+                .reflow_row_physical_minimum(table, row, styles)
+                .is_some()
         {
             return None;
         }
