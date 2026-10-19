@@ -1,4 +1,6 @@
-//! Synthetic model/edit/paint contracts, not a document pixel oracle.
+//! Synthetic model/edit/paint contracts. The completed baseline67 page also
+//! protects independent Print rule endpoints (Native/fresh WASM raw100%).
+//! The current generator serialization and direct-reading evidence are in stage8 C427.
 //! The public document consumer exposes the actual EquationNode layout. No new
 //! test-only API or source-side unit-test baseline is needed.
 use rhwp::model::control::{Control, Equation};
@@ -290,5 +292,61 @@ fn cell_baseline_edit_reflows_the_cell_owner_and_preserves_equation_membership()
             );
         }
         previous = Some((relative_y, source_baseline));
+    }
+}
+
+#[test]
+fn completed_legacy_fraction_rule_uses_content_bounds_instead_of_registration_space() {
+    let mut core = document(equation());
+    core.set_hangul2024_compat(true);
+    let (bounds, paint) = rendered(&core);
+    assert_eq!(paint.para_index, Some(0));
+    assert_eq!(paint.script, "가 over 나");
+    let fragment = rhwp::renderer::equation::svg_render::render_equation_svg(
+        &paint.layout_box,
+        "#000",
+        paint.font_size,
+    );
+    let xml = format!("<svg>{fragment}</svg>");
+    let svg = roxmltree::Document::parse(&xml).unwrap();
+    let rules: Vec<_> = svg
+        .descendants()
+        .filter(|n| n.has_tag_name("line"))
+        .collect();
+    assert_eq!(rules.len(), 1, "one fraction rule, no duplicate");
+    let value = |n: roxmltree::Node<'_, '_>, key| n.attribute(key).unwrap().parse::<f64>().unwrap();
+    let rule = rules[0];
+    let left = bounds.x + value(rule, "x1");
+    let right = bounds.x + value(rule, "x2");
+    // Independent Hancom2024 Print of the exact current model-test generator:
+    // p1 rule x=79.957333..101.865333 CSSpx, measured from PDF paths.
+    // Native/fresh WASM 192DPI raw2px are both100%; compare in96DPI CSSpx.
+    assert!(
+        (left - 79.95733333333334).abs() <= 2.0,
+        "the rule must not consume the CJK registration space: left={left}"
+    );
+    assert!(
+        (right - 101.86533333333334).abs() <= 2.0,
+        "independent rule end: right={right}"
+    );
+    let text: Vec<_> = svg
+        .descendants()
+        .filter(|n| n.has_tag_name("text"))
+        .collect();
+    assert_eq!(text.len(), 2, "both source operands, no loss or duplicate");
+    assert_eq!(text[0].text(), Some("가"));
+    assert_eq!(text[1].text(), Some("나"));
+    let rule_y = value(rule, "y1");
+    assert_eq!(rule_y, value(rule, "y2"));
+    assert!(
+        value(text[0], "y") < rule_y && rule_y < value(text[1], "y"),
+        "the rule stays between the owned numerator and denominator"
+    );
+    for operand in text {
+        let x = bounds.x + value(operand, "x");
+        assert!(
+            left <= x && x + paint.font_size <= right,
+            "rule contains the full-em CJK operand, without moving its glyph"
+        );
     }
 }

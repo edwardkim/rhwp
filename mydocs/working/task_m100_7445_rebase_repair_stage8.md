@@ -3307,3 +3307,56 @@ TSV·PNG·로그는 ignored `repair27-legacy-rule-candidate/`에 보존한다.
 source1840파일 hash를 빌드 전후 확인했다. 새 renderer 회귀/기대값 변경은 아직 추가하지 않았다.
 이 단계는 원인별 구현 보정의 로컬 커밋이며 새 fresh WASM·전쪽·전체 nextest·179조건 보존·
 실제 제품 소비 검증은 계속한다. 기존 두 실패 검사는 그대로 보존한다.
+
+
+## C427 완료 단독 분수의 독립 px 회귀와 초기화 응답
+
+C426의 runtime `72ef9c21bec6ee20a5aed74a1c329220454f8de9`를 fresh WASM으로 다시
+컴파일했다. locked wrapper web/pkg/no-opt의 Mac 로컬 대체 빌드exit0(189.697초)이며
+Docker 최적화 결과가 아니다. root pkg와 Studio public의 JS/WASM hash가 일치한다.
+새 집중14쪽은 Native와 같은 정확한 입력·Print로 산출했다. 단독 한글 분수100%,
+원본 sample16의3/6/18쪽99.80378/99.81323/97.54876%, 저장본은97.19902/99.42673/
+98.50096%다. 복합 CJK·괄호 표본의 미달은 남으며 전쪽·전체 수식 지원 완료로 확대하지 않는다.
+실행은 `repair28-fresh-wasm`과 `repair29-wasm-focus`에 보존했다.
+
+새 `completed_legacy_fraction_rule_uses_content_bounds_instead_of_registration_space`는
+기존 합성 model helper의 동일한 문서·수식 생성 결과를 사용한다. 정확한 현재 생성·저장본
+`from-current-test.hwp`의 SHA256은
+`b932adebd711e649825145dd7f02ec8b4374bf279f40f94ed209e743ea01b50e`다.
+예전 oracle 파일과 바이트가 다르므로 그 Print를 재사용하지 않고 정확한 현재 입력을
+한컴2024에서 다시 Print했다. job`ed5f546b-ff0a-48da-9084-aba9311b137c`, engine2024,
+Hancom13.0.0.3901, method0/frame_print_to_pdf_ex_one_up이며 PDF는
+`pdf/issue7445-current-model-baseline67-2024.pdf`, SHA256
+`b033ccd684d6fbaaec402a31ba632f5a6697c72d1ed3e670a1f07d7dc46ca0c4`다.
+
+정확한 입력·새 Print의 전1쪽은 Native/fresh WASM 각각100.00000%,1/1쪽이다.
+인쇄 격자는192DPI이고 회귀 기대 좌표는96DPI CSSpx로 환산했다. 실제 PDF 선분은
+x79.9573333333..101.8653333333이며 괘선의 양끝을 ±2CSSpx로 검사한다.
+현재 테스트의 in-memory 입력과 Print용 저장본 재파싱 입력이 같은 수식 소유·bbox와
+최종 수식 SVG를 낸다는 실행도 확인했다. 원점 대신 논리 상자만 비교한 증거가 아니다.
+단일 수식/괘선, 분자·분모의 소속·순서·누락·중복, 괘선의 두 피연산자 포함과 세로 순서도
+함께 검사한다. 이 동작의100% 완료 쪽을 우선 선정했으며 사설 font binary는 필요하지 않다.
+
+수정 전 frozen19에서는 실제 FAIL(괘선 시작76.386667), 수정 후 frozen27에서는 PASS다.
+정식 nextest의 괘선1건은PASS/exit0(실행0.015초·컴파일2분01초)다. 함께 선택했던 기존
+참여 수식2건은 `--prepare` 뒤 suite010→027로 배정이 바뀌어 첫 명령에서 실행되지 않았다.
+현재 파생 배정을 다시 조회하고 누락2건만 suite027에서 보완해2PASS/exit0(1.329초)을
+확인했다. 처음1건 결과를3건 통과로 보고하지 않는다. CLI의 잘못된 --print 인자 순서와
+진단의 상대 include/직렬화 API 오류는 정정했고 실패 출력을 정식 성공 증거로 쓰지 않는다.
+기존 두 baseline 실패 검사의 입력·기대값은 이 단계에서 변경하지 않았다.
+
+ignored `repair30-current-model-qualification`에 generator/입력 SHA, 같은 최종 SVG 증명,
+Print의 start/status/download·독립 좌표·양쪽 TSV·review/overlay·실제 before/after·정식
+로그를 보존한다. 양쪽 review/overlay를 직접 판독했고 단독 분수의 글자·괘선 소속이 유지된다.
+100%는2px raw 실루엣이며 엄격 RGB 일치의 주장이나 미달 복합 수식의 면제가 아니다.
+
+Studio7736의 실제 새 head 초기화 응답도 캡처했다. Chrome155.0.8059.84에서 WASM 초기화를
+확인했고 JS/WASM 모두HTTP200이며 frozen fresh 빌드와 일치한다. JS 원본 hash는
+`23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591`이고
+실제 Vite 응답은`f2294e7a48873a5ffe66aa3409d96be9a7d191fce5973dbf6b514faa09cc929b`다.
+JS는 인라인 source map의 정확한 asset URL 변환을 검증했으며 raw byte 같음으로 보고하지 않는다.
+WASM은`b26d2d2293e8e5bffb9b1faa04d98fea0a341f0269d9bd97af55935f7530ab57`로
+실제 응답과 byte hash가 같다. `repair31-browser-initial-response/result.json`에 보존했다.
+최초 helper 기본값이 host CDP를 선택해 ENETUNREACH로 종료된 실행은 INVALID로 분리했다.
+브라우저/탭 생성 전 실패했으며 실제 프로세스 확인 뒤 local headless를 명시해 정상 재검증했다.
+이 초기화 증거는 실제 문서 paint36건·글꼴 선택·CanvasKit 준비/지원 검증을 대신하지 않는다.
