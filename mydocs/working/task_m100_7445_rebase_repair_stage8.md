@@ -2951,3 +2951,32 @@ paint 프로토콜 검사다. 같은 고주파 흑백 PNG를 `FormatConverted`�
 나머지 원52조건/1964쪽·새 devel179조건/2082쪽의 전체 동일 조건 검증, 알려진 기존
 실패6건의 독립 재검토·보정, 전체 nextest·필수 게이트·actual36은 계속 필요하다.
 현재 PR 준비 완료가 아니며 외부 push·PR·게시·merge는 하지 않았다.
+
+
+## C418 Native Skia 광범위 검사와 두 단위 계약의 정정
+
+C417을 커밋한 `6215ec12b1552a78eb9092dfa1530b7defd9dd43`에서 Native Skia 공식3종을
+순차 실행했다. PNG2건과 PDF4건은 통과했다. 첫 lib 실행은3857PASS/2FAIL/12ignore였다.
+C417의 장치 PNG 소비 검사는 정식 integration suite에서 이미1PASS였으며 이2건과 다르다.
+
+- `split_label_assigns_positive_slack_to_interior_spaces`: 테스트가 반올림한 호환 폭
+  `estimate_text_width`로 전체 폭·공백·가시 끝을 구성했지만 실제 함수 입력은
+  `est_x - est_x_start`의 소수 누적 폭이다. 테스트 입력과 독립적인 가시 끝 불변식을
+  `estimate_text_width_exact`의 같은 좌표계로 맞췄다. 내부 공백2개만60px와 종료 공백을
+  분배하고, 가시 끝이 프레임 끝에 도달하며 원문 종료 공백·0 문자/대시 배분이 유지된다는
+  assertion은 모두 유지한다. 허용 오차0.001을 늘리지 않았다.
+- `owned_rowbreak_tac_height_selects_current_or_multirow_frames`: `TAG_IMPLEMENTATION_PROPERTY`
+  후속 줄은 원본 저장 사다리를 인증하지 않지만 저장 원점이 간격을 복원하지 못하는
+  **후속 재조판**이다. 저장 frame 인증과 실제 전량 간격을 같은 bool로 부정하던 검사를
+  구분했다. `restarted_tac_line_advance`가 합성 후속 줄을 저장 닫힘으로 인정하지 않음을
+  추가 검사하고, 실제 후행 간격은 전량 남아야 한다고 확인한다. dirty/되감김만 있는 원점/
+  불완전한 개체 높이의 거절 검사는 유지했다. 이 전량 간격의 실제 소비는 C416의6쪽
+  독립 Print 회복과 C417 양쪽 전64쪽 검증에 연결한다.
+
+제품 구현은 바꾸지 않았다. 두 변경은 `cfg(test)` 모듈의 입력·assertion뿐이다.
+동일 Native Skia lib 명령을 다시 실행해 root3859PASS/0FAIL/12ignore, workspace의
+다른 lib15+165+2=182PASS/0FAIL, exit0을 확인했다(총160.338초, 테스트root22.17초).
+C417 PNG/PDF 명령과 실행 내용은 제품 코드·해당 검사·입력에 변화가 없으므로 보존한다.
+증적은 ignored `repair7-skia-{lib,png,pdf}.log`, `repair7-skia-results.json`,
+`repair8-skia-lib.log`, `repair8-skia-state.json`이다. 전체 nextest와 잔여6건의 통과를
+이 root lib 결과로 대신하지 않는다.

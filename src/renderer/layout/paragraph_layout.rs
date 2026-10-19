@@ -11757,7 +11757,9 @@ mod issue_2809_split_alignment_tests {
         };
         let styles = ResolvedStyleSet::default();
         let text_style = resolved_to_text_style(&styles, 0, 0);
-        let natural_width = estimate_text_width("다 같 이 ", &text_style);
+        // 실제 배치는 누적한 소수 전진을 전달한다. 정수 반올림한 호환 폭을
+        // 입력하면서 소수 공백을 빼면 테스트 자체가 다른 좌표계를 섞는다.
+        let natural_width = super::estimate_text_width_exact("다 같 이 ", &text_style);
         let available_width = natural_width + 60.0;
         let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
             &trailing_line,
@@ -11783,11 +11785,11 @@ mod issue_2809_split_alignment_tests {
             available_width,
             40.0,
         );
-        let consumed_separator = estimate_text_width(" ", &text_style);
+        let consumed_separator = super::estimate_text_width_exact(" ", &text_style);
         assert!((extra_word * 2.0 - (60.0 + consumed_separator)).abs() < 0.001);
         let mut distributed_style = text_style;
         distributed_style.extra_word_spacing = extra_word;
-        let visible_advance = estimate_text_width("다 같 이", &distributed_style);
+        let visible_advance = super::estimate_text_width_exact("다 같 이", &distributed_style);
         assert!((visible_advance - available_width).abs() < 0.001);
         assert_eq!(trailing_line.runs[0].text, "다 같 이 ");
         assert_eq!(extra_char, 0.0);

@@ -2388,7 +2388,16 @@ fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
     assert!(!closes(&moved, &next));
     next.cell_format_vpos_dirty = false;
     next.line_segs[0].tag = LineSeg::TAG_IMPLEMENTATION_PROPERTY;
-    assert!(!closes(&moved, &next));
+    // 현재 생성한 후속 줄은 원본 저장 사다리의 닫힘 증거가 아니다.
+    assert!(
+        crate::renderer::float_placement::restarted_tac::restarted_tac_line_advance(
+            &moved, &next, 0.0, 0.0, 96.0,
+        )
+        .is_none()
+    );
+    // 저장 원점이 간격을 복원하지 않는 후속 재조판에는 전량 간격을 남긴다.
+    // C416의 독립 Print/전쪽 검증처럼 두 소유를 구분하며 더티 후속 줄은 위에서 거절한다.
+    assert!(closes(&moved, &next));
     next.line_segs[0].tag = 0;
     moved.line_segs[0].line_height -= 1;
     next.line_segs[0].vertical_pos -= 1;
