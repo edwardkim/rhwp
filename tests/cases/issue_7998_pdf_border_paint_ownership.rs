@@ -199,6 +199,29 @@ fn content_images_and_authored_background_fills_keep_independent_owners() {
     let base = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("pdf/issue7998");
     let mut images = 0;
     let mut backgrounds = 0;
+    let native_fills = |c: &DocumentCore| {
+        let mut values = Vec::new();
+        walk(&c.document().sections[0].paragraphs, &mut |ctrl| {
+            if let Control::Table(t) = ctrl {
+                for cell in &t.cells {
+                    let fill = &c.document().doc_info.border_fills
+                        [usize::from(cell.border_fill_id) - 1]
+                        .fill;
+                    if let Some(s) = &fill.solid {
+                        if !matches!(s.background_color, 0 | 0xffffff) {
+                            values.push((
+                                t.common.instance_id,
+                                cell.row,
+                                cell.col,
+                                s.background_color,
+                            ));
+                        }
+                    }
+                }
+            }
+        });
+        values
+    };
     for key in ["nested-dash-image", "nested-periodic-background"] {
         let c = DocumentCore::from_pdf_bytes(
             &fs::read(base.join(format!("{key}.pdf"))).unwrap(),
@@ -235,16 +258,25 @@ fn content_images_and_authored_background_fills_keep_independent_owners() {
                 _ => {}
             },
         );
+        let fills = native_fills(&c);
+        if key == "nested-periodic-background" {
+            assert_eq!(fills.len(), 1, "one authored area becomes one cell fill");
+            assert_eq!(backgrounds, 0, "no background drawing fragments remain");
+        }
         let expected = bindings(&c);
         for bytes in [
             c.export_hwp_with_adapter_snapshot().unwrap(),
             c.export_hwpx_native().unwrap(),
         ] {
+            let saved = DocumentCore::from_bytes(&bytes).unwrap();
+            assert_eq!(bindings(&saved), expected);
             assert_eq!(
-                bindings(&DocumentCore::from_bytes(&bytes).unwrap()),
-                expected
+                native_fills(&saved),
+                fills,
+                "real native cell fill survives both formats"
             );
         }
+        backgrounds += fills.len();
     }
     assert!(
         images > 0 && backgrounds > 0,

@@ -1,0 +1,7 @@
+{
+  "source": "independent PDF operators, six root rules authored as separate filled bands; occluder retains original dashed rules and overlays full-height white fill",
+  "sha256": "499fd750c31e0d903ce8b084e190fc3287ee1e2758d55579bc8ace4c1b948fc0",
+  "rootBandPt": 0.5,
+  "tables": 2,
+  "occluder": false
+}

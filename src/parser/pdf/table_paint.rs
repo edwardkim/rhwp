@@ -4,7 +4,7 @@ use super::lowering::component;
 use crate::model::{
     control::Control,
     shape::{CommonObjAttr, ShapeObject},
-    style::FillType,
+    style::{Fill, FillType},
     Point,
 };
 use serde_json::Value;
@@ -19,6 +19,14 @@ struct Frame {
     y: i64,
     right: i64,
     bottom: i64,
+}
+impl Frame {
+    fn contains(self, other: Self) -> bool {
+        self.x <= other.x
+            && self.y <= other.y
+            && self.right >= other.right
+            && self.bottom >= other.bottom
+    }
 }
 
 fn coordinate(v: &Value) -> Result<i64, String> {
@@ -328,6 +336,11 @@ fn fragment(original: &Control, source: Frame, piece: Frame) -> Result<Control, 
     Ok(c)
 }
 
+pub(super) struct SourceContent<'a> {
+    pub spans: &'a [Option<usize>],
+    pub images: &'a [usize],
+}
+
 pub(super) struct Target<'a> {
     pub grid: &'a Value,
     pub native_border_controls: Option<&'a [BTreeSet<usize>]>,
@@ -335,6 +348,10 @@ pub(super) struct Target<'a> {
 }
 pub(super) struct PaintPlan {
     pub cells: Vec<Vec<Vec<Control>>>,
+    pub cell_fills: Vec<Vec<Option<Fill>>>,
+    /// Original path -> actual target/cell. Full-cell normalization is explicit,
+    /// rather than being reported as geometry-preserving paint partitioning.
+    pub cell_fill_sources: Vec<(usize, usize, usize)>,
     pub removed: BTreeSet<usize>,
     pub retained: Vec<Control>,
     pub outside_owners:
@@ -382,21 +399,22 @@ struct StrokeAxis {
 pub(super) fn partition(
     controls: &[Control],
     rule_controls: &[Option<usize>],
+    content_controls: SourceContent<'_>,
     targets: &[Target<'_>],
     detection: &Value,
     paths: &[pdf_oxide::elements::PathContent],
     work: &mut usize,
 ) -> Result<PaintPlan, PartitionError> {
     let mut orientations = BTreeMap::<usize, Option<bool>>::new();
-    let mut stroke_paths = BTreeSet::new();
+    let mut border_paths = BTreeSet::new();
     let mut raster_strokes = BTreeMap::new();
-    for boundary in detection["boundaryObservations"]
+    let observations = detection["boundaryObservations"]
         .as_array()
-        .ok_or("boundary observations missing")?
-    {
+        .ok_or("boundary observations missing")?;
+    for boundary in observations {
         let path = index(&boundary["path"])?;
         if boundary["paintKind"] == "stroke" {
-            stroke_paths.insert(path);
+            border_paths.insert(path);
         }
         let horizontal = boundary["horizontal"]
             .as_bool()
@@ -423,7 +441,38 @@ pub(super) fn partition(
                         to: coordinate(&boundary["to"])?,
                     },
                 );
-                stroke_paths.insert(path);
+                border_paths.insert(path);
+            }
+            // A real filled rule is not a stroke, but can be the sole source
+            // of a selected separator. Do not grant this role to a thin fill
+            // over another rule: it can be an occluder, including a full-edge
+            // one. Color and bbox resemblance cannot decide that ambiguity.
+            if boundary["paintKind"] == "fill_band"
+                && source.stroke_color.is_none()
+                && source.fill_color.is_some()
+                && source.paint.fill_alpha == 1.
+                && source.matrix.is_none()
+                && matches!(source.operations.as_slice(), [PathOperation::Rectangle(..)])
+            {
+                let at = coordinate(&boundary["at"])?;
+                let from = coordinate(&boundary["from"])?;
+                let to = coordinate(&boundary["to"])?;
+                let mut competing = false;
+                for other in observations {
+                    tick(work)?;
+                    if index(&other["path"])? != path
+                        && other["horizontal"].as_bool() == Some(horizontal)
+                        && (coordinate(&other["at"])? - at).abs() <= 1
+                        && coordinate(&other["from"])? < to
+                        && coordinate(&other["to"])? > from
+                    {
+                        competing = true;
+                        break;
+                    }
+                }
+                if !competing {
+                    border_paths.insert(path);
+                }
             }
         }
         orientations
@@ -469,6 +518,8 @@ pub(super) fn partition(
         .collect::<Result<Vec<_>, _>>()?;
     let mut result = PaintPlan {
         cells: frames.iter().map(|v| vec![Vec::new(); v.len()]).collect(),
+        cell_fills: frames.iter().map(|v| vec![None; v.len()]).collect(),
+        cell_fill_sources: Vec::new(),
         removed: BTreeSet::new(),
         retained: Vec::new(),
         outside_owners: BTreeMap::new(),
@@ -482,9 +533,173 @@ pub(super) fn partition(
         .flatten()
         .copied()
         .collect::<BTreeSet<_>>();
+    // Ownership comes from the selected cells' source text/image references,
+    // including the content of real descendant cells, not a colored bbox alone.
+    let mut content = Vec::new();
+    for target in targets {
+        let mut cells = Vec::new();
+        for cell in target.grid["cells"].as_array().ok_or("cell grid missing")? {
+            let mut refs = BTreeSet::new();
+            for span in cell["spanIndices"].as_array().ok_or("cell spans missing")? {
+                tick(work)?;
+                if let Some(c) = content_controls.spans.get(index(span)?).copied().flatten() {
+                    refs.insert(c);
+                }
+            }
+            for image in cell["imageIndices"]
+                .as_array()
+                .ok_or("cell images missing")?
+            {
+                tick(work)?;
+                refs.insert(
+                    *content_controls
+                        .images
+                        .get(index(image)?)
+                        .ok_or("cell image missing")?,
+                );
+            }
+            cells.push(refs);
+        }
+        content.push(cells);
+    }
+    let mut backgrounds = BTreeMap::<(usize, usize), Vec<(usize, usize, Fill, bool)>>::new();
+    for (path, control) in rule_controls.iter().enumerate() {
+        let Some(control) = *control else { continue };
+        tick(work)?;
+        if required.iter().any(|set| set.contains(&control)) {
+            continue;
+        }
+        let Some(source_path) = paths.get(path) else {
+            continue;
+        };
+        if source_path.stroke_color.is_some()
+            || source_path.paint.fill_alpha != 1.
+            || source_path.matrix.is_some()
+            || !matches!(
+                source_path.operations.as_slice(),
+                [pdf_oxide::elements::PathOperation::Rectangle(..)]
+            )
+        {
+            continue;
+        }
+        let Control::Shape(shape) = &controls[control] else {
+            continue;
+        };
+        let ShapeObject::Rectangle(rect) = shape.as_ref() else {
+            continue;
+        };
+        if rect.drawing.text_box.is_some()
+            || rect.drawing.fill.fill_type != FillType::Solid
+            || rect.drawing.fill.alpha != 0
+            || rect.drawing.border_line.width != 0
+            || rect.round_rate != 0
+            || rect.drawing.shadow_type != 0
+        {
+            continue;
+        }
+        let source = source_frame(&controls[control]).ok_or("missing background frame")?;
+        let owners = frames
+            .iter()
+            .enumerate()
+            .flat_map(|(ti, cells)| {
+                cells
+                    .iter()
+                    .enumerate()
+                    .filter_map(move |(ci, cell)| cell.contains(source).then_some((ti, ci, *cell)))
+            })
+            .collect::<Vec<_>>();
+        // Select only a uniquely innermost logical cell. Incomparable roots or
+        // a paint crossing cell boundaries retain positional paint ownership.
+        let Some(&(ti, ci, cell)) = owners.iter().find(|(_, _, candidate)| {
+            owners
+                .iter()
+                .all(|(_, _, other)| other.contains(*candidate))
+        }) else {
+            continue;
+        };
+        if owners
+            .iter()
+            .filter(|(_, _, f)| f.contains(cell) && cell.contains(*f))
+            .count()
+            != 1
+        {
+            continue;
+        }
+        let mut refs = BTreeSet::new();
+        for (child, cells) in frames.iter().enumerate() {
+            for (i, frame) in cells.iter().enumerate() {
+                tick(work)?;
+                if cell.contains(*frame) {
+                    refs.extend(content[child][i].iter().copied());
+                }
+            }
+        }
+        // A highlight behind only part of the content is not a cell background.
+        // Empty inset artwork cannot establish that semantic role either.
+        if refs.is_empty() {
+            continue;
+        }
+        let mut background = true;
+        for &r in &refs {
+            tick(work)?;
+            background &= source_frame(&controls[r]).is_some_and(|f| source.contains(f))
+                && common(&controls[r]).is_some_and(|c| c.z_order > rect.common.z_order);
+        }
+        if !background {
+            continue;
+        }
+        // Moving paint into the native background plane must not uncover earlier
+        // page paint or cover content that was drawn before this rectangle.
+        for (i, c) in controls.iter().enumerate() {
+            tick(work)?;
+            // A second overlapping filled area may be a layered background or
+            // an illustration. Do not assign cell-fill editing to the first one
+            // just because only that rectangle encloses all source text.
+            if i != control
+                && path_controls.contains(&i)
+                && !required.iter().any(|set| set.contains(&i))
+                && matches!(c, Control::Shape(s) if matches!(s.as_ref(),
+                    ShapeObject::Rectangle(r) if r.drawing.text_box.is_none()
+                        && r.drawing.fill.fill_type != FillType::None))
+                && source_frame(c).is_some_and(|f| intersection(f, source, None).is_some())
+            {
+                background = false;
+                break;
+            }
+            if i != control
+                && common(c).is_some_and(|c| c.z_order < rect.common.z_order)
+                && source_frame(c).is_some_and(|f| intersection(f, cell, None).is_some())
+            {
+                background = false;
+                break;
+            }
+        }
+        backgrounds.entry((ti, ci)).or_default().push((
+            path,
+            control,
+            rect.drawing.fill.clone(),
+            background,
+        ));
+    }
+    for ((ti, ci), candidates) in backgrounds {
+        // Competing backgrounds need an independent layering interpretation.
+        if candidates.len() != 1 {
+            continue;
+        }
+        let (path, control, fill, behind_paint) = candidates.into_iter().next().unwrap();
+        if !behind_paint {
+            continue;
+        }
+        result.cell_fills[ti][ci] = Some(fill);
+        result.cell_fill_sources.push((path, ti, ci));
+        result.removed.insert(control);
+    }
     let mut count = 0;
     for (path, control) in rule_controls.iter().enumerate() {
         let Some(control) = *control else { continue };
+        if result.removed.contains(&control) {
+            continue;
+        }
         let original = controls.get(control).ok_or("invalid paint control")?;
         let Some(source) = source_frame(original) else {
             continue;
@@ -644,7 +859,7 @@ pub(super) fn partition(
                         result.native_border_fragments += 1;
                     } else {
                         let mut fragment = fragment(original, source, piece)?;
-                        if required[ti].contains(&control) && stroke_paths.contains(&path) {
+                        if required[ti].contains(&control) && border_paths.contains(&path) {
                             if let Some(side) = orientation
                                 .and_then(|h| border_side(original, source, *cell, h, stroke))
                             {
@@ -668,12 +883,12 @@ pub(super) fn partition(
         {
             return Err("source paint measure changed".into());
         }
-        // The remaining half of a proven axial stroke keeps its PAGE owner.
-        // Partition along actual cell intervals; never claim a fill/bitmap or
-        // a corner/extension beyond those intervals by bbox resemblance.
+        // The remaining half of a proven axial rule keeps its PAGE owner.
+        // Partition along actual cell intervals; never claim an ambiguous fill
+        // or a corner/extension beyond those intervals by bbox resemblance.
         let mut outside = Vec::new();
         let mut candidates = Vec::new();
-        if closed && stroke_paths.contains(&path) {
+        if closed && border_paths.contains(&path) {
             for (ti, cells) in frames.iter().enumerate() {
                 if !targets[ti].root || !required[ti].contains(&control) {
                     continue;

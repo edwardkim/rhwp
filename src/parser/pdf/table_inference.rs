@@ -751,6 +751,7 @@ impl Ledger {
             "boundaryPaintPolicy":lowering["boundaryPaintPolicy"],
             "nativeBorderCells":lowering["nativeBorderCells"],
             "nativeBorderPaintFragments":lowering["nativeBorderPaintFragments"],
+            "nativeCellBackgrounds":lowering["nativeCellBackgrounds"],
             "externalBoundaryPaint":lowering["externalBoundaryPaint"],
             "paragraphMappingPolicy":lowering["paragraphMappingPolicy"],
             "bodyParagraphMapping":lowering["bodyParagraphMapping"],

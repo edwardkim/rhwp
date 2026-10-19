@@ -1338,6 +1338,10 @@ pub(super) fn lower(
         let plan = super::table_paint::partition(
             &controls,
             &rule_controls,
+            super::table_paint::SourceContent {
+                spans: &span_controls,
+                images: &image_controls,
+            },
             &targets,
             &page.snapshot["tableDetection"],
             &page.paths,
@@ -1382,6 +1386,7 @@ pub(super) fn lower(
     let mut native_border_cells = 0;
     let mut native_border_fragments = 0;
     let mut external_boundary_paths = Vec::new();
+    let mut cell_fill_sources = Vec::new();
     if let Some(plan) = paint_result {
         match plan {
             Ok(mut plan) => {
@@ -1397,6 +1402,8 @@ pub(super) fn lower(
                     })
                     .collect();
                 native_border_fragments = plan.native_border_fragments;
+                cell_fill_sources = plan.cell_fill_sources.iter().map(|&(path,target,cell)|
+                    json!({"path":path,"candidate":paint_owners[target].candidate,"cell":cell})).collect::<Vec<_>>();
                 removed.extend(plan.removed);
                 let consumed = table_removed
                     .iter()
@@ -1436,6 +1443,29 @@ pub(super) fn lower(
                                     .iter()
                                     .any(|b| b.line_type != BorderLineType::None),
                             );
+                        }
+                        if let Some(fill) = plan.cell_fills[target][ci].take() {
+                            let mut border = doc
+                                .doc_info
+                                .border_fills
+                                .get(
+                                    usize::from(cell.border_fill_id)
+                                        .checked_sub(1)
+                                        .ok_or("missing cell style")?,
+                                )
+                                .ok_or("missing cell style")?
+                                .clone();
+                            border.fill = fill;
+                            border.raw_data = None;
+                            let id = if let Some(i) =
+                                doc.doc_info.border_fills.iter().position(|b| b == &border)
+                            {
+                                i + 1
+                            } else {
+                                doc.doc_info.border_fills.push(border);
+                                doc.doc_info.border_fills.len()
+                            };
+                            cell.border_fill_id = u16::try_from(id).map_err(|e| e.to_string())?;
                         }
                         for mut paint in std::mem::take(&mut plan.cells[target][ci]) {
                             let id = fragment_ids.get();
@@ -1560,6 +1590,8 @@ pub(super) fn lower(
     report["cellOwnedPaintFragments"] = json!(paint_fragments);
     report["nativeBorderCells"] = json!(native_border_cells);
     report["nativeBorderPaintFragments"] = json!(native_border_fragments);
+    report["nativeCellBackgrounds"] = json!({"sources":cell_fill_sources,
+        "policy":"single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint"});
     report["externalBoundaryPaint"] = json!({"sourcePathIndices":external_boundary_paths,
         "owner":"unchanged page source control outside logical table frame"});
     report["ruledTableCandidates"] = json!(grids.len());
