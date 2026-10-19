@@ -375,5 +375,55 @@ pub(super) fn lower(
     );
     image.set_bbox(bounds);
     image.set_matrix([bounds.width, 0.0, 0.0, bounds.height, bounds.x, bounds.y]);
-    lower_picture(&image, doc, page.media_box.0, page.media_box.3, id, budget).map(Some)
+    let control = lower_picture(&image, doc, page.media_box.0, page.media_box.3, id, budget)?;
+    // Keep exact single-axis Butt paint as a bounded source witness beside the
+    // native bitmap fallback. A curve/fill/transform/complex clip cannot claim it.
+    if path.fill_color.is_none()
+        && path.matrix.is_none()
+        && path.line_cap == LineCap::Butt
+        && matches!(
+            path.paint.clip,
+            pdf_oxide::extractors::image_clip::ImageClip::Unbounded
+                | pdf_oxide::extractors::image_clip::ImageClip::Rectangle(_)
+        )
+    {
+        if let (Some(color), [PathOperation::MoveTo(x, y), PathOperation::LineTo(a, b)]) =
+            (path.stroke_color, path.operations.as_slice())
+        {
+            let stroke = crate::model::pdf_stroke::PdfStroke {
+                frame: [bounds.width as f64, bounds.height as f64],
+                endpoints: [
+                    (*x - bounds.x) as f64,
+                    (bounds.y + bounds.height - *y) as f64,
+                    (*a - bounds.x) as f64,
+                    (bounds.y + bounds.height - *b) as f64,
+                ],
+                width: path.stroke_width as f64,
+                color: rgb(color),
+                alpha: path.paint.stroke_alpha as f64,
+                dash: path
+                    .dash_pattern
+                    .as_ref()
+                    .map(|(d, _)| d.iter().map(|v| f64::from(*v)).collect())
+                    .unwrap_or_default(),
+                phase: path
+                    .dash_pattern
+                    .as_ref()
+                    .map_or(0., |(_, p)| f64::from(*p)),
+            };
+            if let Control::Picture(p) = &control {
+                let index = crate::model::bin_data::content_index(
+                    &doc.bin_data_content,
+                    p.image_attr.bin_data_id,
+                )
+                .ok_or("stroke resource missing")?;
+                if let crate::model::bin_data::BinDataBytes::Loaded(bytes) =
+                    &mut doc.bin_data_content[index].data
+                {
+                    let _ = stroke.attach(bytes);
+                }
+            }
+        }
+    }
+    Ok(Some(control))
 }

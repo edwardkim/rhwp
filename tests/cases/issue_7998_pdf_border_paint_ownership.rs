@@ -41,10 +41,13 @@ fn bindings_doc(d: &rhwp::model::document::Document) -> BTreeMap<u32, CellBorder
                     assert!(out.insert(s.common().instance_id, paint).is_none());
                 }
             } else if let Control::Picture(p) = c {
-                assert!(
-                    p.common.cell_border_paint.is_none(),
-                    "content/compound images are not authenticated sides"
-                );
+                if let Some(paint) = p.common.cell_border_paint {
+                    assert!(
+                        p.border_paint_fingerprint.is_some(),
+                        "a raster side needs its source seal"
+                    );
+                    assert!(out.insert(p.common.instance_id, paint).is_none());
+                }
             }
         });
     }
@@ -208,8 +211,13 @@ fn content_images_and_authored_background_fills_keep_independent_owners() {
             &c.document().sections[0].paragraphs,
             &mut |ctrl| match ctrl {
                 Control::Picture(p) => {
-                    images += 1;
-                    assert!(p.common.cell_border_paint.is_none());
+                    // The independent generator's image XObject is 2x2 pixels.
+                    // Rasterized source strokes are a different provenance.
+                    if p.img_dim == (150, 150) {
+                        images += 1;
+                        assert!(p.common.cell_border_paint.is_none());
+                        assert!(p.border_paint_fingerprint.is_none());
+                    }
                 }
                 Control::Shape(s) => {
                     if let ShapeObject::Rectangle(r) = s.as_ref() {

@@ -105,26 +105,31 @@ fn border_side(
     source: Frame,
     cell: Frame,
     horizontal: bool,
+    stroke: Option<StrokeAxis>,
 ) -> Option<crate::model::border_paint::CellSide> {
     use crate::model::border_paint::CellSide;
-    let Control::Shape(s) = original else {
-        return None;
-    };
-    let ShapeObject::Rectangle(r) = s.as_ref() else {
-        return None;
-    };
-    if r.drawing.fill.fill_type != FillType::Solid
-        || r.drawing.fill.alpha != 0
-        || r.drawing.text_box.is_some()
-        || r.drawing.border_line.width != 0
-        || r.round_rate != 0
-        || r.drawing.shadow_type != 0
-    {
-        return None;
+    match original {
+        Control::Shape(s) => {
+            let ShapeObject::Rectangle(r) = s.as_ref() else {
+                return None;
+            };
+            if r.drawing.fill.fill_type != FillType::Solid
+                || r.drawing.fill.alpha != 0
+                || r.drawing.text_box.is_some()
+                || r.drawing.border_line.width != 0
+                || r.round_rate != 0
+                || r.drawing.shadow_type != 0
+            {
+                return None;
+            }
+        }
+        // Authenticated from the actual source operations; not a bitmap bbox heuristic.
+        Control::Picture(_) if stroke.is_some() => {}
+        _ => return None,
     }
     let (at, a, b, first, last) = if horizontal {
         (
-            (source.y + source.bottom) / 2,
+            stroke.map_or((source.y + source.bottom) / 2, |s| s.at),
             cell.y,
             cell.bottom,
             CellSide::Top,
@@ -132,7 +137,7 @@ fn border_side(
         )
     } else {
         (
-            (source.x + source.right) / 2,
+            stroke.map_or((source.x + source.right) / 2, |s| s.at),
             cell.x,
             cell.right,
             CellSide::Left,
@@ -366,15 +371,25 @@ impl std::fmt::Display for PartitionError {
     }
 }
 
+#[derive(Clone, Copy)]
+struct StrokeAxis {
+    horizontal: bool,
+    at: i64,
+    from: i64,
+    to: i64,
+}
+
 pub(super) fn partition(
     controls: &[Control],
     rule_controls: &[Option<usize>],
     targets: &[Target<'_>],
     detection: &Value,
+    paths: &[pdf_oxide::elements::PathContent],
     work: &mut usize,
 ) -> Result<PaintPlan, PartitionError> {
     let mut orientations = BTreeMap::<usize, Option<bool>>::new();
     let mut stroke_paths = BTreeSet::new();
+    let mut raster_strokes = BTreeMap::new();
     for boundary in detection["boundaryObservations"]
         .as_array()
         .ok_or("boundary observations missing")?
@@ -386,6 +401,31 @@ pub(super) fn partition(
         let horizontal = boundary["horizontal"]
             .as_bool()
             .ok_or("invalid boundary orientation")?;
+        // Only one real axial stroke can certify a raster border. Filled areas,
+        // curves and multi-direction paths retain paint, without editing authority.
+        if let Some(source) = paths.get(path) {
+            use pdf_oxide::elements::{LineCap, PathOperation};
+            let axial = matches!(source.operations.as_slice(),
+                [PathOperation::MoveTo(x,y),PathOperation::LineTo(a,b)] if (x==a && y!=b)||(y==b && x!=a));
+            if axial
+                && source.fill_color.is_none()
+                && source.stroke_color.is_some()
+                && source.matrix.is_none()
+                && source.line_cap == LineCap::Butt
+                && (boundary["paintKind"] == "stroke" || boundary["paintKind"] == "dash_carrier")
+            {
+                raster_strokes.insert(
+                    path,
+                    StrokeAxis {
+                        horizontal,
+                        at: coordinate(&boundary["at"])?,
+                        from: coordinate(&boundary["from"])?,
+                        to: coordinate(&boundary["to"])?,
+                    },
+                );
+                stroke_paths.insert(path);
+            }
+        }
         orientations
             .entry(path)
             .and_modify(|known| {
@@ -483,8 +523,9 @@ pub(super) fn partition(
         // Giving the entire band to one side lets that cell's clip erase the
         // other half. Outside-root pieces retain their original page owner.
         let image = matches!(original, Control::Picture(_));
+        let stroke = raster_strokes.get(&path).copied();
         let orientation = if image {
-            None
+            stroke.map(|s| s.horizontal)
         } else {
             line.or_else(|| orientations.get(&path).copied().flatten())
         };
@@ -604,8 +645,8 @@ pub(super) fn partition(
                     } else {
                         let mut fragment = fragment(original, source, piece)?;
                         if required[ti].contains(&control) && stroke_paths.contains(&path) {
-                            if let Some(side) =
-                                orientation.and_then(|h| border_side(original, source, *cell, h))
+                            if let Some(side) = orientation
+                                .and_then(|h| border_side(original, source, *cell, h, stroke))
                             {
                                 common_mut(&mut fragment).unwrap().cell_border_paint =
                                     Some(crate::model::border_paint::CellBorderPaint {
@@ -640,7 +681,7 @@ pub(super) fn partition(
                 for (ci, cell) in cells.iter().enumerate() {
                     tick(work)?;
                     let Some(side) =
-                        orientation.and_then(|h| border_side(original, source, *cell, h))
+                        orientation.and_then(|h| border_side(original, source, *cell, h, stroke))
                     else {
                         continue;
                     };
@@ -654,7 +695,7 @@ pub(super) fn partition(
                     if !outer {
                         continue;
                     }
-                    let clip = if orientation == Some(true) {
+                    let mut clip = if orientation == Some(true) {
                         Frame {
                             y: source.y,
                             bottom: source.bottom,
@@ -667,6 +708,28 @@ pub(super) fn partition(
                             ..*cell
                         }
                     };
+                    // Rasterizer padding beyond a proven Butt endpoint contains
+                    // no stroke ink. Attach that pad only to its actual terminal
+                    // cell; a real path extension past the grid remains unclaimed.
+                    if image {
+                        if let Some(axis) = stroke {
+                            if axis.horizontal {
+                                if (cell.x - axis.from).abs() <= 1 {
+                                    clip.x = source.x;
+                                }
+                                if (cell.right - axis.to).abs() <= 1 {
+                                    clip.right = source.right;
+                                }
+                            } else {
+                                if (cell.y - axis.from).abs() <= 1 {
+                                    clip.y = source.y;
+                                }
+                                if (cell.bottom - axis.to).abs() <= 1 {
+                                    clip.bottom = source.bottom;
+                                }
+                            }
+                        }
+                    }
                     for &r in &remaining {
                         tick(work)?;
                         if let Some(piece) = intersection(r, clip, None) {

@@ -1939,6 +1939,10 @@ impl SvgRenderer {
     }
 
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
+        if let Some(path) = super::pdf_stroke::project(img, *bbox) {
+            self.draw_path_with_gradient(&path.commands, &path.style, None);
+            return;
+        }
         let interpolation = img.data.as_deref().and_then(|data| {
             let (width, height) = super::image_resolver::png_sampling::dimensions(data)?;
             let source = img.crop.map_or((width, height), |crop| {

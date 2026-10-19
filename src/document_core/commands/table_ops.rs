@@ -1379,7 +1379,14 @@ impl DocumentCore {
             let Control::Table(table) = &parent.controls[control_idx] else {
                 unreachable!()
             };
-            super::border_paint_edit::plan(table, cell_idx, paint_sides, parent, control_idx)?
+            super::border_paint_edit::plan(
+                table,
+                cell_idx,
+                paint_sides,
+                parent,
+                control_idx,
+                &mut crate::model::border_paint::Resources::new(&self.document.bin_data_content),
+            )?
         };
         if !paint_plan.is_empty()
             && (self.border_paint_store.len() >= 4096 || self.next_border_paint_id == u32::MAX)

@@ -1340,6 +1340,7 @@ pub(super) fn lower(
             &rule_controls,
             &targets,
             &page.snapshot["tableDetection"],
+            &page.paths,
             &mut paint_work,
         )
         .and_then(|plan| {
@@ -1384,6 +1385,8 @@ pub(super) fn lower(
     if let Some(plan) = paint_result {
         match plan {
             Ok(mut plan) => {
+                let mut paint_resources =
+                    crate::model::border_paint::Resources::new(&doc.bin_data_content);
                 external_boundary_paths = rule_controls
                     .iter()
                     .enumerate()
@@ -1444,6 +1447,14 @@ pub(super) fn lower(
                                 &grid["cells"][ci]["bbox"],
                                 id,
                             )?;
+                            if matches!(&paint, Control::Picture(p) if p.common.cell_border_paint.is_some())
+                            {
+                                crate::model::border_paint::seal_picture(
+                                    &mut paint,
+                                    &mut paint_resources,
+                                )
+                                .ok_or("source border picture seal failed")?;
+                            }
                             let para = &mut cell.paragraphs[0];
                             para.controls.push(paint);
                             para.control_mask |= 0x800;
@@ -1464,14 +1475,14 @@ pub(super) fn lower(
                         let Control::Table(table) = &tables[owner.root] else {
                             unreachable!()
                         };
-                        if let Control::Shape(s) = &mut paint {
-                            if let ShapeObject::Rectangle(r) = s.as_mut() {
-                                crate::model::border_paint::bind_outside(r, table, cell, tag)
-                                    .ok_or(
-                                        "outside border binding no longer matches source frame",
-                                    )?;
-                            }
-                        }
+                        crate::model::border_paint::bind_outside(
+                            &mut paint,
+                            table,
+                            cell,
+                            tag,
+                            &mut paint_resources,
+                        )
+                        .ok_or("outside border binding no longer matches source frame")?;
                     }
                     extra_paint.push(paint);
                 }
@@ -1514,9 +1525,10 @@ pub(super) fn lower(
         .enumerate()
         .filter_map(|(i, c)| (!removed.contains(&i)).then_some(c))
         .collect();
-    let (outside, ordinary): (Vec<_>, Vec<_>) = extra_paint.into_iter().partition(
-        |c| matches!(c, Control::Shape(s) if s.common().outside_cell_border_paint.is_some()),
-    );
+    let (outside, ordinary): (Vec<_>, Vec<_>) = extra_paint.into_iter().partition(|c| {
+        crate::model::border_paint::PaintRef::from_control(c)
+            .is_some_and(|p| p.common().outside_cell_border_paint.is_some())
+    });
     retained.extend(ordinary);
     retained.extend(tables);
     retained.extend(body_frames);

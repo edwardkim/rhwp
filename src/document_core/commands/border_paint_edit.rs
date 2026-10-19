@@ -4,10 +4,9 @@ use crate::{
     document_core::DocumentCore,
     error::HwpError,
     model::{
-        border_paint::{outside_binding, outside_owner, valid_side, CellSide},
+        border_paint::{outside_binding, outside_owner, valid_side, CellSide, PaintRef, Resources},
         control::Control,
         paragraph::Paragraph,
-        shape::ShapeObject,
         table::Table,
     },
 };
@@ -97,6 +96,7 @@ pub(crate) fn plan(
     sides: [bool; 4],
     parent: &Paragraph,
     table_index: usize,
+    resources: &mut Resources<'_>,
 ) -> Result<Vec<ParagraphChange>, HwpError> {
     let c = table
         .cells
@@ -117,8 +117,7 @@ pub(crate) fn plan(
         .rposition(|c| matches!(c, Control::Table(_)))
         .unwrap_or(table_index);
     for (i, ctrl) in parent.controls.iter().enumerate() {
-        let Control::Shape(s) = ctrl else { continue };
-        let ShapeObject::Rectangle(rect) = s.as_ref() else {
+        let Some(rect) = PaintRef::from_control(ctrl) else {
             continue;
         };
         let Some((id, row, col, tag)) = outside_binding(rect) else {
@@ -155,7 +154,7 @@ pub(crate) fn plan(
         if !selected[dir] {
             continue;
         }
-        if outside_owner(rect, table) != Some((ci, tag)) {
+        if outside_owner(rect, table, resources) != Some((ci, tag)) {
             return Err(error("페이지 테두리 그림 소유가 현재 배치와 다릅니다"));
         }
         if i <= last_table {
@@ -172,15 +171,13 @@ pub(crate) fn plan(
     let mut sources = std::collections::BTreeSet::new();
     for (ci, cell) in table.cells.iter().enumerate() {
         for ctrl in cell.paragraphs.iter().flat_map(|p| &p.controls) {
-            if let Control::Shape(s) = ctrl {
-                if let ShapeObject::Rectangle(rect) = s.as_ref() {
-                    if let Some(side) = valid_side(table.common.instance_id, cell, rect) {
-                        sources.insert((
-                            rect.common.cell_border_paint.unwrap().source_id,
-                            side_index(side),
-                            ci,
-                        ));
-                    }
+            if let Some(paint) = PaintRef::from_control(ctrl) {
+                if let Some(side) = valid_side(table.common.instance_id, cell, paint, resources) {
+                    sources.insert((
+                        paint.common().cell_border_paint.unwrap().source_id,
+                        side_index(side),
+                        ci,
+                    ));
                 }
             }
         }
@@ -205,18 +202,17 @@ pub(crate) fn plan(
         for (pi, p) in cell.paragraphs.iter().enumerate() {
             let mut remove = Vec::new();
             for (i, ctrl) in p.controls.iter().enumerate() {
-                let Control::Shape(s) = ctrl else { continue };
-                let ShapeObject::Rectangle(rect) = s.as_ref() else {
+                let Some(rect) = PaintRef::from_control(ctrl) else {
                     continue;
                 };
-                let Some(tag) = rect.common.cell_border_paint else {
+                let Some(tag) = rect.common().cell_border_paint else {
                     continue;
                 };
                 let dir = side_index(tag.side);
                 if !selected[dir] {
                     continue;
                 }
-                if valid_side(table.common.instance_id, cell, rect) != Some(tag.side) {
+                if valid_side(table.common.instance_id, cell, rect, resources) != Some(tag.side) {
                     return Err(error("셀 테두리 그림 소유가 현재 배치와 다릅니다"));
                 }
                 if !outside.contains(&(tag.source_id, dir, ci))

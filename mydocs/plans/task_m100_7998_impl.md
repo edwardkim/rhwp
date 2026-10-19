@@ -372,6 +372,15 @@ B19에서 이미 승인받은 rhwp 클립 보존 범위는 유지한다. 한컴 
 다음은 fill/compound closure이며 행열 계승·부분 병합/중첩 이웃·R2·P5는 여전히 남는다.
 아직 모든 테두리의 편집 가능성이나 PR 준비 완료를 뜻하지 않는다.
 
+[stage18](../working/task_m100_7998_stage18.md)은 실제 단일 축 Butt dash stroke의
+Picture 조각까지 같은 소유·외곽 closure·명시적 교체/지우기와 양 저장을 연결했다.
+일반 내용 그림은 실제 source 종류와 resource/geometry 지문으로 구별한다. 추가 지시한
+가는 반투명 선 출력도 원래 source 폭·alpha·phase의 공통 paint 투영으로 보정했고,
+2026-10-19 메인테이너의 **시각·편집 구조 통과**를 반영했다. 편집 IR의 Picture는 유지한다.
+V3 sidecar는 Picture 종류/지문을 보존하며 기존 V1/V2 읽기와 4MiB 한도를 유지한다.
+fill·여러 축 compound의 역할/closure, 새 행열 상속·삭제/복원, 부분 병합·중첩 이웃과
+R2·P5는 남는다. 이번 직선 raster 경계의 수용을 P4 전체 완료로 바꾸지 않는다.
+
 ## 5. 검증 순서와 수용 기준
 
 | 검증 층 | 실행·판정 |

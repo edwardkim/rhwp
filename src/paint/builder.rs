@@ -180,11 +180,16 @@ impl LayerBuilder {
                 let frame = self
                     .page_context
                     .map_or(node.bbox, |context| context.image_frame(node, image));
-                let mut ops = vec![PaintOp::image(
-                    frame,
-                    image.clone(),
-                    crate::renderer::image_resolver::resolve_image_payload(image),
-                )];
+                let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame)
+                {
+                    vec![PaintOp::path(frame, path)]
+                } else {
+                    vec![PaintOp::image(
+                        frame,
+                        image.clone(),
+                        crate::renderer::image_resolver::resolve_image_payload(image),
+                    )]
+                };
                 if self.output_options.show_control_codes {
                     ops.push(PaintOp::control_label(frame, "[그림]"));
                 }

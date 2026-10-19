@@ -68,6 +68,7 @@ pub(crate) mod shaping_publication;
 pub mod sixel;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
+pub(crate) mod pdf_stroke;
 #[allow(dead_code)]
 pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]

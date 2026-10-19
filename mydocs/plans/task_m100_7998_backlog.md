@@ -51,6 +51,13 @@
 
 ## 현재 실행 우선순위 — 2026-10-19
 
+[stage18](../working/task_m100_7998_stage18.md)의 실제 단일 축 Butt dash stroke를
+Picture 소유·표 밖 closure·명시적 테두리 교체/지우기·양 저장·실제 command undo/redo에
+연결했고 메인테이너가 **시각·편집 구조 통과**로 판정했다. 반투명 선 농도도 실제 source
+폭·alpha·phase를 보존하는 공통 paint로 보정했다. 다음은 fill/여러 축 compound의 역할과
+closure이며, 이어서 새 행열 상속·삭제/복원, 부분 병합·중첩 이웃과 R2를 처리한다.
+아래 stage15–17의 수치는 해당 checkpoint의 기록이며 현재 결과와 합산하지 않는다.
+
 [stage16](../working/task_m100_7998_stage16.md)의 공유 변 스타일 교체·지우기와 실제
 command undo/redo·양 저장을 구현했고 메인테이너가 시각·편집 구조 통과로 판정했다.
 같은 source의 양쪽 물리 소유가 확인된 opaque stroke가 이번 완료 범위다. 표 밖 잔여를
@@ -68,7 +75,7 @@ fill·compound의 일반 역할 구분, 표 밖 조각까지의 편집 closure, 
 
 | 구분 | 일감과 처리 경계 |
 |---|---|
-| 다음 필수 구현 | B02·B15–B17·B20의 표 밖 잔여·fill/compound까지의 교체 closure → 새 행열 상속/복원. 양쪽 소유가 확인된 공유 변은 stage16 실제 API에서 교체한다. 부분 병합 이웃과 크기/안여백 동시 변경은 아직 제한하며, 실선/자격 확인 Dot의 기존 통과와 구분한다. |
+| 다음 필수 구현 | B02·B15–B17·B20의 fill/여러 축 compound까지의 역할·교체 closure → 새 행열 상속/삭제·복원. stage16–18에서 확인한 공유 변·외곽 opaque stroke·단일 축 raster stroke는 실제 API로 교체한다. 부분 병합 이웃과 크기/안여백 동시 변경은 아직 제한하며, 현재 통과 범위를 일반 경계 전체로 확대하지 않는다. |
 | 그다음 필수 구현 | B10–B13의 확정 문단 메트릭 표현. 현재 보고서 셀 17줄이 장평 한도로 남고, 본문에도 장평/자간 보류가 있다. 서로 다른 단위를 더해 미완료 문단 수로 부르지 않는다. |
 | 근거에 따른 정상 보류 | B01·B03·B04·B06의 불확정 작성 구조·부분/무외곽 격자. 원문 단일 소유와 이유·대안을 유지하며 실물/독립 대조군으로 판정한다. 보류 0개를 종료 조건으로 삼지 않는다. |
 | 후속 확장 | B05의 추가 관측 정밀도/문서별 설정, B08 글꼴 공급 진단, B09 cache 신원 자동화와 B19의 한컴 native 클립·다른 작성 owner/회전 등 일반화. 이번 소비 경로의 오류·진단 누락은 P5에서 별도로 판단한다. |
@@ -103,3 +110,14 @@ fill·compound의 일반 역할 구분, 표 밖 조각까지의 편집 closure, 
 기존 표 위 그림을 bbox로 통째로 삭제하지 않으며 물리 page owner와 논리 edit owner를
 구별한다. P5의 V2 metadata 음성 감사에는 source/table ID 0·이중 role·다른 owner 이동을
 포함한다. 이번 source producer/축 경계의 통과가 이 미검증 범위를 대신하지 않는다.
+
+### R1 직선 raster stroke 소유·출력 절편 — 2026-10-19
+
+stage18은 실제 PDF MoveTo/LineTo·Butt·단일 축 stroke만 source 역할을 인증하고, 그림의
+crop·변환·현재 PNG 바이트가 달라지면 편집 권한을 거절한다. 같은 bbox의 내용 그림과
+곡선/fill은 보존한다. 3종 실제 변 교체/지우기의 문자 편집 뒤 undo/redo와 양 저장,
+Native/fresh WASM 각 37쪽·독립 한컴 Print·직접 판정을 확인했다. 새 alpha 원본은
+99.97209%/99.97270%로 보정됐고 작은 불투명 접점 하락은 직접 판정에 공개했다.
+일반 fill/여러 축 compound closure·행열 상속/삭제·복원·부분 병합/중첩 이웃은 남는다.
+V3의 잘못된 종류·버전·source ID·잘린 metadata 거절은 이번 집중 검사에 포함했으나,
+전체 metadata/요청 할당 감사와 P5를 완료한 것으로 표시하지 않는다.

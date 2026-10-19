@@ -1,8 +1,10 @@
 //! Provenance of a retained cell-border drawing, independent of its visible paint.
 //! Native files keep the drawing. A bounded rhwp sidecar keeps its editing owner.
 use super::{
+    bin_data::BinDataContent,
     control::Control,
     document::Document,
+    image::Picture,
     paragraph::Paragraph,
     shape::{CommonObjAttr, HorzRelTo, RectangleShape, ShapeObject, TextWrap, VertRelTo},
     style::FillType,
@@ -16,6 +18,7 @@ pub const HWPX_ENTRY: &str = "META-INF/rhwp-cell-border-paint.bin";
 pub const MAX_BYTES: usize = 4 * 1024 * 1024;
 const MAGIC: &[u8; 8] = b"RBPO\0\0\0\x01";
 const MAGIC_OUTSIDE: &[u8; 8] = b"RBPO\0\0\0\x02";
+const MAGIC_RASTER: &[u8; 8] = b"RBPO\0\0\0\x03";
 const HEADER_BYTES: usize = 12;
 const RECORD_BYTES: usize = 65;
 const MAX_RECORDS: usize = (MAX_BYTES - HEADER_BYTES) / RECORD_BYTES;
@@ -91,8 +94,159 @@ fn table_fingerprint(t: &super::table::Table) -> [u8; 32] {
     h.finalize().into()
 }
 
-fn outside_fingerprint(r: &RectangleShape) -> Option<[u8; 32]> {
-    let a = &r.common;
+/// One source paint contract consumed by serialization and native editing.
+#[derive(Clone, Copy)]
+pub(crate) enum PaintRef<'a> {
+    Rectangle(&'a RectangleShape),
+    Picture(&'a Picture),
+}
+impl<'a> PaintRef<'a> {
+    pub(crate) fn from_control(c: &'a Control) -> Option<Self> {
+        match c {
+            Control::Shape(s) => match s.as_ref() {
+                ShapeObject::Rectangle(r) => Some(Self::Rectangle(r)),
+                _ => None,
+            },
+            Control::Picture(p) => Some(Self::Picture(p)),
+            _ => None,
+        }
+    }
+    pub(crate) fn common(self) -> &'a CommonObjAttr {
+        match self {
+            Self::Rectangle(r) => &r.common,
+            Self::Picture(p) => &p.common,
+        }
+    }
+    fn raster(self) -> bool {
+        matches!(self, Self::Picture(_))
+    }
+    fn digest(self, resources: &mut Resources<'_>) -> Option<[u8; 32]> {
+        match self {
+            Self::Rectangle(r) => geometry_digest(r),
+            Self::Picture(p) => picture_digest(p, resources),
+        }
+    }
+    fn sealed(self, hash: [u8; 32]) -> bool {
+        match self {
+            Self::Rectangle(_) => true,
+            Self::Picture(p) => p.border_paint_fingerprint == Some(hash),
+        }
+    }
+}
+enum PaintMut<'a> {
+    Rectangle(&'a mut RectangleShape),
+    Picture(&'a mut Picture),
+}
+impl PaintMut<'_> {
+    fn as_ref(&self) -> PaintRef<'_> {
+        match self {
+            Self::Rectangle(r) => PaintRef::Rectangle(r),
+            Self::Picture(p) => PaintRef::Picture(p),
+        }
+    }
+    fn common(&mut self) -> &mut CommonObjAttr {
+        match self {
+            Self::Rectangle(r) => &mut r.common,
+            Self::Picture(p) => &mut p.common,
+        }
+    }
+    fn seal(&mut self, hash: [u8; 32]) {
+        if let Self::Picture(p) = self {
+            p.border_paint_fingerprint = Some(hash);
+        }
+    }
+}
+/// Hash each referenced PNG once per operation, using the renderer's index mapping.
+/// Only producer-generated PNG stroke bitmaps can acquire this role.
+pub(crate) struct Resources<'a> {
+    contents: &'a [BinDataContent],
+    hashes: BTreeMap<u16, Option<([u8; 32], (u32, u32))>>,
+}
+impl<'a> Resources<'a> {
+    pub(crate) fn new(contents: &'a [BinDataContent]) -> Self {
+        Self {
+            contents,
+            hashes: BTreeMap::new(),
+        }
+    }
+    fn image(&mut self, id: u16) -> Option<([u8; 32], (u32, u32))> {
+        *self.hashes.entry(id).or_insert_with(|| {
+            let i = super::bin_data::content_index(self.contents, id)?;
+            let bytes = self.contents[i]
+                .data
+                .load_limited(super::bin_data::MAX_BIN_DATA_BYTES)?;
+            if bytes.get(..16)? != b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR" {
+                return None;
+            }
+            let w = u32::from_be_bytes(bytes.get(16..20)?.try_into().ok()?).checked_mul(75)?;
+            let h = u32::from_be_bytes(bytes.get(20..24)?.try_into().ok()?).checked_mul(75)?;
+            if w == 0 || h == 0 {
+                return None;
+            }
+            Some((Sha256::digest(&bytes).into(), (w, h)))
+        })
+    }
+}
+fn picture_digest(p: &Picture, resources: &mut Resources<'_>) -> Option<[u8; 32]> {
+    let a = &p.common;
+    let s = &p.shape_attr;
+    let (image, dim) = resources.image(p.image_attr.bin_data_id)?;
+    // HWP has no imgDim field; its canonical PNG coordinate system is 75HU/px.
+    if (p.img_dim != (0, 0) && p.img_dim != dim)
+        || a.instance_id == 0
+        || a.width == 0
+        || a.height == 0
+        || s.rotation_angle != 0
+        || s.horz_flip
+        || s.vert_flip
+        || s.offset_x != 0
+        || s.offset_y != 0
+        || s.render_sx != 1.0
+        || s.render_sy != 1.0
+        || s.render_tx != 0.0
+        || s.render_ty != 0.0
+        || s.render_b != 0.0
+        || s.render_c != 0.0
+        || s.current_width != a.width
+        || s.current_height != a.height
+        || p.border_width != 0
+        || p.reverse
+        || p.caption.is_some()
+        || p.effects.shadow.is_some()
+        || p.href.is_some()
+        || p.image_attr.brightness != 0
+        || p.image_attr.contrast != 0
+        || p.image_attr.transparency != 0
+        || p.image_attr.external_path.is_some()
+        || !matches!(p.image_attr.effect, super::image::ImageEffect::RealPic)
+        || p.border_x != [0, 0, a.width as i32, 0]
+        || p.border_y != [a.width as i32, a.height as i32, 0, a.height as i32]
+        || p.crop.left < 0
+        || p.crop.top < 0
+        || p.crop.right <= p.crop.left
+        || p.crop.bottom <= p.crop.top
+        || p.crop.right as u32 > dim.0
+        || p.crop.bottom as u32 > dim.1
+        || p.padding.left != 0
+        || p.padding.right != 0
+        || p.padding.top != 0
+        || p.padding.bottom != 0
+    {
+        return None;
+    }
+    let mut h = Sha256::new();
+    for v in [a.horizontal_offset, a.vertical_offset, a.width, a.height] {
+        h.update(v.to_le_bytes());
+    }
+    h.update(a.z_order.to_le_bytes());
+    for v in [p.crop.left, p.crop.top, p.crop.right, p.crop.bottom] {
+        h.update(v.to_le_bytes());
+    }
+    h.update(image);
+    Some(h.finalize().into())
+}
+fn outside_fingerprint(p: PaintRef<'_>, resources: &mut Resources<'_>) -> Option<[u8; 32]> {
+    let a = p.common();
     if a.treat_as_char
         || a.flow_with_text
         || a.horz_rel_to != HorzRelTo::Paper
@@ -101,43 +255,64 @@ fn outside_fingerprint(r: &RectangleShape) -> Option<[u8; 32]> {
     {
         return None;
     }
-    geometry_digest(r)
+    p.digest(resources)
 }
-
+pub(crate) fn seal_picture(c: &mut Control, resources: &mut Resources<'_>) -> Option<()> {
+    if let Control::Picture(p) = c {
+        p.border_paint_fingerprint = Some(picture_digest(p, resources)?);
+    }
+    Some(())
+}
 pub(crate) fn bind_outside(
-    r: &mut RectangleShape,
+    c: &mut Control,
     t: &super::table::Table,
     cell: usize,
     paint: CellBorderPaint,
+    resources: &mut Resources<'_>,
 ) -> Option<()> {
-    let c = t.cells.get(cell)?;
-    r.common.outside_cell_border_paint = Some(OutsideCellBorderPaint {
-        owner: Owner::new(t.common.instance_id, c),
+    let owner = Owner::new(t.common.instance_id, t.cells.get(cell)?);
+    let fingerprint = outside_fingerprint(PaintRef::from_control(c)?, resources)?;
+    if owner.table == 0 || paint.source_id == 0 {
+        return None;
+    }
+    let tag = OutsideCellBorderPaint {
+        owner,
         paint,
         table_fingerprint: table_fingerprint(t),
-        fingerprint: outside_fingerprint(r)?,
-    });
+        fingerprint,
+    };
+    match c {
+        Control::Shape(s) => s.common_mut().outside_cell_border_paint = Some(tag),
+        Control::Picture(p) => {
+            p.border_paint_fingerprint = Some(fingerprint);
+            p.common.outside_cell_border_paint = Some(tag);
+        }
+        _ => return None,
+    }
     Some(())
 }
 pub(crate) fn outside_owner(
-    r: &RectangleShape,
+    p: PaintRef<'_>,
     t: &super::table::Table,
+    resources: &mut Resources<'_>,
 ) -> Option<(usize, CellBorderPaint)> {
-    let tag = r.common.outside_cell_border_paint?;
+    let tag = p.common().outside_cell_border_paint?;
     if tag.owner.table != t.common.instance_id
         || tag.table_fingerprint != table_fingerprint(t)
-        || outside_fingerprint(r) != Some(tag.fingerprint)
+        || outside_fingerprint(p, resources) != Some(tag.fingerprint)
+        || !p.sealed(tag.fingerprint)
     {
         return None;
     }
-    let cell = t
-        .cells
-        .iter()
-        .position(|c| Owner::new(t.common.instance_id, c) == tag.owner)?;
-    Some((cell, tag.paint))
+    Some((
+        t.cells
+            .iter()
+            .position(|c| Owner::new(t.common.instance_id, c) == tag.owner)?,
+        tag.paint,
+    ))
 }
-pub(crate) fn outside_binding(r: &RectangleShape) -> Option<(u32, u16, u16, CellBorderPaint)> {
-    r.common
+pub(crate) fn outside_binding(p: PaintRef<'_>) -> Option<(u32, u16, u16, CellBorderPaint)> {
+    p.common()
         .outside_cell_border_paint
         .map(|v| (v.owner.table, v.owner.row, v.owner.col, v.paint))
 }
@@ -162,10 +337,12 @@ impl Owner {
 pub(crate) fn valid_side(
     table: u32,
     cell: &super::table::Cell,
-    r: &RectangleShape,
+    p: PaintRef<'_>,
+    resources: &mut Resources<'_>,
 ) -> Option<CellSide> {
-    let paint = r.common.cell_border_paint?;
-    fingerprint(r, Owner::new(table, cell), paint).map(|_| paint.side)
+    let paint = p.common().cell_border_paint?;
+    let hash = fingerprint(p, Owner::new(table, cell), paint, resources)?;
+    p.sealed(hash).then_some(paint.side)
 }
 
 fn geometry_digest(r: &RectangleShape) -> Option<[u8; 32]> {
@@ -211,8 +388,13 @@ fn geometry_digest(r: &RectangleShape) -> Option<[u8; 32]> {
     Some(h.finalize().into())
 }
 
-fn fingerprint(r: &RectangleShape, o: Owner, paint: CellBorderPaint) -> Option<[u8; 32]> {
-    let a = &r.common;
+fn fingerprint(
+    p: PaintRef<'_>,
+    o: Owner,
+    paint: CellBorderPaint,
+    resources: &mut Resources<'_>,
+) -> Option<[u8; 32]> {
+    let a = p.common();
     if o.table == 0
         || paint.source_id == 0
         || o.row_span == 0
@@ -244,14 +426,14 @@ fn fingerprint(r: &RectangleShape, o: Owner, paint: CellBorderPaint) -> Option<[
     {
         return None;
     }
-    geometry_digest(r)
+    p.digest(resources)
 }
 
 // SectionDef controls mirror the canonical master list; do not visit both copies.
 fn walk(
     ps: &[Paragraph],
     owner: Option<Owner>,
-    f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<&RectangleShape>),
+    f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<PaintRef<'_>>),
     depth: usize,
 ) {
     if depth > 64 {
@@ -260,7 +442,7 @@ fn walk(
     fn shape(
         s: &ShapeObject,
         owner: Option<Owner>,
-        f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<&RectangleShape>),
+        f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<PaintRef<'_>>),
         depth: usize,
     ) {
         if depth > 64 {
@@ -270,7 +452,7 @@ fn walk(
             s.common(),
             owner,
             if let ShapeObject::Rectangle(r) = s {
-                Some(r)
+                Some(PaintRef::Rectangle(r))
             } else {
                 None
             },
@@ -299,7 +481,7 @@ fn walk(
                     }
                 }
                 Control::Shape(s) => shape(s, owner, f, depth + 1),
-                Control::Picture(p) => f(&p.common, owner, None),
+                Control::Picture(p) => f(&p.common, owner, Some(PaintRef::Picture(p))),
                 Control::Header(h) => walk(&h.paragraphs, None, f, depth + 1),
                 Control::Footer(h) => walk(&h.paragraphs, None, f, depth + 1),
                 Control::Footnote(n) => walk(&n.paragraphs, None, f, depth + 1),
@@ -312,7 +494,7 @@ fn walk(
 fn walk_mut(
     ps: &mut [Paragraph],
     owner: Option<Owner>,
-    f: &mut impl FnMut(&mut RectangleShape, Option<Owner>),
+    f: &mut impl FnMut(PaintMut<'_>, Option<Owner>),
     depth: usize,
 ) {
     if depth > 64 {
@@ -321,14 +503,14 @@ fn walk_mut(
     fn shape(
         s: &mut ShapeObject,
         owner: Option<Owner>,
-        f: &mut impl FnMut(&mut RectangleShape, Option<Owner>),
+        f: &mut impl FnMut(PaintMut<'_>, Option<Owner>),
         depth: usize,
     ) {
         if depth > 64 {
             return;
         }
         if let ShapeObject::Rectangle(r) = s {
-            f(r, owner);
+            f(PaintMut::Rectangle(r), owner);
         }
         if let Some(tb) = s.drawing_mut().and_then(|d| d.text_box.as_mut()) {
             walk_mut(&mut tb.paragraphs, None, f, depth + 1);
@@ -349,6 +531,7 @@ fn walk_mut(
                     }
                 }
                 Control::Shape(s) => shape(s, owner, f, depth + 1),
+                Control::Picture(p) => f(PaintMut::Picture(p), owner),
                 Control::Header(h) => walk_mut(&mut h.paragraphs, None, f, depth + 1),
                 Control::Footer(h) => walk_mut(&mut h.paragraphs, None, f, depth + 1),
                 Control::Footnote(n) => walk_mut(&mut n.paragraphs, None, f, depth + 1),
@@ -358,10 +541,7 @@ fn walk_mut(
         }
     }
 }
-fn each(
-    doc: &Document,
-    f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<&RectangleShape>),
-) {
+fn each(doc: &Document, f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<PaintRef<'_>>)) {
     for s in &doc.sections {
         walk(&s.paragraphs, None, f, 0);
         for m in &s.section_def.master_pages {
@@ -376,6 +556,7 @@ struct Record {
     paint: CellBorderPaint,
     fingerprint: [u8; 32],
     outside: Option<[u8; 32]>,
+    raster: bool,
 }
 impl Record {
     fn write(&self, out: &mut Vec<u8>) {
@@ -397,7 +578,8 @@ impl Record {
                 CellSide::Right => 1,
                 CellSide::Top => 2,
                 CellSide::Bottom => 3,
-            }) | if self.outside.is_some() { 0x80 } else { 0 },
+            }) | if self.outside.is_some() { 0x80 } else { 0 }
+                | if self.raster { 0x40 } else { 0 },
         );
         out.extend(self.paint.source_id.to_le_bytes());
         out.extend(self.fingerprint);
@@ -425,7 +607,7 @@ impl Record {
             top: i16::from_le_bytes(take(bytes, &mut i)?),
         };
         let flag = take::<1>(bytes, &mut i)?[0];
-        let side = match flag & !0x80 {
+        let side = match flag & !0xc0 {
             0 => CellSide::Left,
             1 => CellSide::Right,
             2 => CellSide::Top,
@@ -438,6 +620,7 @@ impl Record {
             owner,
             paint: CellBorderPaint { side, source_id },
             fingerprint: take(bytes, &mut i)?,
+            raster: flag & 0x40 != 0,
             outside: if flag & 0x80 != 0 {
                 Some(take(bytes, &mut i)?)
             } else {
@@ -451,12 +634,15 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     let mut counts = BTreeMap::<u32, usize>::new();
     let mut records = Vec::new();
     let mut over_budget = false;
+    let mut resources = Resources::new(&doc.bin_data_content);
     each(doc, &mut |a, owner, rect| {
         *counts.entry(a.instance_id).or_default() += 1;
         if let (Some(paint), Some(owner), Some(rect)) = (a.cell_border_paint, owner, rect) {
             // A drawing moved out of its old edge no longer has that binding.
             // Its paint is kept; stale provenance never authorizes an edit.
-            if let Some(fingerprint) = fingerprint(rect, owner, paint) {
+            if let Some(fingerprint) =
+                fingerprint(rect, owner, paint, &mut resources).filter(|h| rect.sealed(*h))
+            {
                 if records.len() == MAX_RECORDS {
                     over_budget = true;
                     return;
@@ -467,6 +653,7 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
                     paint,
                     fingerprint,
                     outside: None,
+                    raster: rect.raster(),
                 });
             }
         }
@@ -482,7 +669,7 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
                     }
                     _ => None,
                 });
-            if table.is_some_and(|t| outside_owner(rect, t).is_some()) {
+            if table.is_some_and(|t| outside_owner(rect, t, &mut resources).is_some()) {
                 if records.len() == MAX_RECORDS {
                     over_budget = true;
                     return;
@@ -493,6 +680,7 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
                     paint: tag.paint,
                     fingerprint: tag.fingerprint,
                     outside: Some(tag.table_fingerprint),
+                    raster: rect.raster(),
                 });
             }
         }
@@ -515,7 +703,9 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
         return Err("ambiguous cell border paint ownership".into());
     }
     let mut bytes = Vec::with_capacity(size);
-    bytes.extend(if records.iter().any(|r| r.outside.is_some()) {
+    bytes.extend(if records.iter().any(|r| r.raster) {
+        MAGIC_RASTER
+    } else if records.iter().any(|r| r.outside.is_some()) {
         MAGIC_OUTSIDE
     } else {
         MAGIC
@@ -530,11 +720,14 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
     if bytes.len() > MAX_BYTES {
         return;
     }
-    if bytes.len() < HEADER_BYTES || (&bytes[..8] != MAGIC && &bytes[..8] != MAGIC_OUTSIDE) {
+    if bytes.len() < HEADER_BYTES
+        || (&bytes[..8] != MAGIC && &bytes[..8] != MAGIC_OUTSIDE && &bytes[..8] != MAGIC_RASTER)
+    {
         return;
     }
     let count = u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize;
-    let outside_version = &bytes[..8] == MAGIC_OUTSIDE;
+    let outside_version = &bytes[..8] == MAGIC_OUTSIDE || &bytes[..8] == MAGIC_RASTER;
+    let raster_version = &bytes[..8] == MAGIC_RASTER;
     if count > MAX_RECORDS || bytes.len() < HEADER_BYTES + count * RECORD_BYTES {
         return;
     }
@@ -545,7 +738,11 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
         let Some(r) = Record::read(&bytes[offset..]) else {
             return;
         };
-        if r.outside.is_some() && !outside_version {
+        if (r.outside.is_some() && !outside_version)
+            || (r.raster && !raster_version)
+            || r.owner.table == 0
+            || r.paint.source_id == 0
+        {
             return;
         }
         offset += RECORD_BYTES + if r.outside.is_some() { 32 } else { 0 };
@@ -580,11 +777,15 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
             _ => None,
         })
         .collect::<BTreeMap<_, _>>();
-    let mut restore = |r: &mut RectangleShape, owner: Option<Owner>| {
-        let Some(record) = records.get(&r.common.instance_id) else {
+    let mut resources = Resources::new(&doc.bin_data_content);
+    let mut restore = |mut r: PaintMut<'_>, owner: Option<Owner>| {
+        let Some(record) = records.get(&r.as_ref().common().instance_id) else {
             return;
         };
-        if counts.get(&record.id) != Some(&1) || counts.get(&record.owner.table) != Some(&1) {
+        if counts.get(&record.id) != Some(&1)
+            || counts.get(&record.owner.table) != Some(&1)
+            || r.as_ref().raster() != record.raster
+        {
             return;
         }
         if let Some(frame) = record.outside {
@@ -592,9 +793,10 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
                 && tables
                     .get(&record.owner.table)
                     .is_some_and(|(hash, cells)| *hash == frame && cells.contains(&record.owner))
-                && outside_fingerprint(r) == Some(record.fingerprint)
+                && outside_fingerprint(r.as_ref(), &mut resources) == Some(record.fingerprint)
             {
-                r.common.outside_cell_border_paint = Some(OutsideCellBorderPaint {
+                r.seal(record.fingerprint);
+                r.common().outside_cell_border_paint = Some(OutsideCellBorderPaint {
                     owner: record.owner,
                     paint: record.paint,
                     table_fingerprint: frame,
@@ -604,9 +806,11 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
         } else if counts.get(&record.id) == Some(&1)
             && counts.get(&record.owner.table) == Some(&1)
             && owner == Some(record.owner)
-            && fingerprint(r, record.owner, record.paint) == Some(record.fingerprint)
+            && fingerprint(r.as_ref(), record.owner, record.paint, &mut resources)
+                == Some(record.fingerprint)
         {
-            r.common.cell_border_paint = Some(record.paint);
+            r.seal(record.fingerprint);
+            r.common().cell_border_paint = Some(record.paint);
         }
     };
     for s in &mut doc.sections {
