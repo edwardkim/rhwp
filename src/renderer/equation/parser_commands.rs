@@ -269,7 +269,8 @@ impl EqParser {
             // [#7873] 인자형 글꼴 명령과 다음 글자 사이의 공백 명령(`` ` ``·`~`)은 간격이지
             // body 가 아니다 — 공백을 그대로 두고 그 뒤 원소에 글꼴을 적용한다.
             let mut leading = Vec::new();
-            while self.current_type() == TokenType::Whitespace
+            while !self.document_terms
+                && self.current_type() == TokenType::Whitespace
                 && matches!(self.current_value(), "`" | "~")
             {
                 leading.push(super::atoms::whitespace_node(self.current_value()));

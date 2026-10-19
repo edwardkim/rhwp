@@ -3617,3 +3617,10 @@ PR 생성은 준비 결과 보고 후 사용자 승인을 받는다.
 공개 호환 tokenize에서는 기존 명령 토큰·화살표 이웃 분리 계약을 적용한다. 배치 기대값은
 변경하지 않는다. 문서 경로는 새 base의 실제 document_script 토큰과 AST를 함께 대조한다.
 이 진단은 전체 Cargo suite나 Print/Native/fresh WASM 일치 검증이 아니다.
+
+
+수식 실제 소스 진단 재실행에서 #7873 기존7건과 #7865 기존2건은 모두 통과했다.
+문서 경로는 새 base와58개 스크립트의 실제 토큰·AST를 비교해57개가 같고,
+`bold ``a b`에서만 공백의 인자 소유가 달랐다. 공개 호환 경로의 새 공백 처리를
+문서 모드에 적용하지 않도록 보완해 새 devel의 문서 계약을 유지한다. 이전57/58 결과는
+`post-rebase-equation-contract-before-bold-mode-fix-results.json`에 보존했고 재실행을 진행한다.
