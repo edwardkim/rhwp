@@ -5358,13 +5358,26 @@ fn reflow_line_segs_impl(
             fs
         };
         let mut text_seg = make_line_seg(utf16_start, fs);
+        // A control assigned its own row after this text prefix owns that
+        // row's height only. A terminal anchor can also equal text_len; the
+        // general last-line ownership rule must not reserve it in both rows.
+        let control_after_text = forced_inline_line.is_some_and(|(position, ..)| {
+            position > lb.start_idx
+                && (position < lb.end_idx
+                    || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
+        });
         if forced_inline_line.is_some_and(|(position, ..)| position == lb.start_idx) {
             let (_, _, height_hwp, _) = forced_inline_line.expect("checked inline control");
             apply_inline_control_line_height(&mut text_seg, height_hwp);
         }
         if let Some(control) = inline_controls
             .iter()
-            .filter(|control| inline_control_flow::owns_line(control, lb, text_len))
+            .filter(|control| {
+                inline_control_flow::owns_line(control, lb, text_len)
+                    && !(control_after_text
+                        && forced_inline_line
+                            .is_some_and(|(position, ..)| position == control.char_position))
+            })
             .max_by_key(|control| (control.height_hwp, control.baseline_distance_hwp))
         {
             let inline_owns_row_height = control.height_hwp > text_seg.line_height;
@@ -5380,11 +5393,6 @@ fn reflow_line_segs_impl(
         // control이 text line 한가운데/끝에 있으면 먼저 text prefix를 확정하고,
         // control offset에서 다음 LineSeg를 삽입한다. 단순히 vector 끝에 붙이면
         // 중간 nested table 뒤의 text가 control보다 앞에서 그려진다.
-        let control_after_text = forced_inline_line.is_some_and(|(position, ..)| {
-            position > lb.start_idx
-                && (position < lb.end_idx
-                    || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
-        });
         if control_after_text {
             let (_, control_start, height_hwp, _) =
                 forced_inline_line.expect("checked inline control");
