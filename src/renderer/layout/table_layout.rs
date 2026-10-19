@@ -12619,17 +12619,15 @@ impl LayoutEngine {
         let (bs, be) = block;
         let mut cells = Self::row_block_cells(table, bs, be);
         cells.sort_by_key(|cell| (cell.row, cell.col));
-        let has_paused_covering_span = cells.iter().enumerate().any(|(index, cell)| {
+        let has_spent_covering_span = cells.iter().enumerate().any(|(index, cell)| {
             let len = self.cell_units(cell, table, styles).len();
-            let su = start.get(index).copied().unwrap_or(0).min(len);
-            let eu = end.get(index).copied().unwrap_or(len).clamp(su, len);
             cell.row_span > 1
                 && cell.row as usize <= row
                 && row < cell.row as usize + cell.row_span as usize
                 && len > 0
-                && su == eu
+                && start.get(index).copied().unwrap_or(0) >= len
         });
-        if !has_paused_covering_span
+        if !has_spent_covering_span
             || self.profile.get().session_edited()
             || self
                 .render_normalization
@@ -12686,10 +12684,13 @@ impl LayoutEngine {
             }
             source_height = source_height.max(frame);
         }
-        // 병합 셀의 내용 컷이 이 조각에서 전진하지 않아도 물리 행은 남아 있다.
-        // 이미 소비한 내용과 뒤 조각에 남긴 내용을 구분해 보존하며, 그 선언 제약을
-        // 현재 행의 닫힌 상자에 다시 얹지 않는다. 줄 끝+실효 여백이 가장 큰 원본
-        // 행 상자를 실제로 닫을 때만 사용하고, 빈 띠의 닫힘 근거가 없으면 기존 밴드를 쓴다.
+        // The full table's measured row can contain a constraint from a span
+        // whose content was consumed on an earlier page. Preserve the complete
+        // remaining row's independently stored box, rather than either dropping
+        // its blank band or carrying that spent constraint into this fragment.
+        // A merely fitting line does not close an intentional blank band.
+        // Require an independent stored line end plus effective padding to
+        // close the tallest owning-cell frame; otherwise keep the measured band.
         Some(if closed_source_height != Some(source_height) {
             measured_height
         } else {
@@ -12754,10 +12755,12 @@ impl LayoutEngine {
                 let len = self.cell_units(cell, table, styles).len();
                 let su = start.get(index).copied().unwrap_or(0).min(len);
                 let eu = end.get(index).copied().unwrap_or(len).clamp(su, len);
-                // 병합 셀의 내용이 이번 조각에서 그대로 보류되거나 이미 끝났어도
-                // 덮고 있는 물리 행의 소유는 사라지지 않는다. 부분 내용을 실제로
-                // 새로 소비하는 범위는 기존 컷 높이 경로에서 계속 검사한다.
-                (su == 0 && eu == len) || (cell.row_span > 1 && su == eu)
+                // Consuming a spanning cell's units does not consume every
+                // physical row that it covers. This path uses the measured
+                // height of this row, not the spanning cell's whole frame.
+                // Preserve that row band while excluding its spent content;
+                // a partly consumed cell still requires the cut-height path.
+                eu == len && (su == 0 || (cell.row_span > 1 && su == len))
             })
     }
 
