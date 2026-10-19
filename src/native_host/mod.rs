@@ -8,6 +8,8 @@ pub mod clipboard;
 pub mod commands;
 pub mod editor;
 pub mod fonts;
+#[cfg(feature = "native-skia")]
+pub mod region_cache;
 pub mod runtime;
 pub mod save;
 pub mod view;
@@ -115,6 +117,8 @@ pub struct NativeDocumentSession {
     pending_save: Option<save::PendingSaveCheckpoint>,
     #[cfg(feature = "native-skia")]
     renderer: std::cell::OnceCell<crate::renderer::skia::SkiaLayerRenderer>,
+    #[cfg(feature = "native-skia")]
+    region_cache: std::cell::RefCell<region_cache::NativeRegionCache>,
     // feature가 꺼진 빌드도 같은 스레드 소유권 계약을 지킨다.
     _thread_affinity: PhantomData<Rc<()>>,
 }
@@ -131,6 +135,8 @@ impl NativeDocumentSession {
             pending_save: None,
             #[cfg(feature = "native-skia")]
             renderer: std::cell::OnceCell::new(),
+            #[cfg(feature = "native-skia")]
+            region_cache: std::cell::RefCell::new(region_cache::NativeRegionCache::default()),
             _thread_affinity: PhantomData,
         }
     }
@@ -176,6 +182,8 @@ impl NativeDocumentSession {
     }
 
     pub fn clear_caches(&self) {
+        #[cfg(feature = "native-skia")]
+        self.region_cache.borrow_mut().invalidate();
         #[cfg(feature = "native-skia")]
         if let Some(renderer) = self.renderer.get() {
             renderer.clear_caches();
@@ -269,26 +277,7 @@ impl NativeDocumentSession {
         Self::check_scale(scale)?;
         #[cfg(feature = "native-skia")]
         {
-            let tree = self
-                .core
-                .build_page_layer_tree_with_profile(page, crate::paint::RenderProfile::Screen)?;
-            let output = self.renderer().render_region_pixels_with_options(
-                &tree,
-                region,
-                crate::renderer::layer_renderer::RasterRenderOptions {
-                    scale,
-                    max_pixels: MAX_FRAME_PIXELS,
-                    transparent: false,
-                    ..Default::default()
-                },
-            )?;
-            Ok(NativeFrame {
-                pixels: output.pixels,
-                revision: self.revision,
-                font_generation: self.font_generation,
-                origin_x: output.origin_x,
-                origin_y: output.origin_y,
-            })
+            self.render_region_cached(page, region, scale)
         }
         #[cfg(not(feature = "native-skia"))]
         {

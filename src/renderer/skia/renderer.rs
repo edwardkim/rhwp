@@ -932,6 +932,17 @@ impl SkiaLayerRenderer {
             .map(|_| ())
     }
 
+    /// Shared non-strict raster replay for immutable prepared-page snapshots.
+    pub(super) fn render_prepared_raster(
+        &self,
+        canvas: &Canvas,
+        tree: &PageLayerTree,
+        scale: f32,
+    ) -> LayerRenderResult<()> {
+        self.render_page_to_canvas_with_options(canvas, tree, scale, false)
+            .map(|_| ())
+    }
+
     fn render_page_to_canvas_with_options(
         &self,
         canvas: &Canvas,
