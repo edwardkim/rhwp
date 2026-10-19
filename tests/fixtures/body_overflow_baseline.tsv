@@ -207,5 +207,5 @@ issue6465/press_release_footer_logos.hwpx	1
 issue7816/odd_spacing_prev.hwpx	2
 # #8060 표본 71352 1행 — 이 PR 의 변경과 무관한 devel 유래 결손. 이 PR 없이 devel efc52afb7 만으로도 11쪽 본문
 # 글줄 하나가 바닥 아래 11.7px 에 그려진다(devel 224a32606 은 0건). devel 병합 구간 8740867a5..b3869cd47 에서
-# 들어왔고(first-parent bisect, 구간 다수 컴파일 불가로 단일 커밋 미확정) 이 PR 의 수정 전후 동일하다.
+# 들어왔고(first-parent bisect, 구간 다수 컴파일 불가로 단일 커밋 미확정) 이 PR 의 수정 전후 동일하다. 추적 이슈 #8095 — 고쳐지면 이 줄을 지운다.
 issue8060/71352_lpg_regulatory_impact.hwp	1
