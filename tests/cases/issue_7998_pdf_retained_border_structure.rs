@@ -1421,3 +1421,495 @@ fn saved_interval_conflict_recovers_the_original_cells_own_outer_pen() {
         }
     }
 }
+
+fn topology_edit(c: &mut DocumentCore, mode: usize) -> Result<String, rhwp::error::HwpError> {
+    let ci = root(c).0;
+    match mode {
+        0 => c.merge_table_cells_native(0, 0, ci, 0, 0, 0, 1),
+        1 => c.merge_table_cells_native(0, 0, ci, 0, 0, 1, 0),
+        2 => c.split_table_cell_native(0, 0, ci, 0, 0),
+        3 => c.split_table_cell_into_native(0, 0, ci, 0, 0, 2, 2, false, true),
+        _ => c.split_table_cells_in_range_native(0, 0, ci, 0, 0, 1, 1, 2, 2, false),
+    }
+}
+
+#[test]
+fn unsupported_retained_merge_and_split_preserve_model_events_render_and_both_saves() {
+    let source = load();
+    let hwp = source.export_hwp_with_adapter_snapshot().unwrap();
+    let hwpx = source.export_hwpx_native().unwrap();
+    for source in [None, Some(hwp.as_slice()), Some(hwpx.as_slice())] {
+        for mode in 0..5 {
+            let mut c = source.map_or_else(load, |b| DocumentCore::from_bytes(b).unwrap());
+            let model = serde_json::to_value(&c.document().sections[0].paragraphs).unwrap();
+            let event_log = c.serialize_event_log();
+            let render = c.render_page_svg_native(0).unwrap();
+            let before = (
+                c.export_hwp_with_adapter_snapshot().unwrap(),
+                c.export_hwpx_native().unwrap(),
+            );
+            let error = topology_edit(&mut c, mode).unwrap_err().to_string();
+            assert!(error.contains("아직 지원하지 않습니다"));
+            assert_eq!(
+                serde_json::to_value(&c.document().sections[0].paragraphs).unwrap(),
+                model
+            );
+            assert_eq!(c.serialize_event_log(), event_log);
+            assert_eq!(c.render_page_svg_native(0).unwrap(), render);
+            // Dynamic transaction/restoration equality, not a fixed layout golden.
+            assert_eq!(c.export_hwp_with_adapter_snapshot().unwrap(), before.0);
+            assert_eq!(c.export_hwpx_native().unwrap(), before.1);
+        }
+    }
+}
+
+#[test]
+fn one_by_one_retained_split_remains_a_noop() {
+    for range in [false, true] {
+        let mut c = load();
+        let ci = root(&c).0;
+        let before = c.export_hwpx_native().unwrap();
+        let render = c.render_page_svg_native(0).unwrap();
+        if range {
+            c.split_table_cells_in_range_native(0, 0, ci, 0, 0, 1, 1, 1, 1, false)
+                .unwrap();
+        } else {
+            c.split_table_cell_into_native(0, 0, ci, 0, 0, 1, 1, false, true)
+                .unwrap();
+        }
+        assert_eq!(c.export_hwpx_native().unwrap(), before);
+        assert_eq!(c.render_page_svg_native(0).unwrap(), render);
+    }
+}
+
+fn load_native_topology(name: &str) -> DocumentCore {
+    DocumentCore::from_pdf_bytes(
+        &std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join(format!("pdf/issue7998/cell-regions/{name}.pdf")),
+        )
+        .unwrap(),
+        &PdfImportOptions::default(),
+    )
+    .unwrap()
+}
+
+fn assert_native_merged_paragraphs(c: &DocumentCore, row: u16, col: u16, want: [&str; 2]) {
+    use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+    fn collect(n: &RenderNode, ci: usize, cell: usize, out: &mut [Vec<(String, BoundingBox)>; 2]) {
+        if let RenderNodeType::TextRun(t) = &n.node_type {
+            if n.visible && !n.editor_only && !t.text.is_empty() {
+                if let Some(path) = t.cell_context.as_ref().map(|c| c.path.as_slice()) {
+                    if path.len() == 1
+                        && path[0].control_index == ci
+                        && path[0].cell_index == cell
+                        && path[0].cell_para_index < 2
+                    {
+                        out[path[0].cell_para_index].push((t.text.clone(), n.bbox));
+                    }
+                }
+            }
+        }
+        for child in &n.children {
+            collect(child, ci, cell, out);
+        }
+    }
+    let (ci, table) = root(c);
+    assert_eq!(table.cells.len(), 2);
+    let cell = table
+        .cells
+        .iter()
+        .position(|c| c.row == row && c.col == col)
+        .unwrap();
+    assert_eq!(table.cells[cell].paragraphs.len(), 2);
+    let tree = c.build_page_render_tree(0).unwrap();
+    fn cell_box(n: &RenderNode, ci: usize, cell: usize) -> Option<BoundingBox> {
+        if matches!(&n.node_type, RenderNodeType::Table(t) if t.control_index == Some(ci) && t.cell_context.is_none())
+        {
+            return n.children.iter().find_map(|n| match &n.node_type {
+                RenderNodeType::TableCell(t) if t.model_cell_index == Some(cell as u32) => {
+                    Some(n.bbox)
+                }
+                _ => None,
+            });
+        }
+        n.children.iter().find_map(|n| cell_box(n, ci, cell))
+    }
+    let frame = cell_box(&tree.root, ci, cell).unwrap();
+    let mut runs = [vec![], vec![]];
+    collect(&tree.root, ci, cell, &mut runs);
+    for (found, expected) in runs.iter().zip(want) {
+        assert_eq!(
+            found.iter().map(|r| r.0.as_str()).collect::<String>(),
+            expected,
+            "text and final cell/paragraph ownership"
+        );
+    }
+    for (_, bounds) in runs.iter().flatten() {
+        assert!(
+            bounds.x >= frame.x - 0.01 && bounds.x + bounds.width <= frame.x + frame.width + 0.01
+        );
+        assert!(
+            bounds.y >= frame.y - 0.01 && bounds.y + bounds.height <= frame.y + frame.height + 0.01,
+            "merged text belongs inside its cell, not a visually masked overflow"
+        );
+    }
+    let end = runs[0]
+        .iter()
+        .map(|r| r.1.y + r.1.height)
+        .fold(f64::NEG_INFINITY, f64::max);
+    let start = runs[1].iter().map(|r| r.1.y).fold(f64::INFINITY, f64::min);
+    assert!(
+        end <= start + 0.01,
+        "successive merged paragraphs must not overlap: {end} > {start}"
+    );
+}
+
+#[test]
+fn native_merges_rebase_separate_cell_line_origins_and_keep_text_after_both_saves() {
+    // The independent Hancom Print has two successive paragraphs, not two runs
+    // at the same source-cell origin. No absolute glyph coordinate is pinned.
+    for (name, row, col, er, ec, want) in [
+        ("colspan", 1, 0, 1, 1, ["LOWER LEFT", "LOWER RIGHT"]),
+        ("rowspan", 0, 1, 1, 1, ["UPPER RIGHT", "LOWER RIGHT"]),
+    ] {
+        let mut c = load_native_topology(name);
+        let ci = root(&c).0;
+        let all_text = text(&c.document().sections[0].paragraphs);
+        c.merge_table_cells_native(0, 0, ci, row, col, er, ec)
+            .unwrap();
+        assert_eq!(text(&c.document().sections[0].paragraphs), all_text);
+        assert_native_merged_paragraphs(&c, row, col, want);
+        for bytes in [
+            c.export_hwp_with_adapter_snapshot().unwrap(),
+            c.export_hwpx_native().unwrap(),
+        ] {
+            let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            assert_eq!(text(&reopened.document().sections[0].paragraphs), all_text);
+            assert_eq!(
+                (root(&reopened).1.row_count, root(&reopened).1.col_count),
+                (2, 2)
+            );
+            assert_native_merged_paragraphs(&reopened, row, col, want);
+        }
+    }
+}
+
+const ROW_GRID: &str = "META-INF/rhwp-table-row-grids.json";
+fn merged_native() -> DocumentCore {
+    let mut c = load_native_topology("rowspan");
+    let ci = root(&c).0;
+    c.merge_table_cells_native(0, 0, ci, 0, 1, 1, 1).unwrap();
+    c
+}
+fn zip_part(bytes: &[u8], name: &str) -> Vec<u8> {
+    use std::io::Read;
+    let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
+    let mut b = vec![];
+    z.by_name(name).unwrap().read_to_end(&mut b).unwrap();
+    b
+}
+fn change_part(bytes: &[u8], name: &str, replace: Option<&[u8]>) -> Vec<u8> {
+    use std::io::{Read, Write};
+    let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
+    let mut target = zip::ZipWriter::new(std::io::Cursor::new(vec![]));
+    for i in 0..z.len() {
+        let mut p = z.by_index(i).unwrap();
+        let n = p.name().unwrap().into_owned();
+        if n == name && replace.is_none() {
+            continue;
+        }
+        target
+            .start_file(
+                &n,
+                zip::write::SimpleFileOptions::default().compression_method(p.compression()),
+            )
+            .unwrap();
+        let mut b = vec![];
+        p.read_to_end(&mut b).unwrap();
+        target
+            .write_all(if n == name { replace.unwrap() } else { &b })
+            .unwrap();
+    }
+    target.finish().unwrap().into_inner()
+}
+fn table_topology(c: &DocumentCore) -> serde_json::Value {
+    let t = root(c).1;
+    serde_json::json!({"rows":t.row_count,"cols":t.col_count,"cells":t.cells.iter().map(|c|(c.row,c.col,c.row_span,c.col_span,c.width,c.height)).collect::<Vec<_>>()})
+}
+fn assert_xml_rows(bytes: &[u8], count: usize) {
+    let part = zip_part(bytes, "Contents/section0.xml");
+    let x = roxmltree::Document::parse(std::str::from_utf8(&part).unwrap()).unwrap();
+    let t = x
+        .descendants()
+        .find(|n| n.has_tag_name(("http://www.hancom.co.kr/hwpml/2011/paragraph", "tbl")))
+        .unwrap();
+    assert_eq!(
+        t.attribute("rowCnt").unwrap().parse::<usize>().unwrap(),
+        count
+    );
+    let rows: Vec<_> = t
+        .children()
+        .filter(|n| n.is_element() && n.tag_name().name() == "tr")
+        .collect();
+    assert_eq!(rows.len(), count);
+    assert!(
+        rows.iter().all(|r| r
+            .children()
+            .any(|c| c.is_element() && c.tag_name().name() == "tc")),
+        "HWPX must not contain the all-covered empty row rejected by Hancom"
+    );
+}
+#[test]
+fn hwpx_projects_redundant_rows_and_restores_the_original_split_grid() {
+    let c = merged_native();
+    let before = table_topology(&c);
+    let text_before = text(&c.document().sections[0].paragraphs);
+    let bytes = c.export_hwpx_native().unwrap();
+    assert_xml_rows(&bytes, 1);
+    assert_eq!(table_topology(&c), before);
+    let mut restored = DocumentCore::from_bytes(&bytes).unwrap();
+    assert_eq!(table_topology(&restored), before);
+    assert_eq!(
+        text(&restored.document().sections[0].paragraphs),
+        text_before
+    );
+    let ci = root(&restored).0;
+    restored.split_table_cell_native(0, 0, ci, 0, 1).unwrap();
+    assert_eq!(root(&restored).1.row_count, 2);
+    assert_eq!(root(&restored).1.cells.len(), 3);
+    assert_eq!(
+        text(&restored.document().sections[0].paragraphs),
+        text_before
+    );
+    let plain = DocumentCore::from_bytes(&change_part(&bytes, ROW_GRID, None)).unwrap();
+    assert_eq!(root(&plain).1.row_count, 1);
+    assert_eq!(root(&plain).1.cells.len(), 2);
+    assert_eq!(text(&plain.document().sections[0].paragraphs), text_before);
+    assert_eq!(
+        root(&plain)
+            .1
+            .cells
+            .iter()
+            .map(|c| (c.width, c.height))
+            .collect::<Vec<_>>(),
+        root(&c)
+            .1
+            .cells
+            .iter()
+            .map(|c| (c.width, c.height))
+            .collect::<Vec<_>>()
+    );
+}
+#[test]
+fn projected_later_row_origins_roundtrip_after_structure_edit() {
+    let mut c = merged_native();
+    let ci = root(&c).0;
+    c.insert_table_row_native(0, 0, ci, 1, true).unwrap();
+    let before = table_topology(&c);
+    assert_eq!(root(&c).1.row_count, 3);
+    let bytes = c.export_hwpx_native().unwrap();
+    assert_xml_rows(&bytes, 2);
+    let restored = DocumentCore::from_bytes(&bytes).unwrap();
+    assert_eq!(table_topology(&restored), before);
+}
+#[test]
+fn stale_or_malformed_row_grid_records_do_not_override_standard_cells() {
+    let c = merged_native();
+    let bytes = c.export_hwpx_native().unwrap();
+    let original: serde_json::Value = serde_json::from_slice(&zip_part(&bytes, ROW_GRID)).unwrap();
+    let mut variants = vec![];
+    let mut stale = original.clone();
+    stale["records"][0]["fingerprint"][0] =
+        serde_json::json!((original["records"][0]["fingerprint"][0].as_u64().unwrap() + 1) % 256);
+    variants.push(stale);
+    for boundaries in [
+        serde_json::json!([0, 2, 1]),
+        serde_json::json!([1, 2]),
+        serde_json::json!([0, 0]),
+    ] {
+        let mut v = original.clone();
+        v["records"][0]["boundaries"] = boundaries;
+        variants.push(v);
+    }
+    let mut duplicate = original.clone();
+    let r = duplicate["records"][0].clone();
+    duplicate["records"].as_array_mut().unwrap().push(r);
+    variants.push(duplicate);
+    for v in variants {
+        let changed = change_part(&bytes, ROW_GRID, Some(&serde_json::to_vec(&v).unwrap()));
+        let d = DocumentCore::from_bytes(&changed).unwrap();
+        assert_eq!(root(&d).1.row_count, 1);
+        assert_eq!(root(&d).1.cells.len(), 2);
+        assert_eq!(
+            text(&d.document().sections[0].paragraphs),
+            text(&c.document().sections[0].paragraphs)
+        );
+    }
+}
+#[test]
+fn normal_rows_do_not_add_a_row_grid_sidecar() {
+    let c = load_native_topology("rowspan");
+    let b = c.export_hwpx_native().unwrap();
+    let mut z = zip::ZipArchive::new(std::io::Cursor::new(&b)).unwrap();
+    assert!(z.by_name(ROW_GRID).is_err());
+    assert_xml_rows(&b, 2);
+}
+#[test]
+fn row_projection_rejects_ambiguous_ids_and_physical_holes() {
+    let mut c = merged_native();
+    let original = root(&c).1.clone();
+    c.document_mut().sections[0].paragraphs[0]
+        .controls
+        .push(Control::Table(Box::new(original)));
+    assert!(c
+        .export_hwpx_native()
+        .unwrap_err()
+        .to_string()
+        .contains("ID"));
+    let mut c = merged_native();
+    let ci = root(&c).0;
+    let Control::Table(t) = &mut c.document_mut().sections[0].paragraphs[0].controls[ci] else {
+        panic!()
+    };
+    for cell in &mut t.cells {
+        cell.row_span = 1;
+    }
+    assert!(c
+        .export_hwpx_native()
+        .unwrap_err()
+        .to_string()
+        .contains("빈 논리 행"));
+    let mut c = merged_native();
+    let ci = root(&c).0;
+    let Control::Table(t) = &mut c.document_mut().sections[0].paragraphs[0].controls[ci] else {
+        panic!()
+    };
+    t.cells.push(t.cells[0].clone());
+    assert!(c
+        .export_hwpx_native()
+        .unwrap_err()
+        .to_string()
+        .contains("빈 논리 행"));
+    let mut c = merged_native();
+    let ci = root(&c).0;
+    let Control::Table(t) = &mut c.document_mut().sections[0].paragraphs[0].controls[ci] else {
+        panic!()
+    };
+    t.zones.push(rhwp::model::table::TableZone {
+        start_row: 1,
+        end_row: 1,
+        start_col: 0,
+        end_col: 1,
+        border_fill_id: t.border_fill_id,
+    });
+    assert!(c
+        .export_hwpx_native()
+        .unwrap_err()
+        .to_string()
+        .contains("빈 논리 행"));
+}
+
+fn topology_scope_load() -> (DocumentCore, usize) {
+    let c = DocumentCore::from_pdf_bytes(
+        &std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("pdf/issue7998/retained-border-structure/retained-pen.pdf"),
+        )
+        .unwrap(),
+        &PdfImportOptions::default(),
+    )
+    .unwrap();
+    let ci = c.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .position(|v| matches!(v, Control::Table(_)))
+        .unwrap();
+    (c, ci)
+}
+fn topology_table(c: &mut DocumentCore, ci: usize) -> &mut Table {
+    let Control::Table(t) = &mut c.document_mut().sections[0].paragraphs[0].controls[ci] else {
+        panic!()
+    };
+    t
+}
+fn clear_topology_paint(ctrl: &mut Control) {
+    match ctrl {
+        Control::Shape(s) => {
+            s.common_mut().cell_border_paint = None;
+            s.common_mut().outside_cell_border_paint = None;
+        }
+        Control::Picture(p) => {
+            p.common.cell_border_paint = None;
+            p.common.outside_cell_border_paint = None;
+        }
+        _ => {}
+    }
+}
+fn clear_topology_cells(t: &mut Table) {
+    for p in t.cells.iter_mut().flat_map(|c| &mut c.paragraphs) {
+        for ctrl in &mut p.controls {
+            clear_topology_paint(ctrl);
+        }
+    }
+}
+// In-memory ownership counterexamples, not independent Print/fidelity fixtures.
+#[test]
+fn outside_binding_alone_blocks_target() {
+    let (mut c, ci) = topology_scope_load();
+    clear_topology_cells(topology_table(&mut c, ci));
+    let before = serde_json::to_vec(&c.document().sections[0].paragraphs).unwrap();
+    assert!(c.merge_table_cells_native(0, 0, ci, 0, 0, 0, 1).is_err());
+    assert_eq!(
+        before,
+        serde_json::to_vec(&c.document().sections[0].paragraphs).unwrap()
+    );
+}
+#[test]
+fn another_tables_owned_paint_does_not_block_target() {
+    let (mut c, ci) = topology_scope_load();
+    let original =
+        serde_json::to_value(&c.document().sections[0].paragraphs[0].controls[ci]).unwrap();
+    let mut candidate = topology_table(&mut c, ci).clone();
+    clear_topology_cells(&mut candidate);
+    candidate.common.instance_id = 9999;
+    let next = c.document().sections[0].paragraphs[0].controls.len();
+    c.document_mut().sections[0].paragraphs[0]
+        .controls
+        .push(Control::Table(Box::new(candidate)));
+    c.merge_table_cells_native(0, 0, next, 0, 0, 0, 1).unwrap();
+    assert_eq!(
+        serde_json::to_value(&c.document().sections[0].paragraphs[0].controls[ci]).unwrap(),
+        original
+    );
+}
+#[test]
+fn ordinary_drawings_are_not_border_authority() {
+    let (mut c, ci) = topology_scope_load();
+    for ctrl in &mut c.document_mut().sections[0].paragraphs[0].controls {
+        clear_topology_paint(ctrl);
+    }
+    clear_topology_cells(topology_table(&mut c, ci));
+    c.merge_table_cells_native(0, 0, ci, 0, 0, 0, 1).unwrap();
+}
+#[test]
+fn child_owned_paint_does_not_block_parent() {
+    let (mut c, ci) = topology_scope_load();
+    let nested = topology_table(&mut c, ci).clone();
+    for ctrl in &mut c.document_mut().sections[0].paragraphs[0].controls {
+        clear_topology_paint(ctrl);
+    }
+    let t = topology_table(&mut c, ci);
+    clear_topology_cells(t);
+    t.common.instance_id = 9999;
+    let place = t.cells[0]
+        .paragraphs
+        .iter_mut()
+        .flat_map(|p| &mut p.controls)
+        .find(|v| matches!(v, Control::Table(_)))
+        .unwrap();
+    *place = Control::Table(Box::new(nested));
+    c.merge_table_cells_native(0, 0, ci, 0, 0, 0, 1).unwrap();
+    let t = topology_table(&mut c, ci);
+    assert!(t.cells.iter().flat_map(|c|&c.paragraphs).flat_map(|p|&p.controls).any(|v|matches!(v,Control::Table(t)if t.cells.iter().flat_map(|c|&c.paragraphs).flat_map(|p|&p.controls).any(|v|matches!(v,Control::Shape(s)if s.common().cell_border_paint.is_some())||matches!(v,Control::Picture(p)if p.common.cell_border_paint.is_some())))));
+}

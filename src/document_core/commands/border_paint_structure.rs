@@ -818,6 +818,47 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
 }
 
 impl DocumentCore {
+    /// Merge/split moves cell paragraphs and changes the logical border owners.
+    /// Until those edits have a source-paint closure, reject before touching the
+    /// model, reflow, events or serializer. Ordinary drawings are not ownership.
+    pub(super) fn ensure_table_cell_topology_supported(
+        &self,
+        si: usize,
+        pi: usize,
+        ti: usize,
+    ) -> Result<(), HwpError> {
+        let Some(parent) = self
+            .document
+            .sections
+            .get(si)
+            .and_then(|s| s.paragraphs.get(pi))
+        else {
+            return Ok(()); // The existing table getter owns index/type errors.
+        };
+        let Some(Control::Table(table)) = parent.controls.get(ti) else {
+            return Ok(());
+        };
+        let has_cell = table
+            .cells
+            .iter()
+            .flat_map(|c| &c.paragraphs)
+            .flat_map(|p| &p.controls)
+            .filter_map(PaintRef::from_control)
+            .any(|p| p.common().cell_border_paint.is_some());
+        let has_outside = parent
+            .controls
+            .iter()
+            .filter_map(PaintRef::from_control)
+            .filter_map(outside_binding)
+            .any(|binding| binding.0 == table.common.instance_id);
+        if has_cell || has_outside {
+            return Err(HwpError::RenderError(
+                "이 표의 원본 테두리를 보존하는 셀 병합·나누기는 아직 지원하지 않습니다".into(),
+            ));
+        }
+        Ok(())
+    }
+
     pub(super) fn mutate_table_structure(
         &mut self,
         si: usize,

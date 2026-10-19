@@ -734,6 +734,13 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // dir 영역 basename 매칭 영역 image 영역 자동 load. HWP5 parser 와 동일 처리.
     super::populate_link_image_paths(&mut doc);
 
+    // Restore the logical row owners before resolving paint ownership hashes.
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::table_row_grid::HWPX_ENTRY,
+        crate::model::table_row_grid::MAX_BYTES,
+    ) {
+        crate::model::table_row_grid::decode(&mut doc, &bytes);
+    }
     if let Ok(bytes) = reader.read_file_bytes_limited(
         crate::model::border_paint::HWPX_ENTRY,
         crate::model::border_paint::MAX_BYTES,

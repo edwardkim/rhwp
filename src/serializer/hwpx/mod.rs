@@ -134,6 +134,15 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
         }
     }
 
+    if let Some(bytes) = ctx
+        .table_row_grids
+        .encode()
+        .map_err(SerializeError::UnsupportedInput)?
+    {
+        z.write_deflated(crate::model::table_row_grid::HWPX_ENTRY, &bytes)?;
+        ctx.content_loss
+            .record(crate::model::table_row_grid::native_grid_loss());
+    }
     if let Some(bytes) =
         crate::model::border_paint::encode(doc).map_err(SerializeError::UnsupportedInput)?
     {

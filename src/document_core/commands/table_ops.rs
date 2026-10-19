@@ -589,6 +589,7 @@ impl DocumentCore {
         end_row: u16,
         end_col: u16,
     ) -> Result<String, HwpError> {
+        self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .merge_cells(start_row, start_col, end_row, end_col)
@@ -621,6 +622,15 @@ impl DocumentCore {
                     cell_para_idx,
                 );
             }
+            // The paragraphs came from separate cell coordinate frames. Width
+            // reflow alone preserves their old vpos and can overlap them; consume
+            // the same occupied-line ladder used after a cell split.
+            self.rebuild_table_cell_vpos_ladder_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+            );
         }
 
         self.document.sections[section_idx].raw_stream = None;
@@ -646,6 +656,7 @@ impl DocumentCore {
         row: u16,
         col: u16,
     ) -> Result<String, HwpError> {
+        self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .split_cell(row, col)
@@ -682,6 +693,9 @@ impl DocumentCore {
         equal_row_height: bool,
         merge_first: bool,
     ) -> Result<String, HwpError> {
+        if n_rows != 1 || m_cols != 1 {
+            self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
+        }
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .split_cell_into(row, col, n_rows, m_cols, equal_row_height, merge_first)
@@ -778,6 +792,9 @@ impl DocumentCore {
         m_cols: u16,
         equal_row_height: bool,
     ) -> Result<String, HwpError> {
+        if n_rows != 1 || m_cols != 1 {
+            self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
+        }
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .split_cells_in_range(
