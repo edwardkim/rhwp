@@ -1,4 +1,4 @@
-//! Stored text spans distinguish a line's occupied box from its next-line advance.
+//! 저장된 글줄 병합 칸의 실제 점유와 다음 줄 전진을 구분한다.
 
 use crate::model::paragraph::LineSeg;
 use crate::model::table::{Cell, Table, TablePageBreak};
@@ -390,16 +390,26 @@ impl LayoutEngine {
             })
     }
 
-    /// 유효한 저장 슬롯은 기존 수용 계약을 유지한다. 새 프레임이 발행한
-    /// 줄은 실제 다음 줄간격을 구분하며 원본 슬롯을 재사용한 것으로 취급하지 않는다.
+    /// 원본 문단 안의 컷은 온전한 저장 슬롯을 예약한다. 문단 끝에서는
+    /// 공통 용량 계약이 구분한 다음 문단으로의 전진을 실제 점유와 분리한다.
+    /// 새로 조판한 줄은 현재 줄 생산자의 간격을 소비한다.
     pub(super) fn stored_span_cut_closing_advance(
         &self,
         table: &Table,
         cell: &Cell,
-        unit: &CellUnit,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+        styles: &ResolvedStyleSet,
     ) -> f64 {
+        let Some(unit) = end.checked_sub(1).and_then(|index| units.get(index)) else {
+            return 0.0;
+        };
+        if start >= end || end >= units.len() {
+            return 0.0;
+        }
         if self.stored_span_cut_preserves_line_slots(table, cell) && !unit.reflowed_line_slot {
-            0.0
+            self.row_cut_capacity_trailing_trim(table, cell, units, start, end, styles)
         } else {
             self.stored_span_line_tail_spacing(unit)
         }

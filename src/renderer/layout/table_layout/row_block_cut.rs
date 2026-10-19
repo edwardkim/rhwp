@@ -75,8 +75,14 @@ impl<'a> CellCutFrame<'a> {
                 .engine
                 .stored_plain_text_span_frame(self.table, self.cell)
         {
-            self.engine
-                .stored_span_cut_closing_advance(self.table, self.cell, &self.units[end - 1])
+            self.engine.stored_span_cut_closing_advance(
+                self.table,
+                self.cell,
+                self.units,
+                self.start,
+                end,
+                self.styles,
+            )
         } else {
             0.0
         };
@@ -136,7 +142,10 @@ impl<'a> CellCutFrame<'a> {
             let following_advance = self.engine.stored_span_cut_closing_advance(
                 self.table,
                 self.cell,
-                &self.units[end - 1],
+                self.units,
+                self.start,
+                end,
+                self.styles,
             );
             physical
                 .max(content_advance - following_advance + self.padding + self.header_height(end))

@@ -23526,7 +23526,7 @@ impl LayoutEngine {
             // 조각 끝은 실제 글줄 상자를 소유한다. 다음 줄로 가는 간격은
             // 합성 줄을 만든 생산자의 값으로 구분하며 저장 줄 인덱스로 재추측하지 않는다.
             let line_tail = if stored_text_span && n + 1 < units.len() {
-                self.stored_span_cut_closing_advance(table, cell, &units[n])
+                self.stored_span_cut_closing_advance(table, cell, &units, 0, n + 1, styles)
             } else {
                 0.0
             };
