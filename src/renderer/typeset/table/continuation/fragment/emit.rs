@@ -2162,6 +2162,9 @@ impl TypesetEngine {
             let resolved = (split_block_start.is_none())
                 .then_some(input.fragment_row_heights)
                 .flatten()
+                // 패딩만 선언한 일반 행의 측정 높이는 내용 전진 합이다.
+                // 이미 닫힌 저장 프레임의 간격을 물리 최소로 다시 넘기지 않는다.
+                .filter(|_| !layout_engine.stored_ordinary_row_declares_only_padding(table, row))
                 .and_then(|rows| rows.get(row).copied());
             let full = carried.or(resolved).or_else(|| {
                 let declared = *table.get_raw_row_heights().get(row)?;

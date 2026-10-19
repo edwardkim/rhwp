@@ -5,6 +5,26 @@ use crate::model::table::{Cell, Table};
 use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
+    /// 패딩만 선언한 원본 일반 행에는 내용 유닛과 별도의 최소 본문 상자가 없다.
+    /// 측정한 전체 내용 높이를 물리 최소로 이어받으면 이미 지난 저장 프레임의
+    /// 간격을 다음 조각에 다시 예약하므로, 그 잔여는 실제 내용 컷이 소유한다.
+    pub(crate) fn stored_ordinary_row_declares_only_padding(
+        &self,
+        table: &Table,
+        row: usize,
+    ) -> bool {
+        let owners = Self::row_cut_cell_order(table, row);
+        !owners.is_empty()
+            && owners.iter().all(|&index| {
+                let cell = &table.cells[index];
+                let padding = cell.effective_padding(&table.padding);
+                usize::from(cell.row) == row
+                    && cell.row_span == 1
+                    && self.stored_plain_text_cell_frame(table, cell)
+                    && cell.height <= u32::from(padding.top) + u32::from(padding.bottom)
+            })
+    }
+
     fn original_ordinary_row_cells<'a>(
         &self,
         table: &'a Table,
