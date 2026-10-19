@@ -38,7 +38,7 @@ impl TypesetEngine {
         let occupied = scan.split_block_physical_height?;
         let table = input.source.row_geometry_table;
         let layout = &input.prepared.layout_engine;
-        let original_text_page = layout.row_block_cut_is_original_text_page(
+        let original_source_page = layout.row_block_cut_is_original_source_page(
             table,
             (first, end),
             &input.start.start_cut,
@@ -47,7 +47,7 @@ impl TypesetEngine {
         );
         if std::env::var_os("RHWP_TABLE_DRIFT").is_some() {
             eprintln!("TABLE_BLOCK_PAGE_BUDGET: pi={} rows={}..{} original={} continuation={} block={} cursor={} last={:?} blank={:?} source_bottom={:?}",
-                input.source.para_index, first, end, original_text_page,
+                input.source.para_index, first, end, original_source_page,
                 input.start.is_continuation, input.start.start_cut_is_block,
                 input.start.cursor_row, scan.end_row_height_override,
                 budget.reflow_blank_avail_for_rows, budget.source_frame_bottom);
@@ -62,7 +62,7 @@ impl TypesetEngine {
             || st.current_zone_y_offset != 0.0
             || table.caption.is_some()
             || !std::ptr::eq(table, input.source.table)
-            || !original_text_page
+            || !original_source_page
         {
             return None;
         }
