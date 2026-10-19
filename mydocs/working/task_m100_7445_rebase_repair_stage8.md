@@ -3360,3 +3360,26 @@ WASM은`b26d2d2293e8e5bffb9b1faa04d98fea0a341f0269d9bd97af55935f7530ab57`로
 최초 helper 기본값이 host CDP를 선택해 ENETUNREACH로 종료된 실행은 INVALID로 분리했다.
 브라우저/탭 생성 전 실패했으며 실제 프로세스 확인 뒤 local headless를 명시해 정상 재검증했다.
 이 초기화 증거는 실제 문서 paint36건·글꼴 선택·CanvasKit 준비/지원 검증을 대신하지 않는다.
+
+
+## C428 기존 두 실패 검사의 정확한 편집 상태 전쪽 대조
+
+기대값을 바꾸기 전에 기존 inline 검사67/80과 셀 검사90/95의 실제 공개 속성 편집 순서를
+그대로 실행했다. 각 상태를 현재 runtime72ef(frozen27)에서 저장하고 저장 제품이2024임을
+확인한 뒤 그 정확한 HWP를 한컴2024 Print로 출력했다. generator·입력/PDF SHA·job·실행
+제품/Print 경로·Native/fresh WASM producer·전체 TSV·review/overlay는 ignored
+`repair32-existing-test-input-audit`에 보존한다. 모두 독립 Print와1/1쪽이다.
+
+| 기존 검사 상태 | Native raw | fresh WASM raw |
+| --- | ---: | ---: |
+| inline 기준선67 | 100.00000% | 100.00000% |
+| inline 기준선80 | 47.73869% | 47.73869% |
+| 셀 기준선90 | 40.62027% | 40.62027% |
+| 셀 기준선95 | 37.57485% | 37.57485% |
+
+이전 진단은 바깥 예약bbox와 안쪽 표시 기준선을 혼동한 assertion 및 부동소수점 포함 검사의
+문제를 찾았고 수정 prototype은 통과했다. 그러나 이번 독립 Print 대조에서는67 이외의 상태가
+90% 선행 조건을 충족하지 못한다. prototype 통과만으로 기존 두 검사를 정정하거나 출력이
+정상이라고 판정하지 않는다. 저장된 수식 기준선·후속 줄/셀 소유와 한컴 재계산의 실제 경로를
+계속 확인하며, 기대값·baseline·허용 오차를 바꾸거나 검사를 제거하지 않았다.
+이8건은 진단 완료이며 전체 회귀·시각 수용·PR 준비 완료가 아니다.
