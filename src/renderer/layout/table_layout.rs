@@ -25413,7 +25413,20 @@ impl LayoutEngine {
                 });
             owner
                 .unwrap_or_else(|| {
-                    let accepted_height = (consumed_end - prior_h).max(0.0);
+                    // 쪽이 끝 행을 물리 상자로 닫으면(`end_row_height_override`) 그 상자 안에
+                    // 드는 걸침 칸 줄은 이 쪽에 남는다. 끝 행의 내용 컷은 그 행 칸의 저장
+                    // 재시작일 뿐 걸침 칸의 쪽 끝이 아니다 — 1342000 199쪽 r=62 c8(행 62–63)
+                    // 셋째 줄은 행 63 컷(첫 줄 16px)보다 아래지만 닫는 선 안이고, 한/글 2020
+                    // PDF 도 199쪽에 둔다. 다음 조각은 carry 의 끝 유닛에서 잇는다.
+                    let physical_end = if end_row_height_override.is_some()
+                        && !end_cut_is_block
+                        && !end_cut.is_empty()
+                    {
+                        cell_height
+                    } else {
+                        0.0
+                    };
+                    let accepted_height = (consumed_end - prior_h).max(physical_end).max(0.0);
                     // Rebase the budget at the actual accepted content cursor. A saved reset
                     // can snap that cursor backward; original physical rows no longer give
                     // the height of the units beginning here.
