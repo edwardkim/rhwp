@@ -281,6 +281,15 @@ impl LayoutEngine {
                     );
                     let mut advance = 0.0;
                     while fit < units.len() {
+                        // 원본 프레임의 다음 유닛은 남은 잉크 예산으로 앞당겨 소비하지 않는다.
+                        // 일반 블록 컷이 쓰는 같은 유닛의 소유 경계를 실제 걸침 컷도 소비한다.
+                        if fit > su
+                            && self.stored_span_cut_preserves_line_slots(table, cell)
+                            && !units[fit].reflowed_line_slot
+                            && units[fit].hard_break_before
+                        {
+                            break;
+                        }
                         let next = advance + units[fit].height;
                         if frame.fitting_height(fit + 1, next) > accepted_height + 0.1 {
                             break;
@@ -411,12 +420,7 @@ impl LayoutEngine {
         if self.stored_span_cut_preserves_line_slots(table, cell) && !unit.reflowed_line_slot {
             // 원본 문단 내부에서는 저장 되감김의 trim도 한 줄 슬롯을 대신할 수 없다.
             // 문단을 온전히 닫았을 때만 다음 문단으로 가는 전진을 분리한다.
-            // 다음 유닛이 원본의 강제 프레임 경계이면 앞 프레임의 슬롯을 보존한다.
-            // 단순 문단 원점 되감김은 이 경계의 근거로 삼지 않는다.
-            if unit.para_idx == units[end].para_idx
-                || units[end].hard_break_before
-                || units[end].stored_frame_break_before
-            {
+            if unit.para_idx == units[end].para_idx {
                 0.0
             } else {
                 self.row_cut_capacity_trailing_trim(table, cell, units, start, end, styles)
