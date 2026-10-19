@@ -4316,3 +4316,61 @@ D8과 D11의 같은 원본·PDF·글꼴 대조에서 80168 30쪽은 양쪽 48.29
 생산 결과는 기존 FrameGeometry이며 셀 유닛·측정·paint가 이를 소비한다. 1342000의
 실제 Core·123/124쪽, HWPML 93/94쪽, 언어·PrEP와 기존 표 경계를 재검증한다.
 이 보정의 실제 실행은 아직 없으며 효과를 완료로 판정하지 않는다.
+
+### 독립 2024 Print 기준 22개 보존과 D12 실행 결과
+
+찾아 바꾸기 22개 HWPX의 실제 2024 Print PDF를 정식 `pdf/issue7866/`에 보존한다.
+모두 원본 source SHA, `engine=2024`, `pdf_print_method=0`,
+`pdf_output_mode=frame_print_to_pdf_ex_one_up`을 확인한 기존 실행이다. 이 표의 PDF는
+각 파일이 50 MiB 미만이다. D11 code source `0c855add83d88d5259d7c13386ef91fe1b053c84`의
+전체 Native·최적화 fresh WASM TSV에서 각각 raw 100%였고, D12 전쪽 재검증은 별도로 계속한다.
+기준 PDF의 로컬 커밋을 D12 또는 PR 전체의 시각 검증 완료로 판정하지 않는다.
+
+| 원본 / 기준 PDF | 입력 SHA-256 | PDF SHA-256 |
+| --- | --- | --- |
+| [a_whole_bold_after.hwpx](../../samples/issue7866/a_whole_bold_after.hwpx) / [Print](../../pdf/issue7866/a_whole_bold_after-2024.pdf) | `132593ee9b6cdf35008168f90d3305aead4a8da82691e45eda3eb8c98b6471f5` | `d87ffb522dcf60b60800a3e8b9a69a2fe527d5e857755c7aed7e5b38538adbad` |
+| [a_whole_bold_before.hwpx](../../samples/issue7866/a_whole_bold_before.hwpx) / [Print](../../pdf/issue7866/a_whole_bold_before-2024.pdf) | `99ebfcd6d9a68db953c6558946b7e58d89dd93e987f659a553e84ea003c243db` | `c38308fef0a002fecd2ef169353117c5879332e06efd109cb37ee068e09f059a` |
+| [b_first_char_bold_after.hwpx](../../samples/issue7866/b_first_char_bold_after.hwpx) / [Print](../../pdf/issue7866/b_first_char_bold_after-2024.pdf) | `0be349fced112198b07e0118623913485f37207eae22dcab77e5f5c885d6e514` | `204e5d4dbedbf49296fa4efdc26b1a285769af519a2fba10fe7165cba0ac5d4c` |
+| [b_first_char_bold_before.hwpx](../../samples/issue7866/b_first_char_bold_before.hwpx) / [Print](../../pdf/issue7866/b_first_char_bold_before-2024.pdf) | `30bb739997692d0edd6fec3d4446403bbc8889dea29c1a8671b2fbce45092ffa` | `e18a2b3cd80f51165477d051170004d6cac003477f02c766311a2b374bb816a7` |
+| [c_second_char_bold_after.hwpx](../../samples/issue7866/c_second_char_bold_after.hwpx) / [Print](../../pdf/issue7866/c_second_char_bold_after-2024.pdf) | `8d2c08e352bceb5ceef1201efe5811bc743950bd8c97c61bbfca36044047a2d1` | `bf07dda72099a5a1ccfdb0bc3cf11bb0a11d8a2289acc9fff5b34e7f610ceb7c` |
+| [c_second_char_bold_before.hwpx](../../samples/issue7866/c_second_char_bold_before.hwpx) / [Print](../../pdf/issue7866/c_second_char_bold_before-2024.pdf) | `72b9bb317bff9f14dde8c34421f0aba23ea77d7addbf4bdb3e336e2643b6c8b8` | `a0732e0dfc01f8c6364907bf26899089efa9f6586570d2e67208b4ceea6031c4` |
+| [d_red_longer_after.hwpx](../../samples/issue7866/d_red_longer_after.hwpx) / [Print](../../pdf/issue7866/d_red_longer_after-2024.pdf) | `53f8bd951e8ae4ee681593e4a8c74172c64e843ae2c4cf4caded563333ca51b5` | `bd07d5efd693c28e4eeee278d975ba9bf51e2a588874d8bc2b8db0f46fa196c0` |
+| [d_red_longer_before.hwpx](../../samples/issue7866/d_red_longer_before.hwpx) / [Print](../../pdf/issue7866/d_red_longer_before-2024.pdf) | `92d07bf47da723a60f2554c4d90360e2d2937dbf7eddc84af408030a40dff80d` | `0ff1be361e221fc6a6f8d7efc7cca1d655fd959e9be6265e6d2098732f997a2e` |
+| [e_para_start_after.hwpx](../../samples/issue7866/e_para_start_after.hwpx) / [Print](../../pdf/issue7866/e_para_start_after-2024.pdf) | `80b227c727c6815ec11276999ead43ae31bd23a08c31a3318c36f5a2f44f01d8` | `17003e67572acd9be5b25143ea950ffa691ab2121121e79b9d947c705430a1e4` |
+| [e_para_start_before.hwpx](../../samples/issue7866/e_para_start_before.hwpx) / [Print](../../pdf/issue7866/e_para_start_before-2024.pdf) | `64b1a7f32dbac906eb7e627209a16570e546478f68fa93c8263d2edd336510cb` | `d47a0a66492c24e5f4764d5066ef26d660d5adfe5c5a08334a3d7b38f6b60809` |
+| [f_para_end_after.hwpx](../../samples/issue7866/f_para_end_after.hwpx) / [Print](../../pdf/issue7866/f_para_end_after-2024.pdf) | `f32109a803602c38d4342fc6e200a58b735ddbb5e911ea9d2ac8250fda06eda7` | `8d605e995b3315d8e8eb27a522e464d8859cff1d88bd6c5240b9bacf0dd1a0a2` |
+| [f_para_end_before.hwpx](../../samples/issue7866/f_para_end_before.hwpx) / [Print](../../pdf/issue7866/f_para_end_before-2024.pdf) | `d73169eb95399789ea59305453797196c40c267951674983df7f7b8c48bc37d9` | `27d75b1634baf0440a07e25e7f83f3babc0699a8b40cc298b576b8c0fc0b1ad1` |
+| [g_table_cell_after.hwpx](../../samples/issue7866/g_table_cell_after.hwpx) / [Print](../../pdf/issue7866/g_table_cell_after-2024.pdf) | `1d3670b8337aba5a46bd35cb801fde940c72eba6c29611880f1f8e6b69ea219d` | `ed0d328db110975a5c3382dfe60a77b51da72f2d22a1ff4d63f86c5ef3069f6f` |
+| [g_table_cell_before.hwpx](../../samples/issue7866/g_table_cell_before.hwpx) / [Print](../../pdf/issue7866/g_table_cell_before-2024.pdf) | `0abf66d789fa3ed2f9c1654cc6fa404a019aa23cb55cb9f1304ec7444d49894b` | `f4e5a03c5ac6ae81950ef291ebdd92fd1496479e1890c0a98bcc601116033f1f` |
+| [h_prev_bold_match_plain_after.hwpx](../../samples/issue7866/h_prev_bold_match_plain_after.hwpx) / [Print](../../pdf/issue7866/h_prev_bold_match_plain_after-2024.pdf) | `3a010e0b43771090b728ce9f051e6c6b0395df23fb52062f617caaac8c96ddb6` | `c607b4e7d4cf1040f95ba4ab4bcf48f293942140a1fff8454bb1898ee429eeb1` |
+| [h_prev_bold_match_plain_before.hwpx](../../samples/issue7866/h_prev_bold_match_plain_before.hwpx) / [Print](../../pdf/issue7866/h_prev_bold_match_plain_before-2024.pdf) | `0086ed876187f676bb2ba39f5a8a8bb66c7b42a1ef27cb4fb51ac25a25d14693` | `15996f7b1ee86eab283f4e318fc1ea3cf317ba21ad59dea9611f450f8a9f69a4` |
+| [i_shorter_after.hwpx](../../samples/issue7866/i_shorter_after.hwpx) / [Print](../../pdf/issue7866/i_shorter_after-2024.pdf) | `b83eae8250a5155e4ff5339200869443d67fd5bcd97097d13ecd669326fa053a` | `82501132941249677d4d971c63b6bcb109dcd2c327e3ff85b55661e98301500f` |
+| [i_shorter_before.hwpx](../../samples/issue7866/i_shorter_before.hwpx) / [Print](../../pdf/issue7866/i_shorter_before-2024.pdf) | `65cdd3c6247492ec7cb532f57e7546b5ebe49968db6fccd593efa60cad3a9106` | `1677e53790cbcfe8059ffccc114f6c879c9dd75f66f954fa08d624e0531b04e5` |
+| [j_longer_partial_after.hwpx](../../samples/issue7866/j_longer_partial_after.hwpx) / [Print](../../pdf/issue7866/j_longer_partial_after-2024.pdf) | `5ffe19a36840582167137e836a32e43829e3ceaa94bb87db901de9ef46a85cd6` | `af3af174ccce6b72e9d298b4d5e211ba0ffa27a606be6ed019a3f3e97ebd6873` |
+| [j_longer_partial_before.hwpx](../../samples/issue7866/j_longer_partial_before.hwpx) / [Print](../../pdf/issue7866/j_longer_partial_before-2024.pdf) | `359cf374e418887e54b0312425f61bd0562193be39197671610b4b3f7ebe6c61` | `6f2183e4db5044f01bca234e39ff91cc907bdac7a9dbd03c2b7f3a1a0dbf5126` |
+| [k_two_shapes_then_plain_after.hwpx](../../samples/issue7866/k_two_shapes_then_plain_after.hwpx) / [Print](../../pdf/issue7866/k_two_shapes_then_plain_after-2024.pdf) | `eca4de2de5500141712a5784dc4db93c6399b0c42b12077f6e35db88b52dfd9f` | `5411d924a992c78820eca040fb2e8fe0f7c428db91996f867725a42b8f063cef` |
+| [k_two_shapes_then_plain_before.hwpx](../../samples/issue7866/k_two_shapes_then_plain_before.hwpx) / [Print](../../pdf/issue7866/k_two_shapes_then_plain_before-2024.pdf) | `7433cf7172d148a02b7585b6166a3e8e065a3682a854d9723985990e630eddac` | `7caa08a7496154efab472b6fdcfe1b2a6cc3e22e8deb773c72253c3c5cb90967` |
+
+D12 code source `b15839bda0c8fdf759c289bd2e71fde163958802`의 Native 빌드는 570.65초 exit 0,
+최적화 fresh WASM은 1345.31초 exit 0이다. 공용 `target/pr-review`, jobs 8,
+WASM release codegen-units 16을 사용했다. 같은 source의 fresh Node WASM도 다시 생성한 뒤
+Studio TypeScript exit 0, 전체 Node 2,340 PASS / 0 FAIL / 0 SKIP를 확인했다.
+PNG 직접 출력 계약은 24 PASS이며 `cargo fmt --all -- --check`도 exit 0이다.
+정식 경계 50건은 49 PASS / 1 FAIL이다. 전체 Rust·lint·Skia 및 전쪽 시각 완료를 뜻하지 않는다.
+
+실제 Core의 123/124쪽은 Native raw 99.39866% / 99.71551%, fresh WASM raw
+99.40837% / 99.70745%로 마지막 「기」의 같은 줄 복원을 확인했다. 원본은 아직
+418/Print 415쪽이므로 gate는 보류다. 같은 고정 devel을 현재 글꼴 조건에서 직접 출력하면
+420/Print 415쪽이며 86쪽 46.30777%다. 후보의 국소 개선과 남은 결함을 분리한다.
+165/166쪽의 row120 관계 검사는 아직 실패하며 기대값을 바꾸지 않았다.
+
+기준 Native full worker PID 40145의 부재와 원래 tool handle의 소멸을 직접 확인했다.
+완료된 64조건과 미완료 `colon-authored` 산출물을 별도 보존한 뒤 해당 조건부터 이어 실행했다.
+종료 원인은 확인되지 않았으며 추정으로 timeout/OOM이라고 기록하지 않는다.
+복구 원장과 부분 산출물은 ignored `output/`에 있으며 성공 증거가 없는 실행을 완료로 세지 않는다.
+
+`soft-hyphen.hwpx`는 2020 메타데이터와 한글 글꼴만 있는 합성 입력이고, 기존 2024 PDF의
+HWP 재저장본은 영문 글꼴 슬롯이 채워져 있다. 차이만으로 기존 PDF를 잘못된 기준이라고
+단정하지 않는다. 원본 HWPX의 2020 Print를 요청해 대조 중이며 아직 원격 큐 대기 상태다.
+코드 검토상 KEEP_WORD 토큰화에는 제어 U+00AD의 별도 줄 끝 기회가 없다. 이는 미달 원인
+후보이며 독립 Print를 확보하기 전에 글꼴 기본값이나 줄 나눔 기대값을 바꾸지 않는다.
