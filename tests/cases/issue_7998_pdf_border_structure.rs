@@ -210,8 +210,10 @@ fn snapshot_undo_redo_restores_exact_source_after_text_inverse() {
     }
 }
 #[test]
-fn unsupported_pen_phase_and_alpha_reject_without_mutating_document() {
-    for key in ["compound-solid", "compound-dash", "compound-alpha"] {
+fn unsupported_phase_and_alpha_reject_without_mutating_document() {
+    // Uniform nonstandard solid pens are covered by the retained-border
+    // structure contract. A dash/alpha source is still not a solid style.
+    for key in ["compound-dash", "compound-alpha"] {
         for mode in 0..6 {
             let bytes = std::fs::read(
                 std::path::Path::new(env!("CARGO_MANIFEST_DIR"))

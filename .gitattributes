@@ -109,3 +109,5 @@ pdf/issue7998/compound-borders/*.pdf -text -diff
 pdf/issue7998/compound-borders/print/*.pdf -text -diff
 pdf/issue7998/structure-borders/*.pdf -text -diff
 pdf/issue7998/structure-borders/print/*.pdf -text -diff
+pdf/issue7998/retained-border-structure/*.pdf -text -diff
+pdf/issue7998/retained-border-structure/print/*.pdf -text -diff

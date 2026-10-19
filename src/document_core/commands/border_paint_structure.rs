@@ -19,8 +19,7 @@ use crate::{
 };
 use std::collections::BTreeMap;
 
-const UNSUPPORTED: &str =
-    "PDF 경계 그림의 행·열 편집에는 완전한 표준 실선 테두리와의 동등성이 필요합니다";
+const UNSUPPORTED: &str = "PDF 경계의 행·열 편집에는 완전한 연속 불투명 실선의 동등성이 필요합니다";
 fn error() -> HwpError {
     HwpError::RenderError(UNSUPPORTED.into())
 }
@@ -28,7 +27,8 @@ type Rect = [f64; 4];
 type Key = (bool, usize, usize); // horizontal, boundary index, interval index
 struct Edge {
     color: u32,
-    width: u8,
+    width: Option<u8>,
+    rectangle: bool,
     pen: f64,
     rects: Vec<Rect>,
 }
@@ -41,6 +41,8 @@ struct Proof<'a> {
     strokes: BTreeMap<u16, (PdfStroke, [f64; 2])>,
     edges: BTreeMap<Key, Edge>,
     work: usize,
+    z: [Option<i32>; 2],
+    mixed_z: bool,
 }
 fn boundaries(sizes: Vec<u32>) -> Vec<f64> {
     let mut out = vec![0.];
@@ -82,6 +84,16 @@ impl Proof<'_> {
         outside: bool,
     ) -> Result<(), HwpError> {
         self.tick()?;
+        let z = PaintRef::from_control(ctrl)
+            .ok_or_else(error)?
+            .common()
+            .z_order;
+        let slot = &mut self.z[usize::from(outside)];
+        self.mixed_z |= slot.is_some_and(|old| old != z);
+        *slot = Some(z);
+        if let Control::Shape(shape) = ctrl {
+            return self.add_rectangle(shape, ci, tag, outside);
+        }
         let Control::Picture(p) = ctrl else {
             return Err(error());
         };
@@ -154,21 +166,25 @@ impl Proof<'_> {
             let pen = s.width * scale[if k.0 { 1 } else { 0 }];
             let width = border_width_index(pen * 25.4 / 7200.);
             // One source HWPUNIT of quantization, never a nearest-bucket visual approximation.
-            if (BORDER_WIDTHS[width as usize].0 * 7200. / 25.4 - pen).abs() > 1.00001 {
-                return Err(error());
-            }
+            let width = ((BORDER_WIDTHS[width as usize].0 * 7200. / 25.4 - pen).abs() <= 1.00001)
+                .then_some(width);
             // PdfStroke already carries the model's ColorRef, like BorderFill.
             let color = s.color;
             let edge = self.edges.entry(k).or_insert_with(|| Edge {
                 color,
                 width,
-                pen: BORDER_WIDTHS[width as usize].0 * 7200. / 25.4,
+                pen: width.map_or(pen, |w| BORDER_WIDTHS[w as usize].0 * 7200. / 25.4),
+                rectangle: false,
                 rects: vec![],
             });
             // Two independently quantized crops can differ in opposite
             // directions. Each must match the same canonical pen above;
             // comparing their errors to each other is not that contract.
-            if edge.color != color || edge.width != width {
+            if edge.rectangle
+                || edge.color != color
+                || edge.width != width
+                || (edge.pen - pen).abs() > 1.00001
+            {
                 return Err(error());
             }
             for e in std::iter::once(s.endpoints).chain(s.segments.iter().copied()) {
@@ -212,7 +228,83 @@ impl Proof<'_> {
         }
         Ok(())
     }
+    fn add_rectangle(
+        &mut self,
+        shape: &crate::model::shape::ShapeObject,
+        ci: usize,
+        tag: CellBorderPaint,
+        outside: bool,
+    ) -> Result<(), HwpError> {
+        use crate::model::shape::ShapeObject;
+        let ShapeObject::Rectangle(r) = shape else {
+            return Err(error());
+        };
+        let mask = tag.mask().ok_or_else(error)?;
+        // A single axial band has an unambiguous cross-section. Other retained
+        // fills/compound roles are never reinterpreted as a complete solid pen.
+        if mask.count_ones() != 1 {
+            return Err(error());
+        }
+        let side = mask.trailing_zeros() as usize;
+        let c = &self.table.cells[ci];
+        let a = &r.common;
+        let x = f64::from(a.horizontal_offset as i32)
+            + if outside {
+                -f64::from(self.table.common.horizontal_offset as i32)
+            } else {
+                self.x[c.col as usize] + f64::from(c.padding.left)
+            };
+        let y = f64::from(a.vertical_offset as i32)
+            + if outside {
+                -f64::from(self.table.common.vertical_offset as i32)
+            } else {
+                self.y[c.row as usize] + f64::from(c.padding.top)
+            };
+        let color = r
+            .drawing
+            .fill
+            .solid
+            .as_ref()
+            .ok_or_else(error)?
+            .background_color;
+        let edge = self.edges.entry(key(c, side)).or_insert_with(|| Edge {
+            color,
+            width: None,
+            pen: 0.,
+            rectangle: true,
+            rects: Vec::new(),
+        });
+        if !edge.rectangle || edge.color != color {
+            return Err(error());
+        }
+        edge.rects
+            .push([x, y, x + f64::from(a.width), y + f64::from(a.height)]);
+        Ok(())
+    }
     fn complete(&mut self) -> Result<(), HwpError> {
+        for (&(h, line, _), edge) in &mut self.edges {
+            if !edge.rectangle {
+                continue;
+            }
+            let at = if h { self.y[line] } else { self.x[line] };
+            let cross = if h { 1 } else { 0 };
+            let lo = edge
+                .rects
+                .iter()
+                .map(|r| r[cross])
+                .fold(f64::INFINITY, f64::min);
+            let hi = edge
+                .rects
+                .iter()
+                .map(|r| r[cross + 2])
+                .fold(f64::NEG_INFINITY, f64::max);
+            if ((lo + hi) / 2. - at).abs() > 0.5 {
+                return Err(error());
+            }
+            edge.pen = hi - lo;
+            // Retain the exact band on subsequent edits; do not promote the
+            // integer split of an odd pen into a slightly wider native bucket.
+        }
         // Cover the full physical pen, including the neighbour/outside half.
         // A narrow crop or a partially erased side never acquires a full border.
         for (&(h, line, interval), edge) in &self.edges {
@@ -267,6 +359,7 @@ impl Proof<'_> {
 struct Prepared {
     parent: Paragraph,
     fills: Vec<BorderFill>,
+    bands: Option<super::border_paint_bands::Bands>,
 }
 fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Prepared>, HwpError> {
     let Some(parent) = doc.sections.get(si).and_then(|s| s.paragraphs.get(pi)) else {
@@ -340,6 +433,8 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
         strokes: BTreeMap::new(),
         edges: BTreeMap::new(),
         work: 0,
+        z: [None, None],
+        mixed_z: false,
     };
     let mut remove = Vec::new();
     let last_table = parent
@@ -384,6 +479,88 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
         }
     }
     proof.complete()?;
+    let custom = proof.edges.values().any(|e| e.width.is_none());
+    if custom {
+        // Cell paint uses Para/Column anchors. table_cell_content positions a
+        // later paragraph or a vertically aligned text block at a different
+        // origin. This proof uses the top cell frame, so it cannot authorize
+        // rewriting those drawings into cell-relative bands.
+        for c in &table.cells {
+            if c.vertical_align != crate::model::table::VerticalAlign::Top {
+                return Err(error());
+            }
+            for (pi, p) in c.paragraphs.iter().enumerate() {
+                for paint in p.controls.iter().filter_map(PaintRef::from_control) {
+                    let a = paint.common();
+                    if a.cell_border_paint.is_some()
+                        && (pi != 0
+                            || a.horz_align != HorzAlign::Left
+                            || a.vert_align != VertAlign::Top)
+                    {
+                        return Err(error());
+                    }
+                }
+            }
+        }
+        if parent
+            .controls
+            .iter()
+            .filter_map(PaintRef::from_control)
+            .any(|p| {
+                outside_binding(p).is_some_and(|v| v.0 == table.common.instance_id)
+                    && (p.common().horz_align != HorzAlign::Left
+                        || p.common().vert_align != VertAlign::Top)
+            })
+        {
+            return Err(error());
+        }
+        let first = proof.edges.values().next().ok_or_else(error)?;
+        let expected = usize::from(table.row_count) * (usize::from(table.col_count) + 1)
+            + usize::from(table.col_count) * (usize::from(table.row_count) + 1);
+        // First nonstandard inheritance contract: the full grid shares one
+        // continuous pen. Distinct side styles require a per-edge template plan.
+        if proof.mixed_z
+            || proof.edges.len() != expected
+            || proof
+                .edges
+                .values()
+                .any(|e| e.color != first.color || (e.pen - first.pen).abs() > 1.00001)
+        {
+            return Err(error());
+        }
+        let pen = first.pen.round();
+        if pen < 2. || pen > f64::from(i32::MAX) || (pen - first.pen).abs() > 1. {
+            return Err(error());
+        }
+        for c in &table.cells {
+            let f = doc
+                .doc_info
+                .border_fills
+                .get(
+                    usize::from(c.border_fill_id)
+                        .checked_sub(1)
+                        .ok_or_else(error)?,
+                )
+                .ok_or_else(error)?;
+            if f.borders[..4]
+                .iter()
+                .any(|b| b.line_type != BorderLineType::None)
+                || f64::from(c.width.min(c.height)) <= pen
+            {
+                return Err(error());
+            }
+        }
+        return Ok(Some(Prepared {
+            parent: candidate,
+            fills: Vec::new(),
+            bands: Some(super::border_paint_bands::Bands {
+                pen: pen as u32,
+                color: first.color,
+                cell_z: proof.z[0].ok_or_else(error)?,
+                outside_z: proof.z[1].ok_or_else(error)?,
+            }),
+        }));
+    }
     let mut fills = Vec::new();
     for (i, c) in table.cells.iter().enumerate() {
         let mut fill = doc
@@ -403,7 +580,7 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
                 }
                 fill.borders[side].line_type = BorderLineType::Solid;
                 fill.borders[side].color = e.color;
-                fill.borders[side].width = e.width;
+                fill.borders[side].width = e.width.ok_or_else(error)?;
             }
         }
         fill.raw_data = None;
@@ -420,6 +597,7 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
     Ok(Some(Prepared {
         parent: candidate,
         fills,
+        bands: None,
     }))
 }
 
@@ -437,6 +615,9 @@ impl DocumentCore {
             };
             edit(table).map_err(HwpError::RenderError)?;
             let counts = (table.row_count, table.col_count);
+            if let Some(bands) = prepared.bands {
+                super::border_paint_bands::apply(&self.document, &mut prepared.parent, ti, bands)?;
+            }
             self.document.sections[si].paragraphs[pi] = prepared.parent;
             self.document.doc_info.border_fills.extend(prepared.fills);
             self.document.doc_info.raw_stream_dirty = true;

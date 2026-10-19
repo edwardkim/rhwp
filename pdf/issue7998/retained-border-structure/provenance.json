@@ -1,0 +1,233 @@
+{
+  "inputs": [
+    {
+      "file": "mixed-pen.pdf",
+      "sha256": "709690391e2cc4546998b8c6bb2d5de5d685c1e9b2adaf370e57d00cab31f4b1",
+      "bytes": 1396
+    },
+    {
+      "file": "odd-blue.pdf",
+      "sha256": "cc759f5851ae8cf0a06bd741133b532ce27338a2df026e77b37fcf7a7676f276",
+      "bytes": 1400
+    },
+    {
+      "file": "retained-pen.pdf",
+      "sha256": "f41939dc7ba7b197fbf7bbc76611bf47ffb098738d19a163fef92d15edcf547f",
+      "bytes": 1380
+    }
+  ],
+  "printSources": [
+    {
+      "key": "row-above-hwpx",
+      "origin": "maintainer manual Hancom Print; HWPX source explicitly confirmed in user reply",
+      "inputSha256": "f20602470a87b5c74443e0b047c6e5b6d7e18a31eb70414d42560b9f297036e6",
+      "pdfSha256": "a1c791a8ea62dcc8df10b5d2f4ccb7d9e60e17e87e72b1ae866300913c353aba",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/row-above-hwpx-2020.pdf"
+    },
+    {
+      "key": "row-below-hwpx",
+      "origin": "maintainer manual Hancom Print; HWPX source explicitly confirmed in user reply",
+      "inputSha256": "3b54c118e5a2510864887c7cd58fe9114e01211d3a2ee098308f846679a5c92b",
+      "pdfSha256": "6a34ef40a96e473dbdae95543cfa0042259857477c9f5e38e2aab7f8698ab189",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/row-below-hwpx-2020.pdf"
+    },
+    {
+      "key": "col-left-hwpx",
+      "origin": "maintainer manual Hancom Print; HWPX source explicitly confirmed in user reply",
+      "inputSha256": "83f1b963e625135a654f035ac76935a7b3087d3b1388d3cc1c14af03388be868",
+      "pdfSha256": "6b1f1ac1ed68076b9a456aa9b846f95f006fdac912fb28afaee5b9ea083ca0c8",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/col-left-hwpx-2020.pdf"
+    },
+    {
+      "key": "col-right-hwpx",
+      "origin": "maintainer manual Hancom Print; HWPX source explicitly confirmed in user reply",
+      "inputSha256": "12b0c3c88ee49f356c6edfc054445ff3a2506a748fb164206eda05cdb8320335",
+      "pdfSha256": "7f8e5d4743ba7fe110384c96350569ab353148f0eb9c52761513829c5a262375",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/col-right-hwpx-2020.pdf"
+    },
+    {
+      "key": "delete-row-hwpx",
+      "origin": "maintainer manual Hancom Print; HWPX source explicitly confirmed in user reply",
+      "inputSha256": "068209d4e0a902c614a128492be27e18060066aaf839795b895042047048d032",
+      "pdfSha256": "d7e4a6a1cdab11464170677df171ee87c1e1f879833e219f39184d82aad124ff",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/delete-row-hwpx-2020.pdf"
+    },
+    {
+      "key": "delete-col-hwpx",
+      "origin": "maintainer manual Hancom Print; HWPX source explicitly confirmed in user reply",
+      "inputSha256": "c1dc0abea6fbd1a7a33965cf6d13b27af20481be9f05f38509ff075f44939969",
+      "pdfSha256": "6cc8bbee6359b33eed842735a88d78450b8b89cadcf66e3cb98f8cb83bd8dcb5",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/delete-col-hwpx-2020.pdf"
+    },
+    {
+      "key": "blue-row-hwpx",
+      "origin": "maintainer manual Hancom Print; HWPX source explicitly confirmed in user reply",
+      "inputSha256": "cf5bff97adf43cdf69fca9d1268f0d362955c510fa68d46ff50e44827c0be0a0",
+      "pdfSha256": "8ad8cc4979162c29f0a262f8b7e6880f60554a9b331f570e0f05e8d875ae7555",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/blue-row-hwpx-2020.pdf"
+    },
+    {
+      "key": "row-above-hwp",
+      "origin": "maintainer manual Hancom Print; all seven fixed HWP open normally and printed confirmed in user reply",
+      "inputSha256": "df886f8ed2f21f0a7bf48ac2a4a102e261ae23cfa78d687be503d367c9a15212",
+      "pdfSha256": "af1aa89142d6cb26b35466a88518e94a9109b55d9893daa949971adaa8c8eec7",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/row-above-hwp-2020.pdf"
+    },
+    {
+      "key": "row-below-hwp",
+      "origin": "maintainer manual Hancom Print; all seven fixed HWP open normally and printed confirmed in user reply",
+      "inputSha256": "adfb8e4a7483e23e031b5957f1376b336b90df42b9bdd0141276a806c4164448",
+      "pdfSha256": "61f1ca365c95d435802bce0cad5d18de4d396c61d7ba063200071266432c7480",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/row-below-hwp-2020.pdf"
+    },
+    {
+      "key": "col-left-hwp",
+      "origin": "maintainer manual Hancom Print; all seven fixed HWP open normally and printed confirmed in user reply",
+      "inputSha256": "0c441015a3049bf3fbc2c285af08e4111f48f18ae905142ffa7bf08b0f76d2a2",
+      "pdfSha256": "7b4234fe9d2fa38752b7e3632f05d27396a86cac28f362683ffcd86febeec0ca",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/col-left-hwp-2020.pdf"
+    },
+    {
+      "key": "col-right-hwp",
+      "origin": "maintainer manual Hancom Print; all seven fixed HWP open normally and printed confirmed in user reply",
+      "inputSha256": "2a836f3b94a9d33289f669ca98824c2f803bfbe3a6e0b157d8877aafe1557569",
+      "pdfSha256": "a9cf8b0ef16ebdab1e336ca7cc6794823973baf3829feefe7e0514d4953efdac",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/col-right-hwp-2020.pdf"
+    },
+    {
+      "key": "delete-row-hwp",
+      "origin": "maintainer manual Hancom Print; all seven fixed HWP open normally and printed confirmed in user reply",
+      "inputSha256": "80167050da7d0f13b39c904d01cf715dff0fb8d432c3cfcfe9add3c9b0941e18",
+      "pdfSha256": "3dd0a21382a00c5c6a4f06687a46884bc1c5a665e0564128cbbfc549e3673940",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/delete-row-hwp-2020.pdf"
+    },
+    {
+      "key": "delete-col-hwp",
+      "origin": "maintainer manual Hancom Print; all seven fixed HWP open normally and printed confirmed in user reply",
+      "inputSha256": "2ccde45770a6d0033912e4ca9356899f0aaf7874511b079c2ee6da074f0f4ec7",
+      "pdfSha256": "371f42be2e2055e7f62bdb607423fb94778773c02f39c0ff4f4ab6438ed7c1df",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/delete-col-hwp-2020.pdf"
+    },
+    {
+      "key": "blue-row-hwp",
+      "origin": "maintainer manual Hancom Print; all seven fixed HWP open normally and printed confirmed in user reply",
+      "inputSha256": "ff32e1ec4d9cc3e2a5fc6d697de423ab5d2848eb92d17c6ef321cfd3c8613164",
+      "pdfSha256": "2649de0c847f629808afef2028e4e9a3a8c4b26ea1c5c8a8dd94f139b2239fe2",
+      "metadata": {
+        "Creator": "Hwp 2020 11.0.0.9166",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "printFile": "print/blue-row-hwp-2020.pdf"
+    }
+  ],
+  "sourceRuntime": {
+    "src/document_core/commands/mod.rs": "fd94ecde4bfb43284ba0cb867a98dc3ec247c964cac29273cfb72bf40d50cd31",
+    "src/document_core/commands/border_paint_structure.rs": "e5b8d240cfb7e227da16374afb5ff3230e40c5ced9625528ece14700b040798f",
+    "src/document_core/commands/border_paint_bands.rs": "e3919ee551eba8f03e934dbcb838aca1359b6090cedbc346aa22e4296bf2900a",
+    "native_sha256": "80637199c30e58cfaad676a1a1a414a49f991f193d41e0b8efe63631543035f0",
+    "rhwp_bg.wasm_sha256": "bdd35f4c3d558706d8da8b2f1fafb6bfac05beade47a1c013bee7f88f07c996b",
+    "rhwp_bg.wasm_bytes": 19579585,
+    "rhwp.js_sha256": "5671802fbb89ed060c3bab7a6f458a78833a7e5ca3e7df8e1699d45098cddeb6",
+    "rhwp.js_bytes": 476454
+  },
+  "visualSummary": {
+    "native": {
+      "inputs": 19,
+      "pages": 19,
+      "minimum": 96.81666,
+      "editsMinimum": 97.32593,
+      "missing": 0,
+      "pageCountMismatch": 0
+    },
+    "wasm": {
+      "inputs": 19,
+      "pages": 19,
+      "minimum": 95.99244,
+      "editsMinimum": 95.99244,
+      "missing": 0,
+      "pageCountMismatch": 0
+    }
+  },
+  "maintainerVerdict": "2026-10-19 시각·편집 구조 통과; shared horizontal line tone difference displayed in enlarged comparison",
+  "evidence": "output/pr-review/issue7998/p4-border-width/; stage22 report"
+}

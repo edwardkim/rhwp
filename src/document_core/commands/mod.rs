@@ -2,6 +2,7 @@
 pub(crate) mod bin_data_prune;
 pub(crate) mod border_paint_edit;
 mod border_paint_structure;
+mod border_paint_bands;
 mod clipboard;
 mod clone_identity;
 // [#5769] 삭제의 참 역연산 — 조각 저장소. DeleteFragment 타입이 DocumentCore
