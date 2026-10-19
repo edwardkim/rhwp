@@ -1195,10 +1195,8 @@ impl TypesetEngine {
         let ledger_page_end_band = if split_block_start.is_some() {
             0.0
         } else if let Some(frame_rows) = budget.reflow_frame_avail_for_rows {
-            // 물리 경계에는 아래 바깥여백과 실제 각주 공간이 이미 반영돼 있다. 프레임 하단이 비끝 조각
-            // inset 까지 뺀 닫는 선이면 원장 띠는 그 inset 앞의 물리 띠다(그리는 띠는 아래에서 다시 뺀다).
-            (frame_rows + budget.reflow_frame_bottom_inset + header_overhead - partial_height)
-                .max(0.0)
+            // 물리 경계에는 아래 바깥여백과 실제 각주 공간이 이미 반영돼 있다.
+            (frame_rows + header_overhead - partial_height).max(0.0)
         } else {
             let outer_bottom = (hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi)
                 - fragment_outer_bottom_overhead)
@@ -1211,11 +1209,15 @@ impl TypesetEngine {
         // (21761835 3쪽: 그 몫을 넘기면 첫 행들이 한/글보다 커진다).
         // 내용 컷으로 끝난 행(`split_end_limit > 0`)은 다음 조각이 같은 행을 잇는 상자라 이 선을 쓰지
         // 않는다(1342000 202·203쪽: 줄이면 다음 쪽 시작 줄이 한 줄 당겨진다). 통째로 받은 끝 행만 닫는다.
+        // 재조판 프레임 하단이 이미 그 inset 을 뺐으면 다시 빼지 않는다(1613000 154쪽 행 51:
+        // 두 번 빼면 730.57 ↔ 닫는 선 731.91). 원장 띠는 그 프레임에서 잰 값 그대로다 —
+        // inset 앞 물리 띠로 늘리면 다음 조각이 그린 상자보다 큰 몫을 이미 소비한 것으로 센다.
         let unreserved_page_end_band = (ledger_page_end_band
-            - hwpunit_to_px(
+            - (hwpunit_to_px(
                 crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
                 self.dpi,
-            ))
+            ) - budget.reflow_frame_bottom_inset)
+                .max(0.0))
         .max(0.0);
         let mut ledger_end_row_trim = 0.0;
         // 원본 병합 셀은 실제 문단 유지 지시를 만족한 컷의 쪽 끝 물리 띠도 소유한다.

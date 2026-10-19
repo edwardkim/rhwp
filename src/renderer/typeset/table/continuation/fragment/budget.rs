@@ -541,13 +541,21 @@ impl TypesetEngine {
             // row's independently declared remaining height.
             let native_source_frame =
                 st.profile.hwp5_stored_pagination_layout() && table.row_count > 1;
+            // 병합 칸이 있는 HWP5 저장 표의 내용 컷 예산은 비끝 조각 inset 없이 바깥 아래 여백
+            // 선까지다. 한/글 2020·2022·2024 PDF 1342000 149쪽은 행 36·37 의 병합 칸이 걸친
+            // 행 40 첫 줄(내용+패딩 19.76px)을 그 쪽에 두고 아래 괘선을 716.0px(본문 718.2 −
+            // 바깥 아래 1.88)에 긋는다. inset 을 빼면 남은 방이 19.25px 라 행을 넘겨 뒤 쪽이
+            // 모두 밀렸다. 재조판 일반 행 프레임(#7642 #7028 3쪽)과 통째로 받은 끝 행의 닫는 선은
+            // 각자의 경로에서 inset 을 유지한다.
+            let spanning_native_source_frame =
+                native_source_frame && table.cells.iter().any(|cell| cell.row_span > 1);
             let source_bottom =
                 if body_filling_source_frame || single_cell_page_fragment || native_source_frame {
                     crate::renderer::float_placement::rowbreak_fragment_frame_bottom(
                         table,
                         st.inline_flow_column().height,
                         self.dpi,
-                        body_filling_source_frame,
+                        body_filling_source_frame || spanning_native_source_frame,
                     )
                 } else if st.profile.hwpx_stored_layout() {
                     st.inline_flow_column().height

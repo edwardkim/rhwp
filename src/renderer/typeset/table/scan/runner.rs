@@ -204,9 +204,13 @@ impl TypesetEngine {
                 let roundoff = f64::EPSILON
                     * (minimum.abs() + physical.abs()).max(1.0)
                     * (progress.scan.end_row - v.cursor_row + 2) as f64;
-                if minimum - physical > roundoff && minimum <= v.avail_for_rows {
-                    progress.scan.end_row_height_override = Some(height + minimum - physical);
-                    progress.scan.consumed = progress.scan.consumed.max(minimum);
+                // 상자는 예약이 실제로 늘어난 만큼만 키운다. 저장 행 높이 합(`physical`)이 스캔이
+                // 수용한 행 상자 합보다 작으면, 그 차이로 끝 행을 키우는 순간 그린 조각이 예약보다
+                // 커져 쪽 아래를 넘는다(1342000 구역 28 표 42..62행: 4.64px).
+                let grow = minimum - progress.scan.consumed;
+                if minimum - physical > roundoff && grow > roundoff && minimum <= v.avail_for_rows {
+                    progress.scan.end_row_height_override = Some(height + grow);
+                    progress.scan.consumed = minimum;
                     if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                         eprintln!(
                             "DIAG_SCAN SOURCE_SPAN_FRAME rows={}..{} physical={physical:.3} minimum={minimum:.3} last={:.3}",
