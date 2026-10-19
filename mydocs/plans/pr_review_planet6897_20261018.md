@@ -5329,3 +5329,73 @@ D29와 전쪽을 비교하면 27쪽만 +40.11484%p이며, 하락한 쪽은 없�
 텍스트로 분류하지 않으며 유닛과 다음 문단 소유를 바꾸지 않는다. 원본 HU 단위의 저장
 반올림과 부동소수점 산술은 화면 좌표 보정과 구별한다. 같은 14쪽과 내용 진단 5건,
 중첩 표의 내용·앞뒤 문단 보존을 직접 검증한 뒤 전쪽 비교한다. 아직 구현 실행 전이다.
+
+### D35 전쪽 Native 및 최적화한 fresh WASM 결과
+
+코드 `6eaf1e670cf14f24e8e1b34c3a38644f26fd902b`의 Native opt1 빌드는 234.20초·exit 0이다.
+26쪽 99.86079%, 27·28쪽 100%이며 다른 정상 경계 11쪽도 유지했다. 원본 중첩 표의
+모든 셀 내용·앞뒤 문단·부모 셀 내부 포함 진단 2건, 기존 내용 소유 대조 4건과 27쪽 내용
+보존 진단도 통과했다. 독립 Print의 27쪽 하단·첫 기준선을 검사하는 출력 전용 진단은
+D33에서 의도한 위치 차이로 FAIL, D35에서 PASS다. 아직 정식 suite에 등록하지 않았다.
+
+전체 415쪽 Native opt1은 최저 59.88634%, 90% 미달 66쪽이다. D34와 비교하면
+26쪽 +28.93162%p, 28쪽 +16.79878%p이며 하락한 쪽은 없다. D29 이후 합치면
+26·27·28쪽만 개선됐다. 전쪽 증거를 최종 Native opt3 또는 전체 PR 범위 검증으로 세지 않는다.
+
+최적화 포함 fresh WASM 빌드는 1168.97초·exit 0으로 완료했고, source SHA 불변을 확인했다.
+Docker CLI가 없는 환경의 locked host wrapper, 공용 `target/pr-review`, 빌드 잡 8개,
+`codegen-units=16`을 사용했다. WASM SHA는
+`465c7973a9b8f9e71dc28f33837e4311d8fc72d7822a99986404401e1c5315f3`다.
+현재 단계는 고정한 snapshot package를 `--wasm-pkg`로 직접 읽는 Canvas PNG 검증이며,
+최종 Studio/root/public package 동기화와 browser/API 검증은 남아 있다.
+
+같은 head의 수식 원본 Native 4건도 다시 산출했다. fraction 99.56633%, font-state
+99.68240%, 원 quarterspace 100%, 정상 2024 문서 95.51093%다. 대응 fresh WASM은
+99.48605%, 99.59905%, 100%, 94.90263%다. 실제 변경 없는 저장본과 편집 저장본의
+fresh WASM은 독립 2020 Print 대비 각각 99.48605%, 99.47813%다.
+
+표 경계 14쪽의 fresh WASM 최저는 98.46696%이며, 26쪽은 99.87756%, 27·28·51쪽은
+100%다. Native와 fresh WASM의 전체 20쪽 집중 TSV가 모두 90% 이상이고 표준 review
+7건도 완료됐다. 수식의 괄호·분수·첨자·본문 번호를 확대해 직접 대조했다. z12 분모 c의
+래스터 bbox는 양쪽 모두 (97,551,4,5)이고, 분수선에는 약 0.5px 위상과 안티앨리어싱 차이가
+있다. 확대 화면의 인상만으로 글자 기준선이 잘못됐다고 단정하지 않고 실제 좌표도 대조했다.
+
+기존 정상 2024 문서는 같은 backend에서 pinned devel runtime `efc52afb738bd408ac821c4e156101b8d26e5cbd`와
+비교했다. 같은 입력·PDF·exporter의 base WASM 94.88800%→후보 94.90263%로 유지됐다.
+Native와 WASM의 서로 다른 점수를 회귀 판정으로 비교하지 않는다.
+
+집중 원장은 `direction35-focused-fresh-wasm-results.json`,
+`direction35-equation-source-frame-results.json`,
+`direction35-normal2024-wasm-preservation-results.json`에 있다. 전쪽 비교와 직접 PNG는
+`direction35-page27-review-and-full-results.json`,
+`direction35-vs-direction34-curriculum-full-comparison.json` 및 각 review 폴더에 있다.
+임시 실행 로그와 중간 JSON은 커밋하지 않는다. 전체 PR 범위의 최종 양쪽 TSV, 필수 lint·Rust·
+Skia·Studio·fresh API와 현재 head의 정식 회귀 보완을 마친 뒤 제출한다.
+
+## D36: 남은 큰 표의 저장 줄과 번호 줄 메트릭 원인 분리 계획
+
+미달 66쪽의 실제 PageItem 소유를 표별로 묶었다. section 5의 244×10 표 21쪽,
+section 12의 163×8 표 15쪽, section 26의 208×8 표 15쪽, section 24의 166×8 표 7쪽이
+큰 그룹이다. 이 그룹의 대표 쪽은 표 상단이 이미 Print와 대응한다. 별도 48쪽의 위 여백
+차이를 모든 표에 일괄 적용하지 않는다.
+
+220쪽 row4,col7의 원본 저장 줄은 6줄이고 실제 Print는 5줄이다. 같은 원본의 글자모양은
+휴먼명조 1000HU, Latin 상대 크기 105%, 자간 -10이며 번호 문단이다. 메모리 복제본에서
+그 셀의 저장 줄만 지우거나 text partition만 재구성하면 5줄이 되지만, 행 높이는
+89.73333px로 Print의 약 86.4px보다 크다. 같은 Print와의 진단 raw는 82.82828%→89.52895%로
+개선되지만 여전히 미달이다. 원본 파일은 바꾸지 않았고 이 실험을 원본 검증으로 보고하지 않는다.
+
+첫 번째 후보 원인은 저장 텍스트 분할의 재사용 판정, 두 번째 후보는 번호가 첫 줄에 더하는
+높이다. `token_line_font_size`는 상대 크기를 glyph 표시와 구별하고 nominal 크기를 쓰지만,
+`list_marker_metrics::include_marker`는 `ListMarkerGeometry.font_size_px`의 effective glyph
+크기를 사용한다. 이 필드의 소비자는 현재 해당 줄 메트릭 하나이며 실제 번호 paint는 별도의
+TextStyle을 소비한다. 명시된 큰 기본 크기의 번호는 줄 높이에 참여해야 하지만 상대 크기와
+기본 크기를 혼동하면 안 된다. 선행 `c228806b7`와 stage2694 기록, 같은 helper가 있는
+pinned base의 실제 코드를 확인했다. 이번 브랜치의 새 회귀라고 단정하지 않는다.
+
+먼저 원본/독립 Print의 nominal 줄 계약과 실제 마커 paint를 연결하고, 보이는 번호의 크기·폭을
+바꾸지 않은 채 줄 메트릭의 의미를 분리하는 후보를 검증한다. 저장 캐시의 재조판은 편집으로
+거짓 분류하거나 모든 HWP5 줄을 비우는 방식으로 대신하지 않는다. 원본 선언·현재 전진·명시적
+개행과 저장 페이지 경계를 함께 확인해 실제 모순이 있는 경로를 공통 결과로 처리한다.
+수정 전후 실제 원본과 복제본 진단, 명시적으로 큰 번호의 정상 대조, 앞뒤 문단·쪽 보존을
+검증한 뒤 다음 보정을 진행한다. 새 구현은 아직 실행 전이다.
