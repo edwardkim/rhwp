@@ -454,7 +454,7 @@ impl TypesetEngine {
         } else {
             st.current_height
         };
-        let page_avail = if is_continuation {
+        let page_avail_raw = if is_continuation {
             // [Task #1937] 연속 페이지는 신선 full-page 를 기준으로 한다(레퍼런스
             // Paginator engine.rs:2502-2503 과 정합). table_available 은 표 *시작*
             // 페이지에서 표 전체 각주(total_footnote)를 available 에서 차감한 값이라,
@@ -463,24 +463,22 @@ impl TypesetEngine {
             // 페이지당 ~1행으로 과분할된다(122행 → 188쪽). 표 각주는 첫 fragment fit
             // 판정에서만 보수적으로 예약하고, 연속 페이지는 신선 본문 가용을 쓴다.
             // zone offset·border tolerance 는 유지.
-            (base_available
+            base_available
                 - st.current_zone_y_offset
                 - st.layout.pagination_tolerance_px
                 - host_before_overhead
-                - fragment_outer_bottom_overhead)
-                .max(0.0)
+                - fragment_outer_bottom_overhead
         } else if let Some(footnote_boundary) = first_fragment_actual_footnote_boundary {
             // 일반 RowBreak 표의 safety budget은 첫 fragment에서 보수적으로
             // 40px를 남긴다. 사전에 확인한 저장 표의 전체 수용 또는 빈 첫 물리
             // 조각만 기존 각주 직전까지의 실제 경계를 사용한다. 뒤 조각의
             // 그림·캡션과 각주 유닛은 이 예산에서 미리 소비하지 않는다.
-            (footnote_boundary
+            footnote_boundary
                 - st.current_height
                 - caption_extra
                 - host_before_overhead
                 - vert_offset_overhead
-                - fragment_outer_bottom_overhead)
-                .max(0.0)
+                - fragment_outer_bottom_overhead
         } else if is_empty_host_column_float {
             // out-of-flow float 은 para_start + v_off 에 배치된다(#986/#1088/#157).
             // 같은 문단의 선행 in-flow inline(예: tac 캡션 표)이 current_height 를
@@ -493,22 +491,27 @@ impl TypesetEngine {
             // 커져 무효가 된다(pr-1674 pi=27 ci=1: 새 페이지 cur_h=0 에서 stale
             // para_start 583.8 차감 → 예산 −584px → 조기 분할 +1쪽). 참 para_start 는
             // 현재 흐름 높이를 초과할 수 없으므로 current_height 로 상한한다.
-            (table_available
+            table_available
                 - fragment_flow_origin
                 - caption_extra
                 - host_before_overhead
                 - vert_offset_overhead
-                - fragment_outer_bottom_overhead)
-                .max(0.0)
+                - fragment_outer_bottom_overhead
         } else {
-            (table_available
+            table_available
                 - st.current_height
                 - caption_extra
                 - host_before_overhead
                 - vert_offset_overhead
-                - fragment_outer_bottom_overhead)
-                .max(0.0)
+                - fragment_outer_bottom_overhead
         };
+        // [#8081] 첫 조각은 0 으로 자르기 전 모자란 몫을 함께 넘긴다(FragmentBudget 주석).
+        let first_fragment_shortfall = if is_continuation {
+            0.0
+        } else {
+            (-page_avail_raw).max(0.0)
+        };
+        let page_avail = page_avail_raw.max(0.0);
         let page_avail = if !is_continuation && start_cut.is_empty() {
             (page_avail - first_fragment_painted_row_footer_guard).max(0.0)
         } else {
@@ -1677,7 +1680,7 @@ impl TypesetEngine {
         // 일반 재조판 행의 빈 물리 띠는 paint와 같은 하단을 소유한다.
         // 블록 ledger의 가용량을 줄이지 않고 일반 행 컷에만 이 경계를 전달한다.
         // 원점 덮어쓰기와 캡션·반복 머리 행 예약 이후의 좌표를 소비한다.
-        let reflow_frame_avail_for_rows = (!table.common.treat_as_char
+        let reflow_frame_raw = (!table.common.treat_as_char
             && matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
@@ -1713,15 +1716,23 @@ impl TypesetEngine {
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
             );
-            (bottom
+            bottom
                 - top
                 - caption_extra
                 - header_overhead
-                - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi))
-            .max(0.0)
+                - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi)
+        });
+        // [#8081] 첫 조각의 행 예산과 같이, 표 각주 예약이 만든 모자란 몫을 남긴다.
+        let reflow_frame_first_fragment_shortfall = if is_continuation {
+            0.0
+        } else {
+            reflow_frame_raw.map_or(0.0, |raw| (-raw).max(0.0))
+        };
+        let reflow_frame_avail_for_rows = reflow_frame_raw.map(|raw| {
             // 닫힌 원본 첫 프레임은 쪽 본문보다 작은 실제 물리 상자일 수 있다.
             // 일반 내용 예산과 그리기·이어받기 띠에 같은 상한을 적용한다.
-            .min(accepted_source_frame_limit.unwrap_or(f64::MAX))
+            raw.max(0.0)
+                .min(accepted_source_frame_limit.unwrap_or(f64::MAX))
         });
 
         // [Task #1046 Stage 2 진단] 첫/연속 fragment 의 가용공간 분해 — 렌더러
@@ -1753,6 +1764,7 @@ impl TypesetEngine {
             fragment_outer_bottom_overhead,
             vert_offset_overhead,
             page_avail,
+            first_fragment_shortfall,
             source_frame_bottom,
             fragment_placement: fragment_placement
                 .or_else(|| self.stored_header_fragment_placement(st, input, host_before_overhead))
@@ -1804,6 +1816,7 @@ impl TypesetEngine {
             header_overhead,
             avail_for_rows,
             reflow_frame_avail_for_rows,
+            reflow_frame_first_fragment_shortfall,
             single_cell_fragment_shape,
             single_cell_box_height,
         }

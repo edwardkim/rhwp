@@ -105,6 +105,10 @@ struct FragmentBudget {
     physical_content_limit: f64,
     vert_offset_overhead: f64,
     page_avail: f64,
+    /// [#8081] 첫 조각 `page_avail` 을 0 으로 자르기 전 모자란 몫(px, 0 이상). 표 각주
+    /// 예약을 되돌리는 재맞춤(#2097 `FN_REFIT`)이 잘린 0 에 예약을 그대로 더하면 실제
+    /// 남은 공간을 이 몫만큼 넘겨 잡는다.
+    first_fragment_shortfall: f64,
     /// 원본 물리 프레임이 반복해서 닫히는 하단. 종료 인증·예약·방출이 함께 쓴다.
     source_frame_bottom: Option<f64>,
     fragment_placement: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
@@ -121,6 +125,8 @@ struct FragmentBudget {
     avail_for_rows: f64,
     /// 일반 재조판 행의 선언 최소 높이가 소비할 paint 하단. 블록 컷은 별도 ledger를 쓴다.
     reflow_frame_avail_for_rows: Option<f64>,
+    /// [#8081] `reflow_frame_avail_for_rows` 를 0 으로 자르기 전 모자란 몫(첫 조각만).
+    reflow_frame_first_fragment_shortfall: f64,
     /// [#7095] 본문을 통째로 담은 1×1 RowBreak 쪽 조각 형상인지.
     single_cell_fragment_shape: bool,
     /// [#7095] 저장 host 원점이 있는 조각이 칠하는 상자 높이(px). 원점이 없는 조각은

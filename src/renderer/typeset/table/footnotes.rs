@@ -78,7 +78,7 @@ impl TypesetEngine {
         notes: &[TableCellFootnote],
         table: &crate::model::table::Table,
         paragraphs_all: &[crate::model::paragraph::Paragraph],
-        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+        styles: &crate::renderer::typeset::ResolvedStyleSet,
         layout_engine: &crate::renderer::layout::LayoutEngine,
         end_cut: &[usize],
         para_idx: usize,
@@ -301,4 +301,35 @@ impl TypesetEngine {
             continuation.next_table_footnote += 1;
         }
     }
+}
+
+/// 표 칸 각주 앵커 가운데 표 위끝에서 가장 가까운 것의 세로 위치(px).
+///
+/// 행 위치는 `row_heights`(조각 컷이 쓰는 행 높이)와 칸 간격 `cs` 로 쌓고, 행 안 위치는
+/// 레이아웃의 문단 유닛 위치를 쓴다. 각주 앵커가 없거나 하나라도 위치를 잴 수 없으면
+/// `None` 이다 — 첫 단위 이월 판정과 첫 조각 재맞춤(#2097 `FN_REFIT`)이 같은 값을 쓴다.
+pub(in crate::renderer::typeset) fn first_table_footnote_anchor_offset(
+    layout_engine: &crate::renderer::layout::LayoutEngine,
+    table: &crate::model::table::Table,
+    styles: &crate::renderer::typeset::ResolvedStyleSet,
+    row_heights: &[f64],
+    cs: f64,
+) -> Option<f64> {
+    let mut first: Option<f64> = None;
+    for cell in &table.cells {
+        for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
+            if !cp
+                .controls
+                .iter()
+                .any(|c| matches!(c, crate::model::control::Control::Footnote(_)))
+            {
+                continue;
+            }
+            let row = (cell.row as usize).min(row_heights.len().saturating_sub(1));
+            let row_prefix: f64 = row_heights[..row].iter().map(|height| height + cs).sum();
+            let offset = layout_engine.cell_para_unit_offset(cell, table, styles, cp_idx)?;
+            first = Some(first.map_or(row_prefix + offset, |min| min.min(row_prefix + offset)));
+        }
+    }
+    first
 }
