@@ -3703,3 +3703,35 @@ PNG sweep 단위24건은 통과했으며 전체 회귀·fresh WASM·전쪽 시�
 검토 중 upstream/devel이 #8078 의존성 통합 `efc52afb738bd408ac821c4e156101b8d26e5cbd`로
 갱신됐다. 변경11파일은 Actions·npm 의존성과 검토/오늘할일 기록이며 Rust 소스 변경은 없다.
 현재 연결 보완을 고정한 뒤 이 base로 재배치하고 새 head를 확인한다. PR 생성 승인은 별도로 받는다.
+
+
+### 최신 base 적용 후 연결 검증과 기능 보존 단계 진입
+
+최신 base `efc52afb738bd408ac821c4e156101b8d26e5cbd`에 추가 충돌 없이 리베이스했고,
+코드 head는 `27fcaef8efcf444b911a9d1f30bea83c91f3ff6c`이다. 리베이스 전 후보와
+243개 로컬 커밋의 메시지·author·순서가 같고, 원 기여93개가 앞에 배치된 것을 확인했다.
+실제 변경은 새 base의11파일뿐이며 src/tests/scripts/samples/pdf tree는 리베이스 전과 같다.
+Native Skia check60.4s, WASM32 check52.3s, fmt41.0s, diff check 모두 exit0이다.
+manifest는1640 sources·48/48 targets, PNG 단위24PASS, 수식 실제 소스의 기존7+2PASS와
+새 base 대비 문서 토큰/AST58/58 일치를 확인했다. 이 수식 진단은 전체 Cargo 검사가 아니다.
+명령·SHA·결과는 ignored output의 `additional-picks-final-{compile-results,rebase-audit}.json`,
+`additional-picks-final-equation-contract-results.json`에 보존했다.
+
+사용자가 리베이스 지침의 확인 항목을 모두 처리하도록 지시했다. `local_validation.md`의
+리베이스 기능 보존 절차에 따라 old base224a32606 → 새 baseefc52afb7 → 위 코드 head를 고정한다.
+유입 병합은 #8064(수식·폰트·저장 줄·미주·그림 Print/실제 Studio), #8069(8064 검토·증적 문서),
+#8078(7개 의존성 갱신)이다. #8064의 실제 diff와 검토 기록의 공통 소비 경로를 기준으로 기존
+시험지·줄/표/미주·수식·중립 공백·Print 그림의 재현 입력과 정상 대조군을 고른다. 기존179조건의
+입력/독립 Print358개 경로는 SHA까지 모두 현재 파일과 같다. 이 입력을 새 base/후보에서 같은
+글꼴·compat·DPI로 실행하고 전쪽 Native/fresh WASM raw TSV, 쪽수·내용 소속과 대표
+review/overlay를 비교한다. 기존 planet6897 대상과 새45개가 추가한 입력도 유지한다.
+
+#8069는 실행 소스·테스트·설정 변경이 없는 문서 PR이다. 증적 입력 연결을 검사하며 제품 기능
+비해당 사유를 실제 diff로 남긴다. #8078 이후 npm/workflow 파일은 후보와 새 base가 동일하다.
+따라서 이 갱신을 임의로 무영향으로 처리하지 않고 의존성 설치·Studio/확장 실행 및 실제
+WASM 소비 경로를 확인한다. 원 PR의 과거 CI를 현재 후보의 검증으로 표시하지 않는다.
+
+우선 새 base의 실제 producer를 별도 검증 source에서 만들고 공용 target/pr-review를 순차 사용한다.
+생산물을 source SHA·바이트 SHA로 동결한 뒤 후보를 빌드한다. 0.1%p 이상 하락·90% 미달·쪽수/내용
+차이·증거 부족은 구분해 보류하고 보정·양쪽 재검증을 계속한다. 컴파일 통과만으로 준비 완료나
+기능 보존 완료로 보고하지 않는다. 새 PR 생성은 별도 승인 전까지 진행하지 않는다.
