@@ -12,7 +12,10 @@ mixed = mixed.replace(b"20 180.0 m", b"S 0.5 w\n20 180.0 m")
 
 nonuniform = mixed.replace(b"S 0.7 w\n20 30 m 20 330 l", b"S 0.9 w\n20 30 m 20 330 l S 0.7 w")
 
-for name, content in [("retained-pen", base), ("odd-blue", blue), ("mixed-pen", mixed), ("nonuniform-axis", nonuniform)]:
+horizontal = mixed.replace(b"20 30 m 380 30 l\n20 330 m 380 330 l", b"20 30 m 380 30 l S 0.9 w 20 330 m 380 330 l")
+interval = nonuniform.replace(b"20 30 m 20 330 l S 0.7 w", b"20 30 m 20 180 l S 0.7 w 20 180 m 20 330 l S 0.7 w")
+
+for name, content in [("nonuniform-horizontal", horizontal), ("nonuniform-interval", interval), ("retained-pen", base), ("odd-blue", blue), ("mixed-pen", mixed), ("nonuniform-axis", nonuniform)]:
     body = b"q 1 0 0 1 0 360 cm\n" + content + b"\nQ"
     font = b"Arial" if name == "odd-blue" else b"Helvetica"
     objects = [

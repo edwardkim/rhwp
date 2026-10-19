@@ -37,3 +37,20 @@ stage23에서는 `mixed-pen.pdf`를 축별 일정 pen(세로 0.70pt·가로 0.50
 [stage23](../../../mydocs/working/task_m100_7998_stage23.md)에 연결한다.
 2026-10-19 메인테이너가 수정본의 **시각·편집 구조 통과**와 **새 HWP/HWPX 14개 정상 열림**을
 확인했다. 같은 source/runtime의 집중 32건·Native/fresh WASM 각 23쪽 증거를 재사용한다.
+
+### stage24 — 평행 경계별 굵기의 상속
+
+`nonuniform-axis.pdf`의 세로선 0.90/0.70pt는 행 편집으로 길이를 이어갈 수 있다.
+`nonuniform-horizontal.pdf`는 위 가로선 0.90pt·다른 가로선 0.50pt·세로선 0.70pt로,
+열 편집의 같은 계약을 대조한다. 스타일이 다른 축 자체의 편집은 새 공유 변의 상속 충돌
+계약이 필요하므로 원자 거절한다. `nonuniform-interval.pdf`는 왼쪽 세로선의 위/아래
+interval이 0.70/0.90pt여서 한 경계선을 하나의 pen으로 추정하지 않는 반례다.
+
+`parallel-provenance.json`과 `print/parallel-*.pdf`는 새 6종 편집의 HWP/HWPX 모두에
+대한 형식별 독립 한컴 2020 Print다. 원본과 저장본 SHA·actual Print/1-up 실행·PDF SHA를
+연결하며 이전 인쇄본과 구분한다. Native/fresh WASM 새 편집 12쪽 최저는
+98.27716% / 97.20590%, 기존 대조군을 포함한 각 29쪽은 모두 90% 이상이다.
+생성기의 기존 4개와 신규 2개 PDF를 별도 폴더에서 재현했다. 실제 source·수정 전후·
+집중 34건·actual Studio·클릭·동일 backend 비교는
+[stage24](../../../mydocs/working/task_m100_7998_stage24.md)를 따른다. 2026-10-19
+메인테이너가 이번 절편을 **시각·편집 구조 통과**로 판정했다.

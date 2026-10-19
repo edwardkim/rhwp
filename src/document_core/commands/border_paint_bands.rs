@@ -15,10 +15,10 @@ use crate::{
         style::{FillType, SolidFill},
     },
 };
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub(super) struct Bands {
-    /// Full physical pen of vertical and horizontal edges, respectively.
-    pub pens: [u32; 2],
+    /// Full physical pens of vertical/horizontal grid lines, in grid order.
+    pub pens: [Vec<u32>; 2],
     pub color: u32,
     pub cell_z: [i32; 2],
     pub outside_z: [i32; 2],
@@ -36,7 +36,7 @@ fn append(p: &mut Paragraph, c: Control) {
 fn rectangle(
     id: u32,
     rect: [i64; 4],
-    bands: Bands,
+    bands: &Bands,
     outside: bool,
     axis: usize,
 ) -> Result<Control, HwpError> {
@@ -102,7 +102,7 @@ pub(super) fn apply(
     doc: &Document,
     parent: &mut Paragraph,
     ti: usize,
-    bands: Bands,
+    mut bands: Bands,
 ) -> Result<(), HwpError> {
     let mut ids = Allocator {
         used: used_instance_ids(doc),
@@ -114,6 +114,21 @@ pub(super) fn apply(
     };
     if t.cells.len() > 4096 {
         return Err(error());
+    }
+    // Parallel lines keep their source styles when the other axis changes.
+    // A uniform axis has an unambiguous style for each new boundary. Changing
+    // a nonuniform axis needs a template/conflict contract; never guess which
+    // of two unlike neighbouring source lines should win the new boundary.
+    for (axis, count) in [t.col_count, t.row_count].into_iter().enumerate() {
+        let pens = &mut bands.pens[axis];
+        let pen = *pens.first().ok_or_else(error)?;
+        let count = usize::from(count) + 1;
+        if pens.len() != count {
+            if pens.iter().any(|&p| p != pen) {
+                return Err(error());
+            }
+            pens.resize(count, pen);
+        }
     }
     let widths = t.get_column_widths();
     let heights = t.get_row_heights();
@@ -130,25 +145,29 @@ pub(super) fn apply(
     };
     let xs = offsets(&widths);
     let ys = offsets(&heights);
-    let negative = bands.pens.map(|pen| i64::from(pen / 2));
-    let positive = [
-        i64::from(bands.pens[0]) - negative[0],
-        i64::from(bands.pens[1]) - negative[1],
-    ];
     let ox = i64::from(t.common.horizontal_offset as i32);
     let oy = i64::from(t.common.vertical_offset as i32);
     let mut outside = Vec::new();
     for (ci, cell) in t.cells.iter_mut().enumerate() {
+        let pens = [
+            bands.pens[0][usize::from(cell.col)],
+            bands.pens[0][usize::from(cell.col) + 1],
+            bands.pens[1][usize::from(cell.row)],
+            bands.pens[1][usize::from(cell.row) + 1],
+        ];
+        let negative = pens.map(|pen| i64::from(pen / 2));
+        let positive =
+            std::array::from_fn::<_, 4, _>(|side| i64::from(pens[side]) - negative[side]);
         let w = i64::from(cell.width);
         let h = i64::from(cell.height);
-        if w <= i64::from(bands.pens[0]) || h <= i64::from(bands.pens[1]) {
+        if w <= i64::from(pens[0].max(pens[1])) || h <= i64::from(pens[2].max(pens[3])) {
             return Err(error());
         }
         let inside = [
             [0, 0, positive[0], h],
-            [w - negative[0], 0, negative[0], h],
-            [0, 0, w, positive[1]],
-            [0, h - negative[1], w, negative[1]],
+            [w - negative[1], 0, negative[1], h],
+            [0, 0, w, positive[2]],
+            [0, h - negative[3], w, negative[3]],
         ];
         if cell.paragraphs.is_empty() {
             cell.paragraphs.push(Paragraph::new_empty());
@@ -162,7 +181,7 @@ pub(super) fn apply(
                     r,
                     b,
                 ],
-                bands,
+                &bands,
                 false,
                 side / 2,
             )?;
@@ -176,16 +195,16 @@ pub(super) fn apply(
         let y = oy + ys[cell.row as usize];
         let outer = [
             (cell.col == 0, [x - negative[0], y, negative[0], h]),
-            (cell.col + 1 == t.col_count, [x + w, y, positive[0], h]),
-            (cell.row == 0, [x, y - negative[1], w, negative[1]]),
-            (cell.row + 1 == t.row_count, [x, y + h, w, positive[1]]),
+            (cell.col + 1 == t.col_count, [x + w, y, positive[1], h]),
+            (cell.row == 0, [x, y - negative[2], w, negative[2]]),
+            (cell.row + 1 == t.row_count, [x, y + h, w, positive[3]]),
         ];
         for (side, (is_outer, rect)) in outer.into_iter().enumerate() {
             if is_outer {
                 outside.push((
                     ci,
                     side,
-                    rectangle(ids.common()?, rect, bands, true, side / 2)?,
+                    rectangle(ids.common()?, rect, &bands, true, side / 2)?,
                 ));
             }
         }

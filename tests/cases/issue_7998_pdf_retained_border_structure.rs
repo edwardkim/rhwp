@@ -331,7 +331,8 @@ fn snapshot_restore_keeps_original_paint_and_captured_edit_after_text_inverse() 
 
 #[test]
 fn nonuniform_axis_pen_and_invalid_indices_reject_atomically() {
-    for mode in 0..6 {
+    // Changing this nonuniform axis needs a new shared-boundary conflict contract.
+    for mode in [2, 3, 5] {
         let mut c = load_other("nonuniform-axis");
         let before = c.export_hwpx_native().unwrap();
         assert!(apply(&mut c, mode).is_err());
@@ -649,6 +650,167 @@ fn actual_cell_image_data_is_preserved_instead_of_dropping_all_cell_pictures() {
             let mut actual = Vec::new();
             images(&n.document().sections[0].paragraphs, &n, &mut actual);
             assert_eq!(actual, expected);
+        }
+    }
+}
+
+fn parallel_source_halves(c: &DocumentCore, vertical: bool) {
+    for cell in &root(c).1.cells {
+        let mut seen = [false; 4];
+        for control in cell.paragraphs.iter().flat_map(|p| &p.controls) {
+            let Control::Shape(shape) = control else {
+                continue;
+            };
+            let Some(tag) = shape.common().cell_border_paint else {
+                continue;
+            };
+            use border_paint::CellSide::*;
+            let side = match tag.side {
+                Left => 0,
+                Right => 1,
+                Top => 2,
+                Bottom => 3,
+            };
+            // Independent PDF declarations: V=0.90/0.70pt, H=0.50pt;
+            // or V=0.70pt, H=0.90/0.50pt. 1pt is 100 HWPUNITs.
+            let pen = if side < 2 {
+                if vertical && side == 0 && cell.col == 0 {
+                    90
+                } else {
+                    70
+                }
+            } else if !vertical && side == 2 && cell.row == 0 {
+                90
+            } else {
+                50
+            };
+            let expected = if side == 0 || side == 2 {
+                (pen + 1) / 2
+            } else {
+                pen / 2
+            };
+            let actual = if side < 2 {
+                shape.common().width
+            } else {
+                shape.common().height
+            };
+            assert!(
+                (i64::from(actual) - i64::from(expected)).abs() <= 1,
+                "source pen {pen}HU, side {side}: observed half {actual}"
+            );
+            assert!(!seen[side], "one owned physical half per side");
+            seen[side] = true;
+        }
+        assert!(seen.into_iter().all(|value| value));
+    }
+}
+
+#[test]
+fn parallel_line_pens_survive_structural_edits_and_both_saves() {
+    for (name, vertical, modes) in [
+        ("nonuniform-axis", true, [0, 1, 4]),
+        ("nonuniform-horizontal", false, [2, 3, 5]),
+    ] {
+        for mode in modes {
+            let mut c = load_other(name);
+            let nested = child(&c);
+            let geometry = |c: &DocumentCore| {
+                nested_table(c)
+                    .cells
+                    .iter()
+                    .map(|cell| {
+                        (
+                            cell.row,
+                            cell.col,
+                            cell.row_span,
+                            cell.col_span,
+                            cell.width,
+                            cell.height,
+                            text(&cell.paragraphs),
+                            cell.paragraphs
+                                .iter()
+                                .map(|p| serde_json::to_value(&p.line_segs).unwrap())
+                                .collect::<Vec<_>>(),
+                        )
+                    })
+                    .collect::<Vec<_>>()
+            };
+            let expected_child_geometry = geometry(&c);
+            let source = c.export_hwpx_native().unwrap();
+            let snapshot = c.save_snapshot_native();
+            apply(&mut c, mode).unwrap();
+            owned_bands(&c);
+            parallel_source_halves(&c, vertical);
+            assert_eq!(child(&c), nested);
+            let want = text(&c.document().sections[0].paragraphs);
+            assert!(
+                want.contains("BEFORE CHILD")
+                    && want.contains("AFTER CHILD")
+                    && want.contains("OUTSIDE AFTER")
+            );
+            if mode < 4 {
+                for cell in &root(&c).1.cells {
+                    let new = match mode {
+                        0 => cell.row == 0,
+                        1 => cell.row == 1,
+                        2 => cell.col == 0,
+                        _ => cell.col == 1,
+                    };
+                    if new {
+                        assert!(cell.paragraphs.iter().all(|p| p.text.is_empty()
+                            && p.controls.iter().all(|control|
+                                matches!(control, Control::Shape(s) if s.common().cell_border_paint.is_some()))));
+                    }
+                }
+            } else {
+                assert!(!want.contains("LOWER RIGHT"));
+                assert_eq!(want.contains("UPPER RIGHT"), vertical);
+                assert_eq!(want.contains("LOWER LEFT"), !vertical);
+            }
+            for bytes in [
+                c.export_hwp_with_adapter_snapshot().unwrap(),
+                c.export_hwpx_native().unwrap(),
+            ] {
+                let mut n = DocumentCore::from_bytes(&bytes).unwrap();
+                // HWP legitimately synthesizes raw header/cache bytes. Check
+                // source content and geometry across formats, then protect the
+                // complete reopened subtree during subsequent parent edits.
+                assert_eq!(geometry(&n), expected_child_geometry);
+                let reopened_child = child(&n);
+                for _ in 0..3 {
+                    owned_bands(&n);
+                    parallel_source_halves(&n, vertical);
+                    let ci = root(&n).0;
+                    if vertical {
+                        n.insert_table_row_native(0, 0, ci, 0, true).unwrap();
+                        parallel_source_halves(&n, vertical);
+                        n.delete_table_row_native(0, 0, ci, 1).unwrap();
+                    } else {
+                        n.insert_table_column_native(0, 0, ci, 0, true).unwrap();
+                        parallel_source_halves(&n, vertical);
+                        n.delete_table_column_native(0, 0, ci, 1).unwrap();
+                    }
+                    assert_eq!(text(&n.document().sections[0].paragraphs), want);
+                    assert_eq!(child(&n), reopened_child);
+                }
+            }
+            c.restore_snapshot_native(snapshot).unwrap();
+            assert_eq!(c.export_hwpx_native().unwrap(), source);
+        }
+    }
+}
+
+#[test]
+fn along_line_changes_and_perpendicular_conflicts_reject_atomically() {
+    for (name, modes) in [
+        ("nonuniform-horizontal", vec![0, 1, 4]),
+        ("nonuniform-interval", (0..6).collect()),
+    ] {
+        for mode in modes {
+            let mut c = load_other(name);
+            let before = c.export_hwpx_native().unwrap();
+            assert!(apply(&mut c, mode).is_err());
+            assert_eq!(c.export_hwpx_native().unwrap(), before);
         }
     }
 }

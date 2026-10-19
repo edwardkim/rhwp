@@ -649,16 +649,19 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
         let first = proof.edges.values().next().ok_or_else(error)?;
         let expected = usize::from(table.row_count) * (usize::from(table.col_count) + 1)
             + usize::from(table.col_count) * (usize::from(table.row_count) + 1);
-        // A grid may have different vertical/horizontal pens. New rows and
-        // columns extend those two continuous source styles independently.
-        // Variation within one axis needs a per-edge template/conflict plan;
-        // different colours additionally need a proved crossing paint order.
+        // Each complete parallel line has its own source pen. It must remain
+        // continuous through every interval along that line. Mutating the
+        // nonuniform axis still requires a new-boundary conflict contract;
+        // apply() rejects that case before committing this candidate.
         if proof.edges.len() != expected {
             return Err(error());
         }
-        let mut axes = [None::<f64>; 2];
-        for (&(horizontal, _, _), edge) in &proof.edges {
-            let pen = axes[usize::from(horizontal)].get_or_insert(edge.pen);
+        let mut axes = [
+            vec![None::<f64>; usize::from(table.col_count) + 1],
+            vec![None::<f64>; usize::from(table.row_count) + 1],
+        ];
+        for (&(horizontal, line, _), edge) in &proof.edges {
+            let pen = axes[usize::from(horizontal)][line].get_or_insert(edge.pen);
             if edge.color != first.color || (edge.pen - *pen).abs() > 1.00001 {
                 return Err(error());
             }
@@ -674,21 +677,28 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
         ) {
             return Err(error());
         }
-        let mut pens = [0; 2];
-        for (axis, observed) in axes.into_iter().enumerate() {
-            let observed = observed.ok_or_else(error)?;
-            // Preserve the existing canonical pen when the two axis values
-            // differ only by the already-proved one-source-unit crop error.
-            let source_pen = if (observed - first.pen).abs() <= 1.00001 {
-                first.pen
-            } else {
-                observed
-            };
-            let pen = source_pen.round();
-            if pen < 2. || pen > f64::from(i32::MAX) || (pen - source_pen).abs() > 1. {
-                return Err(error());
+        let mut pens = [Vec::new(), Vec::new()];
+        for (axis, lines) in axes.into_iter().enumerate() {
+            let axis_pen = lines.first().copied().flatten().ok_or_else(error)?;
+            for observed in lines {
+                let observed = observed.ok_or_else(error)?;
+                // Preserve the existing canonical pen for source values within
+                // the proved one-unit crop uncertainty. Canonicalize before
+                // integer rounding, which can otherwise turn one uniform axis
+                // into different integer pens (e.g. 49/50) on different lines.
+                let source_pen = if (observed - first.pen).abs() <= 1.00001 {
+                    first.pen
+                } else if (observed - axis_pen).abs() <= 1.00001 {
+                    axis_pen
+                } else {
+                    observed
+                };
+                let pen = source_pen.round();
+                if pen < 2. || pen > f64::from(i32::MAX) || (pen - source_pen).abs() > 1. {
+                    return Err(error());
+                }
+                pens[axis].push(pen as u32);
             }
-            pens[axis] = pen as u32;
         }
         for c in &table.cells {
             let f = doc
@@ -703,8 +713,8 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
             if f.borders[..4]
                 .iter()
                 .any(|b| b.line_type != BorderLineType::None)
-                || c.width <= pens[0]
-                || c.height <= pens[1]
+                || c.width <= pens[0][usize::from(c.col)].max(pens[0][usize::from(c.col) + 1])
+                || c.height <= pens[1][usize::from(c.row)].max(pens[1][usize::from(c.row) + 1])
             {
                 return Err(error());
             }
