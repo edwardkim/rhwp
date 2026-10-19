@@ -6114,9 +6114,10 @@ pub(crate) fn rowbreak_fragment_frame_bottom(
     dpi: f64,
     body_filling_source_frame: bool,
 ) -> f64 {
-    // 선언 개체가 이미 소유한 본문 프레임에는 inset을 다시 넣지 않는다.
-    // 다른 칸의 rowspan 유무는 현재 조각의 실제 본문 하단 계약을 바꾸지 않는다.
-    if body_filling_source_frame {
+    // 추가 inset은 단독 셀의 쪽 조각 계약이다. 일반 격자의 독립 행 컷까지
+    // 이 띠를 예약하면 원본 저장 줄이 들어갈 본문 공간을 다시 줄인다.
+    // 선언으로 닫힌 프레임과 일반 격자는 바깥 아래 여백만 같은 하단에 예약한다.
+    if body_filling_source_frame || table.row_count != 1 || table.col_count != 1 {
         body_bottom - hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi)
     } else {
         single_cell_page_fragment_bottom(table, body_bottom, dpi)
