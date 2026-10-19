@@ -800,3 +800,21 @@ fn footnote_margin_does_not_cut_body_beyond_the_footnote_height() {
         "pi=818 첫 줄은 저장 줄 {expected:.2}px 에 놓여야 한다: {top:.2}"
     );
 }
+
+/// 개체 높이가 행 상자 합보다 작게 저장된 표(첫 조각 프레임만 저장)는 한/글이 쪽에서 가른 원본이다.
+/// 그런 표에는 경계 행을 본문 아래로 흘려 받는 가로 용지 허용치(#1672)를 쓰지 않는다. 1613000 부록
+/// 105×3 표(구역 3 `pi=1`, 개체 33240HU)에서 한/글 2020 PDF 는 197쪽을 9.9 행(행 95)에서 닫고 198쪽을
+/// 빈 구분 행 96 부터 연다. 수정 전 rhwp 는 허용치 36px 로 행 96(20.9px)을 197쪽 본문 아래(659.1 /
+/// 본문 642.6px)로 받아 198쪽이 행 97 로 시작했다.
+#[test]
+fn stored_fragment_table_does_not_bleed_a_landscape_boundary_row() {
+    let core = core(SAMPLE_1613000);
+    let (_, end, _, _) = table_fragment(&core, 196, 1);
+    let (start, _, start_cut, _) = table_fragment(&core, 197, 1);
+    assert_eq!(end, 96, "197쪽은 행 95 까지");
+    assert_eq!(
+        (start, start_cut),
+        (96, vec![]),
+        "198쪽은 행 96 부터 통째로"
+    );
+}

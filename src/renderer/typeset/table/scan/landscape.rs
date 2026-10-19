@@ -147,8 +147,18 @@ impl LandscapeRowQuery<'_> {
     /// `2025 행정업무운영 편람(최종).hwp` 부록 103×2 표(저장 되감김 22곳): 한/글 2024 정본의
     /// 표 아래 괘선은 모든 쪽에서 644.7px 로 본문 하한(646.4) 안이다. 허용치가 행 6·7(40.0·
     /// 38.7px)을 경계 너머로 받아 313쪽이 본문을 70px 넘겼다.
+    ///
+    /// 표 개체 높이가 행 상자 합보다 작게 저장된 원본(첫 조각 프레임만 저장)도 한/글이 그 표를
+    /// 쪽에서 갈랐다는 저장 사실이다. 1613000 부록 105×3 표(개체 33240HU, 행 합 훨씬 큼):
+    /// 한/글 2020 정본의 이어지는 조각 아래는 모든 가로 쪽에서 본문 안이다. 허용치가 빈 구분
+    /// 행 96(20.9px)을 197쪽 본문 아래로 받아 198쪽이 한 행 늦었다.
     fn storage_records_page_cuts(&self) -> bool {
-        self.table_storage_declares_splits
+        (self.table_storage_declares_splits
+            || self
+                .row
+                .rows
+                .layout_engine
+                .native_stored_table_has_fragment_frames(self.row.rows.table))
             && (self.profile.hwp5_stored_pagination_layout() || self.profile.hwpx_stored_layout())
             && !self.profile.session_edited()
     }
