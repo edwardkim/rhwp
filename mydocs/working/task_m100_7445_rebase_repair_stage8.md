@@ -3995,3 +3995,96 @@ PNG byte동일이며 고정4a07의74.58351%/69.70042%보다 개선됐어도 수�
 전 문서 Native/fresh WASM·기본 PII 미달/고정base 대비22쪽 하락·actual36의 완료가 아니다.
 130/134의 이전264쪽 sweep을 최종159/160의 전쪽 통과로 재사용하지 않는다.
 미해결 범위와 필수 검증을 계속 처리하며, PR은 결과 보고 뒤 새 사용자 승인을 받아 진행한다.
+
+## C438 시스템 HFT의 원본 전진폭과 기존 경계 보존
+
+부모는 로컬 C437 `e2ebf76b8a43ce0fc8399e9129001bc7196a892d`다. #6860/#6880 원래
+행 첫 프레임·내용 소유 계약과 이후 #6904 통합, 현재 같은 입력의 전2쪽 미달을 구분했다.
+현재 Native159의 제목 실제 glyph observer는 원본 `시스템`/altType2를 표시 Dotum으로
+치환하고, 원본 한글의 폭도 Dotum의1600HU로 측정한 뒤 −0.78185185px의 배분 간격으로
+좁힌다. 독립 Print는 Type3의880/1000 자연 폭과 TJ−52.3의 굵게 간격을 쓴다. 따라서
+같은 family가 설치됐다는 것만으로 원본 HFT 메트릭을 공급했다고 볼 수 없다.
+trace는512/976개 기록으로 제한됐으며 제목 범위의 실제 선택만 주장한다(`repair169`).
+
+대상 문서를 그대로 메트릭 표본으로 사용하지 않고, 원본의 확인된 HFT 시스템 face 참조를
+유지한 별도 표본을 구성했다. 기존 본문·저장 LineSeg는 제거하고 일반/굵게12·16pt에 각각
+한글11172자·ASCII95자를 넣었다. 일반 스타일은 기존 굵게 태그만 뺀 복제이며 ratio·원본
+언어별 자간은 유지했다. 이 생성 진단은 렌더링 회귀 fixture나 원본 문서 수용 자료가 아니다.
+입력 SHA는 `52a8b3d98bdb4dbfb4a2ea7c9fc3fc2a689ae815c40c7bf2d9c5e52b191d83ad`다.
+별도 한컴2020 Print job `d8b04619-ef08-48d7-b0ec-522f0d61d62f`는34.080초에 성공했고
+실제11.0.0.9136/Print0/driver one-up/preprocess none,39쪽/15,001,588bytes다.
+PDF SHA는 `55390717754f3c64735c46ff9da8b49c73ff4c81b09f6300a15812e23a5e77dc`다.
+표본·PDF·글리프 프로그램은 ignored `repair170`의 로컬 전용 자료로 남긴다.
+
+ToUnicode·실제 text op의 Type3 Widths를 전수 대조한 결과 네 스타일의 한글11172자는
+모두880이며 실제 출력된 ASCII94자의 폭도 전부 같다. Type0 폴백·미해석 문자·폭 충돌은0이다.
+공백은 실제 glyph로 출력되지 않아 새 표에서는 미확인으로 남기며 기존 공백 계약을 쓴다.
+최초 추출기는 bfrange를 처리하지 않아 중단됐고 로그를 보존했다. 실제 bfrange/배열을
+해석한 최종 추출로 전수 결과를 확인했으며 실패 추출을 통과로 세지 않았다.
+
+기존 `legacy_hft_metric_face`의 원본 HFT 경로에 `시스템 (HFT)` 메트릭을 연결했다.
+측정은 원본 자연 폭, 공통 HFT 굵게 walk는 원점 추가 간격, glyph-fit walk는 간격을 뺀
+자연 폭을 각각 소비한다. 명시 TrueType 환경·다른 TTF family는 이 HFT 선택에 들어오지
+않으며 문서 ID·쪽 좌표 조건은 추가하지 않았다. 원본 형태·표/줄 구조나 글꼴 공급 경로를 바꾸지 않았다.
+
+Native171 빌드는123.079257초/exit0이다. CLI SHA는
+`eee80c5090e47211760f1030cebcec390c537eb4365aed2e217ac13d2dd1820a`, library SHA는
+`b432ba549276b7bc4c6c7fcdfdfe56c80764603bedb45602956ff7a418c65139`다.
+현재 runtime2201파일과 patch SHA
+`c676b35ca10009f53076c30920142ab4081ce090612bb2d958607df2f62927b6`를 고정했다.
+새 모듈은 별도 원문/hash도 남겼다. fresh WASM174는 실제 root 재컴파일204.541393초/exit0,
+Mac locked web/pkg/no-opt 대체 빌드다. JS는 앞과 같은23f085e3…,
+WASM SHA는 `5355e80c7d841cc08eda97bb195da021af3140bea05ffb1694c54c9efa4e9460`이다.
+root pkg/Studio public 및 실제7736 browser 초기 응답178을 대조했다. Docker 최적화나
+Studio 문서 paint/actual36 완료를 주장하지 않는다.
+
+동일 원본·독립 Print·네 글꼴 경로·192DPI/compat2022/2px/PDFium의 전2쪽 결과는 다음과 같다.
+
+| 쪽 | 수정 전 Native159 | 최종 Native171 | 수정 전 WASM160 | 최종 fresh WASM174 |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 87.50262% | 91.20154% | 88.99403% | 92.44329% |
+| 2 | 92.31277% | 92.31277% | 92.86183% | 92.86183% |
+
+양쪽 쪽수2/2, 미달0이며2쪽 PNG는 같은 backend의 수정 전과 byte동일이다. 전후1쪽과
+최종 양쪽2쪽 review/overlay를 직접 판독했다. 제목·캡션의 원점 전진이 개선됐지만 대체
+글리프 윤곽과 표의 일부 영문·기호 차이는 남는다. 원본 HFT glyph를 새 공급했거나100%라고
+표현하지 않는다. 본문·괘선·마지막 행 첫 줄의 기존 소유는 유지했다.
+
+고정4a07 Native는 기존 frozen166의 같은 두 쪽을 재사용했다. 고정 base WASM의 첫181
+실행은 새 자동 환경 선택 API가 없어 exporter가 거부했다. guard나 도구를 바꾸지 않고,
+현재174가 실제로 `noDeclaredSubstitutions/environment:null/programs:[]`인 것을 확인했다.
+기존 exporter가 지원하는 명시적 `None`을 **base와 후보 양쪽**에 적용해 전2쪽을 다시
+산출했다(`repair182`). 후보의 두 PNG는 기본174 실행과 byte동일이며 실제 None도 확인했다.
+정본 비교·실제 run별 글꼴 공급 검사는 유지했다.181 실패를 시각 결과로 세지 않는다.
+고정 base→후보는 Native1/2쪽74.58351/69.70042→91.20154/92.31277%, WASM은
+85.43866/92.85946→92.44329/92.86183%다. backend별 Decimal 비교에서0.1%p 이상
+하락0쪽이다. base 대비2쪽 Native 개선은 앞선 보정의 효과이며 이번 C438만의 개선으로 세지 않는다.
+
+기존 주요52조건·incoming·번호 대조군을 합쳐 중복 제거한73입력의 글꼴 선언을 조사했다.
+HFT 시스템에 해당하는 것은 현재 도로조명 재저장본뿐이다. 이는 선언의 보수적 영향 조사이며
+모든 글꼴이 실제 사용됐다는 뜻이 아니다. 별도로 네 정상/여백1133 문서의 전3쪽을 양쪽에서
+다시 출력했다(`repair179`,24쪽). 모든 PNG가 수정 전159/160과 byte동일하고 전쪽 raw90% 이상이다.
+이전 TSV 재인용이 아니라 새 렌더·TSV이며, 같은 hash인 기존 대표 판독과 연결했다.
+
+새 `issue_7445_system_hft_advance`는 원본 제목의0.88em 자연 폭/0.05em 굵게 전진,
+캡션의 같은 프로그램 전진과 기존 반각 공백, TrueType 본문의1em 보존을 공개 Core API와
+실제 run 상자로 확인한다. 제목의 내용 순서·누락·중복·본문 포함도 함께 검사한다.
+캡션의 전진은 독립 Type3 한글880/하이픈406/꺾쇠434와 굵게 간격의 em 합으로 검증하며,
+98% 미만인 화면의 절대 px 위치는 고정하지 않았다. 수정 전159에서1PASS/2FAIL,
+현재171에서3PASS다. 처음 private helper/잘못된 필드명을 쓴 컴파일과 캡션 source 식별자가
+없는 trace를 고른 진단은 INVALID로 보존하고 최종 같은 원문 재현에서 제외했다.
+새 API를 노출하지 않고 캡션은 실제 식별된 run의 상대 전진으로 검사했다.
+
+manifest prepare 후 실제 suite019에서 새3PASS/229선택 제외(test0.123초/전체151.171084초),
+기존 #6860 엄격2PASS, C437 이어받기3PASS다. root 메트릭 조회 unit9PASS/3862선택 제외,
+나머지 library의 해당 필터0실행은 통과 건수에 더하지 않았다. 같은 runtime의 fmt,
+NativeSkia lib/WASM lib Clippy-Dwarnings, 고정4a07 manifest도 exit0이다.
+별도 suite019 Clippy-Dwarnings도27.51초/exit0이다. 정식 명령·exit·source hash는 ignored
+`repair177`에 보존한다. 이 범위를 전체 nextest/all-target/workspace/전 문서 sweep이나
+실제 소비 경로 전체 완료로 확대하지 않는다.
+
+최종 전후·base Native/WASM TSV, 정상 대조군 TSV와 대표12개 review/overlay 및 십진수
+비교 TSV는 [`system-hft-program-advance`](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/system-hft-program-advance/)에 보존했다.
+표본 PDF·글꼴/윤곽·JSON·로그·중간 산출물은 포함하지 않는다. 전체 회귀와 기존 번호 검사,
+1937의51/50쪽 불일치·PII의 기본 환경 미달/22쪽 하락·최종 전 문서/actual 검증은 계속 남는다.
+PR은 준비 결과 보고와 새 사용자 승인 뒤 진행한다.
