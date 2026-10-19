@@ -66,6 +66,7 @@ impl TypesetEngine {
             mut split_block_start,
             mut split_end_cut,
             mut split_end_limit,
+            mut split_end_reserved,
             mut end_row_height_override,
         } = scan;
         let block_query = table::scan::RowBlockQuery {
@@ -1719,11 +1720,16 @@ impl TypesetEngine {
         // 높이를 다시 추정하지 않고 이번 일반 행이 실제 수용한 증분을 보존한다.
         // 다음 행을 이월한 경우에는 앞서 수용한 행의 결과를 그대로 유지한다.
         if end_row > scan_start_row {
+            let reserved_row = (consumed - consumed_before_row - cs_before).max(0.0);
             accepted_end_row_box = (split_end_cut.is_empty() && split_block_start.is_none())
-                .then_some((
-                    end_row - 1,
-                    (consumed - consumed_before_row - cs_before).max(0.0),
-                ));
+                .then_some((end_row - 1, reserved_row));
+            // 내용 컷 행도 같은 증분을 남긴다. 컷 경로마다 예약 값(내용 전진량·패딩 포함 상자·
+            // 물리 띠)이 달라 `split_end_limit`만으로는 쪽 끝까지의 남은 방을 잴 수 없다.
+            split_end_reserved = if !split_end_cut.is_empty() && split_block_start.is_none() {
+                reserved_row
+            } else {
+                0.0
+            };
         }
         let scan = BlockTableRowScan {
             source_frame_band,
@@ -1733,6 +1739,7 @@ impl TypesetEngine {
             split_block_start,
             split_end_cut,
             split_end_limit,
+            split_end_reserved,
             end_row_height_override,
         };
         ScanStep {

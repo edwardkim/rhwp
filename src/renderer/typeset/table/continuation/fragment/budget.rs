@@ -1713,16 +1713,29 @@ impl TypesetEngine {
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
             );
-            (bottom
+            let frame = (bottom
                 - top
                 - caption_extra
                 - header_overhead
                 - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi))
-            .max(0.0)
+            .max(0.0);
             // 닫힌 원본 첫 프레임은 쪽 본문보다 작은 실제 물리 상자일 수 있다.
             // 일반 내용 예산과 그리기·이어받기 띠에 같은 상한을 적용한다.
-            .min(accepted_source_frame_limit.unwrap_or(f64::MAX))
+            let limited = frame.min(accepted_source_frame_limit.unwrap_or(f64::MAX));
+            // 하단은 비끝 조각 닫는 선(본문 아래 − 바깥 아래 여백 − 100HU)이다. 그 inset 을
+            // 실제로 뺀 프레임만 그 값을 함께 넘긴다 — 이어받기 원장은 inset 앞의 물리 띠를 쓴다.
+            let inset = if body_filling || limited < frame {
+                0.0
+            } else {
+                hwpunit_to_px(
+                    crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                    self.dpi,
+                )
+            };
+            (limited, inset)
         });
+        let reflow_frame_bottom_inset = reflow_frame_avail_for_rows.map_or(0.0, |(_, inset)| inset);
+        let reflow_frame_avail_for_rows = reflow_frame_avail_for_rows.map(|(avail, _)| avail);
 
         // [Task #1046 Stage 2 진단] 첫/연속 fragment 의 가용공간 분해 — 렌더러
         // y_start 점프(vert_offset)·host_before 와의 정합 확인용. 동작 불변(게이트).
@@ -1804,6 +1817,7 @@ impl TypesetEngine {
             header_overhead,
             avail_for_rows,
             reflow_frame_avail_for_rows,
+            reflow_frame_bottom_inset,
             single_cell_fragment_shape,
             single_cell_box_height,
         }

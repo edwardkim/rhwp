@@ -75,6 +75,7 @@ impl TypesetEngine {
             split_block_start,
             split_end_cut,
             split_end_limit,
+            split_end_reserved,
             mut end_row_height_override,
         } = scan;
         let source_first_row_frame =
@@ -1194,8 +1195,10 @@ impl TypesetEngine {
         let ledger_page_end_band = if split_block_start.is_some() {
             0.0
         } else if let Some(frame_rows) = budget.reflow_frame_avail_for_rows {
-            // 물리 경계에는 아래 바깥여백과 실제 각주 공간이 이미 반영돼 있다.
-            (frame_rows + header_overhead - partial_height).max(0.0)
+            // 물리 경계에는 아래 바깥여백과 실제 각주 공간이 이미 반영돼 있다. 프레임 하단이 비끝 조각
+            // inset 까지 뺀 닫는 선이면 원장 띠는 그 inset 앞의 물리 띠다(그리는 띠는 아래에서 다시 뺀다).
+            (frame_rows + budget.reflow_frame_bottom_inset + header_overhead - partial_height)
+                .max(0.0)
         } else {
             let outer_bottom = (hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi)
                 - fragment_outer_bottom_overhead)
@@ -1314,11 +1317,17 @@ impl TypesetEngine {
                 // 걸침 몫으로 정한 끝 행 상자는 원본 프레임이다 — 배치가 끝 줄간격으로 다시 접지 않는다.
                 span_band_owns_end_row = span_rule && band > 0.5;
             } else {
-                // 예약(`consumed`)은 이 행을 끝 컷 높이(`split_end_limit`)로 셌다. 쪽 끝까지의 방은
-                // 그 위에 남은 띠를 더한 값이고, 상자는 끝 컷 내용(`last_height`) 이상·걸침 칸의
-                // 남는 몫 이하다.
-                let room = split_end_limit + unreserved_page_end_band;
-                let ledger_room = split_end_limit + ledger_page_end_band;
+                // 쪽 끝까지의 방은 예약(`consumed`)이 이 행에 실제로 준 높이 위에 남은 띠를 더한
+                // 값이고, 상자는 끝 컷 내용(`last_height`) 이상·걸침 칸의 남는 몫 이하다. 컷 경로에
+                // 따라 그 예약은 내용 전진량이 아니라 패딩 포함 컷 상자다(21761835 2쪽 행 20:
+                // 전진량 47.25px · 예약 50.99px — 전진량으로 재면 닫는 선보다 패딩만큼 짧다).
+                let reserved = if split_end_reserved > 0.0 {
+                    split_end_reserved
+                } else {
+                    split_end_limit
+                };
+                let room = reserved + unreserved_page_end_band;
+                let ledger_room = reserved + ledger_page_end_band;
                 let ledger_band = self.crossing_span_page_end_band(
                     st,
                     continuation,

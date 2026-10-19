@@ -121,6 +121,8 @@ struct FragmentBudget {
     avail_for_rows: f64,
     /// 일반 재조판 행의 선언 최소 높이가 소비할 paint 하단. 블록 컷은 별도 ledger를 쓴다.
     reflow_frame_avail_for_rows: Option<f64>,
+    /// `reflow_frame_avail_for_rows` 의 하단이 이미 뺀 비끝 조각 inset(px). 0 이면 inset 없음.
+    reflow_frame_bottom_inset: f64,
     /// [#7095] 본문을 통째로 담은 1×1 RowBreak 쪽 조각 형상인지.
     single_cell_fragment_shape: bool,
     /// [#7095] 저장 host 원점이 있는 조각이 칠하는 상자 높이(px). 원점이 없는 조각은
