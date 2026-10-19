@@ -25,7 +25,7 @@ fn error() -> HwpError {
     HwpError::RenderError(UNSUPPORTED.into())
 }
 type Rect = [f64; 4];
-type Key = (bool, usize, usize); // horizontal, boundary index, interval index
+pub(super) type Key = (bool, usize, usize); // horizontal, boundary index, interval index
 #[derive(Clone, Copy)]
 pub(super) enum StructureEdit {
     InsertRow(u16, bool),
@@ -91,7 +91,7 @@ fn boundaries(sizes: Vec<u32>) -> Vec<f64> {
     }
     out
 }
-fn key(c: &crate::model::table::Cell, side: usize) -> Key {
+pub(super) fn key(c: &crate::model::table::Cell, side: usize) -> Key {
     match side {
         0 => (false, c.col as usize, c.row as usize),
         1 => (false, c.col as usize + 1, c.row as usize),
@@ -687,21 +687,10 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
         let first = proof.edges.values().next().ok_or_else(error)?;
         let expected = usize::from(table.row_count) * (usize::from(table.col_count) + 1)
             + usize::from(table.col_count) * (usize::from(table.row_count) + 1);
-        // Each complete parallel line has its own source pen. It must remain
-        // continuous through every interval along that line. Cell-template
-        // inheritance subsequently resolves the new physical shared edges.
+        // Prove each complete cell-side interval. A line may change pen at a
+        // grid junction; collapsing its intervals would discard cell styles.
         if proof.edges.len() != expected {
             return Err(error());
-        }
-        let mut axes = [
-            vec![None::<f64>; usize::from(table.col_count) + 1],
-            vec![None::<f64>; usize::from(table.row_count) + 1],
-        ];
-        for (&(horizontal, line, _), edge) in &proof.edges {
-            let pen = axes[usize::from(horizontal)][line].get_or_insert(edge.pen);
-            if edge.color != first.color || (edge.pen - *pen).abs() > 1.00001 {
-                return Err(error());
-            }
         }
         if !preserves_layer_order(
             doc,
@@ -714,28 +703,41 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
         ) {
             return Err(error());
         }
-        let mut pens = [Vec::new(), Vec::new()];
-        for (axis, lines) in axes.into_iter().enumerate() {
-            let axis_pen = lines.first().copied().flatten().ok_or_else(error)?;
-            for observed in lines {
-                let observed = observed.ok_or_else(error)?;
-                // Preserve the existing canonical pen for source values within
-                // the proved one-unit crop uncertainty. Canonicalize before
-                // integer rounding, which can otherwise turn one uniform axis
-                // into different integer pens (e.g. 49/50) on different lines.
-                let source_pen = if (observed - first.pen).abs() <= 1.00001 {
-                    first.pen
-                } else if (observed - axis_pen).abs() <= 1.00001 {
-                    axis_pen
-                } else {
-                    observed
-                };
-                let pen = source_pen.round();
-                if pen < 2. || pen > f64::from(i32::MAX) || (pen - source_pen).abs() > 1. {
-                    return Err(error());
-                }
-                pens[axis].push(pen as u32);
+        let axis_pens = [false, true].map(|horizontal| {
+            proof
+                .edges
+                .iter()
+                .find(|(k, _)| k.0 == horizontal)
+                .map(|(_, e)| e.pen)
+        });
+        let mut lines = BTreeMap::new();
+        let mut pens = BTreeMap::new();
+        for (&k, edge) in &proof.edges {
+            if edge.color != first.color {
+                return Err(error());
             }
+            let line_pen = *lines.entry((k.0, k.1)).or_insert(edge.pen);
+            let axis_pen = axis_pens[usize::from(k.0)].ok_or_else(error)?;
+            // Retain prior canonical values within the existing one-HU crop
+            // uncertainty, before rounding. Distinct intervals keep their own
+            // pen; no tolerance is widened and no source geometry is clamped.
+            let observed = if (edge.pen - line_pen).abs() <= 1.00001 {
+                line_pen
+            } else {
+                edge.pen
+            };
+            let source_pen = if (observed - first.pen).abs() <= 1.00001 {
+                first.pen
+            } else if (observed - axis_pen).abs() <= 1.00001 {
+                axis_pen
+            } else {
+                observed
+            };
+            let pen = source_pen.round();
+            if pen < 2. || pen > f64::from(i32::MAX) || (pen - source_pen).abs() > 1. {
+                return Err(error());
+            }
+            pens.insert(k, pen as u32);
         }
         for c in &table.cells {
             let f = doc
@@ -747,11 +749,12 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
                         .ok_or_else(error)?,
                 )
                 .ok_or_else(error)?;
+            let physical = super::border_paint_bands::physical_pens(c, &pens)?;
             if f.borders[..4]
                 .iter()
                 .any(|b| b.line_type != BorderLineType::None)
-                || c.width <= pens[0][usize::from(c.col)].max(pens[0][usize::from(c.col) + 1])
-                || c.height <= pens[1][usize::from(c.row)].max(pens[1][usize::from(c.row) + 1])
+                || c.width <= physical[0].max(physical[1])
+                || c.height <= physical[2].max(physical[3])
             {
                 return Err(error());
             }

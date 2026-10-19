@@ -794,12 +794,14 @@ fn parallel_line_pens_survive_structural_edits_and_both_saves() {
 }
 
 #[test]
-fn along_line_pen_changes_reject_atomically() {
-    for mode in 0..6 {
-        let mut c = load_other("nonuniform-interval");
-        let before = c.export_hwpx_native().unwrap();
-        assert!(apply(&mut c, mode).is_err());
-        assert_eq!(c.export_hwpx_native().unwrap(), before);
+fn within_cell_side_pen_changes_reject_atomically() {
+    for source in ["within-cell-vertical", "within-cell-horizontal"] {
+        for mode in 0..6 {
+            let mut c = load_other(source);
+            let before = c.export_hwpx_native().unwrap();
+            assert!(apply(&mut c, mode).is_err());
+            assert_eq!(c.export_hwpx_native().unwrap(), before);
+        }
     }
 }
 
@@ -1081,5 +1083,341 @@ fn invalid_losing_pen_sidecar_fails_closed_without_changing_visible_geometry() {
             serde_json::to_value(&doc.sections[0].paragraphs).unwrap(),
             geometry_before
         );
+    }
+}
+
+type IntervalPens = std::collections::BTreeMap<(u16, u16), [u32; 4]>;
+fn interval_oracle(kind: &str) -> IntervalPens {
+    let mut p = IntervalPens::new();
+    for r in 0..2 {
+        for c in 0..2 {
+            p.insert((r, c), [70, 70, 50, 50]);
+        }
+    }
+    match kind {
+        "v-outer" => p.get_mut(&(1, 0)).unwrap()[0] = 90,
+        "h-outer" => p.get_mut(&(0, 0)).unwrap()[2] = 90,
+        "v-shared" => {
+            p.get_mut(&(0, 0)).unwrap()[1] = 90;
+            p.get_mut(&(0, 1)).unwrap()[0] = 90;
+        }
+        _ => {
+            p.get_mut(&(0, 1)).unwrap()[3] = 90;
+            p.get_mut(&(1, 1)).unwrap()[2] = 90;
+        }
+    }
+    p
+}
+fn interval_expected(p: &IntervalPens, op: &str) -> IntervalPens {
+    let mut q = IntervalPens::new();
+    for (&(r, c), &a) in p {
+        match op {
+            "row-before" => {
+                q.insert((r + 1, c), a);
+                if r == 0 {
+                    q.insert((0, c), a);
+                }
+            }
+            "col-before" => {
+                q.insert((r, c + 1), a);
+                if c == 0 {
+                    q.insert((r, 0), a);
+                }
+            }
+            "delete-row" => {
+                if r > 0 {
+                    q.insert((r - 1, c), a);
+                }
+            }
+            "delete-col" => {
+                if c > 0 {
+                    q.insert((r, c - 1), a);
+                }
+            }
+            "append-row" => {
+                q.insert((r, c), a);
+                if r == 1 {
+                    q.insert((2, c), a);
+                }
+            }
+            _ => {
+                q.insert((r, c), a);
+                if c == 1 {
+                    q.insert((r, 2), a);
+                }
+            }
+        }
+    }
+    q
+}
+fn interval_apply(c: &mut DocumentCore, op: &str) {
+    let ci = root(c).0;
+    match op {
+        "row-before" => c.insert_table_row_native(0, 0, ci, 0, false),
+        "col-before" => c.insert_table_column_native(0, 0, ci, 0, false),
+        "delete-row" => c.delete_table_row_native(0, 0, ci, 0),
+        "delete-col" => c.delete_table_column_native(0, 0, ci, 0),
+        "append-row" => c.insert_table_row_native(0, 0, ci, 1, true),
+        _ => c.insert_table_column_native(0, 0, ci, 1, true),
+    }
+    .unwrap();
+}
+fn interval_check(c: &DocumentCore, p: &IntervalPens) {
+    owned_bands(c);
+    let t = root(c).1;
+    assert_eq!(t.cells.len(), p.len());
+    let mut hidden = 0;
+    for cell in &t.cells {
+        let a = p[&(cell.row, cell.col)];
+        let mut want = a;
+        if cell.col > 0 {
+            want[0] = want[0].max(p[&(cell.row, cell.col - 1)][1]);
+        }
+        if cell.col + 1 < t.col_count {
+            want[1] = want[1].max(p[&(cell.row, cell.col + 1)][0]);
+        }
+        if cell.row > 0 {
+            want[2] = want[2].max(p[&(cell.row - 1, cell.col)][3]);
+        }
+        if cell.row + 1 < t.row_count {
+            want[3] = want[3].max(p[&(cell.row + 1, cell.col)][2]);
+        }
+        let mut seen = [false; 4];
+        for control in cell.paragraphs.iter().flat_map(|p| &p.controls) {
+            if let Control::Shape(s) = control {
+                if let Some(tag) = s.common().cell_border_paint {
+                    use border_paint::CellSide::*;
+                    let side = match tag.side {
+                        Left => 0,
+                        Right => 1,
+                        Top => 2,
+                        Bottom => 3,
+                    };
+                    let want_half = if side == 0 || side == 2 {
+                        want[side].div_ceil(2)
+                    } else {
+                        want[side] / 2
+                    };
+                    let got = if side < 2 {
+                        s.common().width
+                    } else {
+                        s.common().height
+                    };
+                    assert!(
+                        (got as i64 - want_half as i64).abs() <= 1,
+                        "cell {:?} side {side}: {got} vs {want_half}",
+                        (cell.row, cell.col)
+                    );
+                    assert!(!seen[side]);
+                    seen[side] = true;
+                    if a[side] < want[side] {
+                        hidden += 1;
+                        let own = tag.cell_pen.expect("losing cell pen must survive");
+                        assert!((own as i64 - a[side] as i64).abs() <= 1);
+                    }
+                }
+            }
+        }
+        assert!(seen.into_iter().all(|x| x));
+    }
+    let meta = border_paint::encode(c.document()).unwrap().unwrap();
+    assert_eq!(
+        u32::from_le_bytes(meta[8..12].try_into().unwrap()) as usize,
+        4 * t.cells.len() + 2 * usize::from(t.row_count + t.col_count)
+    );
+    if hidden > 0 {
+        assert_eq!(&meta[..8], b"RBPO\0\0\0\x05");
+    }
+}
+
+fn interval_expected_texts(
+    c: &DocumentCore,
+    op: &str,
+) -> std::collections::BTreeMap<(u16, u16), String> {
+    let mut out = std::collections::BTreeMap::new();
+    for cell in &root(c).1.cells {
+        let (r, col) = (cell.row, cell.col);
+        let at = match op {
+            "row-before" => Some((r + 1, col)),
+            "col-before" => Some((r, col + 1)),
+            "delete-row" => {
+                if r == 0 {
+                    None
+                } else {
+                    Some((r - 1, col))
+                }
+            }
+            "delete-col" => {
+                if col == 0 {
+                    None
+                } else {
+                    Some((r, col - 1))
+                }
+            }
+            _ => Some((r, col)),
+        };
+        if let Some(at) = at {
+            out.insert(at, text(&cell.paragraphs));
+        }
+    }
+    out
+}
+fn interval_check_texts(
+    c: &DocumentCore,
+    expected: &std::collections::BTreeMap<(u16, u16), String>,
+) {
+    for cell in &root(c).1.cells {
+        assert_eq!(
+            text(&cell.paragraphs),
+            expected
+                .get(&(cell.row, cell.col))
+                .cloned()
+                .unwrap_or_default()
+        );
+    }
+    let all = text(&c.document().sections[0].paragraphs);
+    assert_eq!(all.matches("OUTSIDE ABOVE").count(), 1);
+    assert_eq!(all.matches("OUTSIDE AFTER").count(), 1);
+    // Four zero margins exist in the HWP LIST_HEADER. Keep that presence
+    // when crossing HWP -> IR -> HWPX; independent Hancom Print otherwise
+    // loses the above-table text even though rhwp still paints it.
+    let mut outside = 0;
+    for p in &c.document().sections[0].paragraphs {
+        for ctrl in &p.controls {
+            if let Control::Shape(shape) = ctrl {
+                if let Some(tb) = shape.drawing().and_then(|d| d.text_box.as_ref()) {
+                    if tb.paragraphs.iter().any(|p| {
+                        p.text.contains("OUTSIDE ABOVE") || p.text.contains("OUTSIDE AFTER")
+                    }) {
+                        assert!(tb.text_margin_explicit);
+                        assert_eq!(
+                            [
+                                tb.margin_left,
+                                tb.margin_right,
+                                tb.margin_top,
+                                tb.margin_bottom
+                            ],
+                            [0; 4]
+                        );
+                        outside += 1;
+                    }
+                }
+            }
+        }
+    }
+    assert_eq!(outside, 2);
+}
+
+#[test]
+fn cell_interval_pens_survive_insertion_deletion_saves_and_repeated_edits() {
+    // Independent PDF operators declare each of the four original cells' sides.
+    // Wider same-colour shared ink follows the separately printed native
+    // BorderFill contract; inherited cell content is never copied into new cells.
+    for (kind, source, ops) in [
+        (
+            "v-outer",
+            "nonuniform-interval",
+            ["row-before", "col-before", "delete-row", "append-col"],
+        ),
+        (
+            "h-outer",
+            "horizontal-interval",
+            ["row-before", "col-before", "delete-col", "append-row"],
+        ),
+        (
+            "v-shared",
+            "shared-vertical-interval",
+            ["row-before", "col-before", "delete-row", "delete-col"],
+        ),
+        (
+            "h-shared",
+            "shared-horizontal-interval",
+            ["row-before", "col-before", "delete-row", "delete-col"],
+        ),
+    ] {
+        for op in ops {
+            let mut c = load_other(source);
+            let source_child = child(&c);
+            let expected_text = interval_expected_texts(&c, op);
+            let source_hwpx = c.export_hwpx_native().unwrap();
+            let snapshot = c.save_snapshot_native();
+            let expected = interval_expected(&interval_oracle(kind), op);
+            interval_apply(&mut c, op);
+            interval_check(&c, &expected);
+            interval_check_texts(&c, &expected_text);
+            if !op.starts_with("delete-") {
+                assert_eq!(child(&c), source_child);
+            }
+            for bytes in [
+                c.export_hwp_with_adapter_snapshot().unwrap(),
+                c.export_hwpx_native().unwrap(),
+            ] {
+                let mut reopened = DocumentCore::from_bytes(&bytes).unwrap();
+                interval_check(&reopened, &expected);
+                interval_check_texts(&reopened, &expected_text);
+                let child_before = if op.starts_with("delete-") {
+                    None
+                } else {
+                    Some(child(&reopened))
+                };
+                let ci = root(&reopened).0;
+                for _ in 0..2 {
+                    reopened
+                        .insert_table_column_native(0, 0, ci, 0, false)
+                        .unwrap();
+                    reopened.delete_table_column_native(0, 0, ci, 0).unwrap();
+                    interval_check(&reopened, &expected);
+                    reopened
+                        .insert_table_row_native(0, 0, ci, 0, false)
+                        .unwrap();
+                    reopened.delete_table_row_native(0, 0, ci, 0).unwrap();
+                    interval_check(&reopened, &expected);
+                    interval_check_texts(&reopened, &expected_text);
+                    if let Some(before) = &child_before {
+                        assert_eq!(child(&reopened), *before);
+                    }
+                }
+            }
+            c.restore_snapshot_native(snapshot).unwrap();
+            assert_eq!(c.export_hwpx_native().unwrap(), source_hwpx);
+        }
+    }
+}
+
+#[test]
+fn saved_interval_conflict_recovers_the_original_cells_own_outer_pen() {
+    for (kind, source, op, column) in [
+        ("v-shared", "shared-vertical-interval", "col-before", true),
+        (
+            "h-shared",
+            "shared-horizontal-interval",
+            "row-before",
+            false,
+        ),
+    ] {
+        let mut c = load_other(source);
+        let original_text = interval_expected_texts(&c, "unchanged");
+        let own = interval_oracle(kind);
+        interval_apply(&mut c, op);
+        for bytes in [
+            c.export_hwp_with_adapter_snapshot().unwrap(),
+            c.export_hwpx_native().unwrap(),
+        ] {
+            let mut n = DocumentCore::from_bytes(&bytes).unwrap();
+            let before = n.save_snapshot_native();
+            let edited = n.export_hwpx_native().unwrap();
+            let ci = root(&n).0;
+            if column {
+                n.delete_table_column_native(0, 0, ci, 0)
+            } else {
+                n.delete_table_row_native(0, 0, ci, 0)
+            }
+            .unwrap();
+            interval_check(&n, &own);
+            interval_check_texts(&n, &original_text);
+            assert_eq!(nested_table(&n).cells.len(), 4);
+            n.restore_snapshot_native(before).unwrap();
+            assert_eq!(n.export_hwpx_native().unwrap(), edited);
+        }
     }
 }

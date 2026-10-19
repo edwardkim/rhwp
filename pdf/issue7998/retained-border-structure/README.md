@@ -54,3 +54,24 @@ interval이 0.70/0.90pt여서 한 경계선을 하나의 pen으로 추정하지 
 집중 34건·actual Studio·클릭·동일 backend 비교는
 [stage24](../../../mydocs/working/task_m100_7998_stage24.md)를 따른다. 2026-10-19
 메인테이너가 이번 절편을 **시각·편집 구조 통과**로 판정했다.
+
+### stage26 — 셀 구간별 굵기의 상속
+
+기존 `nonuniform-interval.pdf`는 왼쪽 외곽의 위/아래 셀 변이 0.70/0.90pt인 양성 입력이다.
+새 `horizontal-interval.pdf`는 위 외곽의 왼쪽/오른쪽 셀 변이 0.90/0.50pt이며,
+`shared-vertical-interval.pdf`와 `shared-horizontal-interval.pdf`는 공유 변의 한 셀 구간만
+0.90pt다. 실제 셀 경계에서 변하는 pen을 선 전체의 한 값으로 축약하지 않는다.
+`within-cell-vertical.pdf`·`within-cell-horizontal.pdf`는 단일 셀 변 안에서 pen이 변하므로
+한 셀의 테두리 속성으로 확정하지 않고 구조 편집을 원자 거절하는 반례다.
+같은 생성기로 기존 6개와 신규 5개 모두 바이트까지 재현했다.
+
+`print/interval-provenance.json`과 `print/interval-*.pdf`는 16종 편집의 양 저장 32개 및
+재열기 후 삽입한 선두 행/열 삭제 4개의 독립 한컴 2020 Print를 연결한다. HWP 경유
+HWPX 재저장에서 실제 0 글상자 여백의 존재를 잃어 위 문구가 사라지던 결함도 보정했다.
+첫 후보의 미수용 증거와 별도 진단은 [stage26](../../../mydocs/working/task_m100_7998_stage26.md)에
+보존한다. HWPX의 absent/explicit-zero 구별은 유지한다.
+
+Native/fresh WASM 각 100쪽의 최저는 97.45731% / 96.19767%, 새 편집 36쪽은
+98.95186% / 96.69192%다. 기존 59쪽 PNG는 양 backend 각각 stage25 수용본과 동일하다.
+2026-10-19 메인테이너가 **시각·편집 구조 통과**로 수용했다. 다른 색/스타일·dash/alpha·병합/지역 축·
+미증명 원점과 R2/P5의 일반 상속을 이 결과로 완료 처리하지 않는다.

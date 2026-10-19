@@ -15,7 +15,13 @@ nonuniform = mixed.replace(b"S 0.7 w\n20 30 m 20 330 l", b"S 0.9 w\n20 30 m 20 3
 horizontal = mixed.replace(b"20 30 m 380 30 l\n20 330 m 380 330 l", b"20 30 m 380 30 l S 0.9 w 20 330 m 380 330 l")
 interval = nonuniform.replace(b"20 30 m 20 330 l S 0.7 w", b"20 30 m 20 180 l S 0.7 w 20 180 m 20 330 l S 0.7 w")
 
-for name, content in [("nonuniform-horizontal", horizontal), ("nonuniform-interval", interval), ("retained-pen", base), ("odd-blue", blue), ("mixed-pen", mixed), ("nonuniform-axis", nonuniform)]:
+h_interval = horizontal.replace(b"20 330 m 380 330 l", b"20 330 m 200 330 l S 0.5 w 200 330 m 380 330 l")
+v_shared = mixed.replace(b"200.0 30 m 200.0 330 l", b"200.0 30 m 200.0 180 l S 0.9 w 200.0 180 m 200.0 330 l S 0.7 w")
+h_shared = mixed.replace(b"20 180.0 m 380 180.0 l", b"20 180.0 m 200 180.0 l S 0.9 w 200 180.0 m 380 180.0 l S 0.5 w")
+v_partial = nonuniform.replace(b"20 30 m 20 330 l S 0.7 w", b"20 30 m 20 130 l S 0.7 w 20 130 m 20 330 l S 0.7 w")
+h_partial = horizontal.replace(b"20 330 m 380 330 l", b"20 330 m 130 330 l S 0.5 w 130 330 m 380 330 l")
+
+for name, content in [("horizontal-interval", h_interval), ("shared-vertical-interval", v_shared), ("shared-horizontal-interval", h_shared), ("within-cell-vertical", v_partial), ("within-cell-horizontal", h_partial), ("nonuniform-horizontal", horizontal), ("nonuniform-interval", interval), ("retained-pen", base), ("odd-blue", blue), ("mixed-pen", mixed), ("nonuniform-axis", nonuniform)]:
     body = b"q 1 0 0 1 0 360 cm\n" + content + b"\nQ"
     font = b"Arial" if name == "odd-blue" else b"Helvetica"
     objects = [

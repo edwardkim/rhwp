@@ -1,6 +1,6 @@
 //! Exact-width opaque solid bands after a complete source-ink proof.
 //! These are owned border paint, not a nearest native BorderFill width.
-use super::border_paint_structure::StructureEdit;
+use super::border_paint_structure::{key, Key, StructureEdit};
 use crate::{
     error::HwpError,
     model::{
@@ -18,10 +18,22 @@ use crate::{
 };
 use std::collections::BTreeMap;
 type CellPens = BTreeMap<(u16, u16), [u32; 4]>;
+type EdgePens = BTreeMap<Key, u32>;
+
+pub(super) fn physical_pens(
+    cell: &crate::model::table::Cell,
+    edges: &EdgePens,
+) -> Result<[u32; 4], HwpError> {
+    let mut pens = [0; 4];
+    for (side, pen) in pens.iter_mut().enumerate() {
+        *pen = *edges.get(&key(cell, side)).ok_or_else(error)?;
+    }
+    Ok(pens)
+}
 #[derive(Clone)]
 pub(super) struct Bands {
-    /// Full physical pens of vertical/horizontal grid lines, in grid order.
-    pub pens: [Vec<u32>; 2],
+    /// Full physical pen of each grid-line interval, shared by adjacent cells.
+    pub pens: EdgePens,
     pub cells: CellPens,
     pub color: u32,
     pub cell_z: [i32; 2],
@@ -30,16 +42,11 @@ pub(super) struct Bands {
 impl Bands {
     pub(super) fn cell_pens(
         table: &crate::model::table::Table,
-        physical: &[Vec<u32>; 2],
+        physical: &EdgePens,
     ) -> Result<CellPens, HwpError> {
         let mut out = BTreeMap::new();
         for cell in &table.cells {
-            let mut own = [
-                physical[0][cell.col as usize],
-                physical[0][cell.col as usize + 1],
-                physical[1][cell.row as usize],
-                physical[1][cell.row as usize + 1],
-            ];
+            let mut own = physical_pens(cell, physical)?;
             let mut seen = [false; 4];
             for paint in cell.paragraphs.iter().flat_map(|p| &p.controls) {
                 let Control::Shape(shape) = paint else {
@@ -66,48 +73,22 @@ impl Bands {
         }
         Ok(out)
     }
-    fn resolve(
-        table: &crate::model::table::Table,
-        cells: &CellPens,
-    ) -> Result<[Vec<u32>; 2], HwpError> {
-        let mut edges = BTreeMap::<(usize, u16, u16), u32>::new();
+    fn resolve(table: &crate::model::table::Table, cells: &CellPens) -> Result<EdgePens, HwpError> {
+        let mut edges = BTreeMap::<Key, u32>::new();
         for cell in &table.cells {
             let own = cells.get(&(cell.row, cell.col)).ok_or_else(error)?;
-            for (side, (axis, line, interval)) in [
-                (0, cell.col, cell.row),
-                (0, cell.col + 1, cell.row),
-                (1, cell.row, cell.col),
-                (1, cell.row + 1, cell.col),
-            ]
-            .into_iter()
-            .enumerate()
-            {
+            for (side, &own_pen) in own.iter().enumerate() {
                 // Complete opaque solid pens of one colour: the wider cell
                 // border wins, as in native shared-edge resolution. Preserve
                 // the losing own width separately for subsequent deletion.
-                let pen = edges.entry((axis, line, interval)).or_default();
-                *pen = (*pen).max(own[side]);
+                let pen = edges.entry(key(cell, side)).or_default();
+                *pen = (*pen).max(own_pen);
             }
         }
-        let mut result = [
-            vec![0; usize::from(table.col_count) + 1],
-            vec![0; usize::from(table.row_count) + 1],
-        ];
-        for ((axis, line, _), pen) in edges {
-            let slot = &mut result[axis][usize::from(line)];
-            if *slot != 0 && *slot != pen {
-                return Err(error());
-            }
-            *slot = pen;
-        }
-        if result
-            .iter()
-            .flatten()
-            .any(|&p| p < 2 || p > i32::MAX as u32)
-        {
+        if edges.values().any(|&p| p < 2 || p > i32::MAX as u32) {
             return Err(error());
         }
-        Ok(result)
+        Ok(edges)
     }
     pub(super) fn edit(
         &mut self,
@@ -228,10 +209,10 @@ pub(super) fn apply(
     if t.cells.len() > 4096 {
         return Err(error());
     }
-    for (axis, count) in [t.col_count, t.row_count].into_iter().enumerate() {
-        if bands.pens[axis].len() != usize::from(count) + 1 {
-            return Err(error());
-        }
+    let expected = usize::from(t.row_count) * (usize::from(t.col_count) + 1)
+        + usize::from(t.col_count) * (usize::from(t.row_count) + 1);
+    if bands.pens.len() != expected {
+        return Err(error());
     }
     let widths = t.get_column_widths();
     let heights = t.get_row_heights();
@@ -252,12 +233,7 @@ pub(super) fn apply(
     let oy = i64::from(t.common.vertical_offset as i32);
     let mut outside = Vec::new();
     for (ci, cell) in t.cells.iter_mut().enumerate() {
-        let pens = [
-            bands.pens[0][usize::from(cell.col)],
-            bands.pens[0][usize::from(cell.col) + 1],
-            bands.pens[1][usize::from(cell.row)],
-            bands.pens[1][usize::from(cell.row) + 1],
-        ];
+        let pens = physical_pens(cell, &bands.pens)?;
         let negative = pens.map(|pen| i64::from(pen / 2));
         let positive =
             std::array::from_fn::<_, 4, _>(|side| i64::from(pens[side]) - negative[side]);
