@@ -3696,3 +3696,60 @@ web/pkg/no-opt 로컬 대체 빌드다. 모든 원 로그는 ignored repair58~65
 
 C433 추가 정적 검증: NativeSkia lib Clippy `-D warnings`는38.81초 exit0, Studio TypeScript
 `--noEmit`도 exit0이다. 필수 전체 all-target/다른 feature gate 완료를 대신하지 않는다.
+
+
+## C434 명시 기호 공급자의 자연 전진 전달과65쪽 중요 원점 보호
+
+2026-10-19~20 KST. #4962의 기존 양성 집계 중 휴먼명조U+2024만 exact-hit1 대신
+char-miss1이었다. 원 해결 #4962와 정합 보정0f2ed852, 명시 계약64c886의 source를
+추적했다. 선언 벡터만 만들고 언어별 값을 넣지 않아 glyphFallbacks가 paint에는 보이지만
+측정의 명시 조건에 닿지 않았다. 기존 기대값과 집계 분류를 유지하고 각 슬롯의 같은
+비내장·명시 환경 결정에서 값을 만들었다. 문서ID·문구·좌표 분기는 추가하지 않았다.
+
+`resolve_single_char_style`→`glyph_fallback_advance_explicit_for_lang`→text_measurement의
+TextStyle→확인된cmap 결측·선언 공급자의 자연 전진→실제 후속 원점까지 같은 결과를
+전달한다. 기본 공급 체인과 HFT 폭 보호는 유지했다. 같은 기존 집계 검사는 frozen59에서
+1FAIL→frozen68에서1PASS다. runtime2198파일을 고정해 원본과 대응 Print의 PII66 선언/
+기본 조건을 Native/fresh WASM 전쪽 before/after528쪽으로 대조했다.
+
+| 선언 환경의 완료 쪽 | Native before→after | fresh WASM before→after |
+| --- | ---: | ---: |
+| 17 | 98.35193→99.95382% | 98.41237→99.95563% |
+| 40 | 97.72414→99.95671% | 97.81731→99.95802% |
+| 65 | 98.69031→99.97348% | 98.75526→99.97486% |
+
+전후264쌍 중6쌍 개선·258쌍 PNG byte동일·0.1%p 하락0이다. 중간에 같다고 보고한 것은
+최저값과 선택쪽의 부분 관측이었으며 전체 비교로 정정했다. canonical PDFium과 별도
+pdftoppm audit를 혼합하지 않았다. 동일 핵심 동작의 후보 중 양쪽 raw 최솟값이 가장 높은
+65쪽의 review/overlay를 직접 판독하고 정식 회귀를 추가했다. source/PDF SHA와192DPI는
+asset README에 연결했다. 원문 문단·한점 리더의 소속, 순서·누락·중복과 실제 전진 끝에서
+후속 글자를 이어 그리는 관계를 보호한다. 독립 PDF의 기호240.60pt·후속243.24pt·기준선
+69.48pt를 CSS320.80/324.32/92.64±2px로 검사한다. 새 쪽수 검사는 추가하지 않았다.
+
+새 검사를 먼저 ignored prototype으로 보존하고 완료 페이지를 판독한 뒤 활성화했다.
+prototype은 기존 대시1PASS+후속 원점1FAIL→2PASS다. 정식 NativeSkia suite013도2PASS,
+247선택skip, test0.188초·전체10.214초다. 관련 기존4묶음은53PASS/959선택skip,
+test8.820초·전체293.693초였다. libClippy-D warnings66.467초·fmt도 통과했다.
+새 검사 수를 반영해 prepare와 실제 배정을 재계산했다. runtime은 같으며 전체 nextest
+통과를 대신하지 않는다. 기존 검사는 제거하거나 완화하지 않았다.
+
+PII 전66쪽 최저 Native35.07344/W35.59924%는 이번 수정 전후 그대로다. 선언3/36쪽,
+기본3/4/20/21/36쪽 미달은 남아 있다. 이 다른 표의 미달을 완료된 기호 검사로 면제하지
+않는다. fixed4a07 Native도 동일 조건 전66쪽×2환경을 산출했다. 최저35.58967/35.55311%,
+미달42/47쪽이며, 현재가 고정base보다0.1%p 넘게 하락한 쪽/조건도5개다. 전쪽 비교는
+asset TSV에 보존했다. 원본을 이관하거나 검사를 제거하지 않고 별도 하락도 보정한다.
+3쪽의 독립 Print77.515→95.735CSSpx 빈 띠와 앞쪽 row9의 물리 소비를 추적 중이며,
+선언 행 높이에서 실제 소비를 빼는 것만으로 해당 띠와 일치한다고 단정하지 않는다.
+
+Native68/WASM69 source ledger·root pkg/public·실제 Studio7736 초기 HTTP 응답 hash를
+검증했다. 첫 추가 응답 body 읽기 실패는 로그를 보존하고 durable buffer를 쓴 새 실행으로
+재검증했다. Mac 빌드는 locked web/pkg/no-opt 로컬 대체다. CK/actual36 수용을 주장하거나
+PII guard를 우회하지 않았다. canonical/audit20개 완료 manifest와 PNG1320쌍의 hash·전쪽/
+누락·중복을 확인했다. 원본 TSV22개와65쪽 review/overlay6개는 assets의
+`rebase-4a07d3ae-20261019/explicit-onepoint-advance/`에 있다.
+
+SVG #6520은 별도로 확인 중이다. 실제 한컴돋움의 보정 전체 TTF는 cmap·요청9문자와
+Chrome 로드가 정상이다. 공개 Noto의 기존 PDF용 subsetter 출력31,300bytes는 cmap/OS2가
+없고 Chrome이 실제 로드를 거부했다. MIME 기대값만 TTF 허용으로 완화하지 않았다.
+SVG 코드·검사·의존성 변경은 아직 없고 원 증거는 ignored repair67에 있다. 전체 미완료
+상태를 유지하며 PR은 최종 보고 뒤 새 승인을 받아 진행한다.

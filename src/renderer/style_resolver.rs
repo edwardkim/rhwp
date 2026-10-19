@@ -136,6 +136,11 @@ pub(crate) fn resolve_styles_with_environment(
                 );
                 if decision.environment_profile_id.is_some() {
                     style.font_families[lang] = decision.css_family_chain.join(",");
+                    style.font_families_glyph_fallback_advance_explicit[lang] =
+                        decision.embedded != Some(true) && environment.is_some_and(|env| {
+                            decision.normalized_face.as_deref()
+                                .and_then(|face| env.glyph_fallbacks(face)).is_some()
+                        });
                     // 명시적 프로그램 선택과 독립적으로 검증한 글리프 표가 모두 있어야
                     // TrueType 폭을 사용한다. 선언만으로 임의 face의 표를 신뢰하지 않는다.
                     let target = primary_font_name(&style.font_families[lang]);
@@ -157,6 +162,8 @@ pub(crate) fn resolve_styles_with_environment(
                         style.font_families_hft_hangul[lang] = false;
                         style.font_families_hft_fullwidth_dot[lang] = false;
                         style.font_families_metric_face[lang] = None;
+                        style.font_families_hft_print_frame[lang] = false;
+                        style.font_families_original_glyph_metric_face[lang] = None;
                     }
                 }
             }
@@ -330,7 +337,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     let mut font_sizes = Vec::with_capacity(LANG_COUNT);
     let mut latin_slot_legacy = false;
     let mut latin_declared_hft = false;
-    let mut latin_slot_explicit = false;
+    let latin_slot_explicit = false;
 
     for lang in 0..LANG_COUNT {
         let font_id = cs.font_ids[lang];
@@ -342,12 +349,6 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                 .is_some_and(|face| face.alt_type == 2),
         );
         let decision = lookup_font_name_decision(doc_info, lang, font_id);
-        if lang == 1 {
-            latin_slot_explicit = original.substitution_boundary
-                == Some(FontSubstitutionBoundary::LegacyLatin)
-                && decision.environment_profile_id.is_some()
-                && decision.normalized_face != original.normalized_face;
-        }
         let substituted = decision.substitution_boundary.is_some()
             && decision.normalized_face != decision.requested_face;
         if lang == 1 {
@@ -368,6 +369,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                         .as_deref()
                         .is_some_and(metric_widths_verified_face)),
         );
+        font_families_glyph_fallback_advance_explicit.push(false);
         font_families_hft_hangul
             .push(decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft));
         font_families_hft_fullwidth_dot.push(decision.alt_type == Some(2) && !substituted);
@@ -412,12 +414,11 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         // 전체 HFT 표 선택은 보존한다. 추가 HFT 부분 폭은 명시 type2 선언에서만
         // 전달하며 같은 이름의 TTF·명시 TrueType 환경·내장 글꼴은 승격하지 않는다.
         font_families_original_glyph_metric_face.push(
-            (!explicit_true_type
-                && original.embedded != Some(true)
-                && (original.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin)
-                    || original.alt_type == Some(2)))
+            (decision.embedded != Some(true)
+                && (decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin)
+                    || decision.alt_type == Some(2)))
             .then(|| {
-                original
+                decision
                     .requested_face
                     .as_deref()
                     .filter(|face| {

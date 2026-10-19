@@ -45,6 +45,100 @@ fn compact(text: &str) -> String {
 }
 
 #[test]
+fn declared_onepoint_provider_preserves_the_heading_owner_and_print_successor_origin() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(root.join("samples/task2097/75544_pii_bunseok.hwpx")).unwrap(),
+    )
+    .unwrap();
+    core.set_hangul2024_compat(false);
+    core.set_font_environment(Some(FontEnvironment::from_json(&std::fs::read_to_string(root.join(
+        "mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json",
+    )).unwrap()).unwrap())).unwrap();
+
+    // 같은 한점 리더 경계의 완료 후보 중 양쪽 raw 최솟값이 가장 높은65쪽을 선택했다.
+    // 192DPI Native99.97348/fresh WASM99.97486%, review/overlay 직접 판독 완료.
+    // source SHAf429768e / Print SHA0fef38f4, stage8 C434의 전체 TSV·PNG 참조.
+    // 전체66쪽의 다른 표 미달을 이 완료 페이지의 검사로 면제하지 않는다.
+    let tree = core.build_page_render_tree(64).unwrap();
+    let heading = "나.각대안의활동별비용․편익분석결과";
+    let lines: Vec<_> = nodes(&tree.root)
+        .into_iter()
+        .filter(|node| {
+            matches!(node.node_type, RenderNodeType::TextLine(_))
+                && compact(
+                    &nodes(node)
+                        .into_iter()
+                        .filter_map(|child| match &child.node_type {
+                            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+                            _ => None,
+                        })
+                        .collect::<String>(),
+                ) == heading
+        })
+        .collect();
+    assert_eq!(lines.len(), 1, "독립 Print65쪽 소제목은 한 번만 소유한다");
+    let line = lines[0];
+    let RenderNodeType::TextLine(owner) = &line.node_type else {
+        unreachable!()
+    };
+    let section = owner.section_index.expect("원본 구역");
+    let paragraph = owner.para_index.expect("원본 문단");
+    let source = &core.document().sections[section].paragraphs[paragraph];
+    assert_eq!(
+        compact(&source.text),
+        heading,
+        "다른 반복 소제목을 빌려 오지 않는다"
+    );
+    let runs: Vec<_> = nodes(line)
+        .into_iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) => Some((node, run)),
+            _ => None,
+        })
+        .collect();
+    let mut next = 0;
+    let mut rendered = String::new();
+    for (_, run) in &runs {
+        assert_eq!(
+            (run.section_index, run.para_index),
+            (Some(section), Some(paragraph))
+        );
+        assert!(run.cell_context.is_none(), "본문 소제목은 셀 내용이 아니다");
+        assert_eq!(run.char_start, Some(next), "원문 문자 순서·누락·중복");
+        next += run.text.chars().count();
+        rendered.push_str(&run.text);
+    }
+    assert_eq!(compact(&rendered), compact(&source.text));
+    let points: Vec<_> = runs.iter().filter(|(_, run)| run.text == "․").collect();
+    assert_eq!(points.len(), 1, "원본 한점 리더의 유일한 소유");
+    let (point, point_run) = *points[0];
+    let successor = runs
+        .iter()
+        .find(|(_, run)| run.char_start == point_run.char_start.map(|start| start + 1))
+        .expect("한점 리더 직후의 원문 소유 런");
+    assert!(successor.1.text.starts_with("편익 분석 결과"));
+    assert!(
+        (point.bbox.x + point.bbox.width - successor.0.bbox.x).abs() < 0.01,
+        "같은 측정 전진 끝에서 다음 원문을 이어 그린다"
+    );
+    // 독립 Print의 글자 원점은240.60pt/243.24pt, 기준선69.48pt다.
+    // CSS96 좌표로 환산하고192DPI raster 잉크 bbox와 혼동하지 않는다.
+    assert!(
+        (point.bbox.x - 320.80).abs() <= 2.0,
+        "독립 Print 기호 원점 ±2 CSSpx"
+    );
+    assert!(
+        (successor.0.bbox.x - 324.32).abs() <= 2.0,
+        "독립 Print 후속 원점 ±2 CSSpx: 전각 휴리스틱으로 벌어지지 않는다"
+    );
+    assert!(
+        (line.bbox.y + owner.baseline - 92.64).abs() <= 2.0,
+        "독립 Print 소제목 기준선 ±2 CSSpx"
+    );
+}
+
+#[test]
 fn dash_restoration_keeps_word_spaces_and_original_cell_content() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let mut core = DocumentCore::from_bytes(
