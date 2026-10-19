@@ -3228,3 +3228,43 @@ Native 빌드와 source1840파일 hash 검증을 완료했고 frozen19와 현재
 두 구현 파일만 복원했다. 후보20의 source.patch·producer·PNG/TSV·철회 사유는 보존한다.
 높은 한 쪽 점수로 다른 문서의 하락을 면제하지 않았다. 새 회귀/기대값 변경과 PR 제출은
 남은 보정·독립 시각 선행 조건·새 head 검증을 마친 뒤 판단한다.
+
+
+## C425 참여 수식의 실제 후속 줄과 독립 제목 간격 회귀
+
+현재 runtime `fcf6d08dda00765d10bd35235cd91e986c00f09b`와 동일한 frozen19의
+Native8조건921쪽을 새로 산출했다. 모든 쪽 raw90% 이상이며 이전 Native14와 비교한
+0.1%p 이상 하락은0쪽이다. 이 비교는 이전 브랜치 구현과의 대조이며 최신devel 전수
+보존 검증을 대신하지 않는다. 같은 fresh WASM23의 저장197쪽 입력도197/197쪽,
+최저94.66706%·미달0쪽까지 완료했다. 나머지 WASM 조건은 계속 실행 중이다.
+
+새 `issue_7445_participating_equation_frame` 두 검사는 기존 자동 수집으로
+`regression_suite_010`에서 실행된다. 입력은 committed
+`regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp`
+(SHA256 `4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9`)이며,
+독립 기준은 `pdf/issue4138-ascii-split-20261016-2024.pdf`
+(SHA256 `5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571`)다.
+
+첫 검사는 원본 문단1698 수식의 참여 속성·높이2232HU·Percent160%로부터 후속 빈 줄1699가
+47.616CSSpx 이상 전진해야 함을 확인한다. actual47.626667이며 비참여 수식1701의 저장
+leading26.4CSSpx도 보존한다. 실제 TextLine의 문단·줄 소속과 유일성을 함께 검사한다.
+두 번째 검사는 같은 쪽의 두 제목1697/1700을 소속으로 찾아 독립 Print의 같은 글꼴 기준선
+248.0489173333/346.8209733333CSSpx 차이98.772056을 ±2CSSpx로 보호한다.
+원점 자체 대신 같은 글꼴 제목의 간격을 비교하므로 글꼴 baseline 공통항이 제거된다.
+현재 실제 간격98.826667이다. 이 참여 수식 경계의 해당 제목 쌍은130쪽에 있으며 다른
+높은 점수의 페이지로 동작을 대체하지 않았다.
+
+회귀 추가 선행 조건은 같은197쪽 전부 Native/fresh WASM raw90% 이상이다. 해당130쪽은
+96DPI·2px의 Native98.19711%/fresh WASM98.16280%이며 양쪽 review/overlay를 직접
+판독했다. 제목·빈 후속 줄과 아래 본문의 순서·소속이 유지된다. 수식 자체의 괘선·첨자·횡간격
+잔여는 별도 보정 대상으로 남으며 이 테스트가 수식 전체 모양의 완성을 주장하지 않는다.
+픽셀 핀은 확인된 두 제목 간격에만 적용한다. 양쪽 TSV·review/overlay는 ignored
+`repair21-native-whole/whole/native/giant4138-current-ascii/`와
+`repair25-wasm-whole/whole/wasm/giant4138-current-ascii/`에 보존했다.
+
+실제 frozen13(C422 전)에서는 두 건 모두 FAIL(줄 전진39.36, 제목 간격90.56),
+frozen19에서는 두 건 모두 PASS다. `repair26-frame-leading-regression/before.log`,
+`after.log`에 보존했다. 초기 진단의 line_index 타입 오류는 수정하고 실패 로그도 보존했다.
+`--prepare` 후 정식 Native nextest는2PASS/0FAIL, 실행3.198초·컴파일6분21초·exit0이다.
+formal-native-nextest.log에 결과가 있다. 생성 suite·manifest·로그는 커밋하지 않는다.
+전체 nextest나179조건 보존·실제 제품 소비 검증 완료로 확대하지 않는다.
