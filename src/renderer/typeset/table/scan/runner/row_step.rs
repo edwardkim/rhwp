@@ -1712,6 +1712,28 @@ impl TypesetEngine {
                 }
             }
         }
+        // [#7870] 내용이 선언보다 커서 독립 최소가 없는 재조판 행도, 쪽 경계에서 처음
+        // 나뉘는 첫 조각은 선언 행 높이(남은 쪽 한도)를 차지한다. 이어받는 조각은 남은
+        // 내용만 소유하므로 잔여 띠는 넘기지 않는다(emit 의 재조판 잔여 갈래는 최소가
+        // 없으면 넘기지 않는다).
+        if !keep_scanning
+            && !owns_plain_row_frame
+            && end_row_height_override.is_none()
+            && split_end_limit > 0.0
+            && split_block_start.is_none()
+            && end_row == scan_start_row + 1
+            && (scan_start_row != cursor_row || start_cut.is_empty())
+        {
+            let accepted_height = consumed - consumed_before_row - cs_before;
+            let available = (avail_for_rows - consumed_before_row - cs_before).max(0.0);
+            if let Some(declared) = layout_engine.reflow_row_declared_first_frame(table, scan_start_row, styles) {
+                let frame_height = declared.min(available);
+                if accepted_height > 0.0 && frame_height > accepted_height + 0.5 {
+                    consumed += frame_height - accepted_height;
+                    end_row_height_override = Some(frame_height);
+                }
+            }
+        }
         // 높이를 다시 추정하지 않고 이번 일반 행이 실제 수용한 증분을 보존한다.
         // 다음 행을 이월한 경우에는 앞서 수용한 행의 결과를 그대로 유지한다.
         if end_row > scan_start_row {

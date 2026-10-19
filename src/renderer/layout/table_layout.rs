@@ -26022,6 +26022,32 @@ impl LayoutEngine {
             .reduce(f64::max)
     }
 
+    /// [#7870] 재조판 행이 쪽 경계에서 처음 나뉠 때 첫 조각이 차지하는 선언 높이.
+    /// 한/글 2024 는 칸 내용이 선언보다 커도 첫 조각을 `min(남은 쪽, 선언 행 높이)` 로
+    /// 그리고 이어받는 조각에는 남은 내용만 둔다(합성 tac_37, 선언 20·40·80·120px 의
+    /// 첫 조각이 그 높이, 160·267px 은 본문 바닥에서 멈춤, 둘째 조각은 모두 같음).
+    /// 내용 전체보다 큰 독립 최소(`reflow_row_physical_minimum`)와 달리 잔여를 넘기지 않는다.
+    /// 독립 최소가 있는 행은 그 갈래가 첫 조각·잔여 띠·물리 꼬리를 함께 소유하므로 제외한다.
+    pub(crate) fn reflow_row_declared_first_frame(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if !self.row_uses_reflow_physical_frame(table, row)
+            || self.reflow_row_physical_minimum(table, row, styles).is_some()
+        {
+            return None;
+        }
+        table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .filter(|cell| cell.height < 0x8000_0000)
+            .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+            .reduce(f64::max)
+    }
+
     /// 분할 행의 컷 범위에 속하는 내용과 셀 패딩의 높이. 온전한 행은 선언 높이도 보존한다.
     pub(crate) fn row_cut_content_height(
         &self,
