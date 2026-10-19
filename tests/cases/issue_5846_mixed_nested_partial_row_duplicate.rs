@@ -1,9 +1,10 @@
 //! #5846: 혼재 호스트의 내부 행은 쪽별 원본 내용과 표/문단 순서를 보존한다.
 //!
 //! 독립 기준은 `pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf`이다.
-//! 현재 기본/명시 환경의 Native/fresh 전66쪽은 각각 최저93.72832%, 미달0이다.
+//! 2·3쪽의 현재 Native/fresh WASM raw 99%대와 직접 판독을 근거로 아래 경계를 보호한다.
+//! 전66쪽의 남은 미달과 출처는 stage8 C436 및 pii-independent-row-minimum 증적을 따른다.
 //! 59쪽은 앞 행, 60쪽은 단기연체정보부터 서명까지의 뒤 행을 소유한다.
-//! 절대 좌표·픽셀 공차·유닛 번호 대신 소속, 포함 및 표 뒤 문단의 관계를 검사한다.
+//! 쪽·셀 소속, 포함 및 표 뒤 문단 관계를 유지하고 완료된 2·3쪽만 독립 PDF의 ±2px를 쓴다.
 
 use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -118,6 +119,36 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
         );
     }
     let cost = source_cell(next_table, 10, 2);
+    // 192DPI 전쪽 sweep의 완료 페이지 2·3: Native 99.69840/99.53257%,
+    // fresh WASM 99.70746/99.54130%, review/overlay 확대 판독 완료.
+    // 아래 기대값은 동일 Print PDF의 원래 벡터 선 좌표를 96dpi CSS px로 환산한 값이다.
+    // 칸 높이 또는 이번 remainder helper의 출력을 복사하지 않는다.
+    // 증적: mydocs/pr/assets/issue7445/completed-20261009/
+    // rebase-4a07d3ae-20261019/pii-independent-row-minimum/README.md
+    let opening_row = source_cell(first_table, 9, 2);
+    let opening_bottom = opening_row.bbox.y + opening_row.bbox.height;
+    for (name, actual, pdf) in [
+        (
+            "2쪽 영향평가 행의 하단",
+            opening_bottom,
+            1042.698_666_666_666_7,
+        ),
+        (
+            "3쪽 이어받기 표의 상단",
+            next_table.bbox.y,
+            77.514_666_666_666_7,
+        ),
+        (
+            "3쪽 빈 행 뒤 비용 행의 시작",
+            cost.bbox.y,
+            95.734_666_666_666_7,
+        ),
+    ] {
+        assert!(
+            (actual - pdf).abs() <= 2.0,
+            "{name}: 실제 {actual}, 독립 Print {pdf} CSS px"
+        );
+    }
     for col in [2, 6, 10] {
         let first = source_cell(first_table, 9, col);
         let remaining = source_cell(next_table, 9, col);

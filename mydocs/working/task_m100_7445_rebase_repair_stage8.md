@@ -3801,3 +3801,56 @@ assets의 `rebase-4a07d3ae-20261019/svg-unicode-subset/`에 보존했다.
 로그/JSON/중간 글꼴·SVG는 ignored output만 사용했다. 최종 증거는 repair96~105이며
 전체 회귀의 다른 실패·PII 물리 꼬리·수식·전체 문서/actual36는 아직 남아 있다.
 지침·GitHub·remote 변경은 하지 않았다. PR 준비 완료로 처리하지 않고 사용자 승인을 유지한다.
+
+## C436 완료 내용 컷과 일반 칸의 독립 물리 최소를 구분
+
+2026-10-20 KST. #5846 원 이슈·PR #5904·실제 통합 #5912/b9eb551과 후속
+363ef22d2c7의 #7642 계약을 먼저 대조했다. 원 계약의59→60쪽 중첩 내용 소유와
+이번2→3쪽 일반 행의 물리 잔여는 다르다. 완료 걸침 셀의 내용 유래 높이를 다시
+열지 않는 기존 억제는 유지하고, 원본 일반 칸이 따로 소유한 저장 최소만 전달했다.
+
+PII 원본 section0/para13 row9의3758HU 최소는50.106667CSSpx다. 스캔은 첫 조각에
+31.826667px를 수용했지만 paint가26.2px로 줄였고, 다음 조각은 완료 컷을 보고
+row9를 건너뛰었다. 실제 다음 쪽의 독립 Print 괘선은77.514667→95.734667이다.
+paint26.2px에서 잔여를 역산하지 않고, 스캔이 수용한31.826667px를 한 번 차감한다.
+
+`stored_independent_row_minimum`은 원본의 정상 저장 일반 칸·RowBreak에만 적용하고
+dirty/편집/재래핑은 제외한다. RSPAN_BAND가 수용한 행·최소를 refit에도 전달하고,
+emit은 같은 최종 행·완료 컷과 최종 수용 상자로 잔여18.28px를 만든다. 그 결과를
+앞쪽 `end_row_owns_stored_frame`과 뒤쪽 `next_start_row_height_override`가 함께
+소비한다. rowspan 공간 원장과 저장 reset/frame은 별도로 유지한다. 기존 first-frame
+일반 칸 경로는 걸침 셀이 있는 행을 배제하므로 이번 경로와 경쟁하지 않는다.
+
+Native108/fresh WASM111을 source2199파일과 artifact SHA로 고정했다. Mac locked
+web/pkg/no-opt WASM은 실제 재컴파일210.334초/exit0이며 root pkg/Studio public과
+실제7736 초기 HTTP 응답을 대조했다. Docker 최적화 통과가 아니다. 기존 네 글꼴
+공급 경로의 hash도 기록했고 원본·PDF·공유 target은 변경하지 않았다.
+
+전66쪽을 선언/기본 환경의 Native/fresh WASM에서 모두 새로 출력해264쪽 TSV를
+산출했다. canonical PDFium과 별도 pdftoppm audit를 구분한다.2쪽은 Native
+97.57528→99.69840%, WASM97.17350→99.70746%,3쪽은35.07344→99.53257%,
+35.59924→99.54130%다. 네 조건 모두 prior C434와 PNG byte가 다른 쪽은2·3뿐이며
+나머지64쪽은 동일하다. 새2·3쪽 양쪽 review/overlay와 원 중첩 범위59쪽 Native/
+60쪽 WASM을 직접 판독했다. 작은 기존 자간 차이를 새 golden으로 고정하지 않았다.
+
+기존 #5846 관계 검사는 변경 없이 before96 1FAIL→after108 1PASS다. 양쪽 raw99%대와
+확대 판독 후 기존 함수에 독립 Print 벡터 선의96dpi CSS 좌표3개를 ±2px로 추가했다.
+강화한 최종 함수도 before96에서 실제 행 하단1038.1 vs 독립1042.698667로1FAIL,
+after108에서1PASS다. 소유·순서·누락·중복·본문 포함·후속 내용 검사를 유지했다.
+관련 기존7case 정식21PASS/1675선택skip(test3.978초/전체339.080초), 강화 뒤
+재계산한 suite026에서1PASS/227선택skip(test3.313초/전체56.919초)다.
+Native Skia lib Clippy94.678초/exit0, 최종fmt와 고정base manifest 검사도 통과했다.
+초기 nextest 중복 동시성 옵션 및 첫 px tuple fmt 오류는 보존·정정 후 실제 재실행했다.
+
+전체66쪽 최저는 선언 양쪽85.44699%(36쪽), 기본 Native81.66959%/WASM81.93226%
+(4쪽)다. 선언36쪽, 기본4·20·21·36쪽은 여전히 미달이다. Native 고정4a07 대비
+남은0.1%p 이상 하락도 선언36쪽3.92801%p, 기본22쪽0.23111%p·36쪽3.92801%p다.
+이번 수용 개선으로 이 미달을 상쇄하지 않는다.36쪽은 본문 없이 자동 번호만 있고,
+실제 Native snapshot의 HCR Dotum 선택·독립 PDF의 HCRDotum과 번호 잉크의 약1.5px
+세로 차이를 확인했다. 같은 family를 glyph/file 동일성으로 단정하지 않고 계속 추적한다.
+
+정본 ignored 실행은 repair106~123, 최종 제출 증적은
+`mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/pii-independent-row-minimum/`이다.
+TSV12개·대표 review/overlay12개와 Native 비교 TSV를 보존했다. 생성 SVG만 완료 뒤
+hash manifest를 남겨 정리했고 삭제 SVG를 재사용 증거로 쓰지 않는다. 전체 회귀의 다른
+실패·최종 전 문서 검증·actual36는 남아 있다. PR 준비 완료가 아니며 PR은 새 승인을 받는다.
