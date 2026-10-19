@@ -1552,7 +1552,9 @@ impl TypesetEngine {
         {
             let accepted_height = consumed - consumed_before_row - cs_before;
             let available = (avail_for_rows - consumed_before_row - cs_before).max(0.0);
-            if let Some(declared) = layout_engine.reflow_row_declared_first_frame(table, scan_start_row, styles) {
+            if let Some(declared) =
+                layout_engine.reflow_row_declared_first_frame(table, scan_start_row, styles)
+            {
                 let frame_height = declared.min(available);
                 if accepted_height > 0.0 && frame_height > accepted_height + 0.5 {
                     consumed += frame_height - accepted_height;
