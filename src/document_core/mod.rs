@@ -292,6 +292,8 @@ pub struct DocumentCore {
     pub(crate) section_raw_store: Vec<(u32, commands::section_raw_journal::SectionRawCapture)>,
     /// 다음 구역 raw 캡처 ID
     pub(crate) next_section_raw_id: u32,
+    pub(crate) border_paint_store: Vec<(u32, commands::border_paint_edit::BorderPaintUndo)>,
+    pub(crate) next_border_paint_id: u32,
     /// 그림 크기 변경의 원본 변환 상태. 문서/이미지 전체는 복제하지 않는다.
     pub(crate) picture_transform_store: Vec<(
         u32,
@@ -573,6 +575,8 @@ impl DocumentCore {
             next_fragment_id: 0,
             section_raw_store: Vec::new(),
             next_section_raw_id: 0,
+            border_paint_store: Vec::new(),
+            next_border_paint_id: 0,
             picture_transform_store: Vec::new(),
             next_picture_transform_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),

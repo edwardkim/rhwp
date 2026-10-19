@@ -350,6 +350,8 @@ impl DocumentCore {
             next_fragment_id: 0,
             section_raw_store: Vec::new(),
             next_section_raw_id: 0,
+            border_paint_store: Vec::new(),
+            next_border_paint_id: 0,
             picture_transform_store: Vec::new(),
             next_picture_transform_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
@@ -2744,6 +2746,7 @@ impl DocumentCore {
     /// dirty 표시만 다시 만들고 측정 캐시를 그대로 둬 새 문서의 문단이 **이전 문서의
     /// 측정값**을 재사용했다.
     pub fn set_document(&mut self, doc: Document) {
+        self.border_paint_store.clear();
         self.document = doc;
         self.canvas_metrics = None;
         self.render_normalization.text_reflowed_tables.clear();

@@ -365,6 +365,7 @@ export class CellBorderBgDialog extends ModalDialog {
     return frag;
   }
 
+  private borderPaintSides = [false, false, false, false];
   private applyBorderDir(dirIdx: number): void {
     const val = {
       type: this.borderSelectedLineType,
@@ -372,8 +373,10 @@ export class CellBorderBgDialog extends ModalDialog {
       color: this.borderColorInput.value,
     };
     if (dirIdx === 4) {
+      this.borderPaintSides.fill(true);
       this.borderEdits = [val, val, val, val];
     } else {
+      this.borderPaintSides[dirIdx] = true;
       this.borderEdits[dirIdx] = val;
     }
   }
@@ -935,6 +938,7 @@ export class CellBorderBgDialog extends ModalDialog {
   // ─── 필드 채우기 ────────────────────────────
 
   private populateFields(): void {
+    this.borderPaintSides.fill(false);
     const cp = this.cellProps;
 
     // 테두리
@@ -999,6 +1003,7 @@ export class CellBorderBgDialog extends ModalDialog {
     newProps.borderRight = this.borderEdits[1];
     newProps.borderTop = this.borderEdits[2];
     newProps.borderBottom = this.borderEdits[3];
+    newProps.borderPaintSides = [...this.borderPaintSides];
 
     // 배경
     if (this.bgColorRadio.checked) {

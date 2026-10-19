@@ -65,6 +65,17 @@ impl Owner {
     }
 }
 
+/// Recheck the producer's binding against the current physical cell.
+/// A stale tag never authorizes deletion of a drawing.
+pub(crate) fn valid_side(
+    table: u32,
+    cell: &super::table::Cell,
+    r: &RectangleShape,
+) -> Option<CellSide> {
+    let paint = r.common.cell_border_paint?;
+    fingerprint(r, Owner::new(table, cell), paint).map(|_| paint.side)
+}
+
 fn fingerprint(r: &RectangleShape, o: Owner, paint: CellBorderPaint) -> Option<[u8; 32]> {
     let a = &r.common;
     let s = &r.drawing.shape_attr;

@@ -1958,6 +1958,7 @@ export class WasmBridge {
     }>;
     borderFillLenBefore?: number;
     docInfoDirtyBefore?: boolean;
+    borderPaintUndoId?: number | null;
   } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.setCellProperties(sec, parentPara, controlIdx, cellIdx, JSON.stringify(props)));
@@ -1988,6 +1989,7 @@ export class WasmBridge {
         endCol: number;
         id: number | null;
       }>;
+      borderPaintUndoIds?: number[];
     },
   ): { ok: boolean } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
@@ -1995,6 +1997,11 @@ export class WasmBridge {
       applyCellBorderFillIds(sec: number, parentPara: number, controlIdx: number, json: string): string;
     };
     return JSON.parse(doc.applyCellBorderFillIds(sec, parentPara, controlIdx, JSON.stringify(payload)));
+  }
+
+  discardBorderPaintUndo(id: number): void {
+    const doc = this.doc as unknown as { discardBorderPaintUndo?: (id: number) => void };
+    doc?.discardBorderPaintUndo?.(id);
   }
 
   /**

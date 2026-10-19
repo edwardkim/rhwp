@@ -2142,6 +2142,13 @@ export class HwpDocument {
         }
     }
     /**
+     * Discard source-border fragments owned by an evicted undo entry.
+     * @param {number} id
+     */
+    discardBorderPaintUndo(id) {
+        wasm.hwpdocument_discardBorderPaintUndo(this.__wbg_ptr, id);
+    }
+    /**
      * 삭제 조각을 제거하여 메모리를 해제한다 — 히스토리 축출·클리어 시 스냅샷
      * `discardSnapshot` 과 짝으로 호출한다(#5769).
      * @param {number} id

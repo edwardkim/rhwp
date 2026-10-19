@@ -3541,6 +3541,12 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// Discard source-border fragments owned by an evicted undo entry.
+    #[wasm_bindgen(js_name = discardBorderPaintUndo)]
+    pub fn discard_border_paint_undo(&mut self, id: u32) {
+        self.discard_border_paint_undo_native(id);
+    }
+
     /// [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목을 절단한다.
     ///
     /// json: `{"fromLen":12,"dirtyWas":false}` — `from_len` 위 항목을 모두 잘라내고,
