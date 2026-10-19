@@ -8,7 +8,7 @@ from pathlib import Path
 from fontTools.ttLib import TTFont
 
 
-def extract(path, family):
+def extract(path, family, start=0x2300, end=0x23FF):
     raw = path.read_bytes()
     with TTFont(path) as font:
         families = {
@@ -23,11 +23,11 @@ def extract(path, family):
         cmap = font.getBestCmap()
         present = [
             codepoint in cmap and font.getGlyphID(cmap[codepoint]) != 0
-            for codepoint in range(0x2300, 0x2400)
+            for codepoint in range(start, end + 1)
         ]
         values = [
             font["hmtx"][cmap[codepoint]][0] if found else 0
-            for codepoint, found in zip(range(0x2300, 0x2400), present)
+            for codepoint, found in zip(range(start, end + 1), present)
         ]
         if not all(0 <= width <= 65535 for width in values):
             raise ValueError("advance가 u16 범위를 벗어납니다")
@@ -35,8 +35,8 @@ def extract(path, family):
             "family": family,
             "fontSha256": hashlib.sha256(raw).hexdigest(),
             "em": font["head"].unitsPerEm,
-            "start": 0x2300,
-            "end": 0x23FF,
+            "start": start,
+            "end": end,
             "widths": values,
             "present": present,
             "punctuationWidths": {
@@ -55,7 +55,13 @@ def main():
     parser.add_argument("--metric-em", type=int, action="append", help="확인한 DB 단위의 em; 생략하면 SFNT unitsPerEm")
     parser.add_argument("--rust-output", type=Path, required=True)
     parser.add_argument("--evidence-output", type=Path, required=True)
+    parser.add_argument("--range-start", type=lambda value: int(value, 0), default=0x2300)
+    parser.add_argument("--range-end", type=lambda value: int(value, 0), default=0x23FF)
+    parser.add_argument("--module", action="store_true", help="독립 Rust 모듈의 조회 helper를 생성한다")
     args = parser.parse_args()
+    if not 0 <= args.range_start <= args.range_end <= 0x10FFFF:
+        raise ValueError("잘못된 Unicode 범위")
+    count = args.range_end - args.range_start + 1
     if (
         len(args.font) != len(args.family)
         or (args.metric_name and len(args.metric_name) != len(args.font))
@@ -70,7 +76,7 @@ def main():
     protected = {"font_metrics_data.rs", "font_metrics_generated.rs", "font_metrics_overlays.rs"}
     if args.rust_output.resolve().name in protected:
         raise ValueError("기존 메트릭 영역을 덮어쓸 수 없습니다")
-    records = [extract(path, family) for path, family in zip(args.font, args.family)]
+    records = [extract(path, family, args.range_start, args.range_end) for path, family in zip(args.font, args.family)]
     for index, record in enumerate(records):
         record["metricEm"] = args.metric_em[index] if args.metric_em else record["em"]
         # 기존 DB는 원 SFNT와 다른 단위로 정규화돼 있을 수 있다. cmap 유무는
@@ -85,13 +91,16 @@ def main():
             codepoint: in_metric_units(width)
             for codepoint, width in record["punctuationWidths"].items()
         }
-    source = "// scripts/extract_verified_symbol_metrics.py의 SFNT cmap/hmtx 직접 추출.\n// U+2300..U+23FF. 메트릭 결측과 실제 cmap 결측을 구분하며 기존 폭은 덮어쓰지 않는다.\n"
+    source = "// scripts/extract_verified_symbol_metrics.py의 SFNT cmap/hmtx 직접 추출.\n// RANGE_LABEL. 메트릭 결측과 실제 cmap 결측을 구분하며 기존 폭은 덮어쓰지 않는다.\n"
+    source = source.replace("RANGE_LABEL", f"U+{args.range_start:04X}..U+{args.range_end:04X}")
+    if args.module:
+        source += "use super::FontMetric;\n"
     for index, (record, key) in enumerate(zip(records, keys)):
         record["metricName"] = key
         source += f"// face: {record['family']}; key: {key}; SHA-256: {record['fontSha256']}; program em: {record['em']}; DB em: {record['metricEm']}.\n"
         for suffix, rust_type, values in [("WIDTHS", "u16", list(map(str, record["metricWidths"]))), ("PRESENT", "bool", [str(value).lower() for value in record["present"]])]:
-            source += f"static VERIFIED_TECHNICAL_{index}_{suffix}: [{rust_type}; 256] = [\n"
-            source += "".join("    " + ", ".join(values[i:i + 16]) + ",\n" for i in range(0, 256, 16)) + "];\n"
+            source += f"static VERIFIED_TECHNICAL_{index}_{suffix}: [{rust_type}; {count}] = [\n"
+            source += "".join("    " + ", ".join(values[i:i + 16]) + ",\n" for i in range(0, count, 16)) + "];\n"
     source += "\nfn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(bool, u16)> {\n"
     source += "    if !(0x2300..=0x23FF).contains(&(ch as u32)) { return None; }\n"
     source += "    let (present, widths) = match (metric.name, metric.em_size, metric.bold, metric.italic) {\n"
@@ -107,6 +116,14 @@ def main():
         for codepoint, width in record["metricPunctuationWidths"].items():
             source += f'        ("{record["metricName"]}", {record["metricEm"]}, false, false, {codepoint}) => Some({width}),\n'
     source += "        _ => None,\n    }\n}\n"
+    source = source.replace("0x2300..=0x23FF", f"0x{args.range_start:X}..=0x{args.range_end:X}")
+    source = source.replace("ch as u32 - 0x2300", f"ch as u32 - 0x{args.range_start:X}")
+    if args.module:
+        source = source[:source.index("// HFT 보정이 섞인 기존 표와 별개인 원 프로그램의 실제 hmtx.")]
+        source = source.replace("VERIFIED_TECHNICAL_", "VERIFIED_SYMBOL_")
+        source = source.replace("verified_technical_symbol_entry", "entry")
+        source = source.replace("pub(crate) fn verified_program_has_glyph", "pub(super) fn has_glyph")
+        source = source.replace("fn verified_technical_symbol_width", "pub(super) fn width")
     args.rust_output.write_text(source, encoding="utf8")
     args.evidence_output.write_text(json.dumps(records, ensure_ascii=False, indent=2) + "\n", encoding="utf8")
 
