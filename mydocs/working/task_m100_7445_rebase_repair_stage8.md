@@ -3472,3 +3472,64 @@ prototype 최초 누락 serde_json extern의 컴파일 오류도 별도 보존�
 PR은 사용자 승인 후 진행한다.
 
 대표 전후 review/overlay와6상태×양쪽 TSV 원본은 `mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/legacy-baseline-edit/`에 보존했다.
+
+
+## C430 C429 code head의 전체 회귀와 직전 코드 대조
+
+code head `9b1f0e198787ce4d9b70889b8803160d5fa4cdd0`에서 현재 정본 전체 명령
+`cargo nextest run --locked --cargo-profile release-test --target-dir /Users/tsjang/rhwp/target/pr-review --tests --test-threads 8 --no-fail-fast`를
+실행했다. 빌드 jobs8은 환경변수로 고정했고 Cargo는 순차 실행했다. 최종 결과는
+**11,140실행 / 11,120PASS / 20FAIL / 45skip**, test727.549초·전체1160.487초·nextest exit100이다.
+로그 끝의 실패 재목록은 같은20건이며40건으로 중복 집계하지 않는다. 실행 프로세스와 최종
+summary/exit를 확인했다. 원 로그·명령·전체 source/test hash는 ignored `repair41-full-nextest/`다.
+고정base4a07의 manifest 검사1641sources/7158attrs/48targets, unit-tier4101tests/296modules도exit0이다.
+전체 실패가 남으므로 C429의11PASS를 전체 통과로 보고하거나 PR을 생성하지 않는다.
+
+이번3개 runtime 파일의 기여를 분리하려고 테스트·fixture·default feature와 target/filter 조건을
+같게 유지한22건을 대조했다. 현재 전체 실패20건에 C429의 기준선 양성 대조2건을 포함했다.
+현재 코드에서는 **2PASS/20FAIL**(38.952초), 직전 `3d023ba4d7a1abec664c1697e8d46a8b6fb89602`의
+runtime3파일로만 되돌린 실행에서는 **0PASS/22FAIL**(38.016초)이다. 두 명령과 테스트 source는
+같고, source variant별 별도 로그·rlib/hash·backup ref를 남겼다. 결과적으로 이22건 범위에서
+C429로 새로 발생한 실패0건, 복구2건, 양쪽에서 재현한 기존 실패20건이다.
+이는 직전 브랜치 코드 대조이며 **fixed upstream/devel의 정상/미달 입증이나 parent 전체 회귀가 아니다**.
+기존 실패라는 이유로 검사를 제거하거나 별도 이슈로 넘기지 않는다.
+
+대조 뒤3개 runtime 파일을9b1f의 byte로 복원하고1840 runtime source hash를 다시 확인했다.
+현재 branch/HEAD는 유지했으며, 사용자 작업·원본/PDF·다른 작업장은 바꾸지 않았다.
+backup ref는`refs/backup/7445-before-parent-default-triage-20261019`다. root pkg/Studio public의
+새 JS/WASM hash도 그대로다. **공용 target의 마지막 default compile은 대조용 parent runtime**이므로
+그 CLI/rlib를 현재 head의 산출물로 재인용하지 않는다. 현재 code head의 Native는 frozen36,
+fresh WASM은 frozen37이며 다음 Cargo/Native 게이트는 실제 source로 재빌드한다.
+대조·복원 증거는 `repair45-parent-default-comparison/{comparison,restore,producer}.json`이다.
+
+실패20건의 원문 inventory는 `repair44-full-failure-triage/final-failures.json`에 보존했다.
+
+| 실패 계약 | 관측 / 다음 검증 |
+| --- | --- |
+| issue7445 native_bold_tracking | issue265 그림 뒤 본문686.7467 vs 독립708.1600CSSpx; 원본/저장 경로·Print 대조 |
+| issue3930 hwpx_hwp_save_layout | 저장 HWP294쪽 tree가 원본 HWPX와 다름;84개 y 필드차·대표3.3px, 양쪽 해당 쪽 Equation0개 |
+| verified_exam source_content exam_all42 | 독립4쪽 vs 실제5쪽; 최초 경계·내용 소유 대조 |
+| verified_hancom paragraph_frames original_font | 서로 다른 source face의 본문/구두점 소유 |
+| issue7017 PUA dotted_line | 실제 점선0 vs source60개 |
+| issue7445 hft_glyph_paint_frame | roadmap 실제304 vs 독립302쪽 |
+| issue5846 mixed_nested_partial_row | 원본 cell(9,2) 소실 |
+| issue7445 hwp3_source_frame | 원본 inline 수식의 TAC/flow_with_text 소유 |
+| issue7642 sample16_2022 paragraph | 2022저장본 BCP 꼬리1줄 vs 실제2줄; #8064 보존 범위로 우선 대조 |
+| issue6520 svg_layer_contract | multi-codepoint subset의 font/opentype data URI 기대값; 실제 공급 포맷/소비 확인 |
+| issue7418 ascii_punct latin_slot | source face와 fallback chain의 필드 의미 대조 |
+| issue4962 font_metric_coverage | positive exact-hit source 분류0 vs1 |
+| roadmap agency_table | Germany 이어받기와302쪽 source 소유 |
+| roadmap fixed_term_table | Finland 이어받기와302쪽 source 소유 |
+| roadmap closing_note_fragment | 마지막 note fragment source lookup 소실 |
+| issue7642 header_shape | PAPER 참조 사각형의 header 원점 비율0 vs0.0311268; #8064의 독립 Print 대조 |
+| issue6078 inline_table_seg_lookup | 표 앞 빈 줄의 후행 띠360 vs0HU |
+| off_canvas partition15 | 기존 paper 밖 요소 baseline 증가; 원래 TSV와 개별 문서 원인 대조 |
+| issue1892 group roundtrip | source 누적 원점(0,0) vs(1352,0)HU |
+| issue937 f081c flow/paint dot | 실제 점선 glyph의 소실 |
+
+기대값·baseline 변경이나 assertion 완화는 하지 않았다. 각 기존 원본의 독립 출력과 source
+계약을 확인하고, 현재 코드의 실제 회귀는 구현에서 보정한다. 특히 #8064의 BCP 꼬리·header
+도형, 현재 완료 대상의 쪽수/내용 소유를 유지하는 검증을 우선한다. C429와 별도로 복합 CJK/
+괄호 미달과 논리 전진폭도 계속 보정한다. `repair42-logical-advance-proposal`은 적용 전 후보일
+뿐이며 현재 source에는 적용하지 않았다. 전쪽 Native/fresh WASM·incoming179조건 보존·실제
+제품 소비 검증은 여전히 완료 전이다. PR은 준비 완료 보고 뒤 사용자 승인을 받아 진행한다.
