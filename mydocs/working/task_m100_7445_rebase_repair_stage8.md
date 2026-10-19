@@ -3533,3 +3533,67 @@ fresh WASM은 frozen37이며 다음 Cargo/Native 게이트는 실제 source로 �
 괄호 미달과 논리 전진폭도 계속 보정한다. `repair42-logical-advance-proposal`은 적용 전 후보일
 뿐이며 현재 source에는 적용하지 않았다. 전쪽 Native/fresh WASM·incoming179조건 보존·실제
 제품 소비 검증은 여전히 완료 전이다. PR은 준비 완료 보고 뒤 사용자 승인을 받아 진행한다.
+
+
+## C431 #8064 헤더 사각형의 부모 좌표계 복원과 독립 px 보호
+
+기존 `issue7642_paper_relative_rectangle_keeps_header_origin_and_precedes_body` 실패를
+기대값 변경 전에 원 PR8064→통합/후속 코드→독립 Print 순서로 추적했다. 원 merge
+`9b01d5d1447220b3a7345703e79ad42cf3f502f4`는 fixed base4a07의 조상이다. PR8064의
+179조건 TSV에는 이번 header fixture/2022 sample16이 없으므로 그 전쪽 수용으로 대신하지 않았다.
+정확한 source/PDF는 `tests/fixtures/issue_7642/header-origin/`의 한컴2020 저장본/Print이며,
+SHA는 대표 asset README에 고정했다.96DPI/compat2022의 같은 전1쪽에서 fixed4a07의
+Native/WASM은100%, 수정 전9b1f의 양쪽은8.70583%다. 실제 회귀이므로 구현을 보정했다.
+
+원본 Paper/Paper 사각형 offset1500/2250HU가 branch0de2에서 도입한 실제 body/paper
+영역을 소비하면서 물리 용지(0,0)에 더해져20/30CSSpx가 됐다. 최종 Rectangle paint가
+그 원점을 그대로 소비하고 Header bbox도 자식을 포함하도록 확장되어 기존 상대 원점 비율이0이
+됐다. 위반 규칙·생산→소비 사슬은 구현 전에 `repair46-header-fixed-base-comparison/violated-frame-rule.md`에
+기록했다. 헤더/푸터의 도형·수식 호출에 부모 area를 공통 참조 프레임으로 전달하고 불필요한
+body/paper 파라미터를 제거했다. 측정/위치 계산이 같은 area를 소비한다. 실제 본문의
+물리 용지/본문 참조와 별도 머리말 그림 경로는 바꾸지 않았다. 문서/포맷 예외·clamp도 없다.
+원본 sample11의 header는 TAC Picture이고 해당 경로에 도형이 없음도 source probe로 확인했다.
+
+Native47 CLI 빌드exit0(108.870초), fresh WASM49 locked web/pkg/no-opt Mac 대체 빌드
+exit0(221.527초)다. Docker 최적화가 아니다. runtime1840파일 ledger와 patch SHA
+`979f87a9fe1e3f37bb2bc7bfc057e7c5d75269d9b025ecdd9aa426533228c50b`를 고정했다.
+Native CLI SHA `da2838e0628f13132702c3d888ec669e5f567bedab44b9b15e48702bfdc5d665`,
+WASM SHA `56887cbaec709bb56ac9781e01fe4fea07b668b49da1be264a5bf9cef34ed9fb`다.
+Root pkg/Studio public hash와 실제 새 Studio7736 초기화 응답도 일치했다(Chrome155.0.8059.84,
+HTTP200, JS의 정확한 Vite변환/source map 및 WASM raw byte). 최초 browser 명령은
+headless 인자 누락으로 기본 Windows CDP에 접속하다 ENETUNREACH로 실패했고, 원 실패를
+보존한 뒤 실제 Mac Chrome/headless/VITE_URL 명시로 성공했다. 제품 실패나 문서 paint/CK
+통과로 혼동하지 않는다. 초기화만 확인했으며 actual36/문서 소비 검증은 별도 미완료다.
+
+헤더 전1쪽은 Native/fresh WASM **각100%로 복원**됐다. Native review와 WASM overlay를
+직접 판독해 원점·본문 내용 소속을 확인했다. 이는2px raw 실루엣100%이며 엄격한 픽셀 일치는
+아니다. 같은 source/Print 전쪽 양쪽98이상·확대 판독 조건을 충족한 뒤 기존 검사에 독립
+PDF stroke 경계95.468/67.765/195.415/107.723 CSSpx(96DPI)의 **±2px** 보호를 추가했다.
+Header bbox의 상대 관계만으로 양쪽이 같이 틀리는 경우를 막으며 기존 source 소유·비율·본문
+내용/순서 검사는 유지한다. 같은 새 검사에서 frozen36은 `20 != 95.468`로1FAIL(exit101),
+frozen47은1PASS(exit0)다. 정식 NativeSkia 자동 suite 경로의 header shape/머리말 그림/
+머리말 행 높이3건은 **3PASS/0FAIL**, filter730건, test0.056초·compile2분18초·전체142.369초,
+exit0이다. prepare 후 실제 target022/027/002를 다시 계산했다. fmt/diff도 통과했다.
+
+| 대조 범위 | Native 수정 후 최저 | fresh WASM 수정 후 최저 | before/after |
+| --- | ---: | ---: | --- |
+| header 사각형 전1쪽 | 100% | 100% | 양쪽8.70583→100 |
+| pic-in-head02 전6쪽 | 57.60580% | 57.60692% | 전쪽 동일;4쪽 미달 유지 |
+| sample11 선택2/50쪽,192DPI | 89.13433% | 90.66313% | 동일;Native50쪽 미달 유지 |
+| 본문 Paper A3/A4/Letter 각 전1쪽 | 100% | 100% | 동일 |
+
+24쪽 전후 쌍에서0.1%p 이상 하락0쪽, header2쪽 쌍 개선·나머지22쪽 PNG SHA까지 동일하다.
+이는 이번 헤더 보정 전후 대조이며 sample11 전151쪽 수용이나 대조군의 upstream 미달 증거가
+아니다. current canonical PDFium raw TSV와 별도 pdftoppm audit TSV를 혼합하지 않았다.
+`repair48-header-focus/`에 실행 로그·producer·전쪽/선택쪽 TSV·비교/PNG hash를 남겼다.
+최종 대표 review/overlay6장, fixed base/header 및24조건 원본 TSV, 비교 TSV는
+`mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/header-paper-frame/`에 보존했다.
+최종 PR 검토에 쓸 전후 Native 및 fresh WASM 패널이며 게시 전에 승인받는다.
+
+C430 전체20FAIL 중 header 한 건을 집중 경로에서 복구했지만 전체 nextest를 다시 실행한
+결과로19FAIL이라고 보고하지 않는다. 다른19건과 복합 수식·전쪽/실제 제품 소비 검증은 남아 있다.
+BCP도 fixed4a07의 Print3쪽 소유1줄과 현재2줄을 원본으로 재현했다. source pi83의
+본문 run폭312.0→325.9CSSpx, Latin run230.8→239.2CSSpx로 늘며 `수립`의 마지막 글자가
+다음 줄로 밀리는 차이를 `repair50-bcp-analysis/`에 분리했다. Header 보정의 영향은 아니며
+글꼴/자간 생산과 실제 줄 소속 소비를 추적해 보정한다. 현재 PR 준비 완료가 아니고,
+PR 생성·원격 push·게시·merge는 준비 결과 보고와 새 사용자 승인 후 진행한다.

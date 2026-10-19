@@ -68,6 +68,24 @@ fn issue7642_paper_relative_rectangle_keeps_header_origin_and_precedes_body() {
     );
     assert_eq!(shapes.len(), 1, "그림을 도형 대조의 대용으로 쓰지 않는다");
     let rect = shapes[0];
+    // 같은 원본/독립 Print 전1쪽을 Native와 fresh WASM에서 각각 raw 100%로
+    // 재확인했다. Print의 사각형 stroke 경계를 pt / 0.75로 CSS px로 환산한다.
+    // 96DPI, source 3ae94ff8 / PDF 3f4ec502; stage8 C431의 TSV·PNG 참조.
+    // Header bbox도 잘못 놓인 자식을 따라 확장될 수 있으므로 상대 비율만으로는
+    // 물리 쪽에서의 올바른 원점을 보호할 수 없다. 소유·본문 순서 검사는 아래 유지한다.
+    let print_edges = [95.468, 67.765, 195.415, 107.723];
+    let actual_edges = [
+        rect.bbox.x,
+        rect.bbox.y,
+        rect.bbox.x + rect.bbox.width,
+        rect.bbox.y + rect.bbox.height,
+    ];
+    for (have, want) in actual_edges.into_iter().zip(print_edges) {
+        assert!(
+            (have - want).abs() <= 2.0,
+            "독립 Print의 헤더 사각형 경계 ±2 CSS px: {have} != {want}"
+        );
+    }
     let width_hu = f64::from(page.width - page.margin_left - page.margin_right);
     let height_hu = f64::from(page.margin_header);
     assert!(width_hu > 0.0 && height_hu > 0.0);
