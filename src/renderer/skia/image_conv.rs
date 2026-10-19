@@ -26,6 +26,7 @@ pub struct ImageSampling {
     filter_mode: FilterMode,
     mipmap_mode: MipmapMode,
     profile: crate::paint::RenderProfile,
+    output_device_surface: bool,
 }
 
 impl ImageSampling {
@@ -34,6 +35,7 @@ impl ImageSampling {
             filter_mode: FilterMode::Nearest,
             mipmap_mode: MipmapMode::None,
             profile: crate::paint::RenderProfile::Screen,
+            output_device_surface: false,
         }
     }
 
@@ -42,6 +44,7 @@ impl ImageSampling {
             filter_mode: FilterMode::Linear,
             mipmap_mode: MipmapMode::Linear,
             profile: crate::paint::RenderProfile::Screen,
+            output_device_surface: false,
         }
     }
 
@@ -50,6 +53,7 @@ impl ImageSampling {
             filter_mode: FilterMode::Linear,
             mipmap_mode: MipmapMode::None,
             profile: crate::paint::RenderProfile::Screen,
+            output_device_surface: false,
         }
     }
 
@@ -62,6 +66,16 @@ impl ImageSampling {
 
     pub(super) fn with_profile(mut self, profile: crate::paint::RenderProfile) -> Self {
         self.profile = profile;
+        self
+    }
+
+    pub(super) fn with_output_device_surface(mut self, output_device_surface: bool) -> Self {
+        self.output_device_surface = output_device_surface;
+        if output_device_surface {
+            // 장치 producer가 확정한 cosmetic 선·문자·음영 표본을 원본 그림의
+            // mip pyramid로 다시 평균내지 않는다. 최종 사각형의 선형 재생만 한다.
+            self.mipmap_mode = MipmapMode::None;
+        }
         self
     }
 
@@ -443,6 +457,7 @@ pub(super) fn draw_image_bytes(
         // 축소 경로에 넣으면 벡터의 가는 선까지 두 번 필터링하게 된다.
         let prepared = (src.is_none()
             && svg_size.is_none()
+            && !sampling.output_device_surface
             && !binary_preprocessed
             && !matrix.has_perspective()
             && sampling.filter_mode != FilterMode::Nearest)
@@ -503,6 +518,7 @@ pub(super) fn draw_image_bytes(
             );
         let reduced = (filtered.is_none()
             && !cubic
+            && !sampling.output_device_surface
             && sampling.filter_mode != FilterMode::Nearest
             && src.is_none()
             && !binary_preprocessed

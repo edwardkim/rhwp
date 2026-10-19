@@ -1155,7 +1155,8 @@ impl SkiaLayerRenderer {
                           crop_reference_size,
                           effect,
                           brightness,
-                          contrast| {
+                          contrast,
+                          output_device_surface| {
             draw_image_bytes(
                 canvas,
                 &self.image_cache,
@@ -1171,7 +1172,10 @@ impl SkiaLayerRenderer {
                 effect,
                 brightness,
                 contrast,
-                cache_context.policy.image_sampling(),
+                cache_context
+                    .policy
+                    .image_sampling()
+                    .with_output_device_surface(output_device_surface),
             )
         };
         let equation_fonts = EquationFonts {
@@ -1662,6 +1666,7 @@ impl SkiaLayerRenderer {
                                     } else {
                                         image.display_brightness_contrast().1
                                     },
+                                    false,
                                 );
                                 if needs_watermark_opacity {
                                     canvas.restore();
@@ -2033,6 +2038,10 @@ impl SkiaLayerRenderer {
                                         image.brightness
                                     },
                                     if suppress_effects { 0 } else { image.contrast },
+                                    resolved.is_some_and(|payload| {
+                                        payload.kind == crate::paint::ResolvedImageKind::OutputDevice
+                                            && payload.mime == "image/png"
+                                    }),
                                 );
                                 if opacity < 1.0 {
                                     canvas.restore();

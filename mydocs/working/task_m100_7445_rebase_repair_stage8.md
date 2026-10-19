@@ -2874,3 +2874,80 @@ C352 harness의 최초 괄호 문법 오류와 JSON bytes 직렬화 오류는 �
   기본 font database와 WASM의 명시 GulimChe 공급을 대조하는 공개 API 진단을 준비했다.
   현재 제품에 래스터 경로 우회나 글꼴 치환을 넣지 않았다. 이 원인 추적은 다음 단계이며
   현재 체크포인트를 전체 검증 완료로 쓰지 않는다.
+
+
+## C417 장치 PNG의 Native 재생 소유 복구
+
+이 절은 `c4c5632a21d4a34e76b18fc88bccfaf939fff4ab` 뒤의 후보다. 원본 source/PDF는 C412–C416과 같으며, 실제 source hash·명령·빌드 출처는 ignored `rebase-4a07d3ae-20261019/repair7-source.json`·`repair7/native-producer.json`에 고정했다.
+
+### 기각한 후보와 원인 재현
+
+투명 PNG를 alpha 가중 면적 평균으로 공통 축소한 repair6은 실제 Native35쪽을
+75.58354%에서74.40564%로 악화시켰다. 단위 수학 검사2PASS를 실제 시각 보정으로 수용하지 않았다.
+이 후보의 제품 코드와 검사는 철회했으며 patch·PNG·전64쪽 TSV·로그·거절 근거는
+`repair6-rejected-transparent-reduction.patch`와 `repair6-rejection.json`에 보존했다.
+
+Native와 WASM에서 추출한 공통 메타파일 PNG는4560×2853이고 SHA-256
+`3bf3a10d9ce2d2e666fa9a479412a02fb7b9ac3c8c06a4962bada8317c1bc1ba`로 같았다.
+GulimChe 원본과 준비 face를 Native에 명시 공급해도 실제 PNG가 같아 글꼴 공급 가설도 기각했다.
+같은 PNG·bbox·CTM을 독립 Skia surface의 nearest/linear/mipmap/cubic으로 재생했다.
+MIP 결과는 기존 Native 도해 영역과2px 실루엣100%, 독립 PDF와70.12708%였다.
+linear는 기존 WASM과2px 실루엣100%, PDF와96.50339%였다. 여기서100%는 해당 영역의
+허용2px 실루엣이며 바이트·픽셀 완전 일치가 아니다. 원본 도해의 위치·글자 소유는 바꾸지 않았다.
+
+### 실제 생산·소비 연결과 보정 범위
+
+`paint/metafile_surface.rs`가 WMF·장치 크기·글꼴·clip·전달색을 확정한 PNG를
+`ResolvedImageKind::OutputDevice`로 제공한다. Native `PaintOp::Image` 소비자는 그 출처를
+가졌지만 지역 `draw_image` closure에서 버리고 일반 원본 bitmap의 Print MIP 정책을 전달했다.
+`image_conv.rs`는 그 결과를 다시 면적 평균/MIP로 축소해 가는 장치 문자와 무늬를 회색으로 만들었다.
+
+이제 PNG인 `OutputDevice`에서만 출처를 `ImageSampling`까지 전달한다. 이미 만들어진
+장치 표본은 최종 사각형에 선형 재생하며 일반 원본 bitmap의 면적 평균·MIP에 다시 넣지 않는다.
+일반 `FormatConverted`, 직접 bitmap, SVG, 명시적 nearest, crop/transform/clip·tone·binary
+처리는 기존 경로를 유지한다. WMF600DPI producer, 글꼴 선택, 전달색·alpha·source fingerprint와
+#8064의 다른 기능은 되돌리지 않았다. 문서명·페이지·고정 좌표 조건은 추가하지 않았다.
+
+Native 전64쪽을 새로 캡처했다.35쪽은75.58354→96.99437%, 전체 최저95.25071%(22쪽),
+90% 미만0쪽, 쪽수64/64다.18쪽은98.42489→98.35911%로0.06578%p 감소했고 리베이스 전
+98.38916%와 차이는-0.03005%p다.35쪽 review·overlay를 직접 판독하여 도해의 글자·선·음영과
+앞뒤 본문이 보존되고 남은 색·미세 위치 차이가 있음을 확인했다. 완전 일치로 쓰지 않는다.
+
+현재 사용자 HancomEQN 등록 조건에서도 WASM 전64쪽을 **새로 캡처**했다. 최저95.66182%,
+미달0쪽, 쪽수64/64이며 이전 repair5의64 PNG와 바이트가 전부 같았다. 제품 변경 두 파일은
+`cfg(all(not(target_arch="wasm32"), feature="native-skia"))`로 WASM 입력에서 제외되어,
+C416에서 source 결합을 확인한 fresh repair5 JS/WASM을 재사용했다. 새 WASM을 빌드했다고
+기록하지 않는다. `repair7-wasm-producer-binding.json`이 excluded 경로·기존 no-opt build/hash와
+새 PNG/TSV를 연결한다. 실제 Studio 초기화 검증은 이 캡처로 대신하지 않는다.
+
+#8064 집중13조건47쪽의 Native도 새로 캡처했다. 현재 글꼴 조건의 repair5와47 PNG가 모두
+바이트 동일해 이번 Native 변경으로 새 차이가 생기지 않았다. 연산자8쪽은 글꼴 등록 뒤의
+base/candidate를 대조했으며 등록 전 missing-face 결과와 섞지 않았다. 기존 영어2·3쪽 하락은
+남아 있고13조건을 전체179조건2082쪽의 기능 보존 완료로 쓰지 않는다.
+
+### 정식 소비 경계 검사와 남은 범위
+
+`tests/cases/native_output_device_surface.rs`는 font·실물 쪽 좌표에 의존하지 않는 합성
+paint 프로토콜 검사다. 같은 고주파 흑백 PNG를 `FormatConverted`와 `OutputDevice`로
+실제 `SkiaLayerRenderer`에 반복 전달한다. 장치의 흑색 표본이 원본 bitmap의 평균화로
+사라지지 않고, 캐시 전환 뒤 원본 경로도 그대로 돌아오는지를 검사한다. 문서35쪽의 절대px를
+고정하지 않는다. frozen repair5에서1FAIL(0.05s), repair7에서1PASS(0.03s)를 확인했다.
+정식 manifest를1640sources/7154staticattrs로 준비한 뒤 현재 배정 `regression_suite_011`의
+실제 nextest에서도1실행1PASS/255skip(0.073s), exit0을 확인했다.
+초기 CLI에 `-j8`과`--test-threads8`을 동시에 준 시도는 nextest에서 중복 threads로 거절되어
+검사가0건 실행됐으므로 invalid로 보존했다. 수정한 명령은 `CARGO_BUILD_JOBS=8`과
+`--test-threads8`만 사용한다.
+
+증적은 같은 ignored root의 `repair7-paired-sample16-qualification.json`,
+`repair7-incoming-native-preservation.json`, `repair7-device-surface-nextest.log`와
+`repair7/{native-focus,wasm-focus}/sample16-hwp/{silhouette.tsv,review,overlay}`에 있다.
+
+이번 단계는 Native MIP 회귀의 국소 복구다. 리베이스 전과 비교하면22·43·53·60쪽의
+0.1%p 이상 하락이 남는다. 고정4a07d3ae Native와의 별도64쪽 대조에서는60–64쪽이
+0.1%p 이상 낮으며 두 기준을 혼합하지 않는다.22쪽 문단446은 이전 줄의`응용프` 뒤
+`로그램의`가 다음 줄을 시작했으나 후보는`로`까지 앞 줄에 담는다. 독립 Print의 줄 소속과
+이 대조를 다음 보정의 근거로 남겼다. 평균 상승으로 하락을 면제하지 않았다.
+
+나머지 원52조건/1964쪽·새 devel179조건/2082쪽의 전체 동일 조건 검증, 알려진 기존
+실패6건의 독립 재검토·보정, 전체 nextest·필수 게이트·actual36은 계속 필요하다.
+현재 PR 준비 완료가 아니며 외부 push·PR·게시·merge는 하지 않았다.
