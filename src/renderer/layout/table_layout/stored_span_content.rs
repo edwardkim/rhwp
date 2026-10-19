@@ -359,51 +359,6 @@ impl LayoutEngine {
     /// 저장 줄의 유효성은 같은 계약으로 확인하되, 기존 순수 글줄 소비자는 위의
     /// 더 엄격한 컨트롤 없음 조건을 유지한다.
     pub(super) fn stored_body_text_cell_frame(&self, table: &Table, cell: &Cell) -> bool {
-        self.stored_body_cell_frame_metadata(table, cell)
-            && cell
-                .paragraphs
-                .iter()
-                .all(Self::original_body_text_frame_paragraph)
-    }
-
-    /// 뒤 조각의 개체가 현재 원본 글줄 컷의 물리 프레임을 무효화하지 않는다.
-    /// 실제 개체 유닛을 소유한 컷은 원래 개체의 분할·배치 계약을 따른다.
-    pub(super) fn stored_body_text_cut_frame(
-        &self,
-        table: &Table,
-        cell: &Cell,
-        units: &[CellUnit],
-        end: usize,
-    ) -> bool {
-        if end == 0 {
-            return self.stored_body_text_cell_frame(table, cell);
-        }
-        let Some(selected) = units.get(..end) else {
-            return false;
-        };
-        let Some(last) = selected.last() else {
-            return false;
-        };
-        self.stored_body_cell_frame_metadata(table, cell)
-            && selected.iter().all(|unit| {
-                !unit.reflowed_line_slot
-                    && unit.vis_end > unit.vis_start
-                    && unit.nested_row.is_none()
-                    && unit.nested_table_fragment.is_none()
-                    && !unit.mixed_nested_fragment
-                    && unit.non_inline_control_range.is_none()
-            })
-            && cell
-                .paragraphs
-                .get(..=last.para_idx)
-                .is_some_and(|paragraphs| {
-                    paragraphs
-                        .iter()
-                        .all(Self::original_body_text_frame_paragraph)
-                })
-    }
-
-    fn stored_body_cell_frame_metadata(&self, table: &Table, cell: &Cell) -> bool {
         let profile = self.profile.get();
         (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             && !profile.session_edited()
@@ -415,24 +370,23 @@ impl LayoutEngine {
             && table.page_break == TablePageBreak::RowBreak
             && !cell.dirty_flag
             && !cell.paragraphs.is_empty()
-    }
-
-    fn original_body_text_frame_paragraph(para: &crate::model::paragraph::Paragraph) -> bool {
-        !para.stored_text_partition_is_dirty()
-            && !para.cell_format_vpos_dirty
-            && para.controls.iter().all(|control| {
-                matches!(
-                    control,
-                    crate::model::control::Control::Header(_)
-                        | crate::model::control::Control::Footer(_)
-                )
-            })
-            && !para.line_segs.is_empty()
-            && para.line_segs.iter().all(|line| {
-                line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                    && line.vertical_pos >= 0
-                    && line.line_height > 0
-                    && line.line_spacing >= 0
+            && cell.paragraphs.iter().all(|para| {
+                !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty
+                    && para.controls.iter().all(|control| {
+                        matches!(
+                            control,
+                            crate::model::control::Control::Header(_)
+                                | crate::model::control::Control::Footer(_)
+                        )
+                    })
+                    && !para.line_segs.is_empty()
+                    && para.line_segs.iter().all(|line| {
+                        line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && line.vertical_pos >= 0
+                            && line.line_height > 0
+                            && line.line_spacing >= 0
+                    })
             })
     }
 
