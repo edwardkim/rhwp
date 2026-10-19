@@ -248,7 +248,7 @@ impl<'a> Resources<'a> {
         })
     }
 }
-fn picture_digest(p: &Picture, resources: &mut Resources<'_>) -> Option<[u8; 32]> {
+pub(crate) fn picture_digest(p: &Picture, resources: &mut Resources<'_>) -> Option<[u8; 32]> {
     let a = &p.common;
     let s = &p.shape_attr;
     let (image, dim) = resources.image(p.image_attr.bin_data_id)?;

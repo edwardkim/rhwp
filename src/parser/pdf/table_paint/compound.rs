@@ -334,6 +334,19 @@ impl Compound {
         work: &mut usize,
     ) -> Result<Vec<CellPart>, String> {
         if ti != self.target {
+            // A path's raster frame can enclose a descendant without any of
+            // its ink entering that cell. Do not materialize that empty crop
+            // as a selectable, cell-sized picture. Use the certified source
+            // stroke envelopes, including width and outward HU rounding;
+            // bitmap/frame overlap alone is not evidence of painted content.
+            let mut painted = false;
+            for band in &self.bands {
+                tick(work)?;
+                painted |= intersection(band.frame, piece, None).is_some();
+            }
+            if !painted {
+                return Ok(Vec::new());
+            }
             return Ok(vec![(piece, None)]);
         }
         // Every certified segment follows this grid. The untagged remainder

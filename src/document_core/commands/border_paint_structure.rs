@@ -6,7 +6,8 @@ use crate::{
     model::{
         bin_data::{self, BinDataContent},
         border_paint::{
-            outside_binding, outside_owner, valid_paint, CellBorderPaint, PaintRef, Resources,
+            outside_binding, outside_owner, picture_digest, valid_paint, CellBorderPaint, PaintRef,
+            Resources,
         },
         control::Control,
         document::Document,
@@ -30,6 +31,7 @@ struct Edge {
     width: Option<u8>,
     rectangle: bool,
     pen: f64,
+    source_pen: f64,
     rects: Vec<Rect>,
 }
 struct Proof<'a> {
@@ -41,8 +43,8 @@ struct Proof<'a> {
     strokes: BTreeMap<u16, (PdfStroke, [f64; 2])>,
     edges: BTreeMap<Key, Edge>,
     work: usize,
-    z: [Option<i32>; 2],
-    mixed_z: bool,
+    z: [[Option<i32>; 2]; 2], // inside/outside, vertical/horizontal
+    layer_range: Option<(i32, i32)>,
 }
 fn boundaries(sizes: Vec<u32>) -> Vec<f64> {
     let mut out = vec![0.];
@@ -88,9 +90,16 @@ impl Proof<'_> {
             .ok_or_else(error)?
             .common()
             .z_order;
-        let slot = &mut self.z[usize::from(outside)];
-        self.mixed_z |= slot.is_some_and(|old| old != z);
-        *slot = Some(z);
+        let range = self.layer_range.get_or_insert((z, z));
+        range.0 = range.0.min(z);
+        range.1 = range.1.max(z);
+        let mask = tag.mask().ok_or_else(error)?;
+        for side in 0..4 {
+            if mask & (1 << side) != 0 {
+                let slot = &mut self.z[usize::from(outside)][side / 2];
+                slot.get_or_insert(z);
+            }
+        }
         if let Control::Shape(shape) = ctrl {
             return self.add_rectangle(shape, ci, tag, outside);
         }
@@ -174,18 +183,30 @@ impl Proof<'_> {
                 color,
                 width,
                 pen: width.map_or(pen, |w| BORDER_WIDTHS[w as usize].0 * 7200. / 25.4),
+                source_pen: pen,
                 rectangle: false,
                 rects: vec![],
             });
-            // Two independently quantized crops can differ in opposite
-            // directions. Each must match the same canonical pen above;
-            // comparing their errors to each other is not that contract.
+            // Promote only when every fragment proves the same native width.
+            // Near a bucket boundary, independently quantized halves can have
+            // different native eligibility while still describing one source
+            // pen. Preserve that pen instead of rejecting it or rounding it.
+            let same_native = edge.width.is_some() && edge.width == width;
             if edge.rectangle
                 || edge.color != color
-                || edge.width != width
-                || (edge.pen - pen).abs() > 1.00001
+                || ((if same_native {
+                    edge.pen
+                } else {
+                    edge.source_pen
+                }) - pen)
+                    .abs()
+                    > 1.00001
             {
                 return Err(error());
+            }
+            if !same_native {
+                edge.width = None;
+                edge.pen = edge.source_pen;
             }
             for e in std::iter::once(s.endpoints).chain(s.segments.iter().copied()) {
                 self.work += 1;
@@ -271,6 +292,7 @@ impl Proof<'_> {
             color,
             width: None,
             pen: 0.,
+            source_pen: 0.,
             rectangle: true,
             rects: Vec::new(),
         });
@@ -361,6 +383,116 @@ struct Prepared {
     fills: Vec<BorderFill>,
     bands: Option<super::border_paint_bands::Bands>,
 }
+
+/// Opaque ink of one colour commutes with itself. Coalescing its source ranks
+/// is safe only if no noncommuting drawing lies between (or ties) those ranks.
+/// Inspect the candidate after removing only authenticated border pieces; the
+/// nested table/content controls remain in this scan. Unranked drawing types
+/// are not presumed harmless. No bbox proximity or hidden-paint assumption.
+fn preserves_layer_order(
+    doc: &Document,
+    si: usize,
+    pi: usize,
+    candidate: &Paragraph,
+    range: (i32, i32),
+    strokes: &mut BTreeMap<u16, (PdfStroke, [f64; 2])>,
+    color: u32,
+) -> bool {
+    if range.0 == range.1 {
+        return true;
+    }
+    let mut stack = Vec::new();
+    let mut resources = Resources::new(&doc.bin_data_content);
+    for (s, section) in doc.sections.iter().enumerate() {
+        for (p, paragraph) in section.paragraphs.iter().enumerate() {
+            let paragraph = if s == si && p == pi {
+                candidate
+            } else {
+                paragraph
+            };
+            if paragraph.controls.len() > 200_000 - stack.len() {
+                return false;
+            }
+            stack.extend(&paragraph.controls);
+        }
+    }
+    let mut work = 0;
+    while let Some(control) = stack.pop() {
+        work += 1;
+        if work > 200_000 {
+            return false;
+        }
+        let common = match control {
+            Control::Picture(p) => Some(&p.common),
+            Control::Table(t) => {
+                for cell in &t.cells {
+                    for p in &cell.paragraphs {
+                        if p.controls.len() > 200_000 - stack.len() {
+                            return false;
+                        }
+                        stack.extend(&p.controls);
+                    }
+                }
+                Some(&t.common)
+            }
+            Control::Shape(s) => {
+                if let Some(tb) = s.drawing().and_then(|d| d.text_box.as_ref()) {
+                    for p in &tb.paragraphs {
+                        if p.controls.len() > 200_000 - stack.len() {
+                            return false;
+                        }
+                        stack.extend(&p.controls);
+                    }
+                }
+                Some(s.common())
+            }
+            Control::Equation(e) => Some(&e.common),
+            Control::Form(_) | Control::Unknown(_) => return false,
+            _ => None,
+        };
+        if stack.len() > 200_000 {
+            return false;
+        }
+        if !common.is_some_and(|a| (range.0..=range.1).contains(&a.z_order)) {
+            continue;
+        }
+        // After save/reopen every owned border may already be a rectangle.
+        // Verify the retained PNG independently of having an owned PNG peer.
+        // A successful colour/order proof never grants deletion authority.
+        let Control::Picture(p) = control else {
+            return false;
+        };
+        if p.border_attr.width != 0 || picture_digest(p, &mut resources).is_none() {
+            return false;
+        }
+        let id = p.image_attr.bin_data_id;
+        if let std::collections::btree_map::Entry::Vacant(entry) = strokes.entry(id) {
+            let Some(i) = bin_data::content_index(&doc.bin_data_content, id) else {
+                return false;
+            };
+            let Some(bytes) = doc.bin_data_content[i]
+                .data
+                .load_limited(bin_data::MAX_BIN_DATA_BYTES)
+            else {
+                return false;
+            };
+            let Some(stroke) = PdfStroke::read(&bytes) else {
+                return false;
+            };
+            let dim = [
+                u32::from_be_bytes(bytes[16..20].try_into().unwrap()) as f64 * 75.,
+                u32::from_be_bytes(bytes[20..24].try_into().unwrap()) as f64 * 75.,
+            ];
+            entry.insert((stroke, dim));
+        }
+        let (stroke, _) = &strokes[&id];
+        if stroke.color != color || stroke.alpha != 1. {
+            return false;
+        }
+    }
+    true
+}
+
 fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Prepared>, HwpError> {
     let Some(parent) = doc.sections.get(si).and_then(|s| s.paragraphs.get(pi)) else {
         return Ok(None); // Preserve the ordinary API's index/type diagnostics.
@@ -433,8 +565,8 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
         strokes: BTreeMap::new(),
         edges: BTreeMap::new(),
         work: 0,
-        z: [None, None],
-        mixed_z: false,
+        z: [[None; 2]; 2],
+        layer_range: None,
     };
     let mut remove = Vec::new();
     let last_table = parent
@@ -517,20 +649,46 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
         let first = proof.edges.values().next().ok_or_else(error)?;
         let expected = usize::from(table.row_count) * (usize::from(table.col_count) + 1)
             + usize::from(table.col_count) * (usize::from(table.row_count) + 1);
-        // First nonstandard inheritance contract: the full grid shares one
-        // continuous pen. Distinct side styles require a per-edge template plan.
-        if proof.mixed_z
-            || proof.edges.len() != expected
-            || proof
-                .edges
-                .values()
-                .any(|e| e.color != first.color || (e.pen - first.pen).abs() > 1.00001)
-        {
+        // A grid may have different vertical/horizontal pens. New rows and
+        // columns extend those two continuous source styles independently.
+        // Variation within one axis needs a per-edge template/conflict plan;
+        // different colours additionally need a proved crossing paint order.
+        if proof.edges.len() != expected {
             return Err(error());
         }
-        let pen = first.pen.round();
-        if pen < 2. || pen > f64::from(i32::MAX) || (pen - first.pen).abs() > 1. {
+        let mut axes = [None::<f64>; 2];
+        for (&(horizontal, _, _), edge) in &proof.edges {
+            let pen = axes[usize::from(horizontal)].get_or_insert(edge.pen);
+            if edge.color != first.color || (edge.pen - *pen).abs() > 1.00001 {
+                return Err(error());
+            }
+        }
+        if !preserves_layer_order(
+            doc,
+            si,
+            pi,
+            &candidate,
+            proof.layer_range.ok_or_else(error)?,
+            &mut proof.strokes,
+            first.color,
+        ) {
             return Err(error());
+        }
+        let mut pens = [0; 2];
+        for (axis, observed) in axes.into_iter().enumerate() {
+            let observed = observed.ok_or_else(error)?;
+            // Preserve the existing canonical pen when the two axis values
+            // differ only by the already-proved one-source-unit crop error.
+            let source_pen = if (observed - first.pen).abs() <= 1.00001 {
+                first.pen
+            } else {
+                observed
+            };
+            let pen = source_pen.round();
+            if pen < 2. || pen > f64::from(i32::MAX) || (pen - source_pen).abs() > 1. {
+                return Err(error());
+            }
+            pens[axis] = pen as u32;
         }
         for c in &table.cells {
             let f = doc
@@ -545,7 +703,8 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
             if f.borders[..4]
                 .iter()
                 .any(|b| b.line_type != BorderLineType::None)
-                || f64::from(c.width.min(c.height)) <= pen
+                || c.width <= pens[0]
+                || c.height <= pens[1]
             {
                 return Err(error());
             }
@@ -554,10 +713,16 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
             parent: candidate,
             fills: Vec::new(),
             bands: Some(super::border_paint_bands::Bands {
-                pen: pen as u32,
+                pens,
                 color: first.color,
-                cell_z: proof.z[0].ok_or_else(error)?,
-                outside_z: proof.z[1].ok_or_else(error)?,
+                cell_z: [
+                    proof.z[0][0].ok_or_else(error)?,
+                    proof.z[0][1].ok_or_else(error)?,
+                ],
+                outside_z: [
+                    proof.z[1][0].ok_or_else(error)?,
+                    proof.z[1][1].ok_or_else(error)?,
+                ],
             }),
         }));
     }

@@ -17,10 +17,11 @@ use crate::{
 };
 #[derive(Clone, Copy)]
 pub(super) struct Bands {
-    pub pen: u32,
+    /// Full physical pen of vertical and horizontal edges, respectively.
+    pub pens: [u32; 2],
     pub color: u32,
-    pub cell_z: i32,
-    pub outside_z: i32,
+    pub cell_z: [i32; 2],
+    pub outside_z: [i32; 2],
 }
 fn error() -> HwpError {
     HwpError::RenderError("연속 실선 경계 띠의 구조 편집 범위를 표현할 수 없습니다".into())
@@ -32,15 +33,21 @@ fn append(p: &mut Paragraph, c: Control) {
     p.control_mask |= 0x800;
     p.rebuild_char_offsets(&positions);
 }
-fn rectangle(id: u32, rect: [i64; 4], bands: Bands, outside: bool) -> Result<Control, HwpError> {
+fn rectangle(
+    id: u32,
+    rect: [i64; 4],
+    bands: Bands,
+    outside: bool,
+    axis: usize,
+) -> Result<Control, HwpError> {
     let [x, y, w, h] = rect;
     let mut r = RectangleShape::default();
     let a = &mut r.common;
     a.instance_id = id;
     a.z_order = if outside {
-        bands.outside_z
+        bands.outside_z[axis]
     } else {
-        bands.cell_z
+        bands.cell_z[axis]
     };
     a.ctrl_id = u32::from_be_bytes(*b"gso ");
     a.horizontal_offset = i32::try_from(x).map_err(|_| error())? as u32;
@@ -123,22 +130,25 @@ pub(super) fn apply(
     };
     let xs = offsets(&widths);
     let ys = offsets(&heights);
-    let negative = i64::from(bands.pen / 2);
-    let positive = i64::from(bands.pen) - negative;
+    let negative = bands.pens.map(|pen| i64::from(pen / 2));
+    let positive = [
+        i64::from(bands.pens[0]) - negative[0],
+        i64::from(bands.pens[1]) - negative[1],
+    ];
     let ox = i64::from(t.common.horizontal_offset as i32);
     let oy = i64::from(t.common.vertical_offset as i32);
     let mut outside = Vec::new();
     for (ci, cell) in t.cells.iter_mut().enumerate() {
         let w = i64::from(cell.width);
         let h = i64::from(cell.height);
-        if w <= i64::from(bands.pen) || h <= i64::from(bands.pen) {
+        if w <= i64::from(bands.pens[0]) || h <= i64::from(bands.pens[1]) {
             return Err(error());
         }
         let inside = [
-            [0, 0, positive, h],
-            [w - negative, 0, negative, h],
-            [0, 0, w, positive],
-            [0, h - negative, w, negative],
+            [0, 0, positive[0], h],
+            [w - negative[0], 0, negative[0], h],
+            [0, 0, w, positive[1]],
+            [0, h - negative[1], w, negative[1]],
         ];
         if cell.paragraphs.is_empty() {
             cell.paragraphs.push(Paragraph::new_empty());
@@ -154,6 +164,7 @@ pub(super) fn apply(
                 ],
                 bands,
                 false,
+                side / 2,
             )?;
             let Control::Shape(shape) = &mut control else {
                 unreachable!()
@@ -164,14 +175,18 @@ pub(super) fn apply(
         let x = ox + xs[cell.col as usize];
         let y = oy + ys[cell.row as usize];
         let outer = [
-            (cell.col == 0, [x - negative, y, negative, h]),
-            (cell.col + 1 == t.col_count, [x + w, y, positive, h]),
-            (cell.row == 0, [x, y - negative, w, negative]),
-            (cell.row + 1 == t.row_count, [x, y + h, w, positive]),
+            (cell.col == 0, [x - negative[0], y, negative[0], h]),
+            (cell.col + 1 == t.col_count, [x + w, y, positive[0], h]),
+            (cell.row == 0, [x, y - negative[1], w, negative[1]]),
+            (cell.row + 1 == t.row_count, [x, y + h, w, positive[1]]),
         ];
         for (side, (is_outer, rect)) in outer.into_iter().enumerate() {
             if is_outer {
-                outside.push((ci, side, rectangle(ids.common()?, rect, bands, true)?));
+                outside.push((
+                    ci,
+                    side,
+                    rectangle(ids.common()?, rect, bands, true, side / 2)?,
+                ));
             }
         }
     }

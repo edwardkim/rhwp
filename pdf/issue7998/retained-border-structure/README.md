@@ -24,3 +24,16 @@ Native/fresh WASM의 원본·양 저장·무변경 거절 원본 각 19쪽은 �
 남은 범위는 [stage22](../../../mydocs/working/task_m100_7998_stage22.md)에 연결한다.
 일반 점선·반투명·가림·혼합 pen·병합/지역 축의 상속이나 R2 문자 역삭제 원점은 이
 대조군의 통과로 완료 처리하지 않는다.
+
+stage23에서는 `mixed-pen.pdf`를 축별 일정 pen(세로 0.70pt·가로 0.50pt)의 양성 입력으로
+확장한다. 위 stage22의 거절 기록은 당시 범위다. 새 `nonuniform-axis.pdf`는 왼쪽 세로선만
+0.90pt이고 나머지 세로선은 0.70pt여서, 같은 축의 pen을 하나로 추정하지 않는 반례다.
+같은 생성기로 재현하며 전쪽 Native/fresh WASM raw는 각각 99.98109% / 99.98086%다.
+
+부모 선의 큰 PNG frame과 중첩 셀의 교차만으로 빈 Picture를 만드는 결함도 stage23에서
+보완한다. 독립 PDF에서 실제 잉크가 없는 A/B/C/D 셀의 선택 가능한 투명 그림 8개를
+발행하지 않으며 셀 문단·자체 테두리와 실제 내용 그림은 보존한다. 수정 전 FAIL과
+수정 후 Native/실제 WASM 클릭·양 저장·전쪽 비교는
+[stage23](../../../mydocs/working/task_m100_7998_stage23.md)에 연결한다.
+2026-10-19 메인테이너가 수정본의 **시각·편집 구조 통과**와 **새 HWP/HWPX 14개 정상 열림**을
+확인했다. 같은 source/runtime의 집중 32건·Native/fresh WASM 각 23쪽 증거를 재사용한다.

@@ -330,9 +330,9 @@ fn snapshot_restore_keeps_original_paint_and_captured_edit_after_text_inverse() 
 }
 
 #[test]
-fn different_pen_and_invalid_indices_reject_atomically() {
+fn nonuniform_axis_pen_and_invalid_indices_reject_atomically() {
     for mode in 0..6 {
-        let mut c = load_other("mixed-pen");
+        let mut c = load_other("nonuniform-axis");
         let before = c.export_hwpx_native().unwrap();
         assert!(apply(&mut c, mode).is_err());
         assert_eq!(c.export_hwpx_native().unwrap(), before);
@@ -388,5 +388,267 @@ fn non_cell_frame_paint_does_not_authorize_cell_frame_rewriting() {
         let before = c.export_hwpx_native().unwrap();
         assert!(c.insert_table_row_native(0, 0, ci, 0, true).is_err());
         assert_eq!(c.export_hwpx_native().unwrap(), before);
+    }
+}
+
+fn nested_table(c: &DocumentCore) -> &Table {
+    root(c)
+        .1
+        .cells
+        .iter()
+        .flat_map(|c| &c.paragraphs)
+        .flat_map(|p| &p.controls)
+        .find_map(|c| match c {
+            Control::Table(t) => Some(t.as_ref()),
+            _ => None,
+        })
+        .unwrap()
+}
+
+#[test]
+fn parent_source_padding_does_not_become_selectable_nested_cell_pictures() {
+    // Independent PDF: parent stroke axes lie outside the four child cells;
+    // the child contains A/B/C/D and its own borders, no image XObject.
+    // The original failure produced two fully transparent pictures per cell.
+    let mut c = load_other("mixed-pen");
+    for saved in 0..3 {
+        let child = nested_table(&c);
+        assert_eq!(child.cells.len(), 4);
+        assert_eq!(
+            text(
+                &child
+                    .cells
+                    .iter()
+                    .flat_map(|c| c.paragraphs.clone())
+                    .collect::<Vec<_>>()
+            ),
+            "ABCD"
+        );
+        assert!(
+            child
+                .cells
+                .iter()
+                .flat_map(|c| &c.paragraphs)
+                .flat_map(|p| &p.controls)
+                .all(|c| !matches!(c, Control::Picture(_))),
+            "empty parent raster-frame crops must not intercept child-cell text clicks"
+        );
+        for cell in &child.cells {
+            let fill = &c.document().doc_info.border_fills[cell.border_fill_id as usize - 1];
+            assert!(fill.borders[..4]
+                .iter()
+                .all(|b| b.line_type == BorderLineType::Solid));
+        }
+        if saved == 0 {
+            c = DocumentCore::from_bytes(&c.export_hwp_with_adapter_snapshot().unwrap()).unwrap();
+        } else if saved == 1 {
+            c = DocumentCore::from_bytes(&c.export_hwpx_native().unwrap()).unwrap();
+        }
+    }
+}
+
+#[test]
+fn axis_specific_ink_is_inherited_without_cloning_child_content() {
+    for mode in 0..6 {
+        let mut c = load_other("mixed-pen");
+        let child_before = child(&c);
+        let before = text(&c.document().sections[0].paragraphs);
+        apply(&mut c, mode).unwrap();
+        owned_bands(&c);
+        assert_eq!(child(&c), child_before);
+        let t = root(&c).1;
+        if mode < 4 {
+            assert_eq!(text(&c.document().sections[0].paragraphs), before);
+            for cell in &t.cells {
+                let new = if mode < 2 {
+                    cell.row == if mode == 0 { 0 } else { 1 }
+                } else {
+                    cell.col == if mode == 2 { 0 } else { 1 }
+                };
+                if new {
+                    assert!(cell.paragraphs.iter().all(|p| {
+                        p.text.is_empty() && p.controls.iter().all(
+                        |c| matches!(c,Control::Shape(s)if s.common().cell_border_paint.is_some()))
+                    }));
+                }
+            }
+        } else {
+            let got = text(&c.document().sections[0].paragraphs);
+            assert!(
+                got.contains("BEFORE CHILD")
+                    && got.contains("AFTER CHILD")
+                    && got.contains("OUTSIDE AFTER")
+            );
+            assert!(!got.contains("LOWER RIGHT"));
+            assert_eq!(got.contains("UPPER RIGHT"), mode == 4);
+            assert_eq!(got.contains("LOWER LEFT"), mode == 5);
+        }
+    }
+}
+
+#[test]
+fn axis_specific_source_pens_survive_both_formats_and_repeated_edits() {
+    let mut c = load_other("mixed-pen");
+    apply(&mut c, 1).unwrap();
+    for bytes in [
+        c.export_hwp_with_adapter_snapshot().unwrap(),
+        c.export_hwpx_native().unwrap(),
+    ] {
+        let mut n = DocumentCore::from_bytes(&bytes).unwrap();
+        let nested = child(&n);
+        let want = text(&n.document().sections[0].paragraphs);
+        let mut first = None;
+        for _ in 0..3 {
+            for cell in &root(&n).1.cells {
+                let mut halves = [0u32; 4];
+                for ctrl in cell.paragraphs.iter().flat_map(|p| &p.controls) {
+                    if let Control::Shape(s) = ctrl {
+                        if let Some(tag) = s.common().cell_border_paint {
+                            use border_paint::CellSide::*;
+                            let side = match tag.side {
+                                Left => 0,
+                                Right => 1,
+                                Top => 2,
+                                Bottom => 3,
+                            };
+                            halves[side] = if side < 2 {
+                                s.common().width
+                            } else {
+                                s.common().height
+                            };
+                            // Independent PDF operator order: horizontal paths first,
+                            // then vertical paths, with opaque black commutative ink.
+                            assert_eq!(s.common().z_order, if side < 2 { 2 } else { 1 });
+                        }
+                    }
+                }
+                let pens = [halves[0] + halves[1], halves[2] + halves[3]];
+                // PDF declarations 0.70/0.50pt = 70/50HU, not native width buckets.
+                assert!((i64::from(pens[0]) - 70).abs() <= 1);
+                assert!((i64::from(pens[1]) - 50).abs() <= 1);
+                assert_eq!(*first.get_or_insert(pens), pens);
+            }
+            let ci = root(&n).0;
+            n.insert_table_column_native(0, 0, ci, 0, true).unwrap();
+            n.delete_table_column_native(0, 0, ci, 1).unwrap();
+        }
+        assert_eq!(child(&n), nested);
+        assert_eq!(text(&n.document().sections[0].paragraphs), want);
+    }
+}
+
+#[test]
+fn unrelated_png_is_not_consumed_by_an_ink_order_proof() {
+    for effect in 0..3 {
+        let mut c = load_other("mixed-pen");
+        let ci = root(&c).0;
+        let mut d = c.document().clone();
+        let Control::Table(t) = &d.sections[0].paragraphs[0].controls[ci] else {
+            unreachable!()
+        };
+        let mut p = t
+            .cells
+            .iter()
+            .flat_map(|c| &c.paragraphs)
+            .flat_map(|p| &p.controls)
+            .find_map(|c| match c {
+                Control::Picture(p) if p.common.cell_border_paint.is_some() => Some(p.clone()),
+                _ => None,
+            })
+            .unwrap();
+        p.common.cell_border_paint = None;
+        p.common.outside_cell_border_paint = None;
+        p.common.z_order = 2;
+        p.common.instance_id = 500001;
+        if effect == 1 {
+            p.image_attr.brightness = 1;
+        }
+        if effect == 2 {
+            p.border_attr.width = 1;
+        }
+        let independent = serde_json::to_value(&p).unwrap();
+        d.sections[0].paragraphs[0]
+            .controls
+            .push(Control::Picture(p));
+        c.set_document(d);
+        let before = c.export_hwpx_native().unwrap();
+        let result = apply(&mut c, 1);
+        if effect == 0 {
+            result.unwrap();
+            let pictures: Vec<_> = c.document().sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .filter_map(|c| match c {
+                    Control::Picture(p) if p.common.instance_id == 500001 => Some(p),
+                    _ => None,
+                })
+                .collect();
+            assert_eq!(pictures.len(), 1);
+            assert_eq!(serde_json::to_value(pictures[0]).unwrap(), independent);
+        } else {
+            assert!(
+                result.is_err(),
+                "sharing an image resource is not permission to move modified ink"
+            );
+            assert_eq!(c.export_hwpx_native().unwrap(), before);
+        }
+    }
+}
+
+#[test]
+fn actual_cell_image_data_is_preserved_instead_of_dropping_all_cell_pictures() {
+    fn images(ps: &[rhwp::model::paragraph::Paragraph], c: &DocumentCore, out: &mut Vec<Vec<u8>>) {
+        for p in ps {
+            for ctrl in &p.controls {
+                match ctrl {
+                    Control::Table(t) => {
+                        for cell in &t.cells {
+                            images(&cell.paragraphs, c, out);
+                        }
+                    }
+                    Control::Picture(p) => {
+                        let bytes = c
+                            .document()
+                            .bin_data_content
+                            .iter()
+                            .find(|b| b.id == p.image_attr.bin_data_id)
+                            .unwrap()
+                            .data
+                            .load_limited(4 * 1024 * 1024)
+                            .unwrap();
+                        if bytes.starts_with(b"\x89PNG")
+                            && bytes[16..24] == [0, 0, 0, 2, 0, 0, 0, 2]
+                        {
+                            out.push(bytes);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    for key in ["nested-dash-image", "nested-periodic-image"] {
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join(format!("pdf/issue7998/{key}.pdf")),
+        )
+        .unwrap();
+        let c = DocumentCore::from_pdf_bytes(&bytes, &PdfImportOptions::default()).unwrap();
+        let mut expected = Vec::new();
+        images(&c.document().sections[0].paragraphs, &c, &mut expected);
+        assert_eq!(
+            expected.len(),
+            1,
+            "independent source declares one genuine 2x2 image"
+        );
+        for bytes in [
+            c.export_hwp_with_adapter_snapshot().unwrap(),
+            c.export_hwpx_native().unwrap(),
+        ] {
+            let n = DocumentCore::from_bytes(&bytes).unwrap();
+            let mut actual = Vec::new();
+            images(&n.document().sections[0].paragraphs, &n, &mut actual);
+            assert_eq!(actual, expected);
+        }
     }
 }
