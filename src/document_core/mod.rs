@@ -489,7 +489,11 @@ impl DocumentCore {
         )
     }
 
-    pub(crate) fn rebuild_resolved_styles(&mut self) {
+    pub(crate) fn rebuild_resolved_styles(&mut self) -> bool {
+        let equation_frames_changed = crate::renderer::equation::declared_frame::set_generation(
+            &mut self.document,
+            self.hangul2024_compat,
+        );
         // 정규화한 줄과 인라인 프레임은 현재 글꼴 메트릭·DPI에서 파생된다.
         // source revision이 같아도 스타일 재해소 뒤에는 이전 투영을 재사용하지 않는다.
         self.render_normalization.sections.fill_with(|| None);
@@ -504,6 +508,7 @@ impl DocumentCore {
             &mut self.document.sections,
             &self.styles,
         );
+        equation_frames_changed
     }
 
     /// 한글 2024 계열 조판 에뮬레이션을 켜거나 끈다.
@@ -511,7 +516,9 @@ impl DocumentCore {
     pub fn set_hangul2024_compat(&mut self, enabled: bool) {
         if self.hangul2024_compat != enabled {
             self.hangul2024_compat = enabled;
-            self.rebuild_resolved_styles();
+            if self.rebuild_resolved_styles() {
+                self.recompose_all_with_horizontal_shaping();
+            }
             for d in self.dirty_sections.iter_mut() {
                 *d = true;
             }

@@ -28,8 +28,8 @@ pub(super) fn body_ladder_is_unpositioned(paragraphs: &[Paragraph]) -> bool {
     has_cache
 }
 
-/// 원본 줄 출처가 남아 있는 미계산 본문만 선언 수식 프레임을 보존한다.
-/// 저장 줄이 전혀 없는 정상 문서와 구현이 만든 줄은 이 출처가 아니다.
+/// 원본 줄 출처를 구현이 만든 재조판 캐시와 구분한다.
+/// 저장 줄이 전혀 없는 본문의 수식 선언은 호출자가 별도로 판정한다.
 pub(super) fn body_ladder_has_original_source(paragraphs: &[Paragraph]) -> bool {
     paragraphs
         .iter()

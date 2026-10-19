@@ -1,7 +1,7 @@
 //! 인라인 컨트롤 (Ruby, Hyperlink, Field, Bookmark 등)
 
 mod equation;
-pub use equation::Equation;
+pub use equation::{DeclaredEquationFrameSource, Equation};
 
 use std::collections::HashMap;
 

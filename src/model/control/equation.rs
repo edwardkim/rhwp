@@ -2,6 +2,13 @@
 
 use crate::model::shape::CommonObjAttr;
 
+/// 파일 속성과 분리된 선언 프레임의 출처와 현재 소비 세대.
+#[derive(Debug, Clone)]
+pub struct DeclaredEquationFrameSource {
+    pub(crate) signature: [u8; 32],
+    pub(crate) legacy_layout: bool,
+}
+
 /// 수식 ('eqed' 컨트롤, HWP 스펙 표 105)
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Equation {
@@ -43,5 +50,5 @@ pub struct Equation {
     /// 미계산 본문에서 가져온 선언 수식 프레임의 런타임 출처.
     /// 파일 속성이 아니며, 관련 수식 값이 바뀌면 렌더러가 재사용하지 않는다.
     #[serde(skip)]
-    pub unpositioned_host_frame_seal: Option<[u8; 32]>,
+    pub unpositioned_host_frame_seal: Option<DeclaredEquationFrameSource>,
 }
