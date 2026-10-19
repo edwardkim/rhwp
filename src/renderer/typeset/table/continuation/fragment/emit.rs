@@ -844,6 +844,7 @@ impl TypesetEngine {
                 partial_height,
                 self.dpi,
                 st.profile.hwp5_stored_pagination_layout(),
+                styles,
             );
             if whole_height > partial_height
                 && whole_height > avail_for_rows + 0.1

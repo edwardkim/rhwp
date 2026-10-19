@@ -478,6 +478,7 @@ pub(super) fn try_place_stored_tac_paragraph(
         paragraphs.get(para_idx + 1),
         fmt,
         measured_tables,
+        styles,
         st.stored_tac_page(paragraphs),
         || st.available_height(),
         dpi,
@@ -566,6 +567,7 @@ pub(super) fn try_place_stored_tac_paragraph(
         para,
         fmt,
         measured_tables,
+        styles,
         st.stored_tac_page(paragraphs),
         shared_spacing_before,
         para_idx

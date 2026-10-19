@@ -7,7 +7,7 @@ mod rowspan_block;
 mod table_wrapper;
 pub(crate) use table_wrapper::{
     sole_nested_table_in_paragraph, unrestricted_wrapper_frame, whole_table_frame_height,
-    TableWrapperVerticalFrame,
+    wrapper_owns_paint_or_horizontal_frame, TableWrapperVerticalFrame,
 };
 
 use super::composer::{compose_paragraph, ComposedParagraph, SingleLineOverflowCache};
@@ -43,7 +43,13 @@ pub(crate) fn single_table_wrapper_has_vertical_alignment_space(
     i64::from(signed_hwpunit(cell.height)) > content_height
 }
 
-pub(crate) fn transparent_table_wrapper_child(table: &Table) -> Option<&Table> {
+pub(crate) fn transparent_table_wrapper_child<'a>(
+    table: &'a Table,
+    styles: &ResolvedStyleSet,
+) -> Option<&'a Table> {
+    if wrapper_owns_paint_or_horizontal_frame(table, styles) {
+        return None;
+    }
     let [cell] = table.cells.as_slice() else {
         return None;
     };
@@ -70,12 +76,17 @@ pub(crate) fn transparent_table_wrapper_child(table: &Table) -> Option<&Table> {
 
 /// Whole placement keeps the unwrapped row metrics intact and folds each
 /// enclosing frame around them. Split placement continues to own row cuts.
-pub(crate) fn unwrapped_table_whole_height(table: &Table, measured: f64, dpi: f64) -> f64 {
-    let Some(nested) = transparent_table_wrapper_child(table) else {
+pub(crate) fn unwrapped_table_whole_height(
+    table: &Table,
+    measured: f64,
+    dpi: f64,
+    styles: &ResolvedStyleSet,
+) -> f64 {
+    let Some(nested) = transparent_table_wrapper_child(table, styles) else {
         return measured;
     };
     TableWrapperVerticalFrame::new(table, nested, dpi, true)
-        .height(unwrapped_table_whole_height(nested, measured, dpi))
+        .height(unwrapped_table_whole_height(nested, measured, dpi, styles))
 }
 
 /// A stored Square table fits between its host line and the next visible paragraph.
@@ -3058,38 +3069,17 @@ impl HeightMeasurer {
                 row_block_end: rbe,
             };
         }
-        // 1x1 래퍼 표 감지: 내부 표의 높이를 직접 측정.
-        // (Task #688) 셀 paragraphs 가 2개 이상이면 첫 nested 표만 unwrap 시 나머지
-        // paragraph 의 nested 표가 누락되므로 paragraphs.len() == 1 가드를 둔다.
-        // 정렬 마커는 허용하지만 배치 소유자가 여럿이면 감싸기를 풀지 않는다.
-        // 측정·whole paint·partial paint가 같은 단일 자식 계약을 사용한다.
-        if table.row_count == 1 && table.col_count == 1 && table.cells.len() == 1 {
-            let cell = &table.cells[0];
-            if cell.paragraphs.len() == 1 {
-                let p = &cell.paragraphs[0];
-                let has_visible_text = p
-                    .text
-                    .chars()
-                    .any(|ch| !ch.is_whitespace() && ch != '\r' && ch != '\n');
-                if !has_visible_text {
-                    if let Some(nested) = sole_nested_table_in_paragraph(p) {
-                        if unrestricted_wrapper_frame(table, nested, self.dpi).is_some()
-                            || !single_table_wrapper_has_vertical_alignment_space(table, nested)
-                        {
-                            return self.measure_table_impl(
-                                nested,
-                                para_index,
-                                control_index,
-                                styles,
-                                // 펼친 표는 실제 배치에서도 부모와 같은 깊이를 사용한다.
-                                // 셀 중첩 깊이를 늘리면 저장 줄의 안여백을 측정에서만 제외한다.
-                                depth,
-                                width_scale,
-                            );
-                        }
-                    }
-                }
-            }
+        // 측정 행과 실제 배치가 같은 표를 소유해야 한다. 독립적인 셀 채움이나
+        // 자식 문단 프레임이 있으면 부모 행을 측정하고 일반 셀 경로를 유지한다.
+        if let Some(nested) = transparent_table_wrapper_child(table, styles) {
+            return self.measure_table_impl(
+                nested,
+                para_index,
+                control_index,
+                styles,
+                depth,
+                width_scale,
+            );
         }
 
         // 표 레이아웃은 열 그리드를 먼저 해석한 뒤 셀 문단을 그 너비에 맞춰 줄바꿈한다.

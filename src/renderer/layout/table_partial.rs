@@ -132,29 +132,13 @@ struct PartialTableHostContext<'a> {
 /// 독립적으로 보이는 내용이 없으므로 행 지오메트리는 중첩 표의 지오메트리와 같다.
 /// 이 해제 조건은 좁게 유지한다. 텍스트, 추가 문단 또는 1×1이 아닌 격자가 있으면
 /// 바깥 표 자체의 의미가 있으므로 감싸기 해제를 중단한다.
-fn transparent_nested_table(table: &crate::model::table::Table) -> &crate::model::table::Table {
-    if table.row_count != 1 || table.col_count != 1 || table.cells.len() != 1 {
-        return table;
-    }
-
-    let cell = &table.cells[0];
-    if cell.paragraphs.len() != 1 {
-        return table;
-    }
-    let para = &cell.paragraphs[0];
-    if para
-        .text
-        .chars()
-        .any(|ch| !ch.is_whitespace() && ch != '\r' && ch != '\n')
-    {
-        return table;
-    }
-    let Some(nested) = crate::renderer::height_measurer::sole_nested_table_in_paragraph(para)
-    else {
-        return table;
-    };
-
-    transparent_nested_table(nested)
+fn transparent_nested_table<'a>(
+    table: &'a crate::model::table::Table,
+    styles: &ResolvedStyleSet,
+) -> &'a crate::model::table::Table {
+    crate::renderer::height_measurer::transparent_table_wrapper_child(table, styles)
+        .map(|child| transparent_nested_table(child, styles))
+        .unwrap_or(table)
 }
 
 /// 분할 셀 조각에서 실제로 보이는 첫 줄의 저장 vpos를 찾는다.
@@ -5354,7 +5338,7 @@ impl LayoutEngine {
         // 물리 클립과 프레임을 소유한다(#1921 16쪽, #3637, HWP 2020 7쪽).
         // `row_cursor_is_nested == false`일 때 이 경로를 그대로 유지한다.
         let table = if row_cursor_is_nested {
-            transparent_nested_table(outer_table)
+            transparent_nested_table(outer_table, styles)
         } else {
             outer_table
         };

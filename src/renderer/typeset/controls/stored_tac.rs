@@ -230,6 +230,7 @@ pub(super) fn prepare_computed(
     next_para: Option<&Paragraph>,
     fmt: &FormattedParagraph,
     measured_tables: &[MeasuredTable],
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     page: StoredTacPage,
     available_height: impl Fn() -> f64,
     dpi: f64,
@@ -332,10 +333,14 @@ pub(super) fn prepare_computed(
         .find(|m| m.para_index == para_idx && m.control_index == control_index)?;
     // 일반 표 포맷과 paint가 소비하는 저장 셀의 뒤 간격 보정을 먼저 적용한다.
     // 보정 전 측정값으로 줄 소유를 거절하면 표 뒤 흐름만 legacy 상한으로 되돌아간다.
-    let fitted =
-        super::super::table::fit_measured_for_host(para, table, Some(measured), dpi, || {
-            page.profile
-        });
+    let fitted = super::super::table::fit_measured_for_host(
+        para,
+        table,
+        Some(measured),
+        dpi,
+        styles,
+        || page.profile,
+    );
     let measured = fitted.as_ref().unwrap_or(measured);
     let top = hwpunit_to_px(table.outer_margin_top as i32, dpi);
     let bottom = hwpunit_to_px(table.outer_margin_bottom as i32, dpi);
@@ -450,6 +455,7 @@ pub(super) fn prepare(
     para: &Paragraph,
     fmt: &FormattedParagraph,
     measured_tables: &[MeasuredTable],
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     page: StoredTacPage,
     shared_spacing_before: f64,
     previous_para: Option<&Paragraph>,
@@ -748,6 +754,7 @@ pub(super) fn prepare(
                                 table,
                                 m.total_height,
                                 dpi,
+                                styles,
                             )
                         } else {
                             m.total_height
