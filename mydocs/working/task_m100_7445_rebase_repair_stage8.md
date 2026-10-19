@@ -4434,3 +4434,25 @@ PDF 내장 JPEG 직접 대조86.56530%로 압축만으로90%를 충족하지 않
 원본 BMP91.99355%지만, 이는 Print layout 뒤의 진단 profile 교체이며 제품 수정/수용이
 아니다. 과거100%였던 독립 C352/C354/C356도 현재 PDFium으로 다시 대조한다. 프로필이나
 필터를 단순 교체해 다른 옅은 격자를 훼손하지 않도록 원인 계약을 계속 확인한다.
+
+
+## C445 명시 TTF 하이픈의 기존 회귀 기대값 교정
+
+기존 `9cbfd78ccc`의 문단95 하이픈 검사는 원문·단일 scalar 소속·자간/위치·본문과 다른
+Latin 슬롯을 보호한다. C442의 source-program 보정 후 `Some(HCI Poppy)` 메트릭 owner
+기대만 남아 실패했다. 260에서 원본 Latin8/type1과 Palatino Linotype/type1 명시 대체,
+독립 Print의 Type0/CIDFontType2 CID8 `/W333`·15pt를 직접 확인했다. 원점/기준선±2px와
+기존 내용 검사를 유지하며 원본의 명시 선언·HFT 부분 메트릭 배제·독립 자연 폭1HU 이내를
+같은 검사에 추가했다. 단순 None 기대 교체로 완료하지 않는다.
+
+261은 같은 runtime247/250의 개인정보 declared Native66·WASM66쪽을 끝까지 새로 산출했고
+최저94.58132/94.60117%,90미달0이다. 10쪽은 양쪽100%이며 review/overlay에서 하이픈·
+후속 본문·쪽번호를 판독했다. 미세한 AA/기준선 차이는 남는다. 같은 backend의 직전219와
+전66 PNG씩이 모두 바이트 동일하고0.1%p 이상 하락0이다. 앞 각주 보정은 이 문서 출력에
+영향을 주지 않았다. 새 값은 전체98%가 아니라 전체90%·해당10쪽 양쪽98% 조건을 따른다.
+
+263에서 corrected test를 frozen202에 연결해 실제1FAIL,247에 연결해1PASS를 확인했다.
+공식 prepare 뒤 suite025 해당1PASS/249제외(0.189초), 기존 프로그램/명시·암시·type2
+대조 suite024 21PASS/233제외(0.522초), manifest check exit0이다. 테스트 수는 늘리지 않았고
+생성 suite/manifest를 stage하지 않았다. [전쪽 TSV·10쪽 쌍·근거](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/pii-explicit-ttf-hyphen/README.md)를 보존한다.
+이22PASS는 새 전체 nextest 통과가 아니다. 전체 미해결·로드맵153쪽 미달과 PR 승인 보류는 유지한다.

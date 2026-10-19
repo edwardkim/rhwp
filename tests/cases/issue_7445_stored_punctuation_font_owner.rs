@@ -1,6 +1,6 @@
 //! 저장 줄의 ASCII 구두점은 폭 계산과 같은 영문 슬롯을 그린다.
-//! 개인정보 전66쪽 Native/fresh WASM 최저93.77937%, 쪽수66/66 확인 후 추가.
-//! 같은 하이픈 경계10/29/53쪽 모두 양쪽100%; 첫10쪽을 선정했다.
+//! 개인정보 전66쪽 재검증: Native 최저94.58132%, fresh WASM94.60117%, 쪽수66/66.
+//! 첫10쪽 양쪽100% 및 review/overlay 직접 판독 후 명시 TTF 프로그램 계약을 검증한다.
 //! 독립 Hancom Print의 PalatinoLinotype-Roman15pt, x64.08pt/baseline106.32pt를
 //! 96CSSpx로 환산한 위치를 ±2px로 확인하며 원문 소속·순서도 함께 검증한다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -65,15 +65,27 @@ fn stored_hyphen_uses_the_measured_latin_face_and_preserves_source_membership() 
         unreachable!();
     };
     assert_eq!(run.char_shape_id, Some(45));
+    let shape = &core.document().doc_info.char_shapes[45];
+    let latin = &core.document().doc_info.font_faces[1][shape.font_ids[1] as usize];
+    assert_eq!(latin.name, "HCI Poppy");
+    assert_eq!(latin.alt_type, 1);
+    let substitute = latin.subst_font.as_ref().expect("원본의 명시 TTF 프로그램");
+    assert_eq!(substitute.font_type, 1);
+    assert_eq!(substitute.face, "Palatino Linotype");
     assert_eq!(run.style.font_family, "Palatino Linotype");
     assert_eq!(
         run.style
             .original_glyph_metric_family
             .as_deref()
             .map(String::as_str),
-        Some("HCI Poppy")
+        None,
+        "원본이 명시한 TTF 폭에 HFT 부분 메트릭을 덮어쓰지 않는다"
     );
     assert_eq!(run.style.font_size, 20.0, "독립 Print 15pt");
+    assert!(
+        (hyphen.bbox.width - 20.0 * 0.333).abs() <= 96.0 / 7200.0,
+        "독립 Print PalatinoLinotype-Roman CID8 /W333: 1HU 이내"
+    );
     assert!((hyphen.bbox.x - 85.44).abs() <= 2.0, "독립 Print x±2CSSpx");
     assert!(
         (hyphen.bbox.y + run.baseline - 141.76).abs() <= 2.0,
