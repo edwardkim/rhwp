@@ -107,3 +107,5 @@ pdf/issue7998/periodic-borders/*.pdf -text -diff
 pdf/issue7998/fill-borders/*.pdf -text -diff
 pdf/issue7998/compound-borders/*.pdf -text -diff
 pdf/issue7998/compound-borders/print/*.pdf -text -diff
+pdf/issue7998/structure-borders/*.pdf -text -diff
+pdf/issue7998/structure-borders/print/*.pdf -text -diff

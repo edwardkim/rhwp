@@ -61,7 +61,7 @@ pub(crate) fn restore_parent(mut capture: Paragraph, current: &Paragraph) -> Par
     }
     capture
 }
-fn without(p: &Paragraph, remove: &[usize], updates: &[(usize, u8, bool)]) -> Paragraph {
+pub(super) fn without(p: &Paragraph, remove: &[usize], updates: &[(usize, u8, bool)]) -> Paragraph {
     let mut after = p.clone();
     for &(i, mask, outside) in updates {
         keep_sides(&mut after.controls[i], mask, outside).expect("validated remaining source role");
