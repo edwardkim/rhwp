@@ -62,6 +62,7 @@ pub(super) fn project(
                 width_hwp: width,
                 height_hwp: height,
                 baseline_distance_hwp: flow_inline_baseline_hwp(control, height),
+                spacing_height_hwp: inline_control_spacing_height_hwp(control),
             });
             scalar_index += 1;
             represented |= chars.get(position) == Some(&'\u{FFFC}')

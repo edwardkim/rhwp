@@ -151,6 +151,9 @@ struct FlowInlineControl {
     /// Equation supplies an object-owned baseline for the physical row. Other
     /// inline objects keep the text metrics already selected by the caller.
     baseline_distance_hwp: Option<i32>,
+    /// Source-owned participation in paragraph line spacing is separate from
+    /// the object's occupied height. A larger non-participant must not enlarge it.
+    spacing_height_hwp: Option<i32>,
 }
 
 /// 줄 채움 결과
@@ -3073,6 +3076,17 @@ fn inline_control_occupied_size_hwp(
     Some((width, height))
 }
 
+fn inline_control_spacing_height_hwp(control: &Control) -> Option<i32> {
+    match control {
+        Control::Equation(equation)
+            if equation.common.treat_as_char && equation.common.affect_line_spacing =>
+        {
+            Some(crate::renderer::equation::flow_height_hwp(equation) as i32)
+        }
+        _ => None,
+    }
+}
+
 /// [#7160] 프레임 채움 전용 — **글자처럼 취급 표**도 인라인 토큰으로 싣는다.
 ///
 /// 일반 경로는 표를 `control 배치 경로`에 두려고 제외하지만(#3211), 저장 줄이 없는 host 는
@@ -3107,6 +3121,7 @@ fn flow_inline_controls_with_tac_tables(
             width_hwp,
             height_hwp,
             baseline_distance_hwp: None,
+            spacing_height_hwp: inline_control_spacing_height_hwp(control),
         });
     }
     controls.sort_by_key(|control| control.char_position);
@@ -3856,6 +3871,7 @@ fn layout_paragraph_in_frame_impl(
                 width_hwp: px_to_hwpunit(prefix.advance, dpi),
                 height_hwp: px_to_hwpunit(prefix.height, dpi),
                 baseline_distance_hwp: Some(px_to_hwpunit(prefix.baseline, dpi)),
+                spacing_height_hwp: None,
             });
             inline_controls.sort_by_key(|control| control.char_position);
         }
@@ -3975,6 +3991,12 @@ fn layout_paragraph_in_frame_impl(
             Some((height_hwp, baseline_distance_hwp))
         })
         .flatten();
+    let terminal_inline_spacing_height = terminal_inline_metrics.and_then(|_| {
+        para.controls
+            .iter()
+            .filter_map(inline_control_spacing_height_hwp)
+            .max()
+    });
     // Fresh rows inherit only provenance. Page/column-first, empty, indent,
     // paragraph-head, and FIRST/LAST are properties of the newly projected
     // physical row and must not leak from the cached first row.
@@ -4032,6 +4054,9 @@ fn layout_paragraph_in_frame_impl(
                 };
                 let mut inline_metrics = (frame.row_count() == first_row)
                     .then_some(terminal_inline_metrics)
+                    .flatten();
+                let mut inline_spacing_height = (frame.row_count() == first_row)
+                    .then_some(terminal_inline_spacing_height)
                     .flatten();
                 let mut row_terminated = false;
                 let interval_width = |index: usize, interval: &std::ops::Range<i32>| {
@@ -4163,6 +4188,8 @@ fn layout_paragraph_in_frame_impl(
                     for control in inline_controls.iter().filter(|control| {
                         inline_control_flow::owns_line(control, line, text_chars.len())
                     }) {
+                        inline_spacing_height =
+                            inline_spacing_height.max(control.spacing_height_hwp);
                         inline_metrics = match inline_metrics {
                             Some((height_hwp, baseline_distance_hwp))
                                 if height_hwp > control.height_hwp =>
@@ -4212,6 +4239,16 @@ fn layout_paragraph_in_frame_impl(
                     line_spacing_value,
                     dpi,
                 );
+                if let Some(height) = inline_spacing_height {
+                    // Match scalar reflow: only participating objects enlarge
+                    // the line-spacing basis, alongside this row's text strut.
+                    metrics.line_spacing = compute_line_spacing_hwp(
+                        line_spacing_type,
+                        line_spacing_value,
+                        metrics.line_height.max(height),
+                        dpi,
+                    );
+                }
                 if let Some((height_hwp, baseline_distance_hwp)) = inline_metrics {
                     let inline_owns_row_height = height_hwp > metrics.line_height;
                     apply_inline_control_frame_height(&mut metrics, height_hwp);

@@ -3104,3 +3104,43 @@ Native12와 정식 집중 검사는 rustfmt 전 source의 실행이다. 이후 r
 중괄호를 생략한 형태로 정리했으며 원본·patch·두 SHA를 format-binding에 보존했다.
 포맷 반영 source를 별도 producer로 다시 Native/fresh WASM 빌드하고 전쪽을 산출한다.
 이 지점은 단계별 로컬 커밋이며 전체 nextest·전52/반영179조건·실제 소비·PR 제출 완료가 아니다.
+
+
+## C422 수식의 줄간격 참여 속성을 Frame 소비까지 전달
+
+C421의 전쪽 Native921쪽 대조에서 원본115쪽·HWPX115쪽과 sample16의64쪽은90% 이상이지만,
+분할197쪽 세 조건의130쪽은32.89598%였다. 이 전체 결과는 HEAD60f1의 증거이며 아래 후보의
+통과로 재인용하지 않는다. 별도 수식 대조군 HWP/HWPX18쪽도16쪽88.19667/88.24277%가 남는다.
+
+원인 경로는 `Equation.common.affect_line_spacing → FlowInlineControl → FrameRowMetrics →
+공통 줄 높이·간격 → CellUnit/실제 줄 paint`다. 새 Frame admission을 유지한 상태에서 일반
+scalar 재조판은 수식의 줄간격 참여 높이를 반영하지만 Frame 경로는 글자 strut으로 간격을
+계산한 뒤 점유 높이만 늘렸다. 원문 문단1698의 수식은2232HU·참여=true·160% 간격이며,
+저장 줄의 간격1340HU와 달리 Frame의 뒤 본문이8.266667CSSpx 먼저 시작했다. 문단1689도
+같은 원인의 참여 leading을 잃었다. 문서명·페이지·좌표별 예외를 추가하지 않는다.
+
+개체의 점유 높이와 참여 높이를 분리해 FlowInlineControl에 전달한다. 해당 물리 줄의 소유
+개체 중 참여한 수식만 text strut과 함께 간격의 기준이 된다. 더 큰 비참여 개체가 이를 대신하지
+않으며 표·그림의 기존 점유와 일반 개행·종단 소유도 유지한다. projected Frame 입력도 같은
+필드를 전달한다. 첫 빌드의 해당 생성자 누락 E0063은 수정했고 실패 로그를 보존했다.
+
+ignored `rebase-4a07d3ae-20261019/repair14-equation-spacing/`의 source/native-producer,
+`native-build-attempt2.log`가 실제 성공 빌드(240.17초) 출처다. Native192DPI/compat2024:
+보존197쪽 입력44/129/130/131/197은98.09400/95.48686/95.45920/99.49413/99.98419%,
+새 생산197쪽 입력44/130/197도98.09400/95.45920/99.98419%이며 양쪽197/197쪽이다.
+130쪽 review/overlay에서 뒤 본문 원점 복구를 확인했으나 수식 획·첨자·미세 간격 차이는 남는다.
+정상 HWP18쪽의8/9/10쪽97.06418/97.03591/95.89070%도 집중 확인했다.
+
+정식 #1139 정상7건+#4138 5건은12PASS/0FAIL, exit0(전체304.65초)이다. 직접35검사는
+33PASS/2FAIL이고 두 잔여 baseline 검사는 변경하지 않았다. Native Skia lib는 실행 중이며,
+fresh WASM·영향 전쪽·전체 nextest·실제 소비 경로 검증은 아직 완료하지 않았다.
+원문 HWP18쪽16쪽은 같은 조건의 고정devel88.90512% 대 후보88.19667%이므로0.70845%p
+하락도 보정 대상이다. 점수 통과·제출 완료로 표시하지 않는다. 새 회귀 검사는 선행 시각 조건을
+충족한 뒤 추가한다.
+
+별도 합성 CJK baseline67/80의 한컴 재저장 HWPX를 확인했다. 양쪽 모두baseline67,
+폭2199HU/높이2808HU로 정규화된다. 따라서 같은 Print가 나왔다는 사실은 유효한80%가
+동일하게 paint된다는 증거가 아니다. PDF의 가/나 glyph outline·hmtx는 설치HBATANG.TTF와
+각각 완전히 같음을 확인했다. 입력의 유효성과 실제 공통 배치를 먼저 보정하며 미달 상태에서
+테스트를 바꾸지 않는다. `equation-baseline-oracle/normalization-conclusion.json`과
+`cjk-pdf-installed-font-comparison.json`에 근거를 보존한다.
