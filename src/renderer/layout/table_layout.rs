@@ -25935,11 +25935,12 @@ impl LayoutEngine {
         &self,
         table: &crate::model::table::Table,
         row: usize,
+        row_frame_height: f64,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         if !self.row_uses_reflow_physical_frame(table, row)
             || self
-                .reflow_row_physical_minimum(table, row, styles)
+                .reflow_row_physical_minimum(table, row, row_frame_height, None, styles)
                 .is_some()
         {
             return None;

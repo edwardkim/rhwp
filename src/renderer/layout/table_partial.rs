@@ -6668,7 +6668,7 @@ impl LayoutEngine {
                         && self.row_has_plain_reflow_line_units(table, row, styles))
                     // [#7870] scan 이 재조판 행 첫 조각에 예약한 선언 행 높이도 같은 소유다.
                     || (!(is_continuation && row == start_row)
-                        && self.reflow_row_declared_first_frame(table, row, styles).is_some_and(
+                        && self.reflow_row_declared_first_frame(table, row, resolved_row_heights[row], styles).is_some_and(
                             |declared| end_row_height_override.is_some_and(|height| height <= declared + 0.5),
                         ))
                     || (self.profile.get().hwpx_stored_layout()
