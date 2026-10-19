@@ -581,9 +581,13 @@ fn sample16_pink_panels_preserve_their_original_brush_and_contained_mask() {
         .collect();
     assert!(!paints.is_empty(), "독립 출력의 원본 분홍색 paint 보존");
     for paint in paints {
+        // A contained ROP may apply the mask once to a viewport that owns both
+        // the black backing and the original brush. SVG masks are inherited
+        // through that ancestor's compositing, not copied onto every paint.
         let reference = paint
-            .attribute("mask")
-            .expect("흑백 패턴으로 분홍색을 덮지 않음");
+            .ancestors()
+            .find_map(|owner| owner.attribute("mask"))
+            .expect("분홍색 paint의 실제 합성 소유자가 역마스크를 적용한다");
         let id = reference
             .strip_prefix("url(#")
             .and_then(|value| value.strip_suffix(')'))

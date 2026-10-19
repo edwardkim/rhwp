@@ -1,7 +1,7 @@
 //! sample16 한컴 2024 저장본의 제목·BCP 꼬리·후속 본문을 보호한다.
-//! 독립 Print와 전 64쪽 최저 Native 96.22428%, fresh WASM 96.07248%.
-//! 3쪽은 각각 99.92012%, 99.90360%이며 확대 판독을 완료했다.
-//! 입력/PDF SHA·96dpi 좌표·쪽 선정·TSV·PNG: task_m100_7642_stage1351.md.
+//! 검사 도입 시 전64쪽 최저 Native96.22428%, fresh WASM96.07248%,
+//! 3쪽99.92012/99.90360%의 근거: task_m100_7642_stage1351.md.
+//! 현재 전64쪽·입력/PDF SHA·쪽별 점수와 재검토: task_m100_7445_rebase_repair_stage8.md C419–C420.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;
@@ -351,8 +351,23 @@ fn sample16_2024_empty_tail_keeps_its_editor_caret_owner() {
     assert_eq!(carets.len(), 1, "빈 문단의 편집 소유 누락·중복 방지");
     assert_eq!(carets[0]["charStart"], 0);
     assert_eq!(carets[0]["text"], "");
-    assert_eq!(carets[0]["w"], 0.0);
+    // The empty line's hit-test frame may cover its available width. Its
+    // character advances, rather than that frame, own the zero-length caret.
+    assert_eq!(carets[0]["charX"], serde_json::json!([0.0]));
     assert!(carets[0]["h"].as_f64().unwrap() > 0.0);
+    let page = core.build_page_render_tree(2).unwrap();
+    let line = single_line(body(&page.root), blank);
+    assert!(line.bbox.height > 0.0, "빈 원본 줄도 편집 공간을 가진다");
+    let cursor: serde_json::Value = serde_json::from_str(
+        &core
+            .get_cursor_rect_native(blank.0, blank.1, 0)
+            .expect("빈 원본 문단의 실제 커서 질의"),
+    )
+    .unwrap();
+    assert_eq!(cursor["pageIndex"], 2, "원본 후행 문단의 쪽 소유");
+    assert_eq!(cursor["x"], carets[0]["x"]);
+    assert_eq!(cursor["y"], carets[0]["y"]);
+    assert_eq!(cursor["height"], carets[0]["h"]);
 }
 
 #[test]

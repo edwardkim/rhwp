@@ -3016,3 +3016,49 @@ manifest를 다시 준비해1640sources/7155staticattrs를 확인하고 현재 �
 정식 해당 suite의 완료로 대신하지 않는다. 첫 시도의 다른 serde_json dependency identity 선택으로
 생긴 compile 오류는 실제 검사 결과가 아니며 수정한 의존성으로만 실행했다.
 현재 PR 준비 완료가 아니며 기존6실패·시각 하락·전체 범위 검증을 계속한다.
+
+
+## C420 마스크 합성 소유와 빈 원본 문단의 편집 계약 재검토
+
+현재 runtime은 `6215ec12b1552a78eb9092dfa1530b7defd9dd43`와 동일하며,
+`6cb3d68b95`·`5a01dd7072` 이후 제품 코드 변경은 없다. 다음2건은 검사 의미를
+재검토했고, 수식2건과 #4138 두 이어받기 실패는 그대로 유지한다.
+
+- 분홍 패널 검사의 도입은 `34f1579cc6`, 독립 한컴2024 Print와 GDI+ 근거는
+  `regression-policy-20261015/wmf-contained-mask-20261017/README.md`다.
+  새 base의 `6c8bd31e2c`는 WMF 마스크 교집합을 원래 장치 좌표계의 SVG viewport에
+  적용한다. 그 자식의 분홍 paint 자체에 mask 속성이 없더라도 부모 viewport의 역휘도
+  mask가 실제 합성된다. 원본 BIN0003의4개 분홍 paint에서 각각 소유 mask12/14/20/22,
+  역색 filter와 원래 brush를 확인했다. 직접 속성만 찾던 검사를 실제 조상 합성 소유로
+  고쳤고, 같은 SVG의 luminance mask 및 inverse filter 검사는 유지했다.
+- 빈 문단 검사는 `560fae1644`에서 원본 BCP 후행 문단의 편집 소유 누락을 막으려
+  도입했다. `layout_empty_runs_line`은 hit-test frame에 가용 폭을 줄 수 있으며,
+  `get_page_text_layout_native`의 w는 그 frame 폭이다. 빈 문자열의 문자 전진은
+  `charX=[0]`다. 화면 frame을 0으로 제한하던 검사를 문자 전진0·원본 소유 유일성·
+  양의 줄 점유 및 실제 `get_cursor_rect_native`의 쪽/원점/높이 일치로 교정했다.
+  원본 문구로 소유자를 고르며 기존 앞뒤 순서·비겹침 검사는 유지한다.
+
+선행 시각 근거는 C417의 같은 원본·독립 Print·현재 글꼴 전64쪽이다.
+Native 최저95.25071/WASM95.66182%, 미달0, 양쪽64/64쪽이며 새 PNG capture를
+했다고 쓰지 않는다. 보존한 전쪽 PNG에서3/18쪽 review+overlay를 생성해 양backend 모두
+직접 열었다. 18쪽98.35911/98.50096%에서 분홍 패널·역무늬·앞뒤 본문을,
+3쪽96.85161/97.19902%에서 마지막 원문/빈 후행 줄의 순서와 비겹침을 확인했다.
+**3쪽은 이전 px 보호 도입 때와 달리 현재 양쪽98% 미만이므로 시각 회귀가 남는다.**
+기존 중요한 위치 검사는 제거하거나 완화하지 않으며 그 출력 개선도 후속 필수 작업이다.
+그림의 미세 무늬·본문 획/간격 차이도 점수 통과로 숨기지 않는다.
+
+정본 ignored `rebase-4a07d3ae-20261019/repair10-audit/`에 실제 SVG·편집 좌표와
+실행 로그를 보존했다. 최초 현행 직접진단35건29PASS/6FAIL → 검사 교정 뒤31PASS/4FAIL
+(3.51초)이다. 최초 임시 rustc의 resvg extern 누락은 실행 전 설정 오류로 별도 보존하고
+실제 테스트 실패로 세지 않는다. 올바른 의존성으로 재실행했다.
+`--prepare` 후 현재 manifest가 정한 suite008/023에서 두 모듈 **22PASS/0FAIL/453SKIP**,
+실행0.360초·전체14.692초·exit0이다. `formal-nextest.log`·`formal-state.json`을 따른다.
+수정 전 두 잘못된 assertion의 FAIL과 정상 마스크/본문/6쪽 표 경계 검사의 PASS가 연결된다.
+전체 nextest 및 제출 게이트 통과가 아니다.
+
+수식 baseline67/80의 독립 한컴2024 Print도 각1쪽 완료했다(method0,
+frame_print_to_pdf_ex_one_up, Hancom13.0.0.3901). 두 PDF content stream은 동일하다.
+현재 Native/fresh WASM runtime의 전쪽 각32.63506/34.93976%이며, 사용자 요청을 보존한
+별도 pdftoppm 대조도30.88071/33.74439%로 미달이다. 이 합성 입력의 실패 기대값은
+변경하지 않았다. 원본·Print·PNG/TSV·출처를 `equation-baseline-oracle/`에 보존하고
+현재 실제 수식 배치와 기준선 소유를 계속 조사한다.
