@@ -4522,3 +4522,63 @@ LineSeg가 없는데 원본 슬롯이라고 표시하던 두 유닛 생산 지�
 55/56·86·123/124·165/166쪽을 먼저 직접 검증한다. 기존 정식 52건에 완료 페이지의 관계/좌표
 검사와 No-LS·빈 문단 대조를 추가 실행한다. 새 실물 회귀·golden·px 핀을 만들거나 기존
 기대값을 바꾸지 않는다. 작은 경계에서 후퇴가 있으면 보정한 뒤 양쪽 전쪽 검증으로 진행한다.
+
+### 80168 새 줄의 첫 조각 회귀 검출과 독립 기준선
+
+위 후보의 실제 code source는 `fc52f5ef80feacab0af1f371c3dd83f42974ab53`이다.
+Native 빌드는 566.61초, 최적화 fresh WASM 빌드는 1,318.71초에 각각 종료 0을 확인했다.
+공용 `target/pr-review`, jobs 8, WASM codegen-units 16을 사용했다. producer SHA-256은
+Native `c581703a34a58df9c66aaad188f969eeffde4f34ce85cb1bb08be7eb3d35aac4`,
+WASM `bf08031718606b47cd07a5be4b98771a0125644b05618fad3fe2d09f015a919d`다.
+이번 후속 변경은 검사와 증적만 추가하며 렌더링 구현은 바꾸지 않는다.
+
+같은 원본 `samples/80168_regulatory_analysis.hwp`의 SHA-256은
+`c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22`,
+독립 기준 `pdf/80168_regulatory_analysis-hwp-2024.pdf`는
+`b233df7098547df43455f49c13ba5b63f1f06113c853a4773f86a94d6b34a982`다.
+print profile, compat 2024, 96dpi, raw 2px 실루엣으로 전 157쪽을 양쪽 모두 비교했다.
+Native 최저는 49쪽 **93.90078%**, fresh WASM 최저는 153쪽 **91.66667%**이며,
+90% 미만·측정 누락이 없고 전체 쪽수도 두 출력과 독립 PDF 모두 157쪽이다.
+
+| 보호할 경계 | Native raw | fresh WASM raw | 검사 |
+| --- | ---: | ---: | --- |
+| 29쪽 첫 조각의 끝 | 99.15837% | 99.27535% | 문장 앞부분의 소속·포함과 독립 아래 괘선 ±2px |
+| 30쪽 같은 문장의 이어받기 | 95.76628% | 95.70216% | 「등의 명세」의 소속·누락·중복·다음 항목 순서, 절대 좌표 없음 |
+| 61쪽 걸침 칸의 표제 | 99.78251% | 99.77833% | 원본 Center·내용 보존과 독립 글자 기준선 ±2px |
+
+전쪽 원문은 [Native TSV](../pr/assets/planet6897_20261018/80168_d15/native/80168_silhouette.tsv)와
+[fresh WASM TSV](../pr/assets/planet6897_20261018/80168_d15/wasm/80168_silhouette.tsv)에
+바이트 그대로 보존했다. 대표 [Native 29쪽 review](../pr/assets/planet6897_20261018/80168_d15/native/p029-review.png),
+[WASM 30쪽 review](../pr/assets/planet6897_20261018/80168_d15/wasm/p030-review.png),
+[WASM 61쪽 overlay](../pr/assets/planet6897_20261018/80168_d15/wasm/p061-overlay.png)와
+같은 폴더의 양쪽 29/30/61쪽 review·overlay를 직접 확인했다. 같은 좌표의 2배 확대에서도
+29쪽 항목 7의 첫 줄과 아래 괘선, 30쪽 문장 끝과 항목 8의 순서, 61쪽 「예외기준」의
+기준선과 위·아래 여백을 대조했다. 일부 글자 폭·간격과 괘선의 래스터 농도 차이는 남아 있으며,
+이를 완전한 픽셀 일치로 보고하지 않는다. 이번 검사는 관측한 문장 소속 오류를 보호한다.
+
+`tests/cases/regulatory_analysis_completed_pages.rs`에
+`single_cell_opening_fragment_preserves_successor_sentence_owner`를 추가했다.
+원본 저장 LineSeg가 없는 문단이라는 적용 경로를 확인하고, 두 쪽의 앞·뒤 글줄을 합친 내용이
+원문과 같은지 검사한다. 다음 항목의 쪽 소속·포함·순서·겹침도 함께 보호한다.
+같은 검사를 D14 `d3250a8a187956fe6ac25a3864e2a171a2e68331`의 실제 라이브러리로
+실행하면 29쪽 두 줄/독립 기대 한 줄에서 실패하고, D15에서는 통과했다.
+빌드 실패를 재현으로 세지 않았다. 실행 명령과 로그는 ignored
+`output/pr-review/planet6897-20261018/pending-first-fragment-regression-results.json`에 있다.
+
+기존 61쪽 검사는 PDF nominal glyph bbox의 상단 122.4px를 엔진 논리 줄 상단과
+비교했다. 두 상자는 같은 좌표 계약이 아니므로, 독립 PDF의 실제 글자 기준선 137.12px를
+엔진의 실제 TextRun 원점+baseline과 비교하도록 정정했다. 실제 기준선은 137.08px로
+차이가 0.04px다. 허용치를 넓히지 않고 ±2px와 기존 Center·소속·원문 보존 검사를 유지한다.
+
+`node scripts/rust-test-suite-manifest.mjs --prepare` 뒤 실제 자동 수집 위치는
+`regression_suite_018`이다. 파생 manifest/harness는 커밋하지 않으며 CI 개별 호출도 추가하지 않는다.
+정식 `run-rust-test.mjs regulatory_analysis_completed_pages`를 release-test/native-skia로
+실행해 **9건 모두 통과**했다. 명령·로그는
+`output/pr-review/planet6897-20261018/direction15-regulatory-formal-nextest.log`에 보존한다.
+
+기존 집중 검사 83건의 첫 실행은 78 PASS / 5 FAIL이었다. 위 독립 기준선 정정은 그중
+1건을 해결한 것이며, 교육과정의 행 소속 1건과 7518 중첩 표의 쪽별 유닛 소속 3건은 아직
+해결되지 않았다. 7518 세 실패는 D14에서도 같은 값으로 재현되지만 고정 devel보다 후퇴한
+실제 후보 결함이므로 기대값을 바꾸거나 과거 실패라는 이유로 제외하지 않는다.
+전체 248개 입력·256조건·backend별 3,569쪽의 Native/fresh WASM 산출도 계속하며,
+이 문서의 통과를 전체 PR 준비 완료로 대신하지 않는다.

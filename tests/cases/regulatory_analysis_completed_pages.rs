@@ -17,7 +17,13 @@
 //! 61쪽 이어받기 정렬은1c875d9a8의 전157쪽 Native/fresh WASM 최저
 //! 94.73551/94.95563%, 해당쪽 raw98.09685/98.11282%와 직접 review로 확인했다.
 //! 같은 걸침 칸의 마지막 표제를 검증하는 완료 페이지이며, 다른 고득점 쪽은 이 경계를
-//! 대신하지 않는다. 독립 Print 표제 상단122.4px와 원본 Center·앞뒤 쪽 내용 보존을 검사한다.
+//! 대신하지 않는다. 독립 Print 글자 기준선과 원본 Center·앞뒤 쪽 내용 보존을 검사한다.
+//! fc52f5ef8의 전 157쪽 Native/fresh WASM 최저는 93.90078/91.66667%다.
+//! 29쪽 99.15837/99.27535%, 61쪽 99.78251/99.77833%에서 같은 좌표의 확대 출력을
+//! 독립 Print와 대조했다. 29쪽 아래 괘선과 61쪽 기준선은 ±2px로 검사하고,
+//! 30쪽 95.76628/95.70216%는 문장 소속·순서·누락·중복·포함 관계로 보호한다.
+//! 수정 전 FAIL/수정 후 PASS·전쪽 TSV·대표 PNG는 통합 계획서의
+//! 「80168 새 줄의 첫 조각 회귀 검출과 독립 기준선」에 연결한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -456,8 +462,9 @@ fn carried_rowspan_label_keeps_its_print_center_and_page_owner() {
     contained(opening_lines[0], opening);
     contained(closing_lines[0], closing);
 
-    // 한컴 Print61쪽의 독립 글자 상단. 좌표로 셀이나 글줄을 선택하지 않는다.
-    near(closing_lines[0].bbox.y, 122.4);
+    // 독립 Print 61쪽 글자 기준선 137.12px와 같은 좌표 계약을 비교한다.
+    // PDF nominal glyph bbox와 엔진 논리 줄 상자의 상단은 서로 다른 값이다.
+    baseline(closing_lines[0], 137.12);
     let above = closing_lines[0].bbox.y - closing.bbox.y;
     let below = closing.bbox.y + closing.bbox.height
         - closing_lines[0].bbox.y
@@ -470,4 +477,64 @@ fn carried_rowspan_label_keeps_its_print_center_and_page_owner() {
         (above - below).abs() <= 2.0,
         "원본 Center의 위·아래 빈 공간"
     );
+}
+
+// 독립 Print 29쪽 아래 괘선은 72pt 좌표를 96dpi로 환산했다.
+// 30쪽은 문장·항목의 쪽 소유와 포함·순서를 검사한다.
+#[test]
+fn single_cell_opening_fragment_preserves_successor_sentence_owner() {
+    let core = load();
+    let original = source_table(&core, 226)
+        .cells
+        .iter()
+        .find(|cell| cell.row == 0 && cell.col == 0)
+        .unwrap();
+    assert!(
+        original.paragraphs[9].line_segs.is_empty(),
+        "원본은 저장 줄 없는 재조판 경로"
+    );
+    assert!(compact(&original.paragraphs[9].text).ends_with("등의명세"));
+
+    let first = core.build_page_render_tree(28).unwrap();
+    let second = core.build_page_render_tree(29).unwrap();
+    let opening = table(&first.root, 226);
+    let continuation = table(&second.root, 226);
+    let before = cell(opening, 0, 0);
+    let after = cell(continuation, 0, 0);
+    let prefix = lines(before, 9);
+    let suffix = lines(after, 9);
+    assert_eq!(prefix.len(), 1, "29쪽은 항목 7의 첫 줄만 소유해야 한다");
+    assert_eq!(
+        suffix.len(),
+        1,
+        "30쪽은 같은 문장의 나머지 한 줄을 소유해야 한다"
+    );
+    assert_eq!(
+        compact(&text(suffix[0])),
+        "등의명세",
+        "독립 Print 30쪽 첫 표 글줄"
+    );
+    assert_eq!(
+        format!("{}{}", compact(&text(prefix[0])), compact(&text(suffix[0]))),
+        compact(&original.paragraphs[9].text),
+        "앞뒤 쪽의 문장 순서·누락·중복"
+    );
+    contained(prefix[0], before);
+    contained(suffix[0], after);
+    assert!(!compact(&text(before)).contains("등의명세"));
+    assert_eq!(compact(&text(after)).matches("등의명세").count(), 1);
+
+    let following = lines(after, 10);
+    assert_eq!(
+        following.len(),
+        1,
+        "항목 8의 한 줄이 같은 조각에서 이어져야 한다"
+    );
+    assert!(compact(&text(following[0])).starts_with("8."));
+    assert!(
+        suffix[0].bbox.y + suffix[0].bbox.height <= following[0].bbox.y,
+        "문장 끝과 다음 항목이 순서대로 있고 겹치지 않아야 한다"
+    );
+    contained(following[0], after);
+    near(opening.bbox.y + opening.bbox.height, 1024.3199869791667);
 }
