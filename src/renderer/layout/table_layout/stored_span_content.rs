@@ -409,7 +409,13 @@ impl LayoutEngine {
             return 0.0;
         }
         if self.stored_span_cut_preserves_line_slots(table, cell) && !unit.reflowed_line_slot {
-            self.row_cut_capacity_trailing_trim(table, cell, units, start, end, styles)
+            // 원본 문단 내부에서는 저장 되감김의 trim도 한 줄 슬롯을 대신할 수 없다.
+            // 문단을 온전히 닫았을 때만 다음 문단으로 가는 전진을 분리한다.
+            if unit.para_idx == units[end].para_idx {
+                0.0
+            } else {
+                self.row_cut_capacity_trailing_trim(table, cell, units, start, end, styles)
+            }
         } else {
             self.stored_span_line_tail_spacing(unit)
         }
