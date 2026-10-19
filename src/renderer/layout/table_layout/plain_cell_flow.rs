@@ -62,13 +62,24 @@ impl super::LayoutEngine {
             .into_iter()
             .filter_map(|index| {
                 let cell = &table.cells[index];
-                (self.cell_uses_plain_reflow_units(cell, table)
-                    || self.stored_plain_text_cell_frame(table, cell))
-                .then(|| {
-                    self.cell_units(cell, table, styles)
-                        .last()
-                        .map_or(0.0, |unit| unit.height)
-                })
+                let stored = self.stored_plain_text_cell_frame(table, cell);
+                if !stored && !self.cell_uses_plain_reflow_units(cell, table) {
+                    return None;
+                }
+                let units = self.cell_units(cell, table, styles);
+                let last = units.last()?;
+                // 마지막 잉크 상자에서는 다음 줄 간격을 이미 접었을 수 있다.
+                // 완료 뒤의 한 줄 경계는 유효한 원본 슬롯을 소비하며,
+                // 새로 조판한 줄에는 그 줄 생산자가 준 현재 높이를 쓴다.
+                let source_slot = (stored && !last.reflowed_line_slot)
+                    .then(|| {
+                        let paragraph = cell.paragraphs.get(last.para_idx)?;
+                        let line = paragraph.line_segs.get(last.vis_end.checked_sub(1)?)?;
+                        line.line_height.checked_add(line.line_spacing)
+                    })
+                    .flatten()
+                    .map_or(0.0, |height| super::hwpunit_to_px(height, self.dpi));
+                Some(last.height.max(source_slot))
             })
             .fold(0.0, f64::max);
         blank_tail_is_line_sliver(tail, line, self.dpi)

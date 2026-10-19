@@ -61,6 +61,12 @@ async function main() {
   const catalogue = JSON.parse(readFileSync(option('--fonts'), 'utf8'));
   if (!['2022', '2024'].includes(settings.compat) || !(settings.scale > 0)
       || !Number.isInteger(settings.workers) || settings.workers < 1) throw Error('PNG 출력 조건이 올바르지 않습니다.');
+  // 문서 초기 파싱·조판도 CDP evaluate에 포함된다. 복잡한 실물 HWPX는
+  // 180초를 넘으므로 유한한 10분을 기본으로 두고 실행 조건에도 보존한다.
+  const protocolTimeout = settings.protocolTimeoutMs ?? 600000;
+  if (!Number.isSafeInteger(protocolTimeout) || protocolTimeout < 1 || protocolTimeout > 2147483647) {
+    throw Error('브라우저 통신 제한 시간은 유효한 양의 밀리초여야 합니다.');
+  }
   const wanted = settings.pages;
   if (wanted !== null && (!Array.isArray(wanted) || !wanted.length || wanted.some(p => !Number.isInteger(p) || p < 1)
       || new Set(wanted).size !== wanted.length)) throw Error('선택 쪽이 올바르지 않습니다.');
@@ -94,7 +100,7 @@ async function main() {
       try {
         browser = await require('puppeteer-core').launch({
           executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true,
-          protocolTimeout: 180000, userDataDir,
+          protocolTimeout, userDataDir,
         });
         browsers.add(browser);
         const page = await browser.newPage();
@@ -269,7 +275,7 @@ async function main() {
     const expected = wanted || Array.from({length: pageCount}, (_, i) => i + 1);
     if (pageRecords.length !== expected.length || new Set(pageRecords.map(p => p.page)).size !== expected.length) throw Error('WASM PNG 쪽 누락·중복');
     writeFileSync(join(output, 'wasm-export-complete.json'), JSON.stringify({
-      pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d',
+      pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d', protocolTimeoutMs: protocolTimeout,
       pages: pageRecords.sort((a,b) => a.page-b.page), workers,
     }, null, 2));
   } finally {
