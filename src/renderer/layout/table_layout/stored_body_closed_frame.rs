@@ -184,7 +184,6 @@ impl LayoutEngine {
             || profile.session_edited()
             || host.stored_text_partition_is_dirty()
             || host.cell_format_vpos_dirty
-            || super::super::para_has_non_whitespace_text(host)
             || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
             || line.vertical_pos < 0
             || line.line_height <= 0
@@ -220,8 +219,23 @@ impl LayoutEngine {
         let outer_bottom = body_height
             - crate::renderer::hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi);
         let outer_bottom_hu = (outer_bottom * 7200.0 / self.dpi).round() as i64;
-        let original_single_host = matches!(host.controls.as_slice(), [Control::Table(_)])
-            && (table.common.vertical_offset as i32) >= 0;
+        let empty_host = !super::super::para_has_non_whitespace_text(host);
+        let single_table_owner = host
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            == 1
+            && host.controls.iter().all(|control| {
+                matches!(control, Control::Table(_))
+                    || crate::renderer::composer::control_is_width_neutral_marker(control)
+            });
+        // 제목 글줄과 설정 메타데이터는 표의 독립 앵커를 지우지 않는다.
+        // 원본 offset이 제목의 잉크와 뒤 간격 이후를 가리킬 때만 같은 닫힘을 인증한다.
+        let table_offset = i64::from(table.common.vertical_offset as i32);
+        let host_advance = i64::from(line.line_height) + i64::from(line.line_spacing.max(0));
+        let original_single_host =
+            single_table_owner && table_offset >= 0 && (empty_host || table_offset >= host_advance);
         if original_single_host && (stored_bottom - outer_bottom_hu).abs() <= 2 {
             return Some(outer_bottom);
         }
@@ -234,7 +248,8 @@ impl LayoutEngine {
         let anchored_frame = original_single_host && (stored_bottom - frame_bottom_hu).abs() <= 2;
         // 같은 호스트의 흐름 표는 각자 독립된 개체 상자를 갖는다. 앵커의 첫 위치나
         // 형제 개수로 본문 뷰포트를 부정하지 않으며, 다른 개체·겹침은 추정하지 않는다.
-        let flow_table_host = !host.controls.is_empty()
+        let flow_table_host = empty_host
+            && !host.controls.is_empty()
             && host.controls.iter().all(|control| {
                 matches!(control, Control::Table(peer)
                     if !peer.common.treat_as_char
