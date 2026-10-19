@@ -1000,3 +1000,156 @@ fn declared_hft_gothic_keeps_its_monospace_ascii_punctuation() {
         "measuredOriginalGlyph"
     );
 }
+
+fn pii_declared_program_core() -> DocumentCore {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(root.join("samples/task2097/75544_pii_bunseok.hwpx"))
+            .expect("독립 Print와 같은 개인정보 원본"),
+    )
+    .unwrap();
+    core.set_hangul2024_compat(false);
+    core.set_font_environment(Some(FontEnvironment::from_json(include_str!(
+        "../../mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json"
+    )).unwrap())).unwrap();
+    assert_eq!(core.page_count(), 66, "전쪽 독립 Print와 동일한 쪽 소속");
+    core
+}
+
+#[test]
+fn pii_declared_ttf_angles_keep_the_document_program_advance() {
+    // 독립 PII18/F7·43/F4는 Palatino Type0/CIDFontType2, < >의 /W=500이다.
+    // 별도2020 Print 8조건도 type1+명시 TTF 대체만500, implicit/type2는605다.
+    // 큰 글자 합성본의 미검증 배치를 고정하지 않고 실제 완료 원문을 검사한다.
+    let core = pii_declared_program_core();
+    for (page, expected_count, bold) in [(18, 2, true), (43, 4, false)] {
+        let trace: Value = serde_json::from_str(
+            &core
+                .get_font_decision_trace_native(page - 1, r#"{"maxCharacters":4096}"#)
+                .unwrap(),
+        )
+        .unwrap();
+        let angles: Vec<_> = trace["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|r| {
+                matches!(r["source"]["character"].as_str(), Some("<" | ">"))
+                    && r["document"]["face"] == "HCI Poppy"
+            })
+            .collect();
+        assert_eq!(
+            angles.len(),
+            expected_count,
+            "원문 제목의 꺾쇠 누락·중복 금지"
+        );
+        for decision in angles {
+            let lang = decision["document"]["languageSlot"].as_u64().unwrap() as usize;
+            let shape = &core.document().doc_info.char_shapes
+                [decision["source"]["charShapeId"].as_u64().unwrap() as usize];
+            let font = &core.document().doc_info.font_faces[lang][shape.font_ids[lang] as usize];
+            assert_eq!(font.name, "HCI Poppy");
+            assert_eq!(font.alt_type, 1);
+            let substitute = font.subst_font.as_ref().expect("원본의 명시 대체 프로그램");
+            assert_eq!(substitute.font_type, 1);
+            assert_eq!(substitute.face, "Palatino Linotype");
+            assert_eq!(shape.bold, bold, "원본의 일반/굵은 프로그램 보존");
+            assert_eq!(
+                decision["layoutMetric"]["aliasResolvedFace"],
+                "Palatino Linotype"
+            );
+            let size = f64::from(shape.base_size) * f64::from(shape.relative_sizes[lang]) / 100.0;
+            assert!(
+                (advance(decision) - size * 0.5).abs() <= 2.0,
+                "독립 CID /W500과 같은 TTF 자연 전진: {decision}"
+            );
+        }
+    }
+}
+
+#[test]
+fn pii_declared_ttf_closing_angles_keep_source_order_and_independent_ends() {
+    use rhwp::{
+        paint::{
+            builder::LayerBuilder,
+            layer_tree::{LayerNode, LayerNodeKind},
+            paint_op::PaintOp,
+            RenderProfile,
+        },
+        renderer::render_tree::{BoundingBox, TextRunNode},
+    };
+    fn collect<'a>(node: &'a LayerNode, out: &mut Vec<(&'a BoundingBox, &'a TextRunNode)>) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    collect(child, out);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } => collect(child, out),
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if let PaintOp::TextRun { bbox, run, .. } = op {
+                        out.push((bbox, run));
+                    }
+                }
+            }
+        }
+    }
+    fn owner(run: &TextRunNode, page: u32) -> bool {
+        if run.section_index != Some(0) {
+            return false;
+        }
+        if page == 18 {
+            return run.para_index == Some(216) && run.cell_context.is_none();
+        }
+        run.cell_context.as_ref().is_some_and(|cell| {
+            cell.parent_para_index == 403
+                && cell.path.len() == 1
+                && cell.path[0].control_index == 0
+                && cell.path[0].cell_index == 2
+                && matches!(cell.path[0].cell_para_index, 0 | 13)
+        })
+    }
+    let core = pii_declared_program_core();
+    // 전66쪽 Native/fresh WASM90% 및18/43쪽 양쪽100%·review/overlay 직접 판독 후 추가.
+    // PDF CTM .12pt *96/72: p18 x1222,size125,W500 →205.52CSSpx;
+    // p43 x1021,size117,W500 →172.72CSSpx. 평균 점수나 후보 좌표를 근거로 삼지 않는다.
+    for (page, count, label, expected_end) in
+        [(18, 1, " 규제 개요 ", 205.52), (43, 2, "신  설", 172.72)]
+    {
+        let tree = core.build_page_render_tree(page - 1).unwrap();
+        let layers = LayerBuilder::new(RenderProfile::Print).build(&tree);
+        let mut all = Vec::new();
+        collect(&layers.root, &mut all);
+        let headings: Vec<_> = all
+            .iter()
+            .copied()
+            .filter(|(_, r)| owner(r, page))
+            .collect();
+        for text in ["<", label, ">"] {
+            assert_eq!(
+                headings.iter().filter(|(_, r)| r.text == text).count(),
+                count,
+                "원본 제목의 글자·문단·셀 소속과 누락·중복 보존"
+            );
+        }
+        let starts: Vec<_> = headings.iter().filter(|(_, r)| r.text == "<").collect();
+        let labels: Vec<_> = headings.iter().filter(|(_, r)| r.text == label).collect();
+        let ends: Vec<_> = headings.iter().filter(|(_, r)| r.text == ">").collect();
+        for ((start, middle), end) in starts.into_iter().zip(labels).zip(ends) {
+            assert!(
+                start.0.x + start.0.width <= middle.0.x + 0.1,
+                "앞 꺾쇠와 뒤 본문의 순서·비겹침"
+            );
+            assert!(
+                middle.0.x + middle.0.width <= end.0.x + 0.1,
+                "본문과 닫는 꺾쇠의 순서·비겹침"
+            );
+            assert!(
+                (end.0.x + end.0.width - expected_end).abs() <= 2.0,
+                "독립 Print의 제목 끝 ±2CSSpx: page={page}, actual={}",
+                end.0.x + end.0.width
+            );
+        }
+    }
+}

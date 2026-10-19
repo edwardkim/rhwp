@@ -341,13 +341,19 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
 
     for lang in 0..LANG_COUNT {
         let font_id = cs.font_ids[lang];
-        font_families_source_hft.push(
-            doc_info
-                .font_faces
-                .get(lang)
-                .and_then(|faces| faces.get(font_id as usize))
-                .is_some_and(|face| face.alt_type == 2),
-        );
+        let source_font = doc_info
+            .font_faces
+            .get(lang)
+            .and_then(|faces| faces.get(font_id as usize));
+        font_families_source_hft.push(source_font.is_some_and(|face| face.alt_type == 2));
+        // TTF로 선언한 원 face가 없으면 문서의 명시 TTF 대체 프로그램을 쓴다.
+        // 대체 선언이 없는 type1 원본과 실제 HFT(type2)는 이 경계에 속하지 않는다.
+        let document_true_type_substitute = source_font.is_some_and(|face| {
+            face.alt_type == 1
+                && face.subst_font.as_ref().is_some_and(|substitute| {
+                    substitute.font_type == 1 && !substitute.face.trim().is_empty()
+                })
+        });
         let decision = lookup_font_name_decision(doc_info, lang, font_id);
         let substituted = decision.substitution_boundary.is_some()
             && decision.normalized_face != decision.requested_face;
@@ -410,11 +416,11 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                 .flatten()
                 .map(str::to_string)
         });
-        // type1로 재저장된 HCI Poppy도 독립 Print의 동일한 원본 글리프를 쓴다.
-        // 전체 HFT 표 선택은 보존한다. 추가 HFT 부분 폭은 명시 type2 선언에서만
-        // 전달하며 같은 이름의 TTF·명시 TrueType 환경·내장 글꼴은 승격하지 않는다.
+        // 대체 선언 없는 type1 HCI Poppy도 독립 Print의 원본 HFT 글리프를 쓴다.
+        // 명시 TTF 대체 프로그램은 자기 전진폭을 소유한다. 전체 HFT 표 선택과
+        // 실제 type2의 부분 폭은 보존하고 내장 글꼴·호출자 TTF 환경은 승격하지 않는다.
         font_families_original_glyph_metric_face.push(
-            (decision.embedded != Some(true)
+            (!document_true_type_substitute && decision.embedded != Some(true)
                 && (decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin)
                     || decision.alt_type == Some(2)))
             .then(|| {

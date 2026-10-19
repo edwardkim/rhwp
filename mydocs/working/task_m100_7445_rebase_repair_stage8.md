@@ -4265,3 +4265,77 @@ C441 소비 점검의 잔여: 일반 `renderPageToCanvas`/layer-filter 출력은
 같은 `paint_strokes`를 전달하고 실제 legacy/preview API를 확인한다. 기존 Native/SVG direct
 소비와 일반 WASM layer의 검증을 이 두 경로의 완료 근거로 확대하지 않는다. 수평선 보호 검사는
 현재 검증된 공통 paint/Native PNG 범위이며 전체 소비 경로 완료·PR 준비를 주장하지 않는다.
+
+## C442 — 명시 TTF 대체 프로그램의 전진과 direct WebCanvas 소비 복구
+
+C441 뒤 남은 개인정보18/43쪽의 원인은 공급할 글꼴 파일의 결측이 아니라 원본 프로그램
+선택이었다. `1bcd255a9c6 → a310bcf9825`의 type1 HFT 부분 폭 보존 의도를 확인한 뒤,
+같은 생성 입력의 type1/type2 × 대체 선언 없음/Palatino TTF 명시 × 일반/굵은8조건을
+독립 한컴2020 Print로 대조했다. 모두 engine2020·11.0.0.9136·Print method0·
+`hancom2020_pdf_driver_one_up`·preprocess none·1쪽이다. type1+명시 TTF 두 조건만
+Palatino Type0/CIDFontType2의 `<=>` /W500이고, 나머지6조건은 Type3 /Widths605다.
+원문 PII18/F7·43/F4의 Type0 /W500, Mac Palatino5.03의 advance1024/UPEM2048도
+일치한다. HFT/TTF를 파일명이나 표시 family 하나로 동일시하지 않는다.
+
+`style_resolver`에서 문서의 원 face type1과 명시 대체 프로그램 type1을 함께 확인해
+원본 HFT 부분 폭이 이를 덮지 않도록 했다. 문서/쪽 번호 조건은 없으며, type2와 대체 선언
+없는 type1의 기존 부분 폭, 내장 글꼴·호출자가 명시한 TTF 환경 경계는 보존한다.
+독립8조건의 진단 trace는 수정 전 전부4537HU였으나 수정 후 명시 TTF 두 조건만3750HU로
+바뀌고 나머지6조건은4537HU 그대로다(75pt 표본). 실제 PII18쪽은907→750HU,
+43쪽은847→700HU로 독립 /W500을 소비한다. trace의 `embeddedMetric`는 내부 폭 표의
+분류이며 원문에 폰트 파일이 내장됐다는 의미로 확대하지 않는다. 실제 원문은 embedded=false다.
+문서가 같은 face를 대체로 명시해도 기존 이름 결정 trace의 substFont가 null로 보이는
+경우가 있어 이번 판정은 실제 IR의 substFont/type와 독립 PDF 프로그램으로 확인했다.
+
+독립8조건의 HFT 표본 PDF·폰트/글리프 진단은 ignored output/repair214에만 보존한다.
+처음 HWP 출력은 대체 선언을 정규화해 사라뜨려 원래 목적의 입력이 아니었으므로 INVALID로
+격리하고, HWPX로 다시 생성·파싱해 원본 name/type/substFont 보존을 확인한8조건만 썼다.
+큰 글자 합성본은 글자 크기7500HU를 바꾸면서 blank의 저장 줄 높이1000HU/baseline850HU를
+남겨 Native의 세로 위치가 Print와 다르다. repair222의 부분 캡처는 이 배치를 수용하거나
+새 테스트의 근거로 쓰지 않았다. 자기 프로세스가 캡처 lock 대기 중임을 확인한 뒤 종료하고
+PNG·TSV·로그를 보존했다. 글리프 /Widths 대조와 실물 문서 전쪽 검증을 구분한다.
+
+공통 테두리의 직접 소비도 보완했다. Legacy와 header/footer 편집 preview는
+`WebCanvasRenderer::render_tree → render_node(Line) → render_line`으로 들어가며,
+기존에는 공통 LayerBuilder가 만든 검정→흰색 두 획 중 최종 흰색만 그렸다.
+`render_line`이 기존 공통 `paint_strokes`를 소비하도록 연결했다. 도형 transform은 한 번만
+열고 닫으며 이미 낮춘 PaintOp는 underpaint가 없어 한 번만 그린다. 새 스냅·임계값은 없다.
+실제 PII28쪽 Legacy API의 같은80열 영역은 수정 전 잉크0/최저255였고, 수정 후에는
+일반 Layer API와 동일하게160픽셀/최저192가 됐다. 실제 Studio7736 초기화 JS/WASM도
+frozen218과 대조했다. JS가 같아도 WASM hash가 다르므로 JS 일치만으로 판정하지 않았다.
+
+header/footer preview API는 원문 표를 옮긴 합성 소비 대조군으로 두 selector를 실제 호출했다.
+브라우저가 초기화한 frozen204/218 응답을 각각 검증했고, 이전에는 검정 아래 획을 누락한
+흰 선4건이 이후에는 모두 순서대로 소비됐다. 표를 옮긴 footer의 일부는 페이지 밖에 있어
+이 대조군을 footer 배치 정확성이나 독립 Print 수용으로 주장하지 않는다. 직접 API의 소비
+확인과 정상 Studio CanvasView/actual36은 별도 범위다. 첫 응답 감사는 inspector cache에서
+WASM 응답이 퇴거되어 실패했으므로 보존 후 durable Network buffer를 적용해 다시 확인했다.
+
+Native217와 fresh WASM218은 같은 runtime2201파일의 실제 빌드다. WASM은 Mac locked
+`--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며 Docker 최적화 통과가 아니다.
+전체264쪽 재산출219 및 같은4a07 기준의 페이지별 비교·내용 소유 감사를 끝낸 뒤 결과를
+아래에 연결한다. Native/WASM 선언 환경의 전66쪽 최저94.58132/94.60117%,18/43쪽은
+각각100%이며 두 쪽의 양 backend review/overlay에서 꺾쇠·뒤 한글·원문 셀·본문을 직접
+확인했다. 가는 선과 본문 일부의 작은 래스터 프린지는 남으며 raw100을 RGB100으로 쓰지 않는다.
+
+이 시각 선행 조건 뒤 실제 PII를 쓰는 정식 회귀2건을 기존 원본 프로그램 검사에 추가했다.
+문서의 명시 TTF/type·일반/굵은 소유와 자연 전진, 공통 Print paint의 제목 내용·문단/셀 소속·
+누락/중복·앞뒤 순서를 검사한다.18/43쪽은 양쪽100% 자격이 있어 독립 PDF CTM과 /W의
+제목 끝205.52/172.72CSSpx도 ±2CSSpx로 보호한다. 수정 전은 실제2FAIL(제목 끝209.72와
+원 프로그램 소유 오류), 수정 후2PASS다. 기존19검사는 제거·완화하지 않았다.
+최초 standalone compile의 BoundingBox import 오류는 보존하고 고쳐 컴파일·FAIL→PASS를
+다시 실행했다. prepare로28개 harness를 재생성한 뒤 derive한 정식 suite024 전체를 실행한다.
+아직 전체 PR 검증 완료·PR 승인·외부 게시를 주장하지 않으며 새 PR은 사용자 승인을 받는다.
+
+C442 전쪽 최종 확인:219는 exit0, 네 조건264쪽을 모두 완료했다. 각 조건66/66,
+90% 미달0, Native 최저94.58132%/fresh WASM94.60117%이며18/43쪽 네 조건은100%다.
+같은4a07 및 바로 전202/204 대비 십진수 비교에서0.1%p 이상 하락은 각각0쪽이다.
+선언/기본 환경은 backend별66쪽 PNG byte동일, 네 경로의 소유별 본문 순서 차이0이다.
+바뀐 PNG는1/2/18/41/43/45쪽뿐이며 나머지60쪽은 직전 결과와 byte동일하다.
+18/43뿐 아니라1/2/41/45도 양 backend의 review/overlay를 직접 열어 목차·기본 정보·
+소제목·본문·표와 다음 줄을 확인했다. 작은 글자·가는 괘선의 기존 래스터 프린지는 남는다.
+실제 새 회귀2건은 frozen202 2FAIL→217 2PASS이며 정식 suite024 전체21PASS,
+233선택 제외·0.655초, manifest 확인도exit0이다. 같은 최종 runtime의 기존 프레임/테두리
+검사8건과 fmt도 통과했으며 Native/WASM·workspace lint/build·Skia 묶음228은 순차 진행한다.
+[전쪽 TSV·고정 base 비교·전후 대표 그림](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/pii-declared-ttf-and-direct-canvas/README.md)을 정리했다.
+전체 corpus·전체 nextest·actual36 및 다른 미해결 문서의 검증은 남아 있어 전체 PR 완료로 쓰지 않는다.

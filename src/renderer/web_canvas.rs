@@ -1097,27 +1097,31 @@ impl WebCanvasRenderer {
 
     fn render_line(&mut self, bbox: &BoundingBox, line: &LineNode, restore_transform: bool) {
         self.open_shape_transform(&line.transform, bbox);
-        let paint_width = line.style.dash.canvas_width(line.style.width);
-        let (x1, y1, x2, y2) = self
-            .ctx
-            .get_transform()
-            .map(|transform| {
-                super::raster_stroke::raster_line_endpoints(
-                    line,
-                    [
-                        transform.a(),
-                        transform.b(),
-                        transform.c(),
-                        transform.d(),
-                        transform.e(),
-                        transform.f(),
-                    ],
-                    self.render_profile,
-                    paint_width,
-                )
-            })
-            .unwrap_or((line.x1, line.y1, line.x2, line.y2));
-        self.draw_line_with_resolved_width(x1, y1, x2, y2, &line.style, paint_width);
+        // PageRenderTree 직결 경로도 LayerBuilder와 같은 순서·coverage를 소비한다.
+        // 이미 낮춘 PaintOp는 underpaint가 없으므로 한 번만 그린다.
+        for stroke in line.paint_strokes() {
+            let paint_width = stroke.style.dash.canvas_width(stroke.style.width);
+            let (x1, y1, x2, y2) = self
+                .ctx
+                .get_transform()
+                .map(|transform| {
+                    super::raster_stroke::raster_line_endpoints(
+                        &stroke,
+                        [
+                            transform.a(),
+                            transform.b(),
+                            transform.c(),
+                            transform.d(),
+                            transform.e(),
+                            transform.f(),
+                        ],
+                        self.render_profile,
+                        paint_width,
+                    )
+                })
+                .unwrap_or((stroke.x1, stroke.y1, stroke.x2, stroke.y2));
+            self.draw_line_with_resolved_width(x1, y1, x2, y2, &stroke.style, paint_width);
+        }
         if restore_transform {
             self.close_shape_transform_if_needed(&line.transform);
         }
