@@ -753,7 +753,7 @@ impl TypesetEngine {
                 - before_last;
             let available = physical.min(
                 budget
-                    .reflow_frame_avail_for_rows
+                    .reflow_blank_avail_for_rows
                     .unwrap_or(avail_for_rows)
                     .min(avail_for_rows)
                     - before_last,

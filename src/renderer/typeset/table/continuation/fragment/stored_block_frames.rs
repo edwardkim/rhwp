@@ -61,7 +61,7 @@ impl TypesetEngine {
         );
         let before = scan.consumed - occupied;
         let room = budget
-            .reflow_frame_avail_for_rows
+            .reflow_blank_avail_for_rows
             .unwrap_or(budget.avail_for_rows)
             .min(budget.avail_for_rows)
             - before;

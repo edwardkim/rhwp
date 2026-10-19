@@ -1705,7 +1705,7 @@ impl TypesetEngine {
                 first_fragment_actual_footnote_boundary.unwrap_or(table_available)
             }
             .min(st.inline_flow_column().height);
-            let bottom = crate::renderer::float_placement::rowbreak_fragment_frame_bottom(
+            let bounds = crate::renderer::float_placement::rowbreak_fragment_bounds(
                 table,
                 frame_boundary,
                 self.dpi,
@@ -1713,7 +1713,10 @@ impl TypesetEngine {
             );
             // 내용 컷이 이미 소비한 원본 하단 inset을 빈 띠 예산에서 되돌리지 않는다.
             // 현재 각주 등으로 좁아진 본문과 인증한 이어받기 프레임의 교집합이다.
-            let bottom = accepted_frame_bottom.map_or(bottom, |saved| bottom.min(saved));
+            let bottom = accepted_frame_bottom
+                .map_or(bounds.content_bottom, |saved| bounds.content_bottom.min(saved));
+            let blank_bottom = accepted_frame_bottom
+                .map_or(bounds.blank_bottom, |saved| bounds.blank_bottom.min(saved));
             let top = fragment_placement.map_or(
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
@@ -1725,21 +1728,24 @@ impl TypesetEngine {
                     table.outer_cell_spacing_hu(),
                 );
             }
-            bottom
-                - top
-                - caption_extra
-                - header_overhead
-                - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi)
+            let overhead = top + caption_extra + header_overhead
+                + hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi);
+            (bottom - overhead, blank_bottom - overhead)
         });
         // [#8081] 첫 조각의 행 예산과 같이, 표 각주 예약이 만든 모자란 몫을 남긴다.
         let reflow_frame_first_fragment_shortfall = if is_continuation {
             0.0
         } else {
-            reflow_frame_raw.map_or(0.0, |raw| (-raw).max(0.0))
+            reflow_frame_raw.map_or(0.0, |(raw, _)| (-raw).max(0.0))
         };
-        let reflow_frame_avail_for_rows = reflow_frame_raw.map(|raw| {
+        let reflow_frame_avail_for_rows = reflow_frame_raw.map(|(raw, _)| {
             // 닫힌 원본 첫 프레임은 쪽 본문보다 작은 실제 물리 상자일 수 있다.
             // 일반 내용 예산과 그리기·이어받기 띠에 같은 상한을 적용한다.
+            raw.max(0.0)
+                .min(accepted_source_frame_limit.unwrap_or(f64::MAX))
+        });
+
+        let reflow_blank_avail_for_rows = reflow_frame_raw.map(|(_, raw)| {
             raw.max(0.0)
                 .min(accepted_source_frame_limit.unwrap_or(f64::MAX))
         });
@@ -1825,6 +1831,7 @@ impl TypesetEngine {
             header_overhead,
             avail_for_rows,
             reflow_frame_avail_for_rows,
+            reflow_blank_avail_for_rows,
             reflow_frame_first_fragment_shortfall,
             single_cell_fragment_shape,
             single_cell_box_height,

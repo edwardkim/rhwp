@@ -4654,3 +4654,25 @@ ignored `output/pr-review/planet6897-20261018/curriculum-inset-margin-print-caus
 충족하기 전에는 `tests/cases/`에 정식 추가하지 않는다. 다음 후보에서 기존 집중 84건과
 단독 셀·다행·마지막 조각·쪽 중간 조각 대조 17건, 이 진단을 먼저 실행한다.
 이 하단 후보는 아직 실행하지 않았으며 개선 또는 검증 완료로 판정하지 않는다.
+
+
+## 2026-10-20 내용 수용 경계와 빈 종료 띠 분리 후보
+
+D17 `42ba4050e`에서 집중 101건 중 98건 통과, 기존 걸침 종료 띠 3건이 실패했다.
+교육과정 149쪽 첫 줄 진단은 D16에서 의도한 소속 차이로 실패 / D17 통과했고,
+149·150·156·165·166쪽 Native raw는 모두 99%대로 개선됐다. 다만 155쪽은
+85.58753%이며 전쪽 Native/fresh WASM 검증도 완료되지 않아 완료나 PR 제출로 판정하지 않는다.
+D17의 기존 실패는 `crossing_rowspan_owns_the_page_end_band`,
+`crossing_span_end_row_takes_the_larger_span_share_up_to_the_closing_line`,
+`crossing_span_row_closes_at_the_fragment_bottom_line`이다. 독립 Print로 정한 기대값은 유지한다.
+
+원인은 일반 격자의 실제 줄 수용 예산을 늘린 값이 내용 뒤의 빈 종료 띠 예약에도 전달된 것이다.
+새 공통 `float_placement/rowbreak_frame.rs`는 같은 본문·바깥여백에서 내용 하단과 빈 띠 하단을
+함께 생산한다. 실제 내용에는 D17 수용 경계를 유지하고, 빈 띠에는 독립 Print로 입증된
+기존 종료선을 유지한다. `budget.rs`에서 두 값을 같은 실제 원점·캡션·제목행·간격과
+인증된 프레임의 교집합으로 변환한다. 내용 스캔은 내용 예산을, 저장 행의 빈 띠 예약과
+블록 원장·emit은 빈 띠 예산을 소비한다. 최종 paint 상한은 내용 수용 하단을 유지한다.
+따라서 이미 수용한 내용을 잘라 숨기거나 기대값 허용치를 늘리지 않는다.
+
+다음 검증은 같은 그래프의 실제 Cargo 집중 101건, 149쪽 첫 줄 진단, Native 영향 페이지다.
+아직 이 분리 후보의 실행 결과는 없으며 최적화 fresh WASM은 Native 방향 확인 뒤 수행한다.

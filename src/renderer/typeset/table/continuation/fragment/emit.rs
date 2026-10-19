@@ -1288,7 +1288,7 @@ impl TypesetEngine {
         // 원본 프레임이 이미 예약한 띠는 그리기 높이에 다시 더하지 않는다.
         let ledger_page_end_band = if split_block_start.is_some() {
             0.0
-        } else if let Some(frame_rows) = budget.reflow_frame_avail_for_rows {
+        } else if let Some(frame_rows) = budget.reflow_blank_avail_for_rows {
             // 물리 경계에는 아래 바깥여백과 실제 각주 공간이 이미 반영돼 있다.
             (frame_rows + header_overhead - partial_height).max(0.0)
         } else {
@@ -1303,7 +1303,7 @@ impl TypesetEngine {
         // (21761835 3쪽: 그 몫을 넘기면 첫 행들이 한/글보다 커진다).
         // 내용 컷으로 끝난 행(`split_end_limit > 0`)은 다음 조각이 같은 행을 잇는 상자라 이 선을 쓰지
         // 않는다(1342000 202·203쪽: 줄이면 다음 쪽 시작 줄이 한 줄 당겨진다). 통째로 받은 끝 행만 닫는다.
-        let unreserved_page_end_band = if budget.reflow_frame_avail_for_rows.is_some() {
+        let unreserved_page_end_band = if budget.reflow_blank_avail_for_rows.is_some() {
             // 공통 물리 하단 생산자가 이미 바깥 여백과 inset을 차감했다.
             // 같은 하단을 예약과 paint가 소비하며 여기서 다시 접지 않는다.
             ledger_page_end_band
