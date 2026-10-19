@@ -38,7 +38,24 @@ pub(crate) fn normalize(
     initial_columns: &ColumnDef,
     dpi: f64,
 ) -> Option<Vec<Paragraph>> {
-    let mut width = uniform_column_width(page, initial_columns, dpi);
+    normalize_flow(
+        original,
+        styles,
+        uniform_column_width(page, initial_columns, dpi),
+        Some(page),
+        dpi,
+    )
+}
+
+/// 문단의 새 줄 구성과 뒤 문단의 원점은 같은 흐름에서 함께 발행한다.
+/// 본문은 단의 폭을, 셀은 자신의 정수 내용 상자를 소유한다.
+fn normalize_flow(
+    original: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    mut width: Option<f64>,
+    body_page: Option<&PageDef>,
+    dpi: f64,
+) -> Option<Vec<Paragraph>> {
     let mut shift = 0_i32;
     let mut previous_source_vpos = None;
     let mut result = Vec::with_capacity(original.len());
@@ -53,12 +70,47 @@ pub(crate) fn normalize(
             shift = 0;
         }
         for control in &source.controls {
-            if let Control::ColumnDef(columns) = control {
+            if let (Some(page), Control::ColumnDef(columns)) = (body_page, control) {
                 width = uniform_column_width(page, columns, dpi);
                 shift = 0;
             }
         }
         let mut paragraph = source.clone();
+        for control in &mut paragraph.controls {
+            let Control::Table(table) = control else {
+                continue;
+            };
+            for cell in &mut table.cells {
+                if cell.text_direction != 0 || cell.line_wrap != 0 {
+                    continue;
+                }
+                let padding = cell.effective_padding(&table.padding);
+                let Some(inner_hu) = i32::try_from(cell.width).ok().and_then(|width| {
+                    width
+                        .checked_sub(i32::from(padding.left))?
+                        .checked_sub(i32::from(padding.right))
+                }) else {
+                    continue;
+                };
+                if inner_hu <= 0 {
+                    continue;
+                }
+                // 괘선의 누적 px 좌표를 다시 빼면 정수 폭이 1HU 작아질 수 있다.
+                // 원본의 정수 길이에서 내용 폭을 계산한 뒤 기존 셀 폭 계약에 전달한다.
+                let inner = crate::renderer::composer::cell_inner_text_width(
+                    crate::renderer::hwpunit_to_px(inner_hu, dpi),
+                    0.0,
+                    0.0,
+                    dpi,
+                );
+                if let Some(projected) =
+                    normalize_flow(&cell.paragraphs, styles, Some(inner), None, dpi)
+                {
+                    cell.paragraphs = projected;
+                    changed = true;
+                }
+            }
+        }
         let mut origin_changed = false;
         for line in &mut paragraph.line_segs {
             let source_vpos = line.vertical_pos;
@@ -80,7 +132,11 @@ pub(crate) fn normalize(
         }
         if let Some(width) = width {
             let style = styles.para_styles.get(paragraph.para_shape_id as usize);
-            let box_ = ParagraphBox::body_for_style(width, style, dpi);
+            let box_ = if body_page.is_some() {
+                ParagraphBox::body_for_style(width, style, dpi)
+            } else {
+                ParagraphBox::content_for_style(width, style, dpi)
+            };
             // 현재 측정으로 더 적은 줄에 들어간다는 사실만으로 정상 저장 줄을
             // 무효화하지 않는다. 원문 문자에 없는 목록 마커는 문서 순서에서
             // 해소한 실제 기하를 갱신해야 하며, 같은 결과가 채움·높이에 참여한다.
