@@ -4339,3 +4339,14 @@ C442 전쪽 최종 확인:219는 exit0, 네 조건264쪽을 모두 완료했다.
 검사8건과 fmt도 통과했으며 Native/WASM·workspace lint/build·Skia 묶음228은 순차 진행한다.
 [전쪽 TSV·고정 base 비교·전후 대표 그림](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/pii-declared-ttf-and-direct-canvas/README.md)을 정리했다.
 전체 corpus·전체 nextest·actual36 및 다른 미해결 문서의 검증은 남아 있어 전체 PR 완료로 쓰지 않는다.
+
+## C443 — 전체 target lint의 숫자 표기 교정
+
+228에서 기존 프레임/테두리8검사·fmt·Native/WASM Clippy·workspace build는 통과했으나
+workspace all-target Clippy가 #5846의 `1042.698_666_666_666_7`에 대한
+`inconsistent_digit_grouping` 한 건으로 exit101을 냈다. 값·오차·검사를 바꾸지 않고
+`1_042.698_666_666_666_7`로 표기만 교정했다. 두 f64의 bit는 모두
+`8e50466fcb4a9040`으로 동일하다. source runtime과217/218 빌드·264쪽 시각 결과는 같다.
+prepare와 해당 파일 rustfmt 확인 뒤 실패한 all-target lint·관련5846·남은 Skia/manifest를
+233에서 순차 재실행한다. gate 대기230은 Cargo nextest를 시작하기 전에 종료됐으므로
+전체 회귀 통과/실행으로 집계하지 않는다. 성공한 앞 검증과 실패·미실행 항목을 구분한다.

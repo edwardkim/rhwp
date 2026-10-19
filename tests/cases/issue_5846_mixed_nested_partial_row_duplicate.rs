@@ -131,7 +131,7 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
         (
             "2쪽 영향평가 행의 하단",
             opening_bottom,
-            1042.698_666_666_666_7,
+            1_042.698_666_666_666_7,
         ),
         (
             "3쪽 이어받기 표의 상단",
