@@ -21,6 +21,31 @@ impl<'a> RowCutCapacity<'a> {
 }
 
 impl LayoutEngine {
+    /// 내용 커서는 무높이 보조 spacer도 소비한다. 이어받은 조각의 실제
+    /// 글줄·개체 범위는 이 공통 소유 판정으로 선택·측정·배치에 전달한다.
+    /// 저장 빈 줄과 재조판 빈 문단의 유효 줄 상자는 제외하지 않는다.
+    pub(super) fn cell_cut_flow_range(
+        cell: &Cell,
+        table: &Table,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+    ) -> std::ops::Range<usize> {
+        let mut first = start.min(units.len());
+        let mut last = end.clamp(first, units.len());
+        if first > 0 {
+            while first < last && Self::is_free_leading_spacer(cell, table, &units[first]) {
+                first += 1;
+            }
+            if last == units.len() {
+                while last > first && Self::is_free_leading_spacer(cell, table, &units[last - 1]) {
+                    last -= 1;
+                }
+            }
+        }
+        first..last
+    }
+
     /// 일반 셀이 없어 컷 슬롯이 비어도 시작 행의 잔여 물리 상자는 존재한다.
     /// 끝나는 병합 셀의 내용 요구는 기존 continuation demand가 별도로 예약한다.
     /// 블록 컷과 일반 셀 컷은 각자의 내용/물리 상자 계약을 유지한다.

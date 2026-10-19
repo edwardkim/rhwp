@@ -21749,26 +21749,15 @@ impl LayoutEngine {
             let mut j = start;
             let mut h = 0.0f64;
             let mut applied_trailing_trim = 0.0f64;
+            let flow_range = Self::cell_cut_flow_range(cell, table, &units, start, units.len());
             while j < units.len() {
                 let u = &units[j];
                 // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
-                if start > 0
-                    && units[start..=j]
-                        .iter()
-                        .all(|unit| Self::is_free_leading_spacer(cell, table, unit))
-                {
+                if j < flow_range.start {
                     j += 1;
                     continue;
                 }
-                if start > 0
-                    && u.empty_spacer
-                    && !u.hard_break_before
-                    && units[j..].iter().all(|unit| {
-                        unit.empty_spacer
-                            && !unit.hard_break_before
-                            && !Self::empty_unit_owns_flow_line_box(cell, table, unit)
-                    })
-                {
+                if j >= flow_range.end {
                     j = units.len();
                     break;
                 }
@@ -22268,26 +22257,15 @@ impl LayoutEngine {
             let cell_avail = (cell_avail - nested_header).max(0.0);
             let mut j = start;
             let mut h = 0.0f64;
+            let flow_range = Self::cell_cut_flow_range(cell, table, &units, start, units.len());
             while j < units.len() {
                 let u = &units[j];
                 // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
-                if start > 0
-                    && units[start..=j]
-                        .iter()
-                        .all(|unit| Self::is_free_leading_spacer(cell, table, unit))
-                {
+                if j < flow_range.start {
                     j += 1;
                     continue;
                 }
-                if start > 0
-                    && u.empty_spacer
-                    && !u.hard_break_before
-                    && units[j..].iter().all(|unit| {
-                        unit.empty_spacer
-                            && !unit.hard_break_before
-                            && !Self::empty_unit_owns_flow_line_box(cell, table, unit)
-                    })
-                {
+                if j >= flow_range.end {
                     j = units.len();
                     break;
                 }
@@ -23784,7 +23762,8 @@ impl LayoutEngine {
         let mut seen = vec![false; cell.paragraphs.len()];
         let lo = start_unit.min(units.len());
         let hi = end_unit.min(units.len());
-        for u in units.iter().take(hi).skip(lo) {
+        let flow_range = Self::cell_cut_flow_range(cell, table, &units, lo, hi);
+        for u in &units[flow_range] {
             if u.para_idx >= ranges.len() {
                 continue;
             }
@@ -23840,7 +23819,8 @@ impl LayoutEngine {
     ) -> Vec<bool> {
         let units = self.cell_units(cell, table, styles);
         let mut owners = vec![false; cell.paragraphs.len()];
-        for unit in units.iter().take(end_unit).skip(start_unit) {
+        let flow_range = Self::cell_cut_flow_range(cell, table, &units, start_unit, end_unit);
+        for unit in &units[flow_range] {
             if unit.empty_spacer
                 && unit.vis_start == 0
                 && unit.vis_end == 1
@@ -26002,6 +25982,7 @@ impl LayoutEngine {
                 .clamp(su, units.len());
             let mixed_nested_extra =
                 self.mixed_nested_flow_extra_from_cut(cell, table, styles, su, eu);
+            let flow_range = Self::cell_cut_flow_range(cell, table, &units, su, eu);
             let trailing_trim = if is_whole_row {
                 0.0
             } else {
@@ -26011,7 +25992,7 @@ impl LayoutEngine {
             // 방금 앉힌 atom 을 다음 쪽으로 밀어낸다.
             let nested_atom_tail =
                 self.continued_cut_nested_atom_tail(cell, &units, su, eu, styles);
-            let content: f64 = (units[su..eu].iter().map(|u| u.height).sum::<f64>()
+            let content: f64 = (units[flow_range].iter().map(|u| u.height).sum::<f64>()
                 - trailing_trim
                 - nested_atom_tail)
                 .max(0.0)
