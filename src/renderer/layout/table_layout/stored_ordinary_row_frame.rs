@@ -6,7 +6,7 @@ use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
     /// 원본 일반 행의 물리 최소는 셀 선언이며, 여러 저장 프레임의 내용 합이 아니다.
-    /// 병합 칸의 수용 원장이 따로 필요한 행은 이 일반 칸 계약에 포함하지 않는다.
+    /// 다른 열의 병합 칸은 별도 원장을 쓰며 일반 칸 자신의 최소 공간을 없애지 않는다.
     pub(crate) fn stored_ordinary_row_uses_declared_minimum(
         &self,
         table: &Table,
@@ -14,11 +14,6 @@ impl LayoutEngine {
     ) -> bool {
         let owners = Self::row_cut_cell_order(table, row);
         !owners.is_empty()
-            && !table.cells.iter().any(|cell| {
-                cell.row_span > 1
-                    && usize::from(cell.row) <= row
-                    && row < usize::from(cell.row) + usize::from(cell.row_span)
-            })
             && owners.iter().all(|&index| {
                 let cell = &table.cells[index];
                 usize::from(cell.row) == row
@@ -32,19 +27,14 @@ impl LayoutEngine {
         table: &'a Table,
         row: usize,
     ) -> Option<Vec<&'a Cell>> {
-        if !self.stored_row_boxes_exceed_first_frame(table)
-            || table.cells.iter().any(|cell| {
-                cell.row_span > 1
-                    && usize::from(cell.row) <= row
-                    && row < usize::from(cell.row) + usize::from(cell.row_span)
-            })
-        {
+        if !self.stored_row_boxes_exceed_first_frame(table) {
             return None;
         }
-        let mut cells: Vec<_> = table
-            .cells
-            .iter()
-            .filter(|cell| usize::from(cell.row) == row)
+        // 컷 생산자와 같은 일반 칸만 조회한다. 다른 열에서 시작하거나
+        // 계속되는 병합 칸의 공간은 이 칸들의 프레임과 독립적이다.
+        let mut cells: Vec<_> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|index| table.cells.get(index))
             .collect();
         cells.sort_by_key(|cell| cell.col);
         (!cells.is_empty()
