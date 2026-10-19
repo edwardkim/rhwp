@@ -4004,3 +4004,44 @@ counter p106 raw80.50116→95.33168로 개선됐지만 p10777.82460과 전체 �
 남았다는 이유만으로 일반 행의 기존 물리 잔여를 일괄 없앤14줄은 철회한다.
 이 잔여는 뒤 저장 프레임과 함께 실제 빈 최소 공간도 소유할 수 있다. 두 변경을
 구분한 새 producer에서 같은38개와 영향 페이지를 다시 대조해 실제 귀속을 확정한다.
+
+### Native 전용 보존 검증과 원 Windows 글꼴 공급 복원
+
+작업지시자의 최신 지시는 이 리베이스 기능 보존 검증을 **Native만** 수행하는 것이다.
+이전 절의 fresh WASM 추가 실행 계획은 이번 범위의 필수 조건에서 제외한다.
+현재 작업의 Native 품질과 #8064의 기능·내용·쪽수·확대 판독 조건은 유지한다.
+
+현재 호스트를 실제 조회하니 ubuntu-ted3이며, #8064 기록의 Windows 원본 gulim.ttc가
+없었다. 등록 전 `fc-match 굴림`은 Noto Sans CJK KR을 반환했다. Windows 원 호스트
+win10-ted의 C:/Windows/Fonts/gulim.ttc는 기록된 SHA-256
+`4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226`과 같다.
+이 파일을 ubuntu-ted3의 개인 시스템 글꼴 경로에 등록했다. 기존 검증의 글꼴 조건을
+바로잡은 것이며 코드·기대값·독립 PDF·계측 허용치를 변경한 것이 아니다.
+
+독립 증거로 #8064에 커밋된 math-p012-native-review.png에서 당시 Native와 PDF 패널을
+원래 크기 그대로 복원했다. 현재 PDFium의 같은 PDF/96dpi 래스터는 당시 PDF 패널과
+전 픽셀이 같다. 현재 계측기로 복원한 두 패널을 계산해도 원 공개 TSV의98.64024%가
+나온다. 등록 전 base는 Native490픽셀이 다르고98.63129%였으며, 원 gulim.ttc를
+등록한 새 프로세스에서는 **Native 픽셀 차이0·raw98.64024% 동일**이다. 이 한 쪽의
+복원을 전쪽 기능 보존 완료로 바꾸어 보고하지 않는다.
+
+원 글꼴이 빠졌던 전쪽 baseline 및 #8064 집중 검증은 SIGTERM으로 의도 중단했다.
+그 실행의23PASS·6SIGTERM·38미실행을 제품 회귀6건이나 전체 통과로 세지 않는다.
+종료 이유·정확한 프로세스·기존 로그는 output에 별도로 보존했다. 같은 frozen producer와
+원 입력/PDF에서 글꼴 복원 후 전쪽 Native 및 정식67개 검사를 새 경로로 실행 중이다.
+기존5개 표 이어받기 실패는 별도 미해결이며 이 중단과 혼동하지 않는다.
+
+추가 지시에 따라 ubuntu-ted와 ubuntu-ted2의 시스템 글꼴도 확인했다.
+ubuntu-ted는 /usr/local/share/fonts/windows-system/gulim.ttc에 이미 같은 원본이 있어
+해시·조회만 확인했다. ubuntu-ted2에는 개인 시스템 글꼴 경로에 같은 원본을 등록했다.
+세 호스트에서 굴림/굴림체/돋움/돋움체의 한국어·영문8개 이름이 모두 같은 SHA의
+원 프로그램과 대응 face index로 조회됨을 확인했다. 이 검증용 글꼴은 저장소 밖의
+설치 경로이며, 공개 PR의 폰트 fixture나 asset으로 추가하지 않는다.
+
+실행 근거는 ignored output/pr-review/planet6897-20261018/의
+windows-gulim-three-host-install-verification.json,
+pr8064-published-raster-recovery/recovery-evidence.json,
+pr8064-restored-font-witness/recovered-published-comparison.json이다.
+새 전쪽 로그는 rebase-base-efc52-native-gulim-full-driver.log,
+정식 검사는 rebase-direction5-8064-preservation-restored-gulim-focused-tests.log다.
+전쪽·후보 대조·직접 판독이 남아 있으므로 PR 준비 완료로 판정하지 않는다.
