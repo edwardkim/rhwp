@@ -76,30 +76,6 @@ fn extract_dotted_horizontal_lines(svg: &str) -> Vec<(f64, f64, f64)> {
     lines
 }
 
-fn extract_text_positions(svg: &str, wanted: &str) -> Vec<(f64, f64)> {
-    let mut positions = Vec::new();
-    let mut search_from = 0;
-    while let Some(rel) = svg[search_from..].find("<text ") {
-        let tag_start = search_from + rel;
-        search_from = tag_start + 6;
-        let Some(close_rel) = svg[tag_start..].find('>') else {
-            break;
-        };
-        let attrs = &svg[tag_start..tag_start + close_rel];
-        let content_start = tag_start + close_rel + 1;
-        let Some(end_rel) = svg[content_start..].find("</text>") else {
-            break;
-        };
-        let text = &svg[content_start..content_start + end_rel];
-        if text == wanted {
-            if let (Some(x), Some(y)) = (attr_f64(attrs, "x"), attr_f64(attrs, "y")) {
-                positions.push((x, y));
-            }
-        }
-    }
-    positions
-}
-
 fn toc_page_number_right_edges(svg: &str) -> Vec<f64> {
     let mut rows: std::collections::BTreeMap<i32, Vec<(f64, f64, String)>> =
         std::collections::BTreeMap::new();
@@ -210,21 +186,8 @@ fn sample16_hwp5_toc_page_numbers_share_right_edge() {
     );
 }
 
-#[test]
-fn sample16_hwp3_toc_page_numbers_share_right_edge() {
-    let svg = render_svg("samples/hwp3-sample16.hwp", 1);
-    let edges = toc_page_number_right_edges(&svg);
-    assert!(
-        edges.len() >= 25,
-        "원본 HWP3 목차 페이지 번호를 충분히 찾아야 함: {edges:?}"
-    );
-    let min = edges.iter().copied().fold(f64::INFINITY, f64::min);
-    let max = edges.iter().copied().fold(f64::NEG_INFINITY, f64::max);
-    assert!(
-        max - min <= 1.5,
-        "원본 HWP3 목차 페이지 번호 오른쪽 끝이 한컴처럼 같은 기준선에 정렬되어야 함: min={min:.2}, max={max:.2}, edges={edges:?}"
-    );
-}
+// HWP3 원본의 목차 번호는 고정 x 영역 대신 원문 문단과 끝 토큰으로 고르는
+// verified_hwp3_original_print_boundaries의 새 관계 검사에서 보호한다.
 
 #[test]
 fn sample16_hwp5_page3_svg_latin_glyphs_pin_browser_width() {
@@ -288,52 +251,8 @@ fn sample16_hwp3_page3_latin_font_matches_legacy_hancom_mapping() {
     assert_page3_latin_poppy_resolves_to_palatino("samples/hwp3-sample16.hwp");
 }
 
-#[test]
-fn sample16_hwp5_page3_heading_positions_follow_lineseg_vpos() {
-    let svg = render_svg("samples/hwp3-sample16-hwp5.hwp", 2);
-    let twos = extract_text_positions(&svg, "2");
-    let threes = extract_text_positions(&svg, "3");
-
-    let heading2 = twos
-        .iter()
-        .find(|(x, y)| (*x - 83.36).abs() < 1.0 && (*y - 337.2).abs() < 2.0)
-        .copied();
-    assert!(
-        heading2.is_some(),
-        "p3 `2. 추진방향` heading digit must match the 3mm-grid Hancom PDF y≈337.2: {twos:?}"
-    );
-
-    let heading3 = threes
-        .iter()
-        .find(|(x, y)| (*x - 83.36).abs() < 1.0 && (*y - 749.3).abs() < 2.0)
-        .copied();
-    assert!(
-        heading3.is_some(),
-        "p3 `3. 주요 추진내용` heading digit must match the 3mm-grid Hancom PDF y≈749.3: {threes:?}"
-    );
-}
-
-#[test]
-fn sample16_hwp3_page3_heading_positions_follow_hancom_grid() {
-    let svg = render_svg("samples/hwp3-sample16.hwp", 2);
-    let twos = extract_text_positions(&svg, "2");
-    let threes = extract_text_positions(&svg, "3");
-
-    let heading2 = twos.iter().find(|(_, y)| (*y - 337.2).abs() < 2.0).copied();
-    assert!(
-        heading2.is_some(),
-        "HWP3 원본 p3 `2. 추진방향`도 한컴 3mm 격자 y≈337.2를 따라야 함: {twos:?}"
-    );
-
-    let heading3 = threes
-        .iter()
-        .find(|(_, y)| (*y - 749.2).abs() < 2.0)
-        .copied();
-    assert!(
-        heading3.is_some(),
-        "HWP3 원본 p3 `3. 주요 추진내용`도 한컴 3mm 격자 y≈749.2를 따라야 함: {threes:?}"
-    );
-}
+// HWP3 원본 제목의 독립 Print 기준선과 내용 소유는
+// verified_hwp3_original_print_boundaries에서 검증한다.
 
 #[test]
 fn sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height() {
@@ -356,97 +275,8 @@ fn sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height() {
     );
 }
 
-#[test]
-fn sample16_hwp5_page3_dump_pages_summary_uses_lineseg_spacing() {
-    let doc = load_doc("samples/hwp3-sample16-hwp5.hwp");
-    let dump = doc.dump_page_items(Some(2));
-    // #1648 수정으로 페이지 하단 빈 문단(pi=87)이 한컴처럼 page3 에 배치(items 19→20).
-    // 단, pi=87은 가시 내용이 없는 trailing 빈 문단이므로 시각 사용 높이 used는
-    // 2022 변환본(items=19)과 같은 경계를 유지해야 한다.
-    let summary = dump
-        .lines()
-        .find(|line| line.contains("단 0 (items=20"))
-        .unwrap_or_else(|| panic!("p3 단 요약을 찾을 수 없음:\n{dump}"));
-
-    assert!(
-        summary.contains("used=874.5px")
-            && summary.contains("hwp_used≈841.6px")
-            && summary.contains("diff=+32.9px"),
-        "p3 단 요약은 trailing 빈 문단을 items에 유지하되 시각 사용 높이는 2022 기준과 같은 경계를 유지해야 함: {summary}"
-    );
-}
-
-#[test]
-fn sample16_hwp5_page3_bcp_tail_paragraph_stays_single_visual_line_for_pdf_oracle() {
-    let doc = load_doc("samples/hwp3-sample16-hwp5.hwp");
-    let dump = doc.dump_page_items(Some(2));
-    let p83 = dump
-        .lines()
-        .find(|line| line.contains("FullParagraph  pi=83"))
-        .unwrap_or_else(|| panic!("p3 pi=83 dump line not found:\n{dump}"));
-
-    // #4628: 프로덕션 format_paragraph total(sb + lines + sa). 2022 표본과
-    // 같이 HeightMeasurer 합 31.5 가 아니라 29.6 이다. 한 줄 접힘은 유지.
-    assert!(
-        p83.contains("h=29.6")
-            && p83.contains("lines=27.7")
-            && p83.contains("lh=17.3")
-            && p83.contains("ls=10.4"),
-        "p83 BCP 문단은 한컴 PDF 정답지처럼 단일 시각 줄로 유지되어야 함: {p83}"
-    );
-}
-
-#[test]
-fn sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg() {
-    let doc = load_doc("samples/hwp3-sample16-hwp5-2022.hwp");
-    let dump = doc.dump_page_items(Some(2));
-    let p83 = dump
-        .lines()
-        .find(|line| line.contains("FullParagraph  pi=83"))
-        .unwrap_or_else(|| panic!("2022 p3 pi=83 dump line not found:\n{dump}"));
-    let summary = dump
-        .lines()
-        .find(|line| line.contains("단 0 (items=19"))
-        .unwrap_or_else(|| panic!("2022 p3 단 요약을 찾을 수 없음:\n{dump}"));
-
-    // dump-pages 는 #4628 이후 HeightMeasurer 합(31.5)이 아니라 프로덕션
-    // format_paragraph total(sb=1.9 + lines=27.7 + sa=0 → 29.6)을 말한다.
-    // 접힘 계약은 그대로: lh/ls 한 줄, 꼬리 LINE_SEG 를 별도 시각 줄로 세지 않는다.
-    assert!(
-        p83.contains("h=29.6")
-            && p83.contains("lines=27.7")
-            && p83.contains("lh=17.3")
-            && p83.contains("ls=10.4"),
-        "2022 p83 BCP 문단의 마지막 LINE_SEG 꼬리는 한컴오피스처럼 앞 줄에 접혀야 함: {p83}"
-    );
-    assert!(
-        summary.contains("used=874.5px")
-            && summary.contains("hwp_used≈841.6px")
-            && summary.contains("diff=+32.9px"),
-        "2022 p3 단 요약은 p83 꼬리 LINE_SEG를 별도 시각 줄로 세지 않아야 함: {summary}"
-    );
-}
-
-#[test]
-fn sample16_hwp5_2022_page3_bcp_tail_glyph_stays_on_hancom_line() {
-    let svg = render_svg("samples/hwp3-sample16-hwp5-2022.hwp", 2);
-    let tail_glyphs = extract_text_positions(&svg, "립");
-
-    let folded_tail = tail_glyphs
-        .iter()
-        .find(|(x, y)| *x > 620.0 && (*y - 881.35).abs() < 1.0)
-        .copied();
-    assert!(
-        folded_tail.is_some(),
-        "2022 p83 BCP `수립`의 `립`은 한컴오피스처럼 p83 본문 줄 y≈881.35에 있어야 함: {tail_glyphs:?}"
-    );
-
-    let orphan_tail = tail_glyphs
-        .iter()
-        .find(|(x, y)| (*x - 126.7).abs() < 2.0 && (*y - 909.1).abs() < 2.0)
-        .copied();
-    assert!(
-        orphan_tail.is_none(),
-        "2022 p83 BCP `립`이 다음 줄 머리에 단독 배치되면 p84 이하가 한컴오피스보다 내려감: {tail_glyphs:?}"
-    );
-}
+// 2024 저장본의 제목·BCP 꼬리·후행 빈 문단은 전쪽 검증과 독립 Print 좌표를
+// 확인한 새 이름의 검사로 보호한다. 다른 원본의 검증 근거로 대신하지 않는다.
+// tests/cases/verified_sample16_2024_print_boundaries.rs
+// 2022 저장본의 꼬리·이어받기 배치는 새 이름의 관계 검사로 보호한다.
+// tests/cases/issue_7642_sample16_2022_paragraph_relations.rs

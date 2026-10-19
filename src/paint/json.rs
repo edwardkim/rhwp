@@ -1,5 +1,8 @@
 use std::{collections::HashMap, fmt::Write as _};
 
+#[path = "equation_paren_json.rs"]
+mod equation_paren_json;
+
 use crate::document_core::helpers::{
     color_ref_to_css, json_escape as raw_json_escape, write_json_base64,
 };
@@ -1046,10 +1049,37 @@ impl PaintOp {
                 let resolved = resolved.as_deref().or(fallback.as_ref());
                 // [#7193] 소비자가 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
                 write_bbox(buf, image.paint_bbox(bbox));
+                if resolved
+                    .map(|payload| payload.data.as_slice())
+                    .or(image.data.as_deref())
+                    .is_some_and(
+                        crate::renderer::image_resolver::png_sampling::print_bitmap_reconstruction,
+                    )
+                {
+                    buf.push_str(",\"imageReconstruction\":\"catmullRom\"");
+                }
+                if let Some(interpolate) = image
+                    .data
+                    .as_deref()
+                    .and_then(crate::renderer::image_resolver::png_sampling::interpolation)
+                {
+                    let _ = write!(
+                        buf,
+                        ",\"imageInterpolation\":\"{}\"",
+                        if interpolate { "linear" } else { "nearest" }
+                    );
+                }
                 // [#3315] 키가 있는 op 만 base64 를 생략할 수 있다 — 소비자가 그 키로
                 // `getSourceImageBytes` 를 불러 같은 바이트를 받는다. 키를 낼 수 없는 합성
                 // 그림(`bin_data_id == 0`)은 되찾을 길이 없으므로 종전대로 싣는다.
-                let source_image_key = crate::paint::source_image_key(ctx.bin_data_epoch, image);
+                // 배치·장치에 맞춘 바이트는 원본 bin 키로 다시 얻을 수 없다.
+                // 이 op은 실제 출력 바이트를 싣고 내용 기반 이미지 캐시가 이를 구분한다.
+                let source_image_key =
+                    if resolved.is_some_and(|p| p.kind == ResolvedImageKind::OutputDevice) {
+                        None
+                    } else {
+                        crate::paint::source_image_key(ctx.bin_data_epoch, image)
+                    };
                 let omit_bytes = ctx.options.omit_image_bytes && source_image_key.is_some();
                 if let Some(payload) = resolved {
                     if omit_bytes {
@@ -1071,10 +1101,7 @@ impl PaintOp {
                     // [#3315] 변환 사슬의 단일 권위는 `emitted_image_bytes` 다 — 키로 바이트를
                     // 되돌려주는 경로가 같은 함수를 써야 두 결과가 갈라지지 않는다.
                     let (final_mime, final_data) =
-                        crate::renderer::image_resolver::emitted_image_bytes(
-                            data,
-                            crate::renderer::image_resolver::is_watermark_image(image),
-                        );
+                        crate::renderer::image_resolver::emitted_image_node_bytes(image, data);
                     if omit_bytes {
                         let _ = write!(
                             buf,
@@ -1816,11 +1843,7 @@ fn write_clamped_tab_leaders(buf: &mut String, run: &TextRunNode) -> bool {
 fn write_text_control_marks(buf: &mut String, bbox: BoundingBox, run: &TextRunNode) -> bool {
     let (bounded_text, mut complete) = bounded_text_prefix(&run.text);
     let positions = run.replay_positions_prefix_for(&run.text, &bounded_text);
-    let font_size = if run.style.font_size > 0.0 {
-        run.style.font_size
-    } else {
-        12.0
-    };
+    let font_size = run.style.effective_font_size();
     let mark_font_size = (font_size * 0.5).max(1.0);
     let has_end_mark = run.is_para_end || run.is_line_break_end;
     let inline_limit =
@@ -2828,7 +2851,7 @@ fn write_shape_style(buf: &mut String, style: &ShapeStyle) {
         buf,
         ",\"strokeWidth\":{:.3},\"strokeDash\":{},\"opacity\":{:.3}",
         style.stroke_width,
-        json_escape(stroke_dash_str(style.stroke_dash)),
+        stroke_dash_json(style.stroke_dash),
         style.opacity,
     );
     if let Some(shadow) = &style.shadow {
@@ -2891,7 +2914,7 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
         "{{\"color\":{},\"width\":{:.3},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}",
         json_escape(&color_ref_to_css(style.color)),
         style.width,
-        json_escape(stroke_dash_str(style.dash)),
+        stroke_dash_json(style.dash),
         json_escape(line_render_type_str(style.line_type)),
         json_escape(arrow_style_str(style.start_arrow)),
         json_escape(arrow_style_str(style.end_arrow)),
@@ -2949,19 +2972,35 @@ fn write_path_commands(buf: &mut String, commands: &[PathCommand]) {
 fn write_equation_layout_box(buf: &mut String, layout: &LayoutBox) {
     let _ = write!(
         buf,
-        "{{\"x\":{:.6},\"y\":{:.6},\"width\":{:.6},\"height\":{:.6},\"baseline\":{:.6},\"kind\":",
-        layout.x, layout.y, layout.width, layout.height, layout.baseline,
+        "{{\"x\":{:.6},\"y\":{:.6},\"width\":{:.6},\"height\":{:.6},\"baseline\":{:.6},\"fontSize\":{:.6},\"kind\":",
+        layout.x, layout.y, layout.width, layout.height, layout.baseline, layout.font_size,
     );
-    write_equation_layout_kind(buf, &layout.kind);
+    write_equation_layout_kind(buf, layout);
     buf.push('}');
 }
 
-fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
+fn write_integral_geometry(buf: &mut String, fs: f64) {
+    let path = crate::renderer::equation::svg_render::integral_path_data(0.0, 0.0, fs);
+    let _ = write!(
+        buf,
+        ",\"integralGeometry\":{{\"pathData\":{},\"strokeWidth\":{}}}",
+        json_escape(&path),
+        0.0
+    );
+}
+
+fn write_equation_layout_kind(buf: &mut String, layout: &LayoutBox) {
+    let kind = &layout.kind;
+    let font_size = layout.font_size;
+    if equation_paren_json::write_kind(buf, layout) {
+        return;
+    }
     match kind {
         LayoutKind::HancomGlyphs(run) => {
             let _ = write!(
                 buf,
-                "{{\"type\":\"hancomGlyphs\",\"glyphs\":{},\"positions\":[",
+                "{{\"type\":\"hancomGlyphs\",\"fontFamily\":{},\"glyphs\":{},\"positions\":[",
+                json_escape(run.font_family),
                 json_escape(&run.glyphs)
             );
             for (index, offset) in run.positions.iter().enumerate() {
@@ -2992,7 +3031,43 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
         LayoutKind::Text(text) => write_equation_text_kind(buf, "text", text),
         LayoutKind::Number(text) => write_equation_text_kind(buf, "number", text),
         LayoutKind::Symbol(text) => write_equation_text_kind(buf, "symbol", text),
-        LayoutKind::MathSymbol(text) => write_equation_text_kind(buf, "mathSymbol", text),
+        LayoutKind::FontGlyph {
+            text,
+            font_family,
+            outline,
+            paint,
+        } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"fontGlyph\",\"text\":{},\"fontFamily\":{}",
+                json_escape(text),
+                json_escape(font_family),
+            );
+            if let Some(commands) = outline {
+                let path = crate::renderer::equation::multiplication_outline::path_data(commands);
+                let stroke_width = paint.map_or(0.0, |p| p.stroke_width);
+                let scale_x = paint.map_or(1.0, |p| p.scale_x);
+                let _ = write!(
+                    buf,
+                    ",\"outlineGeometry\":{{\"pathData\":{},\"strokeWidth\":{stroke_width:.6},\"scaleX\":{scale_x:.8},\"fillAndStroke\":true}}",
+                    json_escape(&path),
+                );
+            }
+            buf.push('}');
+        }
+        LayoutKind::MathSymbol(text) => {
+            if crate::renderer::equation::layout::is_integral_symbol(text) {
+                let _ = write!(
+                    buf,
+                    "{{\"type\":\"mathSymbol\",\"text\":{}",
+                    json_escape(text)
+                );
+                write_integral_geometry(buf, font_size);
+                buf.push('}');
+            } else {
+                write_equation_text_kind(buf, "mathSymbol", text);
+            }
+        }
         LayoutKind::Function(name) => {
             let _ = write!(
                 buf,
@@ -3000,11 +3075,18 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
                 json_escape(name)
             );
         }
-        LayoutKind::Fraction { numer, denom } => {
+        LayoutKind::Fraction {
+            numer,
+            denom,
+            axis_height,
+            rule_thickness,
+        } => {
             buf.push_str("{\"type\":\"fraction\",\"numer\":");
             write_equation_layout_box(buf, numer);
             buf.push_str(",\"denom\":");
             write_equation_layout_box(buf, denom);
+            let _ = write!(buf, ",\"axisHeight\":{axis_height}");
+            let _ = write!(buf, ",\"ruleThickness\":{rule_thickness}");
             buf.push('}');
         }
         LayoutKind::Atop { top, bottom } => {
@@ -3039,12 +3121,24 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
             write_equation_layout_box(buf, sup);
             buf.push('}');
         }
-        LayoutKind::BigOp { symbol, sub, sup } => {
+        LayoutKind::BigOp {
+            symbol,
+            sub,
+            sup,
+            op_font_size,
+            op_width,
+            op_x,
+            op_y,
+            op_baseline,
+        } => {
             let _ = write!(
                 buf,
-                "{{\"type\":\"bigOp\",\"symbol\":{}",
-                json_escape(symbol)
+                "{{\"type\":\"bigOp\",\"symbol\":{},\"opFontSize\":{},\"opWidth\":{},\"opX\":{},\"opY\":{},\"opBaseline\":{}",
+                json_escape(symbol), op_font_size, op_width, op_x, op_y, op_baseline
             );
+            if crate::renderer::equation::layout::is_integral_symbol(symbol) {
+                write_integral_geometry(buf, font_size);
+            }
             write_optional_equation_box(buf, "sub", sub.as_deref());
             write_optional_equation_box(buf, "sup", sup.as_deref());
             buf.push('}');
@@ -3052,9 +3146,15 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
         LayoutKind::Limit {
             is_upper,
             name,
+            name_font_size,
+            sub_font_size,
             sub,
         } => {
-            let _ = write!(buf, "{{\"type\":\"limit\",\"isUpper\":{}", is_upper);
+            let _ = write!(
+                buf,
+                "{{\"type\":\"limit\",\"isUpper\":{},\"nameFontSize\":{},\"subFontSize\":{}",
+                is_upper, name_font_size, sub_font_size
+            );
             write_optional_equation_box(buf, "name", name.as_deref());
             write_optional_equation_box(buf, "sub", sub.as_deref());
             buf.push('}');
@@ -3102,21 +3202,59 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
             }
             buf.push_str("]}");
         }
-        LayoutKind::Paren { left, right, body } => {
+        LayoutKind::Paren {
+            left,
+            right,
+            left_width,
+            right_width,
+            delimiter_height,
+            glyph_delimiters,
+            body,
+            ..
+        } => {
             let _ = write!(
                 buf,
-                "{{\"type\":\"paren\",\"left\":{},\"right\":{},\"body\":",
+                "{{\"type\":\"paren\",\"left\":{},\"right\":{},\"leftWidth\":{:.3},\"rightWidth\":{:.3},\"delimiterHeight\":{:.3},\"glyphDelimiters\":{},\"body\":",
                 json_escape(left),
                 json_escape(right),
+                left_width,
+                right_width,
+                delimiter_height,
+                glyph_delimiters,
             );
             write_equation_layout_box(buf, body);
             buf.push('}');
         }
-        LayoutKind::Decoration { kind, body } => {
+        LayoutKind::Decoration {
+            kind,
+            body,
+            negation,
+            outline,
+        } => {
             let _ = write!(
                 buf,
                 "{{\"type\":\"decoration\",\"decoration\":{},\"body\":",
                 json_escape(equation_decoration(*kind))
+            );
+            write_equation_layout_box(buf, body);
+            if let Some(commands) = outline {
+                let path = crate::renderer::equation::multiplication_outline::path_data(commands);
+                let _ = write!(buf,
+                    ",\"outlineGeometry\":{{\"pathData\":{},\"strokeWidth\":0,\"scaleX\":1,\"fillAndStroke\":false}}",
+                    json_escape(&path));
+            }
+            if let Some(g) = negation {
+                let _ = write!(buf,
+                    ",\"negationGeometry\":{{\"start\":[{:.6},{:.6}],\"end\":[{:.6},{:.6}],\"thickness\":{:.6}}}",
+                    g.start.0, g.start.1, g.end.0, g.end.1, g.thickness);
+            }
+            buf.push('}');
+        }
+        LayoutKind::Color { rgb, body } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"color\",\"color\":\"#{:02x}{:02x}{:02x}\",\"body\":",
+                rgb[0], rgb[1], rgb[2]
             );
             write_equation_layout_box(buf, body);
             buf.push('}');
@@ -3180,11 +3318,14 @@ fn equation_matrix_style(style: MatrixStyle) -> &'static str {
         MatrixStyle::Paren => "paren",
         MatrixStyle::Bracket => "bracket",
         MatrixStyle::Vert => "vert",
+        MatrixStyle::Ladder => "ladder",
+        MatrixStyle::ShortLadder => "short_ladder",
     }
 }
 
 fn equation_decoration(kind: DecoKind) -> &'static str {
     match kind {
+        DecoKind::Box => "box",
         DecoKind::Hat => "hat",
         DecoKind::Check => "check",
         DecoKind::Tilde => "tilde",
@@ -3224,14 +3365,25 @@ fn underline_type_str(value: UnderlineType) -> &'static str {
     }
 }
 
-fn stroke_dash_str(value: StrokeDash) -> &'static str {
-    match value {
+fn stroke_dash_json(value: StrokeDash) -> String {
+    let name = match value {
+        StrokeDash::Explicit(_) => {
+            return serde_json::to_string(&value.intervals(0.0))
+                .expect("확정한 선 반복 구간은 유한한 양수다");
+        }
         StrokeDash::Solid => "solid",
         StrokeDash::Dash => "dash",
         StrokeDash::Dot => "dot",
         StrokeDash::DashDot => "dashDot",
         StrokeDash::DashDotDot => "dashDotDot",
-    }
+        StrokeDash::HwpDash => "hwpDash",
+        StrokeDash::HwpDot => "hwpDot",
+        StrokeDash::HwpDashDot => "hwpDashDot",
+        StrokeDash::HwpDashDotDot => "hwpDashDotDot",
+        StrokeDash::HwpLongDash => "hwpLongDash",
+        StrokeDash::HwpCircle => "hwpCircle",
+    };
+    json_escape(name)
 }
 
 fn line_render_type_str(value: LineRenderType) -> &'static str {
@@ -3255,6 +3407,7 @@ fn arrow_style_str(value: ArrowStyle) -> &'static str {
         ArrowStyle::Diamond => "diamond",
         ArrowStyle::Circle => "circle",
         ArrowStyle::Square => "square",
+        ArrowStyle::OpenArrow => "openArrow",
     }
 }
 
@@ -4728,6 +4881,7 @@ mod tests {
                         EquationNode {
                             svg_content: "<text>x</text>".to_string(),
                             layout_box: LayoutBox {
+                                font_size: 12.0,
                                 x: 0.0,
                                 y: 0.0,
                                 width: 8.0,

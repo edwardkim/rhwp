@@ -1,6 +1,8 @@
 //! 문서 생성/로딩/저장/설정 관련 native 메서드
 
 mod hft_outline_fonts;
+mod initial_fields;
+mod metafile_fonts;
 mod reflowed_table_frames;
 
 use crate::document_core::validation::{
@@ -24,6 +26,8 @@ use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+#[path = "stored_body_frames.rs"]
+mod stored_body_frames;
 mod stored_table_tail;
 mod tac_cache_repair;
 
@@ -309,6 +313,7 @@ impl DocumentCore {
             styles,
             canvas_metrics: None,
             hft_outline_fonts: Default::default(),
+            metafile_fonts: Default::default(),
             font_environment: None,
             composed: Vec::new(),
             body_page_field_error: None,
@@ -796,6 +801,38 @@ impl DocumentCore {
                         ))
                     })
                     .collect();
+                // 번호·책갈피 등의 표지와 비자리차지 부동 개체는 호스트의
+                // 저장 글줄을 없애지 않는다. 폭·높이 소유는 기존 공통 분류를 따른다.
+                // 자리차지 개체·각주 슬롯은 제외하고 별도 머리말/꼬리말의 부모 표지는 보존한다.
+                let has_only_text_controls =
+                    |para: &Paragraph| crate::renderer::empty_host_controls_are_flow_neutral(para);
+                // 합성 텍스트 줄의 전진에는 문단 앞뒤 간격도 한 번씩 포함된다.
+                // 물리 개체의 별도 높이는 이 텍스트 브리지로 추측하지 않는다.
+                let reflowed_text_advances: Vec<Option<i32>> = section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .map(|(i, para)| {
+                        if !reflowed_paras.contains(&i)
+                            || !para
+                                .controls
+                                .iter()
+                                .all(crate::renderer::control_is_body_flow_neutral_marker)
+                        {
+                            return None;
+                        }
+                        let style = styles.para_styles.get(para.para_shape_id as usize);
+                        let outer = style.map_or(0, |style| {
+                            ((style.spacing_before + style.spacing_after) * 7200.0 / dpi).round()
+                                as i32
+                        });
+                        Some(para.line_segs.iter().fold(outer, |advance, line| {
+                            advance
+                                .saturating_add(line.line_height)
+                                .saturating_add(line.line_spacing)
+                        }))
+                    })
+                    .collect();
                 // 재구성 전에 실제 글줄 끝과 다음 줄 전진 끝을 함께 고정한다.
                 let orig_plain_tail: Vec<Option<(i32, i32)>> = section
                     .paragraphs
@@ -812,7 +849,7 @@ impl DocumentCore {
                         {
                             return None;
                         }
-                        if !para.controls.is_empty() {
+                        if !has_only_text_controls(para) {
                             return source_table_frames
                                 .then(|| stored_table_tail::source_frame_tail(para))
                                 .flatten();
@@ -836,13 +873,18 @@ impl DocumentCore {
 
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
-                    // 필드는 저장 글줄 안의 텍스트 범위를 표시할 뿐 별도 높이를
-                    // 차지하지 않는다. 필드가 있다는 이유로 저장 간격을 끊으면
-                    // 다음 문단의 빈 물리 공간이 사라진다.
-                    let text_only_controls = para
-                        .controls
-                        .iter()
-                        .all(|control| matches!(control, Control::Field(_)));
+                    let text_only_controls = has_only_text_controls(para)
+                        || stored_body_frames::inline_graphics_fit_saved_text_line(
+                            para,
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0, |style| style.vertical_alignment),
+                        );
+                    // 개체 높이가 저장 줄 전체에 들어 있으면 높이와 후속 간격의
+                    // 소유를 구분한다. 간격 보존이 개체 높이를 다시 더하지 않는다.
+                    let saved_object_line =
+                        !was_reflowed && stored_body_frames::owns_saved_object_line(para);
                     // 저장 줄이 없는 글자취급 그림의 높이는 재구성 사다리가 이미
                     // 소비한다. 직전 저장 글줄의 앵커를 유지해야 그림 뒤 원본 줄의
                     // 저장 간격과 재구성된 그림 높이 중 큰 쪽을 사용할 수 있다.
@@ -877,7 +919,11 @@ impl DocumentCore {
                                     && first <= body_height_hu
                                     && first == prev_end.saturating_add(before)
                             });
-                    if !text_only_controls && !inline_reflowed_picture && !inline_saved_table {
+                    if !text_only_controls
+                        && !saved_object_line
+                        && !inline_reflowed_picture
+                        && !inline_saved_table
+                    {
                         source_anchor_end = None;
                     }
                     let hosts_bottom_fixed_frame = para.controls.iter().any(|c| {
@@ -926,7 +972,7 @@ impl DocumentCore {
                     // 누적 축·개체·합성/편집 줄의 0을 물리 경계로 추측하지 않는다.
                     let source_plain_reset = !was_reflowed
                         && !para.stored_text_partition_dirty
-                        && para.controls.is_empty()
+                        && text_only_controls
                         && orig_span[pi].is_some()
                         && orig_plain_tail[pi].is_some()
                         && first_source
@@ -948,7 +994,25 @@ impl DocumentCore {
                                     ) > body_height_hu
                             });
                     let accumulated_vpos = running_vpos;
-                    if source_page_break || source_tac_reset || source_plain_reset {
+                    let source_positive_reset = !was_reflowed
+                        && !para.stored_text_partition_dirty
+                        && orig_span[pi].is_some()
+                        && first_source.is_some_and(|first| {
+                            stored_body_frames::saved_positive_frame_reset(
+                                stored_body_frames::preceding_saved_span(
+                                    &orig_span,
+                                    &reflowed_text_advances,
+                                    pi,
+                                ),
+                                first,
+                                body_height_hu,
+                            )
+                        });
+                    if source_page_break
+                        || source_tac_reset
+                        || source_plain_reset
+                        || source_positive_reset
+                    {
                         running_vpos = first_source.expect("저장 프레임 원점").vertical_pos;
                     } else if !was_reflowed
                         && hosts_bottom_fixed_frame
@@ -1082,12 +1146,22 @@ impl DocumentCore {
                         .map(|line| line.vertical_pos)
                         .collect();
                     let preserve_source_frames = !was_reflowed
-                        && (para.controls.is_empty() || source_tac_frames[pi].is_some())
+                        && (text_only_controls || source_tac_frames[pi].is_some())
                         && !para.stored_text_partition_dirty
                         && para.line_segs.iter().all(|line| {
                             line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                                 == 0
                         });
+                    if reflowed_text_advances[pi].is_some() {
+                        running_vpos = running_vpos.saturating_add(
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0, |style| {
+                                    (style.spacing_before * 7200.0 / dpi).round() as i32
+                                }),
+                        );
+                    }
                     // 문단의 첫 LINE_SEG vpos를 running_vpos로 갱신
                     if let Some(first_seg) = para.line_segs.first_mut() {
                         first_seg.vertical_pos = running_vpos;
@@ -1204,7 +1278,19 @@ impl DocumentCore {
                         }
                     }
                     running_vpos = inner_vpos;
-                    if let Some((_, original_end)) = orig_span[pi].filter(|_| text_only_controls) {
+                    if reflowed_text_advances[pi].is_some() {
+                        running_vpos = running_vpos.saturating_add(
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0, |style| {
+                                    (style.spacing_after * 7200.0 / dpi).round() as i32
+                                }),
+                        );
+                    }
+                    if let Some((_, original_end)) =
+                        orig_span[pi].filter(|_| text_only_controls || saved_object_line)
+                    {
                         source_anchor_end = Some((original_end, running_vpos));
                     } else if inline_saved_table {
                         // 표 높이는 다음 일반 글줄의 저장 간격으로 재가산하지 않는다.
@@ -3237,163 +3323,7 @@ impl DocumentCore {
     /// start_char_idx != end_char_idx 상태가 된다.
     /// compose 전에 이 텍스트를 제거하여 빈 필드(start==end)로 정규화한다.
     fn clear_initial_field_texts(document: &mut Document) {
-        use crate::model::control::{Control, FieldType};
-        use crate::model::paragraph::Paragraph;
-
-        fn process_para(para: &mut Paragraph) {
-            // 삭제 대상 field_range 인덱스와 삭제할 문자 범위 수집
-            let mut removals: Vec<(usize, usize, usize)> = Vec::new(); // (fr_idx, start, end)
-            for (fri, fr) in para.field_ranges.iter().enumerate() {
-                if fr.start_char_idx >= fr.end_char_idx {
-                    continue;
-                }
-                if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
-                    if f.field_type != FieldType::ClickHere {
-                        continue;
-                    }
-                    if f.properties & (1 << 15) != 0 {
-                        continue;
-                    } // 이미 수정된 상태
-                      // 필드 값이 안내문과 동일한지 확인
-                    if let Some(guide) = f.guide_text() {
-                        let chars: Vec<char> = para.text.chars().collect();
-                        if fr.end_char_idx <= chars.len() {
-                            let field_val: String =
-                                chars[fr.start_char_idx..fr.end_char_idx].iter().collect();
-                            // trailing 공백 제거 후 비교 (한컴이 안내문 뒤에 공백을 추가하는 경우)
-                            if field_val.trim_end() == guide || field_val == guide {
-                                removals.push((fri, fr.start_char_idx, fr.end_char_idx));
-                            }
-                        }
-                    }
-                }
-            }
-            // [Task #1893] 삭제 수술의 IR 불변성 완성용 스냅샷 — 삭제 전 char_offsets 는
-            // 원본 문자 인덱스→utf16 위치 매핑의 유일한 근거다. removal 좌표는 전부
-            // 수집-시점(원본) 인덱스이므로, 원본 스냅샷으로 utf16 범위를 구해
-            // char_shapes 경계를 함께 시프트해야 직렬화→재파스가 고정점이 된다.
-            // (종전엔 text/field_ranges 만 고쳐 char_offsets/char_count/char_shapes 가
-            // stale — 그 불일치 IR 을 저장하면 재파스 정준형과 조판이 갈라져
-            // 라운드트립 렌더 752px 분기·빈 줄 추가가 발생했다.)
-            let orig_offsets: Vec<u32> = para.char_offsets.clone();
-            let orig_chars: Vec<char> = para.text.chars().collect();
-            let offsets_valid = orig_offsets.len() == orig_chars.len();
-            fn utf16_width(c: char) -> u32 {
-                if c == '\t' {
-                    8
-                } else if (c as u32) > 0xFFFF {
-                    2
-                } else {
-                    1
-                }
-            }
-            let mut any_removed = false;
-
-            // 뒤에서부터 삭제 (인덱스 안정성 유지)
-            for &(fri, start, end) in removals.iter().rev() {
-                let chars: Vec<char> = para.text.chars().collect();
-                // [Task #1620] 다중 removal 처리 중 앞선 removal 이 para.text 를 축소하면(특히
-                // 같은 범위를 가리키는 중첩 field_range) 이후 removal 의 수집-시점 (start,end) 가
-                // 현재 길이를 초과해 슬라이스 패닉(36396650). 현재 길이 기준 범위를 재검증해 skip.
-                if start > end || end > chars.len() {
-                    continue;
-                }
-                let removed_len = end - start;
-                let new_text: String = chars[..start].iter().chain(chars[end..].iter()).collect();
-                para.text = new_text;
-                para.field_ranges[fri].end_char_idx = start;
-                // 이후 field_ranges의 char_idx 조정
-                for i in 0..para.field_ranges.len() {
-                    if i == fri {
-                        continue;
-                    }
-                    let other = &mut para.field_ranges[i];
-                    if other.start_char_idx >= end {
-                        other.start_char_idx -= removed_len;
-                    }
-                    if other.end_char_idx >= end {
-                        other.end_char_idx -= removed_len;
-                    }
-                }
-                any_removed = true;
-
-                // [Task #1893] char_offsets/char_shapes/char_count 직접 수술 — 원본 utf16
-                // 좌표 기준. 역순 처리라 오른쪽 removal 의 시프트가 왼쪽 utf16 좌표에 영향
-                // 없고, 삭제 폭(u_end−u_start)은 원본 스냅샷 불변량이다. 컨트롤/필드 마커의
-                // 8유닛 갭 구조는 기존 오프셋에 이미 올바르게 인코딩되어 있으므로 감산만으로
-                // 보존된다.
-                if offsets_valid && start < end && end <= orig_offsets.len() {
-                    let u_start = orig_offsets[start];
-                    // [#3545] 지워진 본문 run 을 HWPX 저장에서 되살리기 위한 잔재 기록.
-                    // 한컴 정준형은 미기입 누름틀의 안내문을 파일에 본문 run 으로 남기므로
-                    // (form-01.hwpx), 기록 없이 저장하면 파일에서 영구 소실된다. 서식까지
-                    // 되살리도록 그 텍스트를 담던 run 의 char shape 도 함께 남긴다 — 아래
-                    // 수술이 zero-width 로 접기 전의 원본 좌표에서 조회해야 정확하다.
-                    let residue_shape_id = para
-                        .char_shapes
-                        .iter()
-                        .rev()
-                        .find(|cs| cs.start_pos <= u_start)
-                        .map(|cs| cs.char_shape_id)
-                        .unwrap_or(0);
-                    let residue_text: String = orig_chars[start..end].iter().collect();
-                    let ctrl_idx = para.field_ranges[fri].control_idx;
-                    if let Some(Control::Field(f)) = para.controls.get_mut(ctrl_idx) {
-                        f.guide_residue = Some(crate::model::control::GuideResidue {
-                            text: residue_text,
-                            char_shape_id: residue_shape_id,
-                        });
-                    }
-                    // 삭제 폭 = 삭제 문자들의 utf16 폭만. orig_offsets[end] 는 필드 end
-                    // 마커의 8유닛 갭을 건너뛴 다음 문자 위치라 갭까지 폭에 포함되어
-                    // 후속 오프셋에서 마커 갭이 소실된다(슬롯 방출 위치 붕괴).
-                    let u_end = orig_offsets[end - 1] + utf16_width(orig_chars[end - 1]);
-                    let width = u_end.saturating_sub(u_start);
-                    // 삭제 구간의 오프셋 엔트리 제거 + 후속 엔트리 감산.
-                    para.char_offsets.drain(start..end);
-                    for off in para.char_offsets.iter_mut().skip(start) {
-                        *off = off.saturating_sub(width);
-                    }
-                    para.char_count = para.char_count.saturating_sub(width);
-                    for cs in &mut para.char_shapes {
-                        if cs.start_pos >= u_end {
-                            cs.start_pos -= width;
-                        } else if cs.start_pos > u_start {
-                            // 삭제 범위 내부 경계 → zero-width run 으로 시작점에 고정
-                            // (한컴도 필드값 삭제 시 zero-width char run 을 남긴다 —
-                            // 원본 서식의 자식 없는 <hp:run/> 33개와 동일 표현).
-                            cs.start_pos = u_start;
-                        }
-                    }
-                }
-            }
-            if any_removed {}
-        }
-
-        fn process_table(table: &mut crate::model::table::Table) {
-            for cell in &mut table.cells {
-                for cp in &mut cell.paragraphs {
-                    process_para(cp);
-                    // 중첩 표 재귀 탐색
-                    for ctrl in &mut cp.controls {
-                        if let Control::Table(nested) = ctrl {
-                            process_table(nested);
-                        }
-                    }
-                }
-            }
-        }
-
-        for section in &mut document.sections {
-            for para in &mut section.paragraphs {
-                process_para(para);
-                for ctrl in &mut para.controls {
-                    if let Control::Table(table) = ctrl {
-                        process_table(table);
-                    }
-                }
-            }
-        }
+        initial_fields::clear(document);
     }
 }
 

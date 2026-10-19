@@ -1259,7 +1259,9 @@ export interface LayerFootnoteMarkerOp {
   color?: string;
 }
 
-export type LayerStrokeDash = 'solid' | 'dash' | 'dot' | 'dashDot' | 'dashDotDot';
+export type LayerStrokeDash = 'solid' | 'dash' | 'dot' | 'dashDot' | 'dashDotDot'
+  | 'hwpDash' | 'hwpDot' | 'hwpDashDot' | 'hwpDashDotDot' | 'hwpLongDash' | 'hwpCircle'
+  | number[];
 
 export interface LayerShadowStyle {
   shadowType?: number;
@@ -1376,6 +1378,10 @@ export interface LayerPathOp {
 export interface LayerImageOp {
   type: 'image';
   bbox: LayerBounds;
+  /** Explicit source sampling; absent preserves the output profile policy. */
+  imageInterpolation?: 'nearest' | 'linear';
+  /** 실제 Print 색 전달 payload의 축소 재구성 계약. */
+  imageReconstruction?: 'catmullRom';
   mime?: string;
   base64?: string;
   imageRef?: number | string;
@@ -1413,8 +1419,9 @@ export interface LayerControlLabelOp {
   color?: string;
 }
 
-export type LayerEquationMatrixStyle = 'plain' | 'paren' | 'bracket' | 'vert';
+export type LayerEquationMatrixStyle = 'plain' | 'paren' | 'bracket' | 'vert' | 'ladder' | 'short_ladder';
 export type LayerEquationDecoration =
+  | 'box'
   | 'hat'
   | 'check'
   | 'tilde'
@@ -1441,6 +1448,7 @@ export type LayerEquationFontStyle =
   | 'monospace';
 
 export interface LayerEquationLayoutBox {
+  fontSize?: number;
   x: number;
   y: number;
   width: number;
@@ -1449,27 +1457,46 @@ export interface LayerEquationLayoutBox {
   kind: LayerEquationLayoutKind;
 }
 
+export interface LayerIntegralGeometry {
+  pathData: string;
+  /** 0은 닫힌 윤곽 채우기, 양수는 이전 stroke 경로다. */
+  strokeWidth: number;
+}
+
+export interface LayerFontGlyphGeometry extends LayerIntegralGeometry {
+  scaleX?: number;
+  fillAndStroke?: boolean;
+}
+
+export interface LayerNegationGeometry {
+  start: [number, number];
+  end: [number, number];
+  thickness: number;
+}
+
 export type LayerEquationLayoutKind =
-  | { type: 'hancomGlyphs'; glyphs: string; positions: number[]; shears?: number[]; baselineShift: number }
+  | { type: 'hancomGlyphs'; fontFamily?: string; glyphs: string; positions: number[]; shears?: number[]; baselineShift: number }
   | { type: 'row'; children: LayerEquationLayoutBox[] }
   | { type: 'text'; text: string }
   | { type: 'number'; text: string }
   | { type: 'symbol'; text: string }
-  | { type: 'mathSymbol'; text: string }
+  | { type: 'fontGlyph'; text: string; fontFamily: string; outlineGeometry?: LayerFontGlyphGeometry }
+  | { type: 'mathSymbol'; text: string; integralGeometry?: LayerIntegralGeometry }
   | { type: 'function'; name: string }
-  | { type: 'fraction'; numer: LayerEquationLayoutBox; denom: LayerEquationLayoutBox }
+  | { type: 'fraction'; numer: LayerEquationLayoutBox; denom: LayerEquationLayoutBox; axisHeight: number; ruleThickness?: number }
   | { type: 'atop'; top: LayerEquationLayoutBox; bottom: LayerEquationLayoutBox }
   | { type: 'sqrt'; body: LayerEquationLayoutBox; index?: LayerEquationLayoutBox }
   | { type: 'superscript'; base: LayerEquationLayoutBox; sup: LayerEquationLayoutBox }
   | { type: 'subscript'; base: LayerEquationLayoutBox; sub: LayerEquationLayoutBox }
   | { type: 'subSup'; base: LayerEquationLayoutBox; sub: LayerEquationLayoutBox; sup: LayerEquationLayoutBox }
-  | { type: 'bigOp'; symbol: string; sub?: LayerEquationLayoutBox; sup?: LayerEquationLayoutBox }
-  | { type: 'limit'; isUpper: boolean; name?: LayerEquationLayoutBox; sub?: LayerEquationLayoutBox }
+  | { type: 'bigOp'; symbol: string; opFontSize?: number; opWidth?: number; opX?: number; opY?: number; opBaseline?: number; integralGeometry?: LayerIntegralGeometry; sub?: LayerEquationLayoutBox; sup?: LayerEquationLayoutBox }
+  | { type: 'limit'; isUpper: boolean; name?: LayerEquationLayoutBox; nameFontSize?: number; subFontSize?: number; sub?: LayerEquationLayoutBox }
   | { type: 'matrix'; style: LayerEquationMatrixStyle; cells: LayerEquationLayoutBox[][] }
   | { type: 'rel'; arrow: LayerEquationLayoutBox; over: LayerEquationLayoutBox; under?: LayerEquationLayoutBox }
   | { type: 'eqAlign'; rows: Array<{ left: LayerEquationLayoutBox; right: LayerEquationLayoutBox }> }
-  | { type: 'paren'; left: string; right: string; body: LayerEquationLayoutBox }
-  | { type: 'decoration'; decoration: LayerEquationDecoration; body: LayerEquationLayoutBox }
+  | { type: 'paren'; left: string; right: string; leftWidth?: number; rightWidth?: number; delimiterHeight?: number; glyphDelimiters?: boolean; body: LayerEquationLayoutBox }
+  | { type: 'decoration'; decoration: LayerEquationDecoration; body: LayerEquationLayoutBox; negationGeometry?: LayerNegationGeometry; outlineGeometry?: LayerFontGlyphGeometry }
+  | { type: 'color'; color: string; body: LayerEquationLayoutBox }
   | { type: 'fontStyle'; fontStyle: LayerEquationFontStyle; body: LayerEquationLayoutBox }
   | { type: 'space'; width: number }
   | { type: 'newline' }

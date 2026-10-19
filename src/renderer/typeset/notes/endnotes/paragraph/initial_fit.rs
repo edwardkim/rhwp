@@ -6,9 +6,9 @@ use crate::renderer::typeset::{
     endnote_last_column_tail_overflows_frame, hwpunit_to_px, line_has_visible_text_or_tac_equation,
     page_item_para_index, para_has_non_tac_picture_or_shape, para_has_visible_text_or_equation,
     para_is_treat_as_char_picture_only, paragraph_by_global_index, ComposedParagraph, Control,
-    EndnoteRef, FormattedParagraph, Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
-    ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX, ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX,
-    ENDNOTE_PAGE_OFFCANVAS_GUARD_PX,
+    EndnoteRef, FormattedParagraph, MeasuredTable, PageItem, Paragraph, ResolvedStyleSet,
+    TypesetEngine, TypesetState, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX,
+    ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX, ENDNOTE_PAGE_OFFCANVAS_GUARD_PX,
 };
 
 /// 호출 시점의 관측값. 페이지 상태를 변경할 수 없는 Query 입력이다.
@@ -16,6 +16,7 @@ pub(super) struct InitialFitInput<'a> {
     pub(super) st: &'a TypesetState,
     pub(super) paragraphs: &'a [Paragraph],
     pub(super) styles: &'a ResolvedStyleSet,
+    pub(super) measured_tables: &'a [MeasuredTable],
     pub(super) endnote_refs: &'a [EndnoteRef],
     pub(super) en_ref_idx: usize,
     pub(super) en_ref: &'a EndnoteRef,
@@ -49,7 +50,6 @@ pub(super) struct InitialFitInput<'a> {
     pub(super) default_between_notes_gap: bool,
     pub(super) zero_endnote_spacing_profile: bool,
     pub(super) compact_between_notes_gap: bool,
-    pub(super) allow_default_late_question_tail: bool,
     pub(super) has_treat_as_char_picture_shape: bool,
 }
 
@@ -66,6 +66,7 @@ pub(super) struct InitialFitResult {
     pub(super) compact_endnote_own_vpos_span_fits_for_flow: bool,
     pub(super) no_separator_compact_final_note_first_line_tail_fits: bool,
     pub(super) split_endnote_to_fit: Option<usize>,
+    pub(super) reflowed_fit: Option<super::reflow_fit::ReflowedEndnoteFit>,
     pub(super) late_internal_rewind_fit_split: bool,
     pub(super) compact_non_default_empty_column_rewind_fits: bool,
     pub(super) visible_compact_sequential_tail_fits_current_column: bool,
@@ -77,6 +78,7 @@ impl TypesetEngine {
             st,
             paragraphs,
             styles,
+            measured_tables,
             endnote_refs,
             en_ref_idx,
             en_ref,
@@ -110,7 +112,6 @@ impl TypesetEngine {
             default_between_notes_gap,
             zero_endnote_spacing_profile,
             compact_between_notes_gap,
-            allow_default_late_question_tail,
             has_treat_as_char_picture_shape,
         } = input;
         let remaining_height = (available - st.current_height).max(0.0);
@@ -313,12 +314,26 @@ impl TypesetEngine {
             && !local_vpos_rewind
             && !internal_vpos_rewind
             && fmt.line_heights.len() > 1
-            && st.current_height + total_advance_fit > available + 1.0
+            && st.current_height + en_fit > available
             && endnote_has_visible_payload
-            && ((!default_between_notes_gap && st.current_height > available * 0.95)
-                || (zero_between_large_separator_margin
-                    && st.current_column + 1 >= st.col_count
-                    && st.current_height > available * 0.80));
+            // 저장 span의 허용치는 실제 내용이 본문 밖에 놓이는 근거가 아니다.
+            // paint와 같은 현재 단 문맥에서 전체 후보의 점유 끝을 확인한다.
+            && self
+                .simulate_endnote_column_with_item(
+                    st,
+                    paragraphs,
+                    styles,
+                    available,
+                    en_col_w,
+                    Some(PageItem::FullParagraph {
+                        para_index: en_para_idx,
+                    }),
+                    true,
+                    None,
+                    measured_tables,
+                    true,
+                )
+                .is_some_and(|bottom| bottom > available);
         let no_separator_saved_vpos_tail_outside = large_separator_block
             && !has_visible_endnote_separator
             && ep_idx > 0
@@ -410,17 +425,33 @@ impl TypesetEngine {
             } else {
                 remaining_height
             };
-            let mut sum = 0.0;
-            let mut split = 0usize;
-            for line_idx in 0..fmt.line_heights.len() {
-                let line_h = fmt.line_advance(line_idx);
-                if sum + line_h > split_remaining_height {
-                    break;
+            if compact_endnote_body_tail_overflows_frame {
+                // 실제 방출할 부분 문단으로 가장 긴 수용 가능한 prefix를 찾는다.
+                // 마지막 줄 뒤 간격의 합으로 보이는 내용의 fit을 대신하지 않는다.
+                self.reflowed_endnote_prefix_split(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    en_para_idx,
+                    available,
+                    en_col_w,
+                    measured_tables,
+                )
+                .and_then(super::reflow_fit::EndnotePrefixFit::split_line)
+            } else {
+                let mut sum = 0.0;
+                let mut split = 0usize;
+                for line_idx in 0..fmt.line_heights.len() {
+                    let line_h = fmt.line_advance(line_idx);
+                    if sum + line_h > split_remaining_height {
+                        break;
+                    }
+                    sum += line_h;
+                    split = line_idx + 1;
                 }
-                sum += line_h;
-                split = line_idx + 1;
+                (split > 0 && split < fmt.line_heights.len()).then_some(split)
             }
-            (split > 0 && split < fmt.line_heights.len()).then_some(split)
         } else {
             None
         };
@@ -583,21 +614,17 @@ impl TypesetEngine {
         } else {
             split_endnote_to_fit
         };
-        let mut split_endnote_to_fit = split_endnote_to_fit.filter(|split| {
-            let single_line_tail_split_at_bottom = *split == 1
-                && !default_between_notes_gap
-                && !allow_default_late_question_tail
-                && !(late_internal_rewind_fit_split
-                    && has_visible_endnote_separator
-                    && compact_between_notes_gap)
-                && endnote_has_visible_payload;
-            let large_separator_title_tail_split = *split == 1
-                && large_separator_block
-                && ep_idx == 0
-                && st.current_column + 1 >= st.col_count
-                && st.current_height + en_fit > available
-                && endnote_has_visible_payload;
-            !single_line_tail_split_at_bottom && !large_separator_title_tail_split
+        let split_before_style_check = split_endnote_to_fit;
+        let mut split_endnote_to_fit = split_endnote_to_fit.filter(|&split| {
+            // 한 줄을 남길 수 있는지는 미주 간격이 아니라 원본 묶음 속성이다.
+            styles
+                .para_styles
+                .get(en_para.para_shape_id as usize)
+                .is_some_and(|style| {
+                    !style.keep_lines
+                        && (!style.widow_orphan
+                            || (split >= 2 && fmt.line_count().saturating_sub(split) >= 2))
+                })
         });
         if no_separator_visible_multiline_tail_fits_with_bleed {
             // 구분선이 없는 큰 미주 block에서 이미 보이는 다줄 tail이
@@ -629,6 +656,37 @@ impl TypesetEngine {
             && endnote_has_visible_payload
             && st.current_height + total_advance_fit
                 <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX;
+        // 저장 줄의 자동 단 컷도 현재 단의 실제 점유로 재검증한다.
+        // vpos 되감김만으로 들어가는 앞부분까지 통째로 넘기지 않는다.
+        // 명시적 묶음·단 나눔·별도 개체 계획은 조회 자체의 guard가 보존한다.
+        let reflowed_fit = (ep_idx > 0)
+            .then(|| {
+                self.query_reflowed_endnote_fit(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    fmt,
+                    en_para_idx,
+                    available,
+                    en_col_w,
+                    measured_tables,
+                )
+            })
+            .flatten();
+        if let Some(fit) = reflowed_fit {
+            split_endnote_to_fit = match fit {
+                super::reflow_fit::ReflowedEndnoteFit::Split(line) => Some(line),
+                super::reflow_fit::ReflowedEndnoteFit::Whole
+                | super::reflow_fit::ReflowedEndnoteFit::Overflow => None,
+            };
+        }
+        if std::env::var_os("RHWP_FLOW_BREAK_DEBUG").is_some() {
+            eprintln!(
+                "EN_CUT_FIT pi={en_para_idx} before_style={split_before_style_check:?} actual={reflowed_fit:?} cut={split_endnote_to_fit:?} column={} items={} height={:.3}",
+                st.current_column, st.current_items.len(), st.current_height,
+            );
+        }
         // [Task #1363 v2 Stage 3] A2: split 불가(단일줄 등) para 가 단을
         // 넘으면 먼저 단 advance (fit-or-advance). sim 이 렌더-정합이므로
         // overflow 판정이 신뢰 가능.
@@ -644,6 +702,7 @@ impl TypesetEngine {
             compact_endnote_own_vpos_span_fits_for_flow,
             no_separator_compact_final_note_first_line_tail_fits,
             split_endnote_to_fit,
+            reflowed_fit,
             late_internal_rewind_fit_split,
             compact_non_default_empty_column_rewind_fits,
             visible_compact_sequential_tail_fits_current_column,

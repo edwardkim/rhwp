@@ -1,5 +1,7 @@
 import { CanvasKitBundledFontFamily } from './canvaskit/font-style-selection.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
+import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
+import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -68,6 +70,10 @@ import {
   type CanvasKitSurfaceRequest,
 } from './render-backend';
 import { imageCropSelectionIsEmpty } from './image-crop-scale.ts';
+import { magnificationFiltering } from './image-sampling.ts';
+import { drawEquationTextWithFonts } from './canvaskit/equation-text-replay.ts';
+import { drawDeclaredEquationFontGlyph } from './canvaskit/equation-font-glyph.ts';
+import { drawEquationGlyphOutline } from './canvaskit/equation-glyph-outline.ts';
 import {
   boundedCanvasKitSourceImageKey,
   canvasKitImageCacheKey,
@@ -145,6 +151,8 @@ type SkSurface = Surface;
 export interface CanvasKitLayerRendererOptions {
   defaultFontUrl?: string;
   symbolFallbackFontUrl?: string;
+  mathFallbackFontUrl?: string;
+  additionalMathFallbackFontUrl?: string;
   oldHangulFontUrl?: string;
   requirePreparedFontFamilies?: boolean;
 }
@@ -300,7 +308,7 @@ export interface CanvasKitFontSubstitutionDiagnostic {
   opId?: string;
   requestedFamily: string;
   resolvedFamily: string;
-  source: 'unregisteredDefault' | 'missingGlyphDefault' | 'missingGlyphSymbol' | 'oldHangul';
+  source: 'unregisteredDefault' | 'missingGlyphDefault' | 'missingGlyphSymbol' | 'oldHangul' | 'equationDeclaredFallback';
   kind: 'unregisteredFallback' | 'glyphCoverageFallback';
 }
 
@@ -482,6 +490,10 @@ export class CanvasKitLayerRenderer {
     private readonly webgpuDeviceContext: WebGPUDeviceContext | null = null,
     private readonly webgpuDevice: GPUDevice | null = null,
     private readonly webgpuInitFailure: string | null = null,
+    private readonly mathFallbackTypeface: Typeface | null = null,
+    private readonly mathFallbackFamily: string | null = null,
+    private readonly additionalMathFallbackTypeface: Typeface | null = null,
+    private readonly additionalMathFallbackFamily: string | null = null,
   ) {
     this.glyphRunFonts = new CanvasKitGlyphRunFontCache(canvasKit);
     this.paragraphFonts = new CanvasKitParagraphFonts(canvasKit);
@@ -568,6 +580,46 @@ export class CanvasKitLayerRenderer {
     } catch (error) {
       console.warn('[CanvasKitLayerRenderer] 기호 폴백 폰트 로딩 실패:', error);
     }
+    let mathFallbackTypeface: Typeface | null = null;
+    let mathFallbackFamily: string | null = null;
+    try {
+      const response = await fetch(options.mathFallbackFontUrl ?? 'fonts/LatinModernMath-Regular.woff2');
+      if (response.ok) {
+        const bytes = await readBoundedResponseArrayBuffer(response, {
+          maxBytes: CanvasKitLayerRenderer.MAX_BUNDLED_FONT_BYTES,
+        });
+        mathFallbackTypeface = canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
+          ?? canvasKit.Typeface.MakeTypefaceFromData(bytes);
+        const manager = canvasKit.FontMgr.FromData(bytes.slice(0));
+        try {
+          mathFallbackFamily = manager && manager.countFamilies() > 0 ? manager.getFamilyName(0) : null;
+        } finally { manager?.delete(); }
+      }
+    } catch (error) {
+      console.warn('[CanvasKitLayerRenderer] 수학 기호 폴백 폰트 로딩 실패:', error);
+    }
+    // 일반 수학 기호의 추가 face는 문서별 Typeface 캐시 초기화 뒤에도 유지한다.
+    // 원본 한컴 PUA face를 바꾸지 않으며, U+2AFD 등 LMM에 없는 기호만 보완한다.
+    let additionalMathFallbackTypeface: Typeface | null = null;
+    let additionalMathFallbackFamily: string | null = null;
+    if (normalizedFontFamily(mathFallbackFamily ?? '') !== normalizedFontFamily('Noto Sans Math')) {
+      try {
+        const response = await fetch(options.additionalMathFallbackFontUrl ?? 'fonts/NotoSansMath-Regular.woff2');
+        if (response.ok) {
+          const bytes = await readBoundedResponseArrayBuffer(response, {
+            maxBytes: CanvasKitLayerRenderer.MAX_BUNDLED_FONT_BYTES,
+          });
+          additionalMathFallbackTypeface = canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
+            ?? canvasKit.Typeface.MakeTypefaceFromData(bytes);
+          const manager = canvasKit.FontMgr.FromData(bytes.slice(0));
+          try {
+            additionalMathFallbackFamily = manager && manager.countFamilies() > 0 ? manager.getFamilyName(0) : null;
+          } finally { manager?.delete(); }
+        }
+      } catch (error) {
+        console.warn('[CanvasKitLayerRenderer] 추가 수학 기호 face 준비 실패:', error);
+      }
+    }
     let oldHangulTypeface: CanvasKitLocalTypeface | null = null;
     const oldHangulFontUrl = options.oldHangulFontUrl
       ?? 'fonts/RHWPOldHangul-Regular.woff2';
@@ -618,6 +670,10 @@ export class CanvasKitLayerRenderer {
       webgpuDeviceContext,
       webgpuDevice,
       webgpuInitFailure,
+      mathFallbackTypeface,
+      mathFallbackFamily,
+      additionalMathFallbackTypeface,
+      additionalMathFallbackFamily,
     );
     for (const source of paragraphFontSources) renderer.paragraphFonts.remember(source.face, source.bytes);
     return renderer;
@@ -986,7 +1042,7 @@ export class CanvasKitLayerRenderer {
       for (const replayPlane of CANVASKIT_REPLAY_PLANES) {
         this.renderNode(canvas, tree.root, tree.profile ?? 'screen', replayPlane, null);
       }
-      if (pageInfo) {
+      if (pageInfo && tree.profile !== 'print') {
         const paint = this.makeStrokePaint('#c0c0c0', 0.3);
         const left = pageInfo.marginLeft;
         const top = pageInfo.marginHeader + pageInfo.marginTop;
@@ -1382,6 +1438,8 @@ export class CanvasKitLayerRenderer {
     this.resetDocumentResources();
     this.defaultTypeface?.delete();
     this.symbolFallbackTypeface?.delete();
+    this.mathFallbackTypeface?.delete();
+    this.additionalMathFallbackTypeface?.delete();
     this.defaultFontManager?.delete();
     this.oldHangulTypeface?.typeface?.delete?.();
     this.oldHangulTypeface?.fontManager?.delete?.();
@@ -2574,12 +2632,22 @@ export class CanvasKitLayerRenderer {
       // grayscale and tone retain the profile's ordinary sampling policy.
       const binaryEffectWasApplied = !!canvasKitImageEffectKey(op)
         && (op.effect === 'blackWhite' || op.effect === 'pattern8x8');
-      const useMipmaps = bitmapFiltering === undefined && !binaryEffectWasApplied
+      const matrix = canvas.getTotalMatrix?.();
+      const sourceFiltering = magnificationFiltering(
+        op.imageInterpolation,
+        crop?.width ?? imageWidth, crop?.height ?? imageHeight,
+        dstW * (matrix ? Math.hypot(matrix[0], matrix[3]) : 1),
+        dstH * (matrix ? Math.hypot(matrix[1], matrix[4]) : 1),
+      );
+      const explicitFiltering = bitmapFiltering ?? (binaryEffectWasApplied ? 'nearest' : sourceFiltering);
+      const useMipmaps = explicitFiltering === undefined && !binaryEffectWasApplied
         && this.currentProfile !== 'fastPreview' && this.preferRasterDepth === 0
         && (this.renderMode === 'compat' || this.currentProfile === 'print' || this.currentProfile === 'highQuality')
-        && ((crop?.width ?? imageWidth) > dstW * 1.2 || (crop?.height ?? imageHeight) > dstH * 1.2);
+        && ((crop?.width ?? imageWidth) > dstW * 1.2 || (crop?.height ?? imageHeight) > dstH * 1.2
+          || imageRectIsReduced(canvas, image, src, this.canvasKit.XYWHRect(dstX, dstY, dstW, dstH)));
       this.drawImageRect(canvas, image, src, this.canvasKit.XYWHRect(dstX, dstY, dstW, dstH), opacity,
-        bitmapFiltering ?? (binaryEffectWasApplied ? 'nearest' : 'linear'), useMipmaps);
+        explicitFiltering ?? (binaryEffectWasApplied ? 'nearest' : 'linear'), useMipmaps,
+        op.imageReconstruction === 'catmullRom' && op.imageInterpolation === undefined);
     };
 
     const fillMode = op.fillMode ?? 'fitToSize';
@@ -2618,11 +2686,21 @@ export class CanvasKitLayerRenderer {
   }
 
   private drawImageRect(canvas: SkCanvas, image: SkImage, source: Rect, dest: Rect, opacity = 1,
-    filtering: 'nearest' | 'linear' = 'linear', useMipmaps = false): void {
+    filtering: 'nearest' | 'linear' = 'linear', useMipmaps = false, allowCubic = false): void {
     const paint = new this.canvasKit.Paint();
     paint.setAntiAlias?.(true);
     if (opacity < 1) {
       paint.setAlphaf(opacity);
+    }
+    if (allowCubic && filtering === 'linear' && useMipmaps
+      && imageRectUsesCubic(canvas, image, source, dest)
+      && typeof canvas.drawImageRectCubic === 'function') {
+      try {
+        canvas.drawImageRectCubic(image, source, dest, 0, 0.5, paint);
+      } finally {
+        paint.delete?.();
+      }
+      return;
     }
     let sampled = image;
     let temporary: SkImage | null = null;
@@ -2951,7 +3029,7 @@ export class CanvasKitLayerRenderer {
             }
             const candidateIndex = candidateGlyphIds.findIndex(ids => (ids[index] ?? 0) !== 0);
             if (candidateIndex >= 0) return candidateIndex;
-            return code >= 0xF02B1 && code <= 0xF02C4 ? -1 : 0;
+            return code >= 0xF02B0 && code <= 0xF02C4 ? -1 : 0;
           });
           for (const fontIndex of new Set(selectedFontIndices)) {
             if (fontIndex > 0) {
@@ -3072,6 +3150,39 @@ export class CanvasKitLayerRenderer {
             if (fontIndex === -1) {
               const codePoint = codePoints[runStart].codePointAt(0) ?? 0;
               const displayNumber = String(codePoint - 0xF02B0);
+              let geometry = singleDigitGeometry(codePoint - 0xF02B0, fontSize);
+              if (geometry) {
+                const measuredFace = this.findPreparedTypeface(geometry.face)?.typeface;
+                // 숫자는 본문 regular face를 먼저 사용한다. 기호 글꼴의 사선 0을
+                // 선택하거나 그 윤곽에 다른 face의 source bounds를 적용하지 않는다.
+                const numberFace = measuredFace
+                  ?? this.findPreparedTypeface(requestedFontFamily,
+                    { bold: false, italic: false })?.typeface
+                  ?? this.defaultTypeface ?? typeface ?? this.symbolFallbackTypeface;
+                const numberFont = new this.canvasKit.Font(numberFace, fontSize);
+                const framePaint = this.makeStrokePaint(style.color ?? '#000000', geometry.strokeWidth);
+                try {
+                  if (!measuredFace) {
+                    const glyphs = numberFont.getGlyphIDs(displayNumber, displayNumber.length);
+                    const bounds = numberFont.getGlyphBounds(glyphs);
+                    geometry = singleDigitGeometry(codePoint - 0xF02B0, fontSize, Array.from(bounds))!;
+                  }
+                  canvas.drawRect(this.canvasKit.XYWHRect(
+                    originX + replayPositions![runStart] + offsetX + geometry.frameX,
+                    originY + baselineShift + offsetY + geometry.frameY,
+                    geometry.frameWidth, geometry.frameHeight), framePaint);
+                  canvas.save();
+                  canvas.translate(originX + replayPositions![runStart] + offsetX + geometry.numberX,
+                    originY + baselineShift + offsetY + geometry.numberY);
+                  canvas.scale(geometry.scaleX, geometry.scaleY);
+                  canvas.drawText(displayNumber, 0, 0, fillPaint, numberFont);
+                  canvas.restore();
+                } finally {
+                  framePaint.delete();
+                  numberFont.delete();
+                }
+                continue;
+              }
               const boxSize = Math.max(1, fontSize * 0.72);
               const boxX = originX + replayPositions![runStart];
               const boxY = originY + baselineShift - fontSize * 0.76;
@@ -4054,9 +4165,6 @@ export class CanvasKitLayerRenderer {
       record('failed', !this.boundsAreDrawable(op.bbox) ? 'invalidEquationBounds' : 'invalidLayout');
       return;
     }
-    const scaleX = op.scaleX !== undefined && Number.isFinite(op.scaleX) ? op.scaleX : op.layoutBox.width > 0 && op.bbox.width > 0
-      ? op.bbox.width / op.layoutBox.width
-      : 1;
     const budget: EquationRenderBudget = {
       remainingNodes: CanvasKitLayerRenderer.MAX_EQUATION_LAYOUT_NODES,
     };
@@ -4066,11 +4174,10 @@ export class CanvasKitLayerRenderer {
     let replayed = false;
     try {
       const recordingCanvas = recorder.beginRecording(this.rect({
-        ...op.bbox, width: Math.max(op.bbox.width, op.layoutBox.width * scaleX),
+        ...op.bbox, width: Math.max(op.bbox.width, op.layoutBox.width),
       }));
       recordingCanvas.save();
       recordingCanvas.translate(op.bbox.x, op.bbox.y);
-      if (Math.abs(scaleX - 1) > 0.01) recordingCanvas.scale(scaleX, 1);
       try {
         replayed = this.renderEquationBox(
           recordingCanvas,
@@ -4079,7 +4186,7 @@ export class CanvasKitLayerRenderer {
           0,
           op.color ?? '#000000',
           Math.max(1, op.fontSize ?? op.bbox.height),
-          false,
+          undefined,
           false,
           0,
           budget,
@@ -4226,7 +4333,7 @@ export class CanvasKitLayerRenderer {
     parentY: number,
     color: string,
     fontSize: number,
-    italic: boolean,
+    italic: boolean | undefined,
     bold: boolean,
     depth: number,
     budget: EquationRenderBudget,
@@ -4239,6 +4346,7 @@ export class CanvasKitLayerRenderer {
       return false;
     }
     budget.remainingNodes -= 1;
+    fontSize = layout.fontSize ?? fontSize;
     const x = parentX + layout.x;
     const y = parentY + layout.y;
     const child = (box: LayerEquationLayoutBox, size = fontSize, childItalic = italic, childBold = bold) => (
@@ -4248,7 +4356,7 @@ export class CanvasKitLayerRenderer {
     switch (layout.kind.type) {
       case 'hancomGlyphs': {
         const run = layout.kind;
-        const typeface = this.findPreparedTypeface('HyhwpEQ')?.typeface;
+        const typeface = this.findPreparedTypeface(run.fontFamily ?? 'HyhwpEQ')?.typeface;
         const glyphs = Array.from(run.glyphs);
         const shears = run.shears ?? glyphs.map(() => 0);
         if (!typeface || glyphs.length !== run.positions.length
@@ -4278,7 +4386,12 @@ export class CanvasKitLayerRenderer {
       case 'text':
       case 'number':
       case 'symbol':
-      case 'mathSymbol':
+      case 'mathSymbol': {
+        if (layout.kind.type === 'mathSymbol' && layout.kind.integralGeometry) {
+          return this.drawEquationIntegral(canvas, layout.kind.integralGeometry, x, y, color);
+        }
+        // 수학 알파벳에는 글리프 자체의 기울임·굵기를 그대로 사용한다.
+        const styled = layout.kind.type === 'text' && /^[\u{1D400}-\u{1D7FF}\u{210E}]+$/u.test(layout.kind.text);
         return this.drawEquationText(
           canvas,
           layout.kind.text,
@@ -4286,12 +4399,33 @@ export class CanvasKitLayerRenderer {
           y + layout.baseline,
           this.equationFontSizeFromBox(layout, fontSize),
           color,
-          layout.kind.type === 'text' || italic,
-          bold,
+          styled ? false : (italic ?? layout.kind.type === 'text'),
+          styled ? false : bold,
           layout.width,
           layout.kind.type === 'symbol',
           layout.kind.type === 'text' || layout.kind.type === 'number' ? '함초롬바탕' : 'Latin Modern Math',
         );
+      }
+      case 'fontGlyph':
+        return layout.kind.outlineGeometry
+          ? drawEquationGlyphOutline(this.canvasKit, canvas, layout.kind.outlineGeometry, x, y, color,
+            fillColor => this.makeFillPaint(fillColor),
+            (strokeColor, width) => this.makeStrokePaint(strokeColor, width))
+          : drawDeclaredEquationFontGlyph({
+            canvasKit: this.canvasKit,
+            maxTextLength: CanvasKitLayerRenderer.MAX_EQUATION_TEXT_LENGTH,
+            lookupTypeface: family => this.findPreparedTypeface(family)?.typeface
+              ?? (this.mathFallbackFamily && normalizedFontFamily(family) === normalizedFontFamily(this.mathFallbackFamily)
+                ? this.mathFallbackTypeface : null)
+              ?? (this.additionalMathFallbackFamily && normalizedFontFamily(family) === normalizedFontFamily(this.additionalMathFallbackFamily)
+                ? this.additionalMathFallbackTypeface : null),
+            makeFillPaint: fillColor => this.makeFillPaint(fillColor),
+            onFallback: (requestedFamily, resolvedFamily) => this.recordFontSubstitution({
+              requestedFamily, resolvedFamily,
+              source: 'equationDeclaredFallback', kind: 'glyphCoverageFallback',
+            }),
+          }, canvas, layout.kind.text, layout.kind.fontFamily, x, y + layout.baseline,
+          fontSize, color, layout.width);
       case 'function':
         return this.drawEquationText(
           canvas,
@@ -4300,7 +4434,7 @@ export class CanvasKitLayerRenderer {
           y + layout.baseline,
           this.equationFontSizeFromBox(layout, fontSize),
           color,
-          italic,
+          italic ?? false,
           bold,
           layout.width,
           false,
@@ -4311,11 +4445,11 @@ export class CanvasKitLayerRenderer {
           && this.drawEquationLine(
             canvas,
             x + fontSize * 0.05,
-            y + layout.baseline,
+            y + layout.baseline - layout.kind.axisHeight,
             x + layout.width - fontSize * 0.05,
-            y + layout.baseline,
+            y + layout.baseline - layout.kind.axisHeight,
             color,
-            fontSize * 0.04,
+            layout.kind.ruleThickness ?? fontSize * 0.04,
           )
           && child(layout.kind.denom);
       case 'atop':
@@ -4333,7 +4467,7 @@ export class CanvasKitLayerRenderer {
           && this.drawEquationLine(canvas, midX, midY, bodyLeft, y, color, fontSize * 0.04)
           && this.drawEquationLine(canvas, bodyLeft, y, x + layout.width, y, color, fontSize * 0.04);
         const indexDrawn = layout.kind.index
-          ? child(layout.kind.index, fontSize * 0.7, false, false)
+          ? child(layout.kind.index, fontSize * 0.5, false, false)
           : true;
         return linesDrawn && indexDrawn && child(layout.kind.body);
       }
@@ -4348,20 +4482,16 @@ export class CanvasKitLayerRenderer {
           && child(layout.kind.sub, fontSize * 0.7)
           && child(layout.kind.sup, fontSize * 0.7);
       case 'bigOp': {
-        const opSize = fontSize * 1.5;
+        const opSize = layout.kind.opFontSize ?? fontSize * 1.5;
         const supHeight = layout.kind.sup ? layout.kind.sup.height + fontSize * 0.05 : 0;
-        const symbolDrawn = this.drawEquationText(
-          canvas,
-          layout.kind.symbol,
-          x,
-          y + supHeight + opSize * 0.8,
-          opSize,
-          color,
-          false,
-          false,
-          layout.width,
-          true,
-        );
+        const symbolDrawn = layout.kind.integralGeometry
+          ? this.drawEquationIntegral(canvas, layout.kind.integralGeometry, x + (layout.kind.opX ?? 0), y + (layout.kind.opY ?? 0), color)
+          : this.drawEquationText(
+            canvas, layout.kind.symbol, x + (layout.kind.opX ?? 0),
+            y + (layout.kind.opBaseline ?? (supHeight + opSize * 0.8)),
+            opSize, color, false, false,
+            layout.kind.opWidth ?? layout.width, false,
+          );
         const supDrawn = layout.kind.sup
           ? child(layout.kind.sup, fontSize * 0.7, false, false)
           : true;
@@ -4371,7 +4501,7 @@ export class CanvasKitLayerRenderer {
         return symbolDrawn && supDrawn && subDrawn;
       }
       case 'limit': {
-        const size = this.equationFontSizeFromBox(layout, fontSize);
+        const size = layout.kind.nameFontSize ?? fontSize;
         // 이름의 글리프·폭·em 크기는 producer가 함께 정한다.
         const limitDrawn = layout.kind.name
           ? child(layout.kind.name, layout.kind.name.height, false, false)
@@ -4379,7 +4509,7 @@ export class CanvasKitLayerRenderer {
             canvas,
             layout.kind.isUpper ? 'Lim' : 'lim',
             x,
-            y + size * 0.8,
+            y + layout.baseline,
             size,
             color,
             false,
@@ -4389,12 +4519,12 @@ export class CanvasKitLayerRenderer {
             '함초롬바탕',
           );
         return limitDrawn && (layout.kind.sub
-          ? child(layout.kind.sub, fontSize * 0.7, false, false)
+          ? child(layout.kind.sub, layout.kind.subFontSize ?? fontSize * 0.7, false, false)
           : true);
       }
       case 'matrix': {
         let rendered = true;
-        if (layout.kind.style !== 'plain') {
+        if (layout.kind.style === 'paren' || layout.kind.style === 'bracket' || layout.kind.style === 'vert') {
           const brackets = layout.kind.style === 'paren'
             ? ['(', ')']
             : layout.kind.style === 'bracket'
@@ -4414,15 +4544,49 @@ export class CanvasKitLayerRenderer {
           && (layout.kind.under ? child(layout.kind.under) : true);
       case 'eqAlign':
         return layout.kind.rows.every((row) => child(row.left) && child(row.right));
-      case 'paren':
+      case 'paren': {
+        const { leftWidth, rightWidth, delimiterHeight, glyphDelimiters } = layout.kind;
+        // 이전 paint JSON에는 측정 폭이 없다. SVG 대체 경로를 사용한다.
+        if (typeof leftWidth !== 'number' || typeof rightWidth !== 'number'
+          || !Number.isFinite(leftWidth) || !Number.isFinite(rightWidth)
+          || typeof delimiterHeight !== 'number' || !Number.isFinite(delimiterHeight)
+          || typeof glyphDelimiters !== 'boolean') return false;
         return (layout.kind.left
-          ? this.drawEquationBracket(canvas, layout.kind.left, x, y, layout.height, color, fontSize)
+          ? this.drawEquationBracket(canvas, layout.kind.left, x, y, delimiterHeight, color, fontSize, leftWidth, layout.baseline, glyphDelimiters)
           : true)
           && child(layout.kind.body)
           && (layout.kind.right
-            ? this.drawEquationBracket(canvas, layout.kind.right, x + layout.width, y, layout.height, color, fontSize)
+            ? this.drawEquationBracket(canvas, layout.kind.right, x + layout.width - rightWidth, y, delimiterHeight, color, fontSize, rightWidth, layout.baseline, glyphDelimiters)
             : true);
+      }
       case 'decoration':
+        if (layout.kind.outlineGeometry) {
+          return child(layout.kind.body)
+            && drawEquationGlyphOutline(this.canvasKit, canvas, layout.kind.outlineGeometry, x, y, color,
+              fillColor => this.makeFillPaint(fillColor),
+              (strokeColor, width) => this.makeStrokePaint(strokeColor, width));
+        }
+        if (layout.kind.decoration === 'strikeThrough') {
+          const geometry = layout.kind.negationGeometry;
+          if (!geometry || !Array.isArray(geometry.start) || geometry.start.length !== 2
+            || !Array.isArray(geometry.end) || geometry.end.length !== 2
+            || ![...geometry.start, ...geometry.end, geometry.thickness].every(Number.isFinite)
+            || geometry.thickness <= 0) return false;
+          return child(layout.kind.body) && this.drawEquationLine(
+            canvas,
+            x + geometry.start[0], y + geometry.start[1],
+            x + geometry.end[0], y + geometry.end[1],
+            color, geometry.thickness, true,
+          );
+        }
+        if (layout.kind.decoration === 'box') {
+          const strokeWidth = fontSize * 0.03;
+          return child(layout.kind.body)
+            && this.drawEquationLine(canvas, x, y, x + layout.width, y, color, strokeWidth)
+            && this.drawEquationLine(canvas, x + layout.width, y, x + layout.width, y + layout.height, color, strokeWidth)
+            && this.drawEquationLine(canvas, x + layout.width, y + layout.height, x, y + layout.height, color, strokeWidth)
+            && this.drawEquationLine(canvas, x, y + layout.height, x, y, color, strokeWidth);
+        }
         return child(layout.kind.body)
           && this.drawEquationDecoration(
             canvas,
@@ -4433,6 +4597,11 @@ export class CanvasKitLayerRenderer {
             color,
             fontSize,
           );
+      case 'color':
+        return this.renderEquationBox(
+          canvas, layout.kind.body, x, y, layout.kind.color, fontSize,
+          italic, bold, depth + 1, budget,
+        );
       case 'fontStyle': {
         if (!['roman', 'italic', 'bold'].includes(layout.kind.fontStyle)) return false;
         const nextItalic = layout.kind.fontStyle === 'roman'
@@ -4456,7 +4625,8 @@ export class CanvasKitLayerRenderer {
   }
 
   private equationBoxIsFinite(layout: LayerEquationLayoutBox): boolean {
-    return Number.isFinite(layout.x)
+    return (layout.fontSize === undefined || (Number.isFinite(layout.fontSize) && layout.fontSize > 0))
+      && Number.isFinite(layout.x)
       && Number.isFinite(layout.y)
       && Number.isFinite(layout.width)
       && Number.isFinite(layout.height)
@@ -4466,7 +4636,7 @@ export class CanvasKitLayerRenderer {
   }
 
   private equationFontSizeFromBox(layout: LayerEquationLayoutBox, baseFontSize: number): number {
-    return Math.max(1, layout.height > 0 ? layout.height : baseFontSize);
+    return Math.max(1, layout.fontSize ?? baseFontSize);
   }
 
   private drawEquationText(
@@ -4489,10 +4659,18 @@ export class CanvasKitLayerRenderer {
     ) {
       return false;
     }
-    return this.drawStaticControlText(canvas, text, { x, y: baselineY, fontSize: Math.max(1, fontSize),
-      color, italic, bold, targetWidth, centered,
-      fontFamilies: [/[\u1100-\u11ff\u3130-\u318f\ua960-\ua97f\uac00-\ud7ff]/u.test(text) ? '함초롬바탕' : fontFamily,
-        'Latin Modern Math', '함초롬바탕', 'Noto Serif KR', 'Noto Serif CJK KR', 'Noto Sans KR', 'Noto Sans CJK KR'] });
+    if (textRequiresComplexShaping(text) || /[\u1100-\u11ff\u3130-\u318f\ua960-\ua97f\uac00-\ud7ff]/u.test(text)) {
+      return this.drawStaticControlText(canvas, text, { x, y: baselineY, fontSize: Math.max(1, fontSize),
+        color, italic, bold, targetWidth, centered,
+        fontFamilies: [/[\u1100-\u11ff\u3130-\u318f\ua960-\ua97f\uac00-\ud7ff]/u.test(text) ? '함초롬바탕' : fontFamily,
+          'Latin Modern Math', '함초롬바탕', 'Noto Serif KR', 'Noto Serif CJK KR', 'Noto Sans KR', 'Noto Sans CJK KR'] });
+    }
+    return drawEquationTextWithFonts({
+      canvasKit: this.canvasKit,
+      typefaces: [this.findPreparedTypeface(fontFamily, { bold, italic })?.typeface ?? null, this.mathFallbackTypeface, this.additionalMathFallbackTypeface, this.defaultTypeface, this.symbolFallbackTypeface],
+      maxTextLength: CanvasKitLayerRenderer.MAX_EQUATION_TEXT_LENGTH,
+      makeFillPaint: (fillColor) => this.makeFillPaint(fillColor),
+    }, canvas, text, x, baselineY, fontSize, color, italic, bold, targetWidth, centered);
   }
 
   /** Shape static labels without recomputing producer-owned positions or equation widths. */
@@ -4507,7 +4685,8 @@ export class CanvasKitLayerRenderer {
       || fontSize <= 0 || (targetWidth !== undefined && targetWidth < 0)) return false;
     const candidates = [...options.fontFamilies.map(family => this.findPreparedTypeface(family, { bold, italic })), this.oldHangulTypeface,
       { typeface: this.defaultTypeface, fontManager: this.defaultFontManager, fontFamily: this.defaultFontFamily },
-      { typeface: this.symbolFallbackTypeface, fontManager: null, fontFamily: null }];
+      { typeface: this.symbolFallbackTypeface, fontManager: null, fontFamily: null },
+      { typeface: this.mathFallbackTypeface, fontManager: null, fontFamily: null }];
     const seen = new Set<Typeface | null>();
     const combined = this.paragraphFonts.source(candidates.map(candidate => candidate?.paragraphTypefaces ?? candidate?.typeface ?? null));
     let triedCombined = false;
@@ -4572,6 +4751,25 @@ export class CanvasKitLayerRenderer {
     return false;
   }
 
+  private drawEquationIntegral(
+    canvas: SkCanvas,
+    geometry: { pathData: string; strokeWidth: number },
+    x: number, y: number, color: string,
+  ): boolean {
+    if (!geometry.pathData || geometry.pathData.length > 4096
+      || ![x, y, geometry.strokeWidth].every(Number.isFinite) || geometry.strokeWidth < 0) return false;
+    const path = this.canvasKit.Path.MakeFromSVGString(geometry.pathData);
+    if (!path) return false;
+    const paint = geometry.strokeWidth === 0
+      ? this.makeFillPaint(color) : this.makeStrokePaint(color, geometry.strokeWidth);
+    try {
+      paint.setStrokeCap(this.canvasKit.StrokeCap.Round);
+      canvas.save();
+      try { canvas.translate(x, y); canvas.drawPath(path, paint); } finally { canvas.restore(); }
+      return true;
+    } finally { path.delete(); paint.delete(); }
+  }
+
   private drawEquationLine(
     canvas: SkCanvas,
     x1: number,
@@ -4580,9 +4778,10 @@ export class CanvasKitLayerRenderer {
     y2: number,
     color: string,
     width: number,
+    measuredWidth = false,
   ): boolean {
     if (![x1, y1, x2, y2, width].every(Number.isFinite)) return false;
-    const paint = this.makeStrokePaint(color, Math.max(0.5, width));
+    const paint = this.makeStrokePaint(color, measuredWidth ? width : Math.max(0.5, width));
     try {
       canvas.drawLine(x1, y1, x2, y2, paint);
       return true;
@@ -4599,17 +4798,20 @@ export class CanvasKitLayerRenderer {
     height: number,
     color: string,
     fontSize: number,
+    measuredWidth?: number,
+    baseline?: number,
+    glyphDelimiters?: boolean,
   ): boolean {
-    const width = Math.max(fontSize * 0.3, 1);
+    const width = measuredWidth ?? Math.max(fontSize * 0.3, 1);
     if (bracket === '|') {
       return this.drawEquationLine(canvas, x, y, x, y + height, color, fontSize * 0.04);
     }
     return this.drawEquationText(
       canvas,
       bracket,
-      x - width / 2,
-      y + height * 0.7,
-      Math.max(height, fontSize),
+      measuredWidth === undefined ? x - width / 2 : x,
+      y + (baseline ?? height * 0.7),
+      glyphDelimiters === true ? fontSize : Math.max(height, fontSize),
       color,
       false,
       false,
@@ -4635,7 +4837,6 @@ export class CanvasKitLayerRenderer {
           && this.drawEquationLine(canvas, centerX, y, centerX + halfWidth * 0.6, y + fontSize * 0.15, color, strokeWidth);
       case 'bar':
       case 'overline':
-      case 'strikeThrough':
         return this.drawEquationLine(canvas, centerX - halfWidth, y + fontSize * 0.05, centerX + halfWidth, y + fontSize * 0.05, color, strokeWidth);
       case 'underline':
       case 'under':
@@ -5041,17 +5242,21 @@ export class CanvasKitLayerRenderer {
     paint: SkPaint,
     draw: () => void,
   ): void {
-    const intervals = dash === undefined || dash === 'solid'
+    const patterns: Partial<Record<Exclude<LayerStrokeDash, number[]>, number[]>> = {
+      dash: [6, 3], dot: [2, 2], dashDot: [6, 3, 2, 3], dashDotDot: [6, 3, 2, 3, 2, 3],
+      hwpDash: [7.5, 4.5], hwpDot: [1.5, 2.25], hwpDashDot: [15, 4.5, 1.5, 4.5],
+      hwpDashDotDot: [15, 4.5, 1.5, 4.5, 1.5, 4.5], hwpLongDash: [15, 4.5], hwpCircle: [0, 2.25],
+    };
+    // 도형 스타일은 96dpi 좌표이며 pen 외곽은 한컴 Print의 600dpi 물리 단위다.
+    const hwpPattern = typeof dash === 'string' && dash.startsWith('hwp');
+    const outline = 96 / 600;
+    const scale = hwpPattern ? Math.max(paint.getStrokeWidth() - outline, outline) : 1;
+    const intervals = Array.isArray(dash) ? dash : dash === undefined || dash === 'solid'
       ? null
-      : dash === 'dash'
-        ? [6, 3]
-        : dash === 'dot'
-          ? [2, 2]
-          : dash === 'dashDot'
-            ? [6, 3, 2, 3]
-            : dash === 'dashDotDot'
-              ? [6, 3, 2, 3, 2, 3]
-              : undefined;
+      : patterns[dash]?.map((value, index) => {
+        const edge = hwpPattern && dash !== 'hwpCircle' ? (index % 2 === 0 ? outline : -outline) : 0;
+        return value * scale + edge;
+      });
     if (intervals === undefined) {
       this.unsupportedOps.add(`strokeDash:${String(dash)}`);
       return;
@@ -5066,11 +5271,14 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('strokeDash:pathEffectUnavailable');
       return;
     }
+    const previousCap = paint.getStrokeCap();
     try {
+      if (dash === 'hwpCircle') paint.setStrokeCap(this.canvasKit.StrokeCap.Round);
       paint.setPathEffect(effect);
       draw();
       this.currentReplayFeatureCounts.dashedStrokes += 1;
     } finally {
+      paint.setStrokeCap(previousCap);
       effect.delete?.();
     }
   }

@@ -203,6 +203,8 @@ pub(crate) struct ImageGraphicsState {
     pub ctm: Matrix,
     pub clip: ImageClip,
     pub alpha: f32,
+    pub fill_space: crate::path_color::PathColorSpace,
+    pub fill_colour: Option<(f32, f32, f32)>,
 }
 
 #[derive(Default)]
@@ -296,6 +298,8 @@ impl ImageClipTracker {
                 ctm,
                 clip,
                 alpha: 1.0,
+                fill_space: crate::path_color::PathColorSpace::GRAY,
+                fill_colour: Some((0., 0., 0.)),
             },
             saved: Vec::new(),
             path: ClipPath::default(),
@@ -315,6 +319,15 @@ impl ImageClipTracker {
 
     pub fn set_alpha(&mut self, alpha: f32) {
         self.current.alpha = alpha;
+    }
+
+    pub fn set_fill_colour(
+        &mut self,
+        space: crate::path_color::PathColorSpace,
+        colour: Option<(f32, f32, f32)>,
+    ) {
+        self.current.fill_space = space;
+        self.current.fill_colour = colour;
     }
 
     pub fn current(&self) -> ImageGraphicsState {

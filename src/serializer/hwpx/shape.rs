@@ -801,14 +801,14 @@ pub(crate) fn write_line_shape<W: Write>(
 ) -> Result<(), SerializeError> {
     let color = color_to_hex(bl.color);
     let width = bl.width.to_string();
-    // style 은 attr 하위 6비트. 정본 코드(0=NONE/1=SOLID/2=DASH…)는 표 borderFill 의
+    // style 은 attr 하위 6비트. 정본 코드(0=NONE/1=SOLID/2=파선…)는 표 borderFill 의
     // border_line_type_from_code 및 HWP5 doc_info 와 동일. 종전에는 0 이 _ => SOLID 로
     // 떨어져 "선 없음" 도형 외곽선이 라운드트립에서 사각형 박스로 살아났다(#1531).
     let style = match bl.attr & 0x3F {
         0 => "NONE",
         1 => "SOLID",
-        2 => "DASH",
-        3 => "DOT",
+        2 => "DOT",
+        3 => "DASH",
         4 => "DASH_DOT",
         5 => "DASH_DOT_DOT",
         6 => "LONG_DASH",
@@ -1411,7 +1411,7 @@ mod tests {
     fn task1531_line_shape_none_preserved() {
         assert_eq!(line_shape_style(0), "NONE"); // 정본 코드 0 = NONE
         assert_eq!(line_shape_style(1), "SOLID"); // 1 = SOLID
-        assert_eq!(line_shape_style(2), "DASH"); // 2 = DASH (회귀 방지)
+        assert_eq!(line_shape_style(2), "DOT"); // HWP5 파선은 HWPX DOT로 저장한다.
         let none_with_flat_end_cap = 1 << 6;
         assert_eq!(line_shape_style(none_with_flat_end_cap), "NONE");
     }

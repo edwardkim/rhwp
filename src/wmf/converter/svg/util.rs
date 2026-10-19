@@ -419,10 +419,18 @@ impl Font {
 
         let mut font_family: Vec<String> = vec![];
 
-        font_family.push(self.facename.clone());
-        self.fallback_facename.iter().for_each(|f| {
-            font_family.push(f.clone());
-        });
+        // 본문과 같은 설치 별칭을 사용해 한국어 face가 영문 family로 설치된 경우도 찾는다.
+        for face in std::iter::once(&self.facename).chain(&self.fallback_facename) {
+            for name in std::iter::once(face.as_str()).chain(
+                crate::renderer::installed_render_font_aliases(face)
+                    .iter()
+                    .copied(),
+            ) {
+                if !font_family.iter().any(|existing| existing == name) {
+                    font_family.push(name.to_owned());
+                }
+            }
+        }
 
         // 한컴 WMF 의 한국어 폰트 (예: "굴림체") 가 시스템에 미설치된 환경에서
         // SVG renderer 가 fallback 못 찾으면 글자가 깨져 보임. facename/fallback

@@ -24331,6 +24331,7 @@ impl PdfDocument {
                     }
                 }
             }
+            self.process_image_colour_operator(&op, resources.as_ref(), &mut graphics)?;
             graphics.apply(&op);
             let state = graphics.current();
             match op {
@@ -24356,6 +24357,7 @@ impl PdfDocument {
                         image_handle_from_inline(self, &dict, data, state.ctm, paint_order, &cs_map)
                     {
                         handle.opacity = state.alpha;
+                        handle.stencil_colour = state.fill_colour;
                         handle.source_order.push(ordinal);
                         handle.clip = state.clip;
                         handles.push(handle);
@@ -24425,6 +24427,7 @@ impl PdfDocument {
                     ) {
                         h.clip = state.clip;
                         h.opacity = state.alpha;
+                        h.stencil_colour = state.fill_colour;
                         *paint_order += 1;
                         Ok(vec![h])
                     } else {
@@ -24581,6 +24584,7 @@ impl PdfDocument {
                 }));
         let mut graphics = ImageClipTracker::for_images(start_ctm, clip);
         graphics.set_alpha(parent_state.alpha);
+        graphics.set_fill_colour(parent_state.fill_space, parent_state.fill_colour);
         let mut handles = Vec::new();
 
         for (ordinal, op) in operators.into_iter().enumerate() {
@@ -24589,6 +24593,7 @@ impl PdfDocument {
                     graphics.set_alpha(alpha);
                 }
             }
+            self.process_image_colour_operator(&op, Some(&form_resources), &mut graphics)?;
             graphics.apply(&op);
             let state = graphics.current();
             match op {
@@ -24621,6 +24626,7 @@ impl PdfDocument {
                         &cs_map,
                     ) {
                         h.opacity = state.alpha;
+                        h.stencil_colour = state.fill_colour;
                         h.source_order.push(ordinal);
                         h.clip = state.clip;
                         handles.push(h);

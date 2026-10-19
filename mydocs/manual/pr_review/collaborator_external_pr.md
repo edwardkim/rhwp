@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-14
+last_verified: 2026-10-18
 ---
 
 # Collaborator 매개 외부 PR 처리
@@ -29,7 +29,12 @@ maintainer_can_modify가 false이면 이 경로를 쓰지 않는다. maintainer 
 `git worktree add`를 만들지 않는다. 별도 worktree는 주 작업공간이 dirty여서 격리가 꼭 필요하거나
 작업지시자가 명시적으로 요구한 경우에만 쓴다.
 
+Git 명령을 시작하기 전에 [reviewer assign 선행](intake_and_review.md#21-reviewer-assign-선행)에 따라
+**각 원 PR의 reviewer를 지정하고 API로 재확인**한다. 최소 사전 분류 이후의 상세 조사와 local fetch·체리픽은
+이 확인을 통과한 원 PR만 진행한다. 여러 PR 중 미지정·확인 실패한 PR은 누적 적용 목록에서 보류한다.
+
 ~~~bash
+# 선행 조건: 원 PR N의 reviewer 지정과 requested_reviewers API 확인 완료.
 git status --short --branch
 git fetch upstream devel pull/N/head:refs/remotes/upstream/prN-head
 git switch devel

@@ -54,6 +54,9 @@ pub(super) struct FontFileLookupPlan {
     original_candidates: Vec<FontFileName>,
     candidates: Vec<FontFileName>,
     pub(super) search_dirs: Vec<std::path::PathBuf>,
+    custom_dirs: Vec<std::path::PathBuf>,
+    families: Vec<String>,
+    bold: bool,
 }
 
 /// 문서 폰트명을 SVG 폰트 해석용 파일 후보로 계획한다.
@@ -118,6 +121,15 @@ pub(super) fn plan_svg_font_file_lookup(
         original_candidates,
         candidates,
         search_dirs: crate::renderer::font_paths::search_dirs(extra_paths),
+        custom_dirs: crate::renderer::font_paths::custom_font_dirs(extra_paths),
+        families: std::iter::once(font_name.to_string())
+            .chain(
+                font_local_aliases(font_name)
+                    .into_iter()
+                    .map(str::to_string),
+            )
+            .collect(),
+        bold,
     }
 }
 
@@ -125,18 +137,57 @@ pub(super) fn plan_svg_font_file_lookup(
 pub(super) fn find_font_file(plan: &FontFileLookupPlan) -> Option<std::path::PathBuf> {
     // 원 face의 직접 파일을 모든 루트에서 확인한 뒤 대체 face를 찾는다.
     // 같은 face가 여러 루트에 있으면 호출자가 지정한 루트 순서를 보존한다.
-    for candidates in [&plan.original_candidates, &plan.candidates] {
-        for dir in &plan.search_dirs {
-            if !dir.exists() {
-                continue;
+    for dir in &plan.search_dirs {
+        if !dir.exists() {
+            continue;
+        }
+        for candidate in &plan.original_candidates {
+            let path = dir.join(candidate.as_path());
+            if path.is_file() {
+                return Some(path);
             }
-            for candidate in candidates {
-                let path = dir.join(candidate.as_path());
-                if path.is_file() {
-                    return Some(path);
-                }
+        }
+    }
+    // 명시한 공급과 시스템 family 조회를 파일명 대체보다 먼저 적용한다.
+    // 원 face의 모든 루트 우선순위는 위 단계에서 보존한다.
+    for dir in &plan.custom_dirs {
+        for candidate in &plan.candidates {
+            let path = dir.join(candidate.as_path());
+            if path.is_file() {
+                return Some(path);
+            }
+        }
+    }
+    if let Some(path) = super::system_fonts::family_file(&plan.families, plan.bold) {
+        return Some(path);
+    }
+    for dir in &plan.search_dirs {
+        for candidate in &plan.candidates {
+            let path = dir.join(candidate.as_path());
+            if path.is_file() {
+                return Some(path);
             }
         }
     }
     None
+}
+
+/// 이름이 같은 설치 부분 글꼴에 없는 표시 문자는 같은 face의 완전한 파일로 공급한다.
+pub(super) fn find_font_file_for_chars(
+    plan: &FontFileLookupPlan,
+    chars: &std::collections::HashSet<char>,
+) -> Option<std::path::PathBuf> {
+    let preferred = find_font_file(plan)?;
+    let covered = std::fs::read(&preferred).ok().is_some_and(|bytes| {
+        ttf_parser::Face::parse(&bytes, 0).is_ok_and(|face| {
+            chars
+                .iter()
+                .filter(|ch| !ch.is_whitespace() && !ch.is_control())
+                .all(|ch| face.glyph_index(*ch).is_some_and(|glyph| glyph.0 != 0))
+        })
+    });
+    if covered {
+        return Some(preferred);
+    }
+    super::system_fonts::family_file_for_chars(&plan.families, plan.bold, chars).or(Some(preferred))
 }

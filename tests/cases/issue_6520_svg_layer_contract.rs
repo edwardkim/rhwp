@@ -784,6 +784,7 @@ fn image_and_equation_control_labels_replay_as_canonical_ops() {
             RenderNodeType::Equation(EquationNode {
                 svg_content: "<text>x</text>".to_string(),
                 layout_box: LayoutBox {
+                    font_size: 12.0,
                     x: 0.0,
                     y: 0.0,
                     width: 8.0,
@@ -854,7 +855,7 @@ fn image_and_equation_control_labels_replay_as_canonical_ops() {
     let json = tree.to_json();
     assert_eq!(json.matches("\"type\":\"controlLabel\"").count(), 7);
     let json: serde_json::Value = serde_json::from_str(&json).unwrap();
-    assert_eq!(json["schemaMinorVersion"], 25);
+    assert_eq!(json["schemaMinorVersion"], 27);
     assert!(json["usedFeatures"]
         .as_array()
         .unwrap()

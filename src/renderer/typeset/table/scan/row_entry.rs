@@ -109,6 +109,7 @@ impl RowEntryQuery<'_> {
         &self,
         can_intra_split: bool,
         intra_row_cut_here: bool,
+        physical_minimum_splittable: bool,
     ) -> RowSplitGate {
         let RowScanQuery { rows, r, .. } = *self.row;
         let RowBlockQuery {
@@ -133,6 +134,7 @@ impl RowEntryQuery<'_> {
         let splittable = can_intra_split
             && intra_row_cut_here
             && (mt.is_row_splittable(r)
+                || physical_minimum_splittable
                 || native_short_parent_child_splittable
                 || stored_picture_cell_splittable
                 || layout_engine.stored_single_line_row_is_fragmentable(table, r, styles));

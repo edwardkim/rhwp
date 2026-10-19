@@ -56,6 +56,9 @@ pub(super) fn prepare_shaped_spans(
         !text.chars().any(|character| {
             character.is_whitespace()
                 || character.is_control()
+                // 개체 마커를 이웃 결합 문자와 같은 blob에 넣으면 별도 cluster의
+                // 비표시 계약을 우회한다. 앞뒤 span은 기존 배치 원점을 유지한다.
+                || character == '\u{FFFC}'
                 || matches!(character, '\u{00ad}' | '\u{00b7}' | '\u{2018}'..='\u{2027}'
                     | '\u{203b}' | '\u{2460}'..='\u{27bf}')
                 || crate::renderer::boxed_pua_number(character).is_some()

@@ -1,7 +1,8 @@
 use resvg::{tiny_skia, usvg};
 use skia_safe::{
-    canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, ColorSpace, Data,
-    FilterMode, IRect, Image, Matrix, MipmapMode, Paint, Rect, SamplingOptions, TileMode,
+    canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, ColorSpace,
+    CubicResampler, Data, FilterMode, IRect, Image, Matrix, MipmapMode, Paint, Rect,
+    SamplingOptions, TileMode,
 };
 use std::sync::{Arc, OnceLock};
 
@@ -390,22 +391,75 @@ pub(super) fn draw_image_bytes(
     });
 
     let draw_image_rect = |src: Option<Rect>, dst: Rect| {
+        let matrix = canvas.local_to_device_as_3x3();
+        let scale_x = matrix.scale_x().hypot(matrix.skew_y());
+        let scale_y = matrix.skew_x().hypot(matrix.scale_y());
+        let source = src.unwrap_or(Rect::from_xywh(0., 0., decoded_width, decoded_height));
+        let interpolation = super::super::image_resolver::png_sampling::magnification(
+            super::super::image_resolver::png_sampling::interpolation(bytes),
+            (source.width() as f64, source.height() as f64),
+            (
+                (dst.width() * scale_x) as f64,
+                (dst.height() * scale_y) as f64,
+            ),
+        );
+        // 확대 선언과 binary effect의 우선순위를 보존한다.
+        let sampling = if binary_preprocessed {
+            sampling
+        } else {
+            match interpolation {
+                Some(false) => ImageSampling::nearest(),
+                Some(true) => ImageSampling::linear(),
+                None => sampling,
+            }
+        };
+        // 전체 원본의 축소에는 가는 선을 보존하는 저역 통과를 적용한다.
+        // crop의 strict 경계와 binary·빠른 미리보기의 명시적 nearest를 유지한다.
+        let cubic = sampling.mipmap_mode == MipmapMode::Linear
+            && src.is_none()
+            && !binary_preprocessed
+            && super::super::image_resolver::png_sampling::print_bitmap_reconstruction(bytes)
+            && !matrix.has_perspective()
+            && matrix.skew_x() == 0.0
+            && matrix.skew_y() == 0.0
+            && matrix.scale_x() > 0.0
+            && matrix.scale_y() > 0.0
+            && super::super::cubic_sampling::modest_reduction(
+                (f64::from(image.width()), f64::from(image.height())),
+                (
+                    f64::from(dst.width() * scale_x),
+                    f64::from(dst.height() * scale_y),
+                ),
+            );
+        let reduced = (!cubic
+            && sampling.filter_mode != FilterMode::Nearest
+            && src.is_none()
+            && !binary_preprocessed
+            && !matrix.has_perspective()
+            && scale_x.is_finite()
+            && scale_y.is_finite()
+            && (image.width() as f32 > dst.width() * scale_x
+                || image.height() as f32 > dst.height() * scale_y))
+            .then(|| image.with_default_mipmaps())
+            .flatten();
+        let actual_image = reduced.as_ref().unwrap_or(&image);
+        let options = if cubic {
+            SamplingOptions::from(CubicResampler::catmull_rom())
+        } else if reduced.is_some() {
+            SamplingOptions::new(FilterMode::Linear, MipmapMode::Linear)
+        } else {
+            sampling.options()
+        };
         if let Some(src) = src.as_ref() {
             canvas.draw_image_rect_with_sampling_options(
-                &image,
+                actual_image,
                 Some((src, SrcRectConstraint::Strict)),
                 dst,
-                sampling.options(),
+                options,
                 &paint,
             );
         } else {
-            canvas.draw_image_rect_with_sampling_options(
-                &image,
-                None,
-                dst,
-                sampling.options(),
-                &paint,
-            );
+            canvas.draw_image_rect_with_sampling_options(actual_image, None, dst, options, &paint);
         }
     };
 
@@ -645,13 +699,26 @@ fn rasterize_svg_document_to_png(
         return None;
     }
 
-    let mut pixmap = tiny_skia::Pixmap::new(raster_width as u32, raster_height as u32)?;
+    if let Some(png) = super::svg_bitmap_mask::rasterize_before_reduction(
+        &tree,
+        raster_width as u32,
+        raster_height as u32,
+        MAX_SVG_RASTER_PIXELS,
+    ) {
+        return Some(png);
+    }
+
     let transform = tiny_skia::Transform::from_scale(
         raster_width as f32 / size.width(),
         raster_height as f32 / size.height(),
     );
-    resvg::render(&tree, transform, &mut pixmap.as_mut());
-    pixmap.encode_png().ok()
+    rasterize_svg_with_mask_coverage(
+        &tree,
+        raster_width as u32,
+        raster_height as u32,
+        transform,
+        raster_scale,
+    )
 }
 
 fn rasterize_svg_fragment_to_png(
@@ -699,9 +766,53 @@ fn rasterize_svg_fragment_to_png(
         return None;
     }
 
-    let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())?;
-    resvg::render(&tree, tiny_skia::Transform::default(), &mut pixmap.as_mut());
-    pixmap.encode_png().ok()
+    rasterize_svg_with_mask_coverage(
+        &tree,
+        size.width(),
+        size.height(),
+        tiny_skia::Transform::default(),
+        raster_scale,
+    )
+}
+
+/// 축소된 패턴 마스크의 피복률을 면적으로 적분한다. 위치·viewport·최종 크기는 보존한다.
+fn rasterize_svg_with_mask_coverage(
+    tree: &usvg::Tree,
+    width: u32,
+    height: u32,
+    transform: tiny_skia::Transform,
+    raster_scale: f32,
+) -> Option<Vec<u8>> {
+    // WMF의 미세한 흑백 마스크를 목적지 픽셀에서 한 번만 샘플링하면
+    // 검정/흰색 중 한쪽만 선택되어 칠과 글자가 사라진다. 마스크가 있는
+    // SVG에만 축마다 최대 4배 표본을 두고 최종 출력 크기로 저역 통과한다.
+    // 이미 고배율인 출력과 마스크 없는 SVG는 기존 경로를 유지한다.
+    let mut samples = if tree.masks().is_empty() {
+        1
+    } else {
+        (4.0 / raster_scale.max(1.0)).floor().clamp(1.0, 4.0) as u32
+    };
+    let pixels = u64::from(width).checked_mul(u64::from(height))?;
+    if pixels == 0 || pixels > MAX_SVG_RASTER_PIXELS {
+        return None;
+    }
+    while pixels.checked_mul(u64::from(samples).pow(2))? > MAX_SVG_RASTER_PIXELS {
+        samples -= 1;
+    }
+    let render_width = width.checked_mul(samples)?;
+    let render_height = height.checked_mul(samples)?;
+    let mut pixmap = tiny_skia::Pixmap::new(render_width, render_height)?;
+    let transform =
+        tiny_skia::Transform::from_scale(samples as f32, samples as f32).post_concat(transform);
+    resvg::render(tree, transform, &mut pixmap.as_mut());
+    if samples == 1 {
+        return pixmap.encode_png().ok();
+    }
+
+    // 투명 가장자리의 색 번짐을 막기 위해 premultiplied RGBA 상태에서 적분한다.
+    // PNG 인코더가 마지막에만 알파를 되돌린다. Lanczos의 작은 overshoot도
+    // premultiplied 불변식(R/G/B <= A) 안으로 제한한다.
+    super::svg_bitmap_mask::encode_reduced(&pixmap, width, height)
 }
 
 fn svg_parse_options() -> usvg::Options<'static> {

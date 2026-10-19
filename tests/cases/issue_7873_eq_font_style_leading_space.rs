@@ -37,7 +37,7 @@ fn children(node: &EqNode) -> Vec<&EqNode> {
         EqNode::Limit { sub, .. } => sub.iter().map(|b| &**b).collect(),
         EqNode::Matrix { rows, .. } => rows.iter().flatten().collect(),
         EqNode::Cases { rows } | EqNode::Pile { rows, .. } => rows.iter().collect(),
-        EqNode::EqAlign { rows } => rows.iter().flat_map(|(l, r)| [l, r]).collect(),
+        EqNode::EqAlign { rows, .. } => rows.iter().flat_map(|(l, r)| [l, r]).collect(),
         EqNode::Rel { over, under, .. } => std::iter::once(&**over)
             .chain(under.iter().map(|b| &**b))
             .collect(),
@@ -62,51 +62,58 @@ fn has_backtick_text(node: &EqNode) -> bool {
     found
 }
 
-/// `style` 로 감싸인 글자(`Text`)를 문서 순서로 모은다. 상태 모델에서는 글자마다 감싸인다.
-fn styled_letters(node: &EqNode, style: FontStyleKind) -> Vec<String> {
-    let mut out = Vec::new();
-    walk(node, &mut |n| {
-        if let EqNode::FontStyle { style: s, body } = n {
-            if *s == style {
-                walk(body, &mut |b| {
-                    if let EqNode::Text(t) = b {
-                        out.push(t.clone());
-                    }
-                });
-            }
+/// 글자(`Text`)마다 그리기에 쓰이는 글꼴 — 가장 안쪽 글꼴 노드 — 을 문서 순서로 모은다.
+/// 렌더러는 안쪽 `FontStyle` 이 바깥 것을 덮어쓰므로, 같은 글자를 감싼 바깥 묶음(현재
+/// 그룹의 전환 묶음)은 세지 않는다.
+fn effective_letters(node: &EqNode) -> Vec<(String, Option<FontStyleKind>)> {
+    fn go(
+        node: &EqNode,
+        style: Option<FontStyleKind>,
+        out: &mut Vec<(String, Option<FontStyleKind>)>,
+    ) {
+        match node {
+            EqNode::Text(t) => out.push((t.clone(), style)),
+            EqNode::FontStyle { style: s, body } => go(body, Some(*s), out),
+            _ => children(node).into_iter().for_each(|c| go(c, style, out)),
         }
-    });
+    }
+    let mut out = Vec::new();
+    go(node, None, &mut out);
     out
+}
+
+/// 가장 안쪽 글꼴이 `style` 인 글자.
+fn styled_letters(node: &EqNode, style: FontStyleKind) -> Vec<String> {
+    effective_letters(node)
+        .into_iter()
+        .filter(|(_, s)| *s == Some(style))
+        .map(|(t, _)| t)
+        .collect()
 }
 
 /// 어떤 글꼴 노드에도 감싸이지 않은 글자(기본 이탤릭).
 fn plain_letters(node: &EqNode) -> Vec<String> {
-    fn go(node: &EqNode, inside: bool, out: &mut Vec<String>) {
-        match node {
-            EqNode::Text(t) if !inside => out.push(t.clone()),
-            EqNode::FontStyle { body, .. } => go(body, true, out),
-            _ => children(node).into_iter().for_each(|c| go(c, inside, out)),
-        }
-    }
-    let mut out = Vec::new();
-    go(node, false, &mut out);
-    out
+    effective_letters(node)
+        .into_iter()
+        .filter(|(_, s)| s.is_none())
+        .map(|(t, _)| t)
+        .collect()
 }
 
-fn flatten_rows<'a>(node: &'a EqNode, out: &mut Vec<&'a EqNode>) {
+/// 글꼴 노드와 `Row` 를 펼친 문서 순서의 말단 노드.
+fn flatten_leaves<'a>(node: &'a EqNode, out: &mut Vec<&'a EqNode>) {
     match node {
-        EqNode::Row(children) => children.iter().for_each(|c| flatten_rows(c, out)),
+        EqNode::Row(children) => children.iter().for_each(|c| flatten_leaves(c, out)),
+        EqNode::FontStyle { body, .. } => flatten_leaves(body, out),
         other => out.push(other),
     }
 }
 
-fn thin_spaces_before_first_font_style(node: &EqNode) -> Option<usize> {
-    // 중첩 Row 를 펼친 순서에서 첫 글꼴 노드 바로 앞의 연속 Thin 공백 수.
+/// 첫 글자(`Text`) 바로 앞의 연속 Thin 공백 수. 공백이 글꼴 묶음 안팎 어디에 있든 센다.
+fn thin_spaces_before_first_letter(node: &EqNode) -> Option<usize> {
     let mut seq = Vec::new();
-    flatten_rows(node, &mut seq);
-    let at = seq
-        .iter()
-        .position(|c| matches!(c, EqNode::FontStyle { .. }))?;
+    flatten_leaves(node, &mut seq);
+    let at = seq.iter().position(|c| matches!(c, EqNode::Text(_)))?;
     Some(
         seq[..at]
             .iter()
@@ -141,7 +148,7 @@ fn quarter_spaces_after_rm_stay_spaces_and_unit_is_roman() {
         "단위 m 이 로만체여야 한다: {ast:?}"
     );
     assert_eq!(
-        thin_spaces_before_first_font_style(&ast),
+        thin_spaces_before_first_letter(&ast),
         Some(2),
         "``(1/4 공백 둘)이 글꼴 글자 앞 간격으로 보존된다: {ast:?}"
     );
@@ -258,14 +265,70 @@ fn bold_applies_to_the_next_element_only() {
 
 #[test]
 fn plain_rm_body_is_unchanged() {
-    // 종전 계약(`rm abc` → FontStyle(Roman, Text)) 은 그대로다.
-    match parse("rm abc") {
-        EqNode::FontStyle { style, body } => {
-            assert_eq!(style, FontStyleKind::Roman);
-            assert_eq!(*body, EqNode::Text("abc".to_string()));
-        }
-        other => panic!("FontStyle 이어야 한다: {other:?}"),
-    }
+    // `rm abc` 의 글자는 모두 로만체로 그려진다.
+    assert_eq!(roman("rm abc"), strs(&["abc"]));
+    assert!(plain("rm abc").is_empty());
     assert_eq!(roman("x=6 rm m"), strs(&["m"]));
     assert_eq!(plain("x=6 rm m"), strs(&["x"]));
+}
+
+/// 문서 렌더 경로(저장 문서 수식 파서)에서 라벨별 수식의 이탤릭 글리프 수.
+/// 이탤릭 글리프는 수식 글꼴의 사용자 정의 영역 글자이거나 SVG `transform` 기울임(`-0.333`)이다.
+fn document_italic_counts() -> std::collections::BTreeMap<String, usize> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue7873/eq-font-state-doc.hwpx");
+    let core = rhwp::document_core::DocumentCore::from_bytes(&std::fs::read(path).expect("read"))
+        .expect("parse");
+    let svg = core.render_page_svg_native(0).expect("svg");
+    let mut counts = std::collections::BTreeMap::new();
+    let mut label: Option<String> = None;
+    let mut previous_text = String::new();
+    for chunk in svg.split("<text").skip(1) {
+        let (attrs, rest) = chunk.split_once('>').unwrap_or((chunk, ""));
+        let content = rest.split("</text>").next().unwrap_or("");
+        if attrs.contains("font-size=\"12\"") {
+            // 본문 라벨 «k.» — 글자 노드 뒤 «.» 노드가 온다.
+            if content == "." {
+                label = Some(previous_text.clone());
+                counts.entry(previous_text.clone()).or_insert(0);
+            }
+            previous_text = content.to_string();
+            continue;
+        }
+        if let Some(label) = &label {
+            // 수식 글꼴의 이탤릭 소문자는 사용자 정의 영역 글리프로, 대문자 등은 기울임
+            // 변환으로 그려진다. 로만체 글자는 ASCII 그대로다.
+            let private_use = content
+                .chars()
+                .any(|ch| ('\u{E000}'..='\u{F8FF}').contains(&ch));
+            if private_use || attrs.contains("matrix(1 0 -0.333 1") {
+                *counts.get_mut(label).expect("label") += 1;
+            }
+        }
+    }
+    counts
+}
+
+#[test]
+fn document_path_keeps_rm_state_across_groups_and_fractions() {
+    // 정본 `pdf/issue7873/eq-font-state-doc-2024.pdf`(한/글 2024 Print) 판독 — 같은 스크립트의
+    // 한/글 2020 Print(`mydocs/report/eq-rm-space-7873/eq-font-state-2020.pdf`)도 같다.
+    let counts = document_italic_counts();
+    for (label, script, italic) in [
+        ("k", "{rm a} b", 0),
+        ("m", "rm a {b} c", 0),
+        ("n", "{rm a} over {b} c", 1),
+        ("o", "it A rm B it C", 2),
+        ("p", "rm a it b c", 2),
+        ("r", "a rm b ^{c} d", 1),
+        ("t", "{a rm b} c", 1),
+        ("u", "rm a LEFT ( b RIGHT ) c", 0),
+        ("y", "a rm {b} c", 1),
+    ] {
+        assert_eq!(
+            counts.get(label).copied(),
+            Some(italic),
+            "{label}. `{script}` 의 이탤릭 글리프 수 — 전체 {counts:?}"
+        );
+    }
 }

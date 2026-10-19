@@ -436,7 +436,18 @@ impl TypesetEngine {
             unconstrained_host_placement
                 .filter(|_| placement_para_start_height + fmt.height_for_fit <= available)
                 .map(|placement| {
-                    let applied_before = if placement_para_start_height > 0.0 {
+                    // 저장 글줄과 공유한 원점이 있는 글 앞 앵커는 entry에서
+                    // 이미 앞 간격 이전 문단 원점으로 만들었다. 같은 간격을
+                    // 다시 빼지 않는다. 원점 인증이 없는 기존 흐름 앵커와
+                    // 계산 줄·글 끝 앵커는 기존 첫 조각 변환을 유지한다.
+                    let anchor_includes_before = fmt.computed_host_lines.is_some()
+                        || placement.stored_host_origin.is_none()
+                        || !crate::renderer::float_placement::ParagraphFloatPlacement::stored_head_host_lines_are_valid(
+                            para, table, ctrl_idx,
+                        );
+                    let applied_before = if anchor_includes_before
+                        && placement_para_start_height > 0.0
+                    {
                         fmt.spacing_before
                     } else {
                         0.0
@@ -1035,7 +1046,16 @@ impl TypesetEngine {
             table,
             self.dpi,
         ) + layout_engine
-            .saved_single_cell_terminal_host_spacing_px(table, para, styles);
+            .saved_single_cell_terminal_host_spacing_px(table, para, styles)
+            + crate::renderer::layout::stored_unconsumed_rowbreak_host_advance_hu(
+                self.profile.get().hwp5_stored_pagination_layout(),
+                para,
+                table,
+                paragraphs_all.get(para_idx + 1),
+                st.pre_emitted_host_paras.contains(&para_idx),
+            )
+            .map(|advance| hwpunit_to_px(advance, self.dpi))
+            .unwrap_or(0.0);
         // 호스트 배치를 처음 조회한 뒤 내용 소비 없는 이월로 조각이 바뀔 수 있다.
         // 실제 새 프레임에서 닫힌 원본 상자를 다시 결정하고,
         // 스캐너 예산과 확정 단계가 그 원점·흐름 끝을 함께 사용하게 한다.

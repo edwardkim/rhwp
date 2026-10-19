@@ -17,9 +17,12 @@ use std::fs;
 use std::path::Path;
 
 use rhwp::diagnostics::render_geom_diff::{roundtrip_geom, Via};
+use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::shape::{ShapeObject, SizeCriterion};
 use rhwp::parser::parse_document;
+use rhwp::renderer::layout::CellContext;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::serializer::serialize_document;
 
 const SAMPLE_GROUP: &str = "samples/issue1892_hwp3_drawing_group_roundtrip.hwp";
@@ -55,11 +58,178 @@ fn assert_roundtrip_render_self_consistent(rel: &str) {
     }
 }
 
-/// 대표 2912309 (제적등본2 서식): 빈 묶음 + rendering matrix + 크기 기준 축.
-/// 수정 전 STRUCT_MISMATCH 5449px.
+/// 같은 독립 Print의 원본·저장본 전 2쪽을 양쪽 backend에서 확인한 계약.
+/// 글꼴별 획 상자의 차이를 모든 노드의 1px 제한으로 고정하지 않는다.
 #[test]
-fn issue_1892_hwp3_drawing_group_roundtrip_render_is_self_consistent() {
-    assert_roundtrip_render_self_consistent(SAMPLE_GROUP);
+fn issue_1892_hwp3_group_roundtrip_preserves_owned_content_and_object_frames() {
+    let mut original = DocumentCore::from_bytes(&read_sample(SAMPLE_GROUP)).expect("원본");
+    let saved = original.export_hwp_with_adapter().expect("공개 HWP 저장");
+    let reopened = DocumentCore::from_bytes(&saved).expect("저장본");
+    assert_eq!(original.page_count(), 2, "독립 Print 전체 쪽수");
+    assert_eq!(reopened.page_count(), original.page_count());
+    let source_paper = &original.document().sections[0].section_def.page_def;
+    let mut total_groups = 0;
+    for page in 0..original.page_count() {
+        let a = original.build_page_render_tree(page).expect("원본 쪽");
+        let b = reopened.build_page_render_tree(page).expect("저장본 쪽");
+        assert_eq!(
+            owned_content(&a.root),
+            owned_content(&b.root),
+            "같은 쪽·문단·셀 내용의 순서·누락·중복: {page}"
+        );
+        assert_eq!(
+            owned_tables(&a.root),
+            owned_tables(&b.root),
+            "인라인 표 소속·순서·누락·중복: {page}"
+        );
+        let mut left = Vec::new();
+        let mut right = Vec::new();
+        collect_groups(&a.root, &mut left);
+        collect_groups(&b.root, &mut right);
+        total_groups += left.len();
+        assert_eq!(left.len(), right.len(), "묶음 도형 누락·중복: {page}");
+        for (left, right) in left.into_iter().zip(right) {
+            let RenderNodeType::Group(ga) = &left.node_type else {
+                unreachable!()
+            };
+            let RenderNodeType::Group(gb) = &right.node_type else {
+                unreachable!()
+            };
+            assert_eq!(
+                (ga.section_index, ga.para_index, ga.control_index),
+                (gb.section_index, gb.para_index, gb.control_index),
+                "묶음 소유 보존"
+            );
+            assert_eq!(
+                left.children
+                    .iter()
+                    .map(|n| std::mem::discriminant(&n.node_type))
+                    .collect::<Vec<_>>(),
+                right
+                    .children
+                    .iter()
+                    .map(|n| std::mem::discriminant(&n.node_type))
+                    .collect::<Vec<_>>(),
+                "자식 도형 종류·순서 보존, 빈 묶음을 사각형으로 바꾸지 않는다"
+            );
+            // 소스 용지에 대한 개체 프레임 비율을 비교한다. 허용 오차는
+            // 직렬화의 원본 정수 단위 1HU이며 관측 픽셀 위치를 고정하지 않는다.
+            for (before, after, dimension, units) in [
+                (
+                    left.bbox.x - a.root.bbox.x,
+                    right.bbox.x - b.root.bbox.x,
+                    a.root.bbox.width,
+                    source_paper.width,
+                ),
+                (
+                    left.bbox.y - a.root.bbox.y,
+                    right.bbox.y - b.root.bbox.y,
+                    a.root.bbox.height,
+                    source_paper.height,
+                ),
+                (
+                    left.bbox.width,
+                    right.bbox.width,
+                    a.root.bbox.width,
+                    source_paper.width,
+                ),
+                (
+                    left.bbox.height,
+                    right.bbox.height,
+                    a.root.bbox.height,
+                    source_paper.height,
+                ),
+            ] {
+                assert!(dimension > 0.0 && units > 0);
+                let difference = ((before - after) / dimension).abs();
+                assert!(
+                    difference.is_finite() && difference <= 1.0 / f64::from(units) + f64::EPSILON,
+                    "원본 용지에 대한 개체 프레임 비율 보존: {difference}"
+                );
+            }
+        }
+    }
+    assert!(total_groups > 0, "실제 출력에서 묶음 도형을 검사해야 한다");
+}
+
+#[derive(Debug, PartialEq)]
+struct OwnedContent {
+    section: Option<usize>,
+    paragraph: Option<usize>,
+    cell: Option<CellContext>,
+    text: String,
+}
+
+fn owned_content(node: &RenderNode) -> Vec<OwnedContent> {
+    fn walk(node: &RenderNode, out: &mut Vec<OwnedContent>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            // HWP3의 개체 슬롯 문자는 HWP 저장 시 실제 Table control로 보존된다.
+            // 표시 문자를 비교하고 개체 소유는 owned_tables에서 별도로 검사한다.
+            let text: String = run.text.chars().filter(|ch| *ch != '\u{fffc}').collect();
+            if !text.is_empty() {
+                if let Some(last) = out.last_mut().filter(|last| {
+                    last.section == run.section_index
+                        && last.paragraph == run.para_index
+                        && last.cell == run.cell_context
+                }) {
+                    last.text.push_str(&text);
+                } else {
+                    out.push(OwnedContent {
+                        section: run.section_index,
+                        paragraph: run.para_index,
+                        cell: run.cell_context.clone(),
+                        text,
+                    });
+                }
+            }
+        }
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    let mut out = Vec::new();
+    walk(node, &mut out);
+    out
+}
+
+#[derive(Debug, PartialEq)]
+struct OwnedTable {
+    section: Option<usize>,
+    paragraph: Option<usize>,
+    control: Option<usize>,
+    cell: Option<CellContext>,
+    rows: u16,
+    cols: u16,
+}
+
+fn owned_tables(node: &RenderNode) -> Vec<OwnedTable> {
+    fn walk(node: &RenderNode, out: &mut Vec<OwnedTable>) {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            out.push(OwnedTable {
+                section: table.section_index,
+                paragraph: table.para_index,
+                control: table.control_index,
+                cell: table.cell_context.clone(),
+                rows: table.row_count,
+                cols: table.col_count,
+            });
+        }
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    let mut out = Vec::new();
+    walk(node, &mut out);
+    out
+}
+
+fn collect_groups<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+    if matches!(node.node_type, RenderNodeType::Group(_)) {
+        out.push(node);
+    }
+    for child in &node.children {
+        collect_groups(child, out);
+    }
 }
 
 /// 대표 2952505 (문서건명부 서식): 탭 확장 "데이터 없음" 마커 축.
@@ -69,53 +239,125 @@ fn issue_1892_hwp3_tab_roundtrip_render_is_self_consistent() {
     assert_roundtrip_render_self_consistent(SAMPLE_TAB);
 }
 
-/// IR 핀: 빈 묶음('$con', children=0)이 직렬화→재파스에서 Group 으로 보존되고
-/// (사각형 폴백 금지), 그룹 자식 rendering matrix 는 identity(translation 미승격),
-/// 최상위 개체 크기 기준은 Absolute 로 왕복한다.
+/// 자식의 원본 상대 오프셋은 상위 묶음 원점에 누적된다. 중첩 묶음과
+/// Absolute 크기 기준을 보존하며 메타데이터 오프셋을 행렬에 두 번 더하지 않는다.
 #[test]
-fn issue_1892_empty_container_and_size_criterion_roundtrip() {
-    let data = read_sample(SAMPLE_GROUP);
-    let doc_a = parse_document(&data).expect("parse A");
-    let out = serialize_document(&doc_a).expect("serialize");
-    let doc_b = parse_document(&out).expect("parse B");
-
-    // 문단 0.1 의 최상위 묶음: A 구조 = Group { children: [Group { children: [] }] }
-    let find_group =
-        |doc: &rhwp::model::document::Document| -> Option<(bool, SizeCriterion, SizeCriterion)> {
-            for para in &doc.sections[0].paragraphs {
-                for ctrl in &para.controls {
-                    if let Control::Shape(shape) = ctrl {
-                        if let ShapeObject::Group(g) = shape.as_ref() {
-                            if let Some(ShapeObject::Group(child)) = g.children.first() {
-                                let child_matrix_is_identity = child.shape_attr.render_tx == 0.0
-                                    && child.shape_attr.render_ty == 0.0;
-                                return Some((
-                                    child_matrix_is_identity,
-                                    g.common.width_criterion,
-                                    g.common.height_criterion,
-                                ));
+fn issue_1892_group_roundtrip_preserves_source_offsets_and_group_hierarchy() {
+    let doc_a = parse_document(&read_sample(SAMPLE_GROUP)).expect("원본 파싱");
+    let doc_b = parse_document(&serialize_document(&doc_a).expect("저장")).expect("재파싱");
+    fn verify(
+        node: &ShapeObject,
+        parent: (f64, f64),
+        depth: u16,
+        nested: &mut usize,
+        moved: &mut usize,
+    ) {
+        let attr = node.shape_attr();
+        let origin = if depth == 0 {
+            (0.0, 0.0)
+        } else {
+            (
+                parent.0 + f64::from(attr.offset_x),
+                parent.1 + f64::from(attr.offset_y),
+            )
+        };
+        assert_eq!(
+            (attr.render_tx, attr.render_ty),
+            origin,
+            "소스 상대 오프셋의 누적 원점"
+        );
+        assert_eq!(attr.group_level, depth, "소유 묶음 깊이");
+        if depth > 0 && (attr.offset_x != 0 || attr.offset_y != 0) {
+            *moved += 1;
+        }
+        if let ShapeObject::Group(group) = node {
+            if depth > 0 {
+                *nested += 1;
+            }
+            for child in &group.children {
+                verify(child, origin, depth + 1, nested, moved);
+            }
+        }
+    }
+    fn groups(doc: &rhwp::model::document::Document) -> Vec<&ShapeObject> {
+        fn shape_text<'a>(shape: &'a ShapeObject, out: &mut Vec<&'a ShapeObject>) {
+            if let Some(drawing) = shape.drawing() {
+                if let Some(text_box) = &drawing.text_box {
+                    paragraphs(&text_box.paragraphs, out);
+                }
+                if let Some(caption) = &drawing.caption {
+                    paragraphs(&caption.paragraphs, out);
+                }
+            }
+            if let ShapeObject::Group(group) = shape {
+                for child in &group.children {
+                    shape_text(child, out);
+                }
+            }
+        }
+        fn paragraphs<'a>(
+            source: &'a [rhwp::model::paragraph::Paragraph],
+            out: &mut Vec<&'a ShapeObject>,
+        ) {
+            for para in source {
+                for control in &para.controls {
+                    match control {
+                        Control::Shape(shape) => {
+                            if matches!(**shape, ShapeObject::Group(_)) {
+                                out.push(shape);
+                            }
+                            shape_text(shape, out);
+                        }
+                        Control::Table(table) => {
+                            for cell in &table.cells {
+                                paragraphs(&cell.paragraphs, out);
+                            }
+                            if let Some(caption) = &table.caption {
+                                paragraphs(&caption.paragraphs, out);
                             }
                         }
+                        Control::Header(header) => paragraphs(&header.paragraphs, out),
+                        Control::Footer(footer) => paragraphs(&footer.paragraphs, out),
+                        Control::Footnote(note) => paragraphs(&note.paragraphs, out),
+                        Control::Endnote(note) => paragraphs(&note.paragraphs, out),
+                        _ => {}
                     }
                 }
             }
-            None
-        };
-
-    let a = find_group(&doc_a).expect("A: 중첩 빈 묶음을 가진 최상위 묶음이 있어야 함");
-    let b = find_group(&doc_b)
-        .expect("B: 재파스에서 중첩 빈 묶음이 Group 으로 보존되어야 함 (사각형 폴백 회귀)");
-
-    assert!(a.0, "A: HWP3 그룹 자식 rendering matrix 는 identity");
-    assert!(
-        b.0,
-        "B: 재파스 그룹 자식 rendering matrix 가 translation 으로 오염 (offset 승격 회귀)"
-    );
-    assert_eq!(
-        (b.1, b.2),
-        (SizeCriterion::Absolute, SizeCriterion::Absolute),
-        "B: 재파스 크기 기준이 Absolute 가 아님 (criterion 비트 누락 → Paper 퍼센트 팽창 회귀)"
-    );
+        }
+        let mut out = Vec::new();
+        for section in &doc.sections {
+            paragraphs(&section.paragraphs, &mut out);
+        }
+        out
+    }
+    let original = groups(&doc_a);
+    let saved = groups(&doc_b);
+    assert!(!original.is_empty());
+    assert_eq!(original.len(), saved.len(), "최상위 묶음 보존");
+    let mut total_nested = 0;
+    for (a, b) in original.into_iter().zip(saved) {
+        let mut original_nested = 0;
+        let mut saved_nested = 0;
+        let mut original_moved = 0;
+        let mut saved_moved = 0;
+        verify(a, (0.0, 0.0), 0, &mut original_nested, &mut original_moved);
+        verify(b, (0.0, 0.0), 0, &mut saved_nested, &mut saved_moved);
+        assert_eq!(original_nested, saved_nested, "중첩 묶음 소유 보존");
+        assert_eq!(original_moved, saved_moved, "비영 상대 오프셋 보존");
+        total_nested += original_nested;
+        assert_eq!(
+            (a.common().width, a.common().height),
+            (b.common().width, b.common().height),
+            "원본 개체 크기 보존"
+        );
+        assert_eq!(
+            (b.common().width_criterion, b.common().height_criterion),
+            (SizeCriterion::Absolute, SizeCriterion::Absolute),
+            "용지 퍼센트 크기로 바뀌지 않는다"
+        );
+    }
+    assert!(total_nested > 0, "중첩 묶음이 있는 원본");
 }
 
 /// IR 핀: tab_extended 없는 탭이 직렬화→재파스 후에도 tab_extended 를 만들지

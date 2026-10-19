@@ -706,6 +706,13 @@ function hitTestAfterPageScroll(
  */
 export function onKeyDown(this: any, e: KeyboardEvent): void {
   if (!this.active) return;
+  if (['Delete', 'Backspace', 'Enter', 'Tab'].includes(e.key)
+    && !(e.key === 'Tab' && this.isFormMode?.())
+    && this.cursor.hasSelection()
+    && this.canDeleteSelectionInFormMode?.() === false) {
+    e.preventDefault();
+    return;
+  }
 
   // fcitx forwards the same physical key after its Process/compositionend sequence.
   if (this._imeNavigationGuard?.consume(e)) {
@@ -1929,6 +1936,10 @@ export function onCopy(this: any, e: ClipboardEvent): boolean {
 
 export function onCut(this: any, e: ClipboardEvent): void {
   if (!this.active) return;
+  if (this.cursor.hasSelection() && this.canDeleteSelectionInFormMode?.() === false) {
+    e.preventDefault();
+    return;
+  }
   if (this.isFormMode?.()) {
     e.preventDefault();
     return;
@@ -1966,6 +1977,7 @@ export function onCut(this: any, e: ClipboardEvent): void {
 export function onPaste(this: any, e: ClipboardEvent): void {
   if (!this.active) return;
   e.preventDefault();
+  if (this.cursor.hasSelection() && this.canDeleteSelectionInFormMode?.() === false) return;
   if (this.isFormMode?.()) return;
 
   // 개체/표 선택 모드 해제 후 붙여넣기 진행

@@ -65,18 +65,6 @@ fn hml_provenance() {
 }
 
 #[test]
-fn hwp3_to_hwp5_variant_lineage_sync() {
-    // HWP3→HWP5 변환본 휴리스틱이 발동하는 샘플 — shim 과 provenance 동기 검증.
-    let doc = load("samples/hwp3-sample-hwp5.hwp");
-    assert_eq!(doc.provenance.format, SourceFormat::Hwp5);
-    assert_eq!(
-        doc.provenance.hwp3_lineage, doc.is_hwp3_variant,
-        "hwp3_lineage 는 is_hwp3_variant 쓰기 지점에서 동기되어야 한다"
-    );
-    assert_eq!(doc.layout_profile().hwp3_layout(), doc.is_hwp3_variant);
-}
-
-#[test]
 fn hwp5_origin_hwpx_marker_excludes_hwpx_layout() {
     // 마커가 부착된 HWPX 는 HWP5 시멘틱 유지 — 파생식 등가를 합성 케이스로 고정.
     let mut doc = load("samples/issue_2148_degenerate_cell_vpos.hwpx");

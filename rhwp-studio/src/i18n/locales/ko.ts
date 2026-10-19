@@ -7,6 +7,7 @@
  */
 
 const catalog = {
+  "editor.crossSectionSelectionUnsupported": "구역을 걸친 선택 편집은 아직 지원하지 않습니다. 구역별로 선택해 편집하세요.",
   "dialog.fill.keepGradient": "기존 그라데이션 유지",
   "dialog.fill.keepImage": "기존 그림 배경 유지",
   "dialog.fill.keepExisting": "기존 채우기 유지",

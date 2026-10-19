@@ -1,12 +1,12 @@
-//! HYhwpEQ Latin glyph selection and logical advance shared by all painters.
-//! The cmap and hmtx values below come from the installed HYHWPEQ.TTF (1024 UPEM).
-//! Independent Hancom Print probes confirm the italic PUA/roman cmap distinction.
-//! Latin advance rounds the 48 dpi logical size first, then the glyph advance.
+//! 한컴 수식의 실제 face·글리프·논리 전진을 모든 출력 경로에 함께 전달한다.
+//! HYhwpEQ의 cmap/hmtx는 설치 HYHWPEQ.TTF(UPM 1024)에서 확인했다.
+//! HancomEQN은 별도 GDI 메트릭을 사용한다. 두 글꼴을 서로 치환하지 않는다.
 
 pub const FONT_FAMILY: &str = "HyhwpEQ";
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct GlyphRun {
+    pub font_family: &'static str,
     pub glyphs: String,
     pub positions: Vec<f64>,
     pub shears: Vec<f64>,
@@ -19,10 +19,15 @@ pub(super) enum Role {
     Variable { italic: bool },
     Number,
     Operator,
+    Greek,
+    BigOperator,
 }
 
 pub(super) fn is_operator(text: &str) -> bool {
-    matches!(text, "+" | "-" | "=" | "<" | ">" | "×" | "÷" | "≤" | "≥")
+    matches!(
+        text,
+        "+" | "-" | "=" | ":" | "<" | ">" | "×" | "÷" | "≤" | "≥"
+    )
 }
 
 const ITALIC_LOWER: [u16; 26] = [
@@ -74,20 +79,49 @@ fn glyph(ch: char, role: Role) -> Option<(char, u16)> {
             '+' => (0xe048, 795),
             '-' => (0xe046, 774),
             '=' => (0xe047, 795),
+            ':' => (0xe04f, 283),
             '<' => (0xe055, 864),
             '>' => (0xe056, 864),
             '×' => (0xd7, 831),
             '÷' => (0xf7, 831),
             '≤' => (0x2264, 1024),
             '≥' => (0x2265, 1024),
+            // 독립 두 face·네 크기 Print의 논리 기호는 각 원본 face의 1em이다.
+            // 이항 연산자로 분류하거나 명시적 ~의 여백을 여기서 더하지 않는다.
+            '∴' => (0x2234, 1024),
+            '∵' => (0x2235, 1024),
+            ',' => (0xe052, 283),
+            // 독립 Print의 일반 괄호는 ASCII glyph가 아닌 수학 PUA다.
+            '(' => (0xe044, 398),
+            ')' => (0xe045, 398),
             _ => return None,
         },
+        Role::Greek => {
+            if let Some(index) = "αβγδεζηθικλμνξοπρστυφχψω".chars().position(|c| c == ch)
+            {
+                (0xe09d + index as u32, 0)
+            } else {
+                let index = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ".chars().position(|c| c == ch)?;
+                (0xe085 + index as u32, 0)
+            }
+        }
+        Role::BigOperator if ch == '∑' => (0xe067, 739),
         _ => return None,
     };
     Some((char::from_u32(code)?, advance))
 }
 
-pub(super) fn measure(text: &str, role: Role, fs: f64, dpi: f64, pad: f64) -> Option<GlyphRun> {
+pub(super) fn measure(
+    text: &str,
+    role: Role,
+    fs: f64,
+    dpi: f64,
+    pad: f64,
+    font_family: &'static str,
+) -> Option<GlyphRun> {
+    if font_family != "HancomEQN" && matches!(role, Role::Greek | Role::BigOperator) {
+        return None;
+    }
     if text.is_empty() || !fs.is_finite() || fs <= 0.0 || !dpi.is_finite() || dpi <= 0.0 {
         return None;
     }
@@ -99,8 +133,8 @@ pub(super) fn measure(text: &str, role: Role, fs: f64, dpi: f64, pad: f64) -> Op
     for ch in text.chars() {
         let (rendered, advance) = glyph(ch, role)?;
         positions.push(width);
-        // Independent Print uses this text matrix for upright PUA capitals.
-        // Lowercase PUA glyphs already contain their italic outline.
+        // 독립 Print는 정체 PUA 대문자에 이 행렬을 적용한다.
+        // 소문자 PUA는 글리프 자체에 기울임 윤곽이 있다.
         shears.push(
             if matches!(role, Role::Variable { italic: true }) && ch.is_ascii_uppercase() {
                 0.333
@@ -109,26 +143,46 @@ pub(super) fn measure(text: &str, role: Role, fs: f64, dpi: f64, pad: f64) -> Op
             },
         );
         glyphs.push(rendered);
-        width += (logical_size * f64::from(advance) / 1024.0).round() * dpi / 96.0;
+        width += if font_family == "HancomEQN" {
+            super::hancom_eqn_metrics::advance(rendered, fs, dpi)?
+        } else if matches!(role, Role::Variable { italic: false }) {
+            // 같은 face의 기존 독립 GDI 전진을 실제 glyph 원점에도 소비한다.
+            // hmtx의 단순 반올림은 힌팅된 정체 D 등의 다음 글자를 앞당긴다.
+            super::layout::measured_roman_advance(&ch.to_string(), fs, dpi).unwrap_or_else(|| {
+                (logical_size * f64::from(advance) / 1024.0).round() * dpi / 96.0
+            })
+        } else {
+            (logical_size * f64::from(advance) / 1024.0).round() * dpi / 96.0
+        };
+        if matches!(role, Role::Operator) && ch == ',' {
+            // 독립 Print의 네 크기에서 확인한 수학 쉼표의 오른쪽 간격.
+            // glyph 자체의 GDI 전진과 구분하며 쉼표의 표시 원점은 보존한다.
+            width += fs * 0.07;
+        }
     }
     Some(GlyphRun {
+        font_family,
         glyphs,
         positions,
         shears,
         width: width + pad,
-        // Roman glyphs use the font ascent, rather than the formula baseline.
-        // Moving the stored control baseline moves the entire object separately.
+        // 정체·ASCII 연산자의 glyph 기준선과 수식 기준선을 구분한다.
+        // 저장 컨트롤의 기준선 이동은 개체 전체에 별도로 적용한다.
         baseline_shift: if matches!(role, Role::Variable { italic: false })
             || matches!(role, Role::Operator) && text.is_ascii()
         {
-            fs * (820.0 / 1024.0 - 0.85)
+            fs * if font_family == "HancomEQN" {
+                -0.05
+            } else {
+                820.0 / 1024.0 - 0.85
+            }
         } else {
             0.0
         },
     })
 }
 
-/// Only the independently verified linear Latin path has natural glyph scale.
+/// 독립 확인한 선형 글리프 줄은 자연 크기로 표시한다.
 pub(crate) fn is_linear(layout: &super::layout::LayoutBox) -> bool {
     use super::layout::LayoutKind;
     match &layout.kind {
@@ -143,13 +197,22 @@ pub(crate) fn is_linear(layout: &super::layout::LayoutBox) -> bool {
 }
 
 pub(crate) fn is_used(layout: &super::layout::LayoutBox) -> bool {
+    !used_font_families(layout).is_empty()
+}
+
+pub(crate) fn used_font_families(
+    layout: &super::layout::LayoutBox,
+) -> std::collections::BTreeSet<&'static str> {
     use super::layout::LayoutKind;
     let mut pending = vec![layout];
+    let mut families = std::collections::BTreeSet::new();
     while let Some(item) = pending.pop() {
         match &item.kind {
-            LayoutKind::HancomGlyphs(_) => return true,
+            LayoutKind::HancomGlyphs(run) => {
+                families.insert(run.font_family);
+            }
             LayoutKind::Row(children) => pending.extend(children),
-            LayoutKind::Fraction { numer, denom } => {
+            LayoutKind::Fraction { numer, denom, .. } => {
                 pending.push(numer);
                 pending.push(denom);
             }
@@ -200,5 +263,5 @@ pub(crate) fn is_used(layout: &super::layout::LayoutBox) -> bool {
             _ => {}
         }
     }
-    false
+    families
 }

@@ -4,9 +4,33 @@ import {mkdtempSync, rmSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test from 'node:test';
-import {createSweepServer} from '../export-wasm-png-for-sweep.mjs';
+import {createSweepServer, registerCanvasFont} from '../export-wasm-png-for-sweep.mjs';
 
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+
+test('Canvas 공급은 family 이름과 원본 바이트를 보존한다', async t => {
+  const supplied = [];
+  class Face {
+    constructor(family, bytes, descriptors) { Object.assign(this, {family, bytes, descriptors}); }
+    async load() { return this; }
+  }
+  for (const [key, value] of Object.entries({FontFace: Face, document: {fonts: {add: face => supplied.push(face)}}})) {
+    const original = Object.getOwnPropertyDescriptor(globalThis, key);
+    Object.defineProperty(globalThis, key, {configurable: true, writable: true, value});
+    t.after(() => {
+      if (original) Object.defineProperty(globalThis, key, original);
+      else delete globalThis[key];
+    });
+  }
+  const bytes = new Uint8Array([1, 3, 5, 7]).buffer;
+  for (const family of ['RHWP Supply Probe', '공급글꼴검사']) {
+    const face = await registerCanvasFont(family, bytes, 400, 'normal');
+    assert.equal(face.family, family, 'Canvas 요청 이름에 따옴표나 이스케이프를 추가하지 않는다');
+    assert.equal(face.bytes, bytes);
+    assert.deepEqual(face.descriptors, {weight: '400', style: 'normal'});
+    assert.equal(supplied.at(-1), face);
+  }
+});
 
 async function withServer(t, fonts = new Map()) {
   const server = createSweepServer(new Map([

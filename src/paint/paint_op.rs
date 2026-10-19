@@ -30,6 +30,8 @@ impl TextDecorationKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ResolvedImageKind {
     FormatConverted,
+    /// 출력 크기·장치에 따라 바이트가 달라지는 변환. 원본 bin 키와 구분한다.
+    OutputDevice,
     BakedWatermark,
 }
 
@@ -257,9 +259,10 @@ impl PaintOp {
 
     pub fn image(
         bbox: BoundingBox,
-        image: ImageNode,
+        mut image: ImageNode,
         resolved: Option<ResolvedImagePayload>,
     ) -> Self {
+        image.original_size_hu = crate::renderer::image_resolver::image_crop_reference(&image);
         Self::Image {
             bbox,
             image: Box::new(image),
@@ -1992,6 +1995,7 @@ pub struct GlyphRunDiagnostics {
 pub struct PaintTextStyle {
     pub font_family: String,
     pub font_size: f64,
+    pub font_position: Option<i8>,
     pub color: ColorRef,
     pub bold: bool,
     pub italic: bool,
@@ -2021,6 +2025,7 @@ impl From<&TextStyle> for PaintTextStyle {
         Self {
             font_family: style.font_family.clone(),
             font_size: style.font_size,
+            font_position: style.font_position,
             color: style.color,
             bold: style.bold,
             italic: style.italic,
@@ -2075,6 +2080,9 @@ impl PaintTextStyle {
                 .all(|offset| offset.is_finite() && offset.abs() <= f32::MAX as f64)
             && !self.superscript
             && !self.subscript
+            // 단순 glyph replay의 위치는 줄 기준선이다. 별도 글자 위치가 있는
+            // run은 그 속성을 소비하는 positioned text 경로를 사용한다.
+            && self.font_position.unwrap_or_default() == 0
             && self.emphasis_dot == 0
             // [#4155] 종전엔 흰색만 "음영 없음"으로 봐서, 미지정 잔재 0 을 가진 텍스트
             // (HWP3 변환본 전건)가 늘 fill-only 경로에서 빠졌다. 판정 정본은 model::color.

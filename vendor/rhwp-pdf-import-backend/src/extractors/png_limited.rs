@@ -19,6 +19,7 @@ pub(super) fn encode(
     height: u32,
     channels: usize,
     budget: &ImportBudget,
+    interpolate: Option<bool>,
 ) -> Result<()> {
     budget.check()?;
     if width == 0 || height == 0 || ![1, 3, 4].contains(&channels) {
@@ -44,6 +45,11 @@ pub(super) fn encode(
         _ => unreachable!("validated above"),
     };
     chunk(writer, b"IHDR", &ihdr, &[])?;
+    if let Some(interpolate) = interpolate {
+        // Private, ancillary, unsafe-to-copy PNG chunk. Version 1 declares
+        // source sampling; pixel-changing foreign editors must discard it.
+        chunk(writer, b"rhWP", &[1, u8::from(interpolate)], &[])?;
+    }
     for row in pixels.chunks_exact(row_bytes) {
         // PNG filter None; the source samples remain borrowed.
         feed(&mut compressor, &[0], false, writer)?;

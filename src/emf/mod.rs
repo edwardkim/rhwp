@@ -19,6 +19,7 @@
 )]
 
 pub mod converter;
+pub(crate) mod emfplus;
 pub mod parser;
 
 #[cfg(test)]
@@ -81,8 +82,18 @@ pub fn parse_emf(bytes: &[u8]) -> Result<Vec<Record>, Error> {
 ///
 /// 반환값은 viewBox/xmlns가 없는 **fragment**로, rhwp 렌더 트리의 RawSvg로 삽입된다.
 pub fn convert_to_svg(bytes: &[u8], render_rect: (f32, f32, f32, f32)) -> Result<String, Error> {
+    convert_to_svg_with_device(bytes, render_rect, None)
+}
+
+/// 출력 장치의 픽셀 크기를 명시해 재생한다. 참조 장치와 출력 장치를 구분한다.
+pub fn convert_to_svg_with_device(
+    bytes: &[u8],
+    render_rect: (f32, f32, f32, f32),
+    device_pixel_width: Option<f64>,
+) -> Result<String, Error> {
     let records = parse_emf(bytes)?;
-    let mut player = converter::Player::new(render_rect);
+    let mut player =
+        converter::Player::new(render_rect).with_device_pixel_width(device_pixel_width);
     player.play(&records)?;
     Ok(player.svg.into_string())
 }
@@ -100,6 +111,60 @@ pub fn convert_to_standalone_svg(bytes: &[u8]) -> Option<Vec<u8>> {
         Record::Header(header) => Some(header),
         _ => None,
     })?;
+    let (w, h) = header_size(header)?;
+    let mut player = converter::Player::new((0.0, 0.0, w as f32, h as f32));
+    player.play(&records).ok()?;
+    let fragment = player.svg.into_string();
+    Some(
+        format!(
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{w:.2}\" height=\"{h:.2}\" viewBox=\"0 0 {w:.2} {h:.2}\">{fragment}</svg>"
+        )
+        .into_bytes(),
+    )
+}
+
+/// 그림 배치 크기로 만든 SVG. 장치 펜은 외부 그림 배율을 적용하기 전에 확정한다.
+pub fn convert_to_sized_svg(
+    bytes: &[u8],
+    width: f64,
+    height: f64,
+    device_pixel_width: f64,
+) -> Option<Vec<u8>> {
+    if ![width, height, device_pixel_width]
+        .iter()
+        .all(|v| v.is_finite() && *v > 0.0)
+        || width > f32::MAX as f64
+        || height > f32::MAX as f64
+    {
+        return None;
+    }
+    let fragment = convert_to_svg_with_device(
+        bytes,
+        (0.0, 0.0, width as f32, height as f32),
+        Some(device_pixel_width),
+    )
+    .ok()?;
+    Some(format!("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width:.9}\" height=\"{height:.9}\" viewBox=\"0 0 {width:.9} {height:.9}\">{fragment}</svg>").into_bytes())
+}
+
+/// 배치 후에도 profile에 맞는 장치로 다시 재생할 수 있는 원본이다.
+#[derive(Debug, Clone)]
+pub struct EmfReplaySource {
+    pub data: std::sync::Arc<[u8]>,
+    pub render_rect: (f32, f32, f32, f32),
+}
+
+/// 단독 SVG의 고유 크기. 채움·자르기 재생도 같은 크기를 소비한다.
+pub(crate) fn standalone_size(bytes: &[u8]) -> Option<(f64, f64)> {
+    let records = parse_emf(bytes).ok()?;
+    let header = records.iter().find_map(|r| match r {
+        Record::Header(h) => Some(h),
+        _ => None,
+    })?;
+    header_size(header)
+}
+
+fn header_size(header: &Header) -> Option<(f64, f64)> {
     let frame_pt = (
         f64::from(header.frame.width()) / 100.0 * 72.0 / 25.4,
         f64::from(header.frame.height()) / 100.0 * 72.0 / 25.4,
@@ -113,16 +178,5 @@ pub fn convert_to_standalone_svg(bytes: &[u8]) -> Option<Vec<u8>> {
     } else {
         bounds_pt
     };
-    if !(w > 0.0 && h > 0.0) {
-        return None;
-    }
-    let mut player = converter::Player::new((0.0, 0.0, w as f32, h as f32));
-    player.play(&records).ok()?;
-    let fragment = player.svg.into_string();
-    Some(
-        format!(
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{w:.2}\" height=\"{h:.2}\" viewBox=\"0 0 {w:.2} {h:.2}\">{fragment}</svg>"
-        )
-        .into_bytes(),
-    )
+    (w.is_finite() && h.is_finite() && w > 0.0 && h > 0.0).then_some((w, h))
 }

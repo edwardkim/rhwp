@@ -22,6 +22,7 @@ pub(super) fn gradient_paint(
         || gradient.colors.len() > 4096
         || !replay_bounds.is_finite()
         || replay_bounds.is_empty()
+        || !opacity.is_finite()
     {
         return None;
     }
@@ -49,18 +50,25 @@ pub(super) fn gradient_paint(
         Interpolation::default(),
     );
     let shader = match gradient.gradient_type {
-        // Canvas와 같은 중심·반경을 소비한다. 원뿔/사각의 현행 근사는 유지한다.
-        2..=4 => shaders::radial_gradient(
-            (
-                (
-                    (bounds.x + bounds.width * f64::from(gradient.center_x) / 100.0) as f32,
-                    (bounds.y + bounds.height * f64::from(gradient.center_y) / 100.0) as f32,
-                ),
-                bounds.width.max(bounds.height) as f32 / 2.0,
-            ),
-            &specification,
-            None,
-        ),
+        2..=4 => {
+            // 원형은 SVG·Canvas와 같은 물리 원을 소비한다. 원뿔/사각의
+            // 기존 원형 근사는 이번에 확인한 원형 계약으로 바꾸지 않는다.
+            let (cx, cy, radius) = crate::renderer::gradient_geometry::radial_circle(
+                (bounds.x, bounds.y, bounds.width, bounds.height),
+                gradient.center_x,
+                gradient.center_y,
+            )?;
+            let radius = if gradient.gradient_type == 2 {
+                radius
+            } else {
+                bounds.width.max(bounds.height) / 2.0
+            };
+            shaders::radial_gradient(
+                ((cx as f32, cy as f32), radius as f32),
+                &specification,
+                None,
+            )
+        }
         _ => {
             let (x0, y0, x1, y1) = crate::renderer::linear_gradient_axis(
                 gradient.angle,

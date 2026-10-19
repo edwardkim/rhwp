@@ -23,6 +23,7 @@ import {
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
 import { imageCropSelectionIsEmpty, imageCropSourceRect } from './image-crop-scale.ts';
+import { magnificationFiltering } from './image-sampling.ts';
 import {
   drawPageMarginGuides,
   type PageMarginGuideEdges,
@@ -235,7 +236,9 @@ export class PageRenderer {
     this.surfaceLayerCountCache.set(pageIdx, this.canvasSurfaceLayerCount(layers));
     const preferStaticFlow = this.shouldSplitStaticFlow(layers);
     let reuseStaticFlow = this.renderFlowCanvas(pageIdx, canvas, renderScale, preferStaticFlow);
-    const flowImages = reuseStaticFlow && layers.flowImageCount > 0
+    // 좁은 DOM 질의는 Screen payload만 제공한다. 다른 프로필은 같은
+    // 프로필의 static canvas에서 색 전달·표본 정책까지 함께 소비한다.
+    const flowImages = this.renderProfile === 'screen' && reuseStaticFlow && layers.flowImageCount > 0
       ? this.getFlowImagePaintOps(pageIdx)
       : [];
     const usesDomFlowImages =
@@ -1608,6 +1611,15 @@ function applyFlowImageCrop(
     image.crop ?? undefined,
     image.originalSizeHu,
   );
+  if (image.imageInterpolation !== undefined) {
+    const pixelRatio = globalThis.devicePixelRatio || 1;
+    const filtering = magnificationFiltering(
+      image.imageInterpolation,
+      source?.width ?? element.naturalWidth, source?.height ?? element.naturalHeight,
+      frameWidth * displayScale * pixelRatio, frameHeight * displayScale * pixelRatio,
+    );
+    element.style.imageRendering = filtering === 'nearest' ? 'pixelated' : 'auto';
+  }
   if (!source) {
     element.style.left = '0';
     element.style.top = '0';
