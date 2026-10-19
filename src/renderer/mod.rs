@@ -64,6 +64,7 @@ pub(crate) mod partial_replay;
 pub mod pdf;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf_raster_fidelity;
+mod physical_units;
 pub mod pua_oldhangul;
 pub mod raster_pixels;
 pub(crate) mod reflow_float_host_line;
@@ -2370,7 +2371,7 @@ pub(crate) fn partial_tac_header_tail_px(
 /// 픽셀을 HWPUNIT으로 변환
 #[inline]
 pub fn px_to_hwpunit(px: f64, dpi: f64) -> i32 {
-    (px * HWPUNIT_PER_INCH / dpi) as i32
+    physical_units::px_to_hwpunit(px, dpi)
 }
 
 /// TAC(글자처럼 취급) 표 한 칸의 유효 높이 — 저장된 line_seg 높이와 실측 표 높이 중
