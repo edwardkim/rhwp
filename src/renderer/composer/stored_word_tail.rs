@@ -14,13 +14,21 @@ pub(crate) fn projects_current_marker_geometry(
     styles: &ResolvedStyleSet,
 ) -> bool {
     let extent = box_.effective();
+    // 셀의 문단 여백 경로는 실제 폭을 유지하고, 저장 줄의 오른쪽 끝은
+    // content_width_px와 같은 4 HWPUNIT 격자에 놓인다. 격자에서 접힌
+    // 잔여를 다른 상자로 오인하지 않으며 실제 채움 폭은 바꾸지 않는다.
+    let stored_right = extent.end
+        - extent
+            .end
+            .rem_euclid(crate::renderer::layout_frame::COLUMN_WIDTH_QUANTUM_HWP);
     box_.is_usable()
         && !para.line_segs.is_empty()
         && para.line_segs.iter().all(|line| {
             line.is_first_segment()
                 && line.is_last_segment()
                 && line.column_start == extent.start
-                && line.segment_width == extent.end - extent.start
+                && (line.segment_width == extent.end - extent.start
+                    || line.segment_width == stored_right - extent.start)
         })
         && crate::renderer::layout::list_marker_geometry(para, styles)
             .is_some_and(|marker| marker.marker_visible)
