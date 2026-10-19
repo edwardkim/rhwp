@@ -3592,8 +3592,60 @@ exit0이다. prepare 후 실제 target022/027/002를 다시 계산했다. fmt/di
 
 C430 전체20FAIL 중 header 한 건을 집중 경로에서 복구했지만 전체 nextest를 다시 실행한
 결과로19FAIL이라고 보고하지 않는다. 다른19건과 복합 수식·전쪽/실제 제품 소비 검증은 남아 있다.
-BCP도 fixed4a07의 Print3쪽 소유1줄과 현재2줄을 원본으로 재현했다. source pi83의
-본문 run폭312.0→325.9CSSpx, Latin run230.8→239.2CSSpx로 늘며 `수립`의 마지막 글자가
-다음 줄로 밀리는 차이를 `repair50-bcp-analysis/`에 분리했다. Header 보정의 영향은 아니며
-글꼴/자간 생산과 실제 줄 소속 소비를 추적해 보정한다. 현재 PR 준비 완료가 아니고,
+BCP의 fixed4a07 RenderTree1줄과 현재2줄 차이를 원본으로 재현했다. 당시 Print도1줄이라고
+판단한 내용은 **C432의 독립 PDF 재판독으로 정정한다**. 실제 Print는2줄이며 현재와 같다.
+source pi83의 run폭 증가는 글리프 폭 변화가 아니라 첫 줄 공백 분배2.77926CSSpx다.
+`repair50-bcp-analysis/`의 원 로그와 독립 Print 소유 대조를 보존한다. 현재 PR 준비 완료가 아니고,
 PR 생성·원격 push·게시·merge는 준비 결과 보고와 새 사용자 승인 후 진행한다.
+
+
+## C432 BCP 한 줄 기대값의 독립 Print 재검토와 중요한 줄 경계 보호
+
+C431의 BCP 판단을 정정한다. 정확한 source/PDF SHA를 재확인한 독립 한컴2020 Print3쪽은
+`공사 정보처리… Planning) 수`와 다음 줄 `립`으로 구성된다. PDF 첫 기준선677.40pt,
+둘째698.16pt·둘째 원점107.52pt다. 현재 출력의 두 줄과 맞으며, fixed4a07의 한 줄은
+`is_sample16_2022_bcp_orphan_tail_lineseg`라는 해당 문구 전용 예외에서 왔다. branch0de2가
+그 예외를 제거한 뒤 기존 테스트의 한 줄 기대값이 남아 잘못 실패했다. 본문 run312→325.896,
+Latin230.827→239.164CSSpx 차이도 글리프 자연 폭 변화가 아니라 첫 줄 공백 분배2.77926px다.
+독립 Print의 원점도 이 분배를 확인하므로 다시 한 줄로 합치는 구현을 넣지 않았다.
+원 PR8064/기존 stage496의 관계형 테스트 추가 근거를 추적했고, stage496에도 재판독 정정을
+연결했다. 원문·PDF·잘못된 기대값의 실제 실패 로그를 보존했다.
+
+검사 변경 전에 현재 runtime d34926(frozen47/fresh49)의 같은 원본 전64쪽을 현재 canonical
+Native PNG/fresh WASM PNG로 산출했다.192DPI/compat2022, raw2px 문턱90%를 그대로 썼다.
+Native 최저94.14342%, WASM94.60213%,64/64쪽 일치·미달0쪽이다. 해당3쪽은99.48430/
+99.81839%이며 Native review와 양쪽 overlay의 `수|립`, 내용·원점·뒤 문단을 직접 판독했다.
+원본 SHAfec3671c…/PDF6737b57a…의 전체값은 asset README에 둔다. 각64쪽 manifest의
+실제PNG/PDF hash192쌍과 runtime1840 source ledger도 검증했다. 별도 pdftoppm audit는
+canonical 수치와 섞지 않았다. source/runtime를 바꾸지 않아 Native47/fresh49를 재빌드하지 않았다.
+
+기존 BCP 함수 안의 원문 전체 구절 선택을 유지하고 독립 Print의 두 줄 소유, 첫 줄 `수`까지·
+둘째 `립`, 전체 내용 순서/누락/중복, 두 줄 비겹침과 **마지막 줄 뒤** 후속 원문 문단 보존을
+검사한다. 완료3쪽의 양쪽98이상·직접 판독 조건을 확인한 뒤 PDF의 text origin 기준선
+903.20/930.88 CSSpx와 둘째 글줄 원점143.36 CSSpx를 ±2px로 추가 보호한다. PDF 잉크 상단과
+글줄 상단을 섞지 않는다. 기존7쪽 표의 소유·세 줄·원본 내용·앞 문단/내부 겹침 검사는 유지한다.
+
+현재 코드의 이전 검사 실행은1PASS/1FAIL(실제2 vs 기대1), 교정 후 prototype은2PASS다.
+같은 새 검사를 fixed4a07에서 실행하면1PASS/1FAIL(실제1 vs 독립2)로 옛 예외를 검출한다.
+정식 NativeSkia suite018은 **2PASS/0FAIL**, filter285, test0.164초·compile6.89초·전체9.550초,
+exit0이다. prepare 후 실제 배정을 다시 계산했다. 초기 fmt check는 긴 assertion 줄바꿈만
+지적했고 서식 적용·prepare 뒤 정식 실행했다. prototype의 hash는 서식 적용 전이며 정식 로그는
+현재 파일을 사용한다. `repair52-sample16-2022-whole/`에 모든 원 로그/관측을 보존한다.
+
+고정base Native도 동일 입력/Print·글꼴 경로·DPI의 전64쪽을 실행했다. 최저59.36766%,
+미달50쪽이며3쪽72.37067→현재99.48430%다. 다만 Native63/64쪽은 base99.80954/99.67493%
+대비 현재97.65514/98.22800%로 각각 **2.15440/1.44693%p 하락**했다. WASM 현재63/64쪽은
+99.80727/99.67064%이고 RenderTree의 위치 차이는 대부분0.1~0.3CSSpx여서 Native paint의
+선택/실제 자원 소비도 추적한다. Native의 두 하락을 평균 향상이나 전체90통과로 상쇄하지 않는다.
+
+처음 driver가 계획한 base WASM은 현재 문서의 자동 prepared-program 환경이 non-null임을
+확인한 guard에서 중단했다. 이전 base package의 구 API를 같은 실제 글꼴 선택으로 추정하지
+않았다. 이 네 번째 비교는 미검증이고 원 failed state/log를 보존한다. 이미 종료·hash 검증된
+base Native/current Native/current WASM 세 실행만 qualification-result에 유효 범위로 남겼다.
+새 프로세스를 중복 시작하거나 guard를 우회하지 않았다. #8064 Native-only 자동 래칫과
+기존 Native/fresh WASM 시각 수용의 범위를 구분하며 base WASM 수용을 주장하지 않는다.
+
+원본 TSV6개(canonical3/audit3), Native64쪽 비교 TSV와3쪽 대표 review/overlay6장은
+`mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/sample16-2022-bcp-ownership/`에
+보존했다. C431·C432의 집중 통과는 전체 nextest 재실행이 아니다. Native63/64 하락·다른
+실패·전쪽/실제 소비 경로 검증이 남아 있으며, PR은 준비 결과 보고 후 새 승인을 받아 진행한다.

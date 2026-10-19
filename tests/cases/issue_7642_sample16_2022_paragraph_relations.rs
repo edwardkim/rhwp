@@ -1,6 +1,7 @@
-//! 2022 저장본의 전 64쪽 Native/fresh WASM 최저 91.72947%와 Print 쪽수를 확인했다.
+//! 2022 저장본의 전64쪽 Native/fresh WASM 최저94.14342/94.60213%와 Print 쪽수를 확인했다.
 //! 고정 화면 위치 대신 원본 문단·표 소유, 꼬리 내용과 포함·겹침을 검사한다.
 //! 표 경계 검사는 source5ac의 실제 출력에서 앞 문단과의 겹침을 검출한다.
+//! BCP 3쪽은 양쪽 raw99.48430/99.81839%와 확대 판독 후 독립 기준선도 ±2px로 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -61,7 +62,7 @@ fn owned_lines<'a>(lines: &[&'a RenderNode], owner: (usize, usize)) -> Vec<&'a R
 }
 
 #[test]
-fn sample16_2022_bcp_tail_keeps_one_owned_line_and_source_successor() {
+fn sample16_2022_bcp_tail_keeps_print_line_ownership_and_source_successor() {
     let core = load();
     let sources: Vec<_> = core
         .document()
@@ -85,15 +86,42 @@ fn sample16_2022_bcp_tail_keeps_one_owned_line_and_source_successor() {
     let mut lines = Vec::new();
     body_lines(&page.root, false, &mut lines);
     let bcp = owned_lines(&lines, (section, paragraph));
-    assert_eq!(bcp.len(), 1, "꼬리 글자를 별도 고아 줄로 분리하지 않는다");
+    // 독립 한컴2020 Print의 실제 경계는 `수|립`이다. 이전 한 줄 기대값은
+    // 이 문구만 합치던 예외의 출력을 옮긴 것이므로 원본 저장 줄과 Print를 보호한다.
+    // PDF SHA6737b57a, 원본 SHAfec3671c; stage8 C432의 전쪽 TSV·확대 PNG 참조.
+    assert_eq!(bcp.len(), 2, "독립 Print의 같은 원본 문단 두 줄 소유");
+    let actual_text: String = bcp.iter().map(|line| text(line)).collect();
     assert_eq!(
-        normalized(&text(bcp[0])),
+        normalized(&actual_text),
         normalized(&source.text),
         "원본 내용 순서·누락·중복"
     );
+    assert_eq!(
+        normalized(&text(bcp[0])),
+        normalized(&source.text)
+            .strip_suffix('립')
+            .expect("원본 꼬리"),
+        "Print 첫 줄은 `수`까지 보존한다"
+    );
+    assert_eq!(normalized(&text(bcp[1])), "립", "Print 둘째 줄의 꼬리 소유");
     assert!(
-        normalized(&text(bcp[0])).ends_with("수립"),
-        "끝 글자의 소유 보존"
+        bcp[0].bbox.y + bcp[0].bbox.height <= bcp[1].bbox.y,
+        "같은 문단 두 줄의 점유가 겹치지 않는다"
+    );
+    // PDF text origin(기준선)의 pt / 0.75를 CSS px로 환산한다.
+    // 잉크 bbox 상단을 글줄 상단과 비교하지 않는다. 192DPI raster는 CSS의 2배다.
+    for (line, baseline_css_px) in bcp.iter().zip([903.20, 930.88]) {
+        let RenderNodeType::TextLine(owner) = &line.node_type else {
+            unreachable!()
+        };
+        assert!(
+            (line.bbox.y + owner.baseline - baseline_css_px).abs() <= 2.0,
+            "독립 Print BCP 기준선 ±2 CSS px"
+        );
+    }
+    assert!(
+        (bcp[1].bbox.x - 143.36).abs() <= 2.0,
+        "독립 Print의 이어지는 글줄 원점 ±2 CSS px"
     );
     let successor = owned_lines(&lines, (section, paragraph + 1));
     assert!(
@@ -101,7 +129,7 @@ fn sample16_2022_bcp_tail_keeps_one_owned_line_and_source_successor() {
         "다음 원본 문단도 같은 Print 쪽에 보존"
     );
     assert!(
-        bcp[0].bbox.y + bcp[0].bbox.height <= successor[0].bbox.y,
+        bcp[1].bbox.y + bcp[1].bbox.height <= successor[0].bbox.y,
         "본문 꼬리와 다음 문단이 겹치지 않는다"
     );
     let source_next = &core.document().sections[section].paragraphs[paragraph + 1];
