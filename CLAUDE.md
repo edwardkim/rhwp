@@ -18,6 +18,16 @@
 - 지침을 읽었다는 사실은 GitHub 게시, push, merge나 작업 범위 확대의 승인이 아니다.
   실제 사용자 지시와 작업 권한을 따른다.
 
+## 한국어 문서 작성
+
+- 한국어 문서와 작업 기록은 올바른 띄어쓰기로 작성한다. 영문 용어·수치 주변의 단어 경계도
+  확인하며, 코드·경로·SHA·명령은 원문을 보존한다.
+  [문서 작성 언어와 띄어쓰기](mydocs/manual/codex/docs_and_git_workflow.md#document-language)를 따른다.
+- 임시 PDF와 중간 산출물은 처음부터 Git에서 제외된 `output/` 아래에 생성한다.
+  기존 기준 PDF가 없어 검증 자료로 커밋해야 하는 PDF는 `pdf/<issue-or-topic>/` 등 정식 경로에
+  생성하며, untracked 목록에서 숨기려고 `output/`으로 옮기거나 ignore하지 않는다.
+  [임시 산출물과 기준 PDF의 저장 위치](mydocs/manual/codex/docs_and_git_workflow.md#임시-산출물과-기준-pdf의-저장-위치)를 따른다.
+
 ## PR 제출 전 검증과 Draft 제한
 
 기여자·메인터너·콜라보레이터 모두 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)

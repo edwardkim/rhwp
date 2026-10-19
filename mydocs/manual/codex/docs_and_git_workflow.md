@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-10-18
+last_verified: 2026-10-19
 ---
 
 # Documentation And Git Workflow
@@ -15,6 +15,26 @@ last_verified: 2026-10-18
 ## Document Language
 
 모든 프로젝트 문서는 한국어로 작성한다.
+
+- 한국어 문장은 맞춤법과 띄어쓰기를 지킨다. 작업 계획·진행 기록·검증 결과도 같은 기준을
+  적용하며, 작성 속도를 이유로 여러 단어를 붙여 쓰지 않는다.
+- 한국어와 영문 용어·수치가 이어지는 문장은 단어 경계와 조사를 구분해 읽기 쉽게 쓴다.
+  예: `같은 글꼴의 Native 전후 대조`, `기존 39개 검사`, `37 PASS / 2 FAIL`.
+- 띄어쓰기를 정리할 때 코드 블록·인라인 코드·식별자·경로·URL·SHA·명령·수치는 원문을
+  보존한다. 공백 교정에 기술 내용이나 검증 판정 변경을 섞지 않고, 변경 후 원문과 대조한다.
+
+## 임시 산출물과 기준 PDF의 저장 위치
+
+- 작업용 임시 PDF·PNG·TSV·JSON·로그 등 중간 산출물은 처음부터 Git에서 제외된
+  `output/` 아래에 생성한다. PR 검토 자료는 `output/pr-review/<id>/`를 사용한다.
+  저장소 루트나 정식 자료 경로에 임시 파일을 만들어 Git의 untracked 목록에 쌓지 않는다.
+- 기존 기준 PDF가 없어 검증 자료로 **커밋해야 하는 PDF**는 임시 산출물로 취급하지 않는다.
+  처음부터 `pdf/<issue-or-topic>/` 등 해당 작업의 정식 자료 경로에 생성하고,
+  대응 원본·출처·SHA와 함께 제출한다. 이 PDF를 `output/`에만 두고 검증을 완료 처리하지 않는다.
+- 이미 정식 자료 경로에 있는 파일은 임시 산출물인지 필수 제출 자료인지 확인한 뒤 처리한다.
+  필수 기준 PDF를 untracked 목록에서 숨기기 위해 `output/`으로 옮기거나 ignore하지 않는다.
+  50 MiB 이상 PDF는 기존 [대용량 PDF 로컬 보관](../pr_review/intake_and_review.md#28-검증-입력-커밋-확인)
+  예외 계약을 따른다.
 
 ## Working Document Naming
 
