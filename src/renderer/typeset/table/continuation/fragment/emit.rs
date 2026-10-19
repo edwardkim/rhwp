@@ -726,35 +726,22 @@ impl TypesetEngine {
             && start_cut.is_empty()
             && end_row == 1
             && row_count == 1
-            && split_end_cut.len() == 1
-            && !st.profile.session_edited()
-            && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
-            && !self.render_normalization.table_text_reflowed(table)
             && table_footnotes.is_empty()
-            && two_frame_successor_origin.is_some()
             && input
                 .source
                 .paragraphs_all
                 .get(para_idx + 1)
                 .is_some_and(|next| {
-                    crate::renderer::float_placement::stored_single_cell_closing_frame_height(
-                        input.source.paragraph,
-                        next,
-                        table,
-                        self.dpi,
-                    )
-                    .is_some()
-                })
-            && table.cells.first().is_some_and(|cell| {
-                layout_engine.cell_unit_opens_stored_page_frame(
-                    cell,
-                    table,
-                    styles,
-                    split_end_cut[0],
-                )
-            })
-            && hwpunit_to_px(table.common.height as i32, self.dpi) >= partial_height
-            && hwpunit_to_px(table.common.height as i32, self.dpi) <= avail_for_rows;
+                    layout_engine
+                        .stored_single_cell_two_frame_opening(
+                            input.source.paragraph,
+                            next,
+                            table,
+                            &split_end_cut,
+                            styles,
+                        )
+                        .is_some_and(|height| height >= partial_height && height <= avail_for_rows)
+                });
         let declared_opening_frame = (single_cell_fragment_shape
             && two_frame_successor_origin.is_some()
             && !is_continuation
