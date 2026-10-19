@@ -90,6 +90,7 @@ impl LayoutEngine {
         (minimum > self.row_complete_cut_content_height(table, row, styles)).then_some(cells)
     }
 
+    /// 미완료 컷의 원본 프레임과 전내용을 소비한 뒤의 독립 최소를 같은 소비자에게 전달한다.
     fn ordinary_row_cells_for_cut<'a>(
         &self,
         table: &'a Table,
