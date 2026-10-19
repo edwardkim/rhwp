@@ -1015,7 +1015,7 @@ impl LayoutEngine {
         content_x: f64,
         content_width: f64,
         y_start: f64,
-        auto_counter: &mut AutoNumberCounter,
+        _auto_counter: &mut AutoNumberCounter,
         bin_data_content: &[BinDataContent],
         cell_ctx: Option<super::CellContext>,
         caption_owner: Option<CaptionOwner>,
@@ -1039,8 +1039,8 @@ impl LayoutEngine {
             let mut composed =
                 crate::renderer::composer::compose_paragraph_in_context(para, styles);
 
-            // AutoNumber 컨트롤 처리: 조합된 텍스트에 번호 삽입
-            self.apply_auto_numbers_to_composed(&mut composed, para, auto_counter);
+            // 자동 번호는 자리표 글자의 표시 문자열로만 바꿔 글자 위치 대응을 지킨다.
+            crate::renderer::composer::project_caption_auto_numbers(&mut composed, para);
 
             // cell_ctx에 cell_para_index 갱신
             let ctx = cell_ctx.as_ref().map(|c| {

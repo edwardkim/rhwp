@@ -1,4 +1,4 @@
-//! note 본문 밖의 자동 번호를 해당 control의 원문 위치에 표시한다.
+//! note 본문 밖·캡션의 자동 번호를 해당 control의 원문 위치에 표시한다.
 
 use super::{insert_control_text_run, ComposedParagraph, ComposedTextRun, SpaceMetric};
 use crate::model::{
@@ -67,16 +67,28 @@ fn project_placeholder(
 }
 
 pub(super) fn project(composed: &mut ComposedParagraph, para: &Paragraph) {
+    project_where(composed, para, |kind| {
+        matches!(kind, AutoNumberType::Footnote | AutoNumberType::Endnote)
+    });
+}
+
+/// 캡션은 번호 종류와 무관하게 모든 자동 번호를 자기 자리표에 투영한다.
+pub(crate) fn project_caption(composed: &mut ComposedParagraph, para: &Paragraph) {
+    project_where(composed, para, |_| true);
+}
+
+fn project_where(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    owns: impl Fn(AutoNumberType) -> bool,
+) {
     let positions = para.control_text_positions();
     let utf16_positions = para.control_utf16_positions();
     for (index, control) in para.controls.iter().enumerate() {
         let Control::AutoNumber(number) = control else {
             continue;
         };
-        if !matches!(
-            number.number_type,
-            AutoNumberType::Footnote | AutoNumberType::Endnote
-        ) {
+        if !owns(number.number_type) {
             continue;
         }
         let Some(&position) = positions.get(index) else {

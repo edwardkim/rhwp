@@ -977,7 +977,7 @@ impl LayoutEngine {
                         Control::Table(t) => {
                             // 캡션은 존재 자체가 아니라 auto counter 소비 요소
                             // (개요/번호 헤드·AutoNumber)를 가질 때만 차단한다 —
-                            // layout_caption 은 apply_auto_numbers_to_composed 로만
+                            // layout_caption 은 자동 번호 투영으로만
                             // counter 를 만진다.
                             if let Some(cap) = t.caption.as_ref() {
                                 if paras_block(&cap.paragraphs, styles) {
