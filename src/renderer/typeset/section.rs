@@ -445,6 +445,13 @@ impl TypesetEngine {
             st.push_new_page();
         }
         st.ensure_page();
+        // 구역 끝의 글앞/글뒤 표가 쪽 아래로 넘친 잔여 행은 새 쪽이 열릴 때만 이어
+        // 그려지므로, 뒤 문단이 없어도 쪽을 열어 대기열을 비운다. 한/글은 잔여 행을
+        // 다음 쪽 위에 이어 그린다.
+        if st.has_pending_overlay_continuations() {
+            st.push_new_page();
+            st.flush_column_always();
+        }
 
         // [#1955] 글뒤로 표 후행 빈 문단 보류 흡수 부착 — 페이지 확정 후
         // anchor 표의 첫 fragment 가 있는 단에 소급 기록 (한글: 글뒤로 표는

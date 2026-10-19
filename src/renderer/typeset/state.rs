@@ -384,6 +384,10 @@ impl TypesetState {
         self.data.overlay_shape_shortcut_para = Some(para_idx);
     }
 
+    pub(super) fn has_pending_overlay_continuations(&self) -> bool {
+        !self.data.pending_overlay_continuations.is_empty()
+    }
+
     pub(super) fn table_control_page(&self) -> TableControlPage {
         TableControlPage {
             has_items: !self.data.current_items.is_empty(),

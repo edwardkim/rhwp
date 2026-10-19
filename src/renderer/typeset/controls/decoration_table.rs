@@ -15,6 +15,71 @@ pub(in crate::renderer::typeset) struct OverlayContinuation {
     pub row_fragment: Option<OverlayRowFragment>,
 }
 
+/// 셀 내용(줄 높이 합, 마지막 줄 줄간격 제외) + 상하 패딩. 중첩 표 셀은 내용
+/// 하한을 줄 단위로 말할 수 없으므로 `None`.
+fn cell_content_floor_px(cell: &crate::renderer::height_measurer::MeasuredCell) -> Option<f64> {
+    (!cell.has_nested_table)
+        .then_some(cell.total_content_height + cell.padding_top + cell.padding_bottom)
+}
+
+/// 한/글은 글앞/글뒤 표의 행 합이 선언 높이(hp:sz)를 넘으면 행을 내용 아래로는
+/// 줄이지 않는 범위에서 줄여 선언 높이에 맞춘다. 한 행이 내용으로 커져도 여유 있는
+/// 다른 행이 줄어 표 높이는 선언과 같다. 내용 하한이 막으면 선언을 넘긴 채 남는다.
+/// 반환값은 이 규칙으로 표가 실제로 차지하는 높이(캡션 포함)다.
+fn declared_fit_height(table: &Table, ft: &FormattedTable, dpi: f64) -> f64 {
+    let row_count = ft.row_heights.len();
+    let rows_total = ft.cumulative_heights.last().copied().unwrap_or(0.0);
+    if row_count == 0
+        || table.row_count as usize != row_count
+        || table.common.height == 0
+        || ft.cells.is_empty()
+    {
+        return ft.effective_height;
+    }
+    let caption_part = (ft.effective_height - rows_total).max(0.0);
+    // 행별 여유: 단일 행 셀들의 내용 하한 중 최댓값까지. 말할 수 없는 셀이 있으면 0.
+    let mut row_floor = vec![0.0f64; row_count];
+    let mut row_known = vec![true; row_count];
+    for cell in &ft.cells {
+        let r = cell.row;
+        if cell.row_span != 1 || r >= row_count {
+            continue;
+        }
+        match cell_content_floor_px(cell) {
+            Some(floor) => row_floor[r] = row_floor[r].max(floor),
+            None => row_known[r] = false,
+        }
+    }
+    let row_slack: Vec<f64> = (0..row_count)
+        .map(|r| {
+            if row_known[r] && row_floor[r] > 0.0 {
+                (ft.row_heights[r] - row_floor[r]).max(0.0)
+            } else {
+                0.0
+            }
+        })
+        .collect();
+    let mut slack: f64 = row_slack.iter().sum();
+    // 병합 셀은 걸친 행 합이 자기 내용 하한 아래로 내려가지 않는다.
+    for cell in &ft.cells {
+        let start = cell.row;
+        let end = (start + cell.row_span).min(row_count);
+        if cell.row_span <= 1 || start >= end {
+            continue;
+        }
+        let block_height: f64 = ft.row_heights[start..end].iter().sum();
+        let block_slack: f64 = row_slack[start..end].iter().sum();
+        let allowed =
+            cell_content_floor_px(cell).map_or(0.0, |floor| (block_height - floor).max(0.0));
+        if block_slack > allowed {
+            slack -= block_slack - allowed;
+        }
+    }
+    let declared = hwpunit_to_px(table.common.height as i32, dpi);
+    let fitted_rows = (rows_total - slack.max(0.0)).max(declared).min(rows_total);
+    fitted_rows + caption_part
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(super) fn continuation(
     para: &Paragraph,
@@ -41,7 +106,7 @@ pub(super) fn continuation(
     }
     let anchor_y = current_height + hwpunit_to_px(table.common.vertical_offset as i32, dpi);
     let room = base_available_height() - anchor_y;
-    if room > 0.0 && ft.effective_height > room {
+    if room > 0.0 && ft.effective_height > room && declared_fit_height(table, ft, dpi) > room {
         // `cumulative_heights` 는 접두합(len = 행 수 + 1)이다 —
         // `cum[i]` 는 행 0..i 의 합이므로, 처음으로 room 을 넘는
         // 인덱스 i 는 "행 i-1 이 안 들어간다"는 뜻이다.

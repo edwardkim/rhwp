@@ -87,7 +87,23 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
         // 실측 인라인 표의 현재 프레임은 글자 없는 host와 여러 표도 구성한다.
         // 나머지 경로는 기존의 보이는 글자+단일 TAC 표 수용 계약을 유지한다.
         || ((!measured_inline_table_heights.is_empty() || single_tac_table_with_text)
-            && line_breaking::supports_tac_table_band_frame_controls(para));
+            && line_breaking::supports_tac_table_band_frame_controls(para))
+        // 저장 줄 없는 글앞/글뒤 표 host 는 45자 합성 줄바꿈이 실폭 한 줄을 두 줄로
+        // 쪼갤 수 있다(앞 공백으로 자리 잡은 제목이 둘째 줄 왼쪽으로 내려감). 표는 줄 폭에
+        // 중립이므로 실제 폭으로 채워 **한 줄에 들어갈 때만** 프레임이 받는다 — 여러 줄
+        // 문단의 줄바꿈은 건드리지 않는다.
+        || (crate::renderer::para_has_no_stored_line_segs(para)
+            && composed.lines.len() > 1
+            && para.text.chars().any(|c| !c.is_whitespace())
+            && line_breaking::supports_overlay_table_frame_controls(para)
+            && paragraph_box.is_usable()
+            && {
+                let mut probe = paragraph_box.frame(0);
+                let mut input = para.clone();
+                input.line_segs.clear();
+                line_breaking::layout_paragraph_in_frame(&input, &mut probe, styles, dpi)
+                    .is_some_and(|rows| rows.len() == 1)
+            });
     if !paragraph_box.is_usable() || !frame_admits_controls {
         return None;
     }

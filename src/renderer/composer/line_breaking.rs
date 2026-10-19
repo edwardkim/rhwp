@@ -3150,6 +3150,33 @@ pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
         .min()
 }
 
+/// 글앞/글뒤 비-TAC 표는 종이층에 놓여 줄 폭도 세로 밴드도 소비하지 않는다.
+/// 저장 줄 없는 문단에서 이 표만 가진 host 의 줄바꿈은 글자 폭이 정한다.
+/// 같은 종이층의 글앞/글뒤 그림·도형도 줄 폭에 중립이라 함께 둘 수 있다.
+pub(super) fn supports_overlay_table_frame_controls(para: &Paragraph) -> bool {
+    let is_overlay = |common: &crate::model::shape::CommonObjAttr| {
+        !common.treat_as_char
+            && matches!(
+                common.text_wrap,
+                crate::model::shape::TextWrap::InFrontOfText
+                    | crate::model::shape::TextWrap::BehindText
+            )
+    };
+    let mut overlay_tables = 0usize;
+    for control in &para.controls {
+        match control {
+            Control::Table(table) if is_overlay(&table.common) => {
+                overlay_tables += 1;
+            }
+            Control::Picture(pic) if is_overlay(&pic.common) => {}
+            Control::Shape(shape) if is_overlay(shape.common()) => {}
+            other if control_is_width_neutral_marker(other) => {}
+            _ => return false,
+        }
+    }
+    overlay_tables > 0
+}
+
 pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
     let remeasured = remeasured_equation_start_row(para).is_some();
     para.controls.iter().all(|control| {
@@ -3584,6 +3611,7 @@ fn layout_paragraph_in_frame_impl(
             supports_picture_band_frame_controls(para)
                 || supports_cached_body_frame_controls(para)
                 || (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
+                || (para.line_segs.is_empty() && supports_overlay_table_frame_controls(para))
         }
         FramePurpose::PictureAnchor => picture_anchor_projection::admits(para),
     };
@@ -4187,8 +4215,10 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     // [#7160] 글자처럼 취급 표 host 도 같은 축이다 — 저장 줄이 없으면 아래 NO_LS fill 이
     // 유일한 소유자이고, `inline_control_size_hwp` 가 그 표의 폭을 인라인 토큰으로 계상한다.
     // 거절하면 45자 합성 줄이 그대로 남아 표가 자기 줄을 못 얻는다(distribution_doc 3쪽).
-    let tac_table_host_fill =
-        para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para);
+    // 글앞/글뒤 표 host 도 저장 줄이 없으면 같다 — 호출자가 실폭 한 줄일 때만 보낸다.
+    let tac_table_host_fill = para.line_segs.is_empty()
+        && (supports_tac_table_band_frame_controls(para)
+            || supports_overlay_table_frame_controls(para));
     if !supports_picture_band_frame_controls(para) && !tac_table_host_fill {
         if !supports_cached_body_frame_controls(para) || (!stale && !para.line_segs.is_empty()) {
             return None;
