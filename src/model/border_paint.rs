@@ -15,6 +15,7 @@ pub const HWP_STREAM: &str = "/RhwpCellBorderPaint";
 pub const HWPX_ENTRY: &str = "META-INF/rhwp-cell-border-paint.bin";
 pub const MAX_BYTES: usize = 4 * 1024 * 1024;
 const MAGIC: &[u8; 8] = b"RBPO\0\0\0\x01";
+const MAGIC_OUTSIDE: &[u8; 8] = b"RBPO\0\0\0\x02";
 const HEADER_BYTES: usize = 12;
 const RECORD_BYTES: usize = 65;
 const MAX_RECORDS: usize = (MAX_BYTES - HEADER_BYTES) / RECORD_BYTES;
@@ -36,7 +37,7 @@ pub struct CellBorderPaint {
     pub source_id: u32,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Owner {
     table: u32,
@@ -48,6 +49,97 @@ struct Owner {
     height: u32,
     left: i16,
     top: i16,
+}
+
+/// A page drawing keeps its physical owner; this is only its editing link.
+/// The producer certifies closure of the original stroke, never a bbox guess.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OutsideCellBorderPaint {
+    owner: Owner,
+    paint: CellBorderPaint,
+    table_fingerprint: [u8; 32],
+    fingerprint: [u8; 32],
+}
+
+fn table_fingerprint(t: &super::table::Table) -> [u8; 32] {
+    let a = &t.common;
+    let mut h = Sha256::new();
+    for v in [
+        a.instance_id,
+        a.horizontal_offset,
+        a.vertical_offset,
+        a.width,
+        a.height,
+    ] {
+        h.update(v.to_le_bytes());
+    }
+    h.update(
+        serde_json::to_vec(&(
+            a.horz_rel_to,
+            a.vert_rel_to,
+            a.horz_align,
+            a.vert_align,
+            a.treat_as_char,
+            a.flow_with_text,
+            a.text_wrap,
+        ))
+        .unwrap(),
+    );
+    for c in &t.cells {
+        h.update(serde_json::to_vec(&Owner::new(a.instance_id, c)).unwrap());
+    }
+    h.finalize().into()
+}
+
+fn outside_fingerprint(r: &RectangleShape) -> Option<[u8; 32]> {
+    let a = &r.common;
+    if a.treat_as_char
+        || a.flow_with_text
+        || a.horz_rel_to != HorzRelTo::Paper
+        || a.vert_rel_to != VertRelTo::Paper
+        || a.text_wrap != TextWrap::InFrontOfText
+    {
+        return None;
+    }
+    geometry_digest(r)
+}
+
+pub(crate) fn bind_outside(
+    r: &mut RectangleShape,
+    t: &super::table::Table,
+    cell: usize,
+    paint: CellBorderPaint,
+) -> Option<()> {
+    let c = t.cells.get(cell)?;
+    r.common.outside_cell_border_paint = Some(OutsideCellBorderPaint {
+        owner: Owner::new(t.common.instance_id, c),
+        paint,
+        table_fingerprint: table_fingerprint(t),
+        fingerprint: outside_fingerprint(r)?,
+    });
+    Some(())
+}
+pub(crate) fn outside_owner(
+    r: &RectangleShape,
+    t: &super::table::Table,
+) -> Option<(usize, CellBorderPaint)> {
+    let tag = r.common.outside_cell_border_paint?;
+    if tag.owner.table != t.common.instance_id
+        || tag.table_fingerprint != table_fingerprint(t)
+        || outside_fingerprint(r) != Some(tag.fingerprint)
+    {
+        return None;
+    }
+    let cell = t
+        .cells
+        .iter()
+        .position(|c| Owner::new(t.common.instance_id, c) == tag.owner)?;
+    Some((cell, tag.paint))
+}
+pub(crate) fn outside_binding(r: &RectangleShape) -> Option<(u32, u16, u16, CellBorderPaint)> {
+    r.common
+        .outside_cell_border_paint
+        .map(|v| (v.owner.table, v.owner.row, v.owner.col, v.paint))
 }
 impl Owner {
     fn new(id: u32, c: &super::table::Cell) -> Self {
@@ -76,17 +168,13 @@ pub(crate) fn valid_side(
     fingerprint(r, Owner::new(table, cell), paint).map(|_| paint.side)
 }
 
-fn fingerprint(r: &RectangleShape, o: Owner, paint: CellBorderPaint) -> Option<[u8; 32]> {
+fn geometry_digest(r: &RectangleShape) -> Option<[u8; 32]> {
     let a = &r.common;
     let s = &r.drawing.shape_attr;
     let color = r.drawing.fill.solid.as_ref()?.background_color;
-    if o.table == 0
-        || a.instance_id == 0
-        || paint.source_id == 0
+    if a.instance_id == 0
         || a.width == 0
         || a.height == 0
-        || o.row_span == 0
-        || o.col_span == 0
         || r.drawing.text_box.is_some()
         || r.drawing.fill.fill_type != FillType::Solid
         || r.drawing.fill.alpha != 0
@@ -106,6 +194,29 @@ fn fingerprint(r: &RectangleShape, o: Owner, paint: CellBorderPaint) -> Option<[
         || s.render_c != 0.0
         || r.x_coords != [0, a.width as i32, a.width as i32, 0]
         || r.y_coords != [0, 0, a.height as i32, a.height as i32]
+    {
+        return None;
+    }
+    let mut h = Sha256::new();
+    for v in [
+        a.horizontal_offset,
+        a.vertical_offset,
+        a.width,
+        a.height,
+        color,
+    ] {
+        h.update(v.to_le_bytes());
+    }
+    h.update(a.z_order.to_le_bytes());
+    Some(h.finalize().into())
+}
+
+fn fingerprint(r: &RectangleShape, o: Owner, paint: CellBorderPaint) -> Option<[u8; 32]> {
+    let a = &r.common;
+    if o.table == 0
+        || paint.source_id == 0
+        || o.row_span == 0
+        || o.col_span == 0
         || a.treat_as_char
         || !a.flow_with_text
         || a.horz_rel_to != HorzRelTo::Column
@@ -133,18 +244,7 @@ fn fingerprint(r: &RectangleShape, o: Owner, paint: CellBorderPaint) -> Option<[
     {
         return None;
     }
-    let mut h = Sha256::new();
-    for v in [
-        a.horizontal_offset,
-        a.vertical_offset,
-        a.width,
-        a.height,
-        color,
-    ] {
-        h.update(v.to_le_bytes());
-    }
-    h.update(a.z_order.to_le_bytes());
-    Some(h.finalize().into())
+    geometry_digest(r)
 }
 
 // SectionDef controls mirror the canonical master list; do not visit both copies.
@@ -275,6 +375,7 @@ struct Record {
     owner: Owner,
     paint: CellBorderPaint,
     fingerprint: [u8; 32],
+    outside: Option<[u8; 32]>,
 }
 impl Record {
     fn write(&self, out: &mut Vec<u8>) {
@@ -290,14 +391,19 @@ impl Record {
         for v in [o.left, o.top] {
             out.extend(v.to_le_bytes());
         }
-        out.push(match self.paint.side {
-            CellSide::Left => 0,
-            CellSide::Right => 1,
-            CellSide::Top => 2,
-            CellSide::Bottom => 3,
-        });
+        out.push(
+            (match self.paint.side {
+                CellSide::Left => 0,
+                CellSide::Right => 1,
+                CellSide::Top => 2,
+                CellSide::Bottom => 3,
+            }) | if self.outside.is_some() { 0x80 } else { 0 },
+        );
         out.extend(self.paint.source_id.to_le_bytes());
         out.extend(self.fingerprint);
+        if let Some(frame) = self.outside {
+            out.extend(frame);
+        }
     }
     fn read(bytes: &[u8]) -> Option<Self> {
         fn take<const N: usize>(b: &[u8], i: &mut usize) -> Option<[u8; N]> {
@@ -318,7 +424,8 @@ impl Record {
             left: i16::from_le_bytes(take(bytes, &mut i)?),
             top: i16::from_le_bytes(take(bytes, &mut i)?),
         };
-        let side = match take::<1>(bytes, &mut i)?[0] {
+        let flag = take::<1>(bytes, &mut i)?[0];
+        let side = match flag & !0x80 {
             0 => CellSide::Left,
             1 => CellSide::Right,
             2 => CellSide::Top,
@@ -331,6 +438,11 @@ impl Record {
             owner,
             paint: CellBorderPaint { side, source_id },
             fingerprint: take(bytes, &mut i)?,
+            outside: if flag & 0x80 != 0 {
+                Some(take(bytes, &mut i)?)
+            } else {
+                None
+            },
         })
     }
 }
@@ -354,6 +466,33 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
                     owner,
                     paint,
                     fingerprint,
+                    outside: None,
+                });
+            }
+        }
+        if let (Some(tag), None, Some(rect)) = (a.outside_cell_border_paint, owner, rect) {
+            let table = doc
+                .sections
+                .iter()
+                .flat_map(|s| &s.paragraphs)
+                .flat_map(|p| &p.controls)
+                .find_map(|c| match c {
+                    Control::Table(t) if t.common.instance_id == tag.owner.table => {
+                        Some(t.as_ref())
+                    }
+                    _ => None,
+                });
+            if table.is_some_and(|t| outside_owner(rect, t).is_some()) {
+                if records.len() == MAX_RECORDS {
+                    over_budget = true;
+                    return;
+                }
+                records.push(Record {
+                    id: a.instance_id,
+                    owner: tag.owner,
+                    paint: tag.paint,
+                    fingerprint: tag.fingerprint,
+                    outside: Some(tag.table_fingerprint),
                 });
             }
         }
@@ -361,7 +500,12 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     if records.is_empty() {
         return Ok(None);
     }
-    if over_budget {
+    let size = HEADER_BYTES
+        + records
+            .iter()
+            .map(|r| RECORD_BYTES + if r.outside.is_some() { 32 } else { 0 })
+            .sum::<usize>();
+    if over_budget || size > MAX_BYTES {
         return Err("cell border paint metadata budget exceeded".into());
     }
     if records
@@ -370,8 +514,12 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     {
         return Err("ambiguous cell border paint ownership".into());
     }
-    let mut bytes = Vec::with_capacity(HEADER_BYTES + records.len() * RECORD_BYTES);
-    bytes.extend(MAGIC);
+    let mut bytes = Vec::with_capacity(size);
+    bytes.extend(if records.iter().any(|r| r.outside.is_some()) {
+        MAGIC_OUTSIDE
+    } else {
+        MAGIC
+    });
     bytes.extend((records.len() as u32).to_le_bytes());
     for r in records {
         r.write(&mut bytes);
@@ -382,33 +530,78 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
     if bytes.len() > MAX_BYTES {
         return;
     }
-    if bytes.len() < HEADER_BYTES || &bytes[..8] != MAGIC {
+    if bytes.len() < HEADER_BYTES || (&bytes[..8] != MAGIC && &bytes[..8] != MAGIC_OUTSIDE) {
         return;
     }
     let count = u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize;
-    if count > MAX_RECORDS || bytes.len() != HEADER_BYTES + count * RECORD_BYTES {
+    let outside_version = &bytes[..8] == MAGIC_OUTSIDE;
+    if count > MAX_RECORDS || bytes.len() < HEADER_BYTES + count * RECORD_BYTES {
         return;
     }
     let mut ids = BTreeSet::new();
     let mut records = BTreeMap::new();
-    for b in bytes[HEADER_BYTES..].chunks_exact(RECORD_BYTES) {
-        let Some(r) = Record::read(b) else {
+    let mut offset = HEADER_BYTES;
+    for _ in 0..count {
+        let Some(r) = Record::read(&bytes[offset..]) else {
             return;
         };
+        if r.outside.is_some() && !outside_version {
+            return;
+        }
+        offset += RECORD_BYTES + if r.outside.is_some() { 32 } else { 0 };
         if r.id == 0 || !ids.insert(r.id) {
             return;
         }
         records.insert(r.id, r);
     }
+    if offset != bytes.len() {
+        return;
+    }
     let mut counts = BTreeMap::<u32, usize>::new();
     each(doc, &mut |a, _, _| {
         *counts.entry(a.instance_id).or_default() += 1
     });
+    let tables = doc
+        .sections
+        .iter()
+        .flat_map(|s| &s.paragraphs)
+        .flat_map(|p| &p.controls)
+        .filter_map(|c| match c {
+            Control::Table(t) => Some((
+                t.common.instance_id,
+                (
+                    table_fingerprint(t),
+                    t.cells
+                        .iter()
+                        .map(|c| Owner::new(t.common.instance_id, c))
+                        .collect::<Vec<_>>(),
+                ),
+            )),
+            _ => None,
+        })
+        .collect::<BTreeMap<_, _>>();
     let mut restore = |r: &mut RectangleShape, owner: Option<Owner>| {
         let Some(record) = records.get(&r.common.instance_id) else {
             return;
         };
-        if counts.get(&record.id) == Some(&1)
+        if counts.get(&record.id) != Some(&1) || counts.get(&record.owner.table) != Some(&1) {
+            return;
+        }
+        if let Some(frame) = record.outside {
+            if owner.is_none()
+                && tables
+                    .get(&record.owner.table)
+                    .is_some_and(|(hash, cells)| *hash == frame && cells.contains(&record.owner))
+                && outside_fingerprint(r) == Some(record.fingerprint)
+            {
+                r.common.outside_cell_border_paint = Some(OutsideCellBorderPaint {
+                    owner: record.owner,
+                    paint: record.paint,
+                    table_fingerprint: frame,
+                    fingerprint: record.fingerprint,
+                });
+            }
+        } else if counts.get(&record.id) == Some(&1)
             && counts.get(&record.owner.table) == Some(&1)
             && owner == Some(record.owner)
             && fingerprint(r, record.owner, record.paint) == Some(record.fingerprint)

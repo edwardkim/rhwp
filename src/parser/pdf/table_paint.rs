@@ -326,11 +326,14 @@ fn fragment(original: &Control, source: Frame, piece: Frame) -> Result<Control, 
 pub(super) struct Target<'a> {
     pub grid: &'a Value,
     pub native_border_controls: Option<&'a [BTreeSet<usize>]>,
+    pub root: bool,
 }
 pub(super) struct PaintPlan {
     pub cells: Vec<Vec<Vec<Control>>>,
     pub removed: BTreeSet<usize>,
     pub retained: Vec<Control>,
+    pub outside_owners:
+        BTreeMap<usize, (usize, usize, crate::model::border_paint::CellBorderPaint)>,
     pub native_border_fragments: usize,
     /// Boundary contributors may lie outside a logical content frame. Such
     /// physical paint keeps its original page owner, rather than being moved
@@ -428,6 +431,7 @@ pub(super) fn partition(
         cells: frames.iter().map(|v| vec![Vec::new(); v.len()]).collect(),
         removed: BTreeSet::new(),
         retained: Vec::new(),
+        outside_owners: BTreeMap::new(),
         native_border_fragments: 0,
         external_boundary_controls: BTreeSet::new(),
     };
@@ -486,6 +490,7 @@ pub(super) fn partition(
         };
         let mut remaining = vec![source];
         let mut owned = 0;
+        let mut closed = true;
         for (ti, cells) in frames.iter().enumerate() {
             let region = regions[ti];
             let on_axis = orientation.filter(|h| {
@@ -609,6 +614,7 @@ pub(super) fn partition(
                                     });
                             }
                         }
+                        closed &= common(&fragment).is_some_and(|a| a.cell_border_paint.is_some());
                         result.cells[ti][ci].push(fragment);
                     }
                 }
@@ -621,10 +627,91 @@ pub(super) fn partition(
         {
             return Err("source paint measure changed".into());
         }
-        for r in remaining {
+        // The remaining half of a proven axial stroke keeps its PAGE owner.
+        // Partition along actual cell intervals; never claim a fill/bitmap or
+        // a corner/extension beyond those intervals by bbox resemblance.
+        let mut outside = Vec::new();
+        let mut candidates = Vec::new();
+        if closed && stroke_paths.contains(&path) {
+            for (ti, cells) in frames.iter().enumerate() {
+                if !targets[ti].root || !required[ti].contains(&control) {
+                    continue;
+                }
+                for (ci, cell) in cells.iter().enumerate() {
+                    tick(work)?;
+                    let Some(side) =
+                        orientation.and_then(|h| border_side(original, source, *cell, h))
+                    else {
+                        continue;
+                    };
+                    use crate::model::border_paint::CellSide;
+                    let outer = match side {
+                        CellSide::Left => cell.x == regions[ti].x,
+                        CellSide::Right => cell.right == regions[ti].right,
+                        CellSide::Top => cell.y == regions[ti].y,
+                        CellSide::Bottom => cell.bottom == regions[ti].bottom,
+                    };
+                    if !outer {
+                        continue;
+                    }
+                    let clip = if orientation == Some(true) {
+                        Frame {
+                            y: source.y,
+                            bottom: source.bottom,
+                            ..*cell
+                        }
+                    } else {
+                        Frame {
+                            x: source.x,
+                            right: source.right,
+                            ..*cell
+                        }
+                    };
+                    for &r in &remaining {
+                        tick(work)?;
+                        if let Some(piece) = intersection(r, clip, None) {
+                            candidates.push((piece, ti, ci, side));
+                        }
+                    }
+                }
+            }
+        }
+        // Conflicting roots do not grant editing authority to the first match.
+        for i in 0..candidates.len() {
+            for j in 0..i {
+                tick(work)?;
+                if intersection(candidates[i].0, candidates[j].0, None).is_some() {
+                    closed = false;
+                }
+            }
+        }
+        if closed {
+            for (piece, ti, ci, side) in candidates {
+                subtract(&mut remaining, piece, None, work)?;
+                outside.push((
+                    piece,
+                    Some((
+                        ti,
+                        ci,
+                        crate::model::border_paint::CellBorderPaint {
+                            side,
+                            source_id: common(original).unwrap().instance_id,
+                        },
+                    )),
+                ));
+            }
+        }
+        closed &= remaining.is_empty();
+        outside.extend(remaining.into_iter().map(|r| (r, None)));
+        for (r, owner) in outside {
             count += 1;
             if count > MAX_FRAGMENTS {
                 return Err("cell paint fragment budget exceeded".into());
+            }
+            if closed {
+                if let Some(owner) = owner {
+                    result.outside_owners.insert(result.retained.len(), owner);
+                }
             }
             result.retained.push(fragment(original, source, r)?)
         }

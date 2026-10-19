@@ -1374,8 +1374,12 @@ impl DocumentCore {
             }
         }
         let paint_plan = {
-            let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-            super::border_paint_edit::plan(table, cell_idx, paint_sides)?
+            self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let parent = &self.document.sections[section_idx].paragraphs[parent_para_idx];
+            let Control::Table(table) = &parent.controls[control_idx] else {
+                unreachable!()
+            };
+            super::border_paint_edit::plan(table, cell_idx, paint_sides, parent, control_idx)?
         };
         if !paint_plan.is_empty()
             && (self.border_paint_store.len() >= 4096 || self.next_border_paint_id == u32::MAX)
@@ -2055,9 +2059,15 @@ impl DocumentCore {
                     (None, None) => {}
                 }
             }
-            for ((cell, paragraph), value) in paint_restores {
-                table.cells[cell].paragraphs[paragraph] = value;
+            for ((cell, paragraph), value) in &paint_restores {
+                if let Some(cell) = cell {
+                    table.cells[*cell].paragraphs[*paragraph] = value.clone();
+                }
             }
+        }
+        if let Some(value) = paint_restores.get(&(None, 0)) {
+            let p = &mut self.document.sections[section_idx].paragraphs[parent_para_idx];
+            *p = super::border_paint_edit::restore_parent(value.clone(), p);
         }
         for id in payload.border_paint_undo_ids {
             self.discard_border_paint_undo_native(id);

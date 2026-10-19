@@ -92,3 +92,14 @@ fill·compound의 일반 역할 구분, 표 밖 조각까지의 편집 closure, 
 - 실제 배치 회귀는 Native/fresh Docker WASM의 선행 시각 조건을 충족한 입력에만 등록한다.
 - 기존 검증과 캐시는 그대로 재사용한다. 상세 항목을 진행할 때 영향받은 증거만 갱신하며,
   같은 소스의 빌드나 이미 확인한 무관한 검사를 반복하지 않는다.
+
+
+### R1 외곽 stroke 소유 절편 — 2026-10-19
+
+[stage17](../working/task_m100_7998_stage17.md)의 root 단일 축 opaque stroke는 셀 밖
+페이지 잔여까지 소유 closure·명시적 교체/지우기·양 저장·실제 undo/redo를 연결했고
+메인테이너 직접 판정을 통과했다. 다음 작은 경계는 fill/compound의 source 역할 구분과
+표 밖 closure다. 이어서 새 행열 상속/삭제·복원과 부분 병합·중첩 이웃, R2를 처리한다.
+기존 표 위 그림을 bbox로 통째로 삭제하지 않으며 물리 page owner와 논리 edit owner를
+구별한다. P5의 V2 metadata 음성 감사에는 source/table ID 0·이중 role·다른 owner 이동을
+포함한다. 이번 source producer/축 경계의 통과가 이 미검증 범위를 대신하지 않는다.

@@ -4,7 +4,7 @@ use crate::{
     document_core::DocumentCore,
     error::HwpError,
     model::{
-        border_paint::{valid_side, CellSide},
+        border_paint::{outside_binding, outside_owner, valid_side, CellSide},
         control::Control,
         paragraph::Paragraph,
         shape::ShapeObject,
@@ -18,7 +18,7 @@ pub(crate) const KEYS: [&str; 4] = ["borderLeft", "borderRight", "borderTop", "b
 
 #[derive(Clone, Debug)]
 pub(crate) struct ParagraphChange {
-    cell: usize,
+    cell: Option<usize>,
     paragraph: usize,
     before: Paragraph,
     after: Paragraph,
@@ -40,6 +40,46 @@ fn digest(p: &Paragraph) -> [u8; 32] {
     semantic.line_segs.clear();
     Sha256::digest(serde_json::to_vec(&semantic).expect("Paragraph is serializable")).into()
 }
+// Parent journals capture slots/page paint, never another copy of live Table
+// contents. Cell/style undo is applied to that live Table independently.
+fn parent_capture(p: &Paragraph) -> Paragraph {
+    let mut p = p.clone();
+    for c in &mut p.controls {
+        if let Control::Table(t) = c {
+            t.cells.clear();
+            t.zones.clear();
+        }
+    }
+    p
+}
+pub(crate) fn restore_parent(mut capture: Paragraph, current: &Paragraph) -> Paragraph {
+    for (i, c) in capture.controls.iter_mut().enumerate() {
+        if matches!(c, Control::Table(_)) {
+            *c = current.controls[i].clone();
+        }
+    }
+    capture
+}
+fn without(p: &Paragraph, remove: &[usize]) -> Paragraph {
+    let mut after = p.clone();
+    let mut positions = after.logical_control_positions();
+    for &i in remove.iter().rev() {
+        after.controls.remove(i);
+        if i < after.ctrl_data_records.len() {
+            after.ctrl_data_records.remove(i);
+        }
+        if i < positions.len() {
+            positions.remove(i);
+        }
+        for f in &mut after.field_ranges {
+            if f.control_idx > i {
+                f.control_idx -= 1;
+            }
+        }
+    }
+    after.rebuild_char_offsets(&positions);
+    after
+}
 fn side_index(side: CellSide) -> usize {
     match side {
         CellSide::Left => 0,
@@ -55,6 +95,8 @@ pub(crate) fn plan(
     table: &Table,
     target: usize,
     sides: [bool; 4],
+    parent: &Paragraph,
+    table_index: usize,
 ) -> Result<Vec<ParagraphChange>, HwpError> {
     let c = table
         .cells
@@ -67,6 +109,66 @@ pub(crate) fn plan(
         u32::from(c.col) + u32::from(c.col_span),
     );
     let mut changes = Vec::new();
+    let mut outside = std::collections::BTreeSet::new();
+    let mut remove_outside = Vec::new();
+    let last_table = parent
+        .controls
+        .iter()
+        .rposition(|c| matches!(c, Control::Table(_)))
+        .unwrap_or(table_index);
+    for (i, ctrl) in parent.controls.iter().enumerate() {
+        let Control::Shape(s) = ctrl else { continue };
+        let ShapeObject::Rectangle(rect) = s.as_ref() else {
+            continue;
+        };
+        let Some((id, row, col, tag)) = outside_binding(rect) else {
+            continue;
+        };
+        if id != table.common.instance_id {
+            continue;
+        }
+        let Some(ci) = table
+            .cells
+            .iter()
+            .position(|c| c.row == row && c.col == col)
+        else {
+            return Err(error("페이지 테두리 조각의 논리 셀이 없습니다"));
+        };
+        let cell = &table.cells[ci];
+        let (nr, nb, nx, ne) = (
+            u32::from(cell.row),
+            u32::from(cell.row) + u32::from(cell.row_span),
+            u32::from(cell.col),
+            u32::from(cell.col) + u32::from(cell.col_span),
+        );
+        let selected = if ci == target {
+            sides
+        } else {
+            [
+                sides[1] && nx == e && nr < b && nb > r,
+                sides[0] && ne == x && nr < b && nb > r,
+                sides[3] && nr == b && nx < e && ne > x,
+                sides[2] && nb == r && nx < e && ne > x,
+            ]
+        };
+        let dir = side_index(tag.side);
+        if !selected[dir] {
+            continue;
+        }
+        if outside_owner(rect, table) != Some((ci, tag)) {
+            return Err(error("페이지 테두리 그림 소유가 현재 배치와 다릅니다"));
+        }
+        if i <= last_table {
+            return Err(error("페이지 테두리 제거가 표 슬롯을 이동시킵니다"));
+        }
+        if ci != target && ((dir < 2 && (nr < r || nb > b)) || (dir >= 2 && (nx < x || ne > e))) {
+            return Err(error(
+                "병합 이웃의 공유 변 일부는 native 테두리로 교체할 수 없습니다",
+            ));
+        }
+        outside.insert((tag.source_id, dir, ci));
+        remove_outside.push(i);
+    }
     let mut sources = std::collections::BTreeSet::new();
     for (ci, cell) in table.cells.iter().enumerate() {
         for ctrl in cell.paragraphs.iter().flat_map(|p| &p.controls) {
@@ -117,9 +219,10 @@ pub(crate) fn plan(
                 if valid_side(table.common.instance_id, cell, rect) != Some(tag.side) {
                     return Err(error("셀 테두리 그림 소유가 현재 배치와 다릅니다"));
                 }
-                if !sources
-                    .range((tag.source_id, dir ^ 1, 0)..=(tag.source_id, dir ^ 1, usize::MAX))
-                    .any(|&(_, _, peer)| peer != ci)
+                if !outside.contains(&(tag.source_id, dir, ci))
+                    && !sources
+                        .range((tag.source_id, dir ^ 1, 0)..=(tag.source_id, dir ^ 1, usize::MAX))
+                        .any(|&(_, _, peer)| peer != ci)
                 {
                     return Err(error(
                         "표 밖 잔여 조각의 편집 소유가 확정되지 않은 테두리는 교체할 수 없습니다",
@@ -137,30 +240,24 @@ pub(crate) fn plan(
             if remove.is_empty() {
                 continue;
             }
-            let mut after = p.clone();
-            let mut positions = after.logical_control_positions();
-            for &i in remove.iter().rev() {
-                after.controls.remove(i);
-                if i < after.ctrl_data_records.len() {
-                    after.ctrl_data_records.remove(i);
-                }
-                if i < positions.len() {
-                    positions.remove(i);
-                }
-                for f in &mut after.field_ranges {
-                    if f.control_idx > i {
-                        f.control_idx -= 1;
-                    }
-                }
-            }
-            after.rebuild_char_offsets(&positions);
+            let after = without(p, &remove);
             changes.push(ParagraphChange {
-                cell: ci,
+                cell: Some(ci),
                 paragraph: pi,
                 before: p.clone(),
                 after,
             });
         }
+    }
+    if !remove_outside.is_empty() {
+        let before = parent_capture(parent);
+        let after = without(&before, &remove_outside);
+        changes.push(ParagraphChange {
+            cell: None,
+            paragraph: 0,
+            before,
+            after,
+        });
     }
     Ok(changes)
 }
@@ -173,12 +270,20 @@ impl DocumentCore {
         if changes.is_empty() {
             return None;
         }
+        for change in &changes {
+            if change.cell.is_none() {
+                let p = &mut self.document.sections[target.0].paragraphs[target.1];
+                *p = restore_parent(change.after.clone(), p);
+            }
+        }
         let table = self
             .get_table_mut(target.0, target.1, target.2)
             .expect("validated table");
         let table_id = table.common.instance_id;
         for change in &changes {
-            table.cells[change.cell].paragraphs[change.paragraph] = change.after.clone();
+            if let Some(cell) = change.cell {
+                table.cells[cell].paragraphs[change.paragraph] = change.after.clone();
+            }
         }
         let id = self.next_border_paint_id;
         self.next_border_paint_id += 1;
@@ -199,7 +304,7 @@ impl DocumentCore {
         &mut self,
         target: (usize, usize, usize),
         ids: &[u32],
-    ) -> Result<BTreeMap<(usize, usize), Paragraph>, HwpError> {
+    ) -> Result<BTreeMap<(Option<usize>, usize), Paragraph>, HwpError> {
         let mut restores = BTreeMap::new();
         let mut seen = std::collections::BTreeSet::new();
         for &id in ids.iter().rev() {
@@ -215,19 +320,32 @@ impl DocumentCore {
             if capture.target != target {
                 return Err(error("테두리 조각 undo 대상 불일치"));
             }
-            let table = self.get_table_mut(target.0, target.1, target.2)?;
+            let parent = self
+                .document
+                .sections
+                .get(target.0)
+                .and_then(|s| s.paragraphs.get(target.1))
+                .ok_or_else(|| error("테두리 조각 문단 없음"))?;
+            let Some(Control::Table(table)) = parent.controls.get(target.2) else {
+                return Err(error("테두리 조각 표 없음"));
+            };
             if table.common.instance_id != capture.table_id {
                 return Err(error("테두리 조각 표 신원 불일치"));
             }
             for change in capture.changes {
                 let key = (change.cell, change.paragraph);
+                let parent_state = parent_capture(parent);
                 let current = restores
                     .get(&key)
                     .or_else(|| {
-                        table
-                            .cells
-                            .get(change.cell)
-                            .and_then(|c| c.paragraphs.get(change.paragraph))
+                        if let Some(cell) = change.cell {
+                            table
+                                .cells
+                                .get(cell)
+                                .and_then(|c| c.paragraphs.get(change.paragraph))
+                        } else {
+                            Some(&parent_state)
+                        }
                     })
                     .ok_or_else(|| error("테두리 조각 문단 없음"))?;
                 if digest(current) != digest(&change.after) {

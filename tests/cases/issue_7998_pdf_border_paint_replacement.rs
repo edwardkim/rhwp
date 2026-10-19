@@ -193,8 +193,8 @@ fn full_unchanged_dialog_and_background_only_preserve_source_roles() {
     }
 }
 #[test]
-fn unsafe_outer_and_stale_bindings_fail_before_any_style_or_content_mutation() {
-    for mode in ["outer", "stale", "resize"] {
+fn stale_bindings_and_simultaneous_resize_fail_before_any_mutation() {
+    for mode in ["stale", "resize"] {
         let mut c = load("thin-fill-occluder");
         let ci = root(&c).0;
         if mode == "stale" {
@@ -219,9 +219,7 @@ fn unsafe_outer_and_stale_bindings_fail_before_any_style_or_content_mutation() {
             c.set_document(d);
         }
         let before = c.export_hwpx_native().unwrap();
-        let props = if mode == "outer" {
-            r##"{"borderLeft":{"type":1,"width":5,"color":"#d00000"}}"##
-        } else if mode == "resize" {
+        let props = if mode == "resize" {
             r##"{"borderRight":{"type":1,"width":5,"color":"#d00000"},"width":12000}"##
         } else {
             RED

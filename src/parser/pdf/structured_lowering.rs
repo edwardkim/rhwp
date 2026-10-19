@@ -1332,6 +1332,7 @@ pub(super) fn lower(
             .map(|(owner, native)| super::table_paint::Target {
                 grid: &grids[owner.candidate],
                 native_border_controls: native.as_ref().map(|n| n.controls.as_slice()),
+                root: matches!(&tables[owner.root], Control::Table(t) if t.common.instance_id == owner.instance_id),
             })
             .collect::<Vec<_>>();
         let plan = super::table_paint::partition(
@@ -1454,10 +1455,24 @@ pub(super) fn lower(
                         }
                     }
                 }
-                for mut paint in plan.retained {
+                for (ri, mut paint) in plan.retained.into_iter().enumerate() {
                     let id = fragment_ids.get();
                     fragment_ids.set(id.checked_add(1).ok_or("page paint instance ID overflow")?);
                     super::table_paint::assign_id(&mut paint, id);
+                    if let Some(&(target, cell, tag)) = plan.outside_owners.get(&ri) {
+                        let owner = &paint_owners[target];
+                        let Control::Table(table) = &tables[owner.root] else {
+                            unreachable!()
+                        };
+                        if let Control::Shape(s) = &mut paint {
+                            if let ShapeObject::Rectangle(r) = s.as_mut() {
+                                crate::model::border_paint::bind_outside(r, table, cell, tag)
+                                    .ok_or(
+                                        "outside border binding no longer matches source frame",
+                                    )?;
+                            }
+                        }
+                    }
                     extra_paint.push(paint);
                 }
             }
@@ -1499,9 +1514,15 @@ pub(super) fn lower(
         .enumerate()
         .filter_map(|(i, c)| (!removed.contains(&i)).then_some(c))
         .collect();
-    retained.extend(extra_paint);
+    let (outside, ordinary): (Vec<_>, Vec<_>) = extra_paint.into_iter().partition(
+        |c| matches!(c, Control::Shape(s) if s.common().outside_cell_border_paint.is_some()),
+    );
+    retained.extend(ordinary);
     retained.extend(tables);
     retained.extend(body_frames);
+    // Logical root table indices stay stable when a trailing page fragment is
+    // removed by a cell-border command. Original z-order/coordinates are intact.
+    retained.extend(outside);
     let owner = &mut doc.sections[section].paragraphs[0];
     owner.controls = retained;
     owner.char_count = 1 + owner.controls.len() as u32 * 8;

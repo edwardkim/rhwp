@@ -32,6 +32,9 @@ pub struct CommonObjAttr {
     /// Retained drawing's proven cell-border role; visible geometry stays native.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cell_border_paint: Option<super::border_paint::CellBorderPaint>,
+    /// Physical page paint with a proven logical cell-edge editing owner.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub outside_cell_border_paint: Option<super::border_paint::OutsideCellBorderPaint>,
     /// 컨트롤 ID
     pub ctrl_id: u32,
     /// 속성 비트 플래그
