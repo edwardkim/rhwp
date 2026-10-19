@@ -70,6 +70,72 @@ fn tac_nested_table_moves_whole_line_to_next_page() {
     );
 }
 
+/// 바깥 1×1 표의 저장 선언 행 높이(`hp:cellSz` height, HWPUNIT).
+fn declared_outer_row_height_hu(sample: &str) -> f64 {
+    use std::io::Read;
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
+    let mut zip = zip::ZipArchive::new(std::fs::File::open(path).expect("open")).expect("zip");
+    let mut xml = String::new();
+    zip.by_name("Contents/section0.xml")
+        .expect("section0")
+        .read_to_string(&mut xml)
+        .expect("utf-8");
+    // 바깥 칸은 본문 폭(42000)이고 중첩 표 칸은 9000 이다.
+    let cell_size = xml
+        .find("<hp:cellSz width=\"42000\"")
+        .expect("바깥 칸 크기");
+    let height = &xml[cell_size..];
+    let start = height.find("height=\"").unwrap() + 8;
+    let end = start + height[start..].find('"').unwrap();
+    height[start..end].parse().unwrap()
+}
+
+/// 쪽마다 바깥 1×1 표 칸 조각의 (위, 높이).
+fn outer_cell_fragments(sample: &str) -> Vec<Option<(f64, f64)>> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
+    let doc = HwpDocument::from_bytes(&std::fs::read(&path).expect("read")).expect("표본 파싱");
+    fn find(node: &Value) -> Option<(f64, f64)> {
+        if node["type"] == "Table" && node["rows"] == 1 && node["cols"] == 1 {
+            let cell = node["children"]
+                .as_array()?
+                .iter()
+                .find(|child| child["type"] == "Cell")?;
+            return Some((
+                cell["bbox"]["y"].as_f64()?,
+                cell["bbox"]["h"].as_f64()?,
+            ));
+        }
+        node["children"].as_array()?.iter().find_map(find)
+    }
+    (0..doc.page_count())
+        .map(|page| {
+            let tree: Value =
+                serde_json::from_str(&doc.get_page_render_tree(page).unwrap()).unwrap();
+            find(&tree)
+        })
+        .collect()
+}
+
+#[test]
+fn split_reflow_row_first_fragment_takes_declared_row_height() {
+    // 한/글 2024 는 쪽 경계에서 나뉜 재조판 행의 첫 조각을 min(쪽 남은 공간, 선언 행 높이)로
+    // 그린다(tac_37 첫 조각 = 선언 3000 HU). 첫 조각의 내용은 칸 앞 글줄 하나뿐이라
+    // 수정 전 rhwp 는 내용 높이(약 32px)로 줄여 그렸다. 이어지는 조각은 남은 내용만 갖는다.
+    let sample = "samples/issue7870/tac_37.hwpx";
+    let declared_px = declared_outer_row_height_hu(sample) * 96.0 / 7200.0;
+    let fragments = outer_cell_fragments(sample);
+    let (_, first_height) = fragments[0].expect("1쪽 바깥 칸 첫 조각");
+    assert!(
+        (first_height - declared_px).abs() <= 0.5,
+        "첫 조각 높이 {first_height:.2}px 는 선언 행 높이 {declared_px:.2}px 여야 한다"
+    );
+    let (_, rest_height) = fragments[1].expect("2쪽 바깥 칸 이어지는 조각");
+    assert!(
+        rest_height > declared_px,
+        "이어지는 조각({rest_height:.2}px)은 중첩 표 전체를 담는다"
+    );
+}
+
 #[test]
 fn floating_nested_table_still_splits_between_rows() {
     let pages = markers_by_page("samples/issue7870/flow_37.hwpx");
