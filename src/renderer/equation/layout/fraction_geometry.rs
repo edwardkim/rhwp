@@ -71,6 +71,37 @@ use super::{
     EqLayout, EqNode, LayoutKind, AXIS_HEIGHT, FRAC_LINE_PAD, RADICAL_DEGREE_SCALE, SQRT_PAD,
 };
 
+// HFT line/fraction frames independently regenerated at 9, 12 and 18pt:
+// line 1.2em/84%, fraction 2.34em/67%. The display font's glyph bounds are
+// separate from these logical slots. Do not substitute the modern math face's
+// different frame table for the versionless source program.
+fn legacy_operand_frame(value: &LayoutBox, fs: f64) -> Option<(f64, f64)> {
+    match &value.kind {
+        LayoutKind::Text(_)
+        | LayoutKind::Number(_)
+        | LayoutKind::Symbol(_)
+        | LayoutKind::MathSymbol(_)
+        | LayoutKind::Function(_)
+        | LayoutKind::FontGlyph { .. }
+        | LayoutKind::HancomGlyphs(_) => Some((fs * 1.2, fs * 1.2 * 0.84)),
+        LayoutKind::Fraction { .. } => Some((value.height, value.baseline)),
+        LayoutKind::Color { body, .. }
+        | LayoutKind::FontStyle { body, .. }
+        | LayoutKind::Paren { body, .. } => legacy_operand_frame(body, fs),
+        LayoutKind::Row(items) if !items.is_empty() => {
+            let mut ascent = 0.0_f64;
+            let mut descent = 0.0_f64;
+            for item in items {
+                let (height, baseline) = legacy_operand_frame(item, fs)?;
+                ascent = ascent.max(baseline);
+                descent = descent.max(height - baseline);
+            }
+            Some((ascent + descent, ascent))
+        }
+        _ => None,
+    }
+}
+
 impl EqLayout {
     pub(super) fn layout_fraction(&self, numer: &EqNode, denom: &EqNode, fs: f64) -> LayoutBox {
         if self.legacy_hft_metrics {
@@ -291,7 +322,7 @@ impl EqLayout {
             pad
         };
         let line_thick = fs * FRAC_LINE_THICK;
-        let axis = fs * AXIS_HEIGHT;
+        let mut axis = fs * AXIS_HEIGHT;
         let w = n.width.max(d.width) + side_pad * 2.0;
 
         let numer_h = n.height + pad;
@@ -301,8 +332,8 @@ impl EqLayout {
         // baseline(상단에서) = 분자높이 + 분수선두께/2 + axis_height
         // 즉, 분수선 y = baseline - axis_height (상단 기준)
         let frac_line_from_top = numer_h + line_thick / 2.0;
-        let baseline = frac_line_from_top + axis;
-        let total_h = numer_h + line_thick + denom_h;
+        let mut baseline = frac_line_from_top + axis;
+        let mut total_h = numer_h + line_thick + denom_h;
 
         let mut n_box = n;
         n_box.x = (w - n_box.width) / 2.0;
@@ -311,6 +342,23 @@ impl EqLayout {
         let mut d_box = d;
         d_box.x = (w - d_box.width) / 2.0;
         d_box.y = numer_h + line_thick;
+
+        if let (Some((nh, nb)), Some((dh, db))) = (
+            legacy_operand_frame(&n_box, fs),
+            legacy_operand_frame(&d_box, fs),
+        ) {
+            let line_height = fs * 1.2;
+            let above = (nh - line_height).max(0.0);
+            let below = (dh - line_height).max(0.0);
+            total_h = fs * 2.34 + above + below;
+            let percent = ((fs * 2.34 * 0.67 + above) / total_h * 100.0).round();
+            baseline = total_h * percent / 100.0;
+            n_box.y = nb - n_box.baseline;
+            d_box.y = total_h - dh + db - d_box.baseline;
+            // The first logical line closes at the fraction rule. The common
+            // axis is consumed unchanged by SVG, Canvas and Native paint.
+            axis = baseline - line_height - above;
+        }
 
         LayoutBox {
             font_size: fs,

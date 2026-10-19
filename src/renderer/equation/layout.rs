@@ -178,7 +178,10 @@ impl EqLayout {
             ..*self
         };
         let result = root.layout_node(node, self.font_size);
-        if self.legacy_hft_metrics && result.width > 0.0 {
+        if self.legacy_hft_metrics
+            && result.width > 0.0
+            && !standalone_cjk_fraction_owns_inset(node)
+        {
             let mut body = result;
             let inset = self.font_size * 0.22;
             body.x = inset;
@@ -763,6 +766,22 @@ fn operand_starts_cjk(node: &EqNode) -> bool {
             .is_some_and(|ch| super::text_has_cjk(&ch.to_string())),
         EqNode::Row(children) => children.first().is_some_and(operand_starts_cjk),
         EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => operand_starts_cjk(body),
+        _ => false,
+    }
+}
+
+// A standalone CJK fraction already introduces the fallback face in its
+// numerator. In a larger expression the outer row has its own registration.
+// Independent 9/12/18pt Print controls distinguish the two expression scopes.
+fn standalone_cjk_fraction_owns_inset(node: &EqNode) -> bool {
+    match node {
+        EqNode::Fraction { numer, .. } => operand_starts_cjk(numer),
+        EqNode::Row(children) if children.len() == 1 => {
+            standalone_cjk_fraction_owns_inset(&children[0])
+        }
+        EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => {
+            standalone_cjk_fraction_owns_inset(body)
+        }
         _ => false,
     }
 }
