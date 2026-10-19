@@ -10,6 +10,8 @@ use crate::model::{
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
+mod compound;
+
 const MAX_WORK: usize = 1_000_000;
 const MAX_FRAGMENTS: usize = 32_768;
 
@@ -339,6 +341,7 @@ fn fragment(original: &Control, source: Frame, piece: Frame) -> Result<Control, 
 pub(super) struct SourceContent<'a> {
     pub spans: &'a [Option<usize>],
     pub images: &'a [usize],
+    pub resources: &'a [crate::model::bin_data::BinDataContent],
 }
 
 pub(super) struct Target<'a> {
@@ -744,6 +747,17 @@ pub(super) fn partition(
         } else {
             line.or_else(|| orientations.get(&path).copied().flatten())
         };
+        let compound = compound::plan(
+            original,
+            source,
+            &paths[path],
+            control,
+            targets,
+            &frames,
+            &required,
+            content_controls.resources,
+            work,
+        )?;
         let mut remaining = vec![source];
         let mut owned = 0;
         let mut closed = true;
@@ -848,30 +862,47 @@ pub(super) fn partition(
                     }
                     subtract(&mut remaining, piece, line, work)?;
                     owned += measure(piece, line);
-                    count += 1;
-                    if count > MAX_FRAGMENTS {
-                        return Err("cell paint fragment budget exceeded".into());
-                    }
                     if native_border {
+                        count += 1;
+                        if count > MAX_FRAGMENTS {
+                            return Err("cell paint fragment budget exceeded".into());
+                        }
                         // This exact physical piece is represented by the
                         // cell's native border. Keep subtraction/conservation
                         // and all other owners; do not paint it a second time.
                         result.native_border_fragments += 1;
                     } else {
-                        let mut fragment = fragment(original, source, piece)?;
-                        if required[ti].contains(&control) && border_paths.contains(&path) {
-                            if let Some(side) = orientation
-                                .and_then(|h| border_side(original, source, *cell, h, stroke))
-                            {
-                                common_mut(&mut fragment).unwrap().cell_border_paint =
-                                    Some(crate::model::border_paint::CellBorderPaint {
-                                        side,
-                                        source_id: common(original).unwrap().instance_id,
-                                    });
+                        let pieces = if let Some(compound) = &compound {
+                            compound.cell(ti, piece, *cell, work)?
+                        } else {
+                            vec![(piece, None)]
+                        };
+                        for (part, tag) in pieces {
+                            count += 1;
+                            if count > MAX_FRAGMENTS {
+                                return Err("cell paint fragment budget exceeded".into());
                             }
+                            let mut fragment = fragment(original, source, part)?;
+                            common_mut(&mut fragment).unwrap().cell_border_paint = tag;
+                            if compound.is_none()
+                                && required[ti].contains(&control)
+                                && border_paths.contains(&path)
+                            {
+                                if let Some(side) = orientation
+                                    .and_then(|h| border_side(original, source, *cell, h, stroke))
+                                {
+                                    common_mut(&mut fragment).unwrap().cell_border_paint =
+                                        Some(crate::model::border_paint::CellBorderPaint {
+                                            side,
+                                            sides: 0,
+                                            source_id: common(original).unwrap().instance_id,
+                                        });
+                                }
+                            }
+                            closed &=
+                                common(&fragment).is_some_and(|a| a.cell_border_paint.is_some());
+                            result.cells[ti][ci].push(fragment);
                         }
-                        closed &= common(&fragment).is_some_and(|a| a.cell_border_paint.is_some());
-                        result.cells[ti][ci].push(fragment);
                     }
                 }
             }
@@ -882,6 +913,20 @@ pub(super) fn partition(
         if owned + remaining.iter().map(|r| measure(*r, line)).sum::<i64>() != measure(source, line)
         {
             return Err("source paint measure changed".into());
+        }
+        if let Some(compound) = compound {
+            for (piece, owner) in compound.outside(remaining, &frames, targets, work)? {
+                count += 1;
+                if count > MAX_FRAGMENTS {
+                    return Err("cell paint fragment budget exceeded".into());
+                }
+                if let Some(owner) = owner {
+                    result.outside_owners.insert(result.retained.len(), owner);
+                }
+                result.retained.push(fragment(original, source, piece)?);
+            }
+            result.removed.insert(control);
+            continue;
         }
         // The remaining half of a proven axial rule keeps its PAGE owner.
         // Partition along actual cell intervals; never claim an ambiguous fill
@@ -973,6 +1018,7 @@ pub(super) fn partition(
                         ci,
                         crate::model::border_paint::CellBorderPaint {
                             side,
+                            sides: 0,
                             source_id: common(original).unwrap().instance_id,
                         },
                     )),

@@ -19,6 +19,7 @@ pub const MAX_BYTES: usize = 4 * 1024 * 1024;
 const MAGIC: &[u8; 8] = b"RBPO\0\0\0\x01";
 const MAGIC_OUTSIDE: &[u8; 8] = b"RBPO\0\0\0\x02";
 const MAGIC_RASTER: &[u8; 8] = b"RBPO\0\0\0\x03";
+const MAGIC_COMPOUND: &[u8; 8] = b"RBPO\0\0\0\x04";
 const HEADER_BYTES: usize = 12;
 const RECORD_BYTES: usize = 65;
 const MAX_RECORDS: usize = (MAX_BYTES - HEADER_BYTES) / RECORD_BYTES;
@@ -38,6 +39,66 @@ pub struct CellBorderPaint {
     /// Opaque origin identity shared by physical pieces of the same source paint.
     /// It is not the current drawing's ID and is never used to locate a control.
     pub source_id: u32,
+    /// Zero is the legacy single side. Nonzero is a certified union of sides.
+    #[serde(default, skip_serializing_if = "zero")]
+    pub sides: u8,
+}
+fn zero(v: &u8) -> bool {
+    *v == 0
+}
+impl CellSide {
+    pub(crate) fn index(self) -> usize {
+        match self {
+            Self::Left => 0,
+            Self::Right => 1,
+            Self::Top => 2,
+            Self::Bottom => 3,
+        }
+    }
+    pub(crate) fn from_index(i: usize) -> Self {
+        [Self::Left, Self::Right, Self::Top, Self::Bottom][i]
+    }
+}
+impl CellBorderPaint {
+    pub(crate) fn from_mask(mask: u8, source_id: u32) -> Option<Self> {
+        if mask == 0 || mask & !15 != 0 {
+            return None;
+        }
+        Some(Self {
+            side: CellSide::from_index(mask.trailing_zeros() as usize),
+            source_id,
+            sides: if mask.count_ones() > 1 { mask } else { 0 },
+        })
+    }
+    pub(crate) fn mask(self) -> Option<u8> {
+        if self.sides == 0 {
+            Some(1 << self.side.index())
+        } else if self.sides & !15 == 0
+            && self.sides.count_ones() > 1
+            && self.sides.trailing_zeros() as usize == self.side.index()
+        {
+            Some(self.sides)
+        } else {
+            None
+        }
+    }
+}
+/// Called only after validating the current binding. Remaining sides keep the
+/// same physical crop/resource; the journal captures the old role for undo.
+pub(crate) fn keep_sides(c: &mut Control, mask: u8, outside: bool) -> Option<()> {
+    let a = match c {
+        Control::Picture(p) => &mut p.common,
+        Control::Shape(s) => s.common_mut(),
+        _ => return None,
+    };
+    if outside {
+        let tag = a.outside_cell_border_paint.as_mut()?;
+        tag.paint = CellBorderPaint::from_mask(mask, tag.paint.source_id)?;
+    } else {
+        let tag = a.cell_border_paint?;
+        a.cell_border_paint = Some(CellBorderPaint::from_mask(mask, tag.source_id)?);
+    }
+    Some(())
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -270,6 +331,7 @@ pub(crate) fn bind_outside(
     paint: CellBorderPaint,
     resources: &mut Resources<'_>,
 ) -> Option<()> {
+    paint.mask()?;
     let owner = Owner::new(t.common.instance_id, t.cells.get(cell)?);
     let fingerprint = outside_fingerprint(PaintRef::from_control(c)?, resources)?;
     if owner.table == 0 || paint.source_id == 0 {
@@ -297,6 +359,7 @@ pub(crate) fn outside_owner(
     resources: &mut Resources<'_>,
 ) -> Option<(usize, CellBorderPaint)> {
     let tag = p.common().outside_cell_border_paint?;
+    tag.paint.mask()?;
     if tag.owner.table != t.common.instance_id
         || tag.table_fingerprint != table_fingerprint(t)
         || outside_fingerprint(p, resources) != Some(tag.fingerprint)
@@ -334,15 +397,15 @@ impl Owner {
 
 /// Recheck the producer's binding against the current physical cell.
 /// A stale tag never authorizes deletion of a drawing.
-pub(crate) fn valid_side(
+pub(crate) fn valid_paint(
     table: u32,
     cell: &super::table::Cell,
     p: PaintRef<'_>,
     resources: &mut Resources<'_>,
-) -> Option<CellSide> {
+) -> Option<CellBorderPaint> {
     let paint = p.common().cell_border_paint?;
     let hash = fingerprint(p, Owner::new(table, cell), paint, resources)?;
-    p.sealed(hash).then_some(paint.side)
+    p.sealed(hash).then_some(paint)
 }
 
 fn geometry_digest(r: &RectangleShape) -> Option<[u8; 32]> {
@@ -411,14 +474,18 @@ fn fingerprint(
     let y = i64::from(a.vertical_offset as i32) + i64::from(o.top);
     let right = x + i64::from(a.width);
     let bottom = y + i64::from(a.height);
-    let edge = match paint.side {
-        CellSide::Left => x,
-        CellSide::Right => right - i64::from(o.width),
-        CellSide::Top => y,
-        CellSide::Bottom => bottom - i64::from(o.height),
-    };
+    let mask = paint.mask()?;
+    let edges = [
+        x,
+        right - i64::from(o.width),
+        y,
+        bottom - i64::from(o.height),
+    ];
     // One source HWPUNIT of quantization; never relocate the drawing to fit.
-    if edge.abs() > 1
+    if edges
+        .iter()
+        .enumerate()
+        .any(|(i, edge)| mask & (1 << i) != 0 && edge.abs() > 1)
         || x < -1
         || y < -1
         || right > i64::from(o.width) + 1
@@ -559,7 +626,7 @@ struct Record {
     raster: bool,
 }
 impl Record {
-    fn write(&self, out: &mut Vec<u8>) {
+    fn write(&self, out: &mut Vec<u8>, compound: bool) {
         let o = self.owner;
         out.extend(self.id.to_le_bytes());
         out.extend(o.table.to_le_bytes());
@@ -573,11 +640,15 @@ impl Record {
             out.extend(v.to_le_bytes());
         }
         out.push(
-            (match self.paint.side {
-                CellSide::Left => 0,
-                CellSide::Right => 1,
-                CellSide::Top => 2,
-                CellSide::Bottom => 3,
+            (if compound {
+                self.paint.mask().expect("validated paint mask")
+            } else {
+                match self.paint.side {
+                    CellSide::Left => 0,
+                    CellSide::Right => 1,
+                    CellSide::Top => 2,
+                    CellSide::Bottom => 3,
+                }
             }) | if self.outside.is_some() { 0x80 } else { 0 }
                 | if self.raster { 0x40 } else { 0 },
         );
@@ -587,7 +658,7 @@ impl Record {
             out.extend(frame);
         }
     }
-    fn read(bytes: &[u8]) -> Option<Self> {
+    fn read(bytes: &[u8], compound: bool) -> Option<Self> {
         fn take<const N: usize>(b: &[u8], i: &mut usize) -> Option<[u8; N]> {
             let v = b.get(*i..*i + N)?.try_into().ok()?;
             *i += N;
@@ -607,18 +678,30 @@ impl Record {
             top: i16::from_le_bytes(take(bytes, &mut i)?),
         };
         let flag = take::<1>(bytes, &mut i)?[0];
-        let side = match flag & !0xc0 {
-            0 => CellSide::Left,
-            1 => CellSide::Right,
-            2 => CellSide::Top,
-            3 => CellSide::Bottom,
-            _ => return None,
+        let side = if compound {
+            CellBorderPaint::from_mask(flag & !0xc0, 1)?.side
+        } else {
+            match flag & !0xc0 {
+                0 => CellSide::Left,
+                1 => CellSide::Right,
+                2 => CellSide::Top,
+                3 => CellSide::Bottom,
+                _ => return None,
+            }
         };
         let source_id = u32::from_le_bytes(take(bytes, &mut i)?);
         Some(Self {
             id,
             owner,
-            paint: CellBorderPaint { side, source_id },
+            paint: if compound {
+                CellBorderPaint::from_mask(flag & !0xc0, source_id)?
+            } else {
+                CellBorderPaint {
+                    side,
+                    source_id,
+                    sides: 0,
+                }
+            },
             fingerprint: take(bytes, &mut i)?,
             raster: flag & 0x40 != 0,
             outside: if flag & 0x80 != 0 {
@@ -703,7 +786,10 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
         return Err("ambiguous cell border paint ownership".into());
     }
     let mut bytes = Vec::with_capacity(size);
-    bytes.extend(if records.iter().any(|r| r.raster) {
+    let compound = records.iter().any(|r| r.paint.sides != 0);
+    bytes.extend(if compound {
+        MAGIC_COMPOUND
+    } else if records.iter().any(|r| r.raster) {
         MAGIC_RASTER
     } else if records.iter().any(|r| r.outside.is_some()) {
         MAGIC_OUTSIDE
@@ -712,7 +798,7 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     });
     bytes.extend((records.len() as u32).to_le_bytes());
     for r in records {
-        r.write(&mut bytes);
+        r.write(&mut bytes, compound);
     }
     Ok(Some(bytes))
 }
@@ -721,13 +807,17 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
         return;
     }
     if bytes.len() < HEADER_BYTES
-        || (&bytes[..8] != MAGIC && &bytes[..8] != MAGIC_OUTSIDE && &bytes[..8] != MAGIC_RASTER)
+        || (&bytes[..8] != MAGIC
+            && &bytes[..8] != MAGIC_OUTSIDE
+            && &bytes[..8] != MAGIC_RASTER
+            && &bytes[..8] != MAGIC_COMPOUND)
     {
         return;
     }
     let count = u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize;
-    let outside_version = &bytes[..8] == MAGIC_OUTSIDE || &bytes[..8] == MAGIC_RASTER;
-    let raster_version = &bytes[..8] == MAGIC_RASTER;
+    let compound = &bytes[..8] == MAGIC_COMPOUND;
+    let outside_version = &bytes[..8] == MAGIC_OUTSIDE || &bytes[..8] == MAGIC_RASTER || compound;
+    let raster_version = &bytes[..8] == MAGIC_RASTER || compound;
     if count > MAX_RECORDS || bytes.len() < HEADER_BYTES + count * RECORD_BYTES {
         return;
     }
@@ -735,7 +825,7 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
     let mut records = BTreeMap::new();
     let mut offset = HEADER_BYTES;
     for _ in 0..count {
-        let Some(r) = Record::read(&bytes[offset..]) else {
+        let Some(r) = Record::read(&bytes[offset..], compound) else {
             return;
         };
         if (r.outside.is_some() && !outside_version)

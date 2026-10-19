@@ -4,7 +4,9 @@ use crate::{
     document_core::DocumentCore,
     error::HwpError,
     model::{
-        border_paint::{outside_binding, outside_owner, valid_side, CellSide, PaintRef, Resources},
+        border_paint::{
+            keep_sides, outside_binding, outside_owner, valid_paint, PaintRef, Resources,
+        },
         control::Control,
         paragraph::Paragraph,
         table::Table,
@@ -59,8 +61,11 @@ pub(crate) fn restore_parent(mut capture: Paragraph, current: &Paragraph) -> Par
     }
     capture
 }
-fn without(p: &Paragraph, remove: &[usize]) -> Paragraph {
+fn without(p: &Paragraph, remove: &[usize], updates: &[(usize, u8, bool)]) -> Paragraph {
     let mut after = p.clone();
+    for &(i, mask, outside) in updates {
+        keep_sides(&mut after.controls[i], mask, outside).expect("validated remaining source role");
+    }
     let mut positions = after.logical_control_positions();
     for &i in remove.iter().rev() {
         after.controls.remove(i);
@@ -79,12 +84,35 @@ fn without(p: &Paragraph, remove: &[usize]) -> Paragraph {
     after.rebuild_char_offsets(&positions);
     after
 }
-fn side_index(side: CellSide) -> usize {
-    match side {
-        CellSide::Left => 0,
-        CellSide::Right => 1,
-        CellSide::Top => 2,
-        CellSide::Bottom => 3,
+fn mask_of(sides: [bool; 4]) -> u8 {
+    sides
+        .iter()
+        .enumerate()
+        .fold(0, |mask, (i, b)| mask | if *b { 1 << i } else { 0 })
+}
+fn adjacent(table: &Table, ci: usize, peer: usize, dir: usize) -> bool {
+    if ci == peer {
+        return false;
+    }
+    let a = &table.cells[ci];
+    let b = &table.cells[peer];
+    let (x, y, r, d) = (
+        u32::from(a.col),
+        u32::from(a.row),
+        u32::from(a.col) + u32::from(a.col_span),
+        u32::from(a.row) + u32::from(a.row_span),
+    );
+    let (xx, yy, rr, dd) = (
+        u32::from(b.col),
+        u32::from(b.row),
+        u32::from(b.col) + u32::from(b.col_span),
+        u32::from(b.row) + u32::from(b.row_span),
+    );
+    match dir {
+        0 => rr == x && yy < d && dd > y,
+        1 => xx == r && yy < d && dd > y,
+        2 => dd == y && xx < r && rr > x,
+        _ => yy == d && xx < r && rr > x,
     }
 }
 
@@ -111,6 +139,7 @@ pub(crate) fn plan(
     let mut changes = Vec::new();
     let mut outside = std::collections::BTreeSet::new();
     let mut remove_outside = Vec::new();
+    let mut update_outside = Vec::new();
     let last_table = parent
         .controls
         .iter()
@@ -150,8 +179,11 @@ pub(crate) fn plan(
                 sides[2] && nb == r && nx < e && ne > x,
             ]
         };
-        let dir = side_index(tag.side);
-        if !selected[dir] {
+        let mask = tag
+            .mask()
+            .ok_or_else(|| error("잘못된 페이지 경계 변 집합"))?;
+        let selected_mask = mask_of(selected);
+        if mask & selected_mask == 0 {
             continue;
         }
         if outside_owner(rect, table, resources) != Some((ci, tag)) {
@@ -160,24 +192,37 @@ pub(crate) fn plan(
         if i <= last_table {
             return Err(error("페이지 테두리 제거가 표 슬롯을 이동시킵니다"));
         }
-        if ci != target && ((dir < 2 && (nr < r || nb > b)) || (dir >= 2 && (nx < x || ne > e))) {
-            return Err(error(
-                "병합 이웃의 공유 변 일부는 native 테두리로 교체할 수 없습니다",
-            ));
+        for dir in 0..4 {
+            if mask & (1 << dir) == 0 {
+                continue;
+            }
+            outside.insert((tag.source_id, dir, ci));
+            if selected[dir]
+                && ci != target
+                && ((dir < 2 && (nr < r || nb > b)) || (dir >= 2 && (nx < x || ne > e)))
+            {
+                return Err(error(
+                    "병합 이웃의 공유 변 일부는 native 테두리로 교체할 수 없습니다",
+                ));
+            }
         }
-        outside.insert((tag.source_id, dir, ci));
-        remove_outside.push(i);
+        let remaining = mask & !selected_mask;
+        if remaining == 0 {
+            remove_outside.push(i);
+        } else {
+            update_outside.push((i, remaining, true));
+        }
     }
     let mut sources = std::collections::BTreeSet::new();
     for (ci, cell) in table.cells.iter().enumerate() {
         for ctrl in cell.paragraphs.iter().flat_map(|p| &p.controls) {
             if let Some(paint) = PaintRef::from_control(ctrl) {
-                if let Some(side) = valid_side(table.common.instance_id, cell, paint, resources) {
-                    sources.insert((
-                        paint.common().cell_border_paint.unwrap().source_id,
-                        side_index(side),
-                        ci,
-                    ));
+                if let Some(tag) = valid_paint(table.common.instance_id, cell, paint, resources) {
+                    for dir in 0..4 {
+                        if tag.mask().unwrap() & (1 << dir) != 0 {
+                            sources.insert((tag.source_id, dir, ci));
+                        }
+                    }
                 }
             }
         }
@@ -201,6 +246,7 @@ pub(crate) fn plan(
         }
         for (pi, p) in cell.paragraphs.iter().enumerate() {
             let mut remove = Vec::new();
+            let mut updates = Vec::new();
             for (i, ctrl) in p.controls.iter().enumerate() {
                 let Some(rect) = PaintRef::from_control(ctrl) else {
                     continue;
@@ -208,35 +254,46 @@ pub(crate) fn plan(
                 let Some(tag) = rect.common().cell_border_paint else {
                     continue;
                 };
-                let dir = side_index(tag.side);
-                if !selected[dir] {
+                let mask = tag.mask().ok_or_else(|| error("잘못된 셀 경계 변 집합"))?;
+                let selected_mask = mask_of(selected);
+                if mask & selected_mask == 0 {
                     continue;
                 }
-                if valid_side(table.common.instance_id, cell, rect, resources) != Some(tag.side) {
+                if valid_paint(table.common.instance_id, cell, rect, resources) != Some(tag) {
                     return Err(error("셀 테두리 그림 소유가 현재 배치와 다릅니다"));
                 }
-                if !outside.contains(&(tag.source_id, dir, ci))
-                    && !sources
-                        .range((tag.source_id, dir ^ 1, 0)..=(tag.source_id, dir ^ 1, usize::MAX))
-                        .any(|&(_, _, peer)| peer != ci)
-                {
-                    return Err(error(
-                        "표 밖 잔여 조각의 편집 소유가 확정되지 않은 테두리는 교체할 수 없습니다",
-                    ));
+                for dir in 0..4 {
+                    if mask & selected_mask & (1 << dir) == 0 {
+                        continue;
+                    }
+                    if !outside.contains(&(tag.source_id, dir, ci))
+                        && !sources
+                            .range(
+                                (tag.source_id, dir ^ 1, 0)..=(tag.source_id, dir ^ 1, usize::MAX),
+                            )
+                            .any(|&(_, _, peer)| adjacent(table, ci, peer, dir))
+                    {
+                        return Err(error("표 밖 잔여 조각의 편집 소유가 확정되지 않은 테두리는 교체할 수 없습니다"));
+                    }
+                    if ci != target
+                        && ((dir < 2 && (nr < r || nb > b)) || (dir >= 2 && (nx < x || ne > e)))
+                    {
+                        return Err(error(
+                            "병합 이웃의 공유 변 일부는 native 테두리로 교체할 수 없습니다",
+                        ));
+                    }
                 }
-                if ci != target
-                    && ((dir < 2 && (nr < r || nb > b)) || (dir >= 2 && (nx < x || ne > e)))
-                {
-                    return Err(error(
-                        "병합 이웃의 공유 변 일부는 native 테두리로 교체할 수 없습니다",
-                    ));
+                let remaining = mask & !selected_mask;
+                if remaining == 0 {
+                    remove.push(i);
+                } else {
+                    updates.push((i, remaining, false));
                 }
-                remove.push(i);
             }
-            if remove.is_empty() {
+            if remove.is_empty() && updates.is_empty() {
                 continue;
             }
-            let after = without(p, &remove);
+            let after = without(p, &remove, &updates);
             changes.push(ParagraphChange {
                 cell: Some(ci),
                 paragraph: pi,
@@ -245,9 +302,9 @@ pub(crate) fn plan(
             });
         }
     }
-    if !remove_outside.is_empty() {
+    if !remove_outside.is_empty() || !update_outside.is_empty() {
         let before = parent_capture(parent);
-        let after = without(&before, &remove_outside);
+        let after = without(&before, &remove_outside, &update_outside);
         changes.push(ParagraphChange {
             cell: None,
             paragraph: 0,

@@ -19,6 +19,9 @@ pub(crate) struct PdfStroke {
     pub alpha: f64,
     pub dash: Vec<f64>,
     pub phase: f64,
+    /// Additional disconnected axial subpaths, with dash phase reset at each MoveTo.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub segments: Vec<[f64; 4]>,
 }
 impl PdfStroke {
     fn valid(&self) -> bool {
@@ -38,6 +41,13 @@ impl PdfStroke {
                 .iter()
                 .all(|v| v.is_finite() && *v >= 0. && *v <= 100_000.)
             && (self.dash.is_empty() || self.dash.iter().sum::<f64>() > 0.)
+            && self.segments.len() < 32
+            && self.segments.iter().all(|[x, y, a, b]| {
+                [x, y, a, b]
+                    .iter()
+                    .all(|v| v.is_finite() && v.abs() <= 100_000.)
+                    && ((x == a && y != b) || (y == b && x != a))
+            })
     }
     pub(crate) fn attach(&self, png: &mut Vec<u8>) -> Option<()> {
         if !self.valid() || png.get(..16)? != b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR" {
@@ -53,6 +63,7 @@ impl PdfStroke {
                 alpha: self.alpha,
                 dash: self.dash.clone(),
                 phase: self.phase,
+                segments: self.segments.clone(),
             },
         })
         .ok()?;
@@ -90,7 +101,17 @@ impl PdfStroke {
     /// Actual painted rectangles in source-frame points, including phase and
     /// path direction. Bounds/crop are applied by the common paint projection.
     pub(crate) fn rectangles(&self) -> Option<Vec<[f64; 4]>> {
-        let [x, y, a, b] = self.endpoints;
+        let mut all = Vec::new();
+        for endpoints in std::iter::once(self.endpoints).chain(self.segments.iter().copied()) {
+            all.extend(self.segment_rectangles(endpoints)?);
+            if all.len() > 8192 {
+                return None;
+            }
+        }
+        Some(all)
+    }
+    pub(crate) fn segment_rectangles(&self, endpoints: [f64; 4]) -> Option<Vec<[f64; 4]>> {
+        let [x, y, a, b] = endpoints;
         let horizontal = y == b;
         let length = if horizontal {
             (a - x).abs()

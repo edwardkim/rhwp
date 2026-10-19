@@ -1341,6 +1341,7 @@ pub(super) fn lower(
             super::table_paint::SourceContent {
                 spans: &span_controls,
                 images: &image_controls,
+                resources: &doc.bin_data_content,
             },
             &targets,
             &page.snapshot["tableDetection"],

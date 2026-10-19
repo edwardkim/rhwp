@@ -105,3 +105,5 @@ pdf/issue7333/*.pdf -text -diff
 pdf/issue7998/*.pdf -text -diff
 pdf/issue7998/periodic-borders/*.pdf -text -diff
 pdf/issue7998/fill-borders/*.pdf -text -diff
+pdf/issue7998/compound-borders/*.pdf -text -diff
+pdf/issue7998/compound-borders/print/*.pdf -text -diff

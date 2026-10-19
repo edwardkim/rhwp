@@ -2244,6 +2244,30 @@ impl PageRenderTree {
                 if plane_a != plane_b {
                     continue;
                 }
+                // Similar x/width is not physical overlap. Adjacent narrow
+                // source crops (e.g. compound stroke pieces) may all be within
+                // the legacy 1px alignment tolerance. They own disjoint ink.
+                // Ignore only floating point roundoff at a shared edge.
+                let epsilon = f64::EPSILON
+                    * 32.0
+                    * [
+                        bbox_a.x.abs(),
+                        bbox_b.x.abs(),
+                        bbox_a.y.abs(),
+                        bbox_b.y.abs(),
+                        bbox_a.width,
+                        bbox_b.width,
+                        bbox_a.height,
+                        bbox_b.height,
+                        1.0,
+                    ]
+                    .into_iter()
+                    .fold(1.0_f64, f64::max);
+                let overlap_x =
+                    (bbox_a.x + bbox_a.width).min(bbox_b.x + bbox_b.width) - bbox_a.x.max(bbox_b.x);
+                if overlap_x <= epsilon {
+                    continue;
+                }
                 // 조건 2/3: x, width 동일 (1px tolerance)
                 if (bbox_a.x - bbox_b.x).abs() > 1.0 {
                     continue;
@@ -2257,7 +2281,7 @@ impl PageRenderTree {
                 }
                 // 조건 5: 세로 겹침 (A.y + A.height > B.y)
                 let a_bottom = bbox_a.y + bbox_a.height;
-                if a_bottom <= bbox_b.y {
+                if a_bottom - bbox_b.y <= epsilon {
                     continue;
                 }
                 // Clip 계산: A 의 new_height = B.y - A.y
