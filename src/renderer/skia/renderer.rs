@@ -1,3 +1,4 @@
+use super::region_plan::SkiaRegionPlan;
 use skia_safe::{
     paint, png_encoder, surfaces, Canvas, Color, Font, FontMgr, FontStyle, Matrix, Paint,
     PathBuilder, PathEffect, Picture, PictureRecorder, RRect, Rect, Shaper,
@@ -401,14 +402,6 @@ struct PageReplayOutput {
     replay_time: Duration,
 }
 
-#[derive(Clone, Copy)]
-struct RasterRegionWindow {
-    origin_x: i32,
-    origin_y: i32,
-    page_width: i32,
-    page_height: i32,
-}
-
 pub struct SkiaLayerRenderer {
     font_mgr: FontMgr,
     text_shaper: OnceCell<Option<Shaper>>,
@@ -671,72 +664,17 @@ impl SkiaLayerRenderer {
         region: RasterRegion,
         options: RasterRenderOptions,
     ) -> LayerRenderResult<RasterRegionPixels> {
-        Self::validate_raster_options(options)?;
-        const MAX_EXACT_PIXEL: f64 = 16_777_216.0;
-        let invalid = || HwpError::RenderError("invalid raster region geometry".into());
-        let page_extent = |value: f64| -> LayerRenderResult<i32> {
-            let pixels = (value * options.scale).ceil();
-            if !value.is_finite()
-                || value <= 0.0
-                || !pixels.is_finite()
-                || pixels <= 0.0
-                || pixels > MAX_EXACT_PIXEL
-            {
-                return Err(invalid());
-            }
-            Ok(pixels as i32)
-        };
-        let page_width = page_extent(tree.page_width)?;
-        let page_height = page_extent(tree.page_height)?;
-        let right = region.x + region.width;
-        let bottom = region.y + region.height;
-        if [
-            region.x,
-            region.y,
-            region.width,
-            region.height,
-            right,
-            bottom,
-        ]
-        .into_iter()
-        .any(|value| !value.is_finite())
-            || region.width <= 0.0
-            || region.height <= 0.0
-            || right <= region.x
-            || bottom <= region.y
-        {
-            return Err(invalid());
-        }
-        let endpoints = [
-            (region.x * options.scale).floor(),
-            (region.y * options.scale).floor(),
-            (right * options.scale).ceil(),
-            (bottom * options.scale).ceil(),
-        ];
-        if endpoints.iter().any(|value| {
-            !value.is_finite() || !(-MAX_EXACT_PIXEL..=MAX_EXACT_PIXEL).contains(value)
-        }) {
-            return Err(invalid());
-        }
-        let [left, top, right, bottom] = endpoints.map(|value| value as i32);
-        let width = right.checked_sub(left).ok_or_else(invalid)?;
-        let height = bottom.checked_sub(top).ok_or_else(invalid)?;
-        let window = RasterRegionWindow {
-            origin_x: left,
-            origin_y: top,
-            page_width,
-            page_height,
-        };
+        let plan = SkiaRegionPlan::new(tree.page_width, tree.page_height, region, options)?;
         let (pixels, _) =
-            self.render_pixels_in_window(tree, options, (width, height), Some(window))?;
+            self.render_pixels_in_window(tree, options, (plan.width(), plan.height()), Some(plan))?;
         Ok(RasterRegionPixels {
             pixels,
-            origin_x: left,
-            origin_y: top,
+            origin_x: plan.origin_x(),
+            origin_y: plan.origin_y(),
         })
     }
 
-    fn validate_raster_options(options: RasterRenderOptions) -> LayerRenderResult<()> {
+    pub(super) fn validate_raster_options(options: RasterRenderOptions) -> LayerRenderResult<()> {
         if let Some(dpi) = options.dpi {
             if !dpi.is_finite() || dpi <= 0.0 {
                 return Err(HwpError::RenderError(format!("invalid raster dpi: {dpi}")));
@@ -805,7 +743,7 @@ impl SkiaLayerRenderer {
         tree: &PageLayerTree,
         options: RasterRenderOptions,
         (width, height): (i32, i32),
-        region: Option<RasterRegionWindow>,
+        region: Option<SkiaRegionPlan>,
     ) -> LayerRenderResult<(RasterPixels, LayerRenderDiagnostics)> {
         let total_start = Instant::now();
         if width <= 0
@@ -838,47 +776,20 @@ impl SkiaLayerRenderer {
             .checked_mul(height as usize)
             .ok_or_else(|| HwpError::ResourceLimit("raster byte count overflow".into()))?;
         let (surface_width, surface_height, origin_x, origin_y) = match region {
-            Some(region) => (
-                region.page_width,
-                region.page_height,
-                region.origin_x,
-                region.origin_y,
+            Some(plan) => (
+                plan.page_width(),
+                plan.page_height(),
+                plan.origin_x(),
+                plan.origin_y(),
             ),
             None => (width, height, 0, 0),
         };
-        // Use wide arithmetic even though admitted region endpoints fit 2^24.
-        let left = i64::from(origin_x).max(0);
-        let top = i64::from(origin_y).max(0);
-        let right = (i64::from(origin_x) + i64::from(width)).min(i64::from(surface_width));
-        let bottom = (i64::from(origin_y) + i64::from(height)).min(i64::from(surface_height));
-        let intersects = left < right && top < bottom;
-        if region.is_some() {
-            const MAX_WORKING_DIMENSION: i32 = 16_384;
-            const MAX_WORKING_PIXELS: u64 = 16 * 1024 * 1024;
-            const MAX_PEAK_BITMAP_BYTES: u64 = 128 * 1024 * 1024;
-            let limit = || HwpError::ResourceLimit("raster region working budget exceeded".into());
-            let working_bytes = if intersects {
-                let working_pixels = (surface_width as u64)
-                    .checked_mul(surface_height as u64)
-                    .ok_or_else(limit)?;
-                if surface_width > MAX_WORKING_DIMENSION
-                    || surface_height > MAX_WORKING_DIMENSION
-                    || working_pixels > MAX_WORKING_PIXELS
-                {
-                    return Err(limit());
-                }
-                // raster_n32_premul uses tightly packed four-byte N32 pixels.
-                working_pixels.checked_mul(4).ok_or_else(limit)?
-            } else {
-                0
-            };
-            let peak = working_bytes
-                .checked_add(u64::try_from(byte_count).map_err(|_| limit())?)
-                .ok_or_else(limit)?;
-            if peak > MAX_PEAK_BITMAP_BYTES {
-                return Err(limit());
-            }
-        }
+        // Region copy bounds and working/output budgets come from the same
+        // allocation-free preflight exposed to callers. A plan cannot be forged.
+        let intersection = match region {
+            Some(plan) => plan.intersection(),
+            None => Some((0, 0, width, height)),
+        };
 
         let clear_color = if let Some(color) = options.background_color {
             colorref_to_skia(color, 1.0)
@@ -903,7 +814,7 @@ impl SkiaLayerRenderer {
         }
         let nanos = |duration: Duration| duration.as_nanos().min(u128::from(u64::MAX)) as u64;
         let mut diagnostics = LayerRenderDiagnostics::default();
-        if intersects {
+        if let Some((left, top, right, bottom)) = intersection {
             let mut surface = surfaces::raster_n32_premul((surface_width, surface_height))
                 .ok_or_else(|| {
                     HwpError::RenderError("Skia raster surface 생성 실패".to_string())
@@ -921,13 +832,13 @@ impl SkiaLayerRenderer {
             let encode_start = Instant::now();
             let image = surface.image_snapshot();
             let copy_info = skia_safe::ImageInfo::new(
-                ((right - left) as i32, (bottom - top) as i32),
+                (right - left, bottom - top),
                 skia_safe::ColorType::RGBA8888,
                 skia_safe::AlphaType::Premul,
                 None,
             );
-            let destination_x = (left - i64::from(origin_x)) as usize;
-            let destination_y = (top - i64::from(origin_y)) as usize;
+            let destination_x = (i64::from(left) - i64::from(origin_x)) as usize;
+            let destination_y = (i64::from(top) - i64::from(origin_y)) as usize;
             let destination = destination_y
                 .checked_mul(stride)
                 .and_then(|row| {
@@ -940,7 +851,7 @@ impl SkiaLayerRenderer {
                 &copy_info,
                 &mut bytes[destination..],
                 stride,
-                (left as i32, top as i32),
+                (left, top),
                 skia_safe::image::CachingHint::Disallow,
             ) {
                 return Err(HwpError::RenderError("Skia RGBA pixel read failed".into()));
