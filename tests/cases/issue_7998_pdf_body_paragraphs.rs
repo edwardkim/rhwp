@@ -174,8 +174,8 @@ fn body_regions_are_real_editable_paragraphs_through_both_save_formats() {
         ),
         (
             "body-unrepresentable",
-            vec![vec!["NORMAL BODY NORMAL TAIL"]],
-            vec!["A", "B", "GAMMA"],
+            vec![vec!["A B GAMMA", "NORMAL BODY NORMAL TAIL"]],
+            vec![],
         ),
         (
             "body-picture",

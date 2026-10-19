@@ -1242,16 +1242,17 @@ impl Paragraph {
         let trailing_number = self.trailing_auto_number(&control_positions);
         let char_end = |idx: usize| self.char_stream_end(&text_chars, idx, trailing_number);
         let is_inline_object = |ctrl: &Control| {
-            matches!(
-                ctrl,
-                Control::Shape(_)
-                    | Control::Table(_)
-                    | Control::Picture(_)
-                    | Control::Equation(_)
-                    | Control::Footnote(_)
-                    | Control::Endnote(_)
-                    | Control::AutoNumber(_)
-            )
+            !super::border_paint::is_cell_frame_paint(ctrl)
+                && matches!(
+                    ctrl,
+                    Control::Shape(_)
+                        | Control::Table(_)
+                        | Control::Picture(_)
+                        | Control::Equation(_)
+                        | Control::Footnote(_)
+                        | Control::Endnote(_)
+                        | Control::AutoNumber(_)
+                )
         };
         // 이 자리 컨트롤 가운데 첫 개체의 차례 — 그 앞에 놓인 같은 자리 컨트롤 수와 같다.
         // 문단 끝 자동 번호는 자리표 글자가 8유닛을 차지하므로 이 자리 컨트롤로 세지 않는다.
@@ -2296,6 +2297,13 @@ impl Paragraph {
         let deleted = delete_count.min(len - at);
         let inserted = text.chars().count();
         let mut positions = self.control_text_positions();
+        // Cell-frame paint has a paragraph-start anchor, including in an empty
+        // cell whose other controls use synthetic logical slot positions.
+        for (ci, at) in positions.iter_mut().enumerate() {
+            if super::border_paint::is_cell_frame_paint(&self.controls[ci]) {
+                *at = 0;
+            }
+        }
         // 문단 끝 자동 번호는 갭 슬롯이 아니라 자리표 글자(마지막 글자)를 차지한다. 그 글자
         // 자리로 두어야 끝에 친 글자가 번호 앞 갭으로 들어가지 않고, 다시 셀 때 빈 슬롯이 생기지 않는다.
         if let Some(ci) = self.trailing_auto_number(&positions) {
@@ -2375,7 +2383,7 @@ impl Paragraph {
                 })
                 .collect();
             let object = |slot: &Slot| {
-                matches!(slot, Slot::Control(ci) if matches!(
+                matches!(slot, Slot::Control(ci) if !super::border_paint::is_cell_frame_paint(&self.controls[*ci]) && matches!(
                     self.controls[*ci],
                     Control::Shape(_)
                         | Control::Table(_)

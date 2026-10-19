@@ -534,7 +534,7 @@ fn published_helvetica_advances_and_trace_use_their_actual_afm_source() {
         );
     }
     assert!(find_metric("HelveticaCorp-Custom", false, false).is_none());
-    let mut core = rhwp::DocumentCore::from_pdf_bytes(
+    let core = rhwp::DocumentCore::from_pdf_bytes(
         include_bytes!("../../pdf/issue7998/multiline-cell.pdf"),
         &PdfImportOptions::default(),
     )
@@ -626,7 +626,7 @@ fn pdf_glyph_source_references_remain_unique_when_word_spaces_are_inferred() {
 #[test]
 fn pdf_public_page_five_cell_runs_fit_without_losing_the_final_glyphs() {
     use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
-    let mut core = rhwp::DocumentCore::from_pdf_bytes(
+    let core = rhwp::DocumentCore::from_pdf_bytes(
         include_bytes!("../../pdf/pr7704/6778-square-2020.pdf"),
         &PdfImportOptions::default(),
     )
@@ -680,14 +680,31 @@ fn pdf_extended_tabs_keep_source_cell_lines_after_both_save_formats() {
         DocumentCore,
     };
     fn paragraph_axis(p: &Paragraph) {
-        let mut pos = 0;
+        // HWP extended controls and tabs each own 8 stream units. Floating
+        // source paint can precede text; real content controls may remain
+        // between glyphs. Account for every slot without pinning text at zero.
+        let (mut pos, mut slots) = (0, 0);
         for (ch, offset) in p.text.chars().zip(&p.char_offsets) {
+            let gap = offset.checked_sub(pos).expect("text stream order");
             assert_eq!(
-                *offset, pos,
-                "PARA_TEXT uses its extended-character stream axis"
+                gap % 8,
+                0,
+                "only complete control slots separate source characters"
             );
-            pos += if ch == '\t' { 8 } else { ch.len_utf16() as u32 };
+            slots += gap / 8;
+            pos = offset + if ch == '\t' { 8 } else { ch.len_utf16() as u32 };
         }
+        let tail = p
+            .char_count
+            .checked_sub(pos + 1)
+            .expect("paragraph terminator follows text");
+        assert_eq!(tail % 8, 0);
+        slots += tail / 8;
+        assert_eq!(
+            slots as usize,
+            p.controls.len(),
+            "every physical control slot is counted once"
+        );
         assert_eq!(p.text.chars().count(), p.char_offsets.len());
     }
     fn cell(node: &RenderNode) -> Option<&RenderNode> {
@@ -1076,5 +1093,609 @@ fn pdf_baseline_is_preserved_when_horizontal_metrics_are_deferred() {
         core.export_hwpx_native().unwrap(),
     ] {
         check(&DocumentCore::from_bytes(&bytes).unwrap());
+    }
+}
+
+// Qualified source/save evidence and independent before failures: stage29 report.
+fn whitespace_source(name: &str) -> Vec<u8> {
+    std::fs::read(
+        std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/pdf/issue7998/horizontal-metrics/native"
+        ))
+        .join(format!("{name}.pdf")),
+    )
+    .unwrap()
+}
+fn whitespace_first_cell(core: &rhwp::DocumentCore) -> &rhwp::model::table::Cell {
+    let rhwp::model::control::Control::Table(table) = core.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .find(|c| matches!(c, rhwp::model::control::Control::Table(_)))
+        .unwrap()
+    else {
+        unreachable!()
+    };
+    assert_eq!(
+        (table.row_count, table.col_count, table.cells.len()),
+        (1, 2, 2)
+    );
+    &table.cells[0]
+}
+fn whitespace_paint(core: &rhwp::DocumentCore, gap: f64) {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn table(n: &RenderNode) -> Option<&RenderNode> {
+        if matches!(n.node_type, RenderNodeType::Table(_)) {
+            Some(n)
+        } else {
+            n.children.iter().find_map(table)
+        }
+    }
+    fn run<'a>(n: &'a RenderNode, start: &str) -> Option<&'a RenderNode> {
+        if let RenderNodeType::TextRun(r) = &n.node_type {
+            if r.text.starts_with(start) {
+                return Some(n);
+            }
+        }
+        n.children.iter().find_map(|n| run(n, start))
+    }
+    fn letters(n: &RenderNode, out: &mut String) {
+        if let RenderNodeType::TextRun(r) = &n.node_type {
+            out.extend(r.text.chars().filter(|c| !c.is_whitespace()));
+        }
+        for c in &n.children {
+            letters(c, out);
+        }
+    }
+    let tree = core.build_page_render_tree(0).unwrap();
+    let t = table(&tree.root).unwrap();
+    let cells: Vec<_> = t
+        .children
+        .iter()
+        .filter(|c| matches!(c.node_type, RenderNodeType::TableCell(_)))
+        .collect();
+    assert_eq!(cells.len(), 2);
+    let a = run(cells[0], "A").unwrap();
+    let b = run(cells[0], "B").unwrap();
+    let c = run(cells[0], "C").unwrap();
+    // ArialMT A=667/1000em, 12pt; independent TJ/Tw separator, not fitted fields.
+    // Source page has 100% raw in both backends; retain inclusion/order too.
+    assert!(((b.bbox.x - a.bbox.x) - (8.004 + gap) * 96. / 72.).abs() <= 2.0);
+    assert!(b.bbox.x >= a.bbox.x + a.bbox.width - 0.5);
+    assert!(c.bbox.y >= a.bbox.y + a.bbox.height - 0.5);
+    for n in [a, b, c] {
+        assert!(n.bbox.x >= cells[0].bbox.x && n.bbox.y >= cells[0].bbox.y);
+        assert!(n.bbox.x + n.bbox.width <= cells[0].bbox.x + cells[0].bbox.width + 0.5);
+        assert!(n.bbox.y + n.bbox.height <= cells[0].bbox.y + cells[0].bbox.height + 0.5);
+    }
+    let tail = run(&tree.root, "AFTER").unwrap();
+    assert!(tail.bbox.y >= t.bbox.y + t.bbox.height);
+    let mut painted = String::new();
+    letters(&tree.root, &mut painted);
+    assert_eq!(painted, "ABCDCONTROLCELLAFTERTABLE");
+}
+#[test]
+fn joint_whitespace_metrics_preserve_source_cell_paragraph_and_both_saves() {
+    use rhwp::DocumentCore;
+    for (name, gap) in [
+        ("wide-inferred", 15.),
+        ("narrow-inferred", 2.88),
+        ("wide-explicit", 15.),
+    ] {
+        let input = whitespace_source(name);
+        let report = inference(&input, true);
+        let first = report["sourceTypography"]["lines"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|l| {
+                l["context"] == serde_json::json!(["page", "table:0", "cell:0"])
+                    && l["lineIndex"] == 0
+            })
+            .unwrap();
+        assert_eq!(first["jointWhitespaceFits"], 1);
+        assert_eq!(first["status"], "observed_origins_with_nominal_widths");
+        let chars = first["characters"].as_array().unwrap();
+        assert_eq!(
+            chars
+                .iter()
+                .map(|c| c["character"].as_str().unwrap())
+                .collect::<String>(),
+            "A B"
+        );
+        assert!((chars[1]["advance"].as_f64().unwrap() - gap).abs() < 0.0001);
+        assert_eq!(
+            chars[1]["span"],
+            if name == "wide-explicit" { 0 } else { 1 }
+        );
+        let mut core = DocumentCore::from_pdf_bytes(&input, &PdfImportOptions::default()).unwrap();
+        let p = &whitespace_first_cell(&core).paragraphs;
+        assert_eq!(core.document().doc_info.para_shapes[p[0].para_shape_id as usize].attr2 & 3,0,"editable PDF paragraphs use normal line wrapping; observed source lines remain in LineSeg");
+        assert_eq!(p.len(), 1);
+        assert_eq!(p[0].text, "A B C D");
+        assert_eq!(p[0].line_segs.len(), 2);
+        assert!(p[0].controls.is_empty());
+        for item in &p[0].char_shapes {
+            let s = &core.document().doc_info.char_shapes[item.char_shape_id as usize];
+            assert!(s.ratios.iter().all(|r| (50..=200).contains(r)));
+            assert!(s.spacings.iter().all(|s| (-50..=50).contains(s)));
+        }
+        whitespace_paint(&core, gap);
+        for bytes in [
+            core.export_hwp_with_adapter_snapshot().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            assert_eq!(
+                whitespace_first_cell(&reopened).paragraphs[0].text,
+                "A B C D"
+            );
+            whitespace_paint(&reopened, gap);
+        }
+        core.insert_text_in_cell_native(0, 0, 0, 0, 0, 1, "X")
+            .unwrap();
+        assert_eq!(whitespace_first_cell(&core).paragraphs[0].text, "AX B C D");
+        core.delete_text_in_cell_native(0, 0, 0, 0, 0, 1, 1)
+            .unwrap();
+        assert_eq!(whitespace_first_cell(&core).paragraphs[0].text, "A B C D");
+    }
+}
+#[test]
+fn whitespace_outside_combined_fields_stays_unverified_and_ordinary_path_stays_ordinary() {
+    for (name, joint, legacy) in [("ordinary", 0, false), ("too-wide", 0, true)] {
+        let input = whitespace_source(name);
+        let report = inference(&input, true);
+        let first = report["sourceTypography"]["lines"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|l| {
+                l["context"] == serde_json::json!(["page", "table:0", "cell:0"])
+                    && l["lineIndex"] == 0
+            })
+            .unwrap();
+        if legacy {
+            assert_eq!(first["status"], "unverified_legacy_line_frame");
+            assert_eq!(
+                first["reason"],
+                "source whitespace advance exceeds combined HWP character range"
+            );
+        } else {
+            assert_eq!(first["jointWhitespaceFits"], joint);
+            assert_eq!(first["status"], "observed_origins_with_nominal_widths");
+        }
+        let core =
+            rhwp::DocumentCore::from_pdf_bytes(&input, &PdfImportOptions::default()).unwrap();
+        assert_eq!(
+            whitespace_first_cell(&core)
+                .paragraphs
+                .iter()
+                .flat_map(|p| p.text.chars())
+                .filter(|c| !c.is_whitespace())
+                .collect::<String>(),
+            "ABCD"
+        );
+    }
+}
+#[test]
+fn plain_rectangular_strokes_use_native_cell_borders_without_overlay_objects() {
+    use rhwp::DocumentCore;
+    for (name, gap) in [
+        ("wide-inferred", 15.),
+        ("narrow-inferred", 2.88),
+        ("wide-explicit", 15.),
+    ] {
+        let input = std::fs::read(
+            std::path::Path::new(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/pdf/issue7998/horizontal-metrics/rectangle"
+            ))
+            .join(format!("{name}.pdf")),
+        )
+        .unwrap();
+        let core = DocumentCore::from_pdf_bytes(&input, &PdfImportOptions::default()).unwrap();
+        let cell = whitespace_first_cell(&core);
+        assert_eq!(cell.paragraphs.len(), 1);
+        let p = &cell.paragraphs[0];
+        assert_eq!(p.text, "A B C D");
+        assert_eq!(p.line_segs.len(), 2);
+        assert!(
+            p.controls.is_empty(),
+            "a plain rectangular stroke is a native cell border, not a selectable overlay"
+        );
+        assert_eq!(inference(&input, true)["nativeBorderCells"], 2);
+        assert_eq!(
+            p.utf16_pos_to_char_idx(p.line_seg_text_start(1)),
+            4,
+            "the next source line still starts at C after all graphic slots"
+        );
+        whitespace_paint(&core, gap);
+        for bytes in [
+            core.export_hwp_with_adapter_snapshot().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            let p = &whitespace_first_cell(&reopened).paragraphs[0];
+            assert_eq!(p.text, "A B C D");
+            assert_eq!(p.line_segs.len(), 2);
+            assert!(p.control_text_positions().iter().all(|at| *at == 0));
+            assert_eq!(p.utf16_pos_to_char_idx(p.line_seg_text_start(1)), 4);
+            whitespace_paint(&reopened, gap);
+        }
+    }
+}
+
+#[test]
+fn regenerated_cell_bands_anchor_before_multiline_text_after_row_and_column_edits() {
+    use rhwp::{model::control::Control, DocumentCore};
+    let input = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/pdf/issue7998/horizontal-metrics/compound/wide-inferred.pdf"
+    ))
+    .unwrap();
+    assert_eq!(
+        inference(&input, true)["nativeBorderCells"],
+        0,
+        "this source exercises retained paint, not ordinary native borders"
+    );
+    for row in [true, false] {
+        let mut core = DocumentCore::from_pdf_bytes(&input, &PdfImportOptions::default()).unwrap();
+        let ci = core.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Table(_)))
+            .unwrap();
+        if row {
+            core.insert_table_row_native(0, 0, ci, 0, false).unwrap();
+        } else {
+            core.insert_table_column_native(0, 0, ci, 0, false).unwrap();
+        }
+        let saved = [
+            core.export_hwp_with_adapter_snapshot().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ];
+        for current in
+            std::iter::once(core).chain(saved.iter().map(|b| DocumentCore::from_bytes(b).unwrap()))
+        {
+            let Control::Table(table) = current.document().sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .find(|c| matches!(c, Control::Table(_)))
+                .unwrap()
+            else {
+                panic!()
+            };
+            assert_eq!(
+                (table.row_count, table.col_count),
+                if row { (2, 2) } else { (1, 3) }
+            );
+            let paragraphs: Vec<_> = table.cells.iter().flat_map(|c| &c.paragraphs).collect();
+            assert_eq!(
+                paragraphs
+                    .iter()
+                    .map(|p| p.text.as_str())
+                    .filter(|s| !s.is_empty())
+                    .collect::<Vec<_>>(),
+                ["A B C D", "CONTROL CELL"]
+            );
+            for p in &paragraphs {
+                assert!(!p.controls.is_empty());
+                if !p.text.is_empty() {
+                    assert!(
+                        p.control_text_positions().iter().all(|at| *at == 0),
+                        "new cell-local bands must not follow the last text line"
+                    );
+                } else {
+                    assert_eq!(p.char_count, p.controls.len() as u32 * 8 + 1);
+                }
+            }
+            let p = paragraphs.iter().find(|p| p.text == "A B C D").unwrap();
+            assert_eq!(p.line_segs.len(), 2);
+            assert_eq!(p.utf16_pos_to_char_idx(p.line_seg_text_start(1)), 4);
+        }
+    }
+}
+
+#[test]
+fn cell_frame_anchors_survive_leading_text_after_both_reopen_formats() {
+    use rhwp::{model::control::Control, DocumentCore};
+    let bytes = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/pdf/issue7998/horizontal-metrics/alpha/wide-inferred.pdf"
+    ))
+    .unwrap();
+    let original = DocumentCore::from_pdf_bytes(&bytes, &PdfImportOptions::default()).unwrap();
+    let files = [
+        original.export_hwp_with_adapter_snapshot().unwrap(),
+        original.export_hwpx_native().unwrap(),
+    ];
+    for mut c in
+        std::iter::once(original).chain(files.iter().map(|b| DocumentCore::from_bytes(b).unwrap()))
+    {
+        let ci = c.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Table(_)))
+            .unwrap();
+        let p = &whitespace_first_cell(&c).paragraphs[0];
+        assert!(p.controls.iter().all(|c| match c {
+            Control::Picture(p) => p.common.cell_frame_paint,
+            Control::Shape(s) => s.common().cell_frame_paint,
+            _ => false,
+        }));
+        assert!(
+            p.controls
+                .iter()
+                .any(|c| matches!(c,Control::Picture(p)if p.common.cell_border_paint.is_none())),
+            "frame-only role must not invent border-edit authority"
+        );
+        c.insert_text_in_cell_native(
+            0,
+            0,
+            ci,
+            0,
+            0,
+            0,
+            "FIRST SECOND THIRD FOURTH FIFTH SIXTH SEVENTH EIGHTH ",
+        )
+        .unwrap();
+        let p = &whitespace_first_cell(&c).paragraphs[0];
+        assert!(p.line_segs.len() > 2);
+        assert!(p.control_text_positions().iter().all(|at| *at == 0));
+        for data in [
+            c.export_hwp_with_adapter_snapshot().unwrap(),
+            c.export_hwpx_native().unwrap(),
+        ] {
+            let reread = DocumentCore::from_bytes(&data).unwrap();
+            let p = &whitespace_first_cell(&reread).paragraphs[0];
+            assert!(p.control_text_positions().iter().all(|at| *at == 0));
+            assert!(p.text.ends_with("A B C D"));
+        }
+    }
+}
+
+#[test]
+fn empty_new_cell_frame_anchor_survives_typing_after_both_save_formats() {
+    use rhwp::{model::control::Control, DocumentCore};
+    let bytes = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/pdf/issue7998/horizontal-metrics/compound/wide-inferred.pdf"
+    ))
+    .unwrap();
+    let original = DocumentCore::from_pdf_bytes(&bytes, &PdfImportOptions::default()).unwrap();
+    let files = [
+        original.export_hwp_with_adapter_snapshot().unwrap(),
+        original.export_hwpx_native().unwrap(),
+    ];
+    for mut c in
+        std::iter::once(original).chain(files.iter().map(|b| DocumentCore::from_bytes(b).unwrap()))
+    {
+        let ci = c.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Table(_)))
+            .unwrap();
+        c.insert_table_row_native(0, 0, ci, 0, false).unwrap();
+        let text = "FIRST SECOND THIRD FOURTH FIFTH SIXTH SEVENTH EIGHTH ";
+        c.insert_text_in_cell_native(0, 0, ci, 0, 0, 0, text)
+            .unwrap();
+        for file in [
+            c.export_hwp_with_adapter_snapshot().unwrap(),
+            c.export_hwpx_native().unwrap(),
+        ] {
+            let reopened = DocumentCore::from_bytes(&file).unwrap();
+            let Control::Table(t) = reopened.document().sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .find(|c| matches!(c, Control::Table(_)))
+                .unwrap()
+            else {
+                unreachable!()
+            };
+            let p = &t.cells[0].paragraphs[0];
+            assert_eq!(p.text, text);
+            assert!(p.line_segs.len() > 1);
+            assert!(p.control_text_positions().iter().all(|&at| at == 0));
+            assert_eq!(
+                t.cells
+                    .iter()
+                    .flat_map(|c| &c.paragraphs)
+                    .map(|p| p.text.as_str())
+                    .collect::<String>(),
+                format!("{text}A B C DCONTROL CELL")
+            );
+        }
+    }
+}
+#[test]
+fn legacy_border_sidecars_restore_edit_roles_without_inventing_frame_anchors() {
+    use rhwp::{
+        model::{border_paint, control::Control, paragraph::Paragraph},
+        DocumentCore,
+    };
+    fn clear(ps: &mut [Paragraph], borders: bool) {
+        for p in ps {
+            for c in &mut p.controls {
+                match c {
+                    Control::Table(t) => {
+                        for cell in &mut t.cells {
+                            clear(&mut cell.paragraphs, borders)
+                        }
+                    }
+                    Control::Shape(s) => {
+                        s.common_mut().cell_frame_paint = false;
+                        if borders {
+                            s.common_mut().cell_border_paint = None;
+                            s.common_mut().outside_cell_border_paint = None;
+                        }
+                    }
+                    Control::Picture(p) => {
+                        p.common.cell_frame_paint = false;
+                        if borders {
+                            p.common.cell_border_paint = None;
+                            p.common.outside_cell_border_paint = None;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    for (file, version) in [
+        ("periodic-borders/thin-fill-occluder.pdf", 2),
+        ("nested-dash-parent.pdf", 3),
+        ("compound-borders/compound-solid.pdf", 4),
+        ("retained-border-structure/nonuniform-axis.pdf", 5),
+    ] {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("pdf/issue7998")
+            .join(file);
+        let mut core = DocumentCore::from_pdf_bytes(
+            &std::fs::read(path).unwrap(),
+            &PdfImportOptions::default(),
+        )
+        .unwrap();
+        if version == 5 {
+            let ci = core.document().sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .position(|c| matches!(c, Control::Table(_)))
+                .unwrap();
+            core.insert_table_column_native(0, 0, ci, 0, false).unwrap();
+        }
+        let mut legacy = core.document().clone();
+        for sec in &mut legacy.sections {
+            clear(&mut sec.paragraphs, false)
+        }
+        let bytes = border_paint::encode(&legacy).unwrap().unwrap();
+        assert_eq!(bytes[7], version, "{file}");
+        let mut plain = legacy.clone();
+        for sec in &mut plain.sections {
+            clear(&mut sec.paragraphs, true)
+        }
+        assert!(border_paint::encode(&plain).unwrap().is_none());
+        border_paint::decode(&mut plain, &bytes);
+        assert_eq!(border_paint::encode(&plain).unwrap(), Some(bytes));
+        // Re-encoding stays legacy: no frame role is guessed from coincident geometry.
+    }
+}
+
+#[test]
+fn plain_rectangle_properties_survive_real_axis_edits_and_both_native_saves() {
+    use rhwp::{
+        model::{control::Control, style::BorderLineType},
+        DocumentCore,
+    };
+    let bytes = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/pdf/issue7998/horizontal-metrics/closed-large/wide-inferred.pdf"
+    ))
+    .unwrap();
+    for mode in 0..3 {
+        let mut core = DocumentCore::from_pdf_bytes(&bytes, &PdfImportOptions::default()).unwrap();
+        let ci = core.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Table(_)))
+            .unwrap();
+        match mode {
+            1 => {
+                core.insert_table_row_native(0, 0, ci, 0, false).unwrap();
+            }
+            2 => {
+                core.insert_table_column_native(0, 0, ci, 0, false).unwrap();
+            }
+            _ => {}
+        }
+        let saved = [
+            core.export_hwp_with_adapter_snapshot().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ];
+        for c in
+            std::iter::once(core).chain(saved.iter().map(|b| DocumentCore::from_bytes(b).unwrap()))
+        {
+            let Control::Table(t) = c.document().sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .find(|c| matches!(c, Control::Table(_)))
+                .unwrap()
+            else {
+                unreachable!()
+            };
+            assert_eq!(
+                (t.row_count, t.col_count),
+                match mode {
+                    1 => (2, 2),
+                    2 => (1, 3),
+                    _ => (1, 2),
+                }
+            );
+            assert_eq!(
+                t.cells
+                    .iter()
+                    .flat_map(|c| &c.paragraphs)
+                    .map(|p| p.text.as_str())
+                    .collect::<String>(),
+                "A B C DCONTROL CELL"
+            );
+            for cell in &t.cells {
+                assert!(
+                    cell.paragraphs.iter().all(|p| p.controls.is_empty()),
+                    "native cell borders must not create selectable overlay objects"
+                );
+                let fill = &c.document().doc_info.border_fills[cell.border_fill_id as usize - 1];
+                for border in fill.borders.iter().take(4) {
+                    assert_eq!(border.line_type, BorderLineType::Solid);
+                    assert_eq!(border.color, 0);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn transparent_or_occluded_rectangles_do_not_invent_opaque_native_cell_borders() {
+    use rhwp::{model::control::Control, DocumentCore};
+    for name in ["alpha-frame", "occluded-frame"] {
+        let path = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/pdf/issue7998/horizontal-metrics/"
+        ))
+        .join(if name == "alpha-frame" {
+            "alpha"
+        } else {
+            "occluded"
+        })
+        .join("wide-inferred.pdf");
+        let bytes = std::fs::read(path).unwrap();
+        assert_eq!(
+            inference(&bytes, true)["nativeBorderCells"],
+            0,
+            "{name}: rectangle geometry alone does not prove full opaque ink"
+        );
+        let core = DocumentCore::from_pdf_bytes(&bytes, &PdfImportOptions::default()).unwrap();
+        let Control::Table(t) = core.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .find(|c| matches!(c, Control::Table(_)))
+            .unwrap()
+        else {
+            unreachable!()
+        };
+        assert_eq!(
+            t.cells
+                .iter()
+                .flat_map(|c| &c.paragraphs)
+                .map(|p| p.text.as_str())
+                .collect::<String>(),
+            "A B C DCONTROL CELL"
+        );
+        assert!(
+            t.cells
+                .iter()
+                .flat_map(|c| &c.paragraphs)
+                .any(|p| !p.controls.is_empty()),
+            "retain source paint rather than filling the missing/transparent edge"
+        );
     }
 }

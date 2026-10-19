@@ -2,7 +2,7 @@
 //! Arbitrary gaps, phase, occlusion and compound paint keep their source owners.
 use super::*;
 use crate::model::style::{BorderFill, BorderLine};
-use pdf_oxide::elements::{LineCap, PathOperation};
+use pdf_oxide::elements::{LineCap, LineJoin, PathOperation};
 
 pub(super) struct Plan {
     pub borders: Vec<BorderFill>,
@@ -17,6 +17,7 @@ struct Rule {
     to: f32,
     color: u32,
     width: u32,
+    endpoint_extension: f32,
 }
 
 // Compare actual painted intervals, not a regularized carrier or coverage ratio.
@@ -83,6 +84,73 @@ pub(super) fn plan(
     let mut work = 0usize;
     for path in refs(&grid["sourcePathIndices"]).ok()? {
         let source = page.paths.get(path)?;
+        // A genuine closed rectangular stroke has the same four editable
+        // cell sides as four separate strokes. Do not keep a cell-sized bitmap
+        // merely because the PDF emitted `re S` instead of four `m/l/S` paths.
+        // Clipped/rounded/transparent/filled/compound paths retain their paint.
+        if matches!(source.operations.as_slice(), [PathOperation::Rectangle(..)]) {
+            let clip_complete = match source.paint.clip {
+                pdf_oxide::extractors::image_clip::ImageClip::Unbounded => true,
+                pdf_oxide::extractors::image_clip::ImageClip::Rectangle(clip) => {
+                    let bounds = source.rendered_bbox();
+                    bounds.x >= clip.x
+                        && bounds.y >= clip.y
+                        && bounds.x + bounds.width <= clip.x + clip.width
+                        && bounds.y + bounds.height <= clip.y + clip.height
+                }
+                _ => false,
+            };
+            if source.fill_color.is_some()
+                || source.dash_pattern.is_some()
+                || source.matrix.is_some()
+                || source.paint.stroke_alpha != 1.
+                || source.line_join != LineJoin::Miter
+                || !clip_complete
+                || !source.stroke_width.is_finite()
+                || source.stroke_width <= 0.
+            {
+                return None;
+            }
+            let color = super::super::lowering::rgb(source.stroke_color?);
+            let control = *rule_controls.get(path)?.as_ref()?;
+            let observations =
+                page.snapshot["tableDetection"]["boundaryObservations"].as_array()?;
+            let mut count = 0;
+            for observed in observations {
+                work += 1;
+                if work > 1_000_000 {
+                    return None;
+                }
+                if observed["path"].as_u64()? as usize != path {
+                    continue;
+                }
+                if observed["paintKind"] != "stroke" {
+                    return None;
+                }
+                let horizontal = observed["horizontal"].as_bool()?;
+                let at = number(&observed["at"]).ok()?;
+                let from = number(&observed["from"]).ok()?;
+                let to = number(&observed["to"]).ok()?;
+                if ![at, from, to].iter().all(|n| n.is_finite()) || to <= from {
+                    return None;
+                }
+                rules.push(Rule {
+                    control,
+                    horizontal,
+                    at,
+                    from,
+                    to,
+                    color,
+                    width: hu(source.stroke_width).ok()?,
+                    endpoint_extension: source.stroke_width / 2.,
+                });
+                count += 1;
+            }
+            if count != 4 {
+                return None;
+            }
+            continue;
+        }
         // The positional producer has already resolved clipping and color.
         // Require a genuine opaque, uncapped straight stroke as provenance,
         // rather than promoting a bitmap or a coincident content rectangle.
@@ -163,6 +231,7 @@ pub(super) fn plan(
             to,
             color: r.drawing.fill.solid.as_ref()?.background_color,
             width: if horizontal { c.height } else { c.width },
+            endpoint_extension: 0.,
         });
     }
     if rules.is_empty() {
@@ -170,12 +239,30 @@ pub(super) fn plan(
     }
     let rule_ids = rules.iter().map(|r| r.control).collect::<BTreeSet<_>>();
     for rule in &rules {
-        let Control::Shape(source) = &controls[rule.control] else {
-            return None;
+        let source = match &controls[rule.control] {
+            Control::Shape(s) => s.common(),
+            Control::Picture(p) => &p.common,
+            _ => return None,
         };
-        let source = source.common();
-        let x = source.horizontal_offset as i32 as i64;
-        let y = source.vertical_offset as i32 as i64;
+        // Test the actual edge ink, not a transparent rectangle bitmap's whole
+        // frame. Text inside a border does not occlude that border. Miter corners
+        // extend by half a pen; flat-cap straight strokes keep their endpoints.
+        let half = rule.width as f32 / 200.;
+        let (x, y, w, h) = if rule.horizontal {
+            (
+                rule.from - rule.endpoint_extension,
+                rule.at - half,
+                rule.to - rule.from + 2. * rule.endpoint_extension,
+                2. * half,
+            )
+        } else {
+            (
+                rule.at - half,
+                rule.from - rule.endpoint_extension,
+                2. * half,
+                rule.to - rule.from + 2. * rule.endpoint_extension,
+            )
+        };
         for (ci, control) in controls.iter().enumerate() {
             work += 1;
             if work > 1_000_000 {
@@ -192,12 +279,12 @@ pub(super) fn plan(
             if c.z_order <= source.z_order {
                 continue;
             }
-            let xx = c.horizontal_offset as i32 as i64;
-            let yy = c.vertical_offset as i32 as i64;
-            if xx < x + i64::from(source.width)
-                && x < xx + i64::from(c.width)
-                && yy < y + i64::from(source.height)
-                && y < yy + i64::from(c.height)
+            let xx = c.horizontal_offset as i32 as f32 / 100.;
+            let yy = c.vertical_offset as i32 as f32 / 100.;
+            if xx < x + w
+                && x < xx + c.width as f32 / 100.
+                && yy < y + h
+                && y < yy + c.height as f32 / 100.
             {
                 // A later object may cover the separator. Keep its original
                 // source paint/order rather than interpreting an invisible

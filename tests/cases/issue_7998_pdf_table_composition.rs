@@ -379,23 +379,64 @@ fn native_periodic_families_keep_actual_cell_owners_paint_and_both_save_formats(
 }
 
 #[test]
-fn parent_and_child_backgrounds_partition_the_same_source_area() {
+fn parent_background_is_one_native_fill_and_nested_content_keeps_its_owner() {
     let core = DocumentCore::from_pdf_bytes(
         &std::fs::read(base().join("nested-periodic-background.pdf")).unwrap(),
         &PdfImportOptions::default(),
     )
     .unwrap();
-    fn area(n: &RenderNode, depth: usize, out: &mut [f64; 3]) {
-        let depth = depth + usize::from(matches!(n.node_type, RenderNodeType::Table(_)));
-        if let RenderNodeType::Rectangle(r) = &n.node_type {
-            if r.style.fill_color.is_some_and(|c| c != 0 && c != 0xffffff) {
-                assert!(depth < 3);
-                out[depth] += n.bbox.width * n.bbox.height * 72. / 96. * 72. / 96.;
+    fn owners(core: &DocumentCore, controls: &[Control], depth: usize) -> usize {
+        let mut count = 0;
+        for control in controls {
+            if let Control::Table(table) = control {
+                for cell in &table.cells {
+                    let fill = &core.document().doc_info.border_fills
+                        [cell.border_fill_id as usize - 1]
+                        .fill;
+                    if fill.fill_type == rhwp::model::style::FillType::Solid {
+                        if let Some(solid) = fill.solid.filter(|s| s.background_color != 0xffffff) {
+                            // Independent PDF declares one 0.9/0.95/1 rectangle
+                            // behind the parent; it does not declare a child fill.
+                            assert_eq!(solid.background_color, 0xfff2e6);
+                            assert_eq!((depth, cell.row, cell.col), (0, 0, 0));
+                            count += 1;
+                        }
+                    }
+                    for p in &cell.paragraphs {
+                        count += owners(core, &p.controls, depth + 1);
+                    }
+                }
             }
         }
-        for child in &n.children {
-            area(child, depth, out);
+        count
+    }
+    fn background(n: &RenderNode, owner: Option<&RenderNode>) -> usize {
+        let owner = if matches!(n.node_type, RenderNodeType::TableCell(_)) {
+            Some(n)
+        } else {
+            owner
+        };
+        let mut count = 0;
+        if let RenderNodeType::Rectangle(r) = &n.node_type {
+            if r.style.fill_color == Some(0xfff2e6) {
+                let cell = owner.expect("background belongs to a real cell");
+                // Standard full-cell fill, including the accepted source inset
+                // normalization. Do not re-pin the former ten drawing areas.
+                assert!(
+                    (n.bbox.x - cell.bbox.x).abs() < 0.5 && (n.bbox.y - cell.bbox.y).abs() < 0.5
+                );
+                assert!(
+                    (n.bbox.width - cell.bbox.width).abs() < 0.5
+                        && (n.bbox.height - cell.bbox.height).abs() < 0.5
+                );
+                count += 1;
+            }
         }
+        count
+            + n.children
+                .iter()
+                .map(|c| background(c, owner))
+                .sum::<usize>()
     }
     let saved = [
         core.export_hwp_native().unwrap(),
@@ -403,17 +444,54 @@ fn parent_and_child_backgrounds_partition_the_same_source_area() {
     ];
     for c in std::iter::once(core).chain(saved.iter().map(|b| DocumentCore::from_bytes(b).unwrap()))
     {
-        let mut observed = [0.; 3];
-        area(&c.build_page_render_tree(0).unwrap().root, 0, &mut observed);
-        // Independent source rectangles: background=170*140, enclosed child=140*60.
-        for (actual, want) in observed
-            .into_iter()
-            .zip([0., 170. * 140. - 140. * 60., 140. * 60.])
-        {
-            assert!((actual-want).abs()<0.5,"colored area must have the correct parent/child physical owner: {actual} vs {want}");
+        let root = &c.document().sections[0].paragraphs;
+        assert_eq!(owners(&c, &root[0].controls, 0), 1);
+        assert_eq!(table_count(&root[0].controls), 2);
+        let tree = c.build_page_render_tree(0).unwrap();
+        assert_eq!(background(&tree.root, None), 1);
+        let mut source = Vec::new();
+        model_text(root, &mut source);
+        let mut actual = Vec::new();
+        let mut lines = 0.;
+        paint(&tree.root, &mut actual, &mut lines);
+        let mut inside = Vec::new();
+        for control in &root[0].controls {
+            if let Control::Table(table) = control {
+                for cell in &table.cells {
+                    model_text(&cell.paragraphs, &mut inside);
+                }
+            }
         }
+        assert_eq!(
+            inside.iter().collect::<String>(),
+            "BEFORECHILDABCDAFTERCHILDUPPERRIGHTLOWERLEFTLOWERRIGHT"
+        );
+        fn first_table(n: &RenderNode) -> Option<&RenderNode> {
+            if matches!(n.node_type, RenderNodeType::Table(_)) {
+                Some(n)
+            } else {
+                n.children.iter().find_map(first_table)
+            }
+        }
+        let mut inside_paint = Vec::new();
+        paint(
+            first_table(&tree.root).unwrap(),
+            &mut inside_paint,
+            &mut lines,
+        );
+        assert_eq!(inside_paint, inside);
+        assert_eq!(
+            actual.len(),
+            inside.len() + "OUTSIDEABOVEOUTSIDEAFTER".len()
+        );
+        let all = actual.iter().collect::<String>();
+        assert_eq!(all.matches("OUTSIDEABOVE").count(), 1);
+        assert_eq!(all.matches("OUTSIDEAFTER").count(), 1);
+        geometry(&tree.root, None);
+        order(&tree.root);
     }
 }
+
 #[test]
 fn original_cell_picture_and_solid_nested_owners_remain_valid() {
     for (key, tables, pictures) in [

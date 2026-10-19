@@ -116,6 +116,7 @@ fn clear(ps: &mut [Paragraph], moved: bool) {
                         a.horizontal_offset = a.horizontal_offset.wrapping_add(1);
                     }
                     a.cell_border_paint = None;
+                    a.cell_frame_paint = false;
                 }
                 Control::Table(t) => {
                     for c in &mut t.cells {
@@ -295,6 +296,8 @@ fn native_borders_and_unconfirmed_outer_tables_do_not_receive_drawing_ownership(
 fn stale_geometry_owner_and_ambiguous_ids_cannot_attach_border_metadata() {
     let c = source("phase-shifted-dot");
     let bytes = border_paint::encode(c.document()).unwrap().unwrap();
+    assert_eq!(bytes[7], 6);
+    assert_eq!((bytes.len() - 12) % 69, 0);
     for mode in [
         "fingerprint",
         "owner",
@@ -309,17 +312,17 @@ fn stale_geometry_owner_and_ambiguous_ids_cannot_attach_border_metadata() {
         let mut data = bytes.clone();
         match mode {
             "fingerprint" => {
-                for r in data[12..].chunks_exact_mut(65) {
+                for r in data[12..].chunks_exact_mut(69) {
                     r[33] ^= 1;
                 }
             }
             "owner" => {
-                for r in data[12..].chunks_exact_mut(65) {
+                for r in data[12..].chunks_exact_mut(69) {
                     r[4..8].fill(0);
                 }
             }
             "duplicate" => {
-                let record = data[12..77].to_vec();
+                let record = data[12..81].to_vec();
                 let count = u32::from_le_bytes(data[8..12].try_into().unwrap());
                 data[8..12].copy_from_slice(&(count + 1).to_le_bytes());
                 data.extend(record);
@@ -330,7 +333,7 @@ fn stale_geometry_owner_and_ambiguous_ids_cannot_attach_border_metadata() {
             }
             "count" => data[8..12].copy_from_slice(&u32::MAX.to_le_bytes()),
             "side" => {
-                for r in data[12..].chunks_exact_mut(65) {
+                for r in data[12..].chunks_exact_mut(69) {
                     r[28] = 255;
                 }
             }
@@ -347,6 +350,10 @@ fn stale_geometry_owner_and_ambiguous_ids_cannot_attach_border_metadata() {
         assert!(
             bindings(&n).is_empty(),
             "{mode} must fail closed without repainting or moving objects"
+        );
+        assert!(
+            border_paint::encode(n.document()).unwrap().is_none(),
+            "{mode}: no frame authority restored"
         );
     }
     let mut d = c.document().clone();

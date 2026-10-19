@@ -310,6 +310,7 @@ fn clear(ps: &mut [rhwp::model::paragraph::Paragraph]) {
             match c {
                 Control::Picture(p) => {
                     p.common.cell_border_paint = None;
+                    p.common.cell_frame_paint = false;
                     p.common.outside_cell_border_paint = None
                 }
                 Control::Table(t) => {
@@ -323,22 +324,22 @@ fn clear(ps: &mut [rhwp::model::paragraph::Paragraph]) {
     }
 }
 #[test]
-fn v4_masks_roundtrip_and_malformed_side_sets_fail_closed() {
+fn frame_masks_roundtrip_and_malformed_side_sets_fail_closed() {
     let c = load("compound-solid");
     let bytes = border_paint::encode(c.document()).unwrap().unwrap();
-    assert_eq!(bytes[7], 4);
+    assert_eq!(bytes[7], 6);
     let mut cleared = c.document().clone();
     clear(&mut cleared.sections[0].paragraphs);
     let mut good = cleared.clone();
     border_paint::decode(&mut good, &bytes);
     assert_eq!(border_paint::encode(&good).unwrap().as_ref(), Some(&bytes));
-    for flag in [0, 16, 63] {
+    for flag in [0, 0x20, 0x3f] {
         let mut bad = bytes.clone();
         let mut at = 12;
         while at < bad.len() {
             let outside = bad[at + 28] & 128 != 0;
             bad[at + 28] = (bad[at + 28] & 0xc0) | flag;
-            at += if outside { 97 } else { 65 };
+            at += if outside { 101 } else { 69 };
         }
         let mut d = cleared.clone();
         border_paint::decode(&mut d, &bad);

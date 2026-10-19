@@ -21,6 +21,7 @@ const MAGIC_OUTSIDE: &[u8; 8] = b"RBPO\0\0\0\x02";
 const MAGIC_RASTER: &[u8; 8] = b"RBPO\0\0\0\x03";
 const MAGIC_COMPOUND: &[u8; 8] = b"RBPO\0\0\0\x04";
 const MAGIC_CELL_PEN: &[u8; 8] = b"RBPO\0\0\0\x05";
+const MAGIC_CELL_FRAME: &[u8; 8] = b"RBPO\0\0\0\x06";
 const HEADER_BYTES: usize = 12;
 const RECORD_BYTES: usize = 65;
 const MAX_RECORDS: usize = (MAX_BYTES - HEADER_BYTES) / RECORD_BYTES;
@@ -424,6 +425,74 @@ pub(crate) fn valid_paint(
     p.sealed(hash).then_some(paint)
 }
 
+/// Paint partitioned by the producer into a cell frame belongs before its text
+/// flow. Hancom attaches a floating control after multiline text to the last
+/// line, even with a zero offset. The caller supplies the actual source paint;
+/// a coincident drawing or an editing-side tag alone does not prove this role.
+/// Ordinary content controls retain their logical positions and relative order.
+pub(crate) fn prepend_cell_paint(p: &mut Paragraph, mut paint: Vec<Control>) {
+    if paint.is_empty() {
+        return;
+    }
+    let count = paint.len();
+    for c in &mut paint {
+        match c {
+            Control::Picture(p) => p.common.cell_frame_paint = true,
+            Control::Shape(s) => s.common_mut().cell_frame_paint = true,
+            _ => unreachable!("cell-frame producer emits drawings"),
+        }
+    }
+    let mut positions = vec![0; count];
+    positions.extend(p.logical_control_positions());
+    let old_line_starts: Vec<_> = p.line_segs.iter().map(|s| s.text_start).collect();
+    p.align_ctrl_data_records();
+    p.controls.splice(0..0, paint);
+    p.ctrl_data_records
+        .splice(0..0, std::iter::repeat_n(None, count));
+    for range in &mut p.field_ranges {
+        range.control_idx += count;
+    }
+    p.control_mask |= 0x800;
+    p.rebuild_char_offsets(&positions);
+    for (start, _) in &mut p.layout_space_metrics {
+        if let Some(i) = old_line_starts.iter().position(|old| old == start) {
+            *start = p.line_segs[i].text_start;
+        }
+    }
+}
+
+fn frame_attributes(a: &CommonObjAttr) -> bool {
+    !a.treat_as_char
+        && a.flow_with_text
+        && a.horz_rel_to == HorzRelTo::Column
+        && a.vert_rel_to == VertRelTo::Para
+        && a.text_wrap == TextWrap::BehindText
+        && matches!(a.horz_align, super::shape::HorzAlign::Left)
+        && matches!(a.vert_align, super::shape::VertAlign::Top)
+}
+pub(crate) fn is_cell_frame_paint(c: &Control) -> bool {
+    PaintRef::from_control(c)
+        .is_some_and(|p| p.common().cell_frame_paint && frame_attributes(p.common()))
+}
+fn frame_fingerprint(p: PaintRef<'_>, o: Owner, resources: &mut Resources<'_>) -> Option<[u8; 32]> {
+    let a = p.common();
+    if !frame_attributes(a) {
+        return None;
+    }
+    let x = i64::from(a.horizontal_offset as i32) + i64::from(o.left);
+    let y = i64::from(a.vertical_offset as i32) + i64::from(o.top);
+    if a.width == 0
+        || a.height == 0
+        || x < -1
+        || y < -1
+        || x + i64::from(a.width) > i64::from(o.width) + 1
+        || y + i64::from(a.height) > i64::from(o.height) + 1
+    {
+        return None;
+    }
+    p.digest(resources)
+}
+
 fn geometry_digest(r: &RectangleShape) -> Option<[u8; 32]> {
     let a = &r.common;
     let s = &r.drawing.shape_attr;
@@ -640,6 +709,8 @@ struct Record {
     fingerprint: [u8; 32],
     outside: Option<[u8; 32]>,
     raster: bool,
+    frame: bool,
+    frame_only: bool,
 }
 impl Record {
     fn write(&self, out: &mut Vec<u8>, compound: bool, cell_pens: bool) {
@@ -656,7 +727,9 @@ impl Record {
             out.extend(v.to_le_bytes());
         }
         out.push(
-            (if compound {
+            (if self.frame_only {
+                0
+            } else if compound {
                 self.paint.mask().expect("validated paint mask")
             } else {
                 match self.paint.side {
@@ -665,7 +738,9 @@ impl Record {
                     CellSide::Top => 2,
                     CellSide::Bottom => 3,
                 }
-            }) | if self.outside.is_some() { 0x80 } else { 0 }
+            }) | if self.frame { 0x10 } else { 0 }
+                | if self.frame_only { 0x20 } else { 0 }
+                | if self.outside.is_some() { 0x80 } else { 0 }
                 | if self.raster { 0x40 } else { 0 },
         );
         out.extend(self.paint.source_id.to_le_bytes());
@@ -677,7 +752,7 @@ impl Record {
             out.extend(self.paint.cell_pen.unwrap_or(0).to_le_bytes());
         }
     }
-    fn read(bytes: &[u8], compound: bool, cell_pens: bool) -> Option<Self> {
+    fn read(bytes: &[u8], compound: bool, cell_pens: bool, frames: bool) -> Option<Self> {
         fn take<const N: usize>(b: &[u8], i: &mut usize) -> Option<[u8; N]> {
             let v = b.get(*i..*i + N)?.try_into().ok()?;
             *i += N;
@@ -697,10 +772,21 @@ impl Record {
             top: i16::from_le_bytes(take(bytes, &mut i)?),
         };
         let flag = take::<1>(bytes, &mut i)?[0];
-        let side = if compound {
-            CellBorderPaint::from_mask(flag & !0xc0, 1)?.side
+        if !frames && flag & 0x30 != 0 {
+            return None;
+        }
+        let frame = flag & 0x10 != 0;
+        let frame_only = flag & 0x20 != 0;
+        let paint_flag = flag & if frames { 0x0f } else { 0x3f };
+        if frame_only && (!frame || paint_flag != 0 || flag & 0x80 != 0) {
+            return None;
+        }
+        let side = if frame_only {
+            CellSide::Left
+        } else if compound {
+            CellBorderPaint::from_mask(paint_flag, 1)?.side
         } else {
-            match flag & !0xc0 {
+            match paint_flag {
                 0 => CellSide::Left,
                 1 => CellSide::Right,
                 2 => CellSide::Top,
@@ -712,8 +798,8 @@ impl Record {
         let mut record = Self {
             id,
             owner,
-            paint: if compound {
-                CellBorderPaint::from_mask(flag & !0xc0, source_id)?
+            paint: if compound && !frame_only {
+                CellBorderPaint::from_mask(paint_flag, source_id)?
             } else {
                 CellBorderPaint {
                     side,
@@ -724,6 +810,8 @@ impl Record {
             },
             fingerprint: take(bytes, &mut i)?,
             raster: flag & 0x40 != 0,
+            frame,
+            frame_only,
             outside: if flag & 0x80 != 0 {
                 Some(take(bytes, &mut i)?)
             } else {
@@ -732,6 +820,9 @@ impl Record {
         };
         if cell_pens {
             let pen = u32::from_le_bytes(take(bytes, &mut i)?);
+            if record.frame_only && pen != 0 {
+                return None;
+            }
             record.paint.cell_pen = (pen != 0).then_some(pen);
             record.paint.mask()?;
         }
@@ -746,23 +837,44 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     let mut resources = Resources::new(&doc.bin_data_content);
     each(doc, &mut |a, owner, rect| {
         *counts.entry(a.instance_id).or_default() += 1;
-        if let (Some(paint), Some(owner), Some(rect)) = (a.cell_border_paint, owner, rect) {
-            // A drawing moved out of its old edge no longer has that binding.
-            // Its paint is kept; stale provenance never authorizes an edit.
-            if let Some(fingerprint) =
-                fingerprint(rect, owner, paint, &mut resources).filter(|h| rect.sealed(*h))
-            {
+        if let (Some(owner), Some(rect)) = (owner, rect) {
+            let border = a.cell_border_paint.and_then(|paint| {
+                fingerprint(rect, owner, paint, &mut resources)
+                    .filter(|h| rect.sealed(*h))
+                    .map(|h| (paint, h))
+            });
+            let frame = a
+                .cell_frame_paint
+                .then(|| frame_fingerprint(rect, owner, &mut resources))
+                .flatten();
+            if border.is_some() || frame.is_some() {
                 if records.len() == MAX_RECORDS {
                     over_budget = true;
                     return;
                 }
+                let (paint, hash, frame_only) = if let Some((paint, hash)) = border {
+                    (paint, hash, false)
+                } else {
+                    (
+                        CellBorderPaint {
+                            side: CellSide::Left,
+                            source_id: 0,
+                            sides: 0,
+                            cell_pen: None,
+                        },
+                        frame.unwrap(),
+                        true,
+                    )
+                };
                 records.push(Record {
                     id: a.instance_id,
                     owner,
                     paint,
-                    fingerprint,
+                    fingerprint: hash,
                     outside: None,
                     raster: rect.raster(),
+                    frame: frame == Some(hash),
+                    frame_only,
                 });
             }
         }
@@ -790,6 +902,8 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
                     fingerprint: tag.fingerprint,
                     outside: Some(tag.table_fingerprint),
                     raster: rect.raster(),
+                    frame: false,
+                    frame_only: false,
                 });
             }
         }
@@ -797,7 +911,8 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     if records.is_empty() {
         return Ok(None);
     }
-    let cell_pens = records.iter().any(|r| r.paint.cell_pen.is_some());
+    let frames = records.iter().any(|r| r.frame);
+    let cell_pens = frames || records.iter().any(|r| r.paint.cell_pen.is_some());
     let size = HEADER_BYTES
         + records
             .iter()
@@ -818,7 +933,9 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     }
     let mut bytes = Vec::with_capacity(size);
     let compound = cell_pens || records.iter().any(|r| r.paint.sides != 0);
-    bytes.extend(if cell_pens {
+    bytes.extend(if frames {
+        MAGIC_CELL_FRAME
+    } else if cell_pens {
         MAGIC_CELL_PEN
     } else if compound {
         MAGIC_COMPOUND
@@ -844,12 +961,14 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
             && &bytes[..8] != MAGIC_OUTSIDE
             && &bytes[..8] != MAGIC_RASTER
             && &bytes[..8] != MAGIC_COMPOUND
-            && &bytes[..8] != MAGIC_CELL_PEN)
+            && &bytes[..8] != MAGIC_CELL_PEN
+            && &bytes[..8] != MAGIC_CELL_FRAME)
     {
         return;
     }
     let count = u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize;
-    let cell_pens = &bytes[..8] == MAGIC_CELL_PEN;
+    let frames = &bytes[..8] == MAGIC_CELL_FRAME;
+    let cell_pens = frames || &bytes[..8] == MAGIC_CELL_PEN;
     let compound = cell_pens || &bytes[..8] == MAGIC_COMPOUND;
     let outside_version = &bytes[..8] == MAGIC_OUTSIDE || &bytes[..8] == MAGIC_RASTER || compound;
     let raster_version = &bytes[..8] == MAGIC_RASTER || compound;
@@ -860,13 +979,15 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
     let mut records = BTreeMap::new();
     let mut offset = HEADER_BYTES;
     for _ in 0..count {
-        let Some(r) = Record::read(&bytes[offset..], compound, cell_pens) else {
+        let Some(r) = Record::read(&bytes[offset..], compound, cell_pens, frames) else {
             return;
         };
         if (r.outside.is_some() && !outside_version)
             || (r.raster && !raster_version)
             || r.owner.table == 0
-            || r.paint.source_id == 0
+            || (r.paint.source_id == 0 && !r.frame_only)
+            || (r.frame_only && r.paint.source_id != 0)
+            || (r.frame && r.outside.is_some())
         {
             return;
         }
@@ -932,11 +1053,20 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
         } else if counts.get(&record.id) == Some(&1)
             && counts.get(&record.owner.table) == Some(&1)
             && owner == Some(record.owner)
-            && fingerprint(r.as_ref(), record.owner, record.paint, &mut resources)
-                == Some(record.fingerprint)
+            && (if record.frame_only {
+                frame_fingerprint(r.as_ref(), record.owner, &mut resources)
+            } else {
+                fingerprint(r.as_ref(), record.owner, record.paint, &mut resources)
+            }) == Some(record.fingerprint)
+            && (!record.frame
+                || frame_fingerprint(r.as_ref(), record.owner, &mut resources)
+                    == Some(record.fingerprint))
         {
             r.seal(record.fingerprint);
-            r.common().cell_border_paint = Some(record.paint);
+            r.common().cell_frame_paint = record.frame;
+            if !record.frame_only {
+                r.common().cell_border_paint = Some(record.paint);
+            }
         }
     };
     for s in &mut doc.sections {

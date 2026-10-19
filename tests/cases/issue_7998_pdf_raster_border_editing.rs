@@ -130,7 +130,7 @@ fn replaces_both_shared_raster_halves_and_preserves_nested_content() {
 fn both_native_saves_reopen_and_edit_with_same_resource_seal() {
     let c = load();
     let expected = border_paint::encode(c.document()).unwrap().unwrap();
-    assert_eq!(&expected[..8], b"RBPO\0\0\0\x03");
+    assert_eq!(&expected[..8], b"RBPO\0\0\0\x06");
     for bytes in [
         c.export_hwp_with_adapter_snapshot().unwrap(),
         c.export_hwpx_native().unwrap(),
@@ -271,6 +271,7 @@ fn metadata_picture_kind_and_version_mismatch_grant_no_authority() {
                         }
                         Control::Picture(p) => {
                             p.common.cell_border_paint = None;
+                            p.common.cell_frame_paint = false;
                             p.common.outside_cell_border_paint = None;
                             p.border_paint_fingerprint = None;
                         }
@@ -283,7 +284,7 @@ fn metadata_picture_kind_and_version_mismatch_grant_no_authority() {
         let mut bad = bytes.clone();
         match mode {
             "kind" => bad[40] ^= 0x40,
-            "version" => bad[7] = 2,
+            "version" => bad[7] = 0xff,
             "source" => bad[41..45].fill(0),
             _ => {
                 bad.pop();

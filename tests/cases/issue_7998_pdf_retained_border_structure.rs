@@ -551,6 +551,7 @@ fn unrelated_png_is_not_consumed_by_an_ink_order_proof() {
             })
             .unwrap();
         p.common.cell_border_paint = None;
+        p.common.cell_frame_paint = false;
         p.common.outside_cell_border_paint = None;
         p.common.z_order = 2;
         p.common.instance_id = 500001;
@@ -979,7 +980,7 @@ fn conflicting_axis_inherits_actual_template_and_preserves_losing_style_in_both_
                 }
                 if mode == 0 {
                     let meta = border_paint::encode(reopened.document()).unwrap().unwrap();
-                    assert_eq!(&meta[..8], b"RBPO\0\0\0\x05");
+                    assert_eq!(&meta[..8], b"RBPO\0\0\0\x06");
                     let first = root(&reopened)
                         .1
                         .cells
@@ -1059,10 +1060,12 @@ fn invalid_losing_pen_sidecar_fails_closed_without_changing_visible_geometry() {
                     match control {
                         Control::Shape(s) => {
                             s.common_mut().cell_border_paint = None;
+                            s.common_mut().cell_frame_paint = false;
                             s.common_mut().outside_cell_border_paint = None;
                         }
                         Control::Picture(p) => {
                             p.common.cell_border_paint = None;
+                            p.common.cell_frame_paint = false;
                             p.common.outside_cell_border_paint = None;
                         }
                         Control::Table(t) => {
@@ -1226,7 +1229,7 @@ fn interval_check(c: &DocumentCore, p: &IntervalPens) {
         4 * t.cells.len() + 2 * usize::from(t.row_count + t.col_count)
     );
     if hidden > 0 {
-        assert_eq!(&meta[..8], b"RBPO\0\0\0\x05");
+        assert_eq!(&meta[..8], b"RBPO\0\0\0\x06");
     }
 }
 
@@ -1837,10 +1840,12 @@ fn clear_topology_paint(ctrl: &mut Control) {
     match ctrl {
         Control::Shape(s) => {
             s.common_mut().cell_border_paint = None;
+            s.common_mut().cell_frame_paint = false;
             s.common_mut().outside_cell_border_paint = None;
         }
         Control::Picture(p) => {
             p.common.cell_border_paint = None;
+            p.common.cell_frame_paint = false;
             p.common.outside_cell_border_paint = None;
         }
         _ => {}

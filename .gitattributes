@@ -111,3 +111,6 @@ pdf/issue7998/structure-borders/*.pdf -text -diff
 pdf/issue7998/structure-borders/print/*.pdf -text -diff
 pdf/issue7998/retained-border-structure/*.pdf -text -diff
 pdf/issue7998/retained-border-structure/print/*.pdf -text -diff
+
+# #7998 수평 메트릭 독립 PDF의 xref 끝 공백을 포함해 원본 바이트를 보존한다.
+pdf/issue7998/horizontal-metrics/**/*.pdf -text -diff

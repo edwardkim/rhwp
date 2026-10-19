@@ -1,7 +1,7 @@
 //! Proven source/page ownership and actual edit/save contracts; no rendering golden.
 #![cfg(feature = "pdf-import")]
 use rhwp::{
-    model::{border_paint, control::Control, shape::ShapeObject, table::Table},
+    model::{border_paint, control::Control, table::Table},
     parser::pdf::PdfImportOptions,
     DocumentCore,
 };
@@ -112,7 +112,7 @@ fn external_stroke_replacement_preserves_other_cells_fill_and_slots() {
 fn native_files_keep_page_owner_and_allow_the_same_edit_after_reopen() {
     let c = load("thin-fill-occluder");
     let expected = border_paint::encode(c.document()).unwrap();
-    assert_eq!(&expected.as_ref().unwrap()[..8], b"RBPO\0\0\0\x02");
+    assert_eq!(&expected.as_ref().unwrap()[..8], b"RBPO\0\0\0\x06");
     for bytes in [
         c.export_hwp_with_adapter_snapshot().unwrap(),
         c.export_hwpx_native().unwrap(),

@@ -254,6 +254,7 @@ pub(super) fn apply(
         if cell.paragraphs.is_empty() {
             cell.paragraphs.push(Paragraph::new_empty());
         }
+        let mut cell_paint = Vec::with_capacity(4);
         for (side, [x, y, r, b]) in inside.into_iter().enumerate() {
             let mut control = rectangle(
                 ids.common()?,
@@ -274,8 +275,9 @@ pub(super) fn apply(
             let own = bands.cells.get(&(cell.row, cell.col)).ok_or_else(error)?[side];
             tag.cell_pen = (own != pens[side]).then_some(own);
             shape.common_mut().cell_border_paint = Some(tag);
-            append(&mut cell.paragraphs[0], control);
+            cell_paint.push(control);
         }
+        crate::model::border_paint::prepend_cell_paint(&mut cell.paragraphs[0], cell_paint);
         let x = ox + xs[cell.col as usize];
         let y = oy + ys[cell.row as usize];
         let outer = [

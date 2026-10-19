@@ -261,11 +261,28 @@ fn character_and_axis_edits_keep_local_cell_owners_and_order_in_both_formats() {
             let mut c = load(key);
             let ci = root(&c).0;
             let (rows, cols) = (root(&c).1.row_count, root(&c).1.col_count);
-            if row {
-                c.insert_table_row_native(0, 0, ci, 0, true).unwrap();
+            let before_hwp = c.export_hwp_native().unwrap();
+            let before_hwpx = c.export_hwpx_native().unwrap();
+            let before_tree = serde_json::to_value(c.build_page_render_tree(0).unwrap()).unwrap();
+            let result = if row {
+                c.insert_table_row_native(0, 0, ci, 0, true)
             } else {
-                c.insert_table_column_native(0, 0, ci, 0, true).unwrap();
+                c.insert_table_column_native(0, 0, ci, 0, true)
+            };
+            // Content/clip evidence proves these cells, but an incomplete
+            // source separator does not authorize inventing structural bands.
+            if key == "local-l-shape" {
+                assert!(result.unwrap_err().to_string().contains("동등성"));
+                assert_eq!(c.export_hwp_native().unwrap(), before_hwp);
+                assert_eq!(c.export_hwpx_native().unwrap(), before_hwpx);
+                assert_eq!(
+                    serde_json::to_value(c.build_page_render_tree(0).unwrap()).unwrap(),
+                    before_tree
+                );
+                roundtrip(&c, want, &addrs);
+                continue;
             }
+            result.unwrap();
             assert_eq!(
                 (root(&c).1.row_count, root(&c).1.col_count),
                 if row {

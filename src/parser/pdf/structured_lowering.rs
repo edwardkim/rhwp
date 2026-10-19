@@ -72,6 +72,73 @@ fn positioned_span_style(
     Ok(id)
 }
 
+/// Fit the ordinary spacing field after selecting an ordinary ratio. The
+/// common final measurer, including font-space and punctuation rules, remains
+/// the authority for the emitted advance.
+fn fit_spacing(
+    style: &mut crate::renderer::TextStyle,
+    text: &str,
+    ratio: u8,
+    desired: f64,
+) -> Option<(i8, f64, f64)> {
+    use crate::renderer::layout::estimate_text_width_exact;
+    style.ratio = f64::from(ratio) / 100.;
+    style.letter_spacing = 0.;
+    if let Some(latin) = &mut style.ascii_punct_latin {
+        latin.ratio = style.ratio;
+        latin.letter_spacing = 0.;
+    }
+    let nominal = estimate_text_width_exact(text, style);
+    let guess = (desired / nominal - 1.) * 100.;
+    if !nominal.is_finite()
+        || nominal <= 0.
+        || !guess.is_finite()
+        || !(-52. ..=52.).contains(&guess)
+    {
+        return None;
+    }
+    let mut best: Option<(i8, f64, f64)> = None;
+    for spacing in (guess.floor() as i32 - 2)..=(guess.ceil() as i32 + 2) {
+        if !(-50..=50).contains(&spacing) {
+            continue;
+        }
+        style.letter_spacing = style.font_size * f64::from(spacing) / 100.;
+        if let Some(latin) = &mut style.ascii_punct_latin {
+            latin.letter_spacing = style.letter_spacing;
+        }
+        let measured = estimate_text_width_exact(text, style);
+        let error = (measured - desired).abs();
+        if best.is_none_or(|(_, previous, _)| error < previous) {
+            best = Some((spacing as i8, error, measured));
+        }
+    }
+    best
+}
+
+/// A blank separator has an observed extent, not an outline whose aspect ratio
+/// must be recovered. Reject only when the combined legal ratio/spacing fields
+/// cannot represent it, rather than requiring ratio alone to own the full gap.
+fn fit_whitespace_advance(
+    style: &mut crate::renderer::TextStyle,
+    text: &str,
+    desired: f64,
+) -> Option<(u8, i8, f64)> {
+    let mut best: Option<(u8, i8, f64, f64)> = None;
+    for ratio in 50..=200 {
+        let Some((spacing, error, measured)) = fit_spacing(style, text, ratio, desired) else {
+            continue;
+        };
+        let preference = (spacing.unsigned_abs(), ratio.abs_diff(100));
+        if best.is_none_or(|(r, s, previous, _)| {
+            error < previous
+                || (error == previous && preference < (s.unsigned_abs(), r.abs_diff(100)))
+        }) {
+            best = Some((ratio, spacing, error, measured));
+        }
+    }
+    best.map(|(r, s, _, measured)| (r, s, measured))
+}
+
 /// Translate observed glyph metrics into the ordinary HWP character contract.
 /// Source-font loss is explicit: width-compatible fallback does not recover its outline.
 fn observed_line_text(
@@ -92,6 +159,7 @@ fn observed_line_text(
     let mut maximum_error: f64 = 0.;
     let mut maximum_baseline_error: f64 = 0.;
     let mut maximum_origin_error: f64 = 0.;
+    let mut joint_whitespace_fits = 0;
     let origin = content
         .characters
         .first()
@@ -131,44 +199,29 @@ fn observed_line_text(
         } else {
             f64::from(source.horizontal_scaling).round()
         };
-        if !(50. ..=200.).contains(&ratio) {
-            return Err("source glyph width exceeds HWP ratio range".into());
-        }
-        let ratio = ratio as u8;
-        style.ratio = f64::from(ratio) / 100.;
-        if let Some(latin) = &mut style.ascii_punct_latin {
-            latin.ratio = style.ratio;
-        }
-        let nominal = estimate_text_width_exact(&text, &style);
-        // Fit each observed origin, rather than accumulating independently
-        // rounded advances. HWP's integer-percent fields can otherwise drift
-        // over a long line although every individual glyph is nearly correct.
         let source_start = (f64::from(glyph.origin) - f64::from(origin)) * 96. / 72.;
         let source_advance = f64::from(glyph.advance) * 96. / 72.;
         let desired = source_start + source_advance - emitted_advance;
-        // The common final glyph_letter_spacing maps the resolved em value
-        // back to a fraction of glyph width. Keep that actual consumer's unit.
-        let guess = (desired / nominal - 1.) * 100.;
-        if !guess.is_finite() || !(-52. ..=52.).contains(&guess) {
+        // Preserve the established representable path. Search the combined
+        // field contract only when that path cannot encode a blank separator.
+        let ordinary = (50. ..=200.)
+            .contains(&ratio)
+            .then(|| fit_spacing(&mut style, &text, ratio as u8, desired))
+            .flatten()
+            .map(|(s, _, measured)| (ratio as u8, s, measured));
+        let (ratio, spacing, measured) = if let Some(fit) = ordinary {
+            fit
+        } else if glyph.character.is_whitespace() {
+            let fit = fit_whitespace_advance(&mut style, &text, desired)
+                .ok_or("source whitespace advance exceeds combined HWP character range")?;
+            joint_whitespace_fits += 1;
+            fit
+        } else if !(50. ..=200.).contains(&ratio) {
+            return Err("source glyph width exceeds HWP ratio range".into());
+        } else {
             return Err("source displacement exceeds HWP spacing range".into());
-        }
-        let mut best: Option<(i8, f64, f64)> = None;
-        for spacing in (guess.floor() as i32 - 2)..=(guess.ceil() as i32 + 2) {
-            if !(-50..=50).contains(&spacing) {
-                continue;
-            }
-            style.letter_spacing = style.font_size * f64::from(spacing) / 100.;
-            if let Some(latin) = &mut style.ascii_punct_latin {
-                latin.letter_spacing = style.letter_spacing;
-            }
-            let measured = estimate_text_width_exact(&text, &style);
-            let error = (measured - desired).abs();
-            if best.is_none_or(|(_, previous, _)| error < previous) {
-                best = Some((spacing as i8, error, measured));
-            }
-        }
-        let (spacing, error, measured) =
-            best.ok_or("source displacement exceeds HWP spacing range")?;
+        };
+        let error = (measured - desired).abs();
         emitted_advance += measured;
         maximum_origin_error = maximum_origin_error.max(error * 72. / 96.);
         maximum_error = maximum_error.max((measured - source_advance).abs() * 72. / 96.);
@@ -202,6 +255,7 @@ fn observed_line_text(
         json!({
             "characters":content.characters,
             "maximumAdvanceQuantizationErrorPt":maximum_error,
+            "jointWhitespaceFits":joint_whitespace_fits,
             "maximumOriginQuantizationErrorPt":maximum_origin_error,
             "maximumBaselineQuantizationErrorPt":maximum_baseline_error,
             "lineBaselinePt":line.baseline,
@@ -499,7 +553,10 @@ fn paragraph(
     if fixed_line_height {
         style.attr1 &= !(1 << 8);
     }
-    style.attr2 = (style.attr2 & !PARA_ATTR2_LINE_WRAP_MASK) | 1;
+    // Stored LineSegs preserve observed PDF lines. The editable paragraph must
+    // still allow normal wrapping: SQUEEZE makes Hancom compress newly typed
+    // multiline text onto one line although native reflow creates several.
+    style.attr2 &= !PARA_ATTR2_LINE_WRAP_MASK;
     style.alignment = if centered {
         Alignment::Center
     } else {
@@ -1468,12 +1525,13 @@ pub(super) fn lower(
                             };
                             cell.border_fill_id = u16::try_from(id).map_err(|e| e.to_string())?;
                         }
-                        for mut paint in std::mem::take(&mut plan.cells[target][ci]) {
+                        let mut cell_paint = std::mem::take(&mut plan.cells[target][ci]);
+                        for paint in &mut cell_paint {
                             let id = fragment_ids.get();
                             fragment_ids
                                 .set(id.checked_add(1).ok_or("cell paint instance ID overflow")?);
                             super::table_paint::anchor(
-                                &mut paint,
+                                paint,
                                 cell,
                                 &grid["cells"][ci]["bbox"],
                                 id,
@@ -1481,20 +1539,17 @@ pub(super) fn lower(
                             if matches!(&paint, Control::Picture(p) if p.common.cell_border_paint.is_some())
                             {
                                 crate::model::border_paint::seal_picture(
-                                    &mut paint,
+                                    paint,
                                     &mut paint_resources,
                                 )
                                 .ok_or("source border picture seal failed")?;
                             }
-                            let para = &mut cell.paragraphs[0];
-                            para.controls.push(paint);
-                            para.control_mask |= 0x800;
-                            para.char_count = para
-                                .char_count
-                                .checked_add(8)
-                                .ok_or("cell paint text count overflow")?;
                             paint_fragments += 1;
                         }
+                        crate::model::border_paint::prepend_cell_paint(
+                            &mut cell.paragraphs[0],
+                            cell_paint,
+                        );
                     }
                 }
                 for (ri, mut paint) in plan.retained.into_iter().enumerate() {
