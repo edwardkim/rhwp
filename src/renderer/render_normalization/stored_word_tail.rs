@@ -43,6 +43,7 @@ pub(crate) fn normalize(
         styles,
         uniform_column_width(page, initial_columns, dpi),
         Some(page),
+        true,
         dpi,
     )
 }
@@ -54,6 +55,7 @@ fn normalize_flow(
     styles: &ResolvedStyleSet,
     mut width: Option<f64>,
     body_page: Option<&PageDef>,
+    refresh_text: bool,
     dpi: f64,
 ) -> Option<Vec<Paragraph>> {
     let mut shift = 0_i32;
@@ -80,6 +82,13 @@ fn normalize_flow(
             let Control::Table(table) = control else {
                 continue;
             };
+            let mut row_frames = std::collections::HashMap::<u16, u32>::new();
+            for cell in &table.cells {
+                if cell.row_span == 1 {
+                    let height = row_frames.entry(cell.row).or_default();
+                    *height = (*height).max(cell.height);
+                }
+            }
             for cell in &mut table.cells {
                 if cell.text_direction != 0 || cell.line_wrap != 0 {
                     continue;
@@ -103,8 +112,14 @@ fn normalize_flow(
                     0.0,
                     dpi,
                 );
+                let frame = if cell.row_span == 1 {
+                    row_frames.get(&cell.row).copied().unwrap_or(cell.height)
+                } else {
+                    cell.height
+                };
+                let stale = stored_text_exceeds_frame(cell, frame, &padding);
                 if let Some(projected) =
-                    normalize_flow(&cell.paragraphs, styles, Some(inner), None, dpi)
+                    normalize_flow(&cell.paragraphs, styles, Some(inner), None, stale, dpi)
                 {
                     cell.paragraphs = projected;
                     changed = true;
@@ -140,7 +155,7 @@ fn normalize_flow(
             // 현재 측정으로 더 적은 줄에 들어간다는 사실만으로 정상 저장 줄을
             // 무효화하지 않는다. 원문 문자에 없는 목록 마커는 문서 순서에서
             // 해소한 실제 기하를 갱신해야 하며, 같은 결과가 채움·높이에 참여한다.
-            if projects_current_marker_geometry(&paragraph, &box_, styles) {
+            if refresh_text && projects_current_marker_geometry(&paragraph, &box_, styles) {
                 let first = paragraph.line_segs[0].vertical_pos;
                 let frame = box_.frame(first);
                 if let Some((lines, spaces)) =
@@ -157,4 +172,40 @@ fn normalize_flow(
         result.push(paragraph);
     }
     changed.then_some(result)
+}
+
+/// 줄 수 감소만으로 캐시를 버리지 않고 원본 저장 프레임의 실제 초과를 확인한다.
+fn stored_text_exceeds_frame(
+    cell: &crate::model::table::Cell,
+    frame_height: u32,
+    padding: &crate::model::Padding,
+) -> bool {
+    if cell.dirty_flag || frame_height == 0 || frame_height > i32::MAX as u32 {
+        return false;
+    }
+    let mut end = 0_i64;
+    let mut first = true;
+    for para in &cell.paragraphs {
+        if !para.controls.is_empty()
+            || para.column_type != ColumnBreakType::None
+            || para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || para.line_segs.is_empty()
+        {
+            return false;
+        }
+        for line in &para.line_segs {
+            if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || line.line_height <= 0
+                || line.line_spacing < 0
+                || i64::from(line.vertical_pos) < end
+                || (!first && (line.is_first_line_of_page() || line.is_first_line_of_column()))
+            {
+                return false;
+            }
+            end = i64::from(line.vertical_pos) + i64::from(line.line_height);
+            first = false;
+        }
+    }
+    !first && end + i64::from(padding.top) + i64::from(padding.bottom) > i64::from(frame_height)
 }
