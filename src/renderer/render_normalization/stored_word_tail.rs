@@ -5,7 +5,7 @@ use crate::model::{
     paragraph::{ColumnBreakType, LineSeg, Paragraph},
 };
 use crate::renderer::{
-    composer::{project_current_marker_soft_wrap_frame, ParagraphBox},
+    composer::{project_stored_soft_wraps, projects_current_marker_geometry, ParagraphBox},
     page_layout::PageLayoutInfo,
     px_to_hwpunit,
     style_resolver::ResolvedStyleSet,
@@ -84,13 +84,12 @@ pub(crate) fn normalize(
             // 현재 측정으로 더 적은 줄에 들어간다는 사실만으로 정상 저장 줄을
             // 무효화하지 않는다. 원문 문자에 없는 목록 마커는 문서 순서에서
             // 해소한 실제 기하를 갱신해야 하며, 같은 결과가 채움·높이에 참여한다.
-            if let Some(first) = paragraph.line_segs.first().map(|line| line.vertical_pos) {
+            if projects_current_marker_geometry(&paragraph, &box_, styles) {
+                let first = paragraph.line_segs[0].vertical_pos;
                 let frame = box_.frame(first);
-                if let Some(projected) = project_current_marker_soft_wrap_frame(
-                    &paragraph, &box_, &frame, styles, dpi, false,
-                ) {
-                    let lines = projected.project_line_segs();
-                    let spaces = projected.project_space_metrics();
+                if let Some((lines, spaces)) =
+                    project_stored_soft_wraps(&paragraph, &frame, styles, dpi, false)
+                {
                     let old_advance = frame_advance(&paragraph.line_segs)?;
                     let new_advance = frame_advance(&lines)?;
                     shift = shift.checked_add(new_advance.checked_sub(old_advance)?)?;

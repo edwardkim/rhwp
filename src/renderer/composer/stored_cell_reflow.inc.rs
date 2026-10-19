@@ -115,21 +115,10 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
         );
     // 캐시 수용 실패 정책이나 줄 수 감소만으로 원본을 무효화하지 않는다.
     // 본문과 같은 마커 기하 갱신과 실제 공백 메트릭 변경만 공통 프레임에 요청한다.
-    let marker_frame = (!stored_geometry_policy.preserve_hwp3_origins)
-        .then(|| {
-            stored_word_tail::project_current_marker_soft_wrap_frame(
-                para,
-                &paragraph_box,
-                &frame,
-                styles,
-                dpi,
-                justified_kopub_picture,
-            )
-        })
-        .flatten();
-    let marker_geometry_changed = marker_frame.is_some();
+    let refreshes_marker_metrics =
+        stored_word_tail::projects_current_marker_geometry(para, &paragraph_box, styles);
     let rejoinable_word_tail = !stored_geometry_policy.preserve_hwp3_origins
-        && regenerated_spaces_change_metrics
+        && (regenerated_spaces_change_metrics || refreshes_marker_metrics)
         && stored_word_tail::can_rejoin_stored_word_tail(
             para,
             &frame,
@@ -143,28 +132,20 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             && (para.stored_text_partition_dirty
                 || crate::renderer::para_has_no_stored_line_segs(para)))
         || rejoinable_word_tail
-        || marker_geometry_changed
         || (stored_rows_untrusted && !para.line_segs.is_empty())
         || stored_rows_are_stale(composed, para, inner_width_px, styles)
         || line_breaking::remeasured_equation_start_row(para).is_some();
-    let resolution = if let Some(projected) = marker_frame {
-        // 판정에 쓴 프레임 자체를 소비해 측정·배치에서 다시 줄을 추측하지 않는다.
-        frame = projected;
-        Some(line_breaking::StoredRowResolution::Reflowed)
-    } else {
-        line_breaking::resolve_stored_line_segs_in_frame(
-            para,
-            &mut frame,
-            styles,
-            dpi,
-            stored_geometry_policy.preserve_hwp3_origins,
-            miss_policy,
-            stale,
-            float_carve_evidence,
-            known_square_band,
-        )
-    };
-    match resolution {
+    match line_breaking::resolve_stored_line_segs_in_frame(
+        para,
+        &mut frame,
+        styles,
+        dpi,
+        stored_geometry_policy.preserve_hwp3_origins,
+        miss_policy,
+        stale,
+        float_carve_evidence,
+        known_square_band,
+    ) {
         // Stale — the row cannot hold its own text — so the rebuilt row is the
         // frame's. Its fill tokenizes through `para.char_shapes`
         // (`line_breaking.rs`), which is the char-shape re-splitting #2632
@@ -194,10 +175,7 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             }
             let mut reconciled = composed.clone();
             reconciled.lines = reflowed.lines;
-            if rejoinable_word_tail
-                || marker_geometry_changed
-                || !measured_inline_table_heights.is_empty()
-            {
+            if rejoinable_word_tail || !measured_inline_table_heights.is_empty() {
                 reconciled.frame_geometry =
                     Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
                         line_segs: reflowed_para.line_segs,

@@ -136,36 +136,6 @@ pub(crate) fn project_stored_soft_wraps(
     dpi: f64,
     supported_inline_picture: bool,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
-    let projected =
-        project_stored_soft_wrap_frame(para, frame, styles, dpi, supported_inline_picture, false)?;
-    Some((
-        projected.project_line_segs(),
-        projected.project_space_metrics(),
-    ))
-}
-
-/// 현재 마커가 소유한 상자의 자동 줄 경계도 같은 채움 결과에서 발행한다.
-/// 줄 수가 같아도 어절 경계가 바뀔 수 있으며, 마지막 어절만 갱신하지 않는다.
-pub(crate) fn project_current_marker_soft_wrap_frame(
-    para: &Paragraph,
-    box_: &ParagraphBox,
-    frame: &LayoutFrame,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-    supported_inline_picture: bool,
-) -> Option<LayoutFrame> {
-    projects_current_marker_geometry(para, box_, styles).then_some(())?;
-    project_stored_soft_wrap_frame(para, frame, styles, dpi, supported_inline_picture, true)
-}
-
-fn project_stored_soft_wrap_frame(
-    para: &Paragraph,
-    frame: &LayoutFrame,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-    supported_inline_picture: bool,
-    refresh_marker_partition: bool,
-) -> Option<LayoutFrame> {
     if para.line_segs.len() < 2
         || (!para.controls.is_empty() && !supported_inline_picture)
         || para.text.contains('\n')
@@ -216,14 +186,5 @@ fn project_stored_soft_wrap_frame(
     // 채움은 새 줄을 만들지만 원본의 줄별 들여쓰기 기록도 소비한다. 저장 줄을
     // 비워 입력의 근거까지 없애면 명시적으로 꺼진 들여쓰기가 다시 적용된다.
     let rows = line_breaking::layout_paragraph_in_frame(para, &mut probe, styles, dpi)?;
-    let changed = if refresh_marker_partition {
-        rows.len() != para.line_segs.len()
-            || rows
-                .iter()
-                .enumerate()
-                .any(|(index, row)| row.text_start != para.line_seg_text_start(index))
-    } else {
-        rows.len() < para.line_segs.len()
-    };
-    changed.then_some(probe)
+    (rows.len() < para.line_segs.len()).then(|| (rows, probe.project_space_metrics()))
 }
