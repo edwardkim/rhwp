@@ -6,7 +6,7 @@ use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
     /// 원본 일반 행의 물리 최소는 셀 선언이며, 여러 저장 프레임의 내용 합이 아니다.
-    /// 다른 열의 병합 칸은 별도 원장을 쓰며 일반 칸 자신의 최소 공간을 없애지 않는다.
+    /// 병합 칸의 수용 원장이 따로 필요한 행은 이 일반 칸 계약에 포함하지 않는다.
     pub(crate) fn stored_ordinary_row_uses_declared_minimum(
         &self,
         table: &Table,
@@ -14,6 +14,11 @@ impl LayoutEngine {
     ) -> bool {
         let owners = Self::row_cut_cell_order(table, row);
         !owners.is_empty()
+            && !table.cells.iter().any(|cell| {
+                cell.row_span > 1
+                    && usize::from(cell.row) <= row
+                    && row < usize::from(cell.row) + usize::from(cell.row_span)
+            })
             && owners.iter().all(|&index| {
                 let cell = &table.cells[index];
                 usize::from(cell.row) == row
@@ -27,14 +32,19 @@ impl LayoutEngine {
         table: &'a Table,
         row: usize,
     ) -> Option<Vec<&'a Cell>> {
-        if !self.stored_row_boxes_exceed_first_frame(table) {
+        if !self.stored_row_boxes_exceed_first_frame(table)
+            || table.cells.iter().any(|cell| {
+                cell.row_span > 1
+                    && usize::from(cell.row) <= row
+                    && row < usize::from(cell.row) + usize::from(cell.row_span)
+            })
+        {
             return None;
         }
-        // 컷 생산자와 같은 일반 칸만 조회한다. 다른 열에서 시작하거나
-        // 계속되는 병합 칸의 공간은 이 칸들의 프레임과 독립적이다.
-        let mut cells: Vec<_> = Self::row_cut_cell_order(table, row)
-            .into_iter()
-            .filter_map(|index| table.cells.get(index))
+        let mut cells: Vec<_> = table
+            .cells
+            .iter()
+            .filter(|cell| usize::from(cell.row) == row)
             .collect();
         cells.sort_by_key(|cell| cell.col);
         (!cells.is_empty()
@@ -44,6 +54,51 @@ impl LayoutEngine {
                     && self.stored_plain_text_cell_frame(table, cell)
             }))
         .then_some(cells)
+    }
+
+    /// 일반 칸 자신의 선언 최소는 다른 열의 병합 프레임과 별도다.
+    /// 내용 컷을 정하는 저장 행 프레임과 혼동하지 않도록, 여기서는
+    /// 모든 일반 내용이 끝나고도 최소 공간이 남는 소유자만 조회한다.
+    fn completed_ordinary_minimum_cells<'a>(
+        &self,
+        table: &'a Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<Vec<&'a Cell>> {
+        if !self.stored_row_boxes_exceed_first_frame(table) {
+            return None;
+        }
+        let cells: Vec<_> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|index| table.cells.get(index))
+            .collect();
+        if cells.is_empty()
+            || cells.len() != cut.len()
+            || !cells.iter().zip(cut).all(|(cell, &end)| {
+                cell.height <= i32::MAX as u32
+                    && self.stored_plain_text_cell_frame(table, cell)
+                    && end == self.cell_units(cell, table, styles).len()
+            })
+        {
+            return None;
+        }
+        let minimum = cells
+            .iter()
+            .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+            .fold(0.0_f64, f64::max);
+        (minimum > self.row_complete_cut_content_height(table, row, styles)).then_some(cells)
+    }
+
+    fn ordinary_row_cells_for_cut<'a>(
+        &self,
+        table: &'a Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<Vec<&'a Cell>> {
+        self.original_ordinary_row_cells(table, row)
+            .or_else(|| self.completed_ordinary_minimum_cells(table, row, cut, styles))
     }
 
     /// 한 글줄은 쪼개지 않되, 원본 최소 높이의 빈 부분은 별도 물리 조각일 수 있다.
@@ -123,7 +178,7 @@ impl LayoutEngine {
         end: &[usize],
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
-        let cells = self.original_ordinary_row_cells(table, row)?;
+        let cells = self.ordinary_row_cells_for_cut(table, row, end, styles)?;
         if end.len() != cells.len() {
             return None;
         }
@@ -173,7 +228,7 @@ impl LayoutEngine {
         available: f64,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
-        let cells = self.original_ordinary_row_cells(table, row)?;
+        let cells = self.ordinary_row_cells_for_cut(table, row, end, styles)?;
         if !start.is_empty()
             || end.len() != cells.len()
             || !(self.stored_ordinary_row_cut_has_boundary(table, row, start, end, styles)
@@ -202,12 +257,15 @@ impl LayoutEngine {
         carried: Option<f64>,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
-        let cells = self.original_ordinary_row_cells(table, row)?;
+        let cells = self.ordinary_row_cells_for_cut(table, row, cut, styles)?;
         if cut.len() != cells.len()
             || !self.row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles)
             || !(self.stored_ordinary_row_cut_has_boundary(table, row, &[], cut, styles)
                 || self.stored_single_line_row_is_fragmentable(table, row, styles)
-                || carried.is_some())
+                || carried.is_some()
+                || self
+                    .completed_ordinary_minimum_cells(table, row, cut, styles)
+                    .is_some())
         {
             return None;
         }
@@ -343,7 +401,7 @@ impl LayoutEngine {
         cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> bool {
-        self.original_ordinary_row_cells(table, row)
+        self.ordinary_row_cells_for_cut(table, row, cut, styles)
             .is_some_and(|cells| {
                 if cut.len() != cells.len() {
                     return false;
