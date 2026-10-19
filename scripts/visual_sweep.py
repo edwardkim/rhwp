@@ -27,10 +27,12 @@ try:
     from scripts.visual_sweep_workers import ordered_page_map
     from scripts.visual_sweep_images import open_page_rgb, page_rgb
     from scripts.visual_sweep_pdf import PDF_RASTERIZER, pdf_raster_commands, pdf_rasterizer_provenance
+    from scripts.visual_sweep_quality import enforce_quality
 except ModuleNotFoundError:
     from visual_sweep_workers import ordered_page_map
     from visual_sweep_images import open_page_rgb, page_rgb
     from visual_sweep_pdf import PDF_RASTERIZER, pdf_raster_commands, pdf_rasterizer_provenance
+    from visual_sweep_quality import enforce_quality
 
 
 LABEL_FONT_ENV = "RHWP_VISUAL_SWEEP_LABEL_FONT"
@@ -1150,6 +1152,18 @@ def review_gate_reason(gate: dict[str, object]) -> str:
     counts = gate.get("document_page_counts")
     if gate.get("page_count_mismatch") and isinstance(counts, dict):
         reasons.append(f"전체 쪽수 불일치: RHWP {counts.get('rhwp')}쪽 / PDF {counts.get('pdf')}쪽")
+    quality = gate.get("quality_regression")
+    if isinstance(quality, dict) and quality.get("status") == "re_review_required":
+        for check in quality.get("checks", []):
+            label = f"{check.get('contract')}/{check.get('condition', '')}"
+            if check.get("reason"):
+                reasons.append(f"{label}: {check['reason']}")
+            for loss in check.get("regressions", []):
+                reasons.append(f"{label} p{loss['page']}: {loss['drop_pp']}%p 하락")
+            if check.get("missing_pages"):
+                reasons.append(f"{label}: 미검증 쪽 {check['missing_pages']}")
+        if not quality.get("checks"):
+            reasons.append(f"품질 회귀 증거 오류: {quality.get('error', quality.get('reason'))}")
     return ", ".join(reasons) or "검증 지표 부족"
 
 
@@ -1484,6 +1498,9 @@ def write_target_status(
         native_metadata = load_json_object(native_metadata_path, "Native export")
         manifest["native_document_pages"] = native_metadata["pageCount"]
         manifest["native_export_metadata"] = safe_rel_str(root, native_metadata_path)
+    manifest["provenance"] = run_manifest["provenance"]
+    enforce_quality(root, manifest, overlay_metrics, run_manifest.get("dpi"),
+                    run_manifest.get("document_page_counts"), SILHOUETTE_METHOD)
     write_json_atomic(base / "manifest.json", manifest)
     update_root_summary(out_root, manifest)
     return manifest
@@ -1681,6 +1698,7 @@ def render_target(
         manifest["exported_png_source_pages"] = len(all_svg_paths) if png_module else 0
         manifest["exported_render_tree_pages"] = len(all_tree_paths)
         manifest["exported_pdf_pages"] = len(all_pdf_pngs)
+        enforce_quality(root, manifest, manifest["metrics"], dpi, document_counts, SILHOUETTE_METHOD)
         write_json_atomic(base / "silhouette_manifest.json", manifest)
         update_root_summary(out_root, manifest)
         return manifest

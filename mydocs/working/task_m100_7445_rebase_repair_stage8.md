@@ -3144,3 +3144,38 @@ fresh WASM·영향 전쪽·전체 nextest·실제 소비 경로 검증은 아직
 각각 완전히 같음을 확인했다. 입력의 유효성과 실제 공통 배치를 먼저 보정하며 미달 상태에서
 테스트를 바꾸지 않는다. `equation-baseline-oracle/normalization-conclusion.json`과
 `cjk-pdf-installed-font-comparison.json`에 근거를 보존한다.
+
+
+## C423 #8064 Native 품질 하락의 자동 검출
+
+사용자 요청에 따라 기존 `visual_sweep.py`의 Native 실행에만 승인된 #8064 품질 기준을
+연결했다. PR 번호로 임의 자료를 찾는 기능이 아니라 입력·독립 Print PDF SHA로 등록된
+179조건/2082쪽의 Native 원본 TSV를 비교한다. WASM·SVG 경로에는 이 추가 계약을 적용하지
+않으며 이 검사 때문에 WASM 실행을 요구하지 않는다. 기존 각 backend의 다른 gate는 유지한다.
+
+같은 Print/96DPI/compat/PDFium153.0.7999.0/raw2px 조건에서 각 쪽의 하락폭을 Decimal로
+계산한다. 정확히0.1%p를 포함한 하락, 누락·중복·쪽수 차이·기준 hash 손상은 보류다.
+등록된 Native 입력의 측정 조건이 다르면 점수를 직접 비교하지 않고 재검토로 기록한다.
+평균·보정 점수·글꼴 예외로 이 품질 하락을 상쇄하지 않는다. 통과해도 기존 `not_evaluated`를
+승인으로 올리지 않으며 글꼴 출처·내용 소유·직접 판독·동일 조건의 최신 devel 비교는 별도다.
+이 도구 계약 검사는 원인별 Rust 렌더러 회귀 검사를 대신하지 않는다.
+
+도구 전체186건은 정상 의존성이 있는 Python에서 PASS(12.557초)다. 최초 시스템 Python
+실행에서는 PDFium 미설치와 새 연결의 누락 DPI 처리 오류가 있었다. DPI 누락을 안전하게
+처리하도록 고친 뒤 PDFium을 갖춘 기존 검증 Python으로 전체를 다시 실행했다. 기대값을
+낮추거나 검사를 제거하지 않았다. 신규 계약 검사는 Native 기준 hash·전쪽 수집·정확한0.1%p
+경계·실루엣 원값·조건 불일치·자료 손상·WASM 비적용을 확인한다. 기존 CI 자동 수집을 따른다.
+
+실제 fresh Native는 고정4a07와 runtime211fff의 HWP/HWPX18쪽씩, 총72쪽을 동일 조건으로
+재출력했다. 후보 최저98.09635/98.13231%, 두 문서 모두18/18쪽이며 base 대비0.1%p 이상
+하락0쪽, #8064 Native 승인 기준 대비0.1%p 이상 하락0쪽이다. 최근192DPI 진단의16쪽
+88%대를 이96DPI 승인 기준과 직접 비교했던 판단은 철회한다.192DPI 출력·실제 미세 차이는
+별도 진단으로 보존한다. 사용자 지정 pdftoppm 대조도 별도 TSV로 보존하며 PDFium 점수와
+혼합하지 않는다. Native-only 범위 지정 후 예정 WASM은 시작 전에 취소했다.
+
+실행·producer·Native 원본 TSV·두 rasterizer의 review/overlay·최종 비교는 ignored
+`rebase-4a07d3ae-20261019/repair16-8064-96dpi/`에, 도구 테스트 로그는
+`8064-regression-guard/native-only-visual-tool-tests.log`에 보존했다. 현재 Native-only 코드로
+원본 capture manifest를 다시 평가한 `native-only-assessment.json`도 기록했다. 원래 capture
+시점의 도구 hash는 덮어쓰지 않았다. 이는179조건 전체 재출력·전체 Rust 회귀·실제 제품
+소비 검증 완료를 뜻하지 않으며 나머지 보정·검증은 계속한다.
