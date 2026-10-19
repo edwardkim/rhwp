@@ -3177,6 +3177,40 @@ pub(super) fn supports_overlay_table_frame_controls(para: &Paragraph) -> bool {
     overlay_tables > 0
 }
 
+/// 표 없이 글앞/글뒤 그림·도형만 가진 저장 줄 없는 **제목** host.
+///
+/// 같은 종이층 개체라 줄 폭에 중립이다. 대상은 공백으로 자리 잡은 제목뿐이다 —
+/// 글자의 절반 넘게가 앞 공백이다. 첫 글자부터 본문이 이어지는 문단은 합성 줄바꿈에
+/// 남는다.
+pub(super) fn supports_overlay_shape_title_frame_controls(para: &Paragraph) -> bool {
+    let is_overlay = |common: &crate::model::shape::CommonObjAttr| {
+        !common.treat_as_char
+            && matches!(
+                common.text_wrap,
+                crate::model::shape::TextWrap::InFrontOfText
+                    | crate::model::shape::TextWrap::BehindText
+            )
+    };
+    if !para.line_segs.is_empty() {
+        return false;
+    }
+    let total = para.text.chars().count();
+    let leading = para.text.chars().take_while(|c| c.is_whitespace()).count();
+    if leading == total || leading * 2 <= total {
+        return false;
+    }
+    let mut overlay_objects = 0usize;
+    for control in &para.controls {
+        match control {
+            Control::Picture(pic) if is_overlay(&pic.common) => overlay_objects += 1,
+            Control::Shape(shape) if is_overlay(shape.common()) => overlay_objects += 1,
+            other if control_is_width_neutral_marker(other) => {}
+            _ => return false,
+        }
+    }
+    overlay_objects > 0
+}
+
 pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
     let remeasured = remeasured_equation_start_row(para).is_some();
     para.controls.iter().all(|control| {
@@ -3612,6 +3646,7 @@ fn layout_paragraph_in_frame_impl(
                 || supports_cached_body_frame_controls(para)
                 || (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
                 || (para.line_segs.is_empty() && supports_overlay_table_frame_controls(para))
+                || supports_overlay_shape_title_frame_controls(para)
         }
         FramePurpose::PictureAnchor => picture_anchor_projection::admits(para),
     };
@@ -4218,7 +4253,8 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     // 글앞/글뒤 표 host 도 저장 줄이 없으면 같다 — 호출자가 실폭 한 줄일 때만 보낸다.
     let tac_table_host_fill = para.line_segs.is_empty()
         && (supports_tac_table_band_frame_controls(para)
-            || supports_overlay_table_frame_controls(para));
+            || supports_overlay_table_frame_controls(para)
+            || supports_overlay_shape_title_frame_controls(para));
     if !supports_picture_band_frame_controls(para) && !tac_table_host_fill {
         if !supports_cached_body_frame_controls(para) || (!stale && !para.line_segs.is_empty()) {
             return None;

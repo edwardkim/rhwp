@@ -95,7 +95,8 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
         || (crate::renderer::para_has_no_stored_line_segs(para)
             && composed.lines.len() > 1
             && para.text.chars().any(|c| !c.is_whitespace())
-            && line_breaking::supports_overlay_table_frame_controls(para)
+            && (line_breaking::supports_overlay_table_frame_controls(para)
+                || line_breaking::supports_overlay_shape_title_frame_controls(para))
             && paragraph_box.is_usable()
             && {
                 let mut probe = paragraph_box.frame(0);
