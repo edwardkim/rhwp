@@ -12,6 +12,31 @@ pub(in crate::renderer::typeset) struct BodyFootnoteMeasure<'a> {
 }
 
 impl BodyFootnoteMeasure<'_> {
+    /// 저장 각주의 조각 소속은 그대로 두고 같은 선택 줄의 paint 상자를 조회한다.
+    pub fn stored_current_area_height(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[crate::model::paragraph::Paragraph],
+    ) -> Option<f64> {
+        let page = st.pages.last().filter(|page| !page.footnotes.is_empty())?;
+        let layout = self.configured_layout(st);
+        if !layout.footnote_area_has_stored_lines(
+            &page.footnotes,
+            paragraphs,
+            st.layout.body_area.width,
+        ) {
+            return None;
+        }
+        Some(layout.estimate_footnote_area_height_with_metrics(
+            &page.footnotes,
+            paragraphs,
+            self.styles,
+            st.layout.body_area.width,
+            st.footnote_separator_overhead,
+            st.footnote_between_notes_margin,
+        ))
+    }
+
     fn configured_layout(&self, st: &TypesetState) -> crate::renderer::layout::LayoutEngine {
         let layout = crate::renderer::layout::LayoutEngine::new(self.engine.dpi);
         self.engine.prime_section_cell_context(&layout);

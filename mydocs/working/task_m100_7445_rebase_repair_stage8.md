@@ -4350,3 +4350,87 @@ workspace all-target Clippy가 #5846의 `1042.698_666_666_666_7`에 대한
 prepare와 해당 파일 rustfmt 확인 뒤 실패한 all-target lint·관련5846·남은 Skia/manifest를
 233에서 순차 재실행한다. gate 대기230은 Cargo nextest를 시작하기 전에 종료됐으므로
 전체 회귀 통과/실행으로 집계하지 않는다. 성공한 앞 검증과 실패·미실행 항목을 구분한다.
+
+## C444 각주 앞 빈 줄의 실제 문단 원점과 물리 공간 확인
+
+부모 HEAD는 `bd361ceac032830ab251d95ca8c088bcaf719686`이다. C443의 숫자 표기 교정 뒤
+233의 all-target Clippy, #5846, Skia root3859PASS/12ignore와 다른 lib182PASS,
+Native PNG2PASS·PDF14PASS·manifest가 완료됐다. 같은 HEAD의 전체234는
+11149실행/11125PASS/24FAIL/45skip, 테스트801.021초·exit100이다. 최종 요약과 중복 recap을
+분리한24실패 목록은 ignored `repair234-full-nextest/`에 있다. 이 결과를 아래 미커밋 후보의
+전체 회귀 통과로 재인용하지 않는다.
+
+로드맵 독립 Print는302쪽인데, frozen217의 실제 CLI·core는304쪽이었다. 고정4a07은
+CLI와 별도 보존 library 모두299쪽이므로 고정 base가302쪽에 통과했다고 쓰지 않는다.
+추가된109/131쪽에는 원본 빈 문단1604/1605 및1722가 양의 줄 상자로 남아 있었다.
+앞의 본문·표·각주는 독립 출력과 가까이 일치하지만, 저장 각주 예약 뒤 추정용40px가
+추가 차감되어 이 빈 줄만 먼저 이월되고 뒤의 실제 저장 reset이 다시 새 쪽을 열었다.
+
+공통 소비 경로는 `paragraph::flow::place`의 표 후속 원점·공유 간격 확정 →
+`state::empty_run::prepare_saved_empty_run`의 원본 빈 줄·실제 원점 일치 →
+`BodyFootnoteMeasure::stored_current_area_height`의 기존 선택 조각과 공통 배치 높이 →
+`reserve_painted_footnote_area` → 기존 `available_height`·문단 fit/전진 → 실제 TextLine 배치다.
+각주의 원래 조각·소유자는 다시 선택하지 않는다. 실제 공간이 부족한 경로와 편집·합성·
+미확정 원점 경로, 기존 저장 빈 줄 이월은 유지한다. 문서/쪽 ID나 새 px 허용치, 페이지 삭제,
+빈 줄 숨김, 전체 추정 여백 제거를 추가하지 않았다.
+
+첫241은 구역 진입의 커서를 읽어304→303쪽만 복구했다.244/245 진단에서 표 뒤1722의
+구역 진입 커서는290.4px이고 실제 문단 원점을 선택한 뒤586.0px임을 확인했다.
+247은 확정 뒤의 공통 원점을 소비한다. 일찍 조회한 같은 helper가 정확한 배치 근거가
+아님을 이 진단으로 구분했다. 임시 진단 출력은 제거했고 frozen247의 source/patch와
+producer를 보존했다. Native build는1분43초/exit0이다.
+
+기존 검사 소스는 바꾸지 않았다. 같은22개를 frozen217과247에 직접 연결해
+18PASS/4FAIL→22PASS/0FAIL로 확인했다(`repair248-resolved-tail-and-stored-notes/`).
+로드맵302쪽·국가 행 소속·끝 프레임과 기존 정상 대조군의 통과이며, 정식 전체 suite·
+시각 전쪽 완료를 대신하지 않는다. 실제108쪽의 빈 줄 두 상자는 y475.5/501.9에서
+높이16px를 소유하고 각주 상단518.7px 위에 있다.129쪽의 빈 줄도 y718.3/높이18.7로
+각주 상단741.0px 위에 남는다. 이 값은 진단이며 새 px 핀으로 고정하지 않았다.
+원본 논리 source/셀/각주의 글줄 분할을 합친8657개 소속과 텍스트 순서는 전후 동일하다.
+PDF 첫32자 진단은261쪽의 고유 대응에서 쪽 어긋남0, 추출 미대응13·복수 대응28이며
+전체 텍스트 oracle로 표현하지 않는다(`repair253-roadmap-source-preservation/`).
+
+fresh WASM250은 Mac locked `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며
+실제 root를 재컴파일해325.52초/exit0이다. Docker 최적화 통과가 아니다.
+WASM SHA는 `ce1b7a14f2f376faf7a4f872af4638c4f8bdc1f7c8762dd84cb4c693166d6d71`,
+JS SHA는 `23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591`이다.
+root pkg/Studio public 및 실제 Studio7736 초기 응답254를 대조했다. 초기화는 actual36,
+지원 CanvasKit 준비나 문서 paint 수용의 증거가 아니다. 첫 브라우저 진단의 잘못된 host
+모드는 별도로 보존하고 실제 Mac headless·해당 Vite URL로 다시 검증했다.
+
+전쪽251의 Native는302/302쪽, 최저83.61607%(153쪽),90% 미달1쪽이다. 나머지301쪽은
+90% 이상이다. 집중8쪽은99.09137~100%이고108/109/129/130 및 끝 조각을 직접 읽었으나
+전체 수용으로 올리지 않는다. fresh WASM 전쪽은 기록 시점에 실행 중이며, 완료 batch의
+153쪽도83.58341%다. 현재 새 회귀·기대값·baseline 변경은 보류한다.
+
+153쪽 그림은 현재153쪽/직전217의155쪽/고정4a07의152쪽에서 동일한 BMP bin54와
+동일한 배치·전체 crop이다. 원본1000×514/165색이며 bytes SHA는
+`5fe1aec3bbe667deafe2093ab0f2cb108592bf51b6b2f5f9a401e0b0a05f2905`다.
+독립 PDF의 해당 그림은1000×514 JPEG24500bytes다. source BMP를 JPEG로 재인코딩한
+로컬 진단에서 q41/subsampling2의 양자화 표가 같고 decoded RGB 평균 차이는 약0.25076,
+원본 BMP와 PDF JPEG의 차이는 약1.96147이었다. JPEG 바이트·decoded RGB가 같다는
+주장이 아니며, q41을 제품의 문서별 예외나 승인된 인쇄 정책으로 채택하지 않았다.
+BMP 전체 crop/미자름, JPEG 대조의 frozen layer replay를 `repair256`에서 캡처 잠금 후
+실행하도록 준비했다. 원본·PDF·비교기·90% 문턱은 유지한다. 로그·중간 JSON·BMP/JPEG는
+ignored output에만 남기며, 삭제한 과거 SVG를 재사용 가능한 증거로 쓰지 않는다.
+
+별도257의 쪽번호 진단은 frozen202와247의 같은 논리/Print 좌표를 확인했다. 기존1133의
+5실패와 약1.2px raw PDF 차이는 C437/C439에서 이미 재현된 상태이며 새 빈 줄 보정의
+회귀라고 단정하지 않는다. 기존 기대값·허용치는 변경하지 않았다. 진단의 실행 파일과
+출력 폴더 경합 첫 시도는 보존하고 서로 다른 경로로 고쳤다. fmt/Native Clippy258은
+exit0이고 WASM Clippy·전쪽 시각 검증은 기록 당시 진행 중이다.
+전체 PR 검증·나머지 실패 보정·새 승인 전 원격 작업은 계속 보류한다.
+
+
+C444 추가 완료 기록: 251은 Native/fresh WASM 각302쪽, 총604쪽을 끝까지 산출했다.
+최저83.61607/83.58341%, 미달은 양쪽153쪽 한 곳이고 나머지301쪽씩은90% 이상이다.
+양쪽108/129/153 review와 overlay를 실제로 열어 본문·표·각주·쪽번호 소속과 남은 격자선
+차이를 확인했다. [전쪽 TSV와 대표 쌍](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/roadmap-stored-empty-tail/README.md)에 원본 바이트를 보존한다.
+258 fmt·Native Clippy·WASM Clippy도 각각 exit0으로 종료했다. 전체 nextest의24실패는
+아직 재실행하지 않았고, 기존 집중4건의 복구를 전체 회귀 완료로 쓰지 않는다.
+
+256의 전체 crop 제거는 출력과 동일해 crop 분기 가설을 기각했다. JPEG q41 진단84.82584%,
+PDF 내장 JPEG 직접 대조86.56530%로 압축만으로90%를 충족하지 않는다. 262의 HQ 재생은
+원본 BMP91.99355%지만, 이는 Print layout 뒤의 진단 profile 교체이며 제품 수정/수용이
+아니다. 과거100%였던 독립 C352/C354/C356도 현재 PDFium으로 다시 대조한다. 프로필이나
+필터를 단순 교체해 다른 옅은 격자를 훼손하지 않도록 원인 계약을 계속 확인한다.

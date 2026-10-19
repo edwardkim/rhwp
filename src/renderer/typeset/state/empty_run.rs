@@ -29,11 +29,11 @@ impl TypesetState {
         first: usize,
         paragraphs: &[Paragraph],
         dpi: f64,
+        measured_note_area: impl FnOnce(&Self) -> Option<f64>,
     ) {
         if self.data.saved_empty_run.is_some()
             || self.data.col_count != 1
             || self.data.hide_empty_line
-            || !self.data.current_footnote_body_bottom_reserved
             || self.data.current_items.is_empty()
         {
             return;
@@ -55,6 +55,52 @@ impl TypesetState {
                 seg.vertical_pos != 0 || seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
             })
         {
+            return;
+        }
+        // 저장 빈 줄의 점유와 그 뒤의 reset은 별개다. 같은 저장 프레임에
+        // 있는 빈 꼬리가 실제 각주 상자 위에 모두 들어가면, 추정용 안전
+        // 여백 때문에 빈 줄만 다음 쪽으로 보내지 않는다. 각주의 원래
+        // 조각·소유자는 바꾸지 않고 paint와 같은 선택 조각 높이만 예약한다.
+        if !self.data.current_footnote_body_bottom_reserved
+            && !self.data.profile.session_edited()
+            && (self.data.profile.hwp5_stored_pagination_layout()
+                || self.data.profile.hwpx_stored_layout())
+            && self.data.vpos_page_base_stored
+            && !self.data.vpos_ladder_dirty
+        {
+            if let Some(base) = self.data.vpos_page_base {
+                let first_line = &paragraphs[first].line_segs[0];
+                let top = crate::renderer::hwpunit_to_px(
+                    first_line.vertical_pos.saturating_sub(base),
+                    dpi,
+                );
+                let bottom = crate::renderer::hwpunit_to_px(
+                    last.vertical_pos
+                        .saturating_add(last.line_height)
+                        .saturating_sub(base),
+                    dpi,
+                );
+                if (top - self.data.current_height).abs() <= dpi / 7200.0 {
+                    if let Some(height) = measured_note_area(self) {
+                        let capacity = self.base_available_height()
+                            - height
+                            - self.data.current_zone_y_offset
+                            - self.data.current_bottom_fixed_exclusion;
+                        if height.is_finite() && height > 0.0 && top >= 0.0 && bottom <= capacity {
+                            self.reserve_painted_footnote_area(height);
+                            self.data.saved_empty_run = Some(SavedEmptyRun {
+                                first,
+                                reset,
+                                page: self.data.pages.len(),
+                            });
+                            return;
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        if !self.data.current_footnote_body_bottom_reserved {
             return;
         }
         let bottom =

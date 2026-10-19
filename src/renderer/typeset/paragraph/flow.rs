@@ -53,6 +53,12 @@ pub(in crate::renderer::typeset) fn place(
             dpi,
         );
     st.reclaim_flow_by(shared_spacing.min(st.current_height));
+    // 표/저장 프레임의 후속 원점과 공유 간격을 확정한 뒤 물리 빈 꼬리를 잰다.
+    // 구역 진입의 옛 커서를 재사용하면 표 뒤 빈 줄의 실제 위치를 놓친다.
+    st.prepare_saved_empty_run(para_idx, paragraphs, dpi, |st| {
+        crate::renderer::typeset::notes::footnotes::measure::BodyFootnoteMeasure { engine, styles }
+            .stored_current_area_height(st, paragraphs)
+    });
     let paragraph::FitBudget {
         strict_after_empty_host_float,
         layout_drift_safety_px,
