@@ -5,6 +5,13 @@ use super::{
 };
 use crate::model::table::{Cell, Table};
 
+/// 같은 내용 컷의 수용 전진과 실제 마지막 상자를 재귀 부모까지 구분한다.
+#[derive(Clone, Copy)]
+pub(super) enum CutHeight {
+    Capacity,
+    Occupied,
+}
+
 #[derive(Clone, Copy)]
 pub(super) enum RowCutCapacity<'a> {
     Content,
@@ -179,8 +186,15 @@ impl LayoutEngine {
                 styles,
                 RowCutCapacity::Physical(&deltas),
             );
-            let visible = self.row_cut_content_height(table, row, start_cut, &cut.end_cut, styles);
-            let excess = (visible - physical_budget).max(0.0);
+            let required = self.row_cut_height(
+                table,
+                row,
+                start_cut,
+                &cut.end_cut,
+                styles,
+                CutHeight::Capacity,
+            );
+            let excess = (required - physical_budget).max(0.0);
             if excess > ROW_CUT_CAPACITY_FP_EPSILON_PX && std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 let owners: Vec<_> = Self::row_cut_cell_order(table, row)
                     .iter()
@@ -200,7 +214,7 @@ impl LayoutEngine {
                     })
                     .collect();
                 eprintln!(
-                    "DIAG_SCAN PHYSICAL_REFIT r={row} start={start_cut:?} end={:?} physical={physical_budget:.3} budget={budget:.3} visible={visible:.3} owners={owners:?}",
+                    "DIAG_SCAN PHYSICAL_REFIT r={row} start={start_cut:?} end={:?} physical={physical_budget:.3} budget={budget:.3} required={required:.3} owners={owners:?}",
                     cut.end_cut,
                 );
             }
@@ -211,7 +225,12 @@ impl LayoutEngine {
                 return (cut, budget);
             }
             previous_cut = Some(cut.end_cut);
-            physical_cut_budget = (physical_cut_budget - excess).max(0.0);
+            // 논리 컷이 아직 예약하지 않은 자식 상자·전진 전체를 다음 예산에 반영한다.
+            // 초과분만 빼면 남은 여유가 그 예약을 상쇄해 같은 컷을 다시 고를 수 있다.
+            let additional_reserve = (required - cut.consumed_height - max_padding).max(0.0);
+            physical_cut_budget = (physical_cut_budget - excess)
+                .min(physical_budget - additional_reserve)
+                .max(0.0);
         }
     }
 }

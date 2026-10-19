@@ -24972,6 +24972,16 @@ impl LayoutEngine {
         cut: &NestedTableCut,
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        self.nested_cut_height(child, cut, styles, row_physical_band::CutHeight::Occupied)
+    }
+
+    fn nested_cut_height(
+        &self,
+        child: &crate::model::table::Table,
+        cut: &NestedTableCut,
+        styles: &ResolvedStyleSet,
+        purpose: row_physical_band::CutHeight,
+    ) -> f64 {
         if cut.start_row == 0 && cut.end_row == 1 && !cut.is_block_split && !cut.start_cut_is_block
         {
             if let Some(height) = self.saved_nested_single_cell_frame_height(
@@ -25013,7 +25023,7 @@ impl LayoutEngine {
             } else {
                 &[]
             };
-            let content = self.row_cut_content_height(child, row, start_cut, end_cut, styles);
+            let content = self.row_cut_height(child, row, start_cut, end_cut, styles, purpose);
             physical += if start_cut.is_empty()
                 && end_cut.is_empty()
                 && (self.reflowed_fragment_row_uses_measured_height(child, row)
@@ -25057,6 +25067,7 @@ impl LayoutEngine {
         run_end: usize,
         lo: usize,
         hi: usize,
+        purpose: row_physical_band::CutHeight,
     ) -> Option<f64> {
         let pi = units[run_start].para_idx;
         let para = cell.paragraphs.get(pi)?;
@@ -25135,7 +25146,7 @@ impl LayoutEngine {
         } else {
             return None;
         };
-        let mut physical = self.nested_cut_physical_height(child, &cut, styles);
+        let mut physical = self.nested_cut_height(child, &cut, styles, purpose);
         let style = styles.para_styles.get(para.para_shape_id as usize);
         let reopens_outer_frame = reflow_nested_table_has_outer_frame(para, child);
         if start == run_start || reopens_outer_frame {
@@ -25212,6 +25223,25 @@ impl LayoutEngine {
         start_unit: usize,
         end_unit: usize,
     ) -> f64 {
+        self.mixed_nested_flow_extra_for_height(
+            cell,
+            table,
+            styles,
+            start_unit,
+            end_unit,
+            row_physical_band::CutHeight::Occupied,
+        )
+    }
+
+    fn mixed_nested_flow_extra_for_height(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+        purpose: row_physical_band::CutHeight,
+    ) -> f64 {
         let units = self.cell_units(cell, table, styles);
         let lo = start_unit.min(units.len());
         let hi = end_unit.min(units.len()).max(lo);
@@ -25238,8 +25268,8 @@ impl LayoutEngine {
                     issue4129_visited += 1;
                     u += 1;
                 }
-                if let Some(reserve) =
-                    self.reflow_recursive_run_extra(cell, styles, &units, run_start, u, lo, hi)
+                if let Some(reserve) = self
+                    .reflow_recursive_run_extra(cell, styles, &units, run_start, u, lo, hi, purpose)
                 {
                     extra += reserve;
                     continue;
@@ -25389,7 +25419,7 @@ impl LayoutEngine {
                         let child_height = self
                             .plain_nested_continuation_frame_height(child, &cut, styles)
                             .unwrap_or_else(|| {
-                                self.nested_cut_physical_height(child, &cut, styles)
+                                self.nested_cut_height(child, &cut, styles, purpose)
                             });
                         extra += (child_height - reserved_flow).max(0.0);
                         // 자식의 실제 상자가 셀 최소 높이를 늘린 경우 부모 행도
@@ -25932,6 +25962,25 @@ impl LayoutEngine {
         end_cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        self.row_cut_height(
+            table,
+            row,
+            start_cut,
+            end_cut,
+            styles,
+            row_physical_band::CutHeight::Occupied,
+        )
+    }
+
+    fn row_cut_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+        purpose: row_physical_band::CutHeight,
+    ) -> f64 {
         if start_cut.is_empty()
             && end_cut.is_empty()
             && !self.profile.get().session_edited()
@@ -25986,12 +26035,19 @@ impl LayoutEngine {
                 .unwrap_or(units.len())
                 .clamp(su, units.len());
             let mixed_nested_extra =
-                self.mixed_nested_flow_extra_from_cut(cell, table, styles, su, eu);
+                self.mixed_nested_flow_extra_for_height(cell, table, styles, su, eu, purpose);
             let flow_range = Self::cell_cut_flow_range(cell, table, &units, su, eu);
             let trailing_trim = if is_whole_row {
                 0.0
             } else {
-                self.physical_cut_trailing_trim(table, cell, &units, su, eu, styles)
+                match purpose {
+                    row_physical_band::CutHeight::Capacity => {
+                        self.row_cut_capacity_trailing_trim(table, cell, &units, su, eu, styles)
+                    }
+                    row_physical_band::CutHeight::Occupied => {
+                        self.physical_cut_trailing_trim(table, cell, &units, su, eu, styles)
+                    }
+                }
             };
             // [#7870] 여백을 다시 세면 물리 밴드 재맞춤이 그 몫만큼 예산을 줄여 용량 컷이
             // 방금 앉힌 atom 을 다음 쪽으로 밀어낸다.
