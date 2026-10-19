@@ -1027,13 +1027,16 @@ impl TypesetEngine {
                 // 컷해 페이지를 본문 높이 끝까지 채운다 (21761835 p1/p3/p5 경계
                 // 낭비 157/37/39px, 한글 PDF는 매 경계 만충). 콘텐츠-소진 컷을
                 // 밴드 컷으로 수용 — RowBreak + rowspan 걸침 행 한정.
+                let complete_cut_band = row_query
+                    .complete_cut_band_height(&res.end_cut, avail_for_rows - consumed - cs_before);
                 let band_cut_ok = rowspan_touched[r]
                     && mt.allows_row_break_split()
                     && r > cursor_row
                     && !res.end_cut.is_empty()
                     && res.consumed_height >= MIN_TOP_KEEP_PX
                     && budget >= MIN_TOP_KEEP_PX
-                    && row_total > budget + 0.5;
+                    && row_total > budget + 0.5
+                    && complete_cut_band.is_some();
                 if band_cut_ok {
                     end_row = r + 1;
                     let physical_band = row_start_cut
@@ -1072,8 +1075,13 @@ impl TypesetEngine {
                     }
                     split_end_cut = res.end_cut.clone();
                     split_end_limit = budget.max(res.consumed_height);
-                    end_row_height_override = physical_band;
-                    consumed += cs_before + physical_band.unwrap_or(split_end_limit);
+                    // 종료 프레임의 prefix도 같은 물리 상자를 뺀다. 내용 전진만
+                    // 예약하면 뒤 단계에서 안 여백을 앞 행의 몫으로 잘못 옮긴다.
+                    let physical = physical_band.unwrap_or_else(|| {
+                        complete_cut_band.expect("실제 컷이 들어가는 밴드만 수용한다")
+                    });
+                    end_row_height_override = Some(physical);
+                    consumed += cs_before + physical;
                     if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                         eprintln!(
                             "DIAG_SCAN BAND_CUT r={} limit={:.1} content={:.1} row_total={:.1}",

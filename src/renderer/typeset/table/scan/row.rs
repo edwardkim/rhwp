@@ -25,6 +25,28 @@ pub(in crate::renderer::typeset) struct RowBandProbe {
 }
 
 impl RowScanQuery<'_> {
+    /// 유닛 소비 완료와 실제 칸 상자의 수용을 구분한다.
+    /// 밴드 컷은 내용과 안 여백이 모두 들어갈 때만 남은 물리 공간을 소유한다.
+    pub(in crate::renderer::typeset) fn complete_cut_band_height(
+        &self,
+        end_cut: &[usize],
+        available: f64,
+    ) -> Option<f64> {
+        let start = if self.r == self.cursor_row {
+            self.start_cut
+        } else {
+            &[]
+        };
+        let occupied = self.rows.layout_engine.row_cut_content_height(
+            self.rows.table,
+            self.r,
+            start,
+            end_cut,
+            self.rows.styles,
+        );
+        (available.is_finite() && available > 0.0 && occupied <= available).then_some(available)
+    }
+
     /// 문단 유지 계약을 통과한 컷이 실제로 소유할 상자를 수용 전에 확정한다.
     /// 내용 높이만으로 최소 조각을 검사한 뒤 paint에서 상자를 늘리지 않는다.
     /// 반환값은 누적 예약과 부분 행 상자에 함께 전달한다.
