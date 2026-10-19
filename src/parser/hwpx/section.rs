@@ -6922,6 +6922,7 @@ fn parse_equation(
         version_info,
         raw_ctrl_data: Vec::new(),
         raw_ctrl_seal: None,
+        unpositioned_host_frame_seal: None,
     };
     Ok(Control::Equation(Box::new(equation)))
 }

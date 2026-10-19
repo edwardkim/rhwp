@@ -16,6 +16,7 @@ mod brace_recovery;
 pub(crate) mod brace_stretch;
 #[cfg(target_arch = "wasm32")]
 pub mod canvas_render;
+pub(crate) mod declared_frame;
 pub(crate) mod dispatch;
 mod dot_geometry;
 mod font_frame_22;
@@ -97,6 +98,13 @@ pub fn intrinsic_size_hwp(script: &str, font_size: u32) -> (u32, u32) {
 /// 일반 수식의 저장 프레임과 보호된 크기는 유지한다. 독립 한컴 출력에서
 /// 확인한 글자 줄·윗줄·단일 위첨자·BOX의 낡은 캐시만 논리 상자로 재발행한다.
 pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
+    if declared_frame::retains_unpositioned_host_frame(equation) {
+        return (
+            equation.common.width,
+            equation.common.height,
+            (equation.common.height as i32).saturating_mul(i32::from(equation.baseline)) / 100,
+        );
+    }
     // 표시 내용이 없는 구문과 유효한 빈 템플릿은 다르다. 정상 한컴 저장본의
     // 인자 없는 PILE은 범위 밖 기준선을 가진 무효 캐시를 남기지만, 호스트의
     // 빈 글줄은 여전히 점유한다. 캐시를 표시 상자의 크기로 보정하지 않는다.
@@ -347,6 +355,11 @@ pub(crate) fn layout_for_paint(
     dpi: f64,
 ) -> layout::LayoutBox {
     let mut result = layout::EqLayout::for_equation(equation, dpi).layout(ast);
+    if declared_frame::retains_unpositioned_host_frame(equation) {
+        // 호스트의 기준선은 선언 상자를 배치한다. 상자 안의 자연 표시 원점을
+        // 같은 기준선에 다시 맞추면 예약 높이가 큰 수식의 글리프가 내려간다.
+        return result;
+    }
     let fs = super::hwpunit_to_px(equation.font_size as i32, dpi);
     let scale = stored_vertical_scale(
         super::hwpunit_to_px(flow_height_hwp(equation) as i32, dpi),

@@ -817,6 +817,7 @@ mod tests {
             version_info: "Equation Version 60".to_string(),
             raw_ctrl_data: Vec::new(),
             raw_ctrl_seal: None,
+            unpositioned_host_frame_seal: None,
         })));
         section.paragraphs.push(para);
         doc.sections.push(section);

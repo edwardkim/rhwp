@@ -27,3 +27,20 @@ pub(super) fn body_ladder_is_unpositioned(paragraphs: &[Paragraph]) -> bool {
     }
     has_cache
 }
+
+/// 원본 줄 출처가 남아 있는 미계산 본문만 선언 수식 프레임을 보존한다.
+/// 저장 줄이 전혀 없는 정상 문서와 구현이 만든 줄은 이 출처가 아니다.
+pub(super) fn body_ladder_has_original_source(paragraphs: &[Paragraph]) -> bool {
+    paragraphs
+        .iter()
+        .flat_map(|para| &para.line_segs)
+        .all(|line| line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+}
+
+pub(super) fn retain_declared_equation_frames(paragraph: &mut Paragraph) {
+    for control in &mut paragraph.controls {
+        if let crate::model::control::Control::Equation(equation) = control {
+            crate::renderer::equation::declared_frame::retain_unpositioned_host_frame(equation);
+        }
+    }
+}

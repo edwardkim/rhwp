@@ -543,6 +543,9 @@ impl DocumentCore {
             let section_sized = Self::section_has_sized_lineseg(section);
             let unpositioned_body = include_empty
                 && super::source_line_ladder::body_ladder_is_unpositioned(&section.paragraphs);
+            let retain_declared_equation_frames = unpositioned_body
+                && !profile.session_edited()
+                && super::source_line_ladder::body_ladder_has_original_source(&section.paragraphs);
             let page_def = &section.section_def.page_def;
             let column_def = Self::find_initial_column_def(&section.paragraphs);
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
@@ -577,6 +580,9 @@ impl DocumentCore {
                 std::collections::HashSet::new();
             for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                 if unpositioned_body {
+                    if retain_declared_equation_frames {
+                        super::source_line_ladder::retain_declared_equation_frames(para);
+                    }
                     // 미계산 원점의 캐시를 일부만 재사용하면 낡은 높이·간격이 새
                     // vpos 체인에 섞인다. 원본 파일은 보존하고 본문 캐시만 무효화한다.
                     para.replace_line_segs(Vec::new());
