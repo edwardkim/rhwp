@@ -5070,6 +5070,28 @@ impl DocumentCore {
         self.measured_tables.truncate(sec_count);
         self.dirty_sections.resize(sec_count, true);
         self.dirty_sections.truncate(sec_count);
+        // 앞 구역의 문서 끝 미주는 마지막 구역이 모아 그린다. 미주가 있거나 마지막 구역이
+        // 그 미주를 그리고 있던 앞 구역이 바뀌면 마지막 구역도 다시 조판한다.
+        if let Some(last) = sec_count.checked_sub(1) {
+            let renders_notes_of_dirty_section = (0..last).any(|idx| {
+                self.dirty_sections[idx]
+                    && (self.document.sections[idx]
+                        .paragraphs
+                        .iter()
+                        .enumerate()
+                        .any(|(pi, para)| {
+                            !crate::renderer::pagination::paragraph_endnote_refs(idx, pi, para)
+                                .is_empty()
+                        })
+                        || self.pagination[last]
+                            .endnote_para_sources
+                            .iter()
+                            .any(|src| src.section_index == idx))
+            });
+            if renders_notes_of_dirty_section {
+                self.dirty_sections[last] = true;
+            }
+        }
         while self.measured_sections.len() < sec_count {
             self.measured_sections.push(MeasuredSection {
                 fallback_paragraphs: Vec::new(),
