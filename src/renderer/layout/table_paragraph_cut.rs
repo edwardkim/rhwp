@@ -153,9 +153,11 @@ impl LayoutEngine {
             }
             match source {
                 CutSource::Stored => {
+                    // 문단 끝 컷은 저장 글줄이 없어도 문단 소유 경계로 확정된다.
+                    // 문단 안 컷의 저장 줄 인증과 별도의 Reflow 계약은 유지한다.
                     if paragraph.stored_text_partition_is_dirty()
                         || paragraph.cell_format_vpos_dirty
-                        || paragraph.line_segs.is_empty()
+                        || (paragraph.line_segs.is_empty() && !complete)
                         || paragraph
                             .line_segs
                             .iter()
