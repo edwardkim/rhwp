@@ -3735,3 +3735,28 @@ WASM 소비 경로를 확인한다. 원 PR의 과거 CI를 현재 후보의 검�
 생산물을 source SHA·바이트 SHA로 동결한 뒤 후보를 빌드한다. 0.1%p 이상 하락·90% 미달·쪽수/내용
 차이·증거 부족은 구분해 보류하고 보정·양쪽 재검증을 계속한다. 컴파일 통과만으로 준비 완료나
 기능 보존 완료로 보고하지 않는다. 새 PR 생성은 별도 승인 전까지 진행하지 않는다.
+
+
+### 리베이스 점검 중 Studio JSON 러너의 실행 실패 보완
+
+#8078의3개 npm ci, Studio TypeScript, 변경3 workflow actionlint, 정책 Node333개와
+Python187개는 모두 통과했다. Studio 전체 Node는2340개 중2338PASS/2FAIL/0SKIP다.
+실패는 `mixed-char-format.test.ts`, `pending-char-shape.test.ts`의 실제 Node WASM 러너다.
+기존 Node package가 있는 로컬에서는 새 JSON 메트릭 import에 `.ts`를 붙여 파일 열기에서
+중단했다. 정확한 실패 로그는 `rebase-8078-studio-node-tests.log`에 보존했다.
+
+#8064에 포함된 원 JSON import 보정1faca6915와 다른 러너의 JSON 위임779461342,
+혼합 모양 원 해결08bf41c69 및 #6788의 기대 동작을 추적했다. 두 러너는 base/후보에서
+바이트가 같았고, 기대값·기능을 약화하지 않고 JSON은 Node의 import attributes로 전달하도록
+기존 공통 로드 규칙을 적용한다. 실제 두 테스트 파일6건은 수정 후PASS이며 원래 실패2건도
+문서 열기·서식 적용/Undo/Redo까지 실행했다. 사용한 기존 `pkg-node`의 생산 source는
+입증되지 않았으므로 이 결과는 JSON 로더 보정 진단으로만 기록한다. fresh Node WASM과
+전체 Node 검증은 다시 실행한다. 테스트 주석의3080은 현재 GitHub #3080의 내용과 달라
+원 해결 이슈로 잘못 연결하지 않았다.
+
+새 base의 최적화 Native CLI는480초대·exit0으로 실제 빌드했고 producer를 동결했다.
+sourceefc52afb7, 공용 target/pr-review, jobs8이며 상세 명령과 바이트 SHA는
+`rebase-base-efc52-native-build-results.json`에 있다. 전쪽 비교 계획은 기존179조건과
+원 작업/추가 체리픽 입력을 합쳐222조건·2868쪽/producer/backend이며 조건 수를 고유
+문서 수로 보고하지 않는다. matrix는 `rebase-preservation-matrix.json`에 입력/PDF SHA와
+글꼴·compat·DPI를 고정했다. 아직 전쪽 비교나 기능 보존 완료 판정은 하지 않는다.

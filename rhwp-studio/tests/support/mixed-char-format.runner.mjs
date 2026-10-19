@@ -9,6 +9,8 @@ const src = join(studio, 'src');
 const binding = join(studio, '../pkg-node/rhwp.js');
 registerHooks({
   resolve(specifier, context, next) {
+    // JSON 메트릭은 TypeScript 확장자를 붙이지 않고 Node의 import attributes로 읽는다.
+    if (specifier.endsWith('.json')) return next(specifier, context);
     if (specifier === '@wasm/rhwp.js') return { url: pathToFileURL(binding).href, shortCircuit: true };
     if (specifier.startsWith('@/')) return { url: pathToFileURL(join(src, specifier.slice(2) + '.ts')).href, shortCircuit: true };
     if (/^\.{1,2}\//.test(specifier) && !/\.[cm]?[tj]s$/.test(specifier)) {
