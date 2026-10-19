@@ -185,7 +185,13 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
 pub(crate) fn normalized_simple_math_metrics(
     equation: &crate::model::control::Equation,
 ) -> Option<(u32, u32, i32)> {
-    if equation.common.size_protect
+    // A valid legacy logical frame is shared by flow and HFT paint. Modern
+    // simple-math cache normalization must not replace that stored owner;
+    // editing refreshes the legacy frame before this query is called.
+    if (uses_legacy_hft_metrics(equation)
+        && equation.common.width > 0
+        && equation.common.height > 0)
+        || equation.common.size_protect
         || equation.attr & 1 != 0
         || equation.font_size == 0
         || !equation.font_name.eq_ignore_ascii_case("HYhwpEQ")

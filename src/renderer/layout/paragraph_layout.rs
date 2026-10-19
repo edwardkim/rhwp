@@ -82,8 +82,16 @@ fn terminal_tracking_for_distribution(
         {
             return 0.0;
         }
+        // The shared query measures exactly the supplied glyph. Passing the
+        // whole run would recover every authored tracking advance as though
+        // it belonged after the final glyph and falsely compress fitting text.
+        let Some(last) =
+            unicode_segmentation::UnicodeSegmentation::graphemes(text, true).next_back()
+        else {
+            return 0.0;
+        };
         return super::terminal_tracking::glyph_letter_spacing_advance(
-            text,
+            last,
             &run.text_style(styles),
         );
     }
@@ -7262,18 +7270,6 @@ impl LayoutEngine {
             // 누름틀 앞의 들여쓰기 공백과 누름틀 값 안의 공백은 소유 범위가 다르다.
             // 값이 공백으로 시작해도 그 공백까지 문단 접두 영역으로 제외하지 않는다.
             // 글자취급 개체와 같은 원문 scalar 경계로 배분 제외 구간을 끝낸다.
-            let first_field_offset = click_here_positions
-                .iter()
-                .filter(|&&position| position >= comp_line.char_start)
-                .map(|position| position.saturating_sub(comp_line.char_start))
-                .min()
-                .unwrap_or(usize::MAX);
-            let first_inline_offset = line_tac_offsets_for_width
-                .iter()
-                .map(|(position, _, _)| position.saturating_sub(comp_line.char_start))
-                .min()
-                .unwrap_or(usize::MAX)
-                .min(first_field_offset);
             // 들여쓰기 접두 영역은 본문 정렬의 늘림·압축 대상과 구분한다.
             // 저장 줄이 상자를 넘더라도 접두 원점을 줄이지 않고 뒤 본문의
             // 같은 분배 배열이 남은 압축을 소비한다.
@@ -7322,6 +7318,12 @@ impl LayoutEngine {
             {
                 fixed_auto_tab_prefix_by_run(&leading_space_plan.line)
             } else if needs_justify && !is_hancom_company_pua_logo_line {
+                // Both measurement and emitted advances stop indentation at
+                // the same visible owner, including a note marker outside
+                // text runs. A following space belongs to body distribution.
+                let first_inline_offset = first_inline_pos.map_or(usize::MAX, |position| {
+                    position.saturating_sub(comp_line.char_start)
+                });
                 unjustified_leading_spaces_by_run(&leading_space_plan.line, first_inline_offset)
             } else {
                 vec![0; leading_space_plan.line.runs.len()]

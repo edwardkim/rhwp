@@ -328,3 +328,141 @@ fn justified_terminal_glyph_preserves_the_source_frame_and_content() {
         "page38 paragraph has no missing or repeated text"
     );
 }
+
+// Worklife page1: independent Print keeps the fitting authored negative tracking.
+// Pre/post whole-document Native and fresh WASM remain >=90%; this is a
+// source-frame/spacing relationship, not an unqualified absolute pixel pin.
+#[test]
+fn authored_tracking_that_fits_does_not_acquire_false_compression() {
+    let core = DocumentCore::from_bytes(
+        &std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/issue6145/worklife_balance_index_156607916.hwpx"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let owner = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .position(|p| p.text.trim_start().starts_with("1위를 기록한 서울은"))
+        .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut nodes = Vec::new();
+    walk(&tree.root, &mut nodes);
+    let line=nodes.into_iter().find(|n|matches!(&n.node_type,RenderNodeType::TextLine(l)if l.para_index==Some(owner)&&l.line_index==Some(0))).unwrap();
+    let mut content = Vec::new();
+    walk(line, &mut content);
+    let runs: Vec<_> = content
+        .iter()
+        .filter_map(|n| {
+            if let RenderNodeType::TextRun(r) = &n.node_type {
+                Some((n, r))
+            } else {
+                None
+            }
+        })
+        .collect();
+    let joined = runs
+        .iter()
+        .map(|(_, r)| r.text.as_str())
+        .collect::<String>();
+    assert!(joined.trim_end().ends_with("사업장"));
+    assert!(core.document().sections[0].paragraphs[owner]
+        .text
+        .starts_with(&joined));
+    let natural: f64 = runs
+        .iter()
+        .enumerate()
+        .map(|(i, (_, r))| {
+            let mut s = r.style.clone();
+            s.extra_word_spacing = 0.;
+            s.extra_char_spacing = 0.;
+            let text = if i + 1 == runs.len() {
+                r.text.trim_end_matches(' ')
+            } else {
+                &r.text
+            };
+            EmbeddedTextMeasurer
+                .compute_char_positions(text, &s)
+                .last()
+                .copied()
+                .unwrap_or(0.)
+        })
+        .sum();
+    assert!(runs.iter().any(|(_, r)| r.style.letter_spacing < 0.));
+    assert!(
+        natural < line.bbox.width,
+        "authored tracking already fits: natural={natural},frame={}",
+        line.bbox.width
+    );
+    for (_, r) in runs {
+        assert!(
+            r.style.extra_word_spacing >= 0. && r.style.extra_char_spacing >= 0.,
+            "no compression when visible text already fits: {:?} word={} chars={}",
+            r.text,
+            r.style.extra_word_spacing,
+            r.style.extra_char_spacing
+        );
+    }
+}
+
+// The independent dyad Print places a visible note marker before this space.
+// It is an interior gap in the justified line, not indentation before all ink.
+// The complete one-page source passed Native/fresh WASM before adding this
+// relationship; source/order and actual emitted advance remain the oracle.
+#[test]
+fn a_visible_note_marker_keeps_the_following_space_in_body_distribution() {
+    let core = DocumentCore::from_bytes(
+        &std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/issue7593/repro-equation-issue7593.hwpx"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let owner = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .position(|p| p.text.contains("[발문 앞부분]"))
+        .unwrap();
+    assert_eq!(core.page_count(), 1);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut nodes = Vec::new();
+    walk(&tree.root, &mut nodes);
+    let line = nodes
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::TextLine(value) if value.para_index == Some(owner)
+            && value.line_index == Some(0))
+        })
+        .unwrap();
+    let marker = line
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::FootnoteMarker(_)))
+        .unwrap();
+    let (space, run) = line
+        .children
+        .iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) if run.text == " " => Some((node, run)),
+            _ => None,
+        })
+        .unwrap();
+    assert!(
+        marker.bbox.x + marker.bbox.width <= space.bbox.x + 1e-8,
+        "the visible marker precedes the gap"
+    );
+    assert!(
+        run.style.extra_word_spacing < 0.0,
+        "the accepted source line needs body-space compression"
+    );
+    let mut natural = run.style.clone();
+    natural.extra_word_spacing = 0.0;
+    natural.extra_char_spacing = 0.0;
+    let natural_advance = EmbeddedTextMeasurer.compute_char_positions(" ", &natural)[1];
+    assert!(space.bbox.width < natural_advance,
+        "the gap after visible ink must consume body distribution: actual={}, natural={natural_advance}", space.bbox.width);
+}

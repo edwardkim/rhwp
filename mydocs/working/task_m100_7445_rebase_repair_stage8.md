@@ -2682,3 +2682,195 @@ C352 harness의 최초 괄호 문법 오류와 JSON bytes 직렬화 오류는 �
 - 상세 커밋·fetch·충돌 원장·복원 해시·실패와 재실행 로그는 ignored
   `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/commit-before-rebase-20261019-122334/`
   에 보존한다. 지침 변경은 없다.
+
+
+## C412. 리베이스 전후 실제 TSV와 신규 devel 기능 대조
+
+- 사용자 지시에 따라 리베이스 직전 WIP `504e2e236c1585c2c11ba6d0cb1408544b8af201`,
+  직후 후보 `1227fa979acd8750b50395d81d64c630ded4a6c5`, 새 기준
+  `4a07d3ae4dd3255a57fb0166b2b2a2dc335a61fa`를 구분한다. 기존 TSV 통과를 재인용하지
+  않고 같은 입력·독립 Print·글꼴·DPI·compat·계측기로 새 PNG와 전쪽 TSV를 산출한다.
+- 새 기준에 들어온 PR은 코드 #8064와 기록 #8069다. PR 본문·실제 제품/회귀 diff를
+  읽고 185개 공통 변경 경로를 확인했다. 수식·중립 공백·저장 줄/표/미주·그림 샘플링·
+  Studio Print가 실제 대조 범위다. #8069는 기록만 변경하며 제품 경로가 없다.
+- 직전 Native/WASM frozen C360 producer의 원장을 선커밋과 대조했다. `src` 1,467개를
+  포함한 원장 3,451개가 Git에 대응하며 제품 소스·Cargo/lock/build가 같다. 차이는 차트
+  테스트 한 개이며 미추적 28개는 generated suite다. 선커밋 WIP에는 crates 변경이 없다.
+  이것은 기존 producer의 출처 대조이며 `504e`에서 새로 컴파일했다고 쓰지 않는다.
+  과거 PNG/TSV는 가져오지 않았다. 원장은 ignored `pre-rebase-producer-equivalence.json`이다.
+- 현재 정본은 PDFium으로 변경되어 양쪽에 동일하게 적용했다. 과거 pdftoppm 수치와
+  섞지 않는다. 사용자 지정 pdftoppm 대조도 별도 reference/TSV로 분리한다. 새 계측기
+  PDF 색·Type3·면 경계·PNG·raw gate 계약은 53PASS다.
+- 첫 집중 회귀는 현재 manifest에서 16개 case를 찾아 실행했다. 실제 58건 중47PASS,
+  11FAIL이다. WMF mask 5건, legacy 수식 frame/edit 3건, 빈 문단 caret1건,
+  #4138 이어받기2건이며 실패 검사나 허용치는 바꾸지 않았다. 초기 nextest의 `-j`와
+  `--test-threads` 중복 인자 오류는 실행 전 오류로 별도 보존하고 실제 요약에 합치지 않았다.
+- 우선9문서 Native432쪽의 전후 TSV를 새로 확보했다. 전에는90%미만0쪽, 후에는34쪽이며
+  0.1%p 이상 하락214쪽이다. 표33/40·미주CP02·field01은 유지됐고 나머지는 보정 대상이다.
+
+| 문서 | 쪽수 | 직전 최저raw | 직후 최저raw | 직후90%미만 | 0.1%p이상 하락 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| sample16 HWP5 |64|94.76582|62.37332|16|36|
+| sample11 원본·사용자 Print |151|90.67531|88.15021|5|150|
+| #4138 현재 ASCII 저장본 |197|90.87627|28.58472|13|22|
+| 일생활 |6|98.01425|97.09531|0|3|
+| 위첨자 |3|98.74954|95.96704|0|3|
+| 표33/표40/미주CP02/field01 |11|각 원문TSV 참조|같은 값|0|0|
+
+- worklife1쪽과 sample16 6쪽의 전/후 실제 PNG를 직접 판독했다. 자간 압축·표/수식 원점
+  차이가 보이며 점수만의 차이로 면제하지 않는다. 새 devel Native의 같은3문서73쪽도
+  별도로 산출해 devel에서 이미 미달인 쪽과 후보의 추가 하락을 구분했다.
+- #8064 기능 우선13조건47쪽 Native의 base/head 출력은 모두 생성됐으나 후보1쪽90%미만,
+  14쪽0.1%p이상 하락이다. 실제 dyad·operator script·공백·영어·각주 후속 표의 하락이
+  남아 있으며 원 PR의 통과 이력으로 이번 head를 통과 처리하지 않는다.
+- 기준 archive의 workspace member `tools/rhwp-subsecond`와 CLI `include_str!` 문서가
+  빠진 두 설정 오류는 exact Git archive로 보완하고 실패 로그를 남겼다. 제품 컴파일 결함으로
+  세지 않는다. 초기 비교 panel helper의 출력 폴더 누락은 이미 만든 PNG/TSV 해시를 확인해
+  panel 단계만 재실행한다. 해당 오류를 숨기거나 같은 캡처를 중복하지 않는다.
+- fresh WASM의 최초 후보가 새 기준과 같은 JS/WASM hash를 낸 것을 확인해 무효로 분리했다.
+  서로 다른 worktree의 source mtime가 공용 캐시보다 오래될 때의 재사용 문제를 현재 환경
+  지침과 대조했다. 공유 target은 삭제하지 않으며 source 바이트를 보존한 timestamp 갱신과
+  실제 root 재컴파일·API/해시 확인으로 복구한다. 무효 후보 pkg는 `pkg-invalid-shared-cache`와
+  `wasm-producer-invalid-shared-cache.json`에 보존하며 후보 증거로 사용하지 않는다.
+- 현재 수치는 미해결 회귀의 진단이다. 후보 fresh WASM·원52조건 전쪽·전체 nextest/필수
+  gate·실제 제품 소비·대표 review/overlay 판독을 완료한 상태가 아니다. 소스 보정과 해당
+  원 기능/기존 보정 양쪽 재검증을 계속하고 PR은 보류한다. 지침·원격 게시 변경은 없다.
+- 실행·원본 TSV·페이지별 전후 차이·PNG는 ignored
+  `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/`에 있다.
+
+## C413. 전후 TSV로 발견한 공통 호출 회귀 보정
+
+- 최초 head WASM은 공유 target의 오래된 base 산출물을 재사용했으므로 무효로 분리했다.
+  소스 바이트를 보존하고 mtime만 갱신한 뒤 실제 root `Compiling rhwp`를 확인했다.
+  Native lib308.509초와 fresh WASM245.019초가 exit0이며 새 WASM hash는 base와 다르고
+  root pkg/Studio public hash가 같다. 이 빌드는 Mac `--no-opt` 로컬 대체 경로다.
+- 새 Python 환경에 Brotli가 없어 전후 WASM18조건이 캡처 전 실패했다. PNG 없는 실패
+  디렉터리를 `prepost-wasm-missing-brotli-attempt`에 보존하고 같은 interpreter에
+  brotli1.2.0을 설치해 새로 실행했다. 초기 오류를 시각 미달 또는 통과로 세지 않는다.
+- #8064 base는 자동 글꼴 선택 API가 없어 현재 sweep이 중단했다. 후보13조건의 실제
+  선택 결과가 모두 `None`임을 확인해, 구 API도 지원하는 명시적 JSON null 계약으로
+  동일 None의 base를 별도 산출 중이다. 제품·canonical 도구의 guard는 변경하지 않았다.
+  실패 상태의 최초 base WASM을 통과로 재인용하지 않는다.
+- WMF의 흑백 pattern definition index가 새 상태 기계로 전달되지 않은 리베이스 누락을
+  복구했다. legacy 수식의 유효한 저장 상자를 현대 단순 수식 정규화가 덮지 않도록
+  원본 frame 소유를 유지했다. 16case/58실행은 수정 전47PASS11FAIL에서
+  수정 후52PASS6FAIL(15.976초)로 바뀌었다. bitwise WMF4건과 수식 frame1건이 복구됐고
+  pink-mask1·baseline/cell2·caret1·#4138이어받기2건은 아직 실패다.
+- 일생활 p1의 수평 압축은 설치 글꼴 환경의 None 여부와 무관하게 재현됐다.
+  `terminal_tracking_for_distribution`가 마지막 grapheme을 받는 공통 질의에
+  런 전체 문자열을 넘겨 전체 signed 자간을 종료 한 글자의 몫으로 계산했다.
+  마지막 grapheme만 넘기도록 복구한다. 측정·배치의 공통 TextStyle/advance 계약과
+  신규 devel의20% 공백 축소 규칙은 유지한다.
+- 독립 Print PDF의 p1 마지막 '장' 잉크 끝은716.9707 CSSpx다. 원문·줄 프레임과
+  자연 전진을 확인한 관계 검사는 기존1227 producer에서 실제1FAIL(0.17초)이며
+  실패는 이미 폭 안에 드는 원문에 word−1.588444/char−0.278222 압축이 생긴 것이다.
+  전6쪽 Native/fresh WASM raw가 각각97.09531/97.04187 이상임을 먼저 확인해
+  `issue_7445_negative_indent_ownership`에 같은 관계 검사를 추가했다. 98% 미달 쪽을
+  절대 px로 고정하지 않으며 줄/원문 소유와 끝 내용 보존도 검사한다.
+- 추가 보정 후보의 Native 빌드·시각 재검증은 진행 중이다. 부모1227와 dirty 후보를
+  구분하며 `repair2-source.json`·`repair2-native-build.log`에 출처를 고정한다.
+  전체52조건·전체 nextest·필수 gate·실제 소비 경로 검증 및 PR 준비는 완료되지 않았다.
+
+### C413 추가 실행 결과
+
+- repair2 Native CLI는430초 exit0이다. `--bin` 빌드가 갱신하지 않는 profile-root의
+  convenience rlib를 진단에 한 번 잘못 고정한 실행은 무효로 분리했다. CLI가 실제 소비한
+  `release-test/deps/librhwp.rlib`로 정정한 관계 검사는1PASS(0.06초)다.
+  Native 실행 파일은 처음부터 최신이며 이 rlib 정정으로 PNG/TSV를 재분류하지 않았다.
+- repair2 fresh WASM도 실제 root를 컴파일해 exit0이다.15분20초가 걸렸으며
+  root/pkg·Studio/public의 일치와 이전1227 WASM 대비 hash변경을 확인했다.
+- 일생활6쪽은 Native최저97.98364/WASM97.96748, 위첨자3쪽은 Native98.68217/
+  WASM98.64035다. 원 pre-rebase producer에 대한 전쪽 하락은 모두0.1%p 미만이다.
+  1쪽 자간 관계의 실제 FAIL→PASS와 전쪽 양 backend 원본 TSV를 각각 보존했다.
+- sample16 진단6/18쪽은 Native67.79449/98.42489, WASM68.19394/98.50096다.
+  이것은 두 쪽 진단이며64쪽 완료로 쓰지 않는다. 6쪽 review/overlay를 직접 판독해
+  표와 후속 본문이8.8CSSpx 위로 이동한 실제 원점 차이를 확인했다.
+- 동일 frozen CLI의 `dump-pages`·`RHWP_DIAG_TAC`·`RHWP_VPOS_DEBUG`·`RHWP_DIAG_ADV`
+  대조에서 원본 paragraph142의 total88.2133 중9.5467px 마지막 줄간격이 fit용 높이와
+  함께 전진에서 빠지고, 이후 lazy base가660HU로 바뀜을 확인했다. 표152는 같은 높이인데
+  typeset의 진입526.4→517.6, 실제 paint603.9→595.1로 달라진다. 표시 문자열이나
+  글꼴 교체로 면제하지 않는다. 현재 관련 흐름의 가드/진단 후보를 별도로 검증 중이며
+  repair2의 frozen source와 다음 dirty 후보를 섞지 않는다.
+- 수식 baseline 두 검사도 감사했다. 내부 layout.y는1.56→6.426667로 실제 움직이고
+  바깥 frame.y는 같다. 셀 포함 검사 중 하나는94.46666666666667과
+  94.46666666666668의 roundoff 때문에 실패한다. 검사 수정은 아직 하지 않았다.
+  독립 Hancom oracle용 두 입력은 로컬에 준비했으나 서비스 queue full로 접수되지 않았다.
+
+## C414–C415. #8064 기능 보존과 저장 축·공백 소유 보정
+
+- 사용자께서 #8064 개선을 되돌리지 않도록 명시했다. 새 기준4a07의 #8064 병합
+  `9b01d5d1447220b3a7345703e79ad42cf3f502f4` 본문·소비 경로를 다시 확인했다.
+  `final_sweep_20261019/summary.tsv`의179조건2082쪽에 대응하는 원본·독립 PDF의
+  모든 경로/해시가 현재 저장소와 일치한다. 이것은 입력 감사이며 새 후보 통과가 아니다.
+  세부 기능/소비/미검증 연결은 ignored `rebase-4a07d3ae-20261019/8064-preservation-matrix.json`이다.
+- pre/post 집중9문서의 Native432쪽과 WASM432쪽 TSV가 모두 완료됐다. 부모1227의
+  전후864쌍에는 Native214쪽·WASM64쪽의0.1%p 이상 하락이 남았다. 새 보정 후보의
+  통과로 이 결과를 재인용하지 않는다. 별도 pdftoppm 기준 전쪽 감사도 진행했다.
+- provisional 다단 dirty 가드는 sample16의 단단 원인과 무관하여 채택하지 않았다.
+  #8064의 다단 소비 규칙과 HWP5 재저장본의 프로필 구분을 유지했다. 실제 단단 pi142는
+  새 원본 좌표축으로 되감겼는데도 spacing-before 트림을 허용했다. 첫 문단의 후행
+  줄간격을 제거하면 다음 lazy 원점이 잘못 역산된다. `paragraph_origin_rewinds`의
+  공통 원점 증거로 해당 첫 문단의 전체 흐름을 보존하고, 뒤의 유효 anchor 계약은 유지했다.
+  `flow_hints → flow_advance_height/flow_trimmed_spacing_before → typeset pen → 기록한
+  원점 → paint`가 같은 판정을 소비한다. 문서ID나8.8px 상수 보정은 넣지 않았다.
+- repair4의 pi142 전진은78.6667→88.2133, 다음 lazy base660→0HU로 복원됐다.
+  sample16 Native64/64쪽이 완료됐고6쪽은67.79449→98.16591%다. 전쪽 최저는
+ 35쪽75.58354%이며 미달1쪽,0.1%p 이상 하락은22/35/43/53/60쪽이다.
+  따라서 전체 수용은 보류다. 35쪽 review/overlay를 직접 판독했고 그림 내부의 차이를
+  확인했다. 그림의 source bytes·crop·bbox는 새 base/repair4가 같아 paint 소비를 더 추적한다.
+- repair2의 #8064 집중13조건47쪽 Native를 다시 출력했다. 초기 후보의14쪽 하락은
+ 7쪽으로 줄었고, dyad1·operator1–4·영어2–3쪽이 남았다. operator3쪽88.99961%는
+  여전히 미달이다. saved-note·space/font-size 대조군의 회복도 원본 TSV에 기록했으며
+  아직 #8064 전체 기능 보존이나 새 fresh WASM 통과를 주장하지 않는다.
+- dyad의 가시 주석 표식 뒤 공백은 본문 내부다. 측정용 LeadingSpacePlan은 표식을
+  경계로 쓰는데 별도의 출력용 들여쓰기 한도는 표식을 빠뜨려 이 공백의 압축을 막았다.
+  source/order·실제 공백 advance 관계를 검사하는 새 테스트는 repair4 실제 라이브러리에서
+  1FAIL(0.02초)이다. 한 쪽 전체의 사전 Native99.36532/WASM99.61456%를 확인한 뒤
+  관계 검사를 추가했으며 절대 px 기대값을 붙이지 않았다. 같은 원본 scalar 경계를
+  측정과 방출에 전달하는 repair5를 빌드 중이다. 수식 메트릭·20% 공백 축소·실제
+  inline 표식 소유와 #8064의 새 이미지/Print 경로는 제거하지 않았다.
+- 일생활 관계 검사도 저장소의 실제 테스트 파일을 컴파일하여 부모1227에서1FAIL,
+  repair4에서1PASS(0.09초)임을 확인했다. 이것은 실제 테스트 소스의 집중 실행이며
+  generated suite/nextest 전체 실행과 구분한다. 새 테스트 수 변화 뒤 `--prepare`를
+  다시 완료했다(1639 sources/7153 static attrs/48 integration targets).
+
+### C415. 사용자 공급 HancomEQN의 실제 사용자 글꼴 등록·전쪽 소비 검증
+
+- 사용자가 Downloads/HancomEQN.ttf 사용과 사용자 글꼴 등록을 승인했다.
+  `/Users/tsjang/Library/Fonts/HancomEQN.ttf`에 설치하고 `fc-match`가 해당 실제
+  HancomEQN Regular 파일을 선택함을 확인했다. SHA는
+  `c249c422e4acbafe2757c0f4a5d714414f84305c728776d889224f6116186e35`,244816바이트,
+  revision1.0/UPM1024다. 이전 원 검증의9683b9...와 파일 해시는 다르다.
+  필요한175코드가 모두 있고 코드의 HMTX175개와 실제 전진폭은 전부 일치한다.
+  이전 파일의 윤곽과 완전히 같다고 주장하지 않으며 글꼴 바이너리는 커밋하지 않는다.
+- 설치 전의 글꼴 누락 출력과 새 글꼴 출력을 구분했다. 같은 원본/PDF를 새 글꼴로
+  새 base와 repair5 후보에서 각각 Native/fresh WASM 전8쪽 다시 출력했다.
+  Native base최저98.90120→후보98.90357%, WASM양쪽98.96325%다.
+  네 조건32쪽이 모두90% 이상/8쪽 일치이고16개 base/후보 쌍의0.1%p 이상 하락은0이다.
+  실제 WASM font catalog의 해당 face 공급도 확인했다. 양 backend3쪽 review와 overlay를
+  직접 읽어 기존에 사라진 C·앞첨자6·제곱2·연산자와 결합 줄이 보이는 것을 확인했다.
+  작은 윤곽 가장자리/기준선 잔차는 남는다. #8064 전체 기능 보존 완료와 구분한다.
+- Native에 JSON null을 FontEnvironment struct로 준 최초 driver는 metadata 단계에서
+  exit2였고 PNG가 없다. invalid-native-null-environment-attempt로 보존했다.
+  Native는 정본의 자동 환경 인자 None, WASM은 구 base API와 같은 명시적 JSON null
+  경로로 정정해 새로 실행했다. 엔진·계측 guard를 변경하지 않았다.
+- 공백/들여쓰기 실제 suite는 `--prepare`의 새 route regression_suite_007에서
+  nextest6실행6PASS/249skip,0.430초 exit0이다. 직접 rustc의6PASS와 구분해 기록한다.
+  repair5 fresh WASM은 실제 root 컴파일 후219.621초 exit0이며 root pkg/Studio public
+  JS/WASM hash가 같다. 전체 회귀·전체 시각·실제 Studio 소비는 아직 완료되지 않았다.
+- 설치·입력·source/pkg 출처·원문 TSV·대표 PNG·소비 증거는 ignored
+  `rebase-4a07d3ae-20261019/8064-font-audit/`와 `8064-hancomeqn-installed/`에 있다.
+
+### C416. 검증된 공통 보정의 로컬 체크포인트
+
+- repair5 fresh WASM 집중 문서의 실제 완료: 일생활6쪽 최저97.96748%, 위첨자3쪽
+ 98.64035%, sample16 저장본64쪽95.66182%, 미달0/쪽수 일치다. sample16의
+  pre-rebase 대비0.1%p 이상 하락은22/53/60쪽으로 남으며 Native35쪽은 별도 미달이다.
+  #8064 집중13조건47쪽 WASM의 하락은영어2쪽(-0.33187%p)·saved-note1쪽
+  (-0.15188%p)이다. Native의 영어2/3쪽도 남는다. 새 글꼴로 다시 산출한 연산자8쪽은
+  Native/WASM 모두 별도 base/후보 대조를 완료해 글꼴 미설치 결과와 구분했다.
+- #8064의 WMF 공통600DPI surface·명시 프로그램 등록·실제 source fingerprint 계약은
+  유지한다. Native35쪽과 WASM35쪽 차이는 원본 그림 bytes/crop/bbox가 같아서 Native의
+  기본 font database와 WASM의 명시 GulimChe 공급을 대조하는 공개 API 진단을 준비했다.
+  현재 제품에 래스터 경로 우회나 글꼴 치환을 넣지 않았다. 이 원인 추적은 다음 단계이며
+  현재 체크포인트를 전체 검증 완료로 쓰지 않는다.

@@ -293,7 +293,18 @@ pub(in crate::renderer::typeset) fn flow_hints(
     });
     // HWP3-origin 변환본은 spacing_before 누적을 보존해야 dump-pages 요약과
     // 실제 한컴 줄 흐름이 유지된다(#1116).
+    // A rewind starts a different saved coordinate frame. Its first paragraph
+    // still advances from the accepted physical pen; a later lazy origin must
+    // not be derived from an already shortened advance. Keep that paragraph's
+    // complete flow until the new source frame has an actual successor anchor.
+    let starts_new_stored_origin = para_idx
+        .checked_sub(1)
+        .and_then(|previous| paragraphs.get(previous))
+        .is_some_and(|previous| {
+            crate::renderer::height_cursor::paragraph_origin_rewinds(previous, para)
+        });
     let trim_spacing_before_for_flow = !profile.hwp3_layout()
+        && !starts_new_stored_origin
         && !para_near_rowbreak_table(paragraphs, para_idx)
         // [#5801] 저장 사다리가 문단 위 간격을 안 담았으면 트림의 전제가 깨진다 —
         // 트림하면 쪽 채움을 문단마다 sb 만큼 짧게 센다.

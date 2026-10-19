@@ -365,7 +365,7 @@ pub(super) fn place_fitted_paragraph(
         });
     if std::env::var("RHWP_DIAG_ADV").is_ok() {
         eprintln!(
-            "DIAG_ADV pi={} adv={:.1} total={:.1} h4f={:.1} sb={:.1} sa={:.1} cur={:.1}",
+            "DIAG_ADV pi={} adv={:.1} total={:.1} h4f={:.1} sb={:.1} sa={:.1} cur={:.1} columns={} page_base={:?} lazy_base={:?} dirty={} trim_before={} stored_successor={:?} stored_guide={:?}",
             para_idx,
             advance,
             fmt.total_height,
@@ -373,6 +373,13 @@ pub(super) fn place_fitted_paragraph(
             fmt.spacing_before,
             fmt.spacing_after,
             st.current_height,
+            st.col_count,
+            st.vpos_page_base,
+            st.vpos_lazy_base,
+            st.vpos_ladder_dirty,
+            trim_spacing_before_for_flow,
+            stored_successor_flow,
+            stored_guide_advance,
         );
     }
     let trimmed_spacing_before =
