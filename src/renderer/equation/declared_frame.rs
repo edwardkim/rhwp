@@ -47,7 +47,10 @@ pub(super) fn retains_unpositioned_host_frame(equation: &Equation) -> bool {
 }
 
 /// 원본 서명은 보존하고 명시적으로 선택한 목표 조판 세대만 전달한다.
-pub(crate) fn set_generation(document: &mut crate::model::Document, hangul2024: bool) -> bool {
+pub(crate) fn set_generation(
+    document: &mut crate::model::document::Document,
+    hangul2024: bool,
+) -> bool {
     use crate::model::control::Control;
     use crate::model::identity::walk::{walk, Node};
 
