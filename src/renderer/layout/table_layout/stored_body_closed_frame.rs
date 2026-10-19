@@ -164,9 +164,21 @@ impl LayoutEngine {
         table: &Table,
         body_height: f64,
     ) -> bool {
+        self.original_body_closed_table_bottom(host, table, body_height)
+            .is_some()
+    }
+
+    /// 원본 앵커가 증언한 종료선을 예약과 실제 조각에 함께 전달한다.
+    /// 바깥 아래 경계와 추가 100HU가 있는 기존 프레임을 혼동하지 않는다.
+    pub(crate) fn original_body_closed_table_bottom(
+        &self,
+        host: &Paragraph,
+        table: &Table,
+        body_height: f64,
+    ) -> Option<f64> {
         let profile = self.profile.get();
         let [line] = host.line_segs.as_slice() else {
-            return false;
+            return None;
         };
         if !profile.hwp5_stored_pagination_layout()
             || profile.session_edited()
@@ -199,21 +211,27 @@ impl LayoutEngine {
                     })
             })
         {
-            return false;
+            return None;
         }
         let stored_bottom = i64::from(line.vertical_pos)
             + i64::from(table.common.vertical_offset as i32)
             + i64::from(table.outer_margin_top)
             + i64::from(table.common.height);
+        let outer_bottom = body_height
+            - crate::renderer::hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi);
+        let outer_bottom_hu = (outer_bottom * 7200.0 / self.dpi).round() as i64;
+        let original_single_host = matches!(host.controls.as_slice(), [Control::Table(_)])
+            && (table.common.vertical_offset as i32) >= 0;
+        if original_single_host && (stored_bottom - outer_bottom_hu).abs() <= 2 {
+            return Some(outer_bottom);
+        }
         let frame_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
             table,
             body_height,
             self.dpi,
         );
         let frame_bottom_hu = (frame_bottom * 7200.0 / self.dpi).round() as i64;
-        let anchored_frame = matches!(host.controls.as_slice(), [Control::Table(_)])
-            && (table.common.vertical_offset as i32) >= 0
-            && (stored_bottom - frame_bottom_hu).abs() <= 2;
+        let anchored_frame = original_single_host && (stored_bottom - frame_bottom_hu).abs() <= 2;
         // 같은 호스트의 흐름 표는 각자 독립된 개체 상자를 갖는다. 앵커의 첫 위치나
         // 형제 개수로 본문 뷰포트를 부정하지 않으며, 다른 개체·겹침은 추정하지 않는다.
         let flow_table_host = !host.controls.is_empty()
@@ -231,7 +249,8 @@ impl LayoutEngine {
                 crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
             );
         let body_hu = (body_height * 7200.0 / self.dpi).round() as i64;
-        anchored_frame || (flow_table_host && (declared_frame - body_hu).abs() <= 2)
+        (anchored_frame || (flow_table_host && (declared_frame - body_hu).abs() <= 2))
+            .then_some(frame_bottom)
     }
 
     /// 미소비 셀 모두가 같은 원본 쪽 경계에서 끝나는지 확인한다.

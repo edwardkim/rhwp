@@ -1639,19 +1639,15 @@ impl TypesetEngine {
         let body_closed_frame_bottom = (is_continuation
             && st.current_height <= 0.5
             && st.current_zone_y_offset == 0.0
-            && std::ptr::eq(row_geometry_table, table)
-            && prepared.layout_engine.original_body_closed_table_frame(
+            && std::ptr::eq(row_geometry_table, table))
+        .then(|| {
+            prepared.layout_engine.original_body_closed_table_bottom(
                 para,
                 table,
                 st.layout.body_area.height,
-            ))
-        .then(|| {
-            crate::renderer::float_placement::single_cell_page_fragment_bottom(
-                table,
-                st.layout.body_area.height,
-                self.dpi,
             )
-        });
+        })
+        .flatten();
         // 첫 수용 상자가 본문을 닫은 원본은 뒤 조각도 같은 바깥 프레임 안에서
         // 컷을 선택한다. 실제 종료의 빈 띠는 스캔 뒤 원본 소유 컷에서 확인한다.
         let continued_source_frame_bottom = (is_continuation
@@ -1716,7 +1712,7 @@ impl TypesetEngine {
             let bottom = accepted_frame_bottom
                 .map_or(bounds.content_bottom, |saved| bounds.content_bottom.min(saved));
             let blank_bottom = accepted_frame_bottom
-                .map_or(bounds.blank_bottom, |saved| bounds.blank_bottom.min(saved));
+                .map_or(bounds.blank_bottom, |saved| bounds.content_bottom.min(saved));
             let top = fragment_placement.map_or(
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,

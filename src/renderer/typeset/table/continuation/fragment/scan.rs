@@ -279,15 +279,16 @@ impl TypesetEngine {
             // 원본 첫 상자가 본문 하단을 닫는 경우, 후속 쪽의 공통 저장 컷은
             // 잉크뿐 아니라 남은 빈 밴드도 소유한다. 각주 재수용도 이 closure를
             // 다시 호출하므로 현재 실제 예산 안에서만 물리 프레임을 수용한다.
+            let original_body_frame_bottom = layout_engine.original_body_closed_table_bottom(
+                input.source.paragraph,
+                table,
+                st.layout.body_area.height,
+            );
             if is_continuation
                 && scan.split_block_start.is_none()
                 && scan.split_end_limit > 0.0
                 && st.current_zone_y_offset == 0.0
-                && layout_engine.original_body_closed_table_frame(
-                    input.source.paragraph,
-                    table,
-                    st.layout.body_area.height,
-                )
+                && original_body_frame_bottom.is_some()
                 && scan.end_row.checked_sub(1).is_some_and(|row| {
                     layout_engine.row_cut_closes_shared_original_frame(
                         table,
@@ -307,13 +308,9 @@ impl TypesetEngine {
                     st.current_height + budget.host_before_overhead + budget.vert_offset_overhead,
                     |placement| placement.table_top,
                 ) + budget.caption_extra;
-                let frame_height =
-                    crate::renderer::float_placement::single_cell_page_fragment_bottom(
-                        table,
-                        st.layout.body_area.height,
-                        self.dpi,
-                    ) - top
-                        - vars.header_overhead;
+                let frame_height = original_body_frame_bottom.expect("같은 원본에서 확인한 종료선")
+                    - top
+                    - vars.header_overhead;
                 if frame_height >= scan.consumed && frame_height <= vars.avail_for_rows {
                     let last_height = scan.end_row_height_override.unwrap_or_else(|| {
                         let row = scan.end_row - 1;
