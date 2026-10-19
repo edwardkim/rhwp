@@ -16,6 +16,7 @@ mod image_cache;
 mod image_conv;
 mod image_effect;
 mod line_replay;
+mod region_plan;
 mod renderer;
 mod replay_policy;
 mod svg_bitmap_mask;
@@ -24,6 +25,7 @@ mod text_replay;
 mod text_shaping;
 
 pub use cache::{NativeSkiaCacheStats, NativeSkiaCacheUsage};
+pub use region_plan::SkiaRegionPlan;
 pub use renderer::{
     native_skia_glyph_run_replay_proof, NativeGlyphRunReplayProof, NativeGlyphRunReplayProofReason,
     SkiaLayerRenderer,
