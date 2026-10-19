@@ -133,11 +133,7 @@ impl HtmlRenderer {
                     run.validated_layout_positions_for(run.display_or_text()),
                 );
                 if self.show_paragraph_marks || self.show_control_codes {
-                    let font_size = if run.style.font_size > 0.0 {
-                        run.style.font_size
-                    } else {
-                        12.0
-                    };
+                    let font_size = run.style.effective_font_size();
                     // 공백·탭 기호
                     if !run.text.is_empty() {
                         let char_positions = run.replay_positions_for(&run.text);
@@ -289,11 +285,7 @@ impl Renderer for HtmlRenderer {
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 (PR #251 정합).
         let text = &crate::renderer::composer::expand_pua_render_text(text);
 
-        let font_size = if style.font_size > 0.0 {
-            style.font_size
-        } else {
-            12.0
-        };
+        let font_size = style.effective_font_size();
         let color = color_to_css(style.color);
         let font_family = if style.font_family.is_empty() {
             "sans-serif".to_string()

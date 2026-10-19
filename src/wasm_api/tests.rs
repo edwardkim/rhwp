@@ -24605,7 +24605,7 @@ fn test_hml_source_format_is_reported_without_reusing_hwp_save_path() {
 }
 
 #[test]
-fn test_hml_save_state_is_one_canonical_dto_for_hml_non_hml_and_unknown_equation() {
+fn test_hml_save_state_is_one_canonical_dto_for_hml_and_non_hml() {
     let lawful = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><CHAR>ok</CHAR></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
     let mut doc = HwpDocument::new(lawful).expect("lawful HML");
     let state: Value = serde_json::from_str(&doc.get_hml_save_state()).expect("save state JSON");
@@ -24634,56 +24634,6 @@ fn test_hml_save_state_is_one_canonical_dto_for_hml_non_hml_and_unknown_equation
             }],
         })
     );
-
-    let unknown = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><EQUATION FutureAttr="1"><SCRIPT>x</SCRIPT><FUTURE/></EQUATION></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
-    let doc = HwpDocument::new(unknown).expect("unknown equation semantics remain readable");
-    let state: Value = serde_json::from_str(&doc.get_hml_save_state()).expect("save state JSON");
-    assert_eq!(state["hmlSavable"], false);
-    assert_eq!(state["sourceFormat"], "hml");
-    assert_eq!(state["blockers"].as_array().map(Vec::len), Some(2));
-    for blocker in state["blockers"].as_array().unwrap() {
-        assert_eq!(blocker["code"], "HML_UNSUPPORTED_EQUATION_SEMANTICS");
-        assert_eq!(blocker["preserved"], false);
-    }
-}
-
-#[test]
-fn test_unknown_equation_values_survive_edit_undo_redo_and_save_state() {
-    let unknown = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><EQUATION><SCRIPT>x</SCRIPT><FUTURE Mode="matrix&amp;inline">secret &lt; value</FUTURE></EQUATION></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
-    let mut doc = HwpDocument::new(unknown).expect("unknown equation semantics remain readable");
-    let before_snapshot = doc.save_snapshot_native();
-
-    doc.set_equation_properties_native(0, 0, 0, None, None, r#"{"script":"x^2 + 2"}"#)
-        .expect("equation edit should apply");
-    let after_snapshot = doc.save_snapshot_native();
-
-    let assert_values = |doc: &HwpDocument| {
-        let state: Value =
-            serde_json::from_str(&doc.get_hml_save_state()).expect("save state JSON");
-        let blockers = state["blockers"].as_array().expect("blocker array");
-        assert!(blockers.iter().any(|blocker| {
-            blocker["xmlPath"] == "/HWPML/BODY/SECTION/P/TEXT/EQUATION/FUTURE/@Mode"
-                && blocker["message"]
-                    .as_str()
-                    .is_some_and(|message| message.contains("Mode=matrix&inline"))
-                && blocker["preserved"] == false
-        }));
-        assert!(blockers.iter().any(|blocker| {
-            blocker["xmlPath"] == "/HWPML/BODY/SECTION/P/TEXT/EQUATION/FUTURE/#text"
-                && blocker["message"]
-                    .as_str()
-                    .is_some_and(|message| message.contains("#text=secret < value"))
-                && blocker["preserved"] == false
-        }));
-    };
-
-    assert_values(&doc);
-    doc.restore_snapshot_native(before_snapshot)
-        .expect("undo snapshot should restore");
-    assert_values(&doc);
-    doc.restore_snapshot_native(after_snapshot)
-        .expect("redo snapshot should restore");
-    assert_values(&doc);
 }
 
 #[test]

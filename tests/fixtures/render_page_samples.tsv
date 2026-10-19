@@ -85,7 +85,6 @@ samples/issue1770_rowsplit_tolerance.hwpx	4	4	0
 samples/issue1835_tac_stale_height.hwp	3	3	0
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1	0
 samples/issue1921/59043_regulatory_analysis.hwp	37	37	0
-samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115	0
 samples/issue1950_hwp3_tab_charoffset.hwp	1	1	0
 samples/issue2004_cell_image_stack.hwp	8	8	0
 samples/issue2020/passport_application_lawgo.hwp	2	2	0

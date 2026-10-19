@@ -96,6 +96,10 @@ pub(in crate::renderer::typeset) fn place(
             if let Some(placement) = super::stored_tac::prepare_coanchored_first_line(
                 ctrl_idx,
                 para,
+                next_para,
+                next_para
+                    .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+                    .map_or(0.0, |style| style.spacing_before),
                 fmt,
                 ft.effective_height,
                 st.stored_tac_page(paragraphs_all),
@@ -119,6 +123,7 @@ pub(in crate::renderer::typeset) fn place(
             is_last_placed,
             styles,
             composed,
+            next_para,
             preceding_stored_vpos(paragraphs_all, para_idx),
         );
     } else if engine.try_typeset_empty_para_float_table(

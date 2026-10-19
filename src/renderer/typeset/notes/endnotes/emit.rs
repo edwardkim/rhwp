@@ -6,6 +6,45 @@ use crate::renderer::typeset::{
     TypesetState, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX,
 };
 
+/// 문단과 그 개체를 실제 방출 순서로 묶는다. fit 측정도 같은 항목을 소비한다.
+pub(super) fn endnote_paragraph_items(
+    paragraph: &Paragraph,
+    para_index: usize,
+    omit_paragraph_host: bool,
+) -> Vec<PageItem> {
+    let table_only = paragraph.text.is_empty()
+        && paragraph
+            .controls
+            .iter()
+            .any(|control| matches!(control, Control::Table(_)))
+        && !paragraph
+            .controls
+            .iter()
+            .any(|control| matches!(control, Control::Equation(_)));
+    let mut items = Vec::new();
+    if !table_only && !omit_paragraph_host {
+        items.push(PageItem::FullParagraph { para_index });
+    }
+    for (control_index, control) in paragraph.controls.iter().enumerate() {
+        match control {
+            Control::Table(_) if table_only => {
+                items.push(PageItem::Table {
+                    para_index,
+                    control_index,
+                });
+            }
+            Control::Shape(_) | Control::Picture(_) => {
+                items.push(PageItem::Shape {
+                    para_index,
+                    control_index,
+                });
+            }
+            _ => {}
+        }
+    }
+    items
+}
+
 impl TypesetEngine {
     /// [#2064 추출] P8: split 후보가 확정된 미주 문단의 PartialParagraph 방출 —
     /// 원본 무변경 이동. 반환: split 방출 수행 여부 (caller 의 split_endnote_emitted).
@@ -57,42 +96,14 @@ impl TypesetEngine {
             st.mark_endnote_flow();
             emitted = true;
         } else {
-            let table_only_endnote_para = en_para.text.is_empty()
-                && en_para
-                    .controls
-                    .iter()
-                    .any(|ctrl| matches!(ctrl, Control::Table(_)))
-                && !en_para
-                    .controls
-                    .iter()
-                    .any(|ctrl| matches!(ctrl, Control::Equation(_)));
             let pre_emitted_non_tac_object_only_para = pre_emit_tail_before_non_tac_object_advance
                 && non_tac_object_height.is_some()
                 && !endnote_has_text_or_equation;
-            if !table_only_endnote_para && !pre_emitted_non_tac_object_only_para {
-                st.append_item(PageItem::FullParagraph {
-                    para_index: en_para_idx,
-                });
+            for item in
+                endnote_paragraph_items(en_para, en_para_idx, pre_emitted_non_tac_object_only_para)
+            {
+                st.append_item(item);
                 st.mark_endnote_flow();
-            }
-            for (ctrl_idx, ctrl) in en_para.controls.iter().enumerate() {
-                match ctrl {
-                    Control::Table(_) if table_only_endnote_para => {
-                        st.append_item(PageItem::Table {
-                            para_index: en_para_idx,
-                            control_index: ctrl_idx,
-                        });
-                        st.mark_endnote_flow();
-                    }
-                    Control::Shape(_) | Control::Picture(_) => {
-                        st.append_item(PageItem::Shape {
-                            para_index: en_para_idx,
-                            control_index: ctrl_idx,
-                        });
-                        st.mark_endnote_flow();
-                    }
-                    _ => {}
-                }
             }
             // [Task #1363 Divergence C] TAC 그림 미주 para 의 누적 경로.
             // 종전(legacy/A): local_vpos_rewind TAC 그림은 저장 vpos 가

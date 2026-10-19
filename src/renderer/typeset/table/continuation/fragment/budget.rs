@@ -195,12 +195,11 @@ impl TypesetEngine {
         // 이어받기는 paint가 여는 같은 프레임 여백을 한 번만 예약한다.
         // 단일 셀/후속 본문 엄격 예산은 partial_rowbreak_fragment_spacing_px에서
         // 이미 예약하며, 종료 컷과 일반 프레임 술어가 동시에 참이어도 중복하지 않는다.
-        let terminal_fragment_opens_outer_top =
-            crate::renderer::float_placement::native_terminal_multirow_rowbreak_reopens_outer_top(
+        let grid_fragment_opens_outer_top =
+            crate::renderer::float_placement::native_multirow_rowbreak_reopens_outer_top(
                 self.profile.get().hwp5_stored_pagination_layout(),
                 table,
                 is_continuation,
-                cursor_row,
                 start_cut,
             );
         let host_before_overhead = host_before_overhead
@@ -211,7 +210,7 @@ impl TypesetEngine {
             }
             + if is_continuation
                 && (fragment_opens_outer_top
-                    || terminal_fragment_opens_outer_top
+                    || grid_fragment_opens_outer_top
                     || source_cut_opens_outer_top
                     || (input.start.stored_fragment_outer_frame
                         && st.current_height <= 0.5
@@ -275,7 +274,7 @@ impl TypesetEngine {
         let host_before_overhead = host_before_overhead
             + if (empty_opening_continuation
                 || (parallel_picture_opening_continuation
-                    && !terminal_fragment_opens_outer_top
+                    && !grid_fragment_opens_outer_top
                     && !single_cell_page_fragment
                     && !strict_following_plain_text_fit))
                 && !fragment_opens_outer_top
@@ -1034,6 +1033,11 @@ impl TypesetEngine {
         let saved_first_fragment_source_frame = if !is_continuation
             && cursor_row == 0
             && start_cut.is_empty()
+            // 셀 편집의 재조판은 저장 첫 조각을 이미 무효화했다.
+            // 원본 host 좌표가 우연히 현재 원점과 같아도 그 옛 프레임으로
+            // 내용 예산을 초과 수용하지 않는다. 다른 source-frame 소비자와
+            // 같은 정규화 overlay의 유효성 결과를 사용한다.
+            && !self.render_normalization.table_text_reflowed(table)
             && first_fragment_painted_row_footer_guard <= 0.0
             && !table.common.treat_as_char
             && crate::renderer::typeset::is_para_topbottom_float(&table.common)
@@ -1156,7 +1160,16 @@ impl TypesetEngine {
                     ((bottom - frame).abs() <= 0.5).then_some(row + 1)
                 })
         })
-        .flatten();
+        .flatten()
+        .or_else(|| {
+            self.coanchored_closed_first_fragment_row_end(
+                st,
+                input,
+                fragment_placement,
+                host_before_overhead,
+                vert_offset_overhead,
+            )
+        });
         let scan_row_count =
             exact_source_row_end.map_or(scan_row_count, |end| scan_row_count.min(end));
         // [#6123] 저장 행 높이(행 안 row_span==1 셀의 최대 저장 높이). 프레임
@@ -1714,6 +1727,25 @@ impl TypesetEngine {
             source_frame_bottom,
             fragment_placement: fragment_placement
                 .or_else(|| self.stored_header_fragment_placement(st, input, host_before_overhead))
+                .or_else(|| {
+                    grid_fragment_opens_outer_top.then(|| {
+                        // 예산에서 연 같은 바깥 원점을 실제 배치에 전달한다.
+                        // paint가 행 컷이나 현재 높이로 다시 추측하지 않는다.
+                        let top = st.current_height
+                            + caption_extra
+                            + host_before_overhead
+                            + vert_offset_overhead;
+                        crate::renderer::float_placement::ParagraphFloatPlacement {
+                            flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                            anchor_y: st.current_height,
+                            stored_host_origin: None,
+                            stored_successor_line_origin: None,
+                            table_left: None,
+                            table_top: top,
+                            occupied_bottom: top,
+                        }
+                    })
+                })
                 .or_else(|| {
                     empty_square_outer_top.map(|_| {
                         let top = st.current_height

@@ -69,8 +69,11 @@ fn curly_quotes_are_classified_into_the_latin_slot() {
     for quote in ['\u{2018}', '\u{2019}', '\u{201C}', '\u{201D}'] {
         assert_eq!(detect_lang_category(quote), 1, "{quote}");
     }
+    // 한글/기호 face가 같은 treatise만으로 슬롯 0과 5를 구별할 수 없다.
+    // 두 face가 다른 월간 수출입 원본의 한컴 Print와 원본 글자모양이 기호 슬롯을 확인한다.
+    assert_eq!(detect_lang_category('\u{2024}'), 5, "점 리더는 기호 슬롯");
     for other in [
-        '\u{2024}', '\u{2026}', '\u{2013}', '\u{2014}', '\u{203B}', '\u{2022}', '\'', '"',
+        '\u{2026}', '\u{2013}', '\u{2014}', '\u{203B}', '\u{2022}', '\'', '"',
     ] {
         assert_eq!(
             detect_lang_category(other),

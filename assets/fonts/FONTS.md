@@ -1,7 +1,7 @@
 # 웹 폰트 목록
 
-웹 배포에 사용하는 WOFF2 폰트의 canonical source 목록이다. Git에는 36개 WOFF2,
-총 23,137,616 bytes가 포함된다. Studio와 legacy `/web`은 각각의 `fonts/` runtime URL을 유지하면서
+웹 배포에 사용하는 WOFF2 폰트의 canonical source 목록이다. Git에는 37개 WOFF2,
+총 23,364,072 bytes가 포함된다. Studio와 legacy `/web`은 각각의 `fonts/` runtime URL을 유지하면서
 이 디렉토리를 참조하고, extension build는 여기에서 배포 산출물로 복사한다.
 
 재배포 권한이 확인되지 않은 상용 폰트는 Git에 포함하지 않는다. 오픈소스 폰트도 저작권의
@@ -119,3 +119,21 @@ OFL 1.1 전문과 Reserved Font Name을 명시한다. 이 네 WOFF2는 공식 `H
 |--------|--------|---------|------|------|
 | RHWPOldHangul-Regular.woff2 | RHWP Old Hangul subset | SIL OFL 1.1 (`SourceHanSerifK-OFL.txt`) | Adobe / Google | 옛한글 자모·합자 fallback |
 | LatinModernMath-Regular.woff2 | Latin Modern Math | GUST Font License | GUST / TeX ecosystem | 수식 fallback |
+| LatinModernMath-VariableOutline-subset.otf | RHWP LMM Variable Outline | GUST Font License | 위 Latin Modern Math의 A~Z/a~z 정체와 a~z 이탤릭 윤곽 파생 subset | 공통 수식 변수 윤곽 파싱; [manifest](MANIFEST-RHWP-LMM-VariableOutline.txt) 참조 |
+
+| NotoSansMath-Regular.woff2 | Noto Sans Math Regular | SIL OFL 1.1 (`NotoSansMath-OFL.txt`) | Google / Ubuntu fonts-noto-core | 선택 가능한 수식 대체 글꼴 |
+
+Noto Sans Math는 `/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf`의 전체 glyph를
+fontTools `TTFont`의 `flavor='woff2'`로 변환했다. subset·문자 매핑 변경은 없다.
+원 TTF의 SHA-256은 `8242bd1e55368b27e32455260754cf9aa58f3ad7ea80664b66c21f1b09910d6c`,
+WOFF2의 SHA-256은 `6836027b99d29fd0e6f668cf0c2e89107de4131b91116cd96516ad4a7e19d66d`다.
+CanvasKit 수식의 기본 수학 face는 Latin Modern Math다. glyph ID가 0이면 기본 본문
+face와 기호 face를 차례로 확인한다. `mathFallbackFontUrl`을 지정한 호출자는 다른
+수학 face를 선택할 수 있다. 공통 FontGlyph 윤곽이 있는 항목은 같은 윤곽을 직접
+재생한다. U+2AFD 하나의 누락으로 정상 AB/CD와 dyad 장식을 포함한 수식 전체를
+버리지 않으며 폴백 실패는 진단으로 남긴다.
+
+배포 권한은 폰트 내부 name ID13의 SIL OFL1.1, Ubuntu `fonts-noto-core`의 copyright와
+[Noto Sans Math 공식 라이선스](https://github.com/google/fonts/blob/main/ofl/notosansmath/OFL.txt)에서
+확인했다. 동봉 `NotoSansMath-OFL.txt`에 이2.001 버전의 Copyright2018 Google LLC와
+OFL 전문을 보존하며, 폰트 자체는 프로젝트의 다른 라이선스로 재허가하지 않는다.

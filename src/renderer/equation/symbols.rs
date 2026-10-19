@@ -4,6 +4,42 @@
 //! 참조: openhwp/docs/hwpx/appendix-i-formula.md
 
 use std::collections::HashMap;
+
+/// 직접 Unicode로 쓴 논리 기호도 명령형과 같은 수학 원자다.
+/// 이항/관계 연산자의 자동 간격 분류와는 구분한다.
+pub(crate) fn is_logical_symbol(symbol: &str) -> bool {
+    matches!(symbol, "∴" | "∵")
+}
+
+/// 이항 산술 기호는 직접 Unicode로 입력해도 문자 식별자와 분리한다.
+pub(crate) fn is_binary_symbol(symbol: &str) -> bool {
+    matches!(symbol, "+" | "-" | "−" | "±" | "∓" | "×" | "÷" | "∙" | "⋅")
+}
+
+/// 피연산자를 비교하는 관계 기호. 명령 표기와 직접 Unicode 표기에 같은 간격을 준다.
+pub(crate) fn is_relation_symbol(symbol: &str) -> bool {
+    matches!(
+        symbol,
+        "=" | ":"
+            | "<"
+            | ">"
+            | "≤"
+            | "≥"
+            | "≠"
+            | "≈"
+            | "≡"
+            | "∼"
+            | "∝"
+            | "⊂"
+            | "⊃"
+            | "⊆"
+            | "⊇"
+            | "⊥"
+            | "⊤"
+            | "∥"
+            | "⫽"
+    )
+}
 use std::sync::LazyLock;
 
 /// 그리스 문자 (소문자, 대소문자 구분)
@@ -14,7 +50,7 @@ static GREEK_LOWER: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::ne
         ("gamma", "γ"),
         ("delta", "δ"),
         ("epsilon", "ε"),
-        ("varepsilon", "ε"),
+        ("varepsilon", "ϵ"),
         ("zeta", "ζ"),
         ("eta", "η"),
         ("theta", "θ"),
@@ -29,12 +65,13 @@ static GREEK_LOWER: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::ne
         ("pi", "π"),
         ("varpi", "ϖ"),
         ("rho", "ρ"),
+        ("varrho", "ϱ"),
         ("sigma", "σ"),
         ("varsigma", "ς"),
         ("tau", "τ"),
         ("upsilon", "υ"),
         ("phi", "φ"),
-        ("varphi", "φ"),
+        ("varphi", "ϕ"),
         ("chi", "χ"),
         ("psi", "ψ"),
         ("omega", "ω"),
@@ -135,12 +172,10 @@ static OPERATORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(
         ("DIVDE", "÷"),
         ("DIVIDE", "÷"),
         ("PLUSMINUS", "±"),
-        ("PM", "±"),
         ("MINUSPLUS", "∓"),
-        ("MP", "∓"),
-        ("CDOT", "·"),
+        ("CDOT", "⋅"),
         ("CIRC", "∘"),
-        ("BULLET", "•"),
+        ("BULLET", "∙"),
         ("AST", "∗"),
         ("STAR", "★"),
         ("DSUM", "⊞"),
@@ -250,11 +285,9 @@ static OPERATORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(
         ("aleph", "ℵ"),
         ("therefore", "∴"),
         ("because", "∵"),
-        ("cdot", "·"),
+        ("cdot", "⋅"),
         ("times", "×"),
         ("div", "÷"),
-        ("pm", "±"),
-        ("mp", "∓"),
         ("cup", "∪"),
         ("cap", "∩"),
         ("vdash", "⊢"),
@@ -457,6 +490,7 @@ static FUNCTIONS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(
 /// 글자 장식 명령어
 pub static DECORATIONS: LazyLock<HashMap<&'static str, DecoKind>> = LazyLock::new(|| {
     HashMap::from([
+        ("box", DecoKind::Box),
         ("hat", DecoKind::Hat),
         ("check", DecoKind::Check),
         ("tilde", DecoKind::Tilde),
@@ -578,8 +612,13 @@ pub fn is_function(cmd: &str) -> bool {
 ///
 /// 한컴 수식은 대소문자를 구분하지 않으므로 (예: `times` = `TIMES`),
 /// 원래 대소문자로 먼저 찾고 실패하면 대문자 변환 후 재시도한다.
-/// 그리스 문자와 화살표는 대소문자가 의미를 가지므로 (alpha ≠ Alpha) 원래 값만 사용.
+/// 그리스 이름은 소문자·첫 글자 대문자·전체 대문자를 구분하며 혼합 철자는 접지 않는다.
+/// 화살표는 기호표에 등록된 원래 철자로만 조회한다.
 pub fn lookup_symbol(cmd: &str) -> Option<&'static str> {
+    // 독립 한컴 Print에서 MINUSPLUS만 명령이며 minusplus는 min과 usplus다.
+    if cmd != "MINUSPLUS" && cmd.eq_ignore_ascii_case("MINUSPLUS") {
+        return None;
+    }
     // 1차: 원래 대소문자로 조회
     if let Some(s) = GREEK_LOWER
         .get(cmd)
@@ -591,6 +630,18 @@ pub fn lookup_symbol(cmd: &str) -> Option<&'static str> {
         .or_else(|| BRACKETS.get(cmd))
     {
         return Some(s);
+    }
+
+    // 독립 한컴 Print의 24개 이름에서 ALPHA/Alpha는 같은 대문자 기호다.
+    // AlPhA 같은 혼합 철자는 문자이므로 전체 대문자 철자만 함께 수용한다.
+    // tokenizer의 안전 접두사도 이 조회를 소비해 ALPHAX의 X를 보존한다.
+    if cmd.bytes().all(|ch| ch.is_ascii_uppercase()) {
+        if let Some(symbol) = GREEK_UPPER.iter().find_map(|(name, symbol)| {
+            (name.starts_with(|ch: char| ch.is_ascii_uppercase()) && name.eq_ignore_ascii_case(cmd))
+                .then_some(*symbol)
+        }) {
+            return Some(symbol);
+        }
     }
 
     // 2차: 대문자 변환 후 재시도 (SPECIAL_SYMBOLS, OPERATORS, BIG_OPERATORS, BRACKETS)
@@ -630,6 +681,7 @@ pub fn lookup_equation_pua(ch: char) -> Option<&'static str> {
 /// 글자 장식 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum DecoKind {
+    Box,           // 내용 전체를 감싸는 사각 테두리
     Hat,           // ^
     Check,         // ˇ
     Tilde,         // ~
@@ -692,7 +744,7 @@ mod tests {
         assert_eq!(lookup_symbol("leq"), Some("≤"));
         assert_eq!(lookup_symbol("geq"), Some("≥"));
         assert_eq!(lookup_symbol("inf"), Some("∞"));
-        assert_eq!(lookup_symbol("pm"), Some("±"));
+        assert_eq!(lookup_symbol("pm"), None);
         // 그리스 문자는 대소문자 구분 유지
         assert_eq!(lookup_symbol("alpha"), Some("α"));
         assert_eq!(lookup_symbol("Alpha"), Some("Α"));
