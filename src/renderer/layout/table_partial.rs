@@ -1,5 +1,6 @@
 //! 페이지 분할 표 레이아웃 (layout_partial_table)
 
+mod row_band;
 mod tail_alignment;
 
 use super::super::composer::{compose_paragraph, ComposedParagraph};
@@ -498,10 +499,23 @@ pub(crate) fn resumes_inside_own_start_row(
     start_cut: &[usize],
     start_cut_is_block: bool,
     start_row_height_override: Option<f64>,
+    straddle_page_bands: &[crate::renderer::pagination::StraddleCellCarry],
 ) -> bool {
+    let accepted_source_start = table
+        .cells
+        .iter()
+        .position(|owner| std::ptr::eq(owner, cell))
+        .and_then(|index| {
+            straddle_page_bands
+                .iter()
+                .find(|carry| carry.cell_index == index)
+        })
+        .and_then(|carry| carry.next_unit)
+        .is_some_and(|unit| unit > 0);
     cell.row_span > 1
         && cell.row as usize == start_row
-        && ((!start_cut_is_block && !start_cut.is_empty())
+        && (accepted_source_start
+            || (!start_cut_is_block && !start_cut.is_empty())
             || (start_row_height_override.is_some()
                 && start_cut.is_empty()
                 && !table
@@ -1204,7 +1218,10 @@ impl LayoutEngine {
             let straddles_fragment_start = cell_row < start_row && cell_end_row > start_row;
             let straddles_fragment_end = cell_row < render_range_end
                 && (cell_end_row > render_range_end
-                    || (cell_end_row == render_range_end && !end_cut.is_empty()));
+                    || (cell_end_row == render_range_end
+                        && (!end_cut.is_empty()
+                            || (end_row_height_override.is_some()
+                                && self.cell_uses_plain_reflow_units(cell, table)))));
             // [#6024] block-split 조각이라도 **컷이 비어 있는 쪽 경계**(행 경계
             // 컷)의 straddle rowspan 셀은 split-block 범위(is_in_split_row)에
             // 잡히지 않는다 — 그대로 두면 연속 조각이 병합 셀 내용을 처음부터
@@ -1221,6 +1238,7 @@ impl LayoutEngine {
                     start_cut,
                     start_cut_is_block,
                     start_row_height_override,
+                    straddle_page_bands,
                 );
             let straddle_end_uncovered =
                 straddles_fragment_end && (!is_block_split || end_cut.is_empty());
@@ -1318,6 +1336,7 @@ impl LayoutEngine {
                     start_row_height_override,
                     end_cut,
                     is_block_split,
+                    end_row_height_override,
                     cell_h,
                     resolved_row_heights,
                     straddle_page_bands,
@@ -2729,7 +2748,8 @@ impl LayoutEngine {
                             hwpunit_to_px(shape.common().width as i32, self.dpi)
                         }
                         Control::Equation(eq) => hwpunit_to_px(
-                            crate::renderer::equation::inline_advance_width_hwp(eq),
+                            crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                .occupied_width_hwp(),
                             self.dpi,
                         ),
                         _ => 0.0,
@@ -2752,7 +2772,8 @@ impl LayoutEngine {
                             Control::Equation(eq) => (
                                 true,
                                 hwpunit_to_px(
-                                    crate::renderer::equation::inline_advance_width_hwp(eq),
+                                    crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                        .occupied_width_hwp(),
                                     self.dpi,
                                 ),
                             ),
@@ -3001,7 +3022,8 @@ impl LayoutEngine {
                                 Some(hwpunit_to_px(shape.common().width as i32, self.dpi))
                             }
                             Control::Equation(eq) => Some(hwpunit_to_px(
-                                crate::renderer::equation::inline_advance_width_hwp(eq),
+                                crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                    .occupied_width_hwp(),
                                 self.dpi,
                             )),
                             _ => None,
@@ -3088,7 +3110,10 @@ impl LayoutEngine {
                         Control::Table(t) => Some(t.row_count as usize),
                         _ => None,
                     });
-                    let mut nested_table_continues = nested_cursor_split.is_some()
+                    let mut nested_table_continues = nested_cursor_split
+                        .as_ref()
+                        .zip(nested_row_count)
+                        .is_some_and(|(split, rows)| !split.terminal || split.end_row < rows)
                         || nested_cut_rows
                             .zip(nested_row_count)
                             .is_some_and(|((_, end), rows)| end < rows);
@@ -3845,7 +3870,8 @@ impl LayoutEngine {
                             Control::Equation(eq) => {
                                 // 분할 표 내 수식: 항상 글자처럼 인라인 배치
                                 let eq_w = hwpunit_to_px(
-                                    crate::renderer::equation::inline_advance_width_hwp(eq),
+                                    crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                        .occupied_width_hwp(),
                                     self.dpi,
                                 );
                                 let eq_h = hwpunit_to_px(
@@ -3877,15 +3903,13 @@ impl LayoutEngine {
                                 };
 
                                 let tokens =
-                                    super::super::equation::tokenizer::tokenize(&eq.script);
+                                    super::super::equation::document_script::tokenize(&eq.script);
                                 let ast =
-                                    super::super::equation::parser::EqParser::new(tokens).parse();
+                                    super::super::equation::parser::EqParser::for_document(tokens)
+                                        .parse();
                                 let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
                                 let layout_box =
-                                    super::super::equation::layout::EqLayout::for_equation(
-                                        eq, self.dpi,
-                                    )
-                                    .layout(&ast);
+                                    super::super::equation::layout_for_paint(eq, &ast, self.dpi);
                                 let color_str =
                                     super::super::equation::svg_render::eq_color_to_svg(eq.color);
                                 let svg_content =
@@ -3911,11 +3935,12 @@ impl LayoutEngine {
                                         cell_para_index: Some(cp_idx),
                                         note_ref: None,
                                     }),
-                                    crate::renderer::equation::inline_content_box(
-                                        eq,
-                                        BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
-                                        self.dpi,
-                                    ),
+                                    BoundingBox::new(
+                    crate::renderer::equation::inline_box::horizontal_metrics(eq).content_origin_x(eq_x, self.dpi),
+                    eq_y,
+                    hwpunit_to_px(crate::renderer::equation::inline_box::horizontal_metrics(eq).content_width_hwp, self.dpi),
+                    eq_h,
+                ),
                                 );
                                 cell_node.children.push(eq_node);
                             }
@@ -4285,10 +4310,9 @@ impl LayoutEngine {
                                             content_offset: 0.0,
                                             force_source_start_cut: false,
                                             replay_terminal_boundary_unit: false,
-                                            // [#3658] per-중첩행 컷 경로도 마지막 유닛까지
-                                            // 포함한 컷(end_cut=[])이면 종료 조각이다.
-                                            terminal: cut_units
-                                                .is_some_and(|(_, eu)| eu == usize::MAX),
+                                            // 행 컷은 자식의 마지막 행을 소유하면 종료다.
+                                            // 부모 셀의 end_unit 센티널과 구분한다.
+                                            terminal: end_row == nrow,
                                             offset_within_start: 0.0,
                                             recursive_cut: None,
                                         })
@@ -4342,7 +4366,9 @@ impl LayoutEngine {
                                     }
                                     if split_ref.is_some_and(|s| {
                                         s.end_row < nested_table.row_count as usize
-                                            || s.visible_height + 0.5 < nested_h
+                                            || (nested_cursor_split.is_none()
+                                                && nested_cut_rows.is_none()
+                                                && s.visible_height + 0.5 < nested_h)
                                     }) {
                                         nested_table_continues = true;
                                     }
@@ -4753,7 +4779,11 @@ impl LayoutEngine {
                         None => cp_idx + 1 < cell.paragraphs.len(),
                     };
                     if next_para_in_fragment && !nested_table_continues {
+                        // 저장 successor 전진량은 호스트 전체 줄의 슬롯이다.
+                        // 앞 조각이 입구를 소비했다면 현재 자식 컷의 전진 끝을
+                        // 보존하고, 전체 높이로 이미 소비한 앞부분을 다시 싣지 않는다.
                         if !self.profile.get().session_edited()
+                            && owns_paragraph_entry
                             && !self
                                 .render_normalization
                                 .borrow()
@@ -4767,12 +4797,20 @@ impl LayoutEngine {
                                 para_y = para_y_before_lines + advance;
                             }
                         }
+                        // 재귀·혼합 컷은 CellUnit의 종료 간격을 flow_height에
+                        // 이미 담는다. scalar 행 컷의 본체 높이에만 호스트의
+                        // 줄 뒤·문단 뒤 간격을 한 번 더한다.
                         if let Some(spacing) =
                             crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
                                 para, styles, self.dpi,
                             )
+                            .filter(|_| nested_cursor_split.is_none() && mixed_nested_split.is_none())
                         {
-                            para_y += spacing;
+                            para_y += spacing
+                                + styles
+                                    .para_styles
+                                    .get(para.para_shape_id as usize)
+                                    .map_or(0.0, |style| style.spacing_after);
                         }
                     }
                     // [#6122] 폭 초과로 내린 개체는 composed 줄 높이에 없다 — 그 아래로
@@ -5022,7 +5060,9 @@ impl LayoutEngine {
             // 공유하는 칸들이 실제로 남긴 여분의 **최솟값**을 모은다. 상자를 접어도 어느 칸의
             // 내용·아래여백도 잘리지 않는 상한이다.
             if let Some(fold_row) = fold_last_row {
-                if cell_row + cell.row_span as usize == fold_row + 1 && !is_repeated_header_cell {
+                if row_band::owns_fragment_bottom(cell_row, cell.row_span as usize, fold_row)
+                    && !is_repeated_header_cell
+                {
                     // 배치 커서(`para_y`)는 줄 상자 바닥과 다를 수 있다 — 상자 **안에 있던**
                     // 가시 자손의 바닥도 함께 본다. 상자 밖으로 나간 자손은 이 조각이 이미
                     // 잘라 낸 것이므로 세지 않는다(세면 접기가 영영 멈춘다).
@@ -5580,12 +5620,11 @@ impl LayoutEngine {
                 .parallel_picture_row_opening_height(table, start_row, &[], start_cut, styles)
                 .is_some();
         // 처음과 이어받기 조각은 예산이 이미 예약한 같은 바깥 위 여백을 연다.
-        let terminal_multirow_reopens_outer_top = enclosing_cell_ctx.is_none()
-            && crate::renderer::float_placement::native_terminal_multirow_rowbreak_reopens_outer_top(
+        let multirow_reopens_outer_top = enclosing_cell_ctx.is_none()
+            && crate::renderer::float_placement::native_multirow_rowbreak_reopens_outer_top(
                 self.profile.get().hwp5_stored_pagination_layout(),
                 table,
                 is_continuation,
-                start_row,
                 start_cut,
             );
         // 저장된 자리차지 RowBreak 표는 저장 앵커(첫 조각) 또는
@@ -5684,7 +5723,7 @@ impl LayoutEngine {
             && (y_start - col_area.y).abs() <= 0.5;
         let y_start = if (single_cell_page_fragment
             || generic_continuation_outer_top
-            || terminal_multirow_reopens_outer_top
+            || multirow_reopens_outer_top
             || rowbreak_reopens_outer_top
             || stored_body_frame_opens_outer_top
             || source_cut_reopens_outer_top
@@ -6260,11 +6299,13 @@ impl LayoutEngine {
             // 늘리지 않는다 — 늘린 상자 안에서 칸 `valign` 을 적용하면 내용이 14~18px 내려간다.
             // `valign=Top` 칸은 저장 높이가 작아도 정본이 상자를 쪽에 둔다(synam-001 `pi=163`
             // h 282HU: 20쪽 내용 끝 1032 ↔ 상자 1054) — 위 #6923 갈래는 그대로 둔다.
-            let stored_cell_spans_page_box = content_is_top_anchored
-                || table.cells.first().is_some_and(|cell| {
-                    hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) + 0.5
+            let stored_cell_spans_page_box = table.cells.first().is_some_and(|cell| {
+                // 일반 재조판 줄에는 저장된 전쪽 상자가 없다. 위 정렬만으로
+                // 스캔의 내용 컷을 쪽 하단까지 다시 늘리지 않는다.
+                (content_is_top_anchored && !self.cell_uses_plain_reflow_units(cell, table))
+                    || hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) + 0.5
                         >= pinned_height
-                });
+            });
             if stored_cell_spans_page_box && !projected_content {
                 // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
                 // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
@@ -6324,10 +6365,17 @@ impl LayoutEngine {
             Err(_) => return y_start,
         };
 
-        let table_width = row_col_x
-            .iter()
-            .map(|rx| rx.last().copied().unwrap_or(0.0))
-            .fold(col_x.last().copied().unwrap_or(0.0), f64::max);
+        let declared_table_width = if table.common.width > 0 {
+            hwpunit_to_px(table.common.width as i32, self.dpi)
+                * self.render_table_width_scale(table)
+        } else {
+            0.0
+        };
+        let table_width = super::table_grid_width::resolved_table_width(
+            &row_col_x,
+            col_x.last().copied().unwrap_or(0.0),
+            declared_table_width,
+        );
 
         // ── 표 수평 위치 (table_layout 공유 메서드) ──
         let pw = self.current_paper_width.get();
@@ -6566,12 +6614,15 @@ impl LayoutEngine {
             body_filling_source_frame,
         );
         let page_cap_fold = (table_y + partial_table_height - page_cap).max(0.0);
-        let owns_declared_row_frame = end_row_height_override.is_some()
+        let owns_accepted_row_frame = end_row_height_override.is_some()
             && end_row.checked_sub(1).is_some_and(|row| {
                 self.native_stored_row_has_text_frame_boundary(table, row, styles)
-                    // 재조판 행의 선언 최소 높이도 수용한 빈 물리 띠를 소유한다.
-                    // 예약과 잔여가 쓴 끝 행 상자를 paint에서 다시 접지 않는다.
-                    || (self.reflow_row_physical_minimum(table, row, styles).is_some()
+                    // 독립 최소를 가진 칸이 수용한 빈 띠만 보존한다.
+                    // scan과 같은 소유 판정으로 일반 내용 행의 여백을 늘리지 않는다.
+                    || ((self.row_has_continuing_reflow_minimum(table, row, styles)
+                        || self.reflow_row_physical_minimum(table, row, styles).is_some_and(
+                            |minimum| end_row_height_override.is_some_and(|height| height <= minimum + 0.5),
+                        ))
                         && self.row_has_plain_reflow_line_units(table, row, styles))
                     || (self.profile.get().hwpx_stored_layout()
                         && self
@@ -6645,12 +6696,15 @@ impl LayoutEngine {
                 && enclosing_cell_ctx.is_none()
                 && !align_saved_opening_frame
                 && !end_row_owns_stored_frame
+                // 저장 걸침 칸의 두 조각에 이미 배분한 물리 높이는 옆 칸의
+                // 후행 줄간격이 아니다. 다시 접으면 앞 조각의 공간만 유실된다.
+                && center_saved_spanning_cell.is_none()
                 // 이어받은 원본 행은 수용한 빈 띠도 소유한다.
                 && !(fold_row == 0 && start_row == 0 && is_continuation
                     && source_first_row_frame.as_ref().is_some_and(|(cut, _, remaining)| {
                         cut.as_slice() == start_cut && start_row_height_override == Some(*remaining)
                     }))
-                && !owns_declared_row_frame
+                && !owns_accepted_row_frame
                 && !accepted_body_closed_frame
                 && !(end_row_height_override.is_some()
                     && !is_block_split
@@ -6778,11 +6832,13 @@ impl LayoutEngine {
             // 두 사유(줄간격 · 쪽 상한) 중 **큰 쪽**만큼 접되, 실제로 남은 여분을 넘지 않는다.
             let fold = trail.max(cap_fold).min(fold_slack).max(0.0);
             if fold > 0.5 && partial_table_height > fold + 1.0 {
-                let fold_row_end = fold_row + 1;
                 for child in &mut table_node.children {
                     if let RenderNodeType::TableCell(meta) = &child.node_type {
-                        if usize::from(meta.row) + usize::from(meta.row_span) == fold_row_end
-                            && child.bbox.height > fold + 1.0
+                        if row_band::owns_fragment_bottom(
+                            usize::from(meta.row),
+                            usize::from(meta.row_span),
+                            fold_row,
+                        ) && child.bbox.height > fold + 1.0
                         {
                             child.bbox.height -= fold;
                         }

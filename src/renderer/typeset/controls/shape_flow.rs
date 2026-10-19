@@ -66,19 +66,14 @@ pub(super) fn prepare(
                     && matches!(p.common.text_wrap, TextWrap::TopAndBottom)
                     && matches!(p.common.vert_rel_to, VertRelTo::Para) =>
             {
-                let h = hwpunit_to_px(p.common.height as i32, dpi);
-                let mb = hwpunit_to_px(p.common.margin.bottom as i32, dpi);
-                Some(h + mb)
+                topbottom_pushdown_height(&p.common, dpi)
             }
             Control::Shape(s)
                 if !s.common().treat_as_char
                     && matches!(s.common().text_wrap, TextWrap::TopAndBottom)
                     && matches!(s.common().vert_rel_to, VertRelTo::Para) =>
             {
-                let cm = s.common();
-                let h = hwpunit_to_px(cm.height as i32, dpi);
-                let mb = hwpunit_to_px(cm.margin.bottom as i32, dpi);
-                Some(h + mb)
+                topbottom_pushdown_height(s.common(), dpi)
             }
             _ => None,
         }
@@ -143,4 +138,17 @@ impl TableHostShapeFlow {
             false
         }
     }
+}
+
+/// 호스트 위쪽에서 끝나는 개체는 현재 본문 흐름의 물리 띠를 차지하지 않는다.
+/// 개체의 출력 위치는 보존하며, 양수 오프셋 등 다른 앵커의 기존 처리는 유지한다.
+fn topbottom_pushdown_height(common: &crate::model::shape::CommonObjAttr, dpi: f64) -> Option<f64> {
+    let bottom = i64::from(crate::renderer::float_placement::signed_hwpunit(
+        common.vertical_offset,
+    )) + i64::from(common.height)
+        + i64::from(common.margin.bottom);
+    if bottom <= 0 {
+        return None;
+    }
+    Some(hwpunit_to_px(common.height as i32, dpi) + hwpunit_to_px(common.margin.bottom as i32, dpi))
 }

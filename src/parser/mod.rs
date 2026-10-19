@@ -15,6 +15,9 @@
 //! 3. header.xml → DocInfo (hwpx/header)
 //! 4. section*.xml → Section (hwpx/section)
 
+mod auto_numbers;
+pub(crate) use auto_numbers::assign_auto_numbers;
+
 pub mod bin_data;
 pub mod body_text;
 pub mod byte_reader;
@@ -572,28 +575,9 @@ fn parse_hwp_with_cfb(
             if ps_r < 0.20 && cs_r < 0.20 {
                 doc.is_hwp3_variant = true;
                 doc.provenance.hwp3_lineage = true;
-                // [Task #1001 Stage 11] line_segs.vertical_pos /2 보정 revert —
-                // 실제 raw vpos 비교 결과 HWP5 변환본 vpos 는 HWP3 의 2배가 아닌
-                // ~1.15배 (15% 만 차이). /2 fix 시 HWP5 가 HWP3 보다 더 compact 되어
-                // 한컴 정합 페이지 분할 회귀 (한컴은 section 2 가 새 페이지 vs rhwp
-                // 는 같은 페이지에 packed). vpos 보정 없이 ParaShape /4 만으로 정합.
-
-                // [Task #1037 → #1042 정정] ParaShape unit semantic normalize.
-                // HWP3 vs HWP5 variant 비교 결과 (diag_1042_hwp3_vs_hwp5_paragraph):
-                //   - margin_left/right: HWP5 raw = HWP3 raw 동일 → /2 적용은 wrong
-                //   - spacing_before / spacing_after: HWP5 raw = HWP3 × 2 → /2 정합
-                // margin_left/right /2 제거 — HWP3 정답 paragraph 분포 정합.
-                //
-                // [Task #1472] indent /2 제거 — IR 은 정답(full HWPUNIT, HWPX 일치)로 둔다.
-                //   종전 indent /2 는 본문 내어쓰기를 절반으로 훼손(한컴/HWPX 와 어긋남)하면서,
-                //   미주 TAC 수식 흐름의 available_width 계산이 indent_scale=2.0 으로 이를 되돌려
-                //   "수식 effective indent = (indent/2)×2 = full" 로 페이지네이션을 한컴과 정합시켰다.
-                //   재설계: IR indent 는 full 로 두고, 미주 수식 흐름의 indent_scale 을 변환본에서만
-                //   절반(2.0→1.0)으로 낮춰 effective indent(=full) 를 불변 유지한다(아래 렌더러).
-                for ps in &mut doc.doc_info.para_shapes {
-                    ps.spacing_before /= 2;
-                    ps.spacing_after /= 2;
-                }
+                // 계보는 출처 정보다. HWP5의 문단 간격과 저장 vpos는 HWP5 계약으로
+                // 읽으며, 원본 HWP3의 좌표에 맞추어 저장 속성을 다시 줄이지 않는다.
+                // 정상 한컴 저장본에서 raw spacing_before / 2가 첫 저장 vpos와 일치한다.
             }
         }
     }
@@ -602,15 +586,6 @@ fn parse_hwp_with_cfb(
     // 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
     // dir 영역 basename 매칭 영역 image 영역 자동 load.
     populate_link_image_paths(&mut doc);
-
-    // [Task #1042 Stage 5] HWP5 variant 의 paragraph data raw vpos normalize —
-    // HWP3 vs HWP5 variant 진단 결과 HWP5 의 raw vpos = HWP3 vpos + cumulative
-    // spacing_before. paragraph 마다 +sb 누적 → paragraph_layout 의 외부 path
-    // (예: pagination engine 의 vpos 보정) 에서 cascade 차이 야기. HWP3 정합 위해
-    // paragraph 의 line_segs.vpos 에서 cumulative spacing_before 차감.
-    if doc.is_hwp3_variant {
-        normalize_variant_paragraph_vpos(&mut doc);
-    }
 
     if let Some(idx) = doc
         .extra_streams
@@ -623,51 +598,6 @@ fn parse_hwp_with_cfb(
         }
     }
     Ok(doc)
-}
-
-/// [Task #1042 Stage 5] HWP5 variant 의 paragraph data vpos 를 HWP3 형식으로 normalize.
-///
-/// HWP3 paragraph 사이 vpos diff = lh + ls (spacing_before 미포함)
-/// HWP5 variant paragraph 사이 vpos diff = lh + ls + sb (spacing_before 포함)
-///
-/// HWP5 variant 의 line_segs.vpos 에서 cumulative spacing_before 차감하여 HWP3
-/// 형식과 정합. paragraph_layout 의 spacing_before 적용 path 는 ParaShape 기반
-/// 으로 처리되므로 vpos normalize 후에도 동일.
-///
-/// paragraph local reset detection: 현재 paragraph 의 first vpos 가 이전
-/// paragraph 의 vpos 끝보다 작으면 reset 발생 (page boundary 등). cumulative_sb
-/// reset.
-fn normalize_variant_paragraph_vpos(doc: &mut crate::model::document::Document) {
-    let para_shapes = doc.doc_info.para_shapes.clone();
-    for section in doc.sections.iter_mut() {
-        let mut cumulative_sb: i32 = 0;
-        let mut prev_vpos_end: i32 = 0;
-        for para in section.paragraphs.iter_mut() {
-            if para.line_segs.is_empty() {
-                continue;
-            }
-            let sb = para_shapes
-                .get(para.para_shape_id as usize)
-                .map(|p| p.spacing_before)
-                .unwrap_or(0);
-            let first_vpos = para.line_segs[0].vertical_pos;
-            // paragraph local reset detection
-            if first_vpos < prev_vpos_end.saturating_sub(cumulative_sb + sb) {
-                cumulative_sb = 0;
-            }
-            cumulative_sb = cumulative_sb.saturating_add(sb);
-            for ls in para.line_segs.iter_mut() {
-                ls.vertical_pos = ls.vertical_pos.saturating_sub(cumulative_sb);
-            }
-            let last = para.line_segs.last().unwrap();
-            // 주변(saturating_sub/add)과 달리 여기만 raw 덧셈이라 손상 입력의 거대
-            // vpos/height 로 i32 오버플로 패닉하던 것을 saturating 으로 맞춘다.
-            prev_vpos_end = last
-                .vertical_pos
-                .saturating_add(last.line_height)
-                .saturating_add(last.line_spacing);
-        }
-    }
 }
 
 /// [Task #554] HWP3 → HWP5/HWPX 변환본 식별 휴리스틱 + 페이지 여백 보정
@@ -707,6 +637,7 @@ fn fixup_line_segs_for_variant(paragraphs: &mut [crate::model::paragraph::Paragr
 }
 
 fn apply_hwp3_origin_fixup(doc: &mut Document, summary_hwp3_era: bool) {
+    let external_realign = doc.layout_profile().hwp3_external_realign();
     // [#1880 v2] rhwp HWPX→HWP 변환본(is_hwpx_variant, #1886 마커)은 한컴
     // HWP3→HWP5 변환본이 아니다 — 결정론 마커가 비율 휴리스틱에 우선한다.
     // 미게이트 시 저-스타일 대형 문서(2959953)가 비율에 걸려 margin_bottom
@@ -742,12 +673,16 @@ fn apply_hwp3_origin_fixup(doc: &mut Document, summary_hwp3_era: bool) {
         doc.provenance.hwp3_lineage = true;
         for section in doc.sections.iter_mut() {
             let pd = &mut section.section_def.page_def;
-            if pd.pagination_bottom_tolerance == 0 {
+            if !external_realign && pd.pagination_bottom_tolerance == 0 {
                 pd.pagination_bottom_tolerance = 1600.min(pd.margin_bottom);
             }
         }
     }
 
+    // 출처는 보존하되 외부 문서의 재정렬 요청에 이전 마지막 줄 허용치를 덧씌우지 않는다.
+    if external_realign {
+        return;
+    }
     let total_paragraphs: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
     if total_paragraphs <= 50 {
         return;
@@ -1129,15 +1064,6 @@ fn parse_hwp_with_lenient(
     // dir 영역 basename 매칭 영역 image 영역 자동 load.
     populate_link_image_paths(&mut doc);
 
-    // [Task #1042 Stage 5] HWP5 variant 의 paragraph data raw vpos normalize —
-    // HWP3 vs HWP5 variant 진단 결과 HWP5 의 raw vpos = HWP3 vpos + cumulative
-    // spacing_before. paragraph 마다 +sb 누적 → paragraph_layout 의 외부 path
-    // (예: pagination engine 의 vpos 보정) 에서 cascade 차이 야기. HWP3 정합 위해
-    // paragraph 의 line_segs.vpos 에서 cumulative spacing_before 차감.
-    if doc.is_hwp3_variant {
-        normalize_variant_paragraph_vpos(&mut doc);
-    }
-
     Ok(doc)
 }
 
@@ -1301,263 +1227,6 @@ pub(crate) fn populate_link_image_paths(doc: &mut Document) {
                     }
                 }
             }
-        }
-    }
-}
-
-/// 문서 내 모든 AutoNumber 컨트롤에 번호를 할당한다.
-/// NewNumber 컨트롤을 만나면 해당 종류의 카운터를 리셋한다.
-pub(crate) fn assign_auto_numbers(doc: &mut Document) {
-    use crate::model::control::AutoNumberType;
-
-    // 번호 종류별 카운터 — DocProperties 시작번호로 초기화
-    let mut counters = [
-        doc.doc_properties.page_start_num.saturating_sub(1),
-        doc.doc_properties.footnote_start_num.saturating_sub(1),
-        doc.doc_properties.endnote_start_num.saturating_sub(1),
-        doc.doc_properties.picture_start_num.saturating_sub(1),
-        doc.doc_properties.table_start_num.saturating_sub(1),
-        doc.doc_properties.equation_start_num.saturating_sub(1),
-    ];
-
-    fn counter_index(t: AutoNumberType) -> Option<usize> {
-        match t {
-            AutoNumberType::Page => Some(0),
-            AutoNumberType::Footnote => Some(1),
-            AutoNumberType::Endnote => Some(2),
-            AutoNumberType::Picture => Some(3),
-            AutoNumberType::Table => Some(4),
-            AutoNumberType::Equation => Some(5),
-            // 총 쪽수는 페이지네이션이 끝난 뒤 결정되는 표시값이다. 일반 자동번호
-            // 카운터를 증가시키거나 NewNumber로 재설정할 대상이 아니다.
-            AutoNumberType::TotalPage => None,
-        }
-    }
-
-    // 모든 섹션, 문단, 컨트롤 순회
-    for section in &mut doc.sections {
-        // 구역별 시작번호 반영: 0이 아니면 해당 카운터를 리셋
-        let sd = &section.section_def;
-        if sd.picture_num > 0 {
-            counters[3] = sd.picture_num.saturating_sub(1);
-        }
-        if sd.table_num > 0 {
-            counters[4] = sd.table_num.saturating_sub(1);
-        }
-        if sd.equation_num > 0 {
-            counters[5] = sd.equation_num.saturating_sub(1);
-        }
-        if sd.page_num > 0 {
-            counters[0] = sd.page_num.saturating_sub(1);
-        }
-
-        // 본문 문단
-        for para in &mut section.paragraphs {
-            assign_auto_numbers_in_controls(&mut para.controls, &mut counters, counter_index);
-        }
-    }
-}
-
-fn assign_auto_numbers_in_controls(
-    controls: &mut [crate::model::control::Control],
-    counters: &mut [u16; 6],
-    counter_index: fn(crate::model::control::AutoNumberType) -> Option<usize>,
-) {
-    use crate::model::control::Control;
-
-    fn assign_caption_auto_numbers(
-        caption: &mut Option<crate::model::shape::Caption>,
-        counters: &mut [u16; 6],
-        counter_index: fn(crate::model::control::AutoNumberType) -> Option<usize>,
-    ) {
-        if let Some(caption) = caption {
-            for para in &mut caption.paragraphs {
-                assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-            }
-        }
-    }
-
-    fn assign_text_box_auto_numbers(
-        text_box: &mut Option<crate::model::shape::TextBox>,
-        counters: &mut [u16; 6],
-        counter_index: fn(crate::model::control::AutoNumberType) -> Option<usize>,
-    ) {
-        if let Some(text_box) = text_box {
-            for para in &mut text_box.paragraphs {
-                assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-            }
-        }
-    }
-
-    for ctrl in controls.iter_mut() {
-        match ctrl {
-            Control::AutoNumber(an) => {
-                if let Some(idx) = counter_index(an.number_type) {
-                    counters[idx] += 1;
-                    an.assigned_number = counters[idx];
-                    an.number = counters[idx];
-                }
-            }
-            Control::Table(table) => {
-                // 표 내부 셀의 문단도 처리
-                for cell in &mut table.cells {
-                    for para in &mut cell.paragraphs {
-                        assign_auto_numbers_in_controls(
-                            &mut para.controls,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                }
-                // 표 캡션 처리
-                assign_caption_auto_numbers(&mut table.caption, counters, counter_index);
-            }
-            Control::Picture(pic) => {
-                // 그림 캡션 처리
-                assign_caption_auto_numbers(&mut pic.caption, counters, counter_index);
-            }
-            Control::Shape(shape) => {
-                use crate::model::shape::ShapeObject;
-
-                match shape.as_mut() {
-                    ShapeObject::Line(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Rectangle(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Ellipse(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Arc(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Polygon(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Curve(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Group(s) => {
-                        assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
-                    }
-                    ShapeObject::Picture(s) => {
-                        assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
-                    }
-                    ShapeObject::Chart(s) => {
-                        if s.caption.is_some() {
-                            assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
-                        } else {
-                            assign_caption_auto_numbers(
-                                &mut s.drawing.caption,
-                                counters,
-                                counter_index,
-                            );
-                        }
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Ole(s) => {
-                        if s.caption.is_some() {
-                            assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
-                        } else {
-                            assign_caption_auto_numbers(
-                                &mut s.drawing.caption,
-                                counters,
-                                counter_index,
-                            );
-                        }
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                }
-            }
-            Control::Header(h) => {
-                for para in &mut h.paragraphs {
-                    assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-                }
-            }
-            Control::Footer(f) => {
-                for para in &mut f.paragraphs {
-                    assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-                }
-            }
-            Control::Footnote(fn_) => {
-                for para in &mut fn_.paragraphs {
-                    assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-                }
-            }
-            Control::Endnote(en) => {
-                for para in &mut en.paragraphs {
-                    assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-                }
-            }
-            Control::NewNumber(nn) => {
-                if let Some(idx) = counter_index(nn.number_type) {
-                    counters[idx] = nn.number.saturating_sub(1);
-                }
-            }
-            _ => {}
         }
     }
 }

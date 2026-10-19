@@ -875,10 +875,6 @@ pub(super) fn bounded_display_text_for_run(run: &TextRunNode) -> (String, bool) 
 }
 
 pub(super) fn effective_text_font_size_and_baseline(run: &TextRunNode) -> (f64, f64) {
-    let base_font_size = if run.style.font_size > 0.0 {
-        run.style.font_size
-    } else {
-        12.0
-    };
+    let base_font_size = run.style.effective_font_size();
     run.style.script_draw_metrics(base_font_size, run.baseline)
 }

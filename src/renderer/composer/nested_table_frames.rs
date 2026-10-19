@@ -21,15 +21,16 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
     width: f64,
     styles: &ResolvedStyleSet,
     dpi: f64,
-    legacy_geometry: bool,
+    stored_geometry_policy: impl Into<crate::model::provenance::StoredGeometryPolicy>,
     native_hwp5: bool,
     cache: &SingleLineOverflowCache,
     mut nested_height: impl FnMut(&Table) -> f64,
 ) {
+    let stored_geometry_policy = stored_geometry_policy.into();
     let mut projected = None;
     let mut heights = Vec::new();
     let reflowed_table_host = !native_hwp5
-        && !legacy_geometry
+        && !stored_geometry_policy.preserve_hwp3_origins
         && crate::renderer::para_has_no_stored_line_segs(source)
         && source.controls.iter().any(|control| {
             matches!(control, Control::Table(table)
@@ -79,7 +80,7 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
             width,
             styles,
             dpi,
-            legacy_geometry,
+            stored_geometry_policy,
             super::line_breaking::StoredRowMissPolicy::Reflow,
             &[],
             false,
@@ -96,7 +97,7 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
             width,
             styles,
             dpi,
-            legacy_geometry,
+            stored_geometry_policy,
             native_hwp5,
             cache,
         );

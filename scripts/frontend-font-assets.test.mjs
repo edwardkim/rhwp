@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const CANONICAL_DIR = path.join(ROOT, 'assets/fonts');
-const EXPECTED_FONT_COUNT = 36;
-const EXPECTED_TOTAL_BYTES = 23_137_616;
+const EXPECTED_FONT_COUNT = 37;
+const EXPECTED_TOTAL_BYTES = 23_364_072;
 const EXPECTED_NOTO_SANS_KR_SHA256 = 'd1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a';
 const VSCODE_FONT_FILES = [
   'NotoSerifKR-Regular.woff2',
@@ -20,6 +20,7 @@ const VSCODE_FONT_FILES = [
   'Pretendard-Regular.woff2',
   'Pretendard-Bold.woff2',
   'D2Coding-Regular.woff2',
+  'NotoSansMath-Regular.woff2',
   'NanumGothic-Regular.woff2',
   'NanumMyeongjo-Regular.woff2',
   'GowunBatang-Regular.woff2',
@@ -55,7 +56,16 @@ function assertFontNotices(directory, expectedFiles, label) {
   const registry = JSON.parse(readFileSync(path.join(noticeDir, 'font-notices.json'), 'utf8'));
   const requiredNotices = new Set(['README.md', 'font-notices.json']);
   for (const filename of expectedFiles) {
-    const entries = registry.fonts.filter((entry) => entry.file === filename);
+    // 소스용 OTF도 배포 디렉터리에 포함되면 등록된 동일 바이트와 고지 전문을 대조한다.
+    const entries = [
+      ...registry.fonts.filter((entry) => entry.file === filename),
+      ...registry.repositoryOnlyFonts
+        .filter((entry) => entry.repositoryPath === `assets/fonts/${filename}`)
+        .map((entry) => ({
+          ...entry,
+          licenseFiles: entry.licenseFiles.map((file) => file.replace(/^assets\/fonts\/licenses\//, '')),
+        })),
+    ];
     assert.equal(entries.length, 1, `${label}/${filename} must have exactly one font notice`);
     const [entry] = entries;
     assert.equal(entry.sha256, sha256(path.join(directory, filename)));
@@ -81,6 +91,7 @@ test('canonical font inventory and license contract', () => {
   );
   assert.ok(statSync(path.join(CANONICAL_DIR, 'FONTS.md')).size > 0);
   assert.ok(statSync(path.join(CANONICAL_DIR, 'SourceHanSerifK-OFL.txt')).size > 0);
+  assert.ok(statSync(path.join(CANONICAL_DIR, 'NotoSansMath-OFL.txt')).size > 0);
   assert.equal(sha256(path.join(CANONICAL_DIR, 'NotoSansKR-Regular.woff2')), EXPECTED_NOTO_SANS_KR_SHA256);
 });
 
@@ -122,6 +133,13 @@ test('Studio and browser extension distributions preserve all canonical fonts', 
   assertDirectoryMatchesSource(path.join(ROOT, 'rhwp-studio/dist/fonts'), expected, 'Studio dist');
   assertDirectoryMatchesSource(path.join(ROOT, 'rhwp-chrome/dist/fonts'), expected, 'Chrome dist');
   assertDirectoryMatchesSource(path.join(ROOT, 'rhwp-firefox/dist/fonts'), expected, 'Firefox dist');
+  for (const directory of ['rhwp-studio/dist/fonts', 'rhwp-chrome/dist/fonts', 'rhwp-firefox/dist/fonts', 'rhwp-vscode/dist/media/fonts']) {
+    assert.deepEqual(
+      readFileSync(path.join(ROOT, directory, 'NotoSansMath-OFL.txt')),
+      readFileSync(path.join(CANONICAL_DIR, 'NotoSansMath-OFL.txt')),
+      `${directory}에 배포 폰트의 라이선스 전문을 보존한다`,
+    );
+  }
 });
 
 test('VS Code distribution preserves the approved font subset', () => {

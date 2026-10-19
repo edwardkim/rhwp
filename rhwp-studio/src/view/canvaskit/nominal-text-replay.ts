@@ -7,7 +7,7 @@ export function textRequiresComplexShaping(text: string): boolean {
     const isOldHangul = (codePoint >= 0x1100 && codePoint <= 0x11ff)
       || (codePoint >= 0xa960 && codePoint <= 0xa97f)
       || (codePoint >= 0xd7b0 && codePoint <= 0xd7ff);
-    const isBoxedPua = codePoint >= 0xf02b1 && codePoint <= 0xf02c4;
+    const isBoxedPua = codePoint >= 0xf02b0 && codePoint <= 0xf02c4;
     if (isOldHangul || isBoxedPua) continue;
 
     const nominalGlyphReplayIsSafe = codePoint <= 0x02ff

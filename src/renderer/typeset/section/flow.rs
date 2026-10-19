@@ -126,7 +126,7 @@ impl TypesetEngine {
                     .filter(|line| !is_synthetic_line_seg(line))
                     .map(|line| line.vertical_pos),
             );
-            let formatted = self.format_paragraph_with_known_square_band(
+            let mut formatted = self.format_paragraph_with_known_square_band(
                 para,
                 composed.get(para_idx),
                 styles,
@@ -135,6 +135,20 @@ impl TypesetEngine {
                     || st.current_column_wrap_anchors.contains_key(&para_idx),
             );
             self.format_next_stored_vpos.set(None);
+            // HWP5 컨테이너는 파서의 raw 출처 봉인으로 편집 여부를 확인할 수 있다.
+            // HWPX/원본 HWP3는 같은 출처 봉인이 없으므로 이 저장 증언 경로에 넣지 않는다.
+            // 편집 중 복제한 줄을 정상 저장 원점으로 믿지 않고 기존 소유자에 남긴다.
+            if let Some(plan) = (st.profile.hwp5_container() && !st.profile.session_edited())
+                .then(|| paragraphs.get(para_idx + 1))
+                .flatten()
+                .and_then(|next| {
+                    crate::renderer::inline_flow::plan_stored_empty_square_host(
+                        para, next, styles, self.dpi,
+                    )
+                })
+            {
+                formatted.use_square_host_plan(plan, self.dpi);
+            }
             // 줄 단위 어울림 배제: 문단 시작은 개체 위이지만 뒷줄이 개체 사각형과
             // 교차하는 형상(출석부) — 문단 전체 감폭 대신 교차 y 밴드를 anchor 에
             // 실어 layout 이 교차하는 줄만 감폭한다.
@@ -194,6 +208,7 @@ impl TypesetEngine {
                 st,
                 para_idx,
                 paragraphs,
+                composed,
                 styles,
                 formatted.spacing_before,
             );
@@ -243,6 +258,21 @@ impl TypesetEngine {
                     styles,
                     is_last_in_section,
                 );
+            }
+            if let Some(mut plan) = formatted
+                .square_host_plan
+                .clone()
+                .filter(|plan| plan.stored_empty_host)
+            {
+                // fit 후 실제 같은 단에 수용한 전체 줄 결과만 게시한다.
+                // 이월·숨김·분할 경로를 소유했다고 추정하지 않는다.
+                if !st.hidden_empty_paras.contains(&para_idx) && st.current_items.iter().any(|item| {
+                    matches!(item, PageItem::FullParagraph { para_index } if *para_index == para_idx)
+                }) {
+                    let origin = st.current_height - (plan.end - plan.start);
+                    plan.relative_to(0.0, -origin);
+                    st.record_square_host_flow(para_idx, plan);
+                }
             }
             // HWPX가 수식 인라인 개체를 포함한 문단의 line_seg 높이를 실제
             // 조판보다 작게 저장하는 경우, 다음 문단의 양수 VPOS가 같은 물리

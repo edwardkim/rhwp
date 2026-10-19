@@ -482,6 +482,9 @@ impl ObjectControlRef {
 /// 미리 렌더된 SVG 조각 (Task #195 단계 8)
 #[derive(Debug, Clone, Serialize)]
 pub struct RawSvgNode {
+    /// 장치에 맞춘 재생에 필요한 EMF 원문. 표시/선택용 JSON에는 싣지 않는다.
+    #[serde(skip)]
+    pub emf_source: Option<crate::emf::EmfReplaySource>,
     /// 삽입할 SVG 조각 (유효한 `<g>...</g>` 또는 개별 요소)
     pub svg: String,
     /// 원본 개체 참조. OLE RawSvg 선택/속성 진입에 사용한다.
@@ -497,6 +500,7 @@ pub struct RawSvgNode {
 impl RawSvgNode {
     pub fn new(svg: String) -> Self {
         Self {
+            emf_source: None,
             svg,
             control_ref: None,
             cell_context: None,
@@ -511,6 +515,7 @@ impl RawSvgNode {
         cell_context: Option<crate::renderer::layout::CellContext>,
     ) -> Self {
         Self {
+            emf_source: None,
             svg,
             control_ref: Some(ObjectControlRef::ole(
                 section_index,
@@ -1073,8 +1078,9 @@ impl TextRunNode {
         &'a self,
         replay_text: &str,
     ) -> std::borrow::Cow<'a, [f64]> {
+        let replay_text = super::composer::one_to_one_pua_replay_text(replay_text);
         super::replay_positions_or_compute(
-            replay_text,
+            &replay_text,
             &self.style,
             self.layout_positions.as_deref(),
         )
@@ -1105,8 +1111,9 @@ impl TextRunNode {
             }
         }
 
+        let prefix_replay_text = super::composer::one_to_one_pua_replay_text(prefix_replay_text);
         std::borrow::Cow::Owned(super::layout::compute_char_positions(
-            prefix_replay_text,
+            &prefix_replay_text,
             &self.style,
         ))
     }
@@ -1447,6 +1454,9 @@ pub struct ImageNode {
     /// 이미지 데이터 (캐시용, JSON 직렬화 시 제외)
     #[serde(skip)]
     pub data: Option<Vec<u8>>,
+    /// 원본 IR이 아닌 출력 문맥이다. 한컴 2024 Print의 bitmap 색 전달에만 사용한다.
+    #[serde(skip)]
+    pub hancom2024_print_bitmap: bool,
     /// 소속 구역 인덱스
     pub section_index: Option<usize>,
     /// 이미지 컨트롤을 소유한 문단 인덱스
@@ -1554,6 +1564,7 @@ impl ImageNode {
         Self {
             bin_data_id,
             data,
+            hancom2024_print_bitmap: false,
             section_index: None,
             para_index: None,
             control_index: None,

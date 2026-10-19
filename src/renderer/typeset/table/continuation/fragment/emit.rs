@@ -1225,14 +1225,21 @@ impl TypesetEngine {
         let complete_physical_end_cut = split_block_start.is_none()
             && split_end_limit > 0.0
             && end_row_height_override.is_some()
-            && !split_end_cut.is_empty()
             && end_row > cursor_row
-            && layout_engine.row_cut_consumes_all_ordinary_units(
-                row_geometry_table,
-                end_row - 1,
-                &split_end_cut,
-                styles,
-            );
+            && ((!split_end_cut.is_empty()
+                && layout_engine.row_cut_consumes_all_ordinary_units(
+                    row_geometry_table,
+                    end_row - 1,
+                    &split_end_cut,
+                    styles,
+                ))
+                || (split_end_cut.is_empty()
+                    && layout_engine.row_band_completes_ending_reflow_spans(
+                        row_geometry_table,
+                        end_row - 1,
+                        &accepted_straddle_cells,
+                        styles,
+                    )));
         let complete_source_row_frame = split_block_start.is_none()
             && split_end_cut.is_empty()
             && split_end_limit <= 0.0
@@ -1289,7 +1296,9 @@ impl TypesetEngine {
             straddle_row_relief: straddle_row_relief.clone(),
             straddle_page_bands: accepted_straddle_cells.clone(),
             fragment_row_heights: input.fragment_row_heights.map(<[f64]>::to_vec),
-            end_row_owns_stored_frame: is_continuation && stored_complete_extent.is_some(),
+            // 스캔에서 이미 예약한 빈 저장 띠는 paint의 줄간격이 아니다.
+            end_row_owns_stored_frame: source_frame_band > 0.0
+                || (is_continuation && stored_complete_extent.is_some()),
         });
         // 저장 호스트 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
         // 호스트·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).
@@ -1539,8 +1548,8 @@ impl TypesetEngine {
             });
         // 여러 행에 걸친 셀은 일반 행의 내용 유닛을 모두 소비했더라도
         // 이 조각 경계를 넘어 물리 공간을 소유한다.
-        // 재조판은 해당 블록 안에서 일반 셀의 최소 높이를 중복 반영하지 않지만,
-        // 여러 행에 걸친 셀이 소유한 잔여 밴드까지 없애서는 안 된다.
+        // 일반 칸의 독립 최소와 걸침 칸의 누적 공간은 각 장부가 소유한다.
+        // 내용을 소진했다는 이유로 어느 쪽의 잔여 밴드도 없애지 않는다.
         let crossing_span_owns_tail = table.cells.iter().any(|cell| {
             (cell.row as usize) < end_row
                 && cell.row as usize + (cell.row_span as usize).max(1) > end_row
@@ -1631,7 +1640,14 @@ impl TypesetEngine {
             })
             .or_else(|| {
                 let row = end_row.checked_sub(1)?;
-                if split_end_limit <= 0.0 || !layout_engine.row_uses_reflow_physical_frame(table, row) {
+                let minimum = layout_engine.reflow_row_physical_minimum(table, row, styles);
+                // 블록 컷은 여러 행의 셀 슬롯이다. 마지막 일반 행의 최소와
+                // 빼서 시작 행 잔여로 넘기면 이미 소비한 행의 빈 띠를 재생성한다.
+                if split_block_start.is_some()
+                    || split_end_limit <= 0.0
+                    || (!layout_engine.row_uses_reflow_physical_frame(table, row)
+                        && minimum.is_none())
+                {
                     return None;
                 }
                 let carried = (row == cursor_row).then_some(start_row_height_override).flatten();
@@ -1641,13 +1657,26 @@ impl TypesetEngine {
                     // 최소 높이가 전체 내용의 점유 높이보다 클 때만 물리 잔여가 생긴다.
                     // 내용에서 비롯된 높이는 이미 남은 유닛으로 표현되므로,
                     // 이중으로 이어받지 않는다.
-                    layout_engine.reflow_row_physical_minimum(table, row, styles)?
+                    minimum?
                 };
                 let start = if row == cursor_row { start_cut.as_slice() } else { &[] };
                 let used = end_row_height_override.unwrap_or_else(|| {
                     layout_engine.row_cut_content_height(table, row, start, &next_cut, styles)
                 });
                 let tail = (full - used).max(0.0);
+                // 독립적인 일반 칸의 큰 잔여는 병합 칸의 원장과 별도로 보존한다.
+                // 내용까지 끝난 한 줄 이하의 빈 꼬리는 쪽 경계에서 흡수한다.
+                if complete_physical_end_cut
+                    && layout_engine.reflow_blank_tail_is_line_sliver(table, row, tail, styles)
+                {
+                    return None;
+                }
+                #[cfg(not(target_arch = "wasm32"))]
+                if std::env::var_os("RHWP_DIAG_ROW_TAIL").is_some() {
+                    eprintln!(
+                        "DIAG_ROW_TAIL reflow pi={para_idx} row={row} complete={complete_physical_end_cut} full={full:.6} used={used:.6} tail={tail:.6} carried={carried:?} cut={next_cut:?}"
+                    );
+                }
                 (tail > 0.5).then_some(tail)
             })
             .or_else(|| {
@@ -1785,6 +1814,8 @@ impl TypesetEngine {
                 table, end_row.saturating_sub(1),
                 if end_row - 1 == cursor_row { start_cut } else { &[] }, &next_cut, styles,
             ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
+                && layout_engine.reflow_row_physical_minimum(table, end_row.saturating_sub(1), styles).is_none()
+                && !(complete_physical_end_cut && crossing_span_owns_tail)
                 && (!layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1))
                     || crossing_span_owns_tail))
             .and_then(|limit| {
@@ -1831,6 +1862,26 @@ impl TypesetEngine {
             // 늘리지 않는다. 다음 스캔이 이 컷에서 실제 수용할 유닛을 선택한다.
             (tail > 0.5 && tail_band_continues).then_some(tail)
         }));
+        // 완료 일반 칸의 잔여와 같은 끝 행에 걸친 병합 칸의 잔여는 별도 소유다.
+        let next_start_row_height_override = match (
+            next_start_row_height_override,
+            layout_engine.reflow_ending_span_minimum_remainder(
+                row_geometry_table,
+                end_row,
+                &accepted_straddle_cells,
+                styles,
+            ),
+        ) {
+            (Some(ordinary), Some(spanning)) => Some(ordinary.max(spanning)),
+            (ordinary, spanning) => ordinary.or(spanning),
+        };
+        #[cfg(not(target_arch = "wasm32"))]
+        if std::env::var_os("RHWP_DIAG_ROW_TAIL").is_some() {
+            eprintln!(
+                "DIAG_ROW_TAIL selected pi={para_idx} cursor={cursor_row} end={end_row} complete={complete_physical_end_cut} crossing_span={crossing_span_owns_tail} reflow={} override={next_start_row_height_override:?} cut={next_cut:?}",
+                layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1))
+            );
+        }
         // 이미 예약한 띠와 이번 조각의 미예약 띠를 각각 한 번만 이어받는다.
         // 미예약 띠는 실제 행 상자를 늘리기 전에 계산해 예약과 paint가 공유한다.
         let page_end_band = if split_block_start.is_some() {
@@ -1838,11 +1889,14 @@ impl TypesetEngine {
         } else {
             source_frame_band.max(reserved_straddle_end_band) + unreserved_page_end_band
         };
+        // 완료 일반 행을 다시 열지 않는다. 계속되는 병합 칸의 실제 공간은 공통 행 계획이 예약한다.
+        let has_intra_row_tail = split_end_limit > 0.0
+            && !(complete_physical_end_cut && next_start_row_height_override.is_none());
         continuation.straddle_page_bands =
             crate::renderer::layout::LayoutEngine::straddle_page_bands_after_fragment(
                 row_geometry_table,
                 &accepted_straddle_cells,
-                if split_end_limit > 0.0 {
+                if has_intra_row_tail {
                     end_row.saturating_sub(1)
                 } else {
                     end_row
@@ -1853,7 +1907,7 @@ impl TypesetEngine {
             end_row,
             split_block_start,
             next_source_cut,
-            split_end_limit > 0.0,
+            has_intra_row_tail,
         );
         continuation.start_row_height_override = next_start_row_height_override;
         if let Some(((_, row, cut, height), _)) = stored_rowspan_frame {

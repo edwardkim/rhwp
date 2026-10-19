@@ -3,21 +3,22 @@ use super::{ComposedParagraph, ComposedTextRun, SpaceMetric};
 use crate::renderer::supplemental_metrics::scalar_eligibility;
 
 /// Logical scalar eligibility prepared once, before token/style subdivision.
-pub(crate) struct ParagraphMetricScope(Option<Vec<bool>>, SpaceMetric);
+pub(crate) struct ParagraphMetricScope<'a>(Option<Vec<bool>>, SpaceMetric, &'a [char]);
 
-impl ParagraphMetricScope {
+impl<'a> ParagraphMetricScope<'a> {
     pub(crate) fn allows(&self, index: usize) -> bool {
         self.0
             .as_ref()
             .is_none_or(|mask| mask.get(index).copied().unwrap_or(false))
     }
-    pub(crate) fn new(chars: &[char], styles: &super::ResolvedStyleSet) -> Self {
+    pub(crate) fn new(chars: &'a [char], styles: &super::ResolvedStyleSet) -> Self {
         Self(
             styles.supplemental_metrics.as_ref().map(|_| {
                 let text: String = chars.iter().collect();
                 scalar_eligibility(&text)
             }),
             SpaceMetric::Stored,
+            chars,
         )
     }
 
@@ -33,7 +34,10 @@ impl ParagraphMetricScope {
         lang: usize,
         index: usize,
     ) -> super::TextStyle {
-        let mut style = super::resolved_to_text_style(styles, id, lang);
+        let mut style = self.2.get(index).map_or_else(
+            || super::resolved_to_text_style(styles, id, lang),
+            |&ch| super::punctuation_slots::character_style(ch, lang, styles, id),
+        );
         if !self.allows(index) {
             style.supplemental_metrics = None;
         }

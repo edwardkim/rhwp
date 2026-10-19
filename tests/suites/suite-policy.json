@@ -61,6 +61,20 @@
       "allowBlockers": [
         "function_gated_native_skia"
       ]
+    },
+    {
+      "path": "tests/cases/issue_7642_same_family_font_coverage.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/cases/verified_png_sampling_contracts.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
     }
   ],
   "exceptions": [

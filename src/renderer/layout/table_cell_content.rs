@@ -133,7 +133,7 @@ impl LayoutEngine {
                         ),
                         styles,
                         self.dpi,
-                        self.profile.get().legacy_hwp3_stored_geometry(),
+                        self.profile.get().stored_geometry_policy(),
                     );
                     Some(fresh)
                 } else {
@@ -713,17 +713,6 @@ impl LayoutEngine {
         } else {
             // 셀 내 비-TAC 도형: horz_align/vert_align 속성 기반 배치
             use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
-            // 문단 기준의 가로 원점은 셀 안에서도 문단 좌우 여백으로 정해진다.
-            // 첫 줄 들여쓰기는 글줄의 속성이므로 떠 있는 도형의 기준에는 더하지 않는다.
-            // TAC는 앞 분기의 확정 글줄 위치를 쓰고, 단·종이 기준은 셀 프레임을 유지한다.
-            let (ref_x, ref_w) = if matches!(child_common.horz_rel_to, HorzRelTo::Para) {
-                let para_style = styles.para_styles.get(para_shape_id as usize);
-                let left = para_style.map_or(0.0, |style| style.margin_left);
-                let right = para_style.map_or(0.0, |style| style.margin_right);
-                (inner_area.x + left, inner_area.width - left - right)
-            } else {
-                (inner_area.x, inner_area.width)
-            };
             let h_offset = hwpunit_to_px(child_common.horizontal_offset as i32, self.dpi);
             let mut vertical_offset = child_common.vertical_offset as i32;
             // 한컴은 머리말 안의 문단 기준 글상자에서 음수 `문단 내 위`를 0처럼 배치한다.
@@ -735,15 +724,31 @@ impl LayoutEngine {
                 vertical_offset = 0;
             }
             let v_offset = hwpunit_to_px(vertical_offset, self.dpi);
+            // 셀은 개체의 소유 경로다. PAPER/PAGE 정렬의 기준 영역까지 셀로
+            // 바꾸면 용지에 붙인 글상자가 셀의 이동·크기에 따라 잘못 이동한다.
+            let (body_x, body_y, body_w, body_h) = self.current_body_area.get();
+            let (ref_x, ref_w) = match child_common.horz_rel_to {
+                HorzRelTo::Paper => (0.0, self.current_paper_width.get()),
+                HorzRelTo::Page => (body_x, body_w),
+                // 문단 기준 도형에는 문단 좌우 여백만 반영한다.
+                // 첫 줄 들여쓰기는 떠 있는 도형의 기준 원점에 포함하지 않는다.
+                HorzRelTo::Para => {
+                    let para_style = styles.para_styles.get(para_shape_id as usize);
+                    let left = para_style.map_or(0.0, |style| style.margin_left);
+                    let right = para_style.map_or(0.0, |style| style.margin_right);
+                    (inner_area.x + left, inner_area.width - left - right)
+                }
+                HorzRelTo::Column => (inner_area.x, inner_area.width),
+            };
             let x = match child_common.horz_align {
                 HorzAlign::Right | HorzAlign::Outside => ref_x + ref_w - child_w - h_offset,
                 HorzAlign::Center => ref_x + (ref_w - child_w) / 2.0 + h_offset,
                 _ => ref_x + h_offset,
             };
-            let (ref_y, ref_h) = if matches!(child_common.vert_rel_to, VertRelTo::Para) {
-                (para_y, (inner_area.y + inner_area.height - para_y).max(0.0))
-            } else {
-                (inner_area.y, inner_area.height)
+            let (ref_y, ref_h) = match child_common.vert_rel_to {
+                VertRelTo::Paper => (0.0, self.current_page_height.get()),
+                VertRelTo::Page => (body_y, body_h),
+                VertRelTo::Para => (para_y, (inner_area.y + inner_area.height - para_y).max(0.0)),
             };
             let y = match child_common.vert_align {
                 VertAlign::Bottom | VertAlign::Outside => ref_y + ref_h - child_h - v_offset,
@@ -1282,6 +1287,7 @@ impl LayoutEngine {
                                 RenderNodeType::Image(ImageNode {
                                     bin_data_id: bin_id,
                                     data: img_data,
+                                    hancom2024_print_bitmap: false,
                                     section_index: enclosing_ctx.map(|(s, _, _, _)| s),
                                     para_index: enclosing_ctx.map(|(_, p, _, _)| p),
                                     control_index: Some(ctrl_idx),

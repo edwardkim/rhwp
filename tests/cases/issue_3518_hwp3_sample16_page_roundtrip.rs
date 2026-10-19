@@ -72,13 +72,26 @@ fn hwp3_sample16_heading_keeps_stored_lineseg_on_hwpx_roundtrip() {
     let data = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
     let original = rhwp::parse_document(&data).expect("parse hwp3");
     let p70 = &original.sections[0].paragraphs[70];
-    assert_eq!(p70.text, "1.추진목적", "샘플 전제: 문단 70 제목");
+    // 원본 hchar와 독립 Print에 번호 뒤 공백이 있고, 뒤의 세 제어 슬롯은 비가시다.
+    // 과거 파서가 지운 공백을 정상 원문의 전제로 다시 고정하지 않는다.
+    assert_eq!(
+        p70.text, "1. 추진목적\u{fffc}\u{fffc}\u{fffc}",
+        "원문 제목의 공백과 세 제어 슬롯"
+    );
     assert_eq!(p70.line_segs.len(), 1, "샘플 전제: 저장 line_seg 1개");
 
     let core = rhwp::document_core::DocumentCore::from_bytes(&data).expect("core");
     let hwpx = core.export_hwpx_native().expect("export");
     let roundtripped = rhwp::parse_document(&hwpx).expect("reparse");
     let r70 = &roundtripped.sections[0].paragraphs[70];
+    assert_eq!(
+        r70.text, p70.text,
+        "왕복에서 제목의 공백·내용·제어 슬롯을 누락하거나 중복하지 않는다"
+    );
+    assert_eq!(
+        r70.char_count, p70.char_count,
+        "원문의 문자·제어 위치 축 보존"
+    );
     assert_eq!(
         r70.line_segs.len(),
         1,

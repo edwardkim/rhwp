@@ -107,7 +107,15 @@ def restore_outline(stream):
     return width, pen.getCharString()
 
 
-def restore(specimen_pdf, output_font):
+def validate_face(face):
+    if (not isinstance(face, str) or not face.strip() or len(face) > 256
+            or any(ord(character) < 32 or ord(character) == 127 for character in face)):
+        raise ValueError('An explicit nonempty HFT face is required')
+    return face
+
+
+def restore(specimen_pdf, output_font, face='한양신명조'):
+    face = validate_face(face)
     document = pymupdf.open(specimen_pdf)
     expected_text = ''.join(chr(value) for value in range(0xAC00, 0xD7A4))
     observed = ''.join(ch for page in document for ch in page.get_text() if not ch.isspace())
@@ -147,14 +155,20 @@ def restore(specimen_pdf, output_font):
         source_hashes[f'{value:04X}'] = hashlib.sha256(stream.encode()).hexdigest()
     builder.setupHorizontalMetrics(widths)
     builder.setupHorizontalHeader(ascent=1000, descent=-200)
-    builder.setupNameTable({'familyName': '한양신명조', 'styleName': 'Regular',
-                           'uniqueFontIdentifier': 'OriginalHFT-HGSMJ-IndependentAlphabet',
-                           'fullName': '한양신명조 Original HFT Hangul',
-                           'psName': 'HanyangSinMyeongJo-OriginalHFT-Hangul',
+    # 요청 이름은 프로그램 동일성 판정이 아니다. 다른 face를 한양신명조로 명명하지 않는다.
+    identity = hashlib.sha256(face.encode('utf-8')).hexdigest()[:16]
+    ps_name = ('HanyangSinMyeongJo-OriginalHFT-Hangul' if face == '한양신명조'
+               else f'OriginalHFT-{identity}-Hangul')
+    unique_id = ('OriginalHFT-HGSMJ-IndependentAlphabet' if face == '한양신명조'
+                 else f'OriginalHFT-{identity}-IndependentAlphabet')
+    builder.setupNameTable({'familyName': face, 'styleName': 'Regular',
+                           'uniqueFontIdentifier': unique_id,
+                           'fullName': f'{face} Original HFT Hangul',
+                           'psName': ps_name,
                            'version': 'Version 1.000'})
     builder.setupOS2(sTypoAscender=1000, sTypoDescender=-200, usWinAscent=1000, usWinDescent=200)
     builder.setupPost()
-    builder.setupCFF('HanyangSinMyeongJo-OriginalHFT-Hangul',
+    builder.setupCFF(ps_name,
                      {'FullName': 'Original HFT Hangul', 'FamilyName': 'Original HFT Hangul', 'Weight': 'Regular'}, strings, {})
     # CFF 자체에서 bearing을 읽는 rasterizer와 hmtx를 읽는 소비자가 같은
     # 원점을 사용해야 한다. setupCFF가 연결한 private dict로 원본 경계를 읽는다.
@@ -164,6 +178,7 @@ def restore(specimen_pdf, output_font):
     builder.save(output_font)
     record = {'source': str(specimen_pdf), 'sourceSha256': hashlib.sha256(specimen_pdf.read_bytes()).hexdigest(),
               'font': str(output_font), 'fontSha256': hashlib.sha256(output_font.read_bytes()).hexdigest(),
+              'requestedFace': face,
               'scope': 'Complete modern Hangul alphabet only; ASCII intentionally absent and uses the existing supplied chain',
               'glyphs': len(glyphs), 'sourceGlyphSha256': source_hashes, 'fontMatrix': [0.001, 0, 0, 0.001, 0, 0],
               'glyphTransform': 'identity; no score-dependent shift, scale, hinting or contour changes',
@@ -172,8 +187,9 @@ def restore(specimen_pdf, output_font):
     print(json.dumps({key: value for key, value in record.items() if key != 'sourceGlyphSha256'}, ensure_ascii=True))
 
 
-def create_specimen(template, output):
+def create_specimen(template, output, face='한양신명조'):
     """한컴 빈 HWPX의 쪽/스타일을 쓰되 저장 줄과 기존 내용을 보존하지 않는다."""
+    face = validate_face(face)
     hp = 'http://www.hancom.co.kr/hwpml/2011/paragraph'
     hh = 'http://www.hancom.co.kr/hwpml/2011/head'
     with zipfile.ZipFile(template) as source:
@@ -182,7 +198,7 @@ def create_specimen(template, output):
         if len(section) != 1 or not list(section[0].iter('{' + hp + '}secPr')):
             raise ValueError('A blank single-section template is required')
         for font in header.iter('{' + hh + '}font'):
-            font.set('face', '한양신명조')
+            font.set('face', face)
             font.set('type', 'HFT')
         paragraph = copy.deepcopy(section[0])
         for run in paragraph.findall('{' + hp + '}run'):
@@ -211,7 +227,7 @@ def create_specimen(template, output):
     record = {'purpose': 'Independent complete Hangul alphabet, no target document data',
               'template': str(template), 'templateSha256': hashlib.sha256(template.read_bytes()).hexdigest(),
               'input': str(output), 'inputSha256': hashlib.sha256(output.read_bytes()).hexdigest(),
-              'requestedFace': '한양신명조', 'requestedFontType': 'HFT', 'characters': len(characters)}
+              'requestedFace': face, 'requestedFontType': 'HFT', 'characters': len(characters)}
     output.with_suffix('.provenance.json').write_text(json.dumps(record, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(record, ensure_ascii=True))
 
@@ -222,14 +238,16 @@ def main():
     create = commands.add_parser('create-specimen', help='한컴 빈 HWPX로 독립 11172자 표본 작성')
     create.add_argument('--template', type=Path, required=True)
     create.add_argument('--out', type=Path, required=True)
+    create.add_argument('--face', default='한양신명조', help='독립 표본에 요청할 원본 HFT face')
     recover = commands.add_parser('restore', help='그 별도 표본의 Print Type3 원본 윤곽을 CFF로 옮김')
     recover.add_argument('--specimen-pdf', type=Path, required=True)
     recover.add_argument('--out', type=Path, required=True)
+    recover.add_argument('--face', default='한양신명조', help='독립 표본에서 요청한 동일 HFT face')
     args = parser.parse_args()
     if args.command == 'create-specimen':
-        create_specimen(args.template, args.out)
+        create_specimen(args.template, args.out, args.face)
     else:
-        restore(args.specimen_pdf, args.out)
+        restore(args.specimen_pdf, args.out, args.face)
 
 
 if __name__ == '__main__':
