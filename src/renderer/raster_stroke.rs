@@ -19,6 +19,7 @@ pub(crate) fn raster_line_endpoints(
     let style = &line.style;
     if !matches!(profile, RenderProfile::Print | RenderProfile::HighQuality)
         || style.line_type != LineRenderType::Single
+        || style.compound_component
         || style.dash != StrokeDash::Solid
         || style.start_arrow != ArrowStyle::None
         || style.end_arrow != ArrowStyle::None

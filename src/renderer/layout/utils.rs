@@ -486,6 +486,7 @@ pub(crate) fn drawing_to_line_style(drawing: &crate::model::shape::DrawingObjAtt
         dash,
         dash_pattern: None,
         line_type: line_render_type,
+        compound_component: false,
         start_arrow,
         end_arrow,
         start_arrow_size,

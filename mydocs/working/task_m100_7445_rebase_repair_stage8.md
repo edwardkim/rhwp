@@ -3649,3 +3649,50 @@ base Native/current Native/current WASM 세 실행만 qualification-result에 �
 `mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/sample16-2022-bcp-ownership/`에
 보존했다. C431·C432의 집중 통과는 전체 nextest 재실행이 아니다. Native63/64 하락·다른
 실패·전쪽/실제 소비 경로 검증이 남아 있으며, PR은 준비 결과 보고 후 새 승인을 받아 진행한다.
+
+
+## C433 복합 테두리의 분해 출처와 Native 재스냅 회귀 복구
+
+63/64쪽의 Native 하락 원인은 글꼴 선택이나 HFT transform이 아니었다. 실제 Native font trace,
+transform0건의 동등 출력 대조, base/현재26개 선 op의 byte동일을 확인했다. 독립 Print의 아래
+이중선은192DPI에서 각2행에 coverage가 있지만 현재 Native는 각1행으로 이동했다.
+`double_line_parts`가 정한600DPI 부모 기하를 `create_parallel_lines*`에서 Single로 분해한 뒤
+`raster_line_endpoints`가 다시 일반 실선으로 판단해 각 획을 픽셀 중심에 옮긴 것이 원인이다.
+기존 helper의 복합선 제외 조건은 부모 line type이 소실되어 작동하지 않았다.
+
+일반 이중/삼중선 분해 생산자에 `compound_component` 출처를 남겨 Native 소비에서 다시
+스냅하지 않는다. JSON의 compoundComponent→Studio 타입→CanvasKit 실제 stroke 소비에도
+같은 결과를 전달한다. 페이지 번호·문구·폭·색상으로 대상을 좁히지 않았으며 기존 일반 실선의
+선명도 계약은 유지했다. 측정 좌표/내용 소속을 바꾸거나 글꼴·비교 기준을 바꾸지 않았다.
+
+Native frozen59/fresh60을 source2198파일 ledger로 고정한 뒤 sample16 전64쪽 양쪽,
+생물독205쪽 양쪽 before/after를 순차 캡처했다(새 실행948쪽/capture8). canonical와 별도
+pdftoppm audit의12개 완료 manifest·PNG1896쌍 SHA/쪽수/누락·중복을 확인했다.
+sample16 Native 전쪽 최저94.14342→94.59411%, fresh WASM94.60213% 유지, 미달0이다.
+63쪽97.65514→99.80596%,64쪽98.22800→99.66659%이며 fixed4a07 대비 각각
+-0.00358/-0.00834%p로0.1%p 안이다. 생물독 전205쪽은 Native98.06390%,WASM98.12078%
+그대로이고143쪽 양쪽100%다. 전체538전후쌍에서0.1%p 하락0,PNG동일468쌍이다.
+기존 미달 대조군 pic-in-head02 4쪽57.60580%·sample11 Native50쪽89.13433%는 이번
+수정 전후 그대로이며, 전쪽 수용이나 upstream 기존 미달로 추정하지 않는다.
+
+대표 review/overlay와 아래 이중선 확대를 직접 판독했다.63/64쪽 양쪽98이상 확인 후 독립
+Print 띠 중심±2CSSpx·두 분리 획의 인접 픽셀 coverage를 실제 Native PNG로 보호했다.
+같은 쪽의 원본 문단·내용 순서/누락/중복도 함께 검사하며 기존BCP/표 검사를 유지한다.
+prototype은2PASS1FAIL→3PASS(수정 전 띠가 한 행)이다. 정식 NativeSkia는 새 sample16세 건,
+기존 회색 실선143쪽, 본문/종이 테두리 관계 두 건 **6PASS/0FAIL**,선택720skip,
+test2.072초·compile2분19초·전체147.375초,exit0. prepare 후 실제016/017/002 배정을 다시
+계산했다. CanvasKit 단위4PASS와 fmt도 통과했다. 실행할 필요 없는 tsx loader를 지정한 최초
+unit 명령은 실패 원본을 보존하고, 현재 Node24 정식 node --test로4PASS를 확인했다.
+
+Studio7736의 root pkg/public/초기 HTTP200 JS/WASM byte를 frozen60과 대조했다.
+정상 한 쪽 이중선 입력에서 실제 Canvas2D/CanvasKit Print 모두8개 출처를 받았고 software
+CanvasKit readiness PASS·fallback/미지원op/숨은 Canvas2D overlay0을 확인했다. 최초 시도의
+inspector cache 소진은 버퍼 명시 후 새 실행으로 재검증했으며 이전 로그를 보존했다.
+이는 실제 제품 소비 한 조건이며 actual36 전체가 아니다. Mac WASM은 locked wrapper의
+web/pkg/no-opt 로컬 대체 빌드다. 모든 원 로그는 ignored repair58~65에 보존했다.
+최종 TSV17개·대표 review/overlay12개와 상세 출처는
+`mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/compound-stroke-coverage/`다.
+전체 nextest 재실행·남은 기존 실패·HFT 수식·전쪽/actual36 검증은 미완료이며 PR은 새 승인 후 진행한다.
+
+C433 추가 정적 검증: NativeSkia lib Clippy `-D warnings`는38.81초 exit0, Studio TypeScript
+`--noEmit`도 exit0이다. 필수 전체 all-target/다른 feature gate 완료를 대신하지 않는다.

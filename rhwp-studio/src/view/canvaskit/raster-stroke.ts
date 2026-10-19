@@ -12,6 +12,7 @@ export function rasterLineEndpoints(
   const width = style.width ?? 1;
   if (!['print', 'highQuality'].includes(profile) || !matrix || matrix.length !== 9
     || (style.lineType ?? 'single') !== 'single' || (style.dash ?? 'solid') !== 'solid'
+    || style.compoundComponent
     || (style.startArrow ?? 'none') !== 'none' || (style.endArrow ?? 'none') !== 'none'
     || line.arrowHeads?.length || style.shadow || !Number.isFinite(paintWidth) || paintWidth <= 0
     || !Number.isFinite(width) || width <= 0

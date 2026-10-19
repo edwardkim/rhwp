@@ -36,6 +36,7 @@ test('화면·굵은 선·복합선·화살표·그림자·사선은 원래 pain
   assert.deepEqual(rasterLineEndpoints(line, identity, 'screen'), original);
   assert.deepEqual(rasterLineEndpoints(line, [3, 0, 0, 0, 3, 0, 0, 0, 1], 'print'), original);
   for (const style of [{ dash: 'dot' as const }, { lineType: 'double' },
+    { compoundComponent: true },
     { startArrow: 'arrow' }, { shadow: {} }]) {
     assert.deepEqual(rasterLineEndpoints({ ...line, style: { ...line.style, ...style } },
       identity, 'print'), original);

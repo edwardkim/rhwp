@@ -1123,6 +1123,10 @@ pub struct LineStyle {
     pub dash_pattern: Option<Vec<f64>>,
     /// 선 렌더링 종류 (이중선/삼중선 등)
     pub line_type: LineRenderType,
+    /// 부모의 이중선/삼중선 기하를 이미 분해한 구성 획이다.
+    /// 각 획을 다시 픽셀 중심에 옮기면 부모가 정한 간격과 coverage가 바뀐다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub compound_component: bool,
     /// 시작 화살표
     pub start_arrow: ArrowStyle,
     /// 끝 화살표

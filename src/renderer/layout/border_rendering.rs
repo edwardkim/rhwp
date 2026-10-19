@@ -1156,6 +1156,7 @@ fn create_parallel_lines(
                 color,
                 width,
                 dash,
+                compound_component: true,
                 ..Default::default()
             },
         );
@@ -1203,6 +1204,7 @@ fn create_parallel_lines_perpendicular(
                 color,
                 width,
                 dash,
+                compound_component: true,
                 ..Default::default()
             },
         );

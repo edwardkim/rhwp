@@ -2984,6 +2984,9 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
         }
         buf.push(']');
     }
+    if style.compound_component {
+        buf.push_str(",\"compoundComponent\":true");
+    }
     if let Some(shadow) = &style.shadow {
         buf.push_str(",\"shadow\":");
         write_shadow_style(buf, shadow);

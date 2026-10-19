@@ -1298,6 +1298,8 @@ export interface LayerLineStyle {
   /** Physical on/off lengths supplied by the shared border layout. */
   dashPattern?: number[];
   lineType?: string;
+  /** An already expanded double/triple stroke keeps its parent's subpixel geometry. */
+  compoundComponent?: boolean;
   startArrow?: string;
   endArrow?: string;
   startArrowSize?: number;
