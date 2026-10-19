@@ -4246,3 +4246,48 @@ Native는 마지막 「기」를 124쪽으로 넘긴다. 원본 row35/col8 문�
 HWPML 93/94쪽, 언어 8/10쪽과 PrEP 67/68쪽을 수정 전후 대조하고 기존 정식 44건에
 언어/PrEP 정식 검사 5건을 더해 실행한다. 영향 쪽 Native 판독 후 전쪽 보존 검증을 계속한다.
 이 후보의 실행 결과는 아직 없으며 새 실물 회귀나 px 핀은 추가하지 않는다.
+
+
+### PR 제출용 전체 문서 Native·fresh WASM TSV — 사용자 지시 갱신
+
+작업지시자는 PR 제출용으로 모든 보정 문서의 전쪽 TSV를 Native와 WASM 양쪽에서 산출하도록
+명시했다. 앞선 Native 전용 검증 범위는 이 지시로 갱신한다. 기존 보존 검증 232조건에 누락된
+찾아 바꾸기 전후 22개와 수식 대조 2개를 추가했다. 전체는 입력 248개·256조건이며,
+각 backend에서 3,569쪽을 같은 입력·독립 Print PDF·compat·96dpi로 측정한다.
+현재 diff의 HWP/HWPX 61개는 입력 SHA로 빠짐없이 연결했고, 동일 바이트의 별칭도 구분했다.
+조건별 원본·PDF·글꼴·SHA·전체 쪽수는 `all-documents-pr-tsv-matrix.json`에 보존한다.
+
+찾아 바꾸기 22개 원본은 저장 제품이 한컴 2024다. 대응하는 2024 Print PDF가 없어
+`engine=2024`, `pdf_print_method=0`, `pdf_output_mode=frame_print_to_pdf_ex_one_up`의
+실제 실행 증거를 확인하고 22개를 정식 `pdf/issue7866/*-2024.pdf`에 생성했다.
+전체 237,310바이트이며 기존 2020 PDF는 보존한다. 새 기준 PDF는 필수 제출 자료이므로
+`output/`으로 숨기지 않는다. 성공 job과 입력/PDF SHA는
+`issue7866-all-version-matched-print-reference-receipts.json`에 기록했다.
+2020 engine으로 고정하려던 첫 준비는 저장 제품 guard에서 중단됐으며 원격 start는 없었다.
+새 2024 Print와의 Native 전쪽 TSV 22개는 raw 100%다. WASM과 직접 판독은 별도로 확인한다.
+
+동결 code source는 `0c855add83d88d5259d7c13386ef91fe1b053c84`다. Native 최적화 빌드는 460.49초 exit 0,
+fresh WASM은 최적화까지 1354.57초 exit 0이다. 공용 `target/pr-review`,
+빌드 잡 8개와 WASM release `codegen-units=16`을 사용했다.
+Native 실행 파일 SHA-256은 `750391b662f9f8a8df93693b80876757fd678dd89ce710e4b002139d5ea8cb23`,
+WASM SHA-256은 `3425e898cdde0636081c33aa477ba72f5a61d09b5f4e665936084dede476f19b`다. 문서 기록 커밋은 이 동결 code source와 구분한다.
+
+기존 정식 49건은 48 PASS / 1 FAIL이며, 추가 실행한 HWPML 저장 셀 보호 검사도 통과했다.
+D11의 마커 공통 보정으로 1342000의 실제 분할이 복구됐다고 판정하지 않는다.
+현재 원본은 Native 418/Print 415쪽이고 123쪽 99.25675%, 124쪽 77.03822%다.
+공개 portable composition의 1줄 결과와 실제 Core 출력을 같은 증거로 쓰지 않는다.
+진단용 메모리 복사본에서 해당 문단의 저장 줄만 제거해도 418쪽과 같은 분할이 남았다.
+이 복사본은 원본 입력이나 독립 기준의 대체가 아니며 실제 스타일 문맥과 공통 소비 경로를
+추가 대조한다. 원본의 실제 글자·공백 전진은 `direction11-row35-font-evidence.json`에 남겼다.
+
+선택 쪽 개선과 전쪽 결과도 구분한다. 22081993의 107쪽은 99.76034%로 개선됐지만,
+전 121쪽에서는 90쪽 69.51946%, 91쪽 15.30344%, 118쪽 85.52146%가 남아 있다.
+156465345 1쪽은 64.44366%이고 같은 PNG의 review에서 회색 표와 앞 문단의 겹침을 확인했다.
+이 결과를 기존 이슈·쪽수 일치·대표 쪽 상승으로 면제하지 않는다. 기준 devel과의 같은 조건 대조 및
+전체 미달 목록을 확보하고 원인 보정·재검증한다. 테스트 기대값·baseline·px 핀은 변경하지 않았다.
+
+현재 후보와 고정 devel 각각의 Native·WASM 전쪽 산출을 계속한다. 원래 232조건과 추가 24조건은
+별도 실행 원장으로 같은 동결 artifact에 연결한다. `all-documents-tsv-progress.tsv`는 모든 조건의
+쪽수·최저 raw·90% 미만·누락을, `all-documents-native-pages.tsv`와
+`all-documents-wasm-pages.tsv`는 산출된 페이지 원문 값을 갱신한다. 측정 완료와 직접 시각 검토의
+완료를 구분한다. 전체 TSV·미달 보정·필수 검증을 완료하기 전에는 PR 준비 완료로 보고하지 않는다.
