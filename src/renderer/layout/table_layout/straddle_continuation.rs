@@ -122,6 +122,59 @@ impl LayoutEngine {
             })
     }
 
+    /// 시작 블록 뒤에서 새로 시작한 일반 행 셀은 실제 수용 상자를 소유한다.
+    /// 블록 안에서 시작한 셀은 아직 계상하지 않은 블록 공간을 추정하지 않는다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn accepted_straddle_after_block(
+        &self,
+        table: &crate::model::table::Table,
+        resolved_row_heights: &[f64],
+        trailing_start: Option<usize>,
+        end_row: usize,
+        end_cut: &[usize],
+        is_continuation: bool,
+        end_row_height_override: Option<f64>,
+        straddle_row_relief: &[(usize, f64)],
+        carried: &[crate::renderer::pagination::StraddleCellCarry],
+        styles: &ResolvedStyleSet,
+    ) -> Vec<crate::renderer::pagination::StraddleCellCarry> {
+        let mut accepted: Vec<_> = carried
+            .iter()
+            .cloned()
+            .map(|mut carry| {
+                carry.accepted_physical_height = None;
+                carry.owns_blank_band = false;
+                carry
+            })
+            .collect();
+        if let Some(start) = trailing_start {
+            let ordinary = self.accepted_straddle_fragment_units(
+                table,
+                resolved_row_heights,
+                start,
+                end_row,
+                &[],
+                end_cut,
+                is_continuation,
+                None,
+                end_row_height_override,
+                straddle_row_relief,
+                carried,
+                styles,
+            );
+            for owner in ordinary.into_iter().filter(|carry| {
+                table
+                    .cells
+                    .get(carry.cell_index)
+                    .is_some_and(|cell| usize::from(cell.row) >= start)
+            }) {
+                accepted.retain(|carry| carry.cell_index != owner.cell_index);
+                accepted.push(owner);
+            }
+        }
+        accepted
+    }
+
     /// 수용한 조각의 쪽 끝 빈 띠를 경계를 넘는 걸침 칸마다 누적한다.
     /// 내용 컷과 실제 상자 원장도 보존하고, 경계를 다 지난 칸은 버린다.
     pub(crate) fn straddle_page_bands_after_fragment(

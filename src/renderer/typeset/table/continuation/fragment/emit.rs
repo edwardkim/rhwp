@@ -1511,17 +1511,22 @@ impl TypesetEngine {
                 styles,
             )
         } else {
-            // 블록 컷은 위의 일반 행 상자를 수용하지 않았다. 이전 합을 새 물리
-            // 점유로 오인하지 않도록 내용 컷만 보존하고 상자 원장은 무효화한다.
-            straddle_page_bands
-                .iter()
-                .cloned()
-                .map(|mut carry| {
-                    carry.accepted_physical_height = None;
-                    carry.owns_blank_band = false;
-                    carry
-                })
-                .collect()
+            let trailing_start =
+                (start_cut_is_block && !start_cut.is_empty() && split_block_start.is_none())
+                    .then(|| mt.row_block_for(cursor_row).1)
+                    .filter(|&start| start > cursor_row && start < end_row);
+            layout_engine.accepted_straddle_after_block(
+                row_geometry_table,
+                &mt.row_heights,
+                trailing_start,
+                end_row,
+                &split_end_cut,
+                is_continuation,
+                end_row_height_override,
+                straddle_row_relief,
+                straddle_page_bands,
+                styles,
+            )
         };
 
         // 중간 또는 내용이 완전히 소비된 최종 컷 조각 배치
