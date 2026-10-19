@@ -4163,3 +4163,37 @@ D7 정식 39개는 36 PASS/3 FAIL이며 1613000 128쪽 raw는65.26477→97.76551
 
 위세보정은문서ID/고정좌표분기나새기대값을추가하지않는다. 기존정식39개와Native영향쪽을
 수정전후같은입력·PDF·글꼴로실행하고, 큰전체검증전에관계·실제경계를먼저확인한다.
+
+
+### D8 결과와 제목행 없는 원본 일반 행의 호출 연결
+
+f916d6600의최적화Native빌드는406.35초exit0이다. 같은Cargo그래프에서컴파일한정식suite의
+39개검사를이름별로격리실행해37PASS/2FAIL을확인했다. 154쪽닫는선검사는통과했다.
+1480000의최소높이는아직15.76px로실패한다. 호출경로를다시확인하면저장일반행helper는
+반복제목행표의scan분기안에서만실행된다. 실제pi263표는header_overhead=0이며그분기에
+들지않는다. helper의이름/구현만으로전달됐다고판정하지않고일반저장컷의공통확정단계에서
+호출한다. 인라인재시작의반복제목행계약은기존조건을유지한다. 원본일반행은helper자체의
+미편집/순수글줄/저장컷/단일남은프레임인증을통과해야하며,같은물리하단예산으로예약한다.
+
+counter는Native/Print121/121쪽으로복구됐다. 106쪽raw100.00000%,121쪽99.98474%이며,
+107쪽82.90255%,108쪽92.59984%다. D7의통째이월회귀는해소했지만107쪽미달은남아있다.
+직접출력대조와전체쪽검증을계속하며검사통과나쪽수일치로완료하지않는다.
+
+### 열린 원 PR의 최신 head와 병합 충돌 해소 동작 재검토
+
+GitHubAPI로planet6897의열린26개PR과각head·reviewer를다시확인했다. 모두jangster77이
+지정되어있으며,sourcehead확인은ignored source-open-pr-heads-live-direction8.json에기록한다.
+#7956/#7979의head는devel병합커밋이므로그커밋의존재만으로체리픽누락이라판정하지않고,
+기능commit·기존patch동등성·병합충돌해소의현재동작을따로대조한다.
+#7956의column_start_is_own_margin과paragraph_line_indent_for_source의연결은유지돼있다.
+
+#7979head4e0219c9f의충돌해소는공용replace_text_inheriting_char_shapes_native에서도
+normalize_text_newlines를호출한다. 현재통합본은그두줄을빠뜨려직접Native호출에CRLF/CR이
+그대로남는다. 기존높은수준검색진입점의정규화로이누락을가리지않는다. ignored최소재현은
+source69915d035에서compile0/run101,이번정식case추가분도D8f916d6600의frozenlibrary에서
+compile0/run101로실패했다. 기대문자열은명시적인LF와치환끝charOffset6이며원merge해소와
+공통개행계약에서정했다. 공용Native진입점에서글자수계산전에정규화하고,실제text·offset·
+새글자모양·뒤글자모양보존을tests/cases/issue_7866_replace_inherits_char_shapes.rs에서검사한다.
+이검사는합성편집API문자열계약이며새렌더링fixture나px기대값을추가하는것이아니다.
+새case는기존suite자동수집에포함된다(1641sources/7127staticattrs/48targets).
+원본입출력의시각검증범위를축소하거나API검사로대신하지않는다.

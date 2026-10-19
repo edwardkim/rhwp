@@ -162,3 +162,29 @@ fn plain_insert_without_deletion_is_unchanged() {
     assert!(!sig[2].1, "앞 글자(공백, 보통)의 모양: {sig:?}");
     assert!(sig[3].1 && sig[4].1, "원래 굵은 글자는 그대로: {sig:?}");
 }
+
+#[test]
+fn native_style_inheriting_replace_normalizes_newlines_before_counting_offsets() {
+    // #7979의 devel 병합 해소 계약: 공용 Native 진입점도 CRLF/CR을 LF로
+    // 정규화한 뒤 글자 수와 이벤트 위치를 정한다. 화면 좌표 검사가 아니다.
+    for replacement in ["가\r\n나\r다", "가\n나\n다"] {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "앞굵게뒤").unwrap();
+        core.apply_char_format_native(0, 0, 1, 3, r#"{"bold":true}"#)
+            .unwrap();
+        let bold_id = core.document().sections[0].paragraphs[0]
+            .char_shape_id_at(1)
+            .unwrap();
+        let result = core
+            .replace_text_inheriting_char_shapes_native(0, 0, 1, 2, replacement)
+            .unwrap();
+        let paragraph = &core.document().sections[0].paragraphs[0];
+        assert_eq!(paragraph.text, "앞가\n나\n다뒤", "입력 {replacement:?}");
+        assert_eq!(result, r#"{"ok":true,"charOffset":6}"#);
+        for offset in 1..6 {
+            assert_eq!(paragraph.char_shape_id_at(offset), Some(bold_id));
+        }
+        assert_eq!(paragraph.char_shape_id_at(6), Some(0), "뒤 글자 모양 보존");
+    }
+}

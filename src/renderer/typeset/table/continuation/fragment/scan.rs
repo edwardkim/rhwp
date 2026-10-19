@@ -721,13 +721,12 @@ impl TypesetEngine {
             }
         }
 
-        // 반복 제목행의 원본 쪽 프레임은 refit이 선택한 내용과 같은 물리 상자를 예약한다.
+        // 원본 일반 행의 쪽 프레임은 refit이 선택한 내용과 같은 물리 상자를 예약한다.
         // 내용을 다 소비한 컷에도 마지막 줄 간격만 남은 꼬리를 별도 행으로 세지 않는다.
         if split_block_start.is_none()
             && split_end_limit > 0.0
             && !split_end_cut.is_empty()
             && end_row > cursor_row
-            && self.stored_header_physical_rows(st, input.source)
         {
             let row = end_row - 1;
             let row_start = if row == cursor_row {
@@ -752,16 +751,28 @@ impl TypesetEngine {
                 budget.host_before_overhead,
             ) - header_overhead
                 - before_last;
-            let available = physical.min(avail_for_rows - before_last);
-            let inline_frame = layout_engine
-                .stored_inline_restart_row_end_frame(
-                    row_geometry_table,
-                    row,
-                    row_start,
-                    &split_end_cut,
-                    available,
-                    styles,
-                )
+            let available = physical.min(
+                budget
+                    .reflow_frame_avail_for_rows
+                    .unwrap_or(avail_for_rows)
+                    .min(avail_for_rows)
+                    - before_last,
+            );
+            // 인라인 프레임의 반복 제목행 계약은 유지한다. 일반 칸의 원본
+            // 최소는 제목행 유무와 무관하며, helper가 저장 컷의 유효성을 확인한다.
+            let inline_frame = self
+                .stored_header_physical_rows(st, input.source)
+                .then(|| {
+                    layout_engine.stored_inline_restart_row_end_frame(
+                        row_geometry_table,
+                        row,
+                        row_start,
+                        &split_end_cut,
+                        available,
+                        styles,
+                    )
+                })
+                .flatten()
                 .filter(|height| *height >= selected);
             if let Some(height) = inline_frame.or_else(|| {
                 layout_engine.stored_ordinary_row_end_frame(

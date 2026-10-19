@@ -1515,6 +1515,8 @@ impl DocumentCore {
         length: usize,
         text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         self.validate_body_paragraph_index(section_idx, para_idx)?;
         let new_chars_count = text.chars().count();
         let apply_replace = |para: &mut Paragraph| {
