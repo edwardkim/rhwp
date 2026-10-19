@@ -104,6 +104,29 @@ impl LayoutEngine {
             );
             let visible = self.row_cut_content_height(table, row, start_cut, &cut.end_cut, styles);
             let excess = (visible - physical_budget).max(0.0);
+            if excess > ROW_CUT_CAPACITY_FP_EPSILON_PX && std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                let owners: Vec<_> = Self::row_cut_cell_order(table, row)
+                    .iter()
+                    .enumerate()
+                    .map(|(slot, &index)| {
+                        let cell = &table.cells[index];
+                        let units = self.cell_units(cell, table, styles);
+                        let start = start_cut.get(slot).copied().unwrap_or(0).min(units.len());
+                        let end = cut.end_cut[slot].clamp(start, units.len());
+                        let advance = units[start..end]
+                            .iter()
+                            .map(|unit| unit.height)
+                            .sum::<f64>();
+                        let trim = self
+                            .physical_cut_trailing_trim(table, cell, &units, start, end, styles);
+                        (cell.col, start, end, advance, trim)
+                    })
+                    .collect();
+                eprintln!(
+                    "DIAG_SCAN PHYSICAL_REFIT r={row} start={start_cut:?} end={:?} physical={physical_budget:.3} budget={budget:.3} visible={visible:.3} owners={owners:?}",
+                    cut.end_cut,
+                );
+            }
             if excess <= ROW_CUT_CAPACITY_FP_EPSILON_PX
                 || physical_cut_budget <= 0.0
                 || previous_cut.as_ref() == Some(&cut.end_cut)
