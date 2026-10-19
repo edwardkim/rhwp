@@ -3624,3 +3624,56 @@ PR 생성은 준비 결과 보고 후 사용자 승인을 받는다.
 `bold ``a b`에서만 공백의 인자 소유가 달랐다. 공개 호환 경로의 새 공백 처리를
 문서 모드에 적용하지 않도록 보완해 새 devel의 문서 계약을 유지한다. 이전57/58 결과는
 `post-rebase-equation-contract-before-bold-mode-fix-results.json`에 보존했고 재실행을 진행한다.
+
+
+### 리베이스 연결 최종 사전 확인
+
+코드 head `174113849bff8a815a0230c5d59e278152df6a61`에서 Native Skia cargo check
+38.5s·WASM target cargo check146.4s·fmt40.6s·diff check 모두 exit0이다. Cargo는 공용
+`target/pr-review`, jobs8로 순차 실행했다. #7873 기존7건·#7865 기존2건의 실제 수식
+소스 진단도 통과했고, 새 devel과 문서 경로의 실제 토큰/AST58개가 모두 일치한다.
+`post-rebase-compile-validation-results.json`, `post-rebase-equation-contract-results.json`에
+명령·source SHA·결과를 보존했다. 실제 제품 전체 회귀·최적화 fresh WASM/브라우저·전쪽
+시각·Windows 검증을 완료했다는 뜻은 아니다.
+
+## 2026-10-19 승인 범위 확대: 열린 planet6897 PR의 미반영 커밋 전부 적용
+
+사용자는 열린 planet6897 PR에서 체리픽되지 않은 것을 모두 적용하도록 지시했다.
+기존11개에 한정하던 범위를26개 원 PR 전체로 확대한다. 모두 non-Draft이며 devel 대상이다.
+먼저 각 원 PR의 jangster77 reviewer를 requested_reviewers API로 확인했고 누락된15개에 추가했다.
+기본 경로 maintainer_general, 보조 intake_and_review/local_validation/multi_pr_update_branch/
+visual_fixture_evidence를 적용한다. PR 생성은 준비 결과 보고 후 별도 사용자 승인을 받는다.
+
+원 PR 최신 head와 실제 commit 목록을 고정하고 merge commit2개를 제외했다.
+기존 #7965 재작성22개는 원본 stable patch-id와 모두 같다. 기존 원본48개는 로컬에 있고,
+#4961 기대값1개는 새 base에 동일한 내용이 있다. 새 base와 현재 head의1223개 commit
+patch-id까지 대조한 결과 추가45개가 남았다: #7965 후속21개와 아래15개 PR의24개다.
+
+| 추가 원 PR | 추가 커밋 수 |
+| --- | ---: |
+| #7965 | 21 |
+| #8005 | 1 |
+| #8006 | 1 |
+| #8007 | 2 |
+| #8009 | 1 |
+| #8010 | 1 |
+| #8011 | 2 |
+| #8012 | 3 |
+| #8013 | 2 |
+| #8015 | 2 |
+| #8026 | 2 |
+| #8028 | 1 |
+| #8034 | 1 |
+| #8059 | 2 |
+| #8063 | 2 |
+| #8068 | 1 |
+
+순서는 기존 원 기여 커밋 → 원 PR 번호/commit 순의 추가 원 기여 커밋 → 기존 메인터너
+보정으로 다시 배치한다. #7965 후속은 해당 PR의 기존22개 바로 뒤에 넣는다. 추가 체리픽을
+먼저 마치고 그 뒤 메인터너 보정을 적용하며, 기존 충돌 보정·기능과 원 author·공동 저자·출처를
+보존한다. 시작 전 전체 로컬 head의 backup branch와 todo를 남긴다. 새 원본45개의 PDF 변경21건은
+모두50MiB 미만이다. 미추적 로컬 PDF4개는 해시 고정해 유지한다.
+
+입력은 ignored output의 `open-planet6897-{intake,cherry-pick-plan}-20261019.json`,
+`open-planet6897-reviewer-verification-20261019.json`, `additional-source-pdf-sizes.json`에 있다.
+새 통합 head에서는 기존 검증 결과를 재사용하지 않고 영향 범위와 필수 검증을 다시 수행한다.
