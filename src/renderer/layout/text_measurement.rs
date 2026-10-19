@@ -1048,6 +1048,7 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                             storage,
                         )?,
                         font_metric_trusted: cs.font_metric_trusted_for_lang(1),
+                        source_font_is_hft: cs.source_hft_for_lang(1),
                         letter_spacing: resolved_letter_spacing(styles, char_style_id, 1),
                         ratio: cs.ratio_for_lang(1),
                     }))
@@ -1616,6 +1617,7 @@ fn measure_char_width_embedded_decision<'a>(
         font_size,
         false,
         false,
+        false,
     )
 }
 
@@ -1640,6 +1642,11 @@ fn css_primary_face(font_family: &str) -> &str {
 
 /// [#7092] `font_metric_trusted` — 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
 /// (TTF 선언 · 대체 없음). 스타일을 모르는 호출은 거짓으로 종전 측정을 따른다.
+///
+/// [#8079] `regular_bold_advance` — 굵은 글자의 전진폭을 같은 family 보통 표에서 읽는다.
+/// 선언 face 가 TrueType 일 때만 참이다(HFT 프로그램은 제 Bold 전진폭을 쓴다).
+/// 스타일을 모르는 호출은 거짓으로 종전 측정을 따른다.
+#[allow(clippy::too_many_arguments)]
 fn measure_char_width_embedded_decision_for_font<'a>(
     font_family: &'a str,
     bold: bool,
@@ -1648,6 +1655,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
     font_size: f64,
     font_metric_trusted: bool,
     hft_hangul_face: bool,
+    regular_bold_advance: bool,
 ) -> EmbeddedWidthDecision<'a> {
     let primary_name = css_primary_face(font_family);
     if let Some(em) = font_metrics_data::original_glyph_advance_em(primary_name, bold, italic, c) {
@@ -1710,6 +1718,13 @@ fn measure_char_width_embedded_decision_for_font<'a>(
                 character_match: "miss",
             };
         };
+        // [#8079] 굵은 글자는 Bold 면으로 그리되 전진폭은 같은 family 보통 면의 값이다.
+        // 보통 표에 없는 글자는 Bold 폭을 그대로 쓴다(결측을 0 폭으로 만들지 않는다).
+        let glyph_w = regular_bold_advance
+            .then(|| font_metrics_data::regular_advance_metric(mm.metric))
+            .flatten()
+            .and_then(|regular| regular.get_width(c))
+            .unwrap_or(glyph_w);
         // 확인된 TrueType 프로그램의 cmap/hmtx는 표 모양으로 추측한 결측보다 우선한다.
         // 실제 글리프가 1em이어도 Latin-1 표가 0/1em으로만 구성될 수 있다.
         // 검증된 face·문자만 lookup에 있으며 HFT·치환·불명 face의 호환 폭은 유지한다.
@@ -2045,6 +2060,9 @@ fn char_width_decision_with_hft_tracking<'a>(
         } else {
             c
         };
+        // [#8079] TrueType 로 선언된 face 의 굵은 글자는 보통 면 전진폭으로 잰다.
+        let regular_bold_advance =
+            !latin.map_or(style.source_font_is_hft, |l| l.source_font_is_hft);
         let original_glyph_face = latin
             .map_or(style.original_glyph_metric_family.as_deref(), |slot| {
                 slot.original_glyph_metric_family.as_deref()
@@ -2091,6 +2109,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                 font_size,
                 latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
                 latin.is_none() && style.hft_hangul_face,
+                regular_bold_advance,
             )
         };
         if original_glyph_em.is_none() && metric_character != c && embedded.width_px.is_some() {
@@ -2117,6 +2136,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                 font_size,
                 false,
                 false,
+                regular_bold_advance,
             );
             if display_metric.width_px.is_some() {
                 embedded = display_metric;
@@ -2205,6 +2225,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                     font_size,
                     false,
                     false,
+                    regular_bold_advance,
                 );
                 if fallback.width_px.is_some()
                     && fallback.metric.is_some_and(|found| {
@@ -2225,6 +2246,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                         font_size,
                         false,
                         false,
+                        regular_bold_advance,
                     );
                     embedded.width_source = "declaredGlyphFallbackMetric";
                     break;
@@ -2833,6 +2855,7 @@ pub fn forces_halfwidth_punct_paint(style: &TextStyle, c: char) -> bool {
         style.font_size,
         style.font_metric_trusted,
         style.hft_hangul_face,
+        !style.source_font_is_hft,
     );
     // 측정이 실제로 좁힌 프로그램만 같은 paint 보정을 소비한다.
     // 전각 기호의 metric miss나 원 프로그램 폭은 문자 범위만으로 다시 누르지 않는다.

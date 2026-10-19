@@ -449,6 +449,29 @@ pub(crate) fn find_metric_decision<'a>(
     })
 }
 
+/// [#8079] 굵은 글자의 **조판 전진폭**을 줄 같은 family 의 보통(Regular) 표.
+///
+/// 한/글은 별도 Bold 면이 있는 TrueType 의 굵은 글자를 Bold 면으로 그리지만, 글자 원점은
+/// 보통 면의 전진폭으로 잡는다. 한컴 PDF 는 임베드 Bold `/W` 를 그대로 둔 채 TJ 조정으로
+/// 다음 글자를 당긴다 — 맑은 고딕 Bold 숫자 `/W` 579/1000 뒤 `29.000` = 보통 1128/2048(0.55em).
+/// `pdf/` 한컴 정본 205개 전수(TJ 안 글자의 `/W − 조정`)에서 굵은 맑은 고딕은 보통 폭 쪽이
+/// 26,893자, Bold 폭 쪽이 357자다. Arial Bold·Times New Roman Bold 도 Bold 폭 쪽은 0자다.
+///
+/// 같은 이름·같은 기울임의 보통 항목이 **정확히** 있을 때만 돌려준다. em 이 다르면 같은
+/// 격자로 비교할 근거가 없어 None. 글리프 선택·결측 판정은 이 표가 아니라 Bold 항목이 맡는다.
+pub(crate) fn regular_advance_metric(bold_metric: &FontMetric) -> Option<&'static FontMetric> {
+    if !bold_metric.bold {
+        return None;
+    }
+    let slots = metric_index().get(bold_metric.name)?;
+    let regular = slots[metric_slot_index(false, bold_metric.italic)];
+    (regular.match_kind == MetricMatchKind::Exact
+        && !regular.metric.bold
+        && regular.metric.italic == bold_metric.italic
+        && regular.metric.em_size == bold_metric.em_size)
+        .then_some(regular.metric)
+}
+
 /// 원본 프로그램에서 확인한 문자 폭은 표시 대체 글꼴의 완전한 표보다 우선한다.
 /// 부분 표의 미측정 문자·확인하지 않은 정체는 기존 색인 선택을 그대로 쓴다.
 pub(crate) fn find_metric_decision_for_character<'a>(

@@ -605,11 +605,13 @@ pub struct LatinSlotMetrics {
     /// 불변 이름을 공유하여 런 복제와 enum의 인라인 메모리를 줄인다.
     pub original_glyph_metric_family: Option<std::sync::Arc<String>>,
     pub font_metric_trusted: bool,
+    /// [#8079] 영문 슬롯의 선언 face 가 HFT 프로그램인지 — [`TextStyle::source_font_is_hft`] 와 같은 뜻.
+    pub source_font_is_hft: bool,
     pub letter_spacing: f64,
     pub ratio: f64,
 }
 
-crate::storage::clone_fields!(LatinSlotMetrics, {font_family, metric_font_family, original_glyph_metric_family, font_metric_trusted, letter_spacing, ratio});
+crate::storage::clone_fields!(LatinSlotMetrics, {font_family, metric_font_family, original_glyph_metric_family, font_metric_trusted, source_font_is_hft, letter_spacing, ratio});
 crate::storage::clone_copy!(crate::model::style::UnderlineType);
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
