@@ -189,6 +189,9 @@ impl LayoutEngine {
         {
             return None;
         }
+        if let Some(height) = self.stored_ordinary_closing_text_frame(table, row, cut, styles) {
+            return Some(height);
+        }
         // 같은 행을 다시 나누면 이전 조각까지 차감한 커서의 물리 잔여를 쓴다.
         // 원본 전체 높이로 돌아가 이미 소비한 공간을 다시 예약하지 않는다.
         let full = carried.unwrap_or_else(|| {
@@ -203,6 +206,58 @@ impl LayoutEngine {
             .collect();
         let content = self.stored_ordinary_row_cut_height(table, row, cut, &end, styles)?;
         (accepted > 0.0 && accepted < full).then_some((full - accepted).max(content))
+    }
+
+    /// 미완료 칸들이 함께 여는 마지막 원본 텍스트 프레임의 물리 끝이다.
+    /// 전체 내용 전진 합에는 앞 쪽 경계에서 접힌 간격도 들어 있으므로,
+    /// 같은 합의 잔여를 다시 예약하지 않고 저장 원점과 줄 끝을 소비한다.
+    fn stored_ordinary_closing_text_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let cells = self.original_ordinary_row_cells(table, row)?;
+        if cells.len() != cut.len() {
+            return None;
+        }
+        let mut owners = 0;
+        let mut height = 0.0_f64;
+        for (cell, &start) in cells.iter().zip(cut) {
+            let units = self.cell_units(cell, table, styles);
+            if start == units.len() {
+                continue;
+            }
+            let first = units.get(start)?;
+            let paragraph = cell.paragraphs.get(first.para_idx)?;
+            let previous = cell.paragraphs.get(first.para_idx.checked_sub(1)?)?;
+            if first.vis_start != 0
+                || !self.stored_plain_paragraph_restart(cell, table, previous, paragraph)
+            {
+                return None;
+            }
+            let range = Self::cell_cut_flow_range(cell, table, &units, start, units.len());
+            let mut previous_top = 0;
+            let mut bottom = 0;
+            for unit in &units[range] {
+                let para = cell.paragraphs.get(unit.para_idx)?;
+                for line in para.line_segs.get(unit.vis_start..unit.vis_end)? {
+                    if line.vertical_pos < previous_top {
+                        return None;
+                    }
+                    previous_top = line.vertical_pos;
+                    bottom = bottom.max(line.vertical_pos.checked_add(line.line_height)?);
+                }
+            }
+            let padding = cell.effective_padding(&table.padding);
+            let physical = bottom
+                .checked_add(i32::from(padding.top))?
+                .checked_add(i32::from(padding.bottom))?;
+            height = height.max(hwpunit_to_px(physical, self.dpi));
+            owners += 1;
+        }
+        (owners >= 2).then_some(height)
     }
 
     /// 종료 줄의 다음 줄 간격만 남은 컷은 새 내용·빈 밴드 소유자를 만들지 않는다.

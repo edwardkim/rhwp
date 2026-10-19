@@ -2149,6 +2149,20 @@ impl TypesetEngine {
                     || crossing_span_owns_tail))
             .and_then(|limit| {
             let row = end_row.checked_sub(1)?;
+            // 여러 저장 프레임에 걸친 내용은 다음 컷이 각각의 물리 상자를
+            // 선택한다. 온전한 내용 전진 합을 하나의 잔여 프레임으로 넘기지 않는다.
+            // 걸침 칸은 별도 물리 원장을 통해 뒤 행의 최소 공간을 소유한다.
+            if split_block_start.is_none()
+                && !table.cells.iter().any(|cell| {
+                    let first = usize::from(cell.row);
+                    cell.row_span > 1 && first <= row && row < first + usize::from(cell.row_span)
+                })
+                && !layout_engine.row_cut_remaining_is_single_stored_frame(
+                    table, row, &next_cut, None, styles,
+                )
+            {
+                return None;
+            }
             // 같은 일반 행을 다시 나누는 경우 앞 조각까지 차감한 물리 상자에서
             // 이번에 수용한 상자를 뺀다. 블록 컷의 별도 소유 공간은 유지한다.
             let carried = (row == cursor_row && !start_cut_is_block)
