@@ -5,7 +5,7 @@ use crate::model::{
     paragraph::{ColumnBreakType, LineSeg, Paragraph},
 };
 use crate::renderer::{
-    composer::{project_stored_soft_wraps, ParagraphBox},
+    composer::{project_stored_soft_wraps, projects_current_marker_geometry, ParagraphBox},
     page_layout::PageLayoutInfo,
     px_to_hwpunit,
     style_resolver::ResolvedStyleSet,
@@ -81,24 +81,10 @@ pub(crate) fn normalize(
         if let Some(width) = width {
             let style = styles.para_styles.get(paragraph.para_shape_id as usize);
             let box_ = ParagraphBox::body_for_style(width, style, dpi);
-            let extent = box_.effective();
-            // 좁은 저장 띠는 앞 문단의 어울림 소유일 수 있다. 현재의 전폭
-            // frame과 같은 물리 구간인 경우만 자동 줄 끝을 재검토한다.
-            let source_matches = box_.is_usable()
-                && !paragraph.line_segs.is_empty()
-                && paragraph.line_segs.iter().all(|line| {
-                    line.is_first_segment()
-                        && line.is_last_segment()
-                        && line.column_start == extent.start
-                        && line.segment_width == extent.end - extent.start
-                });
             // 현재 측정으로 더 적은 줄에 들어간다는 사실만으로 정상 저장 줄을
             // 무효화하지 않는다. 원문 문자에 없는 목록 마커는 문서 순서에서
             // 해소한 실제 기하를 갱신해야 하며, 같은 결과가 채움·높이에 참여한다.
-            let refreshes_marker_metrics =
-                crate::renderer::layout::list_marker_geometry(&paragraph, styles)
-                    .is_some_and(|marker| marker.marker_visible);
-            if source_matches && refreshes_marker_metrics {
+            if projects_current_marker_geometry(&paragraph, &box_, styles) {
                 let first = paragraph.line_segs[0].vertical_pos;
                 let frame = box_.frame(first);
                 if let Some((lines, spaces)) =

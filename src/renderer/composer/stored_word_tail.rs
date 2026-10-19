@@ -4,7 +4,61 @@ use super::{
     line_breaking, utf16_range_to_text_range, ComposedParagraph, ResolvedStyleSet, SpaceMetric,
 };
 use crate::model::paragraph::{LineSeg, Paragraph};
-use crate::renderer::layout_frame::LayoutFrame;
+use crate::renderer::layout_frame::{LayoutFrame, ParagraphBox};
+
+/// 원문 문자 밖의 목록 마커는 현재 해소한 기하로 줄 구성을 갱신한다.
+/// 본문과 셀이 같은 가로 상자 인증과 마커 소유 판정을 소비한다.
+pub(crate) fn projects_current_marker_geometry(
+    para: &Paragraph,
+    box_: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    let extent = box_.effective();
+    box_.is_usable()
+        && !para.line_segs.is_empty()
+        && para.line_segs.iter().all(|line| {
+            line.is_first_segment()
+                && line.is_last_segment()
+                && line.column_start == extent.start
+                && line.segment_width == extent.end - extent.start
+        })
+        && crate::renderer::layout::list_marker_geometry(para, styles)
+            .is_some_and(|marker| marker.marker_visible)
+}
+
+/// 앞선 물리 경계가 없는 마지막 자동 어절의 캐시 원점 되감김인가.
+/// 명시적 쪽/단과 다른 가로 상자는 실제 프레임 소유자로 남긴다.
+fn has_unmarked_final_word_rewind(para: &Paragraph) -> bool {
+    let Some((last, prefix)) = para.line_segs.split_last() else {
+        return false;
+    };
+    let Some(previous) = prefix.last() else {
+        return false;
+    };
+    let chars: Vec<_> = para.text.chars().collect();
+    let (start, _) = utf16_range_to_text_range(
+        &para.char_offsets,
+        para.line_seg_text_start(para.line_segs.len() - 1),
+        u32::MAX,
+        chars.len(),
+    );
+    start > 0
+        && start < chars.len()
+        && chars[start - 1].is_alphanumeric()
+        && chars[start].is_alphanumeric()
+        && !last.is_first_line_of_page()
+        && !last.is_first_line_of_column()
+        && last.vertical_pos >= 0
+        && last.vertical_pos < previous.vertical_pos
+        && last.column_start == previous.column_start
+        && last.segment_width > 0
+        && last.segment_width == previous.segment_width
+        && !prefix.windows(2).any(|pair| {
+            pair[1].is_first_line_of_page()
+                || pair[1].is_first_line_of_column()
+                || pair[1].vertical_pos < pair[0].vertical_pos
+        })
+}
 
 /// 저장 run과 현재 채움이 서로 다른 공백 전진을 사용하면 줄 분할도 재검토해야 한다.
 /// 같은 공백 메트릭의 정상 본문은 더 적은 줄로 들어간다는 이유만으로 무효화하지 않는다.
@@ -78,7 +132,8 @@ pub(crate) fn project_stored_soft_wraps(
         || (!para.controls.is_empty() && !supported_inline_picture)
         || para.text.contains('\n')
         || para.stored_text_partition_is_dirty()
-        || super::stored_row_fragments::crosses_physical_frame(para)
+        || (super::stored_row_fragments::crosses_physical_frame(para)
+            && !has_unmarked_final_word_rewind(para))
         || frame.models_exclusions()
         || para
             .line_segs

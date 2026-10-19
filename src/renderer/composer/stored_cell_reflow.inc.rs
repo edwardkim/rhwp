@@ -113,10 +113,12 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             styles,
             SpaceMetric::KoPubJustified,
         );
-    // 캐시 수용 실패의 처리 정책은 원본 저장 줄을 무효화할 근거가 아니다.
-    // 실제 공백 메트릭이 달라질 때만 어절 꼬리 재구성을 별도로 요청한다.
+    // 캐시 수용 실패 정책이나 줄 수 감소만으로 원본을 무효화하지 않는다.
+    // 본문과 같은 마커 기하 갱신과 실제 공백 메트릭 변경만 공통 프레임에 요청한다.
+    let refreshes_marker_metrics =
+        stored_word_tail::projects_current_marker_geometry(para, &paragraph_box, styles);
     let rejoinable_word_tail = !stored_geometry_policy.preserve_hwp3_origins
-        && regenerated_spaces_change_metrics
+        && (regenerated_spaces_change_metrics || refreshes_marker_metrics)
         && stored_word_tail::can_rejoin_stored_word_tail(
             para,
             &frame,
