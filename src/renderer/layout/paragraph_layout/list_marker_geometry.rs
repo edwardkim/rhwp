@@ -5,8 +5,8 @@ use super::{hwpunit_to_px, MarkerHead, ResolvedStyleSet, TextStyle};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct ListMarkerGeometry {
-    /// 마커가 첫 물리 줄에 점유하는 실제 글자 크기.
-    pub font_size_px: f64,
+    /// 마커 글자모양의 기본 크기. 상대 크기를 적용한 glyph 표시 크기와 구별한다.
+    pub line_font_size_px: f64,
     /// 첫 줄 시작에 더하는 양.
     pub first_line_px: f64,
     /// 이어지는 줄 시작에 더하는 양.
@@ -132,7 +132,7 @@ pub(super) fn list_marker_geometry_for(
         _ => 0.0,
     };
     ListMarkerGeometry {
-        font_size_px: style.effective_font_size(),
+        line_font_size_px: distance_font_size,
         first_line_px,
         rest_line_px,
         marker_dx_px: align_dx - area_px,
