@@ -20,6 +20,7 @@ mod prepared_page;
 mod region_plan;
 mod renderer;
 mod replay_policy;
+mod surface;
 mod svg_bitmap_mask;
 mod synthetic_typeface;
 mod text_replay;
@@ -32,3 +33,5 @@ pub use renderer::{
     native_skia_glyph_run_replay_proof, NativeGlyphRunReplayProof, NativeGlyphRunReplayProofReason,
     SkiaLayerRenderer,
 };
+
+pub use surface::SkiaSurfaceRenderOptions;
