@@ -67,10 +67,11 @@ impl TypesetEngine {
         let stored_complete_extent = self
             .stored_partial_fragment_complete_extent(input, budget, &scan)
             .or_else(|| self.stored_body_closing_fragment_extent(st, input, budget, &scan));
-        let block_acceptance = self.accept_stored_block_frame(continuation, input, budget, &scan);
+        let block_acceptance =
+            self.accept_stored_block_frame(st, continuation, input, budget, &scan);
         let mut fragment_block_frames = mt.fragment_block_frames.clone();
         let fragment_rows = if let Some(accepted) = &block_acceptance {
-            let range = (accepted.frame.start, accepted.frame.end);
+            let range = accepted.range;
             if !fragment_block_frames.contains(&range) {
                 fragment_block_frames.push(range);
             }
@@ -2245,7 +2246,7 @@ impl TypesetEngine {
                 page_end_band,
                 plain_cut_owns_blank_band,
             );
-        continuation.stored_block_frame = block_acceptance.map(|accepted| accepted.frame);
+        continuation.stored_block_frame = block_acceptance.and_then(|accepted| accepted.frame);
         continuation.advance(
             end_row,
             split_block_start,

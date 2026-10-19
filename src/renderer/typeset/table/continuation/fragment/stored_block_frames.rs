@@ -1,18 +1,110 @@
 //! 블록 내용 컷과 실제 수용한 원본 행 상자의 공통 전달.
 
-use crate::renderer::typeset::{BlockTableRowScan, TypesetEngine};
+use crate::renderer::typeset::{BlockTableRowScan, TypesetEngine, TypesetState};
 
 use super::super::{StoredBlockPhysicalFrame, TableContinuationCursor};
 use super::{FragmentBudget, FragmentInput};
 
 pub(super) struct StoredBlockAcceptance {
-    pub(super) frame: StoredBlockPhysicalFrame,
+    pub(super) frame: Option<StoredBlockPhysicalFrame>,
+    pub(super) range: (usize, usize),
     pub(super) rows: Vec<f64>,
     pub(super) extra: f64,
 }
 
 impl TypesetEngine {
     pub(super) fn accept_stored_block_frame(
+        &self,
+        st: &TypesetState,
+        cursor: &TableContinuationCursor,
+        input: FragmentInput<'_>,
+        budget: &FragmentBudget,
+        scan: &BlockTableRowScan,
+    ) -> Option<StoredBlockAcceptance> {
+        self.accept_stored_block_row_frame(cursor, input, budget, scan)
+            .or_else(|| self.accept_stored_block_page_frame(st, input, budget, scan))
+    }
+
+    /// 전체 원본 행의 잔고와 현재 저장 쪽 프레임은 별도 근거다.
+    fn accept_stored_block_page_frame(
+        &self,
+        st: &TypesetState,
+        input: FragmentInput<'_>,
+        budget: &FragmentBudget,
+        scan: &BlockTableRowScan,
+    ) -> Option<StoredBlockAcceptance> {
+        let first = scan.split_block_start?;
+        let (_, end, _) = input.source.measured_table.row_block_for(first);
+        let occupied = scan.split_block_physical_height?;
+        let table = input.source.row_geometry_table;
+        let layout = &input.prepared.layout_engine;
+        if !input.start.is_continuation
+            || !input.start.start_cut_is_block
+            || input.start.cursor_row != first
+            || scan.end_row != end
+            || scan.end_row_height_override.is_some()
+            || input.row_cursor_is_nested
+            || st.current_height > 0.5
+            || st.current_zone_y_offset != 0.0
+            || table.caption.is_some()
+            || !std::ptr::eq(table, input.source.table)
+            || !layout.row_block_cut_is_original_text_page(
+                table,
+                (first, end),
+                &input.start.start_cut,
+                &scan.split_end_cut,
+                input.source.styles,
+            )
+        {
+            return None;
+        }
+        let top = budget.fragment_placement.map_or(
+            st.current_height + budget.host_before_overhead + budget.vert_offset_overhead,
+            |placement| placement.table_top,
+        );
+        let before = scan.consumed - occupied;
+        let height = budget.source_frame_bottom? - top - budget.header_overhead - before;
+        let room = budget
+            .reflow_blank_avail_for_rows
+            .unwrap_or(budget.avail_for_rows)
+            .min(budget.avail_for_rows)
+            - before;
+        if !height.is_finite() || height < occupied || height > room {
+            return None;
+        }
+        let mut rows = input.source.measured_table.row_heights.clone();
+        let mut used = 0.0;
+        for row in first..end {
+            rows[row] = layout.row_block_cut_row_content_height(
+                table,
+                first,
+                end,
+                row,
+                &input.start.start_cut,
+                &scan.split_end_cut,
+                input.source.styles,
+            );
+            used += rows[row];
+        }
+        if used > height {
+            return None;
+        }
+        rows[end - 1] += height - used;
+        if std::env::var_os("RHWP_TABLE_DRIFT").is_some() {
+            eprintln!(
+                "TABLE_ACCEPTED_BLOCK_PAGE: pi={} rows={}..{} physical={:.6} content={:.6}",
+                input.source.para_index, first, end, height, occupied
+            );
+        }
+        Some(StoredBlockAcceptance {
+            frame: None,
+            range: (first, end),
+            rows,
+            extra: height - occupied,
+        })
+    }
+
+    fn accept_stored_block_row_frame(
         &self,
         cursor: &TableContinuationCursor,
         input: FragmentInput<'_>,
@@ -92,7 +184,8 @@ impl TypesetEngine {
                 frame.accepted, (remaining - height).max(0.0));
         }
         Some(StoredBlockAcceptance {
-            frame,
+            frame: Some(frame),
+            range: (first, end),
             rows,
             extra: height - occupied,
         })

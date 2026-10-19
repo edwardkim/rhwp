@@ -6,6 +6,86 @@ use crate::renderer::hwpunit_to_px;
 use super::{LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
+    /// 현재 소유한 원본 텍스트 컷이 독립된 저장 쪽 프레임을 여닫는가.
+    /// 앞뒤 조각의 중첩 개체를 현재 텍스트의 소유로 추정하지 않는다.
+    pub(crate) fn row_block_cut_is_original_text_page(
+        &self,
+        table: &Table,
+        range: (usize, usize),
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        use crate::model::{control::Control, paragraph::LineSeg};
+
+        let profile = self.profile.get();
+        if !profile.hwp5_stored_pagination_layout()
+            || profile.session_edited()
+            || table.common.treat_as_char
+            || table.cell_spacing != 0
+            || table.page_break != TablePageBreak::RowBreak
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+        {
+            return false;
+        }
+        let mut cells = Self::row_block_cells(table, range.0, range.1);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        if cells.is_empty() || cells.len() != start_cut.len() || cells.len() != end_cut.len() {
+            return false;
+        }
+        let mut opens_next_frame = false;
+        for ((cell, &start), &end) in cells.iter().zip(start_cut).zip(end_cut) {
+            let units = self.cell_units(cell, table, styles);
+            if cell.dirty_flag || start > end || end > units.len() {
+                return false;
+            }
+            if start == end {
+                if end != units.len() {
+                    return false;
+                }
+                continue;
+            }
+            if start == 0 || !units[start].page_frame_reset_before {
+                return false;
+            }
+            if end < units.len() {
+                if !units[end].page_frame_reset_before {
+                    return false;
+                }
+                opens_next_frame = true;
+            }
+            for unit in &units[start..end] {
+                let para = &cell.paragraphs[unit.para_idx];
+                if unit.reflowed_line_slot
+                    || unit.vis_end <= unit.vis_start
+                    || para.stored_text_partition_is_dirty()
+                    || para.cell_format_vpos_dirty
+                    || para
+                        .controls
+                        .iter()
+                        .any(|control| !matches!(control, Control::Header(_) | Control::Footer(_)))
+                    || !para
+                        .line_segs
+                        .get(unit.vis_start..unit.vis_end)
+                        .is_some_and(|lines| {
+                            lines.iter().all(|line| {
+                                line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                    && line.vertical_pos >= 0
+                                    && line.line_height > 0
+                                    && line.line_spacing >= 0
+                            })
+                        })
+                {
+                    return false;
+                }
+            }
+        }
+        opens_next_frame
+    }
+
     /// 실제 원본 줄·단일행 선언·걸침 셀의 저장 쪽 재시작이 함께 증명하는 행 상자.
     /// 편집/재조판과 중첩 개체는 `stored_body_text_cell_frame`에서 제외한다.
     /// 분리 괘선의 간격은 행과 별도 소유자이므로 이 연속 행 상자 계약을 쓰지 않는다.
