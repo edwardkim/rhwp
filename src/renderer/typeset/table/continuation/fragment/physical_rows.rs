@@ -127,7 +127,7 @@ impl TypesetEngine {
         band: f64,
         fragment_rows: &[f64],
     ) -> Option<f64> {
-        let (row, start_cut, end_cut) = cut;
+        let (row, _, end_cut) = cut;
         let source = input.source;
         let table = source.row_geometry_table;
         let layout = &input.prepared.layout_engine;
@@ -141,6 +141,7 @@ impl TypesetEngine {
         }
         if !row_cells_hold_only_text_lines(table, row) {
             return self.legacy_crossing_span_page_end_band(
+                st,
                 cursor,
                 input,
                 cut,
@@ -206,8 +207,10 @@ impl TypesetEngine {
 
     /// 개체를 품은 행의 종전 띠 몫: 걸침 칸마다 «선언 − 앞 행 − 끝 행 하한 − 뒤 행 내용» 의 최솟값과 나뉜 행의
     /// 선언 보존 몫 중 큰 쪽(21761835 2쪽·1342000 81쪽 근거).
+    #[allow(clippy::too_many_arguments)]
     fn legacy_crossing_span_page_end_band(
         &self,
+        st: &TypesetState,
         cursor: &TableContinuationCursor,
         input: FragmentInput<'_>,
         cut: (usize, &[usize], &[usize]),
@@ -215,7 +218,7 @@ impl TypesetEngine {
         band: f64,
         fragment_rows: &[f64],
     ) -> Option<f64> {
-        let (row, _, end_cut) = cut;
+        let (row, start_cut, end_cut) = cut;
         let source = input.source;
         let table = source.row_geometry_table;
         let layout = &input.prepared.layout_engine;

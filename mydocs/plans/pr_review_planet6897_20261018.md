@@ -3677,3 +3677,29 @@ patch-id까지 대조한 결과 추가45개가 남았다: #7965 후속21개와 �
 입력은 ignored output의 `open-planet6897-{intake,cherry-pick-plan}-20261019.json`,
 `open-planet6897-reviewer-verification-20261019.json`, `additional-source-pdf-sizes.json`에 있다.
 새 통합 head에서는 기존 검증 결과를 재사용하지 않고 영향 범위와 필수 검증을 다시 수행한다.
+
+
+### 추가 체리픽 적용과 메인터너 보정 재배치 완료
+
+통합 head `daa3ff3a5d9b328a3115e9f19513e5cac25e7cdc`에서 신규45개를 모두 적용했다.
+원 기여93개(기존48+신규45)는 `review/planet6897-sources-20261019`의
+`b7e58ecf5663e464258b630e162820c532dbb13a`까지 먼저 두고, 기존 메인터너 보정·기록148개를
+뒤에 재적용했다. 각 source trailer·author/email/date, 보정148개의 순서·메시지·author,
+로컬 PDF4개 SHA가 모두 보존됐다. `additional-picks-final-history-audit-20261019.json`에
+대응표를 남겼다. 원 PR26개 head는 적용 뒤 재조회해 변경 없음도 확인했다.
+
+충돌은 새 devel의 분리 모듈·저장 조판 계약과 추가 원본의 동작을 함께 보존하도록 해소했다.
+주요 연결은 저장/재조판 컷 분리, 텍스트 조각 ledger 기록, 페이지 기준 개체 흐름과 앞 간격 흡수,
+수식 공개 API/문서 모드 분리, 스캔 예약 높이/실제 그릴 높이 분리다. 폰트 cache의 원자적 기록과
+검증을 유지하면서 bitmap strike 제거 repair를 허용 목록에 추가했다. 독립 폰트 파일은 추가하지 않았다.
+
+`daa3ff3a5`의 첫 Native check에서 새 원본이 분리한 legacy page-end-band helper에
+기존 보정이 사용하는 `start_cut`·`TypesetState` 연결이 빠진 컴파일 오류4건을 확인했다.
+호출자의 동일 `cut`을 해체해 시작 컷을 보존하고 상태 인자를 직접 전달한다. 높이 계산식이나
+기대값을 바꾸지 않는 연결 보완이다. 해당 head의 실패 로그는
+`additional-picks-native-check.log`와 `additional-picks-compile-validation-results.json`에 남겼다.
+PNG sweep 단위24건은 통과했으며 전체 회귀·fresh WASM·전쪽 시각 검증을 대신하지 않는다.
+
+검토 중 upstream/devel이 #8078 의존성 통합 `efc52afb738bd408ac821c4e156101b8d26e5cbd`로
+갱신됐다. 변경11파일은 Actions·npm 의존성과 검토/오늘할일 기록이며 Rust 소스 변경은 없다.
+현재 연결 보완을 고정한 뒤 이 base로 재배치하고 새 head를 확인한다. PR 생성 승인은 별도로 받는다.
