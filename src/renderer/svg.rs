@@ -55,6 +55,8 @@ mod fallback_fonts;
 mod font_file_lookup;
 #[cfg(not(target_arch = "wasm32"))]
 mod system_fonts;
+#[cfg(not(target_arch = "wasm32"))]
+mod webfont_subset;
 #[cfg(all(test, not(target_arch = "wasm32")))]
 use font_file_lookup::FontFileName;
 #[cfg(not(target_arch = "wasm32"))]
@@ -4555,9 +4557,8 @@ fn known_bold_font_filenames(font_name: &str) -> Vec<&'static str> {
 /// serif(바탕/명조/궁서)·라틴 폰트에는 적용하지 않는다(시각 정합과 무관). 실제 저작권
 /// 폰트가 탐색 경로에 있으면 그쪽이 우선한다(대체는 탐색 경로 말단의 `ttfs/opensource/`).
 ///
-/// 주의: 현 임베딩 subsetter(typst, PDF용)는 cmap 을 제거하므로 @font-face 임베딩은
-/// 브라우저 `<text>` 매핑에 무효. 본 대체의 실효 경로는 **폴백 체인 + fontconfig/웹폰트로
-/// 설치된 ExtraLight** 이다(Task #1224 보고서 참조).
+/// SVG 부분집합은 Unicode cmap과 웹 조판 정보를 보존한다. 설치된 원 프로그램과
+/// 최후 후보의 선택 순서는 부분집합 생성 여부와 별개다.
 #[cfg(not(target_arch = "wasm32"))]
 fn korean_gothic_substitute(font_name: &str) -> Option<&'static str> {
     let lower = font_name.to_ascii_lowercase();
@@ -4907,9 +4908,8 @@ fn append_local_bold_font_face_css(css: &mut String, font_name: &str) {
 
 /// 실제 Bold face를 data-URI로 추가한다.
 ///
-/// 서브셋 경로도 Bold는 전체 파일을 사용한다. 현재 subsetter 산출물은 browser
-/// `<text>`에서 필요한 cmap를 보존하지 않는 경우가 있어, real Bold 대신
-/// synthetic bold로 되돌아가는 것보다 원본 face를 보존하는 편이 정확하다.
+/// Bold는 기존의 실제 전체 프로그램 공급을 유지한다. Regular의 부분집합 결과로
+/// Bold 프로그램을 대신하거나 브라우저의 synthetic bold를 강제하지 않는다.
 #[cfg(not(target_arch = "wasm32"))]
 fn append_embedded_bold_font_face_css(
     css: &mut String,
@@ -5058,75 +5058,36 @@ pub fn generate_font_style(
                         if let Some(font_data) =
                             svg_selected_font_data(&font_data, font_name, chars)
                         {
-                            let outline_data = svg_outline_font_data(&font_data, chars);
-                            if matches!(outline_data, std::borrow::Cow::Owned(_))
-                                || matches!(font_data, std::borrow::Cow::Owned(_))
-                            {
-                                let b64 =
-                                    base64::engine::general_purpose::STANDARD.encode(&outline_data);
-                                css.push_str(&format!(
-                                "@font-face {{ font-family: \"{}\"; src: url(\"data:font/ttf;base64,{}\") format(\"truetype\"); }}\n",
-                                escape_css_font_name(font_name), b64,
+                            let (data, subset) = match webfont_subset::subset(&font_data, chars) {
+                                Ok(data) => (std::borrow::Cow::Owned(data), true),
+                                Err(error) => {
+                                    eprintln!(
+                                        "  [font-embed] {} 부분집합 미지원: {} → 전체 face 공급",
+                                        font_name, error
+                                    );
+                                    (font_data, false)
+                                }
+                            };
+                            let (mime, format) = if subset || data.starts_with(b"OTTO") {
+                                ("font/opentype", "opentype")
+                            } else {
+                                ("font/ttf", "truetype")
+                            };
+                            let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
+                            css.push_str(&format!(
+                                "@font-face {{ font-family: \"{}\"; src: url(\"data:{};base64,{}\") format(\"{}\"); }}\n",
+                                escape_css_font_name(font_name), mime, b64, format,
                             ));
-                                if codepoints[font_name].bold {
-                                    let bold_lookup =
-                                        plan_svg_font_file_lookup(font_name, font_paths, true);
-                                    append_embedded_bold_font_face_css(
-                                        &mut css,
-                                        font_name,
-                                        &bold_lookup,
-                                    );
-                                }
-                                continue;
+                            if codepoints[font_name].bold {
+                                let bold_lookup =
+                                    plan_svg_font_file_lookup(font_name, font_paths, true);
+                                append_embedded_bold_font_face_css(
+                                    &mut css,
+                                    font_name,
+                                    &bold_lookup,
+                                );
                             }
-                            // codepoint → glyph ID 변환 (ttf-parser cmap 사용)
-                            let glyphs = ttf_parser::Face::parse(&font_data, 0)
-                                .map(|face| {
-                                    chars
-                                        .iter()
-                                        .filter_map(|character| face.glyph_index(*character))
-                                        .map(|glyph| glyph.0)
-                                        .collect::<Vec<_>>()
-                                })
-                                .unwrap_or_default();
-                            // HashSet의 문자 순서와 무관하게 안정적인 글리프 ID를 사용해
-                            // 부분 글꼴 바이트와 삽입하는 base64 결과를 일정하게 만든다.
-                            let remapper =
-                                subsetter::GlyphRemapper::new_from_glyphs_sorted(&glyphs);
-                            // 서브셋 추출
-                            match subsetter::subset(&font_data, 0, &remapper) {
-                                Ok(subset_data) => {
-                                    let b64 = base64::engine::general_purpose::STANDARD
-                                        .encode(&subset_data);
-                                    css.push_str(&format!(
-                                    "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); }}\n",
-                                    escape_css_font_name(font_name), b64,
-                                ));
-                                    if codepoints[font_name].bold {
-                                        let bold_lookup =
-                                            plan_svg_font_file_lookup(font_name, font_paths, true);
-                                        append_embedded_bold_font_face_css(
-                                            &mut css,
-                                            font_name,
-                                            &bold_lookup,
-                                        );
-                                    }
-                                    eprintln!(
-                                        "  [font-embed] {} → 서브셋 {:.1}KB ({}글자, 원본 {:.1}KB)",
-                                        font_name,
-                                        subset_data.len() as f64 / 1024.0,
-                                        chars.len(),
-                                        font_data.len() as f64 / 1024.0
-                                    );
-                                    continue;
-                                }
-                                Err(e) => {
-                                    eprintln!(
-                                        "  [font-embed] {} 서브셋 실패: {} → local() 폴백",
-                                        font_name, e
-                                    );
-                                }
-                            }
+                            continue;
                         }
                     }
                 }

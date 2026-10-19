@@ -290,19 +290,22 @@ fn production_svg_sorts_multiple_document_embedded_font_rules() {
 
 #[test]
 fn subset_font_bytes_are_deterministic_for_multiple_codepoints() {
-    let bytes = std::fs::read("samples/para-001.hwp").expect("sample");
-    let mut document = HwpDocument::from_bytes(&bytes).expect("parse sample");
-    let mut model = document.document().clone();
-    for font in model.doc_info.font_faces.iter_mut().flatten() {
-        font.name = "한컴돋움".to_string();
-        font.is_embedded = false;
-        font.resolved_bin_data_id = None;
-    }
-    let paragraph = &mut model.sections[0].paragraphs[0];
-    paragraph.text = "가나다ABC123".to_string();
-    paragraph.char_count = 9;
-    paragraph.char_offsets = (0..9).collect();
-    document.set_document(model);
+    use base64::Engine;
+    use rhwp::document_core::DocumentCore;
+
+    // C435: public blank/insert/font/format/save operations, not a paragraph
+    // replacement retaining unrelated stored line widths. The same saved input
+    // has a Hancom2020 Print reference; Native/fresh WASM p1 both raw100%.
+    let text = "가나다ABC123";
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().expect("public blank");
+    core.insert_text_native(0, 0, 0, text)
+        .expect("public insert");
+    let font_id = core.find_or_create_font_id_native("한컴돋움");
+    core.apply_char_format_native(0, 0, 0, 9, &format!(r#"{{"fontId":{font_id}}}"#))
+        .expect("public font assignment");
+    let bytes = core.export_hwp_native().expect("public save");
+    let document = HwpDocument::from_bytes(&bytes).expect("reopen saved input");
     let font_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource");
 
     let outputs = (0..8)
@@ -318,6 +321,60 @@ fn subset_font_bytes_are_deterministic_for_multiple_codepoints() {
         .collect::<Vec<_>>();
     assert!(outputs[0].contains("data:font/opentype;base64,"));
     assert!(outputs.windows(2).all(|pair| pair[0] == pair[1]));
+
+    fn embedded_face(svg: &str) -> Vec<u8> {
+        let uri = svg.split("data:font/").nth(1).expect("embedded face");
+        let encoded = uri
+            .split_once(";base64,")
+            .expect("font data URI")
+            .1
+            .split('"')
+            .next()
+            .expect("font bytes");
+        base64::engine::general_purpose::STANDARD
+            .decode(encoded)
+            .expect("valid base64")
+    }
+
+    // A PDF-only subset can be deterministic yet unusable by browser <text>:
+    // glyph IDs alone do not preserve Unicode lookup, metrics or outlines.
+    let full_svg = document
+        .render_page_svg_with_fonts(0, FontEmbedMode::Full, &[font_path])
+        .expect("full-face control");
+    assert_eq!(svg_text(&full_svg), text, "saved source text ownership");
+    assert_eq!(svg_text(&outputs[0]), text, "no missing/duplicate glyphs");
+    let full_bytes = embedded_face(&full_svg);
+    let subset_bytes = embedded_face(&outputs[0]);
+    let full = ttf_parser::Face::parse(&full_bytes, 0).expect("full sfnt");
+    let subset = ttf_parser::Face::parse(&subset_bytes, 0).expect("subset sfnt");
+    assert!(
+        subset.tables().cmap.is_some(),
+        "web Unicode cmap is required"
+    );
+    assert!(
+        subset.tables().os2.is_some(),
+        "web font metadata is required"
+    );
+    assert_eq!(subset.units_per_em(), full.units_per_em());
+    assert_eq!(subset.ascender(), full.ascender());
+    assert_eq!(subset.descender(), full.descender());
+    for ch in text.chars() {
+        let source = full.glyph_index(ch).expect("source Unicode glyph");
+        let target = subset.glyph_index(ch).expect("subset Unicode glyph");
+        assert_ne!(target.0, 0, "U+{:04X} must not become .notdef", ch as u32);
+        assert_eq!(
+            subset.glyph_hor_advance(target),
+            full.glyph_hor_advance(source)
+        );
+        assert_eq!(
+            subset.glyph_bounding_box(target),
+            full.glyph_bounding_box(source)
+        );
+        assert!(
+            subset.glyph_bounding_box(target).is_some(),
+            "visible glyph outline"
+        );
+    }
 }
 
 #[test]

@@ -3753,3 +3753,51 @@ Chrome 로드가 정상이다. 공개 Noto의 기존 PDF용 subsetter 출력31,3
 없고 Chrome이 실제 로드를 거부했다. MIME 기대값만 TTF 허용으로 완화하지 않았다.
 SVG 코드·검사·의존성 변경은 아직 없고 원 증거는 ignored repair67에 있다. 전체 미완료
 상태를 유지하며 PR은 최종 보고 뒤 새 승인을 받아 진행한다.
+
+
+## C435 SVG 부분 글꼴의 웹 Unicode 계약과 실제 소비 복구
+
+2026-10-20 KST. #6520 생산 SVG 경로의 원 구현9ee885와 cherry-pick fa21c26,
+#6668 검토 기록을 대조했다. 기존 검사는 결정성/MIME만 확인했다. 실제 시스템 한컴돋움은
+보정 전체 TTF로 남아 MIME 검사에서 실패했고, public Noto의 PDF용 부분집합은 cmap/OS2가
+없어 Chrome에서 거부됐다. MIME 기대값을 완화하지 않고 웹용 Unicode 부분집합으로 고쳤다.
+
+`font_style_requests`의 실제 face/문자→선택 face의 기존 정규화→skera의 Unicode/GSUB
+closure·GPOS·이름·힌팅 보존→data-URI→실제 FontFace/SVG raster로 연결했다.
+미지원 CFF 단일 face·legacy kern·부분집합 금지 표시에서는 선택한 전체 프로그램을 공급한다.
+세 대조군의 전체 byte동일과 실제 Chrome 로드를 최종96에서 확인했다. 실제 Bold와 문서
+내장 프로그램은 기존 공급을 유지하며 공유 측정·줄 배치에 문서별 예외를 넣지 않았다.
+
+최종 검토 중 독립 glyph가 없는 VS를 필터링해 cmap14 closure에서 누락하는 경계도
+재현·보정했다. 원 요청 Unicode를 모두 전달한다. 합성 A+VS→B의 윤곽/hmtx와 Chrome 폭
+26.2799988px/PNG가 원본과 동일해졌고 보정 전에는24.3199921px의 A로 돌아갔다.
+glyph ID 재배정 뒤 이름 차이를 오류로 판정했던 최초 진단은 실제 윤곽 hash와 폭으로 정정했다.
+이는 글꼴 자원 계약이며 독립 Print의 VS 문서 조판 완료라고 주장하지 않는다.
+
+기존 검사 입력은 para-001의 문단만 바꾸면서 관련 없는 저장 줄 폭을 남겼다. 공개 blank/
+insert/font 등록/서식/save/reopen으로 정상 입력을 만들고 같은 저장본을 독립 한컴2020
+Print와 Native/fresh WASM으로 먼저 확인한 뒤 보강했다. 첫 수동 모델 대조의70.99664/
+63.74932%와 새 입력의 결과는 서로 다른 입력이다. 실제 첫 PDF face는 바탕이었고 새 PDF는
+돋움이다. raw 스트림 잔재만으로 그 저장 차이 원인을 확정한 것은 아니며 첫 자료도 보존했다.
+
+새 입력은 전1쪽이다. 최종96/97의 직접 PNG 양쪽100.00000%, 정식 검사와 같은 public-only
+SVG 양쪽97.85523%다. 별도 pdftoppm audit는 각각100.00000/98.62920%로 분리했다.
+public SVG의98% 수용이나 완전 픽셀 일치를 주장하지 않고 새 절대 px 핀은 넣지 않았다.
+검사에는 기존8회 결정성을 유지하고 cmap/OS2·em/수직 메트릭·9자 glyph/전진폭/외곽 상자와
+내용 순서·누락·중복을 추가했다. 이전68에서 cmap 누락1FAIL→최종96에서1PASS이며
+prepare 후 실제 suite015의25건 PASS/243선택 제외,test1.891초/전체135.495초,exit0이다.
+NativeSkia lib Clippy30.787초도 통과했다. 원 para-001을 쓰는 다른 정상 경로 검사는 유지했다.
+
+Native96 build122.614초/exit0, source2199파일을 고정했다. Mac wrapper97은 Native 전용
+helper만 달라 byte동일 WASM82 target을 재사용했음을 기록했다. root pkg/public/실제7736
+초기 HTTP 응답 hash를 다시 확인했다. Docker 최적화 통과가 아니다. 실제 public Subset은
+전체2,817,876→4,128bytes이며 Chrome의 Full/Subset SVG PNG byte동일이다.
+최종 전쪽 TSV를 재산출하고8개 완료 manifest·PNG8쌍을 감사했다. review/overlay8장은
+직접 판독한90/92 패널과 byte동일도 대조했다. 최종 TSV8개·PNG8개·출처/입력/PDF hash는
+assets의 `rebase-4a07d3ae-20261019/svg-unicode-subset/`에 보존했다.
+
+잘못된 compat2020·PDFium 없는 기본 Python·standalone extern 누락·기본 Vite7700 접속은
+증거를 보존하고 명시 환경으로 정정했다. 최종 초기 응답은 기존7736을 대상으로 재실행했다.
+로그/JSON/중간 글꼴·SVG는 ignored output만 사용했다. 최종 증거는 repair96~105이며
+전체 회귀의 다른 실패·PII 물리 꼬리·수식·전체 문서/actual36는 아직 남아 있다.
+지침·GitHub·remote 변경은 하지 않았다. PR 준비 완료로 처리하지 않고 사용자 승인을 유지한다.
