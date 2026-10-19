@@ -279,14 +279,22 @@ impl LayoutEngine {
                     let frame = super::row_block_cut::CellCutFrame::new(
                         self, cell, table, styles, &units, fit,
                     );
+                    let relaxed_hard_break = self.row_block_relaxes_stored_hard_break(
+                        table,
+                        &Self::row_block_cells(table, start_row, end_row),
+                    );
                     let mut advance = 0.0;
                     while fit < units.len() {
                         // 원본 프레임의 다음 유닛은 남은 잉크 예산으로 앞당겨 소비하지 않는다.
                         // 일반 블록 컷이 쓰는 같은 유닛의 소유 경계를 실제 걸침 컷도 소비한다.
-                        if fit > su
-                            && self.stored_span_cut_preserves_line_slots(table, cell)
+                        if self.stored_span_cut_preserves_line_slots(table, cell)
                             && !units[fit].reflowed_line_slot
-                            && units[fit].hard_break_before
+                            && frame.honors_hard_break_before(
+                                fit,
+                                advance,
+                                accepted_height,
+                                relaxed_hard_break,
+                            )
                         {
                             break;
                         }
