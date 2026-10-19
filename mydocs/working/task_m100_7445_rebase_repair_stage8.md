@@ -3383,3 +3383,92 @@ WASM은`b26d2d2293e8e5bffb9b1faa04d98fea0a341f0269d9bd97af55935f7530ab57`로
 정상이라고 판정하지 않는다. 저장된 수식 기준선·후속 줄/셀 소유와 한컴 재계산의 실제 경로를
 계속 확인하며, 기대값·baseline·허용 오차를 바꾸거나 검사를 제거하지 않았다.
 이8건은 진단 완료이며 전체 회귀·시각 수용·PR 준비 완료가 아니다.
+
+
+## C429 HFT 기준선 편집의 내부 프레임 보정과 기존 검사 재검토
+
+C428의 정확한 편집 상태를 더 대조했다. inline67/80의 독립 한컴2024 Print는 내용 스트림
+SHA가 같고, cell90/95도 서로 같다. `repair33-baseline-origin-diagnosis/independent-origins.json`은
+같은 분자·분모·괘선 좌표를 확인한다. 정확한 cell90 입력을 한컴에서 HWPX로 다시 저장하면
+수식은 baseLine67·height2808HU로 정규화된다. 원본 저장 baseline을 전부67로 덮어쓰는
+규칙으로 확대하지 않는다. 유효한 HWP3의66과 다른 소유 프레임은 계속 보존한다.
+
+소비 경로는 `flow_metrics_hwp → composer의 줄 기준선 → paragraph_layout의
+host baseline - equation baseline → 바깥 EquationNode bbox → layout_for_paint의 내부
+layout.y → SVG/Native/Canvas`다. 저장 백분율은 바깥 슬롯의 글줄 정렬을 결정하는데,
+HFT 논리 글줄·분수 프로그램의 표시 원점까지 같은 값으로 다시 옮겨 실제 글리프가 이동했다.
+공통 HFT 글줄/분수 프레임을 root와 피연산자에서 함께 생산하고 그 프레임이 있는 HFT paint는
+프로그램의 내부 원점을 유지한다. 지원한 프레임을 얻지 못한 종류의 기존 경로와 현대 수식은
+유지한다. 문서ID/쪽 번호 분기, 저장 cache 삭제, baseline 강제 변경은 추가하지 않았다.
+
+처음의 후보34는 내부 이동만 제거해 기존 실패 입력4쪽은100%가 됐지만, HFT의 순수 글줄
+논리 프레임을 만들지 않아 단독 한글 대조군이 후퇴했다. 이 후보를 최종으로 채택하지 않고
+`repair34-legacy-paint-origin-candidate/review-decision.json`에 보존했다. 후보36은 독립
+9/12/18pt 생성본에서 이미 확인한 글줄1.2em/84%, 분수2.34em/67% 계약을 공통 root에도
+사용한다. 단독 CJK 분수의 registration inset 소유도 유지하며 현대 matrix frame으로
+다시 포장하지 않는다. 이는 표시 glyph의 ink box와 글줄의 논리 크기를 구분하는 보정이다.
+
+기존 실패 입력4개는 그대로 두고 새 생산자에서도 같은 공개 속성 편집 순서를 실행했다.
+inline67/80은 이전 입력과 byte가 같고, cell90/95는 생산 높이가2760→2808HU로 바뀐다.
+새 셀 입력2개는 정확한 파일을 각각 한컴2024 Print로 다시 출력했다. 후보34에서 만든
+새 입력과 후보36에서 재생성한 입력의 SHA가 모두 같음도 확인했다. 기존 실패 입력을
+새 입력의 성공으로 대체하지 않았다. `repair35-current-edit-state-qualification/`에 원본
+대조·새 Print job/제품/출력 방식·Native36 생산자·전1쪽 TSV를 보존한다.
+
+| 입력 상태 | Native36 raw | fresh WASM37 raw |
+| --- | ---: | ---: |
+| 기존 inline67/80 각각1쪽 | 각각100.00000% | 각각100.00000% |
+| 기존 cell90/95 각각1쪽 | 각각100.00000% | 각각100.00000% |
+| 새 생산 cell90/95 각각1쪽 | 각각100.00000% | 각각100.00000% |
+
+전체6상태·양쪽12출력은 쪽수1/1이며192DPI·2px raw 조건을 유지했다. 상태별 Native/PDF
+PNG hash는4그룹이며 각 그룹의 review와 overlay를 직접 확대 판독했다. 두 피연산자·괘선의
+소속/위치/순서가 유지되며 얇은 윤곽의 색상·안티앨리어싱 차이는 남는다.100%는 엄격 RGB
+동일성의 주장이 아니다. `repair39-baseline-contract-prototype/qualified-image-groups.json`과
+`direct-read.json`에 원본 이미지·SHA와 판독을 연결했다.
+
+기존 두 검사를 이제 정정했다. 바깥 예약 bbox가 반드시 이동해야 한다는 기대값과 셀 내부
+표시 원점에 source baseline delta를 다시 더하던 기대값을 제거하고, 실제 공개 수식 SVG의
+두 글리프 원점·내용 순서·단일 수식/셀 소유를 검사한다. source baseline을 줄이 소비한다는
+관계는 유지한다. 셀 포함 검사는 합계의 부동소수점 반올림만8ULP로 허용하며 물리 여백을
+늘리지 않는다. 새로운 고정 전체 SVG hash/golden을 만들지 않았다. 기존 완료 분수의
+독립 Print ±2CSSpx 괘선 양끝 검사도 그대로 실행한다.
+
+같은 정정 prototype9건은 frozen27에서7PASS/2FAIL, 후보36에서9PASS다. 수정 전 실제 실패는
+glyph 원점의 중복 이동을 검출하며, 이전 바깥 상자 assertion만 고친 prototype의 통과와
+구분한다. 정식 자동 수집 경로의 실행 결과는 아래 확정 로그를 따른다.
+
+기존 집중14쪽의 이전 후보27/29 대비0.1%p 이상 하락은 양쪽0건이다. 원본 sample16의6쪽은
+Native99.40948→99.38125%(-0.02823%p), WASM99.81323→99.79231%(-0.02092%p)다.
+이 미세 차이도 기록한다. 복합 CJK/괄호 표본의 Native 최저75.58331/55.22232%,
+WASM75.92796/52.29732% 미달은 남아 있다. 일반 현대 수식16쪽192DPI의 기존 미달
+Native88.19667/WASM89.01922%도 유지된다.96DPI 전체 통과 결과와 섞지 않는다.
+이 값들 때문에 이번 국소 보정을 전체 수식 지원/PR 준비 완료로 보고하지 않는다.
+
+Native36 빌드exit0(1분45초), fresh WASM37 locked web/pkg/no-opt Mac 대체 빌드exit0
+(199.002초)이며 Docker 최적화가 아니다. source ledger1840파일과 root pkg/Studio public의
+JS/WASM hash를 확인했다. WASM은`0706f7a344f77b7eec2099ca4776068838498d2819395f4a635c89613f3f4a27`다.
+실제 Studio7736 초기화의 새 JS/WASM HTTP200 응답도 fresh 빌드와 일치한다. JS는 Vite의
+정확한 URL 변환/inline source map, WASM은 raw byte hash로 확인했다. 초기 첫 계측은
+추가 응답의 CDP body 취득 오류로 실패했으며 원인을 preflight로 확정하지 않는다. 원 실패를
+보존하고 실제 응답을 다시 수집해 성공했다. 이는 실제 문서 paint36건·글꼴/CanvasKit 준비
+검증을 대신하지 않는다. 증거는 `repair37-fresh-wasm/`과 `repair40-browser-initial-response/`다.
+
+남은 복합 수식의 공통 원인도 분리했다. 같은12pt 독립 저장본의 단순 분수4종은 Native의
+논리 폭보다 각각159HU 크고, 중첩 분수는583HU 크다. 중첩 분수의 CJK 원점은2.6~3.4CSSpx
+왼쪽이다. `repair33-baseline-origin-diagnosis/cjk-logical-slot-width-differences.json`과
+벡터 원점 대조에 기록했으며, 아직 이 폭 차이를 임의 상수로 보정하거나 정상 기대값으로
+고정하지 않았다. 괄호 프로그램·복합 프레임의 실제 독립 원인을 계속 보정한다.
+
+정식11건 결과: **11PASS/0FAIL**, test 실행1.356초·컴파일2분15초·전체139.522초, exit0.
+기존 수식 계약9건과 참여 수식/제목 간격2건이며 전체 nextest 통과로 확대하지 않는다.
+`--prepare` 뒤 실제 자동 배정은 legacy_contract→suite022, participating_frame→suite021이다.
+초기 정식 명령은 nextest에서 -j가 test thread 별칭인데 --test-threads와 중복되어 파싱 단계에서
+종료했다. 테스트는 실행되지 않았고 원 로그를 보존했다. 빌드 jobs는 환경 CARGO_BUILD_JOBS=8로
+유지하고 중복 인자를 제거해 두 target을 순차 Cargo 실행 하나에서 다시 검증한다.
+prototype 최초 누락 serde_json extern의 컴파일 오류도 별도 보존했으며 before/after의 실제
+검사 결과와 섞지 않는다. fmt·diff 확인 및 manifest prepare는 성공했다.
+최신 전체 nextest·Native/fresh WASM 전쪽·incoming179조건 보존·실제 소비 경로는 완료 전이다.
+PR은 사용자 승인 후 진행한다.
+
+대표 전후 review/overlay와6상태×양쪽 TSV 원본은 `mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/legacy-baseline-edit/`에 보존했다.

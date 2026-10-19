@@ -75,7 +75,7 @@ use super::{
 // line 1.2em/84%, fraction 2.34em/67%. The display font's glyph bounds are
 // separate from these logical slots. Do not substitute the modern math face's
 // different frame table for the versionless source program.
-fn legacy_operand_frame(value: &LayoutBox, fs: f64) -> Option<(f64, f64)> {
+pub(super) fn legacy_operand_frame(value: &LayoutBox, fs: f64) -> Option<(f64, f64)> {
     match &value.kind {
         LayoutKind::Text(_)
         | LayoutKind::Number(_)

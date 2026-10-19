@@ -126,6 +126,10 @@ pub(crate) const AXIS_HEIGHT: f64 = 0.25;
 /// 텍스트 기본 baseline 비율 (상단에서 baseline까지)
 const TEXT_BASELINE: f64 = 0.8;
 
+pub(super) fn legacy_logical_frame(value: &LayoutBox, fs: f64) -> Option<(f64, f64)> {
+    fraction_geometry::legacy_operand_frame(value, fs)
+}
+
 impl EqLayout {
     pub fn new(font_size: f64) -> Self {
         Self {
@@ -178,20 +182,26 @@ impl EqLayout {
             ..*self
         };
         let result = root.layout_node(node, self.font_size);
-        if self.legacy_hft_metrics
-            && result.width > 0.0
-            && !standalone_cjk_fraction_owns_inset(node)
-        {
+        if self.legacy_hft_metrics && result.width > 0.0 {
+            // The same HFT line/fraction frame owns both root paint and edited
+            // size. A display glyph's ink box is not the logical font line.
+            let (height, baseline) = legacy_logical_frame(&result, self.font_size)
+                .unwrap_or((result.height, result.baseline));
             let mut body = result;
-            let inset = self.font_size * 0.22;
+            let inset = if standalone_cjk_fraction_owns_inset(node) {
+                0.0
+            } else {
+                self.font_size * 0.22
+            };
             body.x = inset;
+            body.y = baseline - body.baseline;
             return LayoutBox {
                 font_size: self.font_size,
                 x: 0.0,
                 y: 0.0,
                 width: body.width + inset,
-                height: body.height,
-                baseline: body.baseline,
+                height,
+                baseline,
                 kind: LayoutKind::Row(vec![body]),
             };
         }

@@ -1,6 +1,8 @@
 //! Synthetic model/edit/paint contracts. The completed baseline67 page also
 //! protects independent Print rule endpoints (Native/fresh WASM raw100%).
 //! The current generator serialization and direct-reading evidence are in stage8 C427.
+//! Baseline-only edits are qualified against exact same-input independent Print
+//! in stage8 C429: original/current cell states and inline states are raw100% in both backends.
 //! The public document consumer exposes the actual EquationNode layout. No new
 //! test-only API or source-side unit-test baseline is needed.
 use rhwp::model::control::{Control, Equation};
@@ -57,6 +59,43 @@ fn rendered(core: &DocumentCore) -> (BoundingBox, EquationNode) {
         "one source equation, no loss or duplicate"
     );
     equations.remove(0)
+}
+
+// Inspect the actual public SVG paint origins, rather than the outer flow slot.
+fn cjk_paint_origins(bounds: &BoundingBox, paint: &EquationNode) -> Vec<(String, f64, f64)> {
+    let xml = format!("<svg>{}</svg>", paint.svg_content);
+    let svg = roxmltree::Document::parse(&xml).expect("public equation SVG");
+    svg.descendants()
+        .filter(|n| n.has_tag_name("text"))
+        .map(|n| {
+            assert!(
+                n.attribute("transform").is_none(),
+                "these CJK controls use direct origins"
+            );
+            (
+                n.text().unwrap().to_owned(),
+                bounds.x + n.attribute("x").unwrap().parse::<f64>().unwrap(),
+                bounds.y + n.attribute("y").unwrap().parse::<f64>().unwrap(),
+            )
+        })
+        .collect()
+}
+
+fn assert_same_origins(before: &[(String, f64, f64)], after: &[(String, f64, f64)]) {
+    assert_eq!(
+        before.len(),
+        2,
+        "one numerator and denominator, no duplicate"
+    );
+    assert_eq!(before.len(), after.len());
+    for (before, after) in before.iter().zip(after) {
+        assert_eq!(before.0, after.0, "source content and order are preserved");
+        assert!(
+            (before.1 - after.1).abs() <= 1.0 / 75.0,
+            "baseline-only edit keeps the inner horizontal origin"
+        );
+        assert!((before.2 - after.2).abs() <= 1.0 / 75.0, "baseline-only edit keeps the HFT program's inner vertical origin: {before:?} -> {after:?}");
+    }
 }
 
 #[test]
@@ -129,29 +168,42 @@ fn legacy_cjk_fallback_does_not_replace_the_stored_flow_frame() {
 }
 
 #[test]
-fn legacy_cjk_baseline_percentage_owns_inline_alignment() {
+fn legacy_cjk_baseline_edit_preserves_the_inner_program_frame() {
     let mut equation = equation();
     equation.baseline = 50;
     let mut core = document(equation);
     core.set_equation_properties_native(0, 0, 0, None, None, r#"{"baseline":67}"#)
         .expect("public baseline edit to source percentage");
-    let first = rendered(&core).0;
+    let first = rendered(&core);
     assert_eq!(
         core.document().sections[0].paragraphs[0].line_segs[0].baseline_distance,
         (2808.0_f64 * 0.67).round() as i32
     );
     core.set_equation_properties_native(0, 0, 0, None, None, r#"{"baseline":80}"#)
         .expect("second public baseline edit");
-    let second = rendered(&core).0;
+    let second = rendered(&core);
     assert_eq!(
         core.document().sections[0].paragraphs[0].line_segs[0].baseline_distance,
         (2808.0_f64 * 0.80).round() as i32
     );
-    assert_eq!((first.width, first.height), (second.width, second.height));
-    assert_ne!(
-        first.y, second.y,
-        "actual inline paint must consume the edited source baseline"
+    assert_eq!(
+        (first.0.width, first.0.height),
+        (second.0.width, second.0.height)
     );
+    assert_eq!(first.1.para_index, Some(0));
+    assert_eq!(second.1.para_index, Some(0));
+    assert_eq!(first.1.script, "가 over 나");
+    assert_eq!(first.1.script, second.1.script);
+    let before = cjk_paint_origins(&first.0, &first.1);
+    let after = cjk_paint_origins(&second.0, &second.1);
+    assert_eq!(
+        before.iter().map(|p| p.0.as_str()).collect::<Vec<_>>(),
+        ["가", "나"]
+    );
+    // Exact independent Print streams for the 67/80 edit states are identical.
+    // The stored percentage belongs to the slot's host alignment, not a second
+    // translation of the glyph program inside that slot.
+    assert_same_origins(&before, &after);
 }
 
 #[test]
@@ -247,7 +299,7 @@ fn cell_baseline_edit_reflows_the_cell_owner_and_preserves_equation_membership()
             cell_bounds(child, out);
         }
     }
-    let mut previous: Option<(f64, i32)> = None;
+    let mut previous: Option<(Vec<(String, f64, f64)>, i32)> = None;
     // Keep both percentages below the degenerate baseline == text_height
     // boundary. The common paragraph consumer intentionally reserves a
     // descender at that boundary; it is not a linear baseline edit contract.
@@ -278,20 +330,33 @@ fn cell_baseline_edit_reflows_the_cell_owner_and_preserves_equation_membership()
         cell_bounds(&tree.root, &mut cells);
         assert_eq!(cells.len(), 1, "one cell owner");
         let cell = &cells[0];
-        assert!(bounds.y >= cell.y && bounds.y + bounds.height <= cell.y + cell.height);
-        let relative_y = bounds.y - cell.y;
+        let cell_end = cell.y + cell.height;
+        let equation_end = bounds.y + bounds.height;
+        let roundoff = 8.0 * f64::EPSILON * cell_end.abs().max(equation_end.abs()).max(1.0);
+        assert!(bounds.y + roundoff >= cell.y && equation_end <= cell_end + roundoff);
+        let relative = BoundingBox::new(
+            bounds.x - cell.x,
+            bounds.y - cell.y,
+            bounds.width,
+            bounds.height,
+        );
+        let origins = cjk_paint_origins(&relative, &paint);
+        assert_eq!(
+            origins.iter().map(|p| p.0.as_str()).collect::<Vec<_>>(),
+            ["가가", "나"]
+        );
         let source_baseline = paragraph.line_segs[0].baseline_distance;
-        if let Some((old_relative_y, old_source_baseline)) = previous {
-            // An inline table's own page origin may move when its content's
-            // baseline changes. Compare the equation in its actual cell frame,
-            // not an unsupported monotonic direction in page coordinates.
-            let expected_delta = f64::from(source_baseline - old_source_baseline) / 75.0;
+        if let Some((old_origins, old_source_baseline)) = previous {
             assert!(
-                (relative_y - old_relative_y - expected_delta).abs() <= 1.0 / 75.0,
-                "cell-relative paint follows the same source baseline delta: old={old_relative_y}, new={relative_y}, source_delta={expected_delta}, cell={cell:?}, equation={bounds:?}, line={:?}", paragraph.line_segs[0]
+                source_baseline > old_source_baseline,
+                "the edited cell line still consumes its source baseline"
             );
+            // Independent Print keeps both operands at the same cell-relative
+            // origin for these baseline-only edits. Do not add the source
+            // baseline delta to the equation's own display program again.
+            assert_same_origins(&old_origins, &origins);
         }
-        previous = Some((relative_y, source_baseline));
+        previous = Some((origins, source_baseline));
     }
 }
 
