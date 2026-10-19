@@ -2980,3 +2980,39 @@ C417 PNG/PDF 명령과 실행 내용은 제품 코드·해당 검사·입력에 
 증적은 ignored `repair7-skia-{lib,png,pdf}.log`, `repair7-skia-results.json`,
 `repair8-skia-lib.log`, `repair8-skia-state.json`이다. 전체 nextest와 잔여6건의 통과를
 이 root lib 결과로 대신하지 않는다.
+
+
+## C419 98% 완료 쪽의 중요한 표 경계 px 회귀
+
+사용자가 요청한 중요 위치 보호를6쪽의 평가 비율 표에 추가했다. C417에서 같은 문서
+전64쪽의 Native/fresh WASM 최저가 각각95.25071/95.66182%이고6쪽은98.16591/98.56406%다.
+직접 Native/WASM review·overlay를 판독했으며, 표의 외곽·앞 caption·뒤 평점산식이 보존된다.
+수식·글꼴의 남은 미세 차이와 이 문서의 다른 쪽 하락은 별도로 남긴다.
+이미 보호 중인3쪽99%대 제목·표 검사는 유지했다. 이번에 복구한 저장 원점 재시작을
+통과하는 실제 경계는6쪽이므로 이쪽을 선택했다.
+
+`verified_sample16_2024_print_boundaries`에 새
+`completed_page_six_keeps_the_evaluation_table_and_its_source_neighbors_in_the_print_frame`를 추가했다.
+원본 표의 내용으로 section/paragraph/control을 찾고 전64쪽에서6쪽에 한 번만 나타남,
+앞 caption→표→뒤 평점산식 순서·비겹침·본문 포함을 보호한다. 독립 PDF6쪽 표 외곽 path의
+stroke 중심을 pt×96/72로 환산한 네 경계117.697337/603.340007/709.218669/733.277344CSSpx에만
+±2CSSpx를 사용한다. 고정 화면 영역으로 검사 대상을 찾거나 가시 식의 전체 SVG를 핀으로 삼지 않는다.
+
+보정 전 frozen repair3에서 실제 위쪽595.093333과 독립603.340007이8.246674CSSpx 달라
+1FAIL(0.29s), repair7에서1PASS(0.29s)였다. 실제 source를 직접 연결한 진단을 보존했다.
+manifest를 다시 준비해1640sources/7155staticattrs를 확인하고 현재 자동 배정
+`regression_suite_020`을 동적으로 조회했다. 공식 nextest에서도1실행1PASS/248skip,
+테스트0.307s·전체118.012s·exit0을 확인했다. 이전 target 번호를 하드코딩하지 않았다.
+
+최종 원본 TSV64쪽×양쪽과6쪽 review·overlay4개는
+[`page6-source-frame`](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/page6-source-frame/README.md)에
+바이트 그대로 보존했다. README에 원본/PDF/생산자/파일별 SHA와 Native code·WASM 재사용 출처를 연결했다.
+로그와 중간 JSON은 ignored `repair9-page6-*-result.log`, `repair9-page6-nextest.log`,
+`repair9-page6-nextest-state.json`, `sample16-p6-independent-table-paths.json`에만 둔다.
+
+잔여4모듈의 현행 Native 직접 연결 진단도 수행해29PASS/6FAIL을 확인했다. 두 수식 baseline,
+원본 WMF 분홍색 mask 소유, 빈 문단 편집 폭, #4138 첫/마지막 이어받기의 기존6실패이며
+새6쪽 검사는 통과했다. source-equivalent frozen Native의 focused 진단으로 기록하며 전체 nextest나
+정식 해당 suite의 완료로 대신하지 않는다. 첫 시도의 다른 serde_json dependency identity 선택으로
+생긴 compile 오류는 실제 검사 결과가 아니며 수정한 의존성으로만 실행했다.
+현재 PR 준비 완료가 아니며 기존6실패·시각 하락·전체 범위 검증을 계속한다.

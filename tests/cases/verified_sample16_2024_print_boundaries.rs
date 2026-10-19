@@ -354,3 +354,96 @@ fn sample16_2024_empty_tail_keeps_its_editor_caret_owner() {
     assert_eq!(carets[0]["w"], 0.0);
     assert!(carets[0]["h"].as_f64().unwrap() > 0.0);
 }
+
+#[test]
+fn completed_page_six_keeps_the_evaluation_table_and_its_source_neighbors_in_the_print_frame() {
+    // C417: 전64쪽 Native/fresh WASM >=90%, p6=98.16591/98.56406%, 직접 review/overlay.
+    // 같은 원본/PDF SHA·192DPI PNG·96CSSpx 좌표·독립 PDF path 근거: stage8 C419.
+    let core = load();
+    let mut owners = Vec::new();
+    for (section, data) in core.document().sections.iter().enumerate() {
+        for (paragraph, para) in data.paragraphs.iter().enumerate() {
+            for (control, item) in para.controls.iter().enumerate() {
+                let Control::Table(table) = item else {
+                    continue;
+                };
+                let content: String = table
+                    .cells
+                    .iter()
+                    .flat_map(|cell| &cell.paragraphs)
+                    .map(|para| normalized(&para.text))
+                    .collect();
+                if content.contains("기술능력평가")
+                    && content.contains("입찰가격평가")
+                    && content.contains("제출한가격입찰서")
+                {
+                    owners.push((section, paragraph, control));
+                }
+            }
+        }
+    }
+    assert_eq!(owners.len(), 1, "내용으로 식별한 평가 비율 표의 원본 소유");
+    let (section, paragraph, control) = owners[0];
+    let paragraphs = &core.document().sections[section].paragraphs;
+    assert!(
+        normalized(&paragraphs[paragraph - 1].text).contains("기술제안서평가및입찰가격평가비율")
+    );
+    assert!(normalized(&paragraphs[paragraph + 1].text).contains("입찰가격평점산식"));
+
+    fn collect<'a>(
+        node: &'a RenderNode,
+        owner: (usize, usize, usize),
+        out: &mut Vec<&'a RenderNode>,
+    ) {
+        if matches!(&node.node_type, RenderNodeType::Table(table)
+            if (table.section_index, table.para_index, table.control_index)
+                == (Some(owner.0), Some(owner.1), Some(owner.2))
+                && table.cell_context.is_none())
+        {
+            out.push(node);
+        }
+        for child in &node.children {
+            collect(child, owner, out);
+        }
+    }
+
+    let owner = (section, paragraph, control);
+    let mut page_owners = Vec::new();
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let mut found = Vec::new();
+        collect(body(&tree.root), owner, &mut found);
+        page_owners.extend(std::iter::repeat_n(page, found.len()));
+    }
+    assert_eq!(page_owners, [5], "독립 Print 6쪽의 표 소유·누락·중복 방지");
+    let tree = core.build_page_render_tree(5).unwrap();
+    let container = body(&tree.root);
+    let mut found = Vec::new();
+    collect(container, owner, &mut found);
+    let table = found[0];
+    let caption = single_line(container, (section, paragraph - 1));
+    let following = single_line(container, (section, paragraph + 1));
+    assert!(caption.bbox.y + caption.bbox.height <= table.bbox.y);
+    assert!(table.bbox.y + table.bbox.height <= following.bbox.y);
+    assert!(
+        table.bbox.x >= container.bbox.x
+            && table.bbox.x + table.bbox.width <= container.bbox.x + container.bbox.width
+    );
+    // PDF의 표 외곽 stroke 중심(pt→96CSSpx). 그림/글자 ROI로 대상을 선택하지 않는다.
+    for (name, actual, expected) in [
+        ("평가 비율 표 왼쪽", table.bbox.x, 117.697337),
+        ("평가 비율 표 위쪽", table.bbox.y, 603.340007),
+        (
+            "평가 비율 표 오른쪽",
+            table.bbox.x + table.bbox.width,
+            709.218669,
+        ),
+        (
+            "평가 비율 표 아래쪽",
+            table.bbox.y + table.bbox.height,
+            733.277344,
+        ),
+    ] {
+        near_print(actual, expected, name);
+    }
+}
