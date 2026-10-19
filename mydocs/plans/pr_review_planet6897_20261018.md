@@ -3793,3 +3793,34 @@ HWP3/변환 출처/저장 왕복11개다. 후보에서 같은 의미의 검사�
 pdf/assets/output에서 찾지 못했다. 실제 info는 한컴2020 11.0.0.8808 저장본이다.
 새 PDF가 필요하면 canonical MCP client의명시적 engine2020 Print를 사용하며,
 기존 PDF가 없는 이 대조군만 새로 만든다. 관련 원문/Print SHA와 출력을 matrix에 연결한다.
+
+
+### 누적 적용 뒤 기능 보존 pilot의 실제 실패와 공통 보정 방향
+
+통합 producer dfb48728900d4d70a88e517104cf24fc44abd78b와 새 base efc52afb7을
+같은 원문·독립 Print·글꼴·compat·96 DPI에서 Native 17조건50쪽으로 대조했다.
+80168 p61은 base raw98.81402 → 후보37.26118이며, 22081993은 Print/base121쪽과
+달리 후보127쪽이다. float_push_spacing_before_continuation p5/p6도 각각
+99.77629→95.32478, 93.44295→87.54666으로 하락했다. 1342000은 base420쪽과
+후보418쪽 모두 Print415쪽과 달라, 번호별 하락과 실제 내용 소속을 구분한다.
+전체 검증이나 PR 준비 완료로 판정하지 않는다. 측정·입력 SHA는
+`rebase-preservation-native-pilot-comparison.json`과 각 silhouette_manifest에 남겼다.
+
+80168의 실제 row_step 경로는 row12의 완결 첫 문단17.333px를 남은18.347px에
+수용하는 end_cut [1,1]을 생산했지만, 뒤 최소 조각 문턱에서 다시 행 전체를 이월한다.
+독립 Print60쪽은 첫 문단까지, 61쪽은 다음 문단인 “하는 규제”부터 소유한다.
+현재 후보의 실제 library로 실행한 두 진단은 컴파일 exit0, 실행 exit101이며
+80168의 endRow12(독립 기대13)와 대조군127쪽(독립 기대121)을 실제로 검출했다.
+이 진단은 정식 Cargo 회귀를 대체하지 않는다. before 로그와 명령은
+`rebase-complete-paragraph-cuts-before{.log,-results.json}`에 보존했다.
+
+공통 보정은 완결 문단 경계에도 실제 문단 keep 계약을 적용하는 방향이다.
+물리 상자 예약·예산 비교는 유지하고, 예산 안의 온전한 문단을 고정 px 최소 조각
+문턱으로 다시 이월하지 않도록 한다. 문서 식별자·좌표 분기는 추가하지 않는다.
+우선 작은 경계와 영향 쪽을 다시 실행하고 방향이 확인된 뒤 큰 검증을 진행한다.
+아직 보정 효과는 미검증이다.
+
+후보 집중 검사의 별도 컴파일 실패는 새 base가 추가한 Fraction의 axis_height와
+rule_thickness 필드를 원 기여의 재귀 match가 열거하지 않은 E0027이다. numer/denom의
+원 검사는 유지하고 `..`로 새 필드를 수용한다. 해당 실행은 런타임 검사가 없었으므로
+통과 건수로 계산하지 않으며, 수정 뒤 정식 검사를 다시 실행한다.

@@ -1386,9 +1386,9 @@ impl TypesetEngine {
                     &res.end_cut,
                     styles,
                 );
-            // 문단 내부 컷의 고아 줄 계약과 문단 사이 새 행 조각의 최소 점유는 다르다.
-            // 내부 컷은 실제 문단 유지 지시를 따르고, 진행 셀이 모두 문단 끝에서
-            // 나뉘는 조각은 수용·배치가 공유하는 물리 상자로 최소 점유를 확인한다.
+            // 문단 내부 컷과 완결 문단 사이의 컷 모두 실제 문단 유지 지시를 따른다.
+            // 완결 문단 컷에도 수용·배치가 공유하는 물리 상자를 예약하되,
+            // 그 예산에 맞는 온전한 문단을 고정 px 고아 줄 문턱으로 다시 이월하지 않는다.
             let plain_cut_completes_paragraphs = plain_paragraph_keep_contract
                 && layout_engine.row_cut_completes_unlinked_plain_paragraphs(
                     table,
@@ -1397,8 +1397,6 @@ impl TypesetEngine {
                     &res.end_cut,
                     styles,
                 );
-            let plain_internal_cut_keep =
-                plain_paragraph_keep_contract && !plain_cut_completes_paragraphs;
             let complete_list_item_keep = plain_cut_completes_paragraphs
                 && layout_engine.row_cut_closes_independent_list_items(
                     table,
@@ -1487,7 +1485,7 @@ impl TypesetEngine {
             if r > cursor_row
                 && (defer_single_unit_row_start
                     || (!cellbreak_complete_unit_keep
-                        && !plain_internal_cut_keep
+                        && !plain_paragraph_keep_contract
                         && !complete_list_item_keep
                         && !stored_page_reset_keep
                         && !stored_plain_reset_boundary_keep

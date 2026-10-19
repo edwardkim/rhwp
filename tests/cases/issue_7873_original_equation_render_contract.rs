@@ -28,7 +28,7 @@ fn unit_letters(layout: &LayoutBox, style: Option<FontStyleKind>, out: &mut Stri
                 unit_letters(child, style, out);
             }
         }
-        LayoutKind::Fraction { numer, denom } => {
+        LayoutKind::Fraction { numer, denom, .. } => {
             unit_letters(numer, style, out);
             unit_letters(denom, style, out);
         }
