@@ -120,6 +120,7 @@ impl NativeDocumentSession {
             self.renderer = std::cell::OnceCell::from(renderer);
             self.fonts = next;
             self.font_generation = generation;
+            self.region_cache.get_mut().invalidate();
             Ok(true)
         }
         #[cfg(not(feature = "native-skia"))]
