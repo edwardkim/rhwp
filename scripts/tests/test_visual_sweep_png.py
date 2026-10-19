@@ -264,6 +264,43 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
                         before, after = before[:8] + before[12:], after[:8] + after[12:]
                     self.assertEqual(after, before, tag)
 
+    def test_outline_face_drops_embedded_bitmap_strikes_only(self):
+        from fontTools.ttLib import TTFont
+        from fontTools.ttLib.sfnt import SFNTWriter
+        import hashlib
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            inputs = root / 'input'
+            inputs.mkdir()
+            fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPExactFaceSmoke.ttc'
+            source = inputs / 'strikes.ttf'
+            strikes = {'EBDT': bytes([0, 2, 0, 0]), 'EBLC': bytes([0, 2, 0, 0, 0, 0, 0, 0])}
+            with TTFont(fixture, fontNumber=0, lazy=True) as font, source.open('wb') as output:
+                tags = sorted([*font.reader.keys(), *strikes])
+                writer = SFNTWriter(output, len(tags), font.sfntVersion)
+                for tag in tags:
+                    writer[tag] = strikes[tag] if tag in strikes else font.reader[tag]
+                writer.close()
+            adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest(),
+                write_json_atomic=lambda p, v: p.write_text(json.dumps(v)))
+            catalogue = json.loads(png.font_catalog(adapter, root, [inputs], root).read_text())
+            record = catalogue['faces'][0]
+            self.assertEqual(record['repairs'], ['drop-embedded-bitmap-strikes'])
+            with TTFont(source, lazy=True) as original, TTFont(Path(record['path']), lazy=True) as actual:
+                self.assertEqual(set(actual.reader.keys()), set(original.reader.keys()) - set(strikes))
+                for tag in actual.reader.keys():
+                    before, after = original.reader[tag], actual.reader[tag]
+                    if tag == 'head':
+                        before, after = before[:8] + before[12:], after[:8] + after[12:]
+                    self.assertEqual(after, before, tag)
+
+    def test_bitmap_only_face_keeps_its_strikes(self):
+        self.assertEqual(png.embedded_bitmap_strike_tags({'EBDT', 'EBLC', 'cmap', 'head'}), frozenset())
+        self.assertEqual(png.embedded_bitmap_strike_tags({'EBDT', 'EBLC', 'EBSC', 'glyf'}),
+                         frozenset({'EBDT', 'EBLC', 'EBSC'}))
+        self.assertEqual(png.embedded_bitmap_strike_tags({'CFF ', 'cmap'}), frozenset())
+
     def test_cmap_repair_preserves_other_tables_and_duplicate_sources(self):
         from fontTools.ttLib import TTFont
         from fontTools.ttLib.sfnt import SFNTWriter, calcChecksum

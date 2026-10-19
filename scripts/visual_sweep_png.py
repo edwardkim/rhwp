@@ -157,16 +157,20 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     italic = bool(font['head'].macStyle & 2) if 'head' in font else False
                     path = source
                     repaired_cmap = repair_terminal_cmap(font.reader['cmap'], font['maxp'].numGlyphs) if 'cmap' in font else None
-                    if collection or repaired_cmap is not None:
+                    dropped = embedded_bitmap_strike_tags(font.reader.keys())
+                    if collection or repaired_cmap is not None or dropped:
                         resource_dir.mkdir(exist_ok=True)
                         path = resource_dir / f'{digest}-{index}.ttf'
-                        write_font_face(font, path, repaired_cmap)
+                        write_font_face(font, path, repaired_cmap, dropped)
+                    repairs = ['cmap-format4-terminal-notdef'] if repaired_cmap is not None else []
+                    if dropped:
+                        repairs.append('drop-embedded-bitmap-strikes')
                     records.append({'path': str(path.resolve()), 'source': str(source.resolve()),
                                     'sourceSha256': digest, 'sha256': vs.sha256_file(path),
                                     'faceIndex': index, 'families': names, 'weight': weight,
                                     'style': 'italic' if italic else 'normal',
                                     'nameRecordErrors': name_errors,
-                                    'repairs': ['cmap-format4-terminal-notdef'] if repaired_cmap is not None else []})
+                                    'repairs': repairs})
             finally:
                 if collection:
                     collection.close()
@@ -198,17 +202,33 @@ def font_family_names(font) -> tuple[list[str], list[dict]]:
     return sorted(names), errors
 
 
-def write_font_face(font, path: Path, repaired_cmap: bytes | None) -> None:
+def write_font_face(font, path: Path, repaired_cmap: bytes | None, dropped=frozenset()) -> None:
     """원본 SFNT 테이블을 복사한다. 글리프·메트릭·경계·날짜를 재컴파일하지 않는다."""
     from fontTools.ttLib.sfnt import SFNTWriter
     # TTFont.save는 읽어 둔 테이블을 재컴파일하고 CFF 전체의 bbox를 계산한다.
     # face 공급에는 directory/checksum 갱신과 명시한 cmap 종료 항목 수정만 필요하다.
-    tags = sorted(font.reader.keys())
+    tags = sorted(tag for tag in font.reader.keys() if tag not in dropped)
     with path.open('wb') as output:
         writer = SFNTWriter(output, len(tags), font.sfntVersion)
         for tag in tags:
             writer[tag] = repaired_cmap if tag == 'cmap' and repaired_cmap is not None else font.reader[tag]
         writer.close()
+
+
+EMBEDDED_BITMAP_STRIKE_TAGS = frozenset({'EBDT', 'EBLC', 'EBSC'})
+
+
+def embedded_bitmap_strike_tags(tags) -> frozenset:
+    """외곽선 글꼴에 함께 든 흑백 비트맵 strike 테이블. 외곽선이 없으면 버리지 않는다.
+
+    한/글 Print PDF와 Native PNG는 외곽선으로 그린다. 브라우저 canvas는 strike가 있는
+    글꼴에서 그 비트맵을 고르고, HBATANG.TTF(한컴바탕, 12·14·16ppem strike)는 한글
+    글자를 빈칸으로 그렸다 — 같은 글꼴의 Latin은 그려져 WASM 쪽만 글자가 사라졌다.
+    """
+    tags = set(tags)
+    if not tags & {'glyf', 'CFF ', 'CFF2'}:
+        return frozenset()
+    return frozenset(tags & EMBEDDED_BITMAP_STRIKE_TAGS)
 
 
 def repair_terminal_cmap(data: bytes, glyph_count: int) -> bytes | None:
