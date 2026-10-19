@@ -818,3 +818,25 @@ fn stored_fragment_table_does_not_bleed_a_landscape_boundary_row() {
         "198쪽은 행 96 부터 통째로"
     );
 }
+
+/// 한/글이 줄 정보를 남기지 않은 셀(저장 글줄 없음)도 문단 끝 컷은 유효한 행 분할 경계다. 80168 hwp 표
+/// `pi=516`(24×14) 행 12 의 왼 칸은 두 문단(「1. 국제조약 등에 따라 동일하게 적용 되어야」 / 「하는 규제」)
+/// 이고, 위 행에서 내려온 걸침 칸(「기타」·「12.규제일몰제」)이 행 윗변을 가로지른다. 한/글 2024 PDF 는 60쪽
+/// 끝에 첫 문단을 두고 61쪽을 「하는 규제」로 연다. 수정 전 rhwp 는 저장 글줄이 없다는 이유로 문단 유지
+/// 계약을 적용하지 않아 25px 최소 상단 문턱(첫 조각 17.3px)으로 행 12 를 통째로 61쪽에 넘겼다.
+#[test]
+fn no_line_seg_cell_paragraph_end_is_a_row_split_boundary() {
+    let core = core(SAMPLE_80168);
+    let (_, end, _, end_cut) = table_fragment(&core, 59, 516);
+    assert_eq!(
+        (end, end_cut.clone()),
+        (13, vec![1, 1]),
+        "60쪽은 행 12 첫 문단에서 닫는다"
+    );
+    let (start, _, start_cut, _) = table_fragment(&core, 60, 516);
+    assert_eq!(
+        (start, start_cut),
+        (12, end_cut),
+        "61쪽은 같은 컷에서 잇는다"
+    );
+}
