@@ -851,10 +851,10 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
         .find(|node| {
             matches!(
                 &node.node_type,
-                RenderNodeType::TextRun(run)
-                    if run.text.contains("그림") && run.text.contains("1.")
+                RenderNodeType::TextRun(run) if run.text.contains("그림")
             )
         })
+        .filter(|_| rendered_text.contains("그림 1."))
         .unwrap_or_else(|| {
             panic!(
                 "OLE caption should render as visible figure text for {}: rendered={:?}",
