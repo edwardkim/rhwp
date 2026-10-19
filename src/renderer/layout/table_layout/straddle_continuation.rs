@@ -121,4 +121,58 @@ impl LayoutEngine {
                 physical: a.physical.max(b.physical),
             })
     }
+
+    /// 수용한 조각의 쪽 끝 빈 띠를 경계를 넘는 걸침 칸마다 누적한다.
+    /// 내용 컷과 실제 상자 원장도 보존하고, 경계를 다 지난 칸은 버린다.
+    pub(crate) fn straddle_page_bands_after_fragment(
+        table: &crate::model::table::Table,
+        carried_bands: &[crate::renderer::pagination::StraddleCellCarry],
+        next_row: usize,
+        band: f64,
+        owns_blank_band: bool,
+    ) -> Vec<crate::renderer::pagination::StraddleCellCarry> {
+        table
+            .cells
+            .iter()
+            .enumerate()
+            .filter(|(index, cell)| {
+                // 같은 행에서 재개할 때 내용 컷이 0→0이어도 앞 조각이
+                // 실제 공간을 사용했을 수 있다. 내용과 물리 prefix를 함께
+                // 유지해야 새 첫 상자로 오인해 선언 높이를 다시 예약하지 않는다.
+                // 미접촉 미래 셀은 앞 조각의 수용 목록에 없다.
+                let started_on_own_row = cell.row as usize == next_row
+                    && carried_bands.iter().any(|carry| {
+                        carry.cell_index == *index
+                            && (carry.next_unit.is_some_and(|unit| unit > 0)
+                                || carry.fragment_cut.is_some_and(|(start, end)| end > start)
+                                || carry
+                                    .accepted_physical_height
+                                    .is_some_and(|height| height.is_finite() && height > 0.0))
+                    });
+                cell.row_span > 1
+                    && ((cell.row as usize) < next_row || started_on_own_row)
+                    && next_row < cell.row as usize + cell.row_span as usize
+            })
+            .map(|(index, _)| {
+                let before = carried_bands
+                    .iter()
+                    .find(|carry| carry.cell_index == index)
+                    .map_or(0.0, |carry| carry.physical_height);
+                let accepted = carried_bands.iter().find(|carry| carry.cell_index == index);
+                crate::renderer::pagination::StraddleCellCarry {
+                    cell_index: index,
+                    physical_height: before + band.max(0.0),
+                    owns_blank_band: owns_blank_band
+                        || accepted.is_some_and(|carry| carry.owns_blank_band),
+                    accepted_physical_height: accepted
+                        .and_then(|carry| carry.accepted_physical_height),
+                    accepted_before_fragment: None,
+                    next_unit: accepted.and_then(|carry| {
+                        carry.fragment_cut.map(|(_, end)| end).or(carry.next_unit)
+                    }),
+                    fragment_cut: None,
+                }
+            })
+            .collect()
+    }
 }
