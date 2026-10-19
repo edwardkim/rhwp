@@ -5,6 +5,9 @@ use std::io::{Read, Write};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
 
+/// Shared input ceiling for the frontend and this decoder policy.
+pub const DEFAULT_INPUT_BYTES: usize = 64 * 1024 * 1024;
+
 /// Stream bytes retain the originating request's budget through object clones.
 #[derive(Clone, Debug, Default)]
 pub struct StreamData {
@@ -73,7 +76,8 @@ impl From<String> for StreamData {
 }
 
 /// Explicit limits for one PDF import; zero never means unlimited.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PdfImportLimits {
     /// Input byte limit checked before the constructor's copy.
     pub input_bytes: usize,
@@ -122,7 +126,7 @@ pub struct PdfImportLimits {
 impl Default for PdfImportLimits {
     fn default() -> Self {
         Self {
-            input_bytes: 16 * 1024 * 1024,
+            input_bytes: DEFAULT_INPUT_BYTES,
             stream_bytes: 32 * 1024 * 1024,
             codec_allocation_bytes: 32 * 1024 * 1024,
             decoded_bytes: 256 * 1024 * 1024,
@@ -154,12 +158,64 @@ impl std::fmt::Debug for CodecScratch {
     }
 }
 
+/// The first failed reservation; successful counters are never incremented by it.
+#[derive(Clone, Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportLimitFailure {
+    /// Stable category of the first failed reservation.
+    pub reason: &'static str,
+    /// Successful charges at that counter before the rejected operation.
+    pub used: Option<usize>,
+    /// Amount rejected before it was charged or allocated.
+    pub requested: Option<usize>,
+    /// Applicable counter ceiling; absent for non-counter rejections.
+    pub limit: Option<usize>,
+}
+
+/// Request-local work observations, not process live heap/RSS measurements.
+#[derive(Clone, Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportBudgetSnapshot {
+    /// Cumulative decoded/copy/predictor work successfully charged.
+    pub decoded_bytes: usize,
+    /// Cumulative private codec storage requested, including released blocks.
+    pub codec_allocated_bytes: usize,
+    /// Parsed object values charged by this request.
+    pub parsed_objects: usize,
+    /// Collection and xref entries charged by this request.
+    pub collection_entries: usize,
+    /// Lexically parsed operators, including repeated parses.
+    pub operators: usize,
+    /// Bytes consumed by text-showing operators.
+    pub text_bytes: usize,
+    /// Emitted text spans before postprocessing.
+    pub spans: usize,
+    /// Page-tree and indirect-object traversal work, including cache hits.
+    pub reference_visits: usize,
+    /// XObject invocations, including repeated paint.
+    pub xobject_visits: usize,
+    /// Actual bounded parser calls, not interpreter invocations.
+    pub content_parse_calls: usize,
+    /// Parsed page operator cache hits.
+    pub page_operator_cache_hits: usize,
+    /// Decoded page stream cache hits.
+    pub page_stream_cache_hits: usize,
+    /// Decoded Form stream cache hits.
+    pub form_stream_cache_hits: usize,
+    /// First fatal reservation, if any; snapshotting does not clear it.
+    pub failure: Option<ImportLimitFailure>,
+}
+
 /// Shared accounting with a sticky fatal state; not a global allocation tracker.
 #[derive(Debug)]
 pub struct ImportBudget {
     /// Immutable request policy.
     pub limits: PdfImportLimits,
     decoded: AtomicUsize,
+    decoded_limit: AtomicUsize,
+    operator_limit: AtomicUsize,
+    span_limit: AtomicUsize,
+    entry_limit: AtomicUsize,
     codec_allocated: AtomicUsize,
     objects: AtomicUsize,
     entries: AtomicUsize,
@@ -173,7 +229,11 @@ pub struct ImportBudget {
     active_references: AtomicUsize,
     xobject_visits: AtomicUsize,
     failed: AtomicBool,
-    failure_reason: std::sync::Mutex<Option<&'static str>>,
+    failure_reason: std::sync::Mutex<Option<ImportLimitFailure>>,
+    content_parse_calls: AtomicUsize,
+    page_operator_cache_hits: AtomicUsize,
+    page_stream_cache_hits: AtomicUsize,
+    form_stream_cache_hits: AtomicUsize,
     // At most one idle codec block per request; live streams own their blocks.
     codec_scratch: CodecScratch,
 }
@@ -211,6 +271,10 @@ impl ImportBudget {
         Ok(Self {
             limits,
             decoded: AtomicUsize::new(0),
+            decoded_limit: AtomicUsize::new(limits.decoded_bytes),
+            operator_limit: AtomicUsize::new(limits.operators),
+            span_limit: AtomicUsize::new(limits.spans),
+            entry_limit: AtomicUsize::new(limits.entries),
             codec_allocated: AtomicUsize::new(0),
             objects: AtomicUsize::new(0),
             entries: AtomicUsize::new(0),
@@ -226,7 +290,47 @@ impl ImportBudget {
             codec_scratch: CodecScratch(std::sync::Mutex::new(None)),
             failed: AtomicBool::new(false),
             failure_reason: std::sync::Mutex::new(None),
+            content_parse_calls: AtomicUsize::new(0),
+            page_operator_cache_hits: AtomicUsize::new(0),
+            page_stream_cache_hits: AtomicUsize::new(0),
+            form_stream_cache_hits: AtomicUsize::new(0),
         })
+    }
+
+    /// Narrow work ceilings once the host knows the selected pages. Existing
+    /// consumption and the first failure remain intact; this can never raise a
+    /// limit. Call before starting extraction workers.
+    pub fn restrict_work_limits(&self, decoded: usize, operators: usize) -> Result<()> {
+        self.check()?;
+        if decoded == 0 || operators == 0 {
+            return Err(self.reject("zero work budget"));
+        }
+        self.decoded_limit.fetch_min(decoded, Ordering::Relaxed);
+        self.operator_limit.fetch_min(operators, Ordering::Relaxed);
+        self.charge_decoded(0)?;
+        self.charge(
+            &self.operators,
+            0,
+            self.operator_limit.load(Ordering::Relaxed),
+            "content operators",
+        )
+    }
+
+    /// Narrow output/metadata work without clearing previously consumed values.
+    pub fn restrict_structure_limits(&self, spans: usize, entries: usize) -> Result<()> {
+        self.check()?;
+        if spans == 0 || entries == 0 {
+            return Err(self.reject("zero structure budget"));
+        }
+        self.span_limit.fetch_min(spans, Ordering::Relaxed);
+        self.entry_limit.fetch_min(entries, Ordering::Relaxed);
+        self.charge(&self.spans, 0, self.span_limit.load(Ordering::Relaxed), "emitted spans")?;
+        self.charge(
+            &self.entries,
+            0,
+            self.entry_limit.load(Ordering::Relaxed),
+            "collection entries",
+        )
     }
 
     /// Fail once any previous operation exhausted this request.
@@ -236,7 +340,11 @@ impl ImportBudget {
                 .failure_reason
                 .lock()
                 .unwrap_or_else(|error| error.into_inner());
-            Err(Error::ImportResourceLimit(reason.unwrap_or("request budget exhausted")))
+            Err(Error::ImportResourceLimit(
+                reason
+                    .as_ref()
+                    .map_or("request budget exhausted", |failure| failure.reason),
+            ))
         } else {
             Ok(())
         }
@@ -244,11 +352,20 @@ impl ImportBudget {
 
     /// Mark a resource failure as fatal for the whole import.
     pub fn reject(&self, reason: &'static str) -> Error {
+        self.reject_reservation(ImportLimitFailure {
+            reason,
+            used: None,
+            requested: None,
+            limit: None,
+        })
+    }
+
+    fn reject_reservation(&self, failure: ImportLimitFailure) -> Error {
         let mut first = self
             .failure_reason
             .lock()
             .unwrap_or_else(|error| error.into_inner());
-        let reason = *first.get_or_insert(reason);
+        let reason = first.get_or_insert(failure).reason;
         self.failed.store(true, Ordering::Release);
         Error::ImportResourceLimit(reason)
     }
@@ -266,7 +383,57 @@ impl ImportBudget {
                 used.checked_add(amount).filter(|&next| next <= cap)
             })
             .map(|_| ())
-            .map_err(|_| self.reject(reason))
+            .map_err(|used| {
+                self.reject_reservation(ImportLimitFailure {
+                    reason,
+                    used: Some(used),
+                    requested: Some(amount),
+                    limit: Some(cap),
+                })
+            })
+    }
+
+    /// Observe this request after an extraction step. Concurrent codec work can
+    /// advance individual counters during the snapshot; this is not a heap limit.
+    pub fn snapshot(&self) -> ImportBudgetSnapshot {
+        let read = |value: &AtomicUsize| value.load(Ordering::Relaxed);
+        ImportBudgetSnapshot {
+            decoded_bytes: read(&self.decoded),
+            codec_allocated_bytes: read(&self.codec_allocated),
+            parsed_objects: read(&self.objects),
+            collection_entries: read(&self.entries),
+            operators: read(&self.operators),
+            text_bytes: read(&self.text_bytes),
+            spans: read(&self.spans),
+            reference_visits: read(&self.reference_visits),
+            xobject_visits: read(&self.xobject_visits),
+            content_parse_calls: read(&self.content_parse_calls),
+            page_operator_cache_hits: read(&self.page_operator_cache_hits),
+            page_stream_cache_hits: read(&self.page_stream_cache_hits),
+            form_stream_cache_hits: read(&self.form_stream_cache_hits),
+            failure: self
+                .failure_reason
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .clone(),
+        }
+    }
+
+    pub(crate) fn record_content_parse(&self) {
+        self.content_parse_calls.fetch_add(1, Ordering::Relaxed);
+    }
+
+    pub(crate) fn record_page_operator_cache_hit(&self) {
+        self.page_operator_cache_hits
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    pub(crate) fn record_page_stream_cache_hit(&self) {
+        self.page_stream_cache_hits.fetch_add(1, Ordering::Relaxed);
+    }
+
+    pub(crate) fn record_form_stream_cache_hit(&self) {
+        self.form_stream_cache_hits.fetch_add(1, Ordering::Relaxed);
     }
 
     /// Successfully charged decoded/copy bytes so far, including failed attempts.
@@ -324,7 +491,12 @@ impl ImportBudget {
 
     /// Charge before allocating or extending an output buffer.
     pub fn charge_decoded(&self, amount: usize) -> Result<()> {
-        self.charge(&self.decoded, amount, self.limits.decoded_bytes, "document decoded bytes")
+        self.charge(
+            &self.decoded,
+            amount,
+            self.decoded_limit.load(Ordering::Relaxed),
+            "document decoded bytes",
+        )
     }
 
     /// Charge the requested flat and owned payload bytes before a cache copy.
@@ -342,17 +514,27 @@ impl ImportBudget {
     }
 
     pub(crate) fn charge_entries(&self, count: usize) -> Result<()> {
-        self.charge(&self.entries, count, self.limits.entries, "collection entries")
+        self.charge(
+            &self.entries,
+            count,
+            self.entry_limit.load(Ordering::Relaxed),
+            "collection entries",
+        )
     }
 
     pub(crate) fn charge_operator(&self) -> Result<()> {
-        self.charge(&self.operators, 1, self.limits.operators, "content operators")
+        self.charge(
+            &self.operators,
+            1,
+            self.operator_limit.load(Ordering::Relaxed),
+            "content operators",
+        )
     }
     pub(crate) fn charge_text(&self, amount: usize) -> Result<()> {
         self.charge(&self.text_bytes, amount, self.limits.text_bytes, "shown text bytes")
     }
     pub(crate) fn charge_span(&self) -> Result<()> {
-        self.charge(&self.spans, 1, self.limits.spans, "emitted spans")
+        self.charge(&self.spans, 1, self.span_limit.load(Ordering::Relaxed), "emitted spans")
     }
 
     pub(crate) fn cmap_source(&self, bytes: usize) -> Result<()> {

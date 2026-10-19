@@ -34,6 +34,7 @@ pub(crate) fn head_with_dimensions(
     let h = width / 2.0;
     let mut commands = match style {
         ArrowStyle::None => return None,
+        ArrowStyle::OpenArrow => vec![MoveTo(length, -h), LineTo(0.0, 0.0), LineTo(length, h)],
         ArrowStyle::Arrow => vec![MoveTo(0.0, 0.0), LineTo(length, -h), LineTo(length, h)],
         ArrowStyle::ConcaveArrow => vec![
             MoveTo(0.0, 0.0),
@@ -68,12 +69,17 @@ pub(crate) fn head_with_dimensions(
             ]
         }
     };
-    commands.push(ClosePath);
+    if style != ArrowStyle::OpenArrow {
+        commands.push(ClosePath);
+    }
     Some(ArrowHead {
         commands,
         filled: !matches!(
             style,
-            ArrowStyle::OpenDiamond | ArrowStyle::OpenCircle | ArrowStyle::OpenSquare
+            ArrowStyle::OpenArrow
+                | ArrowStyle::OpenDiamond
+                | ArrowStyle::OpenCircle
+                | ArrowStyle::OpenSquare
         ),
     })
 }

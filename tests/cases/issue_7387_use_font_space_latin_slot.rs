@@ -26,6 +26,32 @@ fn collect(node: &RenderNode, out: &mut Vec<Run>) {
     }
 }
 
+/// 언어 슬롯별 run 분할과 무관하게 같은 줄의 문자열과 실제 점유폭을 확인한다.
+fn named_line(node: &RenderNode, needle: &str) -> Option<Run> {
+    if matches!(&node.node_type, RenderNodeType::TextLine(_)) {
+        let mut runs = Vec::new();
+        collect(node, &mut runs);
+        let text: String = runs.iter().map(|run| run.text.as_str()).collect();
+        if !runs.is_empty() && text == needle {
+            let left = runs.iter().map(|run| run.x).fold(f64::INFINITY, f64::min);
+            let right = runs
+                .iter()
+                .map(|run| run.x + run.width)
+                .fold(f64::NEG_INFINITY, f64::max);
+            return Some(Run {
+                text,
+                x: left,
+                width: right - left,
+                y: node.bbox.y,
+                font_size: runs[0].font_size,
+            });
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| named_line(child, needle))
+}
+
 fn open(name: &str) -> DocumentCore {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("samples/{name}"));
     DocumentCore::from_bytes(&std::fs::read(path).expect("공개 회귀 문서")).expect("문서 파싱")
@@ -115,16 +141,14 @@ fn use_font_space_kopub_latin_slot_uses_kopub_space_glyph() {
     // 정본은 이 상자를 377쪽에 둔다. rhwp 의 이 문서 전체 쪽수는 정본(383)과 달라
     // (앞쪽 표 분할 축, 이 검사의 범위 밖) 같은 상자가 몇 쪽 앞에 놓인다. 폭은 쪽 번호와
     // 무관하므로 쪽 번호로 고정하지 않고 두 줄을 함께 품은 쪽을 내용으로 찾는다.
-    let (tree, runs) = (0..doc.page_count())
+    let tree = (0..doc.page_count())
         .rev()
         .find_map(|page| {
             let tree = doc.build_page_render_tree(page).ok()?;
-            let mut runs = Vec::new();
-            collect(&tree.root, &mut runs);
             CARD_LINES
                 .iter()
-                .all(|text| runs.iter().any(|r| r.text == *text))
-                .then_some((tree, runs))
+                .all(|text| named_line(&tree.root, text).is_some())
+                .then_some(tree)
         })
         .expect("「문서관리카드」 두 줄을 함께 품은 쪽");
     let page_px = tree.root.bbox.width;
@@ -132,9 +156,7 @@ fn use_font_space_kopub_latin_slot_uses_kopub_space_glyph() {
         (CARD_LINES[0], 2.0_f64, 69.40_f64),
         (CARD_LINES[1], 19.0, 175.80),
     ] {
-        let run = runs
-            .iter()
-            .find(|r| r.text == text)
+        let run = named_line(&tree.root, text)
             .unwrap_or_else(|| panic!("「문서관리카드」의 `{text}` run"));
         let expected = oracle_px * page_px / (ORACLE_PAGE_PT * 96.0 / 72.0);
         let tolerance = 1.5 + 0.5 * spaces;

@@ -1,4 +1,7 @@
-use std::fmt::Write as _;
+use std::{collections::HashMap, fmt::Write as _};
+
+#[path = "equation_paren_json.rs"]
+mod equation_paren_json;
 
 use crate::document_core::helpers::{
     color_ref_to_css, json_escape as raw_json_escape, write_json_base64,
@@ -6,6 +9,9 @@ use crate::document_core::helpers::{
 use crate::model::control::FormType;
 use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
+use crate::paint::paint_bounds::{
+    bounded_display_text_for_run, bounded_text_prefix, effective_text_font_size_and_baseline,
+};
 use crate::paint::ResourceArena;
 use crate::paint::{
     BitmapGlyphPayload, CacheHint, ClipKind, ColorLayerNode, ColorLayersPayload,
@@ -49,9 +55,12 @@ const KNOWN_TEXT_FEATURES: &[&str] = &[
     "text.glyphOutline.colorLayers",
     "text.glyphOutline.colorLayers.colrV0",
     "text.glyphOutline.colorLayers.colrV1",
+    "text.glyphOutline.colorLayers.colrV1.sourceOver",
+    "text.glyphOutline.colorLayers.colrV1.clip",
     "text.glyphOutline.bitmapGlyph",
     "text.glyphOutline.svgGlyph",
     "text.glyphOutline.svgGlyph.vectorResourceId",
+    "text.glyphOutline.svgGlyph.fontEmBox",
     "text.glyphOutline.payloadResourceKey",
     "text.glyphOutline.payloadResourceDigestKey",
     "text.specialVisualOps",
@@ -67,8 +76,10 @@ const KNOWN_TEXT_FEATURES: &[&str] = &[
     "text.visualSourceBinding",
     "text.decorationOp.producerExtent",
     "paint.controlLabel",
+    "paint.pageBackground.imageEffects",
     "text.displayText",
     "text.vertical.mixedPerGlyph",
+    "layer.visualBounds",
 ];
 
 /// 레이어 트리 JSON 직렬화 옵션 (Task #3315).
@@ -100,9 +111,10 @@ pub struct LayerJsonOptions {
 /// 직렬화 도중 트리 아래로 흘려야 하는 값. 그림 op 하나를 쓰려면 문서 세대(키 발급)와
 /// 생략 여부가 함께 필요해 한 덩이로 옮겼다.
 #[derive(Debug, Clone, Copy)]
-struct JsonWriteContext {
+struct JsonWriteContext<'a> {
     bin_data_epoch: u32,
     options: LayerJsonOptions,
+    visual_bounds: &'a HashMap<*const LayerNode, BoundingBox>,
 }
 
 impl PageLayerTree {
@@ -113,6 +125,7 @@ impl PageLayerTree {
     /// [Task #3315/#4969] 그림·font base64 생략을 각각 켤 수 있는 직렬화.
     /// `to_json()`은 두 payload를 모두 inline하는 기본 옵션 위임이다.
     pub fn to_json_with_options(&self, options: LayerJsonOptions) -> String {
+        let visual_bounds = self.visual_bounds_index();
         let mut buf = String::with_capacity(32_768);
         buf.push('{');
         let _ = write!(
@@ -159,6 +172,7 @@ impl PageLayerTree {
             JsonWriteContext {
                 bin_data_epoch: self.resources.source_image_epoch(),
                 options,
+                visual_bounds: &visual_bounds,
             },
         );
         buf.push_str(",\"textSources\":");
@@ -188,6 +202,10 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
     });
     let has_control_labels =
         layer_tree_has_op(root, |op| matches!(op, PaintOp::ControlLabel { .. }));
+    let has_background_images = layer_tree_has_op(root, |op| {
+        matches!(op,
+        PaintOp::PageBackground { background, .. } if background.image.is_some())
+    });
     let text_variant_features = collect_text_variant_features(root, resources);
     let has_variant_groups = text_variant_features.has_variant_groups();
     let has_glyph_runs = text_variant_features.has_glyph_runs;
@@ -200,7 +218,7 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
     let has_glyph_outline_payload_resource_digest_keys =
         text_variant_features.has_glyph_outline_payload_resource_digest_keys;
     let has_display_text = text_variant_features.has_display_text;
-    buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\",\"layer.optionMetadata\"");
+    buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\",\"layer.optionMetadata\",\"layer.visualBounds\"");
     if has_display_text {
         buf.push_str(",\"text.displayText\"");
     }
@@ -216,12 +234,21 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
     if has_glyph_outline_color_layers {
         buf.push_str(",\"text.glyphOutline.colorLayers\"");
     }
+    if text_variant_features.has_colrv1_source_over {
+        buf.push_str(",\"text.glyphOutline.colorLayers.colrV1.sourceOver\"");
+    }
+    if text_variant_features.has_colrv1_clip {
+        buf.push_str(",\"text.glyphOutline.colorLayers.colrV1.clip\"");
+    }
     if has_glyph_outline_bitmap {
         buf.push_str(",\"text.glyphOutline.bitmapGlyph\"");
     }
     if has_glyph_outline_svg {
         buf.push_str(",\"text.glyphOutline.svgGlyph\"");
         buf.push_str(",\"text.glyphOutline.svgGlyph.vectorResourceId\"");
+    }
+    if text_variant_features.has_svg_font_em_box {
+        buf.push_str(",\"text.glyphOutline.svgGlyph.fontEmBox\"");
     }
     if has_glyph_outline_payload_resource_keys {
         buf.push_str(",\"text.glyphOutline.payloadResourceKey\"");
@@ -258,7 +285,13 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
     if has_control_labels {
         buf.push_str(",\"paint.controlLabel\"");
     }
+    if has_background_images {
+        buf.push_str(",\"paint.pageBackground.imageEffects\"");
+    }
     let mut optional_features = Vec::new();
+    if has_background_images {
+        optional_features.push("paint.pageBackground.imageEffects");
+    }
     if has_glyph_runs || has_glyph_outlines {
         optional_features.push("fontResources");
     }
@@ -272,12 +305,21 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
     if has_glyph_outline_color_layers {
         optional_features.push("text.glyphOutline.colorLayers");
     }
+    if text_variant_features.has_colrv1_source_over {
+        optional_features.push("text.glyphOutline.colorLayers.colrV1.sourceOver");
+    }
+    if text_variant_features.has_colrv1_clip {
+        optional_features.push("text.glyphOutline.colorLayers.colrV1.clip");
+    }
     if has_glyph_outline_bitmap {
         optional_features.push("text.glyphOutline.bitmapGlyph");
     }
     if has_glyph_outline_svg {
         optional_features.push("text.glyphOutline.svgGlyph");
         optional_features.push("text.glyphOutline.svgGlyph.vectorResourceId");
+    }
+    if text_variant_features.has_svg_font_em_box {
+        optional_features.push("text.glyphOutline.svgGlyph.fontEmBox");
     }
     if has_glyph_outline_payload_resource_keys {
         optional_features.push("text.glyphOutline.payloadResourceKey");
@@ -321,8 +363,11 @@ struct TextVariantFeatureFlags {
     has_glyph_runs: bool,
     has_glyph_outlines: bool,
     has_glyph_outline_color_layers: bool,
+    has_colrv1_source_over: bool,
+    has_colrv1_clip: bool,
     has_glyph_outline_bitmap: bool,
     has_glyph_outline_svg: bool,
+    has_svg_font_em_box: bool,
     has_glyph_outline_payload_resource_keys: bool,
     has_glyph_outline_payload_resource_digest_keys: bool,
     has_display_text: bool,
@@ -356,6 +401,26 @@ fn collect_text_variant_features(
                         }
                         PaintOp::GlyphRun { .. } => features.has_glyph_runs = true,
                         PaintOp::GlyphOutline { outline, .. } => {
+                            features.has_svg_font_em_box |= outline
+                                .svg_glyph
+                                .as_ref()
+                                .is_some_and(|payload| payload.font_em_box.is_some());
+                            if let Some(graph) = outline
+                                .color_layers
+                                .as_ref()
+                                .and_then(|payload| payload.paint_graph.as_ref())
+                            {
+                                for node in &graph.nodes {
+                                    features.has_colrv1_source_over |= matches!(
+                                        node.kind,
+                                        crate::paint::ColorPaintGraphNodeKind::Composite
+                                    );
+                                    features.has_colrv1_clip |= matches!(
+                                        node.kind,
+                                        crate::paint::ColorPaintGraphNodeKind::Clip
+                                    );
+                                }
+                            }
                             features.has_glyph_outlines = true;
                             features.has_glyph_outline_color_layers |= matches!(
                                 outline.payload_kind,
@@ -477,11 +542,15 @@ impl LayerNode {
         buf: &mut String,
         text_sources: &mut TextSourceExportState,
         resources: &ResourceArena,
-        ctx: JsonWriteContext,
+        ctx: JsonWriteContext<'_>,
     ) {
         buf.push('{');
         buf.push_str("\"bounds\":");
         write_bbox(buf, self.bounds);
+        if let Some(bounds) = ctx.visual_bounds.get(&(self as *const LayerNode)) {
+            buf.push_str(",\"visualBounds\":");
+            write_bbox(buf, *bounds);
+        }
         if let Some(source_node_id) = self.source_node_id {
             let _ = write!(buf, ",\"sourceNodeId\":{}", source_node_id);
         }
@@ -549,7 +618,7 @@ impl PaintOp {
         text_sources: &mut TextSourceExportState,
         leaf_visuals: &LeafTextVisualOps,
         resources: &ResourceArena,
-        ctx: JsonWriteContext,
+        ctx: JsonWriteContext<'_>,
     ) {
         match self {
             PaintOp::PageBackground { bbox, background } => {
@@ -576,10 +645,30 @@ impl PaintOp {
                     write_gradient(buf, gradient);
                 }
                 if let Some(image) = &background.image {
+                    let preserve_color_watermark = image.is_real_picture_watermark_tone_preset();
+                    let watermark = preserve_color_watermark
+                        || (!matches!(image.effect, ImageEffect::RealPic) && image.is_watermark());
+                    let (brightness, contrast) = if preserve_color_watermark {
+                        (0, 0)
+                    } else {
+                        image.display_brightness_contrast()
+                    };
+                    let opacity = if preserve_color_watermark {
+                        crate::renderer::render_tree::REAL_PICTURE_WATERMARK_PAGE_OPACITY
+                    } else if watermark {
+                        crate::renderer::render_tree::LEGACY_IMAGE_WATERMARK_OPACITY
+                    } else {
+                        1.0
+                    };
                     let _ = write!(
                         buf,
-                        ",\"image\":{{\"fillMode\":{},\"base64\":",
+                        ",\"image\":{{\"fillMode\":{},\"brightness\":{},\"contrast\":{},\"effect\":{},\"opacity\":{},\"watermark\":{},\"base64\":",
                         json_escape(image_fill_mode_str(image.fill_mode)),
+                        brightness,
+                        contrast,
+                        json_escape(image_effect_str(image.effect)),
+                        opacity,
+                        watermark,
                     );
                     write_json_base64(buf, &image.data[..]);
                     buf.push('}');
@@ -960,10 +1049,37 @@ impl PaintOp {
                 let resolved = resolved.as_deref().or(fallback.as_ref());
                 // [#7193] 소비자가 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
                 write_bbox(buf, image.paint_bbox(bbox));
+                if resolved
+                    .map(|payload| payload.data.as_slice())
+                    .or(image.data.as_deref())
+                    .is_some_and(
+                        crate::renderer::image_resolver::png_sampling::print_bitmap_reconstruction,
+                    )
+                {
+                    buf.push_str(",\"imageReconstruction\":\"catmullRom\"");
+                }
+                if let Some(interpolate) = image
+                    .data
+                    .as_deref()
+                    .and_then(crate::renderer::image_resolver::png_sampling::interpolation)
+                {
+                    let _ = write!(
+                        buf,
+                        ",\"imageInterpolation\":\"{}\"",
+                        if interpolate { "linear" } else { "nearest" }
+                    );
+                }
                 // [#3315] 키가 있는 op 만 base64 를 생략할 수 있다 — 소비자가 그 키로
                 // `getSourceImageBytes` 를 불러 같은 바이트를 받는다. 키를 낼 수 없는 합성
                 // 그림(`bin_data_id == 0`)은 되찾을 길이 없으므로 종전대로 싣는다.
-                let source_image_key = crate::paint::source_image_key(ctx.bin_data_epoch, image);
+                // 배치·장치에 맞춘 바이트는 원본 bin 키로 다시 얻을 수 없다.
+                // 이 op은 실제 출력 바이트를 싣고 내용 기반 이미지 캐시가 이를 구분한다.
+                let source_image_key =
+                    if resolved.is_some_and(|p| p.kind == ResolvedImageKind::OutputDevice) {
+                        None
+                    } else {
+                        crate::paint::source_image_key(ctx.bin_data_epoch, image)
+                    };
                 let omit_bytes = ctx.options.omit_image_bytes && source_image_key.is_some();
                 if let Some(payload) = resolved {
                     if omit_bytes {
@@ -985,10 +1101,7 @@ impl PaintOp {
                     // [#3315] 변환 사슬의 단일 권위는 `emitted_image_bytes` 다 — 키로 바이트를
                     // 되돌려주는 경로가 같은 함수를 써야 두 결과가 갈라지지 않는다.
                     let (final_mime, final_data) =
-                        crate::renderer::image_resolver::emitted_image_bytes(
-                            data,
-                            crate::renderer::image_resolver::is_watermark_image(image),
-                        );
+                        crate::renderer::image_resolver::emitted_image_node_bytes(image, data);
                     if omit_bytes {
                         let _ = write!(
                             buf,
@@ -1406,7 +1519,7 @@ fn write_text_source_entry(buf: &mut String, entry: &TextSourceEntry) {
     buf.push('}');
 }
 
-fn write_text_source_span(buf: &mut String, span: &TextSourceSpan) {
+pub(crate) fn write_text_source_span(buf: &mut String, span: &TextSourceSpan) {
     let _ = write!(buf, "{{\"id\":{},\"utf8Range\":", span.id.0);
     write_text_source_range(buf, span.utf8_range);
     buf.push_str(",\"utf16Range\":");
@@ -1672,22 +1785,6 @@ fn write_position_values(buf: &mut String, positions: &[f64]) {
     buf.push(']');
 }
 
-fn bounded_text_prefix(text: &str) -> (String, bool) {
-    let mut chars = text.chars();
-    let prefix = chars
-        .by_ref()
-        .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN)
-        .collect();
-    (prefix, chars.next().is_none())
-}
-
-fn bounded_display_text_for_run(run: &TextRunNode) -> (String, bool) {
-    let (source_prefix, source_complete) = bounded_text_prefix(run.display_or_text());
-    let display_text = expand_pua_display_text(&source_prefix);
-    let (display_prefix, display_complete) = bounded_text_prefix(&display_text);
-    (display_prefix, source_complete && display_complete)
-}
-
 fn write_bounded_text_positions(buf: &mut String, text: &str, style: &TextStyle) -> bool {
     let (prefix, complete) = bounded_text_prefix(text);
     let positions = compute_char_positions(&prefix, style);
@@ -1698,15 +1795,6 @@ fn write_bounded_text_positions(buf: &mut String, text: &str, style: &TextStyle)
 fn display_text_for_text_run(run: &TextRunNode) -> Option<String> {
     let display_text = expand_pua_display_text(run.display_or_text());
     (display_text != run.text.as_str()).then_some(display_text)
-}
-
-fn effective_text_font_size_and_baseline(run: &TextRunNode) -> (f64, f64) {
-    let base_font_size = if run.style.font_size > 0.0 {
-        run.style.font_size
-    } else {
-        12.0
-    };
-    run.style.script_draw_metrics(base_font_size, run.baseline)
 }
 
 fn write_tab_leaders(buf: &mut String, leaders: &[TabLeaderInfo]) {
@@ -1755,11 +1843,7 @@ fn write_clamped_tab_leaders(buf: &mut String, run: &TextRunNode) -> bool {
 fn write_text_control_marks(buf: &mut String, bbox: BoundingBox, run: &TextRunNode) -> bool {
     let (bounded_text, mut complete) = bounded_text_prefix(&run.text);
     let positions = run.replay_positions_prefix_for(&run.text, &bounded_text);
-    let font_size = if run.style.font_size > 0.0 {
-        run.style.font_size
-    } else {
-        12.0
-    };
+    let font_size = run.style.effective_font_size();
     let mark_font_size = (font_size * 0.5).max(1.0);
     let has_end_mark = run.is_para_end || run.is_line_break_end;
     let inline_limit =
@@ -2332,6 +2416,28 @@ fn write_color_paint_graph_node(buf: &mut String, node: &ColorPaintGraphNode) {
         buf.push_str(",\"transform\":");
         write_color_paint_transform_node(buf, transform);
     }
+    if let Some(composite) = &node.composite {
+        let _ = write!(
+            buf,
+            ",\"composite\":{{\"sourceNodeId\":{},\"backdropNodeId\":{},\"mode\":{}}}",
+            composite.source_node_id,
+            composite.backdrop_node_id,
+            json_escape(composite.mode.as_str())
+        );
+    }
+    if let Some(clip) = &node.clip {
+        let _ = write!(
+            buf,
+            ",\"clip\":{{\"childNodeId\":{},\"clipCommands\":",
+            clip.child_node_id
+        );
+        write_path_commands(buf, &clip.clip_commands);
+        let _ = write!(
+            buf,
+            ",\"fillRule\":{}}}",
+            json_escape(clip.fill_rule.as_str())
+        );
+    }
     if let Some(range) = node.source_range_utf8 {
         buf.push_str(",\"sourceRangeUtf8\":");
         write_text_source_range(buf, range);
@@ -2521,6 +2627,10 @@ fn write_svg_glyph_payload(buf: &mut String, payload: &SvgGlyphPayload) {
         payload.glyph_range.start, payload.glyph_range.end
     );
     write_bbox(buf, payload.view_box);
+    if let Some(em_box) = payload.font_em_box {
+        buf.push_str(",\"fontEmBox\":");
+        write_bbox(buf, em_box);
+    }
     if let Some(size) = payload.intrinsic_size {
         let _ = write!(
             buf,
@@ -2741,7 +2851,7 @@ fn write_shape_style(buf: &mut String, style: &ShapeStyle) {
         buf,
         ",\"strokeWidth\":{:.3},\"strokeDash\":{},\"opacity\":{:.3}",
         style.stroke_width,
-        json_escape(stroke_dash_str(style.stroke_dash)),
+        stroke_dash_json(style.stroke_dash),
         style.opacity,
     );
     if let Some(shadow) = &style.shadow {
@@ -2804,7 +2914,7 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
         "{{\"color\":{},\"width\":{:.3},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}",
         json_escape(&color_ref_to_css(style.color)),
         style.width,
-        json_escape(stroke_dash_str(style.dash)),
+        stroke_dash_json(style.dash),
         json_escape(line_render_type_str(style.line_type)),
         json_escape(arrow_style_str(style.start_arrow)),
         json_escape(arrow_style_str(style.end_arrow)),
@@ -2862,19 +2972,35 @@ fn write_path_commands(buf: &mut String, commands: &[PathCommand]) {
 fn write_equation_layout_box(buf: &mut String, layout: &LayoutBox) {
     let _ = write!(
         buf,
-        "{{\"x\":{:.6},\"y\":{:.6},\"width\":{:.6},\"height\":{:.6},\"baseline\":{:.6},\"kind\":",
-        layout.x, layout.y, layout.width, layout.height, layout.baseline,
+        "{{\"x\":{:.6},\"y\":{:.6},\"width\":{:.6},\"height\":{:.6},\"baseline\":{:.6},\"fontSize\":{:.6},\"kind\":",
+        layout.x, layout.y, layout.width, layout.height, layout.baseline, layout.font_size,
     );
-    write_equation_layout_kind(buf, &layout.kind);
+    write_equation_layout_kind(buf, layout);
     buf.push('}');
 }
 
-fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
+fn write_integral_geometry(buf: &mut String, fs: f64) {
+    let path = crate::renderer::equation::svg_render::integral_path_data(0.0, 0.0, fs);
+    let _ = write!(
+        buf,
+        ",\"integralGeometry\":{{\"pathData\":{},\"strokeWidth\":{}}}",
+        json_escape(&path),
+        0.0
+    );
+}
+
+fn write_equation_layout_kind(buf: &mut String, layout: &LayoutBox) {
+    let kind = &layout.kind;
+    let font_size = layout.font_size;
+    if equation_paren_json::write_kind(buf, layout) {
+        return;
+    }
     match kind {
         LayoutKind::HancomGlyphs(run) => {
             let _ = write!(
                 buf,
-                "{{\"type\":\"hancomGlyphs\",\"glyphs\":{},\"positions\":[",
+                "{{\"type\":\"hancomGlyphs\",\"fontFamily\":{},\"glyphs\":{},\"positions\":[",
+                json_escape(run.font_family),
                 json_escape(&run.glyphs)
             );
             for (index, offset) in run.positions.iter().enumerate() {
@@ -2905,7 +3031,43 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
         LayoutKind::Text(text) => write_equation_text_kind(buf, "text", text),
         LayoutKind::Number(text) => write_equation_text_kind(buf, "number", text),
         LayoutKind::Symbol(text) => write_equation_text_kind(buf, "symbol", text),
-        LayoutKind::MathSymbol(text) => write_equation_text_kind(buf, "mathSymbol", text),
+        LayoutKind::FontGlyph {
+            text,
+            font_family,
+            outline,
+            paint,
+        } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"fontGlyph\",\"text\":{},\"fontFamily\":{}",
+                json_escape(text),
+                json_escape(font_family),
+            );
+            if let Some(commands) = outline {
+                let path = crate::renderer::equation::multiplication_outline::path_data(commands);
+                let stroke_width = paint.map_or(0.0, |p| p.stroke_width);
+                let scale_x = paint.map_or(1.0, |p| p.scale_x);
+                let _ = write!(
+                    buf,
+                    ",\"outlineGeometry\":{{\"pathData\":{},\"strokeWidth\":{stroke_width:.6},\"scaleX\":{scale_x:.8},\"fillAndStroke\":true}}",
+                    json_escape(&path),
+                );
+            }
+            buf.push('}');
+        }
+        LayoutKind::MathSymbol(text) => {
+            if crate::renderer::equation::layout::is_integral_symbol(text) {
+                let _ = write!(
+                    buf,
+                    "{{\"type\":\"mathSymbol\",\"text\":{}",
+                    json_escape(text)
+                );
+                write_integral_geometry(buf, font_size);
+                buf.push('}');
+            } else {
+                write_equation_text_kind(buf, "mathSymbol", text);
+            }
+        }
         LayoutKind::Function(name) => {
             let _ = write!(
                 buf,
@@ -2913,11 +3075,18 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
                 json_escape(name)
             );
         }
-        LayoutKind::Fraction { numer, denom } => {
+        LayoutKind::Fraction {
+            numer,
+            denom,
+            axis_height,
+            rule_thickness,
+        } => {
             buf.push_str("{\"type\":\"fraction\",\"numer\":");
             write_equation_layout_box(buf, numer);
             buf.push_str(",\"denom\":");
             write_equation_layout_box(buf, denom);
+            let _ = write!(buf, ",\"axisHeight\":{axis_height}");
+            let _ = write!(buf, ",\"ruleThickness\":{rule_thickness}");
             buf.push('}');
         }
         LayoutKind::Atop { top, bottom } => {
@@ -2952,18 +3121,41 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
             write_equation_layout_box(buf, sup);
             buf.push('}');
         }
-        LayoutKind::BigOp { symbol, sub, sup } => {
+        LayoutKind::BigOp {
+            symbol,
+            sub,
+            sup,
+            op_font_size,
+            op_width,
+            op_x,
+            op_y,
+            op_baseline,
+        } => {
             let _ = write!(
                 buf,
-                "{{\"type\":\"bigOp\",\"symbol\":{}",
-                json_escape(symbol)
+                "{{\"type\":\"bigOp\",\"symbol\":{},\"opFontSize\":{},\"opWidth\":{},\"opX\":{},\"opY\":{},\"opBaseline\":{}",
+                json_escape(symbol), op_font_size, op_width, op_x, op_y, op_baseline
             );
+            if crate::renderer::equation::layout::is_integral_symbol(symbol) {
+                write_integral_geometry(buf, font_size);
+            }
             write_optional_equation_box(buf, "sub", sub.as_deref());
             write_optional_equation_box(buf, "sup", sup.as_deref());
             buf.push('}');
         }
-        LayoutKind::Limit { is_upper, sub } => {
-            let _ = write!(buf, "{{\"type\":\"limit\",\"isUpper\":{}", is_upper);
+        LayoutKind::Limit {
+            is_upper,
+            name,
+            name_font_size,
+            sub_font_size,
+            sub,
+        } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"limit\",\"isUpper\":{},\"nameFontSize\":{},\"subFontSize\":{}",
+                is_upper, name_font_size, sub_font_size
+            );
+            write_optional_equation_box(buf, "name", name.as_deref());
             write_optional_equation_box(buf, "sub", sub.as_deref());
             buf.push('}');
         }
@@ -3010,21 +3202,59 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
             }
             buf.push_str("]}");
         }
-        LayoutKind::Paren { left, right, body } => {
+        LayoutKind::Paren {
+            left,
+            right,
+            left_width,
+            right_width,
+            delimiter_height,
+            glyph_delimiters,
+            body,
+            ..
+        } => {
             let _ = write!(
                 buf,
-                "{{\"type\":\"paren\",\"left\":{},\"right\":{},\"body\":",
+                "{{\"type\":\"paren\",\"left\":{},\"right\":{},\"leftWidth\":{:.3},\"rightWidth\":{:.3},\"delimiterHeight\":{:.3},\"glyphDelimiters\":{},\"body\":",
                 json_escape(left),
                 json_escape(right),
+                left_width,
+                right_width,
+                delimiter_height,
+                glyph_delimiters,
             );
             write_equation_layout_box(buf, body);
             buf.push('}');
         }
-        LayoutKind::Decoration { kind, body } => {
+        LayoutKind::Decoration {
+            kind,
+            body,
+            negation,
+            outline,
+        } => {
             let _ = write!(
                 buf,
                 "{{\"type\":\"decoration\",\"decoration\":{},\"body\":",
                 json_escape(equation_decoration(*kind))
+            );
+            write_equation_layout_box(buf, body);
+            if let Some(commands) = outline {
+                let path = crate::renderer::equation::multiplication_outline::path_data(commands);
+                let _ = write!(buf,
+                    ",\"outlineGeometry\":{{\"pathData\":{},\"strokeWidth\":0,\"scaleX\":1,\"fillAndStroke\":false}}",
+                    json_escape(&path));
+            }
+            if let Some(g) = negation {
+                let _ = write!(buf,
+                    ",\"negationGeometry\":{{\"start\":[{:.6},{:.6}],\"end\":[{:.6},{:.6}],\"thickness\":{:.6}}}",
+                    g.start.0, g.start.1, g.end.0, g.end.1, g.thickness);
+            }
+            buf.push('}');
+        }
+        LayoutKind::Color { rgb, body } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"color\",\"color\":\"#{:02x}{:02x}{:02x}\",\"body\":",
+                rgb[0], rgb[1], rgb[2]
             );
             write_equation_layout_box(buf, body);
             buf.push('}');
@@ -3088,11 +3318,14 @@ fn equation_matrix_style(style: MatrixStyle) -> &'static str {
         MatrixStyle::Paren => "paren",
         MatrixStyle::Bracket => "bracket",
         MatrixStyle::Vert => "vert",
+        MatrixStyle::Ladder => "ladder",
+        MatrixStyle::ShortLadder => "short_ladder",
     }
 }
 
 fn equation_decoration(kind: DecoKind) -> &'static str {
     match kind {
+        DecoKind::Box => "box",
         DecoKind::Hat => "hat",
         DecoKind::Check => "check",
         DecoKind::Tilde => "tilde",
@@ -3132,14 +3365,25 @@ fn underline_type_str(value: UnderlineType) -> &'static str {
     }
 }
 
-fn stroke_dash_str(value: StrokeDash) -> &'static str {
-    match value {
+fn stroke_dash_json(value: StrokeDash) -> String {
+    let name = match value {
+        StrokeDash::Explicit(_) => {
+            return serde_json::to_string(&value.intervals(0.0))
+                .expect("확정한 선 반복 구간은 유한한 양수다");
+        }
         StrokeDash::Solid => "solid",
         StrokeDash::Dash => "dash",
         StrokeDash::Dot => "dot",
         StrokeDash::DashDot => "dashDot",
         StrokeDash::DashDotDot => "dashDotDot",
-    }
+        StrokeDash::HwpDash => "hwpDash",
+        StrokeDash::HwpDot => "hwpDot",
+        StrokeDash::HwpDashDot => "hwpDashDot",
+        StrokeDash::HwpDashDotDot => "hwpDashDotDot",
+        StrokeDash::HwpLongDash => "hwpLongDash",
+        StrokeDash::HwpCircle => "hwpCircle",
+    };
+    json_escape(name)
 }
 
 fn line_render_type_str(value: LineRenderType) -> &'static str {
@@ -3163,6 +3407,7 @@ fn arrow_style_str(value: ArrowStyle) -> &'static str {
         ArrowStyle::Diamond => "diamond",
         ArrowStyle::Circle => "circle",
         ArrowStyle::Square => "square",
+        ArrowStyle::OpenArrow => "openArrow",
     }
 }
 
@@ -3943,7 +4188,8 @@ mod tests {
                     },
                     baseline_y: 0.0,
                 },
-                glyph_ids: vec![42],
+                // Both fixture TTC faces have maxp.numGlyphs = 2; exactFace is glyph 1.
+                glyph_ids: vec![1],
                 positions: vec![LayerPoint { x: 0.0, y: 0.0 }],
                 advances: Some(vec![LayerVector { dx: 12.0, dy: 0.0 }]),
                 clusters: vec![GlyphCluster {
@@ -4031,7 +4277,7 @@ mod tests {
             json.contains("\"variant\":{\"equivalenceGroup\":\"text-0\",\"variantId\":\"textRun\"")
         );
         assert!(json.contains("\"variantId\":\"glyphRun\""));
-        assert!(json.contains("\"glyphIds\":[42]"));
+        assert!(json.contains("\"glyphIds\":[1]"));
         assert!(json.contains("\"replayEligibility\":\"portable\""));
         assert!(json.contains("\"strictVisualEligible\":true"));
         assert!(json.contains("\"slotDiagnostics\":[{\"paintOrderSlotId\":\"text-0\""));
@@ -4251,6 +4497,8 @@ mod tests {
                             radial_gradient_path: None,
                             sweep_gradient_path: None,
                             transform: None,
+                            composite: None,
+                            clip: None,
                             source_range_utf8: Some(TextSourceRange::new(0, 1)),
                             glyph_range: Some(GlyphRange::new(0, 1)),
                             source_font_ref: Some(FontColorGlyphRef {
@@ -4468,6 +4716,7 @@ mod tests {
                     glyph_range: GlyphRange::new(0, 1),
                     view_box: BoundingBox::new(0.1234, 0.5678, 10.9876, 10.5432),
                     intrinsic_size: Some(LayerVector { dx: 10.0, dy: 10.0 }),
+                    font_em_box: None,
                     static_sanitized: true,
                     script_allowed: false,
                     animation_allowed: false,
@@ -4632,6 +4881,7 @@ mod tests {
                         EquationNode {
                             svg_content: "<text>x</text>".to_string(),
                             layout_box: LayoutBox {
+                                font_size: 12.0,
                                 x: 0.0,
                                 y: 0.0,
                                 width: 8.0,

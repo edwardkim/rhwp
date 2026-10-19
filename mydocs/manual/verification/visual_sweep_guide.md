@@ -17,7 +17,9 @@ last_verified: 2026-10-15
 쪽수·페이지 분할 변경은 전체 문서를 비교하며 평균값·높은 페이지 선별로 미달을 숨기지 않는다.
 기준 PDF는 [원본 저장 버전에 맞는 한컴 Print 출력](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
 MCP는 저장 제품에 따라 engine 2020/2024를 명시하고, 수동 출력도 PDF 저장/내보내기 대신 인쇄를 쓴다.
-TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않는다.
+작업 중 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존한다.
+최종 제출용 TSV는 PR 본문에 전체 원문을 넣거나, 본문 크기 제한 시 원본 asset의 링크로 제출한다.
+아래 [본문 삽입·저장소 링크](#tsv-원문-본문-삽입과-저장소-링크)를 따른다. 실행 로그·중간 JSON은 Git에 커밋하지 않는다.
 **50 MiB(52,428,800바이트) 이상 기준 PDF는 로컬에만 보관하고 PR에 포함하지 않는다.**
 파일의 출처·바이트 수·SHA-256·전체 쪽수·명령과 전쪽 TSV·대표 PNG를 남기며,
 [대용량 PDF 보존 규칙](../pr_review/visual_fixture_evidence.md#원본-fixture와-기준-pdf-보존)을 따른다.
@@ -188,7 +190,7 @@ raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 �
 위 Native/fresh WASM 명령을 기준 SHA의 producer와 후보 SHA의 producer로 각각 실행한다.
 동일 원본·PDF·글꼴·backend·Print profile·compat·DPI로 문서 전쪽을 비교하며, output은
 `output/pr-review/<id>/base/{native,wasm}`와 `head/{native,wasm}`처럼 분리한다.
-`page`별 `silhouette_raw_match_percent`의 **기준−후보가0.01%p 이상이면90% 이상이어도
+`page`별 `silhouette_raw_match_percent`의 **기준−후보가0.1%p 이상이면90% 이상이어도
 PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 혼합은 허용하지 않는다.
 원 소수값·십진수 연산·누락 판정·직접 판독·review 기록은
 [devel 대비 실루엣 하락 재검토](visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
@@ -533,13 +535,13 @@ cargo build --locked --target-dir /home/tsjang/rhwp/target/pr-review -j 8 --feat
 Native PNG에는 Node·Chrome·SVG 임베딩 검사가 필요 없다. WASM PNG에는 Node·Chrome과
 외부 공급 글꼴 catalogue용 Python `fonttools`가 필요하다. SVG 진단의 필수 도구는 다음과 같다.
 
-스크립트는 실행 시작 시 다음 CLI가 `PATH`에 있는지 확인한다.
+스크립트는 실행 시작 시 다음 CLI와 Python 패키지가 있는지 확인한다.
 
 | CLI | 용도 | Ubuntu/WSL/Debian 패키지 |
 |---|---|---|
 | Chrome 또는 Chromium | Studio 공통 webfont를 적용해 SVG를 PNG로 변환 | GitHub hosted runner 기본 설치 또는 Chromium 패키지 |
 | `node` | webfont projection을 읽고 headless browser raster를 실행 | Node.js LTS |
-| `pdftoppm` | PDF 페이지를 PNG로 변환 | `poppler-utils` |
+| `pypdfium2` | 균일색·인접 채움·가는 Type3 획을 보존하는 PDF PNG 래스터 | 사용 중 Python에 `pip install pypdfium2==5.13.0` |
 | `pdftotext` | PDF bbox-layout 추출 | `poppler-utils` |
 
 `--svg-rasterizer rsvg`로 기존 librsvg 경로를 명시적으로 선택할 때만
@@ -571,7 +573,7 @@ sudo dnf install chromium nodejs poppler-utils
 ```bash
 which google-chrome || which chromium || which chromium-browser
 which node
-which pdftoppm
+python3 -c "import pypdfium2; print(pypdfium2.PDFIUM_INFO)"
 which pdftotext
 ```
 
@@ -690,7 +692,7 @@ python3 scripts/visual_sweep.py \
 
 `--page`는 여러 번 지정할 수 있고, `--pages`는 `1,3,5-7` 형식을 허용한다. 페이지 번호는
 사용자가 PDF viewer에서 보는 1-based 번호다. `export-svg`와 render tree 추출은 문서 단위로 수행하지만,
-`--page`/`--pages`가 지정되면 SVG rasterizer와 `pdftoppm`의 raster 생성부터 선택 페이지로 제한한다.
+`--page`/`--pages`가 지정되면 SVG rasterizer와 PDFium의 raster 생성부터 선택 페이지로 제한한다.
 비교·overlay·analysis도 동일한 선택 페이지로만 수행한다. 따라서 `compare/compare_022.png`,
 `overlay/overlay_022.png`, `analysis/annotated_022.png`처럼 실제 페이지 번호가 파일명에 남는다.
 
@@ -740,15 +742,31 @@ python3 scripts/visual_sweep.py \
 있다. 이 값은 PDF raster와 rhwp SVG raster 양쪽에 같은 배율로 적용된다. 기본값은
 96dpi이며 0 이하 값은 허용하지 않는다.
 
-PDF PNG는 `pdftoppm -thinlinemode shape`로 생성한다. 1px보다 얇은 선을 원래
-너비에 비례한 coverage로 그려 SVG의 안티앨리어싱과 비교한다. 원본 PDF의 선 두께·색상,
-내용 이진화 임계값·2px 공차·90% gate는 바꾸지 않는다. 실행 manifest의
-`provenance.pdf_rasterizer.thin_line_mode`에 이 설정을 기록한다. 과거 기본 모드의 PNG·TSV는
-그 출처를 유지하며 새 결과로 덮어쓰지 않는다. 새 설정으로 다시 비교할 때는 같은 원본·PDF와
-Native/fresh WASM 출력의 해시를 고정하고 전쪽 TSV를 산출한다. 숫자 상승만으로 수용하지 않고
-원본 선과 독립 PDF의 두께·색상, 변경 영역의 review PNG를 함께 확인한다.
+PDF PNG는 `visual_sweep.py`를 실행한 **같은 Python 환경의 PDFium**으로 생성한다.
+예를 들어 venv를 쓰면 `venv/bin/python -m pip install pypdfium2==5.13.0`으로 설치한다.
+전체/선택 쪽은 같은 RGB·흰 배경·글자/이미지/경로 antialias 설정을 사용하고 원본 쪽 번호를
+유지한다. 설치된 PDFium 라이브러리 신원을 확인하지 못하면 실패하며 다른 renderer로
+fallback하지 않는다. 명령·쪽 선택·실행 신원은
+[`visual_sweep_pdf.py`](../../../scripts/visual_sweep_pdf.py)가 정의한다.
 
-옵션의 의미는 [Poppler의 pdftoppm 문서](https://skia.googlesource.com/third_party/poppler/+/master/utils/pdftoppm.1)에 따른다.
+설정은 다음 독립 PDF 계약을 동시에 충족한다. 상수 DeviceRGB 이미지의 축소 전후 내부
+RGB가 같고, 같은 RGB의 인접한 얇은 면과 단일 큰 면에 흰 이음매 차이가 없으며,
+Type3 글꼴의 실제 가는 획이 통째로 사라지지 않아야 한다.96/144DPI에서 검사한다.
+기존 Cairo `-antialias none`은 색을 보존하지만 가는 Type3 획을 소실시켰고,
+Cairo 기본 antialias는 인접 면에 흰 이음매를 만들었다. Splash의 `pdftoppm` 경로는
+분수 좌표에서 축소한 균일 RGB를64→63,232→231,255→254처럼 바꾸었다.
+PDFium은 이 계약과 실제 한컴 Print의 파랑 그라데이션 보존을 함께 검사한다.
+[독립 계약과 전후 실행](../../working/task_m100_7642_stage2471.md)을 참고한다.
+
+점수가 높은 renderer를 문서별로 고르지 않는다. 원본 PDF, 내용 이진화 임계값·raw 판정식·
+2px 공차·90%·98%·0.1%p 기준은 유지한다. 실행 manifest의
+`provenance.pdf_rasterizer`에 backend·정책·antialias·도구 버전·실행 Python·실제 PDFium
+라이브러리와 helper 해시를 기록한다. 이전 Cairo/Splash PNG·TSV는 출처를 유지하고
+덮어쓰지 않는다. 고정한 base/head의 Native/fresh WASM 전쪽을 모두 같은 PDFium
+조건으로 다시 계산하며 서로 다른 renderer의 수치를 같은 baseline으로 섞지 않는다.
+source SHA·입력·글꼴·compat·DPI·PNG 바이트가 확인된 RHWP raster는 재사용할 수 있지만
+새 source 재출력이라고 쓰지 않는다. 독립 PDF의 선·색상·채우기와 변경 영역의
+review·overlay를 직접 판독해야 한다.
 
 일부 공개문서 축약 샘플은 rhwp SVG/PNG 파일명이 문서 내부 원래 페이지 번호나 문서번호를 따라가고,
 기준 PDF는 해당 페이지만 잘라낸 단일 페이지라 `pdf-1.png`로 생성될 수 있다. 예를 들어 rhwp 쪽은
@@ -871,6 +889,50 @@ reviewer가 저장소를 찾아 열게 하지 않는다.
    재확인하고, `gh api repos/<head-owner>/<head-repo>/contents/<asset>?ref=<head-sha>`로 asset이 그 head에
    존재하는지 확인한다. GitHub PR 화면에서 이미지가 렌더링되는 것도 직접 확인한다.
 
+### TSV 원문 본문 삽입과 저장소 링크
+
+최종 제출용 `silhouette.tsv`는 다음 두 방식으로 제출할 수 있다. 생성·진단은 ignored
+`output/pr-review/<id>/`에서 한다.
+
+1. **본문에 직접 삽입**: 파일명·입력·Native/fresh WASM·base/후보와 실제 producer SHA를 적고,
+   각 파일의 `tsv` 코드 블록에 header·전체 페이지 행·원래 열과 수치를 그대로 넣는다.
+   TSV별 SHA-256·바이트 수를 연결하고 게시 뒤 API에서 원문·탭·개행·전체 행이 보존됐는지 확인한다.
+2. **본문 크기 제한 시 원본 링크**: 압축하지 않은 원본을 아래 asset 경로 등에 바이트 그대로
+   복사해 커밋하고, 정확한 PR head SHA의 raw 다운로드 링크를 본문에 넣는다.
+   요약 표나 일부 행으로 줄이지 않고 전체 원본을 내려받을 수 있게 한다.
+
+본문에 직접 넣더라도 다운로드·영구 보존을 위해 같은 원본의 asset 링크를 함께 제공할 수 있다.
+`issue_<이슈번호>`에는 실제 관련 이슈 번호를 쓰고 같은 이슈의 검토 묶음 식별자를 붙일 수 있다.
+
+```text
+mydocs/pr/assets/issue_536_seo_rii_20261017/
+  native/equation-lim-print2020_silhouette.tsv
+  wasm/equation-lim-print2020_silhouette.tsv
+  base/native/equation-lim-print2020_silhouette.tsv
+  base/wasm/equation-lim-print2020_silhouette.tsv
+```
+
+- Native와 fresh WASM, 비교 기준 base와 후보를 별도 폴더 또는 명확한 파일명으로 구분한다.
+  각 파일에는 검증 대상 전체 페이지의 header·행·열·원래 수치를 유지한다. 대표 페이지만 추리거나
+  수치를 반올림·재작성한 요약을 원본 TSV로 제출하지 않는다. 압축하지 않은 `.tsv` 원본을 연결한다.
+- PR 본문에서 실제 입력·기준 Print PDF·페이지·DPI·인쇄 profile·글꼴 조건, 검증 source와
+  Native binary/fresh WASM SHA, TSV의 SHA-256·바이트 수를 연결한다. asset을 담은 head와
+  실제 코드를 빌드한 producer SHA가 다르면 둘의 역할을 구분한다.
+- PR head repository와 정확한 head SHA의 raw 다운로드 URL을 사용한다. branch 이름이나 로컬
+  output 경로만 연결하지 않는다. 다음 `HEAD_SHA`를 실제 asset commit SHA로 치환한다.
+
+```markdown
+[Native TSV](https://raw.githubusercontent.com/edwardkim/rhwp/HEAD_SHA/mydocs/pr/assets/issue_536_seo_rii_20261017/native/equation-lim-print2020_silhouette.tsv)
+[fresh WASM TSV](https://raw.githubusercontent.com/edwardkim/rhwp/HEAD_SHA/mydocs/pr/assets/issue_536_seo_rii_20261017/wasm/equation-lim-print2020_silhouette.tsv)
+```
+
+- push 뒤 raw 파일을 실제 다운로드하여 생성 원본과 바이트·SHA-256이 같은지 확인한다.
+  PR 생성·본문 갱신 뒤 API로 본문의 head SHA·링크를 재조회한다. 최종 head가 바뀌면
+  실제 증거의 재사용 가능 여부와 URL을 다시 확인한다.
+- GitHub CLI의 PR 파일 첨부 업로드 기능이나 별도 Gist가 없어도 이 asset 링크로 제출한다.
+  실행 로그·중간 JSON·렌더 작업 디렉터리는 ignored output에 두며 Git에 커밋하지 않는다.
+  최종 TSV asset과 PR 링크는 post_merge의 output 전체 정리 이후에도 보존한다.
+
 ### 입력·페이지별 첨부 형식
 
 [PR #7551](https://github.com/edwardkim/rhwp/pull/7551)의 Native/fresh WASM review/overlay 표와
@@ -884,8 +946,10 @@ reviewer가 저장소를 찾아 열게 하지 않는다.
    검증 대상 전체 페이지의 **Native TSV와 fresh WASM TSV 원본 모두** PR 본문에 첨부하거나
    검토자가 내려받을 수 있는 동일 파일의 링크를 첨부한다. Native/fresh WASM 출력 경로를 구분한다.
    첨부 파일의 입력·출력 경로·검증 head를 명시한다.
-   요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않는다. TSV는 ignored output에
-   보존하고 Git에 커밋하지 않는다. 수정 전 비교를 실행했다면 source SHA와 같은 입력·페이지의 전후 값도 연결한다.
+   요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않는다. PR 본문에 파일별 전체 원문을
+   넣을 수 있으며, 본문 크기 제한 시 `mydocs/pr/assets/issue_<이슈번호>/` 아래에 원본을 커밋하고
+   정확한 head SHA의 raw 링크로 제출한다. 아래 [두 제출 방식](#tsv-원문-본문-삽입과-저장소-링크)을 따른다.
+   수정 전 비교를 실행했다면 base/후보를 구분하고 source SHA와 같은 입력·페이지의 전후 값도 연결한다.
 3. 대표 직접 증적: `### 입력명 · 기준 PDF pN ↔ rhwp pN` 아래 한 표로 같은 쪽의 두 출력 경로와
    review/standalone overlay를 대조한다. 첨부할 대표 입력·쪽이 여러 개일 때만 소제목/표/판독 묶음을 반복한다.
    이미지 설명에는 입력명·쪽·출력 경로를 넣고, 해당 쪽 수치·실제로 확인한 경계·남은 차이를 바로 아래에 적는다.

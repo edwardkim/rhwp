@@ -1,91 +1,78 @@
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, OnceLock};
 
 use skia_safe::{FontMgr, FontStyle, Typeface};
 
-use crate::renderer::base_family_without_weight_suffix;
+use super::font_catalog::TypefaceCatalog;
+use crate::renderer::{
+    base_family_without_weight_suffix, generic_fallback_for_weight, installed_render_font_aliases,
+    internal_font_family_members,
+};
 
-pub(super) type SystemFontFamilies = HashSet<String>;
+#[derive(Clone, Default)]
+pub(super) struct SystemFontFamilies {
+    names: HashSet<String>,
+    postscript_faces: Arc<OnceLock<HashMap<String, Typeface>>>,
+}
 
-pub(super) type SuppliedTypefaces = HashMap<String, Vec<Typeface>>;
+impl SystemFontFamilies {
+    fn postscript_face(&self, font_mgr: &FontMgr, requested: &str) -> Option<Typeface> {
+        // OpenType name ID 6은 공백·비ASCII·PostScript 구분 문자를 허용하지 않는다.
+        // 일반 family의 이름 수용과 구별하며 없는 한국어 family를 색인하지 않는다.
+        if requested.is_empty()
+            || !requested
+                .bytes()
+                .all(|byte| (33..=126).contains(&byte) && !b"[](){}<>/%".contains(&byte))
+        {
+            return None;
+        }
+        // family와 다른 식별자다. FULL_NAME이나 추측한 접미사를 색인하지 않는다.
+        self.postscript_faces
+            .get_or_init(|| {
+                let mut faces = HashMap::new();
+                for family in 0..font_mgr.count_families() {
+                    let mut styles = font_mgr.new_style_set(family);
+                    for style in 0..styles.count() {
+                        if let Some(face) = styles.new_typeface(style) {
+                            if let Some(name) = face.post_script_name() {
+                                faces.entry(name).or_insert(face);
+                            }
+                        }
+                    }
+                }
+                faces
+            })
+            .get(requested)
+            .cloned()
+    }
+}
 
-/// CSS/Skia의 폭 → 기울임 → 굵기 순서로 공급 프로그램을 고른다.
-/// https://github.com/google/skia/blob/main/src/core/SkFontMgr.cpp (matchStyleCSS3)
-/// 같은 스타일의 프로그램은 공급 경로에서 먼저 지정한 파일을 보존한다.
+pub(super) fn font_style_for_text(style: &crate::renderer::TextStyle) -> FontStyle {
+    let weight = match style.css_font_weight() {
+        Some("bold") => 700,
+        Some("300") => 300,
+        Some("500") => 500,
+        _ => 400,
+    };
+    FontStyle::new(
+        skia_safe::font_style::Weight::from(weight),
+        skia_safe::font_style::Width::NORMAL,
+        if style.italic {
+            skia_safe::font_style::Slant::Italic
+        } else {
+            skia_safe::font_style::Slant::Upright
+        },
+    )
+}
+
 pub(super) fn match_supplied_family(
-    families: &SuppliedTypefaces,
+    families: &TypefaceCatalog,
     family: &str,
     requested: FontStyle,
 ) -> Option<Typeface> {
-    let rank = |style: FontStyle| {
-        let rw = *requested.width();
-        let cw = *style.width();
-        let width = if rw <= 5 {
-            if cw <= rw {
-                (0, rw - cw)
-            } else {
-                (1, cw - rw)
-            }
-        } else if cw >= rw {
-            (0, cw - rw)
-        } else {
-            (1, rw - cw)
-        };
-        let slant_order = [[0, 2, 1], [2, 0, 1], [2, 1, 0]];
-        let slant = slant_order[requested.slant() as usize][style.slant() as usize];
-        let rw = *requested.weight();
-        let cw = *style.weight();
-        let weight = if rw < 400 {
-            if cw <= rw {
-                (0, rw - cw)
-            } else {
-                (1, cw - rw)
-            }
-        } else if rw <= 500 {
-            if (rw..=500).contains(&cw) {
-                (0, cw - rw)
-            } else if cw < rw {
-                (1, rw - cw)
-            } else {
-                (2, cw - 500)
-            }
-        } else if cw >= rw {
-            (0, cw - rw)
-        } else {
-            (1, rw - cw)
-        };
-        (width, slant, weight)
-    };
-    families
-        .get(family)?
-        .iter()
-        .reduce(|best, face| {
-            if rank(face.font_style()) < rank(best.font_style()) {
-                face
-            } else {
-                best
-            }
-        })
-        .cloned()
+    families.candidates(family, requested).into_iter().next()
 }
-
-const TEXT_FALLBACK_FAMILIES: &[&str] = &[
-    "Noto Sans KR",
-    "Noto Serif KR",
-    "Noto Sans CJK KR",
-    "Noto Serif CJK KR",
-    "Nanum Gothic",
-    "Nanum Myeongjo",
-    "Malgun Gothic",
-    "맑은 고딕",
-    "Batang",
-    "바탕",
-    "Apple SD Gothic Neo",
-    "AppleMyungjo",
-    "DejaVu Sans",
-    "Arial",
-    "sans-serif",
-];
 
 #[derive(Clone)]
 pub(super) struct TypefaceCandidate {
@@ -96,10 +83,10 @@ pub(super) struct TypefaceCandidate {
 /// A supplied face has one Skia primary name, but its SFNT naming table may
 /// declare localized or typographic family names for that same program.
 /// Match family records only: a full face or PostScript name is not a family.
-pub(super) fn supplied_family_names(data: &[u8], primary: &str) -> Vec<String> {
+pub(super) fn supplied_family_names(data: &[u8], face_index: u32, primary: &str) -> Vec<String> {
     let mut families = vec![primary.to_string()];
-    // new_from_data(..., None) loads collection face zero as well.
-    if let Ok(face) = ttf_parser::Face::parse(data, 0) {
+    // Read the same collection face that the bounded catalog constructed.
+    if let Ok(face) = ttf_parser::Face::parse(data, face_index) {
         for name in face.names() {
             if !matches!(
                 name.name_id,
@@ -121,24 +108,47 @@ pub(super) fn supplied_family_names(data: &[u8], primary: &str) -> Vec<String> {
 }
 
 pub(super) fn text_family_candidates(requested: &str) -> Vec<String> {
-    let mut families = Vec::new();
-    for requested in requested
+    text_family_candidates_for_weight(requested, false)
+}
+
+fn text_family_candidates_for_weight(requested: &str, bold: bool) -> Vec<String> {
+    let mut families = declared_family_candidates(requested);
+    let requested_members = internal_font_family_members(requested);
+    // SVG/Canvas와 같은 서체 분류·굵기 계약을 소비한다. 원 바탕 face가
+    // 없다는 이유로 고딕을 우선하거나 굵은 본문에 ExtraLight를 고르지 않는다.
+    // 공통 정책의 정적 CSS 이름만 해제하며 사용자 요청 이름은 아래에서 보존한다.
+    let fallback =
+        generic_fallback_for_weight(requested_members.first().copied().unwrap_or(""), bold);
+    for family in fallback
         .split(',')
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
+        .map(|name| name.trim().trim_matches('\''))
     {
-        if !families.iter().any(|family| family == requested) {
-            families.push(requested.to_string());
+        if !families.iter().any(|candidate| candidate == family) {
+            families.push(family.to_string());
         }
-        if let Some(base) = base_family_without_weight_suffix(requested) {
+    }
+    families
+}
+
+fn declared_family_candidates(requested: &str) -> Vec<String> {
+    let mut families = Vec::new();
+    // CSS 체인을 하나의 family 이름으로 조회하면 설치된 첫 face도 놓친다.
+    // SVG/Canvas와 같은 원본 순서·설치 별칭·굵기 접미사 해소를 소비한다.
+    let requested_members = internal_font_family_members(requested);
+    for requested_family in &requested_members {
+        let requested_family = *requested_family;
+        if !families.iter().any(|family| family == requested_family) {
+            families.push(requested_family.to_string());
+        }
+        for alias in installed_render_font_aliases(requested_family) {
+            if !families.iter().any(|family| family == alias) {
+                families.push((*alias).to_string());
+            }
+        }
+        if let Some(base) = base_family_without_weight_suffix(requested_family) {
             if !families.iter().any(|family| family == &base) {
                 families.push(base);
             }
-        }
-    }
-    for family in TEXT_FALLBACK_FAMILIES {
-        if !families.iter().any(|candidate| candidate == family) {
-            families.push((*family).to_string());
         }
     }
     families
@@ -147,18 +157,19 @@ pub(super) fn text_family_candidates(requested: &str) -> Vec<String> {
 pub(super) fn text_typeface_candidates(
     font_mgr: &FontMgr,
     system_families: &SystemFontFamilies,
-    custom_typefaces: &SuppliedTypefaces,
-    bundled_typefaces: &SuppliedTypefaces,
+    custom_typefaces: &TypefaceCatalog,
+    bundled_typefaces: &TypefaceCatalog,
     requested: &str,
     style: FontStyle,
 ) -> (Vec<String>, Vec<TypefaceCandidate>) {
-    let families = text_family_candidates(requested);
+    let families = text_family_candidates_for_weight(requested, *style.weight() >= 600);
     let chain = typeface_candidates_for_families(
         font_mgr,
         system_families,
         custom_typefaces,
         bundled_typefaces,
         &families,
+        &declared_family_candidates(requested),
         style,
     );
     (families, chain)
@@ -168,30 +179,36 @@ pub(super) fn text_typeface_candidates(
 pub(super) fn typeface_candidates_for_families(
     font_mgr: &FontMgr,
     system_families: &SystemFontFamilies,
-    custom_typefaces: &SuppliedTypefaces,
-    bundled_typefaces: &SuppliedTypefaces,
+    custom_typefaces: &TypefaceCatalog,
+    bundled_typefaces: &TypefaceCatalog,
     families: &[String],
+    postscript_requests: &[String],
     style: FontStyle,
 ) -> Vec<TypefaceCandidate> {
     let mut chain = Vec::new();
     let mut seen = HashSet::new();
     let mut push = |typeface: Typeface, source: &'static str| {
-        let key = typeface.family_name();
+        let key = typeface.unique_id();
         if seen.insert(key) {
             chain.push(TypefaceCandidate { typeface, source });
         }
     };
     for family in families {
-        if let Some(typeface) = match_supplied_family(custom_typefaces, family, style) {
+        for typeface in custom_typefaces.candidates(family, style) {
             push(typeface, "custom");
         }
         // 원 face의 system 프로그램보다 뒤 face의 custom 프로그램을 먼저
         // 고르면 선언 순서를 뒤집는다. 공급 출처는 각 face 내부에서 우선한다.
-        if let Some(typeface) = match_system_family_style(font_mgr, system_families, family, style)
+        // 생성 fallback은 family 요청이다. 원본/설치 별칭의 명시 ID 6만
+        // 별도 프로그램으로 해석하며 같은 family의 문자 fallback은 유지한다.
+        if let Some(typeface) = (has_system_family(system_families, family)
+            || postscript_requests.contains(family))
+        .then(|| match_system_family_style(font_mgr, system_families, family, style))
+        .flatten()
         {
             push(typeface, "system");
         }
-        if let Some(typeface) = match_supplied_family(bundled_typefaces, family, style) {
+        for typeface in bundled_typefaces.candidates(family, style) {
             push(typeface, "bundled");
         }
     }
@@ -245,11 +262,21 @@ thread_local! {
 }
 
 pub(super) fn collect_system_families(font_mgr: &FontMgr) -> SystemFontFamilies {
-    font_mgr.family_names().collect()
+    SystemFontFamilies {
+        names: font_mgr.family_names().collect(),
+        ..Default::default()
+    }
 }
 
 pub(super) fn has_system_family(system_families: &SystemFontFamilies, family: &str) -> bool {
-    system_families.contains(family)
+    // Skia의 실제 family 조회는 ASCII 대소문자를 구분하지 않는다.
+    // 설치 이름 HyhwpEQ를 요청 HYhwpEQ의 사전 필터에서 제외하면
+    // 측정 face 대신 대체 글꼴로 표시하게 된다. 없는 이름은 계속 제외한다.
+    system_families.names.contains(family)
+        || system_families
+            .names
+            .iter()
+            .any(|installed| installed.eq_ignore_ascii_case(family))
 }
 
 pub(super) fn match_system_family_style(
@@ -258,7 +285,7 @@ pub(super) fn match_system_family_style(
     family: &str,
     style: FontStyle,
 ) -> Option<Typeface> {
-    if !has_system_family(system_families, family) {
+    if system_families.names.is_empty() {
         return None;
     }
 
@@ -271,7 +298,13 @@ pub(super) fn match_system_family_style(
             return cached;
         }
 
-        let matched = font_mgr.match_family_style(family, style);
+        let matched = if has_system_family(system_families, family) {
+            font_mgr.match_family_style(family, style)
+        } else {
+            // 설치된 style set의 name ID 6만 조회한다. 없는 이름을 OS에
+            // 질의하면 headless CoreText의 다운로드 IPC를 유발할 수 있다.
+            system_families.postscript_face(font_mgr, family)
+        };
         cache.borrow_mut().insert(key, matched.clone());
         matched
     })
@@ -297,7 +330,7 @@ mod tests {
     #[test]
     fn missing_family_is_filtered_before_system_lookup() {
         let font_mgr = FontMgr::default();
-        let system_families = SystemFontFamilies::new();
+        let mut system_families = SystemFontFamilies::default();
 
         assert!(match_system_family_style(
             &font_mgr,
@@ -306,15 +339,36 @@ mod tests {
             FontStyle::normal(),
         )
         .is_none());
+        system_families
+            .names
+            .insert("RHWP membership witness".into());
+        for name in [
+            "없는 가족",
+            "Missing Family",
+            "Missing/Program",
+            "Font[Face]",
+        ] {
+            assert!(match_system_family_style(
+                &font_mgr,
+                &system_families,
+                name,
+                FontStyle::normal(),
+            )
+            .is_none());
+        }
+        // 사양상 ID 6일 수 없는 요청은 실제 시스템 색인을 시작하지 않는다.
+        assert!(system_families.postscript_faces.get().is_none());
     }
 
     #[test]
-    fn system_family_membership_uses_exact_family_name() {
-        let mut system_families = SystemFontFamilies::new();
-        system_families.insert("AppleGothic".to_string());
+    fn system_family_membership_matches_skia_family_lookup() {
+        let mut system_families = SystemFontFamilies::default();
+        system_families.names.insert("AppleGothic".to_string());
 
         assert!(has_system_family(&system_families, "AppleGothic"));
-        assert!(!has_system_family(&system_families, "applegothic"));
+        assert!(has_system_family(&system_families, "applegothic"));
+        assert!(has_system_family(&system_families, "APPLEGOTHIC"));
+        assert!(!has_system_family(&system_families, "AppleGothic Extra"));
         assert!(!has_system_family(&system_families, "Missing Family"));
     }
 }

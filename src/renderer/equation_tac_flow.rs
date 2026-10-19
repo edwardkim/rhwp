@@ -206,18 +206,9 @@ pub(crate) fn paragraph_line_indent_for_source(
 }
 
 pub(crate) fn paragraph_line_indent(indent: f64, visual_line_idx: usize) -> f64 {
-    paragraph_line_indent_with_scale(indent, visual_line_idx, 1.0)
-}
-
-pub(crate) fn paragraph_line_indent_with_scale(
-    indent: f64,
-    visual_line_idx: usize,
-    indent_scale: f64,
-) -> f64 {
-    let scaled_indent = indent * indent_scale;
     if indent > 0.0 {
         if visual_line_idx == 0 {
-            scaled_indent
+            indent
         } else {
             0.0
         }
@@ -225,7 +216,7 @@ pub(crate) fn paragraph_line_indent_with_scale(
         if visual_line_idx == 0 {
             0.0
         } else {
-            scaled_indent.abs()
+            indent.abs()
         }
     } else {
         0.0
@@ -240,16 +231,7 @@ pub(crate) fn paragraph_effective_margin_left(
     margin_left + paragraph_line_indent(indent, visual_line_idx)
 }
 
-pub(crate) fn paragraph_effective_margin_left_with_indent_scale(
-    margin_left: f64,
-    indent: f64,
-    visual_line_idx: usize,
-    indent_scale: f64,
-) -> f64 {
-    margin_left + paragraph_line_indent_with_scale(indent, visual_line_idx, indent_scale)
-}
-
-fn equation_only_tac_line_assignment(
+pub(crate) fn equation_only_tac_line_assignment(
     para: &Paragraph,
     composed: &ComposedParagraph,
     tac_offsets_px: &[(usize, f64, usize)],

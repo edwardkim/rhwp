@@ -1,8 +1,8 @@
-//! 사각형 BorderFill의 좌표와 색상 stop을 Native shader로 소비한다.
+//! BorderFill의 좌표와 색상 stop을 모든 Native shape shader가 공유한다.
 
 use skia_safe::{
     gradient::{shaders, Colors, Gradient, Interpolation},
-    paint, Color4f, Paint, TileMode,
+    paint, Color4f, Paint, Rect, TileMode,
 };
 
 use crate::renderer::{render_tree::BoundingBox, GradientFillInfo};
@@ -12,7 +12,18 @@ pub(super) fn gradient_paint(
     bounds: &BoundingBox,
     opacity: f64,
 ) -> Option<Paint> {
-    if gradient.colors.len() < 2 || bounds.width <= 0.0 || bounds.height <= 0.0 {
+    let replay_bounds = Rect::from_xywh(
+        bounds.x as f32,
+        bounds.y as f32,
+        bounds.width as f32,
+        bounds.height as f32,
+    );
+    if gradient.colors.len() < 2
+        || gradient.colors.len() > 4096
+        || !replay_bounds.is_finite()
+        || replay_bounds.is_empty()
+        || !opacity.is_finite()
+    {
         return None;
     }
     let (source_colors, positions) = crate::renderer::linear_gradient_color_stops(
@@ -39,18 +50,25 @@ pub(super) fn gradient_paint(
         Interpolation::default(),
     );
     let shader = match gradient.gradient_type {
-        // Canvas와 같은 중심·반경을 소비한다. 원뿔/사각의 현행 근사는 유지한다.
-        2..=4 => shaders::radial_gradient(
-            (
-                (
-                    (bounds.x + bounds.width * f64::from(gradient.center_x) / 100.0) as f32,
-                    (bounds.y + bounds.height * f64::from(gradient.center_y) / 100.0) as f32,
-                ),
-                bounds.width.max(bounds.height) as f32 / 2.0,
-            ),
-            &specification,
-            None,
-        ),
+        2..=4 => {
+            // 원형은 SVG·Canvas와 같은 물리 원을 소비한다. 원뿔/사각의
+            // 기존 원형 근사는 이번에 확인한 원형 계약으로 바꾸지 않는다.
+            let (cx, cy, radius) = crate::renderer::gradient_geometry::radial_circle(
+                (bounds.x, bounds.y, bounds.width, bounds.height),
+                gradient.center_x,
+                gradient.center_y,
+            )?;
+            let radius = if gradient.gradient_type == 2 {
+                radius
+            } else {
+                bounds.width.max(bounds.height) / 2.0
+            };
+            shaders::radial_gradient(
+                ((cx as f32, cy as f32), radius as f32),
+                &specification,
+                None,
+            )
+        }
         _ => {
             let (x0, y0, x1, y1) = crate::renderer::linear_gradient_axis(
                 gradient.angle,

@@ -315,17 +315,8 @@ pub(super) fn lower(
         id += 1;
     }
 
-    paint_orders.sort_by(|a, b| a.1.cmp(&b.1));
-    for (z, (control, _)) in paint_orders.iter().enumerate() {
-        match &mut owner.controls[*control] {
-            Control::Shape(s) => s.common_mut().z_order = z as i32,
-            Control::Picture(p) => p.common.z_order = z as i32,
-            _ => {}
-        }
-    }
-
     let mut unknown_fonts = 0;
-    for span in &page.spans {
+    for (span_index, span) in page.spans.iter().enumerate() {
         if span.text.is_empty() {
             continue;
         }
@@ -376,7 +367,8 @@ pub(super) fn lower(
         )?;
         let width = attrs.width;
         let height = attrs.height;
-        let mut paragraph = text_para(&span.text, shape, width, height);
+        let text = super::structured_lowering::span_text_with_spaces(span);
+        let mut paragraph = text_para(&text, shape, width, height);
         paragraph.para_shape_id = single_line_id;
         paragraph.char_count_msb = true;
         let rect = RectangleShape {
@@ -396,11 +388,21 @@ pub(super) fn lower(
             },
             ..Default::default()
         };
+        paint_orders.push((owner.controls.len(), page.span_orders[span_index].clone()));
         owner
             .controls
             .push(Control::Shape(Box::new(ShapeObject::Rectangle(rect))));
         id += 1;
     }
+    paint_orders.sort_by(|a, b| a.1.cmp(&b.1));
+    for (z, (control, _)) in paint_orders.iter().enumerate() {
+        match &mut owner.controls[*control] {
+            Control::Shape(s) => s.common_mut().z_order = z as i32,
+            Control::Picture(p) => p.common.z_order = z as i32,
+            _ => {}
+        }
+    }
+
     if unknown_fonts > 0 {
         warnings.push(format!(
             "{unknown_fonts} spans have Unknown font; explicit fallback used"

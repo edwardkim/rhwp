@@ -1,6 +1,6 @@
 use super::{
     recognition, table_detection, Budget, ExtractedPage, PdfImportError, MAX_DOCUMENT_IMAGE_PIXELS,
-    MAX_SOURCE_SPANS, MAX_TEXT_BYTES,
+    MAX_TEXT_BYTES,
 };
 use pdf_oxide::PdfDocument;
 use serde_json::json;
@@ -8,9 +8,14 @@ use serde_json::json;
 fn checked<T>(
     pdf: &PdfDocument,
     result: Result<T, pdf_oxide::error::Error>,
+    stage: &'static str,
+    page: usize,
 ) -> Result<T, PdfImportError> {
-    pdf.check_import_budget().map_err(PdfImportError::backend)?;
-    result.map_err(PdfImportError::backend)
+    let error = |error| {
+        PdfImportError::backend(error).at(stage, Some(page), pdf.import_budget().map(AsRef::as_ref))
+    };
+    pdf.check_import_budget().map_err(error)?;
+    result.map_err(error)
 }
 
 pub(super) fn extract(
@@ -18,9 +23,9 @@ pub(super) fn extract(
     page: usize,
     budget: &mut Budget,
 ) -> Result<ExtractedPage, PdfImportError> {
-    let media_box = checked(pdf, pdf.get_page_media_box(page))?;
-    let rotation = checked(pdf, pdf.get_page_rotation(page))?;
-    let visible_box = checked(pdf, pdf.get_page_visible_box(page))?;
+    let media_box = checked(pdf, pdf.get_page_media_box(page), "media_box", page)?;
+    let rotation = checked(pdf, pdf.get_page_rotation(page), "rotation", page)?;
+    let visible_box = checked(pdf, pdf.get_page_visible_box(page), "visible_box", page)?;
     let (left, bottom, right, top) = media_box;
     if rotation != 0 || visible_box != media_box {
         return Err(PdfImportError::new(
@@ -39,24 +44,43 @@ pub(super) fn extract(
             "invalid page dimensions",
         ));
     }
-    let spans = checked(pdf, pdf.extract_painted_spans(page))?;
-    let paths = checked(pdf, pdf.extract_paths(page))?;
+    let (spans, span_orders): (Vec<_>, Vec<_>) =
+        checked(pdf, pdf.extract_ordered_painted_spans(page), "text", page)?
+            .into_iter()
+            .unzip();
+    let paths = checked(pdf, pdf.extract_paths(page), "paths", page)?;
     for path in &paths {
-        budget.path_operations = budget
+        let next = budget
             .path_operations
             .checked_add(path.operations.len())
             .ok_or_else(|| PdfImportError::budget("path operation count overflow"))?;
-        if path.operations.len() > 20_000 || budget.path_operations > 80_000 {
-            return Err(PdfImportError::budget(
-                "document path operation budget exceeded",
-            ));
+        if path.operations.len() > budget.policy.max_path_operations {
+            return Err(
+                PdfImportError::budget("document path operation budget exceeded").limit(
+                    "path operations",
+                    0,
+                    path.operations.len(),
+                    budget.policy.max_path_operations,
+                ),
+            );
         }
+        if next > budget.policy.max_document_path_operations {
+            return Err(
+                PdfImportError::budget("document path operation budget exceeded").limit(
+                    "document path operations",
+                    budget.path_operations,
+                    path.operations.len(),
+                    budget.policy.max_document_path_operations,
+                ),
+            );
+        }
+        budget.path_operations = next;
     }
     budget.spans = budget
         .spans
         .checked_add(spans.len())
         .ok_or_else(|| PdfImportError::budget("span count overflow"))?;
-    if spans.len() > 20_000 || paths.len() > 20_000 || budget.spans > MAX_SOURCE_SPANS {
+    if spans.len() > 20_000 || paths.len() > 20_000 || budget.spans > budget.policy.backend.spans {
         return Err(PdfImportError::budget("extracted element budget exceeded"));
     }
     for span in &spans {
@@ -94,10 +118,25 @@ pub(super) fn extract(
     }
     // Inspect declared image extents before pixel decode. Enumerating handles
     // still decompresses content upstream and is not a parser allocation bound.
-    let handles = checked(pdf, pdf.page_image_handles(page))?;
-    if handles.len() > 32 {
-        return Err(PdfImportError::budget("page image count exceeds 32"));
+    let handles = checked(pdf, pdf.page_image_handles(page), "image_handles", page)?;
+    // Count actual paint placements, not unique resources. Reusing one image
+    // with another CTM/clip/opacity is real output and must not be deduplicated.
+    // Reserve before decode and before allocating the lowered image vectors.
+    let next = budget
+        .image_placements
+        .checked_add(handles.len())
+        .ok_or_else(|| PdfImportError::budget("image placement count overflow"))?;
+    if next > budget.policy.max_document_image_placements {
+        return Err(
+            PdfImportError::budget("document image placement budget exceeded").limit(
+                "document image placements",
+                budget.image_placements,
+                handles.len(),
+                budget.policy.max_document_image_placements,
+            ),
+        );
     }
+    budget.image_placements = next;
     let mut images = Vec::with_capacity(handles.len());
     let mut image_orders = Vec::with_capacity(handles.len());
     for handle in handles {
@@ -125,13 +164,12 @@ pub(super) fn extract(
             ));
         }
         let decoded = handle.decode();
-        pdf.check_import_budget().map_err(PdfImportError::backend)?;
-        let mut image = decoded.map_err(|error| match error {
-            pdf_oxide::error::Error::Unsupported(_) => PdfImportError::new(
-                "PDF_IMAGE_UNSUPPORTED",
-                "image codec or mask is not supported by the bounded import path",
-            ),
-            other => PdfImportError::backend(other),
+        let mut image = checked(pdf, decoded, "image_decode", page).map_err(|mut error| {
+            if error.diagnostics.as_ref().and_then(|d| d.backend_kind) == Some("unsupported") {
+                error.code = "PDF_IMAGE_UNSUPPORTED";
+                error.message = "image codec or mask is not supported by the bounded import path";
+            }
+            error
         })?;
         // Handle decode validates the codec's declared dimensions before mask
         // composition. A higher-resolution mask may then increase the bitmap
@@ -189,6 +227,7 @@ pub(super) fn extract(
             .ok_or_else(|| PdfImportError::budget("missing backend request budget"))?,
         media_box,
         spans,
+        span_orders,
         images,
         image_orders,
         paths,

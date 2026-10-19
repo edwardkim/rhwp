@@ -83,8 +83,10 @@ Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면
 
 기본 빌드에 포함된 `pdf-import`로 PDF를 공통 Document IR로 가져와 HWPX 또는 HWP로 저장한다.
 devel에서 함께 구현하는 기능이며, parser 전체 할당 경계는 아직 미입증이다.
-현재 한도는 입력 16 MiB, 원본 문서 전체 1~128쪽이다. 선택 가져오기에서도 이 원본 한도를
-적용하며 암호화 PDF는 지원하지 않는다.
+기본 요청 정책은 입력 64 MiB, 가져올 쪽 최대 1,024개다. 원본 쪽 인덱스는 선택 쪽수와
+분리하며, page tree의 유한한 참조 방문 예산 안에서 검증한다. 128쪽 이후를 선택할 수도 있다.
+선택하지 않으면 전체 쪽을 가져오므로 1,024쪽을 초과하는 원본에는 선택 범위를 지정한다.
+실제 operator·decoded·그림·자원 ID 등 다른 요청 한도도 적용하며 암호화 PDF는 지원하지 않는다.
 
 ```bash
 cargo build --locked --profile release-test --bin rhwp \
@@ -112,7 +114,7 @@ rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
   진단에 남긴다. 원본 좌표를 담는 `diagnostics.pages`는 비신뢰 문서 파생 필드로 표시한다.
 - 암호 옵션은 이 명령에서 거부한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
   `export-hwpx`의 암호 옵션을 사용한다.
-- `--no-default-features`로 PDF를 제외한 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은
+- `--no-default-features --features wasm-api`로 PDF만 제외한 CLI 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은
   `PDF_IMPORT_DISABLED`(exit 1)다. `capabilities.formats.read`에는 feature-on일 때만 PDF를 넣는다.
 
 feature-on에서는 기존 `info input.pdf --json`, `export-svg input.pdf`,

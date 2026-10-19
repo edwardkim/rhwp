@@ -1,3 +1,5 @@
+pub(crate) use super::font_size::glyph_font_size_is_portable;
+
 /// Export-local identifier for a font blob or collection.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FontBlobKey(pub String);

@@ -69,7 +69,7 @@ after(() => {
   }
 });
 
-test('five backend projections are deterministic and close all 831 registry rules', () => {
+test('five backend projections are deterministic and close all 841 active registry rules', () => {
   const registry = readRegistry();
   const first = buildProjectionBundle(registry);
   const second = buildProjectionBundle(registry);
@@ -81,14 +81,14 @@ test('five backend projections are deterministic and close all 831 registry rule
     registry,
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
-  assert.equal(first.manifest.summary.activeRuleCount, 831);
+  assert.equal(first.manifest.summary.activeRuleCount, 841);
   assert.equal(first.manifest.summary.retiredRuleCount, registry.rules.filter(rule => rule.status === 'retired').length);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
-    'canvas2d-webfont': 153,
-    'canvaskit-sfnt': 158,
-    'rust-layout-metric': 68,
-    'rust-layout-name': 171,
+    'canvas2d-webfont': 154,
+    'canvaskit-sfnt': 159,
+    'rust-layout-metric': 70,
+    'rust-layout-name': 177,
   });
   assert.deepEqual(
     Object.fromEntries(first.outputs.map(output => [
@@ -97,11 +97,13 @@ test('five backend projections are deterministic and close all 831 registry rule
     ]).sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))),
     { ...SEALED_PROJECTION_SHA256,
       // Issue-scoped replacements preserve the sealed historical hashes above.
-      'canvas2d-webfont': 'b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245',
-      // #7196: 같은 실물 글꼴의 한글 이름을 기존 영문 메트릭에 연결한다.
-      'rust-layout-metric': '10448dda2d70a29dba5346245af09d7e308262e94486e9a3da046b183921c44c',
-      // #6936 changes only the New Gulim layout-name decision.
-      'rust-layout-name': 'b619cf7584628d61d930696b1b9a8a6c9c08301b1343463cae054b7dc5c0f142',
+      // Existing #4969 supply rules were already active before #7958.
+      'canvas2d-webfont': '74158e11fbaeabda7894841a43751aa2724842bd140e2ed48cdc7dd4ce362435',
+      'canvaskit-sfnt': 'b118ebc3e757da4ec107fbb80cf8aeee6c64e30601113b86492eda3b888e4e8e',
+      // #7196 / #7966: preserve same-program metric identities, including styled PDF faces.
+      'rust-layout-metric': 'b36c884e942ec501bde20a9dbf8f09fb06d2fed3638e06020a754fb7ad669ef8',
+      // #7958 / #7959 / #7966 preserve PostScript name and full-face identities.
+      'rust-layout-name': '399777eec1e7e184aef01d8b5bba4ef58e9a5a9ea121da94bed922fcf616bbd6',
     },
   );
 });
@@ -219,7 +221,7 @@ test('retired rules remain in the registry but never reach runtime projections',
   const paint = bundle.outputs.find(output => output.projectionId === 'canvas2d-paint');
   assert.equal(paint.ruleCount, 280);
   assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
-  assert.equal(bundle.manifest.summary.activeRuleCount, 830);
+  assert.equal(bundle.manifest.summary.activeRuleCount, 840);
   assert.equal(bundle.manifest.summary.retiredRuleCount, previousRetiredCount + 1);
 });
 
@@ -348,4 +350,24 @@ test('BatangChe supply retains serif paint without changing its metric rule', ()
   const metric = active.find(rule => rule.projections[0].id === 'rust-layout-metric');
   assert.equal(metric.targetFaceOrPolicy, 'BatangChe');
   assert.equal(supply.lifecycle.predecessorRuleIds.length, 1);
+});
+
+// The existing public trace links finite style decisions by this canonical
+// candidate identity. A schema-valid descriptive ruleId cannot satisfy it.
+test('layout-name rule IDs remain joinable by the public font decision trace', () => {
+  const registry = readRegistry();
+  for (const rule of registry.rules.filter(rule =>
+    rule.status === 'active' && rule.projections[0].id === 'rust-layout-name')) {
+    const identity = {
+      sourceBoundaryId: rule.sourceBoundaryId,
+      candidateKind: 'finite-mapping',
+      sourceFace: rule.sourceFace,
+      targetOrPolicy: rule.targetFaceOrPolicy,
+      conditions: rule.conditions,
+      order: rule.order,
+    };
+    assert.equal(rule.ruleId,
+      `rule.rust-style-resolution.${sha256Text(canonicalJson(identity)).slice(0, 20)}`,
+      rule.sourceFace);
+  }
 });

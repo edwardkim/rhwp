@@ -43,6 +43,7 @@ fn render_box(
     italic: bool,
     bold: bool,
 ) {
+    let fs = if lb.font_size > 0.0 { lb.font_size } else { fs };
     let x = parent_x + lb.x;
     let y = parent_y + lb.y;
 
@@ -53,7 +54,7 @@ fn render_box(
                 svg.push_str(&format!(
                     "<text x=\"0\" y=\"0\" transform=\"matrix(1 0 {} 1 {:.2} {:.2})\" font-size=\"{:.2}\" fill=\"{}\" font-family=\"{}\">{}</text>\n",
                     -shear, x + offset, y + lb.baseline + run.baseline_shift, fs, color,
-                    super::hancom_glyphs::FONT_FAMILY, escape_xml(&glyph.to_string()),
+                    run.font_family, escape_xml(&glyph.to_string()),
                 ));
             }
         }
@@ -70,12 +71,17 @@ fn render_box(
             // CJK/한글 텍스트는 이탤릭 없이 렌더링 (수학 변수명만 이탤릭).
             // FontStyle::Roman(`rm` 적용)으로 italic=false 가 전달된 경우에도 이탤릭을 적용하지 않는다.
             let has_cjk = super::text_has_cjk(text);
-            let italic_attr = if !has_cjk && italic {
+            let styled = is_styled_variable(text);
+            let italic_attr = if !has_cjk && italic && !styled {
                 " font-style=\"italic\""
             } else {
                 ""
             };
-            let weight_attr = if bold { " font-weight=\"bold\"" } else { "" };
+            let weight_attr = if bold && !styled {
+                " font-weight=\"bold\""
+            } else {
+                ""
+            };
             if has_cjk && (lb.width - estimate_text_width(text, fi, false)).abs() > 0.01 {
                 for (ch, offset) in super::positioned_cjk_text(text, fi, lb.width) {
                     svg.push_str(&format!(
@@ -122,8 +128,31 @@ fn render_box(
                 text_x, text_y, fi, color, EQ_FONT_FAMILY, esc,
             ));
         }
+        LayoutKind::FontGlyph {
+            text,
+            font_family,
+            outline,
+            paint,
+        } => {
+            if let Some(commands) = outline {
+                let scale_x = paint.map_or(1.0, |p| p.scale_x);
+                let stroke = paint.map_or_else(String::new, |p| format!(
+                    " stroke=\"{color}\" stroke-width=\"{:.6}\" stroke-linejoin=\"miter\" stroke-miterlimit=\"10\"",
+                    p.stroke_width,
+                ));
+                svg.push_str(&format!(
+                    "<path d=\"{}\" transform=\"translate({x:.4},{y:.4}) scale({scale_x:.8},1)\" fill=\"{color}\"{stroke}/>\n",
+                    super::multiplication_outline::path_data(commands),
+                ));
+                return;
+            }
+            svg.push_str(&format!(
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\" font-family=\"{}\">{}</text>\n",
+                x, y + lb.baseline, fs, color, escape_xml(font_family), escape_xml(text),
+            ));
+        }
         LayoutKind::MathSymbol(text) => {
-            // 적분 기호(∫): 폰트 `<text>` 대신 stroke path 로 렌더 (Task #1317).
+            // 적분 기호(∫): 공통 공개 글리프 윤곽을 사용한다.
             // 폰트 미임베딩 SVG 에서 뷰어 대체 폰트의 글리프 bbox 편차로 상·하한이
             // 어긋나던 문제를, 폰트 독립·결정적 path 로 해소한다(geom SSOT).
             if super::layout::is_integral_symbol(text) {
@@ -148,12 +177,17 @@ fn render_box(
                 text_x, text_y, fi, color, EQ_FONT_FAMILY, esc,
             ));
         }
-        LayoutKind::Fraction { numer, denom } => {
+        LayoutKind::Fraction {
+            numer,
+            denom,
+            axis_height,
+            rule_thickness,
+        } => {
             // 분자
             render_box(svg, numer, x, y, color, fs, italic, bold);
             // 분수선 — baseline에서 axis_height 위에 배치
-            let line_y = y + lb.baseline - fs * super::layout::AXIS_HEIGHT;
-            let line_thick = fs * 0.04;
+            let line_y = y + lb.baseline - axis_height;
+            let line_thick = rule_thickness;
             svg.push_str(&format!(
                 "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
                 x + fs * 0.05, line_y,
@@ -168,27 +202,16 @@ fn render_box(
             render_box(svg, bottom, x, y, color, fs, italic, bold);
         }
         LayoutKind::Sqrt { index, body } => {
-            // √ 기호
-            let sign_h = lb.height;
-            let body_left = x + body.x - fs * 0.1;
-            let sign_x = x;
-            // V 모양 경로
-            let v_top = y;
-            let v_mid_x = body_left - fs * 0.15;
-            let v_mid_y = y + sign_h;
-            let v_start_x = v_mid_x - fs * 0.3;
-            let v_start_y = y + sign_h * 0.6;
-            let tick_x = v_start_x - fs * 0.1;
-            let tick_y = v_start_y - fs * 0.05;
-
+            let geometry = super::radical_outline::geometry(lb, body, fs);
             svg.push_str(&format!(
-                "<path d=\"M{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
-                tick_x, tick_y,
-                v_start_x, v_start_y,
-                v_mid_x, v_mid_y,
-                body_left, v_top,
-                x + lb.width, v_top,
-                color, fs * 0.04,
+                "<path d=\"{}\" transform=\"translate({x:.4},{y:.4})\" fill=\"{color}\"/>\n",
+                super::multiplication_outline::path_data(&geometry.outline),
+            ));
+            svg.push_str(&format!(
+                "<line x1=\"{:.4}\" y1=\"{:.4}\" x2=\"{:.4}\" y2=\"{:.4}\" stroke=\"{color}\" stroke-width=\"{:.4}\"/>\n",
+                x + geometry.bar_start.0, y + geometry.bar_start.1,
+                x + geometry.bar_end.0, y + geometry.bar_end.1,
+                geometry.rule_thickness,
             ));
 
             // 인덱스 (있으면)
@@ -196,10 +219,10 @@ fn render_box(
                 render_box(
                     svg,
                     idx,
-                    sign_x,
+                    x,
                     y,
                     color,
-                    fs * super::layout::SCRIPT_SCALE,
+                    fs * super::layout::RADICAL_DEGREE_SCALE,
                     false,
                     false,
                 );
@@ -257,33 +280,29 @@ fn render_box(
                 bold,
             );
         }
-        LayoutKind::BigOp { symbol, sub, sup } => {
+        LayoutKind::BigOp {
+            symbol,
+            sub,
+            sup,
+            op_font_size,
+            op_x,
+            op_y,
+            op_baseline,
+            ..
+        } => {
             let is_integral = super::layout::is_integral_symbol(symbol);
-            // Task #1313: 적분은 전용 스케일(INTEGRAL_SCALE), ∑/∏ 등은 BIG_OP_SCALE.
-            let op_fs = fs
-                * if is_integral {
-                    super::layout::INTEGRAL_SCALE
-                } else {
-                    super::layout::BIG_OP_SCALE
-                };
+            // 생산 단계에서 확정한 표시 글자 크기와 원점을 소비한다.
+            let op_fs = *op_font_size;
             let esc = escape_xml(symbol);
 
             if is_integral {
                 // 적분: 기호는 왼쪽, 첨자는 오른쪽 위/아래 (nolimits).
                 // Task #1317: 폰트 `<text>` 대신 stroke path 로 렌더(geom SSOT).
-                svg.push_str(&integral_path(x, y, fs, color));
+                svg.push_str(&integral_path(x + op_x, y + op_y, fs, color));
             } else {
                 // ∑, ∏ 등: 기호는 중앙, 첨자는 위/아래 (limits)
-                let sup_h = sup.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
-                // Task #1233: 연산자는 max_w(= lb.width - trailing pad)에 중앙정렬 →
-                // pad 전체가 순수 trailing 간격이 되고 첨자(max_w 중앙정렬)와 정렬된다.
-                // #1304: 연산자 폭은 layout 의 estimate_text_width 와 동일 기준을 써야
-                // 첨자(레이아웃이 estimate_text_width 로 max_w 중앙정렬)와 가로 중심이 맞는다.
-                // (기존 estimate_op_width 의 0.6 과소추정 → ∑가 우측으로, 첨자가 좌측으로 보임)
-                let center_w = lb.width - fs * super::layout::BIG_OP_TRAIL_PAD;
-                let op_x =
-                    x + (center_w - super::layout::estimate_text_width(symbol, op_fs, false)) / 2.0;
-                let op_y = y + sup_h + op_fs * 0.8;
+                let op_x = x + op_x;
+                let op_y = y + op_baseline;
                 svg.push_str(&format!(
                     "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
                     op_x, op_y, op_fs, color, EQ_FONT_FAMILY, esc,
@@ -315,29 +334,29 @@ fn render_box(
                 );
             }
         }
-        LayoutKind::Limit { is_upper, sub } => {
-            let name = if *is_upper { "Lim" } else { "lim" };
-            let fi = fs;
-            svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
-                x,
-                y + fi * 0.8,
-                fi,
-                color,
-                EQ_FONT_FAMILY,
-                name,
-            ));
-            if let Some(sub_box) = sub {
-                render_box(
-                    svg,
-                    sub_box,
+        LayoutKind::Limit {
+            is_upper,
+            name,
+            name_font_size,
+            sub_font_size,
+            sub,
+        } => {
+            if let Some(name) = name {
+                render_box(svg, name, x, y, color, name.height, false, false);
+            } else {
+                let name = if *is_upper { "Lim" } else { "lim" };
+                svg.push_str(&format!(
+                    "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
                     x,
-                    y,
+                    y + lb.baseline,
+                    name_font_size,
                     color,
-                    fs * super::layout::SCRIPT_SCALE,
-                    false,
-                    false,
-                );
+                    EQ_FONT_FAMILY,
+                    name,
+                ));
+            }
+            if let Some(sub_box) = sub {
+                render_box(svg, sub_box, x, y, color, *sub_font_size, false, false);
             }
         }
         LayoutKind::Matrix { cells, style } => {
@@ -346,7 +365,7 @@ fn render_box(
                 MatrixStyle::Paren => ("(", ")"),
                 MatrixStyle::Bracket => ("[", "]"),
                 MatrixStyle::Vert => ("|", "|"),
-                MatrixStyle::Plain => ("", ""),
+                MatrixStyle::Plain | MatrixStyle::Ladder | MatrixStyle::ShortLadder => ("", ""),
             };
             if !bracket_chars.0.is_empty() {
                 draw_stretch_bracket(svg, bracket_chars.0, x, y, fs * 0.3, lb.height, color, fs);
@@ -381,41 +400,103 @@ fn render_box(
                 render_box(svg, right, x, y, color, fs, italic, bold);
             }
         }
-        LayoutKind::Paren { left, right, body } => {
+        LayoutKind::Paren {
+            left,
+            right,
+            left_width,
+            right_width,
+            delimiter_height,
+            glyph_delimiters,
+            left_outline,
+            right_outline,
+            body,
+        } => {
             // 텍스트 높이 파렌(`(`, `)`)은 폰트 글리프로 렌더, 그 외는 path. (Task #283)
-            let use_glyph = lb.height <= fs * 1.2;
-            let paren_w = if use_glyph { fs * 0.333 } else { fs * 0.27 };
+            let use_glyph = *glyph_delimiters;
             // 왼쪽 괄호
             if !left.is_empty() {
-                if use_glyph && (left == "(" || left == ")") {
+                if let Some(commands) = left_outline {
+                    let path = super::multiplication_outline::path_data(commands);
+                    svg.push_str(&format!("<path d=\"{path}\" transform=\"translate({x:.4},{y:.4})\" fill=\"{color}\"/>\n"));
+                } else if use_glyph && (left == "(" || left == ")") {
                     svg.push_str(&format!(
                         "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
                         x, y + lb.baseline, fs, color, EQ_FONT_FAMILY, escape_xml(left),
                     ));
                 } else {
-                    draw_stretch_bracket(svg, left, x, y, paren_w, lb.height, color, fs);
+                    draw_stretch_bracket(
+                        svg,
+                        left,
+                        x,
+                        y,
+                        *left_width,
+                        *delimiter_height,
+                        color,
+                        fs,
+                    );
                 }
             }
             // 본체
             render_box(svg, body, x, y, color, fs, italic, bold);
             // 오른쪽 괄호
             if !right.is_empty() {
-                let right_x = x + lb.width - paren_w;
-                if use_glyph && (right == "(" || right == ")") {
+                let right_x = x + lb.width - right_width;
+                if let Some(commands) = right_outline {
+                    let path = super::multiplication_outline::path_data(commands);
+                    svg.push_str(&format!("<path d=\"{path}\" transform=\"translate({right_x:.4},{y:.4})\" fill=\"{color}\"/>\n"));
+                } else if use_glyph && (right == "(" || right == ")") {
                     svg.push_str(&format!(
                         "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}>{}</text>\n",
                         right_x, y + lb.baseline, fs, color, EQ_FONT_FAMILY, escape_xml(right),
                     ));
                 } else {
-                    draw_stretch_bracket(svg, right, right_x, y, paren_w, lb.height, color, fs);
+                    draw_stretch_bracket(
+                        svg,
+                        right,
+                        right_x,
+                        y,
+                        *right_width,
+                        *delimiter_height,
+                        color,
+                        fs,
+                    );
                 }
             }
         }
-        LayoutKind::Decoration { kind, body } => {
+        LayoutKind::Decoration {
+            kind,
+            body,
+            negation,
+            outline,
+        } => {
             render_box(svg, body, x, y, color, fs, italic, bold);
-            let deco_y = y + fs * 0.05;
-            let mid_x = x + body.x + body.width / 2.0;
-            draw_decoration(svg, *kind, mid_x, deco_y, body.width, color, fs);
+            if let Some(commands) = outline {
+                svg.push_str(&format!(
+                    "<path d=\"{}\" transform=\"translate({x:.4},{y:.4})\" fill=\"{color}\"/>\n",
+                    super::multiplication_outline::path_data(commands),
+                ));
+            } else if *kind == DecoKind::StrikeThrough {
+                let g = negation
+                    .clone()
+                    .unwrap_or_else(|| super::negation_geometry::geometry(body));
+                svg.push_str(&format!(
+                    "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
+                    x + g.start.0, y + g.start.1, x + g.end.0, y + g.end.1, color, g.thickness,
+                ));
+            } else if *kind == DecoKind::Box {
+                svg.push_str(&format!(
+                    "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
+                    x, y, lb.width, lb.height, color, fs * 0.03,
+                ));
+            } else {
+                let deco_y = y + fs * 0.05;
+                let mid_x = x + body.x + body.width / 2.0;
+                draw_decoration(svg, *kind, mid_x, deco_y, body.width, color, fs);
+            }
+        }
+        LayoutKind::Color { rgb, body } => {
+            let body_color = format!("#{:02x}{:02x}{:02x}", rgb[0], rgb[1], rgb[2]);
+            render_box(svg, body, x, y, &body_color, fs, italic, bold);
         }
         LayoutKind::FontStyle { style, body } => {
             let (new_italic, new_bold) = match style {
@@ -433,28 +514,34 @@ fn render_box(
     }
 }
 
-/// 적분 기호(∫)를 stroke path 로 렌더 (Task #1317).
-///
-/// 글리프 박스 좌상단 `(x, y)` 기준으로 `integral_geom` 의 기하를 사용해 한 줄짜리
-/// S-곡선(bottom-left → top-right, 양끝 갈고리)을 그린다. 폰트에 의존하지 않으므로
-/// SVG 뷰어/환경에 무관하게 동일한 visual bbox 를 보장하며, layout 의 상·하한
-/// attach point(동일 geom)와 정합한다.
+/// 공개 표시 글꼴의 적분 윤곽을 공통 ink 영역에 배치한다.
+/// 측정에서 정한 점유와 첨자 원점을 유지하며 모든 backend에 같은 경로를 전달한다.
+pub(crate) fn integral_path_data(x: f64, y: f64, fs: f64) -> String {
+    use super::integral_outline::{commands, Command};
+    use std::fmt::Write;
+    let mut path = String::new();
+    for command in commands(x, y, fs) {
+        match command {
+            Command::Move((x, y)) => {
+                let _ = write!(path, "M{x:.4},{y:.4}");
+            }
+            Command::Line((x, y)) => {
+                let _ = write!(path, "L{x:.4},{y:.4}");
+            }
+            Command::Cubic([(a, b), (c, d), (e, f)]) => {
+                let _ = write!(path, "C{a:.4},{b:.4} {c:.4},{d:.4} {e:.4},{f:.4}");
+            }
+            Command::Close => path.push('Z'),
+        }
+    }
+    path
+}
+
 fn integral_path(x: f64, y: f64, fs: f64, color: &str) -> String {
-    let g = integral_geom(fs);
-    let h = g.bottom_y - g.top_y;
-    // 하단 갈고리 끝(좌하) → 상단 갈고리 끝(우상). 하부는 우측, 상부는 좌측으로
-    // 휘어 적분기호 특유의 기운 S 형태를 만든다(round cap 으로 갈고리 표현).
-    let p0x = x + g.bottom_hook_x;
-    let p0y = y + g.bottom_y;
-    let p3x = x + g.top_hook_x;
-    let p3y = y + g.top_y;
-    let c1x = x + g.width * 1.02;
-    let c1y = y + g.bottom_y - h * 0.30;
-    let c2x = x - g.width * 0.10;
-    let c2y = y + g.top_y + h * 0.30;
     format!(
-        "<path d=\"M{:.2},{:.2} C{:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\" stroke-linecap=\"round\"/>\n",
-        p0x, p0y, c1x, c1y, c2x, c2y, p3x, p3y, color, g.stroke_w,
+        "<path d=\"{}\" fill=\"{}\"/>\n",
+        integral_path_data(x, y, fs),
+        color
     )
 }
 
@@ -478,6 +565,15 @@ fn draw_stretch_bracket(
     color: &str,
     fs: f64,
 ) {
+    if matches!(bracket, "{" | "}") {
+        let commands = super::brace_stretch::commands(x, y, w, h, fs, bracket == "}");
+        svg.push_str(&format!(
+            "<path d=\"{}\" fill=\"{}\"/>\n",
+            super::multiplication_outline::path_data(&commands),
+            color
+        ));
+        return;
+    }
     let mid_x = x + w / 2.0;
     let stroke_w = if matches!(bracket, "(" | ")") {
         (fs * 0.042).max(0.48)
@@ -522,38 +618,6 @@ fn draw_stretch_bracket(
                 mid_x - w * 0.2, y,
                 mid_x + w * 0.2, y,
                 mid_x + w * 0.2, y + h,
-                mid_x - w * 0.2, y + h,
-                color, stroke_w,
-            ));
-        }
-        "{" => {
-            let qh = h / 4.0;
-            svg.push_str(&format!(
-                "<path d=\"M{:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
-                mid_x + w * 0.2, y,
-                mid_x - w * 0.1, y,
-                mid_x - w * 0.1, y + qh,
-                mid_x - w * 0.1, y + qh * 2.0,
-                mid_x - w * 0.3, y + qh * 2.0,
-                mid_x - w * 0.1, y + qh * 2.0,
-                mid_x - w * 0.1, y + qh * 3.0,
-                mid_x - w * 0.1, y + h,
-                mid_x + w * 0.2, y + h,
-                color, stroke_w,
-            ));
-        }
-        "}" => {
-            let qh = h / 4.0;
-            svg.push_str(&format!(
-                "<path d=\"M{:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2} Q{:.2},{:.2} {:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
-                mid_x - w * 0.2, y,
-                mid_x + w * 0.1, y,
-                mid_x + w * 0.1, y + qh,
-                mid_x + w * 0.1, y + qh * 2.0,
-                mid_x + w * 0.3, y + qh * 2.0,
-                mid_x + w * 0.1, y + qh * 2.0,
-                mid_x + w * 0.1, y + qh * 3.0,
-                mid_x + w * 0.1, y + h,
                 mid_x - w * 0.2, y + h,
                 color, stroke_w,
             ));
@@ -680,7 +744,7 @@ fn draw_decoration(
             ));
         }
         _ => {
-            // Check, Acute, Grave, Arch, StrikeThrough 등 간략 처리
+            // Check, Acute, Grave, Arch 등 간략 처리
             svg.push_str(&format!(
                 "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
                 mid_x - half_w * 0.5, y + fs * 0.1,
@@ -735,6 +799,17 @@ mod tests {
         render_equation_svg(&layout, "#000000", 20.0)
     }
 
+    /// 분리된 글리프도 실제 SVG 텍스트 노드의 순서로 검사한다.
+    fn rendered_text(svg: &str) -> String {
+        let wrapped = format!("<svg>{svg}</svg>");
+        let document = roxmltree::Document::parse(&wrapped).expect("유효한 수식 SVG");
+        document
+            .descendants()
+            .filter(|node| node.has_tag_name("text"))
+            .filter_map(|node| node.text())
+            .collect()
+    }
+
     #[test]
     fn escape_xml_drops_xml_invalid_control_chars() {
         // #3382: 수식 SVG 는 본문 SVG(renderer/svg.rs)와 달리 XML 1.0 문자 필터가 없어,
@@ -760,7 +835,11 @@ mod tests {
     fn test_simple_text_svg() {
         let svg = render_eq("abc");
         assert!(svg.contains("<text"));
-        assert!(svg.contains("abc"));
+        assert_eq!(
+            rendered_text(&svg),
+            "𝑎𝑏𝑐",
+            "변수 내용·순서·이탤릭 글리프 보존"
+        );
     }
 
     #[test]
@@ -827,8 +906,8 @@ mod tests {
         );
         assert!(svg.contains(">cos<"), "cos 함수가 렌더링되어야 함: {}", svg);
         assert!(
-            svg.contains(">π<"),
-            "pi 명령은 문자 π로 렌더링되어야 함: {}",
+            rendered_text(&svg).contains('𝜋'),
+            "pi 명령의 이탤릭 수학 글리프가 보존되어야 함: {}",
             svg
         );
         assert!(
@@ -863,13 +942,9 @@ mod tests {
 
     #[test]
     fn test_default_text_is_italic() {
-        // hwpeq 기본: 라틴 변수는 italic
+        // 독립 한컴 Print의 기본 변수는 이탤릭이다. Unicode 수학 글리프도 같은 의미다.
         let svg = render_eq("K");
-        assert!(
-            svg.contains("font-style=\"italic\""),
-            "기본 변수는 italic: {}",
-            svg
-        );
+        assert!(rendered_text(&svg) == "𝐾", "기본 변수는 italic: {}", svg);
     }
 
     #[test]
@@ -908,10 +983,9 @@ mod tests {
 
     #[test]
     fn test_it_keeps_italic() {
-        // it K (이탤릭 명시): italic 적용
+        // 명시 이탤릭은 CSS 속성 유무 대신 실제 이탤릭 수학 글리프를 검사한다.
         let svg = render_eq("it K");
-        assert!(svg.contains("font-style=\"italic\""));
-        assert!(svg.contains(">K<"));
+        assert_eq!(rendered_text(&svg), "𝐾");
     }
 
     #[test]

@@ -12,12 +12,36 @@ use crate::model::{
 };
 use crate::renderer::hwpunit_to_px;
 
-/// Field와 hyperlink는 글자 위치의 인라인 metadata다. 저장 vpos reset의 본문 흐름을
-/// 해석할 때 표·그림·각주처럼 줄이나 쪽을 점유하는 control과 구별한다.
-fn controls_are_inline_text_metadata(para: &Paragraph) -> bool {
-    para.controls
+/// 저장 경계 앞의 글줄과 다음 조각에 속한 떠 있는 그림을 구분한다.
+/// 다음 조각의 그림 때문에 앞 글줄의 유효한 쪽 경계를 버리지 않는다.
+fn controls_allow_stored_text_boundary(para: &Paragraph, text_start: u32) -> bool {
+    if para
+        .controls
         .iter()
         .all(|control| matches!(control, Control::Field(_) | Control::Hyperlink(_)))
+    {
+        return true;
+    }
+    let positions = para.control_utf16_positions();
+    para.controls.iter().enumerate().all(|(index, control)| {
+        if matches!(control, Control::Field(_) | Control::Hyperlink(_)) {
+            return true;
+        }
+        let common = match control {
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => match shape.as_ref() {
+                crate::model::shape::ShapeObject::Picture(picture) => &picture.common,
+                _ => return false,
+            },
+            _ => return false,
+        };
+        !common.treat_as_char
+            && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+            && !para.char_offsets.is_empty()
+            && positions
+                .get(index)
+                .is_some_and(|&position| position >= text_start && position < para.char_count)
+    })
 }
 
 /// An authoritative page-start flag owns the following physical fragment.
@@ -65,9 +89,7 @@ pub(super) fn internal_vpos_page_break_line(
     }
 
     let first = para.line_segs.first()?;
-    let text_vpos_rewind = source_uses_inline_field_reset
-        && para_has_visible_text(para)
-        && controls_are_inline_text_metadata(para);
+    let text_vpos_rewind = source_uses_inline_field_reset && para_has_visible_text(para);
 
     // [Issue #2006] 빈-텍스트 문단에 전면(full-page) tac 이미지가 다수 스택된 경우
     // (예: 1790387 PrEP 보고서 pi=367, tac 그림 2장 각 lh≈900px, vpos=0..0), 한글은
@@ -109,6 +131,9 @@ pub(super) fn internal_vpos_page_break_line(
             let prev = &pair[0];
             let cur = &pair[1];
             if is_synthetic_line_seg(prev) || is_synthetic_line_seg(cur) || prev.vertical_pos <= 0 {
+                return None;
+            }
+            if !controls_allow_stored_text_boundary(para, cur.text_start) {
                 return None;
             }
 

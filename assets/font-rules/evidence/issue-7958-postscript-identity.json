@@ -1,0 +1,34 @@
+{
+  "fontFile": "H2HDRM.TTF",
+  "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+  "unitsPerEm": 1024,
+  "fontRevision": 1.0,
+  "weightClass": 400,
+  "names": [
+    [
+      1,
+      "HYHeadLine-Medium"
+    ],
+    [
+      1,
+      "HY헤드라인M"
+    ],
+    [
+      2,
+      "Regular"
+    ],
+    [
+      4,
+      "HYHeadLine-Medium"
+    ],
+    [
+      4,
+      "HY헤드라인M"
+    ],
+    [
+      6,
+      "H2hdrM"
+    ]
+  ],
+  "scope": "Installed proprietary font identity metadata only. No font bytes are distributed. PostScript name and family/full names identify the same program; no glyph substitution or weight change is authorized by this evidence."
+}

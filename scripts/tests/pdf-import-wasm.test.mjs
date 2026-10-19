@@ -15,10 +15,10 @@ const pkg = resolve(process.env.PDF_IMPORT_PKG || join(root, 'pkg'));
 const disabledPkg = process.env.PDF_IMPORT_DISABLED_PKG;
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 
-function syntheticPdf() {
+function syntheticPdf(pageCount = 3) {
   const objects = ['<< /Type /Catalog /Pages 2 0 R >>', ''];
   const kids = [];
-  for (const text of ['FIRST', 'SECOND', 'THIRD']) {
+  for (const text of Array.from({length: pageCount}, (_, i) => ['FIRST', 'SECOND', 'THIRD'][i] ?? `PAGE_${i + 1}`)) {
     const page = objects.length + 1;
     kids.push(`${page} 0 R`);
     const content = `BT /F1 12 Tf 30 140 Td (${text}) Tj ET`;
@@ -26,7 +26,7 @@ function syntheticPdf() {
     objects.push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
     objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
   }
-  objects[1] = `<< /Type /Pages /Count 3 /Kids [${kids.join(' ')}] >>`;
+  objects[1] = `<< /Type /Pages /Count ${pageCount} /Kids [${kids.join(' ')}] >>`;
   let pdf = '%PDF-1.4\n';
   const offsets = [];
   objects.forEach((object, i) => { offsets.push(pdf.length); pdf += `${i + 1} 0 obj\n${object}\nendobj\n`; });
@@ -54,8 +54,13 @@ test('Docker product WASM: public API, active document isolation and real Worker
     add(`/rhwp-shared/pdf/${name}`, join(root, 'rhwp-shared/pdf', name), 'text/javascript');
   }
   add('/real.pdf', join(root, 'pdf/issue5875/nested_table_text_caption-2020.pdf'), 'application/pdf');
+  add('/placements.pdf', join(root, 'pdf/issue7966/image-placement-controls.pdf'), 'application/pdf');
+  add('/slides.pdf', join(root, 'pdf/issue7966/exceeds-32.pdf'), 'application/pdf');
+  add('/scan-buffers.pdf', join(root, 'pdf/issue7971/scan-jpeg-buffer-controls.pdf'), 'application/pdf');
+  add('/colour-source.pdf', join(root, 'samples/issue7959/bounded-import-path.pdf'), 'application/pdf');
   add('/control.hwp', join(root, 'samples/hwp_table_test.hwp'), 'application/octet-stream');
   files.set('/synthetic.pdf', ['application/pdf', syntheticPdf()]);
+  files.set('/synthetic-many-pages.pdf', ['application/pdf', syntheticPdf(1025)]);
   const server = http.createServer((req, res) => {
     if (req.url === '/') { res.setHeader('Content-Type', 'text/html'); res.end('<!doctype html><meta charset="utf-8">'); return; }
     const file = files.get(req.url);
@@ -89,6 +94,8 @@ test('Docker product WASM: public API, active document isolation and real Worker
       }
       const bytes = new Uint8Array(await (await fetch('/synthetic.pdf')).arrayBuffer());
       const real = new Uint8Array(await (await fetch('/real.pdf')).arrayBuffer());
+      const placements = new Uint8Array(await (await fetch('/placements.pdf')).arrayBuffer());
+      const slides = new Uint8Array(await (await fetch('/slides.pdf')).arrayBuffer());
       const controlBytes = new Uint8Array(await (await fetch('/control.hwp')).arrayBuffer());
       if (hasDisabled) {
         const disabled = await import('/disabled/rhwp.js'); await disabled.default();
@@ -101,6 +108,53 @@ test('Docker product WASM: public API, active document isolation and real Worker
       }
       const wasm = await import('/pkg/rhwp.js'); await wasm.default();
       check(wasm.HwpDocument.supportsPdfImport() === true, 'PDF runtime advertises PDF enabled');
+      const policy = JSON.parse(wasm.HwpDocument.getPdfImportPolicy());
+      check(policy.schemaVersion === 1 && Number.isSafeInteger(policy.backend.inputBytes), 'runtime supplies the policy used before transfer');
+      check(Number.isSafeInteger(policy.maxDocumentImagePlacements) && policy.maxDocumentImagePlacements >= 99,
+        'runtime exposes the bounded cumulative image placement policy');
+      const repeated = wasm.HwpDocument.importPdf(placements, {});
+      try {
+        check(repeated.pageCount() === 3, 'XObject, Form and inline placement pages remain distinct');
+        for (let p = 0; p < 3; p++) {
+          const xml = new DOMParser().parseFromString(repeated.renderPageSvg(p), 'image/svg+xml');
+          check(xml.querySelectorAll('image').length === 33, `page ${p + 1} preserves every repeated image paint`);
+        }
+      } finally { repeated.free(); }
+      const scanBytes = new Uint8Array(await (await fetch('/scan-buffers.pdf')).arrayBuffer());
+      const scanImages = svg => [...new DOMParser().parseFromString(svg, 'image/svg+xml').querySelectorAll('image')].map(n => n.getAttribute('href') || n.getAttributeNS('http://www.w3.org/1999/xlink', 'href'));
+      const scans = wasm.HwpDocument.importPdf(scanBytes, {});
+      try {
+        check(scans.pageCount() === 5, 'scan-sized JPEG buffers import all five source pages');
+        for (let p = 0; p < 5; p++) {
+          const xml = new DOMParser().parseFromString(scans.renderPageSvg(p), 'image/svg+xml');
+          check(xml.querySelectorAll('image').length === 1, `scan page ${p + 1} retains its source image`);
+        }
+        for (const [name, saved] of [['hwp', scans.exportHwp()], ['hwpx', scans.exportHwpx()]]) {
+          const reopened = new wasm.HwpDocument(saved);
+          try {
+            check(reopened.pageCount() === 5, `scan JPEG ${name} save/reopen preserves all pages`);
+            for (let p = 0; p < 5; p++) {
+              const xml = new DOMParser().parseFromString(reopened.renderPageSvg(p), 'image/svg+xml');
+              check(xml.querySelectorAll('image').length === 1 && JSON.stringify(scanImages(reopened.renderPageSvg(p))) === JSON.stringify(scanImages(scans.renderPageSvg(p))), `scan JPEG ${name} page ${p + 1} keeps its image bytes`);
+            }
+          } finally { reopened.free(); }
+        }
+      } finally { scans.free(); }
+      const colourBytes = new Uint8Array(await (await fetch('/colour-source.pdf')).arrayBuffer());
+      const colourDoc = wasm.HwpDocument.importPdf(colourBytes, {});
+      try {
+        check(colourDoc.pageCount() === 4, 'source text-style PDF imports every page');
+        const xml = new DOMParser().parseFromString(colourDoc.renderPageSvg(0), 'image/svg+xml');
+        const paints = [...xml.querySelectorAll('text')].flatMap(n =>
+          [...n.textContent].map(c => [c, n.getAttribute('fill')?.toLowerCase() || '#000000']));
+        function hasWordColour(word, colour) {
+          const found = paints.map((_, i) => paints.slice(i, i + word.length))
+            .filter(run => run.map(v => v[0]).join('') === word);
+          return found.length === 1 && found[0].every(v => v[1] === colour);
+        }
+        check(hasWordColour('Website:', '#000000'), 'black label retains its own source text style');
+        check(hasWordColour('https://ostday.kr', '#0563c1'), 'source URL colour survives contiguous text assembly');
+      } finally { colourDoc.free(); }
       const all = new wasm.HwpDocument(bytes);
       check(all.pageCount() === 3 && all.getSourceFormat() === 'pdf', 'constructor imports all PDF pages');
       all.free();
@@ -114,6 +168,11 @@ test('Docker product WASM: public API, active document isolation and real Worker
         return [...xml.querySelectorAll('text')].map(t => t.textContent).join('');
       });
       check(JSON.stringify(text(selected)) === '["FIRST","THIRD"]', 'selected content and order');
+      const manyBytes = new Uint8Array(await (await fetch('/synthetic-many-pages.pdf')).arrayBuffer());
+      throwsCode(() => wasm.HwpDocument.importPdf(manyBytes, {}), 'PDF_RESOURCE_LIMIT');
+      const late = wasm.HwpDocument.importPdf(manyBytes, { sourcePages: [128, 1024] });
+      check(late.pageCount() === 2 && JSON.stringify(text(late)) === '["PAGE_129","PAGE_1025"]', 'source indices beyond the former page ceiling stay distinct from selected count');
+      late.free();
       for (const save of ['exportHwp', 'exportHwpx']) {
         const reopen = new wasm.HwpDocument(selected[save]());
         check(JSON.stringify(text(reopen)) === '["FIRST","THIRD"]', `${save} reopen content`);
@@ -123,7 +182,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
       for (const option of [null, 1, '0,2', [], { sourcePage: [0] }]) {
         throwsCode(() => wasm.HwpDocument.importPdf(bytes, option), 'PDF_IMPORT_OPTIONS');
       }
-      for (const pages of [[], [2, 1], [1, 1], [3], [-1], [0.5], [NaN], [Infinity], [4294967296], ['1'], [null], [true], new Uint32Array([0]), [1n], Array(1), Array(129).fill(0)]) {
+      for (const pages of [[], [2, 1], [1, 1], [3], [-1], [0.5], [NaN], [Infinity], [4294967296], ['1'], [null], [true], new Uint32Array([0]), [1n], Array(1), Array(policy.maxSelectedPages + 1).fill(0)]) {
         throwsCode(() => wasm.HwpDocument.importPdf(bytes, { sourcePages: pages }), 'PDF_PAGE_SELECTION');
       }
       for (const options of [undefined, {}]) {
@@ -132,7 +191,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
       }
       throwsCode(() => wasm.HwpDocument.importPdf(new Uint8Array([0]), {}), 'PDF_INVALID_INPUT');
       throwsCode(() => wasm.HwpDocument.importPdf(new TextEncoder().encode('%PDF-1.4\n'), {}), 'PDF_PARSE_FAILED');
-      throwsCode(() => wasm.HwpDocument.importPdf(new Uint8Array(16 * 1024 * 1024 + 1), {}), 'PDF_RESOURCE_LIMIT');
+      throwsCode(() => wasm.HwpDocument.importPdf(new Uint8Array(policy.backend.inputBytes + 1), {}), 'PDF_RESOURCE_LIMIT');
       check(JSON.stringify(text(selected)) === '["FIRST","THIRD"]', 'failed direct import preserves existing document');
       selected.free();
       const { PdfImportSession } = await import('/rhwp-shared/pdf/import-session.js');
@@ -145,6 +204,14 @@ test('Docker product WASM: public API, active document isolation and real Worker
         return worker;
       } });
       try {
+        const scanned = await session.importPdf(scanBytes, {}, { timeoutMs: 60_000 });
+        check(scanned.pageCount === 5, 'Worker imports every scan-sized JPEG page');
+        check(scanImages(await session.renderPageSvg(4)).length === 1, 'Worker preserves the final scan image');
+        const painted = await session.importPdf(slides, {}, { timeoutMs: 60_000 });
+        check(painted.pageCount === 19 && painted.diagnostics.pages.length === 19, 'Worker imports all 19 image-rich PDF pages');
+        const sixth = new DOMParser().parseFromString(await session.renderPageSvg(5), 'image/svg+xml');
+        check(sixth.querySelectorAll('image').length >= 35, 'Worker preserves the formerly rejected image placements');
+        check((await session.renderPageSvg(6)).includes('<svg'), 'Worker renders the affine-clipped image page');
         const loaded = await session.importPdf(real, {}, { timeoutMs: 60_000 });
         check(loaded.pageCount === 12 && loaded.diagnostics.pages.length === 12, 'Worker full real 12-page PDF');
         const svg = [];
@@ -178,7 +245,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
         check((await session.inspect()).pageCount === 12, 'ordinary failure preserves active Worker');
         await rejectsCode(session.importPdf(new Uint8Array([0])), 'PDF_INVALID_INPUT');
         await rejectsCode(session.importPdf(new TextEncoder().encode('%PDF-1.4\n')), 'PDF_PARSE_FAILED');
-        await rejectsCode(session.importPdf(new Uint8Array(16 * 1024 * 1024 + 1)), 'PDF_RESOURCE_LIMIT');
+        await rejectsCode(session.importPdf(new Uint8Array(policy.backend.inputBytes + 1)), 'PDF_RESOURCE_LIMIT');
         const valid = await session.importPdf(real, { sourcePages: [0, 6, 7] }, { timeoutMs: 60_000 });
         check(workers === afterFailureWorkers && valid.pageCount === 3, 'same Worker failure then normal input');
         check(valid.diagnostics.pages.map(p => p.sourcePage).join() === '0,6,7', 'Worker source selection');

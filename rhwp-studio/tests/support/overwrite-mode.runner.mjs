@@ -17,6 +17,8 @@ const WASM_ENTRY_STUB = 'data:text/javascript,export default async function init
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
+    // 제품의 JSON 메트릭을 .json.ts로 바꾸지 않는다.
+    if (specifier.endsWith('.json')) return nextResolve(specifier, context);
     if (specifier === '@wasm/rhwp.js') return { url: WASM_ENTRY_STUB, shortCircuit: true };
     if (specifier.startsWith('@/')) {
       const abs = join(srcDir, specifier.slice(2));

@@ -41,6 +41,31 @@ fn physical_margin(points: f32) -> Result<i32, String> {
         .ok_or_else(|| "physical paragraph measure exceeds format range".into())
 }
 
+// PDF TJ displacements can express word spaces without a U+0020 glyph.
+// Positional boxes and reconstructed table paragraphs must recover the same
+// text from the same glyph origins, before either path measures the line.
+pub(super) fn span_text_with_spaces(span: &pdf_oxide::layout::TextSpan) -> String {
+    let mut text = String::new();
+    for (j, ch) in span.text.chars().enumerate() {
+        if j > 0 {
+            if let (Some(x), Some(prev), Some(width)) = (
+                span.char_x_offsets.get(j),
+                span.char_x_offsets.get(j - 1),
+                span.char_widths.get(j - 1),
+            ) {
+                if x - prev - width > span.font_size * 0.2
+                    && !text.ends_with(char::is_whitespace)
+                    && !ch.is_whitespace()
+                {
+                    text.push(' ');
+                }
+            }
+        }
+        text.push(ch);
+    }
+    text
+}
+
 fn text_with_spaces(page: &ExtractedPage, indices: &[usize]) -> (String, Vec<(u32, usize)>) {
     let mut text = String::new();
     let mut runs = Vec::new();
@@ -54,23 +79,7 @@ fn text_with_spaces(page: &ExtractedPage, indices: &[usize]) -> (String, Vec<(u3
             text.push(' ');
         }
         runs.push((text.encode_utf16().count() as u32, i));
-        for (j, ch) in span.text.chars().enumerate() {
-            if j > 0 {
-                if let (Some(x), Some(prev), Some(width)) = (
-                    span.char_x_offsets.get(j),
-                    span.char_x_offsets.get(j - 1),
-                    span.char_widths.get(j - 1),
-                ) {
-                    if x - prev - width > span.font_size * 0.2
-                        && !text.ends_with(char::is_whitespace)
-                        && !ch.is_whitespace()
-                    {
-                        text.push(' ');
-                    }
-                }
-            }
-            text.push(ch);
-        }
+        text.push_str(&span_text_with_spaces(span));
         end = Some(span.bbox.x + span.bbox.width);
     }
     (text, runs)

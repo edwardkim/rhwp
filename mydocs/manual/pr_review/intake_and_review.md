@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-15
+last_verified: 2026-10-18
 ---
 
 # PR 접수와 리뷰 기록
@@ -33,12 +33,38 @@ merge, merge 후속 처리는 기본 경로 문서와 [merge 후속 처리](post
 먼저 reviewer를 assign한다. 대량 PR은 [다수 PR과 update branch](multi_pr_update_branch.md)의 사전 분류 뒤,
 각 원 PR마다 assign한다.
 
+순서는 **최소 사전 분류 → 원 PR별 reviewer 지정·API 재확인 → 상세 metadata·본문·파일·코멘트 조사 →
+local fetch·체리픽 → 검증·review 기록**이다. 사전 분류에서는 대상 PR 번호, 작성자, open/draft 상태,
+base와 통합 그룹을 식별하는 정보만 확인한다. 상세 조사를 끝낸 뒤 reviewer를 지정하지 않는다.
+체리픽 통합 PR을 따로 만들더라도 지정 대상은 **각 원 PR**이며, 통합 PR 하나의 지정으로 대신하지 않는다.
+
+작업지시자가 지정한 reviewer를 사용하고 기존 reviewer는 제거하지 않는다. 이미 지정돼 있으면 추가 요청을
+반복하지 않고 API로 확인한다. 명령 성공만으로 배정 완료를 단정하지 않으며, API 응답의 `users`에 대상
+login이 있어야 다음 단계로 진행한다. 지정 실패·확인 불가이면 해당 원 PR의 상세 조사·fetch·체리픽을 보류하고
+실패 이유를 보고한다. 승인된 검토 범위 안의 reviewer 지정 때문에 작업지시자 승인을 다시 요청하지 않는다.
+
 collaborator 자신의 self PR은 reviewer를 지정하지 않는다. 이 경우 review 문서에 작성자 self-review임을
 기록하고, 최신 CI와 merge 조건을 독립적으로 확인한다.
 
+`pr_number`와 `reviewer`는 실제 대상 값으로 바꾼다. 여러 PR은 원 PR마다 이 단계를 완료한다.
+
 ~~~bash
-gh pr edit N --repo edwardkim/rhwp --add-reviewer <reviewer>
+pr_number=N
+reviewer=REVIEWER_LOGIN
+assigned_reviewers=$(gh api "repos/edwardkim/rhwp/pulls/$pr_number/requested_reviewers") || exit 1
+if ! printf '%s\n' "$assigned_reviewers" \
+  | jq -e --arg reviewer "$reviewer" 'any(.users[]; .login == $reviewer)' >/dev/null; then
+  gh api --method POST "repos/edwardkim/rhwp/pulls/$pr_number/requested_reviewers" \
+    -f "reviewers[]=$reviewer" || exit 1
+fi
+# jq -e가 실패하면 다음 상세 조사·fetch·체리픽을 실행하지 않는다.
+gh api "repos/edwardkim/rhwp/pulls/$pr_number/requested_reviewers" \
+  | jq -e --arg reviewer "$reviewer" 'any(.users[]; .login == $reviewer)' || exit 1
 ~~~
+
+`gh pr edit --add-reviewer`를 사용했더라도 같은 API 재확인을 수행한다. Projects classic GraphQL 오류 등으로
+CLI 편집이 실패하면 위 REST POST 경로를 사용한다. reviewer login과 확인 결과를 검토 기록에 남기며,
+인증 토큰은 출력하지 않는다.
 
 ## 2.2 기본 metadata
 
@@ -125,13 +151,18 @@ PR review의 공통 항목**이다. 작성자·역할·PR 크기로 생략하지
 [구현 주장과 검증 증거의 대조](../../../AGENTS.md#구현-주장과-검증-증거의-대조)에 따라
 작성자의 경로 목록과 실제 검사 항목이 주장을 입증하는지 확인한다. helper 이후 값 덮어쓰기·
 별도 배치와 핵심 가정을 깨는 반례의 누락을 대조하고, 수정 전에도 통과하는 테스트를 해당 결함의
-검출 증거로 인정하지 않는다. 충분한 기존 증거는 재사용하며, 부족한 필수 증거는 `미검증`으로
-남긴다. 아래 표의 해당 행에서 기존 증적을 연결하면 같은 표나 보고서를 추가 작성할 필요는 없다.
+검출 증거로 인정하지 않는다. 충분한 기존 증거는 재사용하며, **부족한 필수 증거는 자료 확보와
+추가 실행으로 보완하고 결함을 수정·재검증해 모두 충족해야 한다.** 검증을 마치지 않은 필수
+항목을 남긴 채 PR을 생성·승인·통합하지 않는다. 아래 표의 해당 행에서 기존 증적을 연결하면
+같은 표나 보고서를 추가 작성할 필요는 없다.
 
 | 검토 항목 | reviewer가 확인·기록할 근거 | 판정 |
 | --- | --- | --- |
+| 제출 전 로컬 검증과 PR 상태 | [로컬 사전 검증](local_validation.md) 4.3 및 해당 보조 절차의 필수 실행·결과·head/base SHA, 환경에 맞는 Docker/호스트 fresh WASM 경로; 일반 Open PR 제출 여부 또는 예외 Draft의 특별한 목적·승인·완료 계획 | 충족/미충족/미검증/비해당 |
+| 기존 이슈·해결 PR의 선행 분석 | [선행 분석 절차](../codex/docs_and_git_workflow.md#기존-이슈와-해결-pr의-선행-분석)의 원 이슈·해결 PR·실제 통합/후속 보정 SHA, 원래 계약·독립 증거와 현재 base/head 관측; 조사 대상 실패별로 확인 | 충족/미충족/미검증/비해당 |
 | 구현 근거와 일반성 | 위반된 규칙의 독립 출처, 원인 계층, 새 분기의 필요 조건과 반례; 샘플 전용 조건·clamp·출력 은폐 여부 | 충족/미충족/미검증/비해당 |
 | 측정·배치 일관성 | 같은 줄 구성·메트릭을 생성·소비하는 코드 위치와 호출 경로, backend 적용 조건·좌표계 | 충족/미충족/미검증/비해당 |
+| 리베이스 반영 PR의 기능 보존 | [리베이스 후 검증](local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)의 반영 PR 목록·기능, 새 base/후보 SHA, 실제 기능·출력 비교와 유지/개선/후퇴/미검증; 현재 작업과 반영 PR 양쪽의 보정·재검증 근거 | 충족/미충족/미검증/비해당 |
 | 최종 출력 소비 계약 | [출력 백엔드 소비 경로 검증](../verification/renderer_backend_verification.md)에 따른 실제 Canvas/SVG/Native PNG 등의 적용 경로·font/resource·metric context와 최종 화면/파일; 한 경로의 성공으로 다른 경로를 입증하지 않음 | 충족/미충족/미검증/비해당 |
 | 분할·이어받기 계약 | 적용 분기별 컷·유닛 소유, 요구/예약/배치 높이, 예산 실패 시 실제 컷·이월, 소비 완료 후 다음 내용 보존 | 충족/미충족/미검증/비해당 |
 | 줄 소속과 점유 높이 | 저장 LineSeg·재조판 경로 각각의 적용 여부와 소속 결정 근거, 기준선·여백·줄간격 반영 | 충족/미충족/미검증/비해당 |

@@ -12,13 +12,33 @@ export class PdfImportSession {
     this._assertAlive();
     if (this._importing) throw failure('PDF_IMPORT_BUSY', 'another import is in progress');
     if (!(bytes instanceof Uint8Array)) throw failure('PDF_INVALID_INPUT', 'expected Uint8Array');
-    // Before structured clone. Rust independently applies the same frontend limit.
-    if (bytes.byteLength > 16 * 1024 * 1024) throw failure('PDF_RESOURCE_LIMIT', 'input exceeds 16 MiB');
+    if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 2_147_483_647) {
+      throw failure('PDF_DEADLINE_INVALID', 'timeoutMs must be a positive timer interval');
+    }
+    if (signal?.aborted) throw failure('PDF_IMPORT_CANCELLED', 'request cancelled');
     this._importing = true;
     try {
+      const started = performance.now();
       const candidate = this._candidate ??= new Channel(this._workerFactory());
+      const requestOptions = () => {
+        const remaining = Math.ceil(timeoutMs - (performance.now() - started));
+        if (remaining <= 0) {
+          const error = failure('PDF_IMPORT_TIMEOUT', 'worker deadline exceeded');
+          candidate.close(error);
+          throw error;
+        }
+        return { signal, timeoutMs: remaining };
+      };
+      // Ask the initialized product before copying or structured-cloning input.
+      // Policy and import share the same candidate and one overall deadline.
+      const policy = candidate.policy ??= validatePolicy(
+        await candidate.request('policy', {}, requestOptions()),
+      );
+      if (bytes.byteLength > policy.backend.inputBytes) {
+        throw failure('PDF_RESOURCE_LIMIT', `input exceeds ${policy.backend.inputBytes} bytes`);
+      }
       // Copy only the selected view, not its possibly much larger backing buffer.
-      const result = await candidate.request('importPdf', { bytes: bytes.slice(), options }, { signal, timeoutMs });
+      const result = await candidate.request('importPdf', { bytes: bytes.slice(), options }, requestOptions());
       // No await between successful response and publication. Failed/cancelled candidates
       // never become the active session, even when synchronous WASM had already completed.
       this._assertAlive();
@@ -26,6 +46,9 @@ export class PdfImportSession {
       this._active = candidate;
       this._candidate = null;
       return result;
+    } catch (error) {
+      if (error?.code === 'PDF_WORKER_PROTOCOL') this._candidate?.close(error);
+      throw error;
     } finally {
       if (this._candidate?.closed) this._candidate = null;
       this._importing = false;
@@ -58,6 +81,14 @@ export class PdfImportSession {
 
 function failure(code, message) {
   return Object.assign(new Error(`${code}: ${message}`), { code });
+}
+
+function validatePolicy(policy) {
+  if (policy?.schemaVersion !== 1 || !Number.isSafeInteger(policy.backend?.inputBytes)
+      || policy.backend.inputBytes <= 0) {
+    throw failure('PDF_WORKER_PROTOCOL', 'invalid product import policy');
+  }
+  return policy;
 }
 
 class Channel {

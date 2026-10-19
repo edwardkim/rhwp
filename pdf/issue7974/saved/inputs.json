@@ -1,0 +1,296 @@
+[
+  {
+    "path": "pdf/issue7974/saved/gray-packed-decode/saved.hwp",
+    "sha256": "9c39beafeff1131a300332bf44cea83fde849d58f1af02fbf3537e95c425db5f",
+    "bytes": 3584,
+    "source": "pdf/issue7974/gray-packed-decode.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/gray-packed-decode/saved.hwpx",
+    "sha256": "182bf425d8aff39d53b4498733f2fe1783681e11446308add02547e58c8f4e79",
+    "bytes": 6712,
+    "source": "pdf/issue7974/gray-packed-decode.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/gray-padding/saved.hwp",
+    "sha256": "02de44bdb2220774bd795bf95af0a5f79e14513589c2b97cf8121fbb87b27688",
+    "bytes": 3584,
+    "source": "pdf/issue7974/gray-padding.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/gray-padding/saved.hwpx",
+    "sha256": "18550c2cd657c7b3a616c58ece259556683703a7b095c55117dd94a9de2bd99e",
+    "bytes": 6704,
+    "source": "pdf/issue7974/gray-padding.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/indexed-key/saved.hwp",
+    "sha256": "35842096ea4fcdc4e3b790afdac8a9d14cb6910b6c7c048e4d47ecbde21926cd",
+    "bytes": 3584,
+    "source": "pdf/issue7974/indexed-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/indexed-key/saved.hwpx",
+    "sha256": "3ea89a7dd9b5bd190d5a91b0054ab8055db97ad8494cc3f8f771e93038b01843",
+    "bytes": 6707,
+    "source": "pdf/issue7974/indexed-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/gray16-key/saved.hwp",
+    "sha256": "43efd2b454a0ac827d813775b2b7663a2aafd3f5511959619ba8415f8fbe1d7e",
+    "bytes": 3584,
+    "source": "pdf/issue7974/gray16-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/gray16-key/saved.hwpx",
+    "sha256": "775436fe8b1f6aa989b1f54914e110175062fdabff78512abfc272f83cc69293",
+    "bytes": 6704,
+    "source": "pdf/issue7974/gray16-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/rgb-all-components/saved.hwp",
+    "sha256": "5d969c76c1392b245218ab28bbb3c4457607cb78237cac7633ef4b8eb0ef3aa7",
+    "bytes": 3584,
+    "source": "pdf/issue7974/rgb-all-components.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/rgb-all-components/saved.hwpx",
+    "sha256": "a5a251112f4c73d08b24b7be6b50631b0eeff10cdd36b5dcda44771f310e86d2",
+    "bytes": 6704,
+    "source": "pdf/issue7974/rgb-all-components.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/smask-overrides-key/saved.hwp",
+    "sha256": "ff78497cc50fab7a42193e630fdedbc8a45de521799d7acb957a0f3717c678f7",
+    "bytes": 3584,
+    "source": "pdf/issue7974/smask-overrides-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/smask-overrides-key/saved.hwpx",
+    "sha256": "77e9b088e7c4ac7c5b7a429edb6d010bf193692d9cc5930e3507b63c0979ddbb",
+    "bytes": 6704,
+    "source": "pdf/issue7974/smask-overrides-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/stencil-reverse-padding/saved.hwp",
+    "sha256": "57ad85b8b2d57beb005d4e9f69dbb8c694ccdb5b77c8d7f2344d47318adf2602",
+    "bytes": 3584,
+    "source": "pdf/issue7974/stencil-reverse-padding.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/stencil-reverse-padding/saved.hwpx",
+    "sha256": "8eeedb1de17cc26339ab3c6bcbe593fd0a99391747dceeae5f3b0fc41bde332a",
+    "bytes": 6707,
+    "source": "pdf/issue7974/stencil-reverse-padding.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/stencil-resource-colour/saved.hwp",
+    "sha256": "b4ff5895460966fd91f30a0089e55cf495ebd8b8db0953bb09bef7bc3acece81",
+    "bytes": 3584,
+    "source": "pdf/issue7974/stencil-resource-colour.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/stencil-resource-colour/saved.hwpx",
+    "sha256": "0f4d88f7321f0ed35fe139dffa1a4ac141df5f99058418b4d9f2efd27ae6795c",
+    "bytes": 6703,
+    "source": "pdf/issue7974/stencil-resource-colour.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/stencil-alpha/saved.hwp",
+    "sha256": "311e9810a6364dd98acdc6a6d6d19b63e40b088f57dbf46fe39f903e42f135b3",
+    "bytes": 3584,
+    "source": "pdf/issue7974/stencil-alpha.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/stencil-alpha/saved.hwpx",
+    "sha256": "83c926aaaaae88c2e7db3fd2c011724ab39759e4f9af506ea401fa983d8231d4",
+    "bytes": 6704,
+    "source": "pdf/issue7974/stencil-alpha.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/stencil-form-reuse/saved.hwp",
+    "sha256": "364a2950f2f596c0cb3b8b4125ddb4c4ff9cd01e8465100474f77138c7ec899f",
+    "bytes": 3584,
+    "source": "pdf/issue7974/stencil-form-reuse.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/stencil-form-reuse/saved.hwpx",
+    "sha256": "aed9521ef6b70ed46ad09486eea1c25bf85bdbfce24c221772d4d8368cf0c262",
+    "bytes": 6768,
+    "source": "pdf/issue7974/stencil-form-reuse.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/colour-key/saved.hwp",
+    "sha256": "4f3caae2ce93ce7c6dd63f0a6afaf04aa40c936ef1b231f091780f135f69dd17",
+    "bytes": 3584,
+    "source": "pdf/issue7974/colour-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/colour-key/saved.hwpx",
+    "sha256": "f95aa9a7266266d0738d7accb7abe12516575e28d5ee6c76242f8cee40be8074",
+    "bytes": 6702,
+    "source": "pdf/issue7974/colour-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/standalone-stencil/saved.hwp",
+    "sha256": "9667c0bf4ce9d3ce16c0927f32454a88a8bc4ba6e14dc0a60e664a039fcf745e",
+    "bytes": 3584,
+    "source": "pdf/issue7974/standalone-stencil.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/standalone-stencil/saved.hwpx",
+    "sha256": "3666999590e2cc90c7331f1b12da254b350ab5e84e01cada043c73de5d96b2a3",
+    "bytes": 6704,
+    "source": "pdf/issue7974/standalone-stencil.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/low-resolution-mask/saved.hwp",
+    "sha256": "4be293123233f44e640f73d2bf8fae19f349f52fbbdf41889965c52466139738",
+    "bytes": 3584,
+    "source": "pdf/issue7974/low-resolution-mask.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/low-resolution-mask/saved.hwpx",
+    "sha256": "126ab0dab51a47d4a3ca8718b03f9aa36a404847609613f65219121a4a402439",
+    "bytes": 6705,
+    "source": "pdf/issue7974/low-resolution-mask.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/unmasked-control/saved.hwp",
+    "sha256": "d007cda62eeb9f8bbbeef8c75cc446d0f534a586c4f35646b5652ded62288b5e",
+    "bytes": 3584,
+    "source": "pdf/issue7974/unmasked-control.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/unmasked-control/saved.hwpx",
+    "sha256": "6a9cf935874daebc869367177ff69305c34061d7bd250bb0cd3b4887fddb7b20",
+    "bytes": 6701,
+    "source": "pdf/issue7974/unmasked-control.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/explicit-mask/saved.hwp",
+    "sha256": "88fe98d6bb99bce5ec1ed70e6aaccad60dc980a94a88a86a3f5570356c432e3e",
+    "bytes": 4096,
+    "source": "pdf/issue7974/explicit-mask.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/explicit-mask/saved.hwpx",
+    "sha256": "0e598fb2a1d7d35b9d964bd66556354bc7c9e52cfb514ca42536e14739dc1c53",
+    "bytes": 6681,
+    "source": "pdf/issue7974/explicit-mask.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/highres-smask/saved.hwp",
+    "sha256": "025870d316f38a14c97243cb7e1ff6b09040afd2f7d64329434e4105a66bdff5",
+    "bytes": 4096,
+    "source": "pdf/issue7974/highres-smask.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/highres-smask/saved.hwpx",
+    "sha256": "31a20c855afa58eede8693be884c3b76d82d63d2c80661eb6fb1a6306ab5d95e",
+    "bytes": 6694,
+    "source": "pdf/issue7974/highres-smask.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/smask-matte/saved.hwp",
+    "sha256": "ea5cf0aa08dca05c2449a59ec23055a7e9337ebf73a969f93353b77bd7c3cdfc",
+    "bytes": 3584,
+    "source": "pdf/issue7974/smask-matte.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/smask-matte/saved.hwpx",
+    "sha256": "3d48471095365acf644f3391a6d5b1ace2019401ca94973d8384ae863e8cab3b",
+    "bytes": 6533,
+    "source": "pdf/issue7974/smask-matte.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/scaled/saved.hwp",
+    "sha256": "6d09010844798a04bf32614d54b19eed3f40b96aab6e96773fe0d7c34c897ead",
+    "bytes": 3584,
+    "source": "pdf/issue7974/scaled.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/scaled/saved.hwpx",
+    "sha256": "245de00f6c1a422e95fe49c48e21722b33075566b0568100a190041217b860b3",
+    "bytes": 6513,
+    "source": "pdf/issue7974/scaled.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/linear-control/saved.hwp",
+    "sha256": "1c7de707fa151d260a4a2c802a32dcbe46cb69f7cbe0032f8f92398e9a86b1da",
+    "bytes": 3584,
+    "source": "pdf/issue7974/linear-control.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/linear-control/saved.hwpx",
+    "sha256": "6344ad84ce1c017361a0d30b4c04755478c8cbc65f6ac4a45da58dca40ea0825",
+    "bytes": 6701,
+    "source": "pdf/issue7974/linear-control.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/cmyk-key/saved.hwp",
+    "sha256": "36a6649a1775bdb3543c2808b1bff983485b367e22253ff782e5ff8ba745ecaf",
+    "bytes": 3584,
+    "source": "pdf/issue7974/cmyk-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/cmyk-key/saved.hwpx",
+    "sha256": "a4b3a38614bcb23c73de81fa366eda53110c1a68335793108ec76461b1d4a511",
+    "bytes": 6704,
+    "source": "pdf/issue7974/cmyk-key.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/inline-stencil/saved.hwp",
+    "sha256": "9667c0bf4ce9d3ce16c0927f32454a88a8bc4ba6e14dc0a60e664a039fcf745e",
+    "bytes": 3584,
+    "source": "pdf/issue7974/inline-stencil.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  },
+  {
+    "path": "pdf/issue7974/saved/inline-stencil/saved.hwpx",
+    "sha256": "3666999590e2cc90c7331f1b12da254b350ab5e84e01cada043c73de5d96b2a3",
+    "bytes": 6704,
+    "source": "pdf/issue7974/inline-stencil.pdf",
+    "generator": "DocumentCore import \u2192 export_hwp/export_hwpx; stage1 validation source 6b072955e9b83d8f7729133eda5e93536ee453f5"
+  }
+]

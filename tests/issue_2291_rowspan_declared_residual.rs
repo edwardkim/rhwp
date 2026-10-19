@@ -26,6 +26,20 @@ fn core() -> DocumentCore {
 }
 
 fn find_text(node: &RenderNode, needle: &str) -> bool {
+    // 글꼴 슬롯별로 run이 나뉘어도 같은 줄에 보존된 문단 꼬리는 함께 검사한다.
+    if matches!(&node.node_type, RenderNodeType::TextLine(_)) {
+        let text: String = node
+            .children
+            .iter()
+            .filter_map(|child| match &child.node_type {
+                RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+                _ => None,
+            })
+            .collect();
+        if text.contains(needle) {
+            return true;
+        }
+    }
     if let RenderNodeType::TextRun(run) = &node.node_type {
         if run.text.contains(needle) {
             return true;

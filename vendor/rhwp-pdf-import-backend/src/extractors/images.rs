@@ -16,6 +16,8 @@ use std::path::Path;
 
 #[path = "image_mask_limited.rs"]
 mod image_mask_limited;
+#[path = "image_mask_limited_extra.rs"]
+mod image_mask_limited_extra;
 
 /// A PDF image with metadata and pixel data.
 ///
@@ -78,6 +80,8 @@ pub struct PdfImage {
     /// owed (e.g. a `/Decode [1 0]` inversion) on every sub-byte image.
     #[serde(skip)]
     decode_folded_in: bool,
+    /// Explicit bounded-import sampling, persisted in the PNG resource.
+    interpolate: Option<bool>,
 }
 
 impl PdfImage {
@@ -103,6 +107,7 @@ impl PdfImage {
             rendering_intent: crate::color::RenderingIntent::default(),
             samples_are_raw: true,
             decode_folded_in: false,
+            interpolate: None,
         }
     }
 
@@ -172,6 +177,125 @@ impl PdfImage {
         self.samples_are_raw
     }
 
+    /// Bake a convex page-space clip and affine placement into an RGBA frame.
+    /// The rectangle is storage geometry only; pixels outside the real boundary
+    /// remain transparent. Axis-aligned editable crops keep their existing path.
+    fn apply_affine_clip(
+        &mut self,
+        ctm: crate::content::Matrix,
+        clip: &super::image_clip::ImageClip,
+        frame: crate::geometry::Rect,
+        interpolate: bool,
+        budget: &crate::import_limits::ImportBudget,
+    ) -> Result<()> {
+        let [a, b, c, d, e, f] = [ctm.a, ctm.b, ctm.c, ctm.d, ctm.e, ctm.f].map(f64::from);
+        let determinant = a * d - b * c;
+        if !determinant.is_finite() || determinant == 0.0 {
+            return Err(Error::Unsupported("singular clipped image matrix".into()));
+        }
+        let (sw, sh) = (self.width as usize, self.height as usize);
+        if sw == 0 || sh == 0 {
+            return Err(Error::Image("empty clipped image samples".into()));
+        }
+        // The clip edge is geometric, even for a one-pixel solid image. Match
+        // the product's compound-path raster density, retaining higher source
+        // density. This changes storage resolution, never the physical frame.
+        let density_x = ((d * sw as f64).hypot(b * sh as f64) / determinant.abs()).max(3.0);
+        let density_y = ((c * sw as f64).hypot(a * sh as f64) / determinant.abs()).max(3.0);
+        let width = (f64::from(frame.width) * density_x).ceil();
+        let height = (f64::from(frame.height) * density_y).ceil();
+        if !width.is_finite()
+            || !height.is_finite()
+            || width < 1.0
+            || height < 1.0
+            || width > 16_384.0
+            || height > 16_384.0
+            || width * height > 16_000_000.0
+        {
+            return Err(budget.reject("clipped image raster dimensions"));
+        }
+        let (width, height) = (width as usize, height as usize);
+        let mut output = sample_buffer(width * height * 4, Some(budget))?;
+        // Use the existing bounded codec/colour conversion; existing alpha is
+        // retained. Both this conversion and the destination are charged.
+        self.apply_opacity(1.0, budget)?;
+        let ImageData::Raw {
+            pixels,
+            format: PixelFormat::RGBA,
+        } = &self.data
+        else {
+            return Err(Error::Image("clipped image requires RGBA samples".into()));
+        };
+        if sw.checked_mul(sh).and_then(|n| n.checked_mul(4)) != Some(pixels.len()) {
+            return Err(Error::Image("invalid clipped image sample length".into()));
+        }
+        let sample = |x: isize, y: isize| {
+            // PDF interpolation extends edge samples at the unit-square edge.
+            let x = x.clamp(0, sw as isize - 1) as usize;
+            let y = y.clamp(0, sh as isize - 1) as usize;
+            &pixels[(y * sw + x) * 4..(y * sw + x + 1) * 4]
+        };
+        for y in 0..height {
+            budget.check()?;
+            let py = f64::from(frame.y)
+                + f64::from(frame.height) * (1.0 - (y as f64 + 0.5) / height as f64);
+            for x in 0..width {
+                let px =
+                    f64::from(frame.x) + f64::from(frame.width) * (x as f64 + 0.5) / width as f64;
+                let u = (d * (px - e) - c * (py - f)) / determinant;
+                let v = (-b * (px - e) + a * (py - f)) / determinant;
+                if !(0.0..=1.0).contains(&u)
+                    || !(0.0..=1.0).contains(&v)
+                    || !clip.contains(crate::geometry::Point::new(px as f32, py as f32))
+                {
+                    output.extend_from_slice(&[0; 4]);
+                } else if !interpolate {
+                    output.extend_from_slice(sample(
+                        (u * sw as f64).floor() as isize,
+                        ((1.0 - v) * sh as f64).floor() as isize,
+                    ));
+                } else {
+                    let (sx, sy) = (u * sw as f64 - 0.5, (1.0 - v) * sh as f64 - 0.5);
+                    let (ix, iy) = (sx.floor() as isize, sy.floor() as isize);
+                    let (fx, fy) = (sx - sx.floor(), sy - sy.floor());
+                    let mut channels = [0.0; 4];
+                    for (dx, dy, w) in [
+                        (0, 0, (1.0 - fx) * (1.0 - fy)),
+                        (1, 0, fx * (1.0 - fy)),
+                        (0, 1, (1.0 - fx) * fy),
+                        (1, 1, fx * fy),
+                    ] {
+                        let p = sample(ix + dx, iy + dy);
+                        channels[3] += f64::from(p[3]) * w;
+                        for k in 0..3 {
+                            channels[k] += f64::from(p[k]) * f64::from(p[3]) * w;
+                        }
+                    }
+                    let mut rgba = [0; 4];
+                    rgba[3] = channels[3].round() as u8;
+                    if channels[3] > 0.0 {
+                        for k in 0..3 {
+                            rgba[k] = (channels[k] / channels[3]).round() as u8;
+                        }
+                    }
+                    output.extend_from_slice(&rgba);
+                }
+            }
+        }
+        self.width = width as u32;
+        self.height = height as u32;
+        self.data = ImageData::Raw {
+            pixels: output,
+            format: PixelFormat::RGBA,
+        };
+        self.color_space = ColorSpace::DeviceRGB;
+        self.bits_per_component = 8;
+        self.set_bbox(frame);
+        self.set_matrix([frame.width, 0.0, 0.0, frame.height, frame.x, frame.y]);
+        self.set_rotation_degrees(0);
+        Ok(())
+    }
+
     /// Record that the stored samples have been transformed out of the raw
     /// sample space.
     pub(crate) fn set_samples_are_raw(&mut self, raw: bool) {
@@ -216,6 +340,7 @@ impl PdfImage {
             rendering_intent: crate::color::RenderingIntent::default(),
             samples_are_raw: true,
             decode_folded_in: false,
+            interpolate: None,
         }
     }
 
@@ -263,6 +388,7 @@ impl PdfImage {
             rendering_intent: crate::color::RenderingIntent::default(),
             samples_are_raw: true,
             decode_folded_in: false,
+            interpolate: None,
         }
     }
 
@@ -458,9 +584,11 @@ impl PdfImage {
         if ![1, 2, 4, 8].contains(&self.bits_per_component) {
             return Err(Error::Unsupported("limited import image sample depth".into()));
         }
-        // Includes pixel decode, conversion and temporary RGB output. This is
-        // accounted work, not a promise about the codec's private scratch heap.
-        if self.borrowed_png_samples().is_none() {
+        // Legacy raw conversion still needs its conservative work allowance.
+        // JPEG reservations now flow through the audited RGB/CMYK decoder hooks,
+        // into_rgb_with_budget and the bounded PNG compressor/output writer.
+        // Charging an additional imaginary 3*RGBA buffer counted that work twice.
+        if self.borrowed_png_samples().is_none() && !matches!(self.data, ImageData::Jpeg(_)) {
             budget.charge_decoded(
                 raw_size
                     .checked_mul(3)
@@ -522,6 +650,7 @@ impl PdfImage {
                     self.height,
                     color.channel_count() as usize,
                     budget,
+                    self.interpolate,
                 );
             }
             PngEncoder::new_with_quality(
@@ -1429,16 +1558,50 @@ pub fn extract_image_from_xobject_at(
 
     let width = dimension("Width")?;
     let height = dimension("Height")?;
+    let filter_names = if let Some(filter_obj) = dict.get("Filter") {
+        match filter_obj {
+            Object::Name(name) => vec![name.clone()],
+            Object::Array(filters) => filters
+                .iter()
+                .filter_map(|f| f.as_name().map(String::from))
+                .collect(),
+            _ => vec![],
+        }
+    } else {
+        vec![]
+    };
+
+    let has_dct = filter_names.iter().any(|name| name == "DCTDecode");
+    let is_jpeg_only = has_dct && filter_names.len() == 1;
+    let is_jpeg_chain = has_dct && filter_names.len() > 1;
+
+    let is_jbig2 = filter_names
+        .iter()
+        .any(|n| n.eq_ignore_ascii_case("JBIG2Decode"));
+
+    let is_jpx = filter_names
+        .iter()
+        .any(|n| n.eq_ignore_ascii_case("JPXDecode"));
+
+    let is_ccitt = filter_names
+        .iter()
+        .any(|n| n.eq_ignore_ascii_case("CCITTFaxDecode"));
+
+    // Match the actual storage branch below. JPEG keeps encoded bytes here;
+    // its RGB/CMYK decoder, conversions and PNG writer reserve real buffers.
+    // A fictitious eight-byte plane is not an individual JPEG allocation.
+    let encoded_jpeg = (is_jpeg_only || is_jpeg_chain) && !is_jbig2 && !is_jpx;
     if let Some(budget) = doc.and_then(|doc| doc.import_budget()) {
-        let worst_buffer = (width as usize)
-            .checked_mul(height as usize)
-            .and_then(|n| n.checked_mul(8))
-            .filter(|&n| n > 0 && n <= budget.limits.stream_bytes)
-            .ok_or_else(|| budget.reject("image extraction buffer"))?;
-        // Geometry preflight is not an allocation. Bounded decoders, unpackers
-        // and colour conversion reserve their actual buffers below; do not
-        // additionally charge a fictitious width*height*8 scratch plane.
-        let _ = worst_buffer;
+        budget.check()?;
+        if !encoded_jpeg {
+            // Preserve the existing conservative preflight for other codecs.
+            // This is not an allocation and is not charged as decoded work.
+            let _worst_buffer = (width as usize)
+                .checked_mul(height as usize)
+                .and_then(|n| n.checked_mul(8))
+                .filter(|&n| n > 0 && n <= budget.limits.stream_bytes)
+                .ok_or_else(|| budget.reject("image extraction buffer"))?;
+        }
     }
 
     let sample_depth = dict
@@ -1571,35 +1734,6 @@ pub fn extract_image_from_xobject_at(
         .map(crate::color::RenderingIntent::from_pdf_name)
         .unwrap_or_default();
 
-    let filter_names = if let Some(filter_obj) = dict.get("Filter") {
-        match filter_obj {
-            Object::Name(name) => vec![name.clone()],
-            Object::Array(filters) => filters
-                .iter()
-                .filter_map(|f| f.as_name().map(String::from))
-                .collect(),
-            _ => vec![],
-        }
-    } else {
-        vec![]
-    };
-
-    let has_dct = filter_names.iter().any(|name| name == "DCTDecode");
-    let is_jpeg_only = has_dct && filter_names.len() == 1;
-    let is_jpeg_chain = has_dct && filter_names.len() > 1;
-
-    let is_jbig2 = filter_names
-        .iter()
-        .any(|n| n.eq_ignore_ascii_case("JBIG2Decode"));
-
-    let is_jpx = filter_names
-        .iter()
-        .any(|n| n.eq_ignore_ascii_case("JPXDecode"));
-
-    let is_ccitt = filter_names
-        .iter()
-        .any(|n| n.eq_ignore_ascii_case("CCITTFaxDecode"));
-
     // Bit depth of the buffer actually stored: raised to 8 when a transform
     // below (sub-byte unpack, /Decode application, 16-bit reduction) rewrites
     // the samples as one byte per component.
@@ -1656,7 +1790,7 @@ pub fn extract_image_from_xobject_at(
             decode_jpx_image(xobject, obj_ref, doc, &color_space, indexed, target)?;
         jpx_decoded_dims = Some((dec_w, dec_h));
         data
-    } else if is_jpeg_only || is_jpeg_chain {
+    } else if encoded_jpeg {
         let decoded = if let (Some(d), Some(ref_id)) = (doc.as_ref(), obj_ref) {
             d.decode_stream_with_encryption(xobject, ref_id)?
         } else {
@@ -4104,6 +4238,8 @@ pub struct PdfImageHandle<'doc> {
     /// For an Indexed image (`[/Indexed base hival lookup]`, §8.6.6.3), the
     /// resolved de-indexed *base* colour space; `None` for non-Indexed images.
     indexed_base: Option<ColorSpace>,
+    /// Current nonstroking solid colour at this invocation; None is unsupported.
+    pub(crate) stencil_colour: Option<(f32, f32, f32)>,
 }
 
 impl<'doc> PdfImageHandle<'doc> {
@@ -4134,6 +4270,23 @@ impl<'doc> PdfImageHandle<'doc> {
         } else {
             Some(&self.color_space_resources)
         };
+        let interpolation = if let Some(budget) = self.doc.import_budget() {
+            obj.as_dict()
+                .and_then(|d| d.get("Interpolate"))
+                .map(|o| image_mask_limited::resolve(self.doc, o, budget))
+                .transpose()?
+                .as_deref()
+                .map(|o| match o {
+                    crate::object::Object::Null => Ok(false),
+                    crate::object::Object::Boolean(v) => Ok(*v),
+                    _ => Err(Error::Image("invalid image Interpolate flag".into())),
+                })
+                .transpose()?
+                .or(Some(false))
+        } else {
+            None
+        };
+        let mut stencil = false;
         let mask = if let Some(budget) = self.doc.import_budget() {
             // The limited handle path imports the image as an independent IR
             // picture. Compose image alpha, while standalone stencils still
@@ -4146,13 +4299,17 @@ impl<'doc> PdfImageHandle<'doc> {
                 .ok_or_else(|| Error::Image("invalid image object".into()))?;
             if let Some(value) = dict.get("ImageMask") {
                 let value = resolve_image_object(Some(self.doc), value)?;
-                let absent =
-                    matches!(*value, crate::object::Object::Null) || value.as_bool() == Some(false);
-                if !absent {
-                    return Err(Error::Unsupported("limited image import /ImageMask".into()));
-                }
+                stencil = match &*value {
+                    crate::object::Object::Null | crate::object::Object::Boolean(false) => false,
+                    crate::object::Object::Boolean(true) => true,
+                    _ => return Err(Error::Image("invalid ImageMask boolean".into())),
+                };
             }
-            image_mask_limited::Mask::read(self.doc, dict, cs_map, budget)?
+            if stencil {
+                None
+            } else {
+                image_mask_limited::Mask::read(self.doc, obj, cs_map, budget)?
+            }
         } else {
             None
         };
@@ -4161,7 +4318,16 @@ impl<'doc> PdfImageHandle<'doc> {
         // `/ColorSpace` (e.g. `/CS0`) resolves the same way the renderer does.
         // `None` when empty preserves the original decode path for the common
         // case where the image's colour space needs no resource lookup.
-        let mut image = extract_image_from_xobject(Some(self.doc), obj, obj_ref, cs_map)?;
+        let mut image = if stencil {
+            image_mask_limited_extra::stencil(
+                self.doc,
+                obj,
+                self.stencil_colour,
+                self.doc.import_budget().expect("bounded stencil"),
+            )?
+        } else {
+            extract_image_from_xobject(Some(self.doc), obj, obj_ref, cs_map)?
+        };
         // Validate codec output against the source declaration before a mask
         // compositor may increase the bitmap resolution in the same unit square.
         if self.doc.import_budget().is_some()
@@ -4171,8 +4337,50 @@ impl<'doc> PdfImageHandle<'doc> {
                 "decoded image dimensions differ from declaration".into(),
             ));
         }
+        let mask_interpolation = mask
+            .as_ref()
+            .and_then(image_mask_limited::Mask::interpolation);
         if let Some(mask) = mask {
             mask.apply(&mut image, self.doc.import_budget().expect("bounded mask"))?;
+        }
+        image.interpolate = interpolation;
+        if let (Some(base), Some(mask)) = (interpolation, mask_interpolation) {
+            if base != mask {
+                // A single RGBA texture can represent different sampling only
+                // when the other plane is constant. Do not smooth hard mask
+                // edges merely to interpolate the colour plane, or vice versa.
+                let ImageData::Raw {
+                    pixels,
+                    format: PixelFormat::RGBA,
+                } = &image.data
+                else {
+                    unreachable!("composed mask is RGBA")
+                };
+                let budget = self.doc.import_budget().expect("bounded mask");
+                let mut first_rgb: Option<[u8; 3]> = None;
+                let (mut constant_rgb, mut constant_alpha) = (true, true);
+                for (i, p) in pixels.chunks_exact(4).enumerate() {
+                    if i % 4096 == 0 {
+                        budget.check()?;
+                    }
+                    constant_alpha &= p[3] == pixels[3];
+                    if p[3] != 0 {
+                        let rgb = [p[0], p[1], p[2]];
+                        constant_rgb &= first_rgb.is_none_or(|first| first == rgb);
+                        first_rgb = Some(rgb);
+                    }
+                }
+                if (!base && mask && constant_rgb) || (base && !mask && constant_alpha) {
+                    image.interpolate = Some(true);
+                } else {
+                    // A precomposed RGBA resource cannot carry two independent
+                    // sampling planes. Keep the previously supported compositor
+                    // and renderer profile for this case; do not claim that a
+                    // single texture's filtering implements both PDF flags.
+                    // Separate-plane replay remains a follow-up contract.
+                    image.interpolate = None;
+                }
+            }
         }
         if self.opacity < 1.0 {
             if let Some(budget) = self.doc.import_budget() {
@@ -4183,6 +4391,18 @@ impl<'doc> PdfImageHandle<'doc> {
 
         // Use pre-computed bbox and rotation from Phase 1 — no need to call
         // back into document.rs helpers here.
+        if let (super::image_clip::ImageClip::Polygon(_), Some(budget)) =
+            (&self.clip, self.doc.import_budget())
+        {
+            let frame = self
+                .clip
+                .visible_bounds(self.bbox)?
+                .ok_or_else(|| Error::Image("empty image clip".into()))?;
+            let interpolate = image.interpolate.or(interpolation).unwrap_or(false);
+            image.apply_affine_clip(self.ctm, &self.clip, frame, interpolate, budget)?;
+            self.doc.check_import_budget()?;
+            return Ok(image);
+        }
         image.set_bbox(self.bbox);
         image.set_matrix([
             self.ctm.a, self.ctm.b, self.ctm.c, self.ctm.d, self.ctm.e, self.ctm.f,
@@ -4488,6 +4708,7 @@ pub(crate) fn image_handle_from_xobject<'doc>(
         )
         .ok()?,
         indexed_base,
+        stencil_colour: Some((0., 0., 0.)),
     })
 }
 
@@ -4579,6 +4800,7 @@ pub(crate) fn image_handle_from_inline<'doc>(
         )
         .ok()?,
         indexed_base,
+        stencil_colour: Some((0., 0., 0.)),
     })
 }
 

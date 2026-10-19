@@ -48,6 +48,8 @@ use crate::layout::Color;
 #[derive(Debug, Clone)]
 pub(crate) struct PathGraphicsState {
     pub ctm: Matrix,
+    pub stroke_color_space: crate::path_color::PathColorSpace,
+    pub fill_color_space: crate::path_color::PathColorSpace,
     pub stroke_color_rgb: (f32, f32, f32),
     pub fill_color_rgb: (f32, f32, f32),
     pub line_width: f32,
@@ -63,6 +65,8 @@ impl PathGraphicsState {
     pub fn new() -> Self {
         Self {
             ctm: Matrix::identity(),
+            stroke_color_space: crate::path_color::PathColorSpace::GRAY,
+            fill_color_space: crate::path_color::PathColorSpace::GRAY,
             stroke_color_rgb: (0.0, 0.0, 0.0),
             fill_color_rgb: (0.0, 0.0, 0.0),
             line_width: 1.0,

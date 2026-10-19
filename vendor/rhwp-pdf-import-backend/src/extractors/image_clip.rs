@@ -1,20 +1,119 @@
-//! Rectangular image clipping for the editable import path (ISO 32000-1 §8.5.4).
+//! Bounded convex image clipping for the editable import path (ISO 32000-1 §8.5.4).
 //! Unsupported paths are explicit: their bounding box is not an equivalent clip.
 
 use crate::content::{Matrix, Operator};
 use crate::geometry::{Point, Rect};
 
 /// Active page-space clip understood by the editable image importer.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub enum ImageClip {
     /// No restriction has been applied.
     Unbounded,
     /// An axis-aligned rectangular intersection.
     Rectangle(Rect),
+    /// Straight, convex page-space boundary, including an affine Form BBox.
+    Polygon(std::sync::Arc<ClipPolygon>),
     /// The clip has no visible area.
     Empty,
-    /// A path that cannot be represented by a rectangular picture crop.
+    /// A curved, compound or non-convex boundary outside this bounded path.
     Unsupported,
+}
+
+const MAX_VERTICES: usize = 32;
+
+#[derive(Clone, Copy, Debug)]
+/// A finite convex boundary; vertices are validated before construction.
+pub struct ClipPolygon {
+    points: [Point; MAX_VERTICES],
+    len: usize,
+}
+
+fn cross(a: Point, b: Point, p: Point) -> f64 {
+    (f64::from(b.x) - f64::from(a.x)) * (f64::from(p.y) - f64::from(a.y))
+        - (f64::from(b.y) - f64::from(a.y)) * (f64::from(p.x) - f64::from(a.x))
+}
+
+impl ClipPolygon {
+    fn winding(&self) -> f64 {
+        let area = (0..self.len)
+            .map(|i| {
+                let a = self.points[i];
+                let b = self.points[(i + 1) % self.len];
+                cross(self.points[0], a, b)
+            })
+            .sum::<f64>();
+        if area == 0.0 {
+            0.0
+        } else {
+            area.signum()
+        }
+    }
+
+    fn push(&mut self, point: Point) -> bool {
+        if self.len > 0 && self.points[self.len - 1] == point {
+            return true;
+        }
+        if self.len == MAX_VERTICES || !point.x.is_finite() || !point.y.is_finite() {
+            return false;
+        }
+        self.points[self.len] = point;
+        self.len += 1;
+        true
+    }
+
+    fn bounds(&self) -> Rect {
+        let mut min = self.points[0];
+        let mut max = min;
+        for p in &self.points[..self.len] {
+            min.x = min.x.min(p.x);
+            min.y = min.y.min(p.y);
+            max.x = max.x.max(p.x);
+            max.y = max.y.max(p.y);
+        }
+        Rect::new(min.x, min.y, max.x - min.x, max.y - min.y)
+    }
+
+    fn intersect(mut self, clip: Self) -> ImageClip {
+        let direction = clip.winding();
+        for i in 0..clip.len {
+            let a = clip.points[i];
+            let b = clip.points[(i + 1) % clip.len];
+            let mut result = Self {
+                points: [Point::default(); MAX_VERTICES],
+                len: 0,
+            };
+            let mut previous = self.points[self.len - 1];
+            let mut before = cross(a, b, previous) * direction;
+            for point in &self.points[..self.len] {
+                let after = cross(a, b, *point) * direction;
+                if (before >= 0.0) != (after >= 0.0) {
+                    let t = before / (before - after);
+                    let hit = Point::new(
+                        (f64::from(previous.x) + t * (f64::from(point.x) - f64::from(previous.x)))
+                            as f32,
+                        (f64::from(previous.y) + t * (f64::from(point.y) - f64::from(previous.y)))
+                            as f32,
+                    );
+                    if !result.push(hit) {
+                        return ImageClip::Unsupported;
+                    }
+                }
+                if after >= 0.0 && !result.push(*point) {
+                    return ImageClip::Unsupported;
+                }
+                previous = *point;
+                before = after;
+            }
+            if result.len > 1 && result.points[0] == result.points[result.len - 1] {
+                result.len -= 1;
+            }
+            if result.len < 3 || result.winding() == 0.0 {
+                return ImageClip::Empty;
+            }
+            self = result;
+        }
+        ImageClip::Polygon(std::sync::Arc::new(self))
+    }
 }
 
 impl ImageClip {
@@ -26,38 +125,91 @@ impl ImageClip {
             (Self::Rectangle(a), Self::Rectangle(b)) => {
                 a.intersection(&b).map_or(Self::Empty, Self::Rectangle)
             },
+            (a, b) => a.polygon().intersect(b.polygon()),
+        }
+    }
+
+    fn polygon(self) -> ClipPolygon {
+        if let Self::Polygon(p) = self {
+            return *p;
+        }
+        let Self::Rectangle(r) = self else {
+            unreachable!("only finite regions intersect")
+        };
+        let mut p = ClipPolygon {
+            points: [Point::default(); MAX_VERTICES],
+            len: 0,
+        };
+        for (x, y) in [
+            (r.x, r.y),
+            (r.x + r.width, r.y),
+            (r.x + r.width, r.y + r.height),
+            (r.x, r.y + r.height),
+        ] {
+            p.push(Point::new(x, y));
+        }
+        p
+    }
+
+    pub(crate) fn contains(&self, point: Point) -> bool {
+        match self {
+            Self::Unbounded => true,
+            Self::Empty | Self::Unsupported => false,
+            Self::Rectangle(r) => {
+                point.x >= r.x
+                    && point.x <= r.x + r.width
+                    && point.y >= r.y
+                    && point.y <= r.y + r.height
+            },
+            Self::Polygon(p) => {
+                let direction = p.winding();
+                (0..p.len).all(|i| {
+                    cross(p.points[i], p.points[(i + 1) % p.len], point) * direction >= 0.0
+                })
+            },
         }
     }
 
     /// Intersect a full image frame with the clip, rejecting unsupported paths.
-    pub fn visible_bounds(self, image: Rect) -> crate::error::Result<Option<Rect>> {
-        match self.intersect(Self::Rectangle(image)) {
+    pub fn visible_bounds(&self, image: Rect) -> crate::error::Result<Option<Rect>> {
+        match self.clone().intersect(Self::Rectangle(image)) {
             Self::Rectangle(rect) => Ok(Some(rect)),
+            Self::Polygon(p) => Ok(Some(p.bounds())),
             Self::Empty => Ok(None),
             _ => Err(crate::error::Error::Unsupported("non-rectangular image clipping".into())),
         }
     }
 
     pub(crate) fn transformed_rectangle(ctm: Matrix, bounds: [f32; 4]) -> Self {
+        Self::rectangle_region(ctm, bounds, false)
+    }
+
+    pub(crate) fn transformed_image_rectangle(ctm: Matrix, bounds: [f32; 4]) -> Self {
+        Self::rectangle_region(ctm, bounds, true)
+    }
+
+    fn rectangle_region(ctm: Matrix, bounds: [f32; 4], convex: bool) -> Self {
         let [x0, y0, x1, y1] = bounds;
         let mut path = ClipPath::default();
         for (x, y) in [(x0, y0), (x1, y0), (x1, y1), (x0, y1)] {
             path.push(ctm.transform_point(x, y));
         }
-        path.region()
+        path.region(convex)
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub(crate) struct ImageGraphicsState {
     pub ctm: Matrix,
     pub clip: ImageClip,
     pub alpha: f32,
+    pub fill_space: crate::path_color::PathColorSpace,
+    pub fill_colour: Option<(f32, f32, f32)>,
 }
 
 #[derive(Default)]
 struct ClipPath {
-    points: [Point; 5],
+    points: [Point; MAX_VERTICES],
     len: usize,
     unsupported: bool,
 }
@@ -72,26 +224,54 @@ impl ClipPath {
         }
     }
 
-    fn region(&self) -> ImageClip {
+    fn region(&self, convex: bool) -> ImageClip {
         if self.unsupported {
             return ImageClip::Unsupported;
         }
         if self.len == 0 {
             return ImageClip::Empty;
         }
-        let len = if self.len == 5 && self.points[4] == self.points[0] {
-            4
+        let len = if self.len > 1 && self.points[self.len - 1] == self.points[0] {
+            self.len - 1
         } else {
             self.len
         };
-        if len != 4 {
+        if len < 3 {
             return ImageClip::Unsupported;
         }
-        let [a, b, c, d, _] = self.points;
-        let axis_rectangle = (a.y == b.y && b.x == c.x && c.y == d.y && d.x == a.x)
-            || (a.x == b.x && b.y == c.y && c.x == d.x && d.y == a.y);
+        let [a, b, c, d, ..] = self.points;
+        let axis_rectangle = len == 4
+            && ((a.y == b.y && b.x == c.x && c.y == d.y && d.x == a.x)
+                || (a.x == b.x && b.y == c.y && c.x == d.x && d.y == a.y));
         if !axis_rectangle {
-            return ImageClip::Unsupported;
+            if !convex {
+                return ImageClip::Unsupported;
+            }
+            let p = ClipPolygon {
+                points: self.points,
+                len,
+            };
+            let direction = p.winding();
+            if direction == 0.0 {
+                let second = p.points[..len]
+                    .iter()
+                    .find(|v| **v != a)
+                    .copied()
+                    .unwrap_or(a);
+                return if p.points[..len].iter().all(|v| cross(a, second, *v) == 0.0) {
+                    ImageClip::Empty
+                } else {
+                    ImageClip::Unsupported
+                };
+            }
+            if (0..len).any(|i| {
+                p.points[..len]
+                    .iter()
+                    .any(|v| cross(p.points[i], p.points[(i + 1) % len], *v) * direction < 0.0)
+            }) {
+                return ImageClip::Unsupported;
+            }
+            return ImageClip::Polygon(std::sync::Arc::new(p));
         }
         let rect = Rect::new(a.x.min(c.x), a.y.min(c.y), (c.x - a.x).abs(), (c.y - a.y).abs());
         if rect.width == 0.0 || rect.height == 0.0 {
@@ -108,6 +288,7 @@ pub(crate) struct ImageClipTracker {
     saved: Vec<ImageGraphicsState>,
     path: ClipPath,
     pending: bool,
+    convex: bool,
 }
 
 impl ImageClipTracker {
@@ -117,10 +298,22 @@ impl ImageClipTracker {
                 ctm,
                 clip,
                 alpha: 1.0,
+                fill_space: crate::path_color::PathColorSpace::GRAY,
+                fill_colour: Some((0., 0., 0.)),
             },
             saved: Vec::new(),
             path: ClipPath::default(),
             pending: false,
+            convex: false,
+        }
+    }
+
+    /// Image import has a bounded alpha compositor. Vector path paint keeps
+    /// its existing explicit unsupported-path handling and original clip path.
+    pub fn for_images(ctm: Matrix, clip: ImageClip) -> Self {
+        Self {
+            convex: true,
+            ..Self::new(ctm, clip)
         }
     }
 
@@ -128,14 +321,23 @@ impl ImageClipTracker {
         self.current.alpha = alpha;
     }
 
+    pub fn set_fill_colour(
+        &mut self,
+        space: crate::path_color::PathColorSpace,
+        colour: Option<(f32, f32, f32)>,
+    ) {
+        self.current.fill_space = space;
+        self.current.fill_colour = colour;
+    }
+
     pub fn current(&self) -> ImageGraphicsState {
-        self.current
+        self.current.clone()
     }
 
     pub fn apply(&mut self, op: &Operator) {
         use Operator::*;
         match *op {
-            SaveState => self.saved.push(self.current),
+            SaveState => self.saved.push(self.current.clone()),
             RestoreState => {
                 if let Some(state) = self.saved.pop() {
                     self.current = state;
@@ -186,7 +388,11 @@ impl ImageClipTracker {
             | FillStrokeEvenOdd
             | CloseFillStrokeEvenOdd => {
                 if self.pending {
-                    self.current.clip = self.current.clip.intersect(self.path.region());
+                    self.current.clip = self
+                        .current
+                        .clip
+                        .clone()
+                        .intersect(self.path.region(self.convex));
                 }
                 self.path = ClipPath::default();
                 self.pending = false;

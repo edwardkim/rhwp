@@ -206,12 +206,7 @@ impl Object {
     ) -> Result<Vec<u8>> {
         match self {
             Object::Stream { dict, data } => {
-                let filters = dict
-                    .get("Filter")
-                    .map(extract_filter_names)
-                    .unwrap_or_default();
-                let params = extract_decode_params(dict.get("DecodeParms"));
-                crate::decoders::decode_stream_with_budget(data, &filters, params.as_ref(), budget)
+                crate::stream_parameters_limited::decode_resolved(dict, data, budget)
             },
             Object::Dictionary(_) | Object::Null => {
                 budget.check()?;

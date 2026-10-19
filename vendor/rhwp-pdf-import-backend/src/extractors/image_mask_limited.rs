@@ -12,7 +12,7 @@ use std::collections::HashMap;
 
 // Resolve chains with an explicit request depth bound as well as the loader's
 // cumulative visit accounting. A cycle cannot start an unbounded recovery loop.
-fn resolve<'a>(
+pub(super) fn resolve<'a>(
     doc: &PdfDocument,
     object: &'a Object,
     budget: &ImportBudget,
@@ -30,20 +30,72 @@ fn resolve<'a>(
     Ok(object)
 }
 
-pub(super) struct Mask {
+pub(super) enum Mask {
+    Stream(StreamMask),
+    ColourKey(super::image_mask_limited_extra::ColourKey),
+}
+
+impl Mask {
+    pub(super) fn interpolation(&self) -> Option<bool> {
+        match self {
+            Self::Stream(mask) => Some(mask.interpolate),
+            Self::ColourKey(_) => None,
+        }
+    }
+    pub(super) fn read(
+        doc: &PdfDocument,
+        object: &Object,
+        color_spaces: Option<&HashMap<String, Object>>,
+        budget: &ImportBudget,
+    ) -> Result<Option<Self>> {
+        let base = object
+            .as_dict()
+            .ok_or_else(|| Error::Image("image must be a stream".into()))?;
+        let soft = base
+            .get("SMask")
+            .map(|o| resolve(doc, o, budget))
+            .transpose()?;
+        if soft.as_deref().is_none_or(|o| matches!(o, Object::Null)) {
+            if let Some(value) = base.get("Mask") {
+                let value = resolve(doc, value, budget)?;
+                if let Object::Array(ranges) = &*value {
+                    return super::image_mask_limited_extra::ColourKey::read(
+                        doc,
+                        object,
+                        ranges,
+                        color_spaces,
+                        budget,
+                    )
+                    .map(|m| Some(Self::ColourKey(m)));
+                }
+            }
+        }
+        StreamMask::read(doc, base, color_spaces, budget).map(|m| m.map(Self::Stream))
+    }
+
+    pub(super) fn apply(self, image: &mut PdfImage, budget: &ImportBudget) -> Result<()> {
+        match self {
+            Self::Stream(mask) => mask.apply(image, budget),
+            Self::ColourKey(mask) => mask.apply(image, budget),
+        }
+    }
+}
+
+pub(super) struct StreamMask {
     width: u32,
     height: u32,
     stride: usize,
     bpc: usize,
     decode: (f32, f32),
     soft: bool,
+    interpolate: bool,
     samples: Vec<u8>,
     matte: Option<[f32; 3]>,
     jpeg_decode: Option<[(f32, f32); 3]>,
     other_source_decode: bool,
 }
 
-impl Mask {
+impl StreamMask {
     pub(super) fn read(
         doc: &PdfDocument,
         base: &HashMap<String, Object>,
@@ -105,11 +157,11 @@ impl Mask {
                 return Err(Error::Unsupported("nested image mask".into()));
             }
         }
-        if entry("Interpolate")?
-            .is_some_and(|v| !matches!(*v, Object::Null | Object::Boolean(false)))
-        {
-            return Err(Error::Unsupported("interpolated image mask".into()));
-        }
+        let interpolate = match entry("Interpolate")?.as_deref() {
+            None | Some(Object::Null | Object::Boolean(false)) => false,
+            Some(Object::Boolean(true)) => true,
+            _ => return Err(Error::Image("invalid mask Interpolate flag".into())),
+        };
         let dimension = |key: &str| -> Result<u32> {
             entry(key)?
                 .as_deref()
@@ -238,7 +290,8 @@ impl Mask {
             .get("Decode")
             .is_some_and(|v| !matches!(v, Object::Null))
             && jpeg_decode.is_none();
-        let samples = object.decode_stream_data_with_budget(budget)?;
+        let samples =
+            doc.decode_stream_with_encryption(&object, crate::object::ObjectRef::new(0, 0))?;
         if samples.len() != expected {
             return Err(Error::Image("mask sample length differs from dimensions".into()));
         }
@@ -249,11 +302,26 @@ impl Mask {
             bpc,
             decode,
             soft,
+            interpolate,
             samples,
             matte,
             jpeg_decode,
             other_source_decode,
         }))
+    }
+
+    fn alpha(&self, x: usize, y: usize, max: u8) -> f64 {
+        let offset = x * self.bpc;
+        let raw = (self.samples[y * self.stride + offset / 8] >> (8 - self.bpc - offset % 8)) & max;
+        let value = (f64::from(self.decode.0)
+            + f64::from(raw) * (f64::from(self.decode.1) - f64::from(self.decode.0))
+                / f64::from(max))
+        .clamp(0.0, 1.0);
+        if self.soft {
+            value
+        } else {
+            1.0 - value
+        }
     }
 
     pub(super) fn apply(self, image: &mut PdfImage, budget: &ImportBudget) -> Result<()> {
@@ -322,15 +390,28 @@ impl Mask {
                     as usize;
                 let bx = ((2 * u64::from(x) + 1) * u64::from(image.width) / (2 * u64::from(width)))
                     as usize;
-                let offset = mx * self.bpc;
-                let raw = (self.samples[my * self.stride + offset / 8]
-                    >> (8 - self.bpc - offset % 8))
-                    & max;
-                let value = (f64::from(self.decode.0)
-                    + f64::from(raw) * (f64::from(self.decode.1) - f64::from(self.decode.0))
-                        / f64::from(max))
-                .clamp(0.0, 1.0);
-                let alpha = if self.soft { value } else { 1.0 - value };
+                let alpha = if self.interpolate {
+                    // ISO 32000-1 8.9.5.3 allows the reader's interpolation
+                    // algorithm. Bilinear sample-centre mapping, with edge
+                    // extension, needs no additional image-sized allocation.
+                    let fx = ((f64::from(x) + 0.5) * f64::from(self.width) / f64::from(width)
+                        - 0.5)
+                        .clamp(0.0, f64::from(self.width - 1));
+                    let fy = ((f64::from(y) + 0.5) * f64::from(self.height) / f64::from(height)
+                        - 0.5)
+                        .clamp(0.0, f64::from(self.height - 1));
+                    let (x0, y0) = (fx.floor() as usize, fy.floor() as usize);
+                    let (x1, y1) = (
+                        (x0 + 1).min(self.width as usize - 1),
+                        (y0 + 1).min(self.height as usize - 1),
+                    );
+                    let (dx, dy) = (fx - x0 as f64, fy - y0 as f64);
+                    let upper = self.alpha(x0, y0, max) * (1.0 - dx) + self.alpha(x1, y0, max) * dx;
+                    let lower = self.alpha(x0, y1, max) * (1.0 - dx) + self.alpha(x1, y1, max) * dx;
+                    upper * (1.0 - dy) + lower * dy
+                } else {
+                    self.alpha(mx, my, max)
+                };
                 let pixel = (by * image.width as usize + bx) * 3;
                 for c in 0..3 {
                     let mut value = f64::from(rgb[pixel + c]);

@@ -162,11 +162,46 @@ test('Hancom equation glyphs request their actual regular host face without read
     assert.equal(requests.length, 1, 'the same equation face is prepared once');
     assert.equal(requests[0].hostReference?.face.id, 'equation');
     assert.equal(f.reads(), 0, 'request collection is metadata only');
+    const name: LayerEquationLayoutBox = { ...bounds, baseline: 10,
+      kind: { type: 'hancomGlyphs', glyphs: 'lim', positions: [0, 5, 10], baselineShift: 0 } };
+    const limit: LayerEquationLayoutBox = { ...bounds, baseline: 10,
+      kind: { type: 'limit', isUpper: false, name } };
+    tree.root = { kind: 'leaf', bounds, ops: [
+      { type: 'equation', bbox: bounds, layoutBox: limit },
+    ] };
+    assert.equal(collectHostFontRequests(tree)[0]?.hostReference?.face.id, 'equation',
+      '첨자가 없는 극한도 이름이 소비하는 실제 face를 요청한다');
+    assert.equal(f.reads(), 0, '이름의 요청 수집도 글꼴 바이트를 읽지 않는다');
     tree.root = { kind: 'leaf', bounds, ops: [
       { type: 'equation', bbox: bounds, layoutBox: plain },
       { type: 'equation', bbox: bounds, svgContent: '<svg/>' },
     ] };
     assert.equal(collectHostFontRequests(tree).length, 0, 'other equation paint paths do not consume HyhwpEQ');
+  } finally { await setHostFontProvider(null); }
+});
+
+test('서로 다른 한컴 수식 face를 같은 페이지에서 각각 준비하고 기본 face도 보존한다', async () => {
+  const f = fixture();
+  const faces = ['HyhwpEQ', 'HancomEQN'].map((family, index) => ({
+    id: `equation-${index}`, family, fullName: family, postscriptName: family,
+    style: 'Regular', weight: 400, slant: 'normal' as const,
+  }));
+  f.replace({ ...f.snapshot(), faces: [...f.snapshot().faces, ...faces] });
+  const bounds = { x: 0, y: 0, width: 200, height: 100 };
+  const glyph = (fontFamily?: string): LayerEquationLayoutBox => ({
+    ...bounds, baseline: 10,
+    kind: { type: 'hancomGlyphs', fontFamily, glyphs: '\ue007', positions: [0], baselineShift: 0 },
+  });
+  const tree: PageLayerTree = { pageWidth: 200, pageHeight: 100,
+    root: { kind: 'leaf', bounds, ops: [{ type: 'equation', bbox: bounds,
+      layoutBox: { ...bounds, baseline: 10,
+        kind: { type: 'fraction', numer: glyph('HancomEQN'), denom: glyph() } },
+    }] } };
+  try {
+    await setHostFontProvider(f.provider);
+    const requests = collectHostFontRequests(tree);
+    assert.deepEqual(requests.map(r => r.hostReference?.face.id).sort(), ['equation-0', 'equation-1']);
+    assert.equal(f.reads(), 0, '실제 글꼴 바이트를 읽기 전에 두 face를 식별한다');
   } finally { await setHostFontProvider(null); }
 });
 

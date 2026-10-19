@@ -27,8 +27,11 @@ use crate::renderer::typeset::{
     ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX,
 };
 
+mod fit_split;
 mod initial_fit;
 mod new_note_fit;
+mod picture_frame;
+mod reflow_fit;
 mod rewind_tail;
 mod tail_fit;
 
@@ -55,7 +58,11 @@ impl TypesetEngine {
         vars: EndnoteEmitVars,
         flow: EndnoteFlowState,
     ) -> EndnoteFlowState {
+        let original_endnote = en_ctrl;
+        let projected_endnote = super::row_projection::project_equation_rows(en_ctrl, styles, st);
+        let en_ctrl = projected_endnote.as_ref();
         let EndnoteEmitVars {
+            reserved_tail_spacing_px,
             boundary_prev_endnote_had_vpos_rewind,
             endnote_has_vpos_rewind,
             continued_endnote_tail_before_new_note,
@@ -75,6 +82,8 @@ impl TypesetEngine {
             mut current_endnote_had_inline_object_vpos_overestimate,
         } = flow;
         let mut pre_emitted_endnote_para_indices = std::collections::HashSet::new();
+        let mut kept_new_head_in_current_column = false;
+        let reserved_tail_column = (st.pages.len(), st.current_column);
         for (ep_idx, en_para) in en_ctrl.paragraphs.iter().enumerate() {
             if pre_emitted_endnote_para_indices.remove(&ep_idx) {
                 emitted_endnote_count += 1;
@@ -99,17 +108,11 @@ impl TypesetEngine {
                 en_para
             };
             let en_para_idx = paragraphs.len() + st.endnote_paragraphs.len();
-            let mut en_para_copy = render_en_para.clone();
-            if compact_no_separator_spacing {
-                let divisor = 10;
-                for line_seg in &mut en_para_copy.line_segs {
-                    line_seg.line_spacing = -(line_seg.line_height / divisor);
-                }
-            }
-            // line_segs vpos를 endnote 시작점 기준으로 오프셋
-            for ls in &mut en_para_copy.line_segs {
-                ls.vertical_pos += endnote_start;
-            }
+            let mut en_para_copy = super::row_projection::render_paragraph(
+                render_en_para,
+                endnote_start,
+                compact_no_separator_spacing,
+            );
             // 첫 paragraph에 미주 번호 prepend
             if ep_idx == 0 {
                 prepend_endnote_marker_text(&mut en_para_copy, en_ctrl);
@@ -140,6 +143,40 @@ impl TypesetEngine {
                 .unwrap_or(st.layout.body_area.width);
             let fmt =
                 self.format_endnote_paragraph(en_para, Some(&composed), &styles, Some(en_col_w));
+            if self.typeset_endnote_flow_tables(
+                st,
+                paragraphs,
+                styles,
+                en_para_idx,
+                &fmt,
+                &en_ctrl.paragraphs[ep_idx + 1..],
+                endnote_start,
+                compact_no_separator_spacing,
+                measured_tables,
+            ) {
+                // 표 조각은 실제 행 높이를 수용했다. 다음 문단은 저장 host의
+                // 한 줄 높이로 그 소비량을 다시 추정하지 않는다.
+                prev_en_bottom_vpos = None;
+                prev_en_content_bottom_vpos = None;
+                continue;
+            }
+            if kept_new_head_in_current_column
+                && ep_idx == 1
+                && self.reflowed_endnote_head_successor_first_line_overflows(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    &fmt,
+                    st.available_height(),
+                    en_col_w,
+                    measured_tables,
+                )
+            {
+                st.advance_column_or_new_page();
+                prev_en_bottom_vpos = None;
+                prev_en_content_bottom_vpos = None;
+            }
             if std::env::var("RHWP_ENDNOTE_LINE_DEBUG").is_ok() {
                 debug_print_endnote_line_segments(
                     en_ref.number,
@@ -413,8 +450,55 @@ impl TypesetEngine {
                         (prev_en_bottom_vpos, this_first_offset),
                         (Some(prev), Some(first)) if first < prev
                     );
+            // 저장 경계의 재조판 fit는 실제 점유 끝으로 판단한다. 다음 문단과
+            // 묶지 않는 문단을 미주 전체와 임의로 하나의 keep 그룹으로 만들지 않는다.
+            let local_rewind_tail_fits = ep_idx > 0
+                && en_para.column_type == crate::model::paragraph::ColumnBreakType::None
+                && !styles
+                    .para_styles
+                    .get(en_para.para_shape_id as usize)
+                    .is_some_and(|style| style.keep_with_next)
+                && matches!((prev_en_bottom_vpos, this_first_offset),
+                    (Some(previous), Some(first)) if first < previous)
+                && self.reflowed_endnote_saved_boundary_fits(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    en_para_idx,
+                    available,
+                    en_col_w,
+                    measured_tables,
+                );
+            // 저장 경계가 문단 사이에 있어도 실제 줄이 작아졌다면 앞부분을
+            // 현재 단에 둘 수 있다. keep 계약과 실제 표 측정도 같은 경로로 확인한다.
+            let local_rewind_prefix_split = (!local_rewind_tail_fits
+                && ep_idx > 0
+                && !st.profile.session_edited()
+                && matches!((prev_en_bottom_vpos, this_first_offset),
+                    (Some(previous), Some(first)) if first < previous)
+                && (crate::renderer::composer::stored_row_projection::reissued_equation_rows(
+                    &original_endnote.paragraphs[ep_idx],
+                    &composed,
+                ) || self.endnote_column_has_reissued_rows(st, paragraphs, styles)))
+            .then(|| {
+                self.reflowed_endnote_prefix_split(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    en_para_idx,
+                    available,
+                    en_col_w,
+                    measured_tables,
+                )
+                .and_then(reflow_fit::EndnotePrefixFit::split_line)
+            })
+            .flatten();
             if st.col_count > 1
                 && !st.current_items.is_empty()
+                && !local_rewind_tail_fits
+                && local_rewind_prefix_split.is_none()
                 && (st.current_height > available * local_rewind_advance_threshold
                     || visible_separator_title_body_rewind_starts_next_column)
                 && !current_default_late_question_title
@@ -696,29 +780,6 @@ impl TypesetEngine {
                 })
                 .chain(tac_picture_only_height)
                 .reduce(f64::max);
-            let tac_picture_tail_group_height =
-                if let (Some(first), Some(pic_h)) = (this_first_offset, tac_picture_tail_height) {
-                    let tail_bottom = en_ctrl
-                        .paragraphs
-                        .iter()
-                        .skip(ep_idx + 1)
-                        .flat_map(|p| p.line_segs.iter())
-                        .map(|s| {
-                            s.vertical_pos
-                                .saturating_add(s.line_height)
-                                .saturating_add(s.line_spacing)
-                                + endnote_start
-                        })
-                        .max();
-                    Some(
-                        tail_bottom
-                            .map(|bottom| hwpunit_to_px((bottom - first).max(0), dpi))
-                            .unwrap_or(0.0)
-                            .max(pic_h),
-                    )
-                } else {
-                    None
-                };
             let cap_large_separator_stale_forward_vpos = large_separator_block
                 && compact_between_notes_gap
                 && st.current_height < available * 0.70;
@@ -738,7 +799,17 @@ impl TypesetEngine {
             let ssot_level = en_ssot_level();
             let ssot_debug = en_ssot_debug();
 
-            let non_tac_object_height = if endnote_has_text_or_equation {
+            // 앞/현재/뒤 저장 줄이 그림 띠를 정확히 닫는 경우만 호스트 한 줄을
+            // 별도 예약하지 않는다. 상대 프레임의 끝을 fit과 실제 누적에 공유한다.
+            let stored_picture_frame = (!self.profile.get().session_edited()
+                && (self.profile.get().hwp5_container()
+                    || self.profile.get().hwpx_stored_layout())
+                && !compact_no_separator_spacing)
+                .then(|| picture_frame::relative_frame(&en_ctrl.paragraphs, ep_idx, styles, dpi))
+                .flatten();
+            let non_tac_object_height = if let Some(frame) = stored_picture_frame {
+                Some(fmt.spacing_before + frame.paragraph_end(0.0, 0.0))
+            } else if endnote_has_text_or_equation {
                 None
             } else {
                 non_tac_picture_or_shape_block_height_px(en_para, dpi)
@@ -786,6 +857,13 @@ impl TypesetEngine {
                     local_vpos_rewind_crosses_prev_content,
                     min_vpos_rewind_height,
                     new_endnote_between_notes_px,
+                    reserved_tail_spacing_px: if ep_idx == 0
+                        && reserved_tail_column == (st.pages.len(), st.current_column)
+                    {
+                        reserved_tail_spacing_px
+                    } else {
+                        0.0
+                    },
                     no_separator_new_note_head_fits_current_column,
                     ssot_debug,
                     ssot_level,
@@ -795,10 +873,20 @@ impl TypesetEngine {
                     trailing_ls_px,
                 },
             );
-            let en_fit = non_tac_object_height
-                .map(|height| raw_en_fit.max(height))
-                .unwrap_or(raw_en_fit);
-            let total_advance_fit = line_advances_sum.max(non_tac_object_height.unwrap_or(0.0));
+            let en_fit = if stored_picture_frame.is_some() {
+                non_tac_object_height.unwrap_or(raw_en_fit)
+            } else {
+                non_tac_object_height
+                    .map(|height| raw_en_fit.max(height))
+                    .unwrap_or(raw_en_fit)
+            };
+            let total_advance_fit = if stored_picture_frame.is_some() {
+                en_fit
+            } else {
+                line_advances_sum.max(non_tac_object_height.unwrap_or(0.0))
+            };
+            let fit_split_column = (st.pages.len(), st.current_column);
+            let fit_item_count = st.current_items.len();
             let initial_fit::InitialFitResult {
                 remaining_height,
                 a2_overflow_with_para,
@@ -811,6 +899,7 @@ impl TypesetEngine {
                 compact_endnote_own_vpos_span_fits_for_flow,
                 no_separator_compact_final_note_first_line_tail_fits,
                 mut split_endnote_to_fit,
+                reflowed_fit,
                 late_internal_rewind_fit_split,
                 compact_non_default_empty_column_rewind_fits,
                 visible_compact_sequential_tail_fits_current_column,
@@ -818,6 +907,7 @@ impl TypesetEngine {
                 st,
                 paragraphs,
                 styles,
+                measured_tables,
                 endnote_refs,
                 en_ref_idx,
                 en_ref,
@@ -851,12 +941,15 @@ impl TypesetEngine {
                 default_between_notes_gap,
                 zero_endnote_spacing_profile,
                 compact_between_notes_gap,
-                allow_default_late_question_tail,
                 has_treat_as_char_picture_shape,
             });
+            if let Some(split) = local_rewind_prefix_split {
+                split_endnote_to_fit = Some(split);
+            }
             if ssot_level >= EnSsotLevel::A2
                 && a2_overflow_with_para == Some(true)
                 && split_endnote_to_fit.is_none()
+                && reflowed_fit != Some(reflow_fit::ReflowedEndnoteFit::Whole)
                 && !visible_compact_sequential_tail_fits_current_column
                 && !visible_separator_new_note_title_tail_fits_for_a2
                 && !st.current_items.is_empty()
@@ -873,14 +966,17 @@ impl TypesetEngine {
             if page_offcanvas_with_para
                 && !st.current_items.is_empty()
                 && split_endnote_to_fit.is_none()
+                && reflowed_fit != Some(reflow_fit::ReflowedEndnoteFit::Whole)
                 && !internal_vpos_rewind
             {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
                 prev_en_content_bottom_vpos = None;
             }
-            let large_between_split_head_render_overflows = self
-                .judge_large_between_split_head_render_overflows(
+            let large_between_split_head_render_overflows = !(fit_split_column
+                == (st.pages.len(), st.current_column)
+                && reflowed_fit.is_some_and(reflow_fit::ReflowedEndnoteFit::can_stay))
+                && self.judge_large_between_split_head_render_overflows(
                     st,
                     &fmt,
                     en_para,
@@ -1047,12 +1143,10 @@ impl TypesetEngine {
             let rewind_tail::RewindTailResult {
                 new_endnote_stale_forward_vpos,
                 large_between_tail_render_overflows,
-                large_between_tail_before_rewind_picture,
+                kept_successor_overflows,
                 no_separator_tail_table_starts_next_column,
-                no_separator_last_column_tail_before_rewind_starts_next_page,
                 no_separator_tail_after_picture_starts_next_page,
                 later_endnote_vpos_rewinds_after_current,
-                large_between_equation_tail_starts_next_column,
                 large_between_title_tail_render_overflows,
                 large_between_question_title_render_y,
                 large_between_question_title_head_inside_frame,
@@ -1071,8 +1165,8 @@ impl TypesetEngine {
                 ep_idx,
                 en_para,
                 fmt: &fmt,
-                composed: &composed,
                 endnote_start,
+                compact_no_separator_spacing,
                 prev_en_bottom_vpos,
                 emitted_endnote_count,
                 en_para_idx,
@@ -1125,12 +1219,12 @@ impl TypesetEngine {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
             }
-            if ((large_between_tail_render_overflows
-                || large_between_tail_before_rewind_picture
-                || large_between_equation_tail_starts_next_column
-                || no_separator_last_column_tail_before_rewind_starts_next_page)
-                && !render_whole_fits(st))
-                || no_separator_tail_table_starts_next_column
+            if ((large_between_tail_render_overflows && !render_whole_fits(st))
+                || kept_successor_overflows
+                || no_separator_tail_table_starts_next_column)
+                && !(fit_split_column == (st.pages.len(), st.current_column)
+                    && fit_item_count == st.current_items.len()
+                    && reflowed_fit.is_some_and(reflow_fit::ReflowedEndnoteFit::can_stay))
             {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
@@ -1168,6 +1262,23 @@ impl TypesetEngine {
                 (count == 2).then_some(total)
             } else {
                 None
+            };
+            // 실제 제목의 fit은 다음 본문과 묶어 넘기는 추정보다 먼저 소비한다.
+            // keep_with_next가 없는 제목은 자체 점유와 설정 gap으로 소유를 정한다.
+            let mut new_head_fit = if ep_idx == 0 {
+                self.query_reflowed_endnote_new_head_fit(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    &fmt,
+                    en_para_idx,
+                    available,
+                    en_col_w,
+                    measured_tables,
+                )
+            } else {
+                reflow_fit::NewHeadFit::default()
             };
             let zero_between_large_separator_last_column_title_orphan =
                 compact_endnote_separator_profile
@@ -1231,9 +1342,14 @@ impl TypesetEngine {
                 || default_large_below_last_column_title_orphan
                 || default_compact_below_last_column_title_orphan
             {
-                st.advance_column_or_new_page();
-                prev_en_bottom_vpos = None;
-                prev_en_content_bottom_vpos = None;
+                if new_head_fit.can_stay {
+                    kept_new_head_in_current_column = true;
+                } else {
+                    st.advance_column_or_new_page();
+                    new_head_fit = reflow_fit::NewHeadFit::default();
+                    prev_en_bottom_vpos = None;
+                    prev_en_content_bottom_vpos = None;
+                }
             }
             let tail_fit::TailFitResult {
                 allow_large_between_question_title_tail,
@@ -1248,7 +1364,7 @@ impl TypesetEngine {
                 default_question_title_tail_fits_by_line_height,
                 zero_question_title_tail_fits_by_line_height,
                 large_between_zero_above_whole_note_small_bleed_fits,
-                advance_for_fit,
+                mut advance_for_fit,
                 pre_emit_tail_before_non_tac_object_advance,
             } = self.query_tail_fit(tail_fit::TailFitInput {
                 default_question_group_title_tail,
@@ -1315,7 +1431,6 @@ impl TypesetEngine {
                 internal_rewind_full_advance_needed,
                 no_separator_tail_after_picture_starts_next_page,
                 later_endnote_vpos_rewinds_after_current,
-                large_between_equation_tail_starts_next_column,
                 large_between_question_title_render_y,
                 large_between_question_title_head_inside_frame,
                 large_between_question_title_head_fits_flow,
@@ -1353,7 +1468,55 @@ impl TypesetEngine {
                     st.advance_flow_by(next_fmt.total_height);
                     st.mark_endnote_flow();
                     pre_emitted_endnote_para_indices.insert(ep_idx + 1);
+                    // 선행 방출로 현재 단의 항목이 바뀌었으면 이전 fit을 재사용하지 않는다.
+                    new_head_fit = if ep_idx == 0 {
+                        self.query_reflowed_endnote_new_head_fit(
+                            st,
+                            paragraphs,
+                            styles,
+                            en_para,
+                            &fmt,
+                            en_para_idx,
+                            available,
+                            en_col_w,
+                            measured_tables,
+                        )
+                    } else {
+                        reflow_fit::NewHeadFit::default()
+                    };
                 }
+            }
+            // 같은 paint 문맥에서 구한 제목 fit을 일반 높이 추정에도 전달한다.
+            if advance_for_fit && new_head_fit.can_stay {
+                advance_for_fit = false;
+                kept_new_head_in_current_column = true;
+            }
+            if fit_split_column == (st.pages.len(), st.current_column)
+                && fit_item_count == st.current_items.len()
+            {
+                // 전체/부분 점유의 공통 결과를 이월 판정과 최종 컷에 함께 전달한다.
+                // 선행 방출이나 단 전환으로 항목이 바뀌면 이전 조회를 소비하지 않는다.
+                if let Some(fit) = reflowed_fit {
+                    advance_for_fit = !fit.can_stay();
+                }
+            }
+            if advance_for_fit
+                && ep_idx > 0
+                && self.reflowed_endnote_single_line_fits(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    &fmt,
+                    en_para_idx,
+                    available,
+                    en_col_w,
+                    measured_tables,
+                )
+            {
+                // 본문 줄도 실제 배치 전에 확인한다. 넘긴 뒤의 overflow
+                // 검사만으로는 앞 단에 들어가는 줄의 소속을 복원할 수 없다.
+                advance_for_fit = false;
             }
             if advance_for_fit {
                 // [#6574] 렌더 경로로 그려 이 문단이 현재 단에 통째로 들어가면 누계 기반 일반
@@ -1376,6 +1539,7 @@ impl TypesetEngine {
                 );
                 if !render_fits_current_column {
                     st.advance_column_or_new_page();
+                    new_head_fit = reflow_fit::NewHeadFit::default();
                 }
                 prev_en_bottom_vpos = None;
                 prev_en_content_bottom_vpos = None;
@@ -1421,7 +1585,7 @@ impl TypesetEngine {
                     EndnoteRenderInkFit::Fits | EndnoteRenderInkFit::SplitAt(_)
                 );
             let new_note_fit::NewNoteFitResult {
-                advance_for_new_endnote,
+                mut advance_for_new_endnote,
                 advance_for_internal_rewind,
             } = self.query_new_note_fit(new_note_fit::NewNoteFitInput {
                 st,
@@ -1480,6 +1644,12 @@ impl TypesetEngine {
                 zero_question_title_tail_fits_by_line_height,
                 large_between_zero_above_whole_note_small_bleed_fits,
             });
+            advance_for_new_endnote |= new_head_fit.natural_overflows;
+            let kept_new_head = advance_for_new_endnote && new_head_fit.can_stay;
+            if kept_new_head {
+                kept_new_head_in_current_column = true;
+                advance_for_new_endnote = false;
+            }
             if advance_for_new_endnote {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
@@ -1550,11 +1720,17 @@ impl TypesetEngine {
                 && local_vpos_rewind
                 && para_is_treat_as_char_picture_only(en_para)
                 && st.current_column + 1 >= st.col_count
-                && st.current_height
-                    + tac_picture_tail_group_height
-                        .or(tac_picture_only_height)
-                        .unwrap_or(en_fit)
-                    > available - ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                && self.reflowed_endnote_single_line_overflows(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    &fmt,
+                    en_para_idx,
+                    available,
+                    en_col_w,
+                    measured_tables,
+                )
                 && st
                     .current_items
                     .iter()
@@ -1569,8 +1745,8 @@ impl TypesetEngine {
                     })
                     .unwrap_or(false);
             if tac_picture_rewinds_before_column_base {
-                // 저장 vpos가 현재 단 시작보다 앞선 TAC 그림은 한컴에서
-                // 하단 겹침으로 남기지 않고 다음 단/쪽에서 자체 높이를 소비한다.
+                // 저장 원점이 앞서도 실제 그림 점유가 들어가면 현재 단에 둔다.
+                // 뒤 풀이 전체를 그림과 묶어 공간을 예약하지 않는다.
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
                 prev_en_content_bottom_vpos = None;
@@ -1656,6 +1832,13 @@ impl TypesetEngine {
                     local_vpos_rewind_crosses_prev_content,
                     min_vpos_rewind_height,
                     new_endnote_between_notes_px,
+                    reserved_tail_spacing_px: if ep_idx == 0
+                        && reserved_tail_column == (st.pages.len(), st.current_column)
+                    {
+                        reserved_tail_spacing_px
+                    } else {
+                        0.0
+                    },
                     no_separator_new_note_head_fits_current_column,
                     ssot_debug,
                     ssot_level,
@@ -1728,6 +1911,14 @@ impl TypesetEngine {
                     .map(|gap| hwpunit_to_px(gap as i32, dpi))
                     .unwrap_or(0.0);
                 en_advance = en_advance.max(total_advance_fit + boundary_gap);
+            }
+            if fit_split_column != (st.pages.len(), st.current_column) {
+                split_endnote_to_fit = fit_split::refresh_after_column_change(
+                    &fmt,
+                    split_endnote_to_fit,
+                    (st.available_height() - st.current_height).max(0.0),
+                    total_advance_fit,
+                );
             }
             let compact_visible_last_column_non_reset_rewind_tail =
                 compact_endnote_separator_profile
@@ -1817,14 +2008,131 @@ impl TypesetEngine {
             } else {
                 split_candidate
             };
-            // 렌더로 잰 분할 줄 수가 있으면 그 값을 쓴다 — 단 하단까지 실제로 들어가는 줄 수다.
-            // 렌더가 통째로 들어간다고 판정하면 누계 기반 분할 후보를 버린다. 저장 사다리
-            // 되감김 등 다른 분할 후보는 렌더 판정이 없을 때만 쓴다.
-            let split_candidate = if render_fits_whole {
+            let split_candidate = if fit_split_column == (st.pages.len(), st.current_column)
+                && fit_item_count == st.current_items.len()
+            {
+                match reflowed_fit {
+                    Some(reflow_fit::ReflowedEndnoteFit::Whole)
+                    | Some(reflow_fit::ReflowedEndnoteFit::Overflow) => None,
+                    Some(reflow_fit::ReflowedEndnoteFit::Split(line)) => Some(line),
+                    None => split_candidate,
+                }
+            } else {
+                split_candidate
+            };
+            // 저장 누계의 자동 컷보다 실제 방출할 문단의 점유를 먼저 확인한다.
+            // 명시적 묶음·단 경계·개체 계획은 이 일반 글줄 조회로 대체하지 않는다.
+            let whole_internal_rewind_fits = internal_vpos_rewind
+                && split_candidate.is_some()
+                && self.reflowed_endnote_whole_paragraph_fits(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    en_para_idx,
+                    available,
+                    en_col_w,
+                    measured_tables,
+                );
+            let split_candidate = if render_fits_whole || whole_internal_rewind_fits {
                 None
             } else {
                 render_fit_split.or(split_candidate)
             };
+            let split_candidate = split_candidate.filter(|_| {
+                !whole_internal_rewind_fits
+                    && !self.reflowed_endnote_unsplit_candidate_fits(
+                        st,
+                        paragraphs,
+                        styles,
+                        en_para,
+                        en_para_idx,
+                        available,
+                        en_col_w,
+                        measured_tables,
+                    )
+            });
+            // 기존 컷도 실제 배치에 들어가야 한다. 확대 후보만 검사한 뒤
+            // 넘치는 옛 컷을 재사용하지 않으며, 수용 불가와 미측정을 구분한다.
+            let mut prefix_overflows = false;
+            let split_candidate = split_candidate.and_then(|saved_split| {
+                if internal_vpos_rewind
+                    && !st.profile.session_edited()
+                    && (crate::renderer::composer::stored_row_projection::reissued_equation_rows(
+                        &original_endnote.paragraphs[ep_idx],
+                        &composed,
+                    ) || self.endnote_column_has_reissued_rows(st, paragraphs, styles))
+                {
+                    match self.reflowed_endnote_prefix_split(
+                        st,
+                        paragraphs,
+                        styles,
+                        en_para,
+                        en_para_idx,
+                        available,
+                        en_col_w,
+                        measured_tables,
+                    ) {
+                        Some(reflow_fit::EndnotePrefixFit::Split(line)) => Some(line),
+                        Some(reflow_fit::EndnotePrefixFit::Overflow) => {
+                            prefix_overflows = true;
+                            None
+                        }
+                        None => Some(saved_split),
+                    }
+                } else {
+                    Some(saved_split)
+                }
+            });
+            if prefix_overflows {
+                st.advance_column_or_new_page();
+                prev_en_bottom_vpos = None;
+                prev_en_content_bottom_vpos = None;
+                en_advance = fmt.total_height;
+            }
+            // 저장 되감김을 같은 단에 수용한 뒤에도 후속 줄의 실제 점유를
+            // 확인한다. 작아진 saved-delta 누계로 쪽 아래 넘침을 허용하지 않는다.
+            if ep_idx > 0
+                && self.reflowed_endnote_single_line_overflows(
+                    st,
+                    paragraphs,
+                    styles,
+                    en_para,
+                    &fmt,
+                    en_para_idx,
+                    available,
+                    en_col_w,
+                    measured_tables,
+                )
+            {
+                st.advance_column_or_new_page();
+                prev_en_bottom_vpos = None;
+                prev_en_content_bottom_vpos = None;
+            }
+            if split_candidate.is_none() && !pre_emit_tail_before_non_tac_object_advance {
+                if let Some(frame) = stored_picture_frame {
+                    // 저장 높이 누계 대신 실제 현재 단의 흐름 원점을 소비한다.
+                    // 이전 단에서 줄을 남기거나 간격을 복구한 차이를 그림과
+                    // 후속 본문의 프레임 예약에도 함께 전달한다.
+                    let origin = self
+                        .measure_endnote_column_with_item(
+                            st,
+                            paragraphs,
+                            styles,
+                            available,
+                            en_col_w,
+                            None,
+                            true,
+                            None,
+                            measured_tables,
+                        )
+                        .map_or(st.current_height, |geometry| geometry.flow_bottom);
+                    let placement = picture_frame::at_origin(frame, origin + fmt.spacing_before);
+                    en_advance =
+                        placement.paragraph_end(st.current_height, 0.0) - st.current_height;
+                    st.record_paragraph_float_placement((en_para_idx, 0), placement);
+                }
+            }
             if self.emit_endnote_split(
                 st,
                 &fmt,
@@ -1870,7 +2178,7 @@ impl TypesetEngine {
                 prev_en_bottom_vpos = Some(last_line_bottom.unwrap_or(tb));
                 prev_en_content_bottom_vpos = this_content_bottom_offset.or(this_bottom_offset);
             }
-            if local_vpos_rewind {
+            if local_vpos_rewind || whole_internal_rewind_fits {
                 st.mark_compact_endnote_rewind();
             }
         }

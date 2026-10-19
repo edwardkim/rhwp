@@ -1,9 +1,14 @@
 use resvg::{tiny_skia, usvg};
 use skia_safe::{
-    canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, ColorSpace, Data,
-    FilterMode, IRect, Image, Matrix, MipmapMode, Paint, Rect, SamplingOptions, TileMode,
+    canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, ColorSpace,
+    CubicResampler, Data, FilterMode, IRect, Image, Matrix, MipmapMode, Paint, Rect,
+    SamplingOptions, TileMode,
 };
 use std::sync::{Arc, OnceLock};
+
+use super::cache::byte_key;
+use super::image_cache::{CachedImageResource, ImageResourceCache};
+use super::image_effect::binary_effect_png;
 
 use crate::model::image::ImageEffect;
 use crate::model::style::ImageFillMode;
@@ -19,6 +24,20 @@ pub struct ImageSampling {
 }
 
 impl ImageSampling {
+    pub(super) fn nearest() -> Self {
+        Self {
+            filter_mode: FilterMode::Nearest,
+            mipmap_mode: MipmapMode::None,
+        }
+    }
+
+    pub(super) fn linear_mipmap() -> Self {
+        Self {
+            filter_mode: FilterMode::Linear,
+            mipmap_mode: MipmapMode::Linear,
+        }
+    }
+
     pub fn linear() -> Self {
         Self {
             filter_mode: FilterMode::Linear,
@@ -26,13 +45,14 @@ impl ImageSampling {
         }
     }
 
-    fn options(self) -> SamplingOptions {
+    pub(super) fn options(self) -> SamplingOptions {
         SamplingOptions::new(self.filter_mode, self.mipmap_mode)
     }
 }
 
-pub fn draw_svg_fragment(
+pub(super) fn draw_svg_fragment(
     canvas: &skia_safe::Canvas,
+    cache: &ImageResourceCache,
     svg_fragment: &str,
     x: f32,
     y: f32,
@@ -45,12 +65,33 @@ pub fn draw_svg_fragment(
     // 직접 삽입·web_canvas 와 동일 계약). viewBox 원점에 조각의 페이지
     // 위치(x, y)를 넘겨 bbox 창만 래스터한다 — (0,0) 가정 시 창 밖 콘텐츠
     // 전부 클리핑 + bbox 재배치 이중 오프셋으로 차트가 잘렸다.
-    let Some(png) = rasterize_svg_fragment_to_png(svg_fragment, x, y, width, height, raster_scale)
-    else {
-        return false;
+    let key = byte_key(
+        b"raw-svg",
+        svg_fragment.as_bytes(),
+        &(x, y, width, height, raster_scale),
+    );
+    let cached = cache.get(key, false);
+    let png = if let Some(CachedImageResource::SvgPng(png)) = cached {
+        png
+    } else {
+        let Some(png) =
+            rasterize_svg_fragment_to_png(svg_fragment, x, y, width, height, raster_scale)
+        else {
+            return false;
+        };
+        let png = Arc::new(png);
+        if let Some(key) = key {
+            cache.insert(
+                key,
+                CachedImageResource::SvgPng(png.clone()),
+                png.capacity(),
+            );
+        }
+        png
     };
     draw_image_bytes(
         canvas,
+        cache,
         &png,
         x,
         y,
@@ -67,8 +108,9 @@ pub fn draw_svg_fragment(
     )
 }
 
-pub fn draw_image_bytes(
+pub(super) fn draw_image_bytes(
     canvas: &skia_safe::Canvas,
+    cache: &ImageResourceCache,
     bytes: &[u8],
     x: f32,
     y: f32,
@@ -179,69 +221,134 @@ pub fn draw_image_bytes(
     // [#3460] HWPX BinData 는 SVG 를 그대로 담는다(`<hc:img>` → `Format="svg"`). skia 디코더는
     // SVG 를 읽지 못해 종전에는 회색 자리표시자만 남았다. 같은 모듈의 resvg 로 목적지 크기에
     // 맞춰 먼저 래스터화하면 이후 크롭·채움·효과 경로를 그대로 탈 수 있다.
-    let svg_raster = if crate::renderer::svg_fragment::is_svg_prefix(bytes) {
-        rasterize_svg_document_to_png(bytes, width, height, canvas_raster_scale(canvas))
+    let svg_size = crate::renderer::svg_fragment::is_svg_prefix(bytes)
+        .then(|| (width, height, canvas_raster_scale(canvas)));
+    let binary_effect =
+        matches!(effect, ImageEffect::BlackWhite | ImageEffect::Pattern8x8).then_some(effect);
+    // 같은 원본의 중립 캐시가 색조 변환을 우회하지 않도록 변환 조건도 구분한다.
+    let tone = (brightness != 0 || contrast != 0).then_some((effect, brightness, contrast));
+    let key = byte_key(b"decoded-image", bytes, &(svg_size, binary_effect, tone));
+    let cached = cache.get(key, binary_effect.is_some());
+    let (image, binary_preprocessed) = if let Some(CachedImageResource::Decoded {
+        image,
+        binary_preprocessed,
+        ..
+    }) = cached
+    {
+        (image, binary_preprocessed)
     } else {
-        None
+        let svg_raster = svg_size.and_then(|(width, height, scale)| {
+            rasterize_svg_document_to_png(bytes, width, height, scale)
+        });
+        let bytes = svg_raster.as_deref().unwrap_or(bytes);
+        let normalized_bytes = if detect_image_mime_type(bytes) == "image/jpeg" {
+            grayscale_jpeg_bytes_to_png_bytes(bytes)
+        } else {
+            None
+        };
+        let encoded_bytes = normalized_bytes.as_deref().unwrap_or(bytes);
+        // 한컴 색조를 원본 픽셀에 먼저 확정하고 동일 캐시·배치 경로로 재생한다.
+        // 재귀 입력은 보정 PNG와 중립 효과이므로 색조를 두 번 적용하지 않는다.
+        if let Some(adjusted) = crate::renderer::image_resolver::adjusted_picture_bytes(
+            encoded_bytes,
+            effect,
+            brightness,
+            contrast,
+        ) {
+            return draw_image_bytes(
+                canvas,
+                cache,
+                &adjusted,
+                x,
+                y,
+                width,
+                height,
+                fill_mode,
+                original_size,
+                crop,
+                crop_reference_size,
+                ImageEffect::RealPic,
+                0,
+                0,
+                sampling,
+            );
+        }
+        // Binary effects are applied in source pixels before placement/filtering.
+        // Embedded SVG is keyed by destination and device scale above, so its
+        // raster-specific dither cannot leak to a differently sized placement.
+        let binary_png = binary_effect.and_then(|effect| binary_effect_png(encoded_bytes, effect));
+        let encoded_bytes = binary_png.as_deref().unwrap_or(encoded_bytes);
+        let Some(image) = Image::from_encoded(Data::new_copy(encoded_bytes)) else {
+            if binary_effect.is_some() {
+                cache.record_preprocessing(None);
+            }
+            draw_missing_image_placeholder(x, y, width, height);
+            return false;
+        };
+        if binary_effect.is_some() {
+            cache.record_preprocessing(binary_png.as_ref().map(|_| {
+                (image.width().max(0) as usize)
+                    .saturating_mul(image.height().max(0) as usize)
+                    .saturating_mul(4)
+            }));
+        }
+        if let Some(key) = key {
+            let cost = (image.width().max(0) as usize)
+                .saturating_mul(image.height().max(0) as usize)
+                .saturating_mul(4)
+                .saturating_add(encoded_bytes.len());
+            cache.insert(
+                key,
+                CachedImageResource::Decoded {
+                    image: image.clone(),
+                    binary_requested: binary_effect.is_some(),
+                    binary_preprocessed: binary_png.is_some(),
+                },
+                cost,
+            );
+        }
+        (image, binary_png.is_some())
     };
-    let bytes = svg_raster.as_deref().unwrap_or(bytes);
 
-    let normalized_bytes = if detect_image_mime_type(bytes) == "image/jpeg" {
-        grayscale_jpeg_bytes_to_png_bytes(bytes)
+    // Interpolation after source-pixel thresholding would reintroduce gray
+    // pixels and shift ordered-dither phase. Failed preprocessing retains the
+    // old filter/sampling fallback, including on a decoded-image cache hit.
+    let (filter_effect, sampling) = if binary_preprocessed {
+        (ImageEffect::RealPic, ImageSampling::nearest())
     } else {
-        None
-    };
-    let encoded_bytes = normalized_bytes.as_deref().unwrap_or(bytes);
-
-    if let Some(adjusted) = crate::renderer::image_resolver::adjusted_picture_bytes(
-        encoded_bytes,
-        effect,
-        brightness,
-        contrast,
-    ) {
-        return draw_image_bytes(
-            canvas,
-            &adjusted,
-            x,
-            y,
-            width,
-            height,
-            fill_mode,
-            original_size,
-            crop,
-            crop_reference_size,
-            ImageEffect::RealPic,
-            0,
-            0,
-            sampling,
-        );
-    }
-
-    let Some(image) = Image::from_encoded(Data::new_copy(encoded_bytes)) else {
-        draw_missing_image_placeholder(x, y, width, height);
-        return false;
+        if binary_effect.is_some() {
+            cache.record_filter_fallback();
+        }
+        (effect, sampling)
     };
 
     let dst = Rect::from_xywh(x, y, width, height);
     let mut paint = Paint::default();
     paint.set_anti_alias(true);
-    let effect_filter = image_effect_filter(effect);
     let has_adjustments = brightness != 0 || contrast != 0;
-    // 회색조와 일반 그림만 SVG의 선형 RGB 보정을 재생한다. 이산 흑백과
-    // 패턴 효과는 별도 계약이므로 기존 Native 경로를 유지한다.
     let use_linear_adjustments =
         has_adjustments && matches!(effect, ImageEffect::RealPic | ImageEffect::GrayScale);
-    let adjustment_filter =
-        has_adjustments.then(|| brightness_contrast_filter(brightness, contrast));
-    let color_filter = match (effect_filter, adjustment_filter) {
-        (Some(effect), Some(adjustment)) if use_linear_adjustments => {
-            // SVG의 바깥 효과 그룹은 안쪽 밝기·대비 그룹의 결과를 받는다.
-            color_filters::compose(effect, adjustment)
+    let effect_key = byte_key(b"image-effect", &[], &(filter_effect, brightness, contrast));
+    let cached_effect = cache.get(effect_key, false);
+    let color_filter = if let Some(CachedImageResource::Effect(filter)) = cached_effect {
+        filter
+    } else {
+        let effect_filter = image_effect_filter(filter_effect);
+        let adjustment_filter = (brightness != 0 || contrast != 0)
+            .then(|| brightness_contrast_filter(brightness, contrast));
+        let filter = match (effect_filter, adjustment_filter) {
+            (Some(effect), Some(adjustment)) if use_linear_adjustments => {
+                color_filters::compose(effect, adjustment)
+            }
+            (Some(effect), Some(adjustment)) => color_filters::compose(adjustment, effect),
+            (Some(effect), None) => Some(effect),
+            (None, Some(adjustment)) => Some(adjustment),
+            (None, None) => None,
+        };
+        if let Some(key) = effect_key {
+            cache.insert(key, CachedImageResource::Effect(filter.clone()), 256);
         }
-        (Some(effect), Some(adjustment)) => color_filters::compose(adjustment, effect),
-        (Some(effect), None) => Some(effect),
-        (None, Some(adjustment)) => Some(adjustment),
-        (None, None) => None,
+        filter
     };
     if let Some(color_filter) = color_filter {
         // SVG 필터의 기본 색 공간은 linearRGB다. 검증한 일반 그림·회색조의
@@ -284,22 +391,75 @@ pub fn draw_image_bytes(
     });
 
     let draw_image_rect = |src: Option<Rect>, dst: Rect| {
+        let matrix = canvas.local_to_device_as_3x3();
+        let scale_x = matrix.scale_x().hypot(matrix.skew_y());
+        let scale_y = matrix.skew_x().hypot(matrix.scale_y());
+        let source = src.unwrap_or(Rect::from_xywh(0., 0., decoded_width, decoded_height));
+        let interpolation = super::super::image_resolver::png_sampling::magnification(
+            super::super::image_resolver::png_sampling::interpolation(bytes),
+            (source.width() as f64, source.height() as f64),
+            (
+                (dst.width() * scale_x) as f64,
+                (dst.height() * scale_y) as f64,
+            ),
+        );
+        // 확대 선언과 binary effect의 우선순위를 보존한다.
+        let sampling = if binary_preprocessed {
+            sampling
+        } else {
+            match interpolation {
+                Some(false) => ImageSampling::nearest(),
+                Some(true) => ImageSampling::linear(),
+                None => sampling,
+            }
+        };
+        // 전체 원본의 축소에는 가는 선을 보존하는 저역 통과를 적용한다.
+        // crop의 strict 경계와 binary·빠른 미리보기의 명시적 nearest를 유지한다.
+        let cubic = sampling.mipmap_mode == MipmapMode::Linear
+            && src.is_none()
+            && !binary_preprocessed
+            && super::super::image_resolver::png_sampling::print_bitmap_reconstruction(bytes)
+            && !matrix.has_perspective()
+            && matrix.skew_x() == 0.0
+            && matrix.skew_y() == 0.0
+            && matrix.scale_x() > 0.0
+            && matrix.scale_y() > 0.0
+            && super::super::cubic_sampling::modest_reduction(
+                (f64::from(image.width()), f64::from(image.height())),
+                (
+                    f64::from(dst.width() * scale_x),
+                    f64::from(dst.height() * scale_y),
+                ),
+            );
+        let reduced = (!cubic
+            && sampling.filter_mode != FilterMode::Nearest
+            && src.is_none()
+            && !binary_preprocessed
+            && !matrix.has_perspective()
+            && scale_x.is_finite()
+            && scale_y.is_finite()
+            && (image.width() as f32 > dst.width() * scale_x
+                || image.height() as f32 > dst.height() * scale_y))
+            .then(|| image.with_default_mipmaps())
+            .flatten();
+        let actual_image = reduced.as_ref().unwrap_or(&image);
+        let options = if cubic {
+            SamplingOptions::from(CubicResampler::catmull_rom())
+        } else if reduced.is_some() {
+            SamplingOptions::new(FilterMode::Linear, MipmapMode::Linear)
+        } else {
+            sampling.options()
+        };
         if let Some(src) = src.as_ref() {
             canvas.draw_image_rect_with_sampling_options(
-                &image,
+                actual_image,
                 Some((src, SrcRectConstraint::Strict)),
                 dst,
-                sampling.options(),
+                options,
                 &paint,
             );
         } else {
-            canvas.draw_image_rect_with_sampling_options(
-                &image,
-                None,
-                dst,
-                sampling.options(),
-                &paint,
-            );
+            canvas.draw_image_rect_with_sampling_options(actual_image, None, dst, options, &paint);
         }
     };
 
@@ -376,15 +536,14 @@ pub fn draw_image_bytes(
             if shader_source_width <= 0.0 || shader_source_height <= 0.0 {
                 return false;
             }
-            let scale_x = shader_source_width / image_width;
-            let scale_y = shader_source_height / image_height;
+            let scale_x = image_width / shader_source_width;
+            let scale_y = image_height / shader_source_height;
             if !scale_x.is_finite() || !scale_y.is_finite() || scale_x <= 0.0 || scale_y <= 0.0 {
                 return false;
             }
-            let local_matrix = Matrix::scale_translate(
-                (scale_x, scale_y),
-                (-origin_x * scale_x, -origin_y * scale_y),
-            );
+            // Skia's local matrix maps source pixels into logical canvas
+            // coordinates; shader lookup performs the inverse internally.
+            let local_matrix = Matrix::scale_translate((scale_x, scale_y), (origin_x, origin_y));
             let Some(shader) = shader_image.to_shader(
                 Some((TileMode::Repeat, TileMode::Repeat)),
                 sampling.options(),
@@ -432,8 +591,53 @@ pub fn draw_image_bytes(
                 return true;
             }
         }
+        // A valid decoded image can still lack a usable shader matrix. Retain
+        // the committed bounded draw fallback instead of dropping that image.
+        let step_x = image_width.max(1.0);
+        let step_y = image_height.max(1.0);
+        let horizontal = matches!(
+            mode,
+            ImageFillMode::TileHorzTop | ImageFillMode::TileHorzBottom
+        );
+        let vertical = matches!(
+            mode,
+            ImageFillMode::TileVertLeft | ImageFillMode::TileVertRight
+        );
+        let columns = if vertical {
+            1
+        } else {
+            (width / step_x).ceil() as usize
+        };
+        let rows = if horizontal {
+            1
+        } else {
+            (height / step_y).ceil() as usize
+        };
+        let draws = columns.saturating_mul(rows);
+        let origin_x = if mode == ImageFillMode::TileVertRight {
+            x + width - image_width
+        } else {
+            x
+        };
+        let origin_y = if mode == ImageFillMode::TileHorzBottom {
+            y + height - image_height
+        } else {
+            y
+        };
+        const MAX_TILE_DRAWS: usize = 4096;
+        for index in 0..draws.min(MAX_TILE_DRAWS) {
+            let tile_x = origin_x + (index % columns) as f32 * step_x;
+            let tile_y = origin_y + (index / columns) as f32 * step_y;
+            draw_image_rect(
+                crop_src,
+                Rect::from_xywh(tile_x, tile_y, image_width, image_height),
+            );
+        }
+        if draws > MAX_TILE_DRAWS {
+            cache.record_tile_cap();
+        }
         canvas.restore();
-        return false;
+        return true;
     } else {
         let (image_x, image_y) =
             resolve_image_placement(mode, x, y, width, height, image_width, image_height);
@@ -495,13 +699,26 @@ fn rasterize_svg_document_to_png(
         return None;
     }
 
-    let mut pixmap = tiny_skia::Pixmap::new(raster_width as u32, raster_height as u32)?;
+    if let Some(png) = super::svg_bitmap_mask::rasterize_before_reduction(
+        &tree,
+        raster_width as u32,
+        raster_height as u32,
+        MAX_SVG_RASTER_PIXELS,
+    ) {
+        return Some(png);
+    }
+
     let transform = tiny_skia::Transform::from_scale(
         raster_width as f32 / size.width(),
         raster_height as f32 / size.height(),
     );
-    resvg::render(&tree, transform, &mut pixmap.as_mut());
-    pixmap.encode_png().ok()
+    rasterize_svg_with_mask_coverage(
+        &tree,
+        raster_width as u32,
+        raster_height as u32,
+        transform,
+        raster_scale,
+    )
 }
 
 fn rasterize_svg_fragment_to_png(
@@ -549,9 +766,53 @@ fn rasterize_svg_fragment_to_png(
         return None;
     }
 
-    let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())?;
-    resvg::render(&tree, tiny_skia::Transform::default(), &mut pixmap.as_mut());
-    pixmap.encode_png().ok()
+    rasterize_svg_with_mask_coverage(
+        &tree,
+        size.width(),
+        size.height(),
+        tiny_skia::Transform::default(),
+        raster_scale,
+    )
+}
+
+/// 축소된 패턴 마스크의 피복률을 면적으로 적분한다. 위치·viewport·최종 크기는 보존한다.
+fn rasterize_svg_with_mask_coverage(
+    tree: &usvg::Tree,
+    width: u32,
+    height: u32,
+    transform: tiny_skia::Transform,
+    raster_scale: f32,
+) -> Option<Vec<u8>> {
+    // WMF의 미세한 흑백 마스크를 목적지 픽셀에서 한 번만 샘플링하면
+    // 검정/흰색 중 한쪽만 선택되어 칠과 글자가 사라진다. 마스크가 있는
+    // SVG에만 축마다 최대 4배 표본을 두고 최종 출력 크기로 저역 통과한다.
+    // 이미 고배율인 출력과 마스크 없는 SVG는 기존 경로를 유지한다.
+    let mut samples = if tree.masks().is_empty() {
+        1
+    } else {
+        (4.0 / raster_scale.max(1.0)).floor().clamp(1.0, 4.0) as u32
+    };
+    let pixels = u64::from(width).checked_mul(u64::from(height))?;
+    if pixels == 0 || pixels > MAX_SVG_RASTER_PIXELS {
+        return None;
+    }
+    while pixels.checked_mul(u64::from(samples).pow(2))? > MAX_SVG_RASTER_PIXELS {
+        samples -= 1;
+    }
+    let render_width = width.checked_mul(samples)?;
+    let render_height = height.checked_mul(samples)?;
+    let mut pixmap = tiny_skia::Pixmap::new(render_width, render_height)?;
+    let transform =
+        tiny_skia::Transform::from_scale(samples as f32, samples as f32).post_concat(transform);
+    resvg::render(tree, transform, &mut pixmap.as_mut());
+    if samples == 1 {
+        return pixmap.encode_png().ok();
+    }
+
+    // 투명 가장자리의 색 번짐을 막기 위해 premultiplied RGBA 상태에서 적분한다.
+    // PNG 인코더가 마지막에만 알파를 되돌린다. Lanczos의 작은 overshoot도
+    // premultiplied 불변식(R/G/B <= A) 안으로 제한한다.
+    super::svg_bitmap_mask::encode_reduced(&pixmap, width, height)
 }
 
 fn svg_parse_options() -> usvg::Options<'static> {

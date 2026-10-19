@@ -2,6 +2,7 @@ import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
 import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
+import { MetafileFontSession, type MetafileFontDocument } from './metafile-font-session';
 import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
 import { collectHostFontRequests } from './host-font-requests';
 import type { CanvasMetricDocument } from './canvas-metric-session';
@@ -14,6 +15,8 @@ import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
 import { parseCanvasKitDocumentPreflight } from './canvaskit-document-preflight';
+import { LayerResourceStore } from './layer-resource-store';
+import { readLayerTreeTransport, type LayerTreeExportOptions } from './layer-tree-transport';
 import {
   normalizeHmlSaveState,
   parseHmlSaveState,
@@ -313,6 +316,7 @@ export class WasmBridge {
   private doc: HwpDocument | null = null;
   private canvasMetrics = new CanvasMetricSession();
   private readonly hostCanvasFonts = new HostCanvasFontSession();
+  private readonly metafileFonts = new MetafileFontSession();
   private canvasFontGeneration = 0;
 
   private canvasMetricDocument(): CanvasMetricDocument | null {
@@ -338,6 +342,9 @@ export class WasmBridge {
     const doc = this.doc;
     const documentGeneration = this._documentGeneration;
     const current = () => this.doc === doc && this._documentGeneration === documentGeneration && isCurrent();
+    const metafileFontGeneration = this.canvasFontGeneration;
+    if (!await this.metafileFonts.prepare(doc as unknown as MetafileFontDocument | null,
+      metafileFontGeneration, () => current() && this.canvasFontGeneration === metafileFontGeneration)) return false;
     if (backend === 'canvas2d' && hasHostFontProvider()) {
       const generation = getHostFontState().generation;
       await prepareHostFontCatalog();
@@ -386,6 +393,7 @@ export class WasmBridge {
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
+  private readonly layerResourceStore = new LayerResourceStore();
   /** 개발 진단에서만 읽는 wasm 선형 메모리. 일반 wasm-glue에는 없을 수 있다. */
   private wasmLinearMemory: WebAssembly.Memory | null = null;
   /** [#3313] 외부 연결 그림 비동기 주입 완료 훅 — 주입 성공(>0)시에만 호출된다.
@@ -449,6 +457,7 @@ export class WasmBridge {
    */
   releaseDocument(): void {
     this.releaseCanvasFontResources();
+    this.clearLayerResourceCache();
     if (this.doc) {
       try {
         this.doc.free();
@@ -490,6 +499,7 @@ export class WasmBridge {
       this._documentDigest = nextDocumentDigest;
       this._documentGeneration += 1;
       this.releaseCanvasFontResources();
+      this.clearLayerResourceCache();
       if (previousDoc) {
         try {
           previousDoc.free();
@@ -607,6 +617,7 @@ export class WasmBridge {
     }
     this._documentGeneration += 1;
     this.releaseCanvasFontResources();
+    this.clearLayerResourceCache();
     console.log(`[WasmBridge] 새 문서 생성: ${info.pageCount}페이지`);
     this.onFileNameChanged?.(this._fileName);
     return info;
@@ -1152,38 +1163,23 @@ export class WasmBridge {
     }
   }
 
-  getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {
+  getPageLayerTreeObject(
+    pageNum: number,
+    profile: LayerRenderProfile = 'screen',
+    options: LayerTreeExportOptions = {},
+  ): PageLayerTree {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    const d = this.doc as unknown as {
-      getPageLayerTreeWithProfile?: (
-        p: number,
-        profile: string,
-        omitImageBytes?: boolean,
-        omitFontBytes?: boolean,
-      ) => string;
-      getPageLayerTree?: (p: number) => string;
-      getSourceFontBytes?: (key: string) => Uint8Array;
-    };
-    const hasProfileApi = typeof d.getPageLayerTreeWithProfile === 'function';
-    if (!hasProfileApi && profile !== 'screen') {
-      throw new Error('[WasmBridge] 현재 WASM은 profile별 PageLayerTree를 지원하지 않습니다');
-    }
     const metrics = this.canvasMetricDocument();
-    const json = metrics?.canvasMetricsActive()
-      ? metrics.getCanvasPageLayerTree(pageNum, profile, typeof d.getSourceFontBytes === 'function')
-      : hasProfileApi
-      ? d.getPageLayerTreeWithProfile!(
-        pageNum,
-        profile,
-        false,
-        typeof d.getSourceFontBytes === 'function',
-      )
-      : this.getPageLayerTree(pageNum);
     let parsed: unknown;
-    try {
-      parsed = JSON.parse(json);
-    } catch (error) {
-      throw new Error(`[WasmBridge] PageLayerTree JSON parse 실패 (page=${pageNum}): ${error}`);
+    if ((options.transport ?? 'json') === 'json' && (options.textProfile ?? 'v1Compat') === 'v1Compat'
+      && metrics?.canvasMetricsActive()) {
+      const source = this.doc as unknown as { getSourceFontBytes?: (key: string) => Uint8Array };
+      const json = metrics.getCanvasPageLayerTree(pageNum, profile, typeof source.getSourceFontBytes === 'function');
+      try { parsed = JSON.parse(json); }
+      catch (error) { throw new Error(`[WasmBridge] PageLayerTree JSON parse 실패 (page=${pageNum}): ${error}`); }
+    } else {
+      // Typed/strict exports keep the Rust portable-metrics guard; never switch layout authority silently.
+      parsed = readLayerTreeTransport(this.doc, pageNum, profile, options, this.layerResourceStore);
     }
     if (!parsed || typeof parsed !== 'object') {
       throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): object가 아닙니다`);
@@ -1246,7 +1242,7 @@ export class WasmBridge {
   }
 
   clearLayerResourceCache(): void {
-    /* Reserved for JS-value resource transport builds. JSON export is self-contained. */
+    this.layerResourceStore.clear();
   }
 
   getCanvasKitReplayPlan(

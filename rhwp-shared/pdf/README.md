@@ -44,7 +44,17 @@ try {
 동시에 하나의 가져오기만 허용하며, 중복 요청은 `PDF_IMPORT_BUSY`다. `inspect()`는 현재
 문서의 쪽수와 가져오기 당시 진단을 반환한다. 편집 뒤의 쪽 대응 재계산을 주장하지 않는다.
 
-## 세션과 실패
+## 요청 정책과 세션 실패
+
+- 후보 Worker는 WASM 초기화 뒤 `getPdfImportPolicy()`로 읽은 제품 정책을 먼저 반환한다.
+  호스트는 그 후보의 `backend.inputBytes`를 사용해 `bytes.slice()`·structured clone 전에
+  입력을 검사한다. JavaScript에 별도의 16 MiB 상수를 복제하지 않는다. 거절 시 현재 문서는
+  보존하며 다음 정상 입력은 같은 후보·정책을 재사용할 수 있다.
+- 정책 조회와 실제 가져오기는 한 번의 `timeoutMs`를 공유한다. 초기화·정책 응답 시간이
+  길었다는 이유로 가져오기 deadline을 새로 시작하지 않는다. 이 프로토콜의 Worker와 WASM은
+  함께 버전 고정해야 하며, 정책이 없거나 잘못된 응답이면 입력을 전송하지 않는다.
+- 성공 진단의 `resourcePolicy`·`resourceUsage`는 실제 요청의 정책·연산/복사 계상과 cache 관측이다.
+  누적 decoded 비용과 codec 예약을 프로세스의 현재 heap/RSS로 해석하지 않는다.
 
 - 후보 Worker에서 가져오기·진단 생성까지 성공해야 현재 Worker를 교체한다. 기존 문서는
   그동안 조회·렌더·저장할 수 있다. 보통의 입력 오류 뒤에는 후보 Worker를 재사용한다.
