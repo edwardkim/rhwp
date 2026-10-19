@@ -441,8 +441,11 @@ pub(super) fn draw_image_bytes(
         let transform = canvas.local_to_device_as_3x3();
         // SVG는 위에서 이미 실제 장치 크기로 raster했다. 이를 다시 bitmap
         // 축소 경로에 넣으면 벡터의 가는 선까지 두 번 필터링하게 된다.
-        let prepared = (src.is_none() && svg_size.is_none() && !binary_preprocessed
-            && !matrix.has_perspective() && sampling.filter_mode != FilterMode::Nearest)
+        let prepared = (src.is_none()
+            && svg_size.is_none()
+            && !binary_preprocessed
+            && !matrix.has_perspective()
+            && sampling.filter_mode != FilterMode::Nearest)
             .then(|| {
                 crate::renderer::bitmap_raster::prepare_bitmap(
                     encoded.as_bytes(),
@@ -481,7 +484,8 @@ pub(super) fn draw_image_bytes(
         };
         // 전체 원본의 축소에는 가는 선을 보존하는 저역 통과를 적용한다.
         // crop의 strict 경계와 binary·빠른 미리보기의 명시적 nearest를 유지한다.
-        let cubic = filtered.is_none() && sampling.mipmap_mode == MipmapMode::Linear
+        let cubic = filtered.is_none()
+            && sampling.mipmap_mode == MipmapMode::Linear
             && src.is_none()
             && !binary_preprocessed
             && super::super::image_resolver::png_sampling::print_bitmap_reconstruction(bytes)
@@ -497,7 +501,8 @@ pub(super) fn draw_image_bytes(
                     f64::from(dst.height() * scale_y),
                 ),
             );
-        let reduced = (filtered.is_none() && !cubic
+        let reduced = (filtered.is_none()
+            && !cubic
             && sampling.filter_mode != FilterMode::Nearest
             && src.is_none()
             && !binary_preprocessed

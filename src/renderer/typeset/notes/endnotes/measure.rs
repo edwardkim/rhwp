@@ -305,6 +305,8 @@ impl TypesetEngine {
                 float_pushed_line_spacings: st.float_pushed_line_spacings.clone(),
                 page_band_flow_starts: st.page_band_flow_starts.clone(),
                 paragraph_float_placements: st.paragraph_float_placements.clone(),
+                paragraph_origins: st.paragraph_origins.clone(),
+                computed_paragraphs: st.computed_paragraphs.clone(),
             };
             let mut col_area = st.inline_flow_column();
             col_area.width = en_col_w;

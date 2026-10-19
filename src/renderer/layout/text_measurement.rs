@@ -1725,7 +1725,8 @@ fn char_width_decision_with_hft_tracking<'a>(
                 .unwrap_or(&style.font_family),
         };
         let display_family = latin.map_or(&style.font_family, |l| &l.font_family);
-        let measured_family = crate::renderer::legacy_font_advances::measurement_face(metric_family);
+        let measured_family =
+            crate::renderer::legacy_font_advances::measurement_face(metric_family);
         source_hft_metric = font_metrics_data::is_legacy_hft_metric_face(measured_family);
         let measured_bold = crate::renderer::legacy_font_advances::measurement_bold(
             metric_family,
@@ -2125,7 +2126,11 @@ fn char_width_decision_with_hft_tracking<'a>(
         font_size * ratio,
         original_glyph_face.map(String::as_str),
     );
-    let bold_tracking_px = if include_hft_bold_tracking && !source_hft_metric { bold_tracking_px } else { 0.0 };
+    let bold_tracking_px = if include_hft_bold_tracking && !source_hft_metric {
+        bold_tracking_px
+    } else {
+        0.0
+    };
     final_width_px += bold_tracking_px;
     if c == ' ' && i >= style.unjustified_leading_spaces {
         final_width_px += style.extra_word_spacing;

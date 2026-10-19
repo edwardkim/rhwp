@@ -325,16 +325,16 @@ impl TypesetEngine {
                     st.profile.hwpx_stored_layout(),
                 )
             })
-        .or_else(|| {
-            crate::renderer::float_placement::stored_float_before_whitespace_line_frame(
-                paragraphs.get(para_idx.checked_sub(1)?)?,
-                para,
-                next,
-                table,
-                effective_height,
-                self.dpi,
-            )
-        })
+            .or_else(|| {
+                crate::renderer::float_placement::stored_float_before_whitespace_line_frame(
+                    paragraphs.get(para_idx.checked_sub(1)?)?,
+                    para,
+                    next,
+                    table,
+                    effective_height,
+                    self.dpi,
+                )
+            })
             .or_else(|| {
                 crate::renderer::float_placement::stored_adjacent_line_table_frame(
                     paragraphs.get(para_idx.checked_sub(1)?)?,

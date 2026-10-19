@@ -1,6 +1,7 @@
 //! 괄호 슬롯·본체 원점·논리 프레임을 한 배치에서 결정한다.
 use super::{
-    delimiter_advance, source_font_advance, EqLayout, EqNode, LayoutBox, LayoutKind, PAREN_PAD,
+    delimiter_advance, legacy_delimiter_width, source_font_advance, EqLayout, EqNode, LayoutBox,
+    LayoutKind, PAREN_PAD,
 };
 impl EqLayout {
     pub(super) fn layout_paren(
@@ -74,6 +75,7 @@ impl EqLayout {
         ));
 
         let (height, baseline) = logical_frame.unwrap_or((b.height, b.baseline));
+        let delimiter_height = b.height;
         let mut body_box = b;
         body_box.x = left_w + pad;
         body_box.y = baseline - body_box.baseline;
@@ -168,6 +170,7 @@ impl EqLayout {
             paint_width
         };
 
+        let delimiter_height = b.height;
         let mut body_box = b;
         body_box.x = left_w + pad;
         body_box.y = 0.0;
@@ -175,7 +178,6 @@ impl EqLayout {
         let total_w = left_w + pad + body_box.width + pad + right_w;
 
         LayoutBox {
-
             font_size: fs,
             x: 0.0,
             y: 0.0,
@@ -183,8 +185,8 @@ impl EqLayout {
             height: body_box.height,
             baseline: body_box.baseline,
             kind: LayoutKind::Paren {
-                delimiter_height: b.height,
-                glyph_delimiters: b.height <= fs * 1.2,
+                delimiter_height,
+                glyph_delimiters: delimiter_height <= fs * 1.2,
                 left_outline: None,
                 right_outline: None,
                 left: left.to_string(),
@@ -195,5 +197,4 @@ impl EqLayout {
             },
         }
     }
-
 }

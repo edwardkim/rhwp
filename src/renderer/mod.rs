@@ -10,10 +10,10 @@ use crate::model::paragraph::LineSeg;
 use crate::model::style::{LineSpacingType, UnderlineType};
 
 pub(crate) mod arrow;
-pub(crate) mod blank_band;
-pub(crate) mod boxed_digit_geometry;
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod bitmap_raster;
+pub(crate) mod blank_band;
+pub(crate) mod boxed_digit_geometry;
 pub mod canvas;
 pub mod canvas_text_font;
 pub mod canvaskit_policy;
@@ -2972,8 +2972,6 @@ pub(crate) fn installed_render_font_aliases(font_family: &str) -> &'static [&'st
         // 공식 설치 글꼴의 한국어 이름과 영문 family 이름을 함께 조회한다.
         "굴림" => &["Gulim"],
         "굴림체" => &["GulimChe"],
-        "돋움" => &["Dotum"],
-        "돋움체" => &["DotumChe"],
         "바탕" => &["Batang"],
         "바탕체" => &["BatangChe"],
         // [#6171] 이름 셋 중 `HYGothic` 만 Windows 에서 해석된다. headless Chrome

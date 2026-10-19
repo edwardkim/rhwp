@@ -26,9 +26,9 @@ use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+mod reparsed_split_cache;
 #[path = "stored_body_frames.rs"]
 mod stored_body_frames;
-mod reparsed_split_cache;
 mod stored_table_tail;
 mod tac_cache_repair;
 

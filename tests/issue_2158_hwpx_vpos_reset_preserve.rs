@@ -71,7 +71,7 @@ fn hwp3_sample16_hwpx_matches_hwp5_and_hangul() {
     assert_eq!(
         (
             doc.page_count(),
-            page_count_of("samples/hwp3-sample16-hwp5.hwp")
+            load("samples/hwp3-sample16-hwp5.hwp").page_count()
         ),
         (64, 64),
         "두 원본의 독립 Print PDF는 각각 64쪽이다"

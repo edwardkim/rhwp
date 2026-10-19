@@ -96,7 +96,6 @@ fn issue_5821_condensed_title_preserves_source_height_and_horizontal_ratio() {
         );
         assert_eq!(values[1], 1.0, "세로 축은 변하지 않는다");
     }
-
 }
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};

@@ -325,15 +325,29 @@ fn sample16_2024_page_tail_preserves_owned_paragraphs_and_empty_line_without_ove
 #[test]
 fn sample16_2024_empty_tail_keeps_its_editor_caret_owner() {
     let core = load();
-    let end = source_owner(&core, "활용가능기존장비는용도변경및재해복구센터(DR)활용방안수립");
+    let end = source_owner(
+        &core,
+        "활용가능기존장비는용도변경및재해복구센터(DR)활용방안수립",
+    );
     let blank = (end.0, end.1 + 1);
-    assert!(core.document().sections[blank.0].paragraphs[blank.1].text.trim().is_empty());
+    assert!(core.document().sections[blank.0].paragraphs[blank.1]
+        .text
+        .trim()
+        .is_empty());
     let layout: serde_json::Value = serde_json::from_str(
-        &core.get_page_text_layout_native(2).expect("원본 후행 빈 문단의 편집 좌표"),
-    ).unwrap();
-    let carets: Vec<_> = layout["runs"].as_array().unwrap().iter().filter(|run| {
-        run["secIdx"] == blank.0 && run["paraIdx"] == blank.1 && run["cellIdx"].is_null()
-    }).collect();
+        &core
+            .get_page_text_layout_native(2)
+            .expect("원본 후행 빈 문단의 편집 좌표"),
+    )
+    .unwrap();
+    let carets: Vec<_> = layout["runs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|run| {
+            run["secIdx"] == blank.0 && run["paraIdx"] == blank.1 && run["cellIdx"].is_null()
+        })
+        .collect();
     assert_eq!(carets.len(), 1, "빈 문단의 편집 소유 누락·중복 방지");
     assert_eq!(carets[0]["charStart"], 0);
     assert_eq!(carets[0]["text"], "");

@@ -35,6 +35,7 @@ pub(in crate::renderer::typeset) fn decide_whole_fit(
     .filter(|(_, origin)| current_page_vpos_base == Some(*origin))
     .map(|(owner, _)| owner);
     let whole_fit::WholeFitEvidence {
+        stored_first_line_bottom_outside_body,
         saved_single_line_bottom_fits,
         saved_list_tail_body_vpos_fits,
         page_end_fit_height,
@@ -88,6 +89,7 @@ pub(in crate::renderer::typeset) fn decide_whole_fit(
     }
     WholeFitDecision {
         fits: forced_page_break_line.is_none()
+            && !stored_first_line_bottom_outside_body
             && !stored_vpos_rewind_break
             && (hangul2024_blank_spill
                 || st.current_height + page_end_fit_height <= available

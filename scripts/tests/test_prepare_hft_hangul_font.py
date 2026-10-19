@@ -101,7 +101,7 @@ class OriginalHftFontTests(unittest.TestCase):
             output = root / 'should-not-exist.otf'
             for include_bullets in [False, True]:
                 with self.assertRaisesRegex(ValueError, 'independent complete alphabet'):
-                    self.tool.restore(source, output, include_bullets)
+                    self.tool.restore(source, output, include_bullets=include_bullets)
             self.assertFalse(output.exists())
 
     def test_arrows_require_the_complete_independent_alphabet_and_all_requested_symbols(self):
@@ -114,7 +114,7 @@ class OriginalHftFontTests(unittest.TestCase):
             root = Path(directory)
             specimen = root / 'independent-arrows.hwpx'
             with contextlib.redirect_stdout(io.StringIO()):
-                self.tool.create_specimen(template, specimen, True, True)
+                self.tool.create_specimen(template, specimen, include_bullets=True, include_arrows=True)
             with zipfile.ZipFile(specimen) as archive:
                 import xml.etree.ElementTree as ET
                 section = ET.fromstring(archive.read('Contents/section0.xml'))
@@ -128,7 +128,7 @@ class OriginalHftFontTests(unittest.TestCase):
 
             with patch.object(self.tool.pymupdf, 'open', return_value=[Page()]):
                 with self.assertRaisesRegex(ValueError, 'independent complete alphabet'):
-                    self.tool.restore(root / 'incomplete.pdf', root / 'bad.otf', True, True, True)
+                    self.tool.restore(root / 'incomplete.pdf', root / 'bad.otf', include_bullets=True, symbols_only=True, include_arrows=True)
             self.assertFalse((root / 'bad.otf').exists())
 
     def test_bullet_mode_keeps_complete_alphabet_and_rejects_missing_symbol(self):
@@ -138,7 +138,7 @@ class OriginalHftFontTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'alphabet-bullets.hwpx'
             with contextlib.redirect_stdout(io.StringIO()):
-                self.tool.create_specimen(template, output, True)
+                self.tool.create_specimen(template, output, include_bullets=True)
             with zipfile.ZipFile(output) as archive:
                 import xml.etree.ElementTree as ET
                 section = ET.fromstring(archive.read('Contents/section0.xml'))
@@ -150,7 +150,7 @@ class OriginalHftFontTests(unittest.TestCase):
                     return text[:-1]
             with patch.object(self.tool.pymupdf, 'open', return_value=[Page()]):
                 with self.assertRaisesRegex(ValueError, 'independent complete alphabet'):
-                    self.tool.restore(Path('incomplete.pdf'), Path(directory) / 'bad.otf', True)
+                    self.tool.restore(Path('incomplete.pdf'), Path(directory) / 'bad.otf', include_bullets=True)
             self.assertFalse((Path(directory) / 'bad.otf').exists())
 
     def test_specimen_has_entire_alphabet_hft_face_and_no_saved_lines(self):

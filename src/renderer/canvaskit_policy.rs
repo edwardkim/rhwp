@@ -2102,7 +2102,12 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
                 .iter()
                 .all(|(left, right)| child(left, remaining_nodes) && child(right, remaining_nodes)),
             LayoutKind::Paren {
-                left, right, body, left_width, right_width, ..
+                left,
+                right,
+                body,
+                left_width,
+                right_width,
+                ..
             } => {
                 left_width.is_finite()
                     && right_width.is_finite()

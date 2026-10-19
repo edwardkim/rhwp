@@ -5052,7 +5052,7 @@ pub fn generate_font_style(
                     codepoints[font_name].allow_generic_substitute,
                 );
                 if let Some(font_path) =
-                    find_font_file_for_chars(&regular_lookup, &codepoints[font_name])
+                    find_font_file_for_chars(&regular_lookup, &codepoints[font_name].chars)
                 {
                     if let Ok(font_data) = std::fs::read(&font_path) {
                         if let Some(font_data) =
@@ -5166,7 +5166,7 @@ pub fn generate_font_style(
                     codepoints[font_name].allow_generic_substitute,
                 );
                 if let Some(font_path) =
-                    find_font_file_for_chars(&regular_lookup, &codepoints[font_name])
+                    find_font_file_for_chars(&regular_lookup, &codepoints[font_name].chars)
                 {
                     if let Ok(font_data) = std::fs::read(&font_path) {
                         if let Some(font_data) = svg_selected_font_data(

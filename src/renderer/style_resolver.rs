@@ -478,17 +478,28 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         cs.italic,
     );
     let primary = |chain: &String| {
-        chain.split(',').next().unwrap_or("").trim()
-            .trim_matches(|c| c == '\'' || c == '"').to_string()
+        chain
+            .split(',')
+            .next()
+            .unwrap_or("")
+            .trim()
+            .trim_matches(|c| c == '\'' || c == '"')
+            .to_string()
     };
     let explicit_latin_slot = latin_slot_explicit
         && latin_slot_legacy
         && primary(&font_families[0]) != primary(&font_families[1]);
     let ascii_punct_latin_slot = ascii_punct_latin_slot || explicit_latin_slot;
     let latin_primary = primary(&font_families[1]);
-    let ascii_punct_latin_slot = ascii_punct_latin_slot || (primary(&font_families[0]) != latin_primary
-        && (latin_slot_explicit || crate::renderer::font_metrics_data::find_metric(&latin_primary, cs.bold, cs.italic)
-            .is_some_and(|found| found.metric.hangul.is_none())));
+    let ascii_punct_latin_slot = ascii_punct_latin_slot
+        || (primary(&font_families[0]) != latin_primary
+            && (latin_slot_explicit
+                || crate::renderer::font_metrics_data::find_metric(
+                    &latin_primary,
+                    cs.bold,
+                    cs.italic,
+                )
+                .is_some_and(|found| found.metric.hangul.is_none())));
 
     // 한국어(0번) 값을 기본값으로 사용
     let font_family = font_families[0].clone();
@@ -758,8 +769,6 @@ fn metric_widths_verified_face(face: &str) -> bool {
             | "HumanMyeongJo"
             | "Times New Roman"
             | "휴먼고딕"
-            | "HY중고딕"
-            | "HYGothic-Medium"
     )
 }
 

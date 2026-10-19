@@ -60,7 +60,9 @@ fn slot(ch: char, inherited: usize, regenerated: bool, style: Option<&ResolvedCh
         || style.ratio_for_lang(inherited) != style.ratio_for_lang(1);
     if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
         1
-    } else if explicit_metrics_differ && (matches!(ch, ' ' | '\u{00a0}') || ch.is_ascii_punctuation()) {
+    } else if explicit_metrics_differ
+        && (matches!(ch, ' ' | '\u{00a0}') || ch.is_ascii_punctuation())
+    {
         1
     } else if !style.ascii_punct_latin_slot {
         inherited
@@ -97,10 +99,11 @@ pub(super) fn resolve_run_slots(
         let mut resolved = Vec::new();
         for run in std::mem::take(&mut line.runs) {
             let style = styles.char_styles.get(run.char_style_id as usize);
-            if run.char_overlap.is_some() || !run
-                .text
-                .chars()
-                .any(|ch| slot(ch, run.lang_index, regenerated, style) != run.lang_index)
+            if run.char_overlap.is_some()
+                || !run
+                    .text
+                    .chars()
+                    .any(|ch| slot(ch, run.lang_index, regenerated, style) != run.lang_index)
             {
                 resolved.push(run);
                 continue;
@@ -133,7 +136,8 @@ pub(super) fn resolve_run_slots(
             }
             if start < run.text.len() {
                 resolved.push(ComposedTextRun {
-                    display_text: run.display_for_model_range(model_start, run.text.chars().count()),
+                    display_text: run
+                        .display_for_model_range(model_start, run.text.chars().count()),
                     text: run.text[start..].to_string(),
                     lang_index: lang,
                     neutral_space_origin: origin,

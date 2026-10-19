@@ -55,6 +55,8 @@ impl LayoutEngine {
                 carried_bands,
                 true,
                 styles,
+                false,
+                &[],
             )
         } else {
             row_heights.to_vec()

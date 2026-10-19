@@ -45,7 +45,8 @@ impl EqLayout {
         if self.legacy_hft_metrics
             && ((matches!(role, super::super::hancom_glyphs::Role::Operator)
                 && matches!(text, "+" | "-" | "=" | "×"))
-                || (matches!(role, super::super::hancom_glyphs::Role::LegacyLiteral) && text == "%"))
+                || (matches!(role, super::super::hancom_glyphs::Role::LegacyLiteral)
+                    && text == "%"))
         {
             // Legacy HFT operator slots are independent of the TTF glyph's
             // outline advance (Print: =/+/-/% full em; TIMES .68em).

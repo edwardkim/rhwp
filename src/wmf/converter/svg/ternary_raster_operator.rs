@@ -490,9 +490,6 @@ impl TernaryRasterOperator {
                 let fill = match Fill::from(self.brush.clone().unwrap()) {
                     Fill::Pattern { pattern } => {
                         let id = Self::issue_id(definitions);
-                        if is_mask {
-                            has_monochrome_pattern = true;
-                        }
                         definitions.push(pattern.set("id", id.as_str()));
                         url_string(format!("#{id}").as_str())
                     }

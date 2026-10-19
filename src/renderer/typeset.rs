@@ -3936,7 +3936,6 @@ impl TypesetEngine {
         next_para: Option<&Paragraph>,
         // [#3837] 값이 있는 가장 가까운 앞 문단의 마지막 저장 vpos.
         prev_stored_vpos: Option<i32>,
-        next_para: Option<&Paragraph>,
     ) {
         // [Task #1152] 호스트 문단의 intra-paragraph vpos-reset 가드.
         // empty-text host paragraph 가 N controls + N line_segs 1:1 매핑이고,
@@ -4315,6 +4314,7 @@ impl TypesetEngine {
                         y: column.y + origin,
                         clearance: 0.0,
                         resolved_x: false,
+                        stored_column_frame: None,
                         stored_horizontal_pen: None,
                         advance_end: None,
                     });
@@ -5711,6 +5711,7 @@ impl TypesetEngine {
                     resolved_x: false,
                     advance_end: Some(st.current_height),
                     stored_horizontal_pen: None,
+                    stored_column_frame: None,
                 },
             );
         }

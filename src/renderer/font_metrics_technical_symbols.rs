@@ -153,7 +153,7 @@ pub(crate) fn verified_program_punctuation_width(metric: &FontMetric, ch: char) 
         ("HumanMyeongJo", 1024, false, false, 8221) => Some(1024),
         // 공식 H2GTRM.TTF: SHA 0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5.
         // 원본 한컴 Print와 같은 periodcentered·곡선 따옴표의 실제 hmtx다.
-        ("HYGothic-Medium", 1024, false, false, 183 | 8216 | 8217 | 8220 | 8221) => Some(1024),
+        ("HYGothic-Medium", 1024, false, false, 8220 | 8221) => Some(1024),
         _ => None,
     }
 }

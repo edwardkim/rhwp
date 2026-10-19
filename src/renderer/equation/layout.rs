@@ -326,7 +326,8 @@ impl EqLayout {
             };
         }
 
-        let (source_nodes, mut boxes): (Vec<&EqNode>, Vec<LayoutBox>) = children.iter()
+        let (source_nodes, mut boxes): (Vec<&EqNode>, Vec<LayoutBox>) = children
+            .iter()
             .zip(self.row_children(children, fs))
             .filter(|(_, b)| b.width > 0.0 || matches!(b.kind, LayoutKind::Newline))
             .unzip();
@@ -460,20 +461,19 @@ impl EqLayout {
         let w = if self.legacy_hft_metrics {
             self.text_width(text, fs, false)
         } else {
-            text
-            .chars()
-            .map(|ch| {
-                if ch.is_ascii_digit() {
-                    if let Some(advance) = self.math_digit_advance {
-                        source_font_text::logical_advance(advance, fs, self.dpi)
+            text.chars()
+                .map(|ch| {
+                    if ch.is_ascii_digit() {
+                        if let Some(advance) = self.math_digit_advance {
+                            source_font_text::logical_advance(advance, fs, self.dpi)
+                        } else {
+                            fs * 0.5
+                        }
                     } else {
-                        fs * 0.5
+                        estimate_text_width(&ch.to_string(), fs, false)
                     }
-                } else {
-                    estimate_text_width(&ch.to_string(), fs, false)
-                }
-            })
-            .sum()
+                })
+                .sum()
         };
         LayoutBox {
             font_size: fs,
@@ -505,12 +505,16 @@ impl EqLayout {
             }
         }
         // 수식의 빼기 기호는 문장용 하이픈과 다른 글리프다.
-        let display = if self.legacy_hft_metrics { text } else { match text {
-            "-" => "−",
-            // 인용 문자열과 달리 수식 기호의 작은따옴표는 미분 prime이다.
-            "'" => "′",
-            _ => text,
-        }};
+        let display = if self.legacy_hft_metrics {
+            text
+        } else {
+            match text {
+                "-" => "−",
+                // 인용 문자열과 달리 수식 기호의 작은따옴표는 미분 prime이다.
+                "'" => "′",
+                _ => text,
+            }
+        };
         let source_operator = (self.hancom_math_face && !self.legacy_hft_metrics)
             .then(|| source_font_symbol::operator_metrics(display, fs, self.dpi))
             .flatten();

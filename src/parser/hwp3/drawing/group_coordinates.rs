@@ -1,6 +1,10 @@
 //! Stored absolute group coordinates and full source affine.
 use crate::model::shape::ShapeObject;
-pub(super) fn assign_group_coordinates(node: &mut ShapeObject, level: u16, _parent_origin: (f64, f64)) {
+pub(super) fn assign_group_coordinates(
+    node: &mut ShapeObject,
+    level: u16,
+    _parent_origin: (f64, f64),
+) {
     let attr = node.shape_attr_mut();
     attr.group_level = level;
     if level == 0 {

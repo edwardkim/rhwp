@@ -2969,7 +2969,14 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_line(&mut self, x1: f64, y1: f64, x2: f64, y2: f64, style: &LineStyle) {
-        self.draw_line_with_resolved_width(x1, y1, x2, y2, style, style.dash.canvas_width(style.width));
+        self.draw_line_with_resolved_width(
+            x1,
+            y1,
+            x2,
+            y2,
+            style,
+            style.dash.canvas_width(style.width),
+        );
     }
 
     fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, style: &ShapeStyle) {

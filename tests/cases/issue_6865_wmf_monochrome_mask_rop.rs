@@ -476,6 +476,15 @@ fn issue_6865_reversed_palette_reverses_brush_and_destination_selection() {
 /// 합성 WMF에 기록한 실제 연산 영역과 DIB 비트로 기대 색을 계산한다.
 /// 실물 문서의 화면 좌표 핀이 아니라 GDI 비트 연산의 독립 계약이다.
 fn assert_xor_pattern_pixels(svg: &str, middle: [i32; 4], reversed: bool) {
+    assert_xor_pattern_pixels_with_source_row(svg, middle, reversed, false);
+}
+
+fn assert_xor_pattern_pixels_with_source_row(
+    svg: &str,
+    middle: [i32; 4],
+    reversed: bool,
+    zero_bottom_row: bool,
+) {
     use resvg::tiny_skia::{Color, Pixmap, Transform};
     let tree = resvg::usvg::Tree::from_str(svg, &resvg::usvg::Options::default())
         .expect("WMF 변환 SVG 해석");
@@ -493,7 +502,11 @@ fn assert_xor_pattern_pixels(svg: &str, middle: [i32; 4], reversed: bool) {
             let masked = (left..left + width).contains(&x) && (top..top + height).contains(&y);
             // DIB는 bottom-up이다. 첫 저장 행은 0x55, 맨 위 행은 0xAA이므로
             // 기본 팔레트에서 x+y가 짝수인 비트가 흰색이다.
-            let mask = if ((x + y) % 2 == 0) ^ reversed {
+            // The non-checker control changes DIB bottom row zero to all black.
+            // DIB is bottom-up, so its device-space row is y mod 8 == 7.
+            let mask = if zero_bottom_row && y % 8 == 7 {
+                0
+            } else if ((x + y) % 2 == 0) ^ reversed {
                 255
             } else {
                 0
@@ -532,16 +545,14 @@ fn contained_non_checker_mask_keeps_the_original_brush_as_its_only_paint() {
     let mut pattern = dib_pattern_brush(1);
     pattern[6 + 2 + 2 + 40 + 8] = 0;
     // 완전 안쪽·한쪽 경계 공유·8단위보다 작은 마스크에도 같은 비트 항등식이다.
-    for middle in [
-        blit_rect(DPA, 14, 15, 30, 20),
-        blit_rect(DPA, 11, 10, 49, 50),
-        blit_rect(DPA, 31, 25, 2, 3),
-    ] {
+    for rect in [[14, 15, 30, 20], [11, 10, 49, 50], [31, 25, 2, 3]] {
+        let [x, y, width, height] = rect;
+        let middle = blit_rect(DPA, x, y, width, height);
         let svg = finish_sequence(
             mask_prefix(pattern.clone(), middle),
             &[select_object(0), brush_blit(PATINVERT)],
         );
-        assert_pattern_only_selects_brush_paint(&svg);
+        assert_xor_pattern_pixels_with_source_row(&svg, rect.map(i32::from), false, true);
     }
 }
 

@@ -20,14 +20,8 @@ pub(in crate::renderer::typeset) fn prepare_forced_page_boundary(
     // native HWP5 본문은 기존 각주가 있는 page tail에서도 `vpos=0` reset으로
     // 다음 physical page를 기록할 수 있다. 일반 reset은 과분할 위험이 있으므로,
     // 실제 FootnoteArea 경계와 source/flow가 함께 맞을 때만 강제 경계로 쓴다.
-    let native_hwp5_existing_footnote_reset_line =
-        native_hwp5_existing_footnote_reset_overlap_break_line(
-            st,
-            para,
-            fmt,
-            paragraphs,
-            note_measure,
-        );
+    let native_hwp5_existing_footnote_boundary =
+        native_hwp5_existing_footnote_reset_boundary(st, para, fmt, paragraphs, note_measure);
     // 흐름 스냅이 이미 확정한 지연 기준은 마지막 줄·내부 쪽 경계도 함께 소비한다.
     // 첫 빈 개체 호스트의 저장 위치는 표 밴드 뒤의 줄일 수 있어 쪽 원점으로 다시 쓰지 않는다.
     let current_page_vpos_base = st.vpos_page_base.or(st.vpos_lazy_base).or_else(|| {
@@ -130,7 +124,7 @@ pub(in crate::renderer::typeset) fn prepare_forced_page_boundary(
         })
         // full-fit early return보다 앞의 같은 chain에 넣어야 reset tail을 통째로
         // 배치해 separator와 겹치는 우회가 없다.
-        .or(native_hwp5_existing_footnote_reset_line);
+        .or(native_hwp5_existing_footnote_boundary.map(|boundary| boundary.break_line));
     if std::env::var("RHWP_DIAG_SPLIT_BUDGET").is_ok() && forced_page_break_line.is_some() {
         // 물리 예산 부족과 저장 경계 강제를 구분한다. 내용·동작은 바꾸지 않는다.
         eprintln!(
@@ -140,7 +134,7 @@ pub(in crate::renderer::typeset) fn prepare_forced_page_boundary(
         );
     }
     ForcedPageBoundary {
-        native_hwp5_existing_footnote_reset_line,
+        native_hwp5_existing_footnote_boundary,
         current_page_vpos_base,
         forced_page_break_line,
     }

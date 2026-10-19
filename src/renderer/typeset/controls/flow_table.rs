@@ -125,7 +125,6 @@ pub(in crate::renderer::typeset) fn place(
             composed,
             next_para,
             preceding_stored_vpos(paragraphs_all, para_idx),
-            next_para,
         );
     } else if !crate::renderer::float_placement::is_textless_coanchored_float_host(para)
         // [#7687] 양수 오프셋 표를 품은 글자 없는 다중 자리차지 host 는 lane 적층이 아니라

@@ -406,9 +406,7 @@ pub(super) fn match_system_family_style(
             system_families.postscript_face(font_mgr, family)
         })
         .filter(|typeface| !is_placeholder_typeface(typeface))
-        .or_else(|| {
-            recover_installed_system_typeface(font_mgr, family, style)
-        });
+        .or_else(|| recover_installed_system_typeface(font_mgr, family, style));
         cache.borrow_mut().insert(key, matched.clone());
         matched
     })
@@ -505,8 +503,8 @@ mod tests {
         let localized = "검사용 표기 가족";
         let source = query_database_typeface(&database, &font_mgr, localized, FontStyle::normal())
             .expect("SFNT 자체가 선언한 한국어 family");
-        let mut enumerated = SystemFontFamilies::new();
-        enumerated.insert(source.family_name());
+        let mut enumerated = SystemFontFamilies::default();
+        enumerated.names.insert(source.family_name());
         assert!(!has_system_family(&enumerated, localized));
 
         struct RestoreDatabase(Option<usvg::fontdb::Database>);

@@ -285,7 +285,12 @@ impl SkiaTextReplay<'_> {
                     layout_positions,
                 );
                 let fit_positions = style.fixed_glyph_advances.then(|| {
-                    crate::renderer::glyph_fit_positions(metric_text, style, layout_positions, &char_positions)
+                    crate::renderer::glyph_fit_positions(
+                        metric_text,
+                        style,
+                        layout_positions,
+                        &char_positions,
+                    )
                 });
                 let clusters = split_into_clusters(text);
                 let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
@@ -705,7 +710,8 @@ impl SkiaTextReplay<'_> {
                                         "metricNarrowPunctuationOverlay"
                                             | "metricHalfwidthPunctuationOverlay"
                                     )
-                            }) && !has_ratio;
+                                })
+                                && !has_ratio;
                             if needs_halfwidth_scale {
                                 if synthetic_bold {
                                     // 글자 윤곽선만 반각으로 하고 사용자 좌표 획은 유지한다.

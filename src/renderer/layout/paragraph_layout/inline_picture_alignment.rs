@@ -76,7 +76,7 @@ impl LayoutEngine {
         let (_, _, top, bottom) = tac_object_outer_margins_px(shape.common(), self.dpi);
         tac_object_box_height_px(
             hwpunit_to_px(shape.flow_height_hu(), self.dpi),
-            &super::super::shape_layout::shape_caption_for_layout(shape),
+            &crate::renderer::composer::shape_caption_for_layout(shape),
             self.dpi,
         ) + top
             + bottom

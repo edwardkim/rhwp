@@ -4,7 +4,7 @@
 //! 1177d9025d1e797c54b3c7676976365abd90f903423091de7f0f4e7a4b372162.
 //! 배치 계약: https://www.w3.org/TR/mathml-core/#fraction-with-nonzero-line-thickness
 
-use super::LayoutBox;
+use super::{LayoutBox, FRAC_LINE_THICK};
 
 fn hancom_position(
     numer: &mut LayoutBox,
@@ -313,7 +313,6 @@ impl EqLayout {
         d_box.y = numer_h + line_thick;
 
         LayoutBox {
-
             font_size: fs,
             x: 0.0,
             y: 0.0,
@@ -328,5 +327,4 @@ impl EqLayout {
             },
         }
     }
-
 }

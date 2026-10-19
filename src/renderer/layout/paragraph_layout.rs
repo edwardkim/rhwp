@@ -82,7 +82,10 @@ fn terminal_tracking_for_distribution(
         {
             return 0.0;
         }
-        return super::terminal_tracking::glyph_letter_spacing_advance(text, &run.text_style(styles));
+        return super::terminal_tracking::glyph_letter_spacing_advance(
+            text,
+            &run.text_style(styles),
+        );
     }
     0.0
 }
@@ -2260,64 +2263,6 @@ fn fixed_auto_tab_prefix_by_run(line: &ComposedLine) -> Vec<usize> {
         .collect()
 }
 
-/// [Task #2067] 명시적 정렬 분배와 실제 오버플로우에 따른 여분 간격 계산.
-/// 반환 = (extra_word_sp, extra_char_sp, extra_dash_sp).
-#[cfg(test)]
-#[allow(clippy::too_many_arguments)]
-fn compute_line_extra_spacing(
-    comp_line: &ComposedLine,
-    leading_space_count: usize,
-    inline_object_count: usize,
-    trailing_space_limit: usize,
-    leading_space_plan: &LeadingSpacePlan<'_>,
-    soft_wrap_separator_width: f64,
-    terminal_tracking: f64,
-    unjustified_leading_spaces: &[usize],
-    styles: &ResolvedStyleSet,
-    centered_measure: Option<&CenteredTextLineMeasure>,
-    alignment: Alignment,
-    in_cell: bool,
-    needs_justify: bool,
-    justify_spaces_only: bool,
-    needs_distribute: bool,
-    has_tabs: bool,
-    renders_synthetic_wrap_trailing_space: bool,
-    suppress_cell_overflow_spacing: bool,
-    converge_auto_shrink_cell: bool,
-    total_char_count: usize,
-    total_text_width: f64,
-    available_width: f64,
-    tab_width: f64,
-) -> (f64, f64, f64) {
-    let mut dash_extra_by_run = None;
-    compute_line_extra_spacing_with_dash_plan(
-        comp_line,
-        leading_space_count,
-        inline_object_count,
-        trailing_space_limit,
-        leading_space_plan,
-        soft_wrap_separator_width,
-        terminal_tracking,
-        unjustified_leading_spaces,
-        styles,
-        centered_measure,
-        alignment,
-        in_cell,
-        needs_justify,
-        justify_spaces_only,
-        needs_distribute,
-        has_tabs,
-        renders_synthetic_wrap_trailing_space,
-        suppress_cell_overflow_spacing,
-        converge_auto_shrink_cell,
-        total_char_count,
-        total_text_width,
-        available_width,
-        tab_width,
-        &mut dash_extra_by_run,
-    )
-}
-
 /// 낱말 공백과 대시가 함께 있는 양쪽 정렬 줄의 복원 예산.
 /// 대시는 해당 런의 자연 전진까지만 복원하고 남은 폭은 낱말 공백이 소비한다.
 /// 방출과 같은 정규화 런·표시 문자열을 사용하여 다른 글꼴/크기의 대시에도
@@ -2632,7 +2577,7 @@ fn compute_line_extra_spacing_with_dash_plan(
                         trailing_spaces,
                         tab_width,
                         slack,
-                        terminal_ink_overhang,
+                        (-terminal_tracking).max(0.0),
                     );
                     return (word, character, 0.0);
                 }
@@ -6772,18 +6717,22 @@ impl LayoutEngine {
             // 본문의 명시적 첫 줄 들여쓰기는 용지 밖이어도 지정한 원점을 갖는다.
             // 셀 내어쓰기의 좁은 후속 줄을 복구하는 계약을 여기에 전파하면,
             // 재조판은 들여쓴 폭으로 줄을 나누고 paint만 들여쓰기를 취소한다.
-            let effective_margin_left =
-                if cell_ctx.is_some() && indent < 0.0 && line_idx > 0 && line_indent > 0.0 && !physical_frame_rows {
-                    let min_line_w = max_fs.max(1.0);
-                    let avail = effective_col_w - effective_margin_left - effective_margin_right;
-                    if avail < min_line_w {
-                        margin_left.min(effective_margin_left)
-                    } else {
-                        effective_margin_left
-                    }
+            let effective_margin_left = if cell_ctx.is_some()
+                && indent < 0.0
+                && line_idx > 0
+                && line_indent > 0.0
+                && !physical_frame_rows
+            {
+                let min_line_w = max_fs.max(1.0);
+                let avail = effective_col_w - effective_margin_left - effective_margin_right;
+                if avail < min_line_w {
+                    margin_left.min(effective_margin_left)
                 } else {
                     effective_margin_left
-                };
+                }
+            } else {
+                effective_margin_left
+            };
 
             // 인라인 Shape가 있는 줄: 텍스트 y를 Shape 하단 baseline에 맞춤
             let text_y = if has_tac_shape
@@ -7754,11 +7703,12 @@ impl LayoutEngine {
             // cross-run 탭 감지용 inline_tabs(composed.tab_extended) 커서 — Task #290
             let mut inline_tab_cursor_render = stored_tab_index_before_line(composed, comp_line);
             // 측정에 사용한 줄과 같은 run 분할로 선두 공백의 소유를 재생한다.
-            let emit_line = if extra_word_sp == 0.0 && extra_char_sp == 0.0 && dash_extra_by_run.is_none() {
-                comp_line
-            } else {
-                leading_space_plan.line.as_ref()
-            };
+            let emit_line =
+                if extra_word_sp == 0.0 && extra_char_sp == 0.0 && dash_extra_by_run.is_none() {
+                    comp_line
+                } else {
+                    leading_space_plan.line.as_ref()
+                };
             let leading_spaces = LeadingSpaces::new(emit_line, first_inline_pos);
             let emit_state = self.emit_line_runs(
                 tree,
@@ -11679,6 +11629,8 @@ mod issue_2809_split_alignment_tests {
         inline_object_count: usize,
         trailing_space_limit: usize,
         leading_space_plan: &LeadingSpacePlan<'_>,
+        soft_wrap_separator_width: f64,
+        terminal_tracking: f64,
         unjustified_leading_spaces: &[usize],
         styles: &ResolvedStyleSet,
         centered_measure: Option<&CenteredTextLineMeasure>,
@@ -11699,9 +11651,12 @@ mod issue_2809_split_alignment_tests {
         let mut dash_extra_by_run = None;
         compute_line_extra_spacing_with_dash_plan(
             comp_line,
+            leading_space_plan.leading_spaces,
             inline_object_count,
             trailing_space_limit,
             leading_space_plan,
+            soft_wrap_separator_width,
+            terminal_tracking,
             unjustified_leading_spaces,
             styles,
             centered_measure,
@@ -11866,6 +11821,8 @@ mod issue_2809_split_alignment_tests {
                         0,
                         usize::MAX,
                         &LeadingSpacePlan::new(&line, None),
+                        0.0,
+                        super::terminal_tracking_for_alignment(&line, &styles, &[], true),
                         &[],
                         &styles,
                         None,

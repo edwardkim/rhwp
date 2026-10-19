@@ -82,6 +82,8 @@ class FontNameCatalogueTests(unittest.TestCase):
                 pass
         font = Font(name=SimpleNamespace(names=[invalid, valid]),
                     head=SimpleNamespace(macStyle=0))
+        font.flavor = None
+        font.reader = SimpleNamespace(tables={}, keys=lambda: font.keys())
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             (root / 'legacy.ttf').write_bytes(b'font resource identity')
@@ -96,6 +98,7 @@ class FontNameCatalogueTests(unittest.TestCase):
             self.assertEqual(face['nameDecodeWarnings'][0]['platformID'], 3)
             self.assertEqual(face['nameDecodeWarnings'][0]['platEncID'], 5)
             font['name'].names = [invalid]
+            (root / 'legacy.ttf').write_bytes(b'invalid name-only font resource identity')
             with patch('fontTools.ttLib.TTFont', return_value=font), self.assertRaisesRegex(SystemExit, 'family 이름'):
                 png.font_catalog(vs, root, [root], root)
 

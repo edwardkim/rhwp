@@ -2649,3 +2649,36 @@ C352 harness의 최초 괄호 문법 오류와 JSON bytes 직렬화 오류는 �
 - C407은 ignored 격리 소스에서만 일반 흐름 소유 계약을 보정했다. Exclusion/StoredSquareWrap의 종료 cursor 덮어쓰기를 배제하고 EmptyHost·NextLine·명시 캡션 계약은 유지한다. 정정된 실제 Rust test executable에서 동일 formal 검사1건이 기존 CLI의 여백 중복 assertion으로 FAIL(1.01초), 후보 CLI에서 PASS(1.84초)했다. 현재 manifest로 실행한 관련 정상 대조군은7PASS 및27PASS다. 초기 잘못된 문단 소속 기대값/nextest CLI override, mixed JSON, stale suite의0tests는 증거에서 제외했다. 아직 authoritative 소스에는 적용하지 않았으며 실제 NativeSkia/fresh WASM 시각 수용도 남는다.
 - 각주201쪽의9.6px 실제 배치 하락은 미해결이며 C401 가설은 출력 무변화로 기각했다. C409 baseline cursor 진단은 선행 실패 guard로 종료됐고 빌드는 시작하지 않았다. C410 worklife4쪽은 본문25줄 원점이 같고 current에 footer TextLine wrapper가 추가된 사실까지 확인했으나, raw0.16679%p 하락의 독립 판정은 남는다.
 - 이 커밋은 승인된 진행 중 변경의 보존 단계다. 리베이스 후 새 devel 기능 보존·필수 전체 게이트·Native/fresh WASM 전쪽·실제 소비 및 대표 review/overlay 직접판독을 이어간다. PR은 준비 결과 보고 후 사용자 승인을 받아 진행한다.
+
+
+## 2026-10-19 선행 커밋 후 최신 devel 리베이스
+
+- 사용자 지시 `커밋 먼저 하고 리베이스`에 따라 WIP 203개 파일을
+  `504e2e236c1585c2c11ba6d0cb1408544b8af201`에 먼저 보존했다.
+- 이전 HEAD `b80662087571f746579350d2ef00f3387b54b527`, 이전 base
+  `224a326063a5aeab5a1ca8dcaa92918f55843ffc`에서 새 base
+  `4a07d3ae4dd3255a57fb0166b2b2a2dc335a61fa`로 262개 커밋을 리베이스했다.
+  리베이스 직후 HEAD는 `ebb527e9e8d0d51f43feca879fc0604b3f5965fb`다.
+  range-diff는 262개 모두 대응하며 169개 동일·93개 변경, 누락은 없다.
+- 새 devel의 composer·style·수식·머리말/꼬리말 분리 구조를 유지하면서 기존 보정을
+  해당 공통 소비 지점으로 옮겼다. 최초 컴파일에서 확인한 인자·필드·import 불일치,
+  테스트 보조 함수의 API 불일치도 보정했다. 각주 경계의 줄 번호와 실제 각주 영역 높이,
+  저장 단 프레임, 이미 계산한 문단과 원점 원장을 호출부까지 전달한다.
+- 새 devel의 Noto Sans Math/LMM와 기존 Public Batang 라이선스·공급 항목을 함께
+  보존했다. 최종 canonical WOFF2는 38개·26,196,084 bytes다. 글리프 공급명 검사와
+  source bytes/cache·원자적 글꼴 face 공개·SFNT 정렬/헤더 복구 계약을 함께 유지한다.
+- 사용자 초안 2개와 미분류 진단 PDF 12개는 별도 stash
+  `f84286916b0e1316e9420e013544ec90791a9292`에 보존한 뒤 apply했다.
+  14개 모두 리베이스 전 SHA-256과 일치한다. 백업 ref·stash는 유지하며 커밋에 섞지 않았다.
+- 실제 확인: `cargo fmt --all -- --check`, 현재 base 대상 suite manifest,
+  unit-tier 정책(4,101 tests), Native Skia 라이브러리와 전체 테스트 코드의 `cargo check`,
+  WASM32 라이브러리 `cargo check`, Studio TypeScript 검사 모두 exit 0.
+  Python 글꼴 catalogue 26건과 의존성을 갖춘 HFT 도구 15건도 통과했다.
+- 이 단계의 `cargo check --tests`는 테스트 **컴파일** 확인이다. 새 소스의 전체 nextest,
+  Native/fresh WASM 전쪽 시각 검증·신규 devel 기능 보존·실제 소비 경로 수용을 대신하지 않는다.
+  웹폰트 배포 검사 3건은 기존 dist에 새 Noto Sans Math·통합 notices가 없어 실패했으며,
+  최신 WASM/프런트엔드 배포 산출물 재생성 뒤 다시 확인해야 한다. 기존 코드의 통과율·PNG를
+  이번 head 통과로 재인용하지 않는다. PR 생성·원격 게시·merge는 수행하지 않았다.
+- 상세 커밋·fetch·충돌 원장·복원 해시·실패와 재실행 로그는 ignored
+  `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/commit-before-rebase-20261019-122334/`
+  에 보존한다. 지침 변경은 없다.

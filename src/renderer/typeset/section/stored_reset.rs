@@ -209,7 +209,7 @@ impl TypesetEngine {
                             // 경계를 소비한다. 잔여 fit만으로 이를 덮지 않는다.
                             || (!profile.session_edited()
                                 && crate::renderer::typeset::stored_rewind_boundary_matches_current_flow(
-                                    paragraphs, para_idx, st.current_height, self.dpi,
+                                    paragraphs, para_idx, &st.current_items, st.current_height, self.dpi,
                                 ))
                             || native_near_top_reset_exceeds_remaining(
                                 para,
