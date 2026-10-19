@@ -552,6 +552,7 @@ fn parse_hwp_with_cfb(
             hwp3_lineage: false,
             hwpx_lineage: is_hwpx_variant,
             hft_ascii_halfwidth_witnessed: false,
+            stored_rows_before_hancom_2020: false,
         },
     };
 
@@ -1041,6 +1042,7 @@ fn parse_hwp_with_lenient(
             hwp3_lineage: false,
             hwpx_lineage: false,
             hft_ascii_halfwidth_witnessed: false,
+            stored_rows_before_hancom_2020: false,
         },
     };
 

@@ -224,6 +224,22 @@ impl DocumentCore {
             }
         }
 
+        // [#7702] 저장 줄을 만든 제품 세대. 컨테이너가 기록한 마지막 저장만 본다 — HWPX 가
+        // 원본 HWP5 요약 정보를 그대로 싣고 있어도(`36388711…청년오피스.hwpx`: 요약 8.0, 저장
+        // 11.0) 그 줄은 HWPX 를 저장한 제품의 것이다. 메타데이터가 없으면 판정하지 않는다.
+        let last_saved = match document.provenance.format {
+            crate::model::provenance::SourceFormat::Hwp5 => {
+                crate::parser::hwp_summary::last_saved_with(&document.extra_streams)
+            }
+            crate::model::provenance::SourceFormat::Hwpx => {
+                crate::parser::hwp_summary::hwpx_last_saved_with(&document.hwpx_aux_entries)
+            }
+            _ => None,
+        };
+        document.provenance.stored_rows_before_hancom_2020 = last_saved
+            .and_then(|saved| saved.version.split('.').next()?.parse::<u32>().ok())
+            .is_some_and(|major| (1..11).contains(&major));
+
         // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
         let mut styles = resolve_styles_for_document(&document, DEFAULT_DPI);
         // [#7051] 계보 신호가 없는 저장본은 저장 줄 사다리로 HFT ASCII 반각 조판을 판정한다.

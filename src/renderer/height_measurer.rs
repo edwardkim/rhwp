@@ -3072,6 +3072,7 @@ impl HeightMeasurer {
 
                 // 셀 내 문단들의 실제 높이 합산
                 let mut frame_paragraphs = None;
+                let mut stored_ladder_discarded = false;
                 let text_height: f64 = if cell.text_direction != 0 {
                     // 세로쓰기: line_seg.segment_width가 열의 세로 길이
                     // 셀 높이 = 최대 segment_width
@@ -3120,6 +3121,11 @@ impl HeightMeasurer {
                                 frame_paragraphs.get_or_insert_with(|| cell.paragraphs.clone())[pidx] = paragraph.clone();
                             }
                             let p = frame_paragraph.as_ref();
+                            // 프레임이 저장 줄을 버리고 다시 끊었는데 새 줄 좌표를 발행하지 않았으면
+                            // 저장 사다리는 그리는 줄이 아니다. 아래 저장 extent 증인에 쓰지 않는다.
+                            if !p.line_segs.is_empty() && comp.lines.len() != p.line_segs.len() {
+                                stored_ladder_discarded = true;
+                            }
                             let reflow_nested_height = if cell.paragraphs.iter().all(
                                 crate::renderer::para_has_no_stored_line_segs,
                             ) && crate::renderer::float_placement::reflow_block_table_host_occupied_height(p, 0.0, 0.0).is_some() {
@@ -3527,7 +3533,8 @@ impl HeightMeasurer {
                     // 이중 계상이다 (주보 p2 로고 표 셀: 그림 2개 합산 112.8px vs 저장
                     // extent 65.9px → 행 1.9× 팽창, 2행 텍스트 페이지 밖 소실).
                     // layout trust_stored_cell_flow 와 동일 원리·가드 (#2211 계보).
-                    let stored_extent = if !cell.paragraphs.is_empty()
+                    let stored_extent = if !stored_ladder_discarded
+                        && !cell.paragraphs.is_empty()
                         && cell
                             .paragraphs
                             .iter()

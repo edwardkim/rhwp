@@ -744,6 +744,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             hwp3_lineage: false,
             hwpx_lineage: false,
             hft_ascii_halfwidth_witnessed: false,
+            stored_rows_before_hancom_2020: false,
         },
     };
     // HWP3-origin 마커가 있으면 계보를 복원한다 — 직파싱 HWP3 와 같은

@@ -44,6 +44,7 @@ fn load_with_native_hwp5_provenance(sample: &str) -> HwpDocument {
         hwp3_lineage: false,
         hwpx_lineage: false,
         hft_ascii_halfwidth_witnessed: false,
+        stored_rows_before_hancom_2020: false,
     };
     let host = &mut model.sections[0].paragraphs[1];
     host.line_segs[0].tag &= !LineSeg::TAG_IMPLEMENTATION_PROPERTY;

@@ -427,6 +427,7 @@ impl Document {
         .with_hwp3_password_layout(
             self.provenance.format == SourceFormat::Hwp3 && self.header.encrypted,
         )
+        .with_stored_rows_before_hancom_2020(self.provenance.stored_rows_before_hancom_2020)
         // native HWP5 는 로드 시 raw_stream 을 보유한 섹션을 raw_provenance 로
         // 봉인한다(파서 seal_body_raw_provenance). 편집 명령은 raw_stream 만
         // None 으로 지우고 봉인은 남기므로, "봉인은 있는데 raw_stream 이 사라짐"
