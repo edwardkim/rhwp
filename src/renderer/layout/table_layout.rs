@@ -6199,58 +6199,20 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
     ) -> (f64, f64, f64, f64) {
-        self.resolve_cell_padding_at_height(cell, table, None)
-    }
-
-    /// 온전한 행 조각은 측정에서 확정한 물리 높이로 안 여백을 판단한다.
-    /// 저장된 최소 셀 높이로 다시 축소하면 측정과 글줄 배치가 어긋난다.
-    pub(crate) fn resolve_cell_padding_for_physical_height(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-        height: f64,
-    ) -> (f64, f64, f64, f64) {
-        self.resolve_cell_padding_at_height(cell, table, Some(height))
-    }
-
-    fn resolve_cell_padding_at_height(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-        physical_height: Option<f64>,
-    ) -> (f64, f64, f64, f64) {
         // 문단 프레임·높이 측정과 같은 유효 여백을 소비한다.
         // hasMargin=false이면 셀 보존값으로 표 기본 0을 덮어쓰지 않는다.
+        //
+        // [#8067] 위·아래 안 여백 합이 칸 선언 높이를 넘어도 줄이지 않는다. 한/글 2024
+        // 합성 대조(선언 1000HU, 안 여백 1500HU 두 축): 한 줄 칸 상자 53px = 40 + 13.3,
+        // 첫 줄은 칸 위 20px — 저장 여백 그대로다. 예전 축소 가드(#501)의 근거였던
+        // mel-001 셀[21] 은 hasMargin=false 라 그 1700HU 가 애초에 유효 여백이 아니다.
         let padding = cell.effective_padding(&table.padding);
-        let pad_left = hwpunit_to_px(padding.left as i32, self.dpi);
-        let pad_right = hwpunit_to_px(padding.right as i32, self.dpi);
-        let pad_top = hwpunit_to_px(padding.top as i32, self.dpi);
-        let pad_bottom = hwpunit_to_px(padding.bottom as i32, self.dpi);
-        // [Task #501] 한컴 방어 로직 모방 — cell.padding.top + bottom 합산이
-        // cell.height 자체를 초과하면 (mel-001 p2 셀[21]: pad=1700 HU 두 축, h=1280 HU)
-        // 한컴은 자체 가드로 cell 안에 콘텐츠가 들어가도록 처리. cell.height 의 절반까지
-        // 비례 축소 (HWP 스펙 외 한컴 동작 모방).
-        // 발동 기준은 측정(height_measurer)과 공유한다 (#5751).
-        let padding_guard_height = cell.vertical_padding_guard_height_hu(table);
-        let guard_height = physical_height
-            .filter(|height| height.is_finite() && *height > 0.0)
-            .or_else(|| {
-                (padding_guard_height < 0x80000000)
-                    .then(|| hwpunit_to_px(padding_guard_height as i32, self.dpi))
-            });
-        let (pad_top, pad_bottom) = if let Some(cell_h_px) = guard_height {
-            let total_v_pad = pad_top + pad_bottom;
-            if crate::model::table::Cell::vertical_padding_is_abnormal(cell_h_px, total_v_pad) {
-                let max_v_pad = cell_h_px * 0.5;
-                let scale = max_v_pad / total_v_pad;
-                (pad_top * scale, pad_bottom * scale)
-            } else {
-                (pad_top, pad_bottom)
-            }
-        } else {
-            (pad_top, pad_bottom)
-        };
-        (pad_left, pad_right, pad_top, pad_bottom)
+        (
+            hwpunit_to_px(padding.left as i32, self.dpi),
+            hwpunit_to_px(padding.right as i32, self.dpi),
+            hwpunit_to_px(padding.top as i32, self.dpi),
+            hwpunit_to_px(padding.bottom as i32, self.dpi),
+        )
     }
 
     /// 셀 텍스트가 오버플로우할 때 좌우 패딩을 축소하여 공간을 확보한다.
