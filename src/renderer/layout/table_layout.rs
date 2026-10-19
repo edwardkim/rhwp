@@ -16658,7 +16658,7 @@ impl LayoutEngine {
                 units.push(CellUnit {
                     height: para_h,
                     following_line_advance,
-                    reflowed_line_slot: p.line_segs.last().is_some_and(line_seg_is_synthetic),
+                    reflowed_line_slot: p.line_segs.last().is_none_or(line_seg_is_synthetic),
                     // [Task #1488] 비가시 빈 문단(중첩표 없음)의 오버레이 리셋은 페이지를
                     // 강제 분할하지 않는다 — 여분 빈 연속 페이지 방지. 중첩표가 있으면
                     // 가시 콘텐츠를 가지므로 리셋 보존.
@@ -16817,7 +16817,7 @@ impl LayoutEngine {
                         reflowed_line_slot: p
                             .line_segs
                             .get(last_fragment)
-                            .is_some_and(line_seg_is_synthetic),
+                            .is_none_or(line_seg_is_synthetic),
                         // [Task #1488] 비가시(빈 텍스트) 오버레이 스페이서 문단이 만든 vpos
                         // 리셋은 페이지를 강제 분할하지 않는다. 셀 안에서 본문 텍스트 위에
                         // 겹쳐 놓인 빈 문단(동일/역방향 vpos)들이 리셋마다 페이지를 1장씩
@@ -22067,7 +22067,14 @@ impl LayoutEngine {
                                 styles,
                             ),
                         row_physical_band::RowCutCapacity::Physical(_) => self
-                            .physical_cut_trailing_trim(table, cell, &units, start, j + 1, styles),
+                            .row_cut_capacity_trailing_trim(
+                                table,
+                                cell,
+                                &units,
+                                start,
+                                j + 1,
+                                styles,
+                            ),
                     };
                     let trimmed_height = h + u.height - trailing_trim;
                     let trimmed_tolerance = capacity_tolerance::for_next_unit(

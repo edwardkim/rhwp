@@ -77,9 +77,67 @@ impl LayoutEngine {
             .then_some(height)
     }
 
-    /// 선택한 문단의 다음 줄 전진은 다음 조각에 속한다. 문단 앞/뒤 간격과
-    /// 빈 줄·개체의 점유를 추정하지 않고 유닛 생산자가 분리한 값만 소비한다.
-    /// 기존 저장 컷의 종료 계약은 그대로 유지한다.
+    /// 수용 용량과 실제 마지막 줄 상자를 같은 유닛의 서로 다른 값으로 구분한다.
+    /// 저장 슬롯이 없는 새 줄은 다음 줄 전진까지 들어가야 수용할 수 있다.
+    /// 수용한 뒤 다음 조각으로 넘어가는 전진은 실제 끝 상자에 다시 포함하지 않는다.
+    fn cut_trailing_advances(
+        &self,
+        table: &Table,
+        cell: &Cell,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+        styles: &ResolvedStyleSet,
+    ) -> (f64, f64) {
+        let stored =
+            self.native_saved_reset_cut_trailing_trim(table, cell, units, start, end, styles);
+        let Some(last) = end.checked_sub(1).and_then(|index| units.get(index)) else {
+            return (stored, stored);
+        };
+        if start >= end || end >= units.len() {
+            return (stored, stored);
+        }
+        let original_slot = !last.reflowed_line_slot
+            && cell.paragraphs.get(last.para_idx).is_some_and(|para| {
+                !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty
+                    && last.vis_end.checked_sub(1).is_some_and(|line| {
+                        para.line_segs.get(line).is_some_and(|seg| {
+                            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                        })
+                    })
+            });
+        let paragraph_end = last.para_idx != units[end].para_idx;
+        let following = self.stored_span_line_tail_spacing(last);
+        let capacity = if original_slot && paragraph_end {
+            following
+        } else {
+            0.0
+        };
+        let occupied = if paragraph_end || !original_slot {
+            following
+        } else {
+            0.0
+        };
+        (stored.max(capacity), stored.max(occupied))
+    }
+
+    /// 저장 줄이 증언한 컷의 수용량만 완화한다. 새 줄의 잉크 높이로 용량을 늘리지 않는다.
+    pub(super) fn row_cut_capacity_trailing_trim(
+        &self,
+        table: &Table,
+        cell: &Cell,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        self.cut_trailing_advances(table, cell, units, start, end, styles)
+            .0
+    }
+
+    /// 수용된 컷의 실제 끝 상자. 문단 간격·빈 줄·개체의 점유는 그대로 유지한다.
     pub(super) fn physical_cut_trailing_trim(
         &self,
         table: &Table,
@@ -89,15 +147,8 @@ impl LayoutEngine {
         end: usize,
         styles: &ResolvedStyleSet,
     ) -> f64 {
-        let stored =
-            self.native_saved_reset_cut_trailing_trim(table, cell, units, start, end, styles);
-        let following =
-            if start < end && end < units.len() && units[end - 1].para_idx != units[end].para_idx {
-                self.stored_span_line_tail_spacing(&units[end - 1])
-            } else {
-                0.0
-            };
-        stored.max(following)
+        self.cut_trailing_advances(table, cell, units, start, end, styles)
+            .1
     }
 
     /// 실제 칸별 안여백과 같은 컷의 내용 점유로 물리 밴드 안의 유닛을 고른다.
