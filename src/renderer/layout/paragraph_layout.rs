@@ -37,13 +37,11 @@ mod leading_justification;
 mod leading_spaces;
 use leading_spaces::{natural_leading_positions, LeadingSpaces};
 
-mod picture_bullet;
 mod list_marker_geometry;
+mod picture_bullet;
+pub(crate) use list_marker_geometry::ListMarkerGeometry;
 use list_marker_geometry::{
     list_marker_geometry_for, marker_text_style, marker_text_width, nominal_marker_size,
-};
-pub(crate) use list_marker_geometry::{
-    ListMarkerGeometry,
 };
 mod right_tab_fields;
 use crate::model::shape::{

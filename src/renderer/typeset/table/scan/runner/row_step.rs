@@ -84,7 +84,8 @@ impl TypesetEngine {
         };
         let scan_start_row = r;
         let consumed_before_row = consumed;
-        let reflow_minimum = layout_engine.reflow_row_physical_minimum(table, r, mt.row_heights[r], None, styles);
+        let reflow_minimum =
+            layout_engine.reflow_row_physical_minimum(table, r, mt.row_heights[r], None, styles);
         let continuing_reflow_minimum =
             layout_engine.row_has_continuing_reflow_minimum(table, r, styles);
         let plain_reflow_line_units =

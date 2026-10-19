@@ -1,6 +1,6 @@
 //! 앞 조각의 실제 물리 공간과 현재 조각의 행 제약을 한 계획으로 전달한다.
 
-use super::{hwpunit_to_px, LayoutEngine, ResolvedStyleSet};
+use super::{hwpunit_to_px, unit_diagnostics, LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
     /// 앞 조각의 실제 걸침 칸 상자를 소비한 뒤 끝 행에서 덜어낼 양 `(행, px)`.

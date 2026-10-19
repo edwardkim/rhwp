@@ -32,8 +32,8 @@ mod stored_span_row_owner;
 mod stored_terminal_row_frame;
 mod stored_text_frame_owner;
 mod stored_zero_origin;
-mod tac_host_end;
 mod straddle_continuation;
+mod tac_host_end;
 pub(crate) use stored_zero_origin::SavedZeroOriginWitness;
 pub(super) mod unit_diagnostics;
 mod wrapper_cell_viewport;
@@ -25735,7 +25735,6 @@ impl LayoutEngine {
             })
             .collect()
     }
-
 
     /// 수용한 조각의 쪽 끝 빈 띠를 경계를 넘는 걸침 칸마다 누적한다.
     /// 내용 컷과 실제 상자 원장도 보존하고, 경계를 다 지난 칸은 버린다.

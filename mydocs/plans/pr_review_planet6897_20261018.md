@@ -3564,3 +3564,40 @@ build·집중 회귀·전쪽의 signal 기록은 모두 start/exit만 있고 SIG
 PR #8064/#8069로 들어왔고 source·font/수식·조판·검증 지침도 바뀌었다. 이 절의 결과는
 **리베이스 전 출처**로 보존하며 새 head의 통과 결과로 재사용하지 않는다. 복구 참조와
 전후 mapping을 남겨 리베이스한 뒤, 새 지침·base의 기능과 현재 작업을 함께 검증한다.
+
+
+## 2026-10-19 리베이스: 새 devel 기능과 누적 변경 보존
+
+- 이전 base `224a326063a5aeab5a1ca8dcaa92918f55843ffc`, 이전 head
+  `a2d93202b1fd3bd9f0c37ac03388d874af25a344`를 로컬
+  `backup/planet6897-before-rebase-20261019T032240Z`에 보존했다.
+- 새 base는 `4a07d3ae4dd3255a57fb0166b2b2a2dc335a61fa`이며 #8064(코드)·#8069(기록)를
+  포함한다. 리베이스 직후 head는 `87e6d67bb49112a3de794faf7c16fba6c00a1190`다.
+  원래11개 PR 범위와 원본 적용 → 메인터너 보정 순서를 유지했다.
+- 이전194 commit 중193개를 다시 적용했다. `936a4b6e6`의 #4961 기대값 변경은 새 base에
+  이미 동일하게 들어 있어 별도 commit이 필요 없었다. 해당 JSON의 base/후보 전체 값이 같다.
+  원본49개 체리픽 중48개는 새 commit의 원본 SHA trailer로, 나머지1개
+  `03e6025fd564bd0f22e88925db9251de66be92a0`는 위 base 동일 내용으로 확인했다.
+  나머지193개는 제목과 원 저자·이메일·author timestamp를 대조했다.
+- 로컬 미추적 Print PDF4개는 모두 기존 SHA-256을 유지한다. 삭제·추가 배포하지 않았다.
+
+충돌은 새 devel의 실제 소비 경로를 유지하며 다음과 같이 연결했다.
+
+| 경계 | 충돌 해소 내용 | 실제 동작 검증 상태 |
+| --- | --- | --- |
+| 저장 호스트·다음 문단 vpos | 두 입력을 함께 전달하고 새 저장 호스트 plan의 후속 적용을 유지 | 재검증 필요 |
+| 머리말·꼬리말, 미주 측정 | 새로 분리된 자식 파일에 변경을 옮기고 이전 부모 함수는 복원하지 않음 | 재검증 필요 |
+| 표 종료 간격 | NO_LS/synthetic 동등성과 원문 종료 유닛 소유를 유지하고 outgrown 호스트도 공통 close로 전달 | 재검증 필요 |
+| 저장/재조판 문단 컷 | CutSource와 재조판 계약을 유지하고 완결 문단·실제 목록 항목 판정을 함께 적용 | 재검증 필요 |
+| 걸침·물리 행 상자 | 새 devel의 독립 칸 최소 높이·source frame band·실제 accepted cursor를 유지하고 기존 후속 요구와 연결 | 재검증 필요 |
+| 글꼴 | KoPubWorld 별도 family와 HFT metric 경로를 유지하고 맑은 고딕 꾸밈 전진을 별도 전달 | 재검증 필요 |
+| 수식 파서 | 새 devel의 분리 구조·문서 항 소유·문서 그룹 전환을 유지. 일반 script parse의 지속 font state를 분리 모듈에 이식 | #7873 원본과 새 devel 수식 양쪽을 재검증해야 함 |
+
+이력·로컬 PDF 감사는 `output/pr-review/planet6897-20261018/post-rebase-history-audit.json`,
+전체 전후 patch 대조는 `post-rebase-range-diff.log`, 실행은 `rebase-onto-4a07d3ae4.log`에 있다.
+새 suite prepare를 실행해 삭제된 옛 case를 가리키던 로컬 generated harness를 다시 산출했다.
+첫 Native Skia cargo check에서 LineSeg import1곳과 새 carry 인자2곳이 빠진 것을 확인해 보완했다.
+이 빌드 오류는 결함 재현·회귀 통과 증거로 계산하지 않는다. 아래 재실행 결과를 별도로 기록한다.
+이전 후보114의 전쪽 TSV·38PASS는 역사적 자료이며 새 head의 기능 보존이나 제출 gate를 대신하지 않는다.
+새 devel/후보의 실제 Native·fresh WASM 전쪽 대조와 필수 회귀·브라우저·Windows 검증은 계속 필요하다.
+PR 생성은 준비 결과 보고 후 사용자 승인을 받는다.

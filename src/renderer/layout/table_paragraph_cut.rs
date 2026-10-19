@@ -1,7 +1,7 @@
 //! 문단 경계의 완결성을 실제 셀 유닛 소유로 판정한다.
 
 use super::LayoutEngine;
-use crate::model::paragraph::NumberingMarker;
+use crate::model::paragraph::{LineSeg, NumberingMarker};
 use crate::model::style::HeadType;
 use crate::model::table::{Table, TablePageBreak};
 use crate::renderer::style_resolver::ResolvedStyleSet;

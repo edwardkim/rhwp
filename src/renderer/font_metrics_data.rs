@@ -322,7 +322,7 @@ pub fn layout_metric_face_name(font_family: &str, bold: bool, italic: bool) -> O
         .trim_matches('\'');
     // KoPub 은 kopub_char_width 전용 표가 find_metric 보다 앞선다 — face 자체가 정체.
     // `measure_char_width_embedded` 의 `KoPubFamily::from_primary` 와 같은 이름 판정
-    // (`KoPubWorld` 개정판 포함 — 전진폭이 KoPub 과 같다).
+    // (`KoPubWorld` 개정판도 구분하며 각 face의 전진폭은 해당 측정 표가 결정한다).
     let lower = primary.to_lowercase().replace(' ', "");
     if primary.contains("KoPub돋움체")
         || primary.contains("KoPubWorld돋움체")

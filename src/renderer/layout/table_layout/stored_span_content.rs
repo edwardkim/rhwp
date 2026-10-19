@@ -90,13 +90,14 @@ impl LayoutEngine {
                 start_cut,
                 start_cut_is_block,
                 start_row_height_override,
+                straddle_page_bands,
             );
         let straddles_end = crate::renderer::layout::table_partial::cell_crosses_fragment_end(
             cell, end_row, end_cut,
-        )
-                || (cell_row < end_row && cell_row + usize::from(cell.row_span) == end_row
-                    && end_row_height_override.is_some()
-                    && self.cell_uses_plain_reflow_units(cell, table));
+        ) || (cell_row < end_row
+            && cell_row + usize::from(cell.row_span) == end_row
+            && end_row_height_override.is_some()
+            && self.cell_uses_plain_reflow_units(cell, table));
         // HWP5 저장 pagination의 2행/2문단 계약에서는 문단 하나가 행 하나의 owner다.
         if start_cut.is_empty()
             && start_row_height_override.is_none()

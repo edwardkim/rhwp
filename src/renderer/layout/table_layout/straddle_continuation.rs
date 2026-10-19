@@ -55,6 +55,7 @@ impl LayoutEngine {
                     start_cut,
                     start_cut_is_block,
                     start_row_height_override,
+                    straddle_page_bands,
                 );
                 cell.row_span > 1
                     && (cell_row < start_row || resumes_own_row)
