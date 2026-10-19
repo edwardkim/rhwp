@@ -14,10 +14,10 @@ export async function applySweepFontEnvironment(doc, environmentJson, preparePro
   }
   const plan = JSON.parse(doc.getDocumentFontSelectionPlan());
   if (plan.environmentId !== null) throw Error('새 문서에 예상하지 못한 글꼴 환경이 있습니다.');
-  // Native도 명시 대체 후보가 없으면 환경을 만들지 않는다. 문서 사전에만
+  // Native도 문서 지정·조건부 공개 대체 후보가 없으면 환경을 만들지 않는다. 문서 사전에만
   // 남은 미사용 face를 환경 선택을 위해 모두 로드할 이유가 없다.
   // 실제 paint의 글꼴 공급·로드 검증은 exporter가 요청된 run별로 계속 수행한다.
-  if (plan.requests.every(request => request.substitute.length === 0)) {
+  if (plan.requests.every(request => request.substitute.length === 0 && (request.publicFallback?.length ?? 0) === 0)) {
     const environment = JSON.parse(doc.buildFontEnvironmentFromAvailablePrograms('[]'));
     if (environment !== null) throw Error('대체 후보가 없는 문서에서 예상하지 못한 환경이 생성됐습니다.');
     return {source: 'noDeclaredSubstitutions', environment: null, programs: [], loaded: []};
@@ -29,7 +29,7 @@ export async function applySweepFontEnvironment(doc, environmentJson, preparePro
 }
 
 export function selectSweepProgramFaces(plan, fonts) {
-  const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute]))];
+  const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute, ...(request.publicFallback ?? [])]))];
   if (names.length > 1024) throw Error('문서의 글꼴 프로그램 후보가 한도를 넘었습니다.');
   const embedded = new Set((plan.embeddedFamilies || []).map(name => name.toLowerCase()));
   const rank = face => (face.style === 'normal' ? 0 : 1000) + Math.abs(face.weight - 400);

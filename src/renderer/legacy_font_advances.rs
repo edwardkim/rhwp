@@ -92,12 +92,41 @@ pub(crate) fn has_bold_tracking(style: &TextStyle) -> bool {
     style.bold && style.metric_font_family.as_deref() == Some(HANYANG_HFT_METRIC_FACE)
 }
 
+fn fixed_ascii_face(face: Option<&str>) -> bool {
+    matches!(face, Some("고딕" | "명조" | "산세리프"))
+}
+
+pub(crate) fn has_fixed_ascii_bold_tracking(style: &TextStyle) -> bool {
+    style.bold
+        && !style.italic
+        && (fixed_ascii_face(
+            style
+                .original_glyph_metric_family
+                .as_deref()
+                .map(String::as_str),
+        ) || style.ascii_punct_latin.as_deref().is_some_and(|slot| {
+            fixed_ascii_face(
+                slot.original_glyph_metric_family
+                    .as_deref()
+                    .map(String::as_str),
+            )
+        }))
+}
+
 pub(crate) fn bold_advance(
     style: &TextStyle,
     ch: char,
     ordinary_advance: f64,
     em_advance: f64,
+    original_glyph_face: Option<&str>,
 ) -> f64 {
+    // 독립 ASCII95, 고딕/명조/산세리프의10/20pt Print에서 자연 폭은
+    // 일반·굵게 모두0.5em이고 굵은 비공백 원점만 약0.05em 더 전진한다.
+    // 실제 TTF 선택은 원본 부분 메트릭 이름이 없으므로 적용되지 않는다.
+    if style.bold && !style.italic && fixed_ascii_face(original_glyph_face) && ch.is_ascii_graphic()
+    {
+        return em_advance * 0.05;
+    }
     if has_bold_tracking(style) && !ch.is_whitespace() && !ch.is_control() {
         return em_advance * 0.05;
     }

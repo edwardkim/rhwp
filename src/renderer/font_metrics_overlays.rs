@@ -4,6 +4,22 @@
 // They intentionally reuse selected Latin/Hangul tables from the historical generated region.
 // Do not move them ahead of the generated entries or alter their order.
 
+/// 기존 Wingdings PUA 표시 투영이 소유하는 원본 프로그램의 자연 전진폭.
+/// `pdf/2912695_civil_petition_form-2020.pdf` p1의 Wingdings CID3 /W312와
+/// 별도 한컴 Print의 일반·굵게·기울임 6크기 대조군이 같은 값을 보존한다.
+/// 문서의 CJK face나 표시 Unicode·의 전각 폭으로 이 기호를 재지 않는다.
+/// 확인하지 않은 기호는 기존 표시 폴백을 유지하며 글꼴 파일에 의존하지 않는다.
+pub(crate) fn implicit_symbol_advance_em(character: char) -> Option<f64> {
+    match character {
+        '\u{F09E}' | '\u{F0A0}' => Some(312.0 / 1000.0),
+        // 독립 한컴2020 Print의 원본 책괄호는 Haansoft Batang
+        // A854/A855 프로그램을 사용한다. /W512, UPEM1024이며 표시용
+        // 전각 흰 겹낫표의 폭으로 원본 반각 전진을 덮어쓰지 않는다.
+        '\u{F0854}' | '\u{F0855}' => Some(0.5),
+        _ => None,
+    }
+}
+
 /// 원본 face의 일부 글리프만 독립적으로 확인한 경우의 자연 전진폭.
 /// 미확인 글자/스타일은 이 표로 추정하지 않고 기존 표시 폴백을 사용한다.
 struct OriginalGlyphMetric {
@@ -19,6 +35,33 @@ struct OriginalGlyphMetric {
 // 슬래시 네 군데의 /Widths와 CharProc d1이 모두 605/1000이다.
 // 표시 폴백 Palatino의 656/2048은 원본 HFT 글리프의 폭이 아니다.
 static ORIGINAL_GLYPH_METRICS: &[OriginalGlyphMetric] = &[
+    // 별도 ASCII95 ×6크기 한컴2020 Print의 일반 HCI Poppy:
+    // <=>도 각각 Widths605, FontMatrix.001, CharProc d1=605다.
+    // 굵기별로 확인한 원 프로그램만 선택하며 명시 TTF의 폭은 유지한다.
+    OriginalGlyphMetric {
+        face: "HCI Poppy",
+        bold: false,
+        italic: false,
+        character: '<',
+        advance_units: 605,
+        em_units: 1000,
+    },
+    OriginalGlyphMetric {
+        face: "HCI Poppy",
+        bold: false,
+        italic: false,
+        character: '>',
+        advance_units: 605,
+        em_units: 1000,
+    },
+    OriginalGlyphMetric {
+        face: "HCI Poppy",
+        bold: false,
+        italic: false,
+        character: '=',
+        advance_units: 605,
+        em_units: 1000,
+    },
     // 수동 Hancom2024 Print sample16 p41 T5: ToUnicode003C/003E/003D,
     // Widths605·FontMatrix.001·각 CharProc d1=605. 굵은 원본 HCI Poppy를
     // 표시 폴백의 반각 기호로 재면 혼합 소제목의 뒤 한글이 당겨진다.
@@ -100,7 +143,7 @@ static HCI_TULIP_REGULAR_ADVANCES: &[(char, u16)] = &[
 // Widths225, FontMatrix.001, CharProc d1=225. 국립국어원2022 p3 T9에서도
 // 좌우2018/2019는225/1000. 동명 TTF나 표시 대체의 전각 폭으로 확장하지 않는다.
 pub(crate) fn has_declared_original_glyph_metrics(face: &str) -> bool {
-    has_original_glyph_metrics(face) || face == "한양중고딕"
+    has_original_glyph_metrics(face) || matches!(face, "한양중고딕" | "고딕" | "명조" | "산세리프")
 }
 
 pub(crate) fn declared_original_glyph_advance_em(
@@ -109,9 +152,33 @@ pub(crate) fn declared_original_glyph_advance_em(
     italic: bool,
     character: char,
 ) -> Option<f64> {
+    // 독립 전체 ASCII 표본의 한컴2020 Print Type3는 95자 모두500/1000em이다.
+    // 원본 HFT 선언을 확인한 호출자만 이 부분 표를 받는다. 실제 TrueType,
+    // 미검증 italic·비ASCII에는 전달하지 않는다. 알 수 없는 고딕의 점·쉼표를
+    // 일반 비례 구두점0.3em으로 추정하면 그 뒤 원점이 기호마다 당겨진다.
+    // 산세리프도 별도 ASCII95자 표본의 HFT Print에서 전부500/1000em이다.
+    // 앞 구두점의 반각 전진을 잃으면 같은 줄의 뒤 필드 원점도 당겨진다.
+    if matches!(face, "고딕" | "명조" | "산세리프") && !italic && (' '..='~').contains(&character)
+    {
+        // 독립 ASCII95 × 세 face × 일반/굵게 Print의 /Widths는 모두500이다.
+        // 굵게의 추가 원점 전진은 legacy_font_advances가 별도로 소유한다.
+        return Some(0.5);
+    }
+    // 원본 HNC 반각 괘선과 Unicode 전각 괘선은 같은 표시 모양이어도
+    // 다른 프로그램이다. 원본 sample11의 한컴2020 Print는 이 HNC 선을
+    // Haansoft Batang의512/1024em으로 출력한다. BMP HWP5 표기도 같은 키다.
+    if face == "명조" && !bold && !italic && matches!(character, '\u{F080F}' | '\u{A80F}') {
+        return Some(0.5);
+    }
+    // 별도 빈 HWPX의 명조 HFT ASCII/선문자 표본을 한컴2020 Print:
+    // ASCII95자는500/1000em, 확인한 ─│═는1000/1000em이다.
+    // 미확인 선문자·다른 프로그램·style에는 반영하지 않는다. 대상 본문의
+    // 연결선 길이나 원점을 늘리는 대신 같은 원본 문자 전진을 측정·paint가 쓴다.
+    if face == "명조" && !bold && !italic && matches!(character, '─' | '│' | '═') {
+        return Some(1.0);
+    }
     original_glyph_advance_em(face, bold, italic, character).or_else(|| {
-        (face == "한양중고딕" && !bold && !italic
-            && matches!(character, '\u{2018}' | '\u{2019}'))
+        (face == "한양중고딕" && !bold && !italic && matches!(character, '\u{2018}' | '\u{2019}'))
             .then_some(225.0 / 1000.0)
     })
 }
@@ -119,8 +186,8 @@ pub(crate) fn declared_original_glyph_advance_em(
 pub(crate) fn has_original_glyph_metrics(face: &str) -> bool {
     face == "HCI Tulip"
         || ORIGINAL_GLYPH_METRICS
-        .iter()
-        .any(|metric| metric.face == face)
+            .iter()
+            .any(|metric| metric.face == face)
 }
 
 pub(crate) fn original_glyph_advance_em(

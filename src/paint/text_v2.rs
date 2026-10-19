@@ -980,6 +980,7 @@ mod tests {
         let utf8_len = text.len() as u32;
         let utf16_len = text.encode_utf16().count() as u32;
         PaintOp::GlyphRun {
+            paint_transform: None,
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             run: Box::new(LayerGlyphRunPaint {
                 source: TextSourceSpan {
@@ -1067,6 +1068,7 @@ mod tests {
 
     fn glyph_outline_op() -> PaintOp {
         PaintOp::GlyphOutline {
+            paint_transform: None,
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             outline: Box::new(LayerGlyphOutlinePaint {
                 source: TextSourceSpan {

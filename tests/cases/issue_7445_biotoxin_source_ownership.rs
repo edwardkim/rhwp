@@ -68,6 +68,79 @@ fn paragraph_runs_in(root: &RenderNode, section: usize, host: usize) -> Vec<&Ren
         .collect()
 }
 
+#[test]
+fn direct_latin_punctuation_keeps_its_declared_face_and_cell_text_ownership() {
+    // 같은 원본의 독립 Print 10쪽은 두 셀의 '/'만 TimesNewRomanPSMT로
+    // 그리고 양옆 한글은 HCRBatang으로 그린다. 별도 한컴 Print 대조군도
+    // HCR·HY신명조·바탕 + 직접 선언 Times 조합의 구두점 소유를 확인했다.
+    // 저장 줄 재사용에서도 측정의 언어 슬롯과 실제 TextRun 소유가 같아야 한다.
+    let core = core();
+    let Control::Table(table) = &core.document().sections[2].paragraphs[1].controls[0] else {
+        panic!("독립 Print 10쪽의 원본 표");
+    };
+    let tree = core.build_page_render_tree(9).unwrap();
+    let trace: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(9, r#"{"maxCharacters":4096}"#)
+            .unwrap(),
+    )
+    .unwrap();
+    for cell_index in [253, 346] {
+        let source = &table.cells[cell_index].paragraphs[0];
+        assert_eq!(source.text.trim(), "농업/산림해충 천적");
+        let rendered: Vec<_> = nodes(&tree.root)
+            .into_iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextRun(run)
+                    if run.section_index == Some(2)
+                        && run.cell_context.as_ref().is_some_and(|context| {
+                            context.parent_para_index == 1
+                                && context.path.len() == 1
+                                && context.path[0].control_index == 0
+                                && context.path[0].cell_index == cell_index
+                                && context.path[0].cell_para_index == 0
+                        }) =>
+                {
+                    Some((node, run))
+                }
+                _ => None,
+            })
+            .collect();
+        let combined: String = rendered.iter().map(|(_, run)| run.text.as_str()).collect();
+        assert_eq!(combined, source.text, "원문 문자 순서·누락·중복 보존");
+        let slash: Vec<_> = rendered
+            .iter()
+            .filter(|(_, run)| run.text.contains('/'))
+            .collect();
+        assert_eq!(slash.len(), 1, "구두점은 같은 셀에서 한 번만 소유");
+        assert_eq!(slash[0].1.text, "/", "한글과 영문 프로그램을 분리");
+        assert!(slash[0].1.style.font_family.starts_with("Times New Roman"));
+        let mut consumed = 0;
+        for (node, run) in &rendered {
+            assert_eq!(run.char_start, Some(consumed), "분할 런의 원문 위치");
+            consumed += run.text.chars().count();
+            if run.text.chars().any(|c| ('가'..='힣').contains(&c)) {
+                assert!(run.style.font_family.starts_with("함초롬바탕"));
+            }
+            assert!(node.bbox.width >= 0.0);
+        }
+        let records: Vec<_> = trace["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|record| {
+                record["source"]["nestedPath"] == serde_json::json!([0, cell_index, 0])
+                    && record["source"]["sectionIndex"] == 2
+                    && record["source"]["paragraphIndex"] == 1
+                    && record["source"]["character"] == "/"
+            })
+            .collect();
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0]["document"]["languageSlot"], 1);
+        assert_eq!(records[0]["document"]["face"], "Times New Roman");
+    }
+}
+
 #[cfg(feature = "native-skia")]
 #[test]
 fn range_tag_markpen_stays_on_screen_without_leaking_into_printed_cell_content() {

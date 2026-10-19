@@ -88,6 +88,18 @@ producer·선정 후보·양쪽 본문 보존·legacy 진단·실행 원문을 �
 추가 런타임 import39행도 함께 동기화했다. API를 수동 수정한 것은 아니며 실제 초기화
 응답 hash 검증은 새 head의 전체 소비 검증에 남긴다.
 
-선택 순서의 추가 대조본3개는 한컴2020 Print queue에 제출했다. 현재 queued 상태이므로
-그 결과를 혼합 선언 순서의 독립 수용 근거로 사용하지 않는다. 원본6쪽의 단일 중첩 선언
-수용과 구분하며 ignored `order-probes/`의 기존 job ID로 계속 확인한다.
+선택 순서의 추가 대조본3개는 한컴2020 Print를 완료했다(11.0.0.9136,
+direct DLL host, Print method0, preprocess none). 결과는 다음과 같다.
+
+|메타데이터 대조본|독립 Print 선택|Native 대조|
+|---|---|---|
+|중첩 중앙 선언보다 앞에 오른쪽 선언 추가|중앙 번호,6쪽|6/6 일치|
+|중첩 중앙 선언보다 뒤에 오른쪽 선언 추가|오른쪽 번호,6쪽|6/6 일치|
+|중첩 중앙 선언보다 뒤에 NONE 추가|번호 없음,6쪽|6/6 일치|
+
+원문 본문·다른 ZIP entry를 보존했다. 총18쪽의 번호·소속과 원점을 대조했고,
+중앙 X 잔여+0.1380CSSpx·오른쪽+0.0086CSSpx·기준선−1.2964CSSpx다.
+ignored `order-probes/selection-evaluation.json`에18개 관측값과 producer를 연결하고
+실제 job별 status/download의 성공 증적을 보존했다. 이는 선언 순서·NONE의 독립
+진단이며 파생3문서의 전쪽 래스터 수용·새 golden 또는 fresh WASM 소비의 증거가 아니다.
+원본6쪽의 양쪽 전쪽 시각 수용과 구분한다.

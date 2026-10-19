@@ -7,9 +7,7 @@ impl DocumentCore {
         serde_json::json!({
             "requests": FontEnvironment::document_requests(&self.document.doc_info),
             "environmentId": self.font_environment.as_ref().map(FontEnvironment::id),
-            "embeddedFamilies": self.document.doc_info.font_faces.iter().flatten()
-                .filter(|font| font.is_embedded).map(|font| &font.name)
-                .collect::<std::collections::BTreeSet<_>>(),
+            "embeddedFamilies": FontEnvironment::embedded_program_names(&self.document.doc_info),
         })
         .to_string()
     }

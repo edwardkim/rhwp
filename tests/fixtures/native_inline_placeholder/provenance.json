@@ -1,0 +1,15 @@
+{
+  "purpose": "Synthetic marker replay contract, not a production font or document layout golden",
+  "source": "tests/fixtures/native_font_family_names/family-contract.ttf",
+  "sourceSha256": "6df6857773effe6a86fdfa99eff92e1d1e3e6a928ec0f52316f85c4b464c3bbd",
+  "fixtureSha256": "9d3e046441b985a80e69d4bc78d567a9bcfde5ab7dcba59607591adf638007e9",
+  "family": "Rhwp Inline Placeholder Contract",
+  "mapping": {
+    "U+0041": "same unmodified A outline and metrics",
+    "U+0915": "same unmodified A outline and metrics",
+    "U+FFFC": "same unmodified A outline and metrics",
+    "U+FFFD": "same unmodified A outline and metrics"
+  },
+  "reason": "An explicit visible glyph at U+FFFC makes accidental marker painting deterministic without host fallback fonts. U+FFFD is a visible counterexample. U+0915 enters the complex-shaping consumer.",
+  "license": "OFL.txt copied from existing OFL derivative source"
+}

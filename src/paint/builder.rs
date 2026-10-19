@@ -22,6 +22,8 @@ pub struct LayerBuilder {
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
+    prior_print_solid_fill: bool,
+    hangul2024_print: bool,
 }
 
 impl LayerBuilder {
@@ -34,6 +36,8 @@ impl LayerBuilder {
             metafile_device_pixel_width: None,
             hancom2024_print_bitmap: false,
             metafile_fonts: Default::default(),
+            prior_print_solid_fill: false,
+            hangul2024_print: false,
         }
     }
 
@@ -65,6 +69,20 @@ impl LayerBuilder {
     ) -> Self {
         self.metafile_fonts = fonts.clone();
         self
+    }
+
+    pub(crate) fn with_prior_print_solid_fill(mut self, filled: bool) -> Self {
+        self.prior_print_solid_fill = filled;
+        self
+    }
+
+    pub(crate) fn with_hangul2024_print(mut self, enabled: bool) -> Self {
+        self.hangul2024_print = enabled;
+        self
+    }
+
+    pub(crate) fn page_has_print_solid_fill(tree: &PageRenderTree, hangul2024_print: bool) -> bool {
+        PagePaintContext::node_has_print_solid_fill(&tree.root, hangul2024_print)
     }
 
     pub fn build(&mut self, tree: &PageRenderTree) -> PageLayerTree {
@@ -130,6 +148,12 @@ impl LayerBuilder {
             &mut layer_tree.resources,
             fonts,
             &claimed_glyph_run_sources,
+        );
+        context.publish_decoration_geometry(&mut layer_tree.root);
+        context.publish_glyph_geometry(
+            &mut layer_tree.root,
+            self.prior_print_solid_fill,
+            self.hangul2024_print,
         );
         layer_tree
     }

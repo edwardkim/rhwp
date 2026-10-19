@@ -617,7 +617,7 @@ fn collect_text_variant_groups(
                             });
                         candidate.add_glyph_run(run);
                     }
-                    PaintOp::GlyphOutline { bbox, outline } => {
+                    PaintOp::GlyphOutline { bbox, outline, .. } => {
                         let group = groups
                             .entry(outline.variant.equivalence_group.clone())
                             .or_default();
@@ -1243,6 +1243,7 @@ mod tests {
             && diagnostics.missing_glyph_count == 0
             && diagnostics.cluster_mismatch_count == 0;
         PaintOp::GlyphRun {
+            paint_transform: None,
             bbox: bbox(),
             run: Box::new(LayerGlyphRunPaint {
                 source: source(),
@@ -1277,6 +1278,7 @@ mod tests {
 
     fn glyph_outline(stroke: Option<GlyphOutlineStrokeStyle>) -> PaintOp {
         PaintOp::GlyphOutline {
+            paint_transform: None,
             bbox: bbox(),
             outline: Box::new(LayerGlyphOutlinePaint {
                 source: source(),

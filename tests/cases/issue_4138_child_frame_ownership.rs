@@ -80,6 +80,53 @@ fn images(root: &RenderNode) -> Vec<&RenderNode> {
         .collect()
 }
 #[test]
+fn parallel_picture_captions_close_before_the_following_source_line() {
+    for sample in SAVED {
+        let d = load(sample);
+        let source = body(&d);
+        let host = &source.paragraphs[310];
+        let successor = &source.paragraphs[311];
+        let source_band = host
+            .controls
+            .iter()
+            .map(|control| {
+                let Control::Picture(picture) = control else {
+                    panic!("원본의 병렬 그림")
+                };
+                let caption = picture.caption.as_ref().expect("독립 Print의 아래 캡션");
+                let caption_ink = caption
+                    .paragraphs
+                    .iter()
+                    .flat_map(|p| &p.line_segs)
+                    .map(|line| line.vertical_pos + line.line_height)
+                    .max()
+                    .unwrap();
+                picture.common.vertical_offset as i64
+                    + i64::from(picture.common.height)
+                    + i64::from(picture.common.margin.top)
+                    + i64::from(picture.common.margin.bottom)
+                    + i64::from(caption.spacing)
+                    + i64::from(caption_ink)
+            })
+            .max()
+            .unwrap();
+        assert!(
+            i64::from(successor.line_segs[0].vertical_pos - host.line_segs[0].vertical_pos)
+                >= source_band,
+            "원본 저장 사다리도 그림·캡션의 물리 끝 뒤에서 다음 줄을 시작한다"
+        );
+        let root = d.build_page_render_tree(23).unwrap().root;
+        let painted_host = line(&root, 310);
+        let next = line(&root, 311);
+        let body_start = line(&root, 312);
+        assert!(next.bbox.y + 1e-6 >= painted_host.bbox.y + source_band as f64 * 96.0 / 7200.0,
+            "측정에서 예약한 그림·아래 캡션의 끝을 실제 후속 줄이 침범하지 않음: sourceHU={source_band}, host={}, successor={}",painted_host.bbox.y,next.bbox.y);
+        assert!(body_start.bbox.y >= next.bbox.y + next.bbox.height);
+        assert!(compact(&text(body_start)).starts_with("3.4.6.3횡동요각도"));
+    }
+}
+
+#[test]
 fn original_nested_table_closes_its_host_slot_once() {
     let d = load(ORIGINAL);
     assert_eq!(d.page_count(), 115);

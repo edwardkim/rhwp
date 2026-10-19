@@ -317,7 +317,7 @@ function installCanvasFontSubstitution(): void {
   canvasFontSubstitutionInstalled = true;
 }
 
-import { prepareDeclaredLocalPrograms, type DocumentFontSelectionPlan } from './declared-font-environment';
+import { prepareDeclaredFontPrograms, type DocumentFontSelectionPlan } from './declared-font-environment';
 
 interface DocumentFontEnvironmentApi {
   getDocumentFontSelectionPlan(): string;
@@ -979,7 +979,7 @@ export class WasmBridge {
     const plan = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
     // 사용자 명시 환경을 자동 선택으로 덮어쓰지 않는다.
     if (plan.environmentId !== null) return false;
-    const programs = await prepareDeclaredLocalPrograms(plan, current);
+    const programs = await prepareDeclaredFontPrograms(plan, current);
     if (!current()) return false;
     try {
       const environment = api.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(programs));

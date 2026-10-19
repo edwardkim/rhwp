@@ -142,3 +142,33 @@ test('공급 실패·hash 변경·실제 font 로드 거절은 준비 완료로 
     assert.ok(!events.some(event => event.startsWith('add:')));
   }
 });
+
+
+test('문서 지정 대체가 없어도 조건부 공개 후보를 첫 페이지 수 이전에 준비한다', async () => {
+  const doc = documentFixture();
+  const publicName = 'RHWP Public Batang';
+  doc.getDocumentFontSelectionPlan = () => JSON.stringify({environmentId: null,
+    requests: [{source: 'Missing Original', primary: ['Missing Original'], substitute: [], publicFallback: [publicName]}]});
+  doc.buildFontEnvironmentFromAvailablePrograms = json => {
+    const programs = JSON.parse(json);
+    return programs.some(p => p.query === publicName)
+      ? JSON.stringify({id: 'actual-public-program', substitutions: {'Missing Original': publicName}}) : 'null';
+  };
+  let prepared = false;
+  const result = await applySweepFontEnvironment(doc, null, async plan => {
+    prepared = true;
+    assert.deepEqual(plan.requests[0].publicFallback, [publicName]);
+    return {programs: [{query: publicName, family: publicName, programId: 'supplied-public', trueType: true}]};
+  });
+  assert.equal(prepared, true);
+  assert.equal(result.source, 'preparedPrograms');
+  assert.equal(result.environment.substitutions['Missing Original'], publicName);
+  assert.equal(doc.pageCount(), 2);
+});
+
+test('공개 fallback도 실제 공급 후보에 포함하며 내장 프로그램 이름은 보호한다', () => {
+  const publicFace = {families: ['RHWP Public Batang'], weight: 400, style: 'normal'};
+  const plan = {requests: [{primary: ['Missing'], substitute: [], publicFallback: ['RHWP Public Batang']}]};
+  assert.deepEqual(selectSweepProgramFaces(plan, [publicFace]), [{query: 'RHWP Public Batang', face: publicFace}]);
+  assert.deepEqual(selectSweepProgramFaces({...plan, embeddedFamilies: ['RHWP Public Batang']}, [publicFace]), []);
+});

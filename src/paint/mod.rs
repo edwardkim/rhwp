@@ -70,8 +70,8 @@ pub use paint_op::{
     GlyphRunOrientation, GlyphTransform, LayerAffineTransform, LayerGlyphOutlinePaint,
     LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerPoint, LayerVector, PaintBounds, PaintOp,
     PaintTextStyle, PaintVariantMeta, PaletteRef, ResolvedColor, ResolvedImageKind,
-    ResolvedImagePayload, SvgGlyphPayload, TextDecorationKind, TextRunPlacement, TextVariantKind,
-    TextVariantQuality,
+    ResolvedImagePayload, SvgGlyphPayload, TextDecorationKind, TextDecorationPaintGeometry,
+    TextRunPlacement, TextVariantKind, TextVariantQuality,
 };
 pub use profile::RenderProfile;
 pub use replay_order::{

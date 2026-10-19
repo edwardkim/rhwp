@@ -17,6 +17,13 @@ pub enum TextDecorationKind {
     EmphasisDot,
 }
 
+/// Decoration-only output placement; the paired text/source stays in layout space.
+#[derive(Debug, Clone, Copy)]
+pub struct TextDecorationPaintGeometry {
+    pub bbox: BoundingBox,
+    pub inline_scale: f64,
+}
+
 impl TextDecorationKind {
     pub fn as_str(self) -> &'static str {
         match self {
@@ -68,14 +75,17 @@ pub enum PaintOp {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
         source: Option<TextSourceSpan>,
+        paint_transform: Option<LayerAffineTransform>,
     },
     GlyphRun {
         bbox: BoundingBox,
         run: Box<LayerGlyphRunPaint>,
+        paint_transform: Option<LayerAffineTransform>,
     },
     GlyphOutline {
         bbox: BoundingBox,
         outline: Box<LayerGlyphOutlinePaint>,
+        paint_transform: Option<LayerAffineTransform>,
     },
     /// HWP 글자겹침의 명시 visual op.
     ///
@@ -85,6 +95,7 @@ pub enum PaintOp {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
         source: Option<TextSourceSpan>,
+        paint_transform: Option<LayerAffineTransform>,
     },
     /// 문단 끝/줄 바꿈/필드 마커처럼 source text와 visual projection이 다른 표식.
     TextControlMark {
@@ -105,6 +116,7 @@ pub enum PaintOp {
         kind: TextDecorationKind,
         source: Option<TextSourceSpan>,
         trim_trailing_spaces: usize,
+        paint_geometry: Option<TextDecorationPaintGeometry>,
     },
     /// Editor control-code label for a non-text object.
     ControlLabel { bbox: BoundingBox, label: String },
@@ -161,6 +173,7 @@ impl PaintOp {
 
     pub fn text_run(bbox: BoundingBox, run: TextRunNode) -> Self {
         Self::TextRun {
+            paint_transform: None,
             bbox,
             run: Box::new(run),
             source: None,
@@ -169,6 +182,7 @@ impl PaintOp {
 
     pub fn glyph_run(bbox: BoundingBox, run: LayerGlyphRunPaint) -> Self {
         Self::GlyphRun {
+            paint_transform: None,
             bbox,
             run: Box::new(run),
         }
@@ -176,6 +190,7 @@ impl PaintOp {
 
     pub fn glyph_outline(bbox: BoundingBox, outline: LayerGlyphOutlinePaint) -> Self {
         Self::GlyphOutline {
+            paint_transform: None,
             bbox,
             outline: Box::new(outline),
         }
@@ -183,6 +198,7 @@ impl PaintOp {
 
     pub fn char_overlap(bbox: BoundingBox, run: TextRunNode) -> Self {
         Self::CharOverlap {
+            paint_transform: None,
             bbox,
             run: Box::new(run),
             source: None,
@@ -212,7 +228,63 @@ impl PaintOp {
             kind,
             source: None,
             trim_trailing_spaces: 0,
+            paint_geometry: None,
         }
+    }
+
+    pub fn glyph_paint_transform(&self) -> Option<LayerAffineTransform> {
+        match self {
+            Self::TextRun {
+                paint_transform, ..
+            }
+            | Self::CharOverlap {
+                paint_transform, ..
+            }
+            | Self::GlyphRun {
+                paint_transform, ..
+            }
+            | Self::GlyphOutline {
+                paint_transform, ..
+            } => *paint_transform,
+            _ => None,
+        }
+    }
+
+    pub fn glyph_paint_transform_is_valid(&self) -> bool {
+        self.glyph_paint_transform().is_none_or(|t| {
+            [t.a, t.b, t.c, t.d, t.e, t.f]
+                .iter()
+                .all(|v| v.is_finite() && (*v as f32).is_finite())
+                && (t.a * t.d - t.b * t.c).is_finite()
+                && (t.a * t.d - t.b * t.c).abs() > 1e-12
+        })
+    }
+
+    /// All decoration consumers replay this placement, without mutating the
+    /// semantic run used by source binding, selection and variant validation.
+    pub(crate) fn decoration_replay(
+        &self,
+    ) -> Option<(BoundingBox, std::borrow::Cow<'_, TextRunNode>)> {
+        let Self::TextDecoration {
+            bbox,
+            run,
+            paint_geometry,
+            ..
+        } = self
+        else {
+            return None;
+        };
+        let Some(geometry) = paint_geometry else {
+            return Some((*bbox, std::borrow::Cow::Borrowed(run.as_ref())));
+        };
+        let mut replay = run.as_ref().clone();
+        replay.layout_positions = Some(
+            run.replay_positions_for(run.display_or_text())
+                .iter()
+                .map(|position| position * geometry.inline_scale)
+                .collect(),
+        );
+        Some((geometry.bbox, std::borrow::Cow::Owned(replay)))
     }
 
     pub fn control_label(bbox: BoundingBox, label: impl Into<String>) -> Self {

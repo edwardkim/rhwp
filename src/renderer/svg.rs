@@ -311,6 +311,26 @@ impl SvgRenderer {
         op: &PaintOp,
         source_node_id: Option<u32>,
     ) -> SvgPaintDisposition {
+        if !op.glyph_paint_transform_is_valid() {
+            return SvgPaintDisposition::UnsupportedTextVariant;
+        }
+        if let Some(t) = op.glyph_paint_transform() {
+            self.output.push_str(&format!(
+                "<g transform=\"matrix({} {} {} {} {} {})\">",
+                t.a, t.b, t.c, t.d, t.e, t.f
+            ));
+            let disposition = self.render_layer_paint_op_untransformed(op, source_node_id);
+            self.output.push_str("</g>");
+            return disposition;
+        }
+        self.render_layer_paint_op_untransformed(op, source_node_id)
+    }
+
+    fn render_layer_paint_op_untransformed(
+        &mut self,
+        op: &PaintOp,
+        source_node_id: Option<u32>,
+    ) -> SvgPaintDisposition {
         let node_id = source_node_id.unwrap_or(0);
         match op {
             PaintOp::PageBackground { bbox, background } => self.render_layer_payload_node(
@@ -401,6 +421,7 @@ impl SvgRenderer {
                 trim_trailing_spaces,
                 ..
             } => {
+                let (bbox, run) = op.decoration_replay().expect("decoration replay");
                 let rotation = run.rotation;
                 let mut decoration = run.as_ref().clone();
                 decoration.rotation = 0.0;
@@ -422,12 +443,12 @@ impl SvgRenderer {
                 };
                 let previous_forced_trim = self.forced_decoration_trim;
                 self.forced_decoration_trim = Some(*trim_trailing_spaces);
-                self.with_layer_text_rotation(rotation, *bbox, |renderer| {
+                self.with_layer_text_rotation(rotation, bbox, |renderer| {
                     renderer.with_suppressed_text_glyphs(|renderer| {
                         renderer.render_layer_payload_node(
                             node_id,
                             RenderNodeType::TextRun(decoration),
-                            *bbox,
+                            bbox,
                             false,
                         );
                     });
@@ -837,7 +858,7 @@ impl SvgRenderer {
                     // 어긋나면 run 경계마다 실틈이 남는다.
                     self.active_decoration_width = Some(node.bbox.width);
                     self.draw_text_positioned(
-                        run.display_or_text(),
+                        run.metric_or_display_text(),
                         node.bbox.x,
                         node.bbox.y + run.baseline,
                         &run.style,
@@ -1410,6 +1431,31 @@ impl SvgRenderer {
         });
 
         let def = match grad.gradient_type {
+            4 if bbox.2 > 0.0 && bbox.3 > 0.0 => {
+                let (bx, by, bw, bh) = bbox;
+                let (cx, cy, radius, cos, sin) =
+                    super::square_gradient_geometry(grad, bx, by, bw, bh);
+                let point = |u: f64, v: f64| {
+                    (
+                        cx + radius * (u * cos - v * sin),
+                        cy + radius * (u * sin + v * cos),
+                    )
+                };
+                let corners = [(1.0, -1.0), (1.0, 1.0), (-1.0, 1.0), (-1.0, -1.0)];
+                let normals = [(1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0)];
+                let outside = color_to_svg(*grad.colors.last().unwrap_or(&0));
+                let mut pattern = format!("<pattern id=\"{id}\" patternUnits=\"userSpaceOnUse\" x=\"{bx}\" y=\"{by}\" width=\"{bw}\" height=\"{bh}\" viewBox=\"{bx} {by} {bw} {bh}\"><rect x=\"{bx}\" y=\"{by}\" width=\"{bw}\" height=\"{bh}\" fill=\"{outside}\"/>\n");
+                // max(|회전 x|, |회전 y|)는 네 삼각형 안에서 각각 선형이다.
+                // 각 면의 중심→변 색상 축을 공통 물리 좌표에서 만든다.
+                for index in 0..4 {
+                    let (ex, ey) = point(normals[index].0, normals[index].1);
+                    let (ax, ay) = point(corners[index].0, corners[index].1);
+                    let (bx, by) = point(corners[(index + 1) % 4].0, corners[(index + 1) % 4].1);
+                    pattern.push_str(&format!("<linearGradient id=\"{id}s{index}\" gradientUnits=\"userSpaceOnUse\" x1=\"{cx}\" y1=\"{cy}\" x2=\"{ex}\" y2=\"{ey}\">{stops}</linearGradient><path d=\"M{cx} {cy}L{ax} {ay}L{bx} {by}Z\" fill=\"url(#{id}s{index})\"/>\n"));
+                }
+                pattern.push_str("</pattern>\n");
+                pattern
+            }
             2 => {
                 // 원형 (Radial)
                 if let Some((cx, cy, radius)) =
@@ -1427,7 +1473,7 @@ impl SvgRenderer {
                 }
             }
             _ => {
-                // 선형 (Linear) — gradient_type 1(줄무늬), 3(원뿔), 4(사각) 모두 선형으로 근사
+                // 선형 (Linear) — 원뿔과 치수를 알 수 없는 채우기는 기존 선형 근사.
                 //
                 // [#6845] 축은 **사용자 좌표계**로 낸다. `objectBoundingBox` 백분율은
                 // 상자의 가로·세로를 각각 0~1 로 정규화하므로 가로세로비가 1 이 아니면
@@ -3236,7 +3282,8 @@ impl Renderer for SvgRenderer {
         // 보이지 않게 처리. HWP/HWPX 의 inline 도형/표/그림 등 treat_as_char 컨트롤이
         // paragraph text 자체에 U+FFFC 로 표현됨 — 도형 path 는 별도 emit 되므로 본
         // placeholder character 는 시각적으로 invisible 해야 한다. 한컴 정답지 정합.
-        let text: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
+        let metric_source: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
+        let text = metric_source.as_str();
         if text.is_empty() {
             return;
         }
@@ -3314,7 +3361,9 @@ impl Renderer for SvgRenderer {
         };
 
         // 클러스터 단위 렌더링: 옛한글 자모 조합 시퀀스를 하나의 <text>로 묶음
-        let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
+        let metric_text = super::composer::display_projection_metric_text(&metric_source, text);
+        let char_positions =
+            super::replay_positions_or_compute(metric_text, style, layout_positions);
         let clusters = split_into_clusters(text);
 
         // 형광펜 배경 (CharShape.shade_color 기반 — web_canvas.rs와 동일 로직)
@@ -3354,7 +3403,7 @@ impl Renderer for SvgRenderer {
             |char_idx: usize, cluster_str: &str| advance_in(&char_positions, char_idx, cluster_str);
         // 글리프 폭(`textLength`)은 커닝 전 advance에 맞춘다. 자리와 `·` 중앙은 char_positions를 따른다.
         let fit_positions =
-            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
+            super::glyph_fit_positions(metric_text, style, layout_positions, &char_positions);
         let glyph_advance =
             |char_idx: usize, cluster_str: &str| advance_in(&fit_positions, char_idx, cluster_str);
         let is_middle_dot = |cluster_str: &str| cluster_str == "\u{00B7}";
@@ -3987,9 +4036,13 @@ fn svg_text_length_attrs(
     fit_narrow_hangul: bool,
 ) -> String {
     if !fit_narrow_hangul
-        && !cluster_str
-            .chars()
-            .any(|ch| ch.is_ascii_alphanumeric() || is_halfwidth_cjk_quote(ch))
+        && !cluster_str.chars().any(|ch| {
+            ch.is_ascii_alphanumeric()
+                    || is_halfwidth_cjk_quote(ch)
+                    // PUA 책괄호의 반각 원본 전진과 리터럴 전각 흰 겹낫표는
+                    // 같은 표시 Unicode라도 각자의 측정 결과에 맞춰 그린다.
+                    || matches!(ch, '\u{300E}' | '\u{300F}')
+        })
     {
         return String::new();
     }

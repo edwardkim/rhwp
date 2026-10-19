@@ -121,6 +121,9 @@ fn emitted_run_layout_positions(
     leading_space_count: usize,
     eligible: bool,
 ) -> (f64, Option<Vec<f64>>) {
+    let source_projection = replay_text.chars().any(|character| {
+        crate::renderer::composer::single_scalar_display_char(character) != character
+    });
     let leading = natural_leading_positions(replay_text, style, leading_space_count);
     let corrected_width = leading
         .as_ref()
@@ -130,7 +133,7 @@ fn emitted_run_layout_positions(
         && !replay_text.is_empty()
         && session.source_handle(slot).is_some();
     let recover_trailing = trailing_space_count > 0 && style.extra_word_spacing != 0.0;
-    if !can_kern && leading.is_none() && !recover_trailing {
+    if !can_kern && leading.is_none() && !recover_trailing && !source_projection {
         return (fallback_width, None);
     }
     let mut base_positions = leading.as_ref().map_or_else(
@@ -2496,7 +2499,9 @@ fn compute_line_extra_spacing_with_dash_plan(
                 .map(|r| {
                     let mut ts = r.text_style(styles);
                     ts.default_tab_width = tab_width;
-                    let natural = estimate_text_width("-", &ts);
+                    // 복원량은 한 글자의 소수 자연 전진이다. run 전체를 위한
+                    // 정수 반올림을 한 글자마다 쓰면 대시 수만큼 오차가 누적된다.
+                    let natural = estimate_text_width_exact("-", &ts);
                     (natural - natural.min(ts.font_size * 0.3)).max(0.0)
                 })
                 .unwrap_or(0.0);
@@ -5080,10 +5085,10 @@ impl LayoutEngine {
         self.resolve_object_size(&picture.common, col_area, &body_area, &paper_area)
     }
 
-    /// 같은 줄의 그림들이 공유하는 기준선에서 개별 상자의 위끝을 구한다.
-    /// 정규 줄 소속만 소비하여 뒤 줄의 그림을 최고 상자로 계상하지 않는다.
-    /// 텍스트 런·런 중간·미대응 offset의 실제 그림 발행에 같은 결과를 쓴다.
-    fn inline_picture_box_top_y(
+    /// 같은 줄의 그림·도형이 공유하는 기준선에서 개별 상자의 위끝을 구한다.
+    /// 정규 줄 소속만 소비하여 뒤 줄의 개체를 최고 상자로 계상하지 않는다.
+    /// 텍스트 런·런 중간·빈 개체 줄의 실제 발행에 같은 결과를 쓴다.
+    fn inline_visual_box_top_y(
         &self,
         para: &Paragraph,
         line_tac_offsets: &[(usize, f64, usize)],
@@ -5102,6 +5107,19 @@ impl LayoutEngine {
                     Some(
                         tac_object_box_height_px(other_h, &other.caption, self.dpi)
                             + other_top
+                            + other_bottom,
+                    )
+                }
+                Some(Control::Shape(other)) => {
+                    let other_h = hwpunit_to_px(other.flow_height_hu(), self.dpi);
+                    let (_, _, other_top, other_bottom) =
+                        tac_object_outer_margins_px(other.common(), self.dpi);
+                    Some(
+                        tac_object_box_height_px(
+                            other_h,
+                            &crate::renderer::composer::shape_caption_for_layout(other),
+                            self.dpi,
+                        ) + other_top
                             + other_bottom,
                     )
                 }
@@ -6413,6 +6431,11 @@ impl LayoutEngine {
                 let font_bl = max_fs * 0.85;
                 (font_lh, ensure_min_baseline(font_bl, max_fs))
             } else if has_tac_shape
+                // 개체만 있는 guide 줄의 접힘과 문단 높이 바닥값은 한 쌍이다.
+                // 가시 글자나 공백 run이 있으면 그 줄도 기준선을 소유하므로 저장
+                // line box를 font 높이로 접지 않는다. 큰 inline 도형과 글자가 같은
+                // 줄에 있는 경우에도 저장 baseline이 최종 글자 위치의 기준이다.
+                && empty_tac_guide_line
                 && !empty_tac_guide_has_explicit_shape_height
                 // [#6632] 셀 안에서는 접지 않는다. 접힌 높이를 되돌리는 바닥값
                 // (`layout_column_item` 의 `para_start + max(seg_lh, shape_max_h)`)은 본문
@@ -11648,7 +11671,61 @@ mod issue_4370_tac_table_wrap_tests {
 
 #[cfg(test)]
 mod issue_2809_split_alignment_tests {
-    use super::{compute_line_extra_spacing, needs_word_distribution, LeadingSpacePlan};
+    /// [Task #2067] 명시적 정렬 분배와 실제 오버플로우에 따른 여분 간격 계산.
+    /// 반환 = (extra_word_sp, extra_char_sp, extra_dash_sp).
+    #[allow(clippy::too_many_arguments)]
+    pub(super) fn compute_line_extra_spacing(
+        comp_line: &ComposedLine,
+        inline_object_count: usize,
+        trailing_space_limit: usize,
+        leading_space_plan: &LeadingSpacePlan<'_>,
+        unjustified_leading_spaces: &[usize],
+        styles: &ResolvedStyleSet,
+        centered_measure: Option<&CenteredTextLineMeasure>,
+        alignment: Alignment,
+        in_cell: bool,
+        needs_justify: bool,
+        justify_spaces_only: bool,
+        needs_distribute: bool,
+        has_tabs: bool,
+        renders_synthetic_wrap_trailing_space: bool,
+        suppress_cell_overflow_spacing: bool,
+        converge_auto_shrink_cell: bool,
+        total_char_count: usize,
+        total_text_width: f64,
+        available_width: f64,
+        tab_width: f64,
+    ) -> (f64, f64, f64) {
+        let mut dash_extra_by_run = None;
+        compute_line_extra_spacing_with_dash_plan(
+            comp_line,
+            inline_object_count,
+            trailing_space_limit,
+            leading_space_plan,
+            unjustified_leading_spaces,
+            styles,
+            centered_measure,
+            alignment,
+            in_cell,
+            needs_justify,
+            justify_spaces_only,
+            needs_distribute,
+            has_tabs,
+            renders_synthetic_wrap_trailing_space,
+            suppress_cell_overflow_spacing,
+            converge_auto_shrink_cell,
+            total_char_count,
+            total_text_width,
+            available_width,
+            tab_width,
+            &mut dash_extra_by_run,
+        )
+    }
+
+    use super::{
+        compute_line_extra_spacing_with_dash_plan, needs_word_distribution,
+        CenteredTextLineMeasure, LeadingSpacePlan,
+    };
     use crate::model::style::Alignment;
     use crate::renderer::composer::{ComposedLine, ComposedTextRun};
     use crate::renderer::layout::text_measurement::{estimate_text_width, resolved_to_text_style};
@@ -11947,7 +12024,8 @@ mod issue_2809_split_alignment_tests {
 
 #[cfg(test)]
 mod issue_4657_distribute_alignment_tests {
-    use super::{compute_line_extra_spacing, LeadingSpacePlan};
+    use super::issue_2809_split_alignment_tests::compute_line_extra_spacing;
+    use super::LeadingSpacePlan;
     use crate::model::style::Alignment;
     use crate::renderer::composer::{ComposedLine, ComposedTextRun};
     use crate::renderer::layout::text_measurement::{
@@ -12379,16 +12457,19 @@ pub fn map_pua_bullet_char(ch: char) -> char {
     // exam_kor p17 측정: F0854/F0855 각 33회 (책 제목 둘러싸기), F00DA 2회
     if (0xF00D0..=0xF09FF).contains(&code) {
         return match code {
-            // 책괄호 (한국어 도서 제목) — 용비어천가, 석보상절, 월인천강지곡 등
-            0xF0854 => '\u{300A}', // 《 LEFT DOUBLE ANGLE BRACKET
-            0xF0855 => '\u{300B}', // 》 RIGHT DOUBLE ANGLE BRACKET
+            // 독립 한컴 Print의 책괄호는 흰 겹낫표다. 원본 프로그램의
+            // 반각 전진은 implicit_symbol_advance_em이 별도로 소유한다.
+            0xF0854 => '\u{300E}', // 『 LEFT WHITE CORNER BRACKET
+            0xF0855 => '\u{300F}', // 』 RIGHT WHITE CORNER BRACKET
             // 예시 마커 — `(F00DA 단풍 철 : 철 성분)` 패턴 — 한컴 PDF 시각 검증 필요
             0xF00DA => '\u{25B8}', // ▸ BLACK SMALL TRIANGLE (잠정, 시각 판정 후 정정)
             // [Task #826] HWP3 한컴 PUA 그래픽 라인 (PR #753 후속 — johab.rs:65,67).
             // 한컴 함초롬 폰트는 PUA glyph 보유, rhwp-studio 번들 폰트 (오픈 라이선스)
             // 부재 → render-time substitution. 측정/렌더링 양쪽 자동 적용.
             // sample11.hwp 머리말/꼬리말 가로선 패턴 (각 85+ 회) 시각 정합.
-            0xF080F => '\u{2501}', // ━ BOX DRAWINGS HEAVY HORIZONTAL (한컴 — 굵은 가로선)
+            // 독립 Print의 원본 선 glyph는0.5em 전진·약0.042em 두께다.
+            // 굵은 box drawing으로 낮추면 두께가 약 두 배가 된다.
+            0xF080F => '\u{2500}', // ─ BOX DRAWINGS LIGHT HORIZONTAL
             // [Task #1692 Stage 9] HWP3 관계도 계열 선문자.
             // 한컴은 U+F0811/F0817/F081A를 자체 글리프로 이어진 선처럼 렌더한다.
             // 공개 폰트 경로에서는 .notdef 두부가 나오므로 대응 가능한 box drawing으로 낮춘다.

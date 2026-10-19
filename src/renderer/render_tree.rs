@@ -1109,6 +1109,11 @@ impl TextRunNode {
         self.display_text.as_deref().unwrap_or(&self.text)
     }
 
+    /// 표시 모양은 display_or_text로, 일대일 투영의 물리 폭은 원문으로 전달한다.
+    pub(crate) fn metric_or_display_text(&self) -> &str {
+        super::composer::display_projection_metric_text(&self.text, self.display_or_text())
+    }
+
     /// Replay 대상 문자열에 대해 layout positions가 안전한 경우에만 빌려준다.
     ///
     /// Backend가 PUA 확장·inline placeholder 제거 등으로 다른 문자열을 그리면

@@ -225,13 +225,17 @@ fn style_provenance(
     generated_rule_id: &str,
 ) -> Result<ProvenanceDecision, HwpError> {
     let language = boundary.language_condition(source);
+    let mut conditions = json!({ "languageSlot": language });
+    if boundary == FontSubstitutionBoundary::MissingProgram {
+        conditions["availability"] = json!("primary-and-document-substitute-missing");
+    }
     let provenance = linked_provenance(
         json!({
             "sourceBoundaryId": boundary.source_boundary_id(),
             "candidateKind": "finite-mapping",
             "sourceFace": source,
             "targetOrPolicy": target,
-            "conditions": { "languageSlot": language },
+            "conditions": conditions,
             "order": null,
         }),
         "rust-style-resolution",
@@ -280,6 +284,27 @@ fn metric_alias_provenance(
     target: &str,
     generated_rule_id: &str,
 ) -> Result<ProvenanceDecision, HwpError> {
+    // v2는 change-set에 기록된 ID를 허용한다. 해시에서 나온다는 과거 가정 대신
+    // 실제 폭 선택에 쓴 canonical projection의 전체 identity를 검증한다.
+    let rule =
+        crate::renderer::font_rule_layout_metric_projection::find_font_rule_layout_metric(source)
+            .filter(|rule| {
+                rule.rule_id == generated_rule_id
+                    && rule.source_boundary_id == "rust-metric.metric-alias"
+                    && rule.source_face == Some(source)
+                    && rule.target_face_or_policy == target
+                    && rule.decision_plane == "layout-metric"
+                    && rule.order.is_none()
+                    && rule.conditions.language_slot.is_none()
+                    && rule.conditions.alt_type.is_none()
+                    && rule.conditions.availability.is_none()
+                    && rule.conditions.profile.is_none()
+            })
+            .ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "font trace provenance: selected metric projection mismatch for {source}"
+                ))
+            })?;
     let (relation_type, evidence_status) = metric_alias_relation(source, target);
     let is_surrogate = relation_type == "metric-surrogate";
     let identity = json!({
@@ -295,7 +320,7 @@ fn metric_alias_provenance(
     {
         return Ok(provenance);
     }
-    let provenance = linked_provenance(
+    let mut provenance = linked_provenance(
         identity,
         "rust-metric",
         relation_type,
@@ -307,11 +332,9 @@ fn metric_alias_provenance(
         },
     )
     .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))?;
-    if provenance.rule_id.as_deref() != Some(generated_rule_id) {
-        return Err(HwpError::RenderError(format!(
-            "font trace provenance: generated metric ruleId mismatch for {source}"
-        )));
-    }
+    // candidate_id와 과거 증적 앵커·확실성은 보존한다. 현재 선택 규칙의 ID는
+    // 위에서 검증한 생성 projection이 소유하며 서술형 ID도 그대로 연결한다.
+    provenance.rule_id = Some(rule.rule_id.to_owned());
     Ok(provenance)
 }
 

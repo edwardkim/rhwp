@@ -26,6 +26,7 @@ import { imageCropSelectionIsEmpty, imageCropSourceRect } from './image-crop-sca
 import { magnificationFiltering } from './image-sampling.ts';
 import {
   drawPageMarginGuides,
+  shouldDrawPageMarginGuides,
   type PageMarginGuideEdges,
   type PageSpaceRect,
 } from './page-margin-guides';
@@ -1109,6 +1110,7 @@ export class PageRenderer {
     clip?: PageSpaceRect,
     displayScale = 1,
   ): void {
+    if (!shouldDrawPageMarginGuides(this.renderProfile)) return;
     drawPageMarginGuides(
       this.wasm.getPageInfo(pageIdx),
       canvas,

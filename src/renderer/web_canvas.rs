@@ -787,6 +787,21 @@ impl WebCanvasRenderer {
     }
 
     fn render_paint_op(&mut self, op: &PaintOp) {
+        assert!(
+            op.glyph_paint_transform_is_valid(),
+            "invalid glyph paint transform"
+        );
+        if let Some(t) = op.glyph_paint_transform() {
+            self.ctx.save();
+            let _ = self.ctx.transform(t.a, t.b, t.c, t.d, t.e, t.f);
+            self.render_paint_op_untransformed(op);
+            self.ctx.restore();
+        } else {
+            self.render_paint_op_untransformed(op);
+        }
+    }
+
+    fn render_paint_op_untransformed(&mut self, op: &PaintOp) {
         match op {
             PaintOp::PageBackground { .. } if !self.should_render_page_background() => {}
             PaintOp::PageBackground { bbox, background } => {
@@ -796,18 +811,25 @@ impl WebCanvasRenderer {
             | PaintOp::CharOverlap { bbox, run, .. }
             | PaintOp::TextControlMark { bbox, run, .. }
             | PaintOp::TabLeader { bbox, run, .. }
-            | PaintOp::TextDecoration { bbox, run, .. } => self.render_layer_text_visual(
-                bbox,
-                run,
-                text_visual_replay_role(op),
-                match op {
-                    PaintOp::TextDecoration {
-                        trim_trailing_spaces,
-                        ..
-                    } => *trim_trailing_spaces,
-                    _ => 0,
-                },
-            ),
+            | PaintOp::TextDecoration { bbox, run, .. } => {
+                let decoration_replay = op.decoration_replay();
+                let (bbox, run) = decoration_replay
+                    .as_ref()
+                    .map(|(bbox, run)| (bbox, run.as_ref()))
+                    .unwrap_or((bbox, run.as_ref()));
+                self.render_layer_text_visual(
+                    bbox,
+                    run,
+                    text_visual_replay_role(op),
+                    match op {
+                        PaintOp::TextDecoration {
+                            trim_trailing_spaces,
+                            ..
+                        } => *trim_trailing_spaces,
+                        _ => 0,
+                    },
+                );
+            }
             PaintOp::FootnoteMarker { bbox, marker } => {
                 self.render_footnote_marker(bbox, marker);
             }
@@ -980,7 +1002,7 @@ impl WebCanvasRenderer {
             self.ctx.restore();
         } else {
             self.draw_text_positioned(
-                run.display_or_text(),
+                run.metric_or_display_text(),
                 bbox.x,
                 bbox.y + run.baseline,
                 &run.style,
@@ -1895,9 +1917,12 @@ impl WebCanvasRenderer {
         if grad.colors.len() < 2 {
             return false;
         }
+        if grad.gradient_type == 4 {
+            return self.apply_square_gradient_fill(grad, x, y, w, h);
+        }
 
         let canvas_grad = match grad.gradient_type {
-            2..=4 => {
+            2..=3 => {
                 // Radial / Conical / Square → radialGradient
                 let Some((cx, cy, r)) = super::gradient_geometry::radial_circle(
                     (x, y, w, h),
@@ -1933,6 +1958,126 @@ impl WebCanvasRenderer {
         }
 
         self.ctx.set_fill_style_canvas_gradient(&canvas_grad);
+        true
+    }
+
+    /// Canvas2D에는 사각 거리 shader가 없으므로 현재 물리 해상도의 제한된
+    /// 타일에 같은 max(|회전 x|, |회전 y|) 색 램프를 표집한다. 도형의 경로,
+    /// clip·회전·불투명도는 기존 소비자가 그대로 적용한다.
+    fn apply_square_gradient_fill(
+        &self,
+        grad: &GradientFillInfo,
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
+    ) -> bool {
+        let Some(document) = web_sys::window().and_then(|window| window.document()) else {
+            return false;
+        };
+        let Ok(transform) = self.ctx.get_transform() else {
+            return false;
+        };
+        let scale = transform
+            .a()
+            .hypot(transform.b())
+            .max(transform.c().hypot(transform.d()));
+        if ![x, y, w, h, scale].iter().all(|value| value.is_finite())
+            || w <= 0.0
+            || h <= 0.0
+            || scale <= 0.0
+        {
+            return false;
+        }
+        let pw = (w * scale).ceil();
+        let ph = (h * scale).ceil();
+        // 한 채우기에서 최대 16Mi 픽셀. 실패를 다른 거리 함수로 바꾸지 않는다.
+        if pw < 1.0 || ph < 1.0 || pw * ph > 16.0 * 1024.0 * 1024.0 {
+            return false;
+        }
+        let (pw, ph) = (pw as u32, ph as u32);
+        let (cx, cy, radius, cos, sin) = super::square_gradient_geometry(grad, x, y, w, h);
+        if !radius.is_finite() || radius <= 0.0 {
+            return false;
+        }
+        let (colors, stops) = super::linear_gradient_color_stops(grad, x, y, w, h);
+        let mut bytes = Vec::with_capacity(pw as usize * ph as usize * 4);
+        for row in 0..ph {
+            for col in 0..pw {
+                let dx = x + (f64::from(col) + 0.5) * w / f64::from(pw) - cx;
+                let dy = y + (f64::from(row) + 0.5) * h / f64::from(ph) - cy;
+                let distance = (dx * cos + dy * sin)
+                    .abs()
+                    .max((-dx * sin + dy * cos).abs())
+                    / radius;
+                let color = super::sample_ramp(&colors, &stops, distance.clamp(0.0, 1.0));
+                bytes.extend_from_slice(&[
+                    color as u8,
+                    (color >> 8) as u8,
+                    (color >> 16) as u8,
+                    255,
+                ]);
+            }
+        }
+        let Ok(image) = web_sys::ImageData::new_with_u8_clamped_array_and_sh(
+            wasm_bindgen::Clamped(&bytes),
+            pw,
+            ph,
+        ) else {
+            return false;
+        };
+        let Some(tile) = document
+            .create_element("canvas")
+            .ok()
+            .and_then(|element| element.dyn_into::<HtmlCanvasElement>().ok())
+        else {
+            return false;
+        };
+        tile.set_width(pw);
+        tile.set_height(ph);
+        let Some(ctx) = tile
+            .get_context("2d")
+            .ok()
+            .flatten()
+            .and_then(|ctx| ctx.dyn_into::<CanvasRenderingContext2d>().ok())
+        else {
+            return false;
+        };
+        if ctx.put_image_data(&image, 0.0, 0.0).is_err() {
+            return false;
+        }
+        let Some(pattern) = self
+            .ctx
+            .create_pattern_with_html_canvas_element(&tile, "no-repeat")
+            .ok()
+            .flatten()
+        else {
+            return false;
+        };
+        let matrix = js_sys::Object::new();
+        for (key, value) in [
+            ("a", w / f64::from(pw)),
+            ("d", h / f64::from(ph)),
+            ("e", x),
+            ("f", y),
+        ] {
+            if js_sys::Reflect::set(&matrix, &JsValue::from_str(key), &JsValue::from_f64(value))
+                .is_err()
+            {
+                return false;
+            }
+        }
+        let Some(set_transform) =
+            js_sys::Reflect::get(&pattern, &JsValue::from_str("setTransform"))
+                .ok()
+                .and_then(|method| method.dyn_into::<js_sys::Function>().ok())
+        else {
+            return false;
+        };
+        if set_transform.call1(&pattern, &matrix).is_err() {
+            return false;
+        }
+        self.ctx.set_fill_style_canvas_pattern(&pattern);
         true
     }
 
@@ -2372,7 +2517,8 @@ impl Renderer for WebCanvasRenderer {
     ) {
         // [Task #1067] inline 컨트롤 placeholder (U+FFFC OBJECT REPLACEMENT CHARACTER) skip.
         // svg.rs::draw_text 와 동일 정합.
-        let text: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
+        let metric_source: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
+        let text = metric_source.as_str();
         if text.is_empty() {
             return;
         }
@@ -2396,10 +2542,12 @@ impl Renderer for WebCanvasRenderer {
         let clusters = split_into_clusters(text);
 
         // 레이아웃 메트릭 기준으로 글자 위치 계산 (줄바꿈 결정과 동일한 메트릭 사용)
-        let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
+        let metric_text = super::composer::display_projection_metric_text(&metric_source, text);
+        let char_positions =
+            super::replay_positions_or_compute(metric_text, style, layout_positions);
         // 글리프 폭은 커닝 전 advance에 맞춘다. 자리는 char_positions가 정한다.
         let fit_positions =
-            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
+            super::glyph_fit_positions(metric_text, style, layout_positions, &char_positions);
 
         if !self.suppress_text_glyphs {
             // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)

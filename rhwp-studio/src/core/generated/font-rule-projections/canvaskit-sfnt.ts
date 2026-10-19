@@ -25,10 +25,10 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVASKIT_SFNT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "a1232971b1b929cdb6a71348e76c66ca024a727d21b42156515a067b4d1559a4",
+  "inputSha256": "629005247ee6ffa4671aef3b7a0719434ee500d40941dd9ca7a4e80497152628",
   "projectionId": "canvaskit-sfnt",
-  "projectionSha256": "b118ebc3e757da4ec107fbb80cf8aeee6c64e30601113b86492eda3b888e4e8e",
-  "ruleCount": 159
+  "projectionSha256": "1a5cff1a44450170dafa2ad157b8938cec3024df8bf3e2037c005c6cdb838bc5",
+  "ruleCount": 160
 });
 
 export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
@@ -6657,6 +6657,49 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
               "Noto Sans Symbols2"
             ],
             "url": "fonts/NotoSansSymbols2-Regular.ttf"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "runtimePlanStatus": "planned"
+    }
+  },
+  {
+    "ruleId": "rule.issue-7445.public-batang-canvaskit-supply",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "RHWP Public Batang",
+    "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/RHWPPublicBatang-Regular.woff2'",
+    "conditions": {
+      "profile": "canvaskit-sfnt"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "capabilityAgreement": false,
+      "declaredCapability": "unavailable",
+      "fontFamily": "RHWP Public Batang",
+      "kind": "canvaskit-plan",
+      "offline": {
+        "sources": [
+          {
+            "aliases": [
+              "RHWP Public Batang"
+            ],
+            "url": "fonts/RHWPPublicBatang-Regular.woff2"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "online": {
+        "sources": [
+          {
+            "aliases": [
+              "RHWP Public Batang"
+            ],
+            "url": "fonts/RHWPPublicBatang-Regular.woff2"
           }
         ],
         "unavailableFonts": []

@@ -202,7 +202,7 @@ pub(super) fn inline_resource_estimate(node: &LayerNode, scale: f32) -> usize {
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     let payload = match op {
-                        PaintOp::GlyphOutline { bbox, outline } => {
+                        PaintOp::GlyphOutline { bbox, outline, .. } => {
                             if let Some(graph) = outline
                                 .color_layers
                                 .as_ref()

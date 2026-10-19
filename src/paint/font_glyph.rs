@@ -509,7 +509,13 @@ impl FontGlyphLowerer<'_, '_> {
     fn lower_leaf(&mut self, ops: &mut Vec<PaintOp>) {
         let mut lowered = Vec::with_capacity(ops.len());
         for op in ops.drain(..) {
-            if let PaintOp::TextRun { bbox, run, source } = op {
+            if let PaintOp::TextRun {
+                bbox,
+                run,
+                source,
+                paint_transform,
+            } = op
+            {
                 let source = source.unwrap_or_else(|| {
                     crate::paint::TextSourceSpan::for_text_run(self.next_text_source_id, &run)
                 });
@@ -525,15 +531,18 @@ impl FontGlyphLowerer<'_, '_> {
                     bbox,
                     run,
                     source: Some(source),
+                    paint_transform,
                 });
                 if let Some(glyph_run) = glyph_run {
                     lowered.push(PaintOp::GlyphRun {
+                        paint_transform,
                         bbox,
                         run: Box::new(glyph_run),
                     });
                 }
                 if let Some(sidecar) = sidecar {
                     lowered.push(PaintOp::GlyphOutline {
+                        paint_transform,
                         bbox,
                         outline: Box::new(sidecar),
                     });

@@ -84,6 +84,9 @@ fn hwp3_sample16_heading_keeps_stored_lineseg_on_hwpx_roundtrip() {
     let hwpx = core.export_hwpx_native().expect("export");
     let roundtripped = rhwp::parse_document(&hwpx).expect("reparse");
     let r70 = &roundtripped.sections[0].paragraphs[70];
+    assert_eq!(r70.text, p70.text, "제목과 번호 구분 공백 보존");
+    assert_eq!(r70.controls.len(), p70.controls.len(), "책갈피·쪽번호 보존");
+    assert_eq!(r70.char_count, p70.char_count, "메타데이터 갭 슬롯 보존");
     assert_eq!(
         r70.text, p70.text,
         "왕복에서 제목의 공백·내용·제어 슬롯을 누락하거나 중복하지 않는다"

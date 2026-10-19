@@ -1,7 +1,7 @@
 //! 축소 비트맵은 목표 장치 격자에서 한 번만 저역 통과시킨다.
 //!
-//! source/layout 좌표는 유지한다. 인쇄 paint에서만 최근접 장치 경계를
-//! 사용하여, 준비한 픽셀을 fractional destination에서 다시 보간하지 않는다.
+//! source/layout 좌표는 유지한다. 인쇄 paint의 장치 경계에서 준비한
+//! 픽셀을 fractional destination에서 다시 보간하지 않는다.
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -23,6 +23,7 @@ struct CacheKey {
     source_len: usize,
     width: u32,
     height: u32,
+    print: bool,
 }
 
 #[derive(Default)]
@@ -63,10 +64,15 @@ pub(crate) fn prepare_bitmap(
     {
         return None;
     }
-    let left = (a * bbox.x + e).round();
-    let right = (a * (bbox.x + bbox.width) + e).round();
-    let top = (d * bbox.y + f).round();
-    let bottom = (d * (bbox.y + bbox.height) + f).round();
+    let print = profile == RenderProfile::Print;
+    // Print 그림은 장치 픽셀의 덮이는 구간 전체를 소유한다. 최근접 경계로
+    // 먼저 줄이면 소수 원점에 따라 가는 선의 source 구간까지 달라진다.
+    let lower = |x: f64| if print { x.floor() } else { x.round() };
+    let upper = |x: f64| if print { x.floor() + 1.0 } else { x.round() };
+    let left = lower(a * bbox.x + e);
+    let right = upper(a * (bbox.x + bbox.width) + e);
+    let top = lower(d * bbox.y + f);
+    let bottom = upper(d * (bbox.y + bbox.height) + f);
     let (width, height) = (right - left, bottom - top);
     if ![left, right, top, bottom, width, height]
         .into_iter()
@@ -98,6 +104,7 @@ pub(crate) fn prepare_bitmap(
         source_len: bytes.len(),
         width,
         height,
+        print,
     };
     let png = CACHE.with(|cache| cache.borrow().entries.get(&key).cloned());
     let png = match png {
@@ -117,7 +124,18 @@ pub(crate) fn prepare_bitmap(
             {
                 return None;
             }
-            let resized = source.resize_exact(width, height, image::imageops::FilterType::Lanczos3);
+            // 독립 Print 표본 C352/C354/C356의 구간 평균을 보존한다.
+            // 각 source 픽셀은 정확히 한 장치 구간에 들어간다. Lanczos의
+            // 음의 lobe나 새 보간으로 옅은 선의 밝기를 다시 바꾸지 않는다.
+            let resized = if print {
+                image::DynamicImage::ImageRgb8(integer_area_downsample(
+                    &source.to_rgb8(),
+                    width,
+                    height,
+                ))
+            } else {
+                source.resize_exact(width, height, image::imageops::FilterType::Lanczos3)
+            };
             let mut output = Cursor::new(Vec::new());
             resized
                 .write_to(&mut output, image::ImageFormat::Png)
@@ -147,4 +165,31 @@ pub(crate) fn prepare_bitmap(
             f64::from(height) / d,
         ),
     })
+}
+
+fn integer_area_downsample(source: &image::RgbImage, width: u32, height: u32) -> image::RgbImage {
+    let mut result = image::RgbImage::new(width, height);
+    let boundary = |index: u32, source_extent: u32, target_extent: u32| {
+        (u64::from(index) * u64::from(source_extent) / u64::from(target_extent)) as u32
+    };
+    for y in 0..height {
+        let top = boundary(y, source.height(), height);
+        let bottom = boundary(y + 1, source.height(), height);
+        for x in 0..width {
+            let left = boundary(x, source.width(), width);
+            let right = boundary(x + 1, source.width(), width);
+            let count = u64::from(bottom - top) * u64::from(right - left);
+            let mut sum = [0u64; 3];
+            for source_y in top..bottom {
+                for source_x in left..right {
+                    let pixel = source.get_pixel(source_x, source_y);
+                    for channel in 0..3 {
+                        sum[channel] += u64::from(pixel[channel]);
+                    }
+                }
+            }
+            result.put_pixel(x, y, image::Rgb(sum.map(|value| (value / count) as u8)));
+        }
+    }
+    result
 }

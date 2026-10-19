@@ -1,0 +1,76 @@
+{
+  "changeSetId": "issue-7445.public-batang-canvaskit-supply",
+  "decisionPlane": "supply",
+  "evidenceRecords": [],
+  "expectedDelta": {
+    "activeRuleDelta": 1,
+    "projectionId": "canvaskit-sfnt",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont"
+    ]
+  },
+  "issue": 7445,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-7445.public-batang-canvaskit-supply",
+      "rule": {
+        "conditions": {
+          "profile": "canvaskit-sfnt"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-7445.public-batang-webfont"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        },
+        "projectionSequence": 159,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-7445.public-batang-canvaskit-supply",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "RHWP Public Batang",
+        "supply": {
+          "capabilityAgreement": false,
+          "declaredCapability": "unavailable",
+          "fontFamily": "RHWP Public Batang",
+          "kind": "canvaskit-plan",
+          "offline": {
+            "sources": [
+              {
+                "aliases": [
+                  "RHWP Public Batang"
+                ],
+                "url": "fonts/RHWPPublicBatang-Regular.woff2"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "online": {
+            "sources": [
+              {
+                "aliases": [
+                  "RHWP Public Batang"
+                ],
+                "url": "fonts/RHWPPublicBatang-Regular.woff2"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "runtimePlanStatus": "planned"
+        },
+        "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/RHWPPublicBatang-Regular.woff2'"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "2fa9a6567d13d051059aa7bd8dfda1f70aeb14d7cd49bcc400dd1cf271427291",
+  "schemaVersion": "2.0",
+  "sequence": 14
+}

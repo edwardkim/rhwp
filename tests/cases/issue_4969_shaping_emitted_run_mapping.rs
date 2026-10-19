@@ -613,7 +613,7 @@ fn issue_4969_q2_d5_n1_product_no_lineseg_uses_one_common_run_without_nominal_du
     let common_runs = ops
         .iter()
         .filter_map(|op| match op {
-            PaintOp::GlyphRun { bbox, run }
+            PaintOp::GlyphRun { bbox, run, .. }
                 if run.diagnostics.reason.as_deref()
                     == Some("q2CommonShapingCondensedDrawProjectionV1") =>
             {

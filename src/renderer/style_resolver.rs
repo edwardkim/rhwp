@@ -321,6 +321,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     let mut font_families_glyph_fallback_advance_explicit = Vec::with_capacity(LANG_COUNT);
     let mut font_families_hft_hangul = Vec::with_capacity(LANG_COUNT);
     let mut font_families_source_hft = Vec::with_capacity(LANG_COUNT);
+    let mut font_families_hft_print_frame = Vec::with_capacity(LANG_COUNT);
     let mut font_families_hft_fullwidth_dot = Vec::with_capacity(LANG_COUNT);
     let mut font_families_metric_face: Vec<Option<String>> = Vec::with_capacity(LANG_COUNT);
     let mut font_families_original_glyph_metric_face = Vec::with_capacity(LANG_COUNT);
@@ -342,9 +343,9 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         );
         let decision = lookup_font_name_decision(doc_info, lang, font_id);
         if lang == 1 {
-            latin_slot_legacy =
-                original.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin);
-            latin_slot_explicit = decision.environment_profile_id.is_some()
+            latin_slot_explicit = original.substitution_boundary
+                == Some(FontSubstitutionBoundary::LegacyLatin)
+                && decision.environment_profile_id.is_some()
                 && decision.normalized_face != original.normalized_face;
         }
         let substituted = decision.substitution_boundary.is_some()
@@ -370,6 +371,13 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families_hft_hangul
             .push(decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft));
         font_families_hft_fullwidth_dot.push(decision.alt_type == Some(2) && !substituted);
+        // 독립 Print의 유지된 HFT는 Type3 device 좌표로 그려진다.
+        // 명시 TrueType·내장 글꼴·실제 치환 프로그램의 기존 원점을 보존한다.
+        font_families_hft_print_frame.push(
+            decision.alt_type == Some(2)
+                && !substituted
+                && decision.embedded != Some(true),
+        );
         // [#7391] legacy-latin은 선언 face의 기존 표를 사용한다. HFT는
         // 프로그램 자체를 확인한 표만 사용하며 표시용 TTF와 구분한다.
         // HWP3 ASCII 반각 여부는 기존 문서의 저장 줄 증인이 계속 결정한다.
@@ -437,14 +445,26 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_sizes.push(lang_font_size);
     }
 
-    // [#7387] 공백은 영문 슬롯(1) 글꼴이 정한다. 속성이 꺼졌거나 그 글꼴의 공백폭을
-    // 모르면 `None` 으로 두어 종전 반각 측정을 그대로 쓴다.
+    // [#7387] 공백은 영문 슬롯(1) 글꼴이 정한다. 원본 프로그램의 폭을 선택한
+    // 슬롯은 공백도 그 프로그램의 폭을 소비한다. 표시용 대체 글꼴의 좁은 공백을
+    // 섞으면 같은 원본 글꼴의 문자와 들여쓰기 전진폭이 달라진다.
+    // 확인하지 못한 원본 공백·명시 TrueType·내장 글꼴은 기존 표시 체인으로 조회한다.
     let font_space_em = cs
         .use_font_space
         .then(|| {
-            font_families
+            font_families_original_glyph_metric_face
                 .get(1)
-                .and_then(|chain| declared_space_advance_em(chain, cs.bold, cs.italic))
+                .and_then(Option::as_deref)
+                .and_then(|face| {
+                    crate::renderer::font_metrics_data::declared_original_glyph_advance_em(
+                        face, cs.bold, cs.italic, ' ',
+                    )
+                })
+                .or_else(|| {
+                    font_families
+                        .get(1)
+                        .and_then(|chain| declared_space_advance_em(chain, cs.bold, cs.italic))
+                })
         })
         .flatten();
 
@@ -465,6 +485,10 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         && latin_slot_legacy
         && primary(&font_families[0]) != primary(&font_families[1]);
     let ascii_punct_latin_slot = ascii_punct_latin_slot || explicit_latin_slot;
+    let latin_primary = primary(&font_families[1]);
+    let ascii_punct_latin_slot = ascii_punct_latin_slot || (primary(&font_families[0]) != latin_primary
+        && (latin_slot_explicit || crate::renderer::font_metrics_data::find_metric(&latin_primary, cs.bold, cs.italic)
+            .is_some_and(|found| found.metric.hangul.is_none())));
 
     // 한국어(0번) 값을 기본값으로 사용
     let font_family = font_families[0].clone();
@@ -478,6 +502,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families_glyph_fallback_advance_explicit,
         font_families_hft_hangul,
         font_families_source_hft,
+        font_families_hft_print_frame,
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
         explicit_latin_slot,
@@ -614,6 +639,7 @@ pub(crate) enum FontSubstitutionBoundary {
     LegacyLatin,
     Hft,
     Ttf,
+    MissingProgram,
 }
 
 impl FontSubstitutionBoundary {
@@ -622,13 +648,14 @@ impl FontSubstitutionBoundary {
             Self::LegacyLatin => "rust-style-resolution.legacy-latin",
             Self::Hft => "rust-style-resolution.hft",
             Self::Ttf => "rust-style-resolution.ttf",
+            Self::MissingProgram => "rust-style-resolution.missing-program",
         }
     }
 
     pub(crate) fn language_condition(self, source_face: &str) -> &'static str {
         match self {
             Self::LegacyLatin => "1",
-            Self::Ttf => "all",
+            Self::Ttf | Self::MissingProgram => "all",
             Self::Hft
                 if find_font_rule_layout_name(self.source_boundary_id(), source_face, 0)
                     .is_some() =>
@@ -805,8 +832,13 @@ pub(crate) fn lookup_font_name_in_environment(
         }) {
             decision.normalized_face = Some(target.to_string());
             decision.css_family_chain = vec![target.to_string()];
-            decision.substitution_boundary = None;
-            decision.substitution_rule_id = None;
+            let canonical_rule = decision
+                .requested_face
+                .as_deref()
+                .and_then(|source| environment.canonical_selection_rule(source));
+            decision.substitution_boundary =
+                canonical_rule.map(|_| FontSubstitutionBoundary::MissingProgram);
+            decision.substitution_rule_id = canonical_rule;
             decision.environment_profile_id = Some(environment.id().to_string());
         }
     }

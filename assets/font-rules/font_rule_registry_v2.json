@@ -54,6 +54,26 @@
       "changeSetId": "issue-7966.postscript-layout-metric",
       "path": "assets/font-rules/changes/issue-7966-postscript-layout-metric.json",
       "sha256": "11fae7cb24b36e78ae21025701378a9eb8b81f93cc0c3603a76e9bd05a56a7b1"
+    },
+    {
+      "changeSetId": "issue-7445.public-batang-metric-name",
+      "path": "assets/font-rules/changes/issue-7445-public-batang-metric-name.json",
+      "sha256": "0381893ad6f1771e3e889916a4a2e38006e7762ae0893ca67ff1b8d1545c95de"
+    },
+    {
+      "changeSetId": "issue-7445.public-batang-webfont-supply",
+      "path": "assets/font-rules/changes/issue-7445-public-batang-webfont-supply.json",
+      "sha256": "66614284a8def9bffcbdab99449cd2b95671282899b5afb508c9f790ac43abb9"
+    },
+    {
+      "changeSetId": "issue-7445.public-batang-canvaskit-supply",
+      "path": "assets/font-rules/changes/issue-7445-public-batang-canvaskit-supply.json",
+      "sha256": "38b56482df8a3a8774e9babbf332b1825a560f7d898c6e7eb9d755927e8a0eac"
+    },
+    {
+      "changeSetId": "issue-7445.missing-title-public-fallback",
+      "path": "assets/font-rules/changes/issue-7445-missing-title-public-fallback.json",
+      "sha256": "1a2bd7909e9bcb3b9433a21b6a9ec8ead1499f0c4a3f288fb30936a2473d361f"
     }
   ],
   "evidenceRecords": [
@@ -128,6 +148,32 @@
       "parentEvidenceIds": [],
       "sha256": "0d348703c2d9d027af77c42fda6293f61f63aef8af6205e6b595bc39cd1fd337",
       "source": "assets/font-rules/evidence/issue-7966-postscript-styles.json"
+    },
+    {
+      "evidenceId": "evidence.issue-7445.public-batang-metrics",
+      "kind": "aggregate-measurement",
+      "licenseOrProvenance": "공식 Google Fonts OFL 배포본과 기존 Batang regular 폭 표11636항목 대조. ASCII·현대 한글 전부 일치. NBSP는 기존 공통 U+0020 정규화 계약으로 처리한다. 역사적 원장의 전체 계보 승격은 아니다.",
+      "parentEvidenceIds": [],
+      "sha256": "84c210d7a62d3748294566085dc3138453bcd0ab2d4f1cc48b2791dbcf6176ae",
+      "source": "assets/font-rules/evidence/issue-7445-public-batang-metrics.json"
+    },
+    {
+      "evidenceId": "evidence.issue-7445.public-batang-webfont",
+      "kind": "public-source",
+      "licenseOrProvenance": "공식 Google Fonts OFL 원본의 별도 RHWP family 파생본. 전체 WOFF2의 22772글리프·cmap·가로/세로 전진폭·힌팅과 기능 보존을 확인. 원 family의 자동 대체 선택과 문서 시각 수용은 별도 검증한다.",
+      "parentEvidenceIds": [],
+      "sha256": "ccae18164ba222f378da8f1334c7f78c06303be42cc845c5101159a68f1c13b1",
+      "source": "assets/font-rules/evidence/issue-7445-public-batang-webfont.json"
+    },
+    {
+      "evidenceId": "evidence.issue-7445.missing-title-public-fallback",
+      "kind": "aggregate-measurement",
+      "licenseOrProvenance": "기존 독립 Print 대체 윤곽31글자와 공개 후보 비교. 실제 원본 하이텔 프로그램의 자형 복원 주장이 아니며 원본/문서 지정/사용자 환경을 우선한다. 공급 파일은 OFL 배포본의 RHWP family 파생본이다.",
+      "parentEvidenceIds": [
+        "evidence.issue-7445.public-batang-webfont"
+      ],
+      "sha256": "9709acc051c695a9769e7ce34bef30fb74c5e9f3f6430856fe1a0c9c764b400c",
+      "source": "assets/font-rules/evidence/issue-7445-missing-title-public-fallback.json"
     }
   ],
   "issue": 5955,
@@ -43958,9 +44004,185 @@
       "status": "active",
       "supply": null,
       "targetFaceOrPolicy": "Arial"
+    },
+    {
+      "conditions": {},
+      "decisionPlane": "layout-metric",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7445.public-batang-metrics"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7445.public-batang-metric-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [
+        "font-metric.edec2573883b7b4dc023"
+      ],
+      "order": null,
+      "projectionSequence": 70,
+      "projections": [
+        {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "metric-surrogate",
+      "ruleId": "rule.rust-metric.issue-7445.public-batang-name",
+      "selectionTupleSha256": "2bed2681b6b0b73640d426f8fb92e0d87a3e235f56b23049fd539fc29425de0e",
+      "sourceBoundaryId": "rust-metric.metric-alias",
+      "sourceFace": "RHWP Public Batang",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Batang"
+    },
+    {
+      "conditions": {
+        "profile": "canvas2d-css-unknown"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7445.public-batang-webfont"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7445.public-batang-webfont-supply",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 154,
+      "projections": [
+        {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-7445.public-batang-webfont-supply",
+      "selectionTupleSha256": "9420c33a288ad1bb017877d5cb6e5fd039835d308741df985cb9c3536c80d1fa",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "RHWP Public Batang",
+      "status": "active",
+      "supply": {
+        "external": false,
+        "fontFamily": "RHWP Public Batang",
+        "format": "woff2",
+        "kind": "canvas2d-webfont",
+        "sourceUrl": "fonts/RHWPPublicBatang-Regular.woff2",
+        "unicodeRange": null
+      },
+      "targetFaceOrPolicy": "'fonts/RHWPPublicBatang-Regular.woff2'"
+    },
+    {
+      "conditions": {
+        "profile": "canvaskit-sfnt"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7445.public-batang-webfont"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7445.public-batang-canvaskit-supply",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 159,
+      "projections": [
+        {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-7445.public-batang-canvaskit-supply",
+      "selectionTupleSha256": "7558ac8ecc8931fa3b29380cfe07634b42a19862d36dd1ae3eefa62ec5f0620b",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "RHWP Public Batang",
+      "status": "active",
+      "supply": {
+        "capabilityAgreement": false,
+        "declaredCapability": "unavailable",
+        "fontFamily": "RHWP Public Batang",
+        "kind": "canvaskit-plan",
+        "offline": {
+          "sources": [
+            {
+              "aliases": [
+                "RHWP Public Batang"
+              ],
+              "url": "fonts/RHWPPublicBatang-Regular.woff2"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "online": {
+          "sources": [
+            {
+              "aliases": [
+                "RHWP Public Batang"
+              ],
+              "url": "fonts/RHWPPublicBatang-Regular.woff2"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "runtimePlanStatus": "planned"
+      },
+      "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/RHWPPublicBatang-Regular.woff2'"
+    },
+    {
+      "conditions": {
+        "availability": "primary-and-document-substitute-missing",
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7445.missing-title-public-fallback"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7445.missing-title-public-fallback",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 177,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.79009337ef6c42cd3a51",
+      "selectionTupleSha256": "51757f277a3e829edd19ce782a757c148f88a31ee0bc40aec08ed4e912e07b56",
+      "sourceBoundaryId": "rust-style-resolution.missing-program",
+      "sourceFace": "하이텔울릉도제목체",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "RHWP Public Batang"
     }
   ],
-  "rulesSha256": "c5dfc832aed0996b85307aacdce61c3fb1a2f8fbe816b5f2494ce7ac2d04a293",
+  "rulesSha256": "c696247e9b5389f249b74c53a455e33f32b1a24c2a0ef714a9b9804f3ae04ee9",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -43972,15 +44194,15 @@
   },
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 841,
+    "activeRuleCount": 845,
     "countsByProjection": {
       "canvas2d-paint": 281,
-      "canvas2d-webfont": 154,
-      "canvaskit-sfnt": 159,
-      "rust-layout-metric": 70,
-      "rust-layout-name": 177
+      "canvas2d-webfont": 155,
+      "canvaskit-sfnt": 160,
+      "rust-layout-metric": 71,
+      "rust-layout-name": 178
     },
     "retiredRuleCount": 4,
-    "ruleCount": 845
+    "ruleCount": 849
   }
 }

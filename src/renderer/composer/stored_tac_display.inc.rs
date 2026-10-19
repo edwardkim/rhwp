@@ -404,10 +404,9 @@ fn convert_pua_display_text(
                     display.extend(jamos.iter().copied());
                     changed = true;
                 } else {
-                    // paint 경로(`expand_pua_display_text`)와 같이 한컴 PUA 책괄호
-                    // (U+F0854/F0855 → 《》) 등을 측정 문자열에도 올린다. 원문 PUA 는
-                    // CJK가 아니라 0.5em 휴리스틱이 되어 run bbox 가 전각 글리프보다
-                    // 짧고, 다음 라틴 run 이 한글 위에 겹친다 (#6057).
+                    // paint와 같은 표시 투영을 사용하되 원본 프로그램의
+                    // 확인된 전진폭은 char_width_decision이 소유한다.
+                    // 표시용 전각 글리프로 원본 PUA의 반각 폭을 바꾸지 않는다.
                     let mapped = map_pua_bullet_char(ch);
                     display.push(mapped);
                     if mapped != ch {

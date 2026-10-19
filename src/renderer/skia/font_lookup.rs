@@ -325,7 +325,7 @@ fn query_database_typeface(
     })?;
     database
         .with_face_data(id, |bytes, index| {
-            font_mgr.new_from_data(skia_safe::Data::new_copy(bytes), Some(index))
+            super::font_catalog::typeface_from_data(font_mgr, bytes, index)
         })
         .flatten()
         .filter(|typeface| !is_placeholder_typeface(typeface))
@@ -389,10 +389,6 @@ pub(super) fn match_system_family_style(
     family: &str,
     style: FontStyle,
 ) -> Option<Typeface> {
-    if system_families.names.is_empty() {
-        return None;
-    }
-
     let key = FontLookupKey {
         family: family.to_string(),
         style: FontStyleCacheKey::new(style),
@@ -411,9 +407,7 @@ pub(super) fn match_system_family_style(
         })
         .filter(|typeface| !is_placeholder_typeface(typeface))
         .or_else(|| {
-            has_system_family(system_families, family)
-                .then(|| recover_installed_system_typeface(font_mgr, family, style))
-                .flatten()
+            recover_installed_system_typeface(font_mgr, family, style)
         });
         cache.borrow_mut().insert(key, matched.clone());
         matched
@@ -439,6 +433,7 @@ mod tests {
 
     #[test]
     fn missing_family_is_filtered_before_system_lookup() {
+        installed_localized_family_is_not_discarded_by_primary_name_enumeration();
         let font_mgr = FontMgr::default();
         let mut system_families = SystemFontFamilies::default();
 
@@ -498,5 +493,48 @@ mod tests {
         assert!(has_system_family(&system_families, "APPLEGOTHIC"));
         assert!(!has_system_family(&system_families, "AppleGothic Extra"));
         assert!(!has_system_family(&system_families, "Missing Family"));
+    }
+
+    fn installed_localized_family_is_not_discarded_by_primary_name_enumeration() {
+        let font_mgr = FontMgr::default();
+        let mut database = usvg::fontdb::Database::new();
+        database.load_font_data(
+            include_bytes!("../../../tests/fixtures/native_font_family_names/family-contract.ttf")
+                .to_vec(),
+        );
+        let localized = "검사용 표기 가족";
+        let source = query_database_typeface(&database, &font_mgr, localized, FontStyle::normal())
+            .expect("SFNT 자체가 선언한 한국어 family");
+        let mut enumerated = SystemFontFamilies::new();
+        enumerated.insert(source.family_name());
+        assert!(!has_system_family(&enumerated, localized));
+
+        struct RestoreDatabase(Option<usvg::fontdb::Database>);
+        impl Drop for RestoreDatabase {
+            fn drop(&mut self) {
+                SYSTEM_PROGRAM_DATABASE.with(|database| {
+                    *database.borrow_mut() = self.0.take();
+                });
+                SYSTEM_TYPEFACE_CACHE.with(|cache| cache.borrow_mut().clear());
+            }
+        }
+        let _restore = RestoreDatabase(
+            SYSTEM_PROGRAM_DATABASE.with(|slot| slot.borrow_mut().replace(database)),
+        );
+        let recovered =
+            match_system_family_style(&font_mgr, &enumerated, localized, FontStyle::normal())
+                .expect("OS의 대표 이름 목록에 없어도 설치 파일의 실제 family는 조회한다");
+        assert_eq!(recovered.family_name(), source.family_name());
+        assert_eq!(
+            recovered.unichar_to_glyph('A' as i32),
+            source.unichar_to_glyph('A' as i32)
+        );
+        assert!(match_system_family_style(
+            &font_mgr,
+            &enumerated,
+            "RHWP Nonexistent Installed Family",
+            FontStyle::normal(),
+        )
+        .is_none());
     }
 }

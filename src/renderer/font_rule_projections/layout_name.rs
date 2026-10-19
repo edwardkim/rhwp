@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
-    "d257f3b55823a16e4ba2d356538e1f78c2774a6f866823ecd5818a44fdf8f840";
+    "542fb05279ee54bc18eac1abebb970691c27c5a057ca82663b735c536f5a0236";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "399777eec1e7e184aef01d8b5bba4ef58e9a5a9ea121da94bed922fcf616bbd6";
+    "8c338b200f993a60e0d055d0610021f6dd25ad7f8d6f01c3e96f1d2afc9bf41e";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -3040,6 +3040,23 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         mode: "direct",
         metric_entry_ids: &[],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.79009337ef6c42cd3a51",
+        source_boundary_id: "rust-style-resolution.missing-program",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("하이텔울릉도제목체"),
+        target_face_or_policy: "RHWP Public Batang",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: Some("primary-and-document-substitute-missing"),
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
 ];
 
 #[rustfmt::skip]
@@ -3579,6 +3596,9 @@ pub(crate) fn find_font_rule_layout_name(
         }
         ("rust-style-resolution.ttf", "Wingdings-Regular") => {
             Some(&FONT_RULE_LAYOUT_NAME_RULES[176])
+        }
+        ("rust-style-resolution.missing-program", "하이텔울릉도제목체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[177])
         }
         _ => None,
     }

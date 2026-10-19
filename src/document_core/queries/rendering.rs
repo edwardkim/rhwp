@@ -1385,8 +1385,29 @@ impl DocumentCore {
         page_num: u32,
         profile: RenderProfile,
     ) -> Result<PageLayerTree, HwpError> {
+        // 앞쪽 Print 이력을 읽기 전에 요청한 쪽 자체의 범위를 확인한다.
+        // 잘못된 요청의 오류를 중간 페이지 번호로 바꾸지 않는다.
+        self.find_page(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         let idx = page_num as usize;
+        // Print의 fill 이후 device CTM 정밀도는 문서 paint 순서의 상태다.
+        // 임의 쪽부터 요청해도 같은 결과를 내도록 이미 존재하는 semantic page
+        // cache에서 앞쪽 source fill을 읽는다. 별도 상태 cache를 추측하지 않는다.
+        let hangul2024_print = self.hangul2024_compat;
+        let mut prior_print_solid_fill = false;
+        if profile == RenderProfile::Print {
+            for previous in 0..page_num {
+                if self.with_page_tree_cached(previous, |tree| {
+                    Ok(LayerBuilder::page_has_print_solid_fill(
+                        tree,
+                        hangul2024_print,
+                    ))
+                })? {
+                    prior_print_solid_fill = true;
+                    break;
+                }
+            }
+        }
         let fingerprint = self
             .layer_output_options_fingerprint(profile, crate::paint::LayerJsonOptions::default());
         if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
@@ -1575,7 +1596,9 @@ impl DocumentCore {
                 .with_metafile_device_pixel_width(metafile_pixel)
                 .with_hancom2024_print_bitmap(self.hangul2024_compat)
                 .with_output_options(output_options)
-                .with_bin_data_epoch(self.bin_data_epoch);
+                .with_bin_data_epoch(self.bin_data_epoch)
+                .with_prior_print_solid_fill(prior_print_solid_fill)
+                .with_hangul2024_print(hangul2024_print);
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
         })?;
         {
@@ -7301,10 +7324,12 @@ impl DocumentCore {
         }
         // 대표 HF tree도 페이지 숨김 상태를 포함하므로 함께 무효화한다 (#6452).
         self.header_footer_preview_tree_cache.borrow_mut().take();
-        if let Some(variants) = self.layer_tree_json_cache.borrow_mut().get_mut(idx) {
+        // 한 쪽의 source fill 변경은 뒤쪽 Print 좌표에도 영향을 줄 수 있다.
+        // semantic layout은 해당 쪽만 비우고 파생 output cache는 뒤쪽도 비운다.
+        for variants in self.layer_tree_json_cache.borrow_mut().iter_mut().skip(idx) {
             variants.clear();
         }
-        if let Some(variants) = self.page_layer_tree_cache.borrow_mut().get_mut(idx) {
+        for variants in self.page_layer_tree_cache.borrow_mut().iter_mut().skip(idx) {
             variants.clear();
         }
     }

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -217,22 +218,18 @@ test('W1 source digest drift is detected without exposing an absolute checkout p
     'issue-4939',
     'font_rule_candidates.json',
   ));
-  const expectedTraceDrift = [
-    'THIRD_PARTY_LICENSES.md',
-    'rhwp-studio/src/core/font-loader.ts',
-    'rhwp-studio/src/core/font-substitution.ts',
-    'rhwp-studio/src/core/local-fonts.ts',
-    'rhwp-studio/src/core/wasm-bridge.ts',
-    'rhwp-studio/tests/font-substitution.test.ts',
-    'src/renderer/font_metrics_data.rs',
-    'src/renderer/layout/text_measurement.rs',
-    'src/renderer/mod.rs',
-    'src/renderer/skia/font_lookup.rs',
-    'src/renderer/skia/text_replay.rs',
-    'src/renderer/style_resolver.rs',
-  ];
+  const original = structuredClone(snapshot);
+  // Historical W1 digests stay frozen. Independently read the current bytes;
+  // legitimate source edits must not require updating a hardcoded drift list.
+  const candidates = new Map(snapshot.candidates.map(candidate => [candidate.path, candidate]));
+  const expectedDrift = [...candidates.keys()].sort().flatMap(sourcePath => {
+    const bytes = fs.readFileSync(path.join(ROOT, sourcePath));
+    const actualSha256 = createHash('sha256').update(bytes).digest('hex');
+    const expectedSha256 = candidates.get(sourcePath).sourceSha256;
+    return actualSha256 === expectedSha256 ? [] : [{ path: sourcePath, expectedSha256, actualSha256 }];
+  });
   const currentDrift = detectLedgerSourceDrift(snapshot, ROOT);
-  assert.deepEqual(currentDrift.map(entry => entry.path), expectedTraceDrift);
+  assert.deepEqual(currentDrift, expectedDrift);
   for (const entry of currentDrift) {
     assert.match(entry.expectedSha256, /^[0-9a-f]{64}$/);
     assert.match(entry.actualSha256, /^[0-9a-f]{64}$/);
@@ -241,7 +238,7 @@ test('W1 source digest drift is detected without exposing an absolute checkout p
 
   const changed = structuredClone(snapshot);
   const changedPath = changed.candidates.find(
-    candidate => !expectedTraceDrift.includes(candidate.path),
+    candidate => !expectedDrift.some(entry => entry.path === candidate.path),
   ).path;
   for (const candidate of changed.candidates) {
     if (candidate.path === changedPath) candidate.sourceSha256 = '0'.repeat(64);
@@ -250,6 +247,8 @@ test('W1 source digest drift is detected without exposing an absolute checkout p
   assert.equal(drift.length, currentDrift.length + 1);
   assert.ok(drift.some(entry => entry.path === changedPath));
   assert.equal(path.isAbsolute(drift[0].path), false);
+  assert.equal(JSON.stringify(drift).includes(ROOT), false);
+  assert.deepEqual(snapshot, original, 'Historical W1 evidence must remain unchanged');
 });
 
 test('hashes ignore object key order and unordered diagnostics but preserve fallback chain order', () => {

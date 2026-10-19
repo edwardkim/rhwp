@@ -249,13 +249,14 @@ pub(super) fn draw_image_bytes(
     let tone = (brightness != 0 || contrast != 0).then_some((effect, brightness, contrast));
     let key = byte_key(b"decoded-image", bytes, &(svg_size, binary_effect, tone));
     let cached = cache.get(key, binary_effect.is_some());
-    let (image, binary_preprocessed) = if let Some(CachedImageResource::Decoded {
+    let (image, binary_preprocessed, encoded) = if let Some(CachedImageResource::Decoded {
         image,
+        encoded,
         binary_preprocessed,
         ..
     }) = cached
     {
-        (image, binary_preprocessed)
+        (image, binary_preprocessed, encoded)
     } else {
         let svg_raster = svg_size.and_then(|(width, height, scale)| {
             rasterize_svg_document_to_png(bytes, width, height, scale)
@@ -298,7 +299,10 @@ pub(super) fn draw_image_bytes(
         // raster-specific dither cannot leak to a differently sized placement.
         let binary_png = binary_effect.and_then(|effect| binary_effect_png(encoded_bytes, effect));
         let encoded_bytes = binary_png.as_deref().unwrap_or(encoded_bytes);
-        let Some(image) = Image::from_encoded(Data::new_copy(encoded_bytes)) else {
+        // 디코더와 캐시가 같은 immutable Data를 공유한다. 캐시 hit도 실제
+        // 정규화·전처리된 바이트를 전달해 원본/색조 전 바이트로 되돌리지 않는다.
+        let encoded = Data::new_copy(encoded_bytes);
+        let Some(image) = Image::from_encoded(encoded.clone()) else {
             if binary_effect.is_some() {
                 cache.record_preprocessing(None);
             }
@@ -321,13 +325,14 @@ pub(super) fn draw_image_bytes(
                 key,
                 CachedImageResource::Decoded {
                     image: image.clone(),
+                    encoded: encoded.clone(),
                     binary_requested: binary_effect.is_some(),
                     binary_preprocessed: binary_png.is_some(),
                 },
                 cost,
             );
         }
-        (image, binary_png.is_some())
+        (image, binary_png.is_some(), encoded)
     };
 
     // Interpolation after source-pixel thresholding would reintroduce gray
@@ -436,11 +441,11 @@ pub(super) fn draw_image_bytes(
         let transform = canvas.local_to_device_as_3x3();
         // SVG는 위에서 이미 실제 장치 크기로 raster했다. 이를 다시 bitmap
         // 축소 경로에 넣으면 벡터의 가는 선까지 두 번 필터링하게 된다.
-        let prepared = (src.is_none() && svg_raster.is_none() && !binary_preprocessed
+        let prepared = (src.is_none() && svg_size.is_none() && !binary_preprocessed
             && !matrix.has_perspective() && sampling.filter_mode != FilterMode::Nearest)
             .then(|| {
                 crate::renderer::bitmap_raster::prepare_bitmap(
-                    encoded_bytes,
+                    encoded.as_bytes(),
                     crate::renderer::render_tree::BoundingBox::new(
                         dst.x() as f64,
                         dst.y() as f64,

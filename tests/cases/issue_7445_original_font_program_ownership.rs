@@ -305,6 +305,93 @@ fn original_hci_plus_keeps_its_independent_type3_advance() {
 }
 
 #[test]
+fn regular_hci_comparison_signs_keep_the_independent_program_and_ttf_boundary() {
+    // 별도 ASCII95 ×6크기 한컴2020 Print: 일반 HCI Poppy의 <=>도
+    // Type3 FontMatrix.001, CharProc d1/Widths605다. 굵은 표를 재인용하지 않는다.
+    let mut program = core("HCI Poppy", "A<=>A", None);
+    for ch in ["<", "=", ">"] {
+        let decision = record(&program, ch);
+        assert_eq!(
+            decision["layoutMetric"]["widthSource"],
+            "measuredOriginalGlyph"
+        );
+        assert!((advance(&decision) - 7500.0 * 0.605).abs() <= 2.0);
+    }
+    program.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"explicit-regular-hci-ttf","substitutions":{"HCI Poppy":"Palatino Linotype"},"trueTypeFaces":["Palatino Linotype"]}"#,
+    ).unwrap())).unwrap();
+    for ch in ["<", "=", ">"] {
+        assert_ne!(
+            record(&program, ch)["layoutMetric"]["widthSource"],
+            "measuredOriginalGlyph"
+        );
+    }
+}
+
+#[test]
+fn asset_caption_comparison_program_reaches_the_following_source_text() {
+    fn collect<'a>(node: &'a Value, out: &mut Vec<&'a Value>) {
+        if node["type"] == "textRun"
+            && node["source"]["stableSourceKey"]
+                .as_str()
+                .is_some_and(|key| {
+                    key.starts_with("section:2/para:22/char:") && !key.contains("/cell:")
+                })
+        {
+            out.push(node);
+        }
+        match node {
+            Value::Array(children) => {
+                for child in children {
+                    collect(child, out);
+                }
+            }
+            Value::Object(children) => {
+                for child in children.values() {
+                    collect(child, out);
+                }
+            }
+            _ => {}
+        }
+    }
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue6031/3249937_asset_management_rules.hwpx");
+    let core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    let source = &core.document().sections[2].paragraphs[22].text;
+    let tree: Value = serde_json::from_str(
+        &core
+            .get_page_layer_tree_with_profile_native(55, rhwp::paint::RenderProfile::Print)
+            .unwrap(),
+    )
+    .unwrap();
+    let mut nodes = Vec::new();
+    collect(&tree["root"], &mut nodes);
+    let rebuilt: String = nodes
+        .iter()
+        .map(|node| node["text"].as_str().unwrap())
+        .collect();
+    assert_eq!(&rebuilt, source, "같은 쪽의 원문 순서·누락·중복 보존");
+    let mut found = 0;
+    for node in &nodes {
+        let clusters = node["clusters"].as_array().expect("최종 replay 클러스터");
+        let text = node["text"].as_str().unwrap();
+        assert_eq!(clusters.len(), text.chars().count());
+        for (i, ch) in text.chars().enumerate() {
+            if matches!(ch, '<' | '>') {
+                found += 1;
+                let em = clusters[i]["advance"]["dx"].as_f64().unwrap()
+                    / node["style"]["fontSize"].as_f64().unwrap();
+                assert!(
+                    (em - 0.605).abs() < 0.005,
+                    "원 프로그램의 비교 기호 전진: {ch} {em}"
+                );
+            }
+        }
+    }
+    assert_eq!(found, 2, "같은 원문의 두 비교 기호만 검사");
+}
+
+#[test]
 fn worklife_repeated_plus_keeps_the_following_value_on_its_independent_origin() {
     // C94: 전6쪽 Native/fresh WASM90% 이상, devel 대비0.01%p 하락0.
     // 같은 물리 줄의 반복 '+' 누적 경계는4쪽(99.00620/98.99872%)에 있다.
@@ -831,4 +918,85 @@ fn original_hci_bold_comparison_glyphs_preserve_style_and_ttf_boundaries() {
             "measuredOriginalGlyph"
         );
     }
+}
+
+#[test]
+fn declared_hft_gothic_keeps_its_monospace_ascii_punctuation() {
+    // 별도 빈 HWPX의 전체 ASCII 표본을 한컴2020 Print: 95자 모두500/1000em.
+    // sample11의 좌표나 잠정 배치를 기대값으로 사용하지 않는다.
+    let input = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-sample11.hwp");
+    let original = DocumentCore::from_bytes(&std::fs::read(input).unwrap()).unwrap();
+    let source_faces: Vec<_> = original
+        .document()
+        .doc_info
+        .font_faces
+        .iter()
+        .flatten()
+        .filter(|face| face.name == "고딕")
+        .collect();
+    assert!(!source_faces.is_empty());
+    assert!(
+        source_faces.iter().all(|face| face.alt_type == 2),
+        "공통 IR의 HFT 선언까지 전달되어야 실제 조판이 같은 폭을 소비한다"
+    );
+    let mut program = core("고딕", " .,:()!?A1", None);
+    let mut source = program.document().clone();
+    for font in source.doc_info.font_faces.iter_mut().flatten() {
+        font.alt_type = 2;
+    }
+    for shape in &mut source.doc_info.char_shapes {
+        shape.use_font_space = true;
+    }
+    program.set_document(source.clone());
+    let space = record(&program, " ");
+    assert!(
+        (advance(&space) - 7500.0 * 0.5).abs() <= 2.0,
+        "원본 고정폭 공백도 표시용 대체 글꼴의 폭을 소비하지 않음: {}",
+        advance(&space)
+    );
+    assert_eq!(space["layoutMetric"]["widthSource"], "useFontSpace");
+    for c in ['.', ',', ':', '(', ')', '!', '?', 'A', '1'] {
+        let decision = record(&program, &c.to_string());
+        assert!(
+            (advance(&decision) - 7500.0 * 0.5).abs() <= 2.0,
+            "원본 고정폭 ASCII {c}: {}",
+            advance(&decision)
+        );
+        assert_eq!(
+            decision["layoutMetric"]["widthSource"],
+            "measuredOriginalGlyph"
+        );
+    }
+    program
+        .set_font_environment(Some(
+            FontEnvironment::from_json(
+                r#"{"id":"explicit-gothic-ttf","substitutions":{"고딕":"HCR Dotum"},"trueTypeFaces":["HCR Dotum"]}"#,
+            )
+            .unwrap(),
+        ))
+        .unwrap();
+    assert_ne!(
+        record(&program, ".")["layoutMetric"]["widthSource"],
+        "measuredOriginalGlyph"
+    );
+    let mut ttf = core("HCR Dotum", " A", None);
+    let mut ttf_source = ttf.document().clone();
+    for shape in &mut ttf_source.doc_info.char_shapes {
+        shape.use_font_space = true;
+    }
+    ttf.set_document(ttf_source);
+    assert_eq!(
+        advance(&record(&program, " ")),
+        advance(&record(&ttf, " ")),
+        "명시 TrueType 대조군은 선택한 TTF의 공백을 유지한다"
+    );
+    program.set_font_environment(None).unwrap();
+    for shape in &mut source.doc_info.char_shapes {
+        shape.italic = true;
+    }
+    program.set_document(source);
+    assert_ne!(
+        record(&program, ".")["layoutMetric"]["widthSource"],
+        "measuredOriginalGlyph"
+    );
 }

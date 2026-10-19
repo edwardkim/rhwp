@@ -4,6 +4,8 @@ import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
 import { rasterLineEndpoints } from './canvaskit/raster-stroke.ts';
+import { shouldDrawPageMarginGuides } from './page-margin-guides.ts';
+import squareGradientSkSL from '../../../src/renderer/square_gradient.sksl?raw';
 import * as bitmapRasterWasm from '@wasm/rhwp.js';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
@@ -1047,7 +1049,7 @@ export class CanvasKitLayerRenderer {
       for (const replayPlane of CANVASKIT_REPLAY_PLANES) {
         this.renderNode(canvas, tree.root, tree.profile ?? 'screen', replayPlane, null);
       }
-      if (pageInfo && tree.profile !== 'print') {
+      if (pageInfo && shouldDrawPageMarginGuides(tree.profile)) {
         const paint = this.makeStrokePaint('#c0c0c0', 0.3);
         const left = pageInfo.marginLeft;
         const top = pageInfo.marginHeader + pageInfo.marginTop;
@@ -1916,8 +1918,23 @@ export class CanvasKitLayerRenderer {
       if (equivalenceGroup && !this.selectedTextVariantOps.has(op)) {
         continue;
       }
+      const transform = (op.type === 'textRun' || op.type === 'glyphRun'
+        || op.type === 'glyphOutline' || op.type === 'charOverlap') ? op.paintTransform : undefined;
+      const matrix = this.affineToCanvasKitMatrix(transform);
+      if (transform && (!matrix
+        || !matrix.every(value => Number.isFinite(value) && Number.isFinite(Math.fround(value)))
+        || !(Math.abs(transform.a * transform.d - transform.b * transform.c) > 1e-12))) {
+        throw new Error('Invalid glyph paint transform');
+      }
       this.currentOp = op;
-      try { this.renderOp(canvas, op, profile); } finally { this.currentOp = null; }
+      let saved = false;
+      try {
+        if (matrix) { canvas.save(); saved = true; canvas.concat(matrix); }
+        this.renderOp(canvas, op, profile);
+      } finally {
+        this.currentOp = null;
+        if (saved) canvas.restore();
+      }
     }
   }
 
@@ -3113,6 +3130,8 @@ export class CanvasKitLayerRenderer {
             candidateGlyphIds.push(symbolFont.getGlyphIDs(glyphReplayText, codePoints.length));
           }
           const selectedFontIndices = codePoints.map((codePoint, index) => {
+            // 위치/전진은 공통 positions가 소유한다. TAB·공백은 font가 visible gid를 갖고 있어도 글리프 잉크가 아니다.
+            if (/^\s$/u.test(codePoint)) return -3;
             const code = codePoint.codePointAt(0) ?? 0;
             if ((code >= 0x1100 && code <= 0x11ff)
               || (code >= 0xa960 && code <= 0xa97f)
@@ -3212,6 +3231,32 @@ export class CanvasKitLayerRenderer {
 
           if (!hasLayoutPositions) {
             const y = originY + baselineShift + offsetY;
+            if (codePoints.some(character => /^\s$/u.test(character))) {
+              // 구형 caller에 확정 positions가 없으면 기존 nominal glyph 전진을
+              // 보존한다. 잉크를 생략해도 뒤 글자의 원점·배경·장식 길이는 줄이지 않는다.
+              const ids = font!.getGlyphIDs(glyphReplayText, codePoints.length);
+              const widths = font!.getGlyphWidths(ids);
+              const visibleIds: number[] = [];
+              const visiblePositions: number[] = [];
+              let advance = 0;
+              for (let index = 0; index < codePoints.length; index += 1) {
+                if (!/^\s$/u.test(codePoints[index])) {
+                  visibleIds.push(ids[index]);
+                  visiblePositions.push(advance, baselineShift);
+                }
+                advance += widths?.[index] ?? 0;
+              }
+              if (visibleIds.length > 0) {
+                const inkIds = Uint16Array.from(visibleIds);
+                const inkPositions = Float32Array.from(visiblePositions);
+                const range = { start: 0, length: glyphReplayText.length };
+                this.drawCachedGlyphs(canvas, inkIds, inkPositions, originX + offsetX,
+                  originY + offsetY, font!, fillPaint, range);
+                if (strokePaint) this.drawCachedGlyphs(canvas, inkIds, inkPositions,
+                  originX + offsetX, originY + offsetY, font!, strokePaint, range);
+              }
+              return;
+            }
             this.drawCachedText(canvas, glyphReplayText, originX + offsetX, y, fillPaint, font!);
             if (strokePaint) {
               this.drawCachedText(canvas, glyphReplayText, originX + offsetX, y, strokePaint, font!);
@@ -3221,6 +3266,7 @@ export class CanvasKitLayerRenderer {
 
           let hasMissingGlyph = false;
           for (const { start: runStart, end: runEnd, fontIndex } of fallbackSpans) {
+            if (fontIndex === -3) continue;
             if (fontIndex === -2) {
               if (!this.renderShapedScriptText(
                 canvas,
@@ -3872,7 +3918,8 @@ export class CanvasKitLayerRenderer {
       if (decoration.kind === 'underline') {
         const y = decoration.underline === 'top'
           ? baselineY - decoration.fontSize + 1
-          : baselineY + 2;
+          // 독립 Print 6크기 계약: Native/SVG/Canvas2D와 같은 em 비례 오프셋.
+          : baselineY + decoration.fontSize * 0.17;
         drawLineShape(originX, y);
         return;
       }
@@ -5215,7 +5262,26 @@ export class CanvasKitLayerRenderer {
       MakeRadialGradient?: (...args: unknown[]) => unknown;
     };
     const gradientType = gradient.gradientType ?? 1;
-    if (gradientType >= 2 && gradientType <= 4) {
+    if (gradientType === 4) {
+      const cx = bounds.x + bounds.width * ((gradient.centerX ?? 50) / 100);
+      const cy = bounds.y + bounds.height * ((gradient.centerY ?? 50) / 100);
+      const radius = Math.max(Math.abs(cx - bounds.x), Math.abs(bounds.x + bounds.width - cx),
+        Math.abs(cy - bounds.y), Math.abs(bounds.y + bounds.height - cy));
+      if (!Number.isFinite(radius) || radius <= 0) return null;
+      const ramp = this.canvasKit.Shader.MakeLinearGradient(
+        [0, 0], [radius, 0], shaderColors.map(color => new Float32Array(color)), positions, this.canvasKit.TileMode.Clamp,
+      );
+      if (!ramp) return null;
+      const effect = this.canvasKit.RuntimeEffect.Make(squareGradientSkSL);
+      try {
+        const angle = (gradient.angle ?? 0) * Math.PI / 180;
+        return effect?.makeShaderWithChildren([cx, cy, Math.cos(angle), Math.sin(angle)], [ramp]) ?? null;
+      } finally {
+        effect?.delete();
+        ramp.delete();
+      }
+    }
+    if (gradientType >= 2 && gradientType <= 3) {
       const cx = bounds.x + bounds.width * ((gradient.centerX ?? 50) / 100);
       const cy = bounds.y + bounds.height * ((gradient.centerY ?? 50) / 100);
       const radius = Math.max(bounds.width, bounds.height) / 2;

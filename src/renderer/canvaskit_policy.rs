@@ -1705,15 +1705,38 @@ impl CanvasKitReplayPlanBuilder {
                 }
             }
             PaintOp::TextDecoration {
-                bbox, run, kind, ..
+                bbox,
+                run,
+                kind,
+                paint_geometry,
+                ..
             } => {
+                let invalid_placement = paint_geometry.is_some_and(|geometry| {
+                    ![
+                        geometry.bbox.x,
+                        geometry.bbox.y,
+                        geometry.bbox.width,
+                        geometry.bbox.height,
+                        geometry.inline_scale,
+                    ]
+                    .iter()
+                    .all(|value| value.is_finite())
+                        || geometry.inline_scale <= 0.0
+                        || geometry.bbox.width < 0.0
+                        || geometry.bbox.height < 0.0
+                });
                 let (display_text, display_complete) = bounded_display_text_for_visual(run);
                 let detail = if !display_complete {
                     Some("visualItemLimitExceeded")
-                } else if !text_visual_geometry_is_valid(bbox, run, &display_text) {
+                } else if invalid_placement
+                    || !text_visual_geometry_is_valid(bbox, run, &display_text)
+                {
                     Some("invalidGeometry")
                 } else {
-                    None
+                    let (paint_bbox, paint_run) =
+                        op.decoration_replay().expect("decoration replay");
+                    (!text_visual_geometry_is_valid(&paint_bbox, &paint_run, &display_text))
+                        .then_some("invalidGeometry")
                 };
                 if let Some(detail) = detail {
                     let mut item = self.transition_overlay_item(
@@ -1746,6 +1769,12 @@ impl CanvasKitReplayPlanBuilder {
                 TextVariantKind::GlyphOutline,
             ),
         };
+        if !op.glyph_paint_transform_is_valid() {
+            item.status = CanvasKitReplayStatus::Unsupported;
+            item.reason = CanvasKitReplayReason::UnsupportedFeature;
+            item.compat_overlay_allowed = false;
+            item.detail = Some("invalidGlyphPaintTransform".to_string());
+        }
         item.replay_plane = Some(paint_op_replay_plane_with_layer(op, layer));
         item
     }

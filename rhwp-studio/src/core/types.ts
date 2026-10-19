@@ -1236,6 +1236,8 @@ export interface LayerTextControlMark {
 }
 
 export interface LayerTextRunOp {
+  /** Glyph-only output frame; source bbox/placement stay logical. */
+  paintTransform?: LayerAffineTransform;
   type: 'textRun';
   bbox: LayerBounds;
   text: string;
@@ -1600,6 +1602,8 @@ export interface LayerTabLeaderOp {
 }
 
 export interface LayerCharOverlapOp {
+  /** Glyph-only output frame; source bbox/placement stay logical. */
+  paintTransform?: LayerAffineTransform;
   type: 'charOverlap';
   bbox: LayerBounds;
   text: string;
@@ -1614,6 +1618,8 @@ export interface LayerCharOverlapOp {
 }
 
 export interface LayerGlyphRunOp {
+  /** Glyph-only output frame; source bbox/placement stay logical. */
+  paintTransform?: LayerAffineTransform;
   type: 'glyphRun';
   bbox: LayerBounds;
   source: LayerTextSourceSpan;
@@ -1634,6 +1640,8 @@ export interface LayerGlyphRunOp {
 }
 
 export interface LayerGlyphOutlineOp {
+  /** Glyph-only output frame; source bbox/placement stay logical. */
+  paintTransform?: LayerAffineTransform;
   type: 'glyphOutline';
   bbox: LayerBounds;
   variant?: LayerTextVariantMeta;

@@ -932,7 +932,7 @@ fn issue_4969_common_alternative_preserves_declared_size_and_shared_page_geometr
     let glyph_runs = ops
         .iter()
         .filter_map(|op| match op {
-            PaintOp::GlyphRun { bbox, run }
+            PaintOp::GlyphRun { bbox, run, .. }
                 if run.diagnostics.reason.as_deref()
                     == Some("q2CommonShapingCondensedDrawProjectionV1") =>
             {
@@ -1063,7 +1063,7 @@ fn issue_4969_q2_d5_n1_no_lineseg_publishes_one_atomic_common_alternative() {
     let glyph_runs = ops
         .iter()
         .filter_map(|op| match op {
-            PaintOp::GlyphRun { bbox, run }
+            PaintOp::GlyphRun { bbox, run, .. }
                 if run.diagnostics.reason.as_deref()
                     == Some("q2CommonShapingCondensedDrawProjectionV1") =>
             {

@@ -19,7 +19,21 @@ pub fn effective_text_for_metrics(run: &ComposedTextRun) -> &str {
     if run.text.contains('\u{F081C}') {
         return &run.text;
     }
-    run.display_text.as_deref().unwrap_or(&run.text)
+    display_projection_metric_text(&run.text, run.display_text.as_deref().unwrap_or(&run.text))
+}
+
+/// 일대일 표시 투영은 source 프로그램의 메트릭을 유지한다. 필드 값·옛한글
+/// 확장처럼 별도 표시 문자열인 경우는 표시 문자열 자체의 폭을 사용한다.
+pub(crate) fn display_projection_metric_text<'a>(source: &'a str, display: &'a str) -> &'a str {
+    if source
+        .chars()
+        .map(single_scalar_display_char)
+        .eq(display.chars())
+    {
+        source
+    } else {
+        display
+    }
 }
 
 /// PUA Supplementary 영역(U+F0000~) 문자가 테두리 숫자인지 판별한다.

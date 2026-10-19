@@ -289,6 +289,22 @@ pub(crate) fn glyph_fit_positions<'a>(
     layout_positions: Option<&[f64]>,
     char_positions: &'a [f64],
 ) -> std::borrow::Cow<'a, [f64]> {
+    if legacy_font_advances::has_fixed_ascii_bold_tracking(style) {
+        // 원점은 확정 layout positions를 그대로 쓴다. 윤곽 폭만 측정이 실제
+        // 적용한 tracking 기여를 제외하며, 다른 언어 슬롯·탭·음수 자간도
+        // 같은 CharWidthDecision 결과에서 소비한다.
+        let mut fit_style = style.clone();
+        fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
+        let decisions = layout::trace_char_width_decisions(replay_text, &fit_style);
+        let mut positions = Vec::with_capacity(decisions.len() + 1);
+        let mut x = 0.0;
+        positions.push(x);
+        for decision in decisions {
+            x += decision.final_width_px - decision.bold_tracking_px;
+            positions.push(x);
+        }
+        return std::borrow::Cow::Owned(positions);
+    }
     if layout::has_hft_bold_tracking(style) {
         // 원본 HFT의 굵기 간격은 글자 원점만 전진시키며 intrinsic 폭은 유지한다.
         // backend는 원래 char_positions를 위치로, 이 경계를 glyph-fit 폭으로 쓴다.
@@ -346,6 +362,9 @@ pub struct TextStyle {
     /// 원본 언어 슬롯의 글자 위치(%). 0은 기존 직렬화와 같이 생략한다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub font_position: Option<i8>,
+    /// 유지된 원본 HFT의 인쇄 paint 좌표 계약. 논리 조판/전진 폭과 별개다.
+    #[serde(skip_serializing)]
+    pub hft_print_frame: bool,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -718,6 +737,7 @@ impl Default for TextStyle {
             source_font_is_hft: false,
             resolved_font_size: false,
             font_position: None,
+            hft_print_frame: false,
             color: 0,
             bold: false,
             italic: false,
@@ -1065,6 +1085,27 @@ pub fn radial_gradient_geometry(
     let dx = (cx - x).abs().max((x + w - cx).abs());
     let dy = (cy - y).abs().max((y + h - cy).abs());
     (cx, cy, dx.hypot(dy))
+}
+
+/// 사각 채우기의 중심·회전축·반변 길이. 중심에서 원본 상자 네 변까지의
+/// 가장 긴 거리를 회전 전의 정사각형 반변으로 쓴다. 회전 후 모서리를 덮도록
+/// 반변을 다시 늘리면 원본의 색 띠 폭이 달라진다. 정사각형 밖은 마지막 색이다.
+pub fn square_gradient_geometry(
+    grad: &GradientFillInfo,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+) -> (f64, f64, f64, f64, f64) {
+    let cx = x + w * f64::from(grad.center_x) / 100.0;
+    let cy = y + h * f64::from(grad.center_y) / 100.0;
+    let radius = (cx - x)
+        .abs()
+        .max((x + w - cx).abs())
+        .max((cy - y).abs())
+        .max((y + h - cy).abs());
+    let angle = f64::from(grad.angle).to_radians();
+    (cx, cy, radius, angle.cos(), angle.sin())
 }
 
 /// 선 렌더링 스타일

@@ -89,7 +89,13 @@ impl PaintOp {
                 kind,
                 trim_trailing_spaces,
                 ..
-            } => decoration_bounds(logical, run, *kind, *trim_trailing_spaces),
+            } => {
+                let (bbox, run) = self.decoration_replay().expect("decoration replay");
+                union(
+                    logical,
+                    decoration_bounds(bbox, &run, *kind, *trim_trailing_spaces),
+                )
+            }
             Self::FootnoteMarker { marker, .. } => expand(logical, marker.base_font_size * 0.15),
             Self::Line { line, .. } => {
                 let base = arrow_bounds(
@@ -151,6 +157,7 @@ impl PaintOp {
             | Self::Placeholder { .. }
             | Self::RawSvg { .. } => logical,
         };
+        let visual = affine_bounds(visual, self.glyph_paint_transform());
         PaintBounds { logical, visual }
     }
 
@@ -872,7 +879,7 @@ fn decoration_bounds(
             if run.style.underline == UnderlineType::Top {
                 baseline - font_size + 1.0
             } else {
-                baseline + 2.0
+                baseline + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
             },
             1.0,
         ),

@@ -55,6 +55,7 @@ fn hwp3_sample16_business_box_has_gradient() {
         2,
         "HWP3 raw 는 start_color + end_color 2-stop"
     );
+    assert_eq!(grad.step_center, 50, "전이 위치가 없는 V3는 중앙 전이");
 }
 
 /// HWPX shape-local fillBrush 의 `<hc:gradation><hc:color .../>` stop 파싱 회귀 가드.

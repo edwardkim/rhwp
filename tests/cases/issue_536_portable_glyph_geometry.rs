@@ -527,7 +527,7 @@ fn shared_bitmap_and_svg_selector_preserves_fonts_when_decimal_wire_extents_coll
             let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
                 unreachable!()
             };
-            let PaintOp::GlyphOutline { bbox, outline } = &mut ops[1] else {
+            let PaintOp::GlyphOutline { bbox, outline, .. } = &mut ops[1] else {
                 unreachable!()
             };
             outline.paths.clear();
@@ -714,7 +714,7 @@ fn shared_svg_selector_keeps_fallback_fonts_when_view_box_mapping_overflows() {
         let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
             unreachable!()
         };
-        let PaintOp::GlyphOutline { bbox, outline } = &mut ops[1] else {
+        let PaintOp::GlyphOutline { bbox, outline, .. } = &mut ops[1] else {
             unreachable!()
         };
         *bbox = destination;
@@ -754,7 +754,7 @@ fn shared_svg_selector_uses_the_explicit_font_em_destination() {
     let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
         unreachable!()
     };
-    let PaintOp::GlyphOutline { bbox, outline } = &mut ops[1] else {
+    let PaintOp::GlyphOutline { bbox, outline, .. } = &mut ops[1] else {
         unreachable!()
     };
     *bbox = BoundingBox::new(1e100, 0.0, 8.0, 8.0);
@@ -814,7 +814,7 @@ fn shared_svg_mapping_checks_the_explicit_font_em_viewport() {
         let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
             unreachable!()
         };
-        let PaintOp::GlyphOutline { bbox, outline } = &mut ops[1] else {
+        let PaintOp::GlyphOutline { bbox, outline, .. } = &mut ops[1] else {
             unreachable!()
         };
         *bbox = BoundingBox::new(0.0, 0.0, compatibility_width, 1.0);

@@ -85,8 +85,8 @@ fn chart_png_renders_text_labels() {
 }
 
 // #7445: 원본 PNG 산점도의 전302쪽 수용 후 추가한 Print 축소 경계.
-// 독립 PDF·Native/fresh WASM raw 최저91.00093%와 review/overlay는
-// mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/bitmap-print-20261017/ 참조.
+// 독립 PDF·Native/fresh WASM 전302쪽 및153쪽 raw98.66795%와 review/overlay는
+// mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/bitmap-print-20261018/ 참조.
 #[test]
 fn reduced_scatter_plot_preserves_every_interior_grid_band() {
     use rhwp::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp, RenderProfile};
@@ -108,7 +108,8 @@ fn reduced_scatter_plot_preserves_every_interior_grid_band() {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/issue5941/1490000-201600081_roadmap_research.hwp");
     let mut core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
-    core.set_hangul2024_compat(true);
+    // 이 원본의 독립 기준은 한컴2020 Print다. 2024 호환 모드로 대체하지 않는다.
+    core.set_hangul2024_compat(false);
     assert_eq!(core.page_count(), 302);
     let layer = core
         .build_page_layer_tree_with_profile(152, RenderProfile::Print)
@@ -130,6 +131,19 @@ fn reduced_scatter_plot_preserves_every_interior_grid_band() {
         .or(image.data.as_deref())
         .expect("원본 그림 픽셀");
     let source = image::load_from_memory(bytes).unwrap().to_rgb8();
+    // PDF153쪽의 실제 이미지 사각형(pt)을96dpi CSS px로 환산했다.
+    // 그림과 내부 격자를 같은 개체로 식별한 뒤 네 변을 함께 보호한다.
+    let [x, y, width, height] = [121.374664, 146.560018, 558.740000, 430.089315];
+    let reference_edges = [x, y, x + width, y + height];
+    for (actual, reference) in [bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height]
+        .into_iter()
+        .zip(reference_edges)
+    {
+        assert!(
+            (actual - reference).abs() <= 2.0,
+            "독립 Print 그림 경계: {actual} vs {reference}"
+        );
+    }
     let (width, height) = source.dimensions();
     let (first, end) = (width / 4, width * 3 / 4);
     let gray = |p: &image::Rgb<u8>| {
@@ -147,7 +161,11 @@ fn reduced_scatter_plot_preserves_every_interior_grid_band() {
                 >= (end - first) as usize * 9
         })
         .collect();
-    assert!(rows.len() >= 5, "원본 산점도의 수평 격자선");
+    assert_eq!(
+        rows.len(),
+        7,
+        "축 테두리2개와 내부 격자5개가 같은 그림에 속한다"
+    );
     let scene = PageLayerTree::with_profile(
         layer.page_width,
         layer.page_height,
@@ -167,30 +185,48 @@ fn reduced_scatter_plot_preserves_every_interior_grid_band() {
     let sx = bbox.width / f64::from(width);
     let sy = bbox.height / f64::from(height);
     // 첫/끝 줄은 축 테두리다. 내부의 반복 격자를 모두 검사한다.
-    for &y in rows.iter().skip(1).take(rows.len() - 2) {
+    // 독립 Print를 pdftoppm96dpi로 읽은 같은5개 밴드의 명암5/95분위수.
+    // JPEG/축소 위상 때문에 네 번째 줄만 더 옅다. 모든 줄에232를 적용하면
+    // 기준 PDF 자체도198/272열(72.8%)만 통과하므로 잘못된 기대값이다.
+    // 나머지 네 줄의 상한은 기존232보다 엄격하다. 검은 선으로 덮어서
+    // 통과하지 못하도록 중앙값의 하한도 독립 PDF의5분위수로 검사한다.
+    let reference_bands = [(215, 218), (215, 218), (215, 221), (224, 238), (215, 222)];
+    for (&y, (dark_limit, light_limit)) in rows
+        .iter()
+        .skip(1)
+        .take(rows.len() - 2)
+        .zip(reference_bands)
+    {
         let center = (bbox.y + (f64::from(y) + 0.5) * sy - 0.5).round() as u32;
         let left = (bbox.x + f64::from(first) * sx).round() as u32;
         let right = (bbox.x + f64::from(end) * sx).round() as u32;
         let mut preserved = 0;
         let mut sampled = 0;
+        let mut levels = Vec::new();
         for x in left..right {
             let source_x = ((f64::from(x) + 0.5 - bbox.x) / sx).floor() as u32;
             let original = source.get_pixel(source_x.min(width - 1), y);
             if !gray(original) {
                 continue;
             }
-            // 독립 Print의 같은 내부 격자선은 중앙 구간에서 모두
-            // RGB232 이하의 연결된 선을 갖는다. raw 실루엣과 같은 명암
-            // 경계에서 원본 행의90% 이상 열이 이어져 보여야 한다.
-            // 위치는 원본 행과 그림 영역의 비율에서만 유도한다.
-            let visible = (center.saturating_sub(2)..=center + 2)
-                .any(|row| output.get_pixel(x, row).0.into_iter().all(|v| v <= 232));
+            // 원본 회색 행이 있는 열에서 ±2CSSpx의 RGB 최대 성분 최솟값을
+            // 읽는다. JPEG의 색 번짐도 독립 PDF와 같은 조건으로 평가한다.
+            let level = (center.saturating_sub(2)..=center + 2)
+                .map(|row| output.get_pixel(x, row).0.into_iter().max().unwrap())
+                .min()
+                .unwrap_or(255);
             sampled += 1;
-            preserved += usize::from(visible);
+            preserved += usize::from(level <= light_limit);
+            levels.push(level);
         }
         assert!(
             sampled > 0 && preserved * 10 >= sampled * 9,
             "원본 grid 행{y}: 신호를 보존한 열{preserved}/{sampled}; 원본 격자선의 연속 표시 유지"
+        );
+        levels.sort_unstable();
+        assert!(
+            levels[levels.len() / 2] >= dark_limit,
+            "원본 grid 행{y}: 독립 Print보다 검게 덮지 않는다"
         );
     }
 }

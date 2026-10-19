@@ -903,6 +903,7 @@ pub(crate) fn resolved_to_text_style(
                 .flatten(),
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
+            hft_print_frame: cs.hft_print_frame_for_lang(lang_index),
             font_family: cs.font_family_for_lang(lang_index).to_string(),
             supplemental_metrics: styles.supplemental_metrics.clone(),
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
@@ -1353,6 +1354,9 @@ pub(crate) struct CharWidthDecision<'a> {
     pub(crate) width_source: &'static str,
     pub(crate) base_width_px: f64,
     pub(crate) final_width_px: f64,
+    /// 실제 전진 중 원점에만 적용한 옛 프로그램의 굵은 자간.
+    /// glyph fit은 이 측정 결과를 빼고 자연 윤곽 폭을 사용한다.
+    pub(crate) bold_tracking_px: f64,
     /// 자연 글리프 폭에 실제 적용한 자간. 줄 끝 fit도 이 기여를 소비한다.
     pub(crate) applied_letter_spacing_px: f64,
     pub(crate) metric: Option<font_metrics_data::MetricLookupDecision<'a>>,
@@ -1624,6 +1628,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             width_source: "clusterContinuation",
             base_width_px: 0.0,
             final_width_px: 0.0,
+            bold_tracking_px: 0.0,
             applied_letter_spacing_px: 0.0,
             metric: None,
             character_match: "notApplicable",
@@ -1636,6 +1641,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             width_source: "inlineObjectPlaceholder",
             base_width_px: 0.0,
             final_width_px: 0.0,
+            bold_tracking_px: 0.0,
             applied_letter_spacing_px: 0.0,
             metric: None,
             character_match: "notApplicable",
@@ -1666,6 +1672,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             width_source: "figureSpace",
             base_width_px,
             final_width_px,
+            bold_tracking_px: 0.0,
             applied_letter_spacing_px,
             metric: None,
             character_match: "notApplicable",
@@ -1729,14 +1736,36 @@ fn char_width_decision_with_hft_tracking<'a>(
             .map_or(style.original_glyph_metric_family.as_deref(), |slot| {
                 slot.original_glyph_metric_family.as_deref()
             });
-        let original_glyph_em = original_glyph_face.and_then(|face| {
-            font_metrics_data::declared_original_glyph_advance_em(face, style.bold, style.italic, c)
+        let implicit_symbol_em = font_metrics_data::implicit_symbol_advance_em(chars[i]);
+        let original_glyph_em = implicit_symbol_em.or_else(|| {
+            original_glyph_face.and_then(|face| {
+                // 표시용 Unicode로 바꾸기 전의 원본 프로그램 hit를 먼저 소비한다.
+                // source 결측일 때만 기존 표시 글리프의 확인된 폭으로 내려간다.
+                font_metrics_data::declared_original_glyph_advance_em(
+                    face,
+                    style.bold,
+                    style.italic,
+                    chars[i],
+                )
+                .or_else(|| {
+                    font_metrics_data::declared_original_glyph_advance_em(
+                        face,
+                        style.bold,
+                        style.italic,
+                        c,
+                    )
+                })
+            })
         });
         let mut embedded = if let Some(em) = original_glyph_em {
             EmbeddedWidthDecision {
                 width_px: Some(quantize_hwp_px(font_size * em)),
                 em_fraction: Some(em),
-                width_source: "measuredOriginalGlyph",
+                width_source: if implicit_symbol_em.is_some() {
+                    "implicitSymbolProgram"
+                } else {
+                    "measuredOriginalGlyph"
+                },
                 metric: None,
                 character_match: "hit",
             }
@@ -2086,24 +2115,29 @@ fn char_width_decision_with_hft_tracking<'a>(
     };
     let mut final_width_px = glyph_advance_px + extra_char_spacing;
     let mut applied_letter_spacing_px = glyph_advance_px - base_width_px * ratio;
-    // 정식 원본 HFT tracking을 이미 소비한 경우 부분 표의 보정을 중복하지 않는다.
-    if include_hft_bold_tracking && !source_hft_metric {
-        final_width_px += crate::renderer::legacy_font_advances::bold_advance(
-            style,
-            c,
-            base_width_px * ratio + applied_letter_spacing_px,
-            font_size * ratio,
-        );
-    }
+    let original_glyph_face = latin.map_or(style.original_glyph_metric_family.as_deref(), |slot| {
+        slot.original_glyph_metric_family.as_deref()
+    });
+    let bold_tracking_px = crate::renderer::legacy_font_advances::bold_advance(
+        style,
+        c,
+        base_width_px * ratio + applied_letter_spacing_px,
+        font_size * ratio,
+        original_glyph_face.map(String::as_str),
+    );
+    let bold_tracking_px = if include_hft_bold_tracking && !source_hft_metric { bold_tracking_px } else { 0.0 };
+    final_width_px += bold_tracking_px;
     if c == ' ' && i >= style.unjustified_leading_spaces {
         final_width_px += style.extra_word_spacing;
     }
     if dash_leader {
         final_width_px += style.extra_dash_advance;
     }
+    let mut without_bold_tracking_px = final_width_px - bold_tracking_px;
     let mut negative_spacing_clamped = false;
     if letter_spacing + extra_char_spacing < 0.0 {
         let min_width = base_width_px * ratio * 0.5;
+        without_bold_tracking_px = without_bold_tracking_px.max(min_width);
         if final_width_px < min_width {
             applied_letter_spacing_px += min_width - final_width_px;
             final_width_px = min_width;
@@ -2114,6 +2148,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         width_source,
         base_width_px,
         final_width_px,
+        bold_tracking_px: final_width_px - without_bold_tracking_px,
         applied_letter_spacing_px,
         metric,
         character_match,
@@ -2307,6 +2342,7 @@ pub(crate) fn trace_char_width_decisions<'a>(
                 decision.width_source = "tabAdvance";
                 decision.base_width_px = advance;
                 decision.final_width_px = advance;
+                decision.bold_tracking_px = 0.0;
                 decision.applied_letter_spacing_px = 0.0;
                 decision.metric = None;
                 decision.character_match = "notApplicable";

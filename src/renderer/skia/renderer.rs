@@ -27,9 +27,7 @@ use crate::renderer::raster_pixels::{
     RasterPixelFormat, RasterPixels, RasterRegion, RasterRegionPixels,
 };
 use crate::renderer::render_tree::RenderLayerInfo;
-use crate::renderer::{
-    svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash,
-};
+use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
 
 use super::cache::{
     debug_key, debug_size, inline_resource_estimate, BoundedCache, NativeSkiaCacheStats,
@@ -1026,7 +1024,7 @@ impl SkiaLayerRenderer {
             PaintOp::GlyphRun { run, .. } => {
                 prepare_native_glyph_run(run, resources, &self.font_mgr).1?
             }
-            PaintOp::GlyphOutline { outline, bbox } => {
+            PaintOp::GlyphOutline { outline, bbox, .. } => {
                 prepare_glyph_outline(outline, *bbox, resources, scale)?
             }
             _ => return None,
@@ -1582,6 +1580,18 @@ impl SkiaLayerRenderer {
                         diagnostics.output.paint_ops_replayed =
                             diagnostics.output.paint_ops_replayed.saturating_add(1);
                     }
+                    if !op.glyph_paint_transform_is_valid() {
+                        return Err(crate::error::HwpError::RenderError(
+                            "invalid glyph paint transform".to_string(),
+                        ));
+                    }
+                    let _glyph_frame_guard = op.glyph_paint_transform().map(|t| {
+                        let guard = skia_safe::AutoCanvasRestore::guard(canvas, true);
+                        canvas.concat(&skia_safe::Matrix::from_affine(&[
+                            t.a as f32, t.b as f32, t.c as f32, t.d as f32, t.e as f32, t.f as f32,
+                        ]));
+                        guard
+                    });
                     match op {
                         PaintOp::PageBackground { bbox, background } => {
                             let rect = Rect::from_xywh(
@@ -1684,7 +1694,12 @@ impl SkiaLayerRenderer {
                             if role == TextVisualReplayRole::SuppressedFallback {
                                 continue;
                             }
-                            let mut projected = run.as_ref().clone();
+                            let decoration_replay = op.decoration_replay();
+                            let (bbox, run) = decoration_replay
+                                .as_ref()
+                                .map(|(bbox, run)| (*bbox, run.as_ref()))
+                                .unwrap_or((*bbox, run.as_ref()));
+                            let mut projected = run.clone();
                             projected.char_overlap = None;
                             projected.style.tab_leaders.clear();
                             projected.style.underline = UnderlineType::None;
@@ -1733,8 +1748,8 @@ impl SkiaLayerRenderer {
                                 crate::renderer::render_tree::FieldMarkerType::None
                             );
                             text_replay.draw_text(
-                                projected.display_or_text(),
-                                *bbox,
+                                projected.metric_or_display_text(),
+                                bbox,
                                 &projected.style,
                                 projected.baseline,
                                 projected.rotation,
@@ -1804,7 +1819,13 @@ impl SkiaLayerRenderer {
                             if line.transform.has_transform() {
                                 open_shape_transform(line.transform, bbox);
                             }
-                            draw_line(canvas, line, &make_line_paint(&line.style), antialias, profile);
+                            draw_line(
+                                canvas,
+                                line,
+                                &make_line_paint(&line.style),
+                                antialias,
+                                profile,
+                            );
                             draw_arrow_heads(
                                 canvas,
                                 &crate::renderer::arrow::line_heads(
@@ -2309,6 +2330,7 @@ fn draw_arrow_heads(
 
 #[cfg(test)]
 mod tests {
+    use super::super::image_conv::ImageSampling;
     use super::*;
     use crate::model::control::FormType;
     use crate::model::shape::TextWrap;
@@ -3316,9 +3338,11 @@ mod tests {
     fn svg_images_and_raw_fragments_keep_bounded_input_and_raster_area() {
         let mut surface = surfaces::raster_n32_premul((8, 8)).unwrap();
         let canvas = surface.canvas();
+        let cache = super::super::image_cache::ImageResourceCache::new(8, 1024 * 1024);
         let image = |bytes: &[u8], width, height| {
             draw_image_bytes(
                 canvas,
+                &cache,
                 bytes,
                 0.0,
                 0.0,
@@ -3337,6 +3361,7 @@ mod tests {
         assert!(!image(&vec![b' '; 16 * 1024 * 1024 + 1], 8.0, 8.0));
         assert!(!draw_svg_fragment(
             canvas,
+            &cache,
             &" ".repeat(4 * 1024 * 1024 + 1),
             0.0,
             0.0,
@@ -3350,6 +3375,7 @@ mod tests {
         assert!(!image(svg, f32::NAN, 8.0));
         assert!(!draw_svg_fragment(
             canvas,
+            &cache,
             "<rect width=\"8\" height=\"8\"/>",
             0.0,
             0.0,
@@ -3361,7 +3387,7 @@ mod tests {
     }
 
     #[test]
-    fn custom_font_paths_select_the_requested_style_after_bold_is_loaded_first() {
+    fn custom_font_paths_select_style_within_the_first_family_owner() {
         let regular = std::fs::read(
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("ttfs/opensource/NotoSansKR-Regular.ttf"),
@@ -3376,13 +3402,15 @@ mod tests {
                 .unwrap()
                 .as_nanos()
         ));
-        let bold_dir = root.join("bold-first");
+        let bold_dir = root.join("complete-family-first");
         let regular_dir = root.join("regular-second");
         std::fs::create_dir_all(&bold_dir).unwrap();
         std::fs::create_dir_all(&regular_dir).unwrap();
-        std::fs::write(bold_dir.join("bold.ttf"), &bold).unwrap();
-        std::fs::write(regular_dir.join("regular.ttf"), regular).unwrap();
-        let renderer = SkiaLayerRenderer::new().with_font_paths(&[bold_dir, regular_dir]);
+        std::fs::write(bold_dir.join("01-bold.ttf"), &bold).unwrap();
+        std::fs::write(bold_dir.join("02-regular.ttf"), &regular).unwrap();
+        std::fs::write(regular_dir.join("regular.ttf"), &regular).unwrap();
+        let renderer =
+            SkiaLayerRenderer::new().with_font_paths(&[bold_dir.clone(), regular_dir.clone()]);
         let declared_bold = renderer
             .font_mgr
             .new_from_data(skia_safe::Data::new_copy(&bold), None)
@@ -3408,6 +3436,21 @@ mod tests {
             );
             assert_eq!(chain[0].source, "custom");
         }
+        // upstream P47의 첫 경로 family 소유권을 유지한다. 첫 경로에 없는
+        // 스타일을 뒤 경로의 동명 프로그램으로 보충하지 않는다.
+        std::fs::remove_file(bold_dir.join("02-regular.ttf")).unwrap();
+        let renderer = SkiaLayerRenderer::new().with_font_paths(&[bold_dir, regular_dir]);
+        let selected = match_supplied_family(
+            &renderer.custom_typefaces,
+            "Noto Sans KR",
+            FontStyle::normal(),
+        )
+        .expect("첫 경로의 family 공급");
+        assert_eq!(
+            *selected.font_style().weight(),
+            700,
+            "뒤 경로의 가까운 스타일이 첫 family 소유자를 덮어쓰지 않는다"
+        );
         std::fs::remove_dir_all(root).unwrap();
     }
 

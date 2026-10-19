@@ -25,10 +25,10 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVAS2D_WEBFONT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "362249f4e2a0020b5f190bb89b4a396432f5423a9ff18f5d53dc3abf2ac1b521",
+  "inputSha256": "067d9fa89a5c9316aa372193ace695f6f105edaff1e78b27aedb25038f212b64",
   "projectionId": "canvas2d-webfont",
-  "projectionSha256": "74158e11fbaeabda7894841a43751aa2724842bd140e2ed48cdc7dd4ce362435",
-  "ruleCount": 154
+  "projectionSha256": "1fe89c01aa989f9449c736e0f73c4d448a0176c863edcb9bb66cb849b306beee",
+  "ruleCount": 155
 });
 
 export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
@@ -3417,6 +3417,28 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
       "format": "truetype",
       "kind": "canvas2d-webfont",
       "sourceUrl": "fonts/NotoSansSymbols2-Regular.ttf",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-7445.public-batang-webfont-supply",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "RHWP Public Batang",
+    "targetFaceOrPolicy": "'fonts/RHWPPublicBatang-Regular.woff2'",
+    "conditions": {
+      "profile": "canvas2d-css-unknown"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": false,
+      "fontFamily": "RHWP Public Batang",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "fonts/RHWPPublicBatang-Regular.woff2",
       "unicodeRange": null
     }
   }

@@ -274,12 +274,18 @@ impl SkiaTextReplay<'_> {
                     return;
                 }
 
+                let metric_source = text;
                 let text = expand_pua_render_text_in_style(text, style);
                 let text = text.as_str();
-                let char_positions =
-                    crate::renderer::replay_positions_or_compute(text, style, layout_positions);
+                let metric_text =
+                    crate::renderer::composer::display_projection_metric_text(metric_source, text);
+                let char_positions = crate::renderer::replay_positions_or_compute(
+                    metric_text,
+                    style,
+                    layout_positions,
+                );
                 let fit_positions = style.fixed_glyph_advances.then(|| {
-                    crate::renderer::glyph_fit_positions(text, style, layout_positions, &char_positions)
+                    crate::renderer::glyph_fit_positions(metric_text, style, layout_positions, &char_positions)
                 });
                 let clusters = split_into_clusters(text);
                 let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();

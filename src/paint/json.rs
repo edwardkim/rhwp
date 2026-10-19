@@ -223,6 +223,9 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
     if text_variant_features.has_text_clip {
         buf.push_str(",\"paint.textClipPath\"");
     }
+    if layer_tree_has_op(root, |op| op.glyph_paint_transform().is_some()) {
+        buf.push_str(",\"text.paintTransform\"");
+    }
     if has_display_text {
         buf.push_str(",\"text.displayText\"");
     }
@@ -698,10 +701,16 @@ impl PaintOp {
                 }
                 buf.push('}');
             }
-            PaintOp::TextRun { bbox, run, source } => {
+            PaintOp::TextRun {
+                bbox, run, source, ..
+            } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"textRun\",\"bbox\":");
                 write_bbox(buf, *bbox);
+                if let Some(transform) = self.glyph_paint_transform() {
+                    buf.push_str(",\"paintTransform\":");
+                    write_affine_transform(buf, transform);
+                }
                 let source = text_sources.next_text_run_span(run, source.as_ref());
                 let display_text = display_text_for_text_run(run);
                 let _ = write!(
@@ -764,10 +773,14 @@ impl PaintOp {
                 write_char_overlap(buf, run.char_overlap.as_ref());
                 buf.push('}');
             }
-            PaintOp::GlyphRun { bbox, run } => {
+            PaintOp::GlyphRun { bbox, run, .. } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"glyphRun\",\"bbox\":");
                 write_bbox(buf, *bbox);
+                if let Some(transform) = self.glyph_paint_transform() {
+                    buf.push_str(",\"paintTransform\":");
+                    write_affine_transform(buf, transform);
+                }
                 buf.push_str(",\"source\":");
                 write_text_source_span(buf, &run.source);
                 buf.push_str(",\"variant\":");
@@ -811,10 +824,14 @@ impl PaintOp {
                 write_glyph_run_diagnostics(buf, &run.diagnostics);
                 buf.push('}');
             }
-            PaintOp::GlyphOutline { bbox, outline } => {
+            PaintOp::GlyphOutline { bbox, outline, .. } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"glyphOutline\",\"bbox\":");
                 write_bbox(buf, *bbox);
+                if let Some(transform) = self.glyph_paint_transform() {
+                    buf.push_str(",\"paintTransform\":");
+                    write_affine_transform(buf, transform);
+                }
                 buf.push_str(",\"source\":");
                 write_text_source_span(buf, &outline.source);
                 buf.push_str(",\"variant\":");
@@ -859,10 +876,16 @@ impl PaintOp {
                 write_glyph_run_diagnostics(buf, &outline.diagnostics);
                 buf.push('}');
             }
-            PaintOp::CharOverlap { bbox, run, source } => {
+            PaintOp::CharOverlap {
+                bbox, run, source, ..
+            } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"charOverlap\",\"bbox\":");
                 write_bbox(buf, *bbox);
+                if let Some(transform) = self.glyph_paint_transform() {
+                    buf.push_str(",\"paintTransform\":");
+                    write_affine_transform(buf, transform);
+                }
                 if let Some(source) = source {
                     buf.push_str(",\"source\":");
                     write_text_source_span(buf, source);
@@ -940,16 +963,18 @@ impl PaintOp {
                 kind,
                 trim_trailing_spaces,
                 source,
+                ..
             } => {
+                let (bbox, run) = self.decoration_replay().expect("decoration replay");
                 buf.push('{');
                 buf.push_str("\"type\":\"textDecoration\",\"bbox\":");
-                write_bbox(buf, *bbox);
+                write_bbox(buf, bbox);
                 if let Some(source) = source {
                     buf.push_str(",\"source\":");
                     write_text_source_span(buf, source);
                 }
                 buf.push_str(",\"decoration\":");
-                write_text_decoration(buf, *kind, run, *trim_trailing_spaces);
+                write_text_decoration(buf, *kind, &run, *trim_trailing_spaces);
                 buf.push('}');
             }
             PaintOp::ControlLabel { bbox, label } => {
@@ -4193,6 +4218,7 @@ mod tests {
             },
         );
         let glyph_run = PaintOp::GlyphRun {
+            paint_transform: None,
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             run: Box::new(LayerGlyphRunPaint {
                 source,
@@ -4377,6 +4403,7 @@ mod tests {
             },
         );
         let outline = PaintOp::GlyphOutline {
+            paint_transform: None,
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             outline: Box::new(LayerGlyphOutlinePaint {
                 source,
@@ -4477,6 +4504,7 @@ mod tests {
     #[test]
     fn serializes_advanced_glyph_outline_payload_gate_metadata() {
         let outline = PaintOp::GlyphOutline {
+            paint_transform: None,
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             outline: Box::new(LayerGlyphOutlinePaint {
                 source: TextSourceSpan {
@@ -4694,6 +4722,7 @@ mod tests {
             &resources
         ));
         let bitmap_outline = PaintOp::GlyphOutline {
+            paint_transform: None,
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             outline: Box::new(LayerGlyphOutlinePaint {
                 source: source.clone(),
@@ -4730,6 +4759,7 @@ mod tests {
             }),
         };
         let svg_outline = PaintOp::GlyphOutline {
+            paint_transform: None,
             bbox: BoundingBox::new(20.0, 0.0, 20.0, 20.0),
             outline: Box::new(LayerGlyphOutlinePaint {
                 source,
