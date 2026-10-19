@@ -38,6 +38,20 @@ impl TypesetEngine {
         let occupied = scan.split_block_physical_height?;
         let table = input.source.row_geometry_table;
         let layout = &input.prepared.layout_engine;
+        let original_text_page = layout.row_block_cut_is_original_text_page(
+            table,
+            (first, end),
+            &input.start.start_cut,
+            &scan.split_end_cut,
+            input.source.styles,
+        );
+        if std::env::var_os("RHWP_TABLE_DRIFT").is_some() {
+            eprintln!("TABLE_BLOCK_PAGE_BUDGET: pi={} rows={}..{} original={} continuation={} block={} cursor={} last={:?} blank={:?} source_bottom={:?}",
+                input.source.para_index, first, end, original_text_page,
+                input.start.is_continuation, input.start.start_cut_is_block,
+                input.start.cursor_row, scan.end_row_height_override,
+                budget.reflow_blank_avail_for_rows, budget.source_frame_bottom);
+        }
         if !input.start.is_continuation
             || !input.start.start_cut_is_block
             || input.start.cursor_row != first
@@ -48,27 +62,15 @@ impl TypesetEngine {
             || st.current_zone_y_offset != 0.0
             || table.caption.is_some()
             || !std::ptr::eq(table, input.source.table)
-            || !layout.row_block_cut_is_original_text_page(
-                table,
-                (first, end),
-                &input.start.start_cut,
-                &scan.split_end_cut,
-                input.source.styles,
-            )
+            || !original_text_page
         {
             return None;
         }
-        let top = budget.fragment_placement.map_or(
-            st.current_height + budget.host_before_overhead + budget.vert_offset_overhead,
-            |placement| placement.table_top,
-        );
         let before = scan.consumed - occupied;
-        let height = budget.source_frame_bottom? - top - budget.header_overhead - before;
-        let room = budget
-            .reflow_blank_avail_for_rows
-            .unwrap_or(budget.avail_for_rows)
-            .min(budget.avail_for_rows)
-            - before;
+        // 같은 열·각주·프레임 원점에서 이미 계산한 빈 띠를 현재 블록이 수용한다.
+        // 일반 행에만 생성되는 source_frame_bottom을 새로 추정하지 않는다.
+        let height = budget.reflow_blank_avail_for_rows? - before;
+        let room = budget.avail_for_rows - before;
         if !height.is_finite() || height < occupied || height > room {
             return None;
         }
