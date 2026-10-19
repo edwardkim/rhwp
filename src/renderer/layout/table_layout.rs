@@ -11128,6 +11128,41 @@ impl LayoutEngine {
         };
         // 앞 문단의 흐름 중첩 표 끝. 뒤 호스트의 저장 갭이 그 표의 띠인지 가린다.
         let prior_nested_end = std::cell::Cell::new(0.0f64);
+        // 저장 줄이 하나도 없는 셀은 vpos 사다리가 없어 아래 `para_top` 이 전부 0 이 된다 —
+        // 뒤 문단의 중첩 표가 앞 글줄 높이를 잃고 셀 위에서 재어져 칸이 표 바닥보다
+        // 낮아진다. 측정(`height_measurer` NO_LS 가산 경로: 글 합 + 중첩 표)과 같게 앞
+        // 문단들의 조판 줄 높이 누적을 문단 시작점으로 쓴다.
+        let unstored_para_tops: Option<Vec<f64>> = (paragraphs.len() > 1
+            && paragraphs
+                .iter()
+                .all(crate::renderer::para_has_no_stored_line_segs))
+        .then(|| {
+            let count = paragraphs.len();
+            let mut top = 0.0;
+            composed_paras
+                .iter()
+                .zip(paragraphs.iter())
+                .enumerate()
+                .map(|(pidx, (comp, para))| {
+                    let start = top;
+                    let frame_paragraph = comp.paragraph_with_frame_geometry(para);
+                    let para = frame_paragraph.as_ref();
+                    top += self.calc_para_lines_height(
+                        &comp.lines,
+                        para,
+                        self.profile.get().hwp3_layout()
+                            && para.line_segs.is_empty()
+                            && !para.text.is_empty(),
+                        !para.line_segs.is_empty(),
+                        pidx,
+                        count,
+                        styles.para_styles.get(para.para_shape_id as usize),
+                        styles,
+                    );
+                    start
+                })
+                .collect()
+        });
         paragraphs
             .iter()
             .enumerate()
@@ -11196,11 +11231,15 @@ impl LayoutEngine {
                 if nested_h <= 0.0 {
                     0.0
                 } else {
-                    let para_top = p
-                        .line_segs
-                        .first()
-                        .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
-                        .unwrap_or(0.0);
+                    let para_top = unstored_para_tops
+                        .as_ref()
+                        .and_then(|tops| tops.get(pidx).copied())
+                        .unwrap_or_else(|| {
+                            p.line_segs
+                                .first()
+                                .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
+                                .unwrap_or(0.0)
+                        });
                     let candidate = para_top + nested_h;
                     // 절대배치의 직접 증거는 "표의 공간이 호스트 줄 **위**에 이미
                     // 예약됨"이다 — 직전 저장 줄 끝→호스트 vpos 갭이 표 높이만큼
