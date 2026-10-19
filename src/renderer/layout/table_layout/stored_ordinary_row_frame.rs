@@ -301,7 +301,15 @@ impl LayoutEngine {
         // 원본 전체 높이로 돌아가 이미 소비한 공간을 다시 예약하지 않는다.
         let full = carried.unwrap_or(declared);
         let content = self.stored_ordinary_row_cut_height(table, row, cut, &end, styles)?;
-        (accepted > 0.0 && accepted < full).then_some((full - accepted).max(content))
+        let remaining = (full - accepted).max(content);
+        // 저장 여부와 무관하게 이미 끝난 내용 뒤의 한 줄 이하 빈 꼬리는
+        // 새 행 프레임을 열지 않는다. 큰 독립 최소와 미소비 내용은 보존한다.
+        if self.row_cut_consumes_all_ordinary_units(table, row, cut, styles)
+            && self.row_blank_tail_is_line_sliver(table, row, remaining, styles)
+        {
+            return None;
+        }
+        (accepted > 0.0 && accepted < full).then_some(remaining)
     }
 
     /// 미완료 칸들이 함께 여는 마지막 원본 텍스트 프레임의 물리 끝이다.

@@ -1999,7 +1999,7 @@ impl TypesetEngine {
                 // 독립적인 일반 칸의 큰 잔여는 병합 칸의 원장과 별도로 보존한다.
                 // 내용까지 끝난 한 줄 이하의 빈 꼬리는 쪽 경계에서 흡수한다.
                 if complete_physical_end_cut
-                    && layout_engine.reflow_blank_tail_is_line_sliver(table, row, tail, styles)
+                    && layout_engine.row_blank_tail_is_line_sliver(table, row, tail, styles)
                 {
                     return None;
                 }
