@@ -31,8 +31,8 @@ mod stored_header_frame;
 pub(crate) use stored_cut_outer_frame::stored_hwpx_cut_owns_outer_frame;
 pub(crate) use stored_header_frame::{
     stored_independent_table_frame_host, stored_repeated_header_rowbreak_outer_frame,
-    stored_rowbreak_fragment_opens_outer_top, stored_rowbreak_outer_frame_host,
-    stored_whole_header_next_page_placement,
+    stored_rowbreak_fragment_opens_outer_top, stored_rowbreak_opening_uses_host_budget,
+    stored_rowbreak_outer_frame_host, stored_whole_header_next_page_placement,
 };
 mod stored_span_opening;
 pub(crate) use stored_span_opening::{stored_span_opening_frame, StoredSpanOpeningFrame};

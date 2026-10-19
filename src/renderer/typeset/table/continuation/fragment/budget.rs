@@ -1789,6 +1789,32 @@ impl TypesetEngine {
             fragment_placement: fragment_placement
                 .or_else(|| self.stored_header_fragment_placement(st, input, host_before_overhead))
                 .or_else(|| {
+                    (!is_continuation
+                        && cursor_row == 0
+                        && start_cut.is_empty()
+                        && std::ptr::eq(row_geometry_table, table)
+                        && crate::renderer::float_placement::stored_rowbreak_opening_uses_host_budget(
+                            st.profile, para, table,
+                        ))
+                    .then(|| {
+                        // 예산에서 이미 예약한 원점을 paint가 같은 좌표계로 소비한다.
+                        // 기존 반복 여백 분기에서 원점을 다시 추정하거나 여백을 중복하지 않는다.
+                        let top = st.current_height
+                            + caption_extra
+                            + host_before_overhead
+                            + vert_offset_overhead;
+                        crate::renderer::float_placement::ParagraphFloatPlacement {
+                            flow: crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost,
+                            anchor_y: st.current_height,
+                            stored_host_origin: None,
+                            stored_successor_line_origin: None,
+                            table_left: None,
+                            table_top: top,
+                            occupied_bottom: top,
+                        }
+                    })
+                })
+                .or_else(|| {
                     grid_fragment_opens_outer_top.then(|| {
                         // 예산에서 연 같은 바깥 원점을 실제 배치에 전달한다.
                         // paint가 행 컷이나 현재 높이로 다시 추측하지 않는다.

@@ -159,6 +159,22 @@ pub(crate) fn stored_rowbreak_fragment_opens_outer_top(
 
 /// 빈 저장 호스트도 여러 본문 흐름 표를 순서대로 소유할 수 있다.
 /// 단일 셀의 내부 조각과 배경 개체의 좌표 계약을 여기서 추정하지 않는다.
+/// 첫 조각도 빈 호스트가 예약한 바깥 위 여백의 원점을 소비한다.
+/// 이어받기는 기존 재개방 계약이 소유하며 여기서 다시 열지 않는다.
+pub(crate) fn stored_rowbreak_opening_uses_host_budget(
+    profile: LayoutCompatibilityProfile,
+    host: &Paragraph,
+    table: &Table,
+) -> bool {
+    (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+        && !profile.session_edited()
+        && table.page_break == TablePageBreak::RowBreak
+        && table.row_count > 1
+        && table.outer_margin_top > 0
+        && table.caption.is_none()
+        && stored_flow_table_sequence_host(host)
+}
+
 fn stored_flow_table_sequence_host(host: &Paragraph) -> bool {
     if !host.text.is_empty()
         || host.stored_text_partition_is_dirty()
