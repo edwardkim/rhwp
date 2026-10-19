@@ -45,6 +45,8 @@
 | B21 극소 가림 영역의 source/raster 경계 | 2026-10-19 작업지시자 **“저장 보존 범위 예외·경계 차이는 백로그”**. 같은 원본의 물리 용지 원점에서 curve는 Native 77.77778%/fresh WASM 77.50000%, parent 교집합은 양쪽 0%다. parent는 독립 PDF 회색 2픽셀/Native 0픽셀이며 source 원문은 보존된다. 이전 `62a820490`과 현재 코드의 직접 PDF Native PNG가 바이트 동일해 이번 metadata 회귀와 구분한다. [stage13](../working/task_m100_7998_stage13.md)의 원본·독립 PDF·SHA·TSV·10배 crop을 유지한다. 원인은 미확정이며 경로 이동/가림/허용치 완화로 수치를 맞추지 않는다. 해당 두 입력을 새 rendering golden으로 등록하지 않는다. |
 | B22 각주 직접 글상자의 실제 paint | 저장 순회 감사에서 발견한 기존 native note 표시 결함. 현재 PDF frontend가 각주를 새로 발행한다는 뜻이 아니며 자동으로 #7998의 다음 필수 구현 범위로 확장하지 않는다. 공개 원문 TextBox를 보통 각주에 두면 source Paragraph/clip은 live·양 저장 Native/실제 WASM 모두 남지만 RenderTree에는 번호만 나오고 MERGED가 표시되지 않는다. 수정 전후 같은 실행 결함이며 metadata 복원과 구분한다. 원래 LineSeg와 control-only/번호 문단·TAC 여부가 실제 note 소비에 연결되는지 추적하고, 공통 줄/개체 결과에서 원문을 paint해야 한다. 표로 감싸거나 원문을 raster로 바꿔 재현을 피하지 않는다. 정상 한컴 Print와 actual Native/fresh WASM·관계형 회귀로 완료를 입증한다. `p4-text-clip-lists/{before,after}/result.json`과 `studio-result.json`에 실패를 보존했다. 미주의 독립 전쪽 Print도 아직 미검증이다. |
 | B23 한컴 HWP Print의 표 높이 차이 | 동일 rowspan 병합 HWP의 사용자 정상 PDF와 추가 MCP 인쇄가 다르다. 2026-10-19 **정상 PDF 기준·추가 차이는 백로그** 승인. 버전/용지/서비스 조건의 원인은 미확정이며 stage27 말미와 공개 compatibility 자료에 같은 입력·두 출력·56.38381% 미달을 보존한다. |
+| B24 보존 경계와 실제 내용 성장 격자 | stage28에서 원래 rowspan 문단의 큰 spacingBefore/vpos를 상속한 새 행이 실제로 늘어나는 경계를 확인했다. 잘못된 성공 대신 원자 거절한다. 새 줄 원점만 0으로 옮긴 시도는 독립 Print 미달로 철회했다. Top 정상 문단의 행 추가는 별도 독립 Print로 통과했다. source 단위/셀별 실제 배치 프레임에서 안/밖 band를 함께 파생할 수 있는 일반 계약은 미구현이며, 같은 source의 행 편집을 완료/시각 예외 승인으로 간주하지 않는다. [stage28](../working/task_m100_7998_stage28.md)의 원본·철회 증거·실제 오류·대조군을 유지한다. |
+
 
 첫 절편에서 정상 2×2 합성 대조군은 공통 IR의 의미 표 1개로 생성됐다. 사용자 원본의
 불확실한 후보는 원래 문자·그림·paint를 유지한다. 후보 검출 수, 의미 표 생성 수,
@@ -243,3 +245,15 @@ MCP 인쇄(11.0.0.9136·원본 399×360pt·one-up)에서는 세로 변이 페이
 2026-10-19 메인테이너의 **“정상 PDF 기준·추가 차이는 백로그”** 승인에 따라 이번 기준은
 정상 사용자 PDF로 유지한다. [같은 입력·두 독립 출력·정확한 출처](../../pdf/issue7998/cell-regions/topology/compatibility/README.md)를
 보존하고 후속에서 원인을 분리한다. 이 예외를 일반 HWP/HWPX 호환 완료로 확대하지 않는다.
+
+### R1 이미 병합된 원본의 perimeter 상속 — stage28 수용
+
+[stage28](../working/task_m100_7998_stage28.md)은 기존 colspan/rowspan 3셀의 실제 긴 변과
+내부 변 부재를 source 소유에 연결한다. 지원 15종 행열 편집의 양 저장 30개는 각각 독립
+한컴 Print를 확보했고, 최종 각 backend 77쪽은 90% 이상이다. 기존/실물 37쪽 PNG는
+같은 backend의 이전 수용본과 같다. 2026-10-20 메인테이너가 **시각·편집 구조 통과**로
+수용했다. R1/P4 전체 완료로 확대하지 않는다.
+
+변의 일부만 다른 pen, 미증명 물리 격자, 일반 source paint 병합은 그대로 원문 보존 제약이다.
+B24는 그 실제 높이 경계를 구체화한 것이며 새 예외 승인이나 필수 R2/P5의 후속 이관이
+아니다. 기존 B23의 정상 사용자 PDF 기준은 유지하고 새 30개 Print와 혼동하지 않는다.

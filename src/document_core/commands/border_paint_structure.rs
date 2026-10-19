@@ -18,7 +18,7 @@ use crate::{
         table::Table,
     },
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 const UNSUPPORTED: &str = "PDF 경계의 행·열 편집에는 완전한 연속 불투명 실선의 동등성이 필요합니다";
 fn error() -> HwpError {
@@ -47,7 +47,8 @@ impl StructureEdit {
         }
     }
     /// Coordinates of a surviving original cell, never a template guess.
-    pub(super) fn destination(self, row: u16, col: u16) -> Option<(u16, u16)> {
+    pub(super) fn destination(self, cell: &crate::model::table::Cell) -> Option<(u16, u16)> {
+        let (row, col) = (cell.row, cell.col);
         Some(match self {
             Self::InsertRow(i, below) => (
                 row.checked_add(u16::from(u32::from(row) >= u32::from(i) + u32::from(below)))?,
@@ -57,8 +58,8 @@ impl StructureEdit {
                 row,
                 col.checked_add(u16::from(u32::from(col) >= u32::from(i) + u32::from(right)))?,
             ),
-            Self::DeleteRow(i) if row == i => return None,
-            Self::DeleteColumn(i) if col == i => return None,
+            Self::DeleteRow(i) if row == i && cell.row_span == 1 => return None,
+            Self::DeleteColumn(i) if col == i && cell.col_span == 1 => return None,
             Self::DeleteRow(i) => (row - u16::from(row > i), col),
             Self::DeleteColumn(i) => (row, col - u16::from(col > i)),
         })
@@ -91,13 +92,73 @@ fn boundaries(sizes: Vec<u32>) -> Vec<f64> {
     }
     out
 }
-pub(super) fn key(c: &crate::model::table::Cell, side: usize) -> Key {
-    match side {
-        0 => (false, c.col as usize, c.row as usize),
-        1 => (false, c.col as usize + 1, c.row as usize),
-        2 => (true, c.row as usize, c.col as usize),
-        _ => (true, c.row as usize + 1, c.col as usize),
+pub(super) fn side_keys(c: &crate::model::table::Cell, side: usize) -> impl Iterator<Item = Key> {
+    let (r, col, rs, cs) = (
+        c.row as usize,
+        c.col as usize,
+        c.row_span as usize,
+        c.col_span as usize,
+    );
+    let (horizontal, boundary, start, end) = match side {
+        0 => (false, col, r, r + rs),
+        1 => (false, col + cs, r, r + rs),
+        2 => (true, r, col, col + cs),
+        _ => (true, r + rs, col, col + cs),
+    };
+    (start..end).map(move |interval| (horizontal, boundary, interval))
+}
+pub(super) struct Grid {
+    pub x: Vec<f64>,
+    pub y: Vec<f64>,
+    pub edges: BTreeSet<Key>,
+}
+/// A complete tiling, not a dense set of 1x1 origins. An interior cut of a
+/// merged cell is not a physical border and must never be synthesized.
+pub(super) fn grid(table: &Table) -> Result<Grid, HwpError> {
+    let slots = usize::from(table.row_count) * usize::from(table.col_count);
+    if slots == 0 || slots > 4096 || table.cell_spacing != 0 || !table.zones.is_empty() {
+        return Err(error());
     }
+    let x = boundaries(table.get_column_widths());
+    let y = boundaries(table.get_row_heights());
+    if x.last().copied() != Some(f64::from(table.common.width))
+        || y.last().copied() != Some(f64::from(table.common.height))
+    {
+        return Err(error());
+    }
+    let mut covered = vec![false; slots];
+    let mut edges = BTreeSet::new();
+    for c in &table.cells {
+        let end_row = c.row.checked_add(c.row_span).ok_or_else(error)?;
+        let end_col = c.col.checked_add(c.col_span).ok_or_else(error)?;
+        if c.row_span == 0
+            || c.col_span == 0
+            || end_row > table.row_count
+            || end_col > table.col_count
+            || f64::from(c.width) != x[end_col as usize] - x[c.col as usize]
+            || f64::from(c.height) != y[end_row as usize] - y[c.row as usize]
+        {
+            return Err(error());
+        }
+        for row in c.row..end_row {
+            for col in c.col..end_col {
+                if std::mem::replace(
+                    &mut covered
+                        [usize::from(row) * usize::from(table.col_count) + usize::from(col)],
+                    true,
+                ) {
+                    return Err(error());
+                }
+            }
+        }
+        for side in 0..4 {
+            edges.extend(side_keys(c, side));
+        }
+    }
+    if covered.iter().any(|v| !v) {
+        return Err(error());
+    }
+    Ok(Grid { x, y, edges })
 }
 fn intersect(a: Rect, b: Rect) -> Option<Rect> {
     let r = [
@@ -204,83 +265,85 @@ impl Proof<'_> {
             if mask & (1 << side) == 0 {
                 continue;
             }
-            let k = key(c, side);
-            let (at, lo, hi) = if k.0 {
-                (self.y[k.1], self.x[k.2], self.x[k.2 + 1])
-            } else {
-                (self.x[k.1], self.y[k.2], self.y[k.2 + 1])
-            };
-            let pen = s.width * scale[if k.0 { 1 } else { 0 }];
-            let width = border_width_index(pen * 25.4 / 7200.);
-            // One source HWPUNIT of quantization, never a nearest-bucket visual approximation.
-            let width = ((BORDER_WIDTHS[width as usize].0 * 7200. / 25.4 - pen).abs() <= 1.00001)
-                .then_some(width);
-            // PdfStroke already carries the model's ColorRef, like BorderFill.
-            let color = s.color;
-            let edge = self.edges.entry(k).or_insert_with(|| Edge {
-                color,
-                width,
-                pen: width.map_or(pen, |w| BORDER_WIDTHS[w as usize].0 * 7200. / 25.4),
-                source_pen: pen,
-                rectangle: false,
-                rects: vec![],
-            });
-            // Promote only when every fragment proves the same native width.
-            // Near a bucket boundary, independently quantized halves can have
-            // different native eligibility while still describing one source
-            // pen. Preserve that pen instead of rejecting it or rounding it.
-            let same_native = edge.width.is_some() && edge.width == width;
-            if edge.rectangle
-                || edge.color != color
-                || ((if same_native {
-                    edge.pen
+            for k in side_keys(c, side) {
+                let (at, lo, hi) = if k.0 {
+                    (self.y[k.1], self.x[k.2], self.x[k.2 + 1])
                 } else {
-                    edge.source_pen
-                }) - pen)
-                    .abs()
-                    > 1.00001
-            {
-                return Err(error());
-            }
-            if !same_native {
-                edge.width = None;
-                edge.pen = edge.source_pen;
-            }
-            for e in std::iter::once(s.endpoints).chain(s.segments.iter().copied()) {
-                self.work += 1;
-                if self.work > 200_000 {
+                    (self.x[k.1], self.y[k.2], self.y[k.2 + 1])
+                };
+                let pen = s.width * scale[if k.0 { 1 } else { 0 }];
+                let width = border_width_index(pen * 25.4 / 7200.);
+                // One source HWPUNIT of quantization, never a nearest-bucket visual approximation.
+                let width = ((BORDER_WIDTHS[width as usize].0 * 7200. / 25.4 - pen).abs()
+                    <= 1.00001)
+                    .then_some(width);
+                // PdfStroke already carries the model's ColorRef, like BorderFill.
+                let color = s.color;
+                let edge = self.edges.entry(k).or_insert_with(|| Edge {
+                    color,
+                    width,
+                    pen: width.map_or(pen, |w| BORDER_WIDTHS[w as usize].0 * 7200. / 25.4),
+                    source_pen: pen,
+                    rectangle: false,
+                    rects: vec![],
+                });
+                // Promote only when every fragment proves the same native width.
+                // Near a bucket boundary, independently quantized halves can have
+                // different native eligibility while still describing one source
+                // pen. Preserve that pen instead of rejecting it or rounding it.
+                let same_native = edge.width.is_some() && edge.width == width;
+                if edge.rectangle
+                    || edge.color != color
+                    || ((if same_native {
+                        edge.pen
+                    } else {
+                        edge.source_pen
+                    }) - pen)
+                        .abs()
+                        > 1.00001
+                {
                     return Err(error());
                 }
-                if (e[1] == e[3]) != k.0 {
-                    continue;
+                if !same_native {
+                    edge.width = None;
+                    edge.pen = edge.source_pen;
                 }
-                let center = map(e);
-                if ((if k.0 { center[1] } else { center[0] }) - at).abs() > 1. {
-                    continue;
-                }
-                let band = if k.0 {
-                    [
-                        e[0].min(e[2]),
-                        e[1] - s.width / 2.,
-                        e[0].max(e[2]),
-                        e[1] + s.width / 2.,
-                    ]
-                } else {
-                    [
-                        e[0] - s.width / 2.,
-                        e[1].min(e[3]),
-                        e[0] + s.width / 2.,
-                        e[1].max(e[3]),
-                    ]
-                };
-                if let Some(r) = intersect(band, crop).map(map) {
-                    let want = if k.0 {
-                        [lo, at - pen / 2., hi, at + pen / 2.]
+                for e in std::iter::once(s.endpoints).chain(s.segments.iter().copied()) {
+                    self.work += 1;
+                    if self.work > 200_000 {
+                        return Err(error());
+                    }
+                    if (e[1] == e[3]) != k.0 {
+                        continue;
+                    }
+                    let center = map(e);
+                    if ((if k.0 { center[1] } else { center[0] }) - at).abs() > 1. {
+                        continue;
+                    }
+                    let band = if k.0 {
+                        [
+                            e[0].min(e[2]),
+                            e[1] - s.width / 2.,
+                            e[0].max(e[2]),
+                            e[1] + s.width / 2.,
+                        ]
                     } else {
-                        [at - pen / 2., lo, at + pen / 2., hi]
+                        [
+                            e[0] - s.width / 2.,
+                            e[1].min(e[3]),
+                            e[0] + s.width / 2.,
+                            e[1].max(e[3]),
+                        ]
                     };
-                    if let Some(r) = intersect(r, want) {
-                        edge.rects.push(r);
+                    if let Some(r) = intersect(band, crop).map(map) {
+                        let want = if k.0 {
+                            [lo, at - pen / 2., hi, at + pen / 2.]
+                        } else {
+                            [at - pen / 2., lo, at + pen / 2., hi]
+                        };
+                        if let Some(r) = intersect(r, want) {
+                            edge.rects.push(r);
+                        }
                     }
                 }
             }
@@ -326,19 +389,21 @@ impl Proof<'_> {
             .as_ref()
             .ok_or_else(error)?
             .background_color;
-        let edge = self.edges.entry(key(c, side)).or_insert_with(|| Edge {
-            color,
-            width: None,
-            pen: 0.,
-            source_pen: 0.,
-            rectangle: true,
-            rects: Vec::new(),
-        });
-        if !edge.rectangle || edge.color != color {
-            return Err(error());
+        for k in side_keys(c, side) {
+            let edge = self.edges.entry(k).or_insert_with(|| Edge {
+                color,
+                width: None,
+                pen: 0.,
+                source_pen: 0.,
+                rectangle: true,
+                rects: Vec::new(),
+            });
+            if !edge.rectangle || edge.color != color {
+                return Err(error());
+            }
+            edge.rects
+                .push([x, y, x + f64::from(a.width), y + f64::from(a.height)]);
         }
-        edge.rects
-            .push([x, y, x + f64::from(a.width), y + f64::from(a.height)]);
         Ok(())
     }
     fn complete(&mut self) -> Result<(), HwpError> {
@@ -554,37 +619,11 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
     if !has_cell && !has_outside {
         return Ok(None);
     }
-    if table.row_count == 0
-        || table.col_count == 0
-        || table.cell_spacing != 0
-        || !table.zones.is_empty()
-        || table.cells.len() > 4096
-        || table.cells.iter().any(|c| {
-            c.row_span != 1
-                || c.col_span != 1
-                || c.row >= table.row_count
-                || c.col >= table.col_count
-        })
-        || table.cells.len() != usize::from(table.row_count) * usize::from(table.col_count)
-    {
-        return Err(error());
-    }
-    let x = boundaries(table.get_column_widths());
-    let y = boundaries(table.get_row_heights());
-    let mut seen = std::collections::BTreeSet::new();
-    for c in &table.cells {
-        if !seen.insert((c.row, c.col))
-            || f64::from(c.width) != x[c.col as usize + 1] - x[c.col as usize]
-            || f64::from(c.height) != y[c.row as usize + 1] - y[c.row as usize]
-        {
-            return Err(error());
-        }
-    }
-    if x.last().copied() != Some(f64::from(table.common.width))
-        || y.last().copied() != Some(f64::from(table.common.height))
-    {
-        return Err(error());
-    }
+    let Grid {
+        x,
+        y,
+        edges: expected,
+    } = grid(table)?;
     if has_outside
         && (table.common.treat_as_char
             || table.common.horz_rel_to != HorzRelTo::Paper
@@ -685,11 +724,9 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
             return Err(error());
         }
         let first = proof.edges.values().next().ok_or_else(error)?;
-        let expected = usize::from(table.row_count) * (usize::from(table.col_count) + 1)
-            + usize::from(table.col_count) * (usize::from(table.row_count) + 1);
         // Prove each complete cell-side interval. A line may change pen at a
         // grid junction; collapsing its intervals would discard cell styles.
-        if proof.edges.len() != expected {
+        if proof.edges.keys().copied().collect::<BTreeSet<_>>() != expected {
             return Err(error());
         }
         if !preserves_layer_order(
@@ -790,7 +827,21 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
             .ok_or_else(error)?
             .clone();
         for side in 0..4 {
-            if let Some(e) = proof.edges.get(&key(c, side)) {
+            let mut sides = side_keys(c, side).map(|k| proof.edges.get(&k));
+            let first = sides.next().ok_or_else(error)?;
+            // A native cell has one style per complete side. Missing or unequal
+            // intervals cannot be silently reduced to the first interval.
+            for other in sides {
+                match (first, other) {
+                    (None, None) => {}
+                    (Some(a), Some(b))
+                        if a.color == b.color
+                            && a.width == b.width
+                            && (a.pen - b.pen).abs() <= 1.00001 => {}
+                    _ => return Err(error()),
+                }
+            }
+            if let Some(e) = first {
                 if fill.borders[side].line_type != BorderLineType::None {
                     return Err(error());
                 }
@@ -818,6 +869,59 @@ fn prepare(doc: &Document, si: usize, pi: usize, ti: usize) -> Result<Option<Pre
 }
 
 impl DocumentCore {
+    /// Page-owned outer halves and cell-owned inner halves use the same source
+    /// grid. If actual content measurement/placement grows a row, that grid no
+    /// longer authorizes fixed bands. Do not alter paragraph origins or clamp
+    /// the content to manufacture an equivalent frame.
+    fn ensure_banded_layout_grid(
+        &self,
+        table: &Table,
+        si: usize,
+        pi: usize,
+        ti: usize,
+    ) -> Result<(), HwpError> {
+        let profile = self.effective_layout_profile();
+        let measured = crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
+            .with_hwp3_variant(profile.hwp3_layout())
+            .with_legacy_hwp3_stored_geometry(profile.legacy_hwp3_stored_geometry())
+            .with_native_hwp5(profile.native_hwp5_layout())
+            .with_hwpx_stored_layout(profile.hwpx_stored_layout())
+            .with_session_edited(profile.session_edited())
+            .with_hwp3_origin_flow_spacing_before(profile.hwp3_origin_flow_spacing_before())
+            .with_section_column_spacing_hu(i32::from(
+                self.document.sections[si].section_def.column_spacing,
+            ))
+            .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay))
+            .measure_table(table, pi, ti, &self.styles);
+        // Use the final layout resolver too: it can override the measured rows.
+        // A separate engine keeps candidate pointer-keyed caches out of the live
+        // engine when this edit is rejected before publication.
+        let engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        engine.set_layout_profile(profile);
+        let columns = engine.resolve_column_widths(table, table.col_count as usize);
+        let rows = engine.resolve_row_heights(
+            table,
+            table.col_count as usize,
+            table.row_count as usize,
+            Some(&measured),
+            &self.styles,
+            false, // This proof is the direct, non-TAC paper-anchored table.
+        );
+        let frame = grid(table)?;
+        for (actual, axis) in [(&columns, &frame.x), (&rows, &frame.y)] {
+            if actual.len() + 1 != axis.len()
+                || actual.iter().zip(axis.windows(2)).any(|(&px, cut)| {
+                    !px.is_finite() || (px * 7200.0 / self.dpi - (cut[1] - cut[0])).abs() > 1.00001
+                })
+            {
+                return Err(HwpError::RenderError(
+                    "실제 셀 배치가 원본 경계의 물리 격자를 유지하지 않아 이 행·열 편집을 지원하지 않습니다".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
+
     /// Merge/split moves cell paragraphs and changes the logical border owners.
     /// Until those edits have a source-paint closure, reject before touching the
     /// model, reflow, events or serializer. Ordinary drawings are not ownership.
@@ -879,6 +983,10 @@ impl DocumentCore {
             let counts = (table.row_count, table.col_count);
             if let Some(bands) = prepared.bands {
                 super::border_paint_bands::apply(&self.document, &mut prepared.parent, ti, bands)?;
+                let Control::Table(table) = &prepared.parent.controls[ti] else {
+                    unreachable!()
+                };
+                self.ensure_banded_layout_grid(table, si, pi, ti)?;
             }
             self.document.sections[si].paragraphs[pi] = prepared.parent;
             self.document.doc_info.border_fills.extend(prepared.fills);

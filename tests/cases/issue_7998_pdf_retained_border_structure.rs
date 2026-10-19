@@ -1913,3 +1913,259 @@ fn child_owned_paint_does_not_block_parent() {
     let t = topology_table(&mut c, ci);
     assert!(t.cells.iter().flat_map(|c|&c.paragraphs).flat_map(|p|&p.controls).any(|v|matches!(v,Control::Table(t)if t.cells.iter().flat_map(|c|&c.paragraphs).flat_map(|p|&p.controls).any(|v|matches!(v,Control::Shape(s)if s.common().cell_border_paint.is_some())||matches!(v,Control::Picture(p)if p.common.cell_border_paint.is_some())))));
 }
+
+// Stage28: generated, explicitly closed compound perimeters. These are not the
+// unmodified Hancom Print (whose endpoint extensions remain outside the proof).
+fn load_merged_retained(name: &str) -> DocumentCore {
+    DocumentCore::from_pdf_bytes(
+        &std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join(format!("pdf/issue7998/merged-neighbor/{name}.pdf")),
+        )
+        .unwrap(),
+        &PdfImportOptions::default(),
+    )
+    .unwrap()
+}
+fn merged_structure_edit(
+    c: &mut DocumentCore,
+    mode: usize,
+) -> Result<String, rhwp::error::HwpError> {
+    let ci = root(c).0;
+    match mode {
+        0..=5 => apply(c, mode),
+        6 => c.insert_table_row_native(0, 0, ci, 1, true),
+        7 => c.insert_table_column_native(0, 0, ci, 1, true),
+        8 => c.delete_table_row_native(0, 0, ci, 0),
+        _ => c.delete_table_column_native(0, 0, ci, 0),
+    }
+}
+fn assert_merged_owned_sides(c: &DocumentCore) {
+    use rhwp::model::border_paint::CellSide;
+    assert!(tagged(c) > 0, "source ink has actual editable ownership");
+    for cell in &root(c).1.cells {
+        let mask = cell
+            .paragraphs
+            .iter()
+            .flat_map(|p| &p.controls)
+            .filter_map(|ctrl| {
+                let common = match ctrl {
+                    Control::Shape(s) => s.common(),
+                    Control::Picture(p) => &p.common,
+                    _ => return None,
+                };
+                let t = common.cell_border_paint.as_ref()?;
+                Some(if t.sides != 0 {
+                    t.sides
+                } else {
+                    match t.side {
+                        CellSide::Left => 1,
+                        CellSide::Right => 2,
+                        CellSide::Top => 4,
+                        CellSide::Bottom => 8,
+                    }
+                })
+            })
+            .fold(0, |a, b| a | b);
+        assert_eq!(
+            mask, 15,
+            "all four real sides keep ownership, including long merged sides"
+        );
+        let fill = &c.document().doc_info.border_fills[cell.border_fill_id as usize - 1];
+        assert!(fill.borders[..4]
+            .iter()
+            .all(|b| b.line_type == BorderLineType::None));
+    }
+}
+fn assert_merged_text_in_cells(c: &DocumentCore) {
+    use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+    fn find(n: &RenderNode, ci: usize) -> Option<&RenderNode> {
+        if matches!(&n.node_type, RenderNodeType::Table(t) if t.control_index == Some(ci) && t.cell_context.is_none())
+        {
+            return Some(n);
+        }
+        n.children.iter().find_map(|n| find(n, ci))
+    }
+    fn runs(n: &RenderNode, ci: usize, cell: usize, out: &mut Vec<(String, BoundingBox)>) {
+        if let RenderNodeType::TextRun(t) = &n.node_type {
+            if n.visible
+                && !n.editor_only
+                && !t.text.is_empty()
+                && t.cell_context.as_ref().is_some_and(|p| {
+                    p.path.len() == 1
+                        && p.path[0].control_index == ci
+                        && p.path[0].cell_index == cell
+                })
+            {
+                out.push((t.text.clone(), n.bbox));
+            }
+        }
+        for n in &n.children {
+            runs(n, ci, cell, out);
+        }
+    }
+    let (ci, model) = root(c);
+    let tree = c.build_page_render_tree(0).unwrap();
+    let table = find(&tree.root, ci).unwrap();
+    let frames: Vec<_> = table
+        .children
+        .iter()
+        .filter_map(|n| {
+            if let RenderNodeType::TableCell(t) = &n.node_type {
+                Some((t.model_cell_index.unwrap() as usize, n.bbox))
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(frames.len(), model.cells.len());
+    for (index, frame) in frames {
+        let mut found = vec![];
+        runs(&tree.root, ci, index, &mut found);
+        assert_eq!(
+            found.iter().map(|t| t.0.as_str()).collect::<String>(),
+            text(&model.cells[index].paragraphs)
+        );
+        for (_, b) in found {
+            assert!(b.x >= frame.x - 0.01 && b.x + b.width <= frame.x + frame.width + 0.01);
+            assert!(
+                b.x >= tree.root.bbox.x - 0.01
+                    && b.x + b.width <= tree.root.bbox.x + tree.root.bbox.width + 0.01,
+                "source text remains on the paper after column insertion"
+            );
+            assert!(
+                b.y >= frame.y - 0.01 && b.y + b.height <= frame.y + frame.height + 0.01,
+                "actual text must remain in its logical cell"
+            );
+        }
+    }
+}
+#[test]
+fn merged_compound_source_has_real_perimeter_owners_without_inventing_interior_edges() {
+    for (name, span, label) in [
+        ("colspan-retained", (1, 2), "MERGED HEADER"),
+        ("rowspan-retained", (2, 1), "MERGED LEFT"),
+        ("rowspan-top-retained", (2, 1), "MERGED LEFT"),
+    ] {
+        let c = load_merged_retained(name);
+        let table = root(&c).1;
+        assert_eq!(
+            (table.row_count, table.col_count, table.cells.len()),
+            (2, 2, 3)
+        );
+        let cell = table
+            .cells
+            .iter()
+            .find(|c| text(&c.paragraphs).contains(label))
+            .unwrap();
+        assert_eq!((cell.row_span, cell.col_span), span);
+        assert_merged_owned_sides(&c);
+        assert_merged_text_in_cells(&c);
+    }
+}
+#[test]
+fn merged_retained_neighbors_inherit_real_sides_across_structure_edits_and_both_saves() {
+    // Counts follow the source's three logical cells and the insertion/deletion
+    // operation; a new cut inside a merged cell expands its span, not its text.
+    for (name, modes) in [
+        ("colspan-retained", &[0, 1, 2, 3, 5, 6, 7, 8, 9][..]),
+        ("rowspan-retained", &[2, 3, 7, 9][..]),
+        ("rowspan-top-retained", &[0, 6][..]),
+    ] {
+        for &mode in modes {
+            let mut c = load_merged_retained(name);
+            let original = text(&c.document().sections[0].paragraphs);
+            merged_structure_edit(&mut c, mode).unwrap();
+            let t = root(&c).1;
+            let dims = match mode {
+                0 | 1 | 6 => (3, 2),
+                2 | 3 | 7 => (2, 3),
+                8 => (1, 2),
+                _ => (2, 1),
+            };
+            assert_eq!((t.row_count, t.col_count), dims);
+            assert_eq!(
+                t.cells.len(),
+                if mode >= 5 && mode != 6 && mode != 7 {
+                    2
+                } else if name.starts_with("colspan") && mode == 3 {
+                    4
+                } else {
+                    5
+                }
+            );
+            let after = text(&c.document().sections[0].paragraphs);
+            if mode <= 3 || mode == 6 || mode == 7 {
+                assert_eq!(after, original)
+            } else {
+                let removed = match (name, mode) {
+                    ("colspan-retained", 5) => "LOWER RIGHT",
+                    ("colspan-retained", 8) => "MERGED HEADER",
+                    ("colspan-retained", 9) => "LOWER LEFT",
+                    _ => "MERGED LEFT",
+                };
+                assert!(!after.contains(removed));
+                assert_eq!(after, original.replace(removed, ""));
+            }
+            assert_merged_owned_sides(&c);
+            assert_merged_text_in_cells(&c);
+            let topology: Vec<_> = t
+                .cells
+                .iter()
+                .map(|c| (c.row, c.col, c.row_span, c.col_span))
+                .collect();
+            for bytes in [
+                c.export_hwp_with_adapter_snapshot().unwrap(),
+                c.export_hwpx_native().unwrap(),
+            ] {
+                let n = DocumentCore::from_bytes(&bytes).unwrap();
+                assert_eq!(text(&n.document().sections[0].paragraphs), after);
+                assert_eq!(
+                    root(&n)
+                        .1
+                        .cells
+                        .iter()
+                        .map(|c| (c.row, c.col, c.row_span, c.col_span))
+                        .collect::<Vec<_>>(),
+                    topology
+                );
+                assert_merged_owned_sides(&n);
+                assert_merged_text_in_cells(&n);
+            }
+        }
+    }
+}
+#[test]
+fn merged_retained_unproven_grid_and_varying_side_reject_before_document_changes() {
+    for (name, modes) in [
+        ("colspan-retained", &[4][..]),
+        ("rowspan-retained", &[0, 1, 4, 5, 6, 8][..]),
+        ("colspan-varying-side", &[0, 1, 2, 3, 4, 5][..]),
+    ] {
+        for &mode in modes {
+            let mut c = load_merged_retained(name);
+            assert!(tagged(&c) > 0);
+            let before = (
+                serde_json::to_value(&c.document().sections[0].paragraphs).unwrap(),
+                c.serialize_event_log(),
+                c.export_hwp_with_adapter_snapshot().unwrap(),
+                c.export_hwpx_native().unwrap(),
+                c.render_page_svg_native(0).unwrap(),
+            );
+            let error = merged_structure_edit(&mut c, mode).unwrap_err().to_string();
+            if name == "rowspan-retained" && (mode == 0 || mode == 6) {
+                assert!(error.contains("실제 셀 배치"));
+            }
+            assert_eq!(
+                before,
+                (
+                    serde_json::to_value(&c.document().sections[0].paragraphs).unwrap(),
+                    c.serialize_event_log(),
+                    c.export_hwp_with_adapter_snapshot().unwrap(),
+                    c.export_hwpx_native().unwrap(),
+                    c.render_page_svg_native(0).unwrap()
+                )
+            );
+        }
+    }
+}

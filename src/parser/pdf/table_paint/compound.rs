@@ -134,13 +134,9 @@ pub(super) fn plan(
         if !t.root || !required[ti].contains(&control) {
             continue;
         }
-        // A side replacement cannot express a partial merged-neighbour edge.
-        if !t.grid["cells"]
-            .as_array()
-            .is_some_and(|cs| cs.iter().all(|c| c["rowspan"] == 1 && c["colspan"] == 1))
-        {
-            continue;
-        }
+        // Ownership follows the actual cell perimeters, including merged cells.
+        // The segment-coverage proof below rejects ink crossing a cell interior;
+        // native side replacement separately rejects a partial merged neighbour.
         let region = bounds(t.grid)?;
         let mut certified = true;
         for band in &bands {

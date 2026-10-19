@@ -650,3 +650,17 @@ HWPX는 중복 논리 행을 표준 격자로 투영하면서 rhwp의 잠재 spl
 Native/fresh WASM 각 24쪽(최저 99.93299% / 98.27024%)을 확인했다. 같은 source/runtime의
 빌드·캡처를 재사용한다. 추가 MCP HWP Print의 높이 차이는 별도 **정상 PDF 기준·백로그**
 승인으로 B23에 유지한다. 보존 paint의 재배분 일반 지원과 R2/P5는 남는다.
+
+### R1 이미 병합된 원본의 경계 상속 — stage28 수용
+
+다음 절편 승인으로 [stage28](../working/task_m100_7998_stage28.md)을 구현·집중 검증했다.
+실제 Cell span/perimeter interval과 완전 tiling을 source 소유·pen 증명·행열 template·
+최종 band 발행이 함께 소비한다. 미증명 행 높이는 실제 측정/최종 row resolver로 거절한다.
+원점을 줄여 화면을 맞춘 실험은 철회했으며 문단/LineSeg 규칙은 변경하지 않는다.
+정상 Top 문단은 같은 rowspan에서도 행 추가가 가능함을 독립 한컴 Print로 대조했다.
+
+실제 15종 편집·13종 거절·양 저장, Native/fresh WASM 각 77쪽과 정식 새 3건·기존 80건,
+공개 재현기/Print·실제 Studio를 연결했다. 2026-10-20 메인테이너가 **시각·편집 구조 통과**로
+수용했다. 이 절편의 수용을 R1/P4 전체 완료로 확대하지 않는다. 지원 불가 격자와 단일 변의 다른 pen은 보존/제약으로 기록하고,
+원래 source의 임의 병합·다쪽 continuation·지역 격자 전체 지원으로 확대하지 않는다.
+R2/P5의 순서는 유지하고 전체 suite나 원격 작업은 실행하지 않는다.

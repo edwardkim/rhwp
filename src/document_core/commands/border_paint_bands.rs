@@ -1,6 +1,6 @@
 //! Exact-width opaque solid bands after a complete source-ink proof.
 //! These are owned border paint, not a nearest native BorderFill width.
-use super::border_paint_structure::{key, Key, StructureEdit};
+use super::border_paint_structure::{grid, side_keys, Key, StructureEdit};
 use crate::{
     error::HwpError,
     model::{
@@ -26,7 +26,13 @@ pub(super) fn physical_pens(
 ) -> Result<[u32; 4], HwpError> {
     let mut pens = [0; 4];
     for (side, pen) in pens.iter_mut().enumerate() {
-        *pen = *edges.get(&key(cell, side)).ok_or_else(error)?;
+        let mut intervals = side_keys(cell, side);
+        *pen = *edges
+            .get(&intervals.next().ok_or_else(error)?)
+            .ok_or_else(error)?;
+        if intervals.any(|key| edges.get(&key) != Some(pen)) {
+            return Err(error()); // One own style cannot explain a varying physical side.
+        }
     }
     Ok(pens)
 }
@@ -81,8 +87,10 @@ impl Bands {
                 // Complete opaque solid pens of one colour: the wider cell
                 // border wins, as in native shared-edge resolution. Preserve
                 // the losing own width separately for subsequent deletion.
-                let pen = edges.entry(key(cell, side)).or_default();
-                *pen = (*pen).max(own_pen);
+                for key in side_keys(cell, side) {
+                    let pen = edges.entry(key).or_default();
+                    *pen = (*pen).max(own_pen);
+                }
             }
         }
         if edges.values().any(|&p| p < 2 || p > i32::MAX as u32) {
@@ -95,11 +103,13 @@ impl Bands {
         table: &mut crate::model::table::Table,
         edit: StructureEdit,
     ) -> Result<(), HwpError> {
-        let mut cells: CellPens = self
-            .cells
-            .iter()
-            .filter_map(|(&(r, c), &pens)| edit.destination(r, c).map(|at| (at, pens)))
-            .collect();
+        let mut cells = CellPens::new();
+        for cell in &table.cells {
+            if let Some(at) = edit.destination(cell) {
+                let pens = *self.cells.get(&(cell.row, cell.col)).ok_or_else(error)?;
+                cells.insert(at, pens);
+            }
+        }
         let mut missing = false;
         edit.apply(table, |new, template| {
             if let Some(&pens) = cells.get(&(template.row, template.col)) {
@@ -112,6 +122,7 @@ impl Bands {
         if missing || cells.len() != table.cells.len() {
             return Err(error());
         }
+        grid(table)?; // The actual edited cell frames must still describe the same tiling.
         self.pens = Self::resolve(table, &cells)?;
         self.cells = cells;
         Ok(())
@@ -209,26 +220,18 @@ pub(super) fn apply(
     if t.cells.len() > 4096 {
         return Err(error());
     }
-    let expected = usize::from(t.row_count) * (usize::from(t.col_count) + 1)
-        + usize::from(t.col_count) * (usize::from(t.row_count) + 1);
-    if bands.pens.len() != expected {
+    let grid = grid(t)?;
+    if bands
+        .pens
+        .keys()
+        .copied()
+        .collect::<std::collections::BTreeSet<_>>()
+        != grid.edges
+    {
         return Err(error());
     }
-    let widths = t.get_column_widths();
-    let heights = t.get_row_heights();
-    let offsets = |sizes: &[u32]| -> Vec<i64> {
-        let mut at = 0i64;
-        sizes
-            .iter()
-            .map(|&size| {
-                let n = at;
-                at += i64::from(size);
-                n
-            })
-            .collect()
-    };
-    let xs = offsets(&widths);
-    let ys = offsets(&heights);
+    let xs: Vec<_> = grid.x.iter().map(|&x| x as i64).collect();
+    let ys: Vec<_> = grid.y.iter().map(|&y| y as i64).collect();
     let ox = i64::from(t.common.horizontal_offset as i32);
     let oy = i64::from(t.common.vertical_offset as i32);
     let mut outside = Vec::new();
@@ -277,9 +280,15 @@ pub(super) fn apply(
         let y = oy + ys[cell.row as usize];
         let outer = [
             (cell.col == 0, [x - negative[0], y, negative[0], h]),
-            (cell.col + 1 == t.col_count, [x + w, y, positive[1], h]),
+            (
+                cell.col + cell.col_span == t.col_count,
+                [x + w, y, positive[1], h],
+            ),
             (cell.row == 0, [x, y - negative[2], w, negative[2]]),
-            (cell.row + 1 == t.row_count, [x, y + h, w, positive[3]]),
+            (
+                cell.row + cell.row_span == t.row_count,
+                [x, y + h, w, positive[3]],
+            ),
         ];
         for (side, (is_outer, rect)) in outer.into_iter().enumerate() {
             if is_outer {
