@@ -4103,7 +4103,35 @@ CGMP 및22081993의 별도 원본 행 최소와 #7644의 실제 빈 문단을 �
 154쪽의남은1.33px경계는추정으로바꾸지않고, 실제budget생산값과최종원점의진단을추가해
 현재호출의중복차감여부를확인한다. 신규fixture·px핀·기대값변경은없다.
 
-#8082실제원본문서1382000-202000077은SHAe8d8712715ad7ec1423c007a8358e8b7c8b7932e16b978987714639c1e561eac,
-저장버전9.6.1.9813/product미상이다. Linux원본자료/저장소와Windows다운로드의대응PDF를
-검색했지만없어MCPengine2020·Print·timeout1800초로비동기출력을시작했다.
-619쪽원본검증은기존2개의정식경계fixture통과와구분해진행한다.
+### #8081/#8082 검증 입력 범위 정정
+
+사용자가 지정한 검증 입력은 `samples/issue8081/span_36.hwpx`,
+`samples/issue8081/span_38.hwpx`이며, 각각 기존 기준 PDF
+`pdf/issue8081/span_36-2024.pdf`, `pdf/issue8081/span_38-2024.pdf`와 대조한다.
+두 PDF는 모두 2쪽이며 Creator는 한/글 2024 13.0.0.564다. 네 파일 모두 실제 실행 파일의
+SHA-256이 현재 커밋의 파일과 일치함을 확인했다. 사용자 지시대로 Native로 전쪽을 재검증한다.
+
+앞서 별도의 비공개 대용량 HWP까지 필수 검증 대상으로 확장한 것은 작업 범위 판단 오류였다.
+그 문서의 PDF 변환 시도는 이 두 fixture의 검증이나 PR 준비 조건으로 사용하지 않는다.
+기존 PDF를 재사용하며, 새 PDF 출력 없이 두 문서의 쪽수·각주와 행의 소속·내용 보존 및
+전쪽 raw 실루엣 TSV·대표 review/overlay를 현재 Native producer에서 확인한다.
+범위 확인과 입력 해시는 ignored `output/pr-review/planet6897-20261018/`의
+`pr8082-validation-scope-correction.json`, 실행 결과는
+`pr8081-confirmed-scope-direction7-results.json`에 기록한다. 실행 중인 결과를 통과로 간주하지 않는다.
+
+code SHA `69915d0354776a4dba6fb858abe3be43f42c8ea0`의 최적화 Native에서 실제 재실행을 완료했다.
+두 문서 모두 Native/독립 PDF 2/2쪽이며 누락 없이 전쪽 TSV를 산출했다.
+
+| 입력 | 1쪽 raw % | 2쪽 raw % | 실행 |
+| --- | ---: | ---: | --- |
+| span_36.hwpx | 99.81770 | 99.83292 | TSV·review 모두 exit 0 |
+| span_38.hwpx | 99.72433 | 99.83760 | TSV·review 모두 exit 0 |
+
+같은 code SHA에서 빌드한 정식 `issue_8081_table_footnote_first_fragment` 검사는
+1 PASS/0 FAIL이다. 이 한 검사가 두 입력의 전체 행 소속과 중복·누락, 표 뒤 문단을 검사한다.
+네 쪽 review를 직접 열어 1쪽 끝 행(span_36 R06/span_38 R04), 2쪽 이어받기와 각주 여섯 개,
+표 뒤 TAIL의 위치를 PDF와 대조했다. 글자·괘선의 래스터 농도와 미세 경계 차이는 남아 있으며
+완전한 픽셀 일치로 보고하지 않는다. 이 두 fixture의 결과를 전체 통합 검증 완료로 확대하지 않는다.
+TSV는 `pr8081-direction7-native-scores/<key>/silhouette.tsv`, 직접 판독 PNG는
+`pr8081-direction7-native-review/<key>/review/review_00{1,2}.png`, 정식 검사 로그는
+`pr8081-direction7-focused-test.log`에 보존했다.
