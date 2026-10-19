@@ -229,20 +229,35 @@ impl TypesetEngine {
                         split_end_limit = opening;
                         return false;
                     }
+                    // 내용이 모두 들어온 뒤의 빈 띠는 내용 수용 경계까지 늘리지 않는다.
+                    // 조기 종료도 emit·원장과 같은 빈 띠 경계를 예약한다.
+                    let source_blank_rest = v.reflow_blank_avail_for_rows.map_or(rest, |height| {
+                        rest.min((height - consumed - cs_before).max(0.0))
+                    });
                     if probe.fully_consumed
-                        && visible_height <= rest + 0.5
+                        && visible_height <= source_blank_rest + 0.5
                         && layout_engine
-                            .stored_complete_row_cut_band(table, r, &probe.end_cut, rest, styles)
+                            .stored_complete_row_cut_band(
+                                table,
+                                r,
+                                &probe.end_cut,
+                                source_blank_rest,
+                                styles,
+                            )
                             .is_some()
-                        && row_query.complete_source_band_can_close(whole_row_fit_h, h, rest)
+                        && row_query.complete_source_band_can_close(
+                            whole_row_fit_h,
+                            h,
+                            source_blank_rest,
+                        )
                     {
-                        consumed += cs_before + rest;
+                        consumed += cs_before + source_blank_rest;
                         end_row = r + 1;
-                        end_row_height_override = Some(rest);
+                        end_row_height_override = Some(source_blank_rest);
                         if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                             eprintln!(
                                 "DIAG_SCAN SOURCE_BAND_CLOSE r={} physical={:.6} visible={:.6}",
-                                r, rest, visible_height
+                                r, source_blank_rest, visible_height
                             );
                         }
                         return false;

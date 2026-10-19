@@ -36,6 +36,8 @@ pub(in crate::renderer::typeset) struct BlockRowScanVars {
     pub(in crate::renderer::typeset) is_continuation: bool,
     pub(in crate::renderer::typeset) avail_for_rows: f64,
     pub(in crate::renderer::typeset) reflow_frame_avail_for_rows: Option<f64>,
+    /// 내용 수용 뒤 빈 종료 띠를 예약하는 독립 경계.
+    pub(in crate::renderer::typeset) reflow_blank_avail_for_rows: Option<f64>,
     /// 각주 refit이 필요한 표에서는 병합 칸의 빈 쪽 끝 띠를 미리 소유하지 않는다.
     pub(in crate::renderer::typeset) has_table_footnotes: bool,
     pub(in crate::renderer::typeset) header_overhead: f64,

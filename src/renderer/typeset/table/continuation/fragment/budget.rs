@@ -1745,6 +1745,11 @@ impl TypesetEngine {
                 .min(accepted_source_frame_limit.unwrap_or(f64::MAX))
         });
 
+        let reflow_blank_first_fragment_shortfall = if is_continuation {
+            0.0
+        } else {
+            reflow_frame_raw.map_or(0.0, |(_, raw)| (-raw).max(0.0))
+        };
         let reflow_blank_avail_for_rows = reflow_frame_raw.map(|(_, raw)| {
             raw.max(0.0)
                 .min(accepted_source_frame_limit.unwrap_or(f64::MAX))
@@ -1832,6 +1837,7 @@ impl TypesetEngine {
             avail_for_rows,
             reflow_frame_avail_for_rows,
             reflow_blank_avail_for_rows,
+            reflow_blank_first_fragment_shortfall,
             reflow_frame_first_fragment_shortfall,
             single_cell_fragment_shape,
             single_cell_box_height,

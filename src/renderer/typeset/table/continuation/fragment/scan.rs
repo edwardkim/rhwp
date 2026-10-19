@@ -55,6 +55,8 @@ impl TypesetEngine {
             header_overhead,
             avail_for_rows,
             reflow_frame_avail_for_rows,
+            reflow_blank_avail_for_rows,
+            reflow_blank_first_fragment_shortfall,
             reflow_frame_first_fragment_shortfall,
             first_fragment_shortfall,
             ..
@@ -220,6 +222,7 @@ impl TypesetEngine {
             is_continuation,
             avail_for_rows,
             reflow_frame_avail_for_rows,
+            reflow_blank_avail_for_rows,
             header_overhead,
             landscape_rowbreak_bleed,
             has_table_footnotes: !input.prepared.table_footnotes.is_empty(),
@@ -502,9 +505,14 @@ impl TypesetEngine {
                         height
                             .max(height + table_fn_reserved - reflow_frame_first_fragment_shortfall)
                     });
+                    let blank_refit = reflow_blank_avail_for_rows.map(|height| {
+                        height
+                            .max(height + table_fn_reserved - reflow_blank_first_fragment_shortfall)
+                    });
                     let refit = run_scan(BlockRowScanVars {
                         avail_for_rows: avail_refit,
                         reflow_frame_avail_for_rows: reflow_refit,
+                        reflow_blank_avail_for_rows: blank_refit,
                         ..scan_vars
                     });
                     if let Some(started) = issue2424_refit_started {
