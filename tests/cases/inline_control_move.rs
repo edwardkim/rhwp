@@ -36,6 +36,16 @@ fn caret(owner: InlineControlOwner, offset: usize) -> InlineControlCaret {
         char_offset: offset,
     }
 }
+fn chart_content(core: &DocumentCore) -> serde_json::Value {
+    let mut data: serde_json::Value =
+        serde_json::from_str(&core.get_chart_data_by_index_native(0).unwrap()).unwrap();
+    assert_eq!(data["ok"].as_bool(), Some(true));
+    // 저장 형식마다 달라지는 위치 정보 대신 차트 내용을 비교한다.
+    let object = data.as_object_mut().unwrap();
+    object.remove("source");
+    object.remove("representations");
+    data
+}
 fn equation(id: u32) -> Control {
     Control::Equation(Box::new(Equation {
         common: CommonObjAttr {
@@ -947,7 +957,8 @@ fn public_hwp_export_preserves_inline_chart_with_and_without_move() {
             )
             .unwrap();
         }
-        let before = serde_json::to_value(core.document()).unwrap();
+        let before_chart = chart_content(&core);
+        let before = format!("{:?}", core.document());
         for bytes in [
             core.export_hwp_with_adapter_snapshot().unwrap(),
             core.export_hwpx_native().unwrap(),
@@ -967,7 +978,8 @@ fn public_hwp_export_preserves_inline_chart_with_and_without_move() {
                 1,
                 "이동 여부 {moved}: 저장 후 차트를 글자처럼 취급해야 한다"
             );
-            assert_eq!(serde_json::to_value(core.document()).unwrap(), before);
+            assert_eq!(chart_content(&reopened), before_chart);
+            assert_eq!(format!("{:?}", core.document()), before);
         }
     }
 }
@@ -999,6 +1011,9 @@ fn malformed_source_or_destination_coordinates_reject_without_changes() {
 fn committed_public_fixtures_reopen_and_keep_objects_at_the_saved_carets() {
     let root =
         std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/inline-control-move");
+    let expected_chart = chart_content(
+        &DocumentCore::from_bytes(&std::fs::read(root.join("chart-before.hwpx")).unwrap()).unwrap(),
+    );
     for ext in ["hwp", "hwpx"] {
         let mut core =
             DocumentCore::from_bytes(&std::fs::read(root.join(format!("before.{ext}"))).unwrap())
@@ -1051,6 +1066,7 @@ fn committed_public_fixtures_reopen_and_keep_objects_at_the_saved_carets() {
             )
             .unwrap();
             assert_eq!(chart.page_count(), 1);
+            assert_eq!(chart_content(&chart), expected_chart);
             assert_eq!(
                 chart.document().sections[0]
                     .paragraphs
