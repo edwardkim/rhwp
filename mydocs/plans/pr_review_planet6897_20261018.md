@@ -6116,3 +6116,12 @@ Visual Sweep WASM PNG는 Studio Bridge를 사용하지 않고 HwpDocument를 직
 덮어쓰지 않는다. 기존 exact registry의 슬롯 존재 질의를 공통 스타일 경계에서 소비해
 그 슬롯은 공급 요청과 외부 PUA 선택에서 제외한다. 해당 경로의 기존 글리프 계약은
 그대로 유지하며 외부 TTF 프로그램을 내장 face의 glyph 근거로 승격하지 않는다.
+
+
+D61 경계 검토에서 D60의 clear_native_pua_fonts가 일반 rebuild_derived_state를 호출해
+명시 exact 소유까지 지우는 결함을 재현했다. 동일한 기존 자체 제작 1008바이트 font fixture를
+등록한 뒤 PUA만 해제해도 exact 재등록이 already-registered 대신 registered이고 generation이
+1→3으로 변했다. 수정 전 ignored 실행은 이 원인으로 FAIL이다. PUA 전용 스타일/구성/측정/
+페이지 갱신에서는 기존 exact registry를 다시 만들지 않고 같은 snapshot을 재결합한다.
+이 순수 등록 소유 계약을 lib 단위 검사에 추가했다. 실물 좌표·렌더링 baseline 검사를 추가한
+것이 아니며 실제 PUA 30개와 페이지 시각 증거는 별도 원본 실행으로 계속 검증한다.

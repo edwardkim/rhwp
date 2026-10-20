@@ -862,11 +862,15 @@ pub(crate) fn resolved_to_text_style(
 ) -> TextStyle {
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         TextStyle {
-            native_pua_metrics: styles.native_pua_fonts.get(
-                cs.font_family_for_lang(lang_index),
-                cs.bold,
-                cs.italic,
-            ),
+            native_pua_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
+                .then(|| {
+                    styles.native_pua_fonts.get(
+                        cs.font_family_for_lang(lang_index),
+                        cs.bold,
+                        cs.italic,
+                    )
+                })
+                .flatten(),
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
             font_family: cs.font_family_for_lang(lang_index).to_string(),

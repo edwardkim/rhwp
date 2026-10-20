@@ -44,3 +44,39 @@ export async function installCanvasFont(family, bytes, descriptors, sourceOwner 
   }
   return font;
 }
+
+// 쪽수/대상 쪽을 고르기 전에 실제 FontFace와 같은 PUA 프로그램을 공급한다.
+export async function prepareNativePuaFonts(owner, fonts, loadBytes) {
+  if (typeof owner?.getNativePuaFontRequests !== 'function'
+      || typeof owner?.registerNativePuaFont !== 'function') return [];
+  const requests = JSON.parse(owner.getNativePuaFontRequests());
+  const loaded = new Map(), proofs = [];
+  for (const request of requests) {
+    for (const family of request.paint_families || [request.family]) {
+      const selected = selectMetafileFontFaces(fonts,
+        [{families: [family], weight: request.bold ? 700 : 400, italic: request.italic}]);
+      let accepted = false;
+      for (const key of selected) {
+        const record = fonts.find(font => font.families.some(name =>
+          `${name.toLowerCase()}|${font.weight}|${font.style}` === key));
+        if (!record) continue;
+        let bytes = loaded.get(key);
+        if (!bytes) {
+          bytes = await loadBytes(record);
+          await installCanvasFont(family, bytes,
+            {weight: String(record.weight), style: record.style}, owner);
+          loaded.set(key, bytes);
+        }
+        if (owner.registerNativePuaFont(request.family, request.bold, request.italic,
+          new Uint8Array(bytes), 0)) {
+          proofs.push({family: request.family, selectedFamily: family, weight: record.weight,
+            style: record.style, sha256: record.sha256, sourceSha256: record.sourceSha256});
+          accepted = true;
+          break;
+        }
+      }
+      if (accepted) break;
+    }
+  }
+  return proofs;
+}

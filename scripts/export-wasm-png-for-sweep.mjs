@@ -105,7 +105,7 @@ async function main() {
         browsers.add(browser);
         const page = await browser.newPage();
         await page.goto(`http://127.0.0.1:${server.address().port}`);
-        const info = await page.evaluate(async ({compat, environmentJson}) => {
+        const info = await page.evaluate(async ({compat, environmentJson, fonts}) => {
           const module = await import('/rhwp.js');
           await module.default({module_or_path: '/rhwp_bg.wasm'});
           const doc = new module.HwpDocument(new Uint8Array(await (await fetch('/source')).arrayBuffer()));
@@ -137,8 +137,14 @@ async function main() {
               return imageDescriptor.set.call(this, value);
             },
           });
-          return {pageCount: doc.pageCount(), version: module.version()};
-        }, {compat: settings.compat, environmentJson});
+          const {prepareNativePuaFonts} = await import('/font-registration.mjs');
+          const nativePuaFonts = await prepareNativePuaFonts(doc, fonts, async record => {
+            const response = await fetch(record.url);
+            if (!response.ok) throw Error('PUA 공급 글꼴을 읽을 수 없습니다.');
+            return response.arrayBuffer();
+          });
+          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts};
+        }, {compat: settings.compat, environmentJson, fonts});
         if (!Number.isInteger(info.pageCount) || info.pageCount < 1) throw Error('WASM 전체 쪽수가 올바르지 않습니다.');
         if (pageCount !== undefined && pageCount !== info.pageCount) throw Error('WASM 작업자 간 전체 쪽수가 다릅니다.');
         pageCount = info.pageCount;
@@ -261,7 +267,7 @@ async function main() {
           pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height});
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
-        workers.push({index, pages, fonts: fontInfo, browser: await browser.version()});
+        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, browser: await browser.version()});
         await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
       } finally {
         if (browser) {

@@ -394,6 +394,9 @@ impl std::fmt::Debug for KerningMeasurementContext {
 }
 
 impl KerningMeasurementContext {
+    pub(crate) fn has_font_source(&self, slot: ExactFontSlot) -> bool {
+        self.registry.handle_for_slot(slot).is_some()
+    }
     pub(crate) fn new(registry: ExactFontSourceRegistry) -> Self {
         Self {
             registry,

@@ -489,3 +489,17 @@ pub struct ResolvedStyleSet {
     pub(crate) horizontal_shaping_context:
         Option<std::sync::Arc<crate::renderer::shaping_context::HorizontalShapingContext>>,
 }
+
+impl ResolvedStyleSet {
+    /// 명시/내장 슬롯의 실제 프로그램을 외부 family 캐시로 대체하지 않는다.
+    pub(crate) fn has_exact_font_source(&self, char_style_id: u32, lang_index: usize) -> bool {
+        self.kerning_measurement_context
+            .as_ref()
+            .is_some_and(|context| {
+                context.has_font_source(crate::renderer::kerning::ExactFontSlot::new(
+                    char_style_id,
+                    lang_index,
+                ))
+            })
+    }
+}

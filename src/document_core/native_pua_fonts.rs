@@ -31,7 +31,7 @@ impl DocumentCore {
         let changed = fonts != *self.native_pua_fonts;
         if changed {
             self.native_pua_fonts = std::sync::Arc::new(fonts);
-            self.rebuild_derived_state();
+            self.refresh_native_pua_font_layout();
         }
         Ok(changed)
     }
@@ -60,6 +60,12 @@ impl DocumentCore {
         }
         let mut requests = BTreeMap::new();
         for slot in slots {
+            if self
+                .styles
+                .has_exact_font_source(slot.char_shape_id, slot.language_index)
+            {
+                continue;
+            }
             if let Some(style) = self.styles.char_styles.get(slot.char_shape_id as usize) {
                 let family = style.font_family_for_lang(slot.language_index).to_owned();
                 requests
@@ -94,7 +100,7 @@ impl DocumentCore {
         let supported = fonts.get(family, bold, italic).is_some();
         if changed {
             self.native_pua_fonts = std::sync::Arc::new(fonts);
-            self.rebuild_derived_state();
+            self.refresh_native_pua_font_layout();
         }
         Ok(supported)
     }
@@ -102,6 +108,51 @@ impl DocumentCore {
     /// 호스트 글꼴 세대가 바뀌면 원 PUA 결정과 파생 배치를 함께 폐기한다.
     pub fn clear_native_pua_fonts(&mut self) {
         self.native_pua_fonts = Default::default();
-        self.rebuild_derived_state();
+        self.refresh_native_pua_font_layout();
+    }
+
+    /// 글꼴 공급은 원본/명시 exact registry를 다시 읽거나 지우는 문서 교체가 아니다.
+    fn refresh_native_pua_font_layout(&mut self) {
+        self.rebuild_resolved_styles();
+        self.refresh_exact_font_measurement_contexts();
+        self.recompose_all_with_horizontal_shaping();
+        self.mark_all_sections_dirty();
+        self.measured_tables.clear();
+        self.measured_sections.clear();
+        self.dirty_paragraphs.clear();
+        self.para_column_map.clear();
+        self.invalidate_page_tree_cache();
+        self.overflow_links_cache.borrow_mut().clear();
+        self.paginate_if_needed();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::DocumentCore;
+
+    #[test]
+    fn pua_supply_clear_preserves_explicit_exact_font_owner() {
+        let mut core = DocumentCore::new_empty();
+        let bytes = include_bytes!("../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+        let before: serde_json::Value = serde_json::from_str(
+            &core
+                .register_exact_font_source_native(0, 0, bytes, 0)
+                .unwrap(),
+        )
+        .unwrap();
+        core.clear_native_pua_fonts();
+        let after: serde_json::Value = serde_json::from_str(
+            &core
+                .register_exact_font_source_native(0, 0, bytes, 0)
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            after["status"], "already-registered",
+            "PUA만 해제해도 명시 exact 소유자는 동일한 채 유지한다"
+        );
+        assert_eq!(before["handle"], after["handle"]);
+        assert_eq!(before["registry"], after["registry"]);
     }
 }
