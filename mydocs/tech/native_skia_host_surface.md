@@ -41,6 +41,11 @@ intersection of the host and page clips to the requested opaque COLORREF color.
 The maximum scale of the resulting device matrix controls resolution-dependent
 SVG raster fallbacks, including inherited device-pixel scaling.
 
+호스트가 페이지를 회전하거나 기울여도 SVG 이미지의 해상도 계산은 최종
+행렬의 최대 배율을 사용합니다. SVG 문서 이미지의 기존 1–4배 raster 배율
+제한은 유지합니다. 4배 확대 후 90도 회전한 SVG 이미지가 회전 전 픽셀을
+정확히 회전한 결과와 같은지 회귀 테스트로 확인합니다.
+
 The API restores matrix, clip, and save count on success and error. Invalid
 geometry, a non-finite/singular/perspective device matrix, or an invalid text
 contract is rejected before background or content changes target pixels. Page
