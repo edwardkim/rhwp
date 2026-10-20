@@ -133,9 +133,7 @@ impl LayoutEngine {
             }
             if end != 1
                 || units.len() != 2
-                || units
-                    .iter()
-                    .any(|unit| !unit.has_visible_line() || unit.vis_end != unit.vis_start + 1)
+                || units.iter().any(|unit| !unit.is_single_visible_line())
             {
                 return false;
             }

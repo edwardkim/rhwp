@@ -252,6 +252,11 @@ impl super::CellUnit {
     pub(in crate::renderer::layout) fn has_visible_line(&self) -> bool {
         !self.empty_spacer && self.vis_start < self.vis_end
     }
+
+    /// 한 가시 줄만 소유하는 유닛인가. 원문 줄 범위는 이 소유자 안에서 판정한다.
+    pub(in crate::renderer::layout) fn is_single_visible_line(&self) -> bool {
+        self.has_visible_line() && self.vis_end - self.vis_start == 1
+    }
 }
 
 /// 흡수 기준은 소유 칸의 마지막 줄과 원본 1HU 반올림이다.
