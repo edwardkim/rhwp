@@ -17,6 +17,16 @@ const option = name => {
 };
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 
+// 실제 Canvas가 요청한 family에 공급 program을 등록한다. 별칭은 글리프를 바꾸지 않는다.
+export async function registerCanvasFont(family, bytes, weight, style) {
+  // FontFace에는 원본 이름을 전달한다. JSON 문자열의 따옴표나 CSS 식별자의
+  // 이스케이프를 붙이면 Canvas가 조회한 이름과 공급 이름이 달라질 수 있다.
+  const font = new FontFace(family, bytes, {weight: String(weight), style});
+  await font.load();
+  document.fonts.add(font);
+  return font;
+}
+
 // 공급 목록만 공개하며 URL을 파일시스템 경로로 해석하지 않는다.
 export function createSweepServer(files, fontByUrl) {
   return http.createServer((req, res) => {
@@ -56,6 +66,7 @@ async function main() {
       || new Set(wanted).size !== wanted.length)) throw Error('선택 쪽이 올바르지 않습니다.');
   const environmentJson = settings.fontEnvironment ? readFileSync(settings.fontEnvironment, 'utf8') : null;
   const files = new Map([
+    ['/font-supply.js', ['application/javascript', 'export ' + registerCanvasFont.toString()]],
     ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
     ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
     ['/source', ['application/octet-stream', readFileSync(input)]],
@@ -175,10 +186,21 @@ async function main() {
         }
         // 같은 문서의 필요한 face를 한 번만 공급한다. 데이터는 SVG/base64로 복제하지 않는다.
         const fontInfo = await page.evaluate(async ({pages, fonts, scale}) => {
-          const {installCanvasFont} = await import('/font-registration.mjs');
+          const {installCanvasFont, selectMetafileFontFaces} = await import('/font-registration.mjs');
           const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
+          const metafileRequests = typeof doc.getMetafileFontRequests === 'function' ? JSON.parse(doc.getMetafileFontRequests()) : [];
+          const metafileFaces = selectMetafileFontFaces(fonts, metafileRequests);
           const requested = new Set();
+          if (metafileRequests.length) {
+            for (const request of metafileRequests) {
+              for (const family of request.families) {
+                if (fonts.some(record => record.families.some(name => name.toLowerCase() === family.toLowerCase()))) {
+                  requested.add(family.toLowerCase());
+                }
+              }
+            }
+          }
           for (const value of globalThis.sweepRequestedFonts) {
             const style = document.createElement('span').style; style.font = value;
             const chain = (style.fontFamily.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,]+/g) || [])
@@ -197,7 +219,7 @@ async function main() {
             if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
             const bytes = await response.arrayBuffer();
             for (const family of selected) {
-              try { await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc); }
+              try { await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc, metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`)); }
               catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
               supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}`);
               loaded.push({family, sourceSha256: record.sourceSha256, sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});

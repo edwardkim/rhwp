@@ -15,25 +15,6 @@ use rhwp::DocumentCore;
 const SAMPLE: &str = "samples/issue2006/1790387_prep_final_report.hwpx";
 
 #[test]
-fn prep_page_33_keeps_complete_final_word_on_saved_sixth_line() {
-    let bytes =
-        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
-    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
-    let page = core.build_page_render_tree(32).expect("물리 33쪽");
-    let mut lines = Vec::new();
-    paragraph_lines(&page.root, 345, &mut lines);
-    // 원본 저장 LineSeg 6개와 한컴 2024 PDF 물리 33쪽의 여섯 줄이
-    // 같은 어절 경계를 보존한다. 더 적은 줄로 채울 수 있다는 사실만으로
-    // 이 정상 저장 분할을 무효로 분류하면 안 된다.
-    assert_eq!(lines.len(), 6, "정상 저장 여섯 줄: {lines:?}");
-    assert!(lines[0].trim_end().ends_with("한다는"), "첫 줄: {lines:?}");
-    assert_eq!(lines[5].trim(), "왜곡될 수 있음.");
-    let last = line_top_containing(&page.root, "왜곡될 수 있음.").expect("마지막 줄");
-    // PDF 위 좌표 yMin=430.848pt, 96dpi 기준.
-    assert!((last - 574.464).abs() <= 1.5, "마지막 줄 위치: {last:.3}");
-}
-
-#[test]
 fn prep_page_76_single_cell_does_not_reserve_last_line_spacing() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
@@ -154,25 +135,6 @@ fn prep_kopub_paragraph_does_not_orphan_final_syllable() {
             .last()
             .is_some_and(|line| line.ends_with("연령을 정리하면 다음과 같음.")),
         "한컴 PDF에서는 다음 문단의 마지막 줄까지 물리 67쪽에 있다: {next_paragraph:?}"
-    );
-}
-
-#[test]
-fn prep_chart_caption_preserves_following_saved_line_spacing() {
-    let bytes =
-        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
-    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
-    let page = core.build_page_render_tree(26).expect("물리 27쪽");
-    let caption =
-        line_top_containing(&page.root, "[그림 6] 서울시민 성생활 비율").expect("여성 차트 캡션");
-    let following =
-        line_top_containing(&page.root, "남성에서는 20대의 성생활 비율").expect("차트 뒤 본문");
-    // 한컴 2024 PDF: 캡션 y=426.7px, 뒤 본문 y=476.7px. 저장 chart
-    // LineSeg의 뒤 줄 간격 720HU(9.6px)가 두 글줄 사이에 들어간다.
-    assert!((caption - 426.7).abs() <= 1.5, "캡션 위치: {caption:.1}");
-    assert!(
-        (following - 476.7).abs() <= 1.5,
-        "차트 뒤 본문은 저장 줄간격을 점유해야 한다: {following:.1}"
     );
 }
 

@@ -304,7 +304,15 @@ pub(super) fn capped_bottom(
         .filter(|((pi, _), _)| *pi == para_idx)
         .map(|(_, placement)| placement.clearance)
         .sum();
-    let capped_bottom = snapped_base + cap + side_wrap_clearance;
+    let shared_end = page
+        .inline_placements
+        .iter()
+        .filter(|((pi, _), _)| *pi == para_idx)
+        .filter_map(|(_, placement)| placement.advance_end)
+        .fold(0.0_f64, f64::max);
+    // 확정 줄 프레임의 뒤 간격은 다음 문단도 실제로 소비한다.
+    // 오래된 분리 예산 cap으로 fit/paint 공통 끝을 되감지 않는다.
+    let capped_bottom = (snapped_base + cap + side_wrap_clearance).max(shared_end);
     // 저장 host가 4px여도 회피 줄의 실측 표 높이는 되돌릴 수 없다.
     // 뒤 표까지 같은 단에서 물리 하단을 이어야 렌더와 fit의 cursor가 같다.
     if page.inline_placements.is_empty() {

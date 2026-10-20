@@ -2,14 +2,26 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-14
+last_verified: 2026-10-18
 ---
 
 # 로컬 사전 검증
 
-이 가이드는 PR의 코드·sample·frontend 변경을 로컬에서 확인하는 절차다. 선택한 검증과 생략 이유를
-PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유하는 Cargo 계열 명령은
-**반드시 하나가 끝난 뒤 다음 명령을 실행**한다.
+이 가이드는 PR의 코드·sample·frontend 변경을 로컬에서 확인하는 절차다. **PR 제출 전에 4.3의
+변경 범위별 필수 검증과 해당 보조 절차를 빠짐없이 완료한다.** 기여자·메인터너·콜라보레이터 모두
+같은 기준을 적용한다. 실행 head·base SHA, 명령·환경·실제 결과와 증적을 PR 본문 또는 기존 검증
+기록에 연결한다. 비해당 항목은 변경 범위와 소비 경로를 근거로 구분하며, 실패·미실행 항목을
+비해당으로 바꾸거나 새 PR의 CI에 넘겨 제출 전 검증을 대신하지 않는다. 정본에서 허용한 동일
+code head의 기존 CI·증적 재사용은 그 조건을 확인해 기록한다.
+
+일반 제출은 **검증을 완료한 Open PR**로 한다. Draft는 미완성 설계·WIP의 조기 논의처럼 특별한
+목적을 명시한 경우에만 사용하며, 에이전트는 작업지시자의 명시적 Draft 지시가 있어야 생성한다.
+단순한 PR 생성 승인, 번호 확보, CI 시작·대기 또는 필수 검증 실패·미완료는 Draft 예외 사유가 아니다.
+예외 Draft도 목적·미완료 항목·완료 계획을 본문에 적고 Ready 전환 전에 필수 검증을 모두 마친다.
+
+선택한 검증과 정본이 허용한 재사용·비해당 사유를 PR별 검증 기록에 남긴다.
+같은 checkout·target·Cargo cache를 공유하는 Cargo 계열 명령은 **반드시 하나가 끝난 뒤 다음
+명령을 실행**한다.
 
 로컬 검증 로그(`*.log`)는 저장소의 ignored `output/pr-review/<review-id>/logs/`에 기록한다.
 `/private/tmp`이나 추적되는 문서·asset 경로에 로그를 만들거나 커밋하지 않는다. PR review 문서에는
@@ -17,6 +29,12 @@ PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유
 불필요한 산출물을 점검·정리한다. 검토별 저장 경로가 정리 범위를 제한하지 않는다. 삭제 전 사용·소유·
 증적 보존 확인, 활성 작업·공유 캐시의 보존과 정리 결과 기록은
 [merge 후속 처리](post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
+
+기존 회귀 실패는 [해결 PR의 선행 분석](../codex/docs_and_git_workflow.md#기존-이슈와-해결-pr의-선행-분석)으로
+원 이슈·원 PR·실제 통합 및 후속 보정의 원인·기대값·검증 범위를 먼저 확인한다. 실패 항목마다
+현재 base/head와 대조하며, 리베이스로 반영한 기능의 실패도 같은 순서로 조사한다.
+필수 근거 부족·미해결 항목을 `미검증`으로 기록한 채 PR을 제출하지 않는다. 승인된 작업 범위는
+근거 확보·원인 보정·실제 재검증까지 완료하며, 그 전에는 PR 생성·승인·통합을 보류한다.
 
 기존 렌더링 회귀가 실패하면 검사부터 바꾸지 않는다. **원본 입력 출력 보정 → 독립 한컴 Print PDF와
 Native/fresh WASM의 관련 모든 페이지에서 90% 이상 확인 → 독립 기대값에 따라 필요한 검사 변경**
@@ -91,6 +109,33 @@ Linux Snap 경로와 상세 절차는 [디스크 공간 정리](../dev_environme
 find "${rhwp_review_source_dir:?기본 작업공간 경로를 먼저 고정하세요}/target" -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
 pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 ~~~
+
+### 리베이스로 반영한 PR의 기능 보존 검증
+
+리베이스 뒤에는 현재 작업의 개선과 **새 기준에서 들어온 PR의 기능 유지·개선**을 함께 확인한다.
+충돌 없는 자동 적용도 포함한다. 작성자·reviewer·메인터너 보정·collaborator self PR에 같은 기준을 적용한다.
+
+1. 리베이스 전 base, 새 `upstream/devel`, 리베이스 후 후보의 SHA를 고정한다. 두 base 사이의
+   commit과 병합 PR을 확인하고, 각 PR의 본문·실제 diff·회귀 검사에서 제공하는 기능과 기대 동작을
+   파악한다. 충돌을 해소한 파일만으로 대상을 정하지 않는다.
+2. 들어온 PR별로 후보 변경과의 공통 호출 경로·데이터·조건·backend를 대조한다. 기존 재현 입력과
+   정상 대조군, 중요한 적용·비적용 경계를 골라 **새 devel과 리베이스 후 후보를 같은 조건에서 실행**한다.
+   원래 작업 대상의 검증도 유지한다. 기능상 영향이 없는 PR은 실제 diff·소비 경로를 근거로 비해당
+   사유를 적으며, 시험하지 않았다는 이유로 비해당 처리하지 않는다.
+3. 기능의 실제 소비 지점까지 확인한다. 해당 PR이 다루는 편집·저장·열기·Native ABI·브라우저 동작 등은
+   그 실행 경로에서 검증한다. 조판·렌더링은 같은 원본·독립 한컴 Print PDF의 전쪽 Native/fresh WASM
+   TSV와 review·overlay 직접 판독을 대조한다. 컴파일·전체 CI 성공이나 코드가 남아 있다는 사실만으로
+   기능 보존을 판정하지 않는다.
+4. **기존 기능이 유지되거나 개선되고 현재 작업의 필수 검증도 충족하면 다음 단계로 진행한다.**
+   기능·내용 보존·배치·출력 품질이 하나라도 후퇴하면 구현이나 충돌 해소를 보정하고, 영향받은
+   원래 작업과 반영 PR 양쪽을 새 후보에서 다시 검증한다. 다른 입력의 개선·평균값으로 후퇴를
+   상쇄하거나, 기존 검사·baseline·허용치를 완화해 통과시키지 않는다. 시각 판정은
+   [devel 대비 페이지별 하락 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)과
+   90%·쪽수·내용 보존·확대 판독 조건도 함께 적용한다.
+5. 기존 PR 본문 또는 검토 기록에 `반영 PR/기능 → 새 base/후보 SHA → 입력·명령·실제 결과 →
+   유지/개선/후퇴/미검증 → 보정·재검증 결과`를 연결한다. 리베이스 전 실행은 출처 기록이며 새
+   후보의 검증으로 표시하지 않는다. 실행으로 확인한 후퇴와 필수 증거 부족을 구분하고, 어느 쪽이든
+   해소 전에는 준비 완료·새 PR 생성·승인·통합을 보류한다. 별도 보고서 파일을 중복 작성할 필요는 없다.
 
 ### 고정 review target과 실행 환경
 
@@ -295,6 +340,11 @@ RHWP_BIN="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경�
   venv/bin/python tools/fidelity_compare/fidelity_compare.py <키> <시작쪽> <끝쪽> \
   --out-dir output/pr-review/<review-id>/fidelity-<키>
 ~~~
+
+위 `--target-dir`의 공용 `target/pr-review`는 **Cargo 컴파일 캐시**이며 모든 검토에서 재사용한다.
+반면 `--out-dir output/pr-review/<review-id>/fidelity-<키>`는 **해당 실행의 비교 증적 저장 위치**다.
+TSV·PNG·보고서를 검토별로 구분하므로 공용 빌드 캐시 재사용과 충돌하지 않는다. 증적을 나누기 위해
+별도 Cargo target을 만들지 않으며, 서로 다른 head·입력·실행의 증적을 같은 경로에 덮어쓰지 않는다.
 
 `cargo build`는 **컴파일 전용 준비 단계**이며 테스트를 실행하지 않는다. 시각 보정 중에는 이 명령으로
 빠르게 최신 SVG를 확인하되, code head가 바뀐 뒤 PR 검증을 완료하려면 위의 전체 `cargo nextest run
@@ -507,8 +557,8 @@ GitHub Full CI가 완료된 code head를 maintainer가 재검토할 때는
   끝내고 PR을 만든다.
 - focused test, `git diff --check`, 변경 문서 링크 검사, renderer의 실제 WASM/브라우저 시각 검증은
   생략하지 않는다.
-- Docker 등 표준 실행 환경이 없어서 host fallback을 썼다면, 표준 경로를 통과했다고 쓰지 않고
-  대체 명령과 환경 부재를 review 문서에 함께 기록한다.
+- Docker 사용 여부는 필수 검증의 생략 조건이 아니다. 아래 [환경별 WASM 검증](#환경에-따른-fresh-wasm-검증)에서
+  실제 사용 가능한 경로를 선택하고 명령·환경·산출물과 결과를 기록한다.
 - candidate SHA와 녹색 run, 생략한 명령과 사유를 PR review 문서에 적고, 최신 trailing 문서 head의
   aggregate 상태는 merge 직전에 다시 확인한다.
 
@@ -552,13 +602,14 @@ renderer 영향 PR의 Native Skia 공식 회귀 범위는 다음 3종이다.
 
 ~~~bash
 cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia --lib
-node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \\
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
   --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
-node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \\
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
   --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
-# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
-docker compose --env-file .env.docker run --rm wasm
 ~~~
+
+fresh WASM은 아래 환경별 경로 중 하나를 완료한다. Docker 설치 여부와 관계없이 Native Skia 3종과
+WASM·브라우저·시각 검증의 적용 범위는 동일하다.
 
 `native-skia`가 Cargo feature이고 `skia`는 feature가 아니다. 따라서
 `cargo test --features native-skia skia --lib`의 `skia`는 test filter가 되어 전체 회귀를 실행하지 않는다.
@@ -567,8 +618,81 @@ libtest 동시성을 현재 host에 맞춰 조정해야 하면 Cargo 옵션 뒤�
 
 개별 Rust 통합 fixture는 `tests/generated/regression_suite_*.rs`에 묶이므로, 이전처럼 파일명을
 `cargo test --test`에 직접 넘기지 않는다. `run-rust-test.mjs`가 manifest에서 실제 suite와 테스트
-필터를 해석한다. Docker 표준 WASM 경로가 없는 호스트에서는 개발 환경 안내의 `--no-opt` 진단 경로를
-사용하고, 검토 기록에 Docker 부재와 대체 명령을 함께 남긴다.
+필터를 해석한다.
+
+### 환경에 따른 fresh WASM 검증
+
+**Docker는 필수 설치 조건이 아니다.** Docker·Compose 명령과 daemon 접근이 정상인 환경에서는
+컨테이너 경로를, Docker 미설치·daemon 접근 불가·컨테이너 실행 제한 환경에서는 호스트 경로를 쓴다.
+Docker 설치·권한·daemon 설정 변경을 검증의 선행 의무로 만들지 않는다.
+
+| 환경 | 수행할 빌드 | 공용 캐시 |
+| --- | --- | --- |
+| Docker에서 공용 target 마운트·읽기/쓰기·hard-link 가능 | Compose `wasm` 서비스에 호스트 공용 target을 연결해 최적화 포함 빌드 | 호스트의 동일한 물리적 `target/pr-review` 재사용 |
+| Docker 실행 불가 | 해당 OS의 locked wrapper로 호스트에서 최적화 포함 빌드 | 기본 작업공간의 고정 `target/pr-review` 절대 경로 재사용 |
+| 원인 분리를 위한 `--no-opt` 실행 | 진단 결과로만 기록; 제출 전에는 위 두 경로 중 하나의 최적화 포함 빌드를 완료 | 해당 실행 환경의 기존 캐시 재사용 |
+
+Docker 사용 가능 여부는 `docker compose version`과 `docker info`의 성공으로 확인한다. CLI만
+설치되어 있거나 daemon 권한이 없는 상태를 사용 가능한 환경으로 기록하지 않는다. 호스트 경로는
+Rust의 `wasm32-unknown-unknown` target과 `wasm-pack`을 준비하며, 버전·옵션과 최적화 종료 결과를
+기록한다. 도구 준비·OS별 설명은 [개발 환경 가이드](../dev_environment_guide.md#wasm-빌드)를 따른다.
+
+**A. Docker에서 공용 캐시를 사용할 수 있는 환경 — Linux 등 POSIX 셸의 저장소 루트에서 실행:**
+
+~~~bash
+if [ ! -f .env.docker ]; then cp .env.docker.example .env.docker; fi
+mkdir -p "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+docker compose --env-file .env.docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --env HOST_UID="$(id -u)" --env HOST_GID="$(id -g)" \
+  --env CARGO_TARGET_DIR=/review-target \
+  --volume "${rhwp_review_target_dir}:/review-target" wasm
+~~~
+
+컨테이너의 `/review-target`는 **호스트의 기존 `target/pr-review`를 가리키는 마운트 경로**이며
+별도 target이나 캐시가 아니다. 호스트 UID/GID로 실행해 공용 캐시의 소유권도 유지한다.
+Compose 기본 설정의 `/build-target` named volume은 별도 캐시이므로 로컬 PR 검증에서는 위
+명령으로 `CARGO_TARGET_DIR`을 덮어쓴다. 옵션 없는 `docker compose ... run --rm wasm`을
+공용 캐시 재사용 명령으로 기록하지 않는다.
+
+Windows Docker Desktop 등의 bind mount에서 Cargo hard-link나 같은 공용 target 접근을
+지원하지 않으면 **아래 호스트 경로를 선택한다.** 별도 named volume으로 캐시를 분리하거나
+공유 target을 비우거나 옮겨 우회하지 않는다. 호스트와 컨테이너의 Cargo 작업도 동시에 실행하지 않는다.
+
+**B. Docker 실행 불가 환경 — Linux/macOS의 저장소 루트에서 실행:**
+
+~~~bash
+CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg
+~~~
+
+**B. Docker 실행 불가 환경 — Windows PowerShell의 저장소 루트에서 실행:**
+
+~~~powershell
+if (-not $rhwpReviewTargetDir) { throw '기본 작업공간에서 공용 target 경로를 먼저 고정하세요' }
+$rhwpPreviousTargetDir = $env:CARGO_TARGET_DIR
+try {
+    $env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
+    .\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg
+    if ($LASTEXITCODE -ne 0) { throw 'fresh WASM 빌드 실패' }
+    foreach ($artifact in @('rhwp.js', 'rhwp_bg.wasm', 'rhwp.d.ts', 'rhwp_bg.wasm.d.ts')) {
+        Copy-Item "pkg/$artifact" "rhwp-studio/public/$artifact" -Force -ErrorAction Stop
+    }
+} finally {
+    if ($null -eq $rhwpPreviousTargetDir) {
+        Remove-Item Env:CARGO_TARGET_DIR -ErrorAction SilentlyContinue
+    } else {
+        $env:CARGO_TARGET_DIR = $rhwpPreviousTargetDir
+    }
+}
+~~~
+
+어느 경로든 종료 코드·source SHA와 `pkg/`의 실제 산출물을 확인한다. Studio가 읽는
+`rhwp-studio/public/`의 JS·WASM과 해시가 일치하는지 확인하고, 같은 fresh package로 해당
+브라우저 동작·Native/fresh WASM Visual Sweep을 완료한다. 컨테이너 빌드 성공만으로 이 검증을
+대신하지 않는다. 호스트에서 최적화까지 성공한 빌드도 정식 로컬 검증으로 인정하며 Docker를
+추가 실행할 필요는 없다. `--no-opt` 결과나 과거 package를 최종 fresh 산출물로 제출하지 않는다.
+최적화 실패 시 잔재·실행 프로세스·도구 환경을 조사해 보정한 뒤 다시 실행하며 검증을 생략하지 않는다.
 
 ## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — 코퍼스 래칫 일곱
 
@@ -743,13 +867,14 @@ iframe RPC 완료 시점이나 기본 옵션이 바뀌면 fresh WASM build와 �
 embed E2E를 추가한다. 기본값 변경은 옵션을 생략한 smoke에서도 loadFile 완료와 페이지 수를 기록한다.
 
 ~~~bash
-# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
-docker compose --env-file .env.docker run --rm wasm
+# 위 환경별 경로 중 하나로 fresh WASM 빌드·Studio 동기화를 완료한 뒤 실행한다.
 VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 ~~~
 
 대형 복합 변경 또는 승인된 전체 검증은 build, release lib, release-test, Native Skia 3종, fmt,
-diff check, clippy, doc test, TypeScript, npm test, 표준 Docker WASM build를 이 순서로 실행한다.
+diff check, clippy, doc test, TypeScript, npm test, 환경에 맞는 fresh WASM build를 이 순서로 실행한다.
+마지막 WASM 단계는 위 Docker 또는 호스트 경로 중 하나를 완료하며, Docker 사용 불가를 생략
+사유로 삼지 않는다.
 
 ~~~bash
 cargo build --locked --release --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
@@ -769,7 +894,7 @@ cargo clippy --locked --all-targets --target-dir "${rhwp_review_target_dir:?기�
 cargo test --locked --doc --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
 (cd rhwp-studio && npx tsc --noEmit)
 npm --prefix rhwp-studio test
-docker compose --env-file .env.docker run --rm wasm
+# 이어서 위 환경별 fresh WASM 절의 Docker 또는 호스트 빌드 중 하나를 완료한다.
 ~~~
 
 각 명령은 앞 명령이 끝난 뒤 실행한다. 실패하면 뒤 명령으로 건너뛰어 전체 통과처럼 기록하지 않는다.

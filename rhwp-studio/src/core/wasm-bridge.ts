@@ -2,6 +2,7 @@ import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
 import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
+import { MetafileFontSession, type MetafileFontDocument } from './metafile-font-session';
 import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
 import { collectHostFontRequests } from './host-font-requests';
 import type { CanvasMetricDocument } from './canvas-metric-session';
@@ -315,6 +316,7 @@ export class WasmBridge {
   private doc: HwpDocument | null = null;
   private canvasMetrics = new CanvasMetricSession();
   private readonly hostCanvasFonts = new HostCanvasFontSession();
+  private readonly metafileFonts = new MetafileFontSession();
   private canvasFontGeneration = 0;
 
   private canvasMetricDocument(): CanvasMetricDocument | null {
@@ -340,6 +342,9 @@ export class WasmBridge {
     const doc = this.doc;
     const documentGeneration = this._documentGeneration;
     const current = () => this.doc === doc && this._documentGeneration === documentGeneration && isCurrent();
+    const metafileFontGeneration = this.canvasFontGeneration;
+    if (!await this.metafileFonts.prepare(doc as unknown as MetafileFontDocument | null,
+      metafileFontGeneration, () => current() && this.canvasFontGeneration === metafileFontGeneration)) return false;
     if (backend === 'canvas2d' && hasHostFontProvider()) {
       const generation = getHostFontState().generation;
       await prepareHostFontCatalog();

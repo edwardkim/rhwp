@@ -152,27 +152,27 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         "원본 p30 바탕쪽은 장 제목으로 바뀌면 안 된다"
     );
     assert!(
-        source_p144_tree.contains(ATTACHMENT_GUIDANCE),
+        has_line_text(&source_p144_tree, ATTACHMENT_GUIDANCE),
         "한컴 PDF p144와 같이 붙임 안내 블록은 원본 p144에 있어야 한다"
     );
     assert!(
-        !source_p145_tree.contains(ATTACHMENT_GUIDANCE),
+        !has_line_text(&source_p145_tree, ATTACHMENT_GUIDANCE),
         "원본 p145는 앞 표의 붙임 안내 블록을 다시 갖지 않아야 한다"
     );
     assert!(
-        source_p283_tree.contains(Q5_RESPONSE_FIRST_LINE),
+        has_line_text(&source_p283_tree, Q5_RESPONSE_FIRST_LINE),
         "HWPX Q5의 saved-frame response 첫 줄은 PDF/native HWP와 같이 p283에 있어야 한다"
     );
     assert!(
-        !source_p284_tree.contains(Q5_RESPONSE_FIRST_LINE),
+        !has_line_text(&source_p284_tree, Q5_RESPONSE_FIRST_LINE),
         "HWPX Q5의 saved-frame response 첫 줄은 p284로 밀리면 안 된다"
     );
     assert!(
-        source_p285_tree.contains("홈페이지상의 질의에 대하여"),
+        has_line_text(&source_p285_tree, "홈페이지상의 질의에 대하여"),
         "HWPX Q8 표제는 PDF physical p285와 같이 Q7 tail 뒤 같은 쪽에서 시작해야 한다"
     );
     assert!(
-        source_p286_tree.contains(Q9_TITLE),
+        has_line_text(&source_p286_tree, Q9_TITLE),
         "HWPX Q9 표제는 PDF/native HWP와 같이 p286에서 시작해야 한다"
     );
     assert!(
@@ -180,15 +180,15 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         "HWPX Q10 표제는 PDF/native HWP와 같이 p287에서 시작해야 한다"
     );
     assert!(
-        source_p290_tree.contains(Q16_TITLE),
+        has_line_text(&source_p290_tree, Q16_TITLE),
         "HWPX Q16 표와 trailing blank-bottom row는 PDF/native HWP와 같이 p290에서 끝나야 한다"
     );
     assert!(
-        !source_p291_tree.contains(Q16_TITLE),
+        !has_line_text(&source_p291_tree, Q16_TITLE),
         "HWPX Q16 표는 p291로 분할되어 반복되면 안 된다"
     );
     assert!(
-        !source_p294_tree.contains(Q27_TITLE),
+        !has_line_text(&source_p294_tree, Q27_TITLE),
         "HWPX Q26의 3+3줄 응답 tail은 PDF/native HWP와 같이 p294에서 끝나야 한다"
     );
     // 독립 PDF296쪽에도 Q29가 있다. 이미 #7445에 이관한 물리쪽의

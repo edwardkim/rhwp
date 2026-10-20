@@ -1,5 +1,8 @@
 //! 도형/글상자/그룹 개체 레이아웃
 
+mod affine_line;
+mod compound_rectangle;
+
 use super::super::composer::{
     compose_paragraph, reflow_line_segs, ComposedParagraph, ParagraphBox,
 };
@@ -820,60 +823,19 @@ impl LayoutEngine {
                 return;
             }
 
-            // 인라인 좌표 없으면 기존 방식 (정렬 기반 단독 배치)
-            let eq_w = hwpunit_to_px(
-                crate::renderer::equation::inline_advance_width_hwp(eq),
-                self.dpi,
+            self.layout_floating_equation(
+                tree,
+                parent,
+                eq,
+                section_index,
+                para_index,
+                control_index,
+                col_area,
+                body_area,
+                paper_area,
+                para_y,
+                alignment,
             );
-            let eq_h = hwpunit_to_px(
-                crate::renderer::equation::flow_height_hwp(eq) as i32,
-                self.dpi,
-            );
-            let eq_x = match alignment {
-                Alignment::Center | Alignment::Distribute => {
-                    col_area.x + (col_area.width - eq_w).max(0.0) / 2.0
-                }
-                Alignment::Right => col_area.x + (col_area.width - eq_w).max(0.0),
-                _ => col_area.x,
-            };
-            let eq_y = para_y;
-
-            // 수식 스크립트 → AST → 레이아웃 → SVG 조각
-            let tokens = super::super::equation::tokenizer::tokenize(&eq.script);
-            let ast = super::super::equation::parser::EqParser::new(tokens).parse();
-            let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-            let layout_box =
-                super::super::equation::layout::EqLayout::for_equation(eq, self.dpi).layout(&ast);
-            let color_str = super::super::equation::svg_render::eq_color_to_svg(eq.color);
-            let svg_content = super::super::equation::svg_render::render_equation_svg(
-                &layout_box,
-                &color_str,
-                font_size_px,
-            );
-
-            let eq_node = RenderNode::new(
-                tree.next_id(),
-                RenderNodeType::Equation(EquationNode {
-                    svg_content,
-                    layout_box,
-                    color_str,
-                    color: eq.color,
-                    script: eq.script.clone(),
-                    font_size: font_size_px,
-                    section_index: Some(section_index),
-                    para_index: Some(para_index),
-                    control_index: Some(control_index),
-                    cell_index: None,
-                    cell_para_index: None,
-                    note_ref: None,
-                }),
-                crate::renderer::equation::inline_content_box(
-                    eq,
-                    BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
-                    self.dpi,
-                ),
-            );
-            parent.children.push(eq_node);
             return;
         }
 
@@ -1101,7 +1063,13 @@ impl LayoutEngine {
         let shape_y = if !common.treat_as_char
             && common.flow_with_text
             && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
-        {
+            // 머리말·꼬리말 도형은 본문 흐름에 참여하지 않는다. 구분선처럼
+            // 밴드 밖으로 뻗는 개체를 밴드 높이에 맞추면 유효한 문단 오프셋이
+            // 사라져 제목을 가로지른다. 본문 개체의 단 내부 제한만 적용한다.
+            && !matches!(
+                parent.node_type,
+                RenderNodeType::Header | RenderNodeType::Footer
+            ) {
             let total_h = shape_h
                 + caption_height
                 + if caption_height > 0.0 {
@@ -1282,18 +1250,17 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Line(line) => {
-                let (style, gradient) = drawing_to_shape_style(&line.drawing, self.dpi);
                 let (x1, y1) = transform_pt(line.start.x as f64, line.start.y as f64);
                 let (x2, y2) = transform_pt(line.end.x as f64, line.end.y as f64);
-                let min_x = x1.min(x2);
-                let min_y = y1.min(y2);
-                let commands = vec![PathCommand::MoveTo(x1, y1), PathCommand::LineTo(x2, y2)];
                 let node_id = tree.next_id();
-                let node = RenderNode::new(
-                    node_id,
-                    RenderNodeType::Path(PathNode::new(commands, style, gradient)),
-                    BoundingBox::new(min_x, min_y, (x2 - x1).abs(), (y2 - y1).abs()),
-                );
+                let (mut kind, bbox) =
+                    affine_line::rendered_line(line, (x1, y1), (x2, y2), self.dpi);
+                if let RenderNodeType::Line(rendered) = &mut kind {
+                    rendered.section_index = Some(section_index);
+                    rendered.para_index = Some(para_index);
+                    rendered.control_index = Some(control_index);
+                }
+                let node = RenderNode::new(node_id, kind, bbox);
                 parent.children.push(node);
             }
             ShapeObject::Curve(curve) => {
@@ -1644,6 +1611,7 @@ impl LayoutEngine {
                     render_h,
                     bin_data_content,
                 );
+                compound_rectangle::append_border(tree, &mut node, &rect.drawing);
                 // TextBox가 있으면 자식으로 텍스트 레이아웃
                 self.layout_textbox_content(
                     tree,
@@ -2427,8 +2395,10 @@ impl LayoutEngine {
                                     }
                                 }
                             }
-                            let svg_fragment =
-                                chart.render_svg(render_x, render_y, render_w, render_h);
+                            let svg_fragment = crate::ole_chart::render_ooxml_chart(
+                                &chart,
+                                [render_x, render_y, render_w, render_h],
+                            );
                             push_ole_raw_svg_render_node(
                                 tree,
                                 parent,
@@ -2458,8 +2428,10 @@ impl LayoutEngine {
                                             &mut chart, contents, preview, render_w, render_h,
                                         );
                                     }
-                                    let svg_fragment =
-                                        chart.render_svg(render_x, render_y, render_w, render_h);
+                                    let svg_fragment = crate::ole_chart::render_ooxml_chart(
+                                        &chart,
+                                        [render_x, render_y, render_w, render_h],
+                                    );
                                     push_ole_raw_svg_render_node(
                                         tree,
                                         parent,
@@ -2541,6 +2513,18 @@ impl LayoutEngine {
                                             control_index,
                                             &ole_container_path,
                                         );
+                                        if let Some(node) = parent.children.last_mut() {
+                                            if let RenderNodeType::RawSvg(raw) = &mut node.node_type
+                                            {
+                                                raw.emf_source =
+                                                    Some(crate::emf::EmfReplaySource {
+                                                        data: std::sync::Arc::from(
+                                                            emf_bytes.as_slice(),
+                                                        ),
+                                                        render_rect,
+                                                    });
+                                            }
+                                        }
                                         rendered = true;
                                     }
                                 }
@@ -2558,6 +2542,7 @@ impl LayoutEngine {
                                         let b64 = base64::engine::general_purpose::STANDARD
                                             .encode(&svg_bytes);
                                         let href = format!("data:image/svg+xml;base64,{}", b64);
+                                        // OLE의 목적 extent는 WMF 창을 가로·세로 독립 환산한다.
                                         let svg_fragment = format!(
                                             "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"none\" xlink:href=\"{}\" href=\"{}\"/>",
                                             render_x, render_y, render_w, render_h, href, href
@@ -2631,8 +2616,11 @@ impl LayoutEngine {
                                     crate::parser::ole_container::parse_equation_contents_script,
                                 ) {
                                     let tokens =
-                                        super::super::equation::tokenizer::tokenize(&script);
-                                    let ast = super::super::equation::parser::EqParser::new(tokens)
+                                        super::super::equation::document_script::tokenize(&script);
+                                    let ast =
+                                        super::super::equation::parser::EqParser::for_document(
+                                            tokens,
+                                        )
                                         .parse();
                                     // 글자 크기는 개체 크기에 맞춘다 — 기준 10px 레이아웃의
                                     // 높이 비로 역산. (SVG/Skia 는 수식을 bbox 폭에만 맞춰
@@ -2697,6 +2685,7 @@ impl LayoutEngine {
                                             let b64 = base64::engine::general_purpose::STANDARD
                                                 .encode(&svg_bytes);
                                             let href = format!("data:image/svg+xml;base64,{}", b64);
+                                            // OLE의 목적 extent는 WMF 창을 가로·세로 독립 환산한다.
                                             let svg_fragment = format!(
                                                 "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"none\" xlink:href=\"{}\" href=\"{}\"/>",
                                                 render_x, render_y, render_w, render_h, href, href
@@ -2739,6 +2728,19 @@ impl LayoutEngine {
                                                 control_index,
                                                 &ole_container_path,
                                             );
+                                            if let Some(node) = parent.children.last_mut() {
+                                                if let RenderNodeType::RawSvg(raw) =
+                                                    &mut node.node_type
+                                                {
+                                                    raw.emf_source =
+                                                        Some(crate::emf::EmfReplaySource {
+                                                            data: std::sync::Arc::from(
+                                                                contents_emf,
+                                                            ),
+                                                            render_rect,
+                                                        });
+                                                }
+                                            }
                                             rendered = true;
                                         }
                                     } else if let Some((kind, bytes)) =
@@ -3369,7 +3371,7 @@ impl LayoutEngine {
                     inner_width,
                     styles,
                     self.dpi,
-                    self.profile.get().legacy_hwp3_stored_geometry(),
+                    self.profile.get().stored_geometry_policy(),
                     crate::renderer::composer::StoredRowMissPolicy::Reflow,
                     &[],
                 )
@@ -3652,7 +3654,8 @@ impl LayoutEngine {
                     }
                     Control::Equation(eq) => {
                         total_inline_width += hwpunit_to_px(
-                            crate::renderer::equation::inline_advance_width_hwp(eq),
+                            crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                .occupied_width_hwp(),
                             self.dpi,
                         );
                         max_inline_height = max_inline_height.max(hwpunit_to_px(
@@ -3953,7 +3956,8 @@ impl LayoutEngine {
                     Control::Equation(eq) => {
                         // 글상자 내 수식: 항상 글자처럼 인라인 배치
                         let eq_w = hwpunit_to_px(
-                            crate::renderer::equation::inline_advance_width_hwp(eq),
+                            crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                .occupied_width_hwp(),
                             self.dpi,
                         );
                         let eq_h = hwpunit_to_px(
@@ -3999,14 +4003,14 @@ impl LayoutEngine {
                                 (x, inline_obj_y)
                             };
 
-                            let tokens = super::super::equation::tokenizer::tokenize(&eq.script);
-                            let ast = super::super::equation::parser::EqParser::new(tokens).parse();
+                            let tokens =
+                                super::super::equation::document_script::tokenize(&eq.script);
+                            let ast =
+                                super::super::equation::parser::EqParser::for_document(tokens)
+                                    .parse();
                             let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
                             let layout_box =
-                                super::super::equation::layout::EqLayout::for_equation(
-                                    eq, self.dpi,
-                                )
-                                .layout(&ast);
+                                super::super::equation::layout_for_paint(eq, &ast, self.dpi);
                             let color_str =
                                 super::super::equation::svg_render::eq_color_to_svg(eq.color);
                             let svg_content =
@@ -4032,10 +4036,18 @@ impl LayoutEngine {
                                     cell_para_index: None,
                                     note_ref: None,
                                 }),
-                                crate::renderer::equation::inline_content_box(
-                                    eq,
-                                    BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
-                                    self.dpi,
+                                BoundingBox::new(
+                                    crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                        .content_origin_x(eq_x, self.dpi),
+                                    eq_y,
+                                    hwpunit_to_px(
+                                        crate::renderer::equation::inline_box::horizontal_metrics(
+                                            eq,
+                                        )
+                                        .content_width_hwp,
+                                        self.dpi,
+                                    ),
+                                    eq_h,
                                 ),
                             );
                             textbox_node.children.push(eq_node);

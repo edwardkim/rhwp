@@ -905,6 +905,9 @@ export class HwpDocument {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
+    clearMetafileFonts() {
+        wasm.hwpdocument_clearMetafileFonts(this.__wbg_ptr);
+    }
     /**
      * 셀 블록이 덮은 칸들의 글을 비운다 — `Run("TableDeleteCell")`. 규약은 merge 와 같다.
      * @param {number} list_id
@@ -4676,6 +4679,27 @@ export class HwpDocument {
             throw takeFromExternrefTable0(ret[1]);
         }
         return ret[0] >>> 0;
+    }
+    /**
+     * @returns {string}
+     */
+    getMetafileFontRequests() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getMetafileFontRequests(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
     }
     /**
      * 각주/미주 편집 모드 진입 대상 조회
@@ -8990,6 +9014,24 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
+     * 문서 측정 slot과 별도로 SVG/WMF paint에 실제 선택한 font face를 공급한다.
+     * @param {string} family
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {boolean}
+     */
+    registerMetafileFont(family, bytes, face_index) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerMetafileFont(this.__wbg_ptr, ptr0, len0, ptr1, len1, face_index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목을 절단한다.
      *
      * json: `{"fromLen":12,"dirtyWas":false}` — `from_len` 위 항목을 모두 잘라내고,
@@ -10656,7 +10698,8 @@ export class HwpDocument {
         }
     }
     /**
-     * Native와 같은 조판 세대를 선택하고 공통 core에서 재페이지네이션한다.
+     * 실제 기준 출력의 한컴 세대를 선택한다. 저장 메타데이터로 추정하지 않는다.
+     * 기존 공통 경로가 캐시를 무효화하고 모든 섹션을 다시 조판한다.
      * @param {boolean} enabled
      */
     setHangul2024Compat(enabled) {
@@ -11967,6 +12010,10 @@ function __wbg_get_imports() {
             const ret = typeof(val) === 'object' && val !== null;
             return ret;
         },
+        __wbg___wbindgen_is_string_e6f02f0ea5f20a32: function(arg0) {
+            const ret = typeof(arg0) === 'string';
+            return ret;
+        },
         __wbg___wbindgen_is_undefined_6cff064c44e0d823: function(arg0) {
             const ret = arg0 === undefined;
             return ret;
@@ -12052,10 +12099,20 @@ function __wbg_get_imports() {
             const ret = arg0.d;
             return ret;
         },
+        __wbg_data_51774c2dcd0a0e9f: function(arg0, arg1) {
+            const ret = arg1.data;
+            const ptr1 = passArray8ToWasm0(ret, wasm.__wbindgen_malloc);
+            const len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+        },
         __wbg_document_ac38448dbfd31a57: function(arg0) {
             const ret = arg0.document;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         },
+        __wbg_drawImage_4f05aa5544efd528: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+            arg0.drawImage(arg1, arg2, arg3);
+        }, arguments); },
         __wbg_drawImage_87a05b54f458ec06: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {
             arg0.drawImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }, arguments); },
@@ -12068,6 +12125,10 @@ function __wbg_get_imports() {
         __wbg_drawImage_df46beb36e04ae8f: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5) {
             arg0.drawImage(arg1, arg2, arg3, arg4, arg5);
         }, arguments); },
+        __wbg_e_59a2a263244aebfc: function(arg0) {
+            const ret = arg0.e;
+            return ret;
+        },
         __wbg_ellipse_5101aa9d3056735c: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
             arg0.ellipse(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }, arguments); },
@@ -12081,6 +12142,10 @@ function __wbg_get_imports() {
             } finally {
                 wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
             }
+        },
+        __wbg_f_ea46ea3f61f48c32: function(arg0) {
+            const ret = arg0.f;
+            return ret;
         },
         __wbg_fillRect_3077c0e38eb34cd1: function(arg0, arg1, arg2, arg3, arg4) {
             arg0.fillRect(arg1, arg2, arg3, arg4);
@@ -12101,6 +12166,10 @@ function __wbg_get_imports() {
         __wbg_getContext_71c33f14b63da593: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.getContext(getStringFromWasm0(arg1, arg2));
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        }, arguments); },
+        __wbg_getImageData_8700a8b301ed5f06: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+            const ret = arg0.getImageData(arg1, arg2, arg3, arg4);
+            return ret;
         }, arguments); },
         __wbg_getRandomValues_436a51d0629d84e1: function() { return handleError(function (arg0, arg1) {
             globalThis.crypto.getRandomValues(getArrayU8FromWasm0(arg0, arg1));
@@ -12166,12 +12235,20 @@ function __wbg_get_imports() {
         __wbg_lineTo_9495a068a4f48283: function(arg0, arg1, arg2) {
             arg0.lineTo(arg1, arg2);
         },
+        __wbg_lineWidth_df50b89fb2d27dfd: function(arg0) {
+            const ret = arg0.lineWidth;
+            return ret;
+        },
         __wbg_measureText_13aedbb9b35a9a0a: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.measureText(getStringFromWasm0(arg1, arg2));
             return ret;
         }, arguments); },
         __wbg_moveTo_a5882cdf1a7d39d9: function(arg0, arg1, arg2) {
             arg0.moveTo(arg1, arg2);
+        },
+        __wbg_naturalHeight_fc4deba91f58f42f: function(arg0) {
+            const ret = arg0.naturalHeight;
+            return ret;
         },
         __wbg_naturalWidth_8c1fdea17f824ef1: function(arg0) {
             const ret = arg0.naturalWidth;
@@ -12282,8 +12359,14 @@ function __wbg_get_imports() {
         __wbg_set_lineCap_ec484c1489fa48bc: function(arg0, arg1, arg2) {
             arg0.lineCap = getStringFromWasm0(arg1, arg2);
         },
+        __wbg_set_lineJoin_645744ec04386dd0: function(arg0, arg1, arg2) {
+            arg0.lineJoin = getStringFromWasm0(arg1, arg2);
+        },
         __wbg_set_lineWidth_5f9aefcc32e60287: function(arg0, arg1) {
             arg0.lineWidth = arg1;
+        },
+        __wbg_set_miterLimit_db0797fa63d61672: function(arg0, arg1) {
+            arg0.miterLimit = arg1;
         },
         __wbg_set_shadowBlur_8f0ba721d1bde0ba: function(arg0, arg1) {
             arg0.shadowBlur = arg1;

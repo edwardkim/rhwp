@@ -15,6 +15,7 @@ import { selectLayerTextVariantsForLeaf } from '../src/view/canvaskit/text-varia
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fontPath = path.resolve(studioRoot, '../assets/fonts/NotoSansKR-Regular.woff2');
 const symbolFontPath = path.resolve(studioRoot, '../assets/fonts/D2Coding-Regular.woff2');
+const mathFontPath = path.resolve(studioRoot, '../assets/fonts/NotoSansMath-Regular.woff2');
 const oldHangulFontPath = path.resolve(studioRoot, '../assets/fonts/RHWPOldHangul-Regular.woff2');
 const exactFaceFontPath = path.resolve(studioRoot, '../tests/fixtures/fonts/RHWPExactFaceSmoke.ttc');
 const canvasKitBundle = path.resolve(studioRoot, 'node_modules/canvaskit-wasm/bin/full');
@@ -64,6 +65,19 @@ try {
 } finally {
   symbolFont.delete();
   symbolTypeface.delete();
+}
+
+// U+2AFD는 기본 CJK face에 없으며 누락 시 복합 dyad 수식 전체가 버려졌던 기호다.
+const mathTypeface = CanvasKit.Typeface.MakeFreeTypeFaceFromData(fs.readFileSync(mathFontPath));
+assert.ok(mathTypeface, 'Noto Sans Math 수식 폴백 typeface를 만들 수 있어야 한다');
+const mathFont = new CanvasKit.Font(mathTypeface, 16);
+try {
+  for (const character of ['\u2AFD', '\u2225', '\u2194']) {
+    assert.notEqual(mathFont.getGlyphIDs(character, 1)[0], 0, `${character}의 수학 glyph를 공급한다`);
+  }
+} finally {
+  mathFont.delete();
+  mathTypeface.delete();
 }
 
 const oldHangulTypeface = CanvasKit.Typeface.MakeFreeTypeFaceFromData(fs.readFileSync(oldHangulFontPath));

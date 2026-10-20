@@ -44,6 +44,7 @@ use crate::renderer::DEFAULT_DPI;
 
 mod canvas_metrics;
 mod hyperlink;
+mod layout_generation;
 #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
 mod pdf_import;
 /// 어떤 렌더 export가 교체 가능한 경계 뒤에 있는지 선언하는 곳 (#4577, #4642).
@@ -734,6 +735,29 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    /// 문서 측정 slot과 별도로 SVG/WMF paint에 실제 선택한 font face를 공급한다.
+    #[wasm_bindgen(js_name = registerMetafileFont)]
+    pub fn register_metafile_font(
+        &mut self,
+        family: &str,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<bool, JsValue> {
+        self.register_metafile_font_native(family, bytes, face_index)
+            .map_err(JsValue::from)
+    }
+
+    #[wasm_bindgen(js_name = clearMetafileFonts)]
+    pub fn clear_metafile_fonts(&mut self) {
+        self.clear_metafile_fonts_native();
+    }
+
+    #[wasm_bindgen(js_name = getMetafileFontRequests)]
+    pub fn get_metafile_font_requests(&self) -> Result<String, JsValue> {
+        self.get_metafile_font_requests_native()
+            .map_err(JsValue::from)
+    }
+
     /// 이미 등록된 exact font source slot에 명시 variable-font instance 요청을 설정한다.
     /// JSON DTO의 검증·canonicalization·mutation 권위는 native command 한 곳에만 둔다.
     #[wasm_bindgen(js_name = setExactFontInstance)]
@@ -815,12 +839,6 @@ impl HwpDocument {
     /// 디버그 오버레이 표시 여부를 설정한다.
     pub fn set_debug_overlay(&mut self, enabled: bool) {
         self.debug_overlay = enabled;
-    }
-
-    /// Native와 같은 조판 세대를 선택하고 공통 core에서 재페이지네이션한다.
-    #[wasm_bindgen(js_name = setHangul2024Compat)]
-    pub fn set_hangul2024_compat(&mut self, enabled: bool) {
-        self.core.set_hangul2024_compat(enabled);
     }
 
     /// LINE_SEG vpos-reset 강제 분리 적용 여부를 설정한다.

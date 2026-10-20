@@ -65,8 +65,18 @@ fn roundtrip_diff(src_rel: &str, tag: &str) -> Option<serde_json::Value> {
         "--json",
     ];
     let output = run(&args);
+    assert!(
+        matches!(output.status.code(), Some(0 | 3)),
+        "{}",
+        describe(&args, &output)
+    );
     let v: serde_json::Value =
         serde_json::from_slice(&output.stdout).expect("ir-diff --json 이 순수 JSON 이어야 합니다");
+    assert!(
+        v["identical"].is_boolean(),
+        "비교 판정 필드가 있어야 합니다"
+    );
+    assert!(v["diffCount"].is_u64(), "비교 건수 필드가 있어야 합니다");
     let _ = std::fs::remove_file(&out);
     Some(v)
 }
@@ -75,67 +85,25 @@ fn roundtrip_diff(src_rel: &str, tag: &str) -> Option<serde_json::Value> {
 fn cc_diff_count(v: &serde_json::Value) -> u64 {
     v["categories"]
         .as_object()
-        .map(|m| {
-            m.iter()
-                .filter(|(k, _)| k.as_str() == "cc")
-                .filter_map(|(_, n)| n.as_u64())
-                .sum()
+        .expect("구조화된 차이 카테고리가 있어야 합니다")
+        .get("cc")
+        .map_or(0, |count| {
+            count.as_u64().expect("cc 건수는 정수여야 합니다")
         })
-        .unwrap_or(0)
-}
-
-/// `cc`(char_count) 라인들을 뽑아 `(A, B)` 쌍으로 파싱한다. 원문 형식: `cc: A=<n> vs B=<n>`.
-fn cc_pairs(diff_text: &str) -> Vec<(i64, i64)> {
-    diff_text
-        .lines()
-        .filter_map(|l| {
-            let l = l.trim();
-            let rest = l.strip_prefix("[차이] cc: A=")?;
-            let (a, rest) = rest.split_once(" vs B=")?;
-            Some((a.trim().parse().ok()?, rest.trim().parse().ok()?))
-        })
-        .collect()
 }
 
 #[test]
 fn hwp3_roundtrip_char_count_is_not_off_by_exactly_one() {
-    // [#3510] 본론: 끝 마커 규약 불일치는 **모든** 문단·셀에서 예외 없이 정확히 1씩만
-    // 어긋나는 것이 특징이었다(diffCount 298건, 전부 cc, 전부 |A-B|==1). 그 패턴이
-    // 사라졌는지만 고정한다 — 이 표본에는 #3510 과 무관한 다른 결함(예: 구역 시작
-    // 문단의 secd/cold 컨트롤 순서 뒤집힘, 필드 컨트롤 라운드트립 손실)이 남아 있어
-    // diffCount 자체는 0 이 아니다.
-    let src = sample(SAMPLE_HWP3);
-    if !src.exists() {
-        eprintln!("샘플 없음 — 건너뜀");
+    // 끝 마커를 빼던 구현은 모든 문단·셀에서 cc 차이 298건을 만들었다.
+    // 사람이 읽는 종료 문구 대신 구조화된 비교에서 cc 차이가 없음을 확인한다.
+    let Some(diff) = roundtrip_diff(SAMPLE_HWP3, "offbyone") else {
         return;
-    }
-    let out = temp_path("offbyone", "hwpx");
-    let conv = ["export-hwpx", src.to_str().unwrap(), out.to_str().unwrap()];
-    let c = run(&conv);
-    assert_eq!(c.status.code(), Some(0), "{}", describe(&conv, &c));
-
-    let args = ["ir-diff", src.to_str().unwrap(), out.to_str().unwrap()];
-    let output = run(&args);
-    let text = String::from_utf8_lossy(&output.stdout).to_string();
-    let pairs = cc_pairs(&text);
-    if pairs.is_empty() {
-        // [#5251] issue_265(=hwp3-sample) char_count 가 맞으면 cc 줄이 없다.
-        // off-by-one 패턴이 사라진 것과 같다. ir-diff 출력이 비면 형식 변경이다.
-        assert!(
-            text.contains("[차이]") || text.contains("IR 차이 없음"),
-            "cc 라인 파싱 실패 — 형식이 바뀌었을 수 있습니다\n{text}"
-        );
-        let _ = std::fs::remove_file(&out);
-        return;
-    }
-    for (a, b) in &pairs {
-        assert_ne!(
-            (a - b).abs(),
-            1,
-            "끝 마커 규약 불일치(off-by-one) 패턴이 재발했습니다: A={a} B={b}\n{text}"
-        );
-    }
-    let _ = std::fs::remove_file(&out);
+    };
+    assert_eq!(
+        cc_diff_count(&diff),
+        0,
+        "문단·셀의 char_count를 왕복 저장에서 보존해야 합니다: {diff}"
+    );
 }
 
 #[test]

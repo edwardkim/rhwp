@@ -1,5 +1,25 @@
 //! 구역 문단 처리의 keep_heading_with_following_block 단계. 조건·예약·발행 순서를 유지한다.
 use crate::renderer::typeset::{PageItem, Paragraph, TypesetEngine, TypesetState};
+
+/// 저장 쪽 경계의 증거는 재조판 누적 좌표와 섞지 않는다.
+/// 줄 수·내용·셀 배치가 바뀐 원본 스냅샷은 현재 줄의 위치 증거가 아니다.
+fn stored_row_position(paragraph: &Paragraph, row: usize) -> Option<i32> {
+    if paragraph.stored_text_partition_is_dirty()
+        || paragraph.cell_format_vpos_dirty
+        || paragraph
+            .line_segs
+            .iter()
+            .any(super::super::is_synthetic_line_seg)
+    {
+        return None;
+    }
+    let line = paragraph.line_segs.get(row)?;
+    match &paragraph.source_line_seg_vertical_pos {
+        Some(source) if source.len() == paragraph.line_segs.len() => source.get(row).copied(),
+        Some(_) => None,
+        None => Some(line.vertical_pos),
+    }
+}
 impl TypesetEngine {
     #[allow(clippy::too_many_arguments)]
     pub(super) fn keep_heading_with_following_block(
@@ -37,26 +57,14 @@ impl TypesetEngine {
             });
             let page_top_vpos_opt = page_first_para_idx
                 .and_then(|pi| paragraphs.get(pi))
-                .and_then(|p| p.line_segs.first())
-                .filter(|seg| !super::super::is_synthetic_line_seg(seg))
-                .map(|s| s.vertical_pos);
-            if let (Some(first_seg), Some(page_top_vpos)) = (
-                para.line_segs
-                    .first()
-                    .filter(|seg| !super::super::is_synthetic_line_seg(seg)),
-                page_top_vpos_opt,
-            ) {
-                // 재조판이 생성한 누적 좌표는 저장된 쪽의 소유 근거가 아니다.
-                // 앞 쪽에서 일부 줄을 이미 소비한 문단의 첫 좌표로 쪽 원점을
-                // 추측하면, 실제로 들어가는 목록 항목까지 다음 쪽으로 밀린다.
-                // 혼합 사다리도 전체 경계의 저장 근거가 없으면 흐름 fit에 맡긴다.
-                if para
-                    .line_segs
-                    .iter()
-                    .any(super::super::is_synthetic_line_seg)
-                {
+                .and_then(|paragraph| stored_row_position(paragraph, 0));
+            if let Some(page_top_vpos) = page_top_vpos_opt {
+                let Some(last_index) = para.line_segs.len().checked_sub(1) else {
                     return;
-                }
+                };
+                let Some(last_vpos) = stored_row_position(para, last_index) else {
+                    return;
+                };
                 let body_h_hu =
                     crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
                 let para_h_px: f64 = para
@@ -69,18 +77,13 @@ impl TypesetEngine {
                         )
                     })
                     .sum();
-                let para_h_hu = crate::renderer::px_to_hwpunit(para_h_px, self.dpi);
                 // [Task #643] vpos_end 는 마지막 줄의 bottom (vpos + lh) 기준.
                 // para_h_px 누적은 트레일링 line_spacing 까지 포함하여 ~10-12 HU 과대.
                 // HWP 가 페이지 끝에서 트레일링 ls 를 고려하지 않고 lh 만 fit 검사하는
                 // 시멘틱 정합 (pi=39 page 3 fits 케이스).
                 // 손상 입력의 거대한 vpos/height 로 i32 덧셈이 오버플로(패닉)하지
                 // 않도록 saturating — 정상값에선 동일, 손상값은 i32::MAX 로 포화.
-                let vpos_end = para
-                    .line_segs
-                    .last()
-                    .map(|s| s.vertical_pos.saturating_add(s.line_height))
-                    .unwrap_or(first_seg.vertical_pos.saturating_add(para_h_hu));
+                let vpos_end = last_vpos.saturating_add(para.line_segs[last_index].line_height);
                 let page_bottom_vpos = page_top_vpos.saturating_add(body_h_hu);
 
                 let avail = st.available_height();

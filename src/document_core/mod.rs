@@ -187,6 +187,7 @@ pub struct DocumentCore {
     pub(crate) styles: ResolvedStyleSet,
     pub(crate) canvas_metrics: Option<canvas_metrics::CanvasMetricSession>,
     pub(crate) hft_outline_fonts: crate::renderer::hft_outline::HftOutlineFonts,
+    pub(crate) metafile_fonts: crate::paint::metafile_fonts::MetafileFonts,
     pub(crate) font_environment: Option<crate::renderer::font_environment::FontEnvironment>,
     /// 구역별 구성된 문단 목록
     pub(crate) composed: Vec<Vec<ComposedParagraph>>,
@@ -484,6 +485,7 @@ impl DocumentCore {
             &self.document,
             self.dpi,
             self.font_environment.as_ref(),
+            self.effective_layout_profile(),
         )
     }
 
@@ -509,6 +511,7 @@ impl DocumentCore {
     pub fn set_hangul2024_compat(&mut self, enabled: bool) {
         if self.hangul2024_compat != enabled {
             self.hangul2024_compat = enabled;
+            self.rebuild_resolved_styles();
             for d in self.dirty_sections.iter_mut() {
                 *d = true;
             }
@@ -532,6 +535,7 @@ impl DocumentCore {
             styles: ResolvedStyleSet::default(),
             canvas_metrics: None,
             hft_outline_fonts: Default::default(),
+            metafile_fonts: Default::default(),
             font_environment: None,
             composed: Vec::new(),
             body_page_field_error: None,

@@ -36,6 +36,7 @@ impl TypesetEngine {
             local_vpos_rewind_crosses_prev_content,
             min_vpos_rewind_height,
             new_endnote_between_notes_px,
+            reserved_tail_spacing_px,
             no_separator_new_note_head_fits_current_column,
             ssot_debug,
             ssot_level,
@@ -51,8 +52,15 @@ impl TypesetEngine {
                 } else {
                     prev.unwrap_or(tf)
                 };
+                let saved_boundary_gap = if internal_vpos_rewind {
+                    0.0
+                } else {
+                    hwpunit_to_px(tf.saturating_sub(base).max(0), dpi)
+                };
                 let advance_px = hwpunit_to_px((tb - base).max(0), dpi);
-                let compact_local_rewind = compact_endnote_separator_profile
+                // 이전 단에서 관측한 문단 간 되감김은 새 단의 자체 높이를 줄이지 않는다.
+                let compact_local_rewind = prev.is_some()
+                    && compact_endnote_separator_profile
                     && local_vpos_rewind
                     && !local_vpos_rewind_crosses_prev_content;
                 // 한컴 저장본의 미주 LineSeg는 TAC 도형을 포함한 문단의
@@ -117,6 +125,13 @@ impl TypesetEngine {
                 } else {
                     advance_px
                 };
+                // 저장 좌표의 과대 전진을 재검토한 결과에도 경계 간격이 남는다.
+                // 같은 단의 앞 tail이 이미 예약한 부분만 제외하고 자체 줄 전진은 보존한다.
+                let own_advance = hwpunit_to_px(tb.saturating_sub(tf).max(0), dpi);
+                let reserved_boundary_gap = reserved_tail_spacing_px
+                    .min(saved_boundary_gap)
+                    .min((metric_advance_px - own_advance).max(0.0));
+                let metric_advance_px = metric_advance_px - reserved_boundary_gap;
                 let fit = (metric_advance_px - trailing_ls_px).max(min_h);
                 let acc_legacy = metric_advance_px.max(min_h);
                 // [Task #1363] Divergence A: 내부 vpos rewind para 는

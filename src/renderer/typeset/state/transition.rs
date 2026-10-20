@@ -96,7 +96,10 @@ impl TypesetState {
                 page_tail_spilled_floats: std::collections::HashSet::new(),
                 endnotes: Vec::new(),
                 endnote_paragraphs: Vec::new(),
+                reissued_endnote_rows: std::collections::HashSet::new(),
                 endnote_para_sources: Vec::new(),
+                endnote_para_base: None,
+                endnote_measured_tables: Vec::new(),
                 endnote_between_notes_hu: 0,
                 endnote_separator_above_hu: 0,
                 endnote_separator_below_hu: 0,
@@ -122,6 +125,7 @@ impl TypesetState {
                 current_zone_design_spacing_px: 0.0,
                 vpos_page_base: None,
                 vpos_lazy_base: None,
+                vpos_stored_column_origin: None,
                 vpos_page_base_stored: false,
                 vpos_ladder_dirty: false,
                 vpos_compacted_stored_delta: 0.0,
@@ -156,6 +160,7 @@ impl TypesetState {
         self.data.vpos_prev_trimmed_sb_px = 0.0;
         self.data.vpos_page_base = None;
         self.data.vpos_lazy_base = None;
+        self.data.vpos_stored_column_origin = None;
         self.data.vpos_page_base_stored = false;
         self.data.vpos_ladder_dirty = false;
         self.data.vpos_compacted_stored_delta = 0.0;
@@ -222,7 +227,15 @@ impl TypesetState {
 
     /// 기본 가용 높이 (각주/존 미차감)
     pub(in crate::renderer::typeset) fn base_available_height(&self) -> f64 {
-        self.data.layout.available_body_height()
+        // 본문 점유와 레거시 미주 흐름의 추가 예산을 구분한다. 전체 문단 fit,
+        // 줄 분할, 표 예약이 같은 물리 경계를 소비해야, 저장 쪽 표식이 없는
+        // 변환본의 마지막 글줄을 아래 여백에 넣고 다음 본문을 당기지 않는다.
+        // 미주의 기존 단 예산은 별도 흐름 계약이므로 여기서 제거하지 않는다.
+        if self.data.current_endnote_flow {
+            self.data.layout.available_body_height()
+        } else {
+            self.data.layout.physical_body_height()
+        }
     }
 
     /// 동일 표의 terminal fragment가 아직 current column에 있는지, 직전에 flush된
@@ -328,7 +341,7 @@ impl TypesetState {
             alignment: style.map_or(crate::model::style::Alignment::Left, |s| s.alignment),
             dpi: self.data.layout.dpi,
         };
-        if let Some(exclusion) = frame.picture_exclusion(picture) {
+        if let Some(exclusion) = frame.picture_exclusion(picture, para, control_index, styles) {
             self.data
                 .side_wrap_exclusions
                 .insert((para_index, control_index), exclusion);
@@ -659,7 +672,18 @@ impl TypesetState {
         }
     }
 
+    #[track_caller]
     pub(in crate::renderer::typeset) fn advance_column_or_new_page(&mut self) {
+        if std::env::var("RHWP_FLOW_BREAK_DEBUG").is_ok() {
+            eprintln!(
+                "FLOW_BREAK caller={} page={} column={} height={} next_note={:?}",
+                std::panic::Location::caller(),
+                self.data.pages.len(),
+                self.data.current_column,
+                self.data.current_height,
+                self.data.endnote_para_sources.last()
+            );
+        }
         self.flush_column();
         self.data.visible_float_exclusions.clear();
         self.data.page_anchored_bands.clear();
