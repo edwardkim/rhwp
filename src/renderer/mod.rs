@@ -2925,6 +2925,14 @@ pub fn render_font_family_chain_for_weight(font_family: &str, bold: bool) -> Str
     families.join(",")
 }
 
+/// 호스트의 실제 face 준비 요청도 paint와 같은 별칭·fallback 순서를 소비한다.
+pub(crate) fn render_font_family_names_for_weight(font_family: &str, bold: bool) -> Vec<String> {
+    internal_font_family_members(&render_font_family_chain_for_weight(font_family, bold))
+        .into_iter()
+        .map(str::to_owned)
+        .collect()
+}
+
 /// Canvas 2D 렌더용 인용 font-family 체인.
 ///
 /// [#3314] Canvas API가 요구하는 인용 형식을 유지하면서, 굵기 접미사 face

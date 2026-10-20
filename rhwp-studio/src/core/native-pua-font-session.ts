@@ -56,7 +56,8 @@ export class NativePuaFontSession {
         if (!record) continue;
         if (!isPrepared(record)) { settled = false; break; }
         const data = await loadRendererLocalFont(record);
-        if (!current() || generation !== `${fontGeneration}:${getHostFontState().generation}`) return false;
+        if (!current() || this.prepared.get(owner) !== state
+          || generation !== `${fontGeneration}:${getHostFontState().generation}`) return false;
         if (!data) continue;
         const bytes = normalizeFontFaceData(data.bytes, data.faceIndex ?? 0);
         if (!bytes) continue;

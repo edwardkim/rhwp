@@ -6080,3 +6080,11 @@ FontFace 준비와 같은 normalizeFontFaceData의 결과를 공급한다. 실�
 구별한다. 기존 호스트 3건과 ignored 공급/지연 응답 2건이 통과했다. 첫 async 진단은
 mock provider의 필수 subscribe가 빠져 실패했으며, 무한 대기 대신 제한된 대기를 사용하고
 provider 계약을 갖춘 재실행으로 수정했다. 실제 SFNT나 시각 검증을 mock 통과로 대신하지 않는다.
+
+
+D59 `04e465b1f` 진단 빌드는 82.45초에 renderer 내부 파서에 대한 E0603으로
+실패했다. 시각 실행은 시작하지 않았다. 내부 파서의 공개 범위를 늘리지 않고 renderer가
+공유 paint 체인을 family 목록으로 반환하는 crate 내부 facade를 추가한다. 공급 해제 뒤
+늦은 비동기 응답은 document/host 세대뿐 아니라 공급 세션의 동일성도 확인한다. Bridge의
+Canvas 글꼴 세대도 콜백에 고정한다. 새 Node 검사는 글꼴 bytes의 시각적 정확성과 구분한
+공급 순서·멱등·미준비·문서 교체·공급 해제 계약이며 기존 호스트 검사와 함께 7건 통과했다.

@@ -65,14 +65,9 @@ impl DocumentCore {
                 requests
                     .entry((family.clone(), style.bold, style.italic))
                     .or_insert(NativePuaFontRequest {
-                        paint_families: crate::renderer::internal_font_family_members(
-                            &crate::renderer::render_font_family_chain_for_weight(
-                                &family, style.bold,
-                            ),
-                        )
-                        .into_iter()
-                        .map(str::to_owned)
-                        .collect(),
+                        paint_families: crate::renderer::render_font_family_names_for_weight(
+                            &family, style.bold,
+                        ),
                         family,
                         bold: style.bold,
                         italic: style.italic,

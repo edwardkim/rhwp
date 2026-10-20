@@ -366,8 +366,10 @@ export class WasmBridge {
       });
       await this.hostCanvasFonts.prepare(records);
       if (!current() || generation !== getHostFontState().generation) return false;
+      const puaFontGeneration = this.canvasFontGeneration;
       if (!await this.nativePuaFonts.prepare(doc as unknown as NativePuaFontDocument | null,
-        this.canvasFontGeneration, record => this.hostCanvasFonts.isPrepared(record), current)) return false;
+        puaFontGeneration, record => this.hostCanvasFonts.isPrepared(record),
+        () => current() && this.canvasFontGeneration === puaFontGeneration)) return false;
     } else {
       this.hostCanvasFonts.reset();
       this.nativePuaFonts.clear(doc as unknown as NativePuaFontDocument | null);
