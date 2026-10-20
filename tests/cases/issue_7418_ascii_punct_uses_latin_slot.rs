@@ -1,4 +1,7 @@
-//! 전체 피델리티 미달의 차단 검사만 #7445(comment5981655880)로 이관했습니다. 나머지 검사는 유지합니다.
+//! C449: 원문/독립 Print74쪽의 Native/fresh WASM 전쪽 raw90과 직접 판독 후 보강한다.
+//! p8은 양쪽99.9988% 이상이므로 독립 PDF Tm/cm의 핵심 좌표를 ±2 CSS px로 보호한다.
+//! 과거7807021b76에서 분리했던 8쪽 줄 소속/74쪽 계약도 원문 소유 관계와 함께 복원한다.
+//! 전쪽 TSV·글꼴 프로그램 공급·source hash 근거는 단계8 C449 보고서를 참조한다.
 //! [#7418] 영문 슬롯이 옛 한컴 영문 글꼴이면 ASCII 구두점도 한/글이 **영문 슬롯** 글꼴로 재고
 //! 그린다.
 //!
@@ -68,6 +71,28 @@ fn the_hyphen_in_a_hangul_run_advances_with_latin_slot_metrics() {
         actual_text.push_str(text);
     }
     assert_eq!(actual_text, source.text, "원문 문단의 전체 내용 보존");
+    // Restore the independent first-line/continuation contract removed in
+    // 7807021b76, selecting by source paragraph and relative line ownership.
+    let first_y = &paragraph[0]["y"];
+    let first_line: String = paragraph
+        .iter()
+        .take_while(|item| &item["y"] == first_y)
+        .map(|item| item["text"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        first_line.split_whitespace().collect::<String>(),
+        "-해당사업자는신고업무처리를위한행정적부담이수반되나,사업",
+        "독립 Print8쪽 첫 줄은 사업까지 같은 줄에 둔다"
+    );
+    let next_line: String = paragraph
+        .iter()
+        .skip_while(|item| &item["y"] == first_y)
+        .map(|item| item["text"].as_str().unwrap())
+        .collect();
+    assert!(
+        next_line.trim_start().starts_with("일반현황,"),
+        "다음 source 줄의 첫 내용"
+    );
     let matches: Vec<_> = paragraph
         .iter()
         .filter(|run| run["charStart"] == 2)
@@ -107,7 +132,15 @@ fn the_hyphen_in_a_hangul_run_advances_with_latin_slot_metrics() {
         .as_str()
         .unwrap()
         .starts_with(" 해당 사업자는"));
-    assert_eq!(following["fontFamily"], "휴먼명조");
+    assert_eq!(
+        rhwp::renderer::style_resolver::primary_font_name(
+            following["fontFamily"]
+                .as_str()
+                .expect("CSS face 후보 사다리")
+        ),
+        "휴먼명조",
+        "원본 한글 face는 보존하며 공개 API의 CSS 후보 사다리와 구분한다"
+    );
     assert_eq!(
         following["charShapeId"], run["charShapeId"],
         "같은 원문 글자모양"
@@ -117,5 +150,163 @@ fn the_hyphen_in_a_hangul_run_advances_with_latin_slot_metrics() {
         (following["x"].as_f64().unwrap() - run["x"].as_f64().unwrap() - advance).abs() / font_size
             < 0.01,
         "영문 전진 끝에서 한글 본문을 이어 그린다"
+    );
+
+    // Independent Print p8: cm=(0.12,0,0,-0.12,0,841), Tm x=597/697,
+    // y=3366. Convert PDF points to CSS px; these are not renderer snapshots.
+    // Enable only after current full-document raw90 and p8 N/W raw98+ reading.
+    let hyphen_x = run["x"].as_f64().unwrap();
+    let first_hangul_x = following["x"].as_f64().unwrap()
+        + following["charX"][1]
+            .as_f64()
+            .expect("뒤 공백 다음 원문 글자 경계");
+    assert!((hyphen_x - 95.52).abs() <= 2.0, "독립 Print 하이픈 원점");
+    assert!(
+        (first_hangul_x - 111.52).abs() <= 2.0,
+        "독립 Print 첫 한글 원점"
+    );
+    let page = core.build_page_render_tree(PAGE).unwrap();
+    assert_eq!(
+        core.page_count(),
+        74,
+        "독립 Print 전74쪽과 원문 문단의 소속을 함께 보존"
+    );
+    let owned: Vec<_> = decree_nodes(&page.root)
+        .into_iter()
+        .filter_map(|node| {
+            let rhwp::renderer::render_tree::RenderNodeType::TextRun(text) = &node.node_type else {
+                return None;
+            };
+            (text.section_index == Some(0)
+                && text.para_index == Some(73)
+                && text.cell_context.is_none()
+                && text.char_start == Some(2)
+                && text.text == "-")
+                .then_some((node, text))
+        })
+        .collect();
+    assert_eq!(
+        owned.len(),
+        1,
+        "독립 하이픈은 실제 paint에도 유일한 원문 소유자"
+    );
+    assert!(
+        (owned[0].0.bbox.y + owned[0].1.baseline - 538.56).abs() <= 2.0,
+        "독립 Print의 실제 paint 기준선"
+    );
+}
+
+fn decree_nodes(
+    node: &rhwp::renderer::render_tree::RenderNode,
+) -> Vec<&rhwp::renderer::render_tree::RenderNode> {
+    let mut result = vec![node];
+    for child in &node.children {
+        result.extend(decree_nodes(child));
+    }
+    result
+}
+
+/// Source s0/p331/c0: the nested third column does not own the plain second
+/// column's closing gap. Independent Print p36 closes the label paragraph;
+/// p37 continues only the separate article-number paragraph.
+#[test]
+fn plain_label_keeps_its_closing_line_beside_a_nested_continuation() {
+    use rhwp::{
+        model::control::Control,
+        renderer::{font_environment::FontEnvironment, render_tree::RenderNodeType},
+    };
+    let mut core = load();
+    core.set_hangul2024_compat(false);
+    // Portable layout selection model; actual glyph availability/program bytes
+    // are checked separately by the Native/fresh WASM full visual evidence.
+    let programs = serde_json::json!([
+        {"query":"HY중고딕","family":"HYGothic-Medium","programId":"layout-control-H2gtrM","trueType":true},
+        {"query":"함초롬돋움","family":"HCR Dotum","programId":"layout-control-HCRDotum","trueType":true}
+    ]);
+    let selection =
+        FontEnvironment::from_available_programs(&core.document().doc_info, &programs.to_string())
+            .unwrap();
+    core.set_font_environment(selection).unwrap();
+    let Control::Table(source) = &core.document().sections[0].paragraphs[331].controls[0] else {
+        panic!("원본 표")
+    };
+    let label = &source.cells[7];
+    assert_eq!(
+        (label.row, label.col, label.row_span, label.col_span),
+        (2, 1, 1, 1)
+    );
+    assert!(label
+        .paragraphs
+        .iter()
+        .all(|paragraph| paragraph.line_segs.is_empty() && paragraph.controls.is_empty()));
+    assert!(source.cells[8].paragraphs.iter().any(|paragraph| paragraph
+        .controls
+        .iter()
+        .any(|control| matches!(control, Control::Table(_)))));
+    let expected: Vec<_> = label
+        .paragraphs
+        .iter()
+        .map(|paragraph| paragraph.text.clone())
+        .collect();
+    assert_eq!(
+        expected,
+        ["1인 창조기업 육성에 관한 법률 시행령", "제4조, [별표2]"]
+    );
+    let mut fragments = Vec::new();
+    for page in [35, 36] {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let table = decree_nodes(&tree.root).into_iter().find(|node| matches!(&node.node_type,
+            RenderNodeType::Table(table) if table.section_index == Some(0) && table.para_index == Some(331)
+                && table.control_index == Some(0) && table.cell_context.is_none())).expect("현재 원본 표 조각");
+        let cell = table
+            .children
+            .iter()
+            .find(|node| {
+                matches!(&node.node_type,
+            RenderNodeType::TableCell(cell) if cell.model_cell_index == Some(7))
+            })
+            .expect("라벨의 물리 셀 조각");
+        let mut parts = vec![String::new(), String::new()];
+        for node in decree_nodes(cell) {
+            let RenderNodeType::TextRun(run) = &node.node_type else {
+                continue;
+            };
+            let Some(context) = &run.cell_context else {
+                continue;
+            };
+            if context.parent_para_index != 331 || context.path.len() != 1 {
+                continue;
+            }
+            let address = &context.path[0];
+            if address.control_index != 0 || address.cell_index != 7 {
+                continue;
+            }
+            let paragraph = address.cell_para_index;
+            assert!(
+                paragraph < parts.len(),
+                "원본 문단 범위를 벗어난 소유자가 없어야 한다"
+            );
+            assert!(
+                node.bbox.y >= cell.bbox.y
+                    && node.bbox.y + node.bbox.height <= cell.bbox.y + cell.bbox.height,
+                "선택한 라벨 줄은 실제 clip 안에 완전히 포함되어야 한다"
+            );
+            parts[paragraph].push_str(&run.text);
+        }
+        fragments.push(parts);
+    }
+    assert_eq!(core.page_count(), 74, "독립 Print 전쪽 수");
+    assert_eq!(
+        fragments[0][0], expected[0],
+        "36쪽은 시행령까지 첫 문단을 닫는다"
+    );
+    assert!(fragments[0][1].is_empty(), "조문 번호는 다음 조각 소유");
+    assert!(
+        fragments[1][0].is_empty(),
+        "닫은 문단을 다음 조각에 중복하지 않는다"
+    );
+    assert_eq!(
+        fragments[1][1], expected[1],
+        "37쪽은 조문 번호만 이어받는다"
     );
 }

@@ -19087,9 +19087,11 @@ impl LayoutEngine {
         };
         // 원본 NO_LS와 정규화한 synthetic 줄은 같은 재조판 컷이다.
         // 저장 줄이 없는 입력만 예약에서 뒤 간격을 남기면 paint와 높이가 달라진다.
+        // A parallel cell's nested table owns its own advance ledger. It
+        // does not turn this cell's plain closing line into a nested unit.
         if !plain_cell_flow::paragraph_has_plain_flow(para)
             || !crate::renderer::para_has_no_stored_line_segs(para)
-            || !self.row_has_plain_reflow_line_units(table, usize::from(cell.row), styles)
+            || !self.cell_has_plain_reflow_line_units(cell, table, styles)
         {
             return 0.0;
         }
@@ -26027,17 +26029,27 @@ impl LayoutEngine {
         let owners = Self::row_cut_cell_order(table, row);
         !owners.is_empty()
             && owners.iter().all(|&index| {
-                let cell = &table.cells[index];
-                cell.paragraphs
-                    .iter()
-                    .all(plain_cell_flow::paragraph_has_plain_flow)
-                    && self.cell_units(cell, table, styles).iter().all(|unit| {
-                        unit.nested_row.is_none()
-                            && unit.nested_table_fragment.is_none()
-                            && !unit.mixed_nested_fragment
-                            && !unit.top_and_bottom_flow
-                            && unit.non_inline_control_range.is_none()
-                    })
+                self.cell_has_plain_reflow_line_units(&table.cells[index], table, styles)
+            })
+    }
+
+    /// Each parallel cell retains the classification of its own source units.
+    /// A row-wide query remains available when the caller owns a whole row.
+    fn cell_has_plain_reflow_line_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        cell.paragraphs
+            .iter()
+            .all(plain_cell_flow::paragraph_has_plain_flow)
+            && self.cell_units(cell, table, styles).iter().all(|unit| {
+                unit.nested_row.is_none()
+                    && unit.nested_table_fragment.is_none()
+                    && !unit.mixed_nested_fragment
+                    && !unit.top_and_bottom_flow
+                    && unit.non_inline_control_range.is_none()
             })
     }
 

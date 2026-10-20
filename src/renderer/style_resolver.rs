@@ -843,15 +843,14 @@ pub(crate) fn lookup_font_name_in_environment(
             decision
                 .requested_face
                 .as_deref()
-                .and_then(|face| env.replacement(face))
+                .and_then(|face| env.replacement_for(face, lang_index, font_id))
                 .map(|target| (env, target))
         }) {
             decision.normalized_face = Some(target.to_string());
             decision.css_family_chain = vec![target.to_string()];
-            let canonical_rule = decision
-                .requested_face
-                .as_deref()
-                .and_then(|source| environment.canonical_selection_rule(source));
+            let canonical_rule = decision.requested_face.as_deref().and_then(|source| {
+                environment.canonical_selection_rule_for(source, lang_index, font_id)
+            });
             decision.substitution_boundary =
                 canonical_rule.map(|_| FontSubstitutionBoundary::MissingProgram);
             decision.substitution_rule_id = canonical_rule;

@@ -111,7 +111,34 @@ fn conflicting_language_slot_selection_is_not_resurrected_by_a_later_fallback() 
         ..Default::default()
     });
     core.set_document(doc);
-    assert!(select(&core, json!([program(PUBLIC), program("Arial")])).is_null());
+    let before = core.export_hwp_native().unwrap();
+    let selected = select(&core, json!([program(PUBLIC), program("Arial")]));
+    assert!(
+        selected["substitutions"][SOURCE].is_null(),
+        "전역 이름 치환은 되살리지 않음"
+    );
+    let slots = selected["documentSubstitutions"]
+        .as_array()
+        .expect("원본 주소별 선택");
+    assert_eq!(slots.len(), core.document().doc_info.font_faces.len());
+    for (language, selection) in slots.iter().enumerate() {
+        assert_eq!(selection["languageSlot"], language);
+        assert_eq!(selection["fontId"], 0);
+        assert_eq!(selection["source"], SOURCE);
+        assert_eq!(
+            selection["target"],
+            if language == 0 { "Arial" } else { PUBLIC }
+        );
+    }
+    core.set_font_environment(Some(
+        FontEnvironment::from_json(&selected.to_string()).unwrap(),
+    ))
+    .unwrap();
+    assert_eq!(
+        core.export_hwp_native().unwrap(),
+        before,
+        "슬롯별 선택도 원본 선언을 바꾸지 않음"
+    );
 }
 
 #[test]
@@ -136,4 +163,64 @@ fn embedded_document_substitute_keeps_its_source_out_of_public_selection() {
         .iter()
         .all(|request| request["source"] != SOURCE));
     assert!(select(&core, json!([program(PUBLIC)])).is_null());
+}
+
+#[test]
+fn different_programs_with_the_same_final_family_are_not_scoped_selections() {
+    let mut core = core();
+    let mut doc = core.document().clone();
+    for (language, fonts) in doc.doc_info.font_faces.iter_mut().enumerate() {
+        fonts[0].subst_font = Some(SubstFont {
+            face: if language == 0 {
+                "Program A"
+            } else {
+                "Program B"
+            }
+            .into(),
+            font_type: 1,
+            ..Default::default()
+        });
+    }
+    core.set_document(doc);
+    let programs = ["Program A", "Program B"].map(|query| json!({
+        "query":query,"family":"Same Final Family","programId":format!("distinct-{query}"),"trueType":true
+    }));
+    assert!(
+        select(&core, json!(programs)).is_null(),
+        "원본 주소가 달라도 같은 CSS family의 다른 프로그램은 구분할 수 없음"
+    );
+}
+
+#[test]
+fn scoped_program_declarations_require_distinct_bounded_source_addresses() {
+    let slot = json!({"languageSlot":0,"fontId":0,"source":SOURCE,"target":"Arial","programId":"address-protocol-program"});
+    let valid = json!({"id":"address-protocol","substitutions":{},"documentSubstitutions":[slot]});
+    assert!(FontEnvironment::from_json(&valid.to_string()).is_ok());
+    let mut duplicate = valid.clone();
+    duplicate["documentSubstitutions"]
+        .as_array_mut()
+        .unwrap()
+        .push(slot.clone());
+    assert!(
+        FontEnvironment::from_json(&duplicate.to_string()).is_err(),
+        "하나의 원본 주소에 두 프로그램을 선언하지 않음"
+    );
+    let mut outside = valid.clone();
+    outside["documentSubstitutions"][0]["languageSlot"] = json!(7);
+    assert!(
+        FontEnvironment::from_json(&outside.to_string()).is_err(),
+        "HWP의 일곱 언어 슬롯 밖 주소는 거부"
+    );
+    let mut global = valid.clone();
+    global["substitutions"][SOURCE] = json!("Global Program");
+    assert!(
+        FontEnvironment::from_json(&global.to_string()).is_err(),
+        "같은 소스를 전역과 주소별로 동시에 덮지 않음"
+    );
+    let mut chain = valid;
+    chain["documentSubstitutions"][0]["target"] = json!("Arial,serif");
+    assert!(
+        FontEnvironment::from_json(&chain.to_string()).is_err(),
+        "대상은 CSS 사다리가 아닌 하나의 프로그램"
+    );
 }
