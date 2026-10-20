@@ -2766,7 +2766,7 @@ pub(crate) fn stored_table_column_origin(
     dpi: f64,
 ) -> Option<i32> {
     let source = para.line_segs.first()?.vertical_pos;
-    if has_host_line {
+    if has_host_line && super::composer::stored_tac_host_frame(para).is_none() {
         placement
             .and_then(|placement| placement.stored_host_origin)
             .map(|origin| source.saturating_sub(super::px_to_hwpunit(origin, dpi)))

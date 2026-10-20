@@ -8986,10 +8986,31 @@ impl LayoutEngine {
                         _ => None,
                     })
                     .is_some_and(|pi| self.endnote_para_starts_note(pi));
+            let same_column_tac_host = self.profile.get().hwp5_stored_pagination_layout()
+                && !self.profile.get().session_edited()
+                && matches!(item, PageItem::PartialParagraph { start_line: 1, .. })
+                && crate::renderer::composer::stored_tac_host_frame(&paragraphs[item_para])
+                    .is_some_and(|frame| {
+                        matches!(col_content.items.first(), Some(PageItem::Table {
+                            para_index, control_index,
+                        }) if *para_index == item_para && *control_index == frame.control)
+                            && col_content
+                                .inline_placements
+                                .get(&(item_para, frame.control))
+                                .is_some_and(|placement| placement.y.abs() <= self.dpi / 7200.0)
+                    });
+            if same_column_tac_host {
+                if let Some((origin, anchor)) = hcursor.stored_column_origin {
+                    hcursor.vpos_page_base = Some(origin);
+                    hcursor.vpos_lazy_base = None;
+                    hcursor.col_anchor_y = anchor;
+                }
+            }
             if (matches!(
                 item,
                 PageItem::PartialParagraph { start_line, .. } if *start_line > 0
-            ) && !next_is_endnote_question_title)
+            ) && !next_is_endnote_question_title
+                && !same_column_tac_host)
                 || current_vpos_rewinds_from_prev
             {
                 // 이어지는 partial paragraph는 이전 쪽/단에서 시작한 문단의 나머지다.

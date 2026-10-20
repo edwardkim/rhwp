@@ -158,6 +158,22 @@ pub(super) fn measure(
     } else {
         fmt.total_height
     };
+    // 개체 줄 뒤의 본문도 같은 문단이 이미 소비한 독립 줄이다.
+    // 표 줄만 합산한 상한으로 그 본문과 줄 사이 간격을 회수하지 않는다.
+    let cap = if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
+        crate::renderer::composer::stored_tac_host_frame(para)
+            .map(|frame| {
+                let before = if height_before < 1.0 {
+                    0.0
+                } else {
+                    fmt.spacing_before
+                };
+                before + hwpunit_to_px(frame.paragraph_advance_hu, dpi) + fmt.spacing_after
+            })
+            .unwrap_or(cap)
+    } else {
+        cap
+    };
     // A complete source slot includes its outer margins and full closing
     // advance. Reuse the same producer as table paint instead of independently
     // halving spacing or adding a margin already owned by the stored line.

@@ -4232,6 +4232,17 @@ impl TypesetEngine {
             )
         })
         .flatten();
+        let stored_host_frame = (st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && !self.render_normalization.table_text_reflowed(table)
+            && (ft.effective_height - hwpunit_to_px(table.common.height as i32, self.dpi)).abs()
+                <= self.dpi / 7200.0)
+            .then(|| crate::renderer::composer::stored_tac_host_frame(para))
+            .flatten()
+            .filter(|frame| frame.control == ctrl_idx);
+        let table_height = stored_host_frame.as_ref().map_or(table_height, |frame| {
+            hwpunit_to_px(frame.object_advance_hu, self.dpi)
+        });
         // 앞선 TAC 소유 줄은 이미 각자의 표 경로에서 소비됐다.
         let before_text: f64 = if owned_row.is_some() {
             0.0
