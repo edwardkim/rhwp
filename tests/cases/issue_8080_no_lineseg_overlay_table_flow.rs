@@ -8,7 +8,7 @@
 //! 작은 표의 바깥 여백을 한/글과 다르게 잡아, 본문 표가 작은 표 아래가 아니라 작은 표와 같은
 //! 높이에서 시작해 두 표가 겹쳤다.
 //!
-//! 이 수정이 빈 host 문단을 한/글처럼 다루면 다음 세 경로가 함께 바뀐다.
+//! 이 수정이 빈 host 문단을 한/글처럼 다루면 다음 경로가 함께 바뀐다.
 //!
 //! - 셀 첫 문단이 소유한 글앞 중첩 표: 셀 높이를 글줄 높이로만 잡으면 중첩 표 마지막 행의
 //!   글자가 셀 밖으로 넘친다.
@@ -16,6 +16,9 @@
 //!   두 줄이 되어 뒤 표가 다음 쪽으로 밀린다.
 //! - 그림이 앵커된 빈 문단 뒤에 빈 문단이 이어지는 작은 표 칸: 행 예약 높이를 두 문단을
 //!   쌓은 값으로 잡아 측정·그리기 높이보다 커지고, 그 차이만큼 뒤 본문 표가 밀린다.
+//! - 글뒤 그림을 함께 가진 빈 문단의 자리차지 표: 바깥 여백을 빠뜨리고 host 빈 줄도 세지
+//!   않아 뒤 흐름이 한 줄 짧아진다. 반대로 표만 가진 빈 어울림 host 뒤에 빈 줄을 더하면
+//!   뒤 흐름이 한 줄 길어진다.
 //!
 //! # 기대값의 출처
 //!
@@ -25,18 +28,19 @@
 //! - 작은 표가 있는 문서는 5쪽이다. 1쪽 제목은 작은 표 왼쪽에 작은 표와 같은 높이로 놓이고,
 //!   본문 표는 작은 표 아래에서 시작한다.
 //! - 셀 안 중첩 표 문서에서 중첩 표의 마지막 행 글자는 행 안에 모두 보인다.
-//! - 떠 있는 도형 사이 제목 문서의 4쪽 맨 위에는 제목이 한 줄로 두 도형 사이에 있고, 그 아래
-//!   본문 표가 같은 쪽에 놓인다.
+//! - 떠 있는 도형 사이 제목 문서는 4쪽이다. 2쪽 글뒤 그림을 가진 표 host 의 빈 줄이 표 아래에
+//!   놓여 2쪽 마지막 빈 문단이 3쪽 첫 줄이 된다. 3쪽 어울림 표 뒤 안내 줄은 표 바로 아래에 온다.
+//!   4쪽 맨 위에는 제목이 한 줄로 두 도형 사이에 있고, 그 아래 본문 표가 같은 쪽에 놓인다.
 //! - 그림 칸 문서는 5쪽이다. 5쪽 제목은 작은 표 아래에, 본문 표는 제목 아래에 놓인다.
 //!   작은 표 아래끝과 바로 아래 개체 사이 간격은 1쪽(본문 표)과 5쪽(제목)이 같다.
 //!
-//! 떠 있는 도형 사이 제목 문서는 3쪽의 다른 결함(본문 줄 간격) 때문에 3쪽 실루엣 일치율이
-//! 90% 미만이라 쪽 수는 검사하지 않고 4쪽만 검사한다. 나머지 쪽은 모두 90% 이상이다.
+//! 재현물 4개의 모든 쪽 실루엣 일치율은 90% 이상이다.
 //!
 //! # 검사하는 것
 //!
 //! 쪽 수, 작은 표·제목 줄·본문 표의 위아래 순서와 겹침 여부, 중첩 표 글줄의 행·셀 포함,
-//! 제목 줄 수와 도형과의 같은 띠 여부, 같은 문서 안 두 쪽의 작은 표 아래 간격 일치.
+//! 제목 줄 수와 도형과의 같은 띠 여부, 같은 문서 안 두 쪽의 작은 표 아래 간격 일치,
+//! 빈 표 host 뒤 문단의 쪽 소속과 표 아래 간격.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -58,6 +62,11 @@ const NESTED_OUTER_TABLE_PARA: usize = 3;
 const TITLE_PAGE: u32 = 3;
 const TITLE_PARA: usize = 83;
 const TITLE_TABLE_PARA: usize = 85;
+const DECORATED_HOST_PAGE: u32 = 1;
+const DECORATED_HOST_PARA: usize = 43;
+const PUSHED_EMPTY_PARA: usize = 52;
+const SQUARE_HOST_PARA: usize = 67;
+const SQUARE_CAPTION_PARA: usize = 68;
 /// 5쪽 작은 표·제목·본문 표.
 const PICTURE_CELL_PAGE: u32 = 4;
 const PICTURE_CELL_TABLE_PARA: usize = 129;
@@ -276,6 +285,60 @@ fn title_between_floating_shapes_stays_one_line_above_table() {
     assert!(
         table.bottom() <= page_body.bottom() + 0.5,
         "본문 표가 4쪽 본문 영역 안에 다 들어가야 한다: 표 {table:?}, 본문 {page_body:?}"
+    );
+}
+
+#[test]
+fn title_sample_keeps_four_pages() {
+    assert_eq!(
+        load(TITLE_SAMPLE).page_count(),
+        4,
+        "웹한글기안기 기준 4쪽 — 글뒤 그림을 함께 가진 빈 표 host 의 빈 줄을 빠뜨리면 \
+         3쪽이 한 줄 위로 당겨지고, 넣고 어울림 표 뒤에도 빈 줄을 더하면 4쪽 표가 5쪽으로 넘친다"
+    );
+}
+
+#[test]
+fn decorated_empty_table_host_line_pushes_last_empty_paragraph_to_next_page() {
+    let doc = load(TITLE_SAMPLE);
+    let page2 = doc
+        .build_page_render_tree(DECORATED_HOST_PAGE)
+        .expect("2쪽 렌더 트리");
+    let page3 = doc
+        .build_page_render_tree(DECORATED_HOST_PAGE + 1)
+        .expect("3쪽 렌더 트리");
+    let mut host = Vec::new();
+    column_lines(&page2.root, DECORATED_HOST_PARA, &mut host);
+    let table = top_level_table(&page2.root, DECORATED_HOST_PARA, false).expect("2쪽 표");
+    assert!(
+        host.iter().all(|line| line.y + 0.5 >= table.bottom()),
+        "글뒤 그림을 함께 가진 빈 host 의 빈 줄은 표 위 틈(오프셋+위 여백)이 줄 높이보다 \
+         좁아 표 아래에 놓여야 한다: 줄 {host:?}, 표 {table:?}"
+    );
+    let mut on_page2 = Vec::new();
+    column_lines(&page2.root, PUSHED_EMPTY_PARA, &mut on_page2);
+    let mut on_page3 = Vec::new();
+    column_lines(&page3.root, PUSHED_EMPTY_PARA, &mut on_page3);
+    assert!(
+        on_page2.is_empty() && on_page3.len() == 1,
+        "host 빈 줄만큼 밀린 2쪽 마지막 빈 문단은 3쪽 첫 줄이어야 한다: 2쪽 {on_page2:?}, 3쪽 {on_page3:?}"
+    );
+}
+
+#[test]
+fn table_only_square_host_adds_no_empty_line_below_table() {
+    let doc = load(TITLE_SAMPLE);
+    let tree = doc
+        .build_page_render_tree(DECORATED_HOST_PAGE + 1)
+        .expect("3쪽 렌더 트리");
+    let table = top_level_table(&tree.root, SQUARE_HOST_PARA, false).expect("3쪽 어울림 표");
+    let mut caption = Vec::new();
+    column_lines(&tree.root, SQUARE_CAPTION_PARA, &mut caption);
+    let first = *caption.first().expect("어울림 표 뒤 안내 줄");
+    assert!(
+        first.y + 0.5 >= table.bottom() && first.y - table.bottom() < first.h,
+        "표만 가진 빈 어울림 host 는 자기 빈 줄이 없어 뒤 안내 줄이 표 바로 아래(바깥 여백만 사이)에 와야 한다: \
+         표 {table:?}, 안내 줄 {first:?}"
     );
 }
 

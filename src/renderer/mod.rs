@@ -1942,9 +1942,11 @@ pub(crate) fn unstored_host_text_follows_topbottom_table(
 /// 저장 줄 없는 **빈** host 의 단독 어울림(Square) 표 기하 `(표 상단, 표 아래 추가분)` px.
 ///
 /// 표 상단은 host 시작에서 `세로 오프셋 + 바깥여백 위` 아래다(오프셋은 바깥여백 상자의
-/// 모서리). 표가 단 폭을 채워 옆에 글자 띠가 없으면 host 의 빈 줄은 표 밴드와 겹치는
-/// 자리에 들어갈 수 없어 표 **아래**로 내려가므로, 표 바닥 뒤 흐름은 `바깥여백 아래 +
-/// host 줄(lh+ls)` 만큼 더 전진한다.
+/// 모서리). 표만 가진 빈 host 는 개체 앵커라 자기 빈 줄이 없어 표 바닥 뒤 흐름이
+/// `바깥여백 아래` 만큼만 전진한다. 글앞·글뒤 장식을 함께 가진 host 는 빈 줄을 갖고,
+/// 표가 단 폭을 채워 옆에 글자 띠가 없으면 그 줄은 표 밴드와 겹치는 자리에 들어갈 수
+/// 없어 표 **아래**로 내려가므로, 표 바닥 뒤 흐름은 `바깥여백 아래 + host 줄(lh+ls)`
+/// 만큼 더 전진한다.
 ///
 /// 줄이 오프셋 위 틈에 들어가는 경우(오프셋 ≥ 줄 높이)와 옆 띠가 있는 경우는 None 으로
 /// 일반 어울림 표 경로에 남긴다. typeset(흐름 전진)과 layout(표 위치·뒤 흐름)이
@@ -1981,6 +1983,7 @@ pub(crate) fn unstored_empty_square_table_host_geometry_px(
         return None;
     }
     let mut square_floats = 0usize;
+    let mut has_overlay = false;
     for control in &p.controls {
         let common = match control {
             Control::Table(table) => &table.common,
@@ -1990,7 +1993,9 @@ pub(crate) fn unstored_empty_square_table_host_geometry_px(
         };
         if is_square_float(common) {
             square_floats += 1;
-        } else if !is_overlay(common) {
+        } else if is_overlay(common) {
+            has_overlay = true;
+        } else {
             return None;
         }
     }
@@ -2027,10 +2032,12 @@ pub(crate) fn unstored_empty_square_table_host_geometry_px(
     if v_off >= line_advance {
         return None;
     }
-    Some((
-        v_off + hwpunit_to_px(t.outer_margin_top as i32, dpi),
-        hwpunit_to_px(t.outer_margin_bottom as i32, dpi) + line_advance,
-    ))
+    let table_top = v_off + hwpunit_to_px(t.outer_margin_top as i32, dpi);
+    let outer_bottom = hwpunit_to_px(t.outer_margin_bottom as i32, dpi);
+    if !has_overlay {
+        return Some((table_top, outer_bottom));
+    }
+    Some((table_top, outer_bottom + line_advance))
 }
 
 /// [`para_is_unstored_empty_overlay_table_host`] 문단의 em 줄 글자 크기.
