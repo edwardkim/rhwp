@@ -763,6 +763,12 @@ pub(super) fn prepare(
                 let same_frame = (saved_origin - page.current_height).abs() <= dpi / 7200.0
                     || (saved_origin - unreserved_origin).abs() <= dpi / 7200.0
                     || (page.original_object_column_origin
+                        && para.source_line_seg_vertical_pos.is_none())
+                    // 단의 첫 원본 글줄이 영점을 이미 인증했고 활성 축도 그대로면,
+                    // 독립 저장 개체의 원점은 앞 텍스트의 실측 높이와 별개다.
+                    // 작은 줄 높이 증가를 전체 개체 축의 이동으로 전파하지 않는다.
+                    || (page.stored_zero_column_origin
+                        && page.vpos_page_base.or(page.vpos_lazy_base) == Some(0)
                         && para.source_line_seg_vertical_pos.is_none());
                 // 앞 저장 글줄의 후행 간격은 표의 진입 밴드다. 수용 커서가
                 // 그 글줄의 내용 끝에 있으면 같은 좌표축에서 표 원점까지 연결한다.

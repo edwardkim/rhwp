@@ -1,0 +1,18 @@
+{
+  "head": "455aac1ac07f58eac8b4a553a227cf09c0ca2bf1",
+  "sourceLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair509-exam-source-object-origin-fresh-wasm/source.json",
+  "hashes": {
+    "rhwp.js": "23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591",
+    "rhwp_bg.wasm": "077c60d0406d9a774637f5aba38510fd258439baf3a1b7405e7023b33ec2ead3"
+  },
+  "rootPackageRecompiled": true,
+  "wrapperInvoked": true,
+  "changesSincePreviousWasm": [
+    "src/renderer/typeset/controls/stored_tac.rs"
+  ],
+  "rootPkgStudioPublicMatch": true,
+  "buildExitCode": 0,
+  "seconds": 270.75369024276733,
+  "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+  "actualBrowserInitialization": "pending"
+}

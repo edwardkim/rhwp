@@ -1,0 +1,358 @@
+{
+  "parent": "455aac1ac07f58eac8b4a553a227cf09c0ca2bf1",
+  "base": "4a07d3ae4dd3255a57fb0166b2b2a2dc335a61fa",
+  "sourceFile": "src/renderer/typeset/controls/stored_tac.rs",
+  "sourceSha256": "c0c00a5f3d4f5dd32aab5e2eb3bfe85e0fd927d2eb0db2dd5f1bcc0ee06ff410",
+  "testFile": "tests/cases/verified_hancom_paragraph_frames.rs",
+  "testSha256": "c530cdf2d984a919ecb6c83c6618601da9a2ee8cd09cb78038a7819f3312714c",
+  "officialGate": {
+    "exitCode": 0,
+    "seconds": 465.7367027499713,
+    "summary": [
+      "     Summary [ 208.531s] 83 tests run: 83 passed (7 slow), 1917 skipped"
+    ],
+    "sourceUnchanged": true,
+    "scope": "Native original8064 source equations/page ownership plus chain-aware original baseline contract and stored TAC controls/3930/1937; not full nextest"
+  },
+  "format": "final fmt/check completed; only if-expression line wrapping changed after official run; no runtime/test logic change",
+  "nativeWasmWholePageRows": 44,
+  "metrics": [
+    {
+      "backend": "base-native",
+      "key": "science",
+      "counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "minimum": "93.18598",
+      "worstPage": 4,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/base-native/science/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "base-native",
+      "key": "kor-hwp",
+      "counts": {
+        "rhwp": 20,
+        "pdf": 20
+      },
+      "minimum": "92.32711",
+      "worstPage": 17,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/base-native/kor-hwp/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "base-native",
+      "key": "kor-hwpx",
+      "counts": {
+        "rhwp": 20,
+        "pdf": 20
+      },
+      "minimum": "92.32711",
+      "worstPage": 17,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/base-native/kor-hwpx/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "native",
+      "key": "science",
+      "counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "minimum": "93.11518",
+      "worstPage": 4,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/science/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "native",
+      "key": "kor-hwp",
+      "counts": {
+        "rhwp": 20,
+        "pdf": 20
+      },
+      "minimum": "96.27225",
+      "worstPage": 17,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/kor-hwp/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "native",
+      "key": "kor-hwpx",
+      "counts": {
+        "rhwp": 20,
+        "pdf": 20
+      },
+      "minimum": "96.27225",
+      "worstPage": 17,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/kor-hwpx/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "wasm",
+      "key": "science",
+      "counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "minimum": "93.04014",
+      "worstPage": 4,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/science/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "wasm",
+      "key": "kor-hwp",
+      "counts": {
+        "rhwp": 20,
+        "pdf": 20
+      },
+      "minimum": "96.29373",
+      "worstPage": 17,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/kor-hwp/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "wasm",
+      "key": "kor-hwpx",
+      "counts": {
+        "rhwp": 20,
+        "pdf": 20
+      },
+      "minimum": "96.29373",
+      "worstPage": 17,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/kor-hwpx/silhouette.tsv",
+      "directReading": "pending"
+    }
+  ],
+  "korInputFormatsPngIdentity": {
+    "native": true,
+    "wasm": true
+  },
+  "directReading": "Science p2 owned final table and following column10 question restored; p3/p4 residual spacing/ink retained. Kor14 body/punctuation baselines, original first face, passage border and inline header read in Native/freshWASM; format identity uses same20 PNG hashes.",
+  "declineHold": [
+    {
+      "case": "science",
+      "page": "3",
+      "base": "95.06581",
+      "candidate": "94.73771",
+      "decline": "0.32810",
+      "hold": true
+    }
+  ],
+  "prReady": false,
+  "browserInitialization": {
+    "head": "455aac1ac07f58eac8b4a553a227cf09c0ca2bf1",
+    "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+    "browserVersion": "Chrome/155.0.8059.85",
+    "producer": {
+      "head": "455aac1ac07f58eac8b4a553a227cf09c0ca2bf1",
+      "sourceLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair509-exam-source-object-origin-fresh-wasm/source.json",
+      "hashes": {
+        "rhwp.js": "23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591",
+        "rhwp_bg.wasm": "077c60d0406d9a774637f5aba38510fd258439baf3a1b7405e7023b33ec2ead3"
+      },
+      "rootPackageRecompiled": true,
+      "wrapperInvoked": true,
+      "changesSincePreviousWasm": [
+        "src/renderer/typeset/controls/stored_tac.rs"
+      ],
+      "rootPkgStudioPublicMatch": true,
+      "buildExitCode": 0,
+      "seconds": 270.75369024276733,
+      "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+      "actualBrowserInitialization": "pending"
+    },
+    "rows": [
+      {
+        "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+        "httpMethod": "GET",
+        "resourceType": "script",
+        "status": 200,
+        "fromCache": false,
+        "bytes": 2705563,
+        "servedSha256": "f2294e7a48873a5ffe66aa3409d96be9a7d191fce5973dbf6b514faa09cc929b",
+        "frozenSha256": "23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591",
+        "matchesFrozenBuild": true,
+        "sourceMapContentSha256": "319f1364be37ceb61752deeda2a8da9c1ed11505eb080c5f506edabc08356f5e",
+        "expectedAssetRewriteSha256": "319f1364be37ceb61752deeda2a8da9c1ed11505eb080c5f506edabc08356f5e",
+        "viteAssetRewrite": {
+          "original": "new URL('rhwp_bg.wasm', import.meta.url)",
+          "transformed": "new URL(\"/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm\", '' + import.meta.url)",
+          "wasmPath": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sourceMapSource": "rhwp.js"
+        },
+        "method": "vite-inline-source-map-exact-asset-url-rewrite"
+      },
+      {
+        "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+        "httpMethod": "GET",
+        "resourceType": "fetch",
+        "status": 200,
+        "fromCache": false,
+        "bytes": 22645059,
+        "servedSha256": "077c60d0406d9a774637f5aba38510fd258439baf3a1b7405e7023b33ec2ead3",
+        "frozenSha256": "077c60d0406d9a774637f5aba38510fd258439baf3a1b7405e7023b33ec2ead3",
+        "matchesFrozenBuild": true,
+        "method": "raw-byte-identity"
+      }
+    ],
+    "errors": [],
+    "preflights": [],
+    "wasmInitialized": true,
+    "scope": "actual Studio7736 initialization responses only; not document paint, fonts, CanvasKit readiness or actual36 acceptance"
+  },
+  "files": [
+    {
+      "file": "base-native-science.tsv",
+      "sha256": "36d6acb1379d9a5250474dbbfa1cddb2c5c9d3d6161b9631bbce78b2b6bafd0e",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/base-native/science/silhouette.tsv"
+    },
+    {
+      "file": "base-native-kor-hwp.tsv",
+      "sha256": "09673ac34143280c29a0eb845687b2a589d76e4c0439e899b97a876f7cddc0db",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/base-native/kor-hwp/silhouette.tsv"
+    },
+    {
+      "file": "base-native-kor-hwpx.tsv",
+      "sha256": "09673ac34143280c29a0eb845687b2a589d76e4c0439e899b97a876f7cddc0db",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/base-native/kor-hwpx/silhouette.tsv"
+    },
+    {
+      "file": "native-science.tsv",
+      "sha256": "1889aff78b006414d1058a6840f0907bcf6ab91c0514ce4d23552941991c40a4",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/science/silhouette.tsv"
+    },
+    {
+      "file": "native-kor-hwp.tsv",
+      "sha256": "dd596397564f528e48328d623e1859c9e405f778783381569d7441b4796af22f",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/kor-hwp/silhouette.tsv"
+    },
+    {
+      "file": "native-kor-hwpx.tsv",
+      "sha256": "dd596397564f528e48328d623e1859c9e405f778783381569d7441b4796af22f",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/kor-hwpx/silhouette.tsv"
+    },
+    {
+      "file": "wasm-science.tsv",
+      "sha256": "6ade3149cd1ca7a2ddb4fb3377188b4248b4994a098f2735e6149cd3f2e599f3",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/science/silhouette.tsv"
+    },
+    {
+      "file": "wasm-kor-hwp.tsv",
+      "sha256": "f7d3629d4da045dc4ef5398743dba28df7ea9d26e320838132bd241f4b35276c",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/kor-hwp/silhouette.tsv"
+    },
+    {
+      "file": "wasm-kor-hwpx.tsv",
+      "sha256": "f7d3629d4da045dc4ef5398743dba28df7ea9d26e320838132bd241f4b35276c",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/kor-hwpx/silhouette.tsv"
+    },
+    {
+      "file": "native-science-p002-review.png",
+      "sha256": "518d6a9e8cd662e0290bdc2299aac0cb2c2caf16e7961c6ff7f555c40fa86490",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/science/review/review_002.png"
+    },
+    {
+      "file": "native-science-p002-overlay.png",
+      "sha256": "3b5390e32f185af3338737c73d13734bbc515fa6b899a5980ddfb01fc7c4b6a7",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/science/overlay/overlay_002.png"
+    },
+    {
+      "file": "native-science-p003-review.png",
+      "sha256": "eb027685a8285cdaff9383834a9a77e6252aaf7fdd749bc86c51c20813de5561",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/science/review/review_003.png"
+    },
+    {
+      "file": "native-science-p003-overlay.png",
+      "sha256": "2a9f286e4493557acc5aba8fd6611cfd4501dac3e36e8bc13ea3888066bc2472",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/science/overlay/overlay_003.png"
+    },
+    {
+      "file": "wasm-science-p002-review.png",
+      "sha256": "b2c2f977563c2f39d74ee329d3f3308d60da6c7f7db16bfabc3baf99e6bdcd88",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/science/review/review_002.png"
+    },
+    {
+      "file": "wasm-science-p002-overlay.png",
+      "sha256": "774c532702963937a35a41b81e790a7b96e8595c0411083c36b98fb45fa70385",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/science/overlay/overlay_002.png"
+    },
+    {
+      "file": "base-native-science-p003-review.png",
+      "sha256": "22eb780d8ed654d2d354c31092f457fda67aaedd486d77825562d039a8ec93d1",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/base-native/science/review/review_003.png"
+    },
+    {
+      "file": "base-native-science-p003-overlay.png",
+      "sha256": "31d7aa865356e368c69b10e36289f968c7a95675cf88ab0462705ae062ce2ca7",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/base-native/science/overlay/overlay_003.png"
+    },
+    {
+      "file": "native-kor-hwp-p014-review.png",
+      "sha256": "cb098dbf0af403fcd31da5a81148995f811a39613dbe1f9a88dd2fad26e5c798",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/kor-hwp/review/review_014.png"
+    },
+    {
+      "file": "native-kor-hwp-p014-overlay.png",
+      "sha256": "bfdcfec19e80980cf43484f26bdc570a6cc1155b9cacad477f6e49f235965413",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/native/kor-hwp/overlay/overlay_014.png"
+    },
+    {
+      "file": "wasm-kor-hwp-p014-review.png",
+      "sha256": "b69ab6c41089cbab01ea300210bb642f01f196c87f86ae0d354aec1474bf187f",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/kor-hwp/review/review_014.png"
+    },
+    {
+      "file": "wasm-kor-hwp-p014-overlay.png",
+      "sha256": "cfa49255619ed799b33b988efd73570b207ed0450d78e2807d747b60b085673c",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair512-exam-original-matched-dpi/wasm/kor-hwp/overlay/overlay_014.png"
+    }
+  ],
+  "extraDiagnostic192Dpi": {
+    "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair510-exam-original-whole",
+    "nativeWhole44": true,
+    "wasmScience4": true,
+    "wasmKorFailed": "ENOSPC",
+    "sameAsOriginalPrDpi": false,
+    "acceptance": false
+  },
+  "cleanup": {
+    "probe": {
+      "deleted": 14,
+      "bytes": 294135220,
+      "scope": "closed temporary probe executables and duplicate trace dumps only; primary base/current JSON, source, logs, original HWP/PDF/PNG/TSV and all frozen engine libraries preserved"
+    },
+    "old13": {
+      "deleted": 13,
+      "bytes": 1025019464,
+      "protected": [
+        "current507",
+        "before497",
+        "before482",
+        "before467",
+        "393",
+        "fixedbase4a07",
+        "all inputs/PDF/PNG/TSV/log/source/producer",
+        "shared target"
+      ]
+    },
+    "old89": {
+      "deleted": 89,
+      "bytes": 6894757848,
+      "preservedEvidenceChanged": 0
+    }
+  },
+  "finalManifest": "[RustTestSuite] 확인 완료: 1643 sources / 7175 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 1470219..1475194",
+  "formatAndManifestRepair": "Initial fmt check exposed if-expression line wrapping; after fmt, harness drift was repaired with prepare then final base-ref manifest check passed. Executed83 case functions are unchanged in logic."
+}
