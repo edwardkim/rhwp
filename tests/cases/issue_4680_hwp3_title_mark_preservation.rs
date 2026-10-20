@@ -23,7 +23,8 @@ use rhwp::model::document::Document;
 use std::path::Path;
 
 const HWP3: &str = "samples/hwp3-sample10.hwp";
-const HWP5: &str = "samples/hwp3-sample10-hwp5.hwp";
+const HWP5: &str =
+    "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp";
 
 fn parse(rel: &str) -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);

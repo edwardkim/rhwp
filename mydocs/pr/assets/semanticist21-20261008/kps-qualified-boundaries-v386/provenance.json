@@ -1,0 +1,140 @@
+{
+  "scope": "Unfixed current315/323 cohort boundary evidence; not acceptance. All77 Native/fresh RGB equal, Native/Print direct4page review and3x read.",
+  "production_source": "940ea1322617ccff5a7b47d6920ae96e94cfffad",
+  "binary": "output/pr-review/semanticist21-20261008/binaries/rhwp-wrapper-cell-note-v315-debug",
+  "binary_sha256": "3d50e1311eb579afd41d0dcf3bafade916b8b763a633083c8f89d2b001340ae3",
+  "wasm": {
+    "rhwp.js": "691e4fd480cf4e04f9e599ca7c7a4802ad87b2c141fba93bf94111f4144dcb3b",
+    "rhwp_bg.wasm": "f16609ba3bac35ab0292a0c15c2bc36d8becb562834f98090fb1831cc2d517f9"
+  },
+  "input_pdf": [
+    {
+      "path": "samples/kps-ai.hwp",
+      "bytes": 485888,
+      "sha256": "9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9",
+      "commit": "940ea1322617ccff5a7b47d6920ae96e94cfffad"
+    },
+    {
+      "path": "pdf/kps-ai-2022.pdf",
+      "bytes": 1047845,
+      "sha256": "7c064fd290368369a3c8eaa7d7b03668c46fb4dfe0fc18ba52d00456ffe01d28",
+      "commit": "940ea1322617ccff5a7b47d6920ae96e94cfffad"
+    }
+  ],
+  "rgb_comparison_record": "output/pr-review/semanticist21-20261008/kps-qualified-boundaries-v386-retry1/result.json",
+  "rgb_comparison_record_sha256": "c38b22a434a0dd3148604db9e72dd04a47ecf9619f1a86bad975591a00db9146",
+  "tsv": [
+    {
+      "path": "output/pr-review/semanticist21-20261008/direct-three-current-kps-native-v347/kps1156/silhouette.tsv",
+      "sha256": "3c1a80bc79e8025e7c83162f2b7a13241a8d5e465418ce7aa4b3d0c6574efcaf",
+      "pages": 77,
+      "minimum": 90.91935
+    },
+    {
+      "path": "output/pr-review/semanticist21-20261008/direct-three-current-kps-wasm-v347/kps1156/silhouette.tsv",
+      "sha256": "3c1a80bc79e8025e7c83162f2b7a13241a8d5e465418ce7aa4b3d0c6574efcaf",
+      "pages": 77,
+      "minimum": 90.91935
+    }
+  ],
+  "assets": [
+    {
+      "page": 37,
+      "kind": "review",
+      "path": "review_037.png",
+      "sha256": "22bde4080589fcc573ebbb04e9f31d6c98773c2deaf8d4227ce988e724bc9c96"
+    },
+    {
+      "page": 37,
+      "kind": "overlay",
+      "path": "overlay_037.png",
+      "sha256": "a09546ee748c2a5103810a0580c3da68544d45f9f7e34aee8b6909fad856b700"
+    },
+    {
+      "page": 38,
+      "kind": "review",
+      "path": "review_038.png",
+      "sha256": "0c653f8f42b87fa5ff28160cd68dd43bb608d315d77938d91d893adc5e8ddf3b"
+    },
+    {
+      "page": 38,
+      "kind": "overlay",
+      "path": "overlay_038.png",
+      "sha256": "d322f6e245979cb0ae4a47dc0a89eded473e1adeec243fc081acacca1dea5bbb"
+    },
+    {
+      "page": 65,
+      "kind": "review",
+      "path": "review_065.png",
+      "sha256": "cb43f6925dc667e6cc93f3820a94256e678f8012a7f42ffd959e8a39e8b2765e"
+    },
+    {
+      "page": 65,
+      "kind": "overlay",
+      "path": "overlay_065.png",
+      "sha256": "99a995f875745bc3b735f07004a929f9adf52d77dd6798cb601add94d636d52d"
+    },
+    {
+      "page": 66,
+      "kind": "review",
+      "path": "review_066.png",
+      "sha256": "6cd26a4c80544426e6f7d3351d37f79a4ddd408d13da2958a9fd7ef25a5f945b"
+    },
+    {
+      "page": 66,
+      "kind": "overlay",
+      "path": "overlay_066.png",
+      "sha256": "f69c18ad53f3ec78bc3c68699ba5e591352c484762215a0b8b8763669b2d3b1b"
+    },
+    {
+      "page": 37,
+      "kind": "3x-diagnostic-crop",
+      "path": "zoom_037_3x.png",
+      "sha256": "ca6ddfd7a1c17ec09e15d95d268744beacbf2921714efbbe0f8d4e7341c44d0a",
+      "diagnostic_crop_only": [
+        62,
+        936,
+        731,
+        1062
+      ]
+    },
+    {
+      "page": 38,
+      "kind": "3x-diagnostic-crop",
+      "path": "zoom_038_3x.png",
+      "sha256": "1b5dd82ae03a1df8012b915cc56b34caa2f132363912bdc0ed21d0e9ed2ee69f",
+      "diagnostic_crop_only": [
+        62,
+        140,
+        731,
+        244
+      ]
+    },
+    {
+      "page": 65,
+      "kind": "3x-diagnostic-crop",
+      "path": "zoom_065_3x.png",
+      "sha256": "de088b84e455b48cd1bdf8de0080f47c98e39efc98fedf6d6795a21250f78c33",
+      "diagnostic_crop_only": [
+        51,
+        939,
+        181,
+        1052
+      ]
+    },
+    {
+      "page": 66,
+      "kind": "3x-diagnostic-crop",
+      "path": "zoom_066_3x.png",
+      "sha256": "039554fc08a923361b61e6ac5cc9a2de351f70b07ca815726b472909c11dccab",
+      "diagnostic_crop_only": [
+        51,
+        122,
+        181,
+        326
+      ]
+    }
+  ],
+  "direct_read": "37 ends performance row,38 starts data row;65 label keeps3.민간/소프트웨어,66 receives시장침해/가능성. Missing top rules on66 are actual remaining defect, despite96.42%.",
+  "trace": "output/pr-review/semanticist21-20261008/kps-continuation-border-diagnostic-v387/result.json"
+}

@@ -33,6 +33,19 @@ const narrowResponse = (overrides: Record<string, unknown> = {}) => JSON.stringi
 
 const resolveOk = (key: string) => `blob:${key}`;
 
+test('full and narrow image transports retain source sampling and ignore invalid flags', () => {
+  for (const imageInterpolation of ['nearest', 'linear', 'invalid']) {
+    const narrow = flowImageOpsFromNarrowQuery(narrowResponse({ imageInterpolation }), resolveOk);
+    const full = collectFlowImagePaintOps({ kind: 'leaf', ops: [{
+      type: 'image', bbox: { x: 0, y: 0, width: 10, height: 10 },
+      mime: 'image/png', base64: 'AA==', imageInterpolation,
+    }] }, (op) => op.type === 'image');
+    const expected = imageInterpolation === 'invalid' ? undefined : imageInterpolation;
+    assert.equal(narrow?.[0].imageInterpolation, expected);
+    assert.equal(full[0].imageInterpolation, expected);
+  }
+});
+
 test('좁은 질의 응답을 FlowImagePaintOp 로 옮긴다', () => {
   const images = flowImageOpsFromNarrowQuery(narrowResponse(), resolveOk);
 

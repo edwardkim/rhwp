@@ -126,10 +126,20 @@ fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
         };
         serialize_paragraph_with_msb(para_ref, 0, is_last, &mut records);
     }
-    if has_memo_tail {
-        serialize_memo_tail(section, &memo_lists, &mut records);
+    if let Some(tail) = &section.trailing_lists {
+        // 본문 재작성과 별개로 저장 소유를 유지한다. 모델 목록을 중복 생성하지 않는다.
+        records.extend(tail.records.iter().map(|raw| Record {
+            tag_id: raw.tag_id,
+            level: raw.level,
+            size: raw.data.len() as u32,
+            data: raw.data.clone(),
+        }));
+    } else {
+        if has_memo_tail {
+            serialize_memo_tail(section, &memo_lists, &mut records);
+        }
+        serialize_master_page_tail(section, &mut records);
     }
-    serialize_master_page_tail(section, &mut records);
     // 변경추적 병합 문단 여부(UINT16)는 5.0.3.2부터 존재한다. 재귀로 생성한
     // 머리말·꼬리말·셀 문단도 같은 출력 버전을 따른다. 보존된 24바이트 이상의
     // 헤더는 건드리지 않으며, 원본 스트림 재사용은 위에서 이미 반환했다.
@@ -317,8 +327,10 @@ fn serialize_paragraph_with_msb(
         || !para.controls.is_empty()
         || !para.title_marks.is_empty()
         || has_emittable_orphan_end;
+    // An explicit empty PARA_TEXT (just its terminator) is different from
+    // an absent record. Preserve that source distinction on rebuild.
     let (text_data, residue_shifts): (Option<Vec<u8>>, Vec<GuideResidueShift>) =
-        if has_content || (para.has_para_text && para.char_count > 1) {
+        if has_content || para.has_para_text {
             let result = serialize_para_text(para);
             (Some(result.bytes), result.residue_shifts)
         } else {
@@ -378,7 +390,7 @@ fn serialize_paragraph_with_msb(
     //
     // 범위 판정도 축을 올린 값으로 한다 — `actual_char_count` 는 이 파일에 실제로 실린
     // 글자 수라 언제나 HWP5 축이다.
-    let line_segs_in_range = if para.stored_text_partition_is_dirty() {
+    let line_segs_in_range = if !super::line_cache::can_serialize_line_partition(para) {
         // Text/style mutation retained the old rows only as an edit-reflow
         // template. They are not a serializable partition of the new text.
         &source_line_segs[..0]
@@ -897,12 +909,13 @@ fn serialize_para_text_with_slots(
         // 아직 0 이라 판정이 실패한다 — 그 자리를 채운 뒤 다시 물어야 자리표시자를 알아본다
         // (#4957: `secd`·`cold` 를 앞세운 HWP3 첫 문단).
         //
-        // 두 번째 물음은 `object_only` 로 **U+FFFC 만** 받는다. 공백 자리표시자는 판별자가
-        // 글자가 아니라 `controls[ctrl_idx]` 의 코드(0x0012)뿐인데, 갭을 채우고 나면
-        // `ctrl_idx` 가 다른 컨트롤을 가리킨다 — 그때 다시 물으면 미주 앞의 **진짜 공백**이
-        // 자동번호로 오인돼 먹힌다(#3495 SO-SUEOP 문단 238). `U+FFFC` 는 글자 자체가
-        // 판별자라 이 위험이 없다.
-        let is_placeholder = |prev_end: u32, ctrl_idx: usize, object_only: bool| -> bool {
+        // 두 번째 물음(`after_gap`)도 공백 자리표시자를 받아야 각주·개체 바로 뒤나 구역·단
+        // 정의 뒤의 자동번호가 자기 자리에 써진다. 다만 이때는 자리 폭으로도 가린다. 공백
+        // 자리표시자는 판별자가 글자가 아니라 `controls[ctrl_idx]` 의 코드(0x0012)뿐인데, 갭을
+        // 채우고 나면 `ctrl_idx` 가 다른 컨트롤을 가리켜 미주 앞의 **진짜 공백**이 자동번호로
+        // 오인될 수 있다(#3495 SO-SUEOP 문단 238). 자리표시자는 8유닛이라 다음 글자가 8의
+        // 배수만큼 뒤에 오고, 1유닛인 진짜 공백은 뒤에 슬롯이 붙어도 그렇지 않다.
+        let is_placeholder = |prev_end: u32, ctrl_idx: usize, after_gap: bool| -> bool {
             if offset != prev_end
                 || ctrl_idx >= para.controls.len()
                 || !next_offset.map_or(is_last_text_char, |n| n >= offset + 8)
@@ -924,8 +937,10 @@ fn serialize_para_text_with_slots(
                 // placeholder 를 만들지 않으므로, 여기 포함하면 미주 앞의 진짜 공백을
                 // placeholder 로 오인해 컨트롤로 덮어쓴다 (SO-SUEOP.hwp 문단 238:
                 // 공백 12개 -> 11개, 뒤 텍스트가 한 칸 당겨짐).
-                ' ' if !object_only => {
+                ' ' => {
                     matches!(control_char_code_and_id(&para.controls[ctrl_idx]).0, 0x0012)
+                        && (!after_gap
+                            || next_offset.is_none_or(|n| (n - offset).is_multiple_of(8)))
                 }
                 _ => false,
             }
@@ -1535,7 +1550,9 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         // 통째로 버린다(0자·1쪽). `CTRL_CHAR_OVERLAP` 상수는 이름과 달리 'tdut'(덧말)이다.
         Control::Ruby(_) => (0x0017, tags::CTRL_CHAR_OVERLAP),
         Control::CharOverlap(_) => (0x0017, tags::CTRL_TCPS),
-        Control::Field(f) => (0x0003, f.ctrl_id),
+        // Native MEMO의 CTRL_HEADER는 %unk여도 본문 FIELD_BEGIN은 %%me다.
+        // 시작·종료 마커가 같은 메모 정체성을 소비해야 목록 번호와 연결된다.
+        Control::Field(_) => (0x0003, field_end_marker(ctrl).ctrl_id),
         Control::Equation(_) => (0x000B, tags::CTRL_EQUATION),
         Control::Form(_) => (0x000B, tags::CTRL_FORM),
         Control::Unknown(u) => (0x000B, u.ctrl_id),
@@ -2685,6 +2702,7 @@ mod tests {
                 ..Default::default()
             },
             paragraphs: vec![para],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         };

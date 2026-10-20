@@ -471,8 +471,9 @@ pub(in crate::renderer::typeset) fn native_hwp5_final_marker_footnote_uses_next_
 pub(in crate::renderer::typeset) fn native_hwp5_existing_body_footnote_area_height(
     st: &TypesetState,
     paragraphs: &[Paragraph],
-    dpi: f64,
+    note_measure: &super::measure::BodyFootnoteMeasure<'_>,
 ) -> Option<f64> {
+    let dpi = note_measure.engine.dpi;
     let footnotes = &st.pages.last()?.footnotes;
     if footnotes.is_empty() {
         return None;
@@ -494,7 +495,11 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_body_footnote_area_heig
             return None;
         };
 
-        total += if let Some(fragment) = footnote_ref.fragment {
+        total += if let Some(height) =
+            note_measure.block_content_height(st, footnote, footnote_ref.fragment)
+        {
+            height
+        } else if let Some(fragment) = footnote_ref.fragment {
             // 저장 reset으로 확정한 조각의 줄 범위·번호·구분선까지 일치해야
             // 예약과 충돌 판정이 같은 각주 공간을 소비한다.
             if let Some(split) = native_hwp5_footnote_reset_fragments(footnote, dpi) {
@@ -534,8 +539,9 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_footnote_reset_overlap_
     para: &Paragraph,
     fmt: &FormattedParagraph,
     paragraphs: &[Paragraph],
-    dpi: f64,
+    note_measure: &super::measure::BodyFootnoteMeasure<'_>,
 ) -> Option<usize> {
+    let dpi = note_measure.engine.dpi;
     if !stored_body_note_pagination(st)
         || st.col_count != 1
         || st.current_footnote_height <= 0.0
@@ -547,7 +553,7 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_footnote_reset_overlap_
 
     let page_vpos_base = st.vpos_page_base.or(st.vpos_lazy_base).unwrap_or(0);
     let actual_footnote_height =
-        native_hwp5_existing_body_footnote_area_height(st, paragraphs, dpi)?;
+        native_hwp5_existing_body_footnote_area_height(st, paragraphs, note_measure)?;
     let control_positions = para.control_text_positions();
     let mut current_footnotes = Vec::with_capacity(para.controls.len());
     for (control_index, control) in para.controls.iter().enumerate() {
@@ -602,7 +608,7 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_footnote_reset_overlap_
                 + projected_current_notes.len() as f64 * st.footnote_between_notes_margin
                 + projected_current_notes
                     .iter()
-                    .map(|footnote| composed_footnote_content_height(footnote, dpi))
+                    .map(|footnote| note_measure.content_height(st, footnote))
                     .sum::<f64>();
             let footnote_top = (st.layout.body_area.height - projected_footnote_height).max(0.0);
             let flow_prev_bottom = flow_prev_top + fmt.line_heights[prev_idx];

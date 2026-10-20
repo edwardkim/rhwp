@@ -31,6 +31,7 @@ import type { CharProperties } from '@/core/types';
 import { REGISTERED_FONTS } from '@/core/font-loader';
 import { getLocalFonts } from '@/core/local-fonts';
 import { enableDialogDrag } from './dialog-drag';
+import { populateFillSelection, updateFillControls } from './fill-selection';
 
 import { t as i18nText } from '../i18n/index.ts';
 const LANG_NAMES = [i18nText('dialog.charShape.label'), i18nText('dialog.charShape.label.x885288'), i18nText('dialog.charShape.label.x8a6f8c'), i18nText('dialog.charShape.label.xd19d19'), i18nText('dialog.charShape.label.xfeeb82'), i18nText('dialog.charShape.label.x6a36a4'), i18nText('dialog.charShape.label.x35b98e'), i18nText('dialog.charShape.label.x2f0255')];
@@ -729,7 +730,7 @@ export class CharShapeDialog {
     faceRow.appendChild(this.label(i18nText('dialog.charShape.label.label.x18d3e6')));
     this.faceColorSelect = document.createElement('select');
     this.faceColorSelect.className = 'dialog-select';
-    this.faceColorSelect.style.width = '100px';
+    this.faceColorSelect.style.width = '180px';
     for (const [val, lbl] of [['none', i18nText('dialog.charShape.buildBorderPanel.label.x5ab3b7')], ['solid', i18nText('dialog.charShape.buildBorderPanel.label.x013035')]] as const) {
       const o = document.createElement('option');
       o.value = val; o.textContent = lbl;
@@ -770,6 +771,9 @@ export class CharShapeDialog {
     }
     patRow.appendChild(this.patShapeSelect);
     bgFs.appendChild(patRow);
+    this.faceColorSelect.addEventListener('change', () => updateFillControls(
+      this.faceColorSelect, [this.faceColorPicker, this.patColorInput, this.patShapeSelect],
+    ));
     panel.appendChild(bgFs);
 
     return panel;
@@ -904,7 +908,8 @@ export class CharShapeDialog {
 
     // 배경
     const ft = p.fillType || 'none';
-    this.faceColorSelect.value = ft === 'solid' ? 'solid' : 'none';
+    populateFillSelection(this.faceColorSelect, ft);
+    updateFillControls(this.faceColorSelect, [this.faceColorPicker, this.patColorInput, this.patShapeSelect]);
     this.faceColorPicker.value = p.fillColor || '#ffffff';
     this.patColorInput.value = p.patternColor || '#000000';
     this.patShapeSelect.value = String(p.patternType || 0);
@@ -1046,7 +1051,7 @@ export class CharShapeDialog {
     }
 
     // 배경
-    const fillType = this.faceColorSelect.value === 'solid' ? 'solid' : 'none';
+    const fillType = this.faceColorSelect.value;
     const fillColor = this.faceColorPicker.value;
     const patColor = this.patColorInput.value;
     const patType = parseInt(this.patShapeSelect.value);
@@ -1054,10 +1059,19 @@ export class CharShapeDialog {
     const origFillColor = p.fillColor || '#ffffff';
     const origPatColor = p.patternColor || '#000000';
     const origPatType = p.patternType || 0;
-    if (fillType !== origFillType) mods.fillType = fillType;
-    if (fillColor !== origFillColor) mods.fillColor = fillColor;
-    if (patColor !== origPatColor) mods.patternColor = patColor;
-    if (patType !== origPatType) mods.patternType = patType;
+    if (fillType !== origFillType || (fillType === 'solid'
+      && (fillColor !== origFillColor || patColor !== origPatColor || patType !== origPatType))) {
+      mods.fillType = fillType;
+      if (fillType === 'solid') {
+        mods.fillColor = fillColor;
+        mods.patternColor = patColor;
+        mods.patternType = patType;
+      }
+    }
+    if (Object.keys(mods).some(key => key.startsWith('border')
+      || ['fillType', 'fillColor', 'patternColor', 'patternType'].includes(key))) {
+      mods.borderFillId = p.borderFillId;
+    }
 
     return mods;
   }

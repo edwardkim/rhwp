@@ -7,6 +7,7 @@ mod clone_identity;
 pub(crate) mod delete_fragment;
 mod document;
 // [jb] 외부 문서(다른 서식표)를 커서에 끼워 넣기 — 한글 클립보드 문서모델 붙여넣기용
+mod cell_format_origin;
 mod footnote_ops;
 mod foreign_paste;
 mod formatting;

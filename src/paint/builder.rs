@@ -4,6 +4,7 @@ use crate::paint::layer_tree::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
 };
 use crate::paint::paint_op::{PaintOp, TextDecorationKind};
+use crate::paint::paper_viewport::PagePaintContext;
 use crate::paint::profile::RenderProfile;
 use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
 use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
@@ -17,6 +18,10 @@ pub struct LayerBuilder {
     profile: RenderProfile,
     output_options: LayerOutputOptions,
     bin_data_epoch: u32,
+    page_context: Option<PagePaintContext>,
+    metafile_device_pixel_width: Option<f64>,
+    hancom2024_print_bitmap: bool,
+    metafile_fonts: super::metafile_fonts::MetafileFonts,
 }
 
 impl LayerBuilder {
@@ -25,7 +30,23 @@ impl LayerBuilder {
             profile,
             output_options: LayerOutputOptions::default(),
             bin_data_epoch: 0,
+            page_context: None,
+            metafile_device_pixel_width: None,
+            hancom2024_print_bitmap: false,
+            metafile_fonts: Default::default(),
         }
+    }
+
+    /// 원본 형식과 분리된 출력 장치 픽셀의 레이아웃 단위 크기다.
+    pub fn with_metafile_device_pixel_width(mut self, width: Option<f64>) -> Self {
+        self.metafile_device_pixel_width = width.filter(|v| v.is_finite() && *v > 0.0);
+        self
+    }
+
+    /// 그림 색의 출력 세대를 장치 픽셀 값과 독립적으로 전달한다.
+    pub fn with_hancom2024_print_bitmap(mut self, enabled: bool) -> Self {
+        self.hancom2024_print_bitmap = enabled && self.profile == RenderProfile::Print;
+        self
     }
 
     pub fn with_output_options(mut self, output_options: LayerOutputOptions) -> Self {
@@ -38,6 +59,14 @@ impl LayerBuilder {
         self
     }
 
+    pub(crate) fn with_metafile_fonts(
+        mut self,
+        fonts: &super::metafile_fonts::MetafileFonts,
+    ) -> Self {
+        self.metafile_fonts = fonts.clone();
+        self
+    }
+
     pub fn build(&mut self, tree: &PageRenderTree) -> PageLayerTree {
         self.build_with_embedded_fonts(tree, &[])
     }
@@ -47,10 +76,27 @@ impl LayerBuilder {
         tree: &PageRenderTree,
         fonts: &[EmbeddedFontFace<'_>],
     ) -> PageLayerTree {
+        if self.hancom2024_print_bitmap && !fonts.is_empty() && super::metafile::has_wmf(&tree.root)
+        {
+            for font in fonts {
+                let _ = self
+                    .metafile_fonts
+                    .register(font.family, font.bytes, font.face_index);
+                if let Some(alias) = font.alternate_family {
+                    let _ = self
+                        .metafile_fonts
+                        .register(alias, font.bytes, font.face_index);
+                }
+            }
+        }
         let (page_width, page_height) = match &tree.root.node_type {
             RenderNodeType::Page(page) => (page.width, page.height),
             _ => (tree.root.bbox.width, tree.root.bbox.height),
         };
+
+        let context = PagePaintContext::new(self.profile, page_width, page_height);
+        let (page_width, page_height) = context.output_size();
+        self.page_context = Some(context);
 
         let root = LayerNode::group(
             tree.root.bbox,
@@ -115,6 +161,14 @@ impl LayerBuilder {
     }
 
     fn build_node(&mut self, node: &RenderNode) -> Option<LayerNode> {
+        if !self.profile.shows_editor_visuals() {
+            if let Some(bbox) = node.print_bbox {
+                let mut print_node = node.clone();
+                print_node.bbox = bbox;
+                print_node.print_bbox = None;
+                return self.build_node(&print_node);
+            }
+        }
         if !node.visible || (node.editor_only && !self.profile.shows_editor_visuals()) {
             return None;
         }
@@ -148,13 +202,20 @@ impl LayerBuilder {
             }
             RenderNodeType::Path(path) => Some(vec![PaintOp::path(node.bbox, path.clone())]),
             RenderNodeType::Image(image) => {
-                let mut ops = vec![PaintOp::image(
+                let frame = self
+                    .page_context
+                    .map_or(node.bbox, |context| context.image_frame(node, image));
+                let mut image = image.clone();
+                image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
+                let resolved = crate::paint::metafile::image_payload(
+                    &image,
                     node.bbox,
-                    image.clone(),
-                    crate::renderer::image_resolver::resolve_image_payload(image),
-                )];
+                    self.metafile_device_pixel_width,
+                    &self.metafile_fonts,
+                );
+                let mut ops = vec![PaintOp::image(frame, image, resolved)];
                 if self.output_options.show_control_codes {
-                    ops.push(PaintOp::control_label(node.bbox, "[그림]"));
+                    ops.push(PaintOp::control_label(frame, "[그림]"));
                 }
                 Some(ops)
             }
@@ -171,12 +232,16 @@ impl LayerBuilder {
             RenderNodeType::Placeholder(placeholder) => {
                 Some(vec![PaintOp::placeholder(node.bbox, placeholder.clone())])
             }
-            RenderNodeType::RawSvg(raw) => Some(vec![PaintOp::raw_svg(node.bbox, raw.clone())]),
+            RenderNodeType::RawSvg(raw) => Some(vec![PaintOp::raw_svg(
+                node.bbox,
+                crate::paint::metafile::raw_svg(raw, self.metafile_device_pixel_width),
+            )]),
             _ => None,
         };
 
         if let Some(ops) = own_ops {
-            let own_leaf = LayerNode::leaf(node.bbox, Some(node.id), ops).with_layer(node.layer);
+            let own_bounds = ops.first().map_or(node.bbox, PaintOp::bounds);
+            let own_leaf = LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
             // 내부 문단이 없는 사각형도 원본 컨트롤 부호를 출력해야 한다.
             let has_source_marker = self.output_options.show_control_codes
                 && matches!(node.control_code, ControlCode::Rectangle(_));
@@ -773,6 +838,7 @@ mod tests {
                     number: 1,
                     text: "1)".to_string(),
                     base_font_size: 12.0,
+                    baseline: 7.0,
                     font_family: "serif".to_string(),
                     color: 0x00000000,
                     section_index: 0,
@@ -1364,6 +1430,7 @@ mod tests {
         EquationNode {
             svg_content: "<text>x</text>".to_string(),
             layout_box: LayoutBox {
+                font_size: 12.0,
                 x: 0.0,
                 y: 0.0,
                 width: 8.0,

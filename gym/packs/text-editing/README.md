@@ -153,14 +153,12 @@ rhwp edit insert-text 입력.hwp --section S --para P --offset O --text "표지"
 | TE13 | 짐표지TE13 | para-001 | (0,0,0) |
 | TE27 | 짐표지TE27 | table-001 | (0,0,0) |
 | TE28 | 짐표지TE28 | form-01 | (0,0,0) |
-| TE29 | 짐표지TE29 | exam_kor | (0,0,0) |
 | TE30 | 짐표지TE30 | footnote-01 | (0,0,0) |
 | TE31 | 짐표지TE31 | landscape-001 | (0,0,0) |
 | TE32 | 짐표지TE32 | pic2 | (0,0,0) |
 | TE33 | 짐표지TE33 | aift | (0,0,0) |
 | TE34 | 짐표지TE34 | biz_plan | (0,0,0) |
 | TE35 | 짐표지TE35 | field-01 | (0,0,0) |
-| TE36–TE39 | 시험지 1–4쪽 | exam-kor-Np | (0,0,0) |
 | TE40 | 짐표지TE40 | endnote-01 | (0,0,0) |
 | TE41 | 짐표지TE41 | 143E | (0,0,0) |
 | TE42 | 짐표지TE42 | issue2007 | (0,0,0) |
@@ -241,7 +239,6 @@ core-cli **T07**(`fill-fields`) 복제가 아니다.
 | TE64 | search --ignore-case | matchCount | REGULATORY |
 | TE65 | digest | paraCount | para-001 |
 | TE66 | explain | paragraphCount | table-001 |
-| TE67 / TE74 / TE76 | info | pageCount | 실문서 / 가로 / 2쪽 |
 | TE68 / TE86 / TE87 | info | format | 실문서 / 중첩셀 / hwp3 |
 | TE69 / TE70 / TE88 | export-structure | nodeCount | table / para / hwp3 |
 | TE71–TE73 / TE89 | search | matches[0].* | 보험료 / 규제 / 국어 / 표 |
@@ -259,7 +256,6 @@ TE06 이 그 혼동을 가른다.
 | TE77 | sanitize | 143E | format hwp5 |
 | TE78 | sanitize | para-001 | format hwp5 |
 | TE79 | sanitize | hwpx_sample2 | format hwpx |
-| TE80–TE82 | insert-paragraph | para / table / exam | paragraphCount 라이브 |
 
 sanitize 는 메타데이터를 지운다. 누름틀을 채우지 않는다. 산출물이
 여전히 열리는지 `info.format` 으로 본다.
@@ -334,3 +330,7 @@ devel 의 TE01–TE10 과 첫 확장 TE11–TE14 는 그대로 둔다. 과제 ID
 예외·가장자리는
 [mydocs/working/gym_text_editing_exceptions.md](../../../mydocs/working/archives/gym_text_editing_exceptions.md)
 다.
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: TE29, TE36, TE37, TE38, TE39, TE76, TE82. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

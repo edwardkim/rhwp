@@ -685,6 +685,9 @@ class ClassifyAndSelectTests(unittest.TestCase):
             Path(d, "c.hml").write_bytes(b"x")
             Path(d, "d.HWP").write_bytes(b"x")
             Path(d, "note.md").write_bytes(b"x")
+            from gym.core.input_selection import EXCLUDED_EXAM_INPUT_NAMES
+            for name in EXCLUDED_EXAM_INPUT_NAMES:
+                Path(d, name).write_bytes(b"x")
             picked, total = mod.select_samples(d, 0)
             self.assertEqual(total, 4)
             self.assertEqual(picked, ["a.hwp", "b.hwpx", "c.hml", "d.HWP"])

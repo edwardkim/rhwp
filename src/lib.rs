@@ -16,6 +16,8 @@ pub mod eps;
 pub mod error;
 pub use rhwp_contracts::ir_schema;
 pub mod model;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod native_host;
 pub mod ole_chart;
 pub use rhwp_contracts::ontology;
 pub use rhwp_ooxml_chart as ooxml_chart;
@@ -42,6 +44,7 @@ pub mod service;
 #[doc(hidden)]
 #[cfg(feature = "subsecond-dev")]
 pub mod subsecond_dev;
+#[cfg(feature = "wasm-api")]
 pub mod wasm_api;
 pub mod wmf;
 
@@ -51,14 +54,17 @@ pub use model::event::DocumentEvent;
 pub use parser::{parse_document, parse_document_with_password, DocumentParser};
 pub use serializer::{serialize_document, DocumentSerializer};
 
+// 아래 두 함수는 항상 Rust API로 남는다. `wasm-api`를 켰을 때만 JS export와 자동 start를
+// 등록하며, 끄면 소비 앱의 일반 Rust main이 자동 진입점으로 선택되는 것을 방해하지 않는다.
+
 /// WASM panic hook 초기화 (한 번만 실행)
-#[wasm_bindgen(start)]
+#[cfg_attr(feature = "wasm-api", wasm_bindgen(start))]
 pub fn init_panic_hook() {
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
 }
 
-#[wasm_bindgen]
+#[cfg_attr(feature = "wasm-api", wasm_bindgen)]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }

@@ -9,7 +9,6 @@
  */
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import { pathToFileURL } from 'node:url';
 import { PNG } from 'pngjs';
 
 export function readRulerState() {
@@ -81,33 +80,4 @@ export async function runResizeSnapshots(driver, { widths, height = 768, label =
       `${label}: 캡처에서 눈금자 그림을 확인하지 못함 ${JSON.stringify(sample)}`);
   }
   return samples;
-}
-
-// 저장소의 일반 E2E 진입점. browser-client에서는 위 driver 계약만 사용한다.
-if (typeof process !== 'undefined' && process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const { runTest } = await import('./helpers.mjs');
-  runTest('눈금자 resize snapshot', async ({ page }) => {
-    const base = process.env.VITE_URL || 'http://localhost:7700';
-    await page.goto(`${base}/?url=/samples/exam_kor.hwp`, { waitUntil: 'networkidle0' });
-    await page.waitForFunction(() => document.getElementById('status-bar')?.textContent.includes('20페이지'));
-    // 첫 실행 안내는 실제 UI로 닫는다. 저장소 설정을 직접 덮지 않는다.
-    const firstRun = await page.$('.skin-onboarding-body');
-    if (firstRun) await page.keyboard.press('Escape');
-    await page.focus('[aria-label="문서 편집 입력"]');
-    await page.keyboard.down('Control');
-    await page.keyboard.press('Home');
-    await page.keyboard.up('Control');
-    if (process.argv.includes('--mode=headless')) {
-      assert.equal(await page.evaluate(() => devicePixelRatio), 1,
-        'headless resize 검증은 실제 DPR 1 환경이어야 한다');
-    }
-    const samples = await runResizeSnapshots({
-      setViewport: size => page.setViewport(size),
-      screenshot: () => page.screenshot({ type: 'png' }),
-      readState: () => page.evaluate(readRulerState),
-    }, {
-      widths: [...Array.from({ length: 10 }, () => [1023, 1024]).flat(), 767, 768, 807, 808, 961, 962, 375, 1280],
-    });
-    console.log(`RULER_RESIZE_SNAPSHOTS_OK ${samples.length} snapshots; compositor 전 프레임 검사는 아님`);
-  });
 }

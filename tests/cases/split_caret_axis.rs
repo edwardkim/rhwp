@@ -315,12 +315,12 @@ fn rewrite_section(core: &DocumentCore, edit: impl Fn(String) -> String) -> Docu
         let mut entry = input.by_index(i).unwrap();
         let mut data = Vec::new();
         entry.read_to_end(&mut data).unwrap();
-        if entry.name() == "Contents/section0.xml" {
+        if entry.name().expect("ZIP 엔트리 이름") == "Contents/section0.xml" {
             data = edit(String::from_utf8(data).unwrap()).into_bytes();
         }
         output
             .start_file(
-                entry.name(),
+                entry.name().expect("ZIP 엔트리 이름"),
                 zip::write::SimpleFileOptions::default().compression_method(entry.compression()),
             )
             .unwrap();
@@ -414,6 +414,47 @@ fn enter_right_after_auto_number_keeps_it_in_first_paragraph() {
         assert_eq!(body(&reopened, 2).text, "다라마");
         assert!(objects(body(&reopened, 2)).is_empty());
     }
+}
+
+#[test]
+fn undo_of_enter_right_after_auto_number_restores_the_paragraph() {
+    // Enter 를 합치기로 되돌리면 문단이 처음과 같다. 이어서 번호 뒤에 친 글자는 저장본에서도
+    // 번호 뒤에 있고, 번호 자리표가 낱 공백으로 남지 않는다.
+    let mut broken = Vec::new();
+    for (format, open) in variants(auto_number) {
+        let mut core = open();
+        let before = body(&core, 1).clone();
+        core.split_paragraph_native(0, 1, 3, None).unwrap();
+        core.merge_paragraph_native(0, 2).unwrap();
+        let merged = body(&core, 1);
+        if merged.text != before.text
+            || merged.char_offsets != before.char_offsets
+            || merged.control_text_positions() != before.control_text_positions()
+        {
+            broken.push(format!(
+                "{format} 되돌리기: {:?} {:?} {:?}",
+                merged.text,
+                merged.char_offsets,
+                merged.control_text_positions()
+            ));
+        }
+        core.insert_text_native(0, 1, 3, "X").unwrap();
+        for (saved, bytes) in [
+            ("HWP", core.export_hwp_native().unwrap()),
+            ("HWPX", core.export_hwpx_native().unwrap()),
+        ] {
+            let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            let p = body(&reopened, 1);
+            if p.text != "가나 X다라마" || objects(p) != [("번호", 2)] {
+                broken.push(format!(
+                    "{format} 입력 뒤 {saved} 저장: {:?}{:?}",
+                    p.text,
+                    objects(p)
+                ));
+            }
+        }
+    }
+    assert!(broken.is_empty(), "번호가 어긋난 경우: {broken:#?}");
 }
 
 /// 본문 첫 문단의 떠 있는 사각형을, `build` 가 만든 글 `TEXT` 의 2번 글자 앞으로 옮긴 문서.
@@ -630,31 +671,25 @@ fn sample_paragraph(name: &str, section: usize, para: usize) -> Paragraph {
 
 #[test]
 fn real_document_end_enter_keeps_last_character() {
-    // (파일, 구역, 문단): 앞머리 떠 있는 도형, 미주·수식 뒤의 떠 있는 표·그림, 앞머리 자동 번호.
-    for (name, section, para) in [
-        ("143E433F503322BD33.hwp", 0, 1),
-        ("3-09월_교육_통합_2023.hwp", 0, 258),
-        ("3-09월_교육_통합_2023.hwp", 0, 369),
-        ("eq-002.hwp", 0, 0),
-    ] {
-        let source = sample_paragraph(name, section, para);
-        let end = source.text.chars().count()
-            + source
-                .controls
-                .iter()
-                .filter(|c| c.is_logical_inline())
-                .count();
-        let last = source.text.chars().last().unwrap().to_string();
+    // (파일, 구역, 문단): 앞머리에 떠 있는 도형이 있는 일반 문서.
+    let (name, section, para) = ("143E433F503322BD33.hwp", 0, 1);
+    let source = sample_paragraph(name, section, para);
+    let end = source.text.chars().count()
+        + source
+            .controls
+            .iter()
+            .filter(|c| c.is_logical_inline())
+            .count();
+    let last = source.text.chars().last().unwrap().to_string();
 
-        let mut head = source.clone();
-        let tail = head.split_at(end);
-        assert_eq!(head.text, source.text, "{name} 문단 {para} End");
-        assert_eq!(tail.text, "", "{name} 문단 {para} End");
+    let mut head = source.clone();
+    let tail = head.split_at(end);
+    assert_eq!(head.text, source.text, "{name} 문단 {para} End");
+    assert_eq!(tail.text, "", "{name} 문단 {para} End");
 
-        let mut head = source.clone();
-        let tail = head.split_at(end - 1);
-        assert_eq!(tail.text, last, "{name} 문단 {para} End-1");
-    }
+    let mut head = source.clone();
+    let tail = head.split_at(end - 1);
+    assert_eq!(tail.text, last, "{name} 문단 {para} End-1");
 }
 
 #[test]

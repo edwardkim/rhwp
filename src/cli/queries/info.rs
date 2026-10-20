@@ -137,7 +137,10 @@ fn print_file_header(
 ) {
     println!("파일: {}", file_path);
     println!("크기: {} bytes", file_size);
-    if detected_format != FileFormat::Hml {
+    if detected_format == FileFormat::Pdf {
+        println!("format: PDF");
+    }
+    if !matches!(detected_format, FileFormat::Hml | FileFormat::Pdf) {
         println!(
             "버전: {}.{}.{}.{}",
             document.header.version.major,

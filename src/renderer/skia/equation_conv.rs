@@ -1,23 +1,33 @@
-use skia_safe::{font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder};
-
-use super::font_lookup::{
-    legacy_typeface_for_style, match_system_family_style, SystemFontFamilies,
+use skia_safe::{
+    font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder, Typeface,
 };
+use std::collections::HashMap;
+
+use super::font_catalog::TypefaceCatalog;
+use super::font_lookup::{match_supplied_family, match_system_family_style, SystemFontFamilies};
+mod glyphs;
+use glyphs::{draw_stretch_bracket, draw_text, draw_text_with_family};
 
 use crate::renderer::equation::ast::MatrixStyle;
 use crate::renderer::equation::layout::{
-    integral_geom, is_integral_symbol, LayoutBox, LayoutKind, AXIS_HEIGHT, BIG_OP_SCALE,
-    INTEGRAL_SCALE, SCRIPT_SCALE,
+    is_integral_symbol, LayoutBox, LayoutKind, BIG_OP_SCALE, INTEGRAL_SCALE, SCRIPT_SCALE,
 };
 use crate::renderer::equation::symbols::{DecoKind, FontStyleKind};
 
 const EQ_FONT_FAMILY: &str =
-    "Latin Modern Math, STIX Two Math, Cambria Math, DejaVu Sans, Times New Roman, serif";
+    "Latin Modern Math, STIX Two Math, Cambria Math, DejaVu Math TeX Gyre, DejaVu Sans, Times New Roman, serif";
 
-pub fn render_equation(
+/// Font resources supplied to body text and every recursive equation branch.
+pub(super) struct EquationFonts<'a> {
+    pub(super) font_mgr: &'a FontMgr,
+    pub(super) system_families: &'a SystemFontFamilies,
+    pub(super) custom_typefaces: &'a TypefaceCatalog,
+    pub(super) bundled_typefaces: &'a TypefaceCatalog,
+}
+
+pub(super) fn render_equation(
     canvas: &Canvas,
-    font_mgr: &FontMgr,
-    system_families: &SystemFontFamilies,
+    fonts: &EquationFonts<'_>,
     layout: &LayoutBox,
     origin_x: f64,
     origin_y: f64,
@@ -26,22 +36,20 @@ pub fn render_equation(
 ) {
     render_box(
         canvas,
-        font_mgr,
-        system_families,
+        fonts,
         layout,
         origin_x,
         origin_y,
         colorref_to_skia(color, 1.0),
         base_font_size,
-        false,
+        true,
         false,
     );
 }
 
 fn render_box(
     canvas: &Canvas,
-    font_mgr: &FontMgr,
-    system_families: &SystemFontFamilies,
+    fonts: &EquationFonts<'_>,
     lb: &LayoutBox,
     parent_x: f64,
     parent_y: f64,
@@ -50,24 +58,56 @@ fn render_box(
     italic: bool,
     bold: bool,
 ) {
+    let fs = if lb.font_size > 0.0 { lb.font_size } else { fs };
     let x = parent_x + lb.x;
     let y = parent_y + lb.y;
 
     match &lb.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            let family = run.font_family;
+            let typeface =
+                match_supplied_family(fonts.custom_typefaces, family, FontStyle::normal())
+                    .or_else(|| {
+                        match_supplied_family(fonts.bundled_typefaces, family, FontStyle::normal())
+                    })
+                    .or_else(|| {
+                        match_system_family_style(
+                            fonts.font_mgr,
+                            fonts.system_families,
+                            family,
+                            FontStyle::normal(),
+                        )
+                    });
+            let mut font = if let Some(typeface) = typeface {
+                Font::new(typeface, fs as f32)
+            } else {
+                let mut font = Font::default();
+                font.set_size(fs as f32);
+                font
+            };
+            font.set_edging(font::Edging::AntiAlias);
+            font.set_hinting(skia_safe::FontHinting::None);
+            font.set_subpixel(true);
+            let mut paint = Paint::default();
+            paint.set_anti_alias(true);
+            paint.set_color(color);
+            for ((glyph, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears)
+            {
+                font.set_skew_x(-(*shear as f32));
+                canvas.draw_str(
+                    glyph.to_string(),
+                    (
+                        (x + offset) as f32,
+                        (y + lb.baseline + run.baseline_shift) as f32,
+                    ),
+                    &font,
+                    &paint,
+                );
+            }
+        }
         LayoutKind::Row(children) => {
             for child in children {
-                render_box(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    child,
-                    x,
-                    y,
-                    color,
-                    fs,
-                    italic,
-                    bold,
-                );
+                render_box(canvas, fonts, child, x, y, color, fs, italic, bold);
             }
         }
         LayoutKind::Text(text) => {
@@ -87,8 +127,7 @@ fn render_box(
                 {
                     draw_text(
                         canvas,
-                        font_mgr,
-                        system_families,
+                        fonts,
                         &ch.to_string(),
                         x + offset,
                         y + lb.baseline,
@@ -103,14 +142,13 @@ fn render_box(
             }
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 text,
                 x,
                 y + lb.baseline,
                 font_size_from_box(lb, fs),
-                true,
-                bold,
+                italic && !crate::renderer::equation::layout::is_styled_variable(text),
+                bold && !crate::renderer::equation::layout::is_styled_variable(text),
                 color,
                 false,
             );
@@ -118,8 +156,7 @@ fn render_box(
         LayoutKind::Number(text) => {
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 text,
                 x,
                 y + lb.baseline,
@@ -133,8 +170,7 @@ fn render_box(
         LayoutKind::Symbol(text) => {
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 text,
                 x + lb.width / 2.0,
                 y + lb.baseline,
@@ -145,6 +181,30 @@ fn render_box(
                 true,
             );
         }
+        LayoutKind::FontGlyph {
+            text,
+            font_family,
+            outline,
+            paint,
+        } => {
+            if let Some(commands) = outline {
+                super::equation_glyph::draw_outline(canvas, commands, x, y, color, *paint);
+                return;
+            }
+            draw_text_with_family(
+                canvas,
+                fonts,
+                text,
+                x,
+                y + lb.baseline,
+                fs,
+                false,
+                false,
+                color,
+                false,
+                Some(font_family),
+            );
+        }
         LayoutKind::MathSymbol(text) => {
             // Task #1317: 적분 기호(∫)는 폰트 text 가 아닌 stroke path 로 렌더(geom SSOT,
             // svg/canvas 와 동일). 그 외 MathSymbol 은 text 렌더.
@@ -153,8 +213,7 @@ fn render_box(
             } else {
                 draw_text(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     text,
                     x,
                     y + lb.baseline,
@@ -169,8 +228,7 @@ fn render_box(
         LayoutKind::Function(name) => {
             draw_text(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 name,
                 x,
                 y + lb.baseline,
@@ -181,128 +239,82 @@ fn render_box(
                 false,
             );
         }
-        LayoutKind::Fraction { numer, denom } => {
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                numer,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            let line_y = y + lb.baseline - fs * AXIS_HEIGHT;
+        LayoutKind::Fraction {
+            numer,
+            denom,
+            axis_height,
+            rule_thickness,
+        } => {
+            render_box(canvas, fonts, numer, x, y, color, fs, italic, bold);
+            let line_y = y + lb.baseline - axis_height;
             canvas.draw_line(
                 ((x + fs * 0.05) as f32, line_y as f32),
                 ((x + lb.width - fs * 0.05) as f32, line_y as f32),
-                &stroke_paint(color, fs * 0.04),
+                &stroke_paint(color, *rule_thickness),
             );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                denom,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, denom, x, y, color, fs, italic, bold);
         }
         LayoutKind::Atop { top, bottom } => {
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                top,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                bottom,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, top, x, y, color, fs, italic, bold);
+            render_box(canvas, fonts, bottom, x, y, color, fs, italic, bold);
         }
         LayoutKind::Sqrt { index, body } => {
-            let sign_h = lb.height;
-            let body_left = x + body.x - fs * 0.1;
-            let sign_x = x;
-            let v_top = y;
-            let v_mid_x = body_left - fs * 0.15;
-            let v_mid_y = y + sign_h;
-            let v_start_x = v_mid_x - fs * 0.3;
-            let v_start_y = y + sign_h * 0.6;
-            let tick_x = v_start_x - fs * 0.1;
-            let tick_y = v_start_y - fs * 0.05;
-
+            let geometry = crate::renderer::equation::radical_outline::geometry(lb, body, fs);
             let mut path = PathBuilder::new();
-            path.move_to((tick_x as f32, tick_y as f32));
-            path.line_to((v_start_x as f32, v_start_y as f32));
-            path.line_to((v_mid_x as f32, v_mid_y as f32));
-            path.line_to((body_left as f32, v_top as f32));
-            path.line_to(((x + lb.width) as f32, v_top as f32));
-            canvas.draw_path(&path.detach(), &stroke_paint(color, fs * 0.04));
+            for command in &geometry.outline {
+                use crate::renderer::equation::GlyphOutlineCommand as Command;
+                match *command {
+                    Command::Move((a, b)) => {
+                        path.move_to(((x + a) as f32, (y + b) as f32));
+                    }
+                    Command::Line((a, b)) => {
+                        path.line_to(((x + a) as f32, (y + b) as f32));
+                    }
+                    Command::Cubic([(a, b), (c, d), (e, f)]) => {
+                        path.cubic_to(
+                            ((x + a) as f32, (y + b) as f32),
+                            ((x + c) as f32, (y + d) as f32),
+                            ((x + e) as f32, (y + f) as f32),
+                        );
+                    }
+                    Command::Close => {
+                        path.close();
+                    }
+                }
+            }
+            canvas.draw_path(&path.detach(), &fill_paint(color));
+            canvas.draw_line(
+                (
+                    (x + geometry.bar_start.0) as f32,
+                    (y + geometry.bar_start.1) as f32,
+                ),
+                (
+                    (x + geometry.bar_end.0) as f32,
+                    (y + geometry.bar_end.1) as f32,
+                ),
+                &stroke_paint(color, geometry.rule_thickness),
+            );
 
             if let Some(index) = index {
                 render_box(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     index,
-                    sign_x,
+                    x,
                     y,
                     color,
-                    fs * SCRIPT_SCALE,
+                    fs * crate::renderer::equation::layout::RADICAL_DEGREE_SCALE,
                     false,
                     false,
                 );
             }
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                body,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, body, x, y, color, fs, italic, bold);
         }
         LayoutKind::Superscript { base, sup } => {
+            render_box(canvas, fonts, base, x, y, color, fs, italic, bold);
             render_box(
                 canvas,
-                font_mgr,
-                system_families,
-                base,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 sup,
                 x,
                 y,
@@ -313,22 +325,10 @@ fn render_box(
             );
         }
         LayoutKind::Subscript { base, sub } => {
+            render_box(canvas, fonts, base, x, y, color, fs, italic, bold);
             render_box(
                 canvas,
-                font_mgr,
-                system_families,
-                base,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 sub,
                 x,
                 y,
@@ -339,22 +339,10 @@ fn render_box(
             );
         }
         LayoutKind::SubSup { base, sub, sup } => {
+            render_box(canvas, fonts, base, x, y, color, fs, italic, bold);
             render_box(
                 canvas,
-                font_mgr,
-                system_families,
-                base,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 sub,
                 x,
                 y,
@@ -365,8 +353,7 @@ fn render_box(
             );
             render_box(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 sup,
                 x,
                 y,
@@ -376,41 +363,33 @@ fn render_box(
                 bold,
             );
         }
-        LayoutKind::BigOp { symbol, sub, sup } => {
+        LayoutKind::BigOp {
+            symbol,
+            sub,
+            sup,
+            op_font_size,
+            op_x,
+            op_y,
+            op_baseline,
+            ..
+        } => {
             let is_integral = is_integral_symbol(symbol);
-            // Task #1313: 적분은 전용 스케일(INTEGRAL_SCALE), ∑/∏ 등은 BIG_OP_SCALE.
-            let op_fs = fs
-                * if is_integral {
-                    INTEGRAL_SCALE
-                } else {
-                    BIG_OP_SCALE
-                };
+            // 생산 단계에서 확정한 표시 글자 크기와 원점을 소비한다.
+            let op_fs = *op_font_size;
             if is_integral {
                 // Task #1317: 적분 기호는 stroke path 로 렌더(geom SSOT).
-                draw_integral(canvas, x, y, fs, color);
+                draw_integral(canvas, x + op_x, y + op_y, fs, color);
             } else {
-                let sup_h = sup.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
-                let op_x = x + (lb.width - estimate_op_width(symbol, op_fs)) / 2.0;
-                let op_y = y + sup_h + op_fs * 0.8;
+                let op_x = x + op_x;
+                let op_y = y + op_baseline;
                 draw_text(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    symbol,
-                    op_x,
-                    op_y,
-                    op_fs,
-                    false,
-                    false,
-                    color,
-                    false,
+                    canvas, fonts, symbol, op_x, op_y, op_fs, false, false, color, false,
                 );
             }
             if let Some(sup) = sup {
                 render_box(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     sup,
                     x,
                     y,
@@ -423,8 +402,7 @@ fn render_box(
             if let Some(sub) = sub {
                 render_box(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     sub,
                     x,
                     y,
@@ -435,31 +413,39 @@ fn render_box(
                 );
             }
         }
-        LayoutKind::Limit { is_upper, sub } => {
-            let name = if *is_upper { "Lim" } else { "lim" };
-            draw_text(
-                canvas,
-                font_mgr,
-                system_families,
-                name,
-                x,
-                y + fs * 0.8,
-                fs,
-                false,
-                false,
-                color,
-                false,
-            );
+        LayoutKind::Limit {
+            is_upper,
+            name,
+            name_font_size,
+            sub_font_size,
+            sub,
+        } => {
+            if let Some(name) = name {
+                render_box(canvas, fonts, name, x, y, color, name.height, false, false);
+            } else {
+                let name = if *is_upper { "Lim" } else { "lim" };
+                draw_text(
+                    canvas,
+                    fonts,
+                    name,
+                    x,
+                    y + lb.baseline,
+                    *name_font_size,
+                    false,
+                    false,
+                    color,
+                    false,
+                );
+            }
             if let Some(sub) = sub {
                 render_box(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     sub,
                     x,
                     y,
                     color,
-                    fs * SCRIPT_SCALE,
+                    *sub_font_size,
                     false,
                     false,
                 );
@@ -470,13 +456,12 @@ fn render_box(
                 MatrixStyle::Paren => ("(", ")"),
                 MatrixStyle::Bracket => ("[", "]"),
                 MatrixStyle::Vert => ("|", "|"),
-                MatrixStyle::Plain => ("", ""),
+                MatrixStyle::Plain | MatrixStyle::Ladder | MatrixStyle::ShortLadder => ("", ""),
             };
             if !bracket_chars.0.is_empty() {
                 draw_stretch_bracket(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     bracket_chars.0,
                     x,
                     y,
@@ -487,8 +472,7 @@ fn render_box(
                 );
                 draw_stretch_bracket(
                     canvas,
-                    font_mgr,
-                    system_families,
+                    fonts,
                     bracket_chars.1,
                     x + lb.width - fs * 0.3,
                     y,
@@ -500,98 +484,42 @@ fn render_box(
             }
             for row in cells {
                 for cell in row {
-                    render_box(
-                        canvas,
-                        font_mgr,
-                        system_families,
-                        cell,
-                        x,
-                        y,
-                        color,
-                        fs,
-                        italic,
-                        bold,
-                    );
+                    render_box(canvas, fonts, cell, x, y, color, fs, italic, bold);
                 }
             }
         }
         LayoutKind::Rel { arrow, over, under } => {
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                over,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                arrow,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, over, x, y, color, fs, italic, bold);
+            render_box(canvas, fonts, arrow, x, y, color, fs, italic, bold);
             if let Some(under) = under {
-                render_box(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    under,
-                    x,
-                    y,
-                    color,
-                    fs,
-                    italic,
-                    bold,
-                );
+                render_box(canvas, fonts, under, x, y, color, fs, italic, bold);
             }
         }
         LayoutKind::EqAlign { rows } => {
             for (left, right) in rows {
-                render_box(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    left,
-                    x,
-                    y,
-                    color,
-                    fs,
-                    italic,
-                    bold,
-                );
-                render_box(
-                    canvas,
-                    font_mgr,
-                    system_families,
-                    right,
-                    x,
-                    y,
-                    color,
-                    fs,
-                    italic,
-                    bold,
-                );
+                render_box(canvas, fonts, left, x, y, color, fs, italic, bold);
+                render_box(canvas, fonts, right, x, y, color, fs, italic, bold);
             }
         }
-        LayoutKind::Paren { left, right, body } => {
-            let paren_w = fs * 0.333;
-            let use_glyph = lb.height <= fs * 1.2;
+        LayoutKind::Paren {
+            left,
+            right,
+            left_width,
+            right_width,
+            delimiter_height,
+            glyph_delimiters,
+            left_outline,
+            right_outline,
+            body,
+        } => {
+            let use_glyph = *glyph_delimiters;
             if !left.is_empty() {
-                if use_glyph && (left == "(" || left == ")") {
+                if let Some(commands) = left_outline {
+                    super::equation_glyph::draw_outline(canvas, commands, x, y, color, None);
+                } else if use_glyph && (left == "(" || left == ")") {
                     draw_text(
                         canvas,
-                        font_mgr,
-                        system_families,
+                        fonts,
                         left,
                         x,
                         y + lb.baseline,
@@ -604,37 +532,26 @@ fn render_box(
                 } else {
                     draw_stretch_bracket(
                         canvas,
-                        font_mgr,
-                        system_families,
+                        fonts,
                         left,
                         x,
                         y,
-                        paren_w,
-                        lb.height,
+                        *left_width,
+                        *delimiter_height,
                         color,
                         fs,
                     );
                 }
             }
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                body,
-                x,
-                y,
-                color,
-                fs,
-                italic,
-                bold,
-            );
+            render_box(canvas, fonts, body, x, y, color, fs, italic, bold);
             if !right.is_empty() {
-                let right_x = x + lb.width - paren_w;
-                if use_glyph && (right == "(" || right == ")") {
+                let right_x = x + lb.width - right_width;
+                if let Some(commands) = right_outline {
+                    super::equation_glyph::draw_outline(canvas, commands, right_x, y, color, None);
+                } else if use_glyph && (right == "(" || right == ")") {
                     draw_text(
                         canvas,
-                        font_mgr,
-                        system_families,
+                        fonts,
                         right,
                         right_x,
                         y + lb.baseline,
@@ -647,35 +564,65 @@ fn render_box(
                 } else {
                     draw_stretch_bracket(
                         canvas,
-                        font_mgr,
-                        system_families,
+                        fonts,
                         right,
                         right_x,
                         y,
-                        paren_w,
-                        lb.height,
+                        *right_width,
+                        *delimiter_height,
                         color,
                         fs,
                     );
                 }
             }
         }
-        LayoutKind::Decoration { kind, body } => {
+        LayoutKind::Decoration {
+            kind,
+            body,
+            negation,
+            outline,
+        } => {
+            render_box(canvas, fonts, body, x, y, color, fs, italic, bold);
+            if let Some(commands) = outline {
+                super::equation_glyph::draw_outline(canvas, commands, x, y, color, None);
+            } else if *kind == DecoKind::StrikeThrough {
+                let g = negation.clone().unwrap_or_else(|| {
+                    crate::renderer::equation::negation_geometry::geometry(body)
+                });
+                canvas.draw_line(
+                    ((x + g.start.0) as f32, (y + g.start.1) as f32),
+                    ((x + g.end.0) as f32, (y + g.end.1) as f32),
+                    &stroke_paint(color, g.thickness),
+                );
+            } else if *kind == DecoKind::Box {
+                canvas.draw_rect(
+                    skia_safe::Rect::from_xywh(
+                        x as f32,
+                        y as f32,
+                        lb.width as f32,
+                        lb.height as f32,
+                    ),
+                    &stroke_paint(color, fs * 0.03),
+                );
+            } else {
+                let deco_y = y + fs * 0.05;
+                let mid_x = x + body.x + body.width / 2.0;
+                draw_decoration(canvas, *kind, mid_x, deco_y, body.width, color, fs);
+            }
+        }
+        LayoutKind::Color { rgb, body } => {
+            // RGB 범위는 해당 하위 수식에만 적용하며 형제의 원래 색상은 보존한다.
             render_box(
                 canvas,
-                font_mgr,
-                system_families,
+                fonts,
                 body,
                 x,
                 y,
-                color,
+                Color::from_rgb(rgb[0], rgb[1], rgb[2]),
                 fs,
                 italic,
                 bold,
             );
-            let deco_y = y + fs * 0.05;
-            let mid_x = x + body.x + body.width / 2.0;
-            draw_decoration(canvas, *kind, mid_x, deco_y, body.width, color, fs);
         }
         LayoutKind::FontStyle { style, body } => {
             let (new_italic, new_bold) = match style {
@@ -687,197 +634,9 @@ fn render_box(
                 FontStyleKind::Blackboard => (false, true),
                 FontStyleKind::Calligraphy | FontStyleKind::Fraktur => (false, false),
             };
-            render_box(
-                canvas,
-                font_mgr,
-                system_families,
-                body,
-                x,
-                y,
-                color,
-                fs,
-                new_italic,
-                new_bold,
-            );
+            render_box(canvas, fonts, body, x, y, color, fs, new_italic, new_bold);
         }
         LayoutKind::Space(_) | LayoutKind::Newline | LayoutKind::Empty => {}
-    }
-}
-
-fn draw_text(
-    canvas: &Canvas,
-    font_mgr: &FontMgr,
-    system_families: &SystemFontFamilies,
-    text: &str,
-    x: f64,
-    baseline_y: f64,
-    font_size: f64,
-    italic: bool,
-    bold: bool,
-    color: Color,
-    centered: bool,
-) {
-    if text.is_empty() {
-        return;
-    }
-    // 수식의 한글은 SVG/Canvas와 같은 명조 대체 글꼴과 정체 스타일을 쓴다.
-    let has_cjk = crate::renderer::equation::text_has_cjk(text);
-    let family = if has_cjk {
-        crate::renderer::equation::CJK_EQUATION_FONT_FAMILY
-    } else {
-        EQ_FONT_FAMILY
-    };
-    let font_style = match (bold, italic && !has_cjk) {
-        (true, true) => FontStyle::bold_italic(),
-        (true, false) => FontStyle::bold(),
-        (false, true) => FontStyle::italic(),
-        (false, false) => FontStyle::normal(),
-    };
-    let typeface = family
-        .split(',')
-        .map(str::trim)
-        .filter(|family| !family.is_empty())
-        .find_map(|family| match_system_family_style(font_mgr, system_families, family, font_style))
-        .or_else(|| legacy_typeface_for_style(font_mgr, font_style));
-    let mut font = if let Some(typeface) = typeface {
-        Font::new(typeface, font_size as f32)
-    } else {
-        let mut font = Font::default();
-        font.set_size(font_size as f32);
-        font
-    };
-    font.set_edging(font::Edging::AntiAlias);
-
-    let mut paint = Paint::default();
-    paint.set_anti_alias(true);
-    paint.set_style(paint::Style::Fill);
-    paint.set_color(color);
-
-    let draw_x = if centered {
-        let (width, _) = font.measure_str(text, Some(&paint));
-        x - f64::from(width) / 2.0
-    } else {
-        x
-    };
-    canvas.draw_str(text, (draw_x as f32, baseline_y as f32), &font, &paint);
-}
-
-fn draw_stretch_bracket(
-    canvas: &Canvas,
-    font_mgr: &FontMgr,
-    system_families: &SystemFontFamilies,
-    bracket: &str,
-    x: f64,
-    y: f64,
-    w: f64,
-    h: f64,
-    color: Color,
-    fs: f64,
-) {
-    let mid_x = x + w / 2.0;
-    let paint = stroke_paint(color, fs * 0.04);
-
-    match bracket {
-        "(" => {
-            let mut path = PathBuilder::new();
-            path.move_to(((mid_x + w * 0.2) as f32, y as f32));
-            path.quad_to(
-                (x as f32, (y + h / 2.0) as f32),
-                ((mid_x + w * 0.2) as f32, (y + h) as f32),
-            );
-            canvas.draw_path(&path.detach(), &paint);
-        }
-        ")" => {
-            let mut path = PathBuilder::new();
-            path.move_to(((mid_x - w * 0.2) as f32, y as f32));
-            path.quad_to(
-                ((x + w) as f32, (y + h / 2.0) as f32),
-                ((mid_x - w * 0.2) as f32, (y + h) as f32),
-            );
-            canvas.draw_path(&path.detach(), &paint);
-        }
-        "[" => {
-            let mut path = PathBuilder::new();
-            path.move_to(((mid_x + w * 0.2) as f32, y as f32));
-            path.line_to(((mid_x - w * 0.2) as f32, y as f32));
-            path.line_to(((mid_x - w * 0.2) as f32, (y + h) as f32));
-            path.line_to(((mid_x + w * 0.2) as f32, (y + h) as f32));
-            canvas.draw_path(&path.detach(), &paint);
-        }
-        "]" => {
-            let mut path = PathBuilder::new();
-            path.move_to(((mid_x - w * 0.2) as f32, y as f32));
-            path.line_to(((mid_x + w * 0.2) as f32, y as f32));
-            path.line_to(((mid_x + w * 0.2) as f32, (y + h) as f32));
-            path.line_to(((mid_x - w * 0.2) as f32, (y + h) as f32));
-            canvas.draw_path(&path.detach(), &paint);
-        }
-        "{" => {
-            let qh = h / 4.0;
-            let mut path = PathBuilder::new();
-            path.move_to(((mid_x + w * 0.2) as f32, y as f32));
-            path.quad_to(
-                ((mid_x - w * 0.1) as f32, y as f32),
-                ((mid_x - w * 0.1) as f32, (y + qh) as f32),
-            );
-            path.quad_to(
-                ((mid_x - w * 0.1) as f32, (y + qh * 2.0) as f32),
-                ((mid_x - w * 0.3) as f32, (y + qh * 2.0) as f32),
-            );
-            path.quad_to(
-                ((mid_x - w * 0.1) as f32, (y + qh * 2.0) as f32),
-                ((mid_x - w * 0.1) as f32, (y + qh * 3.0) as f32),
-            );
-            path.quad_to(
-                ((mid_x - w * 0.1) as f32, (y + h) as f32),
-                ((mid_x + w * 0.2) as f32, (y + h) as f32),
-            );
-            canvas.draw_path(&path.detach(), &paint);
-        }
-        "}" => {
-            let qh = h / 4.0;
-            let mut path = PathBuilder::new();
-            path.move_to(((mid_x - w * 0.2) as f32, y as f32));
-            path.quad_to(
-                ((mid_x + w * 0.1) as f32, y as f32),
-                ((mid_x + w * 0.1) as f32, (y + qh) as f32),
-            );
-            path.quad_to(
-                ((mid_x + w * 0.1) as f32, (y + qh * 2.0) as f32),
-                ((mid_x + w * 0.3) as f32, (y + qh * 2.0) as f32),
-            );
-            path.quad_to(
-                ((mid_x + w * 0.1) as f32, (y + qh * 2.0) as f32),
-                ((mid_x + w * 0.1) as f32, (y + qh * 3.0) as f32),
-            );
-            path.quad_to(
-                ((mid_x + w * 0.1) as f32, (y + h) as f32),
-                ((mid_x - w * 0.2) as f32, (y + h) as f32),
-            );
-            canvas.draw_path(&path.detach(), &paint);
-        }
-        "|" => {
-            canvas.draw_line(
-                (mid_x as f32, y as f32),
-                (mid_x as f32, (y + h) as f32),
-                &paint,
-            );
-        }
-        _ => {
-            draw_text(
-                canvas,
-                font_mgr,
-                system_families,
-                bracket,
-                mid_x,
-                y + h * 0.7,
-                h,
-                false,
-                false,
-                color,
-                true,
-            );
-        }
     }
 }
 
@@ -994,43 +753,40 @@ fn draw_decoration(
 }
 
 fn font_size_from_box(lb: &LayoutBox, base_fs: f64) -> f64 {
-    if lb.height > 0.0 {
-        lb.height
+    if lb.font_size > 0.0 {
+        lb.font_size
     } else {
         base_fs
     }
 }
 
-fn estimate_op_width(text: &str, fs: f64) -> f64 {
-    text.chars().count() as f64 * fs * 0.6
-}
-
 /// 적분 기호(∫)를 stroke path 로 렌더 (Task #1317).
 ///
-/// svg_render.rs `integral_path` / canvas_render.rs `draw_integral` 와 동일한
-/// `integral_geom` 기하·곡선을 사용해 SVG/Canvas/Skia 3경로가 정합한다. 폰트
-/// 비의존으로 글리프 bbox 가 결정적이며 상·하한 attach point 와 어긋나지 않는다.
+/// SVG·Canvas2D와 같은 공개 적분 윤곽 및 공통 ink 영역을 소비한다.
 fn draw_integral(canvas: &Canvas, x: f64, y: f64, fs: f64, color: Color) {
-    let g = integral_geom(fs);
-    let h = g.bottom_y - g.top_y;
-    let p0x = x + g.bottom_hook_x;
-    let p0y = y + g.bottom_y;
-    let p3x = x + g.top_hook_x;
-    let p3y = y + g.top_y;
-    let c1x = x + g.width * 1.02;
-    let c1y = y + g.bottom_y - h * 0.30;
-    let c2x = x - g.width * 0.10;
-    let c2y = y + g.top_y + h * 0.30;
-    let mut paint = stroke_paint(color, g.stroke_w);
-    paint.set_stroke_cap(paint::Cap::Round);
+    use crate::renderer::equation::integral_outline::{commands, Command};
     let mut path = PathBuilder::new();
-    path.move_to((p0x as f32, p0y as f32));
-    path.cubic_to(
-        (c1x as f32, c1y as f32),
-        (c2x as f32, c2y as f32),
-        (p3x as f32, p3y as f32),
-    );
-    canvas.draw_path(&path.detach(), &paint);
+    for command in commands(x, y, fs) {
+        match command {
+            Command::Move((x, y)) => {
+                path.move_to((x as f32, y as f32));
+            }
+            Command::Line((x, y)) => {
+                path.line_to((x as f32, y as f32));
+            }
+            Command::Cubic([(a, b), (c, d), (e, f)]) => {
+                path.cubic_to(
+                    (a as f32, b as f32),
+                    (c as f32, d as f32),
+                    (e as f32, f as f32),
+                );
+            }
+            Command::Close => {
+                path.close();
+            }
+        }
+    }
+    canvas.draw_path(&path.detach(), &fill_paint(color));
 }
 
 fn fill_paint(color: Color) -> Paint {

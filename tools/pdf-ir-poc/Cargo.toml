@@ -1,0 +1,29 @@
+[package]
+name = "rhwp-pdf-oxide-poc"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Standalone experiment: keep the product workspace and lockfile unchanged.
+[workspace]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pdf_oxide = { version = "=0.3.78", default-features = false }
+office_oxide = { version = "=0.1.9", default-features = false }
+rhwp = { path = "../..", default-features = false }
+serde_json = "1"
+quick-xml = "=0.42.0"
+zip = { version = "=9.0.2", default-features = false, features = ["deflate"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "=0.2.127"
+getrandom_02 = { package = "getrandom", version = "0.2", features = ["js"] }
+
+[profile.release]
+opt-level = 1
+lto = false
+codegen-units = 64
+debug = 0

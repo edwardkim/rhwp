@@ -20,6 +20,8 @@ pub enum SourceFormat {
     Hwp3,
     /// Standalone HWPML
     Hml,
+    /// PDF frontend에서 컴파일한 공통 IR.
+    Pdf,
 }
 
 /// 문서 출처 서명 — 파서가 확정하며 이후 read-only.
@@ -43,6 +45,22 @@ pub struct SourceProvenance {
     pub hft_ascii_halfwidth_witnessed: bool,
 }
 
+/// 저장 줄의 출처 원점과 재정렬 요청을 분리해 측정·배치에 전달한다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct StoredGeometryPolicy {
+    pub(crate) preserve_hwp3_origins: bool,
+    pub(crate) requires_realign: bool,
+}
+
+impl From<bool> for StoredGeometryPolicy {
+    fn from(preserve_hwp3_origins: bool) -> Self {
+        Self {
+            preserve_hwp3_origins,
+            requires_realign: false,
+        }
+    }
+}
+
 /// 레이아웃 호환 정책 질의 표면.
 ///
 /// 질의 이름은 "무엇을 켜는가"를 말하고, 값 계산은
@@ -54,10 +72,12 @@ pub struct LayoutCompatibilityProfile {
     hwp3_layout: bool,
     hwp3_native_layout: bool,
     hwp3_password_layout: bool,
+    hwp3_external_realign: bool,
     hwpx_stored_layout: bool,
     hwpx_container: bool,
     hwp5_origin_hwpx: bool,
     native_hwp5_layout: bool,
+    hwp5_container: bool,
     hangul2024_layout: bool,
     /// 이 세션에서 편집 명령이 문서를 변조했다(native HWP5 섹션의 raw_stream 소실).
     /// 저장 시점 형상 전용 보정(선언 높이 fit-down 등)은 편집 문서에서 꺼야 한다 —
@@ -78,13 +98,26 @@ impl LayoutCompatibilityProfile {
             hwp3_layout,
             hwp3_native_layout,
             hwp3_password_layout: false,
+            hwp3_external_realign: false,
             hwpx_stored_layout,
             hwpx_container,
             hwp5_origin_hwpx,
             native_hwp5_layout,
+            hwp5_container: native_hwp5_layout,
             hangul2024_layout: false,
             session_edited: false,
         }
+    }
+
+    /// 계보와 별개로 입력이 실제 HWP5 바이너리 컨테이너인지 확인한다.
+    /// 옛 작성일이 남은 저장본도 유효한 현재 저장 줄 상자를 가질 수 있다.
+    pub fn hwp5_container(&self) -> bool {
+        self.hwp5_container
+    }
+
+    pub(crate) fn with_hwp5_container(mut self, enabled: bool) -> Self {
+        self.hwp5_container = enabled;
+        self
     }
 
     /// 이 세션의 편집 변조를 표시한다. `Document::layout_profile` 만 이 값을
@@ -99,8 +132,8 @@ impl LayoutCompatibilityProfile {
         self.session_edited
     }
 
-    /// HWP3 계보 레이아웃 보정(ParaShape 단위 정규화 등) 적용 여부 —
-    /// 기존 `is_hwp3_variant` 분기 동치 (HWP3→HWP5 변환본 휴리스틱).
+    /// HWP3 좌표 호환 경로 적용 여부. 실제 HWP5 컨테이너는 자체 저장 계약을 쓴다.
+    /// 변환 계보를 보존하는 SourceProvenance::hwp3_lineage와 구분한다.
     pub fn hwp3_layout(&self) -> bool {
         self.hwp3_layout
     }
@@ -116,7 +149,25 @@ impl LayoutCompatibilityProfile {
     /// and HWP3-lineage conversion layouts, while keeping the decision out of
     /// the DocInfo-derived style aggregate.
     pub fn legacy_hwp3_stored_geometry(&self) -> bool {
-        self.hwp3_native_layout || self.hwp3_layout
+        (self.hwp3_native_layout || self.hwp3_layout) && !self.hwp3_external_realign
+    }
+
+    pub fn stored_geometry_policy(&self) -> StoredGeometryPolicy {
+        StoredGeometryPolicy {
+            preserve_hwp3_origins: self.legacy_hwp3_stored_geometry(),
+            requires_realign: self.hwp3_external_realign,
+        }
+    }
+
+    /// 원본 헤더가 외부 생성 문서의 재정렬을 요청했다. 저장 폭·배치 캐시의
+    /// 수용과 출처 포맷을 구분하며, 원본 글자·서식·점끌기는 보존한다.
+    pub fn hwp3_external_realign(&self) -> bool {
+        self.hwp3_external_realign
+    }
+
+    pub(crate) fn with_hwp3_external_realign(mut self, enabled: bool) -> Self {
+        self.hwp3_external_realign = enabled;
+        self
     }
 
     /// 원본 HWP3가 비밀번호로 복호화된 문서인지 여부.
@@ -178,6 +229,21 @@ impl LayoutCompatibilityProfile {
     /// 저장 행 높이·pagination marker 를 보존한다. 기존 `is_hwp5_origin_hwpx` 동치.
     pub fn hwp5_origin_hwpx(&self) -> bool {
         self.hwp5_origin_hwpx
+    }
+
+    /// HWP3→HWP5 변환본의 본문 흐름 `spacing_before` 복원(*2) 여부. 렌더 셋업과
+    /// 조판 중 scratch 렌더가 같은 값을 쓰도록 한 곳에서 정한다.
+    ///
+    /// HWP3→HWP5 변환본은 parser 가 ParaShape spacing 을 절반으로 정규화하므로
+    /// 본문 흐름에서만 원래 spacing_before 를 복원한다. 원본 HWP3 는 parser 가 만든
+    /// 값을 그대로 쓰고 재확대하지 않는다. 그 HWPX export 도 IR 이 같은 스케일이다.
+    /// 마커만으로 hwp3_layout 을 켜면 *2 가 한 번 더 들어가 sample16은 64→65,
+    /// sample11은 151→152로 갈라진다(#3518, #3737). HWP5 변환본의 HWPX는 hwp5-origin
+    /// 마커가 있어 절반 정규화가 있었던 경우만 *2를 유지한다.
+    pub fn hwp3_origin_flow_spacing_before(&self) -> bool {
+        self.hwp3_layout
+            && !self.hwp3_native_layout
+            && (!self.hwpx_container || self.hwp5_origin_hwpx)
     }
 
     /// 변환 계보가 없는 원본 HWP 5.x 바이너리인지 여부. HML 및 HWP3/HWPX

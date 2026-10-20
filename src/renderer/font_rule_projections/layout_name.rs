@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
-    "807590ecc4fba3102fde4a2236ee091fac91b5a19851b76d61a61014a5ee4086";
+    "d257f3b55823a16e4ba2d356538e1f78c2774a6f866823ecd5818a44fdf8f840";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "b619cf7584628d61d930696b1b9a8a6c9c08301b1343463cae054b7dc5c0f142";
+    "399777eec1e7e184aef01d8b5bba4ef58e9a5a9ea121da94bed922fcf616bbd6";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -2938,6 +2938,108 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         mode: "direct",
         metric_entry_ids: &[],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.14713c8b701c74678152",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("H2hdrM"),
+        target_face_or_policy: "HY헤드라인M",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.1ce3e788a4c6198b4799",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("HYHeadLine-Medium"),
+        target_face_or_policy: "HY헤드라인M",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.dada52dd12498becd0dd",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("MalgunGothic"),
+        target_face_or_policy: "맑은 고딕",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.d145573b4a0a8f0207a1",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("MalgunGothicBold"),
+        target_face_or_policy: "Malgun Gothic Bold",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.b1f7fd94d0b7349f050c",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("Arial-BoldMT"),
+        target_face_or_policy: "Arial Bold",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.95cdb8836bbe2ab25687",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("Wingdings-Regular"),
+        target_face_or_policy: "Wingdings",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
 ];
 
 #[rustfmt::skip]
@@ -3459,6 +3561,24 @@ pub(crate) fn find_font_rule_layout_name(
         }
         ("rust-style-resolution.ttf", "굵은안상수체") => {
             Some(&FONT_RULE_LAYOUT_NAME_RULES[170])
+        }
+        ("rust-style-resolution.ttf", "H2hdrM") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[171])
+        }
+        ("rust-style-resolution.ttf", "HYHeadLine-Medium") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[172])
+        }
+        ("rust-style-resolution.ttf", "MalgunGothic") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[173])
+        }
+        ("rust-style-resolution.ttf", "MalgunGothicBold") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[174])
+        }
+        ("rust-style-resolution.ttf", "Arial-BoldMT") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[175])
+        }
+        ("rust-style-resolution.ttf", "Wingdings-Regular") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[176])
         }
         _ => None,
     }

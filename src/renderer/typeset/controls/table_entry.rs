@@ -6,11 +6,13 @@ use crate::renderer::{
     float_placement::{original_hwpx_infront_para_flow_paginates, signed_hwpunit},
     height_measurer::MeasuredTable,
     hwpunit_to_px,
+    page_layout::LayoutRect,
 };
 
 pub(in crate::renderer::typeset) struct TableControlPage {
     pub has_items: bool,
     pub col_count: u16,
+    pub profile: crate::model::provenance::LayoutCompatibilityProfile,
 }
 
 pub(super) fn needs_stored_line_advance(
@@ -62,6 +64,8 @@ pub(super) fn uses_decoration_placement(
     col_count: u16,
     has_tac: bool,
     host_col_w: f64,
+    body: LayoutRect,
+    paper_height: f64,
     dpi: f64,
     base_available_height: impl FnOnce() -> f64,
     original_hwpx: impl FnOnce() -> bool,
@@ -103,6 +107,11 @@ pub(super) fn uses_decoration_placement(
         .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx)
         .map(|mt| mt.total_height)
         .unwrap_or(0.0);
+    // 용지 기준 개체의 외곽 상자가 본문 밖에 있으면 자리차지 띠도
+    // 본문과 만나지 않는다. 표는 그 위치에 그리고 호스트 글줄만 소비한다.
+    // paint와 같은 가장자리 정렬식을 사용하며 본문 안의 고정 표는 제외한다.
+    let paper_outside_body =
+        paper_table_is_outside_body(table, table_measured_h, body, paper_height, dpi);
     let oversized_multirow = table.row_count > 1
         && table_measured_h > base_available_height()
         && !paper_anchored_overlay_table;
@@ -151,10 +160,22 @@ pub(super) fn uses_decoration_placement(
     // 박스가 글앞으로로 저장돼도 zero-height Shape 로 빠지면 후속 문단이
     // 박스 위로 겹치고 문서가 과소 페이지로 압축된다. 단일컬럼 케이스만
     // 가드하고, multicol overlay anchor 경로(자체 TAC 판정 보유)는 유지.
-    (matches!(
-        table.common.text_wrap,
-        crate::model::shape::TextWrap::InFrontOfText | crate::model::shape::TextWrap::BehindText
-    ) && ((col_count == 1
+    // A fixed paper rectangle with THROUGH wrapping and no page splitting
+    // paints at its paper coordinates. Its geometry is not a body advance;
+    // the host's text line, if any, keeps its own flow ownership.
+    let paper_through = paper_anchored_overlay_table
+        && matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::Through
+        )
+        && table.page_break == crate::model::table::TablePageBreak::None;
+    paper_outside_body
+        || paper_through
+        || (matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::InFrontOfText
+                | crate::model::shape::TextWrap::BehindText
+        ) && ((col_count == 1
     && !oversized_multirow
     && !table.common.treat_as_char
     // [#6366] 원본 HWPX 문단 기준 글앞으로 다행·다열
@@ -165,6 +186,40 @@ pub(super) fn uses_decoration_placement(
         original_hwpx(),
         table,
     )) || multicol_empty_overlay_anchor
-        || multicol_tac_host_overlay_anchor))
+            || multicol_tac_host_overlay_anchor))
         || horz_fully_outside_column
+}
+
+fn paper_table_is_outside_body(
+    table: &Table,
+    measured_height: f64,
+    body: LayoutRect,
+    paper_height: f64,
+    dpi: f64,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+    if table.common.treat_as_char
+        || table.common.vert_rel_to != VertRelTo::Paper
+        || table.common.text_wrap != TextWrap::TopAndBottom
+        || table.caption.is_some()
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+        || !measured_height.is_finite()
+        || !paper_height.is_finite()
+        || paper_height <= 0.0
+        || !dpi.is_finite()
+        || dpi <= 0.0
+    {
+        return false;
+    }
+    let height = measured_height.max(hwpunit_to_px(table.common.height as i32, dpi));
+    let (top, bottom) = crate::renderer::float_placement::absolute_table_vertical_geometry(
+        table,
+        0.0,
+        paper_height,
+        height,
+        dpi,
+    );
+    let outer_top = top - hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+    bottom <= body.y || outer_top >= body.y + body.height
 }

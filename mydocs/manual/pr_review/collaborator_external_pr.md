@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-14
+last_verified: 2026-10-18
 ---
 
 # Collaborator 매개 외부 PR 처리
@@ -29,7 +29,12 @@ maintainer_can_modify가 false이면 이 경로를 쓰지 않는다. maintainer 
 `git worktree add`를 만들지 않는다. 별도 worktree는 주 작업공간이 dirty여서 격리가 꼭 필요하거나
 작업지시자가 명시적으로 요구한 경우에만 쓴다.
 
+Git 명령을 시작하기 전에 [reviewer assign 선행](intake_and_review.md#21-reviewer-assign-선행)에 따라
+**각 원 PR의 reviewer를 지정하고 API로 재확인**한다. 최소 사전 분류 이후의 상세 조사와 local fetch·체리픽은
+이 확인을 통과한 원 PR만 진행한다. 여러 PR 중 미지정·확인 실패한 PR은 누적 적용 목록에서 보류한다.
+
 ~~~bash
+# 선행 조건: 원 PR N의 reviewer 지정과 requested_reviewers API 확인 완료.
 git status --short --branch
 git fetch upstream devel pull/N/head:refs/remotes/upstream/prN-head
 git switch devel
@@ -60,6 +65,55 @@ git diff --check upstream/devel...HEAD
 경우는 아래 9.3.1의 예외 경로다. 이 경우에도 사용자 가시성이 필요하면 별도 worktree 대신 같은 주
 작업공간에서 source head를 checkout한 `review/<contributor>-<yyyymmdd>` branch를 사용한다. direct source
 경로와 위 체리픽 통합 경로를 한 PR에 섞거나, contributor history를 rebase·amend·force-push하지 않는다.
+
+### 9.1.2 렌더링 회귀 보정의 선행 조건
+
+체리픽 통합과 원 contributor head 직접 보정 모두 **실패한 원 회귀의 원본 입력 출력 보정 →
+버전에 맞는 독립 한컴 Print PDF와 Native/fresh WASM의 관련 모든 페이지에서 90% 이상 확인 →
+독립 기대값에 따라 필요한 검사 변경** 순서를 따른다. 새 렌더링 회귀도 같은 90% 선행 조건을 적용한다.
+실물 배치를 절대 px 좌표·고정 px 영역으로 선택하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침
+관계로 검사한다. 미달·측정 불가이면 기대값·baseline 갱신을 보류하고 원본과 실패 증거를 보존한다.
+사용자가 승인한 보정도 이 조건을 면제하지 않는다. 상세 절차는
+[시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+[기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
+다만 **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)이 각각98% 이상이고
+독립 PDF와 직접 판독을 마쳤으면 ±2px 좌표 고정도 허용한다. 고정한 쪽은 양쪽98% 이상을
+유지해야 하며100%로 개선은 허용한다. 문서 전체98% 이상은 요구하지 않는다.
+[페이지별 px 회귀 조건](visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.
+
+현재 브랜치에서 전쪽 Native/fresh WASM 최저 90% 이상·독립 PDF 쪽수 일치·직접 판독을
+확인한 문서는 실패 검사를 먼저 재검토한다. **쪽수 검사도 포함**하며, 잘못된 px·고정 영역·과거
+쪽수 핀은 문단·줄·개체 소속, 내용 순서·보존·포함·겹침 관계로 수정한다. 정확한 독립 기대값은
+유지하고 구현을 고친다. 이미 보정한 문서는 과거 base 미달이나 이슈 등록만으로 제거하지 않는다.
+
+전쪽 Native/fresh WASM 검증과 직접 판독을 마친 **현재 보정 대상 문서**는 기존 회귀가
+통과 중이어도 그 문서를 사용하는 절대 px 좌표·고정 영역 검사를 확인하고 관계 검사로
+바꾼다. 위 페이지별98% 이상·직접 판독 조건을 충족한 쪽의 ±2px 좌표 검사는 유지·추가할 수 있다.
+대상 문서의 원본 경로를 따라 검사·공용 corpus 참조를 확인하며 다른 문서로 범위를
+확장하지 않는다. 기존 검사 함수 안에서 쪽 소속·내용 순서·누락·중복·포함·겹침을 보호하고,
+독립 PDF 쪽수 대조에는 대응 내용 보존을 함께 검사한다. 원본 글자모양·셀 속성에서 계산한
+크기와 실제 줄·개체의 포함 또는 비율 관계는 유지할 수 있다. 소스 단위를 px로 환산했다는
+이유만으로 이 원본 계약을 제거하지 않는다. 변경 보고에는 기존에 이미 관계 검사였던 범위,
+실제로 교체한 핀, 새로 보완한 내용 관계와 재사용한 시각 증거를 구분해 기록한다.
+
+미달 문서는 **같은 원본·같은 미해결 범위가 기존 이슈에 등록되어 있는지 먼저 확인**한다.
+등록되어 있으면 해당 회귀 함수·assertion·baseline/manifest 및 자동 수집 참조를 제거한 뒤
+남은 검증을 계속한다. 원본·PDF와 범위 밖의 정상 검사는 보존한다. 관련 이슈가 없을 때만
+별도 이슈를 등록하며, **개인의 작업 이슈를 공통 이관 대상으로 자동 지정하지 않는다.**
+상세 판정·기록은 [기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)와
+[기존 이슈 확인·처리](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)를 따른다.
+
+**SHA를 고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 회귀 검사**가
+부적합한 경우에만
+[별도 이슈 이관](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)에 따라 기존 이슈 등록 여부를 먼저 확인하고
+해당 회귀 검사와 HWP/HWPX/PDF를 활성 검증 경로에서 제거·이관한다. 별도 이슈에서
+보정·90% 이상·확대 판독 후 관계형 회귀를 복원한다.
+같은 원본·독립 Print PDF의 base/head 비교로 기존 미달을 입증한다. 현재 수정으로 생긴 회귀는
+구현을 고치며, base가 미검증이면 이관 판정을 보류한다. 이관 범위와 현재 PR의 완료 범위를 구분한다.
+
+90% 이상이어도 [수식·간격 확대 판독](visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을
+수행한다. 통합 head와 직접 보정 head 모두 변경 영역·알려진 차이·사용자 지적 영역의 실제 모양·
+장평·미세 간격을 대조하며, 점수만으로 완료·승인하지 않는다.
 
 ## 9.2 문서 경로
 

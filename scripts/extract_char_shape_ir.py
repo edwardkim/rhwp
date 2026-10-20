@@ -405,7 +405,9 @@ def main() -> int:
     samples = root / "samples"
     out_dir = root / "tests" / "fixtures" / "char_shapes"
     out_dir.mkdir(parents=True, exist_ok=True)
+    excluded = set((root / "tests/fixtures/transferred_exam_regressions.txt").read_text(encoding="utf-8").splitlines())
     files = sorted(samples.rglob("*.hwp")) + sorted(samples.rglob("*.hwpx"))
+    files = [path for path in files if path.relative_to(samples).as_posix() not in excluded]
     para_rows = []
     shape_rows = []
     target = None

@@ -127,3 +127,29 @@ nextest 설치 버전 `0.9.137`에서 권장 `0.9.140` 경고와 비기능적 JU
 ### 병합 후 자동 실행 확인
 
 [Refresh nextest target duration data #37843669946](https://github.com/edwardkim/rhwp/actions/runs/37843669946)는 success다. 수집 결과는 `ready:false`, `reason:no-verified-pr-duration-measurements`로 실측 정책 갱신 보류다. 이는 검증 CI 실패가 아니며 CI를 추가 실행하지 않는다. [Close Issues on devel Push #37843669943](https://github.com/edwardkim/rhwp/actions/runs/37843669943)도 success다. source merge SHA의 run 목록에서 CI·CodeQL·Adapter·Proptest·Oracle의 병합 후 재실행은 없었다.
+
+
+## 현재 통합 검토와 후속 처리 — 2026-10-13
+
+초기18개 목록에 속한 이 PR은 이미 병합됐다. 병합 SHA `83131ecd186bd7483671b7886d659ecb4fd380ca`가
+현재 고정 base `552f5228d2dbfd6046c838f14241704f1bcb8a05`의 조상임을 실제 Git으로 확인했다.
+이번 통합에서 다시 체리픽하거나 별도 병합 대상으로 처리하지 않는다. 위 승인·예외와 당시 검증은
+#7612의 기존 기록이며, 다른17개 PR 또는 현재 통합 head의 검증을 면제하지 않는다.
+
+현재 브랜치 `review/semanticist21-20261008`, 기록 기준 head `5cd155886dbcfb19d5f4fa17ae778f278940e08b`다.
+작업지시자의 자동 승인에 따라 모든 필수 테스트와 시각 검증 완료 후 통합 PR 생성·최신 head CI 확인·
+머지·후속 처리를 진행한다. 이미 완료된 #7612의 승인·병합 상태는 유지한다.
+
+
+## 초기18개 통합 검토와의 관계 — 2026-10-14
+
+#7612는 이미 `83131ecd186bd7483671b7886d659ecb4fd380ca`로 병합됐으며 기존 승인·명시 시각 예외를 보존한다. 통합 PR [#7882](https://github.com/edwardkim/rhwp/pull/7882)의 code candidate `0d59e7f73cc366897891329a21d353458db7776e`·base `22317614b03722e95349a1d3d71c86923363c6f5`에서 기존 기여의 devel 포함을 유지했고, 초기18개 가운데 새 열린17개 범위를 검증했다. 이번 통합 때문에 이 PR을 다시 merge/close하거나 과거 미실행 시각 검사를 PASS로 바꾸지 않는다.
+
+
+## 통합 merge 확인 — 2026-10-14
+
+통합 PR [#7882](https://github.com/edwardkim/rhwp/pull/7882)는 merge `86a3c88fc89de9a2306a10bdda9a31023f0e24a5`로 실제 병합됐으며 `upstream/devel` 포함을 확인했다. code candidate `0d59e7f73cc366897891329a21d353458db7776e`의 전체 CI, 문서-only trailing head `34cc7ddefa246ecb7780c748dc7eb449bde89e6b`의 [CI](https://github.com/edwardkim/rhwp/actions/runs/38478418053)·CodeQL·Render Diff·Adapter·Proptest 및 [정책 감사3](https://github.com/edwardkim/rhwp/actions/runs/38478674616)를 확인했다. 최종 `CI Impact Policy=success`, `MERGEABLE/CLEAN`, 모든 최신 head check 성공/정상 skipped 상태에서 exact-head merge했다. API의 완료 step 메타데이터 지연으로 첫 정책 감사가 실패/대기했으며 실제 step이 모두 종료된 뒤 Controller만 재실행했다. 검사를 완화하거나 전체 로컬 회귀를 반복하지 않았다.
+
+195 집중 PASS·180 Native/fresh TSV·1040쪽/backend의 범위와 독립 입력/Print·생산 SHA는 이전 최종 검증에 유지한다. 이번 후속 기록은 확정 merge SHA만 보완하며 source/test/fixture/workflow·시각 결과는 바꾸지 않는다. 이미 제출된 오늘할일은 반복 갱신하지 않는다.
+
+후속 범위는 CGMP 하위 [#7764](https://github.com/edwardkim/rhwp/issues/7764)의 완료 증거와 원 PR별 contributor comment/supersede 처리다. 원 PR 16개는 머지 후 원격 head 재확인 뒤 처리한다. #7612의 기존 merge는 보존하고 #7615의 초기 수용 이후 변경과 후속6개는 제외한 상태로 유지한다. 대표 #7445 및 Refs #7759/#7807/#4514는 전체 해결로 닫지 않는다. 실행 결과는 원 PR·해당 이슈의 실제 comment에 남기며 이 문단을 미실행 close의 증거로 사용하지 않는다.

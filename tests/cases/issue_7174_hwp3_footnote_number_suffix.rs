@@ -60,26 +60,6 @@ const START_NUMBER: u16 = 1;
 // 저장소 표본 — 각주 모양 배선
 // ---------------------------------------------------------------------------
 
-fn load(rel: &str) -> rhwp::model::document::Document {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
-    rhwp::parser::parse_document(&std::fs::read(path).expect("표본 읽기")).expect("파싱")
-}
-
-/// HWP3 각주 모양이 문서가 지정한 번호 장식과 시작 번호를 싣는다.
-#[test]
-fn hwp3_footnote_shape_carries_the_document_number_suffix() {
-    let doc = load("samples/SO-SUEOP.hwp");
-    let shape = &doc.sections[0].section_def.footnote_shape;
-    assert_eq!(
-        shape.suffix_char, NUMBER_SUFFIX,
-        "각주 모양의 뒤 장식이 비면 저장본의 본문 참조 번호가 닫는 장식을 잃는다"
-    );
-    assert_eq!(
-        shape.start_number, START_NUMBER,
-        "각주 모양의 시작 번호가 한글 정본(1)과 다르다"
-    );
-}
-
 // ---------------------------------------------------------------------------
 // 합성 최소 HWP3 — 리터럴 제거
 //

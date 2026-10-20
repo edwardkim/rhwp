@@ -65,6 +65,21 @@ impl<'a> TacFlowQuery<'a> {
             return None;
         }
 
+        // 같은 사다리를 측정하는 경로에서는 실제 제어 슬롯의 소유 줄을 쓴다.
+        // 셀 편집으로 표가 커지면 선언 높이와의 매칭은 더 이상 소속 증거가 아니다.
+        if fmt.computed_host_lines.is_none() && fmt.line_heights.len() == para.line_segs.len() {
+            if let Some(control_index) = para.controls.iter().position(|control| {
+                matches!(control, crate::model::control::Control::Table(candidate)
+                    if std::ptr::eq(candidate.as_ref(), table))
+            }) {
+                if let Some(line) =
+                    crate::renderer::composer::control_slot_line_index(para, control_index)
+                {
+                    return Some(line);
+                }
+            }
+        }
+
         let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
         let om_bot = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
         let table_body_h = hwpunit_to_px(table.common.height as i32, self.dpi);

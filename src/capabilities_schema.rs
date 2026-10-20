@@ -372,6 +372,8 @@ fn mcp_tool_def() -> Value {
                 "이 도구가 돌려주는 JSON 봉투의 최상위 필드 목록.",
             ),
             "annotations": r("McpToolAnnotations"),
+            "requiresFeature": prim("string", "이 도구가 요구하는 빌드 feature. 게이트된 도구에만 붙는다."),
+            "available": prim("boolean", "현재 바이너리에서 실제로 쓸 수 있는가. 게이트된 도구에만 붙는다."),
         }),
         &["name", "description", "inputSchema", "cli"],
         "MCP 도구 하나의 정의. 호스트가 tools/list 에 그대로 등록할 수 있는 모양이다.",

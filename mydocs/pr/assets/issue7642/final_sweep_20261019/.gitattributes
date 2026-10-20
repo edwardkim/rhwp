@@ -1,0 +1,2 @@
+# 계측 원본 TSV의 CRLF와 마지막 빈 열을 바이트 그대로 보존한다.
+*.tsv -text -whitespace

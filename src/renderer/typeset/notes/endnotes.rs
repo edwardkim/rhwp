@@ -11,12 +11,14 @@ pub(in crate::renderer::typeset) mod content;
 pub(in crate::renderer::typeset) mod debug;
 pub(in crate::renderer::typeset) mod emit;
 pub(in crate::renderer::typeset) mod fit;
+mod flow_table;
 pub(in crate::renderer::typeset) mod format;
 pub(in crate::renderer::typeset) mod measure;
 pub(in crate::renderer::typeset) mod metrics;
 pub(in crate::renderer::typeset) mod paragraph;
 pub(in crate::renderer::typeset) mod prepare;
 pub(in crate::renderer::typeset) mod profile;
+pub(in crate::renderer::typeset) mod row_projection;
 pub(in crate::renderer::typeset) mod types;
 
 impl TypesetEngine {
@@ -55,7 +57,56 @@ impl TypesetEngine {
         // 한컴 정합: 미주는 섹션 마지막에 일반 본문처럼 2단 레이아웃 플로우를 따름
         // 미주 paragraphs를 endnote_paragraphs Vec에 모으고, ENDNOTE_PARA_BASE 이상 인덱스로 마킹
         if !st.endnotes.is_empty() {
+            st.begin_endnote_paragraphs(paragraphs.len());
             let endnote_refs: Vec<EndnoteRef> = st.endnotes.clone();
+            // 미주는 문서 본문과 마지막 쪽 각주의 실제 점유 뒤에 시작한다.
+            let separator_origin = if st.current_footnote_height > 0.0 {
+                st.force_new_page();
+                Some(st.current_height)
+            } else if let Some(crate::renderer::pagination::PageItem::FullParagraph {
+                para_index,
+            }) = st.current_items.last()
+            {
+                let index = *para_index;
+                paragraphs
+                    .get(index)
+                    .filter(|para| {
+                        crate::renderer::para_has_no_stored_line_segs(para)
+                            && !para.controls.iter().any(|control| {
+                                matches!(
+                                    control,
+                                    crate::model::control::Control::Table(_)
+                                        | crate::model::control::Control::Picture(_)
+                                        | crate::model::control::Control::Shape(_)
+                                        | crate::model::control::Control::Equation(_)
+                                        | crate::model::control::Control::Form(_)
+                                )
+                            })
+                    })
+                    .map(|para| {
+                        let fmt = self.format_paragraph(
+                            para,
+                            composed.get(index),
+                            styles,
+                            Some(st.following_wrap_column_width()),
+                        );
+                        let border = styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map_or(0, |style| style.border_fill_id);
+                        let occupied = if crate::renderer::paragraph_outline_reserves_line_spacing(
+                            border, styles,
+                        ) {
+                            fmt.total_height.max(fmt.height_for_fit)
+                        } else {
+                            fmt.height_for_fit
+                        };
+                        st.reclaim_flow_by(fmt.total_height - occupied);
+                        st.current_height
+                    })
+            } else {
+                None
+            };
             // 본문 마지막 paragraph의 vpos 끝 위치 계산
             let mut vpos_offset: i32 = paragraphs
                 .last()
@@ -104,6 +155,7 @@ impl TypesetEngine {
                             endnote_shape,
                             endnote_flow_profile,
                             compact_endnote_separator_profile,
+                            separator_origin,
                             emitted_endnote_count,
                             last_render_endnote_para_local_idx,
                             cleared_single_line_internal_rewind_split,

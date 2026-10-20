@@ -307,7 +307,7 @@ impl Paginator {
         let is_hwp3_variant = opts.is_hwp3_variant;
         let source_uses_inline_field_reset = source_context.source_uses_inline_field_reset;
         let hwp3_converted_missing_lineseg = source_context.hwp3_converted_missing_lineseg;
-        let legacy_hwp3_stored_geometry = source_context.legacy_hwp3_stored_geometry;
+        let stored_geometry_policy = source_context.stored_geometry_policy;
         // [Task #1007] 페이지 본문 영역 높이 (HWPUNIT) — variant cross-paragraph
         // vpos reset 감지 THRESHOLD 계산용.
         let body_height_hu_for_variant = if is_hwp3_variant {
@@ -326,7 +326,7 @@ impl Paginator {
         let tac_seg_width_fallback_hu = layout.column_width_hu();
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(is_hwp3_variant)
-            .with_legacy_hwp3_stored_geometry(legacy_hwp3_stored_geometry);
+            .with_stored_geometry_policy(stored_geometry_policy);
 
         // 머리말/꼬리말/쪽 번호 위치/새 번호 지정 컨트롤 수집
         let (hf_entries, page_number_pos) =
@@ -1165,6 +1165,7 @@ impl Paginator {
             endnotes: Vec::new(),
             endnote_paragraphs: Vec::new(),
             endnote_para_sources: Vec::new(),
+            endnote_measured_tables: Vec::new(),
             endnote_between_notes_hu: 0,
             endnote_separator_above_hu: 0,
             endnote_separator_below_hu: 0,
@@ -2019,17 +2020,11 @@ impl Paginator {
 
         // 표 내 각주 높이 사전 계산
         let mut table_footnote_height = 0.0;
-        let mut table_footnote_count = 0usize;
-        for cell in &table.cells {
-            for cp in &cell.paragraphs {
-                for cc in &cp.controls {
-                    if let Control::Footnote(fn_ctrl) = cc {
-                        let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
-                        table_footnote_height += fn_height;
-                        table_footnote_count += 1;
-                    }
-                }
-            }
+        let table_notes = super::table_cell_footnotes(table);
+        let table_footnote_count = table_notes.len();
+        for (_, fn_ctrl) in &table_notes {
+            let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
+            table_footnote_height += fn_height;
         }
 
         // 현재 사용 가능한 높이
@@ -2282,27 +2277,15 @@ impl Paginator {
         }
 
         // 표 셀 내 각주 수집
-        for (cell_idx, cell) in table.cells.iter().enumerate() {
-            for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-                for (cc_idx, cc) in cp.controls.iter().enumerate() {
-                    if let Control::Footnote(fn_ctrl) = cc {
-                        if let Some(page) = st.pages.last_mut() {
-                            page.footnotes.push(FootnoteRef {
-                                number: fn_ctrl.number,
-                                source: FootnoteSource::TableCell {
-                                    para_index: para_idx,
-                                    table_control_index: ctrl_idx,
-                                    cell_index: cell_idx,
-                                    cell_para_index: cp_idx,
-                                    cell_control_index: cc_idx,
-                                },
-                                fragment: None,
-                            });
-                            let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
-                            st.add_footnote_height(fn_height);
-                        }
-                    }
-                }
+        for (cell_path, fn_ctrl) in table_notes {
+            if let Some(page) = st.pages.last_mut() {
+                page.footnotes.push(FootnoteRef {
+                    number: fn_ctrl.number,
+                    source: FootnoteSource::table_cell_path(para_idx, ctrl_idx, &cell_path),
+                    fragment: None,
+                });
+                let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
+                st.add_footnote_height(fn_height);
             }
         }
     }
@@ -2544,8 +2527,11 @@ impl Paginator {
         let first_block_is_single_row = first_block_size == 1;
         // [Task #474] RowBreak 표는 보호 블록 정책 비적용 (HWP 행 경계 분할 정책 정합)
         let first_block_protected = !mt.allows_row_break_split()
-            && first_block_size >= 2
-            && first_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+            && mt.rowspan_block_fits_whole_unit(
+                first_block_start,
+                first_block_end,
+                base_available_height,
+            );
         let can_intra_split_early = !mt.cells.is_empty();
         let split_unit_h = if first_block_protected {
             first_block_h
@@ -2684,7 +2670,9 @@ impl Paginator {
                 let approx_end_raw =
                     mt.find_break_row(avail_for_rows, cursor_row, effective_first_row_h);
                 // Task #398: rowspan 묶음 중간에서 잘리지 않도록 블록 경계로 스냅
-                let approx_end = mt.snap_to_block_boundary(approx_end_raw);
+                let fresh_row_budget = (base_available_height - header_overhead).max(0.0);
+                let approx_end =
+                    mt.snap_to_block_boundary_for_budget(approx_end_raw, fresh_row_budget);
 
                 // cursor_row가 속한 블록 정보 (인트라-로우 분할 가드)
                 let (cur_b_start, cur_b_end, _) = mt.row_block_for(cursor_row);
@@ -2692,9 +2680,9 @@ impl Paginator {
                 let cur_block_single = cur_block_size == 1;
                 // [Task #474] RowBreak 표는 보호 블록 정책 비적용
                 let cur_block_protected = !mt.allows_row_break_split()
-                    && cur_block_size >= 2
-                    && cur_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
-                // 큰 블록(>3) 또는 단일 행은 분할 가능; 보호 블록(2~3)은 분할 불가
+                    && mt.rowspan_block_fits_whole_unit(cur_b_start, cur_b_end, fresh_row_budget);
+                // 다음 온전한 밴드에 들어가는 병합 그룹은 이월하고,
+                // 실제 page-larger 그룹과 단일 행은 내용 컷으로 전진한다.
                 let cur_can_intra_split =
                     (cur_block_single || !cur_block_protected) && can_intra_split;
 
@@ -2749,8 +2737,11 @@ impl Paginator {
                     let next_block_single = next_block_size == 1;
                     // [Task #474] RowBreak 표는 보호 블록 정책 비적용
                     let next_block_protected = !mt.allows_row_break_split()
-                        && next_block_size >= 2
-                        && next_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+                        && mt.rowspan_block_fits_whole_unit(
+                            next_b_start,
+                            next_b_end,
+                            fresh_row_budget,
+                        );
                     let next_can_intra_split =
                         (next_block_single || !next_block_protected) && can_intra_split;
                     if next_can_intra_split && mt.is_row_splittable(r) {
@@ -2859,6 +2850,10 @@ impl Paginator {
                         row_cursor_is_nested,
                         end_row_height_override: None,
                         start_row_height_override: None,
+                        straddle_row_relief: Vec::new(),
+                        straddle_page_bands: Vec::new(),
+                        fragment_row_heights: None,
+                        end_row_owns_stored_frame: false,
                     });
                     // 마지막 부분 표: spacing_after도 포함 (레이아웃과 일치)
                     let mp = measured.get_measured_paragraph(para_idx);
@@ -2882,6 +2877,10 @@ impl Paginator {
                 row_cursor_is_nested,
                 end_row_height_override: None,
                 start_row_height_override: None,
+                straddle_row_relief: Vec::new(),
+                straddle_page_bands: Vec::new(),
+                fragment_row_heights: None,
+                end_row_owns_stored_frame: false,
             });
             st.advance_column_or_new_page();
 

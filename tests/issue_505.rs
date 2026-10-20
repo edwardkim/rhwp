@@ -155,7 +155,7 @@ fn count_fractions_and_atops(node: &rhwp::renderer::equation::ast::EqNode) -> us
         EqNode::Cases { rows } | EqNode::Pile { rows, .. } => {
             rows.iter().map(count_fractions_and_atops).sum()
         }
-        EqNode::EqAlign { rows } => rows
+        EqNode::EqAlign { rows, .. } => rows
             .iter()
             .map(|(l, r)| count_fractions_and_atops(l) + count_fractions_and_atops(r))
             .sum(),

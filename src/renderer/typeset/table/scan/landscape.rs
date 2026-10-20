@@ -53,6 +53,7 @@ impl LandscapeRowQuery<'_> {
             avail_for_rows,
         } = self.budget;
         landscape_rowbreak_bleed
+                && !self.storage_records_page_cuts()
                 && mt.allows_row_break_split()
                 && is_continuation
                 && header_overhead > 0.0
@@ -104,6 +105,7 @@ impl LandscapeRowQuery<'_> {
             avail_for_rows,
         } = self.budget;
         landscape_rowbreak_bleed
+                && !self.storage_records_page_cuts()
                 && mt.allows_row_break_split()
                 && is_continuation
                 && header_overhead > 0.0
@@ -137,6 +139,18 @@ impl LandscapeRowQuery<'_> {
                     .is_some_and(|prev| (prev - row_total).abs() < 0.5)
                 && consumed + cs_before + row_total
                     <= avail_for_rows + landscape_short_row_tolerance
+    }
+
+    /// 원본 저장 표의 셀 사다리가 한/글의 쪽 컷(문단 사이·줄 사이 vpos 되감김)을 적어 둔
+    /// 표인가. 이런 표는 한/글이 실제로 어디서 쪽을 갈랐는지 저장본이 증언하므로, 경계 행을
+    /// 본문 아래 여백으로 흘려 받는 가로 용지 허용치(#1672·#5828)를 쓰지 않는다.
+    /// `2025 행정업무운영 편람(최종).hwp` 부록 103×2 표(저장 되감김 22곳): 한/글 2024 정본의
+    /// 표 아래 괘선은 모든 쪽에서 644.7px 로 본문 하한(646.4) 안이다. 허용치가 행 6·7(40.0·
+    /// 38.7px)을 경계 너머로 받아 313쪽이 본문을 70px 넘겼다.
+    fn storage_records_page_cuts(&self) -> bool {
+        self.table_storage_declares_splits
+            && (self.profile.hwp5_stored_pagination_layout() || self.profile.hwpx_stored_layout())
+            && !self.profile.session_edited()
     }
 
     /// 세 호출 지점의 선행 guard와 반복 조회를 보존한다. 형상과 합쳐 선행 계산하지 않는다.

@@ -358,6 +358,9 @@ pub struct TextBox {
     pub margin_top: HwpUnit16,
     /// 아래쪽 여백
     pub margin_bottom: HwpUnit16,
+    /// 명시적인 0 여백을 XML 부재와 구분한다. 기존 생성기의 기본값은 false다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub text_margin_explicit: bool,
     /// 텍스트 최대 폭
     pub max_width: HwpUnit,
     /// LIST_HEADER 레코드의 파싱된 필드 이후 추가 바이트 (라운드트립 보존용)

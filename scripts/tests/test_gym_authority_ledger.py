@@ -270,9 +270,9 @@ class RealRepositoryLedgerTests(unittest.TestCase):
     def test_every_real_task_appears_exactly_once(self):
         report = self.report
         self.assertTrue(report["ok"], report["issues"][:10])
-        self.assertEqual(report["taskCount"], 1035)
-        self.assertEqual(report["referenceCount"], 1035)
-        self.assertEqual(report["entryCount"], 1035)
+        self.assertEqual(report["taskCount"], 949)
+        self.assertEqual(report["referenceCount"], 949)
+        self.assertEqual(report["entryCount"], 949)
         keys = [entry["key"] for entry in report["entries"]]
         self.assertEqual(len(keys), len(set(keys)))
 
@@ -281,22 +281,22 @@ class RealRepositoryLedgerTests(unittest.TestCase):
             self.report["summary"],
             self.mod.recompute_summary(self.report["entries"]),
         )
-        self.assertEqual(sum(self.report["summary"]["byAuthority"].values()), 1035)
-        self.assertEqual(sum(self.report["summary"]["byBaselineSource"].values()), 1035)
+        self.assertEqual(sum(self.report["summary"]["byAuthority"].values()), 949)
+        self.assertEqual(sum(self.report["summary"]["byBaselineSource"].values()), 949)
 
     def test_current_distribution_exposes_zero_external_oracles(self):
         self.assertEqual(
             self.report["summary"]["byAuthority"],
             {
-                "self-live": 987,
+                "self-live": 903,
                 "contract-constant": 28,
-                "independent-fixture": 20,
+                "independent-fixture": 18,
                 "external-oracle": 0,
             },
         )
         self.assertEqual(
             self.report["summary"]["byBaselineSource"],
-            {"self-live": 1031, "contract-constant": 4},
+            {"self-live": 945, "contract-constant": 4},
         )
 
     def test_output_is_deterministic_and_contains_no_absolute_repo_path(self):
@@ -318,7 +318,7 @@ class RealRepositoryLedgerTests(unittest.TestCase):
         self.assertEqual(process.returncode, 0, process.stderr)
         report = json.loads(process.stdout)
         self.assertEqual(report["kind"], "gymAuthorityLedger")
-        self.assertEqual(report["entryCount"], 1035)
+        self.assertEqual(report["entryCount"], 949)
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 from support import PKG, REPO
-from oracle_vs_self.contracts import ALL_CONTRACTS, PAGE_SMOKE_CONTRACT
+from oracle_vs_self.contracts import ALL_CONTRACTS, PAGE_SMOKE_CONTRACT, VISUAL_SWEEP_CONTRACT
 
 
 class ContractSnapshotTests(unittest.TestCase):
@@ -64,7 +64,18 @@ class ContractSnapshotTests(unittest.TestCase):
 
     def test_visual_sweep_schema_version_live(self) -> None:
         src = (REPO / "scripts" / "visual_sweep.py").read_text(encoding="utf-8")
-        self.assertIn("VISUAL_SWEEP_RUN_SCHEMA_VERSION = 1", src)
+        self.assertIn("VISUAL_SWEEP_RUN_SCHEMA_VERSION = 2", src)
+        self.assertIn("VISUAL_SWEEP_PAGE_SCHEMA_VERSION = 1", src)
+        snapshot = json.loads(
+            (PKG / "fixtures" / "contracts" / "visual_sweep.fields.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(snapshot["runSchemaVersion"], VISUAL_SWEEP_CONTRACT["run_schema_version"])
+        self.assertEqual(snapshot["pageSchemaVersion"], VISUAL_SWEEP_CONTRACT["page_schema_version"])
+        self.assertEqual(
+            snapshot["supportedRunSchemaVersions"],
+            VISUAL_SWEEP_CONTRACT["supported_run_schema_versions"],
+        )
+        self.assertIn("font_mismatch_evidence", src)
         self.assertIn("schema_version", src)
         self.assertIn("pixel_diff_threshold", src)
         self.assertIn('hwp: Path', src)

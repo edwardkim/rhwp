@@ -187,6 +187,7 @@ pub(crate) fn explain_document(args: &[String]) -> i32 {
         rhwp::parser::FileFormat::Hwpx => "HWPX",
         rhwp::parser::FileFormat::Hwp3 => "HWP3",
         rhwp::parser::FileFormat::Hml => "HML",
+        rhwp::parser::FileFormat::Pdf => "PDF",
         rhwp::parser::FileFormat::DrmProtected => "DRM",
         rhwp::parser::FileFormat::Empty => "빈 파일",
         rhwp::parser::FileFormat::Unknown => "알 수 없음",

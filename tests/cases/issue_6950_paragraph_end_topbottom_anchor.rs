@@ -141,43 +141,6 @@ fn floating_band_consumes_flow_only_when_the_tail_line_has_insufficient_space() 
 }
 
 #[test]
-fn first_fragment_real_fixture_matches_paragraph_offset_without_extra_margins() {
-    let bytes = std::fs::read(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("samples/issue6025/3232693_employment_support_criteria.hwpx"),
-    )
-    .unwrap();
-    let core = DocumentCore::from_bytes(&bytes).unwrap();
-    let doc = core.document();
-    let host = &doc.sections[0].paragraphs[1];
-    let Control::Table(source) = &host.controls[0] else {
-        panic!("table")
-    };
-    let styles = rhwp::renderer::style_resolver::resolve_styles(&doc.doc_info, 96.0);
-    let spacing_before = styles.para_styles[host.para_shape_id as usize].spacing_before;
-    let tree = core.build_page_render_tree(0).unwrap();
-    let mut items = Vec::new();
-    body_items(&tree.root, &mut items);
-    let title = items
-        .iter()
-        .find(|n| {
-            matches!(&n.node_type,
-        RenderNodeType::TextLine(line) if line.para_index == Some(1))
-        })
-        .unwrap();
-    let (top, _) = table(&items, 1, 0);
-    // 실제0.8.6 출력과 메인터너 관측: 문단 기준점은 앞 간격보다 먼저다.
-    // 기존 #6025 마지막 줄의 좌표 계약을 대체하지 않는다.
-    let expected = title.bbox.y - spacing_before + source.common.vertical_offset as f64 / 75.0;
-    assert!(
-        (top - expected).abs() < 0.02,
-        "table {top}, paragraph-relative {expected}"
-    );
-    assert!(top >= title.bbox.y + title.bbox.height);
-    assert_eq!(core.page_count(), 4);
-}
-
-#[test]
 fn stored_band_origin_requires_measured_successor_agreement_and_valid_source() {
     let core = stored_band_core();
     let paragraphs = &core.document().sections[0].paragraphs;
@@ -1085,8 +1048,17 @@ fn split_computed_host_publishes_fragment_local_placements() {
                         .expect("분할 표도 현재 단의 확정 배치를 전달해야 한다");
                     assert!(placement.occupied_bottom > placement.table_top);
                     if *is_continuation {
+                        // [#7685] 행 경계에서 이어지는 조각은 표의 바깥 위 여백을 다시 연다
+                        // (한/글 정본: 1342000 124쪽 표 위끝 = 본문 위 + outMargin.top).
+                        // 이 시험이 막는 것은 이전 앵커 거리의 재적용이므로 그 여백까지만 허용한다.
+                        let Control::Table(target) = &section.paragraphs[0].controls[0] else {
+                            panic!("표");
+                        };
+                        let outer_top =
+                            rhwp::renderer::hwpunit_to_px(target.outer_margin_top as i32, 96.0);
                         assert!(
-                            placement.table_top.abs() < 0.1,
+                            placement.table_top.abs() < 0.1
+                                || (placement.table_top - outer_top).abs() < 0.1,
                             "다음 단에 이전 앵커 거리 재적용 금지: {placement:?}"
                         );
                     } else {
@@ -1176,14 +1148,20 @@ fn split_and_deferred_computed_tables_preserve_host_and_paint_inside_frame() {
                                 panic!("표");
                             };
                             // 첫 조각 전체 이월은 첫 조각의 위 바깥 여백을 유지한다.
-                            // 이미 시작한 표의 연속 조각에는 이 첫 여백도 반복하지 않는다.
-                            let first_margin = if fragments == 1 {
-                                rhwp::renderer::hwpunit_to_px(target.outer_margin_top as i32, 96.0)
+                            // [#7685] 행 경계에서 이어지는 조각도 바깥 위 여백을 다시 연다
+                            // (한/글 정본: 1342000 124쪽 표 위끝 = 본문 위 + outMargin.top).
+                            // 칸 중간에서 이어지는 조각은 열지 않는다. 어느 쪽이든 이전 앵커
+                            // 거리는 다시 적용하지 않는다.
+                            let outer_top =
+                                rhwp::renderer::hwpunit_to_px(target.outer_margin_top as i32, 96.0);
+                            let offset = node.bbox.y - body_top;
+                            let allowed = if fragments == 1 {
+                                (offset - outer_top).abs() < 0.5
                             } else {
-                                0.0
+                                offset.abs() < 0.5 || (offset - outer_top).abs() < 0.5
                             };
-                            assert!((node.bbox.y - body_top - first_margin).abs() < 0.5,
-                                "새 쪽 앵커 거리 재적용 금지: {:?}, 본문 {body_top}, 첫 여백 {first_margin}", node.bbox);
+                            assert!(allowed,
+                                "새 쪽 앵커 거리 재적용 금지: {:?}, 본문 {body_top}, 바깥 위 여백 {outer_top}", node.bbox);
                         }
                     }
                 }

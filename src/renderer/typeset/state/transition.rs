@@ -18,6 +18,7 @@ impl TypesetState {
             data: StateView {
                 pages: Vec::new(),
                 current_items: Vec::new(),
+                saved_empty_run: None,
                 paragraph_fragment_content_bottoms: Default::default(),
                 current_height: 0.0,
                 current_start_height: 0.0,
@@ -38,6 +39,7 @@ impl TypesetState {
                 square_band_bottom: 0.0,
                 square_band_top: None,
                 current_footnote_height: 0.0,
+                deferred_body_footnotes: Vec::new(),
                 current_footnote_body_bottom_reserved: false,
                 deferred_hwpx_note_body: false,
                 current_bottom_fixed_exclusion: 0.0,
@@ -58,12 +60,19 @@ impl TypesetState {
                 side_wrap_exclusions: std::collections::BTreeMap::new(),
                 inline_placements: std::collections::HashMap::new(),
                 inline_flow_plans: std::collections::HashMap::new(),
+                stored_paragraph_flow_ends: std::collections::HashMap::new(),
+                stored_column_top_spacings: std::collections::HashMap::new(),
                 paragraph_float_placements: std::collections::HashMap::new(),
+                float_pushed_line_spacings: std::collections::HashMap::new(),
                 inline_box_flow_bottom: 0.0,
                 deferred_table_controls: Vec::new(),
+                deferred_table_successor_start: None,
+                pending_table_terminal_gap: None,
                 deferred_next_page_square_pictures: Vec::new(),
                 page_start_square_pictures: Vec::new(),
                 deferred_next_page_stored_frames: Vec::new(),
+                deferred_next_column_stored_frames: Vec::new(),
+                deferred_source_frame_body_pages: std::collections::HashMap::new(),
                 page_start_stored_frames: Vec::new(),
                 fragment_queued_table_footnotes: std::collections::HashSet::new(),
                 reset_vpos_after_queued_table_footnote_page: false,
@@ -85,7 +94,10 @@ impl TypesetState {
                 page_tail_spilled_floats: std::collections::HashSet::new(),
                 endnotes: Vec::new(),
                 endnote_paragraphs: Vec::new(),
+                reissued_endnote_rows: std::collections::HashSet::new(),
                 endnote_para_sources: Vec::new(),
+                endnote_para_base: None,
+                endnote_measured_tables: Vec::new(),
                 endnote_between_notes_hu: 0,
                 endnote_separator_above_hu: 0,
                 endnote_separator_below_hu: 0,
@@ -111,6 +123,7 @@ impl TypesetState {
                 current_zone_design_spacing_px: 0.0,
                 vpos_page_base: None,
                 vpos_lazy_base: None,
+                vpos_stored_column_origin: None,
                 vpos_page_base_stored: false,
                 vpos_ladder_dirty: false,
                 vpos_compacted_stored_delta: 0.0,
@@ -145,6 +158,7 @@ impl TypesetState {
         self.data.vpos_prev_trimmed_sb_px = 0.0;
         self.data.vpos_page_base = None;
         self.data.vpos_lazy_base = None;
+        self.data.vpos_stored_column_origin = None;
         self.data.vpos_page_base_stored = false;
         self.data.vpos_ladder_dirty = false;
         self.data.vpos_compacted_stored_delta = 0.0;
@@ -156,7 +170,9 @@ impl TypesetState {
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
     pub(in crate::renderer::typeset) fn available_height(&self) -> f64 {
         let base = self.base_available_height();
-        let fn_margin = if self.data.current_footnote_height > 0.0 {
+        let fn_margin = if self.data.current_footnote_height > 0.0
+            && !self.data.current_footnote_body_bottom_reserved
+        {
             self.data.footnote_safety_margin
         } else {
             0.0
@@ -209,7 +225,15 @@ impl TypesetState {
 
     /// 기본 가용 높이 (각주/존 미차감)
     pub(in crate::renderer::typeset) fn base_available_height(&self) -> f64 {
-        self.data.layout.available_body_height()
+        // 본문 점유와 레거시 미주 흐름의 추가 예산을 구분한다. 전체 문단 fit,
+        // 줄 분할, 표 예약이 같은 물리 경계를 소비해야, 저장 쪽 표식이 없는
+        // 변환본의 마지막 글줄을 아래 여백에 넣고 다음 본문을 당기지 않는다.
+        // 미주의 기존 단 예산은 별도 흐름 계약이므로 여기서 제거하지 않는다.
+        if self.data.current_endnote_flow {
+            self.data.layout.available_body_height()
+        } else {
+            self.data.layout.physical_body_height()
+        }
     }
 
     /// 동일 표의 terminal fragment가 아직 current column에 있는지, 직전에 flush된
@@ -315,7 +339,7 @@ impl TypesetState {
             alignment: style.map_or(crate::model::style::Alignment::Left, |s| s.alignment),
             dpi: self.data.layout.dpi,
         };
-        if let Some(exclusion) = frame.picture_exclusion(picture) {
+        if let Some(exclusion) = frame.picture_exclusion(picture, para, control_index, styles) {
             self.data
                 .side_wrap_exclusions
                 .insert((para_index, control_index), exclusion);
@@ -387,7 +411,10 @@ impl TypesetState {
             overlay_cuts: std::mem::take(&mut self.data.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.data.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.data.inline_flow_plans),
+            stored_paragraph_flow_ends: std::mem::take(&mut self.data.stored_paragraph_flow_ends),
+            stored_column_top_spacings: std::mem::take(&mut self.data.stored_column_top_spacings),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
+            float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
         };
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -462,7 +489,10 @@ impl TypesetState {
             overlay_cuts: std::mem::take(&mut self.data.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.data.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.data.inline_flow_plans),
+            stored_paragraph_flow_ends: std::mem::take(&mut self.data.stored_paragraph_flow_ends),
+            stored_column_top_spacings: std::mem::take(&mut self.data.stored_column_top_spacings),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
+            float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
         };
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -537,7 +567,18 @@ impl TypesetState {
         }
     }
 
+    #[track_caller]
     pub(in crate::renderer::typeset) fn advance_column_or_new_page(&mut self) {
+        if std::env::var("RHWP_FLOW_BREAK_DEBUG").is_ok() {
+            eprintln!(
+                "FLOW_BREAK caller={} page={} column={} height={} next_note={:?}",
+                std::panic::Location::caller(),
+                self.data.pages.len(),
+                self.data.current_column,
+                self.data.current_height,
+                self.data.endnote_para_sources.last()
+            );
+        }
         self.flush_column();
         self.data.visible_float_exclusions.clear();
         if self.data.current_column + 1 < self.data.col_count {
@@ -561,6 +602,7 @@ impl TypesetState {
             self.data.hangul2024_reclaimed = 0.0;
             self.data.column_had_compact_endnote_rewind = false;
             self.reset_vpos_cursor();
+            self.activate_next_column_stored_frames();
         } else {
             self.push_new_page();
         }
@@ -581,6 +623,7 @@ impl TypesetState {
 
     /// 새 페이지 push + 상태 리셋
     pub(in crate::renderer::typeset) fn push_new_page(&mut self) {
+        self.finish_next_column_stored_frames();
         self.data
             .layout
             .apply_column_page_number(self.data.pages.len() as u32 + 1);
@@ -629,14 +672,8 @@ impl TypesetState {
         self.data.current_column_overlay_continuations.extend(
             std::mem::take(&mut self.data.pending_overlay_continuations)
                 .into_iter()
-                .map(|(para_index, control_index, start_row, remaining_px)| {
-                    overlay_top_reserve = overlay_top_reserve.max(remaining_px);
-                    crate::renderer::pagination::OverlayContinuation {
-                        para_index,
-                        control_index,
-                        start_row,
-                        reserve_px: remaining_px,
-                    }
+                .inspect(|continuation| {
+                    overlay_top_reserve = overlay_top_reserve.max(continuation.reserve_px);
                 }),
         );
         // 잔여 높이를 새 쪽 흐름에 무조건 예약하면 안 된다 — #4514 기제에서 필러
@@ -648,6 +685,7 @@ impl TypesetState {
             self.data.current_height = self.data.current_height.max(overlay_top_reserve);
             self.data.current_start_height = self.data.current_height;
         }
+        self.drain_deferred_body_footnotes();
     }
 
     pub(in crate::renderer::typeset) fn reset_for_new_page(&mut self) {

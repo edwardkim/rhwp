@@ -1,5 +1,8 @@
 use crate::wmf::imports::*;
 
+mod shared_bitmaps;
+pub(super) use shared_bitmaps::share_repeated_bitmaps;
+
 #[derive(Clone, Debug)]
 pub struct Node {
     typ: NodeType,

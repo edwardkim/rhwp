@@ -9,6 +9,45 @@ use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::common_obj_offsets;
 
+use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+// 렌더 트리에서 해당 표 노드를 찾아 셀 bbox를 수집
+fn find_table_cells(
+    node: &RenderNode,
+    sec: usize,
+    ppi: usize,
+    ci: usize,
+    page_idx: usize,
+    result: &mut Vec<String>,
+) -> bool {
+    if let RenderNodeType::Table(ref tn) = node.node_type {
+        if tn.section_index == Some(sec)
+            && tn.para_index == Some(ppi)
+            && tn.control_index == Some(ci)
+        {
+            for child in &node.children {
+                if let RenderNodeType::TableCell(ref cn) = child.node_type {
+                    // cellIdx: 모델의 cells 배열에서 (row, col)로 검색한 인덱스
+                    let model_cell_idx = cn.model_cell_index.unwrap_or(0) as usize;
+                    result.push(format!(
+                        "{{\"cellIdx\":{},\"row\":{},\"col\":{},\"rowSpan\":{},\"colSpan\":{},\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}}",
+                        model_cell_idx, cn.row, cn.col, cn.row_span, cn.col_span,
+                        page_idx,
+                        child.bbox.x, child.bbox.y, child.bbox.width, child.bbox.height
+                    ));
+                }
+            }
+            return true; // 찾음
+        }
+    }
+    for child in &node.children {
+        if find_table_cells(child, sec, ppi, ci, page_idx, result) {
+            return true;
+        }
+    }
+    false
+}
+
 impl DocumentCore {
     /// [Task #1151 v7] cell_path JSON → Vec<(controlIdx, cellIdx, cellParaIdx)>.
     /// 4 개 by_path setter/getter (cell picture/shape × set/get) 의 공통 파싱.
@@ -860,6 +899,10 @@ impl DocumentCore {
 
         // ── 인라인 TAC 표 생성 ──
 
+        let previous_host_end = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
+
         let instance_id = super::super::clone_identity::next_instance_id(&self.document)?;
 
         let pd = &self.document.sections[section_idx].section_def.page_def;
@@ -990,6 +1033,7 @@ impl DocumentCore {
         let flags: u32 = (1 << 0) /* treat_as_char */
             | (0 << 3) /* vert=Page */
             | (3 << 8) /* horz=Para */
+            | (1 << 13) /* flow_with_text: 인라인 개체의 본문 흐름 */
             | (4 << 15) /* width_criterion=Absolute */
             | (2 << 18) /* height_criterion=Absolute */
             | (1 << 21) /* wrap=TopAndBottom */;
@@ -1006,7 +1050,7 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
         let mut table = Table {
-            attr: 0x04000006,
+            attr: flags,
             row_count,
             col_count,
             cell_spacing: 0,
@@ -1020,8 +1064,10 @@ impl DocumentCore {
             repeat_header: false,
             caption: None,
             common: crate::model::shape::CommonObjAttr {
+                attr: flags,
                 instance_id,
                 treat_as_char: true,
+                flow_with_text: true,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
                 vert_rel_to: crate::model::shape::VertRelTo::Page,
                 horz_rel_to: crate::model::shape::HorzRelTo::Para,
@@ -1079,15 +1125,19 @@ impl DocumentCore {
         // char_count 갱신 (확장 제어문자 8 + 기존)
         para.char_count += 8;
 
-        // LINE_SEG 갱신: 표 높이를 반영
-        if let Some(seg) = para.line_segs.first_mut() {
-            let new_lh = (total_height as i32).max(seg.line_height);
-            if new_lh > seg.line_height {
-                seg.line_height = new_lh;
-                seg.text_height = new_lh;
-                seg.baseline_distance = (new_lh as f64 * 0.85) as i32;
-            }
-        }
+        // 실제 줄 나눔은 글자/표 순서와 가용 폭을 함께 소비한다. 최초 줄의 높이만
+        // 바꾸면 앞 글자도 표 줄에 귀속되고 뒤 문단의 오래된 vpos가 리셋처럼 남는다.
+        self.reflow_paragraph(section_idx, para_idx);
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            previous_host_end,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
 
         // rebuild
         self.rebuild_section(section_idx);
@@ -1192,6 +1242,31 @@ impl DocumentCore {
         }
         (0, 0)
     }
+    /// 지정 페이지에 배치된 표 조각의 셀 bbox만 반환한다.
+    /// hover/리사이즈용이며 다른 페이지의 렌더 트리를 준비하지 않는다.
+    /// 분할 조각의 cellIdx는 원본 모델 인덱스를 그대로 보존한다.
+    pub fn get_table_cell_bboxes_at_page_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        page: u32,
+    ) -> Result<String, HwpError> {
+        let mut cells = Vec::new();
+        self.with_page_tree_cached(page, |tree| {
+            find_table_cells(
+                &tree.root,
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                page as usize,
+                &mut cells,
+            );
+            Ok(())
+        })?;
+        Ok(format!("[{}]", cells.join(",")))
+    }
+
     /// page_hint부터 탐색하여 표의 셀 bbox를 반환한다 (네이티브).
     /// page_hint에서 못 찾으면 앞쪽도 탐색한다 (페이지 분할된 표 대응).
     pub(crate) fn get_table_cell_bboxes_from_page(
@@ -1201,45 +1276,6 @@ impl DocumentCore {
         control_idx: usize,
         page_hint: usize,
     ) -> Result<String, HwpError> {
-        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
-
-        // 렌더 트리에서 해당 표 노드를 찾아 셀 bbox를 수집
-        fn find_table_cells(
-            node: &RenderNode,
-            sec: usize,
-            ppi: usize,
-            ci: usize,
-            page_idx: usize,
-            result: &mut Vec<String>,
-        ) -> bool {
-            if let RenderNodeType::Table(ref tn) = node.node_type {
-                if tn.section_index == Some(sec)
-                    && tn.para_index == Some(ppi)
-                    && tn.control_index == Some(ci)
-                {
-                    for (_child_idx, child) in node.children.iter().enumerate() {
-                        if let RenderNodeType::TableCell(ref cn) = child.node_type {
-                            // cellIdx: 모델의 cells 배열에서 (row, col)로 검색한 인덱스
-                            let model_cell_idx = cn.model_cell_index.unwrap_or(0) as usize;
-                            result.push(format!(
-                                "{{\"cellIdx\":{},\"row\":{},\"col\":{},\"rowSpan\":{},\"colSpan\":{},\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}}",
-                                model_cell_idx, cn.row, cn.col, cn.row_span, cn.col_span,
-                                page_idx,
-                                child.bbox.x, child.bbox.y, child.bbox.width, child.bbox.height
-                            ));
-                        }
-                    }
-                    return true; // 찾음
-                }
-            }
-            for child in &node.children {
-                if find_table_cells(child, sec, ppi, ci, page_idx, result) {
-                    return true;
-                }
-            }
-            false
-        }
-
         let mut cells = Vec::new();
         let total_pages = self.page_count() as usize;
         let start = page_hint.min(total_pages.saturating_sub(1));

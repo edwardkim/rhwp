@@ -121,6 +121,37 @@ pub(in crate::renderer::typeset) fn anchor_is_picture(
         .unwrap_or(false)
 }
 
+/// 쪽·종이 기준 Square 표는 typeset_block_table에서 표 높이를 본문에
+/// 예약하지 않는다. 문단 상대 프레임과 혼재한 host는 같은 소유로 해석하지 않는다.
+pub(in crate::renderer::typeset) fn anchor_table_has_absolute_frame(
+    paragraphs: &[Paragraph],
+    band: WrapBand,
+) -> bool {
+    let Some(anchor) = paragraphs.get(band.anchor_para) else {
+        return false;
+    };
+    let mut tables = anchor
+        .controls
+        .iter()
+        .filter_map(|control| match control {
+            Control::Table(table)
+                if !table.common.treat_as_char
+                    && table.common.text_wrap == crate::model::shape::TextWrap::Square =>
+            {
+                Some(table.as_ref())
+            }
+            _ => None,
+        })
+        .peekable();
+    tables.peek().is_some()
+        && tables.all(|table| {
+            matches!(
+                table.common.vert_rel_to,
+                crate::model::shape::VertRelTo::Page | crate::model::shape::VertRelTo::Paper
+            )
+        })
+}
+
 pub(in crate::renderer::typeset) fn picture_anchor(
     paragraphs: &[Paragraph],
     band: WrapBand,

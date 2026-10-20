@@ -8,6 +8,25 @@ use std::sync::OnceLock;
 
 use crate::renderer::font_rule_layout_metric_projection::find_font_rule_layout_metric;
 
+#[path = "font_metric_han_santteut.rs"]
+mod han_santteut;
+
+#[path = "font_metric_legacy_hft.rs"]
+mod legacy_hft;
+
+#[path = "font_metric_hci_poppy.rs"]
+mod hci_poppy;
+
+#[path = "font_metric_hci_tulip.rs"]
+mod hci_tulip;
+
+#[path = "font_metric_math_alphabet.rs"]
+mod math_alphabet;
+
+pub(crate) use legacy_hft::{
+    is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
+};
+
 #[derive(Debug)]
 pub struct HangulMetric {
     pub cho_groups: u8,
@@ -64,8 +83,27 @@ impl FontMetric {
             };
             return if w > 0 { Some(w) } else { None };
         }
-        None
+        // 기존 범위는 그대로 우선하며, 확인된 프로그램의 누락 구간만 보충한다.
+        verified_technical_symbol_width(self, ch).or_else(|| math_alphabet::width(self, ch))
     }
+}
+
+include!("font_metrics_technical_symbols.rs");
+
+/// 실제 프로그램에서 확인한 cmap. DB의 미수집 범위를 glyph 결측으로 취급하지 않는다.
+pub(crate) fn verified_metric_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
+    verified_program_has_glyph(metric, ch)
+        .or_else(|| math_alphabet::entry(metric, ch).map(|(present, _)| present))
+}
+
+/// DB 항목이 없어도 확인한 원 face의 cmap은 독립적으로 조회한다.
+pub(crate) fn verified_named_program_has_glyph(
+    family: &str,
+    bold: bool,
+    italic: bool,
+    ch: char,
+) -> Option<bool> {
+    math_alphabet::primary_has_glyph(family, bold, italic, ch)
 }
 
 /// find_metric의 반환값: 메트릭 + 폴백 정보
@@ -236,6 +274,40 @@ pub(crate) fn find_metric_decision<'a>(
     })
 }
 
+/// 원본 프로그램에서 확인한 문자 폭은 표시 대체 글꼴의 완전한 표보다 우선한다.
+/// 부분 표의 미측정 문자·확인하지 않은 정체는 기존 색인 선택을 그대로 쓴다.
+pub(crate) fn find_metric_decision_for_character<'a>(
+    name: &'a str,
+    bold: bool,
+    italic: bool,
+    character: char,
+) -> Option<MetricLookupDecision<'a>> {
+    let mut decision = find_metric_decision(name, bold, italic)?;
+    let source = &hci_poppy::METRICS[0];
+    if decision.alias_resolved_name != source.name
+        || bold != source.bold
+        || italic != source.italic
+        || character.is_whitespace()
+        || source.get_width(character).is_none()
+    {
+        return Some(decision);
+    }
+    static SOURCE_INDEX: OnceLock<Option<usize>> = OnceLock::new();
+    if let Some(index) = *SOURCE_INDEX.get_or_init(|| {
+        FONT_METRICS
+            .iter()
+            .position(|entry| std::ptr::eq(entry, source))
+    }) {
+        // 각 표가 가진 em을 함께 선택한다. em=1000의 폭을 em=2048 표에
+        // 정수 반올림해 섞지 않으며 가운뎃점 등 기존 독립 측정도 보존한다.
+        decision.metric = source;
+        decision.entry_index = index;
+        decision.match_kind = MetricMatchKind::Exact;
+        decision.bold_fallback = false;
+    }
+    Some(decision)
+}
+
 /// [#4709] 이 스타일의 글자폭 배치에 실제로 쓰인 내장 메트릭 face 이름.
 ///
 /// `measure_char_width_embedded`(text_measurement.rs)의 해석 순서를 따른다:
@@ -309,6 +381,10 @@ impl FontMetrics {
         GENERATED_FONT_METRICS
             .iter()
             .chain(MEASURED_FONT_METRIC_OVERLAYS.iter())
+            .chain(han_santteut::METRICS.iter())
+            .chain(legacy_hft::METRICS.iter())
+            .chain(hci_poppy::METRICS.iter())
+            .chain(hci_tulip::METRICS.iter())
     }
 }
 

@@ -26,13 +26,42 @@ export interface GlyphOutlinePayloadStatusOptions {
   allowSvgGlyph?: boolean;
 }
 
+// Exact largest finite IEEE-754 binary32 value, shared with native Skia.
+const MAX_GLYPH_SCALAR = 3.4028234663852886e38;
+
+function isPortableGlyphScalar(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= MAX_GLYPH_SCALAR;
+}
+
 const COLRV1_SUPPORTED_NODE_KINDS = new Set([
   'solidPath',
   'linearGradientPath',
   'radialGradientPath',
   'sweepGradientPath',
   'transform',
+  'composite',
+  'clip',
 ]);
+
+function hasMonochromePaths(op: LayerGlyphOutlineOp): boolean {
+  return Array.isArray(op.paths) && op.paths.length > 0 && op.paths.length <= 4096
+    && isFiniteAffine(op.placement?.runToPage)
+    && op.paths.every(path => !!path && isValidPathCommands(path.commands)
+      && (path.fillRule === undefined || isSupportedFillRule(path.fillRule)));
+}
+
+export function glyphOutlinePaintIsSupported(op: LayerGlyphOutlineOp): boolean {
+  const style = op.paintStyle ?? {};
+  const shade = typeof style.shadeColor === 'string' ? style.shadeColor.toLowerCase() : '#ffffff';
+  return (style.fontSize === undefined || (isPortableGlyphScalar(style.fontSize) && style.fontSize > 0 && style.fontSize <= 4096))
+    && (style.ratio === undefined || (isPortableGlyphScalar(style.ratio) && Math.abs(style.ratio - 1) <= 0.001))
+    && (style.underline ?? 'none') === 'none' && (style.emphasisDot ?? 0) === 0
+    && [style.strikethrough, style.superscript, style.subscript, style.emboss, style.engrave]
+      .every(value => value === undefined || value === false)
+    && (style.shadowType ?? 0) === 0 && (style.outlineType ?? 0) === 0
+    && [style.shadowOffsetX ?? 0, style.shadowOffsetY ?? 0].every(isPortableGlyphScalar)
+    && (shade === '#ffffff' || shade === '#000000');
+}
 
 export function glyphOutlinePayloadStatus(
   op: LayerGlyphOutlineOp,
@@ -42,14 +71,21 @@ export function glyphOutlinePayloadStatus(
   if (!hasExclusivePayloadFamily(op, payloadKind)) {
     return { payloadKind, supported: false, reason: 'unsupportedOutlinePayload', detail: 'mixedPayloadFamily' };
   }
+  // Legacy non-monochrome payloads may omit placement; supplied values must
+  // fit the portable f32 scalar contract used by the producer and CanvasKit.
+  if (!isOptionalFiniteAffine(op.placement?.runToPage)
+    || (op.placement?.baselineY !== undefined && !isPortableGlyphScalar(op.placement.baselineY))) {
+    return { payloadKind, supported: false, reason: 'unsupportedOutlinePayload', detail: 'invalidPlacement' };
+  }
   switch (payloadKind) {
     case 'monochromeFill':
-      return { payloadKind, supported: Array.isArray(op.paths) && op.paths.length > 0, reason: op.paths?.length ? undefined : 'unsupportedOutlinePayload' };
+      return hasMonochromePaths(op) ? { payloadKind, supported: true }
+        : { payloadKind, supported: false, reason: 'unsupportedOutlinePayload' };
     case 'monochromeFillStroke':
       if (!options.allowMonochromeFillStroke) {
         return { payloadKind, supported: false, reason: 'glyphOutlineStrokeStyleUnsupported', detail: 'gateClosed' };
       }
-      return isStrictStroke(op.stroke)
+      return hasMonochromePaths(op) && isStrictStroke(op.stroke)
         ? { payloadKind, supported: true }
         : { payloadKind, supported: false, reason: 'glyphOutlineStrokeStyleUnsupported' };
     case 'colorLayers':
@@ -100,13 +136,16 @@ function colorLayersStatus(
     return { payloadKind, supported: false, reason: 'unsupportedColorGlyph', detail: 'missingColorLayers' };
   }
   if (colorLayers.colorFormat === 'colrV0') {
-    return options.allowColrv0ColorLayers && Array.isArray(colorLayers.layers) && colorLayers.layers.length > 0
+    return options.allowColrv0ColorLayers && hasColrv0ResolvedLayerContract(colorLayers)
       ? { payloadKind, supported: true }
       : { payloadKind, supported: false, reason: 'unsupportedColorGlyph', detail: 'colrV0GateClosed' };
   }
   if (colorLayers.colorFormat === 'colrV1') {
     const nodes = colorLayers.paintGraph?.nodes ?? [];
-    const unsupported = nodes.find((node) => !COLRV1_SUPPORTED_NODE_KINDS.has(node.kind ?? ''));
+    if (!Array.isArray(nodes)) {
+      return { payloadKind, supported: false, reason: 'unsupportedColorGlyph', detail: 'colrV1InvalidGraph' };
+    }
+    const unsupported = nodes.find((node) => !node || !COLRV1_SUPPORTED_NODE_KINDS.has(node.kind ?? ''));
     if (unsupported) {
       return {
         payloadKind,
@@ -133,6 +172,7 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
   if (
     colorLayers?.colorFormat !== 'colrV1'
     || !graph
+    || !Array.isArray(nodes)
     || nodes.length === 0
     || nodes.length > 64
     || colorLayers.sourceFontRef === undefined
@@ -143,15 +183,16 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
   }
   const nodesById = new Map<number, NonNullable<typeof nodes[number]>>();
   for (const node of nodes) {
-    if (!Number.isInteger(node.nodeId) || node.nodeId === undefined || nodesById.has(node.nodeId)) {
+    if (!node || !Number.isInteger(node.nodeId) || node.nodeId === undefined || nodesById.has(node.nodeId)) {
       return false;
     }
     nodesById.set(node.nodeId, node);
   }
-  let nodeId = graph.rootNodeId;
   const visited = new Set<number>();
-  for (let depth = 0; depth < 64; depth += 1) {
-    if (!Number.isInteger(nodeId) || nodeId === undefined || visited.has(nodeId)) {
+  const active = new Set<number>();
+  let expanded = 0;
+  const visit = (nodeId: number | undefined, depth: number): boolean => {
+    if (depth >= 64 || ++expanded > 4096 || !Number.isInteger(nodeId) || nodeId === undefined || active.has(nodeId)) {
       return false;
     }
     visited.add(nodeId);
@@ -159,84 +200,97 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
     if (!node) {
       return false;
     }
-    switch (node.kind) {
-      case 'solidPath':
-        return visited.size === nodes.length
-          && node.solidPath !== undefined
-          && node.transform === undefined
-          && node.linearGradientPath === undefined
-          && node.radialGradientPath === undefined
-          && node.sweepGradientPath === undefined
-          && isLeafMetadataValid(node)
-          && isValidPathCommands(node.solidPath.commands)
-          && isValidResolvedColor(node.solidPath.fill)
-          && isSupportedFillRule(node.solidPath.fillRule);
-      case 'linearGradientPath':
-        return visited.size === nodes.length
-          && node.solidPath === undefined
-          && node.transform === undefined
-          && node.radialGradientPath === undefined
-          && node.sweepGradientPath === undefined
-          && node.linearGradientPath !== undefined
-          && isLeafMetadataValid(node)
-          && isValidPathCommands(node.linearGradientPath.commands)
-          && Number.isFinite(node.linearGradientPath.gradient?.x0)
-          && Number.isFinite(node.linearGradientPath.gradient?.y0)
-          && Number.isFinite(node.linearGradientPath.gradient?.x1)
-          && Number.isFinite(node.linearGradientPath.gradient?.y1)
-          && isValidColorGradientStops(node.linearGradientPath.gradient?.stops)
-          && isSupportedFillRule(node.linearGradientPath.fillRule);
-      case 'radialGradientPath':
-        return visited.size === nodes.length
-          && node.solidPath === undefined
-          && node.transform === undefined
-          && node.linearGradientPath === undefined
-          && node.sweepGradientPath === undefined
-          && node.radialGradientPath !== undefined
-          && isLeafMetadataValid(node)
-          && isValidPathCommands(node.radialGradientPath.commands)
-          && Number.isFinite(node.radialGradientPath.gradient?.cx)
-          && Number.isFinite(node.radialGradientPath.gradient?.cy)
-          && Number.isFinite(node.radialGradientPath.gradient?.radius)
-          && (node.radialGradientPath.gradient?.radius ?? 0) > 0
-          && isValidColorGradientStops(node.radialGradientPath.gradient?.stops)
-          && isSupportedFillRule(node.radialGradientPath.fillRule);
-      case 'sweepGradientPath':
-        return visited.size === nodes.length
-          && node.solidPath === undefined
-          && node.transform === undefined
-          && node.linearGradientPath === undefined
-          && node.radialGradientPath === undefined
-          && node.sweepGradientPath !== undefined
-          && isLeafMetadataValid(node)
-          && isValidPathCommands(node.sweepGradientPath.commands)
-          && Number.isFinite(node.sweepGradientPath.gradient?.cx)
-          && Number.isFinite(node.sweepGradientPath.gradient?.cy)
-          && isSupportedFullCircleSweepGradient(
-            node.sweepGradientPath.gradient?.startAngleDegrees,
-            node.sweepGradientPath.gradient?.endAngleDegrees,
-          )
-          && isValidColorGradientStops(node.sweepGradientPath.gradient?.stops)
-          && isSupportedFillRule(node.sweepGradientPath.fillRule);
-      case 'transform':
-        if (
-          node.solidPath !== undefined
-          || node.linearGradientPath !== undefined
-          || node.radialGradientPath !== undefined
-          || node.sweepGradientPath !== undefined
-          || node.transform === undefined
-          || !Number.isInteger(node.transform.childNodeId)
-          || !isFiniteAffine(node.transform.transform)
-        ) {
+    const fields = ['solidPath', 'linearGradientPath', 'radialGradientPath', 'sweepGradientPath', 'transform', 'composite', 'clip'] as const;
+    if (fields.filter(field => node[field] !== undefined).length !== 1) return false;
+    active.add(nodeId);
+    try {
+      switch (node.kind) {
+        case 'solidPath':
+          return !!node.solidPath
+            && node.transform === undefined
+            && node.linearGradientPath === undefined
+            && node.radialGradientPath === undefined
+            && node.sweepGradientPath === undefined
+            && isLeafMetadataValid(node)
+            && isValidPathCommands(node.solidPath.commands)
+            && isValidResolvedColor(node.solidPath.fill)
+            && isSupportedFillRule(node.solidPath.fillRule);
+        case 'linearGradientPath':
+          return node.solidPath === undefined
+            && node.transform === undefined
+            && node.radialGradientPath === undefined
+            && node.sweepGradientPath === undefined
+            && !!node.linearGradientPath
+            && isLeafMetadataValid(node)
+            && isValidPathCommands(node.linearGradientPath.commands)
+            && isPortableGlyphScalar(node.linearGradientPath.gradient?.x0)
+            && isPortableGlyphScalar(node.linearGradientPath.gradient?.y0)
+            && isPortableGlyphScalar(node.linearGradientPath.gradient?.x1)
+            && isPortableGlyphScalar(node.linearGradientPath.gradient?.y1)
+            && isValidColorGradientStops(node.linearGradientPath.gradient?.stops)
+            && isSupportedFillRule(node.linearGradientPath.fillRule);
+        case 'radialGradientPath':
+          return node.solidPath === undefined
+            && node.transform === undefined
+            && node.linearGradientPath === undefined
+            && node.sweepGradientPath === undefined
+            && !!node.radialGradientPath
+            && isLeafMetadataValid(node)
+            && isValidPathCommands(node.radialGradientPath.commands)
+            && isPortableGlyphScalar(node.radialGradientPath.gradient?.cx)
+            && isPortableGlyphScalar(node.radialGradientPath.gradient?.cy)
+            && isPortableGlyphScalar(node.radialGradientPath.gradient?.radius)
+            && (node.radialGradientPath.gradient?.radius ?? 0) > 0
+            && Number(node.radialGradientPath.gradient.radius.toFixed(6)) > 0
+            && isValidColorGradientStops(node.radialGradientPath.gradient?.stops)
+            && isSupportedFillRule(node.radialGradientPath.fillRule);
+        case 'sweepGradientPath':
+          return node.solidPath === undefined
+            && node.transform === undefined
+            && node.linearGradientPath === undefined
+            && node.radialGradientPath === undefined
+            && !!node.sweepGradientPath
+            && isLeafMetadataValid(node)
+            && isValidPathCommands(node.sweepGradientPath.commands)
+            && isPortableGlyphScalar(node.sweepGradientPath.gradient?.cx)
+            && isPortableGlyphScalar(node.sweepGradientPath.gradient?.cy)
+            && isSupportedFullCircleSweepGradient(
+              node.sweepGradientPath.gradient?.startAngleDegrees,
+              node.sweepGradientPath.gradient?.endAngleDegrees,
+            )
+            && isValidColorGradientStops(node.sweepGradientPath.gradient?.stops)
+            && isSupportedFillRule(node.sweepGradientPath.fillRule);
+        case 'transform':
+          if (
+            !!node.solidPath
+            || !!node.linearGradientPath
+            || !!node.radialGradientPath
+            || !!node.sweepGradientPath
+            || !node.transform
+            || !Number.isInteger(node.transform.childNodeId)
+            || !isFiniteAffine(node.transform.transform)
+          ) {
+            return false;
+          }
+          return visit(node.transform.childNodeId, depth + 1);
+        case 'composite':
+          return node.composite?.mode === 'sourceOver'
+            && node.composite.sourceNodeId !== node.composite.backdropNodeId
+            && visit(node.composite.backdropNodeId, depth + 1)
+            && visit(node.composite.sourceNodeId, depth + 1);
+        case 'clip':
+          return !!node.clip
+            && isValidPathCommands(node.clip.clipCommands)
+            && isSupportedFillRule(node.clip.fillRule)
+            && visit(node.clip.childNodeId, depth + 1);
+        default:
           return false;
-        }
-        nodeId = node.transform.childNodeId;
-        continue;
-      default:
-        return false;
+      }
+    } finally {
+      active.delete(nodeId);
     }
-  }
-  return false;
+  };
+  return visit(graph.rootNodeId, 0) && visited.size === nodes.length;
 }
 
 function hasColorLayersResourceKeyContract(op: LayerGlyphOutlineOp): boolean {
@@ -255,17 +309,19 @@ function hasColorLayersResourceKeyContract(op: LayerGlyphOutlineOp): boolean {
 
 function hasColrv0ResolvedLayerContract(colorLayers: NonNullable<LayerGlyphOutlineOp['colorLayers']>): boolean {
   const layers = colorLayers.layers ?? [];
-  return colorLayers.colorFormat === 'colrV0'
+  return Array.isArray(layers) && colorLayers.colorFormat === 'colrV0'
     && colorLayers.paintGraph === undefined
     && layers.length > 0
+    && layers.length <= 256
+    && layers.reduce((sum, layer) => sum + (layer?.commands?.length ?? 0), 0) <= 4096
     && layers.every((layer) => (
-      isValidPathCommands(layer.commands)
+      isValidPathCommands(layer?.commands)
       && isValidResolvedColor(layer.fill)
       && isSupportedFillRule(layer.fillRule)
       && isValidTextRange(layer.sourceRangeUtf8)
       && isNonEmptyTextRange(layer.glyphRange)
       && isOptionalFiniteAffine(layer.transformToRun)
-      && (layer.opacity === undefined || Number.isFinite(layer.opacity))
+      && (layer.opacity === undefined || (Number.isFinite(layer.opacity) && layer.opacity >= 0 && layer.opacity <= 1))
     ));
 }
 
@@ -276,7 +332,7 @@ function isLeafMetadataValid(node: LayerColorPaintGraphNode): boolean {
 }
 
 function isValidTextRange(range: { start?: number; end?: number } | undefined): boolean {
-  return range !== undefined
+  return !!range
     && Number.isInteger(range.start)
     && Number.isInteger(range.end)
     && (range.end ?? -1) >= (range.start ?? 0);
@@ -288,12 +344,8 @@ function isNonEmptyTextRange(range: { start?: number; end?: number } | undefined
 
 function isFiniteAffine(transform: { a?: number; b?: number; c?: number; d?: number; e?: number; f?: number } | undefined): boolean {
   return transform !== undefined
-    && Number.isFinite(transform.a)
-    && Number.isFinite(transform.b)
-    && Number.isFinite(transform.c)
-    && Number.isFinite(transform.d)
-    && Number.isFinite(transform.e)
-    && Number.isFinite(transform.f);
+    && transform !== null
+    && [transform.a, transform.b, transform.c, transform.d, transform.e, transform.f].every(isPortableGlyphScalar);
 }
 
 function isOptionalFiniteAffine(transform: { a?: number; b?: number; c?: number; d?: number; e?: number; f?: number } | undefined): boolean {
@@ -301,7 +353,19 @@ function isOptionalFiniteAffine(transform: { a?: number; b?: number; c?: number;
 }
 
 function isValidPathCommands(commands: unknown[] | undefined): boolean {
-  return Array.isArray(commands) && commands.length > 0;
+  return Array.isArray(commands) && commands.length > 0 && commands.length <= 4096
+    && commands.every(raw => {
+      if (!raw || typeof raw !== 'object') return false;
+      const command = raw as Record<string, unknown>;
+      switch (command.type) {
+        case 'moveTo': case 'lineTo': return [command.x, command.y].every(isPortableGlyphScalar);
+        case 'curveTo': return [command.x1, command.y1, command.x2, command.y2, command.x3, command.y3].every(isPortableGlyphScalar);
+        case 'arcTo': return [command.rx, command.ry, command.rotation, command.x, command.y].every(isPortableGlyphScalar)
+          && typeof command.largeArc === 'boolean' && typeof command.sweep === 'boolean';
+        case 'closePath': return true;
+        default: return false;
+      }
+    });
 }
 
 function isValidResolvedColor(color: { rgba?: number[] } | undefined): boolean {
@@ -311,7 +375,7 @@ function isValidResolvedColor(color: { rgba?: number[] } | undefined): boolean {
 }
 
 function isValidColorGradientStops(stops: Array<{ offset?: number; color?: { rgba?: number[] } }> | undefined): boolean {
-  if (!Array.isArray(stops) || stops.length < 2) {
+  if (!Array.isArray(stops) || stops.length < 2 || stops.length > 4096) {
     return false;
   }
   let previousOffset = Number.NEGATIVE_INFINITY;
@@ -334,10 +398,11 @@ function isSupportedFullCircleSweepGradient(
   startAngleDegrees: number | undefined,
   endAngleDegrees: number | undefined,
 ): boolean {
-  return Number.isFinite(startAngleDegrees)
-    && Number.isFinite(endAngleDegrees)
-    && (startAngleDegrees ?? 0) < (endAngleDegrees ?? 0)
-    && Math.abs((endAngleDegrees ?? 0) - (startAngleDegrees ?? 0) - 360) <= 1e-9;
+  const isFullCircle = (start: number, end: number) => start < end && Math.abs(end - start - 360) <= 1e-9;
+  return isPortableGlyphScalar(startAngleDegrees)
+    && isPortableGlyphScalar(endAngleDegrees)
+    && isFullCircle(startAngleDegrees, endAngleDegrees)
+    && isFullCircle(Number(startAngleDegrees.toFixed(6)), Number(endAngleDegrees.toFixed(6)));
 }
 
 function isSupportedFillRule(fillRule: string | undefined): boolean {
@@ -361,11 +426,12 @@ function hasExclusivePayloadFamily(op: LayerGlyphOutlineOp, payloadKind: string)
 
 function isStrictStroke(stroke: LayerGlyphOutlineOp['stroke']): boolean {
   return !!stroke
-    && Number.isFinite(stroke.width)
+    && isPortableGlyphScalar(stroke.width)
     && (stroke.width ?? 0) > 0
+    && Number(stroke.width.toFixed(6)) > 0
     && stroke.join === 'miter'
     && stroke.cap === 'butt'
-    && Number.isFinite(stroke.miterLimit)
+    && isPortableGlyphScalar(stroke.miterLimit)
     && (stroke.miterLimit ?? 0) >= 1
     && (stroke.paintOrder === 'fillThenStroke' || stroke.paintOrder === 'strokeThenFill');
 }
@@ -376,11 +442,13 @@ function hasBitmapGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && typeof glyph.imageRef === 'number'
     && glyph.scalingPolicy !== 'backendDefault'
     && glyph.placement !== undefined
-    && isPositiveBounds(glyph.placement);
+    && isPositiveBounds(glyph.placement)
+    && isOptionalFiniteAffine(glyph.transformToRun);
 }
 
 function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
   const glyph = op.svgGlyph;
+  const destination = glyph?.fontEmBox ?? op.bbox;
   return !!glyph
     && typeof glyph.svgRef === 'number'
     && glyph.staticSanitized === true
@@ -389,7 +457,19 @@ function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && glyph.externalResourcesAllowed !== true
     && glyph.interactivityAllowed !== true
     && glyph.viewBox !== undefined
-    && isPositiveBounds(glyph.viewBox);
+    && isPositiveBounds(glyph.viewBox)
+    && destination !== undefined
+    && isPositiveBounds(destination)
+    && isPortableSvgViewBoxMapping(glyph.viewBox, destination)
+    && isPortableSvgViewBoxMapping(wireBounds(glyph.viewBox), wireBounds(destination))
+    && isOptionalFiniteAffine(glyph.transformToRun)
+    && (glyph.intrinsicSize === undefined || (glyph.intrinsicSize !== null
+      && isPortableGlyphScalar(glyph.intrinsicSize.width) && Math.fround(glyph.intrinsicSize.width) > 0
+      && isPortableGlyphScalar(glyph.intrinsicSize.height) && Math.fround(glyph.intrinsicSize.height) > 0
+      && Number(glyph.intrinsicSize.width.toFixed(6)) > 0
+      && Number(glyph.intrinsicSize.height.toFixed(6)) > 0
+    ))
+    && (glyph.fontEmBox === undefined || isPositiveBounds(glyph.fontEmBox));
 }
 
 function colorLayersResourceKey(colorLayers: NonNullable<LayerGlyphOutlineOp['colorLayers']>): string {
@@ -448,6 +528,7 @@ function svgGlyphResourceKey(glyph: NonNullable<LayerGlyphOutlineOp['svgGlyph']>
     `external:${glyph.externalResourcesAllowed === true}`,
     `interactive:${glyph.interactivityAllowed === true}`,
     `transform:${affineKey(glyph.transformToRun)}`,
+    ...(glyph.fontEmBox ? [`fontEmBox:${boundsKey(glyph.fontEmBox)}`] : []),
   ].join(':');
 }
 
@@ -483,16 +564,82 @@ function affineKey(transform: { a?: number; b?: number; c?: number; d?: number; 
 }
 
 function fixed(value: number | undefined): string {
-  return Number.isFinite(value) ? (value ?? 0).toFixed(6) : '-';
+  return fixedDecimalKey(value, 6);
 }
 
 function fixedBounds(value: number | undefined): string {
-  return Number.isFinite(value) ? (value ?? 0).toFixed(3) : '-';
+  return fixedDecimalKey(value, 3);
 }
 
-function isPositiveBounds(bounds: { width?: number; height?: number }): boolean {
-  return Number.isFinite(bounds.width)
-    && Number.isFinite(bounds.height)
-    && (bounds.width ?? 0) > 0
-    && (bounds.height ?? 0) > 0;
+function fixedDecimalKey(value: number | undefined, precision: 3 | 6): string {
+  if (value === undefined || !Number.isFinite(value)) return '-';
+  // Rust's existing fixed-decimal wire/key preserves signed zero. JSON.parse
+  // preserves it too, but Number.toFixed() erases the sign of an exact -0.
+  if (Object.is(value, -0)) return `-0.${'0'.repeat(precision)}`;
+  // Number.toFixed() switches to exponent notation at 1e21. Every binary64
+  // number at that magnitude is integral, and BigInt(number) retains its exact
+  // integer rather than the shortest (potentially rounded) Number.toString().
+  if (Math.abs(value) >= 1e21) return `${BigInt(value)}.${'0'.repeat(precision)}`;
+  return value.toFixed(precision);
+}
+
+function isPositiveBounds(bounds: { x?: number; y?: number; width?: number; height?: number }): boolean {
+  if (!isPositiveBoundsInReplaySpace(bounds)) return false;
+  // Match preflight before JSON export as well as already serialized payloads.
+  // The three-decimal wire must not turn an admitted extent into zero.
+  return isPositiveBoundsInReplaySpace(wireBounds(bounds));
+}
+
+function wireBounds(bounds: { x?: number; y?: number; width?: number; height?: number }) {
+  return {
+    x: Number(bounds.x!.toFixed(3)),
+    y: Number(bounds.y!.toFixed(3)),
+    width: Number(bounds.width!.toFixed(3)),
+    height: Number(bounds.height!.toFixed(3)),
+  };
+}
+
+function isPortableSvgViewBoxMapping(
+  viewBox: { x?: number; y?: number; width?: number; height?: number },
+  destination: { x?: number; y?: number; width?: number; height?: number },
+): boolean {
+  return [
+    [viewBox.x!, viewBox.width!, destination.x!, destination.width!],
+    [viewBox.y!, viewBox.height!, destination.y!, destination.height!],
+  ].every(([origin, extent, destinationOrigin, destinationExtent]) => {
+    const scale = destinationExtent / extent;
+    const scaledOrigin = origin * scale;
+    const narrowedScale = Math.fround(scale);
+    const narrowedOrigin = Math.fround(Math.fround(origin) * narrowedScale);
+    return isPortableGlyphScalar(scale) && narrowedScale > 0
+      && isPortableGlyphScalar(scaledOrigin)
+      && isPortableGlyphScalar(destinationOrigin - scaledOrigin)
+      && Number.isFinite(narrowedOrigin)
+      && Number.isFinite(Math.fround(Math.fround(destinationOrigin) - narrowedOrigin));
+  });
+}
+
+function isPositiveBoundsInReplaySpace(bounds: { x?: number; y?: number; width?: number; height?: number }): boolean {
+  if (bounds === null || !isPortableGlyphScalar(bounds.x)
+    || !isPortableGlyphScalar(bounds.y)
+    || !isPortableGlyphScalar(bounds.width)
+    || !isPortableGlyphScalar(bounds.height)
+    || !isPortableGlyphScalar(bounds.x + bounds.width)
+    || !isPortableGlyphScalar(bounds.y + bounds.height)) {
+    return false;
+  }
+  const x = Math.fround(bounds.x);
+  const y = Math.fround(bounds.y);
+  const width = Math.fround(bounds.width);
+  const height = Math.fround(bounds.height);
+  // Native Skia adds narrowed components; CanvasKit XYWHRect narrows f64
+  // endpoints instead. Both rectangles must remain finite and nonempty.
+  const nativeRight = Math.fround(x + width);
+  const nativeBottom = Math.fround(y + height);
+  const canvasKitRight = Math.fround(bounds.x + bounds.width);
+  const canvasKitBottom = Math.fround(bounds.y + bounds.height);
+  return width > 0 && height > 0
+    && Number.isFinite(nativeRight) && Number.isFinite(nativeBottom)
+    && nativeRight > x && nativeBottom > y
+    && canvasKitRight > x && canvasKitBottom > y;
 }

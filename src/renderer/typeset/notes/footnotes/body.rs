@@ -5,11 +5,9 @@ use crate::renderer::typeset::notes::footnotes::boundary::{
     native_hwp5_footnote_fragment_height, native_hwp5_footnote_reset_fragments,
     native_hwp5_two_line_footnote_fragments, NativeHwp5FootnoteFragmentSplit,
 };
-use crate::renderer::typeset::notes::footnotes::measure::composed_footnote_content_height;
 use crate::renderer::typeset::{
-    estimate_footnote_note_height, hwpunit_to_px,
-    native_hwp5_rowbreak_host_precedes_first_fragment, Control, Footnote, FootnoteRef,
-    FootnoteSource, Paragraph, TypesetEngine, TypesetState,
+    hwpunit_to_px, native_hwp5_rowbreak_host_precedes_first_fragment, Control, Footnote,
+    FootnoteRef, FootnoteSource, Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
 };
 
 impl TypesetEngine {
@@ -22,7 +20,7 @@ impl TypesetEngine {
         paragraphs: &[Paragraph],
         ctrl_idx: usize,
         fn_ctrl: &Footnote,
-        has_table: bool,
+        styles: &ResolvedStyleSet,
         native_hwp5_footnote_break: Option<super::boundary::NativeHwp5FootnoteBreak>,
     ) {
         // 본문 내 참조는 그대로 배치하며, 원본에 없는 각주 번호/구분선을 만들지 않는다.
@@ -64,6 +62,38 @@ impl TypesetEngine {
             para_index: para_idx,
             control_index: ctrl_idx,
         };
+        let note_measure = super::measure::BodyFootnoteMeasure {
+            engine: self,
+            styles,
+        };
+        let block_content_height = note_measure.block_content_height(st, fn_ctrl, None);
+        let content_height =
+            block_content_height.unwrap_or_else(|| note_measure.content_height(st, fn_ctrl));
+        // 번호는 문서 순서다. 앞 각주의 저장 suffix가 다음 쪽 lane을 열었으면
+        // 뒤 번호를 현재 쪽에 끼워 넣지 않고 같은 lane에서 이어받는다.
+        // 본문 marker의 소유 쪽은 이 예약으로 바뀌지 않는다.
+        // 앞 각주의 뒤 조각이 다음 쪽을 소유하면 같은 현재 쪽 표시의 후속
+        // 각주도 그 뒤에 둔다. 이미 완료된 쪽의 표시는 기존 소급 경로가 맡는다.
+        if st.has_deferred_body_footnotes()
+            && crate::renderer::pagination::find_inline_control_target_page(
+                &st.pages,
+                &st.current_items,
+                para_idx,
+                ctrl_idx,
+                para,
+            )
+            .is_none()
+        {
+            st.defer_body_footnote_for_next_page(
+                FootnoteRef {
+                    number: fn_ctrl.number,
+                    source,
+                    fragment: None,
+                },
+                content_height,
+            );
+            return;
+        }
         // 원본 HWPX의 표 뒤 형제 각주도 실제 끝 조각 소유를 따른다.
         // 편집·무효 텍스트 분할·합성 줄은 원본 저장 캡션의 근거로 사용하지 않는다.
         let original_hwpx_table_host = st.profile.hwpx_stored_layout()
@@ -101,7 +131,7 @@ impl TypesetEngine {
                         && (!original_hwpx_table_host
                             || !self.render_normalization.table_text_reflowed(table)) =>
                 {
-                    let full_content_height = composed_footnote_content_height(fn_ctrl, self.dpi);
+                    let full_content_height = content_height;
                     st.table_host_terminal_fragment_placement(
                         para_idx,
                         table_control_index,
@@ -159,8 +189,10 @@ impl TypesetEngine {
                 source,
                 full_content_height,
             );
-        } else if !has_table {
-            let fn_height = estimate_footnote_note_height(fn_ctrl, self.dpi);
+        } else {
+            // 최상위 본문 control의 각주는 같은 문단의 형제 표와 독립적이다.
+            // 셀 내부 각주는 별도의 fragment queue에서 등록한다.
+            let fn_height = content_height;
             let move_to_next_reset_page = native_hwp5_final_marker_footnote_uses_next_reset_page(
                 st, para_idx, para, paragraphs, ctrl_idx, fn_ctrl, fn_height,
             );
@@ -182,12 +214,7 @@ impl TypesetEngine {
                     para,
                 )
                 .is_none()
-                && !st.footnote_fragment_fits_current_page(
-                    composed_footnote_content_height(fn_ctrl, self.dpi),
-                    true,
-                    false,
-                    0.0,
-                );
+                && !st.footnote_fragment_fits_current_page(content_height, true, false, 0.0);
             let body_tail_reset =
                 native_hwp5_body_footnote_tail_reset(st, para_idx, para, ctrl_idx);
             // 두 줄 각주는 full-note owner route와 다른 계약이다. marker
@@ -357,13 +384,16 @@ impl TypesetEngine {
                     fragment: Some(split.prefix),
                 });
                 st.add_footnote_fragment_height(split.prefix_height, split.prefix.draw_separator);
-                st.force_new_page();
-                st.record_current_footnote(FootnoteRef {
-                    number: fn_ctrl.number,
-                    source: source.clone(),
-                    fragment: Some(split.suffix),
-                });
-                st.add_footnote_fragment_height(split.suffix_height, split.suffix.draw_separator);
+                // 각주 사다리의 재시작은 각주만 다음 쪽에 소유시킨다.
+                // 표시 뒤 본문은 현재 쪽의 남은 본문 상자를 계속 사용한다.
+                st.defer_body_footnote_for_next_page(
+                    FootnoteRef {
+                        number: fn_ctrl.number,
+                        source: source.clone(),
+                        fragment: Some(split.suffix),
+                    },
+                    split.suffix_height,
+                );
                 return;
             }
             if let Some((page_idx, _)) = routed {

@@ -9,6 +9,7 @@ fn parse_arrow(name: &str) -> ArrowStyle {
         "diamond" => ArrowStyle::Diamond,
         "circle" => ArrowStyle::Circle,
         "square" => ArrowStyle::Square,
+        "openArrow" => ArrowStyle::OpenArrow,
         other => panic!("unknown arrow {other}"),
     }
 }
@@ -31,6 +32,12 @@ fn parse_dash(name: &str) -> StrokeDash {
         "dot" => StrokeDash::Dot,
         "dashDot" => StrokeDash::DashDot,
         "dashDotDot" => StrokeDash::DashDotDot,
+        "hwpDash" => StrokeDash::HwpDash,
+        "hwpDot" => StrokeDash::HwpDot,
+        "hwpDashDot" => StrokeDash::HwpDashDot,
+        "hwpDashDotDot" => StrokeDash::HwpDashDotDot,
+        "hwpLongDash" => StrokeDash::HwpLongDash,
+        "hwpCircle" => StrokeDash::HwpCircle,
         other => panic!("unknown dash {other}"),
     }
 }
@@ -118,6 +125,7 @@ fn op_from_matrix_row(row: &serde_json::Value) -> PaintOp {
             if family == "patternFill" {
                 style.pattern = Some(crate::renderer::PatternFillInfo {
                     pattern_type: row["patternType"].as_i64().unwrap_or(1) as i32,
+                    tile_size: 7.68,
                     pattern_color: css_to_colorref(
                         row["patternColor"].as_str().unwrap_or("#000000"),
                     ),
@@ -158,6 +166,7 @@ fn op_from_matrix_row(row: &serde_json::Value) -> PaintOp {
                 number: row["number"].as_u64().unwrap_or(1) as u16,
                 text: row["text"].as_str().unwrap_or("1)").to_string(),
                 base_font_size: row["fontSize"].as_f64().unwrap_or(7.0),
+                baseline: 7.0,
                 font_family: row["fontFamily"].as_str().unwrap_or("Test").to_string(),
                 color: 0x0000_0000,
                 section_index: 0,
@@ -383,6 +392,7 @@ fn m07_pack_footnote_marker_stays_direct_with_declared_detail() {
             number: 12,
             text: "12)".to_string(),
             base_font_size: 8.0,
+            baseline: 7.0,
             font_family: "Batang".to_string(),
             color: 0x0000_00ff,
             section_index: 1,
@@ -414,6 +424,7 @@ fn m07_pack_paint_json_emits_line_shadow_and_pattern() {
     let mut rect_style = ShapeStyle::default();
     rect_style.pattern = Some(crate::renderer::PatternFillInfo {
         pattern_type: 5,
+        tile_size: 7.68,
         pattern_color: 0x0000_00ff,
         background_color: 0x00ff_ffff,
     });

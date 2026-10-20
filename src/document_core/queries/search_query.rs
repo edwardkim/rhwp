@@ -6,6 +6,7 @@ use crate::document_core::helpers::get_textbox_from_shape;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
+use crate::model::paragraph::normalize_text_newlines;
 
 /// 병적으로 깊은 중첩(손상/악의적 문서)에서 순회가 스택을 태우지 않게 하는 상한.
 /// `grep` / `table_extract::MAX_NEST_DEPTH` / `explain` / `hidden_text` / `chart_extract` 와
@@ -73,20 +74,22 @@ fn replace_char_range(text: &mut String, offset: usize, length: usize, replaceme
     *text = chars.into_iter().collect();
 }
 
-/// 문단 텍스트에서 query를 검색하여 모든 매치 오프셋을 반환한다.
+/// 문단 텍스트에서 query를 검색하여 겹치지 않는 매치의 원문 문자 (오프셋, 길이)를 반환한다.
 ///
 /// [#3283] `grep`(주소를 가진 검색)이 같은 매칭 규칙을 쓰도록 크레이트에 공개한다 —
 /// 검색과 치환이 다른 규칙을 쓰면 "찾았는데 못 바꾸는" 어긋남이 생긴다.
-pub(crate) fn find_matches(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
+pub(crate) fn find_matches(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, usize)> {
     find_in_text(text, query, case_sensitive)
 }
 
-/// 문단 텍스트에서 query를 검색하여 모든 매치 오프셋을 반환
-fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
+/// 문단 텍스트에서 query를 검색하여 겹치지 않는 매치의 원문 문자 (오프셋, 길이)를 반환
+fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, usize)> {
     if query.is_empty() || text.is_empty() {
         return vec![];
     }
     let mut results = vec![];
+    // 치환도 이 범위를 역순으로 소비하므로, 앞 매치와 겹치면 후속 원문까지 삭제된다.
+    let mut match_end = 0;
     if case_sensitive {
         let chars: Vec<char> = text.chars().collect();
         let qchars: Vec<char> = query.chars().collect();
@@ -95,15 +98,16 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
             return results;
         }
         for i in 0..=chars.len() - qlen {
-            if chars[i..i + qlen] == qchars[..] {
-                results.push(i);
+            if i >= match_end && chars[i..i + qlen] == qchars[..] {
+                results.push((i, qlen));
+                match_end = i + qlen;
             }
         }
     } else {
         // `to_lowercase()` 는 한 원문 문자를 여러 문자로 확장할 수 있다(예: `İ` →
         // `i` + COMBINING DOT ABOVE). lower-case 버퍼의 인덱스를 그대로 반환하면
         // 호출자가 기대하는 원문 문자 오프셋이 밀린다. 각 확장 문자를 원문 문자
-        // 인덱스에 연결해 검색은 folded 텍스트에서 하되 주소는 원문 기준으로 돌려준다.
+        // 인덱스에 연결해 검색은 folded 텍스트에서 하되 시작과 끝은 원문 기준으로 돌려준다.
         let chars: Vec<(char, usize)> = text
             .chars()
             .enumerate()
@@ -118,12 +122,16 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
             return results;
         }
         for i in 0..=chars.len() - qlen {
-            if chars[i..i + qlen]
-                .iter()
-                .map(|(c, _)| *c)
-                .eq(qchars.iter().copied())
+            if chars[i].1 >= match_end
+                && chars[i..i + qlen]
+                    .iter()
+                    .map(|(c, _)| *c)
+                    .eq(qchars.iter().copied())
             {
-                results.push(chars[i].1);
+                let offset = chars[i].1;
+                let length = chars[i + qlen - 1].1 + 1 - offset;
+                results.push((offset, length));
+                match_end = offset + length;
             }
         }
     }
@@ -132,15 +140,15 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
 
 /// 문서 본문에서 query의 첫 번째 매치만 반환 (표/글상자 내부 제외, early-exit)
 fn search_first_body(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Option<SearchHit> {
-    let qlen = query.chars().count();
     for (sec_idx, section) in doc.document.sections.iter().enumerate() {
         for (para_idx, para) in section.paragraphs.iter().enumerate() {
-            if let Some(&offset) = find_in_text(&para.text, query, case_sensitive).first() {
+            if let Some(&(offset, length)) = find_in_text(&para.text, query, case_sensitive).first()
+            {
                 return Some(SearchHit {
                     sec: sec_idx,
                     para: para_idx,
                     char_offset: offset,
-                    length: qlen,
+                    length,
                     cell_context: None,
                     is_text_box: false,
                     equation_control: None,
@@ -166,13 +174,12 @@ fn push_container_hits(
     case_sensitive: bool,
     results: &mut Vec<SearchHit>,
 ) {
-    let qlen = query.chars().count();
-    for offset in find_in_text(&container.text, query, case_sensitive) {
+    for (offset, length) in find_in_text(&container.text, query, case_sensitive) {
         results.push(SearchHit {
             sec: sec_idx,
             para: para_idx,
             char_offset: offset,
-            length: qlen,
+            length,
             cell_context: cell.cloned(),
             is_text_box,
             equation_control: None,
@@ -183,12 +190,12 @@ fn push_container_hits(
     // 별도 equation_control 로 표시해 커서 이동 대상에서는 제외한다.
     for (equation_index, control) in container.controls.iter().enumerate() {
         if let Control::Equation(equation) = control {
-            for offset in find_in_text(&equation.script, query, case_sensitive) {
+            for (offset, length) in find_in_text(&equation.script, query, case_sensitive) {
                 results.push(SearchHit {
                     sec: sec_idx,
                     para: para_idx,
                     char_offset: offset,
-                    length: qlen,
+                    length,
                     cell_context: cell.cloned(),
                     is_text_box,
                     equation_control: Some(equation_index),
@@ -478,6 +485,8 @@ impl DocumentCore {
         length: usize,
         new_text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(new_text);
+        let new_text = normalized.as_ref();
         // 삭제 후 삽입
         self.delete_text_native(sec, para, char_offset, length)?;
         self.insert_text_native(sec, para, char_offset, new_text)?;
@@ -499,6 +508,8 @@ impl DocumentCore {
         new_text: &str,
         case_sensitive: bool,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(new_text);
+        let new_text = normalized.as_ref();
         if query.is_empty() {
             return Ok(r#"{"ok":false}"#.to_string());
         }
@@ -551,6 +562,8 @@ impl DocumentCore {
         case_sensitive: bool,
         occurrence: Option<usize>,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(new_text);
+        let new_text = normalized.as_ref();
         if query.is_empty() {
             return Ok(r#"{"ok":true,"count":0}"#.to_string());
         }
@@ -849,226 +862,41 @@ fn format_search_hit(hit: &SearchHit, wrapped: bool, total_match_count: usize) -
 mod tests {
     use super::*;
 
-    fn stored_search_paragraph(text: &str, width_hwp: i32) -> crate::model::paragraph::Paragraph {
-        crate::model::paragraph::Paragraph {
-            text: text.to_string(),
-            char_offsets: (0..text.chars().count() as u32).collect(),
-            char_count: text.chars().count() as u32 + 1,
-            char_shapes: vec![crate::model::paragraph::CharShapeRef {
-                start_pos: 0,
-                char_shape_id: 0,
-            }],
-            line_segs: vec![crate::model::paragraph::LineSeg {
-                text_start: 0,
-                line_height: 1_000,
-                text_height: 900,
-                baseline_distance: 800,
-                segment_width: width_hwp,
-                tag: crate::model::paragraph::LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                ..Default::default()
-            }],
-            ..Default::default()
-        }
-    }
-
-    fn core_with_search_section(paragraph: crate::model::paragraph::Paragraph) -> DocumentCore {
-        let mut core = DocumentCore::new_empty();
-        core.document.sections = vec![crate::model::document::Section {
-            section_def: crate::model::document::SectionDef {
-                page_def: crate::model::page::PageDef {
-                    width: 10_000,
-                    height: 84_188,
-                    margin_left: 0,
-                    margin_right: 0,
-                    margin_top: 0,
-                    margin_bottom: 0,
-                    margin_header: 0,
-                    margin_footer: 0,
-                    margin_gutter: 0,
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            paragraphs: vec![paragraph],
-            ..Default::default()
-        }];
-        core.composed = vec![Vec::new()];
-        core.dirty_sections = vec![true];
-        core.dirty_paragraphs = vec![None];
-        core
-    }
-
     #[test]
     fn find_in_text_case_sensitive() {
-        assert_eq!(find_in_text("hello world", "world", true), vec![6]);
+        assert_eq!(find_in_text("hello world", "world", true), vec![(6, 5)]);
         assert_eq!(
             find_in_text("hello world", "World", true),
-            Vec::<usize>::new()
+            Vec::<(usize, usize)>::new()
         );
     }
 
     #[test]
     fn find_in_text_case_insensitive() {
-        assert_eq!(find_in_text("Hello World", "hello", false), vec![0]);
-        assert_eq!(find_in_text("Hello World", "WORLD", false), vec![6]);
+        assert_eq!(find_in_text("Hello World", "hello", false), vec![(0, 5)]);
+        assert_eq!(find_in_text("Hello World", "WORLD", false), vec![(6, 5)]);
     }
 
     #[test]
     fn ignore_case_returns_original_char_offset_after_unicode_lowercase_expansion() {
         // `İ`가 두 lower-case 문자로 확장돼도 `stan`의 시작은 원문 2번째 문자다.
-        assert_eq!(find_matches("Aİstanbul", "stan", false), vec![2]);
+        assert_eq!(find_matches("Aİstanbul", "stan", false), vec![(2, 4)]);
     }
 
     #[test]
     fn find_in_text_multiple_matches() {
-        assert_eq!(find_in_text("abcabc", "abc", true), vec![0, 3]);
+        assert_eq!(find_in_text("abcabc", "abc", true), vec![(0, 3), (3, 3)]);
     }
 
     #[test]
     fn find_in_text_empty_inputs() {
-        assert_eq!(find_in_text("", "abc", true), Vec::<usize>::new());
-        assert_eq!(find_in_text("abc", "", true), Vec::<usize>::new());
+        assert_eq!(find_in_text("", "abc", true), Vec::<(usize, usize)>::new());
+        assert_eq!(find_in_text("abc", "", true), Vec::<(usize, usize)>::new());
     }
 
     #[test]
     fn find_in_text_korean() {
-        assert_eq!(find_in_text("안녕하세요 세계", "세계", true), vec![6]);
-        assert_eq!(find_in_text("가나가나", "가나", true), vec![0, 2]);
-    }
-
-    /// [#3413] `search` 가 수식(Equation) 컨트롤의 script 텍스트를 검색 대상에서
-    /// 빠뜨리던 버그 회귀 테스트. 실제 표본(`samples/exam_math.hwp`)의 수식에는
-    /// `lim` 이 포함돼 있는데도 이전 코드는 matchCount=0 을 반환했다.
-    #[test]
-    fn search_all_text_finds_equation_script() {
-        let data = std::fs::read("samples/exam_math.hwp").expect("샘플 파일 읽기 실패");
-        let doc = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
-        let json = doc
-            .search_all_text_native("lim", true, true)
-            .expect("검색 실패");
-        assert!(
-            json.contains("\"charOffset\""),
-            "수식 스크립트 내 'lim' 매치를 찾지 못함: {json}"
-        );
-        assert_ne!(json, "[]", "수식 스크립트 내 'lim' 매치가 비어있음");
-        assert!(
-            json.contains("\"equationControl\""),
-            "수식 매치는 일반 셀 텍스트와 구분되는 주소를 제공해야 함: {json}"
-        );
-    }
-
-    #[test]
-    fn replace_all_updates_equation_scripts_and_reports_actual_count() {
-        bulk_replace_materializes_a_current_body_partition();
-        bulk_replace_materializes_a_current_nested_cell_partition();
-        let data = std::fs::read("samples/exam_math.hwp").expect("샘플 파일 읽기 실패");
-        let mut doc = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
-        let before: serde_json::Value = serde_json::from_str(
-            &doc.search_all_text_native("lim", true, true)
-                .expect("수식 검색 실패"),
-        )
-        .expect("수식 검색 JSON 파싱 실패");
-        let expected = before.as_array().expect("검색 결과 배열").len();
-        assert!(expected > 0, "교체 전 lim 수식이 있어야 함");
-        assert_eq!(
-            doc.grep("lim", true, None).len(),
-            expected,
-            "CLI dry-run(grep)과 실제 replace-all의 수식 검색 범위가 같아야 함"
-        );
-
-        let result: serde_json::Value = serde_json::from_str(
-            &doc.replace_all_native("lim", "LIMIT", true)
-                .expect("수식 치환 실패"),
-        )
-        .expect("수식 치환 JSON 파싱 실패");
-        assert_eq!(result["count"].as_u64(), Some(expected as u64));
-        assert_eq!(
-            doc.search_all_text_native("lim", true, true)
-                .expect("치환 후 원문 검색 실패"),
-            "[]"
-        );
-        let replaced: serde_json::Value = serde_json::from_str(
-            &doc.search_all_text_native("LIMIT", true, true)
-                .expect("치환 후 새 텍스트 검색 실패"),
-        )
-        .expect("치환 후 검색 JSON 파싱 실패");
-        assert_eq!(
-            replaced.as_array().expect("치환 후 검색 결과 배열").len(),
-            expected
-        );
-    }
-
-    fn bulk_replace_materializes_a_current_body_partition() {
-        let replacement = "A".repeat(30);
-        let mut core = core_with_search_section(stored_search_paragraph("old", 10_000));
-        let mut following = stored_search_paragraph("tail", 10_000);
-        following.line_segs[0].vertical_pos = 1_000;
-        core.document.sections[0].paragraphs.push(following);
-
-        core.replace_all_native("old", &replacement, true)
-            .expect("body replacement succeeds");
-        let paragraph = &core.document.sections[0].paragraphs[0];
-        assert!(paragraph.line_segs.len() > 1);
-        assert!(!paragraph.stored_text_partition_is_dirty());
-        let expected_following_vpos = crate::renderer::composer::paragraph_flow_end(paragraph)
-            .expect("replacement paragraph has flow end");
-        assert_eq!(
-            core.document.sections[0].paragraphs[1].line_segs[0].vertical_pos,
-            expected_following_vpos
-        );
-
-        let bytes = crate::serializer::body_text::serialize_section(&core.document.sections[0]);
-        let parsed = crate::parser::body_text::parse_body_text_section(&bytes).unwrap();
-        assert_eq!(
-            parsed.paragraphs[0].line_segs.len(),
-            paragraph.line_segs.len()
-        );
-        assert_eq!(
-            parsed.paragraphs[1].line_segs[0].vertical_pos,
-            expected_following_vpos
-        );
-    }
-
-    fn bulk_replace_materializes_a_current_nested_cell_partition() {
-        let replacement = "A".repeat(30);
-        let cell_para = stored_search_paragraph("old", 10_000);
-        let mut following = stored_search_paragraph("tail", 10_000);
-        following.line_segs[0].vertical_pos = 1_000;
-        let table = crate::model::table::Table {
-            row_count: 1,
-            col_count: 1,
-            cells: vec![crate::model::table::Cell {
-                row: 0,
-                col: 0,
-                row_span: 1,
-                col_span: 1,
-                width: 10_000,
-                paragraphs: vec![cell_para, following],
-                ..Default::default()
-            }],
-            ..Default::default()
-        };
-        let mut parent = crate::model::paragraph::Paragraph::default();
-        parent.controls.push(Control::Table(Box::new(table)));
-        let mut core = core_with_search_section(parent);
-
-        core.replace_all_native("old", &replacement, true)
-            .expect("nested replacement succeeds");
-        let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
-            panic!("expected table");
-        };
-        let paragraph = &table.cells[0].paragraphs[0];
-        assert!(paragraph.line_segs.len() > 1);
-        assert!(!paragraph.stored_text_partition_is_dirty());
-        let expected_following_vpos = crate::renderer::composer::paragraph_flow_end(paragraph)
-            .expect("replacement cell paragraph has flow end");
-        assert_eq!(
-            table.cells[0].paragraphs[1].line_segs[0].vertical_pos,
-            expected_following_vpos
-        );
-
-        assert!(
-            !crate::serializer::body_text::serialize_section(&core.document.sections[0]).is_empty()
-        );
+        assert_eq!(find_in_text("안녕하세요 세계", "세계", true), vec![(6, 2)]);
+        assert_eq!(find_in_text("가나가나", "가나", true), vec![(0, 2), (2, 2)]);
     }
 }

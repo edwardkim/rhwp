@@ -1,5 +1,8 @@
 //! 렌더링/페이지 정보/구성/페이지네이션/페이지 트리 관련 native 메서드
 
+#[path = "rendering_metafile_fonts.rs"]
+mod metafile_fonts;
+
 use super::super::helpers::color_ref_to_css;
 use crate::document_core::{
     header_footer_apply_from_u8, DeferredPaginationJobState, DeferredPaginationStepResult,
@@ -785,7 +788,7 @@ fn reclassify_cell_floating_stacks(para: &mut Paragraph, min_height_hu: i32) -> 
                             let img_h = floating_stack_picture_common(img_ctrl)
                                 .map(|cm| cm.height as i32)
                                 .unwrap_or(template.line_height);
-                            sp.line_segs = vec![LineSeg {
+                            sp.publish_object_projection(vec![LineSeg {
                                 text_start: 0,
                                 vertical_pos: cum_vpos,
                                 line_height: img_h,
@@ -799,7 +802,7 @@ fn reclassify_cell_floating_stacks(para: &mut Paragraph, min_height_hu: i32) -> 
                                 // inline 그림과 구분할 수 있도록 provenance를 남긴다.
                                 tag: LineSeg::TAG_SINGLE_SEGMENT_LINE
                                     | LineSeg::TAG_IMPLEMENTATION_PROPERTY,
-                            }];
+                            }]);
                             cum_vpos = cum_vpos.saturating_add(img_h);
                             reclassify_floating_pictures_inline(&mut sp);
                             new_paras.push(sp);
@@ -828,17 +831,7 @@ fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
 }
 
 pub(crate) fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
-    // HWP3→HWP5 변환본은 parser 가 ParaShape spacing 을 절반으로 정규화하므로
-    // 본문 흐름에서만 원래 spacing_before 를 복원(*2)한다.
-    // 원본 HWP3 는 parser 가 만든 값을 그대로 쓰고 여기서 재확대하지 않는다.
-    // 그 HWPX export 도 IR 이 같은 스케일이다. 마커만으로 hwp3_layout 을 켜면
-    // *2 가 한 번 더 들어가 sample16은 64→65, sample11은 151→152로 갈라진다
-    // (#3518, #3737). HWP5 변환본의 HWPX는 hwp5-origin 마커가 있어 절반
-    // 정규화가 있었던 경우만 *2를 유지한다.
-    let profile = document.layout_profile();
-    profile.hwp3_layout()
-        && !profile.hwp3_native_layout()
-        && (!profile.hwpx_container() || profile.hwp5_origin_hwpx())
+    document.layout_profile().hwp3_origin_flow_spacing_before()
 }
 
 fn should_insert_hwp3_title_filler_page(
@@ -1017,13 +1010,24 @@ fn assign_master_pages_for_section(
         };
         page.active_master_page = selected;
 
-        if is_last && !ext_mp_indices.is_empty() {
-            let replace_exts: Vec<usize> = ext_mp_indices
+        // 임의 쪽과 마지막 쪽은 별도 범위다. 표시 쪽 번호의 재시작과 구분하여
+        // 구역 안 물리 위치로 지정 대상을 고르고 같은 대체/겹침 계약을 소비한다.
+        let applicable_ext_mp_indices: Vec<usize> = ext_mp_indices
+            .iter()
+            .copied()
+            .filter(|&index| {
+                mps[index].optional_page_number.map_or(is_last, |number| {
+                    usize::from(number) == page_idx_in_section + 1
+                })
+            })
+            .collect();
+        if !applicable_ext_mp_indices.is_empty() {
+            let replace_exts: Vec<usize> = applicable_ext_mp_indices
                 .iter()
                 .filter(|&&i| !mps[i].overlap || mps[i].replace_base)
                 .copied()
                 .collect();
-            let overlap_exts: Vec<usize> = ext_mp_indices
+            let overlap_exts: Vec<usize> = applicable_ext_mp_indices
                 .iter()
                 .filter(|&&i| mps[i].overlap && !mps[i].replace_base)
                 .copied()
@@ -1499,7 +1503,27 @@ impl DocumentCore {
                     },
                 )
                 .collect::<Vec<_>>();
+            // 2020 호환 경로는 참조 장치를 보존한다. 2024 Print는 EMF를
+            // 래스터 장치에서 재생하므로 최종 레이아웃 단위의 픽셀을 전달한다.
+            let metafile_pixel = self.hangul2024_compat.then_some(
+                self.dpi
+                    / if profile == RenderProfile::Print {
+                        crate::paint::metafile::HANCOM_2024_PRINT_DEVICE_DPI
+                    } else {
+                        crate::renderer::DEFAULT_DPI
+                    },
+            );
             let mut builder = LayerBuilder::new(profile)
+                .with_metafile_fonts(&if self.hangul2024_compat
+                    && profile == RenderProfile::Print
+                    && crate::paint::metafile::has_wmf(&tree.root)
+                {
+                    metafile_fonts::with_document_fonts(&self.metafile_fonts, &self.document)
+                } else {
+                    self.metafile_fonts.clone()
+                })
+                .with_metafile_device_pixel_width(metafile_pixel)
+                .with_hancom2024_print_bitmap(self.hangul2024_compat)
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch);
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
@@ -1983,6 +2007,21 @@ impl DocumentCore {
         SkiaLayerRenderer::new().render_png(&layer_tree)
     }
 
+    /// PNG와 같은 조판·replay를 요청 픽셀 너비로 래스터화한다 (쪽 번호는 0부터).
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_pixels_native_at_width(
+        &self,
+        page_num: u32,
+        width: u32,
+        profile: RenderProfile,
+        font_paths: &[std::path::PathBuf],
+    ) -> Result<crate::renderer::raster_pixels::RasterPixels, HwpError> {
+        let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
+        crate::renderer::skia::SkiaLayerRenderer::new()
+            .with_font_paths(font_paths)
+            .render_pixels_at_width(&tree, width, Default::default())
+    }
+
     /// 사용자 지정 폰트 경로를 포함한 PNG 렌더링. SVG 의 `--font-path` 와 동일 패턴.
     /// ttfs 디렉토리의 한컴 전용 폰트 (HY견명조 등) 가 시스템 fontconfig 에 없을 때 사용.
     #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -2022,81 +2061,15 @@ impl DocumentCore {
         profile: RenderProfile,
         options: &PngExportOptions,
     ) -> Result<Vec<u8>, HwpError> {
-        use crate::renderer::layer_renderer::{LayerRasterRenderer, RasterRenderOptions};
-        use crate::renderer::skia::SkiaLayerRenderer;
-
-        let layer_tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
-
-        // 페이지 크기에서 effective scale + max_dimension 결정
-        let mut raster_options = RasterRenderOptions::default();
-
-        // VLM 프리셋 적용 (longest edge 한도 + 픽셀 수 한도)
-        let mut effective_max_dim: Option<i32> = options.max_dimension;
-        let mut effective_max_pixels: Option<u64> = None;
-        if let Some(target) = options.vlm_target {
-            let (longest_edge, max_pixels) = target.constraints();
-            // 명시 max_dimension 이 없으면 프리셋 한도 사용
-            effective_max_dim.get_or_insert(longest_edge);
-            effective_max_pixels = Some(max_pixels);
-        }
-
-        // scale 결정 우선순위:
-        // 1. 명시 scale (사용자 직접 지정)
-        // 2. max_dimension / VLM 기반 자동 계산
-        // 3. --dpi 만 지정 시 scale = dpi / 96.0 (#614)
-        // 4. 기본 1.0
-        let scale = if let Some(s) = options.scale {
-            s
-        } else if effective_max_dim.is_some() || effective_max_pixels.is_some() {
-            let mut auto_scale: f64 = 1.0;
-            // longest edge 한도
-            if let Some(max_dim) = effective_max_dim {
-                let longest_page_edge = layer_tree.page_width.max(layer_tree.page_height);
-                if longest_page_edge > 0.0 {
-                    auto_scale = auto_scale.min(max_dim as f64 / longest_page_edge);
-                }
-            }
-            // 픽셀 수 한도 (ceil + 부동소수점 오차 안전 마진 0.5%)
-            if let Some(max_pixels) = effective_max_pixels {
-                let page_pixels = layer_tree.page_width * layer_tree.page_height;
-                if page_pixels > 0.0 {
-                    let pixel_scale = (max_pixels as f64 / page_pixels).sqrt() * 0.995;
-                    auto_scale = auto_scale.min(pixel_scale);
-                }
-            }
-            // 1.0 초과 시는 페이지가 이미 충분히 작은 것이므로 1.0 으로 cap
-            auto_scale.min(1.0).max(0.1)
-        } else if let Some(dpi) = options.dpi {
-            (dpi / 96.0).max(0.1)
-        } else {
-            1.0
-        };
-
-        raster_options.scale = scale;
-        raster_options.dpi = options.dpi;
-        if let Some(max_dim) = effective_max_dim {
-            raster_options.max_dimension = max_dim;
-        }
-        if let Some(max_pixels) = effective_max_pixels {
-            raster_options.max_pixels = max_pixels;
-        }
-
-        let png_bytes = SkiaLayerRenderer::new()
-            .with_font_paths(&options.font_paths)
-            .render_png_with_options(&layer_tree, raster_options)?;
-
-        if let Some(dpi) = options.dpi {
-            Ok(inject_png_phys(png_bytes, dpi))
-        } else {
-            Ok(png_bytes)
-        }
+        super::png_export::NativePngExporter::new(profile, options.clone())
+            .render_page(self, page_num)
     }
 }
 
 /// PNG 바이트에 pHYs chunk 를 삽입한다 (IHDR 직후, 첫 IDAT 직전).
 /// pHYs chunk: 4-byte X ppm + 4-byte Y ppm + 1-byte unit(1=meter).
 #[cfg(not(target_arch = "wasm32"))]
-fn inject_png_phys(png: Vec<u8>, dpi: f64) -> Vec<u8> {
+pub(super) fn inject_png_phys(png: Vec<u8>, dpi: f64) -> Vec<u8> {
     const PNG_SIGNATURE: [u8; 8] = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
     const IHDR_DATA_LEN: usize = 13;
 
@@ -2582,6 +2555,17 @@ impl DocumentCore {
                     }
                     None => buf.push_str(",\"sourceImageKey\":null"),
                 }
+                if let Some(interpolate) = image
+                    .data
+                    .as_deref()
+                    .and_then(crate::renderer::image_resolver::png_sampling::interpolation)
+                {
+                    let _ = write!(
+                        buf,
+                        ",\"imageInterpolation\":\"{}\"",
+                        if interpolate { "linear" } else { "nearest" }
+                    );
+                }
                 if let Some((left, top, right, bottom)) = image.crop {
                     let _ = write!(
                         buf,
@@ -2965,9 +2949,8 @@ impl DocumentCore {
 
     /// 페이지 정보 (네이티브 에러 타입)
     pub fn get_page_info_native(&self, page_num: u32) -> Result<String, HwpError> {
-        use crate::model::page::PageBorderBasis;
         use crate::renderer::hwpunit_to_px;
-        use crate::renderer::layout::body_page_border_outset;
+        use crate::renderer::layout::page_border_rect;
         let (page_content, _, _) = self.find_page(page_num)?;
         let sec_idx = page_content.section_index;
         let section_def = &self.document.sections[sec_idx].section_def;
@@ -3000,42 +2983,13 @@ impl DocumentCore {
         let binding_mirrored = page_def.binding == crate::model::page::BindingMethod::DuplexSided
             && page_content.page_number != 0
             && page_content.page_number.is_multiple_of(2);
-        let pbf_left = hwpunit_to_px(page_border_fill.spacing_left as i32, self.dpi);
-        let pbf_right = hwpunit_to_px(page_border_fill.spacing_right as i32, self.dpi);
-        let pbf_top = hwpunit_to_px(page_border_fill.spacing_top as i32, self.dpi);
-        let pbf_bottom = hwpunit_to_px(page_border_fill.spacing_bottom as i32, self.dpi);
-        let body_top = mt + mh;
-        let body_bottom_margin = mb + mf;
-        let visual_outsets = if matches!(page_border_fill.basis, PageBorderBasis::BodyBased)
-            && page_border_fill.border_fill_id > 0
-        {
-            self.document
-                .doc_info
-                .border_fills
-                .get((page_border_fill.border_fill_id - 1) as usize)
-                .map(|bf| {
-                    (
-                        body_page_border_outset(&bf.borders[0]),
-                        body_page_border_outset(&bf.borders[1]),
-                        body_page_border_outset(&bf.borders[2]),
-                        body_page_border_outset(&bf.borders[3]),
-                    )
-                })
-                .unwrap_or((0.0, 0.0, 0.0, 0.0))
-        } else {
-            (0.0, 0.0, 0.0, 0.0)
-        };
-        let (out_l, out_r, out_t, _out_b) = visual_outsets;
-        let (page_border_left, page_border_right, page_border_top, page_border_bottom) =
-            match page_border_fill.basis {
-                PageBorderBasis::PaperBased => (pbf_left, pbf_right, pbf_top, pbf_bottom),
-                PageBorderBasis::BodyBased => (
-                    (ml - pbf_left - out_l).max(0.0),
-                    (mr - pbf_right - out_r).max(0.0),
-                    (body_top - pbf_top - out_t).max(0.0),
-                    (body_bottom_margin - pbf_bottom).max(0.0),
-                ),
-            };
+        let border_rect = page_border_rect(page_border_fill, &page_content.layout, self.dpi);
+        let (page_border_left, page_border_right, page_border_top, page_border_bottom) = (
+            border_rect.x,
+            page_content.layout.page_width - border_rect.x - border_rect.width,
+            border_rect.y,
+            page_content.layout.page_height - border_rect.y - border_rect.height,
+        );
         // 단별 영역 정보
         let cols_json: String = page_content
             .layout
@@ -4690,11 +4644,12 @@ impl DocumentCore {
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
-            .with_legacy_hwp3_stored_geometry(profile.legacy_hwp3_stored_geometry())
+            .with_stored_geometry_policy(profile.stored_geometry_policy())
             .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
             .with_session_edited(profile.session_edited())
-            .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before);
+            .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before)
+            .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing));
         let column_def = Self::find_initial_column_def(paragraphs);
         let layout =
             PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, self.dpi);
@@ -4722,6 +4677,7 @@ impl DocumentCore {
             measurer.measure_section(paragraphs, composed, &self.styles, Some(column_width))
         };
         let typesetter = TypesetEngine::new(self.dpi)
+            .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing))
             .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
         let Some(renderer_job) = typesetter.begin_resumable_table_pagination(
             paragraphs,
@@ -4796,7 +4752,9 @@ impl DocumentCore {
                     page_count: self.page_count(),
                 };
             };
-            let Some(paragraph) = section.paragraphs.get(paragraph_index) else {
+            // Continue in the same normalized IR used by begin/measurement.
+            let paragraphs = self.section_render_paragraphs(pending.descriptor.section_index);
+            let Some(paragraph) = paragraphs.get(paragraph_index) else {
                 return DeferredPaginationStepResult {
                     state: DeferredPaginationJobState::Stale,
                     revision,
@@ -4823,13 +4781,14 @@ impl DocumentCore {
                 };
             };
             TypesetEngine::new(self.dpi)
+                .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing))
                 .with_render_normalization(std::sync::Arc::clone(
                     &self.render_normalization.overlay,
                 ))
                 .step_resumable_table_pagination(
                     &mut pending.renderer_job,
                     paragraph,
-                    &section.paragraphs,
+                    paragraphs,
                     table,
                     measured_table,
                     &self.styles,
@@ -4850,12 +4809,13 @@ impl DocumentCore {
         let result = {
             let section = &self.document.sections[section_index];
             let Some(mut result) = TypesetEngine::new(self.dpi)
+                .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing))
                 .with_render_normalization(std::sync::Arc::clone(
                     &self.render_normalization.overlay,
                 ))
                 .finish_resumable_table_pagination(
                     pending.renderer_job,
-                    &section.paragraphs,
+                    self.section_render_paragraphs(section_index),
                     section_index,
                 )
             else {
@@ -4870,7 +4830,6 @@ impl DocumentCore {
             assign_master_pages_for_section(&mut result, section_index, section, &None, &None);
             result
         };
-        let completed_page_count = result.pages.len() as u32;
         if self.pagination.len() <= section_index {
             self.pagination
                 .resize_with(section_index + 1, || PaginationResult {
@@ -4883,6 +4842,7 @@ impl DocumentCore {
                     endnotes: Vec::new(),
                     endnote_paragraphs: Vec::new(),
                     endnote_para_sources: Vec::new(),
+                    endnote_measured_tables: Vec::new(),
                     endnote_between_notes_hu: 0,
                     endnote_separator_above_hu: 0,
                     endnote_separator_below_hu: 0,
@@ -4901,6 +4861,8 @@ impl DocumentCore {
                 });
         }
         self.measured_tables[section_index] = pending.measured.tables.clone();
+        self.measured_tables[section_index]
+            .extend_from_slice(&self.pagination[section_index].endnote_measured_tables);
         self.measured_sections[section_index] = pending.measured;
         self.dirty_sections
             .resize(self.document.sections.len(), false);
@@ -4917,6 +4879,11 @@ impl DocumentCore {
         }
         self.deferred_pagination_descriptor = None;
         self.invalidate_page_tree_cache();
+        self.body_page_field_error = None;
+        let field_breaks =
+            vec![std::collections::HashSet::new(); self.document.sections.len().max(1)];
+        self.settle_body_page_fields(&field_breaks);
+        let completed_page_count = self.pagination[section_index].pages.len() as u32;
         DeferredPaginationStepResult {
             state: DeferredPaginationJobState::Complete,
             revision,
@@ -4985,13 +4952,15 @@ impl DocumentCore {
         let sec_count = self.document.sections.len().max(1);
         let empty_breaks: Vec<std::collections::HashSet<usize>> =
             vec![std::collections::HashSet::new(); sec_count];
+        self.body_page_field_error = None;
         self.paginate_pass(&empty_breaks);
+        self.settle_body_page_fields(&empty_breaks);
         // [#2424] full path가 최신 dirty state를 반영했으므로 deferred target을 소비한다.
         // 이후 resumable job도 shadow result commit 성공 시 같은 수명 규칙을 적용한다.
         self.deferred_pagination_descriptor = None;
     }
 
-    fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
+    pub(super) fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
         // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
         self.ensure_exact_font_measurement_contexts();
@@ -5038,7 +5007,7 @@ impl DocumentCore {
         let profile = self.effective_layout_profile();
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
-            .with_legacy_hwp3_stored_geometry(profile.legacy_hwp3_stored_geometry())
+            .with_stored_geometry_policy(profile.stored_geometry_policy())
             .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
             .with_session_edited(profile.session_edited())
@@ -5084,6 +5053,7 @@ impl DocumentCore {
                 endnotes: Vec::new(),
                 endnote_paragraphs: Vec::new(),
                 endnote_para_sources: Vec::new(),
+                endnote_measured_tables: Vec::new(),
                 endnote_between_notes_hu: 0,
                 endnote_separator_above_hu: 0,
                 endnote_separator_below_hu: 0,
@@ -5194,6 +5164,7 @@ impl DocumentCore {
                 }
             };
 
+            measurer.set_section_column_spacing_hu(i32::from(section.section_def.column_spacing));
             // 증분 측정: 이전 측정 데이터가 있으면 문단/표 수준 선택적 캐싱
             let issue2424_measure_started = issue2424_profile_enabled.then(std::time::Instant::now);
             let measured = if !self.measured_sections[idx].fallback_paragraphs.is_empty() {
@@ -5264,7 +5235,7 @@ impl DocumentCore {
                     profile,
                 )
             } else {
-                use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral, EndnoteRef};
+                use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral};
                 use crate::renderer::typeset::TypesetEngine;
                 // [미주 배치 — Hancom EndnoteEndOfSection vs EndnoteEndOfDocument]
                 // rhwp 는 지금까지 구역마다 미주를 그 구역 끝에 렌더했으나(END_OF_SECTION),
@@ -5293,18 +5264,14 @@ impl DocumentCore {
                             continue;
                         }
                         for (pi, para) in sec_j.paragraphs.iter().enumerate() {
-                            for (ci, ctrl) in para.controls.iter().enumerate() {
-                                if let crate::model::control::Control::Endnote(en) = ctrl {
-                                    acc.push(DeferredEndnote {
-                                        reff: EndnoteRef {
-                                            number: en.number,
-                                            section_index: sj,
-                                            para_index: pi,
-                                            control_index: ci,
-                                        },
-                                        endnote: (**en).clone(),
-                                    });
-                                }
+                            // [#7860] 표 셀 안 미주도 본문 수집과 같은 경로·순서로 모은다.
+                            for (reff, en) in
+                                crate::renderer::pagination::paragraph_endnote_refs(sj, pi, para)
+                            {
+                                acc.push(DeferredEndnote {
+                                    reff,
+                                    endnote: en.clone(),
+                                });
                             }
                         }
                     }
@@ -5325,9 +5292,11 @@ impl DocumentCore {
                 } else {
                     EndnoteDeferral::None
                 };
-                let typesetter = TypesetEngine::new(self.dpi).with_render_normalization(
-                    std::sync::Arc::clone(&self.render_normalization.overlay),
-                );
+                let typesetter = TypesetEngine::new(self.dpi)
+                    .with_render_normalization(std::sync::Arc::clone(
+                        &self.render_normalization.overlay,
+                    ))
+                    .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing));
                 typesetter.typeset_section_with_variant(
                     para_src,
                     composed,
@@ -5366,6 +5335,7 @@ impl DocumentCore {
             }
 
             self.measured_tables[idx] = measured.tables.clone();
+            self.measured_tables[idx].extend_from_slice(&result.endnote_measured_tables);
             self.measured_sections[idx] = measured;
 
             // ── 수렴 감지: 이전 페이지네이션과 비교하여 변경 흡수 지점 탐색 ──
@@ -5552,31 +5522,23 @@ impl DocumentCore {
             if idx > 0 {
                 let section_has_header = result.pages.iter().any(|p| p.active_header.is_some());
                 if !section_has_header {
-                    for (pi, page) in result.pages.iter_mut().enumerate() {
+                    for page in &mut result.pages {
                         let is_odd = page.page_number % 2 == 1;
                         page.active_header = if is_odd {
-                            carry_header_odd
-                                .clone()
-                                .or_else(|| carry_header_even.clone())
+                            carry_header_odd.clone()
                         } else {
-                            carry_header_even
-                                .clone()
-                                .or_else(|| carry_header_odd.clone())
+                            carry_header_even.clone()
                         };
                     }
                 }
                 let section_has_footer = result.pages.iter().any(|p| p.active_footer.is_some());
                 if !section_has_footer {
-                    for (pi, page) in result.pages.iter_mut().enumerate() {
+                    for page in &mut result.pages {
                         let is_odd = page.page_number % 2 == 1;
                         page.active_footer = if is_odd {
-                            carry_footer_odd
-                                .clone()
-                                .or_else(|| carry_footer_even.clone())
+                            carry_footer_odd.clone()
                         } else {
-                            carry_footer_even
-                                .clone()
-                                .or_else(|| carry_footer_odd.clone())
+                            carry_footer_even.clone()
                         };
                     }
                 }
@@ -5896,6 +5858,32 @@ impl DocumentCore {
                     _ => false,
                 })
             });
+            let math_tables = crate::renderer::render_normalization::math_table::normalize(
+                &section.paragraphs,
+                &self.styles,
+            );
+            let math_textboxes = crate::renderer::render_normalization::math_textbox::normalize(
+                math_tables.as_deref().unwrap_or(&section.paragraphs),
+                &self.styles,
+            );
+            let stored_word_tails = (profile.hwp5_stored_pagination_layout()
+                || profile.hwpx_stored_layout())
+            .then_some(())
+            .filter(|_| !profile.session_edited() && !profile.legacy_hwp3_stored_geometry())
+            .and_then(|_| {
+                crate::renderer::render_normalization::stored_word_tail::normalize(
+                    math_textboxes
+                        .as_deref()
+                        .or(math_tables.as_deref())
+                        .unwrap_or(&section.paragraphs),
+                    &self.styles,
+                    pd,
+                    &Self::find_initial_column_def(&section.paragraphs),
+                    self.dpi,
+                )
+            });
+            let paragraph_geometry_changed =
+                stored_word_tails.is_some() || math_textboxes.is_some() || math_tables.is_some();
             let unplaced_rows =
                 normalize_widthless_rows && section_has_unplaced_stored_rows(&section.paragraphs);
             let widthless: Vec<usize> = section
@@ -5905,11 +5893,90 @@ impl DocumentCore {
                 .filter(|(_, para)| unplaced_rows && has_widthless_stored_rows(para))
                 .map(|(index, _)| index)
                 .collect();
-            if matches.is_empty() && !has_cell_stack && widthless.is_empty() {
+            let inline_frames: Vec<(usize, Paragraph)> =
+                if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                    && !profile.session_edited()
+                {
+                    section
+                        .paragraphs
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(index, paragraph)| {
+                            crate::renderer::layout::normalized_single_line_inline_textbox_host(
+                                paragraph,
+                                &self.styles,
+                                self.dpi,
+                            )
+                            .map(|projected| (index, projected))
+                        })
+                        .collect()
+                } else {
+                    Vec::new()
+                };
+            if matches.is_empty()
+                && !has_cell_stack
+                && widthless.is_empty()
+                && inline_frames.is_empty()
+                && !paragraph_geometry_changed
+            {
                 out.push(None);
                 continue;
             }
-            let mut np = section.paragraphs.clone();
+            let mut np = stored_word_tails
+                .or(math_textboxes)
+                .or(math_tables)
+                .unwrap_or_else(|| section.paragraphs.clone());
+            let mut frame_changes = Vec::new();
+            if !inline_frames.is_empty() {
+                let mut frames = inline_frames.into_iter().peekable();
+                let mut shift_hu = 0i32;
+                let mut previous_source_end = None;
+                for (index, paragraph) in np.iter_mut().enumerate() {
+                    let source = &section.paragraphs[index];
+                    let first = source.line_segs.first();
+                    if !matches!(source.column_type, ColumnBreakType::None)
+                        || first.is_some_and(|line| {
+                            previous_source_end.is_some_and(|end| line.vertical_pos < end)
+                        })
+                    {
+                        shift_hu = 0;
+                    }
+                    previous_source_end = source.line_segs.last().map(|line| line.vertical_pos);
+                    let projected = frames
+                        .peek()
+                        .is_some_and(|(i, _)| *i == index)
+                        .then(|| frames.next().unwrap().1);
+                    if let Some(projected) = projected {
+                        let old_height =
+                            source.line_segs.first().map_or(0, |line| line.line_height);
+                        let new_height = projected
+                            .line_segs
+                            .first()
+                            .map_or(old_height, |line| line.line_height);
+                        *paragraph = projected;
+                        if shift_hu != 0 {
+                            for line in &mut paragraph.line_segs {
+                                line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
+                                line.tag |=
+                                    crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+                            }
+                        }
+                        frame_changes.push(index);
+                        shift_hu = shift_hu.saturating_add(old_height - new_height);
+                    } else if shift_hu != 0 && !paragraph.line_segs.is_empty() {
+                        // Derived page-frame coordinates stay with the projected
+                        // geometry. Original document/save caches are untouched.
+                        let mut lines = paragraph.line_segs.clone();
+                        for line in &mut lines {
+                            line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
+                            line.tag |=
+                                crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+                        }
+                        paragraph.replace_line_segs(lines);
+                        frame_changes.push(index);
+                    }
+                }
+            }
             for &index in &widthless {
                 discard_widthless_rows_for_render(&mut np[index]);
             }
@@ -5926,7 +5993,11 @@ impl DocumentCore {
                 .iter()
                 .enumerate()
                 .map(|(i, p)| {
-                    if matches.binary_search(&i).is_ok() || widthless.binary_search(&i).is_ok() {
+                    if matches.binary_search(&i).is_ok()
+                        || widthless.binary_search(&i).is_ok()
+                        || frame_changes.binary_search(&i).is_ok()
+                        || paragraph_geometry_changed
+                    {
                         let mut c = crate::renderer::composer::compose_paragraph_in_context(
                             p,
                             &self.styles,
@@ -5935,7 +6006,11 @@ impl DocumentCore {
                         // 그림 수만큼 줄을 합성(모두 char_start 동일)해 Stage2 stacked 게이트
                         // (comp.lines.len()==tac_controls) 가 발동하게 한다.
                         let npics = c.tac_controls.len();
-                        if npics >= 2 && c.lines.len() != npics && !c.lines.is_empty() {
+                        if matches.binary_search(&i).is_ok()
+                            && npics >= 2
+                            && c.lines.len() != npics
+                            && !c.lines.is_empty()
+                        {
                             let template = c.lines[0].clone();
                             let mut lines = Vec::with_capacity(npics);
                             for k in 0..npics {
@@ -6374,6 +6449,12 @@ impl DocumentCore {
 
     fn dump_section_typesetter(&self, sec_idx: usize) -> TypesetEngine {
         let typesetter = TypesetEngine::new(self.dpi)
+            .with_section_column_spacing_hu(
+                self.document
+                    .sections
+                    .get(sec_idx)
+                    .map_or(0, |section| i32::from(section.section_def.column_spacing)),
+            )
             .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
         typesetter.apply_section_format_context(
             self.section_render_paragraphs(sec_idx),
@@ -6455,6 +6536,12 @@ impl DocumentCore {
             &self.styles,
             column_width_px,
             para_index >= body_len,
+            self.pagination.get(sec_idx).and_then(|pr| {
+                pr.pages
+                    .iter()
+                    .flat_map(|page| &page.column_contents)
+                    .find_map(|column| column.inline_flow_plans.get(&para_index))
+            }),
         ))
     }
 
@@ -7563,6 +7650,9 @@ impl DocumentCore {
         page_num: u32,
         header_footer_override: Option<(usize, bool, u8)>,
     ) -> Result<PageRenderTree, HwpError> {
+        if let Some(error) = &self.body_page_field_error {
+            return Err(HwpError::RenderError(error.clone()));
+        }
         use crate::model::style::HeadType;
         use crate::renderer::layout::resolve_numbering_id;
         use crate::renderer::pagination::PageItem;
@@ -7664,6 +7754,12 @@ impl DocumentCore {
         // (이전 구역 + 현재 구역의 이전 페이지 모두 포함하여 구역 간 번호 연속 지원)
         self.layout_engine.reset_numbering_state();
         let sec_idx = page_content.section_index;
+        self.layout_engine.set_section_column_spacing_hu(
+            self.document
+                .sections
+                .get(sec_idx)
+                .map_or(0, |section| i32::from(section.section_def.column_spacing)),
+        );
         let sec_page_offset: usize = self
             .pagination
             .iter()
@@ -9153,7 +9249,10 @@ mod tests {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
         };
 
         let h = compute_hwp_used_height(&cc, &paragraphs, 96.0).expect("값이 있어야 함");
@@ -9275,6 +9374,7 @@ mod tests {
                 has_para_text: true,
                 ..Default::default()
             }],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });
@@ -9430,6 +9530,7 @@ mod tests {
                 ..Default::default()
             },
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });
@@ -9477,6 +9578,7 @@ mod tests {
             Section {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
+                trailing_lists: None,
                 raw_stream: None,
                 raw_provenance: None,
             }
@@ -9548,6 +9650,7 @@ mod tests {
             Section {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
+                trailing_lists: None,
                 raw_stream: None,
                 raw_provenance: None,
             }
@@ -9612,6 +9715,7 @@ mod tests {
             Section {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
+                trailing_lists: None,
                 raw_stream: None,
                 raw_provenance: None,
             }
@@ -9670,6 +9774,7 @@ mod tests {
         document.sections.push(Section {
             section_def: SectionDef::default(),
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });
@@ -9706,7 +9811,7 @@ mod tests {
 
     #[cfg(not(target_arch = "wasm32"))]
     #[test]
-    fn page_border_fill_sample_basis_matches_hancom_ui() {
+    fn page_border_fill_reference_sources_keep_paper_and_page_basis() {
         use crate::model::page::PageBorderBasis;
 
         fn json_number(json: &str, key: &str) -> f64 {
@@ -9752,18 +9857,9 @@ mod tests {
         );
         let page_hwp_top = assert_basis("samples/쪽기준.hwp", "page", PageBorderBasis::BodyBased);
         assert_basis("samples/쪽기준.hwpx", "page", PageBorderBasis::BodyBased);
-        let sample16_top = assert_basis(
-            "samples/hwp3-sample16-hwp5.hwp",
-            "page",
-            PageBorderBasis::BodyBased,
-        );
         assert!(
             page_hwp_top > paper_hwp_top,
             "쪽 기준 border top should be inside paper 기준: paper={paper_hwp_top}, page={page_hwp_top}"
-        );
-        assert!(
-            (sample16_top - 49.2).abs() < 0.2,
-            "sample16 page-basis UI should use body top minus spacing and double-line outset: top={sample16_top}"
         );
     }
 

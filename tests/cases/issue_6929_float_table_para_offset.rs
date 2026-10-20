@@ -24,25 +24,74 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::model::shape::{TextWrap, VertAlign, VertRelTo};
+use rhwp::model::table::Table;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue6929/148776468_search_ad_terms_press_release.hwp";
 
-/// 한/글 2020 정본(#6929 본문, `hwp2024Convert` job `f382c2c1-…`)이 잰 1쪽 좌표.
-///
-/// 저장 선언과도 맞물린다 — 본문 상단 94.5 + `vertOffset` 433 HU(5.77px) = **100.27**,
-/// 정본 100.2 와 0.07px 안이다. 곧 이 값은 외부 측정과 저장 선언이 같이 가리키는 자리다.
-const ORACLE_TABLE_TOP: f64 = 100.2;
-/// 정본의 제목 문단 상단. 표가 이 아래로 내려오면 글자가 겹친다.
-const ORACLE_TITLE_TOP: f64 = 268.2;
+const DPI: f64 = 96.0;
 const TITLE: &str = "인터넷포털 검색광고서비스";
 
+fn document(sample: &str) -> DocumentCore {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
+    let bytes = std::fs::read(path).unwrap_or_else(|e| panic!("재현체 {sample}: {e}"));
+    DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("로드 {sample}: {e}"))
+}
+
 fn page0(sample: &str) -> RenderNode {
-    let bytes = std::fs::read(sample).unwrap_or_else(|e| panic!("재현체 {sample}: {e}"));
-    let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("로드 {sample}: {e}"));
+    let core = document(sample);
     core.build_page_render_tree(0)
         .unwrap_or_else(|e| panic!("렌더 {sample}: {e}"))
         .root
+}
+
+fn body_column(root: &RenderNode) -> &RenderNode {
+    let body = root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+        .expect("본문");
+    body.children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .expect("본문 단")
+}
+
+fn body_head_table(column: &RenderNode) -> &RenderNode {
+    column
+        .children
+        .iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::Table(_)))
+        .min_by(|a, b| a.bbox.y.total_cmp(&b.bbox.y))
+        .expect("본문 머리 표")
+}
+
+fn source_table<'a>(core: &'a DocumentCore, node: &RenderNode) -> &'a Table {
+    let RenderNodeType::Table(owner) = &node.node_type else {
+        panic!("표 노드");
+    };
+    let para = &core.document().sections[owner.section_index.expect("표 구역")].paragraphs
+        [owner.para_index.expect("표 문단")];
+    let Control::Table(table) = &para.controls[owner.control_index.expect("표 컨트롤")] else {
+        panic!("원본 표 컨트롤");
+    };
+    table
+}
+
+fn hu(value: i32) -> f64 {
+    f64::from(value) * DPI / 7200.0
+}
+
+fn title_line(node: &RenderNode) -> Option<&RenderNode> {
+    if !node.visible || node.editor_only {
+        return None;
+    }
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) && line_text(node).contains(TITLE) {
+        return Some(node);
+    }
+    node.children.iter().find_map(title_line)
 }
 
 fn line_text(node: &RenderNode) -> String {
@@ -73,52 +122,60 @@ fn head_table(node: &RenderNode, out: &mut Option<(f64, f64)>) {
     }
 }
 
-fn title_top(node: &RenderNode, out: &mut Option<f64>) {
-    if !node.visible || node.editor_only {
-        return;
-    }
-    if matches!(node.node_type, RenderNodeType::TextLine(_)) && line_text(node).contains(TITLE) {
-        if out.is_none_or(|cur| node.bbox.y < cur) {
-            *out = Some(node.bbox.y);
-        }
-        return;
-    }
-    for c in &node.children {
-        title_top(c, out);
-    }
-}
-
 #[test]
 fn para_relative_float_table_starts_at_its_declared_offset() {
-    let root = page0(SAMPLE);
-    let mut table = None;
-    head_table(&root, &mut table);
-    let (top, _) = table.expect("1쪽 머리 표를 못 찾았습니다");
+    let core = document(SAMPLE);
+    let root = core.build_page_render_tree(0).expect("1쪽 렌더").root;
+    let column = body_column(&root);
+    let table = body_head_table(column);
+    let source = source_table(&core, table);
+    assert!(!source.common.treat_as_char);
+    assert_eq!(source.common.text_wrap, TextWrap::TopAndBottom);
+    assert_eq!(source.common.vert_rel_to, VertRelTo::Para);
+    assert_eq!(source.common.vert_align, VertAlign::Top);
+    assert_eq!(source.outer_margin_top, 0);
+    let offset = hu(source.common.vertical_offset as i32);
     assert!(
-        (top - ORACLE_TABLE_TOP).abs() <= 1.0,
-        "머리 표 상단이 정본과 다릅니다 — 정본 {ORACLE_TABLE_TOP:.1} · 현재 {top:.1} \
-         (저장 vertOffset 433 HU = 5.77px, 본문 상단 94.5)"
+        (table.bbox.y - column.bbox.y - offset).abs() <= 1.0,
+        "머리 표는 본문 단의 시작에서 원본 vertOffset만큼 떨어져야 합니다: \
+         표 {}, 단 {}, 원본 오프셋 {offset}",
+        table.bbox.y,
+        column.bbox.y
     );
 }
 
 #[test]
 fn the_head_table_does_not_reach_into_the_title() {
-    let root = page0(SAMPLE);
-    let mut table = None;
-    head_table(&root, &mut table);
-    let (_, bottom) = table.expect("1쪽 머리 표를 못 찾았습니다");
-    let mut title = None;
-    title_top(&root, &mut title);
-    let title = title.expect("제목 문단을 못 찾았습니다");
-
-    assert!(
-        (title - ORACLE_TITLE_TOP).abs() <= 1.0,
-        "제목 상단이 정본과 다릅니다 — 정본 {ORACLE_TITLE_TOP:.1} · 현재 {title:.1}"
+    let core = document(SAMPLE);
+    let root = core.build_page_render_tree(0).expect("1쪽 렌더").root;
+    let column = body_column(&root);
+    let table = body_head_table(column);
+    let title = title_line(column).expect("제목 문단");
+    let RenderNodeType::TextLine(owner) = &title.node_type else {
+        unreachable!();
+    };
+    let para = &core.document().sections[owner.section_index.expect("제목 구역")].paragraphs
+        [owner.para_index.expect("제목 문단")];
+    assert_eq!(
+        para.line_segs.len(),
+        1,
+        "원본 제목은 저장 한 줄이어야 합니다"
     );
+    let source_title_offset = hu(para.line_segs[0].vertical_pos);
+    // 같은 원문의 독립 Print와 일치하는 저장 사다리 관계다. 절대 제목 y를
+    // 고정하지 않고 단 원점과 제목 줄의 소유·저장 위치를 함께 검증한다.
     assert!(
-        bottom <= title + 0.5,
-        "표 아래끝이 제목을 {:.1}px 침범합니다 — 표 바닥 {bottom:.1} · 제목 상단 {title:.1}",
-        bottom - title
+        (title.bbox.y - column.bbox.y - source_title_offset).abs() <= 1.0,
+        "제목 줄은 단 원점에서 원본 저장 사다리 위치에 있어야 합니다: \
+         제목 {}, 단 {}, 저장 거리 {source_title_offset}",
+        title.bbox.y,
+        column.bbox.y
+    );
+    let bottom = table.bbox.y + table.bbox.height;
+    assert!(
+        bottom <= title.bbox.y + 0.5,
+        "표 아래끝이 제목을 침범합니다 — 표 바닥 {bottom} · 제목 상단 {}",
+        title.bbox.y
     );
 }
 

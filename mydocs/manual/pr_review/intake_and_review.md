@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-01
+last_verified: 2026-10-18
 ---
 
 # PR 접수와 리뷰 기록
@@ -10,18 +10,61 @@ last_verified: 2026-10-01
 이 가이드는 모든 정식 PR review의 접수·기본 판정·review 문서 작성 규칙이다. 역할별 push,
 merge, merge 후속 처리는 기본 경로 문서와 [merge 후속 처리](post_merge.md)를 따른다.
 
+## 페이지별 TSV와 PR 재검토 필수 조건
+
+조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
+`silhouette_raw_match_percent`(색상 경계 보정 전2px 내용 실루엣 일치율)를 페이지별로 확인하며,
+**한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
+미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
+
+`re_review_required` 상태에서는 새 PR 생성과 열린 PR의 승인·통합을 보류한다.
+작성자는 원본·독립 한컴 Print PDF·overlay를 대조해 원인을 수정하고 새 head에서 다시 산출한다.
+누락·측정 불가·전체 쪽수 불일치도 보류 조건이다. 모든 페이지가 90% 이상이어도
+변경 영역의 수식·미세 간격을 확대 판독한 뒤 완료 여부를 판단한다.
+
+명령·저장 위치는 [「실루엣 보조값만 빠르게 TSV 산출」](../verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)을 따른다.
+기여자는 전체 페이지 **Native TSV와 fresh WASM TSV 원본 모두 및 대표 PNG**를 제출한다.
+검토자의 Native/fresh WASM 검증은 해당 역할의 절차를 따른다. 해결 불가능한 실제 글꼴 차이는
+[정식 글꼴 예외 계약](../verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의 증거와 gate 판정으로만 처리한다.
+
 ## 2.1 reviewer assign 선행
 
 외부 contributor PR과 maintainer가 처리하는 PR review는 metadata 조사, local fetch, review 문서 작성보다
 먼저 reviewer를 assign한다. 대량 PR은 [다수 PR과 update branch](multi_pr_update_branch.md)의 사전 분류 뒤,
 각 원 PR마다 assign한다.
 
+순서는 **최소 사전 분류 → 원 PR별 reviewer 지정·API 재확인 → 상세 metadata·본문·파일·코멘트 조사 →
+local fetch·체리픽 → 검증·review 기록**이다. 사전 분류에서는 대상 PR 번호, 작성자, open/draft 상태,
+base와 통합 그룹을 식별하는 정보만 확인한다. 상세 조사를 끝낸 뒤 reviewer를 지정하지 않는다.
+체리픽 통합 PR을 따로 만들더라도 지정 대상은 **각 원 PR**이며, 통합 PR 하나의 지정으로 대신하지 않는다.
+
+작업지시자가 지정한 reviewer를 사용하고 기존 reviewer는 제거하지 않는다. 이미 지정돼 있으면 추가 요청을
+반복하지 않고 API로 확인한다. 명령 성공만으로 배정 완료를 단정하지 않으며, API 응답의 `users`에 대상
+login이 있어야 다음 단계로 진행한다. 지정 실패·확인 불가이면 해당 원 PR의 상세 조사·fetch·체리픽을 보류하고
+실패 이유를 보고한다. 승인된 검토 범위 안의 reviewer 지정 때문에 작업지시자 승인을 다시 요청하지 않는다.
+
 collaborator 자신의 self PR은 reviewer를 지정하지 않는다. 이 경우 review 문서에 작성자 self-review임을
 기록하고, 최신 CI와 merge 조건을 독립적으로 확인한다.
 
+`pr_number`와 `reviewer`는 실제 대상 값으로 바꾼다. 여러 PR은 원 PR마다 이 단계를 완료한다.
+
 ~~~bash
-gh pr edit N --repo edwardkim/rhwp --add-reviewer <reviewer>
+pr_number=N
+reviewer=REVIEWER_LOGIN
+assigned_reviewers=$(gh api "repos/edwardkim/rhwp/pulls/$pr_number/requested_reviewers") || exit 1
+if ! printf '%s\n' "$assigned_reviewers" \
+  | jq -e --arg reviewer "$reviewer" 'any(.users[]; .login == $reviewer)' >/dev/null; then
+  gh api --method POST "repos/edwardkim/rhwp/pulls/$pr_number/requested_reviewers" \
+    -f "reviewers[]=$reviewer" || exit 1
+fi
+# jq -e가 실패하면 다음 상세 조사·fetch·체리픽을 실행하지 않는다.
+gh api "repos/edwardkim/rhwp/pulls/$pr_number/requested_reviewers" \
+  | jq -e --arg reviewer "$reviewer" 'any(.users[]; .login == $reviewer)' || exit 1
 ~~~
+
+`gh pr edit --add-reviewer`를 사용했더라도 같은 API 재확인을 수행한다. Projects classic GraphQL 오류 등으로
+CLI 편집이 실패하면 위 REST POST 경로를 사용한다. reviewer login과 확인 결과를 검토 기록에 남기며,
+인증 토큰은 출력하지 않는다.
 
 ## 2.2 기본 metadata
 
@@ -108,17 +151,25 @@ PR review의 공통 항목**이다. 작성자·역할·PR 크기로 생략하지
 [구현 주장과 검증 증거의 대조](../../../AGENTS.md#구현-주장과-검증-증거의-대조)에 따라
 작성자의 경로 목록과 실제 검사 항목이 주장을 입증하는지 확인한다. helper 이후 값 덮어쓰기·
 별도 배치와 핵심 가정을 깨는 반례의 누락을 대조하고, 수정 전에도 통과하는 테스트를 해당 결함의
-검출 증거로 인정하지 않는다. 충분한 기존 증거는 재사용하며, 부족한 필수 증거는 `미검증`으로
-남긴다. 아래 표의 해당 행에서 기존 증적을 연결하면 같은 표나 보고서를 추가 작성할 필요는 없다.
+검출 증거로 인정하지 않는다. 충분한 기존 증거는 재사용하며, **부족한 필수 증거는 자료 확보와
+추가 실행으로 보완하고 결함을 수정·재검증해 모두 충족해야 한다.** 검증을 마치지 않은 필수
+항목을 남긴 채 PR을 생성·승인·통합하지 않는다. 아래 표의 해당 행에서 기존 증적을 연결하면
+같은 표나 보고서를 추가 작성할 필요는 없다.
 
 | 검토 항목 | reviewer가 확인·기록할 근거 | 판정 |
 | --- | --- | --- |
+| 제출 전 로컬 검증과 PR 상태 | [로컬 사전 검증](local_validation.md) 4.3 및 해당 보조 절차의 필수 실행·결과·head/base SHA, 환경에 맞는 Docker/호스트 fresh WASM 경로; 일반 Open PR 제출 여부 또는 예외 Draft의 특별한 목적·승인·완료 계획 | 충족/미충족/미검증/비해당 |
+| 기존 이슈·해결 PR의 선행 분석 | [선행 분석 절차](../codex/docs_and_git_workflow.md#기존-이슈와-해결-pr의-선행-분석)의 원 이슈·해결 PR·실제 통합/후속 보정 SHA, 원래 계약·독립 증거와 현재 base/head 관측; 조사 대상 실패별로 확인 | 충족/미충족/미검증/비해당 |
 | 구현 근거와 일반성 | 위반된 규칙의 독립 출처, 원인 계층, 새 분기의 필요 조건과 반례; 샘플 전용 조건·clamp·출력 은폐 여부 | 충족/미충족/미검증/비해당 |
 | 측정·배치 일관성 | 같은 줄 구성·메트릭을 생성·소비하는 코드 위치와 호출 경로, backend 적용 조건·좌표계 | 충족/미충족/미검증/비해당 |
+| 리베이스 반영 PR의 기능 보존 | [리베이스 후 검증](local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)의 반영 PR 목록·기능, 새 base/후보 SHA, 실제 기능·출력 비교와 유지/개선/후퇴/미검증; 현재 작업과 반영 PR 양쪽의 보정·재검증 근거 | 충족/미충족/미검증/비해당 |
+| 최종 출력 소비 계약 | [출력 백엔드 소비 경로 검증](../verification/renderer_backend_verification.md)에 따른 실제 Canvas/SVG/Native PNG 등의 적용 경로·font/resource·metric context와 최종 화면/파일; 한 경로의 성공으로 다른 경로를 입증하지 않음 | 충족/미충족/미검증/비해당 |
 | 분할·이어받기 계약 | 적용 분기별 컷·유닛 소유, 요구/예약/배치 높이, 예산 실패 시 실제 컷·이월, 소비 완료 후 다음 내용 보존 | 충족/미충족/미검증/비해당 |
 | 줄 소속과 점유 높이 | 저장 LineSeg·재조판 경로 각각의 적용 여부와 소속 결정 근거, 기준선·여백·줄간격 반영 | 충족/미충족/미검증/비해당 |
 | 사례와 증거의 독립성 | 해당 경계·반례의 실제 실행 결과, 합성 계약/정상 한컴 출력/미검증 구분 | 충족/미충족/미검증/비해당 |
 | 기준값 변경 | baseline·golden·허용치 전후 diff, 발생 환경·노드·경계 좌표, 정상 변화의 독립 근거; 변경 없으면 비해당 | 충족/미충족/미검증/비해당 |
+| 회귀 추가·변경의 선행 조건 | 같은 원본·독립 Print PDF의 관련 모든 페이지에서 Native/fresh WASM 최저 raw 90% 이상 확인 후 검사 추가·변경; 관계 검사를 기본으로 하며 완료된 해당 페이지의 양쪽 raw 실루엣 98% 이상·직접 판독 조건을 충족하면 ±2px 좌표 고정도 허용 | 충족/미충족/미검증/비해당 |
+| 90% 통과 후 확대 판독 | 변경·알려진 차이·사용자 지적 영역의 같은 배율 Print/Native/fresh WASM 대조; 수식 모양·장평·기준선·첨자·장식과 관계 기호·본문·보기 번호·탭·줄 사이 간격의 관측·원인·처리 결과 | 충족/미충족/미검증/비해당 |
 | 주장과 검증 범위 | source SHA·명령·결과·직접 확인한 산출물, 남은 미검증과 코드 검토상 우려/실행 검출 회귀의 구분 | 충족/미충족/미검증/비해당 |
 
 줄 구성 사례와 기준값 변경의 증적은
@@ -142,28 +193,55 @@ fit 실패 뒤 작은 높이로 수용하는 fallback, 최종 컷 뒤 페이지 
 신규 렌더링 회귀가 포함되면 [회귀 추가 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)의
 관련 모든 페이지·fixture·Native/fresh WASM 최저 일치율 90% 이상과 직접 판독 증거를 확인한다.
 90% 미만은 `미충족`, 측정 불가·필수 경로 미실행은 `미검증`으로 기록하고 신규 회귀 추가를 보류한다.
-평균값·글꼴 예외·CI 통과로 충족 처리하거나 기존 검사를 자동 삭제하지 않는다.
+평균값·글꼴 예외·CI 통과로 충족 처리하지 않는다. **고정한 `upstream/devel`에서 이미 90% 미만인
+원본에 등록되어 있던 부적합한 회귀 검사**만
+[별도 이슈 이관](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)에 따라
+새로운 이슈 등록·회귀 검사와 HWP/HWPX/PDF의 활성 경로 제거·이관을 검토한다. 이관 근거·남은
+검사의 참조·현재 PR의 검증 범위와 별도 이슈의 90% 이상 및 관계형 회귀 복원 조건을 확인한다.
+같은 입력의 base/head 시각 비교와 기존 검사 등록 근거를 확인한다. 현재 수정으로 발생한 회귀는
+구현 보정 대상으로 남기고, base가 미검증이면 이관 대상으로 판정하지 않는다.
+
+실패한 기존 회귀의 변경도 [기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)에 따라
+**원본 입력 출력 보정 → 관련 모든 페이지의 Native/fresh WASM 일치율 90% 이상 확인 → 필요한 검사 변경**
+순서를 확인한다. 변경된 검사의 절대 px 좌표·고정 px 영역 선택 여부와 실제 소유·순서·보존 관계를
+코드에서 대조한다. 미달 상태에서 먼저 테스트를 바꾼 경우 위 항목은 `미충족`이며, 승인된 메인터너
+보정·collaborator self-review에도 같은 기준을 적용한다.
+px 좌표 검사에는 [완료 페이지의 98% 이상 조건](visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을
+쪽별로 확인한다. 문서 전체98% 이상은 요구하지 않으며 관계 검사·독립 기대 좌표·±2px 오차의
+DPI/좌표계와 Native/fresh WASM 증거를 함께 대조한다.
+
+90% 이상이어도 [수식·간격 확대 판독](visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을
+생략하지 않는다. reviewer는 전체 페이지뿐 아니라 변경 영역·알려진 차이·사용자 지적 영역의 같은
+내용·배율 확대 증거를 직접 확인한다. 수식 모양·장평·간격 결함이 보이면 점수 통과와 별도로
+`미충족`, 판독이나 원인 근거가 없으면 `미검증`으로 기록하고 해당 범위의 승인·통합을 보류한다.
 
 ## 2.8 검증 입력 커밋 확인
 
 이 항목도 역할·작성자와 관계없이 모든 정식 PR review에 적용한다. 직접 검증에 사용한 HWP/HWPX와
-기준·비교 PDF는 **수용 판정 전에 검토 대상 commit에 포함**되어야 한다. `korea_downloads` 같은 개인
-다운로드 경로, `/tmp`, output, GitHub 첨부 URL에만 있는 파일은 저장소에 보존된 입력으로 세지 않는다.
+50 MiB 미만 기준·비교 PDF는 **수용 판정 전에 검토 대상 commit에 포함**되어야 한다.
+**50 MiB(52,428,800바이트) 이상 PDF는 로컬에만 보관하고 PR에서 제외**하며 아래 별도 확인을 적용한다.
+그 외 파일은 `korea_downloads` 같은 개인 다운로드 경로, `/tmp`, output, GitHub 첨부 URL에만 있으면
+저장소에 보존된 입력으로 세지 않는다.
 테스트 통과·파일 존재·`git add`만으로 커밋 포함을 확인했다고 쓰지 않는다.
 
 1. 시각 검증, focused 회귀, Native/WASM 비교 등에 실제 사용한 입력과 기준 PDF를 열거한다.
    입력 파일을 만들지 않고 코드에서 생성·소비하는 단위 테스트는 별도 파일을 만들 필요가 없다.
-2. 기존에 커밋된 동일 파일은 그 경로를 재사용한다. 누락한 원본·PDF와 파일로 사용한 합성·축소 변형은
+2. 위 커밋 대상 중 기존에 커밋된 동일 파일은 그 경로를 재사용한다. 누락한 원본·PDF와 파일로 사용한 합성·축소 변형은
    [원본 fixture 보존 절차](visual_fixture_evidence.md#원본-fixture와-기준-pdf-보존)에 따라 같은 검토 branch에 추가한다.
 3. 최종 검증 명령은 저장소 경로를 사용한다. 외부 경로에서 먼저 실행했다면 저장소 파일 및 commit과
    SHA-256이 같은지 대조하고 경로 변경과 동일성 확인을 기록한다. 내용이 달라졌으면 영향받는 검증을 다시 실행한다.
 4. 검토 대상 commit의 파일 내용과 실행한 파일을 대조한다. 각 입력의 저장소 경로, 출처·역할,
    SHA-256, 확인한 commit SHA를 review Markdown 또는 정식 fixture manifest에 남긴다.
    Git LFS 대상이면 pointer의 존재만 확인하지 않고 실제 object의 확보와 내용 해시까지 확인한다.
+5. 50 MiB 이상 PDF는 commit 포함 검사에서 제외한다. [대용량 PDF 보존](visual_fixture_evidence.md#원본-fixture와-기준-pdf-보존)에
+   따라 실제 로컬 파일의 경로·바이트 수·SHA-256·출처·전체 쪽수와 생성/검증 명령을 기록하고,
+   전쪽 Native/fresh WASM TSV 및 대표 PNG를 연결한다. 파일을 확보해 같은 SHA로 검증했고 PR에서
+   제외했으면 `충족 — 대용량 PDF 로컬 보관`으로 기록한다. 크기만으로 검증 자체를 생략하지 않는다.
 
 review 문서에는 `충족`, `미충족`, `미검증`, `비해당`과 근거를 적는다. HWP/HWPX/PDF 파일을 사용하지
 않았을 때만 이유를 적어 `비해당`으로 처리한다. 개인 경로에서만 재현되거나 필수 입력이 누락됐으면
-`머지 보류`로 기록하고, 누락 파일의 커밋과 동일 입력 검증을 해제 조건으로 적는다.
+`머지 보류`로 기록하고, 누락 파일의 확보·해당 크기별 보존 및 동일 입력 검증을 해제 조건으로 적는다.
+위 대용량 PDF 로컬 보관을 충족한 경우에는 그 PDF의 커밋을 요구하지 않는다.
 합성 입력의 내부 계약과 실제 한컴 원본·PDF의 시각 증거는 구분하며, 파일을 커밋했다는 사실만으로
 합성 입력에 한컴 기준 출력이 있다고 주장하지 않는다.
 

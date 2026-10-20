@@ -1,0 +1,22 @@
+PDFOxide
+Copyright (c) 2025-2026 Yury Fedoseev and the PDFOxide project contributors
+
+PDFOxide is the product; "pdf_oxide" is the name of its packages/crate.
+
+This product is licensed under the terms of the MIT license OR the
+Apache License, Version 2.0, at your option. See LICENSE-MIT and
+LICENSE-APACHE for the full license texts.
+
+Copyright in the PDFOxide code base is held by Yury Fedoseev and the project's
+contributors; contributions are made under the project's Contributor License
+Agreement (see CLA.md) and/or the Developer Certificate of Origin (see
+CONTRIBUTING.md), under which contributors retain ownership of their
+contributions and license them to the project.
+
+"PDFOxide" (the product name) and "pdf_oxide" (the package name), together with
+any associated logo, are trademarks of Yury Fedoseev and are not covered by the
+source-code license. See TRADEMARKS.md.
+
+Portions of this software incorporate third-party open-source components; their
+respective licenses are listed in the dependency manifests (Cargo.toml /
+Cargo.lock and the per-binding package manifests).

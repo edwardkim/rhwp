@@ -41,9 +41,11 @@ import { toolCommands } from '@/command/commands/tool';
 import { installPwaFileHandling, type FileHandlingWindowLike } from '@/command/pwa-file-handling';
 import {
   isSupportedDocumentFileName,
+  documentFileInputAccept,
+  unsupportedDocumentMessage,
   type FileSystemFileHandleLike,
 } from '@/command/file-system-access';
-import { forgetConvertedHmlSaveHandle } from '@/command/save-target';
+import { forgetConvertedHmlSaveHandle, forgetConvertedPdfSaveHandle } from '@/command/save-target';
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
 import { MODAL_DIALOG_CLOSED_EVENT } from '@/ui/dialog';
@@ -104,6 +106,7 @@ import { CENTER_ZOOM_ANCHOR } from '@/view/zoom-anchor';
 import { withBusyCursor } from '@/view/busy-cursor';
 import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
+import { subscribeFieldChanges } from '@/embed/field-events';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
 import { DocumentAgentController } from '@/document-agent/controller';
@@ -253,7 +256,7 @@ function getContext(): EditorContext {
     showControlCodes: wasm.getShowControlCodes(),
     showParagraphMarks: wasm.getShowParagraphMarks(),
     isDirty: documentState.isDirty(),
-    sourceFormat: hasDoc ? (wasm.getSourceFormat() as 'hwp' | 'hwpx' | 'hml') : undefined,
+    sourceFormat: hasDoc ? (wasm.getSourceFormat() as 'hwp' | 'hwpx' | 'hml' | 'pdf') : undefined,
   };
 }
 
@@ -477,15 +480,15 @@ async function updateLoadProgress(percent: number, label: string): Promise<void>
  * face는 prepareCanvasKitDocument에서 먼저 준비하고, 여기서는 문서 전체 face 및 사용자가
  * 새로 승인한 local face를 보충한 뒤 현재 뷰만 다시 그린다.
  */
-function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined): void {
+function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined, refresh = false): void {
   const renderer = canvasView?.getRenderBackend() === 'canvaskit'
     ? rendererSession?.getCanvasKitRenderer() ?? null
     : null;
-  if (!renderer || !fontNames?.length) return;
-  const requestedFonts = [...fontNames];
+  if (!renderer || (!fontNames?.length && !refresh)) return;
+  const requestedFonts = [...(fontNames ?? [])];
   void (async () => {
     await loadStoredLocalFonts();
-    await renderer.prepareLocalFonts(requestedFonts);
+    await renderer.prepareLocalFonts(requestedFonts, { refresh });
     if (
       renderer === rendererSession?.getCanvasKitRenderer()
       && canvasView?.getRenderBackend() === 'canvaskit'
@@ -549,7 +552,7 @@ async function initialize(): Promise<void> {
         msg.textContent = 'CanvasKit 로딩 중...';
         const { CanvasKitLayerRenderer } = await import('@/view/canvaskit-renderer');
         return CanvasKitLayerRenderer.create(mode, surface, {
-          requirePreparedFontFamilies: renderBackendRequest.backend === 'auto',
+          requirePreparedFontFamilies: true,
         });
       },
       {
@@ -578,26 +581,35 @@ async function initialize(): Promise<void> {
             }
             await renderer.prepareHostFonts([...records.values()]);
           }
-          // Explicit CanvasKit has no document-wide auto-selection preflight.
-          if (!report) return;
+          // Explicit selection bypasses auto eligibility, not font preparation.
+          const fontRequirements = report ?? wasm.getCanvasKitDocumentPreflight(
+            canvaskitModeRequest.mode,
+            renderProfile,
+          );
+          if (!fontRequirements.complete) {
+            throw new Error('CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다');
+          }
           const plan = resolveCanvasKitFontPlan(
-            report.requiredFontFamilies,
+            fontRequirements.requiredFontFamilies,
             extensionViewerSettings,
           );
-          if (plan.unavailableFonts.length > 0) {
-            throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${plan.unavailableFonts.join(', ')}`);
-          }
           try {
             // 저장된 Local Font Access 권한이 있으면 첫 replay부터 원 face의 SFNT bytes를
             // CanvasKit에 전달한다. CSS local()에서 EBDT face가 두부로 바뀌는 경로를 타지 않는다.
             await loadStoredLocalFonts();
-            await renderer.prepareLocalFonts(report.requiredFontFamilies);
+            await renderer.prepareLocalFonts(fontRequirements.requiredFontFamilies);
           } catch (error) {
             // 로컬 권한이 만료됐거나 face 읽기에 실패해도 portable bundled face로 계속 연다.
             console.warn(
               '[CanvasKit] 저장된 로컬 Typeface 사전 준비 실패, bundled fallback으로 계속합니다:',
               error,
             );
+          }
+          const unavailableFonts = plan.unavailableFonts.filter(
+            family => !renderer.hasPreparedFontFamily(family),
+          );
+          if (unavailableFonts.length > 0) {
+            throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${unavailableFonts.join(', ')}`);
           }
           await renderer.prepareBundledFonts(plan.sources);
         },
@@ -948,6 +960,7 @@ function setupGlobalShortcuts(): void {
 
 function setupFileInput(): void {
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  fileInput.accept = documentFileInputAccept(wasm.hasPdfImportCapability());
 
   fileInput.addEventListener('change', async (e) => {
     const input = e.target as HTMLInputElement;
@@ -955,8 +968,8 @@ function setupFileInput(): void {
     delete input.dataset.skipUnsavedGuard;
     const file = input.files?.[0];
     if (!file) return;
-    if (!isSupportedDocumentFileName(file.name)) {
-      alert('HWP/HWPX/HML 파일만 지원합니다.');
+    if (!isSupportedDocumentFileName(file.name, wasm.hasPdfImportCapability())) {
+      alert(unsupportedDocumentMessage(file.name, wasm.hasPdfImportCapability()));
       fileInput.value = '';
       return;
     }
@@ -985,12 +998,12 @@ function setupFileInput(): void {
     const dropName = file.name.toLowerCase();
     const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
     const isImage = imageExts.some(ext => dropName.endsWith(ext));
-    const isDoc = isSupportedDocumentFileName(dropName);
+    const isDoc = isSupportedDocumentFileName(dropName, wasm.hasPdfImportCapability());
     // embed 프로파일: 문서 드롭은 호스트가 감지할 수 없는 문서 교체 경로이므로 무시한다.
     // 이미지 드롭은 수명주기가 아니라 편집 기능이라 그대로 둔다.
     if (chromeMode === 'embed' && isDoc) return;
     if (!isImage && !isDoc) {
-      alert('HWP/HWPX/HML 파일 또는 이미지 파일만 지원합니다.');
+      alert(unsupportedDocumentMessage(dropName, wasm.hasPdfImportCapability(), true));
       return;
     }
 
@@ -1204,7 +1217,7 @@ function setupEventListeners(): void {
 
     if (canvasView.getRenderBackend() === 'canvaskit') {
       // CanvasKit은 browser CSS를 쓰지 않으므로 local SFNT 준비가 끝난 뒤 helper가 한 번 갱신한다.
-      prepareCanvasKitLocalFonts(currentDocumentFonts);
+      prepareCanvasKitLocalFonts(currentDocumentFonts, true);
       return;
     }
     // Canvas2D는 Rust layout과 문서를 다시 열지 않고 현재 보이는 view만 새 family chain으로 그린다.
@@ -1615,6 +1628,9 @@ async function loadBytes(
     eventBus.emit('document-swapped');
     await updateLoadProgress(45, '자동 저장 준비 중...');
     forgetConvertedHmlSaveHandle(fileHandle);
+    forgetConvertedPdfSaveHandle(fileHandle);
+    // Imported PDF handles are retained for identity checks/recent files; resolveSaveTarget
+    // forces a different output until a converted HWP/HWPX handle has been published.
     wasm.currentFileHandle = fileHandle;
 
     // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
@@ -2007,6 +2023,16 @@ installEmbedRuntime({
   hostWindow: window,
   parentWindow: window.parent,
   subscribeDocumentChanged: (listener) => eventBus.on('document-agent-changed', listener),
+  subscribeFieldChanged: (listener) => {
+    // 연결마다 새로 센다 — 직전 누름틀 기억이 다른 세션으로 새지 않게.
+    return subscribeFieldChanges(eventBus, (fieldId) => {
+      try {
+        return wasm.getFieldList().find((field) => field.fieldId === fieldId && !field.cellField)?.name ?? '';
+      } catch {
+        return '';
+      }
+    }, listener);
+  },
   handlers: {
     async ready() {
       await initPromise;
@@ -2051,9 +2077,11 @@ installEmbedRuntime({
         },
       );
     },
-    async getPageSvg(page) {
+    async getPageSvg(page, profile) {
       await initPromise;
-      return wasm.renderPageSvg(page);
+      // 인자 없는 기존 호출은 종전 경로 그대로(화면 렌더). 인쇄·PDF 호스트는 'print' 를 넘겨
+      // editor_only 노드(#3375/#4379)를 뺀 SVG 를 받는다.
+      return profile === undefined ? wasm.renderPageSvg(page) : wasm.renderPageSvgWithProfile(page, profile);
     },
     async exportHwp() {
       await initPromise;

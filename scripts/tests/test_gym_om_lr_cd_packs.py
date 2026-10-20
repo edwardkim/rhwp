@@ -22,24 +22,16 @@ LR = GYM / "packs" / "layout-rendering"
 CD = GYM / "packs" / "corpus-diagnostics"
 WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_om_lr_cd.md"
 
-OM_IDS = [f"OM{i:02d}" for i in range(1, 46)]
-LR_IDS = [f"LR{i:02d}" for i in range(1, 49)]
-CD_IDS = [f"CD{i:02d}" for i in range(1, 49)]
+OM_IDS = [f"OM{i:02d}" for i in range(1, 46) if i not in {25, 29, 38, 39}]
+LR_IDS = [f"LR{i:02d}" for i in range(1, 49) if i not in {11, 12, 13, 16, 19, 23, 24, 31, 34, 39, 40, 42, 46}]
+CD_IDS = [f"CD{i:02d}" for i in range(1, 49) if i not in {17, 18, 21, 22, 25, 26, 27, 28, 29, 30, 33, 41, 44, 45, 46}]
 
 OM_FILL = {"OM02", "OM06", "OM31", "OM32", "OM33", "OM34", "OM35", "OM45"}
-LR_VERIFY = {
-    "LR02", "LR06", "LR08", "LR10", "LR18", "LR19", "LR20", "LR21",
-    "LR22", "LR23", "LR24", "LR25", "LR26", "LR27", "LR37", "LR40",
-    "LR45", "LR46", "LR48",
-}
-LR_SVG = {"LR03", "LR07", "LR33", "LR34", "LR35", "LR42"}
-CD_EXTRACT = {
-    "CD06", "CD10", "CD26", "CD27", "CD28", "CD29", "CD30", "CD41", "CD46",
-}
-CD_CONVERT = {"CD07", "CD31", "CD32", "CD33", "CD34", "CD38", "CD42"}
-CD_IR = {
-    "CD04", "CD09", "CD20", "CD21", "CD22", "CD23", "CD36", "CD40", "CD45", "CD47",
-}
+LR_VERIFY = {'LR02', 'LR06', 'LR08', 'LR10', 'LR18', 'LR20', 'LR21', 'LR22', 'LR25', 'LR26', 'LR27', 'LR37', 'LR45', 'LR48'}
+LR_SVG = {'LR03', 'LR07', 'LR33', 'LR35'}
+CD_EXTRACT = {'CD06', 'CD10'}
+CD_CONVERT = {'CD07', 'CD31', 'CD32', 'CD34', 'CD38', 'CD42'}
+CD_IR = {'CD04', 'CD09', 'CD20', 'CD23', 'CD36', 'CD40', 'CD47'}
 
 ALLOWED_CMDS = {
     "fields",

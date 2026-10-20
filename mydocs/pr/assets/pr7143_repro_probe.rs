@@ -47,7 +47,7 @@ fn scan(n: &RenderNode, body: Option<f64>, out: &mut Vec<String>) {
     }
 }
 fn main() {
-    let bytes = std::fs::read("samples/task2287/1342000_edu_curriculum_map.hwp").unwrap();
+    let bytes = std::fs::read("mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp").unwrap();
     let core = DocumentCore::from_bytes(&bytes).unwrap();
     let source = core.document();
     let mut target = None;

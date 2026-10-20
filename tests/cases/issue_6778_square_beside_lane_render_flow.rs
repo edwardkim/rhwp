@@ -115,7 +115,8 @@ fn maintainer_lane_geometry() -> (i32, i32, i32, i32) {
 
 fn maintainer_lane_variant(column_start: i32, segment_width: i32) -> RenderNode {
     let mut core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
-    let paragraph = &mut core.document_mut().sections[0].paragraphs[13];
+    let mut document = core.document().clone();
+    let paragraph = &mut document.sections[0].paragraphs[13];
     assert!(
         !paragraph.line_segs.is_empty(),
         "원본 저장 사다리가 필요하다"
@@ -124,6 +125,8 @@ fn maintainer_lane_variant(column_start: i32, segment_width: i32) -> RenderNode 
         segment.column_start = column_start;
         segment.segment_width = segment_width;
     }
+    // Direct IR mutation must rebuild composition, measurement, and pagination.
+    core.set_document(document);
     core.build_page_render_tree(0)
         .expect("변형 render tree")
         .root
@@ -164,9 +167,9 @@ fn maintainer_square_lane_requires_the_right_edge_and_narrow_width() {
 #[test]
 fn maintainer_first_item_without_stored_vpos_starts_below_the_square_band() {
     let mut core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
-    core.document_mut().sections[0].paragraphs[14]
-        .line_segs
-        .clear();
+    let mut document = core.document().clone();
+    document.sections[0].paragraphs[14].line_segs.clear();
+    core.set_document(document);
     let tree = core.build_page_render_tree(0).expect("변형 render tree");
     let (_, bottom) = maintainer_square_bounds(&tree.root).expect("pi=12 Square 표");
     let top = maintainer_body_line_top(&tree.root, 14).expect("pi=14 첫 비-레인 본문 줄");

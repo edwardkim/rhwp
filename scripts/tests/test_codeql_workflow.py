@@ -196,6 +196,15 @@ class CodeQLWorkflowTests(unittest.TestCase):
 
     def test_analysis_steps_follow_selection_while_check_names_stay_stable(self) -> None:
         analyze = job_body(self.workflow, "analyze")
+        # CodeQL은 init과 analyze 사이에 같은 버전의 설정을 공유한다.
+        pins = re.findall(r"github/codeql-action/(?:init|analyze)@([0-9a-f]{40})", analyze)
+        self.assertGreaterEqual(len(pins), 2)
+        self.assertEqual(len(set(pins)), 1, "CodeQL 단계의 버전 불일치")
+        dependabot = (REPO_ROOT / ".github/dependabot.yml").read_text(encoding="utf-8")
+        actions_config = dependabot.split('package-ecosystem: "github-actions"', 1)[1].split(
+            "  - package-ecosystem:", 1
+        )[0]
+        self.assertIn('"github/codeql-action/*"', actions_config)
         selected = (
             "contains(format(',{0},', env.SELECTED_LANGUAGES), "
             "format(',{0},', matrix.language))"

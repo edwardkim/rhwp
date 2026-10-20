@@ -15,6 +15,9 @@
 //! 3. header.xml → DocInfo (hwpx/header)
 //! 4. section*.xml → Section (hwpx/section)
 
+mod auto_numbers;
+pub(crate) use auto_numbers::assign_auto_numbers;
+
 pub mod bin_data;
 pub mod body_text;
 pub mod byte_reader;
@@ -29,8 +32,11 @@ pub mod hwp_summary;
 pub mod hwpx;
 pub mod ingest;
 pub mod ole_container;
+#[cfg(feature = "pdf-import")]
+pub mod pdf;
 pub mod record;
 pub mod tags;
+pub(crate) mod tracked_viewtext;
 
 use crate::model::bin_data::BinDataContent;
 use crate::model::document::{
@@ -49,6 +55,8 @@ pub enum FileFormat {
     Hwp3,
     /// Standalone HWPML XML
     Hml,
+    /// PDF (실험적 가져오기는 `pdf-import` feature 필요)
+    Pdf,
     /// DRM/보안 컨테이너로 보호된 문서 (미지원 — 감지만, Issue #1982)
     /// Fasoo(`\x9b DRMONE`) / SoftCamp SCDSA(`SCDSA00x`) 등. 복호화는 범위 밖.
     DrmProtected,
@@ -66,6 +74,8 @@ const DRM_PROTECTED_HINT: &str =
     "DRM/보안 컨테이너로 보호된 문서입니다. 한컴오피스 등 DRM 클라이언트에서 보호를 해제한 뒤 저장해 열어주세요.";
 const EMPTY_FILE_CODE: &str = "EMPTY_FILE";
 const EMPTY_FILE_HINT: &str = "빈 파일(0 바이트)입니다.";
+pub(crate) const PDF_IMPORT_DISABLED_HINT: &str =
+    "이 빌드는 PDF 가져오기가 제외되었습니다. pdf-import feature를 포함해 다시 빌드하세요.";
 
 /// HWP5 완전 문서 열기가 선택하는 핵심 스트림 출력 예산.
 ///
@@ -210,6 +220,9 @@ pub fn detect_format(data: &[u8]) -> FileFormat {
     if data.starts_with(FASOO_DRM_SIG) || data.starts_with(SCDSA_SIG) {
         return FileFormat::DrmProtected;
     }
+    if data.starts_with(b"%PDF-") {
+        return FileFormat::Pdf;
+    }
     if data.len() >= 8 {
         // CFB/OLE 시그니처: D0 CF 11 E0 A1 B1 1A E1
         if data[0] == 0xD0 && data[1] == 0xCF && data[2] == 0x11 && data[3] == 0xE0 {
@@ -248,6 +261,8 @@ pub enum ParseError {
     HwpxError(hwpx::HwpxError),
     Hwp3Error(hwp3::Hwp3Error),
     HmlError(hml::HmlError),
+    #[cfg(feature = "pdf-import")]
+    PdfError(pdf::PdfImportError),
     EncryptedDocument,
     /// 감지는 되었으나 지원하지 않는 포맷
     UnsupportedFormat {
@@ -268,6 +283,8 @@ impl std::fmt::Display for ParseError {
             ParseError::HwpxError(e) => write!(f, "HWPX 오류: {}", e),
             ParseError::Hwp3Error(e) => write!(f, "HWP 3.0 오류: {}", e),
             ParseError::HmlError(e) => write!(f, "HML 오류: {}", e),
+            #[cfg(feature = "pdf-import")]
+            ParseError::PdfError(e) => write!(f, "PDF 오류: {}", e),
             ParseError::EncryptedDocument => write!(
                 f,
                 "비밀번호가 필요한 암호 문서입니다 (parse_document_with_password 또는 parse_hwp_with_password 로 비밀번호를 전달하세요)"
@@ -387,7 +404,7 @@ fn parse_hwp_inner_with_limits(
     limits: Hwp5DocumentOpenDecompressionLimits,
 ) -> Result<Document, ParseError> {
     // 1. CFB 컨테이너 열기 (strict → lenient 폴백)
-    match cfb_reader::CfbReader::open(data) {
+    let mut document = match cfb_reader::CfbReader::open(data) {
         Ok(cfb) => parse_hwp_with_cfb(cfb, data, password, limits),
         Err(strict_err) => {
             eprintln!(
@@ -398,7 +415,9 @@ fn parse_hwp_inner_with_limits(
                 .map_err(|_| ParseError::CfbError(strict_err))?;
             parse_hwp_with_lenient(lenient, data, password, limits)
         }
-    }
+    }?;
+    document.seal_section_tail_provenance();
+    Ok(document)
 }
 
 /// 표준 CfbReader로 파싱
@@ -465,6 +484,7 @@ fn parse_hwp_with_cfb(
         encrypted,
         password,
         &mut decompression_budget,
+        &doc_info,
     )?;
 
     // 5-7. 미리보기, BinData, 추가 스트림
@@ -555,28 +575,9 @@ fn parse_hwp_with_cfb(
             if ps_r < 0.20 && cs_r < 0.20 {
                 doc.is_hwp3_variant = true;
                 doc.provenance.hwp3_lineage = true;
-                // [Task #1001 Stage 11] line_segs.vertical_pos /2 보정 revert —
-                // 실제 raw vpos 비교 결과 HWP5 변환본 vpos 는 HWP3 의 2배가 아닌
-                // ~1.15배 (15% 만 차이). /2 fix 시 HWP5 가 HWP3 보다 더 compact 되어
-                // 한컴 정합 페이지 분할 회귀 (한컴은 section 2 가 새 페이지 vs rhwp
-                // 는 같은 페이지에 packed). vpos 보정 없이 ParaShape /4 만으로 정합.
-
-                // [Task #1037 → #1042 정정] ParaShape unit semantic normalize.
-                // HWP3 vs HWP5 variant 비교 결과 (diag_1042_hwp3_vs_hwp5_paragraph):
-                //   - margin_left/right: HWP5 raw = HWP3 raw 동일 → /2 적용은 wrong
-                //   - spacing_before / spacing_after: HWP5 raw = HWP3 × 2 → /2 정합
-                // margin_left/right /2 제거 — HWP3 정답 paragraph 분포 정합.
-                //
-                // [Task #1472] indent /2 제거 — IR 은 정답(full HWPUNIT, HWPX 일치)로 둔다.
-                //   종전 indent /2 는 본문 내어쓰기를 절반으로 훼손(한컴/HWPX 와 어긋남)하면서,
-                //   미주 TAC 수식 흐름의 available_width 계산이 indent_scale=2.0 으로 이를 되돌려
-                //   "수식 effective indent = (indent/2)×2 = full" 로 페이지네이션을 한컴과 정합시켰다.
-                //   재설계: IR indent 는 full 로 두고, 미주 수식 흐름의 indent_scale 을 변환본에서만
-                //   절반(2.0→1.0)으로 낮춰 effective indent(=full) 를 불변 유지한다(아래 렌더러).
-                for ps in &mut doc.doc_info.para_shapes {
-                    ps.spacing_before /= 2;
-                    ps.spacing_after /= 2;
-                }
+                // 계보는 출처 정보다. HWP5의 문단 간격과 저장 vpos는 HWP5 계약으로
+                // 읽으며, 원본 HWP3의 좌표에 맞추어 저장 속성을 다시 줄이지 않는다.
+                // 정상 한컴 저장본에서 raw spacing_before / 2가 첫 저장 vpos와 일치한다.
             }
         }
     }
@@ -585,15 +586,6 @@ fn parse_hwp_with_cfb(
     // 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
     // dir 영역 basename 매칭 영역 image 영역 자동 load.
     populate_link_image_paths(&mut doc);
-
-    // [Task #1042 Stage 5] HWP5 variant 의 paragraph data raw vpos normalize —
-    // HWP3 vs HWP5 variant 진단 결과 HWP5 의 raw vpos = HWP3 vpos + cumulative
-    // spacing_before. paragraph 마다 +sb 누적 → paragraph_layout 의 외부 path
-    // (예: pagination engine 의 vpos 보정) 에서 cascade 차이 야기. HWP3 정합 위해
-    // paragraph 의 line_segs.vpos 에서 cumulative spacing_before 차감.
-    if doc.is_hwp3_variant {
-        normalize_variant_paragraph_vpos(&mut doc);
-    }
 
     if let Some(idx) = doc
         .extra_streams
@@ -606,51 +598,6 @@ fn parse_hwp_with_cfb(
         }
     }
     Ok(doc)
-}
-
-/// [Task #1042 Stage 5] HWP5 variant 의 paragraph data vpos 를 HWP3 형식으로 normalize.
-///
-/// HWP3 paragraph 사이 vpos diff = lh + ls (spacing_before 미포함)
-/// HWP5 variant paragraph 사이 vpos diff = lh + ls + sb (spacing_before 포함)
-///
-/// HWP5 variant 의 line_segs.vpos 에서 cumulative spacing_before 차감하여 HWP3
-/// 형식과 정합. paragraph_layout 의 spacing_before 적용 path 는 ParaShape 기반
-/// 으로 처리되므로 vpos normalize 후에도 동일.
-///
-/// paragraph local reset detection: 현재 paragraph 의 first vpos 가 이전
-/// paragraph 의 vpos 끝보다 작으면 reset 발생 (page boundary 등). cumulative_sb
-/// reset.
-fn normalize_variant_paragraph_vpos(doc: &mut crate::model::document::Document) {
-    let para_shapes = doc.doc_info.para_shapes.clone();
-    for section in doc.sections.iter_mut() {
-        let mut cumulative_sb: i32 = 0;
-        let mut prev_vpos_end: i32 = 0;
-        for para in section.paragraphs.iter_mut() {
-            if para.line_segs.is_empty() {
-                continue;
-            }
-            let sb = para_shapes
-                .get(para.para_shape_id as usize)
-                .map(|p| p.spacing_before)
-                .unwrap_or(0);
-            let first_vpos = para.line_segs[0].vertical_pos;
-            // paragraph local reset detection
-            if first_vpos < prev_vpos_end.saturating_sub(cumulative_sb + sb) {
-                cumulative_sb = 0;
-            }
-            cumulative_sb = cumulative_sb.saturating_add(sb);
-            for ls in para.line_segs.iter_mut() {
-                ls.vertical_pos = ls.vertical_pos.saturating_sub(cumulative_sb);
-            }
-            let last = para.line_segs.last().unwrap();
-            // 주변(saturating_sub/add)과 달리 여기만 raw 덧셈이라 손상 입력의 거대
-            // vpos/height 로 i32 오버플로 패닉하던 것을 saturating 으로 맞춘다.
-            prev_vpos_end = last
-                .vertical_pos
-                .saturating_add(last.line_height)
-                .saturating_add(last.line_spacing);
-        }
-    }
 }
 
 /// [Task #554] HWP3 → HWP5/HWPX 변환본 식별 휴리스틱 + 페이지 여백 보정
@@ -690,6 +637,7 @@ fn fixup_line_segs_for_variant(paragraphs: &mut [crate::model::paragraph::Paragr
 }
 
 fn apply_hwp3_origin_fixup(doc: &mut Document, summary_hwp3_era: bool) {
+    let external_realign = doc.layout_profile().hwp3_external_realign();
     // [#1880 v2] rhwp HWPX→HWP 변환본(is_hwpx_variant, #1886 마커)은 한컴
     // HWP3→HWP5 변환본이 아니다 — 결정론 마커가 비율 휴리스틱에 우선한다.
     // 미게이트 시 저-스타일 대형 문서(2959953)가 비율에 걸려 margin_bottom
@@ -725,12 +673,16 @@ fn apply_hwp3_origin_fixup(doc: &mut Document, summary_hwp3_era: bool) {
         doc.provenance.hwp3_lineage = true;
         for section in doc.sections.iter_mut() {
             let pd = &mut section.section_def.page_def;
-            if pd.pagination_bottom_tolerance == 0 {
+            if !external_realign && pd.pagination_bottom_tolerance == 0 {
                 pd.pagination_bottom_tolerance = 1600.min(pd.margin_bottom);
             }
         }
     }
 
+    // 출처는 보존하되 외부 문서의 재정렬 요청에 이전 마지막 줄 허용치를 덧씌우지 않는다.
+    if external_realign {
+        return;
+    }
     let total_paragraphs: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
     if total_paragraphs <= 50 {
         return;
@@ -780,35 +732,52 @@ fn apply_hwp3_origin_fixup(doc: &mut Document, summary_hwp3_era: bool) {
     }
 }
 
-/// [#5169] 비배포 문서의 `ViewText/Section{N}` 을 렌더 본문으로 채택할지 판정한다.
-///
-/// 배포용(0x04) 문서만 `ViewText` 를 읽던 종전 규칙은, **변경 추적**(0x4000) 등으로
-/// `BodyText` 와 `ViewText` 가 갈라진 일반 문서에서 rhwp 가 한글이 **렌더하지 않는**
-/// `BodyText` 를 읽게 만들었다(예: 연구계획서 — `BodyText` 표 4·3,540자 vs `ViewText`
-/// 표 10·10,210자). 한글은 `ViewText` 가 있으면 그것을 렌더하므로, 정상 복호되는
-/// `ViewText` 를 우선한다.
-///
-/// 단 일부 문서는 압축 비트가 서 있어도 `ViewText` 가 deflate 로 풀리지 않는 스텁이라
-/// (예: `20250130-hongbo.hwp`), 무조건 우선하면 본문을 잃는다. 그래서 **복호에 성공하고
-/// 첫 레코드가 `PARA_HEADER`(구역 시작 문단) 인 경우에만** 채택하고, 아니면 `None` 을
-/// 돌려 호출부가 `BodyText` 로 폴백하게 한다. 배포용 문서는 이 경로로 오지 않는다
-/// (암호화된 `ViewText` 라 별도 복호 경로가 처리한다).
+/// Decode a non-distribution ViewText paragraph stream, falling back on stubs.
+/// Change-tracking streams contain review history, not just visible content;
+/// DocInfo visibility must be applied before this stream becomes layout IR.
 fn decode_rendered_viewtext(
     raw: Vec<u8>,
     compressed: bool,
     output_limit: usize,
 ) -> Option<Vec<u8>> {
     let decoded = cfb_reader::decode_stream_limited(raw, compressed, output_limit).ok()?;
-    if decoded.len() < 4 {
-        return None;
+    starts_with_paragraph_header(&decoded).then_some(decoded)
+}
+
+fn starts_with_paragraph_header(data: &[u8]) -> bool {
+    data.get(..4).is_some_and(|bytes| {
+        let header = u32::from_le_bytes(bytes.try_into().unwrap());
+        (header & 0x3ff) as u16 == tags::HWPTAG_PARA_HEADER
+    })
+}
+
+/// 암호 문서도 #5169의 ViewText 우선 정책을 따른다. 스텁은 BodyText로 내려가되,
+/// 읽기 오류와 자원 제한 초과는 숨기지 않는다. DocInfo에서 비밀번호는 이미 검증됐다.
+/// 반환값은 복호화된 문단 레코드 스트림이며, 비밀번호나 파생 키가 아니다.
+fn decode_viewtext_paragraph_stream(
+    raw: Result<Vec<u8>, cfb_reader::CfbError>,
+    password: &[u8],
+    compressed: bool,
+    output_limit: usize,
+) -> Result<Option<Vec<u8>>, ParseError> {
+    let raw = match raw {
+        Ok(raw) => raw,
+        Err(cfb_reader::CfbError::StreamNotFound(_)) => return Ok(None),
+        Err(error) => return Err(ParseError::CfbError(error)),
+    };
+    match crypto::decrypt_password_protected_limited(&raw, password, compressed, output_limit) {
+        Ok(decoded) => Ok(starts_with_paragraph_header(&decoded).then_some(decoded)),
+        Err(crypto::CryptoError::WrongPassword) => Ok(None),
+        Err(error) => Err(ParseError::CryptoError(error)),
     }
-    let header = u32::from_le_bytes([decoded[0], decoded[1], decoded[2], decoded[3]]);
-    let tag = (header & 0x3ff) as u16;
-    if tag == tags::HWPTAG_PARA_HEADER {
-        Some(decoded)
-    } else {
-        None
-    }
+}
+
+fn parse_visible_section(
+    data: &[u8],
+    doc_info: &crate::model::document::DocInfo,
+) -> Result<crate::model::document::Section, body_text::BodyTextError> {
+    let projected = tracked_viewtext::project(data, doc_info)?;
+    body_text::parse_body_text_section(projected.as_deref().unwrap_or(data))
 }
 
 /// CfbReader로 섹션들 파싱
@@ -821,6 +790,7 @@ fn parse_sections_strict(
     encrypted: bool,
     password: Option<&[u8]>,
     decompression_budget: &mut Hwp5DocumentOpenDecompressionBudget,
+    doc_info: &crate::model::document::DocInfo,
 ) -> Result<Vec<crate::model::document::Section>, ParseError> {
     let mut sections = Vec::new();
 
@@ -835,23 +805,30 @@ fn parse_sections_strict(
             crypto::decrypt_viewtext_section_limited(&raw, compressed, section_output_limit)
                 .map_err(ParseError::CryptoError)?
         } else if encrypted {
-            // 비밀번호 암호 문서: BodyText raw → 비밀번호 복호화.
-            // read_body_text_section_raw() 가 스트림 경로 탐색
-            // (BodyText/Section{i} → /Section{i}) 을 담당하므로 raw 만 얻어
-            // 복호화+압축해제는 crypto 로 위임한다.
-            let raw = cfb
-                .read_body_text_section_raw_limited(i, section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            crypto::decrypt_password_protected_limited(
-                &raw,
+            let rendered = decode_viewtext_paragraph_stream(
+                cfb.read_viewtext_section_raw_limited(i, section_raw_limit),
                 password.unwrap(),
                 compressed,
                 section_output_limit,
-            )
-            .map_err(ParseError::CryptoError)?
+            )?;
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = cfb
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    crypto::decrypt_password_protected_limited(
+                        &raw,
+                        password.unwrap(),
+                        compressed,
+                        section_output_limit,
+                    )
+                    .map_err(ParseError::CryptoError)?
+                }
+            }
         } else {
-            // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 한글이 렌더하는
-            // 본문이므로 우선한다. 복호 실패·스텁이면 BodyText 로 폴백한다.
+            // ViewText may be the only complete section. Apply its visibility
+            // separately after decoding; existence alone does not mean visible.
             let rendered = cfb
                 .read_viewtext_section_raw_limited(i, section_raw_limit)
                 .ok()
@@ -871,13 +848,16 @@ fn parse_sections_strict(
             .consume(section_data.len())
             .map_err(ParseError::CfbError)?;
 
-        match body_text::parse_body_text_section(&section_data) {
+        match parse_visible_section(&section_data, doc_info) {
             Ok(mut section) => {
                 // 원본 BodyText 스트림 보존 (라운드트립용)
                 section.raw_stream = Some(section_data);
                 sections.push(section);
             }
-            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+            Err(
+                e @ (body_text::BodyTextError::DrawingTextStructure(_)
+                | body_text::BodyTextError::ChangeTrackingStructure(_)),
+            ) => {
                 return Err(ParseError::BodyTextError(e));
             }
             Err(e) => {
@@ -957,17 +937,27 @@ fn parse_hwp_with_lenient(
             crypto::decrypt_viewtext_section_limited(&raw, compressed, section_output_limit)
                 .map_err(ParseError::CryptoError)?
         } else if encrypted {
-            // 비밀번호 암호 문서: lenient reader 로 raw 섹션 바이트를 얻어 복호화.
-            let raw = lenient
-                .read_body_text_section_raw_limited(i, section_raw_limit)
-                .map_err(ParseError::CfbError)?;
-            crypto::decrypt_password_protected_limited(
-                &raw,
+            let rendered = decode_viewtext_paragraph_stream(
+                lenient.read_viewtext_section_raw_limited(i, section_raw_limit),
                 password.unwrap(),
                 compressed,
                 section_output_limit,
-            )
-            .map_err(ParseError::CryptoError)?
+            )?;
+            match rendered {
+                Some(decoded) => decoded,
+                None => {
+                    let raw = lenient
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
+                        .map_err(ParseError::CfbError)?;
+                    crypto::decrypt_password_protected_limited(
+                        &raw,
+                        password.unwrap(),
+                        compressed,
+                        section_output_limit,
+                    )
+                    .map_err(ParseError::CryptoError)?
+                }
+            }
         } else {
             // [#5169] 비배포 문서라도 정상 복호되는 ViewText 가 있으면 우선한다(위 strict
             // 경로와 동일 규칙). 복호 실패·스텁이면 BodyText 로 폴백.
@@ -990,12 +980,15 @@ fn parse_hwp_with_lenient(
             .consume(section_data.len())
             .map_err(ParseError::CfbError)?;
 
-        match body_text::parse_body_text_section(&section_data) {
+        match parse_visible_section(&section_data, &doc_info) {
             Ok(mut section) => {
                 section.raw_stream = Some(section_data);
                 sections.push(section);
             }
-            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+            Err(
+                e @ (body_text::BodyTextError::DrawingTextStructure(_)
+                | body_text::BodyTextError::ChangeTrackingStructure(_)),
+            ) => {
                 return Err(ParseError::BodyTextError(e));
             }
             Err(e) => {
@@ -1070,15 +1063,6 @@ fn parse_hwp_with_lenient(
     // 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
     // dir 영역 basename 매칭 영역 image 영역 자동 load.
     populate_link_image_paths(&mut doc);
-
-    // [Task #1042 Stage 5] HWP5 variant 의 paragraph data raw vpos normalize —
-    // HWP3 vs HWP5 variant 진단 결과 HWP5 의 raw vpos = HWP3 vpos + cumulative
-    // spacing_before. paragraph 마다 +sb 누적 → paragraph_layout 의 외부 path
-    // (예: pagination engine 의 vpos 보정) 에서 cascade 차이 야기. HWP3 정합 위해
-    // paragraph 의 line_segs.vpos 에서 cumulative spacing_before 차감.
-    if doc.is_hwp3_variant {
-        normalize_variant_paragraph_vpos(&mut doc);
-    }
 
     Ok(doc)
 }
@@ -1247,263 +1231,6 @@ pub(crate) fn populate_link_image_paths(doc: &mut Document) {
     }
 }
 
-/// 문서 내 모든 AutoNumber 컨트롤에 번호를 할당한다.
-/// NewNumber 컨트롤을 만나면 해당 종류의 카운터를 리셋한다.
-pub(crate) fn assign_auto_numbers(doc: &mut Document) {
-    use crate::model::control::AutoNumberType;
-
-    // 번호 종류별 카운터 — DocProperties 시작번호로 초기화
-    let mut counters = [
-        doc.doc_properties.page_start_num.saturating_sub(1),
-        doc.doc_properties.footnote_start_num.saturating_sub(1),
-        doc.doc_properties.endnote_start_num.saturating_sub(1),
-        doc.doc_properties.picture_start_num.saturating_sub(1),
-        doc.doc_properties.table_start_num.saturating_sub(1),
-        doc.doc_properties.equation_start_num.saturating_sub(1),
-    ];
-
-    fn counter_index(t: AutoNumberType) -> Option<usize> {
-        match t {
-            AutoNumberType::Page => Some(0),
-            AutoNumberType::Footnote => Some(1),
-            AutoNumberType::Endnote => Some(2),
-            AutoNumberType::Picture => Some(3),
-            AutoNumberType::Table => Some(4),
-            AutoNumberType::Equation => Some(5),
-            // 총 쪽수는 페이지네이션이 끝난 뒤 결정되는 표시값이다. 일반 자동번호
-            // 카운터를 증가시키거나 NewNumber로 재설정할 대상이 아니다.
-            AutoNumberType::TotalPage => None,
-        }
-    }
-
-    // 모든 섹션, 문단, 컨트롤 순회
-    for section in &mut doc.sections {
-        // 구역별 시작번호 반영: 0이 아니면 해당 카운터를 리셋
-        let sd = &section.section_def;
-        if sd.picture_num > 0 {
-            counters[3] = sd.picture_num.saturating_sub(1);
-        }
-        if sd.table_num > 0 {
-            counters[4] = sd.table_num.saturating_sub(1);
-        }
-        if sd.equation_num > 0 {
-            counters[5] = sd.equation_num.saturating_sub(1);
-        }
-        if sd.page_num > 0 {
-            counters[0] = sd.page_num.saturating_sub(1);
-        }
-
-        // 본문 문단
-        for para in &mut section.paragraphs {
-            assign_auto_numbers_in_controls(&mut para.controls, &mut counters, counter_index);
-        }
-    }
-}
-
-fn assign_auto_numbers_in_controls(
-    controls: &mut [crate::model::control::Control],
-    counters: &mut [u16; 6],
-    counter_index: fn(crate::model::control::AutoNumberType) -> Option<usize>,
-) {
-    use crate::model::control::Control;
-
-    fn assign_caption_auto_numbers(
-        caption: &mut Option<crate::model::shape::Caption>,
-        counters: &mut [u16; 6],
-        counter_index: fn(crate::model::control::AutoNumberType) -> Option<usize>,
-    ) {
-        if let Some(caption) = caption {
-            for para in &mut caption.paragraphs {
-                assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-            }
-        }
-    }
-
-    fn assign_text_box_auto_numbers(
-        text_box: &mut Option<crate::model::shape::TextBox>,
-        counters: &mut [u16; 6],
-        counter_index: fn(crate::model::control::AutoNumberType) -> Option<usize>,
-    ) {
-        if let Some(text_box) = text_box {
-            for para in &mut text_box.paragraphs {
-                assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-            }
-        }
-    }
-
-    for ctrl in controls.iter_mut() {
-        match ctrl {
-            Control::AutoNumber(an) => {
-                if let Some(idx) = counter_index(an.number_type) {
-                    counters[idx] += 1;
-                    an.assigned_number = counters[idx];
-                    an.number = counters[idx];
-                }
-            }
-            Control::Table(table) => {
-                // 표 내부 셀의 문단도 처리
-                for cell in &mut table.cells {
-                    for para in &mut cell.paragraphs {
-                        assign_auto_numbers_in_controls(
-                            &mut para.controls,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                }
-                // 표 캡션 처리
-                assign_caption_auto_numbers(&mut table.caption, counters, counter_index);
-            }
-            Control::Picture(pic) => {
-                // 그림 캡션 처리
-                assign_caption_auto_numbers(&mut pic.caption, counters, counter_index);
-            }
-            Control::Shape(shape) => {
-                use crate::model::shape::ShapeObject;
-
-                match shape.as_mut() {
-                    ShapeObject::Line(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Rectangle(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Ellipse(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Arc(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Polygon(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Curve(s) => {
-                        assign_caption_auto_numbers(
-                            &mut s.drawing.caption,
-                            counters,
-                            counter_index,
-                        );
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Group(s) => {
-                        assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
-                    }
-                    ShapeObject::Picture(s) => {
-                        assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
-                    }
-                    ShapeObject::Chart(s) => {
-                        if s.caption.is_some() {
-                            assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
-                        } else {
-                            assign_caption_auto_numbers(
-                                &mut s.drawing.caption,
-                                counters,
-                                counter_index,
-                            );
-                        }
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                    ShapeObject::Ole(s) => {
-                        if s.caption.is_some() {
-                            assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
-                        } else {
-                            assign_caption_auto_numbers(
-                                &mut s.drawing.caption,
-                                counters,
-                                counter_index,
-                            );
-                        }
-                        assign_text_box_auto_numbers(
-                            &mut s.drawing.text_box,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                }
-            }
-            Control::Header(h) => {
-                for para in &mut h.paragraphs {
-                    assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-                }
-            }
-            Control::Footer(f) => {
-                for para in &mut f.paragraphs {
-                    assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-                }
-            }
-            Control::Footnote(fn_) => {
-                for para in &mut fn_.paragraphs {
-                    assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-                }
-            }
-            Control::Endnote(en) => {
-                for para in &mut en.paragraphs {
-                    assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
-                }
-            }
-            Control::NewNumber(nn) => {
-                if let Some(idx) = counter_index(nn.number_type) {
-                    counters[idx] = nn.number.saturating_sub(1);
-                }
-            }
-            _ => {}
-        }
-    }
-}
-
 // ---------------------------------------------------------------------------
 // Trait 추상화: DocumentParser
 // ---------------------------------------------------------------------------
@@ -1566,6 +1293,32 @@ pub struct HmlImportMetadata {
 pub struct ParsedDocument {
     pub document: Document,
     pub hml_metadata: Option<HmlImportMetadata>,
+    #[cfg(feature = "pdf-import")]
+    pub pdf_metadata: Option<pdf::PdfImportMetadata>,
+}
+
+/// 선택한 PDF 쪽을 공통 IR과 원본 쪽 대응 메타데이터로 가져온다.
+///
+/// 자동 감지 경로와 같은 provenance 봉인을 사용한다. PDF로 다시 저장하는 API가 아니다.
+#[cfg(feature = "pdf-import")]
+pub fn parse_pdf_with_metadata(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+) -> Result<ParsedDocument, ParseError> {
+    parse_pdf_unsealed(data, options).map(seal_parsed_document)
+}
+
+#[cfg(feature = "pdf-import")]
+fn parse_pdf_unsealed(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+) -> Result<ParsedDocument, ParseError> {
+    let result = pdf::parse_pdf_with_options(data, options).map_err(ParseError::PdfError)?;
+    Ok(ParsedDocument {
+        document: result.document,
+        hml_metadata: None,
+        pdf_metadata: Some(result.metadata),
+    })
 }
 
 /// 포맷 자동 감지 후 공통 IR과 입력 메타데이터를 파싱한다.
@@ -1589,7 +1342,10 @@ fn parse_document_inner(
     data: &[u8],
     password: Option<&[u8]>,
 ) -> Result<ParsedDocument, ParseError> {
-    let mut parsed = parse_document_inner_unsealed(data, password)?;
+    parse_document_inner_unsealed(data, password).map(seal_parsed_document)
+}
+
+fn seal_parsed_document(mut parsed: ParsedDocument) -> ParsedDocument {
     // [#4493] 파싱과 모든 load fixup 이 끝난 마지막 지점에서 DocInfo raw 출처를
     // 봉인한다 — 이보다 앞(포맷별 파서 내부)에서 봉인하면 HWP3-변환본 spacing
     // 반감 같은 로드 보정이 봉인을 깨서, 무변경 문서의 원본 바이트 통과가 죽는다.
@@ -1602,7 +1358,7 @@ fn parse_document_inner(
     // 지점에서 봉인한다. DocumentCore 로 열리는 경로는 from_bytes 의 로드 픽스업
     // (손상 lineseg 제거 등) 뒤에 다시 봉인된다.
     parsed.document.seal_body_raw_provenance();
-    Ok(parsed)
+    parsed
 }
 
 fn parse_document_inner_unsealed(
@@ -1645,8 +1401,18 @@ fn parse_document_inner_unsealed(
                     warnings: result.warnings,
                     preserved_fragments: result.preserved_fragments,
                 }),
+                #[cfg(feature = "pdf-import")]
+                pdf_metadata: None,
             })
         }
+        #[cfg(feature = "pdf-import")]
+        FileFormat::Pdf => parse_pdf_unsealed(data, &pdf::PdfImportOptions::default()),
+        #[cfg(not(feature = "pdf-import"))]
+        FileFormat::Pdf => Err(ParseError::UnsupportedFormat {
+            code: "PDF_IMPORT_DISABLED",
+            format: "PDF",
+            hint: PDF_IMPORT_DISABLED_HINT,
+        }),
         FileFormat::DrmProtected => Err(ParseError::UnsupportedFormat {
             code: DRM_PROTECTED_CODE,
             format: drm_format_name(data),
@@ -1669,6 +1435,8 @@ fn without_hml_metadata(document: Document) -> ParsedDocument {
     ParsedDocument {
         document,
         hml_metadata: None,
+        #[cfg(feature = "pdf-import")]
+        pdf_metadata: None,
     }
 }
 
@@ -1815,7 +1583,7 @@ fn extract_thumbnail_from_hwpx(data: &[u8], max_bytes: usize) -> Option<Vec<u8>>
     // Preview/PrvImage.png 또는 Preview/PrvImage.* 탐색
     let entry_name = (0..archive.len()).find_map(|i| {
         let file = archive.by_index(i).ok()?;
-        let name = file.name().to_string();
+        let name = file.name().ok()?.into_owned();
         if name.starts_with("Preview/PrvImage") {
             Some(name)
         } else {

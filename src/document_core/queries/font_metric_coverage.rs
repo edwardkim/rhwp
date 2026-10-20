@@ -370,6 +370,7 @@ fn format_name(format: FileFormat) -> &'static str {
         FileFormat::Hwpx => "hwpx",
         FileFormat::Hwp3 => "hwp3",
         FileFormat::Hml => "hml",
+        FileFormat::Pdf => "pdf",
         FileFormat::DrmProtected => "drm",
         FileFormat::Empty => "empty",
         FileFormat::Unknown => "unknown",

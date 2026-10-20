@@ -1,10 +1,11 @@
 # 웹 폰트 목록
 
-웹 배포에 사용하는 WOFF2 폰트의 canonical source 목록이다. Git에는 36개 WOFF2,
-총 22,651,296 bytes가 포함된다. Studio와 legacy `/web`은 각각의 `fonts/` runtime URL을 유지하면서
+웹 배포에 사용하는 WOFF2 폰트의 canonical source 목록이다. Git에는 37개 WOFF2,
+총 23,364,072 bytes가 포함된다. Studio와 legacy `/web`은 각각의 `fonts/` runtime URL을 유지하면서
 이 디렉토리를 참조하고, extension build는 여기에서 배포 산출물로 복사한다.
 
-저작권 보호가 필요한 폰트는 Git에 포함하지 않으며, 별도로 준비해야 한다.
+재배포 권한이 확인되지 않은 상용 폰트는 Git에 포함하지 않는다. 오픈소스 폰트도 저작권의
+보호를 받으며, [파일별 고지와 라이선스 전문](licenses/README.md)을 제품 패키지에 함께 배포한다.
 
 ## 저작권 폰트 (Git 미포함)
 
@@ -103,14 +104,36 @@ python tools/subset_noto_sans_kr_regular.py \
 
 | 파일명 | 폰트명 | 라이선스 | 출처 |
 |--------|--------|---------|------|
-| Cafe24Ssurround-v2.0.woff2 | 카페24 써라운드 | 무료 배포 | Cafe24 |
-| Cafe24Supermagic-Regular-v1.0.woff2 | 카페24 슈퍼매직 | 무료 배포 | Cafe24 |
-| Happiness-Sans-*.woff2 (3종) | 행복고딕 Regular/Bold/Title | 무료 배포 | 행복나눔 |
-| HappinessSansVF.woff2 | 행복고딕 Variable | 무료 배포 | 행복나눔 |
+| Cafe24Ssurround-v2.0.woff2 | 카페24 써라운드 | SIL OFL 1.1 | Cafe24 |
+| Cafe24Supermagic-Regular-v1.0.woff2 | 카페24 슈퍼매직 | SIL OFL 1.1 | Cafe24 |
+| Happiness-Sans-*.woff2 (3종) | 해피니스 산스 Regular/Bold/Title | SIL OFL 1.1 | [현대백화점](https://thehyundaifont.com/) |
+| HappinessSansVF.woff2 | 해피니스 산스 Variable | SIL OFL 1.1 | [현대백화점](https://thehyundaifont.com/) |
+
+해피니스 산스의 [공식 동봉 라이선스 PDF](../../ttfs/redistributable/happiness-sans/HapinessSans_License.pdf)는
+OFL 1.1 전문과 Reserved Font Name을 명시한다. 이 네 WOFF2는 공식 `HappinessSans-Screen.zip`의
+대응 member와 바이트가 같으며 임의 변환본이 아니다. 재배포 시 권리자 고지와 라이선스를 함께 보존한다.
 
 ### 문자/수식 보조
 
 | 파일명 | 폰트명 | 라이선스 | 출처 | 용도 |
 |--------|--------|---------|------|------|
-| SourceHanSerifK-OldHangul-subset.woff2 | Source Han Serif K Old Hangul subset | SIL OFL 1.1 (`SourceHanSerifK-OFL.txt`) | Adobe / Google | 옛한글 자모·합자 fallback |
+| RHWPOldHangul-Regular.woff2 | RHWP Old Hangul subset | SIL OFL 1.1 (`SourceHanSerifK-OFL.txt`) | Adobe / Google | 옛한글 자모·합자 fallback |
 | LatinModernMath-Regular.woff2 | Latin Modern Math | GUST Font License | GUST / TeX ecosystem | 수식 fallback |
+| LatinModernMath-VariableOutline-subset.otf | RHWP LMM Variable Outline | GUST Font License | 위 Latin Modern Math의 A~Z/a~z 정체와 a~z 이탤릭 윤곽 파생 subset | 공통 수식 변수 윤곽 파싱; [manifest](MANIFEST-RHWP-LMM-VariableOutline.txt) 참조 |
+
+| NotoSansMath-Regular.woff2 | Noto Sans Math Regular | SIL OFL 1.1 (`NotoSansMath-OFL.txt`) | Google / Ubuntu fonts-noto-core | 선택 가능한 수식 대체 글꼴 |
+
+Noto Sans Math는 `/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf`의 전체 glyph를
+fontTools `TTFont`의 `flavor='woff2'`로 변환했다. subset·문자 매핑 변경은 없다.
+원 TTF의 SHA-256은 `8242bd1e55368b27e32455260754cf9aa58f3ad7ea80664b66c21f1b09910d6c`,
+WOFF2의 SHA-256은 `6836027b99d29fd0e6f668cf0c2e89107de4131b91116cd96516ad4a7e19d66d`다.
+CanvasKit 수식의 기본 수학 face는 Latin Modern Math다. glyph ID가 0이면 기본 본문
+face와 기호 face를 차례로 확인한다. `mathFallbackFontUrl`을 지정한 호출자는 다른
+수학 face를 선택할 수 있다. 공통 FontGlyph 윤곽이 있는 항목은 같은 윤곽을 직접
+재생한다. U+2AFD 하나의 누락으로 정상 AB/CD와 dyad 장식을 포함한 수식 전체를
+버리지 않으며 폴백 실패는 진단으로 남긴다.
+
+배포 권한은 폰트 내부 name ID13의 SIL OFL1.1, Ubuntu `fonts-noto-core`의 copyright와
+[Noto Sans Math 공식 라이선스](https://github.com/google/fonts/blob/main/ofl/notosansmath/OFL.txt)에서
+확인했다. 동봉 `NotoSansMath-OFL.txt`에 이2.001 버전의 Copyright2018 Google LLC와
+OFL 전문을 보존하며, 폰트 자체는 프로젝트의 다른 라이선스로 재허가하지 않는다.

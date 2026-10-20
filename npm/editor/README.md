@@ -75,6 +75,10 @@ await studio.hwpctrl.batch(h => {
 const bytes = await studio.hwpctrl.exportBytes();
 
 await studio.hwpctrl.undo();       // 위 배치 전체가 undo 1스텝
+
+// 사용자 캐럿 자리에 누름틀 — HwpCtrl 커서는 화면 캐럿을 따라가지 않으므로 먼저 맞춘다
+await studio.hwpctrl.syncCursorFromCaret();   // {list, para, pos} 또는 null
+await studio.hwpctrl.call('CreateField', ['이름', '', '기안자']);
 studio.destroy();
 ```
 
@@ -85,6 +89,9 @@ studio.destroy();
 - **대화상자를 여는 커맨드는 기본 거절됩니다**(`{ok:false, reason:'needs-dialog'}`). 자동화가 그것을
   열면 사람이 누를 때까지 응답이 멈춥니다. 사용자가 앞에 있는 통합에서는
   `studio.commands.execute(id, params, { allowDialog: true })` 로 풉니다.
+  값을 매개변수로 다 받는 커맨드는 대화상자 없이 실행됩니다. 예를 들어 누름틀은
+  `studio.commands.execute('insert:field', { name: '기안자', guide: '이름', memo: '' })` 로
+  캐럿 위치에 바로 넣습니다(`editable`·`type:'clickhere'` 선택, 잘못된 값은 `reason:'threw'`).
 - **컨테이너 이동은 지원하지 않습니다.** iframe 을 다른 요소로 옮기면 브라우저가 문서를 재로드해
   편집 상태가 사라집니다. 화면상의 이동·숨김은 컨테이너 CSS 로 하고(`display:none` 은 상태를
   보존합니다), 정말 옮겨야 하면 `destroy()` 후 다시 만듭니다.
@@ -214,12 +221,29 @@ v1 target은 control·field·혼합 글자 서식이 없는 본문 문단 전체
 [`document_agent_command.md`](https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/wasm_agent_surface/document_agent_command.md)를
 참조하세요.
 
-### editor.getPageSvg(page?)
+### 누름틀 진입·이탈 이벤트
 
-특정 페이지를 SVG 문자열로 렌더링합니다.
+사용자 캐럿이 누름틀에 들어가거나, 다른 누름틀로 옮기거나, 누름틀 밖으로 나오면 알림을 받습니다.
+같은 누름틀 안에서 움직이는 동안은 다시 오지 않습니다. 바깥 화면의 필드 패널에서 현재 누름틀을
+강조할 때 씁니다(`field-focus-events-v1`).
 
 ```javascript
-const svg = await editor.getPageSvg(0); // 첫 페이지
+const off = editor.onFieldChanged((event) => {
+  if (event.inField) console.log(event.name, event.guide, event.fieldId);
+  else console.log('누름틀 밖');
+});
+off();
+```
+
+### editor.getPageSvg(page?, options?)
+
+특정 페이지를 SVG 문자열로 렌더링합니다. `options.profile` 을 생략하면 편집 화면과 같은 렌더입니다.
+인쇄·PDF 용으로는 `{ profile: 'print' }` 를 넘기세요 — 빈 누름틀 안내문처럼 편집 화면에서만 보이는
+요소(#3375)가 빠집니다.
+
+```javascript
+const svg = await editor.getPageSvg(0);                          // 첫 페이지(화면)
+const printSvg = await editor.getPageSvg(0, { profile: 'print' }); // 인쇄용
 ```
 
 ### editor.getRendererDiagnostics(page?)

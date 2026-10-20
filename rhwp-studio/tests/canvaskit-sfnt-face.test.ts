@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-import { canvasKitFontFaceData } from '../src/view/canvaskit/sfnt-face.ts';
+import { canvasKitFontFaceData, canvasKitSfntGlyphCount } from '../src/view/canvaskit/sfnt-face.ts';
 
 function fixtureBuffer(name: string): ArrayBuffer {
   const bytes = readFileSync(new URL(`../../tests/fixtures/fonts/${name}`, import.meta.url));
@@ -60,4 +60,19 @@ test('CanvasKit SFNT normalization protects TTC v2 DSIG metadata', () => {
   view.setUint32(secondFaceOffset + 20, v2HeaderLength - 4, false);
 
   assert.equal(canvasKitFontFaceData(malformed, 1), null);
+});
+
+test('exact SFNT maxp proof distinguishes the selected TTC face and rejects malformed or compressed containers', () => {
+  const standalone = fixtureBuffer('RHWPBitmapSvgGlyphSmoke.ttf');
+  assert.equal(canvasKitSfntGlyphCount(standalone), 7);
+  const collection = fixtureBuffer('RHWPExactFaceSmoke.ttc');
+  for (const index of [0, 1]) assert.ok(canvasKitSfntGlyphCount(canvasKitFontFaceData(collection, index)!)! > 0);
+  assert.equal(canvasKitSfntGlyphCount(collection), null, 'a TTC directory is not a selected face');
+  const malformed = standalone.slice(0), view = new DataView(malformed);
+  for (let record = 12; record < 12 + view.getUint16(4, false) * 16; record += 16) {
+    if (view.getUint32(record, false) === 0x6d61_7870) view.setUint32(record + 8, malformed.byteLength - 2, false);
+  }
+  assert.equal(canvasKitSfntGlyphCount(malformed), null);
+  const woff = readFileSync(new URL('../public/fonts/D2Coding-Regular.woff2', import.meta.url));
+  assert.equal(canvasKitSfntGlyphCount(woff.buffer.slice(woff.byteOffset, woff.byteOffset + woff.byteLength)), null);
 });

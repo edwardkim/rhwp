@@ -4,7 +4,7 @@
 
 use std::fmt::Write;
 
-use crate::emf::parser::objects::{Header, LogBrush, LogPen, PointL, RectL, XForm};
+use crate::emf::parser::objects::{Header, LogBrush, LogPen, PenWidthKind, PointL, RectL, XForm};
 use crate::emf::parser::records::{ExtTextOut, Record, StretchDIBits};
 use crate::emf::Error;
 
@@ -19,6 +19,9 @@ pub struct Player {
     pub svg: SvgBuilder,
     pub render_rect: (f32, f32, f32, f32),
     pub header: Option<Header>,
+
+    root_xform: super::device_stroke::Matrix,
+    device_pixel_width: Option<f64>,
 
     // 패스 상태
     path_active: bool,
@@ -36,10 +39,18 @@ impl Player {
             svg: SvgBuilder::new(),
             render_rect,
             header: None,
+            root_xform: super::device_stroke::IDENTITY,
+            device_pixel_width: None,
             path_active: false,
             path_d: String::new(),
             clip_ids: std::collections::BTreeMap::new(),
         }
+    }
+
+    /// 재생할 장치 픽셀의 출력 단위 크기. 없으면 참조 장치 좌표를 보존한다.
+    pub fn with_device_pixel_width(mut self, width: Option<f64>) -> Self {
+        self.device_pixel_width = width.filter(|w| w.is_finite() && *w > 0.0);
+        self
     }
 
     /// 레코드 시퀀스 전체 재생.
@@ -59,26 +70,32 @@ impl Player {
     }
 
     fn open_root_group(&mut self) {
-        // Bounds → render_rect 매핑. Bounds가 비어 있으면 identity.
+        // GDI는 물리 Frame을 render_rect에 대응시킨다. Frame을 해석할
+        // 참조 장치 정보가 없는 입력만 기존 Bounds 폴백을 사용한다.
         let (rx, ry, rw, rh) = self.render_rect;
         let m = if let Some(h) = &self.header {
             // Bounds are attacker-controlled i32 coordinates; a naive
             // `right - left` overflows (DoS panic under debug overflow checks)
             // on crafted EMR_HEADER bounds. Saturate the extent computation.
-            let w = h.bounds.right.saturating_sub(h.bounds.left) as f32;
-            let hh = h.bounds.bottom.saturating_sub(h.bounds.top) as f32;
+            let (left, top, w, hh) = h.device_frame().unwrap_or((
+                f64::from(h.bounds.left),
+                f64::from(h.bounds.top),
+                f64::from(h.bounds.right.saturating_sub(h.bounds.left)),
+                f64::from(h.bounds.bottom.saturating_sub(h.bounds.top)),
+            ));
             if w > 0.0 && hh > 0.0 {
-                let sx = rw / w;
-                let sy = rh / hh;
-                let tx = rx - h.bounds.left as f32 * sx;
-                let ty = ry - h.bounds.top as f32 * sy;
-                [sx, 0.0, 0.0, sy, tx, ty]
+                let sx = f64::from(rw) / w;
+                let sy = f64::from(rh) / hh;
+                let tx = f64::from(rx) - left * sx;
+                let ty = f64::from(ry) - top * sy;
+                [sx as f32, 0.0, 0.0, sy as f32, tx as f32, ty as f32]
             } else {
                 [1.0, 0.0, 0.0, 1.0, rx, ry]
             }
         } else {
             [1.0, 0.0, 0.0, 1.0, rx, ry]
         };
+        self.root_xform = m.map(f64::from);
         self.svg.open_group_matrix(m);
     }
 
@@ -279,6 +296,7 @@ impl Player {
             Some(GraphicsObject::Pen(LogPen {
                 style,
                 width: 1,
+                width_kind: PenWidthKind::DevicePixel,
                 _reserved: 0,
                 color,
             }))
@@ -326,17 +344,20 @@ impl Player {
                 StrokeSpec {
                     color: None,
                     width: 0.0,
+                    width_kind: p.width_kind,
                 }
             } else {
                 StrokeSpec {
                     color: Some(colorref_to_rgb(p.color)),
                     width: p.width.max(1) as f32,
+                    width_kind: p.width_kind,
                 }
             }
         } else {
             StrokeSpec {
                 color: Some("black".into()),
                 width: 1.0,
+                width_kind: PenWidthKind::DevicePixel,
             }
         }
     }
@@ -369,7 +390,7 @@ impl Player {
             }
             let _ = write!(self.path_d, "L{} {} ", to.x, to.y);
         } else {
-            self.push_clipped(&node);
+            self.push_stroked(&node, &s);
         }
         self.dc_stack.current_mut().current_pos = (to.x, to.y);
     }
@@ -386,7 +407,7 @@ impl Player {
             "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\"{rx_attr}{ry_attr} fill=\"{fill}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             r.left, r.top, r.width(), r.height(), stroke.width,
         );
-        self.push_clipped(&node);
+        self.push_stroked(&node, &stroke);
     }
 
     fn emit_ellipse(&mut self, r: &RectL) {
@@ -401,7 +422,7 @@ impl Player {
             "<ellipse cx=\"{cx}\" cy=\"{cy}\" rx=\"{rx}\" ry=\"{ry}\" fill=\"{fill}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             stroke.width,
         );
-        self.push_clipped(&node);
+        self.push_stroked(&node, &stroke);
     }
 
     fn emit_arc_like(&mut self, r: &RectL, start: &PointL, end: &PointL, kind: ArcKind) {
@@ -430,7 +451,7 @@ impl Player {
             "<path d=\"{d}\" fill=\"{fill}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             stroke.width,
         );
-        self.push_clipped(&node);
+        self.push_stroked(&node, &stroke);
     }
 
     fn emit_polyline16(&mut self, points: &[(i16, i16)], close: bool) {
@@ -454,7 +475,7 @@ impl Player {
             "<{tag} points=\"{pts}\" fill=\"{fill}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             stroke.width,
         );
-        self.push_clipped(&node);
+        self.push_stroked(&node, &stroke);
     }
 
     fn emit_polybezier16(&mut self, points: &[(i16, i16)]) {
@@ -477,7 +498,7 @@ impl Player {
             "<path d=\"{d}\" fill=\"none\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             stroke.width,
         );
-        self.push_clipped(&node);
+        self.push_stroked(&node, &stroke);
     }
 
     /// [#6577] `EMR_POLYLINETO16` — 현재 위치에서 이어지는 선분열을 패스에 누적한다.
@@ -530,11 +551,34 @@ impl Player {
                 "<path d=\"M{cx} {cy}{d}\" fill=\"none\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
                 stroke.width,
             );
-            self.push_clipped(&node);
+            self.push_stroked(&node, &stroke);
         }
         if let Some((x, y)) = points.get(i.saturating_sub(1)).or_else(|| points.last()) {
             self.dc_stack.current_mut().current_pos = (i32::from(*x), i32::from(*y));
         }
+    }
+
+    /// 기하 선은 기존 변환을 사용하고 장치 선은 변환된 경로에 폭을 적용한다.
+    fn push_stroked(&mut self, node: &str, stroke: &StrokeSpec) {
+        let normalized = if stroke.width_kind == PenWidthKind::DevicePixel && stroke.color.is_some()
+        {
+            let dc = self.dc_stack.current();
+            let page = page_xform(dc)
+                .map(|m| m.map(f64::from))
+                .unwrap_or(super::device_stroke::IDENTITY);
+            let w = dc.world_xform;
+            let world = [w.m11, w.m12, w.m21, w.m22, w.dx, w.dy].map(f64::from);
+            let dc_matrix = super::device_stroke::compose(page, world);
+            let matrix = if self.device_pixel_width.is_some() {
+                super::device_stroke::compose(self.root_xform, dc_matrix)
+            } else {
+                dc_matrix
+            };
+            super::device_stroke::normalize(node, matrix, self.device_pixel_width.unwrap_or(1.0))
+        } else {
+            None
+        };
+        self.push_clipped(normalized.as_deref().unwrap_or(node));
     }
 
     /// [#6577 ④] 도형 노드 하나를 현재 DC 의 월드 변환·클립을 반영해 방출한다.
@@ -635,15 +679,19 @@ impl Player {
             return;
         }
         let fill_attr = fill.as_deref().unwrap_or("none");
-        let (stroke_color, stroke_width) = stroke.map_or(("none".into(), 0.0_f32), |s| {
-            (s.color.unwrap_or_else(|| "none".into()), s.width)
+        let (stroke_color, stroke_width) = stroke.as_ref().map_or(("none", 0.0_f32), |s| {
+            (s.color.as_deref().unwrap_or("none"), s.width)
         });
         let node = format!(
             "<path d=\"{}\" fill=\"{fill_attr}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             self.path_d.trim(),
             stroke_width,
         );
-        self.push_clipped(&node);
+        if let Some(stroke) = &stroke {
+            self.push_stroked(&node, stroke);
+        } else {
+            self.push_clipped(&node);
+        }
         self.path_d.clear();
     }
 }
@@ -722,6 +770,7 @@ enum ArcKind {
 pub struct StrokeSpec {
     pub color: Option<String>,
     pub width: f32,
+    pub width_kind: PenWidthKind,
 }
 
 /// DIB(BITMAPINFO + bits)를 BMP 파일 포맷으로 래핑한 후 PNG 로 변환하여 base64 data URL로 반환.

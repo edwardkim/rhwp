@@ -1,5 +1,8 @@
 //! 도형/글상자/그룹 개체 레이아웃
 
+mod affine_line;
+mod compound_rectangle;
+
 use super::super::composer::{
     compose_paragraph, reflow_line_segs, ComposedParagraph, ParagraphBox,
 };
@@ -405,6 +408,137 @@ fn matrix_textbox_lines_need_reflow(para: &Paragraph) -> bool {
         && para.line_segs.len() > 1
 }
 
+/// A content-grown, unprotected inline textbox may retain a wrapped cache after
+/// its full text fits the unchanged width. Project both its text and host frame
+/// together; a paint-only collapse would leave the old height in pagination.
+pub(crate) fn normalized_single_line_inline_textbox_host(
+    host: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<Paragraph> {
+    let [host_line] = host.line_segs.as_slice() else {
+        return None;
+    };
+    let [Control::Shape(shape)] = host.controls.as_slice() else {
+        return None;
+    };
+    let common = shape.common();
+    let attr = shape.shape_attr();
+    let drawing = shape.drawing()?;
+    let text_box = drawing.text_box.as_ref()?;
+    let [paragraph] = text_box.paragraphs.as_slice() else {
+        return None;
+    };
+    let first = paragraph.line_segs.first()?;
+    let last = paragraph.line_segs.last()?;
+    if !host.text.is_empty()
+        || host.stored_text_partition_is_dirty()
+        || host.cell_format_vpos_dirty
+        || host_line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || !common.treat_as_char
+        || common.size_protect
+        || drawing.caption.is_some()
+        || common.height == 0
+        || common.height > i32::MAX as u32
+        || common.width == 0
+        || common.width > i32::MAX as u32
+        || attr.group_level != 0
+        || attr.rotation_angle != 0
+        || attr.render_b.abs() > 1e-6
+        || attr.render_c.abs() > 1e-6
+        || attr.render_ty.abs() > 1e-6
+        || (attr.render_sx - 1.0).abs() > 1e-6
+        || attr.original_width != common.width
+        || attr.current_width != common.width
+        || attr.original_height != common.height
+        || attr.current_height <= common.height
+        || attr.current_height > i32::MAX as u32
+        || (attr.render_sy - f64::from(attr.current_height) / f64::from(attr.original_height)).abs()
+            > 1e-6
+        || host_line.line_height != shape.flow_height_hu()
+        || host_line.segment_width <= 0
+        || text_box.list_attr & 0x07 != 0
+        || text_box.raw_list_header_extra.iter().any(|&byte| byte != 0)
+        || [
+            text_box.margin_left,
+            text_box.margin_right,
+            text_box.margin_top,
+            text_box.margin_bottom,
+        ]
+        .iter()
+        .any(|&margin| margin < 0)
+        || !matrix_textbox_lines_need_reflow(paragraph)
+        || paragraph.text.contains(['\r', '\t'])
+        || paragraph.stored_text_partition_is_dirty()
+        || first.vertical_pos != 0
+        || first.text_start != 0
+        || paragraph.line_segs.iter().any(|line| {
+            line.line_height <= 0
+                || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        })
+        || paragraph.line_seg_text_start(paragraph.line_segs.len() - 1)
+            >= paragraph.char_offsets.last().copied()?.saturating_add(1)
+    {
+        return None;
+    }
+    let padding = i32::from(text_box.margin_top) + i32::from(text_box.margin_bottom);
+    let cached_height = last
+        .vertical_pos
+        .checked_add(last.line_height)?
+        .checked_add(padding)?;
+    if cached_height != attr.current_height as i32 {
+        return None;
+    }
+    let para_style = styles.para_styles.get(paragraph.para_shape_id as usize)?;
+    let inner_width = hwpunit_to_px(
+        common.width as i32 - i32::from(text_box.margin_left) - i32::from(text_box.margin_right),
+        dpi,
+    ) - para_style.margin_left
+        - para_style.margin_right
+        - para_style.indent.max(0.0);
+    let composed = crate::renderer::composer::compose_paragraph_in_context(paragraph, styles);
+    let width = measure_composed_text_range_width(
+        &composed,
+        styles,
+        0,
+        paragraph.text.chars().count(),
+        None,
+    );
+    let height = first
+        .line_height
+        .checked_add(padding)?
+        .max(common.height as i32);
+    if inner_width <= 0.0
+        || !width.is_finite()
+        || width > inner_width
+        || height >= attr.current_height as i32
+    {
+        return None;
+    }
+    let mut projected = host.clone();
+    let Control::Shape(shape) = &mut projected.controls[0] else {
+        return None;
+    };
+    let mut single_line = first.clone();
+    single_line.segment_width = px_to_hwpunit(inner_width, dpi);
+    single_line.tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    shape.drawing_mut()?.text_box.as_mut()?.paragraphs[0].replace_line_segs(vec![single_line]);
+    let attr = shape.shape_attr_mut();
+    attr.current_height = height as u32;
+    attr.render_sy = f64::from(height) / f64::from(attr.original_height);
+    attr.rotation_center.y = height / 2;
+    reflow_line_segs(
+        &mut projected,
+        ParagraphBox::content_width_px(hwpunit_to_px(host_line.segment_width, dpi), dpi),
+        styles,
+        dpi,
+    );
+    for line in &mut projected.line_segs {
+        line.tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    }
+    Some(projected)
+}
+
 fn matrix_textbox_lines_overflow_height(para: &Paragraph, available_height: f64, dpi: f64) -> bool {
     para.line_segs.last().is_some_and(|seg| {
         hwpunit_to_px(seg.vertical_pos.saturating_add(seg.line_height), dpi)
@@ -689,56 +823,19 @@ impl LayoutEngine {
                 return;
             }
 
-            // 인라인 좌표 없으면 기존 방식 (정렬 기반 단독 배치)
-            let eq_w = hwpunit_to_px(
-                crate::renderer::equation::flow_width_hwp(eq) as i32,
-                self.dpi,
+            self.layout_floating_equation(
+                tree,
+                parent,
+                eq,
+                section_index,
+                para_index,
+                control_index,
+                col_area,
+                body_area,
+                paper_area,
+                para_y,
+                alignment,
             );
-            let eq_h = hwpunit_to_px(
-                crate::renderer::equation::flow_height_hwp(eq) as i32,
-                self.dpi,
-            );
-            let eq_x = match alignment {
-                Alignment::Center | Alignment::Distribute => {
-                    col_area.x + (col_area.width - eq_w).max(0.0) / 2.0
-                }
-                Alignment::Right => col_area.x + (col_area.width - eq_w).max(0.0),
-                _ => col_area.x,
-            };
-            let eq_y = para_y;
-
-            // 수식 스크립트 → AST → 레이아웃 → SVG 조각
-            let tokens = super::super::equation::tokenizer::tokenize(&eq.script);
-            let ast = super::super::equation::parser::EqParser::new(tokens).parse();
-            let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-            let layout_box =
-                super::super::equation::layout::EqLayout::for_equation(eq, self.dpi).layout(&ast);
-            let color_str = super::super::equation::svg_render::eq_color_to_svg(eq.color);
-            let svg_content = super::super::equation::svg_render::render_equation_svg(
-                &layout_box,
-                &color_str,
-                font_size_px,
-            );
-
-            let eq_node = RenderNode::new(
-                tree.next_id(),
-                RenderNodeType::Equation(EquationNode {
-                    svg_content,
-                    layout_box,
-                    color_str,
-                    color: eq.color,
-                    script: eq.script.clone(),
-                    font_size: font_size_px,
-                    section_index: Some(section_index),
-                    para_index: Some(para_index),
-                    control_index: Some(control_index),
-                    cell_index: None,
-                    cell_para_index: None,
-                    note_ref: None,
-                }),
-                BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
-            );
-            parent.children.push(eq_node);
             return;
         }
 
@@ -926,6 +1023,10 @@ impl LayoutEngine {
             {
                 x += hwpunit_to_px(i32::from(common.margin.left), self.dpi);
             }
+            // 자리차지 OLE의 위 여백은 잉크 원점과 본문 예약 높이에 함께 속한다.
+            // 일반 문단도 단 이월과 동일한 확정 프레임을 소비한다.
+            let y = crate::renderer::float_placement::column_ole_placement(shape, para_y, self.dpi)
+                .map_or(y, |placement| placement.table_top);
             (x, y)
         };
 
@@ -962,7 +1063,13 @@ impl LayoutEngine {
         let shape_y = if !common.treat_as_char
             && common.flow_with_text
             && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
-        {
+            // 머리말·꼬리말 도형은 본문 흐름에 참여하지 않는다. 구분선처럼
+            // 밴드 밖으로 뻗는 개체를 밴드 높이에 맞추면 유효한 문단 오프셋이
+            // 사라져 제목을 가로지른다. 본문 개체의 단 내부 제한만 적용한다.
+            && !matches!(
+                parent.node_type,
+                RenderNodeType::Header | RenderNodeType::Footer
+            ) {
             let total_h = shape_h
                 + caption_height
                 + if caption_height > 0.0 {
@@ -1107,7 +1214,7 @@ impl LayoutEngine {
 
         match child {
             ShapeObject::Polygon(poly) => {
-                let (style, gradient) = drawing_to_shape_style(&poly.drawing);
+                let (style, gradient) = drawing_to_shape_style(&poly.drawing, self.dpi);
                 let mut commands = Vec::new();
                 let mut min_x = f64::MAX;
                 let mut min_y = f64::MAX;
@@ -1143,22 +1250,21 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Line(line) => {
-                let (style, gradient) = drawing_to_shape_style(&line.drawing);
                 let (x1, y1) = transform_pt(line.start.x as f64, line.start.y as f64);
                 let (x2, y2) = transform_pt(line.end.x as f64, line.end.y as f64);
-                let min_x = x1.min(x2);
-                let min_y = y1.min(y2);
-                let commands = vec![PathCommand::MoveTo(x1, y1), PathCommand::LineTo(x2, y2)];
                 let node_id = tree.next_id();
-                let node = RenderNode::new(
-                    node_id,
-                    RenderNodeType::Path(PathNode::new(commands, style, gradient)),
-                    BoundingBox::new(min_x, min_y, (x2 - x1).abs(), (y2 - y1).abs()),
-                );
+                let (mut kind, bbox) =
+                    affine_line::rendered_line(line, (x1, y1), (x2, y2), self.dpi);
+                if let RenderNodeType::Line(rendered) = &mut kind {
+                    rendered.section_index = Some(section_index);
+                    rendered.para_index = Some(para_index);
+                    rendered.control_index = Some(control_index);
+                }
+                let node = RenderNode::new(node_id, kind, bbox);
                 parent.children.push(node);
             }
             ShapeObject::Curve(curve) => {
-                let (style, gradient) = drawing_to_shape_style(&curve.drawing);
+                let (style, gradient) = drawing_to_shape_style(&curve.drawing, self.dpi);
                 let mut commands = Vec::new();
                 let mut min_x = f64::MAX;
                 let mut min_y = f64::MAX;
@@ -1203,7 +1309,7 @@ impl LayoutEngine {
                 let ow = sa.original_width as f64;
                 let oh = sa.original_height as f64;
                 let corners = [(0.0, 0.0), (ow, 0.0), (ow, oh), (0.0, oh)];
-                let (style, gradient) = drawing_to_shape_style(&rect.drawing);
+                let (style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
                 let mut commands = Vec::new();
                 let mut min_x = f64::MAX;
                 let mut min_y = f64::MAX;
@@ -1466,14 +1572,16 @@ impl LayoutEngine {
 
         match shape {
             ShapeObject::Rectangle(rect) => {
-                let (mut style, gradient) = drawing_to_shape_style(&rect.drawing);
+                let (mut style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
                 // 기존 글상자 보정만 적용한다. 일반 사각형의 선은 원본 스타일을 따른다.
                 if should_suppress_group_textbox_construction_stroke(&rect.drawing) {
                     style.stroke_color = None;
                     style.stroke_width = 0.0;
                 }
                 let round_px = if rect.round_rate > 0 {
-                    (rect.round_rate as f64 / 100.0) * render_w.min(render_h) / 2.0
+                    // 한컴 곡률 50%는 반원이다. 짧은 변의 절반이 반지름이며,
+                    // 백분율을 적용한 뒤 다시 2로 나누면 50%도 둥근 모서리에 그친다.
+                    (rect.round_rate as f64 / 100.0) * render_w.min(render_h)
                 } else {
                     0.0
                 };
@@ -1503,6 +1611,7 @@ impl LayoutEngine {
                     render_h,
                     bin_data_content,
                 );
+                compound_rectangle::append_border(tree, &mut node, &rect.drawing);
                 // TextBox가 있으면 자식으로 텍스트 레이아웃
                 self.layout_textbox_content(
                     tree,
@@ -1798,7 +1907,7 @@ impl LayoutEngine {
                 }
             }
             ShapeObject::Ellipse(ellipse) => {
-                let (style, gradient) = drawing_to_shape_style(&ellipse.drawing);
+                let (style, gradient) = drawing_to_shape_style(&ellipse.drawing, self.dpi);
                 let node_id = tree.next_id();
                 let mut ell_node = EllipseNode::new(style, gradient);
                 ell_node.section_index = Some(section_index);
@@ -1846,7 +1955,7 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Arc(arc) => {
-                let (style, gradient) = drawing_to_shape_style(&arc.drawing);
+                let (style, gradient) = drawing_to_shape_style(&arc.drawing, self.dpi);
                 // 호(Arc) 좌표 계산: center, axis1, axis2를 렌더 좌표로 변환
                 let sa = &arc.drawing.shape_attr;
                 let sx = if sa.original_width > 0 {
@@ -1948,7 +2057,7 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Polygon(poly) => {
-                let (style, gradient) = drawing_to_shape_style(&poly.drawing);
+                let (style, gradient) = drawing_to_shape_style(&poly.drawing, self.dpi);
                 // 꼭짓점 좌표를 PathCommand로 변환 (원본→렌더 스케일링 적용)
                 let sa = &poly.drawing.shape_attr;
                 let sx = if sa.original_width > 0 {
@@ -2033,7 +2142,7 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Curve(curve) => {
-                let (style, gradient) = drawing_to_shape_style(&curve.drawing);
+                let (style, gradient) = drawing_to_shape_style(&curve.drawing, self.dpi);
                 let sa = &curve.drawing.shape_attr;
                 let sx = if sa.original_width > 0 {
                     render_w / hwpunit_to_px(sa.original_width as i32, self.dpi)
@@ -2286,8 +2395,10 @@ impl LayoutEngine {
                                     }
                                 }
                             }
-                            let svg_fragment =
-                                chart.render_svg(render_x, render_y, render_w, render_h);
+                            let svg_fragment = crate::ole_chart::render_ooxml_chart(
+                                &chart,
+                                [render_x, render_y, render_w, render_h],
+                            );
                             push_ole_raw_svg_render_node(
                                 tree,
                                 parent,
@@ -2317,8 +2428,10 @@ impl LayoutEngine {
                                             &mut chart, contents, preview, render_w, render_h,
                                         );
                                     }
-                                    let svg_fragment =
-                                        chart.render_svg(render_x, render_y, render_w, render_h);
+                                    let svg_fragment = crate::ole_chart::render_ooxml_chart(
+                                        &chart,
+                                        [render_x, render_y, render_w, render_h],
+                                    );
                                     push_ole_raw_svg_render_node(
                                         tree,
                                         parent,
@@ -2339,11 +2452,12 @@ impl LayoutEngine {
                                     match crate::ole_chart::parse_ole_chart_contents(raw_contents) {
                                         Ok(ole_chart) => {
                                             let svg_fragment =
-                                                crate::ole_chart::render_ole_chart_svg_fragment_with_contents(
+                                                crate::ole_chart::render_ole_chart_svg_fragment_with_contents_at_dpi(
                                                     &ole_chart,
                                                     raw_contents,
                                                     [render_x, render_y, render_w, render_h],
                                                     ole.bin_data_id,
+                                                    self.dpi,
                                                 );
                                             push_ole_raw_svg_render_node(
                                                 tree,
@@ -2399,6 +2513,18 @@ impl LayoutEngine {
                                             control_index,
                                             &ole_container_path,
                                         );
+                                        if let Some(node) = parent.children.last_mut() {
+                                            if let RenderNodeType::RawSvg(raw) = &mut node.node_type
+                                            {
+                                                raw.emf_source =
+                                                    Some(crate::emf::EmfReplaySource {
+                                                        data: std::sync::Arc::from(
+                                                            emf_bytes.as_slice(),
+                                                        ),
+                                                        render_rect,
+                                                    });
+                                            }
+                                        }
                                         rendered = true;
                                     }
                                 }
@@ -2416,8 +2542,9 @@ impl LayoutEngine {
                                         let b64 = base64::engine::general_purpose::STANDARD
                                             .encode(&svg_bytes);
                                         let href = format!("data:image/svg+xml;base64,{}", b64);
+                                        // OLE의 목적 extent는 WMF 창을 가로·세로 독립 환산한다.
                                         let svg_fragment = format!(
-                                            "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                            "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"none\" xlink:href=\"{}\" href=\"{}\"/>",
                                             render_x, render_y, render_w, render_h, href, href
                                         );
                                         push_ole_raw_svg_render_node(
@@ -2489,8 +2616,11 @@ impl LayoutEngine {
                                     crate::parser::ole_container::parse_equation_contents_script,
                                 ) {
                                     let tokens =
-                                        super::super::equation::tokenizer::tokenize(&script);
-                                    let ast = super::super::equation::parser::EqParser::new(tokens)
+                                        super::super::equation::document_script::tokenize(&script);
+                                    let ast =
+                                        super::super::equation::parser::EqParser::for_document(
+                                            tokens,
+                                        )
                                         .parse();
                                     // 글자 크기는 개체 크기에 맞춘다 — 기준 10px 레이아웃의
                                     // 높이 비로 역산. (SVG/Skia 는 수식을 bbox 폭에만 맞춰
@@ -2555,8 +2685,9 @@ impl LayoutEngine {
                                             let b64 = base64::engine::general_purpose::STANDARD
                                                 .encode(&svg_bytes);
                                             let href = format!("data:image/svg+xml;base64,{}", b64);
+                                            // OLE의 목적 extent는 WMF 창을 가로·세로 독립 환산한다.
                                             let svg_fragment = format!(
-                                                "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                                "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"none\" xlink:href=\"{}\" href=\"{}\"/>",
                                                 render_x, render_y, render_w, render_h, href, href
                                             );
                                             push_ole_raw_svg_render_node(
@@ -2597,6 +2728,19 @@ impl LayoutEngine {
                                                 control_index,
                                                 &ole_container_path,
                                             );
+                                            if let Some(node) = parent.children.last_mut() {
+                                                if let RenderNodeType::RawSvg(raw) =
+                                                    &mut node.node_type
+                                                {
+                                                    raw.emf_source =
+                                                        Some(crate::emf::EmfReplaySource {
+                                                            data: std::sync::Arc::from(
+                                                                contents_emf,
+                                                            ),
+                                                            render_rect,
+                                                        });
+                                                }
+                                            }
                                             rendered = true;
                                         }
                                     } else if let Some((kind, bytes)) =
@@ -2980,17 +3124,33 @@ impl LayoutEngine {
             self.dpi,
         ) {
             let mut paragraphs = text_box.paragraphs.clone();
-            for para in paragraphs
-                .iter_mut()
-                .filter(|para| matrix_textbox_lines_need_reflow(para))
-            {
+            for index in 0..paragraphs.len() {
+                if !matrix_textbox_lines_need_reflow(&paragraphs[index]) {
+                    continue;
+                }
+                let previous_end =
+                    crate::renderer::composer::paragraph_flow_end(&paragraphs[index]);
                 reflow_matrix_textbox_para(
-                    para,
+                    &mut paragraphs[index],
                     inner_area.width,
                     inner_area.height,
                     styles,
                     self.dpi,
                 );
+                // 줄 수가 바뀌면 뒤 문단도 새 흐름 끝에서 이어진다. 저장 쪽/글상자
+                // 리셋은 공통 vpos 재계산기가 보존하며 이전 줄의 끝과 구분한다.
+                if crate::renderer::composer::paragraph_flow_end(&paragraphs[index]) != previous_end
+                {
+                    crate::renderer::composer::recalculate_section_vpos(
+                        &mut paragraphs,
+                        index,
+                        None,
+                        previous_end,
+                        styles,
+                        self.dpi,
+                        false,
+                    );
+                }
             }
             Some(paragraphs)
         } else {
@@ -3211,7 +3371,7 @@ impl LayoutEngine {
                     inner_width,
                     styles,
                     self.dpi,
-                    self.profile.get().legacy_hwp3_stored_geometry(),
+                    self.profile.get().stored_geometry_policy(),
                     crate::renderer::composer::StoredRowMissPolicy::Reflow,
                     &[],
                 )
@@ -3494,7 +3654,8 @@ impl LayoutEngine {
                     }
                     Control::Equation(eq) => {
                         total_inline_width += hwpunit_to_px(
-                            crate::renderer::equation::flow_width_hwp(eq) as i32,
+                            crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                .occupied_width_hwp(),
                             self.dpi,
                         );
                         max_inline_height = max_inline_height.max(hwpunit_to_px(
@@ -3714,14 +3875,39 @@ impl LayoutEngine {
                             } else {
                                 pic_h
                             };
-                            // [#5820 축2] 인라인 형제는 **하단 정렬** — 한글은 같은 줄의
-                            // TAC 그림들을 베이스라인(하단)에 맞춘다(156560092 로고 A/B:
-                            // 한글 A top = B top + 10.4px = 상자-상대 +12.8, rhwp 상단
-                            // 정렬은 두 그림 top 이 같아 A 가 12.1px 낮았다).
+                            // A saved object line owns its baseline, which need
+                            // not be the bottom of the object box. Preserve the
+                            // baseline proportion for each inline picture when
+                            // the complete saved line matches this object row.
+                            // Without an authoritative row, keep the existing
+                            // composed bottom alignment (#5820).
+                            let baseline_fraction = para
+                                .line_segs
+                                .get(inline_line_idx)
+                                .filter(|line| {
+                                    !para.stored_text_partition_is_dirty()
+                                        && !para.cell_format_vpos_dirty
+                                        && line.tag
+                                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                            == 0
+                                        && line.line_height > 0
+                                        && line.baseline_distance >= 0
+                                        && line.baseline_distance <= line.line_height
+                                        && (max_inline_height
+                                            - hwpunit_to_px(line.line_height, self.dpi))
+                                            .abs()
+                                            <= self.dpi / 7200.0
+                                })
+                                .map(|line| {
+                                    f64::from(line.baseline_distance)
+                                        / f64::from(line.line_height)
+                                })
+                                .unwrap_or(1.0);
                             let pic_container = LayoutRect {
                                 x: inline_x,
                                 // [#6465] 개체가 뒤 줄에 배정됐으면 그 줄의 y 를 쓴다.
-                                y: inline_obj_y + (max_inline_height - clamped_h).max(0.0),
+                                y: inline_obj_y
+                                    + (max_inline_height - clamped_h).max(0.0) * baseline_fraction,
                                 width: clamped_w,
                                 height: clamped_h,
                             };
@@ -3770,7 +3956,8 @@ impl LayoutEngine {
                     Control::Equation(eq) => {
                         // 글상자 내 수식: 항상 글자처럼 인라인 배치
                         let eq_w = hwpunit_to_px(
-                            crate::renderer::equation::flow_width_hwp(eq) as i32,
+                            crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                .occupied_width_hwp(),
                             self.dpi,
                         );
                         let eq_h = hwpunit_to_px(
@@ -3816,14 +4003,14 @@ impl LayoutEngine {
                                 (x, inline_obj_y)
                             };
 
-                            let tokens = super::super::equation::tokenizer::tokenize(&eq.script);
-                            let ast = super::super::equation::parser::EqParser::new(tokens).parse();
+                            let tokens =
+                                super::super::equation::document_script::tokenize(&eq.script);
+                            let ast =
+                                super::super::equation::parser::EqParser::for_document(tokens)
+                                    .parse();
                             let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
                             let layout_box =
-                                super::super::equation::layout::EqLayout::for_equation(
-                                    eq, self.dpi,
-                                )
-                                .layout(&ast);
+                                super::super::equation::layout_for_paint(eq, &ast, self.dpi);
                             let color_str =
                                 super::super::equation::svg_render::eq_color_to_svg(eq.color);
                             let svg_content =
@@ -3849,7 +4036,19 @@ impl LayoutEngine {
                                     cell_para_index: None,
                                     note_ref: None,
                                 }),
-                                BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
+                                BoundingBox::new(
+                                    crate::renderer::equation::inline_box::horizontal_metrics(eq)
+                                        .content_origin_x(eq_x, self.dpi),
+                                    eq_y,
+                                    hwpunit_to_px(
+                                        crate::renderer::equation::inline_box::horizontal_metrics(
+                                            eq,
+                                        )
+                                        .content_width_hwp,
+                                        self.dpi,
+                                    ),
+                                    eq_h,
+                                ),
                             );
                             textbox_node.children.push(eq_node);
                         }
@@ -4320,7 +4519,14 @@ impl LayoutEngine {
                     _ => continue,
                 };
 
-                // TopAndBottom 모드만 본문 밀어내기 처리
+                if col_area.width < body_area.width {
+                    if let Some(bottom) = crate::renderer::float_placement::stored_square_top_band(
+                        para, ctrl, body_area, self.dpi,
+                    ) {
+                        result.push((*para_index, bottom));
+                        continue;
+                    }
+                }
                 if !matches!(common.text_wrap, TextWrap::TopAndBottom) {
                     continue;
                 }
@@ -4346,7 +4552,7 @@ impl LayoutEngine {
                 // Table: common.height는 실제 렌더링 높이(셀 콘텐츠 포함)보다 작을 수 있음
                 // 셀 내 LINE_SEG 기반 실제 높이를 사용하여 보정
                 let effective_common = if let Control::Table(t) = ctrl {
-                    let measured_h = self.measure_table_actual_height(t);
+                    let measured_h = crate::renderer::float_placement::table_reserved_height_hu(t);
                     if measured_h > common.height {
                         let mut c = common.clone();
                         c.height = measured_h;
@@ -4507,6 +4713,12 @@ impl LayoutEngine {
                     Control::Picture(p) if !p.common.treat_as_char => &p.common,
                     _ => continue,
                 };
+                if let Some(bottom) = crate::renderer::float_placement::stored_square_top_band(
+                    para, ctrl, body_area, self.dpi,
+                ) {
+                    result.push((*para_index, bottom));
+                    continue;
+                }
                 if !matches!(common.text_wrap, TextWrap::TopAndBottom) || common.treat_as_char {
                     continue;
                 }
@@ -4562,47 +4774,6 @@ impl LayoutEngine {
         }
 
         result
-    }
-
-    /// 표의 실제 렌더링 높이를 계산 (셀 콘텐츠 + 패딩 포함)
-    fn measure_table_actual_height(&self, table: &crate::model::table::Table) -> u32 {
-        let row_count = table.row_count as usize;
-        if row_count == 0 {
-            return table.common.height;
-        }
-        let mut row_heights = vec![0u32; row_count];
-        for cell in &table.cells {
-            if cell.row_span == 1 && (cell.row as usize) < row_count {
-                let r = cell.row as usize;
-                if cell.height < 0x80000000 && cell.height > row_heights[r] {
-                    row_heights[r] = cell.height;
-                }
-            }
-        }
-        // 셀 내 LINE_SEG 기반 콘텐츠 높이로 보정
-        for cell in &table.cells {
-            if cell.row_span == 1 && (cell.row as usize) < row_count {
-                let r = cell.row as usize;
-                let (pad_top, pad_bottom) = if cell.apply_inner_margin {
-                    (cell.padding.top as u32, cell.padding.bottom as u32)
-                } else {
-                    (table.padding.top as u32, table.padding.bottom as u32)
-                };
-                let content_h: i32 = cell
-                    .paragraphs
-                    .iter()
-                    .flat_map(|p| p.line_segs.last())
-                    .map(|s| s.vertical_pos.saturating_add(s.line_height))
-                    .max()
-                    .unwrap_or(0);
-                let required = content_h as u32 + pad_top + pad_bottom;
-                if required > row_heights[r] {
-                    row_heights[r] = required;
-                }
-            }
-        }
-        let total: u32 = row_heights.iter().sum();
-        total.max(table.common.height)
     }
 
     /// 개체가 단 영역과 수평으로 겹치는지 확인

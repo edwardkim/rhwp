@@ -82,30 +82,32 @@ class PrReviewGateTests(unittest.TestCase):
             check=True,
             text=True,
             capture_output=True,
+            encoding="utf-8",
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"},
         )
         self.assertIn("90% 실루엣 gate", completed.stdout)
 
     def test_below_ninety_requires_re_review(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+            [{"page": 3, "silhouette_raw_match_percent": 89.99}],
             font_mismatch_evidence=None,
         )
         self.assertEqual(gate["status"], "re_review_required")
         self.assertEqual(
             gate["below_threshold_pages"],
-            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+            [{"page": 3, "silhouette_raw_match_percent": 89.99}],
         )
 
     def test_ninety_and_above_passes(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 90.0}],
+            [{"page": 3, "silhouette_raw_match_percent": 90.0}],
             font_mismatch_evidence=None,
         )
         self.assertEqual(gate["status"], "passed")
 
     def test_missing_requested_metric_requires_re_review(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 7, "tolerant_content_match_percent": 99.0}],
+            [{"page": 7, "silhouette_raw_match_percent": 99.0}],
             expected_pages=[7, 8],
             font_mismatch_evidence=None,
         )
@@ -115,7 +117,7 @@ class PrReviewGateTests(unittest.TestCase):
     def test_hashed_font_mismatch_evidence_does_not_waive_low_metric(self) -> None:
         evidence = {"path": "scratch/font-mismatch.md", "sha256": "a" * 64}
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 28.4}],
+            [{"page": 3, "silhouette_raw_match_percent": 28.4}],
             font_mismatch_evidence=evidence,
         )
         self.assertEqual(gate["status"], "re_review_required")
@@ -123,7 +125,7 @@ class PrReviewGateTests(unittest.TestCase):
 
     def test_hashed_font_evidence_does_not_waive_missing_page(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 90.0}],
+            [{"page": 3, "silhouette_raw_match_percent": 90.0}],
             expected_pages=[3, 4],
             font_mismatch_evidence={"path": "scratch/font.md", "sha256": "a" * 64},
         )
@@ -133,8 +135,8 @@ class PrReviewGateTests(unittest.TestCase):
     def test_one_low_page_cannot_be_offset_by_high_pages(self) -> None:
         gate = SWEEP.pr_review_gate(
             [
-                {"page": 1, "tolerant_content_match_percent": 100.0},
-                {"page": 2, "tolerant_content_match_percent": 89.99},
+                {"page": 1, "silhouette_raw_match_percent": 100.0},
+                {"page": 2, "silhouette_raw_match_percent": 89.99},
             ],
         )
         self.assertEqual(gate["status"], "re_review_required")
@@ -402,17 +404,24 @@ class SelectedRasterTests(unittest.TestCase):
             Path("reference.pdf"), 144, Path("out/pdf"), [1, 3]
         )
 
-        self.assertEqual(len(commands), 2)
-        self.assertEqual(commands[0][1:5], ["-f", "1", "-l", "1"])
-        self.assertEqual(commands[1][1:5], ["-f", "3", "-l", "3"])
-        self.assertEqual(commands[0][-2:], ["reference.pdf", "out/pdf"])
+        self.assertEqual(len(commands), 1)
+        command = commands[0]
+        self.assertEqual(command[0], sys.executable)
+        self.assertEqual(Path(command[1]).name, "visual_sweep_pdf.py")
+        self.assertEqual(command[2:], ["--pdf", "reference.pdf", "--dpi", "144",
+                                      "--prefix", str(Path("out") / "pdf"), "--pages", "1,3"])
 
     def test_pdf_raster_commands_keeps_full_document_default(self) -> None:
         commands = SWEEP.pdf_raster_commands(
             Path("reference.pdf"), 144, Path("out/pdf"), None
         )
 
-        self.assertEqual(commands, [["pdftoppm", "-r", "144", "-png", "reference.pdf", "out/pdf"]])
+        self.assertEqual(len(commands), 1)
+        self.assertEqual(commands[0][0], sys.executable)
+        self.assertEqual(Path(commands[0][1]).name, "visual_sweep_pdf.py")
+        self.assertEqual(commands[0][2:], ["--pdf", "reference.pdf", "--dpi", "144",
+                                         "--prefix", str(Path("out") / "pdf")])
+
 
 
 class EmbeddedFontPreflightTests(unittest.TestCase):
@@ -447,7 +456,7 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             report = Path(temp) / 'font-check.json'
             with self.assertRaisesRegex(SystemExit, 'Unicode cmap'):
                 SWEEP.check_sweep_embedded_fonts([svg], report)
-            record = json.loads(report.read_text())
+            record = json.loads(report.read_text(encoding="utf-8"))
             self.assertEqual(record['status'], 'failed')
             self.assertEqual(record['pages'][0]['fonts'][0]['family'], 'Fixture')
 
@@ -615,7 +624,7 @@ class WasmSweepTests(unittest.TestCase):
                     for page in (1, 2):
                         (output / f'raw_svg/wasm_{page:03}.svg').write_text('<svg><text x="4">WASM</text></svg>')
                         (output / f'render_tree/render_tree_{page:03}.json').write_text('{"type":"Page","bbox":{"x":4}}')
-                    (output / 'manifest.json').write_text('{"pageCount":2}')
+                    (output / 'manifest.json').write_text('{"pageCount":2,"layoutGeneration":"2022"}')
                 else:
                     # Native pagination is deliberately different: only its font CSS is used.
                     (Path(command[command.index('-o') + 1]) / 'native.svg').write_text('<svg><style>@font-face {font-family: "A";src:local("A")}</style><text x="99">Native</text></svg>')
@@ -637,7 +646,7 @@ class WasmSweepTests(unittest.TestCase):
             def incomplete_run(command, **kwargs):
                 result = fake_run(command, **kwargs)
                 if command[0] == 'node':
-                    (Path(command[-1]) / 'render_tree/render_tree_002.json').unlink()
+                    (Path(command[command.index('--out') + 1]) / 'render_tree/render_tree_002.json').unlink()
                 return result
 
             with patch.object(SWEEP, 'run', side_effect=incomplete_run):

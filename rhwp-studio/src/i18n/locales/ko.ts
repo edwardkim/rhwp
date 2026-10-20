@@ -7,6 +7,10 @@
  */
 
 const catalog = {
+  "editor.crossSectionSelectionUnsupported": "구역을 걸친 선택 편집은 아직 지원하지 않습니다. 구역별로 선택해 편집하세요.",
+  "dialog.fill.keepGradient": "기존 그라데이션 유지",
+  "dialog.fill.keepImage": "기존 그림 배경 유지",
+  "dialog.fill.keepExisting": "기존 채우기 유지",
   "command.edit.compareDocuments.label": "문서 비교",
   "command.edit.compareDocuments.splitLabel": "문서 비교 ",
   "command.edit.compareDocuments.toolbarLabel": "문서\n비교",
@@ -903,6 +907,10 @@ const catalog = {
   "dialog.hmlSaveFormat.primaryButton.text": "HML로 저장",
   "dialog.hmlSaveFormat.primaryButton.text.xa0b100": "HWP로 저장",
   "dialog.hmlSaveFormat.title": "HML 문서 저장",
+  "dialog.pdfSaveFormat.title": "PDF 문서 저장",
+  "dialog.pdfSaveFormat.message": "PDF 원본은 그대로 유지됩니다. 편집 내용을 저장할 형식을 선택하세요.",
+  "dialog.pdfSaveFormat.hwpx": "HWPX로 저장",
+  "dialog.pdfSaveFormat.hwp": "HWP로 저장",
   "dialog.hwpPassword.createPasswordInput.label": "새 암호",
   "dialog.hwpPassword.createPasswordInput.label.x0c638a": "암호 확인",
   "dialog.hwpPassword.help.text": "입력한 암호는 이 문서를 여는 동안에만 사용하며 저장하지 않습니다.",

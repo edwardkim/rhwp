@@ -217,6 +217,7 @@ fn two_section_core() -> DocumentCore {
             ..Default::default()
         },
         paragraphs: vec![Paragraph::default()],
+        trailing_lists: None,
         raw_stream: None,
         raw_provenance: None,
     };

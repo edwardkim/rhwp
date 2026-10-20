@@ -10,6 +10,26 @@ rhwp에 관심을 가져주셔서 감사합니다!
 
 "모두의 한글"은 이름 그대로 모두의 참여로 완성됩니다. 코드 기여, 버그 리포트, 문서 개선, HWP 샘플 파일 제공 — 어떤 형태든 환영합니다.
 
+기여자들과 실시간으로 질문하고 작업 내용을 나누고 싶다면 Slack에도 함께해 주세요.
+[Discussion #858의 Slack 가입 안내](https://github.com/edwardkim/rhwp/discussions/858)를 참고해 가입할 수 있습니다.
+
+## 페이지별 TSV와 PR 재검토 필수 조건
+
+조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
+`silhouette_raw_match_percent`(색상 경계 보정 전2px 내용 실루엣 일치율)를 페이지별로 확인하며,
+**한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
+미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
+
+`re_review_required` 상태에서는 새 PR 생성과 열린 PR의 승인·통합을 보류한다.
+작성자는 원본·독립 한컴 Print PDF·overlay를 대조해 원인을 수정하고 새 head에서 다시 산출한다.
+누락·측정 불가·전체 쪽수 불일치도 보류 조건이다. 모든 페이지가 90% 이상이어도
+변경 영역의 수식·미세 간격을 확대 판독한 뒤 완료 여부를 판단한다.
+
+명령·저장 위치는 [「실루엣 보조값만 빠르게 TSV 산출」](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)을 따른다.
+기여자는 전체 페이지 **Native TSV와 fresh WASM TSV 원본 모두 및 대표 PNG**를 제출한다.
+검토자의 Native/fresh WASM 검증은 해당 역할의 절차를 따른다. 해결 불가능한 실제 글꼴 차이는
+[정식 글꼴 예외 계약](mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의 증거와 gate 판정으로만 처리한다.
+
 ## 처음 참여하시나요?
 
 ### 1. 프로젝트 체험하기
@@ -118,12 +138,44 @@ CLI·MCP 계약과 현재 공식 배포 대상의 개선은 rhwp 업스트림에
 - 메인테이너의 코드 리뷰 승인 후 merge됩니다
 - Issue와 PR은 같은 번호 공간을 쓰며, PR 번호는 **PR 생성이 성공한 시점**에 채번됩니다.
   생성 전에 다음 번호를 예측하거나, 번호만 확보하기 위해 Draft PR을 만들지 마세요.
-- 구현과 PR 전 검증을 마친 기여는 일반 Open PR로 제출합니다. Draft는 아직 완료되지 않은 WIP에
-  대해 조기 피드백을 요청할 때만 사용합니다.
+- **PR 제출 전에 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md) 4.3과 해당 보조
+  절차의 변경 범위별 필수 검증을 빠짐없이 완료하세요.** 아래 공개 체크리스트와 함께 적용하며,
+  실행 SHA·명령·환경·결과를 PR 본문에 기록하세요. 실패·미실행을 PR CI에 넘겨 대신하지 마세요.
+- 일반 제출은 검증을 완료한 **Open PR**입니다. 특별한 사유 없는 Draft 제출은 금지합니다.
+  미완성 설계 논의·WIP의 조기 피드백이 필요한 예외에만 목적·미완료 항목·완료 계획을 본문에
+  명시하세요. 번호 확보·CI 시작·대기나 필수 검증 실패·미완료 자체는 예외 사유가 아닙니다.
+  에이전트는 작업지시자의 명시적 Draft 지시가 있을 때만 생성하며, Ready 전환 전에는 필수 검증을
+  모두 완료해야 합니다.
 - **하나의 PR에 여러 fix를 담을 때는 이슈별로 커밋을 분리**해주세요. 여러 수정이 한 커밋에
   섞이면 회귀 추적·선별 반영·리뷰가 어려워져 머지가 지연됩니다.
 - **외부 기여자는 `mydocs/orders/YYYYMMDD.md`를 PR에 포함하지 마세요.** 이 파일은 저장소 운영 기록입니다.
   승인된 collaborator self PR의 번호 기반 기록은 아래 역할별 예외를 따릅니다.
+
+### 기존 이슈와 해결 PR부터 확인
+
+기존 이슈를 수정하거나 회귀 테스트가 실패하면 코드·기대값·골든을 바꾸기 전에 그 이슈의
+원 해결 PR과 통합·후속 보정 커밋을 찾아 읽어 주세요. 본문·리뷰·전체 논의·diff에서 원래 원인,
+보호하려던 동작, 독립 기대값과 검증 범위를 확인한 뒤 현재 base/head의 실제 결과와 대조합니다.
+여러 실패는 각각 확인하며 과거 PR의 통과나 이슈 종료만으로 현재 정상이라고 판단하지 않습니다.
+[선행 분석 절차](mydocs/manual/codex/docs_and_git_workflow.md#기존-이슈와-해결-pr의-선행-분석)를 따르고,
+찾은 PR·커밋과 현재 판정은 기존 PR 설명·검증 기록에 연결하세요. 메인터너 전용 문서 제출을
+요구하는 절차는 아닙니다.
+필수 근거를 확보하고 원인 보정·실제 재검증을 완료한 뒤 PR을 제출하세요. `미검증`이라고
+기록하는 것만으로 제출할 수 없으며, 미해결 필수 항목은 제출 전에 해결해야 합니다.
+
+### 리베이스 후 기존 기능 확인
+
+리베이스로 새 devel의 PR을 반영했다면, 작업 중인 문제의 개선과 함께 해당 PR의 기능도
+유지되거나 개선되는지 확인하세요. 새 devel과 후보를 같은 입력·환경으로 실행하고, 반영 PR의
+기존 재현 사례·중요한 경계·실제 사용 경로를 대조하세요. 충돌 없이 적용되거나 컴파일·CI가
+통과했다는 사실만으로 기능이 유지됐다고 판단하지 마세요.
+
+기능이나 출력이 후퇴하면 원인을 보정한 뒤 현재 작업과 반영 PR 양쪽을 다시 검증하세요.
+다른 부분의 개선으로 후퇴를 상쇄하지 않으며, 후퇴·필수 증거 부족이 남아 있으면 PR 생성·갱신을
+보류하세요. 유지·개선과 필수 검증을 확인하면 다음 단계로 진행하세요. PR 본문에 반영 PR,
+새 base·후보 SHA, 입력·명령·결과와 보정 후 재검증을 기록하면 됩니다. 별도 내부 review 문서는
+요구하지 않습니다. 렌더링에는 전쪽 Native/fresh WASM TSV와 직접 판독 기준도 함께 적용합니다.
+상세 기준은 [리베이스 후 기능 보존 검증](mydocs/manual/pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)을 따릅니다.
 
 ### 메인터너 검토 기록과의 구분
 
@@ -157,8 +209,7 @@ Native/fresh WASM 두 행과 review/standalone overlay 두 열의 실제 Markdow
 쪽별 일치율, 직접 확인한 표·문단·그림 경계와 남은 차이는 해당 표 바로 아래에 적습니다.
 첨부할 대표 입력·쪽이 여러 개면 이 묶음을 반복하며, 이미지 설명에 입력명·쪽·출력 경로를 표시하세요.
 **전체 페이지의 PNG 생성·커밋·본문 첨부는 필요하지 않습니다.** 변경 효과와 주요 경계를 보여주는
-대표 페이지만 첨부하고, 검증 대상 전체 페이지의 **Native TSV 원본만** 함께 제출하세요.
-WASM TSV는 첨부할 필요가 없습니다.
+대표 페이지만 첨부하고, 검증 대상 전체 페이지의 **Native TSV와 fresh WASM TSV 원본을 모두** 함께 제출하세요.
 같은 쪽의 두 출력 경로와 두 이미지 종류를 본문에서 바로 대조할 수 있어야 합니다.
 작성 예시는 [PR 본문 직접 증적 정본](mydocs/manual/verification/visual_sweep_guide.md#pr-body-visual-evidence)과
 [PR 템플릿](.github/pull_request_template.md)을 따릅니다.
@@ -187,12 +238,15 @@ PR 생성 시 본문의 `![설명](URL)`에 넣습니다. PR 번호가 나온 �
 검증 대상 전체 페이지의 Native/fresh WASM `silhouette.tsv`에서 비교 쪽수·최저값과
 90% 미만/누락 쪽을 확인하고, 해당 쪽과 구조 차이·대표 경계는 일반 모드의 PNG로 직접 판독합니다.
 전체 페이지의 review/overlay PNG를 일률 생성하거나 첨부할 필요는 없습니다.
-**PR 본문에는 대표 페이지의 이미지와 전체 검증 범위의 TSV 원본 다운로드 링크를 첨부하세요.**
-제출용 TSV는 **Native만 필수**이며 WASM TSV 첨부는 요구하지 않습니다. Native TSV를
-ZIP으로 묶어 PR 본문에 업로드하거나, 검토자가 내려받을 수 있는
-동일 파일의 첨부 링크를 넣습니다. 요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않습니다.
-첨부 파일이 어느 입력·출력 경로·검증 head에 대응하는지 명시하며, TSV는 ignored output에 보존하고
-Git에 커밋하지 않습니다. TSV·입력/출력 provenance와 최저값·미달 페이지를 PR 증거에 연결하세요.
+**PR 본문에는 대표 페이지 이미지와 전체 TSV 원문을 넣으세요. 본문 크기 제한에 걸리면 원본 다운로드 링크로 제출할 수 있습니다.**
+제출용 TSV는 **Native와 fresh WASM 둘 다 필수**입니다. 파일명·출력 경로를 명시한
+`tsv` 코드 블록에 header와 전체 페이지 원문을 그대로 넣을 수 있습니다. 본문 크기 제한에 걸리면
+압축하지 않은 원본을 `mydocs/pr/assets/issue_<이슈번호>/<문서이름>_silhouette.tsv` 등에
+바이트 그대로 복사해 커밋하고 정확한 head SHA의 raw 다운로드 링크로 제출하세요. Native/fresh WASM과
+base/후보는 하위 폴더나 파일명으로 구분합니다. 요약 표·최저값·로컬 output 경로만으로 원본을 대신하지 않습니다.
+입력·출력 경로·실제 검증 source 및 binary/WASM SHA·페이지·TSV SHA-256을 명시하세요.
+[TSV 원본 보존·링크 예시](mydocs/manual/verification/visual_sweep_guide.md#tsv-원문-본문-삽입과-저장소-링크)를 따릅니다.
+GitHub CLI의 파일 첨부 기능이나 외부 Gist 없이 저장소 asset 링크로 제출할 수 있습니다.
 실루엣 계산 방법, 이진화 원값과 색상 경계 대조 픽셀 수도 함께 기록하세요.
 색상 경계 대조는 실제 흰 배경의 그림 누락·위치 차이를 제외하는 근거가 아닙니다.
 기존 PNG 재사용은 원 실행의 코드·빌드·글꼴 조건을 확인하며 새 head 검증으로 표시하지 않습니다.
@@ -203,7 +257,8 @@ TSV 산출 exit0 또는 `not_evaluated`는 승인 판정이 아닙니다. 90% �
 실루엣 일치율은 모두 90% 이상이어야 합니다. `scripts/visual_sweep.py`가 `re_review_required`를 기록하거나 non-zero로 끝나면
 PR을 제출하지 말고 본인 branch에서 PDF·overlay 원인을 재검토·수정한 뒤 새 head에서 gate를 통과할 때만
 PR을 생성·갱신합니다. **90% 미만**이 보류 기준이며 **정확히 90%는 통과**합니다.
-TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않습니다.
+작업 중 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존합니다.
+본문에 원문을 넣거나, 크기 제한 시 최종 TSV 원본만 위 asset 경로에 커밋해 링크합니다. 실행 로그·중간 JSON은 커밋하지 않습니다.
 사용자가 승인한 메인터너 보정도 같은 기준을 충족해야 합니다. 한컴 PDF와 rhwp의 실제 글꼴 차이는
 양쪽 font family와 확인 방법을 적은 UTF-8 증거를 `--font-mismatch-evidence`로 기록할 수 있지만
 확인한 해결 불가능한 글꼴 문제는 [PR 제출 예외 계약](mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의
@@ -449,8 +504,9 @@ Rust renderer/layout/typeset/WASM 변경은 같은 worktree에서 Native Skia 3�
 ```
 
 그 뒤 WASM을 준비하고 [시각 검증](#렌더링-pr-자가-검증-도구-한컴-없이-가능)을 진행하세요.
-렌더링 변경의 표준 WASM 빌드는 Docker `wasm` 서비스입니다. 검증 worktree에서 아래처럼
-최초 환경 파일을 준비하되 기존 파일을 덮어쓰지 않습니다.
+**Docker 설치는 필수 조건이 아닙니다.** 검증 worktree의 저장소 루트에서 실행 환경에 맞는
+경로 하나를 선택하세요. Docker·Compose와 daemon 접근이 정상이라면 아래 서비스를 사용할 수
+있습니다. 최초 환경 파일만 준비하고 기존 파일은 덮어쓰지 않습니다.
 
 ```bash
 (
@@ -458,15 +514,32 @@ Rust renderer/layout/typeset/WASM 변경은 같은 worktree에서 Native Skia 3�
   cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
   test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
   if [ ! -f .env.docker ]; then cp .env.docker.example .env.docker; fi
-  docker compose --env-file .env.docker run --rm wasm
+  mkdir -p "${rhwp_review_target_dir:?}"
+  docker compose --env-file .env.docker run --rm \
+    --user "$(id -u):$(id -g)" \
+    --env HOST_UID="$(id -u)" --env HOST_GID="$(id -g)" \
+    --env CARGO_TARGET_DIR=/review-target \
+    --volume "${rhwp_review_target_dir}:/review-target" wasm
 )
 ```
 
-Docker를 사용할 수 없을 때의 진단 경로는 해당 worktree의 **저장소 루트**에서
-`CARGO_TARGET_DIR="${rhwp_review_target_dir:?}" scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt`입니다.
-이 경우 Docker 부재·대체 명령을 기록하고, 최적화된 표준 빌드를 통과했다고 쓰지 마세요. Windows native
-wrapper는 아래 프런트엔드 절에 있습니다. 같은 commit으로 이미 WASM을 준비했다면 이어지는 frontend
-검사·시각 대조를 위해 다시 빌드할 필요는 없습니다.
+Docker의 `/review-target`는 호스트의 같은 물리적 `target/pr-review`입니다. 별도 named volume을
+공용 캐시로 간주하지 않습니다. bind mount가 Cargo hard-link·읽기/쓰기를 지원하지 않으면 호스트
+경로를 사용하세요.
+
+Docker 미설치·daemon 접근 불가 환경에서는 Linux/macOS의 같은 worktree 루트에서
+호스트 빌드를 실행하세요. 이 명령은 최적화를 포함한 정식 로컬 검증 경로입니다.
+
+```bash
+CARGO_TARGET_DIR="${rhwp_review_target_dir:?}" scripts/wasm-pack-locked.sh --target web --out-dir pkg
+```
+
+Windows PowerShell의 locked wrapper·Studio 동기화 예시는
+[환경별 fresh WASM 검증](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)을 따릅니다.
+Docker와 호스트 경로 모두 source SHA·명령·환경·실제 결과 및 pkg/public 해시를 확인하고 같은 fresh
+package로 브라우저·시각 검증을 완료하세요. `--no-opt`는 원인 분리용 진단이며 제출 전 최적화 포함
+빌드를 대신하지 않습니다. 같은 commit으로 이미 이 검증을 마쳤다면 Docker 여부만을 이유로
+다시 빌드할 필요는 없습니다.
 
 비교 도구가 최신 실행 파일을 보도록 `cargo build --locked --profile release-test --target-dir "${rhwp_review_target_dir:?}"`로
 검증 worktree의 `rhwp` 바이너리를 만들 수 있습니다. 이 빌드는 테스트를 실행하지 않으므로 위 회귀를
@@ -593,7 +666,7 @@ gate와 같이 `--dev`로 fresh WASM을 먼저 만듭니다. Studio production b
 실행합니다. 이 준비는 Studio가 사용할 WASM 산출물을 만드는 단계로,
 Studio 단독 변경에 Rust 전체 lint·회귀를 요구하는 것과는 구분합니다.
 
-렌더링 출력·성능이나 release WASM을 검증할 때는 Rust 절의 표준 Docker 빌드·시각 검증을 적용합니다.
+렌더링 출력·성능이나 release WASM을 검증할 때는 Rust 절의 환경별 최적화 포함 빌드·시각 검증을 적용합니다.
 `--dev` 성공을 최적화된 release WASM의 검증으로 기록하지 않습니다. 동일 SHA로 이미 요구되는 WASM을
 준비했다면 package 검사를 위해 재빌드하지 않습니다.
 
@@ -681,8 +754,7 @@ npm --prefix npm/editor test
 node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
 (cd rhwp-studio && npx tsc --ignoreConfig --noEmit --skipLibCheck ../npm/editor/index.d.ts)
 (cd npm/editor && npm pack --dry-run --json)
-# 최초 한 번의 .env.docker 준비와 Docker 미설치 host의 진단 경로는 개발 환경 안내를 따른다.
-docker compose --env-file .env.docker run --rm wasm
+# 위 Docker 또는 호스트 경로 중 하나로 fresh WASM 빌드·Studio 동기화를 마친 뒤 실행한다.
 VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 ```
 
@@ -726,13 +798,62 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
 기존 핀을 재검토할 때도 현재 PR을 막는 범위에서 잘못된 기대값의 근거를 남긴 뒤 의미 검사로
 바꿉니다. 시각 점수와 회귀 검사의 의미 충족은 각각 기록합니다.
 
+기존 회귀 테스트가 실패하면 **그 테스트의 원본 입력 출력을 먼저 보정 → 버전에 맞는 독립 한컴
+Print PDF와 Native/fresh WASM Visual Sweep에서 관련 모든 페이지가 90% 이상인지 확인 →
+독립 기대값에 따라 필요한 검사 변경** 순서로 진행하세요. 쪽수 검사는 전체 페이지를 비교합니다.
+90% 미만·측정 불가이면 기대값·baseline 갱신을 보류하세요. **검증 기준으로 SHA를 고정한
+`upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 회귀 검사**가 부적합한 경우에만
+같은 원본·증상의 기존 이슈 등록 여부를 먼저 확인하고 해당 검사와 HWP/HWPX/PDF를 활성 검증 경로에서 제거·이관하세요.
+같은 원본·독립 Print PDF로 base와 현재 head를 비교하고, 현재 수정으로 생긴 회귀는 구현을
+고치세요. base의 미달 근거가 없으면 이관 대상으로 판정하지 않습니다. 해당 이슈에서 출력 보정·
+90% 이상·확대 판독을 충족한 뒤 관계형 회귀를 복원하세요.
+[별도 이슈 이관](mydocs/manual/pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)을 따릅니다. 기존 px 고정 검사를 바꾸는
+경우에도 이 선행 조건을 충족한 뒤 문단·줄·개체의 소유·순서·보존·포함·겹침 관계로 검사하세요.
+관계 검사를 기본으로 하되, **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)이
+각각 **98% 이상**이고 독립 PDF와 직접 확대 판독을 마쳤으면 해당 쪽의 독립 기대 좌표를
+**±2px** 허용 오차로 고정할 수 있습니다. 문서 전체98% 이상은 요구하지 않으며 관계 검사도 유지하세요.
+[페이지별 px 회귀 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따릅니다.
+고정한 쪽은 양쪽98% 이상을 유지해야 합니다. 100%로 개선은 허용하며 한쪽이라도98% 미만이면
+회귀로 판정하고 구현을 보정하세요.
+
+현재 브랜치에서 전쪽 Native/fresh WASM 최저 90% 이상·독립 PDF 쪽수 일치·직접 판독을
+확인한 문서는 실패 검사를 먼저 재검토하세요. **쪽수 검사도 포함**하며, 잘못된 px·고정 영역·과거
+쪽수 핀은 문단·줄·개체 소속, 내용 순서·보존·포함·겹침 관계로 수정하세요. 정확한 독립 기대값은
+유지하고 구현을 고치세요. 이미 보정한 문서는 과거 base 미달이나 이슈 등록만으로 제거하지 마세요.
+
+전쪽 Native/fresh WASM 검증과 직접 판독을 마친 **현재 보정 대상 문서**는 기존 회귀가
+통과 중이어도 그 문서를 사용하는 절대 px 좌표·고정 영역 검사를 확인하고 관계 검사로
+바꾼다. 위 페이지별 98% 이상·직접 판독 조건을 충족한 쪽의 ±2px 좌표 검사는 유지·추가할 수 있다.
+대상 문서의 원본 경로를 따라 검사·공용 corpus 참조를 확인하며 다른 문서로 범위를
+확장하지 않는다. 기존 검사 함수 안에서 쪽 소속·내용 순서·누락·중복·포함·겹침을 보호하고,
+독립 PDF 쪽수 대조에는 대응 내용 보존을 함께 검사한다. 원본 글자모양·셀 속성에서 계산한
+크기와 실제 줄·개체의 포함 또는 비율 관계는 유지할 수 있다. 소스 단위를 px로 환산했다는
+이유만으로 이 원본 계약을 제거하지 않는다. 변경 보고에는 기존에 이미 관계 검사였던 범위,
+실제로 교체한 핀, 새로 보완한 내용 관계와 재사용한 시각 증거를 구분해 기록한다.
+
+미달 문서는 **같은 원본·같은 미해결 범위가 기존 이슈에 등록되어 있는지 먼저 확인**하세요.
+등록되어 있으면 해당 회귀 함수·assertion·baseline/manifest 및 자동 수집 참조를 제거한 뒤
+남은 검증을 계속하세요. 원본·PDF와 범위 밖의 정상 검사는 보존하세요. 관련 이슈가 없을 때만
+별도 이슈를 등록하세요. **개인의 작업 이슈를 공통 이관 대상으로 자동 지정하지 마세요.**
+상세 판정·기록은 [기존 기대값 재검토](mydocs/manual/pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)와
+[기존 이슈 확인·처리](mydocs/manual/pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)를 따르세요.
+
 렌더링·조판·페이지 배치 변경에서는 **새 회귀 테스트 또는 fixture/golden을 추가하기 전에** 같은
 원본·독립 한컴 PDF의 Native/fresh WASM Visual Sweep을 완료하세요. 관련 모든 페이지·fixture·출력
-경로 중 최저 `tolerant_content_match_percent`가 90% 이상이어야 합니다. 쪽수 검사는 전체 페이지를
+경로 중 최저 `silhouette_raw_match_percent`가 90% 이상이어야 합니다. 쪽수 검사는 전체 페이지를
 비교합니다. 최저값 90% 미만 또는 측정 불가이면 새 회귀 테스트를 추가하지 않고 실제 출력을 먼저
-개선하세요. 평균값·글꼴 예외·CI 성공으로 대신하지 않으며 이미 존재하는 검사를 자동 삭제하지 않습니다.
+개선하세요. 평균값·글꼴 예외·CI 성공으로 대신하지 않습니다. 기존 검사·파일의 제거와 이관은 위
+별도 이슈 절차에 따라 실패 근거와 복원 조건을 남겨 처리하세요.
 최저 페이지·backend·source SHA와 직접 판독 증거를
 [회귀 추가 선행 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)에 따라 연결하세요.
+
+**90% 이상이어도 미세한 모양·간격을 직접 확인하세요.** 독립 한컴 Print PDF와 변경 전·후
+Native/fresh WASM의 같은 영역을 같은 배율로 확대해 수식의 기호·장평·정체/이탤릭·기준선·첨자·
+화살표·장식, 관계 기호 양쪽 여백과 앞뒤 본문·보기 번호·탭·줄 사이 간격을 대조하세요.
+변경 영역·알려진 차이·사용자가 지적한 영역을 포함하고 점수와 직접 판독 결과를 구분해 기록하세요.
+확인된 결함은 출력 보정·재검증 후 회귀 추가/변경·완료 여부를 판정하세요. 90% 통과를 이유로
+결함을 정상 기대값으로 고정하지 마세요. 상세 절차와 증적은
+[90% 통과 후 확대 판독](mydocs/manual/pr_review/visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을 따릅니다.
 
 1. **red→green 회귀 테스트 동봉** — 수정 전 결함을 재현·고정하는 테스트를 함께 제출합니다.
    Rust 파일명 관례: `tests/cases/issue_{이슈번호}_{짧은_설명}.rs`. Studio 회귀는 변경에 맞는 단위 테스트나
@@ -776,13 +897,16 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    높아집니다. 다만 **조판 변경에서 결함 검출을 주장하는 테스트**는
    [구현 주장과 검증 증거의 대조](AGENTS.md#구현-주장과-검증-증거의-대조)에 따라 수정 전후를
    확인해야 합니다. 수정 전에도 통과하거나 빌드·환경 문제로 실패한 결과는 결함 검출 증거가
-   아니며, 실행하지 못했다면 해당 증거는 미검증으로 남깁니다. 원복 대조는 별도 검증 worktree에서
+   아닙니다. 실행 환경·입력을 확보해 수정 전후 검증을 완료하세요. 원복 대조는 별도 검증 worktree에서
    수행하고 사용자·다른 작업의 변경을 되돌리지 않습니다.
 3. **기존 기대값(잠정 핀) 변경 시** — 페이지 수 등 잠정 핀 수치를 바꾸는 PR 은 다음을
    지켜주세요. 임의 갱신은 받지 않습니다.
    실패한 렌더링·페이지 검사는 먼저 같은 원본과 독립 PDF의 Visual Sweep으로 테스트와 픽스쳐의
    적절성을 검증합니다. 관련 각 페이지가 90% 이상이어야 하며 쪽수 검사는 전체 페이지를 비교합니다.
-   90% 미만이면 해당 픽스쳐의 실제 출력을 먼저 개선하고 테스트·기대값·baseline 수정은 보류합니다.
+   90% 미만이면 기대값·baseline을 갱신하지 않습니다. 고정한 `upstream/devel`에서 이미
+   90% 미만인 원본에 등록되어 있던 부적합한 회귀 검사만
+   [별도 이슈 이관](mydocs/manual/pr_review/visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)으로 검사와 HWP/HWPX/PDF를
+   활성 검증에서 제거하고, 해당 이슈에서 출력 개선과 관계형 회귀 복원을 진행합니다.
    검사가 정확하면 기대값을 유지하고 구현을 수정합니다. 자세한 순서는
    [기존 회귀 테스트의 기대값 재검토](mydocs/manual/pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따릅니다.
    - 기존 테스트 자체의 적절성도 [기대값 재검토](mydocs/manual/pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)에 따라 동일 입력의 기준 PDF와 수정 전·후 Visual Sweep으로 확인해주세요. 실제 회귀·잘못된 기대값·미검증을 구분합니다.
@@ -823,7 +947,9 @@ generated suite의 `does not exist` 오류는 준비 부족에 의한 검사 실
 일반 기여자는 메인터너 전용 HWP 변환 MCP를 사용할 수 없습니다. MCP 접근이나 호출을
 기여자의 검증 전제로 요구하지 않습니다. 기준 PDF가 필요한 렌더링 변경은 기여자가 직접
 원본 저장 버전에 맞는 검증 대상 한컴 오피스에서 원본 HWP/HWPX를 열어 **Print 인쇄 경로로 PDF를 출력**하고 PR 또는 관련 issue에
-원본과 함께 첨부해주세요. 파서 구조만을 검증하는 변경에 이 요구를 일괄 적용하지는 않습니다.
+원본과 함께 첨부해주세요. **50 MiB(52,428,800바이트) 이상 PDF는 로컬에만 보관하고 PR에 포함하지 않습니다.**
+대용량 PDF는 아래 fixture 정책의 출처·해시·전쪽 검증 기록으로 확인합니다. 파서 구조만을 검증하는 변경에
+PDF 요구를 일괄 적용하지는 않습니다.
 
 [기준 PDF 인쇄 계약](mydocs/manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따릅니다.
 PDF로 저장/내보내기 대신 파일 → 인쇄 → PDF 출력을 사용하고 원본 용지·100%·1-up·전체 문서를
@@ -831,7 +957,8 @@ PDF로 저장/내보내기 대신 파일 → 인쇄 → PDF 출력을 사용하�
 명시합니다. 직접 출력본은 실제 제품 버전으로 이름 붙입니다. 편집 동작도 같은 편집 저장본을
 Print 출력해 비교하며, 기준 PDF 부족을 Visual Sweep 비해당 사유로 쓰지 않습니다.
 
-- 여러 한컴 버전의 동작을 주장하거나 비교한다면 그 대상 버전별 PDF를 각각 첨부합니다.
+- 여러 한컴 버전의 동작을 주장하거나 비교한다면 그 대상 버전별 PDF를 각각 확보합니다.
+  50 MiB 미만 PDF는 첨부하고, 이상인 PDF는 아래 로컬 보관 규칙을 적용합니다.
   예를 들어 2020/2022/2024 비교에는 실제 각 제품에서 출력한 PDF가 필요합니다.
 - 파일명은 `원본stem-2020.pdf`, `원본stem-2022.pdf`, `원본stem-2024.pdf`처럼
   실제 출력 제품 버전으로 구분합니다. 메인터너 MCP의 2020/2024 engine bucket으로 바꾸지 않습니다.
@@ -866,8 +993,13 @@ Print 출력해 비교하며, 기준 PDF 부족을 Visual Sweep 비해당 사유
    - 유효한 기존 PDF를 재사용하고, 내용으로 대응시킨 변경 전후 페이지·영역을 직접 확인
    - 자동 검사 통과는 직접 비교를 대체하지 않으며, 메인터너 재검증 예정이라는 이유로 작성자 검증을 생략하지 않음
 
-3. **다른 렌더링 결과** (참고):
-   - HTML / Canvas / VS Code 확장 등 다른 출력 경로와의 일관성
+3. **변경 결과를 소비하는 출력 경로 검증** (해당 경로 필수):
+   - [출력 백엔드 소비 경로 검증](mydocs/manual/verification/renderer_backend_verification.md)에 따라
+     공통 조판/paint 결과와 실제 Canvas·SVG·Native PNG 등의 소비 경로를 연결합니다.
+   - 같은 tree 생성 함수를 호출해도 metric context·font resource·glyph fallback·DOM 합성이
+     다르면 최종 출력이 달라질 수 있습니다. 영향받는 경로의 실제 화면/파일과 정상 대조군을 확인하세요.
+   - backend 자기 비교는 한컴 PDF Sweep을 대체하지 않습니다. 미실행 경로는 미검증이며,
+     해당되지 않는 경로는 호출 경로의 근거를 적습니다. 모든 backend를 매번 전수 실행하는 조건은 아닙니다.
 
 ### 페이지 분할 / 페이지네이션 영향 PR 의 경우
 
@@ -938,11 +1070,14 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
   PR 본문 Markdown 이미지로 표시합니다. output 전체·원시 raster·로그·JSON은 포함하지 않습니다.
 - **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명
   (예: `pdf/issue1835_tac_stale_height-2022.pdf`), PR 본문에 생성 환경(한컴 버전)을
-  명시해주세요. 한컴 정본 오라클은 버전·크기와 무관하게 `pdf/**`에 일반 Git blob으로만
-  커밋하며 `pdf-2020/`, `pdf-large/` 같은 최상위 분리 폴더와 Git LFS pointer를 사용하지 않습니다.
-  파일 하나는 50 MiB(52,428,800 bytes) 미만이어야 합니다. 상한을 넘으면 그대로 제출하지 말고
-  축소 fixture·페이지 발췌·외부 증적 방식을 이슈에서 먼저 합의해주세요. 재현 fixture는 가능하면
-  1~2페이지로 축소해 `samples/`에 포함합니다.
+  명시해주세요. 50 MiB 미만 한컴 정본 오라클은 `pdf/**`에 일반 Git blob으로 커밋하며
+  `pdf-2020/`, `pdf-large/` 같은 최상위 분리 폴더와 Git LFS pointer를 사용하지 않습니다.
+  **50 MiB(52,428,800바이트) 이상 PDF는 로컬에만 보관하고 commit·push·PR 첨부에서 제외합니다.**
+  저장소 밖의 안정적인 로컬 경로에 보관하고, 저장소 안에 둘 경우 `.git/info/exclude`에 정확한 경로를
+  등록하세요. 출처·바이트 수·SHA-256·전체 쪽수·Print/검증 명령과 전쪽 Native/fresh WASM TSV·대표 PNG를
+  PR에 기록합니다. 크기 제한을 피하려고 전쪽 PDF를 분할해 올리거나 커밋 예외 승인을 요청하지 않습니다.
+  실제 PDF 검증은 생략하지 않으며, [대용량 PDF 보존](mydocs/manual/pr_review/visual_fixture_evidence.md#원본-fixture와-기준-pdf-보존)을 따릅니다.
+  재현 fixture는 가능하면 1~2페이지로 축소해 `samples/`에 포함합니다.
 
   ```bash
   python3 scripts/check_pdf_repository_policy.py

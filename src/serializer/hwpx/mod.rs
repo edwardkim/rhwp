@@ -75,6 +75,8 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     // 3. Contents/header.xml — Stage 1 동적 생성 (IR 기반)
     let header_xml = header::write_header(doc, &ctx)?;
     z.write_deflated("Contents/header.xml", &header_xml)?;
+    let mut hwp3_page_ownership =
+        crate::model::hwp3_page_ownership::PageOwnership::for_document(doc, &header_xml);
 
     // 4. Contents/section{N}.xml — 실제 섹션만큼, 없으면 0개
     let section_hrefs: Vec<String> = (0..doc.sections.len())
@@ -82,6 +84,9 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
         .collect();
     for (i, sec) in doc.sections.iter().enumerate() {
         let xml = section::write_section(sec, doc, i, &mut ctx)?;
+        if let Some(ownership) = &mut hwp3_page_ownership {
+            ownership.push_section(sec, &xml);
+        }
         z.write_deflated(&section_hrefs[i], &xml)?;
     }
 
@@ -269,7 +274,21 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     }
     // HWP3-origin 마커 — 재열람 시 hwp3_lineage 복원(왕복 레이아웃 등식).
     if let Some(marker) = doc.hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH) {
-        z.write_deflated(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH, marker)?;
+        let encoded = hwp3_page_ownership
+            .as_ref()
+            .map(crate::model::hwp3_page_ownership::PageOwnership::encode)
+            .transpose()
+            .map_err(|error| SerializeError::XmlError(error.to_string()))?;
+        z.write_deflated(
+            crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
+            encoded.as_deref().unwrap_or(marker),
+        )?;
+    }
+    if doc.layout_profile().hwp3_external_realign() {
+        z.write_deflated(
+            crate::model::document::HWP3_EXTERNAL_REALIGN_HWPX_PATH,
+            b"1",
+        )?;
     }
 
     // 참조 정합성 단언 (Stage 1+)
@@ -718,8 +737,8 @@ mod tests {
             "단별 간격이 왕복에서 보존돼야 함(#4387)"
         );
         assert!(
-            !cd2.proportional_widths,
-            "HWPX colSz 는 절대 HWPUNIT — 비례값 플래그가 켜지면 안 됨"
+            cd2.proportional_widths,
+            "한컴 HWPX colSz의 비례 너비 해석이 왕복에서 보존돼야 함"
         );
     }
 
@@ -1609,7 +1628,10 @@ mod tests {
         // ZIP 파일 목록에 한컴 필수 11개가 모두 있는지 확인
         let cursor = std::io::Cursor::new(&bytes);
         let archive = zip::ZipArchive::new(cursor).expect("valid zip");
-        let names: Vec<String> = archive.file_names().map(String::from).collect();
+        let names: Vec<String> = archive
+            .file_names()
+            .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+            .collect();
         let required = [
             "mimetype",
             "version.xml",
@@ -1670,7 +1692,10 @@ mod tests {
         // ZIP에 BinData 엔트리 존재 확인
         let cursor = std::io::Cursor::new(&bytes);
         let archive = zip::ZipArchive::new(cursor).expect("zip");
-        let names: Vec<String> = archive.file_names().map(String::from).collect();
+        let names: Vec<String> = archive
+            .file_names()
+            .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+            .collect();
         assert!(
             names.iter().any(|n| n.starts_with("BinData/")),
             "BinData/ ZIP entry missing: {:?}",
@@ -1776,7 +1801,7 @@ mod tests {
                 .compression_method(zip::CompressionMethod::Deflated);
             for i in 0..archive.len() {
                 let mut f = archive.by_index(i).expect("entry");
-                let name = f.name().to_string();
+                let name = f.name().expect("ZIP 엔트리 이름").to_string();
                 if name.starts_with("BinData/") {
                     continue;
                 }
@@ -1860,8 +1885,9 @@ mod tests {
         let mut archive = zip::ZipArchive::new(cursor).expect("zip");
         let bin_name = archive
             .file_names()
+            .map(|name| name.expect("ZIP 엔트리 이름"))
             .find(|name| name.starts_with("BinData/") && name.ends_with(".png"))
-            .map(String::from)
+            .map(|name| name.into_owned())
             .expect("png BinData entry");
         let mut bin = archive.by_name(&bin_name).expect("read png BinData");
         let mut actual = Vec::new();
@@ -1917,8 +1943,9 @@ mod tests {
             zip::ZipArchive::new(std::io::Cursor::new(serialized)).expect("roundtrip zip");
         let section_names: Vec<String> = archive
             .file_names()
+            .map(|name| name.expect("ZIP 엔트리 이름"))
             .filter(|name| name.starts_with("Contents/section") && name.ends_with(".xml"))
-            .map(String::from)
+            .map(|name| name.into_owned())
             .collect();
         let mut section_xml = String::new();
         for name in section_names {

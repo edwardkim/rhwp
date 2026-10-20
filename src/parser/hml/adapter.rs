@@ -42,6 +42,7 @@ pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError>
             .map(into_paragraph)
             .collect::<Result<Vec<_>, _>>()?;
         document.sections.push(Section {
+            trailing_lists: None,
             section_def,
             paragraphs,
             raw_provenance: None,

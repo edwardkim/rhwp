@@ -192,7 +192,7 @@ ignored `output/pr-review/issue7207-7544-focus-20261007`과 해당 임시 sweep 
 | `task2097/18095317_eogu_geumji.hwp` | 21 / 21 / 21쪽 | 양쪽 backend 전21쪽 TSV 최저 **14.72666% (19쪽)**, 90% 미만16쪽, 누락0. 영향20/21쪽은 **18.38669% / 19.92770%** | 미충족; 대표 gate `re_review_required` |
 | `task2287/1342000_edu_curriculum_map.hwp` | **415 / 413 / 413쪽** | 양쪽 전체 TSV는 쪽수 불일치로 측정 전 실패. 전체 최저값은 미산출. 같은 쪽171/172 비교는 **66.33053% / 24.00083%** | 미충족; 대표 gate `re_review_required`; 전쪽 일치는 미검증 |
 
-어구 문서는 [동일 원문의 한컴 PDF](../../../pdf/18095317_eogu_geumji-2020.pdf)를 확보했다. 한컴 `11.0.0.9136`, 전처리 없음, one-up 출력, 21쪽/PDF1.4이며 PDF SHA-256은 `98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab`다. 교육과정은 [기존 정상 한컴 PDF415쪽](../../../pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf)를 재사용했다. 파일명은 2020 bucket이나 실제 Creator는 Hwp2022이며 버전 이름만으로 기준을 폐기하지 않았다.
+어구 문서는 [동일 원문의 한컴 PDF](../../../pdf/18095317_eogu_geumji-2020.pdf)를 확보했다. 한컴 `11.0.0.9136`, 전처리 없음, one-up 출력, 21쪽/PDF1.4이며 PDF SHA-256은 `98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab`다. 교육과정은 [기존 정상 한컴 PDF415쪽](../assets/issue7445/education-curriculum-map/existing-hwp-hancom2020-print.pdf)를 재사용했다. 파일명은 2020 bucket이나 실제 Creator는 Hwp2022이며 버전 이름만으로 기준을 폐기하지 않았다.
 
 대표 Native/fresh WASM review와 standalone overlay를 직접 판독했다. 어구21쪽은 이전 세로 지도가 다시 배치되고 마지막 `[부도5]` 지도는 아래로 밀려 용지 밖까지 이어진다. 기준 PDF21쪽은 마지막 지도만 본문 상단에 있다. 교육과정171쪽은 본문 행·성취기준 코드의 쪽 소유가 다르며 현재171쪽 내용은 기준PDF172쪽에 대응한다. 기준 페이지를 재번호하거나 잘라 점수를 올리지 않았다. 글꼴 이름으로 그림 배치·쪽 소유 차이를 면제할 수 없다.
 

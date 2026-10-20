@@ -784,6 +784,7 @@ fn image_and_equation_control_labels_replay_as_canonical_ops() {
             RenderNodeType::Equation(EquationNode {
                 svg_content: "<text>x</text>".to_string(),
                 layout_box: LayoutBox {
+                    font_size: 12.0,
                     x: 0.0,
                     y: 0.0,
                     width: 8.0,
@@ -854,7 +855,7 @@ fn image_and_equation_control_labels_replay_as_canonical_ops() {
     let json = tree.to_json();
     assert_eq!(json.matches("\"type\":\"controlLabel\"").count(), 7);
     let json: serde_json::Value = serde_json::from_str(&json).unwrap();
-    assert_eq!(json["schemaMinorVersion"], 23);
+    assert_eq!(json["schemaMinorVersion"], 27);
     assert!(json["usedFeatures"]
         .as_array()
         .unwrap()
@@ -1324,10 +1325,9 @@ fn soft_wrap_decoration_trim_does_not_depend_on_source_node_id() {
             _ => None,
         }
     }
-    assert_eq!(
-        underline_x2(&first),
-        10.0 + decoration_end(&json).expect("serialized decoration endpoint")
-    );
+    // 렌더 트리 JSON 은 끝점을 소수 셋째 자리로 직렬화한다 — SVG 좌표를 그 정밀도에서 비교한다.
+    let endpoint = 10.0 + decoration_end(&json).expect("serialized decoration endpoint");
+    assert_eq!((underline_x2(&first) * 1000.0).round() / 1000.0, endpoint);
 
     #[cfg(feature = "native-skia")]
     {

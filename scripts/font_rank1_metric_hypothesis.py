@@ -284,7 +284,7 @@ def project_record(
 
 def _read_trace(binary: Path, fixture: Path) -> dict[str, Any]:
     stdout, _ = run_bounded(
-        [str(binary), str(fixture), "--page", "0", "--max-characters", "4096", "--json"],
+        [str(binary), "font-trace", str(fixture), "--page", "0", "--max-characters", "4096", "--json"],
         timeout_seconds=60,
         maximum_output_bytes=MAX_JSON_BYTES,
     )
@@ -422,7 +422,7 @@ def build_projection(
             "textMeasurementSource": {"artifact": "src/renderer/layout/text_measurement.rs", "sha256": sha256_file(paths["textMeasurementSource"])},
             "fontDecisionSource": {"artifact": "src/document_core/queries/font_decision.rs", "sha256": sha256_file(paths["fontDecisionSource"])},
             "metricLineage": {"artifact": "mydocs/tech/investigations/issue-4964/font_metric_lineage_manifest.json", "sha256": sha256_file(paths["lineage"])},
-            "nativeBinary": {"artifact": "target/debug/rhwp-q-font-trace", "sha256": sha256_file(paths["nativeBinary"])},
+            "nativeBinary": {"artifact": paths["nativeBinary"].relative_to(ROOT).as_posix(), "sha256": sha256_file(paths["nativeBinary"])},
         },
         "currentMetric": {
             "entryId": entry["entryId"],

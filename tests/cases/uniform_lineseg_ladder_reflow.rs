@@ -8,7 +8,7 @@
 //!
 //! 이 테스트가 잠그는 것은 **두 가지를 함께** 지키는 것이다.
 //!
-//! 1. 빈 쪽이 끼어들지 않는다 (쪽수 6, 어느 쪽도 비어 있지 않다).
+//! 1. 독립 Print의 전5쪽과 쪽별 내용이 일치하고, 활성 원문의 글자가 누락·중복되지 않는다.
 //! 2. 문단별 advance 가 한글 모델과 같다 — 쪽수만 맞추고 줄 간격을 틀리게 만드는
 //!    보정(이슈 본문의 "시도했다가 접은 수정")을 되풀이하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -116,11 +116,7 @@ fn advance(tops: &[(u32, usize, f64)], pi: usize) -> Option<f64> {
 
 #[test]
 fn no_blank_page_is_inserted() {
-    assert_eq!(
-        page_count(),
-        6,
-        "합성 사다리를 조판 근거로 쓰면 3쪽 하단이 29px 모자라 빈 4쪽이 끼어든다"
-    );
+    assert_eq!(page_count(), 5, "독립 한컴 Print의 전체 쪽수와 일치한다");
 
     let dir = temp_dir("txt");
     let out = Command::new(rhwp_bin())
@@ -128,30 +124,45 @@ fn no_blank_page_is_inserted() {
         .output()
         .unwrap();
     assert_eq!(out.status.code(), Some(0), "{out:?}");
-    let mut pages: Vec<(String, usize)> = std::fs::read_dir(&dir)
+    let mut pages: Vec<(String, String)> = std::fs::read_dir(&dir)
         .unwrap()
         .filter_map(|e| e.ok().map(|e| e.path()))
         .filter(|p| p.extension().is_some_and(|ext| ext == "txt"))
         .map(|p| {
             let name = p.file_name().unwrap().to_string_lossy().into_owned();
             let body = std::fs::read_to_string(&p).unwrap();
-            (
-                name,
-                body.split_whitespace().collect::<String>().chars().count(),
-            )
+            (name, body.split_whitespace().collect::<String>())
         })
         .collect();
     pages.sort();
     let _ = std::fs::remove_dir_all(&dir);
 
-    assert_eq!(pages.len(), 6, "쪽 텍스트 파일 수: {pages:?}");
-    for (name, chars) in &pages {
-        assert!(*chars > 0, "{name} 이 비어 있다 — 빈 쪽이 끼어들었다");
+    assert_eq!(pages.len(), 5, "독립 Print의 쪽 텍스트 파일 수: {pages:?}");
+    // 같은 입력의 독립 Print 전5쪽에서 센 글자 수다. 쪽 소속과 함께 원문
+    // 전체 순서를 검사하여 같은 수량의 누락·중복으로 통과하지 않게 한다.
+    let print_chars = [529, 474, 217, 89, 128];
+    for ((name, text), expected) in pages.iter().zip(print_chars) {
+        assert!(!text.is_empty(), "{name} 이 비어 있다");
+        assert_eq!(
+            text.chars().count(),
+            expected,
+            "{name}: 독립 Print의 내용 소속"
+        );
     }
-    // 정답지(한글 2022) 3~5쪽의 글자 수와 같아야 한다.
-    assert_eq!(pages[2].1, 217, "3쪽 글자 수");
-    assert_eq!(pages[3].1, 89, "4쪽 글자 수");
-    assert_eq!(pages[4].1, 128, "5쪽 글자 수");
+    let bytes = std::fs::read(sample()).expect("원문");
+    let source = rhwp::parser::parse_document(&bytes).expect("원문 구조");
+    let expected: String = source
+        .sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|paragraph| paragraph.text.chars())
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    let actual: String = pages.into_iter().map(|(_, text)| text).collect();
+    assert_eq!(
+        actual, expected,
+        "활성 원문의 내용·순서·누락·중복을 보존한다"
+    );
 }
 
 #[test]

@@ -11,7 +11,7 @@ pub(super) fn stored_tail_fills_page(
     para_idx: usize,
     para: &Paragraph,
     paragraphs: &[Paragraph],
-    hwp5_stored_pagination_layout: bool,
+    stored_pagination_layout: bool,
     current_height: f64,
     dpi: f64,
     available_height: impl Fn() -> f64,
@@ -40,8 +40,11 @@ pub(super) fn stored_tail_fills_page(
     // ⚠ ② 가 없으면 안 된다. `vpos == 0` 은 새 쪽 상단인 동시에 **"앵커 없음"
     // 센티널**이기도 하다(`#6753` 이 남긴 함정 — 조각 시작 `vpos == 0` 을 무조건
     // 쪽 경계로 읽은 선행 시도가 242쪽을 243쪽으로 늘려 기각됐다).
-    // 저장 사다리가 권위인 **네이티브 HWP5** 조판에 한정한다.
-    if hwp5_stored_pagination_layout
+    // 저장 사다리가 권위인 HWP5/HWPX에 같은 계약을 적용한다. 변경 이력
+    // 투영으로 앞 문단을 재조판했어도 이 경계의 두 저장 줄과 실제 흐름이
+    // 일치하면 꼬리 간격은 쪽 끝 공간이다. 합성 줄이나 이미 지난 경계는
+    // 아래의 출처·흐름 일치 조건이 제외한다.
+    if stored_pagination_layout
         && para_idx > 0
         && current_height > 0.5
         && para

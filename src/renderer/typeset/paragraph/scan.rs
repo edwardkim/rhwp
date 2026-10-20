@@ -22,6 +22,8 @@ pub(in crate::renderer::typeset) struct LineScanPage {
     pub current_height: f64,
     pub has_items: bool,
     pub vpos_ladder_dirty: bool,
+    /// 첫 항목에서 임시 유추한 원점과 구분되는 확정 저장 프레임의 축.
+    pub stored_vpos_base: Option<i32>,
     pub current_footnote_height: f64,
     pub footnote_safety_margin: f64,
     pub current_zone_y_offset: f64,
@@ -57,6 +59,12 @@ pub(in crate::renderer::typeset) fn scan_lines(
     let mut cumulative = 0.0;
     let mut end_line = cursor_line;
     let mut used_saved_tail_vpos_fit = false;
+    // The next source-owned page boundary is relative to this fragment.
+    // After consuming the first page, later page starts in the same paragraph
+    // must remain boundaries rather than becoming an ordinary zero cursor.
+    let stored_page_start = (!page.profile.session_edited())
+        .then(|| super::boundary::stored_page_start_line(para, line_count, cursor_line))
+        .flatten();
     // [#4024] 저장 사다리 신뢰(`saved_tail_vpos_fit`)는 `li..line_count` 만 보고
     // 그때까지 쌓인 `cumulative` 를 모른다. 그래서 한 번 참이 되면 예산을 넘긴
     // 채로 남은 줄을 계속 통과시켜 초과가 단조 증가한다(1480000 pi=724: 잔여
@@ -68,9 +76,10 @@ pub(in crate::renderer::typeset) fn scan_lines(
     // `issue_554` hwp3-sample4 의 유일한 통과도 길이 1 이다.
     let mut tail_fit_chain = 0usize;
     for li in cursor_line..line_count {
-        if forced_page_break_line
-            .map(|break_line| li == break_line && li > cursor_line)
-            .unwrap_or(false)
+        if stored_page_start == Some(li)
+            || forced_page_break_line
+                .map(|break_line| li == break_line && li > cursor_line)
+                .unwrap_or(false)
         {
             break;
         }
@@ -115,6 +124,7 @@ pub(in crate::renderer::typeset) fn scan_lines(
             // 조건: (1) 다음 줄의 vpos==0 (페이지 경계 신호)
             //       (2) 현재 줄의 hwp 좌표 vpos+lh 가 body_available 안
             let hwp_authoritative = !is_tac_picture_stack
+                && para.line_segs.len() == line_count
                 && para
                     .line_segs
                     .get(li + 1)
@@ -124,11 +134,8 @@ pub(in crate::renderer::typeset) fn scan_lines(
                     .line_segs
                     .get(li)
                     .map(|cur| {
-                        let bottom_px = crate::renderer::hwpunit_to_px(
-                            cur.vertical_pos.saturating_add(cur.line_height),
-                            dpi,
-                        );
-                        bottom_px <= page.body_height
+                        line_seg_visible_bounds_px(cur, current_page_vpos_base.unwrap_or(0), dpi)
+                            .is_some_and(|(_, bottom)| bottom <= page.body_height)
                     })
                     .unwrap_or(false);
             let overflow = cumulative + content_h - avail_for_lines;
@@ -138,6 +145,15 @@ pub(in crate::renderer::typeset) fn scan_lines(
             // 없으면 한컴 저장 flow 를 신뢰한다. 문단 전체/표/다단에는 적용하지 않고
             // partial paragraph split 지점에서만 작동시켜 하단 겹침 회귀를 줄인다.
             let saved_tail_vpos_fit = forced_page_break_line.is_none()
+                && para.line_segs.len() == line_count
+                && !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
+                && para.line_segs.get(cursor_line)
+                    .and_then(|seg| line_seg_visible_bounds_px(seg, current_page_vpos_base.unwrap_or(0), dpi))
+                    .is_some_and(|bounds| saved_line_is_anchored_to_current_flow(
+                        bounds,
+                        page.current_height + if cursor_line == 0 { fmt.spacing_before } else { 0.0 },
+                    ))
                 && page.col_count == 1
                 && para.controls.is_empty()
                 && page.has_items
@@ -152,6 +168,7 @@ pub(in crate::renderer::typeset) fn scan_lines(
                     li,
                     line_count,
                     page.body_height,
+                    current_page_vpos_base.unwrap_or(0),
                     dpi,
                 );
             // HWPX의 vpos=0 reset은 일반 writer-local cursor가 아니라
@@ -209,6 +226,7 @@ pub(in crate::renderer::typeset) fn scan_lines(
                         - page.current_zone_y_offset
                         - page.current_bottom_fixed_exclusion)
                         .max(0.0),
+                    current_page_vpos_base.unwrap_or(0),
                     dpi,
                 );
             // [#4054] 각주 안전마진(40px = 3000 HWPUNIT)은 각주 영역과 본문 꼬리가
@@ -231,6 +249,14 @@ pub(in crate::renderer::typeset) fn scan_lines(
                 page.body_height,
                 page.current_height,
             );
+            // 진단은 원본 줄의 수용 근거와 실제 예약 경계를 함께 남긴다.
+            if std::env::var("RHWP_DIAG_SPLIT_BUDGET").is_ok() {
+                eprintln!(
+                    "DIAG_LINE_FIT pi={para_idx} line={li} cursor={cursor_line} current={:.3} cumulative={cumulative:.3} content={content_h:.3} available={avail_for_lines:.3} body={:.3} notes={:.3} zone={:.3} saved_tail={saved_tail_vpos_fit} authoritative={hwp_authoritative} reset_owner={hwpx_reset_fragment_owner} note_reset={native_hwp5_reset_tail_fits_actual_footnote_boundary} note_clear={saved_line_clears_footnote_area} dirty={}",
+                    page.current_height, page.body_height, page.current_footnote_height,
+                    page.current_zone_y_offset, page.vpos_ladder_dirty,
+                );
+            }
             match saved_tail_fit_chain_decision(
                 tail_fit_chain,
                 saved_tail_vpos_fit,
@@ -280,6 +306,62 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
     let only_bodyless_notes = !para.controls.is_empty() && para.controls.iter().all(|control| {
         matches!(control, crate::model::control::Control::Footnote(note) if crate::renderer::stored_footnote_is_bodyless(note))
     });
+    // A note or paragraph-relative floating picture whose marker belongs after
+    // the stored page reset cannot change the control-free prefix's owner. Use the same codepoint space
+    // as control_text_positions; LineSeg.text_start is an original UTF-16 slot.
+    let only_suffix_controls = !para.controls.is_empty()
+        && !para.char_offsets.is_empty()
+        && para.line_segs.get(break_line).is_some_and(|line| {
+            let break_char = para.utf16_pos_to_char_idx(line.text_start);
+            let positions = para.control_text_positions();
+            para.controls.iter().enumerate().all(|(index, control)| {
+                let suffix_owner = match control {
+                    crate::model::control::Control::Footnote(_) => true,
+                    crate::model::control::Control::Picture(picture) => {
+                        !picture.common.treat_as_char
+                            && picture.common.vert_rel_to == crate::model::shape::VertRelTo::Para
+                    }
+                    _ => false,
+                };
+                suffix_owner
+                    && positions
+                        .get(index)
+                        .is_some_and(|&position| position >= break_char)
+            })
+        })
+        && saved_line_range_fits_body_tail(
+            para,
+            start_line,
+            break_line,
+            page.body_height
+                - page.current_footnote_height
+                - page.current_zone_y_offset
+                - page.current_bottom_fixed_exclusion,
+            current_page_vpos_base,
+            dpi,
+        );
+    // 뒤 프레임에 표시가 있는 각주는 앞 본문 조각의 글줄 흐름을 바꾸지 않는다.
+    // 문단 전체에 각주가 있다는 이유로 앞 조각의 원본 소속까지 버리지 않는다.
+    // 제어 슬롯의 실제 UTF-16 줄 소속과 현재 각주 영역 위의 잉크 끝을 함께 확인한다.
+    let notes_owned_by_following_frame = page.profile.hwp5_stored_pagination_layout()
+        && !page.profile.session_edited()
+        && !para.controls.is_empty()
+        && para.controls.iter().enumerate().all(|(index, control)| {
+            matches!(control, crate::model::control::Control::Footnote(_))
+                && crate::renderer::composer::control_slot_line_index(para, index)
+                    .is_some_and(|line| line >= break_line)
+        })
+        && break_line
+            .checked_sub(1)
+            .and_then(|line| para.line_segs.get(line))
+            .and_then(|line| line_seg_visible_bounds_px(line, current_page_vpos_base, dpi))
+            .is_some_and(|(_, bottom)| {
+                bottom
+                    <= page.body_height
+                        - page.current_footnote_height
+                        - page.current_zone_y_offset
+                        - page.current_bottom_fixed_exclusion
+            });
     // 먼저 검증된 이월 개체 상자의 하단에서 본문이 재개하는 비영 원점이다.
     // 이 경우 흐름을 밀지 않는 떠 있는 표가 있어도 앞 글줄의 소유는 보존한다.
     let stored_frame_reset = (page.profile.hwpx_stored_layout()
@@ -300,11 +382,22 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
                         | crate::model::shape::TextWrap::BehindText
                         | crate::model::shape::TextWrap::InFrontOfText))
         });
-    if !(page.profile.hwpx_stored_layout() || page.profile.hwp5_stored_pagination_layout())
+    if page.profile.session_edited()
+        // 앞선 재조판 이력만으로 현재 저장 조각의 소유를 버리지 않는다.
+        // 아래에서 현재 실제 원점과 저장 첫 줄의 일치, 편집되지 않은
+        // 연속 prefix와 본문 안의 마지막 점유 끝을 함께 확인한다.
+        // 재조판된 쪽의 임시 로컬 원점에 맞는다는 사실만으로 원래의
+        // 물리 reset을 복원하지 않는다. 확정 프레임의 같은 축이어야 한다.
+        || (page.vpos_ladder_dirty
+            && page.stored_vpos_base != Some(current_page_vpos_base))
         || para.stored_text_partition_is_dirty()
         || para.cell_format_vpos_dirty
         || page.col_count != 1
-        || (!para.controls.is_empty() && !only_bodyless_notes && !stored_frame_reset)
+        || (!para.controls.is_empty()
+            && !only_bodyless_notes
+            && !only_suffix_controls
+            && !notes_owned_by_following_frame
+            && !stored_frame_reset)
         || start_line >= break_line
         || break_line >= para.line_segs.len()
     {
@@ -334,6 +427,22 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
             return false;
         }
         previous_vpos = Some(seg.vertical_pos);
+    }
+
+    // An anchored start and a subsequent reset do not prove that the whole
+    // prefix occupies this physical column. Close the same saved frame at its
+    // last ink box before allowing it to bypass the ordinary line budget.
+    let available = page.body_height
+        - page.current_footnote_height
+        - page.current_zone_y_offset
+        - page.current_bottom_fixed_exclusion;
+    if para
+        .line_segs
+        .get(break_line - 1)
+        .and_then(|line| line_seg_visible_bounds_px(line, current_page_vpos_base, dpi))
+        .is_none_or(|(_, bottom)| bottom > available)
+    {
+        return false;
     }
 
     para.line_segs.get(break_line).is_some_and(|seg| {
