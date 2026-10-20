@@ -432,12 +432,15 @@ fn fold_hwpx_chart_ole_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
         }
         match ole.chart_switch_fallback.take() {
             Some(fallback) => {
+                // 편집한 차트의 인라인 속성은 저장용 대체 OLE에도 유지한다.
+                let treat_as_char = ole.common.treat_as_char;
                 // [#4319] 파서가 `<hp:chart>` 와 `<hp:default><hp:ole>` 양쪽의
                 // `<hp:caption>` 을 읽는다. 실물은 두 브랜치가 같은 캡션을 중복
                 // 기록하지만, chart 쪽에만 있는 경우 fallback 채택으로 조용히
                 // 사라지지 않게 이월한다.
                 let chart_caption = ole.caption.take();
                 *ole = *fallback;
+                ole.common.treat_as_char = treat_as_char;
                 if ole.caption.is_none() {
                     ole.caption = chart_caption;
                 }

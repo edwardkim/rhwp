@@ -930,6 +930,49 @@ fn actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save() {
 }
 
 #[test]
+fn public_hwp_export_preserves_inline_chart_with_and_without_move() {
+    let bytes = include_bytes!("../fixtures/inline-control-move/chart-before.hwpx");
+    for moved in [false, true] {
+        let mut core = DocumentCore::from_bytes(bytes).unwrap();
+        let source_index = core.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(Control::is_treat_as_char_object)
+            .unwrap();
+        let target = if moved { 1 } else { 0 };
+        if moved {
+            core.move_inline_control_native(
+                &source(body(0), source_index),
+                &caret(body(target), 9),
+            )
+            .unwrap();
+        }
+        let before = serde_json::to_value(core.document()).unwrap();
+        for bytes in [
+            core.export_hwp_with_adapter_snapshot().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            let paragraph = &reopened.document().sections[0].paragraphs[target];
+            assert_eq!(
+                paragraph.text,
+                core.document().sections[0].paragraphs[target].text
+            );
+            assert_eq!(
+                paragraph
+                    .controls
+                    .iter()
+                    .filter(|c| c.is_treat_as_char_object())
+                    .count(),
+                1,
+                "이동 여부 {moved}: 저장 후 차트를 글자처럼 취급해야 한다"
+            );
+            assert_eq!(serde_json::to_value(core.document()).unwrap(), before);
+        }
+    }
+}
+
+#[test]
 fn malformed_source_or_destination_coordinates_reject_without_changes() {
     for source_invalid in [true, false] {
         let mut core = core(vec![
