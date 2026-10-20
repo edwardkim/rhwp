@@ -19,6 +19,8 @@ use crate::renderer::font_rule_layout_name_projection::{
 pub const LANG_COUNT: usize = 7;
 
 mod ascii_punctuation;
+mod missing_fonts;
+pub(crate) use missing_fonts::missing_latin_default;
 mod page_number;
 mod resolved;
 pub use resolved::{
@@ -35,7 +37,8 @@ pub fn resolve_styles(doc_info: &DocInfo, dpi: f64) -> ResolvedStyleSet {
 /// is passed separately to consumers that need it.
 pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> ResolvedStyleSet {
     let profile = document.layout_profile();
-    let mut styles = resolve_styles_with_variant(&document.doc_info, dpi, profile.hwp3_layout());
+    let lookup = missing_fonts::lookup_context(document);
+    let mut styles = resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout());
     super::legacy_font_advances::select_native_programs(document, &mut styles);
     // [#7051] 계보 신호가 없는 저장본의 HFT ASCII 반각 판정은 로드 시 한 번 내려 출처에 둔다.
     styles.hft_ascii_halfwidth |= document.provenance.hft_ascii_halfwidth_witnessed;
@@ -118,6 +121,7 @@ pub(crate) fn resolve_styles_with_environment(
         styles.page_number_font_is_hft,
     ) = page_number::resolve(&document.doc_info, profile.hangul2024_layout());
     if environment.is_some() {
+        let lookup = missing_fonts::lookup_context(document);
         for (style, shape) in styles
             .char_styles
             .iter_mut()
@@ -125,7 +129,7 @@ pub(crate) fn resolve_styles_with_environment(
         {
             for lang in 0..LANG_COUNT {
                 let decision = lookup_font_name_in_environment(
-                    &document.doc_info,
+                    &lookup,
                     lang,
                     shape.font_ids[lang],
                     environment,

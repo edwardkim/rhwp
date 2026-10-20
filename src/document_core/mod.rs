@@ -390,6 +390,12 @@ impl DocumentCore {
         use crate::renderer::style_resolver::lookup_font_name_in_environment;
 
         let mut fonts = std::collections::BTreeSet::new();
+        if let Some(default) =
+            crate::renderer::style_resolver::missing_latin_default(&self.document)
+        {
+            // 표시·측정에 쓰는 기본 face도 같은 브라우저 준비 경로로 공급한다.
+            fonts.insert(default.to_string());
+        }
         let mut font_substitutions = std::collections::BTreeSet::new();
         for (lang_idx, lang_fonts) in self.document.doc_info.font_faces.iter().enumerate() {
             for (font_idx, _) in lang_fonts.iter().enumerate() {

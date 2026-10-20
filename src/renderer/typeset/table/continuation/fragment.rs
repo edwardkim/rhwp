@@ -245,7 +245,13 @@ impl TypesetEngine {
             cursor_row: continuation.row,
             is_continuation: continuation.is_continuation,
             start_cut_is_block: continuation.start_cut_is_block,
-            start_row_height_override: continuation.start_row_height_override,
+            start_row_height_override: physical_rows::pending_plain_row_remaining(
+                continuation,
+                source.row_geometry_table,
+                physical_rows.as_deref(),
+            )
+            .map(|remaining| remaining.max(continuation.start_row_height_override.unwrap_or(0.0)))
+            .or(continuation.start_row_height_override),
             stored_fragment_outer_frame: continuation.stored_fragment_outer_frame,
             stored_fragment_body_bottom_inset: continuation.stored_fragment_body_bottom_inset,
             start_cut,
