@@ -1,0 +1,10 @@
+[
+  {
+    "backend": "native",
+    "rowsEqual": true
+  },
+  {
+    "backend": "wasm",
+    "rowsEqual": true
+  }
+]

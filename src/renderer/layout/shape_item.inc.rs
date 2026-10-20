@@ -409,6 +409,7 @@ impl LayoutEngine {
                                         para,
                                         pic,
                                         self.profile.get(),
+                                        paragraphs.get(para_index + 1),
                                     ),
                                     self.dpi,
                                 );
@@ -424,7 +425,16 @@ impl LayoutEngine {
                                             result_y
                                         },
                                     );
-                                    result_y += host_line_advance;
+                                    result_y = crate::renderer::hwp3_caption_host::stored_flow_end_px(
+                                        para,
+                                        pic,
+                                        self.profile.get(),
+                                        paragraphs.get(para_index + 1),
+                                        pic_y,
+                                        self.dpi,
+                                    )
+                                    .filter(|end| *end <= col_area.y + col_area.height)
+                                    .unwrap_or(result_y + host_line_advance);
                                 }
                             }
                             // [Task #683] 빈 paragraph (텍스트 없음) + Para-relative TopAndBottom

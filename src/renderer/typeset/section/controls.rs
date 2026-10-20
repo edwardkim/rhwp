@@ -510,15 +510,31 @@ impl TypesetEngine {
                                         para,
                                         pic,
                                         self.profile.get(),
+                                        paragraphs.get(para_idx + 1),
                                     ),
                                     self.dpi,
                                 );
-                                Some((
-                                    h,
+                                let source_end = ((st.pages.len(), st.current_column)
+                                    == (picture_host_origin.0, picture_host_origin.1))
+                                    .then(|| {
+                                        crate::renderer::hwp3_caption_host::stored_flow_end_px(
+                                            para,
+                                            pic,
+                                            self.profile.get(),
+                                            paragraphs.get(para_idx + 1),
+                                            picture_host_origin.2,
+                                            self.dpi,
+                                        )
+                                    })
+                                    .flatten()
+                                    .filter(|end| *end <= st.available_height());
+                                // 호스트 글줄은 이미 current_height에 들어 있다. 문단
+                                // 앵커에서 계산한 실제 끝까지 남은 띠만 예약한다.
+                                let advance = source_end.map_or(
                                     (h + mb - absorbed_host_line).max(0.0) + host_line,
-                                    hl,
-                                    hr,
-                                ))
+                                    |end| (end - st.current_height).max(0.0),
+                                );
+                                Some((h, advance, hl, hr))
                             }
                             Control::Shape(s)
                                 if !s.common().treat_as_char
