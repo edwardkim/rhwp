@@ -378,3 +378,50 @@ fn host_surface_resource_error_restores_nested_state_but_retains_partial_paint()
         .render_to_surface_strict(&mut target, &tree(vec![]), Default::default())
         .unwrap();
 }
+
+#[test]
+fn host_surface_svg_image_keeps_device_resolution_after_a_quarter_turn() {
+    let bounds = BoundingBox::new(0.0, 0.0, 16.0, 16.0);
+    let svg = br##"<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M1 2L15 13" stroke="#163f9a" stroke-width="0.75"/><circle cx="9.25" cy="5.5" r="2.25" fill="#b52139"/></svg>"##;
+    let page = PageLayerTree::new(
+        16.0,
+        16.0,
+        LayerNode::leaf(
+            bounds,
+            None,
+            vec![PaintOp::image(
+                bounds,
+                ImageNode::new(1, Some(svg.to_vec())),
+                None,
+            )],
+        ),
+    );
+    let renderer = SkiaLayerRenderer::new();
+    let mut unrotated = surface();
+    unrotated.canvas().scale((4.0, 4.0));
+    renderer
+        .render_to_surface_strict(&mut unrotated, &page, Default::default())
+        .unwrap();
+    let reference = pixels(&mut unrotated);
+    let mut rotated = surface();
+    rotated.canvas().concat(&Matrix::new_all(
+        0.0, -4.0, 64.0, 4.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+    ));
+    renderer
+        .render_to_surface_strict(&mut rotated, &page, Default::default())
+        .unwrap();
+    let actual = pixels(&mut rotated);
+    let mut differences = 0;
+    for y in 0..64 {
+        for x in 0..64 {
+            let destination = (y * 64 + x) * 4;
+            let source = ((63 - x) * 64 + y) * 4;
+            differences +=
+                usize::from(actual[destination..destination + 4] != reference[source..source + 4]);
+        }
+    }
+    assert_eq!(
+        differences, 0,
+        "rotating a host target must preserve the SVG's raster resolution"
+    );
+}
