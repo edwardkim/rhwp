@@ -1911,8 +1911,6 @@ impl TypesetEngine {
                 false,
             );
         }
-        st.advance_column_or_new_page();
-
         // 커서 전진 — [작업 #993] 컷은 절대 유닛 인덱스이므로 누적 없이 대입.
         let empty_opening_next_height = input
             .prepared
@@ -2282,8 +2280,10 @@ impl TypesetEngine {
                 } else {
                     0.0
                 };
+                // 아직 쪽을 넘기지 않았다. 다음 조각 스캔과 같은 신선한
+                // 물리 예산으로 이 잔여가 한 프레임에 속하는지 확인한다.
                 (remaining > content + 0.5
-                    && remaining + repeated_header <= st.available_height() + 0.5)
+                    && remaining + repeated_header <= budget.fresh_page_avail + 0.5)
                     .then_some(remaining)
                 })
             })
@@ -2424,6 +2424,11 @@ impl TypesetEngine {
             continuation.start_cut = cut;
             continuation.start_cut_is_block = false;
             continuation.start_row_height_override = Some(height);
+        }
+        // 내용 컷과 일반·병합 칸의 물리 잔여가 같은 다음 커서를 확정한다.
+        // 완료한 커서 뒤에서 먼저 새 쪽을 만들면 소유 항목 없는 빈 쪽이 남는다.
+        if continuation.row < row_count {
+            st.advance_column_or_new_page();
         }
 
         TableContinuationIteration::Emitted

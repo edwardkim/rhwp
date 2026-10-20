@@ -4456,3 +4456,43 @@ Latin 슬롯을 보호한다. C442의 source-program 보정 후 `Some(HCI Poppy)
 대조 suite024 21PASS/233제외(0.522초), manifest check exit0이다. 테스트 수는 늘리지 않았고
 생성 suite/manifest를 stage하지 않았다. [전쪽 TSV·10쪽 쌍·근거](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/pii-explicit-ttf-hyphen/README.md)를 보존한다.
 이22PASS는 새 전체 nextest 통과가 아니다. 전체 미해결·로드맵153쪽 미달과 PR 승인 보류는 유지한다.
+
+
+## C446 끝 표의 물리 잔여 확정 뒤 쪽 전진
+
+#1418 원 보고서와 #4658 쪽수 계약, #5057의 원본 첫 프레임 허용을 대조했다.
+원본 OSS HWP와 독립 한컴2020 Print는6쪽이다. 269에서 후보247은 마지막 표의
+12행을3쪽에서 모두 소비한 뒤, 내용/표가 없는4쪽을 먼저 만들고 SBOM 구역을5쪽에
+배치했다. 단순히 작은 표로 줄여6쪽으로 맞추면 원본 마지막 행 높이를 훼손한다.
+
+소비 경로는 fragment emit의 실제 컷/ordinary·rowspan 물리 잔여 선택 →
+continuation.advance와 저장 rowspan override → 다음 커서 유무 → column/page advance다.
+기존 코드는 커서 확정 전에 advance하여 완료한 커서 뒤에 항목 없는 쪽을 남겼다.
+전진을 확정 뒤로 옮기고 다음 잔여의 한 프레임 포함 판정에는 동일 scan budget의
+fresh_page_avail을 사용한다. 완료하지 않은 내용/물리 잔여는 기존처럼 전진한다.
+문서·쪽 ID 예외, 빈 쪽 삭제, 표 축소, 기대 쪽수 완화는 추가하지 않았다.
+
+270 Native 빌드는1분56초/exit0, 271의 기존57건은 before247 56PASS/1FAIL에서
+after270 57PASS가 됐다. 기존 #1418 기대는 유지했다. 독립 PDF3쪽 벡터 네 변을
+pt→CSSpx로 측정한275와 전쪽 시각 검증 뒤, 같은 기존 테스트 파일에 마지막 세 행의
+내용 소속·누락/중복과 바로 뒤4쪽 SBOM 구역, 독립 표 네 변±2CSSpx를 함께 추가했다.
+새 검사는 before47에서 표 하단 차이로 FAIL, before247에서 중간 빈 쪽으로 FAIL,
+after270에서 PASS다. 277 standalone 결과만으로 끝내지 않고 prepare 후279 정식
+10개 packet의61건 전체 PASS를 확인했다. fmt/Native Clippy/WASM Clippy/manifest도 exit0.
+첫 harness의 CLI env/extern 누락, 첫 fmt 미반영은 보존하고 수정한 실행과 구분했다.
+
+272의 base4a07 Native와 후보270 Native는 각각6/6쪽이며 최저96.34424/95.88324%.
+278 fresh WASM273은6/6쪽, 최저96.56689%다. raw2px90% 미달은 없다.
+3쪽은 양쪽99.99680%이고 N/W3·4쪽 review/overlay에서 표의 마지막 세 행과 SBOM
+구역을 직접 판독했다. 이 완료 페이지를 독립 좌표 회귀의 근거로 사용한다.
+274에서 before2471~3쪽과 후보1~3쪽, before2475~7쪽과 후보4~6쪽은 각각 PNG
+바이트 동일하다. 이는 수정 자체의 내용 보존 진단이며 쪽 이동을 정식 PDF 통과로
+재인용하지 않는다. Native1/4쪽은 base 대비0.68234/0.15572%p 하락이 이미 존재하므로
+여전히 보정한다. 후보 전6쪽90%만으로0.1%p 보존 계약을 통과했다고 하지 않는다.
+
+273 fresh WASM은 실제 root 재컴파일217.076초/exit0의 Mac locked no-opt 로컬 대체
+빌드다. root pkg/Studio public 및280의 실제7736 초기 JS/WASM 응답 hash와 초기화도
+확인했다. CanvasKit/actual36 및 전체 PR 검증 완료의 증거가 아니다.
+[전쪽 TSV·수정 전 빈 쪽·수정 후 review와 overlay](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/oss-terminal-cursor/README.md)를 보존한다.
+전체 nextest는 C443의11125PASS/24FAIL/45skip 이후 재실행 전이며, 로드맵153쪽 미달·
+다른 실패 보정·전체 corpus 재검증·PR 새 승인은 남아 있다.
