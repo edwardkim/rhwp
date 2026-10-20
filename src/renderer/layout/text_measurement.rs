@@ -140,11 +140,9 @@ fn style_params(style: &TextStyle) -> (f64, f64, f64) {
 /// 본문 빈칸과 같은 advance/양쪽 정렬 증가분을 가진다. 저장 글꼴 공백은
 /// 기존 경로를 유지하고, 줄 채움과 paint가 같은 layout_half_space를 읽는다.
 fn reflow_space_font_size(style: &TextStyle) -> f64 {
-    if style.font_size > 0.0 {
-        style.font_size
-    } else {
-        12.0
-    }
+    // 원본에서 해소된 0 크기의 안내문도 빈칸을 소유하지만 전진폭은 0이다.
+    // 미해소 스타일의 기본 크기만 일반 글리프와 같은 계약으로 공급한다.
+    style.effective_font_size()
 }
 
 /// inline_tabs ext[2] 에서 탭 종류를 추출.
