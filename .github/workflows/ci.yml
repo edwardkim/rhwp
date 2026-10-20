@@ -1082,7 +1082,7 @@ jobs:
         run: node --test scripts/tests/visual-sweep-png-server.test.mjs
 
       - name: Validate Render Diff trigger policy
-        run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
+        run: python3 -m unittest scripts/tests/test_render_diff_workflow.py scripts/tests/test_verify_release_wasm.py
 
       - name: Validate canvaskit-parity batch map
         run: python3 -m unittest scripts/tests/test_canvaskit_parity_batches.py

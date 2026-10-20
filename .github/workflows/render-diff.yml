@@ -49,7 +49,7 @@ on:
           - release
           - dev
       wasm-build-mode:
-        description: 'Manual comparison: auto uses cdylib for release and standard for dev'
+        description: 'Manual comparison: auto preserves standard; cdylib is explicit opt-in'
         required: false
         default: 'auto'
         type: choice
@@ -774,7 +774,7 @@ jobs:
         id: wasm_configuration
         env:
           RHWP_WASM_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-profile'] || 'release' }}
-          RHWP_WASM_BUILD_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-build-mode'] || 'cdylib' }}
+          RHWP_WASM_BUILD_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-build-mode'] || 'standard' }}
         run: python3 scripts/measure_render_diff_wasm.py --profile "$RHWP_WASM_PROFILE" --build-mode "$RHWP_WASM_BUILD_MODE" --describe-build >> "$GITHUB_OUTPUT"
 
       - name: Restore cargo registry & build cache

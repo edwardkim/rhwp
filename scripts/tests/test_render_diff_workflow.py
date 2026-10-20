@@ -119,14 +119,14 @@ class WasmBuildMeasurementTests(unittest.TestCase):
     def test_build_modes_resolve_to_distinct_cache_and_lto_policies(self):
         dev = self.measurement.build_configuration("dev", "auto")
         standard = self.measurement.build_configuration("release", "standard")
-        cdylib = self.measurement.build_configuration("release", "auto")
+        cdylib = self.measurement.build_configuration("release", "cdylib")
         self.assertEqual(dev["cdylib_only"], "0")
         self.assertEqual(standard["crate_types"], "rlib+cdylib")
         self.assertEqual(standard["lto_policy"], "manifest")
         self.assertEqual(cdylib["cdylib_only"], "1")
         self.assertEqual(cdylib["crate_types"], "cdylib")
         self.assertEqual(cdylib["lto_policy"], "override-false")
-        self.assertEqual(cdylib, self.measurement.build_configuration("release", "cdylib"))
+        self.assertEqual(standard, self.measurement.build_configuration("release", "auto"))
         self.assertEqual(len({item["cache_variant"] for item in (dev, standard, cdylib)}), 3)
         with self.assertRaisesRegex(ValueError, "release"):
             self.measurement.build_configuration("dev", "cdylib")
@@ -140,7 +140,7 @@ class WasmBuildMeasurementTests(unittest.TestCase):
         self.assertIn(f"restore-keys: |\n            {prefix}\n", restore)
         self.assertNotIn("${{ runner.os }}-render-diff-cargo-\n", restore)
         self.assertIn("key: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-primary-key }}", workflow)
-        self.assertIn("github.event_name == 'workflow_dispatch' && inputs['wasm-build-mode'] || 'cdylib'", workflow)
+        self.assertIn("github.event_name == 'workflow_dispatch' && inputs['wasm-build-mode'] || 'standard'", workflow)
         self.assertIn("github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main'", workflow)
 
     def test_release_rejects_missing_optimization_and_failed_build(self):
@@ -182,8 +182,8 @@ class WasmBuildMeasurementTests(unittest.TestCase):
         repo = WORKFLOW_PATH.parents[2]
         ci = (repo / ".github/workflows/ci.yml").read_text()
         self.assertIn("wasm-pack build --target web --dev", ci)
-        for name in ("deploy-pages", "npm-publish", "full-renderer-sweep"):
-            self.assertIn("wasm-pack build --target web --release",
+        for name in ("deploy-pages", "npm-publish"):
+            self.assertIn("python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard",
                           (repo / f".github/workflows/{name}.yml").read_text())
 
 

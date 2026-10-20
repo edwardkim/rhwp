@@ -74,6 +74,7 @@ jobs:
 
   build-wasm:
     name: Build WASM
+    timeout-minutes: 45
     needs: validate-release-source
     runs-on: ubuntu-latest
 
@@ -100,7 +101,10 @@ jobs:
             ${{ runner.os }}-wasm-
 
       - name: Build WASM
-        run: wasm-pack build --target web --release
+        run: python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard
+
+      - name: Verify the release WASM before packaging
+        uses: ./.github/actions/verify-release-wasm
 
       - name: Upload WASM artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

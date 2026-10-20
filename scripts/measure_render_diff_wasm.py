@@ -68,7 +68,7 @@ def validate(profile: str, returncode: int, commands: dict) -> None:
 
 def build_configuration(profile: str, mode: str) -> dict:
     if mode == "auto":
-        mode = "cdylib" if profile == "release" else "standard"
+        mode = "standard"
     if mode == "cdylib" and profile != "release":
         raise ValueError("cdylib-only requires the release profile")
     return {

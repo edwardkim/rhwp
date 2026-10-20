@@ -29,6 +29,7 @@ concurrency:
 jobs:
   build:
     name: Build
+    timeout-minutes: 45
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -57,22 +58,10 @@ jobs:
             ${{ runner.os }}-wasm-
 
       - name: Build WASM
-        run: wasm-pack build --target web --release
+        run: python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard
 
-      # --- rhwp-studio 빌드 ---
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        working-directory: rhwp-studio
-        run: npm install
-
-      - name: Copy WASM to public
-        run: |
-          cp pkg/rhwp_bg.wasm rhwp-studio/public/
-          cp pkg/rhwp.js rhwp-studio/public/
+      - name: Verify the release WASM before packaging
+        uses: ./.github/actions/verify-release-wasm
 
       - name: Copy favicon
         run: cp assets/logo/favicon.ico rhwp-studio/public/favicon.ico
@@ -80,6 +69,13 @@ jobs:
       - name: Build rhwp-studio
         working-directory: rhwp-studio
         run: npx vite build --base=/rhwp/
+
+      - name: Verify Pages contains the tested WASM
+        run: >-
+          python3 scripts/verify_release_wasm.py
+          --manifest output/render-diff-build/build.json
+          --package-dir pkg --package-dir rhwp-studio/dist
+          --require-consumption
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

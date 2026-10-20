@@ -75,6 +75,24 @@ stable v* tag push → Release Binary 시작
 > 각 채널의 exact version 상태 판정이 이미 게시된 채널을 건너뛴다.
 > Chrome/Edge/Firefox 브라우저 확장은 스토어 심사 흐름이 달라 현재 수동 업로드한다.
 
+### 배포 WASM의 검사와 재사용 (#7473)
+
+Pages와 package publish는 `measure_render_diff_wasm.py --profile release --build-mode standard`로
+최적화 WASM을 한 번 만든다. 개발용 cdylib opt-in은 배포에서 자동 선택하지 않는다.
+`verify-release-wasm` action이 그 패키지로 기존 대표 Canvas/direct PDF 검사를 실행하고,
+source SHA·실제 브라우저 응답·패키지 JS/WASM 해시를 확인한 후에만 업로드한다.
+검사 실패·입력 누락·환경 준비 실패 시 업로드와 후속 배포는 진행하지 않는다.
+
+npm/VSIX는 검사를 통과한 `wasm-pkg`를 기존 download-artifact 경로로 재사용한다.
+Pages는 같은 패키지를 Vite로 묶고 `dist/rhwp.js`, `dist/rhwp_bg.wasm`이 검사한 바이트와 같은지
+다시 확인한다. WASM 재빌드 없이 검증과 게시 사이의 파일 교체를 검출한다.
+`release-wasm-validation` artifact에 빌드·소비 기록과 대표 이미지가 30일 보존된다.
+이는 대표 문서 검사이며 전체 문서 sweep이나 독립 한컴 정확도 판정을 대신하지 않는다.
+
+작업 branch에서 `deploy-pages.yml`의 수동 실행은 기존대로 Deploy를 건너뛴다.
+`npm-publish.yml`의 `publish=false` 수동 실행은 네 외부 게시 채널을 건너뛰면서 동일 검증 경로를 실행한다.
+기존 exact tag/source guard·게시 권한·production trigger는 변경하지 않는다.
+
 ### Gym 운영 경계
 
 Gym은 AI 에이전트가 rhwp CLI/API를 조합해 과제를 수행하는 기술을 학습·평가하는

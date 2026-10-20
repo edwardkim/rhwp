@@ -130,3 +130,26 @@ Draft 검토 뒤 ready/merge 여부를 결정하며 캐시 변경은 별도 PR�
 
 기본 fixture/페이지/Direct PDF 조건이며 WASM dev 81–121초, 시각 검사 38–57초, 전체 356–495초다.
 로그·원본 API 응답은 로컬 `output/issue-7473/ci-baseline/`에 보존했다.
+
+
+## 2026-10-20 — opt-in과 배포 검증의 역할 분리
+
+사용자 지시에 따라 #7488은 명시적 opt-in으로 유지하고 #7474의 자동 cdylib 선택을 제거한다.
+기준 devel은 `5e2b9bfbf08573a31fa1e11a2445ff63fc0755c0`이다. #7488 통합 head
+`3bfe08e24`의 제품 코드는 기존 옵션과 동일하며 최신 호스트 빌드 안내와 문서 충돌만 정리했다.
+
+- base route: collaborator_self_merge. modifiers: intake_and_review, local_validation,
+  multi_pr_update_branch. 후속 review-only 기록 시 review_only_fast_pass를 적용한다.
+- GitHub 운영 등급 O3: 빌드·검증·artifact 흐름 변경. required context, 권한, 배포 trigger와
+  publish=false 의미는 보존한다. 실제 게시·merge는 이번 구현 검증의 동작이 아니다.
+- PR은 기존 trusted impact 범위에서 standard release로 검사한다. 개발 Frontend dev 빌드는 유지한다.
+- Pages/npm의 기존 WASM 빌드를 계측 wrapper로 교체한다. 같은 pkg로 Canvas/direct PDF를 확인하고
+  JS/WASM 해시·source SHA·실제 브라우저 소비를 대조한 뒤 기존 artifact 업로드로 연결한다.
+- Pages의 Vite dist도 업로드 직전에 대조한다. 다른 run의 PR artifact를 privileged 배포에 가져오지 않는다.
+- action은 WASM을 다시 빌드하지 않는다. Native PDF 비교 CLI만 별도로 준비한다.
+- 검증: Python 빌드/배포 계약, 실제 파일 교체·실패/dirty/stale/cdylib/누락 소비 거부,
+  actionlint, 기존 provenance Node 테스트 및 최신 PR CI. 배포 연결은 exact head에서
+  Pages 수동 실행(Deploy skipped), npm publish=false(외부 게시 skipped)로 확인한다.
+- rollback: 이 변경 commit을 되돌리면 기존 배포 build/upload 연결로 복귀한다.
+- 조판 로직·fixture·baseline은 변경하지 않는다. 앞선 Linux/Mac 수치는 당시 코드의 역사적 증거이며
+  이 새 head의 실행 시간으로 재사용하지 않는다.
