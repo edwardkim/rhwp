@@ -17804,9 +17804,25 @@ impl LayoutEngine {
                 gap >= 0
                     && (gap as f64 * self.dpi / 7200.0 - declared_gap).abs() <= self.dpi / 7200.0
             };
+        // [#8105] 다음 문단이 자기 앞 간격 원점(vpos = 앞 간격)으로 되감기면 저장 제품이 그 앞에서
+        // 쪽을 나눈 기록이다(1342000 55쪽 행 21 p2 vpos 500 = 앞 간격 500, 앞 줄 p1 vpos 1800).
+        // 한/글 2020 은 p0·p1 두 줄을 34.66pt 조각에 담는다 — p1 뒤 줄간격은 다음 프레임 몫이다.
+        let own_before_restart = next.vis_start == 0
+            && next.para_idx == closing.para_idx + 1
+            && first.vertical_pos > 0
+            && first.vertical_pos < last.vertical_pos
+            && i64::from(first.vertical_pos)
+                == crate::renderer::px_to_hwpunit(
+                    styles
+                        .para_styles
+                        .get(next_para.para_shape_id as usize)
+                        .map_or(0.0, |style| style.spacing_before),
+                    self.dpi,
+                ) as i64;
         if !(next.hard_break_before
             || next.stored_frame_break_before
-            || progressing_source_boundary)
+            || progressing_source_boundary
+            || own_before_restart)
         {
             return 0.0;
         }
@@ -17830,7 +17846,8 @@ impl LayoutEngine {
             || last.vertical_pos < 0
             || (!progressing_source_boundary
                 && first.vertical_pos != 0
-                && !positive_source_frame_restart)
+                && !positive_source_frame_restart
+                && !own_before_restart)
             || last.line_height <= 0
             || (!progressing_source_boundary
                 && !stored_zero_restart_is_confirmed(

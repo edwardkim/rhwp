@@ -4722,7 +4722,7 @@ impl TypesetEngine {
             && !(st.paragraph_float_placements.contains_key(&(para_idx, ctrl_idx))
                 && !st.profile.session_edited()
                 && crate::renderer::float_placement::para_offset_consumed_by_page_break(
-                    para, &table.common, st.base_available_height(), self.dpi,
+                    para, table, st.base_available_height(), self.dpi,
                 ))
             && !no_lineseg_host_flows_below
             && fmt.square_host_plan.is_none()

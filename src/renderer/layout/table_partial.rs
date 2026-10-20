@@ -5445,7 +5445,7 @@ impl LayoutEngine {
             && host.paragraphs.get(host.para_index).is_some_and(|anchor| {
                 crate::renderer::float_placement::para_offset_consumed_by_page_break(
                     anchor,
-                    &table.common,
+                    table,
                     col_area.height,
                     self.dpi,
                 )
@@ -5730,8 +5730,16 @@ impl LayoutEngine {
             && enclosing_cell_ctx.is_none()
             && col_node.children.is_empty()
             && (y_start - col_area.y).abs() <= 0.5;
+        // [#8105] 문단 기준 오프셋을 앞 쪽에서 소진한 첫 조각도 이 쪽에서 바깥 위 여백을 연다 —
+        // 예산(`budget.rs` 첫 조각 host_before)과 같은 원점이다. 한/글 2024 `hwpx_sample2` 6쪽 표
+        // 위 괘선 = 본문 위 + 283HU, 156555538 9쪽 = 본문 위 + 140HU(다른 규칙이 이미 여는 형상).
+        let consumed_offset_first_fragment_outer_top = !is_continuation
+            && para_offset_consumed_by_page_break
+            && col_node.children.is_empty()
+            && (y_start - col_area.y).abs() <= 0.5;
         let y_start = if (single_cell_page_fragment
             || generic_continuation_outer_top
+            || consumed_offset_first_fragment_outer_top
             || multirow_reopens_outer_top
             || rowbreak_reopens_outer_top
             || stored_body_frame_opens_outer_top

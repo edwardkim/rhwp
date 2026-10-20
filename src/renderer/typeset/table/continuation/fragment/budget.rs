@@ -349,7 +349,7 @@ impl TypesetEngine {
                 <= 0.0
             && crate::renderer::float_placement::para_offset_consumed_by_page_break(
                 para,
-                &table.common,
+                table,
                 base_available,
                 self.dpi,
             );

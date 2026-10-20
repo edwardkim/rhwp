@@ -6072,6 +6072,9 @@ pub(crate) fn native_single_cell_rowbreak_page_fragment(
 /// 2020) / 77.5px(2024), 78494 p20·p21은 77.5px이다. 모두 본문 상단
 /// 75.6px에 141HU를 더한 값이다. 이전 `col_count > 2` 조건은 76076 p34가
 /// 여백 없이 정렬된 것으로 잘못 판단했다.
+/// [#8105] 표의 문단 기준 세로 오프셋은 첫 조각에서 소진되므로 이어지는 조각의 여백과
+/// 무관하다. 1342000 구역 1 표(오프셋 5280·752HU)의 한/글 2020 이어지는 조각 윗변은
+/// 26·27·28·29·31·34·55쪽 모두 본문 위 + 141HU 다(종전 `vertical_offset == 0` 조건은 여백을 빠뜨렸다).
 pub(crate) fn native_multirow_rowbreak_reopens_outer_top(
     native_hwp5_layout: bool,
     table: &Table,
@@ -6086,7 +6089,6 @@ pub(crate) fn native_multirow_rowbreak_reopens_outer_top(
         && table.outer_margin_top > 0
         && is_para_topbottom_float(&table.common)
         && matches!(table.page_break, TablePageBreak::RowBreak)
-        && signed_hwpunit(table.common.vertical_offset) == 0
 }
 
 /// Physical bottom of a nonterminal single-cell page fragment. Callers use
@@ -6729,15 +6731,22 @@ pub(crate) fn ranges_overlap(a_start: f64, a_end: f64, b_start: f64, b_end: f64)
 ///
 /// 반대로 앵커 자리 + 오프셋이 쪽 안에 여유 있게 들어가면 그 오프셋은 이 쪽에서 유효한
 /// 통상적인 미세 이동이므로 그대로 둔다(1342000 교육부 맵 p25: 200.0 + 10.0 ≪ 585.9).
+///
+/// [#8105] 첫 조각이 시작하려면 최소 조각(25px)뿐 아니라 나눌 수 없는 0행 전체가 들어가야
+/// 한다. `hwpx_sample2.hwp` 표 `pi=69` 는 앵커 1016.48 + 오프셋 4.0 뒤에 26.4px 가 남지만
+/// 0행(한 줄, 선언 28.41px)이 들어가지 않아 한/글 2024 는 표를 6쪽에서 오프셋 없이 연다 —
+/// 저장 첫 프레임 1038.01px 와 PDF 첫 조각 1037.88px 가 본문 아래 닫는 선 − (본문 위 + 바깥
+/// 위 여백) 이다. 오프셋을 그대로 물면 첫 조각이 4px 짧아져 그 몫이 다음 조각으로 넘어간다.
 pub(crate) fn para_offset_consumed_by_page_break(
     para: &Paragraph,
-    common: &CommonObjAttr,
+    table: &Table,
     available_height: f64,
     dpi: f64,
 ) -> bool {
     /// 오프셋을 적용한 자리에 이만큼도 안 남으면 그 자리에서는 조각이 시작될 수 없다.
     const MIN_FRAGMENT_KEEP_PX: f64 = 25.0;
 
+    let common = &table.common;
     if common.treat_as_char || !matches!(common.vert_rel_to, VertRelTo::Para) {
         return false;
     }
@@ -6753,7 +6762,26 @@ pub(crate) fn para_offset_consumed_by_page_break(
         .first()
         .map(|seg| hwpunit_to_px(seg.vertical_pos, dpi))
         .unwrap_or(0.0);
-    anchor_top + hwpunit_to_px(offset, dpi) + MIN_FRAGMENT_KEEP_PX >= available_height
+    // 0행 칸이 모두 한 줄 이하면 그 행은 가를 수 없다 — 첫 조각은 행 전체를 담아야 한다.
+    let first_row_cells = || {
+        table
+            .cells
+            .iter()
+            .filter(|cell| cell.row == 0 && cell.row_span <= 1)
+    };
+    let unsplittable_first_row = first_row_cells().next().is_some()
+        && first_row_cells().all(|cell| {
+            cell.paragraphs.len() <= 1
+                && cell.paragraphs.iter().all(|para| para.line_segs.len() <= 1)
+        });
+    let entry_need = if unsplittable_first_row {
+        first_row_cells()
+            .map(|cell| hwpunit_to_px(cell.height as i32, dpi))
+            .fold(MIN_FRAGMENT_KEEP_PX, f64::max)
+    } else {
+        MIN_FRAGMENT_KEEP_PX
+    };
+    anchor_top + hwpunit_to_px(offset, dpi) + entry_need >= available_height
 }
 
 #[cfg(test)]
