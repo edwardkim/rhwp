@@ -5,6 +5,8 @@ use super::super::kerning::{ExactFontSourceHandle, KerningRunMeasurement, Kernin
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{TabLeaderInfo, TabStop, TextStyle};
 
+mod kopub_symbol_advances;
+
 // ── TextMeasurer trait ──────────────────────────────────────────────
 
 /// 텍스트 폭 측정 추상화 트레이트
@@ -1221,6 +1223,11 @@ fn kopub_char_advance_em(primary_name: &str, bold: bool, c: char) -> Option<f64>
             return Some(em);
         }
     }
+    // [#8099] 한자·전각 기호는 한글 전진폭이 아니라 글꼴 자신의 폭(900 · 낫표 450)이다.
+    // KoPub 과 KoPubWorld 의 바탕·돋움 12개 프로그램이 같은 표를 갖는다.
+    if let Some(units) = kopub_cjk_symbol_units(family, c) {
+        return Some(f64::from(units) / 1000.0);
+    }
     if matches!(family, KoPubFamily::WorldDotum | KoPubFamily::WorldBatang) {
         // World의 ASCII·현대 한글만 실제 여섯 프로그램에서 확인했다.
         // 다른 기호·CJK 블록에 한글의 고정 전진폭을 확대 적용하지 않는다.
@@ -1236,11 +1243,6 @@ fn kopub_char_advance_em(primary_name: &str, bold: bool, c: char) -> Option<f64>
             _ => 872.0,
         };
         return Some(units / 1000.0);
-    }
-    // KoPub Dotum/Batang의 세 굵기 모두 U+203B cmap+hmtx 전진폭은900/1000em이다.
-    // 한컴 Print의 장평98%·자간-3%에서도11.36px로 같으며 반각 fallback이 아니다.
-    if c == '※' {
-        return Some(0.9);
     }
     if is_narrow_punctuation(c) {
         return Some(0.3);
@@ -1269,6 +1271,60 @@ fn kopub_char_advance_em(primary_name: &str, bold: bool, c: char) -> Option<f64>
     }
 
     None
+}
+
+/// [#8099] KoPub 계열의 한자·전각 기호 전진폭(1000em 기준). 한글 전진폭(돋움 872 ·
+/// 바탕 936)과 다르다.
+///
+/// KOPUS 배포 KoPub·KoPubWorld 바탕·돋움 × Light·Medium·Bold 12개 프로그램의
+/// `cmap`+`hmtx` 직독이다. 굵기 사이 차이는 한자 몇 자의 ±2 뿐이라 계열당 한 벌이다.
+/// 한/글 Print 의 내장 서브셋(`pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf`)의
+/// `/W` 도 한자·○·ㆍ·①·→·［］ 0.89–0.90, 「」 0.45 로 같다.
+///
+/// ```text
+///   900  한자(4E00–9FFF · 3400–4DBF · F900–FAFF) · 옛 자모 ㅤ–ㆎ(3164–318E, ㆍ 포함)
+///        전각 ！–～(FF01–FF5E) · ￠–￦(FFE0–FFE6) · 　〃〓 · ※
+///        화살표 · ①② · □○◆ · ☆ · ✓ · ㉠ · ㎜ · Ⅰ (`is_fullwidth_symbol`)
+///   450  、。〈〉《》「」『』【】〔〕
+///   600  ◦ · 894 ₩ · £ 533(돋움)/555(바탕) · ¥ 520(돋움)/706(바탕)
+/// ```
+///
+/// KoPub돋움체·바탕체는 그 밖의 U+0080–U+2FFF 도 글꼴 표([`kopub_symbol_advances`])를 쓴다
+/// — 같은 정본 49쪽 `(×)` 의 `×` 가 ○·→ 와 같은 전진(장평·자간 포함 0.804em)이다.
+///
+/// 현대 한글 호환 자모(ㄱ–ㅣ)·가나는 이 표에 넣지 않는다 — 앞은 한글 전진폭과 같고,
+/// 가나는 KoPubWorld 바탕만 1024 로 달라 한/글 출력으로 확인하지 않았다.
+fn kopub_cjk_symbol_units(family: KoPubFamily, c: char) -> Option<u16> {
+    let batang = matches!(family, KoPubFamily::Batang | KoPubFamily::WorldBatang);
+    // KoPub돋움체·바탕체는 U+0080–U+2FFF 를 글꼴 표 그대로 쓴다(× ± ¶ · Α–Ω · А–я · ─ · ∑ …).
+    // KoPubWorld 는 이 범위의 라틴·기호 일부가 비례폭·굵기별로 달라(돋움 × 559) 아래
+    // 공통 갈래만 쓴다.
+    if matches!(family, KoPubFamily::Dotum | KoPubFamily::Batang) {
+        if let Ok(cp) = u16::try_from(u32::from(c)) {
+            if let Ok(index) = kopub_symbol_advances::KOPUB_SYMBOL_ADVANCES
+                .binary_search_by_key(&cp, |&(code, _, _)| code)
+            {
+                let (_, dotum, batang_units) = kopub_symbol_advances::KOPUB_SYMBOL_ADVANCES[index];
+                return Some(if batang { batang_units } else { dotum });
+            }
+        }
+    }
+    match c {
+        '\u{3001}' | '\u{3002}' | '\u{3008}'..='\u{3011}' | '\u{3014}' | '\u{3015}' => Some(450),
+        '\u{25E6}' => Some(600),
+        '\u{20A9}' => Some(894),
+        '\u{00A3}' => Some(if batang { 555 } else { 533 }),
+        '\u{00A5}' => Some(if batang { 706 } else { 520 }),
+        '\u{3000}' | '\u{3003}' | '\u{3013}' | '\u{203B}' => Some(900),
+        '\u{3164}'..='\u{318E}'
+        | '\u{4E00}'..='\u{9FFF}'
+        | '\u{3400}'..='\u{4DBF}'
+        | '\u{F900}'..='\u{FAFF}'
+        | '\u{FF01}'..='\u{FF5E}'
+        | '\u{FFE0}'..='\u{FFE6}' => Some(900),
+        _ if is_fullwidth_symbol(c) => Some(900),
+        _ => None,
+    }
 }
 
 /// KoPub 양쪽 정렬의 새 줄 경계를 판단할 때 쓰는 실제 글꼴 공백폭.
