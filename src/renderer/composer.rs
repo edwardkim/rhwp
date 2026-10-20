@@ -26,6 +26,7 @@ pub(crate) use nested_table_frames::{
 mod inline_frame_admission;
 mod inline_picture_metrics;
 mod resolved_fields;
+mod stored_marker_frames;
 mod stored_word_tail;
 pub(crate) use inline_picture_metrics::{inline_picture_ascent_ratio, inline_picture_size_hu};
 pub(crate) use stored_word_tail::{project_stored_soft_wraps, projects_current_marker_geometry};

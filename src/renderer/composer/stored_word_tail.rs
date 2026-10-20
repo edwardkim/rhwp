@@ -136,6 +136,9 @@ pub(crate) fn project_stored_soft_wraps(
     dpi: f64,
     supported_inline_picture: bool,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
+    if let Some(projected) = super::stored_marker_frames::project(para, frame, styles, dpi) {
+        return Some(projected);
+    }
     if para.line_segs.len() < 2
         || (!para.controls.is_empty() && !supported_inline_picture)
         || para.text.contains('\n')

@@ -155,7 +155,11 @@ fn normalize_flow(
             // 현재 측정으로 더 적은 줄에 들어간다는 사실만으로 정상 저장 줄을
             // 무효화하지 않는다. 원문 문자에 없는 목록 마커는 문서 순서에서
             // 해소한 실제 기하를 갱신해야 하며, 같은 결과가 채움·높이에 참여한다.
-            if refresh_text && projects_current_marker_geometry(&paragraph, &box_, styles) {
+            let spans_physical_frames =
+                crate::renderer::composer::stored_rows_cross_physical_frame(&paragraph);
+            if (refresh_text || spans_physical_frames)
+                && projects_current_marker_geometry(&paragraph, &box_, styles)
+            {
                 let first = paragraph.line_segs[0].vertical_pos;
                 let frame = box_.frame(first);
                 if let Some((lines, spaces)) =
