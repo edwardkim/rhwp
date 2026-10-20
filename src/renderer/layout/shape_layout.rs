@@ -51,6 +51,36 @@ fn group_point_frame(
     )
 }
 
+/// 저장한 화살촉이 있으면 모양·크기·끝점 소유를 그대로 사용한다.
+/// 연결선 종류의 기본 화살표는 장식 정보가 전혀 없는 생성 경로에만 적용한다.
+fn connector_line_style(
+    drawing: &DrawingObjAttr,
+    link_type: crate::model::shape::LinkLineType,
+) -> super::super::LineStyle {
+    use super::super::ArrowStyle;
+    use crate::model::shape::LinkLineType;
+    let mut style = drawing_to_line_style(drawing);
+    if style.start_arrow == ArrowStyle::None && style.end_arrow == ArrowStyle::None {
+        let both = matches!(
+            link_type,
+            LinkLineType::StraightBoth | LinkLineType::StrokeBoth | LinkLineType::ArcBoth
+        );
+        let one = matches!(
+            link_type,
+            LinkLineType::StraightOneWay | LinkLineType::StrokeOneWay | LinkLineType::ArcOneWay
+        );
+        if both {
+            style.start_arrow = ArrowStyle::Arrow;
+            style.start_arrow_size = 4;
+        }
+        if both || one {
+            style.end_arrow = ArrowStyle::Arrow;
+            style.end_arrow_size = 4;
+        }
+    }
+    style
+}
+
 /// 글상자에 공백이 아닌 실제 텍스트가 한 글자라도 있는지.
 fn textbox_has_visible_text(text_box: &TextBox) -> bool {
     text_box
@@ -1645,29 +1675,43 @@ impl LayoutEngine {
                     1.0
                 };
 
+                // 선 없음은 남은 두께·화살촉 정보로 가시 직선이 되지 않는다.
+                // 회전된 묶음 자식과 같은 경로 표현을 사용하고 소유·선택 영역은
+                // 보존한다. 일반 직선의 최소 두께 fallback까지 내려가지 않는다.
+                if line.drawing.border_line.attr & 0x3F == 0
+                    && line
+                        .connector
+                        .as_ref()
+                        .is_none_or(|connector| connector.control_points.is_empty())
+                {
+                    let (start, end) = self.line_endpoints_in_rendering_frame(
+                        line,
+                        render_x,
+                        render_y,
+                        sx,
+                        sy,
+                        matrix_positioned,
+                    );
+                    let (mut kind, bbox) = affine_line::rendered_line(line, start, end, self.dpi);
+                    if let RenderNodeType::Path(path) = &mut kind {
+                        path.section_index = Some(section_index);
+                        path.para_index = Some(para_index);
+                        path.control_index = Some(control_index);
+                        path.transform = transform;
+                        path.cell_index = cell_index;
+                        path.cell_para_index = cell_para_index;
+                        path.outer_table_control_index = outer_table_control_index;
+                    }
+                    parent
+                        .children
+                        .push(RenderNode::new(tree.next_id(), kind, bbox));
+                    return;
+                }
+
                 // 연결선: 제어점이 있으면 Path로, 없으면 Line으로 렌더링
                 if let Some(ref conn) = line.connector {
                     if !conn.control_points.is_empty() {
-                        let mut line_style = drawing_to_line_style(&line.drawing);
-                        // 연결선 화살표: LinkLineType → ArrowStyle
-                        use crate::model::shape::LinkLineType;
-                        match conn.link_type {
-                            LinkLineType::StraightOneWay
-                            | LinkLineType::StrokeOneWay
-                            | LinkLineType::ArcOneWay => {
-                                line_style.end_arrow = super::super::ArrowStyle::Arrow;
-                                line_style.end_arrow_size = 4; // 중간 크기
-                            }
-                            LinkLineType::StraightBoth
-                            | LinkLineType::StrokeBoth
-                            | LinkLineType::ArcBoth => {
-                                line_style.start_arrow = super::super::ArrowStyle::Arrow;
-                                line_style.start_arrow_size = 4;
-                                line_style.end_arrow = super::super::ArrowStyle::Arrow;
-                                line_style.end_arrow_size = 4;
-                            }
-                            _ => {}
-                        }
+                        let line_style = connector_line_style(&line.drawing, conn.link_type);
                         // 제어점으로 경로 생성
                         let mut commands = Vec::new();
                         let (conn_x1, conn_y1) = self.line_point_in_rendering_frame(
@@ -1800,12 +1844,19 @@ impl LayoutEngine {
                             }
                         }
 
-                        let style = ShapeStyle {
-                            stroke_color: Some(line_style.color),
-                            stroke_width: line_style.width,
-                            stroke_dash: line_style.dash.clone(),
-                            fill_color: None,
-                            ..Default::default()
+                        // 비표시 연결선도 원본 제어점·선택 끝점을 유지한다.
+                        // 직선 fallback으로 바꾸지 않고 획·화살촉만 제외한다.
+                        let line_visible = line.drawing.border_line.attr & 0x3F != 0;
+                        let style = if line_visible {
+                            ShapeStyle {
+                                stroke_color: Some(line_style.color),
+                                stroke_width: line_style.width,
+                                stroke_dash: line_style.dash.clone(),
+                                fill_color: None,
+                                ..Default::default()
+                            }
+                        } else {
+                            ShapeStyle::default()
                         };
                         let node_id = tree.next_id();
                         let mut path_node = PathNode::new(commands, style, None);
@@ -1819,8 +1870,9 @@ impl LayoutEngine {
                         // 연결선: 시작/끝 좌표 (선 선택 방식용) + 화살표
                         path_node.connector_endpoints =
                             Some((path_start_x, path_start_y, path_end_x, path_end_y));
-                        if line_style.start_arrow != super::super::ArrowStyle::None
-                            || line_style.end_arrow != super::super::ArrowStyle::None
+                        if line_visible
+                            && (line_style.start_arrow != super::super::ArrowStyle::None
+                                || line_style.end_arrow != super::super::ArrowStyle::None)
                         {
                             path_node.line_style = Some(line_style);
                         }
@@ -1832,25 +1884,7 @@ impl LayoutEngine {
                         parent.children.push(node);
                     } else {
                         // 제어점 없는 연결선 → 직선으로 렌더링
-                        let mut line_style = drawing_to_line_style(&line.drawing);
-                        use crate::model::shape::LinkLineType;
-                        match conn.link_type {
-                            LinkLineType::StraightOneWay
-                            | LinkLineType::StrokeOneWay
-                            | LinkLineType::ArcOneWay => {
-                                line_style.end_arrow = super::super::ArrowStyle::Arrow;
-                                line_style.end_arrow_size = 4;
-                            }
-                            LinkLineType::StraightBoth
-                            | LinkLineType::StrokeBoth
-                            | LinkLineType::ArcBoth => {
-                                line_style.start_arrow = super::super::ArrowStyle::Arrow;
-                                line_style.start_arrow_size = 4;
-                                line_style.end_arrow = super::super::ArrowStyle::Arrow;
-                                line_style.end_arrow_size = 4;
-                            }
-                            _ => {}
-                        }
+                        let line_style = connector_line_style(&line.drawing, conn.link_type);
                         let ((x1, y1), (x2, y2)) = self.line_endpoints_in_rendering_frame(
                             line,
                             render_x,

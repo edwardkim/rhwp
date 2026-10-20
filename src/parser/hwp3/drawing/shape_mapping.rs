@@ -239,6 +239,24 @@ pub(super) fn map_to_shape_object(
                 shape_attr.render_sy = (p[5] - p[3]) / height;
                 shape_attr.render_tx += p[0] * f64::from(HWP3_UNIT_SCALE);
                 shape_attr.render_ty += p[1] * f64::from(HWP3_UNIT_SCALE);
+                // 축에 평행한 직선의 실제 끝점은 표 74의 object_size와
+                // shape_info에서 이미 복원했다. 오래된 평행사변형의 축척을
+                // 다시 곱하면 편집 뒤 남은 크기로 치수선 길이가 바뀐다.
+                // 독립 한컴 재저장도 이 선을 object_size 길이로 기록한다.
+                // 회전·전단·음수 축의 일반 affine은 이 정규화 대상이 아니다.
+                if matches!(&final_shape, ShapeObject::Line(_))
+                    && shape_attr.render_b == 0.0
+                    && shape_attr.render_c == 0.0
+                    && shape_attr.render_sx >= 0.0
+                    && shape_attr.render_sy >= 0.0
+                {
+                    if shape_attr.render_sx > 0.0 {
+                        shape_attr.render_sx = 1.0;
+                    }
+                    if shape_attr.render_sy > 0.0 {
+                        shape_attr.render_sy = 1.0;
+                    }
+                }
             }
         }
     }
@@ -329,7 +347,14 @@ pub(super) fn map_to_shape_object(
             solid: Some(crate::model::style::SolidFill {
                 background_color: effective_rgb,
                 pattern_color: header.basic_attr.pattern_color,
-                pattern_type: header.basic_attr.pattern_type as i32,
+                // 표69의 bit24/25가 모두 없으면 HWP3 단색 면이다.
+                // HWP5의 무늬 없음은 -1이며 0을 쓰면 수평 hatch로 바뀐다.
+                // 실제 hatch/bitmap 표식은 이 단색 정규화로 없애지 않는다.
+                pattern_type: if header.basic_attr.pattern_type & ((1 << 24) | (1 << 25)) == 0 {
+                    -1
+                } else {
+                    header.basic_attr.pattern_type as i32
+                },
             }),
             gradient,
             image: None,
@@ -349,7 +374,16 @@ pub(super) fn map_to_shape_object(
     // 빈 글상자 LIST 제거 → 개방). 빈 글상자는 보이는 내용이 없어 프레임 생략에도
     // 시각 손실이 없다.
     let text_box = if !parsed_paragraphs.is_empty() {
+        let centered = header.basic_attr.options & (1 << 4) != 0;
         Some(TextBox {
+            // 표69 bit4의 가운데 정렬을 공통 IR과 HWP 저장 LIST_HEADER에 전달한다.
+            // 글상자는 파싱용 정렬과 왕복용 bit5를 함께 소비한다.
+            list_attr: if centered { 1 << 5 } else { 0 },
+            vertical_align: if centered {
+                crate::model::table::VerticalAlign::Center
+            } else {
+                crate::model::table::VerticalAlign::Top
+            },
             margin_left: hwp3_margin_to_i16(header.basic_attr.textbox_margin[0]),
             margin_top: hwp3_margin_to_i16(header.basic_attr.textbox_margin[1]),
             margin_right: hwp3_margin_to_i16(header.basic_attr.textbox_margin[0]),

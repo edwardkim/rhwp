@@ -4752,3 +4752,150 @@ snapshot SHA-256은 양쪽
 용량 경계다. C449의 전쪽 시각 증거를 C450의 새로운 전쪽 실행으로 재명명하지 않는다.
 최신 source의 최종 corpus/전쪽·전체 회귀·나머지 실패 보정은 계속 남는다.
 로그와 라이브러리·진단 JSON은 ignored repair355/356/357/358/359에만 보존한다.
+
+
+## C451 — #1892의 메타데이터 원점과 치수선 paint 재검토(진행 중)
+
+부모는 `93d9cd8e596f27c6ce170c2ce55ddf45b6ed1b62`다. 361 Native와362 fresh WASM을
+실제 재빌드했다.362는 `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며
+Docker 최적화 결과가 아니다. 루트 pkg/Studio public/동결 pkg의 hash가 같고365의
+새 headless Studio7736 초기화 응답도 검증했다. 기본 Windows CDP 주소로 접속한
+첫 시도는 ENETUNREACH로 초기화 전에 실패했으며 INVALID로 분리했다.
+초기화만으로 문서 paint·actual36 통과를 주장하지 않는다.
+
+### 기존 계약의 계보와 현재 실패
+
+원 이슈1892 → PR1905 → 원 수정489bd3829f/merge23aea574ac → 후속2993cd35ed와
+0bbb7c366c → 이 브랜치 C101(5c2dd53c64)의 좌표 생산·소비를 읽었다.
+원 PR은 metadata offset을 rendering translation으로 승격하지 않는 계약이다.
+2993의 모든 노드 누적 offset 기대값은 구조 묶음 identity와 충돌한다.
+현재 원본의 중첩 묶음 offset(1352,0)은 메타데이터로 보존되며, 자식의 absolute
+행렬이 실제 이동을 소유한다. 현재 기존4검사의 재실행은3PASS/1FAIL이다.
+메타데이터 검사를 먼저 통과시키려고 renderer를 다시 이동시키지 않았다.
+원 PR의 과거 자기정합 검증을 현재 독립 Print 검증 면제로 쓰지 않는다.
+
+원본 SHA-256 `ab6bb4e80c4b0f4228e62bbb3d180229e5cef5f52b20fddee8849bf1c7b4c438`,
+Print PDF `bde778b26c91635f14bf14272eca8b9199da7be7f9d4e0750b7402768b640bc9`를
+고정했다.364에서 원본·공개 export adapter 저장본의 전2쪽을 각각 Native/fresh WASM으로
+산출했다. 최저98.83706/98.83714%, 미달0,2/2쪽이다. 이 실행은 canonical 기본96DPI를
+실행 전에 고정했으며, 과거819/820의 원 producer를 찾지 못해 과거 점수와 수치 대조하지
+않았다. 두 번째 빈 쪽의100%를 실제 도형 보호용 페이지로 선택하지 않는다.
+점수 통과 뒤 판독에서 치수선의 길이 차이가 확인되어 완료·검사 변경은 보류했다.
+
+### 원본 끝점의 중복 축척
+
+같은 원본을 MCP engine2020,timeout1800으로 독립 HWPX 재저장했다.
+job `abd99d81-6e7c-45da-88b8-bf26b4e57abf`는10초 succeeded,
+Hancom11.0.0.9136/direct DLL host/preprocess none이며 산출물 SHA-256은
+`ae8014cbf25a5f9ebaddd076ec4145c2ae8907893792eaaac4e77db08f533209`다.
+새 HWPX를 원본이나 기존 PDF 대신 새 정답 입력으로 바꾸지 않고 source geometry 대조에만 쓴다.
+원본의6개 축 평행 직선은 object_size/shape_info에서 이미 물리 끝점을 복원했지만
+그 후 오래된 평행사변형 축척을 곱했다. 기존 후보는 독립 재저장의 끝점과 최대
+2648HU 차이가 났다. 축 평행·비음수 직선만 실제 길이를 한 번 소비하도록 정규화한367은
+6개 모두 원본 한 단위4HU 이내(최대2.379484HU)다. 회전·전단·음수 축은 그대로다.
+
+368 Native 원본/공개 저장본은 각각 전2쪽 최저99.42692%,371 fresh WASM은
+각각99.42695%, 쪽수2/2·미달0이다. 아직 아래 비표시 소비 결함이 남아 있으므로
+이 중간 후보의 수치를 최종 완료로 인용하지 않는다.370의 기존192DPI 선택 대조군은
+sample11의2/50/100쪽과 sample16의6/33쪽 모두361→367 점수 변화0이다.
+sample11 50쪽89.13433%는 양쪽 모두 미달이며 별도 보정이 계속 필요하다.
+선택5쪽을 전151/64쪽 수용으로 쓰지 않는다.
+
+### 선 없음의 일반 직선 소비(검증 진행 중)
+
+원본 중첩 묶음의 첫 직선은 lineColor0x10000000·선 종류0·남은 두께11/source unit과
+끝 화살촉 정보를 가진다. 독립 한컴 재저장도 NONE으로 보존한다. 그러나 일반 직선
+소비가 drawing_to_line_style의0.5px 최소 두께 fallback으로 들어가 선과 화살촉을
+그렸다. 회전된 자식의 기존 affine_line 경로는 이미 비표시 Path를 쓰고 있었다.
+일반 경로도 같은 비표시 표현과 실제 소유·선택 영역을 보존하도록 보정 중이다.
+372의 ignored 진단 검사는 기존 나머지3건 PASS·이 sentinel 재표시1FAIL을 확인했다.
+정식 기존 테스트의 기대값은 아직 바꾸지 않았다.373 Native/374 전쪽 결과와
+최종 source의 fresh WASM·대표 직접 판독·정식 회귀가 완료되기 전 수용하지 않는다.
+
+독립 PDF의 채워진 치수선 path에서 shaft 끝이 아닌 실제 화살촉 끝점을 읽었다.
+248mm 선의(96.668,671.146)/(96.668,127.301)pt는841pt 용지의 상단96dpi CSS
+좌표(128.890667,226.472)/(128.890667,951.598667)다. 전쪽90%·해당1쪽 양쪽98% 및
+직접 판독을 최종 source에서 충족한 뒤, 실제 source 소속과 누락·중복·비표시 보존 관계에
+±2CSSpx 회귀를 함께 연결할 계획이다. 현재 출력 좌표를 기대값으로 복사하지 않는다.
+
+363~374의 원본·재저장본·동결 라이브러리·JSON·로그는 ignored output에만 둔다.
+이 단계 이후에도 다른 기존 실패·sample11 미달·OSS 괘선·로드맵153쪽·전체 회귀/시각
+corpus·유입 기능·actual36이 남으며 PR 전체 준비 완료가 아니다. PR은 별도 승인을 받는다.
+
+373/374의 비표시 보정 Native와 ignored372 진단은4PASS를 확인했다. 정식 테스트 변경은
+아직 없다. 형식 정리 후375를 다시 빌드했고377의 원본/공개 저장본 전2쪽 최저는
+각각99.47674%, 쪽수2/2·미달0이다. 원본/저장본1쪽 review와 원본 standalone overlay를
+직접 열었으며 치수선 길이·비표시 동반선 제거와 내용 보존을 대조했다. 작은 글자 획과
+가는 괘선 차이는 남아 있고 전체 픽셀 일치라는 뜻이 아니다.376 fresh WASM 빌드와
+378 전쪽 대조가 진행 중이다.375 이후의 정식 회귀·최종 소비 경로와 대조군은 미완료다.
+
+
+### C451 최종 도형 표시 의미와 저장 경로의 보정
+
+이 단계는 같은 원본을 유지하고 일반 선·연결선의 실제 paint까지 보정했다.
+축 평행 직선의 중복 축척을 HWP3 생산 단계에서 제거하고, 공통 layout은 선 없음의
+잔여 두께·화살촉을 다시 그리지 않는다. 비표시 곡선 연결선은 원본 Cubic 제어점과
+선택 끝점을 보존하며 획·화살촉만 제외한다. 가시 연결선은 source에 있는 화살촉의
+종류·크기·끝 소유를 우선한다. 양쪽 source 장식이 없는 기존 UI 생성 경로의
+LinkLineType 기본 화살표는 유지한다. 일반·제어점 연결선 모두 같은 style 결과를 소비한다.
+
+독립 한컴 재저장과 추가 Print에서 글상자 배경에 생긴 줄무늬도 확인했다. HWP3 표69의
+pattern bit24/25가 없는 단색을 HWP5의 pattern0으로 저장해 수평 hatch가 생겼다.
+HWP3 생산 단계에서 단색만 무늬 없음(-1)으로 정규화하고 실제 hatch/bitmap 표식은 보존한다.
+표69 options bit4의 가운데 정렬도 IR vertical_align과 저장용 TextBox list_attr bit5에
+함께 전달한다. 후자는392의4PASS/1FAIL에서 실제 Center→Top 왕복 손실로 검출했다.
+serializer 일반 정책을 바꾸거나 테스트에서 Top을 새 정답으로 쓰지 않았다.
+
+최종 Native393(source parent93d9cd8e59+runtime patch
+`362a6267baba2a217610c88c8ab20fde29809ebb84cb95b07f1e60ba84aa9050`) 빌드는
+147.688초 exit0,CLI SHA-256 `4a2f63a7423c3f0c87c715af569a9a9f4788ca3386cd7bca1446a94bbf9bc0a0`,
+lib `8021fb2d8f3c48d802ad625644994843134a06651e2919e03a549c5aea928714`다.
+fresh WASM394는 같은 runtime2파일을 실제 재컴파일하여256.011초 exit0,
+WASM `174ef06e842525682c71e2368c755f327890cd9899964c16ddef6effd4aa4aa2`,
+JS `23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591`다.
+root pkg/Studio public/frozen hash와398의 실제 초기화 응답을 확인했다.
+Mac locked wrapper web/pkg/no-opt 로컬 대체 빌드이며 Docker 최적화 통과가 아니다.
+초기화 응답 일치는 actual36의 문서 paint/CanvasKit 검증을 대신하지 않는다.
+
+| 최종 입력 조건 | Native400 최저 | fresh WASM396 최저 | 전체 쪽수/각 backend | 미달 |
+| --- | --- | --- | --- | --- |
+| 원본 | 99.98735% | 99.98735% | 2/2 | 0 |
+| 공개 adapter 저장 | 100.00000% | 100.00000% | 2/2 | 0 |
+| 선 없음 Cubic 연결선 | 100.00000% | 100.00000% | 2/2 | 0 |
+| 원본 화살촉을 가진 가시 Cubic 연결선 | 99.94939% | 99.94939% | 2/2 | 0 |
+
+네 입력의 전쪽·페이지 순서를 각각 산출했다(새 비교16 backend-pages).
+96DPI/compat2022·canonical PDFium smooth_rgb_v1·raw2px/90% 문턱·같은4글꼴 경로다.
+각 편집본은 정확한 새 HWP 입력을 engine2020/timeout1800/direct DLL host/Print method0/
+preprocess none으로 독립 인쇄했다. 추가3개 기준 PDF와 hash는 아래 asset README에 있다.
+기존 실패 입력·원본·이전 PDF를 덮어쓰지 않았다.395는 잘못 고른 Python의 PDFium 부재로
+캡처 시작 단계에서 실패했다. Print receipt/입력은 유효하며 그대로 재사용하고,400은
+확인된 PDFium Python에서 별도 산출했다. 실패 PNG를 수용하지 않았다.
+
+원본에 대한 고정4a07 devel Native384/fresh WASM387의1쪽은99.38299/99.38301%다.
+최종1쪽은 각각+0.60436/+0.60434%p,2쪽은 변화0이며0.1%p 후퇴가 없다.
+기존 후보361/362의98.83706/98.83714%를 최종 후보 통과로 재인용하지 않는다.
+384/386 WASM의 Chrome/API 실패는 제외했다.387은 현재 실제 fontEnvironment:null과
+같은 None을 명시하여 구형 base 자동 선택 API 차이만 분리한 유효한 전2쪽 결과다.
+
+원본/저장본과 선 없음/가시 연결선의 Native/fresh WASM 대표 review와 overlay를 직접 열었다.
+248mm 끝점과 비표시 동반선 소유, 글상자 단색·가운데 정렬, OpenArrow 종류·시작 장식 부재,
+주변 표/본문 보존을 확인했다. 작은 화살촉/가는 획·글자 래스터 경계는 남아 있다.
+100% raw는2px 관용 실루엣이며 RGB 동일이 아니다. 모든 입력의2쪽은 실제 PNG/PDF
+잉크가 없는 빈 쪽이므로 핵심 px 핀으로 선정하지 않는다. public-saved1쪽 양쪽100%와
+원본1쪽 양쪽99%대에서 같은 치수선을 함께 보호한다.
+
+동일한 최종 ignored 진단5검사는381에서3PASS/2FAIL→393에서5PASS다.
+별도399의 원본7333은14PASS,7688은SVG/실제 Native PNG2PASS다.397에서7333을 처음
+컴파일할 때 누락한 roxmltree 외부 인자는399에서 바로잡았으며 제품 결함/검사 PASS로
+계산하지 않았다. 시각 선행 조건과 직접 판독을 완료한 뒤에만 기존 issue_1892 정식 파일을
+갱신했다. metadata offset/affine/깊이/자식 순서·내용/표 소속·누락·중복을 보존하고,
+독립 PDF 실제 화살촉 끝점을96DPI CSS ±2px로 검사한다. 기존 탭/널 표식 검사는 유지한다.
+403의 자동 수집 prepare/fmt,정식 nextest5+14+2=21PASS,Native/WASM Clippy와 고정 base manifest가 모두 exit0이다. 전체 회귀·workspace/all-target/Skia 전체 게이트는 이 결과에 포함하지 않는다.
+
+최종 TSV12개와 대표 review/overlay24개는
+[안정 증적](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/group-source-semantics/README.md)에
+복사했고 원본 hash가 같다. 중간 JSON/log/진단 source는 ignored output의
+repair360~403에만 둔다. 다른 실패·sample11 50쪽 미달·OSS 괘선·로드맵153쪽·전체
+회귀/시각 corpus·유입 기능·actual36은 계속 보정/검증할 대상이다. PR 전체 완료나 제출
+승인이 아니며 PR은 사용자에게 결과 보고 후 별도 승인받는다.
