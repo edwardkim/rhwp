@@ -478,12 +478,9 @@ impl TypesetEngine {
         // 줄+각주 크기 실측 정합). 앵커 전부가 조각 밖이면 예약을 해제하되
         // 첫 앵커 직전을 예산 상한으로 재스캔한다 (앵커 줄은 자기 각주와
         // 함께 다음 조각으로 — 한글 규칙).
-        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0)
-            + if st.current_footnote_height <= 0.0 {
-                fn_margin
-            } else {
-                0.0
-            };
+        // [#7732] 표 각주를 이 쪽에서 빼면 남는 각주는 이미 정해진 쪽 각주뿐이라 경계가 확정이다.
+        // 그 경계를 지키는 40px 여유도 함께 되돌린다(한/글은 각주 구분선 바로 위까지 행을 놓는다).
+        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0) + fn_margin;
         let is_split_fragment = end_row < row_count || split_end_limit > 0.0;
         if table_fn_reserved > 0.5
             && !is_continuation

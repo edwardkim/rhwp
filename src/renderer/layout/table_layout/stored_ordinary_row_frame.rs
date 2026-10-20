@@ -406,10 +406,15 @@ impl LayoutEngine {
                     }
                 })
                 .is_some_and(|line| {
-                    line.line_spacing > 0
+                    // 저장 줄의 뒤 줄간격 몫, 그리고 [#7732] 재조판 행과 같은 쪽 끝 빈 꼬리
+                    // 상한(`complete_row_blank_tail_is_absorbed`)까지 흡수한다 — 내용이 모두
+                    // 끝난 행의 선언 높이 잔여는 다음 쪽에 빈 띠로 이어받지 않는다
+                    // (issue1937 32쪽 끝 행: 선언 131.6px 중 125.3px 만 그리고 33쪽은 다음 행).
+                    (line.line_spacing > 0
                         && tail
                             <= hwpunit_to_px(line.line_spacing, self.dpi)
-                                + hwpunit_to_px(2, self.dpi)
+                                + hwpunit_to_px(2, self.dpi))
+                        || self.complete_row_blank_tail_is_absorbed(tail)
                 })
         })
     }
