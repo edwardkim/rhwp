@@ -1,0 +1,349 @@
+{
+  "head_before_review": "66859c77039400713917b45cd1f8823ec9de2844",
+  "scope": "기존 쪽번호 검사 기대값/소유 관계 재검토. 제품 구현 변경 없음. 원본/여백4건12쪽+style7336전6쪽+1937전50쪽, backend별68쪽. 전체PR통과 아님.",
+  "producer_path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/producer.json",
+  "producer_sha256": "a1d23d51308933caffbfd5fe7f0331335b9ec20a1ae35669a2270aac542b7243",
+  "visual_results": [
+    {
+      "backend": "native",
+      "key": "footer15",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "minimum": "95.17397",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/footer15/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "native",
+      "key": "bottom15",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "minimum": "95.17397",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/bottom15/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "native",
+      "key": "original1133-hwp",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "minimum": "95.17397",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/original1133-hwp/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "native",
+      "key": "original1133-hwpx",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "minimum": "95.17148",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/original1133-hwpx/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "native",
+      "key": "style7336",
+      "counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "minimum": "95.13463",
+      "worstPage": 5,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/style7336/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "native",
+      "key": "footnote-number25",
+      "counts": {
+        "rhwp": 50,
+        "pdf": 50
+      },
+      "minimum": "94.90661",
+      "worstPage": 22,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/footnote-number25/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "wasm",
+      "key": "footer15",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "minimum": "95.18760",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/footer15/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "wasm",
+      "key": "bottom15",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "minimum": "95.18760",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/bottom15/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "wasm",
+      "key": "original1133-hwp",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "minimum": "95.18760",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/original1133-hwp/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "wasm",
+      "key": "original1133-hwpx",
+      "counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "minimum": "95.18502",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/original1133-hwpx/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "wasm",
+      "key": "style7336",
+      "counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "minimum": "94.96148",
+      "worstPage": 5,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/style7336/silhouette.tsv",
+      "directReading": "pending"
+    },
+    {
+      "backend": "wasm",
+      "key": "footnote-number25",
+      "counts": {
+        "rhwp": 50,
+        "pdf": 50
+      },
+      "minimum": "94.96082",
+      "worstPage": 22,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/footnote-number25/silhouette.tsv",
+      "directReading": "pending"
+    }
+  ],
+  "important_pages": {
+    "original1133-hwp": {
+      "page": 3,
+      "css_tolerance": 2,
+      "native_raw": "100.00000",
+      "wasm_raw": "100.00000"
+    },
+    "original1133-hwpx": {
+      "page": 3,
+      "css_tolerance": 2,
+      "native_raw": "100.00000",
+      "wasm_raw": "100.00000"
+    },
+    "bottom15": {
+      "page": 3,
+      "css_tolerance": 2,
+      "native_raw": "100.00000",
+      "wasm_raw": "100.00000"
+    },
+    "style7336": {
+      "page": 6,
+      "css_tolerance": 2,
+      "native_raw": "99.88197",
+      "wasm_raw": "99.88244"
+    },
+    "footnote-number25": {
+      "page": 25,
+      "css_tolerance": 2,
+      "native_raw": "99.97779",
+      "wasm_raw": "99.97744"
+    }
+  },
+  "direct_reading": "Native/WASM 원본1133 3쪽·bottom15 3쪽·style7336 6쪽·1937 25쪽을 직접 읽고 번호·본문·표·각주 소유 확인. 원본1133 1쪽 제목의 자형 잔여를 완전일치로 주장하지 않음.",
+  "native_gate": {
+    "exitCode": 0,
+    "seconds": 35.3735370420618,
+    "summary": [
+      "     Summary [   0.512s] 22 tests run: 22 passed, 997 skipped"
+    ],
+    "sourceUnchanged": true,
+    "scope": "Native current footer source/ownership plus original1133 and original1937 controls; not full nextest"
+  },
+  "assets": [
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/footer15/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-footer15-whole.tsv",
+      "sha256": "23c81588cf0a9a39881dfddfa4bacd57b995f031f90cbdce72b10ada77cd41f3"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/bottom15/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-bottom15-whole.tsv",
+      "sha256": "23c81588cf0a9a39881dfddfa4bacd57b995f031f90cbdce72b10ada77cd41f3"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/original1133-hwp/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-original1133-hwp-whole.tsv",
+      "sha256": "63355b3678c5364b3e200dca629c504419d1e68966e36d9d536615f18e8dda09"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/original1133-hwpx/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-original1133-hwpx-whole.tsv",
+      "sha256": "7c173dc621ad6f2c4ef9375d156d09058ae169eadd4d23e6060aa0962abf7acd"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/style7336/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-style7336-whole.tsv",
+      "sha256": "f06c2b6b466c596d058bf0cd7539591e64e87beebd361318fdb4f60e3687b159"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/footnote-number25/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-footnote-number25-whole.tsv",
+      "sha256": "0bd1f1d67fcd0362d5d5433e341351bff32e292934799927d02d0e98f2875620"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/footer15/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-footer15-whole.tsv",
+      "sha256": "49f1ea2f45c70b456d46da13b40fcb690d85aee3647a274944e79a5a34c18fa3"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/bottom15/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-bottom15-whole.tsv",
+      "sha256": "49f1ea2f45c70b456d46da13b40fcb690d85aee3647a274944e79a5a34c18fa3"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/original1133-hwp/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-original1133-hwp-whole.tsv",
+      "sha256": "e0bc115e274f333f34dc1cbc65ebaef6917761f63333e7be3854a22a3d3b81ad"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/original1133-hwpx/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-original1133-hwpx-whole.tsv",
+      "sha256": "f51ae361642f756ca08a75c06fa6098372246690ecb20d62851701d76a3f4b3a"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/style7336/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-style7336-whole.tsv",
+      "sha256": "9e8b4a2d1e6e6d7ab0dc085a9b689a50b65ea9f9022f81319f70b8f4ad16d3b3"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/footnote-number25/silhouette.tsv",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-footnote-number25-whole.tsv",
+      "sha256": "d5017824cd9955f6f4be5c5e85f773f28842c1e32cddae54d88bf307c378e35a"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/original1133-hwp/review/review_003.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-original1133-hwp-p003-review.png",
+      "sha256": "0e659474821184b5b413dc911d457f937a6242ba3453ea89efe4ce9dc79582cd"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/original1133-hwp/overlay/overlay_003.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-original1133-hwp-p003-overlay.png",
+      "sha256": "962dc2d0bb6ed1665ea46bc938251c7f90c8533b3984705e663700dc785100bc"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/bottom15/review/review_003.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-bottom15-p003-review.png",
+      "sha256": "55fc186636e8aa04068121e7badbd65f2a21ccd205d0394c9a3597f095082e75"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/bottom15/overlay/overlay_003.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-bottom15-p003-overlay.png",
+      "sha256": "6377c491de2ee09d688084256d41ee030b16de684d60804454f6dabbb9bc0f21"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/style7336/review/review_006.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-style7336-p006-review.png",
+      "sha256": "c52eab8d443fe6f184f280f0c2147dc35ec132232be6d92042f03a9eb7da4bef"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/style7336/overlay/overlay_006.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-style7336-p006-overlay.png",
+      "sha256": "3c41c410c76fef30367c954ade72241117c4ce0195382bcc9567fff0f9e3d6b0"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/footnote-number25/review/review_025.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-footnote-number25-p025-review.png",
+      "sha256": "ddb3423b2865c4e8e7c38aabfb7c94817de1eb8c717abe68e4bacc8d6802a1dc"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/native/footnote-number25/overlay/overlay_025.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/native-footnote-number25-p025-overlay.png",
+      "sha256": "e4fa9eeb0ee54fa3101ac0d7f918d4ef70184929c64c80c1740ccd326530bde5"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/original1133-hwp/review/review_003.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-original1133-hwp-p003-review.png",
+      "sha256": "d9042ccab715d2e7f740bf953393a6d1c00f2d009ab9739b46ed30beb11fd0b6"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/original1133-hwp/overlay/overlay_003.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-original1133-hwp-p003-overlay.png",
+      "sha256": "0dc4c22cc9347833e02e78ded990cc5df35cd3e16073d4745f74db2bf872c522"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/bottom15/review/review_003.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-bottom15-p003-review.png",
+      "sha256": "3432e594b5a80390c08bdfdd11716dd688215ac18a4a72e324d4b72ef529d12a"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/bottom15/overlay/overlay_003.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-bottom15-p003-overlay.png",
+      "sha256": "4a5e3f6a5750676d2f986b5127fee8da8d92d34cf1086b9fdcd2b11d670e5d6a"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/style7336/review/review_006.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-style7336-p006-review.png",
+      "sha256": "7dafed8ea00857203cb067bc9415d8778b50c82922e1cb81ede839beaee815e0"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/style7336/overlay/overlay_006.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-style7336-p006-overlay.png",
+      "sha256": "9dd7b0d2eb53ebb4cd72ddde1907b968e1499b8f90802482029bf1ea0e155c93"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/footnote-number25/review/review_025.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-footnote-number25-p025-review.png",
+      "sha256": "dbae51c31999ffb499ceb5ef3ebfd2c161f3f168af7d2e0b972d013a36ad3069"
+    },
+    {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair523-footer-current-whole/wasm/footnote-number25/overlay/overlay_025.png",
+      "asset": "mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/wasm-footnote-number25-p025-overlay.png",
+      "sha256": "10186b2cb6b0651c4b90a7352ce015e89916c313ca4674d78a1e567f3ccb63de"
+    }
+  ],
+  "residual": "별도 issue265 HWP5 저장본의 그림 뒤 본문 이동과 Science p3 base 대비0.32810%p 하락,최종 전체 회귀·소비경로 검증 미완료."
+}

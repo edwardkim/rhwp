@@ -1,0 +1,35 @@
+[
+  {
+    "pdf": "pdf/issue7336/nested_table_fragment_cut-2020.pdf",
+    "page": 6,
+    "glyphs": [
+      {
+        "text": "6",
+        "x_css": 393.1199951171875,
+        "baseline_css": 1062.719970703125
+      }
+    ]
+  },
+  {
+    "pdf": "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+    "page": 3,
+    "glyphs": [
+      {
+        "text": "3",
+        "x_css": 392.9070638020833,
+        "baseline_css": 1080.4192708333333
+      }
+    ]
+  },
+  {
+    "pdf": "pdf/issue1133/page-number-bottom15-2020.pdf",
+    "page": 3,
+    "glyphs": [
+      {
+        "text": "3",
+        "x_css": 392.9070638020833,
+        "baseline_css": 1061.5598958333333
+      }
+    ]
+  }
+]
