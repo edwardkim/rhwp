@@ -22,12 +22,28 @@ fn issue_6078_caption_table_and_paper_spec_keep_reading_order() {
         panic!("HWP3 원본의 캡션 표");
     };
     let source_para = &core.document().sections[0].paragraphs[0];
+    // HWP3 원본의 첫 줄 높이325, 다음 줄 pgy423(각 1/1800inch).
+    // 빈 줄은 표의 글꼴 종료 띠가 아니라 자기 저장 간격98을 보존한다.
+    let opening = &source_para.line_segs[0];
+    let host = &source_para.line_segs[1];
+    assert_eq!(opening.line_height, 325 * 4, "공백 줄 상자도 보존");
+    assert_eq!(opening.line_spacing, (423 - 325) * 4, "원본의 물리 줄간격");
     assert_eq!(
-        source_para.line_segs[0].line_spacing, 0,
-        "표 앞 빈 저장 줄은 TAC 표의 후행 띠를 소유하지 않음"
+        host.vertical_pos - opening.vertical_pos,
+        opening.line_height + opening.line_spacing,
+        "표 호스트는 앞 빈 줄의 물리 끝에서 시작"
     );
     let caption = source_table.caption.as_ref().expect("표 위 캡션");
     assert!(caption.spacing > 0, "원본 캡션의 물리 점유가 보존돼야 함");
+    let caption_line = caption.paragraphs[0]
+        .line_segs
+        .last()
+        .expect("원본 캡션 글줄");
+    assert_eq!(
+        caption_line.vertical_pos + caption_line.line_height + i32::from(caption.spacing),
+        463 * 4,
+        "HWP3 표 정보의 캡션 전체 높이463에 마지막 줄간격을 중복 합산하지 않음"
+    );
     let recommendation_checks: usize = source_table
         .cells
         .iter()

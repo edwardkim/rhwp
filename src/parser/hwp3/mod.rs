@@ -1753,8 +1753,9 @@ fn parse_hwp3_object_dispatch(
         };
         if hwp3_paragraphs_have_renderable_content(&caption_paras) {
             // HWP3 표 정보에는 캡션의 실제 세로 점유가 따로 저장된다. 텍스트
-            // 줄높이만 예약하면 위 캡션과 표가 겹친다. 남는 물리 높이와 마지막
-            // 저장 줄간격을 캡션-표 간격으로 옮겨 측정과 실제 배치가 함께 소비한다.
+            // 줄높이만 예약하면 위 캡션과 표가 겹친다. 저장된 전체 높이에서
+            // 글줄 상자를 뺀 나머지를 캡션-표 간격으로 옮긴다. 마지막 줄간격도
+            // 이 물리 높이에 포함되므로 다시 더하지 않는다.
             let text_height = caption_paras
                 .iter()
                 .filter_map(|para| {
@@ -1763,11 +1764,6 @@ fn parse_hwp3_object_dispatch(
                         .map(|last| last.vertical_pos + last.line_height)
                 })
                 .max()
-                .unwrap_or(0);
-            let trailing_spacing = caption_paras
-                .last()
-                .and_then(|para| para.line_segs.last())
-                .map(|seg| seg.line_spacing.max(0))
                 .unwrap_or(0);
             let caption_gap = if caption_height > 0
                 && matches!(
@@ -1778,7 +1774,6 @@ fn parse_hwp3_object_dispatch(
                 caption_height
                     .saturating_sub(text_height)
                     .max(0)
-                    .saturating_add(trailing_spacing)
                     .min(i16::MAX as i32) as i16
             } else {
                 0
@@ -3792,10 +3787,24 @@ fn parse_paragraph_list_inner(
                 seg.line_height = seg.text_height;
                 seg.line_spacing = if use_password_layout_contract {
                     HWP3_TAC_OBJECT_LINE_SPACING_HU
-                } else if fixed_line_spacing.is_none() && table_lines.contains(&index) {
+                } else if fixed_line_spacing.is_some() {
+                    seg.line_spacing
+                } else if table_lines.contains(&index) {
                     fallback_line_spacing
                 } else {
-                    fallback_line_spacing
+                    // 표 앞의 빈 줄도 원래 물리 상자와 간격을 소유한다.
+                    // 같은 저장 프레임의 다음 줄이 있으면 pgy 차이를 소비하고,
+                    // reset/마지막 줄은 이미 계산한 자체 글꼴 간격을 보존한다.
+                    line_infos
+                        .get(index)
+                        .zip(line_infos.get(index + 1))
+                        .and_then(|(line, next)| {
+                            i32::from(next.pgy)
+                                .checked_sub(i32::from(line.pgy) + i32::from(line.line_height))
+                                .filter(|gap| *gap >= 0)
+                                .map(|gap| gap * 4)
+                        })
+                        .unwrap_or(seg.line_spacing)
                 };
             }
         }
