@@ -1633,6 +1633,16 @@ impl TypesetEngine {
                     } else {
                         0.0
                     };
+                // 새 일반 글줄 행의 상자·안 여백은 HWPUNIT 축이다. 고정 px 허용으로
+                // 수 HU 모자란 띠에 첫 줄을 받지 않으며 재시도도 같은 반올림을 쓴다.
+                let ordinary_new_row_rounding = if r > cursor_row
+                    && row_start_cut.is_empty()
+                    && layout_engine.row_has_plain_line_units(table, r, styles)
+                {
+                    crate::renderer::hwpunit_to_px(1, self.dpi)
+                } else {
+                    0.1
+                };
                 let split_row_overflow_tolerance = if uses_source_frame_tail {
                     stored_frame_tail_overflow
                 } else if saved_first_fragment_next_row_cut {
@@ -1646,7 +1656,7 @@ impl TypesetEngine {
                 } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                     0.1
                 } else {
-                    0.1
+                    ordinary_new_row_rounding
                 };
                 // [#7206] 이어받은 조각이 **커서 행 안에서** 시작해 같은 행에서 끝나면 위
                 // 세 조건이 모두 서지 않아 쪽 면적 초과 가드에 **진입조차 하지 못했다.**
@@ -1724,7 +1734,7 @@ impl TypesetEngine {
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                             0.1
                         } else {
-                            0.1
+                            ordinary_new_row_rounding
                         };
                         if row_split_meets_min_top_keep(
                             res2.consumed_height,
