@@ -230,7 +230,7 @@ impl TypesetEngine {
                     // 80168 행 23: 내용 20.67 > 22.76 − 바깥 아래 1.88 − 1.33). 근거가 이어지는 조각뿐이라
                     // 첫 조각의 0행 걸침 묶음 컷(`rowbreak_rowspan_opening_row_cut`)은 건드리지 않는다.
                     let fragment_bottom_inset = crate::renderer::hwpunit_to_px(
-                        crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                        crate::renderer::float_placement::rowbreak_fragment_bottom_inset_hu(table),
                         self.dpi,
                     );
                     let closing_box = rest - v.unreserved_outer_bottom - fragment_bottom_inset;

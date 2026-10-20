@@ -1214,7 +1214,7 @@ impl TypesetEngine {
         // inset 앞 물리 띠로 늘리면 다음 조각이 그린 상자보다 큰 몫을 이미 소비한 것으로 센다.
         let unreserved_page_end_band = (ledger_page_end_band
             - (hwpunit_to_px(
-                crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                crate::renderer::float_placement::rowbreak_fragment_bottom_inset_hu(table),
                 self.dpi,
             ) - budget.reflow_frame_bottom_inset)
                 .max(0.0))
@@ -1594,7 +1594,7 @@ impl TypesetEngine {
                     Some(0.0)
                 } else {
                     let native_inset = hwpunit_to_px(
-                        crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                        crate::renderer::float_placement::rowbreak_fragment_bottom_inset_hu(table),
                         self.dpi,
                     );
                     (st.profile.hwp5_stored_pagination_layout()

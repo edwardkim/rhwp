@@ -6020,6 +6020,22 @@ pub(crate) fn empty_host_cellbreak_fragment_repeats_outer_margin(
 /// ±30000HU)에서 흔들리지 않는 상수라 이름 붙은 필드가 아니다.
 pub(crate) const SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU: i32 = 100;
 
+/// [#8101] 이 표의 비끝 조각 상자 아래 안쪽 거리 (HU).
+///
+/// `noAdjust`(표 속성 bit 3) 표는 이 inset 없이 본문 아래 − `outer_margin_bottom` 에서 닫는다.
+/// 한/글 2020 정본 1342000 의 쪽 끝 표 아래 괘선(쪽 척도를 걷은 값)은 `noAdjust` 표 121·170·
+/// 99·49쪽이 본문 아래 − 바깥 아래 여백 −0.15·−0.14·−0.14·−0.03px, 같은 문서의 `noAdjust` 아닌
+/// 표 157·213·108쪽은 그 선 − 100HU 에 ±0.12px 로 맞는다. inset 을 넣으면 `noAdjust` 표의
+/// 조각마다 걸침 칸 몫이 100HU 씩 덜 소비되어 그 칸의 끝 행이 남는 몫을 한꺼번에 받는다
+/// (126쪽 행 60 +490HU → 쪽 끝 한 줄이 밀려 127–145쪽 연쇄).
+pub(crate) fn rowbreak_fragment_bottom_inset_hu(table: &Table) -> i32 {
+    if (table.attr | table.raw_table_record_attr) & 0x08 != 0 {
+        0
+    } else {
+        SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU
+    }
+}
+
 /// [#7095] 본문을 통째로 담은 1×1 `RowBreak` 표의 쪽 조각인가.
 ///
 /// 이 형상에서 한/글은 조각마다 표 바깥 여백(위·아래)을 다시 연다. 저장된 쪽 프레임의
@@ -6078,7 +6094,7 @@ pub(crate) fn native_multirow_rowbreak_reopens_outer_top(
 pub(crate) fn single_cell_page_fragment_bottom(table: &Table, body_bottom: f64, dpi: f64) -> f64 {
     body_bottom
         - hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi)
-        - hwpunit_to_px(SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU, dpi)
+        - hwpunit_to_px(rowbreak_fragment_bottom_inset_hu(table), dpi)
 }
 
 /// A source object that closes the body already declares the physical frame,

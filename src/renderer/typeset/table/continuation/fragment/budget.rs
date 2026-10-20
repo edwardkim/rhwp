@@ -322,7 +322,7 @@ impl TypesetEngine {
         // reserved here. Emit consumes any remaining flow margin exactly once.
         let single_cell_page_fragment_inset_px = if single_cell_page_fragment {
             hwpunit_to_px(
-                crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                crate::renderer::float_placement::rowbreak_fragment_bottom_inset_hu(table),
                 self.dpi,
             )
         } else {
@@ -1736,7 +1736,7 @@ impl TypesetEngine {
                 0.0
             } else {
                 hwpunit_to_px(
-                    crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                    crate::renderer::float_placement::rowbreak_fragment_bottom_inset_hu(table),
                     self.dpi,
                 )
             };
