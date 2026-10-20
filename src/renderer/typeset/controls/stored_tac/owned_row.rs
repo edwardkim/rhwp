@@ -60,6 +60,68 @@ pub(in crate::renderer::typeset) fn prepare(
     {
         return None;
     }
+    horizontal_pen(para, table, control, composed, styles, dpi)
+}
+
+/// 캡션을 포함한 현재 점유 높이와 구성 결과가 일치하는 독립 개체 줄이다.
+/// 편집 직후와 저장 후에 같은 줄을 소유하면 같은 펜/끝을 paint에도 전달한다.
+#[allow(clippy::too_many_arguments)]
+pub(in crate::renderer::typeset) fn prepare_occupied(
+    para: &Paragraph,
+    table: &Table,
+    control: usize,
+    composed: Option<&ComposedParagraph>,
+    line_heights: &[f64],
+    measured_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<OwnedRow> {
+    if !table.common.treat_as_char
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || !para.text.chars().all(char::is_whitespace)
+    {
+        return None;
+    }
+    let owner = crate::renderer::composer::control_slot_line_index(para, control)?;
+    let row = para.line_segs.get(owner)?;
+    let occupied = measured_height
+        + hwpunit_to_px(
+            i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
+            dpi,
+        );
+    if row.line_spacing < 0
+        || row.column_start < 0
+        || row.segment_width <= 0
+        || (hwpunit_to_px(row.line_height, dpi) - occupied).abs() > dpi / 7200.0
+        || (line_heights.get(owner)? - occupied).abs() > dpi / 7200.0
+        || para.controls.iter().enumerate().any(|(ci, c)| {
+            ci != control
+                && matches!(
+                    c,
+                    Control::Table(_)
+                        | Control::Picture(_)
+                        | Control::Shape(_)
+                        | Control::Equation(_)
+                )
+                && crate::renderer::composer::control_slot_line_index(para, ci) == Some(owner)
+        })
+    {
+        return None;
+    }
+    horizontal_pen(para, table, control, composed, styles, dpi)
+}
+
+fn horizontal_pen(
+    para: &Paragraph,
+    table: &Table,
+    control: usize,
+    composed: Option<&ComposedParagraph>,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<OwnedRow> {
+    let owner = crate::renderer::composer::control_slot_line_index(para, control)?;
+    let line = para.line_segs.get(owner)?;
     let composed = composed?;
     if composed.lines.len() != para.line_segs.len() {
         return None;

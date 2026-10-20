@@ -1223,7 +1223,7 @@ fn issue_1470_create_table_ex_tac_caption_renders_once() {
 }
 
 #[test]
-fn issue_1470_picture_caption_can_be_removed_and_renumbers() {
+fn issue_1470_picture_caption_removal_keeps_the_remaining_object_number() {
     use crate::model::control::Control;
 
     fn minimal_png() -> Vec<u8> {
@@ -1281,14 +1281,17 @@ fn issue_1470_picture_caption_can_be_removed_and_renumbers() {
     }
 
     assert_eq!(
-        issue_1470_picture_caption_number(&doc, first_idx),
-        Some((1, 1))
+        issue_1470_picture_caption_number(&doc, first_idx).map(|n| n.0),
+        Some(1)
     );
     assert_eq!(
-        issue_1470_picture_caption_number(&doc, second_idx),
-        Some((2, 2))
+        issue_1470_picture_caption_number(&doc, second_idx).map(|n| n.0),
+        Some(2)
     );
 
+    let stored_number = issue_1470_picture_caption_number(&doc, second_idx)
+        .unwrap()
+        .1;
     doc.set_picture_properties_native(0, 0, first_idx, r#"{"hasCaption":false}"#)
         .expect("그림 캡션 삭제");
 
@@ -1316,8 +1319,8 @@ fn issue_1470_picture_caption_can_be_removed_and_renumbers() {
     );
     assert_eq!(
         issue_1470_picture_caption_number(&doc, second_idx),
-        Some((1, 1)),
-        "앞 그림 캡션 삭제 후 뒤 그림 캡션 번호가 1로 재배정되어야 한다"
+        Some((2, stored_number)),
+        "캡션만 지운 앞 그림도 번호 범주를 유지하며, 뒤 그림의 표시2와 원본 캐시를 보존한다"
     );
 }
 
@@ -1435,7 +1438,7 @@ fn issue_1470_table_caption_keeps_autonumber_and_can_be_removed() {
 }
 
 #[test]
-fn issue_1470_table_caption_renumbers_after_delete() {
+fn issue_1470_table_caption_removal_keeps_object_numbers() {
     let mut doc = HwpDocument::create_empty();
     for _ in 0..3 {
         doc.create_table_ex_native(0, 0, 0, 1, 1, true, None, None)
@@ -1446,10 +1449,22 @@ fn issue_1470_table_caption_renumbers_after_delete() {
             .expect("캡션 생성");
     }
 
-    assert_eq!(issue_1470_table_caption_number(&doc, 0), Some((1, 1)));
-    assert_eq!(issue_1470_table_caption_number(&doc, 1), Some((2, 2)));
-    assert_eq!(issue_1470_table_caption_number(&doc, 2), Some((3, 3)));
+    assert_eq!(
+        issue_1470_table_caption_number(&doc, 0).map(|n| n.0),
+        Some(1)
+    );
+    assert_eq!(
+        issue_1470_table_caption_number(&doc, 1).map(|n| n.0),
+        Some(2)
+    );
+    assert_eq!(
+        issue_1470_table_caption_number(&doc, 2).map(|n| n.0),
+        Some(3)
+    );
 
+    let stored_numbers: Vec<_> = (0..3)
+        .map(|i| issue_1470_table_caption_number(&doc, i).unwrap().1)
+        .collect();
     doc.set_table_properties_native(0, 0, 1, r#"{"hasCaption":false}"#)
         .expect("중간 캡션 삭제");
     doc.set_table_properties_native(
@@ -1462,7 +1477,7 @@ fn issue_1470_table_caption_renumbers_after_delete() {
 
     assert_eq!(
         issue_1470_table_caption_number(&doc, 0),
-        Some((1, 1)),
+        Some((1, stored_numbers[0])),
         "앞 표 캡션 번호는 1을 유지해야 한다"
     );
     assert_eq!(
@@ -1472,14 +1487,14 @@ fn issue_1470_table_caption_renumbers_after_delete() {
     );
     assert_eq!(
         issue_1470_table_caption_number(&doc, 2),
-        Some((2, 2)),
-        "중간 캡션 삭제 후 뒤 표 캡션의 assigned_number/number가 2로 재배정되어야 한다"
+        Some((3, stored_numbers[2])),
+        "중간 표는 남아 있으므로 뒤 표의 표시3과 원본 캐시를 보존한다"
     );
 
     let svg = doc.render_page_svg_native(0).expect("SVG 렌더링");
     assert!(
-        svg.contains(">표<") && svg.contains(">1<") && svg.contains(">2<") && !svg.contains(">3<"),
-        "렌더링 결과도 중간 캡션 삭제 후 표 1, 표 2만 표시해야 한다"
+        svg.contains(">표<") && svg.contains(">1<") && svg.contains(">3<") && !svg.contains(">2<"),
+        "독립 Print처럼 중간 캡션 삭제 후 표1·표3만 표시하며 표2 캡션은 남기지 않는다"
     );
 }
 
@@ -1493,6 +1508,7 @@ fn issue_1470_table_caption_edit_keeps_autonumber() {
         .expect("표 생성");
     doc.set_table_properties_native(0, 0, 0, r#"{"hasCaption":true}"#)
         .expect("캡션 생성");
+    let stored_number = issue_1470_table_caption_number(&doc, 0).unwrap().1;
 
     doc.set_table_properties_native(
         0,
@@ -1518,7 +1534,7 @@ fn issue_1470_table_caption_edit_keeps_autonumber() {
     assert_eq!(cap_para.control_text_positions(), vec![2]);
     assert!(
         cap_para.controls.iter().any(
-            |c| matches!(c, Control::AutoNumber(an) if an.assigned_number == 1 && an.number == 1)
+            |c| matches!(c, Control::AutoNumber(an) if an.assigned_number == 1 && an.number == stored_number)
         ),
         "캡션 속성 수정 후에도 AutoNumber 컨트롤과 번호가 유지되어야 한다"
     );

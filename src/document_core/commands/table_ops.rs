@@ -3330,7 +3330,7 @@ impl DocumentCore {
         }
 
         // 캡션 생성/수정/삭제 후에는 문서 전체 AutoNumber를 다시 배정한다.
-        // 중간 표 캡션 삭제 시 남은 표 번호가 한컴처럼 1부터 이어지도록 보장한다.
+        // 번호 종류를 가진 표는 캡션을 지워도 개체 순번을 계속 소유한다.
         if caption_created || caption_changed {
             crate::parser::assign_auto_numbers(&mut self.document);
             if let Some(crate::model::control::Control::Table(ref mut tbl)) =
@@ -3364,6 +3364,29 @@ impl DocumentCore {
             }
         }
 
+        if (caption_created || caption_changed)
+            && self
+                .get_table_mut(section_idx, parent_para_idx, control_idx)?
+                .common
+                .treat_as_char
+        {
+            // 캡션 문단만 다시 조판하면 host의 저장 줄은 옛 상자 높이를
+            // 유지한다. 인라인 표의 점유 결과를 본문 줄과 후속 문단도 소비한다.
+            let stored_end = crate::renderer::composer::paragraph_flow_end(
+                &self.document.sections[section_idx].paragraphs[parent_para_idx],
+            );
+            self.reflow_paragraph(section_idx, parent_para_idx);
+            let hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                parent_para_idx,
+                None,
+                stored_end,
+                &self.styles,
+                self.dpi,
+                hwp3_layout,
+            );
+        }
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();

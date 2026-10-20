@@ -541,3 +541,15 @@ samples/issue7593/repro-dyad-min-no-script.hwpx	1	1
 samples/issue7593/repro-equation-issue7593.hwpx	1	1
 # 독립 한컴2024 Print 합성 대조군: samples 밖이므로 명시 등록.
 pdf/issue7642-bitmap-crop-palette-print-20261019/bitmap-crop-palette-controls.hwpx	1	1
+
+# Stage24: 공개 API 작성 캡션10조건, 독립 Hancom2020 Print 각1쪽. fixture README의 SHA/출처 참조.
+tests/fixtures/issue1470_authored_caption_numbering/tables-all.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-all.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-removed.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-removed.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-all.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-all.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-caption-removed.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-caption-removed.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwp	1	1

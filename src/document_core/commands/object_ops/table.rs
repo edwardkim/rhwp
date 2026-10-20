@@ -595,7 +595,8 @@ impl DocumentCore {
         //                 + instance_id(4) = 36바이트 (+ 여유 2바이트 = 38)
         // vert=Para(2), horz=Para(3), wrap=TopAndBottom(1)
         // width_criterion=Absolute(4), height_criterion=Absolute(2)
-        let flags: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18) | (1 << 21);
+        // 새 표의 기본 번호 종류는 TABLE이다. 캡션의 존재가 번호 범주를 정하지 않는다.
+        let flags: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18) | (1 << 21) | (2 << 26);
         let outer_margin: i16 = 283; // ~1mm
         let mut raw_ctrl_data = vec![0u8; 38];
         raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&flags.to_le_bytes());
@@ -635,6 +636,14 @@ impl DocumentCore {
             repeat_header: options.repeat_header.unwrap_or(false),
             caption: None,
             common: crate::model::shape::CommonObjAttr {
+                attr: flags,
+                numbering_type: crate::model::shape::ObjectNumberingType::Table,
+                margin: crate::model::Padding {
+                    left: outer_margin,
+                    right: outer_margin,
+                    top: outer_margin,
+                    bottom: outer_margin,
+                },
                 instance_id,
                 treat_as_char: false,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
@@ -1036,7 +1045,8 @@ impl DocumentCore {
             | (1 << 13) /* flow_with_text: 인라인 개체의 본문 흐름 */
             | (4 << 15) /* width_criterion=Absolute */
             | (2 << 18) /* height_criterion=Absolute */
-            | (1 << 21) /* wrap=TopAndBottom */;
+            | (1 << 21) /* wrap=TopAndBottom */
+            | (2 << 26) /* numbering_type=Table */;
         let mut raw_ctrl_data = vec![0u8; 38];
         raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&flags.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::WIDTH].copy_from_slice(&total_width.to_le_bytes());
@@ -1065,6 +1075,13 @@ impl DocumentCore {
             caption: None,
             common: crate::model::shape::CommonObjAttr {
                 attr: flags,
+                numbering_type: crate::model::shape::ObjectNumberingType::Table,
+                margin: crate::model::Padding {
+                    left: outer_margin,
+                    right: outer_margin,
+                    top: outer_margin,
+                    bottom: outer_margin,
+                },
                 instance_id,
                 treat_as_char: true,
                 flow_with_text: true,

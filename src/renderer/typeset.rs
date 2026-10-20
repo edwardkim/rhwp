@@ -4237,7 +4237,24 @@ impl TypesetEngine {
                 self.dpi,
             )
         })
-        .flatten();
+        .flatten()
+        .or_else(|| {
+            ((st.profile.session_edited() || table.caption.is_some())
+                && ft.table_footnotes.is_empty())
+            .then(|| {
+                controls::stored_tac::owned_row::prepare_occupied(
+                    para,
+                    table,
+                    ctrl_idx,
+                    composed,
+                    &fmt.line_heights,
+                    ft.effective_height,
+                    styles,
+                    self.dpi,
+                )
+            })
+            .flatten()
+        });
         let stored_host_frame = (st.profile.hwp5_stored_pagination_layout()
             && !st.profile.session_edited()
             && !self.render_normalization.table_text_reflowed(table)

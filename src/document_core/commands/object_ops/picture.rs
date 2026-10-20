@@ -1712,10 +1712,12 @@ impl DocumentCore {
                 //   bits 15-17=width_criterion(4=Absolute),
                 //   bits 18-20=height_criterion(2=Absolute),
                 //   bits 21-23=text_wrap(0=Square)
-                let common_attr: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18);
+                let common_attr: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18) | (1 << 26);
                 let common = CommonObjAttr {
                     ctrl_id: 0x67736F20,
                     attr: common_attr,
+                    numbering_type: crate::model::shape::ObjectNumberingType::Picture,
+                    hwp5_gen_shape_attr_bit26: true,
                     treat_as_char: false,
                     vert_rel_to: VertRelTo::Para,
                     horz_rel_to: HorzRelTo::Para,
@@ -1797,10 +1799,12 @@ impl DocumentCore {
             //   bits 3-4=vert_rel_to(0=Paper), bits 8-10=horz_rel_to(0=Paper),
             //   bits 15-17=width_criterion(4=Absolute), bits 18-20=height_criterion(2=Absolute),
             //   bits 21-23=text_wrap(0=Square)
-            let common_attr: u32 = (4 << 15) | (2 << 18);
+            let common_attr: u32 = (4 << 15) | (2 << 18) | (1 << 26);
             let common = CommonObjAttr {
                 ctrl_id: 0x67736F20,
                 attr: common_attr,
+                numbering_type: crate::model::shape::ObjectNumberingType::Picture,
+                hwp5_gen_shape_attr_bit26: true,
                 treat_as_char: false,
                 vert_rel_to: VertRelTo::Paper,
                 horz_rel_to: HorzRelTo::Paper,
@@ -1877,10 +1881,12 @@ impl DocumentCore {
         //   bits 3-4=vert_rel_to(0=Paper), bits 8-10=horz_rel_to(0=Paper),
         //   bits 15-17=width_criterion(4=Absolute), bits 18-20=height_criterion(2=Absolute),
         //   bits 21-23=text_wrap(0=Square)
-        let common_attr: u32 = (4 << 15) | (2 << 18);
+        let common_attr: u32 = (4 << 15) | (2 << 18) | (1 << 26);
         let common = CommonObjAttr {
             ctrl_id: 0x67736F20, // "gso " — GenShape
             attr: common_attr,
+            numbering_type: crate::model::shape::ObjectNumberingType::Picture,
+            hwp5_gen_shape_attr_bit26: true,
             treat_as_char: false,
             vert_rel_to: VertRelTo::Paper,
             horz_rel_to: HorzRelTo::Paper,

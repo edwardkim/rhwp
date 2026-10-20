@@ -3064,10 +3064,9 @@ fn inline_control_occupied_size_hwp(
         let measured = crate::renderer::height_measurer::HeightMeasurer::new(dpi)
             .with_session_edited(true)
             .measure_table(table, 0, 0, styles);
-        height = height.max(px_to_hwpunit(
-            measured.total_height - measured.caption_height,
-            dpi,
-        ));
+        // 위/아래 캡션도 인라인 개체가 소유하는 물리 상자다. 표 본체만
+        // 발행하면 캡션 글줄에 다음 개체가 놓이고 저장 줄도 그 높이로 굳는다.
+        height = height.max(px_to_hwpunit(measured.total_height, dpi));
         width = width
             .saturating_add(i32::from(table.outer_margin_left))
             .saturating_add(i32::from(table.outer_margin_right));
@@ -5007,15 +5006,8 @@ fn reflow_line_segs_impl(
                 Some((start, ctrl))
             })
             .filter_map(|(start, ctrl)| {
-                inline_control_size_hwp(ctrl).map(|(width, height)| {
-                    let height = match ctrl {
-                        Control::Table(table) => height
-                            .saturating_add(i32::from(table.outer_margin_top))
-                            .saturating_add(i32::from(table.outer_margin_bottom)),
-                        _ => height,
-                    };
-                    (start, (width, height))
-                })
+                inline_control_occupied_size_hwp(ctrl, styles, dpi)
+                    .map(|occupied| (start, occupied))
             })
             .collect::<Vec<_>>();
         if !inline_sizes.is_empty() {
