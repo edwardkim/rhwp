@@ -3,6 +3,8 @@
 //! 같은 경계의28쪽은 양쪽 raw100% 및 review/overlay 직접 판독 후 보호한다.
 //! 독립 Print는 검은 하단 위에 흰 상단을 덧그린다. 논리 경계 한 개와 원본
 //! 순서를 보존하고, Native PNG에서도 회색 가장자리를 잃지 않아야 한다.
+//! Stage21 재검증 전66쪽 최저 Native94.49334/WASM94.53407%, 미달0.
+//! 28쪽은 양쪽100%이며 실제 Print의 물리 좌표와 원문 노드 소유를 구분한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{
@@ -40,7 +42,7 @@ fn cell(table: &RenderNode, row: u16, col: u16) -> &RenderNode {
     cells[0]
 }
 
-fn top_edge<'a>(table: &'a RenderNode, cell: &RenderNode) -> &'a LineNode {
+fn top_edge<'a>(table: &'a RenderNode, cell: &RenderNode) -> (&'a RenderNode, &'a LineNode) {
     let mut nodes = Vec::new();
     walk(table, &mut nodes);
     let middle = cell.bbox.x + cell.bbox.width / 2.0;
@@ -53,7 +55,7 @@ fn top_edge<'a>(table: &'a RenderNode, cell: &RenderNode) -> &'a LineNode {
                     && line.x1.min(line.x2) < middle
                     && line.x1.max(line.x2) > middle =>
             {
-                Some(line)
+                Some((node, line))
             }
             _ => None,
         })
@@ -62,22 +64,20 @@ fn top_edge<'a>(table: &'a RenderNode, cell: &RenderNode) -> &'a LineNode {
     edges[0]
 }
 
-fn matching_paint_strokes<'a>(node: &'a LayerNode, source: &LineNode, out: &mut Vec<&'a LineNode>) {
+fn matching_paint_strokes<'a>(node: &'a LayerNode, source_id: u32, out: &mut Vec<&'a LineNode>) {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => {
             for child in children {
-                matching_paint_strokes(child, source, out);
+                matching_paint_strokes(child, source_id, out);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => matching_paint_strokes(child, source, out),
+        LayerNodeKind::ClipRect { child, .. } => matching_paint_strokes(child, source_id, out),
         LayerNodeKind::Leaf { ops } => {
             for op in ops {
                 if let PaintOp::Line { line, .. } = op {
-                    // 원본 소유 노드에서 paint로 전달한 동일 기하를 찾는다.
-                    // 독립 좌표 공차가 아니라 같은 값의 전달 여부다.
-                    if (line.x1, line.y1, line.x2, line.y2)
-                        == (source.x1, source.y1, source.x2, source.y2)
-                    {
+                    // 논리 좌표는 Print 물리 CTM을 거치므로 동일성 키가 아니다.
+                    // 원문 Line 노드가 발행한 실제 획을 소유 ID로 찾는다.
+                    if node.source_node_id == Some(source_id) {
                         out.push(line);
                     }
                 }
@@ -124,17 +124,17 @@ fn shared_horizontal_edge_uses_the_lower_cell_color_in_either_cell_order() {
             assert_eq!(tables.len(), 1, "원본 표의 단일 쪽 소속");
             let table = tables[0];
             let blank = cell(table, 3, 1);
-            let white = top_edge(table, blank);
+            let (white_owner, white) = top_edge(table, blank);
             assert_eq!(white.style.color, 0x00ffffff, "독립 Print의 흰 상단");
             assert!((white.x1 - blank.bbox.x).abs() < 0.1);
             assert!((white.x2 - blank.bbox.x - blank.bbox.width).abs() < 0.1);
             let label = cell(table, 3, 2);
-            let black = top_edge(table, label);
+            let (black_owner, black) = top_edge(table, label);
             assert_eq!(black.style.color, 0, "옆의 정상 검은 경계는 보존");
             assert!(white.x2 <= black.x1 + 0.1, "각 선의 셀 소유 범위 보존");
             let layers = LayerBuilder::new(RenderProfile::Print).build(&tree);
             let mut strokes = Vec::new();
-            matching_paint_strokes(&layers.root, white, &mut strokes);
+            matching_paint_strokes(&layers.root, white_owner.id, &mut strokes);
             assert_eq!(
                 strokes
                     .iter()
@@ -147,20 +147,29 @@ fn shared_horizontal_edge_uses_the_lower_cell_color_in_either_cell_order() {
                 strokes.iter().all(|line| line.style.compound_component),
                 "겹치는 획을 각각 픽셀 중심으로 옮겨 원본 coverage를 지우지 않는다"
             );
+            let geometry = |line: &LineNode| (line.x1, line.y1, line.x2, line.y2);
+            assert_eq!(
+                geometry(strokes[0]),
+                geometry(strokes[1]),
+                "검은 하단과 흰 상단이 같은 물리 경계에 순서대로 겹친다"
+            );
+            assert_eq!(strokes[1].y1, strokes[1].y2, "수평 경계를 보존한다");
+            assert!(strokes[1].x1 < strokes[1].x2, "경계의 방향과 길이 보존");
             let mut normal = Vec::new();
-            matching_paint_strokes(&layers.root, black, &mut normal);
+            matching_paint_strokes(&layers.root, black_owner.id, &mut normal);
             assert_eq!(
                 normal.len(),
                 1,
                 "옆의 단일 검은 경계는 중복 paint하지 않는다"
             );
             assert!(!normal[0].style.compound_component);
+            assert_eq!(strokes[1].y1, normal[0].y1, "옆 셀의 같은 수평 경계");
             if page == 28 {
                 // 독립 Print /72pt →96CSSpx. 화면 캡처는192DPI.
                 for (actual, expected) in [
-                    (white.x1, 132.0893351236979),
-                    (white.x2, 177.02532958984375),
-                    (white.y1, 418.5826822916667),
+                    (strokes[1].x1, 132.0893351236979),
+                    (strokes[1].x2, 177.02532958984375),
+                    (strokes[1].y1, 418.5826822916667),
                 ] {
                     assert!((actual - expected).abs() <= 2.0, "독립 Print 경계 ±2CSSpx");
                 }
@@ -195,7 +204,7 @@ fn shared_horizontal_overpaint_keeps_the_independent_print_ink_in_native_png() {
         .collect();
     assert_eq!(tables.len(), 1, "독립 Print28쪽의 원본 표");
     let blank = cell(tables[0], 3, 1);
-    let edge = top_edge(tables[0], blank);
+    let (_, edge) = top_edge(tables[0], blank);
     assert_eq!(edge.style.color, 0x00ffffff);
     let label = cell(tables[0], 3, 2);
     let mut label_nodes = Vec::new();
