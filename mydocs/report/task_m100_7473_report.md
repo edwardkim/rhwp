@@ -1,8 +1,78 @@
-# #7473 PDF 기능 추가 후 PR Render Diff 재측정 — 2026-10-18
+# #7473 standard release 검증과 배포 산출물 재사용 — 2026-10-20
+
+[PR #7474](https://github.com/edwardkim/rhwp/pull/7474) · [opt-in PR #7488](https://github.com/edwardkim/rhwp/pull/7488)
+
+## 2026-10-20 구현과 검증
+
+기준 devel `5e2b9bfbf08573a31fa1e11a2445ff63fc0755c0`, #7488 head
+`3bfe08e24a55f16f7408405ead9550ffab925dad`, #7474 code head
+`1ae9b510a5af0164de45191670e5e895e97270b3`에서 역할을 분리했다.
+
+- #7488은 환경변수로 명시할 때만 cdylib를 사용한다. 기본 경로·전역 release 설정은 유지한다.
+- #7474 PR Render Diff와 수동 auto는 standard release로 검사한다. Frontend dev 빌드와 기존
+  trusted impact 분류는 유지한다. 관련 PR의 release 비용을 없앴다고 주장하지 않는다.
+- Pages/npm은 이미 필요한 standard WASM 빌드를 계측 wrapper로 실행하고, 그 패키지를 Canvas/direct PDF로
+  확인한 뒤 업로드한다. 검사 action은 WASM을 재빌드하지 않으며 Native PDF 비교 CLI만 준비한다.
+- dirty/stale/dev/cdylib 빌드·누락 소비·해시 불일치·파일 교체는 실패한다. Pages dist도 업로드 직전에 대조한다.
+  npm/VSIX는 기존 wasm-pkg download 경로를 사용하며 다른 PR run의 artifact를 신뢰하지 않는다.
+- 기존 게시 trigger·권한·exact release source guard를 유지한다. 이 검증은 실제 배포 없이 실행했다.
+
+### 실제 실행 결과
+
+| 경로 | CPU | WASM wrapper wall | 전체 해당 job | 결과 |
+| --- | --- | ---: | ---: | --- |
+| [PR Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39380203897) | EPYC 9V74 | 689.626초 | 1134초 | Canvas 3/3, direct PDF 3/3, readiness 8/8 |
+| [Pages verify-only](https://github.com/edwardkim/rhwp/actions/runs/39380248603) | Xeon Platinum 8370C | 778.382초 | 1177초 | 검사·dist hash·artifact 통과, Deploy skipped |
+| [Package verify-only](https://github.com/edwardkim/rhwp/actions/runs/39380255159) | EPYC 7763 | 743.018초 | WASM job 1155초 | 검사·WASM/VSIX artifact 통과, 외부 게시 4채널 skipped |
+
+각기 다른 VM의 n=1이며 세 시간을 개선율 계산에 사용하지 않는다. 새 배포 검증 action 자체의 실행 시간은
+Pages 225초, package 239초였다. WASM을 추가로 빌드하지 않아도 Native 비교 준비·브라우저 검사 비용은 남는다.
+PR Cargo cache는 miss, 두 배포 manifest의 cache 값은 unknown이다. 배포 로그의 cache miss 및
+budget 초과에 따른 cache 저장 거부를 확인했으며, 새 cache가 저장됐다고 보고하지 않는다.
+
+세 경로의 JS와 WASM은 각각 byte hash가 같았고 브라우저 실제 응답 22건(18+2+2)이 각 manifest와 일치했다.
+업로드된 wasm-pkg도 내려받아 같은 verifier로 확인했고, 최종 VSIX 내부의 JS/WASM도 같은 해시였다.
+Pages의 dist 검사는 run의 성공 step으로 확인했다. package 집계 verdict는 completed, 네 채널은 verify-only였다.
+
+- JS: 479,094 bytes, `915ddc5aa7998937f009c76b71e53236a2536b2c30de1a37b9603b95e0b3ff15`.
+- WASM: 19,281,907 bytes, `a7462849b7e0db027b59b81b791d13c45f1fc7669d0aed45caa1a20ca15b8508`.
+- PR의 실제 checkout은 GitHub merge ref `9c14f1b3cdeab25244e6111aeab996227e4c3371`,
+  배포 verify-only checkout은 code head `1ae9b510a5af0164de45191670e5e895e97270b3`이다.
+- report-only PDF 경고 4개는 각 경로에 남는다. 허용치를 완화하지 않았으며 전체 문서·전체 쪽의
+  독립 한컴 정확도, runtime 성능 또는 모든 PNG의 cross-run byte 동등성을 주장하지 않는다.
+
+### CI와 재현 근거
+
+[Full CI](https://github.com/edwardkim/rhwp/actions/runs/39380204001),
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39380203913), Render Diff와 관련 PR 검사에서
+code head는 33 success·5 skipped였다. #7488의 새 head는
+[CI](https://github.com/edwardkim/rhwp/actions/runs/39379760031)·
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39379760037) 포함 31 success·5 skipped였다.
+배포 verify-only는 PR 검사와 별도로 위 run에서 확인했다.
+
+로컬 focused Python 46개, workflow 계약 192개, 정책·provenance Node 102개, actionlint·구문·공백 검사를
+통과했다. 서로 중복되는 검사 묶음은 합산하지 않는다. 기존 12개 fixture의 실제 bytes와 code commit blob도
+대조했다. 제품 Rust·조판 로직·fixture·baseline은 변경하지 않았다.
+
+[빌드·산출물 요약](assets/issue-7473/release-standard-20261020.json)과 각 run의 artifact에 근거를 보존했다.
+검토와 문서-only 후행 head의 확인은 [PR review](../pr/archives/pr_7474_review.md)를 따른다.
+실제 배포·승인·병합·이슈 종료는 수행하지 않았다.
+
+## macOS 결과의 위치
+
+[Mac 4쌍 측정 코멘트](https://github.com/edwardkim/rhwp/pull/7474#issuecomment-6284410757)는 이전 제품 코드
+`0eb4cc2`의 M1 가상 머신 warm 재빌드 비교다. 중앙값 595.698→527.310초(11.48% 절감),
+4문서 85쪽 SVG/RenderTree·PNG 9개 동등성을 확인했다. 전체 run은 timeout cancelled였으나 완료된 측정·
+검증 증거를 별도로 재검산했다. 이 결과는 #7488 opt-in의 근거이며 새 head의 cold 시간이나 순수 LTO 효과가 아니다.
+
+## 이전 기록 — 2026-10-18 PDF 추가 후 비교
+
+아래는 이전 코드와 정책의 역사적 측정이다. 당시의 cdylib 기본값·head·검토 상태는 현재 구현에 적용하지 않는다.
+
 
 [PR #7474](https://github.com/edwardkim/rhwp/pull/7474) · [의존 PR #7488](https://github.com/edwardkim/rhwp/pull/7488)
 
-## 결론
+### 결론
 
 PDF import가 기본 feature인 최신 devel을 통합하고 #7488의 cdylib opt-in을 #7474에 적용했다.
 dev·기존 release·cdylib release 각 3회, 총 9회가 성공했다. PNG 43개는 모든 실행에서 byte 단위로
@@ -16,7 +86,7 @@ dev·기존 release·cdylib release 각 3회, 총 9회가 성공했다. PNG 43�
 코드 검증은 통과했다. #7474는 추가 CI 비용과 명령 단위 LTO 정책을 검토할 수 있도록 Draft를 유지한다.
 #7488은 메인테이너 직접 승인 후 반영 가능한 Ready 후보이며 아직 승인·병합되지 않았다.
 
-## 통제 조건과 해석 범위
+### 통제 조건과 해석 범위
 
 - 고정 base: `6ed1682c3267ea786734eb2e75252916a861d1fd`.
 - 고정 코드 후보: `0eb4cc2ffde257a15080d0add104247c941fcbf9`.
@@ -38,7 +108,7 @@ wall은 helper 내부 빌드 시간, step은 metadata 수집 등을 포함하는
 Cargo·bindgen·opt 시간은 로그 수신 경계 근사이며 독점 CPU 시간으로 해석하지 않는다.
 VM 부하·네트워크는 통제하지 못했다. PDF 기능만의 비용을 분리한 ablation 실험은 아니다.
 
-## 실행별 결과
+### 실행별 결과
 
 단위: 초. 모든 run은 attempt 1, 동일 코드 후보에서 성공했다.
 
@@ -54,7 +124,7 @@ VM 부하·네트워크는 통제하지 못했다. PDF 기능만의 비용을 �
 | [release standard 3](https://github.com/edwardkim/rhwp/actions/runs/39073320923) | 7763 | 710.405 | 722 | 526.245 | 174.667 | 1154 |
 | [release cdylib 3](https://github.com/edwardkim/rhwp/actions/runs/39073325398) | 9V74 | 589.384 | 603 | 416.285 | 164.341 | 1016 |
 
-## CPU별 비교
+### CPU별 비교
 
 동일 모델 안에서도 대응 VM 비교가 아니며 표본이 작다. 단위: 초, 각 셀은 중앙값(표본 수).
 
@@ -70,7 +140,7 @@ CPU 혼합 상태의 실제 관측 중앙값은 dev 615초, standard 1031초, cd
 release opt/마무리는 약 164~236초이며 이번 wrapper 변경으로 제거되지 않는다.
 추가 최적화 판단에는 같은 runner에서 순서를 교차한 반복 비교와 실제 cache hit 검증이 필요하다.
 
-## 출력·검증 결과
+### 출력·검증 결과
 
 - 9회 모두 Canvas 3/3, 직접 PDF gate 3/3, CanvasKit readiness 8/8 통과.
 - 실제 앱에서 관측한 WASM 응답 각 18건, 총 162건이 해당 실행 manifest와 일치했다.
@@ -94,7 +164,7 @@ release opt/마무리는 약 164~236초이며 이번 wrapper 변경으로 제거
 
 ![CanvasKit table-border-style](../pr/assets/issue_7473/20261018/table-border-style.png)
 
-## 코드 검증과 리뷰
+### 코드 검증과 리뷰
 
 정확한 후보 `0eb4cc2ff`의 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/39072973013),
 [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39072973012),
@@ -108,7 +178,7 @@ Node CI 정책·WASM 소비 검사 102개를 통과했다. actionlint·shell/Pyt
 로컬 Rust toolchain이 없어 로컬 전체 Rust 회귀는 실행하지 않았다. 실제 Rust 빌드와 브라우저 검증은 위 CI 결과다.
 [검토 기록](../pr/archives/pr_7474_review.md) · [통합과 되돌리기](../pr/archives/pr_7474_review_impl.md)
 
-## 이전 측정과 증적 보존
+### 이전 측정과 증적 보존
 
 2026-09-28 후보의 dev/release WASM step 중앙값은 122/421초, 전체 job은 500/760초였다.
 현재 standard release step은 609초 중앙값이다. 비용 증가 자체는 관측했지만 코드·PDF feature·runner image·CPU가

@@ -1,65 +1,55 @@
-# PR #7474 검토 기록 — PDF 추가 후 release/cdylib 재측정
+# PR #7474 검토 기록 — standard release와 배포 WASM 동일성
 
 ## 최종 판정
 
-**머지 보류 — 추가 CI 비용과 #7488의 명령 단위 LTO 정책에 대한 메인테이너 검토를 기다린다.**
-코드 후보의 CI와 9회 비교 검증은 완료했고 기능상 차단 결함은 발견하지 않았다.
-Draft를 유지하며 GitHub approve·merge·이슈 종료는 하지 않았다.
-해제 조건은 위 정책·비용 수용과 최신 head CI·mergeability 확인이다.
+**승인 — 검증한 코드 후보가 standard release 기본값과 검사한 WASM의 배포 패키지 재사용 요구를 충족한다.**
+이 판정은 작성자 self-review이며 GitHub approve·Ready 전환·merge를 뜻하지 않는다.
+#7474는 Draft를 유지한다. 남은 merge 조건은 문서 후행 head의 최신 CI, 배포 전 검사 비용에 대한
+메인테이너 검토와 실제 병합 승인이다. 이슈는 종료하지 않았다.
 
-## 접수와 범위
+## 기준과 절차
 
-| 항목 | 작성 시점 참고값 |
-| --- | --- |
-| PR·작성자·base | #7474 / postmelee / devel |
-| 원 #7474 head | `9d05998e09e4698391fe44f543abdd66ddc86c99` |
-| 고정 devel | `6ed1682c3267ea786734eb2e75252916a861d1fd` |
-| 통합 #7488 head | `e8e57b36d4703556128dae31e37eaa9acdceee0d` |
-| 검증 코드 후보 | `0eb4cc2ffde257a15080d0add104247c941fcbf9` |
-| 규모·상태 | 코드 후보 기준 19 files, +2060/-6; Draft, MERGEABLE/CLEAN |
-| 관련 이슈 | #7473 참조, 종료하지 않음 |
+- PR #7474, 작성자 postmelee, base devel. 기준 SHA `5e2b9bfbf08573a31fa1e11a2445ff63fc0755c0`.
+- opt-in #7488 head `3bfe08e24a55f16f7408405ead9550ffab925dad`를 이력 보존 통합했다.
+- 검증 code head `1ae9b510a5af0164de45191670e5e895e97270b3`.
+- 기본 경로 collaborator_self_merge, 보조 intake_and_review·local_validation·multi_pr_update_branch·
+  review_only_fast_pass. github_operations와 publish_guide를 함께 적용했다. self PR reviewer는 지정하지 않는다.
+- O3 workflow 실행·artifact 계약 변경이다. 기존 required context·권한·production trigger와 publish=false를 보존했다.
 
-사용자 요청에 따라 #7488을 선반영하고 PDF import 기본 feature가 포함된 devel에서 다시 측정했다.
-기본 경로는 `collaborator_self_merge.md`, 보조는 `intake_and_review.md`, `local_validation.md`,
-`review_only_fast_pass.md`, `rework_and_exceptions.md`다. `review_template.md`, `github_operations.md`,
-`visual_fixture_evidence.md`의 관련 절도 적용했다. self PR이므로 별도 reviewer를 지정하지 않는다.
+## 코드 검토
 
-## 코드와 계약 검토
+1. #7488 옵션을 자동 활성화하던 helper auto/PR 기본값을 standard로 변경했다. 수동 cdylib 비교와
+   개발 dev 경로를 유지하며 cache key/prefix의 profile·crate type·LTO 분리도 유지한다.
+2. Pages/npm은 기존 WASM 빌드 1회를 계측 wrapper로 실행한다. action은 그 pkg를 검사하며 WASM을
+   다시 빌드하지 않는다. 다른 PR run의 artifact를 privileged 배포에 가져오는 경로는 추가하지 않았다.
+3. release guard는 clean source SHA·standard 설정·wasm-opt 실행·JS/WASM bytes를 확인하고,
+   실제 CDP 응답과 manifest의 source/profile/hash를 대조한다. matched flag만 참인 잘못된 응답도 거부한다.
+4. Canvas/direct PDF 검사 실패와 준비 실패는 업로드를 막는다. Pages는 dist까지 재대조한다.
+   npm/VSIX는 기존 같은-run wasm-pkg를 다운로드한다. 최종 VSIX 내부 JS/WASM도 직접 해시를 확인했다.
+5. 출력 알고리즘·fixture·baseline/threshold를 수정하지 않았다. 독립 한컴 조판 정확도 개선 주장이 없으므로
+   별도 전쪽 TSV·Visual Sweep은 비해당이다. 기존 대표 문서 gate와 report-only 경고는 구분했다.
 
-- PR은 release/cdylib, 수동 실행은 dev/standard·release/standard·release/cdylib를 선택한다.
-  dev+cdylib는 거부하며 inherited opt-in 환경변수를 명시적으로 덮어써 조건을 고정한다.
-- cache key와 restore prefix에 profile·crate type·LTO를 넣고 Cargo manifest·lock·wrapper도 해시한다.
-  서로 다른 구성의 cache를 섞지 않으며 PR restore-only와 trusted main/devel 저장 제한은 유지한다.
-- #7488 wrapper를 원본 그대로 통합했다. cdylib의 `profile.release.lto=false`는 명령 단위 override다.
-  Cargo.toml 전역 설정·Rust 제품 코드 변경은 이 PR의 base 대비 diff에 없다.
-- release에서는 실제 wasm-opt 실행을 관측해야 성공 manifest를 만든다. E2E는 탐색 전에 CDP를 연결해
-  실제 앱 WASM 응답을 확인하고 누락·실패·해시 불일치를 거부한다. 종료 시 CDP를 정리한다.
-- metadata에 CPU/image와 빌드 구성을 기록해 서로 다른 VM의 결과를 동일 환경으로 오인하지 않게 했다.
-- 주요 한계: cold 개선은 CPU별 1~2회 표본, cache hit 성능 미측정, 배포와 LTO 플래그 동일성 미보장.
+## 완료한 검증
 
-## 검증과 남은 차이
+- focused Python 46개, workflow 계약 192개, 정책/provenance Node 102개, actionlint·Python/Node/쉘 관련 구문·공백 검사.
+  테스트 묶음은 중복을 포함하므로 합산하지 않는다. 파일 교체·dirty/stale/dev/cdylib·소비 누락/불일치 반례를 검사했다.
+- [Full CI](https://github.com/edwardkim/rhwp/actions/runs/39380204001),
+  [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39380203913),
+  [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39380203897)와 관련 PR checks: 33 success·5 skipped.
+- [Pages](https://github.com/edwardkim/rhwp/actions/runs/39380248603): Build success, Deploy skipped.
+- [Package](https://github.com/edwardkim/rhwp/actions/runs/39380255159): source guard·WASM·VSIX·aggregate success,
+  외부 게시 4채널 skipped, verdict completed/verify-only.
+- 세 경로의 JS/WASM bytes 동일, 실제 WASM 소비 22건 일치, 대표 Canvas/direct PDF 각각 3/3,
+  PR readiness 8/8. artifact ZIP digest를 확인한 뒤 manifest와 package/VSIX bytes를 별도로 재검산했다.
+- #7488 head도 CI 31 success·5 skipped이며 opt-in 제품 코드는 그대로다. Ready·메인테이너 검토 대기다.
 
-[재측정 보고서](../../report/task_m100_7473_report.md)에 9회 run URL·시간·CPU·산출물 hash가 있다.
-전 실행 Canvas 3/3·직접 PDF 3/3·readiness 8/8, PNG 43개 동일, 실제 응답 162건 일치다.
-report-only PDF 경고 4개와 KTX 머리글 겹침은 기존 그대로이며 threshold를 변경하지 않았다.
-대표 KTX·table-border-style PNG를 직접 판독했다. 조판 알고리즘·회귀 기준 변경은 비해당이며
-한컴 정합·전쪽 Native/fresh WASM silhouette 개선을 주장하지 않는다. 별도 TSV는 생성하지 않았다.
-
-- `python3 -m unittest` focused wrapper/render/workflow/Docker 묶음: 28 PASS.
-- `python3 -m unittest discover -s scripts/tests -p 'test_*workflow.py'`: 192 PASS.
-- `node --test scripts/tests/ci-impact-classifier.test.cjs scripts/tests/ci-impact-policy.test.cjs rhwp-studio/tests/wasm-artifact-check.test.ts`: 실제 102 PASS.
-- actionlint, shell/Python/Node 구문, 변경 Markdown 링크, `git diff --check`: PASS.
-- dev/standard/cdylib 모드와 반대 inherited 환경변수에 대한 mock subprocess 경계 확인: PASS.
-- 로컬 Rust 미설치로 로컬 전체 Rust 회귀는 미실행. 제품 Rust를 추가 변경하지 않았으며 실제 빌드와 브라우저는 CI에서 검증했다.
-
-정확한 코드 후보의 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/39072973013),
-[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39072973012),
-[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39072973025),
-[Adapter](https://github.com/edwardkim/rhwp/actions/runs/39072973002),
-[Proptest](https://github.com/edwardkim/rhwp/actions/runs/39072973042), CI Impact가 완료됐다.
-34 success·5 skipped, 실패·미완료 0건 확인 후 이 문서 후행 기록을 작성했다.
+[보고서](../../report/task_m100_7473_report.md)에 시간·CPU·실제 checkout SHA·hash·원자료 run을 기록했다.
+서로 다른 VM의 n=1 시간을 개선율로 사용하지 않는다. 배포 검증 action은 225/239초의 추가 작업이며,
+release CI 비용은 남는다. report-only PDF 경고 4개는 유지했다. cache 저장은 예산 초과로 거부됐고
+warm-cache 비용 절감을 보장하지 않는다. runtime 성능·전쪽 정확도·실제 registry 게시를 검증했다고 주장하지 않는다.
 
 ## 검증 입력
+
 
 다음 기존 파일의 작업 트리 bytes와 비교 후보 commit의 git blob bytes가 모두 일치한다.
 별도 한컴 기준 PDF는 사용하지 않았으며, PDF export 결과는 생성 산출물이다.
@@ -79,15 +69,9 @@ report-only PDF 경고 4개와 KTX 머리글 겹침은 기존 그대로이며 th
 | `samples/table-004.hwp` | `451ab7c40d47c4200e98b57b7cb3806e64968c32fa9441fc171e7babf64be915` |
 | `samples/tac-case-001.hwp` | `c003385b7b3495dd93a2688ea74b8a07848543a6c0128cb693635d8ba6fe43da` |
 
-## 문서 후행 커밋과 처리 범위
+## 후행 기록과 남은 처리
 
-녹색 코드 후보 위에 보고서·review·통합 기록·오늘할일·대표 PNG만 single-parent 문서 커밋으로 추가한다.
-push 전 최신 devel/head merge tree·공백·변경 링크를 확인하고 후행 head의 실제 CI·fast-pass를 다시 확인한다.
-코드 후보 성공을 후행 head의 자동 통과로 간주하지 않는다.
-[통합 순서·되돌리기](pr_7474_review_impl.md)를 따른다.
-
-## Merge 후 contributor PR comment 계획
-
-이번 작업은 self PR 재측정·리뷰이며 merge나 별도 댓글 게시는 하지 않는다.
-추후 merge가 승인되면 실제 merge SHA·최신 CI·본 보고서·merge SHA 고정 대표 PNG와 남은 차이를
-한국어로 준비하고 해당 시점의 게시 지시와 절차에 따라 처리한다.
+정확한 code head의 CI와 두 verify-only 실행이 모두 성공한 뒤 review·보고서·오늘할일만 후행 커밋으로 추가한다.
+최신 base와의 merge tree, 공백, 변경 링크, 오늘할일의 다른 기록 보존을 확인한 뒤 push한다.
+후행 head의 required check는 별도로 확인하며 기존 code 결과를 자동 통과로 간주하지 않는다.
+[적용 기록](pr_7474_review_impl.md)을 따른다. 실제 배포·approve·merge·이슈 종료는 수행하지 않았다.
