@@ -370,8 +370,8 @@ impl Renderer for CanvasRenderer {
         self.commands.push(CanvasCommand::EndPage);
     }
 
-    fn draw_text(&mut self, text: &str, x: f64, y: f64, _style: &TextStyle) {
-        let text = crate::renderer::composer::expand_pua_render_text(text);
+    fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
+        let text = crate::renderer::composer::expand_pua_render_text_in_style(text, style);
         self.commands.push(CanvasCommand::FillText(text, x, y));
     }
 
@@ -380,10 +380,10 @@ impl Renderer for CanvasRenderer {
         text: &str,
         x: f64,
         y: f64,
-        _style: &TextStyle,
+        style: &TextStyle,
         positions: Option<&[f64]>,
     ) {
-        let text = crate::renderer::composer::expand_pua_render_text(text);
+        let text = crate::renderer::composer::expand_pua_render_text_in_style(text, style);
         if let Some(positions) = super::validated_replay_positions(&text, positions) {
             self.commands.push(CanvasCommand::FillTextPositioned(
                 text,

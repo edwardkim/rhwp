@@ -87,6 +87,7 @@ pub(crate) mod table_row_frame;
 // layout/publication callers remain closed until their own approved slices.
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod cubic_sampling;
+pub mod native_pua_fonts;
 #[allow(dead_code)]
 pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -296,6 +297,9 @@ pub(crate) fn glyph_fit_positions<'a>(
 /// 텍스트 렌더링 스타일
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextStyle {
+    /// 호스트가 실제 paint에 준비한 글꼴의 원 PUA 표시·전진 계약이다.
+    #[serde(skip)]
+    pub native_pua_metrics: Option<std::sync::Arc<native_pua_fonts::NativePuaMetrics>>,
     /// Session-only glyph metrics; never part of document/style serialization.
     #[serde(skip)]
     pub supplemental_metrics:
@@ -674,6 +678,7 @@ impl Default for TextStyle {
             strike_color: 0,
             shade_color: 0x00FFFFFF,
             font_metric_trusted: false,
+            native_pua_metrics: None,
             metric_font_family: None,
             font_space_em: None,
             layout_half_space: false,

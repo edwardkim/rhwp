@@ -758,6 +758,30 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    #[wasm_bindgen(js_name = getNativePuaFontRequests)]
+    pub fn get_native_pua_font_requests(&self) -> Result<String, JsValue> {
+        serde_json::to_string(&self.native_pua_font_requests())
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = registerNativePuaFont)]
+    pub fn register_native_pua_font_wasm(
+        &mut self,
+        family: &str,
+        bold: bool,
+        italic: bool,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<bool, JsValue> {
+        self.register_native_pua_font(family, bold, italic, bytes, face_index)
+            .map_err(JsValue::from)
+    }
+
+    #[wasm_bindgen(js_name = clearNativePuaFonts)]
+    pub fn clear_native_pua_fonts_wasm(&mut self) {
+        self.clear_native_pua_fonts();
+    }
+
     /// 이미 등록된 exact font source slot에 명시 variable-font instance 요청을 설정한다.
     /// JSON DTO의 검증·canonicalization·mutation 권위는 native command 한 곳에만 둔다.
     #[wasm_bindgen(js_name = setExactFontInstance)]

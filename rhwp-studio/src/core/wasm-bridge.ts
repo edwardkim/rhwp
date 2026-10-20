@@ -1,6 +1,7 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
+import { NativePuaFontSession, type NativePuaFontDocument } from './native-pua-font-session';
 import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
 import { MetafileFontSession, type MetafileFontDocument } from './metafile-font-session';
 import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
@@ -316,6 +317,7 @@ export class WasmBridge {
   private doc: HwpDocument | null = null;
   private canvasMetrics = new CanvasMetricSession();
   private readonly hostCanvasFonts = new HostCanvasFontSession();
+  private readonly nativePuaFonts = new NativePuaFontSession();
   private readonly metafileFonts = new MetafileFontSession();
   private canvasFontGeneration = 0;
 
@@ -326,6 +328,7 @@ export class WasmBridge {
   }
 
   invalidateCanvasMetricFonts(): void {
+    this.nativePuaFonts.clear(this.doc as unknown as NativePuaFontDocument | null);
     this.canvasFontGeneration += 1;
     this.invalidateCanvasMetrics();
   }
@@ -360,8 +363,11 @@ export class WasmBridge {
       });
       await this.hostCanvasFonts.prepare(records);
       if (!current() || generation !== getHostFontState().generation) return false;
+      if (!await this.nativePuaFonts.prepare(doc as unknown as NativePuaFontDocument | null,
+        this.canvasFontGeneration, record => this.hostCanvasFonts.isPrepared(record), current)) return false;
     } else {
       this.hostCanvasFonts.reset();
+      this.nativePuaFonts.clear(doc as unknown as NativePuaFontDocument | null);
     }
     const metricDoc = this.canvasMetricDocument();
     if (!metricDoc || !current()) return false;

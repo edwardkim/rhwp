@@ -179,6 +179,7 @@ pub fn resolve_styles_with_variant(
         page_number::resolve(doc_info, false);
 
     ResolvedStyleSet {
+        native_pua_fonts: Default::default(),
         resolved_dpi: Some(dpi),
         page_number_char_style_id,
         page_number_font_is_hft,

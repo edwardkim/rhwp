@@ -862,6 +862,11 @@ pub(crate) fn resolved_to_text_style(
 ) -> TextStyle {
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         TextStyle {
+            native_pua_metrics: styles.native_pua_fonts.get(
+                cs.font_family_for_lang(lang_index),
+                cs.bold,
+                cs.italic,
+            ),
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
             font_family: cs.font_family_for_lang(lang_index).to_string(),
@@ -1616,6 +1621,13 @@ fn char_width_decision_with_hft_tracking<'a>(
     let (base_width_raw, width_source, metric, character_match) = if let Some(w) = font_space_width
     {
         (w, "useFontSpace", None, "notApplicable")
+    } else if let Some(em) = style
+        .native_pua_metrics
+        .as_ref()
+        .and_then(|program| program.advance_em(c))
+    {
+        em_exact = Some(em);
+        (font_size * em, "verifiedSourcePua", None, "exact")
     } else if let Some(w) = (c == '\u{318D}')
         .then(|| area_dot_fallback_width(&style.font_family, font_size))
         .flatten()

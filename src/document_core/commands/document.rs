@@ -308,6 +308,7 @@ impl DocumentCore {
 
         let sec_count = document.sections.len();
         let mut doc = DocumentCore {
+            native_pua_fonts: Default::default(),
             document,
             pagination: Vec::new(),
             styles,

@@ -376,7 +376,7 @@ fn compose_paragraph_scoped(
     // Hanyang-PUA 옛한글 / 한컴 PUA와 legacy 제품명 표시 문자열 변환 (렌더링·측정용)
     // 제어 표기의 소프트 하이픈만 줄 끝에 표시한다. 모델 글자와 offset은 유지한다.
     let soft_hyphen_control = para.control_mask & (1u32 << 0x0018) != 0;
-    convert_pua_display_text(&mut composed, soft_hyphen_control);
+    convert_pua_display_text(&mut composed, soft_hyphen_control, metric_styles);
 
     // Keep existing display projection intact; inserted control text has no source span.
     if protect_metrics {

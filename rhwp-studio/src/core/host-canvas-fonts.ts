@@ -47,6 +47,10 @@ export class HostCanvasFontSession {
     return { loaded: this.faces.size, pending: this.pending.size, failed: this.failures.size };
   }
 
+  isPrepared(record: LocalFontRecord): boolean {
+    return this.generation === getHostFontState().generation && this.faces.has(localFontFaceKey(record));
+  }
+
   async prepare(records: readonly LocalFontRecord[]): Promise<void> {
     const generation = getHostFontState().generation;
     if (this.generation !== generation) {

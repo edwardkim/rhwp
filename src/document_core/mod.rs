@@ -9,6 +9,8 @@ pub(crate) use helpers::*;
 pub mod builders;
 mod canvas_metric_requests;
 mod canvas_metrics;
+mod native_pua_fonts;
+pub use native_pua_fonts::NativePuaFontRequest;
 mod font_environment;
 pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
 mod commands;
@@ -185,6 +187,7 @@ pub struct DocumentCore {
     pub(crate) pagination: Vec<PaginationResult>,
     /// 해소된 스타일 세트
     pub(crate) styles: ResolvedStyleSet,
+    native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
     pub(crate) canvas_metrics: Option<canvas_metrics::CanvasMetricSession>,
     pub(crate) hft_outline_fonts: crate::renderer::hft_outline::HftOutlineFonts,
     pub(crate) metafile_fonts: crate::paint::metafile_fonts::MetafileFonts,
@@ -481,12 +484,14 @@ impl DocumentCore {
     /// normalization. Layout provenance remains in `Document::layout_profile`
     /// and is passed separately to cache-admission consumers.
     pub(crate) fn resolve_render_styles(&self) -> ResolvedStyleSet {
-        crate::renderer::style_resolver::resolve_styles_with_environment(
+        let mut styles = crate::renderer::style_resolver::resolve_styles_with_environment(
             &self.document,
             self.dpi,
             self.font_environment.as_ref(),
             self.effective_layout_profile(),
-        )
+        );
+        styles.native_pua_fonts = self.native_pua_fonts.clone();
+        styles
     }
 
     pub(crate) fn rebuild_resolved_styles(&mut self) -> bool {
@@ -540,6 +545,7 @@ impl DocumentCore {
             document: Document::default(),
             pagination: Vec::new(),
             styles: ResolvedStyleSet::default(),
+            native_pua_fonts: Default::default(),
             canvas_metrics: None,
             hft_outline_fonts: Default::default(),
             metafile_fonts: Default::default(),

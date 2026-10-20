@@ -312,6 +312,25 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         }
     }
 
+    let has_options = png_options.scale.is_some()
+        || png_options.max_dimension.is_some()
+        || png_options.vlm_target.is_some()
+        || png_options.dpi.is_some()
+        || render_profile != rhwp::paint::RenderProfile::Screen;
+    let exporter = if has_options || !font_paths.is_empty() {
+        rhwp::document_core::queries::png_export::NativePngExporter::new(
+            render_profile,
+            png_options,
+        )
+    } else {
+        rhwp::document_core::queries::png_export::NativePngExporter::system_defaults()
+    };
+
+    if let Err(error) = exporter.prepare_document(&mut core) {
+        eprintln!("오류: 실제 PUA 글꼴 공급 실패: {error}");
+        return EXIT_RUNTIME;
+    }
+
     let page_count = core.page_count();
     if !json {
         println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
@@ -372,19 +391,6 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
     let mut success = 0;
     let mut total_bytes = 0usize;
     let mut exported_pages = Vec::new();
-    let has_options = png_options.scale.is_some()
-        || png_options.max_dimension.is_some()
-        || png_options.vlm_target.is_some()
-        || png_options.dpi.is_some()
-        || render_profile != rhwp::paint::RenderProfile::Screen;
-    let exporter = if has_options || !font_paths.is_empty() {
-        rhwp::document_core::queries::png_export::NativePngExporter::new(
-            render_profile,
-            png_options,
-        )
-    } else {
-        rhwp::document_core::queries::png_export::NativePngExporter::system_defaults()
-    };
 
     for page_num in &pages {
         let result = exporter.render_page(&core, *page_num);

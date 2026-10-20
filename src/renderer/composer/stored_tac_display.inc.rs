@@ -297,7 +297,11 @@ pub(crate) fn caption_height_px_in_context(
 /// 바꾸며, 원문 IR·검색·캐럿 offset은 그대로 보존한다.
 ///
 /// 매핑 표: KTUG HanyangPuaTableProject (Public Domain).
-fn convert_pua_display_text(composed: &mut ComposedParagraph, soft_hyphen_control: bool) {
+fn convert_pua_display_text(
+    composed: &mut ComposedParagraph,
+    soft_hyphen_control: bool,
+    styles: Option<&ResolvedStyleSet>,
+) {
     use super::pua_oldhangul::map_pua_old_hangul;
 
     let product_prefix_starts = legacy_hancom_product_prefix_starts(composed);
@@ -309,6 +313,7 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph, soft_hyphen_contro
         // 표시 문자열만 바꾼다 — 줄 끝 판정은 이 줄의 마지막 모델 글자다.
         let line_last_run = line.runs.iter().rposition(|run| !run.text.is_empty());
         for (run_index, run) in line.runs.iter_mut().enumerate() {
+            let program = styles.and_then(|styles| run.text_style(styles).native_pua_metrics);
             let chars: Vec<char> = run.text.chars().collect();
             let run_char_end = run_char_start + chars.len();
             let has_product_projection = product_prefix_starts
@@ -359,7 +364,14 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph, soft_hyphen_contro
                     // (U+F0854/F0855 → 《》) 등을 측정 문자열에도 올린다. 원문 PUA 는
                     // CJK가 아니라 0.5em 휴리스틱이 되어 run bbox 가 전각 글리프보다
                     // 짧고, 다음 라틴 run 이 한글 위에 겹친다 (#6057).
-                    let mapped = map_pua_bullet_char(ch);
+                    let mapped = if program
+                        .as_ref()
+                        .is_some_and(|program| program.advance_em(ch).is_some())
+                    {
+                        hancom_symbol_display_key(ch)
+                    } else {
+                        map_pua_bullet_char(ch)
+                    };
                     display.push(mapped);
                     if mapped != ch {
                         changed = true;
