@@ -5,6 +5,7 @@ mod nested_header_frame;
 mod plain_cell_flow;
 mod reflowed_nested_row;
 mod row_block_cut;
+mod row_defaults;
 mod row_physical_band;
 mod stored_block_frames;
 mod stored_body_closed_frame;
@@ -5672,10 +5673,18 @@ impl LayoutEngine {
             row_heights = heights;
         }
 
-        // 3단계: 높이 0인 행에 기본값
+        // 3단계: 측정과 같은 저장 그리드의 미결 행 기본값을 소비한다.
+        let profile = self.profile.get();
+        let stored = !profile.session_edited()
+            && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            && !self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table);
         for r in 0..row_count {
             if row_heights[r] <= 0.0 {
-                row_heights[r] = hwpunit_to_px(400, self.dpi);
+                row_heights[r] =
+                    hwpunit_to_px(Self::unresolved_row_default_hu(table, r, stored), self.dpi);
             }
         }
         // [#6442] 쓰이지 않는 안 여백 필드(`apply_inner_margin=false`)의 쓰레기값이

@@ -4624,10 +4624,18 @@ impl HeightMeasurer {
             row_heights = heights;
         }
 
-        // 3단계: 높이가 0인 행은 기본값 적용
-        for h in &mut row_heights {
+        // 3단계: 실제 배치와 같은 저장 그리드의 미결 행 기본값을 소비한다.
+        let stored = !self.session_edited
+            && (self.is_native_hwp5 || self.hwpx_stored_layout)
+            && !self.render_normalization.table_text_reflowed(table);
+        for (row, h) in row_heights.iter_mut().enumerate() {
             if *h <= 0.0 {
-                *h = hwpunit_to_px(400, self.dpi);
+                *h = hwpunit_to_px(
+                    crate::renderer::layout::LayoutEngine::unresolved_row_default_hu(
+                        table, row, stored,
+                    ),
+                    self.dpi,
+                );
             }
         }
 
