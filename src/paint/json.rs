@@ -23,7 +23,7 @@ use crate::paint::{
     SvgGlyphPayload, TextDecorationKind, TextSourceAnnotation, TextSourceEntry, TextSourceId,
     TextSourceRange, TextSourceSpan, TextSourceTable, TextV2Diagnostics, LAYER_TREE_SCHEMA,
 };
-use crate::renderer::composer::expand_pua_display_text;
+use crate::renderer::composer::expand_pua_render_text;
 use crate::renderer::equation::ast::MatrixStyle;
 use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
 use crate::renderer::equation::symbols::{DecoKind, FontStyleKind};
@@ -1846,7 +1846,7 @@ fn write_bounded_text_positions(buf: &mut String, text: &str, style: &TextStyle)
 }
 
 fn display_text_for_text_run(run: &TextRunNode) -> Option<String> {
-    let display_text = expand_pua_display_text(run.display_or_text());
+    let display_text = expand_pua_render_text(run.display_or_text());
     (display_text != run.text.as_str()).then_some(display_text)
 }
 
@@ -3941,7 +3941,7 @@ mod tests {
 
         let value: Value = serde_json::from_str(&json).expect("valid layer JSON");
         let ops = value["root"]["ops"].as_array().expect("leaf ops");
-        let display_text = expand_pua_display_text(&run.text);
+        let display_text = expand_pua_render_text(&run.text);
         let positions = compute_char_positions(&display_text, &run.style);
         let expected_end = clamp_tab_leader_end_x(
             &display_text,

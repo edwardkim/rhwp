@@ -12,6 +12,8 @@ use crate::paint::{
     TextDecorationKind, TextVariantKind,
 };
 use crate::renderer::composer::expand_pua_render_text_in_style;
+#[cfg(test)]
+use crate::renderer::composer::expand_pua_render_text;
 use crate::renderer::equation::{
     layout::{LayoutBox, LayoutKind},
     symbols::{DecoKind, FontStyleKind},
@@ -3296,7 +3298,7 @@ mod tests {
             "\u{F012B}".repeat(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN / 3 + 1);
         assert!(pua_source.chars().count() <= crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN);
         assert!(
-            expand_pua_display_text(&pua_source).chars().count()
+            expand_pua_render_text(&pua_source).chars().count()
                 > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
         );
         let mut leader = text_run(&pua_source);
@@ -3344,7 +3346,7 @@ mod tests {
             projected_text.chars().count() < CANVASKIT_DOCUMENT_PREFLIGHT_MAX_WORK_UNITS as usize
         );
         assert!(
-            expand_pua_display_text(&projected_text).chars().count()
+            expand_pua_render_text(&projected_text).chars().count()
                 > CANVASKIT_DOCUMENT_PREFLIGHT_MAX_WORK_UNITS as usize
         );
         let projected_tree =

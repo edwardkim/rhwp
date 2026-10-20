@@ -16,7 +16,7 @@ impl ComposedTextRun {
             return Some(display.chars().skip(start).take(end - start).collect());
         }
         let text: String = self.text.chars().skip(start).take(end - start).collect();
-        let expanded = super::expand_pua_display_text(&text);
+        let expanded = super::expand_pua_render_text(&text);
         (expanded != text).then_some(expanded)
     }
 }

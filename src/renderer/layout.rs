@@ -4900,11 +4900,11 @@ impl LayoutEngine {
 
     /// PUA 표시 확장이 필요한 글자가 있으면 그 표시 문자열을, 없으면 `None` 을 준다.
     ///
-    /// `convert_pua_display_text` 와 같은 규칙(`expand_pua_display_text`)을 쓰되 조각
+    /// `convert_pua_display_text` 와 같은 규칙(`expand_pua_render_text`)을 쓰되 조각
     /// 단위로 다시 만든다 — 원본 런의 값을 잘라 쓸 수 없기 때문이다(표시 길이가 모델과
     /// 다르므로 모델 인덱스로 자를 수 없다).
     fn pua_display_for(text: &str) -> Option<String> {
-        let expanded = crate::renderer::composer::expand_pua_display_text(text);
+        let expanded = crate::renderer::composer::expand_pua_render_text(text);
         (expanded != text).then_some(expanded)
     }
 
@@ -5166,12 +5166,12 @@ impl LayoutEngine {
                         }
                         let plain: String = chars[cursor..rel].iter().collect();
                         display
-                            .push_str(&crate::renderer::composer::expand_pua_display_text(&plain));
+                            .push_str(&crate::renderer::composer::expand_pua_render_text(&plain));
                         display.push_str(rep);
                         cursor = rel + 1;
                     }
                     let tail: String = chars[cursor.min(chars.len())..].iter().collect();
-                    display.push_str(&crate::renderer::composer::expand_pua_display_text(&tail));
+                    display.push_str(&crate::renderer::composer::expand_pua_render_text(&tail));
                     // `line.runs[run_idx].text` 는 marker 를 포함한 원 모델 문자열이다.
                     // 바꾸지 않아야 char_start/offset 이 표시 자릿수에 끌려가지 않는다.
                     line.runs[run_idx].display_text = Some(display);

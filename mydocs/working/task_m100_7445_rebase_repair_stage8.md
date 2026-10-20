@@ -4496,3 +4496,52 @@ after270에서 PASS다. 277 standalone 결과만으로 끝내지 않고 prepare 
 [전쪽 TSV·수정 전 빈 쪽·수정 후 review와 overlay](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/oss-terminal-cursor/README.md)를 보존한다.
 전체 nextest는 C443의11125PASS/24FAIL/45skip 이후 재실행 전이며, 로드맵153쪽 미달·
 다른 실패 보정·전체 corpus 재검증·PR 새 승인은 남아 있다.
+
+
+## C447 PUA 채움의 흐름과 점선 paint를 분리
+
+C446 commit은 c41b7796ca다. 288은 그 head에서 C443의 실패24건만 다시 실행하여
+7PASS/17FAIL,49.176초/exit100이었다. 전체 suite 통과로 쓰지 않는다. 원래 #7017의
+PR #7042/9c7a8c427a, #937과 현재 0fec89c3cc·4b1ce8fdc9의 helper/소비 경로를 대조했다.
+원본 점선 F081C는 측정과 composed display에 남는데 expand_pua_render_text가 TAC의
+빈 흐름 판정용 display helper를 그대로 호출했다. 실제 paint에서 점선이 없어지고
+짧아진 문자열로 원점을 재계산하여 절·취·선도 왼쪽으로 밀렸다. 기대를 숨김으로 되돌리지 않는다.
+
+공통 표면 변환에서 흐름만 F081C를 빈 표시로 분류하고 실제 paint/replay는 검증된
+한컴 점선 매핑을 소비한다. one-to-one replay도 같은 paint scalar를 읽는다.
+layout의 표시 조각/자동번호 주변 본문, resolved field 조각, paint JSON/bounds 및
+CanvasKit 자원/시각 단위 예산은 실제 paint helper를 소비하며, inline_flow의 has_text는
+기존 빈 흐름 계약을 유지한다. 원문 주소·UTF16/문자 수·TAC 배치·미등록 PUA는 보존한다.
+추가 BMP 원시값을 추정 매핑하거나 문서 ID 예외·글꼴/비교기/문턱 변경은 하지 않았다.
+
+291 Native 실제 빌드는160.503초/exit0이다. 기존 실패 #937 helper와 #7017의 SVG60개
+검사를 포함한292 정식5 packet15건은 모두PASS이며 fmt/manifest도 exit0이다.
+289/294/295는 접수증·복학원서 각 전1쪽 Native/WASM을 새로 비교했다. 접수증은
+Native97.75291→99.35164%, fresh WASM97.78710→99.37179%다. 복학원서 대조군은
+Native96.94293→96.92177, WASM97.70069→97.68584%로0.1%p 안의 미세 변화다.
+4조건 모두 쪽수1/1·raw90미달0이다. 모든 after review와 overlay를 직접 읽었고,
+접수증 점선/라벨 중심과 앞뒤 표·본문, 복학원서 표·서명·본문 보존을 확인했다.
+복학원서 왼쪽 위 로고의 기존 PDF 차이와 미세한 자형/AA는 완전 일치로 표현하지 않는다.
+Native의 실제 변경은 접수증 절취선4222픽셀, 대조군 끝 조각121픽셀에 국한된다.
+
+293은 실제 재컴파일한 locked Mac web/pkg/no-opt 로컬 대체 WASM이며256.345초/exit0다.
+root pkg·Studio public과297의 실제7736 초기 응답 JS/WASM hash가 일치하고 초기화 true,
+오류0이다. Docker 최적화, 지원 CanvasKit, actual36 또는 전체 corpus 수용이 아니다.
+
+접수증이 전쪽90%·해당 쪽 양쪽98%·직접 판독을 충족한 뒤에만 기존7017 함수에
+독립 Print의 세 라벨 원점·기준선±2CSSpx를 추가했다. 296은 PDF Tm/CTM의 원래 수치를
+보존하며, 기존 원문·60개·쪽 여백/중앙 정렬·내용 순서 관계는 모두 유지한다. 복학원서는
+양쪽 raw98% 미만이므로 px 핀을 추가하지 않는다. 299 prepare 후 정식 해당1PASS,
+fmt/Native Clippy/WASM Clippy/manifest 각각 exit0이다. 변경한 동일 검사 소스를
+300에서 frozen270에 연결해 실제1FAIL,291에 연결해1PASS도 확인했다. 테스트 함수 수는
+늘리지 않았으며 generated suite/manifest를 stage하지 않았다.
+[전후 전쪽 TSV·Native/fresh WASM review와 overlay](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/pua-flow-paint/README.md)를 보존한다.
+전체 재실행 전이므로17실패에서 두 건을 빼 새 전체 결과라고 쓰지 않는다.
+
+별도285는 OSS의 Native1/4쪽 하락이 자간/글꼴이 아니라 가는 테두리에서 생김을
+확인했다. 선택한5텍스트 영역은 base/current PNG 바이트 동일이며 추가1129개 미대응은
+1쪽 하단 가로선 한 줄이다. 287의 snap 해제는 OSS를 복구하지만 생물독소143쪽을
+100→81.78512%로 떨어뜨려 채택하지 않았다. 물리 Print 프레임 진단도 별도 replay이며
+제품에 적용하지 않았다. 최초 u32 타입/scale 누락 실행은 보존하고 올바른 scale·기준
+PNG 픽셀 동일성까지 확인한 최종 진단과 구분한다. 이 선 문제와 로드맵153쪽 미달,
+다른 실패 보정·전체 corpus/전체 회귀·actual36·PR 새 승인은 남는다.

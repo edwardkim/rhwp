@@ -43,10 +43,10 @@ use rhwp::renderer::{
 
 const SAMPLE: &str = "samples/issue7017/2528375-science-invention-contest-receipt.hwp";
 
-// C169: 같은 원본 전1쪽 Native97.96961% / fresh WASM98.00636%, 독립2020 Print와
-// review/overlay 직접 판독 완료. Native<98이므로 기존145.4±2px/793.3px 핀을
-// 원본 쪽 여백·가운데 정렬·내용 소속 관계로 바꾼다. 점선60개 소실을 허용하지 않는다.
-// 증적: task_m100_7445_rebase_repair_stage8.md의 C169.
+// C447: 같은 원본 전1쪽 Native99.35164% / fresh WASM99.37179%, 독립2020 Print와
+// review/overlay 직접 판독 완료. 원본 여백·내용 소속·점선60개 관계를 유지하며,
+// 복구한 절·취·선의 독립 PDF 원점/기준선을 ±2CSSpx로 보호한다.
+// 증적: stage8 C447 및 pua-flow-paint의 전쪽 TSV·대표 쌍.
 #[test]
 fn issue_7017_centered_pua_dotted_line_stays_on_the_paper() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -136,6 +136,22 @@ fn issue_7017_centered_pua_dotted_line_stays_on_the_paper() {
             && labels[1] < labels[2]
             && labels[2] < dotted[dotted.len() - 1],
         "점선 안의 절·취·선 순서 보존"
+    );
+
+    // 같은 독립 Print의 Batang Tm x=2087/2435/2784, y=2763와
+    // device CTM (0.119935, -0.119869)를 원래 pt→96CSSpx로 변환한다.
+    // 관측된 현재 좌표를 기대값으로 쓰지 않는다.
+    for (actual, source_x) in labels.iter().zip([2087.0, 2435.0, 2784.0]) {
+        let independent = source_x * 0.119_935 * 96.0 / 72.0;
+        assert!(
+            (actual - independent).abs() <= 2.0,
+            "독립 Print 절취선 라벨 x ±2CSSpx: {actual} vs {independent}"
+        );
+    }
+    let independent_baseline = 2763.0 * 0.119_869 * 96.0 / 72.0;
+    assert!(
+        (node.bbox.y + run.baseline - independent_baseline).abs() <= 2.0,
+        "독립 Print 절취선 라벨 기준선 ±2CSSpx"
     );
 }
 
