@@ -69,7 +69,7 @@ impl TypesetEngine {
             .or_else(|| self.stored_body_closing_fragment_extent(st, input, budget, &scan));
         let BlockTableRowScan {
             source_frame_band,
-            consumed,
+            mut consumed,
             accepted_end_row_box,
             mut end_row,
             split_block_start,
@@ -78,6 +78,34 @@ impl TypesetEngine {
             split_end_reserved,
             mut end_row_height_override,
         } = scan;
+        // 내용을 모두 담은 끝 행의 상자는 그리기와 같은 비끝 조각 닫는 선에서 끝난다.
+        // 저장 줄 행의 내용 컷 예산은 본문 아래까지 쓰지만, 닫는 선 아래 몫은 이 행도,
+        // 행을 덮는 병합 칸도 소비하지 않는다. 남은 선언과 병합 칸 원장은 닫는 선까지의
+        // 상자에서 잰다(1342000 58쪽 행 9: 103.99 → 98.88 = 한/글 2020, 59쪽 띠 25.9 ·
+        // 61쪽 병합 칸 잔여 51.6).
+        if let (Some(height), Some(frame_rows)) =
+            (end_row_height_override, budget.reflow_frame_avail_for_rows)
+        {
+            let excess = consumed - frame_rows;
+            let row = end_row.saturating_sub(1);
+            let start: &[usize] = if row == cursor_row { start_cut } else { &[] };
+            if excess > 0.0
+                && split_end_limit > 0.0
+                && split_block_start.is_none()
+                && end_row > cursor_row
+                && layout_engine.row_cut_consumes_all_ordinary_units(
+                    row_geometry_table,
+                    row,
+                    &split_end_cut,
+                    styles,
+                )
+                && layout_engine.row_cut_content_height(table, row, start, &split_end_cut, styles)
+                    <= height - excess + 0.5
+            {
+                end_row_height_override = Some(height - excess);
+                consumed = frame_rows;
+            }
+        }
         let source_first_row_frame =
             layout_engine.saved_first_row_opening_frame(table, styles, st.layout.body_area.height);
         let source_opening_row_frame = (!is_continuation
@@ -1999,7 +2027,6 @@ impl TypesetEngine {
                 if end_row - 1 == cursor_row { start_cut } else { &[] }, &next_cut, styles,
             ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
                 && layout_engine.reflow_row_physical_minimum(table, end_row.saturating_sub(1), styles).is_none()
-                && !(complete_physical_end_cut && crossing_span_owns_tail)
                 && (!layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1))
                     || crossing_span_owns_tail))
             .and_then(|limit| {
@@ -2022,6 +2049,13 @@ impl TypesetEngine {
                 && layout_engine.stored_complete_row_tail_is_line_advance(
                     table, end_row - 1, &next_cut, tail, styles,
                 ) {
+                return None;
+            }
+            // 내용이 끝난 행의 작은 빈 꼬리는 쪽 경계에서 흡수한다. 행을 덮는 병합 칸은
+            // 그 몫을 자기 마지막 행에서 원장으로 이어받는다(#7642). 상한을 넘는 꼬리는
+            // 병합 칸 유무와 무관하게 다음 쪽 첫머리 빈 띠다(한/글 2024 합성 사다리 #8105,
+            // 1342000 59쪽 25.9px).
+            if complete_physical_end_cut && layout_engine.complete_row_blank_tail_is_absorbed(tail) {
                 return None;
             }
             // [#5714] 압축된 끝행의 빈 잔여 띠는 **물리적으로 이어지는
@@ -2049,10 +2083,11 @@ impl TypesetEngine {
         // 완료 일반 칸의 잔여와 같은 끝 행에 걸친 병합 칸의 잔여는 별도 소유다.
         let next_start_row_height_override = match (
             next_start_row_height_override,
-            layout_engine.reflow_ending_span_minimum_remainder(
+            layout_engine.ending_span_minimum_remainder(
                 row_geometry_table,
                 end_row,
                 &accepted_straddle_cells,
+                complete_physical_end_cut,
                 styles,
             ),
         ) {

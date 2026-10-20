@@ -6741,6 +6741,19 @@ impl LayoutEngine {
                     && self
                         .stored_ordinary_row_frame_owns_alignment(table, fold_row, end_cut, styles))
                 && budget_row_height_0.is_none()
+                // 내용을 모두 담고 자기 선언 높이 안에 있는 끝 행 상자는 선언이 만든 물리
+                // 상자다. 한/글은 그 상자를 닫는 선까지 그리고 남은 선언을 다음 쪽 띠로 넘긴다
+                // (1342000 58쪽 행 9 98.88px, #8105 합성 사다리 181.5px). 끝 줄간격으로 접지 않는다.
+                && !(!is_block_split
+                    && end_row == fold_row + 1
+                    && end_row_height_override.is_some_and(|height| {
+                        table.get_raw_row_heights().get(fold_row).is_some_and(|&declared| {
+                            declared <= i32::MAX as u32
+                                && height <= hwpunit_to_px(declared as i32, self.dpi) + 0.5
+                        }) && self.row_cut_consumes_all_ordinary_units(
+                            table, fold_row, end_cut, styles,
+                        )
+                    }))
                 && probe.is_none_or(|p| {
                     table.cells.iter().enumerate().all(|(idx, cell)| {
                         cell.row as usize + cell.row_span as usize != fold_row + 1
