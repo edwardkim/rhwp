@@ -94,6 +94,12 @@ pub(crate) enum StoredRowMissPolicy {
 /// 줄 나눔 토큰
 #[derive(Debug, Clone)]
 pub(crate) enum BreakToken {
+    /// 제어 soft-hyphen은 중간 전진 없이, 하이픈이 fit하는 줄 끝만 제공한다.
+    DiscretionaryHyphen {
+        idx: usize,
+        width: f64,
+        max_font_size: f64,
+    },
     /// 분할 불가 텍스트 조각 (어절/단어/글자)
     /// char_widths: 글자별 px 폭 (char_level_break용, 단일 글자 토큰은 비어있음)
     Text {
@@ -326,6 +332,7 @@ pub(crate) fn tokenize_paragraph(
         korean_break_unit,
         SpaceMetric::Stored,
         &[],
+        false,
     )
 }
 
@@ -385,6 +392,7 @@ pub(crate) fn text_word_ranges(para: &Paragraph, styles: &ResolvedStyleSet) -> V
         style.map_or(0, |s| s.korean_break_unit),
         SpaceMetric::Stored,
         &[],
+        para.control_mask & (1 << 0x18) != 0,
     )
     .into_iter()
     .filter_map(|token| match token {
@@ -405,6 +413,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
     korean_break_unit: u8,
     space_metric: SpaceMetric,
     inline_controls: &[FlowInlineControl],
+    soft_hyphen_control: bool,
 ) -> Vec<BreakToken> {
     let text_len = text_chars.len();
     if text_len == 0 {
@@ -419,6 +428,19 @@ fn tokenize_paragraph_with_regenerated_space_metric(
 
     while i < text_len {
         let ch = text_chars[i];
+
+        if soft_hyphen_control && ch == '\u{00AD}' {
+            let position = char_offsets.get(i).copied().unwrap_or(i as u32);
+            let shape = find_active_char_shape(char_shapes, position);
+            let style = metric_scope.style(styles, shape, current_lang, i);
+            tokens.push(BreakToken::DiscretionaryHyphen {
+                idx: i,
+                width: estimate_text_width_unrounded("-", &style),
+                max_font_size: token_line_font_size(styles, shape),
+            });
+            i += 1;
+            continue;
+        }
 
         // 강제 줄 바꿈
         if ch == '\n' {
@@ -506,6 +528,9 @@ fn tokenize_paragraph_with_regenerated_space_metric(
 
                 while i < text_len {
                     let c = text_chars[i];
+                    if soft_hyphen_control && c == '\u{00AD}' {
+                        break;
+                    }
                     if c == ' ' || c == '\n' || c == '\t' || c == '\u{FFFC}' {
                         break;
                     }
@@ -687,6 +712,9 @@ fn tokenize_paragraph_with_regenerated_space_metric(
 
                 while i < text_len {
                     let c = text_chars[i];
+                    if soft_hyphen_control && c == '\u{00AD}' {
+                        break;
+                    }
                     if c == ' ' || c == '\n' || c == '\t' {
                         break;
                     }
@@ -1684,7 +1712,8 @@ impl FillCursor {
         let mut cursor = Self::new(boundary, first_line);
         cursor.token_index = tokens.partition_point(|token| match token {
             BreakToken::Text { end_idx, .. } => *end_idx <= boundary,
-            BreakToken::Space { idx, .. }
+            BreakToken::DiscretionaryHyphen { idx, .. }
+            | BreakToken::Space { idx, .. }
             | BreakToken::Tab { idx, .. }
             | BreakToken::LineBreak { idx } => *idx < boundary,
         });
@@ -1881,7 +1910,8 @@ fn fill_one_interval(
                 .last()
                 .map(|token| match token {
                     BreakToken::Text { end_idx, .. } => *end_idx,
-                    BreakToken::Space { idx, .. }
+                    BreakToken::DiscretionaryHyphen { idx, .. }
+                    | BreakToken::Space { idx, .. }
                     | BreakToken::Tab { idx, .. }
                     | BreakToken::LineBreak { idx } => *idx + 1,
                 })
@@ -1917,6 +1947,31 @@ fn fill_one_interval(
 
         let ti = cursor.token_index;
         match &tokens[ti] {
+            BreakToken::DiscretionaryHyphen {
+                idx,
+                width,
+                max_font_size,
+            } => {
+                let size = cursor.line_max_fs.max(*max_font_size);
+                if *idx > cursor.line_start_idx
+                    && fits_physical_line(
+                        cursor.lw,
+                        FitWidthHwp(to_hwp(*width)),
+                        cursor.line_space_savings,
+                        eff_w(cursor.is_first_line),
+                        None,
+                    )
+                {
+                    cursor.last_break_token_idx = Some(ti);
+                    cursor.last_break_char_idx = *idx + 1;
+                    // 전진은 0이다. 다음 줄로 넘길 때 표시 하이픈 폭을 빼지 않는다.
+                    cursor.width_at_last_break = cursor.lw;
+                    cursor.space_savings_at_last_break = cursor.line_space_savings;
+                    cursor.fs_at_last_break = size;
+                }
+                cursor.line_max_fs = size;
+                cursor.token_index += 1;
+            }
             BreakToken::LineBreak { idx } => {
                 let result = LineBreakResult {
                     start_idx: cursor.line_start_idx,
@@ -2402,6 +2457,22 @@ fn fill_lines_before_cursor(
 
     for (ti, token) in tokens.iter().enumerate() {
         match token {
+            BreakToken::DiscretionaryHyphen {
+                idx,
+                width,
+                max_font_size,
+            } => {
+                line_max_fs = line_max_fs.max(*max_font_size);
+                if *idx > line_start_idx
+                    && lw + to_hwp(*width) - line_space_savings <= eff_w(is_first_line)
+                {
+                    last_break_token_idx = Some(ti);
+                    last_break_char_idx = *idx + 1;
+                    width_at_last_break = lw;
+                    space_savings_at_last_break = line_space_savings;
+                    fs_at_last_break = line_max_fs;
+                }
+            }
             BreakToken::LineBreak { idx } => {
                 results.push(LineBreakResult {
                     start_idx: line_start_idx,
@@ -2631,7 +2702,8 @@ fn fill_lines_before_cursor(
         .last()
         .map(|t| match t {
             BreakToken::Text { end_idx, .. } => *end_idx,
-            BreakToken::Space { idx, .. }
+            BreakToken::DiscretionaryHyphen { idx, .. }
+            | BreakToken::Space { idx, .. }
             | BreakToken::Tab { idx, .. }
             | BreakToken::LineBreak { idx } => *idx + 1,
         })
@@ -3611,6 +3683,7 @@ fn layout_paragraph_in_frame_impl(
         korean_break_unit,
         space_metric,
         &inline_controls,
+        para.control_mask & (1 << 0x18) != 0,
     );
     apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
     let prepared_kerning = allow_kerning
@@ -3653,6 +3726,7 @@ fn layout_paragraph_in_frame_impl(
             korean_break_unit,
             SpaceMetric::Stored,
             &inline_controls,
+            para.control_mask & (1 << 0x18) != 0,
         );
         apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
         tokens
@@ -4806,6 +4880,7 @@ fn reflow_line_segs_impl(
         // 종전 동작 보존: 이 인자가 곧 공백 규칙이었다.
         reflow_space_metric,
         &inline_controls,
+        para.control_mask & (1 << 0x18) != 0,
     );
     apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
     let prepared_kerning = prepare_paragraph_kerning(
@@ -4825,7 +4900,8 @@ fn reflow_line_segs_impl(
     let original_line_segs = para.line_segs.clone();
     let token_start_idx = |token: &BreakToken| match token {
         BreakToken::Text { start_idx, .. } => *start_idx,
-        BreakToken::Space { idx, .. }
+        BreakToken::DiscretionaryHyphen { idx, .. }
+        | BreakToken::Space { idx, .. }
         | BreakToken::Tab { idx, .. }
         | BreakToken::LineBreak { idx } => *idx,
     };
@@ -5766,6 +5842,7 @@ mod frame_reflow_tests {
             korean_break_unit,
             SpaceMetric::Stored,
             &[],
+            para.control_mask & (1 << 0x18) != 0,
         );
         let line_breaks = fill_lines_before_cursor(
             &tokens,
