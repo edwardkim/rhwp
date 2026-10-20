@@ -142,6 +142,14 @@ fn fit_whitespace_advance(
 
 /// Translate observed glyph metrics into the ordinary HWP character contract.
 /// Source-font loss is explicit: width-compatible fallback does not recover its outline.
+struct ObservedLineText {
+    text: String,
+    runs: Vec<(u32, u32)>,
+    tabs: Vec<TabItem>,
+    extensions: Vec<[u16; 7]>,
+    evidence: Value,
+}
+
 fn observed_line_text(
     page: &ExtractedPage,
     doc: &mut Document,
@@ -149,13 +157,18 @@ fn observed_line_text(
     shape_ids: &[Option<u32>],
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     cache: &mut BTreeMap<(u32, u8, i8, i8), u32>,
-) -> Result<(String, Vec<(u32, u32)>, Value), String> {
+    owner_x: f32,
+) -> Result<ObservedLineText, String> {
     use crate::renderer::{
         layout::{estimate_text_width_exact, resolved_to_text_style},
         style_resolver::detect_lang_category,
     };
     let content = reconstruct_line(&page.spans, &line.indices)?;
     let mut runs = Vec::new();
+    let mut text = String::new();
+    let mut tabs = Vec::new();
+    let mut extensions = Vec::new();
+    let mut positioning_tabs = Vec::new();
     let mut offset = 0;
     let mut maximum_error: f64 = 0.;
     let mut maximum_baseline_error: f64 = 0.;
@@ -178,11 +191,11 @@ fn observed_line_text(
         maximum_baseline_error = maximum_baseline_error.max(baseline_error);
         let mut style =
             resolved_to_text_style(styles, base_id, detect_lang_category(glyph.character));
-        let text = glyph.character.to_string();
+        let glyph_text = glyph.character.to_string();
         // Glyph reconstruction and actual run placement must use the same
         // fractional width. Rounding each scalar can invent an unsupported
         // ratio (e.g. a 2.5pt TJ separator measured as 7 instead of 6.667px).
-        let base_width = estimate_text_width_exact(&text, &style);
+        let base_width = estimate_text_width_exact(&glyph_text, &style);
         if !base_width.is_finite() || base_width <= 0. {
             return Err("glyph advance needs separate shaping".into());
         }
@@ -207,21 +220,60 @@ fn observed_line_text(
         // field contract only when that path cannot encode a blank separator.
         let ordinary = (50. ..=200.)
             .contains(&ratio)
-            .then(|| fit_spacing(&mut style, &text, ratio as u8, desired))
+            .then(|| fit_spacing(&mut style, &glyph_text, ratio as u8, desired))
             .flatten()
             .map(|(s, _, measured)| (ratio as u8, s, measured));
-        let (ratio, spacing, measured) = if let Some(fit) = ordinary {
+        let fit = if let Some(fit) = ordinary {
+            Some(fit)
+        } else if glyph.character.is_whitespace() {
+            fit_whitespace_advance(&mut style, &glyph_text, desired)
+        } else {
+            None
+        };
+        // A source-less geometric separator is an inference, not an authored
+        // space with an out-of-range character style. Preserve actual source
+        // whitespace; only the inferred separator may become a positioning tab.
+        if fit.is_none() && glyph.character.is_whitespace() && glyph.source_character.is_none() {
+            let stop_pt = glyph.origin + glyph.advance - owner_x;
+            let stop = u32::try_from(physical_margin(stop_pt)?)
+                .map_err(|_| "invalid inferred PDF tab position")?;
+            tabs.push(TabItem {
+                position: stop,
+                ..Default::default()
+            });
+            // The stop is editable; an observed advance is not a fixed-width
+            // tab cache. Reuse the standard no-cache marker so insertion before
+            // the tab still reaches the same stop in measure, paint and saves.
+            extensions.push(crate::model::paragraph::TAB_EXT_PLACEHOLDER);
+            let id = positioned_span_style(page, doc, line, glyph.span, base_id, cache)?;
+            if runs.last().is_none_or(|&(_, previous)| previous != id) {
+                runs.push((offset, id));
+            }
+            positioning_tabs.push(json!({"emittedContentUtf16Start":offset,
+                "sourceSpan":glyph.span,"sourceCharacter":null,"sourceUtf16":null,
+                "inference":"positioning_tab_from_observed_gap","authoredTab":"unknown",
+                "observedGapPt":glyph.advance,"stopPt":stop_pt,
+                "tabWidthPolicy":"standard_tab_stop_without_cached_advance"}));
+            text.push('\t');
+            offset += 1;
+            let measured = (f64::from(stop) / 200. - f64::from(origin - owner_x)) * 96. / 72.
+                - emitted_advance;
+            maximum_origin_error = maximum_origin_error.max((measured - desired).abs() * 72. / 96.);
+            emitted_advance += measured;
+            continue;
+        }
+        let (ratio, spacing, measured) = if let Some(fit) = fit {
             fit
         } else if glyph.character.is_whitespace() {
-            let fit = fit_whitespace_advance(&mut style, &text, desired)
-                .ok_or("source whitespace advance exceeds combined HWP character range")?;
-            joint_whitespace_fits += 1;
-            fit
+            return Err("source whitespace advance exceeds combined HWP character range".into());
         } else if !(50. ..=200.).contains(&ratio) {
             return Err("source glyph width exceeds HWP ratio range".into());
         } else {
             return Err("source displacement exceeds HWP spacing range".into());
         };
+        if ordinary.is_none() && glyph.character.is_whitespace() {
+            joint_whitespace_fits += 1;
+        }
         let error = (measured - desired).abs();
         emitted_advance += measured;
         maximum_origin_error = maximum_origin_error.max(error * 72. / 96.);
@@ -248,13 +300,17 @@ fn observed_line_text(
         if runs.last().is_none_or(|&(_, previous)| previous != id) {
             runs.push((offset, id));
         }
+        text.push(glyph.character);
         offset += glyph.character.len_utf16() as u32;
     }
-    Ok((
-        content.text,
+    Ok(ObservedLineText {
+        text,
         runs,
-        json!({
+        tabs,
+        extensions,
+        evidence: json!({
             "characters":content.characters,
+            "positioningTabs":positioning_tabs,
             "maximumAdvanceQuantizationErrorPt":maximum_error,
             "jointWhitespaceFits":joint_whitespace_fits,
             "maximumOriginQuantizationErrorPt":maximum_origin_error,
@@ -263,7 +319,7 @@ fn observed_line_text(
             "status":"observed_origins_with_nominal_widths",
             "hwpQuantization":"integer-percent ratio, spacing and character position; no source-font outline recovery"
         }),
-    ))
+    })
 }
 
 fn array(v: &Value) -> Result<&Vec<Value>, String> {
@@ -480,10 +536,20 @@ fn paragraph(
             .unwrap_or(line_top + line_height);
         let (text, runs): (String, Vec<(u32, u32)>) = if fixed_line_height {
             let before_styles = doc.doc_info.char_shapes.len();
-            match observed_line_text(page, doc, line, shape_ids, styles, &mut glyph_styles) {
-                Ok((text, runs, evidence)) => {
-                    materialization = Some(evidence);
-                    (text, runs)
+            match observed_line_text(
+                page,
+                doc,
+                line,
+                shape_ids,
+                styles,
+                &mut glyph_styles,
+                cell_x,
+            ) {
+                Ok(observed) => {
+                    materialization = Some(observed.evidence);
+                    tabs.extend(observed.tabs);
+                    para.tab_extended.extend(observed.extensions);
+                    (observed.text, observed.runs)
                 }
                 Err(reason) => {
                     doc.doc_info.char_shapes.truncate(before_styles);

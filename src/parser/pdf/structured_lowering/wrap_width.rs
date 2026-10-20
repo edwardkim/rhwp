@@ -14,7 +14,9 @@ fn ends(para: &Paragraph) -> Vec<u32> {
         .iter()
         .skip(1)
         .map(|line| line.text_start)
-        .chain(std::iter::once(para.text.encode_utf16().count() as u32))
+        .chain(std::iter::once(
+            para.text.chars().map(Paragraph::char_stream_len).sum(),
+        ))
         .collect()
 }
 

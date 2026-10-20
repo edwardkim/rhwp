@@ -3074,6 +3074,11 @@ pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
     para.controls.iter().all(|control| {
         control_is_width_neutral_marker(control)
             || control_is_line_width_neutral_float_table(control)
+            // Without stored rows, certified non-flow cell paint must not veto
+            // the text frame. With stored rows its existing layout owner keeps
+            // that geometry; this is not permission to rebuild a saved ladder.
+            || (crate::renderer::para_has_no_stored_line_segs(para)
+                && crate::model::border_paint::is_cell_frame_paint(control))
             || (remeasured && matches!(control, Control::Equation(eq) if eq.common.treat_as_char))
             || (remeasured && matches!(control, Control::Footnote(_)))
     })
