@@ -6058,3 +6058,25 @@ Native PNG 명령은 현재 exporter가 이미 적재한 실제 주 face에서 b
 같은 쪽·영역의 원본/Print/현재 출력, 실제 원 PUA의 반각 전진과 뒤 글자의 순서·겹침,
 글꼴 미공급 폴백과 기존 #6057, 정상 일반 문자 및 앞 보정 경계를 검증한다. 실제 공급 전후
 검증이 완료되기 전에는 414쪽 통과를 선언하지 않는다.
+
+
+### D58 미공급 확인과 D59 실제 문자 fallback의 같은 프로그램 선택
+
+D58 `8185514040032b1666d91389265ecd30bb0d8cc0` Native 빌드는 237.95초에 통과했지만
+414쪽 raw는 89.22123%로 그대로다. 주 face 휴먼명조의 실제 SFNT에는 F0854/F0855가
+없고, 기존 paint의 선언/동일 계열 fallback인 Haansoft Batang에는 각 0.5em로 존재한다.
+주 face만 공급한 D58은 미공급 폴백을 올바르게 유지했으나 목표 원 글리프를 선택하지 못했다.
+
+PUA 파생 캐시는 일반 문자·커닝의 exact slot registry를 덮어쓰지 않는다. 따라서
+실제 paint가 문자별로 선택한 fallback 프로그램을 이 두 PUA에만 공급하는 것이 적절하다.
+Native는 기존 text_typeface_candidates와 문자 선택을 그대로 소비한다. 브라우저도
+기존 render_font_family_chain의 순서로 FontFace를 준비하고 각 실제 cmap이 PUA를
+지원할 때만 선택한다. 원문/일반 글자의 family와 메트릭은 그대로 유지한다.
+
+Host Canvas의 scoped 별칭은 준비된 fallback family에도 같은 순서로 적용하여
+선택한 bytes와 실제 표시가 달라지지 않게 한다. TTC 분리·terminal cmap 수리는
+FontFace 준비와 같은 normalizeFontFaceData의 결과를 공급한다. 실제 글꼴이 사라지거나
+교체되면 과거 PUA 캐시를 보존하지 않으며, 같은 지원 프로그램의 멱등 등록과 지원 부재를
+구별한다. 기존 호스트 3건과 ignored 공급/지연 응답 2건이 통과했다. 첫 async 진단은
+mock provider의 필수 subscribe가 빠져 실패했으며, 무한 대기 대신 제한된 대기를 사용하고
+provider 계약을 갖춘 재실행으로 수정했다. 실제 SFNT나 시각 검증을 mock 통과로 대신하지 않는다.
