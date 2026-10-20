@@ -240,6 +240,48 @@ fn cross_paragraph_move_keeps_paragraphs_and_both_save_formats() {
 }
 
 #[test]
+fn moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats() {
+    for prefix in ["", "가나다"] {
+        let mut core = core(vec![
+            paragraph("앞뒤", vec![(1, equation(41))]),
+            paragraph(prefix, vec![]),
+        ]);
+        let offset = prefix.chars().count();
+        core.insert_auto_number_at_cursor(0, 1, offset, "page")
+            .unwrap();
+        let mut core = DocumentCore::from_bytes(&core.export_hwpx_native().unwrap()).unwrap();
+        let source_index = core.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|control| matches!(control, Control::Equation(_)))
+            .unwrap();
+        let before = core.document().sections[0].paragraphs[1].clone();
+        assert_eq!(before.text, format!("{prefix} "));
+        let result = core
+            .move_inline_control_native(&source(body(0), source_index), &caret(body(1), offset + 1))
+            .unwrap();
+        assert_eq!(result.address, source(body(1), before.controls.len()));
+        assert_eq!(result.char_offset, offset + 1);
+        for bytes in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            let paragraphs = &reopened.document().sections[0].paragraphs;
+            let target = &paragraphs[1];
+            assert_eq!(target.text, before.text);
+            assert_eq!(target.char_offsets, before.char_offsets);
+            assert_eq!(target.char_count, before.char_count + 8);
+            assert_eq!(object_ids(target), vec![41]);
+            assert_eq!(target.controls.len(), before.controls.len() + 1);
+            assert!(matches!(target.controls[0], Control::AutoNumber(_)));
+            assert!(matches!(target.controls.last(), Some(Control::Equation(_))));
+            assert!(object_ids(&paragraphs[0]).is_empty());
+        }
+    }
+}
+
+#[test]
 fn zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive() {
     let field = Control::Field(Field {
         field_type: FieldType::ClickHere,

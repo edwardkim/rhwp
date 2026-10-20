@@ -319,7 +319,7 @@ fn caret_slot(para: &Paragraph, logical: usize) -> Result<(u32, usize), HwpError
     if text > text_len {
         return Err(invalid("캐럿이 문단 범위를 벗어났습니다"));
     }
-    let raw = para.char_offsets.get(text).copied().unwrap_or_else(|| {
+    let mut raw = para.char_offsets.get(text).copied().unwrap_or_else(|| {
         para.char_offsets
             .last()
             .zip(para.text.chars().last())
@@ -328,6 +328,18 @@ fn caret_slot(para: &Paragraph, logical: usize) -> Result<(u32, usize), HwpError
                 |(offset, ch)| offset + Paragraph::char_stream_len(ch),
             )
     });
+    // 끝 자동번호의 공백은 저장기에서 번호 슬롯 8유닛을 함께 차지한다.
+    if text == text_len && para.text.ends_with(' ') {
+        let last = para.char_offsets[text_len - 1];
+        if slots.iter().zip(&para.controls).any(|(slot, control)| {
+            matches!(control, Control::AutoNumber(_))
+                && slot.is_some_and(|(position, _)| position == last)
+        }) {
+            raw = last
+                .checked_add(8)
+                .ok_or_else(|| invalid("문단의 문자 좌표가 너무 큽니다"))?;
+        }
+    }
     let ci = slots
         .iter()
         .position(|slot| slot.is_some_and(|(pos, _)| pos >= raw))
