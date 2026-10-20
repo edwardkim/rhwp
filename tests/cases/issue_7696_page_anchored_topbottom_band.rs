@@ -116,3 +116,54 @@ fn page_anchored_topbottom_band_reflowed_input() {
 fn page_anchored_topbottom_band_hancom_saved_input() {
     check("samples/issue7696/page-anchored-band-2024.hwp");
 }
+
+/// 빈 host 줄(`sw=0`)이 자기 문단 기준 자리차지 그림의 띠 안에서 시작하면(세로 오프셋이 줄
+/// 상자 안) 그 줄은 띠에 흡수된다. 다음 문단은 문단 시작 + 오프셋 + 그림 높이에서 시작한다.
+///
+/// ```text
+///   hwpspec 구역 3 표제 쪽   문단 0: 빈 줄 vpos 0 (lh 1000 · ls 600 · sw 0)
+///                           그림: 문단 기준 오프셋 115HU · 높이 4428HU
+///   저장 사다리              문단 1 vpos 4543 = 115 + 4428 · 문단 24 vpos 41343
+///   종이 기준 그림(문단 7)    본문 567.5px 부터 아래 끝까지 — 문단 24 줄 상자 551.2..564.5 는 그 위
+/// ```
+///
+/// 줄과 그림을 쌓으면(+19.8px) 문단 24 가 종이 기준 밴드에 들어가 다음 쪽으로 밀린다.
+/// 정본·저장 사다리는 문단 24 를 표제 쪽에 두고, 문단 25(vpos 76421, 밴드 아래)만 넘긴다.
+#[test]
+fn empty_host_line_inside_offset_para_picture_band_is_absorbed() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/한글문서파일형식_5.0_revision1.3.hwp");
+    let core = rhwp::document_core::DocumentCore::from_bytes(&std::fs::read(&path).expect("read"))
+        .expect("표본 파싱");
+    let pages = core.dump_page_items_json(None);
+    let owner_pages = |para: u64| -> Vec<usize> {
+        pages
+            .as_array()
+            .unwrap()
+            .iter()
+            .enumerate()
+            .filter(|(_, page)| page["section"].as_u64() == Some(3))
+            .filter(|(_, page)| {
+                page["columns"].as_array().unwrap().iter().any(|column| {
+                    column["items"].as_array().unwrap().iter().any(|item| {
+                        item["kind"].as_str() == Some("fullParagraph")
+                            && item["paraIndex"].as_u64() == Some(para)
+                    })
+                })
+            })
+            .map(|(index, _)| index)
+            .collect()
+    };
+    let title_page = owner_pages(0);
+    assert_eq!(title_page.len(), 1, "구역 3 문단 0 은 한 쪽에 있다");
+    assert_eq!(
+        owner_pages(24),
+        title_page,
+        "문단 24 는 저장 사다리대로 표제 쪽(종이 기준 밴드 위)에 남는다"
+    );
+    assert_eq!(
+        owner_pages(25),
+        vec![title_page[0] + 1],
+        "문단 25 는 종이 기준 밴드 아래라 다음 쪽으로 간다"
+    );
+}

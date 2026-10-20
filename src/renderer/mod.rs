@@ -3332,12 +3332,13 @@ pub(crate) fn empty_host_line_absorbed_by_topbottom_float(
 ) -> bool {
     use crate::model::shape::{TextWrap, VertRelTo};
 
-    // 띠가 앵커에서 시작할 때만 host 줄이 띠 안에 든다. 양수 세로 오프셋이면 host 줄은 개체 위에
-    // 따로 놓인다(PrEP 3.214: `sw=0` 이지만 오프셋 504HU, 한/글 캡션 위치는 종전 전진과 일치).
+    // 띠가 host 줄 상자 안에서 시작하면 host 줄은 띠 안에 든다. 다음 문단의 저장 vpos 는
+    // 문단 시작 + max(위 간격, 세로 오프셋) + 개체 높이다(hwpspec 구역 3 첫 쪽: 오프셋 115HU,
+    // 0 + 115 + 4428 = 4543 · PrEP 3.214: 위 간격 500·오프셋 504HU, 45884 + 504 + 20145 =
+    // 66533). 오프셋이 줄 상자 아래면 host 줄은 개체 위에 따로 놓인다(#6888).
     if common.treat_as_char
         || !matches!(common.text_wrap, TextWrap::TopAndBottom)
         || !matches!(common.vert_rel_to, VertRelTo::Para)
-        || crate::renderer::float_placement::signed_hwpunit(common.vertical_offset) != 0
     {
         return false;
     }
@@ -3346,8 +3347,34 @@ pub(crate) fn empty_host_line_absorbed_by_topbottom_float(
         return false;
     }
     let seg = &para.line_segs[0];
+    let offset = crate::renderer::float_placement::signed_hwpunit(common.vertical_offset);
     seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && seg.segment_width == 0
+        && (0..seg.line_height.max(1)).contains(&offset)
+}
+
+/// 띠에 흡수된 빈 host 줄([`empty_host_line_absorbed_by_topbottom_float`])이 흐름에서 돌려받는
+/// 높이(px). 문단 측정은 `위 간격 + 줄 높이 + 줄간격` 을 이미 더했고, 띠는 문단 시작에서
+/// `max(위 간격, 세로 오프셋)` 아래에 놓이므로 위 간격을 넘는 오프셋만큼은 돌려주지 않는다.
+pub(crate) fn absorbed_host_line_return_px(
+    para: &crate::model::paragraph::Paragraph,
+    common: &crate::model::shape::CommonObjAttr,
+    spacing_before_px: f64,
+    dpi: f64,
+) -> f64 {
+    if !empty_host_line_absorbed_by_topbottom_float(para, common) {
+        return 0.0;
+    }
+    let Some(seg) = para.line_segs.first() else {
+        return 0.0;
+    };
+    let offset = hwpunit_to_px(
+        crate::renderer::float_placement::signed_hwpunit(common.vertical_offset),
+        dpi,
+    );
+    (hwpunit_to_px(seg.line_height + seg.line_spacing, dpi)
+        - (offset - spacing_before_px.max(0.0)).max(0.0))
+    .max(0.0)
 }
 
 /// [#6888] **자기 앵커보다 아래로 떨어진 자리차지(TopAndBottom) 개체**인가.
