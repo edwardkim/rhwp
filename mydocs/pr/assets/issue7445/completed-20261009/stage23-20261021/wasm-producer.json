@@ -1,0 +1,15 @@
+{
+  "head": "37aff1d19e5a724b502c2f4e0a8e6b389c05c892",
+  "sourceLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair847-bounded-jpeg-window-fresh-wasm/source.json",
+  "hashes": {
+    "rhwp.js": "63c587e4b072f0a65416e65a0e86bf00b2971cdfb0f46cfda7f150449dd30524",
+    "rhwp_bg.wasm": "13f70758c2ee635c7716968d90342d9b69c851af78f31f3e204ee2e2073f9a71"
+  },
+  "rootPackageRecompiled": true,
+  "wrapperInvoked": true,
+  "rootPkgStudioPublicMatch": true,
+  "buildExitCode": 0,
+  "seconds": 236.9714736250462,
+  "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+  "actualBrowserInitialization": "pending"
+}

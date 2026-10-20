@@ -1,0 +1,15 @@
+{
+  "parent": "37aff1d19e5a724b502c2f4e0a8e6b389c05c892",
+  "files": {
+    "src/paint/builder.rs": "a0e2af305bb771ebd49d67a83361b8b8886bac62cb4928b0837c73db913278ff",
+    "src/paint/json.rs": "b3982463e30576989c459be72f57e5836188456c4718a9783fca6c767b18bbc6",
+    "src/paint/paint_op.rs": "d671e5319967d153f0f4fa4421e35398ac81599ad1b8f67dafbd59d3ddd10427",
+    "src/paint/paper_viewport.rs": "973498b8de5bdc5fa8072667a9c9bf8f69330e33c3d72a339d610f4acbb7c532",
+    "src/renderer/bitmap_raster.rs": "07dddf7a46e6dae79e810f8cc50b0d596d5fccc7258dc72f168ab134fea1d09b",
+    "src/renderer/canvaskit_policy.rs": "0205e92d7eb549eb68644d3737089fb6a198bd3f7b05e1fe79881a212ee72db8",
+    "src/renderer/image_resolver.rs": "93ba90d6c53387d715a5d1978acdde87d92481906c05e682586317cf0ad70b45",
+    "src/renderer/image_resolver/print_crop.rs": "25bfdef2bf4d9064d28fb919be7c611103341986fef19120e6ef1d646904d9fb"
+  },
+  "patchSha256": "5886b66a1f9b8f3a83e245cd8f20e3b555729fa09b20560d220aae0333b082f1",
+  "scope": "Stage23 version7: bounded CPU JPEG source-window normalization handles >32M input only when emitted cropped PNG remains inside unchanged8192/32M decode budget. CPU source cap64M mirrors Native raster preparation. Oversized full source is not marked supported. Actual synthetic Native guard case843 fails before, source-window/minification8tests842passed previous version. JPEG source/IR preserved, SourceWindow is not output-device pixels, original lazy bin key omitted. Focus/full/freshWASM pending."
+}

@@ -458,9 +458,21 @@ impl PagePaintContext {
         {
             return bbox;
         }
+        // 원본의 앞쪽 구간을 잘랐다면 시작점은 첫 원본 픽셀이 아니라
+        // clipping 경계다. 독립 Print의 crop 이미지/clip 연산자는 이 축의
+        // 앞 장치 경계를 공유한다. 전체 원본과 뒤쪽만 자른 축은 기존
+        // 첫 픽셀 원점을 유지하며, crop 단위나 내용으로 대상을 추정하지 않는다.
+        let (left, top) = image.crop.map_or((0, 0), |(left, top, _, _)| (left, top));
+        let origin = |value: f64, clipped_start: bool| {
+            if clipped_start {
+                (value * device_per_css + 1e-9).floor()
+            } else {
+                (value * device_per_css - 1e-9).ceil()
+            }
+        };
         BoundingBox::new(
-            (bbox.x * device_per_css - 1e-9).ceil() * sx,
-            (bbox.y * device_per_css - 1e-9).ceil() * sy,
+            origin(bbox.x, left > 0) * sx,
+            origin(bbox.y, top > 0) * sy,
             (bbox.width * device_per_css).round() * sx,
             (bbox.height * device_per_css).round() * sy,
         )

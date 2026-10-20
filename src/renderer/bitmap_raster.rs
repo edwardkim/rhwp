@@ -91,6 +91,16 @@ pub(crate) fn prepare_bitmap(
         .ok()?
         .into_dimensions()
         .ok()?;
+    // 얕은 축소는 선언된 Print 재구성 경로가 표본을 소유한다.
+    // 더 큰 축소는 기존 장치 구간 평균을 유지한다.
+    if super::image_resolver::png_sampling::print_bitmap_reconstruction(bytes)
+        && super::cubic_sampling::modest_reduction(
+            (f64::from(dimensions.0), f64::from(dimensions.1)),
+            (a * bbox.width, d * bbox.height),
+        )
+    {
+        return None;
+    }
     if width >= dimensions.0
         || height >= dimensions.1
         || u64::from(dimensions.0) * u64::from(dimensions.1) > MAX_PIXELS

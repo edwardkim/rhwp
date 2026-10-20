@@ -37,6 +37,8 @@ impl TextDecorationKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ResolvedImageKind {
     FormatConverted,
+    /// 원본의 잘린 픽셀 창. 최종 장치 표본은 아니며 원본 bin 키로 조회할 수 없다.
+    SourceWindow,
     /// 출력 크기·장치에 따라 바이트가 달라지는 변환. 원본 bin 키와 구분한다.
     OutputDevice,
     BakedWatermark,

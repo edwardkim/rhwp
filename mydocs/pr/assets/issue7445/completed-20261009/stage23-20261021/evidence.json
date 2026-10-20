@@ -1,0 +1,357 @@
+{
+  "parent": "37aff1d19e5a724b502c2f4e0a8e6b389c05c892",
+  "base": "2e3b4f880bd11d35398e6ea0100846611f13a72d",
+  "nativeArtifacts": {
+    "cliSha256": "2a30fe92ad9df66200a203454fa6b525a9c5e36a45399010a4d0f4d0947b47c1",
+    "librarySha256": "7e0dffb202711ef28f0eb4f13b4e04a958108856d2f6977d31512e47751948b1"
+  },
+  "runtimeSource": {
+    "parent": "37aff1d19e5a724b502c2f4e0a8e6b389c05c892",
+    "files": {
+      "src/paint/builder.rs": "a0e2af305bb771ebd49d67a83361b8b8886bac62cb4928b0837c73db913278ff",
+      "src/paint/json.rs": "b3982463e30576989c459be72f57e5836188456c4718a9783fca6c767b18bbc6",
+      "src/paint/paint_op.rs": "d671e5319967d153f0f4fa4421e35398ac81599ad1b8f67dafbd59d3ddd10427",
+      "src/paint/paper_viewport.rs": "973498b8de5bdc5fa8072667a9c9bf8f69330e33c3d72a339d610f4acbb7c532",
+      "src/renderer/bitmap_raster.rs": "07dddf7a46e6dae79e810f8cc50b0d596d5fccc7258dc72f168ab134fea1d09b",
+      "src/renderer/canvaskit_policy.rs": "0205e92d7eb549eb68644d3737089fb6a198bd3f7b05e1fe79881a212ee72db8",
+      "src/renderer/image_resolver.rs": "93ba90d6c53387d715a5d1978acdde87d92481906c05e682586317cf0ad70b45",
+      "src/renderer/image_resolver/print_crop.rs": "25bfdef2bf4d9064d28fb919be7c611103341986fef19120e6ef1d646904d9fb"
+    },
+    "patchSha256": "5886b66a1f9b8f3a83e245cd8f20e3b555729fa09b20560d220aae0333b082f1",
+    "scope": "Stage23 version7: bounded CPU JPEG source-window normalization handles >32M input only when emitted cropped PNG remains inside unchanged8192/32M decode budget. CPU source cap64M mirrors Native raster preparation. Oversized full source is not marked supported. Actual synthetic Native guard case843 fails before, source-window/minification8tests842passed previous version. JPEG source/IR preserved, SourceWindow is not output-device pixels, original lazy bin key omitted. Focus/full/freshWASM pending."
+  },
+  "wholeResults": [
+    {
+      "backend": "native",
+      "case": "prep",
+      "counts": {
+        "rhwp": 140,
+        "pdf": 140
+      },
+      "minimum": "94.75150",
+      "worstPage": 27,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/native/prep/silhouette.tsv",
+      "directReading": "pending",
+      "evidenceTsv": "native-prep.tsv",
+      "tsvSha256": "f9e3656edee89fbd1f19d3a9592e5033e0d1189edbe464e6888d737d77825ad5"
+    },
+    {
+      "backend": "native",
+      "case": "palette",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "minimum": "99.97513",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/native/palette/silhouette.tsv",
+      "directReading": "pending",
+      "evidenceTsv": "native-palette.tsv",
+      "tsvSha256": "96f2d192aa6d540b76afd2cfc6539c4efcf670e8d6cfb673784a57fe4595c909"
+    },
+    {
+      "backend": "native",
+      "case": "legal-control",
+      "counts": {
+        "rhwp": 74,
+        "pdf": 74
+      },
+      "minimum": "93.69360",
+      "worstPage": 36,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/native/legal-control/silhouette.tsv",
+      "directReading": "pending",
+      "evidenceTsv": "native-legal-control.tsv",
+      "tsvSha256": "c1fd51cba68bca23b037e685bcef70bb2b970e2e72ad5a91957faa995abe8f45"
+    },
+    {
+      "backend": "wasm",
+      "case": "prep",
+      "counts": {
+        "rhwp": 140,
+        "pdf": 140
+      },
+      "minimum": "94.22354",
+      "worstPage": 27,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/wasm/prep/silhouette.tsv",
+      "directReading": "pending",
+      "evidenceTsv": "wasm-prep.tsv",
+      "tsvSha256": "d0a02da4f79edc8c2db11339bd9d22daeefc7aeaa99fd424a269e3b801adae36"
+    },
+    {
+      "backend": "wasm",
+      "case": "palette",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "minimum": "99.97512",
+      "worstPage": 1,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/wasm/palette/silhouette.tsv",
+      "directReading": "pending",
+      "evidenceTsv": "wasm-palette.tsv",
+      "tsvSha256": "3f942003668e21a25155ed8e3fdc493622d9537f52a63c9a75912ceda17013f7"
+    },
+    {
+      "backend": "wasm",
+      "case": "legal-control",
+      "counts": {
+        "rhwp": 74,
+        "pdf": 74
+      },
+      "minimum": "93.46860",
+      "worstPage": 36,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/wasm/legal-control/silhouette.tsv",
+      "directReading": "pending",
+      "evidenceTsv": "wasm-legal-control.tsv",
+      "tsvSha256": "dc5a0b4cf3aba37111d57b108cd0d9db6b9dec652aae5eacd05a98acf6f8967a"
+    }
+  ],
+  "tests": {
+    "imageOfficial": {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair857-final-image-automatic-regressions/results.json",
+      "sha256": "1b552ce655defceb8681b86b073e1a929e8e8a41e970c5253f682c1ecc2f53bf",
+      "result": [
+        {
+          "case": "prepare",
+          "command": [
+            "node",
+            "scripts/rust-test-suite-manifest.mjs",
+            "--prepare"
+          ],
+          "exitCode": 0,
+          "seconds": 1.0108979580691084
+        },
+        {
+          "case": "native_output_device_surface",
+          "command": [
+            "node",
+            "scripts/run-rust-test.mjs",
+            "native_output_device_surface",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exitCode": 0,
+          "seconds": 126.59585783304647
+        },
+        {
+          "case": "verified_prep_bitmap_grid_flow",
+          "command": [
+            "node",
+            "scripts/run-rust-test.mjs",
+            "verified_prep_bitmap_grid_flow",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exitCode": 0,
+          "seconds": 13.50703416694887
+        }
+      ]
+    },
+    "prepOfficialFinal": {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair860-prep-final-frame-regressions/results.json",
+      "sha256": "41e357473c00a089e0ca3cd2bed1df0eeaf740b9e7ab6e44720b11ebc5d89f61",
+      "result": [
+        {
+          "case": "prepare",
+          "command": [
+            "node",
+            "scripts/rust-test-suite-manifest.mjs",
+            "--prepare"
+          ],
+          "exitCode": 0,
+          "seconds": 1.330676667043008
+        },
+        {
+          "case": "verified_prep_bitmap_grid_flow",
+          "command": [
+            "node",
+            "scripts/run-rust-test.mjs",
+            "verified_prep_bitmap_grid_flow",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exitCode": 0,
+          "seconds": 12.37602725008037
+        }
+      ]
+    },
+    "prep72BeforeAfter": {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair856-prep72-pixel-before-after/results.json",
+      "sha256": "5e0a2b8c43eadb6df6f33ae64fa1bb9903755ba52dd94ac327334576a47be95b",
+      "result": [
+        {
+          "stage": "before",
+          "exitCode": 101,
+          "seconds": 1.9532706249738112
+        },
+        {
+          "stage": "after",
+          "exitCode": 0,
+          "seconds": 1.5656111249700189
+        }
+      ]
+    },
+    "prep15BeforeAfter": {
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair859-prep15-sampling-before-after/results.json",
+      "sha256": "d37b4e07ab3299ff919b2efc1c31f2338bbda74de8b797111b191c7d75e7f6bd",
+      "result": [
+        {
+          "stage": "before",
+          "exitCode": 101
+        },
+        {
+          "stage": "after",
+          "exitCode": 0
+        }
+      ]
+    },
+    "prep72Qualification": {
+      "nativeSourceLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair844-bounded-jpeg-source-window-native/source.json",
+      "freshWasmProducer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair847-bounded-jpeg-window-fresh-wasm/producer.json",
+      "scope": "Whole PrEP140 Native/fresh WASM both >=90 and page72 both>=98; inspected source table/grid/content, residual single-pixel line phase remains inside2CSSpx. Supports important source frame+24grid-line regression, not global branch completion.",
+      "results": [
+        {
+          "backend": "native",
+          "wholePages": 140,
+          "minimum": "94.75150",
+          "page72Raw": "100.00000",
+          "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/native/prep/silhouette.tsv",
+          "review": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/native/prep/review/review_072.png",
+          "overlay": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/native/prep/overlay/overlay_072.png"
+        },
+        {
+          "backend": "wasm",
+          "wholePages": 140,
+          "minimum": "94.22354",
+          "page72Raw": "100.00000",
+          "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/wasm/prep/silhouette.tsv",
+          "review": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/wasm/prep/review/review_072.png",
+          "overlay": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/wasm/prep/overlay/overlay_072.png"
+        }
+      ]
+    },
+    "prep15Qualification": {
+      "results": [
+        {
+          "backend": "native",
+          "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/native/prep/silhouette.tsv",
+          "page15Raw": "98.40426",
+          "directReading": "review and overlay inspected; graph/caption/following body order intact; border strength and fine-edge differences remain"
+        },
+        {
+          "backend": "wasm",
+          "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair848-bounded-jpeg-window-whole/wasm/prep/silhouette.tsv",
+          "page15Raw": "98.40390",
+          "directReading": "review and overlay inspected; graph/caption/following body order intact; border strength and fine-edge differences remain"
+        }
+      ],
+      "independentImageDoCss": [
+        144.7226666667,
+        98.132,
+        503.7293333333,
+        285.448
+      ],
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair817-prep-print-image-consumer-audit/independent-print-image-operators.json"
+    },
+    "syntheticBeforeAfter": {
+      "repair832-print-source-window-contract/before.log": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair832-print-source-window-contract/before.log",
+        "sha256": "67488cfc9b95cefa6f1317dc169bcdfca98206b3ba8f6920d7d899765cf76ba8"
+      },
+      "repair839-cropped-source-minification-contract/before.log": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair839-cropped-source-minification-contract/before.log",
+        "sha256": "3a8c8a92f8ad2c9b6c12cc280f308fa1c216d9649a411828d6f0f2fee435f260"
+      },
+      "repair843-bounded-oversized-jpeg-window-contract/before.log": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair843-bounded-oversized-jpeg-window-contract/before.log",
+        "sha256": "3035a901832076fb624b5f05888eade222c82467546d78c4eb67ad62ae09aa58"
+      }
+    }
+  },
+  "currentTestSha256": {
+    "tests/cases/native_output_device_surface.rs": "fd45f9cff0611ddafc851f75082b43bc317ec627d3616c2e03e95c9bf5bbdf6b",
+    "tests/cases/verified_prep_bitmap_grid_flow.rs": "97bf6b0a9f58c47a861fee0d57865c60cbae480bc277e9e3dce6cc709c7d9478"
+  },
+  "scope": "Stage23 source and crop replay checkpoint; all-branch regression/gates/actual36 not complete; accepted Native floor holds on PrEP1 and legal2/13/36 unchanged",
+  "directReading": {
+    "prep72": "Native/fresh WASM review+overlay inspected: source rows/content present; line phase remains within2CSSpx; raw100 does not mean RGB identity",
+    "prep15": "Native/fresh WASM review+overlay inspected: bands/caption/following content restored; border strength and fine edges remain"
+  },
+  "files": {
+    "whole-producer.json": "807a9c6c6b64a2864a06b90184c15117f61dd3aac57c1da68ad8da87a1e0b0cf",
+    "native-legal-control.tsv": "c1fd51cba68bca23b037e685bcef70bb2b970e2e72ad5a91957faa995abe8f45",
+    "native-prep-p015-overlay.png": "443c74c3d5501f872b36ef3c3a0479f0a5c0f673cf3821234c115476ad75b888",
+    "native-prep.tsv": "f9e3656edee89fbd1f19d3a9592e5033e0d1189edbe464e6888d737d77825ad5",
+    "wasm-prep-p015-review.png": "1af692c58eb53fc0d58888b55e8646eb7cd8b0503c04de100483d0187fd227cf",
+    "wasm-prep-p072-overlay.png": "e49a7b32d1686e06ae40297c4d7aee1a63fd5302b2875914b659f6067ad13e0a",
+    "wasm-producer.json": "5803adf6b57b4b10b70b6848e3702b0a990c04840c626a68f5cce2842c530aa9",
+    "wasm-prep.tsv": "d0a02da4f79edc8c2db11339bd9d22daeefc7aeaa99fd424a269e3b801adae36",
+    "wasm-legal-control.tsv": "dc5a0b4cf3aba37111d57b108cd0d9db6b9dec652aae5eacd05a98acf6f8967a",
+    "wasm-prep-p072-review.png": "034076419e9c05b8dab350daaf18e94a9c3e0f97301527e6a9ec90dc9cfebd93",
+    "wasm-palette.tsv": "3f942003668e21a25155ed8e3fdc493622d9537f52a63c9a75912ceda17013f7",
+    "native-prep-p015-review.png": "4acda01dda7be7d094e402a7168c43b68275f9cc0797f3b28b1dd33452d78f6f",
+    "wasm-prep-p015-overlay.png": "bf052ae26e9b2038ab4a41869c981948f9d337f4f146a5a82b4d79741044ec5b",
+    "native-prep-p072-review.png": "2ef44802c408aaa2ab18f647ba67130bc56b832e823b82930125c9ed7b7ae616",
+    "native-palette.tsv": "96f2d192aa6d540b76afd2cfc6539c4efcf670e8d6cfb673784a57fe4595c909",
+    "native-source.json": "b8e73998111b7779fbc5805446d943a992c29283434b878f8e501915e17b4962",
+    "native-prep-p072-overlay.png": "0d5851af20dd21b9b6fc50476ff8fc4e8195099256d74d5c4324c7bb1ca9cc52",
+    "native-quality.json": "c6f646493796cb38b7dd8b15f9229129221392bfc86cf7119b8ea8e74d3af6ef"
+  },
+  "stageChecks": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exitCode": 0,
+      "seconds": 10.465338042005897
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "seconds": 0.05015745898708701
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "2e3b4f880bd11d35398e6ea0100846611f13a72d"
+      ],
+      "exitCode": 0,
+      "seconds": 4.021858916035853
+    }
+  ]
+}

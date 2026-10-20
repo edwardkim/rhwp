@@ -277,18 +277,24 @@ impl LayerBuilder {
                 let frame = self
                     .page_context
                     .map_or(node.bbox, |context| context.image_frame(node, image));
-                let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame)
-                {
+                let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame) {
                     vec![PaintOp::path(frame, path)]
                 } else {
                     let mut image = image.clone();
                     image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
-                    let resolved = crate::paint::metafile::image_payload(
+                    crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
+                    let mut resolved = crate::paint::metafile::image_payload(
                         &image,
                         node.bbox,
                         self.metafile_device_pixel_width,
                         &self.metafile_fonts,
                     );
+                    if let Some(window) = crate::renderer::image_resolver::resolve_print_jpeg_window(
+                        &mut image,
+                        resolved.as_ref(),
+                    ) {
+                        resolved = Some(window);
+                    }
                     vec![PaintOp::image(frame, image, resolved)]
                 };
                 if self.output_options.show_control_codes {
