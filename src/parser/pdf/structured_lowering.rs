@@ -2,6 +2,7 @@
 mod body;
 mod composition;
 mod native_borders;
+mod wrap_width;
 use super::{
     lowering::hu,
     recognition::{ParagraphProposal, ParagraphState},

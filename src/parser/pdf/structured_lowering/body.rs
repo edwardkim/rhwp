@@ -97,7 +97,7 @@ fn prepare<'a>(
         }
     }
     let start = typography.borrow().len();
-    let item = paragraph(
+    let mut item = paragraph(
         page,
         doc,
         p,
@@ -117,6 +117,10 @@ fn prepare<'a>(
         return Err(format!(
             "body glyph metrics require positioned source: {reason}"
         ));
+    }
+    let wrap = super::wrap_width::fit(page, doc, p, region.bbox, &mut item);
+    if let Some(first) = typography.borrow_mut().get_mut(start) {
+        first["paragraphReflow"] = wrap;
     }
     Ok(Prepared {
         proposal: p,
